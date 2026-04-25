@@ -110,6 +110,7 @@ export default function App() {
           encounterId={view.encounterId}
           manager={encounterManager}
           creatures={storage.creatures}
+          folders={storage.folders}
           onBack={goToEncounters}
           onDuplicate={handleDuplicateEncounter}
         />
@@ -118,6 +119,7 @@ export default function App() {
     encounters: () => (
       <EncountersDashboard
         manager={encounterManager}
+        folders={storage.folders}
         onOpenEncounter={goToEncounter}
         onBackToGrimoire={goToDashboard}
       />

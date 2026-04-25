@@ -73,7 +73,7 @@ const VitalBar = ({ kind, current, max, onChange }) => {
   }, [delta, current, onChange]);
 
   return (
-    <div className={`rounded-lg border bg-slate-900/80 ${theme.border} p-4 transition-shadow hover:shadow-lg`}>
+    <div className={`rounded-lg border bg-slate-900/80 ${theme.border} p-4 transition-shadow hover:shadow-lg overflow-hidden`}>
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <Icon className={`w-5 h-5 ${theme.accent}`} aria-hidden="true" />
@@ -102,7 +102,7 @@ const VitalBar = ({ kind, current, max, onChange }) => {
         <input type="number" value={delta} onChange={(e) => setDelta(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && applyDelta(-1)}
           placeholder="0"
-          className="flex-1 h-9 bg-slate-900 border border-slate-700 rounded px-3 text-center text-white font-mono focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+          className="flex-1 min-w-0 h-9 bg-slate-900 border border-slate-700 rounded px-3 text-center text-white font-mono focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
           aria-label={`Valor para alterar ${theme.label}`} />
         <button type="button" onClick={() => applyDelta(1)}
           className="flex items-center justify-center w-9 h-9 rounded bg-emerald-950 hover:bg-emerald-900 border border-emerald-800 text-emerald-300 font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500"
@@ -200,20 +200,20 @@ const ConditionManager = ({ conditions, onAdd, onRemove }) => {
         })}
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <input type="text" value={name} onChange={(e) => setName(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
           placeholder="Ex: Sangramento, Caído, Exposto..."
-          className="flex-1 h-9 bg-slate-950 border border-slate-700 rounded px-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-purple-500" />
+          className="flex-1 min-w-0 h-9 bg-slate-950 border border-slate-700 rounded px-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-purple-500" />
         <select value={level} onChange={(e) => setLevel(e.target.value)}
-          className="h-9 bg-slate-950 border border-slate-700 rounded px-2 text-sm text-white focus:outline-none focus:border-purple-500"
+          className="flex-shrink-0 h-9 bg-slate-950 border border-slate-700 rounded px-2 text-sm text-white focus:outline-none focus:border-purple-500"
           aria-label="Nível da condição">
           {Object.entries(CONDITION_LEVELS).map(([key, v]) => (
             <option key={key} value={key}>{v.label}</option>
           ))}
         </select>
         <button type="button" onClick={handleAdd}
-          className="h-9 px-4 bg-purple-800 hover:bg-purple-700 rounded text-sm font-semibold text-white transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500">
+          className="flex-shrink-0 h-9 px-4 bg-purple-800 hover:bg-purple-700 rounded text-sm font-semibold text-white transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500">
           Adicionar
         </button>
       </div>
@@ -343,7 +343,8 @@ export default function CombatantPanel({
   onNewRound,
   onReset,
   readOnly = false,
-  showHeader = true
+  showHeader = true,
+  suppressDeathBanner = false
 }) {
   if (!combatant) return null;
 
@@ -476,7 +477,7 @@ export default function CombatantPanel({
       )}
 
       {/* ===== DESAFIANDO A MORTE BANNER ===== */}
-      {inDeathChallenge && (
+      {inDeathChallenge && !suppressDeathBanner && (
         <div className="bg-red-950 border border-red-700 rounded-lg px-4 py-2 flex items-center justify-between gap-3 animate-pulse flex-wrap">
           <div className="flex items-center gap-2">
             <Skull className="w-5 h-5 text-red-300" />

@@ -48,9 +48,15 @@ export const importFromFile = (file) => {
           if (!c.name || typeof c.name !== "string") {
             throw new Error(`Criatura inválida: ${JSON.stringify(c)}`);
           }
+          const hasBuiltInId = typeof c.id === "string" && c.id.includes("builtin_");
+          const safeId = !c.id || hasBuiltInId
+            ? `imported_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 9)}`
+            : c.id;
           return {
             ...c,
-            id: c.id || `migrated-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+            id: safeId,
+            isBuiltIn: false,
+            folderId: null,
           };
         });
 

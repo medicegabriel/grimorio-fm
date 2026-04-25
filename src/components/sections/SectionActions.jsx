@@ -34,6 +34,59 @@ const DAMAGE_TYPES = [
   "necrotico", "energia_amaldicoada",
 ];
 
+// Extrai { numDice, dieSize, mod } de strings como "12d10+84" ou "3d8-2"
+function parseRoll(roll) {
+  const m = (roll ?? "").match(/^(\d+)d(\d+)([+-]\d+)?$/i);
+  if (!m) return null;
+  return { numDice: parseInt(m[1]), dieSize: parseInt(m[2]), mod: parseInt(m[3] ?? "0") };
+}
+
+// Se anchorRoll for parseável, trava numDice/dieSize e só ajusta o modificador.
+// Caso contrário, calcula livremente usando dieSize.
+function averageToRoll(media, anchorRoll, dieSize = 8) {
+  const avg = Number(media) || 0;
+  if (avg <= 0) return "";
+
+  const anchor = parseRoll(anchorRoll);
+  if (anchor) {
+    const anchorAvg = anchor.numDice * (anchor.dieSize + 1) / 2 + anchor.mod;
+    const newMod = Math.round(anchor.mod + (avg - anchorAvg));
+    if (newMod > 0) return `${anchor.numDice}d${anchor.dieSize}+${newMod}`;
+    if (newMod < 0) return `${anchor.numDice}d${anchor.dieSize}${newMod}`;
+    return `${anchor.numDice}d${anchor.dieSize}`;
+  }
+
+  const dieAvg = (dieSize + 1) / 2;
+  const numDice = Math.floor(avg / dieAvg);
+  if (numDice === 0) return `+${Math.round(avg)}`;
+  const mod = Math.round(avg - numDice * dieAvg);
+  if (mod > 0) return `${numDice}d${dieSize}+${mod}`;
+  if (mod < 0) return `${numDice}d${dieSize}${mod}`;
+  return `${numDice}d${dieSize}`;
+}
+
+function DiceButtons({ selected, onSelect }) {
+  return (
+    <div className="flex gap-0.5 mt-1 flex-wrap">
+      {[4, 6, 8, 10, 12].map((d) => (
+        <button
+          key={d}
+          type="button"
+          onClick={() => onSelect(d)}
+          className={`px-1.5 py-0.5 text-[10px] border rounded leading-none ${
+            selected === d
+              ? "bg-purple-700 border-purple-500 text-white"
+              : "bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-700 hover:text-slate-200"
+          }`}
+          title={`Gerar rolagem com d${d}`}
+        >
+          d{d}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export default function SectionActions({ draft, derived, actions }) {
   const [showForm, setShowForm] = useState(false);
 
@@ -99,6 +152,8 @@ export default function SectionActions({ draft, derived, actions }) {
 // ---------- Item de ação (existente) ----------
 function ActionItem({ action, onUpdate, onRemove, onDuplicate }) {
   const [expanded, setExpanded] = useState(false);
+  const [customRoll, setCustomRoll] = useState(false);
+  const [selectedDie, setSelectedDie] = useState(() => parseRoll(action.damage?.roll)?.dieSize ?? 8);
 
   return (
     <div className="bg-slate-950/40 border border-slate-800 rounded">
@@ -146,15 +201,36 @@ function ActionItem({ action, onUpdate, onRemove, onDuplicate }) {
               <FieldLabel>Dano médio</FieldLabel>
               <NumberInput
                 value={action.damage?.average ?? 0}
-                onChange={(v) => onUpdate({ damage: { ...action.damage, average: v } })}
+                onChange={(v) => {
+                  const patch = { average: v };
+                  if (!customRoll) {
+                    // âncora na rolagem atual para travar numDice/dieSize
+                    patch.roll = averageToRoll(v, action.damage?.roll, selectedDie);
+                  }
+                  onUpdate({ damage: { ...action.damage, ...patch } });
+                }}
               />
             </div>
             <div>
               <FieldLabel>Rolagem</FieldLabel>
               <TextInput
                 value={action.damage?.roll}
-                onChange={(v) => onUpdate({ damage: { ...action.damage, roll: v } })}
+                onChange={(v) => {
+                  setCustomRoll(true);
+                  const parsed = parseRoll(v);
+                  if (parsed) setSelectedDie(parsed.dieSize);
+                  onUpdate({ damage: { ...action.damage, roll: v } });
+                }}
                 placeholder="2d8+5"
+              />
+              <DiceButtons
+                selected={selectedDie}
+                onSelect={(d) => {
+                  setSelectedDie(d);
+                  setCustomRoll(false);
+                  // força novo dado sem âncora
+                  onUpdate({ damage: { ...action.damage, roll: averageToRoll(action.damage?.average, null, d) } });
+                }}
               />
             </div>
           </div>
@@ -185,6 +261,9 @@ function ActionForm({ derived, draft, onAdd, onCancel }) {
     description: "",
   });
 
+  const [rollCustomized, setRollCustomized] = useState(false);
+  const [selectedDie, setSelectedDie] = useState(() => parseRoll(suggestedDamage?.roll)?.dieSize ?? 8);
+  const anchorRoll = suggestedDamage?.roll ?? null; // âncora fixa da tabela
   const update = (patch) => setForm((prev) => ({ ...prev, ...patch }));
 
   const isTR = form.attackType.startsWith("tr_");
@@ -264,16 +343,44 @@ function ActionForm({ derived, draft, onAdd, onCancel }) {
             <FieldLabel>Médio</FieldLabel>
             <NumberInput
               value={form.damage.average}
-              onChange={(v) => update({ damage: { ...form.damage, average: v } })}
+              onChange={(v) => {
+                const patch = { average: v };
+                if (!rollCustomized) {
+                  // âncora na sugestão da tabela (trava numDice/dieSize)
+                  patch.roll = averageToRoll(v, anchorRoll, selectedDie);
+                }
+                update({ damage: { ...form.damage, ...patch } });
+              }}
             />
           </div>
           <div>
             <FieldLabel>Rolagem</FieldLabel>
             <TextInput
               value={form.damage.roll}
-              onChange={(v) => update({ damage: { ...form.damage, roll: v } })}
+              onChange={(v) => {
+                setRollCustomized(true);
+                const parsed = parseRoll(v);
+                if (parsed) setSelectedDie(parsed.dieSize);
+                update({ damage: { ...form.damage, roll: v } });
+              }}
               placeholder="2d8+5"
             />
+            {parseRoll(anchorRoll) ? (
+              <div className="flex gap-0.5 mt-1">
+                <span className="px-1.5 py-0.5 text-[10px] bg-slate-900 border border-slate-700 text-slate-400 rounded leading-none">
+                  {parseRoll(anchorRoll).numDice}d{parseRoll(anchorRoll).dieSize} travado
+                </span>
+              </div>
+            ) : (
+              <DiceButtons
+                selected={selectedDie}
+                onSelect={(d) => {
+                  setSelectedDie(d);
+                  setRollCustomized(false);
+                  update({ damage: { ...form.damage, roll: averageToRoll(form.damage.average, null, d) } });
+                }}
+              />
+            )}
           </div>
           <div>
             <FieldLabel>Tipo</FieldLabel>

@@ -3,6 +3,7 @@
 // Mode = 'create' | 'rename' | 'delete'
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { createPortal } from "react-dom";
 import { FolderPlus, Edit3, AlertTriangle, X } from "lucide-react";
 
 const MODE_CONFIG = {
@@ -72,16 +73,16 @@ export default function FolderFormModal({
     onSubmit(trimmed);
   }, [name, mode, onSubmit]);
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4"
       onClick={onCancel}
       role="dialog"
       aria-modal="true"
       aria-labelledby="folder-modal-title"
     >
       <div
-        className="bg-slate-900 border border-slate-800 rounded-lg p-6 max-w-md w-full shadow-2xl"
+        className="bg-slate-900 border border-slate-800 rounded-lg p-6 max-w-md w-full shadow-2xl relative z-50"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start gap-3 mb-5">
@@ -150,6 +151,7 @@ export default function FolderFormModal({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

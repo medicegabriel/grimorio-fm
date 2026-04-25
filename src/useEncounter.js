@@ -8,7 +8,7 @@ import {
   orderByInitiative, rollAllInitiatives, setManualInitiative,
   getNextTurn, applyNewRoundToAll, isAutoDefeated,
   validateReadyToStart, ENCOUNTER_STATUS, canTransition,
-  createLogEntry, LOG_TYPES
+  createLogEntry, LOG_TYPES, rollInitiative
 } from './fm-encounter';
 
 // ============================================================
@@ -19,14 +19,21 @@ const HANDLERS = {
 
   ADD_COMBATANT: (state, { creature, opts = {} }) => {
     const combatant = createCombatant(creature, opts);
-    const combatants = autoNumberDuplicates([...state.combatants, combatant]);
+    // Se initiative foi fornecida (adição mid-combat), aplica imediatamente
+    const withInitiative = opts.initiative != null
+      ? setManualInitiative(combatant, opts.initiative)
+      : combatant;
+    const combatants = autoNumberDuplicates([...state.combatants, withInitiative]);
     return { ...state, combatants };
   },
 
-  ADD_PC: (state, { name, initiativeModifier }) => ({
-    ...state,
-    combatants: [...state.combatants, createPcCombatant({ name, initiativeModifier })]
-  }),
+  ADD_PC: (state, { name, initiativeModifier, initiative }) => {
+    const pc = createPcCombatant({ name, initiativeModifier });
+    const withInitiative = initiative != null
+      ? setManualInitiative(pc, initiative)
+      : pc;
+    return { ...state, combatants: [...state.combatants, withInitiative] };
+  },
 
   REMOVE_COMBATANT: (state, { id }) => {
     const filtered = state.combatants.filter((c) => c.id !== id);
@@ -90,7 +97,7 @@ const HANDLERS = {
     combatants: state.combatants.map((c) => {
       if (c.id !== id) return c;
       const next = { ...c, combatState };
-      // Auto-defeat se HP bater 0 (só marca; mestre pode desmarcar)
+      // Auto-defeat apenas quando missCounter >= 3 (Desafiando a Morte esgotado)
       if (isAutoDefeated(next) && !c.flags.isDefeated) {
         return { ...next, flags: { ...c.flags, isDefeated: true } };
       }
@@ -202,7 +209,7 @@ export default function useEncounter(encounterId, manager) {
   const actions = useMemo(() => ({
     rename: (name) => dispatch({ type: 'RENAME', name }),
     addCombatant: (creature, opts) => dispatch({ type: 'ADD_COMBATANT', creature, opts }),
-    addPc: (name, initiativeModifier = 0) => dispatch({ type: 'ADD_PC', name, initiativeModifier }),
+    addPc: (name, initiativeModifier = 0, initiative = null) => dispatch({ type: 'ADD_PC', name, initiativeModifier, initiative }),
     removeCombatant: (id) => dispatch({ type: 'REMOVE_COMBATANT', id }),
     setInitiative: (id, total) => dispatch({ type: 'SET_INITIATIVE', id, total }),
     setInitiativeModifier: (id, modifier) => dispatch({ type: 'SET_INITIATIVE_MODIFIER', id, modifier }),

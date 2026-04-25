@@ -5,9 +5,10 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import {
   ArrowLeft, Plus, Search, MoreVertical, Play, Copy, Trash2,
-  Swords, Flag, Trophy, X, AlertTriangle, Clock, Users
+  Swords, Flag, Trophy, X, AlertTriangle, Clock, Users, Folder, Edit3
 } from 'lucide-react';
 import { ENCOUNTER_STATUS } from '../fm-encounter';
+import MoveToFolderMenu from './MoveToFolderMenu';
 
 // ============================================================
 // DICIONÁRIOS (regra de ouro #1)
@@ -72,47 +73,25 @@ const countBySide = (combatants) => {
 // ============================================================
 // ACTION MENU (três pontos)
 // ============================================================
-const ActionMenu = ({ encounter, onOpen, onDuplicate, onDelete }) => {
+const ActionMenu = ({ encounter, folders = [], onOpen, onDuplicate, onDelete, onMove, onRename }) => {
   const [open, setOpen] = useState(false);
+  const [moveOpen, setMoveOpen] = useState(false);
   const ref = useRef(null);
   const theme = STATUS_THEMES[encounter.status] ?? STATUS_THEMES.planning;
 
   useEffect(() => {
-    if (!open) return;
-    const close = (e) => {
-      if (!ref.current?.contains(e.target)) setOpen(false);
-    };
+    if (!open) { setMoveOpen(false); return; }
+    const close = (e) => { if (!ref.current?.contains(e.target)) setOpen(false); };
+    const onKey = (e) => { if (e.key === 'Escape') setOpen(false); };
     document.addEventListener('mousedown', close);
-    document.addEventListener('keydown', (e) => e.key === 'Escape' && setOpen(false));
+    document.addEventListener('keydown', onKey);
     return () => {
       document.removeEventListener('mousedown', close);
+      document.removeEventListener('keydown', onKey);
     };
   }, [open]);
 
-  // Dicionário de itens do menu (regra de ouro #1)
-  const items = [
-    {
-      key: 'open',
-      label: theme.cta,
-      icon: Play,
-      onClick: onOpen,
-      danger: false
-    },
-    {
-      key: 'duplicate',
-      label: 'Duplicar',
-      icon: Copy,
-      onClick: onDuplicate,
-      danger: false
-    },
-    {
-      key: 'delete',
-      label: 'Excluir',
-      icon: Trash2,
-      onClick: onDelete,
-      danger: true
-    }
-  ];
+  const closeAll = () => { setOpen(false); setMoveOpen(false); };
 
   return (
     <div className="relative flex-shrink-0" ref={ref}>
@@ -128,31 +107,68 @@ const ActionMenu = ({ encounter, onOpen, onDuplicate, onDelete }) => {
       </button>
       {open && (
         <div
-          className="absolute right-0 top-full mt-1 w-40 bg-slate-950 border border-slate-800 rounded-md shadow-xl z-20 overflow-hidden"
+          className="absolute right-0 top-full mt-1 w-48 bg-slate-950 border border-slate-800 rounded-md shadow-xl z-20 overflow-hidden"
           role="menu"
         >
-          {items.map((it) => {
-            const ItemIcon = it.icon;
-            return (
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); closeAll(); onOpen(); }}
+            className="w-full flex items-center gap-2 px-3 py-2 text-xs text-left text-slate-200 hover:bg-slate-900 transition-colors focus:outline-none focus:bg-slate-900"
+            role="menuitem"
+          >
+            <Play className="w-3.5 h-3.5" /> {theme.cta}
+          </button>
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); closeAll(); onDuplicate(); }}
+            className="w-full flex items-center gap-2 px-3 py-2 text-xs text-left text-slate-200 hover:bg-slate-900 transition-colors focus:outline-none focus:bg-slate-900"
+            role="menuitem"
+          >
+            <Copy className="w-3.5 h-3.5" /> Duplicar
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              closeAll();
+              const newName = window.prompt('Novo nome do encontro:', encounter.name);
+              if (newName && newName.trim()) onRename(newName.trim());
+            }}
+            className="w-full flex items-center gap-2 px-3 py-2 text-xs text-left text-slate-200 hover:bg-slate-900 transition-colors focus:outline-none focus:bg-slate-900"
+            role="menuitem"
+          >
+            <Edit3 className="w-3.5 h-3.5" /> Renomear
+          </button>
+          {folders.length > 0 && (
+            <>
               <button
-                key={it.key}
                 type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setOpen(false);
-                  it.onClick();
-                }}
+                onClick={(e) => { e.stopPropagation(); setMoveOpen((v) => !v); }}
                 className={`w-full flex items-center gap-2 px-3 py-2 text-xs text-left transition-colors focus:outline-none focus:bg-slate-900 ${
-                  it.danger
-                    ? 'text-red-400 hover:bg-red-950/40'
-                    : 'text-slate-200 hover:bg-slate-900'
+                  moveOpen ? 'bg-slate-900 text-purple-300' : 'text-slate-200 hover:bg-slate-900'
                 }`}
                 role="menuitem"
               >
-                <ItemIcon className="w-3.5 h-3.5" /> {it.label}
+                <Folder className="w-3.5 h-3.5" /> Mover para Pasta
               </button>
-            );
-          })}
+              {moveOpen && (
+                <MoveToFolderMenu
+                  folders={folders}
+                  currentFolderId={encounter.folderId ?? null}
+                  onMove={(folderId) => { onMove(folderId); closeAll(); }}
+                />
+              )}
+            </>
+          )}
+          <div className="border-t border-slate-800 mt-0.5" />
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); closeAll(); onDelete(); }}
+            className="w-full flex items-center gap-2 px-3 py-2 text-xs text-left text-red-400 hover:bg-red-950/40 transition-colors focus:outline-none focus:bg-red-950/40"
+            role="menuitem"
+          >
+            <Trash2 className="w-3.5 h-3.5" /> Excluir
+          </button>
         </div>
       )}
     </div>
@@ -177,10 +193,13 @@ const StatusBadge = ({ status }) => {
 // ============================================================
 // ENCOUNTER CARD
 // ============================================================
-const EncounterCard = ({ encounter, onOpen, onDuplicate, onDelete }) => {
+const EncounterCard = ({ encounter, folders = [], onOpen, onDuplicate, onDelete, onMove, onRename }) => {
   const theme = STATUS_THEMES[encounter.status] ?? STATUS_THEMES.planning;
   const sideCount = useMemo(() => countBySide(encounter.combatants), [encounter.combatants]);
   const totalCombatants = encounter.combatants.length;
+  const folderName = encounter.folderId
+    ? (folders.find((f) => String(f.id) === String(encounter.folderId))?.name ?? null)
+    : null;
 
   return (
     <article
@@ -191,6 +210,13 @@ const EncounterCard = ({ encounter, onOpen, onDuplicate, onDelete }) => {
       aria-label={`Abrir encontro ${encounter.name}`}
       className={`bg-slate-900/60 border rounded-lg p-4 transition-all cursor-pointer group focus:outline-none focus:ring-2 focus:ring-purple-500/60 ${theme.cardAccent}`}
     >
+      {/* Folder badge */}
+      {folderName && (
+        <div className="inline-flex items-center gap-1 bg-slate-800 text-slate-300 px-2 py-1 mb-2 rounded-md text-xs font-medium w-fit max-w-full">
+          <Folder className="w-3 h-3 flex-shrink-0" />
+          <span className="truncate">{folderName}</span>
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-start justify-between gap-2 mb-2">
         <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -204,9 +230,12 @@ const EncounterCard = ({ encounter, onOpen, onDuplicate, onDelete }) => {
         </div>
         <ActionMenu
           encounter={encounter}
+          folders={folders}
           onOpen={onOpen}
           onDuplicate={onDuplicate}
           onDelete={onDelete}
+          onMove={onMove}
+          onRename={onRename}
         />
       </div>
 
@@ -335,10 +364,12 @@ const EmptyState = ({ onCreate }) => (
 // ============================================================
 export default function EncountersDashboard({
   manager,
+  folders = [],
   onOpenEncounter,
   onBackToGrimoire
 }) {
   const [search, setSearch] = useState('');
+  const [selectedFolder, setSelectedFolder] = useState('__all__');
   const [activeStatusFilters, setActiveStatusFilters] = useState(() => new Set());
   const [confirmDelete, setConfirmDelete] = useState(null);
 
@@ -351,11 +382,16 @@ export default function EncountersDashboard({
     return acc;
   }, [manager.encounters]);
 
-  // Lista filtrada + ordenada (ativos primeiro, depois por data)
+  // Lista filtrada + ordenada (pasta → status → busca → data)
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
     const list = manager.encounters.filter((e) => {
+      // 1. Filtro de pasta (String() para evitar mismatch number/string)
+      if (selectedFolder === '__unfiled__' && e.folderId != null) return false;
+      if (selectedFolder !== '__all__' && selectedFolder !== '__unfiled__' && String(e.folderId) !== String(selectedFolder)) return false;
+      // 2. Filtro de status
       if (activeStatusFilters.size > 0 && !activeStatusFilters.has(e.status)) return false;
+      // 3. Busca textual
       if (q && !e.name.toLowerCase().includes(q)) return false;
       return true;
     });
@@ -369,7 +405,7 @@ export default function EncountersDashboard({
       if (pa !== pb) return pa - pb;
       return (b.updatedAt ?? 0) - (a.updatedAt ?? 0);
     });
-  }, [manager.encounters, search, activeStatusFilters]);
+  }, [manager.encounters, search, activeStatusFilters, selectedFolder]);
 
   // Handlers
   const toggleFilter = useCallback((status) => {
@@ -383,6 +419,7 @@ export default function EncountersDashboard({
 
   const clearFilters = useCallback(() => {
     setSearch('');
+    setSelectedFolder('__all__');
     setActiveStatusFilters(new Set());
   }, []);
 
@@ -397,7 +434,7 @@ export default function EncountersDashboard({
     setConfirmDelete(null);
   }, [confirmDelete, manager]);
 
-  const hasFilters = search.length > 0 || activeStatusFilters.size > 0;
+  const hasFilters = search.length > 0 || selectedFolder !== '__all__' || activeStatusFilters.size > 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-purple-950/30 text-white">
@@ -441,16 +478,32 @@ export default function EncountersDashboard({
         {/* Busca + chips — só renderiza se houver algo */}
         {manager.encounters.length > 0 && (
           <div className="mb-6 space-y-3">
-            <div className="relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-600" />
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Buscar encontro por nome..."
-                className="w-full h-10 bg-slate-900/60 border border-slate-800 rounded-lg pl-10 pr-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/40"
-                aria-label="Buscar encontros"
-              />
+            <div className="flex gap-2 flex-wrap">
+              <div className="relative flex-1 min-w-0 basis-48">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-600" />
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Buscar encontro por nome..."
+                  className="w-full h-10 bg-slate-900/60 border border-slate-800 rounded-lg pl-10 pr-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/40"
+                  aria-label="Buscar encontros"
+                />
+              </div>
+              {folders.length > 0 && (
+                <select
+                  value={selectedFolder}
+                  onChange={(e) => setSelectedFolder(e.target.value)}
+                  className="flex-shrink-0 h-10 bg-slate-900/60 border border-slate-800 rounded-lg px-3 text-sm text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/40"
+                  aria-label="Filtrar por pasta"
+                >
+                  <option value="__all__">Todas as Pastas</option>
+                  <option value="__unfiled__">Sem Pasta</option>
+                  {folders.map((f) => (
+                    <option key={f.id} value={f.id}>{f.name}</option>
+                  ))}
+                </select>
+              )}
             </div>
 
             <div className="flex items-center gap-2 flex-wrap">
@@ -510,9 +563,12 @@ export default function EncountersDashboard({
               <EncounterCard
                 key={enc.id}
                 encounter={enc}
+                folders={folders}
                 onOpen={() => onOpenEncounter(enc.id)}
                 onDuplicate={() => manager.duplicate(enc.id)}
                 onDelete={() => setConfirmDelete(enc)}
+                onMove={(folderId) => manager.moveToFolder(enc.id, folderId)}
+                onRename={(name) => manager.update(enc.id, { name })}
               />
             ))}
           </div>

@@ -12,7 +12,9 @@ const loadFromStorage = () => {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    if (!Array.isArray(parsed)) return [];
+    // Migração: garante folderId em encontros antigos
+    return parsed.map((e) => ({ ...e, folderId: e.folderId ?? null }));
   } catch (err) {
     console.warn('[useEncounterManager] Falha ao carregar encontros:', err);
     return [];
@@ -67,5 +69,13 @@ export default function useEncounterManager() {
     [encounters]
   );
 
-  return { encounters, create, update, remove, duplicate, getById };
+  const moveToFolder = useCallback((id, folderId) => {
+    setEncounters((prev) =>
+      prev.map((e) =>
+        e.id === id ? { ...e, folderId: folderId ?? null, updatedAt: Date.now() } : e
+      )
+    );
+  }, []);
+
+  return { encounters, create, update, remove, duplicate, getById, moveToFolder };
 }

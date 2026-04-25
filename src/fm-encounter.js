@@ -268,9 +268,10 @@ export const applyNewRoundToAll = (combatants) =>
 // ============================================================
 // ENCOUNTER FACTORIES
 // ============================================================
-export const createEncounter = ({ name = 'Novo Encontro' } = {}) => ({
+export const createEncounter = ({ name = 'Novo Encontro', folderId = null } = {}) => ({
   id: genId('enc'),
   name,
+  folderId,
   createdAt: Date.now(),
   updatedAt: Date.now(),
   status: ENCOUNTER_STATUS.PLANNING,
@@ -332,12 +333,12 @@ export const validateReadyToStart = (encounter) => {
 // DETECÇÃO DE ESTADO (dicionário de checks)
 // ============================================================
 export const DEFEAT_CHECKS = {
-  hp: (cs) => cs && cs.hpCurrent <= 0
+  missCounter: (cs) => cs != null && (cs.missCounter ?? 0) >= 3
 };
 
 export const isAutoDefeated = (combatant) => {
   if (!combatant.combatState) return false;
-  return DEFEAT_CHECKS.hp(combatant.combatState);
+  return DEFEAT_CHECKS.missCounter(combatant.combatState);
 };
 
 // ============================================================
