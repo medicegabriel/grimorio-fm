@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Save, ChevronLeft, AlertTriangle, Info, RotateCcw, Wand2,
   ChevronDown, ChevronUp, Eye, Sparkles,
@@ -13,6 +13,9 @@ import SectionDerivedStats from "./sections/SectionDerivedStats";
 import SectionAptidoes from "./sections/SectionAptidoes";
 import SectionActions from "./sections/SectionActions";
 import SectionFeatures from "./sections/SectionFeatures";
+import SectionTreinamentos from "./sections/SectionTreinamentos";
+import SectionAptidoesEspeciais from "./sections/SectionAptidoesEspeciais";
+import SectionDotes from "./sections/SectionDotes";
 import SectionDefenses from "./sections/SectionDefenses";
 import SectionSkills from "./sections/SectionSkills";
 import LivePreview from "./sections/LivePreview";
@@ -40,7 +43,10 @@ const SECTIONS = [
   { id: "skills",      label: "Perícias",             component: SectionSkills },
   { id: "defenses",    label: "Defesas & Imunidades", component: SectionDefenses },
   { id: "actions",     label: "Ações",                component: SectionActions },
-  { id: "features",    label: "Características",      component: SectionFeatures },
+  { id: "features",      label: "Características",      component: SectionFeatures },
+  { id: "treinamentos",     label: "Treinamentos",            component: SectionTreinamentos },
+  { id: "aptidoesEsp",     label: "Aptidões Amaldiçoadas",  component: SectionAptidoesEspeciais },
+  { id: "dotes",           label: "Dotes Gerais",           component: SectionDotes },
 ];
 
 export default function CreatureBuilder({ existingCreature, onSave, onCancel }) {
@@ -53,6 +59,20 @@ export default function CreatureBuilder({ existingCreature, onSave, onCancel }) 
       actions.hydrate(existingCreature);
     }
   }, [existingCreature?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Mede a altura real do header (cresce quando o WarningBar aparece)
+  // para que o preview sticky nunca fique atrás dele.
+  const headerRef = useRef(null);
+  const [headerHeight, setHeaderHeight] = useState(80);
+  useEffect(() => {
+    if (!headerRef.current) return;
+    const obs = new ResizeObserver(() => {
+      setHeaderHeight(headerRef.current.offsetHeight);
+    });
+    obs.observe(headerRef.current);
+    setHeaderHeight(headerRef.current.offsetHeight);
+    return () => obs.disconnect();
+  }, []);
 
   // Estado de UI: quais seções estão expandidas
   const [openSections, setOpenSections] = useState(() =>
@@ -85,7 +105,7 @@ export default function CreatureBuilder({ existingCreature, onSave, onCancel }) 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-purple-950/30 text-white">
       {/* ========== HEADER FIXO ========== */}
-      <header className="sticky top-0 z-30 bg-slate-950/95 backdrop-blur border-b border-purple-900/50">
+      <header ref={headerRef} className="sticky top-0 z-30 bg-slate-950/95 backdrop-blur border-b border-purple-900/50">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3">
           <button
             onClick={onCancel}
@@ -173,7 +193,13 @@ export default function CreatureBuilder({ existingCreature, onSave, onCancel }) 
 
         {/* --- Coluna da direita: preview (desktop) --- */}
         <div className="hidden lg:block">
-          <div className="sticky top-24">
+          <div
+            className="sticky overflow-y-auto rounded-lg"
+            style={{
+              top: headerHeight + 8,
+              maxHeight: `calc(100vh - ${headerHeight + 16}px)`,
+            }}
+          >
             <LivePreview draft={draft} derived={derived} />
           </div>
         </div>

@@ -9,7 +9,8 @@
 //  - compendiumCount (pra badge da pasta "Sistema")
 //  - className (pra desktop vs drawer externo)
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import {
   Library, Inbox, Folder, FolderPlus, Edit3, Trash2,
   MoreVertical, Archive, BookOpen
@@ -52,13 +53,35 @@ const SYSTEM_VIEW = {
 // ============================================================
 const FolderItem = ({ folder, isActive, count, onSelect, onRename, onRemove }) => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [menuPos, setMenuPos] = useState({ top: 0, right: 0 });
+  const btnRef = useRef(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const close = () => setMenuOpen(false);
+    const onKey = (e) => { if (e.key === 'Escape') setMenuOpen(false); };
+    document.addEventListener('mousedown', close);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', close);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [menuOpen]);
+
+  const handleOpenMenu = (e) => {
+    e.stopPropagation();
+    const rect = btnRef.current.getBoundingClientRect();
+    setMenuPos({ top: rect.bottom + 4, right: window.innerWidth - rect.right });
+    setMenuOpen((v) => !v);
+  };
 
   return (
-    <li className="relative group">
+    <li className="group flex items-center gap-1">
+      {/* Botão principal de seleção */}
       <button
         type="button"
         onClick={onSelect}
-        className={`w-full flex items-center gap-2 px-3 py-2 rounded text-sm text-left transition-colors focus:outline-none focus:ring-1 focus:ring-purple-500/60 ${
+        className={`flex-1 min-w-0 flex items-center gap-2 px-3 py-2 rounded text-sm text-left transition-colors focus:outline-none focus:ring-1 focus:ring-purple-500/60 ${
           isActive
             ? "bg-purple-950/50 border border-purple-800/60 text-purple-100"
             : "text-slate-300 hover:bg-slate-800/60 border border-transparent"
@@ -66,7 +89,7 @@ const FolderItem = ({ folder, isActive, count, onSelect, onRename, onRemove }) =
         aria-current={isActive ? "true" : undefined}
       >
         <Folder className={`w-4 h-4 flex-shrink-0 ${isActive ? "text-purple-400" : "text-slate-500"}`} />
-        <span className="flex-1 truncate">{folder.name}</span>
+        <span className="flex-1 truncate min-w-0">{folder.name}</span>
         <span className={`text-[10px] tabular-nums flex-shrink-0 ${
           isActive ? "text-purple-300" : "text-slate-600"
         }`}>
@@ -74,40 +97,45 @@ const FolderItem = ({ folder, isActive, count, onSelect, onRename, onRemove }) =
         </span>
       </button>
 
-      {/* Menu de ações — aparece em hover (desktop) ou sempre (mobile via focus-within) */}
-      <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
-        <button
-          type="button"
-          onClick={(e) => { e.stopPropagation(); setMenuOpen((v) => !v); }}
-          className="w-5 h-5 flex items-center justify-center rounded text-slate-500 hover:text-slate-200 hover:bg-slate-900/80 focus:outline-none focus:ring-1 focus:ring-purple-500/40"
-          aria-label={`Ações da pasta ${folder.name}`}
-          aria-expanded={menuOpen}
-        >
-          <MoreVertical className="w-3 h-3" />
-        </button>
+      {/* Botão ⋮ — irmão no flex, nunca sobrepõe o contador */}
+      <button
+        ref={btnRef}
+        type="button"
+        onClick={handleOpenMenu}
+        className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded text-slate-600 opacity-0 group-hover:opacity-100 focus:opacity-100 hover:text-slate-200 hover:bg-slate-800 transition-all focus:outline-none focus:ring-1 focus:ring-purple-500/40"
+        aria-label={`Ações da pasta ${folder.name}`}
+        aria-expanded={menuOpen}
+      >
+        <MoreVertical className="w-3.5 h-3.5" />
+      </button>
 
-        {menuOpen && (
-          <>
-            <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
-            <div className="absolute right-0 top-full mt-1 w-36 bg-slate-950 border border-slate-800 rounded shadow-xl z-20 overflow-hidden">
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); setMenuOpen(false); onRename(); }}
-                className="w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-200 hover:bg-slate-900 text-left focus:outline-none focus:bg-slate-900"
-              >
-                <Edit3 className="w-3 h-3" /> Renomear
-              </button>
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); setMenuOpen(false); onRemove(); }}
-                className="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-400 hover:bg-red-950/40 text-left focus:outline-none focus:bg-red-950/40"
-              >
-                <Trash2 className="w-3 h-3" /> Apagar
-              </button>
-            </div>
-          </>
-        )}
-      </div>
+      {/* Dropdown via portal — escapa do overflow da sidebar */}
+      {menuOpen && createPortal(
+        <>
+          <div className="fixed inset-0 z-[9998]" onMouseDown={() => setMenuOpen(false)} />
+          <div
+            className="fixed z-[9999] w-36 bg-slate-950 border border-slate-800 rounded shadow-xl overflow-hidden"
+            style={{ top: menuPos.top, right: menuPos.right }}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); setMenuOpen(false); onRename(); }}
+              className="w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-200 hover:bg-slate-900 text-left focus:outline-none focus:bg-slate-900"
+            >
+              <Edit3 className="w-3 h-3" /> Renomear
+            </button>
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); setMenuOpen(false); onRemove(); }}
+              className="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-400 hover:bg-red-950/40 text-left focus:outline-none focus:bg-red-950/40"
+            >
+              <Trash2 className="w-3 h-3" /> Apagar
+            </button>
+          </div>
+        </>,
+        document.body
+      )}
     </li>
   );
 };

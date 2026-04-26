@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import {
-  Heart, Zap, Shield, Eye, Target, ShieldAlert, Sparkles, Star,
+  Heart, Zap, Shield, Eye, Target, ShieldAlert, Sparkles, Star, GraduationCap,
 } from "lucide-react";
 import { PATAMAR_LABELS } from "../fm-tables";
+import { humanizeAction } from "./SectionActions";
 
 /**
  * LivePreview v2 — Retrato no topo + perícias dominadas no rodapé.
@@ -149,12 +150,32 @@ export default function LivePreview({ draft, derived }) {
           </div>
         )}
 
-        {/* Contadores */}
-        <div className="flex items-center justify-between text-[10px] text-slate-500 pt-2 border-t border-slate-800">
-          <span>Ações: {draft.actions.list.length}</span>
-          <span>Caract.: {draft.features.length}</span>
-          <span>Perícias: {draft.skills.length}</span>
-        </div>
+        {/* Resumo compacto — apenas nomes, sem descrições */}
+        <CompactList
+          label="Aptidões Amaldiçoadas"
+          icon={<Sparkles className="w-3 h-3 text-purple-400" />}
+          names={(draft.aptidoesEspeciais || []).map((a) => a.nome)}
+          accent="text-purple-300"
+        />
+        <CompactList
+          label="Dotes Gerais"
+          icon={<Star className="w-3 h-3 text-amber-400" />}
+          names={(draft.dotes || []).map((d) => d.nome)}
+          accent="text-amber-300"
+        />
+        <CompactList
+          label="Treinamentos"
+          icon={<GraduationCap className="w-3 h-3 text-emerald-400" />}
+          names={(draft.treinamentos || []).map((t) => t.nome)}
+          accent="text-emerald-300"
+        />
+        <ActionsList actions={draft.actions?.list || []} />
+        <CompactList
+          label="Características"
+          icon={<Sparkles className="w-3 h-3 text-fuchsia-400" />}
+          names={(draft.features || []).map((f) => f.name).filter(Boolean)}
+          accent="text-fuchsia-300"
+        />
       </div>
     </div>
   );
@@ -218,6 +239,38 @@ function PortraitHeader({ draft }) {
           </h4>
         </div>
       </div>
+    </div>
+  );
+}
+
+function ActionsList({ actions }) {
+  if (!actions.length) return null;
+  return (
+    <div className="pt-2 border-t border-slate-800">
+      <h5 className="text-[10px] uppercase tracking-widest text-slate-500 mb-1.5 font-bold flex items-center gap-1">
+        <Target className="w-3 h-3 text-rose-400" /> Ações
+      </h5>
+      <div className="space-y-1.5">
+        {actions.map((a) => (
+          <p key={a.id} className="text-xs text-rose-200/80 leading-relaxed">
+            {humanizeAction(a)}
+          </p>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function CompactList({ label, icon, names, accent }) {
+  if (!names.length) return null;
+  return (
+    <div className="pt-2 border-t border-slate-800">
+      <h5 className="text-[10px] uppercase tracking-widest text-slate-500 mb-1 font-bold flex items-center gap-1">
+        {icon} {label}
+      </h5>
+      <p className={`text-xs leading-relaxed ${accent}`}>
+        {names.join(", ")}.
+      </p>
     </div>
   );
 }

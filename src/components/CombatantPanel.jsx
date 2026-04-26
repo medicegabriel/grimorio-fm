@@ -6,9 +6,10 @@ import { useState, useCallback, useMemo } from 'react';
 import {
   Heart, Zap, Shield, Skull, Plus, Minus, ChevronDown, ChevronUp,
   Copy, AlertTriangle, Eye, EyeOff, X, Swords, Dices, RotateCcw,
-  ShieldAlert, Activity, Target, Sparkles, Clock
+  ShieldAlert, Activity, Target, Sparkles, Clock, GraduationCap, Star
 } from 'lucide-react';
 import { createInitialCombatState, applyNewRoundEffects, LOG_TYPES, createLogEntry } from '../fm-encounter';
+import { humanizeAction, ACTION_TYPE_LABELS } from './sections/SectionActions';
 
 // ============================================================
 // DICIONÁRIOS DE TEMA
@@ -225,81 +226,82 @@ const ActionCard = ({ action }) => {
   const [expanded, setExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
   const typeClass = ACTION_TYPE_COLORS[action.type] ?? ACTION_TYPE_COLORS.livre;
+  const typeLabel = ACTION_TYPE_LABELS[action.type] || action.type;
+
+  const dmgRoll = action.damage?.roll;
 
   const copyDamage = useCallback((e) => {
     e.stopPropagation();
-    if (!action.damage?.roll) return;
-    navigator.clipboard?.writeText(action.damage.roll);
+    if (!dmgRoll) return;
+    navigator.clipboard?.writeText(dmgRoll);
     setCopied(true);
     setTimeout(() => setCopied(false), 1200);
-  }, [action.damage]);
+  }, [dmgRoll]);
 
   return (
     <div className="bg-slate-900/60 border border-slate-800 rounded-lg overflow-hidden">
       <button type="button" onClick={() => setExpanded(!expanded)}
         className="w-full flex items-center gap-3 p-3 hover:bg-slate-900 transition-colors text-left focus:outline-none focus:ring-1 focus:ring-purple-500/40"
         aria-expanded={expanded}>
-        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${typeClass}`}>
-          {action.type}
+        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border flex-shrink-0 ${typeClass}`}>
+          {typeLabel}
         </span>
         <span className="flex-1 font-semibold text-white truncate">{action.name}</span>
         {action.cost > 0 && (
-          <span className="text-xs text-purple-300 flex items-center gap-1">
+          <span className="text-xs text-purple-300 flex items-center gap-1 flex-shrink-0">
             <Zap className="w-3 h-3" /> {action.cost} PE
           </span>
         )}
-        {expanded ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
+        {expanded ? <ChevronUp className="w-4 h-4 text-slate-500 flex-shrink-0" /> : <ChevronDown className="w-4 h-4 text-slate-500 flex-shrink-0" />}
       </button>
 
       {expanded && (
-        <div className="px-3 pb-3 pt-1 border-t border-slate-800 space-y-2">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-            {action.toHit != null && (
-              <div className="bg-slate-950 rounded px-2 py-1.5">
-                <div className="text-slate-500 text-[9px] uppercase">Acerto</div>
-                <div className="font-bold text-white">+{action.toHit}</div>
+        <div className="px-3 pb-3 pt-2 border-t border-slate-800 space-y-2">
+          <p className="text-sm text-slate-300 leading-relaxed">{humanizeAction(action)}</p>
+          {dmgRoll && (
+            <div className="flex items-center justify-between bg-slate-950 rounded px-2.5 py-2">
+              <div className="flex items-center gap-1.5 text-xs min-w-0">
+                <Dices className="w-3.5 h-3.5 text-rose-400 flex-shrink-0" />
+                <span className="font-mono font-bold text-white">{dmgRoll}</span>
+                {action.damage?.average != null && (
+                  <span className="text-slate-500">(méd. {action.damage.average})</span>
+                )}
               </div>
-            )}
-            {action.cd != null && (
-              <div className="bg-slate-950 rounded px-2 py-1.5">
-                <div className="text-slate-500 text-[9px] uppercase">CD {action.trType || ''}</div>
-                <div className="font-bold text-white">{action.cd}</div>
-              </div>
-            )}
-            {action.damage && (
-              <div className="bg-slate-950 rounded px-2 py-1.5 col-span-2 flex items-center justify-between gap-2">
-                <div className="min-w-0">
-                  <div className="text-slate-500 text-[9px] uppercase flex items-center gap-1">
-                    <Dices className="w-3 h-3" /> Dano ({action.damage.type})
-                  </div>
-                  <div className="font-mono font-bold text-white truncate">
-                    {action.damage.roll} <span className="text-slate-500 text-[10px]">(méd. {action.damage.average})</span>
-                  </div>
-                </div>
-                <button type="button" onClick={copyDamage}
-                  className="flex-shrink-0 inline-flex items-center gap-1 text-[11px] text-purple-300 hover:text-purple-200 focus:outline-none focus:ring-1 focus:ring-purple-500/40 rounded px-1"
-                  aria-label="Copiar rolagem de dano">
-                  <Copy className="w-3 h-3" />
-                  {copied ? 'Copiado!' : 'Copiar'}
-                </button>
-              </div>
-            )}
-            {action.range && (
-              <div className="bg-slate-950 rounded px-2 py-1.5">
-                <div className="text-slate-500 text-[9px] uppercase">Alcance</div>
-                <div className="font-bold text-white">{action.range}</div>
-              </div>
-            )}
-            {action.area && (
-              <div className="bg-slate-950 rounded px-2 py-1.5">
-                <div className="text-slate-500 text-[9px] uppercase">Área</div>
-                <div className="font-bold text-white">{action.area}</div>
-              </div>
-            )}
-          </div>
-          {action.description && (
-            <p className="text-sm text-slate-400 leading-relaxed whitespace-pre-wrap">{action.description}</p>
+              <button type="button" onClick={copyDamage}
+                className="flex-shrink-0 inline-flex items-center gap-1 text-[11px] text-purple-300 hover:text-purple-200 focus:outline-none focus:ring-1 focus:ring-purple-500/40 rounded px-1.5 py-1"
+                aria-label="Copiar rolagem de dano">
+                <Copy className="w-3 h-3" />
+                {copied ? 'Copiado!' : 'Copiar'}
+              </button>
+            </div>
           )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const AbilityCard = ({ title, tag, tagClass, description, footer }) => {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <div className="bg-slate-900/60 border border-slate-800 rounded-lg overflow-hidden">
+      <button type="button" onClick={() => setExpanded(!expanded)}
+        className="w-full flex items-center gap-3 p-3 hover:bg-slate-900 transition-colors text-left focus:outline-none focus:ring-1 focus:ring-purple-500/40"
+        aria-expanded={expanded}>
+        {tag && (
+          <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border flex-shrink-0 ${tagClass}`}>
+            {tag}
+          </span>
+        )}
+        <span className="flex-1 font-semibold text-white truncate">{title}</span>
+        {expanded ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
+      </button>
+      {expanded && (
+        <div className="px-3 pb-3 pt-1 border-t border-slate-800 space-y-2">
+          {description && (
+            <p className="text-sm text-slate-400 leading-relaxed whitespace-pre-wrap">{description}</p>
+          )}
+          {footer}
         </div>
       )}
     </div>
@@ -372,8 +374,16 @@ export default function CombatantPanel({
   const actionsList = snapshot.actions?.list ?? [];
   const actionsTotal = snapshot.actions?.total ?? {};
   const features = snapshot.features ?? [];
+  const treinamentos = snapshot.treinamentos ?? [];
+  const aptidoesEspeciais = snapshot.aptidoesEspeciais ?? [];
+  const dotes = snapshot.dotes ?? [];
 
   const [showLog, setShowLog] = useState(false);
+  const [showAcoes, setShowAcoes] = useState(true);
+  const [showCaracteristicas, setShowCaracteristicas] = useState(true);
+  const [showAptidoes, setShowAptidoes] = useState(false);
+  const [showDotes, setShowDotes] = useState(false);
+  const [showTreinamentos, setShowTreinamentos] = useState(false);
 
   const patch = useCallback((partial) => {
     if (readOnly) return;
@@ -390,12 +400,43 @@ export default function CombatantPanel({
   // ===== Handlers (dicionário de ações) =====
   const handlers = useMemo(() => ({
     setVital: (kind, v) => {
+      if (kind === 'hp') {
+        const hpMax = stats.hpMax ?? 0;
+        const currentHp = combatState.hpCurrent;
+        const currentGuarda = combatState.guardaInabavalCurrent ?? 0;
+
+        if (v < currentHp) {
+          // Dano recebido — Guarda absorve primeiro
+          const damage = currentHp - v;
+          const guardaAbsorbed = Math.min(currentGuarda, damage);
+          const remainingDamage = damage - guardaAbsorbed;
+          patch({
+            guardaInabavalCurrent: currentGuarda - guardaAbsorbed,
+            hpCurrent: Math.max(-999, currentHp - remainingDamage),
+          });
+        } else {
+          // Cura — aplica direto no HP
+          patch({ hpCurrent: Math.min(hpMax, v) });
+        }
+        return;
+      }
+      if (kind === 'guarda') {
+        if (v < 0) {
+          // Dano excede a Guarda — overflow para HP
+          const overflow = Math.abs(v);
+          patch({
+            guardaInabavalCurrent: 0,
+            hpCurrent: Math.max(-999, combatState.hpCurrent - overflow),
+          });
+        } else {
+          const guardaMax = stats.guardaInabavalMax ?? 0;
+          patch({ guardaInabavalCurrent: Math.min(guardaMax, v) });
+        }
+        return;
+      }
       const theme = VITAL_THEMES[kind];
       const max = stats[theme.maxKey] ?? 0;
-      const clamped = kind === 'hp'
-        ? Math.max(-999, Math.min(max, v))
-        : Math.max(0, Math.min(max, v));
-      patch({ [theme.key]: clamped });
+      patch({ [theme.key]: Math.max(0, Math.min(max, v)) });
     },
     setResParcial: (v) => patch({ resistenciaParcialUsed: v }),
     setResTotal: (v) => patch({ resistenciaTotalUsed: v }),
@@ -579,57 +620,137 @@ export default function CombatantPanel({
         {/* COLUNA DIREITA */}
         <div className="lg:col-span-2 space-y-4">
           <section aria-label="Ações disponíveis">
-            <div className="flex items-center justify-between mb-2">
+            <button type="button" onClick={() => setShowAcoes((v) => !v)}
+              className="w-full flex items-center justify-between mb-2 hover:text-slate-300 focus:outline-none focus:ring-1 focus:ring-purple-500/40 rounded"
+              aria-expanded={showAcoes}>
               <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
                 <Swords className="w-3.5 h-3.5" /> Ações ({actionsList.length})
               </h3>
-              <div className="flex gap-2 text-[10px] text-slate-500 tabular-nums">
-                <span>{actionsTotal.comum ?? 0}C</span>
-                <span>{actionsTotal.rapida ?? 0}R</span>
-                <span>{actionsTotal.bonus ?? 0}B</span>
-                <span>{actionsTotal.movimento ?? 0}M</span>
-              </div>
-            </div>
-            <div className="space-y-2">
-              {actionsList.length === 0 ? (
-                <div className="text-center py-8 text-slate-600 text-sm italic border border-dashed border-slate-800 rounded-lg">
-                  Nenhuma ação cadastrada
+              <div className="flex items-center gap-3">
+                <div className="flex gap-2 text-[10px] text-slate-500 tabular-nums">
+                  <span>{actionsTotal.comum ?? 0}C</span>
+                  <span>{actionsTotal.rapida ?? 0}R</span>
+                  <span>{actionsTotal.bonus ?? 0}B</span>
+                  <span>{actionsTotal.movimento ?? 0}M</span>
                 </div>
-              ) : (
-                actionsList.map((a) => <ActionCard key={a.id} action={a} />)
-              )}
-            </div>
+                {showAcoes ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
+              </div>
+            </button>
+            {showAcoes && (
+              <div className="space-y-2">
+                {actionsList.length === 0 ? (
+                  <div className="text-center py-8 text-slate-600 text-sm italic border border-dashed border-slate-800 rounded-lg">
+                    Nenhuma ação cadastrada
+                  </div>
+                ) : (
+                  actionsList.map((a) => <ActionCard key={a.id} action={a} />)
+                )}
+              </div>
+            )}
           </section>
 
           {features.length > 0 && (
             <section aria-label="Características">
-              <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2 flex items-center gap-2">
-                <Sparkles className="w-3.5 h-3.5" /> Características
-              </h3>
-              <div className="space-y-2">
-                {features.map((f) => (
-                  <div key={f.id} className="bg-slate-900/60 border border-slate-800 rounded-lg p-3">
-                    <div className="flex items-start gap-2">
-                      <span className="text-[9px] uppercase tracking-wider text-fuchsia-400 bg-fuchsia-950/50 border border-fuchsia-900 px-1.5 py-0.5 rounded mt-0.5 flex-shrink-0">
-                        {f.category}
-                      </span>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-white text-sm">{f.name}</div>
-                        {f.description && (
-                          <div className="text-xs text-slate-400 mt-1 leading-relaxed whitespace-pre-wrap">
-                            {f.description}
-                          </div>
-                        )}
-                        {f.trigger && (
-                          <div className="text-[10px] text-amber-400 mt-1 uppercase tracking-wider">
-                            Gatilho: <span className="normal-case text-amber-300/80">{f.trigger}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <button type="button" onClick={() => setShowCaracteristicas((v) => !v)}
+                className="w-full flex items-center justify-between mb-2 hover:text-slate-300 focus:outline-none focus:ring-1 focus:ring-purple-500/40 rounded"
+                aria-expanded={showCaracteristicas}>
+                <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
+                  <Sparkles className="w-3.5 h-3.5" /> Características ({features.length})
+                </h3>
+                {showCaracteristicas ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
+              </button>
+              {showCaracteristicas && (
+                <div className="space-y-2">
+                  {features.map((f) => (
+                    <AbilityCard
+                      key={f.id}
+                      title={f.name}
+                      tag={f.category}
+                      tagClass="text-fuchsia-400 bg-fuchsia-950/50 border-fuchsia-900"
+                      description={f.description}
+                      footer={f.trigger && (
+                        <div className="text-[10px] text-amber-400 uppercase tracking-wider">
+                          Gatilho: <span className="normal-case text-amber-300/80">{f.trigger}</span>
+                        </div>
+                      )}
+                    />
+                  ))}
+                </div>
+              )}
+            </section>
+          )}
+
+          {aptidoesEspeciais.length > 0 && (
+            <section aria-label="Aptidões Amaldiçoadas">
+              <button type="button" onClick={() => setShowAptidoes((v) => !v)}
+                className="w-full flex items-center justify-between mb-2 hover:text-slate-300 focus:outline-none focus:ring-1 focus:ring-purple-500/40 rounded"
+                aria-expanded={showAptidoes}>
+                <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
+                  <Sparkles className="w-3.5 h-3.5 text-purple-400" /> Aptidões Amaldiçoadas ({aptidoesEspeciais.length})
+                </h3>
+                {showAptidoes ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
+              </button>
+              {showAptidoes && (
+                <div className="space-y-2">
+                  {aptidoesEspeciais.map((a) => (
+                    <AbilityCard
+                      key={a.id}
+                      title={a.nome}
+                      tag={a.categoria}
+                      tagClass="text-purple-400 bg-purple-950/50 border-purple-900"
+                      description={a.descricao}
+                    />
+                  ))}
+                </div>
+              )}
+            </section>
+          )}
+
+          {dotes.length > 0 && (
+            <section aria-label="Dotes Gerais">
+              <button type="button" onClick={() => setShowDotes((v) => !v)}
+                className="w-full flex items-center justify-between mb-2 hover:text-slate-300 focus:outline-none focus:ring-1 focus:ring-purple-500/40 rounded"
+                aria-expanded={showDotes}>
+                <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
+                  <Star className="w-3.5 h-3.5 text-amber-400" /> Dotes Gerais ({dotes.length})
+                </h3>
+                {showDotes ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
+              </button>
+              {showDotes && (
+                <div className="space-y-2">
+                  {dotes.map((d) => (
+                    <AbilityCard
+                      key={d.id}
+                      title={d.nome}
+                      description={d.descricao}
+                    />
+                  ))}
+                </div>
+              )}
+            </section>
+          )}
+
+          {treinamentos.length > 0 && (
+            <section aria-label="Treinamentos">
+              <button type="button" onClick={() => setShowTreinamentos((v) => !v)}
+                className="w-full flex items-center justify-between mb-2 hover:text-slate-300 focus:outline-none focus:ring-1 focus:ring-purple-500/40 rounded"
+                aria-expanded={showTreinamentos}>
+                <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
+                  <GraduationCap className="w-3.5 h-3.5 text-emerald-400" /> Treinamentos ({treinamentos.length})
+                </h3>
+                {showTreinamentos ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
+              </button>
+              {showTreinamentos && (
+                <div className="space-y-2">
+                  {treinamentos.map((t) => (
+                    <AbilityCard
+                      key={t.id}
+                      title={t.nome}
+                      description={t.descricao}
+                    />
+                  ))}
+                </div>
+              )}
             </section>
           )}
         </div>

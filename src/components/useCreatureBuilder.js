@@ -48,6 +48,9 @@ export const blankDraft = () => ({
   },
   actions: { list: [] },
   features: [],
+  treinamentos: [],
+  aptidoesEspeciais: [],
+  dotes: [],
   narratorNotes: "",
 });
 
@@ -67,6 +70,9 @@ const actionHandlers = {
     ...payload,
     portraitUrl: payload.portraitUrl || "",
     skills: normalizeSkills(payload.skills),
+    treinamentos: payload.treinamentos || [],
+    aptidoesEspeciais: payload.aptidoesEspeciais || [],
+    dotes: payload.dotes || [],
   }),
 
   SET_NAME:     (s, payload) => ({ ...s, name: payload }),
@@ -172,6 +178,36 @@ const actionHandlers = {
     return { ...s, actions: { ...s.actions, list: newList } };
   },
 
+  // ---------- Aptidões Especiais ----------
+  ADD_APTIDAO_ESPECIAL: (s, payload) => ({
+    ...s,
+    aptidoesEspeciais: [...(s.aptidoesEspeciais || []), { ...payload, id: genId("apt") }],
+  }),
+  REMOVE_APTIDAO_ESPECIAL: (s, id) => ({
+    ...s,
+    aptidoesEspeciais: (s.aptidoesEspeciais || []).filter((a) => a.id !== id),
+  }),
+
+  // ---------- Dotes ----------
+  ADD_DOTE: (s, payload) => ({
+    ...s,
+    dotes: [...(s.dotes || []), { ...payload, id: genId("dote") }],
+  }),
+  REMOVE_DOTE: (s, id) => ({
+    ...s,
+    dotes: (s.dotes || []).filter((d) => d.id !== id),
+  }),
+
+  // ---------- Treinamentos ----------
+  ADD_TREINAMENTO: (s, payload) => ({
+    ...s,
+    treinamentos: [...(s.treinamentos || []), { ...payload, id: genId("treino") }],
+  }),
+  REMOVE_TREINAMENTO: (s, id) => ({
+    ...s,
+    treinamentos: (s.treinamentos || []).filter((t) => t.id !== id),
+  }),
+
   // ---------- Features ----------
   ADD_FEATURE: (s, payload) => ({ ...s, features: [...s.features, payload] }),
   UPDATE_FEATURE: (s, { id, patch }) => ({
@@ -265,6 +301,18 @@ export default function useCreatureBuilder(initialDraft = null) {
       dispatch({ type: "UPDATE_ACTION", payload: { id, patch } }), []),
     removeAction:    useCallback((id) => dispatch({ type: "REMOVE_ACTION", payload: id }), []),
     duplicateAction: useCallback((id) => dispatch({ type: "DUPLICATE_ACTION", payload: id }), []),
+
+    // Aptidões Especiais
+    addAptidaoEspecial:    useCallback((a) => dispatch({ type: "ADD_APTIDAO_ESPECIAL", payload: a }), []),
+    removeAptidaoEspecial: useCallback((id) => dispatch({ type: "REMOVE_APTIDAO_ESPECIAL", payload: id }), []),
+
+    // Dotes
+    addDote:    useCallback((d) => dispatch({ type: "ADD_DOTE", payload: d }), []),
+    removeDote: useCallback((id) => dispatch({ type: "REMOVE_DOTE", payload: id }), []),
+
+    // Treinamentos
+    addTreinamento:    useCallback((t) => dispatch({ type: "ADD_TREINAMENTO", payload: t }), []),
+    removeTreinamento: useCallback((id) => dispatch({ type: "REMOVE_TREINAMENTO", payload: id }), []),
 
     // Features
     addFeature:    useCallback((f) => dispatch({ type: "ADD_FEATURE", payload: f }), []),

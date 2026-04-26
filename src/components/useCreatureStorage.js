@@ -257,27 +257,33 @@ export default function useCreatureStorage() {
       updatedAt: now,
     }));
 
-    // Normaliza creatures (limpa isBuiltIn defensivamente)
+    // Normaliza creatures: SEMPRE gera novo ID para evitar colisão
     const normalizedCreatures = incomingCreatures.map((c) => ({
       ...c,
-      id: c.id || generateId(),
+      id: generateId(),           // novo ID garantido — sem colisão possível
       folderId: c.folderId ?? null,
       isBuiltIn: false,
       updatedAt: now,
     }));
 
-    // Estratégia de merge pra creatures (mesmo dicionário anterior)
+    // Estratégia de merge pra creatures
     const strategies = {
-      append: (prev) => [...normalizedCreatures, ...prev],
+      append: (prev) => {
+        const existingNames = new Set(prev.map((c) => c.name));
+        const tagged = normalizedCreatures.map((c) => ({
+          ...c,
+          name: existingNames.has(c.name) ? `${c.name} (Importado)` : c.name,
+        }));
+        return [...tagged, ...prev];
+      },
       replace: () => normalizedCreatures,
       merge: (prev) => {
-        const existingIds = new Set(prev.map((c) => c.id));
-        const newOnes = normalizedCreatures.filter((c) => !existingIds.has(c.id));
-        const merged = prev.map((c) => {
-          const match = normalizedCreatures.find((n) => n.id === c.id);
-          return match || c;
-        });
-        return [...newOnes, ...merged];
+        const existingNames = new Set(prev.map((c) => c.name));
+        const tagged = normalizedCreatures.map((c) => ({
+          ...c,
+          name: existingNames.has(c.name) ? `${c.name} (Importado)` : c.name,
+        }));
+        return [...tagged, ...prev];
       },
     };
     const strategy = strategies[mergeStrategy] || strategies.append;

@@ -67,108 +67,116 @@ const CreatureCard = ({
         selected ? "ring-2 ring-purple-500/60 bg-purple-950/20" : "hover:border-slate-700"
       } ${isBuiltIn ? "opacity-95" : ""}`}
     >
-      <div className="flex items-start gap-2 mb-2">
-        {showSelect && (
-          <input
-            type="checkbox"
-            checked={selected}
-            onChange={(e) => { e.stopPropagation(); onToggleSelect(creature.id); }}
-            onClick={(e) => e.stopPropagation()}
-            className="mt-1 w-4 h-4 accent-purple-600 flex-shrink-0 cursor-pointer"
-            aria-label={`Selecionar ${creature.name}`}
-          />
-        )}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <h3 className="text-sm font-bold text-white truncate">{creature.name}</h3>
-            {isBuiltIn && (
-              <span className="inline-flex items-center gap-1 text-[9px] uppercase tracking-wider text-amber-300 bg-amber-950/60 border border-amber-900/60 px-1.5 py-0.5 rounded font-bold flex-shrink-0">
-                <Lock className="w-2.5 h-2.5" /> Base
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-1.5 flex-wrap mt-1">
-            <span className={`text-[9px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded border ${patamarStyle.badge}`}>
-              {patamarStyle.label}
+      {/* ── LINHA SUPERIOR: título (esquerda) + checkbox + ⋮ (direita) ── */}
+      <div className="flex justify-between items-center w-full mb-1.5">
+        <div className="flex items-center gap-1.5 min-w-0 flex-1">
+          <h3 className="text-sm font-bold text-white truncate">{creature.name}</h3>
+          {isBuiltIn && (
+            <span className="inline-flex items-center gap-1 text-[9px] uppercase tracking-wider text-amber-300 bg-amber-950/60 border border-amber-900/60 px-1.5 py-0.5 rounded font-bold flex-shrink-0">
+              <Lock className="w-2.5 h-2.5" /> Base
             </span>
-            <span className="text-[10px] text-slate-500 tabular-nums">ND {creature.core?.nd}</span>
-          </div>
-        </div>
-
-        {/* Menu de 3 pontos */}
-        <div className="relative flex-shrink-0">
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); setMenuOpen(!menuOpen); setMoveOpen(false); }}
-            className="w-7 h-7 flex items-center justify-center rounded text-slate-500 hover:text-slate-200 hover:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-purple-500/40"
-            aria-label="Menu de ações"
-            aria-expanded={menuOpen}
-          >
-            <MoreVertical className="w-4 h-4" />
-          </button>
-          {menuOpen && (
-            <>
-              <div className="fixed inset-0 z-10" onClick={(e) => { e.stopPropagation(); setMenuOpen(false); setMoveOpen(false); }} />
-              <div className="absolute right-0 top-full mt-1 w-44 bg-slate-950 border border-slate-800 rounded shadow-xl z-20">
-                <button
-                  type="button"
-                  onClick={(e) => { e.stopPropagation(); setMenuOpen(false); onEdit(creature.id); }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-200 hover:bg-slate-900 text-left"
-                >
-                  <Edit3 className="w-3 h-3" /> {isBuiltIn ? "Clonar e Editar" : "Editar"}
-                </button>
-                <button
-                  type="button"
-                  onClick={(e) => { e.stopPropagation(); setMenuOpen(false); onDuplicate(creature); }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-200 hover:bg-slate-900 text-left"
-                >
-                  <Copy className="w-3 h-3" /> Duplicar
-                </button>
-                {!isBuiltIn && (
-                  <div className="relative">
-                    <button
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); setMoveOpen(!moveOpen); }}
-                      className="w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-200 hover:bg-slate-900 text-left"
-                      aria-expanded={moveOpen}
-                    >
-                      <FolderInput className="w-3 h-3" /> Mover para...
-                    </button>
-                    {moveOpen && (
-                      <div className="absolute right-full top-0 mr-1 w-48 z-30">
-                        <MoveToFolderMenu
-                          folders={folders}
-                          currentFolderId={creature.folderId}
-                          onMove={(folderId) => {
-                            onMove(creature.id, folderId);
-                            setMenuOpen(false);
-                            setMoveOpen(false);
-                          }}
-                        />
-                      </div>
-                    )}
-                  </div>
-                )}
-                <button
-                  type="button"
-                  onClick={(e) => { e.stopPropagation(); setMenuOpen(false); onExport(creature); }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-200 hover:bg-slate-900 text-left"
-                >
-                  <Download className="w-3 h-3" /> Exportar JSON
-                </button>
-                {!isBuiltIn && (
-                  <button
-                    type="button"
-                    onClick={(e) => { e.stopPropagation(); setMenuOpen(false); onDelete(creature); }}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-400 hover:bg-red-950/40 text-left border-t border-slate-800"
-                  >
-                    <Trash2 className="w-3 h-3" /> Excluir
-                  </button>
-                )}
-              </div>
-            </>
           )}
         </div>
+
+        <div className="flex items-center gap-2 shrink-0">
+          {showSelect && (
+            <div
+              className={`transition-opacity duration-150 ${selected ? "opacity-100" : "opacity-0 group-hover:opacity-100 focus-within:opacity-100"}`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <input
+                type="checkbox"
+                checked={selected}
+                onChange={(e) => { e.stopPropagation(); onToggleSelect(creature.id); }}
+                className="w-4 h-4 accent-purple-600 cursor-pointer rounded m-0 translate-y-px"
+                aria-label={`Selecionar ${creature.name}`}
+              />
+            </div>
+          )}
+
+          {/* Menu de 3 pontos */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); setMenuOpen(!menuOpen); setMoveOpen(false); }}
+              className="w-7 h-7 flex items-center justify-center rounded text-slate-500 hover:text-slate-200 hover:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-purple-500/40"
+              aria-label="Menu de ações"
+              aria-expanded={menuOpen}
+            >
+              <MoreVertical className="w-4 h-4" />
+            </button>
+            {menuOpen && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={(e) => { e.stopPropagation(); setMenuOpen(false); setMoveOpen(false); }} />
+                <div className="absolute right-0 top-full mt-1 w-44 bg-slate-950 border border-slate-800 rounded shadow-xl z-20">
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); setMenuOpen(false); onEdit(creature.id); }}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-200 hover:bg-slate-900 text-left"
+                  >
+                    <Edit3 className="w-3 h-3" /> {isBuiltIn ? "Clonar e Editar" : "Editar"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); setMenuOpen(false); onDuplicate(creature); }}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-200 hover:bg-slate-900 text-left"
+                  >
+                    <Copy className="w-3 h-3" /> Duplicar
+                  </button>
+                  {!isBuiltIn && (
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); setMoveOpen(!moveOpen); }}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-200 hover:bg-slate-900 text-left"
+                        aria-expanded={moveOpen}
+                      >
+                        <FolderInput className="w-3 h-3" /> Mover para...
+                      </button>
+                      {moveOpen && (
+                        <div className="absolute right-full top-0 mr-1 w-48 z-30">
+                          <MoveToFolderMenu
+                            folders={folders}
+                            currentFolderId={creature.folderId}
+                            onMove={(folderId) => {
+                              onMove(creature.id, folderId);
+                              setMenuOpen(false);
+                              setMoveOpen(false);
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); setMenuOpen(false); onExport(creature); }}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-200 hover:bg-slate-900 text-left"
+                  >
+                    <Download className="w-3 h-3" /> Exportar JSON
+                  </button>
+                  {!isBuiltIn && (
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); setMenuOpen(false); onDelete(creature); }}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-400 hover:bg-red-950/40 text-left border-t border-slate-800"
+                    >
+                      <Trash2 className="w-3 h-3" /> Excluir
+                    </button>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ── LINHA INFERIOR: tags patamar + ND ── */}
+      <div className="flex items-center gap-1.5 flex-wrap mb-2">
+        <span className={`text-[9px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded border ${patamarStyle.badge}`}>
+          {patamarStyle.label}
+        </span>
+        <span className="text-[10px] text-slate-500 tabular-nums">ND {creature.core?.nd}</span>
       </div>
 
       {/* Stats resumidas */}
@@ -242,6 +250,121 @@ const BulkActionBar = ({ count, folders, onExport, onDelete, onMove, onClear }) 
 };
 
 // ============================================================
+// MODAL DE EXPORTAÇÃO
+// ============================================================
+const ExportModal = ({ creatures, onConfirm, onCancel }) => {
+  const [sel, setSel] = useState(() => new Set(creatures.map((c) => c.id)));
+  const defaultName = creatures.length === 1
+    ? creatures[0].name.replace(/[^a-z0-9]/gi, "_").toLowerCase()
+    : "criaturas_exportadas";
+  const [filename, setFilename] = useState(defaultName);
+
+  const toggle = useCallback((id) => {
+    setSel((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const handleConfirm = useCallback(() => {
+    const toExport = creatures.filter((c) => sel.has(c.id));
+    if (toExport.length === 0) return;
+    const safeName = (filename.trim() || defaultName).replace(/\.json$/i, "") + ".json";
+    onConfirm(toExport, safeName);
+  }, [creatures, sel, filename, defaultName, onConfirm]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+      onClick={onCancel}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div
+        className="bg-slate-900 border border-slate-800 rounded-lg p-6 max-w-md w-full shadow-2xl flex flex-col max-h-[80vh]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-full bg-purple-950/60 border border-purple-900/60 flex items-center justify-center flex-shrink-0">
+            <Download className="w-5 h-5 text-purple-400" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-lg font-bold text-white">Exportar Criaturas</h3>
+            <p className="text-sm text-slate-400">{sel.size} de {creatures.length} selecionada(s)</p>
+          </div>
+          <button
+            type="button"
+            onClick={onCancel}
+            className="w-7 h-7 flex items-center justify-center rounded text-slate-500 hover:text-slate-200 hover:bg-slate-800 focus:outline-none flex-shrink-0"
+            aria-label="Fechar"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="overflow-y-auto flex-1 border border-slate-800 rounded-lg mb-4">
+          {creatures.map((c) => {
+            const ps = PATAMAR_STYLES[c.core?.patamar] ?? PATAMAR_STYLES.comum;
+            return (
+              <label
+                key={c.id}
+                className="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-800/60 cursor-pointer border-b border-slate-800/60 last:border-b-0"
+              >
+                <input
+                  type="checkbox"
+                  checked={sel.has(c.id)}
+                  onChange={() => toggle(c.id)}
+                  className="w-4 h-4 accent-purple-600 cursor-pointer flex-shrink-0"
+                />
+                <span className="flex-1 text-sm text-slate-200 truncate">{c.name}</span>
+                <span className={`text-[9px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded border flex-shrink-0 ${ps.badge}`}>
+                  {ps.label}
+                </span>
+              </label>
+            );
+          })}
+        </div>
+
+        <div className="mb-4 flex-shrink-0">
+          <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+            Nome do Arquivo
+          </label>
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              value={filename}
+              onChange={(e) => setFilename(e.target.value)}
+              placeholder={defaultName}
+              className="flex-1 h-9 bg-slate-950 border border-slate-700 rounded px-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+            />
+            <span className="text-sm text-slate-500 flex-shrink-0">.json</span>
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-2 flex-shrink-0">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="px-4 py-2 rounded bg-slate-800 hover:bg-slate-700 text-sm font-semibold text-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500/60"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={handleConfirm}
+            disabled={sel.size === 0}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded bg-purple-800 hover:bg-purple-700 text-sm font-bold text-white disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-purple-500"
+          >
+            <Download className="w-4 h-4" /> Confirmar ({sel.size})
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ============================================================
 // MAIN
 // ============================================================
 export default function Dashboard({
@@ -256,6 +379,7 @@ export default function Dashboard({
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState(() => new Set());
   const [confirmDelete, setConfirmDelete] = useState(null); // { type: 'one'|'many', payload }
+  const [exportModal, setExportModal] = useState(null);    // array de criaturas | null
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const fileInputRef = useRef(null);
 
@@ -323,14 +447,23 @@ export default function Dashboard({
   }, [manager, selected, clearSelection]);
 
   const handleExportOne = useCallback((creature) => {
-    exportCreaturesToFile([creature], `${creature.name}.json`);
+    setExportModal([creature]);
   }, []);
 
   const handleExportSelected = useCallback(() => {
     const list = manager.creatures.filter((c) => selected.has(c.id));
-    if (list.length === 0) return;
-    exportCreaturesToFile(list, `grimorio-${list.length}.json`);
+    if (list.length > 0) setExportModal(list);
   }, [manager.creatures, selected]);
+
+  const handleExportCurrentView = useCallback(() => {
+    const exportable = filtered.filter((c) => !c.isBuiltIn);
+    if (exportable.length > 0) setExportModal(exportable);
+  }, [filtered]);
+
+  const handleConfirmExport = useCallback((creatures, filename) => {
+    exportCreaturesToFile(creatures, filename);
+    setExportModal(null);
+  }, []);
 
   const handleDelete = useCallback((creature) => {
     setConfirmDelete({ type: "one", payload: creature });
@@ -399,6 +532,15 @@ export default function Dashboard({
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-sm font-semibold text-slate-200 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500/60"
           >
             <Upload className="w-4 h-4" /> Importar
+          </button>
+          <button
+            type="button"
+            onClick={handleExportCurrentView}
+            disabled={filtered.filter((c) => !c.isBuiltIn).length === 0}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-sm font-semibold text-slate-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-purple-500/60"
+            title="Exportar criaturas da visualização atual"
+          >
+            <Download className="w-4 h-4" /> Exportar
           </button>
           <button
             type="button"
@@ -555,6 +697,15 @@ export default function Dashboard({
           )}
         </main>
       </div>
+
+      {/* ===== MODAL DE EXPORTAÇÃO ===== */}
+      {exportModal && (
+        <ExportModal
+          creatures={exportModal}
+          onConfirm={handleConfirmExport}
+          onCancel={() => setExportModal(null)}
+        />
+      )}
 
       {/* ===== CONFIRMAÇÃO DE DELETE ===== */}
       {confirmDelete && (

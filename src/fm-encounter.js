@@ -248,16 +248,13 @@ export const applyNewRoundEffects = (combatant) => {
 
   const stats = combatant.snapshot?.stats ?? {};
   const guardaMax = stats.guardaInabavalMax ?? 0;
-  const hpMax = stats.hpMax ?? 0;
-  const currentHp = combatant.combatState.hpCurrent;
 
-  // Regra do sistema: Guarda Inabalável reseta + cura HP até hpMax
+  // Regra do sistema: apenas reseta a Guarda ao máximo. HP nunca é alterado aqui.
   return {
     ...combatant,
     combatState: {
       ...combatant.combatState,
-      guardaInabavalCurrent: guardaMax,
-      hpCurrent: Math.min(hpMax, currentHp + guardaMax)
+      guardaInabavalCurrent: guardaMax
     }
   };
 };
