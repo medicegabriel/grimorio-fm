@@ -120,6 +120,9 @@ export default function App() {
       <EncountersDashboard
         manager={encounterManager}
         folders={storage.folders}
+        onCreateFolder={storage.createFolder}
+        onRenameFolder={storage.renameFolder}
+        onRemoveFolder={storage.removeFolder}
         onOpenEncounter={goToEncounter}
         onBackToGrimoire={goToDashboard}
       />

@@ -228,6 +228,23 @@ export default function useCreatureStorage() {
   }, []);
 
   // ============================================================
+  // REORDENAÇÃO — mantém o restante do array intacto
+  // ============================================================
+  // orderedIds: novo array de IDs na ordem desejada (subconjunto de creatures).
+  // As criaturas não incluídas em orderedIds permanecem nas suas posições originais.
+  const reorderCreatures = useCallback((orderedIds) => {
+    setCreatures((prev) => {
+      const idSet = new Set(orderedIds);
+      const idOrder = new Map(orderedIds.map((id, i) => [id, i]));
+      const sortedSubset = prev
+        .filter((c) => idSet.has(c.id))
+        .sort((a, b) => idOrder.get(a.id) - idOrder.get(b.id));
+      let subIdx = 0;
+      return prev.map((c) => (idSet.has(c.id) ? sortedSubset[subIdx++] : c));
+    });
+  }, []);
+
+  // ============================================================
   // IMPORT — aceita array puro (retrocompat) ou { creatures, folders }
   // ============================================================
   const importMany = useCallback((payload, { mergeStrategy = "append" } = {}) => {
@@ -326,5 +343,7 @@ export default function useCreatureStorage() {
     moveCreaturesToFolder,
     // IO
     importMany,
+    // Order
+    reorderCreatures,
   };
 }

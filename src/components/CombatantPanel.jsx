@@ -116,13 +116,13 @@ const VitalBar = ({ kind, current, max, onChange }) => {
 };
 
 const StatBlock = ({ icon: Icon, label, value, sublabel, accent = 'text-slate-300' }) => (
-  <div className="bg-slate-900/60 border border-slate-800 rounded-md px-3 py-2 min-w-[88px]">
-    <div className="flex items-center gap-1.5 mb-0.5">
+  <div className="bg-slate-900/60 border border-slate-800 rounded-md p-3 min-w-[88px] flex flex-col items-center justify-center text-center">
+    <div className="flex items-center justify-center gap-1.5 w-full">
       <Icon className={`w-3.5 h-3.5 ${accent}`} aria-hidden="true" />
       <span className="text-[10px] uppercase tracking-wider text-slate-500">{label}</span>
     </div>
-    <div className="text-xl font-bold text-white tabular-nums">{value}</div>
-    {sublabel && <div className="text-[10px] text-slate-500">{sublabel}</div>}
+    <div className="mt-2 text-2xl font-bold text-white tabular-nums w-full text-center">{value}</div>
+    {sublabel && <span className="block text-xs text-slate-400 mt-1">{sublabel}</span>}
   </div>
 );
 
@@ -336,6 +336,28 @@ const DefensesList = ({ defenses }) => {
 };
 
 // ============================================================
+// AVATAR DE COMBATENTE
+// ============================================================
+const CombatantAvatar = ({ imageUrl, name, className }) => {
+  const [failed, setFailed] = useState(false);
+  if (!imageUrl || failed) {
+    return (
+      <div className={`${className} rounded-lg border border-slate-700 bg-slate-800 flex items-center justify-center flex-shrink-0`}>
+        <Skull className="w-8 h-8 text-slate-600" />
+      </div>
+    );
+  }
+  return (
+    <img
+      src={imageUrl}
+      alt={name}
+      className={`${className} rounded-lg border border-slate-700 object-cover object-center flex-shrink-0 shadow-lg`}
+      onError={() => setFailed(true)}
+    />
+  );
+};
+
+// ============================================================
 // MAIN — CombatantPanel
 // ============================================================
 export default function CombatantPanel({
@@ -371,6 +393,7 @@ export default function CombatantPanel({
   const saves = snapshot.saves ?? {};
   const core = snapshot.core ?? {};
   const defenses = snapshot.defenses ?? {};
+  const skills = snapshot.skills ?? [];
   const actionsList = snapshot.actions?.list ?? [];
   const actionsTotal = snapshot.actions?.total ?? {};
   const features = snapshot.features ?? [];
@@ -464,29 +487,36 @@ export default function CombatantPanel({
       {/* ===== HEADER ===== */}
       {showHeader && (
         <div className="flex items-start justify-between gap-3 flex-wrap">
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-xl sm:text-2xl font-bold text-slate-100 truncate">{combatant.displayName}</h2>
-              {flags.isDefeated && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wider font-bold border bg-slate-950/80 text-slate-400 border-slate-800">
-                  <Skull className="w-3 h-3" /> Abatido
+          <div className="flex items-start gap-4 min-w-0 flex-1">
+            <CombatantAvatar
+              imageUrl={snapshot.portraitUrl}
+              name={combatant.displayName}
+              className="w-24 h-24 sm:w-32 sm:h-32"
+            />
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-xl sm:text-2xl font-bold text-slate-100 truncate">{combatant.displayName}</h2>
+                {flags.isDefeated && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wider font-bold border bg-slate-950/80 text-slate-400 border-slate-800">
+                    <Skull className="w-3 h-3" /> Abatido
+                  </span>
+                )}
+                {flags.isHidden && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wider font-bold border bg-slate-950/80 text-slate-500 border-slate-800">
+                    <EyeOff className="w-3 h-3" /> Oculto
+                  </span>
+                )}
+              </div>
+              <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400 mt-1">
+                <span className="px-2 py-0.5 rounded bg-purple-900/50 border border-purple-800 text-purple-200 font-semibold uppercase">
+                  {core.patamar}
                 </span>
-              )}
-              {flags.isHidden && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wider font-bold border bg-slate-950/80 text-slate-500 border-slate-800">
-                  <EyeOff className="w-3 h-3" /> Oculto
-                </span>
-              )}
-            </div>
-            <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400 mt-1">
-              <span className="px-2 py-0.5 rounded bg-purple-900/50 border border-purple-800 text-purple-200 font-semibold uppercase">
-                {core.patamar}
-              </span>
-              <span>ND {core.nd}</span>
-              <span className="text-slate-600">•</span>
-              <span>Grau {core.grau}</span>
-              <span className="text-slate-600">•</span>
-              <span>BT +{core.bonusTreinamento}</span>
+                <span>ND {core.nd}</span>
+                <span className="text-slate-600">•</span>
+                <span>Grau {core.grau}</span>
+                <span className="text-slate-600">•</span>
+                <span>BT +{core.bonusTreinamento}</span>
+              </div>
             </div>
           </div>
 
@@ -588,6 +618,32 @@ export default function CombatantPanel({
           )}
         </div>
       </section>
+
+      {/* ===== PERÍCIAS ===== */}
+      {skills.filter((s) => s.name?.trim()).length > 0 && (
+        <section aria-label="Perícias">
+          <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2 flex items-center gap-2">
+            <Target className="w-3.5 h-3.5" /> Perícias
+          </h3>
+          <div className="flex flex-wrap gap-2 mt-2">
+            {skills
+              .filter((s) => s.name?.trim())
+              .sort((a, b) => (b.mod ?? 0) - (a.mod ?? 0))
+              .map((s) => (
+                <span
+                  key={s.id}
+                  className={`px-2 py-1 bg-slate-800/80 border rounded-md text-sm font-medium ${
+                    s.mastered
+                      ? 'border-purple-700/60 text-purple-200'
+                      : 'border-slate-700 text-slate-300'
+                  }`}
+                >
+                  {s.name} {(s.mod ?? 0) >= 0 ? '+' : ''}{s.mod ?? 0}
+                </span>
+              ))}
+          </div>
+        </section>
+      )}
 
       {/* ===== GRID PRINCIPAL — 2 colunas em lg ===== */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

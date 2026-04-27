@@ -38,6 +38,28 @@ const PATAMAR_BADGE = {
 };
 
 // ============================================================
+// MINIATURA CIRCULAR DE COMBATENTE
+// ============================================================
+const MiniAvatar = ({ imageUrl, name }) => {
+  const [failed, setFailed] = useState(false);
+  if (!imageUrl || failed) {
+    return (
+      <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center flex-shrink-0">
+        <Skull className="w-3.5 h-3.5 text-slate-600" />
+      </div>
+    );
+  }
+  return (
+    <img
+      src={imageUrl}
+      alt={name}
+      className="w-8 h-8 rounded-full border border-slate-700 object-cover object-center flex-shrink-0"
+      onError={() => setFailed(true)}
+    />
+  );
+};
+
+// ============================================================
 // PLANNER — ADICIONAR COMBATENTES
 // ============================================================
 const CreaturePicker = ({ creatures, folders = [], onAdd }) => {
@@ -535,6 +557,7 @@ const InitiativeSidebar = ({ derived, encounter, focusedId, onFocus, onRemove })
               <div className="flex items-center gap-2 mb-1 pr-5">
                 <span className="text-sm font-bold text-white tabular-nums w-7">{c.initiative.total}</span>
                 {isActive && <span className="text-purple-300" aria-label="Turno ativo">⚡</span>}
+                <MiniAvatar imageUrl={c.snapshot?.portraitUrl} name={c.displayName} />
                 <span className="flex-1 text-sm text-slate-200 truncate">{c.displayName}</span>
                 {isDefeated && <Skull className="w-3.5 h-3.5 text-slate-500" aria-label="Abatido" />}
                 {isHidden && <EyeOff className="w-3.5 h-3.5 text-slate-500" aria-label="Oculto" />}

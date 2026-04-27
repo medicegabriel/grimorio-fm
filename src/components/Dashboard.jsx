@@ -1,17 +1,35 @@
 // Dashboard.jsx
 import { useState, useMemo, useRef, useCallback } from "react";
 import {
-  Search, Plus, Upload, Download, Trash2, Copy, Edit3, Play,
-  X, AlertTriangle, FileJson, Check, MoreVertical, Users,
-  FolderInput, Swords, Menu, Filter, Lock
+  Search, Plus, Upload, Download, Trash2, Copy, Edit3,
+  X, AlertTriangle, MoreVertical, Users, Image,
+  FolderInput, Swords, Menu, Lock
 } from "lucide-react";
+import {
+  DndContext,
+  DragOverlay,
+  PointerSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+  closestCenter,
+  pointerWithin,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  useSortable,
+  rectSortingStrategy,
+  arrayMove,
+  sortableKeyboardCoordinates,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 import FolderSidebar from "./FolderSidebar";
 import MoveToFolderMenu from "./MoveToFolderMenu";
 import { exportCreaturesToFile, importFromFile } from "./io-utils";
 
 // ============================================================
-// DICIONÁRIOS DE ESTILO (mesmo do seu original, mantenha o seu)
+// DICIONÁRIOS DE ESTILO
 // ============================================================
 const PATAMAR_STYLES = {
   lacaio:     { label: "Lacaio",     badge: "bg-slate-800 text-slate-300 border-slate-700",      accent: "border-l-slate-600" },
@@ -21,7 +39,6 @@ const PATAMAR_STYLES = {
   calamidade: { label: "Calamidade", badge: "bg-red-950 text-red-300 border-red-800",             accent: "border-l-red-600" },
 };
 
-// Dicionário pra títulos dinâmicos do header
 const VIEW_TITLE = {
   all: () => "Todas as Criaturas",
   unfiled: () => "Sem Pasta",
@@ -29,7 +46,6 @@ const VIEW_TITLE = {
   folder: (folder) => folder?.name ?? "Pasta",
 };
 
-// Dicionário de filtros (regra de ouro #1)
 const VIEW_FILTERS = {
   all:      (c) => !c.isBuiltIn,
   unfiled:  (c) => !c.isBuiltIn && (c.folderId == null),
@@ -38,154 +54,262 @@ const VIEW_FILTERS = {
 };
 
 // ============================================================
-// CARTÃO DE CRIATURA (com menu + Move To)
+// AVATAR DE CRIATURA
+// ============================================================
+const CreatureAvatar = ({ imageUrl, name }) => {
+  const [failed, setFailed] = useState(false);
+  if (!imageUrl || failed) {
+    return (
+      <div className="w-14 h-14 rounded-md border border-slate-700/50 shrink-0 bg-slate-800 flex items-center justify-center">
+        <Image className="w-6 h-6 text-slate-600" />
+      </div>
+    );
+  }
+  return (
+    <img
+      src={imageUrl}
+      alt={name}
+      className="w-14 h-14 rounded-md border border-slate-700/50 shrink-0 object-cover object-center"
+      onError={() => setFailed(true)}
+    />
+  );
+};
+
+// ============================================================
+// CARTÃO DE CRIATURA
+// Quando sortableRef/sortableListeners são passados, o card inteiro é arrastável.
+// onPointerDown com stopPropagation nos controles previne conflito com o DnD.
 // ============================================================
 const CreatureCard = ({
-  creature, selected, viewType, folders,
-  onToggleSelect, onOpen, onEdit, onDuplicate, onExport, onDelete, onMove
+  creature, selected, folders,
+  onToggleSelect, onOpen, onEdit, onDuplicate, onExport, onDelete, onMove,
+  // Props de DnD (passadas pelo SortableCreatureCard)
+  sortableRef, sortableStyle, sortableAttributes, sortableListeners, isDragging,
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [moveOpen, setMoveOpen] = useState(false);
   const patamarStyle = PATAMAR_STYLES[creature.core?.patamar] ?? PATAMAR_STYLES.comum;
   const isBuiltIn = !!creature.isBuiltIn;
+  const isDraggable = !isBuiltIn && !!sortableListeners;
 
   const handleCardClick = useCallback(() => {
     if (menuOpen || moveOpen) return;
     onOpen(creature.id);
   }, [menuOpen, moveOpen, onOpen, creature.id]);
 
-  // Built-ins não mostram checkbox de seleção (evita confusão em bulk)
   const showSelect = !isBuiltIn;
 
   return (
     <article
+      ref={sortableRef}
+      style={sortableStyle}
+      {...(isDraggable ? sortableAttributes : {})}
+      {...(isDraggable ? sortableListeners : {})}
       onClick={handleCardClick}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), handleCardClick())}
-      className={`relative bg-slate-900/60 border-l-4 ${patamarStyle.accent} border-r border-y border-slate-800 rounded-lg p-3 transition-all cursor-pointer group focus:outline-none focus:ring-2 focus:ring-purple-500/60 ${
-        selected ? "ring-2 ring-purple-500/60 bg-purple-950/20" : "hover:border-slate-700"
-      } ${isBuiltIn ? "opacity-95" : ""}`}
+      className={`relative bg-slate-900/60 border-l-4 ${patamarStyle.accent} border-r border-y border-slate-800 rounded-lg p-3 transition-all group focus:outline-none focus:ring-2 focus:ring-purple-500/60 ${
+        isDraggable ? (isDragging ? "cursor-grabbing opacity-30" : "cursor-grab") : "cursor-pointer"
+      } ${selected ? "ring-2 ring-purple-500/60 bg-purple-950/20" : "hover:border-slate-700"} ${isBuiltIn ? "opacity-95" : ""}`}
     >
-      {/* ── LINHA SUPERIOR: título (esquerda) + checkbox + ⋮ (direita) ── */}
-      <div className="flex justify-between items-center w-full mb-1.5">
-        <div className="flex items-center gap-1.5 min-w-0 flex-1">
-          <h3 className="text-sm font-bold text-white truncate">{creature.name}</h3>
-          {isBuiltIn && (
-            <span className="inline-flex items-center gap-1 text-[9px] uppercase tracking-wider text-amber-300 bg-amber-950/60 border border-amber-900/60 px-1.5 py-0.5 rounded font-bold flex-shrink-0">
-              <Lock className="w-2.5 h-2.5" /> Base
-            </span>
-          )}
+      <div className="flex items-start gap-4">
+        <div className="mt-1 shrink-0">
+          <CreatureAvatar imageUrl={creature.portraitUrl} name={creature.name} />
         </div>
-
-        <div className="flex items-center gap-2 shrink-0">
-          {showSelect && (
-            <div
-              className={`transition-opacity duration-150 ${selected ? "opacity-100" : "opacity-0 group-hover:opacity-100 focus-within:opacity-100"}`}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <input
-                type="checkbox"
-                checked={selected}
-                onChange={(e) => { e.stopPropagation(); onToggleSelect(creature.id); }}
-                className="w-4 h-4 accent-purple-600 cursor-pointer rounded m-0 translate-y-px"
-                aria-label={`Selecionar ${creature.name}`}
-              />
+        <div className="flex-1 min-w-0">
+          {/* ── LINHA SUPERIOR ── */}
+          <div className="flex justify-between items-center w-full mb-1.5">
+            <div className="flex items-center gap-1.5 min-w-0 flex-1">
+              <h3 className="text-sm font-bold text-white truncate leading-tight">{creature.name}</h3>
+              {isBuiltIn && (
+                <span className="inline-flex items-center gap-1 text-[9px] uppercase tracking-wider text-amber-300 bg-amber-950/60 border border-amber-900/60 px-1.5 py-0.5 rounded font-bold flex-shrink-0">
+                  <Lock className="w-2.5 h-2.5" /> Base
+                </span>
+              )}
             </div>
-          )}
 
-          {/* Menu de 3 pontos */}
-          <div className="relative">
-            <button
-              type="button"
-              onClick={(e) => { e.stopPropagation(); setMenuOpen(!menuOpen); setMoveOpen(false); }}
-              className="w-7 h-7 flex items-center justify-center rounded text-slate-500 hover:text-slate-200 hover:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-purple-500/40"
-              aria-label="Menu de ações"
-              aria-expanded={menuOpen}
+            {/* Controles: onPointerDown stopPropagation para não iniciar drag */}
+            <div
+              className="flex items-center gap-2 shrink-0"
+              onPointerDown={(e) => e.stopPropagation()}
             >
-              <MoreVertical className="w-4 h-4" />
-            </button>
-            {menuOpen && (
-              <>
-                <div className="fixed inset-0 z-10" onClick={(e) => { e.stopPropagation(); setMenuOpen(false); setMoveOpen(false); }} />
-                <div className="absolute right-0 top-full mt-1 w-44 bg-slate-950 border border-slate-800 rounded shadow-xl z-20">
-                  <button
-                    type="button"
-                    onClick={(e) => { e.stopPropagation(); setMenuOpen(false); onEdit(creature.id); }}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-200 hover:bg-slate-900 text-left"
-                  >
-                    <Edit3 className="w-3 h-3" /> {isBuiltIn ? "Clonar e Editar" : "Editar"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={(e) => { e.stopPropagation(); setMenuOpen(false); onDuplicate(creature); }}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-200 hover:bg-slate-900 text-left"
-                  >
-                    <Copy className="w-3 h-3" /> Duplicar
-                  </button>
-                  {!isBuiltIn && (
-                    <div className="relative">
+              {showSelect && (
+                <div
+                  className={`transition-opacity duration-150 ${selected ? "opacity-100" : "opacity-0 group-hover:opacity-100 focus-within:opacity-100"}`}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <input
+                    type="checkbox"
+                    checked={selected}
+                    onChange={(e) => { e.stopPropagation(); onToggleSelect(creature.id); }}
+                    className="w-4 h-4 accent-purple-600 cursor-pointer rounded m-0 translate-y-px"
+                    aria-label={`Selecionar ${creature.name}`}
+                  />
+                </div>
+              )}
+
+              {/* Menu de 3 pontos */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); setMenuOpen(!menuOpen); setMoveOpen(false); }}
+                  className="w-7 h-7 flex items-center justify-center rounded text-slate-500 hover:text-slate-200 hover:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-purple-500/40"
+                  aria-label="Menu de ações"
+                  aria-expanded={menuOpen}
+                >
+                  <MoreVertical className="w-4 h-4" />
+                </button>
+                {menuOpen && (
+                  <>
+                    <div className="fixed inset-0 z-10" onClick={(e) => { e.stopPropagation(); setMenuOpen(false); setMoveOpen(false); }} />
+                    <div className="absolute right-0 top-full mt-1 w-44 bg-slate-950 border border-slate-800 rounded shadow-xl z-20">
                       <button
                         type="button"
-                        onClick={(e) => { e.stopPropagation(); setMoveOpen(!moveOpen); }}
+                        onClick={(e) => { e.stopPropagation(); setMenuOpen(false); onEdit(creature.id); }}
                         className="w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-200 hover:bg-slate-900 text-left"
-                        aria-expanded={moveOpen}
                       >
-                        <FolderInput className="w-3 h-3" /> Mover para...
+                        <Edit3 className="w-3 h-3" /> {isBuiltIn ? "Clonar e Editar" : "Editar"}
                       </button>
-                      {moveOpen && (
-                        <div className="absolute right-full top-0 mr-1 w-48 z-30">
-                          <MoveToFolderMenu
-                            folders={folders}
-                            currentFolderId={creature.folderId}
-                            onMove={(folderId) => {
-                              onMove(creature.id, folderId);
-                              setMenuOpen(false);
-                              setMoveOpen(false);
-                            }}
-                          />
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); setMenuOpen(false); onDuplicate(creature); }}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-200 hover:bg-slate-900 text-left"
+                      >
+                        <Copy className="w-3 h-3" /> Duplicar
+                      </button>
+                      {!isBuiltIn && (
+                        <div className="relative">
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); setMoveOpen(!moveOpen); }}
+                            className="w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-200 hover:bg-slate-900 text-left"
+                            aria-expanded={moveOpen}
+                          >
+                            <FolderInput className="w-3 h-3" /> Mover para...
+                          </button>
+                          {moveOpen && (
+                            <div className="absolute right-full top-0 mr-1 w-48 z-30">
+                              <MoveToFolderMenu
+                                folders={folders}
+                                currentFolderId={creature.folderId}
+                                onMove={(folderId) => {
+                                  onMove(creature.id, folderId);
+                                  setMenuOpen(false);
+                                  setMoveOpen(false);
+                                }}
+                              />
+                            </div>
+                          )}
                         </div>
                       )}
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); setMenuOpen(false); onExport(creature); }}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-200 hover:bg-slate-900 text-left"
+                      >
+                        <Download className="w-3 h-3" /> Exportar JSON
+                      </button>
+                      {!isBuiltIn && (
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); setMenuOpen(false); onDelete(creature); }}
+                          className="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-400 hover:bg-red-950/40 text-left border-t border-slate-800"
+                        >
+                          <Trash2 className="w-3 h-3" /> Excluir
+                        </button>
+                      )}
                     </div>
-                  )}
-                  <button
-                    type="button"
-                    onClick={(e) => { e.stopPropagation(); setMenuOpen(false); onExport(creature); }}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-200 hover:bg-slate-900 text-left"
-                  >
-                    <Download className="w-3 h-3" /> Exportar JSON
-                  </button>
-                  {!isBuiltIn && (
-                    <button
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); setMenuOpen(false); onDelete(creature); }}
-                      className="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-400 hover:bg-red-950/40 text-left border-t border-slate-800"
-                    >
-                      <Trash2 className="w-3 h-3" /> Excluir
-                    </button>
-                  )}
-                </div>
-              </>
-            )}
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* ── PATAMAR + ND ── */}
+          <div className="flex items-center gap-1.5 flex-wrap mb-2">
+            <span className={`text-[9px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded border ${patamarStyle.badge}`}>
+              {patamarStyle.label}
+            </span>
+            <span className="text-[10px] text-slate-500 tabular-nums">ND {creature.core?.nd}</span>
+          </div>
+
+          {/* Stats resumidas */}
+          <div className="flex items-center gap-3 text-[10px] text-slate-500 tabular-nums pt-2 border-t border-slate-800">
+            <span>HP {creature.stats?.hpMax ?? 0}</span>
+            <span>PE {creature.stats?.peMax ?? 0}</span>
+            <span>Def {creature.stats?.defesa ?? 0}</span>
           </div>
         </div>
       </div>
+    </article>
+  );
+};
 
-      {/* ── LINHA INFERIOR: tags patamar + ND ── */}
-      <div className="flex items-center gap-1.5 flex-wrap mb-2">
+// ============================================================
+// WRAPPER SORTABLE — injeta props de DnD no CreatureCard
+// O article do CreatureCard recebe ref e listeners diretamente.
+// ============================================================
+const SortableCreatureCard = (props) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: props.creature.id });
+
+  return (
+    <CreatureCard
+      {...props}
+      sortableRef={setNodeRef}
+      sortableStyle={{ transform: CSS.Transform.toString(transform), transition }}
+      sortableAttributes={attributes}
+      sortableListeners={listeners}
+      isDragging={isDragging}
+    />
+  );
+};
+
+// ============================================================
+// OVERLAY DE ARRASTO (ghost visual durante o drag)
+// ============================================================
+const CardDragOverlay = ({ creature, count }) => {
+  if (count > 1) {
+    // Multi-drag: visual de cards empilhados
+    return (
+      <div className="relative w-64">
+        <div className="absolute inset-0 rotate-2 translate-x-2 translate-y-2 bg-slate-800 rounded-lg border border-slate-700 opacity-50" />
+        <div className="absolute inset-0 rotate-1 translate-x-1 translate-y-1 bg-slate-800/80 rounded-lg border border-slate-700 opacity-70" />
+        <div className="relative bg-slate-900 border border-purple-500/60 rounded-lg p-3 shadow-2xl ring-2 ring-purple-500/50">
+          <div className="flex items-center gap-2">
+            <Users className="w-4 h-4 text-purple-400 flex-shrink-0" />
+            <span className="text-sm font-bold text-white">Movendo {count} criaturas</span>
+          </div>
+          <p className="text-[10px] text-slate-400 mt-1">Solte em uma pasta para mover todas</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!creature) return null;
+  const patamarStyle = PATAMAR_STYLES[creature.core?.patamar] ?? PATAMAR_STYLES.comum;
+  return (
+    <div className={`w-64 bg-slate-900/98 border-l-4 ${patamarStyle.accent} border-r border-y border-purple-500/40 rounded-lg p-3 shadow-2xl ring-2 ring-purple-500/50 cursor-grabbing`}>
+      <h3 className="text-sm font-bold text-white truncate mb-1.5">{creature.name}</h3>
+      <div className="flex items-center gap-1.5 mb-2">
         <span className={`text-[9px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded border ${patamarStyle.badge}`}>
           {patamarStyle.label}
         </span>
         <span className="text-[10px] text-slate-500 tabular-nums">ND {creature.core?.nd}</span>
       </div>
-
-      {/* Stats resumidas */}
       <div className="flex items-center gap-3 text-[10px] text-slate-500 tabular-nums pt-2 border-t border-slate-800">
         <span>HP {creature.stats?.hpMax ?? 0}</span>
         <span>PE {creature.stats?.peMax ?? 0}</span>
         <span>Def {creature.stats?.defesa ?? 0}</span>
       </div>
-    </article>
+    </div>
   );
 };
 
@@ -368,28 +492,53 @@ const ExportModal = ({ creatures, onConfirm, onCancel }) => {
 // MAIN
 // ============================================================
 export default function Dashboard({
-  manager,                 // useCreatureStorage expandido
-  compendium = [],         // array do fm-compendium
-  onOpenCreature,          // (id) => void — App intercepta built-ins
-  onEditCreature,          // (id) => void — App intercepta built-ins
-  onCreateNew,             // () => void
-  onGoToEncounters,        // () => void
+  manager,
+  compendium = [],
+  onOpenCreature,
+  onEditCreature,
+  onCreateNew,
+  onGoToEncounters,
 }) {
   const [view, setView] = useState({ type: "all", folderId: null });
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState(() => new Set());
-  const [confirmDelete, setConfirmDelete] = useState(null); // { type: 'one'|'many', payload }
-  const [exportModal, setExportModal] = useState(null);    // array de criaturas | null
+  const [confirmDelete, setConfirmDelete] = useState(null);
+  const [exportModal, setExportModal] = useState(null);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const fileInputRef = useRef(null);
 
-  // União só na renderização (built-ins nunca tocam storage)
+  // ── DnD state ──
+  const [activeId, setActiveId] = useState(null);
+  const [isDraggingMultiple, setIsDraggingMultiple] = useState(false);
+  // Ref evita closure stale no onDragEnd
+  const isDraggingMultipleRef = useRef(false);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 8 },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // Detecção de colisão: prioriza pastas (pointer-within), fallback sortable
+  const collisionDetectionStrategy = useCallback((args) => {
+    const pointerHits = pointerWithin(args);
+    const folderHits = pointerHits.filter(({ id }) => {
+      const s = String(id);
+      return s.startsWith("fld_") || s === "view_unfiled";
+    });
+    if (folderHits.length > 0) return folderHits;
+    return closestCenter(args);
+  }, []);
+
+  // União de criaturas (built-ins nunca tocam storage)
   const allCreatures = useMemo(
     () => [...manager.creatures, ...compendium],
     [manager.creatures, compendium]
   );
 
-  // Contagens pro sidebar
   const creatureCounts = useMemo(() => {
     const acc = { all: 0, unfiled: 0, builtins: compendium.length };
     manager.folders.forEach((f) => { acc[f.id] = 0; });
@@ -401,7 +550,6 @@ export default function Dashboard({
     return acc;
   }, [manager.creatures, manager.folders, compendium.length]);
 
-  // Filtragem por view + busca
   const filtered = useMemo(() => {
     const filterFn = VIEW_FILTERS[view.type] ?? VIEW_FILTERS.all;
     const ctx = { folderId: view.folderId };
@@ -418,7 +566,13 @@ export default function Dashboard({
     [view, manager.folders]
   );
 
-  // ===== Handlers =====
+  // Criatura ativa no drag (para o overlay)
+  const activeCreature = useMemo(
+    () => activeId ? allCreatures.find((c) => c.id === activeId) ?? null : null,
+    [activeId, allCreatures]
+  );
+
+  // ===== Handlers de seleção =====
   const toggleSelect = useCallback((id) => {
     setSelected((prev) => {
       const next = new Set(prev);
@@ -429,6 +583,55 @@ export default function Dashboard({
 
   const clearSelection = useCallback(() => setSelected(new Set()), []);
 
+  // ===== Handlers de DnD =====
+  const handleDragStart = useCallback(({ active }) => {
+    const id = String(active.id);
+    const isMulti = selected.size > 1 && selected.has(id);
+    isDraggingMultipleRef.current = isMulti;
+    setActiveId(id);
+    setIsDraggingMultiple(isMulti);
+  }, [selected]);
+
+  const handleDragEnd = useCallback(({ active, over }) => {
+    const wasMulti = isDraggingMultipleRef.current;
+    isDraggingMultipleRef.current = false;
+    setActiveId(null);
+    setIsDraggingMultiple(false);
+
+    if (!over || active.id === over.id) return;
+
+    const overId = String(over.id);
+
+    // Drop em pasta ou "Sem Pasta"
+    if (overId.startsWith("fld_") || overId === "view_unfiled") {
+      const targetFolderId = overId === "view_unfiled" ? null : overId;
+      if (wasMulti) {
+        manager.moveCreaturesToFolder(Array.from(selected), targetFolderId);
+        clearSelection();
+      } else {
+        manager.moveCreatureToFolder(String(active.id), targetFolderId);
+      }
+      return;
+    }
+
+    // Reordenação (apenas drag simples)
+    if (!wasMulti) {
+      const oldIdx = filtered.findIndex((c) => c.id === String(active.id));
+      const newIdx = filtered.findIndex((c) => c.id === overId);
+      if (oldIdx !== -1 && newIdx !== -1 && oldIdx !== newIdx) {
+        const newIds = arrayMove(filtered.map((c) => c.id), oldIdx, newIdx);
+        manager.reorderCreatures(newIds);
+      }
+    }
+  }, [manager, selected, filtered, clearSelection]);
+
+  const handleDragCancel = useCallback(() => {
+    isDraggingMultipleRef.current = false;
+    setActiveId(null);
+    setIsDraggingMultiple(false);
+  }, []);
+
+  // ===== Demais handlers =====
   const handleDuplicate = useCallback((creature) => {
     if (creature.isBuiltIn) {
       manager.cloneFromBuiltIn(creature, { folderId: null, renameSuffix: " (Cópia)" });
@@ -488,7 +691,6 @@ export default function Dashboard({
     try {
       const result = await importFromFile(file);
       manager.importMany(result, { mergeStrategy: "append" });
-      // EXT: toast de sucesso — use seu sistema de toast atual
       alert(`Importadas ${result.creatures?.length ?? 0} criaturas`);
     } catch (err) {
       alert(`Falha na importação: ${err.message}`);
@@ -500,259 +702,303 @@ export default function Dashboard({
     : (VIEW_TITLE[view.type] ?? VIEW_TITLE.all)();
 
   const canCreate = view.type !== "builtins";
+  const isSortableView = view.type !== "builtins";
+
+  // Props compartilhadas para os cards
+  const cardSharedProps = {
+    folders: manager.folders,
+    onToggleSelect: toggleSelect,
+    onOpen: onOpenCreature,
+    onEdit: onEditCreature,
+    onDuplicate: handleDuplicate,
+    onExport: handleExportOne,
+    onDelete: handleDelete,
+    onMove: handleMove,
+  };
+
+  const sidebarProps = {
+    view,
+    onChangeView: setView,
+    folders: manager.folders,
+    creatureCounts,
+    compendiumCount: compendium.length,
+    onCreateFolder: manager.createFolder,
+    onRenameFolder: manager.renameFolder,
+    onRemoveFolder: manager.removeFolder,
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-purple-950/30 text-white">
-      {/* ===== HEADER ===== */}
-      <header className="sticky top-0 z-40 bg-slate-950/90 backdrop-blur border-b border-purple-900/50">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3 flex-wrap">
-          <button
-            type="button"
-            onClick={() => setMobileSidebarOpen(true)}
-            className="md:hidden inline-flex items-center justify-center w-9 h-9 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500/60"
-            aria-label="Abrir menu de pastas"
-          >
-            <Menu className="w-4 h-4" />
-          </button>
+    <DndContext
+      sensors={sensors}
+      collisionDetection={collisionDetectionStrategy}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+      onDragCancel={handleDragCancel}
+    >
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-purple-950/30 text-white">
+        {/* ===== HEADER ===== */}
+        <header className="sticky top-0 z-40 bg-slate-950/90 backdrop-blur border-b border-purple-900/50">
+          <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center gap-3 flex-wrap">
+            <button
+              type="button"
+              onClick={() => setMobileSidebarOpen(true)}
+              className="md:hidden inline-flex items-center justify-center w-9 h-9 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500/60"
+              aria-label="Abrir menu de pastas"
+            >
+              <Menu className="w-4 h-4" />
+            </button>
 
-          <h1 className="text-xl sm:text-2xl font-bold text-white">Grimório</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-white">Grimório</h1>
 
-          <div className="flex-1" />
+            <div className="flex-1" />
 
-          <button
-            type="button"
-            onClick={onGoToEncounters}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-sm font-semibold text-slate-200 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500/60"
-          >
-            <Swords className="w-4 h-4" /> Encontros
-          </button>
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-sm font-semibold text-slate-200 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500/60"
-          >
-            <Upload className="w-4 h-4" /> Importar
-          </button>
-          <button
-            type="button"
-            onClick={handleExportCurrentView}
-            disabled={filtered.filter((c) => !c.isBuiltIn).length === 0}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-sm font-semibold text-slate-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-purple-500/60"
-            title="Exportar criaturas da visualização atual"
-          >
-            <Download className="w-4 h-4" /> Exportar
-          </button>
-          <button
-            type="button"
-            onClick={onCreateNew}
-            disabled={!canCreate}
-            className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded bg-purple-800 hover:bg-purple-700 text-sm font-bold text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-purple-500"
-            title={canCreate ? "Criar nova criatura" : "Não é possível criar na pasta Sistema"}
-          >
-            <Plus className="w-4 h-4" /> Nova Criatura
-          </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".json"
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) handleImport(file);
-              e.target.value = "";
-            }}
-          />
-        </div>
-      </header>
-
-      {/* ===== LAYOUT 2 COLUNAS ===== */}
-      <div className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 md:grid-cols-[288px_1fr] gap-6">
-
-        {/* SIDEBAR DESKTOP */}
-        <div className="hidden md:block">
-          <div className="sticky top-20">
-            <FolderSidebar
-              view={view}
-              onChangeView={setView}
-              folders={manager.folders}
-              creatureCounts={creatureCounts}
-              compendiumCount={compendium.length}
-              onCreateFolder={manager.createFolder}
-              onRenameFolder={manager.renameFolder}
-              onRemoveFolder={manager.removeFolder}
+            <button
+              type="button"
+              onClick={onGoToEncounters}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-sm font-semibold text-slate-200 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500/60"
+            >
+              <Swords className="w-4 h-4" /> Encontros
+            </button>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-sm font-semibold text-slate-200 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500/60"
+            >
+              <Upload className="w-4 h-4" /> Importar
+            </button>
+            <button
+              type="button"
+              onClick={handleExportCurrentView}
+              disabled={filtered.filter((c) => !c.isBuiltIn).length === 0}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-sm font-semibold text-slate-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-purple-500/60"
+              title="Exportar criaturas da visualização atual"
+            >
+              <Download className="w-4 h-4" /> Exportar
+            </button>
+            <button
+              type="button"
+              onClick={onCreateNew}
+              disabled={!canCreate}
+              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded bg-purple-800 hover:bg-purple-700 text-sm font-bold text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-purple-500"
+              title={canCreate ? "Criar nova criatura" : "Não é possível criar na pasta Sistema"}
+            >
+              <Plus className="w-4 h-4" /> Nova Criatura
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".json"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) handleImport(file);
+                e.target.value = "";
+              }}
             />
           </div>
+        </header>
+
+        {/* ===== LAYOUT 2 COLUNAS ===== */}
+        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 grid grid-cols-1 md:grid-cols-[288px_1fr] gap-6">
+
+          {/* SIDEBAR DESKTOP */}
+          <div className="hidden md:block">
+            <div className="sticky top-20">
+              <FolderSidebar {...sidebarProps} />
+            </div>
+          </div>
+
+          {/* DRAWER MOBILE */}
+          {mobileSidebarOpen && (
+            <div
+              className="md:hidden fixed inset-0 z-50 bg-black/80"
+              onClick={() => setMobileSidebarOpen(false)}
+              role="dialog"
+              aria-modal="true"
+            >
+              <div
+                className="absolute left-0 top-0 bottom-0 w-72 bg-slate-950 border-r border-slate-800 p-3 overflow-y-auto"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-sm font-bold text-slate-200">Pastas</span>
+                  <button
+                    type="button"
+                    onClick={() => setMobileSidebarOpen(false)}
+                    className="w-7 h-7 rounded text-slate-400 hover:text-slate-200 focus:outline-none"
+                    aria-label="Fechar"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+                <FolderSidebar
+                  {...sidebarProps}
+                  onChangeView={(v) => { setView(v); setMobileSidebarOpen(false); }}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* CONTEÚDO PRINCIPAL */}
+          <main className="min-w-0">
+            <div className="mb-4 flex items-end justify-between gap-3 flex-wrap">
+              <div>
+                <h2 className="text-xl font-bold text-white">{viewTitle}</h2>
+                <div className="text-xs text-slate-500 uppercase tracking-wider mt-0.5">
+                  {filtered.length} criatura(s)
+                  {view.type === "builtins" && " · Somente leitura — edite para clonar"}
+                  {isSortableView && filtered.length > 0 && (
+                    <span className="ml-2 text-slate-600">· Arraste para reordenar</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Busca */}
+              <div className="relative w-full sm:w-64">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-600" />
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Buscar..."
+                  className="w-full h-9 bg-slate-900/60 border border-slate-800 rounded pl-9 pr-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-purple-500"
+                  aria-label="Buscar criaturas"
+                />
+              </div>
+            </div>
+
+            <BulkActionBar
+              count={selected.size}
+              folders={manager.folders}
+              onMove={handleBulkMove}
+              onExport={handleExportSelected}
+              onDelete={handleBulkDelete}
+              onClear={clearSelection}
+            />
+
+            {filtered.length === 0 ? (
+              <div className="text-center py-20 border border-dashed border-slate-800 rounded-lg bg-slate-900/30">
+                <Users className="w-10 h-10 text-slate-700 mx-auto mb-3" />
+                <p className="text-sm text-slate-500 mb-4">
+                  {search
+                    ? "Nenhuma criatura combina com sua busca."
+                    : view.type === "builtins"
+                      ? "Nenhuma criatura base carregada."
+                      : "Esta pasta está vazia."}
+                </p>
+                {canCreate && !search && (
+                  <button
+                    type="button"
+                    onClick={onCreateNew}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded bg-purple-800 hover:bg-purple-700 text-sm font-bold text-white"
+                  >
+                    <Plus className="w-4 h-4" /> Criar criatura
+                  </button>
+                )}
+              </div>
+            ) : isSortableView ? (
+              <SortableContext
+                items={filtered.map((c) => c.id)}
+                strategy={rectSortingStrategy}
+              >
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {filtered.map((c) => (
+                    <SortableCreatureCard
+                      key={c.id}
+                      creature={c}
+                      selected={selected.has(c.id)}
+                      {...cardSharedProps}
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+            ) : (
+              // Vista "Criaturas Base" — sem DnD
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {filtered.map((c) => (
+                  <CreatureCard
+                    key={c.id}
+                    creature={c}
+                    selected={false}
+                    {...cardSharedProps}
+                  />
+                ))}
+              </div>
+            )}
+          </main>
         </div>
 
-        {/* DRAWER MOBILE */}
-        {mobileSidebarOpen && (
+        {/* ===== MODAL DE EXPORTAÇÃO ===== */}
+        {exportModal && (
+          <ExportModal
+            creatures={exportModal}
+            onConfirm={handleConfirmExport}
+            onCancel={() => setExportModal(null)}
+          />
+        )}
+
+        {/* ===== CONFIRMAÇÃO DE DELETE ===== */}
+        {confirmDelete && (
           <div
-            className="md:hidden fixed inset-0 z-50 bg-black/80"
-            onClick={() => setMobileSidebarOpen(false)}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+            onClick={() => setConfirmDelete(null)}
             role="dialog"
             aria-modal="true"
           >
             <div
-              className="absolute left-0 top-0 bottom-0 w-72 bg-slate-950 border-r border-slate-800 p-3 overflow-y-auto"
+              className="bg-slate-900 border border-red-900/60 rounded-lg p-6 max-w-md w-full shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-sm font-bold text-slate-200">Pastas</span>
+              <div className="flex items-start gap-3 mb-5">
+                <div className="w-10 h-10 rounded-full bg-red-950/60 border border-red-900/60 flex items-center justify-center flex-shrink-0">
+                  <AlertTriangle className="w-5 h-5 text-red-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white mb-1">Excluir?</h3>
+                  <p className="text-sm text-slate-400">
+                    {confirmDelete.type === "one"
+                      ? <><span className="text-slate-200 font-semibold">"{confirmDelete.payload.name}"</span> será removida permanentemente.</>
+                      : <>{confirmDelete.payload.length} criatura(s) serão removidas permanentemente.</>
+                    }
+                  </p>
+                </div>
+              </div>
+              <div className="flex justify-end gap-2">
                 <button
                   type="button"
-                  onClick={() => setMobileSidebarOpen(false)}
-                  className="w-7 h-7 rounded text-slate-400 hover:text-slate-200 focus:outline-none"
-                  aria-label="Fechar"
+                  onClick={() => setConfirmDelete(null)}
+                  className="px-4 py-2 rounded bg-slate-800 hover:bg-slate-700 text-sm font-semibold text-slate-200"
                 >
-                  <X className="w-4 h-4" />
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmDeleteAction}
+                  className="px-4 py-2 rounded bg-red-800 hover:bg-red-700 text-sm font-semibold text-white"
+                  autoFocus
+                >
+                  Excluir
                 </button>
               </div>
-              <FolderSidebar
-                view={view}
-                onChangeView={(v) => { setView(v); setMobileSidebarOpen(false); }}
-                folders={manager.folders}
-                creatureCounts={creatureCounts}
-                compendiumCount={compendium.length}
-                onCreateFolder={manager.createFolder}
-                onRenameFolder={manager.renameFolder}
-                onRemoveFolder={manager.removeFolder}
-              />
             </div>
           </div>
         )}
-
-        {/* CONTEÚDO PRINCIPAL */}
-        <main className="min-w-0">
-          <div className="mb-4 flex items-end justify-between gap-3 flex-wrap">
-            <div>
-              <h2 className="text-xl font-bold text-white">{viewTitle}</h2>
-              <div className="text-xs text-slate-500 uppercase tracking-wider mt-0.5">
-                {filtered.length} criatura(s)
-                {view.type === "builtins" && " · Somente leitura — edite para clonar"}
-              </div>
-            </div>
-
-            {/* Busca */}
-            <div className="relative w-full sm:w-64">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-600" />
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Buscar..."
-                className="w-full h-9 bg-slate-900/60 border border-slate-800 rounded pl-9 pr-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-purple-500"
-                aria-label="Buscar criaturas"
-              />
-            </div>
-          </div>
-
-          <BulkActionBar
-            count={selected.size}
-            folders={manager.folders}
-            onMove={handleBulkMove}
-            onExport={handleExportSelected}
-            onDelete={handleBulkDelete}
-            onClear={clearSelection}
-          />
-
-          {filtered.length === 0 ? (
-            <div className="text-center py-20 border border-dashed border-slate-800 rounded-lg bg-slate-900/30">
-              <Users className="w-10 h-10 text-slate-700 mx-auto mb-3" />
-              <p className="text-sm text-slate-500 mb-4">
-                {search
-                  ? "Nenhuma criatura combina com sua busca."
-                  : view.type === "builtins"
-                    ? "Nenhuma criatura base carregada."
-                    : "Esta pasta está vazia."}
-              </p>
-              {canCreate && !search && (
-                <button
-                  type="button"
-                  onClick={onCreateNew}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded bg-purple-800 hover:bg-purple-700 text-sm font-bold text-white"
-                >
-                  <Plus className="w-4 h-4" /> Criar criatura
-                </button>
-              )}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {filtered.map((c) => (
-                <CreatureCard
-                  key={c.id}
-                  creature={c}
-                  selected={selected.has(c.id)}
-                  viewType={view.type}
-                  folders={manager.folders}
-                  onToggleSelect={toggleSelect}
-                  onOpen={onOpenCreature}
-                  onEdit={onEditCreature}
-                  onDuplicate={handleDuplicate}
-                  onExport={handleExportOne}
-                  onDelete={handleDelete}
-                  onMove={handleMove}
-                />
-              ))}
-            </div>
-          )}
-        </main>
       </div>
 
-      {/* ===== MODAL DE EXPORTAÇÃO ===== */}
-      {exportModal && (
-        <ExportModal
-          creatures={exportModal}
-          onConfirm={handleConfirmExport}
-          onCancel={() => setExportModal(null)}
-        />
-      )}
-
-      {/* ===== CONFIRMAÇÃO DE DELETE ===== */}
-      {confirmDelete && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
-          onClick={() => setConfirmDelete(null)}
-          role="dialog"
-          aria-modal="true"
-        >
-          <div
-            className="bg-slate-900 border border-red-900/60 rounded-lg p-6 max-w-md w-full shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-start gap-3 mb-5">
-              <div className="w-10 h-10 rounded-full bg-red-950/60 border border-red-900/60 flex items-center justify-center flex-shrink-0">
-                <AlertTriangle className="w-5 h-5 text-red-400" />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-white mb-1">Excluir?</h3>
-                <p className="text-sm text-slate-400">
-                  {confirmDelete.type === "one"
-                    ? <><span className="text-slate-200 font-semibold">"{confirmDelete.payload.name}"</span> será removida permanentemente.</>
-                    : <>{confirmDelete.payload.length} criatura(s) serão removidas permanentemente.</>
-                  }
-                </p>
-              </div>
-            </div>
-            <div className="flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setConfirmDelete(null)}
-                className="px-4 py-2 rounded bg-slate-800 hover:bg-slate-700 text-sm font-semibold text-slate-200"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={confirmDeleteAction}
-                className="px-4 py-2 rounded bg-red-800 hover:bg-red-700 text-sm font-semibold text-white"
-                autoFocus
-              >
-                Excluir
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+      {/* ===== DRAG OVERLAY ===== */}
+      <DragOverlay
+        dropAnimation={{
+          duration: 200,
+          easing: "cubic-bezier(0.18, 0.67, 0.6, 1.22)",
+        }}
+      >
+        {activeId && (
+          <CardDragOverlay
+            creature={activeCreature}
+            count={isDraggingMultiple ? selected.size : 1}
+          />
+        )}
+      </DragOverlay>
+    </DndContext>
   );
 }

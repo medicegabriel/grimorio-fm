@@ -77,5 +77,26 @@ export default function useEncounterManager() {
     );
   }, []);
 
-  return { encounters, create, update, remove, duplicate, getById, moveToFolder };
+  const moveManyToFolder = useCallback((ids, folderId) => {
+    const idSet = new Set(ids);
+    setEncounters((prev) =>
+      prev.map((e) =>
+        idSet.has(e.id) ? { ...e, folderId: folderId ?? null, updatedAt: Date.now() } : e
+      )
+    );
+  }, []);
+
+  const reorderEncounters = useCallback((orderedIds) => {
+    setEncounters((prev) => {
+      const idSet = new Set(orderedIds);
+      const idOrder = new Map(orderedIds.map((id, i) => [id, i]));
+      const sortedSubset = prev
+        .filter((e) => idSet.has(e.id))
+        .sort((a, b) => idOrder.get(a.id) - idOrder.get(b.id));
+      let subIdx = 0;
+      return prev.map((e) => (idSet.has(e.id) ? sortedSubset[subIdx++] : e));
+    });
+  }, []);
+
+  return { encounters, create, update, remove, duplicate, getById, moveToFolder, moveManyToFolder, reorderEncounters };
 }

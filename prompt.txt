@@ -1,28 +1,29 @@
-"Claude, o layout da criação de Ações ficou ótimo, mas a UX atual está transferindo o fardo matemático para o usuário e o campo de condições está muito aberto. Precisamos adicionar 'Derived State' (Estado Derivado) para automatizar os cálculos.
+"Claude, precisamos corrigir o alinhamento dos cartões de estatísticas e adicionar a seção de Perícias que foi esquecida na Ficha e nos Encontros.
 
-Refatore a lógica do SectionActions.jsx (ou do componente do formulário de ação) com as seguintes regras:
+Parte 1: Alinhamento das Estatísticas (Ficha e Encontros)
+Os cartõezinhos de Estatísticas de Combate e Testes de Resistência estão com os números tortos.
 
-1. Lista Suspensa de Condições (Select):
-Substitua o input de texto livre 'Nome da Condição' por um <select>. Crie uma constante com a lista de condições padrão do sistema: Abalado, Amedrontado, Apavorado, Atordoado, Caído, Cego, Confuso, Desprevenido, Doente, Em Chamas, Enfeitiçado, Envenenado, Exausto, Fascinado, Fraco, Imóvel, Inconsciente, Lento, Paralisado, Sangrando, Surdo, Vulnerável. (Deixe uma opção 'Outro/Customizado' que abra um input de texto se selecionada).
+Refatore a estrutura de CSS de CADA cartãozinho para forçar a centralização absoluta:
 
-2. Automação do Ataque Físico Narrativo (Matemática de Dados):
-Se o checkbox 'Ataque Físico Narrativo' estiver marcado, o sistema deve subtrair automaticamente 2 do número de dados.
+O contêiner principal do cartão deve ser: flex flex-col items-center justify-center text-center p-3 (ou padding similar).
 
-Crie uma variável derivada: const finalDiceCount = isPhysical ? Math.max(0, baseDiceCount - 2) : baseDiceCount;
+O cabeçalho (Ícone + Label, ex: 'DEFESA') deve estar centralizado: flex items-center justify-center gap-1.5 w-full.
 
-O texto de preview (ex: Rolagem: 2d10+9) e o texto final gerado para a ficha DEVEM usar esse finalDiceCount computado, e não o valor bruto do input.
+O Valor (ex: '65' ou '+40') deve ter mt-2 text-2xl font-bold w-full text-center.
 
-3. Automação do Custo de PE:
-O Custo em PE final deve ser calculado automaticamente se a condição for paga com PE.
+Cuidado especial com a RD Geral: Onde há o valor secundário (ex: 'Irred. 40'), garanta que ele seja um span de bloco logo abaixo do número principal, usando text-xs text-slate-400 mt-1, para não desalinhar o número grande.
 
-Crie uma variável: const finalPE = basePE + custoCondicao;
+Parte 2: Exibição das Perícias
+A ficha não está exibindo as Perícias da criatura em lugar nenhum.
 
-Os custos são: Fraca (+2), Média (+5), Forte (+8), Extrema (+10).
+Adicione uma nova seção chamada 'PERÍCIAS' (use um ícone como Target ou BookOpen do lucide-react), preferencialmente logo após os Testes de Resistência ou Atributos.
 
-Se o usuário selecionar 'Pagar com PE', o campo numérico de 'Custo em PE' no topo do formulário deve ser atualizado ou desabilitado exibindo o valor real total calculado. O texto gerado na ficha deve refletir esse finalPE.
+Renderize as perícias como uma nuvem de Badges compactos para economizar espaço vertical.
 
-4. Alerta Visual de Redução de ND:
-Como a redução de ND depende de consulta à tabela do livro, se o usuário selecionar 'Reduzir ND do Dano' no método de custo, exiba um banner de aviso (AlertTriangle) em destaque logo abaixo avisando: "Atenção: Você selecionou a redução de ND. Lembre-se de ajustar os dados e o dano fixo baseando-se em [1, 2, 3 ou 4] NDs abaixo do ND atual da criatura, conforme a tabela." (Mostre o número correto dependendo da força da condição).
+Contêiner: <div className="flex flex-wrap gap-2 mt-2">
 
-5. Reflexo no Texto Humanizado:
-Garanta que a string final gerada pelo formulário consuma essas variáveis derivadas (finalDiceCount e finalPE), para que a ficha da criatura mostre a matemática já resolvida."
+Badge individual: <span className="px-2 py-1 bg-slate-800/80 border border-slate-700 rounded-md text-sm font-medium text-slate-300">NomeDaPericia +X</span>
+
+Garanta que a Ficha puxe esses dados corretamente do objeto da criatura (seja de creature.skills ou derivadas calculadas).
+
+Aplique isso tanto no preview da Criação quanto na visualização dentro do Combat Tracker!"

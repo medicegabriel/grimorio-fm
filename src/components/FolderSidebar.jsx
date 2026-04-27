@@ -15,6 +15,7 @@ import {
   Library, Inbox, Folder, FolderPlus, Edit3, Trash2,
   MoreVertical, Archive, BookOpen
 } from "lucide-react";
+import { useDroppable } from "@dnd-kit/core";
 import FolderFormModal from "./FolderFormModal";
 
 // ============================================================
@@ -49,12 +50,41 @@ const SYSTEM_VIEW = {
 };
 
 // ============================================================
-// ITEM DE PASTA (com menu de ações)
+// ITEM "SEM PASTA" COM SUPORTE A DROP
+// ============================================================
+const DroppableUnfiledItem = ({ isActive, count, onClick }) => {
+  const { setNodeRef, isOver } = useDroppable({ id: "view_unfiled" });
+  return (
+    <li ref={setNodeRef}>
+      <button
+        type="button"
+        onClick={onClick}
+        className={`w-full flex items-center gap-2 px-3 py-2 rounded text-sm text-left transition-colors focus:outline-none focus:ring-1 focus:ring-purple-500/60 ${
+          isActive
+            ? "bg-purple-950/50 border border-purple-800/60 text-purple-100"
+            : isOver
+            ? "bg-purple-950/30 border border-purple-700/60 text-slate-200 ring-1 ring-purple-500"
+            : "text-slate-300 hover:bg-slate-800/60 border border-transparent"
+        }`}
+      >
+        <Inbox className={`w-4 h-4 flex-shrink-0 ${isActive ? "text-purple-400" : isOver ? "text-purple-400" : "text-slate-400"}`} />
+        <span className="flex-1 truncate font-semibold">Sem Pasta</span>
+        <span className={`text-[10px] tabular-nums ${isActive ? "text-purple-300" : "text-slate-600"}`}>
+          {count}
+        </span>
+      </button>
+    </li>
+  );
+};
+
+// ============================================================
+// ITEM DE PASTA (com menu de ações + droppable)
 // ============================================================
 const FolderItem = ({ folder, isActive, count, onSelect, onRename, onRemove }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuPos, setMenuPos] = useState({ top: 0, right: 0 });
   const btnRef = useRef(null);
+  const { setNodeRef: setDropRef, isOver } = useDroppable({ id: folder.id });
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -76,7 +106,12 @@ const FolderItem = ({ folder, isActive, count, onSelect, onRename, onRemove }) =
   };
 
   return (
-    <li className="group flex items-center gap-1">
+    <li
+      ref={setDropRef}
+      className={`group flex items-center rounded transition-colors ${
+        isOver ? "ring-1 ring-purple-500 bg-purple-950/20" : ""
+      }`}
+    >
       {/* Botão principal de seleção */}
       <button
         type="button"
@@ -84,30 +119,34 @@ const FolderItem = ({ folder, isActive, count, onSelect, onRename, onRemove }) =
         className={`flex-1 min-w-0 flex items-center gap-2 px-3 py-2 rounded text-sm text-left transition-colors focus:outline-none focus:ring-1 focus:ring-purple-500/60 ${
           isActive
             ? "bg-purple-950/50 border border-purple-800/60 text-purple-100"
+            : isOver
+            ? "border border-purple-800/40 text-slate-200"
             : "text-slate-300 hover:bg-slate-800/60 border border-transparent"
         }`}
         aria-current={isActive ? "true" : undefined}
       >
         <Folder className={`w-4 h-4 flex-shrink-0 ${isActive ? "text-purple-400" : "text-slate-500"}`} />
         <span className="flex-1 truncate min-w-0">{folder.name}</span>
-        <span className={`text-[10px] tabular-nums flex-shrink-0 ${
+      </button>
+
+      {/* Slot fixo: número ↔ menu — alternância no hover via group */}
+      <div className="flex-shrink-0 flex items-center justify-center w-8 pr-1">
+        <span className={`block group-hover:hidden text-[10px] tabular-nums ${
           isActive ? "text-purple-300" : "text-slate-600"
         }`}>
           {count}
         </span>
-      </button>
-
-      {/* Botão ⋮ — irmão no flex, nunca sobrepõe o contador */}
-      <button
-        ref={btnRef}
-        type="button"
-        onClick={handleOpenMenu}
-        className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded text-slate-600 opacity-0 group-hover:opacity-100 focus:opacity-100 hover:text-slate-200 hover:bg-slate-800 transition-all focus:outline-none focus:ring-1 focus:ring-purple-500/40"
-        aria-label={`Ações da pasta ${folder.name}`}
-        aria-expanded={menuOpen}
-      >
-        <MoreVertical className="w-3.5 h-3.5" />
-      </button>
+        <button
+          ref={btnRef}
+          type="button"
+          onClick={handleOpenMenu}
+          className="hidden group-hover:flex items-center justify-center w-6 h-6 rounded text-slate-600 hover:text-slate-200 hover:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-purple-500/40"
+          aria-label={`Ações da pasta ${folder.name}`}
+          aria-expanded={menuOpen}
+        >
+          <MoreVertical className="w-3.5 h-3.5" />
+        </button>
+      </div>
 
       {/* Dropdown via portal — escapa do overflow da sidebar */}
       {menuOpen && createPortal(
@@ -152,6 +191,7 @@ export default function FolderSidebar({
   onCreateFolder,
   onRenameFolder,
   onRemoveFolder,
+  showSystemView = true, // false para esconder a seção "Criaturas Base"
   className = "",
 }) {
   const [modalState, setModalState] = useState(null); // { mode, folder? }
@@ -189,30 +229,30 @@ export default function FolderSidebar({
     <aside className={`bg-slate-900/60 border border-slate-800 rounded-lg p-3 ${className}`}>
       {/* Views fixas */}
       <ul className="space-y-1 mb-3">
-        {FIXED_VIEWS.map((v) => {
-          const Icon = v.icon;
-          const active = isActive(v.type);
-          const count = creatureCounts[v.countKey] ?? 0;
-          return (
-            <li key={v.key}>
-              <button
-                type="button"
-                onClick={() => onChangeView({ type: v.type })}
-                className={`w-full flex items-center gap-2 px-3 py-2 rounded text-sm text-left transition-colors focus:outline-none focus:ring-1 focus:ring-purple-500/60 ${
-                  active
-                    ? "bg-purple-950/50 border border-purple-800/60 text-purple-100"
-                    : "text-slate-300 hover:bg-slate-800/60 border border-transparent"
-                }`}
-              >
-                <Icon className={`w-4 h-4 flex-shrink-0 ${active ? "text-purple-400" : v.accent}`} />
-                <span className="flex-1 truncate font-semibold">{v.label}</span>
-                <span className={`text-[10px] tabular-nums ${active ? "text-purple-300" : "text-slate-600"}`}>
-                  {count}
-                </span>
-              </button>
-            </li>
-          );
-        })}
+        {/* "Todas" — não é droppable */}
+        <li>
+          <button
+            type="button"
+            onClick={() => onChangeView({ type: "all" })}
+            className={`w-full flex items-center gap-2 px-3 py-2 rounded text-sm text-left transition-colors focus:outline-none focus:ring-1 focus:ring-purple-500/60 ${
+              isActive("all")
+                ? "bg-purple-950/50 border border-purple-800/60 text-purple-100"
+                : "text-slate-300 hover:bg-slate-800/60 border border-transparent"
+            }`}
+          >
+            <Library className={`w-4 h-4 flex-shrink-0 ${isActive("all") ? "text-purple-400" : "text-slate-300"}`} />
+            <span className="flex-1 truncate font-semibold">Todas</span>
+            <span className={`text-[10px] tabular-nums ${isActive("all") ? "text-purple-300" : "text-slate-600"}`}>
+              {creatureCounts.all ?? 0}
+            </span>
+          </button>
+        </li>
+        {/* "Sem Pasta" — droppable */}
+        <DroppableUnfiledItem
+          isActive={isActive("unfiled")}
+          count={creatureCounts.unfiled ?? 0}
+          onClick={() => onChangeView({ type: "unfiled" })}
+        />
       </ul>
 
       {/* Divisor + pastas customizadas */}
@@ -248,8 +288,8 @@ export default function FolderSidebar({
         </ul>
       )}
 
-      {/* Divisor + pasta do sistema (sempre no rodapé) */}
-      <div className="pt-3 border-t border-slate-800">
+      {/* Divisor + pasta do sistema (opcional) */}
+      {showSystemView && <div className="pt-3 border-t border-slate-800">
         <button
           type="button"
           onClick={() => onChangeView({ type: "builtins" })}
@@ -269,7 +309,7 @@ export default function FolderSidebar({
             {compendiumCount}
           </span>
         </button>
-      </div>
+      </div>}
 
       {modalState && (
         <FolderFormModal
