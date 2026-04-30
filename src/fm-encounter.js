@@ -63,6 +63,7 @@ export const createInitialCombatState = (stats = {}) => ({
   temporaryHp: 0,
   isInDesafiandoMorte: false,
   missCounter: 0,
+  susceptivelFinalizacao: false,
   customCounters: [],
   combatLog: []
 });

@@ -6,10 +6,21 @@ import { useState, useCallback, useMemo } from 'react';
 import {
   Heart, Zap, Shield, Skull, Plus, Minus, ChevronDown, ChevronUp,
   Copy, AlertTriangle, Eye, EyeOff, X, Swords, Dices, RotateCcw,
-  ShieldAlert, Activity, Target, Sparkles, Clock, GraduationCap, Star
+  ShieldAlert, Activity, Target, Sparkles, Clock, GraduationCap, Star,
+  Square, CheckSquare, Crosshair, Sword
 } from 'lucide-react';
 import { createInitialCombatState, applyNewRoundEffects, LOG_TYPES, createLogEntry } from '../fm-encounter';
 import { humanizeAction, ACTION_TYPE_LABELS } from './sections/SectionActions';
+import { getModifier, calculateCD, calculateAcerto } from './fm-tables';
+
+const ATTR_DEFS = [
+  { key: 'forca',        label: 'FOR', accent: 'text-red-400' },
+  { key: 'destreza',     label: 'DES', accent: 'text-emerald-400' },
+  { key: 'constituicao', label: 'CON', accent: 'text-amber-400' },
+  { key: 'inteligencia', label: 'INT', accent: 'text-blue-400' },
+  { key: 'sabedoria',    label: 'SAB', accent: 'text-purple-400' },
+  { key: 'presenca',     label: 'PRE', accent: 'text-pink-400' },
+];
 
 // ============================================================
 // DICIONÁRIOS DE TEMA
@@ -394,6 +405,18 @@ export default function CombatantPanel({
   const core = snapshot.core ?? {};
   const defenses = snapshot.defenses ?? {};
   const skills = snapshot.skills ?? [];
+
+  // CD e Acerto: usa valores salvos ou recalcula a partir dos atributos do snapshot
+  const _attrs = snapshot.attributes ?? {};
+  const _modTecnica = getModifier(Math.max(
+    _attrs.inteligencia ?? 10,
+    _attrs.sabedoria ?? 10,
+    _attrs.presenca ?? 10
+  ));
+  const cdValue = stats.cdBase || calculateCD(core.nd ?? 5, _modTecnica, core.difficulty ?? 'intermediario');
+  const _attackAttr = snapshot.attackAttr ?? 'forca';
+  const _attackMod = getModifier(_attrs[_attackAttr] ?? 10);
+  const acertoValue = stats.acerto || calculateAcerto(core.patamar ?? 'comum', core.nd ?? 5, _attackMod, core.difficulty ?? 'intermediario');
   const actionsList = snapshot.actions?.list ?? [];
   const actionsTotal = snapshot.actions?.total ?? {};
   const features = snapshot.features ?? [];
@@ -402,6 +425,7 @@ export default function CombatantPanel({
   const dotes = snapshot.dotes ?? [];
 
   const [showLog, setShowLog] = useState(false);
+  const [showAtributos, setShowAtributos] = useState(true);
   const [showAcoes, setShowAcoes] = useState(true);
   const [showCaracteristicas, setShowCaracteristicas] = useState(true);
   const [showAptidoes, setShowAptidoes] = useState(false);
@@ -435,7 +459,7 @@ export default function CombatantPanel({
           const remainingDamage = damage - guardaAbsorbed;
           patch({
             guardaInabavalCurrent: currentGuarda - guardaAbsorbed,
-            hpCurrent: Math.max(-999, currentHp - remainingDamage),
+            hpCurrent: currentHp - remainingDamage,
           });
         } else {
           // Cura — aplica direto no HP
@@ -449,7 +473,7 @@ export default function CombatantPanel({
           const overflow = Math.abs(v);
           patch({
             guardaInabavalCurrent: 0,
-            hpCurrent: Math.max(-999, combatState.hpCurrent - overflow),
+            hpCurrent: combatState.hpCurrent - overflow,
           });
         } else {
           const guardaMax = stats.guardaInabavalMax ?? 0;
@@ -467,7 +491,7 @@ export default function CombatantPanel({
     removeCondition: (id) => patch({
       activeConditions: (combatState.activeConditions ?? []).filter((x) => x.id !== id)
     }),
-    setMissCounter: (v) => patch({ missCounter: Math.max(0, Math.min(3, v)) }),
+    setSusceptivel: (v) => patch({ susceptivelFinalizacao: v }),
     toggleDefeated: () => onFlagChange?.('isDefeated', !flags.isDefeated),
     toggleHidden: () => onFlagChange?.('isHidden', !flags.isHidden),
     newRound: () => {
@@ -549,28 +573,34 @@ export default function CombatantPanel({
 
       {/* ===== DESAFIANDO A MORTE BANNER ===== */}
       {inDeathChallenge && !suppressDeathBanner && (
-        <div className="bg-red-950 border border-red-700 rounded-lg px-4 py-2 flex items-center justify-between gap-3 animate-pulse flex-wrap">
-          <div className="flex items-center gap-2">
-            <Skull className="w-5 h-5 text-red-300" />
-            <span className="text-sm font-bold text-red-200">
-              DESAFIANDO A MORTE — Teste de Fortitude CD {deathCD}
+        <div className="bg-red-950/80 border-2 border-red-700 rounded-lg p-4 space-y-3">
+          <div className="flex items-center gap-2 flex-wrap">
+            <Skull className="w-5 h-5 text-red-300 animate-pulse" />
+            <span className="text-base font-black text-red-200 uppercase tracking-wide">
+              ☠️ Desafiando a Morte
+            </span>
+            <span className="ml-auto px-2.5 py-1 rounded-full bg-red-900 border border-red-600 text-red-100 text-sm font-bold">
+              Fortitude CD {deathCD}
             </span>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] text-red-300/80 uppercase tracking-wider font-bold">Falhas</span>
-            <div className="flex gap-1">
-              {[1, 2, 3].map((n) => (
-                <button key={n} type="button"
-                  onClick={() => handlers.setMissCounter(combatState.missCounter === n ? n - 1 : n)}
-                  className={`w-6 h-6 rounded-full border-2 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500/60 ${
-                    combatState.missCounter >= n
-                      ? 'bg-red-600 border-red-400'
-                      : 'bg-transparent border-red-900/60 hover:border-red-700'
-                  }`}
-                  aria-label={`Falha ${n}`} />
-              ))}
-            </div>
-          </div>
+          <button
+            type="button"
+            onClick={() => handlers.setSusceptivel(!(combatState.susceptivelFinalizacao ?? false))}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg border font-bold text-sm transition-all focus:outline-none focus:ring-2 focus:ring-red-500/60 ${
+              combatState.susceptivelFinalizacao
+                ? 'bg-red-600 hover:bg-red-500 border-red-400 text-white'
+                : 'bg-slate-800/60 hover:bg-slate-700 border-slate-700 text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            {combatState.susceptivelFinalizacao
+              ? <CheckSquare className="w-5 h-5 flex-shrink-0" />
+              : <Square className="w-5 h-5 flex-shrink-0" />}
+            <span>
+              {combatState.susceptivelFinalizacao
+                ? '⚠️ VULNERÁVEL À FINALIZAÇÃO (1 Ação Completa)'
+                : 'Marcar como Suscetível a Finalização'}
+            </span>
+          </button>
         </div>
       )}
 
@@ -593,13 +623,15 @@ export default function CombatantPanel({
           <Activity className="w-3.5 h-3.5" /> Estatísticas de Combate
         </h3>
         <div className="flex flex-wrap gap-2">
-          <StatBlock icon={Shield} label="Defesa" value={stats.defesa ?? 0} accent="text-sky-400" />
-          <StatBlock icon={Eye}    label="Atenção" value={stats.atencao ?? 0} accent="text-amber-400" />
-          <StatBlock icon={Target} label="Iniciativa" value={`+${stats.iniciativa ?? 0}`} accent="text-emerald-400" />
-          <StatBlock icon={Shield} label="RD Geral" value={stats.rdGeral ?? 0}
+          <StatBlock icon={Shield}     label="Defesa"       value={stats.defesa ?? 0}           accent="text-sky-400" />
+          <StatBlock icon={Eye}        label="Atenção"      value={stats.atencao ?? 0}          accent="text-amber-400" />
+          <StatBlock icon={Target}     label="Iniciativa"   value={`+${stats.iniciativa ?? 0}`} accent="text-emerald-400" />
+          <StatBlock icon={Crosshair}   label="CD"          value={cdValue}                     accent="text-orange-400" />
+          <StatBlock icon={Sword}       label="Acerto"      value={`+${acertoValue}`}            accent="text-red-400" />
+          <StatBlock icon={Shield}     label="RD Geral"     value={stats.rdGeral ?? 0}
             sublabel={`Irred. ${stats.rdIrredutivel ?? 0}`} accent="text-slate-400" />
-          <StatBlock icon={Swords} label="Ignorar RD" value={stats.ignorarRd ?? 0} accent="text-red-400" />
-          <StatBlock icon={Heart}  label="Vida Temp/Atq" value={stats.vidaTempPorAtaque ?? 0} accent="text-rose-300" />
+          <StatBlock icon={Swords}     label="Ignorar RD"   value={stats.ignorarRd ?? 0}        accent="text-red-400" />
+          <StatBlock icon={Heart}      label="Vida Temp/Atq" value={stats.vidaTempPorAtaque ?? 0} accent="text-rose-300" />
         </div>
       </section>
 
@@ -617,6 +649,34 @@ export default function CombatantPanel({
             <StatBlock icon={Sparkles} label="Integridade" value={`+${saves.integridade}`} accent="text-fuchsia-400" />
           )}
         </div>
+      </section>
+
+      {/* ===== ATRIBUTOS & CD ===== */}
+      <section aria-label="Atributos Base">
+        <button type="button" onClick={() => setShowAtributos((v) => !v)}
+          className="w-full flex items-center justify-between mb-2 hover:text-slate-300 focus:outline-none focus:ring-1 focus:ring-purple-500/40 rounded"
+          aria-expanded={showAtributos}>
+          <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
+            <Activity className="w-3.5 h-3.5" /> Atributos Base
+          </h3>
+          {showAtributos ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
+        </button>
+        {showAtributos && (
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+            {ATTR_DEFS.map(({ key, label, accent }) => {
+              const value = snapshot.attributes?.[key] ?? 10;
+              const mod = getModifier(value);
+              const modStr = mod >= 0 ? `+${mod}` : `${mod}`;
+              return (
+                <div key={key} className="bg-slate-900/60 border border-slate-800 rounded-md p-2 flex flex-col items-center justify-center text-center">
+                  <span className={`text-[10px] uppercase tracking-wider font-bold ${accent}`}>{label}</span>
+                  <span className="text-xl font-bold text-white tabular-nums mt-1">{value}</span>
+                  <span className="text-xs text-slate-400">{modStr}</span>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </section>
 
       {/* ===== PERÍCIAS ===== */}

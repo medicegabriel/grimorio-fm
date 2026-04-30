@@ -38,6 +38,8 @@ export const blankDraft = () => ({
     presenca: 10,
   },
   aptidoes: { ea: 0, cl: 0, bar: 0, dom: 0, er: 0 },
+  attackAttr: 'forca',
+  cdAttr: 'inteligencia',
   overrides: { stats: {}, saves: {} },
   skills: [],
   defenses: {
@@ -69,6 +71,8 @@ const actionHandlers = {
   HYDRATE: (_, payload) => ({
     ...payload,
     portraitUrl: payload.portraitUrl || "",
+    attackAttr: payload.attackAttr || 'forca',
+    cdAttr: payload.cdAttr || 'inteligencia',
     skills: normalizeSkills(payload.skills),
     treinamentos: payload.treinamentos || [],
     aptidoesEspeciais: payload.aptidoesEspeciais || [],
@@ -87,8 +91,11 @@ const actionHandlers = {
 
   SET_ATTRIBUTE: (s, { attr, value }) => ({
     ...s,
-    attributes: { ...s.attributes, [attr]: Math.max(0, Math.min(99, value)) },
+    attributes: { ...s.attributes, [attr]: Math.max(8, Math.min(99, value)) },
   }),
+
+  SET_ATTACK_ATTR: (s, payload) => ({ ...s, attackAttr: payload }),
+  SET_CD_ATTR:     (s, payload) => ({ ...s, cdAttr: payload }),
 
   SET_APTIDAO: (s, { key, value }) => ({
     ...s,
@@ -264,6 +271,8 @@ export default function useCreatureBuilder(initialDraft = null) {
     draft.attributes,
     draft.overrides,
     draft.skills,
+    draft.attackAttr,
+    draft.cdAttr,
   ]);
 
   const warnings = useMemo(() => validateDraft(draft, derived), [draft, derived]);
@@ -278,6 +287,8 @@ export default function useCreatureBuilder(initialDraft = null) {
 
     setAttribute:  useCallback((attr, value) =>
       dispatch({ type: "SET_ATTRIBUTE", payload: { attr, value } }), []),
+    setAttackAttr: useCallback((v) => dispatch({ type: "SET_ATTACK_ATTR", payload: v }), []),
+    setCdAttr:     useCallback((v) => dispatch({ type: "SET_CD_ATTR",     payload: v }), []),
     setAptidao:    useCallback((key, value) =>
       dispatch({ type: "SET_APTIDAO", payload: { key, value } }), []),
 
@@ -343,6 +354,8 @@ export default function useCreatureBuilder(initialDraft = null) {
     return {
       ...draft,
       core: { ...draft.core, bonusTreinamento: derived.bt },
+      attackAttr: draft.attackAttr,
+      cdAttr: draft.cdAttr,
       stats: { ...derived.stats },
       saves: { ...derived.saves },
       skills: skillsResolved,

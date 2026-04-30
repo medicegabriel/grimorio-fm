@@ -55,6 +55,7 @@ export default function SectionAttributes({ draft, derived, actions }) {
                   <span className="text-slate-600 ml-1 font-normal">{label}</span>
                 </FieldLabel>
                 <span className={`text-sm font-mono tabular-nums ${
+                  isOverLimit ? "text-red-400 font-bold" :
                   mod > 0 ? "text-emerald-400" : mod < 0 ? "text-red-400" : "text-slate-500"
                 }`}>
                   {modStr}
@@ -63,13 +64,36 @@ export default function SectionAttributes({ draft, derived, actions }) {
               <NumberInput
                 value={value}
                 onChange={(v) => actions.setAttribute(key, v)}
-                min={1}
-                max={attrBudget.limit + 5}
+                min={8}
+                max={99}
               />
             </div>
           );
         })}
       </div>
+
+      {attrBudget.remaining < 0 && (
+        <div className="flex items-start gap-2 px-3 py-2.5 rounded border bg-amber-950/30 border-amber-700 text-amber-300 text-xs">
+          <span className="text-base leading-none flex-shrink-0">⚠️</span>
+          <span>
+            Os atributos distribuídos ultrapassam o limite padrão para o Grau e Nível desta criatura.
+            {Object.entries(draft.attributes).some(([k, v]) => v > attrBudget.limit) && (
+              <span className="block mt-0.5 text-red-300">
+                Um ou mais atributos excedem o limite individual de <b>{attrBudget.limit}</b>.
+              </span>
+            )}
+          </span>
+        </div>
+      )}
+      {attrBudget.remaining >= 0 &&
+        Object.entries(draft.attributes).some(([k, v]) => v > attrBudget.limit) && (
+        <div className="flex items-start gap-2 px-3 py-2.5 rounded border bg-red-950/30 border-red-700 text-red-300 text-xs">
+          <span className="text-base leading-none flex-shrink-0">⚠️</span>
+          <span>
+            Um ou mais atributos excedem o limite individual de <b>{attrBudget.limit}</b> para este Grau/ND.
+          </span>
+        </div>
+      )}
     </div>
   );
 }

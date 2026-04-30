@@ -4,11 +4,11 @@ import { PATAMAR_ND_RANGE, PATAMAR_LABELS, DIFFICULTY_LABELS } from "../fm-table
 
 // Dicionários de opções — centralizados aqui
 const GRAU_OPTIONS = [
-  { value: "4", label: "4° Grau — Fraca" },
-  { value: "3", label: "3° Grau — Básica" },
-  { value: "2", label: "2° Grau — Moderada" },
-  { value: "1", label: "1° Grau — Perigosa" },
-  { value: "especial", label: "Grau Especial — Lendária" },
+  { value: "4", label: "4º Grau" },
+  { value: "3", label: "3º Grau" },
+  { value: "2", label: "2º Grau" },
+  { value: "1", label: "1º Grau" },
+  { value: "especial", label: "Grau Especial" },
 ];
 
 const SIZE_OPTIONS = [

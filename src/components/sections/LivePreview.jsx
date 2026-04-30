@@ -1,9 +1,18 @@
 import React, { useState, useEffect } from "react";
 import {
-  Heart, Zap, Shield, Eye, Target, ShieldAlert, Sparkles, Star, GraduationCap,
+  Heart, Zap, Shield, Eye, Target, ShieldAlert, Sparkles, Star, GraduationCap, Crosshair, Sword,
 } from "lucide-react";
-import { PATAMAR_LABELS } from "../fm-tables";
+import { PATAMAR_LABELS, getModifier } from "../fm-tables";
 import { humanizeAction } from "./SectionActions";
+
+const ATTR_PREVIEW = [
+  { key: "forca",        label: "FOR", accent: "text-red-400" },
+  { key: "destreza",     label: "DES", accent: "text-emerald-400" },
+  { key: "constituicao", label: "CON", accent: "text-amber-400" },
+  { key: "inteligencia", label: "INT", accent: "text-blue-400" },
+  { key: "sabedoria",    label: "SAB", accent: "text-purple-400" },
+  { key: "presenca",     label: "PRE", accent: "text-pink-400" },
+];
 
 /**
  * LivePreview v2 — Retrato no topo + perícias dominadas no rodapé.
@@ -65,6 +74,10 @@ export default function LivePreview({ draft, derived }) {
               <span className="text-[10px] text-slate-500">ND {draft.core.nd}</span>
               <span className="text-[10px] text-slate-600">•</span>
               <span className="text-[10px] text-slate-500">BT +{bt}</span>
+              <span className="text-[10px] text-slate-600">•</span>
+              <span className="text-[10px] font-bold text-purple-300 bg-purple-950/50 border border-purple-800 rounded px-1.5 py-0.5">
+                CD {derived.cdBase}
+              </span>
             </div>
             <h4 className="font-bold text-white text-base truncate">
               {draft.name || "Sem nome"}
@@ -84,6 +97,8 @@ export default function LivePreview({ draft, derived }) {
           <MiniStat icon={Eye}         label="Atenção"  value={stats.atencao}          accent="text-amber-400" />
           <MiniStat icon={Target}      label="Iniciat." value={`+${stats.iniciativa}`} accent="text-emerald-400" />
           <MiniStat icon={ShieldAlert} label="Guarda"   value={stats.guardaInabavalMax} accent="text-sky-300" />
+          <MiniStat icon={Crosshair}   label="CD"       value={derived.cdBase}          accent="text-orange-400" />
+          <MiniStat icon={Sword}       label="Acerto"   value={`+${derived.acertoPrincipal}`} accent="text-red-400" />
         </div>
 
         {/* TR */}
@@ -98,6 +113,27 @@ export default function LivePreview({ draft, derived }) {
                 <div className="text-xs font-mono text-white">+{saves[k]}</div>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* Atributos Base */}
+        <div>
+          <h5 className="text-[10px] uppercase tracking-widest text-slate-500 mb-1 font-bold">
+            Atributos Base
+          </h5>
+          <div className="grid grid-cols-6 gap-1">
+            {ATTR_PREVIEW.map(({ key, label, accent }) => {
+              const value = draft.attributes[key] ?? 10;
+              const mod = getModifier(value);
+              const modStr = mod >= 0 ? `+${mod}` : `${mod}`;
+              return (
+                <div key={key} className="bg-slate-950/60 border border-slate-800 rounded px-1 py-1.5 flex flex-col items-center justify-center text-center">
+                  <span className={`text-[9px] font-bold ${accent}`}>{label}</span>
+                  <span className="text-xs font-bold text-white tabular-nums">{value}</span>
+                  <span className="text-[9px] text-slate-400">{modStr}</span>
+                </div>
+              );
+            })}
           </div>
         </div>
 

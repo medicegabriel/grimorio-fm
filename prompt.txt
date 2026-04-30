@@ -1,29 +1,56 @@
-"Claude, precisamos corrigir o alinhamento dos cartões de estatísticas e adicionar a seção de Perícias que foi esquecida na Ficha e nos Encontros.
+"Claude, precisamos revisar e corrigir os valores baseados em nível e os multiplicadores matemáticos para o Patamar 'Lacaio'. Analisei a tabela oficial e notei algumas inconsistências na implementação atual.
 
-Parte 1: Alinhamento das Estatísticas (Ficha e Encontros)
-Os cartõezinhos de Estatísticas de Combate e Testes de Resistência estão com os números tortos.
+Refatore a base de dados/fórmulas do Patamar 'Lacaio' usando EXATAMENTE os valores abaixo:
 
-Refatore a estrutura de CSS de CADA cartãozinho para forçar a centralização absoluta:
+1. Regras Fixas (Hardcoded) para Lacaios:
 
-O contêiner principal do cartão deve ser: flex flex-col items-center justify-center text-center p-3 (ou padding similar).
+Atributos (Total): 20 + ND
 
-O cabeçalho (Ícone + Label, ex: 'DEFESA') deve estar centralizado: flex items-center justify-center gap-1.5 w-full.
+Limite Máximo por Atributo: 20
 
-O Valor (ex: '65' ou '+40') deve ter mt-2 text-2xl font-bold w-full text-center.
+Vida Máxima: 10 + (Modificador de Constituição * 2) (Para todas as NDs de 1 a 10)
 
-Cuidado especial com a RD Geral: Onde há o valor secundário (ex: 'Irred. 40'), garanta que ele seja um span de bloco logo abaixo do número principal, usando text-xs text-slate-400 mt-1, para não desalinhar o número grande.
+PE (Pontos de Energia): 0
 
-Parte 2: Exibição das Perícias
-A ficha não está exibindo as Perícias da criatura em lugar nenhum.
+RD (Geral) e Ignorar RD: 0
 
-Adicione uma nova seção chamada 'PERÍCIAS' (use um ícone como Target ou BookOpen do lucide-react), preferencialmente logo após os Testes de Resistência ou Atributos.
+Atenção: Apenas o bônus de Percepção (sem somar ND).
 
-Renderize as perícias como uma nuvem de Badges compactos para economizar espaço vertical.
+Iniciativa: Apenas o Modificador de Destreza (sem somar ND).
 
-Contêiner: <div className="flex flex-wrap gap-2 mt-2">
+Defesa: 10 + Mod de Destreza
 
-Badge individual: <span className="px-2 py-1 bg-slate-800/80 border border-slate-700 rounded-md text-sm font-medium text-slate-300">NomeDaPericia +X</span>
+Restrições OBRIGATÓRIAS: Lacaios não recebem RD Irredutível, Vida Temporária por Ataque, Vantagens, Resistências e Imunidades. Zere ou oculte esses campos se o patamar for Lacaio.
 
-Garanta que a Ficha puxe esses dados corretamente do objeto da criatura (seja de creature.skills ou derivadas calculadas).
+2. Fórmulas de Combate e Perícias:
 
-Aplique isso tanto no preview da Criação quanto na visualização dentro do Combat Tracker!"
+Quantidade de Perícias: Maior Modificador Mental.
+
+Perícias Não Dominadas: ND + Modificador do Atributo da perícia.
+
+Testes de Resistência (TR): ND + Modificador do Atributo correspondente.
+
+Acerto: ND + Modificador do Atributo Base de Acerto (aquele selecionável que implementamos).
+
+CD (Iniciante): ND + Math.floor(Modificador do Atributo Base da CD / 2).
+
+CD (Inter/Exp): ND + Modificador do Atributo Base da CD.
+
+3. Mapeamento Irregular (Use um Objeto/Switch Case):
+Para os valores que não seguem uma fórmula linear (Perícias Dominadas e Dano), use o mapeamento exato abaixo, onde a chave é a ND (1 a 10):
+
+JavaScript
+const lacaioProgression = {
+  1: { periciasDominadasBase: 3, danoMedio: 3, dadoDano: "1d4+1" },
+  2: { periciasDominadasBase: 4, danoMedio: 3, dadoDano: "1d4+1" },
+  3: { periciasDominadasBase: 5, danoMedio: 6, dadoDano: "1d6+3" },
+  4: { periciasDominadasBase: 6, danoMedio: 7, dadoDano: "2d4+3" },
+  5: { periciasDominadasBase: 8, danoMedio: 17, dadoDano: "2d10+6" },
+  6: { periciasDominadasBase: 9, danoMedio: 20, dadoDano: "2d10+9" },
+  7: { periciasDominadasBase: 10, danoMedio: 23, dadoDano: "2d12+10" },
+  8: { periciasDominadasBase: 11, danoMedio: 26, dadoDano: "3d8+13" },
+  9: { periciasDominadasBase: 13, danoMedio: 29, dadoDano: "3d10+13" },
+  10: { periciasDominadasBase: 14, danoMedio: 32, dadoDano: "4d8+14" }
+};
+// Fórmula final para Perícias Dominadas = periciasDominadasBase + Mod de Atributo
+Substitua a lógica atual de Lacaios no calculador de status (calculatedValues ou similar) por estas métricas para garantir 100% de precisão com o livro de regras!"

@@ -34,7 +34,7 @@ const getHighestMentalMod = (attrs) => {
 const lookup = (table, patamar, nd) => table?.[patamar]?.[nd] ?? 0;
 
 export function deriveStats(raw) {
-  const { core, attributes, overrides = {}, skills = [] } = raw;
+  const { core, attributes, overrides = {}, skills = [], attackAttr = 'forca', cdAttr = null } = raw;
   const { patamar, nd, difficulty = "iniciante", size = "medio" } = core;
 
   const bt = getBonusTreinamento(nd);
@@ -52,6 +52,11 @@ export function deriveStats(raw) {
   const deslocMultiplier = getDeslocamentoMultiplier(nd, patamar);
   const deslocamentoCalc = sizeInfo.deslocamento * deslocMultiplier;
 
+  // Calcula antes para incluir no sistema de overrides
+  const cdModAttr = cdAttr ? mods[cdAttr] ?? 0 : modTecnica;
+  const cdBaseCalc = calculateCD(nd, cdModAttr, difficulty, patamar);
+  const acertoCalc = calculateAcerto(patamar, nd, mods[attackAttr] ?? mods.forca, difficulty);
+
   const calculated = {
     hpMax: calculateHP(patamar, nd, attributes.constituicao),
     peMax: calculatePE(patamar, nd),
@@ -67,22 +72,20 @@ export function deriveStats(raw) {
     vidaTempPorAtaque: lookup(VIDA_TEMP_ATAQUE, patamar, nd),
     resistenciaParcialMax: calculateResistenciaParcial(patamar, nd),
     resistenciaTotalMax: calculateResistenciaTotal(patamar, nd),
+    cdBase: cdBaseCalc,
+    acerto: acertoCalc,
   };
 
   const saves = {};
   for (const [saveName, attrKey] of Object.entries(SAVE_ATTRS)) {
-    saves[saveName] = calculateTR(nd, mods[attrKey], difficulty);
+    saves[saveName] = calculateTR(nd, mods[attrKey], difficulty, patamar);
   }
-
-  const cdBase = calculateCD(nd, modTecnica, difficulty);
-  const acertoPrincipalFor = calculateAcerto(patamar, nd, mods.forca, difficulty);
-  const acertoPrincipalDes = calculateAcerto(patamar, nd, mods.destreza, difficulty);
 
   const actionsTotal = calculateActions(patamar, nd);
 
   const attrBudget = {
     total: getAttributePoints(patamar, nd, bt),
-    spent: Object.values(attributes).reduce((sum, v) => sum + (v - 8), 0),
+    spent: Object.values(attributes).reduce((sum, v) => sum + (v - 10), 0),
     limit: ATTRIBUTE_LIMIT[patamar] ?? 26,
   };
   attrBudget.remaining = attrBudget.total - attrBudget.spent;
@@ -107,8 +110,8 @@ export function deriveStats(raw) {
   for (const sk of skills) {
     const attrMod = mods[sk.attribute] ?? 0;
     const calcMod = sk.mastered
-      ? calculatePericiaDominada(nd, attrMod)
-      : calculatePericiaComum(nd, attrMod);
+      ? calculatePericiaDominada(nd, attrMod, patamar)
+      : calculatePericiaComum(nd, attrMod, patamar);
     const finalMod = sk.overrideMod != null ? sk.overrideMod : calcMod;
     skillDerivations[sk.id] = {
       attrMod,
@@ -125,21 +128,21 @@ export function deriveStats(raw) {
     calculated,
     stats: finalStats,
     saves: finalSaves,
-    cdBase,
-    acertoPrincipal: { forca: acertoPrincipalFor, destreza: acertoPrincipalDes },
+    cdBase: finalStats.cdBase,
+    acertoPrincipal: finalStats.acerto,
     actionsTotal,
     attrBudget,
     pericias: {
-      comum: (attrMod) => calculatePericiaComum(nd, attrMod),
-      dominada: (attrMod) => calculatePericiaDominada(nd, attrMod),
+      comum:    (attrMod) => calculatePericiaComum(nd, attrMod, patamar),
+      dominada: (attrMod) => calculatePericiaDominada(nd, attrMod, patamar),
     },
-    skillDerivations, // NOVO
+    skillDerivations,
   };
 }
 
 function calcAtencao(patamar, nd, sabedoria) {
   const modSab = getModifier(sabedoria);
-  const bonusPericia = calculatePericiaComum(nd, modSab);
+  const bonusPericia = calculatePericiaComum(nd, modSab, patamar);
   const table = {
     lacaio: () => 10 + modSab,
     capanga: () => bonusPericia + 5,
@@ -150,13 +153,15 @@ function calcAtencao(patamar, nd, sabedoria) {
   return table[patamar]?.() ?? 10;
 }
 
+// Iniciativa Calamidade tem cap em "20 + metade do Mod" (PDF p.45).
 function calcIniciativa(patamar, nd, modDex) {
+  const halfDex = Math.floor(modDex / 2);
   const table = {
-    lacaio: () => modDex,
-    capanga: () => nd + Math.floor(modDex / 2),
-    comum: () => nd + Math.floor(modDex / 2),
-    desafio: () => nd + Math.floor(modDex / 2),
-    calamidade: () => Math.min(20 + modDex, nd + Math.floor(modDex / 2)),
+    lacaio:     () => modDex,
+    capanga:    () => nd + halfDex,
+    comum:      () => nd + halfDex,
+    desafio:    () => nd + halfDex,
+    calamidade: () => Math.min(20, nd) + halfDex,
   };
   return table[patamar]?.() ?? modDex;
 }

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Zap, Lock, Unlock, Info } from "lucide-react";
 
 /**
@@ -41,38 +41,78 @@ export const TextArea = ({ value, onChange, rows = 3, placeholder, ...rest }) =>
   />
 );
 
-// ---------- Número com stepper ----------
-export const NumberInput = ({ value, onChange, min, max, step = 1 }) => (
-  <div className="flex items-center">
-    <button
-      onClick={() => onChange(Math.max(min ?? -Infinity, (value ?? 0) - step))}
-      className="w-9 h-9 rounded-l bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-bold focus:outline-none focus:z-10 focus:ring-1 focus:ring-purple-500"
-      type="button"
-      aria-label="Diminuir"
-    >
-      −
-    </button>
-    <input
-      type="number"
-      value={value ?? ""}
-      onChange={(e) => {
-        const n = parseInt(e.target.value, 10);
-        onChange(Number.isFinite(n) ? n : 0);
-      }}
-      min={min}
-      max={max}
-      className="w-full h-9 bg-slate-950 border-y border-slate-700 px-2 text-center text-sm text-white font-mono focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 focus:z-10 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-    />
-    <button
-      onClick={() => onChange(Math.min(max ?? Infinity, (value ?? 0) + step))}
-      className="w-9 h-9 rounded-r bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-bold focus:outline-none focus:z-10 focus:ring-1 focus:ring-purple-500"
-      type="button"
-      aria-label="Aumentar"
-    >
-      +
-    </button>
-  </div>
-);
+// ---------- Número com stepper (commit-on-blur) ----------
+export const NumberInput = ({ value, onChange, min, max, step = 1 }) => {
+  const [inputValue, setInputValue] = useState(String(value ?? ''));
+  const focused = useRef(false);
+
+  // Sincroniza com o prop externo apenas quando o campo não está em foco
+  useEffect(() => {
+    if (!focused.current) {
+      setInputValue(String(value ?? ''));
+    }
+  }, [value]);
+
+  const commit = (raw) => {
+    const n = parseInt(raw, 10);
+    let final;
+    if (!Number.isFinite(n)) {
+      final = min ?? 0;
+    } else if (min !== undefined && n < min) {
+      final = min;
+    } else if (max !== undefined && n > max) {
+      final = max;
+    } else {
+      final = n;
+    }
+    setInputValue(String(final));
+    onChange(final);
+  };
+
+  // Valor base para os botões: o que está na caixa, ou o prop se inválido
+  const baseNum = () => {
+    const n = parseInt(inputValue, 10);
+    return Number.isFinite(n) ? n : (value ?? 0);
+  };
+
+  return (
+    <div className="flex items-center">
+      <button
+        onClick={() => {
+          const next = Math.max(min ?? -Infinity, baseNum() - step);
+          setInputValue(String(next));
+          onChange(next);
+        }}
+        className="w-9 h-9 rounded-l bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-bold focus:outline-none focus:z-10 focus:ring-1 focus:ring-purple-500"
+        type="button"
+        aria-label="Diminuir"
+      >
+        −
+      </button>
+      <input
+        type="number"
+        value={inputValue}
+        onChange={(e) => setInputValue(e.target.value)}
+        onFocus={() => { focused.current = true; }}
+        onBlur={() => { focused.current = false; commit(inputValue); }}
+        onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur(); }}
+        className="w-full h-9 bg-slate-950 border-y border-slate-700 px-2 text-center text-sm text-white font-mono focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 focus:z-10 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+      />
+      <button
+        onClick={() => {
+          const next = Math.min(max ?? Infinity, baseNum() + step);
+          setInputValue(String(next));
+          onChange(next);
+        }}
+        className="w-9 h-9 rounded-r bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-bold focus:outline-none focus:z-10 focus:ring-1 focus:ring-purple-500"
+        type="button"
+        aria-label="Aumentar"
+      >
+        +
+      </button>
+    </div>
+  );
+};
 
 // ---------- Select ----------
 export const Select = ({ value, onChange, options, placeholder }) => (

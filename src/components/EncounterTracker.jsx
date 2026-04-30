@@ -6,7 +6,7 @@ import { createPortal } from 'react-dom';
 import {
   ArrowLeft, Plus, X, Dices, Play, Pause, SkipForward, Clock,
   Users, UserPlus, Search, Swords, Trophy, Skull, Eye, EyeOff,
-  Copy, ChevronDown, ChevronUp, Edit3, Shield
+  Copy, ChevronDown, ChevronUp, Edit3, Shield, Square, CheckSquare
 } from 'lucide-react';
 import CombatantPanel from './CombatantPanel';
 import useEncounter from '../useEncounter';
@@ -617,12 +617,11 @@ const EncounterActive = ({ encounter, derived, actions, creatures, folders = [],
   const deathCD = inDeathChallenge
     ? 25 + Math.floor(Math.abs(Math.min(0, focusedCS.hpCurrent)) / 50)
     : 0;
-  const missCounter = focusedCS?.missCounter ?? 0;
-  const setMissCounter = (v) =>
-    actions.updateCombatState(focusedCombatant.id, {
-      ...focusedCS,
-      missCounter: Math.max(0, Math.min(3, v)),
-    });
+  const susceptivelFinalizacao = focusedCS?.susceptivelFinalizacao ?? false;
+  const setSusceptivel = (v) => {
+    if (!focusedCS) return;
+    actions.updateCombatState(focusedCombatant.id, { ...focusedCS, susceptivelFinalizacao: v });
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-purple-950/30 text-white">
@@ -706,28 +705,34 @@ const EncounterActive = ({ encounter, derived, actions, creatures, folders = [],
           <div className="lg:col-span-3 space-y-4">
             {/* ===== DESAFIANDO A MORTE BANNER ===== */}
             {inDeathChallenge && (
-              <div className="bg-red-950 border border-red-700 rounded-lg px-4 py-2 flex items-center justify-between gap-3 animate-pulse flex-wrap">
-                <div className="flex items-center gap-2">
-                  <Skull className="w-5 h-5 text-red-300" />
-                  <span className="text-sm font-bold text-red-200">
-                    DESAFIANDO A MORTE — Teste de Fortitude CD {deathCD}
+              <div className="bg-red-950/80 border-2 border-red-700 rounded-lg p-4 space-y-3">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Skull className="w-5 h-5 text-red-300 animate-pulse" />
+                  <span className="text-base font-black text-red-200 uppercase tracking-wide">
+                    ☠️ Desafiando a Morte
+                  </span>
+                  <span className="ml-auto px-2.5 py-1 rounded-full bg-red-900 border border-red-600 text-red-100 text-sm font-bold">
+                    Fortitude CD {deathCD}
                   </span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-red-300/80 uppercase tracking-wider font-bold">Falhas</span>
-                  <div className="flex gap-1">
-                    {[1, 2, 3].map((n) => (
-                      <button key={n} type="button"
-                        onClick={() => setMissCounter(missCounter === n ? n - 1 : n)}
-                        className={`w-6 h-6 rounded-full border-2 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500/60 ${
-                          missCounter >= n
-                            ? 'bg-red-600 border-red-400'
-                            : 'bg-transparent border-red-900/60 hover:border-red-700'
-                        }`}
-                        aria-label={`Falha ${n}`} />
-                    ))}
-                  </div>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setSusceptivel(!susceptivelFinalizacao)}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg border font-bold text-sm transition-all focus:outline-none focus:ring-2 focus:ring-red-500/60 ${
+                    susceptivelFinalizacao
+                      ? 'bg-red-600 hover:bg-red-500 border-red-400 text-white'
+                      : 'bg-slate-800/60 hover:bg-slate-700 border-slate-700 text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  {susceptivelFinalizacao
+                    ? <CheckSquare className="w-5 h-5 flex-shrink-0" />
+                    : <Square className="w-5 h-5 flex-shrink-0" />}
+                  <span>
+                    {susceptivelFinalizacao
+                      ? '⚠️ VULNERÁVEL À FINALIZAÇÃO (1 Ação Completa)'
+                      : 'Marcar como Suscetível a Finalização'}
+                  </span>
+                </button>
               </div>
             )}
 
