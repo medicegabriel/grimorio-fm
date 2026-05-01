@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { Plus, Trash2, Copy, Swords, Info, AlertTriangle } from "lucide-react";
+import { Plus, Trash2, Copy, Swords, Info, AlertTriangle, Lock, Unlock } from "lucide-react";
 import { FieldLabel, TextInput, TextArea, Select, NumberInput, SmallButton, Pill } from "../builder-controls";
-import { getDamage } from "../fm-tables";
+import { getDamage, PATAMAR_ND_RANGE, CONDITIONS } from "../fm-tables";
 
 // ============================================================
 // CONSTANTES
@@ -27,6 +27,11 @@ const ATTACK_TYPE_OPTIONS = [
   { value: "suporte",       label: "Suporte / Defesa (sem dano)" },
 ];
 
+const NARRATIVE_OPTIONS = [
+  { value: "padrao", label: "Arma / Padrão" },
+  { value: "fisica",  label: "Narrativa Física (Soco, Chute...)" },
+];
+
 const TR_TYPE_OPTIONS = [
   { value: "fortitude",   label: "Fortitude" },
   { value: "reflexos",    label: "Reflexos" },
@@ -40,26 +45,23 @@ const TR_TYPE_LABELS = {
   astucia: "Astúcia", integridade: "Integridade",
 };
 
-const DAMAGE_TYPE_OPTIONS = [
-  { value: "cortante",            label: "Cortante" },
-  { value: "perfurante",          label: "Perfurante" },
-  { value: "impacto",             label: "Impacto" },
-  { value: "queimante",           label: "Queimante" },
-  { value: "congelante",          label: "Congelante" },
-  { value: "chocante",            label: "Chocante" },
-  { value: "psiquico",            label: "Psíquico" },
-  { value: "sonoro",              label: "Sonoro" },
-  { value: "corrosivo",           label: "Corrosivo" },
-  { value: "radiante",            label: "Radiante" },
-  { value: "necrotico",           label: "Necrótico" },
-  { value: "energia_amaldicoada", label: "Energia Amaldiçoada" },
+const DAMAGE_TYPE_GROUPS = [
+  { label: "Físicos",    types: ["cortante", "perfurante", "impacto"] },
+  { label: "Elementais", types: ["ácido", "congelante", "chocante", "queimante", "sônico"] },
+  { label: "Etéreos",    types: ["energia reversa", "energético", "psíquico", "radiante"] },
+  { label: "Biológicos", types: ["necrótico", "venenoso"] },
 ];
 
 const DAMAGE_TYPE_LABELS = {
+  // Valores canônicos
   cortante: "Cortante", perfurante: "Perfurante", impacto: "Impacto",
-  queimante: "Queimante", congelante: "Congelante", chocante: "Chocante",
-  psiquico: "Psíquico", sonoro: "Sonoro", corrosivo: "Corrosivo",
-  radiante: "Radiante", necrotico: "Necrótico", energia_amaldicoada: "Energia Amaldiçoada",
+  "ácido": "Ácido", congelante: "Congelante", chocante: "Chocante", queimante: "Queimante", "sônico": "Sônico",
+  "energia reversa": "Energia Reversa", "energético": "Energético",
+  "psíquico": "Psíquico", radiante: "Radiante",
+  "necrótico": "Necrótico", venenoso: "Venenoso",
+  // Compatibilidade com valores antigos salvos
+  psiquico: "Psíquico", sonoro: "Sônico", corrosivo: "Ácido",
+  necrotico: "Necrótico", energia_amaldicoada: "Energia Reversa",
 };
 
 const CONDITION_TIER_OPTIONS = [
@@ -74,8 +76,9 @@ const CONDITION_TIER_LABELS = {
   fraca: "Fraca", media: "Média", forte: "Forte", extrema: "Extrema",
 };
 
-const CONDITION_PE_COST = { fraca: 2, media: 5, forte: 8, extrema: 10 };
-const CONDITION_ND_COST = { fraca: 1, media: 2, forte: 3, extrema: 4 };
+const CONDITION_PE_COST  = { fraca: 2, media: 5, forte: 8, extrema: 10 };
+const CONDITION_ND_COST  = { fraca: 1, media: 2, forte: 3, extrema: 4 };
+const BT_MIN_FOR_TIER    = { fraca: 2, media: 3, forte: 4, extrema: 5 };
 
 const CONDITION_PAYMENT_OPTIONS = [
   { value: "pe", label: "Pagar com PE" },
@@ -96,7 +99,132 @@ const CONDITION_NAME_OPTIONS = [
   { value: "outro", label: "Outro / Customizado" },
 ];
 
+const TIER_TO_CONDITIONS_KEY = {
+  fraca: "fracas", media: "medias", forte: "fortes", extrema: "extremas",
+};
+
+const BLANK_CONDITION = { tier: "nenhuma", payment: "pe", nameKey: "", name: "" };
+
 const DIE_SIZES = [4, 6, 8, 10, 12, 20];
+
+// ============================================================
+// PARÂMETROS DE ALCANCE/ÁREA POR BT
+// ============================================================
+const ACTION_PARAMETERS = {
+  2: { range: 12,  area: 4.5, meleeBonusDice: 1 },
+  3: { range: 18,  area: 6,   meleeBonusDice: 1 },
+  4: { range: 24,  area: 9,   meleeBonusDice: 2 },
+  5: { range: 30,  area: 12,  meleeBonusDice: 2 },
+  6: { range: 48,  area: 18,  meleeBonusDice: 3 },
+};
+
+const getActionParams = (bt) =>
+  ACTION_PARAMETERS[Math.min(6, Math.max(2, bt ?? 2))] ?? ACTION_PARAMETERS[2];
+
+const TRADES_ZERO = { sacrifDadosAcerto: 0, sacrifDadosCD: 0, sacrifAcertoDados: 0, sacrifCdDados: 0 };
+
+// ============================================================
+// CALCULATE ACTION DAMAGE — pipeline rigorosa (7 passos)
+// ============================================================
+export function calculateActionDamage(
+  patamar, nd, attackType, isNarrativeFisica = false, conditionNdReduction = 0
+) {
+  if (!patamar || !nd || attackType === "suporte") return null;
+
+  // Passo 1 — Somar todas as reduções de ND
+  const reducaoTr      = attackType === "tr_individual" ? 1 : 0;
+  const totalReducaoND = reducaoTr + (conditionNdReduction ?? 0);
+
+  // Passo 2 — Calcular ND alvo, safeND e déficit
+  const minND    = PATAMAR_ND_RANGE[patamar]?.min ?? 1;
+  const targetND = nd - totalReducaoND;
+  const safeND   = Math.max(minND, targetND);
+  const deficit  = Math.max(0, minND - targetND);
+
+  // Passo 3 — Buscar na tabela e fazer parse da string de dano
+  const entry = getDamage(patamar, safeND);
+  if (!entry?.roll) return null;
+
+  const m = entry.roll.match(/^(\d+)d(\d+)([+-]\d+)?$/i);
+  if (!m) return null;
+
+  let numDice   = parseInt(m[1]);
+  const dieSize = parseInt(m[2]);
+  let mod       = parseInt(m[3] ?? "0");
+
+  // Passo 4 — Aplicar o déficit no dano fixo
+  mod -= deficit * 4;
+
+  // Passo 5 — Reduções por área / narrativa + trava de segurança
+  if (attackType === "tr_area") {
+    numDice = Math.floor(numDice / 2);
+    mod     = Math.floor(mod / 2);
+  }
+  if (isNarrativeFisica) numDice -= 2;
+  numDice = Math.max(1, numDice);
+
+  // Passos 6-7 — Trades e string final (trades aplicados externamente via applyTrades)
+  const modStr  = mod > 0 ? `+${mod}` : mod < 0 ? `${mod}` : "";
+  const average = Math.floor(numDice * ((dieSize + 1) / 2)) + mod;
+  return { numDice, dieSize, mod, roll: `${numDice}d${dieSize}${modStr}`, average };
+}
+
+// ============================================================
+// TRADE HELPERS
+// ============================================================
+function enforceMutualExclusion(trades) {
+  const t = { ...trades };
+  if ((t.sacrifDadosAcerto ?? 0) > 0) t.sacrifAcertoDados = 0;
+  if ((t.sacrifAcertoDados ?? 0) > 0) t.sacrifDadosAcerto = 0;
+  if ((t.sacrifDadosCD    ?? 0) > 0) t.sacrifCdDados      = 0;
+  if ((t.sacrifCdDados    ?? 0) > 0) t.sacrifDadosCD      = 0;
+  return t;
+}
+
+function applyTrades(numDiceBase, toHitBase, cdBase, rangeType, trades, bt) {
+  const params   = getActionParams(bt);
+  const bonusCaC = rangeType === "cac" ? params.meleeBonusDice : 0;
+  const t        = { ...TRADES_ZERO, ...(trades ?? {}) };
+  const dadosFinais = Math.max(1,
+    (numDiceBase ?? 0) + bonusCaC
+    - t.sacrifDadosAcerto
+    - t.sacrifDadosCD
+    + Math.floor(t.sacrifAcertoDados / 2)
+    + t.sacrifCdDados
+  );
+  const acertoFinal = (toHitBase ?? 0) + (t.sacrifDadosAcerto * 2) - t.sacrifAcertoDados;
+  const cdFinal     = (cdBase     ?? 0) + t.sacrifDadosCD           - t.sacrifCdDados;
+  return { dadosFinais, acertoFinal, cdFinal };
+}
+
+// Zera trades irrelevantes ao trocar o tipo de ofensiva
+function resetTradesForAttackType(attackType, currentTrades) {
+  const t = { ...currentTrades };
+  if (attackType === "acerto") {
+    t.sacrifDadosCD = 0;
+    t.sacrifCdDados = 0;
+  } else if (attackType?.startsWith("tr_")) {
+    t.sacrifDadosAcerto = 0;
+    t.sacrifAcertoDados = 0;
+  }
+  return t;
+}
+
+// Calcula alcance e área automáticos com base no BT, tipo de ataque e tipo de alcance
+const fmtM = (n) => `${String(n).replace(".", ",")} Metros`;
+function calcAutoRange(attackType, rangeType, bt) {
+  const params = getActionParams(bt);
+  if (rangeType === "cac") {
+    return {
+      range: "CaC",
+      area:  attackType === "tr_area" ? fmtM(params.area) : "-",
+    };
+  }
+  return {
+    range: fmtM(params.range),
+    area:  attackType === "tr_area" ? fmtM(params.area) : "-",
+  };
+}
 
 // ============================================================
 // HELPERS DE ROLAGEM
@@ -122,14 +250,12 @@ const parseRollFromStr = (roll) => {
 // ============================================================
 // ESTADO DERIVADO (puro — sem React)
 // ============================================================
-
-// Dado o damage e isNarrativePhysical, retorna o número de dados efetivo.
 const deriveFinalDice = (dmg) => {
   const base = dmg?.numDice ?? 0;
+  if (dmg?.damageIsCalculated) return base;
   return dmg?.isNarrativePhysical ? Math.max(0, base - 2) : base;
 };
 
-// Retorna o custo de PE da condição (0 se payment !== 'pe' ou sem condição).
 const deriveCondPE = (condition) => {
   if (!condition) return 0;
   if (condition.tier === "nenhuma" || !condition.tier) return 0;
@@ -137,11 +263,16 @@ const deriveCondPE = (condition) => {
   return CONDITION_PE_COST[condition.tier] ?? 0;
 };
 
-// PE total = custo base + custo da condição.
-const deriveFinalPE = (baseCost, condition) =>
-  (baseCost ?? 0) + deriveCondPE(condition);
+const deriveFinalPE = (baseCost, condition) => (baseCost ?? 0) + deriveCondPE(condition);
 
-// Normaliza uma ação antiga para o modelo novo.
+const getCondNdReduction = (condition) => {
+  if (!condition || condition.tier === "nenhuma" || condition.payment !== "nd") return 0;
+  return CONDITION_ND_COST[condition.tier] ?? 0;
+};
+
+// ============================================================
+// normalizeAction
+// ============================================================
 function normalizeAction(action) {
   const dmg = action.damage ?? {};
   let { numDice, dieSize, mod } = dmg;
@@ -152,16 +283,28 @@ function normalizeAction(action) {
   const existingName = action.condition?.name ?? "";
   const nameKey = action.condition?.nameKey ??
     (CONDITION_NAMES.includes(existingName) ? existingName : existingName ? "outro" : "");
+  const trades = { ...TRADES_ZERO, ...(action.trades ?? {}) };
   return {
+    rangeType: "distancia",
+    trades,
+    toHitBase: action.toHitBase ?? action.toHit ?? 0,
+    cdBase:    action.cdBase    ?? action.cd    ?? 0,
     condition: { tier: "nenhuma", name: "", nameKey: "", payment: "pe" },
     ...action,
+    rangeLocked: action.rangeLocked ?? true,
+    areaLocked:  action.areaLocked  ?? true,
     damage: {
       type: "cortante",
       isNarrativePhysical: false,
+      narrativeType: "padrao",
+      damageIsLocked: true,
+      damageIsCalculated: false,
       ...dmg,
-      numDice: numDice ?? 0,
-      dieSize: dieSize ?? 8,
-      mod: mod ?? 0,
+      numDice:     numDice ?? 0,
+      dieSize:     dieSize ?? 8,
+      mod:         mod     ?? 0,
+      narrativeType: dmg.narrativeType ?? (dmg.isNarrativePhysical ? "fisica" : "padrao"),
+      numDiceBase: dmg.numDiceBase ?? numDice ?? 0,
     },
     condition: {
       tier: "nenhuma",
@@ -176,26 +319,20 @@ function normalizeAction(action) {
 
 // ============================================================
 // humanizeAction — exportada, consumida por CombatantPanel e LivePreview
-// Usa estado derivado internamente para refletir a matemática resolvida.
 // ============================================================
 export function humanizeAction(action) {
   if (!action?.name) return "";
   const parts = [];
   const typeLabel = ACTION_TYPE_LABELS[action.type] || action.type || "Ação";
-
   parts.push(`${action.name} (${typeLabel}).`);
 
   if (action.description?.trim()) parts.push(action.description.trim());
 
   const dmg = action.damage;
-  // Dados finais já com desconto físico
   const finalDice = deriveFinalDice(dmg);
-  const dieSize = dmg?.dieSize ?? 8;
-  const mod = dmg?.mod ?? 0;
-  // Usa rollStr derivado; fallback para roll armazenado (dados antigos sem numDice)
-  const computedRoll = rollStr(finalDice, dieSize, mod);
-  const roll = computedRoll || dmg?.roll || "";
-
+  const dieSize   = dmg?.dieSize ?? 8;
+  const mod       = dmg?.mod ?? 0;
+  const roll      = rollStr(finalDice, dieSize, mod) || dmg?.roll || "";
   const hasDamage = action.attackType !== "suporte" && roll;
   const dmgTypeLabel = DAMAGE_TYPE_LABELS[dmg?.type] || dmg?.type || "";
   const dmgStr = hasDamage ? `${roll} de dano ${dmgTypeLabel}` : null;
@@ -209,7 +346,7 @@ export function humanizeAction(action) {
     const tr = TR_TYPE_LABELS[action.trType] || action.trType || "TR";
     const rangePart = action.range ? ` a ${action.range}` : "";
     if (hasDamage)
-      parts.push(`Criatura${rangePart} realiza TR de ${tr} (CD ${action.cd}). Em uma falha, recebe ${dmgStr} (sucesso reduz em 1 ND).`);
+      parts.push(`Criatura${rangePart} realiza TR de ${tr} (CD ${action.cd}). Em uma falha, recebe ${dmgStr} (sucesso reduz à metade).`);
     else
       parts.push(`Criatura${rangePart} realiza TR de ${tr} (CD ${action.cd}).`);
   } else if (action.attackType === "tr_area") {
@@ -225,7 +362,7 @@ export function humanizeAction(action) {
   const cond = action.condition;
   if (cond?.tier && cond.tier !== "nenhuma") {
     const tierLabel = CONDITION_TIER_LABELS[cond.tier] || cond.tier;
-    const condName = cond.name?.trim() ? `[${cond.name}]` : `[condição ${tierLabel}]`;
+    const condName  = cond.name?.trim() ? `[${cond.name}]` : `[condição ${tierLabel}]`;
     if (cond.payment === "nd") {
       const ndCost = CONDITION_ND_COST[cond.tier] ?? "?";
       parts.push(`Aplica a condição ${condName} (${tierLabel} — -${ndCost} ND).`);
@@ -234,11 +371,81 @@ export function humanizeAction(action) {
     }
   }
 
-  // PE total já inclui custo da condição
   const finalPE = deriveFinalPE(action.cost, cond);
   if (finalPE > 0) parts.push(`Custo: ${finalPE} PE.`);
 
   return parts.filter(Boolean).join(" ");
+}
+
+// ============================================================
+// generateActionDescription — gerador de texto mecânico base
+// ============================================================
+export function generateActionDescription(action, creatureName, flavorText = "") {
+  const dmg       = action.damage;
+  const finalDice = deriveFinalDice(dmg);
+  const dieSize   = dmg?.dieSize ?? 8;
+  const mod       = dmg?.mod ?? 0;
+  const rollDisplay = rollStr(finalDice, dieSize, mod);
+  const dmgType   = DAMAGE_TYPE_LABELS[dmg?.type] || dmg?.type || "";
+  const finalPE   = deriveFinalPE(action.cost, action.condition);
+  const isTR      = action.attackType?.startsWith("tr_");
+  const isTRArea  = action.attackType === "tr_area";
+  const isAcerto  = action.attackType === "acerto";
+  const hasCond   = action.condition?.tier && action.condition.tier !== "nenhuma";
+  const isComplex = finalPE > 0 || hasCond || isTR;
+  const alcance   = action.range || "-";
+  const area      = action.area  || "-";
+  const creature  = creatureName?.trim() || "A criatura";
+  const actionTypeLabel = ACTION_TYPE_LABELS[action.type] || "Ação";
+  const flavor    = flavorText?.trim() || "";
+
+  if (isAcerto && !isComplex) {
+    const opening = flavor || `${creature} golpeia utilizando ${action.name || "esta ação"}.`;
+    return `${opening} Alcance de ${alcance}, +${action.toHit ?? 0} para acertar, causa ${rollDisplay} de dano ${dmgType}.`;
+  }
+
+  if (isTR || isComplex) {
+    const trAttr   = TR_TYPE_LABELS[action.trType] || "TR";
+    const isCaC    = action.rangeType === "cac";
+    const targetDesc = isTRArea
+      ? (isCaC ? "Toda criatura na área partindo de você" : "Toda criatura na área")
+      : "A criatura alvo";
+    const areaLine = isTRArea
+      ? `Área: ${area}${isCaC ? " partindo de si mesmo" : ""}`
+      : null;
+    const lines    = [
+      `Conjuração: ${actionTypeLabel}`,
+      `Alcance: ${alcance}`,
+      ...(!isTRArea ? [`Alvo: Uma criatura`] : []),
+      ...(areaLine  ? [areaLine]             : []),
+      ...(finalPE > 0 ? [`Custo: ${finalPE} PE`] : []),
+      "",
+    ];
+
+    let mechanicalText = "";
+    if (isTR && rollDisplay) {
+      mechanicalText = `${targetDesc} deve realizar um teste de resistência de ${trAttr} (CD ${action.cd ?? 0}), recebendo ${rollDisplay} de dano ${dmgType}, ou apenas metade em um sucesso.`;
+    } else if (isTR) {
+      mechanicalText = `${targetDesc} deve realizar um teste de resistência de ${trAttr} (CD ${action.cd ?? 0}).`;
+    } else if (isAcerto && rollDisplay) {
+      mechanicalText = `Alcance de ${alcance}, +${action.toHit ?? 0} para acertar, causa ${rollDisplay} de dano ${dmgType}.`;
+    }
+    if (hasCond) {
+      const tierLabel = CONDITION_TIER_LABELS[action.condition.tier] || action.condition.tier;
+      const rawName   = action.condition.name?.trim();
+      const condName  = rawName
+        ? rawName.charAt(0).toUpperCase() + rawName.slice(1)
+        : tierLabel;
+      const condSuffix = rawName ? ` (${tierLabel})` : "";
+      mechanicalText += ` Além disso, caso falhe, sofre a condição ${condName}${condSuffix}.`;
+    }
+
+    const secondParagraph = [flavor, mechanicalText].filter(Boolean).join(" ");
+    if (secondParagraph) lines.push(secondParagraph);
+    return lines.join("\n");
+  }
+
+  return flavor;
 }
 
 // ============================================================
@@ -252,7 +459,10 @@ export default function SectionActions({ draft, derived, actions }) {
     setShowForm(false);
   };
 
-  const total = derived.actionsTotal ?? { comum: 1, bonus: 0, rapida: 0, movimento: 1, reacao: 1 };
+  const total   = derived.actionsTotal ?? { comum: 1, bonus: 0, rapida: 0, movimento: 1, reacao: 1 };
+  const patamar = draft.core?.patamar;
+  const nd      = draft.core?.nd;
+  const bt      = derived.bt ?? 2;
 
   return (
     <div className="space-y-3">
@@ -275,6 +485,10 @@ export default function SectionActions({ draft, derived, actions }) {
           <ActionItem
             key={action.id}
             action={action}
+            patamar={patamar}
+            nd={nd}
+            bt={bt}
+            creatureName={draft.name || "A criatura"}
             onUpdate={(patch) => actions.updateAction(action.id, patch)}
             onRemove={() => actions.removeAction(action.id)}
             onDuplicate={() => actions.duplicateAction(action.id)}
@@ -296,21 +510,145 @@ export default function SectionActions({ draft, derived, actions }) {
 // ============================================================
 // ACTION ITEM
 // ============================================================
-function ActionItem({ action, onUpdate, onRemove, onDuplicate }) {
+function ActionItem({ action, patamar, nd, bt, creatureName, onUpdate, onRemove, onDuplicate }) {
   const [expanded, setExpanded] = useState(false);
-  const norm = normalizeAction(action);
+  const norm    = normalizeAction(action);
   const finalPE = deriveFinalPE(norm.cost, norm.condition);
 
+  // Full recalc from table + apply trades (used when unlocked)
+  const runFullCalc = (attackType, condition, narrativeType, rangeType, trades) => {
+    const baseResult = calculateActionDamage(
+      patamar, nd, attackType, narrativeType === "fisica", getCondNdReduction(condition)
+    );
+    if (!baseResult) return null;
+    const tHitBase = norm.toHitBase ?? norm.toHit ?? 0;
+    const tCdBase  = norm.cdBase    ?? norm.cd    ?? 0;
+    const { dadosFinais, acertoFinal, cdFinal } = applyTrades(
+      baseResult.numDice, tHitBase, tCdBase, rangeType, trades, bt
+    );
+    const finalRoll = rollStr(dadosFinais, baseResult.dieSize, baseResult.mod);
+    const finalAvg  = rollAverage(dadosFinais, baseResult.dieSize, baseResult.mod);
+    return {
+      toHit:    acertoFinal,
+      toHitBase: tHitBase,
+      cd:       cdFinal,
+      cdBase:   tCdBase,
+      damage:   { ...baseResult, numDice: dadosFinais, numDiceBase: baseResult.numDice, roll: finalRoll, average: finalAvg, damageIsCalculated: true },
+    };
+  };
+
+  // Re-apply trades to stored base values (used when locked)
+  const reapplyTradesHelper = (rangeType, trades) => {
+    const numDiceBase = norm.damage?.numDiceBase ?? norm.damage?.numDice ?? 0;
+    const tHitBase    = norm.toHitBase ?? norm.toHit ?? 0;
+    const tCdBase     = norm.cdBase    ?? norm.cd    ?? 0;
+    const { dadosFinais, acertoFinal, cdFinal } = applyTrades(
+      numDiceBase, tHitBase, tCdBase, rangeType, trades, bt
+    );
+    const dieSize = norm.damage?.dieSize ?? 8;
+    const modVal  = norm.damage?.mod ?? 0;
+    return {
+      toHit: acertoFinal,
+      cd:    cdFinal,
+      damage: {
+        ...norm.damage,
+        numDice: dadosFinais,
+        roll:    rollStr(dadosFinais, dieSize, modVal),
+        average: rollAverage(dadosFinais, dieSize, modVal),
+      },
+    };
+  };
+
+  const update = (patch) => {
+    if ("attackType" in patch) {
+      const resetTrades = resetTradesForAttackType(patch.attackType, norm.trades ?? TRADES_ZERO);
+      const basePatch   = { ...patch, trades: resetTrades };
+      if (patch.attackType === "acerto") basePatch.condition = BLANK_CONDITION;
+      const av = calcAutoRange(patch.attackType, norm.rangeType, bt);
+      if (norm.rangeLocked !== false) basePatch.range = av.range;
+      if (norm.areaLocked  !== false) basePatch.area  = av.area;
+      if (!norm.damage?.damageIsLocked) {
+        const r = runFullCalc(patch.attackType, norm.condition, norm.damage?.narrativeType, norm.rangeType, resetTrades);
+        if (r) { onUpdate({ ...basePatch, ...r, damage: { ...norm.damage, ...r.damage } }); return; }
+      }
+      const reapplied = reapplyTradesHelper(norm.rangeType, resetTrades);
+      onUpdate({ ...basePatch, ...reapplied });
+      return;
+    }
+    if ("toHitBase" in patch) {
+      const t = norm.trades ?? TRADES_ZERO;
+      onUpdate({ ...patch, toHit: (patch.toHitBase ?? 0) + ((t.sacrifDadosAcerto ?? 0) * 2) - (t.sacrifAcertoDados ?? 0) });
+      return;
+    }
+    if ("cdBase" in patch) {
+      const t = norm.trades ?? TRADES_ZERO;
+      onUpdate({ ...patch, cd: (patch.cdBase ?? 0) + (t.sacrifDadosCD ?? 0) - (t.sacrifCdDados ?? 0) });
+      return;
+    }
+    onUpdate(patch);
+  };
+
   const updateDamage = (patch) => {
+    const isUnlocking      = patch.damageIsLocked === false && norm.damage?.damageIsLocked === true;
+    const isNarrativeChange = "narrativeType" in patch && !norm.damage?.damageIsLocked;
+
+    if (isUnlocking || isNarrativeChange) {
+      const newNarrative = "narrativeType" in patch ? patch.narrativeType : norm.damage?.narrativeType;
+      const r = runFullCalc(norm.attackType, norm.condition, newNarrative, norm.rangeType, norm.trades);
+      if (r) {
+        onUpdate({ ...r, damage: { ...norm.damage, ...patch, ...r.damage, damageIsCalculated: true } });
+        return;
+      }
+    }
+
     const dmg = { ...norm.damage, ...patch };
-    // Armazena roll baseado nos dados base (humanizeAction deriva o final)
+    if ("numDiceBase" in patch && !("numDice" in patch)) {
+      const { dadosFinais } = applyTrades(
+        patch.numDiceBase, norm.toHitBase ?? norm.toHit ?? 0, norm.cdBase ?? norm.cd ?? 0,
+        norm.rangeType, norm.trades, bt
+      );
+      dmg.numDice = dadosFinais;
+    }
     dmg.roll    = rollStr(dmg.numDice, dmg.dieSize, dmg.mod);
     dmg.average = rollAverage(deriveFinalDice(dmg), dmg.dieSize, dmg.mod);
     onUpdate({ damage: dmg });
   };
 
-  const updateCond = (patch) =>
-    onUpdate({ condition: { ...norm.condition, ...patch } });
+  const updateCond = (patch) => {
+    const newCondition = { ...norm.condition, ...patch };
+    const condUpdate   = { condition: newCondition };
+    if (!norm.damage?.damageIsLocked && ("tier" in patch || "payment" in patch)) {
+      const r = runFullCalc(norm.attackType, newCondition, norm.damage?.narrativeType, norm.rangeType, norm.trades);
+      if (r) Object.assign(condUpdate, r, { damage: { ...norm.damage, ...r.damage, damageIsCalculated: true } });
+    }
+    onUpdate(condUpdate);
+  };
+
+  const updateTrade = (patch) => {
+    const newTrades = enforceMutualExclusion({ ...(norm.trades ?? TRADES_ZERO), ...patch });
+    const tradePatch = { trades: newTrades };
+    if (!norm.damage?.damageIsLocked) {
+      const r = runFullCalc(norm.attackType, norm.condition, norm.damage?.narrativeType, norm.rangeType, newTrades);
+      if (r) { onUpdate({ ...tradePatch, ...r, damage: { ...norm.damage, ...r.damage, damageIsLocked: false } }); return; }
+    }
+    const reapplied = reapplyTradesHelper(norm.rangeType, newTrades);
+    onUpdate({ ...tradePatch, ...reapplied });
+  };
+
+  const updateRangeType = (newRangeType) => {
+    const av = calcAutoRange(norm.attackType, newRangeType, bt);
+    const rangePatch = {
+      rangeType: newRangeType,
+      ...(norm.rangeLocked !== false ? { range: av.range } : {}),
+      ...(norm.areaLocked  !== false ? { area:  av.area  } : {}),
+    };
+    if (!norm.damage?.damageIsLocked) {
+      const r = runFullCalc(norm.attackType, norm.condition, norm.damage?.narrativeType, newRangeType, norm.trades);
+      if (r) { onUpdate({ ...rangePatch, ...r, damage: { ...norm.damage, ...r.damage, damageIsLocked: false } }); return; }
+    }
+    const reapplied = reapplyTradesHelper(newRangeType, norm.trades);
+    onUpdate({ ...rangePatch, ...reapplied });
+  };
 
   return (
     <div className="bg-slate-950/40 border border-slate-800 rounded">
@@ -344,9 +682,13 @@ function ActionItem({ action, onUpdate, onRemove, onDuplicate }) {
         <div className="border-t border-slate-800 p-3 space-y-3">
           <ActionFormFields
             form={norm}
-            update={onUpdate}
+            bt={bt}
+            creatureName={creatureName}
+            update={update}
             updateDamage={updateDamage}
             updateCond={updateCond}
+            updateTrade={updateTrade}
+            updateRangeType={updateRangeType}
           />
         </div>
       )}
@@ -358,45 +700,190 @@ function ActionItem({ action, onUpdate, onRemove, onDuplicate }) {
 // ACTION FORM (nova ação)
 // ============================================================
 function ActionForm({ derived, draft, onAdd, onCancel }) {
+  const patamar = draft?.core?.patamar;
+  const nd      = draft?.core?.nd;
+  const bt      = derived?.bt ?? 2;
+
+  const [isMechanicalTextLocked, setIsMechanicalTextLocked] = useState(true);
+  const [manualMechanicalText,   setManualMechanicalText]   = useState("");
+
   const [form, setForm] = useState(() => {
-    const suggested = getDamage(draft?.core?.patamar, draft?.core?.nd);
-    const parsed = parseRollFromStr(suggested?.roll);
+    const calcDmg    = calculateActionDamage(patamar, nd, "acerto", false);
+    const tHitBase   = derived?.acertoPrincipal ?? 0;
+    const tCdBase    = derived?.cdBase ?? 0;
+    const numDiceBase = calcDmg?.numDice ?? 0;
+    const initAuto   = calcAutoRange("acerto", "distancia", bt);
     return {
-      name: "",
-      type: "comum",
+      name:      "",
+      type:      "comum",
       attackType: "acerto",
-      toHit: derived?.acertoPrincipal?.destreza ?? 0,
-      cd: derived?.cdBase ?? 0,
-      trType: "fortitude",
-      range: "1,5m",
-      area: "",
+      toHit:     tHitBase,
+      toHitBase: tHitBase,
+      cd:        tCdBase,
+      cdBase:    tCdBase,
+      trType:    "fortitude",
+      range:     initAuto.range,
+      area:      initAuto.area,
+      rangeType: "distancia",
+      rangeLocked: true,
+      areaLocked:  true,
+      trades:    { ...TRADES_ZERO },
       damage: {
-        numDice: parsed?.numDice ?? 0,
-        dieSize: parsed?.dieSize ?? 8,
-        mod: parsed?.mod ?? 0,
-        type: "cortante",
+        type:              "cortante",
+        narrativeType:     "padrao",
         isNarrativePhysical: false,
-        roll: suggested?.roll ?? "",
-        average: suggested?.avg ?? 0,
+        damageIsLocked:    false,
+        damageIsCalculated: true,
+        numDice:           numDiceBase,
+        numDiceBase,
+        dieSize:           calcDmg?.dieSize ?? 8,
+        mod:               calcDmg?.mod ?? 0,
+        roll:              calcDmg?.roll ?? "",
+        average:           calcDmg?.average ?? 0,
       },
       condition: { tier: "nenhuma", name: "", nameKey: "", payment: "pe" },
-      cost: 0,
+      cost:        0,
       description: "",
     };
   });
 
-  const update = (patch) => setForm((prev) => ({ ...prev, ...patch }));
+  const runFullCalc = (attackType, condition, narrativeType, rangeType, trades) => {
+    const baseResult = calculateActionDamage(
+      patamar, nd, attackType, narrativeType === "fisica", getCondNdReduction(condition)
+    );
+    if (!baseResult) return null;
+    const tHitBase = derived?.acertoPrincipal ?? 0;
+    const tCdBase  = derived?.cdBase ?? 0;
+    const { dadosFinais, acertoFinal, cdFinal } = applyTrades(
+      baseResult.numDice, tHitBase, tCdBase, rangeType, trades, bt
+    );
+    const finalRoll = rollStr(dadosFinais, baseResult.dieSize, baseResult.mod);
+    const finalAvg  = rollAverage(dadosFinais, baseResult.dieSize, baseResult.mod);
+    return {
+      toHit:    acertoFinal,
+      toHitBase: tHitBase,
+      cd:       cdFinal,
+      cdBase:   tCdBase,
+      damage:   { ...baseResult, numDice: dadosFinais, numDiceBase: baseResult.numDice, roll: finalRoll, average: finalAvg, damageIsCalculated: true },
+    };
+  };
+
+  const reapplyTradesHelper = (prev, rangeType, trades) => {
+    const numDiceBase = prev.damage?.numDiceBase ?? prev.damage?.numDice ?? 0;
+    const tHitBase    = prev.toHitBase ?? prev.toHit ?? 0;
+    const tCdBase     = prev.cdBase    ?? prev.cd    ?? 0;
+    const { dadosFinais, acertoFinal, cdFinal } = applyTrades(
+      numDiceBase, tHitBase, tCdBase, rangeType, trades, bt
+    );
+    const dieSize = prev.damage?.dieSize ?? 8;
+    const modVal  = prev.damage?.mod ?? 0;
+    return {
+      toHit: acertoFinal,
+      cd:    cdFinal,
+      damage: {
+        ...prev.damage,
+        numDice: dadosFinais,
+        roll:    rollStr(dadosFinais, dieSize, modVal),
+        average: rollAverage(dadosFinais, dieSize, modVal),
+      },
+    };
+  };
+
+  const update = (patch) =>
+    setForm((prev) => {
+      let next = { ...prev, ...patch };
+
+      if ("attackType" in patch) {
+        const resetTrades = resetTradesForAttackType(patch.attackType, prev.trades ?? TRADES_ZERO);
+        next.trades = resetTrades;
+        if (patch.attackType === "acerto") next.condition = BLANK_CONDITION;
+        const av = calcAutoRange(patch.attackType, next.rangeType, bt);
+        if (next.rangeLocked !== false) next.range = av.range;
+        if (next.areaLocked  !== false) next.area  = av.area;
+        if (!prev.damage?.damageIsLocked) {
+          const r = runFullCalc(patch.attackType, prev.condition, prev.damage?.narrativeType, prev.rangeType, resetTrades);
+          if (r) Object.assign(next, r, { damage: { ...prev.damage, ...r.damage, damageIsLocked: false } });
+        } else {
+          const reapplied = reapplyTradesHelper(next, prev.rangeType, resetTrades);
+          Object.assign(next, reapplied);
+        }
+      }
+
+      if ("toHitBase" in patch) {
+        const t = next.trades ?? TRADES_ZERO;
+        next.toHit = (patch.toHitBase ?? 0) + ((t.sacrifDadosAcerto ?? 0) * 2) - (t.sacrifAcertoDados ?? 0);
+      }
+      if ("cdBase" in patch) {
+        const t = next.trades ?? TRADES_ZERO;
+        next.cd = (patch.cdBase ?? 0) + (t.sacrifDadosCD ?? 0) - (t.sacrifCdDados ?? 0);
+      }
+
+      return next;
+    });
 
   const updateDamage = (patch) =>
     setForm((prev) => {
+      const isUnlocking      = patch.damageIsLocked === false && prev.damage?.damageIsLocked === true;
+      const isNarrativeChange = "narrativeType" in patch && !prev.damage?.damageIsLocked;
+
+      if (isUnlocking || isNarrativeChange) {
+        const newNarrative = "narrativeType" in patch ? patch.narrativeType : prev.damage?.narrativeType;
+        const r = runFullCalc(prev.attackType, prev.condition, newNarrative, prev.rangeType, prev.trades);
+        if (r) return { ...prev, ...r, damage: { ...prev.damage, ...patch, ...r.damage, damageIsCalculated: true } };
+      }
+
       const dmg = { ...prev.damage, ...patch };
-      dmg.roll    = rollStr(dmg.numDice, dmg.dieSize, dmg.mod);
-      dmg.average = rollAverage(deriveFinalDice(dmg), dmg.dieSize, dmg.mod);
+      if ("numDiceBase" in patch && !("numDice" in patch)) {
+        const { dadosFinais } = applyTrades(
+          patch.numDiceBase, prev.toHitBase ?? prev.toHit ?? 0, prev.cdBase ?? prev.cd ?? 0,
+          prev.rangeType, prev.trades, bt
+        );
+        dmg.numDice = dadosFinais;
+      }
+      if (!("damageIsLocked" in patch) && !("narrativeType" in patch)) {
+        dmg.roll    = rollStr(dmg.numDice, dmg.dieSize, dmg.mod);
+        dmg.average = rollAverage(deriveFinalDice(dmg), dmg.dieSize, dmg.mod);
+      }
       return { ...prev, damage: dmg };
     });
 
   const updateCond = (patch) =>
-    setForm((prev) => ({ ...prev, condition: { ...prev.condition, ...patch } }));
+    setForm((prev) => {
+      const newCondition = { ...prev.condition, ...patch };
+      let next = { ...prev, condition: newCondition };
+      if (!prev.damage?.damageIsLocked && ("tier" in patch || "payment" in patch)) {
+        const r = runFullCalc(prev.attackType, newCondition, prev.damage?.narrativeType, prev.rangeType, prev.trades);
+        if (r) Object.assign(next, r, { damage: { ...prev.damage, ...r.damage, damageIsCalculated: true } });
+      }
+      return next;
+    });
+
+  const updateTrade = (patch) =>
+    setForm((prev) => {
+      const newTrades = enforceMutualExclusion({ ...(prev.trades ?? TRADES_ZERO), ...patch });
+      if (!prev.damage?.damageIsLocked) {
+        const r = runFullCalc(prev.attackType, prev.condition, prev.damage?.narrativeType, prev.rangeType, newTrades);
+        if (r) return { ...prev, trades: newTrades, ...r, damage: { ...prev.damage, ...r.damage, damageIsLocked: false } };
+      }
+      const reapplied = reapplyTradesHelper(prev, prev.rangeType, newTrades);
+      return { ...prev, trades: newTrades, ...reapplied };
+    });
+
+  const updateRangeType = (newRangeType) =>
+    setForm((prev) => {
+      const av = calcAutoRange(prev.attackType, newRangeType, bt);
+      const rangeUpdates = {
+        rangeType: newRangeType,
+        ...(prev.rangeLocked !== false ? { range: av.range } : {}),
+        ...(prev.areaLocked  !== false ? { area:  av.area  } : {}),
+      };
+      if (!prev.damage?.damageIsLocked) {
+        const r = runFullCalc(prev.attackType, prev.condition, prev.damage?.narrativeType, newRangeType, prev.trades);
+        if (r) return { ...prev, ...rangeUpdates, ...r, damage: { ...prev.damage, ...r.damage, damageIsLocked: false } };
+      }
+      const reapplied = reapplyTradesHelper(prev, newRangeType, prev.trades);
+      return { ...prev, ...rangeUpdates, ...reapplied };
+    });
 
   return (
     <div className="bg-slate-950/70 border border-purple-900/50 rounded p-4 space-y-3">
@@ -404,14 +891,70 @@ function ActionForm({ derived, draft, onAdd, onCancel }) {
         <Plus className="w-4 h-4" /> Nova Ação
       </h4>
 
-      <ActionFormFields form={form} update={update} updateDamage={updateDamage} updateCond={updateCond} />
+      <ActionFormFields
+        form={form}
+        bt={bt}
+        creatureName={draft?.name || "A criatura"}
+        update={update}
+        updateDamage={updateDamage}
+        updateCond={updateCond}
+        updateTrade={updateTrade}
+        updateRangeType={updateRangeType}
+      />
 
-      {form.name?.trim() && (
-        <div className="bg-slate-900/60 border border-slate-700 rounded p-3">
-          <div className="text-[10px] uppercase tracking-widest text-slate-500 mb-1 font-bold">Preview</div>
-          <p className="text-xs text-slate-300 leading-relaxed">{humanizeAction(form)}</p>
-        </div>
-      )}
+      {form.name?.trim() && form.attackType !== "suporte" && (() => {
+          const autoText = generateActionDescription(form, draft?.name, form.description);
+          if (!autoText) return null;
+          const displayText = isMechanicalTextLocked ? autoText : manualMechanicalText;
+          const toggleLockMechanical = () => {
+            if (isMechanicalTextLocked) {
+              setManualMechanicalText(autoText);
+              setIsMechanicalTextLocked(false);
+            } else {
+              setIsMechanicalTextLocked(true);
+            }
+          };
+          return (
+            <div className="bg-slate-900/60 border border-slate-700 rounded p-3 space-y-1.5">
+              <div className="flex items-center justify-between">
+                <div className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">
+                  Texto Final
+                </div>
+                <button
+                  type="button"
+                  onClick={toggleLockMechanical}
+                  title={isMechanicalTextLocked ? "Clique para editar manualmente" : "Clique para voltar ao texto automático"}
+                  style={{
+                    borderColor: isMechanicalTextLocked ? "rgb(71 85 105)"        : "rgb(217 119 6 / 0.6)",
+                    color:       isMechanicalTextLocked ? "rgb(100 116 139)"       : "rgb(251 191 36)",
+                    background:  isMechanicalTextLocked ? "transparent"            : "rgb(120 53 15 / 0.2)",
+                  }}
+                  className="flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px] transition-colors"
+                >
+                  {isMechanicalTextLocked
+                    ? <><Lock   className="w-3 h-3" /> Auto</>
+                    : <><Unlock className="w-3 h-3" /> Manual</>}
+                </button>
+              </div>
+              <textarea
+                readOnly={isMechanicalTextLocked}
+                value={displayText}
+                onChange={(e) => !isMechanicalTextLocked && setManualMechanicalText(e.target.value)}
+                rows={5}
+                className={`w-full bg-slate-950 border rounded px-2.5 py-2 text-xs text-slate-300 leading-relaxed resize-y focus:outline-none transition-colors ${
+                  isMechanicalTextLocked
+                    ? "border-slate-800 cursor-default text-slate-400"
+                    : "border-amber-700/60 focus:border-amber-500 focus:ring-1 focus:ring-amber-500/30"
+                }`}
+              />
+              {!isMechanicalTextLocked && (
+                <p className="text-[10px] text-amber-500/70 italic">
+                  Editando manualmente — feche o cadeado para voltar ao texto automático.
+                </p>
+              )}
+            </div>
+          );
+        })()}
 
       <div className="flex justify-end gap-2 pt-1">
         <SmallButton onClick={onCancel}>Cancelar</SmallButton>
@@ -424,32 +967,128 @@ function ActionForm({ derived, draft, onAdd, onCancel }) {
 }
 
 // ============================================================
+// TRADE ROW — stepper de conversão equivalente
+// ============================================================
+function TradeRow({ label, hint, value, onChange, step = 1, blocked, max }) {
+  const canDecrease = value > 0;
+  const canIncrease = !blocked && (max === undefined || value + step <= max);
+  const btnBase = "w-7 h-7 flex items-center justify-center rounded text-sm font-bold border transition-colors focus:outline-none select-none";
+  const btnActive   = "border-slate-600 text-white hover:bg-slate-700 hover:border-slate-500 active:scale-95";
+  const btnDisabled = "border-slate-800 text-slate-700 cursor-not-allowed";
+
+  return (
+    <div className={`flex items-center gap-2 ${blocked ? "opacity-40" : ""}`}>
+      <div className="flex-1 min-w-0">
+        <div className="text-xs text-slate-300 leading-tight">{label}</div>
+        <div className="text-[10px] text-slate-500 leading-tight">{hint}</div>
+      </div>
+      <div className="flex items-center gap-1.5 flex-shrink-0">
+        <button
+          type="button"
+          onClick={() => canDecrease && onChange(Math.max(0, value - step))}
+          disabled={!canDecrease}
+          className={`${btnBase} ${canDecrease ? btnActive : btnDisabled}`}
+        >
+          −
+        </button>
+        <span className={`w-6 text-center text-sm font-mono font-semibold ${value > 0 ? "text-amber-300" : "text-slate-600"}`}>
+          {value}
+        </span>
+        <button
+          type="button"
+          onClick={() => canIncrease && onChange(value + step)}
+          disabled={!canIncrease}
+          className={`${btnBase} ${canIncrease ? btnActive : btnDisabled}`}
+        >
+          +
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
 // FORM FIELDS — compartilhado entre ActionItem e ActionForm
 // ============================================================
-function ActionFormFields({ form, update, updateDamage, updateCond }) {
+function ActionFormFields({ form, bt = 2, creatureName, update, updateDamage, updateCond, updateTrade, updateRangeType }) {
   const isTR      = form.attackType?.startsWith("tr_");
   const isAcerto  = form.attackType === "acerto";
   const hasDamage = form.attackType !== "suporte";
   const hasCond   = form.condition?.tier && form.condition.tier !== "nenhuma";
 
-  // Estado derivado — calculado aqui para exibição
-  const baseDice  = form.damage?.numDice ?? 0;
-  const isPhysical = form.damage?.isNarrativePhysical ?? false;
-  const finalDice = isPhysical ? Math.max(0, baseDice - 2) : baseDice;
   const dieSize   = form.damage?.dieSize ?? 8;
   const mod       = form.damage?.mod ?? 0;
+  const isLocked  = form.damage?.damageIsLocked === true;
+  const isAutoCalc = form.damage?.damageIsCalculated === true && !isLocked;
+  const narrativeType = form.damage?.narrativeType ?? "padrao";
+  const finalDice  = deriveFinalDice(form.damage);
 
   const condPE  = deriveCondPE(form.condition);
   const finalPE = deriveFinalPE(form.cost, form.condition);
   const isCondND = hasCond && form.condition?.payment === "nd";
 
-  const handleCondNameKey = (key) => {
-    if (key === "outro") {
-      updateCond({ nameKey: "outro", name: "" });
-    } else {
-      updateCond({ nameKey: key, name: key });
-    }
+  // Trade / alcance state
+  const trades      = { ...TRADES_ZERO, ...(form.trades ?? {}) };
+  const rangeType   = form.rangeType ?? "distancia";
+  const params      = getActionParams(bt);
+  const numDiceBase = form.damage?.numDiceBase ?? form.damage?.numDice ?? 0;
+  const toHitBase   = form.toHitBase ?? form.toHit ?? 0;
+  const cdBase      = form.cdBase    ?? form.cd    ?? 0;
+
+  // Deltas para mostrar ajuste acima do base
+  const tradeToHitDelta = (trades.sacrifDadosAcerto * 2) - trades.sacrifAcertoDados;
+  const tradeCdDelta    = trades.sacrifDadosCD - trades.sacrifCdDados;
+
+  // Mutual exclusion: bloqueia lado oposto
+  const blockedDadosAcerto  = trades.sacrifAcertoDados > 0;
+  const blockedDadosCD      = trades.sacrifCdDados     > 0;
+  const blockedAcertoDados  = trades.sacrifDadosAcerto > 0;
+  const blockedCdDados      = trades.sacrifDadosCD     > 0;
+
+  // Caps por BT
+  const capDadosAcerto  = bt;
+  const capDadosCD      = bt;
+  const capCdDados      = bt;
+  const capAcertoDados  = bt * 2;
+
+  const hasActiveTrades =
+    (isAcerto && (trades.sacrifDadosAcerto > 0 || trades.sacrifAcertoDados > 0)) ||
+    (isTR    && (trades.sacrifDadosCD     > 0 || trades.sacrifCdDados      > 0)) ||
+    rangeType === "cac";
+
+  const rangeLocked = form.rangeLocked !== false;
+  const areaLocked  = form.areaLocked  !== false;
+  const autoVals    = calcAutoRange(form.attackType, rangeType, bt);
+
+  const toggleRangeLock = () => {
+    if (!rangeLocked) update({ rangeLocked: true, range: autoVals.range });
+    else update({ rangeLocked: false });
   };
+  const toggleAreaLock = () => {
+    if (!areaLocked) update({ areaLocked: true, area: autoVals.area });
+    else update({ areaLocked: false });
+  };
+
+  const lockBtnStyle = (isLocked) => ({
+    borderColor: isLocked ? "rgb(71 85 105)"        : "rgb(217 119 6 / 0.6)",
+    color:       isLocked ? "rgb(100 116 139)"       : "rgb(251 191 36)",
+    background:  isLocked ? "transparent"            : "rgb(120 53 15 / 0.2)",
+  });
+
+  const handleCondNameKey = (key) => {
+    if (key === "outro") updateCond({ nameKey: "outro", name: "" });
+    else updateCond({ nameKey: key, name: key });
+  };
+
+  const handleTierChange = (tier) => {
+    const key = TIER_TO_CONDITIONS_KEY[tier];
+    const validNames = key ? CONDITIONS[key] : [];
+    const currentKey = form.condition?.nameKey ?? "";
+    const nameStillValid = currentKey === "outro" || validNames.includes(currentKey);
+    updateCond({ tier, ...(nameStillValid ? {} : { nameKey: "", name: "" }) });
+  };
+
+  const toggleLock = () => updateDamage({ damageIsLocked: !isLocked });
 
   return (
     <div className="space-y-3">
@@ -465,23 +1104,15 @@ function ActionFormFields({ form, update, updateDamage, updateCond }) {
         </div>
       </div>
 
-      {/* Tipo de ataque + custo com total derivado */}
+      {/* Tipo de ataque + custo */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <FieldLabel>Tipo de Ataque / Efeito</FieldLabel>
           <Select value={form.attackType} onChange={(v) => update({ attackType: v })} options={ATTACK_TYPE_OPTIONS} />
         </div>
         <div>
-          <FieldLabel hint={condPE > 0 ? `+${condPE} da condição` : undefined}>
-            Custo Base em PE
-          </FieldLabel>
+          <FieldLabel>Custo Base em PE</FieldLabel>
           <NumberInput value={form.cost} onChange={(v) => update({ cost: v })} min={0} />
-          {condPE > 0 && (
-            <div className="mt-1 text-xs flex items-center gap-1">
-              <span className="text-purple-300 font-semibold">Total: {finalPE} PE</span>
-              <span className="text-slate-500">({form.cost} base + {condPE} condição)</span>
-            </div>
-          )}
         </div>
       </div>
 
@@ -493,47 +1124,187 @@ function ActionFormFields({ form, update, updateDamage, updateCond }) {
             <Select value={form.trType} onChange={(v) => update({ trType: v })} options={TR_TYPE_OPTIONS} />
           </div>
           <div>
-            <FieldLabel>CD</FieldLabel>
-            <NumberInput value={form.cd} onChange={(v) => update({ cd: v })} min={0} />
+            <FieldLabel>
+              CD{tradeCdDelta !== 0 && <span className="text-slate-500 font-normal ml-1 text-[10px]">(base)</span>}
+            </FieldLabel>
+            <NumberInput value={cdBase} onChange={(v) => update({ cdBase: v })} min={0} />
+            {tradeCdDelta !== 0 && (
+              <div className="mt-1 text-[11px] text-slate-400">
+                Final: <span className="font-mono text-white font-semibold">{cdBase + tradeCdDelta}</span>
+                <span className="text-slate-500 ml-1">
+                  ({tradeCdDelta > 0 ? "+" : ""}{tradeCdDelta} trades)
+                </span>
+              </div>
+            )}
           </div>
         </div>
       )}
       {isAcerto && (
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <FieldLabel>Bônus de Acerto</FieldLabel>
-            <NumberInput value={form.toHit} onChange={(v) => update({ toHit: v })} />
+            <FieldLabel>
+              Bônus de Acerto{tradeToHitDelta !== 0 && <span className="text-slate-500 font-normal ml-1 text-[10px]">(base)</span>}
+            </FieldLabel>
+            <NumberInput value={toHitBase} onChange={(v) => update({ toHitBase: v })} />
+            {tradeToHitDelta !== 0 && (
+              <div className="mt-1 text-[11px] text-slate-400">
+                Final: <span className="font-mono text-white font-semibold">+{toHitBase + tradeToHitDelta}</span>
+                <span className="text-slate-500 ml-1">
+                  ({tradeToHitDelta > 0 ? "+" : ""}{tradeToHitDelta} trades)
+                </span>
+              </div>
+            )}
           </div>
           <div />
         </div>
       )}
 
+      {/* Tipo de Alcance + Parâmetros do BT */}
+      <div className="bg-slate-900/60 border border-slate-800 rounded p-3 space-y-2">
+        <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Tipo de Alcance</div>
+        <div className="flex gap-2">
+          {[
+            { value: "distancia", label: "À Distância" },
+            { value: "cac",       label: "Corpo a Corpo" },
+          ].map(({ value, label }) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => updateRangeType(value)}
+              className={`flex-1 py-1.5 px-3 rounded text-xs font-semibold transition-colors border focus:outline-none ${
+                rangeType === value
+                  ? "bg-purple-900/60 border-purple-700 text-purple-200"
+                  : "bg-slate-950 border-slate-700 text-slate-400 hover:text-white hover:border-slate-600"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-[11px] font-mono">
+          <span className="text-slate-500">
+            Alcance Máx: <span className="text-slate-300">{params.range}m</span>
+          </span>
+          <span className="text-slate-500">
+            Área Máx: <span className="text-slate-300">{params.area}m</span>
+          </span>
+          {rangeType === "cac" && (
+            <span className="text-emerald-400 font-semibold">
+              +{params.meleeBonusDice} dado{params.meleeBonusDice > 1 ? "s" : ""} CaC
+            </span>
+          )}
+        </div>
+      </div>
+
       {/* Alcance e Área */}
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <FieldLabel hint="Ex: 1,5m / 18m">Alcance</FieldLabel>
-          <TextInput value={form.range} onChange={(v) => update({ range: v })} placeholder="1,5m" />
+          <FieldLabel hint={rangeLocked ? "auto" : "livre"}>Alcance</FieldLabel>
+          <div className="flex gap-1">
+            {rangeLocked ? (
+              <div className="flex-1 h-9 bg-slate-950/30 border border-slate-700/50 rounded px-2 text-sm text-slate-400 flex items-center select-none">
+                {form.range || "-"}
+              </div>
+            ) : (
+              <div className="flex-1">
+                <TextInput value={form.range ?? ""} onChange={(v) => update({ range: v })} placeholder="Ex: Toque, Visão..." />
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={toggleRangeLock}
+              title={rangeLocked ? "Desbloquear para editar manualmente" : "Restaurar valor automático"}
+              className="w-9 h-9 flex items-center justify-center rounded border transition-colors flex-shrink-0 focus:outline-none"
+              style={lockBtnStyle(rangeLocked)}
+            >
+              {rangeLocked ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
+            </button>
+          </div>
         </div>
         <div>
-          <FieldLabel hint="Ex: 6m / 9m">Área</FieldLabel>
-          <TextInput value={form.area} onChange={(v) => update({ area: v })} placeholder="—" />
+          <FieldLabel hint={areaLocked ? "auto" : "livre"}>Área</FieldLabel>
+          <div className="flex gap-1">
+            {areaLocked ? (
+              <div className="flex-1 h-9 bg-slate-950/30 border border-slate-700/50 rounded px-2 text-sm text-slate-400 flex items-center select-none">
+                {form.area || "-"}
+              </div>
+            ) : (
+              <div className="flex-1">
+                <TextInput value={form.area ?? ""} onChange={(v) => update({ area: v })} placeholder="Ex: Cone, Esfera..." />
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={toggleAreaLock}
+              title={areaLocked ? "Desbloquear para editar manualmente" : "Restaurar valor automático"}
+              className="w-9 h-9 flex items-center justify-center rounded border transition-colors flex-shrink-0 focus:outline-none"
+              style={lockBtnStyle(areaLocked)}
+            >
+              {areaLocked ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Dano base */}
       {hasDamage && (
         <div className="bg-slate-900/60 border border-slate-800 rounded p-3 space-y-2">
-          <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Dano Base</div>
+          {/* Header com lock */}
+          <div className="flex items-center justify-between">
+            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+              Dano Base
+              {isAutoCalc && (
+                <span className="text-[10px] bg-purple-900/40 border border-purple-800 text-purple-300 px-1.5 py-0.5 rounded font-normal tracking-normal">
+                  Auto
+                </span>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={toggleLock}
+              title={isLocked ? "Desbloquear (restaurar auto-cálculo)" : "Bloquear (manter valores manuais)"}
+              className="flex items-center gap-1 px-2 py-1 rounded text-[10px] border transition-colors focus:outline-none focus:ring-1 focus:ring-purple-500/40"
+              style={{
+                borderColor: isLocked ? "rgb(217 119 6 / 0.6)" : "rgb(71 85 105)",
+                color:       isLocked ? "rgb(251 191 36)"       : "rgb(100 116 139)",
+                background:  isLocked ? "rgb(120 53 15 / 0.2)"  : "transparent",
+              }}
+            >
+              {isLocked
+                ? <><Lock className="w-3 h-3" /> Manual</>
+                : <><Unlock className="w-3 h-3" /> Auto</>
+              }
+            </button>
+          </div>
+
+          {/* Narrativa do ataque */}
+          <div>
+            <FieldLabel>Narrativa do Ataque</FieldLabel>
+            <Select
+              value={narrativeType}
+              onChange={(v) => updateDamage({ narrativeType: v, isNarrativePhysical: v === "fisica" })}
+              options={NARRATIVE_OPTIONS}
+            />
+          </div>
+
+          {/* Campos de dado */}
           <div className="grid grid-cols-4 gap-2">
             <div>
-              <FieldLabel>Nº Dados</FieldLabel>
-              <NumberInput value={baseDice} onChange={(v) => updateDamage({ numDice: v })} min={0} />
+              <FieldLabel>
+                Nº Dados
+                {hasActiveTrades && <span className="text-slate-600 font-normal ml-1 text-[9px]">base</span>}
+              </FieldLabel>
+              <NumberInput
+                value={numDiceBase}
+                onChange={(v) => updateDamage({ numDiceBase: v, damageIsLocked: true })}
+                min={0}
+              />
             </div>
             <div>
               <FieldLabel>Dado</FieldLabel>
               <select
                 value={dieSize}
-                onChange={(e) => updateDamage({ dieSize: parseInt(e.target.value) })}
+                onChange={(e) => updateDamage({ dieSize: parseInt(e.target.value), damageIsLocked: true })}
                 className="w-full h-9 bg-slate-950 border border-slate-700 rounded px-2 text-sm text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
               >
                 {DIE_SIZES.map((d) => <option key={d} value={d}>d{d}</option>)}
@@ -541,138 +1312,189 @@ function ActionFormFields({ form, update, updateDamage, updateCond }) {
             </div>
             <div>
               <FieldLabel>Fixo</FieldLabel>
-              <NumberInput value={mod} onChange={(v) => updateDamage({ mod: v })} />
+              <NumberInput
+                value={mod}
+                onChange={(v) => updateDamage({ mod: v, damageIsLocked: true })}
+              />
             </div>
             <div>
-              <FieldLabel>Tipo</FieldLabel>
-              <Select
+              <FieldLabel>Tipo de Dano</FieldLabel>
+              <select
                 value={form.damage?.type ?? "cortante"}
-                onChange={(v) => updateDamage({ type: v })}
-                options={DAMAGE_TYPE_OPTIONS}
-              />
+                onChange={(e) => updateDamage({ type: e.target.value })}
+                className="w-full h-9 bg-slate-950 border border-slate-700 rounded px-2 text-sm text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+              >
+                {DAMAGE_TYPE_GROUPS.map(({ label, types }) => (
+                  <optgroup key={label} label={label}>
+                    {types.map((t) => (
+                      <option key={t} value={t}>{DAMAGE_TYPE_LABELS[t]}</option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
             </div>
           </div>
 
-          {/* Preview com dados derivados */}
-          {(baseDice > 0 || mod !== 0) && (
+          {/* Preview da rolagem */}
+          {(finalDice > 0 || mod !== 0) && (
             <div className="text-xs text-slate-400 flex items-center gap-2 flex-wrap">
-              {isPhysical && baseDice !== finalDice ? (
-                <>
-                  <span>
-                    Base:{" "}
-                    <span className="font-mono line-through text-slate-600">
-                      {rollStr(baseDice, dieSize, mod)}
-                    </span>
-                  </span>
-                  <span className="text-amber-400">→</span>
-                  <span>
-                    Final:{" "}
-                    <span className="font-mono text-white font-bold">
-                      {rollStr(finalDice, dieSize, mod)}
-                    </span>
-                    <span className="ml-1 text-amber-400 text-[10px]">(-2 dados)</span>
-                  </span>
-                </>
-              ) : (
-                <span>
-                  Rolagem:{" "}
-                  <span className="font-mono text-white">{rollStr(finalDice, dieSize, mod)}</span>
+              <span>
+                Rolagem:{" "}
+                <span className="font-mono text-white font-semibold">
+                  {rollStr(finalDice, dieSize, mod)}
                 </span>
-              )}
-              <span className="text-slate-500">
-                (méd. {rollAverage(finalDice, dieSize, mod)})
               </span>
+              <span className="text-slate-500">(méd. {rollAverage(finalDice, dieSize, mod)})</span>
             </div>
           )}
 
-          {/* Checkbox Ataque Físico Narrativo */}
-          <label className="flex items-center gap-2 text-xs text-slate-400 cursor-pointer select-none">
-            <input
-              type="checkbox"
-              checked={isPhysical}
-              onChange={(e) => updateDamage({ isNarrativePhysical: e.target.checked })}
-              className="w-4 h-4 accent-purple-600 cursor-pointer rounded"
-            />
-            <span>Ataque Físico Narrativo (Soco/Chute)</span>
-            <span className="text-slate-600">— subtrai 2 dados automaticamente</span>
-          </label>
+          {/* Conversão Equivalente — steppers contextuais por tipo de ofensiva */}
+          {(isAcerto || isTR) && (
+            <div className="border-t border-slate-700/50 pt-2.5 space-y-2.5">
+              <div className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">
+                Conversão Equivalente
+              </div>
+
+              {isAcerto && (
+                <>
+                  <TradeRow
+                    label="Dados → Acerto"
+                    hint={`Cada dado sacrificado concede +2 Acerto (máx. ${capDadosAcerto})`}
+                    value={trades.sacrifDadosAcerto}
+                    onChange={(v) => updateTrade({ sacrifDadosAcerto: v })}
+                    blocked={blockedDadosAcerto}
+                    max={capDadosAcerto}
+                  />
+                  <TradeRow
+                    label="Acerto → Dados"
+                    hint={`Cada -2 Acerto concede +1 Dado (máx. ${capAcertoDados} Acerto)`}
+                    value={trades.sacrifAcertoDados}
+                    onChange={(v) => updateTrade({ sacrifAcertoDados: v })}
+                    step={2}
+                    blocked={blockedAcertoDados}
+                    max={capAcertoDados}
+                  />
+                </>
+              )}
+
+              {isTR && (
+                <>
+                  <TradeRow
+                    label="Dados → CD"
+                    hint={`Cada dado sacrificado concede +1 CD (máx. ${capDadosCD})`}
+                    value={trades.sacrifDadosCD}
+                    onChange={(v) => updateTrade({ sacrifDadosCD: v })}
+                    blocked={blockedDadosCD}
+                    max={capDadosCD}
+                  />
+                  <TradeRow
+                    label="CD → Dados"
+                    hint={`Cada -1 CD concede +1 Dado (máx. ${capCdDados})`}
+                    value={trades.sacrifCdDados}
+                    onChange={(v) => updateTrade({ sacrifCdDados: v })}
+                    blocked={blockedCdDados}
+                    max={capCdDados}
+                  />
+                </>
+              )}
+            </div>
+          )}
         </div>
       )}
 
       {/* Condição */}
       <div className="bg-slate-900/60 border border-slate-800 rounded p-3 space-y-2">
         <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Condição (Opcional)</div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <FieldLabel>Força da Condição</FieldLabel>
-            <Select
-              value={form.condition?.tier ?? "nenhuma"}
-              onChange={(v) => updateCond({ tier: v })}
-              options={CONDITION_TIER_OPTIONS}
-            />
-          </div>
-          {hasCond && (
-            <div>
-              <FieldLabel>Método de Custo</FieldLabel>
-              <Select
-                value={form.condition?.payment ?? "pe"}
-                onChange={(v) => updateCond({ payment: v })}
-                options={CONDITION_PAYMENT_OPTIONS}
-              />
-            </div>
-          )}
-        </div>
-
-        {/* Select de condição + input customizado */}
-        {hasCond && (
-          <div className="space-y-2">
-            <div>
-              <FieldLabel>Nome da Condição</FieldLabel>
-              <select
-                value={form.condition?.nameKey ?? ""}
-                onChange={(e) => handleCondNameKey(e.target.value)}
-                className="w-full h-9 bg-slate-950 border border-slate-700 rounded px-2 text-sm text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
-              >
-                {CONDITION_NAME_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>{o.label}</option>
-                ))}
-              </select>
-            </div>
-            {form.condition?.nameKey === "outro" && (
+        {isAcerto ? (
+          <p className="text-xs text-slate-500 italic">
+            Condições só podem ser aplicadas em Testes de Resistência.
+          </p>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <FieldLabel hint="campo livre">Nome Customizado</FieldLabel>
-                <TextInput
-                  value={form.condition?.name ?? ""}
-                  onChange={(v) => updateCond({ name: v })}
-                  placeholder="Descreva a condição..."
-                />
+                <FieldLabel>Força da Condição</FieldLabel>
+                <select
+                  value={form.condition?.tier ?? "nenhuma"}
+                  onChange={(e) => handleTierChange(e.target.value)}
+                  className="w-full h-9 bg-slate-950 border border-slate-700 rounded px-2 text-sm text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+                >
+                  {CONDITION_TIER_OPTIONS.map((opt) => {
+                    const minBt = BT_MIN_FOR_TIER[opt.value];
+                    const locked = minBt != null && bt < minBt;
+                    return (
+                      <option key={opt.value} value={opt.value} disabled={locked}>
+                        {opt.label}{locked ? ` (BT +${minBt} mín.)` : ""}
+                      </option>
+                    );
+                  })}
+                </select>
+                {form.condition?.tier && form.condition.tier !== "nenhuma" &&
+                  (BT_MIN_FOR_TIER[form.condition.tier] ?? 0) > bt && (
+                  <div className="mt-1 text-[10px] text-red-400">
+                    BT insuficiente para esta condição (requer +{BT_MIN_FOR_TIER[form.condition.tier]}, atual +{bt})
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        )}
+              {hasCond && (
+                <div>
+                  <FieldLabel>Método de Custo</FieldLabel>
+                  <Select
+                    value={form.condition?.payment ?? "pe"}
+                    onChange={(v) => updateCond({ payment: v })}
+                    options={CONDITION_PAYMENT_OPTIONS}
+                  />
+                </div>
+              )}
+            </div>
 
-        {/* Banner de aviso para redução de ND */}
-        {isCondND && (
-          <div className="bg-amber-950/30 border border-amber-700/50 rounded p-2.5 flex items-start gap-2 mt-1">
-            <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
-            <p className="text-xs text-amber-300 leading-relaxed">
-              <strong>Atenção:</strong> Você selecionou a redução de ND. Lembre-se de ajustar os dados e o dano
-              fixo baseando-se em{" "}
-              <strong>{CONDITION_ND_COST[form.condition.tier] ?? "?"} ND(s)</strong> abaixo do ND atual da
-              criatura, conforme a tabela.
-            </p>
-          </div>
+            {hasCond && (() => {
+              const tierKey = TIER_TO_CONDITIONS_KEY[form.condition?.tier ?? ""];
+              const condNamesForTier = tierKey ? CONDITIONS[tierKey] : [];
+              return (
+                <div className="space-y-2">
+                  <div>
+                    <FieldLabel>Nome da Condição</FieldLabel>
+                    <select
+                      value={form.condition?.nameKey ?? ""}
+                      onChange={(e) => handleCondNameKey(e.target.value)}
+                      className="w-full h-9 bg-slate-950 border border-slate-700 rounded px-2 text-sm text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+                    >
+                      <option value="">— Selecione —</option>
+                      {condNamesForTier.map((n) => (
+                        <option key={n} value={n}>{n.charAt(0).toUpperCase() + n.slice(1)}</option>
+                      ))}
+                      <option value="outro">Outro / Customizado</option>
+                    </select>
+                  </div>
+                  {form.condition?.nameKey === "outro" && (
+                    <div>
+                      <FieldLabel hint="campo livre">Nome Customizado</FieldLabel>
+                      <TextInput
+                        value={form.condition?.name ?? ""}
+                        onChange={(v) => updateCond({ name: v })}
+                        placeholder="Descreva a condição..."
+                      />
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+          </>
         )}
       </div>
 
-      {/* Descrição extra */}
+      {/* Flavor Text / Narração */}
       <div>
-        <FieldLabel hint="narração livre do efeito">Descrição Extra</FieldLabel>
+        <FieldLabel hint="flavor text — aparece antes do texto mecânico no preview">
+          Texto Narrativo
+        </FieldLabel>
         <TextArea
           value={form.description}
           onChange={(v) => update({ description: v })}
           rows={2}
-          placeholder="Ex: Conjura uma bola de fogo na palma da mão..."
+          placeholder="Ex: Com um rugido, a besta desfere uma garra afiada..."
         />
       </div>
 
@@ -688,7 +1510,7 @@ function RulesReference({ attackType, conditionTier }) {
   const tips = [];
 
   if (attackType === "tr_individual")
-    tips.push("TR Individual: falha = dano completo, sucesso = dano -1 ND.");
+    tips.push("TR Individual: O dano base é equivalente a 1 ND inferior ao Acerto. Falha = Dano completo calculado. Sucesso = Metade do dano.");
   else if (attackType === "tr_area")
     tips.push("TR em Área: falha = dano completo, sucesso = metade do dano.");
 

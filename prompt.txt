@@ -1,56 +1,22 @@
-"Claude, precisamos revisar e corrigir os valores baseados em nível e os multiplicadores matemáticos para o Patamar 'Lacaio'. Analisei a tabela oficial e notei algumas inconsistências na implementação atual.
+"Claude, a automação matemática do dano ficou perfeita! Como o sistema já calcula tudo sozinho, os avisos na interface ficaram redundantes e estão poluindo a tela. Além disso, precisamos de um pequeno ajuste narrativo para ataques em área de curto alcance.
 
-Refatore a base de dados/fórmulas do Patamar 'Lacaio' usando EXATAMENTE os valores abaixo:
+Faça as seguintes alterações no componente de Ações:
 
-1. Regras Fixas (Hardcoded) para Lacaios:
+1. Limpeza Visual (Remoção de Avisos):
 
-Atributos (Total): 20 + ND
+Remova o alerta amarelo/laranja que diz: 'Atenção: Você selecionou a redução de ND. Lembre-se de ajustar os dados e o dano fixo...'.
 
-Limite Máximo por Atributo: 20
+Remova também o bloco de informação (tooltip/texto) secundário que avisa sobre o custo da condição selecionada (ex: 'Condição Extrema: pagar 10 PE ou reduzir 4 ND do dano'). Como a automação já cobra esse valor e ajusta os dados nativamente, a UI não precisa mais exibir esses lembretes de cálculo manual.
 
-Vida Máxima: 10 + (Modificador de Constituição * 2) (Para todas as NDs de 1 a 10)
+2. Ajuste Narrativo (TR em Área + Corpo a Corpo):
+Na função generateActionDescription que monta o texto do Preview:
 
-PE (Pontos de Energia): 0
+Verifique se a ação é do tipo 'TR em Área' E se o alcance está definido como 'Corpo a Corpo' (CaC).
 
-RD (Geral) e Ignorar RD: 0
+Se essa combinação for verdadeira, altere a linha da Área no texto gerado para refletir que a origem é a própria criatura.
 
-Atenção: Apenas o bônus de Percepção (sem somar ND).
+Exemplo de como deve ficar a linha: Área: [X] Metros partindo de si mesmo.
 
-Iniciativa: Apenas o Modificador de Destreza (sem somar ND).
+Na frase descritiva logo abaixo, ajuste sutilmente para: Toda criatura na área partindo de você deve realizar um teste de resistência...
 
-Defesa: 10 + Mod de Destreza
-
-Restrições OBRIGATÓRIAS: Lacaios não recebem RD Irredutível, Vida Temporária por Ataque, Vantagens, Resistências e Imunidades. Zere ou oculte esses campos se o patamar for Lacaio.
-
-2. Fórmulas de Combate e Perícias:
-
-Quantidade de Perícias: Maior Modificador Mental.
-
-Perícias Não Dominadas: ND + Modificador do Atributo da perícia.
-
-Testes de Resistência (TR): ND + Modificador do Atributo correspondente.
-
-Acerto: ND + Modificador do Atributo Base de Acerto (aquele selecionável que implementamos).
-
-CD (Iniciante): ND + Math.floor(Modificador do Atributo Base da CD / 2).
-
-CD (Inter/Exp): ND + Modificador do Atributo Base da CD.
-
-3. Mapeamento Irregular (Use um Objeto/Switch Case):
-Para os valores que não seguem uma fórmula linear (Perícias Dominadas e Dano), use o mapeamento exato abaixo, onde a chave é a ND (1 a 10):
-
-JavaScript
-const lacaioProgression = {
-  1: { periciasDominadasBase: 3, danoMedio: 3, dadoDano: "1d4+1" },
-  2: { periciasDominadasBase: 4, danoMedio: 3, dadoDano: "1d4+1" },
-  3: { periciasDominadasBase: 5, danoMedio: 6, dadoDano: "1d6+3" },
-  4: { periciasDominadasBase: 6, danoMedio: 7, dadoDano: "2d4+3" },
-  5: { periciasDominadasBase: 8, danoMedio: 17, dadoDano: "2d10+6" },
-  6: { periciasDominadasBase: 9, danoMedio: 20, dadoDano: "2d10+9" },
-  7: { periciasDominadasBase: 10, danoMedio: 23, dadoDano: "2d12+10" },
-  8: { periciasDominadasBase: 11, danoMedio: 26, dadoDano: "3d8+13" },
-  9: { periciasDominadasBase: 13, danoMedio: 29, dadoDano: "3d10+13" },
-  10: { periciasDominadasBase: 14, danoMedio: 32, dadoDano: "4d8+14" }
-};
-// Fórmula final para Perícias Dominadas = periciasDominadasBase + Mod de Atributo
-Substitua a lógica atual de Lacaios no calculador de status (calculatedValues ou similar) por estas métricas para garantir 100% de precisão com o livro de regras!"
+Faça essa limpeza para deixarmos o painel minimalista e focado apenas nas escolhas táticas do Mestre!"

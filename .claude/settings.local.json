@@ -5,7 +5,8 @@
       "Bash(npm run *)",
       "Bash(npm install *)",
       "Bash(npx vite *)",
-      "Bash(node -e ' *)"
+      "Bash(node -e ' *)",
+      "Bash(node -e \"const icons = require\\('lucide-react'\\); console.log\\(Object.keys\\(icons\\).filter\\(k => k.toLowerCase\\(\\).includes\\('lock'\\)\\).join\\(', '\\)\\)\")"
     ]
   }
 }
