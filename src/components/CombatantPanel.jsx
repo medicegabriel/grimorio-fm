@@ -10,7 +10,7 @@ import {
   Square, CheckSquare, Crosshair, Sword
 } from 'lucide-react';
 import { createInitialCombatState, applyNewRoundEffects, LOG_TYPES, createLogEntry } from '../fm-encounter';
-import { humanizeAction, ACTION_TYPE_LABELS } from './sections/SectionActions';
+import { humanizeAction, generateActionDescription, ACTION_TYPE_LABELS } from './sections/SectionActions';
 import { getModifier, calculateCD, calculateAcerto } from './fm-tables';
 
 const ATTR_DEFS = [
@@ -127,7 +127,7 @@ const VitalBar = ({ kind, current, max, onChange }) => {
 };
 
 const StatBlock = ({ icon: Icon, label, value, sublabel, accent = 'text-slate-300' }) => (
-  <div className="bg-slate-900/60 border border-slate-800 rounded-md p-3 min-w-[88px] flex flex-col items-center justify-center text-center">
+  <div className="bg-slate-900/60 border border-slate-800 rounded-md p-3 flex flex-col items-center justify-center text-center h-full w-full">
     <div className="flex items-center justify-center gap-1.5 w-full">
       <Icon className={`w-3.5 h-3.5 ${accent}`} aria-hidden="true" />
       <span className="text-[10px] uppercase tracking-wider text-slate-500">{label}</span>
@@ -233,7 +233,7 @@ const ConditionManager = ({ conditions, onAdd, onRemove }) => {
   );
 };
 
-const ActionCard = ({ action }) => {
+const ActionCard = ({ action, creatureName }) => {
   const [expanded, setExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
   const typeClass = ACTION_TYPE_COLORS[action.type] ?? ACTION_TYPE_COLORS.livre;
@@ -268,7 +268,7 @@ const ActionCard = ({ action }) => {
 
       {expanded && (
         <div className="px-3 pb-3 pt-2 border-t border-slate-800 space-y-2">
-          <p className="text-sm text-slate-300 leading-relaxed">{humanizeAction(action)}</p>
+          <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">{generateActionDescription(action, creatureName, action.description) || humanizeAction(action)}</p>
           {dmgRoll && (
             <div className="flex items-center justify-between bg-slate-950 rounded px-2.5 py-2">
               <div className="flex items-center gap-1.5 text-xs min-w-0">
@@ -622,12 +622,12 @@ export default function CombatantPanel({
         <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2 flex items-center gap-2">
           <Activity className="w-3.5 h-3.5" /> Estatísticas de Combate
         </h3>
-        <div className="flex flex-wrap gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 items-stretch">
           <StatBlock icon={Shield}     label="Defesa"       value={stats.defesa ?? 0}           accent="text-sky-400" />
           <StatBlock icon={Eye}        label="Atenção"      value={stats.atencao ?? 0}          accent="text-amber-400" />
-          <StatBlock icon={Target}     label="Iniciativa"   value={`+${stats.iniciativa ?? 0}`} accent="text-emerald-400" />
-          <StatBlock icon={Crosshair}   label="CD"          value={cdValue}                     accent="text-orange-400" />
           <StatBlock icon={Sword}       label="Acerto"      value={`+${acertoValue}`}            accent="text-red-400" />
+          <StatBlock icon={Crosshair}   label="CD"          value={cdValue}                     accent="text-orange-400" />
+          <StatBlock icon={Target}     label="Iniciativa"   value={`+${stats.iniciativa ?? 0}`} accent="text-emerald-400" />
           <StatBlock icon={Shield}     label="RD Geral"     value={stats.rdGeral ?? 0}
             sublabel={`Irred. ${stats.rdIrredutivel ?? 0}`} accent="text-slate-400" />
           <StatBlock icon={Swords}     label="Ignorar RD"   value={stats.ignorarRd ?? 0}        accent="text-red-400" />
@@ -640,7 +640,7 @@ export default function CombatantPanel({
         <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">
           Testes de Resistência
         </h3>
-        <div className="flex flex-wrap gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-2 items-stretch">
           <StatBlock icon={Activity} label="Astúcia"   value={`+${saves.astucia ?? 0}`} />
           <StatBlock icon={Activity} label="Fortitude" value={`+${saves.fortitude ?? 0}`} />
           <StatBlock icon={Activity} label="Reflexos"  value={`+${saves.reflexos ?? 0}`} />
@@ -759,7 +759,7 @@ export default function CombatantPanel({
                     Nenhuma ação cadastrada
                   </div>
                 ) : (
-                  actionsList.map((a) => <ActionCard key={a.id} action={a} />)
+                  actionsList.map((a) => <ActionCard key={a.id} action={a} creatureName={combatant.displayName} />)
                 )}
               </div>
             )}

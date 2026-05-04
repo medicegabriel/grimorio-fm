@@ -1,22 +1,23 @@
-"Claude, a automação matemática do dano ficou perfeita! Como o sistema já calcula tudo sozinho, os avisos na interface ficaram redundantes e estão poluindo a tela. Além disso, precisamos de um pequeno ajuste narrativo para ataques em área de curto alcance.
+"Claude, vamos aplicar duas melhorias focadas puramente na Experiência do Usuário (UX) e organização da interface:
 
-Faça as seguintes alterações no componente de Ações:
+1. Textarea Auto-ajustável (Fim da barra de rolagem):
+Na tela de criação de habilidades (no campo de Preview/Texto Final editável), o <textarea> está exibindo uma barra de rolagem lateral (scrollbar) e limitando a visão geral do texto.
 
-1. Limpeza Visual (Remoção de Avisos):
+Altere o comportamento desse <textarea> para que ele ajuste sua altura (height) automaticamente com base no conteúdo inserido.
 
-Remova o alerta amarelo/laranja que diz: 'Atenção: Você selecionou a redução de ND. Lembre-se de ajustar os dados e o dano fixo...'.
+Você pode fazer isso utilizando um useRef e ajustando o style.height = scrollHeight + 'px' no evento onChange (ou sempre que o texto for atualizado), ou utilizando uma biblioteca como react-textarea-autosize se já estiver no projeto.
 
-Remova também o bloco de informação (tooltip/texto) secundário que avisa sobre o custo da condição selecionada (ex: 'Condição Extrema: pagar 10 PE ou reduzir 4 ND do dano'). Como a automação já cobra esse valor e ajusta os dados nativamente, a UI não precisa mais exibir esses lembretes de cálculo manual.
+Remova o overflow-y que força a barra de rolagem e certifique-se de que a caixa cresça suavemente para baixo conforme o texto aumenta.
 
-2. Ajuste Narrativo (TR em Área + Corpo a Corpo):
-Na função generateActionDescription que monta o texto do Preview:
+2. Reordenação do Grid de Estatísticas (Acerto e CD lado a lado):
+Nas 'Estatísticas de Combate' (tanto na ficha pronta quanto no Combat Tracker), a ordem visual atual está separando atributos que costumam ser consultados juntos.
 
-Verifique se a ação é do tipo 'TR em Área' E se o alcance está definido como 'Corpo a Corpo' (CaC).
+Encontre o componente que renderiza o grid de Estatísticas de Combate.
 
-Se essa combinação for verdadeira, altere a linha da Área no texto gerado para refletir que a origem é a própria criatura.
+Mude o card de 'Acerto' de lugar com o card de 'Iniciativa'.
 
-Exemplo de como deve ficar a linha: Área: [X] Metros partindo de si mesmo.
+A nova ordem no JSX deve ser: Defesa, Atenção, Acerto, CD, Iniciativa, RD Geral, Ignorar RD, Vida Temp/Atq.
 
-Na frase descritiva logo abaixo, ajuste sutilmente para: Toda criatura na área partindo de você deve realizar um teste de resistência...
+O objetivo é garantir que o Acerto fique posicionado exatamente ao lado da CD na mesma linha visual.
 
-Faça essa limpeza para deixarmos o painel minimalista e focado apenas nas escolhas táticas do Mestre!"
+Aplique essa reordenação do JSX e a função de auto-resize no textarea!"

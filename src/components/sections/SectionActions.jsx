@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Plus, Trash2, Copy, Swords, Info, AlertTriangle, Lock, Unlock } from "lucide-react";
 import { FieldLabel, TextInput, TextArea, Select, NumberInput, SmallButton, Pill } from "../builder-controls";
 import { getDamage, PATAMAR_ND_RANGE, CONDITIONS } from "../fm-tables";
@@ -216,7 +216,7 @@ function calcAutoRange(attackType, rangeType, bt) {
   const params = getActionParams(bt);
   if (rangeType === "cac") {
     return {
-      range: "CaC",
+      range: "Corpo-a-Corpo",
       area:  attackType === "tr_area" ? fmtM(params.area) : "-",
     };
   }
@@ -672,8 +672,8 @@ function ActionItem({ action, patamar, nd, bt, creatureName, onUpdate, onRemove,
 
       {!expanded && (
         <div className="px-3 pb-2">
-          <p className="text-xs text-slate-400 leading-relaxed line-clamp-2">
-            {humanizeAction(norm)}
+          <p className="text-xs text-slate-400 leading-relaxed whitespace-pre-wrap">
+            {generateActionDescription(norm, creatureName, norm.description) || humanizeAction(norm)}
           </p>
         </div>
       )}
@@ -706,6 +706,14 @@ function ActionForm({ derived, draft, onAdd, onCancel }) {
 
   const [isMechanicalTextLocked, setIsMechanicalTextLocked] = useState(true);
   const [manualMechanicalText,   setManualMechanicalText]   = useState("");
+  const textareaRef = useRef(null);
+
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = el.scrollHeight + "px";
+  }, [form, isMechanicalTextLocked, manualMechanicalText]);
 
   const [form, setForm] = useState(() => {
     const calcDmg    = calculateActionDamage(patamar, nd, "acerto", false);
@@ -937,11 +945,11 @@ function ActionForm({ derived, draft, onAdd, onCancel }) {
                 </button>
               </div>
               <textarea
+                ref={textareaRef}
                 readOnly={isMechanicalTextLocked}
                 value={displayText}
                 onChange={(e) => !isMechanicalTextLocked && setManualMechanicalText(e.target.value)}
-                rows={5}
-                className={`w-full bg-slate-950 border rounded px-2.5 py-2 text-xs text-slate-300 leading-relaxed resize-y focus:outline-none transition-colors ${
+                className={`w-full bg-slate-950 border rounded px-2.5 py-2 text-xs text-slate-300 leading-relaxed resize-none overflow-hidden focus:outline-none transition-colors ${
                   isMechanicalTextLocked
                     ? "border-slate-800 cursor-default text-slate-400"
                     : "border-amber-700/60 focus:border-amber-500 focus:ring-1 focus:ring-amber-500/30"

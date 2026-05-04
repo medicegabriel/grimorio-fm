@@ -3,7 +3,7 @@ import {
   Heart, Zap, Shield, Eye, Target, ShieldAlert, Sparkles, Star, GraduationCap, Crosshair, Sword,
 } from "lucide-react";
 import { PATAMAR_LABELS, getModifier } from "../fm-tables";
-import { humanizeAction } from "./SectionActions";
+import { humanizeAction, generateActionDescription } from "./SectionActions";
 
 const ATTR_PREVIEW = [
   { key: "forca",        label: "FOR", accent: "text-red-400" },
@@ -205,7 +205,7 @@ export default function LivePreview({ draft, derived }) {
           names={(draft.treinamentos || []).map((t) => t.nome)}
           accent="text-emerald-300"
         />
-        <ActionsList actions={draft.actions?.list || []} />
+        <ActionsList actions={draft.actions?.list || []} creatureName={draft.name} />
         <CompactList
           label="Características"
           icon={<Sparkles className="w-3 h-3 text-fuchsia-400" />}
@@ -279,7 +279,7 @@ function PortraitHeader({ draft }) {
   );
 }
 
-function ActionsList({ actions }) {
+function ActionsList({ actions, creatureName }) {
   if (!actions.length) return null;
   return (
     <div className="pt-2 border-t border-slate-800">
@@ -288,8 +288,8 @@ function ActionsList({ actions }) {
       </h5>
       <div className="space-y-1.5">
         {actions.map((a) => (
-          <p key={a.id} className="text-xs text-rose-200/80 leading-relaxed">
-            {humanizeAction(a)}
+          <p key={a.id} className="text-xs text-rose-200/80 leading-relaxed whitespace-pre-wrap">
+            {generateActionDescription(a, creatureName, a.description) || humanizeAction(a)}
           </p>
         ))}
       </div>

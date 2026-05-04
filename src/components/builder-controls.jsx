@@ -151,7 +151,7 @@ export const StatField = ({
   };
 
   return (
-    <div className={`bg-slate-950/60 border rounded p-2.5 transition-colors ${
+    <div className={`bg-slate-950/60 border rounded p-2.5 transition-colors h-full flex flex-col justify-between ${
       isOverridden ? "border-amber-700/60 bg-amber-950/10" : "border-slate-800"
     }`}>
       <div className="flex items-center justify-between mb-1">

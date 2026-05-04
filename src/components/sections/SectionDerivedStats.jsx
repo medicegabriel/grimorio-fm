@@ -98,7 +98,7 @@ export default function SectionDerivedStats({ draft, derived, actions }) {
         <h3 className="text-[10px] uppercase tracking-widest text-slate-500 mb-2 font-bold">
           Estatísticas de Combate
         </h3>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 items-stretch">
           {STAT_DEFINITIONS.map(({ key, label, icon, accent }) => (
             <StatField
               key={key}
@@ -118,7 +118,7 @@ export default function SectionDerivedStats({ draft, derived, actions }) {
         <h3 className="text-[10px] uppercase tracking-widest text-slate-500 mb-2 font-bold">
           Testes de Resistência
         </h3>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 items-stretch">
           {SAVE_DEFINITIONS.map(({ key, label }) => (
             <StatField
               key={key}
