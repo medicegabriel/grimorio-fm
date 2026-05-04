@@ -7,11 +7,11 @@ import {
   Heart, Zap, Shield, Skull, Plus, Minus, ChevronDown, ChevronUp,
   Copy, AlertTriangle, Eye, EyeOff, X, Swords, Dices, RotateCcw,
   ShieldAlert, Activity, Target, Sparkles, Clock, GraduationCap, Star,
-  Square, CheckSquare, Crosshair, Sword
+  Square, CheckSquare, Crosshair, Sword, Hourglass
 } from 'lucide-react';
 import { createInitialCombatState, applyNewRoundEffects, LOG_TYPES, createLogEntry } from '../fm-encounter';
 import { humanizeAction, generateActionDescription, ACTION_TYPE_LABELS } from './sections/SectionActions';
-import { getModifier, calculateCD, calculateAcerto } from './fm-tables';
+import { getModifier, calculateCD, calculateAcerto, CONDITIONS } from './fm-tables';
 
 const ATTR_DEFS = [
   { key: 'forca',        label: 'FOR', accent: 'text-red-400' },
@@ -49,6 +49,18 @@ const CONDITION_LEVELS = {
   forte:   { label: 'Forte',   color: 'bg-orange-900 text-orange-100 border-orange-700' },
   extrema: { label: 'Extrema', color: 'bg-red-900 text-red-100 border-red-700' }
 };
+
+const CONDITION_LEVEL_MAP = Object.entries({
+  fracas: 'fraca', medias: 'media', fortes: 'forte', extremas: 'extrema'
+}).reduce((acc, [tier, lv]) => {
+  (CONDITIONS[tier] ?? []).forEach((n) => { acc[n] = lv; });
+  return acc;
+}, {});
+
+const VARIABLE_CONDITIONS = new Set(['sangramento']);
+
+// Condições sem duração por rodadas — duram até resolução mecânica
+const PERMANENT_CONDITIONS = new Set(['caido', 'sangramento']);
 
 const ACTION_TYPE_COLORS = {
   comum:      'bg-red-950/40 border-red-900 text-red-300',
@@ -168,20 +180,68 @@ const Counter = ({ label, used, max, onChange, accent = 'purple' }) => {
   );
 };
 
+const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+
 const ConditionManager = ({ conditions, onAdd, onRemove }) => {
   const [name, setName] = useState('');
   const [level, setLevel] = useState('fraca');
+  const [duracao, setDuracao] = useState(1);
+  const [isCustom, setIsCustom] = useState(false);
+  const [customName, setCustomName] = useState('');
+
+  const revertToSelect = useCallback(() => {
+    setIsCustom(false);
+    setName('');
+    setCustomName('');
+    setDuracao(1);
+  }, []);
+
+  const handleConditionChange = useCallback((val) => {
+    if (val === '__custom__') {
+      setIsCustom(true);
+      setCustomName('');
+      setName('__custom__');
+      setDuracao((prev) => prev ?? 1);
+      return;
+    }
+    setName(val);
+    const mapped = CONDITION_LEVEL_MAP[val];
+    if (mapped) setLevel(mapped);
+    if (PERMANENT_CONDITIONS.has(val)) {
+      setDuracao(null);
+    } else {
+      setDuracao((prev) => prev ?? 1);
+    }
+  }, []);
+
+  // Reverte para o select quando o input perde foco com campo vazio.
+  // Se o foco foi para o botão "Adicionar", deixa o click acontecer primeiro.
+  const handleCustomBlur = useCallback((e) => {
+    if (e.relatedTarget?.dataset?.action === 'add') return;
+    if (!customName.trim()) revertToSelect();
+  }, [customName, revertToSelect]);
+
+  const levelLocked = !isCustom && !!name && !VARIABLE_CONDITIONS.has(name) && CONDITION_LEVEL_MAP[name] != null;
+  const isPermanent = !isCustom && PERMANENT_CONDITIONS.has(name);
 
   const handleAdd = useCallback(() => {
-    if (!name.trim()) return;
+    const finalName = isCustom ? customName.trim() : name.trim();
+    if (!finalName) return;
     onAdd({
       id: `cond_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-      name: name.trim(),
+      name: finalName,
       level,
+      duracao,
       appliedAt: new Date().toISOString()
     });
     setName('');
-  }, [name, level, onAdd]);
+    setCustomName('');
+    setIsCustom(false);
+    setDuracao(1);
+  }, [isCustom, customName, name, level, duracao, onAdd]);
+
+  const inputCls = 'flex-1 min-w-[120px] h-10 bg-slate-950 border rounded px-2 py-2 text-sm leading-tight text-white focus:outline-none';
+  const selectCls = 'h-10 w-full bg-slate-950 border border-slate-700 rounded pl-3 pr-10 py-2 text-sm leading-tight text-white appearance-none focus:outline-none focus:border-purple-500';
 
   return (
     <div className="bg-slate-900/60 border border-slate-800 rounded-lg p-4">
@@ -202,6 +262,10 @@ const ConditionManager = ({ conditions, onAdd, onRemove }) => {
               className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded border text-xs font-medium ${theme.color}`}>
               <span className="capitalize">{c.name}</span>
               <span className="opacity-70">({theme.label})</span>
+              {c.duracao != null
+                ? <span className="font-mono opacity-80">⏳{c.duracao}</span>
+                : <span className="opacity-60">∞</span>
+              }
               <button type="button" onClick={() => onRemove(c.id)}
                 className="ml-0.5 hover:text-white focus:outline-none focus:ring-1 focus:ring-white/50 rounded"
                 aria-label={`Remover condição ${c.name}`}>
@@ -212,20 +276,89 @@ const ConditionManager = ({ conditions, onAdd, onRemove }) => {
         })}
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        <input type="text" value={name} onChange={(e) => setName(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
-          placeholder="Ex: Sangramento, Caído, Exposto..."
-          className="flex-1 min-w-0 h-9 bg-slate-950 border border-slate-700 rounded px-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-purple-500" />
-        <select value={level} onChange={(e) => setLevel(e.target.value)}
-          className="flex-shrink-0 h-9 bg-slate-950 border border-slate-700 rounded px-2 text-sm text-white focus:outline-none focus:border-purple-500"
-          aria-label="Nível da condição">
-          {Object.entries(CONDITION_LEVELS).map(([key, v]) => (
-            <option key={key} value={key}>{v.label}</option>
-          ))}
-        </select>
-        <button type="button" onClick={handleAdd}
-          className="flex-shrink-0 h-9 px-4 bg-purple-800 hover:bg-purple-700 rounded text-sm font-semibold text-white transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500">
+      <div className="flex flex-wrap items-center gap-2">
+        {/* Seletor ou input de condição */}
+        {isCustom ? (
+          <input
+            type="text"
+            value={customName}
+            onChange={(e) => setCustomName(e.target.value)}
+            onBlur={handleCustomBlur}
+            placeholder="Nome da condição..."
+            autoFocus
+            className={`${inputCls} border-purple-600 focus:border-purple-400 placeholder:text-slate-500`}
+            aria-label="Nome da condição personalizada"
+          />
+        ) : (
+          <div className="relative flex-1 min-w-[140px]">
+            <select
+              value={name}
+              onChange={(e) => handleConditionChange(e.target.value)}
+              className={selectCls}
+              aria-label="Condição"
+            >
+              <option value="">— Condição —</option>
+              <optgroup label="Fracas">
+                {CONDITIONS.fracas.map((n) => <option key={n} value={n}>{cap(n)}</option>)}
+              </optgroup>
+              <optgroup label="Médias">
+                {CONDITIONS.medias.map((n) => <option key={n} value={n}>{cap(n)}</option>)}
+              </optgroup>
+              <optgroup label="Fortes">
+                {CONDITIONS.fortes.map((n) => <option key={n} value={n}>{cap(n)}</option>)}
+              </optgroup>
+              <optgroup label="Extremas">
+                {CONDITIONS.extremas.map((n) => <option key={n} value={n}>{cap(n)}</option>)}
+              </optgroup>
+              <optgroup label="Personalizada">
+                <option value="__custom__">✦ Outra / Personalizada</option>
+              </optgroup>
+            </select>
+            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+          </div>
+        )}
+
+        {/* Seletor de nível — travado quando a condição tem nível fixo */}
+        <div className={`relative flex-shrink-0 transition-opacity ${levelLocked ? 'opacity-50' : ''}`}>
+          <select
+            value={level}
+            onChange={(e) => setLevel(e.target.value)}
+            disabled={levelLocked}
+            className={`${selectCls} ${levelLocked ? 'cursor-not-allowed' : ''}`}
+            aria-label="Nível da condição"
+          >
+            {Object.entries(CONDITION_LEVELS).map(([key, v]) => (
+              <option key={key} value={key}>{v.label}</option>
+            ))}
+          </select>
+          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+        </div>
+
+        {/* Duração com ícone — desabilitado para condições permanentes */}
+        <div className={`flex items-center gap-1 flex-shrink-0 bg-slate-950 border border-slate-700 rounded h-10 px-2 focus-within:border-purple-500 ${isPermanent ? 'opacity-50' : ''}`}>
+          <Hourglass className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" />
+          {isPermanent ? (
+            <span className="w-14 text-center text-sm leading-tight text-slate-500 select-none" title="Duração contínua">—</span>
+          ) : (
+            <input
+              type="number"
+              value={duracao ?? 1}
+              onChange={(e) => setDuracao(Math.max(1, parseInt(e.target.value, 10) || 1))}
+              min={1}
+              placeholder="Rdds"
+              title="Duração (Rodadas)"
+              aria-label="Duração (Rodadas)"
+              className="w-14 h-full bg-transparent text-center text-sm leading-tight text-white placeholder:text-slate-600 focus:outline-none"
+            />
+          )}
+        </div>
+
+        <button
+          type="button"
+          data-action="add"
+          onClick={handleAdd}
+          className="flex-shrink-0 h-10 px-4 bg-purple-800 hover:bg-purple-700 rounded text-sm font-semibold text-white transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500"
+        >
           Adicionar
         </button>
       </div>

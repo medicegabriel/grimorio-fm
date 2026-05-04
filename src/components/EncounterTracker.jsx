@@ -1,17 +1,17 @@
 // components/EncounterTracker.jsx
 // View única que delega para sub-renderizadores por status do encontro.
 
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import {
   ArrowLeft, Plus, X, Dices, Play, Pause, SkipForward, Clock,
   Users, UserPlus, Search, Swords, Trophy, Skull, Eye, EyeOff,
-  Copy, ChevronDown, ChevronUp, Edit3, Shield, Square, CheckSquare
+  Copy, ChevronDown, ChevronUp, Edit3, Shield, Square, CheckSquare, AlertTriangle
 } from 'lucide-react';
 import CombatantPanel from './CombatantPanel';
 import useEncounter from '../useEncounter';
 import {
-  ENCOUNTER_STATUS, COMBATANT_SIDE, SIDE_LABELS
+  ENCOUNTER_STATUS, COMBATANT_SIDE, SIDE_LABELS, LOG_TYPES
 } from '../fm-encounter';
 
 // ============================================================
@@ -597,6 +597,24 @@ const EncounterActive = ({ encounter, derived, actions, creatures, folders = [],
   const [showSidebar, setShowSidebar] = useState(false);
   const [showAdder, setShowAdder] = useState(false);
   const [confirmRemove, setConfirmRemove] = useState(null);
+  const [toasts, setToasts] = useState([]);
+  const prevLogLenRef = useRef(encounter.log.length);
+
+  useEffect(() => {
+    const prev = prevLogLenRef.current;
+    const curr = encounter.log.length;
+    if (curr > prev) {
+      const newEntries = encounter.log.slice(0, curr - prev);
+      newEntries
+        .filter((e) => e.type === LOG_TYPES.CONDITION)
+        .forEach((e) => {
+          const toastId = `toast_${e.id}`;
+          setToasts((p) => [...p, { id: toastId, message: e.message }]);
+          setTimeout(() => setToasts((p) => p.filter((t) => t.id !== toastId)), 5000);
+        });
+    }
+    prevLogLenRef.current = curr;
+  }, [encounter.log]);
 
   // Sincroniza foco com o turno ativo quando ele muda (o usuário pode desviar o foco)
   const effectiveFocusId = focusedId ?? encounter.activeCombatantId;
@@ -625,6 +643,23 @@ const EncounterActive = ({ encounter, derived, actions, creatures, folders = [],
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-purple-950/30 text-white">
+      {/* ===== TOASTS DE CONDIÇÃO EXPIRADA ===== */}
+      {toasts.length > 0 && (
+        <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm">
+          {toasts.map((t) => (
+            <div key={t.id}
+              className="flex items-start gap-2 bg-amber-950/90 border border-amber-700 rounded-lg px-4 py-3 shadow-xl text-sm text-amber-100 animate-pulse-once">
+              <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+              <span className="flex-1">{t.message}</span>
+              <button type="button" onClick={() => setToasts((p) => p.filter((x) => x.id !== t.id))}
+                className="text-amber-400 hover:text-white focus:outline-none ml-1">
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
       <header className="sticky top-0 z-40 bg-slate-950/90 backdrop-blur border-b border-purple-900/50">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3 flex-wrap">
           <button type="button" onClick={onBack}
@@ -852,8 +887,8 @@ const EncounterFinished = ({ encounter, derived, actions, onBack, onDuplicate })
           </h3>
           <ul className="max-h-80 overflow-y-auto divide-y divide-slate-800/60">
             {encounter.log.map((e) => (
-              <li key={e.id} className="py-1.5 text-xs text-slate-400">
-                <span className="text-slate-600 uppercase tracking-wider text-[10px] mr-2">
+              <li key={e.id} className={`py-1.5 text-xs ${e.type === LOG_TYPES.CONDITION ? 'text-amber-300' : 'text-slate-400'}`}>
+                <span className={`uppercase tracking-wider text-[10px] mr-2 ${e.type === LOG_TYPES.CONDITION ? 'text-amber-600' : 'text-slate-600'}`}>
                   R{e.round} · {e.type}
                 </span>
                 {e.message}

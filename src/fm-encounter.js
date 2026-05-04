@@ -243,6 +243,14 @@ export const autoNumberDuplicates = (combatants) => {
 // Regra atual: reseta Guarda Inabalável ao máximo.
 // EXT: adicionar regeneração, tick de condições, etc.
 // ============================================================
+// Retorna as condições que vão expirar nesta rodada (para notificações antes de aplicar)
+export const getExpiredConditions = (combatant) => {
+  if (!combatant.combatState) return [];
+  return (combatant.combatState.activeConditions ?? [])
+    .filter((c) => c.duracao != null && c.duracao - 1 <= 0)
+    .map((c) => ({ conditionName: c.name, combatantName: combatant.displayName }));
+};
+
 export const applyNewRoundEffects = (combatant) => {
   if (!combatant.combatState) return combatant; // PC
   if (combatant.flags.isDefeated) return combatant;
@@ -250,12 +258,17 @@ export const applyNewRoundEffects = (combatant) => {
   const stats = combatant.snapshot?.stats ?? {};
   const guardaMax = stats.guardaInabavalMax ?? 0;
 
-  // Regra do sistema: apenas reseta a Guarda ao máximo. HP nunca é alterado aqui.
+  // duracao === null = condição permanente (ex: Caído, Sangramento) — nunca decrementa nem remove
+  const updatedConditions = (combatant.combatState.activeConditions ?? [])
+    .map((c) => c.duracao == null ? c : { ...c, duracao: c.duracao - 1 })
+    .filter((c) => c.duracao == null || c.duracao > 0);
+
   return {
     ...combatant,
     combatState: {
       ...combatant.combatState,
-      guardaInabavalCurrent: guardaMax
+      guardaInabavalCurrent: guardaMax,
+      activeConditions: updatedConditions
     }
   };
 };

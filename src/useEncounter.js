@@ -8,7 +8,7 @@ import {
   orderByInitiative, rollAllInitiatives, setManualInitiative,
   getNextTurn, applyNewRoundToAll, isAutoDefeated,
   validateReadyToStart, ENCOUNTER_STATUS, canTransition,
-  createLogEntry, LOG_TYPES, rollInitiative
+  createLogEntry, LOG_TYPES, rollInitiative, getExpiredConditions
 } from './fm-encounter';
 
 // ============================================================
@@ -129,7 +129,14 @@ const HANDLERS = {
     const log = [...state.log];
 
     if (isNewRound) {
+      const expired = combatants.flatMap(getExpiredConditions);
       combatants = applyNewRoundToAll(combatants);
+      expired.forEach(({ conditionName, combatantName }) => {
+        log.unshift(createLogEntry({
+          round: newRound, type: LOG_TYPES.CONDITION,
+          message: `A condição [${conditionName}] de ${combatantName} chegou ao fim e foi removida.`
+        }));
+      });
       log.unshift(createLogEntry({
         round: newRound, type: LOG_TYPES.ROUND,
         message: `Rodada ${newRound} iniciada.`
@@ -151,15 +158,18 @@ const HANDLERS = {
   NEW_ROUND: (state) => {
     // Força nova rodada manualmente (reaplica Guarda + avança contador)
     if (state.status !== ENCOUNTER_STATUS.ACTIVE) return state;
+    const expired = state.combatants.flatMap(getExpiredConditions);
     const combatants = applyNewRoundToAll(state.combatants);
     const round = state.round + 1;
-    return {
-      ...state, combatants, round,
-      log: [
-        createLogEntry({ round, type: LOG_TYPES.ROUND, message: `Rodada ${round} forçada manualmente.` }),
-        ...state.log
-      ]
-    };
+    const newLog = [];
+    expired.forEach(({ conditionName, combatantName }) => {
+      newLog.push(createLogEntry({
+        round, type: LOG_TYPES.CONDITION,
+        message: `A condição [${conditionName}] de ${combatantName} chegou ao fim e foi removida.`
+      }));
+    });
+    newLog.push(createLogEntry({ round, type: LOG_TYPES.ROUND, message: `Rodada ${round} forçada manualmente.` }));
+    return { ...state, combatants, round, log: [...newLog, ...state.log] };
   },
 
   END_COMBAT: (state) => {

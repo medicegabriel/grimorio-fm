@@ -1,23 +1,21 @@
-"Claude, vamos aplicar duas melhorias focadas puramente na Experiência do Usuário (UX) e organização da interface:
+"Claude, o ajuste de padding-right não funcionou como o esperado porque o navegador está ignorando o padding para posicionar a seta nativa do <select>, mantendo-a grudada na borda.
 
-1. Textarea Auto-ajustável (Fim da barra de rolagem):
-Na tela de criação de habilidades (no campo de Preview/Texto Final editável), o <textarea> está exibindo uma barra de rolagem lateral (scrollbar) e limitando a visão geral do texto.
+Para termos controle total sobre o visual, precisamos remover a seta padrão e adicionar um ícone customizado. Faça a seguinte refatoração nos campos <select> de Condição e Nível:
 
-Altere o comportamento desse <textarea> para que ele ajuste sua altura (height) automaticamente com base no conteúdo inserido.
+1. Remova a seta nativa do navegador:
+Adicione a classe Tailwind appearance-none diretamente no seu <select>. Isso vai esconder a seta padrão do sistema.
 
-Você pode fazer isso utilizando um useRef e ajustando o style.height = scrollHeight + 'px' no evento onChange (ou sempre que o texto for atualizado), ou utilizando uma biblioteca como react-textarea-autosize se já estiver no projeto.
+2. Crie um container relativo (Wrapper):
+Envolva cada <select> em uma div com posicionamento relativo. Exemplo: <div className="relative">
 
-Remova o overflow-y que força a barra de rolagem e certifique-se de que a caixa cresça suavemente para baixo conforme o texto aumenta.
+3. Adicione um ícone customizado absoluto:
+Logo após o <select> (ainda dentro da nova div), adicione um ícone de seta (se estiver usando lucide-react, use o ChevronDown).
 
-2. Reordenação do Grid de Estatísticas (Acerto e CD lado a lado):
-Nas 'Estatísticas de Combate' (tanto na ficha pronta quanto no Combat Tracker), a ordem visual atual está separando atributos que costumam ser consultados juntos.
+Aplique as classes de posicionamento absoluto: className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
 
-Encontre o componente que renderiza o grid de Estatísticas de Combate.
+O pointer-events-none é crucial para que o usuário possa clicar na seta e o clique "atravesse" para abrir o <select>.
 
-Mude o card de 'Acerto' de lugar com o card de 'Iniciativa'.
+4. Mantenha o Padding do texto:
+Certifique-se de que o <select> ainda tenha o pr-10 ou pr-8 para que a palavra 'Condição' ou 'Extrema' não fique por baixo do novo ícone.
 
-A nova ordem no JSX deve ser: Defesa, Atenção, Acerto, CD, Iniciativa, RD Geral, Ignorar RD, Vida Temp/Atq.
-
-O objetivo é garantir que o Acerto fique posicionado exatamente ao lado da CD na mesma linha visual.
-
-Aplique essa reordenação do JSX e a função de auto-resize no textarea!"
+Refatore esses dois selects com essa estrutura para que a seta fique perfeitamente recuada da borda!"

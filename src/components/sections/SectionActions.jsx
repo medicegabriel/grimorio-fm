@@ -708,13 +708,6 @@ function ActionForm({ derived, draft, onAdd, onCancel }) {
   const [manualMechanicalText,   setManualMechanicalText]   = useState("");
   const textareaRef = useRef(null);
 
-  useEffect(() => {
-    const el = textareaRef.current;
-    if (!el) return;
-    el.style.height = "auto";
-    el.style.height = el.scrollHeight + "px";
-  }, [form, isMechanicalTextLocked, manualMechanicalText]);
-
   const [form, setForm] = useState(() => {
     const calcDmg    = calculateActionDamage(patamar, nd, "acerto", false);
     const tHitBase   = derived?.acertoPrincipal ?? 0;
@@ -893,6 +886,18 @@ function ActionForm({ derived, draft, onAdd, onCancel }) {
       return { ...prev, ...rangeUpdates, ...reapplied };
     });
 
+  const handleResize = () => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  };
+
+  useEffect(() => {
+    handleResize();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form, isMechanicalTextLocked, manualMechanicalText]);
+
   return (
     <div className="bg-slate-950/70 border border-purple-900/50 rounded p-4 space-y-3">
       <h4 className="text-sm font-bold text-purple-300 flex items-center gap-2">
@@ -948,7 +953,7 @@ function ActionForm({ derived, draft, onAdd, onCancel }) {
                 ref={textareaRef}
                 readOnly={isMechanicalTextLocked}
                 value={displayText}
-                onChange={(e) => !isMechanicalTextLocked && setManualMechanicalText(e.target.value)}
+                onChange={(e) => { if (!isMechanicalTextLocked) { setManualMechanicalText(e.target.value); handleResize(); } }}
                 className={`w-full bg-slate-950 border rounded px-2.5 py-2 text-xs text-slate-300 leading-relaxed resize-none overflow-hidden focus:outline-none transition-colors ${
                   isMechanicalTextLocked
                     ? "border-slate-800 cursor-default text-slate-400"
