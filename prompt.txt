@@ -1,21 +1,28 @@
-"Claude, o ajuste de padding-right não funcionou como o esperado porque o navegador está ignorando o padding para posicionar a seta nativa do <select>, mantendo-a grudada na borda.
+"Claude, precisamos adicionar uma regra fundamental ao comportamento do Dano na Alma que não havia sido especificada: Dano na Alma também causa dano direto nos Pontos de Vida (HP), ignorando completamente a Guarda Inabalável.
 
-Para termos controle total sobre o visual, precisamos remover a seta padrão e adicionar um ícone customizado. Faça a seguinte refatoração nos campos <select> de Condição e Nível:
+Atualize a função/handler que aplica o dano na barra de Integridade (Alma) com a seguinte lógica:
 
-1. Remova a seta nativa do navegador:
-Adicione a classe Tailwind appearance-none diretamente no seu <select>. Isso vai esconder a seta padrão do sistema.
+1. Subtração Dupla (Alma e Vida):
+Quando o usuário inserir um valor de dano (ex: dano = 500) e aplicar na barra de Integridade (Alma), o sistema deve atualizar DOIS estados simultaneamente:
 
-2. Crie um container relativo (Wrapper):
-Envolva cada <select> em uma div com posicionamento relativo. Exemplo: <div className="relative">
+almaAtual = Math.max(0, almaAtual - dano)
 
-3. Adicione um ícone customizado absoluto:
-Logo após o <select> (ainda dentro da nova div), adicione um ícone de seta (se estiver usando lucide-react, use o ChevronDown).
+hpAtual = Math.max(0, hpAtual - dano)
 
-Aplique as classes de posicionamento absoluto: className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
+2. Ignorar Guarda Inabalável (Bypass):
 
-O pointer-events-none é crucial para que o usuário possa clicar na seta e o clique "atravesse" para abrir o <select>.
+Garanta que a subtração no hpAtual provocada por dano na Alma NÃO passe pela lógica de absorção de Guarda Inabalável. O dano vai direto na carne (no hpAtual).
 
-4. Mantenha o Padding do texto:
-Certifique-se de que o <select> ainda tenha o pr-10 ou pr-8 para que a palavra 'Condição' ou 'Extrema' não fique por baixo do novo ícone.
+Exemplo Prático para Validar a Lógica:
 
-Refatore esses dois selects com essa estrutura para que a seta fique perfeitamente recuada da borda!"
+Um personagem tem 1000 de HP Máximo, 500 de HP Atual e 1000 de Alma Atual.
+
+Ele recebe 500 de Dano na Alma.
+
+A Alma dele cai de 1000 para 500. (O que esmaga o HP Máximo dele para 500 devido ao Derived State implementado anteriormente).
+
+O HP Atual dele cai de 500 para 0 (pois subtrai 500 direto, ignorando guarda).
+
+Resultado final visível: 500/1000 Alma Atual e 0/500 HP Atual.
+
+Aplique essa dupla dedução no mesmo ciclo de atualização de estado (no mesmo setState ou dispatch) para evitar renders desnecessários e garantir a sincronia!"

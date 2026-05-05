@@ -54,6 +54,8 @@ const d20 = () => Math.floor(Math.random() * 20) + 1;
 export const createInitialCombatState = (stats = {}) => ({
   isActive: true,
   hpCurrent: stats.hpMax ?? 0,
+  hpMaxBase: stats.hpMax ?? 0,
+  almaAtual: stats.hpMax ?? 0,
   peCurrent: stats.peMax ?? 0,
   guardaInabavalCurrent: stats.guardaInabavalMax ?? 0,
   resistenciaParcialUsed: 0,
@@ -377,3 +379,35 @@ export const createLogEntry = ({
   message,
   combatantId
 });
+
+// ============================================================
+// INTEGRIDADE DA ALMA — Derived State
+// Retorna o estado calculado on-the-fly sem mutar o combatState.
+// ============================================================
+export const ALMA_ESTADOS = {
+  estavel:   { label: 'Estável',   cor: 'cyan',   penalidade: 0,  desvantagem: false, custoExtra: 0, condicoes: [] },
+  danificado:{ label: 'Danificado',cor: 'yellow', penalidade: -3, desvantagem: false, custoExtra: 2, condicoes: [] },
+  instavel:  { label: 'Instável',  cor: 'orange', penalidade: -6, desvantagem: false, custoExtra: 3, condicoes: ['Exposto'] },
+  critico:   { label: 'Crítico',   cor: 'red',    penalidade: -8, desvantagem: true,  custoExtra: 5, condicoes: ['Exposto', 'Fragilizado'] },
+  destruido: { label: 'Destruído', cor: 'dead',   penalidade: 0,  desvantagem: false, custoExtra: 0, condicoes: [] },
+};
+
+export const computeAlmaStatus = (almaAtual, hpMaxBase) => {
+  const base = hpMaxBase ?? 0;
+  const alma = almaAtual ?? base;
+  const hpMaxAtual = Math.max(0, alma);
+
+  if (base <= 0 || alma <= 0) {
+    return { pct: 0, hpMaxAtual: 0, estadoKey: 'destruido', ...ALMA_ESTADOS.destruido };
+  }
+
+  const pct = (alma / base) * 100;
+
+  let estadoKey;
+  if (pct > 75)      estadoKey = 'estavel';
+  else if (pct > 50) estadoKey = 'danificado';
+  else if (pct > 25) estadoKey = 'instavel';
+  else               estadoKey = 'critico';
+
+  return { pct, hpMaxAtual, estadoKey, ...ALMA_ESTADOS[estadoKey] };
+};

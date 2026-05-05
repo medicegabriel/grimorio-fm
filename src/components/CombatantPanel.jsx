@@ -9,7 +9,7 @@ import {
   ShieldAlert, Activity, Target, Sparkles, Clock, GraduationCap, Star,
   Square, CheckSquare, Crosshair, Sword, Hourglass
 } from 'lucide-react';
-import { createInitialCombatState, applyNewRoundEffects, LOG_TYPES, createLogEntry } from '../fm-encounter';
+import { createInitialCombatState, applyNewRoundEffects, LOG_TYPES, createLogEntry, computeAlmaStatus, ALMA_ESTADOS } from '../fm-encounter';
 import { humanizeAction, generateActionDescription, ACTION_TYPE_LABELS } from './sections/SectionActions';
 import { getModifier, calculateCD, calculateAcerto, CONDITIONS } from './fm-tables';
 
@@ -44,10 +44,11 @@ const VITAL_THEMES = {
 };
 
 const CONDITION_LEVELS = {
-  fraca:   { label: 'Fraca',   color: 'bg-slate-700 text-slate-200 border-slate-600' },
-  media:   { label: 'Média',   color: 'bg-amber-900 text-amber-100 border-amber-700' },
-  forte:   { label: 'Forte',   color: 'bg-orange-900 text-orange-100 border-orange-700' },
-  extrema: { label: 'Extrema', color: 'bg-red-900 text-red-100 border-red-700' }
+  fraca:   { label: 'Fraca',        color: 'bg-slate-700 text-slate-200 border-slate-600' },
+  media:   { label: 'Média',        color: 'bg-amber-900 text-amber-100 border-amber-700' },
+  forte:   { label: 'Forte',        color: 'bg-orange-900 text-orange-100 border-orange-700' },
+  extrema: { label: 'Extrema',      color: 'bg-red-900 text-red-100 border-red-700' },
+  alma:    { label: 'Estado da Alma', color: 'bg-purple-900/70 text-purple-200 border-purple-700' }
 };
 
 const CONDITION_LEVEL_MAP = Object.entries({
@@ -131,6 +132,80 @@ const VitalBar = ({ kind, current, max, onChange }) => {
         <button type="button" onClick={() => applyDelta(1)}
           className="flex items-center justify-center w-9 h-9 rounded bg-emerald-950 hover:bg-emerald-900 border border-emerald-800 text-emerald-300 font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500"
           aria-label={`Aumentar ${theme.label}`}>
+          <Plus className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const ALMA_COR_MAP = {
+  cyan:   { accent: 'text-cyan-400',   fill: 'bg-gradient-to-r from-cyan-600 to-teal-700',   border: 'border-cyan-900/50',   badge: 'bg-cyan-900/60 text-cyan-300 border-cyan-700' },
+  yellow: { accent: 'text-yellow-400', fill: 'bg-gradient-to-r from-yellow-600 to-amber-700', border: 'border-yellow-900/50', badge: 'bg-yellow-900/60 text-yellow-200 border-yellow-700' },
+  orange: { accent: 'text-orange-400', fill: 'bg-gradient-to-r from-orange-600 to-red-700',  border: 'border-orange-900/50', badge: 'bg-orange-900/60 text-orange-200 border-orange-700' },
+  red:    { accent: 'text-red-400',    fill: 'bg-gradient-to-r from-red-700 to-red-900',     border: 'border-red-900/50',    badge: 'bg-red-900/60 text-red-200 border-red-700' },
+  dead:   { accent: 'text-slate-500',  fill: 'bg-slate-700',                                 border: 'border-slate-700/50',  badge: 'bg-slate-800 text-slate-400 border-slate-600' },
+};
+
+const AlmaBar = ({ almaAtual, hpMaxBase, onChange }) => {
+  const status = computeAlmaStatus(almaAtual, hpMaxBase);
+  const theme = ALMA_COR_MAP[status.cor] ?? ALMA_COR_MAP.cyan;
+  const [delta, setDelta] = useState('');
+  const pct = Math.max(0, Math.min(100, status.pct));
+  const isCritico = status.estadoKey === 'critico';
+  const isDestruido = status.estadoKey === 'destruido';
+
+  const applyDelta = useCallback((sign) => {
+    const n = parseInt(delta, 10);
+    if (!Number.isFinite(n) || n <= 0) return;
+    onChange(Math.max(0, Math.min(hpMaxBase, almaAtual + sign * n)));
+    setDelta('');
+  }, [delta, almaAtual, hpMaxBase, onChange]);
+
+  return (
+    <div className={`rounded-lg border bg-slate-900/80 ${theme.border} p-4 transition-shadow hover:shadow-lg overflow-hidden col-span-1 md:col-span-3`}>
+      <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+        <div className="flex items-center gap-2">
+          <Sparkles className={`w-5 h-5 ${theme.accent} ${isCritico ? 'animate-pulse' : ''}`} aria-hidden="true" />
+          <span className={`font-bold text-sm uppercase tracking-wider text-slate-300`}>Integridade da Alma</span>
+          <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border ${theme.badge} ${isCritico ? 'animate-pulse' : ''}`}>
+            {status.label}
+          </span>
+          {status.penalidade !== 0 && (
+            <span className="text-[10px] text-slate-400">
+              {status.penalidade} testes{status.desvantagem ? ' + Desvantagem' : ''}
+              {status.custoExtra > 0 ? ` / +${status.custoExtra} PE` : ''}
+            </span>
+          )}
+        </div>
+        <div className="flex items-baseline gap-1">
+          <span className={`text-3xl font-bold tabular-nums ${theme.accent} ${isCritico ? 'animate-pulse' : ''}`}>
+            {isDestruido ? 0 : almaAtual}
+          </span>
+          <span className="text-sm text-slate-500">/ {hpMaxBase}</span>
+        </div>
+      </div>
+
+      <div className="h-2.5 bg-slate-900 rounded-full overflow-hidden mb-3" role="progressbar"
+           aria-valuenow={almaAtual} aria-valuemax={hpMaxBase} aria-valuemin={0} aria-label="Integridade da Alma">
+        <div className={`h-full transition-all duration-300 ${theme.fill} ${isCritico ? 'animate-pulse' : ''}`}
+             style={{ width: `${pct}%` }} />
+      </div>
+
+      <div className="flex items-center gap-2">
+        <button type="button" onClick={() => applyDelta(-1)}
+          className="flex items-center justify-center w-9 h-9 rounded bg-red-950 hover:bg-red-900 border border-red-800 text-red-300 font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-red-500"
+          aria-label="Reduzir Alma">
+          <Minus className="w-4 h-4" />
+        </button>
+        <input type="number" value={delta} onChange={(e) => setDelta(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && applyDelta(-1)}
+          placeholder="0"
+          className="flex-1 min-w-0 h-9 bg-slate-900 border border-slate-700 rounded px-3 text-center text-white font-mono focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+          aria-label="Valor para alterar Alma" />
+        <button type="button" onClick={() => applyDelta(1)}
+          className="flex items-center justify-center w-9 h-9 rounded bg-emerald-950 hover:bg-emerald-900 border border-emerald-800 text-emerald-300 font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          aria-label="Recuperar Alma">
           <Plus className="w-4 h-4" />
         </button>
       </div>
@@ -266,11 +341,17 @@ const ConditionManager = ({ conditions, onAdd, onRemove }) => {
                 ? <span className="font-mono opacity-80">⏳{c.duracao}</span>
                 : <span className="opacity-60">∞</span>
               }
-              <button type="button" onClick={() => onRemove(c.id)}
-                className="ml-0.5 hover:text-white focus:outline-none focus:ring-1 focus:ring-white/50 rounded"
-                aria-label={`Remover condição ${c.name}`}>
-                <X className="w-3 h-3" />
-              </button>
+              {c.isAlma ? (
+                <span title="Condição atrelada à Integridade da Alma" className="ml-0.5 opacity-30 cursor-not-allowed">
+                  <X className="w-3 h-3" />
+                </span>
+              ) : (
+                <button type="button" onClick={() => onRemove(c.id)}
+                  className="ml-0.5 hover:text-white focus:outline-none focus:ring-1 focus:ring-white/50 rounded"
+                  aria-label={`Remover condição ${c.name}`}>
+                  <X className="w-3 h-3" />
+                </button>
+              )}
             </span>
           );
         })}
@@ -557,6 +638,19 @@ export default function CombatantPanel({
   const aptidoesEspeciais = snapshot.aptidoesEspeciais ?? [];
   const dotes = snapshot.dotes ?? [];
 
+  // Derived: alma conditions injected visually only — never persisted
+  const _hpMaxBase = combatState.hpMaxBase ?? stats.hpMax ?? 0;
+  const _almaAtual = combatState.almaAtual ?? _hpMaxBase;
+  const almaStatus = computeAlmaStatus(_almaAtual, _hpMaxBase);
+  const condicoesAlmaVisuais = almaStatus.condicoes.map((condNome) => ({
+    id: `alma-${condNome}`,
+    name: condNome,
+    level: 'alma',
+    duracao: null,
+    isAlma: true
+  }));
+  const todasCondicoes = [...(combatState.activeConditions ?? []), ...condicoesAlmaVisuais];
+
   const [showLog, setShowLog] = useState(false);
   const [showAtributos, setShowAtributos] = useState(true);
   const [showAcoes, setShowAcoes] = useState(true);
@@ -581,7 +675,10 @@ export default function CombatantPanel({
   const handlers = useMemo(() => ({
     setVital: (kind, v) => {
       if (kind === 'hp') {
-        const hpMax = stats.hpMax ?? 0;
+        const hpMaxBase = combatState.hpMaxBase ?? stats.hpMax ?? 0;
+        const almaAtual = combatState.almaAtual ?? hpMaxBase;
+        const almaStatus = computeAlmaStatus(almaAtual, hpMaxBase);
+        const hpMax = almaStatus.hpMaxAtual; // HP máximo limitado pela Alma
         const currentHp = combatState.hpCurrent;
         const currentGuarda = combatState.guardaInabavalCurrent ?? 0;
 
@@ -595,7 +692,7 @@ export default function CombatantPanel({
             hpCurrent: currentHp - remainingDamage,
           });
         } else {
-          // Cura — aplica direto no HP
+          // Cura — aplica direto no HP, limitado pela Alma
           patch({ hpCurrent: Math.min(hpMax, v) });
         }
         return;
@@ -617,6 +714,25 @@ export default function CombatantPanel({
       const theme = VITAL_THEMES[kind];
       const max = stats[theme.maxKey] ?? 0;
       patch({ [theme.key]: Math.max(0, Math.min(max, v)) });
+    },
+    setAlma: (v) => {
+      const hpMaxBase = combatState.hpMaxBase ?? stats.hpMax ?? 0;
+      const almaAntes = combatState.almaAtual ?? hpMaxBase;
+      const newAlma = Math.max(0, Math.min(hpMaxBase, v));
+      const almaStatus = computeAlmaStatus(newAlma, hpMaxBase);
+
+      let newHp = combatState.hpCurrent;
+      if (newAlma < almaAntes) {
+        // Dano na Alma: dedução direta no HP, ignorando Guarda Inabalável
+        const almaDano = almaAntes - newAlma;
+        newHp = Math.max(0, combatState.hpCurrent - almaDano);
+      }
+      // Teto de HP derivado da Alma (esmagamento)
+      newHp = Math.min(newHp, almaStatus.hpMaxAtual);
+
+      const updates = { almaAtual: newAlma, hpCurrent: newHp };
+      if (newAlma <= 0) updates.isActive = false;
+      patch(updates);
     },
     setResParcial: (v) => patch({ resistenciaParcialUsed: v }),
     setResTotal: (v) => patch({ resistenciaTotalUsed: v }),
@@ -741,13 +857,22 @@ export default function CombatantPanel({
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4" aria-label="Recursos vitais">
         {['hp', 'pe', 'guarda'].map((kind) => {
           const theme = VITAL_THEMES[kind];
+          const hpMaxBase = combatState.hpMaxBase ?? stats.hpMax ?? 0;
+          const almaAtual = combatState.almaAtual ?? hpMaxBase;
+          const hpMax = kind === 'hp'
+            ? computeAlmaStatus(almaAtual, hpMaxBase).hpMaxAtual
+            : (stats[theme.maxKey] ?? 0);
           return (
             <VitalBar key={kind} kind={kind}
               current={combatState[theme.key]}
-              max={stats[theme.maxKey] ?? 0}
+              max={hpMax}
               onChange={(v) => handlers.setVital(kind, v)} />
           );
         })}
+        <AlmaBar
+          almaAtual={combatState.almaAtual ?? (combatState.hpMaxBase ?? stats.hpMax ?? 0)}
+          hpMaxBase={combatState.hpMaxBase ?? stats.hpMax ?? 0}
+          onChange={(v) => handlers.setAlma(v)} />
       </section>
 
       {/* ===== ESTATÍSTICAS DE COMBATE ===== */}
@@ -859,7 +984,7 @@ export default function CombatantPanel({
           )}
 
           <ConditionManager
-            conditions={combatState.activeConditions ?? []}
+            conditions={todasCondicoes}
             onAdd={handlers.addCondition}
             onRemove={handlers.removeCondition} />
 

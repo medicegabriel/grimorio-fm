@@ -48,7 +48,7 @@ const TR_TYPE_LABELS = {
 const DAMAGE_TYPE_GROUPS = [
   { label: "Físicos",    types: ["cortante", "perfurante", "impacto"] },
   { label: "Elementais", types: ["ácido", "congelante", "chocante", "queimante", "sônico"] },
-  { label: "Etéreos",    types: ["energia reversa", "energético", "psíquico", "radiante"] },
+  { label: "Etéreos",    types: ["alma", "energia reversa", "energético", "psíquico", "radiante"] },
   { label: "Biológicos", types: ["necrótico", "venenoso"] },
 ];
 
@@ -56,6 +56,7 @@ const DAMAGE_TYPE_LABELS = {
   // Valores canônicos
   cortante: "Cortante", perfurante: "Perfurante", impacto: "Impacto",
   "ácido": "Ácido", congelante: "Congelante", chocante: "Chocante", queimante: "Queimante", "sônico": "Sônico",
+  alma: "Alma",
   "energia reversa": "Energia Reversa", "energético": "Energético",
   "psíquico": "Psíquico", radiante: "Radiante",
   "necrótico": "Necrótico", venenoso: "Venenoso",
@@ -155,11 +156,8 @@ export function calculateActionDamage(
   // Passo 4 — Aplicar o déficit no dano fixo
   mod -= deficit * 4;
 
-  // Passo 5 — Reduções por área / narrativa + trava de segurança
-  if (attackType === "tr_area") {
-    numDice = Math.floor(numDice / 2);
-    mod     = Math.floor(mod / 2);
-  }
+  // Passo 5 — Redução por narrativa + trava de segurança
+  // Divisão por área/alma ocorre no pipeline runFullCalc após somar todos os dados brutos
   if (isNarrativeFisica) numDice -= 2;
   numDice = Math.max(1, numDice);
 
@@ -195,6 +193,39 @@ function applyTrades(numDiceBase, toHitBase, cdBase, rangeType, trades, bt) {
   const acertoFinal = (toHitBase ?? 0) + (t.sacrifDadosAcerto * 2) - t.sacrifAcertoDados;
   const cdFinal     = (cdBase     ?? 0) + t.sacrifDadosCD           - t.sacrifCdDados;
   return { dadosFinais, acertoFinal, cdFinal };
+}
+
+// Divisor composto: tr_area ×2, alma ×3 (podem se combinar → ×6)
+function computeDivisor(attackType, damageType) {
+  let divisor = 1;
+  if (attackType === "tr_area") divisor *= 2;
+  if (damageType === "alma")    divisor *= 3;
+  return divisor;
+}
+
+// Pipeline Target Average com degradação dinâmica de dado:
+// A) Média bruta → B) Média alvo (divisores) → C) Degrada face se necessário → reconstrói dados+fixo
+const FACES_VALIDAS = [20, 12, 10, 8, 6, 4, 2];
+function applyDivisorFull(dadosBrutos, dieSize, modBase, divisor) {
+  if (divisor === 1) return { numDadosFinal: dadosBrutos, danoFixoFinal: modBase, dieSize };
+  // Passo A — Média bruta
+  const mediaFace0 = (dieSize + 1) / 2;
+  const mediaBruta = dadosBrutos * mediaFace0 + modBase;
+  // Passo B — Média alvo
+  const mediaAlvo  = Math.floor(mediaBruta / divisor);
+  // Passo C.1-C.2 — Degrada face enquanto dado for grande demais para a média alvo
+  let faceAtual = FACES_VALIDAS.includes(dieSize) ? dieSize : 10;
+  while (mediaAlvo < (faceAtual + 1) / 2 && faceAtual > 2) {
+    const prox = FACES_VALIDAS[FACES_VALIDAS.indexOf(faceAtual) + 1];
+    if (prox == null) break;
+    faceAtual = prox;
+  }
+  // Passo C.3 — Reconstruir com a face final; fixo sempre >= 0
+  const mediaFaceFinal = (faceAtual + 1) / 2;
+  const numDadosFinal  = Math.max(1, Math.floor(mediaAlvo / mediaFaceFinal));
+  const danoFixoBruto  = Math.round(mediaAlvo - numDadosFinal * mediaFaceFinal);
+  const danoFixoFinal  = Math.max(0, danoFixoBruto);
+  return { numDadosFinal, danoFixoFinal, dieSize: faceAtual };
 }
 
 // Zera trades irrelevantes ao trocar o tipo de ofensiva
@@ -334,7 +365,7 @@ export function humanizeAction(action) {
   const mod       = dmg?.mod ?? 0;
   const roll      = rollStr(finalDice, dieSize, mod) || dmg?.roll || "";
   const hasDamage = action.attackType !== "suporte" && roll;
-  const dmgTypeLabel = DAMAGE_TYPE_LABELS[dmg?.type] || dmg?.type || "";
+  const dmgTypeLabel = dmg?.type === "alma" ? "na Alma" : (DAMAGE_TYPE_LABELS[dmg?.type] || dmg?.type || "");
   const dmgStr = hasDamage ? `${roll} de dano ${dmgTypeLabel}` : null;
 
   if (action.attackType === "acerto") {
@@ -386,7 +417,7 @@ export function generateActionDescription(action, creatureName, flavorText = "")
   const dieSize   = dmg?.dieSize ?? 8;
   const mod       = dmg?.mod ?? 0;
   const rollDisplay = rollStr(finalDice, dieSize, mod);
-  const dmgType   = DAMAGE_TYPE_LABELS[dmg?.type] || dmg?.type || "";
+  const dmgType     = dmg?.type === "alma" ? "na Alma" : (DAMAGE_TYPE_LABELS[dmg?.type] || dmg?.type || "");
   const finalPE   = deriveFinalPE(action.cost, action.condition);
   const isTR      = action.attackType?.startsWith("tr_");
   const isTRArea  = action.attackType === "tr_area";
@@ -515,46 +546,47 @@ function ActionItem({ action, patamar, nd, bt, creatureName, onUpdate, onRemove,
   const norm    = normalizeAction(action);
   const finalPE = deriveFinalPE(norm.cost, norm.condition);
 
-  // Full recalc from table + apply trades (used when unlocked)
-  const runFullCalc = (attackType, condition, narrativeType, rangeType, trades) => {
+  // Full recalc from table + apply trades + divisor pipeline (used when unlocked)
+  const runFullCalc = (attackType, condition, narrativeType, rangeType, trades, damageType) => {
     const baseResult = calculateActionDamage(
       patamar, nd, attackType, narrativeType === "fisica", getCondNdReduction(condition)
     );
     if (!baseResult) return null;
     const tHitBase = norm.toHitBase ?? norm.toHit ?? 0;
     const tCdBase  = norm.cdBase    ?? norm.cd    ?? 0;
-    const { dadosFinais, acertoFinal, cdFinal } = applyTrades(
-      baseResult.numDice, tHitBase, tCdBase, rangeType, trades, bt
-    );
-    const finalRoll = rollStr(dadosFinais, baseResult.dieSize, baseResult.mod);
-    const finalAvg  = rollAverage(dadosFinais, baseResult.dieSize, baseResult.mod);
+    const tradeResult = applyTrades(baseResult.numDice, tHitBase, tCdBase, rangeType, trades, bt);
+    const { acertoFinal, cdFinal } = tradeResult;
+    const divisor = computeDivisor(attackType, damageType ?? norm.damage?.type ?? "cortante");
+    const { numDadosFinal, danoFixoFinal, dieSize: dieFinal } = applyDivisorFull(tradeResult.dadosFinais, baseResult.dieSize, baseResult.mod, divisor);
+    const finalRoll = rollStr(numDadosFinal, dieFinal, danoFixoFinal);
+    const finalAvg  = rollAverage(numDadosFinal, dieFinal, danoFixoFinal);
     return {
       toHit:    acertoFinal,
       toHitBase: tHitBase,
       cd:       cdFinal,
       cdBase:   tCdBase,
-      damage:   { ...baseResult, numDice: dadosFinais, numDiceBase: baseResult.numDice, roll: finalRoll, average: finalAvg, damageIsCalculated: true },
+      damage:   { ...baseResult, numDice: numDadosFinal, numDiceBase: baseResult.numDice, mod: danoFixoFinal, dieSize: dieFinal, roll: finalRoll, average: finalAvg, damageIsCalculated: true },
     };
   };
 
-  // Re-apply trades to stored base values (used when locked)
+  // Re-apply trades (used when locked — aplica divisor simples sem compensação de fração)
   const reapplyTradesHelper = (rangeType, trades) => {
     const numDiceBase = norm.damage?.numDiceBase ?? norm.damage?.numDice ?? 0;
     const tHitBase    = norm.toHitBase ?? norm.toHit ?? 0;
     const tCdBase     = norm.cdBase    ?? norm.cd    ?? 0;
-    const { dadosFinais, acertoFinal, cdFinal } = applyTrades(
-      numDiceBase, tHitBase, tCdBase, rangeType, trades, bt
-    );
+    const tradeRes = applyTrades(numDiceBase, tHitBase, tCdBase, rangeType, trades, bt);
+    const divisor  = computeDivisor(norm.attackType, norm.damage?.type ?? "cortante");
+    const numDadosFinal = divisor === 1 ? tradeRes.dadosFinais : Math.max(1, Math.floor(tradeRes.dadosFinais / divisor));
     const dieSize = norm.damage?.dieSize ?? 8;
     const modVal  = norm.damage?.mod ?? 0;
     return {
-      toHit: acertoFinal,
-      cd:    cdFinal,
+      toHit: tradeRes.acertoFinal,
+      cd:    tradeRes.cdFinal,
       damage: {
         ...norm.damage,
-        numDice: dadosFinais,
-        roll:    rollStr(dadosFinais, dieSize, modVal),
-        average: rollAverage(dadosFinais, dieSize, modVal),
+        numDice: numDadosFinal,
+        roll:    rollStr(numDadosFinal, dieSize, modVal),
+        average: rollAverage(numDadosFinal, dieSize, modVal),
       },
     };
   };
@@ -568,7 +600,7 @@ function ActionItem({ action, patamar, nd, bt, creatureName, onUpdate, onRemove,
       if (norm.rangeLocked !== false) basePatch.range = av.range;
       if (norm.areaLocked  !== false) basePatch.area  = av.area;
       if (!norm.damage?.damageIsLocked) {
-        const r = runFullCalc(patch.attackType, norm.condition, norm.damage?.narrativeType, norm.rangeType, resetTrades);
+        const r = runFullCalc(patch.attackType, norm.condition, norm.damage?.narrativeType, norm.rangeType, resetTrades, norm.damage?.type);
         if (r) { onUpdate({ ...basePatch, ...r, damage: { ...norm.damage, ...r.damage } }); return; }
       }
       const reapplied = reapplyTradesHelper(norm.rangeType, resetTrades);
@@ -589,12 +621,14 @@ function ActionItem({ action, patamar, nd, bt, creatureName, onUpdate, onRemove,
   };
 
   const updateDamage = (patch) => {
-    const isUnlocking      = patch.damageIsLocked === false && norm.damage?.damageIsLocked === true;
-    const isNarrativeChange = "narrativeType" in patch && !norm.damage?.damageIsLocked;
+    const isUnlocking        = patch.damageIsLocked === false && norm.damage?.damageIsLocked === true;
+    const isNarrativeChange  = "narrativeType" in patch && !norm.damage?.damageIsLocked;
+    const isDamageTypeChange = "type" in patch && !norm.damage?.damageIsLocked;
 
-    if (isUnlocking || isNarrativeChange) {
+    if (isUnlocking || isNarrativeChange || isDamageTypeChange) {
       const newNarrative = "narrativeType" in patch ? patch.narrativeType : norm.damage?.narrativeType;
-      const r = runFullCalc(norm.attackType, norm.condition, newNarrative, norm.rangeType, norm.trades);
+      const newType      = "type" in patch ? patch.type : norm.damage?.type;
+      const r = runFullCalc(norm.attackType, norm.condition, newNarrative, norm.rangeType, norm.trades, newType);
       if (r) {
         onUpdate({ ...r, damage: { ...norm.damage, ...patch, ...r.damage, damageIsCalculated: true } });
         return;
@@ -603,11 +637,12 @@ function ActionItem({ action, patamar, nd, bt, creatureName, onUpdate, onRemove,
 
     const dmg = { ...norm.damage, ...patch };
     if ("numDiceBase" in patch && !("numDice" in patch)) {
-      const { dadosFinais } = applyTrades(
+      const tradeRes = applyTrades(
         patch.numDiceBase, norm.toHitBase ?? norm.toHit ?? 0, norm.cdBase ?? norm.cd ?? 0,
         norm.rangeType, norm.trades, bt
       );
-      dmg.numDice = dadosFinais;
+      const divisor = computeDivisor(norm.attackType, dmg.type ?? "cortante");
+      dmg.numDice = divisor === 1 ? tradeRes.dadosFinais : Math.max(1, Math.floor(tradeRes.dadosFinais / divisor));
     }
     dmg.roll    = rollStr(dmg.numDice, dmg.dieSize, dmg.mod);
     dmg.average = rollAverage(deriveFinalDice(dmg), dmg.dieSize, dmg.mod);
@@ -618,7 +653,7 @@ function ActionItem({ action, patamar, nd, bt, creatureName, onUpdate, onRemove,
     const newCondition = { ...norm.condition, ...patch };
     const condUpdate   = { condition: newCondition };
     if (!norm.damage?.damageIsLocked && ("tier" in patch || "payment" in patch)) {
-      const r = runFullCalc(norm.attackType, newCondition, norm.damage?.narrativeType, norm.rangeType, norm.trades);
+      const r = runFullCalc(norm.attackType, newCondition, norm.damage?.narrativeType, norm.rangeType, norm.trades, norm.damage?.type);
       if (r) Object.assign(condUpdate, r, { damage: { ...norm.damage, ...r.damage, damageIsCalculated: true } });
     }
     onUpdate(condUpdate);
@@ -628,7 +663,7 @@ function ActionItem({ action, patamar, nd, bt, creatureName, onUpdate, onRemove,
     const newTrades = enforceMutualExclusion({ ...(norm.trades ?? TRADES_ZERO), ...patch });
     const tradePatch = { trades: newTrades };
     if (!norm.damage?.damageIsLocked) {
-      const r = runFullCalc(norm.attackType, norm.condition, norm.damage?.narrativeType, norm.rangeType, newTrades);
+      const r = runFullCalc(norm.attackType, norm.condition, norm.damage?.narrativeType, norm.rangeType, newTrades, norm.damage?.type);
       if (r) { onUpdate({ ...tradePatch, ...r, damage: { ...norm.damage, ...r.damage, damageIsLocked: false } }); return; }
     }
     const reapplied = reapplyTradesHelper(norm.rangeType, newTrades);
@@ -643,7 +678,7 @@ function ActionItem({ action, patamar, nd, bt, creatureName, onUpdate, onRemove,
       ...(norm.areaLocked  !== false ? { area:  av.area  } : {}),
     };
     if (!norm.damage?.damageIsLocked) {
-      const r = runFullCalc(norm.attackType, norm.condition, norm.damage?.narrativeType, newRangeType, norm.trades);
+      const r = runFullCalc(norm.attackType, norm.condition, norm.damage?.narrativeType, newRangeType, norm.trades, norm.damage?.type);
       if (r) { onUpdate({ ...rangePatch, ...r, damage: { ...norm.damage, ...r.damage, damageIsLocked: false } }); return; }
     }
     const reapplied = reapplyTradesHelper(newRangeType, norm.trades);
@@ -748,24 +783,25 @@ function ActionForm({ derived, draft, onAdd, onCancel }) {
     };
   });
 
-  const runFullCalc = (attackType, condition, narrativeType, rangeType, trades) => {
+  const runFullCalc = (attackType, condition, narrativeType, rangeType, trades, damageType) => {
     const baseResult = calculateActionDamage(
       patamar, nd, attackType, narrativeType === "fisica", getCondNdReduction(condition)
     );
     if (!baseResult) return null;
     const tHitBase = derived?.acertoPrincipal ?? 0;
     const tCdBase  = derived?.cdBase ?? 0;
-    const { dadosFinais, acertoFinal, cdFinal } = applyTrades(
-      baseResult.numDice, tHitBase, tCdBase, rangeType, trades, bt
-    );
-    const finalRoll = rollStr(dadosFinais, baseResult.dieSize, baseResult.mod);
-    const finalAvg  = rollAverage(dadosFinais, baseResult.dieSize, baseResult.mod);
+    const tradeResult = applyTrades(baseResult.numDice, tHitBase, tCdBase, rangeType, trades, bt);
+    const { acertoFinal, cdFinal } = tradeResult;
+    const divisor = computeDivisor(attackType, damageType ?? "cortante");
+    const { numDadosFinal, danoFixoFinal, dieSize: dieFinal } = applyDivisorFull(tradeResult.dadosFinais, baseResult.dieSize, baseResult.mod, divisor);
+    const finalRoll = rollStr(numDadosFinal, dieFinal, danoFixoFinal);
+    const finalAvg  = rollAverage(numDadosFinal, dieFinal, danoFixoFinal);
     return {
       toHit:    acertoFinal,
       toHitBase: tHitBase,
       cd:       cdFinal,
       cdBase:   tCdBase,
-      damage:   { ...baseResult, numDice: dadosFinais, numDiceBase: baseResult.numDice, roll: finalRoll, average: finalAvg, damageIsCalculated: true },
+      damage:   { ...baseResult, numDice: numDadosFinal, numDiceBase: baseResult.numDice, mod: danoFixoFinal, dieSize: dieFinal, roll: finalRoll, average: finalAvg, damageIsCalculated: true },
     };
   };
 
@@ -773,19 +809,19 @@ function ActionForm({ derived, draft, onAdd, onCancel }) {
     const numDiceBase = prev.damage?.numDiceBase ?? prev.damage?.numDice ?? 0;
     const tHitBase    = prev.toHitBase ?? prev.toHit ?? 0;
     const tCdBase     = prev.cdBase    ?? prev.cd    ?? 0;
-    const { dadosFinais, acertoFinal, cdFinal } = applyTrades(
-      numDiceBase, tHitBase, tCdBase, rangeType, trades, bt
-    );
+    const tradeRes = applyTrades(numDiceBase, tHitBase, tCdBase, rangeType, trades, bt);
+    const divisor  = computeDivisor(prev.attackType, prev.damage?.type ?? "cortante");
+    const numDadosFinal = divisor === 1 ? tradeRes.dadosFinais : Math.max(1, Math.floor(tradeRes.dadosFinais / divisor));
     const dieSize = prev.damage?.dieSize ?? 8;
     const modVal  = prev.damage?.mod ?? 0;
     return {
-      toHit: acertoFinal,
-      cd:    cdFinal,
+      toHit: tradeRes.acertoFinal,
+      cd:    tradeRes.cdFinal,
       damage: {
         ...prev.damage,
-        numDice: dadosFinais,
-        roll:    rollStr(dadosFinais, dieSize, modVal),
-        average: rollAverage(dadosFinais, dieSize, modVal),
+        numDice: numDadosFinal,
+        roll:    rollStr(numDadosFinal, dieSize, modVal),
+        average: rollAverage(numDadosFinal, dieSize, modVal),
       },
     };
   };
@@ -802,7 +838,7 @@ function ActionForm({ derived, draft, onAdd, onCancel }) {
         if (next.rangeLocked !== false) next.range = av.range;
         if (next.areaLocked  !== false) next.area  = av.area;
         if (!prev.damage?.damageIsLocked) {
-          const r = runFullCalc(patch.attackType, prev.condition, prev.damage?.narrativeType, prev.rangeType, resetTrades);
+          const r = runFullCalc(patch.attackType, prev.condition, prev.damage?.narrativeType, prev.rangeType, resetTrades, prev.damage?.type);
           if (r) Object.assign(next, r, { damage: { ...prev.damage, ...r.damage, damageIsLocked: false } });
         } else {
           const reapplied = reapplyTradesHelper(next, prev.rangeType, resetTrades);
@@ -824,24 +860,27 @@ function ActionForm({ derived, draft, onAdd, onCancel }) {
 
   const updateDamage = (patch) =>
     setForm((prev) => {
-      const isUnlocking      = patch.damageIsLocked === false && prev.damage?.damageIsLocked === true;
-      const isNarrativeChange = "narrativeType" in patch && !prev.damage?.damageIsLocked;
+      const isUnlocking        = patch.damageIsLocked === false && prev.damage?.damageIsLocked === true;
+      const isNarrativeChange  = "narrativeType" in patch && !prev.damage?.damageIsLocked;
+      const isDamageTypeChange = "type" in patch && !prev.damage?.damageIsLocked;
 
-      if (isUnlocking || isNarrativeChange) {
+      if (isUnlocking || isNarrativeChange || isDamageTypeChange) {
         const newNarrative = "narrativeType" in patch ? patch.narrativeType : prev.damage?.narrativeType;
-        const r = runFullCalc(prev.attackType, prev.condition, newNarrative, prev.rangeType, prev.trades);
+        const newType      = "type" in patch ? patch.type : prev.damage?.type;
+        const r = runFullCalc(prev.attackType, prev.condition, newNarrative, prev.rangeType, prev.trades, newType);
         if (r) return { ...prev, ...r, damage: { ...prev.damage, ...patch, ...r.damage, damageIsCalculated: true } };
       }
 
       const dmg = { ...prev.damage, ...patch };
       if ("numDiceBase" in patch && !("numDice" in patch)) {
-        const { dadosFinais } = applyTrades(
+        const tradeRes = applyTrades(
           patch.numDiceBase, prev.toHitBase ?? prev.toHit ?? 0, prev.cdBase ?? prev.cd ?? 0,
           prev.rangeType, prev.trades, bt
         );
-        dmg.numDice = dadosFinais;
+        const divisor = computeDivisor(prev.attackType, dmg.type ?? "cortante");
+        dmg.numDice = divisor === 1 ? tradeRes.dadosFinais : Math.max(1, Math.floor(tradeRes.dadosFinais / divisor));
       }
-      if (!("damageIsLocked" in patch) && !("narrativeType" in patch)) {
+      if (!("damageIsLocked" in patch) && !("narrativeType" in patch) && !isDamageTypeChange) {
         dmg.roll    = rollStr(dmg.numDice, dmg.dieSize, dmg.mod);
         dmg.average = rollAverage(deriveFinalDice(dmg), dmg.dieSize, dmg.mod);
       }
@@ -853,7 +892,7 @@ function ActionForm({ derived, draft, onAdd, onCancel }) {
       const newCondition = { ...prev.condition, ...patch };
       let next = { ...prev, condition: newCondition };
       if (!prev.damage?.damageIsLocked && ("tier" in patch || "payment" in patch)) {
-        const r = runFullCalc(prev.attackType, newCondition, prev.damage?.narrativeType, prev.rangeType, prev.trades);
+        const r = runFullCalc(prev.attackType, newCondition, prev.damage?.narrativeType, prev.rangeType, prev.trades, prev.damage?.type);
         if (r) Object.assign(next, r, { damage: { ...prev.damage, ...r.damage, damageIsCalculated: true } });
       }
       return next;
@@ -863,7 +902,7 @@ function ActionForm({ derived, draft, onAdd, onCancel }) {
     setForm((prev) => {
       const newTrades = enforceMutualExclusion({ ...(prev.trades ?? TRADES_ZERO), ...patch });
       if (!prev.damage?.damageIsLocked) {
-        const r = runFullCalc(prev.attackType, prev.condition, prev.damage?.narrativeType, prev.rangeType, newTrades);
+        const r = runFullCalc(prev.attackType, prev.condition, prev.damage?.narrativeType, prev.rangeType, newTrades, prev.damage?.type);
         if (r) return { ...prev, trades: newTrades, ...r, damage: { ...prev.damage, ...r.damage, damageIsLocked: false } };
       }
       const reapplied = reapplyTradesHelper(prev, prev.rangeType, newTrades);
@@ -879,7 +918,7 @@ function ActionForm({ derived, draft, onAdd, onCancel }) {
         ...(prev.areaLocked  !== false ? { area:  av.area  } : {}),
       };
       if (!prev.damage?.damageIsLocked) {
-        const r = runFullCalc(prev.attackType, prev.condition, prev.damage?.narrativeType, newRangeType, prev.trades);
+        const r = runFullCalc(prev.attackType, prev.condition, prev.damage?.narrativeType, newRangeType, prev.trades, prev.damage?.type);
         if (r) return { ...prev, ...rangeUpdates, ...r, damage: { ...prev.damage, ...r.damage, damageIsLocked: false } };
       }
       const reapplied = reapplyTradesHelper(prev, newRangeType, prev.trades);
@@ -1058,9 +1097,13 @@ function ActionFormFields({ form, bt = 2, creatureName, update, updateDamage, up
   const blockedAcertoDados  = trades.sacrifDadosAcerto > 0;
   const blockedCdDados      = trades.sacrifDadosCD     > 0;
 
-  // Caps por BT
-  const capDadosAcerto  = bt;
-  const capDadosCD      = bt;
+  // Caps por BT + trava de mínimo 1 dado no pool bruto
+  const bonusCaCPool = rangeType === "cac" ? params.meleeBonusDice : 0;
+  const rawDicePool  = numDiceBase + bonusCaCPool
+    + Math.floor((trades.sacrifAcertoDados ?? 0) / 2)
+    + (trades.sacrifCdDados ?? 0);
+  const capDadosAcerto  = Math.max(0, Math.min(bt, rawDicePool - 1 - (trades.sacrifDadosCD ?? 0)));
+  const capDadosCD      = Math.max(0, Math.min(bt, rawDicePool - 1 - (trades.sacrifDadosAcerto ?? 0)));
   const capCdDados      = bt;
   const capAcertoDados  = bt * 2;
 
@@ -1121,7 +1164,18 @@ function ActionFormFields({ form, bt = 2, creatureName, update, updateDamage, up
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <FieldLabel>Tipo de Ataque / Efeito</FieldLabel>
-          <Select value={form.attackType} onChange={(v) => update({ attackType: v })} options={ATTACK_TYPE_OPTIONS} />
+          <select
+            value={form.attackType ?? ""}
+            onChange={(e) => update({ attackType: e.target.value })}
+            className="w-full h-9 bg-slate-950 border border-slate-700 rounded px-2 text-sm text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 appearance-none"
+          >
+            {ATTACK_TYPE_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}
+                disabled={opt.value === "tr_area" && form.damage?.type === "alma"}>
+                {opt.label}{opt.value === "tr_area" && form.damage?.type === "alma" ? " (incompatível com Alma)" : ""}
+              </option>
+            ))}
+          </select>
         </div>
         <div>
           <FieldLabel>Custo Base em PE</FieldLabel>
@@ -1340,7 +1394,10 @@ function ActionFormFields({ form, bt = 2, creatureName, update, updateDamage, up
                 {DAMAGE_TYPE_GROUPS.map(({ label, types }) => (
                   <optgroup key={label} label={label}>
                     {types.map((t) => (
-                      <option key={t} value={t}>{DAMAGE_TYPE_LABELS[t]}</option>
+                      <option key={t} value={t}
+                        disabled={t === "alma" && form.attackType === "tr_area"}>
+                        {DAMAGE_TYPE_LABELS[t]}{t === "alma" && form.attackType === "tr_area" ? " (incompatível com Área)" : ""}
+                      </option>
                     ))}
                   </optgroup>
                 ))}
