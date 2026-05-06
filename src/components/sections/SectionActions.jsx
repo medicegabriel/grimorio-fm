@@ -1039,18 +1039,18 @@ function TradeRow({ label, hint, value, onChange, step = 1, blocked, max }) {
           type="button"
           onClick={() => canDecrease && onChange(Math.max(0, value - step))}
           disabled={!canDecrease}
-          className={`${btnBase} ${canDecrease ? btnActive : btnDisabled}`}
+          className={`${btnBase} shrink-0 ${canDecrease ? btnActive : btnDisabled}`}
         >
           −
         </button>
-        <span className={`w-6 text-center text-sm font-mono font-semibold ${value > 0 ? "text-amber-300" : "text-slate-600"}`}>
+        <span className={`w-6 text-center text-sm font-mono font-semibold shrink-0 ${value > 0 ? "text-amber-300" : "text-slate-600"}`}>
           {value}
         </span>
         <button
           type="button"
           onClick={() => canIncrease && onChange(value + step)}
           disabled={!canIncrease}
-          className={`${btnBase} ${canIncrease ? btnActive : btnDisabled}`}
+          className={`${btnBase} shrink-0 ${canIncrease ? btnActive : btnDisabled}`}
         >
           +
         </button>
@@ -1264,7 +1264,7 @@ function ActionFormFields({ form, bt = 2, creatureName, update, updateDamage, up
       </div>
 
       {/* Alcance e Área */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div>
           <FieldLabel hint={rangeLocked ? "auto" : "livre"}>Alcance</FieldLabel>
           <div className="flex gap-1">
@@ -1355,10 +1355,10 @@ function ActionFormFields({ form, bt = 2, creatureName, update, updateDamage, up
           </div>
 
           {/* Campos de dado */}
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             <div>
               <FieldLabel>
-                Nº Dados
+                <span className="whitespace-nowrap">Nº Dados</span>
                 {hasActiveTrades && <span className="text-slate-600 font-normal ml-1 text-[9px]">base</span>}
               </FieldLabel>
               <NumberInput
@@ -1368,7 +1368,7 @@ function ActionFormFields({ form, bt = 2, creatureName, update, updateDamage, up
               />
             </div>
             <div>
-              <FieldLabel>Dado</FieldLabel>
+              <FieldLabel><span className="whitespace-nowrap">Dado</span></FieldLabel>
               <select
                 value={dieSize}
                 onChange={(e) => updateDamage({ dieSize: parseInt(e.target.value), damageIsLocked: true })}
@@ -1378,14 +1378,14 @@ function ActionFormFields({ form, bt = 2, creatureName, update, updateDamage, up
               </select>
             </div>
             <div>
-              <FieldLabel>Fixo</FieldLabel>
+              <FieldLabel><span className="whitespace-nowrap">Fixo</span></FieldLabel>
               <NumberInput
                 value={mod}
                 onChange={(v) => updateDamage({ mod: v, damageIsLocked: true })}
               />
             </div>
             <div>
-              <FieldLabel>Tipo de Dano</FieldLabel>
+              <FieldLabel><span className="whitespace-nowrap">Tipo de Dano</span></FieldLabel>
               <select
                 value={form.damage?.type ?? "cortante"}
                 onChange={(e) => updateDamage({ type: e.target.value })}

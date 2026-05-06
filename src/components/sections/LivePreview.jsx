@@ -3,7 +3,6 @@ import {
   Heart, Zap, Shield, Eye, Target, ShieldAlert, Sparkles, Star, GraduationCap, Crosshair, Sword,
 } from "lucide-react";
 import { PATAMAR_LABELS, getModifier } from "../fm-tables";
-import { humanizeAction, generateActionDescription } from "./SectionActions";
 
 const ATTR_PREVIEW = [
   { key: "forca",        label: "FOR", accent: "text-red-400" },
@@ -40,23 +39,26 @@ export default function LivePreview({ draft, derived }) {
   const { stats, saves, bt, skillDerivations = {} } = derived;
   const accentBorder = PATAMAR_COLORS[draft.core.patamar] || PATAMAR_COLORS.comum;
 
-  // Perícias dominadas (destaque visual) + top 3 modificadores
-  const masteredSkills = draft.skills.filter((s) => s.mastered && s.name?.trim());
-  const topSkills = [...draft.skills]
-    .filter((s) => s.name?.trim())
+  // Perícias dominadas ordenadas por mod (exibição inline tipo statblock)
+  const masteredSkills = [...draft.skills]
+    .filter((s) => s.mastered && s.name?.trim())
     .sort((a, b) => {
       const modA = skillDerivations[a.id]?.finalMod ?? 0;
       const modB = skillDerivations[b.id]?.finalMod ?? 0;
       return modB - modA;
     })
-    .slice(0, 4);
+    .map((s) => ({
+      id: s.id,
+      name: s.name,
+      mod: skillDerivations[s.id]?.finalMod ?? 0,
+    }));
 
   return (
     <div className={`bg-slate-900/80 border border-l-4 ${accentBorder} rounded-lg overflow-hidden space-y-3`}>
       {/* ---------- Portrait no topo (se houver) ---------- */}
       <PortraitHeader draft={draft} />
 
-      <div className="px-4 pb-4 space-y-3">
+      <div className="px-4 pt-4 pb-4 space-y-3">
         <div className="flex items-center gap-2 -mt-1">
           <Eye className="w-3.5 h-3.5 text-purple-400" />
           <h3 className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">
@@ -149,40 +151,27 @@ export default function LivePreview({ draft, derived }) {
           </div>
         )}
 
-        {/* ---------- NOVO: Perícias em destaque ---------- */}
-        {topSkills.length > 0 && (
+        {/* Perícias de Destaque — estilo statblock inline */}
+        {masteredSkills.length > 0 && (
           <div className="pt-2 border-t border-slate-800">
-            <h5 className="text-[10px] uppercase tracking-widest text-slate-500 mb-1.5 font-bold flex items-center gap-1">
+            <h5 className="text-[10px] uppercase tracking-widest text-slate-500 mb-1 font-bold flex items-center gap-1">
+              <Star className="w-3 h-3 text-amber-400" />
               Perícias de Destaque
-              {masteredSkills.length > 0 && (
-                <span className="text-amber-500/70">
-                  • {masteredSkills.length} dominada{masteredSkills.length > 1 ? "s" : ""}
-                </span>
-              )}
+              <span className="text-amber-500/70">
+                • {masteredSkills.length} dominada{masteredSkills.length > 1 ? "s" : ""}
+              </span>
             </h5>
-            <div className="space-y-0.5">
-              {topSkills.map((sk) => {
-                const d = skillDerivations[sk.id];
-                const mod = d?.finalMod ?? 0;
-                const modStr = mod >= 0 ? `+${mod}` : `${mod}`;
-                return (
-                  <div
-                    key={sk.id}
-                    className="flex items-center justify-between text-xs bg-slate-950/40 rounded px-2 py-1"
-                  >
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      {sk.mastered && (
-                        <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400 flex-shrink-0" />
-                      )}
-                      <span className={`truncate ${sk.mastered ? "text-amber-200" : "text-slate-300"}`}>
-                        {sk.name}
-                      </span>
-                    </div>
-                    <span className="font-mono text-white tabular-nums ml-2">{modStr}</span>
-                  </div>
-                );
-              })}
-            </div>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              {masteredSkills.map((sk, i) => (
+                <span key={sk.id}>
+                  {sk.name}{" "}
+                  <span className="text-amber-400 font-medium">
+                    {sk.mod >= 0 ? `+${sk.mod}` : sk.mod}
+                  </span>
+                  {i < masteredSkills.length - 1 ? ", " : "."}
+                </span>
+              ))}
+            </p>
           </div>
         )}
 
@@ -205,7 +194,7 @@ export default function LivePreview({ draft, derived }) {
           names={(draft.treinamentos || []).map((t) => t.nome)}
           accent="text-emerald-300"
         />
-        <ActionsList actions={draft.actions?.list || []} creatureName={draft.name} />
+        <ActionsList actions={draft.actions?.list || []} />
         <CompactList
           label="Características"
           icon={<Sparkles className="w-3 h-3 text-fuchsia-400" />}
@@ -279,20 +268,17 @@ function PortraitHeader({ draft }) {
   );
 }
 
-function ActionsList({ actions, creatureName }) {
-  if (!actions.length) return null;
+function ActionsList({ actions }) {
+  const names = actions.map((a) => a.name).filter(Boolean);
+  if (!names.length) return null;
   return (
     <div className="pt-2 border-t border-slate-800">
-      <h5 className="text-[10px] uppercase tracking-widest text-slate-500 mb-1.5 font-bold flex items-center gap-1">
+      <h5 className="text-[10px] uppercase tracking-widest text-slate-500 mb-1 font-bold flex items-center gap-1">
         <Target className="w-3 h-3 text-rose-400" /> Ações
       </h5>
-      <div className="space-y-1.5">
-        {actions.map((a) => (
-          <p key={a.id} className="text-xs text-rose-200/80 leading-relaxed whitespace-pre-wrap">
-            {generateActionDescription(a, creatureName, a.description) || humanizeAction(a)}
-          </p>
-        ))}
-      </div>
+      <p className="text-xs leading-relaxed text-rose-300">
+        {names.join(", ")}.
+      </p>
     </div>
   );
 }

@@ -165,49 +165,54 @@ function SkillRow({ skill, derivation, onUpdate, onRemove, onOverride }) {
     : "bg-slate-900 border-slate-700 text-white";
 
   return (
-    <div className={`grid grid-cols-[1fr_auto_auto_auto_auto] gap-2 items-center p-2 border rounded ${rowBorder}`}>
-      {/* Nome */}
-      <TextInput
-        value={skill.name}
-        onChange={(v) => onUpdate({ name: v })}
-        placeholder="Nome da perícia"
-      />
-
-      {/* Atributo */}
-      <div className="w-20">
-        <Select
-          value={skill.attribute}
-          onChange={(v) => onUpdate({ attribute: v })}
-          options={ATTRIBUTE_OPTIONS}
+    <div className={`flex flex-wrap items-center gap-2 p-2 border rounded ${rowBorder}`}>
+      {/* Nome — cresce para ocupar espaço livre; em telas finas pula para linha própria */}
+      <div className="flex-1 min-w-[120px]">
+        <TextInput
+          value={skill.name}
+          onChange={(v) => onUpdate({ name: v })}
+          placeholder="Nome da perícia"
         />
       </div>
 
-      {/* Toggle Dominada */}
-      <button
-        onClick={() => onUpdate({ mastered: !skill.mastered })}
-        className={`w-9 h-9 rounded border flex items-center justify-center transition-colors focus:outline-none focus:ring-1 focus:ring-purple-500 ${
-          skill.mastered
-            ? "bg-amber-900/60 border-amber-700 text-amber-200"
-            : "bg-slate-900 border-slate-700 text-slate-600 hover:text-slate-400"
-        }`}
-        title={skill.mastered ? "Dominada (clique para desmarcar)" : "Não dominada"}
-        type="button"
-        aria-pressed={skill.mastered}
-      >
-        <Star className={`w-3.5 h-3.5 ${skill.mastered ? "fill-current" : ""}`} />
-      </button>
+      {/* Controles fixos — permanecem agrupados ao quebrar linha */}
+      <div className="flex items-center gap-2 shrink-0">
+        {/* Atributo */}
+        <div className="w-20">
+          <Select
+            value={skill.attribute}
+            onChange={(v) => onUpdate({ attribute: v })}
+            options={ATTRIBUTE_OPTIONS}
+          />
+        </div>
 
-      {/* Modificador — com override inline */}
-      <ModCell
-        derivation={d}
-        overrideValue={skill.overrideMod}
-        onOverride={onOverride}
-      />
+        {/* Toggle Dominada */}
+        <button
+          onClick={() => onUpdate({ mastered: !skill.mastered })}
+          className={`w-9 h-9 rounded border flex items-center justify-center transition-colors focus:outline-none focus:ring-1 focus:ring-purple-500 ${
+            skill.mastered
+              ? "bg-amber-900/60 border-amber-700 text-amber-200"
+              : "bg-slate-900 border-slate-700 text-slate-600 hover:text-slate-400"
+          }`}
+          title={skill.mastered ? "Dominada (clique para desmarcar)" : "Não dominada"}
+          type="button"
+          aria-pressed={skill.mastered}
+        >
+          <Star className={`w-3.5 h-3.5 ${skill.mastered ? "fill-current" : ""}`} />
+        </button>
 
-      {/* Remover */}
-      <SmallButton onClick={onRemove} variant="danger">
-        <Trash2 className="w-3 h-3" />
-      </SmallButton>
+        {/* Modificador — com override inline */}
+        <ModCell
+          derivation={d}
+          overrideValue={skill.overrideMod}
+          onOverride={onOverride}
+        />
+
+        {/* Remover */}
+        <SmallButton onClick={onRemove} variant="danger">
+          <Trash2 className="w-3 h-3" />
+        </SmallButton>
+      </div>
     </div>
   );
 }

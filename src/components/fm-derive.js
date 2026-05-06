@@ -23,7 +23,7 @@ const SAVE_ATTRS = {
   fortitude: "constituicao",
   reflexos: "destreza",
   vontade: "sabedoria",
-  integridade: "presenca",
+  integridade: "constituicao",
 };
 
 const getHighestMentalMod = (attrs) => {
