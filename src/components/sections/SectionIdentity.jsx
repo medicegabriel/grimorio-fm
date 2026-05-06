@@ -1,11 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Image as ImageIcon, X, AlertCircle } from "lucide-react";
-import { FieldLabel, TextInput, TextArea, SmallButton } from "../builder-controls";
-
-/**
- * SectionIdentity v2 — agora com campo de Portrait URL.
- * Aceita URLs remotas (https://...) e data URLs (data:image/...).
- */
+import { Image as ImageIcon, X, Check } from "lucide-react";
+import { FieldLabel, TextInput, TextArea } from "../builder-controls";
 
 export default function SectionIdentity({ draft, actions }) {
   return (
@@ -39,42 +34,33 @@ export default function SectionIdentity({ draft, actions }) {
   );
 }
 
-/**
- * Campo de retrato com preview inline e tratamento de erro.
- * Estados possíveis (via dicionário, sem if/else complexo):
- *   - empty: sem URL
- *   - loading: URL preenchida, imagem ainda carregando
- *   - ok: imagem carregou
- *   - error: falha ao carregar
- */
 function PortraitField({ value, onChange }) {
-  const [loadStatus, setLoadStatus] = useState("empty");
+  const [draftUrl, setDraftUrl] = useState(value || "");
+  const [imageError, setImageError] = useState(false);
 
-  // Reset status sempre que a URL muda
+  // Sincroniza rascunho quando o pai carrega uma ficha existente
   useEffect(() => {
-    setLoadStatus(value ? "loading" : "empty");
+    setDraftUrl(value || "");
+    setImageError(false);
   }, [value]);
 
-  // Dicionário de estilos do status — evita ramificações no JSX
-  const statusConfig = {
-    empty: {
-      borderColor: "border-slate-800",
-      bgColor: "bg-slate-950/40",
-    },
-    loading: {
-      borderColor: "border-slate-700",
-      bgColor: "bg-slate-950/60",
-    },
-    ok: {
-      borderColor: "border-purple-800/60",
-      bgColor: "bg-slate-950/80",
-    },
-    error: {
-      borderColor: "border-red-900",
-      bgColor: "bg-red-950/20",
-    },
+  const handleInsert = () => {
+    setImageError(false);
+    onChange(draftUrl.trim());
   };
-  const cfg = statusConfig[loadStatus];
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleInsert();
+    }
+  };
+
+  const handleRemove = () => {
+    setDraftUrl("");
+    setImageError(false);
+    onChange("");
+  };
 
   return (
     <div>
@@ -83,61 +69,56 @@ function PortraitField({ value, onChange }) {
       </FieldLabel>
 
       <div className="flex gap-3">
-        {/* Preview */}
-        <div
-          className={`relative flex-shrink-0 w-20 h-20 rounded-md border-2 overflow-hidden transition-colors ${cfg.borderColor} ${cfg.bgColor}`}
-        >
-          {value ? (
-            <>
-              <img
-                src={value}
-                alt="Retrato da criatura"
-                className="w-full h-full object-cover"
-                onLoad={() => setLoadStatus("ok")}
-                onError={() => setLoadStatus("error")}
-                // garante que a imagem não vaze nem bloqueie (quebra silenciosa)
-                referrerPolicy="no-referrer"
-              />
-              {loadStatus === "error" && (
-                <div className="absolute inset-0 flex items-center justify-center bg-red-950/80">
-                  <AlertCircle className="w-6 h-6 text-red-400" />
-                </div>
-              )}
-            </>
+        {/* Wrapper 80x80 — SEMPRE renderizado para não perturbar o ResizeObserver */}
+        <div className="relative flex-shrink-0 w-20 h-20 rounded-md border-2 border-slate-700 overflow-hidden bg-slate-900 flex items-center justify-center">
+          {!value || imageError ? (
+            <ImageIcon className="w-8 h-8 text-slate-600" />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-slate-700">
-              <ImageIcon className="w-7 h-7" />
-            </div>
+            <img
+              src={value}
+              alt="Retrato da criatura"
+              className="w-full h-full object-cover"
+              onError={() => setImageError(true)}
+              referrerPolicy="no-referrer"
+            />
           )}
         </div>
 
-        {/* Input + controle */}
-        <div className="flex-1 space-y-2">
-          <TextInput
-            value={value}
-            onChange={onChange}
-            placeholder="https://exemplo.com/retrato.jpg"
-          />
-          <div className="flex items-center gap-2">
-            {value && (
-              <SmallButton onClick={() => onChange("")} variant="danger">
-                <X className="w-3 h-3" /> Remover
-              </SmallButton>
-            )}
-            <span
-              className={`text-[10px] ${
-                loadStatus === "error"
-                  ? "text-red-400"
-                  : loadStatus === "ok"
-                  ? "text-emerald-400"
-                  : "text-slate-500"
-              }`}
+        {/* Controles */}
+        <div className="flex-1">
+          {/* Input com botão de confirmar embutido */}
+          <div className="relative flex-1">
+            <TextInput
+              value={draftUrl}
+              onChange={setDraftUrl}
+              onKeyDown={handleKeyDown}
+              placeholder="https://exemplo.com/retrato.jpg"
+              style={{ paddingRight: "2.25rem" }}
+            />
+            <button
+              type="button"
+              onClick={handleInsert}
+              title="Carregar imagem"
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-purple-400 transition-colors"
             >
-              {loadStatus === "error" && "Falha ao carregar imagem"}
-              {loadStatus === "ok" && "Imagem carregada"}
-              {loadStatus === "loading" && "Carregando..."}
-              {loadStatus === "empty" && "Cole uma URL para ver o preview"}
+              <Check size={16} />
+            </button>
+          </div>
+
+          {/* Linha inferior: dica à esquerda, Remover à direita */}
+          <div className="flex justify-between items-start mt-1">
+            <span className="text-xs text-slate-500">
+              Pressione Enter ou clique no ícone para carregar
             </span>
+            {value && (
+              <button
+                type="button"
+                onClick={handleRemove}
+                className="flex items-center gap-1 text-xs text-red-400 hover:text-red-300 transition-colors shrink-0 ml-2"
+              >
+                <X size={12} /> Remover
+              </button>
+            )}
           </div>
         </div>
       </div>
