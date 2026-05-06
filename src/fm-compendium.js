@@ -438,7 +438,7 @@ export const COMPENDIUM = [
       fortitude: 37,
       reflexos: 41,
       vontade: 40,
-      integridade: 39,
+      integridade: 37,
     },
     combatState: {
       isActive: false,

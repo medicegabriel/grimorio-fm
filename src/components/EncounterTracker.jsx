@@ -777,6 +777,7 @@ const EncounterActive = ({ encounter, derived, actions, creatures, folders = [],
                 onCombatStateChange={(cs) => actions.updateCombatState(focusedCombatant.id, cs)}
                 onFlagChange={(key, value) => actions.setFlag(focusedCombatant.id, key, value)}
                 onNewRound={undefined /* nova rodada é global aqui, feita pelo header */}
+                isTrackerMode
                 suppressDeathBanner />
             ) : (
               <div className="bg-slate-900/60 border border-slate-800 rounded-lg p-12 text-center">

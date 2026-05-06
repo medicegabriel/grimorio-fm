@@ -593,7 +593,8 @@ export default function CombatantPanel({
   onReset,
   readOnly = false,
   showHeader = true,
-  suppressDeathBanner = false
+  suppressDeathBanner = false,
+  isTrackerMode = false
 }) {
   if (!combatant) return null;
 
@@ -759,63 +760,64 @@ export default function CombatantPanel({
     <div className="space-y-6">
       {/* ===== HEADER ===== */}
       {showHeader && (
-        <div className="flex items-start justify-between gap-3 flex-wrap">
-          <div className="flex items-start gap-4 min-w-0 flex-1">
-            <CombatantAvatar
-              imageUrl={snapshot.portraitUrl}
-              name={combatant.displayName}
-              className="w-24 h-24 sm:w-32 sm:h-32"
-            />
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-xl sm:text-2xl font-bold text-slate-100 truncate">{combatant.displayName}</h2>
-                {flags.isDefeated && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wider font-bold border bg-slate-950/80 text-slate-400 border-slate-800">
-                    <Skull className="w-3 h-3" /> Abatido
-                  </span>
-                )}
-                {flags.isHidden && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wider font-bold border bg-slate-950/80 text-slate-500 border-slate-800">
-                    <EyeOff className="w-3 h-3" /> Oculto
-                  </span>
-                )}
-              </div>
-              <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400 mt-1">
-                <span className="px-2 py-0.5 rounded bg-purple-900/50 border border-purple-800 text-purple-200 font-semibold uppercase">
-                  {core.patamar}
-                </span>
-                <span>ND {core.nd}</span>
-                <span className="text-slate-600">•</span>
-                <span>Grau {core.grau}</span>
-                <span className="text-slate-600">•</span>
-                <span>BT +{core.bonusTreinamento}</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 flex-wrap">
-            {onNewRound !== undefined && (
-              <button type="button" onClick={handlers.newRound}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-emerald-800 hover:bg-emerald-700 text-sm font-semibold text-white transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                title="Aplica a Guarda Inabalável (vida temp de início de rodada)">
-                <Clock className="w-4 h-4" /> Nova Rodada
+        <div className="flex gap-3 sm:gap-4 items-start">
+          <CombatantAvatar
+            imageUrl={snapshot.portraitUrl}
+            name={combatant.displayName}
+            className="w-24 h-24 sm:w-32 sm:h-32"
+          />
+          <div className="flex-1 min-w-0">
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              {onNewRound !== undefined && (
+                <button type="button" onClick={handlers.newRound}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-emerald-800 hover:bg-emerald-700 text-sm font-semibold text-white transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  title="Aplica a Guarda Inabalável (vida temp de início de rodada)">
+                  <Clock className="w-4 h-4" /> Nova Rodada
+                </button>
+              )}
+              {isTrackerMode && (
+                <>
+                  <button type="button" onClick={handlers.toggleDefeated}
+                    className="inline-flex items-center justify-center w-9 h-9 rounded bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 focus:outline-none focus:ring-2 focus:ring-purple-500/60"
+                    aria-label="Alternar abatido">
+                    <Skull className="w-4 h-4" />
+                  </button>
+                  <button type="button" onClick={handlers.toggleHidden}
+                    className="inline-flex items-center justify-center w-9 h-9 rounded bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 focus:outline-none focus:ring-2 focus:ring-purple-500/60"
+                    aria-label="Alternar oculto">
+                    {flags.isHidden ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                  </button>
+                </>
+              )}
+              <button type="button" onClick={handlers.resetCombat}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-red-900/50 hover:bg-red-800 border border-red-800 text-sm text-red-200 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500"
+                aria-label="Resetar combate">
+                <RotateCcw className="w-4 h-4" /> Reset
               </button>
-            )}
-            <button type="button" onClick={handlers.toggleDefeated}
-              className="inline-flex items-center justify-center w-9 h-9 rounded bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 focus:outline-none focus:ring-2 focus:ring-purple-500/60"
-              aria-label="Alternar abatido">
-              <Skull className="w-4 h-4" />
-            </button>
-            <button type="button" onClick={handlers.toggleHidden}
-              className="inline-flex items-center justify-center w-9 h-9 rounded bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 focus:outline-none focus:ring-2 focus:ring-purple-500/60"
-              aria-label="Alternar oculto">
-              {flags.isHidden ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-            </button>
-            <button type="button" onClick={handlers.resetCombat}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-red-900/50 hover:bg-red-800 border border-red-800 text-sm text-red-200 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500"
-              aria-label="Resetar combate">
-              <RotateCcw className="w-4 h-4" /> Reset
-            </button>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-100 truncate">{combatant.displayName}</h2>
+              {flags.isDefeated && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wider font-bold border bg-slate-950/80 text-slate-400 border-slate-800">
+                  <Skull className="w-3 h-3" /> Abatido
+                </span>
+              )}
+              {flags.isHidden && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wider font-bold border bg-slate-950/80 text-slate-500 border-slate-800">
+                  <EyeOff className="w-3 h-3" /> Oculto
+                </span>
+              )}
+            </div>
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-slate-400 mt-1">
+              <span className="px-2 py-0.5 rounded bg-purple-900/50 border border-purple-800 text-purple-200 font-semibold uppercase text-xs">
+                {core.patamar}
+              </span>
+              <span>ND {core.nd}</span>
+              <span>&bull;</span>
+              <span>Grau {core.grau}</span>
+              <span>&bull;</span>
+              <span>BT +{core.bonusTreinamento}</span>
+            </div>
           </div>
         </div>
       )}

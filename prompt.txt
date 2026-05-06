@@ -1,23 +1,28 @@
-"Claude, notamos uma inconsistência nos Valores Calculados automáticos da ficha. O resultado final do TR de Fortitude e do TR de Integridade estão divergindo de uma forma que parece incorreta para as regras do sistema.
+"Claude, a abordagem de checar a existência de callbacks (onFlagChange, onReset) falhou. O componente pai provavelmente está injetando funções genéricas na Ficha, fazendo com que os botões de Caveira e Olho continuem aparecendo. Além disso, você ocultou o botão de 'Reset', que é útil na Ficha estática para recuperar HP/PE rapidamente.
 
-Por favor, faça uma auditoria na sua função de cálculo de Testes de Resistência (ex: calculateSaves ou equivalente) e aplique as correções:
+Vamos abandonar a 'adivinhação' de callbacks e usar uma Prop explícita de contexto:
 
-1. Verificação de Mapeamento de Atributos:
+1. Criação da Prop de Contexto:
 
-Verifique exatamente quais atributos estão sendo usados como base para cada TR.
+No componente do cabeçalho (ex: CombatantPanel.jsx ou CreatureHeader.jsx), adicione uma prop booleana explícita chamada isTrackerMode (com valor padrão false).
 
-O padrão esperado é: Fortitude usa o modificador de Constituição, e Integridade usa o modificador de Constituição (ou o atributo correto definido pelas regras do F&M). Confirme se o mapeamento não está cruzado ou puxando a variável errada.
+2. Isolamento Correto dos Botões:
 
-2. Verificação da Fórmula Base:
+Restaure a renderização do botão Reset para o formato original (ele deve aparecer se onReset for passado, independente de estar na Ficha ou no Tracker).
 
-Garanta que a fórmula de cálculo seja rigorosamente idêntica para todos os 5 TRs (Fortitude, Reflexos, Astúcia, Vontade e Integridade).
+Envolva APENAS os botões de Morte (Caveira) e Ocultar (Olho cortado) na condição da nova prop:
 
-A fórmula padrão costuma ser algo como Base (ND ou Nível) + Modificador do Atributo correspondente + Bônus extras (se houver).
+JavaScript
+{isTrackerMode && (
+  <>
+    {/* Botão de Caveira */}
+    {/* Botão de Olho Cortado */}
+  </>
+)}
+3. Injeção da Prop nos Componentes Pais:
 
-Verifique se você não está acidentalmente somando o Bônus de Treinamento (BT) em um TR e esquecendo no outro, ou aplicando um divisor incorreto.
+Vá no componente principal do Combat Tracker (onde você mapeia e renderiza a lista de criaturas no combate) e passe a prop: <CombatantPanel isTrackerMode={true} ... />.
 
-3. Verificação de Overrides:
+Vá no componente da Ficha Estática / Visualização (onde você exibe a criatura fora de combate) e não passe essa prop (ou passe isTrackerMode={false}).
 
-Cheque a lógica de overrides.saves. Se houver algum valor manual sobrepondo o cálculo automático, certifique-se de que o sistema está lidando com isso corretamente e exibindo o valor esperado.
-
-Revise a lógica, uniformize a matemática de todos os TRs e me explique qual era a diferença exata que estava causando essa divergência no código!"
+Essa é a forma à prova de falhas de garantir que elementos de combate fiquem estritamente no combate!"
