@@ -240,7 +240,7 @@ function SectionWrapper({ id, label, isOpen, onToggle, children }) {
         className="w-full flex items-center justify-between px-5 py-3 hover:bg-slate-900 transition-colors text-left focus:outline-none focus:bg-slate-900"
         aria-expanded={isOpen}
       >
-        <h2 className="font-bold text-white flex items-center gap-2">
+        <h2 className="font-bold !text-slate-100 flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-purple-400" />
           {label}
         </h2>

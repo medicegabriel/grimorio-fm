@@ -912,9 +912,9 @@ export default function CombatantPanel({
       {/* ===== ATRIBUTOS & CD ===== */}
       <section aria-label="Atributos Base">
         <button type="button" onClick={() => setShowAtributos((v) => !v)}
-          className="w-full flex items-center justify-between mb-2 hover:text-slate-300 focus:outline-none focus:ring-1 focus:ring-purple-500/40 rounded"
+          className="w-full flex items-center justify-between mb-2 text-slate-100 hover:text-slate-300 focus:outline-none focus:ring-1 focus:ring-purple-500/40 rounded"
           aria-expanded={showAtributos}>
-          <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
+          <h3 className="text-xs font-bold uppercase tracking-widest !text-slate-400 flex items-center gap-2">
             <Activity className="w-3.5 h-3.5" /> Atributos Base
           </h3>
           {showAtributos ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
@@ -995,9 +995,9 @@ export default function CombatantPanel({
         <div className="lg:col-span-2 space-y-4">
           <section aria-label="Ações disponíveis">
             <button type="button" onClick={() => setShowAcoes((v) => !v)}
-              className="w-full flex items-center justify-between mb-2 hover:text-slate-300 focus:outline-none focus:ring-1 focus:ring-purple-500/40 rounded"
+              className="w-full flex items-center justify-between mb-2 text-slate-100 hover:text-slate-300 focus:outline-none focus:ring-1 focus:ring-purple-500/40 rounded"
               aria-expanded={showAcoes}>
-              <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
+              <h3 className="text-xs font-bold uppercase tracking-widest !text-slate-400 flex items-center gap-2">
                 <Swords className="w-3.5 h-3.5" /> Ações ({actionsList.length})
               </h3>
               <div className="flex items-center gap-3">
@@ -1026,9 +1026,9 @@ export default function CombatantPanel({
           {features.length > 0 && (
             <section aria-label="Características">
               <button type="button" onClick={() => setShowCaracteristicas((v) => !v)}
-                className="w-full flex items-center justify-between mb-2 hover:text-slate-300 focus:outline-none focus:ring-1 focus:ring-purple-500/40 rounded"
+                className="w-full flex items-center justify-between mb-2 text-slate-100 hover:text-slate-300 focus:outline-none focus:ring-1 focus:ring-purple-500/40 rounded"
                 aria-expanded={showCaracteristicas}>
-                <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
+                <h3 className="text-xs font-bold uppercase tracking-widest !text-slate-400 flex items-center gap-2">
                   <Sparkles className="w-3.5 h-3.5" /> Características ({features.length})
                 </h3>
                 {showCaracteristicas ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
@@ -1057,9 +1057,9 @@ export default function CombatantPanel({
           {aptidoesEspeciais.length > 0 && (
             <section aria-label="Aptidões Amaldiçoadas">
               <button type="button" onClick={() => setShowAptidoes((v) => !v)}
-                className="w-full flex items-center justify-between mb-2 hover:text-slate-300 focus:outline-none focus:ring-1 focus:ring-purple-500/40 rounded"
+                className="w-full flex items-center justify-between mb-2 text-slate-100 hover:text-slate-300 focus:outline-none focus:ring-1 focus:ring-purple-500/40 rounded"
                 aria-expanded={showAptidoes}>
-                <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
+                <h3 className="text-xs font-bold uppercase tracking-widest !text-slate-400 flex items-center gap-2">
                   <Sparkles className="w-3.5 h-3.5 text-purple-400" /> Aptidões Amaldiçoadas ({aptidoesEspeciais.length})
                 </h3>
                 {showAptidoes ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
@@ -1083,9 +1083,9 @@ export default function CombatantPanel({
           {dotes.length > 0 && (
             <section aria-label="Dotes Gerais">
               <button type="button" onClick={() => setShowDotes((v) => !v)}
-                className="w-full flex items-center justify-between mb-2 hover:text-slate-300 focus:outline-none focus:ring-1 focus:ring-purple-500/40 rounded"
+                className="w-full flex items-center justify-between mb-2 text-slate-100 hover:text-slate-300 focus:outline-none focus:ring-1 focus:ring-purple-500/40 rounded"
                 aria-expanded={showDotes}>
-                <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
+                <h3 className="text-xs font-bold uppercase tracking-widest !text-slate-400 flex items-center gap-2">
                   <Star className="w-3.5 h-3.5 text-amber-400" /> Dotes Gerais ({dotes.length})
                 </h3>
                 {showDotes ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
@@ -1107,9 +1107,9 @@ export default function CombatantPanel({
           {treinamentos.length > 0 && (
             <section aria-label="Treinamentos">
               <button type="button" onClick={() => setShowTreinamentos((v) => !v)}
-                className="w-full flex items-center justify-between mb-2 hover:text-slate-300 focus:outline-none focus:ring-1 focus:ring-purple-500/40 rounded"
+                className="w-full flex items-center justify-between mb-2 text-slate-100 hover:text-slate-300 focus:outline-none focus:ring-1 focus:ring-purple-500/40 rounded"
                 aria-expanded={showTreinamentos}>
-                <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
+                <h3 className="text-xs font-bold uppercase tracking-widest !text-slate-400 flex items-center gap-2">
                   <GraduationCap className="w-3.5 h-3.5 text-emerald-400" /> Treinamentos ({treinamentos.length})
                 </h3>
                 {showTreinamentos ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}

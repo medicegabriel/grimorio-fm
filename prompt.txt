@@ -1,39 +1,23 @@
-"Claude, a funcionalidade está perfeita, mas o layout do SectionIdentity.jsx ficou desbalanceado. O botão 'Inserir' ficou muito largo/pesado ao lado do input, e o botão 'Remover' ficou desalinhado abaixo dele.
+"Claude, recebemos um feedback visual de produção: os títulos das seções sanfonadas (Atributos, Valores Calculados, Aptidões, etc.) estão praticamente invisíveis.
 
-Vamos refatorar a UI para um design mais elegante, embutindo a ação de Inserir DENTRO do input:
+Investigando o DevTools, descobrimos um conflito de especificidade CSS: a classe .text-white no <h2> do AccordionTrigger está sendo sobrescrita (riscada) por alguma regra global ou do próprio componente base.
 
-1. O Input com Botão Embutido (In-Input Action):
+Vamos corrigir esse vazamento de CSS forçando a especificidade nos títulos das seções:
 
-Remova o botão 'Inserir' sólido que fica do lado de fora do input.
+1. Uso do Modificador de Importância (!):
 
-Envolva o <input> da URL em uma <div className="relative flex-1">.
+Nos componentes que renderizam esses cabeçalhos (provavelmente onde você usa <AccordionTrigger> ou no próprio <h2>), altere a classe de cor de texto para usar o modificador !.
 
-Adicione um padding-right extra no input (ex: pr-10) para o texto não encavalar no botão.
+Substitua text-white por !text-slate-100 (ou !text-white). Isso garantirá que o Tailwind ganhe a briga de especificidade contra qualquer estilo padrão do componente.
 
-Coloque um botão de ícone dentro dessa div, posicionado de forma absoluta à direita:
+Exemplo de como deve ficar o <h2>: className="font-bold !text-slate-100 flex items-center gap-2"
 
-<button 
-  onClick={handleCommit}
-  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-purple-400 transition-colors"
-  title="Carregar Imagem"
->
-  <Check size={18} /> {/* Ou um ícone de Download/Upload do Lucide */}
-</button>
+2. Preservação do Ícone:
 
-2. Alinhamento da Linha Inferior (Helper Text + Remover):
+O ícone ao lado do texto (lucide-sparkles ou similares) deve manter sua cor roxa inalterada: <svg className="... text-purple-400" />. Como o ! será aplicado apenas no texto do <h2>, o ícone continuará seguro.
 
-Imediatamente abaixo da div do input, crie um container flex para organizar o texto de ajuda e o botão de remover nas pontas opostas:
+3. Revisão do Container:
 
-<div className="flex justify-between items-start mt-1">
-  <span className="text-xs text-gray-500">Pressione Enter ou clique no ícone para carregar</span>
-  {formData.imagemUrl && (
-    <button 
-      onClick={handleRemove} 
-      className="flex items-center gap-1 text-xs text-red-400 hover:text-red-300 transition-colors"
-    >
-      <X size={12} /> Remover
-    </button>
-  )}
-</div>
+Verifique o botão/trigger do Accordion (<button>) e garanta que não haja nenhuma classe como text-slate-900 ou similar vazando para os filhos.
 
-Com essa estrutura, o layout principal volta a ser apenas o bloco da Imagem e a barra de texto (limpo e minimalista), o botão Inserir vira um detalhe sutil, e o botão Remover fica perfeitamente alinhado com o texto descritivo!"
+Aplique essa blindagem de cor em todos os cabeçalhos de seção da Ficha e do Tracker!"
