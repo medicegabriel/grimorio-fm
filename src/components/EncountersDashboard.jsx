@@ -666,43 +666,47 @@ export default function EncountersDashboard({
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-purple-950/30 text-white">
         {/* ===== HEADER ===== */}
         <header className="sticky top-0 z-40 bg-slate-950/90 backdrop-blur border-b border-purple-900/50">
-          <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center gap-3 flex-wrap">
-            <button
-              type="button"
-              onClick={() => setMobileSidebarOpen(true)}
-              className="md:hidden inline-flex items-center justify-center w-9 h-9 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500/60"
-              aria-label="Abrir menu de pastas"
-            >
-              <Menu className="w-4 h-4" />
-            </button>
-
-            <button
-              type="button"
-              onClick={onBackToGrimoire}
-              className="flex items-center gap-2 px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-sm text-slate-300 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500/60"
-            >
-              <ArrowLeft className="w-4 h-4" /> Grimório
-            </button>
-
-            <h1 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
-              <Swords className="w-5 h-5 text-purple-400" /> Encontros
-            </h1>
-            <div className="hidden sm:block text-xs text-slate-500 uppercase tracking-wider">
-              {manager.encounters.length} total
-              {statusCounts.active > 0 && (
-                <span className="text-purple-400 ml-2">• {statusCounts.active} em combate</span>
-              )}
+          <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-3 space-y-2">
+            {/* Linha superior: título à esquerda, voltar à direita */}
+            <div className="flex items-center justify-between w-full">
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setMobileSidebarOpen(true)}
+                  className="md:hidden inline-flex items-center justify-center w-9 h-9 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500/60"
+                  aria-label="Abrir menu de pastas"
+                >
+                  <Menu className="w-4 h-4" />
+                </button>
+                <h1 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
+                  <Swords className="w-5 h-5 text-purple-400" /> Encontros
+                </h1>
+                <div className="hidden sm:block text-xs text-slate-500 uppercase tracking-wider">
+                  {manager.encounters.length} total
+                  {statusCounts.active > 0 && (
+                    <span className="text-purple-400 ml-2">• {statusCounts.active} em combate</span>
+                  )}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={onBackToGrimoire}
+                className="flex items-center gap-2 px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-sm text-slate-300 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500/60"
+              >
+                <ArrowLeft className="w-4 h-4" /> Grimório
+              </button>
             </div>
 
-            <div className="flex-1" />
-
-            <button
-              type="button"
-              onClick={handleCreate}
-              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded bg-purple-800 hover:bg-purple-700 text-sm font-bold text-white transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500"
-            >
-              <Plus className="w-4 h-4" /> Novo Encontro
-            </button>
+            {/* Linha inferior: botão de ação principal */}
+            <div>
+              <button
+                type="button"
+                onClick={handleCreate}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded bg-purple-800 hover:bg-purple-700 text-sm font-bold text-white transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500"
+              >
+                <Plus className="w-4 h-4" /> Novo Encontro
+              </button>
+            </div>
           </div>
         </header>
 
@@ -773,7 +777,7 @@ export default function EncountersDashboard({
 
             {/* Chips de status */}
             {manager.encounters.length > 0 && (
-              <div className="flex items-center gap-2 flex-wrap mb-4">
+              <div className="flex flex-wrap items-center gap-2 w-full mb-4">
                 {STATUS_ORDER.map((status) => {
                   const theme = STATUS_THEMES[status];
                   const active = activeStatusFilters.has(status);
@@ -783,7 +787,7 @@ export default function EncountersDashboard({
                       key={status}
                       type="button"
                       onClick={() => toggleFilter(status)}
-                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500/60 ${
+                      className={`flex-1 min-w-[100px] h-9 whitespace-nowrap inline-flex items-center justify-center gap-1.5 px-3 rounded-full text-xs font-semibold border transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500/60 ${
                         active
                           ? `${theme.badge} ring-1 ring-purple-500/60`
                           : 'bg-slate-900/60 text-slate-400 border-slate-800 hover:text-slate-200 hover:border-slate-700'

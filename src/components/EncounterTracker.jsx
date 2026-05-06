@@ -661,57 +661,61 @@ const EncounterActive = ({ encounter, derived, actions, creatures, folders = [],
       )}
 
       <header className="sticky top-0 z-40 bg-slate-950/90 backdrop-blur border-b border-purple-900/50">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3 flex-wrap">
-          <button type="button" onClick={onBack}
-            className="flex items-center gap-2 px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-sm text-slate-300 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500/60">
-            <ArrowLeft className="w-4 h-4" /> Sair
-          </button>
+        <div className="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
 
-          <div className="flex-1 min-w-0">
-            <button
-              type="button"
-              onClick={() => {
-                const newName = window.prompt('Novo nome do encontro:', encounter.name);
-                if (newName && newName.trim()) actions.rename(newName.trim());
-              }}
-              className="text-lg sm:text-xl font-bold text-white inline-flex items-center gap-2 hover:text-purple-300 focus:outline-none focus:ring-1 focus:ring-purple-500/40 rounded max-w-full"
-              aria-label="Renomear encontro"
-            >
-              <span className="truncate">{encounter.name}</span>
-              <Edit3 className="w-4 h-4 text-slate-500 flex-shrink-0" />
+          {/* Bloco esquerdo: Sair + Título */}
+          <div className="flex items-center gap-3 w-full md:w-auto flex-1 min-w-0">
+            <button type="button" onClick={onBack}
+              className="flex-shrink-0 flex items-center gap-2 px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-sm text-slate-300 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500/60">
+              <ArrowLeft className="w-4 h-4" /> Sair
             </button>
-            <div className="text-xs text-slate-500 uppercase tracking-wider">
-              Rodada {encounter.round} · {derived.eligibleCombatants.length} em combate
+            <div className="min-w-0 flex-1">
+              <button
+                type="button"
+                onClick={() => {
+                  const newName = window.prompt('Novo nome do encontro:', encounter.name);
+                  if (newName && newName.trim()) actions.rename(newName.trim());
+                }}
+                className="text-lg sm:text-xl font-bold text-white inline-flex items-center gap-2 hover:text-purple-300 focus:outline-none focus:ring-1 focus:ring-purple-500/40 rounded max-w-full"
+                aria-label="Renomear encontro"
+              >
+                <span className="truncate">{encounter.name}</span>
+                <Edit3 className="w-4 h-4 text-slate-500 flex-shrink-0" />
+              </button>
+              <div className="text-xs text-slate-500 uppercase tracking-wider whitespace-nowrap truncate">
+                Rodada {encounter.round} · {derived.eligibleCombatants.length} em combate
+              </div>
             </div>
           </div>
 
-          <button type="button" onClick={() => setShowSidebar((v) => !v)}
-            className="lg:hidden inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500/60"
-            aria-label="Alternar lista de iniciativa">
-            <Users className="w-4 h-4" /> Iniciativa
-          </button>
-
-          <button type="button" onClick={() => setShowAdder((v) => !v)}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500/60 ${
-              showAdder ? 'bg-amber-800 text-white' : 'bg-slate-800 hover:bg-slate-700 text-slate-200'
-            }`}
-            aria-label="Adicionar reforço mid-combat">
-            <UserPlus className="w-4 h-4" /> Reforços
-          </button>
-
-          <button type="button" onClick={actions.newRound}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-emerald-900/60 hover:bg-emerald-800 border border-emerald-800 text-sm font-semibold text-emerald-100 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            title="Força início de nova rodada (reaplica Guarda Inabalável em todos)">
-            <Clock className="w-4 h-4" /> Nova Rodada
-          </button>
-          <button type="button" onClick={handleNextTurn}
-            className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded bg-purple-800 hover:bg-purple-700 text-sm font-bold text-white transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500">
-            <SkipForward className="w-4 h-4" /> Próximo Turno
-          </button>
-          <button type="button" onClick={actions.endCombat}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-red-900/50 hover:bg-red-800 border border-red-800 text-sm text-red-200 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500">
-            <Pause className="w-4 h-4" /> Encerrar
-          </button>
+          {/* Bloco direito: botões de ação */}
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 w-full">
+            <button type="button" onClick={() => setShowSidebar((v) => !v)}
+              className="lg:hidden w-full h-10 inline-flex items-center justify-center gap-2 px-3 rounded bg-slate-800 hover:bg-slate-700 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500/60"
+              aria-label="Alternar lista de iniciativa">
+              <Users className="w-4 h-4" /> Iniciativa
+            </button>
+            <button type="button" onClick={() => setShowAdder((v) => !v)}
+              className={`w-full h-10 inline-flex items-center justify-center gap-2 px-3 rounded text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500/60 ${
+                showAdder ? 'bg-amber-800 text-white' : 'bg-slate-800 hover:bg-slate-700 text-slate-200'
+              }`}
+              aria-label="Adicionar reforço mid-combat">
+              <UserPlus className="w-4 h-4" /> Reforços
+            </button>
+            <button type="button" onClick={actions.newRound}
+              className="w-full h-10 inline-flex items-center justify-center gap-2 px-3 rounded bg-emerald-900/60 hover:bg-emerald-800 border border-emerald-800 text-sm font-semibold text-emerald-100 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              title="Força início de nova rodada (reaplica Guarda Inabalável em todos)">
+              <Clock className="w-4 h-4" /> Nova Rodada
+            </button>
+            <button type="button" onClick={handleNextTurn}
+              className="w-full h-10 inline-flex items-center justify-center gap-2 px-4 rounded bg-purple-800 hover:bg-purple-700 text-sm font-bold text-white transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500">
+              <SkipForward className="w-4 h-4" /> Próximo Turno
+            </button>
+            <button type="button" onClick={actions.endCombat}
+              className="col-span-2 sm:flex-1 w-full h-10 inline-flex items-center justify-center gap-2 px-3 rounded bg-red-900/50 hover:bg-red-800 border border-red-800 text-sm text-red-200 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500">
+              <Pause className="w-4 h-4" /> Encerrar
+            </button>
+          </div>
         </div>
       </header>
 
@@ -738,6 +742,22 @@ const EncounterActive = ({ encounter, derived, actions, creatures, folders = [],
 
           {/* Painel principal */}
           <div className="lg:col-span-3 space-y-4">
+            {/* Reforços mid-combat — aparece no topo, antes da lista */}
+            {showAdder && (
+              <MidCombatAdder
+                creatures={creatures}
+                folders={folders}
+                onAddCreature={(c, initiative) => {
+                  actions.addCombatant(c, { initiative });
+                  setShowAdder(false);
+                }}
+                onAddPc={(name, mod, initiative) => {
+                  actions.addPc(name, mod, initiative);
+                  setShowAdder(false);
+                }}
+              />
+            )}
+
             {/* ===== DESAFIANDO A MORTE BANNER ===== */}
             {inDeathChallenge && (
               <div className="bg-red-950/80 border-2 border-red-700 rounded-lg p-4 space-y-3">
@@ -785,20 +805,6 @@ const EncounterActive = ({ encounter, derived, actions, creatures, folders = [],
               </div>
             )}
 
-            {showAdder && (
-              <MidCombatAdder
-                creatures={creatures}
-                folders={folders}
-                onAddCreature={(c, initiative) => {
-                  actions.addCombatant(c, { initiative });
-                  setShowAdder(false);
-                }}
-                onAddPc={(name, mod, initiative) => {
-                  actions.addPc(name, mod, initiative);
-                  setShowAdder(false);
-                }}
-              />
-            )}
           </div>
         </div>
       </main>
