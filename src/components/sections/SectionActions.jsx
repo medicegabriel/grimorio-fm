@@ -705,15 +705,7 @@ function ActionItem({ action, patamar, nd, bt, creatureName, onUpdate, onRemove,
         </SmallButton>
       </div>
 
-      {!expanded && (
-        <div className="px-3 pb-2">
-          <p className="text-xs text-slate-400 leading-relaxed whitespace-pre-wrap">
-            {generateActionDescription(norm, creatureName, norm.description) || humanizeAction(norm)}
-          </p>
-        </div>
-      )}
-
-      {expanded && (
+      {expanded ? (
         <div className="border-t border-slate-800 p-3 space-y-3">
           <ActionFormFields
             form={norm}
@@ -725,6 +717,12 @@ function ActionItem({ action, patamar, nd, bt, creatureName, onUpdate, onRemove,
             updateTrade={updateTrade}
             updateRangeType={updateRangeType}
           />
+        </div>
+      ) : (
+        <div className="px-3 pb-2">
+          <p className="text-xs text-slate-400 leading-relaxed whitespace-pre-wrap">
+            {generateActionDescription(norm, creatureName, norm.description) || humanizeAction(norm)}
+          </p>
         </div>
       )}
     </div>
@@ -1183,48 +1181,50 @@ function ActionFormFields({ form, bt = 2, creatureName, update, updateDamage, up
         </div>
       </div>
 
-      {/* TR ou Acerto */}
-      {isTR && (
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <FieldLabel>Tipo de TR</FieldLabel>
-            <Select value={form.trType} onChange={(v) => update({ trType: v })} options={TR_TYPE_OPTIONS} />
+      {/* TR ou Acerto — wrapper estável evita insertBefore ao trocar attackType */}
+      <div>
+        {isTR && (
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <FieldLabel>Tipo de TR</FieldLabel>
+              <Select value={form.trType} onChange={(v) => update({ trType: v })} options={TR_TYPE_OPTIONS} />
+            </div>
+            <div>
+              <FieldLabel>
+                CD{tradeCdDelta !== 0 && <span className="text-slate-500 font-normal ml-1 text-[10px]">(base)</span>}
+              </FieldLabel>
+              <NumberInput value={cdBase} onChange={(v) => update({ cdBase: v })} min={0} />
+              {tradeCdDelta !== 0 && (
+                <div className="mt-1 text-[11px] text-slate-400">
+                  Final: <span className="font-mono text-white font-semibold">{cdBase + tradeCdDelta}</span>
+                  <span className="text-slate-500 ml-1">
+                    ({tradeCdDelta > 0 ? "+" : ""}{tradeCdDelta} trades)
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
-          <div>
-            <FieldLabel>
-              CD{tradeCdDelta !== 0 && <span className="text-slate-500 font-normal ml-1 text-[10px]">(base)</span>}
-            </FieldLabel>
-            <NumberInput value={cdBase} onChange={(v) => update({ cdBase: v })} min={0} />
-            {tradeCdDelta !== 0 && (
-              <div className="mt-1 text-[11px] text-slate-400">
-                Final: <span className="font-mono text-white font-semibold">{cdBase + tradeCdDelta}</span>
-                <span className="text-slate-500 ml-1">
-                  ({tradeCdDelta > 0 ? "+" : ""}{tradeCdDelta} trades)
-                </span>
-              </div>
-            )}
+        )}
+        {isAcerto && (
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <FieldLabel>
+                Bônus de Acerto{tradeToHitDelta !== 0 && <span className="text-slate-500 font-normal ml-1 text-[10px]">(base)</span>}
+              </FieldLabel>
+              <NumberInput value={toHitBase} onChange={(v) => update({ toHitBase: v })} />
+              {tradeToHitDelta !== 0 && (
+                <div className="mt-1 text-[11px] text-slate-400">
+                  Final: <span className="font-mono text-white font-semibold">+{toHitBase + tradeToHitDelta}</span>
+                  <span className="text-slate-500 ml-1">
+                    ({tradeToHitDelta > 0 ? "+" : ""}{tradeToHitDelta} trades)
+                  </span>
+                </div>
+              )}
+            </div>
+            <div />
           </div>
-        </div>
-      )}
-      {isAcerto && (
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <FieldLabel>
-              Bônus de Acerto{tradeToHitDelta !== 0 && <span className="text-slate-500 font-normal ml-1 text-[10px]">(base)</span>}
-            </FieldLabel>
-            <NumberInput value={toHitBase} onChange={(v) => update({ toHitBase: v })} />
-            {tradeToHitDelta !== 0 && (
-              <div className="mt-1 text-[11px] text-slate-400">
-                Final: <span className="font-mono text-white font-semibold">+{toHitBase + tradeToHitDelta}</span>
-                <span className="text-slate-500 ml-1">
-                  ({tradeToHitDelta > 0 ? "+" : ""}{tradeToHitDelta} trades)
-                </span>
-              </div>
-            )}
-          </div>
-          <div />
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Tipo de Alcance + Parâmetros do BT */}
       <div className="bg-slate-900/60 border border-slate-800 rounded p-3 space-y-2">

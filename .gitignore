@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Arquivos locais e de IA
+.claude/
+prompt.txt

@@ -151,6 +151,16 @@ export default function LivePreview({ draft, derived }) {
           </div>
         )}
 
+        {/* Imunidades a Condições */}
+        {(draft.defenses?.condicoesImunes ?? []).length > 0 && (
+          <div className="pt-2 border-t border-slate-800">
+            <p className="text-xs text-slate-300 leading-relaxed">
+              <span className="font-bold text-amber-400/80 uppercase tracking-widest text-[10px]">Imune a Condições: </span>
+              <span className="capitalize">{(draft.defenses.condicoesImunes).join(', ')}.</span>
+            </p>
+          </div>
+        )}
+
         {/* Perícias de Destaque — estilo statblock inline */}
         {masteredSkills.length > 0 && (
           <div className="pt-2 border-t border-slate-800">

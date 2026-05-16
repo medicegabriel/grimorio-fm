@@ -536,7 +536,8 @@ const AbilityCard = ({ title, tag, tagClass, description, footer }) => {
 const DefensesList = ({ defenses }) => {
   const hasAny = ['imunidades', 'resistencias', 'vulnerabilidades']
     .some((k) => (defenses?.[k]?.length ?? 0) > 0);
-  if (!hasAny) return null;
+  const condImunes = defenses?.condicoesImunes ?? [];
+  if (!hasAny && condImunes.length === 0) return null;
 
   return (
     <section className="bg-slate-900/60 border border-slate-800 rounded-lg p-4">
@@ -556,6 +557,12 @@ const DefensesList = ({ defenses }) => {
           ))
         )}
       </div>
+      {condImunes.length > 0 && (
+        <div className="mt-2 pt-2 border-t border-slate-800">
+          <span className="font-bold text-amber-400/80 text-xs uppercase tracking-widest">Imune a Condições: </span>
+          <span className="text-slate-300 text-sm capitalize">{condImunes.join(', ')}.</span>
+        </div>
+      )}
     </section>
   );
 };

@@ -67,6 +67,7 @@ export default function CreatureBuilder({ existingCreature, onSave, onCancel }) 
   useEffect(() => {
     if (!headerRef.current) return;
     const obs = new ResizeObserver(() => {
+      if (!headerRef.current) return;
       setHeaderHeight(headerRef.current.offsetHeight);
     });
     obs.observe(headerRef.current);

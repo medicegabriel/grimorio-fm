@@ -661,10 +661,10 @@ const EncounterActive = ({ encounter, derived, actions, creatures, folders = [],
       )}
 
       <header className="sticky top-0 z-40 bg-slate-950/90 backdrop-blur border-b border-purple-900/50">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 w-full">
 
           {/* Bloco esquerdo: Sair + Título */}
-          <div className="flex items-center gap-3 w-full md:w-auto flex-1 min-w-0">
+          <div className="flex items-center gap-3 w-full lg:w-auto flex-1 min-w-0">
             <button type="button" onClick={onBack}
               className="flex-shrink-0 flex items-center gap-2 px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-sm text-slate-300 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500/60">
               <ArrowLeft className="w-4 h-4" /> Sair
@@ -689,30 +689,30 @@ const EncounterActive = ({ encounter, derived, actions, creatures, folders = [],
           </div>
 
           {/* Bloco direito: botões de ação */}
-          <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 w-full">
+          <div className="grid grid-cols-2 lg:flex lg:flex-row items-center gap-2 w-full lg:w-auto lg:ml-auto shrink-0">
             <button type="button" onClick={() => setShowSidebar((v) => !v)}
-              className="lg:hidden w-full h-10 inline-flex items-center justify-center gap-2 px-3 rounded bg-slate-800 hover:bg-slate-700 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500/60"
+              className="lg:hidden w-full lg:w-auto h-10 inline-flex items-center justify-center gap-2 px-3 rounded bg-slate-800 hover:bg-slate-700 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500/60"
               aria-label="Alternar lista de iniciativa">
               <Users className="w-4 h-4" /> Iniciativa
             </button>
             <button type="button" onClick={() => setShowAdder((v) => !v)}
-              className={`w-full h-10 inline-flex items-center justify-center gap-2 px-3 rounded text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500/60 ${
+              className={`w-full lg:w-auto h-10 inline-flex items-center justify-center gap-2 px-3 rounded text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500/60 ${
                 showAdder ? 'bg-amber-800 text-white' : 'bg-slate-800 hover:bg-slate-700 text-slate-200'
               }`}
               aria-label="Adicionar reforço mid-combat">
               <UserPlus className="w-4 h-4" /> Reforços
             </button>
             <button type="button" onClick={actions.newRound}
-              className="w-full h-10 inline-flex items-center justify-center gap-2 px-3 rounded bg-emerald-900/60 hover:bg-emerald-800 border border-emerald-800 text-sm font-semibold text-emerald-100 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full lg:w-auto h-10 inline-flex items-center justify-center gap-2 px-3 rounded bg-emerald-900/60 hover:bg-emerald-800 border border-emerald-800 text-sm font-semibold text-emerald-100 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500"
               title="Força início de nova rodada (reaplica Guarda Inabalável em todos)">
               <Clock className="w-4 h-4" /> Nova Rodada
             </button>
             <button type="button" onClick={handleNextTurn}
-              className="w-full h-10 inline-flex items-center justify-center gap-2 px-4 rounded bg-purple-800 hover:bg-purple-700 text-sm font-bold text-white transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500">
+              className="w-full lg:w-auto h-10 inline-flex items-center justify-center gap-2 px-4 rounded bg-purple-800 hover:bg-purple-700 text-sm font-bold text-white transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500">
               <SkipForward className="w-4 h-4" /> Próximo Turno
             </button>
             <button type="button" onClick={actions.endCombat}
-              className="col-span-2 sm:flex-1 w-full h-10 inline-flex items-center justify-center gap-2 px-3 rounded bg-red-900/50 hover:bg-red-800 border border-red-800 text-sm text-red-200 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500">
+              className="col-span-2 lg:col-span-1 w-full lg:w-auto h-10 inline-flex items-center justify-center gap-2 px-3 rounded bg-red-900/50 hover:bg-red-800 border border-red-800 text-sm text-red-200 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500">
               <Pause className="w-4 h-4" /> Encerrar
             </button>
           </div>
