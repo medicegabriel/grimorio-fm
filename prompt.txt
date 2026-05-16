@@ -1,19 +1,1 @@
-"Claude, a estratégia do Flex-Grow funcionou para preencher o layout, mas gerou um efeito colateral: o botão 'Em Combate' sofreu uma quebra de linha interna (wrap de texto), ficando mais alto ('gordo') que os outros.
 
-Vamos blindar o texto interno das pílulas para evitar que o layout vertical quebre:
-
-1. Trava de Linha Única (Fim do texto quebrado):
-
-Adicione a classe whitespace-nowrap em cada um dos botões/pílulas de filtro (no elemento <button> ou onde o texto é renderizado).
-
-Isso obriga o texto a ficar em uma única linha. Se faltar espaço horizontal, o Flexbox será forçado a jogar o botão inteiro para a próxima linha (o que é o comportamento correto), em vez de quebrar a palavra.
-
-2. Uniformidade de Altura:
-
-Garanta que todos os botões tenham a mesma altura base para evitar qualquer variação. Use uma classe de altura fixa (ex: h-9 ou h-10) ou um padding Y cravado (ex: py-1.5).
-
-3. Alinhamento Interno Correto:
-
-Verifique se a estrutura interna do botão continua sendo flex flex-row items-center justify-center gap-1.5 (ou gap-2). Isso garante que o ícone, o texto e a contagem fiquem perfeitamente alinhados na horizontal.
-
-Aplique essa correção para que os botões voltem a ser pílulas elegantes e simétricas!"
