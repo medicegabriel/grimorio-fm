@@ -52,6 +52,7 @@ const writeCreatures = (creatures) => {
       lastSaved: new Date().toISOString(),
       count: creatures.length,
     }));
+    window.dispatchEvent(new Event('storage-update'));
     return true;
   } catch {
     return false;
@@ -61,6 +62,7 @@ const writeCreatures = (creatures) => {
 const writeFolders = (folders) => {
   try {
     localStorage.setItem(FOLDERS_KEY, JSON.stringify(folders));
+    window.dispatchEvent(new Event('storage-update'));
     return true;
   } catch {
     return false;

@@ -68,6 +68,7 @@ export default function App() {
       <Dashboard
         manager={storage}
         compendium={COMPENDIUM}
+        encounters={encounterManager.encounters}
         onOpenCreature={goToTracker}
         onEditCreature={goToBuilder}
         onCreateNew={() => goToBuilder(null)}
@@ -121,6 +122,7 @@ export default function App() {
       <EncountersDashboard
         manager={encounterManager}
         folders={storage.folders}
+        creatures={storage.creatures}
         onCreateFolder={storage.createFolder}
         onRenameFolder={storage.renameFolder}
         onRemoveFolder={storage.removeFolder}

@@ -3,7 +3,7 @@ import { useState, useMemo, useRef, useCallback } from "react";
 import {
   Search, Plus, Upload, Download, Trash2, Copy, Edit3,
   X, AlertTriangle, MoreVertical, Users, Image,
-  FolderInput, Swords, Menu, Lock
+  FolderInput, Swords, Menu, Lock, Check, ChevronDown, Filter
 } from "lucide-react";
 import {
   DndContext,
@@ -27,6 +27,36 @@ import { CSS } from "@dnd-kit/utilities";
 import FolderSidebar from "./FolderSidebar";
 import MoveToFolderMenu from "./MoveToFolderMenu";
 import { exportCreaturesToFile, importFromFile } from "./io-utils";
+import StorageMeter from "./StorageMeter";
+
+// ============================================================
+// CHECKBOX CUSTOMIZADO (tema RPG)
+// onToggle(shiftKey: boolean) é chamado ao clicar
+// ============================================================
+const CustomCheckbox = ({ checked, onToggle, showTooltip = false }) => (
+  <div className="relative group/cb">
+    <button
+      type="button"
+      role="checkbox"
+      aria-checked={checked}
+      onClick={(e) => { e.stopPropagation(); onToggle(e.shiftKey); }}
+      className={`flex items-center justify-center w-4 h-4 rounded border transition-all duration-150 focus:outline-none focus:ring-1 focus:ring-purple-500/60 ${
+        checked
+          ? "bg-purple-600 border-purple-600"
+          : "bg-slate-900/80 border-slate-600 hover:border-slate-400"
+      }`}
+    >
+      {checked && <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />}
+    </button>
+    {showTooltip && (
+      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 pointer-events-none opacity-0 group-hover/cb:opacity-100 transition-opacity duration-150 z-50 whitespace-nowrap">
+        <div className="bg-slate-900 border border-slate-700/60 text-xs text-slate-300 px-2 py-1.5 rounded shadow-lg">
+          Dica: Shift + Clique para selecionar um intervalo
+        </div>
+      </div>
+    )}
+  </div>
+);
 
 // ============================================================
 // DICIONÁRIOS DE ESTILO
@@ -135,16 +165,11 @@ const CreatureCard = ({
               onPointerDown={(e) => e.stopPropagation()}
             >
               {showSelect && (
-                <div
-                  className={`transition-opacity duration-150 ${selected ? "opacity-100" : "opacity-0 group-hover:opacity-100 focus-within:opacity-100"}`}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <input
-                    type="checkbox"
+                <div className={`transition-opacity duration-150 ${selected ? "opacity-100" : "opacity-0 group-hover:opacity-100 focus-within:opacity-100"}`}>
+                  <CustomCheckbox
                     checked={selected}
-                    onChange={(e) => { e.stopPropagation(); onToggleSelect(creature.id); }}
-                    className="w-4 h-4 accent-purple-600 cursor-pointer rounded m-0 translate-y-px"
-                    aria-label={`Selecionar ${creature.name}`}
+                    onToggle={(shiftKey) => onToggleSelect(creature.id, shiftKey)}
+                    showTooltip
                   />
                 </div>
               )}
@@ -326,6 +351,7 @@ const BulkActionBar = ({ count, folders, onExport, onDelete, onMove, onClear }) 
         {count} selecionada(s)
       </span>
       <div className="flex items-center gap-2 ml-auto flex-wrap">
+        {/* Mover */}
         <div className="relative">
           <button
             type="button"
@@ -347,6 +373,7 @@ const BulkActionBar = ({ count, folders, onExport, onDelete, onMove, onClear }) 
             </>
           )}
         </div>
+
         <button
           type="button"
           onClick={onExport}
@@ -494,6 +521,7 @@ const ExportModal = ({ creatures, onConfirm, onCancel }) => {
 export default function Dashboard({
   manager,
   compendium = [],
+  encounters = [],
   onOpenCreature,
   onEditCreature,
   onCreateNew,
@@ -505,6 +533,8 @@ export default function Dashboard({
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [exportModal, setExportModal] = useState(null);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({ nd: "", patamar: "", grau: "", dificuldade: "", origin: "" });
   const fileInputRef = useRef(null);
 
   // ── DnD state ──
@@ -512,6 +542,8 @@ export default function Dashboard({
   const [isDraggingMultiple, setIsDraggingMultiple] = useState(false);
   // Ref evita closure stale no onDragEnd
   const isDraggingMultipleRef = useRef(false);
+  // Ancoragem para Shift+Click range selection
+  const lastSelectedIndexRef = useRef(-1);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -550,6 +582,13 @@ export default function Dashboard({
     return acc;
   }, [manager.creatures, manager.folders, compendium.length]);
 
+  const uniqueNDs = useMemo(() => {
+    const nds = new Set(manager.creatures.filter((c) => c.core?.nd != null).map((c) => c.core.nd));
+    return Array.from(nds).sort((a, b) => a - b);
+  }, [manager.creatures]);
+
+  const hasActiveFilters = Object.values(filters).some(Boolean);
+
   const filtered = useMemo(() => {
     const filterFn = VIEW_FILTERS[view.type] ?? VIEW_FILTERS.all;
     const ctx = { folderId: view.folderId };
@@ -557,9 +596,21 @@ export default function Dashboard({
     return allCreatures.filter((c) => {
       if (!filterFn(c, ctx)) return false;
       if (q && !c.name.toLowerCase().includes(q)) return false;
+      if (filters.nd && String(c.core?.nd) !== filters.nd) return false;
+      if (filters.patamar && c.core?.patamar !== filters.patamar) return false;
+      if (filters.grau && c.core?.grau !== filters.grau) return false;
+      if (filters.dificuldade && c.core?.difficulty !== filters.dificuldade) return false;
+      if (filters.origin && c.core?.origin?.type !== filters.origin) return false;
       return true;
     });
-  }, [allCreatures, view, search]);
+  }, [allCreatures, view, search, filters]);
+
+  const selectableFiltered = useMemo(
+    () => filtered.filter((c) => !c.isBuiltIn),
+    [filtered]
+  );
+
+  const allFilteredSelected = selectableFiltered.length > 0 && selectableFiltered.every((c) => selected.has(c.id));
 
   const activeFolder = useMemo(
     () => view.type === "folder" ? manager.folders.find((f) => f.id === view.folderId) : null,
@@ -573,15 +624,41 @@ export default function Dashboard({
   );
 
   // ===== Handlers de seleção =====
-  const toggleSelect = useCallback((id) => {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
-      return next;
-    });
+  const toggleSelect = useCallback((id, shiftKey = false) => {
+    const idx = selectableFiltered.findIndex((c) => c.id === id);
+
+    if (shiftKey && lastSelectedIndexRef.current >= 0 && idx >= 0) {
+      const start = Math.min(lastSelectedIndexRef.current, idx);
+      const end = Math.max(lastSelectedIndexRef.current, idx);
+      const rangeIds = selectableFiltered.slice(start, end + 1).map((c) => c.id);
+      setSelected((prev) => {
+        const next = new Set(prev);
+        rangeIds.forEach((rid) => next.add(rid));
+        return next;
+      });
+    } else {
+      setSelected((prev) => {
+        const next = new Set(prev);
+        if (next.has(id)) next.delete(id); else next.add(id);
+        return next;
+      });
+      if (idx >= 0) lastSelectedIndexRef.current = idx;
+    }
+  }, [selectableFiltered]);
+
+  const clearSelection = useCallback(() => {
+    setSelected(new Set());
+    lastSelectedIndexRef.current = -1;
   }, []);
 
-  const clearSelection = useCallback(() => setSelected(new Set()), []);
+  const handleSelectAll = useCallback(() => {
+    if (allFilteredSelected) {
+      clearSelection();
+    } else {
+      setSelected(new Set(selectableFiltered.map((c) => c.id)));
+      lastSelectedIndexRef.current = selectableFiltered.length - 1;
+    }
+  }, [allFilteredSelected, selectableFiltered, clearSelection]);
 
   // ===== Handlers de DnD =====
   const handleDragStart = useCallback(({ active }) => {
@@ -795,6 +872,11 @@ export default function Dashboard({
                 e.target.value = "";
               }}
             />
+            <StorageMeter
+              creatures={manager.creatures}
+              folders={manager.folders}
+              encounters={encounters}
+            />
           </div>
         </header>
 
@@ -844,28 +926,158 @@ export default function Dashboard({
             <div className="mb-4 flex items-end justify-between gap-3 flex-wrap">
               <div>
                 <h2 className="text-xl font-bold text-white">{viewTitle}</h2>
-                <div className="text-xs text-slate-500 uppercase tracking-wider mt-0.5">
-                  {filtered.length} criatura(s)
-                  {view.type === "builtins" && " · Somente leitura — edite para clonar"}
-                  {isSortableView && filtered.length > 0 && (
-                    <span className="ml-2 text-slate-600">· Arraste para reordenar</span>
+                <div className="flex items-center gap-3 flex-wrap mt-0.5">
+                  <span className="text-xs text-slate-500 uppercase tracking-wider">
+                    {filtered.length} criatura(s)
+                    {view.type === "builtins" && " · Somente leitura — edite para clonar"}
+                    {isSortableView && filtered.length > 0 && (
+                      <span className="ml-2 text-slate-600">· Arraste para reordenar</span>
+                    )}
+                  </span>
+                  {isSortableView && selectableFiltered.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={handleSelectAll}
+                      className="flex items-center gap-2 select-none group focus:outline-none"
+                    >
+                      <span className={`flex items-center justify-center w-4 h-4 rounded border transition-all duration-150 ${
+                        allFilteredSelected
+                          ? "bg-purple-600 border-purple-600"
+                          : "bg-slate-900/80 border-slate-600 group-hover:border-slate-400"
+                      }`}>
+                        {allFilteredSelected && <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />}
+                      </span>
+                      <span className="text-xs text-slate-500 group-hover:text-slate-300 transition-colors">
+                        {allFilteredSelected ? "Limpar seleção" : "Selecionar tudo"}
+                      </span>
+                    </button>
                   )}
                 </div>
               </div>
 
-              {/* Busca */}
-              <div className="relative w-full sm:w-64">
-                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-600" />
-                <input
-                  type="text"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Buscar..."
-                  className="w-full h-9 bg-slate-900/60 border border-slate-800 rounded pl-9 pr-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-purple-500"
-                  aria-label="Buscar criaturas"
-                />
+              {/* Busca + Filtros */}
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <div className="relative flex-1 sm:w-64">
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-600" />
+                  <input
+                    type="text"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Buscar..."
+                    className="w-full h-9 bg-slate-900/60 border border-slate-800 rounded pl-9 pr-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-purple-500"
+                    aria-label="Buscar criaturas"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowFilters((v) => !v)}
+                  className={`relative h-9 w-9 flex items-center justify-center rounded border transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500/60 ${
+                    showFilters || hasActiveFilters
+                      ? "bg-purple-900/60 border-purple-700 text-purple-300"
+                      : "bg-slate-900/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700"
+                  }`}
+                  aria-label="Filtros avançados"
+                  title="Filtros avançados"
+                >
+                  <Filter className="w-4 h-4" />
+                  {hasActiveFilters && (
+                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-purple-500 rounded-full" />
+                  )}
+                </button>
               </div>
             </div>
+
+            {/* Painel de filtros avançados */}
+            {showFilters && (
+              <div className="mb-4 p-3 bg-slate-900/60 border border-slate-800 rounded-lg grid grid-cols-2 md:grid-cols-5 gap-2">
+                {/* ND */}
+                <div className="flex flex-col gap-1">
+                  <label className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">ND</label>
+                  <select
+                    value={filters.nd}
+                    onChange={(e) => setFilters((f) => ({ ...f, nd: e.target.value }))}
+                    className="h-8 bg-slate-950 border border-slate-700 rounded px-2 text-xs text-slate-200 focus:outline-none focus:border-purple-500"
+                  >
+                    <option value="">Todos</option>
+                    {uniqueNDs.map((nd) => <option key={nd} value={String(nd)}>{nd}</option>)}
+                  </select>
+                </div>
+                {/* Patamar */}
+                <div className="flex flex-col gap-1">
+                  <label className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Patamar</label>
+                  <select
+                    value={filters.patamar}
+                    onChange={(e) => setFilters((f) => ({ ...f, patamar: e.target.value }))}
+                    className="h-8 bg-slate-950 border border-slate-700 rounded px-2 text-xs text-slate-200 focus:outline-none focus:border-purple-500"
+                  >
+                    <option value="">Todos</option>
+                    <option value="lacaio">Lacaio</option>
+                    <option value="capanga">Capanga</option>
+                    <option value="comum">Comum</option>
+                    <option value="desafio">Desafio</option>
+                    <option value="calamidade">Calamidade</option>
+                  </select>
+                </div>
+                {/* Grau */}
+                <div className="flex flex-col gap-1">
+                  <label className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Grau</label>
+                  <select
+                    value={filters.grau}
+                    onChange={(e) => setFilters((f) => ({ ...f, grau: e.target.value }))}
+                    className="h-8 bg-slate-950 border border-slate-700 rounded px-2 text-xs text-slate-200 focus:outline-none focus:border-purple-500"
+                  >
+                    <option value="">Todos</option>
+                    <option value="especial">Especial</option>
+                    <option value="4">4</option>
+                    <option value="3">3</option>
+                    <option value="2">2</option>
+                    <option value="1">1</option>
+                  </select>
+                </div>
+                {/* Dificuldade */}
+                <div className="flex flex-col gap-1">
+                  <label className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Dificuldade</label>
+                  <select
+                    value={filters.dificuldade}
+                    onChange={(e) => setFilters((f) => ({ ...f, dificuldade: e.target.value }))}
+                    className="h-8 bg-slate-950 border border-slate-700 rounded px-2 text-xs text-slate-200 focus:outline-none focus:border-purple-500"
+                  >
+                    <option value="">Todas</option>
+                    <option value="iniciante">Iniciante</option>
+                    <option value="intermediario">Intermediário</option>
+                    <option value="experiente">Experiente</option>
+                  </select>
+                </div>
+                {/* Origem */}
+                <div className="flex flex-col gap-1">
+                  <label className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Origem</label>
+                  <select
+                    value={filters.origin}
+                    onChange={(e) => setFilters((f) => ({ ...f, origin: e.target.value }))}
+                    className="h-8 bg-slate-950 border border-slate-700 rounded px-2 text-xs text-slate-200 focus:outline-none focus:border-purple-500"
+                  >
+                    <option value="">Todas</option>
+                    <option value="maldicao">Maldição</option>
+                    <option value="feiticeiro">Feiticeiro</option>
+                    <option value="nao_feiticeiro">Não-Feiticeiro</option>
+                    <option value="restringido">Restringido</option>
+                    <option value="corpo_amaldicoado">Corpo Amaldiçoado</option>
+                  </select>
+                </div>
+                {/* Limpar filtros */}
+                {hasActiveFilters && (
+                  <div className="col-span-2 md:col-span-5 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setFilters({ nd: "", patamar: "", grau: "", dificuldade: "", origin: "" })}
+                      className="text-xs text-purple-400 hover:text-purple-200 focus:outline-none"
+                    >
+                      Limpar filtros
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
 
             <BulkActionBar
               count={selected.size}

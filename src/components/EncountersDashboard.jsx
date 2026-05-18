@@ -29,6 +29,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { ENCOUNTER_STATUS } from '../fm-encounter';
 import MoveToFolderMenu from './MoveToFolderMenu';
 import FolderSidebar from './FolderSidebar';
+import StorageMeter from './StorageMeter';
 
 // ============================================================
 // DICIONÁRIOS
@@ -458,6 +459,7 @@ const EmptyState = ({ onCreate }) => (
 export default function EncountersDashboard({
   manager,
   folders = [],
+  creatures = [],
   onCreateFolder,
   onRenameFolder,
   onRemoveFolder,
@@ -667,8 +669,9 @@ export default function EncountersDashboard({
         {/* ===== HEADER ===== */}
         <header className="sticky top-0 z-40 bg-slate-950/90 backdrop-blur border-b border-purple-900/50">
           <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-3 space-y-2">
-            {/* Linha superior: título à esquerda, voltar à direita */}
-            <div className="flex items-center justify-between w-full">
+            {/* Bloco principal: título esquerda, ações direita */}
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 w-full">
+              {/* Esquerda: título + status */}
               <div className="flex items-center gap-3">
                 <button
                   type="button"
@@ -688,25 +691,31 @@ export default function EncountersDashboard({
                   )}
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={onBackToGrimoire}
-                className="flex items-center gap-2 px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-sm text-slate-300 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500/60"
-              >
-                <ArrowLeft className="w-4 h-4" /> Grimório
-              </button>
+
+              {/* Direita: botões de ação */}
+              <div className="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto shrink-0">
+                <button
+                  type="button"
+                  onClick={onBackToGrimoire}
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-sm text-slate-300 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500/60"
+                >
+                  <ArrowLeft className="w-4 h-4" /> Grimório
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCreate}
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded bg-purple-800 hover:bg-purple-700 text-sm font-bold text-white transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500"
+                >
+                  <Plus className="w-4 h-4" /> Novo Encontro
+                </button>
+              </div>
             </div>
 
-            {/* Linha inferior: botão de ação principal */}
-            <div>
-              <button
-                type="button"
-                onClick={handleCreate}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded bg-purple-800 hover:bg-purple-700 text-sm font-bold text-white transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500"
-              >
-                <Plus className="w-4 h-4" /> Novo Encontro
-              </button>
-            </div>
+            <StorageMeter
+              creatures={creatures}
+              folders={folders}
+              encounters={manager.encounters}
+            />
           </div>
         </header>
 

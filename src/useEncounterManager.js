@@ -24,6 +24,7 @@ const loadFromStorage = () => {
 const saveToStorage = (encounters) => {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(encounters));
+    window.dispatchEvent(new Event('storage-update'));
   } catch (err) {
     console.warn('[useEncounterManager] Falha ao salvar encontros:', err);
   }
