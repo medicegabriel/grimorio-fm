@@ -7,6 +7,7 @@ import EncountersDashboard from "./components/EncountersDashboard";
 import useCreatureStorage from "./components/useCreatureStorage";
 import useEncounterManager from "./useEncounterManager";
 import { COMPENDIUM, getCompendiumById, isBuiltInId } from "./fm-compendium";
+import { Analytics } from '@vercel/analytics/react';
 
 // Helper para achar a criatura seja no compêndio ou no localstorage
 const findCreatureAnywhere = (id, storageList, compendium) =>
@@ -129,5 +130,10 @@ export default function App() {
     )
   };
 
-  return views[view.name] ? views[view.name]() : views.dashboard();
+  return (
+    <>
+      {views[view.name] ? views[view.name]() : views.dashboard()}
+      <Analytics />
+    </>
+  );
 }
