@@ -39,7 +39,7 @@ export default function StorageMeter({ creatures, folders, encounters }) {
 
   return (
     <div className="w-full flex items-center gap-2 pt-1.5 border-t border-slate-800/60">
-      <span className="text-[10px] text-slate-500 whitespace-nowrap shrink-0">
+      <span className="text-[10px] text-slate-500 truncate min-w-0">
         Uso de Memória: {usedLabel} / {maxLabel}
       </span>
       <div className="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden min-w-0">

@@ -34,7 +34,7 @@ export default function MoveToFolderMenu({
   ];
 
   return (
-    <div className="bg-slate-950 border border-slate-800 rounded shadow-xl overflow-hidden max-h-64 overflow-y-auto">
+    <div className="bg-slate-950 border border-slate-800 rounded-md shadow-xl z-50 max-h-64 overflow-y-auto">
       <div className="px-3 py-1.5 text-[10px] uppercase tracking-widest text-slate-500 font-bold border-b border-slate-800">
         Mover para...
       </div>

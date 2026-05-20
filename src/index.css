@@ -57,6 +57,14 @@ body {
   background: #0f172a;
 }
 
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 #root {
   width: 100%;
   min-height: 100svh;
