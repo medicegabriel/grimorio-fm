@@ -82,18 +82,21 @@ const CreaturePicker = ({ creatures, folders = [], onAdd }) => {
         <Users className="w-3.5 h-3.5" /> Adicionar do Grimório
       </h3>
       {folders.length > 0 && (
-        <select
-          value={selectedFolder}
-          onChange={(e) => setSelectedFolder(e.target.value)}
-          className="w-full h-9 bg-slate-950 border border-slate-700 rounded px-2 text-sm text-white focus:outline-none focus:border-purple-500 mb-2"
-          aria-label="Filtrar por pasta"
-        >
-          <option value="__all__">Todas as Pastas</option>
-          <option value="__unfiled__">Sem Pasta</option>
-          {folders.map((f) => (
-            <option key={f.id} value={f.id}>{f.name}</option>
-          ))}
-        </select>
+        <div className="relative mb-2">
+          <select
+            value={selectedFolder}
+            onChange={(e) => setSelectedFolder(e.target.value)}
+            className="w-full h-9 bg-slate-950 border border-slate-700 rounded pl-2 pr-7 text-sm text-white appearance-none focus:outline-none focus:border-purple-500"
+            aria-label="Filtrar por pasta"
+          >
+            <option value="__all__">Todas as Pastas</option>
+            <option value="__unfiled__">Sem Pasta</option>
+            {folders.map((f) => (
+              <option key={f.id} value={f.id}>{f.name}</option>
+            ))}
+          </select>
+          <ChevronDown className="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+        </div>
       )}
       <div className="relative mb-3">
         <Search className="w-4 h-4 absolute left-2 top-1/2 -translate-y-1/2 text-slate-600" />
@@ -224,14 +227,17 @@ const CombatantRow = ({ combatant, onRoll, onSetInitiative, onSetMod, onSetSide,
           <Dices className="w-3.5 h-3.5" /> Rolar
         </button>
 
-        <select value={combatant.flags.side}
-          onChange={(e) => onSetSide(e.target.value)}
-          className="h-8 bg-slate-950 border border-slate-700 rounded px-2 text-xs text-white focus:outline-none focus:border-purple-500"
-          aria-label="Lado do combatente">
-          {Object.entries(SIDE_LABELS).map(([key, label]) => (
-            <option key={key} value={key}>{label}</option>
-          ))}
-        </select>
+        <div className="relative">
+          <select value={combatant.flags.side}
+            onChange={(e) => onSetSide(e.target.value)}
+            className="h-8 bg-slate-950 border border-slate-700 rounded pl-2 pr-7 text-xs text-white appearance-none focus:outline-none focus:border-purple-500"
+            aria-label="Lado do combatente">
+            {Object.entries(SIDE_LABELS).map(([key, label]) => (
+              <option key={key} value={key}>{label}</option>
+            ))}
+          </select>
+          <ChevronDown className="w-3 h-3 absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+        </div>
       </div>
     </li>
   );
@@ -387,12 +393,15 @@ const MidCombatAdder = ({ creatures, folders = [], onAddCreature, onAddPc }) => 
       {tab === 'creature' ? (
         <>
           {folders.length > 0 && (
-            <select value={selectedFolder} onChange={(e) => setSelectedFolder(e.target.value)}
-              className="w-full h-8 bg-slate-950 border border-slate-700 rounded px-2 text-xs text-white focus:outline-none focus:border-purple-500 mb-2">
-              <option value="__all__">Todas as Pastas</option>
-              <option value="__unfiled__">Sem Pasta</option>
-              {folders.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
-            </select>
+            <div className="relative mb-2">
+              <select value={selectedFolder} onChange={(e) => setSelectedFolder(e.target.value)}
+                className="w-full h-8 bg-slate-950 border border-slate-700 rounded pl-2 pr-7 text-xs text-white appearance-none focus:outline-none focus:border-purple-500">
+                <option value="__all__">Todas as Pastas</option>
+                <option value="__unfiled__">Sem Pasta</option>
+                {folders.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
+              </select>
+              <ChevronDown className="w-3 h-3 absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+            </div>
           )}
           <div className="relative mb-2">
             <Search className="w-3.5 h-3.5 absolute left-2 top-1/2 -translate-y-1/2 text-slate-600" />

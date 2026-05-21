@@ -76,7 +76,8 @@ h1,
 h2 {
   font-family: var(--heading);
   font-weight: 500;
-  color: var(--text-h);
+  /* App e sempre dark: cor fixa para nao seguir o prefers-color-scheme do SO */
+  color: #f3f4f6;
 }
 
 h1 {

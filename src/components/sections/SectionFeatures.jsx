@@ -1,36 +1,40 @@
 import React, { useState } from "react";
-import { Plus, Trash2, Sparkles } from "lucide-react";
+import { Plus, Trash2, Sparkles, Bookmark, BookmarkCheck, BookOpen, X } from "lucide-react";
 import { FieldLabel, TextInput, TextArea, Select, SmallButton, Pill } from "../builder-controls";
+import useFeatureTemplates from "../useFeatureTemplates";
 
 const CATEGORIES = [
-  { value: "geral",           label: "Geral" },
-  { value: "especial",        label: "Especial" },
-  { value: "dote_geral",      label: "Dote Geral" },
+  { value: "geral",            label: "Geral" },
+  { value: "especial",         label: "Especial" },
+  { value: "dote_geral",       label: "Dote Geral" },
   { value: "dote_amaldicoado", label: "Dote Amaldiçoado" },
-  { value: "aptidao",         label: "Aptidão" },
-  { value: "treinamento",     label: "Treinamento" },
-  { value: "artimanha",       label: "Artimanha" },
+  { value: "aptidao",          label: "Aptidão" },
+  { value: "treinamento",      label: "Treinamento" },
+  { value: "artimanha",        label: "Artimanha" },
 ];
 
 const TRIGGERS = [
-  { value: "passiva",      label: "Passiva" },
-  { value: "rodada",       label: "Todo turno" },
-  { value: "condicional",  label: "Condicional" },
-  { value: "acao",         label: "Custa ação" },
+  { value: "passiva",     label: "Passiva" },
+  { value: "rodada",      label: "Todo turno" },
+  { value: "condicional", label: "Condicional" },
+  { value: "acao",        label: "Custa ação" },
 ];
 
 const CATEGORY_COLORS = {
-  geral: "slate",
-  especial: "rose",
-  dote_geral: "sky",
+  geral:            "slate",
+  especial:         "rose",
+  dote_geral:       "sky",
   dote_amaldicoado: "purple",
-  aptidao: "amber",
-  treinamento: "emerald",
-  artimanha: "rose",
+  aptidao:          "amber",
+  treinamento:      "emerald",
+  artimanha:        "rose",
 };
+
+const CATEGORY_LABELS = Object.fromEntries(CATEGORIES.map((c) => [c.value, c.label]));
 
 export default function SectionFeatures({ draft, actions }) {
   const [showForm, setShowForm] = useState(false);
+  const { templates, saveTemplate, removeTemplate } = useFeatureTemplates();
 
   const handleAdd = (newFeature) => {
     actions.addFeature({ ...newFeature, id: `feat-${Date.now().toString(36)}` });
@@ -51,11 +55,17 @@ export default function SectionFeatures({ draft, actions }) {
           feature={f}
           onUpdate={(patch) => actions.updateFeature(f.id, patch)}
           onRemove={() => actions.removeFeature(f.id)}
+          onSaveTemplate={saveTemplate}
         />
       ))}
 
       {showForm ? (
-        <FeatureForm onAdd={handleAdd} onCancel={() => setShowForm(false)} />
+        <FeatureForm
+          onAdd={handleAdd}
+          onCancel={() => setShowForm(false)}
+          templates={templates}
+          onRemoveTemplate={removeTemplate}
+        />
       ) : (
         <SmallButton onClick={() => setShowForm(true)} variant="primary">
           <Plus className="w-3 h-3" /> Adicionar Característica
@@ -65,19 +75,38 @@ export default function SectionFeatures({ draft, actions }) {
   );
 }
 
-function FeatureItem({ feature, onUpdate, onRemove }) {
+function FeatureItem({ feature, onUpdate, onRemove, onSaveTemplate }) {
   const [expanded, setExpanded] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const handleSaveTemplate = () => {
+    onSaveTemplate(feature);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 1500);
+  };
+
   return (
     <div className="bg-slate-950/40 border border-slate-800 rounded">
       <div className="flex items-center gap-2 p-2">
         <Sparkles className="w-3.5 h-3.5 text-fuchsia-400 flex-shrink-0" />
         <button
           onClick={() => setExpanded(!expanded)}
-          className="flex-1 text-left text-sm font-semibold text-white hover:text-purple-300 truncate"
+          className="flex-1 text-left text-sm font-semibold text-white hover:text-purple-300 truncate min-w-0"
         >
           {feature.name || "Sem nome"}
         </button>
-        <Pill color={CATEGORY_COLORS[feature.category] || "slate"}>{feature.category}</Pill>
+        <Pill color={CATEGORY_COLORS[feature.category] || "slate"}>
+          {CATEGORY_LABELS[feature.category] || feature.category}
+        </Pill>
+        <SmallButton
+          onClick={handleSaveTemplate}
+          title={saved ? "Modelo salvo!" : "Salvar como modelo"}
+        >
+          {saved
+            ? <BookmarkCheck className="w-3 h-3 text-emerald-400" />
+            : <Bookmark className="w-3 h-3" />
+          }
+        </SmallButton>
         <SmallButton onClick={onRemove} variant="danger">
           <Trash2 className="w-3 h-3" />
         </SmallButton>
@@ -109,18 +138,95 @@ function FeatureItem({ feature, onUpdate, onRemove }) {
   );
 }
 
-function FeatureForm({ onAdd, onCancel }) {
+function FeatureForm({ onAdd, onCancel, templates, onRemoveTemplate }) {
   const [form, setForm] = useState({
     name: "",
     category: "geral",
     trigger: "passiva",
     description: "",
   });
+  const [showTemplates, setShowTemplates] = useState(false);
   const update = (p) => setForm((prev) => ({ ...prev, ...p }));
+
+  const applyTemplate = (tpl) => {
+    setForm({
+      name: tpl.name,
+      category: tpl.category,
+      trigger: tpl.trigger,
+      description: tpl.description,
+    });
+    setShowTemplates(false);
+  };
 
   return (
     <div className="bg-slate-950/70 border border-purple-900/50 rounded p-4 space-y-3">
-      <h4 className="text-sm font-bold text-purple-300">Nova Característica</h4>
+      {/* Cabeçalho com botão de modelos */}
+      <div className="flex items-center justify-between gap-2">
+        <h4 className="text-sm font-bold text-purple-300">Nova Característica</h4>
+        {templates.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setShowTemplates(!showTemplates)}
+            className={`flex items-center gap-1.5 text-xs px-2 py-1 rounded transition-colors focus:outline-none ${
+              showTemplates
+                ? "bg-amber-900/40 text-amber-300 border border-amber-800/60"
+                : "text-slate-400 hover:text-amber-300 hover:bg-slate-800"
+            }`}
+          >
+            <BookOpen className="w-3 h-3" />
+            Modelos ({templates.length})
+          </button>
+        )}
+      </div>
+
+      {/* Painel de modelos */}
+      {showTemplates && (
+        <div className="bg-slate-950 border border-slate-700 rounded overflow-hidden">
+          <div className="px-3 py-2 border-b border-slate-800 flex items-center justify-between">
+            <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">
+              Modelos Salvos
+            </span>
+            <button
+              type="button"
+              onClick={() => setShowTemplates(false)}
+              className="text-slate-600 hover:text-slate-300"
+            >
+              <X className="w-3 h-3" />
+            </button>
+          </div>
+          <div className="overflow-y-auto max-h-44 divide-y divide-slate-800/60">
+            {templates.map((tpl) => (
+              <div
+                key={tpl.id}
+                className="flex items-center gap-2 px-3 py-2 hover:bg-slate-800/60 group"
+              >
+                <button
+                  type="button"
+                  onClick={() => applyTemplate(tpl)}
+                  className="flex-1 min-w-0 text-left"
+                >
+                  <span className="text-sm text-slate-200 truncate block group-hover:text-white">
+                    {tpl.name}
+                  </span>
+                </button>
+                <Pill color={CATEGORY_COLORS[tpl.category] || "slate"}>
+                  {CATEGORY_LABELS[tpl.category] || tpl.category}
+                </Pill>
+                <button
+                  type="button"
+                  onClick={() => onRemoveTemplate(tpl.id)}
+                  className="text-slate-600 hover:text-red-400 transition-colors flex-shrink-0"
+                  title="Remover modelo"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Campos do formulário */}
       <TextInput value={form.name} onChange={(v) => update({ name: v })} placeholder="Nome" />
       <div className="grid grid-cols-2 gap-2">
         <Select value={form.category} onChange={(v) => update({ category: v })} options={CATEGORIES} />

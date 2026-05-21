@@ -483,7 +483,7 @@ const ActionCard = ({ action, creatureName }) => {
       {expanded && (
         <div className="px-3 pb-3 pt-2 border-t border-slate-800 space-y-2">
           <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">{generateActionDescription(action, creatureName, action.description) || humanizeAction(action)}</p>
-          {dmgRoll && (
+          {dmgRoll && action.attackType !== "suporte" && (
             <div className="flex items-center justify-between bg-slate-950 rounded px-2.5 py-2">
               <div className="flex items-center gap-1.5 text-xs min-w-0">
                 <Dices className="w-3.5 h-3.5 text-rose-400 flex-shrink-0" />

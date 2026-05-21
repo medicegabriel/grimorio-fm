@@ -4,6 +4,7 @@ import CombatTracker from "./components/CombatTracker";
 import CreatureBuilder from "./components/CreatureBuilder";
 import EncounterTracker from "./components/EncounterTracker";
 import EncountersDashboard from "./components/EncountersDashboard";
+import EncounterSyncModal from "./components/EncounterSyncModal";
 import useCreatureStorage from "./components/useCreatureStorage";
 import useEncounterManager from "./useEncounterManager";
 import { COMPENDIUM, getCompendiumById, isBuiltInId } from "./fm-compendium";
@@ -16,8 +17,9 @@ const findCreatureAnywhere = (id, storageList, compendium) =>
 export default function App() {
   const storage = useCreatureStorage();
   const encounterManager = useEncounterManager();
-  
+
   const [view, setView] = useState({ name: "dashboard", creatureId: null, encounterId: null });
+  const [encounterSyncState, setEncounterSyncState] = useState(null);
 
   // Navegação
   const goToDashboard = useCallback(() => {
@@ -59,6 +61,67 @@ export default function App() {
     goToEncounters();
   }, [encounterManager, goToEncounters]);
 
+  // ---------- Save de criatura com verificação de encontros ----------
+  const handleCreatureSave = useCallback((data) => {
+    const isEditing = !!(data.id && storage.creatures.find((c) => c.id === data.id));
+
+    if (isEditing) {
+      const affected = encounterManager.encounters.filter((enc) =>
+        enc.combatants?.some((c) => c.creatureId === data.id)
+      );
+      if (affected.length > 0) {
+        setEncounterSyncState({ creature: data, affectedEncounters: affected });
+        return;
+      }
+      storage.update(data.id, data);
+    } else {
+      storage.create(data);
+    }
+    goToDashboard();
+  }, [storage, encounterManager.encounters, goToDashboard]);
+
+  const handleSyncConfirm = useCallback((selectedIds) => {
+    if (!encounterSyncState) return;
+    const { creature } = encounterSyncState;
+    storage.update(creature.id, creature);
+    const idSet = new Set(selectedIds);
+    const newHpMax = creature.stats?.hpMax ?? 0;
+    encounterManager.encounters
+      .filter((e) => idSet.has(e.id))
+      .forEach((enc) => {
+        encounterManager.update(enc.id, (e) => ({
+          ...e,
+          combatants: e.combatants.map((c) => {
+            if (c.creatureId !== creature.id) return c;
+            const clampedHp = Math.min(c.combatState?.hpCurrent ?? newHpMax, newHpMax);
+            return {
+              ...c,
+              snapshot: creature,
+              combatState: {
+                ...c.combatState,
+                hpMaxBase: newHpMax,
+                hpCurrent: clampedHp,
+              },
+            };
+          }),
+        }));
+      });
+    setEncounterSyncState(null);
+    goToDashboard();
+  }, [encounterSyncState, storage, encounterManager, goToDashboard]);
+
+  const handleSyncSkip = useCallback(() => {
+    if (!encounterSyncState) return;
+    const { creature } = encounterSyncState;
+    storage.update(creature.id, creature);
+    setEncounterSyncState(null);
+    goToDashboard();
+  }, [encounterSyncState, storage, goToDashboard]);
+
+  const handleSyncCancel = useCallback(() => {
+    setEncounterSyncState(null);
+  }, []);
+
   const activeCreature = view.creatureId
     ? findCreatureAnywhere(view.creatureId, storage.creatures, COMPENDIUM)
     : null;
@@ -91,14 +154,7 @@ export default function App() {
     builder: () => (
       <CreatureBuilder
         existingCreature={activeCreature}
-        onSave={(data) => {
-          if (data.id && storage.creatures.find((c) => c.id === data.id)) {
-            storage.update(data.id, data);
-          } else {
-            storage.create(data);
-          }
-          goToDashboard();
-        }}
+        onSave={handleCreatureSave}
         onCancel={goToDashboard}
       />
     ),
@@ -135,6 +191,15 @@ export default function App() {
   return (
     <>
       {views[view.name] ? views[view.name]() : views.dashboard()}
+      {encounterSyncState && (
+        <EncounterSyncModal
+          creature={encounterSyncState.creature}
+          affectedEncounters={encounterSyncState.affectedEncounters}
+          onConfirm={handleSyncConfirm}
+          onSkip={handleSyncSkip}
+          onCancel={handleSyncCancel}
+        />
+      )}
       <Analytics />
     </>
   );

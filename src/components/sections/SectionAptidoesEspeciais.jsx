@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Plus, Trash2, Sparkles } from "lucide-react";
+import { Plus, Trash2, Sparkles, ChevronDown } from "lucide-react";
 import { TextInput, TextArea, SmallButton } from "../builder-controls";
 
 export const APTIDOES_CATEGORIAS = [
@@ -274,27 +274,30 @@ export default function SectionAptidoesEspeciais({ draft, actions }) {
         </h3>
 
         {/* Select nativo com optgroup por categoria */}
-        <select
-          value={selecao}
-          onChange={(e) => setSelecao(e.target.value)}
-          className="w-full h-9 bg-slate-950 border border-slate-700 rounded px-2 text-sm text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
-        >
-          <option value="">Escolha uma aptidão...</option>
-          {APTIDOES_CATEGORIAS.map((cat) => {
-            const disponiveis = cat.aptidoes.filter((a) => !addedNomes.has(a.nome));
-            if (disponiveis.length === 0) return null;
-            return (
-              <optgroup key={cat.categoria} label={cat.categoria}>
-                {disponiveis.map((a) => (
-                  <option key={a.nome} value={a.nome}>
-                    {a.nome}
-                  </option>
-                ))}
-              </optgroup>
-            );
-          })}
-          <option value={CUSTOM_KEY}>✦ Aptidão Customizada</option>
-        </select>
+        <div className="relative">
+          <select
+            value={selecao}
+            onChange={(e) => setSelecao(e.target.value)}
+            className="w-full h-9 bg-slate-950 border border-slate-700 rounded pl-2 pr-7 text-sm text-white appearance-none focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+          >
+            <option value="">Escolha uma aptidão...</option>
+            {APTIDOES_CATEGORIAS.map((cat) => {
+              const disponiveis = cat.aptidoes.filter((a) => !addedNomes.has(a.nome));
+              if (disponiveis.length === 0) return null;
+              return (
+                <optgroup key={cat.categoria} label={cat.categoria}>
+                  {disponiveis.map((a) => (
+                    <option key={a.nome} value={a.nome}>
+                      {a.nome}
+                    </option>
+                  ))}
+                </optgroup>
+              );
+            })}
+            <option value={CUSTOM_KEY}>✦ Aptidão Customizada</option>
+          </select>
+          <ChevronDown className="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+        </div>
 
         {/* Preview da descrição oficial */}
         {oficialSelecionada && (

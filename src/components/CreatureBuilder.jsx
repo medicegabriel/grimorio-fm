@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import {
   Save, ChevronLeft, AlertTriangle, Info, RotateCcw, Wand2,
-  ChevronDown, ChevronUp, Eye, Sparkles,
+  ChevronDown, ChevronUp, Eye, Sparkles, X,
 } from "lucide-react";
 
 import useCreatureBuilder, { blankDraft } from "./useCreatureBuilder";
@@ -92,16 +93,28 @@ export default function CreatureBuilder({ existingCreature, onSave, onCancel }) 
   const collapseAll = () => setOpenSections(new Set());
   const expandAll = () => setOpenSections(new Set(SECTIONS.map((s) => s.id)));
 
+  const isEditing = !!existingCreature;
+
   // ---------- Salvar ----------
   const hasErrors = warnings.some((w) => w.severity === "error");
+  const errorList = warnings.filter((w) => w.severity === "error");
+  const [showSaveConfirm, setShowSaveConfirm] = useState(false);
 
   const handleSave = () => {
-    if (hasErrors) return;
+    if (hasErrors) {
+      if (!isEditing) return; // "Criar Ficha" mantém bloqueio normal
+      setShowSaveConfirm(true);
+      return;
+    }
     const creature = buildCreature();
     onSave(creature);
   };
 
-  const isEditing = !!existingCreature;
+  const forceSave = () => {
+    setShowSaveConfirm(false);
+    const creature = buildCreature();
+    onSave(creature);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-purple-950/30 text-white">
@@ -148,13 +161,13 @@ export default function CreatureBuilder({ existingCreature, onSave, onCancel }) 
 
           <button
             onClick={handleSave}
-            disabled={hasErrors}
+            disabled={hasErrors && !isEditing}
             className={`flex items-center gap-1.5 px-4 py-2 rounded text-sm font-bold transition-colors focus:outline-none focus:ring-2 ${
-              hasErrors
+              hasErrors && !isEditing
                 ? "bg-slate-800 text-slate-600 cursor-not-allowed"
                 : "bg-purple-700 hover:bg-purple-600 text-white focus:ring-purple-500"
             }`}
-            title={hasErrors ? "Corrija os erros para salvar" : "Salvar ficha"}
+            title={hasErrors && !isEditing ? "Corrija os erros para criar a ficha" : "Salvar ficha"}
           >
             <Save className="w-4 h-4" />
             {isEditing ? "Salvar Alterações" : "Criar Ficha"}
@@ -224,6 +237,74 @@ export default function CreatureBuilder({ existingCreature, onSave, onCancel }) 
             <LivePreview draft={draft} derived={derived} />
           </div>
         </div>
+      )}
+
+      {/* Modal de confirmação — salvar com erros (apenas no modo edição) */}
+      {showSaveConfirm && createPortal(
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4"
+          onClick={() => setShowSaveConfirm(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="save-confirm-title"
+        >
+          <div
+            className="bg-slate-900 border border-slate-800 rounded-lg max-w-md w-full shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-start gap-3 p-5 pb-4 border-b border-slate-800">
+              <div className="w-10 h-10 rounded-full border border-red-800/60 bg-red-950/60 flex items-center justify-center flex-shrink-0">
+                <AlertTriangle className="w-5 h-5 text-red-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 id="save-confirm-title" className="text-base font-bold text-white">
+                  Salvar com erros?
+                </h3>
+                <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">
+                  A ficha possui {errorList.length} erro(s) de validação. Salvar assim pode gerar valores inconsistentes.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowSaveConfirm(false)}
+                className="text-slate-500 hover:text-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-slate-600 flex-shrink-0"
+                aria-label="Fechar"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Lista de erros */}
+            <div className="p-4 space-y-2 overflow-y-auto max-h-52">
+              {errorList.map((w, i) => (
+                <div key={i} className="flex items-start gap-2">
+                  <AlertTriangle className="w-3.5 h-3.5 text-red-400 flex-shrink-0 mt-0.5" />
+                  <span className="text-xs text-red-300 leading-relaxed">{w.message}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Botões */}
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 p-4 pt-0">
+              <button
+                type="button"
+                onClick={() => setShowSaveConfirm(false)}
+                className="px-4 py-2 rounded bg-slate-800 hover:bg-slate-700 text-sm font-semibold text-slate-200 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-500"
+              >
+                Corrigir
+              </button>
+              <button
+                type="button"
+                onClick={forceSave}
+                className="px-4 py-2 rounded bg-red-800 hover:bg-red-700 text-sm font-semibold text-white transition-colors focus:outline-none focus:ring-2 focus:ring-red-500"
+              >
+                Salvar Mesmo Assim
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
       )}
     </div>
   );

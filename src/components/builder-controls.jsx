@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Zap, Lock, Unlock, Info } from "lucide-react";
+import { Zap, Lock, Unlock, Info, ChevronDown } from "lucide-react";
 
 /**
  * Componentes de input reutilizáveis — padrão visual unificado.
@@ -116,18 +116,21 @@ export const NumberInput = ({ value, onChange, min, max, step = 1 }) => {
 
 // ---------- Select ----------
 export const Select = ({ value, onChange, options, placeholder }) => (
-  <select
-    value={value ?? ""}
-    onChange={(e) => onChange(e.target.value)}
-    className="w-full h-9 bg-slate-950 border border-slate-700 rounded px-2 text-sm text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
-  >
-    {placeholder && <option value="">{placeholder}</option>}
-    {options.map((opt) => (
-      <option key={opt.value} value={opt.value}>
-        {opt.label}
-      </option>
-    ))}
-  </select>
+  <div className="relative w-full">
+    <select
+      value={value ?? ""}
+      onChange={(e) => onChange(e.target.value)}
+      className="w-full h-9 bg-slate-950 border border-slate-700 rounded pl-2 pr-7 text-sm text-white appearance-none focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+    >
+      {placeholder && <option value="">{placeholder}</option>}
+      {options.map((opt) => (
+        <option key={opt.value} value={opt.value}>
+          {opt.label}
+        </option>
+      ))}
+    </select>
+    <ChevronDown className="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+  </div>
 );
 
 // ---------- Stat Field com override ----------

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Plus, Trash2, Copy, Swords, Info, AlertTriangle, Lock, Unlock } from "lucide-react";
+import { Plus, Trash2, Copy, Swords, Shield, ChevronDown, Info, AlertTriangle, Lock, Unlock, Bookmark, BookmarkCheck, BookOpen, X } from "lucide-react";
 import { FieldLabel, TextInput, TextArea, Select, NumberInput, SmallButton, Pill } from "../builder-controls";
+import useActionTemplates from "../useActionTemplates";
 import { getDamage, PATAMAR_ND_RANGE, CONDITIONS } from "../fm-tables";
 
 // ============================================================
@@ -484,6 +485,7 @@ export function generateActionDescription(action, creatureName, flavorText = "")
 // ============================================================
 export default function SectionActions({ draft, derived, actions }) {
   const [showForm, setShowForm] = useState(false);
+  const { templates: actionTemplates, saveTemplate: saveActionTemplate, removeTemplate: removeActionTemplate } = useActionTemplates();
 
   const handleAdd = (newAction) => {
     actions.addAction({ ...newAction, id: `act-${Date.now().toString(36)}` });
@@ -523,12 +525,20 @@ export default function SectionActions({ draft, derived, actions }) {
             onUpdate={(patch) => actions.updateAction(action.id, patch)}
             onRemove={() => actions.removeAction(action.id)}
             onDuplicate={() => actions.duplicateAction(action.id)}
+            onSaveTemplate={saveActionTemplate}
           />
         ))}
       </div>
 
       {showForm ? (
-        <ActionForm derived={derived} draft={draft} onAdd={handleAdd} onCancel={() => setShowForm(false)} />
+        <ActionForm
+          derived={derived}
+          draft={draft}
+          onAdd={handleAdd}
+          onCancel={() => setShowForm(false)}
+          templates={actionTemplates}
+          onRemoveTemplate={removeActionTemplate}
+        />
       ) : (
         <SmallButton onClick={() => setShowForm(true)} variant="primary">
           <Plus className="w-3 h-3" /> Adicionar Ação
@@ -541,8 +551,9 @@ export default function SectionActions({ draft, derived, actions }) {
 // ============================================================
 // ACTION ITEM
 // ============================================================
-function ActionItem({ action, patamar, nd, bt, creatureName, onUpdate, onRemove, onDuplicate }) {
+function ActionItem({ action, patamar, nd, bt, creatureName, onUpdate, onRemove, onDuplicate, onSaveTemplate }) {
   const [expanded, setExpanded] = useState(false);
+  const [templateSaved, setTemplateSaved] = useState(false);
   const norm    = normalizeAction(action);
   const finalPE = deriveFinalPE(norm.cost, norm.condition);
 
@@ -599,6 +610,10 @@ function ActionItem({ action, patamar, nd, bt, creatureName, onUpdate, onRemove,
       const av = calcAutoRange(patch.attackType, norm.rangeType, bt);
       if (norm.rangeLocked !== false) basePatch.range = av.range;
       if (norm.areaLocked  !== false) basePatch.area  = av.area;
+      if (patch.attackType === "suporte") {
+        onUpdate({ ...basePatch, damage: { ...norm.damage, roll: "", average: 0, damageIsLocked: false } });
+        return;
+      }
       if (!norm.damage?.damageIsLocked) {
         const r = runFullCalc(patch.attackType, norm.condition, norm.damage?.narrativeType, norm.rangeType, resetTrades, norm.damage?.type);
         if (r) { onUpdate({ ...basePatch, ...r, damage: { ...norm.damage, ...r.damage } }); return; }
@@ -685,10 +700,19 @@ function ActionItem({ action, patamar, nd, bt, creatureName, onUpdate, onRemove,
     onUpdate({ ...rangePatch, ...reapplied });
   };
 
+  const handleSaveTemplate = () => {
+    onSaveTemplate(norm);
+    setTemplateSaved(true);
+    setTimeout(() => setTemplateSaved(false), 1500);
+  };
+
   return (
     <div className="bg-slate-950/40 border border-slate-800 rounded">
       <div className="flex items-center gap-2 p-2">
-        <Swords className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
+        {action.attackType === "suporte"
+          ? <Shield className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
+          : <Swords className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
+        }
         <button
           onClick={() => setExpanded(!expanded)}
           className="flex-1 text-left text-sm font-semibold text-white hover:text-purple-300 min-w-0"
@@ -699,6 +723,12 @@ function ActionItem({ action, patamar, nd, bt, creatureName, onUpdate, onRemove,
         {finalPE > 0 && <Pill color="purple">{finalPE} PE</Pill>}
         <SmallButton onClick={onDuplicate} title="Duplicar">
           <Copy className="w-3 h-3" />
+        </SmallButton>
+        <SmallButton onClick={handleSaveTemplate} title={templateSaved ? "Modelo salvo!" : "Salvar como modelo"}>
+          {templateSaved
+            ? <BookmarkCheck className="w-3 h-3 text-emerald-400" />
+            : <Bookmark className="w-3 h-3" />
+          }
         </SmallButton>
         <SmallButton onClick={onRemove} variant="danger" title="Remover">
           <Trash2 className="w-3 h-3" />
@@ -732,13 +762,14 @@ function ActionItem({ action, patamar, nd, bt, creatureName, onUpdate, onRemove,
 // ============================================================
 // ACTION FORM (nova ação)
 // ============================================================
-function ActionForm({ derived, draft, onAdd, onCancel }) {
+function ActionForm({ derived, draft, onAdd, onCancel, templates = [], onRemoveTemplate }) {
   const patamar = draft?.core?.patamar;
   const nd      = draft?.core?.nd;
   const bt      = derived?.bt ?? 2;
 
   const [isMechanicalTextLocked, setIsMechanicalTextLocked] = useState(true);
   const [manualMechanicalText,   setManualMechanicalText]   = useState("");
+  const [showTemplates,          setShowTemplates]           = useState(false);
   const textareaRef = useRef(null);
 
   const [form, setForm] = useState(() => {
@@ -835,7 +866,9 @@ function ActionForm({ derived, draft, onAdd, onCancel }) {
         const av = calcAutoRange(patch.attackType, next.rangeType, bt);
         if (next.rangeLocked !== false) next.range = av.range;
         if (next.areaLocked  !== false) next.area  = av.area;
-        if (!prev.damage?.damageIsLocked) {
+        if (patch.attackType === "suporte") {
+          next.damage = { ...prev.damage, roll: "", average: 0, damageIsLocked: false };
+        } else if (!prev.damage?.damageIsLocked) {
           const r = runFullCalc(patch.attackType, prev.condition, prev.damage?.narrativeType, prev.rangeType, resetTrades, prev.damage?.type);
           if (r) Object.assign(next, r, { damage: { ...prev.damage, ...r.damage, damageIsLocked: false } });
         } else {
@@ -935,11 +968,107 @@ function ActionForm({ derived, draft, onAdd, onCancel }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form, isMechanicalTextLocked, manualMechanicalText]);
 
+  const applyTemplate = (tpl) => {
+    setForm((prev) => {
+      const newAttackType = tpl.attackType ?? prev.attackType;
+      const newRangeType  = tpl.rangeType  ?? prev.rangeType;
+      const newCondition  = tpl.condition  ? { ...prev.condition, ...tpl.condition } : prev.condition;
+
+      const next = {
+        ...prev,
+        name:        tpl.name        ?? prev.name,
+        type:        tpl.type        ?? prev.type,
+        attackType:  newAttackType,
+        trType:      tpl.trType      ?? prev.trType,
+        rangeType:   newRangeType,
+        cost:        tpl.cost        ?? prev.cost,
+        description: tpl.description ?? prev.description,
+        condition:   newCondition,
+      };
+
+      const resetTrades = resetTradesForAttackType(newAttackType, TRADES_ZERO);
+      next.trades = resetTrades;
+      if (newAttackType === "acerto") next.condition = BLANK_CONDITION;
+
+      const av = calcAutoRange(newAttackType, newRangeType, bt);
+      if (next.rangeLocked !== false) next.range = av.range;
+      if (next.areaLocked  !== false) next.area  = av.area;
+
+      if (newAttackType === "suporte") {
+        next.damage = { ...prev.damage, roll: "", average: 0, damageIsLocked: false };
+      } else {
+        // Recalcula dano para a criatura atual, ignorando valores salvos no template
+        const r = runFullCalc(newAttackType, next.condition, prev.damage?.narrativeType, newRangeType, resetTrades, prev.damage?.type);
+        if (r) Object.assign(next, r, { damage: { ...prev.damage, ...r.damage, damageIsLocked: false } });
+      }
+
+      return next;
+    });
+    setShowTemplates(false);
+  };
+
   return (
     <div className="bg-slate-950/70 border border-purple-900/50 rounded p-4 space-y-3">
-      <h4 className="text-sm font-bold text-purple-300 flex items-center gap-2">
-        <Plus className="w-4 h-4" /> Nova Ação
-      </h4>
+      <div className="flex items-center justify-between gap-2">
+        <h4 className="text-sm font-bold text-purple-300 flex items-center gap-2">
+          <Plus className="w-4 h-4" /> Nova Ação
+        </h4>
+        {templates.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setShowTemplates(!showTemplates)}
+            className={`flex items-center gap-1.5 text-xs px-2 py-1 rounded transition-colors focus:outline-none ${
+              showTemplates
+                ? "bg-amber-900/40 text-amber-300 border border-amber-800/60"
+                : "text-slate-400 hover:text-amber-300 hover:bg-slate-800"
+            }`}
+          >
+            <BookOpen className="w-3 h-3" />
+            Modelos ({templates.length})
+          </button>
+        )}
+      </div>
+
+      {showTemplates && (
+        <div className="bg-slate-950 border border-slate-700 rounded overflow-hidden">
+          <div className="px-3 py-2 border-b border-slate-800 flex items-center justify-between">
+            <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">
+              Modelos Salvos
+            </span>
+            <button
+              type="button"
+              onClick={() => setShowTemplates(false)}
+              className="text-slate-600 hover:text-slate-300"
+            >
+              <X className="w-3 h-3" />
+            </button>
+          </div>
+          <div className="overflow-y-auto max-h-44 divide-y divide-slate-800/60">
+            {templates.map((tpl) => (
+              <div key={tpl.id} className="flex items-center gap-2 px-3 py-2 hover:bg-slate-800/60 group">
+                <button
+                  type="button"
+                  onClick={() => applyTemplate(tpl)}
+                  className="flex-1 min-w-0 text-left"
+                >
+                  <span className="text-sm text-slate-200 truncate block group-hover:text-white">
+                    {tpl.name}
+                  </span>
+                </button>
+                <Pill color="slate">{ACTION_TYPE_LABELS[tpl.type] || tpl.type}</Pill>
+                <button
+                  type="button"
+                  onClick={() => onRemoveTemplate(tpl.id)}
+                  className="text-slate-600 hover:text-red-400 transition-colors flex-shrink-0"
+                  title="Remover modelo"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <ActionFormFields
         form={form}
@@ -1162,18 +1291,21 @@ function ActionFormFields({ form, bt = 2, creatureName, update, updateDamage, up
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <FieldLabel>Tipo de Ataque / Efeito</FieldLabel>
-          <select
-            value={form.attackType ?? ""}
-            onChange={(e) => update({ attackType: e.target.value })}
-            className="w-full h-9 bg-slate-950 border border-slate-700 rounded px-2 text-sm text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 appearance-none"
-          >
-            {ATTACK_TYPE_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}
-                disabled={opt.value === "tr_area" && form.damage?.type === "alma"}>
-                {opt.label}{opt.value === "tr_area" && form.damage?.type === "alma" ? " (incompatível com Alma)" : ""}
-              </option>
-            ))}
-          </select>
+          <div className="relative">
+            <select
+              value={form.attackType ?? ""}
+              onChange={(e) => update({ attackType: e.target.value })}
+              className="w-full h-9 bg-slate-950 border border-slate-700 rounded pl-2 pr-7 text-sm text-white appearance-none focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+            >
+              {ATTACK_TYPE_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}
+                  disabled={opt.value === "tr_area" && form.damage?.type === "alma"}>
+                  {opt.label}{opt.value === "tr_area" && form.damage?.type === "alma" ? " (incompatível com Alma)" : ""}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+          </div>
         </div>
         <div>
           <FieldLabel>Custo Base em PE</FieldLabel>
@@ -1369,13 +1501,16 @@ function ActionFormFields({ form, bt = 2, creatureName, update, updateDamage, up
             </div>
             <div>
               <FieldLabel><span className="whitespace-nowrap">Dado</span></FieldLabel>
-              <select
-                value={dieSize}
-                onChange={(e) => updateDamage({ dieSize: parseInt(e.target.value), damageIsLocked: true })}
-                className="w-full h-9 bg-slate-950 border border-slate-700 rounded px-2 text-sm text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
-              >
-                {DIE_SIZES.map((d) => <option key={d} value={d}>d{d}</option>)}
-              </select>
+              <div className="relative">
+                <select
+                  value={dieSize}
+                  onChange={(e) => updateDamage({ dieSize: parseInt(e.target.value), damageIsLocked: true })}
+                  className="w-full h-9 bg-slate-950 border border-slate-700 rounded pl-2 pr-7 text-sm text-white appearance-none focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+                >
+                  {DIE_SIZES.map((d) => <option key={d} value={d}>d{d}</option>)}
+                </select>
+                <ChevronDown className="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+              </div>
             </div>
             <div>
               <FieldLabel><span className="whitespace-nowrap">Fixo</span></FieldLabel>
@@ -1386,22 +1521,25 @@ function ActionFormFields({ form, bt = 2, creatureName, update, updateDamage, up
             </div>
             <div>
               <FieldLabel><span className="whitespace-nowrap">Tipo de Dano</span></FieldLabel>
-              <select
-                value={form.damage?.type ?? "cortante"}
-                onChange={(e) => updateDamage({ type: e.target.value })}
-                className="w-full h-9 bg-slate-950 border border-slate-700 rounded px-2 text-sm text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
-              >
-                {DAMAGE_TYPE_GROUPS.map(({ label, types }) => (
-                  <optgroup key={label} label={label}>
-                    {types.map((t) => (
-                      <option key={t} value={t}
-                        disabled={t === "alma" && form.attackType === "tr_area"}>
-                        {DAMAGE_TYPE_LABELS[t]}{t === "alma" && form.attackType === "tr_area" ? " (incompatível com Área)" : ""}
-                      </option>
-                    ))}
-                  </optgroup>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  value={form.damage?.type ?? "cortante"}
+                  onChange={(e) => updateDamage({ type: e.target.value })}
+                  className="w-full h-9 bg-slate-950 border border-slate-700 rounded pl-2 pr-7 text-sm text-white appearance-none focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+                >
+                  {DAMAGE_TYPE_GROUPS.map(({ label, types }) => (
+                    <optgroup key={label} label={label}>
+                      {types.map((t) => (
+                        <option key={t} value={t}
+                          disabled={t === "alma" && form.attackType === "tr_area"}>
+                          {DAMAGE_TYPE_LABELS[t]}{t === "alma" && form.attackType === "tr_area" ? " (incompatível com Área)" : ""}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
+                <ChevronDown className="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+              </div>
             </div>
           </div>
 
@@ -1484,21 +1622,24 @@ function ActionFormFields({ form, bt = 2, creatureName, update, updateDamage, up
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <FieldLabel>Força da Condição</FieldLabel>
-                <select
-                  value={form.condition?.tier ?? "nenhuma"}
-                  onChange={(e) => handleTierChange(e.target.value)}
-                  className="w-full h-9 bg-slate-950 border border-slate-700 rounded px-2 text-sm text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
-                >
-                  {CONDITION_TIER_OPTIONS.map((opt) => {
-                    const minBt = BT_MIN_FOR_TIER[opt.value];
-                    const locked = minBt != null && bt < minBt;
-                    return (
-                      <option key={opt.value} value={opt.value} disabled={locked}>
-                        {opt.label}{locked ? ` (BT +${minBt} mín.)` : ""}
-                      </option>
-                    );
-                  })}
-                </select>
+                <div className="relative">
+                  <select
+                    value={form.condition?.tier ?? "nenhuma"}
+                    onChange={(e) => handleTierChange(e.target.value)}
+                    className="w-full h-9 bg-slate-950 border border-slate-700 rounded pl-2 pr-7 text-sm text-white appearance-none focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+                  >
+                    {CONDITION_TIER_OPTIONS.map((opt) => {
+                      const minBt = BT_MIN_FOR_TIER[opt.value];
+                      const locked = minBt != null && bt < minBt;
+                      return (
+                        <option key={opt.value} value={opt.value} disabled={locked}>
+                          {opt.label}{locked ? ` (BT +${minBt} mín.)` : ""}
+                        </option>
+                      );
+                    })}
+                  </select>
+                  <ChevronDown className="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+                </div>
                 {form.condition?.tier && form.condition.tier !== "nenhuma" &&
                   (BT_MIN_FOR_TIER[form.condition.tier] ?? 0) > bt && (
                   <div className="mt-1 text-[10px] text-red-400">
@@ -1525,17 +1666,20 @@ function ActionFormFields({ form, bt = 2, creatureName, update, updateDamage, up
                 <div className="space-y-2">
                   <div>
                     <FieldLabel>Nome da Condição</FieldLabel>
-                    <select
-                      value={form.condition?.nameKey ?? ""}
-                      onChange={(e) => handleCondNameKey(e.target.value)}
-                      className="w-full h-9 bg-slate-950 border border-slate-700 rounded px-2 text-sm text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
-                    >
-                      <option value="">— Selecione —</option>
-                      {condNamesForTier.map((n) => (
-                        <option key={n} value={n}>{n.charAt(0).toUpperCase() + n.slice(1)}</option>
-                      ))}
-                      <option value="outro">Outro / Customizado</option>
-                    </select>
+                    <div className="relative">
+                      <select
+                        value={form.condition?.nameKey ?? ""}
+                        onChange={(e) => handleCondNameKey(e.target.value)}
+                        className="w-full h-9 bg-slate-950 border border-slate-700 rounded pl-2 pr-7 text-sm text-white appearance-none focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+                      >
+                        <option value="">— Selecione —</option>
+                        {condNamesForTier.map((n) => (
+                          <option key={n} value={n}>{n.charAt(0).toUpperCase() + n.slice(1)}</option>
+                        ))}
+                        <option value="outro">Outro / Customizado</option>
+                      </select>
+                      <ChevronDown className="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+                    </div>
                   </div>
                   {form.condition?.nameKey === "outro" && (
                     <div>

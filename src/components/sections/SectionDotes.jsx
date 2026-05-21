@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Plus, Trash2, Star } from "lucide-react";
+import { Plus, Trash2, Star, ChevronDown } from "lucide-react";
 import { TextInput, TextArea, SmallButton } from "../builder-controls";
 
 export const DOTES_OFICIAIS = [
@@ -207,19 +207,22 @@ export default function SectionDotes({ draft, actions }) {
           Adicionar Dote
         </h3>
 
-        <select
-          value={selecao}
-          onChange={(e) => setSelecao(e.target.value)}
-          className="w-full h-9 bg-slate-950 border border-slate-700 rounded px-2 text-sm text-white focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
-        >
-          <option value="">Escolha um dote...</option>
-          {DOTES_OFICIAIS.filter((d) => !addedNomes.has(d.nome)).map((d) => (
-            <option key={d.nome} value={d.nome}>
-              {d.nome}
-            </option>
-          ))}
-          <option value={CUSTOM_KEY}>✦ Dote Customizado</option>
-        </select>
+        <div className="relative">
+          <select
+            value={selecao}
+            onChange={(e) => setSelecao(e.target.value)}
+            className="w-full h-9 bg-slate-950 border border-slate-700 rounded pl-2 pr-7 text-sm text-white appearance-none focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+          >
+            <option value="">Escolha um dote...</option>
+            {DOTES_OFICIAIS.filter((d) => !addedNomes.has(d.nome)).map((d) => (
+              <option key={d.nome} value={d.nome}>
+                {d.nome}
+              </option>
+            ))}
+            <option value={CUSTOM_KEY}>✦ Dote Customizado</option>
+          </select>
+          <ChevronDown className="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+        </div>
 
         {/* Preview da descrição oficial */}
         {oficialSelecionado && (
