@@ -135,7 +135,7 @@ export default function App() {
   return (
     <>
       {views[view.name] ? views[view.name]() : views.dashboard()}
-      <Analytics />
+      <Analytics mode={import.meta.env.PROD ? "production" : "development"} />
     </>
   );
 }
