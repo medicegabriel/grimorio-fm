@@ -7,13 +7,14 @@ import { Zap, Lock, Unlock, Info, ChevronDown } from "lucide-react";
  */
 
 // ---------- Label + hint ----------
-export const FieldLabel = ({ children, hint, required }) => (
-  <label className="block mb-1">
+// `htmlFor` associa o label a um input com o mesmo `id` (acessibilidade).
+export const FieldLabel = ({ children, hint, required, htmlFor }) => (
+  <label htmlFor={htmlFor} className="block mb-1">
     <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
       {children}
       {required && <span className="text-red-400 ml-0.5">*</span>}
     </span>
-    {hint && <span className="text-[10px] text-slate-500 ml-2 normal-case">{hint}</span>}
+    {hint && <span className="text-[10px] text-slate-400 ml-2 normal-case">{hint}</span>}
   </label>
 );
 
@@ -24,7 +25,7 @@ export const TextInput = ({ value, onChange, placeholder, ...rest }) => (
     value={value || ""}
     onChange={(e) => onChange(e.target.value)}
     placeholder={placeholder}
-    className="w-full h-9 bg-slate-950 border border-slate-700 rounded px-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-colors"
+    className="w-full h-9 bg-slate-950 border border-slate-700 rounded px-3 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-colors"
     {...rest}
   />
 );
@@ -36,13 +37,14 @@ export const TextArea = ({ value, onChange, rows = 3, placeholder, ...rest }) =>
     onChange={(e) => onChange(e.target.value)}
     rows={rows}
     placeholder={placeholder}
-    className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 resize-y transition-colors"
+    className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 resize-y transition-colors"
     {...rest}
   />
 );
 
 // ---------- Número com stepper (commit-on-blur) ----------
-export const NumberInput = ({ value, onChange, min, max, step = 1 }) => {
+// `...rest` permite passar `id` / `aria-label` ao <input> (acessibilidade).
+export const NumberInput = ({ value, onChange, min, max, step = 1, ...rest }) => {
   const [inputValue, setInputValue] = useState(String(value ?? ''));
   const focused = useRef(false);
 
@@ -96,6 +98,7 @@ export const NumberInput = ({ value, onChange, min, max, step = 1 }) => {
         onFocus={() => { focused.current = true; }}
         onBlur={() => { focused.current = false; commit(inputValue); }}
         onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur(); }}
+        {...rest}
         className="w-full h-9 bg-slate-950 border-y border-slate-700 px-2 text-center text-sm text-white font-mono focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 focus:z-10 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
       />
       <button
@@ -115,11 +118,13 @@ export const NumberInput = ({ value, onChange, min, max, step = 1 }) => {
 };
 
 // ---------- Select ----------
-export const Select = ({ value, onChange, options, placeholder }) => (
+// `...rest` permite passar `id` / `aria-label` ao <select> (acessibilidade).
+export const Select = ({ value, onChange, options, placeholder, ...rest }) => (
   <div className="relative w-full">
     <select
       value={value ?? ""}
       onChange={(e) => onChange(e.target.value)}
+      {...rest}
       className="w-full h-9 bg-slate-950 border border-slate-700 rounded pl-2 pr-7 text-sm text-white appearance-none focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
     >
       {placeholder && <option value="">{placeholder}</option>}
@@ -160,7 +165,7 @@ export const StatField = ({
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-1.5 min-w-0">
           {Icon && <Icon className={`w-3 h-3 flex-shrink-0 ${accent}`} />}
-          <span className="text-[10px] uppercase tracking-wider text-slate-500 truncate">{label}</span>
+          <span className="text-[10px] uppercase tracking-wider text-slate-400 truncate">{label}</span>
         </div>
         <button
           onClick={toggleOverride}
@@ -178,6 +183,7 @@ export const StatField = ({
         <input
           type="number"
           value={overrideValue ?? ""}
+          aria-label={label}
           onChange={(e) => {
             const n = parseInt(e.target.value, 10);
             onOverride(Number.isFinite(n) ? n : 0);

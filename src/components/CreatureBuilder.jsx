@@ -1,18 +1,18 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { createPortal } from "react-dom";
 import {
   Save, ChevronLeft, AlertTriangle, Info, RotateCcw, Wand2,
-  ChevronDown, ChevronUp, Eye, Sparkles, X,
+  ChevronDown, ChevronUp, Eye, Sparkles, X, List,
 } from "lucide-react";
 
-import useCreatureBuilder, { blankDraft } from "./useCreatureBuilder";
+import useCreatureBuilder from "./useCreatureBuilder";
 
 import SectionIdentity from "./sections/SectionIdentity";
 import SectionCore from "./sections/SectionCore";
 import SectionAttributes from "./sections/SectionAttributes";
 import SectionDerivedStats from "./sections/SectionDerivedStats";
 import SectionAptidoes from "./sections/SectionAptidoes";
-import SectionActions from "./sections/SectionActions";
+import SectionActions from "./sections/actions/SectionActions";
 import SectionFeatures from "./sections/SectionFeatures";
 import SectionTreinamentos from "./sections/SectionTreinamentos";
 import SectionAptidoesEspeciais from "./sections/SectionAptidoesEspeciais";
@@ -34,21 +34,47 @@ import LivePreview from "./sections/LivePreview";
  * ============================================================
  */
 
-// Seções na ordem natural de preenchimento
+// Seções na ordem natural de preenchimento (id + rótulo).
+// Os elementos em si são montados/memoizados dentro do CreatureBuilder.
 const SECTIONS = [
-  { id: "identity",    label: "Identidade",           component: SectionIdentity },
-  { id: "core",        label: "Patamar & Nível",      component: SectionCore },
-  { id: "attributes",  label: "Atributos",            component: SectionAttributes },
-  { id: "derived",     label: "Valores Calculados",   component: SectionDerivedStats },
-  { id: "aptidoes",    label: "Aptidões",             component: SectionAptidoes },
-  { id: "skills",      label: "Perícias",             component: SectionSkills },
-  { id: "defenses",    label: "Defesas & Imunidades", component: SectionDefenses },
-  { id: "actions",     label: "Ações",                component: SectionActions },
-  { id: "features",      label: "Características",      component: SectionFeatures },
-  { id: "treinamentos",     label: "Treinamentos",            component: SectionTreinamentos },
-  { id: "aptidoesEsp",     label: "Aptidões Amaldiçoadas",  component: SectionAptidoesEspeciais },
-  { id: "dotes",           label: "Dotes Gerais",           component: SectionDotes },
+  { id: "identity",     label: "Identidade" },
+  { id: "core",         label: "Patamar & Nível" },
+  { id: "attributes",   label: "Atributos" },
+  { id: "derived",      label: "Valores Calculados" },
+  { id: "aptidoes",     label: "Aptidões" },
+  { id: "skills",       label: "Perícias" },
+  { id: "defenses",     label: "Defesas & Imunidades" },
+  { id: "actions",      label: "Ações" },
+  { id: "features",     label: "Características" },
+  { id: "treinamentos", label: "Treinamentos" },
+  { id: "aptidoesEsp",  label: "Aptidões Amaldiçoadas" },
+  { id: "dotes",        label: "Dotes Gerais" },
 ];
+
+// Mapeia o campo de um warning (validateDraft) para o id da seção.
+const WARNING_FIELD_TO_SECTION = {
+  name: "identity",
+  attributes: "attributes",
+  skills: "skills",
+};
+const sectionOfWarning = (field) => {
+  const root = String(field || "").split(".")[0];
+  return WARNING_FIELD_TO_SECTION[root] ?? null;
+};
+
+// Chave de autosave do rascunho — uma por alvo (id da criatura ou "new").
+const DRAFT_KEY_PREFIX = "fm_builder_draft_v1:";
+const draftKeyFor = (id) => DRAFT_KEY_PREFIX + (id ?? "new");
+
+const formatSavedAt = (ts) => {
+  try {
+    return new Date(ts).toLocaleString("pt-BR", {
+      day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit",
+    });
+  } catch {
+    return "";
+  }
+};
 
 export default function CreatureBuilder({ existingCreature, onSave, onCancel }) {
   const { draft, derived, warnings, actions, buildCreature } =
@@ -60,6 +86,78 @@ export default function CreatureBuilder({ existingCreature, onSave, onCancel }) 
       actions.hydrate(existingCreature);
     }
   }, [existingCreature?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ---------- Autosave do rascunho ----------
+  const draftKey = useMemo(
+    () => draftKeyFor(existingCreature?.id),
+    [existingCreature?.id]
+  );
+
+  // Snapshot do draft inicial — base para detectar alterações não salvas.
+  // useState com inicializador lazy: capturado uma única vez, na montagem.
+  const [initialSnapshot] = useState(() => JSON.stringify(draft));
+  const hasUnsavedChanges = useMemo(
+    () => JSON.stringify(draft) !== initialSnapshot,
+    [draft, initialSnapshot]
+  );
+
+  // Rascunho recuperável: lido do localStorage na montagem (init lazy).
+  // Só conta como recuperável se diferir do estado inicial da ficha.
+  const [recoverable, setRecoverable] = useState(() => {
+    try {
+      const raw = localStorage.getItem(draftKey);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (parsed?.draft && JSON.stringify(parsed.draft) !== initialSnapshot) {
+        return { savedAt: parsed.savedAt, draft: parsed.draft };
+      }
+    } catch { /* localStorage indisponível — ignora */ }
+    return null;
+  });
+
+  // O banner de restauração só faz sentido enquanto a ficha não foi editada
+  // (depois disso o autosave já sobrescreveu o rascunho antigo).
+  const showRecovery = recoverable && !hasUnsavedChanges;
+
+  // Autosave com debounce. Só grava quando há alterações, para não
+  // sobrescrever um rascunho recuperável antes de o usuário tratá-lo.
+  useEffect(() => {
+    if (!hasUnsavedChanges) return;
+    const t = setTimeout(() => {
+      try {
+        localStorage.setItem(
+          draftKey,
+          JSON.stringify({ savedAt: Date.now(), draft })
+        );
+      } catch { /* quota / modo privado — falha silenciosa */ }
+    }, 800);
+    return () => clearTimeout(t);
+  }, [draft, hasUnsavedChanges, draftKey]);
+
+  // Aviso nativo ao fechar/recarregar a aba com alterações não salvas.
+  useEffect(() => {
+    if (!hasUnsavedChanges) return;
+    const handler = (e) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [hasUnsavedChanges]);
+
+  const clearAutosave = () => {
+    try { localStorage.removeItem(draftKey); } catch { /* ignora */ }
+  };
+
+  const restoreDraft = () => {
+    if (recoverable) actions.hydrate(recoverable.draft);
+    setRecoverable(null);
+  };
+
+  const discardRecoverable = () => {
+    clearAutosave();
+    setRecoverable(null);
+  };
 
   // Mede a altura real do header (cresce quando o WarningBar aparece)
   // para que o preview sticky nunca fique atrás dele.
@@ -93,27 +191,149 @@ export default function CreatureBuilder({ existingCreature, onSave, onCancel }) 
   const collapseAll = () => setOpenSections(new Set());
   const expandAll = () => setOpenSections(new Set(SECTIONS.map((s) => s.id)));
 
+  // Abre a seção (se fechada) e rola até ela, compensando o header fixo.
+  const goToSection = (id) => {
+    if (!id) return;
+    setOpenSections((prev) => (prev.has(id) ? prev : new Set(prev).add(id)));
+    requestAnimationFrame(() => {
+      const el = document.getElementById(`section-${id}`);
+      if (!el) return;
+      const top = el.getBoundingClientRect().top + window.scrollY - headerHeight - 8;
+      window.scrollTo({ top, behavior: "smooth" });
+    });
+  };
+
+  // Severidade do warning mais grave de cada seção (para marcadores no índice).
+  const warningSections = useMemo(() => {
+    const map = {};
+    for (const w of warnings) {
+      const id = sectionOfWarning(w.field);
+      if (!id) continue;
+      if (w.severity === "error" || !map[id]) map[id] = w.severity;
+    }
+    return map;
+  }, [warnings]);
+
   const isEditing = !!existingCreature;
 
   // ---------- Salvar ----------
   const hasErrors = warnings.some((w) => w.severity === "error");
   const errorList = warnings.filter((w) => w.severity === "error");
   const [showSaveConfirm, setShowSaveConfirm] = useState(false);
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
 
+  // Com erros (inclusive ao criar): abre o modal listando-os, com a opção
+  // "Salvar Mesmo Assim". Sem erros: salva direto.
   const handleSave = () => {
     if (hasErrors) {
-      if (!isEditing) return; // "Criar Ficha" mantém bloqueio normal
       setShowSaveConfirm(true);
       return;
     }
-    const creature = buildCreature();
-    onSave(creature);
+    clearAutosave();
+    onSave(buildCreature());
   };
 
   const forceSave = () => {
     setShowSaveConfirm(false);
-    const creature = buildCreature();
-    onSave(creature);
+    clearAutosave();
+    onSave(buildCreature());
+  };
+
+  // Voltar: se há alterações não salvas, abre o modal de confirmação.
+  const handleCancel = () => {
+    if (hasUnsavedChanges) {
+      setShowLeaveConfirm(true);
+      return;
+    }
+    onCancel();
+  };
+
+  // Confirmou a saída: persiste o rascunho (para poder restaurá-lo) e sai.
+  const confirmLeave = () => {
+    setShowLeaveConfirm(false);
+    try {
+      localStorage.setItem(
+        draftKey,
+        JSON.stringify({ savedAt: Date.now(), draft })
+      );
+    } catch { /* ignora */ }
+    onCancel();
+  };
+
+  // ---------- Seções memoizadas por fatia do draft ----------
+  // O objeto `draft` é recriado a cada dispatch, mas suas fatias aninhadas
+  // (core, attributes, skills, ...) mantêm a referência quando não mudam.
+  // Memoizar o elemento de cada seção pelas fatias que ela de fato usa faz
+  // o React reaproveitar o elemento e pular a re-renderização das seções
+  // não afetadas — digitar no nome deixa de re-renderizar as 12 seções.
+  //
+  // exhaustive-deps fica desligado de propósito no bloco abaixo: depender de
+  // `draft` inteiro (em vez das fatias) anularia a memoização, já que o
+  // objeto `draft` é recriado a cada dispatch.
+  /* eslint-disable react-hooks/exhaustive-deps */
+  const identityEl = useMemo(
+    () => <SectionIdentity draft={draft} actions={actions} />,
+    [draft.name, draft.portraitUrl, draft.narratorNotes, actions]
+  );
+  const coreEl = useMemo(
+    () => <SectionCore draft={draft} derived={derived} actions={actions} />,
+    [draft.core, derived, actions]
+  );
+  const attributesEl = useMemo(
+    () => <SectionAttributes draft={draft} derived={derived} actions={actions} />,
+    [draft.attributes, derived, actions]
+  );
+  const derivedEl = useMemo(
+    () => <SectionDerivedStats draft={draft} derived={derived} actions={actions} />,
+    [draft.overrides, draft.attributes, draft.attackAttr, draft.cdAttr, derived, actions]
+  );
+  const aptidoesEl = useMemo(
+    () => <SectionAptidoes draft={draft} actions={actions} />,
+    [draft.core, draft.aptidoes, actions]
+  );
+  const skillsEl = useMemo(
+    () => <SectionSkills draft={draft} derived={derived} actions={actions} />,
+    [draft.skills, derived, actions]
+  );
+  const defensesEl = useMemo(
+    () => <SectionDefenses draft={draft} actions={actions} />,
+    [draft.defenses, draft.core, actions]
+  );
+  const actionsEl = useMemo(
+    () => <SectionActions draft={draft} derived={derived} actions={actions} />,
+    [draft.core, draft.actions, draft.name, derived, actions]
+  );
+  const featuresEl = useMemo(
+    () => <SectionFeatures draft={draft} actions={actions} />,
+    [draft.features, actions]
+  );
+  const treinamentosEl = useMemo(
+    () => <SectionTreinamentos draft={draft} actions={actions} />,
+    [draft.core, draft.treinamentos, actions]
+  );
+  const aptidoesEspEl = useMemo(
+    () => <SectionAptidoesEspeciais draft={draft} actions={actions} />,
+    [draft.aptidoesEspeciais, actions]
+  );
+  const dotesEl = useMemo(
+    () => <SectionDotes draft={draft} actions={actions} />,
+    [draft.dotes, actions]
+  );
+  /* eslint-enable react-hooks/exhaustive-deps */
+
+  const sectionEls = {
+    identity:     identityEl,
+    core:         coreEl,
+    attributes:   attributesEl,
+    derived:      derivedEl,
+    aptidoes:     aptidoesEl,
+    skills:       skillsEl,
+    defenses:     defensesEl,
+    actions:      actionsEl,
+    features:     featuresEl,
+    treinamentos: treinamentosEl,
+    aptidoesEsp:  aptidoesEspEl,
+    dotes:        dotesEl,
   };
 
   return (
@@ -122,7 +342,7 @@ export default function CreatureBuilder({ existingCreature, onSave, onCancel }) 
       <header ref={headerRef} className="sticky top-0 z-30 bg-slate-950/95 backdrop-blur border-b border-purple-900/50">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3">
           <button
-            onClick={onCancel}
+            onClick={handleCancel}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-sm text-slate-300 transition-colors"
           >
             <ChevronLeft className="w-4 h-4" /> Voltar
@@ -140,8 +360,14 @@ export default function CreatureBuilder({ existingCreature, onSave, onCancel }) 
             </div>
           </div>
 
-          {/* Toggles de layout (desktop) */}
+          {/* Índice + toggles de layout (desktop) */}
           <div className="hidden md:flex items-center gap-1 text-xs text-slate-500">
+            <SectionIndex
+              sections={SECTIONS}
+              warningSections={warningSections}
+              onJump={goToSection}
+            />
+            <span className="text-slate-700">|</span>
             <button onClick={collapseAll} className="px-2 py-1 hover:text-white transition-colors">
               Recolher tudo
             </button>
@@ -161,13 +387,8 @@ export default function CreatureBuilder({ existingCreature, onSave, onCancel }) 
 
           <button
             onClick={handleSave}
-            disabled={hasErrors && !isEditing}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded text-sm font-bold transition-colors focus:outline-none focus:ring-2 ${
-              hasErrors && !isEditing
-                ? "bg-slate-800 text-slate-600 cursor-not-allowed"
-                : "bg-purple-700 hover:bg-purple-600 text-white focus:ring-purple-500"
-            }`}
-            title={hasErrors && !isEditing ? "Corrija os erros para criar a ficha" : "Salvar ficha"}
+            className="flex items-center gap-1.5 px-4 py-2 rounded text-sm font-bold transition-colors focus:outline-none focus:ring-2 bg-purple-700 hover:bg-purple-600 text-white focus:ring-purple-500"
+            title="Salvar ficha"
           >
             <Save className="w-4 h-4" />
             {isEditing ? "Salvar Alterações" : "Criar Ficha"}
@@ -176,33 +397,52 @@ export default function CreatureBuilder({ existingCreature, onSave, onCancel }) 
 
         {/* Barra de warnings/erros */}
         {warnings.length > 0 && (
-          <WarningBar warnings={warnings} />
+          <WarningBar warnings={warnings} onWarningClick={goToSection} />
         )}
       </header>
+
+      {/* ========== BANNER DE RASCUNHO RECUPERÁVEL ========== */}
+      {showRecovery && (
+        <div className="bg-sky-950/70 border-b border-sky-900">
+          <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center gap-3 text-sm">
+            <RotateCcw className="w-4 h-4 text-sky-400 flex-shrink-0" />
+            <span className="flex-1 min-w-0 text-sky-200">
+              Rascunho não salvo encontrado
+              {recoverable.savedAt && (
+                <span className="text-sky-400/70"> · {formatSavedAt(recoverable.savedAt)}</span>
+              )}
+            </span>
+            <button
+              onClick={restoreDraft}
+              className="px-3 py-1 rounded bg-sky-700 hover:bg-sky-600 text-white text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-sky-500"
+            >
+              Restaurar
+            </button>
+            <button
+              onClick={discardRecoverable}
+              className="px-3 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-slate-500"
+            >
+              Descartar
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ========== GRID PRINCIPAL ========== */}
       <div className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* --- Coluna da esquerda: formulário --- */}
         <div className="lg:col-span-2 space-y-4">
-          {SECTIONS.map((section) => {
-            const SectionComponent = section.component;
-            const isOpen = openSections.has(section.id);
-            return (
-              <SectionWrapper
-                key={section.id}
-                id={section.id}
-                label={section.label}
-                isOpen={isOpen}
-                onToggle={() => toggleSection(section.id)}
-              >
-                <SectionComponent
-                  draft={draft}
-                  derived={derived}
-                  actions={actions}
-                />
-              </SectionWrapper>
-            );
-          })}
+          {SECTIONS.map((section) => (
+            <SectionWrapper
+              key={section.id}
+              id={section.id}
+              label={section.label}
+              isOpen={openSections.has(section.id)}
+              onToggle={() => toggleSection(section.id)}
+            >
+              {sectionEls[section.id]}
+            </SectionWrapper>
+          ))}
         </div>
 
         {/* --- Coluna da direita: preview (desktop) --- */}
@@ -306,6 +546,62 @@ export default function CreatureBuilder({ existingCreature, onSave, onCancel }) 
         </div>,
         document.body
       )}
+
+      {/* Modal de confirmação — sair com alterações não salvas */}
+      {showLeaveConfirm && createPortal(
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4"
+          onClick={() => setShowLeaveConfirm(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="leave-confirm-title"
+        >
+          <div
+            className="bg-slate-900 border border-slate-800 rounded-lg max-w-md w-full shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start gap-3 p-5 pb-4 border-b border-slate-800">
+              <div className="w-10 h-10 rounded-full border border-amber-800/60 bg-amber-950/60 flex items-center justify-center flex-shrink-0">
+                <AlertTriangle className="w-5 h-5 text-amber-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 id="leave-confirm-title" className="text-base font-bold text-white">
+                  Sair sem salvar?
+                </h3>
+                <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">
+                  Há alterações não salvas nesta ficha. O rascunho fica guardado — você poderá restaurá-lo ao reabrir o construtor.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowLeaveConfirm(false)}
+                className="text-slate-500 hover:text-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-slate-600 flex-shrink-0"
+                aria-label="Fechar"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 p-4">
+              <button
+                type="button"
+                onClick={() => setShowLeaveConfirm(false)}
+                className="px-4 py-2 rounded bg-slate-800 hover:bg-slate-700 text-sm font-semibold text-slate-200 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-500"
+              >
+                Continuar editando
+              </button>
+              <button
+                type="button"
+                onClick={confirmLeave}
+                className="px-4 py-2 rounded bg-amber-700 hover:bg-amber-600 text-sm font-semibold text-white transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500"
+              >
+                Sair mesmo assim
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }
@@ -337,27 +633,91 @@ function SectionWrapper({ id, label, isOpen, onToggle, children }) {
   );
 }
 
+// ---------- Índice de seções (dropdown de navegação) ----------
+function SectionIndex({ sections, warningSections, onJump }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="flex items-center gap-1 px-2 py-1 rounded hover:text-white hover:bg-slate-800 transition-colors focus:outline-none focus:ring-1 focus:ring-purple-500"
+        aria-expanded={open}
+        aria-haspopup="menu"
+      >
+        <List className="w-3.5 h-3.5" /> Índice
+        <ChevronDown className={`w-3 h-3 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div
+            role="menu"
+            className="absolute right-0 mt-1 z-50 w-56 max-h-[70vh] overflow-y-auto bg-slate-900 border border-slate-700 rounded-lg shadow-2xl py-1"
+          >
+            {sections.map((s) => {
+              const mark = warningSections[s.id];
+              return (
+                <button
+                  key={s.id}
+                  type="button"
+                  role="menuitem"
+                  onClick={() => { onJump(s.id); setOpen(false); }}
+                  className="w-full flex items-center justify-between gap-2 px-3 py-1.5 text-left text-xs text-slate-300 hover:bg-slate-800 hover:text-white transition-colors focus:outline-none focus:bg-slate-800"
+                >
+                  <span className="truncate">{s.label}</span>
+                  {mark && (
+                    <span
+                      className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+                        mark === "error" ? "bg-red-400" : "bg-amber-400"
+                      }`}
+                      title={mark === "error" ? "Possui erro" : "Possui aviso"}
+                    />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 // ---------- Barra de warnings no header ----------
-function WarningBar({ warnings }) {
+function WarningBar({ warnings, onWarningClick }) {
   const errors = warnings.filter((w) => w.severity === "error");
   const warns = warnings.filter((w) => w.severity === "warn");
   const hasErrors = errors.length > 0;
 
   const bgColor = hasErrors ? "bg-red-950/60 border-red-900" : "bg-amber-950/60 border-amber-900";
   const textColor = hasErrors ? "text-red-300" : "text-amber-300";
-  const icon = hasErrors ? AlertTriangle : Info;
-  const Icon = icon;
+  const Icon = hasErrors ? AlertTriangle : Info;
 
   return (
     <div className={`${bgColor} border-t px-4 py-2`}>
       <div className="max-w-7xl mx-auto flex items-center gap-2 text-xs">
         <Icon className={`w-3.5 h-3.5 ${textColor} flex-shrink-0`} />
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-          {(hasErrors ? errors : warns).slice(0, 3).map((w, i) => (
-            <span key={i} className={textColor}>
-              {w.message}
-            </span>
-          ))}
+          {(hasErrors ? errors : warns).slice(0, 3).map((w, i) => {
+            const target = sectionOfWarning(w.field);
+            return target ? (
+              <button
+                key={i}
+                type="button"
+                onClick={() => onWarningClick(target)}
+                title="Ir para a seção"
+                className={`${textColor} underline decoration-dotted underline-offset-2 hover:decoration-solid focus:outline-none focus:ring-1 focus:ring-current rounded`}
+              >
+                {w.message}
+              </button>
+            ) : (
+              <span key={i} className={textColor}>
+                {w.message}
+              </span>
+            );
+          })}
           {warnings.length > 3 && (
             <span className="text-slate-500">+{warnings.length - 3} outros</span>
           )}

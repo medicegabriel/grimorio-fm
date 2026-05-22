@@ -10,7 +10,7 @@ import {
   Square, CheckSquare, Crosshair, Sword, Hourglass
 } from 'lucide-react';
 import { createInitialCombatState, applyNewRoundEffects, LOG_TYPES, createLogEntry, computeAlmaStatus, ALMA_ESTADOS } from '../fm-encounter';
-import { humanizeAction, generateActionDescription, ACTION_TYPE_LABELS } from './sections/SectionActions';
+import { humanizeAction, generateActionDescription, ACTION_TYPE_LABELS } from './fm-action-calc';
 import { getModifier, calculateCD, calculateAcerto, CONDITIONS } from './fm-tables';
 
 const ATTR_DEFS = [

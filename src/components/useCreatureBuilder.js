@@ -66,18 +66,47 @@ const normalizeSkills = (skills = []) =>
     overrideMod: s.overrideMod ?? null,
   }));
 
-// ---------- Reducer: dicionário de handlers ----------
-const actionHandlers = {
-  HYDRATE: (_, payload) => ({
+// ---------- Normaliza um draft completo (fichas antigas / parciais) ----------
+// Garante que toda chave estrutural exista antes de o reducer mexer nela,
+// evitando crash ao adicionar defesas/ações/características em fichas legadas.
+const normalizeDraft = (payload = {}) => {
+  const base = blankDraft();
+  return {
+    ...base,
     ...payload,
     portraitUrl: payload.portraitUrl || "",
-    attackAttr: payload.attackAttr || 'forca',
-    cdAttr: payload.cdAttr || 'inteligencia',
-    skills: normalizeSkills(payload.skills),
-    treinamentos: payload.treinamentos || [],
+    attackAttr:  payload.attackAttr || "forca",
+    cdAttr:      payload.cdAttr || "inteligencia",
+    core: {
+      ...base.core,
+      ...(payload.core || {}),
+      // origin é aninhado: uma ficha legada pode trazê-lo parcial
+      origin: { ...base.core.origin, ...(payload.core?.origin || {}) },
+    },
+    attributes:  { ...base.attributes, ...(payload.attributes || {}) },
+    aptidoes:    { ...base.aptidoes, ...(payload.aptidoes || {}) },
+    overrides: {
+      stats: payload.overrides?.stats || {},
+      saves: payload.overrides?.saves || {},
+    },
+    defenses: {
+      resistencias:     payload.defenses?.resistencias || [],
+      imunidades:       payload.defenses?.imunidades || [],
+      vulnerabilidades: payload.defenses?.vulnerabilidades || [],
+      condicoesImunes:  payload.defenses?.condicoesImunes || [],
+    },
+    actions:           { list: payload.actions?.list || [] },
+    features:          payload.features || [],
+    skills:            normalizeSkills(payload.skills),
+    treinamentos:      payload.treinamentos || [],
     aptidoesEspeciais: payload.aptidoesEspeciais || [],
-    dotes: payload.dotes || [],
-  }),
+    dotes:             payload.dotes || [],
+  };
+};
+
+// ---------- Reducer: dicionário de handlers ----------
+const actionHandlers = {
+  HYDRATE: (_, payload) => normalizeDraft(payload),
 
   SET_NAME:     (s, payload) => ({ ...s, name: payload }),
   SET_PORTRAIT: (s, payload) => ({ ...s, portraitUrl: payload }),
@@ -263,7 +292,7 @@ export default function useCreatureBuilder(initialDraft = null) {
   const [draft, dispatch] = useReducer(
     reducer,
     initialDraft || blankDraft(),
-    (init) => ({ ...init, skills: normalizeSkills(init.skills) })
+    (init) => normalizeDraft(init)
   );
 
   const derived = useMemo(() => deriveStats(draft), [
@@ -277,66 +306,59 @@ export default function useCreatureBuilder(initialDraft = null) {
 
   const warnings = useMemo(() => validateDraft(draft, derived), [draft, derived]);
 
-  const actions = {
-    hydrate:       useCallback((data) => dispatch({ type: "HYDRATE", payload: data }), []),
-    setName:       useCallback((name) => dispatch({ type: "SET_NAME", payload: name }), []),
-    setPortrait:   useCallback((url) => dispatch({ type: "SET_PORTRAIT", payload: url }), []),
-    setNotes:      useCallback((n) => dispatch({ type: "SET_NOTES", payload: n }), []),
-    patchCore:     useCallback((patch) => dispatch({ type: "PATCH_CORE", payload: patch }), []),
-    patchOrigin:   useCallback((patch) => dispatch({ type: "PATCH_ORIGIN", payload: patch }), []),
+  // Objeto de actions memoizado: identidade estável entre renders.
+  // `dispatch` do useReducer já é estável, então as funções são criadas uma vez.
+  // Isso permite que as seções memoizadas (React.memo) não re-renderizem à toa.
+  const actions = useMemo(() => ({
+    hydrate:       (data) => dispatch({ type: "HYDRATE", payload: data }),
+    setName:       (name) => dispatch({ type: "SET_NAME", payload: name }),
+    setPortrait:   (url) => dispatch({ type: "SET_PORTRAIT", payload: url }),
+    setNotes:      (n) => dispatch({ type: "SET_NOTES", payload: n }),
+    patchCore:     (patch) => dispatch({ type: "PATCH_CORE", payload: patch }),
+    patchOrigin:   (patch) => dispatch({ type: "PATCH_ORIGIN", payload: patch }),
 
-    setAttribute:  useCallback((attr, value) =>
-      dispatch({ type: "SET_ATTRIBUTE", payload: { attr, value } }), []),
-    setAttackAttr: useCallback((v) => dispatch({ type: "SET_ATTACK_ATTR", payload: v }), []),
-    setCdAttr:     useCallback((v) => dispatch({ type: "SET_CD_ATTR",     payload: v }), []),
-    setAptidao:    useCallback((key, value) =>
-      dispatch({ type: "SET_APTIDAO", payload: { key, value } }), []),
+    setAttribute:  (attr, value) => dispatch({ type: "SET_ATTRIBUTE", payload: { attr, value } }),
+    setAttackAttr: (v) => dispatch({ type: "SET_ATTACK_ATTR", payload: v }),
+    setCdAttr:     (v) => dispatch({ type: "SET_CD_ATTR", payload: v }),
+    setAptidao:    (key, value) => dispatch({ type: "SET_APTIDAO", payload: { key, value } }),
 
-    setStatOverride: useCallback((key, value) =>
-      dispatch({ type: "SET_STAT_OVERRIDE", payload: { key, value } }), []),
-    setSaveOverride: useCallback((key, value) =>
-      dispatch({ type: "SET_SAVE_OVERRIDE", payload: { key, value } }), []),
-    clearOverrides:  useCallback(() => dispatch({ type: "CLEAR_ALL_OVERRIDES" }), []),
+    setStatOverride: (key, value) => dispatch({ type: "SET_STAT_OVERRIDE", payload: { key, value } }),
+    setSaveOverride: (key, value) => dispatch({ type: "SET_SAVE_OVERRIDE", payload: { key, value } }),
+    clearOverrides:  () => dispatch({ type: "CLEAR_ALL_OVERRIDES" }),
 
     // Skills — API id-based
-    addSkill:    useCallback((skill = {}) => dispatch({ type: "ADD_SKILL", payload: skill }), []),
-    updateSkill: useCallback((id, patch) =>
-      dispatch({ type: "UPDATE_SKILL", payload: { id, patch } }), []),
-    removeSkill: useCallback((id) => dispatch({ type: "REMOVE_SKILL", payload: id }), []),
-    setSkillOverride: useCallback((id, value) =>
-      dispatch({ type: "SET_SKILL_OVERRIDE", payload: { id, value } }), []),
+    addSkill:    (skill = {}) => dispatch({ type: "ADD_SKILL", payload: skill }),
+    updateSkill: (id, patch) => dispatch({ type: "UPDATE_SKILL", payload: { id, patch } }),
+    removeSkill: (id) => dispatch({ type: "REMOVE_SKILL", payload: id }),
+    setSkillOverride: (id, value) => dispatch({ type: "SET_SKILL_OVERRIDE", payload: { id, value } }),
 
     // Actions
-    addAction:       useCallback((a) => dispatch({ type: "ADD_ACTION", payload: a }), []),
-    updateAction:    useCallback((id, patch) =>
-      dispatch({ type: "UPDATE_ACTION", payload: { id, patch } }), []),
-    removeAction:    useCallback((id) => dispatch({ type: "REMOVE_ACTION", payload: id }), []),
-    duplicateAction: useCallback((id) => dispatch({ type: "DUPLICATE_ACTION", payload: id }), []),
+    addAction:       (a) => dispatch({ type: "ADD_ACTION", payload: a }),
+    updateAction:    (id, patch) => dispatch({ type: "UPDATE_ACTION", payload: { id, patch } }),
+    removeAction:    (id) => dispatch({ type: "REMOVE_ACTION", payload: id }),
+    duplicateAction: (id) => dispatch({ type: "DUPLICATE_ACTION", payload: id }),
 
     // Aptidões Especiais
-    addAptidaoEspecial:    useCallback((a) => dispatch({ type: "ADD_APTIDAO_ESPECIAL", payload: a }), []),
-    removeAptidaoEspecial: useCallback((id) => dispatch({ type: "REMOVE_APTIDAO_ESPECIAL", payload: id }), []),
+    addAptidaoEspecial:    (a) => dispatch({ type: "ADD_APTIDAO_ESPECIAL", payload: a }),
+    removeAptidaoEspecial: (id) => dispatch({ type: "REMOVE_APTIDAO_ESPECIAL", payload: id }),
 
     // Dotes
-    addDote:    useCallback((d) => dispatch({ type: "ADD_DOTE", payload: d }), []),
-    removeDote: useCallback((id) => dispatch({ type: "REMOVE_DOTE", payload: id }), []),
+    addDote:    (d) => dispatch({ type: "ADD_DOTE", payload: d }),
+    removeDote: (id) => dispatch({ type: "REMOVE_DOTE", payload: id }),
 
     // Treinamentos
-    addTreinamento:    useCallback((t) => dispatch({ type: "ADD_TREINAMENTO", payload: t }), []),
-    removeTreinamento: useCallback((id) => dispatch({ type: "REMOVE_TREINAMENTO", payload: id }), []),
+    addTreinamento:    (t) => dispatch({ type: "ADD_TREINAMENTO", payload: t }),
+    removeTreinamento: (id) => dispatch({ type: "REMOVE_TREINAMENTO", payload: id }),
 
     // Features
-    addFeature:    useCallback((f) => dispatch({ type: "ADD_FEATURE", payload: f }), []),
-    updateFeature: useCallback((id, patch) =>
-      dispatch({ type: "UPDATE_FEATURE", payload: { id, patch } }), []),
-    removeFeature: useCallback((id) => dispatch({ type: "REMOVE_FEATURE", payload: id }), []),
+    addFeature:    (f) => dispatch({ type: "ADD_FEATURE", payload: f }),
+    updateFeature: (id, patch) => dispatch({ type: "UPDATE_FEATURE", payload: { id, patch } }),
+    removeFeature: (id) => dispatch({ type: "REMOVE_FEATURE", payload: id }),
 
     // Defenses
-    addDefense:    useCallback((category, item) =>
-      dispatch({ type: "ADD_DEFENSE", payload: { category, item } }), []),
-    removeDefense: useCallback((category, index) =>
-      dispatch({ type: "REMOVE_DEFENSE", payload: { category, index } }), []),
-  };
+    addDefense:    (category, item) => dispatch({ type: "ADD_DEFENSE", payload: { category, item } }),
+    removeDefense: (category, index) => dispatch({ type: "REMOVE_DEFENSE", payload: { category, index } }),
+  }), []);
 
   /**
    * Converte o draft + derivados em uma ficha pronta para salvar.

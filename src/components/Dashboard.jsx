@@ -27,7 +27,7 @@ import { CSS } from "@dnd-kit/utilities";
 
 import FolderSidebar from "./FolderSidebar";
 import MoveToFolderMenu from "./MoveToFolderMenu";
-import { exportCreaturesToFile, importFromFile } from "./io-utils";
+import { exportCreaturesToFile, importFromFile, parseImportText, serializeExport } from "./io-utils";
 import StorageMeter from "./StorageMeter";
 
 // ============================================================
@@ -424,6 +424,26 @@ const ExportModal = ({ creatures, onConfirm, onCancel }) => {
     ? creatures[0].name.replace(/[^a-z0-9]/gi, "_").toLowerCase()
     : "criaturas_exportadas";
   const [filename, setFilename] = useState(defaultName);
+  const [copied, setCopied] = useState(false);
+  const taRef = useRef(null);
+
+  // JSON das criaturas atualmente selecionadas — pronto para copiar.
+  const jsonText = useMemo(
+    () => serializeExport(creatures.filter((c) => sel.has(c.id))),
+    [creatures, sel]
+  );
+
+  const copyJson = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(jsonText);
+    } catch {
+      // Fallback (contexto não-seguro / sem permissão): seleciona o texto.
+      taRef.current?.select();
+      try { document.execCommand("copy"); } catch { /* sem suporte */ }
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  }, [jsonText]);
 
   const toggle = useCallback((id) => {
     setSel((prev) => {
@@ -448,7 +468,7 @@ const ExportModal = ({ creatures, onConfirm, onCancel }) => {
       aria-modal="true"
     >
       <div
-        className="bg-slate-900 border border-slate-800 rounded-lg p-6 max-w-md w-full shadow-2xl flex flex-col max-h-[80vh]"
+        className="bg-slate-900 border border-slate-800 rounded-lg p-6 max-w-lg w-full shadow-2xl flex flex-col max-h-[85vh]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-3 mb-4">
@@ -492,6 +512,34 @@ const ExportModal = ({ creatures, onConfirm, onCancel }) => {
           })}
         </div>
 
+        {/* Copiar como texto */}
+        <div className="mb-3 flex-shrink-0">
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
+              Copiar como Texto
+            </label>
+            <button
+              type="button"
+              onClick={copyJson}
+              disabled={sel.size === 0}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus:ring-1 focus:ring-purple-500"
+            >
+              {copied
+                ? <><Check className="w-3.5 h-3.5 text-emerald-400" /> Copiado!</>
+                : <><Copy className="w-3.5 h-3.5" /> Copiar JSON</>}
+            </button>
+          </div>
+          <textarea
+            ref={taRef}
+            readOnly
+            value={jsonText}
+            onFocus={(e) => e.target.select()}
+            rows={4}
+            className="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5 text-[11px] font-mono text-slate-300 resize-none focus:outline-none focus:border-purple-500"
+          />
+        </div>
+
+        {/* Baixar como arquivo */}
         <div className="mb-4 flex-shrink-0">
           <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
             Nome do Arquivo
@@ -502,7 +550,7 @@ const ExportModal = ({ creatures, onConfirm, onCancel }) => {
               value={filename}
               onChange={(e) => setFilename(e.target.value)}
               placeholder={defaultName}
-              className="flex-1 h-9 bg-slate-950 border border-slate-700 rounded px-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+              className="flex-1 h-9 bg-slate-950 border border-slate-700 rounded px-3 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
             />
             <span className="text-sm text-slate-500 flex-shrink-0">.json</span>
           </div>
@@ -522,8 +570,139 @@ const ExportModal = ({ creatures, onConfirm, onCancel }) => {
             disabled={sel.size === 0}
             className="inline-flex items-center gap-2 px-4 py-2 rounded bg-purple-800 hover:bg-purple-700 text-sm font-bold text-white disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-purple-500"
           >
-            <Download className="w-4 h-4" /> Confirmar ({sel.size})
+            <Download className="w-4 h-4" /> Baixar ({sel.size})
           </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ============================================================
+// IMPORT MODAL — colar JSON ou escolher arquivo
+// ============================================================
+const ImportModal = ({ onImport, onCancel }) => {
+  const [text, setText] = useState("");
+  const [status, setStatus] = useState(null); // { type: "success" | "error", message }
+  const fileRef = useRef(null);
+
+  const applyResult = (result) => {
+    onImport(result);
+    setStatus({
+      type: "success",
+      message: `${result.creatures.length} criatura(s) importada(s) com sucesso.`,
+    });
+    setText("");
+  };
+
+  const importFromText = () => {
+    if (!text.trim()) {
+      setStatus({ type: "error", message: "Cole o JSON antes de importar." });
+      return;
+    }
+    try {
+      applyResult(parseImportText(text));
+    } catch (err) {
+      setStatus({ type: "error", message: err.message });
+    }
+  };
+
+  const handleFile = async (file) => {
+    try {
+      applyResult(await importFromFile(file));
+    } catch (err) {
+      setStatus({ type: "error", message: err.message });
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+      onClick={onCancel}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div
+        className="bg-slate-900 border border-slate-800 rounded-lg p-6 max-w-lg w-full shadow-2xl flex flex-col max-h-[85vh]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-full bg-purple-950/60 border border-purple-900/60 flex items-center justify-center flex-shrink-0">
+            <Upload className="w-5 h-5 text-purple-400" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-lg font-bold text-white">Importar Criaturas</h3>
+            <p className="text-sm text-slate-400">Cole o JSON ou escolha um arquivo</p>
+          </div>
+          <button
+            type="button"
+            onClick={onCancel}
+            className="w-7 h-7 flex items-center justify-center rounded text-slate-500 hover:text-slate-200 hover:bg-slate-800 focus:outline-none flex-shrink-0"
+            aria-label="Fechar"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+          Colar JSON
+        </label>
+        <textarea
+          value={text}
+          onChange={(e) => { setText(e.target.value); setStatus(null); }}
+          rows={9}
+          placeholder="Cole aqui o JSON exportado de uma ou mais fichas..."
+          className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-[11px] font-mono text-slate-200 placeholder:text-slate-500 resize-none focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+        />
+
+        {status && (
+          <div className={`mt-3 flex items-start gap-2 rounded border px-3 py-2 text-xs ${
+            status.type === "success"
+              ? "bg-emerald-950/50 border-emerald-900 text-emerald-300"
+              : "bg-red-950/50 border-red-900 text-red-300"
+          }`}>
+            {status.type === "success"
+              ? <Check className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+              : <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />}
+            <span className="leading-relaxed">{status.message}</span>
+          </div>
+        )}
+
+        <div className="flex items-center justify-between gap-2 mt-4 flex-shrink-0">
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded bg-slate-800 hover:bg-slate-700 text-sm font-semibold text-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500/60"
+          >
+            <Upload className="w-4 h-4" /> Arquivo .json
+          </button>
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".json"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handleFile(file);
+              e.target.value = "";
+            }}
+          />
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={onCancel}
+              className="px-4 py-2 rounded bg-slate-800 hover:bg-slate-700 text-sm font-semibold text-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500/60"
+            >
+              Fechar
+            </button>
+            <button
+              type="button"
+              onClick={importFromText}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded bg-purple-800 hover:bg-purple-700 text-sm font-bold text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+            >
+              <Upload className="w-4 h-4" /> Importar
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -548,10 +727,10 @@ export default function Dashboard({
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [exportModal, setExportModal] = useState(null);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({ nd: "", patamar: "", grau: "", dificuldade: "", origin: "" });
-  const fileInputRef = useRef(null);
   const headerRef = useRef(null);
   const [headerH, setHeaderH] = useState(72);
 
@@ -822,14 +1001,10 @@ export default function Dashboard({
     setConfirmDelete(null);
   }, [confirmDelete, manager, clearSelection]);
 
-  const handleImport = useCallback(async (file) => {
-    try {
-      const result = await importFromFile(file);
-      manager.importMany(result, { mergeStrategy: "append" });
-      alert(`Importadas ${result.creatures?.length ?? 0} criaturas`);
-    } catch (err) {
-      alert(`Falha na importação: ${err.message}`);
-    }
+  // O ImportModal cuida do parse (arquivo ou texto) e do feedback de status.
+  // Aqui só aplicamos o resultado já validado ao storage.
+  const handleImportResult = useCallback((result) => {
+    manager.importMany(result, { mergeStrategy: "append" });
   }, [manager]);
 
   const viewTitle = view.type === "folder"
@@ -901,7 +1076,7 @@ export default function Dashboard({
               </button>
               <button
                 type="button"
-                onClick={() => fileInputRef.current?.click()}
+                onClick={() => setShowImportModal(true)}
                 className="inline-flex items-center justify-center gap-1.5 h-9 w-9 lg:w-auto lg:px-3 shrink-0 rounded bg-slate-800 hover:bg-slate-700 text-sm font-semibold text-slate-200 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500/60"
                 title="Importar"
               >
@@ -928,17 +1103,6 @@ export default function Dashboard({
                 <Plus className="w-4 h-4 shrink-0" />
                 <span className="hidden lg:inline">Nova Criatura</span>
               </button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".json"
-                className="hidden"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) handleImport(file);
-                  e.target.value = "";
-                }}
-              />
             </div>
 
             {/* Linha do medidor de armazenamento */}
@@ -1261,6 +1425,14 @@ export default function Dashboard({
             creatures={exportModal}
             onConfirm={handleConfirmExport}
             onCancel={() => setExportModal(null)}
+          />
+        )}
+
+        {/* ===== MODAL DE IMPORTAÇÃO ===== */}
+        {showImportModal && (
+          <ImportModal
+            onImport={handleImportResult}
+            onCancel={() => setShowImportModal(false)}
           />
         )}
 
