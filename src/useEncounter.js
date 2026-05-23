@@ -92,6 +92,13 @@ const HANDLERS = {
     )
   }),
 
+  UPDATE_COMBATANT_SNAPSHOT: (state, { id, snapshot }) => ({
+    ...state,
+    combatants: state.combatants.map((c) =>
+      c.id === id ? { ...c, snapshot: { ...c.snapshot, ...snapshot } } : c
+    )
+  }),
+
   UPDATE_COMBAT_STATE: (state, { id, combatState }) => ({
     ...state,
     combatants: state.combatants.map((c) => {
@@ -228,6 +235,7 @@ export default function useEncounter(encounterId, manager) {
     setSide: (id, side) => dispatch({ type: 'SET_SIDE', id, side }),
     setFlag: (id, key, value) => dispatch({ type: 'SET_FLAG', id, key, value }),
     updateCombatState: (id, combatState) => dispatch({ type: 'UPDATE_COMBAT_STATE', id, combatState }),
+    updateCombatantSnapshot: (id, snapshot) => dispatch({ type: 'UPDATE_COMBATANT_SNAPSHOT', id, snapshot }),
     startCombat: () => dispatch({ type: 'START_COMBAT' }),
     nextTurn: () => dispatch({ type: 'NEXT_TURN' }),
     newRound: () => dispatch({ type: 'NEW_ROUND' }),

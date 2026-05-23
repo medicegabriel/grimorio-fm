@@ -171,6 +171,13 @@ export default function App() {
           folders={storage.folders}
           onBack={goToEncounters}
           onDuplicate={handleDuplicateEncounter}
+          onUpdateCreature={(creature) => {
+            if (!creature?.id) return;
+            // Só persiste se a criatura existe no compêndio local
+            if (storage.creatures.find((c) => c.id === creature.id)) {
+              storage.update(creature.id, creature);
+            }
+          }}
         />
       );
     },

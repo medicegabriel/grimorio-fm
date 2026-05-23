@@ -251,6 +251,9 @@ function PortraitHeader({ draft }) {
           src={draft.portraitUrl}
           alt={draft.name || "Retrato"}
           className="w-full h-full object-cover"
+          style={{
+            objectPosition: `${draft.portraitFocus?.x ?? 50}% ${draft.portraitFocus?.y ?? 50}%`,
+          }}
           onLoad={() => setStatus("ok")}
           onError={() => setStatus("error")}
           referrerPolicy="no-referrer"

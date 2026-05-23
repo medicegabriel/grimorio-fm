@@ -189,11 +189,15 @@ export const getNextTurn = (encounter) => {
     };
   }
 
-  const currentIdx = eligible.findIndex(
+  // Posição do combatente ativo na ordem COMPLETA (inclui derrotados/ocultos).
+  // Procurar na ordem completa — e não na lista de elegíveis — evita "perder
+  // o lugar" quando o combatente do turno atual é abatido: ele sai dos
+  // elegíveis, mas continua na ordem, então o avanço parte da posição certa.
+  const currentIdx = ordered.findIndex(
     (c) => c.id === encounter.activeCombatantId
   );
 
-  // Nenhum ativo OU ativo ficou inelegível → começa do topo sem virar rodada
+  // Sem combatente ativo conhecido → começa do primeiro elegível, sem virar rodada.
   if (currentIdx === -1) {
     return {
       nextCombatantId: eligible[0].id,
@@ -202,13 +206,22 @@ export const getNextTurn = (encounter) => {
     };
   }
 
-  const nextIdx = currentIdx + 1;
-  const isNewRound = nextIdx >= eligible.length;
+  // Próximo elegível DEPOIS da posição atual na ordem completa.
+  for (let i = currentIdx + 1; i < ordered.length; i++) {
+    if (isEligibleForTurn(ordered[i])) {
+      return {
+        nextCombatantId: ordered[i].id,
+        newRound: encounter.round,
+        isNewRound: false
+      };
+    }
+  }
 
+  // Ninguém elegível adiante → vira a rodada e volta ao primeiro elegível.
   return {
-    nextCombatantId: isNewRound ? eligible[0].id : eligible[nextIdx].id,
-    newRound: isNewRound ? encounter.round + 1 : encounter.round,
-    isNewRound
+    nextCombatantId: eligible[0].id,
+    newRound: encounter.round + 1,
+    isNewRound: true
   };
 };
 

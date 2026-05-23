@@ -273,7 +273,7 @@ export default function CreatureBuilder({ existingCreature, onSave, onCancel }) 
   /* eslint-disable react-hooks/exhaustive-deps */
   const identityEl = useMemo(
     () => <SectionIdentity draft={draft} actions={actions} />,
-    [draft.name, draft.portraitUrl, draft.narratorNotes, actions]
+    [draft.name, draft.portraitUrl, draft.portraitFocus, draft.narratorNotes, actions]
   );
   const coreEl = useMemo(
     () => <SectionCore draft={draft} derived={derived} actions={actions} />,

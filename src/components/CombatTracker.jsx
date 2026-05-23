@@ -18,6 +18,10 @@ export default function CombatTracker({ creature, onUpdate, onExit }) {
     onUpdate?.({ ...creature, combatState: nextCombatState, updatedAt: new Date().toISOString() });
   }, [creature, onUpdate]);
 
+  const handleCreatureUpdate = useCallback((nextCreature) => {
+    onUpdate?.({ ...nextCreature, updatedAt: new Date().toISOString() });
+  }, [onUpdate]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-purple-950/30 text-white">
       <header className="sticky top-0 z-40 bg-slate-950/90 backdrop-blur border-b border-purple-900/50">
@@ -33,6 +37,7 @@ export default function CombatTracker({ creature, onUpdate, onExit }) {
         <CombatantPanel
           combatant={combatant}
           onCombatStateChange={handleCombatStateChange}
+          onCreatureUpdate={handleCreatureUpdate}
           onFlagChange={() => { /* no-op em single-mode */ }}
           onNewRound={() => { /* efeitos já aplicados no panel */ }} />
       </main>

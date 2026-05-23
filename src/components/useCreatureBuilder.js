@@ -21,6 +21,8 @@ const genId = (prefix) =>
 export const blankDraft = () => ({
   name: "",
   portraitUrl: "",
+  portraitFocus: { x: 50, y: 50 },
+  combatSettings: { guardaAbsorbsFirst: true },
   core: {
     grau: "3",
     nd: 5,
@@ -75,6 +77,14 @@ const normalizeDraft = (payload = {}) => {
     ...base,
     ...payload,
     portraitUrl: payload.portraitUrl || "",
+    portraitFocus: {
+      x: clampPercent(payload.portraitFocus?.x, 50),
+      y: clampPercent(payload.portraitFocus?.y, 50),
+    },
+    combatSettings: {
+      ...base.combatSettings,
+      ...(payload.combatSettings || {}),
+    },
     attackAttr:  payload.attackAttr || "forca",
     cdAttr:      payload.cdAttr || "inteligencia",
     core: {
@@ -110,6 +120,13 @@ const actionHandlers = {
 
   SET_NAME:     (s, payload) => ({ ...s, name: payload }),
   SET_PORTRAIT: (s, payload) => ({ ...s, portraitUrl: payload }),
+  SET_PORTRAIT_FOCUS: (s, payload) => ({
+    ...s,
+    portraitFocus: {
+      x: clampPercent(payload?.x, s.portraitFocus?.x ?? 50),
+      y: clampPercent(payload?.y, s.portraitFocus?.y ?? 50),
+    },
+  }),
   SET_NOTES:    (s, payload) => ({ ...s, narratorNotes: payload }),
 
   PATCH_CORE:   (s, payload) => ({ ...s, core: { ...s.core, ...payload } }),
@@ -270,6 +287,12 @@ const actionHandlers = {
 };
 
 // ---------- Utils ----------
+const clampPercent = (value, fallback) => {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.max(0, Math.min(100, n));
+};
+
 const cleanNull = (obj) => {
   const result = {};
   for (const [k, v] of Object.entries(obj)) {
@@ -313,6 +336,7 @@ export default function useCreatureBuilder(initialDraft = null) {
     hydrate:       (data) => dispatch({ type: "HYDRATE", payload: data }),
     setName:       (name) => dispatch({ type: "SET_NAME", payload: name }),
     setPortrait:   (url) => dispatch({ type: "SET_PORTRAIT", payload: url }),
+    setPortraitFocus: (focus) => dispatch({ type: "SET_PORTRAIT_FOCUS", payload: focus }),
     setNotes:      (n) => dispatch({ type: "SET_NOTES", payload: n }),
     patchCore:     (patch) => dispatch({ type: "PATCH_CORE", payload: patch }),
     patchOrigin:   (patch) => dispatch({ type: "PATCH_ORIGIN", payload: patch }),

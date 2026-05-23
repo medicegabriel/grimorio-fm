@@ -40,7 +40,7 @@ const PATAMAR_BADGE = {
 // ============================================================
 // MINIATURA CIRCULAR DE COMBATENTE
 // ============================================================
-const MiniAvatar = ({ imageUrl, name }) => {
+const MiniAvatar = ({ imageUrl, name, focus }) => {
   const [failed, setFailed] = useState(false);
   if (!imageUrl || failed) {
     return (
@@ -53,7 +53,8 @@ const MiniAvatar = ({ imageUrl, name }) => {
     <img
       src={imageUrl}
       alt={name}
-      className="w-8 h-8 rounded-full border border-slate-700 object-cover object-center flex-shrink-0"
+      className="w-8 h-8 rounded-full border border-slate-700 object-cover flex-shrink-0"
+      style={{ objectPosition: `${focus?.x ?? 50}% ${focus?.y ?? 50}%` }}
       onError={() => setFailed(true)}
     />
   );
@@ -566,7 +567,7 @@ const InitiativeSidebar = ({ derived, encounter, focusedId, onFocus, onRemove })
               <div className="flex items-center gap-2 mb-1 pr-5">
                 <span className="text-sm font-bold text-white tabular-nums w-7">{c.initiative.total}</span>
                 {isActive && <span className="text-purple-300" aria-label="Turno ativo">⚡</span>}
-                <MiniAvatar imageUrl={c.snapshot?.portraitUrl} name={c.displayName} />
+                <MiniAvatar imageUrl={c.snapshot?.portraitUrl} focus={c.snapshot?.portraitFocus} name={c.displayName} />
                 <span className="flex-1 text-sm text-slate-200 truncate">{c.displayName}</span>
                 {isDefeated && <Skull className="w-3.5 h-3.5 text-slate-500" aria-label="Abatido" />}
                 {isHidden && <EyeOff className="w-3.5 h-3.5 text-slate-500" aria-label="Oculto" />}
@@ -601,7 +602,7 @@ const InitiativeSidebar = ({ derived, encounter, focusedId, onFocus, onRemove })
   </aside>
 );
 
-const EncounterActive = ({ encounter, derived, actions, creatures, folders = [], onBack }) => {
+const EncounterActive = ({ encounter, derived, actions, creatures, folders = [], onBack, onUpdateCreature }) => {
   const [focusedId, setFocusedId] = useState(encounter.activeCombatantId);
   const [showSidebar, setShowSidebar] = useState(false);
   const [showAdder, setShowAdder] = useState(false);
@@ -805,6 +806,12 @@ const EncounterActive = ({ encounter, derived, actions, creatures, folders = [],
                 combatant={focusedCombatant}
                 onCombatStateChange={(cs) => actions.updateCombatState(focusedCombatant.id, cs)}
                 onFlagChange={(key, value) => actions.setFlag(focusedCombatant.id, key, value)}
+                onCreatureUpdate={(updatedCreature) => {
+                  // Persiste no compêndio (afeta encontros futuros)
+                  onUpdateCreature?.(updatedCreature);
+                  // Atualiza o snapshot do combatente neste encontro (efeito imediato)
+                  actions.updateCombatantSnapshot(focusedCombatant.id, updatedCreature);
+                }}
                 onNewRound={undefined /* nova rodada é global aqui, feita pelo header */}
                 isTrackerMode
                 suppressDeathBanner />
@@ -929,7 +936,7 @@ const STATUS_RENDERERS = {
 // ============================================================
 // COMPONENTE EXPORTADO
 // ============================================================
-export default function EncounterTracker({ encounterId, manager, creatures, folders = [], onBack, onDuplicate }) {
+export default function EncounterTracker({ encounterId, manager, creatures, folders = [], onBack, onDuplicate, onUpdateCreature }) {
   const { encounter, derived, actions } = useEncounter(encounterId, manager);
 
   if (!encounter) {
@@ -956,6 +963,7 @@ export default function EncounterTracker({ encounterId, manager, creatures, fold
       creatures={creatures}
       folders={folders}
       onBack={onBack}
+      onUpdateCreature={onUpdateCreature}
       onDuplicate={() => onDuplicate?.(encounter.id)} />
   );
 }

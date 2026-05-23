@@ -2,12 +2,13 @@
 // Painel genérico de um combatente. Usado tanto pelo CombatTracker single
 // quanto pelo EncounterTracker multi. Só recebe combatant + callbacks.
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Heart, Zap, Shield, Skull, Plus, Minus, ChevronDown, ChevronUp,
   Copy, AlertTriangle, Eye, EyeOff, X, Swords, Dices, RotateCcw,
   ShieldAlert, Activity, Target, Sparkles, Clock, GraduationCap, Star,
-  Square, CheckSquare, Crosshair, Sword, Hourglass
+  Square, CheckSquare, Crosshair, Sword, Hourglass, Settings
 } from 'lucide-react';
 import { createInitialCombatState, applyNewRoundEffects, LOG_TYPES, createLogEntry, computeAlmaStatus, ALMA_ESTADOS } from '../fm-encounter';
 import { humanizeAction, generateActionDescription, ACTION_TYPE_LABELS } from './fm-action-calc';
@@ -570,7 +571,7 @@ const DefensesList = ({ defenses }) => {
 // ============================================================
 // AVATAR DE COMBATENTE
 // ============================================================
-const CombatantAvatar = ({ imageUrl, name, className }) => {
+const CombatantAvatar = ({ imageUrl, name, className, focus }) => {
   const [failed, setFailed] = useState(false);
   if (!imageUrl || failed) {
     return (
@@ -583,11 +584,167 @@ const CombatantAvatar = ({ imageUrl, name, className }) => {
     <img
       src={imageUrl}
       alt={name}
-      className={`${className} rounded-lg border border-slate-700 object-cover object-center flex-shrink-0 shadow-lg`}
+      className={`${className} rounded-lg border border-slate-700 object-cover flex-shrink-0 shadow-lg`}
+      style={{ objectPosition: `${focus?.x ?? 50}% ${focus?.y ?? 50}%` }}
       onError={() => setFailed(true)}
     />
   );
 };
+
+// ============================================================
+// MENU DE AJUSTES DE COMBATE (popover)
+// ============================================================
+const POPOVER_MARGIN = 8;       // distância mínima entre popover e borda do viewport
+const POPOVER_GAP = 8;           // distância entre botão e popover
+
+const CombatSettingsMenu = ({ settings, onChange, disabled = false }) => {
+  const [open, setOpen] = useState(false);
+  const [position, setPosition] = useState(null);
+  const buttonRef = useRef(null);
+  const popoverRef = useRef(null);
+
+  const recalculatePosition = useCallback(() => {
+    if (!buttonRef.current) return;
+    const buttonRect = buttonRef.current.getBoundingClientRect();
+    const viewportW = window.innerWidth;
+    const viewportH = window.innerHeight;
+
+    // Largura: 320 desktop, mais estreito em mobile, sempre cabendo no viewport
+    const desiredWidth = viewportW >= 640 ? 320 : 288;
+    const width = Math.min(desiredWidth, viewportW - POPOVER_MARGIN * 2);
+
+    // Altura aproximada — usada para tentar abrir pra cima se não couber pra baixo
+    const popoverH = popoverRef.current?.offsetHeight ?? 160;
+
+    // Eixo X — preferimos alinhar com a borda direita do botão e estender pra esquerda;
+    // se vazar, clampamos nas bordas do viewport
+    let left = buttonRect.right - width;
+    if (left < POPOVER_MARGIN) left = POPOVER_MARGIN;
+    if (left + width > viewportW - POPOVER_MARGIN) {
+      left = viewportW - width - POPOVER_MARGIN;
+    }
+
+    // Eixo Y — abaixo do botão por padrão; se não couber, abre pra cima
+    let top = buttonRect.bottom + POPOVER_GAP;
+    if (top + popoverH > viewportH - POPOVER_MARGIN) {
+      const topAbove = buttonRect.top - POPOVER_GAP - popoverH;
+      if (topAbove >= POPOVER_MARGIN) top = topAbove;
+      else top = Math.max(POPOVER_MARGIN, viewportH - popoverH - POPOVER_MARGIN);
+    }
+
+    setPosition({ top, left, width });
+  }, []);
+
+  useEffect(() => {
+    if (!open) {
+      setPosition(null);
+      return;
+    }
+
+    recalculatePosition();
+    // Segundo cálculo após o popover ter dimensões reais (corrige altura no eixo Y)
+    const raf = requestAnimationFrame(recalculatePosition);
+
+    const handleClick = (e) => {
+      const insideButton = buttonRef.current?.contains(e.target);
+      const insidePopover = popoverRef.current?.contains(e.target);
+      if (!insideButton && !insidePopover) setOpen(false);
+    };
+    const handleKey = (e) => { if (e.key === 'Escape') setOpen(false); };
+
+    document.addEventListener('mousedown', handleClick);
+    document.addEventListener('keydown', handleKey);
+    window.addEventListener('resize', recalculatePosition);
+    window.addEventListener('scroll', recalculatePosition, true);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      document.removeEventListener('mousedown', handleClick);
+      document.removeEventListener('keydown', handleKey);
+      window.removeEventListener('resize', recalculatePosition);
+      window.removeEventListener('scroll', recalculatePosition, true);
+    };
+  }, [open, recalculatePosition]);
+
+  const guardaAbsorbsFirst = settings?.guardaAbsorbsFirst ?? true;
+
+  const toggle = (key, value) => {
+    onChange?.({ ...(settings || {}), [key]: value });
+  };
+
+  return (
+    <>
+      <button
+        ref={buttonRef}
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        disabled={disabled}
+        className="inline-flex items-center justify-center w-9 h-9 rounded bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 focus:outline-none focus:ring-2 focus:ring-purple-500/60 disabled:opacity-40 disabled:cursor-not-allowed"
+        aria-label="Ajustes de combate"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        title="Ajustes de combate"
+      >
+        <Settings className="w-4 h-4" />
+      </button>
+
+      {open && createPortal(
+        <div
+          ref={popoverRef}
+          role="menu"
+          style={{
+            position: 'fixed',
+            top: position?.top ?? -9999,
+            left: position?.left ?? -9999,
+            width: position?.width,
+            visibility: position ? 'visible' : 'hidden',
+          }}
+          className="z-50 bg-slate-900 border border-slate-700 rounded-lg shadow-2xl p-3 space-y-3"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs uppercase tracking-widest text-slate-400 font-bold">
+              Regras de combate
+            </span>
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="text-slate-500 hover:text-slate-300"
+              aria-label="Fechar"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          <SettingToggle
+            label="Guarda Inabalável absorve dano antes do HP"
+            checked={guardaAbsorbsFirst}
+            onChange={(v) => toggle('guardaAbsorbsFirst', v)}
+            disabled={disabled}
+          />
+        </div>,
+        document.body
+      )}
+    </>
+  );
+};
+
+const SettingToggle = ({ label, description, checked, onChange, disabled }) => (
+  <label className={`flex gap-3 items-start p-2 rounded hover:bg-slate-800/60 transition-colors cursor-pointer ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}>
+    <input
+      type="checkbox"
+      checked={checked}
+      onChange={(e) => onChange?.(e.target.checked)}
+      disabled={disabled}
+      className="mt-0.5 w-4 h-4 accent-purple-500 cursor-pointer"
+    />
+    <span className="flex-1">
+      <span className="block text-sm font-semibold text-slate-200">{label}</span>
+      {description && (
+        <span className="block text-xs text-slate-400 mt-0.5 leading-snug">{description}</span>
+      )}
+    </span>
+  </label>
+);
 
 // ============================================================
 // MAIN — CombatantPanel
@@ -598,6 +755,7 @@ export default function CombatantPanel({
   onFlagChange,
   onNewRound,
   onReset,
+  onCreatureUpdate,
   readOnly = false,
   showHeader = true,
   suppressDeathBanner = false,
@@ -645,6 +803,7 @@ export default function CombatantPanel({
   const treinamentos = snapshot.treinamentos ?? [];
   const aptidoesEspeciais = snapshot.aptidoesEspeciais ?? [];
   const dotes = snapshot.dotes ?? [];
+  const combatSettings = snapshot.combatSettings ?? { guardaAbsorbsFirst: true };
 
   // Derived: alma conditions injected visually only — never persisted
   const _hpMaxBase = combatState.hpMaxBase ?? stats.hpMax ?? 0;
@@ -672,6 +831,14 @@ export default function CombatantPanel({
     onCombatStateChange?.({ ...combatState, ...partial });
   }, [combatState, onCombatStateChange, readOnly]);
 
+  const handleCombatSettingsChange = useCallback((nextSettings) => {
+    if (readOnly || !onCreatureUpdate) return;
+    onCreatureUpdate({
+      ...snapshot,
+      combatSettings: { ...(snapshot.combatSettings ?? {}), ...nextSettings },
+    });
+  }, [onCreatureUpdate, readOnly, snapshot]);
+
   // ===== Desafiando a Morte =====
   const inDeathChallenge = useMemo(
     () => combatState.hpCurrent <= 0 && !flags.isDefeated,
@@ -691,14 +858,20 @@ export default function CombatantPanel({
         const currentGuarda = combatState.guardaInabavalCurrent ?? 0;
 
         if (v < currentHp) {
-          // Dano recebido — Guarda absorve primeiro
+          // Dano recebido
           const damage = currentHp - v;
-          const guardaAbsorbed = Math.min(currentGuarda, damage);
-          const remainingDamage = damage - guardaAbsorbed;
-          patch({
-            guardaInabavalCurrent: currentGuarda - guardaAbsorbed,
-            hpCurrent: currentHp - remainingDamage,
-          });
+          if (combatSettings.guardaAbsorbsFirst) {
+            // Guarda absorve primeiro (regra padrão)
+            const guardaAbsorbed = Math.min(currentGuarda, damage);
+            const remainingDamage = damage - guardaAbsorbed;
+            patch({
+              guardaInabavalCurrent: currentGuarda - guardaAbsorbed,
+              hpCurrent: currentHp - remainingDamage,
+            });
+          } else {
+            // Toggle desligado: dano vai direto pro HP, Guarda intacta
+            patch({ hpCurrent: currentHp - damage });
+          }
         } else {
           // Cura — aplica direto no HP, limitado pela Alma
           patch({ hpCurrent: Math.min(hpMax, v) });
@@ -761,7 +934,7 @@ export default function CombatantPanel({
       onCombatStateChange?.(createInitialCombatState(stats));
       onReset?.();
     }
-  }), [patch, combatState, stats, flags, onFlagChange, combatant, onCombatStateChange, onNewRound, onReset]);
+  }), [patch, combatState, stats, flags, onFlagChange, combatant, onCombatStateChange, onNewRound, onReset, combatSettings]);
 
   return (
     <div className="space-y-6">
@@ -770,6 +943,7 @@ export default function CombatantPanel({
         <div className="flex gap-3 sm:gap-4 items-start">
           <CombatantAvatar
             imageUrl={snapshot.portraitUrl}
+            focus={snapshot.portraitFocus}
             name={combatant.displayName}
             className="w-24 h-24 sm:w-32 sm:h-32"
           />
@@ -796,6 +970,11 @@ export default function CombatantPanel({
                   </button>
                 </>
               )}
+              <CombatSettingsMenu
+                settings={combatSettings}
+                onChange={handleCombatSettingsChange}
+                disabled={readOnly || !onCreatureUpdate}
+              />
               <button type="button" onClick={handlers.resetCombat}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-red-900/50 hover:bg-red-800 border border-red-800 text-sm text-red-200 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500"
                 aria-label="Resetar combate">

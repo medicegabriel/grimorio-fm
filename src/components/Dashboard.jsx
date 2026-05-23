@@ -87,7 +87,7 @@ const VIEW_FILTERS = {
 // ============================================================
 // AVATAR DE CRIATURA
 // ============================================================
-const CreatureAvatar = ({ imageUrl, name }) => {
+const CreatureAvatar = ({ imageUrl, name, focus }) => {
   const [failed, setFailed] = useState(false);
   if (!imageUrl || failed) {
     return (
@@ -100,7 +100,8 @@ const CreatureAvatar = ({ imageUrl, name }) => {
     <img
       src={imageUrl}
       alt={name}
-      className="w-14 h-14 rounded-md border border-slate-700/50 shrink-0 object-cover object-center"
+      className="w-14 h-14 rounded-md border border-slate-700/50 shrink-0 object-cover"
+      style={{ objectPosition: `${focus?.x ?? 50}% ${focus?.y ?? 50}%` }}
       onError={() => setFailed(true)}
     />
   );
@@ -150,7 +151,7 @@ const CreatureCard = ({
     >
       <div className="flex items-start gap-4">
         <div className="mt-1 shrink-0">
-          <CreatureAvatar imageUrl={creature.portraitUrl} name={creature.name} />
+          <CreatureAvatar imageUrl={creature.portraitUrl} focus={creature.portraitFocus} name={creature.name} />
         </div>
         <div className="flex-1 min-w-0 flex flex-col">
           {/* ── LINHA SUPERIOR ── */}

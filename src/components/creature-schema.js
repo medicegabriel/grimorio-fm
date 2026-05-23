@@ -16,6 +16,13 @@ const CreatureSchema = {
   createdAt: "2026-04-17T10:00:00Z",
   updatedAt: "2026-04-17T10:00:00Z",
   portraitUrl: null, // opcional, imagem da criatura
+  portraitFocus: { x: 50, y: 50 }, // ponto focal do retrato (0-100 %), usado como object-position
+
+  // ---------- AJUSTES DE COMBATE (ESTÁTICO, regra de mesa) ----------
+  // Toggles persistentes da ficha; persistem entre combates e overrides do encounter.
+  combatSettings: {
+    guardaAbsorbsFirst: true, // se desligado, dano vai direto pro HP, ignorando Guarda Inabalável
+  },
 
   // ---------- DEFINIÇÃO BASE (ESTÁTICO) ----------
   core: {
