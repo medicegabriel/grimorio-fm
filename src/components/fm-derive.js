@@ -68,11 +68,20 @@ export function deriveStats(raw) {
   const peDoubleMult = hasPeDouble(core) ? 2 : 1;
   const peMaxFinal = peSubtotal * peDoubleMult;
 
+  // Atenção depende do bônus de Percepção (perícia). Detecta se há uma
+  // perícia chamada "Percepção" marcada como dominada — a comparação
+  // ignora acentos/caixa pra cobrir variações que o usuário possa digitar.
+  const stripDiacritics = (s) =>
+    (s || "").toString().normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
+  const percepcaoDominada = skills.some(
+    (s) => stripDiacritics(s.name) === "percepcao" && s.mastered
+  );
+
   const calculated = {
     hpMax: calculateHP(patamar, nd, attributes.constituicao),
     peMax: peMaxFinal,
     defesa: calculateDefesa(patamar, nd, mods.destreza, difficulty),
-    atencao: calcAtencao(patamar, nd, attributes.sabedoria),
+    atencao: calcAtencao(patamar, nd, attributes.sabedoria, percepcaoDominada),
     iniciativa: calcIniciativa(patamar, nd, mods.destreza),
     deslocamento: deslocamentoCalc,
     espaco: sizeInfo.espaco,
@@ -151,17 +160,27 @@ export function deriveStats(raw) {
   };
 }
 
-function calcAtencao(patamar, nd, sabedoria) {
+// Atenção = 10 + bônus de Percepção + adicional do patamar.
+// `bônus de Percepção` é a perícia (comum ou dominada) calculada sobre
+// o modificador de Sabedoria. Se a ficha tem Percepção marcada como
+// dominada, usa-se calculatePericiaDominada — antes esse caminho estava
+// quebrado e Atenção ignorava a dominação.
+function calcAtencao(patamar, nd, sabedoria, percepcaoDominada = false) {
   const modSab = getModifier(sabedoria);
-  const bonusPericia = calculatePericiaComum(nd, modSab, patamar);
-  const table = {
-    lacaio: () => 10 + modSab,
-    capanga: () => bonusPericia + 5,
-    comum: () => bonusPericia + 10,
-    desafio: () => bonusPericia + 15,
-    calamidade: () => bonusPericia + (nd >= 20 ? 20 : 15),
+  const bonusPercepcao = percepcaoDominada
+    ? calculatePericiaDominada(nd, modSab, patamar)
+    : calculatePericiaComum(nd, modSab, patamar);
+
+  const adicionalPatamar = {
+    lacaio:     0,
+    capanga:    5,
+    comum:      10,
+    desafio:    15,
+    calamidade: nd >= 20 ? 20 : 15,
   };
-  return table[patamar]?.() ?? 10;
+  const extra = adicionalPatamar[patamar];
+  if (extra == null) return 10;
+  return 10 + bonusPercepcao + extra;
 }
 
 // Iniciativa Calamidade tem cap em "20 + metade do Mod" (PDF p.45).
