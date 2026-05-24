@@ -160,7 +160,7 @@ export function deriveStats(raw) {
   };
 }
 
-// Atenção = 10 + bônus de Percepção + adicional do patamar.
+// Atenção = bônus de Percepção + adicional do patamar.
 // `bônus de Percepção` é a perícia (comum ou dominada) calculada sobre
 // o modificador de Sabedoria. Se a ficha tem Percepção marcada como
 // dominada, usa-se calculatePericiaDominada — antes esse caminho estava
@@ -180,7 +180,7 @@ function calcAtencao(patamar, nd, sabedoria, percepcaoDominada = false) {
   };
   const extra = adicionalPatamar[patamar];
   if (extra == null) return 10;
-  return 10 + bonusPercepcao + extra;
+  return bonusPercepcao + extra;
 }
 
 // Iniciativa Calamidade tem cap em "20 + metade do Mod" (PDF p.45).
