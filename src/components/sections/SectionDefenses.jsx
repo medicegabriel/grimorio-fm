@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Plus, Shield, ShieldOff, ShieldAlert, AlertTriangle, BookOpen } from "lucide-react";
+import { Plus, Shield, ShieldOff, ShieldAlert, AlertTriangle, BookOpen, Zap } from "lucide-react";
 import { TextInput, Select, SmallButton, Pill } from "../builder-controls";
 import { CONDITIONS } from "../fm-tables";
 
@@ -85,20 +85,31 @@ export default function SectionDefenses({ draft, actions }) {
   const patamar = draft.core.patamar ?? "comum";
   const limits = DEFENSE_LIMITS[patamar] ?? DEFENSE_LIMITS.comum;
 
-  const counts = {
-    imunidades:       draft.defenses.imunidades.length,
-    resistencias:     draft.defenses.resistencias.length,
-    vulnerabilidades: draft.defenses.vulnerabilidades.length,
+  // Defesas vindas de Origem (source:'origin') ou condições em
+  // originCondicoesImunes NÃO entram nos limites do patamar — só manuais contam.
+  const isManual = (item) => item?.source !== "origin";
+  const manualCounts = {
+    imunidades:       draft.defenses.imunidades.filter(isManual).length,
+    resistencias:     draft.defenses.resistencias.filter(isManual).length,
+    vulnerabilidades: draft.defenses.vulnerabilidades.filter(isManual).length,
+  };
+  const originCounts = {
+    imunidades:       draft.defenses.imunidades.length - manualCounts.imunidades,
+    resistencias:     draft.defenses.resistencias.length - manualCounts.resistencias,
+    vulnerabilidades: draft.defenses.vulnerabilidades.length - manualCounts.vulnerabilidades,
   };
 
-  const overLimit = CATEGORIES.filter(({ key }) => counts[key] > limits[key]);
-  const missingVulnerabilidades = counts.imunidades > counts.vulnerabilidades;
+  const overLimit = CATEGORIES.filter(({ key }) => manualCounts[key] > limits[key]);
+  const missingVulnerabilidades = manualCounts.imunidades > manualCounts.vulnerabilidades;
 
   const condTotalLimit = CONDITION_TOTAL_LIMITS[patamar] ?? 5;
-  const condCount = draft.defenses.condicoesImunes.length;
+  const originConds = new Set(draft.defenses.originCondicoesImunes || []);
+  const manualConds = draft.defenses.condicoesImunes.filter((c) => !originConds.has(c));
+  const condCount = manualConds.length;
+  const originCondCount = draft.defenses.condicoesImunes.length - condCount;
   const condExceeded = condCount > condTotalLimit;
-  const extremaCount = draft.defenses.condicoesImunes.filter((c) => CONDITION_SEVERITY_MAP[c] === "extremas").length;
-  const forteCount   = draft.defenses.condicoesImunes.filter((c) => CONDITION_SEVERITY_MAP[c] === "fortes").length;
+  const extremaCount = manualConds.filter((c) => CONDITION_SEVERITY_MAP[c] === "extremas").length;
+  const forteCount   = manualConds.filter((c) => CONDITION_SEVERITY_MAP[c] === "fortes").length;
   const extremaExceeded = extremaCount > 1;
   const forteExceeded   = forteCount > 2;
 
@@ -106,7 +117,8 @@ export default function SectionDefenses({ draft, actions }) {
     <div className="space-y-4">
       {/* Listas por categoria */}
       {CATEGORIES.map(({ key, label, icon: Icon, color, accent }) => {
-        const count = counts[key];
+        const count = manualCounts[key];
+        const originCount = originCounts[key];
         const limit = limits[key];
         const exceeded = count > limit;
         return (
@@ -114,18 +126,33 @@ export default function SectionDefenses({ draft, actions }) {
             <h3 className={`text-[10px] uppercase tracking-widest font-bold mb-2 flex items-center gap-1.5 ${accent}`}>
               <Icon className="w-3 h-3" /> {label}
               <span className={`ml-auto font-mono tabular-nums ${exceeded ? "text-red-400" : "text-slate-400"}`}>
-                ({count}/{limit})
+                ({count}/{limit}){originCount > 0 && (
+                  <span className="text-amber-400/80"> +{originCount} origem</span>
+                )}
               </span>
             </h3>
             <div className="flex flex-wrap gap-1.5">
               {draft.defenses[key].length === 0 && (
                 <span className="text-xs text-slate-600 italic">Nenhuma</span>
               )}
-              {draft.defenses[key].map((item, i) => (
-                <Pill key={`${key}-${i}`} color={color} onRemove={() => actions.removeDefense(key, i)}>
-                  {item.tipo}{item.nivel ? <span className="opacity-60"> ({item.nivel})</span> : null}
-                </Pill>
-              ))}
+              {draft.defenses[key].map((item, i) => {
+                const fromOrigin = item?.source === "origin";
+                return (
+                  <Pill
+                    key={`${key}-${i}`}
+                    color={color}
+                    onRemove={fromOrigin ? null : () => actions.removeDefense(key, i)}
+                  >
+                    {fromOrigin && (
+                      <Zap
+                        className="w-2.5 h-2.5 text-amber-400 -ml-0.5"
+                        title="Aplicada automaticamente pela Origem"
+                      />
+                    )}
+                    {item.tipo}{item.nivel ? <span className="opacity-60"> ({item.nivel})</span> : null}
+                  </Pill>
+                );
+              })}
             </div>
           </div>
         );
@@ -136,7 +163,9 @@ export default function SectionDefenses({ draft, actions }) {
         <h3 className="text-[10px] uppercase tracking-widest text-amber-400 font-bold mb-1.5 flex items-center gap-1.5">
           <AlertTriangle className="w-3 h-3" /> Imunidade a Condições
           <span className={`ml-auto font-mono tabular-nums ${condExceeded ? "text-red-500" : "text-slate-400"}`}>
-            ({condCount}/{condTotalLimit})
+            ({condCount}/{condTotalLimit}){originCondCount > 0 && (
+              <span className="text-amber-400/80"> +{originCondCount} origem</span>
+            )}
           </span>
         </h3>
         <div className="flex gap-3 mb-2 text-[10px] font-mono">
@@ -151,11 +180,24 @@ export default function SectionDefenses({ draft, actions }) {
           {draft.defenses.condicoesImunes.length === 0 && (
             <span className="text-xs text-slate-600 italic">Nenhuma</span>
           )}
-          {draft.defenses.condicoesImunes.map((cond, i) => (
-            <Pill key={`c-${i}`} color="amber" onRemove={() => actions.removeDefense("condicoesImunes", i)}>
-              {cond}
-            </Pill>
-          ))}
+          {draft.defenses.condicoesImunes.map((cond, i) => {
+            const fromOrigin = (draft.defenses.originCondicoesImunes || []).includes(cond);
+            return (
+              <Pill
+                key={`c-${i}`}
+                color="amber"
+                onRemove={fromOrigin ? null : () => actions.removeDefense("condicoesImunes", i)}
+              >
+                {fromOrigin && (
+                  <Zap
+                    className="w-2.5 h-2.5 text-amber-300 -ml-0.5"
+                    title="Aplicada automaticamente pela Origem"
+                  />
+                )}
+                {cond}
+              </Pill>
+            );
+          })}
         </div>
         <div className="flex flex-wrap gap-2 items-center">
           <div className="flex-1 min-w-0 basis-32">

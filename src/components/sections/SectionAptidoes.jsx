@@ -1,6 +1,7 @@
 // sections/SectionAptidoes.jsx
 import React, { useMemo } from "react";
 import { FieldLabel, NumberInput } from "../builder-controls";
+import { getFrutosAptidaoBonus } from "../fm-origens";
 
 // ============================================================
 // DICIONÁRIO DE APTIDÕES (regra de ouro #1)
@@ -49,13 +50,23 @@ const getBudgetKey = ({ budget, spent }) => {
 // ============================================================
 export default function SectionAptidoes({ draft, actions }) {
   // Derivações memoizadas
-  const { budget, spent, remaining, budgetKey, theme } = useMemo(() => {
-    const b = calculateAptidoesBudget(draft.core?.nd);
+  const { budget, baseBudget, frutosBonus, spent, remaining, budgetKey, theme } = useMemo(() => {
+    const base = calculateAptidoesBudget(draft.core?.nd);
+    const bonus = getFrutosAptidaoBonus(draft.core);
+    const b = base + bonus;
     const s = Object.values(draft.aptidoes ?? {}).reduce((sum, v) => sum + (Number(v) || 0), 0);
     const r = b - s;
     const key = getBudgetKey({ budget: b, spent: s });
-    return { budget: b, spent: s, remaining: r, budgetKey: key, theme: BUDGET_THEME[key] };
-  }, [draft.core?.nd, draft.aptidoes]);
+    return {
+      budget: b,
+      baseBudget: base,
+      frutosBonus: bonus,
+      spent: s,
+      remaining: r,
+      budgetKey: key,
+      theme: BUDGET_THEME[key],
+    };
+  }, [draft.core, draft.aptidoes]);
 
   // Handler de mudança com clamp defensivo.
   // Não bloqueia digitar valores acima do orçamento (warning não-bloqueante,
@@ -117,7 +128,14 @@ export default function SectionAptidoes({ draft, actions }) {
         )}
 
         <p className="text-[10px] text-slate-500 mt-2">
-          Regra: 1 ponto de Aptidão a cada 2 NDs · Criatura ND {draft.core?.nd ?? "?"} tem {budget} ponto(s).
+          Regra: 1 ponto de Aptidão a cada 2 NDs · Criatura ND {draft.core?.nd ?? "?"} tem {baseBudget} ponto(s)
+          {frutosBonus > 0 && (
+            <>
+              {" "}+ <span className="text-amber-300">{frutosBonus}</span>
+              <span className="text-amber-400/80"> por Frutos da Experiência</span>
+              {" "}= <strong className="text-slate-300">{budget}</strong>
+            </>
+          )}.
         </p>
       </div>
 

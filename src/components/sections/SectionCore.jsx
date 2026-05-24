@@ -1,4 +1,6 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
+import { createPortal } from "react-dom";
+import { AlertTriangle, X } from "lucide-react";
 import { FieldLabel, Select, NumberInput } from "../builder-controls";
 import { PATAMAR_ND_RANGE, PATAMAR_LABELS, DIFFICULTY_LABELS } from "../fm-tables";
 
@@ -37,9 +39,23 @@ const MALDICAO_SUBTYPES = [
   { value: "enfermo", label: "Enfermo" },
 ];
 
+const RESTRINGIDO_SUBTYPES = [
+  { value: "", label: "Restrito Celeste (Restringido)" },
+  { value: "corpo_por_energia", label: "Restrição de Corpo por Energia" },
+];
+
+// Subtype default ao escolher cada origem (null = sem subtype).
+const DEFAULT_SUBTYPE = {
+  maldicao: "comum",
+};
+
 export default function SectionCore({ draft, derived, actions }) {
   const { core } = draft;
   const ndRange = PATAMAR_ND_RANGE[core.patamar] || { min: 1, max: 20 };
+
+  // Confirmação ao trocar origem perdendo artimanhas (regra do livro).
+  const [pendingOrigin, setPendingOrigin] = useState(null);
+  const artimanhasCount = (draft.artimanhas || []).length;
 
   // Recorta ND no range quando o patamar muda
   const handlePatamarChange = (newPatamar) => {
@@ -48,7 +64,34 @@ export default function SectionCore({ draft, derived, actions }) {
     actions.patchCore({ patamar: newPatamar, nd: clampedND });
   };
 
+  const handleOriginChange = (newType) => {
+    const leavingNaoFeit =
+      core.origin.type === "nao_feiticeiro" &&
+      newType !== "nao_feiticeiro" &&
+      artimanhasCount > 0;
+
+    if (leavingNaoFeit) {
+      setPendingOrigin(newType);
+      return;
+    }
+    actions.patchOrigin({
+      type: newType,
+      subtype: DEFAULT_SUBTYPE[newType] ?? null,
+    });
+  };
+
+  const confirmOriginChange = () => {
+    const newType = pendingOrigin;
+    setPendingOrigin(null);
+    actions.clearArtimanhas();
+    actions.patchOrigin({
+      type: newType,
+      subtype: DEFAULT_SUBTYPE[newType] ?? null,
+    });
+  };
+
   const showMaldicaoSubtype = core.origin.type === "maldicao";
+  const showRestringidoSubtype = core.origin.type === "restringido";
 
   const patamarOptions = useMemo(
     () => Object.keys(PATAMAR_LABELS).map((k) => ({ value: k, label: PATAMAR_LABELS[k] })),
@@ -121,7 +164,7 @@ export default function SectionCore({ draft, derived, actions }) {
             <FieldLabel>Origem</FieldLabel>
             <Select
               value={core.origin.type}
-              onChange={(v) => actions.patchOrigin({ type: v, subtype: v === "maldicao" ? "comum" : null })}
+              onChange={handleOriginChange}
               options={ORIGIN_TYPES}
             />
           </div>
@@ -133,6 +176,17 @@ export default function SectionCore({ draft, derived, actions }) {
                 value={core.origin.subtype}
                 onChange={(v) => actions.patchOrigin({ subtype: v })}
                 options={MALDICAO_SUBTYPES}
+              />
+            </div>
+          )}
+
+          {showRestringidoSubtype && (
+            <div>
+              <FieldLabel>Restrição</FieldLabel>
+              <Select
+                value={core.origin.subtype ?? ""}
+                onChange={(v) => actions.patchOrigin({ subtype: v || null })}
+                options={RESTRINGIDO_SUBTYPES}
               />
             </div>
           )}
@@ -149,7 +203,74 @@ export default function SectionCore({ draft, derived, actions }) {
             Possui Aumento de Energia (+PE igual ao ND)
           </label>
         )}
+
+        {core.origin.type === "corpo_amaldicoado" && (
+          <label className="flex items-center gap-2 mt-3 text-xs text-slate-400 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={!!core.origin.hasEstoqueAdicional}
+              onChange={(e) => actions.patchOrigin({ hasEstoqueAdicional: e.target.checked })}
+              className="rounded bg-slate-950 border-slate-600 text-purple-600 focus:ring-purple-500"
+            />
+            Possui Estoque Adicional (+PE igual ao ND)
+          </label>
+        )}
       </div>
+
+      {/* Modal de confirmação — trocar origem apaga artimanhas */}
+      {pendingOrigin && createPortal(
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4"
+          onClick={() => setPendingOrigin(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="artim-confirm-title"
+        >
+          <div
+            className="bg-slate-900 border border-slate-800 rounded-lg max-w-md w-full shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start gap-3 p-5 pb-4 border-b border-slate-800">
+              <div className="w-10 h-10 rounded-full border border-amber-800/60 bg-amber-950/60 flex items-center justify-center flex-shrink-0">
+                <AlertTriangle className="w-5 h-5 text-amber-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 id="artim-confirm-title" className="text-base font-bold text-white">
+                  Trocar de origem?
+                </h3>
+                <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">
+                  Esta ficha tem {artimanhasCount} artimanha(s). Ao mudar de origem, todas as artimanhas serão removidas (regra do livro: ao deixar de ser Não-Feiticeiro, perde as artimanhas).
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPendingOrigin(null)}
+                className="text-slate-500 hover:text-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-slate-600 flex-shrink-0"
+                aria-label="Fechar"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 p-4">
+              <button
+                type="button"
+                onClick={() => setPendingOrigin(null)}
+                className="px-4 py-2 rounded bg-slate-800 hover:bg-slate-700 text-sm font-semibold text-slate-200 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-500"
+              >
+                Manter origem
+              </button>
+              <button
+                type="button"
+                onClick={confirmOriginChange}
+                className="px-4 py-2 rounded bg-amber-700 hover:bg-amber-600 text-sm font-semibold text-white transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500"
+              >
+                Trocar e apagar artimanhas
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }

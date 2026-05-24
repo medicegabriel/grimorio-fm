@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { Plus, Trash2, Sparkles, Bookmark, BookmarkCheck, BookOpen, X } from "lucide-react";
+import { Plus, Trash2, Sparkles, Bookmark, BookmarkCheck, BookOpen, X, Zap, Lock } from "lucide-react";
 import { FieldLabel, TextInput, TextArea, Select, SmallButton, Pill } from "../builder-controls";
 import useFeatureTemplates from "../useFeatureTemplates";
+import { FRUTOS_OPTIONS } from "../fm-origens";
 
 const CATEGORIES = [
   { value: "geral",            label: "Geral" },
@@ -56,6 +57,8 @@ export default function SectionFeatures({ draft, actions }) {
           onUpdate={(patch) => actions.updateFeature(f.id, patch)}
           onRemove={() => actions.removeFeature(f.id)}
           onSaveTemplate={saveTemplate}
+          origin={draft.core?.origin}
+          onPatchOrigin={actions.patchOrigin}
         />
       ))}
 
@@ -75,7 +78,7 @@ export default function SectionFeatures({ draft, actions }) {
   );
 }
 
-function FeatureItem({ feature, onUpdate, onRemove, onSaveTemplate }) {
+function FeatureItem({ feature, onUpdate, onRemove, onSaveTemplate, origin, onPatchOrigin }) {
   const [expanded, setExpanded] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -85,55 +88,151 @@ function FeatureItem({ feature, onUpdate, onRemove, onSaveTemplate }) {
     setTimeout(() => setSaved(false), 1500);
   };
 
+  const isFromOrigin = feature.source === "origin";
+  const isAutomated = !!feature.automated;
+  const isLocked = !!feature.locked;
+
+  // Visual ligeiramente destacado pra features de origem
+  const containerClass = isFromOrigin
+    ? "bg-purple-950/20 border-purple-900/50 rounded"
+    : "bg-slate-950/40 border-slate-800 rounded";
+
   return (
-    <div className="bg-slate-950/40 border border-slate-800 rounded">
+    <div className={`${containerClass} border`}>
       <div className="flex items-center gap-2 p-2">
-        <Sparkles className="w-3.5 h-3.5 text-fuchsia-400 flex-shrink-0" />
+        <Sparkles className="w-3.5 h-3.5 flex-shrink-0 text-fuchsia-400" />
         <button
           onClick={() => setExpanded(!expanded)}
           className="flex-1 text-left text-sm font-semibold text-white hover:text-purple-300 truncate min-w-0"
         >
           {feature.name || "Sem nome"}
         </button>
+        {isFromOrigin && (
+          <span
+            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px] uppercase tracking-wide bg-purple-950/60 text-purple-300 border-purple-800"
+            title="Característica derivada da Origem — para alterá-la, mude a origem na seção Patamar & Nível."
+          >
+            <Lock className="w-2.5 h-2.5" /> Origem
+          </span>
+        )}
         <Pill color={CATEGORY_COLORS[feature.category] || "slate"}>
           {CATEGORY_LABELS[feature.category] || feature.category}
         </Pill>
-        <SmallButton
-          onClick={handleSaveTemplate}
-          title={saved ? "Modelo salvo!" : "Salvar como modelo"}
-        >
-          {saved
-            ? <BookmarkCheck className="w-3 h-3 text-emerald-400" />
-            : <Bookmark className="w-3 h-3" />
-          }
-        </SmallButton>
-        <SmallButton onClick={onRemove} variant="danger">
-          <Trash2 className="w-3 h-3" />
-        </SmallButton>
+        {isAutomated && (
+          <span
+            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px] uppercase tracking-wide bg-amber-950/60 text-amber-300 border-amber-800"
+            title="Habilidade programada: aplicada automaticamente nos cálculos da ficha."
+          >
+            <Zap className="w-2.5 h-2.5" /> Programada
+          </span>
+        )}
+        {!isFromOrigin && (
+          <SmallButton
+            onClick={handleSaveTemplate}
+            title={saved ? "Modelo salvo!" : "Salvar como modelo"}
+          >
+            {saved
+              ? <BookmarkCheck className="w-3 h-3 text-emerald-400" />
+              : <Bookmark className="w-3 h-3" />
+            }
+          </SmallButton>
+        )}
+        {!isFromOrigin && (
+          <SmallButton onClick={onRemove} variant="danger">
+            <Trash2 className="w-3 h-3" />
+          </SmallButton>
+        )}
       </div>
       {expanded && (
         <div className="border-t border-slate-800 p-3 space-y-2">
-          <TextInput value={feature.name} onChange={(v) => onUpdate({ name: v })} placeholder="Nome" />
-          <TextArea
-            value={feature.description}
-            onChange={(v) => onUpdate({ description: v })}
-            rows={2}
-            placeholder="Descrição..."
-          />
-          <div className="grid grid-cols-2 gap-2">
-            <Select
-              value={feature.category}
-              onChange={(v) => onUpdate({ category: v })}
-              options={CATEGORIES}
-            />
-            <Select
-              value={feature.trigger}
-              onChange={(v) => onUpdate({ trigger: v })}
-              options={TRIGGERS}
-            />
-          </div>
+          {isLocked ? (
+            <>
+              <p className="text-xs text-slate-300 leading-relaxed whitespace-pre-line">
+                {feature.description}
+              </p>
+              {feature.originKey === "frutos_experiencia" && onPatchOrigin && (
+                <FrutosSelector
+                  value={origin?.frutosExperiencia ?? null}
+                  onChange={(v) => onPatchOrigin({ frutosExperiencia: v })}
+                />
+              )}
+            </>
+          ) : (
+            <>
+              <TextInput value={feature.name} onChange={(v) => onUpdate({ name: v })} placeholder="Nome" />
+              <TextArea
+                value={feature.description}
+                onChange={(v) => onUpdate({ description: v })}
+                rows={2}
+                placeholder="Descrição..."
+              />
+              <div className="grid grid-cols-2 gap-2">
+                <Select
+                  value={feature.category}
+                  onChange={(v) => onUpdate({ category: v })}
+                  options={CATEGORIES}
+                />
+                <Select
+                  value={feature.trigger}
+                  onChange={(v) => onUpdate({ trigger: v })}
+                  options={TRIGGERS}
+                />
+              </div>
+            </>
+          )}
         </div>
       )}
+    </div>
+  );
+}
+
+// Seletor de bônus de Frutos da Experiência — radio group inline.
+function FrutosSelector({ value, onChange }) {
+  return (
+    <div className="mt-2 pt-2 border-t border-purple-900/40">
+      <p className="text-[10px] uppercase tracking-widest font-bold text-purple-300 mb-2">
+        Escolha o bônus
+      </p>
+      <div className="space-y-1.5">
+        {FRUTOS_OPTIONS.map((opt) => {
+          const selected = value === opt.value;
+          return (
+            <label
+              key={opt.value}
+              className={`flex items-start gap-2 px-2 py-1.5 rounded border cursor-pointer transition-colors ${
+                selected
+                  ? "bg-amber-950/40 border-amber-700"
+                  : "bg-slate-950/50 border-slate-800 hover:border-slate-700"
+              }`}
+            >
+              <input
+                type="radio"
+                name="frutos-experiencia"
+                checked={selected}
+                onChange={() => onChange(opt.value)}
+                className="mt-0.5 text-amber-500 bg-slate-950 border-slate-600 focus:ring-amber-500"
+              />
+              <span className="flex-1 min-w-0">
+                <span className={`block text-xs font-semibold ${selected ? "text-amber-200" : "text-slate-200"}`}>
+                  {opt.label}
+                </span>
+                <span className="block text-[11px] text-slate-400 leading-snug">
+                  {opt.description}
+                </span>
+              </span>
+            </label>
+          );
+        })}
+        {value && (
+          <button
+            type="button"
+            onClick={() => onChange(null)}
+            className="text-[10px] text-slate-500 hover:text-slate-300 underline decoration-dotted"
+          >
+            Limpar escolha
+          </button>
+        )}
+      </div>
     </div>
   );
 }

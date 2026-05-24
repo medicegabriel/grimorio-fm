@@ -414,12 +414,12 @@ const ConfirmDeleteModal = ({ target, onConfirm, onCancel }) => {
 // EMPTY STATE
 // ============================================================
 const EmptyState = ({ onCreate }) => (
-  <div className="text-center py-20 border border-dashed border-slate-800 rounded-lg bg-slate-900/30">
+  <div className="flex flex-col items-center text-center py-12 sm:py-20 px-4 sm:px-6 border border-dashed border-slate-800 rounded-lg bg-slate-900/30">
     <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-purple-950/40 border border-purple-900/60 mb-4">
       <Swords className="w-8 h-8 text-purple-400" />
     </div>
-    <h3 className="text-lg font-bold text-slate-200 mb-2">Nenhum encontro ainda</h3>
-    <p className="text-sm text-slate-500 mb-6 max-w-sm mx-auto">
+    <h3 className="text-lg font-bold text-slate-200 mb-10">Nenhum encontro ainda</h3>
+    <p className="text-sm text-slate-500 mb-10 max-w-md">
       Crie um encontro para gerenciar iniciativa e combater múltiplas criaturas simultaneamente.
     </p>
     <button type="button" onClick={onCreate}

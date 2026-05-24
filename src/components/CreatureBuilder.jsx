@@ -17,9 +17,11 @@ import SectionFeatures from "./sections/SectionFeatures";
 import SectionTreinamentos from "./sections/SectionTreinamentos";
 import SectionAptidoesEspeciais from "./sections/SectionAptidoesEspeciais";
 import SectionDotes from "./sections/SectionDotes";
+import SectionArtimanhas from "./sections/SectionArtimanhas";
 import SectionDefenses from "./sections/SectionDefenses";
 import SectionSkills from "./sections/SectionSkills";
 import LivePreview from "./sections/LivePreview";
+import { isNaoFeiticeiro } from "./fm-origens";
 
 /**
  * ============================================================
@@ -35,8 +37,9 @@ import LivePreview from "./sections/LivePreview";
  */
 
 // Seções na ordem natural de preenchimento (id + rótulo).
+// `visibleWhen` (opcional) controla se a seção aparece no builder/índice.
 // Os elementos em si são montados/memoizados dentro do CreatureBuilder.
-const SECTIONS = [
+const ALL_SECTIONS = [
   { id: "identity",     label: "Identidade" },
   { id: "core",         label: "Patamar & Nível" },
   { id: "attributes",   label: "Atributos" },
@@ -49,6 +52,7 @@ const SECTIONS = [
   { id: "treinamentos", label: "Treinamentos" },
   { id: "aptidoesEsp",  label: "Aptidões Amaldiçoadas" },
   { id: "dotes",        label: "Dotes Gerais" },
+  { id: "artimanhas",   label: "Artimanhas", visibleWhen: (draft) => isNaoFeiticeiro(draft.core?.origin) },
 ];
 
 // Mapeia o campo de um warning (validateDraft) para o id da seção.
@@ -174,9 +178,16 @@ export default function CreatureBuilder({ existingCreature, onSave, onCancel }) 
     return () => obs.disconnect();
   }, []);
 
+  // Seções visíveis dado o estado atual do draft (esconde, ex., Artimanhas
+  // quando origem não é Não-Feiticeiro).
+  const SECTIONS = useMemo(
+    () => ALL_SECTIONS.filter((s) => !s.visibleWhen || s.visibleWhen(draft)),
+    [draft]
+  );
+
   // Estado de UI: quais seções estão expandidas
   const [openSections, setOpenSections] = useState(() =>
-    new Set(SECTIONS.map((s) => s.id)) // todas abertas por padrão
+    new Set(ALL_SECTIONS.map((s) => s.id)) // todas abertas por padrão
   );
   const [mobilePreviewOpen, setMobilePreviewOpen] = useState(false);
 
@@ -277,7 +288,7 @@ export default function CreatureBuilder({ existingCreature, onSave, onCancel }) 
   );
   const coreEl = useMemo(
     () => <SectionCore draft={draft} derived={derived} actions={actions} />,
-    [draft.core, derived, actions]
+    [draft.core, draft.artimanhas, derived, actions]
   );
   const attributesEl = useMemo(
     () => <SectionAttributes draft={draft} derived={derived} actions={actions} />,
@@ -305,7 +316,7 @@ export default function CreatureBuilder({ existingCreature, onSave, onCancel }) 
   );
   const featuresEl = useMemo(
     () => <SectionFeatures draft={draft} actions={actions} />,
-    [draft.features, actions]
+    [draft.features, draft.core, actions]
   );
   const treinamentosEl = useMemo(
     () => <SectionTreinamentos draft={draft} actions={actions} />,
@@ -318,6 +329,10 @@ export default function CreatureBuilder({ existingCreature, onSave, onCancel }) 
   const dotesEl = useMemo(
     () => <SectionDotes draft={draft} actions={actions} />,
     [draft.dotes, actions]
+  );
+  const artimanhasEl = useMemo(
+    () => <SectionArtimanhas draft={draft} actions={actions} />,
+    [draft.core, draft.artimanhas, actions]
   );
   /* eslint-enable react-hooks/exhaustive-deps */
 
@@ -334,6 +349,7 @@ export default function CreatureBuilder({ existingCreature, onSave, onCancel }) 
     treinamentos: treinamentosEl,
     aptidoesEsp:  aptidoesEspEl,
     dotes:        dotesEl,
+    artimanhas:   artimanhasEl,
   };
 
   return (

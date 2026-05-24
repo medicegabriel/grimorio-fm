@@ -8,6 +8,7 @@ import {
   TAMANHO_INFO, getDeslocamentoMultiplier,
   getAttributePoints, ATTRIBUTE_LIMIT,
 } from "./fm-tables";
+import { hasPeAumentoEnergia, hasPeDouble, hasPeEstoqueAdicional } from "./fm-origens";
 
 /**
  * ============================================================
@@ -57,9 +58,19 @@ export function deriveStats(raw) {
   const cdBaseCalc = calculateCD(nd, cdModAttr, difficulty, patamar);
   const acertoCalc = calculateAcerto(patamar, nd, mods[attackAttr] ?? mods.forca, difficulty);
 
+  // Bônus de PE por origem:
+  //  - Maldição com Aumento de Energia (exceto Lacaio): +ND
+  //  - Corpo Amaldiçoado com Estoque Adicional: +ND
+  //  - Restringido (Corpo por Energia): dobra o total
+  const peBase = calculatePE(patamar, nd);
+  const peNdBonus = (hasPeAumentoEnergia(core) || hasPeEstoqueAdicional(core)) ? nd : 0;
+  const peSubtotal = peBase + peNdBonus;
+  const peDoubleMult = hasPeDouble(core) ? 2 : 1;
+  const peMaxFinal = peSubtotal * peDoubleMult;
+
   const calculated = {
     hpMax: calculateHP(patamar, nd, attributes.constituicao),
-    peMax: calculatePE(patamar, nd),
+    peMax: peMaxFinal,
     defesa: calculateDefesa(patamar, nd, mods.destreza, difficulty),
     atencao: calcAtencao(patamar, nd, attributes.sabedoria),
     iniciativa: calcIniciativa(patamar, nd, mods.destreza),

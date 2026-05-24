@@ -1,5 +1,10 @@
 import { useReducer, useMemo, useCallback } from "react";
 import { deriveStats, validateDraft } from "./fm-derive";
+import {
+  getOriginRawFeatures,
+  buildOriginFeature,
+  getOriginDefenseItems,
+} from "./fm-origens";
 
 /**
  * ============================================================
@@ -28,7 +33,7 @@ export const blankDraft = () => ({
     nd: 5,
     patamar: "comum",
     difficulty: "intermediario",
-    origin: { type: "maldicao", subtype: "comum", hasAumentoEnergia: false },
+    origin: { type: "maldicao", subtype: "comum", hasAumentoEnergia: false, hasEstoqueAdicional: false, frutosExperiencia: null },
     size: "medio",
   },
   attributes: {
@@ -49,12 +54,14 @@ export const blankDraft = () => ({
     imunidades: [],
     vulnerabilidades: [],
     condicoesImunes: [],
+    originCondicoesImunes: [], // strings de condições inseridas pela origem (paralelo)
   },
   actions: { list: [] },
   features: [],
   treinamentos: [],
   aptidoesEspeciais: [],
   dotes: [],
+  artimanhas: [],
   narratorNotes: "",
 });
 
@@ -87,12 +94,19 @@ const normalizeDraft = (payload = {}) => {
     },
     attackAttr:  payload.attackAttr || "forca",
     cdAttr:      payload.cdAttr || "inteligencia",
-    core: {
-      ...base.core,
-      ...(payload.core || {}),
-      // origin é aninhado: uma ficha legada pode trazê-lo parcial
-      origin: { ...base.core.origin, ...(payload.core?.origin || {}) },
-    },
+    core: (() => {
+      const merged = {
+        ...base.core,
+        ...(payload.core || {}),
+        origin: { ...base.core.origin, ...(payload.core?.origin || {}) },
+      };
+      // Invariante do livro: Lacaio nunca pode ter Aumento de Energia.
+      // Normaliza fichas legadas que possam ter o estado inconsistente.
+      if (merged.patamar === "lacaio" && merged.origin?.hasAumentoEnergia) {
+        merged.origin = { ...merged.origin, hasAumentoEnergia: false };
+      }
+      return merged;
+    })(),
     attributes:  { ...base.attributes, ...(payload.attributes || {}) },
     aptidoes:    { ...base.aptidoes, ...(payload.aptidoes || {}) },
     overrides: {
@@ -104,6 +118,7 @@ const normalizeDraft = (payload = {}) => {
       imunidades:       payload.defenses?.imunidades || [],
       vulnerabilidades: payload.defenses?.vulnerabilidades || [],
       condicoesImunes:  payload.defenses?.condicoesImunes || [],
+      originCondicoesImunes: payload.defenses?.originCondicoesImunes || [],
     },
     actions:           { list: payload.actions?.list || [] },
     features:          payload.features || [],
@@ -111,12 +126,54 @@ const normalizeDraft = (payload = {}) => {
     treinamentos:      payload.treinamentos || [],
     aptidoesEspeciais: payload.aptidoesEspeciais || [],
     dotes:             payload.dotes || [],
+    artimanhas:        payload.artimanhas || [],
+  };
+};
+
+// ---------- Sincronização com a origem ----------
+// Remove tudo o que estava marcado como source:'origin' (features e defesas
+// tipadas) + as condições registradas em originCondicoesImunes, e re-injeta
+// a partir do catálogo da origem atual. Idempotente: chamar várias vezes
+// produz o mesmo estado.
+const syncOriginDerived = (state) => {
+  const origin = state.core?.origin;
+
+  // 1) Features: remove as de origem antigas e adiciona as novas.
+  // Algumas features (Regeneração) têm descrição computada com patamar/BT/Con,
+  // por isso o sync também roda quando esses campos mudam. core é passado pra
+  // filtrar features que dependem de patamar (ex.: Aumento de Energia em Lacaio).
+  const ctx = { core: state.core, attributes: state.attributes };
+  const manualFeatures = (state.features || []).filter((f) => f.source !== "origin");
+  const newOriginFeatures = getOriginRawFeatures(origin, state.core).map((raw) => buildOriginFeature(raw, ctx));
+  const features = [...newOriginFeatures, ...manualFeatures];
+
+  // 2) Defesas tipadas + condições
+  const items = getOriginDefenseItems(origin, state.core);
+
+  const stripOrigin = (arr) => (arr || []).filter((it) => it?.source !== "origin");
+  const prevOriginConds = new Set(state.defenses?.originCondicoesImunes || []);
+  const manualConds = (state.defenses?.condicoesImunes || []).filter((c) => !prevOriginConds.has(c));
+  const newOriginConds = items.condicoesImunes;
+  // Une as novas de origem com as manuais, sem duplicar:
+  const mergedConds = [...newOriginConds, ...manualConds.filter((c) => !newOriginConds.includes(c))];
+
+  return {
+    ...state,
+    features,
+    defenses: {
+      ...state.defenses,
+      resistencias:     [...items.resistencias,     ...stripOrigin(state.defenses?.resistencias)],
+      imunidades:       [...items.imunidades,       ...stripOrigin(state.defenses?.imunidades)],
+      vulnerabilidades: [...items.vulnerabilidades, ...stripOrigin(state.defenses?.vulnerabilidades)],
+      condicoesImunes:  mergedConds,
+      originCondicoesImunes: newOriginConds,
+    },
   };
 };
 
 // ---------- Reducer: dicionário de handlers ----------
 const actionHandlers = {
-  HYDRATE: (_, payload) => normalizeDraft(payload),
+  HYDRATE: (_, payload) => syncOriginDerived(normalizeDraft(payload)),
 
   SET_NAME:     (s, payload) => ({ ...s, name: payload }),
   SET_PORTRAIT: (s, payload) => ({ ...s, portraitUrl: payload }),
@@ -129,16 +186,30 @@ const actionHandlers = {
   }),
   SET_NOTES:    (s, payload) => ({ ...s, narratorNotes: payload }),
 
-  PATCH_CORE:   (s, payload) => ({ ...s, core: { ...s.core, ...payload } }),
-  PATCH_ORIGIN: (s, payload) => ({
+  PATCH_CORE:   (s, payload) => {
+    let nextCore = { ...s.core, ...payload };
+    // Lacaio não pode ter Aumento de Energia — força a flag pra false e re-sincroniza.
+    if (payload?.patamar === "lacaio" && nextCore.origin?.hasAumentoEnergia) {
+      nextCore = { ...nextCore, origin: { ...nextCore.origin, hasAumentoEnergia: false } };
+    }
+    const next = { ...s, core: nextCore };
+    // Patamar muda multiplicador de Regeneração; ND muda BT (que também afeta).
+    const needsSync = "patamar" in (payload || {}) || "nd" in (payload || {});
+    return needsSync ? syncOriginDerived(next) : next;
+  },
+  PATCH_ORIGIN: (s, payload) => syncOriginDerived({
     ...s,
     core: { ...s.core, origin: { ...s.core.origin, ...payload } },
   }),
 
-  SET_ATTRIBUTE: (s, { attr, value }) => ({
-    ...s,
-    attributes: { ...s.attributes, [attr]: Math.max(8, Math.min(99, value)) },
-  }),
+  SET_ATTRIBUTE: (s, { attr, value }) => {
+    const next = {
+      ...s,
+      attributes: { ...s.attributes, [attr]: Math.max(8, Math.min(99, value)) },
+    };
+    // Constituição entra na fórmula de cura de Regeneração — ressincroniza.
+    return attr === "constituicao" ? syncOriginDerived(next) : next;
+  },
 
   SET_ATTACK_ATTR: (s, payload) => ({ ...s, attackAttr: payload }),
   SET_CD_ATTR:     (s, payload) => ({ ...s, cdAttr: payload }),
@@ -261,29 +332,65 @@ const actionHandlers = {
     treinamentos: (s.treinamentos || []).filter((t) => t.id !== id),
   }),
 
+  // ---------- Artimanhas (Não-Feiticeiro) ----------
+  ADD_ARTIMANHA: (s, payload) => ({
+    ...s,
+    artimanhas: [...(s.artimanhas || []), { ...payload, id: genId("artim") }],
+  }),
+  REMOVE_ARTIMANHA: (s, id) => ({
+    ...s,
+    artimanhas: (s.artimanhas || []).filter((a) => a.id !== id),
+  }),
+  CLEAR_ARTIMANHAS: (s) => ({ ...s, artimanhas: [] }),
+
   // ---------- Features ----------
   ADD_FEATURE: (s, payload) => ({ ...s, features: [...s.features, payload] }),
   UPDATE_FEATURE: (s, { id, patch }) => ({
     ...s,
-    features: s.features.map((f) => (f.id === id ? { ...f, ...patch } : f)),
+    features: s.features.map((f) => {
+      if (f.id !== id) return f;
+      if (f.locked) return f; // features de origem são imutáveis
+      return { ...f, ...patch };
+    }),
   }),
   REMOVE_FEATURE: (s, id) => ({
     ...s,
-    features: s.features.filter((f) => f.id !== id),
+    // Não permite remover feature de origem por id — só via troca de origem.
+    features: s.features.filter((f) => f.id !== id || f.source === "origin"),
   }),
 
   // ---------- Defesas ----------
-  ADD_DEFENSE: (s, { category, item }) => ({
-    ...s,
-    defenses: { ...s.defenses, [category]: [...s.defenses[category], item] },
-  }),
-  REMOVE_DEFENSE: (s, { category, index }) => ({
-    ...s,
-    defenses: {
-      ...s.defenses,
-      [category]: s.defenses[category].filter((_, i) => i !== index),
-    },
-  }),
+  ADD_DEFENSE: (s, { category, item }) => {
+    if (category === "condicoesImunes") {
+      // Evita duplicar com condição já vinda da origem
+      if (s.defenses.condicoesImunes.includes(item)) return s;
+      return {
+        ...s,
+        defenses: { ...s.defenses, condicoesImunes: [...s.defenses.condicoesImunes, item] },
+      };
+    }
+    return {
+      ...s,
+      defenses: { ...s.defenses, [category]: [...s.defenses[category], item] },
+    };
+  },
+  REMOVE_DEFENSE: (s, { category, index }) => {
+    const list = s.defenses[category] || [];
+    const target = list[index];
+    if (category === "condicoesImunes") {
+      // Bloqueia remoção de condição registrada como de origem
+      if ((s.defenses.originCondicoesImunes || []).includes(target)) return s;
+    } else if (target?.source === "origin") {
+      return s; // bloqueia remoção de defesa tipada de origem
+    }
+    return {
+      ...s,
+      defenses: {
+        ...s.defenses,
+        [category]: list.filter((_, i) => i !== index),
+      },
+    };
+  },
 };
 
 // ---------- Utils ----------
@@ -315,7 +422,7 @@ export default function useCreatureBuilder(initialDraft = null) {
   const [draft, dispatch] = useReducer(
     reducer,
     initialDraft || blankDraft(),
-    (init) => normalizeDraft(init)
+    (init) => syncOriginDerived(normalizeDraft(init))
   );
 
   const derived = useMemo(() => deriveStats(draft), [
@@ -373,6 +480,11 @@ export default function useCreatureBuilder(initialDraft = null) {
     // Treinamentos
     addTreinamento:    (t) => dispatch({ type: "ADD_TREINAMENTO", payload: t }),
     removeTreinamento: (id) => dispatch({ type: "REMOVE_TREINAMENTO", payload: id }),
+
+    // Artimanhas
+    addArtimanha:    (a) => dispatch({ type: "ADD_ARTIMANHA", payload: a }),
+    removeArtimanha: (id) => dispatch({ type: "REMOVE_ARTIMANHA", payload: id }),
+    clearArtimanhas: () => dispatch({ type: "CLEAR_ARTIMANHAS" }),
 
     // Features
     addFeature:    (f) => dispatch({ type: "ADD_FEATURE", payload: f }),

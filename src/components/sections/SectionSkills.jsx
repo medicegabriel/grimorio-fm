@@ -3,6 +3,7 @@ import { Plus, Trash2, Star, BookOpen } from "lucide-react";
 import {
   FieldLabel, TextInput, Select, SmallButton, Pill,
 } from "../builder-controls";
+import { hasSkillsBonusBt, isNaoFeiticeiro } from "../fm-origens";
 
 /**
  * SectionSkills — Gerenciador de perícias customizadas.
@@ -77,14 +78,32 @@ export default function SectionSkills({ draft, derived, actions }) {
 
   return (
     <div className="space-y-3">
-      {/* Info */}
-      <p className="text-xs text-slate-500">
-        Limite recomendado: <strong className="text-slate-300">{derived.mods ? Math.max(
+      {/* Info — origens Jujutsu somam +BT por Treinamento Evidente;
+          Não-Feiticeiro pela Necessidade de Agir (mecânica idêntica). */}
+      {(() => {
+        const baseLimit = derived.mods ? Math.max(
           derived.mods.inteligencia,
           derived.mods.sabedoria,
-          derived.mods.presenca
-        ) : 0}</strong> perícias dominadas (maior modificador mental).
-      </p>
+          derived.mods.presenca,
+        ) : 0;
+        const trainingBonus = hasSkillsBonusBt(draft.core?.origin) ? (derived.bt ?? 0) : 0;
+        const bonusName = isNaoFeiticeiro(draft.core?.origin)
+          ? "Necessidade de Agir"
+          : "Treinamento Evidente";
+        const total = baseLimit + trainingBonus;
+        return (
+          <p className="text-xs text-slate-500">
+            Limite recomendado: <strong className="text-slate-300">{total}</strong> perícias dominadas (maior modificador mental
+            {trainingBonus > 0 && (
+              <>
+                {" "}+ <span className="text-amber-300">BT {derived.bt}</span>
+                <span className="text-amber-400/80"> por {bonusName}</span>
+              </>
+            )}
+            ).
+          </p>
+        );
+      })()}
 
       {/* Lista de perícias */}
       <div className="space-y-1.5">
