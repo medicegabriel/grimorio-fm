@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Plus, Trash2, Sparkles, ChevronDown } from "lucide-react";
+import { Plus, Trash2, Sparkles, ChevronDown, Zap } from "lucide-react";
 import { TextInput, TextArea, SmallButton } from "../builder-controls";
 
 export const APTIDOES_CATEGORIAS = [
@@ -233,37 +233,50 @@ export default function SectionAptidoesEspeciais({ draft, actions }) {
         </div>
       ) : (
         <div className="space-y-2">
-          {aptidoes.map((a) => (
-            <div
-              key={a.id}
-              className="flex items-start gap-2.5 bg-slate-950/40 border border-slate-800 rounded p-3"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-purple-400 flex-shrink-0 mt-0.5" />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                  <span className="text-sm font-semibold text-white">{a.nome}</span>
-                  <span className="text-[9px] uppercase tracking-wide text-slate-500 border border-slate-700 rounded px-1 py-0.5">
-                    {a.categoria}
-                  </span>
-                  {a.tipo === "custom" && (
-                    <span className="text-[9px] uppercase tracking-wide text-amber-400 border border-amber-800/60 rounded px-1 py-0.5">
-                      Custom
+          {aptidoes.map((a) => {
+            const fromTreino = a.source === "treino";
+            return (
+              <div
+                key={a.id}
+                className="flex items-start gap-2.5 bg-slate-950/40 border border-slate-800 rounded p-3"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-purple-400 flex-shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                    <span className="text-sm font-semibold text-white">{a.nome}</span>
+                    <span className="text-[9px] uppercase tracking-wide text-slate-500 border border-slate-700 rounded px-1 py-0.5">
+                      {a.categoria}
                     </span>
+                    {fromTreino && (
+                      <span
+                        className="inline-flex items-center gap-0.5 text-[9px] uppercase tracking-wide text-amber-300 border border-amber-700/60 rounded px-1 py-0.5"
+                        title="Concedida automaticamente por um treinamento"
+                      >
+                        <Zap className="w-2.5 h-2.5" /> Programada
+                      </span>
+                    )}
+                    {a.tipo === "custom" && (
+                      <span className="text-[9px] uppercase tracking-wide text-amber-400 border border-amber-800/60 rounded px-1 py-0.5">
+                        Custom
+                      </span>
+                    )}
+                  </div>
+                  {a.descricao && (
+                    <p className="text-xs text-slate-400 leading-relaxed">{a.descricao}</p>
                   )}
                 </div>
-                {a.descricao && (
-                  <p className="text-xs text-slate-400 leading-relaxed">{a.descricao}</p>
+                {!fromTreino && (
+                  <SmallButton
+                    onClick={() => actions.removeAptidaoEspecial(a.id)}
+                    variant="danger"
+                    title="Remover aptidão"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </SmallButton>
                 )}
               </div>
-              <SmallButton
-                onClick={() => actions.removeAptidaoEspecial(a.id)}
-                variant="danger"
-                title="Remover aptidão"
-              >
-                <Trash2 className="w-3 h-3" />
-              </SmallButton>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

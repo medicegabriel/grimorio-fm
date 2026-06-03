@@ -8,11 +8,12 @@ import {
   Heart, Zap, Shield, Skull, Plus, Minus, ChevronDown, ChevronUp,
   Copy, AlertTriangle, Eye, EyeOff, X, Swords, Dices, RotateCcw,
   ShieldAlert, Activity, Target, Sparkles, Clock, GraduationCap, Star,
-  Square, CheckSquare, Crosshair, Sword, Hourglass, Settings
+  Square, CheckSquare, Crosshair, Sword, Hourglass, Settings, Flame
 } from 'lucide-react';
 import { createInitialCombatState, applyNewRoundEffects, LOG_TYPES, createLogEntry, computeAlmaStatus, ALMA_ESTADOS } from '../fm-encounter';
 import { humanizeAction, generateActionDescription, ACTION_TYPE_LABELS } from './fm-action-calc';
 import { getModifier, calculateCD, calculateAcerto, CONDITIONS } from './fm-tables';
+import { computeConfrontoDominio } from './fm-treinamentos';
 
 const ATTR_DEFS = [
   { key: 'forca',        label: 'FOR', accent: 'text-red-400' },
@@ -224,6 +225,22 @@ const StatBlock = ({ icon: Icon, label, value, sublabel, accent = 'text-slate-30
     {sublabel && <span className="block text-xs text-slate-400 mt-1">{sublabel}</span>}
   </div>
 );
+
+// Sublabel de margem de crítico para um TR/ataque. Retorna null quando
+// o valor é o padrão (20) — assim só aparece quando algum poder/treino
+// reduziu a margem (ex.: Treino de Agilidade → Reflexos 18+).
+const CRIT_DEFAULT_PANEL = 20;
+function renderCritSublabel(margin) {
+  if (margin == null || margin === CRIT_DEFAULT_PANEL) return null;
+  return (
+    <span
+      className="inline-flex items-center gap-0.5 text-[9px] font-mono text-amber-300 leading-none"
+      title={`Crítica automática em ${margin} ou mais (padrão: 20)`}
+    >
+      <Flame className="w-2.5 h-2.5 text-amber-400" /> crit {margin}+
+    </span>
+  );
+}
 
 const Counter = ({ label, used, max, onChange, accent = 'purple' }) => {
   const colors = {
@@ -782,6 +799,14 @@ export default function CombatantPanel({
   const { snapshot, combatState, flags } = combatant;
   const stats = snapshot.stats ?? {};
   const saves = snapshot.saves ?? {};
+  const critMargins = snapshot.critMargins ?? {};
+  // Fallback pra fichas legadas que ainda não tinham confrontoDominio
+  // persistido no snapshot: recalcula a partir do estado bruto.
+  const confrontoDominio = snapshot.confrontoDominio ?? computeConfrontoDominio({
+    nd: snapshot.core?.nd,
+    dom: snapshot.aptidoes?.dom,
+    treinamentos: snapshot.treinamentos,
+  });
   const core = snapshot.core ?? {};
   const defenses = snapshot.defenses ?? {};
   const skills = snapshot.skills ?? [];
@@ -1068,16 +1093,28 @@ export default function CombatantPanel({
         <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2 flex items-center gap-2">
           <Activity className="w-3.5 h-3.5" /> Estatísticas de Combate
         </h3>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 items-stretch">
+        {/* auto-rows-fr garante altura uniforme entre todas as linhas —
+            sem isso, a 3ª linha (incompleta) ficava mais baixa que as
+            demais quando algum card tinha sublabel. */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 auto-rows-fr">
           <StatBlock icon={Shield}     label="Defesa"       value={stats.defesa ?? 0}           accent="text-sky-400" />
           <StatBlock icon={Eye}        label="Atenção"      value={stats.atencao ?? 0}          accent="text-amber-400" />
           <StatBlock icon={Sword}       label="Acerto"      value={`+${acertoValue}`}            accent="text-red-400" />
           <StatBlock icon={Crosshair}   label="CD"          value={cdValue}                     accent="text-orange-400" />
           <StatBlock icon={Target}     label="Iniciativa"   value={`+${stats.iniciativa ?? 0}`} accent="text-emerald-400" />
+          <StatBlock icon={Activity}   label="Deslocamento" value={`${stats.deslocamento ?? 0}m`} accent="text-slate-300" />
           <StatBlock icon={Shield}     label="RD Geral"     value={stats.rdGeral ?? 0}
             sublabel={`Irred. ${stats.rdIrredutivel ?? 0}`} accent="text-slate-400" />
           <StatBlock icon={Swords}     label="Ignorar RD"   value={stats.ignorarRd ?? 0}        accent="text-red-400" />
           <StatBlock icon={Heart}      label="Vida Temp/Atq" value={stats.vidaTempPorAtaque ?? 0} accent="text-rose-300" />
+          {confrontoDominio && (
+            <StatBlock
+              icon={Dices}
+              label="Conf. Domínio"
+              value={confrontoDominio.formula}
+              accent="text-rose-400"
+            />
+          )}
         </div>
       </section>
 
@@ -1086,13 +1123,13 @@ export default function CombatantPanel({
         <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">
           Testes de Resistência
         </h3>
-        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-2 items-stretch">
-          <StatBlock icon={Activity} label="Astúcia"   value={`+${saves.astucia ?? 0}`} />
-          <StatBlock icon={Activity} label="Fortitude" value={`+${saves.fortitude ?? 0}`} />
-          <StatBlock icon={Activity} label="Reflexos"  value={`+${saves.reflexos ?? 0}`} />
-          <StatBlock icon={Activity} label="Vontade"   value={`+${saves.vontade ?? 0}`} />
+        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-2 auto-rows-fr">
+          <StatBlock icon={Activity} label="Astúcia"   value={`+${saves.astucia ?? 0}`}   sublabel={renderCritSublabel(critMargins.astucia)} />
+          <StatBlock icon={Activity} label="Fortitude" value={`+${saves.fortitude ?? 0}`} sublabel={renderCritSublabel(critMargins.fortitude)} />
+          <StatBlock icon={Activity} label="Reflexos"  value={`+${saves.reflexos ?? 0}`}  sublabel={renderCritSublabel(critMargins.reflexos)} />
+          <StatBlock icon={Activity} label="Vontade"   value={`+${saves.vontade ?? 0}`}   sublabel={renderCritSublabel(critMargins.vontade)} />
           {saves.integridade != null && (
-            <StatBlock icon={Sparkles} label="Integridade" value={`+${saves.integridade}`} accent="text-fuchsia-400" />
+            <StatBlock icon={Sparkles} label="Integridade" value={`+${saves.integridade}`} accent="text-fuchsia-400" sublabel={renderCritSublabel(critMargins.integridade)} />
           )}
         </div>
       </section>

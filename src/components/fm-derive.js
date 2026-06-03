@@ -9,6 +9,7 @@ import {
   getAttributePoints, ATTRIBUTE_LIMIT,
 } from "./fm-tables";
 import { hasPeAumentoEnergia, hasPeDouble, hasPeEstoqueAdicional } from "./fm-origens";
+import { getTRCritMarginDeltas, computeConfrontoDominio } from "./fm-treinamentos";
 
 /**
  * ============================================================
@@ -34,8 +35,34 @@ const getHighestMentalMod = (attrs) => {
 
 const lookup = (table, patamar, nd) => table?.[patamar]?.[nd] ?? 0;
 
+// ============================================================
+// Margem crítica padrão. d20 = 20 sempre é crítico; treinamentos
+// podem reduzir a margem necessária (Agilidade/Inteligência/
+// Resistência/Vontade reduzem em 2 → crítica em 18+).
+// `ataque` fica preparado para receber deltas de poderes futuros.
+// ============================================================
+const CRIT_MARGIN_DEFAULT = 20;
+const CRIT_MARGIN_MIN = 2; // sanidade — nada de "crítica em 1+"
+
+const buildCritMargins = (treinamentos = []) => {
+  const trDeltas = getTRCritMarginDeltas(treinamentos);
+  const base = {
+    astucia: CRIT_MARGIN_DEFAULT,
+    fortitude: CRIT_MARGIN_DEFAULT,
+    reflexos: CRIT_MARGIN_DEFAULT,
+    vontade: CRIT_MARGIN_DEFAULT,
+    integridade: CRIT_MARGIN_DEFAULT,
+    ataque: CRIT_MARGIN_DEFAULT,
+  };
+  for (const [save, delta] of Object.entries(trDeltas)) {
+    if (!(save in base)) continue;
+    base[save] = Math.max(CRIT_MARGIN_MIN, base[save] + delta);
+  }
+  return base;
+};
+
 export function deriveStats(raw) {
-  const { core, attributes, overrides = {}, skills = [], attackAttr = 'forca', cdAttr = null } = raw;
+  const { core, attributes, overrides = {}, skills = [], attackAttr = 'forca', cdAttr = null, treinamentos = [], aptidoes = {} } = raw;
   const { patamar, nd, difficulty = "iniciante", size = "medio" } = core;
 
   const bt = getBonusTreinamento(nd);
@@ -141,6 +168,17 @@ export function deriveStats(raw) {
     };
   }
 
+  const critMargins = buildCritMargins(treinamentos);
+
+  // Confronto de Domínio: 1d10 + floor(ND/2) + DOM + bônus de treino.
+  // Expomos só a parte fixa (modBase) e a fórmula textual — o d10 é
+  // rolado na mesa, não no app.
+  const confrontoDominio = computeConfrontoDominio({
+    nd: nd ?? 0,
+    dom: aptidoes?.dom,
+    treinamentos,
+  });
+
   return {
     bt,
     mods,
@@ -148,6 +186,8 @@ export function deriveStats(raw) {
     calculated,
     stats: finalStats,
     saves: finalSaves,
+    critMargins,
+    confrontoDominio,
     cdBase: finalStats.cdBase,
     acertoPrincipal: finalStats.acerto,
     actionsTotal,

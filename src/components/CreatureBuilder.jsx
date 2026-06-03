@@ -300,7 +300,7 @@ export default function CreatureBuilder({ existingCreature, onSave, onCancel }) 
   );
   const aptidoesEl = useMemo(
     () => <SectionAptidoes draft={draft} actions={actions} />,
-    [draft.core, draft.aptidoes, actions]
+    [draft.core, draft.aptidoes, draft.treinamentos, actions]
   );
   const skillsEl = useMemo(
     () => <SectionSkills draft={draft} derived={derived} actions={actions} />,

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
-  Heart, Zap, Shield, Eye, Target, ShieldAlert, Sparkles, Star, GraduationCap, Crosshair, Sword,
+  Heart, Zap, Shield, Eye, Target, ShieldAlert, Sparkles, Star, GraduationCap, Crosshair, Sword, Flame,
 } from "lucide-react";
 import { PATAMAR_LABELS, getModifier } from "../fm-tables";
 
@@ -35,9 +35,22 @@ const PATAMAR_GLOW_HEX = {
   calamidade: "rgba(225, 29, 72, 0.4)",    // rose-600
 };
 
+const CRIT_DEFAULT = 20;
+const SAVE_LABELS_PREVIEW = {
+  astucia: "Ast",
+  fortitude: "For",
+  reflexos: "Ref",
+  vontade: "Von",
+  integridade: "Int",
+  ataque: "Atq",
+};
+
 export default function LivePreview({ draft, derived }) {
-  const { stats, saves, bt, skillDerivations = {} } = derived;
+  const { stats, saves, bt, skillDerivations = {}, critMargins } = derived;
   const accentBorder = PATAMAR_COLORS[draft.core.patamar] || PATAMAR_COLORS.comum;
+  const critEntries = critMargins
+    ? Object.entries(critMargins).filter(([, v]) => v !== CRIT_DEFAULT)
+    : [];
 
   // Perícias dominadas ordenadas por mod (exibição inline tipo statblock)
   const masteredSkills = [...draft.skills]
@@ -116,6 +129,18 @@ export default function LivePreview({ draft, derived }) {
               </div>
             ))}
           </div>
+          {critEntries.length > 0 && (
+            <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[9px]">
+              <span className="inline-flex items-center gap-0.5 text-amber-400/80 uppercase tracking-wider font-bold">
+                <Flame className="w-2.5 h-2.5" /> Crit
+              </span>
+              {critEntries.map(([k, v]) => (
+                <span key={k} className="text-amber-200 font-mono">
+                  <span className="text-amber-400/70">{SAVE_LABELS_PREVIEW[k] || k}</span> {v}+
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Atributos Base */}

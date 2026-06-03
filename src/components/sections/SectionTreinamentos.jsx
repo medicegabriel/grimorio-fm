@@ -1,84 +1,24 @@
 import React, { useState } from "react";
-import { Plus, Trash2, GraduationCap } from "lucide-react";
-import { Select, TextInput, TextArea, SmallButton } from "../builder-controls";
+import { Plus, Trash2, GraduationCap, Zap, ChevronDown, ChevronUp } from "lucide-react";
+import { TextInput, TextArea, SmallButton } from "../builder-controls";
+import {
+  TREINAMENTOS_OFICIAIS,
+  getTreinamentoByKey,
+  isAutomatedTreinamento,
+} from "../fm-treinamentos";
 
-export const TREINAMENTOS_OFICIAIS = [
-  {
-    nome: "Treino de Agilidade",
-    descricao:
-      "Com grande velocidade e agilidade, você se torna rápido e capaz de um nível superior de mobilidade e esquivas. Sua margem necessária para conseguir um sucesso crítico em um TR de Reflexos reduz em 2.",
-  },
-  {
-    nome: "Treino de Barreira",
-    descricao:
-      "Você domina a técnica de barreiras, conseguindo as conferir uma resistência elevada. Toda parede que você criar com Técnicas de Barreira recebe RD igual ao seu Nível de Aptidão em Barreiras, e você também recebe a capacidade de criar 2 barreiras adicionais e +1 Nível de Aptidão em Barreira.",
-  },
-  {
-    nome: "Treino de Compreensão",
-    descricao:
-      "Você chega muito perto de compreender profundamente a energia amaldiçoada, tornando-se familiar com ela e entendendo melhor uma parte dela. Com isso, você aumenta um nível de aptidão a sua escolha em 1.",
-  },
-  {
-    nome: "Treino de Domínio",
-    descricao:
-      "Você se torna um mestre das expansões, entendendo como conseguir moldá-las perfeitamente diante a sua vontade e necessidade do momento. Como resultado, você recebe a aptidão amaldiçoada Modificação Completa e recebe +4 em confrontos.",
-  },
-  {
-    nome: "Treino de Energia",
-    descricao:
-      "Você já estabeleceu uma profunda conexão com a energia amaldiçoada, assim como a conhece cada vez mais completamente. Em uma situação de combate, imerso no fervor da batalha, você consegue gerar energia. Durante uma cena de combate, no começo de toda rodada, você ganha PE temporário igual a metade do seu BT.",
-  },
-  {
-    nome: "Treino de Energia Reversa",
-    descricao:
-      "Sua maestria sobre a energia reversa te permite recuperar até mesmo aquilo que parece impossível. Você pode usar a aptidão amaldiçoada Regeneração Aprimorada para curar sua exaustão de técnica após usar expansão de domínio, reduzindo em um turno para 2 pontos de energia reversa gastos.",
-  },
-  {
-    nome: "Treino de Inteligência",
-    descricao:
-      "Cálculos matemáticos, equações complexas e noções de espaço são meras conveniências para você. Sua margem necessária para conseguir um sucesso crítico em um TR de Astúcia reduz em 2.",
-  },
-  {
-    nome: "Treino de Luta",
-    descricao:
-      "Você se torna altamente proficiente em luta, conseguindo extrair ao máximo de seu corpo e manobras. Você recebe acesso ao efeito de crítico de ataques desarmados, como pugilato. Além disso, você pode, uma vez por rodada, escolher realizar uma rolagem de Acrobacia ou Atletismo com vantagem.",
-  },
-  {
-    nome: "Treino de Manejo de Arma",
-    descricao:
-      "Você se torna um mestre no manejo da arma para qual se dedicou a treinar e dominar. Enquanto estiver manuseando a arma escolhida, ela recebe um encantamento de ferramenta amaldiçoada adicional.",
-  },
-  {
-    nome: "Treino de Perícia",
-    descricao:
-      "Você treinou e se dedicou tanto a uma perícia específica que ela se tornou algo no qual você é quase incapaz de falhar, mantendo uma consistência invejável. Caso realize um teste da perícia escolhida e obtenha um resultado menor do que 5 no d20, você pode rolar novamente e manter o melhor resultado. Você também pode suceder em um teste automaticamente caso não seja um teste competido.",
-  },
-  {
-    nome: "Treino de Potencial Físico",
-    descricao:
-      "Você conseguiu chegar em um ponto onde seu corpo constantemente se renova e sua energia parece nunca ter fim. Durante uma cena de combate, no começo de toda rodada, você recebe uma quantidade de pontos de estamina temporários igual a metade do seu bônus de treinamento. Este treino é válido apenas para Restringidos Celestes.",
-  },
-  {
-    nome: "Treino de Presença",
-    descricao:
-      "Você se torna uma celebridade. Toda vez que você começar uma conversa com alguém, uma vez por pessoa, role um 1d20. Caso caia 15 ou maior, a pessoa te conhece e todos os seus testes de carisma contra ela recebem +5.",
-  },
-  {
-    nome: "Treino de Resistência",
-    descricao:
-      "Seu físico atinge um nível superior, concedendo-lhe uma grande resistência e vigor. Sua margem necessária para conseguir um sucesso crítico em um TR de Fortitude reduz em 2.",
-  },
-  {
-    nome: "Treino de Vontade",
-    descricao:
-      "Seus estudos finalmente deram frutos. Sua margem necessária para conseguir um sucesso crítico em um TR de Vontade reduz em 2.",
-  },
-];
+// Re-export para preservar consumidores externos (import legado).
+export { TREINAMENTOS_OFICIAIS };
 
 // 4° Grau é o mais fraco (0 bônus) → Grau Especial é o mais forte (4 bônus)
 const GRAU_BONUS = { "4": 0, "3": 1, "2": 2, "1": 3, especial: 4 };
 
-const CUSTOM_KEY = "__custom__";
+// Descrição resolvida no contexto da ficha (alguns treinos têm
+// descriptionFn que injetam ½ BT calculado etc.).
+const resolveDesc = (treino, draft) =>
+  typeof treino.descriptionFn === "function"
+    ? treino.descriptionFn({ core: draft.core, attributes: draft.attributes })
+    : treino.descricao;
 
 export default function SectionTreinamentos({ draft, actions }) {
   const pontosTotal = 1 + (GRAU_BONUS[draft.core?.grau] ?? 0);
@@ -86,28 +26,43 @@ export default function SectionTreinamentos({ draft, actions }) {
   const pontosUsados = treinamentos.length;
   const pontosDisponiveis = pontosTotal - pontosUsados;
 
-  const [selecao, setSelecao] = useState("");
+  // Estado da UI de adicionar
+  // Painel inicia aberto só quando não há nenhum treinamento ainda; assim
+  // a aba não vira um muro de cards depois que o usuário já escolheu.
+  const [pickerOpen, setPickerOpen] = useState(treinamentos.length === 0);
+  const [showCustom, setShowCustom] = useState(false);
   const [nomeCustom, setNomeCustom] = useState("");
   const [descCustom, setDescCustom] = useState("");
+  const [expandedKey, setExpandedKey] = useState(null);
 
-  const addedNomes = new Set(treinamentos.map((t) => t.nome));
-  const oficialSelecionado = TREINAMENTOS_OFICIAIS.find((t) => t.nome === selecao);
+  const addedKeys = new Set(treinamentos.map((t) => t.key).filter(Boolean));
+  const disponiveis = TREINAMENTOS_OFICIAIS.filter((t) => !addedKeys.has(t.key));
 
-  const handleAdd = () => {
-    if (selecao === CUSTOM_KEY) {
-      if (!nomeCustom.trim()) return;
-      actions.addTreinamento({ tipo: "custom", nome: nomeCustom.trim(), descricao: descCustom.trim() });
-    } else if (oficialSelecionado) {
-      actions.addTreinamento({ tipo: "oficial", nome: oficialSelecionado.nome, descricao: oficialSelecionado.descricao });
-    }
-    setSelecao("");
-    setNomeCustom("");
-    setDescCustom("");
+  const handleAddOficial = (treino) => {
+    if (pontosDisponiveis <= 0) return;
+    actions.addTreinamento({
+      tipo: "oficial",
+      key: treino.key,
+      nome: treino.nome,
+      descricao: treino.descricao,
+    });
   };
 
-  const podeAdicionar =
-    pontosDisponiveis > 0 &&
-    (selecao === CUSTOM_KEY ? !!nomeCustom.trim() : !!oficialSelecionado);
+  const handleAddCustom = () => {
+    if (pontosDisponiveis <= 0 || !nomeCustom.trim()) return;
+    actions.addTreinamento({
+      tipo: "custom",
+      nome: nomeCustom.trim(),
+      descricao: descCustom.trim(),
+    });
+    setNomeCustom("");
+    setDescCustom("");
+    setShowCustom(false);
+  };
+
+  const toggleExpand = (key) => {
+    setExpandedKey((prev) => (prev === key ? null : key));
+  };
 
   return (
     <div className="space-y-4">
@@ -144,84 +99,213 @@ export default function SectionTreinamentos({ draft, actions }) {
         </div>
       ) : (
         <div className="space-y-2">
-          {treinamentos.map((t) => (
-            <div
-              key={t.id}
-              className="flex items-start gap-2.5 bg-slate-950/40 border border-slate-800 rounded p-3"
-            >
-              <GraduationCap className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0 mt-0.5" />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-0.5">
-                  <span className="text-sm font-semibold text-white">{t.nome}</span>
-                  {t.tipo === "custom" && (
-                    <span className="text-[9px] uppercase tracking-wide text-amber-400 border border-amber-800/60 rounded px-1 py-0.5">
-                      Custom
-                    </span>
+          {treinamentos.map((t) => {
+            const catalog = t.key ? getTreinamentoByKey(t.key) : null;
+            const desc = catalog ? resolveDesc(catalog, draft) : t.descricao;
+            const automated = isAutomatedTreinamento(catalog);
+            return (
+              <div
+                key={t.id}
+                className="flex items-start gap-2.5 bg-slate-950/40 border border-slate-800 rounded p-3"
+              >
+                <GraduationCap className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                    <span className="text-sm font-semibold text-white">{t.nome}</span>
+                    {automated && (
+                      <span
+                        className="inline-flex items-center gap-0.5 text-[9px] uppercase tracking-wide text-amber-300 border border-amber-700/60 rounded px-1 py-0.5"
+                        title="Efeito aplicado automaticamente na ficha"
+                      >
+                        <Zap className="w-2.5 h-2.5" /> Programada
+                      </span>
+                    )}
+                    {t.tipo === "custom" && (
+                      <span className="text-[9px] uppercase tracking-wide text-amber-400 border border-amber-800/60 rounded px-1 py-0.5">
+                        Custom
+                      </span>
+                    )}
+                  </div>
+                  {desc && (
+                    <p className="text-xs text-slate-400 leading-relaxed whitespace-pre-line">
+                      {desc}
+                    </p>
                   )}
                 </div>
-                {t.descricao && (
-                  <p className="text-xs text-slate-400 leading-relaxed">{t.descricao}</p>
-                )}
+                <SmallButton
+                  onClick={() => actions.removeTreinamento(t.id)}
+                  variant="danger"
+                  title="Remover treinamento"
+                >
+                  <Trash2 className="w-3 h-3" />
+                </SmallButton>
               </div>
-              <SmallButton
-                onClick={() => actions.removeTreinamento(t.id)}
-                variant="danger"
-                title="Remover treinamento"
-              >
-                <Trash2 className="w-3 h-3" />
-              </SmallButton>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
-      {/* Formulário de adição — só aparece quando há pontos disponíveis */}
+      {/* ===== SELETOR — só quando há pontos disponíveis ===== */}
       {pontosDisponiveis > 0 ? (
-        <div className="pt-3 border-t border-slate-800 space-y-3">
-          <h3 className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">
-            Adicionar Treinamento
-          </h3>
+        <div className="pt-3 border-t border-slate-800">
+          <button
+            type="button"
+            onClick={() => setPickerOpen((v) => !v)}
+            className={`w-full flex items-center gap-2 px-3 py-2.5 rounded border font-semibold text-sm transition-colors focus:outline-none focus:ring-1 focus:ring-purple-500/50 ${
+              pickerOpen
+                ? "bg-purple-950/40 border-purple-800/60 text-purple-200 hover:bg-purple-950/60"
+                : "bg-purple-900/30 border-purple-800/60 text-purple-300 hover:bg-purple-900/50 hover:text-purple-200"
+            }`}
+            aria-expanded={pickerOpen}
+          >
+            <Plus className="w-4 h-4 flex-shrink-0" />
+            <span className="flex-1 text-left">
+              {pickerOpen ? "Escolher Treinamento" : "Adicionar Treinamento"}
+            </span>
+            <span className="text-[10px] uppercase tracking-wider text-purple-300/90 font-bold bg-purple-950/60 border border-purple-800/60 rounded px-1.5 py-0.5">
+              {disponiveis.length} disp.
+            </span>
+            {pickerOpen ? (
+              <ChevronUp className="w-4 h-4 flex-shrink-0" />
+            ) : (
+              <ChevronDown className="w-4 h-4 flex-shrink-0" />
+            )}
+          </button>
 
-          <Select
-            value={selecao}
-            onChange={setSelecao}
-            options={[
-              ...TREINAMENTOS_OFICIAIS.filter((t) => !addedNomes.has(t.nome)).map((t) => ({
-                value: t.nome,
-                label: t.nome,
-              })),
-              { value: CUSTOM_KEY, label: "✦ Treinamento Customizado" },
-            ]}
-            placeholder="Escolha um treinamento..."
-          />
+          {pickerOpen && (
+            <div className="space-y-3 mt-3">
+              {disponiveis.length === 0 ? (
+                <p className="text-xs text-slate-500 italic">
+                  Todos os treinamentos oficiais já foram adicionados.
+                </p>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 items-stretch">
+                  {disponiveis.map((t) => {
+                    const automated = isAutomatedTreinamento(t);
+                    const isExpanded = expandedKey === t.key;
+                    const desc = resolveDesc(t, draft);
+                    return (
+                      <div
+                        key={t.key}
+                        className={`bg-slate-950/40 border rounded p-2.5 transition-colors h-full flex flex-col ${
+                          automated
+                            ? "border-amber-900/40 hover:border-amber-700/60"
+                            : "border-slate-800 hover:border-slate-700"
+                        }`}
+                      >
+                        <div className="flex items-start gap-2 flex-1 min-h-0">
+                          <GraduationCap
+                            className={`w-3.5 h-3.5 flex-shrink-0 mt-0.5 ${
+                              automated ? "text-amber-400" : "text-emerald-400"
+                            }`}
+                          />
+                          <div className="flex-1 min-w-0 flex flex-col">
+                            <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                              <span className="text-sm font-semibold text-white leading-tight">
+                                {t.nome}
+                              </span>
+                              {automated && (
+                                <span
+                                  className="inline-flex items-center gap-0.5 text-[9px] uppercase tracking-wide text-amber-300 border border-amber-700/60 rounded px-1 py-0.5"
+                                  title="Efeito aplicado automaticamente na ficha"
+                                >
+                                  <Zap className="w-2.5 h-2.5" /> Programada
+                                </span>
+                              )}
+                            </div>
+                            <p
+                              className={`text-[11px] text-slate-400 leading-relaxed whitespace-pre-line ${
+                                isExpanded ? "" : "line-clamp-3"
+                              }`}
+                            >
+                              {desc}
+                            </p>
+                          </div>
+                        </div>
+                        {/* Rodapé fixo no final do card — mt-auto encosta no fundo
+                            independente do tamanho da descrição. */}
+                        <div className="flex items-center gap-2 mt-2 pt-2 border-t border-slate-800/60">
+                          <button
+                            type="button"
+                            onClick={() => toggleExpand(t.key)}
+                            className="inline-flex items-center gap-0.5 text-[10px] text-slate-500 hover:text-slate-300 transition-colors focus:outline-none focus:ring-1 focus:ring-purple-500/40 rounded"
+                          >
+                            {isExpanded ? (
+                              <>
+                                <ChevronUp className="w-3 h-3" /> Recolher
+                              </>
+                            ) : (
+                              <>
+                                <ChevronDown className="w-3 h-3" /> Ler mais
+                              </>
+                            )}
+                          </button>
+                          <div className="flex-1" />
+                          <SmallButton
+                            onClick={() => handleAddOficial(t)}
+                            variant="primary"
+                            title="Adicionar este treinamento"
+                          >
+                            <Plus className="w-3 h-3" /> Adicionar
+                          </SmallButton>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
 
-          {/* Preview da descrição do oficial selecionado */}
-          {oficialSelecionado && (
-            <div className="bg-slate-900/50 border border-slate-800 rounded p-3">
-              <p className="text-xs text-slate-400 leading-relaxed">{oficialSelecionado.descricao}</p>
+              {/* Botão / form de Treinamento Customizado */}
+              <div className="pt-3 border-t border-slate-800/60">
+                {showCustom ? (
+                  <div className="space-y-2 bg-slate-950/40 border border-amber-900/40 rounded p-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-[10px] uppercase tracking-widest text-amber-400 font-bold">
+                        ✦ Treinamento Customizado
+                      </h4>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowCustom(false);
+                          setNomeCustom("");
+                          setDescCustom("");
+                        }}
+                        className="text-[10px] text-slate-500 hover:text-slate-300"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                    <TextInput
+                      value={nomeCustom}
+                      onChange={setNomeCustom}
+                      placeholder="Nome do Treinamento"
+                    />
+                    <TextArea
+                      value={descCustom}
+                      onChange={setDescCustom}
+                      rows={3}
+                      placeholder="Descreva os efeitos deste treinamento..."
+                    />
+                    <SmallButton
+                      onClick={handleAddCustom}
+                      variant="primary"
+                      disabled={!nomeCustom.trim()}
+                    >
+                      <Plus className="w-3 h-3" /> Adicionar
+                    </SmallButton>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setShowCustom(true)}
+                    className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded border border-dashed border-amber-900/60 text-xs font-semibold text-amber-400 hover:text-amber-300 hover:border-amber-700/60 hover:bg-amber-950/20 transition-colors focus:outline-none focus:ring-1 focus:ring-amber-500/40"
+                  >
+                    <Plus className="w-3 h-3" /> ✦ Criar Treinamento Customizado
+                  </button>
+                )}
+              </div>
             </div>
           )}
-
-          {/* Campos para treinamento customizado */}
-          {selecao === CUSTOM_KEY && (
-            <div className="space-y-2">
-              <TextInput
-                value={nomeCustom}
-                onChange={setNomeCustom}
-                placeholder="Nome do Treinamento"
-              />
-              <TextArea
-                value={descCustom}
-                onChange={setDescCustom}
-                rows={3}
-                placeholder="Descreva os efeitos deste treinamento..."
-              />
-            </div>
-          )}
-
-          <SmallButton onClick={handleAdd} variant="primary" disabled={!podeAdicionar}>
-            <Plus className="w-3 h-3" /> Adicionar
-          </SmallButton>
         </div>
       ) : (
         treinamentos.length > 0 && (

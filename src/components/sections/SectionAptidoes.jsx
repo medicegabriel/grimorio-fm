@@ -1,13 +1,18 @@
 // sections/SectionAptidoes.jsx
 import React, { useMemo } from "react";
+import { Zap } from "lucide-react";
 import { FieldLabel, NumberInput } from "../builder-controls";
 import { getFrutosAptidaoBonus } from "../fm-origens";
+import {
+  getBarreiraAptidaoBonus,
+  getCompreensaoAptidaoBudgetBonus,
+} from "../fm-treinamentos";
 
 // ============================================================
 // DICIONÁRIO DE APTIDÕES (regra de ouro #1)
 // ============================================================
 const APTIDAO_LIST = [
-  { key: "ea",  label: "Energia Amaldiçoada", short: "EA",  accent: "bg-purple-900/30 border-purple-800" },
+  { key: "au",  label: "Aura",                short: "AU",  accent: "bg-purple-900/30 border-purple-800" },
   { key: "cl",  label: "Controle e Leitura",  short: "CL",  accent: "bg-sky-900/30 border-sky-800" },
   { key: "bar", label: "Barreira",            short: "BAR", accent: "bg-amber-900/30 border-amber-800" },
   { key: "dom", label: "Domínio",             short: "DOM", accent: "bg-rose-900/30 border-rose-800" },
@@ -50,23 +55,33 @@ const getBudgetKey = ({ budget, spent }) => {
 // ============================================================
 export default function SectionAptidoes({ draft, actions }) {
   // Derivações memoizadas
-  const { budget, baseBudget, frutosBonus, spent, remaining, budgetKey, theme } = useMemo(() => {
+  // O bônus de Compreensão soma ao orçamento total (pode gastar onde quiser).
+  // O bônus de Barreira é EXTRA: não consome ponto do orçamento, só aparece
+  // como nível efetivo a mais no slot BAR.
+  const {
+    budget, baseBudget, frutosBonus, compreensaoBonus, barreiraBonus,
+    spent, remaining, budgetKey, theme,
+  } = useMemo(() => {
     const base = calculateAptidoesBudget(draft.core?.nd);
-    const bonus = getFrutosAptidaoBonus(draft.core);
-    const b = base + bonus;
+    const frutos = getFrutosAptidaoBonus(draft.core);
+    const compreensao = getCompreensaoAptidaoBudgetBonus(draft.treinamentos);
+    const barreira = getBarreiraAptidaoBonus(draft.treinamentos);
+    const b = base + frutos + compreensao;
     const s = Object.values(draft.aptidoes ?? {}).reduce((sum, v) => sum + (Number(v) || 0), 0);
     const r = b - s;
     const key = getBudgetKey({ budget: b, spent: s });
     return {
       budget: b,
       baseBudget: base,
-      frutosBonus: bonus,
+      frutosBonus: frutos,
+      compreensaoBonus: compreensao,
+      barreiraBonus: barreira,
       spent: s,
       remaining: r,
       budgetKey: key,
       theme: BUDGET_THEME[key],
     };
-  }, [draft.core, draft.aptidoes]);
+  }, [draft.core, draft.aptidoes, draft.treinamentos]);
 
   // Handler de mudança com clamp defensivo.
   // Não bloqueia digitar valores acima do orçamento (warning não-bloqueante,
@@ -133,9 +148,20 @@ export default function SectionAptidoes({ draft, actions }) {
             <>
               {" "}+ <span className="text-amber-300">{frutosBonus}</span>
               <span className="text-amber-400/80"> por Frutos da Experiência</span>
+            </>
+          )}
+          {compreensaoBonus > 0 && (
+            <>
+              {" "}+ <span className="text-emerald-300">{compreensaoBonus}</span>
+              <span className="text-emerald-400/80"> por Treino de Compreensão</span>
+            </>
+          )}
+          {(frutosBonus > 0 || compreensaoBonus > 0) && (
+            <>
               {" "}= <strong className="text-slate-300">{budget}</strong>
             </>
-          )}.
+          )}
+          .
         </p>
       </div>
 
@@ -143,9 +169,16 @@ export default function SectionAptidoes({ draft, actions }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
         {APTIDAO_LIST.map(({ key, label, short, accent }) => {
           const current = draft.aptidoes?.[key] ?? 0;
+          const rawBonus = key === "bar" ? barreiraBonus : 0;
+          // Cap absoluto: o bônus do treino nunca pode levar o slot acima
+          // do limite individual (5). Quando o input já atingiu o cap, o
+          // bônus é "desperdiçado" — mostramos isso explicitamente.
+          const effective = Math.min(current + rawBonus, APTIDAO_MAX_PER_SLOT);
+          const appliedBonus = effective - current;
+          const wastedBonus = rawBonus - appliedBonus;
 
           // Destaque visual sutil quando o slot está em uso
-          const hasValue = current > 0;
+          const hasValue = effective > 0;
 
           return (
             <div
@@ -157,6 +190,14 @@ export default function SectionAptidoes({ draft, actions }) {
               <FieldLabel>
                 {short}
                 <span className="text-slate-500 ml-1 font-normal">{label}</span>
+                {appliedBonus > 0 && (
+                  <span
+                    className="inline-flex items-center gap-0.5 ml-1.5 text-[9px] uppercase tracking-wide text-amber-300 border border-amber-700/60 rounded px-1 py-0.5"
+                    title="Bônus automático do Treino de Barreira (limitado pelo cap 5)"
+                  >
+                    <Zap className="w-2.5 h-2.5" /> +{appliedBonus} auto
+                  </span>
+                )}
               </FieldLabel>
               <NumberInput
                 value={current}
@@ -164,6 +205,16 @@ export default function SectionAptidoes({ draft, actions }) {
                 min={0}
                 max={APTIDAO_MAX_PER_SLOT}
               />
+              {appliedBonus > 0 && (
+                <p className="text-[10px] text-amber-300/80 mt-1 font-mono">
+                  Nível efetivo: {effective}
+                </p>
+              )}
+              {wastedBonus > 0 && (
+                <p className="text-[10px] text-slate-500 mt-1 italic">
+                  Limite {APTIDAO_MAX_PER_SLOT} atingido — bônus do treino sem efeito.
+                </p>
+              )}
             </div>
           );
         })}

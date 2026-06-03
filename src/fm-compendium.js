@@ -35,7 +35,7 @@ export const COMPENDIUM = [
       sabedoria: 28,
       presenca: 27,
     },
-    aptidoes: { ea: 0, cl: 3, bar: 4, dom: 5, er: 5 },
+    aptidoes: { au: 0, cl: 3, bar: 4, dom: 5, er: 5 },
     attackAttr: "destreza",
     cdAttr: "inteligencia",
     overrides: { stats: {}, saves: {} },

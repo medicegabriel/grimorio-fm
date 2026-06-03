@@ -5,6 +5,10 @@ import {
   buildOriginFeature,
   getOriginDefenseItems,
 } from "./fm-origens";
+import {
+  getTreinamentoAptidoesEspeciais,
+  getTreinamentoByNome,
+} from "./fm-treinamentos";
 
 /**
  * ============================================================
@@ -44,7 +48,7 @@ export const blankDraft = () => ({
     sabedoria: 10,
     presenca: 10,
   },
-  aptidoes: { ea: 0, cl: 0, bar: 0, dom: 0, er: 0 },
+  aptidoes: { au: 0, cl: 0, bar: 0, dom: 0, er: 0 },
   attackAttr: 'forca',
   cdAttr: 'inteligencia',
   overrides: { stats: {}, saves: {} },
@@ -74,6 +78,30 @@ const normalizeSkills = (skills = []) =>
     mastered: Boolean(s.mastered),
     overrideMod: s.overrideMod ?? null,
   }));
+
+// ---------- Migração: chave "ea" → "au" ----------
+// Fichas antigas guardavam o slot de Aura como "ea" (Energia Amaldiçoada).
+// O nome oficial no sistema é "Aura" (AU), então renomeamos a chave. Se a
+// ficha carregada já tem "au" prevalece — só copiamos "ea" quando "au" não
+// foi definido (= 0/undefined).
+const migrateAptidoes = (baseAptidoes, payloadAptidoes = {}) => {
+  const out = { ...baseAptidoes, ...payloadAptidoes };
+  if (payloadAptidoes && "ea" in payloadAptidoes && !payloadAptidoes.au) {
+    out.au = payloadAptidoes.ea;
+  }
+  delete out.ea;
+  return out;
+};
+
+// ---------- Normaliza treinamentos legados (sem key) ----------
+// Itens antigos só guardavam {tipo, nome, descricao, id}. Para o derive
+// conseguir consultar o catálogo, infere a `key` pelo nome quando faltar.
+const normalizeTreinamentos = (treinamentos = []) =>
+  treinamentos.map((t) => {
+    if (t.key || t.tipo === "custom") return t;
+    const cat = getTreinamentoByNome(t.nome);
+    return cat ? { ...t, key: cat.key } : t;
+  });
 
 // ---------- Normaliza um draft completo (fichas antigas / parciais) ----------
 // Garante que toda chave estrutural exista antes de o reducer mexer nela,
@@ -108,7 +136,7 @@ const normalizeDraft = (payload = {}) => {
       return merged;
     })(),
     attributes:  { ...base.attributes, ...(payload.attributes || {}) },
-    aptidoes:    { ...base.aptidoes, ...(payload.aptidoes || {}) },
+    aptidoes:    migrateAptidoes(base.aptidoes, payload.aptidoes),
     overrides: {
       stats: payload.overrides?.stats || {},
       saves: payload.overrides?.saves || {},
@@ -123,7 +151,7 @@ const normalizeDraft = (payload = {}) => {
     actions:           { list: payload.actions?.list || [] },
     features:          payload.features || [],
     skills:            normalizeSkills(payload.skills),
-    treinamentos:      payload.treinamentos || [],
+    treinamentos:      normalizeTreinamentos(payload.treinamentos || []),
     aptidoesEspeciais: payload.aptidoesEspeciais || [],
     dotes:             payload.dotes || [],
     artimanhas:        payload.artimanhas || [],
@@ -171,9 +199,36 @@ const syncOriginDerived = (state) => {
   };
 };
 
+// ---------- Sincronização com os treinamentos ----------
+// Remove tudo o que estava marcado como source:'treino' em aptidoesEspeciais
+// e re-injeta a partir do catálogo. Treinos como Domínio concedem aptidões
+// (Modificação Completa) que devem aparecer automaticamente e não podem ser
+// removidas manualmente — o sync garante a propriedade idempotente.
+const syncTreinamentosDerived = (state) => {
+  const treinamentos = state.treinamentos || [];
+  const granted = getTreinamentoAptidoesEspeciais(treinamentos);
+
+  const manual = (state.aptidoesEspeciais || []).filter((a) => a.source !== "treino");
+  const injected = granted.map((a) => ({
+    id: `apt-treino-${a.treinoKey}`,
+    nome: a.nome,
+    categoria: a.categoria,
+    descricao: a.descricao,
+    tipo: "oficial",
+    source: "treino",
+    treinoKey: a.treinoKey,
+    locked: true,
+  }));
+
+  return {
+    ...state,
+    aptidoesEspeciais: [...injected, ...manual],
+  };
+};
+
 // ---------- Reducer: dicionário de handlers ----------
 const actionHandlers = {
-  HYDRATE: (_, payload) => syncOriginDerived(normalizeDraft(payload)),
+  HYDRATE: (_, payload) => syncTreinamentosDerived(syncOriginDerived(normalizeDraft(payload))),
 
   SET_NAME:     (s, payload) => ({ ...s, name: payload }),
   SET_PORTRAIT: (s, payload) => ({ ...s, portraitUrl: payload }),
@@ -307,10 +362,15 @@ const actionHandlers = {
     ...s,
     aptidoesEspeciais: [...(s.aptidoesEspeciais || []), { ...payload, id: genId("apt") }],
   }),
-  REMOVE_APTIDAO_ESPECIAL: (s, id) => ({
-    ...s,
-    aptidoesEspeciais: (s.aptidoesEspeciais || []).filter((a) => a.id !== id),
-  }),
+  REMOVE_APTIDAO_ESPECIAL: (s, id) => {
+    const target = (s.aptidoesEspeciais || []).find((a) => a.id === id);
+    // Aptidões concedidas por treinamento são gerenciadas pelo sync.
+    if (target?.source === "treino") return s;
+    return {
+      ...s,
+      aptidoesEspeciais: (s.aptidoesEspeciais || []).filter((a) => a.id !== id),
+    };
+  },
 
   // ---------- Dotes ----------
   ADD_DOTE: (s, payload) => ({
@@ -323,11 +383,13 @@ const actionHandlers = {
   }),
 
   // ---------- Treinamentos ----------
-  ADD_TREINAMENTO: (s, payload) => ({
+  // Add/remove ressincronizam aptidões especiais concedidas pelo treino
+  // (ex.: Modificação Completa via Treino de Domínio).
+  ADD_TREINAMENTO: (s, payload) => syncTreinamentosDerived({
     ...s,
     treinamentos: [...(s.treinamentos || []), { ...payload, id: genId("treino") }],
   }),
-  REMOVE_TREINAMENTO: (s, id) => ({
+  REMOVE_TREINAMENTO: (s, id) => syncTreinamentosDerived({
     ...s,
     treinamentos: (s.treinamentos || []).filter((t) => t.id !== id),
   }),
@@ -422,7 +484,7 @@ export default function useCreatureBuilder(initialDraft = null) {
   const [draft, dispatch] = useReducer(
     reducer,
     initialDraft || blankDraft(),
-    (init) => syncOriginDerived(normalizeDraft(init))
+    (init) => syncTreinamentosDerived(syncOriginDerived(normalizeDraft(init)))
   );
 
   const derived = useMemo(() => deriveStats(draft), [
@@ -432,6 +494,8 @@ export default function useCreatureBuilder(initialDraft = null) {
     draft.skills,
     draft.attackAttr,
     draft.cdAttr,
+    draft.treinamentos,
+    draft.aptidoes,
   ]);
 
   const warnings = useMemo(() => validateDraft(draft, derived), [draft, derived]);
@@ -516,6 +580,8 @@ export default function useCreatureBuilder(initialDraft = null) {
       cdAttr: draft.cdAttr,
       stats: { ...derived.stats },
       saves: { ...derived.saves },
+      critMargins: { ...derived.critMargins },
+      confrontoDominio: { ...derived.confrontoDominio },
       skills: skillsResolved,
       actions: {
         total: derived.actionsTotal,

@@ -1,5 +1,5 @@
 import React from "react";
-import { Heart, Zap, Shield, Eye, Target, ShieldAlert, Swords, Activity, Sparkles, RotateCcw, Crosshair, Sword } from "lucide-react";
+import { Heart, Zap, Shield, Eye, Target, ShieldAlert, Swords, Activity, Sparkles, RotateCcw, Crosshair, Sword, Flame, Dices } from "lucide-react";
 import { StatField, SmallButton, Select } from "../builder-controls";
 import { getModifier } from "../fm-tables";
 
@@ -52,6 +52,15 @@ const SAVE_DEFINITIONS = [
   { key: "integridade", label: "Integridade" },
 ];
 
+const CRIT_DEFAULT = 20;
+const SAVE_LABELS = {
+  astucia: "Astúcia",
+  fortitude: "Fortitude",
+  reflexos: "Reflexos",
+  vontade: "Vontade",
+  integridade: "Integridade",
+};
+
 export default function SectionDerivedStats({ draft, derived, actions }) {
   const hasAnyOverride =
     Object.keys(draft.overrides.stats || {}).length > 0 ||
@@ -98,7 +107,7 @@ export default function SectionDerivedStats({ draft, derived, actions }) {
         <h3 className="text-[10px] uppercase tracking-widest text-slate-500 mb-2 font-bold">
           Estatísticas de Combate
         </h3>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 items-stretch">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 auto-rows-fr">
           {STAT_DEFINITIONS.map(({ key, label, icon, accent }) => (
             <StatField
               key={key}
@@ -110,6 +119,22 @@ export default function SectionDerivedStats({ draft, derived, actions }) {
               onOverride={(v) => actions.setStatOverride(key, v)}
             />
           ))}
+          {/* Confronto de Domínio: derivado puro (1d10 + N), sem override.
+              Compartilha o visual dos StatFields mas mostra a fórmula. */}
+          <StatReadonly
+            label="Conf. Domínio"
+            icon={Dices}
+            accent="text-rose-400"
+            value={derived.confrontoDominio?.formula ?? "—"}
+            tooltip={
+              derived.confrontoDominio
+                ? `½ ND ${derived.confrontoDominio.meiaND} + DOM ${derived.confrontoDominio.dom}` +
+                  (derived.confrontoDominio.treinoBonus > 0
+                    ? ` + Treino ${derived.confrontoDominio.treinoBonus}`
+                    : "")
+                : ""
+            }
+          />
         </div>
       </div>
 
@@ -129,9 +154,15 @@ export default function SectionDerivedStats({ draft, derived, actions }) {
             />
           ))}
         </div>
+
+        {/* Margens críticas — aparece apenas quando algum TR/Ataque ≠ 20.
+            Reflete os efeitos de treinamentos como Agilidade/Inteligência/
+            Resistência/Vontade, e fica preparado pra crítico de ataque vindo
+            de poderes futuros. */}
+        <CritMarginsRow critMargins={derived.critMargins} />
       </div>
 
-      {/* Seleção de Atributos para Acerto e CD */}
+      {/* Seleção de Atributos para Acerto e CD - bloco original abaixo */}
       <div className="bg-slate-950/60 border border-slate-800 rounded p-3 space-y-3">
         <h3 className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">
           Atributo Base do Acerto e CD
@@ -164,6 +195,58 @@ export default function SectionDerivedStats({ draft, derived, actions }) {
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------- Stat só-leitura (sem override) ----------
+// Mesma silhueta visual de um StatField não-overridden, mas sem o cadeado.
+// Usado pra valores derivados que não fazem sentido sobrescrever — ex.:
+// Confronto de Domínio, que é uma fórmula (1d10 + N).
+function StatReadonly({ label, icon: Icon, accent = "text-slate-300", value, tooltip }) {
+  return (
+    <div
+      className="bg-slate-950/60 border border-slate-800 rounded p-2.5 transition-colors h-full flex flex-col justify-between"
+      title={tooltip || undefined}
+    >
+      <div className="flex items-center gap-1.5 min-w-0 mb-1">
+        {Icon && <Icon className={`w-3 h-3 flex-shrink-0 ${accent}`} />}
+        <span className="text-[10px] uppercase tracking-wider text-slate-400 truncate">{label}</span>
+      </div>
+      <div className="text-lg font-bold text-white tabular-nums">{value}</div>
+    </div>
+  );
+}
+
+// ---------- Margens críticas (TR + ataque) ----------
+// Mostra apenas saves/ataque cuja margem ≠ 20. Ex.: Treino de Agilidade
+// reduz Reflexos para 18 → exibe "Reflexos 18+". Ataque ainda fica em 20
+// por default (não há poder que mexa nele no MVP); aparecerá quando
+// algum efeito futuro reduzir a margem.
+function CritMarginsRow({ critMargins }) {
+  if (!critMargins) return null;
+  const entries = Object.entries(critMargins).filter(([, v]) => v !== CRIT_DEFAULT);
+  if (entries.length === 0) return null;
+
+  return (
+    <div className="mt-2 bg-amber-950/20 border border-amber-900/50 rounded p-2">
+      <h4 className="text-[10px] uppercase tracking-widest text-amber-400 font-bold mb-1 flex items-center gap-1">
+        <Flame className="w-3 h-3" /> Margem de Crítico
+      </h4>
+      <div className="flex flex-wrap gap-x-3 gap-y-1">
+        {entries.map(([key, value]) => {
+          const label = key === "ataque" ? "Ataque" : (SAVE_LABELS[key] || key);
+          return (
+            <span
+              key={key}
+              className="text-[10px] text-amber-200 font-mono"
+              title={`Crítica automática em ${value} ou mais (padrão: 20)`}
+            >
+              <span className="text-amber-400/80">{label}:</span> {value}+
+            </span>
+          );
+        })}
       </div>
     </div>
   );

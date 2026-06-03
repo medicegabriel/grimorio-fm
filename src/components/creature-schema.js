@@ -51,7 +51,7 @@ const CreatureSchema = {
 
   // ---------- NÍVEIS DE APTIDÃO (ESTÁTICO) ----------
   aptidoes: {
-    ea: 5,   // Energia Amaldiçoada
+    au: 5,   // Aura
     cl: 4,   // Controle e Leitura
     bar: 2,  // Barreira
     dom: 3,  // Domínio

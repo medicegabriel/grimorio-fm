@@ -480,18 +480,21 @@ export function getOriginRawFeatures(origin = {}, core = null) {
  * ctx (opcional) = { core, attributes } — usado para descrições dinâmicas
  * (ex.: Regeneração, que injeta o valor de cura calculado).
  *
- * `automated: true` só quando a feature REALMENTE altera algo na ficha
- * (peMax, defesas, limite de perícias, budget de aptidões, lista de
- * artimanhas etc.). Features com `kind: "info_only"` (só texto dinâmico)
- * não recebem o badge "Programada".
+ * `automated: true` quando a feature tem alguma forma de programação:
+ *  - automation.kind real (altera valor numérico na ficha — peMax, defesas,
+ *    budget de aptidões etc.); OU
+ *  - descriptionFn (descrição calculada dinamicamente a partir do estado
+ *    da criatura — ND, BT, Constituição, patamar, etc.). Mesmo quando o
+ *    cálculo só aparece no texto da feature, ele é "programado" do ponto
+ *    de vista do usuário e merece o badge.
  */
 export function buildOriginFeature(raw, ctx = {}) {
-  const description = typeof raw.descriptionFn === "function"
-    ? raw.descriptionFn(ctx)
-    : raw.description;
+  const hasDescFn = typeof raw.descriptionFn === "function";
+  const description = hasDescFn ? raw.descriptionFn(ctx) : raw.description;
 
   const kind = raw.automation?.kind;
-  const isRealAutomation = !!kind && kind !== "info_only";
+  const hasRealKind = !!kind && kind !== "info_only";
+  const isAutomated = hasRealKind || hasDescFn;
 
   return {
     id: `origin-${raw.key}`,
@@ -501,7 +504,7 @@ export function buildOriginFeature(raw, ctx = {}) {
     trigger: "passiva",
     source: "origin",
     originKey: raw.key,
-    automated: isRealAutomation,
+    automated: isAutomated,
     locked: true,
   };
 }
