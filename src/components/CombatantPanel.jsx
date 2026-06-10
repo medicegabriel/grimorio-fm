@@ -778,25 +778,16 @@ export default function CombatantPanel({
   suppressDeathBanner = false,
   isTrackerMode = false
 }) {
-  if (!combatant) return null;
+  // PC placeholder (sem ficha) ou combatant ausente: todos os Hooks abaixo
+  // precisam ser chamados em TODA renderização (Regras dos Hooks), então
+  // apenas marcamos o caso aqui e fazemos o early-return depois dos Hooks.
+  const isPlaceholder = !combatant || !combatant.combatState || !combatant.snapshot;
 
-  // PC placeholder — sem ficha
-  if (!combatant.combatState || !combatant.snapshot) {
-    return (
-      <div className="bg-slate-900/60 border border-slate-800 rounded-lg p-8 text-center">
-        <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-sky-950/60 border border-sky-800/60 mb-3">
-          <Activity className="w-7 h-7 text-sky-300" />
-        </div>
-        <div className="text-xs uppercase tracking-widest text-slate-500 mb-1">Combatente Jogador</div>
-        <div className="text-2xl font-bold text-slate-100">{combatant.displayName}</div>
-        <div className="text-xs text-slate-500 mt-3 max-w-xs mx-auto">
-          O controle de ficha do PC fica com o jogador. Use a iniciativa dele apenas para organizar turnos.
-        </div>
-      </div>
-    );
-  }
-
-  const { snapshot, combatState, flags } = combatant;
+  // Derivados null-safe: produzem defaults inofensivos no caso placeholder,
+  // permitindo que os Hooks rodem sem quebrar antes do return.
+  const snapshot = combatant?.snapshot ?? {};
+  const combatState = combatant?.combatState ?? {};
+  const flags = combatant?.flags ?? {};
   const stats = snapshot.stats ?? {};
   const saves = snapshot.saves ?? {};
   const critMargins = snapshot.critMargins ?? {};
@@ -960,6 +951,23 @@ export default function CombatantPanel({
       onReset?.();
     }
   }), [patch, combatState, stats, flags, onFlagChange, combatant, onCombatStateChange, onNewRound, onReset, combatSettings]);
+
+  // ===== Early returns (depois de TODOS os Hooks) =====
+  if (!combatant) return null;
+  if (isPlaceholder) {
+    return (
+      <div className="bg-slate-900/60 border border-slate-800 rounded-lg p-8 text-center">
+        <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-sky-950/60 border border-sky-800/60 mb-3">
+          <Activity className="w-7 h-7 text-sky-300" />
+        </div>
+        <div className="text-xs uppercase tracking-widest text-slate-500 mb-1">Combatente Jogador</div>
+        <div className="text-2xl font-bold text-slate-100">{combatant.displayName}</div>
+        <div className="text-xs text-slate-500 mt-3 max-w-xs mx-auto">
+          O controle de ficha do PC fica com o jogador. Use a iniciativa dele apenas para organizar turnos.
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

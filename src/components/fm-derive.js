@@ -8,8 +8,13 @@ import {
   TAMANHO_INFO, getDeslocamentoMultiplier,
   getAttributePoints, ATTRIBUTE_LIMIT,
 } from "./fm-tables";
-import { hasPeAumentoEnergia, hasPeDouble, hasPeEstoqueAdicional } from "./fm-origens";
+import { hasPeAumentoEnergia, hasPeDouble, hasPeEstoqueAdicional, getFrutosDoteBonus } from "./fm-origens";
 import { getTRCritMarginDeltas, computeConfrontoDominio } from "./fm-treinamentos";
+import {
+  getDotesAtencaoBonus, getDotesIniciativaBonus,
+  getDotesPercepcaoBonus, getDotePrereqWarnings,
+  getDoteExclusionWarnings, getDoteLimit, getDoteSubChoiceWarnings,
+} from "./fm-dotes";
 
 /**
  * ============================================================
@@ -62,7 +67,7 @@ const buildCritMargins = (treinamentos = []) => {
 };
 
 export function deriveStats(raw) {
-  const { core, attributes, overrides = {}, skills = [], attackAttr = 'forca', cdAttr = null, treinamentos = [], aptidoes = {} } = raw;
+  const { core, attributes, overrides = {}, skills = [], attackAttr = 'forca', cdAttr = null, treinamentos = [], aptidoes = {}, dotes = [] } = raw;
   const { patamar, nd, difficulty = "iniciante", size = "medio" } = core;
 
   const bt = getBonusTreinamento(nd);
@@ -95,21 +100,32 @@ export function deriveStats(raw) {
   const peDoubleMult = hasPeDouble(core) ? 2 : 1;
   const peMaxFinal = peSubtotal * peDoubleMult;
 
-  // Atenção depende do bônus de Percepção (perícia). Detecta se há uma
-  // perícia chamada "Percepção" marcada como dominada — a comparação
-  // ignora acentos/caixa pra cobrir variações que o usuário possa digitar.
+  // Atenção segue o modificador REAL da perícia "Percepção" — mod do
+  // atributo dela + dominância + ½ ND de Sentidos Afiados + override —
+  // em vez de recalcular pela Sabedoria. A comparação ignora acentos/caixa
+  // pra cobrir variações de digitação. Sem perícia "Percepção", cai no
+  // cálculo comum por Sabedoria (ainda somando o ½ ND do dote, se houver).
   const stripDiacritics = (s) =>
     (s || "").toString().normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
-  const percepcaoDominada = skills.some(
-    (s) => stripDiacritics(s.name) === "percepcao" && s.mastered
-  );
+  const percepcaoDoteBonus = getDotesPercepcaoBonus(dotes, nd);
+  const percepcaoSkill = skills.find((s) => stripDiacritics(s.name) === "percepcao");
+  let percepcaoMod;
+  if (percepcaoSkill) {
+    const attrMod = mods[percepcaoSkill.attribute] ?? mods.sabedoria;
+    const calc = (percepcaoSkill.mastered
+      ? calculatePericiaDominada(nd, attrMod, patamar)
+      : calculatePericiaComum(nd, attrMod, patamar)) + percepcaoDoteBonus;
+    percepcaoMod = percepcaoSkill.overrideMod != null ? percepcaoSkill.overrideMod : calc;
+  } else {
+    percepcaoMod = calculatePericiaComum(nd, mods.sabedoria, patamar) + percepcaoDoteBonus;
+  }
 
   const calculated = {
     hpMax: calculateHP(patamar, nd, attributes.constituicao),
     peMax: peMaxFinal,
     defesa: calculateDefesa(patamar, nd, mods.destreza, difficulty),
-    atencao: calcAtencao(patamar, nd, attributes.sabedoria, percepcaoDominada),
-    iniciativa: calcIniciativa(patamar, nd, mods.destreza),
+    atencao: calcAtencao(patamar, nd, percepcaoMod) + getDotesAtencaoBonus(dotes, nd),
+    iniciativa: calcIniciativa(patamar, nd, mods.destreza) + getDotesIniciativaBonus(dotes),
     deslocamento: deslocamentoCalc,
     espaco: sizeInfo.espaco,
     guardaInabavalMax: calculateGuardaInabavel(patamar, nd),
@@ -153,12 +169,17 @@ export function deriveStats(raw) {
   // ---------- NOVO: Derivação de perícias ----------
   // Para cada skill, calcula o mod base e resolve override.
   // Retorno indexado por id para consulta rápida.
+  // O ½ ND de Sentidos Afiados (percepcaoDoteBonus, calculado acima) entra
+  // só na perícia "Percepção".
   const skillDerivations = {};
   for (const sk of skills) {
     const attrMod = mods[sk.attribute] ?? 0;
-    const calcMod = sk.mastered
+    let calcMod = sk.mastered
       ? calculatePericiaDominada(nd, attrMod, patamar)
       : calculatePericiaComum(nd, attrMod, patamar);
+    if (percepcaoDoteBonus && stripDiacritics(sk.name) === "percepcao") {
+      calcMod += percepcaoDoteBonus;
+    }
     const finalMod = sk.overrideMod != null ? sk.overrideMod : calcMod;
     skillDerivations[sk.id] = {
       attrMod,
@@ -201,16 +222,10 @@ export function deriveStats(raw) {
 }
 
 // Atenção = bônus de Percepção + adicional do patamar.
-// `bônus de Percepção` é a perícia (comum ou dominada) calculada sobre
-// o modificador de Sabedoria. Se a ficha tem Percepção marcada como
-// dominada, usa-se calculatePericiaDominada — antes esse caminho estava
-// quebrado e Atenção ignorava a dominação.
-function calcAtencao(patamar, nd, sabedoria, percepcaoDominada = false) {
-  const modSab = getModifier(sabedoria);
-  const bonusPercepcao = percepcaoDominada
-    ? calculatePericiaDominada(nd, modSab, patamar)
-    : calculatePericiaComum(nd, modSab, patamar);
-
+// `percepcaoMod` é o modificador REAL da perícia Percepção (resolvido em
+// deriveStats: mod do atributo + dominância + ½ ND de Sentidos Afiados +
+// override), ou o fallback comum por Sabedoria quando não há a perícia.
+function calcAtencao(patamar, nd, percepcaoMod) {
   const adicionalPatamar = {
     lacaio:     0,
     capanga:    5,
@@ -220,7 +235,7 @@ function calcAtencao(patamar, nd, sabedoria, percepcaoDominada = false) {
   };
   const extra = adicionalPatamar[patamar];
   if (extra == null) return 10;
-  return bonusPercepcao + extra;
+  return percepcaoMod + extra;
 }
 
 // Iniciativa Calamidade tem cap em "20 + metade do Mod" (PDF p.45).
@@ -278,6 +293,36 @@ export function validateDraft(raw, derived) {
       severity: "warn",
       message: `${unnamedSkills} perícia(s) sem nome`,
     });
+  }
+
+  // Dotes: excesso de quantidade pelo limite do Patamar × ND (+ Frutos da Experiência).
+  const doteLimit = getDoteLimit(raw.core?.patamar, raw.core?.nd) + getFrutosDoteBonus(raw.core);
+  const doteCount = (raw.dotes || []).length;
+  if (doteCount > doteLimit) {
+    warnings.push({
+      field: "dotes",
+      severity: "error",
+      message: `${doteCount - doteLimit} dote(s) além do limite do Patamar/ND (máx. ${doteLimit}).`,
+    });
+  }
+
+  // Dotes: pré-requisitos não atendidos + exclusividade mútua (não-bloqueantes).
+  for (const w of getDotePrereqWarnings(raw.dotes, {
+    core: raw.core,
+    attributes: raw.attributes,
+    skills: raw.skills,
+  })) {
+    warnings.push({ field: "dotes", severity: "warn", message: w.message });
+  }
+  for (const w of getDoteExclusionWarnings(raw.dotes)) {
+    warnings.push({
+      field: "dotes",
+      severity: "warn",
+      message: `${w.nome} e ${w.conflito} são mutuamente exclusivos.`,
+    });
+  }
+  for (const w of getDoteSubChoiceWarnings(raw.dotes)) {
+    warnings.push({ field: "dotes", severity: "warn", message: w.message });
   }
 
   return warnings;

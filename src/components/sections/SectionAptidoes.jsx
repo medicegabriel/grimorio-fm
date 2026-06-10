@@ -7,6 +7,7 @@ import {
   getBarreiraAptidaoBonus,
   getCompreensaoAptidaoBudgetBonus,
 } from "../fm-treinamentos";
+import { getDotesAptidaoBudgetBonus } from "../fm-dotes";
 
 // ============================================================
 // DICIONÁRIO DE APTIDÕES (regra de ouro #1)
@@ -59,14 +60,15 @@ export default function SectionAptidoes({ draft, actions }) {
   // O bônus de Barreira é EXTRA: não consome ponto do orçamento, só aparece
   // como nível efetivo a mais no slot BAR.
   const {
-    budget, baseBudget, frutosBonus, compreensaoBonus, barreiraBonus,
+    budget, baseBudget, frutosBonus, compreensaoBonus, estudoBonus, barreiraBonus,
     spent, remaining, budgetKey, theme,
   } = useMemo(() => {
     const base = calculateAptidoesBudget(draft.core?.nd);
     const frutos = getFrutosAptidaoBonus(draft.core);
     const compreensao = getCompreensaoAptidaoBudgetBonus(draft.treinamentos);
     const barreira = getBarreiraAptidaoBonus(draft.treinamentos);
-    const b = base + frutos + compreensao;
+    const estudo = getDotesAptidaoBudgetBonus(draft.dotes);
+    const b = base + frutos + compreensao + estudo;
     const s = Object.values(draft.aptidoes ?? {}).reduce((sum, v) => sum + (Number(v) || 0), 0);
     const r = b - s;
     const key = getBudgetKey({ budget: b, spent: s });
@@ -75,13 +77,14 @@ export default function SectionAptidoes({ draft, actions }) {
       baseBudget: base,
       frutosBonus: frutos,
       compreensaoBonus: compreensao,
+      estudoBonus: estudo,
       barreiraBonus: barreira,
       spent: s,
       remaining: r,
       budgetKey: key,
       theme: BUDGET_THEME[key],
     };
-  }, [draft.core, draft.aptidoes, draft.treinamentos]);
+  }, [draft.core, draft.aptidoes, draft.treinamentos, draft.dotes]);
 
   // Handler de mudança com clamp defensivo.
   // Não bloqueia digitar valores acima do orçamento (warning não-bloqueante,
@@ -156,7 +159,13 @@ export default function SectionAptidoes({ draft, actions }) {
               <span className="text-emerald-400/80"> por Treino de Compreensão</span>
             </>
           )}
-          {(frutosBonus > 0 || compreensaoBonus > 0) && (
+          {estudoBonus > 0 && (
+            <>
+              {" "}+ <span className="text-amber-300">{estudoBonus}</span>
+              <span className="text-amber-400/80"> por Estudo Amaldiçoado</span>
+            </>
+          )}
+          {(frutosBonus > 0 || compreensaoBonus > 0 || estudoBonus > 0) && (
             <>
               {" "}= <strong className="text-slate-300">{budget}</strong>
             </>

@@ -60,6 +60,7 @@ const WARNING_FIELD_TO_SECTION = {
   name: "identity",
   attributes: "attributes",
   skills: "skills",
+  dotes: "dotes",
 };
 const sectionOfWarning = (field) => {
   const root = String(field || "").split(".")[0];
@@ -328,7 +329,7 @@ export default function CreatureBuilder({ existingCreature, onSave, onCancel }) 
   );
   const dotesEl = useMemo(
     () => <SectionDotes draft={draft} actions={actions} />,
-    [draft.dotes, actions]
+    [draft.dotes, draft.core, actions]
   );
   const artimanhasEl = useMemo(
     () => <SectionArtimanhas draft={draft} actions={actions} />,

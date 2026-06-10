@@ -1179,10 +1179,12 @@ export default function Dashboard({
                 {/* Linha 1 (mobile) / Lado esquerdo (desktop): Selecionar Tudo */}
                 {isSortableView && selectableFiltered.length > 0 && (
                   <div className="flex items-center gap-2 w-full md:w-auto py-1 md:py-0 shrink-0 select-none border-b border-slate-800/40 md:border-none pb-2 md:pb-0">
-                    <button
-                      type="button"
+                    <div
+                      role="button"
+                      tabIndex={0}
                       onClick={handleSelectAll}
-                      className="flex items-center gap-2 group focus:outline-none"
+                      onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), handleSelectAll())}
+                      className="flex items-center gap-2 group focus:outline-none cursor-pointer"
                     >
                       <CustomCheckbox
                         checked={allFilteredSelected}
@@ -1191,7 +1193,7 @@ export default function Dashboard({
                       <span className="text-xs text-slate-500 group-hover:text-slate-300 transition-colors whitespace-nowrap">
                         {allFilteredSelected ? "Limpar seleção" : "Selecionar tudo"}
                       </span>
-                    </button>
+                    </div>
                   </div>
                 )}
 

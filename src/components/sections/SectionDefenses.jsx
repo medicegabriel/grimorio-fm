@@ -104,9 +104,13 @@ export default function SectionDefenses({ draft, actions }) {
 
   const condTotalLimit = CONDITION_TOTAL_LIMITS[patamar] ?? 5;
   const originConds = new Set(draft.defenses.originCondicoesImunes || []);
-  const manualConds = draft.defenses.condicoesImunes.filter((c) => !originConds.has(c));
+  // Condições concedidas por dotes (ex.: Fúria Berserker) não contam no
+  // limite do patamar nem podem ser removidas — assim como as de origem.
+  const doteConds = new Set(draft.defenses.doteCondicoesImunes || []);
+  const manualConds = draft.defenses.condicoesImunes.filter((c) => !originConds.has(c) && !doteConds.has(c));
   const condCount = manualConds.length;
-  const originCondCount = draft.defenses.condicoesImunes.length - condCount;
+  const originCondCount = draft.defenses.condicoesImunes.filter((c) => originConds.has(c)).length;
+  const doteCondCount = draft.defenses.condicoesImunes.filter((c) => doteConds.has(c) && !originConds.has(c)).length;
   const condExceeded = condCount > condTotalLimit;
   const extremaCount = manualConds.filter((c) => CONDITION_SEVERITY_MAP[c] === "extremas").length;
   const forteCount   = manualConds.filter((c) => CONDITION_SEVERITY_MAP[c] === "fortes").length;
@@ -165,6 +169,8 @@ export default function SectionDefenses({ draft, actions }) {
           <span className={`ml-auto font-mono tabular-nums ${condExceeded ? "text-red-500" : "text-slate-400"}`}>
             ({condCount}/{condTotalLimit}){originCondCount > 0 && (
               <span className="text-amber-400/80"> +{originCondCount} origem</span>
+            )}{doteCondCount > 0 && (
+              <span className="text-amber-400/80"> +{doteCondCount} dote</span>
             )}
           </span>
         </h3>
@@ -182,16 +188,18 @@ export default function SectionDefenses({ draft, actions }) {
           )}
           {draft.defenses.condicoesImunes.map((cond, i) => {
             const fromOrigin = (draft.defenses.originCondicoesImunes || []).includes(cond);
+            const fromDote = !fromOrigin && (draft.defenses.doteCondicoesImunes || []).includes(cond);
+            const locked = fromOrigin || fromDote;
             return (
               <Pill
                 key={`c-${i}`}
                 color="amber"
-                onRemove={fromOrigin ? null : () => actions.removeDefense("condicoesImunes", i)}
+                onRemove={locked ? null : () => actions.removeDefense("condicoesImunes", i)}
               >
-                {fromOrigin && (
+                {locked && (
                   <Zap
                     className="w-2.5 h-2.5 text-amber-300 -ml-0.5"
-                    title="Aplicada automaticamente pela Origem"
+                    title={fromOrigin ? "Aplicada automaticamente pela Origem" : "Aplicada automaticamente por um Dote"}
                   />
                 )}
                 {cond}
@@ -290,7 +298,7 @@ export default function SectionDefenses({ draft, actions }) {
               <span className="flex-shrink-0">⚠️</span>
               <span>
                 <b>Troca Equivalente:</b> Para cada Imunidade, a criatura deve possuir pelo menos uma Vulnerabilidade condizente.{" "}
-                <span className="text-red-400 font-semibold">({counts.imunidades} imunidade(s) — {counts.vulnerabilidades} vulnerabilidade(s))</span>
+                <span className="text-red-400 font-semibold">({manualCounts.imunidades} imunidade(s) — {manualCounts.vulnerabilidades} vulnerabilidade(s))</span>
               </span>
             </div>
           )}

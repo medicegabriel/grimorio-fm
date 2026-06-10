@@ -47,15 +47,6 @@ const ATTRIBUTE_OPTIONS = [
   { value: "presenca",      label: "PRE" },
 ];
 
-const ATTR_COLORS = {
-  forca:        "rose",
-  destreza:     "emerald",
-  constituicao: "amber",
-  inteligencia: "sky",
-  sabedoria:    "purple",
-  presenca:     "rose",
-};
-
 export default function SectionSkills({ draft, derived, actions }) {
   const [showSuggestions, setShowSuggestions] = useState(false);
 
@@ -169,19 +160,11 @@ export default function SectionSkills({ draft, derived, actions }) {
 // ---------- Linha de perícia (compacta, inline editing) ----------
 function SkillRow({ skill, derivation, onUpdate, onRemove, onOverride }) {
   const d = derivation || { calculatedMod: 0, finalMod: 0, isOverridden: false };
-  const attrColor = ATTR_COLORS[skill.attribute] || "slate";
-
-  const formatMod = (n) => (n >= 0 ? `+${n}` : `${n}`);
 
   // Borda levemente dourada se dominada, padrão se não
   const rowBorder = skill.mastered
     ? "border-amber-900/40 bg-amber-950/10"
     : "border-slate-800 bg-slate-950/40";
-
-  // Estado de display do mod (calculado vs overridden)
-  const modBg = d.isOverridden
-    ? "bg-amber-950/60 border-amber-700 text-amber-200"
-    : "bg-slate-900 border-slate-700 text-white";
 
   return (
     <div className={`flex flex-wrap items-center gap-2 p-2 border rounded ${rowBorder}`}>

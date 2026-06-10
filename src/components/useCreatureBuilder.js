@@ -9,6 +9,7 @@ import {
   getTreinamentoAptidoesEspeciais,
   getTreinamentoByNome,
 } from "./fm-treinamentos";
+import { getDoteCondicoesImunes } from "./fm-dotes";
 
 /**
  * ============================================================
@@ -147,6 +148,7 @@ const normalizeDraft = (payload = {}) => {
       vulnerabilidades: payload.defenses?.vulnerabilidades || [],
       condicoesImunes:  payload.defenses?.condicoesImunes || [],
       originCondicoesImunes: payload.defenses?.originCondicoesImunes || [],
+      doteCondicoesImunes:   payload.defenses?.doteCondicoesImunes || [],
     },
     actions:           { list: payload.actions?.list || [] },
     features:          payload.features || [],
@@ -180,10 +182,20 @@ const syncOriginDerived = (state) => {
 
   const stripOrigin = (arr) => (arr || []).filter((it) => it?.source !== "origin");
   const prevOriginConds = new Set(state.defenses?.originCondicoesImunes || []);
-  const manualConds = (state.defenses?.condicoesImunes || []).filter((c) => !prevOriginConds.has(c));
+  // Condições concedidas por dotes são uma terceira fonte protegida — não
+  // contam como manuais e devem sobreviver a uma troca de origem.
+  const doteConds = state.defenses?.doteCondicoesImunes || [];
+  const doteCondsSet = new Set(doteConds);
+  const manualConds = (state.defenses?.condicoesImunes || []).filter(
+    (c) => !prevOriginConds.has(c) && !doteCondsSet.has(c)
+  );
   const newOriginConds = items.condicoesImunes;
-  // Une as novas de origem com as manuais, sem duplicar:
-  const mergedConds = [...newOriginConds, ...manualConds.filter((c) => !newOriginConds.includes(c))];
+  // Ordem: origem → dote → manual, sem duplicar:
+  const mergedConds = [
+    ...newOriginConds,
+    ...doteConds.filter((c) => !newOriginConds.includes(c)),
+    ...manualConds.filter((c) => !newOriginConds.includes(c)),
+  ];
 
   return {
     ...state,
@@ -226,9 +238,45 @@ const syncTreinamentosDerived = (state) => {
   };
 };
 
+// ---------- Sincronização com os dotes ----------
+// Injeta as imunidades a condição concedidas por dotes (ex.: Fúria
+// Berserker) em defenses.condicoesImunes, registrando-as em
+// doteCondicoesImunes para que não contem no limite do patamar nem
+// possam ser removidas manualmente. Idempotente: condições que saem
+// do conjunto de dotes são removidas; manuais e de origem ficam intactas.
+const syncDotesDerived = (state) => {
+  const granted = getDoteCondicoesImunes(state.dotes || []);
+  const grantedSet = new Set(granted);
+  const originConds = state.defenses?.originCondicoesImunes || [];
+  const originSet = new Set(originConds);
+  const prevDoteSet = new Set(state.defenses?.doteCondicoesImunes || []);
+
+  // Manuais = o que não é de origem nem era de dote antes.
+  const manualConds = (state.defenses?.condicoesImunes || []).filter(
+    (c) => !originSet.has(c) && !prevDoteSet.has(c)
+  );
+  // Dote só "possui" o que ainda não veio da origem (evita dupla contagem).
+  const doteList = granted.filter((c) => !originSet.has(c));
+
+  const condicoesImunes = [
+    ...originConds,
+    ...doteList,
+    ...manualConds.filter((c) => !grantedSet.has(c)),
+  ];
+
+  return {
+    ...state,
+    defenses: {
+      ...state.defenses,
+      condicoesImunes,
+      doteCondicoesImunes: doteList,
+    },
+  };
+};
+
 // ---------- Reducer: dicionário de handlers ----------
 const actionHandlers = {
-  HYDRATE: (_, payload) => syncTreinamentosDerived(syncOriginDerived(normalizeDraft(payload))),
+  HYDRATE: (_, payload) => syncDotesDerived(syncTreinamentosDerived(syncOriginDerived(normalizeDraft(payload)))),
 
   SET_NAME:     (s, payload) => ({ ...s, name: payload }),
   SET_PORTRAIT: (s, payload) => ({ ...s, portraitUrl: payload }),
@@ -373,13 +421,20 @@ const actionHandlers = {
   },
 
   // ---------- Dotes ----------
-  ADD_DOTE: (s, payload) => ({
+  // Add/remove ressincronizam as imunidades a condição concedidas (ex.: Fúria
+  // Berserker injeta imovel/paralisado/inconsciente/agarrado/enredado/atordoado).
+  ADD_DOTE: (s, payload) => syncDotesDerived({
     ...s,
     dotes: [...(s.dotes || []), { ...payload, id: genId("dote") }],
   }),
-  REMOVE_DOTE: (s, id) => ({
+  REMOVE_DOTE: (s, id) => syncDotesDerived({
     ...s,
     dotes: (s.dotes || []).filter((d) => d.id !== id),
+  }),
+  // Atualiza um dote já adicionado (ex.: sub-escolha do Domínio dos Fundamentos).
+  UPDATE_DOTE: (s, { id, patch }) => ({
+    ...s,
+    dotes: (s.dotes || []).map((d) => (d.id === id ? { ...d, ...patch } : d)),
   }),
 
   // ---------- Treinamentos ----------
@@ -440,8 +495,9 @@ const actionHandlers = {
     const list = s.defenses[category] || [];
     const target = list[index];
     if (category === "condicoesImunes") {
-      // Bloqueia remoção de condição registrada como de origem
+      // Bloqueia remoção de condição registrada como de origem ou de dote
       if ((s.defenses.originCondicoesImunes || []).includes(target)) return s;
+      if ((s.defenses.doteCondicoesImunes || []).includes(target)) return s;
     } else if (target?.source === "origin") {
       return s; // bloqueia remoção de defesa tipada de origem
     }
@@ -484,7 +540,7 @@ export default function useCreatureBuilder(initialDraft = null) {
   const [draft, dispatch] = useReducer(
     reducer,
     initialDraft || blankDraft(),
-    (init) => syncTreinamentosDerived(syncOriginDerived(normalizeDraft(init)))
+    (init) => syncDotesDerived(syncTreinamentosDerived(syncOriginDerived(normalizeDraft(init))))
   );
 
   const derived = useMemo(() => deriveStats(draft), [
@@ -496,6 +552,7 @@ export default function useCreatureBuilder(initialDraft = null) {
     draft.cdAttr,
     draft.treinamentos,
     draft.aptidoes,
+    draft.dotes,
   ]);
 
   const warnings = useMemo(() => validateDraft(draft, derived), [draft, derived]);
@@ -540,6 +597,7 @@ export default function useCreatureBuilder(initialDraft = null) {
     // Dotes
     addDote:    (d) => dispatch({ type: "ADD_DOTE", payload: d }),
     removeDote: (id) => dispatch({ type: "REMOVE_DOTE", payload: id }),
+    updateDote: (id, patch) => dispatch({ type: "UPDATE_DOTE", payload: { id, patch } }),
 
     // Treinamentos
     addTreinamento:    (t) => dispatch({ type: "ADD_TREINAMENTO", payload: t }),

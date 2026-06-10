@@ -296,14 +296,6 @@ export default function useCreatureStorage() {
         return [...tagged, ...prev];
       },
       replace: () => normalizedCreatures,
-      merge: (prev) => {
-        const existingNames = new Set(prev.map((c) => c.name));
-        const tagged = normalizedCreatures.map((c) => ({
-          ...c,
-          name: existingNames.has(c.name) ? `${c.name} (Importado)` : c.name,
-        }));
-        return [...tagged, ...prev];
-      },
     };
     const strategy = strategies[mergeStrategy] || strategies.append;
     setCreatures(strategy);

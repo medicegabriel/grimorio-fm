@@ -58,6 +58,12 @@ export const parseImportText = (text) => {
     throw new Error("Formato inválido: criaturas não encontradas.");
   }
 
+  const rawFolders = Array.isArray(parsed?.folders) ? parsed.folders : [];
+  // IDs de pasta presentes no próprio import — usados pra preservar o vínculo
+  // criatura→pasta. Se a criatura aponta pra uma pasta que não veio junto,
+  // cai na raiz (folderId: null) em vez de virar órfã.
+  const importedFolderIds = new Set(rawFolders.map((f) => f?.id).filter(Boolean));
+
   const valid = creaturesData.map((c) => {
     if (!c || !c.name || typeof c.name !== "string") {
       throw new Error(`Criatura inválida: ${JSON.stringify(c)}`);
@@ -70,11 +76,9 @@ export const parseImportText = (text) => {
       ...c,
       id: safeId,
       isBuiltIn: false,
-      folderId: null,
+      folderId: c.folderId && importedFolderIds.has(c.folderId) ? c.folderId : null,
     };
   });
-
-  const rawFolders = Array.isArray(parsed?.folders) ? parsed.folders : [];
 
   return {
     creatures: valid,

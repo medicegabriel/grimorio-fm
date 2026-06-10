@@ -430,6 +430,12 @@ export function getFrutosAptidaoBonus(core) {
   return Math.floor((core?.nd ?? 0) / 4);
 }
 
+/** +1 no limite de dotes quando Frutos da Experiência escolhe "+1 Dote adicional". */
+export function getFrutosDoteBonus(core) {
+  if (!isJujutsuOrigin(core?.origin)) return 0;
+  return core?.origin?.frutosExperiencia === "dote" ? 1 : 0;
+}
+
 // ============================================================
 // HELPERS
 // ============================================================

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Heart, Zap, Shield, Eye, Target, ShieldAlert, Sparkles, Star, GraduationCap, Crosshair, Sword, Flame,
 } from "lucide-react";
@@ -249,14 +249,13 @@ export default function LivePreview({ draft, derived }) {
  * no header textual padrão.
  */
 function PortraitHeader({ draft }) {
-  const [status, setStatus] = useState("idle");
+  // Guardamos a URL que falhou (em vez de um booleano) pra que o erro fique
+  // atrelado àquela URL específica: se o usuário troca a imagem, o banner
+  // volta a renderizar sozinho — sem precisar de useEffect pra resetar.
+  const [erroredUrl, setErroredUrl] = useState(null);
 
-  useEffect(() => {
-    setStatus(draft.portraitUrl ? "loading" : "idle");
-  }, [draft.portraitUrl]);
-
-  // Sem URL ou com erro — não renderiza o banner
-  if (!draft.portraitUrl || status === "error") return null;
+  // Sem URL ou com erro nesta URL — não renderiza o banner
+  if (!draft.portraitUrl || erroredUrl === draft.portraitUrl) return null;
 
   const glowColor = PATAMAR_GLOW_HEX[draft.core.patamar] || PATAMAR_GLOW_HEX.comum;
 
@@ -279,8 +278,7 @@ function PortraitHeader({ draft }) {
           style={{
             objectPosition: `${draft.portraitFocus?.x ?? 50}% ${draft.portraitFocus?.y ?? 50}%`,
           }}
-          onLoad={() => setStatus("ok")}
-          onError={() => setStatus("error")}
+          onError={() => setErroredUrl(draft.portraitUrl)}
           referrerPolicy="no-referrer"
         />
 

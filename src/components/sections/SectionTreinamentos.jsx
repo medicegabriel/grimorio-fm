@@ -27,9 +27,9 @@ export default function SectionTreinamentos({ draft, actions }) {
   const pontosDisponiveis = pontosTotal - pontosUsados;
 
   // Estado da UI de adicionar
-  // Painel inicia aberto só quando não há nenhum treinamento ainda; assim
-  // a aba não vira um muro de cards depois que o usuário já escolheu.
-  const [pickerOpen, setPickerOpen] = useState(treinamentos.length === 0);
+  // Painel inicia sempre fechado — o usuário abre o seletor quando quiser
+  // escolher um treinamento, evitando um muro de cards ao abrir a aba.
+  const [pickerOpen, setPickerOpen] = useState(false);
   const [showCustom, setShowCustom] = useState(false);
   const [nomeCustom, setNomeCustom] = useState("");
   const [descCustom, setDescCustom] = useState("");
@@ -179,7 +179,7 @@ export default function SectionTreinamentos({ draft, actions }) {
                   Todos os treinamentos oficiais já foram adicionados.
                 </p>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 items-stretch">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 items-start">
                   {disponiveis.map((t) => {
                     const automated = isAutomatedTreinamento(t);
                     const isExpanded = expandedKey === t.key;
@@ -187,7 +187,7 @@ export default function SectionTreinamentos({ draft, actions }) {
                     return (
                       <div
                         key={t.key}
-                        className={`bg-slate-950/40 border rounded p-2.5 transition-colors h-full flex flex-col ${
+                        className={`bg-slate-950/40 border rounded p-2.5 transition-colors flex flex-col ${
                           automated
                             ? "border-amber-900/40 hover:border-amber-700/60"
                             : "border-slate-800 hover:border-slate-700"
@@ -200,7 +200,9 @@ export default function SectionTreinamentos({ draft, actions }) {
                             }`}
                           />
                           <div className="flex-1 min-w-0 flex flex-col">
-                            <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                            {/* min-h reserva 2 linhas no título: o badge
+                                "Programada" não deixa os automatizados mais altos. */}
+                            <div className="flex items-start gap-1.5 mb-1 flex-wrap min-h-[2.2rem]">
                               <span className="text-sm font-semibold text-white leading-tight">
                                 {t.nome}
                               </span>
@@ -215,7 +217,7 @@ export default function SectionTreinamentos({ draft, actions }) {
                             </div>
                             <p
                               className={`text-[11px] text-slate-400 leading-relaxed whitespace-pre-line ${
-                                isExpanded ? "" : "line-clamp-3"
+                                isExpanded ? "" : "line-clamp-3 min-h-[3.4rem]"
                               }`}
                             >
                               {desc}
