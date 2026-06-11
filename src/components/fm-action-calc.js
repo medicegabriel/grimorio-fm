@@ -133,46 +133,98 @@ export const getActionParams = (bt) =>
 export const TRADES_ZERO = { sacrifDadosAcerto: 0, sacrifDadosCD: 0, sacrifAcertoDados: 0, sacrifCdDados: 0 };
 
 // ============================================================
+// MODELO "MÉDIA → SPLIT" (dano sempre ~45% dado / 55% fixo)
+// ============================================================
+// A tabela DAMAGE_TABLE passa a ser usada só pelo campo `.avg` (média);
+// a string de roll vira mero exemplo. Toda modificação age sobre a MÉDIA
+// e, no fim, `splitAverage` reconstrói uma expressão com ~45% em dados.
+
+// Penalidade de dano fixo por ND abaixo do mínimo do patamar.
+export const BELOW_MIN_PENALTY = { lacaio: 1, capanga: 2, comum: 2, desafio: 3, calamidade: 4 };
+
+const DMG_FACES = [4, 6, 8, 10, 12];
+const faceAvgOf = (f) => (f + 1) / 2;
+const TARGET_DICE_FRACTION = 0.45;
+const PISO_MEDIA = faceAvgOf(4); // 2.5 — piso global: nada abaixo de 1d4
+
+// Face "do nível" pela magnitude da média (d4 → d12).
+export function faceForAverage(avg) {
+  if (avg < 8) return 4;
+  if (avg < 18) return 6;
+  if (avg < 38) return 8;
+  if (avg < 80) return 10;
+  return 12;
+}
+
+// Média base da tabela com reduções de ND (TR Individual / Condição por ND).
+// Abaixo do mínimo do patamar, subtrai a penalidade por ND.
+export function baseAverage(patamar, nd, ndReduction = 0) {
+  const minND = PATAMAR_ND_RANGE[patamar]?.min ?? 1;
+  const ndCalc = (nd ?? 0) - (ndReduction ?? 0);
+  if (ndCalc >= minND) return getDamage(patamar, ndCalc)?.avg ?? null;
+  const floorEntry = getDamage(patamar, minND);
+  if (!floorEntry) return null;
+  const penalty = BELOW_MIN_PENALTY[patamar] ?? 2;
+  return floorEntry.avg - (minND - ndCalc) * penalty;
+}
+
+// Reconstrói uma expressão NdF+fixo a partir da média alvo, mirando ~45%
+// em dados. Testa a face do nível e até ±2 faces vizinhas; piso de 1d4.
+export function splitAverage(avg) {
+  if (!avg || avg <= PISO_MEDIA) return { numDice: 1, dieSize: 4, mod: 0 };
+  const band = faceForAverage(avg);
+  const bi = DMG_FACES.indexOf(band);
+  let best = null;
+  for (const f of DMG_FACES) {
+    const step = Math.abs(DMG_FACES.indexOf(f) - bi);
+    if (step > 2) continue;
+    const m = faceAvgOf(f);
+    const ideal = (TARGET_DICE_FRACTION * avg) / m;
+    for (const n of [Math.floor(ideal), Math.round(ideal), Math.ceil(ideal)]) {
+      if (n < 1 || n > 14) continue;
+      const mod = Math.round(avg - n * m);
+      if (mod < 0) continue;
+      const dice = n * m;
+      const frac = dice / (dice + mod);
+      const score =
+        Math.abs(frac - TARGET_DICE_FRACTION) +
+        Math.abs(dice + mod - avg) * 0.003 +
+        step * 0.012 +
+        n * 0.0015;
+      if (!best || score < best.score) best = { numDice: n, dieSize: f, mod, score };
+    }
+  }
+  return best
+    ? { numDice: best.numDice, dieSize: best.dieSize, mod: best.mod }
+    : { numDice: 1, dieSize: 4, mod: Math.max(0, Math.round(avg - PISO_MEDIA)) };
+}
+
+// ============================================================
 // CALCULATE ACTION DAMAGE — pipeline rigorosa (7 passos)
 // ============================================================
+// Dano BASE de uma ação (sem CaC/trades/divisor — esses entram no runFull).
+// Aplica reduções de ND (TR Individual + Condição-ND) e a Narrativa Física,
+// e devolve já a expressão NdF+fixo via splitAverage. Usado pra semear o form.
 export function calculateActionDamage(
   patamar, nd, attackType, isNarrativeFisica = false, conditionNdReduction = 0
 ) {
   if (!patamar || !nd || attackType === "suporte") return null;
-
-  // Passo 1 — Somar todas as reduções de ND
-  const reducaoTr      = attackType === "tr_individual" ? 1 : 0;
-  const totalReducaoND = reducaoTr + (conditionNdReduction ?? 0);
-
-  // Passo 2 — Calcular ND alvo, safeND e déficit
-  const minND    = PATAMAR_ND_RANGE[patamar]?.min ?? 1;
-  const targetND = nd - totalReducaoND;
-  const safeND   = Math.max(minND, targetND);
-  const deficit  = Math.max(0, minND - targetND);
-
-  // Passo 3 — Buscar na tabela e fazer parse da string de dano
-  const entry = getDamage(patamar, safeND);
-  if (!entry?.roll) return null;
-
-  const m = entry.roll.match(/^(\d+)d(\d+)([+-]\d+)?$/i);
-  if (!m) return null;
-
-  let numDice   = parseInt(m[1]);
-  const dieSize = parseInt(m[2]);
-  let mod       = parseInt(m[3] ?? "0");
-
-  // Passo 4 — Aplicar o déficit no dano fixo
-  mod -= deficit * 4;
-
-  // Passo 5 — Redução por narrativa + trava de segurança
-  // Divisão por área/alma ocorre no pipeline runFullCalc após somar todos os dados brutos
-  if (isNarrativeFisica) numDice -= 2;
-  numDice = Math.max(1, numDice);
-
-  // Passos 6-7 — Trades e string final (trades aplicados externamente via applyTrades)
-  const modStr  = mod > 0 ? `+${mod}` : mod < 0 ? `${mod}` : "";
-  const average = Math.floor(numDice * ((dieSize + 1) / 2)) + mod;
-  return { numDice, dieSize, mod, roll: `${numDice}d${dieSize}${modStr}`, average };
+  const ndRed = (attackType === "tr_individual" ? 1 : 0) + (conditionNdReduction ?? 0);
+  let avg = baseAverage(patamar, nd, ndRed);
+  if (avg == null) return null;
+  if (isNarrativeFisica) {
+    const lf = faceForAverage(baseAverage(patamar, nd, 0) ?? avg);
+    avg -= 2 * faceAvgOf(lf);
+  }
+  avg = Math.max(PISO_MEDIA, avg);
+  const s = splitAverage(avg);
+  return {
+    numDice: s.numDice,
+    dieSize: s.dieSize,
+    mod: s.mod,
+    roll: rollStr(s.numDice, s.dieSize, s.mod),
+    average: rollAverage(s.numDice, s.dieSize, s.mod),
+  };
 }
 
 // ============================================================
@@ -504,49 +556,61 @@ export function generateActionDescription(action, creatureName, flavorText = "")
 export function runFullActionCalc({
   patamar, nd, bt, attackType, condition, narrativeType, rangeType, trades, damageType, toHitBase, cdBase,
 }) {
-  const baseResult = calculateActionDamage(
-    patamar, nd, attackType, narrativeType === "fisica", getCondNdReduction(condition)
+  if (!patamar || !nd || attackType === "suporte") return null;
+  const t = { ...TRADES_ZERO, ...(trades ?? {}) };
+
+  // 1) Média base (com reduções de ND e penalidade abaixo do mínimo).
+  const ndRed = (attackType === "tr_individual" ? 1 : 0) + getCondNdReduction(condition);
+  let avg = baseAverage(patamar, nd, ndRed);
+  if (avg == null) return null;
+
+  // Face do nível: unidade das modificações "em médias de dado" (estável).
+  const fAvg = faceAvgOf(faceForAverage(baseAverage(patamar, nd, 0) ?? avg));
+
+  // 2) Corpo-a-Corpo (+dados por BT) e Narrativa Física (−2 dados), ANTES da divisão.
+  if (rangeType === "cac") avg += getActionParams(bt).meleeBonusDice * fAvg;
+  if (narrativeType === "fisica") avg -= 2 * fAvg;
+
+  // 3) Trades: mexem na média (mesmas taxas) e no Acerto/CD.
+  avg += fAvg * (
+    Math.floor((t.sacrifAcertoDados ?? 0) / 2) + (t.sacrifCdDados ?? 0)
+    - (t.sacrifDadosAcerto ?? 0) - (t.sacrifDadosCD ?? 0)
   );
-  if (!baseResult) return null;
-  const tHitBase = toHitBase ?? 0;
-  const tCdBase  = cdBase ?? 0;
-  const tradeResult = applyTrades(baseResult.numDice, tHitBase, tCdBase, rangeType, trades, bt);
-  const { acertoFinal, cdFinal } = tradeResult;
-  const divisor = computeDivisor(attackType, damageType ?? "cortante");
-  const { numDadosFinal, danoFixoFinal, dieSize: dieFinal } = applyDivisorFull(
-    tradeResult.dadosFinais, baseResult.dieSize, baseResult.mod, divisor
-  );
-  const finalRoll = rollStr(numDadosFinal, dieFinal, danoFixoFinal);
-  const finalAvg  = rollAverage(numDadosFinal, dieFinal, danoFixoFinal);
+  const acertoFinal = (toHitBase ?? 0) + (t.sacrifDadosAcerto ?? 0) * 2 - (t.sacrifAcertoDados ?? 0);
+  const cdFinal     = (cdBase ?? 0) + (t.sacrifDadosCD ?? 0) - (t.sacrifCdDados ?? 0);
+
+  // 4) Divisor de Área (÷2) / Alma (÷3) na média (nunca os dois — Alma não é área).
+  if (attackType === "tr_area") avg /= 2;
+  if (damageType === "alma")    avg /= 3;
+
+  // 5) Piso 1d4 + split (~45% dado / 55% fixo).
+  avg = Math.max(PISO_MEDIA, avg);
+  const s = splitAverage(avg);
+  const roll = rollStr(s.numDice, s.dieSize, s.mod);
+  const average = rollAverage(s.numDice, s.dieSize, s.mod);
+
   return {
-    toHit:    acertoFinal,
-    toHitBase: tHitBase,
-    cd:       cdFinal,
-    cdBase:   tCdBase,
-    damage:   { ...baseResult, numDice: numDadosFinal, numDiceBase: baseResult.numDice, mod: danoFixoFinal, dieSize: dieFinal, roll: finalRoll, average: finalAvg, damageIsCalculated: true },
+    toHit: acertoFinal,
+    toHitBase: toHitBase ?? 0,
+    cd: cdFinal,
+    cdBase: cdBase ?? 0,
+    damage: {
+      numDice: s.numDice,
+      numDiceBase: s.numDice,
+      dieSize: s.dieSize,
+      mod: s.mod,
+      roll,
+      average,
+      damageIsCalculated: true,
+    },
   };
 }
 
-// reapplyTrades: reaplica trades sobre o dano-base existente (usado quando
-// o dano está travado — divisor simples sem compensação de fração).
-// `src` é um objeto tipo-ação (norm em ActionItem, prev em ActionForm).
-export function reapplyTrades(src, rangeType, trades, bt) {
-  const numDiceBase = src.damage?.numDiceBase ?? src.damage?.numDice ?? 0;
-  const tHitBase    = src.toHitBase ?? src.toHit ?? 0;
-  const tCdBase     = src.cdBase    ?? src.cd    ?? 0;
-  const tradeRes = applyTrades(numDiceBase, tHitBase, tCdBase, rangeType, trades, bt);
-  const divisor  = computeDivisor(src.attackType, src.damage?.type ?? "cortante");
-  const numDadosFinal = divisor === 1 ? tradeRes.dadosFinais : Math.max(1, Math.floor(tradeRes.dadosFinais / divisor));
-  const dieSize = src.damage?.dieSize ?? 8;
-  const modVal  = src.damage?.mod ?? 0;
-  return {
-    toHit: tradeRes.acertoFinal,
-    cd:    tradeRes.cdFinal,
-    damage: {
-      ...src.damage,
-      numDice: numDadosFinal,
-      roll:    rollStr(numDadosFinal, dieSize, modVal),
-      average: rollAverage(numDadosFinal, dieSize, modVal),
-    },
-  };
+// reapplyTrades: caminho do dano TRAVADO (manual). Não recalcula os dados
+// (o usuário os digitou) — só atualiza Acerto/CD pelas trocas.
+export function reapplyTrades(src, rangeType, trades, bt) { // eslint-disable-line no-unused-vars
+  const t = { ...TRADES_ZERO, ...(trades ?? {}) };
+  const acerto = (src.toHitBase ?? src.toHit ?? 0) + (t.sacrifDadosAcerto ?? 0) * 2 - (t.sacrifAcertoDados ?? 0);
+  const cd     = (src.cdBase ?? src.cd ?? 0) + (t.sacrifDadosCD ?? 0) - (t.sacrifCdDados ?? 0);
+  return { toHit: acerto, cd, damage: { ...src.damage } };
 }
