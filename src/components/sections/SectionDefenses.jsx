@@ -85,9 +85,10 @@ export default function SectionDefenses({ draft, actions }) {
   const patamar = draft.core.patamar ?? "comum";
   const limits = DEFENSE_LIMITS[patamar] ?? DEFENSE_LIMITS.comum;
 
-  // Defesas vindas de Origem (source:'origin') ou condições em
-  // originCondicoesImunes NÃO entram nos limites do patamar — só manuais contam.
-  const isManual = (item) => item?.source !== "origin";
+  // Defesas vindas de Origem (source:'origin') ou de Aptidão (source:'aptidao'),
+  // e condições em originCondicoesImunes/doteCondicoesImunes NÃO entram nos
+  // limites do patamar — só as manuais contam.
+  const isManual = (item) => item?.source !== "origin" && item?.source !== "aptidao";
   const manualCounts = {
     imunidades:       draft.defenses.imunidades.filter(isManual).length,
     resistencias:     draft.defenses.resistencias.filter(isManual).length,
@@ -141,16 +142,18 @@ export default function SectionDefenses({ draft, actions }) {
               )}
               {draft.defenses[key].map((item, i) => {
                 const fromOrigin = item?.source === "origin";
+                const fromAptidao = item?.source === "aptidao";
+                const locked = fromOrigin || fromAptidao;
                 return (
                   <Pill
                     key={`${key}-${i}`}
                     color={color}
-                    onRemove={fromOrigin ? null : () => actions.removeDefense(key, i)}
+                    onRemove={locked ? null : () => actions.removeDefense(key, i)}
                   >
-                    {fromOrigin && (
+                    {locked && (
                       <Zap
                         className="w-2.5 h-2.5 text-amber-400 -ml-0.5"
-                        title="Aplicada automaticamente pela Origem"
+                        title={fromOrigin ? "Aplicada automaticamente pela Origem" : "Aplicada automaticamente por uma Aptidão"}
                       />
                     )}
                     {item.tipo}{item.nivel ? <span className="opacity-60"> ({item.nivel})</span> : null}

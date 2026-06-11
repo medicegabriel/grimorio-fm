@@ -13,7 +13,10 @@ import {
 import { createInitialCombatState, applyNewRoundEffects, LOG_TYPES, createLogEntry, computeAlmaStatus, ALMA_ESTADOS } from '../fm-encounter';
 import { humanizeAction, generateActionDescription, ACTION_TYPE_LABELS } from './fm-action-calc';
 import { getModifier, calculateCD, calculateAcerto, CONDITIONS } from './fm-tables';
-import { computeConfrontoDominio } from './fm-treinamentos';
+import { computeConfrontoDominio, getTreinamentoByKey, isAutomatedTreinamento } from './fm-treinamentos';
+import { getDoteByKey, isAutomatedDote, resolveDoteDescription } from './fm-dotes';
+import { getAptidaoByKey, resolveAptidaoDescription } from './fm-aptidoes';
+import { MiniTable } from './builder-controls';
 
 const ATTR_DEFS = [
   { key: 'forca',        label: 'FOR', accent: 'text-red-400' },
@@ -1299,15 +1302,27 @@ export default function CombatantPanel({
               </button>
               {showAptidoes && (
                 <div className="space-y-2">
-                  {aptidoesEspeciais.map((a) => (
-                    <AbilityCard
-                      key={a.id}
-                      title={a.nome}
-                      tag={a.categoria}
-                      tagClass="text-purple-400 bg-purple-950/50 border-purple-900"
-                      description={a.descricao}
-                    />
-                  ))}
+                  {aptidoesEspeciais.map((a) => {
+                    const catalog = a.key ? getAptidaoByKey(a.key) : null;
+                    const desc = catalog
+                      ? resolveAptidaoDescription(catalog, {
+                          core: snapshot.core,
+                          attributes: snapshot.attributes,
+                          aptidoes: snapshot.aptidoes,
+                          subChoice: a.subChoice,
+                        })
+                      : a.descricao;
+                    return (
+                      <AbilityCard
+                        key={a.id}
+                        title={a.nome}
+                        tag={a.categoria}
+                        tagClass="text-purple-400 bg-purple-950/50 border-purple-900"
+                        description={desc}
+                        footer={catalog?.tabela ? <MiniTable {...catalog.tabela} /> : undefined}
+                      />
+                    );
+                  })}
                 </div>
               )}
             </section>
@@ -1325,13 +1340,26 @@ export default function CombatantPanel({
               </button>
               {showDotes && (
                 <div className="space-y-2">
-                  {dotes.map((d) => (
-                    <AbilityCard
-                      key={d.id}
-                      title={d.nome}
-                      description={d.descricao}
-                    />
-                  ))}
+                  {dotes.map((d) => {
+                    const catalog = d.key ? getDoteByKey(d.key) : null;
+                    const desc = catalog
+                      ? resolveDoteDescription(catalog, {
+                          core: snapshot.core,
+                          attributes: snapshot.attributes,
+                          subChoice: d.subChoice,
+                        })
+                      : d.descricao;
+                    const automated = isAutomatedDote(catalog);
+                    return (
+                      <AbilityCard
+                        key={d.id}
+                        title={d.nome}
+                        tag={automated ? 'Programada' : undefined}
+                        tagClass="text-amber-300 border-amber-700/60 bg-amber-950/40"
+                        description={desc}
+                      />
+                    );
+                  })}
                 </div>
               )}
             </section>
@@ -1349,13 +1377,24 @@ export default function CombatantPanel({
               </button>
               {showTreinamentos && (
                 <div className="space-y-2">
-                  {treinamentos.map((t) => (
-                    <AbilityCard
-                      key={t.id}
-                      title={t.nome}
-                      description={t.descricao}
-                    />
-                  ))}
+                  {treinamentos.map((t) => {
+                    const catalog = t.key ? getTreinamentoByKey(t.key) : null;
+                    const desc = catalog
+                      ? (typeof catalog.descriptionFn === 'function'
+                          ? catalog.descriptionFn({ core: snapshot.core, attributes: snapshot.attributes })
+                          : catalog.descricao)
+                      : t.descricao;
+                    const automated = isAutomatedTreinamento(catalog);
+                    return (
+                      <AbilityCard
+                        key={t.id}
+                        title={t.nome}
+                        tag={automated ? 'Programada' : undefined}
+                        tagClass="text-amber-300 border-amber-700/60 bg-amber-950/40"
+                        description={desc}
+                      />
+                    );
+                  })}
                 </div>
               )}
             </section>

@@ -1,18 +1,19 @@
 import React, { useState } from "react";
 import { Plus, Trash2, Star, Zap, ChevronDown, ChevronUp } from "lucide-react";
-import { TextInput, TextArea, SmallButton } from "../builder-controls";
-import { DOTES_OFICIAIS, getDoteByKey, isAutomatedDote, getDoteLimit } from "../fm-dotes";
+import { TextInput, TextArea, SmallButton, ExpandableText } from "../builder-controls";
+import { DOTES_OFICIAIS, getDoteByKey, isAutomatedDote, getDoteLimit, resolveDoteDescription } from "../fm-dotes";
 import { getFrutosDoteBonus } from "../fm-origens";
 
 // Re-export para preservar consumidores externos (import legado).
 export { DOTES_OFICIAIS };
 
-// Descrição resolvida no contexto da ficha: alguns dotes têm descriptionFn
-// que injeta valores calculados (BT, ND) no texto.
-const resolveDesc = (dote, draft) =>
-  typeof dote?.descriptionFn === "function"
-    ? dote.descriptionFn({ core: draft.core, attributes: draft.attributes })
-    : dote?.descricao;
+// Descrição resolvida no contexto da ficha (descriptionFn + sub-escolha).
+const resolveDesc = (dote, draft, subChoice) =>
+  resolveDoteDescription(dote, {
+    core: draft.core,
+    attributes: draft.attributes,
+    subChoice,
+  });
 
 // Badge "Programada" reutilizado em vários pontos.
 const ProgramadaBadge = () => (
@@ -73,15 +74,6 @@ export default function SectionDotes({ draft, actions }) {
 
   return (
     <div className="space-y-4">
-      {/* Aviso sobre escolha pelo Mestre */}
-      <div className="flex items-start gap-2 bg-amber-950/30 border border-amber-900/50 rounded px-3 py-2">
-        <Star className="w-3.5 h-3.5 text-amber-400 flex-shrink-0 mt-0.5" />
-        <p className="text-xs text-amber-300/80">
-          Dotes Gerais são concedidos pelo Mestre conforme a narrativa e regras da mesa.
-          A quantidade máxima é definida pelo Patamar e ND da criatura.
-        </p>
-      </div>
-
       {/* Indicador de limite de dotes */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
@@ -131,7 +123,7 @@ export default function SectionDotes({ draft, actions }) {
         <div className="space-y-2">
           {dotes.map((d) => {
             const catalog = d.key ? getDoteByKey(d.key) : null;
-            const desc = catalog ? resolveDesc(catalog, draft) : d.descricao;
+            const desc = catalog ? resolveDesc(catalog, draft, d.subChoice) : d.descricao;
             const automated = isAutomatedDote(catalog);
             const subChoice = catalog?.automation?.kind === "sub_choice" ? catalog.automation : null;
             return (
@@ -150,11 +142,7 @@ export default function SectionDotes({ draft, actions }) {
                       </span>
                     )}
                   </div>
-                  {desc && (
-                    <p className="text-xs text-slate-400 leading-relaxed whitespace-pre-line">
-                      {desc}
-                    </p>
-                  )}
+                  {desc && <ExpandableText text={desc} />}
                   {/* Sub-escolha (ex.: Domínio dos Fundamentos: Cruel × Duplicado) */}
                   {subChoice && (
                     <div className="mt-2 flex items-center gap-2">

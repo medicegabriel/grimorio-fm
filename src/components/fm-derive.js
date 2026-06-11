@@ -8,7 +8,12 @@ import {
   TAMANHO_INFO, getDeslocamentoMultiplier,
   getAttributePoints, ATTRIBUTE_LIMIT,
 } from "./fm-tables";
-import { hasPeAumentoEnergia, hasPeDouble, hasPeEstoqueAdicional, getFrutosDoteBonus } from "./fm-origens";
+import { hasPeAumentoEnergia, hasPeDouble, hasPeEstoqueAdicional, getFrutosDoteBonus, getFrutosAptidaoEspecialBonus } from "./fm-origens";
+import {
+  getAptidaoLimit, getAptidoesDeslocamentoBonus,
+  getAptidoesAtencaoBonus, getAptidoesHpBonus, getAptidoesSkillBonus,
+  getAptidaoSubChoiceWarnings,
+} from "./fm-aptidoes";
 import { getTRCritMarginDeltas, computeConfrontoDominio } from "./fm-treinamentos";
 import {
   getDotesAtencaoBonus, getDotesIniciativaBonus,
@@ -67,7 +72,7 @@ const buildCritMargins = (treinamentos = []) => {
 };
 
 export function deriveStats(raw) {
-  const { core, attributes, overrides = {}, skills = [], attackAttr = 'forca', cdAttr = null, treinamentos = [], aptidoes = {}, dotes = [] } = raw;
+  const { core, attributes, overrides = {}, skills = [], attackAttr = 'forca', cdAttr = null, treinamentos = [], aptidoes = {}, dotes = [], aptidoesEspeciais = [] } = raw;
   const { patamar, nd, difficulty = "iniciante", size = "medio" } = core;
 
   const bt = getBonusTreinamento(nd);
@@ -107,26 +112,30 @@ export function deriveStats(raw) {
   // cálculo comum por Sabedoria (ainda somando o ½ ND do dote, se houver).
   const stripDiacritics = (s) =>
     (s || "").toString().normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
+  // Bônus de Percepção: ½ ND de Sentidos Afiados (dote) + bônus de aptidões
+  // (ex.: Olhos Adicionais +2 escalando). Alimenta a perícia Percepção E a
+  // Atenção (que segue essa perícia).
   const percepcaoDoteBonus = getDotesPercepcaoBonus(dotes, nd);
+  const percepcaoBonus = percepcaoDoteBonus + getAptidoesSkillBonus(aptidoesEspeciais, "percepcao", nd);
   const percepcaoSkill = skills.find((s) => stripDiacritics(s.name) === "percepcao");
   let percepcaoMod;
   if (percepcaoSkill) {
     const attrMod = mods[percepcaoSkill.attribute] ?? mods.sabedoria;
     const calc = (percepcaoSkill.mastered
       ? calculatePericiaDominada(nd, attrMod, patamar)
-      : calculatePericiaComum(nd, attrMod, patamar)) + percepcaoDoteBonus;
+      : calculatePericiaComum(nd, attrMod, patamar)) + percepcaoBonus;
     percepcaoMod = percepcaoSkill.overrideMod != null ? percepcaoSkill.overrideMod : calc;
   } else {
-    percepcaoMod = calculatePericiaComum(nd, mods.sabedoria, patamar) + percepcaoDoteBonus;
+    percepcaoMod = calculatePericiaComum(nd, mods.sabedoria, patamar) + percepcaoBonus;
   }
 
   const calculated = {
-    hpMax: calculateHP(patamar, nd, attributes.constituicao),
+    hpMax: calculateHP(patamar, nd, attributes.constituicao) + getAptidoesHpBonus(aptidoesEspeciais, nd),
     peMax: peMaxFinal,
     defesa: calculateDefesa(patamar, nd, mods.destreza, difficulty),
-    atencao: calcAtencao(patamar, nd, percepcaoMod) + getDotesAtencaoBonus(dotes, nd),
+    atencao: calcAtencao(patamar, nd, percepcaoMod) + getDotesAtencaoBonus(dotes, nd) + getAptidoesAtencaoBonus(aptidoesEspeciais),
     iniciativa: calcIniciativa(patamar, nd, mods.destreza) + getDotesIniciativaBonus(dotes),
-    deslocamento: deslocamentoCalc,
+    deslocamento: deslocamentoCalc + getAptidoesDeslocamentoBonus(aptidoesEspeciais, mods.destreza),
     espaco: sizeInfo.espaco,
     guardaInabavalMax: calculateGuardaInabavel(patamar, nd),
     rdGeral: lookup(RD_GERAL, patamar, nd),
@@ -169,17 +178,17 @@ export function deriveStats(raw) {
   // ---------- NOVO: Derivação de perícias ----------
   // Para cada skill, calcula o mod base e resolve override.
   // Retorno indexado por id para consulta rápida.
-  // O ½ ND de Sentidos Afiados (percepcaoDoteBonus, calculado acima) entra
-  // só na perícia "Percepção".
+  // Bônus por perícia: ½ ND de Sentidos Afiados na Percepção (dote) + bônus
+  // de aptidões por perícia (Olhos → Percepção, Braços → Prestidigitação...).
   const skillDerivations = {};
   for (const sk of skills) {
+    const norm = stripDiacritics(sk.name);
     const attrMod = mods[sk.attribute] ?? 0;
     let calcMod = sk.mastered
       ? calculatePericiaDominada(nd, attrMod, patamar)
       : calculatePericiaComum(nd, attrMod, patamar);
-    if (percepcaoDoteBonus && stripDiacritics(sk.name) === "percepcao") {
-      calcMod += percepcaoDoteBonus;
-    }
+    if (norm === "percepcao") calcMod += percepcaoDoteBonus;
+    calcMod += getAptidoesSkillBonus(aptidoesEspeciais, norm, nd);
     const finalMod = sk.overrideMod != null ? sk.overrideMod : calcMod;
     skillDerivations[sk.id] = {
       attrMod,
@@ -304,6 +313,21 @@ export function validateDraft(raw, derived) {
       severity: "error",
       message: `${doteCount - doteLimit} dote(s) além do limite do Patamar/ND (máx. ${doteLimit}).`,
     });
+  }
+
+  // Aptidões Amaldiçoadas: excesso pelo limite (uma a cada nível par + Frutos).
+  // Concedidas por treino (source:"treino") são extras e não contam.
+  const aptLimit = getAptidaoLimit(raw.core) + getFrutosAptidaoEspecialBonus(raw.core);
+  const aptCount = (raw.aptidoesEspeciais || []).filter((a) => a.source !== "treino").length;
+  if (aptCount > aptLimit) {
+    warnings.push({
+      field: "aptidoesEsp",
+      severity: "error",
+      message: `${aptCount - aptLimit} aptidão(ões) além do limite do Patamar/ND (máx. ${aptLimit}).`,
+    });
+  }
+  for (const w of getAptidaoSubChoiceWarnings(raw.aptidoesEspeciais)) {
+    warnings.push({ field: "aptidoesEsp", severity: "warn", message: w.message });
   }
 
   // Dotes: pré-requisitos não atendidos + exclusividade mútua (não-bloqueantes).

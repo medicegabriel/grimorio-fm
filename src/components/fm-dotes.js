@@ -57,7 +57,7 @@ export const DOTES_OFICIAIS = [
     key: "assumir_postura",
     nome: "Assumir Postura",
     descricao:
-      "A postura que uma pessoa mantém em combate molda suas capacidades, fornecendo grandes benefícios. Ao obter esta habilidade, você recebe acesso às posturas, explicadas e listadas no final da especialização. Entrar em uma postura é uma ação bônus.\n• Postura da Fortuna. Enquanto estiver na postura da fortuna, ao rodar um d20 e conseguir um resultado igual ou menor ao seu bônus de treinamento, você pode escolher rolar novamente, ficando com o maior resultado. Você pode utilizar este efeito uma quantidade de vezes igual a metade do seu bônus de treinamento por rodada e apenas uma vez no mesmo dado.\n• Postura da Tempestade. Enquanto na postura da tempestade, sempre que acertar um ataque o alvo realiza um TR de Fortitude, sendo derrubado em uma falha. Caso acerte um ataque em um alvo já caído, ele deve repetir o teste e, caso falhe, fica imóvel até o começo do seu turno. [Pré-Requisito: ND 10]",
+      "A postura que uma pessoa mantém em combate molda suas capacidades, fornecendo grandes benefícios. Ao obter esta habilidade, você recebe acesso às posturas, explicadas e listadas no final da especialização. Entrar em uma postura é uma ação bônus.\n\n• Postura da Fortuna. Enquanto estiver na postura da fortuna, ao rodar um d20 e conseguir um resultado igual ou menor ao seu bônus de treinamento, você pode escolher rolar novamente, ficando com o maior resultado. Você pode utilizar este efeito uma quantidade de vezes igual a metade do seu bônus de treinamento por rodada e apenas uma vez no mesmo dado.\n\n• Postura da Tempestade. Enquanto na postura da tempestade, sempre que acertar um ataque o alvo realiza um TR de Fortitude, sendo derrubado em uma falha. Caso acerte um ataque em um alvo já caído, ele deve repetir o teste e, caso falhe, fica imóvel até o começo do seu turno. [Pré-Requisito: ND 10]",
   },
   {
     key: "atracao_combate",
@@ -87,13 +87,23 @@ export const DOTES_OFICIAIS = [
     key: "dominio_fundamentos",
     nome: "Domínio dos Fundamentos",
     descricao:
-      "Você tem uma maior dominância sobre os fundamentos da energia amaldiçoada e das suas habilidades. Você pode escolher uma das mudanças de Fundamento abaixo.\n• Feitiço Cruel. Quando usar um Feitiço que força um Teste de Resistência, você pode gastar 1 ponto de energia amaldiçoada para aumentar a CD do teste em 2, ou 2 pontos para aumentar em 4.\n• Feitiço Duplicado. Uma vez por rodada, quando usar um Feitiço de dano cujo alvo seja apenas uma criatura, você pode gastar pontos de energia para dar um segundo alvo à habilidade. O custo para reproduzir a habilidade em outra criatura é 5 PE.",
+      "Você tem uma maior dominância sobre os fundamentos da energia amaldiçoada e das suas habilidades. Você pode escolher uma das mudanças de Fundamento abaixo.",
     automation: {
       kind: "sub_choice",
       label: "Fundamento escolhido",
       options: [
-        { value: "cruel", label: "Feitiço Cruel" },
-        { value: "duplicado", label: "Feitiço Duplicado" },
+        {
+          value: "cruel",
+          label: "Feitiço Cruel",
+          texto:
+            "Quando usar um Feitiço que força um Teste de Resistência, você pode gastar 1 ponto de energia amaldiçoada para aumentar a CD do teste em 2, ou 2 pontos para aumentar em 4.",
+        },
+        {
+          value: "duplicado",
+          label: "Feitiço Duplicado",
+          texto:
+            "Uma vez por rodada, quando usar um Feitiço de dano cujo alvo seja apenas uma criatura, você pode gastar pontos de energia para dar um segundo alvo à habilidade. O custo para reproduzir a habilidade em outra criatura é 5 PE.",
+        },
       ],
     },
   },
@@ -217,6 +227,30 @@ const BY_KEY = Object.fromEntries(DOTES_OFICIAIS.map((d) => [d.key, d]));
 
 export const getDoteByNome = (nome) => BY_NOME[nome] ?? null;
 export const getDoteByKey = (key) => BY_KEY[key] ?? null;
+
+/**
+ * Texto de exibição de um dote, resolvido no contexto da ficha.
+ * - `descriptionFn`: injeta valores calculados (BT, ND) no texto.
+ * - sub-escolha (sub_choice): com uma opção escolhida, mostra só ela;
+ *   sem escolha (ex.: card do seletor), lista todas as opções.
+ * ctx = { core, attributes, subChoice }.
+ */
+export function resolveDoteDescription(dote, ctx = {}) {
+  if (!dote) return "";
+  const base =
+    typeof dote.descriptionFn === "function"
+      ? dote.descriptionFn({ core: ctx.core, attributes: ctx.attributes })
+      : dote.descricao;
+  const auto = dote.automation;
+  if (auto?.kind !== "sub_choice") return base;
+  const opts = auto.options || [];
+  const fmt = (o) => `• ${o.label}. ${o.texto}`;
+  if (ctx.subChoice) {
+    const chosen = opts.find((o) => o.value === ctx.subChoice);
+    if (chosen) return `${base}\n\n${fmt(chosen)}`;
+  }
+  return [base, ...opts.map(fmt)].join("\n\n");
+}
 
 // ============================================================
 // LIMITE DE DOTES — quantidade máxima por Patamar × ND

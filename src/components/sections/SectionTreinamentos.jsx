@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Plus, Trash2, GraduationCap, Zap, ChevronDown, ChevronUp } from "lucide-react";
-import { TextInput, TextArea, SmallButton } from "../builder-controls";
+import { TextInput, TextArea, SmallButton, ExpandableText } from "../builder-controls";
 import {
   TREINAMENTOS_OFICIAIS,
   getTreinamentoByKey,
@@ -126,11 +126,7 @@ export default function SectionTreinamentos({ draft, actions }) {
                       </span>
                     )}
                   </div>
-                  {desc && (
-                    <p className="text-xs text-slate-400 leading-relaxed whitespace-pre-line">
-                      {desc}
-                    </p>
-                  )}
+                  {desc && <ExpandableText text={desc} />}
                 </div>
                 <SmallButton
                   onClick={() => actions.removeTreinamento(t.id)}

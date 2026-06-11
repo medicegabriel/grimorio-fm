@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Zap, Lock, Unlock, Info, ChevronDown } from "lucide-react";
+import { Zap, Lock, Unlock, Info, ChevronDown, ChevronUp } from "lucide-react";
 
 /**
  * Componentes de input reutilizáveis — padrão visual unificado.
@@ -244,5 +244,94 @@ export const SmallButton = ({ children, onClick, variant = "default", type = "bu
     >
       {children}
     </button>
+  );
+};
+
+// ---------- Tabela compacta (ex.: Técnica Máxima por Patamar) ----------
+export const MiniTable = ({ titulo, colunas = [], linhas = [] }) => (
+  <div className="mt-2 border border-slate-800 rounded-lg overflow-hidden">
+    {titulo && (
+      <div className="px-2.5 py-1 bg-slate-900/70 text-[10px] uppercase tracking-wider text-slate-400 font-bold border-b border-slate-800">
+        {titulo}
+      </div>
+    )}
+    {/* Rola na horizontal quando a tabela é larga (ex.: 6 colunas no mobile). */}
+    <div className="overflow-x-auto">
+      <table className="min-w-full text-[11px] border-collapse">
+        {colunas.length > 0 && (
+          <thead>
+            <tr className="bg-slate-900/40">
+              {colunas.map((c) => (
+                <th
+                  key={c}
+                  className="text-left px-2.5 py-1 font-semibold text-slate-300 whitespace-nowrap"
+                >
+                  {c}
+                </th>
+              ))}
+            </tr>
+          </thead>
+        )}
+        <tbody>
+          {linhas.map((row, i) => (
+            <tr key={i} className="border-t border-slate-800/60">
+              {row.map((cell, j) => (
+                <td
+                  key={j}
+                  className={`px-2.5 py-1 align-top whitespace-nowrap ${
+                    j === 0 ? "text-slate-300 font-medium" : "text-slate-400"
+                  }`}
+                >
+                  {cell}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+);
+
+// ---------- Descrição com "Ler mais" ----------
+// Mostra a descrição; quando longa (várias linhas, texto extenso ou com
+// conteúdo `extra`), recolhe em 3 linhas com um botão "Ler mais"/"Recolher".
+// Preserva quebras de linha (whitespace-pre-line), então bullets espaçados
+// com linha em branco aparecem certinho. `extra` (ex.: uma tabela) só
+// aparece quando expandido.
+export const ExpandableText = ({ text, extra, className = "" }) => {
+  const [expanded, setExpanded] = useState(false);
+  if (!text && !extra) return null;
+  const isLong = (!!text && (text.length > 200 || text.includes("\n"))) || !!extra;
+  return (
+    <div>
+      {text && (
+        <p
+          className={`text-xs text-slate-400 leading-relaxed whitespace-pre-line ${
+            isLong && !expanded ? "line-clamp-3" : ""
+          } ${className}`}
+        >
+          {text}
+        </p>
+      )}
+      {expanded && extra}
+      {isLong && (
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className="mt-1 inline-flex items-center gap-0.5 text-[10px] text-slate-500 hover:text-slate-300 transition-colors focus:outline-none focus:ring-1 focus:ring-purple-500/40 rounded"
+        >
+          {expanded ? (
+            <>
+              <ChevronUp className="w-3 h-3" /> Recolher
+            </>
+          ) : (
+            <>
+              <ChevronDown className="w-3 h-3" /> Ler mais
+            </>
+          )}
+        </button>
+      )}
+    </div>
   );
 };

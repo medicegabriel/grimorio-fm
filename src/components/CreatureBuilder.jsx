@@ -61,6 +61,7 @@ const WARNING_FIELD_TO_SECTION = {
   attributes: "attributes",
   skills: "skills",
   dotes: "dotes",
+  aptidoesEsp: "aptidoesEsp",
 };
 const sectionOfWarning = (field) => {
   const root = String(field || "").split(".")[0];
@@ -325,7 +326,7 @@ export default function CreatureBuilder({ existingCreature, onSave, onCancel }) 
   );
   const aptidoesEspEl = useMemo(
     () => <SectionAptidoesEspeciais draft={draft} actions={actions} />,
-    [draft.aptidoesEspeciais, actions]
+    [draft.aptidoesEspeciais, draft.core, draft.attributes, draft.aptidoes, draft.skills, actions]
   );
   const dotesEl = useMemo(
     () => <SectionDotes draft={draft} actions={actions} />,

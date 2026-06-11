@@ -1,231 +1,109 @@
 import React, { useState } from "react";
-import { Plus, Trash2, Sparkles, ChevronDown, Zap } from "lucide-react";
-import { TextInput, TextArea, SmallButton } from "../builder-controls";
+import { Plus, Trash2, Sparkles, Zap, ChevronDown, ChevronUp } from "lucide-react";
+import { TextInput, TextArea, SmallButton, ExpandableText, MiniTable } from "../builder-controls";
+import { APTIDOES_CATEGORIAS, getAptidaoByKey, getAptidaoLimit, isAutomatedAptidao, resolveAptidaoDescription } from "../fm-aptidoes";
+import { getFrutosAptidaoEspecialBonus } from "../fm-origens";
 
-export const APTIDOES_CATEGORIAS = [
-  {
-    categoria: "Aptidões de Aura",
-    aptidoes: [
-      {
-        nome: "Aura de Restrição",
-        descricao:
-          "Focada inteiramente em conter oponentes, esta aptidão gera uma aura pesada e densa. Sempre que tentar agarrar um alvo, você pode adicionar seu Nível de Aptidão em Aura diretamente nas rolagens de Atletismo e nos testes para evitar que a criatura escape. Além disso, um número limitado de vezes por cena, é possível gastar energia amaldiçoada para garantir vantagem na tentativa de agarrar ou forçar desvantagem na fuga do inimigo.",
-      },
-      {
-        nome: "Aura de Rompimento",
-        descricao:
-          "Manifestando uma aura afiada, você causa danos pelo simples contato físico. Você pode ativar essa aura como uma ação livre durante uma rodada, forçando qualquer criatura em um raio de 3 metros que inicie o turno ali a realizar um teste de resistência de Fortitude. Uma falha resulta em dano elementar à sua escolha que ignora resistências e reduções, escalando em poder conforme seu Nível de Aptidão aumenta. Exige ND 8.",
-      },
-      {
-        nome: "Aura do General",
-        descricao:
-          "Refletindo uma forte presença, sua aura atua como uma grande fonte de motivação para seus aliados. Como uma Ação Bônus, você pode expandir essa aura por 9 metros, concedendo um bônus constante em rolagens de dano e perícia para os aliados dentro da área. Manter essa inspiração ativa consome 2 pontos de energia amaldiçoada por turno. Exige ser Líder da Horda.",
-      },
-      {
-        nome: "Aura Nefasta",
-        descricao:
-          "Exalando uma presença vil e macabra, essa aura perturba a mente de seus inimigos. Criaturas hostis que iniciarem o turno perto de você devem realizar um teste de vontade ou ficarão aterrorizadas. Você pode investir 1 ponto de energia para dobrar o raio de alcance dessa perturbação temporariamente.",
-      },
-    ],
-  },
-  {
-    categoria: "Aptidões de Controle e Leitura",
-    aptidoes: [
-      {
-        nome: "Detecção Amaldiçoada",
-        descricao:
-          "Através de treinamento, você lê auras rapidamente para prever as ações dos usuários de energia, favorecendo tanto sua ofensiva quanto defensiva. Utilizando uma Ação de Movimento, você realiza um teste de Percepção contra a dificuldade amaldiçoada da criatura; um sucesso impede que você sofra desvantagens para acertá-la e permite ignorar os bônus de Defesa que o alvo receba por habilidades durante o turno.",
-      },
-      {
-        nome: "Estímulo Amaldiçoado",
-        descricao:
-          "Você domina a arte de usar energia para reforçar o próprio corpo, apurando sua força e agilidade. Durante seu turno, ao se movimentar, você pode gastar energia para aumentar drasticamente sua distância percorrida. Caso esteja realizando testes de Acrobacia ou Atletismo, a energia pode ser gasta para fornecer bônus numéricos imediatos que duram até o próximo turno.",
-      },
-      {
-        nome: "Rastreio de Energia",
-        descricao:
-          "Ampliando suas capacidades investigativas, você rastreia o uso de energia amaldiçoada com precisão. Ao entrar em uma cena onde técnicas foram utilizadas, você detecta vestígios imediatamente e pode realizar testes contra a dificuldade do alvo para ignorar invisibilidades e facilitar sua localização.",
-      },
-    ],
-  },
-  {
-    categoria: "Aptidões de Domínio",
-    aptidoes: [
-      {
-        nome: "Acerto Garantido",
-        descricao:
-          "Alcançando o ápice das técnicas de domínio, você consegue embutir o efeito letal de acerto garantido em sua expansão de barreira. O funcionamento específico é definido pelas regras de criação de domínio, mas sua aplicação exige um custo adicional de 5 pontos de energia. Exige Expansão de Domínio Completa, nível 14 e níveis altos de aptidão.",
-      },
-      {
-        nome: "Modificação Completa",
-        descricao:
-          "Seu refinamento é tão grande que você consegue alterar as condições da sua expansão no exato instante em que ela é ativada. É possível inverter as defesas estruturais da barreira para protegê-la de ataques externos ou modificar as dimensões de espaço do domínio, sacrificando área de efeito para fortificar a saúde estrutural da barreira ou vice-versa. Expansões divinas sem barreiras podem usar esta aptidão para dobrar sua área de efeito livremente.",
-      },
-    ],
-  },
-  {
-    categoria: "Aptidões de Barreira",
-    aptidoes: [
-      {
-        nome: "Barreira Rápida",
-        descricao:
-          "O excesso de treino e repetição torna a estruturação de suas barreiras ágil a ponto de se tornar uma Ação Livre.",
-      },
-      {
-        nome: "Cesta Oca de Vime",
-        descricao:
-          "Esta é uma técnica esotérica antiga voltada para a defesa contra expansões. Usando uma ação bônus ou reação, você tece um trançado protetor ao seu redor que o imuniza do acerto garantido de um domínio inimigo. A técnica usa concentração e tem uma durabilidade que se desgasta caso seja atacada ou caso a concentração falhe; no entanto, usar ambas as mãos para manter o selo impede o desgaste passivo da estrutura. Exige nível 5.",
-      },
-      {
-        nome: "Cortina",
-        descricao:
-          "Você cria um vasto campo de força negro focado no ocultamento de uma área contra espectadores externos. O feitiço possui um custo de energia flexível baseado na área abrangida, sem necessitar de custos de manutenção, permitindo ainda embutir condições específicas na barreira.",
-      },
-      {
-        nome: "Técnicas de Barreira",
-        descricao:
-          "Capacita você a erguer diversas paredes de energia simultaneamente, funcionando como escudos ou jaulas. Estas estruturas físicas possuem reservas de vida atreladas ao seu poder de feitiçaria e podem ser manipuladas taticamente através do campo de batalha.",
-      },
-    ],
-  },
-  {
-    categoria: "Aptidões Especiais",
-    aptidoes: [
-      {
-        nome: "Raio Negro",
-        descricao:
-          "O Kokusen é um fenômeno devastador engatilhado por uma distorção espacial no momento do impacto. Ocorre passivamente em acertos críticos perfeitos corporais, aplicando um brutal multiplicador no dano final que não pode ser defendido ou reduzido pelas defesas do alvo. Realizar esse feito coloca o feiticeiro em estado de foco absoluto, otimizando sua força e diminuindo a margem de acerto necessária para reproduzir os raios negros em golpes subsequentes.",
-      },
-      {
-        nome: "Abençoado pelas Faíscas Negras",
-        descricao:
-          "Você consegue influenciar ativamente a natureza imprevisível do Kokusen, conseguindo engatilhá-lo em margens de acerto ligeiramente menores.",
-      },
-      {
-        nome: "Técnica Máxima",
-        descricao:
-          "Elevando a sua técnica base ao extremo, você forma um feitiço definitivo e indefensável. Embora requeira um grande investimento de energia e exija tempo de recarga de quatro rodadas, ela sobrepuja resistências e anexa quantias massivas de dados de dano extras.",
-      },
-      {
-        nome: "Reversão de Técnica",
-        descricao:
-          "Empregando energia reversa diretamente no conceito originário da sua técnica amaldiçoada, você produz um novo feitiço que opera sob uma lógica completamente invertida ao seu poder padrão.",
-      },
-      {
-        nome: "Energia Reversa",
-        descricao:
-          "Ao dominar a energia positiva, você ganha a capacidade primária de restaurar seus pontos de vida gastando pontos de energia como ações ativas, além de curar feridas internas severas e regenerar membros amputados por custos mais elevados.",
-      },
-      {
-        nome: "Cura de Exaustão",
-        descricao:
-          "Permite queimar energia reversa diretamente para forçar a recuperação da exaustão originada por feitiços exaustivos.",
-      },
-      {
-        nome: "Fluxo Imparável",
-        descricao:
-          "Seu corpo alcança um cume regenerativo, curando-se no exato instante em que é ferido através de reações automáticas ou de forma fluida no início de seus turnos.",
-      },
-    ],
-  },
-  {
-    categoria: "Aptidões de Anatomia",
-    aptidoes: [
-      {
-        nome: "Absorção Elemental",
-        descricao:
-          "Vinculado fisicamente a um elemento, você adquire a capacidade de absorver ataques equivalentes contra você, revertendo a força destrutiva deles em pontos de vida temporários em formato de reação.",
-      },
-      {
-        nome: "Arma Natural",
-        descricao:
-          "O seu físico atípico gerou ferramentas de assassinato naturais em forma de dentes, garras ou caudas. Estes contam como ataques desarmados versáteis e ágeis que substituem ou elevam o padrão de seus golpes marciais contundentes.",
-      },
-      {
-        nome: "Articulações Extensas",
-        descricao:
-          "Mutações nas suas juntas anatômicas expandem consideravelmente a zona de alcance ameaçada pelos seus ataques corporais.",
-      },
-      {
-        nome: "Braços Extras",
-        descricao:
-          "Você desenvolve um par sobressalente de braços que elevam dramaticamente suas aptidões atléticas e destreza manual. Em combate, isso permite portar múltiplos equipamentos pesados, engajar diversos oponentes em agarrões simultâneos e gerenciar o campo de batalha de forma vantajosa.",
-      },
-      {
-        nome: "Composição Elemental",
-        descricao:
-          "Você descarta parte de sua fisicalidade biológica para ser composto por um elemento puro, adquirindo tanto imunidade quanto capacidade bélica associada àquela manifestação.",
-      },
-      {
-        nome: "Corpo Especializado",
-        descricao:
-          "A estrutura anatômica se moldou em torno de uma capacidade fundamental da sua existência, fornecendo ganhos sensíveis e diretos atrelados a uma perícia de sua escolha.",
-      },
-      {
-        nome: "Desenvolvimento Exagerado",
-        descricao:
-          "Através do acúmulo genético exacerbado, sua fisionomia aumenta de categoria em escala, garantindo uma robustez extrema com ganhos passivos contínuos na capacidade vital máxima.",
-      },
-      {
-        nome: "Olhos Adicionais",
-        descricao:
-          "A brotação de múltiplos órgãos visuais em sua superfície apura seus instintos observacionais de forma profunda, impactando seu grau de atenção permanente e percepção ativa de armadilhas.",
-      },
-      {
-        nome: "Pernas Extras",
-        descricao:
-          "Integrando um balanço de locomoção superior, você ganha velocidade contínua em formato de deslocamento expandido, desconsiderando terrenos acidentados ou difíceis pelo caminho.",
-      },
-    ],
-  },
-];
-
-const CUSTOM_KEY = "__custom__";
-
-// Mapa plano nome → aptidão para busca rápida
-const APTIDAO_BY_NOME = Object.fromEntries(
-  APTIDOES_CATEGORIAS.flatMap((cat) =>
-    cat.aptidoes.map((a) => [a.nome, { ...a, categoria: cat.categoria }])
-  )
-);
+// Re-export para preservar consumidores externos (import legado).
+export { APTIDOES_CATEGORIAS };
 
 export default function SectionAptidoesEspeciais({ draft, actions }) {
   const aptidoes = draft.aptidoesEspeciais || [];
   const addedNomes = new Set(aptidoes.map((a) => a.nome));
 
-  const [selecao, setSelecao] = useState("");
+  // Estado da UI — picker inicia fechado, igual às abas de Treinamentos/Dotes.
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [showCustom, setShowCustom] = useState(false);
   const [nomeCustom, setNomeCustom] = useState("");
   const [descCustom, setDescCustom] = useState("");
+  const [expandedKey, setExpandedKey] = useState(null);
 
-  const oficialSelecionada = APTIDAO_BY_NOME[selecao];
+  // Limite: uma aptidão a cada nível par (+ "+2 Aptidões" do Frutos da
+  // Experiência). Concedidas por treino (source:"treino") são extras e não
+  // contam para o limite.
+  const frutosBonus = getFrutosAptidaoEspecialBonus(draft.core);
+  const limite = getAptidaoLimit(draft.core) + frutosBonus;
+  const usados = aptidoes.filter((a) => a.source !== "treino").length;
+  const slotsRestantes = limite - usados;
 
-  const handleAdd = () => {
-    if (selecao === CUSTOM_KEY) {
-      if (!nomeCustom.trim()) return;
-      actions.addAptidaoEspecial({
-        tipo: "custom",
-        categoria: "Customizada",
-        nome: nomeCustom.trim(),
-        descricao: descCustom.trim(),
-      });
-    } else if (oficialSelecionada) {
-      actions.addAptidaoEspecial({
-        tipo: "oficial",
-        categoria: oficialSelecionada.categoria,
-        nome: oficialSelecionada.nome,
-        descricao: oficialSelecionada.descricao,
-      });
-    }
-    setSelecao("");
-    setNomeCustom("");
-    setDescCustom("");
+  // Contexto para os valores computados (computeInfo): núcleo, atributos e
+  // níveis de aptidão (AU/CL/BAR/DOM/ER).
+  const aptCtx = { core: draft.core, attributes: draft.attributes, aptidoes: draft.aptidoes };
+
+  // Total de aptidões oficiais ainda não adicionadas (todas as categorias).
+  const totalDisponiveis = APTIDOES_CATEGORIAS.reduce(
+    (n, cat) => n + cat.aptidoes.filter((a) => !addedNomes.has(a.nome)).length,
+    0
+  );
+
+  const handleAddOficial = (apt, categoria) => {
+    if (slotsRestantes <= 0) return;
+    actions.addAptidaoEspecial({
+      tipo: "oficial",
+      key: apt.key,
+      categoria,
+      nome: apt.nome,
+      descricao: apt.descricao,
+    });
   };
 
-  const podeAdicionar =
-    selecao === CUSTOM_KEY ? !!nomeCustom.trim() : !!oficialSelecionada;
+  const handleAddCustom = () => {
+    if (slotsRestantes <= 0 || !nomeCustom.trim()) return;
+    actions.addAptidaoEspecial({
+      tipo: "custom",
+      categoria: "Customizada",
+      nome: nomeCustom.trim(),
+      descricao: descCustom.trim(),
+    });
+    setNomeCustom("");
+    setDescCustom("");
+    setShowCustom(false);
+  };
+
+  const toggleExpand = (key) => {
+    setExpandedKey((prev) => (prev === key ? null : key));
+  };
 
   return (
     <div className="space-y-4">
+      {/* Indicador de limite de aptidões */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <span className="text-xs text-slate-400">
+            Aptidões Amaldiçoadas
+            {frutosBonus > 0 && (
+              <span className="text-amber-400/80"> (+{frutosBonus} Frutos)</span>
+            )}
+          </span>
+          <div className="flex gap-1 flex-wrap">
+            {Array.from({ length: limite }).map((_, i) => (
+              <div
+                key={i}
+                className={`w-3.5 h-3.5 rounded-full border transition-colors ${
+                  i < usados ? "bg-purple-600 border-purple-500" : "bg-slate-800 border-slate-700"
+                }`}
+              />
+            ))}
+            {limite === 0 && (
+              <span className="text-[10px] text-slate-600 italic">nenhuma neste caso</span>
+            )}
+          </div>
+        </div>
+        <span
+          className={`text-xs font-bold tabular-nums ${
+            slotsRestantes < 0
+              ? "text-red-400"
+              : slotsRestantes === 0
+                ? "text-slate-500"
+                : "text-purple-300"
+          }`}
+        >
+          {slotsRestantes < 0
+            ? `${usados}/${limite} (excedido)`
+            : `${slotsRestantes}/${limite} disponíveis`}
+        </span>
+      </div>
+
       {/* Lista de aptidões adicionadas */}
       {aptidoes.length === 0 ? (
         <div className="text-center py-5 text-slate-600 text-sm italic border border-dashed border-slate-800 rounded">
@@ -235,6 +113,15 @@ export default function SectionAptidoesEspeciais({ draft, actions }) {
         <div className="space-y-2">
           {aptidoes.map((a) => {
             const fromTreino = a.source === "treino";
+            const catalog = a.key ? getAptidaoByKey(a.key) : null;
+            const subAuto = catalog?.automation;
+            const isSub =
+              subAuto && (subAuto.kind === "sub_choice" || subAuto.kind === "imunidade_grant");
+            const subOptions = subAuto?.optionsFromSkills
+              ? (draft.skills || [])
+                  .filter((s) => s.name?.trim())
+                  .map((s) => ({ value: s.name, label: s.name }))
+              : subAuto?.options || [];
             return (
               <div
                 key={a.id}
@@ -255,6 +142,14 @@ export default function SectionAptidoesEspeciais({ draft, actions }) {
                         <Zap className="w-2.5 h-2.5" /> Programada
                       </span>
                     )}
+                    {!fromTreino && isAutomatedAptidao(catalog) && (
+                      <span
+                        className="inline-flex items-center gap-0.5 text-[9px] uppercase tracking-wide text-amber-300 border border-amber-700/60 rounded px-1 py-0.5"
+                        title="Efeito aplicado automaticamente na ficha"
+                      >
+                        <Zap className="w-2.5 h-2.5" /> Programada
+                      </span>
+                    )}
                     {a.tipo === "custom" && (
                       <span className="text-[9px] uppercase tracking-wide text-amber-400 border border-amber-800/60 rounded px-1 py-0.5">
                         Custom
@@ -262,7 +157,39 @@ export default function SectionAptidoesEspeciais({ draft, actions }) {
                     )}
                   </div>
                   {a.descricao && (
-                    <p className="text-xs text-slate-400 leading-relaxed">{a.descricao}</p>
+                    <ExpandableText
+                      text={catalog ? resolveAptidaoDescription(catalog, { ...aptCtx, subChoice: a.subChoice }) : a.descricao}
+                      extra={catalog?.tabela ? <MiniTable {...catalog.tabela} /> : null}
+                    />
+                  )}
+                  {/* Sub-escolha (Composição → elemento, Corpo → perícia) */}
+                  {isSub && (
+                    <div className="mt-2 flex items-center gap-2 flex-wrap">
+                      <span className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">
+                        {subAuto.label}:
+                      </span>
+                      <div className="relative">
+                        <select
+                          value={a.subChoice ?? ""}
+                          onChange={(e) =>
+                            actions.updateAptidaoEspecial(a.id, { subChoice: e.target.value })
+                          }
+                          className="h-8 bg-slate-950 border border-slate-700 rounded pl-2 pr-7 text-xs text-white appearance-none focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+                        >
+                          <option value="">
+                            {subAuto.optionsFromSkills && subOptions.length === 0
+                              ? "Sem perícias na ficha..."
+                              : "Escolha..."}
+                          </option>
+                          {subOptions.map((opt) => (
+                            <option key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDown className="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+                      </div>
+                    </div>
                   )}
                 </div>
                 {!fromTreino && (
@@ -280,69 +207,186 @@ export default function SectionAptidoesEspeciais({ draft, actions }) {
         </div>
       )}
 
-      {/* Formulário de adição */}
-      <div className="pt-3 border-t border-slate-800 space-y-3">
-        <h3 className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">
-          Adicionar Aptidão Amaldiçoada
-        </h3>
+      {/* ===== SELETOR — cards agrupados por Tipo (só quando há vagas) ===== */}
+      {slotsRestantes > 0 ? (
+      <div className="pt-3 border-t border-slate-800">
+        <button
+          type="button"
+          onClick={() => setPickerOpen((v) => !v)}
+          className={`w-full flex items-center gap-2 px-3 py-2.5 rounded border font-semibold text-sm transition-colors focus:outline-none focus:ring-1 focus:ring-purple-500/50 ${
+            pickerOpen
+              ? "bg-purple-950/40 border-purple-800/60 text-purple-200 hover:bg-purple-950/60"
+              : "bg-purple-900/30 border-purple-800/60 text-purple-300 hover:bg-purple-900/50 hover:text-purple-200"
+          }`}
+          aria-expanded={pickerOpen}
+        >
+          <Plus className="w-4 h-4 flex-shrink-0" />
+          <span className="flex-1 text-left">
+            {pickerOpen ? "Escolher Aptidão" : "Adicionar Aptidão"}
+          </span>
+          <span className="text-[10px] uppercase tracking-wider text-purple-300/90 font-bold bg-purple-950/60 border border-purple-800/60 rounded px-1.5 py-0.5">
+            {slotsRestantes} vaga{slotsRestantes === 1 ? "" : "s"}
+          </span>
+          {pickerOpen ? (
+            <ChevronUp className="w-4 h-4 flex-shrink-0" />
+          ) : (
+            <ChevronDown className="w-4 h-4 flex-shrink-0" />
+          )}
+        </button>
 
-        {/* Select nativo com optgroup por categoria */}
-        <div className="relative">
-          <select
-            value={selecao}
-            onChange={(e) => setSelecao(e.target.value)}
-            className="w-full h-9 bg-slate-950 border border-slate-700 rounded pl-2 pr-7 text-sm text-white appearance-none focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
-          >
-            <option value="">Escolha uma aptidão...</option>
-            {APTIDOES_CATEGORIAS.map((cat) => {
-              const disponiveis = cat.aptidoes.filter((a) => !addedNomes.has(a.nome));
-              if (disponiveis.length === 0) return null;
-              return (
-                <optgroup key={cat.categoria} label={cat.categoria}>
-                  {disponiveis.map((a) => (
-                    <option key={a.nome} value={a.nome}>
-                      {a.nome}
-                    </option>
-                  ))}
-                </optgroup>
-              );
-            })}
-            <option value={CUSTOM_KEY}>✦ Aptidão Customizada</option>
-          </select>
-          <ChevronDown className="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
-        </div>
+        {pickerOpen && (
+          <div className="space-y-4 mt-3">
+            {totalDisponiveis === 0 ? (
+              <p className="text-xs text-slate-500 italic">
+                Todas as aptidões oficiais já foram adicionadas.
+              </p>
+            ) : (
+              APTIDOES_CATEGORIAS.map((cat) => {
+                const disponiveis = cat.aptidoes.filter((a) => !addedNomes.has(a.nome));
+                if (disponiveis.length === 0) return null;
+                return (
+                  <div key={cat.key}>
+                    {/* Cabeçalho da categoria (Tipo) */}
+                    <h4
+                      className={`text-[10px] uppercase tracking-widest font-bold mb-2 flex items-center gap-1.5 ${cat.accent}`}
+                    >
+                      <Sparkles className="w-3 h-3" />
+                      {cat.categoria}
+                      <span className="text-slate-600 font-normal">({disponiveis.length})</span>
+                    </h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 items-start">
+                      {disponiveis.map((apt) => {
+                        const isExpanded = expandedKey === apt.key;
+                        return (
+                          <div
+                            key={apt.key}
+                            className="bg-slate-950/40 border border-slate-800 hover:border-slate-700 rounded p-2.5 transition-colors flex flex-col"
+                          >
+                            <div className="flex items-start gap-2 flex-1 min-h-0">
+                              <Sparkles className="w-3.5 h-3.5 text-purple-400 flex-shrink-0 mt-0.5" />
+                              <div className="flex-1 min-w-0 flex flex-col">
+                                <div className="flex items-start gap-1.5 mb-1 flex-wrap min-h-[2.2rem]">
+                                  <span className="text-sm font-semibold text-white leading-tight">
+                                    {apt.nome}
+                                  </span>
+                                  {isAutomatedAptidao(apt) && (
+                                    <span
+                                      className="inline-flex items-center gap-0.5 text-[9px] uppercase tracking-wide text-amber-300 border border-amber-700/60 rounded px-1 py-0.5"
+                                      title="Efeito aplicado automaticamente na ficha"
+                                    >
+                                      <Zap className="w-2.5 h-2.5" /> Programada
+                                    </span>
+                                  )}
+                                </div>
+                                <p
+                                  className={`text-[11px] text-slate-400 leading-relaxed whitespace-pre-line ${
+                                    isExpanded ? "" : "line-clamp-3 min-h-[3.4rem]"
+                                  }`}
+                                >
+                                  {resolveAptidaoDescription(apt, aptCtx)}
+                                </p>
+                                {isExpanded && apt.tabela && <MiniTable {...apt.tabela} />}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 mt-2 pt-2 border-t border-slate-800/60">
+                              <button
+                                type="button"
+                                onClick={() => toggleExpand(apt.key)}
+                                className="inline-flex items-center gap-0.5 text-[10px] text-slate-500 hover:text-slate-300 transition-colors focus:outline-none focus:ring-1 focus:ring-purple-500/40 rounded"
+                              >
+                                {isExpanded ? (
+                                  <>
+                                    <ChevronUp className="w-3 h-3" /> Recolher
+                                  </>
+                                ) : (
+                                  <>
+                                    <ChevronDown className="w-3 h-3" /> Ler mais
+                                  </>
+                                )}
+                              </button>
+                              <div className="flex-1" />
+                              <SmallButton
+                                onClick={() => handleAddOficial(apt, cat.categoria)}
+                                variant="primary"
+                                title="Adicionar esta aptidão"
+                              >
+                                <Plus className="w-3 h-3" /> Adicionar
+                              </SmallButton>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })
+            )}
 
-        {/* Preview da descrição oficial */}
-        {oficialSelecionada && (
-          <div className="bg-slate-900/50 border border-slate-800 rounded p-3">
-            <p className="text-[10px] uppercase tracking-widest text-slate-500 mb-1 font-bold">
-              {oficialSelecionada.categoria}
-            </p>
-            <p className="text-xs text-slate-400 leading-relaxed">{oficialSelecionada.descricao}</p>
+            {/* Botão / form de Aptidão Customizada */}
+            <div className="pt-3 border-t border-slate-800/60">
+              {showCustom ? (
+                <div className="space-y-2 bg-slate-950/40 border border-purple-900/40 rounded p-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-[10px] uppercase tracking-widest text-purple-300 font-bold">
+                      ✦ Aptidão Customizada
+                    </h4>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowCustom(false);
+                        setNomeCustom("");
+                        setDescCustom("");
+                      }}
+                      className="text-[10px] text-slate-500 hover:text-slate-300"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                  <TextInput
+                    value={nomeCustom}
+                    onChange={setNomeCustom}
+                    placeholder="Nome da Aptidão"
+                  />
+                  <TextArea
+                    value={descCustom}
+                    onChange={setDescCustom}
+                    rows={3}
+                    placeholder="Descreva os efeitos desta aptidão..."
+                  />
+                  <SmallButton
+                    onClick={handleAddCustom}
+                    variant="primary"
+                    disabled={!nomeCustom.trim()}
+                  >
+                    <Plus className="w-3 h-3" /> Adicionar
+                  </SmallButton>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setShowCustom(true)}
+                  className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded border border-dashed border-purple-900/60 text-xs font-semibold text-purple-300 hover:text-purple-200 hover:border-purple-700/60 hover:bg-purple-950/20 transition-colors focus:outline-none focus:ring-1 focus:ring-purple-500/40"
+                >
+                  <Plus className="w-3 h-3" /> ✦ Criar Aptidão Customizada
+                </button>
+              )}
+            </div>
           </div>
         )}
-
-        {/* Campos para aptidão customizada */}
-        {selecao === CUSTOM_KEY && (
-          <div className="space-y-2">
-            <TextInput
-              value={nomeCustom}
-              onChange={setNomeCustom}
-              placeholder="Nome da Aptidão"
-            />
-            <TextArea
-              value={descCustom}
-              onChange={setDescCustom}
-              rows={3}
-              placeholder="Descreva os efeitos desta aptidão..."
-            />
-          </div>
-        )}
-
-        <SmallButton onClick={handleAdd} variant="primary" disabled={!podeAdicionar}>
-          <Plus className="w-3 h-3" /> Adicionar
-        </SmallButton>
       </div>
+      ) : (
+        <p
+          className={`text-xs italic text-center pt-1 ${
+            slotsRestantes < 0 ? "text-red-400/80" : "text-slate-600"
+          }`}
+        >
+          {limite === 0
+            ? "Este tipo de criatura não recebe Aptidões Amaldiçoadas."
+            : slotsRestantes < 0
+              ? "Limite de aptidões excedido. Remova algumas para respeitar o máximo."
+              : "Todas as aptidões permitidas foram adicionadas."}
+        </p>
+      )}
     </div>
   );
 }

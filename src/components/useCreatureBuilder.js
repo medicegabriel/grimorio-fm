@@ -10,6 +10,7 @@ import {
   getTreinamentoByNome,
 } from "./fm-treinamentos";
 import { getDoteCondicoesImunes } from "./fm-dotes";
+import { getAptidoesImunidadesGrant } from "./fm-aptidoes";
 
 /**
  * ============================================================
@@ -274,9 +275,27 @@ const syncDotesDerived = (state) => {
   };
 };
 
+// ---------- Sincronização com as aptidões ----------
+// Injeta as imunidades a tipo de dano concedidas por aptidões (ex.: Composição
+// Elemental → imunidade ao elemento escolhido) em defenses.imunidades com
+// source:"aptidao". Idempotente: remove as antigas de aptidão e re-injeta a
+// partir das escolhas atuais. Não duplica tipos que já venham de origem/manual.
+const syncAptidoesDerived = (state) => {
+  const granted = getAptidoesImunidadesGrant(state.aptidoesEspeciais || []);
+  const semAptidao = (state.defenses?.imunidades || []).filter((it) => it?.source !== "aptidao");
+  const existingTipos = new Set(semAptidao.map((it) => it.tipo));
+  const novos = granted
+    .filter((g) => !existingTipos.has(g.tipo))
+    .map((g) => ({ tipo: g.tipo, source: "aptidao", aptidaoKey: g.aptidaoKey }));
+  return {
+    ...state,
+    defenses: { ...state.defenses, imunidades: [...semAptidao, ...novos] },
+  };
+};
+
 // ---------- Reducer: dicionário de handlers ----------
 const actionHandlers = {
-  HYDRATE: (_, payload) => syncDotesDerived(syncTreinamentosDerived(syncOriginDerived(normalizeDraft(payload)))),
+  HYDRATE: (_, payload) => syncAptidoesDerived(syncDotesDerived(syncTreinamentosDerived(syncOriginDerived(normalizeDraft(payload))))),
 
   SET_NAME:     (s, payload) => ({ ...s, name: payload }),
   SET_PORTRAIT: (s, payload) => ({ ...s, portraitUrl: payload }),
@@ -406,7 +425,8 @@ const actionHandlers = {
   },
 
   // ---------- Aptidões Especiais ----------
-  ADD_APTIDAO_ESPECIAL: (s, payload) => ({
+  // Add/remove/update ressincronizam as imunidades concedidas (Composição Elemental).
+  ADD_APTIDAO_ESPECIAL: (s, payload) => syncAptidoesDerived({
     ...s,
     aptidoesEspeciais: [...(s.aptidoesEspeciais || []), { ...payload, id: genId("apt") }],
   }),
@@ -414,11 +434,18 @@ const actionHandlers = {
     const target = (s.aptidoesEspeciais || []).find((a) => a.id === id);
     // Aptidões concedidas por treinamento são gerenciadas pelo sync.
     if (target?.source === "treino") return s;
-    return {
+    return syncAptidoesDerived({
       ...s,
       aptidoesEspeciais: (s.aptidoesEspeciais || []).filter((a) => a.id !== id),
-    };
+    });
   },
+  // Atualiza uma aptidão já adicionada (ex.: sub-escolha de elemento/perícia).
+  UPDATE_APTIDAO_ESPECIAL: (s, { id, patch }) => syncAptidoesDerived({
+    ...s,
+    aptidoesEspeciais: (s.aptidoesEspeciais || []).map((a) =>
+      a.id === id ? { ...a, ...patch } : a
+    ),
+  }),
 
   // ---------- Dotes ----------
   // Add/remove ressincronizam as imunidades a condição concedidas (ex.: Fúria
@@ -498,8 +525,8 @@ const actionHandlers = {
       // Bloqueia remoção de condição registrada como de origem ou de dote
       if ((s.defenses.originCondicoesImunes || []).includes(target)) return s;
       if ((s.defenses.doteCondicoesImunes || []).includes(target)) return s;
-    } else if (target?.source === "origin") {
-      return s; // bloqueia remoção de defesa tipada de origem
+    } else if (target?.source === "origin" || target?.source === "aptidao") {
+      return s; // bloqueia remoção de defesa tipada de origem ou de aptidão
     }
     return {
       ...s,
@@ -540,7 +567,7 @@ export default function useCreatureBuilder(initialDraft = null) {
   const [draft, dispatch] = useReducer(
     reducer,
     initialDraft || blankDraft(),
-    (init) => syncDotesDerived(syncTreinamentosDerived(syncOriginDerived(normalizeDraft(init))))
+    (init) => syncAptidoesDerived(syncDotesDerived(syncTreinamentosDerived(syncOriginDerived(normalizeDraft(init)))))
   );
 
   const derived = useMemo(() => deriveStats(draft), [
@@ -553,6 +580,7 @@ export default function useCreatureBuilder(initialDraft = null) {
     draft.treinamentos,
     draft.aptidoes,
     draft.dotes,
+    draft.aptidoesEspeciais,
   ]);
 
   const warnings = useMemo(() => validateDraft(draft, derived), [draft, derived]);
@@ -593,6 +621,7 @@ export default function useCreatureBuilder(initialDraft = null) {
     // Aptidões Especiais
     addAptidaoEspecial:    (a) => dispatch({ type: "ADD_APTIDAO_ESPECIAL", payload: a }),
     removeAptidaoEspecial: (id) => dispatch({ type: "REMOVE_APTIDAO_ESPECIAL", payload: id }),
+    updateAptidaoEspecial: (id, patch) => dispatch({ type: "UPDATE_APTIDAO_ESPECIAL", payload: { id, patch } }),
 
     // Dotes
     addDote:    (d) => dispatch({ type: "ADD_DOTE", payload: d }),
