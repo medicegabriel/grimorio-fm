@@ -1,4 +1,5 @@
 import { getBonusTreinamento, getModifier } from "./fm-tables";
+import { isRestritoCeleste } from "./fm-origens";
 
 // ============================================================
 // fm-aptidoes.js — Catálogo de Aptidões Amaldiçoadas
@@ -460,13 +461,13 @@ export function getAptidoesImunidadesGrant(aptidoes = []) {
 
 /**
  * Limite base de Aptidões Amaldiçoadas: uma a cada nível par (floor(ND/2)).
- * Lacaios e Capangas não recebem aptidões. Restringidos também não recebem
- * (a regra do livro). Bônus extras (ex.: Frutos da Experiência "+2 Aptidões")
- * são somados no chamador, fora desta base.
+ * Lacaios e Capangas não recebem aptidões. Apenas o Restrito Celeste "puro"
+ * não recebe — a Restrição de Corpo por Energia recebe normalmente. Bônus
+ * extras (ex.: Frutos da Experiência "+2 Aptidões") são somados no chamador.
  */
 export function getAptidaoLimit(core) {
   const patamar = core?.patamar;
   if (patamar === "lacaio" || patamar === "capanga") return 0;
-  if (core?.origin?.type === "restringido") return 0;
+  if (isRestritoCeleste(core)) return 0;
   return Math.max(0, Math.floor((Number(core?.nd) || 0) / 2));
 }

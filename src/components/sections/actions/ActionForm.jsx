@@ -18,22 +18,36 @@ import {
   runFullActionCalc,
   reapplyTrades,
   generateActionDescription,
+  normalizeAction,
 } from "../../fm-action-calc";
 
 // ============================================================
-// ACTION FORM (nova ação)
+// ACTION FORM (nova ação OU edição de uma existente)
 // ============================================================
-export default function ActionForm({ derived, draft, onAdd, onCancel, templates = [], onRemoveTemplate }) {
+// `initialAction` (opcional) pré-preenche o form para edição; nesse caso
+// `onAdd` recebe o form atualizado e o chamador faz o updateAction.
+export default function ActionForm({
+  derived, draft, onAdd, onCancel, templates = [], onRemoveTemplate,
+  initialAction = null, submitLabel = "Adicionar", title = "Nova Ação",
+}) {
   const patamar = draft?.core?.patamar;
   const nd      = draft?.core?.nd;
   const bt      = derived?.bt ?? 2;
 
-  const [isMechanicalTextLocked, setIsMechanicalTextLocked] = useState(true);
-  const [manualMechanicalText,   setManualMechanicalText]   = useState("");
+  // Em edição, reabre já no modo manual se a ação tinha um Texto Final manual.
+  const [isMechanicalTextLocked, setIsMechanicalTextLocked] = useState(
+    () => !initialAction?.finalTextManual?.trim()
+  );
+  const [manualMechanicalText,   setManualMechanicalText]   = useState(
+    () => initialAction?.finalTextManual ?? ""
+  );
   const [showTemplates,          setShowTemplates]           = useState(false);
   const textareaRef = useRef(null);
 
   const [form, setForm] = useState(() => {
+    // Edição: parte dos valores salvos (normalizados), preservando o que o
+    // usuário já tinha montado (dano travado, trades, alcance manual etc.).
+    if (initialAction) return normalizeAction(initialAction);
     const calcDmg    = calculateActionDamage(patamar, nd, "acerto", false);
     const tHitBase   = derived?.acertoPrincipal ?? 0;
     const tCdBase    = derived?.cdBase ?? 0;
@@ -185,6 +199,14 @@ export default function ActionForm({ derived, draft, onAdd, onCancel, templates 
       return { ...prev, ...rangeUpdates, ...reapplied };
     });
 
+  // Monta a ação para salvar, embutindo o Texto Final manual (ou limpando-o
+  // quando o usuário voltou ao modo automático).
+  const handleSubmit = () => {
+    const finalTextManual =
+      !isMechanicalTextLocked && manualMechanicalText.trim() ? manualMechanicalText : "";
+    onAdd({ ...form, finalTextManual });
+  };
+
   const handleResize = () => {
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
@@ -239,7 +261,7 @@ export default function ActionForm({ derived, draft, onAdd, onCancel, templates 
     <div className="bg-slate-950/70 border border-purple-900/50 rounded p-4 space-y-3">
       <div className="flex items-center justify-between gap-2">
         <h4 className="text-sm font-bold text-purple-300 flex items-center gap-2">
-          <Plus className="w-4 h-4" /> Nova Ação
+          <Plus className="w-4 h-4" /> {title}
         </h4>
         {templates.length > 0 && (
           <button
@@ -364,8 +386,8 @@ export default function ActionForm({ derived, draft, onAdd, onCancel, templates 
 
       <div className="flex justify-end gap-2 pt-1">
         <SmallButton onClick={onCancel}>Cancelar</SmallButton>
-        <SmallButton onClick={() => onAdd(form)} variant="primary" disabled={!form.name.trim()}>
-          <Plus className="w-3 h-3" /> Adicionar
+        <SmallButton onClick={handleSubmit} variant="primary" disabled={!form.name.trim()}>
+          <Plus className="w-3 h-3" /> {submitLabel}
         </SmallButton>
       </div>
     </div>

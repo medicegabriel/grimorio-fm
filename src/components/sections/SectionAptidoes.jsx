@@ -2,7 +2,7 @@
 import React, { useMemo } from "react";
 import { Zap } from "lucide-react";
 import { FieldLabel, NumberInput } from "../builder-controls";
-import { getFrutosAptidaoBonus } from "../fm-origens";
+import { getFrutosAptidaoBonus, isRestritoCeleste } from "../fm-origens";
 import {
   getBarreiraAptidaoBonus,
   getCompreensaoAptidaoBudgetBonus,
@@ -63,11 +63,14 @@ export default function SectionAptidoes({ draft, actions }) {
     budget, baseBudget, frutosBonus, compreensaoBonus, estudoBonus, barreiraBonus,
     spent, remaining, budgetKey, theme,
   } = useMemo(() => {
-    const base = calculateAptidoesBudget(draft.core?.nd);
-    const frutos = getFrutosAptidaoBonus(draft.core);
-    const compreensao = getCompreensaoAptidaoBudgetBonus(draft.treinamentos);
-    const barreira = getBarreiraAptidaoBonus(draft.treinamentos);
-    const estudo = getDotesAptidaoBudgetBonus(draft.dotes);
+    // Restrito Celeste (Restringido puro) não tem acesso a Aptidões — orçamento
+    // zerado. A Restrição de Corpo por Energia recebe normalmente.
+    const restrito = isRestritoCeleste(draft.core);
+    const base = restrito ? 0 : calculateAptidoesBudget(draft.core?.nd);
+    const frutos = restrito ? 0 : getFrutosAptidaoBonus(draft.core);
+    const compreensao = restrito ? 0 : getCompreensaoAptidaoBudgetBonus(draft.treinamentos);
+    const barreira = restrito ? 0 : getBarreiraAptidaoBonus(draft.treinamentos);
+    const estudo = restrito ? 0 : getDotesAptidaoBudgetBonus(draft.dotes);
     const b = base + frutos + compreensao + estudo;
     const s = Object.values(draft.aptidoes ?? {}).reduce((sum, v) => sum + (Number(v) || 0), 0);
     const r = b - s;
@@ -120,7 +123,10 @@ export default function SectionAptidoes({ draft, actions }) {
             {budgetKey === "over" && `Excedeu em ${Math.abs(remaining)}`}
             {budgetKey === "ok" && "Limite exato"}
             {budgetKey === "warn" && `${remaining} disponível(is)`}
-            {budgetKey === "idle" && "ND muito baixo para aptidões"}
+            {budgetKey === "idle" &&
+              (isRestritoCeleste(draft.core)
+                ? "Restrito Celeste não recebe Aptidões"
+                : "ND muito baixo para aptidões")}
           </div>
         </div>
 

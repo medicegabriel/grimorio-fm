@@ -1,8 +1,29 @@
 import React, { useState } from "react";
 import {
-  Heart, Zap, Shield, Eye, Target, ShieldAlert, Sparkles, Star, GraduationCap, Crosshair, Sword, Flame,
+  Heart, Zap, Shield, Eye, Target, ShieldAlert, Sparkles, Star, GraduationCap, Crosshair, Sword, Flame, Shapes, Footprints, Maximize2,
 } from "lucide-react";
 import { PATAMAR_LABELS, getModifier } from "../fm-tables";
+import { getCaracteristicaByKey, isAutomatedCaracteristica } from "../fm-caracteristicas";
+
+// Formata um número com sinal explícito (+N / -N), evitando o "+-1".
+const fmtSigned = (n) => (Number(n) >= 0 ? `+${n}` : `${n}`);
+
+// Rótulos PT dos tamanhos (chaves de TAMANHO_INFO em fm-tables).
+const TAMANHO_LABELS = {
+  minusculo: "Minúsculo",
+  pequeno: "Pequeno",
+  medio: "Médio",
+  grande: "Grande",
+  enorme: "Enorme",
+  colossal: "Colossal",
+};
+
+// Blocos de defesa a dano exibidos no preview (label + cor).
+const DEFENSE_PREVIEW = [
+  { key: "resistencias", label: "Resistências", accent: "text-sky-300" },
+  { key: "imunidades", label: "Imunidades", accent: "text-emerald-300" },
+  { key: "vulnerabilidades", label: "Vulnerabilidades", accent: "text-rose-300" },
+];
 
 const ATTR_PREVIEW = [
   { key: "forca",        label: "FOR", accent: "text-red-400" },
@@ -89,10 +110,6 @@ export default function LivePreview({ draft, derived }) {
               <span className="text-[10px] text-slate-500">ND {draft.core.nd}</span>
               <span className="text-[10px] text-slate-600">•</span>
               <span className="text-[10px] text-slate-500">BT +{bt}</span>
-              <span className="text-[10px] text-slate-600">•</span>
-              <span className="text-[10px] font-bold text-purple-300 bg-purple-950/50 border border-purple-800 rounded px-1.5 py-0.5">
-                CD {derived.cdBase}
-              </span>
             </div>
             <h4 className="font-bold text-white text-base truncate">
               {draft.name || "Sem nome"}
@@ -107,13 +124,29 @@ export default function LivePreview({ draft, derived }) {
           <MiniStat icon={Shield} label="Defesa" value={stats.defesa} accent="text-sky-400" />
         </div>
 
-        {/* Secundários */}
+        {/* Combate */}
         <div className="grid grid-cols-3 gap-1.5">
-          <MiniStat icon={Eye}         label="Atenção"  value={stats.atencao}          accent="text-amber-400" />
-          <MiniStat icon={Target}      label="Iniciat." value={`+${stats.iniciativa}`} accent="text-emerald-400" />
-          <MiniStat icon={ShieldAlert} label="Guarda"   value={stats.guardaInabavalMax} accent="text-sky-300" />
-          <MiniStat icon={Crosshair}   label="CD"       value={derived.cdBase}          accent="text-orange-400" />
-          <MiniStat icon={Sword}       label="Acerto"   value={`+${derived.acertoPrincipal}`} accent="text-red-400" />
+          <MiniStat icon={Sword}     label="Acerto"   value={fmtSigned(derived.acertoPrincipal)} accent="text-red-400" />
+          <MiniStat icon={Crosshair} label="CD"       value={derived.cdBase}          accent="text-orange-400" />
+          <MiniStat icon={Target}    label="Iniciat." value={fmtSigned(stats.iniciativa)} accent="text-emerald-400" />
+        </div>
+
+        {/* Sentidos & Movimento */}
+        <div className="grid grid-cols-3 gap-1.5">
+          <MiniStat icon={Eye}         label="Atenção"  value={stats.atencao}            accent="text-amber-400" />
+          <MiniStat icon={ShieldAlert} label="Guarda"   value={stats.guardaInabavalMax}  accent="text-sky-300" />
+          <MiniStat icon={Footprints}  label="Desloc."  value={`${stats.deslocamento}m`} accent="text-teal-300" />
+        </div>
+
+        {/* Tamanho & Espaço */}
+        <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
+          <Maximize2 className="w-2.5 h-2.5 text-slate-500" />
+          <span className="text-slate-500 uppercase tracking-wider">Tamanho</span>
+          <span className="text-slate-300 font-semibold">
+            {TAMANHO_LABELS[draft.core.size] || "Médio"}
+          </span>
+          <span className="text-slate-600">•</span>
+          <span className="text-slate-500">Espaço {stats.espaco}m</span>
         </div>
 
         {/* TR */}
@@ -164,15 +197,41 @@ export default function LivePreview({ draft, derived }) {
           </div>
         </div>
 
-        {/* RD e Ignorar RD */}
-        {(stats.rdGeral > 0 || stats.ignorarRd > 0) && (
-          <div className="grid grid-cols-2 gap-1.5 pt-2 border-t border-slate-800">
-            {stats.rdGeral > 0 && (
-              <MiniStat icon={Shield} label="RD Geral" value={stats.rdGeral} accent="text-slate-400" />
-            )}
-            {stats.ignorarRd > 0 && (
-              <MiniStat icon={Sparkles} label="Ignorar RD" value={stats.ignorarRd} accent="text-red-400" />
-            )}
+        {/* Reduções & Resistências (só os que forem > 0) */}
+        {(() => {
+          const items = [
+            { key: "rdGeral",               icon: Shield,      label: "RD Geral",       accent: "text-slate-400" },
+            { key: "rdIrredutivel",         icon: Shield,      label: "RD Irredut.",    accent: "text-slate-400" },
+            { key: "ignorarRd",             icon: Sword,       label: "Ignorar RD",     accent: "text-red-400" },
+            { key: "vidaTempPorAtaque",     icon: Heart,       label: "Vida Tmp/Atq",   accent: "text-rose-300" },
+            { key: "resistenciaParcialMax", icon: Sparkles,    label: "Resist. Parc.",  accent: "text-purple-300" },
+            { key: "resistenciaTotalMax",   icon: Sparkles,    label: "Resist. Total",  accent: "text-amber-300" },
+          ].filter(({ key }) => (stats[key] ?? 0) > 0);
+          if (items.length === 0) return null;
+          return (
+            <div className="grid grid-cols-2 gap-1.5 pt-2 border-t border-slate-800">
+              {items.map(({ key, icon, label, accent }) => (
+                <MiniStat key={key} icon={icon} label={label} value={stats[key]} accent={accent} />
+              ))}
+            </div>
+          );
+        })()}
+
+        {/* Defesas a Dano (resistências / imunidades / vulnerabilidades) */}
+        {DEFENSE_PREVIEW.some(({ key }) => (draft.defenses?.[key] ?? []).length > 0) && (
+          <div className="pt-2 border-t border-slate-800 space-y-0.5">
+            {DEFENSE_PREVIEW.map(({ key, label, accent }) => {
+              const list = draft.defenses?.[key] ?? [];
+              if (list.length === 0) return null;
+              return (
+                <p key={key} className="text-xs text-slate-300 leading-relaxed">
+                  <span className={`font-bold uppercase tracking-widest text-[10px] ${accent}`}>{label}: </span>
+                  <span className="capitalize">
+                    {list.map((it) => it.tipo).join(", ")}.
+                  </span>
+                </p>
+              );
+            })}
           </div>
         )}
 
@@ -212,6 +271,15 @@ export default function LivePreview({ draft, derived }) {
 
         {/* Resumo compacto — apenas nomes, sem descrições */}
         <CompactList
+          label="Características"
+          icon={<Shapes className="w-3 h-3 text-cyan-400" />}
+          names={(draft.caracteristicas || []).map((c) => {
+            const cat = c.key ? getCaracteristicaByKey(c.key) : null;
+            return isAutomatedCaracteristica(cat) ? `${c.nome} ⚡` : c.nome;
+          })}
+          accent="text-cyan-300"
+        />
+        <CompactList
           label="Aptidões Amaldiçoadas"
           icon={<Sparkles className="w-3 h-3 text-purple-400" />}
           names={(draft.aptidoesEspeciais || []).map((a) => a.nome)}
@@ -231,7 +299,7 @@ export default function LivePreview({ draft, derived }) {
         />
         <ActionsList actions={draft.actions?.list || []} />
         <CompactList
-          label="Características"
+          label="Características Personalizadas"
           icon={<Sparkles className="w-3 h-3 text-fuchsia-400" />}
           names={(draft.features || []).map((f) => f.name).filter(Boolean)}
           accent="text-fuchsia-300"

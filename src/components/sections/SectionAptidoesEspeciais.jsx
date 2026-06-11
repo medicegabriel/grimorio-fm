@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Plus, Trash2, Sparkles, Zap, ChevronDown, ChevronUp } from "lucide-react";
-import { TextInput, TextArea, SmallButton, ExpandableText, MiniTable } from "../builder-controls";
+import { TextInput, TextArea, SmallButton, ExpandableText, MiniTable, SearchInput } from "../builder-controls";
+import { normalizeText } from "../fm-tables";
 import { APTIDOES_CATEGORIAS, getAptidaoByKey, getAptidaoLimit, isAutomatedAptidao, resolveAptidaoDescription } from "../fm-aptidoes";
 import { getFrutosAptidaoEspecialBonus } from "../fm-origens";
 
@@ -17,6 +18,11 @@ export default function SectionAptidoesEspeciais({ draft, actions }) {
   const [nomeCustom, setNomeCustom] = useState("");
   const [descCustom, setDescCustom] = useState("");
   const [expandedKey, setExpandedKey] = useState(null);
+  const [query, setQuery] = useState("");
+
+  const q = normalizeText(query);
+  const isAvailable = (a) =>
+    !addedNomes.has(a.nome) && (q === "" || normalizeText(`${a.nome} ${a.descricao}`).includes(q));
 
   // Limite: uma aptidão a cada nível par (+ "+2 Aptidões" do Frutos da
   // Experiência). Concedidas por treino (source:"treino") são extras e não
@@ -30,9 +36,9 @@ export default function SectionAptidoesEspeciais({ draft, actions }) {
   // níveis de aptidão (AU/CL/BAR/DOM/ER).
   const aptCtx = { core: draft.core, attributes: draft.attributes, aptidoes: draft.aptidoes };
 
-  // Total de aptidões oficiais ainda não adicionadas (todas as categorias).
+  // Total de aptidões oficiais disponíveis (não adicionadas e batendo a busca).
   const totalDisponiveis = APTIDOES_CATEGORIAS.reduce(
-    (n, cat) => n + cat.aptidoes.filter((a) => !addedNomes.has(a.nome)).length,
+    (n, cat) => n + cat.aptidoes.filter(isAvailable).length,
     0
   );
 
@@ -236,13 +242,20 @@ export default function SectionAptidoesEspeciais({ draft, actions }) {
 
         {pickerOpen && (
           <div className="space-y-4 mt-3">
+            <SearchInput
+              value={query}
+              onChange={setQuery}
+              placeholder="Buscar aptidão..."
+            />
             {totalDisponiveis === 0 ? (
               <p className="text-xs text-slate-500 italic">
-                Todas as aptidões oficiais já foram adicionadas.
+                {q
+                  ? "Nenhuma aptidão encontrada para a busca."
+                  : "Todas as aptidões oficiais já foram adicionadas."}
               </p>
             ) : (
               APTIDOES_CATEGORIAS.map((cat) => {
-                const disponiveis = cat.aptidoes.filter((a) => !addedNomes.has(a.nome));
+                const disponiveis = cat.aptidoes.filter(isAvailable);
                 if (disponiveis.length === 0) return null;
                 return (
                   <div key={cat.key}>

@@ -16,6 +16,7 @@ import SectionActions from "./sections/actions/SectionActions";
 import SectionFeatures from "./sections/SectionFeatures";
 import SectionTreinamentos from "./sections/SectionTreinamentos";
 import SectionAptidoesEspeciais from "./sections/SectionAptidoesEspeciais";
+import SectionCaracteristicas from "./sections/SectionCaracteristicas";
 import SectionDotes from "./sections/SectionDotes";
 import SectionArtimanhas from "./sections/SectionArtimanhas";
 import SectionDefenses from "./sections/SectionDefenses";
@@ -48,7 +49,8 @@ const ALL_SECTIONS = [
   { id: "skills",       label: "Perícias" },
   { id: "defenses",     label: "Defesas & Imunidades" },
   { id: "actions",      label: "Ações" },
-  { id: "features",     label: "Características" },
+  { id: "caracteristicas", label: "Características" },
+  { id: "features",     label: "Características Personalizadas" },
   { id: "treinamentos", label: "Treinamentos" },
   { id: "aptidoesEsp",  label: "Aptidões Amaldiçoadas" },
   { id: "dotes",        label: "Dotes Gerais" },
@@ -60,8 +62,10 @@ const WARNING_FIELD_TO_SECTION = {
   name: "identity",
   attributes: "attributes",
   skills: "skills",
+  defenses: "defenses",
   dotes: "dotes",
   aptidoesEsp: "aptidoesEsp",
+  caracteristicas: "caracteristicas",
 };
 const sectionOfWarning = (field) => {
   const root = String(field || "").split(".")[0];
@@ -328,6 +332,10 @@ export default function CreatureBuilder({ existingCreature, onSave, onCancel }) 
     () => <SectionAptidoesEspeciais draft={draft} actions={actions} />,
     [draft.aptidoesEspeciais, draft.core, draft.attributes, draft.aptidoes, draft.skills, actions]
   );
+  const caracteristicasEl = useMemo(
+    () => <SectionCaracteristicas draft={draft} actions={actions} />,
+    [draft.caracteristicas, draft.core, draft.attributes, actions]
+  );
   const dotesEl = useMemo(
     () => <SectionDotes draft={draft} actions={actions} />,
     [draft.dotes, draft.core, actions]
@@ -350,6 +358,7 @@ export default function CreatureBuilder({ existingCreature, onSave, onCancel }) 
     features:     featuresEl,
     treinamentos: treinamentosEl,
     aptidoesEsp:  aptidoesEspEl,
+    caracteristicas: caracteristicasEl,
     dotes:        dotesEl,
     artimanhas:   artimanhasEl,
   };

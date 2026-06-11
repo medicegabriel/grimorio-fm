@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Plus, Trash2, Star, Zap, ChevronDown, ChevronUp } from "lucide-react";
-import { TextInput, TextArea, SmallButton, ExpandableText } from "../builder-controls";
+import { TextInput, TextArea, SmallButton, ExpandableText, SearchInput } from "../builder-controls";
+import { normalizeText } from "../fm-tables";
 import { DOTES_OFICIAIS, getDoteByKey, isAutomatedDote, getDoteLimit, resolveDoteDescription } from "../fm-dotes";
 import { getFrutosDoteBonus } from "../fm-origens";
 
@@ -42,9 +43,13 @@ export default function SectionDotes({ draft, actions }) {
   const [nomeCustom, setNomeCustom] = useState("");
   const [descCustom, setDescCustom] = useState("");
   const [expandedKey, setExpandedKey] = useState(null);
+  const [query, setQuery] = useState("");
 
+  const q = normalizeText(query);
   const addedNomes = new Set(dotes.map((d) => d.nome));
-  const disponiveis = DOTES_OFICIAIS.filter((d) => !addedNomes.has(d.nome));
+  const disponiveis = DOTES_OFICIAIS.filter(
+    (d) => !addedNomes.has(d.nome) && (q === "" || normalizeText(`${d.nome} ${d.descricao}`).includes(q))
+  );
 
   const handleAddOficial = (dote) => {
     if (slotsRestantes <= 0) return;
@@ -209,9 +214,12 @@ export default function SectionDotes({ draft, actions }) {
 
         {pickerOpen && (
           <div className="space-y-3 mt-3">
+            <SearchInput value={query} onChange={setQuery} placeholder="Buscar dote..." />
             {disponiveis.length === 0 ? (
               <p className="text-xs text-slate-500 italic">
-                Todos os dotes oficiais já foram adicionados.
+                {q
+                  ? "Nenhum dote encontrado para a busca."
+                  : "Todos os dotes oficiais já foram adicionados."}
               </p>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 items-start">

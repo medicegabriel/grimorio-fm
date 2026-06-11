@@ -7,6 +7,7 @@ import {
   RD_GERAL, RD_IRREDUTIVEL, IGNORAR_RD, VIDA_TEMP_ATAQUE,
   TAMANHO_INFO, getDeslocamentoMultiplier,
   getAttributePoints, ATTRIBUTE_LIMIT,
+  DEFENSE_LIMITS, CONDITION_TOTAL_LIMITS, CONDITION_SEVERITY_MAP,
 } from "./fm-tables";
 import { hasPeAumentoEnergia, hasPeDouble, hasPeEstoqueAdicional, getFrutosDoteBonus, getFrutosAptidaoEspecialBonus } from "./fm-origens";
 import {
@@ -20,6 +21,10 @@ import {
   getDotesPercepcaoBonus, getDotePrereqWarnings,
   getDoteExclusionWarnings, getDoteLimit, getDoteSubChoiceWarnings,
 } from "./fm-dotes";
+import {
+  getCaracteristicasAcaoBonus, getCaracteristicaSubChoiceWarnings,
+  getCaracteristicaPrereqWarnings,
+} from "./fm-caracteristicas";
 
 /**
  * ============================================================
@@ -72,7 +77,7 @@ const buildCritMargins = (treinamentos = []) => {
 };
 
 export function deriveStats(raw) {
-  const { core, attributes, overrides = {}, skills = [], attackAttr = 'forca', cdAttr = null, treinamentos = [], aptidoes = {}, dotes = [], aptidoesEspeciais = [] } = raw;
+  const { core, attributes, overrides = {}, skills = [], attackAttr = 'forca', cdAttr = null, treinamentos = [], aptidoes = {}, dotes = [], aptidoesEspeciais = [], caracteristicas = [] } = raw;
   const { patamar, nd, difficulty = "iniciante", size = "medio" } = core;
 
   const bt = getBonusTreinamento(nd);
@@ -153,7 +158,12 @@ export function deriveStats(raw) {
     saves[saveName] = calculateTR(nd, mods[attrKey], difficulty, patamar);
   }
 
+  // Economia de ações + bônus de características (Ímpeto Gradual: +1 de um tipo).
   const actionsTotal = calculateActions(patamar, nd);
+  const acaoBonus = getCaracteristicasAcaoBonus(caracteristicas);
+  for (const tipo of Object.keys(acaoBonus)) {
+    actionsTotal[tipo] = (actionsTotal[tipo] || 0) + acaoBonus[tipo];
+  }
 
   const attrBudget = {
     total: getAttributePoints(patamar, nd, bt),
@@ -347,6 +357,64 @@ export function validateDraft(raw, derived) {
   }
   for (const w of getDoteSubChoiceWarnings(raw.dotes)) {
     warnings.push({ field: "dotes", severity: "warn", message: w.message });
+  }
+
+  // Características: sub-escolha pendente (Ímpeto Gradual) + pré-requisitos.
+  for (const w of getCaracteristicaSubChoiceWarnings(raw.caracteristicas)) {
+    warnings.push({ field: "caracteristicas", severity: "warn", message: w.message });
+  }
+  for (const w of getCaracteristicaPrereqWarnings(raw.caracteristicas, { core: raw.core })) {
+    warnings.push({ field: "caracteristicas", severity: "warn", message: w.message });
+  }
+
+  // Defesas: soft caps por Patamar (espelha SectionDefenses). Só as manuais
+  // contam — defesas de origem/aptidão e condições de origem/dote são extras.
+  const defenses = raw.defenses || {};
+  const patamarDef = raw.core?.patamar ?? "comum";
+  const defLimits = DEFENSE_LIMITS[patamarDef] ?? DEFENSE_LIMITS.comum;
+  const isManualDef = (it) => it?.source !== "origin" && it?.source !== "aptidao";
+  const manualDef = {
+    imunidades:       (defenses.imunidades || []).filter(isManualDef).length,
+    resistencias:     (defenses.resistencias || []).filter(isManualDef).length,
+    vulnerabilidades: (defenses.vulnerabilidades || []).filter(isManualDef).length,
+  };
+  const DEF_LABELS = { imunidades: "imunidades", resistencias: "resistências", vulnerabilidades: "vulnerabilidades" };
+  for (const cat of ["imunidades", "resistencias", "vulnerabilidades"]) {
+    if (manualDef[cat] > defLimits[cat]) {
+      warnings.push({
+        field: "defenses",
+        severity: "warn",
+        message: `${manualDef[cat] - defLimits[cat]} ${DEF_LABELS[cat]} além do limite do Patamar (máx. ${defLimits[cat]}).`,
+      });
+    }
+  }
+  // Troca Equivalente: cada Imunidade precisa de ao menos uma Vulnerabilidade.
+  if (manualDef.imunidades > manualDef.vulnerabilidades) {
+    warnings.push({
+      field: "defenses",
+      severity: "warn",
+      message: `Troca Equivalente: ${manualDef.imunidades} imunidade(s) para ${manualDef.vulnerabilidades} vulnerabilidade(s) — cada imunidade pede uma vulnerabilidade condizente.`,
+    });
+  }
+  // Condições imunes: limite total + sub-limites de Forte/Extrema.
+  const condTotalLimit = CONDITION_TOTAL_LIMITS[patamarDef] ?? 5;
+  const originConds = new Set(defenses.originCondicoesImunes || []);
+  const doteConds = new Set(defenses.doteCondicoesImunes || []);
+  const manualConds = (defenses.condicoesImunes || []).filter((c) => !originConds.has(c) && !doteConds.has(c));
+  if (manualConds.length > condTotalLimit) {
+    warnings.push({
+      field: "defenses",
+      severity: "warn",
+      message: `${manualConds.length - condTotalLimit} imunidade(s) a condição além do limite do Patamar (máx. ${condTotalLimit}).`,
+    });
+  }
+  const extremaCount = manualConds.filter((c) => CONDITION_SEVERITY_MAP[c] === "extremas").length;
+  const forteCount = manualConds.filter((c) => CONDITION_SEVERITY_MAP[c] === "fortes").length;
+  if (extremaCount > 1) {
+    warnings.push({ field: "defenses", severity: "warn", message: `Máximo de 1 condição Extrema (${extremaCount} selecionadas).` });
+  }
+  if (forteCount > 2) {
+    warnings.push({ field: "defenses", severity: "warn", message: `Máximo de 2 condições Fortes (${forteCount} selecionadas).` });
   }
 
   return warnings;

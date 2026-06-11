@@ -8,14 +8,15 @@ import {
   Heart, Zap, Shield, Skull, Plus, Minus, ChevronDown, ChevronUp,
   Copy, AlertTriangle, Eye, EyeOff, X, Swords, Dices, RotateCcw,
   ShieldAlert, Activity, Target, Sparkles, Clock, GraduationCap, Star,
-  Square, CheckSquare, Crosshair, Sword, Hourglass, Settings, Flame
+  Square, CheckSquare, Crosshair, Sword, Hourglass, Settings, Flame, Shapes
 } from 'lucide-react';
 import { createInitialCombatState, applyNewRoundEffects, LOG_TYPES, createLogEntry, computeAlmaStatus, ALMA_ESTADOS } from '../fm-encounter';
-import { humanizeAction, generateActionDescription, ACTION_TYPE_LABELS } from './fm-action-calc';
+import { resolveActionFinalText, ACTION_TYPE_LABELS } from './fm-action-calc';
 import { getModifier, calculateCD, calculateAcerto, CONDITIONS } from './fm-tables';
 import { computeConfrontoDominio, getTreinamentoByKey, isAutomatedTreinamento } from './fm-treinamentos';
 import { getDoteByKey, isAutomatedDote, resolveDoteDescription } from './fm-dotes';
 import { getAptidaoByKey, resolveAptidaoDescription } from './fm-aptidoes';
+import { getCaracteristicaByKey, resolveCaracteristicaDescription, getCaracteristicaTabelaDestaque } from './fm-caracteristicas';
 import { MiniTable } from './builder-controls';
 
 const ATTR_DEFS = [
@@ -503,7 +504,7 @@ const ActionCard = ({ action, creatureName }) => {
 
       {expanded && (
         <div className="px-3 pb-3 pt-2 border-t border-slate-800 space-y-2">
-          <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">{generateActionDescription(action, creatureName, action.description) || humanizeAction(action)}</p>
+          <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">{resolveActionFinalText(action, creatureName)}</p>
           {dmgRoll && action.attackType !== "suporte" && (
             <div className="flex items-center justify-between bg-slate-950 rounded px-2.5 py-2">
               <div className="flex items-center gap-1.5 text-xs min-w-0">
@@ -821,6 +822,7 @@ export default function CombatantPanel({
   const features = snapshot.features ?? [];
   const treinamentos = snapshot.treinamentos ?? [];
   const aptidoesEspeciais = snapshot.aptidoesEspeciais ?? [];
+  const caracteristicas = snapshot.caracteristicas ?? [];
   const dotes = snapshot.dotes ?? [];
   const combatSettings = snapshot.combatSettings ?? { guardaAbsorbsFirst: true };
 
@@ -842,6 +844,7 @@ export default function CombatantPanel({
   const [showAcoes, setShowAcoes] = useState(true);
   const [showCaracteristicas, setShowCaracteristicas] = useState(true);
   const [showAptidoes, setShowAptidoes] = useState(false);
+  const [showCaracteristicasCat, setShowCaracteristicasCat] = useState(false);
   const [showDotes, setShowDotes] = useState(false);
   const [showTreinamentos, setShowTreinamentos] = useState(false);
 
@@ -1242,6 +1245,7 @@ export default function CombatantPanel({
                   <span>{actionsTotal.rapida ?? 0}R</span>
                   <span>{actionsTotal.bonus ?? 0}B</span>
                   <span>{actionsTotal.movimento ?? 0}M</span>
+                  <span>{actionsTotal.reacao ?? 0}Rç</span>
                 </div>
                 {showAcoes ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
               </div>
@@ -1260,12 +1264,12 @@ export default function CombatantPanel({
           </section>
 
           {features.length > 0 && (
-            <section aria-label="Características">
+            <section aria-label="Características Personalizadas">
               <button type="button" onClick={() => setShowCaracteristicas((v) => !v)}
                 className="w-full flex items-center justify-between mb-2 text-slate-100 hover:text-slate-300 focus:outline-none focus:ring-1 focus:ring-purple-500/40 rounded"
                 aria-expanded={showCaracteristicas}>
                 <h3 className="text-xs font-bold uppercase tracking-widest !text-slate-400 flex items-center gap-2">
-                  <Sparkles className="w-3.5 h-3.5" /> Características ({features.length})
+                  <Sparkles className="w-3.5 h-3.5" /> Características Personalizadas ({features.length})
                 </h3>
                 {showCaracteristicas ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
               </button>
@@ -1320,6 +1324,39 @@ export default function CombatantPanel({
                         tagClass="text-purple-400 bg-purple-950/50 border-purple-900"
                         description={desc}
                         footer={catalog?.tabela ? <MiniTable {...catalog.tabela} /> : undefined}
+                      />
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+          )}
+
+          {caracteristicas.length > 0 && (
+            <section aria-label="Características">
+              <button type="button" onClick={() => setShowCaracteristicasCat((v) => !v)}
+                className="w-full flex items-center justify-between mb-2 text-slate-100 hover:text-slate-300 focus:outline-none focus:ring-1 focus:ring-cyan-500/40 rounded"
+                aria-expanded={showCaracteristicasCat}>
+                <h3 className="text-xs font-bold uppercase tracking-widest !text-slate-400 flex items-center gap-2">
+                  <Shapes className="w-3.5 h-3.5 text-cyan-400" /> Características ({caracteristicas.length})
+                </h3>
+                {showCaracteristicasCat ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
+              </button>
+              {showCaracteristicasCat && (
+                <div className="space-y-2">
+                  {caracteristicas.map((c) => {
+                    const catalog = c.key ? getCaracteristicaByKey(c.key) : null;
+                    const ctx = { core: snapshot.core, attributes: snapshot.attributes, subChoice: c.subChoice };
+                    const desc = catalog ? resolveCaracteristicaDescription(catalog, ctx) : c.descricao;
+                    const destaque = catalog ? getCaracteristicaTabelaDestaque(catalog, ctx) : null;
+                    return (
+                      <AbilityCard
+                        key={c.id}
+                        title={c.nome}
+                        tag={c.categoria}
+                        tagClass="text-cyan-400 bg-cyan-950/50 border-cyan-900"
+                        description={desc}
+                        footer={catalog?.tabela ? <MiniTable {...catalog.tabela} destaqueIndex={destaque} /> : undefined}
                       />
                     );
                   })}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Zap, Lock, Unlock, Info, ChevronDown, ChevronUp } from "lucide-react";
+import { Zap, Lock, Unlock, Info, ChevronDown, ChevronUp, Search, X } from "lucide-react";
 
 /**
  * Componentes de input reutilizáveis — padrão visual unificado.
@@ -138,6 +138,30 @@ export const Select = ({ value, onChange, options, placeholder, ...rest }) => (
   </div>
 );
 
+// ---------- Campo de busca (para filtrar catálogos) ----------
+export const SearchInput = ({ value, onChange, placeholder = "Buscar..." }) => (
+  <div className="relative">
+    <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+    <input
+      type="text"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      className="w-full h-9 bg-slate-950 border border-slate-700 rounded pl-8 pr-8 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+    />
+    {value && (
+      <button
+        type="button"
+        onClick={() => onChange("")}
+        className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
+        aria-label="Limpar busca"
+      >
+        <X className="w-3.5 h-3.5" />
+      </button>
+    )}
+  </div>
+);
+
 // ---------- Stat Field com override ----------
 /**
  * Campo para stats calculados que podem ser sobrescritos.
@@ -248,7 +272,7 @@ export const SmallButton = ({ children, onClick, variant = "default", type = "bu
 };
 
 // ---------- Tabela compacta (ex.: Técnica Máxima por Patamar) ----------
-export const MiniTable = ({ titulo, colunas = [], linhas = [] }) => (
+export const MiniTable = ({ titulo, colunas = [], linhas = [], destaqueIndex = null }) => (
   <div className="mt-2 border border-slate-800 rounded-lg overflow-hidden">
     {titulo && (
       <div className="px-2.5 py-1 bg-slate-900/70 text-[10px] uppercase tracking-wider text-slate-400 font-bold border-b border-slate-800">
@@ -273,20 +297,34 @@ export const MiniTable = ({ titulo, colunas = [], linhas = [] }) => (
           </thead>
         )}
         <tbody>
-          {linhas.map((row, i) => (
-            <tr key={i} className="border-t border-slate-800/60">
-              {row.map((cell, j) => (
-                <td
-                  key={j}
-                  className={`px-2.5 py-1 align-top whitespace-nowrap ${
-                    j === 0 ? "text-slate-300 font-medium" : "text-slate-400"
-                  }`}
-                >
-                  {cell}
-                </td>
-              ))}
-            </tr>
-          ))}
+          {linhas.map((row, i) => {
+            const ativa = destaqueIndex != null && i === destaqueIndex;
+            return (
+              <tr
+                key={i}
+                className={`border-t border-slate-800/60 ${
+                  ativa ? "bg-cyan-950/40 ring-1 ring-inset ring-cyan-800/50" : ""
+                }`}
+              >
+                {row.map((cell, j) => (
+                  <td
+                    key={j}
+                    className={`px-2.5 py-1 align-top whitespace-nowrap ${
+                      ativa
+                        ? j === 0
+                          ? "text-cyan-200 font-semibold"
+                          : "text-cyan-100"
+                        : j === 0
+                          ? "text-slate-300 font-medium"
+                          : "text-slate-400"
+                    }`}
+                  >
+                    {cell}
+                  </td>
+                ))}
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

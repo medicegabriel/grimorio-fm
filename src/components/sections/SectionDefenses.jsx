@@ -1,31 +1,13 @@
 import React, { useState } from "react";
 import { Plus, Shield, ShieldOff, ShieldAlert, AlertTriangle, BookOpen, Zap } from "lucide-react";
 import { TextInput, Select, SmallButton, Pill } from "../builder-controls";
-import { CONDITIONS } from "../fm-tables";
+import { CONDITIONS, DEFENSE_LIMITS, CONDITION_TOTAL_LIMITS, CONDITION_SEVERITY_MAP } from "../fm-tables";
 
 const CATEGORIES = [
   { key: "resistencias",     label: "Resistências",     icon: Shield,      color: "sky",     accent: "text-sky-400" },
   { key: "imunidades",       label: "Imunidades",       icon: ShieldAlert, color: "emerald", accent: "text-emerald-400" },
   { key: "vulnerabilidades", label: "Vulnerabilidades", icon: ShieldOff,   color: "rose",    accent: "text-rose-400" },
 ];
-
-const DEFENSE_LIMITS = {
-  lacaio:     { imunidades: 0, resistencias: 0, vulnerabilidades: 0 },
-  capanga:    { imunidades: 0, resistencias: 0, vulnerabilidades: 0 },
-  comum:      { imunidades: 1, resistencias: 2, vulnerabilidades: 1 },
-  desafio:    { imunidades: 3, resistencias: 3, vulnerabilidades: 3 },
-  calamidade: { imunidades: 6, resistencias: 4, vulnerabilidades: 6 },
-};
-
-const CONDITION_TOTAL_LIMITS = {
-  lacaio: 0, capanga: 0, comum: 5, desafio: 6, calamidade: 7,
-};
-
-const CONDITION_SEVERITY_MAP = Object.fromEntries(
-  Object.entries(CONDITIONS).flatMap(([severity, list]) =>
-    list.map((c) => [c, severity])
-  )
-);
 
 const CONDITION_GROUPS = [
   { key: "fracas",   label: "Fracas",   accent: "text-slate-400" },

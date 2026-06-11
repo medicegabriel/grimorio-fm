@@ -515,6 +515,29 @@ export const CONDITIONS = {
   extremas: ["atordoado","desmembramento","fragilizado","fragmentado","inconsciente","paralisado"],
 };
 
+// Normaliza texto p/ busca: sem acento, minúsculo, sem espaços nas pontas.
+export const normalizeText = (s) =>
+  (s ?? "").toString().normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
+
+// Limites de defesa a dano por Patamar (soft caps — só avisam, não bloqueiam).
+export const DEFENSE_LIMITS = {
+  lacaio:     { imunidades: 0, resistencias: 0, vulnerabilidades: 0 },
+  capanga:    { imunidades: 0, resistencias: 0, vulnerabilidades: 0 },
+  comum:      { imunidades: 1, resistencias: 2, vulnerabilidades: 1 },
+  desafio:    { imunidades: 3, resistencias: 3, vulnerabilidades: 3 },
+  calamidade: { imunidades: 6, resistencias: 4, vulnerabilidades: 6 },
+};
+
+// Limite total de imunidades a condição por Patamar.
+export const CONDITION_TOTAL_LIMITS = {
+  lacaio: 0, capanga: 0, comum: 5, desafio: 6, calamidade: 7,
+};
+
+// Mapa condição → severidade (derivado de CONDITIONS), para os sub-limites.
+export const CONDITION_SEVERITY_MAP = Object.fromEntries(
+  Object.entries(CONDITIONS).flatMap(([severity, list]) => list.map((c) => [c, severity]))
+);
+
 export const PATAMAR_LABELS = {
   lacaio: "Lacaio",
   capanga: "Capanga",

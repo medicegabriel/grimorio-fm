@@ -354,6 +354,16 @@ export function normalizeAction(action) {
 }
 
 // ============================================================
+// resolveActionFinalText — texto final exibido da ação
+// ============================================================
+// Se o usuário escreveu um "Texto Final" manual (finalTextManual), usa-o
+// verbatim. Caso contrário, gera automaticamente (flavor + mecânica).
+export function resolveActionFinalText(action, creatureName) {
+  if (action?.finalTextManual?.trim()) return action.finalTextManual;
+  return generateActionDescription(action, creatureName, action?.description) || humanizeAction(action);
+}
+
+// ============================================================
 // humanizeAction — consumida por CombatantPanel e LivePreview
 // ============================================================
 export function humanizeAction(action) {

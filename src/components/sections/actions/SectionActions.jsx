@@ -10,6 +10,7 @@ import ActionForm from "./ActionForm";
 // ============================================================
 export default function SectionActions({ draft, derived, actions }) {
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState(null);
   const { templates: actionTemplates, saveTemplate: saveActionTemplate, removeTemplate: removeActionTemplate } = useActionTemplates();
 
   const handleAdd = (newAction) => {
@@ -17,10 +18,18 @@ export default function SectionActions({ draft, derived, actions }) {
     setShowForm(false);
   };
 
-  const total   = derived.actionsTotal ?? { comum: 1, bonus: 0, rapida: 0, movimento: 1, reacao: 1 };
-  const patamar = draft.core?.patamar;
-  const nd      = draft.core?.nd;
-  const bt      = derived.bt ?? 2;
+  // Abrir edição: fecha o form de "nova ação" para não ter dois forms abertos.
+  const handleEdit = (id) => {
+    setEditingId(id);
+    setShowForm(false);
+  };
+
+  const handleSaveEdit = (updatedAction) => {
+    actions.updateAction(editingId, updatedAction);
+    setEditingId(null);
+  };
+
+  const total = derived.actionsTotal ?? { comum: 1, bonus: 0, rapida: 0, movimento: 1, reacao: 1 };
 
   return (
     <div className="space-y-3">
@@ -39,35 +48,50 @@ export default function SectionActions({ draft, derived, actions }) {
             Nenhuma ação cadastrada
           </div>
         )}
-        {draft.actions.list.map((action) => (
-          <ActionItem
-            key={action.id}
-            action={action}
-            patamar={patamar}
-            nd={nd}
-            bt={bt}
-            creatureName={draft.name || "A criatura"}
-            onUpdate={(patch) => actions.updateAction(action.id, patch)}
-            onRemove={() => actions.removeAction(action.id)}
-            onDuplicate={() => actions.duplicateAction(action.id)}
-            onSaveTemplate={saveActionTemplate}
-          />
-        ))}
+        {draft.actions.list.map((action) =>
+          editingId === action.id ? (
+            <ActionForm
+              key={action.id}
+              derived={derived}
+              draft={draft}
+              initialAction={action}
+              title="Editar Ação"
+              submitLabel="Salvar"
+              onAdd={handleSaveEdit}
+              onCancel={() => setEditingId(null)}
+              templates={actionTemplates}
+              onRemoveTemplate={removeActionTemplate}
+            />
+          ) : (
+            <ActionItem
+              key={action.id}
+              action={action}
+              creatureName={draft.name || "A criatura"}
+              onEdit={() => handleEdit(action.id)}
+              onRemove={() => actions.removeAction(action.id)}
+              onDuplicate={() => actions.duplicateAction(action.id)}
+              onSaveTemplate={saveActionTemplate}
+            />
+          )
+        )}
       </div>
 
-      {showForm ? (
-        <ActionForm
-          derived={derived}
-          draft={draft}
-          onAdd={handleAdd}
-          onCancel={() => setShowForm(false)}
-          templates={actionTemplates}
-          onRemoveTemplate={removeActionTemplate}
-        />
-      ) : (
-        <SmallButton onClick={() => setShowForm(true)} variant="primary">
-          <Plus className="w-3 h-3" /> Adicionar Ação
-        </SmallButton>
+      {/* Form de nova ação — escondido enquanto uma edição está aberta. */}
+      {editingId === null && (
+        showForm ? (
+          <ActionForm
+            derived={derived}
+            draft={draft}
+            onAdd={handleAdd}
+            onCancel={() => setShowForm(false)}
+            templates={actionTemplates}
+            onRemoveTemplate={removeActionTemplate}
+          />
+        ) : (
+          <SmallButton onClick={() => setShowForm(true)} variant="primary">
+            <Plus className="w-3 h-3" /> Adicionar Ação
+          </SmallButton>
+        )
       )}
     </div>
   );

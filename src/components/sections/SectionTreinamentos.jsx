@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Plus, Trash2, GraduationCap, Zap, ChevronDown, ChevronUp } from "lucide-react";
-import { TextInput, TextArea, SmallButton, ExpandableText } from "../builder-controls";
+import { TextInput, TextArea, SmallButton, ExpandableText, SearchInput } from "../builder-controls";
+import { normalizeText } from "../fm-tables";
 import {
   TREINAMENTOS_OFICIAIS,
   getTreinamentoByKey,
@@ -34,9 +35,14 @@ export default function SectionTreinamentos({ draft, actions }) {
   const [nomeCustom, setNomeCustom] = useState("");
   const [descCustom, setDescCustom] = useState("");
   const [expandedKey, setExpandedKey] = useState(null);
+  const [query, setQuery] = useState("");
 
   const addedKeys = new Set(treinamentos.map((t) => t.key).filter(Boolean));
   const disponiveis = TREINAMENTOS_OFICIAIS.filter((t) => !addedKeys.has(t.key));
+  const q = normalizeText(query);
+  const visiveis = disponiveis.filter(
+    (t) => q === "" || normalizeText(`${t.nome} ${t.descricao}`).includes(q)
+  );
 
   const handleAddOficial = (treino) => {
     if (pontosDisponiveis <= 0) return;
@@ -170,13 +176,16 @@ export default function SectionTreinamentos({ draft, actions }) {
 
           {pickerOpen && (
             <div className="space-y-3 mt-3">
-              {disponiveis.length === 0 ? (
+              <SearchInput value={query} onChange={setQuery} placeholder="Buscar treinamento..." />
+              {visiveis.length === 0 ? (
                 <p className="text-xs text-slate-500 italic">
-                  Todos os treinamentos oficiais já foram adicionados.
+                  {q
+                    ? "Nenhum treinamento encontrado para a busca."
+                    : "Todos os treinamentos oficiais já foram adicionados."}
                 </p>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 items-start">
-                  {disponiveis.map((t) => {
+                  {visiveis.map((t) => {
                     const automated = isAutomatedTreinamento(t);
                     const isExpanded = expandedKey === t.key;
                     const desc = resolveDesc(t, draft);

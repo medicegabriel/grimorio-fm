@@ -574,3 +574,15 @@ export function hasPeDouble(core) {
     core?.origin?.subtype === "corpo_por_energia"
   );
 }
+
+/**
+ * True se a origem é o Restrito Celeste "puro" (Restringido sem a Restrição de
+ * Corpo por Energia). Somente este NÃO tem acesso a Aptidões nem a Aptidões
+ * Amaldiçoadas — o Corpo por Energia recebe ambos normalmente.
+ */
+export function isRestritoCeleste(core) {
+  return (
+    core?.origin?.type === "restringido" &&
+    core?.origin?.subtype !== "corpo_por_energia"
+  );
+}

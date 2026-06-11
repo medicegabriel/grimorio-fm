@@ -66,6 +66,7 @@ export const blankDraft = () => ({
   features: [],
   treinamentos: [],
   aptidoesEspeciais: [],
+  caracteristicas: [],
   dotes: [],
   artimanhas: [],
   narratorNotes: "",
@@ -156,6 +157,7 @@ const normalizeDraft = (payload = {}) => {
     skills:            normalizeSkills(payload.skills),
     treinamentos:      normalizeTreinamentos(payload.treinamentos || []),
     aptidoesEspeciais: payload.aptidoesEspeciais || [],
+    caracteristicas:   payload.caracteristicas || [],
     dotes:             payload.dotes || [],
     artimanhas:        payload.artimanhas || [],
   };
@@ -464,6 +466,24 @@ const actionHandlers = {
     dotes: (s.dotes || []).map((d) => (d.id === id ? { ...d, ...patch } : d)),
   }),
 
+  // ---------- Características Gerais e Especiais ----------
+  // Catálogo puramente visual (sem automação por enquanto).
+  ADD_CARACTERISTICA: (s, payload) => ({
+    ...s,
+    caracteristicas: [...(s.caracteristicas || []), { ...payload, id: genId("carac") }],
+  }),
+  REMOVE_CARACTERISTICA: (s, id) => ({
+    ...s,
+    caracteristicas: (s.caracteristicas || []).filter((c) => c.id !== id),
+  }),
+  // Atualiza uma característica já adicionada (ex.: sub-escolha do Ímpeto Gradual).
+  UPDATE_CARACTERISTICA: (s, { id, patch }) => ({
+    ...s,
+    caracteristicas: (s.caracteristicas || []).map((c) =>
+      c.id === id ? { ...c, ...patch } : c
+    ),
+  }),
+
   // ---------- Treinamentos ----------
   // Add/remove ressincronizam aptidões especiais concedidas pelo treino
   // (ex.: Modificação Completa via Treino de Domínio).
@@ -512,6 +532,11 @@ const actionHandlers = {
         ...s,
         defenses: { ...s.defenses, condicoesImunes: [...s.defenses.condicoesImunes, item] },
       };
+    }
+    // Evita duplicar o mesmo tipo de dano na mesma categoria (case-insensitive).
+    const tipoNorm = (item?.tipo || "").toLowerCase().trim();
+    if ((s.defenses[category] || []).some((it) => (it?.tipo || "").toLowerCase().trim() === tipoNorm)) {
+      return s;
     }
     return {
       ...s,
@@ -581,6 +606,7 @@ export default function useCreatureBuilder(initialDraft = null) {
     draft.aptidoes,
     draft.dotes,
     draft.aptidoesEspeciais,
+    draft.caracteristicas,
   ]);
 
   const warnings = useMemo(() => validateDraft(draft, derived), [draft, derived]);
@@ -627,6 +653,11 @@ export default function useCreatureBuilder(initialDraft = null) {
     addDote:    (d) => dispatch({ type: "ADD_DOTE", payload: d }),
     removeDote: (id) => dispatch({ type: "REMOVE_DOTE", payload: id }),
     updateDote: (id, patch) => dispatch({ type: "UPDATE_DOTE", payload: { id, patch } }),
+
+    // Características Gerais e Especiais
+    addCaracteristica:    (c) => dispatch({ type: "ADD_CARACTERISTICA", payload: c }),
+    removeCaracteristica: (id) => dispatch({ type: "REMOVE_CARACTERISTICA", payload: id }),
+    updateCaracteristica: (id, patch) => dispatch({ type: "UPDATE_CARACTERISTICA", payload: { id, patch } }),
 
     // Treinamentos
     addTreinamento:    (t) => dispatch({ type: "ADD_TREINAMENTO", payload: t }),
