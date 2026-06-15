@@ -58,6 +58,11 @@ export const createInitialCombatState = (stats = {}) => ({
   almaAtual: stats.hpMax ?? 0,
   peCurrent: stats.peMax ?? 0,
   guardaInabavalCurrent: stats.guardaInabavalMax ?? 0,
+  // Override situacional de RD (zera no Reset de Combate). Quando ativo, o
+  // dano ignora a RD Geral (só a Irredutível continua valendo). O valor é o
+  // "ignorar parcial": desconta X da RD Geral antes de reduzir o dano.
+  ignorarRdAtivo: false,
+  ignorarRdValor: 0,
   resistenciaParcialUsed: 0,
   resistenciaTotalUsed: 0,
   integridadeCurrent: 3, // EXT: se o sistema define isso por patamar, mover para fm-tables.js

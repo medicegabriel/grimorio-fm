@@ -618,7 +618,7 @@ const CombatantAvatar = ({ imageUrl, name, className, focus }) => {
 const POPOVER_MARGIN = 8;       // distância mínima entre popover e borda do viewport
 const POPOVER_GAP = 8;           // distância entre botão e popover
 
-const CombatSettingsMenu = ({ settings, onChange, disabled = false }) => {
+const CombatSettingsMenu = ({ settings, onChange, rdState, onRdState, rdStats, disabled = false }) => {
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState(null);
   const buttonRef = useRef(null);
@@ -688,6 +688,11 @@ const CombatSettingsMenu = ({ settings, onChange, disabled = false }) => {
   }, [open, recalculatePosition]);
 
   const guardaAbsorbsFirst = settings?.guardaAbsorbsFirst ?? true;
+  const rdReducao = settings?.rdReducao ?? true;
+  const rdGeral = rdStats?.geral ?? 0;
+  const rdIrredutivel = rdStats?.irredutivel ?? 0;
+  const ignorarRdAtivo = rdState?.ativo ?? false;
+  const ignorarRdValor = rdState?.valor ?? 0;
 
   const toggle = (key, value) => {
     onChange?.({ ...(settings || {}), [key]: value });
@@ -742,6 +747,48 @@ const CombatSettingsMenu = ({ settings, onChange, disabled = false }) => {
             onChange={(v) => toggle('guardaAbsorbsFirst', v)}
             disabled={disabled}
           />
+
+          <div className="border-t border-slate-800 pt-2">
+            <SettingToggle
+              label="RD reduz dano automaticamente"
+              description={`RD Geral ${rdGeral} · Irredutível ${rdIrredutivel}. Reduz o dano antes da Guarda.`}
+              checked={rdReducao}
+              onChange={(v) => toggle('rdReducao', v)}
+              disabled={disabled}
+            />
+
+            {rdReducao && (
+              <div className="pl-2 mt-1 space-y-2">
+                <SettingToggle
+                  label="Ignorar RD (mantém a Irredutível)"
+                  description="Para ataques que perfuram a RD. A RD Irredutível continua valendo."
+                  checked={ignorarRdAtivo}
+                  onChange={(v) => onRdState?.setAtivo?.(v)}
+                  disabled={disabled}
+                />
+                <label className={`flex items-center gap-2 p-2 rounded ${ignorarRdAtivo ? 'opacity-40' : ''}`}>
+                  <span className="flex-1 text-sm text-slate-300">Ignorar parte da RD</span>
+                  <input
+                    type="number"
+                    min={0}
+                    value={ignorarRdValor || ''}
+                    onChange={(e) => onRdState?.setValor?.(parseInt(e.target.value, 10) || 0)}
+                    placeholder="0"
+                    disabled={disabled || ignorarRdAtivo}
+                    aria-label="Quantidade de RD a ignorar"
+                    className="w-16 h-8 bg-slate-950 border border-slate-700 rounded px-2 text-center text-sm text-white focus:outline-none focus:border-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  />
+                </label>
+                <p className="px-2 text-[11px] text-slate-500 leading-snug">
+                  RD aplicada no próximo dano: <span className="font-mono text-slate-300">
+                    {ignorarRdAtivo
+                      ? rdIrredutivel
+                      : Math.min(rdGeral, Math.max(rdIrredutivel, rdGeral - ignorarRdValor))}
+                  </span>
+                </p>
+              </div>
+            )}
+          </div>
         </div>,
         document.body
       )}
@@ -824,7 +871,7 @@ export default function CombatantPanel({
   const aptidoesEspeciais = snapshot.aptidoesEspeciais ?? [];
   const caracteristicas = snapshot.caracteristicas ?? [];
   const dotes = snapshot.dotes ?? [];
-  const combatSettings = snapshot.combatSettings ?? { guardaAbsorbsFirst: true };
+  const combatSettings = snapshot.combatSettings ?? { guardaAbsorbsFirst: true, rdReducao: true };
 
   // Derived: alma conditions injected visually only — never persisted
   const _hpMaxBase = combatState.hpMaxBase ?? stats.hpMax ?? 0;
@@ -880,8 +927,23 @@ export default function CombatantPanel({
         const currentGuarda = combatState.guardaInabavalCurrent ?? 0;
 
         if (v < currentHp) {
-          // Dano recebido
-          const damage = currentHp - v;
+          // Dano recebido. Ordem: dano → RD → Guarda → HP.
+          // A RD reduz o dano bruto primeiro; o que sobra a Guarda absorve.
+          const rawDamage = currentHp - v;
+          const rdReducaoOn = combatSettings.rdReducao ?? true;
+          let effectiveRd = 0;
+          if (rdReducaoOn) {
+            const rdGeral = stats.rdGeral ?? 0;
+            const rdIrredutivel = stats.rdIrredutivel ?? 0;
+            // "Ignorar RD": ativo zera a RD Geral (sobra só a Irredutível);
+            // ignorarRdValor desconta parcialmente. A Irredutível é o piso e
+            // a RD nunca passa da Geral.
+            const ignorado = (combatState.ignorarRdAtivo ?? false)
+              ? rdGeral
+              : (combatState.ignorarRdValor ?? 0);
+            effectiveRd = Math.min(rdGeral, Math.max(rdIrredutivel, rdGeral - ignorado));
+          }
+          const damage = Math.max(0, rawDamage - effectiveRd);
           if (combatSettings.guardaAbsorbsFirst) {
             // Guarda absorve primeiro (regra padrão)
             const guardaAbsorbed = Math.min(currentGuarda, damage);
@@ -937,6 +999,8 @@ export default function CombatantPanel({
       if (newAlma <= 0) updates.isActive = false;
       patch(updates);
     },
+    setIgnorarRdAtivo: (v) => patch({ ignorarRdAtivo: v }),
+    setIgnorarRdValor: (v) => patch({ ignorarRdValor: Math.max(0, v) }),
     setResParcial: (v) => patch({ resistenciaParcialUsed: v }),
     setResTotal: (v) => patch({ resistenciaTotalUsed: v }),
     addCondition: (c) => patch({ activeConditions: [...(combatState.activeConditions ?? []), c] }),
@@ -1012,6 +1076,9 @@ export default function CombatantPanel({
               <CombatSettingsMenu
                 settings={combatSettings}
                 onChange={handleCombatSettingsChange}
+                rdState={{ ativo: combatState.ignorarRdAtivo ?? false, valor: combatState.ignorarRdValor ?? 0 }}
+                onRdState={{ setAtivo: handlers.setIgnorarRdAtivo, setValor: handlers.setIgnorarRdValor }}
+                rdStats={{ geral: stats.rdGeral ?? 0, irredutivel: stats.rdIrredutivel ?? 0 }}
                 disabled={readOnly || !onCreatureUpdate}
               />
               <button type="button" onClick={handlers.resetCombat}

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Plus, BookOpen, X, Lock, Unlock } from "lucide-react";
+import { createPortal } from "react-dom";
+import { Plus, BookOpen, X, Lock, Unlock, AlertTriangle } from "lucide-react";
 import { SmallButton, Pill } from "../../builder-controls";
 import ActionFormFields from "./ActionFormFields";
 import {
@@ -18,7 +19,10 @@ import {
   runFullActionCalc,
   reapplyTrades,
   generateActionDescription,
+  resolveActionTokens,
+  ACTION_TEXT_TOKENS,
   normalizeAction,
+  clampActionToBt,
 } from "../../fm-action-calc";
 
 // ============================================================
@@ -26,13 +30,21 @@ import {
 // ============================================================
 // `initialAction` (opcional) pré-preenche o form para edição; nesse caso
 // `onAdd` recebe o form atualizado e o chamador faz o updateAction.
+// `context` (opcional) substitui draft/derived quando o form é usado fora do
+// builder (ex.: editar um Modelo na Biblioteca, sem criatura). Quando ausente,
+// os valores vêm de draft/derived como antes.
 export default function ActionForm({
   derived, draft, onAdd, onCancel, templates = [], onRemoveTemplate,
   initialAction = null, submitLabel = "Adicionar", title = "Nova Ação",
+  context = null, showFinalText = true, templateMode = false,
 }) {
-  const patamar = draft?.core?.patamar;
-  const nd      = draft?.core?.nd;
-  const bt      = derived?.bt ?? 2;
+  const patamar = context ? context.patamar : draft?.core?.patamar;
+  const nd      = context ? context.nd      : draft?.core?.nd;
+  const bt      = context ? (context.bt ?? 2) : (derived?.bt ?? 2);
+  const acertoPrincipal = context ? (context.acertoPrincipal ?? 0) : (derived?.acertoPrincipal ?? 0);
+  const cdBaseDerived   = context ? (context.cdBase ?? 0)          : (derived?.cdBase ?? 0);
+  const creatureName    = context ? (context.creatureName ?? "")  : draft?.name;
+  const difficulty      = context ? context.difficulty            : draft?.core?.difficulty;
 
   // Em edição, reabre já no modo manual se a ação tinha um Texto Final manual.
   const [isMechanicalTextLocked, setIsMechanicalTextLocked] = useState(
@@ -42,6 +54,8 @@ export default function ActionForm({
     () => initialAction?.finalTextManual ?? ""
   );
   const [showTemplates,          setShowTemplates]           = useState(false);
+  // Modelo aguardando confirmação de ajuste de BT (condição/trades acima do BT).
+  const [pendingTemplate,        setPendingTemplate]         = useState(null);
   const textareaRef = useRef(null);
 
   const [form, setForm] = useState(() => {
@@ -49,8 +63,8 @@ export default function ActionForm({
     // usuário já tinha montado (dano travado, trades, alcance manual etc.).
     if (initialAction) return normalizeAction(initialAction);
     const calcDmg    = calculateActionDamage(patamar, nd, "acerto", false);
-    const tHitBase   = derived?.acertoPrincipal ?? 0;
-    const tCdBase    = derived?.cdBase ?? 0;
+    const tHitBase   = acertoPrincipal;
+    const tCdBase    = cdBaseDerived;
     const numDiceBase = calcDmg?.numDice ?? 0;
     const initAuto   = calcAutoRange("acerto", "distancia", bt);
     return {
@@ -91,8 +105,8 @@ export default function ActionForm({
   const runFullCalc = (attackType, condition, narrativeType, rangeType, trades, damageType) =>
     runFullActionCalc({
       patamar, nd, bt, attackType, condition, narrativeType, rangeType, trades, damageType,
-      toHitBase: derived?.acertoPrincipal ?? 0,
-      cdBase:    derived?.cdBase ?? 0,
+      toHitBase: acertoPrincipal,
+      cdBase:    cdBaseDerived,
     });
 
   // Reaplica trades sobre o dano-base existente — usado quando travado.
@@ -204,7 +218,10 @@ export default function ActionForm({
   const handleSubmit = () => {
     const finalTextManual =
       !isMechanicalTextLocked && manualMechanicalText.trim() ? manualMechanicalText : "";
-    onAdd({ ...form, finalTextManual });
+    // Carimba o ND/Patamar/Dificuldade em que a ação foi montada e limpa o
+    // selo de "texto desatualizado" (acabou de ser revisada manualmente).
+    const calc = { nd, patamar, difficulty };
+    onAdd({ ...form, finalTextManual, finalTextStale: false, calc });
   };
 
   const handleResize = () => {
@@ -214,15 +231,47 @@ export default function ActionForm({
     }
   };
 
+  // Insere um token {{…}} na posição do cursor do editor manual.
+  const insertToken = (key) => {
+    const tokenStr = `{{${key}}}`;
+    const ta = textareaRef.current;
+    if (!ta) {
+      setManualMechanicalText((t) => t + tokenStr);
+      return;
+    }
+    const start = ta.selectionStart ?? manualMechanicalText.length;
+    const end   = ta.selectionEnd   ?? start;
+    const next  = manualMechanicalText.slice(0, start) + tokenStr + manualMechanicalText.slice(end);
+    setManualMechanicalText(next);
+    requestAnimationFrame(() => {
+      ta.focus();
+      const pos = start + tokenStr.length;
+      ta.setSelectionRange(pos, pos);
+      handleResize();
+    });
+  };
+
   useEffect(() => {
     handleResize();
   }, [form, isMechanicalTextLocked, manualMechanicalText]);
 
+  // Verifica compatibilidade de BT antes de aplicar. Se a condição/trades do
+  // modelo excedem o BT da criatura, abre o modal de confirmação; senão aplica.
   const applyTemplate = (tpl) => {
+    const { action: clamped, changes } = clampActionToBt(tpl, bt);
+    if (changes.length === 0) { applyTemplateNow(tpl); return; }
+    setPendingTemplate({ tpl: clamped, changes });
+    setShowTemplates(false);
+  };
+
+  const applyTemplateNow = (tpl) => {
     setForm((prev) => {
+      const tplDamage     = tpl.damage ?? null;
       const newAttackType = tpl.attackType ?? prev.attackType;
       const newRangeType  = tpl.rangeType  ?? prev.rangeType;
       const newCondition  = tpl.condition  ? { ...prev.condition, ...tpl.condition } : prev.condition;
+      // Carrega os sacrifícios (trades) salvos, zerando os incompatíveis com o tipo de ataque.
+      const newTrades     = resetTradesForAttackType(newAttackType, { ...TRADES_ZERO, ...(tpl.trades ?? {}) });
 
       const next = {
         ...prev,
@@ -234,10 +283,9 @@ export default function ActionForm({
         cost:        tpl.cost        ?? prev.cost,
         description: tpl.description ?? prev.description,
         condition:   newCondition,
+        trades:      newTrades,
       };
 
-      const resetTrades = resetTradesForAttackType(newAttackType, TRADES_ZERO);
-      next.trades = resetTrades;
       if (newAttackType === "acerto") next.condition = BLANK_CONDITION;
 
       const av = calcAutoRange(newAttackType, newRangeType, bt);
@@ -246,15 +294,36 @@ export default function ActionForm({
 
       if (newAttackType === "suporte") {
         next.damage = { ...prev.damage, roll: "", average: 0, damageIsLocked: false };
+      } else if (tplDamage?.damageIsLocked) {
+        // Dano MANUAL salvo no modelo: preserva os números exatos; Acerto/CD
+        // ainda seguem a criatura atual (trades reaplicados sobre o dano travado).
+        next.damage = { ...prev.damage, ...tplDamage, damageIsLocked: true };
+        Object.assign(next, reapplyTradesHelper(next, newRangeType, newTrades));
       } else {
-        // Recalcula dano para a criatura atual, ignorando valores salvos no template
-        const r = runFullCalc(newAttackType, next.condition, prev.damage?.narrativeType, newRangeType, resetTrades, prev.damage?.type);
-        if (r) Object.assign(next, r, { damage: { ...prev.damage, ...r.damage, damageIsLocked: false } });
+        // Dano AUTOMÁTICO: preserva os campos qualitativos do modelo (tipo de
+        // dano, narrativa, condição, trades) e reescala só os dados pro ND atual.
+        const narrativeType = tplDamage?.narrativeType ?? prev.damage?.narrativeType;
+        const damageType    = tplDamage?.type ?? prev.damage?.type;
+        const r = runFullCalc(newAttackType, next.condition, narrativeType, newRangeType, newTrades, damageType);
+        if (r) {
+          Object.assign(next, r, {
+            damage: {
+              ...prev.damage, ...tplDamage, ...r.damage,
+              type: damageType, narrativeType, damageIsLocked: false,
+            },
+          });
+        }
       }
 
       return next;
     });
+    // Carrega o Texto Final customizado do modelo (tokens resolvem na criatura atual).
+    if (tpl.finalTextManual?.trim()) {
+      setManualMechanicalText(tpl.finalTextManual);
+      setIsMechanicalTextLocked(false);
+    }
     setShowTemplates(false);
+    setPendingTemplate(null);
   };
 
   return (
@@ -323,6 +392,7 @@ export default function ActionForm({
       <ActionFormFields
         form={form}
         bt={bt}
+        templateMode={templateMode}
         update={update}
         updateDamage={updateDamage}
         updateCond={updateCond}
@@ -330,13 +400,19 @@ export default function ActionForm({
         updateRangeType={updateRangeType}
       />
 
-      {form.name?.trim() && form.attackType !== "suporte" && (() => {
-          const autoText = generateActionDescription(form, draft?.name, form.description);
+      {showFinalText && form.name?.trim() && form.attackType !== "suporte" && (() => {
+          const autoText = generateActionDescription(form, creatureName, form.description);
           if (!autoText) return null;
+          // Seed do modo manual usa TOKENS ({{dano}}…) em vez de números fixos,
+          // pra prosa e mecânica nunca dessincronizarem.
+          const tokenSeed = generateActionDescription(form, creatureName, form.description, { tokenize: true });
           const displayText = isMechanicalTextLocked ? autoText : manualMechanicalText;
+          const resolvedPreview = !isMechanicalTextLocked
+            ? resolveActionTokens(manualMechanicalText, form, creatureName)
+            : "";
           const toggleLockMechanical = () => {
             if (isMechanicalTextLocked) {
-              setManualMechanicalText(autoText);
+              setManualMechanicalText(tokenSeed);
               setIsMechanicalTextLocked(false);
             } else {
               setIsMechanicalTextLocked(true);
@@ -376,9 +452,36 @@ export default function ActionForm({
                 }`}
               />
               {!isMechanicalTextLocked && (
-                <p className="text-[10px] text-amber-500/70 italic">
-                  Editando manualmente — feche o cadeado para voltar ao texto automático.
-                </p>
+                <div className="space-y-1.5">
+                  <div className="flex flex-wrap items-center gap-1">
+                    <span className="text-[10px] text-slate-500 mr-0.5">Inserir:</span>
+                    {ACTION_TEXT_TOKENS.map((tk) => (
+                      <button
+                        key={tk.key}
+                        type="button"
+                        // eslint-disable-next-line react-hooks/refs -- ref lido em handler de clique (uso válido)
+                        onClick={() => insertToken(tk.key)}
+                        title={`Insere {{${tk.key}}} — atualiza sozinho`}
+                        className="px-1.5 py-0.5 rounded border border-amber-800/60 bg-amber-950/30 text-amber-300/90 text-[10px] font-mono hover:bg-amber-900/40 hover:text-amber-200 transition-colors focus:outline-none"
+                      >
+                        {tk.label}
+                      </button>
+                    ))}
+                  </div>
+                  {resolvedPreview && (
+                    <div className="bg-slate-950 border border-slate-800 rounded px-2.5 py-1.5">
+                      <div className="text-[9px] uppercase tracking-widest text-slate-600 font-bold mb-0.5">
+                        Prévia
+                      </div>
+                      <p className="text-[11px] text-slate-300 leading-relaxed whitespace-pre-wrap">
+                        {resolvedPreview}
+                      </p>
+                    </div>
+                  )}
+                  <p className="text-[10px] text-amber-500/70 italic">
+                    Os marcadores <span className="font-mono">{"{{dano}}"}</span>, <span className="font-mono">{"{{acerto}}"}</span> etc. se atualizam sozinhos quando o dano muda. Feche o cadeado para voltar ao automático.
+                  </p>
+                </div>
               )}
             </div>
           );
@@ -390,6 +493,46 @@ export default function ActionForm({
           <Plus className="w-3 h-3" /> {submitLabel}
         </SmallButton>
       </div>
+
+      {pendingTemplate && createPortal(
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4"
+          onClick={() => setPendingTemplate(null)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div
+            className="bg-slate-900 border border-amber-800/60 rounded-lg max-w-md w-full shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-2 p-4 border-b border-slate-800">
+              <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0" />
+              <h3 className="text-sm font-bold text-amber-200">Ajuste de BT necessário</h3>
+            </div>
+            <div className="p-4 space-y-3">
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Este modelo foi feito para um BT maior que o desta criatura (+{bt}).
+                Para aplicar, os seguintes ajustes serão feitos automaticamente:
+              </p>
+              <ul className="space-y-1.5">
+                {pendingTemplate.changes.map((c, i) => (
+                  <li key={i} className="flex items-start gap-2 text-xs text-amber-200/90">
+                    <span className="text-amber-500 mt-0.5">•</span>
+                    <span>{c}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="flex justify-end gap-2 p-4 border-t border-slate-800">
+              <SmallButton onClick={() => setPendingTemplate(null)}>Cancelar</SmallButton>
+              <SmallButton onClick={() => applyTemplateNow(pendingTemplate.tpl)} variant="primary">
+                Ajustar e aplicar
+              </SmallButton>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }

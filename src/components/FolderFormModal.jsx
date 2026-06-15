@@ -31,10 +31,11 @@ const MODE_CONFIG = {
 };
 
 export default function FolderFormModal({
-  mode,              // 'create' | 'rename' | 'delete'
-  folder,            // objeto da pasta (em rename/delete)
-  creatureCount = 0, // quantas criaturas serão movidas pra raiz em delete
-  onSubmit,          // (name) => void para create/rename; () => void para delete
+  mode,                       // 'create' | 'rename' | 'delete'
+  folder,                     // objeto da pasta (em rename/delete)
+  creatureCount = 0,          // quantos itens serão movidos pra raiz em delete
+  itemLabel = "criatura(s)",  // substantivo dos itens (ex.: "modelo(s)")
+  onSubmit,                   // (name) => void para create/rename; () => void para delete
   onCancel,
 }) {
   const [name, setName] = useState(folder?.name ?? "");
@@ -97,7 +98,7 @@ export default function FolderFormModal({
               <p className="text-sm text-slate-400 leading-relaxed">
                 <span className="text-slate-200 font-semibold">"{folder.name}"</span> será apagada.
                 {creatureCount > 0 ? (
-                  <> As <span className="text-amber-300 font-semibold">{creatureCount} criatura(s)</span> dentro
+                  <> Os <span className="text-amber-300 font-semibold">{creatureCount} {itemLabel}</span> dentro
                   irão para <span className="text-slate-300">Sem Pasta</span>.</>
                 ) : (
                   <> A pasta está vazia.</>

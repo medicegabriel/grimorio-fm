@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Plus, Trash2, Sparkles, Zap, ChevronDown, ChevronUp } from "lucide-react";
 import { TextInput, TextArea, SmallButton, ExpandableText, MiniTable, SearchInput } from "../builder-controls";
+import { SaveTemplateButton, TemplateInlinePicker } from "../TemplateControls";
 import { normalizeText } from "../fm-tables";
 import { APTIDOES_CATEGORIAS, getAptidaoByKey, getAptidaoLimit, isAutomatedAptidao, resolveAptidaoDescription } from "../fm-aptidoes";
 import { getFrutosAptidaoEspecialBonus } from "../fm-origens";
@@ -71,7 +72,8 @@ export default function SectionAptidoesEspeciais({ draft, actions }) {
   };
 
   return (
-    <div className="space-y-4">
+    // flex + order: a área de criação (seletor) fica acima da lista (adendo #5).
+    <div className="flex flex-col gap-4">
       {/* Indicador de limite de aptidões */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
@@ -112,11 +114,11 @@ export default function SectionAptidoesEspeciais({ draft, actions }) {
 
       {/* Lista de aptidões adicionadas */}
       {aptidoes.length === 0 ? (
-        <div className="text-center py-5 text-slate-600 text-sm italic border border-dashed border-slate-800 rounded">
+        <div className="order-3 text-center py-5 text-slate-600 text-sm italic border border-dashed border-slate-800 rounded">
           Nenhuma aptidão amaldiçoada adicionada
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="order-3 space-y-2">
           {aptidoes.map((a) => {
             const fromTreino = a.source === "treino";
             const catalog = a.key ? getAptidaoByKey(a.key) : null;
@@ -199,13 +201,16 @@ export default function SectionAptidoesEspeciais({ draft, actions }) {
                   )}
                 </div>
                 {!fromTreino && (
-                  <SmallButton
-                    onClick={() => actions.removeAptidaoEspecial(a.id)}
-                    variant="danger"
-                    title="Remover aptidão"
-                  >
-                    <Trash2 className="w-3 h-3" />
-                  </SmallButton>
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    {a.tipo === "custom" && <SaveTemplateButton type="aptidao" entity={a} />}
+                    <SmallButton
+                      onClick={() => actions.removeAptidaoEspecial(a.id)}
+                      variant="danger"
+                      title="Remover aptidão"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </SmallButton>
+                  </div>
                 )}
               </div>
             );
@@ -215,7 +220,7 @@ export default function SectionAptidoesEspeciais({ draft, actions }) {
 
       {/* ===== SELETOR — cards agrupados por Tipo (só quando há vagas) ===== */}
       {slotsRestantes > 0 ? (
-      <div className="pt-3 border-t border-slate-800">
+      <div className="order-2 pt-3 border-t border-slate-800">
         <button
           type="button"
           onClick={() => setPickerOpen((v) => !v)}
@@ -336,7 +341,7 @@ export default function SectionAptidoesEspeciais({ draft, actions }) {
             )}
 
             {/* Botão / form de Aptidão Customizada */}
-            <div className="pt-3 border-t border-slate-800/60">
+            <div className="pt-3 border-t border-slate-800/60 space-y-2">
               {showCustom ? (
                 <div className="space-y-2 bg-slate-950/40 border border-purple-900/40 rounded p-3">
                   <div className="flex items-center justify-between">
@@ -355,6 +360,10 @@ export default function SectionAptidoesEspeciais({ draft, actions }) {
                       Cancelar
                     </button>
                   </div>
+                  <TemplateInlinePicker
+                    type="aptidao"
+                    onPick={(tpl) => { setNomeCustom(tpl.nome ?? ""); setDescCustom(tpl.descricao ?? ""); }}
+                  />
                   <TextInput
                     value={nomeCustom}
                     onChange={setNomeCustom}
@@ -389,7 +398,7 @@ export default function SectionAptidoesEspeciais({ draft, actions }) {
       </div>
       ) : (
         <p
-          className={`text-xs italic text-center pt-1 ${
+          className={`order-2 text-xs italic text-center pt-1 ${
             slotsRestantes < 0 ? "text-red-400/80" : "text-slate-600"
           }`}
         >

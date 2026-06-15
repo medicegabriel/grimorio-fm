@@ -362,6 +362,65 @@ export const getCondNdReduction = (condition) => {
 };
 
 // ============================================================
+// COMPATIBILIDADE DE BT — condições e trades exigem BT mínimo
+// ============================================================
+const TRADE_BT_LABELS = {
+  sacrifDadosAcerto: "Dados → Acerto",
+  sacrifDadosCD:     "Dados → CD",
+  sacrifCdDados:     "CD → Dados",
+  sacrifAcertoDados: "Acerto → Dados",
+};
+
+// BT mínimo que uma ação exige (maior entre o tier da condição e os trades).
+export function actionRequiredBt(action) {
+  const t = { ...TRADES_ZERO, ...(action?.trades ?? {}) };
+  const tier = action?.condition?.tier;
+  const condMin = tier && tier !== "nenhuma" ? (BT_MIN_FOR_TIER[tier] ?? 0) : 0;
+  return Math.max(
+    condMin,
+    t.sacrifDadosAcerto ?? 0,
+    t.sacrifDadosCD ?? 0,
+    t.sacrifCdDados ?? 0,
+    Math.ceil((t.sacrifAcertoDados ?? 0) / 2),
+  );
+}
+
+// Ajusta uma ação para caber num dado BT: REMOVE a condição cujo tier exige BT
+// maior e CORTA cada trade para o cap do BT. Retorna a ação ajustada + a lista
+// legível das mudanças (vazia = nada a ajustar). Não recalcula dano/acerto —
+// quem aplica reroda o pipeline (applyTemplate/recalc) sobre os novos valores.
+export function clampActionToBt(action, bt) {
+  const changes = [];
+  const next = { ...action };
+
+  const tier = action?.condition?.tier;
+  if (tier && tier !== "nenhuma" && (BT_MIN_FOR_TIER[tier] ?? 0) > bt) {
+    next.condition = { ...BLANK_CONDITION };
+    changes.push(`Condição ${CONDITION_TIER_LABELS[tier] ?? tier} removida (requer BT +${BT_MIN_FOR_TIER[tier]}, criatura tem +${bt}).`);
+  }
+
+  const t = { ...TRADES_ZERO, ...(action?.trades ?? {}) };
+  const caps = {
+    sacrifDadosAcerto: bt,
+    sacrifDadosCD:     bt,
+    sacrifCdDados:     bt,
+    sacrifAcertoDados: bt * 2,
+  };
+  const nt = { ...t };
+  let tradesChanged = false;
+  for (const k of Object.keys(caps)) {
+    if ((nt[k] ?? 0) > caps[k]) {
+      changes.push(`Conversão ${TRADE_BT_LABELS[k]} reduzida de ${nt[k]} para ${caps[k]}.`);
+      nt[k] = caps[k];
+      tradesChanged = true;
+    }
+  }
+  if (tradesChanged) next.trades = nt;
+
+  return { action: next, changes };
+}
+
+// ============================================================
 // normalizeAction
 // ============================================================
 export function normalizeAction(action) {
@@ -406,12 +465,72 @@ export function normalizeAction(action) {
 }
 
 // ============================================================
+// TOKENS DO TEXTO FINAL — placeholders que resolvem ao vivo
+// ============================================================
+// O "Texto Final" manual pode conter marcadores {{dano}}, {{acerto}}, etc.
+// que são resolvidos na hora de exibir. Assim a prosa fica livre, mas os
+// números acompanham qualquer recálculo (ND, trades, narrativa…) sem
+// dessincronizar. Os mesmos marcadores semeiam o editor ao entrar no manual.
+export const ACTION_TEXT_TOKENS = [
+  { key: "dano",     label: "Dano" },
+  { key: "tipoDano", label: "Tipo de Dano" },
+  { key: "acerto",   label: "Acerto" },
+  { key: "cd",       label: "CD" },
+  { key: "alcance",  label: "Alcance" },
+  { key: "area",     label: "Área" },
+  { key: "custo",    label: "Custo PE" },
+  { key: "criatura", label: "Criatura" },
+];
+
+// Valor atual de cada token a partir da ação (estrutura mecânica viva).
+export function actionTokenValues(action, creatureName) {
+  const dmg       = action?.damage;
+  const finalDice = deriveFinalDice(dmg);
+  const dieSize   = dmg?.dieSize ?? 8;
+  const mod       = dmg?.mod ?? 0;
+  const dmgType   = dmg?.type === "alma" ? "na Alma" : (DAMAGE_TYPE_LABELS[dmg?.type] || dmg?.type || "");
+  return {
+    dano:     rollStr(finalDice, dieSize, mod),
+    tipoDano: dmgType,
+    acerto:   `+${action?.toHit ?? 0}`,
+    cd:       `${action?.cd ?? 0}`,
+    alcance:  action?.range || "-",
+    area:     action?.area  || "-",
+    custo:    `${deriveFinalPE(action?.cost, action?.condition)}`,
+    nome:     action?.name || "",
+    criatura: creatureName?.trim() || "A criatura",
+  };
+}
+
+const TOKEN_RE = /\{\{\s*(\w+)\s*\}\}/g;
+
+export const hasActionTokens = (text) => TOKEN_RE.test(text || "");
+
+// Substitui {{token}} pelos valores atuais; tokens desconhecidos ficam intactos.
+export function resolveActionTokens(text, action, creatureName) {
+  if (!text) return text;
+  const vals = actionTokenValues(action, creatureName);
+  return text.replace(TOKEN_RE, (m, key) => (key in vals ? vals[key] : m));
+}
+
+// Troca o nome da criatura de origem pelo token {{criatura}}, tornando o texto
+// genérico (vira "A criatura" por padrão e o nome da ficha-alvo ao aplicar).
+// Usado ao SALVAR uma ação como Modelo.
+export function tokenizeCreatureName(text, creatureName) {
+  const name = creatureName?.trim();
+  if (!text || !name) return text;
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return text.replace(new RegExp(escaped, "g"), "{{criatura}}");
+}
+
+// ============================================================
 // resolveActionFinalText — texto final exibido da ação
 // ============================================================
-// Se o usuário escreveu um "Texto Final" manual (finalTextManual), usa-o
-// verbatim. Caso contrário, gera automaticamente (flavor + mecânica).
+// Se o usuário escreveu um "Texto Final" manual (finalTextManual), resolve
+// seus tokens e usa o resultado. Caso contrário, gera automaticamente.
 export function resolveActionFinalText(action, creatureName) {
-  if (action?.finalTextManual?.trim()) return action.finalTextManual;
+  if (action?.finalTextManual?.trim())
+    return resolveActionTokens(action.finalTextManual, action, creatureName);
   return generateActionDescription(action, creatureName, action?.description) || humanizeAction(action);
 }
 
@@ -478,7 +597,7 @@ export function humanizeAction(action) {
 // ============================================================
 // generateActionDescription — gerador de texto mecânico base
 // ============================================================
-export function generateActionDescription(action, creatureName, flavorText = "") {
+export function generateActionDescription(action, creatureName, flavorText = "", { tokenize = false } = {}) {
   const dmg       = action.damage;
   const finalDice = deriveFinalDice(dmg);
   const dieSize   = dmg?.dieSize ?? 8;
@@ -497,9 +616,21 @@ export function generateActionDescription(action, creatureName, flavorText = "")
   const actionTypeLabel = ACTION_TYPE_LABELS[action.type] || "Ação";
   const flavor    = flavorText?.trim() || "";
 
+  // Valores emitidos: literais (exibição) ou tokens {{…}} (semeia o editor
+  // manual). Os GUARDS abaixo seguem usando os valores reais (rollDisplay/
+  // finalPE/hasCond) — só o que é IMPRESSO troca para token.
+  const vRoll = tokenize ? "{{dano}}"     : rollDisplay;
+  const vType = tokenize ? "{{tipoDano}}" : dmgType;
+  const vHit  = tokenize ? "{{acerto}}"   : `+${action.toHit ?? 0}`;
+  const vCd   = tokenize ? "{{cd}}"       : `${action.cd ?? 0}`;
+  const vAlc  = tokenize ? "{{alcance}}"  : alcance;
+  const vArea = tokenize ? "{{area}}"     : area;
+  const vPE   = tokenize ? "{{custo}}"    : `${finalPE}`;
+  const vCreature = tokenize ? "{{criatura}}" : creature;
+
   if (isAcerto && !isComplex) {
-    const opening = flavor || `${creature} golpeia utilizando ${action.name || "esta ação"}.`;
-    return `${opening} Alcance de ${alcance}, +${action.toHit ?? 0} para acertar, causa ${rollDisplay} de dano ${dmgType}.`;
+    const opening = flavor || `${vCreature} golpeia utilizando ${action.name || "esta ação"}.`;
+    return `${opening} Alcance de ${vAlc}, ${vHit} para acertar, causa ${vRoll} de dano ${vType}.`;
   }
 
   if (isTR || isComplex) {
@@ -509,24 +640,24 @@ export function generateActionDescription(action, creatureName, flavorText = "")
       ? (isCaC ? "Toda criatura na área partindo de você" : "Toda criatura na área")
       : "A criatura alvo";
     const areaLine = isTRArea
-      ? `Área: ${area}${isCaC ? " partindo de si mesmo" : ""}`
+      ? `Área: ${vArea}${isCaC ? " partindo de si mesmo" : ""}`
       : null;
     const lines    = [
       `Conjuração: ${actionTypeLabel}`,
-      `Alcance: ${alcance}`,
+      `Alcance: ${vAlc}`,
       ...(!isTRArea ? [`Alvo: Uma criatura`] : []),
       ...(areaLine  ? [areaLine]             : []),
-      ...(finalPE > 0 ? [`Custo: ${finalPE} PE`] : []),
+      ...(finalPE > 0 ? [`Custo: ${vPE} PE`] : []),
       "",
     ];
 
     let mechanicalText = "";
     if (isTR && rollDisplay) {
-      mechanicalText = `${targetDesc} deve realizar um teste de resistência de ${trAttr} (CD ${action.cd ?? 0}), recebendo ${rollDisplay} de dano ${dmgType}, ou apenas metade em um sucesso.`;
+      mechanicalText = `${targetDesc} deve realizar um teste de resistência de ${trAttr} (CD ${vCd}), recebendo ${vRoll} de dano ${vType}, ou apenas metade em um sucesso.`;
     } else if (isTR) {
-      mechanicalText = `${targetDesc} deve realizar um teste de resistência de ${trAttr} (CD ${action.cd ?? 0}).`;
+      mechanicalText = `${targetDesc} deve realizar um teste de resistência de ${trAttr} (CD ${vCd}).`;
     } else if (isAcerto && rollDisplay) {
-      mechanicalText = `Alcance de ${alcance}, +${action.toHit ?? 0} para acertar, causa ${rollDisplay} de dano ${dmgType}.`;
+      mechanicalText = `Alcance de ${vAlc}, ${vHit} para acertar, causa ${vRoll} de dano ${vType}.`;
     }
     if (hasCond) {
       const tierLabel = CONDITION_TIER_LABELS[action.condition.tier] || action.condition.tier;
@@ -613,4 +744,83 @@ export function reapplyTrades(src, rangeType, trades, bt) { // eslint-disable-li
   const acerto = (src.toHitBase ?? src.toHit ?? 0) + (t.sacrifDadosAcerto ?? 0) * 2 - (t.sacrifAcertoDados ?? 0);
   const cd     = (src.cdBase ?? src.cd ?? 0) + (t.sacrifDadosCD ?? 0) - (t.sacrifCdDados ?? 0);
   return { toHit: acerto, cd, damage: { ...src.damage } };
+}
+
+// ============================================================
+// recalcAction — re-deriva UMA ação para o ND/Patamar/BT atuais
+// ============================================================
+// Usado quando o ND/Patamar muda no builder e o usuário pede pra
+// sincronizar as ações. Respeita as travas:
+//  - Alcance/Área: só atualiza os que estão em modo automático
+//    (rangeLocked/areaLocked !== false).
+//  - Dano travado (damageIsLocked): mantém os dados digitados e atualiza
+//    só Acerto/CD/Alcance/Área — A NÃO SER que `recalcLockedDamage` peça
+//    pra re-derivar o dano também (a trava é preservada nesse caso).
+//  - finalTextManual: preservado verbatim; só marca `finalTextStale: true`
+//    quando algum número exibido mudou (pra UI avisar que pode estar velho).
+// Sempre carimba `calc` com o ND/Patamar/Dificuldade aplicados.
+export function recalcAction(action, ctx) {
+  const { patamar, nd, difficulty, bt, toHitBase, cdBase, recalcLockedDamage = false } = ctx;
+  const norm  = normalizeAction(action);
+  const stamp = { nd, patamar, difficulty };
+
+  const av    = calcAutoRange(norm.attackType, norm.rangeType, bt);
+  const range = norm.rangeLocked !== false ? av.range : norm.range;
+  const area  = norm.areaLocked  !== false ? av.area  : norm.area;
+
+  const finalize = (result) => {
+    const changed =
+      result.toHit !== norm.toHit ||
+      result.cd    !== norm.cd ||
+      (result.damage?.roll ?? "") !== (norm.damage?.roll ?? "") ||
+      result.range !== norm.range ||
+      result.area  !== norm.area;
+    // Texto com tokens ({{dano}}…) resolve ao vivo → nunca fica desatualizado.
+    // Só texto manual LITERAL (legado) precisa do selo de aviso.
+    if (norm.finalTextManual?.trim() && !hasActionTokens(norm.finalTextManual) && changed)
+      result.finalTextStale = true;
+    return result;
+  };
+
+  if (norm.attackType === "suporte") {
+    return finalize({ ...action, range, area, calc: stamp });
+  }
+
+  const damageLocked = !!norm.damage?.damageIsLocked;
+
+  if (!damageLocked || recalcLockedDamage) {
+    const r = runFullActionCalc({
+      patamar, nd, bt,
+      attackType: norm.attackType,
+      condition: norm.condition,
+      narrativeType: norm.damage?.narrativeType,
+      rangeType: norm.rangeType,
+      trades: norm.trades,
+      damageType: norm.damage?.type,
+      toHitBase, cdBase,
+    });
+    if (!r) return finalize({ ...action, range, area, calc: stamp });
+    return finalize({
+      ...action,
+      range, area, calc: stamp,
+      toHit: r.toHit, toHitBase: r.toHitBase,
+      cd: r.cd, cdBase: r.cdBase,
+      // Preserva o estado da trava: uma ação manual continua manual,
+      // só que agora com os dados re-derivados.
+      damage: { ...norm.damage, ...r.damage, damageIsLocked: damageLocked },
+    });
+  }
+
+  // Dano travado mantido: só Acerto/CD (pelas trocas) + Alcance/Área.
+  const reapplied = reapplyTrades(
+    { toHitBase, cdBase, toHit: norm.toHit, cd: norm.cd, damage: norm.damage },
+    norm.rangeType, norm.trades, bt
+  );
+  return finalize({
+    ...action,
+    range, area, calc: stamp,
+    toHitBase, cdBase,
+    toHit: reapplied.toHit, cd: reapplied.cd,
+    damage: { ...norm.damage },
+  });
 }

@@ -3,7 +3,7 @@ import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import {
   Search, Plus, Upload, Download, Trash2, Copy, Edit3,
   X, AlertTriangle, MoreVertical, Users, Image,
-  FolderInput, Swords, Menu, Lock, Check, ChevronDown, Filter, CheckSquare
+  FolderInput, Swords, Menu, Lock, Check, ChevronDown, Filter, CheckSquare, Library
 } from "lucide-react";
 import {
   DndContext,
@@ -721,6 +721,7 @@ export default function Dashboard({
   onEditCreature,
   onCreateNew,
   onGoToEncounters,
+  onGoToTemplates,
 }) {
   const [view, setView] = useState({ type: "all", folderId: null });
   const [search, setSearch] = useState("");
@@ -1077,6 +1078,15 @@ export default function Dashboard({
               </button>
               <button
                 type="button"
+                onClick={onGoToTemplates}
+                className="inline-flex items-center justify-center gap-1.5 h-9 w-9 lg:w-auto lg:px-3 shrink-0 rounded bg-slate-800 hover:bg-slate-700 text-sm font-semibold text-slate-200 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500/60"
+                title="Biblioteca de Modelos"
+              >
+                <Library className="w-4 h-4 shrink-0" />
+                <span className="hidden lg:inline">Modelos</span>
+              </button>
+              <button
+                type="button"
                 onClick={() => setShowImportModal(true)}
                 className="inline-flex items-center justify-center gap-1.5 h-9 w-9 lg:w-auto lg:px-3 shrink-0 rounded bg-slate-800 hover:bg-slate-700 text-sm font-semibold text-slate-200 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500/60"
                 title="Importar"
@@ -1240,7 +1250,7 @@ export default function Dashboard({
                       title={isSelectionMode ? "Cancelar modo de seleção" : "Ativar seleção em massa"}
                     >
                       <CheckSquare className="w-4 h-4 shrink-0" />
-                      <span className="hidden xl:inline">{isSelectionMode ? "Cancelar" : "Selecionar em Massa"}</span>
+                      <span className="hidden xl:inline">{isSelectionMode ? "Cancelar" : "Selecionar"}</span>
                     </button>
                   )}
                 </div>

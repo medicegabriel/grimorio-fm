@@ -192,6 +192,7 @@ export default function FolderSidebar({
   onRenameFolder,
   onRemoveFolder,
   showSystemView = true, // false para esconder a seção "Criaturas Base"
+  itemLabel = "criatura(s)", // substantivo dos itens (ex.: "modelo(s)")
   className = "",
 }) {
   const [modalState, setModalState] = useState(null); // { mode, folder? }
@@ -320,6 +321,7 @@ export default function FolderSidebar({
               ? (creatureCounts[modalState.folder.id] ?? 0)
               : 0
           }
+          itemLabel={itemLabel}
           onSubmit={handleModalSubmit}
           onCancel={() => setModalState(null)}
         />

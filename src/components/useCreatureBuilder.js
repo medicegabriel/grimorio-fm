@@ -11,6 +11,7 @@ import {
 } from "./fm-treinamentos";
 import { getDoteCondicoesImunes } from "./fm-dotes";
 import { getAptidoesImunidadesGrant } from "./fm-aptidoes";
+import { recalcAction } from "./fm-action-calc";
 
 /**
  * ============================================================
@@ -33,7 +34,7 @@ export const blankDraft = () => ({
   name: "",
   portraitUrl: "",
   portraitFocus: { x: 50, y: 50 },
-  combatSettings: { guardaAbsorbsFirst: true },
+  combatSettings: { guardaAbsorbsFirst: true, rdReducao: true },
   core: {
     grau: "3",
     nd: 5,
@@ -111,6 +112,24 @@ const normalizeTreinamentos = (treinamentos = []) =>
 // evitando crash ao adicionar defesas/ações/características em fichas legadas.
 const normalizeDraft = (payload = {}) => {
   const base = blankDraft();
+  const core = (() => {
+    const merged = {
+      ...base.core,
+      ...(payload.core || {}),
+      origin: { ...base.core.origin, ...(payload.core?.origin || {}) },
+    };
+    // Invariante do livro: Lacaio nunca pode ter Aumento de Energia.
+    // Normaliza fichas legadas que possam ter o estado inconsistente.
+    if (merged.patamar === "lacaio" && merged.origin?.hasAumentoEnergia) {
+      merged.origin = { ...merged.origin, hasAumentoEnergia: false };
+    }
+    return merged;
+  })();
+  // Carimbo de "ND em que a ação foi calculada". Fichas legadas (sem `calc`)
+  // são carimbadas com o core atual na carga — assume-se que estão em dia —,
+  // de modo que só mudanças de ND/Patamar/Dificuldade DENTRO da sessão é que
+  // disparam o aviso de recálculo.
+  const actionStamp = { nd: core.nd, patamar: core.patamar, difficulty: core.difficulty };
   return {
     ...base,
     ...payload,
@@ -125,19 +144,7 @@ const normalizeDraft = (payload = {}) => {
     },
     attackAttr:  payload.attackAttr || "forca",
     cdAttr:      payload.cdAttr || "inteligencia",
-    core: (() => {
-      const merged = {
-        ...base.core,
-        ...(payload.core || {}),
-        origin: { ...base.core.origin, ...(payload.core?.origin || {}) },
-      };
-      // Invariante do livro: Lacaio nunca pode ter Aumento de Energia.
-      // Normaliza fichas legadas que possam ter o estado inconsistente.
-      if (merged.patamar === "lacaio" && merged.origin?.hasAumentoEnergia) {
-        merged.origin = { ...merged.origin, hasAumentoEnergia: false };
-      }
-      return merged;
-    })(),
+    core,
     attributes:  { ...base.attributes, ...(payload.attributes || {}) },
     aptidoes:    migrateAptidoes(base.aptidoes, payload.aptidoes),
     overrides: {
@@ -152,7 +159,11 @@ const normalizeDraft = (payload = {}) => {
       originCondicoesImunes: payload.defenses?.originCondicoesImunes || [],
       doteCondicoesImunes:   payload.defenses?.doteCondicoesImunes || [],
     },
-    actions:           { list: payload.actions?.list || [] },
+    actions: {
+      list: (payload.actions?.list || []).map((a) =>
+        a.calc ? a : { ...a, calc: actionStamp }
+      ),
+    },
     features:          payload.features || [],
     skills:            normalizeSkills(payload.skills),
     treinamentos:      normalizeTreinamentos(payload.treinamentos || []),
@@ -426,6 +437,30 @@ const actionHandlers = {
     return { ...s, actions: { ...s.actions, list: newList } };
   },
 
+  // Re-deriva as ações para o ND/Patamar/Dificuldade atuais. Só transforma
+  // as que estão fora de sincronia (carimbo `calc` diferente do core) ou sem
+  // carimbo; as já em dia passam intactas (evita marcar texto manual como
+  // desatualizado à toa). `recalcDamageIds` lista as ações de dano manual
+  // cujo dano o usuário autorizou re-derivar.
+  RECALC_ACTIONS: (s, payload = {}) => {
+    const recalcDamageIds = new Set(payload.recalcDamageIds || []);
+    const d = deriveStats(s);
+    const { nd, patamar, difficulty } = s.core;
+    const ctxBase = { patamar, nd, difficulty, bt: d.bt, toHitBase: d.acertoPrincipal, cdBase: d.cdBase };
+    return {
+      ...s,
+      actions: {
+        ...s.actions,
+        list: s.actions.list.map((a) => {
+          const inSync = a.calc &&
+            a.calc.nd === nd && a.calc.patamar === patamar && a.calc.difficulty === difficulty;
+          if (inSync) return a;
+          return recalcAction(a, { ...ctxBase, recalcLockedDamage: recalcDamageIds.has(a.id) });
+        }),
+      },
+    };
+  },
+
   // ---------- Aptidões Especiais ----------
   // Add/remove/update ressincronizam as imunidades concedidas (Composição Elemental).
   ADD_APTIDAO_ESPECIAL: (s, payload) => syncAptidoesDerived({
@@ -643,6 +678,7 @@ export default function useCreatureBuilder(initialDraft = null) {
     updateAction:    (id, patch) => dispatch({ type: "UPDATE_ACTION", payload: { id, patch } }),
     removeAction:    (id) => dispatch({ type: "REMOVE_ACTION", payload: id }),
     duplicateAction: (id) => dispatch({ type: "DUPLICATE_ACTION", payload: id }),
+    recalcActions:   (opts) => dispatch({ type: "RECALC_ACTIONS", payload: opts || {} }),
 
     // Aptidões Especiais
     addAptidaoEspecial:    (a) => dispatch({ type: "ADD_APTIDAO_ESPECIAL", payload: a }),

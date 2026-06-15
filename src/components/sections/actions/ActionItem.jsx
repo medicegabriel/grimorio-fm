@@ -1,11 +1,14 @@
 import React, { useState } from "react";
-import { Trash2, Copy, Pencil, Swords, Shield, Bookmark, BookmarkCheck, ChevronDown, ChevronUp } from "lucide-react";
+import { Trash2, Copy, Pencil, Swords, Shield, ChevronDown, ChevronUp, AlertTriangle } from "lucide-react";
 import { SmallButton, Pill } from "../../builder-controls";
+import { SaveTemplateButton } from "../../TemplateControls";
 import {
   ACTION_TYPE_LABELS,
   normalizeAction,
   deriveFinalPE,
   resolveActionFinalText,
+  hasActionTokens,
+  tokenizeCreatureName,
 } from "../../fm-action-calc";
 
 // ============================================================
@@ -13,18 +16,18 @@ import {
 // ============================================================
 // A edição agora abre o ActionForm completo (via onEdit) em vez de um
 // editor inline — uma única experiência de edição, igual à criação.
-export default function ActionItem({ action, creatureName, onEdit, onRemove, onDuplicate, onSaveTemplate }) {
+export default function ActionItem({ action, creatureName, onEdit, onRemove, onDuplicate }) {
   const [expanded, setExpanded] = useState(false);
-  const [templateSaved, setTemplateSaved] = useState(false);
   const norm    = normalizeAction(action);
   const finalPE = deriveFinalPE(norm.cost, norm.condition);
   const desc    = resolveActionFinalText(norm, creatureName);
   const isLong  = !!desc && (desc.length > 160 || desc.includes("\n"));
-
-  const handleSaveTemplate = () => {
-    onSaveTemplate(norm);
-    setTemplateSaved(true);
-    setTimeout(() => setTemplateSaved(false), 1500);
+  // Texto com tokens resolve ao vivo → nunca está "desatualizado".
+  const showStale = action.finalTextStale && !hasActionTokens(norm.finalTextManual);
+  // Ao salvar como Modelo, o nome da criatura vira {{criatura}} (texto genérico).
+  const templateEntity = {
+    ...norm,
+    finalTextManual: tokenizeCreatureName(norm.finalTextManual, creatureName),
   };
 
   return (
@@ -43,18 +46,21 @@ export default function ActionItem({ action, creatureName, onEdit, onRemove, onD
         </button>
         <Pill color="slate">{ACTION_TYPE_LABELS[action.type] || action.type}</Pill>
         {finalPE > 0 && <Pill color="purple">{finalPE} PE</Pill>}
+        {showStale && (
+          <span
+            title="O ND mudou e esta ação tem um Texto Final manual — os números no texto podem estar desatualizados. Edite a ação para revisar."
+            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded border border-amber-700/60 bg-amber-950/50 text-amber-300 text-[10px] font-semibold uppercase tracking-wide flex-shrink-0"
+          >
+            <AlertTriangle className="w-3 h-3" /> Texto desatualizado
+          </span>
+        )}
         <SmallButton onClick={onEdit} variant="primary" title="Editar ação">
           <Pencil className="w-3 h-3" /> Editar
         </SmallButton>
         <SmallButton onClick={onDuplicate} title="Duplicar">
           <Copy className="w-3 h-3" />
         </SmallButton>
-        <SmallButton onClick={handleSaveTemplate} title={templateSaved ? "Modelo salvo!" : "Salvar como modelo"}>
-          {templateSaved
-            ? <BookmarkCheck className="w-3 h-3 text-emerald-400" />
-            : <Bookmark className="w-3 h-3" />
-          }
-        </SmallButton>
+        <SaveTemplateButton type="acao" entity={templateEntity} />
         <SmallButton onClick={onRemove} variant="danger" title="Remover">
           <Trash2 className="w-3 h-3" />
         </SmallButton>

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { Plus, Trash2, Sparkles, Bookmark, BookmarkCheck, BookOpen, X, Zap, Lock } from "lucide-react";
+import { Plus, Trash2, Sparkles, BookOpen, X, Zap, Lock } from "lucide-react";
 import { FieldLabel, TextInput, TextArea, Select, SmallButton, Pill } from "../builder-controls";
+import { SaveTemplateButton } from "../TemplateControls";
 import useFeatureTemplates from "../useFeatureTemplates";
 import { FRUTOS_OPTIONS } from "../fm-origens";
 
@@ -33,9 +34,19 @@ const CATEGORY_COLORS = {
 
 const CATEGORY_LABELS = Object.fromEntries(CATEGORIES.map((c) => [c.value, c.label]));
 
-export default function SectionFeatures({ draft, actions }) {
+// `sourceFilter` (opcional): "custom" mostra só as criadas pelo usuário (com
+// form de criação); "origin" mostra só as derivadas da Origem (somente leitura).
+// Sem filtro, mostra todas com o form — comportamento original.
+export default function SectionFeatures({ draft, actions, sourceFilter }) {
   const [showForm, setShowForm] = useState(false);
-  const { templates, saveTemplate, removeTemplate } = useFeatureTemplates();
+  const { templates, removeTemplate } = useFeatureTemplates();
+
+  const isOrigin = sourceFilter === "origin";
+  const visibleFeatures = (draft.features || []).filter((f) =>
+    sourceFilter === "custom" ? f.source !== "origin"
+    : sourceFilter === "origin" ? f.source === "origin"
+    : true
+  );
 
   const handleAdd = (newFeature) => {
     actions.addFeature({ ...newFeature, id: `feat-${Date.now().toString(36)}` });
@@ -44,49 +55,44 @@ export default function SectionFeatures({ draft, actions }) {
 
   return (
     <div className="space-y-3">
-      {draft.features.length === 0 && (
+      {/* Área de criação — acima da lista (escondida nas de Origem). */}
+      {!isOrigin && (
+        showForm ? (
+          <FeatureForm
+            onAdd={handleAdd}
+            onCancel={() => setShowForm(false)}
+            templates={templates}
+            onRemoveTemplate={removeTemplate}
+          />
+        ) : (
+          <SmallButton onClick={() => setShowForm(true)} variant="primary">
+            <Plus className="w-3 h-3" /> Adicionar Característica
+          </SmallButton>
+        )
+      )}
+
+      {visibleFeatures.length === 0 && (
         <div className="text-center py-6 text-slate-600 text-sm italic border border-dashed border-slate-800 rounded">
-          Nenhuma característica cadastrada
+          {isOrigin ? "Nenhuma característica de origem nesta ficha." : "Nenhuma característica cadastrada"}
         </div>
       )}
 
-      {draft.features.map((f) => (
+      {visibleFeatures.map((f) => (
         <FeatureItem
           key={f.id}
           feature={f}
           onUpdate={(patch) => actions.updateFeature(f.id, patch)}
           onRemove={() => actions.removeFeature(f.id)}
-          onSaveTemplate={saveTemplate}
           origin={draft.core?.origin}
           onPatchOrigin={actions.patchOrigin}
         />
       ))}
-
-      {showForm ? (
-        <FeatureForm
-          onAdd={handleAdd}
-          onCancel={() => setShowForm(false)}
-          templates={templates}
-          onRemoveTemplate={removeTemplate}
-        />
-      ) : (
-        <SmallButton onClick={() => setShowForm(true)} variant="primary">
-          <Plus className="w-3 h-3" /> Adicionar Característica
-        </SmallButton>
-      )}
     </div>
   );
 }
 
-function FeatureItem({ feature, onUpdate, onRemove, onSaveTemplate, origin, onPatchOrigin }) {
+function FeatureItem({ feature, onUpdate, onRemove, origin, onPatchOrigin }) {
   const [expanded, setExpanded] = useState(false);
-  const [saved, setSaved] = useState(false);
-
-  const handleSaveTemplate = () => {
-    onSaveTemplate(feature);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 1500);
-  };
 
   const isFromOrigin = feature.source === "origin";
   const isAutomated = !!feature.automated;
@@ -126,17 +132,7 @@ function FeatureItem({ feature, onUpdate, onRemove, onSaveTemplate, origin, onPa
             <Zap className="w-2.5 h-2.5" /> Programada
           </span>
         )}
-        {!isFromOrigin && (
-          <SmallButton
-            onClick={handleSaveTemplate}
-            title={saved ? "Modelo salvo!" : "Salvar como modelo"}
-          >
-            {saved
-              ? <BookmarkCheck className="w-3 h-3 text-emerald-400" />
-              : <Bookmark className="w-3 h-3" />
-            }
-          </SmallButton>
-        )}
+        {!isFromOrigin && <SaveTemplateButton type="caracteristica" entity={feature} />}
         {!isFromOrigin && (
           <SmallButton onClick={onRemove} variant="danger">
             <Trash2 className="w-3 h-3" />

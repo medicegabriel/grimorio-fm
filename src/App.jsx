@@ -4,6 +4,7 @@ import CombatTracker from "./components/CombatTracker";
 import CreatureBuilder from "./components/CreatureBuilder";
 import EncounterTracker from "./components/EncounterTracker";
 import EncountersDashboard from "./components/EncountersDashboard";
+import TemplateLibrary from "./components/TemplateLibrary";
 import EncounterSyncModal from "./components/EncounterSyncModal";
 import useCreatureStorage from "./components/useCreatureStorage";
 import useEncounterManager from "./useEncounterManager";
@@ -54,6 +55,10 @@ export default function App() {
 
   const goToEncounters = useCallback(() => {
     setView({ name: "encounters" });
+  }, []);
+
+  const goToTemplates = useCallback(() => {
+    setView({ name: "templates" });
   }, []);
 
   const handleDuplicateEncounter = useCallback((id) => {
@@ -136,6 +141,7 @@ export default function App() {
         onEditCreature={goToBuilder}
         onCreateNew={() => goToBuilder(null)}
         onGoToEncounters={goToEncounters}
+        onGoToTemplates={goToTemplates}
       />
     ),
     tracker: () => {
@@ -192,7 +198,8 @@ export default function App() {
         onOpenEncounter={goToEncounter}
         onBackToGrimoire={goToDashboard}
       />
-    )
+    ),
+    templates: () => <TemplateLibrary onBack={goToDashboard} />
   };
 
   return (

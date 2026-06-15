@@ -13,10 +13,9 @@ import SectionAttributes from "./sections/SectionAttributes";
 import SectionDerivedStats from "./sections/SectionDerivedStats";
 import SectionAptidoes from "./sections/SectionAptidoes";
 import SectionActions from "./sections/actions/SectionActions";
-import SectionFeatures from "./sections/SectionFeatures";
 import SectionTreinamentos from "./sections/SectionTreinamentos";
 import SectionAptidoesEspeciais from "./sections/SectionAptidoesEspeciais";
-import SectionCaracteristicas from "./sections/SectionCaracteristicas";
+import SectionCaracteristicasUnified from "./sections/SectionCaracteristicasUnified";
 import SectionDotes from "./sections/SectionDotes";
 import SectionArtimanhas from "./sections/SectionArtimanhas";
 import SectionDefenses from "./sections/SectionDefenses";
@@ -50,7 +49,6 @@ const ALL_SECTIONS = [
   { id: "defenses",     label: "Defesas & Imunidades" },
   { id: "actions",      label: "Ações" },
   { id: "caracteristicas", label: "Características" },
-  { id: "features",     label: "Características Personalizadas" },
   { id: "treinamentos", label: "Treinamentos" },
   { id: "aptidoesEsp",  label: "Aptidões Amaldiçoadas" },
   { id: "dotes",        label: "Dotes Gerais" },
@@ -239,6 +237,53 @@ export default function CreatureBuilder({ existingCreature, onSave, onCancel }) 
   const [showSaveConfirm, setShowSaveConfirm] = useState(false);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
 
+  // ---------- Recálculo de ações ao mudar ND/Patamar/Dificuldade ----------
+  // Cada ação carrega um carimbo `calc` com o ND em que foi montada. Quando o
+  // core muda, as que ficaram com o carimbo antigo entram em "fora de sincronia"
+  // e um aviso oferece recalculá-las (respeitando dano/alcance travados).
+  const coreSig = `${draft.core.nd}|${draft.core.patamar}|${draft.core.difficulty}`;
+  const staleActions = useMemo(
+    () =>
+      (draft.actions?.list || []).filter(
+        (a) =>
+          a.calc &&
+          (a.calc.nd !== draft.core.nd ||
+            a.calc.patamar !== draft.core.patamar ||
+            a.calc.difficulty !== draft.core.difficulty)
+      ),
+    [draft.actions, draft.core.nd, draft.core.patamar, draft.core.difficulty]
+  );
+  const manualDamageStale = useMemo(
+    () => staleActions.filter((a) => a.damage?.damageIsLocked),
+    [staleActions]
+  );
+  const [recalcDismissedSig, setRecalcDismissedSig] = useState(null);
+  const [showRecalcModal, setShowRecalcModal] = useState(false);
+  const [recalcDamageIds, setRecalcDamageIds] = useState(() => new Set());
+  const showRecalcBanner = staleActions.length > 0 && recalcDismissedSig !== coreSig;
+
+  const applyRecalc = (damageIds) => {
+    actions.recalcActions({ recalcDamageIds: Array.from(damageIds || []) });
+    setShowRecalcModal(false);
+    setRecalcDismissedSig(null);
+  };
+  // Sem ações de dano manual fora de sincronia, recalcula direto; havendo,
+  // abre o modal para o usuário escolher quais terão o dano re-derivado.
+  const handleRecalcClick = () => {
+    if (manualDamageStale.length > 0) {
+      setRecalcDamageIds(new Set());
+      setShowRecalcModal(true);
+    } else {
+      applyRecalc([]);
+    }
+  };
+  const toggleRecalcDamageId = (id) =>
+    setRecalcDamageIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+
   // Com erros (inclusive ao criar): abre o modal listando-os, com a opção
   // "Salvar Mesmo Assim". Sem erros: salva direto.
   const handleSave = () => {
@@ -320,10 +365,6 @@ export default function CreatureBuilder({ existingCreature, onSave, onCancel }) 
     () => <SectionActions draft={draft} derived={derived} actions={actions} />,
     [draft.core, draft.actions, draft.name, derived, actions]
   );
-  const featuresEl = useMemo(
-    () => <SectionFeatures draft={draft} actions={actions} />,
-    [draft.features, draft.core, actions]
-  );
   const treinamentosEl = useMemo(
     () => <SectionTreinamentos draft={draft} actions={actions} />,
     [draft.core, draft.treinamentos, actions]
@@ -333,8 +374,8 @@ export default function CreatureBuilder({ existingCreature, onSave, onCancel }) 
     [draft.aptidoesEspeciais, draft.core, draft.attributes, draft.aptidoes, draft.skills, actions]
   );
   const caracteristicasEl = useMemo(
-    () => <SectionCaracteristicas draft={draft} actions={actions} />,
-    [draft.caracteristicas, draft.core, draft.attributes, actions]
+    () => <SectionCaracteristicasUnified draft={draft} actions={actions} />,
+    [draft.caracteristicas, draft.features, draft.core, draft.attributes, actions]
   );
   const dotesEl = useMemo(
     () => <SectionDotes draft={draft} actions={actions} />,
@@ -355,7 +396,6 @@ export default function CreatureBuilder({ existingCreature, onSave, onCancel }) 
     skills:       skillsEl,
     defenses:     defensesEl,
     actions:      actionsEl,
-    features:     featuresEl,
     treinamentos: treinamentosEl,
     aptidoesEsp:  aptidoesEspEl,
     caracteristicas: caracteristicasEl,
@@ -450,6 +490,31 @@ export default function CreatureBuilder({ existingCreature, onSave, onCancel }) 
               className="px-3 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-slate-500"
             >
               Descartar
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ========== BANNER DE RECÁLCULO DE AÇÕES ========== */}
+      {showRecalcBanner && (
+        <div className="bg-amber-950/70 border-b border-amber-900">
+          <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center gap-3 text-sm">
+            <RotateCcw className="w-4 h-4 text-amber-400 flex-shrink-0" />
+            <span className="flex-1 min-w-0 text-amber-200">
+              O ND/Patamar mudou — {staleActions.length}{" "}
+              {staleActions.length === 1 ? "ação está" : "ações estão"} com valores do ND anterior.
+            </span>
+            <button
+              onClick={handleRecalcClick}
+              className="px-3 py-1 rounded bg-amber-700 hover:bg-amber-600 text-white text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500"
+            >
+              Recalcular {staleActions.length === 1 ? "ação" : "ações"}
+            </button>
+            <button
+              onClick={() => setRecalcDismissedSig(coreSig)}
+              className="px-3 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-slate-500"
+            >
+              Dispensar
             </button>
           </div>
         </div>
@@ -567,6 +632,86 @@ export default function CreatureBuilder({ existingCreature, onSave, onCancel }) 
                 className="px-4 py-2 rounded bg-red-800 hover:bg-red-700 text-sm font-semibold text-white transition-colors focus:outline-none focus:ring-2 focus:ring-red-500"
               >
                 Salvar Mesmo Assim
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Modal — escolher quais ações de dano manual recalcular */}
+      {showRecalcModal && createPortal(
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4"
+          onClick={() => setShowRecalcModal(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="recalc-title"
+        >
+          <div
+            className="bg-slate-900 border border-slate-800 rounded-lg max-w-md w-full shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start gap-3 p-5 pb-4 border-b border-slate-800">
+              <div className="w-10 h-10 rounded-full border border-amber-800/60 bg-amber-950/60 flex items-center justify-center flex-shrink-0">
+                <RotateCcw className="w-5 h-5 text-amber-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 id="recalc-title" className="text-base font-bold text-white">
+                  Recalcular ações para ND {draft.core.nd}
+                </h3>
+                <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">
+                  Acerto, CD, Alcance, Área e dano automático serão atualizados. As ações abaixo têm
+                  {" "}<strong className="text-slate-300">dano manual</strong> — marque as que também
+                  devem ter o dano re-derivado da tabela do novo ND.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowRecalcModal(false)}
+                className="text-slate-500 hover:text-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-slate-600 flex-shrink-0"
+                aria-label="Fechar"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-4 space-y-1 overflow-y-auto max-h-60">
+              {manualDamageStale.map((a) => (
+                <label
+                  key={a.id}
+                  className="flex items-center gap-2.5 p-2 rounded hover:bg-slate-800/60 transition-colors cursor-pointer"
+                >
+                  <input
+                    type="checkbox"
+                    checked={recalcDamageIds.has(a.id)}
+                    onChange={() => toggleRecalcDamageId(a.id)}
+                    className="w-4 h-4 accent-amber-500 cursor-pointer flex-shrink-0"
+                  />
+                  <span className="flex-1 min-w-0">
+                    <span className="block text-sm text-slate-200 truncate">{a.name || "Ação sem nome"}</span>
+                    <span className="block text-[11px] text-slate-500 font-mono">
+                      dano atual: {a.damage?.roll || "—"}
+                    </span>
+                  </span>
+                </label>
+              ))}
+            </div>
+
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 p-4 pt-0">
+              <button
+                type="button"
+                onClick={() => setShowRecalcModal(false)}
+                className="px-4 py-2 rounded bg-slate-800 hover:bg-slate-700 text-sm font-semibold text-slate-200 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-500"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() => applyRecalc(recalcDamageIds)}
+                className="px-4 py-2 rounded bg-amber-700 hover:bg-amber-600 text-sm font-semibold text-white transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500"
+              >
+                Recalcular
               </button>
             </div>
           </div>

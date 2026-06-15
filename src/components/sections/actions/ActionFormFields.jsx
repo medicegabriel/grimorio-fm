@@ -69,7 +69,7 @@ function TradeRow({ label, hint, value, onChange, step = 1, blocked, max }) {
 // ============================================================
 // FORM FIELDS — compartilhado entre ActionItem e ActionForm
 // ============================================================
-export default function ActionFormFields({ form, bt = 2, update, updateDamage, updateCond, updateTrade, updateRangeType }) {
+export default function ActionFormFields({ form, bt = 2, templateMode = false, update, updateDamage, updateCond, updateTrade, updateRangeType }) {
   const isTR      = form.attackType?.startsWith("tr_");
   const isAcerto  = form.attackType === "acerto";
   const hasDamage = form.attackType !== "suporte";
@@ -86,6 +86,9 @@ export default function ActionFormFields({ form, bt = 2, update, updateDamage, u
   const trades      = { ...TRADES_ZERO, ...(form.trades ?? {}) };
   const rangeType   = form.rangeType ?? "distancia";
   const params      = getActionParams(bt);
+  // No modo modelo, libera os tiers de condição e os caps de trade (usa BT alto),
+  // já que a ação será reclampada ao BT da criatura no momento de aplicar.
+  const btForCaps   = templateMode ? 6 : bt;
   const numDiceBase = form.damage?.numDiceBase ?? form.damage?.numDice ?? 0;
   const toHitBase   = form.toHitBase ?? form.toHit ?? 0;
   const cdBase      = form.cdBase    ?? form.cd    ?? 0;
@@ -105,10 +108,12 @@ export default function ActionFormFields({ form, bt = 2, update, updateDamage, u
   const rawDicePool  = numDiceBase + bonusCaCPool
     + Math.floor((trades.sacrifAcertoDados ?? 0) / 2)
     + (trades.sacrifCdDados ?? 0);
-  const capDadosAcerto  = Math.max(0, Math.min(bt, rawDicePool - 1 - (trades.sacrifDadosCD ?? 0)));
-  const capDadosCD      = Math.max(0, Math.min(bt, rawDicePool - 1 - (trades.sacrifDadosAcerto ?? 0)));
-  const capCdDados      = bt;
-  const capAcertoDados  = bt * 2;
+  // No modo modelo, a trava de "pool de dados" não se aplica (os dados são
+  // reescalados na criatura-alvo); o cap é só o BT máximo (btForCaps).
+  const capDadosAcerto  = templateMode ? btForCaps : Math.max(0, Math.min(btForCaps, rawDicePool - 1 - (trades.sacrifDadosCD ?? 0)));
+  const capDadosCD      = templateMode ? btForCaps : Math.max(0, Math.min(btForCaps, rawDicePool - 1 - (trades.sacrifDadosAcerto ?? 0)));
+  const capCdDados      = btForCaps;
+  const capAcertoDados  = btForCaps * 2;
 
   const hasActiveTrades =
     (isAcerto && (trades.sacrifDadosAcerto > 0 || trades.sacrifAcertoDados > 0)) ||
@@ -197,6 +202,7 @@ export default function ActionFormFields({ form, bt = 2, update, updateDamage, u
               <FieldLabel>Tipo de TR</FieldLabel>
               <Select value={form.trType} onChange={(v) => update({ trType: v })} options={TR_TYPE_OPTIONS} />
             </div>
+            {!templateMode && (
             <div>
               <FieldLabel>
                 CD{tradeCdDelta !== 0 && <span className="text-slate-500 font-normal ml-1 text-[10px]">(base)</span>}
@@ -211,9 +217,10 @@ export default function ActionFormFields({ form, bt = 2, update, updateDamage, u
                 </div>
               )}
             </div>
+            )}
           </div>
         )}
-        {isAcerto && (
+        {isAcerto && !templateMode && (
           <div className="grid grid-cols-2 gap-3">
             <div>
               <FieldLabel>
@@ -256,6 +263,7 @@ export default function ActionFormFields({ form, bt = 2, update, updateDamage, u
             </button>
           ))}
         </div>
+        {!templateMode && (
         <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-[11px] font-mono">
           <span className="text-slate-500">
             Alcance Máx: <span className="text-slate-300">{params.range}m</span>
@@ -269,9 +277,11 @@ export default function ActionFormFields({ form, bt = 2, update, updateDamage, u
             </span>
           )}
         </div>
+        )}
       </div>
 
-      {/* Alcance e Área */}
+      {/* Alcance e Área — só fora do modo modelo (no modelo é derivado no apply) */}
+      {!templateMode && (
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div>
           <FieldLabel hint={rangeLocked ? "auto" : "livre"}>Alcance</FieldLabel>
@@ -320,6 +330,7 @@ export default function ActionFormFields({ form, bt = 2, update, updateDamage, u
           </div>
         </div>
       </div>
+      )}
 
       {/* Dano base */}
       {hasDamage && (
@@ -334,6 +345,7 @@ export default function ActionFormFields({ form, bt = 2, update, updateDamage, u
                 </span>
               )}
             </div>
+            {!templateMode && (
             <button
               type="button"
               onClick={toggleLock}
@@ -350,6 +362,7 @@ export default function ActionFormFields({ form, bt = 2, update, updateDamage, u
                 : <><Unlock className="w-3 h-3" /> Auto</>
               }
             </button>
+            )}
           </div>
 
           {/* Narrativa do ataque */}
@@ -364,6 +377,8 @@ export default function ActionFormFields({ form, bt = 2, update, updateDamage, u
 
           {/* Campos de dado */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            {/* Números do dano — escondidos no modo modelo (reescalados no apply). */}
+            {!templateMode && (<>
             <div>
               <FieldLabel>
                 <span className="whitespace-nowrap">Nº Dados</span>
@@ -395,6 +410,7 @@ export default function ActionFormFields({ form, bt = 2, update, updateDamage, u
                 onChange={(v) => updateDamage({ mod: v, damageIsLocked: true })}
               />
             </div>
+            </>)}
             <div>
               <FieldLabel><span className="whitespace-nowrap">Tipo de Dano</span></FieldLabel>
               <div className="relative">
@@ -419,8 +435,8 @@ export default function ActionFormFields({ form, bt = 2, update, updateDamage, u
             </div>
           </div>
 
-          {/* Preview da rolagem */}
-          {(finalDice > 0 || mod !== 0) && (
+          {/* Preview da rolagem — escondido no modo modelo */}
+          {!templateMode && (finalDice > 0 || mod !== 0) && (
             <div className="text-xs text-slate-400 flex items-center gap-2 flex-wrap">
               <span>
                 Rolagem:{" "}
@@ -506,7 +522,7 @@ export default function ActionFormFields({ form, bt = 2, update, updateDamage, u
                   >
                     {CONDITION_TIER_OPTIONS.map((opt) => {
                       const minBt = BT_MIN_FOR_TIER[opt.value];
-                      const locked = minBt != null && bt < minBt;
+                      const locked = !templateMode && minBt != null && bt < minBt;
                       return (
                         <option key={opt.value} value={opt.value} disabled={locked}>
                           {opt.label}{locked ? ` (BT +${minBt} mín.)` : ""}
@@ -516,7 +532,7 @@ export default function ActionFormFields({ form, bt = 2, update, updateDamage, u
                   </select>
                   <ChevronDown className="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
                 </div>
-                {form.condition?.tier && form.condition.tier !== "nenhuma" &&
+                {!templateMode && form.condition?.tier && form.condition.tier !== "nenhuma" &&
                   (BT_MIN_FOR_TIER[form.condition.tier] ?? 0) > bt && (
                   <div className="mt-1 text-[10px] text-red-400">
                     BT insuficiente para esta condição (requer +{BT_MIN_FOR_TIER[form.condition.tier]}, atual +{bt})
@@ -588,7 +604,7 @@ export default function ActionFormFields({ form, bt = 2, update, updateDamage, u
         />
       </div>
 
-      <RulesReference attackType={form.attackType} conditionTier={form.condition?.tier} />
+      {!templateMode && <RulesReference attackType={form.attackType} conditionTier={form.condition?.tier} />}
     </div>
   );
 }

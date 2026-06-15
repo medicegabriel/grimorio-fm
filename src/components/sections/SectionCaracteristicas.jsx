@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Plus, Trash2, Shapes, Zap, ChevronDown, ChevronUp } from "lucide-react";
-import { TextInput, TextArea, SmallButton, ExpandableText, MiniTable, SearchInput } from "../builder-controls";
+import { SmallButton, ExpandableText, MiniTable, SearchInput } from "../builder-controls";
 import { normalizeText } from "../fm-tables";
 import {
   CARACTERISTICAS_CATEGORIAS, getCaracteristicaByKey,
@@ -23,18 +23,26 @@ function ProgramadaBadge() {
   );
 }
 
-export default function SectionCaracteristicas({ draft, actions }) {
-  const caracteristicas = draft.caracteristicas || [];
-  const addedNomes = new Set(caracteristicas.map((c) => c.nome));
+// `categoriaKeys` (opcional): restringe a seção a certas categorias do catálogo
+// (ex.: ["gerais"] ou ["especiais"]) — usado na aba unificada de Características.
+export default function SectionCaracteristicas({ draft, actions, categoriaKeys = null }) {
+  const allCaracteristicas = draft.caracteristicas || [];
+  const cats = categoriaKeys
+    ? CARACTERISTICAS_CATEGORIAS.filter((c) => categoriaKeys.includes(c.key))
+    : CARACTERISTICAS_CATEGORIAS;
+  const allowedCategorias = new Set(cats.map((c) => c.categoria));
+  // Lista exibida respeita o filtro; addedNomes usa TODAS (evita re-adicionar
+  // a mesma característica por outra sub-seção).
+  const caracteristicas = categoriaKeys
+    ? allCaracteristicas.filter((c) => allowedCategorias.has(c.categoria))
+    : allCaracteristicas;
+  const addedNomes = new Set(allCaracteristicas.map((c) => c.nome));
 
   // Contexto para os valores computados (computeInfo) e tabelas destacadas.
   const caracCtx = { core: draft.core, attributes: draft.attributes };
 
   // Estado da UI — picker inicia fechado, igual às demais abas de catálogo.
   const [pickerOpen, setPickerOpen] = useState(false);
-  const [showCustom, setShowCustom] = useState(false);
-  const [nomeCustom, setNomeCustom] = useState("");
-  const [descCustom, setDescCustom] = useState("");
   const [expandedKey, setExpandedKey] = useState(null);
   const [query, setQuery] = useState("");
 
@@ -43,8 +51,8 @@ export default function SectionCaracteristicas({ draft, actions }) {
     q === "" || normalizeText(`${c.nome} ${c.descricao}`).includes(q);
   const isAvailable = (c) => !addedNomes.has(c.nome) && matchesQuery(c);
 
-  // Total de características oficiais ainda não adicionadas (todas as categorias).
-  const totalDisponiveis = CARACTERISTICAS_CATEGORIAS.reduce(
+  // Total de características oficiais ainda não adicionadas (nas categorias visíveis).
+  const totalDisponiveis = cats.reduce(
     (n, cat) => n + cat.caracteristicas.filter(isAvailable).length,
     0
   );
@@ -59,32 +67,20 @@ export default function SectionCaracteristicas({ draft, actions }) {
     });
   };
 
-  const handleAddCustom = () => {
-    if (!nomeCustom.trim()) return;
-    actions.addCaracteristica({
-      tipo: "custom",
-      categoria: "Customizada",
-      nome: nomeCustom.trim(),
-      descricao: descCustom.trim(),
-    });
-    setNomeCustom("");
-    setDescCustom("");
-    setShowCustom(false);
-  };
-
   const toggleExpand = (key) => {
     setExpandedKey((prev) => (prev === key ? null : key));
   };
 
   return (
-    <div className="space-y-4">
+    // flex + order: a área de adicionar fica acima da lista (adendo #5).
+    <div className="flex flex-col gap-4">
       {/* Lista de características adicionadas */}
       {caracteristicas.length === 0 ? (
-        <div className="text-center py-5 text-slate-600 text-sm italic border border-dashed border-slate-800 rounded">
+        <div className="order-2 text-center py-5 text-slate-600 text-sm italic border border-dashed border-slate-800 rounded">
           Nenhuma característica adicionada
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="order-2 space-y-2">
           {caracteristicas.map((c) => {
             const catalog = c.key ? getCaracteristicaByKey(c.key) : null;
             const subAuto = catalog?.automation;
@@ -161,7 +157,7 @@ export default function SectionCaracteristicas({ draft, actions }) {
       )}
 
       {/* ===== SELETOR — cards agrupados por Tipo ===== */}
-      <div className="pt-3 border-t border-slate-800">
+      <div className="order-1 pt-3 border-t border-slate-800">
         <button
           type="button"
           onClick={() => setPickerOpen((v) => !v)}
@@ -197,7 +193,7 @@ export default function SectionCaracteristicas({ draft, actions }) {
                   : "Todas as características oficiais já foram adicionadas."}
               </p>
             ) : (
-              CARACTERISTICAS_CATEGORIAS.map((cat) => {
+              cats.map((cat) => {
                 const disponiveis = cat.caracteristicas.filter(isAvailable);
                 if (disponiveis.length === 0) return null;
                 return (
@@ -275,56 +271,6 @@ export default function SectionCaracteristicas({ draft, actions }) {
                 );
               })
             )}
-
-            {/* Botão / form de Característica Customizada */}
-            <div className="pt-3 border-t border-slate-800/60">
-              {showCustom ? (
-                <div className="space-y-2 bg-slate-950/40 border border-cyan-900/40 rounded p-3">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-[10px] uppercase tracking-widest text-cyan-300 font-bold">
-                      ✦ Característica Customizada
-                    </h4>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowCustom(false);
-                        setNomeCustom("");
-                        setDescCustom("");
-                      }}
-                      className="text-[10px] text-slate-500 hover:text-slate-300"
-                    >
-                      Cancelar
-                    </button>
-                  </div>
-                  <TextInput
-                    value={nomeCustom}
-                    onChange={setNomeCustom}
-                    placeholder="Nome da Característica"
-                  />
-                  <TextArea
-                    value={descCustom}
-                    onChange={setDescCustom}
-                    rows={3}
-                    placeholder="Descreva os efeitos desta característica..."
-                  />
-                  <SmallButton
-                    onClick={handleAddCustom}
-                    variant="primary"
-                    disabled={!nomeCustom.trim()}
-                  >
-                    <Plus className="w-3 h-3" /> Adicionar
-                  </SmallButton>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setShowCustom(true)}
-                  className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded border border-dashed border-cyan-900/60 text-xs font-semibold text-cyan-300 hover:text-cyan-200 hover:border-cyan-700/60 hover:bg-cyan-950/20 transition-colors focus:outline-none focus:ring-1 focus:ring-cyan-500/40"
-                >
-                  <Plus className="w-3 h-3" /> ✦ Criar Característica Customizada
-                </button>
-              )}
-            </div>
           </div>
         )}
       </div>

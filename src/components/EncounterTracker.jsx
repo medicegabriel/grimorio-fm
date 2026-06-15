@@ -310,9 +310,9 @@ const EncounterPlanner = ({ encounter, derived, actions, creatures, folders = []
             <PcAdder onAdd={actions.addPc} />
           </div>
 
-          <div className="lg:col-span-2">
-            <section className="bg-slate-900/60 border border-slate-800 rounded-lg p-4">
-              <div className="flex items-center justify-between mb-3">
+          <div className="lg:col-span-2 lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:flex lg:flex-col lg:min-h-0">
+            <section className="bg-slate-900/60 border border-slate-800 rounded-lg p-4 lg:flex lg:flex-col lg:min-h-0 lg:max-h-full lg:overflow-hidden">
+              <div className="flex items-center justify-between mb-3 flex-shrink-0">
                 <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center gap-2">
                   <Swords className="w-3.5 h-3.5" /> Combatentes ({derived.totalCombatants})
                 </h3>
@@ -328,7 +328,7 @@ const EncounterPlanner = ({ encounter, derived, actions, creatures, folders = []
                   Adicione combatentes do painel à esquerda.
                 </div>
               ) : (
-                <ul className="space-y-2">
+                <ul className="space-y-2 lg:overflow-y-auto lg:min-h-0 lg:flex-1 lg:pr-1">
                   {derived.orderedCombatants.map((c) => (
                     <CombatantRow key={c.id} combatant={c}
                       onRoll={() => actions.rollOne(c.id)}
@@ -529,8 +529,8 @@ const ConfirmRemoveCombatantModal = ({ combatant, onConfirm, onCancel }) => {
 // ACTIVE — COMBATE EM ANDAMENTO
 // ============================================================
 const InitiativeSidebar = ({ derived, encounter, focusedId, onFocus, onRemove }) => (
-  <aside className="bg-slate-900/60 border border-slate-800 rounded-lg p-3">
-    <div className="flex items-center justify-between mb-2">
+  <aside className="bg-slate-900/60 border border-slate-800 rounded-lg p-3 flex flex-col min-h-0 max-h-full overflow-hidden">
+    <div className="flex items-center justify-between mb-2 flex-shrink-0">
       <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center gap-1.5">
         <Clock className="w-3.5 h-3.5" /> Rodada {encounter.round}
       </h3>
@@ -538,7 +538,7 @@ const InitiativeSidebar = ({ derived, encounter, focusedId, onFocus, onRemove })
         {derived.eligibleCombatants.length} / {derived.totalCombatants}
       </span>
     </div>
-    <ul className="space-y-1.5">
+    <ul className="space-y-1.5 overflow-y-auto min-h-0 flex-1 pr-1">
       {derived.orderedCombatants.map((c) => {
         const isActive = c.id === encounter.activeCombatantId;
         const isFocused = c.id === focusedId;
@@ -733,7 +733,7 @@ const EncounterActive = ({ encounter, derived, actions, creatures, folders = [],
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
           {/* Sidebar desktop */}
           <div className="hidden lg:block lg:col-span-1">
-            <div className="sticky top-20">
+            <div className="sticky top-20 max-h-[calc(100vh-6rem)] flex flex-col">
               <InitiativeSidebar derived={derived} encounter={encounter}
                 focusedId={effectiveFocusId} onFocus={setFocusedId}
                 onRemove={(c) => setConfirmRemove(c)} />

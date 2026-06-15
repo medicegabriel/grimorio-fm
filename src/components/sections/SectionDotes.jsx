@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Plus, Trash2, Star, Zap, ChevronDown, ChevronUp } from "lucide-react";
 import { TextInput, TextArea, SmallButton, ExpandableText, SearchInput } from "../builder-controls";
+import { SaveTemplateButton, TemplateInlinePicker } from "../TemplateControls";
 import { normalizeText } from "../fm-tables";
 import { DOTES_OFICIAIS, getDoteByKey, isAutomatedDote, getDoteLimit, resolveDoteDescription } from "../fm-dotes";
 import { getFrutosDoteBonus } from "../fm-origens";
@@ -78,7 +79,8 @@ export default function SectionDotes({ draft, actions }) {
   };
 
   return (
-    <div className="space-y-4">
+    // flex + order: a área de criação (seletor) fica acima da lista (adendo #5).
+    <div className="flex flex-col gap-4">
       {/* Indicador de limite de dotes */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
@@ -121,11 +123,11 @@ export default function SectionDotes({ draft, actions }) {
 
       {/* Lista de dotes adicionados */}
       {dotes.length === 0 ? (
-        <div className="text-center py-5 text-slate-600 text-sm italic border border-dashed border-slate-800 rounded">
+        <div className="order-3 text-center py-5 text-slate-600 text-sm italic border border-dashed border-slate-800 rounded">
           Nenhum dote adicionado
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="order-3 space-y-2">
           {dotes.map((d) => {
             const catalog = d.key ? getDoteByKey(d.key) : null;
             const desc = catalog ? resolveDesc(catalog, draft, d.subChoice) : d.descricao;
@@ -172,13 +174,16 @@ export default function SectionDotes({ draft, actions }) {
                     </div>
                   )}
                 </div>
-                <SmallButton
-                  onClick={() => actions.removeDote(d.id)}
-                  variant="danger"
-                  title="Remover dote"
-                >
-                  <Trash2 className="w-3 h-3" />
-                </SmallButton>
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  {d.tipo === "custom" && <SaveTemplateButton type="dote" entity={d} />}
+                  <SmallButton
+                    onClick={() => actions.removeDote(d.id)}
+                    variant="danger"
+                    title="Remover dote"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </SmallButton>
+                </div>
               </div>
             );
           })}
@@ -187,7 +192,7 @@ export default function SectionDotes({ draft, actions }) {
 
       {/* ===== SELETOR — só quando ainda há slots disponíveis ===== */}
       {slotsRestantes > 0 ? (
-      <div className="pt-3 border-t border-slate-800">
+      <div className="order-2 pt-3 border-t border-slate-800">
         <button
           type="button"
           onClick={() => setPickerOpen((v) => !v)}
@@ -292,7 +297,7 @@ export default function SectionDotes({ draft, actions }) {
             )}
 
             {/* Botão / form de Dote Customizado */}
-            <div className="pt-3 border-t border-slate-800/60">
+            <div className="pt-3 border-t border-slate-800/60 space-y-2">
               {showCustom ? (
                 <div className="space-y-2 bg-slate-950/40 border border-amber-900/40 rounded p-3">
                   <div className="flex items-center justify-between">
@@ -311,6 +316,10 @@ export default function SectionDotes({ draft, actions }) {
                       Cancelar
                     </button>
                   </div>
+                  <TemplateInlinePicker
+                    type="dote"
+                    onPick={(tpl) => { setNomeCustom(tpl.nome ?? ""); setDescCustom(tpl.descricao ?? ""); }}
+                  />
                   <TextInput
                     value={nomeCustom}
                     onChange={setNomeCustom}
@@ -345,7 +354,7 @@ export default function SectionDotes({ draft, actions }) {
       </div>
       ) : (
         <p
-          className={`text-xs italic text-center pt-1 ${
+          className={`order-2 text-xs italic text-center pt-1 ${
             slotsRestantes < 0 ? "text-red-400/80" : "text-slate-600"
           }`}
         >

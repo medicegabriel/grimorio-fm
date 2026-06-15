@@ -11,7 +11,7 @@ import ActionForm from "./ActionForm";
 export default function SectionActions({ draft, derived, actions }) {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  const { templates: actionTemplates, saveTemplate: saveActionTemplate, removeTemplate: removeActionTemplate } = useActionTemplates();
+  const { templates: actionTemplates, removeTemplate: removeActionTemplate } = useActionTemplates();
 
   const handleAdd = (newAction) => {
     actions.addAction({ ...newAction, id: `act-${Date.now().toString(36)}` });
@@ -42,6 +42,24 @@ export default function SectionActions({ draft, derived, actions }) {
         <Pill color="purple">{total.reacao} Reação</Pill>
       </div>
 
+      {/* Form de nova ação — acima da lista, escondido durante uma edição. */}
+      {editingId === null && (
+        showForm ? (
+          <ActionForm
+            derived={derived}
+            draft={draft}
+            onAdd={handleAdd}
+            onCancel={() => setShowForm(false)}
+            templates={actionTemplates}
+            onRemoveTemplate={removeActionTemplate}
+          />
+        ) : (
+          <SmallButton onClick={() => setShowForm(true)} variant="primary">
+            <Plus className="w-3 h-3" /> Adicionar Ação
+          </SmallButton>
+        )
+      )}
+
       <div className="space-y-2">
         {draft.actions.list.length === 0 && (
           <div className="text-center py-6 text-slate-600 text-sm italic border border-dashed border-slate-800 rounded">
@@ -70,29 +88,10 @@ export default function SectionActions({ draft, derived, actions }) {
               onEdit={() => handleEdit(action.id)}
               onRemove={() => actions.removeAction(action.id)}
               onDuplicate={() => actions.duplicateAction(action.id)}
-              onSaveTemplate={saveActionTemplate}
             />
           )
         )}
       </div>
-
-      {/* Form de nova ação — escondido enquanto uma edição está aberta. */}
-      {editingId === null && (
-        showForm ? (
-          <ActionForm
-            derived={derived}
-            draft={draft}
-            onAdd={handleAdd}
-            onCancel={() => setShowForm(false)}
-            templates={actionTemplates}
-            onRemoveTemplate={removeActionTemplate}
-          />
-        ) : (
-          <SmallButton onClick={() => setShowForm(true)} variant="primary">
-            <Plus className="w-3 h-3" /> Adicionar Ação
-          </SmallButton>
-        )
-      )}
     </div>
   );
 }

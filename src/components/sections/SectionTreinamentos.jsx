@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Plus, Trash2, GraduationCap, Zap, ChevronDown, ChevronUp } from "lucide-react";
 import { TextInput, TextArea, SmallButton, ExpandableText, SearchInput } from "../builder-controls";
+import { SaveTemplateButton, TemplateInlinePicker } from "../TemplateControls";
 import { normalizeText } from "../fm-tables";
 import {
   TREINAMENTOS_OFICIAIS,
@@ -71,7 +72,8 @@ export default function SectionTreinamentos({ draft, actions }) {
   };
 
   return (
-    <div className="space-y-4">
+    // flex + order: a área de criação (seletor) fica acima da lista (adendo #5).
+    <div className="flex flex-col gap-4">
       {/* Indicador de pontos */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
@@ -100,11 +102,11 @@ export default function SectionTreinamentos({ draft, actions }) {
 
       {/* Lista de treinamentos adicionados */}
       {treinamentos.length === 0 ? (
-        <div className="text-center py-5 text-slate-600 text-sm italic border border-dashed border-slate-800 rounded">
+        <div className="order-3 text-center py-5 text-slate-600 text-sm italic border border-dashed border-slate-800 rounded">
           Nenhum treinamento adicionado
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="order-3 space-y-2">
           {treinamentos.map((t) => {
             const catalog = t.key ? getTreinamentoByKey(t.key) : null;
             const desc = catalog ? resolveDesc(catalog, draft) : t.descricao;
@@ -134,13 +136,16 @@ export default function SectionTreinamentos({ draft, actions }) {
                   </div>
                   {desc && <ExpandableText text={desc} />}
                 </div>
-                <SmallButton
-                  onClick={() => actions.removeTreinamento(t.id)}
-                  variant="danger"
-                  title="Remover treinamento"
-                >
-                  <Trash2 className="w-3 h-3" />
-                </SmallButton>
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  {t.tipo === "custom" && <SaveTemplateButton type="treinamento" entity={t} />}
+                  <SmallButton
+                    onClick={() => actions.removeTreinamento(t.id)}
+                    variant="danger"
+                    title="Remover treinamento"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </SmallButton>
+                </div>
               </div>
             );
           })}
@@ -149,7 +154,7 @@ export default function SectionTreinamentos({ draft, actions }) {
 
       {/* ===== SELETOR — só quando há pontos disponíveis ===== */}
       {pontosDisponiveis > 0 ? (
-        <div className="pt-3 border-t border-slate-800">
+        <div className="order-2 pt-3 border-t border-slate-800">
           <button
             type="button"
             onClick={() => setPickerOpen((v) => !v)}
@@ -263,7 +268,7 @@ export default function SectionTreinamentos({ draft, actions }) {
               )}
 
               {/* Botão / form de Treinamento Customizado */}
-              <div className="pt-3 border-t border-slate-800/60">
+              <div className="pt-3 border-t border-slate-800/60 space-y-2">
                 {showCustom ? (
                   <div className="space-y-2 bg-slate-950/40 border border-amber-900/40 rounded p-3">
                     <div className="flex items-center justify-between">
@@ -282,6 +287,10 @@ export default function SectionTreinamentos({ draft, actions }) {
                         Cancelar
                       </button>
                     </div>
+                    <TemplateInlinePicker
+                      type="treinamento"
+                      onPick={(tpl) => { setNomeCustom(tpl.nome ?? ""); setDescCustom(tpl.descricao ?? ""); }}
+                    />
                     <TextInput
                       value={nomeCustom}
                       onChange={setNomeCustom}
@@ -316,7 +325,7 @@ export default function SectionTreinamentos({ draft, actions }) {
         </div>
       ) : (
         treinamentos.length > 0 && (
-          <p className="text-xs text-slate-600 italic text-center pt-1">
+          <p className="order-2 text-xs text-slate-600 italic text-center pt-1">
             Todos os pontos de treinamento foram utilizados.
           </p>
         )
