@@ -16,6 +16,16 @@ const findCreatureAnywhere = (id, storageList, compendium) =>
   storageList.find((c) => c.id === id) ?? compendium.find((c) => c.id === id) ?? null;
 
 export default function App() {
+  // Gatilho de teste da tela de erro: abrir o site com "?testar-erro=1" na URL
+  // força um erro de propósito para validar o ErrorBoundary (útil pra testar no
+  // celular). Só afeta quem adiciona o parâmetro manualmente — inofensivo.
+  if (
+    typeof location !== "undefined" &&
+    new URLSearchParams(location.search).has("testar-erro")
+  ) {
+    throw new Error("Teste da tela de erro (?testar-erro=1) — tudo certo!");
+  }
+
   const storage = useCreatureStorage();
   const encounterManager = useEncounterManager();
 
