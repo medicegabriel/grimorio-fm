@@ -1,5 +1,5 @@
 import React from "react";
-import { ChevronDown, Info, Lock, Unlock } from "lucide-react";
+import { ChevronDown, Info, Lock, Unlock, Sparkles } from "lucide-react";
 import { FieldLabel, TextInput, TextArea, Select, NumberInput } from "../../builder-controls";
 import { CONDITIONS } from "../../fm-tables";
 import {
@@ -69,7 +69,7 @@ function TradeRow({ label, hint, value, onChange, step = 1, blocked, max }) {
 // ============================================================
 // FORM FIELDS — compartilhado entre ActionItem e ActionForm
 // ============================================================
-export default function ActionFormFields({ form, bt = 2, templateMode = false, update, updateDamage, updateCond, updateTrade, updateRangeType }) {
+export default function ActionFormFields({ form, bt = 2, templateMode = false, tecnicaMaximaUnlocked = false, update, updateDamage, updateCond, updateTrade, updateRangeType }) {
   const isTR      = form.attackType?.startsWith("tr_");
   const isAcerto  = form.attackType === "acerto";
   const hasDamage = form.attackType !== "suporte";
@@ -448,8 +448,10 @@ export default function ActionFormFields({ form, bt = 2, templateMode = false, u
             </div>
           )}
 
-          {/* Conversão Equivalente — steppers contextuais por tipo de ofensiva */}
-          {(isAcerto || isTR) && (
+          {/* Conversão Equivalente — steppers contextuais por tipo de ofensiva.
+              Escondida em Técnica Máxima: é indefensável, então Acerto/CD não
+              têm efeito e converter dados neles não faz sentido. */}
+          {!form.tecnicaMaxima && (isAcerto || isTR) && (
             <div className="border-t border-slate-700/50 pt-2.5 space-y-2.5">
               <div className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">
                 Conversão Equivalente
@@ -590,6 +592,29 @@ export default function ActionFormFields({ form, bt = 2, templateMode = false, u
           </>
         )}
       </div>
+
+      {/* Técnica Máxima — toggle único, só aparece quando a ficha tem a aptidão.
+          Ligado: a ação fica Indefensável, ignora reduções de dano, ganha dados
+          extras por patamar (Desafio +5 / Calamidade +7) e recarga de 4 rodadas. */}
+      {tecnicaMaximaUnlocked && (
+        <label className="flex items-start gap-2.5 rounded border border-purple-900/50 bg-purple-950/20 p-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={!!form.tecnicaMaxima}
+            onChange={(e) => update({ tecnicaMaxima: e.target.checked })}
+            className="mt-0.5 rounded bg-slate-950 border-slate-600 text-purple-600 focus:ring-purple-500 flex-shrink-0"
+          />
+          <span className="min-w-0">
+            <span className="flex items-center gap-1.5 text-xs font-bold text-purple-300">
+              <Sparkles className="w-3.5 h-3.5 flex-shrink-0" /> Técnica Máxima
+            </span>
+            <span className="block text-[10px] text-slate-500 leading-snug mt-1">
+              Torna a ação Indefensável (sem defesa/TR), ignora resistência e Redução de Dano,
+              soma dados extras por patamar (Desafio +5 / Calamidade +7) e adiciona recarga de 4 rodadas.
+            </span>
+          </span>
+        </label>
+      )}
 
       {/* Flavor Text / Narração */}
       <div>

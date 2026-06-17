@@ -437,6 +437,10 @@ export function normalizeAction(action) {
   return {
     rangeType: "distancia",
     trades,
+    // Técnica Máxima: toggle único (Indefensável + ignora reduções + recarga
+    // de 4 rodadas + dados extras por patamar). Só editável quando a ficha tem
+    // a aptidão — ver ActionFormFields.
+    tecnicaMaxima: false,
     toHitBase: action.toHitBase ?? action.toHit ?? 0,
     cdBase:    action.cdBase    ?? action.cd    ?? 0,
     ...action,
@@ -524,6 +528,17 @@ export function tokenizeCreatureName(text, creatureName) {
 }
 
 // ============================================================
+// Técnica Máxima — dados de dano adicionais por Patamar
+// ============================================================
+// A Aptidão "Técnica Máxima" some dados extras ao dano padrão da técnica:
+// Desafio +5, Calamidade +7 (Lacaio/Capanga/Comum não recebem nada).
+// Esses dados entram no MESMO pipeline do dano das ações (somados à média
+// antes da divisão/split), igual ao bônus de Corpo-a-Corpo.
+export const TECNICA_MAXIMA_BONUS_DICE = { desafio: 5, calamidade: 7 };
+export const getTecnicaMaximaBonusDice = (patamar) =>
+  TECNICA_MAXIMA_BONUS_DICE[patamar] ?? 0;
+
+// ============================================================
 // resolveActionFinalText — texto final exibido da ação
 // ============================================================
 // Se o usuário escreveu um "Texto Final" manual (finalTextManual), resolve
@@ -608,8 +623,11 @@ export function generateActionDescription(action, creatureName, flavorText = "",
   const isTR      = action.attackType?.startsWith("tr_");
   const isTRArea  = action.attackType === "tr_area";
   const isAcerto  = action.attackType === "acerto";
+  const isTM      = !!action.tecnicaMaxima;
   const hasCond   = action.condition?.tier && action.condition.tier !== "nenhuma";
-  const isComplex = finalPE > 0 || hasCond || isTR;
+  // Técnica Máxima sempre usa o formato de cabeçalho (Conjuração/Alcance/Custo
+  // antes do texto), inclusive quando o ataque é "Teste de Acerto".
+  const isComplex = finalPE > 0 || hasCond || isTR || isTM;
   const alcance   = action.range || "-";
   const area      = action.area  || "-";
   const creature  = creatureName?.trim() || "A criatura";
@@ -627,6 +645,13 @@ export function generateActionDescription(action, creatureName, flavorText = "",
   const vArea = tokenize ? "{{area}}"     : area;
   const vPE   = tokenize ? "{{custo}}"    : `${finalPE}`;
   const vCreature = tokenize ? "{{criatura}}" : creature;
+
+  // Técnica Máxima é indefensável: no lugar de Acerto/CD, descreve que o alvo
+  // não pode se defender, ignora reduções e tem recarga fixa de 4 rodadas.
+  const tmMechanical = (subjArea) => {
+    const subj = subjArea ? "Cada criatura na área é atingida" : "O alvo é atingido";
+    return `${subj} de forma indefensável (sem direito a defesa ou teste de resistência), recebendo ${vRoll} de dano ${vType}. O dano causado por essa habilidade ignora resistência e qualquer tipo de redução de dano. Essa habilidade não pode ser utilizada novamente pelas próximas 4 rodadas.`;
+  };
 
   if (isAcerto && !isComplex) {
     const opening = flavor || `${vCreature} golpeia utilizando ${action.name || "esta ação"}.`;
@@ -652,7 +677,9 @@ export function generateActionDescription(action, creatureName, flavorText = "",
     ];
 
     let mechanicalText = "";
-    if (isTR && rollDisplay) {
+    if (isTM) {
+      mechanicalText = tmMechanical(isTRArea);
+    } else if (isTR && rollDisplay) {
       mechanicalText = `${targetDesc} deve realizar um teste de resistência de ${trAttr} (CD ${vCd}), recebendo ${vRoll} de dano ${vType}, ou apenas metade em um sucesso.`;
     } else if (isTR) {
       mechanicalText = `${targetDesc} deve realizar um teste de resistência de ${trAttr} (CD ${vCd}).`;
@@ -666,7 +693,9 @@ export function generateActionDescription(action, creatureName, flavorText = "",
         ? rawName.charAt(0).toUpperCase() + rawName.slice(1)
         : tierLabel;
       const condSuffix = rawName ? ` (${tierLabel})` : "";
-      mechanicalText += ` Além disso, caso falhe, sofre a condição ${condName}${condSuffix}.`;
+      // Técnica Máxima é indefensável → o alvo SEMPRE falha, sem "caso falhe".
+      const failClause = isTM ? "" : "caso falhe, ";
+      mechanicalText += ` Além disso, ${failClause}sofre a condição ${condName}${condSuffix}.`;
     }
 
     const secondParagraph = [flavor, mechanicalText].filter(Boolean).join(" ");
@@ -686,6 +715,7 @@ export function generateActionDescription(action, creatureName, flavorText = "",
 // entram como parâmetros.
 export function runFullActionCalc({
   patamar, nd, bt, attackType, condition, narrativeType, rangeType, trades, damageType, toHitBase, cdBase,
+  tecnicaMaxima = false,
 }) {
   if (!patamar || !nd || attackType === "suporte") return null;
   const t = { ...TRADES_ZERO, ...(trades ?? {}) };
@@ -698,8 +728,10 @@ export function runFullActionCalc({
   // Face do nível: unidade das modificações "em médias de dado" (estável).
   const fAvg = faceAvgOf(faceForAverage(baseAverage(patamar, nd, 0) ?? avg));
 
-  // 2) Corpo-a-Corpo (+dados por BT) e Narrativa Física (−2 dados), ANTES da divisão.
+  // 2) Corpo-a-Corpo (+dados por BT), Técnica Máxima (+dados por patamar) e
+  //    Narrativa Física (−2 dados), ANTES da divisão.
   if (rangeType === "cac") avg += getActionParams(bt).meleeBonusDice * fAvg;
+  if (tecnicaMaxima) avg += getTecnicaMaximaBonusDice(patamar) * fAvg;
   if (narrativeType === "fisica") avg -= 2 * fAvg;
 
   // 3) Trades: mexem na média (mesmas taxas) e no Acerto/CD.
@@ -798,6 +830,7 @@ export function recalcAction(action, ctx) {
       trades: norm.trades,
       damageType: norm.damage?.type,
       toHitBase, cdBase,
+      tecnicaMaxima: norm.tecnicaMaxima,
     });
     if (!r) return finalize({ ...action, range, area, calc: stamp });
     return finalize({

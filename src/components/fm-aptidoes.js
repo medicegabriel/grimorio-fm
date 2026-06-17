@@ -332,6 +332,17 @@ const APTIDAO_BY_KEY = Object.fromEntries(_flat.filter((a) => a.key).map((a) => 
 export const getAptidaoByNome = (nome) => APTIDAO_BY_NOME[nome] ?? null;
 export const getAptidaoByKey = (key) => APTIDAO_BY_KEY[key] ?? null;
 
+// Aptidão que destrava as propriedades de Técnica Máxima nas Ações
+// (Indefensável / Ignora RD / Recarga).
+export const TECNICA_MAXIMA_KEY = "tecnica_maxima";
+
+/** True se a ficha possui a Aptidão Amaldiçoada "Técnica Máxima". */
+export function hasTecnicaMaxima(aptidoesEspeciais = []) {
+  return (aptidoesEspeciais || []).some(
+    (a) => a.key === TECNICA_MAXIMA_KEY || a.nome === "Técnica Máxima"
+  );
+}
+
 /**
  * Descrição resolvida no contexto da ficha. Aptidões com `computeInfo`
  * (cálculos básicos: cura, dados, bônus por Nível de Aptidão) ganham uma

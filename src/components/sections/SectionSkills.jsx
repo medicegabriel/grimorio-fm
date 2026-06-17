@@ -72,10 +72,11 @@ export default function SectionSkills({ draft, derived, actions }) {
       {/* Info — origens Jujutsu somam +BT por Treinamento Evidente;
           Não-Feiticeiro pela Necessidade de Agir (mecânica idêntica). */}
       {(() => {
+        // Maior modificador mental = só Inteligência ou Sabedoria (Presença
+        // NÃO entra nessa conta).
         const baseLimit = derived.mods ? Math.max(
           derived.mods.inteligencia,
           derived.mods.sabedoria,
-          derived.mods.presenca,
         ) : 0;
         const trainingBonus = hasSkillsBonusBt(draft.core?.origin) ? (derived.bt ?? 0) : 0;
         const bonusName = isNaoFeiticeiro(draft.core?.origin)

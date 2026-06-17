@@ -24,6 +24,7 @@ import {
   normalizeAction,
   clampActionToBt,
 } from "../../fm-action-calc";
+import { hasTecnicaMaxima } from "../../fm-aptidoes";
 
 // ============================================================
 // ACTION FORM (nova ação OU edição de uma existente)
@@ -45,6 +46,9 @@ export default function ActionForm({
   const cdBaseDerived   = context ? (context.cdBase ?? 0)          : (derived?.cdBase ?? 0);
   const creatureName    = context ? (context.creatureName ?? "")  : draft?.name;
   const difficulty      = context ? context.difficulty            : draft?.core?.difficulty;
+  // A Aptidão "Técnica Máxima" destrava o toggle de Técnica Máxima nas ações.
+  // Fora do builder (edição de Modelo via context) não há ficha → bloqueado.
+  const tecnicaMaximaUnlocked = context ? false : hasTecnicaMaxima(draft?.aptidoesEspeciais);
 
   // Em edição, reabre já no modo manual se a ação tinha um Texto Final manual.
   const [isMechanicalTextLocked, setIsMechanicalTextLocked] = useState(
@@ -102,11 +106,14 @@ export default function ActionForm({
   });
 
   // Recálculo completo (tabela + trades + divisor) — usado quando destravado.
-  const runFullCalc = (attackType, condition, narrativeType, rangeType, trades, damageType) =>
+  // `tmOverride` permite recalcular com o novo valor de Técnica Máxima no exato
+  // momento do toggle (quando `form.tecnicaMaxima` ainda é o valor antigo).
+  const runFullCalc = (attackType, condition, narrativeType, rangeType, trades, damageType, tmOverride) =>
     runFullActionCalc({
       patamar, nd, bt, attackType, condition, narrativeType, rangeType, trades, damageType,
       toHitBase: acertoPrincipal,
       cdBase:    cdBaseDerived,
+      tecnicaMaxima: tmOverride ?? form.tecnicaMaxima,
     });
 
   // Reaplica trades sobre o dano-base existente — usado quando travado.
@@ -131,6 +138,20 @@ export default function ActionForm({
         } else {
           const reapplied = reapplyTradesHelper(next, prev.rangeType, resetTrades);
           Object.assign(next, reapplied);
+        }
+      }
+
+      // Técnica Máxima: ao ligar, zera as conversões (indefensável — Acerto/CD
+      // não se aplicam) e fixa o custo em 20 PE. Em qualquer caso, re-deriva o
+      // dano quando destravado usando o NOVO valor do toggle (bônus por patamar).
+      if ("tecnicaMaxima" in patch) {
+        if (patch.tecnicaMaxima) {
+          next.trades = { ...TRADES_ZERO };
+          next.cost = 20;
+        }
+        if (next.attackType !== "suporte" && !next.damage?.damageIsLocked) {
+          const r = runFullCalc(next.attackType, next.condition, next.damage?.narrativeType, next.rangeType, next.trades, next.damage?.type, patch.tecnicaMaxima);
+          if (r) Object.assign(next, r, { damage: { ...next.damage, ...r.damage, damageIsLocked: false } });
         }
       }
 
@@ -393,6 +414,7 @@ export default function ActionForm({
         form={form}
         bt={bt}
         templateMode={templateMode}
+        tecnicaMaximaUnlocked={tecnicaMaximaUnlocked}
         update={update}
         updateDamage={updateDamage}
         updateCond={updateCond}
