@@ -566,7 +566,7 @@ export default function ActionFormFields({ form, bt = 2, templateMode = false, t
                         onChange={(e) => handleCondNameKey(e.target.value)}
                         className="w-full h-9 bg-slate-950 border border-slate-700 rounded pl-2 pr-7 text-sm text-white appearance-none focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
                       >
-                        <option value="">— Selecione —</option>
+                        <option value="">Selecione...</option>
                         {condNamesForTier.map((n) => (
                           <option key={n} value={n}>{n.charAt(0).toUpperCase() + n.slice(1)}</option>
                         ))}
@@ -618,7 +618,7 @@ export default function ActionFormFields({ form, bt = 2, templateMode = false, t
 
       {/* Flavor Text / Narração */}
       <div>
-        <FieldLabel hint="flavor text — aparece antes do texto mecânico no preview">
+        <FieldLabel hint="flavor text: aparece antes do texto mecânico no preview">
           Texto Narrativo
         </FieldLabel>
         <TextArea

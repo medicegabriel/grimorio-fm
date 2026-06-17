@@ -343,6 +343,24 @@ export function hasTecnicaMaxima(aptidoesEspeciais = []) {
   );
 }
 
+// Aptidões de Domínio que destravam opções extras na Criação de Expansão.
+export const ACERTO_GARANTIDO_KEY = "acerto_garantido";
+export const MODIFICACAO_COMPLETA_KEY = "modificacao_completa";
+
+/** True se a ficha possui a Aptidão "Acerto Garantido". */
+export function hasAcertoGarantido(aptidoesEspeciais = []) {
+  return (aptidoesEspeciais || []).some(
+    (a) => a.key === ACERTO_GARANTIDO_KEY || a.nome === "Acerto Garantido"
+  );
+}
+
+/** True se a ficha possui a Aptidão "Modificação Completa". */
+export function hasModificacaoCompleta(aptidoesEspeciais = []) {
+  return (aptidoesEspeciais || []).some(
+    (a) => a.key === MODIFICACAO_COMPLETA_KEY || a.nome === "Modificação Completa"
+  );
+}
+
 /**
  * Descrição resolvida no contexto da ficha. Aptidões com `computeInfo`
  * (cálculos básicos: cura, dados, bônus por Nível de Aptidão) ganham uma

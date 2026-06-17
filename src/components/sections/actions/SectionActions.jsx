@@ -1,27 +1,41 @@
 import React, { useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, Sparkles } from "lucide-react";
 import { SmallButton, Pill } from "../../builder-controls";
 import useActionTemplates from "../../useActionTemplates";
+import { isDomainAction } from "../../fm-domain-calc";
+import { hasExpansaoDominio } from "../../fm-caracteristicas";
 import ActionItem from "./ActionItem";
 import ActionForm from "./ActionForm";
+import DomainItem from "./DomainItem";
+import DomainForm from "./DomainForm";
 
 // ============================================================
 // SECTION ACTIONS
 // ============================================================
 export default function SectionActions({ draft, derived, actions }) {
   const [showForm, setShowForm] = useState(false);
+  const [showDomainForm, setShowDomainForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const { templates: actionTemplates, removeTemplate: removeActionTemplate } = useActionTemplates();
+
+  // A Característica Especial "Expansão de Domínio" destrava o construtor próprio.
+  const domainUnlocked = hasExpansaoDominio(draft.caracteristicas);
 
   const handleAdd = (newAction) => {
     actions.addAction({ ...newAction, id: `act-${Date.now().toString(36)}` });
     setShowForm(false);
   };
 
-  // Abrir edição: fecha o form de "nova ação" para não ter dois forms abertos.
+  const handleAddDomain = (newDomain) => {
+    actions.addAction({ ...newDomain, id: `dom-${Date.now().toString(36)}` });
+    setShowDomainForm(false);
+  };
+
+  // Abrir edição: fecha os forms de criação para não ter dois forms abertos.
   const handleEdit = (id) => {
     setEditingId(id);
     setShowForm(false);
+    setShowDomainForm(false);
   };
 
   const handleSaveEdit = (updatedAction) => {
@@ -42,22 +56,38 @@ export default function SectionActions({ draft, derived, actions }) {
         <Pill color="purple">{total.reacao} Reação</Pill>
       </div>
 
-      {/* Form de nova ação — acima da lista, escondido durante uma edição. */}
+      {/* Forms de criação — acima da lista, escondidos durante uma edição. */}
       {editingId === null && (
-        showForm ? (
-          <ActionForm
-            derived={derived}
-            draft={draft}
-            onAdd={handleAdd}
-            onCancel={() => setShowForm(false)}
-            templates={actionTemplates}
-            onRemoveTemplate={removeActionTemplate}
-          />
-        ) : (
-          <SmallButton onClick={() => setShowForm(true)} variant="primary">
-            <Plus className="w-3 h-3" /> Adicionar Ação
-          </SmallButton>
-        )
+        <>
+          {showForm ? (
+            <ActionForm
+              derived={derived}
+              draft={draft}
+              onAdd={handleAdd}
+              onCancel={() => setShowForm(false)}
+              templates={actionTemplates}
+              onRemoveTemplate={removeActionTemplate}
+            />
+          ) : showDomainForm ? (
+            <DomainForm
+              draft={draft}
+              derived={derived}
+              onAdd={handleAddDomain}
+              onCancel={() => setShowDomainForm(false)}
+            />
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              <SmallButton onClick={() => setShowForm(true)} variant="primary">
+                <Plus className="w-3 h-3" /> Adicionar Ação
+              </SmallButton>
+              {domainUnlocked && (
+                <SmallButton onClick={() => setShowDomainForm(true)} variant="primary">
+                  <Sparkles className="w-3 h-3" /> Criar Expansão de Domínio
+                </SmallButton>
+              )}
+            </div>
+          )}
+        </>
       )}
 
       <div className="space-y-2">
@@ -66,19 +96,44 @@ export default function SectionActions({ draft, derived, actions }) {
             Nenhuma ação cadastrada
           </div>
         )}
-        {draft.actions.list.map((action) =>
-          editingId === action.id ? (
-            <ActionForm
+        {draft.actions.list.map((action) => {
+          const domain = isDomainAction(action);
+          if (editingId === action.id) {
+            return domain ? (
+              <DomainForm
+                key={action.id}
+                draft={draft}
+                derived={derived}
+                initialAction={action}
+                title="Editar Expansão de Domínio"
+                submitLabel="Salvar"
+                onAdd={handleSaveEdit}
+                onCancel={() => setEditingId(null)}
+              />
+            ) : (
+              <ActionForm
+                key={action.id}
+                derived={derived}
+                draft={draft}
+                initialAction={action}
+                title="Editar Ação"
+                submitLabel="Salvar"
+                onAdd={handleSaveEdit}
+                onCancel={() => setEditingId(null)}
+                templates={actionTemplates}
+                onRemoveTemplate={removeActionTemplate}
+              />
+            );
+          }
+          return domain ? (
+            <DomainItem
               key={action.id}
-              derived={derived}
+              action={action}
               draft={draft}
-              initialAction={action}
-              title="Editar Ação"
-              submitLabel="Salvar"
-              onAdd={handleSaveEdit}
-              onCancel={() => setEditingId(null)}
-              templates={actionTemplates}
-              onRemoveTemplate={removeActionTemplate}
+              derived={derived}
+              onEdit={() => handleEdit(action.id)}
+              onRemove={() => actions.removeAction(action.id)}
+              onDuplicate={() => actions.duplicateAction(action.id)}
             />
           ) : (
             <ActionItem
@@ -89,8 +144,8 @@ export default function SectionActions({ draft, derived, actions }) {
               onRemove={() => actions.removeAction(action.id)}
               onDuplicate={() => actions.duplicateAction(action.id)}
             />
-          )
-        )}
+          );
+        })}
       </div>
     </div>
   );

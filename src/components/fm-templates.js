@@ -21,6 +21,12 @@ export const TEMPLATE_TYPES = {
     idPrefix: "atpl",
     nameField: "name",
   },
+  expansao: {
+    label: "Expansões de Domínio",
+    storageKey: "fm_expansao_templates_v1",
+    idPrefix: "etpl",
+    nameField: "name",
+  },
   caracteristica: {
     label: "Características Personalizadas",
     storageKey: "fm_feature_templates_v1",
@@ -47,7 +53,7 @@ export const TEMPLATE_TYPES = {
   },
 };
 
-export const TEMPLATE_TYPE_ORDER = ["acao", "caracteristica", "dote", "treinamento", "aptidao"];
+export const TEMPLATE_TYPE_ORDER = ["acao", "expansao", "caracteristica", "dote", "treinamento", "aptidao"];
 
 export const isTemplateType = (t) => Object.prototype.hasOwnProperty.call(TEMPLATE_TYPES, t);
 
@@ -81,6 +87,22 @@ const BUILDERS = {
     cd: a.cd,
     range: a.range,
     area: a.area,
+    calc: a.calc ? { ...a.calc } : null,
+  }),
+  expansao: (a) => ({
+    name: a.name,
+    type: a.type ?? "comum",
+    versao: a.versao ?? "",
+    cost: a.cost ?? 0,
+    lore: a.lore ?? "",
+    description: a.description ?? "",
+    effects: Array.isArray(a.effects) ? a.effects.map((e) => ({ ...e })) : [],
+    acertoGarantido: a.acertoGarantido ? { ...a.acertoGarantido } : { ativo: false, escopo: "" },
+    modificacaoCompleta: a.modificacaoCompleta ? { ...a.modificacaoCompleta } : { inversaoResistencia: false, mudancaTamanho: false, tamanho: 9 },
+    finalTextManual: a.finalTextManual ?? "",
+    // Snapshot só para exibição na Biblioteca (reresolvido na criatura ao aplicar).
+    finalText: a.finalText ?? "",
+    // Contexto (DOM/ND/BT/BAR) p/ reabrir a edição com os valores corretos.
     calc: a.calc ? { ...a.calc } : null,
   }),
   caracteristica: (f) => ({
@@ -126,9 +148,9 @@ export const templateLabel = (type, tpl) => {
   return (tpl?.[field] ?? tpl?.name ?? tpl?.nome ?? "").toString();
 };
 
-// Descrição legível (para preview na Biblioteca).
+// Descrição legível (para preview na Biblioteca). Expansões usam `lore`.
 export const templateDescription = (tpl) =>
-  (tpl?.description ?? tpl?.descricao ?? "").toString();
+  (tpl?.description || tpl?.descricao || tpl?.lore || "").toString();
 
 // Assinatura para de-duplicação no import (tipo + título + descrição).
 const templateSignature = (type, tpl) =>

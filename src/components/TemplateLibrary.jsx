@@ -35,6 +35,7 @@ const isFolderDropId = (id) => id === "view_unfiled" || String(id).startsWith("f
 // Estilo por tipo (badge singular no card; o label plural vem de TEMPLATE_TYPES).
 const TYPE_STYLES = {
   acao:           { label: "Ação",          badge: "bg-rose-950 text-rose-300 border-rose-800",       accent: "border-l-rose-600" },
+  expansao:       { label: "Expansão",      badge: "bg-fuchsia-950 text-fuchsia-300 border-fuchsia-800", accent: "border-l-fuchsia-600" },
   caracteristica: { label: "Característica", badge: "bg-sky-950 text-sky-300 border-sky-800",          accent: "border-l-sky-600" },
   dote:           { label: "Dote",          badge: "bg-amber-950 text-amber-300 border-amber-800",     accent: "border-l-amber-600" },
   treinamento:    { label: "Treinamento",   badge: "bg-emerald-950 text-emerald-300 border-emerald-800", accent: "border-l-emerald-600" },

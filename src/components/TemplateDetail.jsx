@@ -4,7 +4,10 @@ import { X, Pencil, Check } from "lucide-react";
 import { TextInput, TextArea, Select, SmallButton } from "./builder-controls";
 import { TEMPLATE_TYPES, templateLabel, updateTemplate, buildTemplateFromEntity } from "./fm-templates";
 import { ACTION_TYPE_LABELS, ATTACK_TYPE_OPTIONS, TR_TYPE_OPTIONS, DAMAGE_TYPE_LABELS, normalizeAction, calcAutoRange, resolveActionFinalText, actionRequiredBt } from "./fm-action-calc";
+import { getDomainVersionLabel, DOMAIN_VERSIONS } from "./fm-domain-calc";
 import ActionForm from "./sections/actions/ActionForm";
+import DomainForm from "./sections/actions/DomainForm";
+import DomainText from "./sections/actions/DomainText";
 
 // ============================================================
 // Opções de edição (rota A — campos textuais/metadados)
@@ -141,6 +144,15 @@ function DetailView({ type, f }) {
           </>
         );
       })()}
+      {type === "expansao" && (
+        <DomainText
+          text={f.finalText}
+          name={f.name}
+          versaoLabel={getDomainVersionLabel(f.versao)}
+          lore={f.lore}
+          size="text-sm"
+        />
+      )}
       {type === "caracteristica" && (
         <div className="flex flex-wrap gap-1.5">
           <Badge>{labelOf(CARAC_CATEGORIES, f.category)}</Badge>
@@ -150,7 +162,7 @@ function DetailView({ type, f }) {
       {type === "aptidao" && f.categoria && (
         <div className="flex flex-wrap gap-1.5"><Badge>{f.categoria}</Badge></div>
       )}
-      {type !== "acao" && (desc ? (
+      {type !== "acao" && type !== "expansao" && (desc ? (
         <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-line">{desc}</p>
       ) : (
         <p className="text-sm text-slate-600 italic">Sem descrição.</p>
@@ -163,7 +175,7 @@ function DetailView({ type, f }) {
 // EDIÇÃO por tipo (rota A)
 // ============================================================
 function DetailEdit({ type, f, update }) {
-  // Ações são editadas pelo ActionForm completo (Rota B), não chegam aqui.
+  // Ações e Expansões são editadas pelo form completo (Rota B), não chegam aqui.
   if (type === "caracteristica") {
     return (
       <div className="space-y-3">
@@ -214,6 +226,32 @@ export default function TemplateDetailModal({ type, tpl, onClose }) {
   // Ações usam o FORM COMPLETO (Rota B) — edita ataque/alcance/dano/condição,
   // não só os metadados. Os demais tipos seguem no editor leve (Rota A).
   const useActionForm = mode === "edit" && type === "acao";
+
+  // Expansões também usam o form completo (DomainForm) — edita efeitos, versão,
+  // Acerto Garantido, Modificação Completa e textos. Sem criatura, montamos um
+  // contexto sintético a partir do snapshot `calc` (ou neutro p/ modelos antigos).
+  const useDomainForm = mode === "edit" && type === "expansao";
+  const dCalc = tpl.calc || {};
+  const ndForEdit  = dCalc.nd  ?? DOMAIN_VERSIONS[tpl.versao]?.minNd ?? 10;
+  const domForEdit = dCalc.dom ?? 5;
+  const barForEdit = dCalc.bar ?? 0;
+  const btForEdit  = dCalc.bt  ?? 2;
+  const domainDraft = {
+    name: form.name,
+    core: { nd: ndForEdit },
+    aptidoes: { dom: domForEdit, bar: barForEdit },
+    caracteristicas: [{ key: "expansao_de_dominio" }],
+    // Inclui as aptidões p/ os blocos de Acerto Garantido / Modificação Completa
+    // ficarem disponíveis na edição do modelo.
+    aptidoesEspeciais: [{ key: "acerto_garantido" }, { key: "modificacao_completa" }],
+  };
+  const domainDerived = { bt: btForEdit };
+  const saveDomainForm = (formDomain) => {
+    const patch = buildTemplateFromEntity("expansao", formDomain);
+    updateTemplate("expansao", tpl.id, patch);
+    setForm((prev) => ({ ...prev, ...patch }));
+    setMode("view");
+  };
   const actionCtx = {
     patamar: null, nd: null, bt: ACTION_TEMPLATE_BT,
     acertoPrincipal: tpl.toHitBase ?? 0, cdBase: tpl.cdBase ?? 0,
@@ -238,7 +276,7 @@ export default function TemplateDetailModal({ type, tpl, onClose }) {
 
   return createPortal(
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4" onClick={onClose} role="dialog" aria-modal="true">
-      <div className={`bg-slate-900 border border-slate-800 rounded-lg w-full shadow-2xl flex flex-col max-h-[85vh] ${useActionForm ? "max-w-2xl" : "max-w-lg"}`} onClick={(e) => e.stopPropagation()}>
+      <div className={`bg-slate-900 border border-slate-800 rounded-lg w-full shadow-2xl flex flex-col max-h-[85vh] ${useActionForm || useDomainForm ? "max-w-2xl" : "max-w-lg"}`} onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between p-4 border-b border-slate-800 flex-shrink-0">
           <div className="min-w-0">
             <span className="text-[10px] uppercase tracking-widest text-purple-400 font-bold">{typeLabel}</span>
@@ -260,6 +298,17 @@ export default function TemplateDetailModal({ type, tpl, onClose }) {
               onAdd={saveActionForm}
               onCancel={() => setMode("view")}
             />
+          ) : useDomainForm ? (
+            <DomainForm
+              templateMode
+              draft={domainDraft}
+              derived={domainDerived}
+              initialAction={form}
+              title="Editar Modelo de Expansão"
+              submitLabel="Salvar"
+              onAdd={saveDomainForm}
+              onCancel={() => setMode("view")}
+            />
           ) : mode === "view" ? (
             <DetailView type={type} f={form} />
           ) : (
@@ -267,7 +316,7 @@ export default function TemplateDetailModal({ type, tpl, onClose }) {
           )}
         </div>
 
-        {!useActionForm && (
+        {!useActionForm && !useDomainForm && (
           <div className="flex items-center justify-between gap-2 p-4 border-t border-slate-800 flex-shrink-0">
             <span className="text-[11px] text-slate-600">
               {savedAt && !isNaN(savedAt) ? `Salvo em ${savedAt.toLocaleDateString("pt-BR")}` : ""}

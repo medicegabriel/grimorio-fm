@@ -443,6 +443,17 @@ const C_BY_KEY = Object.fromEntries(_flatC.filter((c) => c.key).map((c) => [c.ke
 export const getCaracteristicaByNome = (nome) => C_BY_NOME[nome] ?? null;
 export const getCaracteristicaByKey = (key) => C_BY_KEY[key] ?? null;
 
+// Característica Especial que destrava a Criação de Expansão de Domínio na
+// aba de Ações (ver fm-domain-calc / DomainForm).
+export const EXPANSAO_DOMINIO_KEY = "expansao_de_dominio";
+
+/** True se a ficha possui a Característica Especial "Expansão de Domínio". */
+export function hasExpansaoDominio(caracteristicas = []) {
+  return (caracteristicas || []).some(
+    (c) => c.key === EXPANSAO_DOMINIO_KEY || c.nome === "Expansão de Domínio"
+  );
+}
+
 // ---------- Helpers de contexto (Grau, BT, ND, mods) ----------
 const GRAU_LABELS = { "4": "4º Grau", "3": "3º Grau", "2": "2º Grau", "1": "1º Grau", especial: "Grau Especial" };
 // Ordem das linhas nas tabelas Aura/Marca (4º → Especial).

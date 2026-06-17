@@ -1,4 +1,5 @@
 import { getDamage, PATAMAR_ND_RANGE } from "./fm-tables";
+import { isDomainAction } from "./fm-domain-calc";
 
 /**
  * ============================================================
@@ -103,7 +104,7 @@ export const CONDITION_NAMES = [
 ];
 
 export const CONDITION_NAME_OPTIONS = [
-  { value: "", label: "— Selecione —" },
+  { value: "", label: "Selecione..." },
   ...CONDITION_NAMES.map((n) => ({ value: n, label: n })),
   { value: "outro", label: "Outro / Customizado" },
 ];
@@ -544,6 +545,9 @@ export const getTecnicaMaximaBonusDice = (patamar) =>
 // Se o usuário escreveu um "Texto Final" manual (finalTextManual), resolve
 // seus tokens e usa o resultado. Caso contrário, gera automaticamente.
 export function resolveActionFinalText(action, creatureName) {
+  // Expansão de Domínio: texto manual (se houver) ou o snapshot do save.
+  if (isDomainAction(action))
+    return resolveActionTokens(action?.finalTextManual?.trim() || action?.finalText || "", action, creatureName);
   if (action?.finalTextManual?.trim())
     return resolveActionTokens(action.finalTextManual, action, creatureName);
   return generateActionDescription(action, creatureName, action?.description) || humanizeAction(action);
@@ -554,6 +558,9 @@ export function resolveActionFinalText(action, creatureName) {
 // ============================================================
 export function humanizeAction(action) {
   if (!action?.name) return "";
+  // Expansão de Domínio não passa pelo pipeline de dano/TR — usa o snapshot.
+  if (isDomainAction(action))
+    return action.finalText?.trim() || `${action.name} (Expansão de Domínio).`;
   const parts = [];
   const typeLabel = ACTION_TYPE_LABELS[action.type] || action.type || "Ação";
   parts.push(`${action.name} (${typeLabel}).`);
@@ -597,7 +604,7 @@ export function humanizeAction(action) {
     const condName  = cond.name?.trim() ? `[${cond.name}]` : `[condição ${tierLabel}]`;
     if (cond.payment === "nd") {
       const ndCost = CONDITION_ND_COST[cond.tier] ?? "?";
-      parts.push(`Aplica a condição ${condName} (${tierLabel} — -${ndCost} ND).`);
+      parts.push(`Aplica a condição ${condName} (${tierLabel}: -${ndCost} ND).`);
     } else {
       parts.push(`Aplica a condição ${condName} (${tierLabel}).`);
     }
@@ -792,6 +799,8 @@ export function reapplyTrades(src, rangeType, trades, bt) { // eslint-disable-li
 //    quando algum número exibido mudou (pra UI avisar que pode estar velho).
 // Sempre carimba `calc` com o ND/Patamar/Dificuldade aplicados.
 export function recalcAction(action, ctx) {
+  // Expansão de Domínio não passa pelo pipeline de dano/TR — devolve intacta.
+  if (isDomainAction(action)) return action;
   const { patamar, nd, difficulty, bt, toHitBase, cdBase, recalcLockedDamage = false } = ctx;
   const norm  = normalizeAction(action);
   const stamp = { nd, patamar, difficulty };
