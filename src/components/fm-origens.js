@@ -57,6 +57,15 @@ function buildRegeneracaoDescription(core, attributes) {
   return `${MALDICAO_BASE_DESC.regeneracao_base}\n\n${linhaCalc}`;
 }
 
+/** Cura (PV) por ação da Regeneração de Maldição (0 = não recebe nesta faixa). */
+export function getRegeneracaoCura(core, attributes) {
+  const patamar = core?.patamar || "comum";
+  const bt = getBonusTreinamento(core?.nd ?? 1);
+  const mult = REGENERACAO_MULT[patamar]?.[bt] ?? null;
+  if (mult == null) return 0;
+  return Math.max(0, Math.floor(getModifier(attributes?.constituicao ?? 10) * mult));
+}
+
 // ============================================================
 // CATÁLOGO
 // ============================================================
@@ -86,6 +95,20 @@ export const ORIGEM_FEATURES = {
         // o patamar/BT/Constituição atuais (Mod Con × multiplicador).
         descriptionFn: (ctx) => buildRegeneracaoDescription(ctx.core, ctx.attributes),
         automation: { kind: "info_only" }, // marca como "automatizada" só pra exibir o ícone
+        // Motor (interno) — D origens: "Regenerar" como uso único (4 PE → cura
+        // Mod Con × mult). Resolver-função (valor depende de Patamar×BT×Con).
+        // Ferida Interna (8 PE) e Membro (10 PE) seguem manuais (não são cura de PV).
+        motorAuto: (ctx) => {
+          const cura = getRegeneracaoCura(ctx?.core, ctx?.attributes);
+          if (cura <= 0) return null;
+          return { rules: [{
+            name: "Regenerar",
+            trigger: { type: "activated" },
+            activation: "once",
+            cost: { pe: 4, acao: "" },
+            effects: [{ type: "resource", resource: "hp", op: "add", value: cura }],
+          }] };
+        },
       },
       {
         key: "pontos_fracos",
@@ -348,6 +371,20 @@ function corpoAmaldicoadoBaseFeatures() {
         return `Quando o corpo amaldiçoado atinge ou ativa sua segunda fase, ele muda em partes o seu conceito (Mago para Combatente, Mago para Lutador, Fogo para Gelo, Psíquico para Físico, e por aí vai). Recebe um aumento de vida igual a Constituição × (BT × 2) — essa vida recebida é OPCIONAL, o narrador não precisa colocá-la caso não queira. De resto, segue a criação padrão do guia.\n\nGanho opcional de vida: Constituição × (BT × 2) = ${con} × ${bt * 2} = ${vida} PV (BT +${bt}).`;
       },
       automation: { kind: "info_only" },
+      // Motor (interno) — D origens: "Ativar Segunda Fase" (uso único) concede o
+      // aumento de vida = Con × (BT × 2) como PV temporário (excedente verde).
+      motorAuto: (ctx) => {
+        const bt = getBonusTreinamento(ctx?.core?.nd ?? 1);
+        const vida = (ctx?.attributes?.constituicao ?? 10) * (bt * 2);
+        if (vida <= 0) return null;
+        return { rules: [{
+          name: "Ativar Segunda Fase",
+          trigger: { type: "activated" },
+          activation: "once",
+          cost: { pe: 0, acao: "" },
+          effects: [{ type: "resource", resource: "hp_temp", op: "add", value: vida }],
+        }] };
+      },
     },
   ];
 }
@@ -506,9 +543,9 @@ export function buildOriginFeature(raw, ctx = {}) {
 
   const kind = raw.automation?.kind;
   const hasRealKind = !!kind && kind !== "info_only";
-  const isAutomated = hasRealKind || hasDescFn;
+  const isAutomated = hasRealKind || hasDescFn || !!raw.motorAuto;
 
-  return {
+  const feature = {
     id: `origin-${raw.key}`,
     name: raw.name,
     description,
@@ -518,6 +555,36 @@ export function buildOriginFeature(raw, ctx = {}) {
     originKey: raw.key,
     automated: isAutomated,
     locked: true,
+  };
+
+  // Motor de Automação (interno): resolve a spec `motorAuto` da feature de
+  // origem para o formato `automation` do motor, que o tracker escaneia via
+  // snapshot.features. Construído com objetos PLANOS (sem importar fm-automation
+  // — evita ciclo com fm-derive). Reassado pelo syncOriginDerived quando
+  // patamar/BT/Con mudam, então o valor nunca fica obsoleto.
+  const motor = buildOriginMotorAutomation(raw, feature, ctx);
+  if (motor) feature.automation = motor;
+
+  return feature;
+}
+
+function buildOriginMotorAutomation(raw, feature, ctx) {
+  if (!raw.motorAuto) return null;
+  const spec = typeof raw.motorAuto === "function" ? raw.motorAuto(ctx) : raw.motorAuto;
+  if (!spec || !Array.isArray(spec.rules) || !spec.rules.length) return null;
+  const base = feature.id;
+  return {
+    enabled: spec.enabled !== false,
+    rules: spec.rules.map((r, ri) => ({
+      id: `cat_${base}_${ri}`,
+      name: r.name ?? feature.name,
+      enabled: r.enabled !== false,
+      trigger: r.trigger ?? { type: "activated" },
+      activation: r.activation ?? "once",
+      cost: r.cost ?? { pe: 0, acao: "" },
+      requires: r.requires ?? "",
+      effects: (r.effects ?? []).map((e, ei) => ({ ...e, id: `cat_${base}_${ri}_${ei}` })),
+    })),
   };
 }
 

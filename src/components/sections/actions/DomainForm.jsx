@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Sparkles, Plus, Trash2, Lock, Unlock, ChevronDown, ChevronUp, BookOpen, X } from "lucide-react";
 import { FieldLabel, TextInput, TextArea, Select, SmallButton, Pill } from "../../builder-controls";
 import DomainText from "./DomainText";
+import AutomationEditorPanel from "../../AutomationEditorPanel";
 import { useTemplates } from "../../useTemplates";
 import {
   BLANK_DOMAIN,
@@ -28,6 +29,7 @@ import {
   effectValueText,
   getEffectLabel,
   generateDomainText,
+  PHYSICAL_ATTRS,
 } from "../../fm-domain-calc";
 import { hasAcertoGarantido, hasModificacaoCompleta } from "../../fm-aptidoes";
 
@@ -44,7 +46,7 @@ import { hasAcertoGarantido, hasModificacaoCompleta } from "../../fm-aptidoes";
 export default function DomainForm({
   draft, derived, onAdd, onCancel, initialAction = null,
   title = "Nova Expansão de Domínio", submitLabel = "Adicionar",
-  templateMode = false,
+  templateMode = false, dslContext = null,
 }) {
   const dom = Number(draft?.aptidoes?.dom) || 0;
   const bar = Number(draft?.aptidoes?.bar) || 0;
@@ -353,6 +355,45 @@ export default function DomainForm({
               )}
               {typeDef?.hint && <p className="text-[10px] text-slate-500 leading-snug">{typeDef.hint}</p>}
 
+              {/* Escolhas extras p/ a automação no tracker (a tabela não captura) */}
+              {eff.category === "amp_corporal" && eff.type === "atributo" && (() => {
+                const a0 = eff.attrs?.[0] || "forca";
+                const a1 = eff.attrs?.[1] || (a0 === "destreza" ? "constituicao" : "destreza");
+                const setAttr = (slot, v) => {
+                  const next = [a0, a1];
+                  next[slot] = v;
+                  // Impede os dois iguais: empurra o outro p/ um físico distinto.
+                  if (next[0] === next[1]) {
+                    const alt = PHYSICAL_ATTRS.find((p) => p.value !== v)?.value;
+                    next[slot === 0 ? 1 : 0] = alt;
+                  }
+                  updateEffect(eff.id, { attrs: next });
+                };
+                return (
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <FieldLabel hint="aplicado no tracker">Atributo 1</FieldLabel>
+                      <Select value={a0} onChange={(v) => setAttr(0, v)} options={PHYSICAL_ATTRS} />
+                    </div>
+                    <div>
+                      <FieldLabel hint="aplicado no tracker">Atributo 2</FieldLabel>
+                      <Select value={a1} onChange={(v) => setAttr(1, v)} options={PHYSICAL_ATTRS} />
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {eff.category === "amp_corporal" && eff.type === "rd" && (
+                <div>
+                  <FieldLabel hint="texto; no tracker aplica como RD Geral">Tipos de dano protegidos</FieldLabel>
+                  <TextInput
+                    value={eff.rdTipos ?? ""}
+                    onChange={(v) => updateEffect(eff.id, { rdTipos: v })}
+                    placeholder="Ex: cortante, perfurante, fogo..."
+                  />
+                </div>
+              )}
+
               <div>
                 <FieldLabel hint={freeform ? "descreva a mecânica" : "opcional: substitui a frase padrão"}>
                   {freeform ? "Descrição do Efeito Especial" : "Descrição (opcional)"}
@@ -510,6 +551,14 @@ export default function DomainForm({
           </div>
         )}
       </div>
+
+      {/* Programar a Expansão (bloquinhos) — ativar no combate aplica os buffs */}
+      <AutomationEditorPanel
+        value={form.automation}
+        onChange={(automation) => update({ automation })}
+        dslContext={dslContext}
+        defaultStack="highest"
+      />
 
       <div className="flex justify-end gap-2 pt-1">
         <SmallButton onClick={onCancel}>Cancelar</SmallButton>

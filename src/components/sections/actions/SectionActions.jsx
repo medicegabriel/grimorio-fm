@@ -12,7 +12,7 @@ import DomainForm from "./DomainForm";
 // ============================================================
 // SECTION ACTIONS
 // ============================================================
-export default function SectionActions({ draft, derived, actions }) {
+export default function SectionActions({ draft, derived, actions, dslContext = null }) {
   const [showForm, setShowForm] = useState(false);
   const [showDomainForm, setShowDomainForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -63,6 +63,7 @@ export default function SectionActions({ draft, derived, actions }) {
             <ActionForm
               derived={derived}
               draft={draft}
+              dslContext={dslContext}
               onAdd={handleAdd}
               onCancel={() => setShowForm(false)}
               templates={actionTemplates}
@@ -72,6 +73,7 @@ export default function SectionActions({ draft, derived, actions }) {
             <DomainForm
               draft={draft}
               derived={derived}
+              dslContext={dslContext}
               onAdd={handleAddDomain}
               onCancel={() => setShowDomainForm(false)}
             />
@@ -104,6 +106,7 @@ export default function SectionActions({ draft, derived, actions }) {
                 key={action.id}
                 draft={draft}
                 derived={derived}
+                dslContext={dslContext}
                 initialAction={action}
                 title="Editar Expansão de Domínio"
                 submitLabel="Salvar"
@@ -115,6 +118,7 @@ export default function SectionActions({ draft, derived, actions }) {
                 key={action.id}
                 derived={derived}
                 draft={draft}
+                dslContext={dslContext}
                 initialAction={action}
                 title="Editar Ação"
                 submitLabel="Salvar"

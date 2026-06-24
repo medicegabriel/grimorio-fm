@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { Plus, BookOpen, X, Lock, Unlock, AlertTriangle } from "lucide-react";
 import { SmallButton, Pill } from "../../builder-controls";
 import ActionFormFields from "./ActionFormFields";
+import AutomationEditorPanel from "../../AutomationEditorPanel";
 import {
   ACTION_TYPE_LABELS,
   BLANK_CONDITION,
@@ -37,7 +38,7 @@ import { hasTecnicaMaxima } from "../../fm-aptidoes";
 export default function ActionForm({
   derived, draft, onAdd, onCancel, templates = [], onRemoveTemplate,
   initialAction = null, submitLabel = "Adicionar", title = "Nova Ação",
-  context = null, showFinalText = true, templateMode = false,
+  context = null, showFinalText = true, templateMode = false, dslContext = null,
 }) {
   const patamar = context ? context.patamar : draft?.core?.patamar;
   const nd      = context ? context.nd      : draft?.core?.nd;
@@ -305,6 +306,8 @@ export default function ActionForm({
         description: tpl.description ?? prev.description,
         condition:   newCondition,
         trades:      newTrades,
+        // Automação programada (bloquinhos) — vem junto do modelo.
+        automation:  tpl.automation ?? prev.automation,
       };
 
       if (newAttackType === "acerto") next.condition = BLANK_CONDITION;
@@ -508,6 +511,14 @@ export default function ActionForm({
             </div>
           );
         })()}
+
+      {/* Programar a ação (bloquinhos) — ativar no combate aplica os buffs */}
+      <AutomationEditorPanel
+        value={form.automation}
+        onChange={(automation) => update({ automation })}
+        dslContext={dslContext}
+        defaultStack="highest"
+      />
 
       <div className="flex justify-end gap-2 pt-1">
         <SmallButton onClick={onCancel}>Cancelar</SmallButton>

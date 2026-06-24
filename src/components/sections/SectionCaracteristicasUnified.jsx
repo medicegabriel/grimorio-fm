@@ -35,23 +35,23 @@ function SubSection({ title, icon: Icon, accent = "text-slate-400", defaultOpen 
   );
 }
 
-export default function SectionCaracteristicasUnified({ draft, actions }) {
+export default function SectionCaracteristicasUnified({ draft, actions, dslContext = null }) {
   return (
     <div className="space-y-3">
       <SubSection title="Características Personalizadas" icon={Sparkles} accent="text-fuchsia-400">
-        <SectionFeatures draft={draft} actions={actions} sourceFilter="custom" />
+        <SectionFeatures draft={draft} actions={actions} sourceFilter="custom" dslContext={dslContext} />
       </SubSection>
 
       <SubSection title="Características de Origem" icon={Lock} accent="text-purple-400">
-        <SectionFeatures draft={draft} actions={actions} sourceFilter="origin" />
+        <SectionFeatures draft={draft} actions={actions} sourceFilter="origin" dslContext={dslContext} />
       </SubSection>
 
       <SubSection title="Características Gerais" icon={Shapes} accent="text-cyan-400">
-        <SectionCaracteristicas draft={draft} actions={actions} categoriaKeys={["gerais"]} />
+        <SectionCaracteristicas draft={draft} actions={actions} categoriaKeys={["gerais"]} dslContext={dslContext} />
       </SubSection>
 
       <SubSection title="Características Especiais" icon={Shapes} accent="text-cyan-400">
-        <SectionCaracteristicas draft={draft} actions={actions} categoriaKeys={["especiais"]} />
+        <SectionCaracteristicas draft={draft} actions={actions} categoriaKeys={["especiais"]} dslContext={dslContext} />
       </SubSection>
     </div>
   );

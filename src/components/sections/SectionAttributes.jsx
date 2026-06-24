@@ -49,12 +49,14 @@ export default function SectionAttributes({ draft, derived, actions }) {
             <div key={key} className={`bg-slate-950/60 border rounded p-3 ${
               isOverLimit ? "border-red-700" : "border-slate-800"
             }`}>
-              <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center justify-between gap-1 mb-1">
                 <FieldLabel>
                   {short}
-                  <span className="text-slate-600 ml-1 font-normal">{label}</span>
+                  {/* Nome completo some no mobile (cabe só a sigla); volta em md+,
+                      onde os cards já são largos o suficiente. */}
+                  <span className="text-slate-600 ml-1 font-normal hidden md:inline">{label}</span>
                 </FieldLabel>
-                <span className={`text-sm font-mono tabular-nums ${
+                <span className={`flex-shrink-0 text-sm font-mono tabular-nums ${
                   isOverLimit ? "text-red-400 font-bold" :
                   mod > 0 ? "text-emerald-400" : mod < 0 ? "text-red-400" : "text-slate-500"
                 }`}>
@@ -77,7 +79,7 @@ export default function SectionAttributes({ draft, derived, actions }) {
           <span className="text-base leading-none flex-shrink-0">⚠️</span>
           <span>
             Os atributos distribuídos ultrapassam o limite padrão para o Grau e Nível desta criatura.
-            {Object.entries(draft.attributes).some(([k, v]) => v > attrBudget.limit) && (
+            {Object.values(draft.attributes).some((v) => v > attrBudget.limit) && (
               <span className="block mt-0.5 text-red-300">
                 Um ou mais atributos excedem o limite individual de <b>{attrBudget.limit}</b>.
               </span>
@@ -86,7 +88,7 @@ export default function SectionAttributes({ draft, derived, actions }) {
         </div>
       )}
       {attrBudget.remaining >= 0 &&
-        Object.entries(draft.attributes).some(([k, v]) => v > attrBudget.limit) && (
+        Object.values(draft.attributes).some((v) => v > attrBudget.limit) && (
         <div className="flex items-start gap-2 px-3 py-2.5 rounded border bg-red-950/30 border-red-700 text-red-300 text-xs">
           <span className="text-base leading-none flex-shrink-0">⚠️</span>
           <span>

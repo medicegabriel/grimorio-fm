@@ -4,6 +4,8 @@ import { FieldLabel, TextInput, TextArea, Select, SmallButton, Pill } from "../b
 import { SaveTemplateButton } from "../TemplateControls";
 import useFeatureTemplates from "../useFeatureTemplates";
 import { FRUTOS_OPTIONS } from "../fm-origens";
+import AutomationEditorPanel from "../AutomationEditorPanel";
+import { automationRuleCount } from "../fm-automation";
 
 const CATEGORIES = [
   { value: "geral",            label: "Geral" },
@@ -37,7 +39,7 @@ const CATEGORY_LABELS = Object.fromEntries(CATEGORIES.map((c) => [c.value, c.lab
 // `sourceFilter` (opcional): "custom" mostra só as criadas pelo usuário (com
 // form de criação); "origin" mostra só as derivadas da Origem (somente leitura).
 // Sem filtro, mostra todas com o form — comportamento original.
-export default function SectionFeatures({ draft, actions, sourceFilter }) {
+export default function SectionFeatures({ draft, actions, sourceFilter, dslContext = null }) {
   const [showForm, setShowForm] = useState(false);
   const { templates, removeTemplate } = useFeatureTemplates();
 
@@ -63,6 +65,7 @@ export default function SectionFeatures({ draft, actions, sourceFilter }) {
             onCancel={() => setShowForm(false)}
             templates={templates}
             onRemoveTemplate={removeTemplate}
+            dslContext={dslContext}
           />
         ) : (
           <SmallButton onClick={() => setShowForm(true)} variant="primary">
@@ -85,18 +88,20 @@ export default function SectionFeatures({ draft, actions, sourceFilter }) {
           onRemove={() => actions.removeFeature(f.id)}
           origin={draft.core?.origin}
           onPatchOrigin={actions.patchOrigin}
+          dslContext={dslContext}
         />
       ))}
     </div>
   );
 }
 
-function FeatureItem({ feature, onUpdate, onRemove, origin, onPatchOrigin }) {
+function FeatureItem({ feature, onUpdate, onRemove, origin, onPatchOrigin, dslContext = null }) {
   const [expanded, setExpanded] = useState(false);
 
   const isFromOrigin = feature.source === "origin";
   const isAutomated = !!feature.automated;
   const isLocked = !!feature.locked;
+  const ruleCount = automationRuleCount(feature);
 
   // Visual ligeiramente destacado pra features de origem
   const containerClass = isFromOrigin
@@ -105,7 +110,9 @@ function FeatureItem({ feature, onUpdate, onRemove, origin, onPatchOrigin }) {
 
   return (
     <div className={`${containerClass} border`}>
-      <div className="flex items-center gap-2 p-2">
+      {/* flex-wrap: no mobile as badges descem pra próxima linha em vez de
+          espremer o nome até sumir; no desktop tudo cabe numa linha (sem mudança). */}
+      <div className="flex items-center flex-wrap gap-2 p-2">
         <Sparkles className="w-3.5 h-3.5 flex-shrink-0 text-fuchsia-400" />
         <button
           onClick={() => setExpanded(!expanded)}
@@ -130,6 +137,14 @@ function FeatureItem({ feature, onUpdate, onRemove, origin, onPatchOrigin }) {
             title="Habilidade programada: aplicada automaticamente nos cálculos da ficha."
           >
             <Zap className="w-2.5 h-2.5" /> Programada
+          </span>
+        )}
+        {ruleCount > 0 && (
+          <span
+            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px] uppercase tracking-wide bg-emerald-950/60 text-emerald-300 border-emerald-800"
+            title="Esta habilidade tem automação (buffs/efeitos no combate)."
+          >
+            <Zap className="w-2.5 h-2.5" /> Automação ({ruleCount})
           </span>
         )}
         {!isFromOrigin && <SaveTemplateButton type="caracteristica" entity={feature} />}
@@ -174,6 +189,14 @@ function FeatureItem({ feature, onUpdate, onRemove, origin, onPatchOrigin }) {
                   options={TRIGGERS}
                 />
               </div>
+
+              {/* Automação (bloquinhos) — Motor de Automação */}
+              <AutomationEditorPanel
+                value={feature.automation}
+                onChange={(automation) => onUpdate({ automation })}
+                dslContext={dslContext}
+                defaultStack="highest"
+              />
             </>
           )}
         </div>
@@ -233,12 +256,13 @@ function FrutosSelector({ value, onChange }) {
   );
 }
 
-function FeatureForm({ onAdd, onCancel, templates, onRemoveTemplate }) {
+function FeatureForm({ onAdd, onCancel, templates, onRemoveTemplate, dslContext = null }) {
   const [form, setForm] = useState({
     name: "",
     category: "geral",
     trigger: "passiva",
     description: "",
+    automation: null,
   });
   const [showTemplates, setShowTemplates] = useState(false);
   const update = (p) => setForm((prev) => ({ ...prev, ...p }));
@@ -249,6 +273,8 @@ function FeatureForm({ onAdd, onCancel, templates, onRemoveTemplate }) {
       category: tpl.category,
       trigger: tpl.trigger,
       description: tpl.description,
+      // Automação programada (bloquinhos) — vem junto do modelo.
+      automation: tpl.automation ?? null,
     });
     setShowTemplates(false);
   };
@@ -333,6 +359,15 @@ function FeatureForm({ onAdd, onCancel, templates, onRemoveTemplate }) {
         rows={3}
         placeholder="Como funciona..."
       />
+
+      {/* Automação (bloquinhos) — já durante a criação da característica. */}
+      <AutomationEditorPanel
+        value={form.automation}
+        onChange={(automation) => update({ automation })}
+        dslContext={dslContext}
+        defaultStack="highest"
+      />
+
       <div className="flex justify-end gap-2">
         <SmallButton onClick={onCancel}>Cancelar</SmallButton>
         <SmallButton onClick={() => onAdd(form)} variant="primary" disabled={!form.name.trim()}>

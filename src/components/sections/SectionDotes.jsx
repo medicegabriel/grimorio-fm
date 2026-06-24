@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Plus, Trash2, Star, Zap, ChevronDown, ChevronUp } from "lucide-react";
 import { TextInput, TextArea, SmallButton, ExpandableText, SearchInput } from "../builder-controls";
 import { SaveTemplateButton, TemplateInlinePicker } from "../TemplateControls";
+import AutomationEditorPanel from "../AutomationEditorPanel";
 import { normalizeText } from "../fm-tables";
 import { DOTES_OFICIAIS, getDoteByKey, isAutomatedDote, getDoteLimit, resolveDoteDescription } from "../fm-dotes";
 import { getFrutosDoteBonus } from "../fm-origens";
@@ -27,7 +28,7 @@ const ProgramadaBadge = () => (
   </span>
 );
 
-export default function SectionDotes({ draft, actions }) {
+export default function SectionDotes({ draft, actions, dslContext = null }) {
   const dotes = draft.dotes || [];
 
   // Limite de dotes por Patamar × ND (+ bônus de Frutos da Experiência).
@@ -43,6 +44,7 @@ export default function SectionDotes({ draft, actions }) {
   const [showCustom, setShowCustom] = useState(false);
   const [nomeCustom, setNomeCustom] = useState("");
   const [descCustom, setDescCustom] = useState("");
+  const [autoCustom, setAutoCustom] = useState(null);
   const [expandedKey, setExpandedKey] = useState(null);
   const [query, setQuery] = useState("");
 
@@ -68,9 +70,11 @@ export default function SectionDotes({ draft, actions }) {
       tipo: "custom",
       nome: nomeCustom.trim(),
       descricao: descCustom.trim(),
+      automation: autoCustom,
     });
     setNomeCustom("");
     setDescCustom("");
+    setAutoCustom(null);
     setShowCustom(false);
   };
 
@@ -173,6 +177,13 @@ export default function SectionDotes({ draft, actions }) {
                       </div>
                     </div>
                   )}
+                  {d.tipo === "custom" && (
+                    <AutomationEditorPanel
+                      value={d.automation}
+                      onChange={(automation) => actions.updateDote(d.id, { automation })}
+                      dslContext={dslContext}
+                    />
+                  )}
                 </div>
                 <div className="flex items-center gap-1 flex-shrink-0">
                   {d.tipo === "custom" && <SaveTemplateButton type="dote" entity={d} />}
@@ -218,16 +229,16 @@ export default function SectionDotes({ draft, actions }) {
         </button>
 
         {pickerOpen && (
-          <div className="space-y-3 mt-3">
+          <div className="flex flex-col gap-3 mt-3">
             <SearchInput value={query} onChange={setQuery} placeholder="Buscar dote..." />
             {disponiveis.length === 0 ? (
-              <p className="text-xs text-slate-500 italic">
+              <p className="order-2 text-xs text-slate-500 italic">
                 {q
                   ? "Nenhum dote encontrado para a busca."
                   : "Todos os dotes oficiais já foram adicionados."}
               </p>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 items-start">
+              <div className="order-2 grid grid-cols-1 sm:grid-cols-2 gap-2 items-start">
                 {disponiveis.map((dote) => {
                   const isExpanded = expandedKey === dote.key;
                   const automated = isAutomatedDote(dote);
@@ -296,8 +307,8 @@ export default function SectionDotes({ draft, actions }) {
               </div>
             )}
 
-            {/* Botão / form de Dote Customizado */}
-            <div className="pt-3 border-t border-slate-800/60 space-y-2">
+            {/* Botão / form de Dote Customizado — logo após a busca (order-1). */}
+            <div className="order-1 pb-3 border-b border-slate-800/60 space-y-2">
               {showCustom ? (
                 <div className="space-y-2 bg-slate-950/40 border border-amber-900/40 rounded p-3">
                   <div className="flex items-center justify-between">
@@ -310,6 +321,7 @@ export default function SectionDotes({ draft, actions }) {
                         setShowCustom(false);
                         setNomeCustom("");
                         setDescCustom("");
+                        setAutoCustom(null);
                       }}
                       className="text-[10px] text-slate-500 hover:text-slate-300"
                     >
@@ -318,7 +330,7 @@ export default function SectionDotes({ draft, actions }) {
                   </div>
                   <TemplateInlinePicker
                     type="dote"
-                    onPick={(tpl) => { setNomeCustom(tpl.nome ?? ""); setDescCustom(tpl.descricao ?? ""); }}
+                    onPick={(tpl) => { setNomeCustom(tpl.nome ?? ""); setDescCustom(tpl.descricao ?? ""); setAutoCustom(tpl.automation ?? null); }}
                   />
                   <TextInput
                     value={nomeCustom}
@@ -330,6 +342,11 @@ export default function SectionDotes({ draft, actions }) {
                     onChange={setDescCustom}
                     rows={3}
                     placeholder="Descreva os efeitos deste dote..."
+                  />
+                  <AutomationEditorPanel
+                    value={autoCustom}
+                    onChange={setAutoCustom}
+                    dslContext={dslContext}
                   />
                   <SmallButton
                     onClick={handleAddCustom}

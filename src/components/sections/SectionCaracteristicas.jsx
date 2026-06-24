@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Plus, Trash2, Shapes, Zap, ChevronDown, ChevronUp } from "lucide-react";
-import { SmallButton, ExpandableText, MiniTable, SearchInput } from "../builder-controls";
+import { SmallButton, ExpandableText, MiniTable, SearchInput, TextArea, FieldLabel } from "../builder-controls";
+import AutomationEditorPanel from "../AutomationEditorPanel";
 import { normalizeText } from "../fm-tables";
 import {
   CARACTERISTICAS_CATEGORIAS, getCaracteristicaByKey,
@@ -25,7 +26,7 @@ function ProgramadaBadge() {
 
 // `categoriaKeys` (opcional): restringe a seção a certas categorias do catálogo
 // (ex.: ["gerais"] ou ["especiais"]) — usado na aba unificada de Características.
-export default function SectionCaracteristicas({ draft, actions, categoriaKeys = null }) {
+export default function SectionCaracteristicas({ draft, actions, categoriaKeys = null, dslContext = null }) {
   const allCaracteristicas = draft.caracteristicas || [];
   const cats = categoriaKeys
     ? CARACTERISTICAS_CATEGORIAS.filter((c) => categoriaKeys.includes(c.key))
@@ -85,6 +86,10 @@ export default function SectionCaracteristicas({ draft, actions, categoriaKeys =
             const catalog = c.key ? getCaracteristicaByKey(c.key) : null;
             const subAuto = catalog?.automation;
             const isSub = subAuto?.kind === "acao_extra" || subAuto?.kind === "sub_choice";
+            // Habilidade ABERTA (Aura/Marca/Rastro/Transformação Especial): libera
+            // o editor de bloquinhos + nota própria mesmo sendo oficial.
+            const userAuto = !!catalog?.userAutomatable;
+            const hasUserAuto = userAuto && (c.automation?.rules?.length ?? 0) > 0;
             const destaque = catalog
               ? getCaracteristicaTabelaDestaque(catalog, caracCtx)
               : null;
@@ -100,7 +105,7 @@ export default function SectionCaracteristicas({ draft, actions, categoriaKeys =
                     <span className="text-[9px] uppercase tracking-wide text-slate-500 border border-slate-700 rounded px-1 py-0.5">
                       {c.categoria}
                     </span>
-                    {isAutomatedCaracteristica(catalog) && <ProgramadaBadge />}
+                    {(isAutomatedCaracteristica(catalog) || hasUserAuto) && <ProgramadaBadge />}
                     {c.tipo === "custom" && (
                       <span className="text-[9px] uppercase tracking-wide text-amber-400 border border-amber-800/60 rounded px-1 py-0.5">
                         Custom
@@ -111,7 +116,7 @@ export default function SectionCaracteristicas({ draft, actions, categoriaKeys =
                     <ExpandableText
                       text={
                         catalog
-                          ? resolveCaracteristicaDescription(catalog, { ...caracCtx, subChoice: c.subChoice })
+                          ? resolveCaracteristicaDescription(catalog, { ...caracCtx, subChoice: c.subChoice, notaPersonalizada: c.notaPersonalizada })
                           : c.descricao
                       }
                       extra={catalog?.tabela ? <MiniTable {...catalog.tabela} destaqueIndex={destaque} /> : null}
@@ -141,6 +146,25 @@ export default function SectionCaracteristicas({ draft, actions, categoriaKeys =
                         <ChevronDown className="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
                       </div>
                     </div>
+                  )}
+                  {userAuto && c.tipo !== "custom" && (
+                    <div className="mt-2">
+                      <FieldLabel hint="fica sob o texto/tabela oficial, sem substituí-lo">Nota personalizada</FieldLabel>
+                      <TextArea
+                        value={c.notaPersonalizada ?? ""}
+                        onChange={(v) => actions.updateCaracteristica(c.id, { notaPersonalizada: v })}
+                        rows={2}
+                        placeholder="Ex: Minha Marca causa +5 de dano fixo e aplica Lento por 1 rodada."
+                      />
+                    </div>
+                  )}
+                  {(c.tipo === "custom" || userAuto) && (
+                    <AutomationEditorPanel
+                      value={c.automation}
+                      onChange={(automation) => actions.updateCaracteristica(c.id, { automation })}
+                      dslContext={dslContext}
+                      defaultStack="highest"
+                    />
                   )}
                 </div>
                 <SmallButton

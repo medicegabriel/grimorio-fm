@@ -530,6 +530,11 @@ const actionHandlers = {
     ...s,
     treinamentos: (s.treinamentos || []).filter((t) => t.id !== id),
   }),
+  // Patch leve por item (ex.: automation). Não re-sincroniza derivados.
+  UPDATE_TREINAMENTO: (s, { id, patch }) => ({
+    ...s,
+    treinamentos: (s.treinamentos || []).map((t) => (t.id === id ? { ...t, ...patch } : t)),
+  }),
 
   // ---------- Artimanhas (Não-Feiticeiro) ----------
   ADD_ARTIMANHA: (s, payload) => ({
@@ -698,6 +703,7 @@ export default function useCreatureBuilder(initialDraft = null) {
     // Treinamentos
     addTreinamento:    (t) => dispatch({ type: "ADD_TREINAMENTO", payload: t }),
     removeTreinamento: (id) => dispatch({ type: "REMOVE_TREINAMENTO", payload: id }),
+    updateTreinamento: (id, patch) => dispatch({ type: "UPDATE_TREINAMENTO", payload: { id, patch } }),
 
     // Artimanhas
     addArtimanha:    (a) => dispatch({ type: "ADD_ARTIMANHA", payload: a }),
@@ -750,7 +756,7 @@ export default function useCreatureBuilder(initialDraft = null) {
         resistenciaTotalUsed: 0,
         integridadeCurrent: 100,
         activeConditions: [],
-        temporaryHp: 0,
+        activeModifiers: [],
         isInDesafiandoMorte: false,
         missCounter: 0,
         customCounters: [],

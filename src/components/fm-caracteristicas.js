@@ -36,6 +36,19 @@ export const CARACTERISTICAS_CATEGORIAS = [
           const bt = btOf(ctx);
           return `Com o elemento principal em até 9m: +${Math.floor(bt / 2)} no acerto e +${bt} no dano (½ BT e BT, com BT +${bt}).`;
         },
+        // Motor (interno) — Liga/Desliga (elemento a ≤9m, julgado pelo narrador):
+        // Acerto +½BT e Dano +BT. A "melhoria de ritual" fica como nota/texto.
+        motorAuto: (ctx) => {
+          const bt = btOf(ctx);
+          return { rules: [{
+            name: "Arena Elemental",
+            trigger: { type: "activated" }, activation: "toggle", cost: { pe: 0, acao: "" },
+            effects: [
+              { type: "modify_stat", stat: "acerto", op: "add", value: Math.floor(bt / 2), stack: "highest", duration: { kind: "manual" } },
+              { type: "action_damage", scope: "corporal", amount: 0, fixed: bt, duration: { kind: "manual" } },
+            ],
+          }] };
+        },
       },
       {
         key: "aura",
@@ -55,6 +68,9 @@ export const CARACTERISTICAS_CATEGORIAS = [
         },
         computeInfo: (ctx) => `Grau atual da criatura: ${GRAU_LABELS[grauOf(ctx)]} (linha destacada na tabela).`,
         tabelaDestaque: (ctx) => GRAU_ROW_INDEX[grauOf(ctx)] ?? null,
+        // Habilidade ABERTA: o efeito real é definido pelo usuário (qual penalidade,
+        // contra o quê). Libera no builder o editor de bloquinhos + nota própria.
+        userAutomatable: true,
       },
       {
         key: "demolicao",
@@ -135,6 +151,9 @@ export const CARACTERISTICAS_CATEGORIAS = [
         },
         computeInfo: (ctx) => `Grau atual da criatura: ${GRAU_LABELS[grauOf(ctx)]} (linha destacada na tabela).`,
         tabelaDestaque: (ctx) => GRAU_ROW_INDEX[grauOf(ctx)] ?? null,
+        // Habilidade ABERTA: o usuário define o que a marca faz (dano/prejuízos/
+        // condições). Libera editor de bloquinhos + nota própria.
+        userAutomatable: true,
       },
       {
         key: "pavio_curto",
@@ -164,6 +183,9 @@ export const CARACTERISTICAS_CATEGORIAS = [
         },
         computeInfo: (ctx) => `Bônus de Treinamento atual: +${btOf(ctx)} (linha destacada na tabela).`,
         tabelaDestaque: (ctx) => clamp(btOf(ctx) - 2, 0, 4),
+        // Habilidade ABERTA: "deixar uma habilidade no rastro / algo específico
+        // do feitiço" — o usuário define. Libera editor de bloquinhos + nota.
+        userAutomatable: true,
       },
       {
         key: "terreno_favorito",
@@ -404,12 +426,24 @@ export const CARACTERISTICAS_CATEGORIAS = [
           "A criatura tem a capacidade de se transformar e ganhar algumas bonificações como vantagem em testes de ataque, vantagem em testes de resistência e bônus igual às tabelas acima, igual ao seu bônus de treinamento.",
         computeInfo: (ctx) =>
           `Bônus ao se transformar: +${btOf(ctx)} (igual ao Bônus de Treinamento).`,
+        // Motor (interno) — Liga/Desliga: Acerto +BT enquanto transformada. As
+        // "vantagens" em ataque/TR o tracker não rola → ficam como nota/texto.
+        motorAuto: (ctx) => ({
+          rules: [{
+            name: "Transformar-se",
+            trigger: { type: "activated" }, activation: "toggle", cost: { pe: 0, acao: "" },
+            effects: [{ type: "modify_stat", stat: "acerto", op: "add", value: btOf(ctx), stack: "highest", duration: { kind: "manual" } }],
+          }],
+        }),
       },
       {
         key: "transformacao_especial",
         nome: "Transformação Especial",
         descricao:
           "Uma vez por cena, a criatura possuirá uma ação especial para se transformar, ignorando a iniciativa e sendo ativa assim que for anunciada. Essa transformação durará a cena e não poderá ser regredida, com exceção da derrota ou vontade da criatura transformada, recebendo benefícios de acordo com o narrador.",
+        // Habilidade ABERTA: "benefícios de acordo com o narrador" — totalmente
+        // definida pelo usuário. Libera editor de bloquinhos + nota própria.
+        userAutomatable: true,
       },
       {
         key: "transmissao",
@@ -483,7 +517,16 @@ export function resolveCaracteristicaDescription(carac, ctx = {}) {
     const opt = (auto.options || []).find((o) => o.value === ctx.subChoice);
     texto = `${texto}\n\n${auto.label}: ${opt ? opt.label : ctx.subChoice}.`;
   }
+  // Nota personalizada do usuário (habilidades ABERTAS: Aura, Marca, etc.) —
+  // adicionada sob o texto/tabela oficial, sem substituí-lo.
+  const nota = (ctx.notaPersonalizada || "").trim();
+  if (nota) texto = `${texto}\n\n📝 ${nota}`;
   return texto;
+}
+
+/** True se a característica oficial é "aberta" (usuário define efeito/descrição). */
+export function isUserAutomatableCaracteristica(carac) {
+  return !!carac?.userAutomatable;
 }
 
 /** Índice da linha da tabela a destacar para o estado atual da ficha (ou null). */

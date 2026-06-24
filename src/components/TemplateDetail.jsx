@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { createPortal } from "react-dom";
-import { X, Pencil, Check } from "lucide-react";
+import { X, Pencil, Check, Zap } from "lucide-react";
 import { TextInput, TextArea, Select, SmallButton } from "./builder-controls";
+import AutomationEditorPanel from "./AutomationEditorPanel";
+import { hasAutomation, summarizeRule } from "./fm-automation";
 import { TEMPLATE_TYPES, templateLabel, updateTemplate, buildTemplateFromEntity } from "./fm-templates";
 import { ACTION_TYPE_LABELS, ATTACK_TYPE_OPTIONS, TR_TYPE_OPTIONS, DAMAGE_TYPE_LABELS, normalizeAction, calcAutoRange, resolveActionFinalText, actionRequiredBt } from "./fm-action-calc";
 import { getDomainVersionLabel, DOMAIN_VERSIONS } from "./fm-domain-calc";
@@ -62,12 +64,12 @@ function buildPatch(type, f) {
     case "acao":
       return { name: f.name?.trim() || "", type: f.type, cost: Number(f.cost) || 0, description: f.description ?? "" };
     case "caracteristica":
-      return { name: f.name?.trim() || "", category: f.category, trigger: f.trigger, description: f.description ?? "" };
+      return { name: f.name?.trim() || "", category: f.category, trigger: f.trigger, description: f.description ?? "", automation: f.automation ?? null };
     case "dote":
     case "treinamento":
-      return { nome: f.nome?.trim() || "", descricao: f.descricao ?? "" };
+      return { nome: f.nome?.trim() || "", descricao: f.descricao ?? "", automation: f.automation ?? null };
     case "aptidao":
-      return { nome: f.nome?.trim() || "", categoria: f.categoria?.trim() || "Customizada", descricao: f.descricao ?? "" };
+      return { nome: f.nome?.trim() || "", categoria: f.categoria?.trim() || "Customizada", descricao: f.descricao ?? "", automation: f.automation ?? null };
     default:
       return {};
   }
@@ -86,6 +88,42 @@ const Badge = ({ children }) => (
     {children}
   </span>
 );
+
+// Resumo legível da automação programada (modo visualização). Sem ficha, os
+// valores de expressão aparecem como a própria expressão (sem o "→ N").
+function AutomationSummary({ automation }) {
+  if (!hasAutomation({ automation })) return null;
+  const rules = automation.rules.filter((r) => r.enabled !== false);
+  if (rules.length === 0) return null;
+  return (
+    <div className="border border-emerald-900/50 bg-emerald-950/15 rounded p-3 space-y-2">
+      <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-widest font-bold text-emerald-300">
+        <Zap className="w-3 h-3" /> Automação ({rules.length})
+      </div>
+      <div className="space-y-1.5">
+        {rules.map((rule) => {
+          const s = summarizeRule(rule);
+          return (
+            <div key={rule.id} className="text-xs">
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="font-semibold text-slate-200">{rule.name || "Regra"}</span>
+                <span className="text-[10px] uppercase tracking-wide text-indigo-300 border border-indigo-800/60 bg-indigo-950/40 rounded px-1.5 py-0.5">
+                  {s.trigger}
+                </span>
+              </div>
+              {s.effects.length > 0 && (
+                <div className="text-slate-400 mt-0.5">{s.effects.join(" · ")}</div>
+              )}
+              {s.requires && (
+                <div className="text-[10px] text-amber-400/80 mt-0.5">Só se: <span className="font-mono">{s.requires}</span></div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 // ============================================================
 // VISUALIZAÇÃO por tipo
@@ -167,6 +205,8 @@ function DetailView({ type, f }) {
       ) : (
         <p className="text-sm text-slate-600 italic">Sem descrição.</p>
       ))}
+
+      <AutomationSummary automation={f.automation} />
     </div>
   );
 }
@@ -185,6 +225,7 @@ function DetailEdit({ type, f, update }) {
           <Field label="Gatilho"><Select value={f.trigger} onChange={(v) => update({ trigger: v })} options={CARAC_TRIGGERS} /></Field>
         </div>
         <Field label="Descrição"><TextArea value={f.description ?? ""} onChange={(v) => update({ description: v })} rows={4} placeholder="Como funciona..." /></Field>
+        <AutomationEditorPanel value={f.automation} onChange={(automation) => update({ automation })} defaultStack="highest" />
       </div>
     );
   }
@@ -196,6 +237,7 @@ function DetailEdit({ type, f, update }) {
         <Field label="Categoria"><TextInput value={f.categoria ?? ""} onChange={(v) => update({ categoria: v })} placeholder="Customizada" /></Field>
       )}
       <Field label="Descrição"><TextArea value={f.descricao ?? ""} onChange={(v) => update({ descricao: v })} rows={4} placeholder="Descrição..." /></Field>
+      <AutomationEditorPanel value={f.automation} onChange={(automation) => update({ automation })} />
     </div>
   );
 }

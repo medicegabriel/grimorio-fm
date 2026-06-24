@@ -22,6 +22,7 @@ import SectionDefenses from "./sections/SectionDefenses";
 import SectionSkills from "./sections/SectionSkills";
 import LivePreview from "./sections/LivePreview";
 import { isNaoFeiticeiro } from "./fm-origens";
+import { buildDraftDslContext } from "./fm-dsl";
 
 /**
  * ============================================================
@@ -333,6 +334,13 @@ export default function CreatureBuilder({ existingCreature, onSave, onCancel }) 
   // `draft` inteiro (em vez das fatias) anularia a memoização, já que o
   // objeto `draft` é recriado a cada dispatch.
   /* eslint-disable react-hooks/exhaustive-deps */
+  // Contexto da DSL pra prévia ao vivo dos valores de expressão na automação
+  // (ex.: "metade(nd) → +5") durante a criação/edição da ficha.
+  const dslContext = useMemo(
+    () => buildDraftDslContext(draft, derived),
+    [draft.core, draft.attributes, draft.aptidoes, derived]
+  );
+
   const identityEl = useMemo(
     () => <SectionIdentity draft={draft} actions={actions} />,
     [draft.name, draft.portraitUrl, draft.portraitFocus, draft.narratorNotes, actions]
@@ -362,24 +370,24 @@ export default function CreatureBuilder({ existingCreature, onSave, onCancel }) 
     [draft.defenses, draft.core, actions]
   );
   const actionsEl = useMemo(
-    () => <SectionActions draft={draft} derived={derived} actions={actions} />,
-    [draft.core, draft.actions, draft.name, derived, actions]
+    () => <SectionActions draft={draft} derived={derived} actions={actions} dslContext={dslContext} />,
+    [draft.core, draft.actions, draft.name, derived, actions, dslContext]
   );
   const treinamentosEl = useMemo(
-    () => <SectionTreinamentos draft={draft} actions={actions} />,
-    [draft.core, draft.treinamentos, actions]
+    () => <SectionTreinamentos draft={draft} actions={actions} dslContext={dslContext} />,
+    [draft.core, draft.treinamentos, actions, dslContext]
   );
   const aptidoesEspEl = useMemo(
-    () => <SectionAptidoesEspeciais draft={draft} actions={actions} />,
-    [draft.aptidoesEspeciais, draft.core, draft.attributes, draft.aptidoes, draft.skills, actions]
+    () => <SectionAptidoesEspeciais draft={draft} actions={actions} dslContext={dslContext} />,
+    [draft.aptidoesEspeciais, draft.core, draft.attributes, draft.aptidoes, draft.skills, actions, dslContext]
   );
   const caracteristicasEl = useMemo(
-    () => <SectionCaracteristicasUnified draft={draft} actions={actions} />,
-    [draft.caracteristicas, draft.features, draft.core, draft.attributes, actions]
+    () => <SectionCaracteristicasUnified draft={draft} actions={actions} dslContext={dslContext} />,
+    [draft.caracteristicas, draft.features, draft.core, draft.attributes, actions, dslContext]
   );
   const dotesEl = useMemo(
-    () => <SectionDotes draft={draft} actions={actions} />,
-    [draft.dotes, draft.core, actions]
+    () => <SectionDotes draft={draft} actions={actions} dslContext={dslContext} />,
+    [draft.dotes, draft.core, actions, dslContext]
   );
   const artimanhasEl = useMemo(
     () => <SectionArtimanhas draft={draft} actions={actions} />,
@@ -407,54 +415,60 @@ export default function CreatureBuilder({ existingCreature, onSave, onCancel }) 
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-purple-950/30 text-white">
       {/* ========== HEADER FIXO ========== */}
       <header ref={headerRef} className="sticky top-0 z-30 bg-slate-950/95 backdrop-blur border-b border-purple-900/50">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3">
+        {/* flex-wrap: no mobile o título desce pra sua própria linha (basis-full,
+            order-last); em sm+ volta a ser inline (sm:flex-1) — desktop inalterado. */}
+        <div className="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center gap-x-3 gap-y-2">
           <button
             onClick={handleCancel}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-sm text-slate-300 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-sm text-slate-300 transition-colors flex-shrink-0"
           >
             <ChevronLeft className="w-4 h-4" /> Voltar
           </button>
 
-          <div className="flex items-center gap-2 flex-1 min-w-0">
+          <div className="flex items-center gap-2 min-w-0 order-last basis-full sm:order-none sm:basis-0 sm:flex-1">
             <Wand2 className="w-5 h-5 text-purple-400 flex-shrink-0" />
             <div className="min-w-0">
               <h1 className="text-lg sm:text-xl font-bold truncate">
                 {isEditing ? "Editar Criatura" : "Nova Criatura"}
               </h1>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-500 truncate">
                 {draft.name ? `"${draft.name}"` : "Ficha em branco"}
               </p>
             </div>
           </div>
 
           {/* Índice + toggles de layout (desktop) */}
+          {/* O Índice aparece a partir de md; os toggles "Recolher/Expandir tudo"
+              só em lg+ — no tablet (md) eles lotavam a barra e truncavam o título. */}
           <div className="hidden md:flex items-center gap-1 text-xs text-slate-500">
             <SectionIndex
               sections={SECTIONS}
               warningSections={warningSections}
               onJump={goToSection}
             />
-            <span className="text-slate-700">|</span>
-            <button onClick={collapseAll} className="px-2 py-1 hover:text-white transition-colors">
+            <span className="hidden lg:inline text-slate-700">|</span>
+            <button onClick={collapseAll} className="hidden lg:inline-block px-2 py-1 hover:text-white transition-colors">
               Recolher tudo
             </button>
-            <span className="text-slate-700">|</span>
-            <button onClick={expandAll} className="px-2 py-1 hover:text-white transition-colors">
+            <span className="hidden lg:inline text-slate-700">|</span>
+            <button onClick={expandAll} className="hidden lg:inline-block px-2 py-1 hover:text-white transition-colors">
               Expandir tudo
             </button>
           </div>
 
-          {/* Toggle de preview (mobile) */}
+          {/* Toggle de preview (mobile). No mobile fica só o ícone (libera
+              espaço pro título); o texto "Preview" volta a partir de sm. */}
           <button
             onClick={() => setMobilePreviewOpen(!mobilePreviewOpen)}
-            className="lg:hidden flex items-center gap-1 px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-xs text-slate-300"
+            className="lg:hidden flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 flex-shrink-0"
+            title="Preview"
           >
-            <Eye className="w-3.5 h-3.5" /> Preview
+            <Eye className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Preview</span>
           </button>
 
           <button
             onClick={handleSave}
-            className="flex items-center gap-1.5 px-4 py-2 rounded text-sm font-bold transition-colors focus:outline-none focus:ring-2 bg-purple-700 hover:bg-purple-600 text-white focus:ring-purple-500"
+            className="flex items-center gap-1.5 px-4 py-2 rounded text-sm font-bold transition-colors focus:outline-none focus:ring-2 bg-purple-700 hover:bg-purple-600 text-white focus:ring-purple-500 flex-shrink-0"
             title="Salvar ficha"
           >
             <Save className="w-4 h-4" />

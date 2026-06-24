@@ -187,7 +187,11 @@ export const DOMAIN_EFFECTS = {
           const dados = R([1, 2, 3, 4, 5][i], f);
           const fixo = R([5, 5, 10, 10, 15][i], f);
           const value = `+${dados} ${plural(dados, "dado", "dados")} de dano e +${fixo} de dano fixo`;
-          return { value, sentence: `Todos os seus Feitiços de dano recebem ${value}.` };
+          return {
+            value,
+            sentence: `Todos os seus Feitiços de dano recebem ${value}.`,
+            mech: { type: "action_damage", scope: "tecnica", amount: dados, fixed: fixo },
+          };
         },
       },
       cd: {
@@ -195,7 +199,11 @@ export const DOMAIN_EFFECTS = {
         hint: "Aumenta a CD para resistir de todos os seus Feitiços.",
         resolve: (i, f) => {
           const n = R([2, 4, 6, 8, 10][i], f);
-          return { value: `+${n} de CD`, sentence: `Todos os seus Feitiços têm a CD para resistir aumentada em ${n}.` };
+          return {
+            value: `+${n} de CD`,
+            sentence: `Todos os seus Feitiços têm a CD para resistir aumentada em ${n}.`,
+            mech: { type: "stat", stat: "cdBase", value: n },
+          };
         },
       },
       negacao_rd: {
@@ -225,7 +233,11 @@ export const DOMAIN_EFFECTS = {
           const niveis = R([2, 4, 6, 8, 10][i], f);
           const fixo = R([5, 5, 10, 10, 15][i], f);
           const value = `+${niveis} níveis de dano e +${fixo} de dano fixo`;
-          return { value, sentence: `Todos os seus ataques armados e desarmados recebem ${value}.` };
+          return {
+            value,
+            sentence: `Todos os seus ataques armados e desarmados recebem ${value}.`,
+            mech: { type: "action_damage", scope: "corporal", amount: niveis, fixed: fixo },
+          };
         },
       },
       atributo: {
@@ -234,7 +246,11 @@ export const DOMAIN_EFFECTS = {
         resolve: (i, f) => {
           const n = R([2, 4, 6, 8, 10][i], f);
           const value = `+${n} em dois atributos físicos distintos`;
-          return { value, sentence: `Você recebe ${value} (até o limite de 30).` };
+          return {
+            value,
+            sentence: `Você recebe ${value} (até o limite de 30).`,
+            mech: { type: "attrs", value: n },
+          };
         },
       },
       rd: {
@@ -244,7 +260,13 @@ export const DOMAIN_EFFECTS = {
           const rd = R([3, 6, 9, 12, 15][i], f);
           const tipos = [3, 3, 4, 4, 5][i];
           const value = `+${rd} de RD contra ${tipos} tipos de dano`;
-          return { value, sentence: `Você recebe ${value} (escolhidos na criação).` };
+          return {
+            value,
+            sentence: `Você recebe ${value} (escolhidos na criação).`,
+            // No tracker aplica como RD Geral (não há RD por tipo). `tiposMax` é só
+            // o limite de tipos que o guia permite escolher (informativo).
+            mech: { type: "stat", stat: "rdGeral", value: rd, tiposMax: tipos },
+          };
         },
       },
       defesa: {
@@ -252,7 +274,11 @@ export const DOMAIN_EFFECTS = {
         hint: "Aplicada diretamente no personagem enquanto a expansão durar.",
         resolve: (i, f) => {
           const n = R([3, 5, 7, 9, 12][i], f);
-          return { value: `+${n} de DEF`, sentence: `Você recebe +${n} de DEF enquanto a expansão durar.` };
+          return {
+            value: `+${n} de DEF`,
+            sentence: `Você recebe +${n} de DEF enquanto a expansão durar.`,
+            mech: { type: "stat", stat: "defesa", value: n },
+          };
         },
       },
       negacao_rd: {
@@ -422,7 +448,19 @@ export const newEffect = (category = "amp_tecnica") => ({
   nome: "",
   descricao: "",
   fortalecido: false,
+  // Escolhas que a tabela não captura, necessárias para a automação no tracker:
+  //  • attrs — os 2 atributos físicos buffados pelo "Aumento de Atributo".
+  //  • rdTipos — texto livre dos tipos protegidos pela "Redução de Dano".
+  attrs: [],
+  rdTipos: "",
 });
+
+// Atributos físicos elegíveis para o "Aumento de Atributo" (Amplificação Corporal).
+export const PHYSICAL_ATTRS = [
+  { value: "forca",        label: "Força" },
+  { value: "destreza",     label: "Destreza" },
+  { value: "constituicao", label: "Constituição" },
+];
 
 export const BLANK_DOMAIN = {
   kind: "expansao_dominio",
@@ -501,4 +539,74 @@ export function generateDomainText(domain, { dom = 0, nd = 0, bt = 2, bar = 0, h
   // A Modificação Completa NÃO entra como efeito no Texto Final — seu impacto
   // já está refletido no PV/lado da barreira e na distância (acima).
   return paras.join("\n\n");
+}
+
+// ============================================================
+// PONTE COM O MOTOR DE AUTOMAÇÃO (tracker)
+// ============================================================
+// Converte os efeitos ESTRUTURADOS da expansão (tabelas DOMAIN_EFFECTS) numa
+// spec `automation` viva — UMA regra Ativada (Liga/Desliga) cujos efeitos são
+// os buffs mapeáveis ao próprio conjurador. Ativar a expansão no combate aplica
+// todos de uma vez (Defesa/CD/RD/Atributo viram modificadores; Aumento de Dano
+// vira boost de ação) pela duração da expansão e descontando o PE.
+//
+// Construído com objetos PLANOS (sem importar fm-automation) para manter esta
+// camada livre de dependências; o shape espelha newRule/newStatEffect/
+// newActionDamageEffect e é consumido direto por ruleModifiers no tracker.
+//
+// Escopo atual (auto-ponte "Self + Dano"): mapeia Amplificação de Técnica
+// (Dano, CD) e Amplificação Corporal (Dano, Atributo, RD, Defesa). Efeitos
+// Ambientais (em inimigos), Negação de RD e Especial NÃO entram — seguem só
+// como texto descritivo (cross-combatant fica para fase posterior).
+export function domainAutomation(domain, { dom = 0, nd = 0 } = {}) {
+  const d = normalizeDomain(domain);
+  const versao = resolveVersao(d, nd);
+  if (!versao) return null;
+  const dur = getDomainDuration(dom, versao);
+  const idx = Math.max(0, effectiveDom(dom, versao) - 1);
+  const duration = { kind: "rounds", rounds: dur };
+
+  const effects = [];
+  for (const eff of d.effects) {
+    const typeDef = DOMAIN_EFFECTS[eff.category]?.types?.[eff.type];
+    const mech = typeDef?.resolve ? typeDef.resolve(idx, !!eff.fortalecido).mech : null;
+    if (!mech) continue; // efeito não-mapeável (ambiental/negação RD/especial)
+
+    if (mech.type === "stat") {
+      effects.push({
+        id: `${eff.id}_s`, type: "modify_stat", stat: mech.stat,
+        op: "add", value: mech.value, valueExpr: "", stack: "highest", duration,
+      });
+    } else if (mech.type === "action_damage") {
+      effects.push({
+        id: `${eff.id}_d`, type: "action_damage", scope: mech.scope,
+        amount: mech.amount, fixed: mech.fixed, duration,
+      });
+    } else if (mech.type === "attrs") {
+      const chosen = (Array.isArray(eff.attrs) ? eff.attrs.filter(Boolean) : []);
+      const attrs = (chosen.length ? chosen : ["forca", "destreza"]).slice(0, 2);
+      attrs.forEach((a, k) =>
+        effects.push({
+          id: `${eff.id}_a${k}`, type: "modify_stat", stat: a,
+          op: "add", value: mech.value, valueExpr: "", stack: "highest", duration,
+        })
+      );
+    }
+  }
+  if (!effects.length) return null;
+
+  const pe = Number(d.cost) || getDomainCost(versao);
+  return {
+    enabled: true,
+    rules: [{
+      id: `dom_${domain?.id ?? d.name ?? "x"}`,
+      name: d.name || "Expansão de Domínio",
+      enabled: true,
+      trigger: { type: "activated" },
+      activation: "toggle",
+      cost: { pe, acao: "" },
+      requires: "",
+      effects,
+    }],
+  };
 }

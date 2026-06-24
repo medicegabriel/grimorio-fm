@@ -81,6 +81,8 @@ const BUILDERS = {
     // Texto Final customizado (com tokens {{dano}}/{{criatura}}…). Preservado
     // para o modelo manter a narração própria; tokens resolvem na criatura-alvo.
     finalTextManual: a.finalTextManual ?? "",
+    // Automação programada (bloquinhos) — viaja com o modelo.
+    automation: a.automation ?? null,
     // Snapshot da criatura-base (só para exibição na Biblioteca; ignorado no
     // apply, que reescala tudo para a criatura-alvo).
     toHit: a.toHit,
@@ -100,6 +102,8 @@ const BUILDERS = {
     acertoGarantido: a.acertoGarantido ? { ...a.acertoGarantido } : { ativo: false, escopo: "" },
     modificacaoCompleta: a.modificacaoCompleta ? { ...a.modificacaoCompleta } : { inversaoResistencia: false, mudancaTamanho: false, tamanho: 9 },
     finalTextManual: a.finalTextManual ?? "",
+    // Automação programada (bloquinhos) — viaja com o modelo.
+    automation: a.automation ?? null,
     // Snapshot só para exibição na Biblioteca (reresolvido na criatura ao aplicar).
     finalText: a.finalText ?? "",
     // Contexto (DOM/ND/BT/BAR) p/ reabrir a edição com os valores corretos.
@@ -110,13 +114,15 @@ const BUILDERS = {
     category: f.category,
     trigger: f.trigger,
     description: f.description,
+    automation: f.automation ?? null,
   }),
-  dote: (d) => ({ nome: d.nome, descricao: d.descricao }),
-  treinamento: (t) => ({ nome: t.nome, descricao: t.descricao }),
+  dote: (d) => ({ nome: d.nome, descricao: d.descricao, automation: d.automation ?? null }),
+  treinamento: (t) => ({ nome: t.nome, descricao: t.descricao, automation: t.automation ?? null }),
   aptidao: (a) => ({
     nome: a.nome,
     descricao: a.descricao,
     categoria: a.categoria ?? "Customizada",
+    automation: a.automation ?? null,
   }),
 };
 
@@ -126,13 +132,14 @@ const BUILDERS = {
 // Aptidão. Ações e Características têm fluxo próprio nos forms.
 // ------------------------------------------------------------
 const APPLIERS = {
-  dote: (tpl) => ({ tipo: "custom", nome: tpl.nome, descricao: tpl.descricao }),
-  treinamento: (tpl) => ({ tipo: "custom", nome: tpl.nome, descricao: tpl.descricao }),
+  dote: (tpl) => ({ tipo: "custom", nome: tpl.nome, descricao: tpl.descricao, automation: tpl.automation ?? null }),
+  treinamento: (tpl) => ({ tipo: "custom", nome: tpl.nome, descricao: tpl.descricao, automation: tpl.automation ?? null }),
   aptidao: (tpl) => ({
     tipo: "custom",
     categoria: tpl.categoria ?? "Customizada",
     nome: tpl.nome,
     descricao: tpl.descricao,
+    automation: tpl.automation ?? null,
   }),
 };
 

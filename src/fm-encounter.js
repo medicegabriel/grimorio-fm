@@ -2,6 +2,8 @@
 // Camada 2 — Funções puras para gerenciamento de encontros.
 // Zero React, zero side-effects externos. Math.random é isolado aqui.
 
+import { tickModifiersRound } from './components/fm-modifiers';
+
 // ============================================================
 // STATUS MACHINE
 // ============================================================
@@ -67,7 +69,14 @@ export const createInitialCombatState = (stats = {}) => ({
   resistenciaTotalUsed: 0,
   integridadeCurrent: 3, // EXT: se o sistema define isso por patamar, mover para fm-tables.js
   activeConditions: [],
-  temporaryHp: 0,
+  // Modificadores temporários (buffs/debuffs) aplicados sobre os stats do
+  // snapshot. Resolvidos por resolveLiveStats (fm-modifiers.js). Zeram no
+  // Reset de Combate; os de duração "rodadas" expiram em applyNewRoundEffects.
+  activeModifiers: [],
+  // PE temporário por FONTE (round_start; "mesma fonte só o maior"). PV temp =
+  // excedente do hpCurrent acima do máximo (sem campo próprio).
+  peTempSources: {},
+  lastDamage: 0,
   isInDesafiandoMorte: false,
   missCounter: 0,
   susceptivelFinalizacao: false,
@@ -288,7 +297,8 @@ export const applyNewRoundEffects = (combatant) => {
     combatState: {
       ...combatant.combatState,
       guardaInabavalCurrent: guardaMax,
-      activeConditions: updatedConditions
+      activeConditions: updatedConditions,
+      activeModifiers: tickModifiersRound(combatant.combatState.activeModifiers ?? [])
     }
   };
 };

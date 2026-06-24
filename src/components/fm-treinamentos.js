@@ -73,6 +73,15 @@ export const TREINAMENTOS_OFICIAIS = [
       return `Você já estabeleceu uma profunda conexão com a energia amaldiçoada, assim como a conhece cada vez mais completamente. Em uma situação de combate, imerso no fervor da batalha, você consegue gerar energia. Durante uma cena de combate, no começo de toda rodada, você ganha PE temporário igual a metade do seu BT.\n\nPE temp por rodada: ${metade} (½ × BT +${bt}).`;
     },
     automation: { kind: "pe_temp_bt" },
+    // Automação interna (motor) — D2: no começo de cada rodada, +½ BT de PE
+    // (temporário; pode passar do máximo). `metade(bt)` resolve pela DSL.
+    motorAuto: {
+      rules: [{
+        name: "Geração de Energia",
+        trigger: { type: "round_start" },
+        effects: [{ type: "resource", resource: "pe", op: "add", valueExpr: "metade(bt)", value: 0 }],
+      }],
+    },
   },
   {
     key: "energia_reversa",
@@ -116,6 +125,15 @@ export const TREINAMENTOS_OFICIAIS = [
       return `Você conseguiu chegar em um ponto onde seu corpo constantemente se renova e sua energia parece nunca ter fim. Durante uma cena de combate, no começo de toda rodada, você recebe uma quantidade de pontos de estamina temporários igual a metade do seu bônus de treinamento. Este treino é válido apenas para Restringidos Celestes.\n\nEstamina temp por rodada: ${metade} (½ × BT +${bt}).`;
     },
     automation: { kind: "estamina_temp_bt" },
+    // Automação interna (motor) — D2: estamina = PE (Restringidos sem Energia
+    // Amaldiçoada). No começo da rodada, +½ BT de PE (temporário, pode exceder).
+    motorAuto: {
+      rules: [{
+        name: "Renovação Física",
+        trigger: { type: "round_start" },
+        effects: [{ type: "resource", resource: "pe", op: "add", valueExpr: "metade(bt)", value: 0 }],
+      }],
+    },
   },
   {
     key: "presenca",

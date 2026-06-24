@@ -135,9 +135,20 @@ export const DOTES_OFICIAIS = [
     nome: "Fúria Berserker",
     descricao:
       "Durante uma cena de combate uma criatura pode entrar em fúria e liberar seu potencial bestial, se tornando imune a condições que o imobilizam ou que façam ele perder a consciência, porém, a criatura só poderá ter como alvo uma única criatura até que um dos dois cheguem a 0 pontos de vida. Recebe 2 pontos de exaustão caso esteja de pé e a criatura alvo caia. Você consegue sempre perceber um ponto cego na guarda do inimigo, se posicionando em tal. Se mover pelo espaço de um inimigo não conta como terreno difícil, e sempre que você estiver no espaço de um inimigo, faz com que ataques contra você tenham 40% de chance de falhar (1 a 4 em 1d10). A partir do patamar desafio, você pode realizar uma rolagem de furtividade contra um alvo ao qual esteja dentro do espaço dele; caso seu resultado seja superior ao valor de atenção dele, faz com que os ataques da criatura alvo tenham 60% de chance de falhar (1 a 6 em 1d10).",
-    automation: {
-      kind: "condicao_imune_grant",
-      condicoes: ["imovel", "paralisado", "inconsciente", "agarrado", "enredado", "atordoado"],
+    // Automação interna (motor) — D5: a imunidade vale SÓ enquanto em fúria
+    // (Liga/Desliga no tracker), não é permanente. Por isso NÃO usa mais o
+    // `condicao_imune_grant` do builder (que a deixava sempre ligada na ficha).
+    motorAuto: {
+      rules: [{
+        name: "Entrar em Fúria",
+        trigger: { type: "activated" },
+        activation: "toggle",
+        cost: { pe: 0, acao: "" },
+        effects: [{
+          type: "condition_immunity",
+          conditions: ["imovel", "paralisado", "inconsciente", "agarrado", "enredado", "atordoado"],
+        }],
+      }],
     },
   },
   {
@@ -145,6 +156,22 @@ export const DOTES_OFICIAIS = [
     nome: "Imitação",
     descricao:
       "Você consegue imitar técnicas e estilos de combate de outras pessoas; uma vez que você consegue enxergar a técnica/estilo de combate, consegue a reproduzir perfeitamente, recebendo um bônus de +2 para acertar, causando +5 de dano fixo e +3 na Defesa. Uma vez por turno, ao realizar um ataque surpresa ou contra um inimigo desprevenido, você pode adicionar +1 dado de dano.",
+    // Automação interna (motor) — só a parte SUSTENTADA: enquanto imitando, +2
+    // Acerto, +3 Defesa e +5 de dano fixo. O "+1 dado por turno em alvo
+    // desprevenido" é condicional (gatilho de evento) e fica para fase futura.
+    motorAuto: {
+      rules: [{
+        name: "Imitação",
+        trigger: { type: "activated" },
+        activation: "toggle",
+        cost: { pe: 0, acao: "" },
+        effects: [
+          { type: "modify_stat", stat: "acerto", op: "add", value: 2, stack: "highest", duration: { kind: "manual" } },
+          { type: "modify_stat", stat: "defesa", op: "add", value: 3, stack: "highest", duration: { kind: "manual" } },
+          { type: "action_damage", scope: "corporal", amount: 0, fixed: 5, duration: { kind: "manual" } },
+        ],
+      }],
+    },
   },
   {
     key: "membro_fantasma",

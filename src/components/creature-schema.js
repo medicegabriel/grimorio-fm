@@ -169,7 +169,6 @@ const CreatureSchema = {
     activeConditions: [
       // { id, name, level, duration, appliedAt, notes }
     ],
-    temporaryHp: 0,
     isInDesafiandoMorte: false,
     missCounter: 0, // para feature "Fluxo"
     customCounters: [

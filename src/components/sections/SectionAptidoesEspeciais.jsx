@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Plus, Trash2, Sparkles, Zap, ChevronDown, ChevronUp } from "lucide-react";
 import { TextInput, TextArea, SmallButton, ExpandableText, MiniTable, SearchInput } from "../builder-controls";
 import { SaveTemplateButton, TemplateInlinePicker } from "../TemplateControls";
+import AutomationEditorPanel from "../AutomationEditorPanel";
 import { normalizeText } from "../fm-tables";
 import { APTIDOES_CATEGORIAS, getAptidaoByKey, getAptidaoLimit, isAutomatedAptidao, resolveAptidaoDescription } from "../fm-aptidoes";
 import { getFrutosAptidaoEspecialBonus } from "../fm-origens";
@@ -9,7 +10,7 @@ import { getFrutosAptidaoEspecialBonus } from "../fm-origens";
 // Re-export para preservar consumidores externos (import legado).
 export { APTIDOES_CATEGORIAS };
 
-export default function SectionAptidoesEspeciais({ draft, actions }) {
+export default function SectionAptidoesEspeciais({ draft, actions, dslContext = null }) {
   const aptidoes = draft.aptidoesEspeciais || [];
   const addedNomes = new Set(aptidoes.map((a) => a.nome));
 
@@ -18,6 +19,7 @@ export default function SectionAptidoesEspeciais({ draft, actions }) {
   const [showCustom, setShowCustom] = useState(false);
   const [nomeCustom, setNomeCustom] = useState("");
   const [descCustom, setDescCustom] = useState("");
+  const [autoCustom, setAutoCustom] = useState(null);
   const [expandedKey, setExpandedKey] = useState(null);
   const [query, setQuery] = useState("");
 
@@ -61,9 +63,11 @@ export default function SectionAptidoesEspeciais({ draft, actions }) {
       categoria: "Customizada",
       nome: nomeCustom.trim(),
       descricao: descCustom.trim(),
+      automation: autoCustom,
     });
     setNomeCustom("");
     setDescCustom("");
+    setAutoCustom(null);
     setShowCustom(false);
   };
 
@@ -199,6 +203,13 @@ export default function SectionAptidoesEspeciais({ draft, actions }) {
                       </div>
                     </div>
                   )}
+                  {a.tipo === "custom" && (
+                    <AutomationEditorPanel
+                      value={a.automation}
+                      onChange={(automation) => actions.updateAptidaoEspecial(a.id, { automation })}
+                      dslContext={dslContext}
+                    />
+                  )}
                 </div>
                 {!fromTreino && (
                   <div className="flex items-center gap-1 flex-shrink-0">
@@ -246,14 +257,14 @@ export default function SectionAptidoesEspeciais({ draft, actions }) {
         </button>
 
         {pickerOpen && (
-          <div className="space-y-4 mt-3">
+          <div className="flex flex-col gap-4 mt-3">
             <SearchInput
               value={query}
               onChange={setQuery}
               placeholder="Buscar aptidão..."
             />
             {totalDisponiveis === 0 ? (
-              <p className="text-xs text-slate-500 italic">
+              <p className="order-2 text-xs text-slate-500 italic">
                 {q
                   ? "Nenhuma aptidão encontrada para a busca."
                   : "Todas as aptidões oficiais já foram adicionadas."}
@@ -263,7 +274,7 @@ export default function SectionAptidoesEspeciais({ draft, actions }) {
                 const disponiveis = cat.aptidoes.filter(isAvailable);
                 if (disponiveis.length === 0) return null;
                 return (
-                  <div key={cat.key}>
+                  <div key={cat.key} className="order-2">
                     {/* Cabeçalho da categoria (Tipo) */}
                     <h4
                       className={`text-[10px] uppercase tracking-widest font-bold mb-2 flex items-center gap-1.5 ${cat.accent}`}
@@ -340,8 +351,8 @@ export default function SectionAptidoesEspeciais({ draft, actions }) {
               })
             )}
 
-            {/* Botão / form de Aptidão Customizada */}
-            <div className="pt-3 border-t border-slate-800/60 space-y-2">
+            {/* Botão / form de Aptidão Customizada — logo após a busca (order-1). */}
+            <div className="order-1 pb-3 border-b border-slate-800/60 space-y-2">
               {showCustom ? (
                 <div className="space-y-2 bg-slate-950/40 border border-purple-900/40 rounded p-3">
                   <div className="flex items-center justify-between">
@@ -354,6 +365,7 @@ export default function SectionAptidoesEspeciais({ draft, actions }) {
                         setShowCustom(false);
                         setNomeCustom("");
                         setDescCustom("");
+                        setAutoCustom(null);
                       }}
                       className="text-[10px] text-slate-500 hover:text-slate-300"
                     >
@@ -362,7 +374,7 @@ export default function SectionAptidoesEspeciais({ draft, actions }) {
                   </div>
                   <TemplateInlinePicker
                     type="aptidao"
-                    onPick={(tpl) => { setNomeCustom(tpl.nome ?? ""); setDescCustom(tpl.descricao ?? ""); }}
+                    onPick={(tpl) => { setNomeCustom(tpl.nome ?? ""); setDescCustom(tpl.descricao ?? ""); setAutoCustom(tpl.automation ?? null); }}
                   />
                   <TextInput
                     value={nomeCustom}
@@ -374,6 +386,11 @@ export default function SectionAptidoesEspeciais({ draft, actions }) {
                     onChange={setDescCustom}
                     rows={3}
                     placeholder="Descreva os efeitos desta aptidão..."
+                  />
+                  <AutomationEditorPanel
+                    value={autoCustom}
+                    onChange={setAutoCustom}
+                    dslContext={dslContext}
                   />
                   <SmallButton
                     onClick={handleAddCustom}

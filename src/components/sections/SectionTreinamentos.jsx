@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Plus, Trash2, GraduationCap, Zap, ChevronDown, ChevronUp } from "lucide-react";
 import { TextInput, TextArea, SmallButton, ExpandableText, SearchInput } from "../builder-controls";
 import { SaveTemplateButton, TemplateInlinePicker } from "../TemplateControls";
+import AutomationEditorPanel from "../AutomationEditorPanel";
 import { normalizeText } from "../fm-tables";
 import {
   TREINAMENTOS_OFICIAIS,
@@ -22,7 +23,7 @@ const resolveDesc = (treino, draft) =>
     ? treino.descriptionFn({ core: draft.core, attributes: draft.attributes })
     : treino.descricao;
 
-export default function SectionTreinamentos({ draft, actions }) {
+export default function SectionTreinamentos({ draft, actions, dslContext = null }) {
   const pontosTotal = 1 + (GRAU_BONUS[draft.core?.grau] ?? 0);
   const treinamentos = draft.treinamentos || [];
   const pontosUsados = treinamentos.length;
@@ -35,6 +36,7 @@ export default function SectionTreinamentos({ draft, actions }) {
   const [showCustom, setShowCustom] = useState(false);
   const [nomeCustom, setNomeCustom] = useState("");
   const [descCustom, setDescCustom] = useState("");
+  const [autoCustom, setAutoCustom] = useState(null);
   const [expandedKey, setExpandedKey] = useState(null);
   const [query, setQuery] = useState("");
 
@@ -61,9 +63,11 @@ export default function SectionTreinamentos({ draft, actions }) {
       tipo: "custom",
       nome: nomeCustom.trim(),
       descricao: descCustom.trim(),
+      automation: autoCustom,
     });
     setNomeCustom("");
     setDescCustom("");
+    setAutoCustom(null);
     setShowCustom(false);
   };
 
@@ -135,6 +139,13 @@ export default function SectionTreinamentos({ draft, actions }) {
                     )}
                   </div>
                   {desc && <ExpandableText text={desc} />}
+                  {t.tipo === "custom" && (
+                    <AutomationEditorPanel
+                      value={t.automation}
+                      onChange={(automation) => actions.updateTreinamento(t.id, { automation })}
+                      dslContext={dslContext}
+                    />
+                  )}
                 </div>
                 <div className="flex items-center gap-1 flex-shrink-0">
                   {t.tipo === "custom" && <SaveTemplateButton type="treinamento" entity={t} />}
@@ -180,16 +191,16 @@ export default function SectionTreinamentos({ draft, actions }) {
           </button>
 
           {pickerOpen && (
-            <div className="space-y-3 mt-3">
+            <div className="flex flex-col gap-3 mt-3">
               <SearchInput value={query} onChange={setQuery} placeholder="Buscar treinamento..." />
               {visiveis.length === 0 ? (
-                <p className="text-xs text-slate-500 italic">
+                <p className="order-2 text-xs text-slate-500 italic">
                   {q
                     ? "Nenhum treinamento encontrado para a busca."
                     : "Todos os treinamentos oficiais já foram adicionados."}
                 </p>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 items-start">
+                <div className="order-2 grid grid-cols-1 sm:grid-cols-2 gap-2 items-start">
                   {visiveis.map((t) => {
                     const automated = isAutomatedTreinamento(t);
                     const isExpanded = expandedKey === t.key;
@@ -267,8 +278,8 @@ export default function SectionTreinamentos({ draft, actions }) {
                 </div>
               )}
 
-              {/* Botão / form de Treinamento Customizado */}
-              <div className="pt-3 border-t border-slate-800/60 space-y-2">
+              {/* Botão / form de Treinamento Customizado — logo após a busca (order-1). */}
+              <div className="order-1 pb-3 border-b border-slate-800/60 space-y-2">
                 {showCustom ? (
                   <div className="space-y-2 bg-slate-950/40 border border-amber-900/40 rounded p-3">
                     <div className="flex items-center justify-between">
@@ -281,6 +292,7 @@ export default function SectionTreinamentos({ draft, actions }) {
                           setShowCustom(false);
                           setNomeCustom("");
                           setDescCustom("");
+                          setAutoCustom(null);
                         }}
                         className="text-[10px] text-slate-500 hover:text-slate-300"
                       >
@@ -289,7 +301,7 @@ export default function SectionTreinamentos({ draft, actions }) {
                     </div>
                     <TemplateInlinePicker
                       type="treinamento"
-                      onPick={(tpl) => { setNomeCustom(tpl.nome ?? ""); setDescCustom(tpl.descricao ?? ""); }}
+                      onPick={(tpl) => { setNomeCustom(tpl.nome ?? ""); setDescCustom(tpl.descricao ?? ""); setAutoCustom(tpl.automation ?? null); }}
                     />
                     <TextInput
                       value={nomeCustom}
@@ -301,6 +313,11 @@ export default function SectionTreinamentos({ draft, actions }) {
                       onChange={setDescCustom}
                       rows={3}
                       placeholder="Descreva os efeitos deste treinamento..."
+                    />
+                    <AutomationEditorPanel
+                      value={autoCustom}
+                      onChange={setAutoCustom}
+                      dslContext={dslContext}
                     />
                     <SmallButton
                       onClick={handleAddCustom}

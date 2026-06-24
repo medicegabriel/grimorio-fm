@@ -140,7 +140,9 @@ export const TRADES_ZERO = { sacrifDadosAcerto: 0, sacrifDadosCD: 0, sacrifAcert
 // a string de roll vira mero exemplo. Toda modificação age sobre a MÉDIA
 // e, no fim, `splitAverage` reconstrói uma expressão com ~45% em dados.
 
-// Penalidade de dano fixo por ND abaixo do mínimo do patamar.
+// Passo linear de média por ND FORA da faixa do patamar. Abaixo do mínimo é
+// subtraído (penalidade); acima do máximo é somado (extrapolação simétrica),
+// pelo mesmo valor por patamar — assim ND > 30 segue o mesmo padrão do ND baixo.
 export const BELOW_MIN_PENALTY = { lacaio: 1, capanga: 2, comum: 2, desafio: 3, calamidade: 4 };
 
 const DMG_FACES = [4, 6, 8, 10, 12];
@@ -158,15 +160,26 @@ export function faceForAverage(avg) {
 }
 
 // Média base da tabela com reduções de ND (TR Individual / Condição por ND).
-// Abaixo do mínimo do patamar, subtrai a penalidade por ND.
+// Fora da faixa do patamar, extrapola linearmente pelo passo do patamar:
+// abaixo do mínimo subtrai (penalidade); acima do máximo soma (mesmo padrão),
+// permitindo que amplificações de dano empurrem o ND além de 30.
 export function baseAverage(patamar, nd, ndReduction = 0) {
-  const minND = PATAMAR_ND_RANGE[patamar]?.min ?? 1;
+  const range = PATAMAR_ND_RANGE[patamar] ?? {};
+  const minND = range.min ?? 1;
+  const maxND = range.max ?? Infinity;
   const ndCalc = (nd ?? 0) - (ndReduction ?? 0);
-  if (ndCalc >= minND) return getDamage(patamar, ndCalc)?.avg ?? null;
-  const floorEntry = getDamage(patamar, minND);
-  if (!floorEntry) return null;
-  const penalty = BELOW_MIN_PENALTY[patamar] ?? 2;
-  return floorEntry.avg - (minND - ndCalc) * penalty;
+  const step = BELOW_MIN_PENALTY[patamar] ?? 2;
+  if (ndCalc < minND) {
+    const floorEntry = getDamage(patamar, minND);
+    if (!floorEntry) return null;
+    return floorEntry.avg - (minND - ndCalc) * step;
+  }
+  if (ndCalc > maxND) {
+    const ceilEntry = getDamage(patamar, maxND);
+    if (!ceilEntry) return null;
+    return ceilEntry.avg + (ndCalc - maxND) * step;
+  }
+  return getDamage(patamar, ndCalc)?.avg ?? null;
 }
 
 // Reconstrói uma expressão NdF+fixo a partir da média alvo, mirando ~45%
@@ -774,6 +787,73 @@ export function runFullActionCalc({
       damageIsCalculated: true,
     },
   };
+}
+
+// ============================================================
+// BOOST DE DANO POR AUTOMAÇÃO (Amplificação de Domínio) — #2/#3
+// ============================================================
+// Determina o "balde" de dano de uma ação para os efeitos de Amplificação:
+//  • 'corporal' — Teste de Acerto (dano total) que NÃO causa condição, NÃO é
+//    Técnica Máxima e NÃO é dano na Alma (ataques armados/desarmados).
+//  • 'tecnica'  — qualquer OUTRA ação que cause dano (Feitiços: TR, dano na
+//    Alma, que aplicam condição, ou Técnica Máxima).
+//  • null       — ação sem dano (suporte/sem rolagem) ou Expansão de Domínio.
+export function actionDamageScope(action) {
+  if (!action || isDomainAction(action)) return null;
+  if (action.attackType === "suporte") return null;
+  const dmg = action.damage ?? {};
+  const finalDice = deriveFinalDice(dmg);
+  const hasDamage = (finalDice > 0 && (dmg.dieSize ?? 0) > 0) || (dmg.mod ?? 0) > 0 || !!dmg.roll;
+  if (!hasDamage) return null;
+  const causesCondition = !!action.condition?.tier && action.condition.tier !== "nenhuma";
+  const isAlma = dmg.type === "alma";
+  const isTM = !!action.tecnicaMaxima;
+  if (action.attackType === "acerto" && !causesCondition && !isAlma && !isTM) return "corporal";
+  return "tecnica";
+}
+
+// Aplica um boost de dano (de automação) a UMA ação e devolve a ação com o dano
+// recalculado PARA EXIBIÇÃO (não muta a original; não persiste). Corporal: cada
+// "nível de dano" = +1 ND — recalcula a média-base em ND+níveis e soma a
+// VARIAÇÃO ao dano atual (preservando CaC/trades/narrativa já embutidos),
+// re-splitando, e soma o dano fixo no fim. Técnica: soma dados direto + fixo.
+export function applyActionDamageBoost(action, scope, boost, { patamar, nd } = {}) {
+  if (!scope || !boost) return action;
+  const amount = Number(boost.amount) || 0;
+  const fixed = Number(boost.fixed) || 0;
+  if (amount === 0 && fixed === 0) return action;
+
+  const dmg = action.damage ?? {};
+  const finalDice = deriveFinalDice(dmg);
+  const dieSize = dmg.dieSize ?? 8;
+  const baseMod = dmg.mod ?? 0;
+
+  const pack = (numDice, dSize, mod) => ({
+    ...action,
+    damage: {
+      ...dmg, numDice, numDiceBase: numDice, dieSize: dSize, mod,
+      roll: rollStr(numDice, dSize, mod), average: rollAverage(numDice, dSize, mod),
+      damageIsCalculated: true,
+    },
+  });
+
+  if (scope === "tecnica") {
+    return pack(finalDice + amount, dieSize, baseMod + fixed);
+  }
+
+  // corporal — +amount ND
+  if (amount > 0) {
+    if (!patamar || !nd) return fixed ? pack(finalDice, dieSize, baseMod + fixed) : action;
+    const ndRed = (action.attackType === "tr_individual" ? 1 : 0) + getCondNdReduction(action.condition);
+    const baseAvg = baseAverage(patamar, nd, ndRed);
+    const boostedAvg = baseAverage(patamar, nd + amount, ndRed);
+    if (baseAvg == null || boostedAvg == null) return fixed ? pack(finalDice, dieSize, baseMod + fixed) : action;
+    const curAvg = rollAverage(finalDice, dieSize, baseMod);
+    const newAvg = Math.max(PISO_MEDIA, curAvg + (boostedAvg - baseAvg));
+    const s = splitAverage(newAvg);
+    return pack(s.numDice, s.dieSize, s.mod + fixed);
+  }
+  return pack(finalDice, dieSize, baseMod + fixed);
 }
 
 // reapplyTrades: caminho do dano TRAVADO (manual). Não recalcula os dados

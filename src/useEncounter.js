@@ -10,6 +10,7 @@ import {
   validateReadyToStart, ENCOUNTER_STATUS, canTransition,
   createLogEntry, LOG_TYPES, rollInitiative, getExpiredConditions
 } from './fm-encounter';
+import { applyRoundStartResources } from './components/fm-automation-entities';
 
 // ============================================================
 // REDUCER PURO (dicionário de handlers)
@@ -137,7 +138,21 @@ const HANDLERS = {
 
     if (isNewRound) {
       const expired = combatants.flatMap(getExpiredConditions);
-      combatants = applyNewRoundToAll(combatants);
+      // Tick global de condições/modificadores + round_start por combatente
+      // (Treino de Energia/Potencial = +PE temp). Mesma lógica do tracker single.
+      combatants = applyNewRoundToAll(combatants).map((c) => {
+        // Derrotado não recebe recursos de rodada (igual applyNewRoundEffects).
+        if (!c.combatState || !c.snapshot || c.flags?.isDefeated) return c;
+        const base = { ...c.combatState, lastDamage: 0 };
+        const { combatState, peGain } = applyRoundStartResources(base, c.snapshot);
+        if (peGain > 0) {
+          log.unshift(createLogEntry({
+            round: newRound, type: LOG_TYPES.CUSTOM,
+            message: `${c.displayName}: +${peGain} PE (início da rodada)`, combatantId: c.id,
+          }));
+        }
+        return { ...c, combatState };
+      });
       expired.forEach(({ conditionName, combatantName }) => {
         log.unshift(createLogEntry({
           round: newRound, type: LOG_TYPES.CONDITION,

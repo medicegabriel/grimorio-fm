@@ -191,19 +191,31 @@ export const APTIDOES_CATEGORIAS = [
         descricao:
           "Define a capacidade de um feiticeiro se curar a partir da conversão de energia amaldiçoada para energia reversa.\n\nCurar é uma ação Rápida ou Comum. Para cada vez que se curar, a criatura deve pagar 2 pontos de energia amaldiçoada. Para Regenerar um Membro deve ser pago 10 pontos de energia por Membro, ou 8 pontos de energia para Ferida Interna.",
         computeInfo: (ctx) => {
-          const patamar = ctx?.core?.patamar;
           const bt = btOf(ctx);
-          const modCon = modConOf(ctx);
-          // Multiplicador do BT por Patamar (null = não recebe cura nesta faixa).
-          let mult = null;
-          if (patamar === "capanga") mult = bt >= 4 ? bt : null;
-          else if (patamar === "comum") mult = bt <= 2 ? null : bt <= 4 ? bt : bt === 5 ? bt * 1.5 : bt * 2;
-          else if (patamar === "desafio" || patamar === "calamidade") mult = bt <= 2 ? null : bt === 3 ? bt : bt === 4 ? bt * 1.5 : bt * 2;
+          const mult = energiaReversaMult(ctx?.core?.patamar, bt);
           if (mult == null) {
             return `Cura por ação: esta criatura não recebe cura por esta aptidão (Patamar e BT +${bt} atuais).`;
           }
+          const modCon = modConOf(ctx);
           const cura = Math.max(0, Math.floor(modCon * mult));
           return `Cura por ação (2 PE): ${cura} PV (Mod Con ${modCon} × ${Number.isInteger(mult) ? mult : mult.toFixed(1)}, com BT +${bt}).`;
+        },
+        // Automação interna (motor) — D1: "Curar" como uso único (2 PE → +cura PV).
+        // O valor depende de Patamar×BT×Mod Con (não cabe na DSL) → motorAuto é
+        // FUNÇÃO, reusando o mesmo resolver do computeInfo. Sem cura nesta faixa
+        // (mult null) → retorna null → nenhuma regra/botão no tracker.
+        motorAuto: (ctx) => {
+          const cura = getEnergiaReversaCura(ctx);
+          if (cura <= 0) return null;
+          return {
+            rules: [{
+              name: "Curar",
+              trigger: { type: "activated" },
+              activation: "once",
+              cost: { pe: 2, acao: "" },
+              effects: [{ type: "resource", resource: "hp", op: "add", value: cura }],
+            }],
+          };
         },
         tabela: {
           titulo: "Cura por Patamar × Bônus de Treinamento (Mod Con = modificador de Constituição)",
@@ -241,6 +253,19 @@ export const APTIDOES_CATEGORIAS = [
         nome: "Absorção Elemental",
         descricao:
           "Você consegue absorver o elemento que o compõe, em prol de se revigorar. Ao receber dano do seu elemento escolhido em Composição Elemental, você pode utilizar sua reação para receber pontos de vida temporários igual a metade do dano recebido. [Pré-Requisito: Ter um elemento como funcionamento básico, Composição Elemental]",
+        // Automação interna (motor) — D4: reação ao sofrer dano (on_damaged) que
+        // concede PV temporário = metade do dano. Como é reação condicionada ao
+        // TIPO de dano (que o tracker não rastreia), o botão "Reagir" aparece
+        // após o dano e o narrador aplica só quando foi o elemento certo.
+        motorAuto: {
+          rules: [{
+            name: "Absorver Elemento",
+            trigger: { type: "on_damaged" },
+            activation: "once",
+            cost: { pe: 0, acao: "" },
+            effects: [{ type: "resource", resource: "hp_temp", op: "add", value: 0, valueExpr: "metade(dano)" }],
+          }],
+        },
       },
       {
         key: "arma_natural",
@@ -388,6 +413,22 @@ const nivel = (ctx, slot) => Number(ctx?.aptidoes?.[slot]) || 0;
 const ndOf = (ctx) => Number(ctx?.core?.nd) || 0;
 const btOf = (ctx) => getBonusTreinamento(ndOf(ctx));
 const modConOf = (ctx) => getModifier(ctx?.attributes?.constituicao ?? 10);
+
+// Multiplicador do BT por Patamar p/ a cura da Energia Reversa (null = não recebe
+// cura nesta faixa). Fonte única do computeInfo e da automação (motorAuto).
+function energiaReversaMult(patamar, bt) {
+  if (patamar === "capanga") return bt >= 4 ? bt : null;
+  if (patamar === "comum") return bt <= 2 ? null : bt <= 4 ? bt : bt === 5 ? bt * 1.5 : bt * 2;
+  if (patamar === "desafio" || patamar === "calamidade") return bt <= 2 ? null : bt === 3 ? bt : bt === 4 ? bt * 1.5 : bt * 2;
+  return null;
+}
+
+/** Cura (PV) por ação da Energia Reversa no contexto da ficha (0 = não recebe). */
+export function getEnergiaReversaCura(ctx) {
+  const mult = energiaReversaMult(ctx?.core?.patamar, btOf(ctx));
+  if (mult == null) return 0;
+  return Math.max(0, Math.floor(modConOf(ctx) * mult));
+}
 
 // ============================================================
 // HELPERS DE AUTOMAÇÃO
