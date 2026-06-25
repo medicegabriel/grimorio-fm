@@ -348,8 +348,10 @@ function RuleBlock({ rule, ctx = null, defaultStack = "sum", defaultOpen = false
 
 // Linha de efeito. Dois tipos: `modify_stat` (buff/debuff que vira modificador)
 // e `resource` (mexe em PV/PE/Guarda na hora da ativação — instantâneo).
+const condLabel = (k) => CONDITION_OPTIONS.find((o) => o.key === k)?.label ?? k;
+
 function EffectRow({ effect, isActivated, ctx = null, defaultStack = "sum", onUpdate, onReplace, onRemove }) {
-  const KNOWN_EFFECT_TYPES = ["resource", "condition", "action_damage"];
+  const KNOWN_EFFECT_TYPES = ["resource", "condition", "action_damage", "condition_immunity"];
   const type = KNOWN_EFFECT_TYPES.includes(effect.type) ? effect.type : "modify_stat";
   const durKind = effect.duration?.kind ?? "rounds";
   // Prévia do valor da expressão na ficha atual (quando há contexto da DSL).
@@ -500,6 +502,44 @@ function EffectRow({ effect, isActivated, ctx = null, defaultStack = "sum", onUp
             </div>
             {removeButton}
           </>
+        ) : type === "condition_immunity" ? (
+          <>
+            <div className="flex-1 min-w-[200px] flex flex-wrap items-center gap-1.5">
+              <span className="text-[11px] text-slate-400 flex-shrink-0">Imune a:</span>
+              {(effect.conditions ?? []).length === 0 && (
+                <span className="text-[11px] text-slate-600 italic">nenhuma condição</span>
+              )}
+              {(effect.conditions ?? []).map((c) => (
+                <span key={c} className="inline-flex items-center gap-1 text-[11px] bg-slate-800 border border-slate-700 rounded px-1.5 py-0.5 text-slate-200">
+                  <span className="capitalize">{condLabel(c)}</span>
+                  <button
+                    type="button"
+                    onClick={() => onUpdate({ conditions: (effect.conditions ?? []).filter((x) => x !== c) })}
+                    className="text-slate-500 hover:text-red-400 leading-none"
+                    aria-label={`Remover ${condLabel(c)}`}
+                  >×</button>
+                </span>
+              ))}
+              <div className="relative flex-shrink-0">
+                <select
+                  value=""
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    if (v && !(effect.conditions ?? []).includes(v)) onUpdate({ conditions: [...(effect.conditions ?? []), v] });
+                  }}
+                  className={`${selectCls} w-auto pr-8`}
+                  aria-label="Adicionar condição imune"
+                >
+                  <option value="">+ condição</option>
+                  {CONDITION_OPTIONS.filter((c) => !(effect.conditions ?? []).includes(c.key)).map((c) => (
+                    <option key={c.key} value={c.key}>{c.label}</option>
+                  ))}
+                </select>
+                <Chevron />
+              </div>
+            </div>
+            {removeButton}
+          </>
         ) : (
           <>
             <div className="relative flex-shrink-0 min-w-[110px]">
@@ -569,6 +609,13 @@ function EffectRow({ effect, isActivated, ctx = null, defaultStack = "sum", onUp
               aria-label="Rodadas"
             />
           )}
+        </div>
+      )}
+
+      {/* Imunidade: vale enquanto a regra estiver valendo (sustentada). */}
+      {type === "condition_immunity" && (
+        <div className="text-[10px] mt-1 pl-1 text-slate-500">
+          A criatura fica imune a essas condições enquanto a regra valer (Passiva = sempre; Ativada = enquanto ligada).
         </div>
       )}
 
