@@ -1,10 +1,48 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Image as ImageIcon, X, Check, RotateCcw } from "lucide-react";
+import { Image as ImageIcon, X, Check, RotateCcw, Infinity as InfinityIcon } from "lucide-react";
 import { FieldLabel, TextInput, TextArea } from "../builder-controls";
 
 export default function SectionIdentity({ draft, actions }) {
+  const semLimites = !!draft.core?.semLimites;
+
   return (
     <div className="space-y-4">
+      {/* ===== SEM LIMITES ===== */}
+      <button
+        type="button"
+        onClick={() => actions.patchCore({ semLimites: !semLimites })}
+        aria-pressed={semLimites}
+        className={`w-full flex items-center gap-3 rounded-lg border p-3 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500/50 ${
+          semLimites
+            ? "bg-amber-950/40 border-amber-700/70"
+            : "bg-slate-900/60 border-slate-800 hover:border-slate-700"
+        }`}
+      >
+        <InfinityIcon className={`w-5 h-5 shrink-0 ${semLimites ? "text-amber-300" : "text-slate-500"}`} />
+        <div className="flex-1 min-w-0">
+          <div className={`text-sm font-bold uppercase tracking-wide ${semLimites ? "text-amber-200" : "text-slate-300"}`}>
+            Sem Limites
+          </div>
+          <div className="text-xs text-slate-500 leading-snug">
+            {semLimites
+              ? "Ligado: todas as regras de limite (orçamentos, dotes, aptidões, defesas, avisos) estão desativadas."
+              : "Desligado: a ficha segue os limites convencionais das regras."}
+          </div>
+        </div>
+        {/* Switch visual */}
+        <span
+          className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${
+            semLimites ? "bg-amber-500" : "bg-slate-700"
+          }`}
+        >
+          <span
+            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+              semLimites ? "translate-x-4" : "translate-x-0.5"
+            }`}
+          />
+        </span>
+      </button>
+
       <div>
         <FieldLabel required>Nome da Criatura</FieldLabel>
         <TextInput

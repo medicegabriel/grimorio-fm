@@ -28,6 +28,9 @@ export default function SectionTreinamentos({ draft, actions, dslContext = null 
   const treinamentos = draft.treinamentos || [];
   const pontosUsados = treinamentos.length;
   const pontosDisponiveis = pontosTotal - pontosUsados;
+  // Sem Limites: ignora os pontos de treinamento — sempre dá pra adicionar.
+  const noLimits = !!draft.core?.semLimites;
+  const pontosOk = noLimits || pontosDisponiveis > 0;
 
   // Estado da UI de adicionar
   // Painel inicia sempre fechado — o usuário abre o seletor quando quiser
@@ -48,7 +51,7 @@ export default function SectionTreinamentos({ draft, actions, dslContext = null 
   );
 
   const handleAddOficial = (treino) => {
-    if (pontosDisponiveis <= 0) return;
+    if (!pontosOk) return;
     actions.addTreinamento({
       tipo: "oficial",
       key: treino.key,
@@ -58,7 +61,7 @@ export default function SectionTreinamentos({ draft, actions, dslContext = null 
   };
 
   const handleAddCustom = () => {
-    if (pontosDisponiveis <= 0 || !nomeCustom.trim()) return;
+    if (!pontosOk || !nomeCustom.trim()) return;
     actions.addTreinamento({
       tipo: "custom",
       nome: nomeCustom.trim(),
@@ -97,10 +100,12 @@ export default function SectionTreinamentos({ draft, actions, dslContext = null 
         </div>
         <span
           className={`text-xs font-bold tabular-nums ${
-            pontosDisponiveis === 0 ? "text-slate-500" : "text-emerald-400"
+            noLimits ? "text-amber-300" : pontosDisponiveis === 0 ? "text-slate-500" : "text-emerald-400"
           }`}
         >
-          {pontosDisponiveis}/{pontosTotal} disponíveis
+          {noLimits
+            ? `${pontosUsados} · sem limite`
+            : `${pontosDisponiveis}/${pontosTotal} disponíveis`}
         </span>
       </div>
 
@@ -163,8 +168,8 @@ export default function SectionTreinamentos({ draft, actions, dslContext = null 
         </div>
       )}
 
-      {/* ===== SELETOR — só quando há pontos disponíveis ===== */}
-      {pontosDisponiveis > 0 ? (
+      {/* ===== SELETOR — quando há pontos (ou Sem Limites) ===== */}
+      {pontosOk ? (
         <div className="order-2 pt-3 border-t border-slate-800">
           <button
             type="button"

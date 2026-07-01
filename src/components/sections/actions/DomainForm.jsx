@@ -53,6 +53,8 @@ export default function DomainForm({
   const nd = Number(draft?.core?.nd) || 0;
   const bt = Number(derived?.bt) || 2;
   const maxEffects = getMaxEffects(dom);
+  // Sem Limites: sem teto de efeitos nem de tamanho da Expansão.
+  const noLimits = !!draft?.core?.semLimites;
   const availableVersions = getAvailableVersions(nd);
 
   const agUnlocked = hasAcertoGarantido(draft?.aptidoesEspeciais);
@@ -88,7 +90,7 @@ export default function DomainForm({
   const update = (patch) => setForm((prev) => ({ ...prev, ...patch }));
 
   const used = usedEffectSlots(form.effects);
-  const remaining = maxEffects - used;
+  const remaining = noLimits ? Infinity : maxEffects - used;
   const agActive = agUnlocked && form.acertoGarantido.ativo;
   const cost = getDomainCost(versao, agActive);
   const dist = getEffectiveDistance(form, { nd, bt, hasMC: mcUnlocked });
@@ -230,7 +232,7 @@ export default function DomainForm({
           )}
         </div>
         <div className="text-[11px] text-slate-400">
-          Efeitos de Expansão: <span className="font-mono text-white">{used}/{maxEffects}</span>
+          Efeitos de Expansão: <span className="font-mono text-white">{used}/{noLimits ? "∞" : maxEffects}</span>
           {versao === "incompleta" && (
             <span className="text-amber-400/90 ml-2">Incompleta: efeitos limitados ao nível de aptidão 3.</span>
           )}
@@ -490,7 +492,8 @@ export default function DomainForm({
             {form.modificacaoCompleta.mudancaTamanho && (() => {
               const tam = Number(form.modificacaoCompleta.tamanho) || DOMAIN_SIZE_DEFAULT;
               const delta = getDomainSizeHpDelta(tam);
-              const setTam = (v) => updateMC({ tamanho: Math.min(DOMAIN_SIZE_MAX, Math.max(DOMAIN_SIZE_MIN, v)) });
+              const sizeCap = noLimits ? Infinity : DOMAIN_SIZE_MAX;
+              const setTam = (v) => updateMC({ tamanho: Math.min(sizeCap, Math.max(DOMAIN_SIZE_MIN, v)) });
               const stepBtn = "w-6 h-6 flex items-center justify-center rounded border border-slate-600 text-white text-sm font-bold hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed";
               return (
                 <div className="mt-2 pl-6 flex items-center gap-2 flex-wrap">
@@ -498,7 +501,7 @@ export default function DomainForm({
                   <div className="flex items-center gap-1">
                     <button type="button" onClick={() => setTam(tam - 1.5)} disabled={tam <= DOMAIN_SIZE_MIN} className={stepBtn}>−</button>
                     <span className="w-14 text-center text-xs font-mono text-fuchsia-200">{Number.isInteger(tam) ? tam : tam.toString().replace(".", ",")} m</span>
-                    <button type="button" onClick={() => setTam(tam + 1.5)} disabled={tam >= DOMAIN_SIZE_MAX} className={stepBtn}>+</button>
+                    <button type="button" onClick={() => setTam(tam + 1.5)} disabled={!noLimits && tam >= DOMAIN_SIZE_MAX} className={stepBtn}>+</button>
                   </div>
                   <span className={`text-[11px] font-semibold ${delta > 0 ? "text-emerald-300" : delta < 0 ? "text-red-300" : "text-slate-500"}`}>
                     {delta > 0 ? "+" : ""}{delta} PV {delta === 0 ? "(padrão)" : "de barreira"}

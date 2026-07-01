@@ -363,12 +363,12 @@ function corpoAmaldicoadoBaseFeatures() {
       key: "segunda_fase",
       name: "Segunda Fase",
       description:
-        "Quando o corpo amaldiçoado atinge ou ativa sua segunda fase, ele muda em partes o seu conceito (Mago para Combatente, Mago para Lutador, Fogo para Gelo, Psíquico para Físico, e por aí vai). Recebe um aumento de vida igual a Constituição × (BT × 2) — essa vida recebida é OPCIONAL, o narrador não precisa colocá-la caso não queira. De resto, segue a criação padrão do guia.",
+        "Quando o corpo amaldiçoado atinge ou ativa sua segunda fase, ele muda em partes o seu conceito (Mago para Combatente, Mago para Lutador, Fogo para Gelo, Psíquico para Físico, e por aí vai). Recebe um aumento de vida igual a Constituição × (BT × 2). Essa vida recebida é OPCIONAL, o narrador não precisa colocá-la caso não queira. De resto, segue a criação padrão do guia.",
       descriptionFn: (ctx) => {
         const bt = getBonusTreinamento(ctx?.core?.nd ?? 1);
         const con = ctx?.attributes?.constituicao ?? 10;
         const vida = con * (bt * 2);
-        return `Quando o corpo amaldiçoado atinge ou ativa sua segunda fase, ele muda em partes o seu conceito (Mago para Combatente, Mago para Lutador, Fogo para Gelo, Psíquico para Físico, e por aí vai). Recebe um aumento de vida igual a Constituição × (BT × 2) — essa vida recebida é OPCIONAL, o narrador não precisa colocá-la caso não queira. De resto, segue a criação padrão do guia.\n\nGanho opcional de vida: Constituição × (BT × 2) = ${con} × ${bt * 2} = ${vida} PV (BT +${bt}).`;
+        return `Quando o corpo amaldiçoado atinge ou ativa sua segunda fase, ele muda em partes o seu conceito (Mago para Combatente, Mago para Lutador, Fogo para Gelo, Psíquico para Físico, e por aí vai). Recebe um aumento de vida igual a Constituição × (BT × 2). Essa vida recebida é OPCIONAL, o narrador não precisa colocá-la caso não queira. De resto, segue a criação padrão do guia.\n\nGanho opcional de vida: Constituição × (BT × 2) = ${con} × ${bt * 2} = ${vida} PV (BT +${bt}).`;
       },
       automation: { kind: "info_only" },
       // Motor (interno) — D origens: "Ativar Segunda Fase" (uso único) concede o
@@ -411,7 +411,7 @@ function restringidoCorpoPorEnergiaFeatures() {
       key: "fantoches",
       name: "Fantoches e Fantoche Supremo",
       description:
-        "O restrito recebe acesso ao seu fantoche supremo e hordas de fantoches. Cada fantoche é um corpo amaldiçoado artificial, criado para servir como olhos, mãos e lâminas de seu controlador no mundo exterior. Eles existem no ponto exato entre engenharia e feitiçaria, unindo metal, selos e energia amaldiçoada em uma única entidade de combate.\n\nO corpo de um fantoche padrão apresenta:\n• Forma humanoide metálica, de proporções semelhantes a um adulto.\n• Revestimento de metal amaldiçoado reforçado.\n• Articulações seladas com inscrições espirituais.\n• Núcleo interno onde a energia amaldiçoada é comprimida.\n• Superfície marcada por: Talismãs, runas de controle, selos de disparo, defesa e autodestruição.\n\nFantoches usam o mesmo guia de criação de criaturas, mas utilizam os PE’s e atributos mentais do controlador. O fantoche não possui pontos de energia amaldiçoada nem atributos mentais — o controlador, por sua vez, não possui atributos físicos. Os fantoches realizam ações físicas (ou no máximo lançam raios laser pelas mãos via selos). Um fantoche pode carregar uma quantidade de equipamentos (Talismãs, Amuletos, Selos, Remédios, Venenos) igual ao seu BT.",
+        "O restrito recebe acesso ao seu fantoche supremo e hordas de fantoches. Cada fantoche é um corpo amaldiçoado artificial, criado para servir como olhos, mãos e lâminas de seu controlador no mundo exterior. Eles existem no ponto exato entre engenharia e feitiçaria, unindo metal, selos e energia amaldiçoada em uma única entidade de combate.\n\nO corpo de um fantoche padrão apresenta:\n• Forma humanoide metálica, de proporções semelhantes a um adulto.\n• Revestimento de metal amaldiçoado reforçado.\n• Articulações seladas com inscrições espirituais.\n• Núcleo interno onde a energia amaldiçoada é comprimida.\n• Superfície marcada por: Talismãs, runas de controle, selos de disparo, defesa e autodestruição.\n\nFantoches usam o mesmo guia de criação de criaturas, mas utilizam os PE’s e atributos mentais do controlador. O fantoche não possui pontos de energia amaldiçoada nem atributos mentais. O controlador, por sua vez, não possui atributos físicos. Os fantoches realizam ações físicas (ou no máximo lançam raios laser pelas mãos via selos). Um fantoche pode carregar uma quantidade de equipamentos (Talismãs, Amuletos, Selos, Remédios, Venenos) igual ao seu BT.",
     },
   ];
 }

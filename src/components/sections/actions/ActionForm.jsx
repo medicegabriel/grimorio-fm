@@ -486,7 +486,7 @@ export default function ActionForm({
                         type="button"
                         // eslint-disable-next-line react-hooks/refs -- ref lido em handler de clique (uso válido)
                         onClick={() => insertToken(tk.key)}
-                        title={`Insere {{${tk.key}}} — atualiza sozinho`}
+                        title={`Insere {{${tk.key}}}, atualiza sozinho`}
                         className="px-1.5 py-0.5 rounded border border-amber-800/60 bg-amber-950/30 text-amber-300/90 text-[10px] font-mono hover:bg-amber-900/40 hover:text-amber-200 transition-colors focus:outline-none"
                       >
                         {tk.label}

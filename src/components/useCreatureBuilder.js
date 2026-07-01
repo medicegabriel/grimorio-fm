@@ -42,6 +42,9 @@ export const blankDraft = () => ({
     difficulty: "intermediario",
     origin: { type: "maldicao", subtype: "comum", hasAumentoEnergia: false, hasEstoqueAdicional: false, frutosExperiencia: null },
     size: "medio",
+    // "Sem Limites": ignora TODAS as travas/avisos de regra da ficha (orçamentos,
+    // limites de dotes/aptidões/defesas, teto de nível de aptidão, etc.).
+    semLimites: false,
   },
   attributes: {
     forca: 10,
@@ -349,10 +352,14 @@ const actionHandlers = {
   SET_ATTACK_ATTR: (s, payload) => ({ ...s, attackAttr: payload }),
   SET_CD_ATTR:     (s, payload) => ({ ...s, cdAttr: payload }),
 
-  SET_APTIDAO: (s, { key, value }) => ({
-    ...s,
-    aptidoes: { ...s.aptidoes, [key]: Math.max(0, Math.min(10, value)) },
-  }),
+  SET_APTIDAO: (s, { key, value }) => {
+    // Sem Limites remove o teto de nível de aptidão (normalmente 10 no reducer).
+    const cap = s.core?.semLimites ? Infinity : 10;
+    return {
+      ...s,
+      aptidoes: { ...s.aptidoes, [key]: Math.max(0, Math.min(cap, value)) },
+    };
+  },
 
   SET_STAT_OVERRIDE: (s, { key, value }) => ({
     ...s,

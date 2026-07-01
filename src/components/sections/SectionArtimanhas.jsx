@@ -21,7 +21,9 @@ export default function SectionArtimanhas({ draft, actions }) {
 
   const limit = getArtimanhasLimit(draft.core);
   const count = artimanhas.length;
-  const exceeded = count > limit;
+  // Sem Limites: neutraliza o aviso de "excedido" (a adição já é livre aqui).
+  const noLimits = !!draft.core?.semLimites;
+  const exceeded = !noLimits && count > limit;
 
   const handleAdd = () => {
     if (selecao === CUSTOM_KEY) {

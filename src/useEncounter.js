@@ -8,7 +8,7 @@ import {
   orderByInitiative, rollAllInitiatives, setManualInitiative,
   getNextTurn, applyNewRoundToAll, isAutoDefeated,
   validateReadyToStart, ENCOUNTER_STATUS, canTransition,
-  createLogEntry, LOG_TYPES, rollInitiative, getExpiredConditions
+  createLogEntry, LOG_TYPES, rollInitiative, tickCombatantConditions
 } from './fm-encounter';
 import { applyRoundStartResources } from './components/fm-automation-entities';
 
@@ -137,10 +137,10 @@ const HANDLERS = {
     const log = [...state.log];
 
     if (isNewRound) {
-      const expired = combatants.flatMap(getExpiredConditions);
-      // Tick global de condições/modificadores + round_start por combatente
-      // (Treino de Energia/Potencial = +PE temp). Mesma lógica do tracker single.
-      combatants = applyNewRoundToAll(combatants).map((c) => {
+      // Efeitos de RODADA: Guarda + modificadores + round_start por combatente
+      // (Treino de Energia/Potencial = +PE temp). NÃO ticam condições aqui —
+      // condições contam por TURNO (ver bloco abaixo), não no vira-rodada.
+      combatants = applyNewRoundToAll(combatants, { tickConditions: false }).map((c) => {
         // Derrotado não recebe recursos de rodada (igual applyNewRoundEffects).
         if (!c.combatState || !c.snapshot || c.flags?.isDefeated) return c;
         const base = { ...c.combatState, lastDamage: 0 };
@@ -153,12 +153,6 @@ const HANDLERS = {
         }
         return { ...c, combatState };
       });
-      expired.forEach(({ conditionName, combatantName }) => {
-        log.unshift(createLogEntry({
-          round: newRound, type: LOG_TYPES.CONDITION,
-          message: `A condição [${conditionName}] de ${combatantName} chegou ao fim e foi removida.`
-        }));
-      });
       log.unshift(createLogEntry({
         round: newRound, type: LOG_TYPES.ROUND,
         message: `Rodada ${newRound} iniciada.`
@@ -166,6 +160,20 @@ const HANDLERS = {
     }
 
     if (nextCombatantId) {
+      // Tick de condições do combatente que ESTÁ INICIANDO o turno: elas contam
+      // e expiram quando chega a ação dele, não quando vira a rodada.
+      combatants = combatants.map((c) => {
+        if (c.id !== nextCombatantId) return c;
+        const { combatant, expired } = tickCombatantConditions(c);
+        expired.forEach(({ conditionName, combatantName }) => {
+          log.unshift(createLogEntry({
+            round: newRound, type: LOG_TYPES.CONDITION,
+            message: `A condição [${conditionName}] de ${combatantName} chegou ao fim e foi removida.`
+          }));
+        });
+        return combatant;
+      });
+
       const active = combatants.find((c) => c.id === nextCombatantId);
       log.unshift(createLogEntry({
         round: newRound, type: LOG_TYPES.TURN,
@@ -178,19 +186,14 @@ const HANDLERS = {
   },
 
   NEW_ROUND: (state) => {
-    // Força nova rodada manualmente (reaplica Guarda + avança contador)
+    // Força nova rodada manualmente (reaplica Guarda + avança contador).
+    // Não tica condições: elas contam por turno, no início do turno de cada um.
     if (state.status !== ENCOUNTER_STATUS.ACTIVE) return state;
-    const expired = state.combatants.flatMap(getExpiredConditions);
-    const combatants = applyNewRoundToAll(state.combatants);
+    const combatants = applyNewRoundToAll(state.combatants, { tickConditions: false });
     const round = state.round + 1;
-    const newLog = [];
-    expired.forEach(({ conditionName, combatantName }) => {
-      newLog.push(createLogEntry({
-        round, type: LOG_TYPES.CONDITION,
-        message: `A condição [${conditionName}] de ${combatantName} chegou ao fim e foi removida.`
-      }));
-    });
-    newLog.push(createLogEntry({ round, type: LOG_TYPES.ROUND, message: `Rodada ${round} forçada manualmente.` }));
+    const newLog = [
+      createLogEntry({ round, type: LOG_TYPES.ROUND, message: `Rodada ${round} forçada manualmente.` })
+    ];
     return { ...state, combatants, round, log: [...newLog, ...state.log] };
   },
 

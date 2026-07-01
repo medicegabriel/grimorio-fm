@@ -37,6 +37,9 @@ export default function SectionDotes({ draft, actions, dslContext = null }) {
   const limite = limiteBase + frutosBonus;
   const usados = dotes.length;
   const slotsRestantes = limite - usados;
+  // Sem Limites: ignora os slots — sempre dá pra adicionar.
+  const noLimits = !!draft.core?.semLimites;
+  const slotsOk = noLimits || slotsRestantes > 0;
 
   // Estado da UI de adicionar — picker inicia fechado, igual à aba de
   // Treinamentos, evitando um muro de cards ao abrir a seção.
@@ -55,7 +58,7 @@ export default function SectionDotes({ draft, actions, dslContext = null }) {
   );
 
   const handleAddOficial = (dote) => {
-    if (slotsRestantes <= 0) return;
+    if (!slotsOk) return;
     actions.addDote({
       tipo: "oficial",
       key: dote.key,
@@ -65,7 +68,7 @@ export default function SectionDotes({ draft, actions, dslContext = null }) {
   };
 
   const handleAddCustom = () => {
-    if (slotsRestantes <= 0 || !nomeCustom.trim()) return;
+    if (!slotsOk || !nomeCustom.trim()) return;
     actions.addDote({
       tipo: "custom",
       nome: nomeCustom.trim(),
@@ -112,16 +115,20 @@ export default function SectionDotes({ draft, actions, dslContext = null }) {
         </div>
         <span
           className={`text-xs font-bold tabular-nums ${
-            slotsRestantes < 0
-              ? "text-red-400"
-              : slotsRestantes === 0
-                ? "text-slate-500"
-                : "text-amber-400"
+            noLimits
+              ? "text-amber-300"
+              : slotsRestantes < 0
+                ? "text-red-400"
+                : slotsRestantes === 0
+                  ? "text-slate-500"
+                  : "text-amber-400"
           }`}
         >
-          {slotsRestantes < 0
-            ? `${usados}/${limite} (excedido)`
-            : `${slotsRestantes}/${limite} disponíveis`}
+          {noLimits
+            ? `${usados} · sem limite`
+            : slotsRestantes < 0
+              ? `${usados}/${limite} (excedido)`
+              : `${slotsRestantes}/${limite} disponíveis`}
         </span>
       </div>
 
@@ -201,8 +208,8 @@ export default function SectionDotes({ draft, actions, dslContext = null }) {
         </div>
       )}
 
-      {/* ===== SELETOR — só quando ainda há slots disponíveis ===== */}
-      {slotsRestantes > 0 ? (
+      {/* ===== SELETOR — quando há slots (ou Sem Limites) ===== */}
+      {slotsOk ? (
       <div className="order-2 pt-3 border-t border-slate-800">
         <button
           type="button"
@@ -219,7 +226,7 @@ export default function SectionDotes({ draft, actions, dslContext = null }) {
             {pickerOpen ? "Escolher Dote" : "Adicionar Dote"}
           </span>
           <span className="text-[10px] uppercase tracking-wider text-purple-300/90 font-bold bg-purple-950/60 border border-purple-800/60 rounded px-1.5 py-0.5">
-            {slotsRestantes} vaga{slotsRestantes === 1 ? "" : "s"}
+            {noLimits ? "∞ vagas" : `${slotsRestantes} vaga${slotsRestantes === 1 ? "" : "s"}`}
           </span>
           {pickerOpen ? (
             <ChevronUp className="w-4 h-4 flex-shrink-0" />
@@ -378,7 +385,7 @@ export default function SectionDotes({ draft, actions, dslContext = null }) {
           {limite === 0
             ? "Este Patamar não permite Dotes Gerais."
             : slotsRestantes < 0
-              ? "Limite de dotes excedido — remova alguns para respeitar o máximo."
+              ? "Limite de dotes excedido. Remova alguns para respeitar o máximo."
               : "Todos os dotes permitidos foram adicionados."}
         </p>
       )}

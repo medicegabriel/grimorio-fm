@@ -271,6 +271,10 @@ function calcIniciativa(patamar, nd, modDex) {
 }
 
 export function validateDraft(raw, derived) {
+  // Modo "Sem Limites": ignora todas as regras convencionais — nenhum aviso
+  // (orçamentos, limites de dotes/aptidões/defesas, integridade, pré-requisitos).
+  if (raw.core?.semLimites) return [];
+
   const warnings = [];
   const { attrBudget } = derived;
 

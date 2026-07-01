@@ -41,7 +41,8 @@ const BUDGET_THEME = {
   ok:   { bg: "bg-emerald-950/60", border: "border-emerald-800/60", text: "text-emerald-300", label: "exato" },
   warn: { bg: "bg-amber-950/60",   border: "border-amber-800/60",   text: "text-amber-300",   label: "disponível" },
   over: { bg: "bg-red-950/60",     border: "border-red-800/60",     text: "text-red-300",     label: "excedido" },
-  idle: { bg: "bg-slate-900/60",   border: "border-slate-800",      text: "text-slate-400",   label: "sem orçamento" }
+  idle: { bg: "bg-slate-900/60",   border: "border-slate-800",      text: "text-slate-400",   label: "sem orçamento" },
+  nolimit: { bg: "bg-amber-950/40", border: "border-amber-800/50",  text: "text-amber-300",   label: "sem limites" },
 };
 
 const getBudgetKey = ({ budget, spent }) => {
@@ -55,6 +56,10 @@ const getBudgetKey = ({ budget, spent }) => {
 // COMPONENTE
 // ============================================================
 export default function SectionAptidoes({ draft, actions }) {
+  const noLimits = !!draft.core?.semLimites;
+  // Teto por slot: 5 normalmente; livre no modo Sem Limites.
+  const slotMax = noLimits ? 99 : APTIDAO_MAX_PER_SLOT;
+
   // Derivações memoizadas
   // O bônus de Compreensão soma ao orçamento total (pode gastar onde quiser).
   // O bônus de Barreira é EXTRA: não consome ponto do orçamento, só aparece
@@ -74,7 +79,7 @@ export default function SectionAptidoes({ draft, actions }) {
     const b = base + frutos + compreensao + estudo;
     const s = Object.values(draft.aptidoes ?? {}).reduce((sum, v) => sum + (Number(v) || 0), 0);
     const r = b - s;
-    const key = getBudgetKey({ budget: b, spent: s });
+    const key = noLimits ? "nolimit" : getBudgetKey({ budget: b, spent: s });
     return {
       budget: b,
       baseBudget: base,
@@ -93,7 +98,7 @@ export default function SectionAptidoes({ draft, actions }) {
   // Não bloqueia digitar valores acima do orçamento (warning não-bloqueante,
   // conforme filosofia do validateDraft), só garante o range 0-10 individual.
   const handleChange = (key, newValue) => {
-    const clamped = Math.max(0, Math.min(APTIDAO_MAX_PER_SLOT, Number(newValue) || 0));
+    const clamped = Math.max(0, Math.min(slotMax, Number(newValue) || 0));
     actions.setAptidao(key, clamped);
   };
 
@@ -123,6 +128,7 @@ export default function SectionAptidoes({ draft, actions }) {
             {budgetKey === "over" && `Excedeu em ${Math.abs(remaining)}`}
             {budgetKey === "ok" && "Limite exato"}
             {budgetKey === "warn" && `${remaining} disponível(is)`}
+            {budgetKey === "nolimit" && "Sem Limites ativo"}
             {budgetKey === "idle" &&
               (isRestritoCeleste(draft.core)
                 ? "Restrito Celeste não recebe Aptidões"
@@ -188,7 +194,7 @@ export default function SectionAptidoes({ draft, actions }) {
           // Cap absoluto: o bônus do treino nunca pode levar o slot acima
           // do limite individual (5). Quando o input já atingiu o cap, o
           // bônus é "desperdiçado" — mostramos isso explicitamente.
-          const effective = Math.min(current + rawBonus, APTIDAO_MAX_PER_SLOT);
+          const effective = Math.min(current + rawBonus, slotMax);
           const appliedBonus = effective - current;
           const wastedBonus = rawBonus - appliedBonus;
 
@@ -218,7 +224,7 @@ export default function SectionAptidoes({ draft, actions }) {
                 value={current}
                 onChange={(v) => handleChange(key, v)}
                 min={0}
-                max={APTIDAO_MAX_PER_SLOT}
+                max={slotMax}
               />
               {appliedBonus > 0 && (
                 <p className="text-[10px] text-amber-300/80 mt-1 font-mono">
@@ -227,7 +233,7 @@ export default function SectionAptidoes({ draft, actions }) {
               )}
               {wastedBonus > 0 && (
                 <p className="text-[10px] text-slate-500 mt-1 italic">
-                  Limite {APTIDAO_MAX_PER_SLOT} atingido — bônus do treino sem efeito.
+                  Limite {APTIDAO_MAX_PER_SLOT} atingido: bônus do treino sem efeito.
                 </p>
               )}
             </div>

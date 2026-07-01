@@ -22,6 +22,7 @@ import SectionDefenses from "./sections/SectionDefenses";
 import SectionSkills from "./sections/SectionSkills";
 import LivePreview from "./sections/LivePreview";
 import { isNaoFeiticeiro } from "./fm-origens";
+import { isDomainAction } from "./fm-domain-calc";
 import { buildDraftDslContext } from "./fm-dsl";
 
 /**
@@ -247,6 +248,10 @@ export default function CreatureBuilder({ existingCreature, onSave, onCancel }) 
     () =>
       (draft.actions?.list || []).filter(
         (a) =>
+          // Expansão de Domínio não passa pelo pipeline de ND/Patamar/Dificuldade
+          // (seu `calc` tem outra forma e o recálculo a devolve intacta), então
+          // nunca é "fora de sincronia" — incluí-la deixava o aviso preso pra sempre.
+          !isDomainAction(a) &&
           a.calc &&
           (a.calc.nd !== draft.core.nd ||
             a.calc.patamar !== draft.core.patamar ||
@@ -343,7 +348,8 @@ export default function CreatureBuilder({ existingCreature, onSave, onCancel }) 
 
   const identityEl = useMemo(
     () => <SectionIdentity draft={draft} actions={actions} />,
-    [draft.name, draft.portraitUrl, draft.portraitFocus, draft.narratorNotes, actions]
+    // draft.core?.semLimites: o toggle "Sem Limites" mora nesta seção.
+    [draft.name, draft.portraitUrl, draft.portraitFocus, draft.narratorNotes, draft.core?.semLimites, actions]
   );
   const coreEl = useMemo(
     () => <SectionCore draft={draft} derived={derived} actions={actions} />,
@@ -359,7 +365,10 @@ export default function CreatureBuilder({ existingCreature, onSave, onCancel }) 
   );
   const aptidoesEl = useMemo(
     () => <SectionAptidoes draft={draft} actions={actions} />,
-    [draft.core, draft.aptidoes, draft.treinamentos, actions]
+    // draft.dotes entra nas deps porque o orçamento soma o Estudo Amaldiçoado
+    // (dote). Sem isso, adicionar/remover o dote não recomputava a seção e o
+    // +2 só aparecia quando outra dep mudava (bug de atualização atrasada).
+    [draft.core, draft.aptidoes, draft.treinamentos, draft.dotes, actions]
   );
   const skillsEl = useMemo(
     () => <SectionSkills draft={draft} derived={derived} actions={actions} />,

@@ -48,7 +48,7 @@ export default function ActionItem({ action, creatureName, onEdit, onRemove, onD
         {finalPE > 0 && <Pill color="purple">{finalPE} PE</Pill>}
         {showStale && (
           <span
-            title="O ND mudou e esta ação tem um Texto Final manual — os números no texto podem estar desatualizados. Edite a ação para revisar."
+            title="O ND mudou e esta ação tem um Texto Final manual: os números no texto podem estar desatualizados. Edite a ação para revisar."
             className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded border border-amber-700/60 bg-amber-950/50 text-amber-300 text-[10px] font-semibold uppercase tracking-wide flex-shrink-0"
           >
             <AlertTriangle className="w-3 h-3" /> Texto desatualizado

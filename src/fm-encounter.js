@@ -270,17 +270,15 @@ export const autoNumberDuplicates = (combatants) => {
 // ============================================================
 // EFEITOS DE NOVA RODADA
 // Regra atual: reseta Guarda Inabalável ao máximo.
-// EXT: adicionar regeneração, tick de condições, etc.
+// EXT: adicionar regeneração, etc. (tick de condições é POR TURNO — ver
+// tickCombatantConditions — não mais no vira-rodada.)
 // ============================================================
-// Retorna as condições que vão expirar nesta rodada (para notificações antes de aplicar)
-export const getExpiredConditions = (combatant) => {
-  if (!combatant.combatState) return [];
-  return (combatant.combatState.activeConditions ?? [])
-    .filter((c) => c.duracao != null && c.duracao - 1 <= 0)
-    .map((c) => ({ conditionName: c.name, combatantName: combatant.displayName }));
-};
-
-export const applyNewRoundEffects = (combatant) => {
+// `tickConditions` (default true): decrementa as condições por rodada. No
+// multi-tracker (EncounterTracker) passamos `false` porque as condições passaram
+// a contar POR TURNO — cada combatente tica as suas no início do próprio turno
+// (ver tickCombatantConditions). No single-tracker o padrão true é o correto,
+// pois com 1 combatente o turno dele É a rodada.
+export const applyNewRoundEffects = (combatant, { tickConditions = true } = {}) => {
   if (!combatant.combatState) return combatant; // PC
   if (combatant.flags.isDefeated) return combatant;
 
@@ -288,9 +286,11 @@ export const applyNewRoundEffects = (combatant) => {
   const guardaMax = stats.guardaInabavalMax ?? 0;
 
   // duracao === null = condição permanente (ex: Caído, Sangramento) — nunca decrementa nem remove
-  const updatedConditions = (combatant.combatState.activeConditions ?? [])
-    .map((c) => c.duracao == null ? c : { ...c, duracao: c.duracao - 1 })
-    .filter((c) => c.duracao == null || c.duracao > 0);
+  const updatedConditions = tickConditions
+    ? (combatant.combatState.activeConditions ?? [])
+        .map((c) => c.duracao == null ? c : { ...c, duracao: c.duracao - 1 })
+        .filter((c) => c.duracao == null || c.duracao > 0)
+    : (combatant.combatState.activeConditions ?? []);
 
   return {
     ...combatant,
@@ -303,8 +303,34 @@ export const applyNewRoundEffects = (combatant) => {
   };
 };
 
-export const applyNewRoundToAll = (combatants) =>
-  combatants.map(applyNewRoundEffects);
+export const applyNewRoundToAll = (combatants, opts) =>
+  combatants.map((c) => applyNewRoundEffects(c, opts));
+
+// Tick de condições de UM combatente — chamado no INÍCIO do turno dele (multi).
+// Usa a MESMA matemática do tick de rodada, só localizada no combatente da vez:
+// as condições contam/expiram quando chega o turno de cada um, e não quando
+// vira a rodada. Retorna o combatente atualizado + as condições que expiraram
+// (para log). Condições de duracao === null (permanentes) nunca decrementam.
+export const tickCombatantConditions = (combatant) => {
+  if (!combatant.combatState) return { combatant, expired: [] };
+  const conditions = combatant.combatState.activeConditions ?? [];
+  if (!conditions.some((c) => c.duracao != null)) return { combatant, expired: [] };
+
+  const expired = conditions
+    .filter((c) => c.duracao != null && c.duracao - 1 <= 0)
+    .map((c) => ({ conditionName: c.name, combatantName: combatant.displayName }));
+  const updated = conditions
+    .map((c) => c.duracao == null ? c : { ...c, duracao: c.duracao - 1 })
+    .filter((c) => c.duracao == null || c.duracao > 0);
+
+  return {
+    combatant: {
+      ...combatant,
+      combatState: { ...combatant.combatState, activeConditions: updated },
+    },
+    expired,
+  };
+};
 
 // ============================================================
 // ENCOUNTER FACTORIES

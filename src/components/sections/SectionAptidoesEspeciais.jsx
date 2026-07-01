@@ -34,6 +34,9 @@ export default function SectionAptidoesEspeciais({ draft, actions, dslContext = 
   const limite = getAptidaoLimit(draft.core) + frutosBonus;
   const usados = aptidoes.filter((a) => a.source !== "treino").length;
   const slotsRestantes = limite - usados;
+  // Sem Limites: ignora os slots — sempre dá pra adicionar.
+  const noLimits = !!draft.core?.semLimites;
+  const slotsOk = noLimits || slotsRestantes > 0;
 
   // Contexto para os valores computados (computeInfo): núcleo, atributos e
   // níveis de aptidão (AU/CL/BAR/DOM/ER).
@@ -46,7 +49,7 @@ export default function SectionAptidoesEspeciais({ draft, actions, dslContext = 
   );
 
   const handleAddOficial = (apt, categoria) => {
-    if (slotsRestantes <= 0) return;
+    if (!slotsOk) return;
     actions.addAptidaoEspecial({
       tipo: "oficial",
       key: apt.key,
@@ -57,7 +60,7 @@ export default function SectionAptidoesEspeciais({ draft, actions, dslContext = 
   };
 
   const handleAddCustom = () => {
-    if (slotsRestantes <= 0 || !nomeCustom.trim()) return;
+    if (!slotsOk || !nomeCustom.trim()) return;
     actions.addAptidaoEspecial({
       tipo: "custom",
       categoria: "Customizada",
@@ -103,16 +106,20 @@ export default function SectionAptidoesEspeciais({ draft, actions, dslContext = 
         </div>
         <span
           className={`text-xs font-bold tabular-nums ${
-            slotsRestantes < 0
-              ? "text-red-400"
-              : slotsRestantes === 0
-                ? "text-slate-500"
-                : "text-purple-300"
+            noLimits
+              ? "text-amber-300"
+              : slotsRestantes < 0
+                ? "text-red-400"
+                : slotsRestantes === 0
+                  ? "text-slate-500"
+                  : "text-purple-300"
           }`}
         >
-          {slotsRestantes < 0
-            ? `${usados}/${limite} (excedido)`
-            : `${slotsRestantes}/${limite} disponíveis`}
+          {noLimits
+            ? `${usados} · sem limite`
+            : slotsRestantes < 0
+              ? `${usados}/${limite} (excedido)`
+              : `${slotsRestantes}/${limite} disponíveis`}
         </span>
       </div>
 
@@ -229,8 +236,8 @@ export default function SectionAptidoesEspeciais({ draft, actions, dslContext = 
         </div>
       )}
 
-      {/* ===== SELETOR — cards agrupados por Tipo (só quando há vagas) ===== */}
-      {slotsRestantes > 0 ? (
+      {/* ===== SELETOR — cards agrupados por Tipo (quando há vagas ou Sem Limites) ===== */}
+      {slotsOk ? (
       <div className="order-2 pt-3 border-t border-slate-800">
         <button
           type="button"
@@ -247,7 +254,7 @@ export default function SectionAptidoesEspeciais({ draft, actions, dslContext = 
             {pickerOpen ? "Escolher Aptidão" : "Adicionar Aptidão"}
           </span>
           <span className="text-[10px] uppercase tracking-wider text-purple-300/90 font-bold bg-purple-950/60 border border-purple-800/60 rounded px-1.5 py-0.5">
-            {slotsRestantes} vaga{slotsRestantes === 1 ? "" : "s"}
+            {noLimits ? "∞ vagas" : `${slotsRestantes} vaga${slotsRestantes === 1 ? "" : "s"}`}
           </span>
           {pickerOpen ? (
             <ChevronUp className="w-4 h-4 flex-shrink-0" />

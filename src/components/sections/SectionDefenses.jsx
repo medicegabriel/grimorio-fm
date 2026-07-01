@@ -66,6 +66,8 @@ export default function SectionDefenses({ draft, actions }) {
 
   const patamar = draft.core.patamar ?? "comum";
   const limits = DEFENSE_LIMITS[patamar] ?? DEFENSE_LIMITS.comum;
+  // Sem Limites: neutraliza todos os "excedido" (cores + banners de soft cap).
+  const noLimits = !!draft.core?.semLimites;
 
   // Defesas vindas de Origem (source:'origin') ou de Aptidão (source:'aptidao'),
   // e condições em originCondicoesImunes/doteCondicoesImunes NÃO entram nos
@@ -82,8 +84,8 @@ export default function SectionDefenses({ draft, actions }) {
     vulnerabilidades: draft.defenses.vulnerabilidades.length - manualCounts.vulnerabilidades,
   };
 
-  const overLimit = CATEGORIES.filter(({ key }) => manualCounts[key] > limits[key]);
-  const missingVulnerabilidades = manualCounts.imunidades > manualCounts.vulnerabilidades;
+  const overLimit = noLimits ? [] : CATEGORIES.filter(({ key }) => manualCounts[key] > limits[key]);
+  const missingVulnerabilidades = !noLimits && manualCounts.imunidades > manualCounts.vulnerabilidades;
 
   const condTotalLimit = CONDITION_TOTAL_LIMITS[patamar] ?? 5;
   const originConds = new Set(draft.defenses.originCondicoesImunes || []);
@@ -94,11 +96,11 @@ export default function SectionDefenses({ draft, actions }) {
   const condCount = manualConds.length;
   const originCondCount = draft.defenses.condicoesImunes.filter((c) => originConds.has(c)).length;
   const doteCondCount = draft.defenses.condicoesImunes.filter((c) => doteConds.has(c) && !originConds.has(c)).length;
-  const condExceeded = condCount > condTotalLimit;
+  const condExceeded = !noLimits && condCount > condTotalLimit;
   const extremaCount = manualConds.filter((c) => CONDITION_SEVERITY_MAP[c] === "extremas").length;
   const forteCount   = manualConds.filter((c) => CONDITION_SEVERITY_MAP[c] === "fortes").length;
-  const extremaExceeded = extremaCount > 1;
-  const forteExceeded   = forteCount > 2;
+  const extremaExceeded = !noLimits && extremaCount > 1;
+  const forteExceeded   = !noLimits && forteCount > 2;
 
   return (
     <div className="space-y-4">
@@ -107,7 +109,7 @@ export default function SectionDefenses({ draft, actions }) {
         const count = manualCounts[key];
         const originCount = originCounts[key];
         const limit = limits[key];
-        const exceeded = count > limit;
+        const exceeded = !noLimits && count > limit;
         return (
           <div key={key}>
             <h3 className={`text-[10px] uppercase tracking-widest font-bold mb-2 flex items-center gap-1.5 ${accent}`}>
@@ -283,7 +285,7 @@ export default function SectionDefenses({ draft, actions }) {
               <span className="flex-shrink-0">⚠️</span>
               <span>
                 <b>Troca Equivalente:</b> Para cada Imunidade, a criatura deve possuir pelo menos uma Vulnerabilidade condizente.{" "}
-                <span className="text-red-400 font-semibold">({manualCounts.imunidades} imunidade(s) — {manualCounts.vulnerabilidades} vulnerabilidade(s))</span>
+                <span className="text-red-400 font-semibold">({manualCounts.imunidades} imunidade(s) para {manualCounts.vulnerabilidades} vulnerabilidade(s))</span>
               </span>
             </div>
           )}

@@ -123,7 +123,7 @@ function FeatureItem({ feature, onUpdate, onRemove, origin, onPatchOrigin, dslCo
         {isFromOrigin && (
           <span
             className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px] uppercase tracking-wide bg-purple-950/60 text-purple-300 border-purple-800"
-            title="Característica derivada da Origem — para alterá-la, mude a origem na seção Patamar & Nível."
+            title="Característica derivada da Origem. Para alterá-la, mude a origem na seção Patamar & Nível."
           >
             <Lock className="w-2.5 h-2.5" /> Origem
           </span>

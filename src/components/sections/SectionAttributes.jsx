@@ -13,7 +13,8 @@ const ATTRIBUTES = [
 
 export default function SectionAttributes({ draft, derived, actions }) {
   const { attrBudget } = derived;
-  const budgetStatus =
+  const noLimits = !!draft.core?.semLimites;
+  const budgetStatus = noLimits ? "nolimit" :
     attrBudget.remaining < 0 ? "over" :
     attrBudget.remaining === 0 ? "exact" : "under";
 
@@ -22,6 +23,7 @@ export default function SectionAttributes({ draft, derived, actions }) {
     over:  "text-red-400 bg-red-950/30 border-red-900",
     exact: "text-emerald-400 bg-emerald-950/30 border-emerald-900",
     under: "text-amber-400 bg-amber-950/30 border-amber-900",
+    nolimit: "text-amber-300 bg-amber-950/20 border-amber-800/50",
   };
 
   return (
@@ -43,7 +45,7 @@ export default function SectionAttributes({ draft, derived, actions }) {
           const value = draft.attributes[key];
           const mod = getModifier(value);
           const modStr = mod >= 0 ? `+${mod}` : `${mod}`;
-          const isOverLimit = value > attrBudget.limit;
+          const isOverLimit = !noLimits && value > attrBudget.limit;
 
           return (
             <div key={key} className={`bg-slate-950/60 border rounded p-3 ${
@@ -74,7 +76,7 @@ export default function SectionAttributes({ draft, derived, actions }) {
         })}
       </div>
 
-      {attrBudget.remaining < 0 && (
+      {!noLimits && attrBudget.remaining < 0 && (
         <div className="flex items-start gap-2 px-3 py-2.5 rounded border bg-amber-950/30 border-amber-700 text-amber-300 text-xs">
           <span className="text-base leading-none flex-shrink-0">⚠️</span>
           <span>
@@ -87,7 +89,7 @@ export default function SectionAttributes({ draft, derived, actions }) {
           </span>
         </div>
       )}
-      {attrBudget.remaining >= 0 &&
+      {!noLimits && attrBudget.remaining >= 0 &&
         Object.values(draft.attributes).some((v) => v > attrBudget.limit) && (
         <div className="flex items-start gap-2 px-3 py-2.5 rounded border bg-red-950/30 border-red-700 text-red-300 text-xs">
           <span className="text-base leading-none flex-shrink-0">⚠️</span>

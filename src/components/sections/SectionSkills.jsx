@@ -83,17 +83,46 @@ export default function SectionSkills({ draft, derived, actions }) {
           ? "Necessidade de Agir"
           : "Treinamento Evidente";
         const total = baseLimit + trainingBonus;
+        const noLimits = !!draft.core?.semLimites;
+        const masteredCount = draft.skills.filter((s) => s.mastered && (s.name || "").trim()).length;
+        const restantes = Math.max(0, total - masteredCount);
+        const over = !noLimits && masteredCount > total;
         return (
-          <p className="text-xs text-slate-500">
-            Limite recomendado: <strong className="text-slate-300">{total}</strong> perícias dominadas (maior modificador mental
-            {trainingBonus > 0 && (
-              <>
-                {" "}+ <span className="text-amber-300">BT {derived.bt}</span>
-                <span className="text-amber-400/80"> por {bonusName}</span>
-              </>
-            )}
-            ).
-          </p>
+          <div className="space-y-2">
+            {/* Contador de perícias dominadas */}
+            <div className="flex items-center justify-between gap-2 px-3 py-2 rounded border bg-slate-900/60 border-slate-800">
+              <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-300">
+                <Star className="w-3.5 h-3.5 text-purple-400" /> Perícias Dominadas
+              </span>
+              <div className="flex items-center gap-1.5 text-xs tabular-nums">
+                <span className={`font-mono font-bold ${over ? "text-red-400" : "text-purple-300"}`}>{masteredCount}</span>
+                {noLimits ? (
+                  <span className="text-[10px] uppercase tracking-wide text-amber-300">sem limite</span>
+                ) : (
+                  <>
+                    <span className="text-slate-600">/</span>
+                    <span className="font-mono text-slate-400">{total}</span>
+                    <span className={`text-[10px] uppercase tracking-wide ${over ? "text-red-400 font-bold" : "text-slate-500"}`}>
+                      {over
+                        ? `${masteredCount - total} além`
+                        : `${restantes} restante${restantes === 1 ? "" : "s"}`}
+                    </span>
+                  </>
+                )}
+              </div>
+            </div>
+            {/* Limite recomendado (texto) */}
+            <p className="text-xs text-slate-500">
+              Limite recomendado: <strong className="text-slate-300">{total}</strong> perícias dominadas (maior modificador mental
+              {trainingBonus > 0 && (
+                <>
+                  {" "}+ <span className="text-amber-300">BT {derived.bt}</span>
+                  <span className="text-amber-400/80"> por {bonusName}</span>
+                </>
+              )}
+              ).
+            </p>
+          </div>
         );
       })()}
 
