@@ -13,7 +13,7 @@ import {
 import { createInitialCombatState, applyNewRoundEffects, LOG_TYPES, createLogEntry, computeAlmaStatus, ALMA_ESTADOS } from '../fm-encounter';
 import { resolveActionFinalText, ACTION_TYPE_LABELS, actionDamageScope, applyActionDamageBoost } from './fm-action-calc';
 import { getModifier, calculateCD, calculateAcerto, CONDITIONS } from './fm-tables';
-import { computeConfrontoDominio, getTreinamentoByKey, isAutomatedTreinamento } from './fm-treinamentos';
+import { computeConfrontoDominio, getTreinamentoByKey, isAutomatedTreinamento, getBarreiraAptidaoBonus } from './fm-treinamentos';
 import { getDoteByKey, isAutomatedDote, resolveDoteDescription } from './fm-dotes';
 import { getAptidaoByKey, resolveAptidaoDescription } from './fm-aptidoes';
 import { getCaracteristicaByKey, resolveCaracteristicaDescription, getCaracteristicaTabelaDestaque } from './fm-caracteristicas';
@@ -35,6 +35,16 @@ const ATTR_DEFS = [
   { key: 'sabedoria',    label: 'SAB', accent: 'text-purple-400' },
   { key: 'presenca',     label: 'PRE', accent: 'text-pink-400' },
 ];
+
+// Níveis numéricos de Aptidão (AU/CL/BAR/DOM/ER) — sistema de orçamento.
+const APTIDAO_DEFS = [
+  { key: 'au',  label: 'AU',  name: 'Aura',               accent: 'text-purple-300' },
+  { key: 'cl',  label: 'CL',  name: 'Controle e Leitura', accent: 'text-sky-300' },
+  { key: 'bar', label: 'BAR', name: 'Barreira',           accent: 'text-amber-300' },
+  { key: 'dom', label: 'DOM', name: 'Domínio',            accent: 'text-rose-300' },
+  { key: 'er',  label: 'ER',  name: 'Energia Reversa',    accent: 'text-emerald-300' },
+];
+const APTIDAO_NIVEL_MAX = 5;
 
 // ============================================================
 // DICIONÁRIOS DE TEMA
@@ -1955,6 +1965,38 @@ export default function CombatantPanel({
           </div>
         )}
       </section>
+
+      {/* ===== NÍVEIS DE APTIDÃO ===== */}
+      {(() => {
+        const barBonus = getBarreiraAptidaoBonus(treinamentos);
+        const levels = APTIDAO_DEFS.map(({ key, label, name, accent }) => {
+          const base = Number(snapshot.aptidoes?.[key]) || 0;
+          const eff = key === 'bar' ? Math.min(base + barBonus, APTIDAO_NIVEL_MAX) : base;
+          return { key, label, name, accent, eff, bonus: eff - base };
+        });
+        if (!levels.some((l) => l.eff > 0)) return null;
+        return (
+          <section aria-label="Níveis de Aptidão">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2 flex items-center gap-2">
+              <Sparkles className="w-3.5 h-3.5 text-fuchsia-400" /> Níveis de Aptidão
+            </h3>
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+              {levels.map(({ key, label, name, accent, eff, bonus }) => (
+                <div key={key} title={name} className="relative bg-slate-900/60 border border-slate-800 rounded-md p-2 flex flex-col items-center justify-center text-center">
+                  <span className={`text-[10px] uppercase tracking-wider font-bold ${accent}`}>{label}</span>
+                  <span className="text-xl font-bold tabular-nums mt-1 text-white">{eff}</span>
+                  <span className="text-[10px] text-slate-500 leading-tight">{name}</span>
+                  {bonus > 0 && (
+                    <span className="mt-0.5 inline-flex items-center gap-0.5 text-[9px] text-amber-300" title="Bônus do Treino de Barreira">
+                      <Zap className="w-2.5 h-2.5" /> +{bonus}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        );
+      })()}
 
       {/* ===== PERÍCIAS ===== */}
       {skills.filter((s) => s.name?.trim()).length > 0 && (

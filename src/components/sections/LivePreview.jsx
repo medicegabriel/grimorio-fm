@@ -4,6 +4,7 @@ import {
 } from "lucide-react";
 import { PATAMAR_LABELS, getModifier } from "../fm-tables";
 import { getCaracteristicaByKey, isAutomatedCaracteristica } from "../fm-caracteristicas";
+import { getBarreiraAptidaoBonus } from "../fm-treinamentos";
 
 // Formata um número com sinal explícito (+N / -N), evitando o "+-1".
 const fmtSigned = (n) => (Number(n) >= 0 ? `+${n}` : `${n}`);
@@ -33,6 +34,16 @@ const ATTR_PREVIEW = [
   { key: "sabedoria",    label: "SAB", accent: "text-purple-400" },
   { key: "presenca",     label: "PRE", accent: "text-pink-400" },
 ];
+
+// Níveis numéricos de Aptidão (AU/CL/BAR/DOM/ER) — sistema de orçamento.
+const APTIDAO_PREVIEW = [
+  { key: "au",  label: "AU",  name: "Aura",               accent: "text-purple-300" },
+  { key: "cl",  label: "CL",  name: "Controle e Leitura", accent: "text-sky-300" },
+  { key: "bar", label: "BAR", name: "Barreira",           accent: "text-amber-300" },
+  { key: "dom", label: "DOM", name: "Domínio",            accent: "text-rose-300" },
+  { key: "er",  label: "ER",  name: "Energia Reversa",    accent: "text-emerald-300" },
+];
+const APTIDAO_MAX = 5;
 
 /**
  * LivePreview v2 — Retrato no topo + perícias dominadas no rodapé.
@@ -196,6 +207,33 @@ export default function LivePreview({ draft, derived }) {
             })}
           </div>
         </div>
+
+        {/* Níveis de Aptidão (só quando ao menos um > 0) */}
+        {(() => {
+          const barBonus = getBarreiraAptidaoBonus(draft.treinamentos);
+          const levels = APTIDAO_PREVIEW.map(({ key, label, name, accent }) => {
+            const base = Number(draft.aptidoes?.[key]) || 0;
+            const eff = key === "bar" ? Math.min(base + barBonus, APTIDAO_MAX) : base;
+            return { key, label, name, accent, eff, bonus: eff - base };
+          });
+          if (!levels.some((l) => l.eff > 0)) return null;
+          return (
+            <div>
+              <h5 className="text-[10px] uppercase tracking-widest text-slate-500 mb-1 font-bold flex items-center gap-1">
+                <Sparkles className="w-3 h-3 text-fuchsia-400" /> Níveis de Aptidão
+              </h5>
+              <div className="grid grid-cols-5 gap-1">
+                {levels.map(({ key, label, name, accent, eff, bonus }) => (
+                  <div key={key} title={name} className="bg-slate-950/60 border border-slate-800 rounded px-1 py-1.5 flex flex-col items-center justify-center text-center">
+                    <span className={`text-[9px] font-bold ${accent}`}>{label}</span>
+                    <span className="text-xs font-bold text-white tabular-nums">{eff}</span>
+                    {bonus > 0 && <span className="text-[8px] text-amber-300" title="Bônus do Treino de Barreira">+{bonus}</span>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Reduções & Resistências (só os que forem > 0) */}
         {(() => {
