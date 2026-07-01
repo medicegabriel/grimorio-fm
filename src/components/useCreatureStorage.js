@@ -105,6 +105,7 @@ export default function useCreatureStorage() {
       isBuiltIn: false,
       createdAt: now,
       updatedAt: now,
+      editLog: creatureData.editLog ?? [],
     };
     setCreatures((prev) => [newCreature, ...prev]);
     return newCreature;
@@ -114,7 +115,9 @@ export default function useCreatureStorage() {
     setCreatures((prev) =>
       prev.map((c) =>
         c.id === id
-          ? { ...c, ...patch, isBuiltIn: false, updatedAt: new Date().toISOString() }
+          // Honra um updatedAt já vindo no patch (save do builder, casado com o
+          // editLog); senão carimba agora (mudanças de combate, mover pasta...).
+          ? { ...c, ...patch, isBuiltIn: false, updatedAt: patch.updatedAt ?? new Date().toISOString() }
           : c
       )
     );
@@ -141,6 +144,7 @@ export default function useCreatureStorage() {
         isBuiltIn: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
+        editLog: [], // cópia começa com histórico de edições zerado
       };
       cloneRef = copy;
       return [copy, ...prev];
@@ -160,6 +164,7 @@ export default function useCreatureStorage() {
       folderId,
       createdAt: now,
       updatedAt: now,
+      editLog: [], // clone começa com histórico de edições zerado
     };
     setCreatures((prev) => [clone, ...prev]);
     return clone;

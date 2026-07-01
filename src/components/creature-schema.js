@@ -14,7 +14,11 @@ const CreatureSchema = {
   id: "uuid-v4-gerado",
   name: "Maldição Especial do Desastre",
   createdAt: "2026-04-17T10:00:00Z",
-  updatedAt: "2026-04-17T10:00:00Z",
+  updatedAt: "2026-04-17T10:00:00Z", // data da ÚLTIMA edição no builder
+  // Histórico de edições: uma data (ISO) por vez que a ficha foi salva no
+  // builder, em ordem cronológica. O último item == updatedAt. Mudanças de
+  // combate (HP/PE/condições) NÃO entram aqui.
+  editLog: ["2026-04-17T10:00:00Z"],
   portraitUrl: null, // opcional, imagem da criatura
   portraitFocus: { x: 50, y: 50 }, // ponto focal do retrato (0-100 %), usado como object-position
 

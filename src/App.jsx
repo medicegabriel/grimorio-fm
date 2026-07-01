@@ -78,19 +78,30 @@ export default function App() {
 
   // ---------- Save de criatura com verificação de encontros ----------
   const handleCreatureSave = useCallback((data) => {
-    const isEditing = !!(data.id && storage.creatures.find((c) => c.id === data.id));
+    const prior = data.id ? storage.creatures.find((c) => c.id === data.id) : null;
+    const isEditing = !!prior;
+
+    // Histórico de edições: carimba a data deste save no fim do editLog.
+    // updatedAt continua sendo "a última edição"; o editLog guarda todas as
+    // anteriores. Só o save do builder registra — mudanças de combate não.
+    const now = new Date().toISOString();
+    const stamped = {
+      ...data,
+      updatedAt: now,
+      editLog: [...(prior?.editLog ?? data.editLog ?? []), now],
+    };
 
     if (isEditing) {
       const affected = encounterManager.encounters.filter((enc) =>
-        enc.combatants?.some((c) => c.creatureId === data.id)
+        enc.combatants?.some((c) => c.creatureId === stamped.id)
       );
       if (affected.length > 0) {
-        setEncounterSyncState({ creature: data, affectedEncounters: affected });
+        setEncounterSyncState({ creature: stamped, affectedEncounters: affected });
         return;
       }
-      storage.update(data.id, data);
+      storage.update(stamped.id, stamped);
     } else {
-      storage.create(data);
+      storage.create(stamped);
     }
     goToDashboard();
   }, [storage, encounterManager.encounters, goToDashboard]);
