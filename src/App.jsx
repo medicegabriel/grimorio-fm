@@ -6,6 +6,7 @@ import EncounterTracker from "./components/EncounterTracker";
 import EncountersDashboard from "./components/EncountersDashboard";
 import TemplateLibrary from "./components/TemplateLibrary";
 import EncounterSyncModal from "./components/EncounterSyncModal";
+import PdfFab from "./components/PdfFab";
 import useCreatureStorage from "./components/useCreatureStorage";
 import useEncounterManager from "./useEncounterManager";
 import { COMPENDIUM, getCompendiumById, isBuiltInId } from "./fm-compendium";
@@ -235,6 +236,7 @@ export default function App() {
           onCancel={handleSyncCancel}
         />
       )}
+      <PdfFab />
       <Analytics />
     </>
   );
