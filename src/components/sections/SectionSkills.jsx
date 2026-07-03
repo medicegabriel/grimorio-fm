@@ -73,8 +73,10 @@ export default function SectionSkills({ draft, derived, actions }) {
           Não-Feiticeiro pela Necessidade de Agir (mecânica idêntica). */}
       {(() => {
         // Maior modificador mental = só Inteligência ou Sabedoria (Presença
-        // NÃO entra nessa conta).
+        // NÃO entra nessa conta). Piso em 0: com modificadores mentais
+        // negativos o limite de perícias não desce abaixo de zero.
         const baseLimit = derived.mods ? Math.max(
+          0,
           derived.mods.inteligencia,
           derived.mods.sabedoria,
         ) : 0;
@@ -126,27 +128,9 @@ export default function SectionSkills({ draft, derived, actions }) {
         );
       })()}
 
-      {/* Lista de perícias */}
-      <div className="space-y-1.5">
-        {draft.skills.length === 0 && (
-          <div className="text-center py-6 text-slate-600 text-sm italic border border-dashed border-slate-800 rounded">
-            Nenhuma perícia cadastrada
-          </div>
-        )}
-        {draft.skills.map((skill) => (
-          <SkillRow
-            key={skill.id}
-            skill={skill}
-            derivation={derived.skillDerivations[skill.id]}
-            onUpdate={(patch) => actions.updateSkill(skill.id, patch)}
-            onRemove={() => actions.removeSkill(skill.id)}
-            onOverride={(v) => actions.setSkillOverride(skill.id, v)}
-          />
-        ))}
-      </div>
-
-      {/* Ações */}
-      <div className="flex flex-wrap gap-2 pt-2">
+      {/* Ações — mantidas ACIMA da lista para que o painel de sugestões
+          (logo abaixo) não seja empurrado a cada perícia adicionada. */}
+      <div className="flex flex-wrap gap-2">
         <SmallButton onClick={handleAddCustom} variant="primary">
           <Plus className="w-3 h-3" /> Adicionar Perícia
         </SmallButton>
@@ -160,7 +144,8 @@ export default function SectionSkills({ draft, derived, actions }) {
         </SmallButton>
       </div>
 
-      {/* Sugestões rápidas (lista do PDF) */}
+      {/* Sugestões rápidas (lista do PDF) — posicionadas acima da lista para
+          permanecerem no mesmo lugar enquanto o usuário adiciona várias. */}
       {showSuggestions && suggestionsLeft.length > 0 && (
         <div className="bg-slate-950/60 border border-slate-800 rounded p-3">
           <h4 className="text-[10px] uppercase tracking-widest text-slate-500 mb-2 font-bold">
@@ -183,6 +168,25 @@ export default function SectionSkills({ draft, derived, actions }) {
           </div>
         </div>
       )}
+
+      {/* Lista de perícias — cresce para baixo, sem afetar botões/sugestões. */}
+      <div className="space-y-1.5">
+        {draft.skills.length === 0 && (
+          <div className="text-center py-6 text-slate-600 text-sm italic border border-dashed border-slate-800 rounded">
+            Nenhuma perícia cadastrada
+          </div>
+        )}
+        {draft.skills.map((skill) => (
+          <SkillRow
+            key={skill.id}
+            skill={skill}
+            derivation={derived.skillDerivations[skill.id]}
+            onUpdate={(patch) => actions.updateSkill(skill.id, patch)}
+            onRemove={() => actions.removeSkill(skill.id)}
+            onOverride={(v) => actions.setSkillOverride(skill.id, v)}
+          />
+        ))}
+      </div>
     </div>
   );
 }
