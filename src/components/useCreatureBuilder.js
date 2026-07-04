@@ -552,6 +552,11 @@ const actionHandlers = {
     ...s,
     artimanhas: (s.artimanhas || []).filter((a) => a.id !== id),
   }),
+  // Atualiza uma artimanha já adicionada (ex.: automação de uma custom).
+  UPDATE_ARTIMANHA: (s, { id, patch }) => ({
+    ...s,
+    artimanhas: (s.artimanhas || []).map((a) => (a.id === id ? { ...a, ...patch } : a)),
+  }),
   CLEAR_ARTIMANHAS: (s) => ({ ...s, artimanhas: [] }),
 
   // ---------- Features ----------
@@ -715,6 +720,7 @@ export default function useCreatureBuilder(initialDraft = null) {
     // Artimanhas
     addArtimanha:    (a) => dispatch({ type: "ADD_ARTIMANHA", payload: a }),
     removeArtimanha: (id) => dispatch({ type: "REMOVE_ARTIMANHA", payload: id }),
+    updateArtimanha: (id, patch) => dispatch({ type: "UPDATE_ARTIMANHA", payload: { id, patch } }),
     clearArtimanhas: () => dispatch({ type: "CLEAR_ARTIMANHAS" }),
 
     // Features

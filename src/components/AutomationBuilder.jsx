@@ -138,6 +138,10 @@ export default function AutomationBuilder({ value, onChange, dslContext = null, 
 function RuleBlock({ rule, ctx = null, defaultStack = "sum", defaultOpen = false, onUpdate, onRemove, onAddEffect, onUpdateEffect, onRemoveEffect }) {
   const triggerType = rule.trigger?.type ?? "passive";
   const isActivated = triggerType === "activated";
+  // Gatilhos de rodada/turno disparam efeitos INSTANTÂNEOS (recurso + condição)
+  // sozinhos, no momento certo — como o Ativado, mas sem botão.
+  const isTurnRoundTrigger = ["round_start", "round_end", "turn_start", "turn_end"].includes(triggerType);
+  const firesInstant = isActivated || isTurnRoundTrigger;
   const [open, setOpen] = useState(defaultOpen);
 
   const setTrigger = (type) => onUpdate({
@@ -302,6 +306,9 @@ function RuleBlock({ rule, ctx = null, defaultStack = "sum", defaultOpen = false
           {triggerType === "hp_below" && (
             <p className="text-[10px] text-slate-500 mt-1.5">Os modificadores aplicam sozinhos quando o PV cai a esse limiar e somem quando sobe. (Use efeitos do tipo atributo/stat — recurso/condição precisam de gatilho Ativado.)</p>
           )}
+          {isTurnRoundTrigger && (
+            <p className="text-[10px] text-slate-500 mt-1.5">Dispara os efeitos de recurso/condição sozinho no momento indicado. Rodada afeta todos os combatentes; turno, só na vez deste. (Buffs de atributo/stat: use Passiva ou Ativada.)</p>
+          )}
 
           {/* Pré-requisito (expressão DSL) — opcional */}
           <div className="mt-2">
@@ -325,6 +332,7 @@ function RuleBlock({ rule, ctx = null, defaultStack = "sum", defaultOpen = false
               key={eff.id}
               effect={eff}
               isActivated={isActivated}
+              instantFires={firesInstant}
               ctx={ctx}
               defaultStack={defaultStack}
               onUpdate={(patch) => onUpdateEffect(eff.id, patch)}
@@ -350,8 +358,8 @@ function RuleBlock({ rule, ctx = null, defaultStack = "sum", defaultOpen = false
 // e `resource` (mexe em PV/PE/Guarda na hora da ativação — instantâneo).
 const condLabel = (k) => CONDITION_OPTIONS.find((o) => o.key === k)?.label ?? k;
 
-function EffectRow({ effect, isActivated, ctx = null, defaultStack = "sum", onUpdate, onReplace, onRemove }) {
-  const KNOWN_EFFECT_TYPES = ["resource", "condition", "action_damage", "condition_immunity"];
+function EffectRow({ effect, isActivated, instantFires = false, ctx = null, defaultStack = "sum", onUpdate, onReplace, onRemove }) {
+  const KNOWN_EFFECT_TYPES = ["resource", "condition", "action_damage", "action_range", "condition_immunity"];
   const type = KNOWN_EFFECT_TYPES.includes(effect.type) ? effect.type : "modify_stat";
   const durKind = effect.duration?.kind ?? "rounds";
   // Prévia do valor da expressão na ficha atual (quando há contexto da DSL).
@@ -502,6 +510,28 @@ function EffectRow({ effect, isActivated, ctx = null, defaultStack = "sum", onUp
             </div>
             {removeButton}
           </>
+        ) : type === "action_range" ? (
+          <>
+            <div className="flex items-center gap-1 flex-shrink-0">
+              <span className="text-[11px] text-slate-400">+Alcance</span>
+              <input
+                type="number" min={0} value={effect.range ?? 0}
+                onChange={(e) => onUpdate({ range: Math.max(0, parseFloat(e.target.value) || 0) })}
+                className={`${inputCls} w-14 text-center`} aria-label="Alcance (metros)"
+              />
+              <span className="text-[11px] text-slate-500">m</span>
+            </div>
+            <div className="flex items-center gap-1 flex-shrink-0">
+              <span className="text-[11px] text-slate-400">+Área</span>
+              <input
+                type="number" min={0} value={effect.area ?? 0}
+                onChange={(e) => onUpdate({ area: Math.max(0, parseFloat(e.target.value) || 0) })}
+                className={`${inputCls} w-14 text-center`} aria-label="Área (metros)"
+              />
+              <span className="text-[11px] text-slate-500">m</span>
+            </div>
+            {removeButton}
+          </>
         ) : type === "condition_immunity" ? (
           <>
             <div className="flex-1 min-w-[200px] flex flex-wrap items-center gap-1.5">
@@ -587,8 +617,15 @@ function EffectRow({ effect, isActivated, ctx = null, defaultStack = "sum", onUp
         </div>
       )}
 
-      {/* modify_stat / boost de dano + Ativado: duração (passiva é sempre-ativa). */}
-      {(type === "modify_stat" || type === "action_damage") && isActivated && (
+      {/* Nota de escopo do boost de alcance/área. */}
+      {type === "action_range" && (
+        <div className="text-[10px] mt-1 pl-1 text-slate-500">
+          Alcance soma nos ataques E feitiços. Área soma só em feitiços (ações de dano por Técnica).
+        </div>
+      )}
+
+      {/* modify_stat / boost de dano/alcance + Ativado: duração (passiva é sempre-ativa). */}
+      {(type === "modify_stat" || type === "action_damage" || type === "action_range") && isActivated && (
         <div className="flex flex-wrap items-center gap-2 mt-2 pt-2 border-t border-slate-800/60">
           <span className="text-[11px] text-slate-500 flex-shrink-0">Dura</span>
           <div className="relative flex-shrink-0">
@@ -619,12 +656,12 @@ function EffectRow({ effect, isActivated, ctx = null, defaultStack = "sum", onUp
         </div>
       )}
 
-      {/* resource/condition: instantâneo; só funciona em gatilho Ativado. */}
+      {/* resource/condition: instantâneo; funciona em Ativado E em rodada/turno. */}
       {(type === "resource" || type === "condition") && (
-        <div className={`text-[10px] mt-1 pl-1 ${isActivated ? "text-slate-500" : "text-amber-400/90"}`}>
-          {isActivated
-            ? "Aplica no momento da ativação — não reverte ao desativar."
-            : `⚠ Efeito de ${type === "condition" ? "condição" : "recurso"} só é aplicado por gatilho Ativado.`}
+        <div className={`text-[10px] mt-1 pl-1 ${instantFires ? "text-slate-500" : "text-amber-400/90"}`}>
+          {instantFires
+            ? "Aplica no momento do gatilho — não reverte depois."
+            : `⚠ Efeito de ${type === "condition" ? "condição" : "recurso"} precisa de gatilho Ativado, de rodada ou de turno.`}
         </div>
       )}
     </div>

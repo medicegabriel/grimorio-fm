@@ -24,6 +24,35 @@ import {
   TIER_TO_CONDITIONS_KEY,
   DIE_SIZES,
 } from "../../fm-action-calc";
+import SuporteStandardsPanel from "./SuporteStandardsPanel";
+import { resolveDanoFixo } from "../../fm-suporte";
+import { newAutomation, newRule, newStatEffect, newActionDamageEffect, newActionRangeEffect } from "../../fm-automation";
+
+// Constrói os efeitos de automação de um benefício de Suporte (lista vazia
+// quando não é automatizável — Alcance/Área/TR, ou Dano Fixo ≤ 0).
+function buildSuporteEffects(auto, nd) {
+  if (!auto) return [];
+  const duration = { kind: "rounds", rounds: 1 };
+  if (auto.kind === "dmg") {
+    const fixed = resolveDanoFixo(auto.danoFixo, nd);
+    if (fixed == null || fixed <= 0) return [];
+    // Dano Fixo vale para Corpo-a-Corpo (corporal) E Feitiço (técnica).
+    return [
+      newActionDamageEffect({ scope: "corporal", amount: 0, fixed, duration }),
+      newActionDamageEffect({ scope: "tecnica",  amount: 0, fixed, duration }),
+    ];
+  }
+  if (auto.kind === "range") {
+    const range = Number(auto.range) || 0;
+    const area = Number(auto.area) || 0;
+    if (!range && !area) return [];
+    return [newActionRangeEffect({ range, area, duration })];
+  }
+  if (auto.kind === "stat") {
+    return [newStatEffect({ stat: auto.stat, op: "add", value: auto.value, stack: "highest", duration })];
+  }
+  return [];
+}
 
 // ============================================================
 // TRADE ROW — stepper de conversão equivalente
@@ -69,10 +98,11 @@ function TradeRow({ label, hint, value, onChange, step = 1, blocked, max }) {
 // ============================================================
 // FORM FIELDS — compartilhado entre ActionItem e ActionForm
 // ============================================================
-export default function ActionFormFields({ form, bt = 2, templateMode = false, tecnicaMaximaUnlocked = false, update, updateDamage, updateCond, updateTrade, updateRangeType }) {
+export default function ActionFormFields({ form, bt = 2, nd = 1, templateMode = false, tecnicaMaximaUnlocked = false, update, updateDamage, updateCond, updateTrade, updateRangeType }) {
   const isTR      = form.attackType?.startsWith("tr_");
   const isAcerto  = form.attackType === "acerto";
-  const hasDamage = form.attackType !== "suporte";
+  const isSuporte = form.attackType === "suporte";
+  const hasDamage = !isSuporte;
   const hasCond   = form.condition?.tier && form.condition.tier !== "nenhuma";
 
   const dieSize   = form.damage?.dieSize ?? 8;
@@ -154,6 +184,36 @@ export default function ActionFormFields({ form, bt = 2, templateMode = false, t
 
   const toggleLock = () => updateDamage({ damageIsLocked: !isLocked });
 
+  // Aplica UM benefício do padrão de Suporte (pg. 28): define o Custo em PE,
+  // descreve o bônus no Texto Narrativo e, quando o benefício é automatizável
+  // (Acerto/CD/Defesa/Perícias/Dano Fixo), cria uma regra ATIVADA (uso único,
+  // 1 rodada) já plugada em "Automatizar".
+  const applySuporte = ({ cost, descricao, auto, ruleName }) => {
+    const prev = (form.description ?? "").trim();
+    const patch = { cost, description: prev ? `${prev}\n${descricao}` : descricao };
+
+    const effects = buildSuporteEffects(auto, nd);
+    if (effects.length) {
+      const rule = newRule({
+        name: ruleName,
+        trigger: { type: "activated" },
+        activation: "once",
+        cost: { pe: 0, acao: "" },
+        effects,
+      });
+      const base = (form.automation && Array.isArray(form.automation.rules))
+        ? form.automation
+        : newAutomation();
+      patch.automation = {
+        ...base,
+        enabled: base.enabled !== false,
+        rules: [...(base.rules ?? []), rule],
+      };
+    }
+
+    update(patch);
+  };
+
   return (
     <div className="space-y-3">
       {/* Nome + Tipo de execução */}
@@ -193,6 +253,11 @@ export default function ActionFormFields({ form, bt = 2, templateMode = false, t
           <NumberInput value={form.cost} onChange={(v) => update({ cost: v })} min={0} />
         </div>
       </div>
+
+      {/* Padrões de criação de Suporte — só para ações de Suporte/Defesa */}
+      {form.attackType === "suporte" && (
+        <SuporteStandardsPanel bt={bt} onApply={applySuporte} />
+      )}
 
       {/* TR ou Acerto — wrapper estável evita insertBefore ao trocar attackType */}
       <div>
@@ -241,6 +306,8 @@ export default function ActionFormFields({ form, bt = 2, templateMode = false, t
         )}
       </div>
 
+      {/* Alcance/Área — ocultos em Suporte (não usam alcance nem área) */}
+      {!isSuporte && (<>
       {/* Tipo de Alcance + Parâmetros do BT */}
       <div className="bg-slate-900/60 border border-slate-800 rounded p-3 space-y-2">
         <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Tipo de Alcance</div>
@@ -331,6 +398,7 @@ export default function ActionFormFields({ form, bt = 2, templateMode = false, t
         </div>
       </div>
       )}
+      </>)}
 
       {/* Dano base */}
       {hasDamage && (
@@ -504,7 +572,8 @@ export default function ActionFormFields({ form, bt = 2, templateMode = false, t
         </div>
       )}
 
-      {/* Condição */}
+      {/* Condição — oculta em Suporte */}
+      {!isSuporte && (
       <div className="bg-slate-900/60 border border-slate-800 rounded p-3 space-y-2">
         <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Condição (Opcional)</div>
         {isAcerto ? (
@@ -592,6 +661,7 @@ export default function ActionFormFields({ form, bt = 2, templateMode = false, t
           </>
         )}
       </div>
+      )}
 
       {/* Técnica Máxima — toggle único, só aparece quando a ficha tem a aptidão.
           Ligado: a ação fica Indefensável, ignora reduções de dano, ganha dados

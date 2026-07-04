@@ -11,7 +11,7 @@ import {
   Square, CheckSquare, Crosshair, Sword, Hourglass, Settings, Flame, Shapes, Lock
 } from 'lucide-react';
 import { createInitialCombatState, applyNewRoundEffects, LOG_TYPES, createLogEntry, computeAlmaStatus, ALMA_ESTADOS } from '../fm-encounter';
-import { resolveActionFinalText, ACTION_TYPE_LABELS, actionDamageScope, applyActionDamageBoost } from './fm-action-calc';
+import { resolveActionFinalText, ACTION_TYPE_LABELS, actionDamageScope, applyActionDamageBoost, applyActionRangeBoost } from './fm-action-calc';
 import { getModifier, calculateCD, calculateAcerto, CONDITIONS } from './fm-tables';
 import { computeConfrontoDominio, getTreinamentoByKey, isAutomatedTreinamento, getBarreiraAptidaoBonus } from './fm-treinamentos';
 import { getDoteByKey, isAutomatedDote, resolveDoteDescription } from './fm-dotes';
@@ -22,8 +22,8 @@ import {
   resolveLiveStats, newModifier, getTargetLabel, durationLabel,
   MODIFIER_TARGET_GROUPS, STACK_MODES, DURATION_KINDS, MODIFIER_OPS
 } from './fm-modifiers';
-import { collectPassiveModifiers, ruleModifiers, ruleRequiresMet, activatedRulesOf, resolveResourceChanges, resolveConditionEffects, ruleHasSustainedEffect, summarizeRule, hasAutomation, collectActionDamageBoosts, collectImmuneConditions, collectReactionRules } from './fm-automation';
-import { collectAutomationEntities, applyRoundStartResources, drainPeTemp } from './fm-automation-entities';
+import { collectPassiveModifiers, ruleModifiers, ruleRequiresMet, activatedRulesOf, resolveResourceChanges, resolveConditionEffects, ruleHasSustainedEffect, summarizeRule, hasAutomation, collectActionDamageBoosts, collectActionRangeBoosts, collectImmuneConditions, collectReactionRules } from './fm-automation';
+import { collectAutomationEntities, applyRoundStartResources, applyTriggeredEffects, drainPeTemp } from './fm-automation-entities';
 import { collectConditionModifiers, summarizeConditionMods, conditionNotes, hasConditionEffect } from './fm-conditions';
 import { buildDslContext } from './fm-dsl';
 
@@ -730,7 +730,7 @@ const ModifierManager = ({ modifiers, passiveModifiers = [], onAdd, onRemove }) 
   // Modificadores "__dmg" (boost de dano) e "__immune" (imunidade) não são
   // stats — aparecem no card da ação / na lista de imunidades / no inspetor,
   // não como chip aqui.
-  const isHiddenStat = (m) => m.stat === '__dmg' || m.stat === '__immune';
+  const isHiddenStat = (m) => m.stat === '__dmg' || m.stat === '__immune' || m.stat === '__range';
   const visibleMods = (modifiers ?? []).filter((m) => !isHiddenStat(m));
   const visiblePassive = (passiveModifiers ?? []).filter((m) => !isHiddenStat(m));
 
@@ -1417,6 +1417,12 @@ export default function CombatantPanel({
     () => collectActionDamageBoosts([...passiveModifiers, ...(combatState.activeModifiers ?? [])]),
     [passiveModifiers, combatState.activeModifiers]
   );
+  // Boost de Alcance/Área (automação): soma os efeitos action_range ativos e
+  // reexibe alcance (ataques e feitiços) e área (feitiços) ao vivo.
+  const rangeBoosts = useMemo(
+    () => collectActionRangeBoosts([...passiveModifiers, ...(combatState.activeModifiers ?? [])]),
+    [passiveModifiers, combatState.activeModifiers]
+  );
   // Condições a que o combatente está imune AGORA por automação (ex.: Fúria
   // Berserker enquanto ativa). Some-se às imunidades permanentes da ficha.
   const activeImmunities = useMemo(
@@ -1429,7 +1435,8 @@ export default function CombatantPanel({
   const liveActionsList = useMemo(() => {
     const hasBoost = damageBoosts.corporal.amount || damageBoosts.corporal.fixed
       || damageBoosts.tecnica.amount || damageBoosts.tecnica.fixed;
-    if (!hasBoost && !acertoDelta && !cdDelta) return actionsList;
+    const hasRange = rangeBoosts.range || rangeBoosts.area;
+    if (!hasBoost && !hasRange && !acertoDelta && !cdDelta) return actionsList;
     return actionsList.map((a) => {
       let out = a;
       // Dano (Amplificação de Domínio etc.)
@@ -1441,6 +1448,11 @@ export default function CombatantPanel({
           if (boosted !== a) out = { ...boosted, _damageBoosted: true };
         }
       }
+      // Alcance (ataques e feitiços) e Área (feitiços) refletem os buffs ativos.
+      if (hasRange) {
+        const boosted = applyActionRangeBoost(out, rangeBoosts);
+        if (boosted !== out) out = { ...boosted, _rangeBoosted: true };
+      }
       // Acerto (ataques de Acerto) e CD (TRs) refletem os buffs ativos.
       if (acertoDelta && a.attackType === 'acerto' && out.toHit != null) {
         out = { ...out, toHit: (out.toHit ?? 0) + acertoDelta, _acertoBuff: acertoDelta };
@@ -1450,7 +1462,7 @@ export default function CombatantPanel({
       }
       return out;
     });
-  }, [actionsList, damageBoosts, acertoDelta, cdDelta, core.patamar, core.nd]);
+  }, [actionsList, damageBoosts, rangeBoosts, acertoDelta, cdDelta, core.patamar, core.nd]);
   const features = snapshot.features ?? [];
   const treinamentos = snapshot.treinamentos ?? [];
   const aptidoesEspeciais = snapshot.aptidoesEspeciais ?? [];
@@ -1720,15 +1732,34 @@ export default function CombatantPanel({
     toggleDefeated: () => onFlagChange?.('isDefeated', !flags.isDefeated),
     toggleHidden: () => onFlagChange?.('isHidden', !flags.isHidden),
     newRound: () => {
-      // Tick de condições/modificadores + gatilho round_start (Treino de Energia/
+      // 1 criatura: turno = rodada. Cada "Nova Rodada" é a fronteira, então
+      // dispara os 4 gatilhos (fim de turno/rodada → início de rodada/turno).
+      const logs = [];
+      const fire = (cs, trig, opts) => {
+        const r = applyTriggeredEffects(cs, snapshot, trig, opts);
+        logs.push(...r.logs);
+        return r.combatState;
+      };
+
+      // Fim da rodada/turno que termina (sobre o estado atual).
+      let ending = combatState;
+      ending = fire(ending, 'turn_end');
+      ending = fire(ending, 'round_end');
+
+      // Tick de condições/modificadores + round_start (Treino de Energia/
       // Potencial Físico = +½ BT de PE, com overflow). Mesma lógica do multi.
-      const base = { ...applyNewRoundEffects(combatant).combatState, lastDamage: 0 };
-      const { combatState: next, peGain } = applyRoundStartResources(base, snapshot);
-      if (peGain > 0) {
-        next.combatLog = [
-          ...(next.combatLog ?? combatState.combatLog ?? []),
-          createLogEntry({ round: 0, type: LOG_TYPES.CUSTOM, message: `${combatant.displayName}: +${peGain} PE (início da rodada)`, combatantId: combatant?.id ?? null }),
-        ].slice(-50);
+      const base = { ...applyNewRoundEffects({ ...combatant, combatState: ending }).combatState, lastDamage: 0 };
+      const { combatState: afterRes, peGain } = applyRoundStartResources(base, snapshot);
+
+      // Início da rodada/turno (condições round_start + turn_start; recursos já vieram).
+      let next = fire(afterRes, 'round_start', { resources: false, conditions: true });
+      next = fire(next, 'turn_start');
+
+      const entries = [];
+      if (peGain > 0) entries.push(createLogEntry({ round: 0, type: LOG_TYPES.CUSTOM, message: `${combatant.displayName}: +${peGain} PE (início da rodada)`, combatantId: combatant?.id ?? null }));
+      logs.forEach((message) => entries.push(createLogEntry({ round: 0, type: LOG_TYPES.CUSTOM, message, combatantId: combatant?.id ?? null })));
+      if (entries.length) {
+        next = { ...next, combatLog: [...(next.combatLog ?? combatState.combatLog ?? []), ...entries].slice(-50) };
       }
       onCombatStateChange?.(next);
       onNewRound?.();

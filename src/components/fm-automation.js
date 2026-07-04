@@ -23,13 +23,20 @@ export const TRIGGER_TYPES = [
   { key: "passive",     label: "Passiva (sempre ativa)" },
   { key: "activated",   label: "Ativada manualmente" },
   { key: "hp_below",    label: "Quando PV ≤ limiar" },
-  // Reservados (próximas fases) — autoráveis mas ainda não disparam sozinhos:
+  // Rodada = toda vez que vira a rodada (afeta TODOS). Turno = quando chega a
+  // vez do combatente no combate (afeta só ele). Disparam efeitos INSTANTÂNEOS
+  // (recurso + condição) no momento certo.
   { key: "round_start", label: "No início de cada rodada" },
-  { key: "turn_end",    label: "No fim de cada rodada" },
+  { key: "round_end",   label: "No fim de cada rodada" },
+  { key: "turn_start",  label: "No início de cada turno" },
+  { key: "turn_end",    label: "No fim de cada turno" },
   { key: "on_damaged",  label: "Ao sofrer dano" },
 ];
 // Gatilhos já funcionais no runtime.
-export const TRIGGER_ENABLED = new Set(["passive", "activated", "hp_below", "on_damaged"]);
+export const TRIGGER_ENABLED = new Set([
+  "passive", "activated", "hp_below", "on_damaged",
+  "round_start", "round_end", "turn_start", "turn_end",
+]);
 
 // Gatilho hp_below: modificadores SUSTENTADOS reativos (recalculados ao vivo,
 // auto-aplicam/removem conforme o PV cruza o limiar).
@@ -56,6 +63,7 @@ export const EFFECT_TYPES = [
   { key: "resource",           label: "Recurso (PV / PE / Guarda)" },
   { key: "condition",          label: "Condição (aplicar / remover)" },
   { key: "action_damage",      label: "Dano de ações (Amplificação)" },
+  { key: "action_range",       label: "Alcance / Área de ações" },
   { key: "condition_immunity", label: "Imunidade a condição" },
 ];
 
@@ -153,6 +161,18 @@ export function newActionDamageEffect(partial = {}) {
   };
 }
 
+// Aumenta o Alcance (ataques E feitiços) e a Área (feitiços apenas) das ações,
+// em metros. Sustentado: vira um modificador "__range" + payload.
+export function newActionRangeEffect(partial = {}) {
+  return {
+    id: partial.id ?? genId("eff"),
+    type: "action_range",
+    range: Number(partial.range) || 0,   // metros somados ao Alcance (ataques e feitiços)
+    area: Number(partial.area) || 0,      // metros somados à Área (feitiços apenas)
+    duration: partial.duration ?? { kind: "rounds", rounds: 3 },
+  };
+}
+
 // Imunidade a uma ou mais condições enquanto a regra estiver ativa (toggle) ou
 // sempre (passiva). Sustentado: vira um modificador "__immune" + payload.
 export function newImmunityEffect(partial = {}) {
@@ -169,6 +189,7 @@ export function newEffect(type, partial = {}) {
   if (type === "resource") return newResourceEffect(partial);
   if (type === "condition") return newConditionEffect(partial);
   if (type === "action_damage") return newActionDamageEffect(partial);
+  if (type === "action_range") return newActionRangeEffect(partial);
   if (type === "condition_immunity") return newImmunityEffect(partial);
   return newStatEffect(partial);
 }
@@ -268,7 +289,7 @@ export function ruleModifiers(rule, source = {}, ctx = null) {
   // não tica — duração 'manual'. Ativada usa a duração declarada no efeito.
   const isLive = rule?.trigger?.type === "passive" || rule?.trigger?.type === "hp_below";
   return (rule?.effects ?? [])
-    .filter((e) => e.type === "modify_stat" || e.type === "action_damage" || e.type === "condition_immunity")
+    .filter((e) => e.type === "modify_stat" || e.type === "action_damage" || e.type === "condition_immunity" || e.type === "action_range")
     .map((e) => {
       const duration = isLive ? { kind: "manual" } : (e.duration ?? { kind: "manual" });
       // Imunidade a condição: sustentada enquanto a regra vale. Reusa o runtime
@@ -282,6 +303,21 @@ export function ruleModifiers(rule, source = {}, ctx = null) {
           group: source.group ?? null,
           duration: { kind: "manual" },
           payload: { conditions: Array.isArray(e.conditions) ? e.conditions : [] },
+          source: { ...source, ruleId: rule.id },
+        });
+      }
+      // Boost de Alcance/Área de ação: reusa o runtime via stat "__range"
+      // + payload (resolveLiveStats ignora; um coletor próprio lê de volta).
+      if (e.type === "action_range") {
+        return newModifier({
+          id: `${rule.id}__${e.id}`,
+          name: source.name || rule.name || "Habilidade",
+          stat: "__range",
+          op: "add",
+          value: 0,
+          group: source.group ?? null,
+          duration,
+          payload: { range: Number(e.range) || 0, area: Number(e.area) || 0 },
           source: { ...source, ruleId: rule.id },
         });
       }
@@ -336,6 +372,20 @@ export function collectActionDamageBoosts(modifiers = []) {
     const sc = m.payload.scope === "tecnica" ? "tecnica" : "corporal";
     out[sc].amount += Number(m.payload.amount) || 0;
     out[sc].fixed += Number(m.payload.fixed) || 0;
+  }
+  return out;
+}
+
+// Agrega os boosts de Alcance/Área ATIVOS (modificadores stat "__range"). Soma
+// os metros de alcance (ataques e feitiços) e de área (feitiços). Lido no
+// tracker para reexibir o alcance/área das ações afetadas. Ver
+// applyActionRangeBoost em fm-action-calc.
+export function collectActionRangeBoosts(modifiers = []) {
+  const out = { range: 0, area: 0 };
+  for (const m of modifiers) {
+    if (!m || m.stat !== "__range" || !m.payload || m.enabled === false) continue;
+    out.range += Number(m.payload.range) || 0;
+    out.area += Number(m.payload.area) || 0;
   }
   return out;
 }
@@ -438,7 +488,7 @@ export function activatedRulesOf(entity) {
 // não têm o que "desligar": agem como uso único mesmo no modo Liga/Desliga.
 export function ruleHasSustainedEffect(rule) {
   return (rule?.effects ?? []).some((e) =>
-    e.type === "modify_stat" || e.type === "action_damage" || e.type === "condition_immunity");
+    e.type === "modify_stat" || e.type === "action_damage" || e.type === "condition_immunity" || e.type === "action_range");
 }
 
 // ------------------------------------------------------------
@@ -475,6 +525,17 @@ export function summarizeEffect(effect, { isActivated = false, ctx = null } = {}
     const dur = d?.kind === "rounds" ? ` por ${d.rounds ?? 1} rodada(s)`
       : d?.kind === "scene" ? " (combate inteiro)" : "";
     return `Aplica ${label}${dur}${instantSuffix}`;
+  }
+
+  // Boost de Alcance/Área: "Alcance +3m (ataques e feitiços) · Área +1,5m (feitiços)".
+  if (effect.type === "action_range") {
+    const fmtM = (n) => `${String(n).replace(".", ",")}m`;
+    const parts = [];
+    if (Number(effect.range)) parts.push(`Alcance +${fmtM(effect.range)} (ataques e feitiços)`);
+    if (Number(effect.area))  parts.push(`Área +${fmtM(effect.area)} (feitiços)`);
+    let s = parts.length ? parts.join(" · ") : "sem mudança de alcance/área";
+    if (isActivated) { const dur = durationPhrase(effect.duration); if (dur) s += ` ${dur}`; }
+    return s;
   }
 
   // Boost de dano de ação: "Ataques de Acerto: +2 níveis +5 fixo por 3 rodadas".

@@ -10,7 +10,7 @@ import {
   validateReadyToStart, ENCOUNTER_STATUS, canTransition,
   createLogEntry, LOG_TYPES, rollInitiative, tickCombatantConditions
 } from './fm-encounter';
-import { applyRoundStartResources } from './components/fm-automation-entities';
+import { applyRoundStartResources, applyTriggeredEffects } from './components/fm-automation-entities';
 
 // ============================================================
 // REDUCER PURO (dicionário de handlers)
@@ -117,15 +117,45 @@ const HANDLERS = {
     if (!canTransition(state.status, ENCOUNTER_STATUS.ACTIVE)) return state;
     const ordered = orderByInitiative(state.combatants);
     const firstEligible = ordered.find((c) => !c.flags.isDefeated && !c.flags.isHidden);
+    const log = [
+      createLogEntry({ round: 1, type: LOG_TYPES.ROUND, message: 'Combate iniciado. Rodada 1.' }),
+      ...state.log
+    ];
+
+    // Início da RODADA 1: aplica round_start (Guarda + PE temp + condições) para
+    // todos — antes só disparava ao virar pra rodada 2+.
+    let combatants = applyNewRoundToAll(state.combatants, { tickConditions: false }).map((c) => {
+      if (!c.combatState || !c.snapshot || c.flags?.isDefeated) return c;
+      const base = { ...c.combatState, lastDamage: 0 };
+      const { combatState, peGain } = applyRoundStartResources(base, c.snapshot);
+      if (peGain > 0) {
+        log.unshift(createLogEntry({
+          round: 1, type: LOG_TYPES.CUSTOM,
+          message: `${c.displayName}: +${peGain} PE (início da rodada)`, combatantId: c.id,
+        }));
+      }
+      const { combatState: cs, logs } = applyTriggeredEffects(combatState, c.snapshot, "round_start", { resources: false, conditions: true });
+      logs.forEach((message) => log.unshift(createLogEntry({ round: 1, type: LOG_TYPES.CUSTOM, message, combatantId: c.id })));
+      return { ...c, combatState: cs };
+    });
+
+    // Início do TURNO do primeiro combatente.
+    if (firstEligible) {
+      combatants = combatants.map((c) => {
+        if (c.id !== firstEligible.id || !c.combatState || !c.snapshot || c.flags?.isDefeated) return c;
+        const { combatState, logs } = applyTriggeredEffects(c.combatState, c.snapshot, "turn_start", {});
+        logs.forEach((message) => log.unshift(createLogEntry({ round: 1, type: LOG_TYPES.CUSTOM, message, combatantId: c.id })));
+        return combatState === c.combatState ? c : { ...c, combatState };
+      });
+    }
+
     return {
       ...state,
       status: ENCOUNTER_STATUS.ACTIVE,
       round: 1,
       activeCombatantId: firstEligible?.id ?? null,
-      log: [
-        createLogEntry({ round: 1, type: LOG_TYPES.ROUND, message: 'Combate iniciado. Rodada 1.' }),
-        ...state.log
-      ]
+      combatants,
+      log,
     };
   },
 
@@ -136,7 +166,24 @@ const HANDLERS = {
     let combatants = state.combatants;
     const log = [...state.log];
 
+    // Dispara os efeitos INSTANTÂNEOS (recurso + condição) de um gatilho de
+    // automação num combatente e registra no log. Derrotado/PC não recebe.
+    const fireTrigger = (c, triggerType, round, opts) => {
+      if (!c.combatState || !c.snapshot || c.flags?.isDefeated) return c;
+      const { combatState, logs } = applyTriggeredEffects(c.combatState, c.snapshot, triggerType, opts);
+      logs.forEach((message) => log.unshift(createLogEntry({ round, type: LOG_TYPES.CUSTOM, message, combatantId: c.id })));
+      return combatState === c.combatState ? c : { ...c, combatState };
+    };
+
+    // 1) Fim do TURNO do combatente que está SAINDO (a vez dele acabou).
+    if (state.activeCombatantId) {
+      combatants = combatants.map((c) => c.id === state.activeCombatantId ? fireTrigger(c, "turn_end", state.round) : c);
+    }
+
     if (isNewRound) {
+      // 2) Fim da RODADA que termina (todos) — antes de virar.
+      combatants = combatants.map((c) => fireTrigger(c, "round_end", state.round));
+
       // Efeitos de RODADA: Guarda + modificadores + round_start por combatente
       // (Treino de Energia/Potencial = +PE temp). NÃO ticam condições aqui —
       // condições contam por TURNO (ver bloco abaixo), não no vira-rodada.
@@ -151,7 +198,10 @@ const HANDLERS = {
             message: `${c.displayName}: +${peGain} PE (início da rodada)`, combatantId: c.id,
           }));
         }
-        return { ...c, combatState };
+        // round_start: recursos já vieram acima (PE temp) — aqui só as condições.
+        const { combatState: cs, logs } = applyTriggeredEffects(combatState, c.snapshot, "round_start", { resources: false, conditions: true });
+        logs.forEach((message) => log.unshift(createLogEntry({ round: newRound, type: LOG_TYPES.CUSTOM, message, combatantId: c.id })));
+        return { ...c, combatState: cs };
       });
       log.unshift(createLogEntry({
         round: newRound, type: LOG_TYPES.ROUND,
@@ -160,6 +210,9 @@ const HANDLERS = {
     }
 
     if (nextCombatantId) {
+      // 3) Início do TURNO do combatente que está ENTRANDO (chegou a vez dele).
+      combatants = combatants.map((c) => c.id === nextCombatantId ? fireTrigger(c, "turn_start", newRound) : c);
+
       // Tick de condições do combatente que ESTÁ INICIANDO o turno: elas contam
       // e expiram quando chega a ação dele, não quando vira a rodada.
       combatants = combatants.map((c) => {

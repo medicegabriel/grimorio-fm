@@ -399,8 +399,8 @@ export default function CreatureBuilder({ existingCreature, onSave, onCancel }) 
     [draft.dotes, draft.core, actions, dslContext]
   );
   const artimanhasEl = useMemo(
-    () => <SectionArtimanhas draft={draft} actions={actions} />,
-    [draft.core, draft.artimanhas, actions]
+    () => <SectionArtimanhas draft={draft} actions={actions} dslContext={dslContext} />,
+    [draft.core, draft.artimanhas, actions, dslContext]
   );
   /* eslint-enable react-hooks/exhaustive-deps */
 

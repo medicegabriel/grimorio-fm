@@ -416,6 +416,7 @@ export default function ActionForm({
       <ActionFormFields
         form={form}
         bt={bt}
+        nd={nd}
         templateMode={templateMode}
         tecnicaMaximaUnlocked={tecnicaMaximaUnlocked}
         update={update}

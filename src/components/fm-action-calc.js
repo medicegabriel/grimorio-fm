@@ -856,6 +856,35 @@ export function applyActionDamageBoost(action, scope, boost, { patamar, nd } = {
   return pack(finalDice, dieSize, baseMod + fixed);
 }
 
+// Soma metros a um valor textual de alcance/área ("6 Metros" → "9 Metros"). Só
+// funciona quando o valor atual começa com número em metros; senão devolve null
+// (ex.: "Toque", "Visão" não recebem o bônus).
+export function addMetersToRange(value, add) {
+  if (!add) return null;
+  const s = String(value ?? "").trim();
+  const m = /^(\d+(?:[.,]\d+)?)\s*m/i.exec(s);
+  if (!m) return null;
+  const total = parseFloat(m[1].replace(",", ".")) + Number(add);
+  return `${String(total).replace(".", ",")} Metros`;
+}
+
+// Aplica um boost de Alcance/Área (de automação) a UMA ação, PARA EXIBIÇÃO (não
+// muta a original; não persiste). Alcance soma em ataques E feitiços; Área só em
+// feitiços (ações de dano por Técnica).
+export function applyActionRangeBoost(action, boost) {
+  if (!action || !boost || (!boost.range && !boost.area)) return action;
+  let out = action;
+  if (boost.range) {
+    const r = addMetersToRange(action.range, boost.range);
+    if (r != null) out = { ...out, range: r };
+  }
+  if (boost.area && actionDamageScope(action) === "tecnica") {
+    const a = addMetersToRange(action.area, boost.area);
+    if (a != null) out = { ...out, area: a };
+  }
+  return out;
+}
+
 // reapplyTrades: caminho do dano TRAVADO (manual). Não recalcula os dados
 // (o usuário os digitou) — só atualiza Acerto/CD pelas trocas.
 export function reapplyTrades(src, rangeType, trades, bt) { // eslint-disable-line no-unused-vars
