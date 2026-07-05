@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { createInitialCombatState, applyNewRoundEffects, LOG_TYPES, createLogEntry, computeAlmaStatus, ALMA_ESTADOS } from '../fm-encounter';
 import { resolveActionFinalText, ACTION_TYPE_LABELS, actionDamageScope, applyActionDamageBoost, applyActionRangeBoost } from './fm-action-calc';
-import { getModifier, calculateCD, calculateAcerto, CONDITIONS } from './fm-tables';
+import { getModifier, calculateCD, calculateAcerto, CONDITIONS, SANGRAMENTO_LADDER, expandCascadingImmunities } from './fm-tables';
 import { computeConfrontoDominio, getTreinamentoByKey, isAutomatedTreinamento, getBarreiraAptidaoBonus } from './fm-treinamentos';
 import { getDoteByKey, isAutomatedDote, resolveDoteDescription } from './fm-dotes';
 import { getAptidaoByKey, resolveAptidaoDescription } from './fm-aptidoes';
@@ -86,10 +86,13 @@ const CONDITION_LEVEL_MAP = Object.entries({
   return acc;
 }, {});
 
-const VARIABLE_CONDITIONS = new Set(['sangramento']);
+// Sangramento agora é leveled (nível fixo por nome), então nenhuma condição
+// tem mais "nível ajustável" livre.
+const VARIABLE_CONDITIONS = new Set();
 
-// Condições sem duração por rodadas — duram até resolução mecânica
-const PERMANENT_CONDITIONS = new Set(['caido', 'sangramento']);
+// Condições sem duração por rodadas — duram até resolução mecânica. Sangramento
+// (em qualquer nível) e Caído são permanentes.
+const PERMANENT_CONDITIONS = new Set(['caido', ...SANGRAMENTO_LADDER]);
 
 const ACTION_TYPE_COLORS = {
   comum:      'bg-red-950/40 border-red-900 text-red-300',
@@ -2098,7 +2101,7 @@ export default function CombatantPanel({
             conditions={todasCondicoes}
             onAdd={handlers.addCondition}
             onRemove={handlers.removeCondition}
-            immuneConditions={[...(defenses?.condicoesImunes ?? []), ...activeImmunities]} />
+            immuneConditions={expandCascadingImmunities([...(defenses?.condicoesImunes ?? []), ...activeImmunities])} />
 
           <ModifierManager
             modifiers={combatState.activeModifiers ?? []}

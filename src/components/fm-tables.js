@@ -509,11 +509,17 @@ export const calculateResistenciaTotal = (patamar, nd) => {
 export const getModifier = (attrValue) => Math.floor((attrValue - 10) / 2);
 
 export const CONDITIONS = {
-  fracas: ["abalado","caido","desarmar","desorientado","desprevenido","empurrar","sangramento","sofrendo"],
-  medias: ["agarrado","amedrontado","condenado","confuso","enfeiticado","engasgando","enjoado","enredado","envenenado","lento","surdo"],
-  fortes: ["aterrorizado","cego","exposto","imovel","invisivel","surpreso"],
-  extremas: ["atordoado","desmembramento","fragilizado","fragmentado","inconsciente","paralisado"],
+  fracas: ["abalado","caido","desarmar","desorientado","desprevenido","empurrar","sangramento fraco","sofrendo"],
+  medias: ["agarrado","amedrontado","condenado","confuso","enfeiticado","engasgando","enjoado","enredado","envenenado","lento","sangramento medio","surdo"],
+  fortes: ["aterrorizado","cego","exposto","fragilizado","imovel","invisivel","sangramento forte","surpreso"],
+  extremas: ["atordoado","desmembramento","inconsciente","paralisado","sangramento extremo"],
 };
+
+// Sangramento é uma condição LEVELED (Fraco → Extremo). A imunidade a um nível
+// cobre os inferiores (ex.: Forte → também Médio e Fraco). Ordem = cascata.
+export const SANGRAMENTO_LADDER = [
+  "sangramento fraco", "sangramento medio", "sangramento forte", "sangramento extremo",
+];
 
 // Normaliza texto p/ busca: sem acento, minúsculo, sem espaços nas pontas.
 export const normalizeText = (s) =>
@@ -537,6 +543,26 @@ export const CONDITION_TOTAL_LIMITS = {
 export const CONDITION_SEVERITY_MAP = Object.fromEntries(
   Object.entries(CONDITIONS).flatMap(([severity, list]) => list.map((c) => [c, severity]))
 );
+
+// Expande uma lista de condições imunes aplicando a cascata do Sangramento:
+// imunidade a um nível adiciona os níveis inferiores (Forte → Médio e Fraco).
+// Idempotente e acento-insensível.
+export function expandCascadingImmunities(conds = []) {
+  const ladderNorm = SANGRAMENTO_LADDER.map(normalizeText);
+  const out = [...conds];
+  const seen = new Set(conds.map(normalizeText));
+  for (const c of conds) {
+    const idx = ladderNorm.indexOf(normalizeText(c));
+    if (idx <= 0) continue;
+    for (let i = 0; i < idx; i++) {
+      if (!seen.has(ladderNorm[i])) {
+        out.push(SANGRAMENTO_LADDER[i]);
+        seen.add(ladderNorm[i]);
+      }
+    }
+  }
+  return out;
+}
 
 export const PATAMAR_LABELS = {
   lacaio: "Lacaio",

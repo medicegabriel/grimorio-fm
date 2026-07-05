@@ -189,7 +189,7 @@ export default function SectionDefenses({ draft, actions }) {
                     title={fromOrigin ? "Aplicada automaticamente pela Origem" : "Aplicada automaticamente por um Dote"}
                   />
                 )}
-                {cond}
+                <span className="capitalize">{cond}</span>
               </Pill>
             );
           })}

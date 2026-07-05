@@ -17,6 +17,9 @@
 
 import { newModifier } from "./fm-modifiers";
 
+// Sangramento é leveled (Fraco → Extremo); todos os níveis compartilham a nota.
+const SANGRAMENTO_NOTE = ["Perde vida no início do turno e faz TR de Fortitude no fim (sucesso encerra). CD e perda de vida dependem do causador."];
+
 // Efeitos por condição. `mods` = parte automatizada; `notes` = parte só-texto.
 // Referências entre condições ("fica desprevenido/lento/...") foram ACHATADAS
 // nos números para não depender de resolução em cascata.
@@ -38,7 +41,10 @@ export const CONDITION_EFFECTS = {
   envenenado: {
     mods: [{ stat: "acerto", op: "add", value: -2 }, { stat: "resistencias", op: "add", value: -2 }, { stat: "pericias", op: "add", value: -2 }],
   },
-  sangramento: { notes: ["Perde vida no início do turno e faz TR de Fortitude no fim (sucesso encerra). CD e perda de vida dependem do causador."] },
+  "sangramento fraco":   { notes: SANGRAMENTO_NOTE },
+  "sangramento medio":   { notes: SANGRAMENTO_NOTE },
+  "sangramento forte":   { notes: SANGRAMENTO_NOTE },
+  "sangramento extremo": { notes: SANGRAMENTO_NOTE },
   sofrendo: {
     mods: [{ stat: "deslocamento", op: "add", value: -3 }],
     notes: ["−5 em testes de concentração e em Prestidigitação para realizar rituais."],

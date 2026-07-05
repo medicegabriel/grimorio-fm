@@ -7,7 +7,11 @@
 // Valores já derivados — mesmo schema que buildCreature() produziria.
 // Dano das ações segue o modelo "média → split" (~45% dado / 55% fixo).
 
-export const COMPENDIUM = [
+import enciclopedia from "./data/enciclopedia-digital-0.1.json";
+
+// Built-ins escritos à mão (Calamidades). O restante vem da Enciclopédia (JSON
+// exportado do próprio app), transformado em built-in mais abaixo.
+const HANDCRAFTED = [
   // ============================================================
   // CALAMIDADE ESPECIAL — ND 30
   // ============================================================
@@ -882,6 +886,34 @@ export const COMPENDIUM = [
     },
   },
 ];
+
+// ============================================================
+// ENCICLOPÉDIA — criaturas importadas (src/data/enciclopedia-*.json)
+// ============================================================
+// Cada criatura vira built-in: id determinístico (builtin_<slug do nome>),
+// isBuiltIn:true, folderId:null. Slug estável a partir do nome (nomes únicos);
+// em caso de colisão, sufixa um contador.
+const slugify = (s) =>
+  (s ?? "")
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+
+const ENCICLOPEDIA = (() => {
+  const seen = new Set(HANDCRAFTED.map((c) => c.id));
+  return (enciclopedia.creatures ?? []).map((c) => {
+    const base = `builtin_${slugify(c.name) || "criatura"}`;
+    let id = base;
+    let n = 2;
+    while (seen.has(id)) id = `${base}_${n++}`;
+    seen.add(id);
+    return { ...c, id, isBuiltIn: true, folderId: null };
+  });
+})();
+
+export const COMPENDIUM = [...HANDCRAFTED, ...ENCICLOPEDIA];
 
 // Helper para busca por id (útil no App.jsx)
 export const getCompendiumById = (id) =>
