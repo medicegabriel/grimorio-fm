@@ -86,7 +86,7 @@ export function getSuporteBenefits(mode, bt) {
   const row = getSuporteRow(mode, bt);
   if (mode === "defensivo") {
     return [
-      { key: "tr",       label: `TR +${row.tr}`,              efeito: `TR +${row.tr} (especificar)`, auto: null },
+      { key: "tr",       label: `TR +${row.tr}`,              efeito: `+${row.tr} em todos os Testes de Resistência`, auto: { kind: "saves", value: row.tr } },
       { key: "defesa",   label: `Defesa +${row.defesa}`,     efeito: `Defesa +${row.defesa}`,       auto: { kind: "stat", stat: "defesa", value: row.defesa } },
       { key: "pericias", label: `Perícias +${row.pericias}`, efeito: `Perícias +${row.pericias}`,   auto: { kind: "stat", stat: "pericias", value: row.pericias } },
     ];

@@ -27,6 +27,7 @@ import {
 import SuporteStandardsPanel from "./SuporteStandardsPanel";
 import { resolveDanoFixo } from "../../fm-suporte";
 import { newAutomation, newRule, newStatEffect, newActionDamageEffect, newActionRangeEffect } from "../../fm-automation";
+import { MODIFIER_SAVES } from "../../fm-modifiers";
 
 // Constrói os efeitos de automação de um benefício de Suporte (lista vazia
 // quando não é automatizável — Alcance/Área/TR, ou Dano Fixo ≤ 0).
@@ -47,6 +48,11 @@ function buildSuporteEffects(auto, nd) {
     const area = Number(auto.area) || 0;
     if (!range && !area) return [];
     return [newActionRangeEffect({ range, area, duration })];
+  }
+  if (auto.kind === "saves") {
+    // TR do Suporte: bônus em TODOS os Testes de Resistência (um efeito por TR).
+    return MODIFIER_SAVES.map((s) =>
+      newStatEffect({ stat: s.key, op: "add", value: auto.value, stack: "highest", duration }));
   }
   if (auto.kind === "stat") {
     return [newStatEffect({ stat: auto.stat, op: "add", value: auto.value, stack: "highest", duration })];
