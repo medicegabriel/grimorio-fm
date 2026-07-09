@@ -160,7 +160,8 @@ export const templateDescription = (tpl) =>
   (tpl?.description || tpl?.descricao || tpl?.lore || "").toString();
 
 // Assinatura para de-duplicação no import (tipo + título + descrição).
-const templateSignature = (type, tpl) =>
+// Também usada pelo "Aplicar em fichas" para detectar um modelo já presente.
+export const templateSignature = (type, tpl) =>
   `${type}::${templateLabel(type, tpl).trim().toLowerCase()}::${templateDescription(tpl).trim().toLowerCase()}`;
 
 // Verdadeiro se já existe na lista um modelo equivalente à entidade

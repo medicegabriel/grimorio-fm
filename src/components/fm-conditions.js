@@ -115,8 +115,8 @@ export const CONDITION_EFFECTS = {
     notes: ["Ataques contra você recebem +4 (refletido na Defesa) e, ao acertar, causam dano adicional igual ao nível do atacante em cada rolagem."],
   },
   fragilizado: {
-    mods: [{ stat: "rdGeral", op: "set", value: 0 }, { stat: "rdIrredutivel", op: "set", value: 0 }],
-    notes: ["RD reduzida a zero e resistências anuladas (imunidades não). Não pode aumentar a RD nem se tornar resistente enquanto durar."],
+    mods: [{ stat: "rdGeral", op: "set", value: 0 }],
+    notes: ["RD Geral reduzida a zero e resistências anuladas (imunidades não; a RD Irredutível permanece, por ser irredutível). Não pode aumentar a RD nem se tornar resistente enquanto durar."],
   },
 };
 

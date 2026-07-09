@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import {
   ArrowLeft, Download, Upload, Trash2, Pencil, Check, X,
   BookOpen, Copy, Library, Menu, Search, Filter, CheckSquare,
-  FolderInput,
+  FolderInput, Wand2,
 } from "lucide-react";
 import {
   DndContext, DragOverlay, PointerSensor, TouchSensor, KeyboardSensor,
@@ -18,6 +18,7 @@ import { CSS } from "@dnd-kit/utilities";
 import FolderSidebar from "./FolderSidebar";
 import MoveToFolderMenu from "./MoveToFolderMenu";
 import TemplateDetailModal from "./TemplateDetail";
+import ApplyTemplatesModal from "./ApplyTemplatesModal";
 import { useAllTemplates, useTemplateFolders } from "./useTemplates";
 import {
   TEMPLATE_TYPES, TEMPLATE_TYPE_ORDER, templateLabel, templateDescription,
@@ -163,7 +164,7 @@ const SortableTemplateCard = (props) => {
 // ============================================================
 // MAIN
 // ============================================================
-export default function TemplateLibrary({ onBack }) {
+export default function TemplateLibrary({ onBack, creatures = [], creatureFolders = [], onUpdateCreature }) {
   const all = useAllTemplates();
   const folders = useTemplateFolders();
 
@@ -176,6 +177,7 @@ export default function TemplateLibrary({ onBack }) {
   const [confirmDelete, setConfirmDelete] = useState(null); // { type:"one"|"many", payload }
   const [showExport, setShowExport] = useState(false);
   const [showImport, setShowImport] = useState(false);
+  const [showApply, setShowApply] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [activeKey, setActiveKey] = useState(null);
@@ -243,6 +245,17 @@ export default function TemplateLibrary({ onBack }) {
     }
     return out;
   }, [selectedItems, all]);
+
+  // Achatado como [{ type, tpl }] — formato que o "Aplicar em fichas" consome.
+  const selectedTemplates = useMemo(
+    () => selectedItems
+      .map(({ type, id }) => {
+        const tpl = (all[type] ?? []).find((t) => t.id === id);
+        return tpl ? { type, tpl } : null;
+      })
+      .filter(Boolean),
+    [selectedItems, all]
+  );
 
   const allVisibleSelected = visibleKeys.length > 0 && visibleKeys.every((k) => selected.has(k));
 
@@ -562,6 +575,7 @@ export default function TemplateLibrary({ onBack }) {
                 count={selected.size}
                 folders={folders}
                 onMove={handleBulkMove}
+                onApply={onUpdateCreature ? () => setShowApply(true) : null}
                 onExport={() => setShowExport(true)}
                 onDelete={requestDeleteMany}
                 onClear={clearSelection}
@@ -627,6 +641,17 @@ export default function TemplateLibrary({ onBack }) {
             type={detail.type}
             tpl={detail.tpl}
             onClose={() => setDetail(null)}
+          />
+        )}
+        {showApply && (
+          <ApplyTemplatesModal
+            items={selectedTemplates}
+            creatures={creatures}
+            folders={creatureFolders}
+            onApply={(updates) => {
+              for (const { id, draft } of updates) onUpdateCreature(id, draft);
+            }}
+            onClose={() => { setShowApply(false); clearSelection(); }}
           />
         )}
         {showExport && <ExportModal templatesByType={selectedByType} onClose={() => setShowExport(false)} />}
@@ -711,7 +736,7 @@ const EmptyState = ({ icon: Icon, title, hint }) => (
   </div>
 );
 
-const BulkBar = ({ count, folders, onMove, onExport, onDelete, onClear, stickyTop }) => {
+const BulkBar = ({ count, folders, onMove, onApply, onExport, onDelete, onClear, stickyTop }) => {
   const [moveOpen, setMoveOpen] = useState(false);
   return (
     <div className="sticky z-30 mb-4 shadow-lg" style={{ top: stickyTop }}>
@@ -735,6 +760,11 @@ const BulkBar = ({ count, folders, onMove, onExport, onDelete, onClear, stickyTo
               </>
             )}
           </div>
+          {onApply && (
+            <button type="button" onClick={onApply} className="inline-flex items-center gap-1 px-3 py-1 rounded bg-purple-950/80 border border-purple-600/60 hover:bg-purple-800 text-xs font-semibold text-purple-100 focus:outline-none focus:ring-2 focus:ring-purple-500/60">
+              <Wand2 className="w-3 h-3" /> Aplicar em fichas
+            </button>
+          )}
           <button type="button" onClick={onExport} className="inline-flex items-center gap-1 px-3 py-1 rounded bg-slate-900/80 hover:bg-slate-800 text-xs font-semibold text-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500/60">
             <Download className="w-3 h-3" /> Exportar
           </button>

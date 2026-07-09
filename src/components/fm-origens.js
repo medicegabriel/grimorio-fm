@@ -84,7 +84,9 @@ export const ORIGEM_FEATURES = {
         automation: {
           kind: "defenses",
           add: {
-            imunidades: [{ tipo: "venenoso" }],
+            // Só venenos mundanos — NÃO cobre dano Venenoso (biológico) nem
+            // veneno de Ofício/Condições. Venenoso continua adicionável à parte.
+            imunidades: [{ tipo: "venenos mundanos" }],
           },
         },
       },

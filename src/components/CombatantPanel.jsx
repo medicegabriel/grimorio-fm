@@ -79,6 +79,11 @@ const CONDITION_LEVELS = {
   alma:    { label: 'Estado da Alma', color: 'bg-purple-900/70 text-purple-200 border-purple-700' }
 };
 
+// Alvos da penalidade do Estado da Alma (−3/−6/−8 em "testes e rolagens"):
+// ataque, as 5 Resistências e Perícias. NÃO afeta a CD (é dificuldade estática,
+// não uma rolagem). Custo de PE e Desvantagem ficam como lembrete.
+const ALMA_PENALTY_TARGETS = ['acerto', 'astucia', 'fortitude', 'reflexos', 'vontade', 'integridade', 'pericias'];
+
 const CONDITION_LEVEL_MAP = Object.entries({
   fracas: 'fraca', medias: 'media', fortes: 'forte', extremas: 'extrema'
 }).reduce((acc, [tier, lv]) => {
@@ -217,8 +222,9 @@ const AlmaBar = ({ almaAtual, hpMaxBase, onChange }) => {
           </span>
           {status.penalidade !== 0 && (
             <span className="text-[10px] text-slate-400">
-              {status.penalidade} testes{status.desvantagem ? ' + Desvantagem' : ''}
-              {status.custoExtra > 0 ? ` / +${status.custoExtra} PE` : ''}
+              {status.penalidade} em testes/rolagens
+              {status.custoExtra > 0 ? ` • +${status.custoExtra} PE/hab. (manual)` : ''}
+              {status.desvantagem ? ' • Desvantagem (manual)' : ''}
             </span>
           )}
         </div>
@@ -368,10 +374,16 @@ const ConditionManager = ({ conditions, onAdd, onRemove, immuneConditions = [] }
   const immuneSet = new Set((immuneConditions ?? []).map(normCond));
   const selectedCond = isCustom ? customName : name;
   const isImmuneSelected = !!selectedCond && selectedCond !== '__custom__' && immuneSet.has(normCond(selectedCond));
+  // Duplicata: a mesma condição (por nome) já está ativa — inclui as da Alma,
+  // que não podem ser duplicadas manualmente.
+  const activeNameSet = new Set((conditions ?? []).map((c) => normCond(c.name)));
+  const isDuplicateSelected = !!selectedCond && selectedCond !== '__custom__' && activeNameSet.has(normCond(selectedCond));
 
   const handleAdd = useCallback(() => {
     const finalName = isCustom ? customName.trim() : name.trim();
     if (!finalName) return;
+    // Não duplicar: se a condição (por nome) já está ativa, ignora.
+    if ((conditions ?? []).some((c) => normCond(c.name) === normCond(finalName))) return;
     onAdd({
       id: `cond_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
       name: finalName,
@@ -383,7 +395,7 @@ const ConditionManager = ({ conditions, onAdd, onRemove, immuneConditions = [] }
     setCustomName('');
     setIsCustom(false);
     setDuracao(1);
-  }, [isCustom, customName, name, level, duracao, onAdd]);
+  }, [isCustom, customName, name, level, duracao, onAdd, conditions]);
 
   const inputCls = 'flex-1 min-w-[120px] h-10 bg-slate-950 border rounded px-2 py-2 text-sm leading-tight text-white focus:outline-none';
   const selectCls = 'h-10 w-full bg-slate-950 border border-slate-700 rounded pl-3 pr-10 py-2 text-sm leading-tight text-white appearance-none focus:outline-none focus:border-purple-500';
@@ -497,9 +509,13 @@ const ConditionManager = ({ conditions, onAdd, onRemove, immuneConditions = [] }
             className={`${selectCls} ${levelLocked ? 'cursor-not-allowed' : ''}`}
             aria-label="Nível da condição"
           >
-            {Object.entries(CONDITION_LEVELS).map(([key, v]) => (
-              <option key={key} value={key}>{v.label}</option>
-            ))}
+            {/* 'alma' (Estado da Alma) fica de fora: só aparece em condições
+               causadas por dano na alma, nunca é selecionável manualmente. */}
+            {Object.entries(CONDITION_LEVELS)
+              .filter(([key]) => key !== 'alma')
+              .map(([key, v]) => (
+                <option key={key} value={key}>{v.label}</option>
+              ))}
           </select>
           <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
         </div>
@@ -527,13 +543,23 @@ const ConditionManager = ({ conditions, onAdd, onRemove, immuneConditions = [] }
           type="button"
           data-action="add"
           onClick={handleAdd}
-          className="flex-shrink-0 h-10 px-4 bg-purple-800 hover:bg-purple-700 rounded text-sm font-semibold text-white transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500"
+          disabled={isDuplicateSelected}
+          title={isDuplicateSelected ? 'Condição já ativa — não pode duplicar' : undefined}
+          className={`flex-shrink-0 h-10 px-4 bg-purple-800 rounded text-sm font-semibold text-white transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+            isDuplicateSelected ? 'opacity-50 cursor-not-allowed' : 'hover:bg-purple-700'
+          }`}
         >
           Adicionar
         </button>
       </div>
 
-      {isImmuneSelected && (
+      {isDuplicateSelected && (
+        <div className="mt-2 flex items-center gap-1.5 text-[11px] text-amber-300">
+          <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
+          <span><span className="capitalize font-semibold">{selectedCond}</span> já está ativa — não pode duplicar.</span>
+        </div>
+      )}
+      {isImmuneSelected && !isDuplicateSelected && (
         <div className="mt-2 flex items-center gap-1.5 text-[11px] text-amber-300">
           <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
           <span>Imune a <span className="capitalize font-semibold">{selectedCond}</span> no momento — adicionar mesmo assim?</span>
@@ -1364,20 +1390,45 @@ export default function CombatantPanel({
     () => collectPassiveModifiers(automationEntities, dslContext),
     [automationEntities, dslContext]
   );
-  // Modificadores das CONDIÇÕES ativas (efeitos mecânicos numéricos). Aplicados
-  // ao vivo junto dos modificadores de automação; as TRs/Defesa/Perícias/etc.
-  // afetadas aparecem destacadas. A parte comportamental fica como nota no
-  // ConditionManager. Alma é mecânica à parte (não entra aqui).
-  const conditionModifiers = useMemo(
-    () => collectConditionModifiers((combatState.activeConditions ?? []).map((c) => c.name)),
-    [combatState.activeConditions]
+  // Estado da Alma → efeitos mecânicos. Denominador usa o PV máximo BASE
+  // (não depende de liveResolved, evitando ciclo).
+  const almaHpMaxBase = combatState.hpMaxBase ?? snapshot.stats?.hpMax ?? 0;
+  const almaAtualNow = combatState.almaAtual ?? almaHpMaxBase;
+  const almaEstado = useMemo(
+    () => computeAlmaStatus(almaAtualNow, almaHpMaxBase),
+    [almaAtualNow, almaHpMaxBase]
   );
+
+  // Modificadores das CONDIÇÕES ativas (efeitos mecânicos numéricos), INCLUINDO
+  // as condições injetadas pelo Estado da Alma (Exposto/Fragilizado). As
+  // TRs/Defesa/Perícias/etc. afetadas aparecem destacadas; a parte
+  // comportamental fica como nota no ConditionManager.
+  const conditionModifiers = useMemo(
+    () => collectConditionModifiers([
+      ...(combatState.activeConditions ?? []).map((c) => c.name),
+      ...(almaEstado.condicoes ?? []),
+    ]),
+    [combatState.activeConditions, almaEstado.condicoes]
+  );
+
+  // Penalidade do Estado da Alma (−3/−6/−8) em testes e rolagens → modificadores
+  // em Acerto, as 5 Resistências e Perícias (CD não entra — é dificuldade estática).
+  const almaModifiers = useMemo(() => {
+    const pen = almaEstado.penalidade || 0;
+    if (!pen) return [];
+    return ALMA_PENALTY_TARGETS.map((stat) => newModifier({
+      id: `alma_pen_${stat}`,
+      name: `Estado da Alma (${almaEstado.label})`,
+      stat, op: 'add', value: pen,
+      duration: { kind: 'manual' },
+    }));
+  }, [almaEstado.penalidade, almaEstado.label]);
   const liveResolved = useMemo(
     () => resolveLiveStats(snapshot, {
       ...combatState,
-      activeModifiers: [...passiveModifiers, ...conditionModifiers, ...(combatState.activeModifiers ?? [])],
+      activeModifiers: [...passiveModifiers, ...conditionModifiers, ...almaModifiers, ...(combatState.activeModifiers ?? [])],
     }),
-    [snapshot, combatState, passiveModifiers, conditionModifiers]
+    [snapshot, combatState, passiveModifiers, conditionModifiers, almaModifiers]
   );
   const stats = liveResolved.stats;
   const saves = liveResolved.saves;

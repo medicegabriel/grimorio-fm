@@ -1,17 +1,22 @@
 import { useReducer, useMemo, useCallback } from "react";
 import { deriveStats, validateDraft } from "./fm-derive";
-import {
-  getOriginRawFeatures,
-  buildOriginFeature,
-  getOriginDefenseItems,
-} from "./fm-origens";
-import {
-  getTreinamentoAptidoesEspeciais,
-  getTreinamentoByNome,
-} from "./fm-treinamentos";
-import { getDoteCondicoesImunes } from "./fm-dotes";
-import { getAptidoesImunidadesGrant } from "./fm-aptidoes";
 import { recalcAction } from "./fm-action-calc";
+// As operações puras sobre a ficha (normalização + sincronização de derivados)
+// moram em fm-creature-ops para que o "Aplicar em fichas" da Biblioteca possa
+// reusá-las fora deste hook. Este reducer é só um dos consumidores.
+import {
+  genId,
+  blankDraft,
+  clampPercent,
+  normalizeDraft,
+  syncOriginDerived,
+  syncTreinamentosDerived,
+  syncDotesDerived,
+  syncAptidoesDerived,
+  syncAllDerived,
+} from "./fm-creature-ops";
+
+export { blankDraft };
 
 /**
  * ============================================================
@@ -25,293 +30,9 @@ import { recalcAction } from "./fm-action-calc";
  * ============================================================
  */
 
-// ---------- Gerador de ID simples (sem biblioteca externa) ----------
-const genId = (prefix) =>
-  `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
-
-// ---------- Estado inicial de uma ficha em branco ----------
-export const blankDraft = () => ({
-  name: "",
-  portraitUrl: "",
-  portraitFocus: { x: 50, y: 50 },
-  combatSettings: { guardaAbsorbsFirst: true, rdReducao: true },
-  core: {
-    grau: "3",
-    nd: 5,
-    patamar: "comum",
-    difficulty: "intermediario",
-    origin: { type: "maldicao", subtype: "comum", hasAumentoEnergia: false, hasEstoqueAdicional: false, frutosExperiencia: null },
-    size: "medio",
-    // "Sem Limites": ignora TODAS as travas/avisos de regra da ficha (orçamentos,
-    // limites de dotes/aptidões/defesas, teto de nível de aptidão, etc.).
-    semLimites: false,
-  },
-  attributes: {
-    forca: 10,
-    destreza: 10,
-    constituicao: 10,
-    inteligencia: 10,
-    sabedoria: 10,
-    presenca: 10,
-  },
-  aptidoes: { au: 0, cl: 0, bar: 0, dom: 0, er: 0 },
-  attackAttr: 'forca',
-  cdAttr: 'inteligencia',
-  overrides: { stats: {}, saves: {} },
-  skills: [],
-  defenses: {
-    resistencias: [],
-    imunidades: [],
-    vulnerabilidades: [],
-    condicoesImunes: [],
-    originCondicoesImunes: [], // strings de condições inseridas pela origem (paralelo)
-  },
-  actions: { list: [] },
-  features: [],
-  treinamentos: [],
-  aptidoesEspeciais: [],
-  caracteristicas: [],
-  dotes: [],
-  artimanhas: [],
-  narratorNotes: "",
-});
-
-// ---------- Normaliza skills vindas de fichas antigas (sem id) ----------
-const normalizeSkills = (skills = []) =>
-  skills.map((s) => ({
-    id: s.id || genId("skill"),
-    name: s.name || "",
-    attribute: s.attribute || "forca",
-    mastered: Boolean(s.mastered),
-    overrideMod: s.overrideMod ?? null,
-  }));
-
-// ---------- Migração: chave "ea" → "au" ----------
-// Fichas antigas guardavam o slot de Aura como "ea" (Energia Amaldiçoada).
-// O nome oficial no sistema é "Aura" (AU), então renomeamos a chave. Se a
-// ficha carregada já tem "au" prevalece — só copiamos "ea" quando "au" não
-// foi definido (= 0/undefined).
-const migrateAptidoes = (baseAptidoes, payloadAptidoes = {}) => {
-  const out = { ...baseAptidoes, ...payloadAptidoes };
-  if (payloadAptidoes && "ea" in payloadAptidoes && !payloadAptidoes.au) {
-    out.au = payloadAptidoes.ea;
-  }
-  delete out.ea;
-  return out;
-};
-
-// ---------- Normaliza treinamentos legados (sem key) ----------
-// Itens antigos só guardavam {tipo, nome, descricao, id}. Para o derive
-// conseguir consultar o catálogo, infere a `key` pelo nome quando faltar.
-const normalizeTreinamentos = (treinamentos = []) =>
-  treinamentos.map((t) => {
-    if (t.key || t.tipo === "custom") return t;
-    const cat = getTreinamentoByNome(t.nome);
-    return cat ? { ...t, key: cat.key } : t;
-  });
-
-// ---------- Normaliza um draft completo (fichas antigas / parciais) ----------
-// Garante que toda chave estrutural exista antes de o reducer mexer nela,
-// evitando crash ao adicionar defesas/ações/características em fichas legadas.
-const normalizeDraft = (payload = {}) => {
-  const base = blankDraft();
-  const core = (() => {
-    const merged = {
-      ...base.core,
-      ...(payload.core || {}),
-      origin: { ...base.core.origin, ...(payload.core?.origin || {}) },
-    };
-    // Invariante do livro: Lacaio nunca pode ter Aumento de Energia.
-    // Normaliza fichas legadas que possam ter o estado inconsistente.
-    if (merged.patamar === "lacaio" && merged.origin?.hasAumentoEnergia) {
-      merged.origin = { ...merged.origin, hasAumentoEnergia: false };
-    }
-    return merged;
-  })();
-  // Carimbo de "ND em que a ação foi calculada". Fichas legadas (sem `calc`)
-  // são carimbadas com o core atual na carga — assume-se que estão em dia —,
-  // de modo que só mudanças de ND/Patamar/Dificuldade DENTRO da sessão é que
-  // disparam o aviso de recálculo.
-  const actionStamp = { nd: core.nd, patamar: core.patamar, difficulty: core.difficulty };
-  return {
-    ...base,
-    ...payload,
-    portraitUrl: payload.portraitUrl || "",
-    portraitFocus: {
-      x: clampPercent(payload.portraitFocus?.x, 50),
-      y: clampPercent(payload.portraitFocus?.y, 50),
-    },
-    combatSettings: {
-      ...base.combatSettings,
-      ...(payload.combatSettings || {}),
-    },
-    attackAttr:  payload.attackAttr || "forca",
-    cdAttr:      payload.cdAttr || "inteligencia",
-    core,
-    attributes:  { ...base.attributes, ...(payload.attributes || {}) },
-    aptidoes:    migrateAptidoes(base.aptidoes, payload.aptidoes),
-    overrides: {
-      stats: payload.overrides?.stats || {},
-      saves: payload.overrides?.saves || {},
-    },
-    defenses: {
-      resistencias:     payload.defenses?.resistencias || [],
-      imunidades:       payload.defenses?.imunidades || [],
-      vulnerabilidades: payload.defenses?.vulnerabilidades || [],
-      condicoesImunes:  payload.defenses?.condicoesImunes || [],
-      originCondicoesImunes: payload.defenses?.originCondicoesImunes || [],
-      doteCondicoesImunes:   payload.defenses?.doteCondicoesImunes || [],
-    },
-    actions: {
-      list: (payload.actions?.list || []).map((a) =>
-        a.calc ? a : { ...a, calc: actionStamp }
-      ),
-    },
-    features:          payload.features || [],
-    skills:            normalizeSkills(payload.skills),
-    treinamentos:      normalizeTreinamentos(payload.treinamentos || []),
-    aptidoesEspeciais: payload.aptidoesEspeciais || [],
-    caracteristicas:   payload.caracteristicas || [],
-    dotes:             payload.dotes || [],
-    artimanhas:        payload.artimanhas || [],
-  };
-};
-
-// ---------- Sincronização com a origem ----------
-// Remove tudo o que estava marcado como source:'origin' (features e defesas
-// tipadas) + as condições registradas em originCondicoesImunes, e re-injeta
-// a partir do catálogo da origem atual. Idempotente: chamar várias vezes
-// produz o mesmo estado.
-const syncOriginDerived = (state) => {
-  const origin = state.core?.origin;
-
-  // 1) Features: remove as de origem antigas e adiciona as novas.
-  // Algumas features (Regeneração) têm descrição computada com patamar/BT/Con,
-  // por isso o sync também roda quando esses campos mudam. core é passado pra
-  // filtrar features que dependem de patamar (ex.: Aumento de Energia em Lacaio).
-  const ctx = { core: state.core, attributes: state.attributes };
-  const manualFeatures = (state.features || []).filter((f) => f.source !== "origin");
-  const newOriginFeatures = getOriginRawFeatures(origin, state.core).map((raw) => buildOriginFeature(raw, ctx));
-  const features = [...newOriginFeatures, ...manualFeatures];
-
-  // 2) Defesas tipadas + condições
-  const items = getOriginDefenseItems(origin, state.core);
-
-  const stripOrigin = (arr) => (arr || []).filter((it) => it?.source !== "origin");
-  const prevOriginConds = new Set(state.defenses?.originCondicoesImunes || []);
-  // Condições concedidas por dotes são uma terceira fonte protegida — não
-  // contam como manuais e devem sobreviver a uma troca de origem.
-  const doteConds = state.defenses?.doteCondicoesImunes || [];
-  const doteCondsSet = new Set(doteConds);
-  const manualConds = (state.defenses?.condicoesImunes || []).filter(
-    (c) => !prevOriginConds.has(c) && !doteCondsSet.has(c)
-  );
-  const newOriginConds = items.condicoesImunes;
-  // Ordem: origem → dote → manual, sem duplicar:
-  const mergedConds = [
-    ...newOriginConds,
-    ...doteConds.filter((c) => !newOriginConds.includes(c)),
-    ...manualConds.filter((c) => !newOriginConds.includes(c)),
-  ];
-
-  return {
-    ...state,
-    features,
-    defenses: {
-      ...state.defenses,
-      resistencias:     [...items.resistencias,     ...stripOrigin(state.defenses?.resistencias)],
-      imunidades:       [...items.imunidades,       ...stripOrigin(state.defenses?.imunidades)],
-      vulnerabilidades: [...items.vulnerabilidades, ...stripOrigin(state.defenses?.vulnerabilidades)],
-      condicoesImunes:  mergedConds,
-      originCondicoesImunes: newOriginConds,
-    },
-  };
-};
-
-// ---------- Sincronização com os treinamentos ----------
-// Remove tudo o que estava marcado como source:'treino' em aptidoesEspeciais
-// e re-injeta a partir do catálogo. Treinos como Domínio concedem aptidões
-// (Modificação Completa) que devem aparecer automaticamente e não podem ser
-// removidas manualmente — o sync garante a propriedade idempotente.
-const syncTreinamentosDerived = (state) => {
-  const treinamentos = state.treinamentos || [];
-  const granted = getTreinamentoAptidoesEspeciais(treinamentos);
-
-  const manual = (state.aptidoesEspeciais || []).filter((a) => a.source !== "treino");
-  const injected = granted.map((a) => ({
-    id: `apt-treino-${a.treinoKey}`,
-    nome: a.nome,
-    categoria: a.categoria,
-    descricao: a.descricao,
-    tipo: "oficial",
-    source: "treino",
-    treinoKey: a.treinoKey,
-    locked: true,
-  }));
-
-  return {
-    ...state,
-    aptidoesEspeciais: [...injected, ...manual],
-  };
-};
-
-// ---------- Sincronização com os dotes ----------
-// Injeta as imunidades a condição concedidas por dotes (ex.: Fúria
-// Berserker) em defenses.condicoesImunes, registrando-as em
-// doteCondicoesImunes para que não contem no limite do patamar nem
-// possam ser removidas manualmente. Idempotente: condições que saem
-// do conjunto de dotes são removidas; manuais e de origem ficam intactas.
-const syncDotesDerived = (state) => {
-  const granted = getDoteCondicoesImunes(state.dotes || []);
-  const grantedSet = new Set(granted);
-  const originConds = state.defenses?.originCondicoesImunes || [];
-  const originSet = new Set(originConds);
-  const prevDoteSet = new Set(state.defenses?.doteCondicoesImunes || []);
-
-  // Manuais = o que não é de origem nem era de dote antes.
-  const manualConds = (state.defenses?.condicoesImunes || []).filter(
-    (c) => !originSet.has(c) && !prevDoteSet.has(c)
-  );
-  // Dote só "possui" o que ainda não veio da origem (evita dupla contagem).
-  const doteList = granted.filter((c) => !originSet.has(c));
-
-  const condicoesImunes = [
-    ...originConds,
-    ...doteList,
-    ...manualConds.filter((c) => !grantedSet.has(c)),
-  ];
-
-  return {
-    ...state,
-    defenses: {
-      ...state.defenses,
-      condicoesImunes,
-      doteCondicoesImunes: doteList,
-    },
-  };
-};
-
-// ---------- Sincronização com as aptidões ----------
-// Injeta as imunidades a tipo de dano concedidas por aptidões (ex.: Composição
-// Elemental → imunidade ao elemento escolhido) em defenses.imunidades com
-// source:"aptidao". Idempotente: remove as antigas de aptidão e re-injeta a
-// partir das escolhas atuais. Não duplica tipos que já venham de origem/manual.
-const syncAptidoesDerived = (state) => {
-  const granted = getAptidoesImunidadesGrant(state.aptidoesEspeciais || []);
-  const semAptidao = (state.defenses?.imunidades || []).filter((it) => it?.source !== "aptidao");
-  const existingTipos = new Set(semAptidao.map((it) => it.tipo));
-  const novos = granted
-    .filter((g) => !existingTipos.has(g.tipo))
-    .map((g) => ({ tipo: g.tipo, source: "aptidao", aptidaoKey: g.aptidaoKey }));
-  return {
-    ...state,
-    defenses: { ...state.defenses, imunidades: [...semAptidao, ...novos] },
-  };
-};
-
 // ---------- Reducer: dicionário de handlers ----------
 const actionHandlers = {
-  HYDRATE: (_, payload) => syncAptidoesDerived(syncDotesDerived(syncTreinamentosDerived(syncOriginDerived(normalizeDraft(payload))))),
+  HYDRATE: (_, payload) => syncAllDerived(normalizeDraft(payload)),
 
   SET_NAME:     (s, payload) => ({ ...s, name: payload }),
   SET_PORTRAIT: (s, payload) => ({ ...s, portraitUrl: payload }),
@@ -616,12 +337,6 @@ const actionHandlers = {
 };
 
 // ---------- Utils ----------
-const clampPercent = (value, fallback) => {
-  const n = Number(value);
-  if (!Number.isFinite(n)) return fallback;
-  return Math.max(0, Math.min(100, n));
-};
-
 const cleanNull = (obj) => {
   const result = {};
   for (const [k, v] of Object.entries(obj)) {
@@ -644,7 +359,7 @@ export default function useCreatureBuilder(initialDraft = null) {
   const [draft, dispatch] = useReducer(
     reducer,
     initialDraft || blankDraft(),
-    (init) => syncAptidoesDerived(syncDotesDerived(syncTreinamentosDerived(syncOriginDerived(normalizeDraft(init)))))
+    (init) => syncAllDerived(normalizeDraft(init))
   );
 
   const derived = useMemo(() => deriveStats(draft), [

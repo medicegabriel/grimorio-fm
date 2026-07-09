@@ -221,7 +221,14 @@ export default function App() {
         onBackToGrimoire={goToDashboard}
       />
     ),
-    templates: () => <TemplateLibrary onBack={goToDashboard} />
+    templates: () => (
+      <TemplateLibrary
+        onBack={goToDashboard}
+        creatures={storage.creatures}
+        creatureFolders={storage.folders}
+        onUpdateCreature={storage.update}
+      />
+    )
   };
 
   return (

@@ -140,7 +140,7 @@ export default function SectionDefenses({ draft, actions }) {
                         title={fromOrigin ? "Aplicada automaticamente pela Origem" : "Aplicada automaticamente por uma Aptidão"}
                       />
                     )}
-                    {item.tipo}{item.nivel ? <span className="opacity-60"> ({item.nivel})</span> : null}
+                    <span className="capitalize">{item.tipo}</span>{item.nivel ? <span className="opacity-60"> ({item.nivel})</span> : null}
                   </Pill>
                 );
               })}
