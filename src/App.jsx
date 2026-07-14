@@ -7,6 +7,7 @@ import EncountersDashboard from "./components/EncountersDashboard";
 import TemplateLibrary from "./components/TemplateLibrary";
 import EncounterSyncModal from "./components/EncounterSyncModal";
 import PdfFab from "./components/PdfFab";
+import { FeedbackPopup, FeedbackFooter } from "./components/FeedbackPrompt";
 import useCreatureStorage from "./components/useCreatureStorage";
 import useEncounterManager from "./useEncounterManager";
 import { COMPENDIUM, getCompendiumById, isBuiltInId } from "./fm-compendium";
@@ -233,7 +234,14 @@ export default function App() {
 
   return (
     <>
-      {views[view.name] ? views[view.name]() : views.dashboard()}
+      {/* Coluna de altura mínima de tela: empurra o rodapé para o fim
+          quando o conteúdo é curto (sticky footer), sem cobrir nada. */}
+      <div className="min-h-screen flex flex-col">
+        <div className="flex-1">
+          {views[view.name] ? views[view.name]() : views.dashboard()}
+        </div>
+        <FeedbackFooter />
+      </div>
       {encounterSyncState && (
         <EncounterSyncModal
           creature={encounterSyncState.creature}
@@ -244,6 +252,7 @@ export default function App() {
         />
       )}
       <PdfFab />
+      <FeedbackPopup />
       <Analytics />
     </>
   );
