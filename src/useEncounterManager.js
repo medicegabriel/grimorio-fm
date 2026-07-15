@@ -2,14 +2,18 @@
 // Hook de persistência dos encontros. Análogo ao useCreatureStorage.
 // Chave separada no LocalStorage: fm_encounters_v1
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createEncounter, duplicateEncounter as duplicateFn } from './fm-encounter';
 
-const STORAGE_KEY = 'fm_encounters_v1';
+// Sem namespace → chave original (fm_encounters_v1). Com namespace "afty" →
+// fm_encounters_afty_v1, isolando os encontros do espaço homebrew. Espelha a
+// mesma convenção de useCreatureStorage.
+const buildEncountersKey = (namespace = "") =>
+  `fm_encounters${namespace ? `_${namespace}` : ""}_v1`;
 
-const loadFromStorage = () => {
+const loadFromStorage = (key) => {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(key);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
@@ -21,21 +25,22 @@ const loadFromStorage = () => {
   }
 };
 
-const saveToStorage = (encounters) => {
+const saveToStorage = (encounters, key) => {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(encounters));
+    localStorage.setItem(key, JSON.stringify(encounters));
     window.dispatchEvent(new Event('storage-update'));
   } catch (err) {
     console.warn('[useEncounterManager] Falha ao salvar encontros:', err);
   }
 };
 
-export default function useEncounterManager() {
-  const [encounters, setEncounters] = useState(() => loadFromStorage());
+export default function useEncounterManager(namespace = "") {
+  const storageKey = useMemo(() => buildEncountersKey(namespace), [namespace]);
+  const [encounters, setEncounters] = useState(() => loadFromStorage(storageKey));
 
   useEffect(() => {
-    saveToStorage(encounters);
-  }, [encounters]);
+    saveToStorage(encounters, storageKey);
+  }, [encounters, storageKey]);
 
   const create = useCallback((opts = {}) => {
     const fresh = createEncounter(opts);

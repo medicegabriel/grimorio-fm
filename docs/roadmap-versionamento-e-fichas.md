@@ -216,3 +216,156 @@ novos da 2.5.5. Separado, cada metade é verificável sozinha.
 
 **Como verificar o passo 2:** exportar os stats derivados das 51 criaturas do compêndio antes
 da refatoração, refatorar, exportar de novo, e conferir que os dois arquivos são idênticos.
+
+---
+
+## CORREÇÃO (2026-07-14): Afty é um SISTEMA, não uma versão
+
+O modelo de patch por spread (`v255 = {...v252, calculateHP}`) foi desenhado assumindo que
+as versões diferem em *números sobre a mesma estrutura*. Isso vale para **2.5.2 → 2.5.5**
+(edições do mesmo livro), mas **NÃO vale para o Afty**.
+
+O Grimório Afty tem: origens diferentes, cálculos diferentes, aptidões e aptidões
+amaldiçoadas diferentes, Dotes que viram "Habilidades de Especialização", **Especializações
+(classes de RPG) com multiclasse**, **Tipos de criatura** (Combatente, Misto, Conjurador,
+Restringido), e **aba de itens** adaptada do livro do jogador. A *forma do documento* é
+diferente, não só os valores. Um spread onde 80% dos campos são sobrescritos não é patch —
+é uma reimplementação disfarçada, e a "interface compartilhada" vira mentira.
+
+### Nova distinção
+
+- **Versão** (2.5.2 → 2.5.5): patch por spread sobre o mesmo esquema. Modelo original vale.
+- **Sistema** (Afty, e depois Ficha de Jogador): módulo próprio que *implementa a mesma
+  interface* que a 2.5.2, com esquema e código totalmente diferentes por trás. NÃO estende
+  a 2.5.2.
+
+Vira mental: de **"ruleset = tabelas"** para **"sistema = esquema + motor + builder + ficha
++ adaptador de combate"**. O app deixa de ser "o grimório 2.5.2 com temas" e passa a ser uma
+**casca multi-sistema**.
+
+### Interface do módulo de sistema
+
+Casca compartilhada (escrita uma vez): roteamento, storage/pastas, dashboard, import/export,
+o *chrome* do rastreador de combate, encontros, PDF.
+
+Cada sistema fornece:
+
+```
+getSystem(rulesVersion) -> {
+  id, label,
+  createBlank(),                    // forma do documento + defaults — esquema é DELE
+  migrate(creature),                // migrações de versão
+  derive(creature) -> derived,      // motor de cálculo puro
+  toRuntime(creature, derived) -> { // <-- PEÇA-CHAVE: objeto de combate NORMALIZADO
+    hpMax, peMax, defesa, iniciativa, deslocamento,
+    condicoes, acoes, resistencias, ...
+  },
+  Builder,                          // componente de autoria (system-specific)
+  Sheet,                            // componente de visualização (system-specific)
+  validateContent?,                 // para conteúdo orientado a dados
+}
+```
+
+**`toRuntime` é o linchpin.** O rastreador de combate hoje lê `creature.stats.hpMax` e
+`creature.combatState` direto. Como a criatura Afty tem outra forma, isso quebraria. Cada
+sistema produz um objeto de combate normalizado e o rastreador consome só isso — sem saber
+de qual sistema veio. É o que permite uma criatura 2.5.2 e uma Afty no mesmo encontro. Sem
+essa costura, viram dois apps.
+
+O `rulesVersion` (já plantado na ficha) é o que o dashboard usa para abrir o `Builder`/`Sheet`
+certo. Uma criatura Afty NUNCA pode ser aberta pelo builder da 2.5.2 — são tipos de documento
+diferentes.
+
+Justificativa do investimento: são **quatro consumidores** (252, 255, Afty, Jogador). O Afty
+é o **piloto que tira o risco da Ficha de Jogador** — resolve classes/multiclasse, itens e
+habilidades escolhíveis num escopo que o autor domina, antes de enfrentar as 400 páginas.
+
+### Design: criar vs. visualizar
+
+1. **Builder e Ficha são componentes SEPARADOS por conteúdo, mas com a MESMA CASCA.** Ambos =
+   cabeçalho + banda de stats fixa no topo + as mesmas abas. A diferença é o conteúdo de cada
+   aba: editores no modo Criar, leitura no modo Ver. "Um sistema, dois modos."
+2. **Seções orientadas a dados**, renderizadas de um catálogo JSON (ids estáveis + validador),
+   não JSX hardcoded por feature.
+3. **IA do builder = ABAS, não linha reta / wizard numerado.** (Decisão do autor, 2026-07-14.)
+   Criar criatura NÃO é linear — é trabalho de referência, com idas-e-voltas entre partes
+   conferindo números. Uma trilha numerada (01→02→03) *pune* esse ir-e-voltar; abas o
+   convidam. Abas: Identidade · Tipo & Nível · Atributos · Especializações · Habilidades ·
+   Itens · Ações [FIM] · Alto Nível 21+ [FIM]. Navegação livre, sem ordem imposta.
+4. **Anti-atrito do pré-requisito** (motivado por caso real do autor: escolher uma Habilidade,
+   descobrir que o nível não bate, ter que sair pra Níveis e voltar):
+   - A **distribuição de níveis da multiclasse fica sempre visível no cabeçalho** (ex.: Punho
+     12 / Véu 8) com ± inline — ajustável de QUALQUER aba, sem sair de Habilidades.
+   - Habilidade travada **diz o que falta** ("requer Nível 14 em Véu · faltam 6"), não some.
+   - Redistribuir níveis entre classes NÃO altera stats de combate (só o Tipo dirige cálculo),
+     então a banda fica estável enquanto se mexe na distribuição — reforça a regra ao usuário.
+5. **Primitivas de UI compartilhadas** extraídas antes do builder grande: Field, Picker,
+   NumberStepper, Chip, ChoiceList (com validação de pré-req), StatBand, Card, Tabs.
+6. **Tabulada, mobile-first**: banda de combate sempre visível (HP/PE/Defesa) + abas com
+   scroll horizontal no mobile.
+7. **Visual final = o design system do app** (mais bonito que o wireframe). O mockup só define
+   estrutura/IA; a pele vem do app existente.
+
+### Preparação — ordem
+
+1. Escrever o **esquema da criatura Afty** como documento de dados, antes de qualquer tela.
+2. Definir a **interface do módulo de sistema** (contrato acima).
+3. Refatorar a **2.5.2 para trás dessa interface**, sem mudar comportamento (primeiro sistema).
+4. Montar o **catálogo de conteúdo Afty** (especializações, habilidades, itens + validador).
+5. **Builder e Ficha do Afty**, compostos das primitivas, alimentados pelo catálogo.
+
+### Perguntas em aberto sobre o Afty (bloqueiam o esquema)
+
+- **Tipo × Especialização**: o Tipo (Combatente/Misto/Conjurador/Restringido) é escolhido
+  na frente e *restringe* quais Especializações a criatura pode pegar, ou é *derivado* das
+  Especializações escolhidas?
+- **Multiclasse**: como os níveis se dividem? Há nível total com teto? Cada Especialização
+  tem nível próprio (`especializacoes: [{id, nivel}]`)?
+- **Habilidades de Especialização** (ex-Dotes): são liberadas por Especialização+nível, ou
+  são escolhas livres a partir de um pool? Como guardar as escolhidas?
+- **Itens**: inventário simples (lista), ou com slots/equipar + encantamentos (mais perto do
+  livro do jogador)?
+- **Ações/Características**: em que exatamente diferem estruturalmente da 2.5.2?
+
+---
+
+## REFINAMENTO (2026-07-14): respostas do autor + descope da costura universal
+
+### Descope: combate cruzado NÃO é universal
+
+Correção da correção: `toRuntime` **não** precisa normalizar todos os sistemas entre si.
+Só brigam no mesmo encontro **2.5.5-criatura e 2.5.5-jogador** — problema *daquela família*,
+tratado quando ela for construída. Afty, 2.5.2 e 2.5.5 **não** se misturam em combate.
+
+Consequência: o Afty é **quase um app separado**. O compartilhado é só a *casca*: Tela
+Inicial, Aba de Encontros, Modelos, pastas, storage, IO. As fichas (builder + view) são
+independentes. Não arrastar nada da estrutura de ficha da 2.5.2 pro Afty.
+
+### Modelo de cálculo do Afty (confirmado pelo autor)
+
+- **Tipo dirige o cálculo.** `Combatente | Misto | Conjurador | Restringido`. Combatente
+  pende pra defensivo (Defesa, RD); Conjurador pende pra CD e derivados. O Tipo é o driver
+  das fórmulas — é só um jeito fácil de escolher o arquétipo.
+- **Especializações NÃO mudam cálculo** (≠ jogador). Só (a) definem pré-requisito de
+  Habilidades de Especialização e (b) definem escalonamento de algumas habilidades.
+- **Multiclasse trivial.** Nível total N; distribuído livremente entre **até 2** classes,
+  `soma(niveis) === N`. Ex.: 20 níveis → 12 numa classe, 8 na outra.
+- **Habilidades de Especialização** = Dotes renomeados. Agora cada uma pertence a uma
+  Especialização, exige pré-req de nível *naquela* Especialização, e escala com esse nível
+  (e outros fatores).
+- **Itens = equipar + slots.** Contam Espaços de Itens + Encantamentos + Encantamentos
+  Especiais. **Tudo realimenta os cálculos** (Defesa, Acerto, Dano). Parte pesada do motor.
+- **Nível 1 → ∞, sem teto.** Cálculos são **fórmula matemática, não tabela**. O `derive()`
+  do Afty é fundamentalmente diferente do da 2.5.2 (que é lookup capado em ND 30).
+- **Ações e Características**: seguem o **padrão do jogador** (quase 100% compatíveis criatura
+  ↔ jogador), exceto o **Ataque Básico** (dano simplificado na criatura, pra facilitar cálculo
+  manual na mesa). São 100% diferentes das atuais da 2.5.2, mais complexas. **Trabalhadas por
+  último.**
+- **Nível 21+**: abas de **Melhorias Superiores** e **Habilidades Lendárias**. Importantes pra
+  alto nível, mas **deixadas para o fim**.
+
+### Assunções ainda a confirmar (não bloqueiam o esquema v0)
+
+- Afty usa os mesmos 6 atributos da 2.5.2? (assumido que sim no esquema v0)
+- Origens do Afty diferem — forma exata TBD (placeholder no esquema).
+- Perícias/Testes de Resistência — forma exata TBD (placeholder).

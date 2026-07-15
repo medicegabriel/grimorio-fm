@@ -2,6 +2,7 @@ import React, { useState, useCallback } from "react";
 import Dashboard from "./components/Dashboard";
 import CombatTracker from "./components/CombatTracker";
 import CreatureBuilder from "./components/CreatureBuilder";
+import AftyCreatureBuilder from "./systems/afty/AftyCreatureBuilder";
 import EncounterTracker from "./components/EncounterTracker";
 import EncountersDashboard from "./components/EncountersDashboard";
 import TemplateLibrary from "./components/TemplateLibrary";
@@ -28,8 +29,18 @@ export default function App() {
     throw new Error("Teste da tela de erro (?testar-erro=1) — tudo certo!");
   }
 
-  const storage = useCreatureStorage();
-  const encounterManager = useEncounterManager();
+  // ---------- MODO AFTY (ambiente privado) ----------
+  // Acessível só por quem souber a URL /Afty (case-insensitive). Não tem
+  // link em nenhum menu — mesma ideia do ?testar-erro. Ativa um espaço de
+  // dados TOTALMENTE isolado (chaves fm_*_afty_v1) e marca as criaturas
+  // criadas aqui com rulesVersion "afty" (o Grimório Homebrew).
+  const aftyMode =
+    typeof location !== "undefined" && /^\/afty\/?$/i.test(location.pathname);
+
+  const storage = useCreatureStorage(
+    aftyMode ? { namespace: "afty", defaultRulesVersion: "afty" } : undefined
+  );
+  const encounterManager = useEncounterManager(aftyMode ? "afty" : "");
 
   const [view, setView] = useState({ name: "dashboard", creatureId: null, encounterId: null });
   const [encounterSyncState, setEncounterSyncState] = useState(null);
@@ -160,7 +171,7 @@ export default function App() {
         manager={storage}
         compendium={COMPENDIUM}
         encounters={encounterManager.encounters}
-        onOpenCreature={goToTracker}
+        onOpenCreature={aftyMode ? goToBuilder : goToTracker}
         onEditCreature={goToBuilder}
         onCreateNew={() => goToBuilder(null)}
         onGoToEncounters={goToEncounters}
@@ -181,11 +192,19 @@ export default function App() {
       );
     },
     builder: () => (
-      <CreatureBuilder
-        existingCreature={activeCreature}
-        onSave={handleCreatureSave}
-        onCancel={goToDashboard}
-      />
+      aftyMode ? (
+        <AftyCreatureBuilder
+          existingCreature={activeCreature}
+          onSave={handleCreatureSave}
+          onCancel={goToDashboard}
+        />
+      ) : (
+        <CreatureBuilder
+          existingCreature={activeCreature}
+          onSave={handleCreatureSave}
+          onCancel={goToDashboard}
+        />
+      )
     ),
     encounter: () => {
       if (!view.encounterId) {
@@ -253,6 +272,30 @@ export default function App() {
       )}
       <PdfFab />
       <FeedbackPopup />
+      {aftyMode && (
+        <div
+          title="Ambiente privado — Grimório Homebrew do Afty. Dados isolados do grimório público."
+          style={{
+            position: "fixed",
+            top: 8,
+            left: 8,
+            zIndex: 9999,
+            padding: "4px 10px",
+            borderRadius: 9999,
+            fontSize: 12,
+            fontWeight: 700,
+            letterSpacing: 0.3,
+            color: "#f5e9ff",
+            background: "rgba(88, 28, 135, 0.92)",
+            border: "1px solid rgba(216, 180, 254, 0.5)",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.35)",
+            pointerEvents: "none",
+            userSelect: "none",
+          }}
+        >
+          ⚗️ Grimório Afty · privado
+        </div>
+      )}
       <Analytics />
     </>
   );

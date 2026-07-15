@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 
 /**
  * ============================================================
@@ -7,26 +7,42 @@ import { useState, useEffect, useCallback } from "react";
  * Expande o hook original pra gerenciar também pastas.
  * Operações cruzadas (apagar pasta → mover criaturas pra raiz)
  * acontecem atomicamente dentro do mesmo setState.
+ *
+ * NAMESPACE: sem namespace, usa as chaves originais (fm_creatures_v1
+ * etc.) — comportamento idêntico ao histórico. Com namespace (ex.:
+ * "afty"), usa um conjunto de chaves isolado (fm_creatures_afty_v1),
+ * criando um espaço de dados totalmente separado que nunca se mistura
+ * com o grimório público. É assim que a rota /Afty fica escondida.
  * ============================================================
  */
 
-const CREATURES_KEY = "fm_creatures_v1";
-const CREATURES_META_KEY = "fm_creatures_meta_v1";
-const FOLDERS_KEY = "fm_folders_v1";
+// Monta as chaves do LocalStorage a partir do namespace.
+// namespace "" → chaves originais; "afty" → chaves _afty_.
+const buildKeys = (namespace = "") => {
+  const suffix = namespace ? `_${namespace}` : "";
+  return {
+    creatures: `fm_creatures${suffix}_v1`,
+    meta: `fm_creatures_meta${suffix}_v1`,
+    folders: `fm_folders${suffix}_v1`,
+  };
+};
 
 // ============================================================
 // LEITURA/ESCRITA SEGURA
 // ============================================================
-const readCreatures = () => {
+const readCreatures = (key, defaultRulesVersion) => {
   try {
-    const raw = localStorage.getItem(CREATURES_KEY);
+    const raw = localStorage.getItem(key);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
-    // Migração silenciosa: garante folderId em fichas antigas
+    // Migração silenciosa: garante folderId e rulesVersion em fichas antigas.
+    // Fichas sem versão herdam a versão padrão do espaço (2.5.2 no público,
+    // "afty" no espaço homebrew).
     return parsed.map((c) => ({
       ...c,
       folderId: c.folderId ?? null,
+      rulesVersion: c.rulesVersion ?? defaultRulesVersion,
       isBuiltIn: false, // storage nunca contém built-ins
     }));
   } catch {
@@ -34,9 +50,9 @@ const readCreatures = () => {
   }
 };
 
-const readFolders = () => {
+const readFolders = (key) => {
   try {
-    const raw = localStorage.getItem(FOLDERS_KEY);
+    const raw = localStorage.getItem(key);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? parsed : [];
@@ -45,10 +61,10 @@ const readFolders = () => {
   }
 };
 
-const writeCreatures = (creatures) => {
+const writeCreatures = (creatures, keys) => {
   try {
-    localStorage.setItem(CREATURES_KEY, JSON.stringify(creatures));
-    localStorage.setItem(CREATURES_META_KEY, JSON.stringify({
+    localStorage.setItem(keys.creatures, JSON.stringify(creatures));
+    localStorage.setItem(keys.meta, JSON.stringify({
       lastSaved: new Date().toISOString(),
       count: creatures.length,
     }));
@@ -59,9 +75,9 @@ const writeCreatures = (creatures) => {
   }
 };
 
-const writeFolders = (folders) => {
+const writeFolders = (folders, key) => {
   try {
-    localStorage.setItem(FOLDERS_KEY, JSON.stringify(folders));
+    localStorage.setItem(key, JSON.stringify(folders));
     window.dispatchEvent(new Event('storage-update'));
     return true;
   } catch {
@@ -75,23 +91,27 @@ const generateId = (prefix = "") =>
 // ============================================================
 // HOOK
 // ============================================================
-export default function useCreatureStorage() {
-  const [creatures, setCreatures] = useState(() => readCreatures());
-  const [folders, setFolders] = useState(() => readFolders());
+export default function useCreatureStorage({ namespace = "", defaultRulesVersion = "2.5.2" } = {}) {
+  // namespace é fixo durante a vida do componente (definido pela rota),
+  // então as chaves são estáveis — sem risco de loop nos efeitos.
+  const keys = useMemo(() => buildKeys(namespace), [namespace]);
+
+  const [creatures, setCreatures] = useState(() => readCreatures(keys.creatures, defaultRulesVersion));
+  const [folders, setFolders] = useState(() => readFolders(keys.folders));
   const [isSaving, setIsSaving] = useState(false);
 
   // --- Persistência ---
   useEffect(() => {
     setIsSaving(true);
-    const ok = writeCreatures(creatures);
+    const ok = writeCreatures(creatures, keys);
     if (!ok) console.warn("Falha ao salvar criaturas (quota?)");
     const t = setTimeout(() => setIsSaving(false), 300);
     return () => clearTimeout(t);
-  }, [creatures]);
+  }, [creatures, keys]);
 
   useEffect(() => {
-    writeFolders(folders);
-  }, [folders]);
+    writeFolders(folders, keys.folders);
+  }, [folders, keys]);
 
   // ============================================================
   // CRIATURAS — CRUD
@@ -102,6 +122,7 @@ export default function useCreatureStorage() {
       ...creatureData,
       id: creatureData.id || generateId(),
       folderId: creatureData.folderId ?? null,
+      rulesVersion: creatureData.rulesVersion ?? defaultRulesVersion,
       isBuiltIn: false,
       createdAt: now,
       updatedAt: now,
@@ -109,7 +130,7 @@ export default function useCreatureStorage() {
     };
     setCreatures((prev) => [newCreature, ...prev]);
     return newCreature;
-  }, []);
+  }, [defaultRulesVersion]);
 
   const update = useCallback((id, patch) => {
     setCreatures((prev) =>
@@ -162,13 +183,14 @@ export default function useCreatureStorage() {
       name: renameSuffix ? `${builtIn.name}${renameSuffix}` : builtIn.name,
       isBuiltIn: false,
       folderId,
+      rulesVersion: builtIn.rulesVersion ?? defaultRulesVersion,
       createdAt: now,
       updatedAt: now,
       editLog: [], // clone começa com histórico de edições zerado
     };
     setCreatures((prev) => [clone, ...prev]);
     return clone;
-  }, []);
+  }, [defaultRulesVersion]);
 
   // ============================================================
   // PASTAS — CRUD
@@ -286,6 +308,7 @@ export default function useCreatureStorage() {
       ...c,
       id: generateId(),           // novo ID garantido — sem colisão possível
       folderId: c.folderId ?? null,
+      rulesVersion: c.rulesVersion ?? defaultRulesVersion,
       isBuiltIn: false,
       updatedAt: now,
     }));
@@ -319,7 +342,7 @@ export default function useCreatureStorage() {
       skipped: 0,
       foldersImported: normalizedFolders.length,
     };
-  }, []);
+  }, [defaultRulesVersion]);
 
   return {
     // State
