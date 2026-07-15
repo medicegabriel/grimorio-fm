@@ -48,14 +48,7 @@ export const AFTY_TAMANHOS = [
   { value: "colossal",  label: "Colossal" },
 ];
 
-export const AFTY_ORIGENS = [
-  { value: "espirito_amaldicoado", label: "Espírito Amaldiçoado" },
-  { value: "feiticeiro",           label: "Feiticeiro Jujutsu" },
-  { value: "usuario_maldicao",     label: "Usuário de Maldição" },
-  { value: "nao_feiticeiro",       label: "Não-Feiticeiro" },
-  { value: "restringido",          label: "Restrito Celeste" },
-  { value: "corpo_amaldicoado",    label: "Corpo Amaldiçoado" },
-];
+// As origens do Afty ficam em ./afty-origens.js (catálogo de conteúdo).
 
 // Graus de item (temporário até a aba Inventário existir).
 export const AFTY_GRAUS_ITEM = [
@@ -83,7 +76,7 @@ export function createBlankAfty() {
       nd: 1,                    // Nível de Desafio (1 → ∞, sem teto)
       tamanho: "medio",
       tecnicaAttr: "inteligencia", // atributo da Técnica (CD / RD específico)
-      origem: { type: "espirito_amaldicoado", subtype: null },
+      origem: { id: "inato" },     // ver ./afty-origens.js
     },
 
     // Integridade da Alma (0 → 100+). Multiplicador de HP: HP × (atual/100).
@@ -92,9 +85,24 @@ export function createBlankAfty() {
     // Quantidade de PE (Muito Pouca … Muito Grande).
     qntPE: "normal",
 
+    // Método de montagem dos atributos (ver ./afty-atributos.js).
+    attrMethod: "pontos",   // "pontos" | "fixos" | "rolagem"
+    // Limite da alocação (base+nível) POR ATRIBUTO: 20 padrão, elevável a 30
+    // por poderes/itens. O valor efetivo (com bônus) vai até o teto duro de 30.
+    attrLimite: {
+      forca: 20, destreza: 20, constituicao: 20,
+      inteligencia: 20, sabedoria: 20, presenca: 20,
+    },
+
+    // Valores BASE (do método escolhido).
     attributes: {
       forca: 10, destreza: 10, constituicao: 10,
       inteligencia: 10, sabedoria: 10, presenca: 10,
+    },
+    // Pontos de nível alocados por cima da base (+2 a cada 4 ND, 1:1).
+    attrNivel: {
+      forca: 0, destreza: 0, constituicao: 0,
+      inteligencia: 0, sabedoria: 0, presenca: 0,
     },
 
     // Grau de item equipado (temporário; virá do Inventário).

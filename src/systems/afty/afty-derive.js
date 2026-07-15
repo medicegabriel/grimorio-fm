@@ -19,6 +19,8 @@
  * ============================================================
  */
 
+import { resolveOrigemAttrBonus, resolveDesenvolvimento } from "./afty-origens";
+
 export const mod = (attr) => Math.floor(((attr ?? 10) - 10) / 2);
 
 // Maestria == Treinamento (mesmo valor), por faixa de ND.
@@ -58,14 +60,37 @@ export function deriveAfty(creature) {
   const almaMult = almaAtual / 100;
   const qntPE = creature?.qntPE || "normal";
 
-  // Modificadores
-  const modFor = mod(a.forca);
-  const modDes = mod(a.destreza);
-  const modCon = mod(a.constituicao);
-  const modInt = mod(a.inteligencia);
-  const modSab = mod(a.sabedoria);
-  const modPre = mod(a.presenca);
+  const attrBonus = resolveOrigemAttrBonus(creature);
+  const nivelAlloc = creature?.attrNivel ?? {};
+  const desenv = resolveDesenvolvimento(creature);
+
+  // Limite EFETIVO por atributo = limite base (20 / poderes) + Desenvolvimento, teto 30.
+  const limBase = (creature?.attrLimite && typeof creature.attrLimite === "object") ? creature.attrLimite : {};
+  const limiteEfOf = (key) => Math.min((limBase[key] ?? 20) + (desenv[key] || 0), 30);
+
+  // Atributo EFETIVO = base + nível + Desenvolvimento + bônus de origem.
+  // Atributos de ORIGEM NÃO passam o limite (salvo os que digam explicitamente — TODO).
+  // base+nível+Desenvolvimento já cabem no limite por construção (o Desenvolvimento
+  // eleva valor E limite juntos); o bônus de origem é limitado ao limite efetivo.
+  const eff = (key) =>
+    Math.min((a[key] ?? 10) + (nivelAlloc[key] || 0) + (desenv[key] || 0) + (attrBonus[key] || 0), limiteEfOf(key));
+
+  // Modificadores (sobre o efetivo)
+  const modFor = mod(eff("forca"));
+  const modDes = mod(eff("destreza"));
+  const modCon = mod(eff("constituicao"));
+  const modInt = mod(eff("inteligencia"));
+  const modSab = mod(eff("sabedoria"));
+  const modPre = mod(eff("presenca"));
   const modByAttr = { forca: modFor, destreza: modDes, constituicao: modCon, inteligencia: modInt, sabedoria: modSab, presenca: modPre };
+  const attrEff = {
+    forca: eff("forca"), destreza: eff("destreza"), constituicao: eff("constituicao"),
+    inteligencia: eff("inteligencia"), sabedoria: eff("sabedoria"), presenca: eff("presenca"),
+  };
+  const attrLimiteEfetivo = {
+    forca: limiteEfOf("forca"), destreza: limiteEfOf("destreza"), constituicao: limiteEfOf("constituicao"),
+    inteligencia: limiteEfOf("inteligencia"), sabedoria: limiteEfOf("sabedoria"), presenca: limiteEfOf("presenca"),
+  };
 
   // Mod. Técnica = modificador do atributo escolhido para a Técnica/CD
   const tecnicaAttr = core.tecnicaAttr || "inteligencia";
@@ -139,9 +164,7 @@ export function deriveAfty(creature) {
     aptidaoThresholds.reduce((s, [t, v]) => s + (nd >= t ? v : 0), 0) +
     (qntPE === "muito_grande" ? 1 : 0); // +treinos TODO
 
-  const atrPatamarMult = patamar === "calamidade" || patamar === "maldicao" ? 3 : 2;
-  const totalAtributos =
-    76 + (patamar === "maldicao" ? 4 : 3) + Math.floor(nd / 4) * atrPatamarMult; // +treinos TODO
+  // (Pontos de atributo agora vêm do método + pool de nível — ver afty-atributos.js.)
 
   // ---------- overrides de valor final (aba Cálculos) ----------
   const calc = { hp, pe, defesa, cd, rdGeral, rdEspecifico, movimento, resParcial, atencao };
@@ -159,9 +182,12 @@ export function deriveAfty(creature) {
     modTecnica,
     tecnicaAttr,
     totalAptidao,
-    totalAtributos,
     nd, tipo, patamar,
     mods: { forca: modFor, destreza: modDes, constituicao: modCon, inteligencia: modInt, sabedoria: modSab, presenca: modPre },
+    attrEff,              // valor EFETIVO por atributo (base+nível+desenv+origem, teto 30)
+    attrLimiteEfetivo,    // limite por atributo (base + Desenvolvimento, teto 30)
+    attrDesenv: desenv,   // pontos de Desenvolvimento Inesperado por atributo
+    attrBonus,            // bônus de atributo da origem (efetivo)
     guarda: null,         // TODO: depende do contador de ataques consecutivos
   };
 }
