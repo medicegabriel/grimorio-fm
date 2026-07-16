@@ -1,16 +1,23 @@
 import React, { useState, useMemo } from "react";
-import { Save, ChevronLeft, Wand2, Sparkles, FlaskConical } from "lucide-react";
+import {
+  Save, ChevronLeft, ChevronDown, Wand2, Sparkles, FlaskConical,
+  Dumbbell, GraduationCap, BookOpen, Check, ArrowRight, Lock, Plus, X,
+} from "lucide-react";
 
-import { FieldLabel, TextInput, Select, NumberInput, StatField } from "../../components/builder-controls";
+import { FieldLabel, TextInput, Select, NumberInput, StatField, ExpandableText } from "../../components/builder-controls";
 import {
   createBlankAfty, AFTY_ATTRS, AFTY_TIPOS, AFTY_PATAMARES, AFTY_QNT_PE,
   AFTY_TECNICA_ATTRS, AFTY_TAMANHOS, AFTY_GRAUS_ITEM,
 } from "./afty-schema";
 import { AFTY_ORIGENS, getOrigem, origemTemDesenvolvimento } from "./afty-origens";
+import { ANATOMIAS, getAnatomia, anatomiaTotal } from "./afty-anatomias";
 import {
   ATTR_METODOS, VALORES_FIXOS, valoresFixosOk, rolarAtributos, resumoAtributos,
   desenvolvimentoTotal, desenvolvimentoUsado, POINT_BUY_MIN, POINT_BUY_MAX,
 } from "./afty-atributos";
+import {
+  AFTY_TREINAMENTOS, ETAPAS_POR_LINHA, focosGastos, avaliarRequisito,
+} from "./afty-treinamentos";
 import { deriveAfty } from "./afty-derive";
 
 /**
@@ -36,7 +43,7 @@ const TABS = [
   { id: "especializacoes", label: "Especializações" },
   { id: "aptidoes",      label: "Aptidões" },
   { id: "inventario",    label: "Inventário" },
-  { id: "treinamentos",  label: "Treinamentos" },
+  { id: "interludios",   label: "Interlúdios" },
   { id: "calculos",      label: "Cálculos", afty: true },
 ];
 
@@ -45,7 +52,6 @@ const STUBS = {
   especializacoes: "Escolha de Especializações + multiclasse. Habilidades Lendárias e Melhorias Superiores (21+) virão depois.",
   aptidoes: "Níveis de Aptidão e Aptidões Amaldiçoadas.",
   inventario: "Itens, equipar, espaços e consumíveis.",
-  treinamentos: "Treinos do Afty (estrutura diferente da 2.5.2).",
 };
 
 export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel }) {
@@ -95,6 +101,38 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
         core: { ...d.core, origem: { ...d.core.origem, bonusAtributos: bonusMap } },
         attrNivel: nextNivel,
       };
+    });
+
+  const treinosObj = (d) =>
+    (d.treinamentos && !Array.isArray(d.treinamentos) && typeof d.treinamentos === "object") ? d.treinamentos : {};
+
+  // Interlúdios · Treinamentos: define o progresso (0..4) de uma linha NÃO repetível.
+  const setTreinoProgresso = (lineId, prog) =>
+    setDraft((d) => {
+      const next = { ...treinosObj(d) };
+      if (prog > 0) next[lineId] = prog;
+      else delete next[lineId];
+      return { ...d, treinamentos: next };
+    });
+
+  // Linha REPETÍVEL: upsert/remove de uma instância (alvo distinto → progresso).
+  const setTreinoInstance = (lineId, alvo, prog) =>
+    setDraft((d) => {
+      const cur = treinosObj(d);
+      const list = Array.isArray(cur[lineId]) ? cur[lineId] : [];
+      const key = String(alvo).trim().toLowerCase();
+      let nextList;
+      if (prog > 0) {
+        nextList = list.some((it) => String(it.alvo).toLowerCase() === key)
+          ? list.map((it) => (String(it.alvo).toLowerCase() === key ? { ...it, progresso: prog } : it))
+          : [...list, { alvo: String(alvo).trim(), progresso: prog }];
+      } else {
+        nextList = list.filter((it) => String(it.alvo).toLowerCase() !== key);
+      }
+      const next = { ...cur };
+      if (nextList.length) next[lineId] = nextList;
+      else delete next[lineId];
+      return { ...d, treinamentos: next };
     });
 
   // Aba Cálculos: sobrescreve o VALOR FINAL de um stat (padrão StatField).
@@ -203,6 +241,7 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
         <div className="lg:col-span-2 space-y-4">
           {tab === "identidade" && <TabIdentidade draft={draft} patch={patch} patchCore={patchCore} setOrigemBonus={setOrigemBonus} />}
           {tab === "informacoes" && <TabInformacoes draft={draft} derived={derived} patch={patch} patchCore={patchCore} patchAttr={patchAttr} patchNivel={patchNivel} />}
+          {tab === "interludios" && <TabInterludios draft={draft} derived={derived} setTreinoProgresso={setTreinoProgresso} setTreinoInstance={setTreinoInstance} />}
           {tab === "calculos" && <TabCalculos derived={derived} setStatOverride={setStatOverride} />}
           {STUBS[tab] && <StubCard title={TABS.find((t) => t.id === tab)?.label} text={STUBS[tab]} />}
         </div>
@@ -214,12 +253,13 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
 /* ============================================================ */
 /* Cartão / cabeçalho de seção — mesmo visual do builder 2.5.2  */
 /* ============================================================ */
-function Card({ title, children }) {
+function Card({ title, children, headerRight }) {
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-xl">
       <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-800">
-        <Sparkles className="w-4 h-4 text-purple-400" />
+        <Sparkles className="w-4 h-4 text-purple-400 flex-shrink-0" />
         <h2 className="text-sm font-semibold text-white">{title}</h2>
+        {headerRight && <div className="ml-auto flex-shrink-0">{headerRight}</div>}
       </div>
       <div className="p-4">{children}</div>
     </div>
@@ -264,7 +304,7 @@ function TabIdentidade({ draft, patch, patchCore, setOrigemBonus }) {
         </div>
       </div>
 
-      <OrigemInfo draft={draft} setOrigemBonus={setOrigemBonus} />
+      <OrigemInfo draft={draft} patchCore={patchCore} setOrigemBonus={setOrigemBonus} />
 
       <div className="mt-4">
         <FieldLabel hint="URL da imagem (opcional)">Retrato</FieldLabel>
@@ -280,13 +320,14 @@ function grantLabel(g) {
     case "talento": return `${g.quantidade} Talento${g.ndMin > 1 ? ` (ND ≥ ${g.ndMin})` : ""}`;
     case "feitico": return `${g.quantidade} Feitiço −${g.custoPEReduzido} PE`;
     case "aptidao_amaldicoada": return `${g.quantidade} Aptidão Amaldiçoada${g.categoria ? ` de ${g.categoria}` : ""}`;
+    case "pericia_treinada": return `${g.quantidade} Perícia${g.quantidade > 1 ? "s" : ""} treinada${g.quantidade > 1 ? "s" : ""}`;
     default: return `${g.quantidade} ${g.tipo}`;
   }
 }
 
 /* Card da origem selecionada: raridade, resumo, características e — quando a
    origem tem bônus de atributo ESCOLHÍVEL — os seletores +2/+1. */
-function OrigemInfo({ draft, setOrigemBonus }) {
+function OrigemInfo({ draft, patchCore, setOrigemBonus }) {
   const id = draft.core.origem?.id;
   const origem = getOrigem(id);
   if (!origem) return null;
@@ -300,6 +341,20 @@ function OrigemInfo({ draft, setOrigemBonus }) {
     for (const k of Object.keys(cur)) if (cur[k] === points) delete cur[k];
     if (attrKey) cur[attrKey] = points;
     setOrigemBonus(cur); // aplica e devolve pontos de Nível que passariam do limite
+  };
+  // Bônus de distribuir N pontos (máx M por atributo) — ex.: Sem Técnica (4, máx 3).
+  const distribUsado = Object.values(bonusMap).reduce((s, v) => s + v, 0);
+  const setDistrib = (key, val) => {
+    const cur = { ...bonusMap };
+    if (val > 0) cur[key] = val; else delete cur[key];
+    setOrigemBonus(cur);
+  };
+  // Características de Anatomia (Feto): escolhe 1 + 1 a cada 5 níveis.
+  const anatomiasSel = draft.core.origem?.anatomias || [];
+  const anatTotal = anatomiaTotal(draft.core.nd ?? 1);
+  const toggleAnatomia = (aid) => {
+    const cur = anatomiasSel.includes(aid) ? anatomiasSel.filter((x) => x !== aid) : [...anatomiasSel, aid];
+    patchCore({ origem: { ...draft.core.origem, anatomias: cur } });
   };
   const optionsFor = (p) => {
     const usedByOthers = Object.entries(bonusMap).filter(([, v]) => v !== p).map(([k]) => k);
@@ -323,6 +378,14 @@ function OrigemInfo({ draft, setOrigemBonus }) {
       </div>
 
       {origem.resumo && <p className="text-xs text-slate-400 mt-2">{origem.resumo}</p>}
+
+      {origem.restricoes?.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {origem.restricoes.map((r, i) => (
+            <span key={i} className="text-[10px] px-1.5 py-0.5 rounded border border-rose-900/60 text-rose-300/80 bg-rose-950/20">{r}</span>
+          ))}
+        </div>
+      )}
 
       {/* bônus fixo (origens sem escolha) */}
       {fixedBonus.length > 0 && (
@@ -354,14 +417,86 @@ function OrigemInfo({ draft, setOrigemBonus }) {
                     <div key={p} className="flex items-center gap-1.5">
                       <span className="text-[11px] font-mono font-bold text-purple-300 whitespace-nowrap">+{p} em</span>
                       <div className="w-36">
-                        <Select value={attrForPoints(p)} onChange={(v) => setSlot(p, v)} options={optionsFor(p)} placeholder="— escolher —" />
+                        <Select value={attrForPoints(p)} onChange={(v) => setSlot(p, v)} options={optionsFor(p)} placeholder="escolher..." />
                       </div>
                     </div>
                   ))}
                 </div>
               )}
 
-              {/* concessões (Talento / Feitiço / Aptidão) — seletor virá quando os catálogos existirem */}
+              {/* alocador: distribuir N pontos (máx M por atributo) — ex.: Sem Técnica */}
+              {c.bonus?.distribuir && (
+                <div className="mt-2">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-[10px] uppercase tracking-wider text-slate-500">Distribuir · máx {c.bonus.maxPorAtributo}/atributo</span>
+                    <span className="text-[11px] font-mono text-slate-400 tabular-nums">{distribUsado} / {c.bonus.distribuir}</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {AFTY_ATTRS.map((a) => {
+                      const val = bonusMap[a.key] || 0;
+                      const max = Math.min(c.bonus.maxPorAtributo, val + (c.bonus.distribuir - distribUsado));
+                      return (
+                        <div key={a.key} className="flex items-center justify-between gap-1.5 bg-slate-950/50 border border-slate-800 rounded px-2 py-1">
+                          <span className="text-[11px] font-bold text-slate-400">{a.abbr}</span>
+                          <div className="w-[84px]">
+                            <NumberInput value={val} onChange={(v) => setDistrib(a.key, v)} min={0} max={max} aria-label={`Bônus em ${a.label}`} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* seletor de Características de Anatomia (Físico Amaldiçoado) */}
+              {c.poolAnatomia && (
+                <div className="mt-2">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-[10px] uppercase tracking-wider text-slate-500">Características de Anatomia</span>
+                    <span className="text-[11px] font-mono text-slate-400 tabular-nums">{anatomiasSel.length} / {anatTotal}</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {ANATOMIAS.map((an) => {
+                      const sel = anatomiasSel.includes(an.id);
+                      const full = anatomiasSel.length >= anatTotal;
+                      return (
+                        <button
+                          key={an.id}
+                          type="button"
+                          title={an.descricao}
+                          disabled={!sel && full}
+                          onClick={() => toggleAnatomia(an.id)}
+                          className={`text-[10px] px-2 py-1 rounded border transition-colors ${
+                            sel
+                              ? "bg-purple-800/50 border-purple-700 text-purple-100"
+                              : full
+                                ? "border-slate-800 text-slate-600 cursor-not-allowed"
+                                : "border-slate-700 text-slate-400 hover:text-white hover:border-slate-600"
+                          }`}
+                        >
+                          {an.nome}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {anatomiasSel.length > 0 && (
+                    <div className="mt-2 space-y-1.5">
+                      {anatomiasSel.map((aid) => {
+                        const an = getAnatomia(aid);
+                        if (!an) return null;
+                        return (
+                          <div key={aid} className="text-[11px] leading-relaxed border-l-2 border-purple-900/50 pl-2">
+                            <span className="text-slate-200 font-semibold">{an.nome}.</span>{" "}
+                            <span className="text-slate-400">{an.descricao}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* concessões (Talento / Feitiço / Aptidão / Perícia) — seletor virá quando os catálogos existirem */}
               {c.grants && (
                 <div className="mt-1.5 flex flex-wrap gap-1.5">
                   {c.grants.map((g, i) => (
@@ -369,6 +504,14 @@ function OrigemInfo({ draft, setOrigemBonus }) {
                       {grantLabel(g)}
                     </span>
                   ))}
+                </div>
+              )}
+
+              {/* lembrete roxo: característica com continuação a fazer depois */}
+              {c.continuacao && (
+                <div className="mt-2 flex items-start gap-1.5 text-[11px] text-purple-300 bg-purple-950/30 border border-purple-800/60 rounded px-2 py-1.5">
+                  <span aria-hidden="true">✎</span>
+                  <span>Continuação pendente — completar na aba de Habilidades.</span>
                 </div>
               )}
             </div>
@@ -659,6 +802,396 @@ function TabInformacoes({ draft, derived, patch, patchCore, patchAttr, patchNive
             <FieldLabel hint="bônus de RD">Grau (RD)</FieldLabel>
             <Select value={draft.inventario.rdGrau} onChange={(v) => patch({ inventario: { ...draft.inventario, rdGrau: v } })} options={AFTY_GRAUS_ITEM} />
           </div>
+        </div>
+      </Card>
+    </>
+  );
+}
+
+/* ============================================================ */
+/* Aba: Interlúdios (Treinamentos + focos de interlúdio)       */
+/* ============================================================ */
+/* Cena de interlúdio: pausa entre missões. O personagem escolhe
+   focos (2 por interlúdio, mais a critério do Mestre). Foco em
+   Treinamento avança linhas sequenciais; Estudos e Treinamento
+   para Habilidade dependem de sistemas ainda não construídos. */
+
+/* Chip de requisito de uma etapa: compacto, inline, em destaque (roxo).
+   ✓ quando o requisito de atributo está atendido; cadeado quando falta
+   ou é requisito de sistema ainda não construído (não validável). */
+function RequisitoChip({ req }) {
+  if (!req?.label) return null;
+  const atendido = req.verificavel && req.ok;
+  const Icon = atendido ? Check : Lock;
+  return (
+    <span
+      className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-px rounded border whitespace-nowrap border-purple-800/60 bg-purple-950/50 text-purple-300"
+      title={req.verificavel ? undefined : "Requisito de sistema ainda não construído, não validado aqui"}
+    >
+      <Icon className="w-2.5 h-2.5" /> {req.label}
+    </span>
+  );
+}
+
+/* Indicador compacto de progresso: N segmentos preenchidos. */
+function ProgressoSegmentos({ progresso, total }) {
+  return (
+    <div className="flex items-center gap-0.5" aria-hidden="true">
+      {Array.from({ length: total }).map((_, i) => (
+        <span key={i} className={`h-1.5 w-3.5 rounded-full ${i < progresso ? "bg-purple-500" : "bg-slate-700"}`} />
+      ))}
+    </div>
+  );
+}
+
+/* As 4 etapas (linha do tempo) + bônus de Completo de uma instância.
+   `onSet(prog)` grava o novo progresso (bindado à linha/instância certa).
+   `readOnly` = prévia só para consulta (sem ações, tudo em estado neutro). */
+function TreinoEtapas({ linha, progresso, attrEff, nd, onSet, readOnly = false }) {
+  const completa = !readOnly && progresso >= ETAPAS_POR_LINHA;
+  return (
+    <>
+      <div className="pl-1.5 space-y-0.5">
+        {linha.etapas.map((et) => {
+          const done = !readOnly && et.n <= progresso;
+          const isNext = !readOnly && et.n === progresso + 1;
+          const locked = !readOnly && et.n > progresso + 1;
+          const req = avaliarRequisito(et.requisito, { attrEff, nd });
+          const blocked = isNext && !req.ok; // só requisito de atributo bloqueia
+          const isTop = done && et.n === progresso; // última concluída (desfazível)
+
+          return (
+            <div key={et.n} className={`flex items-center gap-2.5 rounded-md px-2 py-1.5 ${isNext ? "bg-slate-900/50" : ""}`}>
+              {/* círculo (centralizado no corpo da etapa) */}
+              <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 text-[10px] font-bold ${
+                done ? "bg-purple-700 text-white"
+                : isNext ? "border border-slate-500 text-slate-300"
+                : readOnly ? "border border-slate-600 text-slate-400"
+                : "border border-slate-700 text-slate-600"
+              }`}>
+                {done ? <Check className="w-3 h-3" /> : et.n}
+              </div>
+
+              {/* corpo */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-x-2 gap-y-1 flex-wrap min-h-[20px]">
+                  <span className={`text-[11px] font-semibold ${locked ? "text-slate-500" : "text-slate-200"}`}>
+                    {et.n}ª Etapa
+                  </span>
+                  <span className="text-[10px] text-slate-500">{et.focos} Foco{et.focos > 1 ? "s" : ""}</span>
+                  {!done && <RequisitoChip req={req} />}
+                </div>
+                <p className={`text-[11px] leading-snug mt-1 ${locked ? "text-slate-500" : "text-slate-400"}`}>
+                  {et.beneficio}
+                </p>
+              </div>
+
+              {/* ação (some na prévia) */}
+              <div className="flex-shrink-0">
+                {!readOnly && isNext && (
+                  <button
+                    type="button"
+                    disabled={blocked}
+                    onClick={() => onSet(et.n)}
+                    className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded border transition-colors ${
+                      blocked
+                        ? "border-slate-800 text-slate-600 cursor-not-allowed"
+                        : "border-purple-700 bg-purple-800/40 text-purple-200 hover:bg-purple-700/50"
+                    }`}
+                    title={blocked ? `Requisito não atendido: ${req.label}` : "Concluir esta etapa"}
+                  >
+                    Treinar <ArrowRight className="w-3 h-3" />
+                  </button>
+                )}
+                {!readOnly && isTop && (
+                  <button
+                    type="button"
+                    onClick={() => onSet(progresso - 1)}
+                    className="text-[11px] text-slate-500 hover:text-slate-300 px-1"
+                    title="Desfazer esta etapa"
+                  >
+                    Desfazer
+                  </button>
+                )}
+                {!readOnly && locked && <Lock className="w-3 h-3 text-slate-700" />}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* bônus de treinamento completo — sempre visível (consulta), mudo até concluir */}
+      <div className={`mt-2 ml-1.5 rounded-md border-l-2 px-3 py-2.5 ${
+        completa ? "border-purple-700 bg-purple-950/20" : "border-slate-700 bg-slate-950/30"
+      }`}>
+        <div className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${completa ? "text-purple-300" : "text-slate-500"}`}>
+          Treinamento Completo
+        </div>
+        <p className={`text-[11px] leading-relaxed ${completa ? "text-purple-100/90" : "text-slate-400"}`}>
+          {linha.completo.beneficio}
+        </p>
+        {linha.completo.detalhe && (
+          <div className="mt-1.5">
+            <ExpandableText text={linha.completo.detalhe} />
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
+
+/* Rótulo do alvo de uma instância repetível (atributo → nome; texto → literal). */
+function alvoLabelDe(linha, alvo) {
+  if (linha.alvoTipo === "atributo") return AFTY_ATTRS.find((a) => a.key === alvo)?.label ?? alvo;
+  return alvo;
+}
+
+/* Uma Linha de Treinamento. Não repetível → uma trilha só. Repetível → várias
+   instâncias, cada uma com um alvo distinto (atributo/perícia/arma). */
+function TreinoLinha({ linha, valor, attrEff, nd, onSetProgresso, onSetInstance }) {
+  const repetivel = !!linha.repetivel;
+  const progresso = repetivel ? 0 : (Number(valor) || 0);
+  const completa = !repetivel && progresso >= ETAPAS_POR_LINHA;
+  const instances = repetivel && Array.isArray(valor) ? valor : [];
+  const ativo = repetivel ? instances.length > 0 : progresso > 0;
+
+  const [open, setOpen] = useState(repetivel ? instances.length > 0 : (progresso > 0 && !completa));
+  const [novoTexto, setNovoTexto] = useState("");
+
+  const usados = new Set(instances.map((it) => String(it.alvo).toLowerCase()));
+  const attrOptions = AFTY_ATTRS.filter((a) => !usados.has(a.key.toLowerCase())).map((a) => ({ value: a.key, label: a.label }));
+  const textoDup = !!novoTexto.trim() && usados.has(novoTexto.trim().toLowerCase());
+  const addTexto = () => {
+    const v = novoTexto.trim();
+    if (!v || usados.has(v.toLowerCase())) return;
+    onSetInstance(linha.id, v, 1);
+    setNovoTexto("");
+  };
+
+  return (
+    <div className={`rounded-lg border bg-slate-950/40 ${ativo ? "border-slate-700/80" : "border-slate-800"}`}>
+      {/* cabeçalho */}
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left"
+      >
+        <ChevronDown className={`w-4 h-4 text-slate-500 flex-shrink-0 transition-transform ${open ? "" : "-rotate-90"}`} />
+        <span className="text-sm font-semibold text-white flex-1 min-w-0 truncate">{linha.nome}</span>
+        {repetivel ? (
+          instances.length > 0 ? (
+            <span className="text-[11px] font-mono text-slate-400 tabular-nums flex-shrink-0">
+              {instances.length} treino{instances.length !== 1 ? "s" : ""}
+            </span>
+          ) : (
+            <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded border border-purple-800/60 bg-purple-950/40 text-purple-300 flex-shrink-0">
+              Repetível
+            </span>
+          )
+        ) : (
+          <span className="flex items-center gap-2 flex-shrink-0">
+            <ProgressoSegmentos progresso={completa ? ETAPAS_POR_LINHA : progresso} total={ETAPAS_POR_LINHA} />
+            {completa ? (
+              <span className="inline-flex items-center gap-0.5 text-[11px] font-semibold text-purple-300 w-16 justify-end">
+                <Check className="w-3 h-3" /> Completo
+              </span>
+            ) : (
+              <span className="text-[11px] font-mono text-slate-400 tabular-nums w-16 text-right">{progresso}/{ETAPAS_POR_LINHA}</span>
+            )}
+          </span>
+        )}
+      </button>
+
+      {/* corpo */}
+      {open && (
+        <div className="px-3 pb-3 -mt-0.5">
+          <p className="text-[11px] text-slate-400 leading-relaxed mb-2.5 pl-6">{linha.resumo}</p>
+
+          {repetivel ? (
+            <div className="space-y-2.5">
+              {/* instâncias (um treino por alvo) */}
+              {instances.map((inst) => {
+                const instCompleta = inst.progresso >= ETAPAS_POR_LINHA;
+                return (
+                  <div key={inst.alvo} className="rounded-md border border-slate-700/80 bg-slate-900/30 p-2">
+                    {/* cabeçalho da instância: mesma anatomia da linha (alvo + segmentos + estado) */}
+                    <div className="flex items-center gap-2 mb-2 pb-1.5 border-b border-slate-800">
+                      <span className="text-[11px] font-bold text-purple-200 flex-1 min-w-0 truncate">
+                        {alvoLabelDe(linha, inst.alvo)}
+                      </span>
+                      <ProgressoSegmentos progresso={inst.progresso} total={ETAPAS_POR_LINHA} />
+                      {instCompleta ? (
+                        <span className="inline-flex items-center gap-0.5 text-[11px] font-semibold text-purple-300 w-16 justify-end">
+                          <Check className="w-3 h-3" /> Completo
+                        </span>
+                      ) : (
+                        <span className="text-[11px] font-mono text-slate-400 tabular-nums w-16 text-right">
+                          {inst.progresso}/{ETAPAS_POR_LINHA}
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => onSetInstance(linha.id, inst.alvo, 0)}
+                        className="text-slate-600 hover:text-rose-300 p-0.5 rounded flex-shrink-0"
+                        title={`Remover treino de ${alvoLabelDe(linha, inst.alvo)}`}
+                        aria-label={`Remover treino de ${alvoLabelDe(linha, inst.alvo)}`}
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                    <TreinoEtapas
+                      linha={linha}
+                      progresso={inst.progresso}
+                      attrEff={attrEff}
+                      nd={nd}
+                      onSet={(p) => onSetInstance(linha.id, inst.alvo, p)}
+                    />
+                  </div>
+                );
+              })}
+
+              {/* sem treinos ainda: prévia consultável das etapas + Completo */}
+              {instances.length === 0 && (
+                <TreinoEtapas linha={linha} progresso={0} attrEff={attrEff} nd={nd} readOnly />
+              )}
+
+              {/* zona de adicionar novo alvo */}
+              <div className="flex items-center gap-2 rounded-md border border-dashed border-slate-700 bg-slate-950/30 px-2.5 py-2">
+                <Plus className="w-3.5 h-3.5 text-purple-400 flex-shrink-0" />
+                {linha.alvoTipo === "atributo" ? (
+                  attrOptions.length > 0 ? (
+                    <div className="w-44">
+                      <Select
+                        value=""
+                        onChange={(v) => v && onSetInstance(linha.id, v, 1)}
+                        options={attrOptions}
+                        placeholder={`Treinar ${(linha.alvoLabel || "alvo").toLowerCase()}...`}
+                      />
+                    </div>
+                  ) : (
+                    <span className="text-[11px] text-slate-500">Todos os atributos já foram treinados.</span>
+                  )
+                ) : (
+                  <>
+                    <div className="w-44">
+                      <TextInput
+                        value={novoTexto}
+                        onChange={setNovoTexto}
+                        placeholder={`${linha.alvoLabel || "Alvo"}...`}
+                        onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTexto(); } }}
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={addTexto}
+                      disabled={!novoTexto.trim() || textoDup}
+                      className="text-[11px] font-semibold px-2.5 py-1.5 rounded border border-purple-700 bg-purple-800/40 text-purple-200 hover:bg-purple-700/50 disabled:opacity-40 disabled:cursor-not-allowed"
+                      title={textoDup ? "Alvo já treinado" : "Adicionar treino"}
+                    >
+                      Adicionar
+                    </button>
+                    {textoDup && <span className="text-[10px] text-rose-300/80">já treinado</span>}
+                  </>
+                )}
+              </div>
+            </div>
+          ) : (
+            <TreinoEtapas
+              linha={linha}
+              progresso={progresso}
+              attrEff={attrEff}
+              nd={nd}
+              onSet={(p) => onSetProgresso(linha.id, p)}
+            />
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* Card informativo recolhível de um foco de interlúdio que depende de
+   sistema ainda não construído (Estudos, Treinamento para Habilidade). */
+function InterludioInfo({ icon: Icon, titulo, children }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="rounded-lg border border-slate-800 bg-slate-950/40">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        className="w-full flex items-center gap-2 px-3 py-2.5 text-left"
+      >
+        <Icon className="w-4 h-4 text-slate-400 flex-shrink-0" />
+        <span className="text-sm font-semibold text-slate-200 flex-1 min-w-0 truncate">{titulo}</span>
+        <span className="text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700 flex-shrink-0">
+          em breve
+        </span>
+        <ChevronDown className={`w-4 h-4 text-slate-500 flex-shrink-0 transition-transform ${open ? "" : "-rotate-90"}`} />
+      </button>
+      {open && (
+        <div className="px-3 pb-3 pt-0 text-[11px] text-slate-400 leading-relaxed">{children}</div>
+      )}
+    </div>
+  );
+}
+
+function TabInterludios({ draft, derived, setTreinoProgresso, setTreinoInstance }) {
+  const treinos = (draft.treinamentos && !Array.isArray(draft.treinamentos) && typeof draft.treinamentos === "object")
+    ? draft.treinamentos : {};
+  const gastos = focosGastos(treinos);
+  const total = derived.focosTotais;                // = ND + bônus de poderes
+  const overBudget = gastos > total;
+
+  return (
+    <>
+      <Card
+        title="Interlúdios · Treinamento"
+        headerRight={
+          <div
+            className="flex items-center gap-1.5 border border-slate-800 bg-slate-950/50 rounded-md px-2 py-1"
+            title="Focos gastos / totais (ND + bônus de poderes)"
+          >
+            <Dumbbell className="w-3 h-3 text-purple-400 flex-shrink-0" />
+            <span className="text-[9px] uppercase tracking-wider text-slate-400">Focos</span>
+            <span className="font-mono text-xs font-bold tabular-nums whitespace-nowrap">
+              <span className={overBudget ? "text-rose-400" : "text-white"}>{gastos}</span>
+              <span className="text-slate-600"> / </span>
+              <span className="text-white">{total}</span>
+            </span>
+          </div>
+        }
+      >
+        {/* linhas de treinamento */}
+        <div className="space-y-1.5">
+          {AFTY_TREINAMENTOS.map((linha) => (
+            <TreinoLinha
+              key={linha.id}
+              linha={linha}
+              valor={treinos[linha.id]}
+              attrEff={derived.attrEff}
+              nd={derived.nd}
+              onSetProgresso={setTreinoProgresso}
+              onSetInstance={setTreinoInstance}
+            />
+          ))}
+        </div>
+      </Card>
+
+      <Card title="Outros Focos de Interlúdio">
+        <div className="space-y-1.5">
+          <InterludioInfo icon={BookOpen} titulo="Estudos">
+            Estudar uma perícia sem maestria (4 testes de INT/SAB, CD 12 + maestria; 2 sucessos
+            concedem maestria), ou tornar-se especialista numa perícia já dominada (3 testes,
+            CD 15 + nível; 2 sucessos). Ativa quando a aba de Perícias existir.
+          </InterludioInfo>
+          <InterludioInfo icon={GraduationCap} titulo="Treinamento para Habilidade">
+            Escolher uma habilidade de especialização cujos requisitos você atende como objetivo do
+            treino (4 testes de um atributo, CD 12 + metade do nível; 3 sucessos concluem). Até o 9º
+            nível, uma habilidade adicional por essa via; a partir do 10º, mais uma. Ativa quando as
+            Especializações/Habilidades existirem.
+          </InterludioInfo>
         </div>
       </Card>
     </>

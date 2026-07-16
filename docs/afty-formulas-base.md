@@ -229,8 +229,16 @@ Decodificado (limpo): base (Calamidade 2 / Maldição 4) + 1 por limiar de ND {1
 
 ### ADIADO (anotado, não implementar ainda)
 
-- **Todas as contribuições de TREINAMENTO** (todos os termos `Treinamentos!…`). Marcadas `TODO`
-  em `afty-derive.js`.
+- **Contribuições de TREINAMENTO** — ⚠ PARCIALMENTE IMPLEMENTADO (2026-07-15). O catálogo
+  `afty-treinamentos.js` já existe e `deriveAfty` soma as contribuições via `resolveTreinoEfeitos`
+  (canais HP/PE/Movimento/Aptidão/Defesa). Trilhas catalogadas: Agilidade, Barreiras, Compreensão,
+  Controle de Energia, Domínios. Faltam Resistência, Potencial Físico, Atributo 1/2, Luta,
+  Energia Reversa (o autor vai enviar). **DIVERGÊNCIA a confirmar:** o mapa célula→treino abaixo
+  (extraído da planilha) diz Compreensão 1ª=+1 PE, 3ª=+2 PE e 2ª=+1 Aptidão; as TABELAS enviadas
+  pelo autor dizem 1ª=+2 PE, 3ª=+3 PE e 2ª=bônus de perícia (sem Aptidão). O código seguiu as
+  TABELAS (fonte mais recente). A planilha pode estar desatualizada — confirmar com o autor.
+  **Mesma divergência no Treino de Luta:** planilha (I17) dizia Luta 2ª = +3 Defesa; a TABELA diz
+  +2 Defesa. Código seguiu a TABELA (+2). Confirmar.
 - **GUARDA** (`CU9` = contador de ataques consecutivos; a Guarda aumenta Defesa e TRs até ser
   quebrada). Lembrar o autor depois. `derived.guarda = null` por ora.
 - **Perícias** → Atenção usa Percepção = 0 provisoriamente.

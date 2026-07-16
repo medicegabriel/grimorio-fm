@@ -112,7 +112,12 @@ export function createBlankAfty() {
     habilidades: [],            // Habilidades de Especialização (ex-Dotes)
     aptidoes: { au: 0, cl: 0, bar: 0, dom: 0 },
     aptidoesAmaldicoadas: [],
-    treinamentos: [],           // TODO: alimenta vários stats — adiado
+    // Interlúdios · Treinamentos: mapa { [linhaId]: progresso 0..4 }.
+    // Etapas sequenciais; 4 → concede o bônus de Completo. Ver afty-treinamentos.js.
+    treinamentos: {},
+    // Orçamento de Focos = ND + bônus de poderes (derivado; ver deriveAfty).
+    // "Outros" (poderes que dão treinos) virá do sistema de poderes:
+    focosBonus: 0,
 
     // Aba Cálculos: sobrescreve o VALOR FINAL de um stat (padrão StatField).
     // A edição por fórmula (coeficientes) fica para depois.

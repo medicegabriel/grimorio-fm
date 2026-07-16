@@ -103,18 +103,85 @@ export const AFTY_ORIGENS_CATALOG = [
     id: "feto_amaldicoado_hibrido",
     nome: "Feto Amaldiçoado Híbrido",
     raridade: "rara",
-    resumo: "",
+    resumo:
+      "Um espírito amaldiçoado embrionário que virou híbrido de humano e maldição: constituição e " +
+      "anatomia únicas, domínio natural do jujutsu. Origem complexa, com interação única com a energia " +
+      "reversa e uma progressão de anatomia.",
     bonusAtributos: {},
-    caracteristicas: [],
+    caracteristicas: [
+      {
+        id: "bonus_atributo",
+        nome: "Bônus em Atributo",
+        descricao: "Aumenta o valor de um atributo em 2 pontos e o de outro em 1 ponto.",
+        bonus: { escolhaDoJogador: true, pontos: [2, 1] },
+      },
+      {
+        id: "heranca_maldita",
+        nome: "Herança Maldita",
+        descricao:
+          "Toda cura recebida de energia reversa é reduzida à metade. Se obtiver uma habilidade de cura por " +
+          "energia reversa, pode usá-la tratando a energia reversa como amaldiçoada (cura cheia), gastando 2 " +
+          "de energia amaldiçoada em vez de 1 de energia reversa.",
+      },
+      {
+        id: "fisico_amaldicoado",
+        nome: "Físico Amaldiçoado",
+        descricao: "Recebe uma Característica de Anatomia; a cada 5 níveis, o corpo desenvolve outra.",
+        poolAnatomia: { base: 1, porNivel: 5 },
+      },
+      {
+        id: "vigor_maldito",
+        nome: "Vigor Maldito",
+        descricao:
+          "1×/descanso longo, ação bônus: recupera PV igual a 5 + mod. de Constituição. Nos níveis 4, 8 e 12 " +
+          "ganha um uso adicional e a cura base aumenta em 5. Pode gastar vários usos de uma vez para curar mais.",
+      },
+    ],
     especializacaoExclusivaId: null,
   },
   {
     id: "sem_tecnica",
     nome: "Sem Técnica",
     raridade: "comum",
-    resumo: "",
+    resumo:
+      "Não foi abençoado com uma técnica — só as capacidades básicas da energia amaldiçoada. " +
+      "É um limitador, mas compensa com dedicação ao limite: foca em algo e vira um trunfo, dominando perícias.",
+    restricoes: ["Sem técnica e sem acesso a Feitiços.", "Não pode ter a especialização Especialista em Técnicas."],
     bonusAtributos: {},
-    caracteristicas: [],
+    caracteristicas: [
+      {
+        id: "bonus_atributo",
+        nome: "Bônus em Atributo",
+        descricao: "Recebe 4 pontos adicionais para distribuir entre os atributos, no máximo 3 no mesmo atributo.",
+        bonus: { distribuir: 4, maxPorAtributo: 3 },
+      },
+      {
+        id: "estudos_dedicados",
+        nome: "Estudos Dedicados",
+        descricao: "Torna-se treinado em 2 perícias à sua escolha.",
+        grants: [{ tipo: "pericia_treinada", quantidade: 2 }],
+      },
+      {
+        id: "empenho_implacavel",
+        nome: "Empenho Implacável",
+        descricao:
+          "Para compensar a falta de técnica, evolui na dedicação conforme sobe de nível, ganhando " +
+          "talentos, aptidões, perícias, bônus em ataque/TR e habilidades de especialização.",
+        // Progressão completa preservada para fiar depois (referencia sistemas ainda inexistentes).
+        niveis: [
+          { nd: 1,  texto: "um Talento OU Aptidão Amaldiçoada (escolha)" },
+          { nd: 3,  texto: "+1 em 2 perícias e +1 em um tipo de ataque ou TR (escolha)" },
+          { nd: 4,  texto: "acesso ao Novo Estilo da Sombra → Aptidão Amaldiçoada Domínio Simples" },
+          { nd: 6,  texto: "uma Habilidade de Especialização adicional" },
+          { nd: 10, texto: "um Talento OU Aptidão Amaldiçoada (escolha)" },
+          { nd: 13, texto: "+2 em 2 perícias e +1 em um tipo de ataque ou TR (escolha)" },
+          { nd: 15, texto: "uma Habilidade de Especialização adicional" },
+          { nd: 17, texto: "+3 em 2 perícias e +2 em um tipo de ataque ou TR (escolha)" },
+          { nd: 19, texto: "uma Habilidade de Especialização e um Talento adicional" },
+        ],
+        continuacao: true, // lembrete roxo: completar na aba de Habilidades
+      },
+    ],
     especializacaoExclusivaId: null,
   },
   {

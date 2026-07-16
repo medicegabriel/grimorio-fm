@@ -11,15 +11,21 @@
  *   • Alma (Integridade da Alma, 0–100+) multiplica o HP.
  *
  * ADIADO (marcado TODO, conforme o autor):
- *   • Contribuições de TREINAMENTO em todos os stats.
  *   • GUARDA (depende do contador de ataques consecutivos, CU9).
  *   • Perícias → Atenção usa Percepção = 0 por ora.
  *   • Grau de item vem do Inventário (ainda não construído):
  *     lido de creature.inventario.{defesaGrau,rdGrau}, default 0.
+ *
+ * TREINAMENTO: as contribuições legíveis pelo motor (HP/PE/Movimento/
+ *   Defesa/Aptidão) já entram via resolveTreinoEfeitos. As trilhas
+ *   catalogadas até agora só alimentam PE/Movimento/Aptidão; os demais
+ *   canais ficam prontos para as próximas trilhas (Resistência, Luta,
+ *   Potencial Físico, Atributo…).
  * ============================================================
  */
 
 import { resolveOrigemAttrBonus, resolveDesenvolvimento } from "./afty-origens";
+import { resolveTreinoEfeitos } from "./afty-treinamentos";
 
 export const mod = (attr) => Math.floor(((attr ?? 10) - 10) / 2);
 
@@ -99,16 +105,17 @@ export function deriveAfty(creature) {
   const maxForDex = Math.max(modFor, modDes);                       // Z8:Z9
   const maxAllMods = Math.max(modFor, modDes, modCon, modInt, modSab, modPre); // Z8:Z13
   const bt = maestria(nd);                                          // Maestria == Treinamento
+  const treino = resolveTreinoEfeitos(creature);                   // contribuições dos Treinamentos
 
-  // ---------- HP (Treino de Resistência ADIADO) ----------
+  // ---------- HP (+ Treino de Resistência) ----------
   const hpBase =
     tipo === "combatente" ? 12 + (nd - 1) * 6 :
     tipo === "restringido" ? 12 * nd :
     /* misto | conjurador */ 10 + (nd - 1) * 5;
   const hpPatamarMult = patamar === "calamidade" ? 1.5 : patamar === "maldicao" ? 2 : 1;
-  const hp = Math.round(almaMult * ((hpBase + nd * modCon /* +treinoRes TODO */) * 2) * hpPatamarMult);
+  const hp = Math.round(almaMult * ((hpBase + nd * modCon + treino.hp) * 2) * hpPatamarMult);
 
-  // ---------- PE (Treinos ADIADOS) ----------
+  // ---------- PE (+ Treinos de Compreensão/Controle de Energia/…) ----------
   const peBase =
     tipo === "conjurador" ? 6 * nd :
     tipo === "misto" ? 5 * nd :
@@ -118,7 +125,7 @@ export function deriveAfty(creature) {
     qntPE === "pouca" ? -Math.floor(nd / 2) :
     qntPE === "grande" ? Math.floor(nd / 2) :
     qntPE === "muito_grande" ? nd : 0;
-  const pe = peBase + peQnt + modTecnica; // +treinos TODO
+  const pe = peBase + peQnt + modTecnica + treino.pe;
 
   // ---------- Resistência Parcial ----------
   const resThresh = (nd >= 15 ? 1 : 0) + (nd >= 20 ? 1 : 0) + (nd >= 25 ? 1 : 0) + (nd >= 30 ? 1 : 0);
@@ -126,8 +133,8 @@ export function deriveAfty(creature) {
     patamar === "calamidade" ? 2 + resThresh :
     patamar === "maldicao" ? 4 + resThresh : 0;
 
-  // ---------- Movimento (Treinos ADIADOS) ----------
-  const movimento = 9 + maxForDex * 1.5; // +treinos TODO
+  // ---------- Movimento (+ Treino de Agilidade) ----------
+  const movimento = 9 + maxForDex * 1.5 + treino.movimento;
 
   // ---------- RD Geral (+ grau de item) ----------
   const rdGeralBase =
@@ -156,13 +163,19 @@ export function deriveAfty(creature) {
     tipo === "conjurador" ? INT(nd / 1.75) :
     tipo === "misto" ? INT(nd / 1.5) :
     /* combatente | restringido */ INT(nd / 1.25);
-  const defesa = 10 + defTipo + modDes + bt + (GRAU_DEFESA[inv.defesaGrau] ?? 0);
+  const defesa = 10 + defTipo + modDes + bt + (GRAU_DEFESA[inv.defesaGrau] ?? 0) + treino.defesa;
 
   // ---------- Orçamentos (budgets do builder) ----------
   const aptidaoThresholds = [[2,1],[4,1],[6,1],[8,1],[10,2],[12,1],[14,1],[16,1],[18,1],[20,2]];
   const totalAptidao =
     aptidaoThresholds.reduce((s, [t, v]) => s + (nd >= t ? v : 0), 0) +
-    (qntPE === "muito_grande" ? 1 : 0); // +treinos TODO
+    (qntPE === "muito_grande" ? 1 : 0) +
+    treino.aptidao;
+
+  // Focos de interlúdio (orçamento de Treinamento) = ND + Outros.
+  // "Outros" = bônus de poderes que concedem treinos (sistema futuro),
+  // lido de creature.focosBonus (0 por ora).
+  const focosTotais = nd + (creature?.focosBonus ?? 0);
 
   // (Pontos de atributo agora vêm do método + pool de nível — ver afty-atributos.js.)
 
@@ -182,6 +195,8 @@ export function deriveAfty(creature) {
     modTecnica,
     tecnicaAttr,
     totalAptidao,
+    focosTotais,          // orçamento de Focos de interlúdio = ND + bônus de poderes
+    treino,               // contribuições agregadas dos Treinamentos (hp/pe/movimento/aptidao/defesa)
     nd, tipo, patamar,
     mods: { forca: modFor, destreza: modDes, constituicao: modCon, inteligencia: modInt, sabedoria: modSab, presenca: modPre },
     attrEff,              // valor EFETIVO por atributo (base+nível+desenv+origem, teto 30)
