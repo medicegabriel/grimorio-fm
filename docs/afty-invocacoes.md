@@ -1053,7 +1053,7 @@ CADA invocação (`buildInvocacaoDslContext` expõe `grau`, `bt`, `nd`, `nivel_c
 e aplicadas por `resolveInvocacao` canal a canal. `deriveAfty` passa os efeitos das habilidades
 escolhidas em `donoInvoc.efeitos`.
 
-### ✅ Automatizado (7 habilidades, efeito de ficha)
+### ✅ Automatizado (efeito de ficha, via Motor)
 
 | Habilidade | Efeito | Fórmula DSL | Canal |
 |---|---|---|---|
@@ -1064,6 +1064,18 @@ escolhidas em `donoInvoc.efeitos`.
 | Controle Aprimorado (base 4) | +2 em testes, +1 por grau acima do quarto | `1 + grau` | bonusTeste |
 | Potencial Superior (4°) | +2 pontos de atributo por grau | `2 * grau` | atributoPontos |
 | Ápice do Controle (base 20) | +2 ações/características (capacidade) | `2` | orcamentoLivre |
+| **Concentrar Poder (6°)** — só em invocação **marcada** (`quando: "marcada"`), por faixa Inicial/6/12/18 | +PV | `5 + 5*(nc>=6) + 10*(nc>=12) + 10*(nc>=18)` | pv |
+| " | +Defesa | `1 + (nc>=6) + (nc>=12) + 2*(nc>=18)` | defesa |
+| " | +TRs | `2*(nc>=6) + (nc>=12) + 2*(nc>=18)` | bonusTR |
+| " | +níveis de dano/cura | `1 + (nc>=6) + (nc>=12) + 2*(nc>=18)` | danoNivel |
+| " | +total de dano/cura | `3*(nc>=6) + 2*(nc>=12) + 5*(nc>=18)` | danoBonus |
+
+> **Canais novos (2026-07-19):** `defesa`, `bonusTR` (só TRs, ≠ `bonusTeste`), `danoNivel`,
+> `danoBonus`. Efeitos agora aceitam **`quando`** (expressão-condição): o efeito só entra se a
+> condição avaliar ≠ 0. `buildInvocacaoDslContext` expõe `marcada` (1/0). A marcação é um flag por
+> invocação (`inv.marcada`), limite `floor(BT/2)` (Concentrar Poder), com contador na aba. A
+> condição de campo ("enquanto for a única marcada em campo") NÃO é modelada (estado de combate):
+> a ficha mostra o buff que a marcada RECEBE, com a ressalva no texto.
 
 ### ⚠ GAPS DO MOTOR (adicionar depois, não dá com o motor atual)
 

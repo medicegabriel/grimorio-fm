@@ -9,6 +9,7 @@
 
 import enciclopedia from "./data/enciclopedia-digital-0.1.json";
 import enciclopedia2 from "./data/enciclopedia-digital-0.2.json";
+import enciclopedia3 from "./data/enciclopedia-digital-0.3.json";
 
 // Built-ins escritos à mão. Atualmente vazio — todas as criaturas vêm da
 // Enciclopédia (JSON exportado do próprio app), transformada em built-in
@@ -35,6 +36,7 @@ const ENCICLOPEDIA = (() => {
   const creatures = [
     ...(enciclopedia.creatures ?? []),
     ...(enciclopedia2.creatures ?? []),
+    ...(enciclopedia3.creatures ?? []),
   ];
   return creatures.map((c) => {
     const base = `builtin_${slugify(c.name) || "criatura"}`;

@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react";
 import {
   Save, ChevronLeft, ChevronDown, Wand2, Sparkles, FlaskConical,
   Dumbbell, GraduationCap, BookOpen, Check, ArrowRight, Lock, Plus, X, Zap,
-  Copy, ArrowUp, ArrowDown, Heart, Shield, Footprints, AlertTriangle,
+  Copy, ArrowUp, ArrowDown, Heart, Shield, Footprints, AlertTriangle, Star,
 } from "lucide-react";
 
 import { FieldLabel, TextInput, Select, NumberInput, StatField, ExpandableText } from "../../components/builder-controls";
@@ -2452,7 +2452,7 @@ function InvocacaoPericias({ inv, allowance, onPatch }) {
 
 /* Uma invocação: cabeçalho recolhível (nome + grau + PV/DEF/PE) e, aberta, o
    editor. Nova invocação (sem nome) abre por padrão. */
-function InvocacaoCard({ inv, resolvida, grausOk, podeSubir, podeDescer, onPatch, onPatchAttr, onRemove, onDuplicar, onSubir, onDescer, acoesApi, caracApi }) {
+function InvocacaoCard({ inv, resolvida, grausOk, concentrarPoder, podeSubir, podeDescer, onPatch, onPatchAttr, onRemove, onDuplicar, onSubir, onDescer, acoesApi, caracApi }) {
   const [open, setOpen] = useState(!inv.nome);
   const [subtab, setSubtab] = useState("atributos");
   const [confirmDel, setConfirmDel] = useState(false);
@@ -2549,6 +2549,16 @@ function InvocacaoCard({ inv, resolvida, grausOk, podeSubir, podeDescer, onPatch
               <FieldLabel>Grau</FieldLabel>
               <OptionChips value={inv.grau} options={grauOptions} onChange={(v) => onPatch({ grau: v })} disabledValues={grausBloqueados} />
             </div>
+            {/* Concentrar Poder: só aparece quando o Controlador tem a habilidade.
+                Marcar a invocação liga os benefícios (só valem em campo sozinha). */}
+            {concentrarPoder?.ativo && (
+              <div>
+                <FieldLabel hint={`marcadas ${concentrarPoder.marcadas} de ${concentrarPoder.limite}`}>Concentrar Poder</FieldLabel>
+                <BoolChip ativo={!!inv.marcada} onToggle={() => onPatch({ marcada: !inv.marcada })}>
+                  <Star className="w-3 h-3" aria-hidden="true" /> Invocação marcada
+                </BoolChip>
+              </div>
+            )}
           </div>
 
           {/* STAT BLOCK (sempre visível): stats + testes + efeitos + avisos */}
@@ -3128,6 +3138,22 @@ function TabInvocacoes({ draft, derived, addInvocacao, removeInvocacao, duplicar
           : "Sem nível de Controlador: os graus são definidos no Interlúdio, então aqui ficam todos disponíveis."}
       </p>
 
+      {/* Concentrar Poder: contador de invocações marcadas contra o limite. */}
+      {derived.invocacoes.concentrarPoder?.ativo && (
+        <div className={`flex items-center gap-2 text-[11px] mb-3 rounded-md border px-2.5 py-1.5 ${
+          derived.invocacoes.concentrarPoder.excedeu ? "border-rose-800 bg-rose-950/30 text-rose-300" : "border-slate-800 bg-slate-950/50 text-slate-400"
+        }`}>
+          <Star className="w-3 h-3 flex-shrink-0 text-purple-400" aria-hidden="true" />
+          <span>
+            Concentrar Poder · marcadas{" "}
+            <span className="font-mono font-bold">{derived.invocacoes.concentrarPoder.marcadas}</span>
+            {" / "}
+            <span className="font-mono font-bold">{derived.invocacoes.concentrarPoder.limite}</span>
+          </span>
+          <span className="text-slate-600">Vale enquanto for a única marcada em campo.</span>
+        </div>
+      )}
+
       {lista.length === 0 ? (
         <div className="text-center py-8 border border-dashed border-slate-700 rounded-lg text-sm text-slate-400">
           Nenhuma invocação ainda.
@@ -3149,6 +3175,7 @@ function TabInvocacoes({ draft, derived, addInvocacao, removeInvocacao, duplicar
               inv={inv}
               resolvida={resolvidaDe(inv.id)}
               grausOk={grausOk}
+              concentrarPoder={derived.invocacoes.concentrarPoder}
               podeSubir={i > 0}
               podeDescer={i < lista.length - 1}
               onPatch={(partial) => patchInvocacao(inv.id, partial)}
