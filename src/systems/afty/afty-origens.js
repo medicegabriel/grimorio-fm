@@ -201,7 +201,10 @@ export const AFTY_ORIGENS_CATALOG = [
     bonusAtributos: {},
     caracteristicas: [],
     // Vinculada a uma Especialização que SÓ pode ser acessada com esta origem.
-    especializacaoExclusivaId: null, // TODO: id da Especialização exclusiva
+    // A trava vale nos dois sentidos e também prende o TIPO em Restringido,
+    // além de proibir multiclasse (autor, 2026-07-17). Quem implementa é
+    // ./afty-especializacoes.js — este campo é a declaração do vínculo.
+    especializacaoExclusivaId: "restringido",
   },
   {
     id: "corpo_amaldicoado_mutante",

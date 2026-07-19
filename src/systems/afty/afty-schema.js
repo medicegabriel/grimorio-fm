@@ -20,11 +20,13 @@ export const AFTY_TIPOS = [
   { value: "restringido", label: "Restringido" },
 ];
 
+// O patamar mais alto se chama "Beyond" (antes "Maldição", nome antigo que ainda
+// aparece na transcrição da planilha em docs/afty-formulas-base.md).
 export const AFTY_PATAMARES = [
   { value: "comum",      label: "Comum" },
   { value: "desafio",    label: "Desafio" },
   { value: "calamidade", label: "Calamidade" },
-  { value: "maldicao",   label: "Maldição" },
+  { value: "beyond",     label: "Beyond" },
 ];
 
 // Quantidade de PE (modifica PE e o total de Aptidões).
@@ -38,6 +40,20 @@ export const AFTY_QNT_PE = [
 
 // Atributo que dirige a Técnica (CD e RD específico).
 export const AFTY_TECNICA_ATTRS = AFTY_ATTRS.map((a) => ({ value: a.key, label: a.label }));
+
+// Testes de Resistência (saves nomeados). O livro diz "divididas em quatro" mas
+// LISTA CINCO (inconsistência preservada). Cada um usa um atributo fixo.
+// Fórmula (player): TR = d20 + mod(atributo) + metade do nível + BT (se treinado) + outros.
+// CD padrão de uma habilidade: 10 + metade do nível + mod de um atributo + BT + outros.
+// O atributo da CD varia: Habilidades de Especialização especificam (2+ opções),
+// Aptidões e Feitiços usam o atributo principal de jujutsu.
+export const AFTY_RESISTENCIAS = [
+  { value: "astucia",     label: "Astúcia",     atributo: "inteligencia", descricao: "Mede a capacidade de resistir a sobrecarga de informações e raciocinar rapidamente para defender sua mente." },
+  { value: "fortitude",   label: "Fortitude",   atributo: "constituicao", descricao: "Permite resistir a efeitos que busquem afetar e debilitar o corpo." },
+  { value: "integridade", label: "Integridade", atributo: "constituicao", descricao: "Mede a resistência da sua alma, indo contra efeitos que busquem a danificar ou modificar." },
+  { value: "reflexos",    label: "Reflexos",    atributo: "destreza",     descricao: "Mede sua velocidade e agilidade para reagir e desviar de efeitos, evitando-os." },
+  { value: "vontade",     label: "Vontade",     atributo: "sabedoria",    descricao: "Mede a capacidade de resistir a ataques, influências e perturbação contra a mente e o espírito." },
+];
 
 export const AFTY_TAMANHOS = [
   { value: "minusculo", label: "Minúsculo" },
@@ -73,7 +89,7 @@ export function createBlankAfty() {
     core: {
       tipo: "combatente",       // dirige coeficientes
       patamar: "comum",         // multiplica HP, escala Resistência/Atributos
-      nd: 1,                    // Nível de Desafio (1 → ∞, sem teto)
+      nd: 3,                    // Nível de Desafio (piso 3 na UI, → ∞ sem teto)
       tamanho: "medio",
       tecnicaAttr: "inteligencia", // atributo da Técnica (CD / RD específico)
       origem: { id: "inato" },     // ver ./afty-origens.js
@@ -108,9 +124,25 @@ export function createBlankAfty() {
     // Grau de item equipado (temporário; virá do Inventário).
     inventario: { defesaGrau: "sem_grau", rdGrau: "sem_grau", itens: [] },
 
-    especializacoes: [],        // [{ id, nome, nivel }]
+    // Especializações (classes). Até 2, e soma(niveis) === core.nd — o
+    // nível de Especialização É o ND. Não mudam cálculo: só destravam
+    // Habilidades de Especialização. Ver afty-especializacoes.js.
+    especializacoes: [],        // [{ id, nivel }]
     habilidades: [],            // Habilidades de Especialização (ex-Dotes)
-    aptidoes: { au: 0, cl: 0, bar: 0, dom: 0 },
+    // Escolhas aninhadas das Habilidades: { [habId]: [opcaoId, ...] }. Guarda
+    // qual opção (Estilo de Controle no Apogeu, Melhoria de Controlador...) foi
+    // escolhida. Habilidade repetível guarda várias. Ver afty-habilidades.js.
+    escolhasHabilidade: {},
+    // Invocações do Controlador (shikigamis / dispositivos). Cada uma é uma
+    // ficha própria que lê valores do dono. Ver afty-invocacoes.js.
+    invocacoes: [],             // [ fichaInvocacao ]
+    // Hordas: cada uma referencia um líder + membros por id (das invocacoes).
+    hordas: [],                 // [ { id, nome, liderId, membroIds:[] } ]
+    // Níveis de Aptidão, uma trilha por chave (0 a 5). O orçamento é
+    // derived.totalAptidao e cada ponto sobe 1 nível. Ver afty-aptidoes.js.
+    aptidoes: { au: 0, cl: 0, bar: 0, dom: 0, er: 0 },
+    // Aptidões Amaldiçoadas escolhidas (ids do catálogo). Não custam
+    // orçamento: são desbloqueadas pelo nível da trilha.
     aptidoesAmaldicoadas: [],
     // Interlúdios · Treinamentos: mapa { [linhaId]: progresso 0..4 }.
     // Etapas sequenciais; 4 → concede o bônus de Completo. Ver afty-treinamentos.js.

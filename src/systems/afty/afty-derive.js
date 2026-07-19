@@ -26,6 +26,10 @@
 
 import { resolveOrigemAttrBonus, resolveDesenvolvimento } from "./afty-origens";
 import { resolveTreinoEfeitos } from "./afty-treinamentos";
+import { resolveNiveisAptidao } from "./afty-aptidoes";
+import { resolveEspecializacoes } from "./afty-especializacoes";
+import { resolveHabilidades, efeitosInvocacaoControlador } from "./afty-habilidades";
+import { resolveInvocacoesList, resolveHordasList } from "./afty-invocacoes";
 
 export const mod = (attr) => Math.floor(((attr ?? 10) - 10) / 2);
 
@@ -47,6 +51,12 @@ export const GRAU_DEFESA = {
 export const GRAU_RD = {
   sem_grau: 0, quarto: 1, terceiro: 2, segundo: 3, primeiro: 4, zero: 5, especial: 10,
 };
+
+// Multiplicador de HP por Patamar, aplicado direto sobre a base.
+// A planilha tinha um `×2` fixo + patamarMult {comum 1, desafio 1, calamidade 1,5, beyond 2},
+// o que dava um efetivo de 2/2/3/4 (Comum empatado com Desafio). O `×2` era, na prática,
+// o multiplicador do Desafio: foi absorvido aqui, e o Comum virou metade do Desafio.
+export const HP_PATAMAR_MULT = { comum: 1, desafio: 2, calamidade: 3, beyond: 4 };
 
 // Stats que a aba Cálculos permite sobrescrever (valor final, padrão StatField).
 export const OVERRIDABLE = ["hp", "pe", "defesa", "cd", "rdGeral", "rdEspecifico", "movimento", "resParcial", "atencao"];
@@ -112,8 +122,8 @@ export function deriveAfty(creature) {
     tipo === "combatente" ? 12 + (nd - 1) * 6 :
     tipo === "restringido" ? 12 * nd :
     /* misto | conjurador */ 10 + (nd - 1) * 5;
-  const hpPatamarMult = patamar === "calamidade" ? 1.5 : patamar === "maldicao" ? 2 : 1;
-  const hp = Math.round(almaMult * ((hpBase + nd * modCon + treino.hp) * 2) * hpPatamarMult);
+  const hpPatamarMult = HP_PATAMAR_MULT[patamar] ?? 1;
+  const hp = Math.round(almaMult * (hpBase + nd * modCon + treino.hp) * hpPatamarMult);
 
   // ---------- PE (+ Treinos de Compreensão/Controle de Energia/…) ----------
   const peBase =
@@ -128,10 +138,14 @@ export function deriveAfty(creature) {
   const pe = peBase + peQnt + modTecnica + treino.pe;
 
   // ---------- Resistência Parcial ----------
-  const resThresh = (nd >= 15 ? 1 : 0) + (nd >= 20 ? 1 : 0) + (nd >= 25 ? 1 : 0) + (nd >= 30 ? 1 : 0);
+  // Calamidade ganha +1 em ND 10, 20 e 30 (0 a 3).
+  // Beyond ganha +1 em ND 1, 10, 20 e 30 (1 a 4) — o limiar de ND 1 é sempre
+  // atendido, já que nd tem piso 1, então entra como constante.
+  // Comum e Desafio não têm Resistência Parcial.
+  const resThresh = (nd >= 10 ? 1 : 0) + (nd >= 20 ? 1 : 0) + (nd >= 30 ? 1 : 0);
   const resParcial =
-    patamar === "calamidade" ? 2 + resThresh :
-    patamar === "maldicao" ? 4 + resThresh : 0;
+    patamar === "calamidade" ? resThresh :
+    patamar === "beyond" ? 1 + resThresh : 0;
 
   // ---------- Movimento (+ Treino de Agilidade) ----------
   const movimento = 9 + maxForDex * 1.5 + treino.movimento;
@@ -166,11 +180,64 @@ export function deriveAfty(creature) {
   const defesa = 10 + defTipo + modDes + bt + (GRAU_DEFESA[inv.defesaGrau] ?? 0) + treino.defesa;
 
   // ---------- Orçamentos (budgets do builder) ----------
+  // Orçamento de Níveis de Aptidão. Só entram aqui os pontos LIVRES: os
+  // limiares de ND, o +1 de Qnt.PE Muito Grande e as concessões de treino
+  // "à sua escolha". As concessões DIRECIONADAS a uma trilha são grátis e
+  // não passam pelo orçamento (ver resolveNiveisAptidao).
+  //
+  // ⚠ O +1 de Qnt.PE Muito Grande NÃO é o Raio Negro. A planilha rotulava
+  // essa célula de "Raio Negro" e o autor confirmou (2026-07-16) que são
+  // efeitos SEPARADOS: Qnt.PE Muito Grande dá +1 no orçamento e nada mais,
+  // enquanto a aptidão Raio Negro dá +ND de PE e +1 DIRECIONADO em Aura.
+  // Os dois somam. O efeito do Raio Negro ainda NÃO é aplicado (o motor não
+  // lê aptidões escolhidas): fica para a passada de efeitos, quando o
+  // catálogo fechar. Ver docs/afty-status.md.
   const aptidaoThresholds = [[2,1],[4,1],[6,1],[8,1],[10,2],[12,1],[14,1],[16,1],[18,1],[20,2]];
   const totalAptidao =
     aptidaoThresholds.reduce((s, [t, v]) => s + (nd >= t ? v : 0), 0) +
     (qntPE === "muito_grande" ? 1 : 0) +
     treino.aptidao;
+
+  // Níveis por trilha: alocado (pago) + concedido (grátis, direcionado).
+  // TODO: Habilidades de Especialização, Origens e Talentos também concedem
+  // nível. Quando esses catálogos existirem, some as concessões deles aqui.
+  const aptidao = resolveNiveisAptidao(creature?.aptidoes, treino.aptidaoTrilha);
+
+  // Quantas Aptidões Amaldiçoadas a criatura PODE ter (regra do autor,
+  // 2026-07-16): 1 no ND 1, mais 1 a cada 3 ND (3, 6, 9, 12, ...).
+  // Sem teto (ND 1 → ∞), ao contrário do orçamento de NÍVEIS de aptidão,
+  // que para no ND 20. São dois orçamentos separados e independentes.
+  const totalAptidoesAmaldicoadas = 1 + Math.floor(nd / 3);
+
+  // Especializações: NÃO entram em nenhum stat (quem dirige fórmula é o
+  // Tipo). Resolvidas aqui só para a UI e a validação lerem de um lugar
+  // só, como o resto dos derivados. O orçamento de níveis é o próprio ND.
+  const especializacoes = resolveEspecializacoes(creature);
+
+  // Habilidades de Especialização: orçamento ÚNICO (1 + floor(ND/3), igual
+  // ao das Aptidões Amaldiçoadas) cobrindo Base e por Nível juntas. O que
+  // muda por especialização é o ACESSO, que lê o nível do lado da
+  // multiclasse — por isso depende do resolve de Especializações.
+  // ⚠ Nenhum EFEITO de habilidade é aplicado ainda (ver docs/afty-status.md).
+  const habilidades = resolveHabilidades(creature, especializacoes.escolhidas);
+
+  // Invocações: a invocação lê valores do DONO (ND, BT = maestria(ND) e o Nível
+  // de Controlador, o lado da multiclasse). Resolvidas aqui só para a UI e a
+  // validação lerem de um lugar só. NÃO alimentam nenhum stat do dono.
+  // Invocações usam o nível de ESCALONAMENTO de Controlador (real + metade da
+  // outra classe): acesso a graus, metade do nível no bônus de teste, e os
+  // limiares 6/12/18 de Invocações Móveis. Pré-requisitos de habilidade usam o real.
+  const nivelControlador = especializacoes.escolhidas.find((e) => e.id === "controlador")?.nivelEscalonamento ?? 0;
+  // Efeitos estáticos das Habilidades de Controlador escolhidas, aplicados a
+  // TODAS as invocações do dono (via Motor de Automação, ver afty-habilidades.js).
+  const efeitosInvoc = efeitosInvocacaoControlador(habilidades.escolhidas);
+  // Concentrar Poder (6°): marca até floor(BT/2) invocações. O limite alimenta o
+  // contador/validação da UI; o efeito em si é filtrado por `marcada` no motor.
+  const temConcentrarPoder = habilidades.escolhidas.includes("ctr_concentrar_poder");
+  const concentrarPoder = { ativo: temConcentrarPoder, limite: temConcentrarPoder ? Math.floor(bt / 2) : 0 };
+  const donoInvoc = { nd, bt, nivelControlador, efeitos: efeitosInvoc, concentrarPoder };
+  const invocacoes = resolveInvocacoesList(creature?.invocacoes, donoInvoc);
+  const hordas = resolveHordasList(creature?.hordas, creature?.invocacoes, donoInvoc);
 
   // Focos de interlúdio (orçamento de Treinamento) = ND + Outros.
   // "Outros" = bônus de poderes que concedem treinos (sistema futuro),
@@ -194,7 +261,13 @@ export function deriveAfty(creature) {
     almaMult,
     modTecnica,
     tecnicaAttr,
-    totalAptidao,
+    totalAptidao,               // orçamento de NÍVEIS de aptidão (para no ND 20)
+    totalAptidoesAmaldicoadas,  // quantas Aptidões Amaldiçoadas pode ter (sem teto)
+    aptidao,              // níveis por trilha: { alocado, concedido, efetivo, gastos }
+    especializacoes,      // { escolhidas, total, max, obrigatoria, completa, erro }
+    habilidades,          // { escolhidas, total, gastos, restante, excedeu, inacessiveis, niveisPorEspec }
+    invocacoes,           // { lista, total, custoTotal, temWarnings }
+    hordas,               // { lista, total, custoTotal } (líder + membros escalados)
     focosTotais,          // orçamento de Focos de interlúdio = ND + bônus de poderes
     treino,               // contribuições agregadas dos Treinamentos (hp/pe/movimento/aptidao/defesa)
     nd, tipo, patamar,

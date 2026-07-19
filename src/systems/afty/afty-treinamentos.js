@@ -84,8 +84,7 @@ export const AFTY_TREINAMENTOS = [
         beneficio: "Os pontos de vida das paredes da sua Técnica de Barreira aumentam em 10." },
       { n: 2, focos: 1, requisito: null,
         beneficio: "Seu Nível de Aptidão em Barreiras aumenta em 1.",
-        // A planilha conta como +1 no orçamento geral de Aptidões (célula R6).
-        efeitos: [{ tipo: "aptidao", valor: 1 }] },
+        efeitos: [{ tipo: "aptidao", trilha: "bar", valor: 1 }] },
       { n: 3, focos: 1, requisito: { tipo: "nota", label: "Nível de Aptidão em Barreiras 2" },
         beneficio: "Os pontos de vida das paredes da sua Técnica de Barreira aumentam em 10." },
       { n: 4, focos: 2, requisito: { tipo: "nota", label: "Nível de Aptidão em Barreiras 3" },
@@ -139,7 +138,7 @@ export const AFTY_TREINAMENTOS = [
         efeitos: [{ tipo: "pe", valor: 3 }] },
       { n: 4, focos: 2, requisito: { tipo: "nota", label: "Nível de Aptidão em Controle e Leitura 3" },
         beneficio: "Seu Nível de Aptidão em Controle e Leitura aumenta em 1.",
-        efeitos: [{ tipo: "aptidao", valor: 1 }] },
+        efeitos: [{ tipo: "aptidao", trilha: "cl", valor: 1 }] },
     ],
     completo: {
       beneficio:
@@ -182,7 +181,7 @@ export const AFTY_TREINAMENTOS = [
         beneficio: "A quantidade de pontos de energia reversa que você pode gastar em Aptidões de Energia Reversa aumenta em 1." },
       { n: 2, focos: 1, requisito: null,
         beneficio: "Seu Nível de Aptidão em Energia Reversa aumenta em 1.",
-        efeitos: [{ tipo: "aptidao", valor: 1 }] },
+        efeitos: [{ tipo: "aptidao", trilha: "er", valor: 1 }] },
       { n: 3, focos: 1, requisito: { tipo: "nota", label: "Nível de Aptidão em Energia Reversa 4" },
         beneficio: "O custo para regenerar um membro ou ferida interna com Regeneração Aprimorada é reduzido em 2 pontos de energia reversa." },
       { n: 4, focos: 2, requisito: { tipo: "nota", label: "Nível de Aptidão em Energia Reversa 5" },
@@ -408,13 +407,29 @@ function progressosDe(linha, val) {
 /**
  * Soma as contribuições dos treinamentos (efeitos LEGÍVEIS PELO
  * MOTOR) até o progresso de cada linha/instância. Retorna o agregado
- * { hp, pe, movimento, aptidao, atributo, defesa }.
+ * { hp, pe, movimento, aptidao, atributo, defesa, aptidaoTrilha }.
+ *
+ * Aptidão tem DOIS canais (decisão do autor, 2026-07-16):
+ *   • `{ tipo:"aptidao", trilha:"bar", valor:1 }` → concessão
+ *     DIRECIONADA. Vai para `aptidaoTrilha.bar`, é grátis e não
+ *     toca no orçamento. É o caso quando a regra nomeia a trilha
+ *     ("Seu Nível de Aptidão em Barreiras aumenta em 1").
+ *   • `{ tipo:"aptidao", valor:1 }` (sem trilha) → ponto de
+ *     ORÇAMENTO livre, somado em `aptidao` e gasto onde o jogador
+ *     quiser. É o caso do texto "um nível de aptidão à sua escolha"
+ *     (Compreensão Completo).
  */
 export function resolveTreinoEfeitos(creature) {
   const prog = normalizeTreinamentos(creature?.treinamentos);
-  const acc = { hp: 0, pe: 0, movimento: 0, aptidao: 0, atributo: 0, defesa: 0 };
+  const acc = { hp: 0, pe: 0, movimento: 0, aptidao: 0, atributo: 0, defesa: 0, aptidaoTrilha: {} };
   const add = (efeitos) => {
-    for (const ef of efeitos || []) acc[ef.tipo] = (acc[ef.tipo] || 0) + (ef.valor || 0);
+    for (const ef of efeitos || []) {
+      if (ef.tipo === "aptidao" && ef.trilha) {
+        acc.aptidaoTrilha[ef.trilha] = (acc.aptidaoTrilha[ef.trilha] || 0) + (ef.valor || 0);
+      } else {
+        acc[ef.tipo] = (acc[ef.tipo] || 0) + (ef.valor || 0);
+      }
+    }
   };
   for (const [id, val] of Object.entries(prog)) {
     const linha = BY_ID[id];

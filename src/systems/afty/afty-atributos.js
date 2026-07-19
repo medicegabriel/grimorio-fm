@@ -11,9 +11,10 @@
  *   • Valores Fixos (15,14,13,12,10,8)
  *   • Rolagem (4d6, descarta o menor)
  *
- * Regra adicional: +2 pontos de atributo a cada 4 ND, alocados
- * POR CIMA da base (1:1, cada ponto = +1 no valor), respeitando
- * o limite. Pool separado da base.
+ * Regra adicional: pontos de atributo a cada 4 ND, alocados POR CIMA
+ * da base (1:1, cada ponto = +1 no valor), respeitando o limite. Pool
+ * separado da base. A quantidade por ciclo depende do PATAMAR:
+ * Comum e Desafio dão 2, Calamidade e Beyond dão 3.
  * ============================================================
  */
 
@@ -55,8 +56,12 @@ export const roll4d6DropLowest = () => {
 export const rolarAtributos = () =>
   Object.fromEntries(ATTR_KEYS.map((k) => [k, roll4d6DropLowest()]));
 
-// ---------- Pontos de nível (+2 a cada 4 ND) ----------
-export const nivelPontosTotal = (nd) => Math.floor((nd ?? 1) / 4) * 2;
+// ---------- Pontos de nível (a cada 4 ND) ----------
+// Comum e Desafio dão 2 por ciclo. Calamidade e Beyond dão 3.
+export const ATTR_POR_CICLO = { comum: 2, desafio: 2, calamidade: 3, beyond: 3 };
+export const nivelPontosPorCiclo = (patamar) => ATTR_POR_CICLO[patamar] ?? 2;
+export const nivelPontosTotal = (nd, patamar) =>
+  Math.floor((nd ?? 1) / 4) * nivelPontosPorCiclo(patamar);
 export const nivelPontosUsados = (attrNivel = {}) =>
   ATTR_KEYS.reduce((s, k) => s + (attrNivel[k] || 0), 0);
 
@@ -75,11 +80,12 @@ export function resumoAtributos(creature) {
   const attrs = creature?.attributes || {};
   const nivel = creature?.attrNivel || {};
   const nd = creature?.core?.nd ?? 1;
+  const patamar = creature?.core?.patamar || "comum";
   // Limite POR ATRIBUTO (mapa). Tolera fichas antigas com número/ausente.
   const limites = (creature?.attrLimite && typeof creature.attrLimite === "object") ? creature.attrLimite : {};
   const limiteDe = (k) => limites[k] ?? ATTR_LIMITE_PADRAO;
 
-  const nivelTotal = nivelPontosTotal(nd);
+  const nivelTotal = nivelPontosTotal(nd, patamar);
   const nivelUsado = nivelPontosUsados(nivel);
   const gasto = pointBuyGasto(attrs);
   const warnings = [];

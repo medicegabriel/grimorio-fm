@@ -78,10 +78,24 @@ Decodificado:
 base = Tipo==Combatente ? 12+(ND-1)*6
      : Tipo∈{Misto,Conjurador} ? 10+(ND-1)*5
      : Restringido ? 12*ND
-treinoRes = 4·[Res1ª] + 5·[Res2ª] + 6·[Res4ª] + 10·[ResCompleto]
-patamarMult = Calamidade?1.5 : Maldição?2 : 1
-HP = (Alma.Atual/100) × ((base + ND·Mod.Con + treinoRes) × 2) × patamarMult
+treinoRes = 4·[Res1ª] + 6·[Res4ª] + 10·[ResCompleto]   (ver Treinamentos)
+HP = (Alma.Atual/100) × (base + ND·Mod.Con + treinoRes) × patamarMult
 ```
+
+> ⚠ **patamarMult ATUALIZADO pelo autor (2026-07-16).** A planilha tinha um `×2` fixo multiplicado
+> por `{Comum 1, Desafio 1, Calamidade 1,5, Maldição 2}`, o que dava um efetivo de **2 / 2 / 3 / 4**
+> sobre a base: Desafio, Calamidade e Beyond já estavam certos, mas o **Comum empatava com o
+> Desafio**. O `×2` era, na prática, o multiplicador do Desafio.
+>
+> **Regra atual** (`HP_PATAMAR_MULT` em `afty-derive.js`): o `×2` foi absorvido no multiplicador,
+> que agora é aplicado direto sobre a base. Só o Comum mudou de valor (caiu pela metade).
+>
+> | Patamar | Comum | Desafio | Calamidade | Beyond |
+> |---|---|---|---|---|
+> | ×HP | 1 | 2 | 3 | 4 |
+>
+> O termo de Treinamento fica dentro do parêntese, então escala junto: Resistência 1ª (+4 na base)
+> dá +4 no Comum, +8 no Desafio, +12 na Calamidade e +16 no Beyond.
 
 ### PE.Max
 ```
@@ -111,13 +125,27 @@ HP = (Alma.Atual/100) × ((base + ND·Mod.Con + treinoRes) × 2) × patamarMult
 Decodificado: só Calamidade/Maldição têm Guarda; se `CN7>=0`, valor por índice `CU9` (0–5):
 - Calamidade: [5,3,1,0,0,0]; Maldição: [10,8,6,4,2,0].
 
-### Resistência Parcial  *(autor: "melhore, fiz na gambiarra")*
+### Resistência Parcial  — SUBSTITUÍDA pelo autor (2026-07-16)
+
+A planilha antiga era gambiarra (base 2/4 + limiares de ND {15,20,25,30}). **Regra atual:**
+
+| Patamar | Ganha +1 em | Faixa |
+|---|---|---|
+| Comum | — | 0 |
+| Desafio | — | 0 |
+| Calamidade | ND 10, 20, 30 | 0 a 3 |
+| Beyond | ND 1, 10, 20, 30 | 1 a 4 |
+
+Implementado em `afty-derive.js`. Como `nd` tem piso 1, o limiar de ND 1 do Beyond é constante.
+
+<details><summary>Fórmula antiga da planilha (histórico)</summary>
+
 ```
 =SWITCH(Patamar;"Lacaio";0;"Comum";0;"Desafio";0;
  "Calamidade";2 + SE(ND>=15;1;0)+SE(ND>=20;1;0)+SE(ND>=25;1;0)+SE(ND>=30;1;0);
  "Maldição";  4 + SE(ND>=15;1;0)+SE(ND>=20;1;0)+SE(ND>=25;1;0)+SE(ND>=30;1;0))
 ```
-Decodificado (limpo): base (Calamidade 2 / Maldição 4) + 1 por limiar de ND {15,20,25,30}.
+</details>
 
 ### Movimento
 ```
@@ -215,7 +243,11 @@ Decodificado (limpo): base (Calamidade 2 / Maldição 4) + 1 por limiar de ND {1
 ## Respostas do autor (2026-07-15) — RESOLVIDO
 
 1. **Nível == ND** (Nível de Desafio). ✅
-2. **Patamares = {Comum, Desafio, Calamidade, Maldição}** — **SEM Lacaio** (corrigido; a
+2. **Patamares = {Comum, Desafio, Calamidade, Beyond}** — **SEM Lacaio** (corrigido; a
+   > ⚠ RENOMEADO (2026-07-16): o patamar antes chamado **"Maldição"** agora se chama **"Beyond"**,
+   > no rótulo E na chave interna (`value: "beyond"`, lido em `deriveAfty`). As fórmulas transcritas
+   > mais abaixo ainda dizem `"Maldição"` porque são a cópia literal da planilha do autor: onde se lê
+   > Maldição na planilha, o código usa `beyond`.
    fórmula da Guarda ainda cita Lacaio, mas ele não existe no modelo final). ✅
 3. **6º atributo = Presença** (`Mod.Car` é só o nome antigo — usar `presenca`). ✅
 4. **Alma/Integridade** = "Integridade da Alma". Vai de 0 a **100+** (poderes aumentam).
