@@ -3,9 +3,107 @@
 Estado atual do sistema Afty (atualizado 2026-07-17). Leia junto com:
 `docs/roadmap-versionamento-e-fichas.md` (arquitetura) e `docs/afty-formulas-base.md` (fórmulas).
 
-> **Trabalho atual: a aba de ESPECIALIZAÇÕES.** Pule para a seção 🎯 TRABALHO ATUAL.
-> Estrutura e motor PRONTOS (2026-07-17), **faltando só o texto do livro** das 6 especializações.
-> Últimas abas concluídas: Interlúdios e **Aptidões** (catálogo completo, 85 aptidões).
+> ⚠ **Este doc parou em 2026-07-17 e o trabalho seguiu.** O que veio depois está nas seções
+> LUTADOR (2026-07-22) e no restante do sistema de INVOCAÇÕES, que foi construído inteiro
+> (engine, editor, Hordas, efeitos de Controlador) e ainda não foi documentado aqui.
+>
+> **AS 6 ESPECIALIZAÇÕES ESTÃO FECHADAS** (2026-07-22): Combatente 71, Lutador 70, Conjurador 66,
+> Suporte 58, Restringido 54, Controlador 48 = **367 habilidades**. Mais **Talentos** (51), em
+> sistema próprio (`afty-talentos.js`).
+>
+> **NÍVEIS LENDÁRIOS FECHADOS** (2026-07-22): **11 Melhorias Superiores**, **16 Habilidades Lendárias**
+> e **6 Habilidades Ápice**, em sistema próprio (`afty-alto-nivel.js`), com card próprio no fim
+> da aba Especializações. Ver [NÍVEIS LENDÁRIOS](#-níveis-lendários-21-catálogo-completo).
+>
+> **Falta transcrever:** Arsenal Amaldiçoado e Estilo Marcial (citados pelo Restringido).
+>
+> 👉 **Começando um chat novo? Vá direto para
+> [PENDÊNCIAS DE ESPECIALIZAÇÕES](#-pendências-de-especializações-lista-de-retomada).**
+
+---
+
+## 🎯 PENDÊNCIAS DE ESPECIALIZAÇÕES (lista de retomada)
+
+Fechada em 2026-07-22, quando as 6 especializações e os Talentos foram transcritos. **Tudo aqui
+está anotado mas NÃO feito.** Cada seção por especialização, mais abaixo no doc, tem o detalhe.
+
+### A. Conteúdo que o autor ainda não mandou
+| O quê | Onde é citado | Por que trava |
+|---|---|---|
+| **Arsenal Amaldiçoado** | *Restrito pelos Céus* (Restringido base 1) | Equipamento do Restringido a partir do 2° nível |
+| **Estilo Marcial** + técnicas marciais | *Restrito pelos Céus* e *Desenvolver Ideias* (Restringido 4°) | *Desenvolver Ideias* concede "duas técnicas marciais" que não existem |
+| **Combatente · 20° por nível** | — | A Base *Autossuficiente* é 20°, mas não se sabe se há por-nível de 20° |
+| **Descrições das Perícias** | `afty-pericias.js` | Só a tabela veio (nome, atributo). Os TRs já têm descrição |
+
+### B. Perguntas de ERRATA (o autor decide, é rápido)
+1. **`lut_poder_corporal`** (Lutador 6°) teve o **cabeçalho comido pelo PDF**. Nome deduzido do
+   pré-requisito de *Punhos Letais*. Confirmar.
+2. **`tal_tecnicas_ofensivas_de_escudo`** (Talento): mesmo caso, nome deduzido do irmão
+   *Técnicas Defensivas de Escudo*. Confirmar.
+3. **"Técnica Precisa" não existe** (*Mira Aperfeiçoada*, Conjurador 8°). A do pool é
+   **Feitiço Preciso**. Mesma coisa?
+4. **"Técnica Rápida" não existe** (*Adepto de Feitiçaria*, Talento). A do pool é
+   **Feitiço Rápido**. Mesma coisa? (3 e 4 parecem o mesmo deslize Técnica/Feitiço.)
+5. **"Dominância em Habilidade" não existe** (pré-req de *Manipulação Perfeita*, Conjurador 16°).
+   A de 6° é **Dominância em Feitiço**. Já apontei para ela.
+6. ***Dominância em Feitiço*** arredonda para **CIMA**. Exceção à regra geral (floor). Confirmar.
+7. **Suporte níveis 6 e 8**: as duas Bases que são **concessão pura** (Energia Reversa e Liberação
+   de Energia Reversa) **custam vaga de orçamento ou vêm de graça?** As duas regras do projeto se
+   chocam: alvo NOMEADO = grátis, mas toda Base no Afty gasta vaga.
+8. **"Lacaio" não existe no Afty** (*Motivação pelo Triunfo*, Suporte 8°). Patamares são
+   Comum/Desafio/Calamidade/Beyond. O que vale no lugar?
+9. **"2 PE" e "1 PE" num Restringido sem PE** (*Ação Ágil* 4° e *Adrenalina Absoluta* 12°). O
+   recurso da classe é Estamina. Trocar?
+10. ***Teste de Resistência Mestre* do Restringido difere das outras 5** ("mestre nos DOIS TRs").
+    Intencional?
+11. ***Valorizar Invocação*** (Restringido 2°) depende de **domar maldições**, declarado FORA DE
+    ESCOPO em 2026-07-17. Manter como texto morto?
+
+### C. Decisões de MODELO (mudam código, precisam de definição antes)
+| # | Assunto | Onde aparece |
+|---|---|---|
+| C1 | **Roubo de Habilidade: filtro de energia.** As 127 opções são as estruturalmente elegíveis. O "não dependa de energia amaldiçoada" não está aplicado. Caminho: marcar `usaEnergia: true` nas ~141 de Combatente e Lutador que gastam PE. | Restringido 2° |
+| C2 | **`nivelMin` de escolha aninhada NÃO bloqueia.** Hoje um Restringido 2 rouba habilidade de 16°. Vale também para as 3 últimas Posturas de Combate. | Roubo, Posturas |
+| C3 | **"Modificador de Int OU Sab" (e Presença ou Sabedoria).** O jogador escolhe qual usar. NÃO é o `atributoOr` existente (aquele é requisito). Vira estado na ficha ou convenção "usa o maior"? | ~10 no Conjurador, vários no Suporte e Lutador |
+| C4 | **Repetível que concede NÍVEL DE TRILHA à escolha (6 casos).** *Aptidões de Combate*, *Aptidões de Luta*, *Aptidões de Suporte*, *Elevar Aptidão*, *Aptidão Desenvolvida*, *Estudo Amaldiçoado*. Todas orçamento, não concessão direcionada. **Resolver os 6 de uma vez.** | 4 especializações + 2 talentos |
+| C5 | **Repetível que o shape de ids únicos não suporta.** *Nova Habilidade* (ilimitado), *Respeito Celeste* (2x), *Incremento de Atributo*, *Crescimento Corporal* (aptidão). O padrão `escolha.repetivel` já resolve quando há pool, mas estes não têm. | Conjurador, Restringido, Talentos |
+| C6 | **Escolha aninhada de ATRIBUTO** (eleva valor, às vezes o limite): *Incremento de Atributo*, *Quebra de Limites*, *Pináculo Físico*. Mesmo padrão do Desenvolvimento Inesperado (Derivado). | Talentos, Restringido |
+| C7 | **Escolha aninhada que ATRAVESSA arquivos**: *Adepto de Combate* → `ESTILOS_DE_COMBATE`, *Adepto de Feitiçaria* → `MUDANCAS_DE_FUNDAMENTO`, os dois pools em `afty-habilidades.js`. | Talentos |
+
+### D. O bloqueio raiz: NÃO EXISTE canal de efeito do lado da CRIATURA
+Nenhum efeito de habilidade ou talento está ligado, e **não é por escolha**: o único canal de
+efeitos que existe (`CONTROLADOR_EFEITOS_INVOCACAO`) aplica sobre **invocações**. Tudo que as 6
+especializações fazem é sobre a própria ficha. Essa é a "passada de efeitos" pendente desde as
+Aptidões, e é o **pré-requisito de tudo em D**.
+
+Quando ela existir, saem quase de graça (já estão escritos como fórmula nas seções de cada
+especialização): 11 do Lutador, 10 do Conjurador, 4 do Suporte, além das do Combatente.
+
+**Canais que ainda NÃO existem e vão precisar de desenho:**
+- **CURA** — o Suporte gira em torno disso (8 habilidades). É o maior sistema novo.
+- **TROCA de atributo na fórmula** (substituição, não soma), 3 consumidores:
+  *Músculos Desenvolvidos* (Defesa usa Força), *Físico Controlado* (HP usa Presença/Sabedoria,
+  teto +4), *Restrito pelos Céus* (Defesa usa Força ou Constituição).
+- **ALMA / Integridade** — *Purificação da Alma* (Suporte 16°) restaura 50%. É a primeira do
+  sistema que mexe na Alma, que multiplica todo o HP.
+- **Vantagem por CONDIÇÃO nomeada** — *Alma Quieta*, *Corpo Sincronizado*, *Mente em Paz*
+  (Lutador 10°), *Bastião Interior* (Conjurador 6°), *Mente Limpa* (Restringido 10°).
+- **Dado de dano por FAIXA de nível** (não é soma): *Corpo Treinado* (Lutador base 1). Reusar
+  `subirNiveisDano` das Invocações.
+- **4 RECURSOS próprios**, um por especialização, nenhum modelado:
+  Pontos de Preparo (Combatente) · Nível de Empolgação 1 a 5 (Lutador) · Pontos de Estamina
+  (Restringido) · PE temporário exclusivo de Aptidão (Conjurador 12°).
+
+**Nunca automatizável (não tentar):** estados ligáveis em combate (Brutalidade, Surto de
+Adrenalina, Ataque Inconsequente...), reações e usos por PE/Estamina, e tudo que depende de
+sistema inexistente (**Armas**, **Inventário**, **Feitiços**, **Perícias/TR do personagem**).
+
+### E. Sistemas inexistentes que as 6 especializações já cobram
+**Feitiços** (trava a maior parte do Conjurador) · **Armas** (Dedicação em Arma, Técnicas de
+Combate, Corpo Arsenal, Manejo Superior...) · **Inventário** (Otimização de Espaço, Ajustes em
+Equipamento, Arsenal Amaldiçoado) · **Perícias e TRs do personagem** (dezenas de `nota` viram
+requisito real no dia que existir) · **Talentos concedidos por origem/treinamento** (o catálogo
+existe, as fontes de concessão não).
 
 ---
 
@@ -54,6 +152,10 @@ Estado atual do sistema Afty (atualizado 2026-07-17). Leia junto com:
 - `afty-aptidoes.js` (~1600 linhas) catálogo COMPLETO das 85 Aptidões Amaldiçoadas + trilhas,
   categorias, sub-grupos, `avaliarRequisitoAptidao`, `resolveNiveisAptidao`,
   `validarCatalogoAptidoes`. **É o arquivo mais maduro do sistema: use de modelo.**
+- `afty-alto-nivel.js` catálogo de **nível 21+**: 11 Melhorias Superiores, 16 Habilidades Lendárias
+  e 6 Habilidades Ápice + resolvers (`totalMelhoriasSuperiores`, `totalHabilidadesLendarias`,
+  `altoNivelAtivo`, `avaliarRequisitoAltoNivel`, `avaliarAcessoAltoNivel`, `resolveAltoNivel`,
+  `validarCatalogoAltoNivel`). Validador zerado.
 - `afty-schema.js` `createBlankAfty()` + constantes (tipos, patamares, tamanhos, graus de item).
 - `afty-atributos.js` regras de atributo (métodos, point-buy, valores fixos, rolagem, pool de nível,
   Desenvolvimento, validação `resumoAtributos`).
@@ -557,7 +659,82 @@ do ND.
   **NÃO implementado**: hoje a divisão só se ajusta dentro da aba. O motivo da decisão era o
   atrito de escolher uma Habilidade e descobrir que o nível não bate, e **as Habilidades ainda não
   existem**, então o atrito ainda não existe. Fazer junto com a aba de Habilidades.
-- **Nível 21+** (Melhorias Superiores, Habilidades Lendárias) segue para o fim.
+- ~~**Nível 21+** (Melhorias Superiores, Habilidades Lendárias) segue para o fim.~~ **FEITO em
+  2026-07-22**, ver a seção abaixo.
+
+---
+
+## ⭐ NÍVEIS LENDÁRIOS (21+): catálogo COMPLETO
+
+`afty-alto-nivel.js` + o card **Níveis Lendários**, terceiro e último da aba Especializações. Some
+inteiro abaixo do ND 21 (decisão do autor: "só aparecerem em Níveis 21+"), em vez de aparecer
+zerado.
+
+### Regras confirmadas (autor, 2026-07-22)
+| Pergunta | Resposta |
+|---|---|
+| De onde vem | **Do ND**, não de classe nenhuma. As Especializações não entram (só nos pré-requisitos das Ápices) |
+| Melhoria Superior | 1 em todo nível **ÍMPAR** a partir do 21 (21, 23, 25...) |
+| Habilidade Lendária | 1 em todo nível **PAR** a partir do 22 (22, 24, 26...) |
+| Orçamentos | **Dois, próprios e separados.** Não tocam o orçamento de Habilidades/Talentos |
+| Melhoria repete? | Só as que o texto diz: **Alma 2x, CA 2x, CD 2x, Energia 2x, Vida 3x**. As outras 6, uma vez |
+| Lendária repete? | **Não, nenhuma** |
+| Habilidade Ápice | Escolha ANINHADA de *Atingir Ápice* (ND 26). Vem de graça, **uma por ficha** |
+| "20 Níveis de X" | Nível **REAL** da especialização, não o de escalonamento (mesma convenção das Habilidades) |
+
+### Shape na ficha
+- `melhoriasSuperiores: []` lista de ids **COM repetição** (cada entrada é uma escolha), então
+  `gastos === length` e `vezes(id) === quantas vezes o id aparece`. Foi o shape mais simples que
+  casa com "cada repetição custa uma vaga", sem contador paralelo.
+- `habilidadesLendarias: []` lista de ids **sem** repetição.
+- `escolhasAltoNivel: {}` **campo NOVO**, `{ [id]: [opcaoId] }`, espelhando `escolhasHabilidade`.
+  Cobre as 6 escolhas aninhadas: Perícia (Melhoria de Perícia), Teste de Resistência (Melhoria de
+  Resistência), Atributo (Aperfeiçoamento de Atributo), 3 Perícias (Conhecimento Iluminado),
+  energia ou vigor (Inesgotável) e a Ápice (Atingir Ápice).
+- O aparo do `maxVezes` é de **leitura, não gravado** (mesma convenção de `resolveEspecializacoes`
+  e `resolveNiveisAptidao`): coberto por assert.
+
+### Requisitos: um tipo NOVO
+`avaliarRequisitoAltoNivel` aceita `nd`, `habilidade`, `nota` (os três já existiam noutros
+arquivos) mais **`nivelEspec`** `{ espId, valor }`, que é o "20 Níveis de Restringido" das Ápices.
+É o primeiro requisito do projeto que lê nível de UMA especialização nomeada.
+
+### ⚠ Pré-requisitos das Ápices que o livro cita e o Afty não tem
+O autor decidiu (2026-07-22) que ficam como **`nota`**: aparecem na linha com cadeado roxo e
+**não bloqueiam**, para a Ápice não ficar inalcançável. São 3:
+
+| Onde | Citado | Situação |
+|---|---|---|
+| Fluxo Invencível | **Ápice Corporal Humano** | não existe no Restringido |
+| Rei do Tabuleiro | **Flanco** | citado no texto de outras habilidades, mas não é habilidade |
+| Rei do Tabuleiro | **Agilidade no Campo de Batalha** | extinta (o autor confirmou) |
+
+Renomes JÁ RESOLVIDOS, apontando para a habilidade real:
+- "Dominância em Habilidade" → `cnj_dominancia_em_feitico` (é o mesmo item 5 da errata acima)
+- "Especialista em Técnicas" → Especialização **Conjurador**
+- "Especialista em Combate" → Especialização **Combatente**
+
+Os dois últimos saem dos próprios pré-requisitos: as habilidades citadas ao lado são `cnj_` e `cmb_`.
+
+### ⚠ EFEITOS: nenhum ligado (mesmo bloqueio de sempre)
+O card conta orçamento e trava pré-requisito, e só. Ligar Melhoria de Vida no HP, Melhoria de Alma
+na Integridade, Intocável na Defesa etc. depende do **canal de efeito do lado da criatura**, que
+não existe (seção D). Coberto por assert: derivar com as 11 Melhorias e as 16 Lendárias dá stats
+idênticos a derivar sem nenhuma.
+
+⚠ Quando esse canal existir, **Aperfeiçoamento de Atributo** ("podendo superar o máximo de 30")
+quebra o teto duro de 30 do `eff()` em `afty-derive.js`. É a segunda exceção ao teto, depois do
+Desenvolvimento Inesperado (que eleva valor E limite juntos, e por isso cabe no modelo atual).
+
+### UI
+Um card, **duas abas** (Melhorias Superiores | Habilidades Lendárias), os dois contadores no
+`headerRight` com o mesmo chrome dos badges de Aptidões. As linhas são o cartão de 32px que abre
+sob demanda, igual a `HabilidadeCard`. Duas coisas novas no vocabulário:
+- **`VezesGauge`**: medidor de 2 ou 3 segmentos nas melhorias repetíveis, à direita da linha.
+  Segue a regra "magnitude é MEDIDOR, não campo numérico". Clicar no segmento que já é o último
+  desce um, então dá para voltar de 3 para 2 sem passar pelo zero.
+- **Pool sem descrição vira fileira de pílulas** (Perícias, Atributos, TRs), em vez do cartão com
+  checkbox usado nas opções com texto (as 6 Ápices).
 
 ### Padrões DESTE projeto que valem reusar (o de Aptidões é o mais recente e maduro)
 - **Conteúdo é dado**: catálogo em `afty-<sistema>.js`, ids estáveis, texto verbatim, resolvers
@@ -733,6 +910,327 @@ assert). Vários efeitos são calculáveis e entram na MESMA passada de efeitos 
 
 ⚠ **Artes do Combate abre um recurso NOVO** (Pontos de Preparo), que não é HP/PE/Alma. Vai
 precisar de canal próprio no motor e provavelmente de lugar na tela de combate.
+
+---
+
+## LUTADOR (catálogo COMPLETO, 2026-07-22)
+
+70 habilidades transcritas verbatim em `afty-habilidades.js`, prefixo `lut_`:
+Base 8 (níveis 1, 1, 2, 4, 5, 9, 11, 20) · 2° 15 · 4° 14 · 6° 13 · 8° 8 · 10° 6 · 12° 4 · 16° 2.
+O autor declarou a especialização FECHADA ("finalizamos Lutador com os poderes acima").
+
+- **Pool novo `MANOBRAS_DE_EMPOLGACAO`** (5): escolha aninhada de Empolgação, com
+  `niveis: [1, 1, 6, 12, 18]` (o `1` repetido é como `escolhasConcedidas` conta as DUAS do
+  nível 1). No nível 18 o Lutador conhece as 5.
+- **Manobras Finalizadoras** (6°) NÃO é escolha aninhada: "você recebe acesso as seguintes",
+  então as 3 (Ataque Circular, Golpe Certeiro, Quebra Crânio) são texto verbatim dentro da
+  habilidade dona, igual às Artes do Combate do Combatente.
+- **Requisito `atributo` é novo** em `avaliarRequisitoHabilidade` (Sobrevivente pede
+  Constituição 16). Espelha o das Aptidões, usa `ctx.attrEff`, que o builder agora passa.
+- ⚠ **`lut_poder_corporal` teve o CABEÇALHO comido pelo PDF** (as duas colunas engoliram o
+  título entre *Manobras Finalizadoras* e *Potência Superior*). O nome foi deduzido do
+  pré-requisito de *Punhos Letais* (8°), que diz "Poder Corporal", e a posição bate com a ordem
+  quase alfabética. **CONFIRMAR com o autor.**
+- **Recurso próprio: Nível de Empolgação** (1 a 5, sobe acertando ataque, desce passando uma
+  rodada sem acertar). É estado de COMBATE, não de ficha, como os Pontos de Preparo do Combatente.
+
+### Automação: NADA ligado ainda, e o motivo
+
+O autor pediu que tudo que der seja automatizado pelo Motor. **Não deu nenhum**, por um motivo
+estrutural: `CONTROLADOR_EFEITOS_INVOCACAO` aplica efeitos DSL sobre **invocações**, e todo efeito
+de Lutador é sobre a **própria ficha**. O canal de efeitos do lado da criatura NÃO EXISTE (é a
+"passada de efeitos" pendente desde as Aptidões). Assim que ele existir, estes saem de graça,
+porque já são fórmulas numéricas incondicionais:
+
+| Habilidade | Fórmula | Canal |
+|---|---|---|
+| Reflexo Evasivo (base 2) | `piso(nivel_lutador/2)`, todo tipo exceto alma | rd |
+| Implemento Marcial (base 4) | `2 + (n>=8) + (n>=16)` | cd |
+| Gosto pela Luta (base 5) | `2 + degraus 8/12/16/20` acerto, `1 + degraus 9/13/17` dano e Fortitude | acerto, dano, tr |
+| Caminho da Mão Vazia (2°) | dano desarmado `+bt`, acerto desarmado `+piso(bt/2)` | dano, acerto |
+| Defesa Marcial (4°) | `1 + piso(bt/2)` | defesa |
+| Aprimoramento Marcial (6°) | `piso(bt/2)` | cd |
+| Corpo Calejado (6°) | Defesa `+piso(modCon/2)`, PV `+nivel_lutador` | defesa, pv |
+| Poder Corporal (6°) | dano desarmado `+2 níveis` | danoNivel |
+| Punhos Letais (8°) | ignora RD `= bt`, margem de crítico `-1` | ignorarRd, critico |
+| Seja Água (12°) | `+3 m` | deslocamento |
+| Corpo Supremo (16°) | `+3 m`, `+4` Defesa, RD `piso(nd/2)` em 3 tipos + 1 à escolha, `piso(nd/4)` no resto | deslocamento, defesa, rd |
+
+Precisam de **canal novo** no motor, além do que já existe:
+- **Corpo Treinado** (base 1): o dado de dano desarmado é uma FAIXA (1d8/1d10/1d12/2d8/2d12 nos
+  níveis 1/5/9/13/17), não uma soma. Vale reusar `subirNiveisDano` das Invocações.
+- **Músculos Desenvolvidos** (4°): TROCA o atributo da Defesa (Força no lugar de Destreza). Não é
+  soma, é substituição na fórmula.
+- **Alma Quieta / Corpo Sincronizado / Mente em Paz** (10°): vantagem para resistir a condições
+  NOMEADAS. Pede canal de vantagem por condição.
+
+**NÃO automatizável (anotado, não tentar):**
+- Tudo que lê o **Nível de Empolgação**: Empolgação, Empolgação Máxima, Fluxo, Ignorar Dor,
+  Empolgar-se, Insistência, Manobras Finalizadoras, parte de Lutador Superior.
+- **Estados ligáveis em combate**: Brutalidade (+ Sanguinária, + Aprimorada), Ataque Inconsequente
+  (+ Sequência), Armas Absolutas, Tempestade Sufocante, Fúria da Vingança, Imprudência Motivadora.
+- **Reações e usos por PE**: Aparar Ataque, Aparar Projéteis, Devolver Projéteis, Redirecionar
+  Força, Segura pra Mim, Golpear Brecha, Resistir, Ação Ágil, Ataque Extra, Voadora, Foguete Sem
+  Ré, Golpe da Mão Aberta, Impacto Demolidor, Feitiço e Punho, Oportunista, Atacar e Recuar.
+  São os MESMOS gaps já listados em `docs/afty-invocacoes.md` (por rodada, reação, economia de ação).
+- **Dependem de sistema inexistente**: Armas (Dedicação em Arma, Um com a Arma, Armas Absolutas,
+  Quebrando Tudo, Corpo Arsenal) · Perícias e TR treinado do personagem (Deboche Desconcertante,
+  Alma Quieta, Corpo Sincronizado, Mente em Paz, Duro na Queda), hoje como `nota`.
+- ⚠ **Aptidões de Luta** (8°) é REPETÍVEL e CONCEDE nível de trilha (Aura ou Controle e Leitura),
+  o par de problemas idêntico ao de *Aptidões de Combate*. Resolver os dois na mesma passada.
+
+---
+
+## CONJURADOR (catálogo COMPLETO, 2026-07-22)
+
+66 habilidades verbatim, prefixo `cnj_`: Base 6 (níveis 1, 1, 4, 9, 10, 20) · 2° 14 · 4° 15 ·
+6° 12 · 8° 8 · 10° 4 · 12° 5 · 16° 2. No livro é **Especialista em Técnicas**, o autor escreve
+**Conjurador** (mesmo caso de Combatente × Especialista em Combate).
+
+**Dois pools novos**, os dois em `afty-habilidades.js`:
+- **`MUDANCAS_DE_FUNDAMENTO`** (7), de *Domínio dos Fundamentos* (base 1), `niveis: [1, 1, 12]`.
+  *Feitiço Rápido* tem `nivelMin: 6` (o "Pré-Requisito: Nível 6" do livro), mesma convenção das
+  últimas Posturas de Combate. *Expansão dos Fundamentos* (8°) concede +1 no 8 e outra no 12, do
+  MESMO pool, e *Versatilidade em Fundamentos* (4°) troca as escolhidas num descanso (decisão de
+  mesa, a ficha já troca livremente).
+- **`FOCOS_AMALDICOADOS`** (3: Destruição, Economia, Refino), de *Foco Amaldiçoado* (base 10),
+  `niveis: [10]`. É a escolha de maior impacto mecânico da especialização (dano, custo de PE, CD).
+
+**Requisito `aptidao` é novo** em `avaliarRequisitoHabilidade`, e ao contrário do `nota` ele
+**bloqueia de verdade**, porque o catálogo das 85 Aptidões existe. Usa `ctx.aptidoes`, que o
+builder agora passa de `draft.aptidoesAmaldicoadas`. Consumidores: *Explosão Defensiva*,
+*Físico Amaldiçoado Defensivo* e *Revestimento Constante* (Cobrir-se) e *Expansão Maestral*
+(Expansão de Domínio Completa).
+
+### ⚠ Três coisas a confirmar com o autor
+1. **"Técnica Precisa" não existe.** *Mira Aperfeiçoada* (8°) diz conceder "a Mudança de
+   Fundamento Técnica Precisa", mas a do pool se chama **Feitiço Preciso**. Transcrito verbatim.
+2. **"Dominância em Habilidade" não existe.** O pré-requisito de *Manipulação Perfeita* (16°) usa
+   esse nome, mas a habilidade de 6° é **Dominância em Feitiço**. O requisito foi apontado para ela.
+3. **Dominância em Feitiço arredonda para CIMA** ("metade do nível dele, arredondado para cima"),
+   exceção explícita à regra geral do Afty, que é floor.
+
+### Automação: mesmo bloqueio do Lutador
+Nada ligado, pelo mesmo motivo: não existe canal de efeito do lado da criatura. E aqui há um
+segundo bloqueio, mais duro: **a maioria dos efeitos do Conjurador opera sobre FEITIÇOS**, que
+são um sistema inteiro ainda não construído (nível de feitiço, custo em PE, alcance, área,
+conjuração, sustentação, rituais, liberações e Técnica Máxima). Enquanto Feitiços não existirem,
+nem os números que dependem deles existem.
+
+Prontos para plugar assim que houver canal de criatura (não dependem de Feitiços):
+| Habilidade | Fórmula | Canal |
+|---|---|---|
+| Reforço Amaldiçoado (2°) | `2 + (n>=10) + (n>=20)` na CD de Especialização e Amaldiçoada | cd |
+| Reação Rápida (2°) | `+mod(int ou sab)` | iniciativa |
+| Energia Inacabável (4°) | `piso(nivel_conjurador/2)` | pe |
+| Feitiços Refinados (4°) | `piso(bt/2)` | cd |
+| Movimentos Imprevisíveis (4°) | `+mod(int ou sab)`, teto = nível | defesa |
+| Olhar Preciso (4°) | `2 + piso(nivel/4)` | acertoAmaldicoado |
+| Revestimento Constante (8°) | `bt`, todo tipo exceto alma | rd |
+| Sentidos Aguçados (10°) | `+piso(mod/2)` | atencao, pericia |
+| O Honrado (base 20) | `+5` CD e `+5` ataque de Feitiço/Aptidão | cd, acertoAmaldicoado |
+| Foco · Destruição / Economia / Refino (base 10) | dano, custo e PE máx, ou CD e acerto | vários |
+
+⚠ **Escolha "Int OU Sab" é um padrão NOVO** e aparece em ~10 habilidades do Conjurador. Não é
+`atributoOr` (que é requisito, não efeito): é o jogador escolhendo qual mod usar. Vai precisar de
+estado na ficha ou de convenção (ex.: usar sempre o maior). **Decidir antes de automatizar.**
+
+**Concessões a somar na passada de efeitos:** *Epifania Amaldiçoada* (4°) dá 1 Aptidão no nível 4
+e outra no 12 (direcionada? não, "uma Aptidão Amaldiçoada" à escolha = ORÇAMENTO) · *Elevar
+Aptidão* (6°) é REPETÍVEL até BT vezes e dá nível de trilha à escolha (orçamento) · *Foco ·
+Refino* dá 1 Aptidão ou Feitiço · *Nova Habilidade* (2°) é repetível SEM limite e cria Feitiços.
+Os repetíveis esbarram no mesmo shape de lista de ids únicos de *Aptidões de Combate* e
+*Aptidões de Luta*. **Resolver os quatro casos de uma vez.**
+
+---
+
+## SUPORTE (catálogo COMPLETO, 2026-07-22)
+
+58 habilidades verbatim, prefixo `sup_`: Base 8 (níveis 1, 3, 5, 6, 8, 9, 10, 20) · 2° 13 ·
+4° 9 · 6° 7 · 8° 9 · 10° 4 · 12° 5 · **14° 1** · 16° 2.
+
+**Pool novo `APOIOS_AVANCADOS`** (5), de *Apoio Avançado* (2°), `niveis: [2, 6, 12]`.
+*Apoio Estratégico* tem `nivelMin: 6`. *Apoios Versáteis* (4°) concede +1 no 4 e outro no 10, do
+MESMO pool, e *Apoio Abrangente* (14°) deixa aplicar DOIS efeitos por apoio em vez de um.
+
+- **Único grupo de 14° nível do sistema.** `gruposDeHabilidade` ordena por nível sozinho, então
+  ele entrou entre o 12° e o 16° sem ajuste nenhum no código.
+- **Único caso de Base que é CONCESSÃO PURA**: nos níveis 6 e 8 o livro só diz "você recebe a
+  aptidão amaldiçoada X", sem nomear uma habilidade. Viraram `sup_energia_reversa` e
+  `sup_liberacao_de_energia_reversa`, batizadas com o nome do que concedem.
+  ⚠ **PERGUNTA ABERTA:** pela regra do projeto, alvo NOMEADO = concessão direcionada e GRÁTIS,
+  mas pela regra do Afty toda Base gasta vaga de orçamento. As duas regras se chocam aqui.
+  **Decidir com o autor** se estas duas custam vaga ou vêm de graça.
+
+### Coisas que este catálogo trouxe de novo
+- **Cura é um eixo inteiro** (Suporte em Combate, Medicina Infalível, Cura Avançada em Grupo,
+  Sintonização Vital, Cura Aperfeiçoada, Sobrecura, Descarga Reanimadora, Purificação da Alma).
+  O motor não tem canal de cura nenhum. É o maior sistema novo que o Suporte pede.
+- ⚠ **Purificação da Alma** (16°) restaura **Integridade/Alma em 50%**. É a PRIMEIRA habilidade
+  do sistema que mexe na Alma, e a Alma escala TODO o HP (`× Alma.Atual/100`). Efeito de peso.
+- ⚠ **Físico Controlado** (8°) TROCA o atributo do HP (Presença ou Sabedoria no lugar de
+  Constituição, teto +4). É substituição de fórmula, igual ao que *Músculos Desenvolvidos*
+  (Lutador) pede para a Defesa. Já são **dois** consumidores do mesmo canal de troca.
+- ⚠ **Motivação pelo Triunfo** (8°) cita **"Lacaio"**, que é patamar da 2.5.2 e NÃO EXISTE no
+  Afty (Comum/Desafio/Calamidade/Beyond). Transcrito verbatim. **Confirmar com o autor.**
+- **Aptidões de Suporte** (8°) é o TERCEIRO repetível que concede nível de trilha (com Aptidões
+  de Combate e Aptidões de Luta). Os três caem no mesmo par de problemas de modelo.
+- Dependem de sistemas inexistentes: **Inventário** (Otimização de Espaço, Ajustes em
+  Equipamento) e **Ferramentas** como perícia (Médico, Ferreiro), hoje `nota`.
+
+Prontos para plugar assim que houver canal de criatura:
+| Habilidade | Fórmula | Canal |
+|---|---|---|
+| Mobilidade Avançada (2°) | `+3 m` | deslocamento |
+| Pronto para Agir (2°) | `+mod(presenca)` | iniciativa |
+| Pré-Análise (4°) | `+5` | atencao |
+| Físico Controlado (8°) | troca CON por `min(mod(pre ou sab), 4)` no HP | hp (substituição) |
+
+---
+
+## RESTRINGIDO (catálogo COMPLETO, 2026-07-22) — fecha as 6
+
+54 habilidades verbatim, prefixo `res_`: Base 8 (níveis 1, 2, 2, 3, 4, 9, 10, 20) · 2° 11 ·
+4° 8 · 6° 8 · 8° 8 · 10° 5 · 12° 3 · 16° 3. **Com ela o catálogo fecha em 367 habilidades.**
+
+É a especialização SEM energia amaldiçoada: o recurso é **Ponto de Estamina** (4 no ND 1, +4 por
+nível). Como é exclusiva da Origem Restringido, que proíbe multiclasse, **nível de Restringido ==
+ND sempre**, o que simplifica todo requisito daqui.
+
+**Pool novo `DADIVAS_DO_CEU`** (9), de *Restrito pelos Céus* (base 1), `niveis: [4, 8, 12, 16,
+20]` — a primeira só no 4°, daí o `escolha.niveis` começar acima do `nivel` da habilidade dona
+(o validador aceita, ele só proíbe conceder ANTES). *Respeito Celeste* (8°) concede mais uma e é
+REPETÍVEL (a 2ª vez a partir do 12), o que o shape de ids únicos ainda não suporta.
+
+### 🔴 ROUBO DE HABILIDADE: o primeiro pool COMPUTADO do sistema
+
+*"você pode aprender uma habilidade de Especialista em Combate ou Lutador... Você não pode roubar
+habilidades base das outras especializações, exceto Golpe Especial."*
+
+Todo outro pool do projeto é uma lista literal. Este é uma **consulta ao próprio catálogo**:
+`HABILIDADES_ROUBAVEIS` = todas as por-nível de Combatente e Lutador + `cmb_golpe_especial`.
+
+✅ **CONFIRMADO (autor, 2026-07-22): são SÓ Combatente e Lutador.** Conjurador, Suporte e
+Controlador **não** entram, e Restringido também não. **Versões antigas do sistema deixavam roubar
+das outras classes** e é fácil se confundir com isso. Se a dúvida voltar, a resposta já é esta:
+não expandir o pool.
+**127 opções.** Como não dá para referenciar `AFTY_HABILIDADES` de dentro dele mesmo, as `opcoes`
+são atribuídas logo APÓS a construção do array. Verificado por assert: Golpe Especial está no
+pool e nenhuma outra Base entrou.
+
+Também trouxe **`escolha.limite: "bt"`**, porque a quantidade é o Bônus de Treinamento e não o
+tamanho do pool (o padrão dos repetíveis, que serve para Melhoria de Controlador). `bt` agora
+desce de `deriveAfty` → `resolveHabilidades` → `resolveEscolhasHabilidade` → `escolhasMaximas`,
+o mesmo caminho que as Invocações já usam.
+
+Verificado num Restringido ND 13 (BT 5): Dádivas 3 de 3, Roubo 3 de 5, `vagasExtras` 2, gastos
+4 de 5. Cada roubo consome uma vaga, que é o que o texto pede.
+
+### 📑 O pool do Roubo é TABULADO (2026-07-22)
+
+127 opções numa lista corrida eram um paredão dentro de um cartão que já está aberto sob demanda.
+A escolha agora traz **`abas: ["especializacao", "nivel"]`**, e o novo componente
+**`OpcoesDeEscolha`** monta uma barra por eixo, encadeadas: escolhida a especialização, a barra de
+baixo só oferece os níveis daquela. Resultado:
+
+| Aba | 2° | 4° | 6° | 8° | 10° | 12° | 16° | total |
+|---|---|---|---|---|---|---|---|---|
+| **Lutador** | 15 | 14 | 13 | 8 | 6 | 4 | 2 | 62 |
+| **Combatente** | 17 | 15 | 12 | 8 | 6 | 5 | 2 | 65 |
+
+Maior folha: 17. Decisões que valem lembrar:
+- **São os MESMOS dois eixos do card de Habilidades** (especialização e depois nível), de
+  propósito: escolher uma habilidade e roubar uma passam a ter a mesma linguagem. As abas só são
+  menores (`text-[11px]`), por estarem um nível mais fundo.
+- **`abasDeOpcoes(opcoes, eixo)`** (em `afty-habilidades.js`) é genérico e puro. Quem decide se
+  tabula é o DADO (`escolha.abas`), não o componente: nenhum outro pool ganhou abas, e um pool
+  novo grande só precisa declarar os eixos. Coberto por assert.
+- Para o eixo funcionar, `HABILIDADES_ROUBAVEIS` passou a carregar **`especializacaoId`**.
+- Cada aba conta quantas opções daquele galho já foram escolhidas, senão o que foi pego nas outras
+  sumiria da vista (mesma lição da barra de grupos do card de Habilidades).
+- Com o pool tabulado por nível, o **`(Nível N)` sai da linha da opção**: vira ruído, já que o
+  nível é a própria aba. Pool sem abas continua mostrando.
+- Item sem o campo do eixo cai num balde **"Outros"** em vez de sumir da tela.
+
+**⚠ DUAS DECISÕES PENDENTES DO AUTOR:**
+1. **O filtro "desde que tal não dependa do uso de energia amaldiçoada" NÃO está aplicado.** Não
+   existe marca de custo em PE no catálogo, e deduzir pelo texto erraria nos dois sentidos. As
+   opções são as 127 estruturalmente elegíveis. Caminho sugerido: marcar `usaEnergia: true` nas
+   habilidades de Combatente e Lutador que gastam PE, e filtrar. São ~141 para revisar.
+2. **O nível da habilidade roubada não BLOQUEIA.** O pool carrega `nivelMin` (o nível da
+   habilidade original) e a UI já mostra "(Nível N)", mas não impede escolher. O livro diz "Você
+   usa seus níveis de Restringido para os requisitos", ou seja, deveria travar. Hoje um
+   Restringido 2 consegue roubar uma habilidade de 16°. Mesma pendência que já existia nas
+   Posturas de Combate, mas aqui ela pesa muito mais.
+
+### ⚠ Incoerências do livro (transcritas verbatim)
+- **"2 PE" e "1 PE" num personagem sem PE.** *Ação Ágil* (4°) e *Adrenalina Absoluta* (12°) citam
+  PE, mas Restringido usa Estamina. *Ação Ágil* parece copiar-colar da homônima do Lutador.
+- ***Teste de Resistência Mestre* DIFERE das outras 5**: aqui é "mestre nos DOIS TRs conferidos
+  pela sua Especialização", não "treinado num segundo e mestre no concedido".
+- ***Valorizar Invocação*** (2°) depende de **domar maldições**, que o autor declarou FORA DE
+  ESCOPO para criação de ficha (2026-07-17).
+- ***Corpo de Aço*** (6°) soma o **VALOR** de Constituição no PV, não o modificador.
+
+### Pendências de CONTEÚDO (citadas mas não enviadas)
+- **ARSENAL AMALDIÇOADO** ("detalhado no final da especialização"), citado em *Restrito pelos Céus*.
+- **ESTILO MARCIAL** e as **técnicas marciais** ("explicado após as habilidades da
+  especialização"), citados em *Restrito pelos Céus* e em *Desenvolver Ideias* (4°).
+
+---
+
+## TALENTOS (sistema NOVO, completo, 2026-07-22)
+
+51 talentos em `src/systems/afty/afty-talentos.js`, prefixo `tal_`:
+**Gerais 43** (20 sem pré-requisito + 23 com) e **de Origem 8**.
+
+### Regras (autor, 2026-07-22)
+| Pergunta | Resposta |
+|---|---|
+| Orçamento | **O MESMO das Habilidades de Especialização** ("pegos no lugar de") |
+| Quem pode pegar | **Qualquer especialização.** Não existe `especializacaoId` no catálogo |
+| "Nível N" nos pré-requisitos | **É o ND**, nunca o nível de classe |
+| Onde fica na UI | **Aba ao lado das especializações.** Numa ficha Restringido: "Restringido \| Talentos" |
+
+### Arquitetura
+- Arquivo próprio (`afty-talentos.js`), porque o agrupamento (Gerais/Origem), a semântica de
+  nível (ND) e os tipos de requisito diferem das Habilidades. Catálogo + resolvers puros, padrão
+  do projeto.
+- `resolveTalentos(creature, ctx)` → `{ escolhidas, gastos, inacessiveis }`. **O orçamento NÃO
+  vive nele**: `deriveAfty` resolve Talentos ANTES e passa `talentos.gastos` como 3º argumento de
+  `resolveHabilidades`, que soma tudo. `derived.talentos` existe só para a UI.
+- **Não alimenta stat nenhum** (coberto por assert: derivar com e sem talento dá stats idênticos).
+- UI: a barra de abas de `HabilidadesEspecializacao` agora sempre mostra Talentos, e os dois
+  catálogos são normalizados para a mesma forma (`{id, titulo, habilidades}`) para reusar a barra
+  de grupos e o `HabilidadeCard` sem ramificar a árvore. Talento passa
+  `acesso = { ...avaliarAcessoTalento(), nivelOk: true, faltam: 0 }`, então o chip de nível some.
+
+### Tipos de requisito de `avaliarRequisitoTalento`
+`nd` · `atributo` · `atributoOr` · `origem` (verificável, as 8 origens existem) · `talento`
+(Mestre do Arremesso pede Técnicas de Arremesso) · **`maxComNome`** (novo: "não possuir mais que
+dois talentos com o nome Adepto" — conta os escolhidos com o prefixo e bloqueia o 3º) · `nota`.
+
+### ⚠ A confirmar com o autor
+1. **Um talento veio SEM cabeçalho**, o mesmo artefato de PDF de *Poder Corporal*: o que começa
+   com "Você aperfeiçoa o uso do seu escudo para colocá-lo no seu ataque". Batizado
+   **Técnicas Ofensivas de Escudo**, pelo irmão *Técnicas Defensivas de Escudo*, que abre com a
+   mesma frase trocando "no seu ataque" por "por completo na sua defesa".
+2. **"Técnica Rápida" não existe.** *Adepto de Feitiçaria* exclui "Técnica Rápida" do pool de
+   Mudanças de Fundamento, mas a opção se chama **Feitiço Rápido**. Mesma troca Técnica/Feitiço
+   de *Mira Aperfeiçoada*. São a mesma?
+3. *Determinado a Viver* escreve **"Pré-Requisito: Pré-Requisito:"** duas vezes. Erro de digitação.
+
+### Escolhas aninhadas que os Talentos pedem (nenhuma ligada ainda)
+- **Incremento de Atributo** e **Quebra de Limites**: repetíveis, elevam VALOR e LIMITE de
+  atributo, exatamente como o Desenvolvimento Inesperado (Derivado). Pedem pool dos 6 atributos.
+- **Adepto de Combate** concede uma escolha de `ESTILOS_DE_COMBATE` e **Adepto de Feitiçaria** uma
+  de `MUDANCAS_DE_FUNDAMENTO`, os dois pools morando em `afty-habilidades.js`. Primeira escolha
+  aninhada que **atravessa arquivos**.
+- **Físico Aperfeiçoado**: 1 de 4 efeitos, e os 4 são canais distintos (deslocamento, perícia,
+  manobra, pulo). Ficou como texto.
+- **Aptidão Desenvolvida** e **Estudo Amaldiçoado** concedem nível de trilha à escolha
+  (ORÇAMENTO). Com *Aptidões de Combate/Luta/Suporte*, já são **cinco** consumidores do mesmo
+  modelo repetível-que-concede-trilha. Resolver os cinco de uma vez.
 
 ---
 

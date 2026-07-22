@@ -18,7 +18,7 @@
       "core": {
         "grau": "especial",
         "nd": 20,
-        "patamar": "desafio",
+        "patamar": "calamidade",
         "difficulty": "intermediario",
         "origin": {
           "type": "maldicao",
@@ -59,7 +59,7 @@
           "attribute": "forca",
           "mastered": false,
           "overrideMod": null,
-          "mod": 34
+          "mod": 32
         },
         {
           "id": "skill-mr6j0nc6-fo4a",
@@ -67,7 +67,7 @@
           "attribute": "destreza",
           "mastered": false,
           "overrideMod": null,
-          "mod": 34
+          "mod": 32
         },
         {
           "id": "skill-mr6j0ouw-se4y",
@@ -75,7 +75,7 @@
           "attribute": "sabedoria",
           "mastered": false,
           "overrideMod": null,
-          "mod": 26
+          "mod": 24
         },
         {
           "id": "skill-mr6j0ps7-exbi",
@@ -83,7 +83,7 @@
           "attribute": "inteligencia",
           "mastered": true,
           "overrideMod": null,
-          "mod": 37
+          "mod": 35
         },
         {
           "id": "skill-mr6j0umo-kdkn",
@@ -91,7 +91,7 @@
           "attribute": "presenca",
           "mastered": false,
           "overrideMod": null,
-          "mod": 33
+          "mod": 31
         },
         {
           "id": "skill-mr6j0w06-spvf",
@@ -99,7 +99,7 @@
           "attribute": "sabedoria",
           "mastered": false,
           "overrideMod": null,
-          "mod": 36
+          "mod": 34
         }
       ],
       "defenses": {
@@ -143,7 +143,7 @@
       },
       "actions": {
         "total": {
-          "comum": 4,
+          "comum": 5,
           "rapida": 3,
           "bonus": 2,
           "movimento": 1,
@@ -156,8 +156,8 @@
             "attackType": "acerto",
             "toHit": 41,
             "toHitBase": 41,
-            "cd": 41,
-            "cdBase": 41,
+            "cd": 39,
+            "cdBase": 39,
             "trType": "fortitude",
             "range": "Corpo-a-Corpo",
             "area": "-",
@@ -172,16 +172,16 @@
             },
             "damage": {
               "type": "queimante",
-              "narrativeType": "padrao",
               "isNarrativePhysical": false,
               "damageIsLocked": false,
               "damageIsCalculated": true,
-              "numDice": 9,
-              "numDiceBase": 9,
-              "dieSize": 10,
-              "mod": 60,
-              "roll": "9d10+60",
-              "average": 110
+              "narrativeType": "padrao",
+              "numDice": 8,
+              "numDiceBase": 8,
+              "dieSize": 12,
+              "mod": 63,
+              "roll": "8d12+63",
+              "average": 115
             },
             "condition": {
               "tier": "nenhuma",
@@ -195,7 +195,7 @@
             "finalTextStale": false,
             "calc": {
               "nd": 20,
-              "patamar": "desafio",
+              "patamar": "calamidade",
               "difficulty": "intermediario"
             },
             "id": "act-mr6j2dvj"
@@ -206,8 +206,8 @@
             "attackType": "tr_area",
             "toHit": 41,
             "toHitBase": 41,
-            "cd": 41,
-            "cdBase": 41,
+            "cd": 39,
+            "cdBase": 39,
             "trType": "fortitude",
             "range": "-",
             "area": "24 Metros Linha",
@@ -222,16 +222,16 @@
             },
             "damage": {
               "type": "queimante",
-              "narrativeType": "padrao",
               "isNarrativePhysical": false,
               "damageIsLocked": false,
               "damageIsCalculated": true,
-              "numDice": 3,
-              "numDiceBase": 3,
-              "dieSize": 12,
+              "narrativeType": "padrao",
+              "numDice": 4,
+              "numDiceBase": 4,
+              "dieSize": 10,
               "mod": 26,
-              "roll": "3d12+26",
-              "average": 46
+              "roll": "4d10+26",
+              "average": 48
             },
             "condition": {
               "tier": "nenhuma",
@@ -245,7 +245,7 @@
             "finalTextStale": false,
             "calc": {
               "nd": 20,
-              "patamar": "desafio",
+              "patamar": "calamidade",
               "difficulty": "intermediario"
             },
             "id": "act-mr6j3dzo"
@@ -256,8 +256,8 @@
             "attackType": "acerto",
             "toHit": 41,
             "toHitBase": 41,
-            "cd": 41,
-            "cdBase": 41,
+            "cd": 39,
+            "cdBase": 39,
             "trType": "fortitude",
             "range": "48 Metros",
             "area": "-",
@@ -272,16 +272,16 @@
             },
             "damage": {
               "type": "perfurante",
-              "narrativeType": "padrao",
               "isNarrativePhysical": false,
               "damageIsLocked": false,
               "damageIsCalculated": true,
-              "numDice": 6,
-              "numDiceBase": 6,
-              "dieSize": 12,
+              "narrativeType": "padrao",
+              "numDice": 8,
+              "numDiceBase": 8,
+              "dieSize": 10,
               "mod": 51,
-              "roll": "6d12+51",
-              "average": 90
+              "roll": "8d10+51",
+              "average": 95
             },
             "condition": {
               "tier": "nenhuma",
@@ -295,7 +295,7 @@
             "finalTextStale": false,
             "calc": {
               "nd": 20,
-              "patamar": "desafio",
+              "patamar": "calamidade",
               "difficulty": "intermediario"
             },
             "id": "act-mr6j49si"
@@ -345,7 +345,7 @@
             "finalTextStale": false,
             "calc": {
               "nd": 20,
-              "patamar": "desafio",
+              "patamar": "calamidade",
               "difficulty": "intermediario"
             },
             "id": "act-mr6j7ee2"
@@ -356,8 +356,8 @@
             "attackType": "tr_area",
             "toHit": 41,
             "toHitBase": 41,
-            "cd": 41,
-            "cdBase": 41,
+            "cd": 39,
+            "cdBase": 39,
             "trType": "fortitude",
             "range": "18 Metros",
             "area": "18 Metros Esfera",
@@ -372,16 +372,16 @@
             },
             "damage": {
               "type": "queimante",
-              "narrativeType": "padrao",
               "isNarrativePhysical": false,
               "damageIsLocked": false,
               "damageIsCalculated": true,
-              "numDice": 3,
-              "numDiceBase": 3,
-              "dieSize": 12,
+              "narrativeType": "padrao",
+              "numDice": 4,
+              "numDiceBase": 4,
+              "dieSize": 10,
               "mod": 26,
-              "roll": "3d12+26",
-              "average": 46
+              "roll": "4d10+26",
+              "average": 48
             },
             "condition": {
               "tier": "nenhuma",
@@ -395,7 +395,7 @@
             "finalTextStale": false,
             "calc": {
               "nd": 20,
-              "patamar": "desafio",
+              "patamar": "calamidade",
               "difficulty": "intermediario"
             },
             "id": "act-mr6j8m15"
@@ -445,7 +445,7 @@
             "finalTextStale": false,
             "calc": {
               "nd": 20,
-              "patamar": "desafio",
+              "patamar": "calamidade",
               "difficulty": "intermediario"
             },
             "id": "act-mr6jakai"
@@ -456,8 +456,8 @@
             "attackType": "tr_area",
             "toHit": 41,
             "toHitBase": 41,
-            "cd": 41,
-            "cdBase": 41,
+            "cd": 39,
+            "cdBase": 39,
             "trType": "fortitude",
             "range": "12 Metros",
             "area": "48 Metros Esfera",
@@ -472,16 +472,16 @@
             },
             "damage": {
               "type": "queimante",
-              "narrativeType": "padrao",
               "isNarrativePhysical": false,
               "damageIsLocked": false,
               "damageIsCalculated": true,
-              "numDice": 5,
-              "numDiceBase": 5,
-              "dieSize": 10,
-              "mod": 34,
-              "roll": "5d10+34",
-              "average": 62
+              "narrativeType": "padrao",
+              "numDice": 7,
+              "numDiceBase": 7,
+              "dieSize": 8,
+              "mod": 39,
+              "roll": "7d8+39",
+              "average": 71
             },
             "condition": {
               "tier": "nenhuma",
@@ -496,7 +496,7 @@
             "finalTextStale": false,
             "calc": {
               "nd": 20,
-              "patamar": "desafio",
+              "patamar": "calamidade",
               "difficulty": "intermediario"
             },
             "id": "act-mr6jmlwb"
@@ -578,7 +578,7 @@
         {
           "id": "origin-regeneracao",
           "name": "Regeneração",
-          "description": "Uma maldição é capaz de regenerar e restaurar o próprio corpo a partir da sua energia amaldiçoada. É necessária uma Ação Comum ou Ação Rápida para se curar, pagando 4 PE; para curar uma Ferida Interna pague 8 PE; para regenerar um membro pague 10 PE.\n\nCura: Mod Con × 12 = 10 × 12 = 120 PV (Patamar desafio, BT +6).",
+          "description": "Uma maldição é capaz de regenerar e restaurar o próprio corpo a partir da sua energia amaldiçoada. É necessária uma Ação Comum ou Ação Rápida para se curar, pagando 4 PE; para curar uma Ferida Interna pague 8 PE; para regenerar um membro pague 10 PE.\n\nCura: Mod Con × 12 = 10 × 12 = 120 PV (Patamar calamidade, BT +6).",
           "category": "geral",
           "trigger": "passiva",
           "source": "origin",
@@ -651,6 +651,33 @@
           "description": "Todas as ações provenientes de feitiço causam dano com vulnerabilidade em estruturas, além de sua ação de meteoro causar terreno difícil em toda a área de efeito.",
           "automation": null,
           "id": "feat-mr6je7sk"
+        },
+        {
+          "name": "Canalizar Golpe - Calamidade",
+          "category": "aptidao",
+          "trigger": "acao",
+          "description": "Utilizando de uma ação bônus, o usuário pode pagar 2 PE para aumentar sua próxima ação de ataque corpo a corpo em 1d8, com o limite máximo igual ao seu nível de aptidão em controle e leitura.",
+          "automation": {
+            "enabled": true,
+            "rules": []
+          },
+          "id": "feat-mr9dvrty"
+        },
+        {
+          "name": "Amplificação de Domínio",
+          "category": "aptidao",
+          "trigger": "acao",
+          "description": "Utilizando de uma ação comum, o usuário pode amplificar seu domínio inato e revesti-lo em seu corpo, fazendo com que toda e qualquer forma de defesa garantida por um feitiço ou aptidão amaldiçoada seja neutralizada, porém, você é incapaz de manifestar seu feitiço com esta aptidão ativa, ao qual custará 8 PE por rodada para se manter ativa.",
+          "automation": null,
+          "id": "feat-mr9dz2o3"
+        },
+        {
+          "name": "Cobrir-se",
+          "category": "aptidao",
+          "trigger": "acao",
+          "description": "Você se torna capaz de concentrar sua energia amaldiçoada em seu corpo, assim amenizando os impactos em troca de um consumo imediato de energia. Como uma Reação, quando receber dano, você pode gastar uma quantidade de PE igual a 2 + o dobro do seu CL para receber pontos de vida temporários: para cada ponto gasto, você recebe 4 PVs temporários. Estes PVs temporários são avulsos a outras fontes e não seguem o limite comum para PVs temporários, durando até o final do turno da criatura contra a qual você usou a Reação. ",
+          "automation": null,
+          "id": "feat-mrcapkii"
         }
       ],
       "treinamentos": [
@@ -882,29 +909,29 @@
       "artimanhas": [],
       "narratorNotes": "Espírito do Desastre Incendiário",
       "stats": {
-        "hpMax": 2080,
+        "hpMax": 3690,
         "peMax": 80,
-        "defesa": 43,
-        "atencao": 71,
+        "defesa": 41,
+        "atencao": 74,
         "iniciativa": 24,
         "deslocamento": 27,
         "espaco": 1.5,
-        "guardaInabavalMax": 60,
+        "guardaInabavalMax": 54,
         "rdGeral": 20,
-        "rdIrredutivel": 18,
+        "rdIrredutivel": 15,
         "ignorarRd": 15,
         "vidaTempPorAtaque": 10,
         "resistenciaParcialMax": 6,
         "resistenciaTotalMax": 4,
-        "cdBase": 41,
+        "cdBase": 39,
         "acerto": 41
       },
       "saves": {
-        "astucia": 34,
-        "fortitude": 39,
-        "reflexos": 37,
-        "vontade": 29,
-        "integridade": 39
+        "astucia": 32,
+        "fortitude": 37,
+        "reflexos": 35,
+        "vontade": 27,
+        "integridade": 37
       },
       "critMargins": {
         "astucia": 20,
@@ -923,9 +950,9 @@
       },
       "combatState": {
         "isActive": false,
-        "hpCurrent": 2080,
+        "hpCurrent": 3690,
         "peCurrent": 80,
-        "guardaInabavalCurrent": 60,
+        "guardaInabavalCurrent": 54,
         "resistenciaParcialUsed": 0,
         "resistenciaTotalUsed": 0,
         "integridadeCurrent": 100,
@@ -936,14 +963,18 @@
         "customCounters": [],
         "combatLog": []
       },
-      "updatedAt": "2026-07-04T16:01:16.608Z",
+      "updatedAt": "2026-07-19T19:42:39.410Z",
       "editLog": [
-        "2026-07-04T15:58:05.153Z"
+        "2026-07-04T15:58:05.153Z",
+        "2026-07-06T11:44:51.690Z",
+        "2026-07-06T15:40:40.561Z",
+        "2026-07-08T16:31:57.798Z"
       ],
       "id": "mr6jqmht-5dtqwat",
-      "folderId": "fld_mr3mhd5y-om9mmkn",
+      "folderId": "fld_mrgidxbd-m203666",
       "isBuiltIn": false,
-      "createdAt": "2026-07-04T15:58:05.153Z"
+      "createdAt": "2026-07-04T15:58:05.153Z",
+      "rulesVersion": "2.5.2"
     },
     {
       "name": "Dagon",

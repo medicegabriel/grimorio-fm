@@ -2289,7 +2289,7 @@
         "rdReducao": true
       },
       "core": {
-        "grau": "3",
+        "grau": "especial",
         "nd": 20,
         "patamar": "calamidade",
         "difficulty": "intermediario",
@@ -3013,9 +3013,10 @@
         "customCounters": [],
         "combatLog": []
       },
-      "updatedAt": "2026-07-18T09:11:40.955Z",
+      "updatedAt": "2026-07-19T19:43:02.244Z",
       "editLog": [
-        "2026-07-15T17:39:05.493Z"
+        "2026-07-15T17:39:05.493Z",
+        "2026-07-19T19:43:02.244Z"
       ],
       "id": "mrmd6w0l-q8bo1dp",
       "folderId": "fld_mrgidxbd-m203666",

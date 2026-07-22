@@ -29,6 +29,8 @@ import { resolveTreinoEfeitos } from "./afty-treinamentos";
 import { resolveNiveisAptidao } from "./afty-aptidoes";
 import { resolveEspecializacoes } from "./afty-especializacoes";
 import { resolveHabilidades, efeitosInvocacaoControlador } from "./afty-habilidades";
+import { resolveTalentos } from "./afty-talentos";
+import { resolveAltoNivel } from "./afty-alto-nivel";
 import { resolveInvocacoesList, resolveHordasList } from "./afty-invocacoes";
 
 export const mod = (attr) => Math.floor(((attr ?? 10) - 10) / 2);
@@ -219,7 +221,29 @@ export function deriveAfty(creature) {
   // muda por especialização é o ACESSO, que lê o nível do lado da
   // multiclasse — por isso depende do resolve de Especializações.
   // ⚠ Nenhum EFEITO de habilidade é aplicado ainda (ver docs/afty-status.md).
-  const habilidades = resolveHabilidades(creature, especializacoes.escolhidas);
+  //
+  // Talentos dividem ESSE orçamento ("obtidos no lugar de habilidades de
+  // especialização"), então são resolvidos ANTES e o gasto entra no cômputo.
+  // Eles não pertencem a especialização nenhuma: o acesso lê o ND, a origem e
+  // os atributos efetivos, nunca o nível de classe.
+  const talentos = resolveTalentos(creature, {
+    nd,
+    attrEff,
+    origemId: creature?.core?.origem?.id ?? null,
+  });
+  // bt entra por causa do Roubo de Habilidade, cujo limite de repetições é o
+  // Bônus de Treinamento, e não o tamanho do pool.
+  const habilidades = resolveHabilidades(creature, especializacoes.escolhidas, talentos.gastos, bt);
+
+  // Alto Nível (21+): Melhorias Superiores e Habilidades Lendárias. Orçamentos
+  // PRÓPRIOS, um por nível ímpar e um por nível par a partir do 21/22, sem
+  // relação com o orçamento de Habilidades. Não dependem de especialização: só
+  // as Habilidades Ápice leem nível de classe, e no pré-requisito.
+  // ⚠ Nenhum EFEITO é aplicado (mesmo bloqueio das Habilidades, ver docs).
+  const altoNivel = resolveAltoNivel(creature, {
+    niveisPorEspec: habilidades.niveisPorEspec,
+    habilidades: habilidades.escolhidas,
+  });
 
   // Invocações: a invocação lê valores do DONO (ND, BT = maestria(ND) e o Nível
   // de Controlador, o lado da multiclasse). Resolvidas aqui só para a UI e a
@@ -266,6 +290,8 @@ export function deriveAfty(creature) {
     aptidao,              // níveis por trilha: { alocado, concedido, efetivo, gastos }
     especializacoes,      // { escolhidas, total, max, obrigatoria, completa, erro }
     habilidades,          // { escolhidas, total, gastos, restante, excedeu, inacessiveis, niveisPorEspec }
+    talentos,             // { escolhidas, gastos, inacessiveis } — gasto já somado em habilidades.gastos
+    altoNivel,            // { ativo, melhorias, lendarias, escolhas, apiceId } — orçamentos próprios
     invocacoes,           // { lista, total, custoTotal, temWarnings }
     hordas,               // { lista, total, custoTotal } (líder + membros escalados)
     focosTotais,          // orçamento de Focos de interlúdio = ND + bônus de poderes

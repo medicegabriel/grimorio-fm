@@ -27,8 +27,12 @@ import {
   especializacoesDisponiveis, getEspecializacao, normalizeEspecializacoes, tipoObrigatorio,
 } from "./afty-especializacoes";
 import {
-  gruposDeHabilidade, avaliarAcessoHabilidade, escolhasConcedidas,
+  gruposDeHabilidade, avaliarAcessoHabilidade, escolhasConcedidas, abasDeOpcoes,
 } from "./afty-habilidades";
+import { gruposDeTalento, avaliarAcessoTalento } from "./afty-talentos";
+import {
+  MELHORIAS_SUPERIORES, HABILIDADES_LENDARIAS, avaliarAcessoAltoNivel,
+} from "./afty-alto-nivel";
 import {
   createBlankInvocacao, cloneInvocacao, createBlankAcao, createBlankCaracteristica, createBlankHorda, AFTY_INV_GRAUS,
   grausDisponiveis, grauMeta, INV_ATRIBUTOS_POR_GRAU, INV_ATTR_MIN, mod as invMod,
@@ -160,6 +164,14 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
       };
     });
 
+  // Talentos: mesmo orçamento das Habilidades de Especialização (são pegos no
+  // lugar delas), mas acessíveis a qualquer classe.
+  const toggleTalento = (id) =>
+    setDraft((d) => {
+      const atual = Array.isArray(d.talentos) ? d.talentos : [];
+      return { ...d, talentos: atual.includes(id) ? atual.filter((x) => x !== id) : [...atual, id] };
+    });
+
   // Escolha aninhada de uma habilidade (Estilo de Controle, Melhoria...).
   // Alterna a opção na lista daquela habilidade. Guarda só a escolha; o
   // resolver (afty-habilidades.js) sanea e conta as vagas.
@@ -169,6 +181,37 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
       const atual = Array.isArray(mapa[habId]) ? mapa[habId] : [];
       const proxima = atual.includes(opcaoId) ? atual.filter((x) => x !== opcaoId) : [...atual, opcaoId];
       return { ...d, escolhasHabilidade: { ...mapa, [habId]: proxima } };
+    });
+
+  // Alto Nível (21+) · Melhoria Superior. A ficha guarda uma lista COM
+  // repetição (cada entrada é uma escolha), então definir "vezes" é reescrever
+  // as entradas daquele id. Quem apara no maxVezes é o resolver.
+  const setMelhoriaVezes = (id, vezes) =>
+    setDraft((d) => {
+      const atual = Array.isArray(d.melhoriasSuperiores) ? d.melhoriasSuperiores : [];
+      const outras = atual.filter((x) => x !== id);
+      return { ...d, melhoriasSuperiores: [...outras, ...Array(Math.max(0, vezes)).fill(id)] };
+    });
+
+  // Alto Nível (21+) · Habilidade Lendária. Nenhuma repete, então é toggle.
+  const toggleLendaria = (id) =>
+    setDraft((d) => {
+      const atual = Array.isArray(d.habilidadesLendarias) ? d.habilidadesLendarias : [];
+      return {
+        ...d,
+        habilidadesLendarias: atual.includes(id) ? atual.filter((x) => x !== id) : [...atual, id],
+      };
+    });
+
+  // Escolha aninhada de alto nível (perícia, atributo, Teste de Resistência,
+  // recurso do Inesgotável, Habilidade Ápice). Mesmo padrão do
+  // toggleEscolhaHabilidade: guarda a escolha e o resolver sanea.
+  const toggleEscolhaAltoNivel = (itemId, opcaoId) =>
+    setDraft((d) => {
+      const mapa = d.escolhasAltoNivel && typeof d.escolhasAltoNivel === "object" ? d.escolhasAltoNivel : {};
+      const atual = Array.isArray(mapa[itemId]) ? mapa[itemId] : [];
+      const proxima = atual.includes(opcaoId) ? atual.filter((x) => x !== opcaoId) : [...atual, opcaoId];
+      return { ...d, escolhasAltoNivel: { ...mapa, [itemId]: proxima } };
     });
 
   // Aptidões Amaldiçoadas: escolher é de graça (o requisito é o que trava).
@@ -376,7 +419,7 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
         <div className="lg:col-span-2 space-y-4">
           {tab === "identidade" && <TabIdentidade draft={draft} patch={patch} patchCore={patchCore} setOrigemBonus={setOrigemBonus} setOrigemId={setOrigemId} />}
           {tab === "informacoes" && <TabInformacoes draft={draft} derived={derived} patch={patch} patchCore={patchCore} patchAttr={patchAttr} patchNivel={patchNivel} />}
-          {tab === "especializacoes" && <TabEspecializacoes draft={draft} derived={derived} setEspecializacoes={setEspecializacoes} toggleHabilidade={toggleHabilidade} toggleEscolhaHabilidade={toggleEscolhaHabilidade} />}
+          {tab === "especializacoes" && <TabEspecializacoes draft={draft} derived={derived} setEspecializacoes={setEspecializacoes} toggleHabilidade={toggleHabilidade} toggleEscolhaHabilidade={toggleEscolhaHabilidade} toggleTalento={toggleTalento} setMelhoriaVezes={setMelhoriaVezes} toggleLendaria={toggleLendaria} toggleEscolhaAltoNivel={toggleEscolhaAltoNivel} />}
           {tab === "aptidoes" && <TabAptidoes draft={draft} derived={derived} setAptidaoNivel={setAptidaoNivel} toggleAptidao={toggleAptidao} />}
           {tab === "invocacoes" && <TabInvocacoes draft={draft} derived={derived} addInvocacao={addInvocacao} removeInvocacao={removeInvocacao} duplicarInvocacao={duplicarInvocacao} moverInvocacao={moverInvocacao} patchInvocacao={patchInvocacao} patchInvocacaoAttr={patchInvocacaoAttr} efeitosApi={efeitosApi} addHorda={addHorda} removeHorda={removeHorda} patchHorda={patchHorda} />}
           {tab === "interludios" && <TabInterludios draft={draft} derived={derived} setTreinoProgresso={setTreinoProgresso} setTreinoInstance={setTreinoInstance} />}
@@ -1484,7 +1527,7 @@ function AptidaoCard({ aptidao, escolhida, ctx, onToggle }) {
    Como soma(niveis) === ND e a 2ª leva o resto (ver resolveEspecializacoes),
    os dois ± editam O MESMO ponto de divisão por lados opostos: subir uma
    baixa a outra. Com uma classe só não há o que dividir, e nenhum ± aparece. */
-function TabEspecializacoes({ draft, derived, setEspecializacoes, toggleHabilidade, toggleEscolhaHabilidade }) {
+function TabEspecializacoes({ draft, derived, setEspecializacoes, toggleHabilidade, toggleEscolhaHabilidade, toggleTalento, setMelhoriaVezes, toggleLendaria, toggleEscolhaAltoNivel }) {
   const { escolhidas, total, max, obrigatoria } = derived.especializacoes;
   const disponiveis = especializacoesDisponiveis(draft.core.origem?.id);
 
@@ -1622,7 +1665,11 @@ function TabEspecializacoes({ draft, derived, setEspecializacoes, toggleHabilida
         (autor, 2026-07-17): a aba "Habilidades" do topo é de Ações &
         Características, não destas. Mesmo arranjo da aba de Aptidões, que
         tem o alocador em cima e a lista de leitura embaixo. */}
-    <HabilidadesEspecializacao derived={derived} toggleHabilidade={toggleHabilidade} toggleEscolhaHabilidade={toggleEscolhaHabilidade} />
+    <HabilidadesEspecializacao draft={draft} derived={derived} toggleHabilidade={toggleHabilidade} toggleEscolhaHabilidade={toggleEscolhaHabilidade} toggleTalento={toggleTalento} />
+
+    {/* Alto Nível (21+): fica SEPARADO embaixo, e não depende de classe
+        nenhuma (autor, 2026-07-22). Some inteiro abaixo do ND 21. */}
+    <AltoNivel derived={derived} setMelhoriaVezes={setMelhoriaVezes} toggleLendaria={toggleLendaria} toggleEscolhaAltoNivel={toggleEscolhaAltoNivel} />
     </>
   );
 }
@@ -1637,6 +1684,116 @@ function TabEspecializacoes({ draft, derived, setEspecializacoes, toggleHabilida
    Travada DIZ O QUE FALTA ("Combatente 6 · faltam 4") em vez de sumir,
    que é decisão explícita do autor (roadmap 2026-07-14), motivada pelo
    caso real de escolher uma habilidade e descobrir que o nível não bate. */
+/* Lista de opções de uma escolha aninhada.
+   Pool pequeno (Estilos de Combate, Melhorias...) sai numa lista corrida, que
+   é como sempre foi. Pool GRANDE traz `escolha.abas` com os eixos em que se
+   divide, e aí vira uma ou mais barras de abas, encadeadas: hoje só o Roubo
+   de Habilidade, com 127 opções, precisa disso.
+
+   As abas são as MESMAS do card de Habilidades (especialização e depois
+   nível), só que menores por estarem um nível mais fundo. Cada aba conta
+   quantas opções daquele galho já foram escolhidas, senão o que foi pego nas
+   outras abas sumiria da vista (mesma lição da barra de grupos). */
+function OpcoesDeEscolha({ escolha, opcoesEscolhidas, escolhida, onToggleOpcao }) {
+  const eixos = escolha.abas || [];
+  // Aba ativa por eixo. Vazio = a primeira de cada barra.
+  const [abaPorEixo, setAbaPorEixo] = useState([]);
+
+  // Desce os eixos filtrando: cada barra só oferece o que sobrou da de cima.
+  const barras = [];
+  let lista = escolha.opcoes;
+  for (let i = 0; i < eixos.length; i++) {
+    const abas = abasDeOpcoes(lista, eixos[i]);
+    const ativa = abas.find((a) => a.id === abaPorEixo[i]) ?? abas[0];
+    barras.push({ abas, ativaId: ativa?.id });
+    lista = ativa?.opcoes ?? [];
+  }
+
+  // Trocar de aba num eixo invalida a escolha dos eixos DE BAIXO (a aba "16°"
+  // pode não existir no Lutador), então elas voltam para a primeira.
+  const escolherAba = (eixoIdx, abaId) =>
+    setAbaPorEixo((atual) => [...atual.slice(0, eixoIdx), abaId]);
+
+  return (
+    <>
+      {barras.map((barra, i) => (
+        <div
+          key={eixos[i]}
+          className="flex gap-1 overflow-x-auto no-scrollbar mb-2"
+          role="tablist"
+          aria-label={`${escolha.label} por ${eixos[i]}`}
+        >
+          {barra.abas.map((a) => {
+            const on = a.id === barra.ativaId;
+            const nEsc = a.opcoes.filter((o) => opcoesEscolhidas.includes(o.id)).length;
+            return (
+              <button
+                key={a.id}
+                role="tab"
+                type="button"
+                aria-selected={on}
+                onClick={() => escolherAba(i, a.id)}
+                className={`grow justify-center whitespace-nowrap px-2.5 py-1 rounded-md text-[11px] font-semibold transition-colors flex items-center gap-1 ${
+                  on ? "bg-purple-700 text-white" : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+                }`}
+              >
+                {a.label}
+                {nEsc > 0 && (
+                  <span className={`font-mono text-[9px] font-bold px-1 rounded ${on ? "bg-white/20 text-white" : "bg-purple-500/25 text-purple-300"}`}>
+                    {nEsc}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      ))}
+
+      <div className="space-y-1.5">
+        {lista.map((o) => {
+          const sel = opcoesEscolhidas.includes(o.id);
+          // Sem a habilidade, a escolha não vale: leitura apenas.
+          const desabilitada = !escolhida;
+          return (
+            <button
+              key={o.id}
+              type="button"
+              onClick={() => onToggleOpcao?.(o.id)}
+              disabled={desabilitada}
+              aria-pressed={sel}
+              className={`w-full text-left rounded-md border px-2 py-1.5 transition-colors flex gap-2 ${
+                sel
+                  ? "border-purple-700 bg-purple-950/40"
+                  : desabilitada
+                    ? "border-slate-800/60 bg-transparent cursor-default"
+                    : "border-slate-800 bg-slate-950/40 hover:border-purple-700/70"
+              }`}
+            >
+              <span
+                className={`mt-0.5 w-3.5 h-3.5 rounded flex items-center justify-center flex-shrink-0 border ${
+                  sel ? "bg-purple-700 border-purple-600 text-white" : "border-slate-600 text-transparent"
+                }`}
+                aria-hidden="true"
+              >
+                {sel && <Check className="w-2.5 h-2.5" />}
+              </span>
+              <span className="text-[11px] text-slate-400 leading-relaxed">
+                <span className={`font-semibold ${sel ? "text-purple-200" : "text-slate-300"}`}>{o.nome}.</span>
+                {/* Com o pool tabulado por nível, o nível já é a aba: repetir
+                    aqui seria ruído. Sem abas, ele continua na linha. */}
+                {o.nivelMin && !eixos.includes("nivel") && (
+                  <span className="text-[10px] text-purple-300 font-medium"> (Nível {o.nivelMin})</span>
+                )}
+                {" "}{o.descricao}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </>
+  );
+}
+
 function HabilidadeCard({ habilidade, escolhida, acesso, nivelEspec, escolhaEstado, onToggleOpcao }) {
   const [open, setOpen] = useState(false);
   // Já escolhida nunca trava: senão redividir a multiclasse prenderia a
@@ -1662,7 +1819,11 @@ function HabilidadeCard({ habilidade, escolhida, acesso, nivelEspec, escolhaEsta
           aria-label={`${escolhida ? "Remover" : "Escolher"} ${habilidade.nome}`}
           title={
             bloqueada
-              ? `Requer nível ${habilidade.nivel} em ${acesso.label.split(" ")[0]}`
+              ? // Talento não tem requisito de nível de classe (não vem com
+                // `label`), só os extras, que já aparecem na linha.
+                acesso.label
+                  ? `Requer nível ${habilidade.nivel} em ${acesso.label.split(" ")[0]}`
+                  : "Pré-requisito não atendido"
               : escolhida ? "Remover esta habilidade" : "Escolher esta habilidade"
           }
           className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 border transition-colors ${
@@ -1741,11 +1902,381 @@ function HabilidadeCard({ habilidade, escolhida, acesso, nivelEspec, escolhaEsta
                   </span>
                 )}
               </p>
-              <div className="space-y-1.5">
-                {habilidade.escolha.opcoes.map((o) => {
+              <OpcoesDeEscolha
+                escolha={habilidade.escolha}
+                opcoesEscolhidas={opcoesEscolhidas}
+                escolhida={escolhida}
+                onToggleOpcao={onToggleOpcao}
+              />
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+const TALENTOS_TAB = "__talentos__";
+
+function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, toggleEscolhaHabilidade, toggleTalento }) {
+  const { escolhidas, escolhas, total, gastos, excedeu, niveisPorEspec } = derived.habilidades;
+  const especs = derived.especializacoes.escolhidas;
+  const talentosEscolhidos = derived.talentos.escolhidas;
+
+  // Tabulada pelas especializações ESCOLHIDAS (1 ou 2), não pelas 6:
+  // habilidade de especialização que a criatura não tem é ruído. Talentos são
+  // uma aba a MAIS, sempre presente: qualquer classe pode pegá-los (autor,
+  // 2026-07-22). Numa ficha Restringido a barra fica "Restringido | Talentos".
+  const [espTab, setEspTab] = useState(null);
+  // Abre na primeira que TEM catálogo: sem isso, uma multiclasse com uma
+  // especialização ainda não transcrita abriria num card vazio, escondendo a
+  // que tem conteúdo atrás dele. (Falta transcrever só o Restringido.)
+  const comConteudo = especs.filter((e) => gruposDeHabilidade(e.id).length > 0);
+  const emTalentos = espTab === TALENTOS_TAB;
+  const ativa = especs.find((e) => e.id === espTab) ?? comConteudo[0] ?? especs[0];
+
+  // Segundo nível de abas: os grupos (Base, 2°, 4°... ou Gerais/Origem nos
+  // Talentos). Com 71 habilidades no Combatente, empilhá-las todas era um
+  // paredão vertical. O grupoTab guarda a escolha; se ela não existe na aba
+  // ativa (troca de aba), cai no primeiro grupo.
+  const [grupoTab, setGrupoTab] = useState(null);
+
+  // Sem especialização, nada a mostrar: os chips logo acima já pedem uma.
+  if (especs.length === 0) return null;
+
+  // Os dois catálogos viram a MESMA forma ({ id, titulo, habilidades }) para
+  // reusar a barra de grupos e o HabilidadeCard sem ramificar a árvore.
+  const grupos = emTalentos
+    ? gruposDeTalento().map((g) => ({ id: g.id, titulo: g.titulo, habilidades: g.talentos }))
+    : gruposDeHabilidade(ativa.id);
+  const grupoAtivo = grupos.find((g) => g.id === grupoTab) ?? grupos[0];
+  // attrEff alimenta os requisitos de atributo (ex.: Sobrevivente, Constituição
+  // 16) e aptidoes os de aptidão (ex.: Revestimento Constante pede Cobrir-se).
+  const ctx = {
+    niveisPorEspec,
+    escolhidas,
+    escolhasHabilidade: escolhas?.mapa,
+    attrEff: derived.attrEff,
+    aptidoes: Array.isArray(draft.aptidoesAmaldicoadas) ? draft.aptidoesAmaldicoadas : [],
+  };
+  // Talento lê o ND e a origem, nunca o nível de classe.
+  const ctxTalento = {
+    nd: derived.nd,
+    attrEff: derived.attrEff,
+    origemId: draft.core?.origem?.id ?? null,
+    talentos: talentosEscolhidos,
+  };
+
+  // Rótulo curto para a aba: "Base", "2°", "4°"... (o título longo não cabe).
+  // Nos Talentos os grupos são "Gerais" e "de Origem".
+  const rotuloGrupo = (g) =>
+    g.id === "base"
+      ? "Base"
+      : g.titulo.replace("Habilidades de ", "").replace("Talentos ", "").replace(" Nível", "");
+
+  return (
+    <Card
+      title="Habilidades de Especialização"
+      headerRight={
+        <div
+          className="flex items-center gap-1.5 border border-slate-800 bg-slate-950/50 rounded-md px-2 py-1"
+          title="Habilidades escolhidas / permitidas (1 no ND 1, mais 1 a cada 3 ND)"
+        >
+          <GraduationCap className="w-3 h-3 text-purple-400 flex-shrink-0" />
+          <span className="text-[9px] uppercase tracking-wider text-slate-400">Habilidades</span>
+          <span className="font-mono text-xs font-bold tabular-nums whitespace-nowrap">
+            <span className={excedeu ? "text-rose-400" : "text-white"}>{gastos}</span>
+            <span className="text-slate-600"> / </span>
+            <span className="text-white">{total}</span>
+          </span>
+        </div>
+      }
+    >
+      {/* Barra de abas: as especializações escolhidas + Talentos, sempre.
+          Mesmo estilo da barra de categorias de Aptidões. Ao contrário das
+          especializações, Talentos não mostra nível: o requisito deles é o ND,
+          que já está no cabeçalho da ficha. */}
+      <div className="flex gap-1 overflow-x-auto no-scrollbar border-b border-slate-800 pb-2 mb-3" role="tablist" aria-label="Especializações e Talentos">
+        {especs.map((e) => {
+          const on = !emTalentos && e.id === ativa.id;
+          return (
+            <button
+              key={e.id}
+              role="tab"
+              aria-selected={on}
+              onClick={() => setEspTab(e.id)}
+              className={`grow justify-center whitespace-nowrap px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-1.5 ${
+                on ? "bg-purple-700 text-white" : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+              }`}
+            >
+              {getEspecializacao(e.id)?.nome}
+              <span className={`font-mono text-xs ${on ? "text-purple-200/90" : "text-slate-600"}`}>{e.nivel}</span>
+            </button>
+          );
+        })}
+        <button
+          role="tab"
+          aria-selected={emTalentos}
+          onClick={() => setEspTab(TALENTOS_TAB)}
+          title="Talentos podem ser pegos por qualquer especialização e gastam o mesmo orçamento"
+          className={`grow justify-center whitespace-nowrap px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-1.5 ${
+            emTalentos ? "bg-purple-700 text-white" : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+          }`}
+        >
+          Talentos
+          {talentosEscolhidos.length > 0 && (
+            <span className={`font-mono text-[10px] font-bold px-1 rounded ${emTalentos ? "bg-white/20 text-white" : "bg-purple-500/25 text-purple-300"}`}>
+              {talentosEscolhidos.length}
+            </span>
+          )}
+        </button>
+      </div>
+
+      {excedeu && (
+        <p className="text-[11px] text-rose-400 mb-3">
+          Você escolheu mais habilidades do que o orçamento permite. Remova uma ou aumente o ND.
+        </p>
+      )}
+
+      {/* Catálogo ainda não transcrito: DIZER isso. Renderizar vazio faz a
+          aba parecer quebrada (foi o que aconteceu numa ficha Lutador +
+          Combatente, que abria no Lutador e mostrava um nada). */}
+      {grupos.length === 0 ? (
+        <p className="text-[11px] text-slate-500">
+          As Habilidades de {getEspecializacao(ativa.id)?.nome} ainda não foram transcritas do
+          livro.
+        </p>
+      ) : (
+        <>
+          {/* Abas de nível (Base, 2°, 4°...). Contador de escolhidas por aba:
+              com as habilidades separadas em abas, o que foi pego nas OUTRAS
+              some da vista, então o número devolve essa visibilidade. */}
+          <div className="flex gap-1 overflow-x-auto no-scrollbar border-b border-slate-800 pb-2 mb-3" role="tablist" aria-label="Níveis de habilidade">
+            {grupos.map((g) => {
+              const on = g.id === grupoAtivo.id;
+              const lista = emTalentos ? talentosEscolhidos : escolhidas;
+              const nEsc = g.habilidades.filter((h) => lista.includes(h.id)).length;
+              return (
+                <button
+                  key={g.id}
+                  role="tab"
+                  aria-selected={on}
+                  onClick={() => setGrupoTab(g.id)}
+                  title={g.titulo}
+                  className={`grow justify-center whitespace-nowrap px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors flex items-center gap-1.5 ${
+                    on ? "bg-purple-700 text-white" : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+                  }`}
+                >
+                  {rotuloGrupo(g)}
+                  {nEsc > 0 && (
+                    <span className={`font-mono text-[10px] font-bold px-1 rounded ${on ? "bg-white/20 text-white" : "bg-purple-500/25 text-purple-300"}`}>
+                      {nEsc}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="space-y-1">
+            {grupoAtivo.habilidades.map((h) =>
+              emTalentos ? (
+                // Talento não tem requisito de nível implícito (o "Nível N" de
+                // alguns é um requisito explícito, do tipo nd), então nivelOk
+                // é sempre true e o chip de nível do card não aparece.
+                <HabilidadeCard
+                  key={h.id}
+                  habilidade={{ ...h, onToggle: () => toggleTalento(h.id) }}
+                  escolhida={talentosEscolhidos.includes(h.id)}
+                  acesso={{ ...avaliarAcessoTalento(h, ctxTalento), nivelOk: true, faltam: 0 }}
+                />
+              ) : (
+                <HabilidadeCard
+                  key={h.id}
+                  habilidade={{ ...h, onToggle: () => toggleHabilidade(h.id) }}
+                  escolhida={escolhidas.includes(h.id)}
+                  acesso={avaliarAcessoHabilidade(h, ctx)}
+                  nivelEspec={ativa.nivel}
+                  escolhaEstado={escolhas?.porHab?.[h.id]}
+                  onToggleOpcao={(opcaoId) => toggleEscolhaHabilidade(h.id, opcaoId)}
+                />
+              )
+            )}
+          </div>
+        </>
+      )}
+    </Card>
+  );
+}
+
+/* ============================================================ */
+/* NÍVEIS LENDÁRIOS (21+) — 3º card da aba Especializações       */
+/* ============================================================ */
+/* ⚠ O card se chama "Níveis Lendários" na tela, mas o código diz
+   altoNivel / AltoNivel / afty-alto-nivel.js de propósito: "lendária"
+   já nomeia UMA das duas listas de dentro (Habilidades Lendárias), e
+   reusar a palavra no container faria os dois se confundirem.
+
+   Melhorias Superiores e Habilidades Lendárias. Separadas das
+   Habilidades de Especialização de propósito: não dependem de classe
+   nenhuma e têm orçamentos próprios (um por nível ímpar e um por nível
+   par a partir do 21/22). Abaixo do ND 21 o card some inteiro.
+
+   Reusa o vocabulário aprovado: linha de 32px que abre sob demanda, chips
+   de requisito com cadeado, e MEDIDOR (não campo numérico) para as
+   melhorias que o livro deixa repetir. */
+
+/** Medidor de repetições de uma Melhoria Superior (2 ou 3 segmentos). */
+function VezesGauge({ vezes, max, nome, onSet }) {
+  return (
+    <span className="flex items-center gap-0.5 flex-shrink-0" role="group" aria-label={`Vezes em ${nome}`}>
+      {Array.from({ length: max }, (_, i) => i + 1).map((n) => (
+        <button
+          key={n}
+          type="button"
+          /* Clicar no segmento que já é o último desce um, então dá para
+             voltar de 3 para 2 sem passar pelo zero. */
+          onClick={() => onSet(n === vezes ? n - 1 : n)}
+          aria-pressed={n <= vezes}
+          title={`${n}ª vez`}
+          className={`w-3.5 h-3.5 rounded-sm border transition-colors ${
+            n <= vezes
+              ? "bg-purple-600 border-purple-500"
+              : "border-slate-700 hover:border-purple-600"
+          }`}
+        />
+      ))}
+    </span>
+  );
+}
+
+function AltoNivelCard({ item, escolhida, acesso, escolhaEstado, vezes, onToggle, onSetVezes, onToggleOpcao, ctxReq }) {
+  const [open, setOpen] = useState(false);
+  // Já escolhida nunca trava (mesma regra do HabilidadeCard): senão baixar o
+  // ND prenderia a escolha na ficha, sem como remover.
+  const bloqueada = acesso ? !acesso.ok && !escolhida : false;
+  const reqExtras = (acesso?.extras || []).filter((e) => e.label);
+  const opcoesEscolhidas = escolhaEstado?.opcoes || [];
+  const quantidade = escolhaEstado?.quantidade ?? item.escolha?.quantidade ?? 0;
+  const excedeuEscolha = !!escolhaEstado?.excedeu;
+  const repetivel = (item.maxVezes ?? 1) > 1;
+
+  return (
+    <div className={`rounded-lg border transition-colors ${
+      escolhida ? "border-purple-700 bg-purple-950/30" : "border-slate-800 bg-slate-950/40"
+    }`}>
+      <div className="flex items-center gap-2.5 px-2.5 h-8">
+        <button
+          type="button"
+          onClick={onToggle}
+          disabled={bloqueada}
+          aria-pressed={escolhida}
+          aria-label={`${escolhida ? "Remover" : "Escolher"} ${item.nome}`}
+          title={bloqueada ? "Pré-requisito não atendido" : escolhida ? "Remover" : "Escolher"}
+          className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 border transition-colors ${
+            escolhida
+              ? "bg-purple-700 border-purple-600 text-white"
+              : bloqueada
+                ? "border-slate-800 text-slate-700 cursor-not-allowed"
+                : "border-slate-600 text-slate-500 hover:border-purple-600 hover:text-purple-300"
+          }`}
+        >
+          {escolhida ? <Check className="w-3 h-3" /> : bloqueada ? <Lock className="w-2.5 h-2.5" /> : <Plus className="w-3 h-3" />}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          aria-expanded={open}
+          className="flex-1 min-w-0 flex items-center gap-x-2 text-left overflow-hidden"
+        >
+          <span
+            className={`text-[12px] font-semibold truncate ${bloqueada ? "text-slate-500" : "text-slate-100"}`}
+            title={item.nome}
+          >
+            {item.nome}
+          </span>
+          <span className="flex items-center gap-1 flex-shrink-0">
+            {reqExtras.map((r, i) => (
+              <React.Fragment key={i}>
+                {i > 0 && <span className="text-slate-700 text-[10px]" aria-hidden="true">·</span>}
+                <span
+                  className={`inline-flex items-center gap-0.5 text-[10px] font-medium whitespace-nowrap ${
+                    r.verificavel && r.ok ? "text-slate-600" : "text-purple-300"
+                  }`}
+                  title={r.verificavel ? undefined : "Pré-requisito que não existe mais no Afty, não validado aqui"}
+                >
+                  {!(r.verificavel && r.ok) && <Lock className="w-2.5 h-2.5 flex-shrink-0" />}
+                  {r.label}
+                </span>
+              </React.Fragment>
+            ))}
+          </span>
+        </button>
+
+        {/* Medidor de repetições: só nas que o livro deixa repetir, e só
+            depois de escolhida (senão o 1º segmento duplicaria o toggle). */}
+        {repetivel && escolhida && (
+          <VezesGauge vezes={vezes} max={item.maxVezes} nome={item.nome} onSet={onSetVezes} />
+        )}
+
+        <ChevronDown
+          className={`w-3.5 h-3.5 text-slate-600 flex-shrink-0 transition-transform ${open ? "" : "-rotate-90"}`}
+          aria-hidden="true"
+        />
+      </div>
+
+      {open && (
+        <div className="px-2.5 pb-2.5 pl-[38px]">
+          <p className="text-[11px] text-slate-400 leading-relaxed whitespace-pre-line">
+            {item.descricao}
+          </p>
+
+          {item.escolha && (
+            <div className="mt-2 border-t border-slate-800 pt-2">
+              <p className="text-[10px] uppercase tracking-wider text-slate-500 mb-1.5">
+                {item.escolha.label}
+                {escolhida && (
+                  <span className={`normal-case tracking-normal ${excedeuEscolha ? "text-rose-400" : "text-purple-300"}`}>
+                    {" "}· {opcoesEscolhidas.length} de {quantidade} escolhida{quantidade === 1 ? "" : "s"}
+                  </span>
+                )}
+              </p>
+              {item.escolha.intro && (
+                <p className="text-[11px] text-slate-500 leading-relaxed mb-2">{item.escolha.intro}</p>
+              )}
+              <div className={item.escolha.opcoes.some((o) => o.descricao) ? "space-y-1.5" : "flex flex-wrap gap-1"}>
+                {item.escolha.opcoes.map((o) => {
                   const sel = opcoesEscolhidas.includes(o.id);
-                  // Sem a habilidade, a escolha não vale: leitura apenas.
-                  const desabilitada = !escolhida;
+                  // Opção com pré-requisito próprio (as Habilidades Ápice).
+                  const acessoOp = o.requisitos ? avaliarAcessoAltoNivel(o, ctxReq) : null;
+                  const opBloqueada = acessoOp ? !acessoOp.ok && !sel : false;
+                  // Sem a habilidade escolhida, a escolha não vale: leitura só.
+                  const desabilitada = !escolhida || opBloqueada;
+
+                  // Pool curto e sem descrição (perícias, atributos, TRs): vira
+                  // fileira de pílulas, que é o vocabulário das outras abas.
+                  if (!o.descricao) {
+                    return (
+                      <button
+                        key={o.id}
+                        type="button"
+                        onClick={() => onToggleOpcao?.(o.id)}
+                        disabled={desabilitada}
+                        aria-pressed={sel}
+                        className={`rounded-md border px-2 py-1 text-[11px] font-medium transition-colors ${
+                          sel
+                            ? "border-purple-600 bg-purple-700 text-white"
+                            : desabilitada
+                              ? "border-slate-800/60 text-slate-600 cursor-default"
+                              : "border-slate-800 text-slate-400 hover:border-purple-700/70 hover:text-white"
+                        }`}
+                      >
+                        {o.nome}
+                      </button>
+                    );
+                  }
+
                   return (
                     <button
                       key={o.id}
@@ -1771,10 +2302,25 @@ function HabilidadeCard({ habilidade, escolhida, acesso, nivelEspec, escolhaEsta
                       </span>
                       <span className="text-[11px] text-slate-400 leading-relaxed">
                         <span className={`font-semibold ${sel ? "text-purple-200" : "text-slate-300"}`}>{o.nome}.</span>
-                        {o.nivelMin && (
-                          <span className="text-[10px] text-purple-300 font-medium"> (Nível {o.nivelMin})</span>
-                        )}
                         {" "}{o.descricao}
+                        {/* Pré-requisitos da Ápice, na linha de baixo: são
+                            vários e longos demais para caber no cabeçalho. */}
+                        {acessoOp && (
+                          <span className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
+                            {acessoOp.extras.filter((r) => r.label).map((r, i) => (
+                              <span
+                                key={i}
+                                className={`inline-flex items-center gap-0.5 text-[10px] font-medium ${
+                                  r.verificavel && r.ok ? "text-slate-600" : "text-purple-300"
+                                }`}
+                                title={r.verificavel ? undefined : "Pré-requisito que não existe mais no Afty, não validado aqui"}
+                              >
+                                {!(r.verificavel && r.ok) && <Lock className="w-2.5 h-2.5 flex-shrink-0" />}
+                                {r.label}
+                              </span>
+                            ))}
+                          </span>
+                        )}
                       </span>
                     </button>
                   );
@@ -1788,137 +2334,118 @@ function HabilidadeCard({ habilidade, escolhida, acesso, nivelEspec, escolhaEsta
   );
 }
 
-function HabilidadesEspecializacao({ derived, toggleHabilidade, toggleEscolhaHabilidade }) {
-  const { escolhidas, escolhas, total, gastos, excedeu, niveisPorEspec } = derived.habilidades;
-  const especs = derived.especializacoes.escolhidas;
+const ALTO_NIVEL_ABAS = [
+  { id: "melhorias", label: "Melhorias Superiores" },
+  { id: "lendarias", label: "Habilidades Lendárias" },
+];
 
-  // Tabulada pelas especializações ESCOLHIDAS (1 ou 2), não pelas 6:
-  // habilidade de especialização que a criatura não tem é ruído.
-  const [espTab, setEspTab] = useState(null);
-  // Abre na primeira que TEM catálogo. Só o Combatente foi transcrito, então
-  // uma ficha Lutador/Combatente abria no Lutador e mostrava um card vazio,
-  // escondendo as 38 do Combatente atrás dele.
-  const comConteudo = especs.filter((e) => gruposDeHabilidade(e.id).length > 0);
-  const ativa = especs.find((e) => e.id === espTab) ?? comConteudo[0] ?? especs[0];
+/* Sem `draft`: tudo que a aba mostra já vem resolvido em derived.altoNivel
+   (o resolver sanea a ficha e a UI só exibe, convenção do projeto). */
+function AltoNivel({ derived, setMelhoriaVezes, toggleLendaria, toggleEscolhaAltoNivel }) {
+  const [aba, setAba] = useState("melhorias");
+  const { ativo, melhorias, lendarias, escolhas } = derived.altoNivel;
 
-  // Segundo nível de abas: os grupos (Base, 2°, 4°...). Com 71 habilidades
-  // no Combatente, empilhá-las todas era um paredão vertical. O grupoTab
-  // guarda a escolha; se ela não existe na especialização ativa (troca de
-  // aba), cai no primeiro grupo.
-  const [grupoTab, setGrupoTab] = useState(null);
+  // Abaixo do ND 21 nada disso existe: o card some inteiro em vez de aparecer
+  // zerado, que é o que o autor pediu ("só aparecerem em Níveis 21+").
+  if (!ativo) return null;
 
-  // Sem especialização, nada a mostrar: os chips logo acima já pedem uma.
-  if (especs.length === 0) return null;
+  const emMelhorias = aba === "melhorias";
+  const vezesDe = (id) => melhorias.escolhidas.find((m) => m.id === id)?.vezes ?? 0;
+  // Pré-requisitos das Lendárias e das Ápices: ND, nível real por
+  // especialização e Habilidades de Especialização já escolhidas.
+  const ctxReq = {
+    nd: derived.nd,
+    niveisPorEspec: derived.habilidades.niveisPorEspec,
+    habilidades: derived.habilidades.escolhidas,
+  };
 
-  const grupos = gruposDeHabilidade(ativa.id);
-  const grupoAtivo = grupos.find((g) => g.id === grupoTab) ?? grupos[0];
-  const ctx = { niveisPorEspec, escolhidas, escolhasHabilidade: escolhas?.mapa };
-
-  // Rótulo curto para a aba: "Base", "2°", "4°"... (o título longo não cabe).
-  const rotuloGrupo = (g) => (g.id === "base" ? "Base" : g.titulo.replace("Habilidades de ", "").replace(" Nível", ""));
+  const badge = (rotulo, r, titulo) => (
+    <div
+      className="flex items-center gap-1.5 border border-slate-800 bg-slate-950/50 rounded-md px-2 py-1"
+      title={titulo}
+    >
+      <Star className="w-3 h-3 text-purple-400 flex-shrink-0" />
+      <span className="text-[9px] uppercase tracking-wider text-slate-400">{rotulo}</span>
+      <span className="font-mono text-xs font-bold tabular-nums whitespace-nowrap">
+        <span className={r.excedeu ? "text-rose-400" : "text-white"}>{r.gastos}</span>
+        <span className="text-slate-600"> / </span>
+        <span className="text-white">{r.total}</span>
+      </span>
+    </div>
+  );
 
   return (
     <Card
-      title="Habilidades de Especialização"
+      title="Níveis Lendários"
       headerRight={
-        <div
-          className="flex items-center gap-1.5 border border-slate-800 bg-slate-950/50 rounded-md px-2 py-1"
-          title="Habilidades escolhidas / permitidas (1 no ND 1, mais 1 a cada 3 ND)"
-        >
-          <GraduationCap className="w-3 h-3 text-purple-400 flex-shrink-0" />
-          <span className="text-[9px] uppercase tracking-wider text-slate-400">Habilidades</span>
-          <span className="font-mono text-xs font-bold tabular-nums whitespace-nowrap">
-            <span className={excedeu ? "text-rose-400" : "text-white"}>{gastos}</span>
-            <span className="text-slate-600"> / </span>
-            <span className="text-white">{total}</span>
-          </span>
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {badge("Melhorias", melhorias, "Uma Melhoria Superior em todo nível ímpar a partir do 21")}
+          {badge("Lendárias", lendarias, "Uma Habilidade Lendária em todo nível par a partir do 22")}
         </div>
       }
     >
-      {/* Abas só quando há multiclasse (uma aba só é ruído). Mesmo estilo da
-          barra de categorias de Aptidões. */}
-      {especs.length > 1 && (
-        <div className="flex gap-1 overflow-x-auto no-scrollbar border-b border-slate-800 pb-2 mb-3" role="tablist" aria-label="Especializações">
-          {especs.map((e) => {
-            const on = e.id === ativa.id;
-            return (
-              <button
-                key={e.id}
-                role="tab"
-                aria-selected={on}
-                onClick={() => setEspTab(e.id)}
-                className={`grow justify-center whitespace-nowrap px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-1.5 ${
-                  on ? "bg-purple-700 text-white" : "text-slate-400 hover:text-white hover:bg-slate-800/60"
-                }`}
-              >
-                {getEspecializacao(e.id)?.nome}
-                <span className={`font-mono text-xs ${on ? "text-purple-200/90" : "text-slate-600"}`}>{e.nivel}</span>
-              </button>
-            );
-          })}
-        </div>
-      )}
+      <div className="flex gap-1 overflow-x-auto no-scrollbar border-b border-slate-800 pb-2 mb-3" role="tablist" aria-label="Níveis Lendários">
+        {ALTO_NIVEL_ABAS.map((t) => {
+          const on = t.id === aba;
+          const r = t.id === "melhorias" ? melhorias : lendarias;
+          return (
+            <button
+              key={t.id}
+              role="tab"
+              aria-selected={on}
+              onClick={() => setAba(t.id)}
+              className={`grow justify-center whitespace-nowrap px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-1.5 ${
+                on ? "bg-purple-700 text-white" : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+              }`}
+            >
+              {t.label}
+              {r.gastos > 0 && (
+                <span className={`font-mono text-[10px] font-bold px-1 rounded ${on ? "bg-white/20 text-white" : "bg-purple-500/25 text-purple-300"}`}>
+                  {r.gastos}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
 
-      {excedeu && (
+      {(emMelhorias ? melhorias : lendarias).excedeu && (
         <p className="text-[11px] text-rose-400 mb-3">
-          Você escolheu mais habilidades do que o orçamento permite. Remova uma ou aumente o ND.
+          Você escolheu mais do que o orçamento permite. Remova uma ou aumente o ND.
         </p>
       )}
 
-      {/* Catálogo ainda não transcrito: DIZER isso. Renderizar vazio faz a
-          aba parecer quebrada (foi o que aconteceu numa ficha Lutador +
-          Combatente, que abria no Lutador e mostrava um nada). */}
-      {grupos.length === 0 ? (
-        <p className="text-[11px] text-slate-500">
-          As Habilidades de {getEspecializacao(ativa.id)?.nome} ainda não foram transcritas do
-          livro. Só o Combatente existe por enquanto.
-        </p>
-      ) : (
-        <>
-          {/* Abas de nível (Base, 2°, 4°...). Contador de escolhidas por aba:
-              com as habilidades separadas em abas, o que foi pego nas OUTRAS
-              some da vista, então o número devolve essa visibilidade. */}
-          <div className="flex gap-1 overflow-x-auto no-scrollbar border-b border-slate-800 pb-2 mb-3" role="tablist" aria-label="Níveis de habilidade">
-            {grupos.map((g) => {
-              const on = g.id === grupoAtivo.id;
-              const nEsc = g.habilidades.filter((h) => escolhidas.includes(h.id)).length;
+      <div className="space-y-1">
+        {emMelhorias
+          ? MELHORIAS_SUPERIORES.map((m) => {
+              const vezes = vezesDe(m.id);
               return (
-                <button
-                  key={g.id}
-                  role="tab"
-                  aria-selected={on}
-                  onClick={() => setGrupoTab(g.id)}
-                  title={g.titulo}
-                  className={`grow justify-center whitespace-nowrap px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors flex items-center gap-1.5 ${
-                    on ? "bg-purple-700 text-white" : "text-slate-400 hover:text-white hover:bg-slate-800/60"
-                  }`}
-                >
-                  {rotuloGrupo(g)}
-                  {nEsc > 0 && (
-                    <span className={`font-mono text-[10px] font-bold px-1 rounded ${on ? "bg-white/20 text-white" : "bg-purple-500/25 text-purple-300"}`}>
-                      {nEsc}
-                    </span>
-                  )}
-                </button>
+                <AltoNivelCard
+                  key={m.id}
+                  item={m}
+                  escolhida={vezes > 0}
+                  vezes={vezes}
+                  escolhaEstado={escolhas.porItem?.[m.id]}
+                  onToggle={() => setMelhoriaVezes(m.id, vezes > 0 ? 0 : 1)}
+                  onSetVezes={(n) => setMelhoriaVezes(m.id, n)}
+                  onToggleOpcao={(opcaoId) => toggleEscolhaAltoNivel(m.id, opcaoId)}
+                  ctxReq={ctxReq}
+                />
               );
-            })}
-          </div>
-
-          <div className="space-y-1">
-            {grupoAtivo.habilidades.map((h) => (
-              <HabilidadeCard
-                key={h.id}
-                habilidade={{ ...h, onToggle: () => toggleHabilidade(h.id) }}
-                escolhida={escolhidas.includes(h.id)}
-                acesso={avaliarAcessoHabilidade(h, ctx)}
-                nivelEspec={ativa.nivel}
-                escolhaEstado={escolhas?.porHab?.[h.id]}
-                onToggleOpcao={(opcaoId) => toggleEscolhaHabilidade(h.id, opcaoId)}
+            })
+          : HABILIDADES_LENDARIAS.map((l) => (
+              <AltoNivelCard
+                key={l.id}
+                item={l}
+                escolhida={lendarias.escolhidas.includes(l.id)}
+                acesso={avaliarAcessoAltoNivel(l, ctxReq)}
+                escolhaEstado={escolhas.porItem?.[l.id]}
+                onToggle={() => toggleLendaria(l.id)}
+                onToggleOpcao={(opcaoId) => toggleEscolhaAltoNivel(l.id, opcaoId)}
+                ctxReq={ctxReq}
               />
             ))}
-          </div>
-        </>
-      )}
+      </div>
     </Card>
   );
 }

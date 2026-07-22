@@ -133,6 +133,10 @@ export function createBlankAfty() {
     // qual opção (Estilo de Controle no Apogeu, Melhoria de Controlador...) foi
     // escolhida. Habilidade repetível guarda várias. Ver afty-habilidades.js.
     escolhasHabilidade: {},
+    // Talentos: pegos NO LUGAR de Habilidades de Especialização, então dividem
+    // o mesmo orçamento. Acessíveis a qualquer classe e usam o ND, não o nível
+    // de especialização. Ver afty-talentos.js.
+    talentos: [],
     // Invocações do Controlador (shikigamis / dispositivos). Cada uma é uma
     // ficha própria que lê valores do dono. Ver afty-invocacoes.js.
     invocacoes: [],             // [ fichaInvocacao ]
@@ -155,9 +159,16 @@ export function createBlankAfty() {
     // A edição por fórmula (coeficientes) fica para depois.
     statOverrides: {},
 
-    // Alto nível (21+) — fases finais
+    // Alto nível (21+). Orçamentos SEPARADOS e independentes do de
+    // Habilidades: uma Melhoria por nível ÍMPAR a partir do 21 e uma Lendária
+    // por nível PAR a partir do 22. Ver afty-alto-nivel.js.
+    // Melhorias é lista COM repetição (cada entrada = uma escolha, e as que o
+    // livro deixa repetir trazem maxVezes). Lendárias não repetem.
     melhoriasSuperiores: [],
     habilidadesLendarias: [],
+    // Escolhas aninhadas dos dois (perícia, atributo, Teste de Resistência,
+    // recurso do Inesgotável, Habilidade Ápice): { [id]: [opcaoId, ...] }.
+    escolhasAltoNivel: {},
 
     narratorNotes: "",
 
