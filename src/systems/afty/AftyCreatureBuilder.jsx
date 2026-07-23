@@ -5,10 +5,10 @@ import {
   Copy, ArrowUp, ArrowDown, Heart, Shield, Footprints, AlertTriangle, Star,
 } from "lucide-react";
 
-import { FieldLabel, TextInput, Select, NumberInput, StatField, ExpandableText } from "../../components/builder-controls";
+import { FieldLabel, TextInput, TextArea, Select, NumberInput, StatField, ExpandableText } from "../../components/builder-controls";
 import {
   createBlankAfty, AFTY_ATTRS, AFTY_TIPOS, AFTY_PATAMARES, AFTY_QNT_PE,
-  AFTY_TECNICA_ATTRS, AFTY_TAMANHOS, AFTY_GRAUS_ITEM,
+  AFTY_TECNICA_ATTRS, AFTY_TAMANHOS,
 } from "./afty-schema";
 import { AFTY_ORIGENS, getOrigem, origemTemDesenvolvimento } from "./afty-origens";
 import { ANATOMIAS, getAnatomia, anatomiaTotal } from "./afty-anatomias";
@@ -41,8 +41,25 @@ import {
   INV_CUSTO_BENEFICIOS, INV_CUSTO_CONDICAO, resistenciasTreinaveis, usoPericias,
 } from "./afty-invocacoes";
 import { periciasParaInvocacao } from "./afty-pericias";
+import {
+  EQUIP_TIPOS, EQUIP_INICIAL, CUSTOS, ARMA_CATEGORIAS, ARMA_GRUPOS, TIPOS_DANO,
+  ITEM_CATEGORIAS, catalogoDoTipo, novaEntradaEquip,
+  orcamentoDoGrau, espacosDoEquipamento, custoDoEquipamento,
+  getPropriedade, getEspecial, grupoLabel,
+  CRIA_LABEL, REFEICOES_COZINHEIRO,
+  AFTY_GRAUS, FA_TIPOS_EQUIP, FA_CRIACAO, FA_BONUS_ARMA, FA_RD_ESCUDO,
+  FA_ENCANT_GANHO, FA_IDENTIFICACAO_CD, FA_GRAU_ESPECIAL_EXEMPLO,
+  ENCANTAMENTOS_POR_TIPO, getEncantamento,
+  avaliarRequisitoEncantamento, EQUIP_EFEITO_CANAIS,
+} from "./afty-equipamentos";
 import { validateExpression } from "../../components/fm-dsl";
 import { deriveAfty } from "./afty-derive";
+import {
+  createBlankFeitico, calcularFeiticoDano,
+  NIVEL_LABEL, FEITICO_ACOES, FORMAS_AREA, DANO_SUBTIPOS, REQUISITO_DIFICULDADE,
+  CONDICAO_FORCAS, CONDICOES_CATALOGO, CONDICAO_FORCAS_POR_NIVEL,
+  SANGRAMENTO, notacaoDano,
+} from "./afty-feiticos";
 
 /**
  * ============================================================
@@ -55,8 +72,7 @@ import { deriveAfty } from "./afty-derive";
  *
  * Estado desta base:
  *   • Reais: Identidade, Informações, Cálculos
- *   • Stubs: Habilidades, Especializações, Aptidões, Inventário,
- *            Treinamentos (próximos incrementos)
+ *   • Stubs: Habilidades, Equipamentos (próximos incrementos)
  * ============================================================
  */
 
@@ -67,18 +83,14 @@ const TABS = [
   { id: "especializacoes", label: "Especializações" },
   { id: "aptidoes",      label: "Aptidões" },
   { id: "invocacoes",    label: "Invocações" },
-  { id: "inventario",    label: "Inventário" },
+  { id: "equipamentos",  label: "Equipamentos" },
   { id: "interludios",   label: "Interlúdios" },
   { id: "calculos",      label: "Cálculos", afty: true },
 ];
 
-const STUBS = {
-  // ⚠ A aba Habilidades é de AÇÕES & CARACTERÍSTICAS. As Habilidades de
-  // ESPECIALIZAÇÃO não moram aqui: elas ficam na aba Especializações, junto
-  // dos chips (autor, 2026-07-17). Os nomes são parecidos, as abas não.
-  habilidades: "Ações & Características (padrão do jogador). Edição detalhada nos próximos incrementos.",
-  inventario: "Itens, equipar, espaços e consumíveis.",
-};
+// A aba Habilidades agora é REAL (Feitiços / Estilo das Sombras / Habilidades
+// Marciais, conforme a origem). Nenhuma aba está em stub por ora.
+const STUBS = {};
 
 export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel }) {
   const [draft, setDraft] = useState(() => {
@@ -183,6 +195,29 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
       return { ...d, escolhasHabilidade: { ...mapa, [habId]: proxima } };
     });
 
+  // Feitiços: entradas CRIADAS pelo jogador. add/remove/patch simples.
+  // O motor (afty-feiticos.js) computa dano/alcance/custo/CD por entrada.
+  const addFeitico = () =>
+    setDraft((d) => ({ ...d, feiticos: [...(Array.isArray(d.feiticos) ? d.feiticos : []), createBlankFeitico()] }));
+  const removeFeitico = (id) =>
+    setDraft((d) => ({ ...d, feiticos: (Array.isArray(d.feiticos) ? d.feiticos : []).filter((f) => f.id !== id) }));
+  const patchFeitico = (id, partial) =>
+    setDraft((d) => ({
+      ...d,
+      feiticos: (Array.isArray(d.feiticos) ? d.feiticos : []).map((f) => (f.id === id ? { ...f, ...partial } : f)),
+    }));
+  const duplicarFeitico = (id) =>
+    setDraft((d) => {
+      const lista = Array.isArray(d.feiticos) ? d.feiticos : [];
+      const orig = lista.find((f) => f.id === id);
+      if (!orig) return d;
+      const copia = { ...orig, id: createBlankFeitico().id, nome: orig.nome ? `${orig.nome} (cópia)` : "" };
+      const i = lista.findIndex((f) => f.id === id);
+      const next = [...lista];
+      next.splice(i + 1, 0, copia);
+      return { ...d, feiticos: next };
+    });
+
   // Alto Nível (21+) · Melhoria Superior. A ficha guarda uma lista COM
   // repetição (cada entrada é uma escolha), então definir "vezes" é reescrever
   // as entradas daquele id. Quem apara no maxVezes é o resolver.
@@ -259,6 +294,48 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
   // Invocações: cada uma é uma ficha própria em creature.invocacoes. O motor
   // (deriveAfty) resolve os stats lendo o dono. Aqui só editamos as escolhas.
   const invocacoesArr = (d) => (Array.isArray(d.invocacoes) ? d.invocacoes : []);
+  /* ---------- Equipamentos ---------- */
+  // Uma entrada por linha do inventário. Equipar não é exclusivo (dá para
+  // carregar duas armas equipadas), com uma exceção: o livro só deixa vestir
+  // um uniforme, então equipar um desequipa o outro.
+  const equipArr = (d) => (Array.isArray(d.equipamentos?.itens) ? d.equipamentos.itens : []);
+  const setEquipArr = (d, itens) => ({ ...d, equipamentos: { ...(d.equipamentos || {}), itens } });
+
+  const addEquipamento = (tipo, refId) =>
+    setDraft((d) => setEquipArr(d, [...equipArr(d), novaEntradaEquip(tipo, refId)]));
+  const removeEquipamento = (uid) =>
+    setDraft((d) => setEquipArr(d, equipArr(d).filter((x) => x.uid !== uid)));
+  const patchEquipamento = (uid, partial) =>
+    setDraft((d) => {
+      const alvo = equipArr(d).find((x) => x.uid === uid);
+      const vestindoUniforme = alvo?.tipo === "uniforme" && partial.equipado === true;
+      return setEquipArr(d, equipArr(d).map((x) => {
+        if (x.uid === uid) return { ...x, ...partial };
+        // Só um uniforme vestido por vez.
+        if (vestindoUniforme && x.tipo === "uniforme") return { ...x, equipado: false };
+        return x;
+      }));
+    });
+
+  // Ferramenta Amaldiçoada: liga/desliga o campo `fa` de uma entrada. Só armas,
+  // escudos e uniformes podem virar ferramenta. Desligar remove o campo inteiro.
+  const toggleFerramenta = (uid) =>
+    setDraft((d) => setEquipArr(d, equipArr(d).map((x) => {
+      if (x.uid !== uid) return x;
+      if (x.fa) { const resto = { ...x }; delete resto.fa; return resto; }
+      return { ...x, fa: { grau: "quarto", encantamentos: [], habilidadeUnica: "" } };
+    })));
+  const patchFerramenta = (uid, faPartial) =>
+    setDraft((d) => setEquipArr(d, equipArr(d).map((x) =>
+      x.uid === uid && x.fa ? { ...x, fa: { ...x.fa, ...faPartial } } : x)));
+  const toggleEncantamento = (uid, encId) =>
+    setDraft((d) => setEquipArr(d, equipArr(d).map((x) => {
+      if (x.uid !== uid || !x.fa) return x;
+      const atuais = Array.isArray(x.fa.encantamentos) ? x.fa.encantamentos : [];
+      const enc = atuais.includes(encId) ? atuais.filter((y) => y !== encId) : [...atuais, encId];
+      return { ...x, fa: { ...x.fa, encantamentos: enc } };
+    })));
+
   const addInvocacao = (grau) =>
     setDraft((d) => ({ ...d, invocacoes: [...invocacoesArr(d), createBlankInvocacao(grau)] }));
   const removeInvocacao = (id) =>
@@ -419,9 +496,11 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
         <div className="lg:col-span-2 space-y-4">
           {tab === "identidade" && <TabIdentidade draft={draft} patch={patch} patchCore={patchCore} setOrigemBonus={setOrigemBonus} setOrigemId={setOrigemId} />}
           {tab === "informacoes" && <TabInformacoes draft={draft} derived={derived} patch={patch} patchCore={patchCore} patchAttr={patchAttr} patchNivel={patchNivel} />}
+          {tab === "habilidades" && <TabHabilidades draft={draft} derived={derived} patchCore={patchCore} addFeitico={addFeitico} removeFeitico={removeFeitico} patchFeitico={patchFeitico} duplicarFeitico={duplicarFeitico} />}
           {tab === "especializacoes" && <TabEspecializacoes draft={draft} derived={derived} setEspecializacoes={setEspecializacoes} toggleHabilidade={toggleHabilidade} toggleEscolhaHabilidade={toggleEscolhaHabilidade} toggleTalento={toggleTalento} setMelhoriaVezes={setMelhoriaVezes} toggleLendaria={toggleLendaria} toggleEscolhaAltoNivel={toggleEscolhaAltoNivel} />}
           {tab === "aptidoes" && <TabAptidoes draft={draft} derived={derived} setAptidaoNivel={setAptidaoNivel} toggleAptidao={toggleAptidao} />}
           {tab === "invocacoes" && <TabInvocacoes draft={draft} derived={derived} addInvocacao={addInvocacao} removeInvocacao={removeInvocacao} duplicarInvocacao={duplicarInvocacao} moverInvocacao={moverInvocacao} patchInvocacao={patchInvocacao} patchInvocacaoAttr={patchInvocacaoAttr} efeitosApi={efeitosApi} addHorda={addHorda} removeHorda={removeHorda} patchHorda={patchHorda} />}
+          {tab === "equipamentos" && <TabEquipamentos derived={derived} addEquipamento={addEquipamento} removeEquipamento={removeEquipamento} patchEquipamento={patchEquipamento} toggleFerramenta={toggleFerramenta} patchFerramenta={patchFerramenta} toggleEncantamento={toggleEncantamento} />}
           {tab === "interludios" && <TabInterludios draft={draft} derived={derived} setTreinoProgresso={setTreinoProgresso} setTreinoInstance={setTreinoInstance} />}
           {tab === "calculos" && <TabCalculos derived={derived} setStatOverride={setStatOverride} />}
           {STUBS[tab] && <StubCard title={TABS.find((t) => t.id === tab)?.label} text={STUBS[tab]} />}
@@ -438,8 +517,13 @@ function Card({ title, children, headerRight }) {
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-xl">
       <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-800">
-        <Sparkles className="w-4 h-4 text-purple-400 flex-shrink-0" />
-        <h2 className="text-sm font-semibold text-white">{title}</h2>
+        {/* Ícone DENTRO do h2 (mesmo padrão do builder 2.5.2): como irmão do
+            título ele se alinhava contra a altura da barra inteira, e não
+            contra a linha do texto, o que deixava ele visivelmente alto. */}
+        <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+          <Sparkles className="w-4 h-4 text-purple-400 flex-shrink-0" />
+          {title}
+        </h2>
         {headerRight && <div className="ml-auto flex-shrink-0">{headerRight}</div>}
       </div>
       <div className="p-4">{children}</div>
@@ -457,6 +541,594 @@ function StubCard({ title, text }) {
         </div>
       </div>
     </Card>
+  );
+}
+
+/* ============================================================ */
+/* Aba: Habilidades (Feitiços / Estilo das Sombras / Marciais)  */
+/* ============================================================ */
+/* A aba mostra UM subsistema por vez, escolhido pela ORIGEM, nunca
+   combinados (autor, 2026-07): origem comum = Feitiços, Sem Técnica =
+   Estilo das Sombras no lugar dos Feitiços, Restringido = Habilidades
+   Marciais no lugar dos Feitiços. Feitiços são CRIADOS pelo jogador
+   (não é catálogo): o motor em afty-feiticos.js computa cada um. */
+
+const TIPO_FEITICO = [
+  { value: "dano",     label: "Dano" },
+  { value: "auxiliar", label: "Auxiliar" },
+  { value: "curativo", label: "Curativo" },
+  { value: "especial", label: "Especial" },
+  { value: "passivo",  label: "Passivo" },
+];
+const TIPO_FEITICO_LABEL = Object.fromEntries(TIPO_FEITICO.map((t) => [t.value, t.label]));
+const TIPO_IMPLEMENTADO = new Set(["dano"]);
+
+function TabHabilidades({ draft, derived, patchCore, addFeitico, removeFeitico, patchFeitico, duplicarFeitico }) {
+  const origem = draft.core.origem?.id;
+  if (origem === "sem_tecnica") return <SubsistemaPendente titulo="Estilo das Sombras" origem="Sem Técnica" />;
+  if (origem === "restringido") return <SubsistemaPendente titulo="Habilidades Marciais" origem="Restringido" />;
+  return (
+    <>
+      <PerfilAmaldicoadoCard draft={draft} derived={derived} patchCore={patchCore} />
+      <FeiticosCard draft={draft} derived={derived} addFeitico={addFeitico} removeFeitico={removeFeitico} patchFeitico={patchFeitico} duplicarFeitico={duplicarFeitico} />
+    </>
+  );
+}
+
+/* Estilo das Sombras e Habilidades Marciais entram em incrementos futuros. */
+function SubsistemaPendente({ titulo, origem }) {
+  return (
+    <Card title={titulo}>
+      <div className="text-center py-8 border border-dashed border-slate-700 rounded-lg text-sm text-slate-400">
+        A origem <span className="text-slate-200 font-semibold">{origem}</span> usa {titulo} no lugar de Feitiços.
+        <div className="mt-2 inline-block text-[10px] font-bold uppercase tracking-wide text-amber-400 border border-amber-800/60 rounded px-2 py-0.5">
+          próximo incremento
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+/* Perfil Amaldiçoado: o Atributo Principal da Técnica É core.tecnicaAttr
+   (já dirige a CD de Feitiçaria), então reusa esse campo. A Descrição da
+   Técnica (Funcionamento Básico) é texto livre. */
+function PerfilAmaldicoadoCard({ draft, derived, patchCore }) {
+  const attrLabel = AFTY_TECNICA_ATTRS.find((a) => a.value === draft.core.tecnicaAttr)?.label ?? "-";
+  return (
+    <Card title="Perfil Amaldiçoado">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <FieldLabel hint="usado na CD e no dano dos Feitiços">Atributo Principal da Técnica</FieldLabel>
+          <Select
+            value={draft.core.tecnicaAttr}
+            onChange={(v) => patchCore({ tecnicaAttr: v })}
+            options={AFTY_TECNICA_ATTRS}
+          />
+        </div>
+        <div className="flex flex-col justify-end">
+          <div className="bg-slate-950/60 border border-slate-800 rounded p-2.5">
+            <div className="text-[10px] uppercase tracking-wider text-slate-400">CD de Feitiçaria (base)</div>
+            <div className="text-lg font-bold text-white tabular-nums">{derived.feiticos.cdBase}</div>
+            <div className="text-[10px] text-slate-500 mt-0.5">10 + escala do Tipo + mod de {attrLabel} + Maestria</div>
+          </div>
+        </div>
+      </div>
+      <div className="mt-4">
+        <FieldLabel hint="Funcionamento Básico: o que a técnica permite fazer">Descrição da Técnica</FieldLabel>
+        <TextArea
+          value={draft.core.tecnicaDescricao}
+          onChange={(v) => patchCore({ tecnicaDescricao: v })}
+          rows={4}
+          placeholder="Descreva o núcleo da técnica: o que ela faz, seus limites e o que ela concede (equipamentos, elemento, mecânicas próprias...)."
+        />
+      </div>
+    </Card>
+  );
+}
+
+/* Card dos Feitiços: orçamento no cabeçalho + lista de entradas criadas. */
+function FeiticosCard({ draft, derived, addFeitico, removeFeitico, patchFeitico, duplicarFeitico }) {
+  const lista = Array.isArray(draft.feiticos) ? draft.feiticos : [];
+  const { total, gastos, excedeu, nivelMax } = derived.feiticos;
+  const ctx = { nd: derived.nd, cdBase: derived.feiticos.cdBase };
+  return (
+    <Card
+      title="Feitiços"
+      headerRight={
+        <div className="flex items-center gap-2" title="Feitiços criados / orçamento (Variações de Liberação não contam)">
+          <span className={`font-mono text-sm font-bold tabular-nums ${excedeu ? "text-rose-400" : "text-slate-200"}`}>
+            {gastos} / {total}
+          </span>
+          <span className="text-[9px] uppercase tracking-wider text-slate-400">Feitiços</span>
+        </div>
+      }
+    >
+      {lista.length === 0 && (
+        <div className="text-center py-6 border border-dashed border-slate-700 rounded-lg text-sm text-slate-400">
+          Nenhum Feitiço criado ainda.
+        </div>
+      )}
+
+      <div className="space-y-2">
+        {lista.map((f) => (
+          <FeiticoCard
+            key={f.id}
+            feitico={f}
+            ctx={ctx}
+            nivelMax={nivelMax}
+            onPatch={(partial) => patchFeitico(f.id, partial)}
+            onRemove={() => removeFeitico(f.id)}
+            onDuplicate={() => duplicarFeitico(f.id)}
+          />
+        ))}
+      </div>
+
+      <button
+        type="button"
+        onClick={addFeitico}
+        className="mt-3 w-full inline-flex items-center justify-center gap-1.5 text-[12px] font-semibold px-3 py-2 rounded-lg border border-dashed border-slate-700 text-slate-400 hover:text-white hover:border-slate-600 transition-colors focus:outline-none focus:ring-1 focus:ring-purple-500"
+      >
+        <Plus className="w-4 h-4" /> Criar Feitiço
+      </button>
+    </Card>
+  );
+}
+
+/* Uma entrada de Feitiço: cabeçalho recolhível + editor por tipo.
+   Mesmo chrome do InvocacaoCard (o editor complexo já aprovado). */
+function FeiticoCard({ feitico, ctx, nivelMax, onPatch, onRemove, onDuplicate }) {
+  const [open, setOpen] = useState(!feitico.nome);
+  const [confirmDel, setConfirmDel] = useState(false);
+  const calc = feitico.tipo === "dano" ? calcularFeiticoDano(feitico, ctx) : null;
+  const temAviso = calc && calc.avisos.length > 0;
+
+  return (
+    <div className="rounded-lg border border-slate-700/80 bg-slate-950/40">
+      <div className="flex items-center gap-2 px-3 py-2.5">
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          aria-expanded={open}
+          className="flex items-center gap-2 flex-1 min-w-0 text-left"
+        >
+          <ChevronDown className={`w-4 h-4 text-slate-500 flex-shrink-0 transition-transform ${open ? "" : "-rotate-90"}`} aria-hidden="true" />
+          <span className={`text-sm font-semibold truncate ${feitico.nome ? "text-white" : "text-slate-500"}`}>
+            {feitico.nome || "Feitiço sem nome"}
+          </span>
+          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded border border-purple-800/60 bg-purple-950/40 text-purple-300 flex-shrink-0 whitespace-nowrap">
+            {TIPO_FEITICO_LABEL[feitico.tipo]} · {NIVEL_LABEL[feitico.nivel]}
+          </span>
+          {temAviso && <AlertTriangle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" aria-label={`${calc.avisos.length} aviso(s)`} title={calc.avisos.join("\n")} />}
+        </button>
+        {calc && (
+          <span className="hidden sm:flex items-center gap-2 flex-shrink-0 font-mono text-[11px] tabular-nums text-slate-400">
+            <span title="Dano">{calc.dano}</span>
+            <span title="Custo em PE" className="text-purple-300">{calc.custoPE} PE</span>
+          </span>
+        )}
+        {confirmDel ? (
+          <span className="flex items-center gap-1 flex-shrink-0">
+            <span className="text-[10px] text-rose-300">Remover?</span>
+            <button type="button" onClick={onRemove} className="text-rose-400 hover:text-rose-300 p-1 rounded" title="Confirmar" aria-label="Confirmar remoção"><Check className="w-4 h-4" /></button>
+            <button type="button" onClick={() => setConfirmDel(false)} className="text-slate-500 hover:text-white p-1 rounded" title="Cancelar" aria-label="Cancelar"><X className="w-4 h-4" /></button>
+          </span>
+        ) : (
+          <span className="flex items-center flex-shrink-0 text-slate-600">
+            <button type="button" onClick={onDuplicate} className="p-1 rounded hover:text-white" title="Duplicar" aria-label="Duplicar Feitiço"><Copy className="w-3.5 h-3.5" /></button>
+            <button type="button" onClick={() => setConfirmDel(true)} className="p-1 rounded hover:text-rose-300" title="Remover Feitiço" aria-label={`Remover ${feitico.nome || "Feitiço"}`}><X className="w-4 h-4" /></button>
+          </span>
+        )}
+      </div>
+
+      {open && (
+        <div className="px-3 pb-3 space-y-3 border-t border-slate-800 pt-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <FieldLabel>Nome</FieldLabel>
+              <TextInput value={feitico.nome} onChange={(v) => onPatch({ nome: v })} placeholder="Nome do Feitiço" />
+            </div>
+            <div>
+              <FieldLabel>Tipo</FieldLabel>
+              <OptionChips value={feitico.tipo} options={TIPO_FEITICO} onChange={(v) => onPatch({ tipo: v })} />
+            </div>
+          </div>
+
+          <div>
+            <FieldLabel>Nível do Feitiço</FieldLabel>
+            <NivelFeiticoPicker value={feitico.nivel} onChange={(n) => onPatch({ nivel: n })} nivelMax={nivelMax} />
+          </div>
+
+          {TIPO_IMPLEMENTADO.has(feitico.tipo) ? (
+            <FeiticoDanoEditor feitico={feitico} calc={calc} onPatch={onPatch} />
+          ) : (
+            <div className="text-center py-5 border border-dashed border-slate-700 rounded-lg text-sm text-slate-400">
+              Feitiços {TIPO_FEITICO_LABEL[feitico.tipo]} entram num próximo incremento.
+              <div className="mt-2 inline-block text-[10px] font-bold uppercase tracking-wide text-amber-400 border border-amber-800/60 rounded px-2 py-0.5">
+                próximo incremento
+              </div>
+            </div>
+          )}
+
+          <div>
+            <FieldLabel>Descrição</FieldLabel>
+            <TextArea value={feitico.descricao} onChange={(v) => onPatch({ descricao: v })} rows={2} placeholder="O que o Feitiço faz na ficção." />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* Cabeçalho de sub-seção dentro do editor (mesmo padrão das outras abas). */
+function SecaoFeitico({ titulo, children }) {
+  return (
+    <div className="border-t border-slate-800 pt-3">
+      <div className="text-[10px] uppercase tracking-wider text-slate-500 mb-2">{titulo}</div>
+      {children}
+    </div>
+  );
+}
+
+/* Picker segmentado 0..5 do nível do Feitiço (medidor, não campo numérico). */
+function NivelFeiticoPicker({ value, onChange, nivelMax }) {
+  return (
+    <div className="flex gap-1.5" role="group" aria-label="Nível do Feitiço">
+      {[0, 1, 2, 3, 4, 5].map((n) => {
+        const on = n === value;
+        const off = n > nivelMax && !on;
+        return (
+          <button
+            key={n}
+            type="button"
+            onClick={() => !off && onChange(n)}
+            disabled={off}
+            aria-pressed={on}
+            title={off ? `Inacessível no ND atual (máximo ${NIVEL_LABEL[nivelMax]})` : NIVEL_LABEL[n]}
+            className={`grow py-1.5 rounded-lg text-sm font-bold tabular-nums border transition-colors focus:outline-none focus:ring-1 focus:ring-purple-500 ${
+              on
+                ? "bg-purple-700 border-purple-600 text-white"
+                : off
+                  ? "border-slate-800 text-slate-700 cursor-not-allowed"
+                  : "border-slate-700 text-slate-300 hover:text-white hover:border-slate-600"
+            }`}
+          >
+            {n}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/* Stepper de delta (troca): valor com sinal, passo configurável. Mesmo
+   chrome dos botões do NumberInput do app (w-9 h-9, slate-800/700). */
+function DeltaStepper({ value, step, min, max, unit = "", onChange }) {
+  const round2 = (x) => Math.round(x * 100) / 100;
+  const dec = () => onChange(round2(Math.max(min ?? -Infinity, value - step)));
+  const inc = () => onChange(round2(Math.min(max ?? Infinity, value + step)));
+  const txt = `${value > 0 ? "+" : ""}${value}${unit}`;
+  const btn = "w-8 h-8 flex items-center justify-center text-base font-bold text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 disabled:opacity-30 focus:outline-none focus:z-10 focus:ring-1 focus:ring-purple-500";
+  return (
+    <div className="inline-flex items-center">
+      <button type="button" onClick={dec} disabled={min != null && value <= min} className={`${btn} rounded-l`} aria-label="Diminuir">−</button>
+      <span className={`w-16 h-8 flex items-center justify-center border-y border-slate-700 bg-slate-950 font-mono text-xs tabular-nums ${value === 0 ? "text-slate-500" : "text-purple-200"}`}>{txt}</span>
+      <button type="button" onClick={inc} disabled={max != null && value >= max} className={`${btn} rounded-r`} aria-label="Aumentar">+</button>
+    </div>
+  );
+}
+
+/* Editor completo de um Feitiço de Dano, com cálculo ao vivo. */
+function FeiticoDanoEditor({ feitico, calc, onPatch }) {
+  const f = feitico;
+  const nNum = f.nivel === "max" ? 6 : f.nivel;
+  const multiplos = f.subtipo === "multiplos";
+  const cataclismico = f.subtipo === "cataclismico";
+  // Destrutivo e Cataclísmico são sempre área + Ritual Estendido (autor).
+  const areaObrigatoria = f.subtipo === "destrutivo" || cataclismico;
+  const emArea = f.alvo === "area" || areaObrigatoria;
+  const setTroca = (chave, v) => onPatch({ trocas: { ...f.trocas, [chave]: v } });
+  const limDados = 1 + nNum;
+  const limAcerto = 2 * nNum;
+  const limCd = 1 + nNum;
+
+  return (
+    <div className="rounded-lg border border-slate-800 bg-slate-950/30 p-3 space-y-3">
+      {/* Perfil */}
+      <div className="space-y-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
+          <div>
+            <FieldLabel>Resolução</FieldLabel>
+            <OptionChips
+              value={emArea && !multiplos ? "tr" : f.resolucao}
+              onChange={(v) => onPatch({ resolucao: v })}
+              options={[
+                { value: "tr", label: "Resistência" },
+                { value: "ataque", label: "Ataque" },
+              ]}
+              disabledValues={emArea && !multiplos ? ["ataque"] : []}
+            />
+          </div>
+          <div>
+            <FieldLabel>Alvo</FieldLabel>
+            <OptionChips
+              value={emArea ? "area" : f.alvo}
+              onChange={(v) => onPatch({ alvo: v, ...(v === "area" && !multiplos ? { resolucao: "tr" } : {}) })}
+              options={[
+                { value: "unico", label: "Alvo único", lockTitle: "Destrutivo e Cataclísmico são sempre em área" },
+                { value: "area", label: "Área", lockTitle: "Múltiplos Disparos não podem ser em área" },
+              ]}
+              disabledValues={[...(areaObrigatoria ? ["unico"] : []), ...(multiplos ? ["area"] : [])]}
+            />
+          </div>
+        </div>
+
+        <div>
+          <FieldLabel>Conjuração (ação)</FieldLabel>
+          <OptionChips
+            value={areaObrigatoria ? "ritual" : f.acao}
+            onChange={(v) => !areaObrigatoria && onPatch({ acao: v })}
+            options={FEITICO_ACOES}
+            disabledValues={areaObrigatoria ? FEITICO_ACOES.filter((a) => a.value !== "ritual").map((a) => a.value) : []}
+          />
+        </div>
+
+        <div>
+          <FieldLabel>Subtipo</FieldLabel>
+          <OptionChips
+            value={f.subtipo}
+            onChange={(v) => onPatch(v === "destrutivo" || v === "cataclismico"
+              ? { subtipo: v, alvo: "area", acao: "ritual", resolucao: "tr" }
+              : { subtipo: v })}
+            options={DANO_SUBTIPOS}
+          />
+        </div>
+
+        {emArea && !cataclismico && (
+          <div>
+            <FieldLabel>Forma da área</FieldLabel>
+            <OptionChips value={f.formaArea} onChange={(v) => onPatch({ formaArea: v })} options={FORMAS_AREA} />
+          </div>
+        )}
+
+        {/* Campos condicionais de subtipo */}
+        {multiplos && (
+          <div>
+            <FieldLabel>Disparos</FieldLabel>
+            <NivelSegmentos value={f.disparos} min={1} max={nNum + 1} onChange={(v) => onPatch({ disparos: v })} />
+          </div>
+        )}
+        {f.subtipo === "continuo" && (
+          <div>
+            <FieldLabel>Modo do dano contínuo</FieldLabel>
+            <OptionChips
+              value={f.continuoModo}
+              onChange={(v) => onPatch({ continuoModo: v })}
+              options={[
+                { value: "sustentado", label: `Sustentado (${nNum} PE/rodada)` },
+                { value: "concentrado", label: "Concentrado" },
+              ]}
+            />
+          </div>
+        )}
+        {f.subtipo === "destrutivo" && (
+          <div className="flex flex-wrap gap-1.5">
+            <BoolChip ativo={f.ignorarResistencias} onToggle={() => onPatch({ ignorarResistencias: !f.ignorarResistencias })}>Ignorar Resistências (−4d)</BoolChip>
+            <BoolChip ativo={f.morteDireta} onToggle={() => onPatch({ morteDireta: !f.morteDireta })}>Morte Direta (−2d)</BoolChip>
+          </div>
+        )}
+      </div>
+
+      {/* Trocas */}
+      <SecaoFeitico titulo="Trocas · 1 dado = 2 acerto = 6m = 1,5m² = 1 CD">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
+          <TrocaLinha rotulo="Dados de dano"><DeltaStepper value={f.trocas.dados} step={1} min={-limDados} max={limDados} onChange={(v) => setTroca("dados", v)} /></TrocaLinha>
+          {f.resolucao === "ataque" && !multiplos && (
+            <TrocaLinha rotulo="Acerto"><DeltaStepper value={f.trocas.acerto} step={1} min={-limAcerto} max={limAcerto} onChange={(v) => setTroca("acerto", v)} /></TrocaLinha>
+          )}
+          <TrocaLinha rotulo="CD"><DeltaStepper value={f.trocas.cd} step={1} min={-limCd} max={limCd} onChange={(v) => setTroca("cd", v)} /></TrocaLinha>
+          <TrocaLinha rotulo="Alcance"><DeltaStepper value={f.trocas.alcance} step={6} unit="m" onChange={(v) => setTroca("alcance", v)} /></TrocaLinha>
+          {emArea && !areaObrigatoria && (
+            <TrocaLinha rotulo="Área"><DeltaStepper value={f.trocas.area} step={["linha", "cone"].includes(f.formaArea) ? 4.5 : 1.5} unit="m" onChange={(v) => setTroca("area", v)} /></TrocaLinha>
+          )}
+          <TrocaLinha rotulo="Empurrão (Gasta Dados)"><DeltaStepper value={f.trocas.empurraoDados} step={1} min={0} onChange={(v) => setTroca("empurraoDados", v)} /></TrocaLinha>
+        </div>
+      </SecaoFeitico>
+
+      {/* Condições e sangramento */}
+      <SecaoFeitico titulo="Condições">
+        <CondicaoEditor feitico={f} onPatch={onPatch} />
+      </SecaoFeitico>
+
+      {/* Requisito */}
+      <SecaoFeitico titulo="Requisito">
+        <OptionChips
+          value={f.requisito || "nenhum"}
+          onChange={(v) => onPatch({ requisito: v === "nenhum" ? null : v })}
+          options={[{ value: "nenhum", label: "Nenhum" }, ...REQUISITO_DIFICULDADE.map((r) => ({ value: r.value, label: `${r.label} (+${r.dados}d)` }))]}
+        />
+      </SecaoFeitico>
+
+      {/* Resultado ao vivo */}
+      {calc && <ResultadoFeitico calc={calc} feitico={f} />}
+    </div>
+  );
+}
+
+/* Medidor segmentado min..max (mesma linguagem do NivelPicker). */
+function NivelSegmentos({ value, min, max, onChange }) {
+  const nums = [];
+  for (let n = min; n <= max; n += 1) nums.push(n);
+  return (
+    <div className="flex gap-1.5" role="group" aria-label="Quantidade">
+      {nums.map((n) => {
+        const on = n === value;
+        return (
+          <button
+            key={n}
+            type="button"
+            onClick={() => onChange(n)}
+            aria-pressed={on}
+            className={`grow py-1.5 rounded-lg text-sm font-bold tabular-nums border transition-colors focus:outline-none focus:ring-1 focus:ring-purple-500 ${
+              on ? "bg-purple-700 border-purple-600 text-white" : "border-slate-700 text-slate-300 hover:text-white hover:border-slate-600"
+            }`}
+          >
+            {n}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function TrocaLinha({ rotulo, children }) {
+  return (
+    <div className="flex items-center justify-between gap-2">
+      <span className="text-[11px] text-slate-400">{rotulo}</span>
+      {children}
+    </div>
+  );
+}
+
+/* Anexar condições ao Feitiço (reduzem dados) + sangramento variável. */
+function CondicaoEditor({ feitico, onPatch }) {
+  const f = feitico;
+  const permitidas = f.focoCondicao
+    ? CONDICAO_FORCAS.map((c) => c.value)
+    : (CONDICAO_FORCAS_POR_NIVEL[f.nivel] || []);
+  const [forca, setForca] = useState(permitidas[0] || "fraca");
+  const catalogo = (CONDICOES_CATALOGO[forca] || []).filter((n) => n !== "Sangramento");
+  const [nome, setNome] = useState(catalogo[0] || "");
+
+  const forcaAtual = permitidas.includes(forca) ? forca : (permitidas[0] || "fraca");
+  const opcoesNome = (CONDICOES_CATALOGO[forcaAtual] || []).filter((n) => n !== "Sangramento");
+
+  const adicionar = () => {
+    const alvo = nome && opcoesNome.includes(nome) ? nome : opcoesNome[0];
+    if (!alvo) return;
+    onPatch({ condicoes: [...(f.condicoes || []), { nome: alvo, forca: forcaAtual }] });
+  };
+  const remover = (i) => onPatch({ condicoes: (f.condicoes || []).filter((_, j) => j !== i) });
+
+  const redLabel = { fraca: "−1d", media: "−3d", forte: "−5d", extrema: "−8d" };
+  const maxCond = f.nivel === "max" ? 6 : f.nivel;
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <span className="text-[11px] text-slate-500">Máximo {maxCond} no {NIVEL_LABEL[f.nivel]}</span>
+        <BoolChip ativo={f.focoCondicao} onToggle={() => onPatch({ focoCondicao: !f.focoCondicao })}>Somente Condição</BoolChip>
+      </div>
+
+      {permitidas.length === 0 ? (
+        <p className="text-[11px] text-slate-500">Nível 0 não aplica condições.</p>
+      ) : (
+        <div className="space-y-2">
+          <OptionChips
+            value={forcaAtual}
+            onChange={(v) => { setForca(v); const first = (CONDICOES_CATALOGO[v] || []).filter((n) => n !== "Sangramento")[0]; setNome(first || ""); }}
+            options={CONDICAO_FORCAS.filter((c) => permitidas.includes(c.value)).map((c) => ({ value: c.value, label: `${c.label} ${redLabel[c.value]}` }))}
+          />
+          <div className="flex items-end gap-2">
+            <div className="flex-1 min-w-0">
+              <Select value={nome} onChange={setNome} options={opcoesNome.map((n) => ({ value: n, label: n }))} />
+            </div>
+            <SmallButtonLocal onClick={adicionar}>Adicionar</SmallButtonLocal>
+          </div>
+        </div>
+      )}
+
+      {(f.condicoes || []).length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {f.condicoes.map((c, i) => (
+            <span key={i} className="inline-flex items-center gap-1 px-2 py-0.5 rounded border text-xs bg-purple-950/40 text-purple-200 border-purple-900/70">
+              {c.nome} <span className="text-purple-400/70">{redLabel[c.forca]}</span>
+              <button type="button" onClick={() => remover(i)} className="ml-0.5 opacity-60 hover:opacity-100" aria-label={`Remover ${c.nome}`}>×</button>
+            </span>
+          ))}
+        </div>
+      )}
+
+      <div>
+        <div className="text-[10px] uppercase tracking-wider text-slate-500 mb-1.5">Sangramento</div>
+        <OptionChips
+          value={f.sangramento || "nenhum"}
+          onChange={(v) => onPatch({ sangramento: v === "nenhum" ? null : v })}
+          options={[
+            { value: "nenhum", label: "Nenhum" },
+            ...Object.entries(SANGRAMENTO).map(([k, [q, t]]) => ({ value: k, label: `${k[0].toUpperCase()}${k.slice(1)} ${notacaoDano(q, t)}` })),
+          ]}
+        />
+      </div>
+    </div>
+  );
+}
+
+function SmallButtonLocal({ children, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="inline-flex items-center gap-1 px-3 h-9 rounded border text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700 focus:outline-none focus:ring-1 focus:ring-purple-500"
+    >
+      <Plus className="w-3.5 h-3.5" /> {children}
+    </button>
+  );
+}
+
+/* Painel de resultado computado do Feitiço. Mesmo bloco de stats da Invocação
+   (StatMini em grid + notas embaixo). */
+function ResultadoFeitico({ calc, feitico }) {
+  const ehArea = feitico.subtipo === "destrutivo" || feitico.subtipo === "cataclismico" || feitico.alvo === "area";
+  const tiles = [
+    { label: "Dano", value: calc.dano, icon: Zap, accent: true },
+    { label: "Média", value: calc.media != null ? calc.media : "-" },
+    { label: "Custo", value: calc.custoPE != null ? `${calc.custoPE} PE` : "-" },
+    { label: "CD", value: calc.cd ?? "-", icon: Shield },
+    { label: "Alcance", value: calc.alcance != null ? `${calc.alcance} m` : "-", icon: Footprints },
+  ];
+  if (ehArea) {
+    tiles.push({ label: "Área", value: calc.detalhes?.areaMapa ? "Mapa" : (calc.area != null ? `${calc.area} m ${calc.forma || ""}`.trim() : "-") });
+  }
+  if (feitico.resolucao === "ataque" && !ehArea && calc.acertoDelta) tiles.push({ label: "Acerto", value: `${calc.acertoDelta > 0 ? "+" : ""}${calc.acertoDelta}` });
+  if (calc.empurraoMetros) tiles.push({ label: "Empurrão", value: `${calc.empurraoMetros} m` });
+
+  return (
+    <div className="rounded-lg border border-slate-800 bg-slate-950/60 p-3 space-y-2.5">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+        {tiles.map((t) => (
+          <StatMini key={t.label} label={t.label} value={t.value} accent={t.accent} icon={t.icon} />
+        ))}
+      </div>
+
+      <div className={`text-[11px] font-mono ${calc.saldoTrocas < 0 ? "text-rose-400" : "text-purple-300"}`}>
+        Saldo de Trocas: {calc.saldoTrocas > 0 ? "+" : ""}{calc.saldoTrocas}
+      </div>
+
+      {calc.contInicial && (
+        <div className="text-[11px] text-slate-300 font-mono border-t border-slate-800 pt-2">
+          Golpe {calc.contInicial}, depois {calc.contPorRodada} por rodada
+          {calc.detalhes.continuo?.custoSustentacao ? ` (sustentação ${calc.detalhes.continuo.custoSustentacao} PE/rodada)` : ""}
+        </div>
+      )}
+      {calc.disparos && (
+        <div className="text-[11px] text-slate-300 font-mono border-t border-slate-800 pt-2">
+          {calc.disparos.disparos} disparos de {notacaoDano(calc.disparos.porDisparo, calc.tipoDado)}, ou {notacaoDano(calc.disparos.concentradoTotal, calc.tipoDado)} concentrado num alvo
+        </div>
+      )}
+      {feitico.subtipo === "cataclismico" && (
+        <div className="text-[11px] text-amber-300/80 border-t border-slate-800 pt-2">Área vira o mapa inteiro, ignora Resistências e RD, 1/3 do dano vira perda de vida no usuário. Não pode ser modificado.</div>
+      )}
+
+      {calc.avisos.length > 0 && (
+        <ul className="space-y-0.5 border-t border-slate-800 pt-2">
+          {calc.avisos.map((a, i) => (
+            <li key={i} className="text-[11px] text-amber-400 flex items-start gap-1">
+              <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" /> {a}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
 
@@ -974,21 +1646,6 @@ function TabInformacoes({ draft, derived, patch, patchCore, patchAttr, patchNive
 
       <AttributesCard draft={draft} derived={derived} patch={patch} patchCore={patchCore} patchAttr={patchAttr} patchNivel={patchNivel} />
 
-      <Card title="Grau de Item Equipado">
-        <p className="text-xs text-slate-400 mb-3">
-          Temporário — virá da aba Inventário. O grau entra em Defesa e RD.
-        </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <FieldLabel hint="bônus de Defesa">Grau (Defesa)</FieldLabel>
-            <Select value={draft.inventario.defesaGrau} onChange={(v) => patch({ inventario: { ...draft.inventario, defesaGrau: v } })} options={AFTY_GRAUS_ITEM} />
-          </div>
-          <div>
-            <FieldLabel hint="bônus de RD">Grau (RD)</FieldLabel>
-            <Select value={draft.inventario.rdGrau} onChange={(v) => patch({ inventario: { ...draft.inventario, rdGrau: v } })} options={AFTY_GRAUS_ITEM} />
-          </div>
-        </div>
-      </Card>
     </>
   );
 }
@@ -2630,6 +3287,1055 @@ function TabAptidoes({ draft, derived, setAptidaoNivel, toggleAptidao }) {
         )}
       </Card>
     </>
+  );
+}
+
+/* ============================================================ */
+/* Aba: Equipamentos                                            */
+/* ============================================================ */
+/* Espaços de item e carregamento em cima (é o que limita), depois o
+   orçamento por grau (INDICATIVO, não trava nada), o que o equipado
+   está fazendo com a ficha, o que está carregado e o catálogo. */
+
+/** "0,5" em vez de "0.5". Consumível ocupa meio espaço. */
+const fmtEspacos = (n) => String(n).replace(".", ",");
+
+const abrevDano = (t) => (t ? t.charAt(0).toUpperCase() + t.slice(1) : "");
+
+function fmtDano(dano) {
+  if (!dano) return "Sem dano";
+  if (dano.desarmado) return "Desarmado";
+  if (Array.isArray(dano.dados)) {
+    return dano.dados.map((d) => `${d.dado} ${abrevDano(d.tipo)}`).join(" + ");
+  }
+  const base = dano.duasMaos ? `${dano.dado}/${dano.duasMaos}` : dano.dado;
+  return `${base} ${abrevDano(dano.tipo)}`.trim();
+}
+
+/** Propriedades da arma como texto legível, com o parâmetro embutido. */
+function fmtProps(props) {
+  return Object.entries(props ?? {}).map(([id, val]) => {
+    const p = getPropriedade(id);
+    const nome = p?.nome ?? id;
+    if (val === true) return nome;
+    switch (p?.param) {
+      case "alcance": return `${nome} [${val[0]}/${val[1]}m]`;
+      case "numero":  return `${nome} [${val}]`;
+      case "dado":    return `${nome} ${val}`;
+      case "tipo":    return `${nome} ${abrevDano(val)}`;
+      default:        return `${nome} ${val}`;
+    }
+  });
+}
+
+/** Barra de carregamento. O teto duro (dobro do limite) fica marcado. */
+function CargaBarra({ carga }) {
+  const { espacosUsados, cargaLimite, cargaMaxima, sobrecarregado, acimaDoMaximo } = carga;
+  // A barra vai até o teto duro, com o limite normal marcado no meio.
+  const pct = cargaMaxima > 0 ? Math.min(100, (espacosUsados / cargaMaxima) * 100) : 0;
+  const cor = acimaDoMaximo ? "bg-rose-600" : sobrecarregado ? "bg-amber-500" : "bg-purple-600";
+  return (
+    <div>
+      <div className="relative h-3 bg-slate-950 border border-slate-800 rounded overflow-hidden">
+        <div className={`h-full transition-all ${cor}`} style={{ width: `${pct}%` }} />
+        <div className="absolute inset-y-0 left-1/2 w-px bg-slate-500" title={`Limite sem sobrecarga: ${cargaLimite}`} />
+      </div>
+      <div className="flex justify-between text-[10px] text-slate-500 mt-1 font-mono">
+        <span>0</span>
+        <span title="Limite sem sobrecarga">{cargaLimite}</span>
+        <span title="Teto absoluto (dobro do limite)">{cargaMaxima}</span>
+      </div>
+    </div>
+  );
+}
+
+/* Uma linha do catálogo de Encantamentos, dentro do editor de Ferramenta.
+   Recolhida como as demais: toggle para escolher, chevron para ler a regra.
+   Os pré-requisitos vão como TEXTO (RequisitoLista), igual em Aptidões e
+   Especializações: roxo + cadeado quando falta, cinza quando atendido. */
+function EncantamentoLinha({ enc, selecionado, reqs, onToggle }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className={`rounded-lg border ${
+      selecionado ? "border-purple-700 bg-purple-950/30" : "border-slate-800 bg-slate-950/40"
+    }`}>
+      <div className="flex items-center gap-2.5 px-2.5 h-8">
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-pressed={selecionado}
+          title={selecionado ? "Remover encantamento" : "Adicionar encantamento"}
+          className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 border transition-colors ${
+            selecionado
+              ? "bg-purple-700 border-purple-600 text-white"
+              : "border-slate-600 text-slate-500 hover:border-purple-600 hover:text-purple-300"
+          }`}
+        >
+          {selecionado ? <Check className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          aria-expanded={open}
+          className="flex-1 min-w-0 flex items-center gap-x-2 text-left overflow-hidden"
+        >
+          <span className="text-[12px] font-semibold text-slate-100 truncate" title={enc.nome}>{enc.nome}</span>
+          {enc.usaCargas && (
+            <span className="text-[10px] font-medium text-sky-300 flex-shrink-0" title="Gasta Cargas de Encantamento">
+              Cargas
+            </span>
+          )}
+          <RequisitoLista reqs={reqs} />
+        </button>
+
+        <ChevronDown
+          className={`w-3.5 h-3.5 text-slate-600 flex-shrink-0 transition-transform ${open ? "" : "-rotate-90"}`}
+          aria-hidden="true"
+        />
+      </div>
+      {open && (
+        <p className="px-2.5 pb-2.5 pt-0.5 text-[11px] text-slate-400 leading-relaxed border-t border-slate-800/80">
+          {enc.preReq && (
+            <span className="block text-[10px] text-purple-300 mb-1">Pré-Requisito: {enc.preReq}</span>
+          )}
+          {enc.descricao}
+        </p>
+      )}
+    </div>
+  );
+}
+
+/* Seção recolhível dentro do editor de Ferramenta: cabeçalho clicável com um
+   resumo à direita, corpo escondido por padrão. Mesmo padrão de recolher do app. */
+function SecaoRecolhivel({ titulo, resumo, defaultOpen = false, children }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="rounded-lg border border-slate-800 bg-slate-950/30">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        className="w-full flex items-center gap-2 px-2.5 h-8 text-left"
+      >
+        <span className="text-[10px] uppercase tracking-wider text-slate-400 flex-shrink-0">{titulo}</span>
+        <span className="flex-1 min-w-0 text-right text-[11px] text-slate-300 truncate">{resumo}</span>
+        <ChevronDown
+          className={`w-3.5 h-3.5 text-slate-600 flex-shrink-0 transition-transform ${open ? "" : "-rotate-90"}`}
+          aria-hidden="true"
+        />
+      </button>
+      {open && <div className="px-2.5 pb-2.5 pt-0.5 border-t border-slate-800/80">{children}</div>}
+    </div>
+  );
+}
+
+/* Motor de Automação da Habilidade Única: lista de efeitos {canal, expr} que o
+   jogador programa. `efeitos` chega RESOLVIDO (com valor e ok), a edição devolve
+   só {canal, expr}. Aplicado enquanto a Ferramenta está equipada. */
+function MotorEfeitosEditor({ efeitos, onChange }) {
+  const bruto = () => efeitos.map((e) => ({ canal: e.canal, expr: e.expr }));
+  const add = () => onChange([...bruto(), { canal: "defesa", expr: "" }]);
+  const remove = (i) => onChange(bruto().filter((_, idx) => idx !== i));
+  const patch = (i, partial) => onChange(bruto().map((e, idx) => (idx === i ? { ...e, ...partial } : e)));
+  return (
+    <div className="space-y-1.5">
+      <FieldLabel hint="opcional: bt, nd, grau, mod_forca, forca, piso(x), max(a,b)...">
+        Motor de Automação (efeitos enquanto equipada)
+      </FieldLabel>
+      {efeitos.map((ef, i) => {
+        const chk = validateExpression(ef.expr || "");
+        return (
+          <div key={i} className="flex items-start gap-2">
+            <div className="w-32 flex-shrink-0">
+              <Select
+                value={ef.canal}
+                onChange={(v) => patch(i, { canal: v })}
+                options={EQUIP_EFEITO_CANAIS.map((c) => ({ value: c.value, label: c.label }))}
+              />
+            </div>
+            <div className="flex-1 min-w-0">
+              <TextInput value={ef.expr} onChange={(v) => patch(i, { expr: v })} placeholder="ex.: 2 + piso(bt / 2)" />
+              {ef.expr && (
+                chk.ok
+                  ? <p className="text-[10px] text-emerald-400 mt-0.5">= {ef.valor ?? 0}</p>
+                  : <p className="text-[10px] text-rose-400 mt-0.5">{chk.error}</p>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => remove(i)}
+              className="text-slate-600 hover:text-rose-300 p-1 rounded flex-shrink-0"
+              aria-label="Remover efeito"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        );
+      })}
+      <button
+        type="button"
+        onClick={add}
+        className="flex items-center gap-1 text-[11px] text-purple-300 hover:text-purple-200"
+      >
+        <Plus className="w-3 h-3" /> Adicionar efeito
+      </button>
+    </div>
+  );
+}
+
+/* Editor da Ferramenta Amaldiçoada de uma entrada: grau, benefícios do grau,
+   escolha de encantamentos (com pré-requisito) e a habilidade única do Especial.
+   Grau e Encantamentos são RECOLHÍVEIS (o autor pediu), colapsados por padrão.
+   `fa` aqui é o resumo JÁ resolvido pelo motor (entrada.fa). */
+function FerramentaEditor({ entrada, onPatch, onToggleEnc, onRemove }) {
+  const { tipo, def, fa } = entrada;
+  const lista = ENCANTAMENTOS_POR_TIPO[tipo] ?? [];
+  const beneficio =
+    tipo === "arma" ? `Bônus de Arma +${fa.bonusArma}` :
+    tipo === "escudo" ? `RD Física +${fa.rdGrau} (grau, soma com o escudo)` : null;
+  const nomesEscolhidos = fa.escolhidos.map((id) => getEncantamento(id)?.nome ?? id);
+  const resumoEnc = nomesEscolhidos.length ? nomesEscolhidos.join(", ") : "Nenhum";
+
+  return (
+    <div className="px-2.5 pb-3 pt-2.5 border-t border-purple-900/50 space-y-2.5 bg-purple-950/10">
+      {/* Benefícios do grau + remover */}
+      <div className="flex flex-wrap gap-1.5 items-center">
+        {beneficio && (
+          <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-emerald-300 font-mono">{beneficio}</span>
+        )}
+        <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono ${
+          fa.excedeu ? "bg-rose-950/50 text-rose-300" : "bg-slate-800 text-slate-300"
+        }`} title="Encantamentos escolhidos / permitidos no grau (acumulam)">
+          Encantamentos {fa.escolhidos.length}/{fa.permitidos}
+        </span>
+        {fa.usaCargas && (
+          <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-sky-300 font-mono" title="Cargas de Encantamento = bônus de treinamento do portador">
+            Cargas {fa.cargas} (= BT)
+          </span>
+        )}
+        {fa.temHabUnica && (
+          <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-200 font-mono">Habilidade única</span>
+        )}
+        <button
+          type="button"
+          onClick={onRemove}
+          className="ml-auto text-[10px] text-slate-500 hover:text-rose-400 transition-colors"
+        >
+          Deixar de ser ferramenta
+        </button>
+      </div>
+
+      {fa.avisos.length > 0 && (
+        <div className="space-y-0.5">
+          {fa.avisos.map((a) => (
+            <p key={a} className="text-[10px] text-amber-400 flex items-start gap-1">
+              <AlertTriangle className="w-3 h-3 flex-shrink-0 mt-px" aria-hidden="true" />
+              <span>{a}</span>
+            </p>
+          ))}
+        </div>
+      )}
+
+      {/* Grau de Equipamento (recolhível) */}
+      <SecaoRecolhivel titulo="Grau de Equipamento" resumo={fa.grauLabel}>
+        <div className="flex gap-1 pt-1.5">
+          {AFTY_GRAUS.map((g) => {
+            const on = g.value === fa.grau;
+            return (
+              <button
+                key={g.value}
+                type="button"
+                onClick={() => onPatch({ grau: g.value })}
+                aria-pressed={on}
+                title={`${g.label} · criação CD ${FA_CRIACAO[g.value].cd}, BT +${FA_CRIACAO[g.value].btNecessario}`}
+                className={`grow justify-center whitespace-nowrap px-2 py-1.5 rounded-lg text-[11px] font-semibold transition-colors ${
+                  on ? "bg-purple-700 text-white" : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+                }`}
+              >
+                {g.label.replace(" Grau", "")}
+              </button>
+            );
+          })}
+        </div>
+      </SecaoRecolhivel>
+
+      {/* Encantamentos (recolhível) */}
+      <SecaoRecolhivel
+        titulo={`Encantamentos ${fa.escolhidos.length}/${fa.permitidos}`}
+        resumo={resumoEnc}
+      >
+        <div className="space-y-1 pt-1.5">
+          {lista.map((enc) => {
+            const selecionado = fa.escolhidos.includes(enc.id);
+            // Pré-requisitos no formato do RequisitoLista (texto), mais a
+            // exclusão mútua (Certeira/Destruidora) como um requisito de texto.
+            const reqs = (enc.requisitos ?? []).map((r) => {
+              const res = avaliarRequisitoEncantamento(r, { def, grauValue: fa.grau, escolhidos: fa.escolhidos, selfId: enc.id });
+              return { label: res.motivo, verificavel: true, ok: res.ok };
+            });
+            for (const x of enc.exclusivoCom ?? []) {
+              if (fa.escolhidos.includes(x)) {
+                reqs.push({ label: `Não com ${getEncantamento(x)?.nome ?? x}`, verificavel: true, ok: false });
+              }
+            }
+            return (
+              <EncantamentoLinha
+                key={enc.id}
+                enc={enc}
+                selecionado={selecionado}
+                reqs={reqs}
+                onToggle={() => onToggleEnc(enc.id)}
+              />
+            );
+          })}
+        </div>
+      </SecaoRecolhivel>
+
+      {/* Habilidade Única (Grau Especial): texto + Motor de Automação */}
+      {fa.temHabUnica && (
+        <div className="rounded-lg border border-purple-900/40 bg-purple-950/20 px-2.5 py-2.5 space-y-2">
+          <span className="block text-[10px] uppercase tracking-wider text-purple-200">
+            Habilidade Única (criada com o Narrador)
+          </span>
+          <textarea
+            value={fa.habilidadeUnica}
+            onChange={(ev) => onPatch({ habilidadeUnica: ev.target.value })}
+            rows={3}
+            placeholder="Descreva a habilidade única desta ferramenta de Grau Especial."
+            className="w-full text-[12px] rounded-lg border border-slate-700 bg-slate-950/60 px-2.5 py-2 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-purple-600 resize-y"
+          />
+          <MotorEfeitosEditor
+            efeitos={fa.habilidadeEfeitos}
+            onChange={(arr) => onPatch({ habilidadeEfeitos: arr })}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Uma linha do que está carregado (com o editor de Ferramenta, se aplicável). */
+function LinhaCarregada({ entrada, onPatch, onRemove, onToggleFerramenta, onPatchFerramenta, onToggleEncantamento }) {
+  const { def, tipo, uid, qtd, equipado, fa } = entrada;
+  const equipavel = tipo === "uniforme" || tipo === "escudo" || def?.efeito;
+  const podeSerFerramenta = FA_TIPOS_EQUIP.includes(tipo);
+  const [faOpen, setFaOpen] = useState(false);
+
+  const clicarFerramenta = () => {
+    if (fa) { setFaOpen((o) => !o); return; }
+    onToggleFerramenta(uid);       // vira ferramenta
+    setFaOpen(true);
+  };
+
+  return (
+    <div className={`rounded-lg border ${
+      fa ? "border-purple-700/70 bg-purple-950/20"
+      : equipado ? "border-purple-700 bg-purple-950/30"
+      : "border-slate-800 bg-slate-950/40"
+    }`}>
+      <div className="flex items-center gap-2 px-2.5 h-9">
+        {equipavel ? (
+          <button
+            type="button"
+            onClick={() => onPatch(uid, { equipado: !equipado })}
+            aria-pressed={equipado}
+            title={equipado ? "Desequipar" : "Equipar"}
+            className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 border transition-colors ${
+              equipado
+                ? "bg-purple-700 border-purple-600 text-white"
+                : "border-slate-600 text-slate-500 hover:border-purple-600 hover:text-purple-300"
+            }`}
+          >
+            {equipado ? <Check className="w-3 h-3" /> : <Shield className="w-2.5 h-2.5" />}
+          </button>
+        ) : (
+          <span className="w-5 flex-shrink-0" />
+        )}
+
+        <span className="text-[12px] font-semibold text-slate-100 truncate flex-1 min-w-0" title={def?.nome}>
+          {def?.nome}
+          {fa && (
+            <span className="ml-1.5 text-[9px] font-mono font-bold px-1 rounded bg-purple-500/25 text-purple-200 align-middle">
+              {fa.grauLabel.replace(" Grau", "")}
+            </span>
+          )}
+        </span>
+
+        {podeSerFerramenta && (
+          <button
+            type="button"
+            onClick={clicarFerramenta}
+            aria-pressed={!!fa}
+            aria-expanded={fa ? faOpen : undefined}
+            title={fa ? "Editar Ferramenta Amaldiçoada" : "Transformar em Ferramenta Amaldiçoada"}
+            className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 border transition-colors ${
+              fa
+                ? "bg-purple-700/40 border-purple-600 text-purple-200"
+                : "border-slate-700 text-slate-600 hover:border-purple-600 hover:text-purple-300"
+            }`}
+          >
+            <Wand2 className="w-3 h-3" />
+          </button>
+        )}
+
+        <span className="text-[10px] text-slate-500 font-mono flex-shrink-0 tabular-nums" title="Espaços ocupados">
+          {fmtEspacos(entrada.espacos)} esp
+        </span>
+        {entrada.custoUn > 0 && (
+          <span className="text-[10px] text-slate-500 font-mono flex-shrink-0" title="Custo do equipamento">
+            C{entrada.custoUn}
+          </span>
+        )}
+
+        <div className="flex items-center gap-px flex-shrink-0" role="group" aria-label="Quantidade">
+          <button
+            type="button"
+            onClick={() => onPatch(uid, { qtd: Math.max(1, qtd - 1) })}
+            disabled={qtd <= 1}
+            className="w-5 h-5 rounded-l bg-slate-800 text-slate-400 text-xs disabled:opacity-40 hover:bg-slate-700"
+            aria-label="Diminuir quantidade"
+          >
+            -
+          </button>
+          <span className="w-6 text-center text-[11px] font-mono text-white tabular-nums bg-slate-900">{qtd}</span>
+          <button
+            type="button"
+            onClick={() => onPatch(uid, { qtd: qtd + 1 })}
+            className="w-5 h-5 rounded-r bg-slate-800 text-slate-400 text-xs hover:bg-slate-700"
+            aria-label="Aumentar quantidade"
+          >
+            +
+          </button>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => onRemove(uid)}
+          className="w-5 h-5 rounded flex items-center justify-center flex-shrink-0 text-slate-600 hover:text-rose-400 hover:bg-rose-950/40"
+          aria-label={`Remover ${def?.nome}`}
+          title="Remover do inventário"
+        >
+          <X className="w-3 h-3" />
+        </button>
+      </div>
+
+      {fa && faOpen && (
+        <FerramentaEditor
+          entrada={entrada}
+          onPatch={(partial) => onPatchFerramenta(uid, partial)}
+          onToggleEnc={(encId) => onToggleEncantamento(uid, encId)}
+          onRemove={() => { onToggleFerramenta(uid); setFaOpen(false); }}
+        />
+      )}
+    </div>
+  );
+}
+
+/* Linha do catálogo. RECOLHIDA por padrão, mesmo padrão das Aptidões:
+   são 52 armas e 48 itens especiais, abertas de uma vez viram um
+   paredão. A linha fechada mostra o que serve para ESCOLHER. */
+function CatalogoLinha({ tipo, def, onAdd, jaTem }) {
+  const [open, setOpen] = useState(false);
+  const espacos = espacosDoEquipamento(tipo, def);
+  const custo = custoDoEquipamento(tipo, def);
+  const especial = def.especial ? getEspecial(def.especial) : null;
+
+  return (
+    <div className="rounded-lg border border-slate-800 bg-slate-950/40">
+      <div className="flex items-center gap-2.5 px-2.5 h-8">
+        <button
+          type="button"
+          onClick={() => onAdd(tipo, def.id)}
+          aria-label={`Adicionar ${def.nome}`}
+          title="Adicionar ao inventário"
+          className="w-5 h-5 rounded flex items-center justify-center flex-shrink-0 border border-slate-600 text-slate-500 transition-colors hover:border-purple-600 hover:text-purple-300"
+        >
+          <Plus className="w-3 h-3" />
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          aria-expanded={open}
+          className="flex-1 min-w-0 flex items-center gap-x-2 text-left overflow-hidden"
+        >
+          <span className="text-[12px] font-semibold text-slate-100 truncate" title={def.nome}>{def.nome}</span>
+          {jaTem > 0 && (
+            <span className="text-[9px] font-mono font-bold px-1 rounded bg-purple-500/25 text-purple-300 flex-shrink-0">
+              {jaTem}
+            </span>
+          )}
+          {tipo === "arma" && (
+            <span className="text-[10px] text-slate-400 font-mono flex-shrink-0">{fmtDano(def.dano)}</span>
+          )}
+          {tipo === "arma" && def.critico && (
+            <span className="text-[10px] text-slate-600 font-mono flex-shrink-0" title="Margem de crítico">
+              {def.critico}+
+            </span>
+          )}
+          {tipo === "uniforme" && def.defesa > 0 && (
+            <span className="text-[10px] text-emerald-400 font-mono flex-shrink-0">+{def.defesa} Def</span>
+          )}
+          {tipo === "escudo" && (
+            <span className="text-[10px] text-emerald-400 font-mono flex-shrink-0">{def.rdFisico} RD Fís</span>
+          )}
+          {def.penalidade < 0 && (
+            <span className="text-[10px] text-amber-400 font-mono flex-shrink-0" title="Penalidade em testes de Destreza">
+              {def.penalidade} Des
+            </span>
+          )}
+        </button>
+
+        <span className="text-[10px] text-slate-500 font-mono flex-shrink-0 tabular-nums" title="Espaços">
+          {fmtEspacos(espacos)}
+        </span>
+        {custo > 0 && (
+          <span className="text-[10px] text-slate-500 font-mono flex-shrink-0" title="Custo">C{custo}</span>
+        )}
+        <ChevronDown
+          className={`w-3.5 h-3.5 text-slate-600 flex-shrink-0 transition-transform ${open ? "" : "-rotate-90"}`}
+          aria-hidden="true"
+        />
+      </div>
+
+      {open && (
+        <div className="px-2.5 pb-2.5 pt-0.5 border-t border-slate-800/80 space-y-2">
+          {tipo === "arma" && (
+            <div className="flex flex-wrap gap-1 pt-2">
+              <span className="text-[9px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">
+                {def.classe === "simples" ? "Simples" : "Complexa"}
+              </span>
+              <span className="text-[9px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">
+                {grupoLabel(def.grupo)}
+              </span>
+              {fmtProps(def.props).map((p) => (
+                <span key={p} className="text-[9px] px-1.5 py-0.5 rounded bg-slate-800/70 text-slate-300">{p}</span>
+              ))}
+            </div>
+          )}
+          {tipo === "kit" && (
+            <div className="flex flex-wrap gap-1 pt-2">
+              <span className="text-[9px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">
+                Ofício ({def.oficio})
+              </span>
+              {(def.cria ?? []).map((c) => (
+                <span key={c} className="text-[9px] px-1.5 py-0.5 rounded bg-slate-800/70 text-slate-300">
+                  Cria {CRIA_LABEL[c]}
+                </span>
+              ))}
+            </div>
+          )}
+          {def.descricao && (
+            <p className="text-[11px] text-slate-400 leading-relaxed">{def.descricao}</p>
+          )}
+          {tipo === "kit" && def.refeicoes && (
+            <div className="space-y-1 pt-0.5">
+              {REFEICOES_COZINHEIRO.map((r) => (
+                <p key={r.id} className="text-[11px] text-slate-400 leading-relaxed">
+                  <span className="text-purple-300 font-semibold">{r.nome}. </span>
+                  {r.descricao}
+                </p>
+              ))}
+            </div>
+          )}
+          {especial && (
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              <span className="text-purple-300 font-semibold">{especial.nome}. </span>
+              {especial.descricao}
+            </p>
+          )}
+          {def.efeito && !def.efeito.aplicado && (
+            <p className="text-[10px] text-amber-400/80">
+              O motor ainda não aplica este efeito (depende de sistema que não existe).
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Só `derived`: o motor já devolve as entradas resolvidas (equip.entradas),
+// com a definição do catálogo junto, então a aba não precisa do draft cru.
+function TabEquipamentos({ derived, addEquipamento, removeEquipamento, patchEquipamento, toggleFerramenta, patchFerramenta, toggleEncantamento }) {
+  const { equip, carga, grauFeiticeiro: grau } = derived;
+  const [catTab, setCatTab] = useState("arma");
+  const [busca, setBusca] = useState("");
+  const [subFiltro, setSubFiltro] = useState("todos");
+  // As armas são duas listas separadas no livro (simples e complexas), então
+  // são duas abas, e não um filtro. A categoria (corpo, distância, arremesso)
+  // continua como filtro por cima.
+  const [classeArma, setClasseArma] = useState("simples");
+
+  const orcamento = orcamentoDoGrau(grau.value);
+
+  // Sub-filtros: categoria da arma, categoria do item especial. Os demais
+  // tipos são listas curtas e não precisam.
+  const subOpcoes =
+    catTab === "arma" ? ARMA_CATEGORIAS
+    : catTab === "item" ? ITEM_CATEGORIAS
+    : null;
+
+  const lista = useMemo(() => {
+    let l = catalogoDoTipo(catTab);
+    if (catTab === "arma") l = l.filter((d) => d.classe === classeArma);
+    if (subFiltro !== "todos") l = l.filter((d) => d.categoria === subFiltro);
+    const q = busca.trim().toLowerCase();
+    if (q) {
+      l = l.filter((d) =>
+        d.nome.toLowerCase().includes(q) ||
+        (catTab === "arma" && grupoLabel(d.grupo).toLowerCase().includes(q)));
+    }
+    return l;
+  }, [catTab, classeArma, subFiltro, busca]);
+
+  // Quantas unidades de cada refId já estão no inventário, para o contador
+  // do catálogo.
+  const contagem = useMemo(() => {
+    const m = {};
+    for (const e of equip.entradas) m[e.refId] = (m[e.refId] ?? 0) + e.qtd;
+    return m;
+  }, [equip.entradas]);
+
+  const porTipo = EQUIP_TIPOS
+    .map((t) => ({ ...t, entradas: equip.entradas.filter((e) => e.tipo === t.value) }))
+    .filter((t) => t.entradas.length > 0);
+
+  const temEfeito =
+    equip.uniformeDefesa !== 0 || equip.rdFisico !== 0 || equip.penalidadeDestreza !== 0 ||
+    equip.hpMaxBonus !== 0 || equip.cdBonus !== 0 ||
+    equip.defesaBonus !== 0 || equip.movimentoBonus !== 0 || equip.rdGeralBonus !== 0 || equip.peBonus !== 0 ||
+    Object.values(equip.attrBonus).some((v) => v !== 0);
+
+  return (
+    <>
+      <Card
+        title="Carregamento"
+        headerRight={
+          <div className="flex items-center gap-1.5 border border-slate-800 bg-slate-950/50 rounded-md px-2 py-1" title="Espaços usados / limite sem sobrecarga">
+            <Zap className="w-3 h-3 text-purple-400 flex-shrink-0" />
+            <span className="text-[9px] uppercase tracking-wider text-slate-400">Espaços</span>
+            <span className="font-mono text-xs font-bold tabular-nums whitespace-nowrap">
+              <span className={carga.sobrecarregado ? "text-amber-400" : "text-white"}>{fmtEspacos(carga.espacosUsados)}</span>
+              <span className="text-slate-600"> / </span>
+              <span className="text-white">{carga.cargaLimite}</span>
+            </span>
+          </div>
+        }
+      >
+        <CargaBarra carga={carga} />
+        {carga.sobrecarregado && (
+          <p className="text-[11px] text-amber-400 mt-3 flex items-start gap-1.5">
+            {/* w-3 + mt-0.5 é a convenção de aviso da ficha (ver as Invocações):
+                o ícone de 14px ficava alto demais para um texto de 11px. */}
+            <AlertTriangle className="w-3 h-3 flex-shrink-0 mt-0.5" aria-hidden="true" />
+            <span>
+              <strong>Sobrecarregado.</strong> Já aplicado no motor: -5 na Defesa e -4,5m no Deslocamento.
+            </span>
+          </p>
+        )}
+        {equip.avisos.map((a) => (
+          <p key={a} className="text-[11px] text-rose-400 mt-2">{a}</p>
+        ))}
+      </Card>
+
+      <Card
+        title="Orçamento de Equipamento"
+        headerRight={
+          <div className="flex items-center gap-1.5 border border-slate-800 bg-slate-950/50 rounded-md px-2 py-1">
+            <Star className="w-3 h-3 text-purple-400 flex-shrink-0" />
+            <span className="text-[9px] uppercase tracking-wider text-slate-400">Grau</span>
+            <span className="text-xs font-bold text-white whitespace-nowrap">{grau.label}</span>
+          </div>
+        }
+      >
+        <p className="text-[11px] text-slate-400 mb-3">
+          Conjunto concedido no começo de toda missão, pelo grau do feiticeiro (que vem do ND).
+          É <strong>indicativo</strong>: a aba conta mas não bloqueia, porque o livro prevê item vindo
+          de talento, recompensa, saque e confecção.
+        </p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          {CUSTOS.map((c) => {
+            const concedido = orcamento[c];
+            const gasto = equip.custoGasto[c];
+            const passou = Number.isFinite(concedido) && gasto > concedido;
+            return (
+              <div key={c} className="border border-slate-800 bg-slate-950/40 rounded-lg px-2 py-2">
+                <div className="text-[10px] uppercase tracking-wider text-slate-400">Custo {c}</div>
+                {/* Gasto e concedido no MESMO tamanho: o "/" é que fica menor. */}
+                <div className="font-mono text-lg font-bold tabular-nums">
+                  <span className={passou ? "text-amber-400" : "text-white"}>{gasto}</span>
+                  <span className="text-slate-600 text-sm font-normal"> / </span>
+                  <span className="text-slate-300">{Number.isFinite(concedido) ? concedido : "∞"}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <p className="text-[11px] text-slate-500 mt-3">
+          <span className="text-slate-400 font-semibold">Equipamento inicial: </span>
+          {EQUIP_INICIAL.texto}
+        </p>
+      </Card>
+
+      <Card title="Efeito do Equipado">
+        {temEfeito ? (
+          <div className="flex flex-wrap gap-2">
+            {equip.uniformeDefesa !== 0 && <EfeitoPill icon={Shield} label="Defesa" valor={`+${equip.uniformeDefesa}`} nota="uniforme" />}
+            {equip.defesaBonus !== 0 && <EfeitoPill icon={Shield} label="Defesa" valor={`+${equip.defesaBonus}`} nota="ferramenta" />}
+            {equip.rdFisico !== 0 && <EfeitoPill icon={Shield} label="RD Física" valor={equip.rdFisico} nota="escudo + grau" />}
+            {equip.rdGeralBonus !== 0 && <EfeitoPill icon={Shield} label="RD Geral" valor={`+${equip.rdGeralBonus}`} nota="ferramenta" />}
+            {equip.movimentoBonus !== 0 && <EfeitoPill icon={Footprints} label="Deslocamento" valor={`+${fmtEspacos(equip.movimentoBonus)}m`} nota="ferramenta" />}
+            {equip.penalidadeDestreza !== 0 && <EfeitoPill icon={AlertTriangle} label="Testes de Destreza" valor={equip.penalidadeDestreza} nota="não aplicado, Perícias não existem" alerta />}
+            {equip.hpMaxBonus !== 0 && <EfeitoPill icon={Heart} label="PV máximo" valor={`+${equip.hpMaxBonus}`} />}
+            {equip.peBonus !== 0 && <EfeitoPill icon={Zap} label="PE máximo" valor={`+${equip.peBonus}`} nota="ferramenta" />}
+            {equip.cdBonus !== 0 && <EfeitoPill icon={Sparkles} label="CD" valor={`+${equip.cdBonus}`} />}
+            {AFTY_ATTRS.filter((at) => equip.attrBonus[at.key] !== 0).map((at) => (
+              <EfeitoPill key={at.key} icon={ArrowUp} label={at.label} valor={`+${equip.attrBonus[at.key]}`} nota="passa o limite, teto 30" />
+            ))}
+          </div>
+        ) : (
+          <p className="text-[11px] text-slate-500">
+            Nada equipado ainda. Uniforme dá Defesa, escudo dá RD Física e acessório dá o bônus dele.
+          </p>
+        )}
+      </Card>
+
+      <Card
+        title="Carregado"
+        headerRight={
+          <span className="text-[10px] text-slate-500 font-mono">{equip.entradas.length} linhas</span>
+        }
+      >
+        {porTipo.length === 0 ? (
+          <p className="text-[11px] text-slate-500">Inventário vazio. Adicione pelo catálogo abaixo.</p>
+        ) : (
+          <div className="space-y-4">
+            {porTipo.map((t) => (
+              <div key={t.value}>
+                <div className="text-[11px] font-semibold text-slate-300 mb-1.5">{t.label}</div>
+                <div className="space-y-1.5">
+                  {t.entradas.map((e) => (
+                    <LinhaCarregada
+                      key={e.uid}
+                      entrada={e}
+                      onPatch={patchEquipamento}
+                      onRemove={removeEquipamento}
+                      onToggleFerramenta={toggleFerramenta}
+                      onPatchFerramenta={patchFerramenta}
+                      onToggleEncantamento={toggleEncantamento}
+                    />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
+
+      <Card title="Catálogo">
+        <div className="flex gap-1 overflow-x-auto no-scrollbar border-b border-slate-800 pb-2 mb-3" role="tablist" aria-label="Tipos de equipamento">
+          {EQUIP_TIPOS.map((t) => {
+            const on = t.value === catTab;
+            return (
+              <button
+                key={t.value}
+                role="tab"
+                aria-selected={on}
+                onClick={() => { setCatTab(t.value); setSubFiltro("todos"); }}
+                className={`grow justify-center whitespace-nowrap px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                  on ? "bg-purple-700 text-white" : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+                }`}
+              >
+                {t.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {catTab === "arma" && (
+          <div className="flex gap-1 mb-2" role="tablist" aria-label="Classe de arma">
+            {[{ value: "simples", label: "Armas Simples" }, { value: "complexa", label: "Armas Complexas" }].map((c) => {
+              const on = c.value === classeArma;
+              return (
+                <button
+                  key={c.value}
+                  role="tab"
+                  aria-selected={on}
+                  onClick={() => setClasseArma(c.value)}
+                  className={`grow justify-center whitespace-nowrap px-3 py-1.5 rounded-lg text-[12px] font-semibold transition-colors ${
+                    on ? "bg-purple-700/70 text-white" : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+                  }`}
+                >
+                  {c.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {subOpcoes && (
+          <div className="flex flex-wrap gap-1 mb-2">
+            {[{ value: "todos", label: "Todos" }, ...subOpcoes].map((o) => {
+              const on = o.value === subFiltro;
+              return (
+                <button
+                  key={o.value}
+                  type="button"
+                  onClick={() => setSubFiltro(o.value)}
+                  className={`text-[10px] px-2 py-1 rounded transition-colors ${
+                    on ? "bg-purple-700 text-white" : "bg-slate-800/70 text-slate-400 hover:text-white"
+                  }`}
+                >
+                  {o.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        <div className="mb-3">
+          <TextInput value={busca} onChange={setBusca} placeholder="Buscar por nome ou grupo" />
+        </div>
+
+        {lista.length === 0 && (
+          <p className="text-[11px] text-slate-600">Nada encontrado.</p>
+        )}
+
+        <div className="space-y-1.5">
+          {lista.map((def) => (
+            <CatalogoLinha
+              key={def.id}
+              tipo={catTab}
+              def={def}
+              jaTem={contagem[def.id] ?? 0}
+              onAdd={addEquipamento}
+            />
+          ))}
+        </div>
+      </Card>
+
+      <FerramentasReferencia />
+    </>
+  );
+}
+
+/* Card de referência das Ferramentas Amaldiçoadas: as tabelas de benefício por
+   grau, o processo de criação, a identificação, o catálogo de encantamentos e o
+   exemplo de Grau Especial. Tudo texto de leitura, recolhido por padrão. */
+function FerramentasReferencia() {
+  const [aberto, setAberto] = useState(false);
+  const [encTipo, setEncTipo] = useState("arma");
+  const linhasBeneficio = AFTY_GRAUS.map((g) => ({
+    grau: g.label,
+    bonusArma: FA_BONUS_ARMA[g.value],
+    rdEscudo: FA_RD_ESCUDO[g.value],
+    ganho: FA_ENCANT_GANHO,
+    value: g.value,
+  }));
+  const encLista = ENCANTAMENTOS_POR_TIPO[encTipo] ?? [];
+  const encAbas = [
+    { value: "arma", label: "Armas" },
+    { value: "escudo", label: "Escudos" },
+    { value: "uniforme", label: "Uniformes" },
+  ];
+
+  return (
+    <Card
+      title="Ferramentas Amaldiçoadas · Referência"
+      headerRight={
+        <button
+          type="button"
+          onClick={() => setAberto((o) => !o)}
+          aria-expanded={aberto}
+          className="flex items-center gap-1 text-[11px] text-slate-400 hover:text-white"
+        >
+          {aberto ? "Recolher" : "Abrir"}
+          <ChevronDown className={`w-3.5 h-3.5 transition-transform ${aberto ? "" : "-rotate-90"}`} aria-hidden="true" />
+        </button>
+      }
+    >
+      {!aberto ? (
+        <p className="text-[11px] text-slate-500">
+          Tabelas de benefício por grau, o processo de criação, a identificação e o catálogo completo de
+          encantamentos. Para transformar um item, use a varinha na linha dele acima.
+        </p>
+      ) : (
+        <div className="space-y-5">
+          {/* Benefícios por grau */}
+          <div>
+            <div className="text-[11px] font-semibold text-slate-300 mb-1.5">Benefícios por grau</div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-[11px] border-collapse">
+                <thead>
+                  <tr className="text-slate-400 text-left">
+                    <th className="py-1 pr-3 font-medium">Grau</th>
+                    <th className="py-1 px-2 font-medium">Bônus de Arma</th>
+                    <th className="py-1 px-2 font-medium">RD do Escudo</th>
+                    <th className="py-1 px-2 font-medium">Enc. Arma</th>
+                    <th className="py-1 px-2 font-medium">Enc. Escudo</th>
+                    <th className="py-1 px-2 font-medium">Enc. Uniforme</th>
+                  </tr>
+                </thead>
+                <tbody className="font-mono text-slate-200">
+                  {linhasBeneficio.map((l) => (
+                    <tr key={l.value} className="border-t border-slate-800">
+                      <td className="py-1 pr-3 font-sans text-slate-300 whitespace-nowrap">{l.grau}</td>
+                      <td className="py-1 px-2">+{l.bonusArma}</td>
+                      <td className="py-1 px-2">{l.rdEscudo}</td>
+                      <td className="py-1 px-2">{l.value === "especial" ? "hab. única" : `+${l.ganho.arma[l.value]}`}</td>
+                      <td className="py-1 px-2">{l.value === "especial" ? "hab. única" : `+${l.ganho.escudo[l.value]}`}</td>
+                      <td className="py-1 px-2">{l.value === "especial" ? "hab. única" : `+${l.ganho.uniforme[l.value]}`}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="text-[10px] text-slate-500 mt-1.5">
+              Os encantamentos acumulam entre os graus. Bônus de Arma e RD do escudo usam só o valor do grau
+              atual (não somam entre graus), e a RD do escudo soma com a RD do escudo comum. Cargas de
+              Encantamento = bônus de treinamento do portador, compartilhadas por todos os encantamentos com
+              carga do item.
+            </p>
+          </div>
+
+          {/* Criação e Identificação */}
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div>
+              <div className="text-[11px] font-semibold text-slate-300 mb-1.5">Criação</div>
+              <table className="w-full text-[11px] border-collapse">
+                <thead>
+                  <tr className="text-slate-400 text-left">
+                    <th className="py-1 pr-2 font-medium">Grau</th>
+                    <th className="py-1 px-2 font-medium">BT necessário</th>
+                    <th className="py-1 px-2 font-medium">CD</th>
+                  </tr>
+                </thead>
+                <tbody className="font-mono text-slate-200">
+                  {AFTY_GRAUS.map((g) => (
+                    <tr key={g.value} className="border-t border-slate-800">
+                      <td className="py-1 pr-2 font-sans text-slate-300 whitespace-nowrap">{g.label}</td>
+                      <td className="py-1 px-2">+{FA_CRIACAO[g.value].btNecessario}</td>
+                      <td className="py-1 px-2">{FA_CRIACAO[g.value].cd}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <p className="text-[10px] text-slate-500 mt-1.5">
+                Precisa do talento Artesão Amaldiçoado e treino em Ferramentas de Canalizador ou de Ferreiro.
+                Duas rolagens: Ofício (Ferreiro) e Ofício (Canalizador), ambas contra a CD.
+              </p>
+            </div>
+            <div>
+              <div className="text-[11px] font-semibold text-slate-300 mb-1.5">Identificação</div>
+              <table className="w-full text-[11px] border-collapse">
+                <thead>
+                  <tr className="text-slate-400 text-left">
+                    <th className="py-1 pr-2 font-medium">Grau</th>
+                    <th className="py-1 px-2 font-medium">CD de Feitiçaria</th>
+                  </tr>
+                </thead>
+                <tbody className="font-mono text-slate-200">
+                  {AFTY_GRAUS.map((g) => (
+                    <tr key={g.value} className="border-t border-slate-800">
+                      <td className="py-1 pr-2 font-sans text-slate-300 whitespace-nowrap">{g.label}</td>
+                      <td className="py-1 px-2">{FA_IDENTIFICACAO_CD[g.value]}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <p className="text-[10px] text-slate-500 mt-1.5">
+                Teste de Feitiçaria (Ação Bônus em combate). Descobre nome e encantamentos. A habilidade única
+                de uma de Grau Especial pede +10 na CD e ter visto o item ser usado.
+              </p>
+            </div>
+          </div>
+
+          {/* Catálogo de encantamentos */}
+          <div>
+            <div className="text-[11px] font-semibold text-slate-300 mb-1.5">Catálogo de encantamentos</div>
+            <div className="flex gap-1 mb-2" role="tablist" aria-label="Tipo de encantamento">
+              {encAbas.map((t) => {
+                const on = t.value === encTipo;
+                return (
+                  <button
+                    key={t.value}
+                    role="tab"
+                    aria-selected={on}
+                    onClick={() => setEncTipo(t.value)}
+                    className={`grow justify-center whitespace-nowrap px-3 py-1.5 rounded-lg text-[12px] font-semibold transition-colors ${
+                      on ? "bg-purple-700/70 text-white" : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="space-y-1.5">
+              {encLista.map((enc) => (
+                <div key={enc.id} className="rounded-lg border border-slate-800 bg-slate-950/40 px-2.5 py-2">
+                  <div className="flex items-center gap-x-2 flex-wrap">
+                    <span className="text-[12px] font-semibold text-slate-100">{enc.nome}</span>
+                    {enc.usaCargas && (
+                      <span className="text-[9px] font-mono px-1 rounded bg-sky-500/20 text-sky-300">Cargas</span>
+                    )}
+                    {enc.preReq && (
+                      <span className="text-[9px] px-1 rounded bg-purple-500/15 text-purple-300">Pré-Req: {enc.preReq}</span>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-slate-400 leading-relaxed mt-0.5">{enc.descricao}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Exemplo de Grau Especial */}
+          <div>
+            <div className="text-[11px] font-semibold text-slate-300 mb-1.5">Exemplo de Grau Especial</div>
+            <div className="rounded-lg border border-purple-900/50 bg-purple-950/20 px-2.5 py-2">
+              <div className="text-[12px] font-semibold text-purple-200">{FA_GRAU_ESPECIAL_EXEMPLO.nome}</div>
+              <div className="text-[10px] text-slate-400 mb-1">{FA_GRAU_ESPECIAL_EXEMPLO.subtitulo}</div>
+              <p className="text-[11px] text-slate-400 leading-relaxed">{FA_GRAU_ESPECIAL_EXEMPLO.descricao}</p>
+              <p className="text-[11px] text-slate-400 leading-relaxed mt-1">
+                <span className="text-purple-300 font-semibold">{FA_GRAU_ESPECIAL_EXEMPLO.habilidade.nome}. </span>
+                {FA_GRAU_ESPECIAL_EXEMPLO.habilidade.descricao}
+              </p>
+            </div>
+          </div>
+
+          <p className="text-[10px] text-amber-400/80">
+            O motor aplica, enquanto a ferramenta está equipada: a RD Física por grau do escudo, e os
+            efeitos estáticos de <strong>Canalizadora</strong> (CD), <strong>Reforçado</strong> (RD Física),
+            <strong> Blindado</strong> (Defesa) e <strong>Propulsor</strong> (Deslocamento), mais o que você
+            programar no Motor de Automação da Habilidade Única. Os demais encantamentos são situacionais ou
+            de combate (Iniciativa, manobras, TRs, Perícias, RD por elemento), que o motor do Afty ainda não
+            calcula, então seguem como texto.
+          </p>
+        </div>
+      )}
+    </Card>
+  );
+}
+
+/* Mesmo desenho do StatMini das Invocações: o ícone vive DENTRO da linha do
+   rótulo, não ao lado do bloco inteiro. Ao lado, ele se centralizava contra as
+   duas linhas (rótulo + valor) e não batia com nenhuma das duas. */
+function EfeitoPill({ icon: Icon, label, valor, nota, alerta }) {
+  return (
+    <div className={`border rounded-lg px-2.5 py-1.5 ${
+      alerta ? "border-amber-800/60 bg-amber-950/20" : "border-slate-800 bg-slate-950/40"
+    }`}>
+      <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-slate-400">
+        <Icon className={`w-3 h-3 flex-shrink-0 ${alerta ? "text-amber-400" : "text-purple-400"}`} aria-hidden="true" />
+        <span className="truncate">{label}</span>
+      </div>
+      <div className="font-mono text-sm font-bold text-white leading-tight">
+        {valor}
+        {nota && <span className="ml-1.5 text-[9px] font-sans font-normal text-slate-500">{nota}</span>}
+      </div>
+    </div>
   );
 }
 

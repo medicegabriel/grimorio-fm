@@ -13,8 +13,9 @@
  * ADIADO (marcado TODO, conforme o autor):
  *   • GUARDA (depende do contador de ataques consecutivos, CU9).
  *   • Perícias → Atenção usa Percepção = 0 por ora.
- *   • Grau de item vem do Inventário (ainda não construído):
- *     lido de creature.inventario.{defesaGrau,rdGrau}, default 0.
+ *   • Grau de Equipamento (Ferramentas Amaldiçoadas) ainda não existe. O que
+ *     entra hoje é o equipamento base: Defesa do uniforme, RD Física do
+ *     escudo, penalidade de Destreza, carga e sobrecarga.
  *
  * TREINAMENTO: as contribuições legíveis pelo motor (HP/PE/Movimento/
  *   Defesa/Aptidão) já entram via resolveTreinoEfeitos. As trilhas
@@ -32,6 +33,8 @@ import { resolveHabilidades, efeitosInvocacaoControlador } from "./afty-habilida
 import { resolveTalentos } from "./afty-talentos";
 import { resolveAltoNivel } from "./afty-alto-nivel";
 import { resolveInvocacoesList, resolveHordasList } from "./afty-invocacoes";
+import { resolveEquipamentos, resolveCarga, grauFeiticeiro } from "./afty-equipamentos";
+import { totalFeiticos, nivelMaxFeitico } from "./afty-feiticos";
 
 export const mod = (attr) => Math.floor(((attr ?? 10) - 10) / 2);
 
@@ -44,14 +47,6 @@ export const maestria = (nd) => {
   if (nd >= 9) return 4;
   if (nd >= 5) return 3;
   return 2;
-};
-
-// Grau de item equipado → bônus (Defesa e RD têm tabelas diferentes).
-export const GRAU_DEFESA = {
-  sem_grau: 0, quarto: 1, terceiro: 2, segundo: 3, primeiro: 4, zero: 5, especial: 6,
-};
-export const GRAU_RD = {
-  sem_grau: 0, quarto: 1, terceiro: 2, segundo: 3, primeiro: 4, zero: 5, especial: 10,
 };
 
 // Multiplicador de HP por Patamar, aplicado direto sobre a base.
@@ -69,7 +64,6 @@ export function deriveAfty(creature) {
   const core = creature?.core ?? {};
   const a = creature?.attributes ?? {};
   const ov = creature?.statOverrides ?? {};
-  const inv = creature?.inventario ?? {};
 
   const tipo = core.tipo || "combatente";
   const patamar = core.patamar || "comum";
@@ -81,6 +75,11 @@ export function deriveAfty(creature) {
   const attrBonus = resolveOrigemAttrBonus(creature);
   const nivelAlloc = creature?.attrNivel ?? {};
   const desenv = resolveDesenvolvimento(creature);
+  // Equipamento primeiro: os acessórios de atributo entram no cálculo do
+  // efetivo. A CARGA não sai daqui, porque depende do mod de Força final.
+  // BT antecipado só para as Cargas de Encantamento das Ferramentas (= BT).
+  const bt = maestria(nd);                                          // Maestria == Treinamento
+  const equip = resolveEquipamentos(creature, bt);
 
   // Limite EFETIVO por atributo = limite base (20 / poderes) + Desenvolvimento, teto 30.
   const limBase = (creature?.attrLimite && typeof creature.attrLimite === "object") ? creature.attrLimite : {};
@@ -90,8 +89,17 @@ export function deriveAfty(creature) {
   // Atributos de ORIGEM NÃO passam o limite (salvo os que digam explicitamente — TODO).
   // base+nível+Desenvolvimento já cabem no limite por construção (o Desenvolvimento
   // eleva valor E limite juntos); o bônus de origem é limitado ao limite efetivo.
-  const eff = (key) =>
-    Math.min((a[key] ?? 10) + (nivelAlloc[key] || 0) + (desenv[key] || 0) + (attrBonus[key] || 0), limiteEfOf(key));
+  // Acessório de atributo (Anéis do Conhecimento, Bracelete da Força...) é o
+  // único bônus que PASSA o limite: o texto deles diz "podendo superar o seu
+  // limite de atributo, até o máximo de 30". Por isso ele entra depois do
+  // clamp do limite, contra o teto duro de 30.
+  const eff = (key) => {
+    const dentroDoLimite = Math.min(
+      (a[key] ?? 10) + (nivelAlloc[key] || 0) + (desenv[key] || 0) + (attrBonus[key] || 0),
+      limiteEfOf(key),
+    );
+    return Math.min(dentroDoLimite + (equip.attrBonus[key] || 0), 30);
+  };
 
   // Modificadores (sobre o efetivo)
   const modFor = mod(eff("forca"));
@@ -116,8 +124,10 @@ export function deriveAfty(creature) {
 
   const maxForDex = Math.max(modFor, modDes);                       // Z8:Z9
   const maxAllMods = Math.max(modFor, modDes, modCon, modInt, modSab, modPre); // Z8:Z13
-  const bt = maestria(nd);                                          // Maestria == Treinamento
   const treino = resolveTreinoEfeitos(creature);                   // contribuições dos Treinamentos
+  // Carga só agora, com o mod de Força já fechado (inclui acessório).
+  const carga = resolveCarga(equip.espacosUsados, modFor);
+  const grau = grauFeiticeiro(nd);                                 // grau do feiticeiro por faixa de ND
 
   // ---------- HP (+ Treino de Resistência) ----------
   const hpBase =
@@ -125,7 +135,10 @@ export function deriveAfty(creature) {
     tipo === "restringido" ? 12 * nd :
     /* misto | conjurador */ 10 + (nd - 1) * 5;
   const hpPatamarMult = HP_PATAMAR_MULT[patamar] ?? 1;
-  const hp = Math.round(almaMult * (hpBase + nd * modCon + treino.hp) * hpPatamarMult);
+  // O bônus de item ("os seus pontos de vida máximos aumentam em 10") entra
+  // DEPOIS da Alma e do Patamar, ao contrário do treino: é um valor fixo de
+  // PV máximo, não uma parcela da base que o Patamar multiplicaria.
+  const hp = Math.round(almaMult * (hpBase + nd * modCon + treino.hp) * hpPatamarMult) + equip.hpMaxBonus;
 
   // ---------- PE (+ Treinos de Compreensão/Controle de Energia/…) ----------
   const peBase =
@@ -137,7 +150,7 @@ export function deriveAfty(creature) {
     qntPE === "pouca" ? -Math.floor(nd / 2) :
     qntPE === "grande" ? Math.floor(nd / 2) :
     qntPE === "muito_grande" ? nd : 0;
-  const pe = peBase + peQnt + modTecnica + treino.pe;
+  const pe = peBase + peQnt + modTecnica + treino.pe + equip.peBonus;
 
   // ---------- Resistência Parcial ----------
   // Calamidade ganha +1 em ND 10, 20 e 30 (0 a 3).
@@ -149,15 +162,15 @@ export function deriveAfty(creature) {
     patamar === "calamidade" ? resThresh :
     patamar === "beyond" ? 1 + resThresh : 0;
 
-  // ---------- Movimento (+ Treino de Agilidade) ----------
-  const movimento = 9 + maxForDex * 1.5 + treino.movimento;
+  // ---------- Movimento (+ Treino de Agilidade, - sobrecarga) ----------
+  const movimento = 9 + maxForDex * 1.5 + treino.movimento + carga.movimento + equip.movimentoBonus;
 
-  // ---------- RD Geral (+ grau de item) ----------
+  // ---------- RD Geral ----------
   const rdGeralBase =
     tipo === "conjurador" ? (nd >= 10 ? Math.floor(nd / 2) : 0) :
     tipo === "misto" ? (nd >= 10 ? nd : Math.floor(nd / 2)) :
     /* combatente | restringido */ (nd >= 10 ? maxAllMods : 0) + nd;
-  const rdGeral = rdGeralBase + (GRAU_RD[inv.rdGrau] ?? 0);
+  const rdGeral = rdGeralBase + equip.rdGeralBonus;
 
   // ---------- RD Específico ----------
   const rdEspecifico =
@@ -169,17 +182,37 @@ export function deriveAfty(creature) {
     tipo === "conjurador" ? INT(nd / 1.25) :
     tipo === "misto" ? INT(nd / 1.5) :
     /* combatente | restringido */ INT(nd / 1.75);
-  const cd = 10 + cdTipo + (modTecnica + bt);
+  const cd = 10 + cdTipo + (modTecnica + bt) + equip.cdBonus;
+
+  // ---------- Feitiços ----------
+  // Orçamento e acesso são fórmula fechada. A CD base dos Feitiços é a CD de
+  // Feitiçaria da criatura (acima), que já usa o Atributo Principal da Técnica
+  // (core.tecnicaAttr) e a Maestria. A criação de cada Feitiço só a desloca.
+  const feiticosLista = Array.isArray(creature.feiticos) ? creature.feiticos : [];
+  const feiticosGastos = feiticosLista.filter((f) => !f.variacaoDe).length;
+  const feiticos = {
+    total: totalFeiticos(nd),
+    nivelMax: nivelMaxFeitico(nd),
+    gastos: feiticosGastos,
+    restante: totalFeiticos(nd) - feiticosGastos,
+    excedeu: feiticosGastos > totalFeiticos(nd),
+    cdBase: cd,
+  };
 
   // ---------- Atenção (Percepção ADIADA → 0) ----------
   const atencao = 10 + 0;
 
-  // ---------- Defesa / CA (+ grau de item; Treino de Luta ADIADO) ----------
+  // ---------- RD Física (só escudo por ora) ----------
+  // Canal NOVO, separado de RD Geral e RD Específico. O autor confirmou que
+  // a RD do escudo é FÍSICA. O sistema de RD Física em si ainda vem.
+  const rdFisico = equip.rdFisico;
+
+  // ---------- Defesa / CA (+ uniforme, - sobrecarga; Treino de Luta ADIADO) ----------
   const defTipo =
     tipo === "conjurador" ? INT(nd / 1.75) :
     tipo === "misto" ? INT(nd / 1.5) :
     /* combatente | restringido */ INT(nd / 1.25);
-  const defesa = 10 + defTipo + modDes + bt + (GRAU_DEFESA[inv.defesaGrau] ?? 0) + treino.defesa;
+  const defesa = 10 + defTipo + modDes + bt + treino.defesa + equip.uniformeDefesa + carga.defesa + equip.defesaBonus;
 
   // ---------- Orçamentos (budgets do builder) ----------
   // Orçamento de Níveis de Aptidão. Só entram aqui os pontos LIVRES: os
@@ -288,6 +321,7 @@ export function deriveAfty(creature) {
     totalAptidao,               // orçamento de NÍVEIS de aptidão (para no ND 20)
     totalAptidoesAmaldicoadas,  // quantas Aptidões Amaldiçoadas pode ter (sem teto)
     aptidao,              // níveis por trilha: { alocado, concedido, efetivo, gastos }
+    feiticos,             // { total, nivelMax, gastos, restante, excedeu, cdBase }
     especializacoes,      // { escolhidas, total, max, obrigatoria, completa, erro }
     habilidades,          // { escolhidas, total, gastos, restante, excedeu, inacessiveis, niveisPorEspec }
     talentos,             // { escolhidas, gastos, inacessiveis } — gasto já somado em habilidades.gastos
@@ -302,6 +336,12 @@ export function deriveAfty(creature) {
     attrLimiteEfetivo,    // limite por atributo (base + Desenvolvimento, teto 30)
     attrDesenv: desenv,   // pontos de Desenvolvimento Inesperado por atributo
     attrBonus,            // bônus de atributo da origem (efetivo)
+    // ---------- Equipamentos ----------
+    grauFeiticeiro: grau,  // { value, label, rank, ndMin } derivado do ND
+    equip,                 // parcelas do equipamento (entradas, custoGasto, avisos...)
+    carga,                 // { espacosUsados, cargaLimite, cargaMaxima, sobrecarregado... }
+    rdFisico,              // RD Física (escudo). Canal separado da RD Geral.
+    penalidadeDestreza: equip.penalidadeDestreza, // uniforme + escudos, cumulativos
     guarda: null,         // TODO: depende do contador de ataques consecutivos
   };
 }

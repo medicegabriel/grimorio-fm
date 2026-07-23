@@ -66,17 +66,6 @@ export const AFTY_TAMANHOS = [
 
 // As origens do Afty ficam em ./afty-origens.js (catálogo de conteúdo).
 
-// Graus de item (temporário até a aba Inventário existir).
-export const AFTY_GRAUS_ITEM = [
-  { value: "sem_grau",  label: "Sem Grau" },
-  { value: "quarto",    label: "Quarto Grau" },
-  { value: "terceiro",  label: "Terceiro Grau" },
-  { value: "segundo",   label: "Segundo Grau" },
-  { value: "primeiro",  label: "Primeiro Grau" },
-  { value: "zero",      label: "Grau Zero" },
-  { value: "especial",  label: "Grau Especial" },
-];
-
 /** Ficha Afty em branco — só ESCOLHAS, os stats são derivados. */
 export function createBlankAfty() {
   return {
@@ -92,6 +81,7 @@ export function createBlankAfty() {
       nd: 3,                    // Nível de Desafio (piso 3 na UI, → ∞ sem teto)
       tamanho: "medio",
       tecnicaAttr: "inteligencia", // atributo da Técnica (CD / RD específico)
+      tecnicaDescricao: "",        // Funcionamento Básico / "Descrição da Técnica" (texto livre)
       origem: { id: "inato" },     // ver ./afty-origens.js
     },
 
@@ -121,13 +111,20 @@ export function createBlankAfty() {
       inteligencia: 0, sabedoria: 0, presenca: 0,
     },
 
-    // Grau de item equipado (temporário; virá do Inventário).
-    inventario: { defesaGrau: "sem_grau", rdGrau: "sem_grau", itens: [] },
+    // Equipamentos (aba Equipamentos, ex-Inventário). Defesa vem da modificação
+    // do uniforme, RD Físico vem do escudo. O shape dos itens fecha junto com a
+    // aba. Ver afty-equipamentos.js.
+    equipamentos: { itens: [] },
 
     // Especializações (classes). Até 2, e soma(niveis) === core.nd — o
     // nível de Especialização É o ND. Não mudam cálculo: só destravam
     // Habilidades de Especialização. Ver afty-especializacoes.js.
     especializacoes: [],        // [{ id, nivel }]
+    // Feitiços CRIADOS pelo jogador (não é catálogo). Cada um é uma entrada
+    // com os campos de criação (nível, tipo, ação, trocas...). O motor em
+    // afty-feiticos.js computa dano/alcance/custo/CD. Variações de Liberação
+    // (variacaoDe apontando outro feitiço) não contam no orçamento.
+    feiticos: [],               // [ feiticoCriado ] — ver afty-feiticos.js
     habilidades: [],            // Habilidades de Especialização (ex-Dotes)
     // Escolhas aninhadas das Habilidades: { [habId]: [opcaoId, ...] }. Guarda
     // qual opção (Estilo de Controle no Apogeu, Melhoria de Controlador...) foi

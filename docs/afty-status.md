@@ -99,9 +99,12 @@ Adrenalina, Ataque Inconsequente...), reações e usos por PE/Estamina, e tudo q
 sistema inexistente (**Armas**, **Inventário**, **Feitiços**, **Perícias/TR do personagem**).
 
 ### E. Sistemas inexistentes que as 6 especializações já cobram
-**Feitiços** (trava a maior parte do Conjurador) · **Armas** (Dedicação em Arma, Técnicas de
-Combate, Corpo Arsenal, Manejo Superior...) · **Inventário** (Otimização de Espaço, Ajustes em
-Equipamento, Arsenal Amaldiçoado) · **Perícias e TRs do personagem** (dezenas de `nota` viram
+**Feitiços** (trava a maior parte do Conjurador) · ~~**Armas**~~ e ~~**Inventário**~~ (feitos em
+2026-07-22: o catálogo existe, mas NENHUMA habilidade foi ligada a ele ainda, porque continua
+valendo o bloqueio raiz D. Candidatas diretas: *Otimização de Espaço*, *Ajustes em Equipamento*,
+*Dedicação em Arma*, *Técnicas de Combate*, *Corpo Arsenal*, *Manejo Superior*, e o grupo
+**Pugilato** citado por um Talento) · **Arsenal Amaldiçoado** (texto nunca enviado) ·
+**Perícias e TRs do personagem** (dezenas de `nota` viram
 requisito real no dia que existir) · **Talentos concedidos por origem/treinamento** (o catálogo
 existe, as fontes de concessão não).
 
@@ -156,7 +159,11 @@ existe, as fontes de concessão não).
   e 6 Habilidades Ápice + resolvers (`totalMelhoriasSuperiores`, `totalHabilidadesLendarias`,
   `altoNivelAtivo`, `avaliarRequisitoAltoNivel`, `avaliarAcessoAltoNivel`, `resolveAltoNivel`,
   `validarCatalogoAltoNivel`). Validador zerado.
-- `afty-schema.js` `createBlankAfty()` + constantes (tipos, patamares, tamanhos, graus de item).
+- `afty-equipamentos.js` catálogo do capítulo de Equipamentos (armas, propriedades, traços
+  especiais, uniformes, escudos, itens especiais) + resolvers (`grauFeiticeiro`,
+  `resolveEquipamentos`, `resolveCarga`, `orcamentoDoGrau`, `validarCatalogoEquipamentos`).
+  Regras de sistema em `docs/afty-equipamentos.md`.
+- `afty-schema.js` `createBlankAfty()` + constantes (tipos, patamares, tamanhos).
 - `afty-atributos.js` regras de atributo (métodos, point-buy, valores fixos, rolagem, pool de nível,
   Desenvolvimento, validação `resumoAtributos`).
 - `afty-origens.js` catálogo de origens + resolvers (`resolveOrigemAttrBonus`, `resolveDesenvolvimento`).
@@ -545,7 +552,11 @@ A planilha pode estar desatualizada. Confirmar quando der.
 - **Feitiços** (Técnica Inata = Ações/Características, aba Habilidades, "por último").
 - **Perícias** (destrava Atenção, que hoje usa Percepção = 0).
 - **Habilidades de Especialização** (a Especialização em si está pronta, faltando só o texto).
-- **Armas / Inventário** (grau de item hoje é campo manual temporário em Informações).
+- ~~**Armas / Inventário**~~ **FEITO em 2026-07-22**, ver `docs/afty-equipamentos.md`. A aba
+  Inventário virou **Equipamentos** e é real: 52 armas, 48 itens especiais, 4 modificações de
+  uniforme, 4 escudos, carga e sobrecarga. O campo manual "Grau de Item Equipado" foi REMOVIDO
+  junto com `GRAU_DEFESA`/`GRAU_RD` e o "Grau Zero". Falta o capítulo de **Ferramentas
+  Amaldiçoadas** (encantar arma, subir de grau), que traz o Grau de Equipamento.
 - **Efeitos das 15 anatomias** (RD, ataques, tamanho, movimento, condições).
 - Motor: **Guarda** (CU9 = contador de ataques consecutivos), `derived.guarda = null` por ora.
 - **Tela de jogo/combate** (rastrear HP/PE/Alma + Resistência Parcial/Guarda).
