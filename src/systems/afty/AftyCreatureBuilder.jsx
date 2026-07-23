@@ -55,7 +55,7 @@ import {
 import { validateExpression } from "../../components/fm-dsl";
 import { deriveAfty } from "./afty-derive";
 import {
-  createBlankFeitico, calcularFeiticoDano,
+  createBlankFeitico, calcularFeiticoDano, ALCANCE_POR_NIVEL, AREA_POR_NIVEL, taxasTroca,
   NIVEL_LABEL, FEITICO_ACOES, FORMAS_AREA, DANO_SUBTIPOS, REQUISITO_DIFICULDADE,
   CONDICAO_FORCAS, CONDICOES_CATALOGO, CONDICAO_FORCAS_POR_NIVEL,
   SANGRAMENTO, notacaoDano,
@@ -806,7 +806,7 @@ function DeltaStepper({ value, step, min, max, unit = "", onChange }) {
   const round2 = (x) => Math.round(x * 100) / 100;
   const dec = () => onChange(round2(Math.max(min ?? -Infinity, value - step)));
   const inc = () => onChange(round2(Math.min(max ?? Infinity, value + step)));
-  const txt = `${value > 0 ? "+" : ""}${value}${unit}`;
+  const txt = `${value > 0 ? "+" : ""}${String(value).replace(".", ",")}${unit}`;
   const btn = "w-8 h-8 flex items-center justify-center text-base font-bold text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 disabled:opacity-30 focus:outline-none focus:z-10 focus:ring-1 focus:ring-purple-500";
   return (
     <div className="inline-flex items-center">
@@ -823,13 +823,26 @@ function FeiticoDanoEditor({ feitico, calc, onPatch }) {
   const nNum = f.nivel === "max" ? 6 : f.nivel;
   const multiplos = f.subtipo === "multiplos";
   const cataclismico = f.subtipo === "cataclismico";
+  const destrutivo = f.subtipo === "destrutivo";
   // Destrutivo e Cataclísmico são sempre área + Ritual Estendido (autor).
-  const areaObrigatoria = f.subtipo === "destrutivo" || cataclismico;
+  const areaObrigatoria = destrutivo || cataclismico;
   const emArea = f.alvo === "area" || areaObrigatoria;
+  const linhaOuCone = ["linha", "cone"].includes(f.formaArea);
   const setTroca = (chave, v) => onPatch({ trocas: { ...f.trocas, [chave]: v } });
   const limDados = 1 + nNum;
   const limAcerto = 2 * nNum;
   const limCd = 1 + nNum;
+  // Alcance/área: aumento com teto de (1 + nível), redução até 0.
+  const taxas = taxasTroca(emArea ? "area" : "unico", f.formaArea);
+  const capAlcance = (1 + nNum) * taxas.alcance;
+  const capArea = (1 + nNum) * taxas.area;
+  const baseAlcance = ALCANCE_POR_NIVEL[f.nivel] ?? 0;
+  // Área efetiva antes das trocas: Destrutivo e Linha/Cone são base × 1,5.
+  const baseArea = ((destrutivo || linhaOuCone) ? 1.5 : 1) * (AREA_POR_NIVEL[f.nivel] ?? 0);
+  // Cabeçalho da seção de Trocas: a proporção muda entre alvo único e área.
+  const trocasTitulo = emArea
+    ? "Trocas · 1 dado = 2 acerto = 1 CD = 12m = 3m² = 6m + 1,5m²"
+    : "Trocas · 1 dado = 2 acerto = 6m = 1 CD";
 
   return (
     <div className="rounded-lg border border-slate-800 bg-slate-950/30 p-3 space-y-3">
@@ -839,13 +852,13 @@ function FeiticoDanoEditor({ feitico, calc, onPatch }) {
           <div>
             <FieldLabel>Resolução</FieldLabel>
             <OptionChips
-              value={emArea && !multiplos ? "tr" : f.resolucao}
+              value={multiplos ? "ataque" : (emArea ? "tr" : f.resolucao)}
               onChange={(v) => onPatch({ resolucao: v })}
               options={[
                 { value: "tr", label: "Resistência" },
                 { value: "ataque", label: "Ataque" },
               ]}
-              disabledValues={emArea && !multiplos ? ["ataque"] : []}
+              disabledValues={multiplos ? ["tr"] : (emArea ? ["ataque"] : [])}
             />
           </div>
           <div>
@@ -876,9 +889,14 @@ function FeiticoDanoEditor({ feitico, calc, onPatch }) {
           <FieldLabel>Subtipo</FieldLabel>
           <OptionChips
             value={f.subtipo}
-            onChange={(v) => onPatch(v === "destrutivo" || v === "cataclismico"
-              ? { subtipo: v, alvo: "area", acao: "ritual", resolucao: "tr" }
-              : { subtipo: v })}
+            onChange={(v) => onPatch(
+              v === "cataclismico"
+                ? { subtipo: v, alvo: "area", acao: "ritual", resolucao: "tr", formaArea: "esfera" }
+                : v === "destrutivo"
+                  ? { subtipo: v, alvo: "area", acao: "ritual", resolucao: "tr" }
+                  : v === "multiplos"
+                    ? { subtipo: v, alvo: "unico", resolucao: "ataque" }
+                    : { subtipo: v })}
             options={DANO_SUBTIPOS}
           />
         </div>
@@ -919,16 +937,19 @@ function FeiticoDanoEditor({ feitico, calc, onPatch }) {
       </div>
 
       {/* Trocas */}
-      <SecaoFeitico titulo="Trocas · 1 dado = 2 acerto = 6m = 1,5m² = 1 CD">
+      <SecaoFeitico titulo={trocasTitulo}>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
           <TrocaLinha rotulo="Dados de dano"><DeltaStepper value={f.trocas.dados} step={1} min={-limDados} max={limDados} onChange={(v) => setTroca("dados", v)} /></TrocaLinha>
           {f.resolucao === "ataque" && !multiplos && (
             <TrocaLinha rotulo="Acerto"><DeltaStepper value={f.trocas.acerto} step={1} min={-limAcerto} max={limAcerto} onChange={(v) => setTroca("acerto", v)} /></TrocaLinha>
           )}
           <TrocaLinha rotulo="CD"><DeltaStepper value={f.trocas.cd} step={1} min={-limCd} max={limCd} onChange={(v) => setTroca("cd", v)} /></TrocaLinha>
-          <TrocaLinha rotulo="Alcance"><DeltaStepper value={f.trocas.alcance} step={6} unit="m" onChange={(v) => setTroca("alcance", v)} /></TrocaLinha>
-          {emArea && !areaObrigatoria && (
-            <TrocaLinha rotulo="Área"><DeltaStepper value={f.trocas.area} step={["linha", "cone"].includes(f.formaArea) ? 4.5 : 1.5} unit="m" onChange={(v) => setTroca("area", v)} /></TrocaLinha>
+          {/* Cataclísmico não reduz alcance nem área (autor). Destrutivo reduz os dois. */}
+          {!cataclismico && (
+            <TrocaLinha rotulo="Alcance"><DeltaStepper value={f.trocas.alcance} step={6} min={-baseAlcance} max={capAlcance} unit="m" onChange={(v) => setTroca("alcance", v)} /></TrocaLinha>
+          )}
+          {emArea && !cataclismico && (
+            <TrocaLinha rotulo="Área"><DeltaStepper value={f.trocas.area} step={linhaOuCone ? 4.5 : 1.5} min={-baseArea} max={capArea} unit="m" onChange={(v) => setTroca("area", v)} /></TrocaLinha>
           )}
           <TrocaLinha rotulo="Empurrão (Gasta Dados)"><DeltaStepper value={f.trocas.empurraoDados} step={1} min={0} onChange={(v) => setTroca("empurraoDados", v)} /></TrocaLinha>
         </div>
@@ -992,8 +1013,9 @@ function TrocaLinha({ rotulo, children }) {
 /* Anexar condições ao Feitiço (reduzem dados) + sangramento variável. */
 function CondicaoEditor({ feitico, onPatch }) {
   const f = feitico;
+  // Somente Condição: escolhe do nível ACIMA (o motor só deixa UMA dessas).
   const permitidas = f.focoCondicao
-    ? CONDICAO_FORCAS.map((c) => c.value)
+    ? (CONDICAO_FORCAS_POR_NIVEL[Math.min((f.nivel === "max" ? 6 : f.nivel) + 1, 5)] || [])
     : (CONDICAO_FORCAS_POR_NIVEL[f.nivel] || []);
   const [forca, setForca] = useState(permitidas[0] || "fraca");
   const catalogo = (CONDICOES_CATALOGO[forca] || []).filter((n) => n !== "Sangramento");

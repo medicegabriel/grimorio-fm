@@ -250,15 +250,31 @@ export const DANO_SUBTIPOS = [
 ];
 
 // ---------------------------------------------------------------
-// PROPORÇÃO DE TROCAS. A base do guia:
+// PROPORÇÃO DE TROCAS. A base do guia (alvo único):
 //   +1 dado = +2 de acerto = 6m de alcance = +1 de CD.
 // Reduzir um eixo abaixo do padrão libera "unidades" para aumentar
-// outro. Cada unidade vale 1 dado / 2 acerto / 6m / 1 CD.
-// Área (cone/esfera/quadrado) reduz alcance E área juntos (6m + 1,5m) por unidade.
-// Linha reduz área em 4,5m por unidade. As condições, ação, subtipo,
-// requisito e linha NÃO entram nesta proporção.
+// outro. As condições, ação, subtipo, requisito e linha NÃO entram nesta proporção.
+//
+// Em Feitiços de ÁREA (autor): cada +1 dado sai de 12m de alcance OU 3m de área
+// (9m em linha/cone) OU o par 6m de alcance + 1,5m de área, que somam. Ou seja,
+// no alvo em área alcance e área valem METADE do padrão de alvo único, e cada
+// eixo é independente e aditivo.
 // ---------------------------------------------------------------
-export const TROCA_UNIDADE = { dado: 1, acerto: 2, alcance: 6, cd: 1, area: 1.5, areaLinha: 4.5 };
+export const TROCA_UNIDADE = {
+  dado: 1, acerto: 2, cd: 1,
+  alcanceUnico: 6,   // alvo único: 6m = 1 dado
+  alcanceArea: 12,   // área: 12m = 1 dado
+  area: 3,           // área normal: 3m = 1 dado
+  areaLinha: 9,      // linha/cone: 9m = 1 dado
+};
+
+// Metros de alcance/área que valem 1 dado, conforme o tipo de alvo e a forma.
+export function taxasTroca(alvo, forma) {
+  return {
+    alcance: alvo === "area" ? TROCA_UNIDADE.alcanceArea : TROCA_UNIDADE.alcanceUnico,
+    area: formaEhLinha(forma) ? TROCA_UNIDADE.areaLinha : TROCA_UNIDADE.area,
+  };
+}
 
 // Dados extras por transformar a área em LINHA (não contam para o limite do guia).
 export function dadosLinha(nivel) {
@@ -311,14 +327,19 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
   const nivel = f.nivel ?? 1;
   const nNum = nivel === "max" ? 6 : nivel;              // valor numérico para fórmulas de escala
   const subtipo = f.subtipo || "nenhum";
+  const destrutivo = subtipo === "destrutivo";
+  const cataclismico = subtipo === "cataclismico";
   const t = f.trocas || {};
 
   // Destrutivo e Cataclísmico NUNCA são alvo único e SEMPRE são Ritual
   // Estendido (autor). Área é sempre teste de resistência.
-  const areaObrigatoria = subtipo === "destrutivo" || subtipo === "cataclismico";
+  const areaObrigatoria = destrutivo || cataclismico;
   const alvo = areaObrigatoria ? "area" : (f.alvo === "area" ? "area" : "unico");
   const acaoEff = areaObrigatoria ? "ritual" : f.acao;
-  const resolucao = alvo === "area" ? "tr" : (f.resolucao === "ataque" ? "ataque" : "tr");
+  // Múltiplos Disparos são SEMPRE jogadas de ataque. Área é sempre teste de resistência.
+  const resolucao = subtipo === "multiplos" ? "ataque"
+    : alvo === "area" ? "tr"
+    : (f.resolucao === "ataque" ? "ataque" : "tr");
 
   // Acesso: o nível do Feitiço não pode passar do máximo da faixa de ND.
   if (ctx.nd != null && nivel !== "max" && nivel > nivelMaxFeitico(ctx.nd)) {
@@ -340,9 +361,12 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
   if (f.acao === "bonus" && subtipo === "vampirico") avisos.push("Feitiço Vampírico não pode ser Ação Bônus.");
 
   // 2) Trocas do guia (limitadas). Estas SIM contam no saldo.
+  // Acerto só existe em Feitiço de ataque de alvo único (não em TR, área nem
+  // Múltiplos Disparos). Fora disso um valor residual não conta no saldo.
+  const acertoAplicavel = resolucao === "ataque" && subtipo !== "multiplos";
   const lim = limitesTroca(nivel);
   const trocaDados = clampAviso(t.dados | 0, lim.dados, avisos, "dados de dano");
-  const trocaAcerto = clampAviso(t.acerto | 0, lim.acerto, avisos, "acerto");
+  const trocaAcerto = acertoAplicavel ? clampAviso(t.acerto | 0, lim.acerto, avisos, "acerto") : 0;
   const trocaCd = clampAviso(t.cd | 0, lim.cd, avisos, "CD");
   dados += trocaDados;
 
@@ -350,8 +374,35 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
   // solta-se a área num ponto dentro do alcance. Os dois entram no saldo.
   const alcanceBase = ALCANCE_POR_NIVEL[nivel] ?? null;
   const areaBase = alvo === "area" ? (AREA_POR_NIVEL[nivel] ?? null) : null;
-  const alcanceDelta = t.alcance | 0;   // metros +/- (múltiplos de 6, ou 12 se for por área)
-  const areaDelta = areaObrigatoria ? 0 : (t.area | 0); // Destrutivo/Cataclísmico têm área própria
+  // Number() (não | 0): o delta de área tem passo fracionário (1,5m / 4,5m),
+  // que o OR bitwise truncaria (-1.5 vira -1).
+  // Destrutivo PODE reduzir alcance e área; Cataclísmico NÃO pode (autor).
+  const linhaOuCone = formaEhLinha(f.formaArea);
+  // Área "própria" antes das trocas: Destrutivo e Linha/Cone são base × 1,5;
+  // esfera comum é a base; Cataclísmico é o mapa (sem valor de metros).
+  const areaBaseEfetiva = (alvo === "area" && !cataclismico)
+    ? ((destrutivo || linhaOuCone) ? areaBase * 1.5 : areaBase)
+    : null;
+  let alcanceDelta = cataclismico ? 0 : (Number(t.alcance) || 0);   // metros +/-
+  let areaDelta = (cataclismico || alvo !== "area") ? 0 : (Number(t.area) || 0);
+  // AUMENTO de alcance e área tem teto de (1 + nível), o mesmo padrão dos dados
+  // (autor). A redução vai livre até o piso (0 para os dois).
+  const taxas = taxasTroca(alvo, f.formaArea);
+  const maxAumentoUnid = 1 + nNum;
+  if (alcanceBase != null && !cataclismico) {
+    if (alcanceDelta > maxAumentoUnid * taxas.alcance) {
+      avisos.push(`Aumento de alcance passa do limite (+${maxAumentoUnid * taxas.alcance}m).`);
+      alcanceDelta = maxAumentoUnid * taxas.alcance;
+    }
+    alcanceDelta = Math.max(alcanceDelta, -alcanceBase);
+  }
+  if (areaBaseEfetiva != null) {
+    if (areaDelta > maxAumentoUnid * taxas.area) {
+      avisos.push(`Aumento de área passa do limite (+${maxAumentoUnid * taxas.area}m).`);
+      areaDelta = maxAumentoUnid * taxas.area;
+    }
+    areaDelta = Math.max(areaDelta, -areaBaseEfetiva);
+  }
 
   // Saldo de trocas em UNIDADES (1 = 1 dado). Reduções liberam, aumentos gastam.
   const saldo = saldoTrocas({ alvo, forma: f.formaArea, trocaDados, trocaAcerto, trocaCd, alcanceDelta, areaDelta });
@@ -363,18 +414,31 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
   const empurraoMetros = empurraoDados * 6;
 
   // 4) Condições anexadas: cada uma reduz dados pela força. (Fora do limite do guia.)
-  const forcasPermitidas = CONDICAO_FORCAS_POR_NIVEL[nivel] || [];
+  // Com "Somente Condição" o Feitiço conta como um NÍVEL ACIMA para a escolha,
+  // mas só pode ter UMA condição desse nível superior (e a duração ganha +1
+  // rodada, ainda não modelada aqui). O teto de quantidade continua valendo.
+  const forcasNormais = CONDICAO_FORCAS_POR_NIVEL[nivel] || [];
+  const forcasPermitidas = f.focoCondicao
+    ? (CONDICAO_FORCAS_POR_NIVEL[Math.min(nNum + 1, 5)] || [])
+    : forcasNormais;
   const condicoes = Array.isArray(f.condicoes) ? f.condicoes : [];
   let reducaoCond = 0;
   const maxCond = nNum; // "quantidade máxima de condições igual ao nível dela"
-  if (condicoes.length > maxCond && !f.focoCondicao) {
+  if (condicoes.length > maxCond) {
     avisos.push(`Máximo de ${maxCond} condição(ões) no ${NIVEL_LABEL[nivel]}.`);
   }
   for (const c of condicoes) {
-    if (!f.focoCondicao && !forcasPermitidas.includes(c.forca)) {
+    if (!forcasPermitidas.includes(c.forca)) {
       avisos.push(`${NIVEL_LABEL[nivel]} não pode aplicar condição ${c.forca}.`);
     }
     reducaoCond += CONDICAO_REDUCAO[c.forca] || 0;
+  }
+  // Somente Condição: no máximo UMA condição acima do nível normal do Feitiço.
+  if (f.focoCondicao) {
+    const superiores = condicoes.filter((c) => !forcasNormais.includes(c.forca));
+    if (superiores.length > 1) {
+      avisos.push("Somente Condição permite apenas uma condição de nível superior por Feitiço.");
+    }
   }
   // Sangramento é uma condição variável (ocupa vaga e reduz dados pela força).
   if (f.sangramento) {
@@ -423,23 +487,17 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
   }
 
   // 7) Área final. Sempre múltipla de 1,5m. Linha e Cone contam como LINHA
-  //    (comprimento = área × 1,5 e dados extras). Destrutivo e Cataclísmico
-  //    têm ÁREAS PRÓPRIAS: o Destrutivo é a área base × 1,5, o Cataclísmico é
-  //    o mapa inteiro.
+  //    (comprimento = área × 1,5 e dados extras). Destrutivo tem área própria
+  //    (base × 1,5) mas PODE ser reduzida pelas trocas. Cataclísmico é o mapa.
   let areaFinal = null;
-  const linhaOuCone = formaEhLinha(f.formaArea);
   if (alvo === "area") {
-    if (subtipo === "cataclismico") {
+    if (cataclismico) {
       areaFinal = null;                       // mapa inteiro
       detalhes.areaMapa = true;
-    } else if (subtipo === "destrutivo") {
-      if (linhaOuCone) dados += dadosLinha(nNum);
-      areaFinal = arredondaArea(areaBase * 1.5);
-      detalhes.areaPropria = true;
     } else {
-      let a = areaBase;
-      if (linhaOuCone) { a = a * 1.5; dados += dadosLinha(nNum); }
-      areaFinal = arredondaArea(a + areaDelta);
+      if (linhaOuCone) dados += dadosLinha(nNum);
+      areaFinal = arredondaArea(areaBaseEfetiva + areaDelta);
+      if (destrutivo) detalhes.areaPropria = true;
     }
   }
 
@@ -485,10 +543,8 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
   const acertoDelta = trocaAcerto;
 
   // Custo em PE (a criação não altera o custo; requisito de dano dá dados, não muda PE).
-  let custoPE = custoPadrao(nivel === "max" ? 5 : nivel);
-  if (subtipo === "continuo" && f.continuoModo !== "concentrado") {
-    detalhes.custoSustentacaoPorRodada = nNum;
-  }
+  // A sustentação do dano contínuo vai em detalhes.continuo.custoSustentacao.
+  const custoPE = custoPadrao(nivel === "max" ? 5 : nivel);
 
   return {
     nivel,
@@ -524,18 +580,16 @@ function clampAviso(valor, limite, avisos, rotulo) {
 // ou trocas positivas em dados/acerto/CD financiadas) devem se pagar.
 // Convenção: aumento gasta unidade (saldo -), redução libera (saldo +).
 function saldoTrocas({ alvo, forma, trocaDados, trocaAcerto, trocaCd, alcanceDelta, areaDelta }) {
+  const taxas = taxasTroca(alvo, forma);
   let saldo = 0;
   // Dados/acerto/CD: aumento gasta, redução (negativo) devolve.
   saldo -= trocaDados;
   saldo -= trocaAcerto / TROCA_UNIDADE.acerto;
   saldo -= trocaCd;
-  // Alcance: reduzir (negativo) devolve 1 unidade a cada 6m. Aumentar gasta.
-  saldo += -alcanceDelta / TROCA_UNIDADE.alcance;
-  // Área: em Feitiço de área, reduzir a área devolve unidade (1,5m comum, 4,5m linha).
-  if (alvo === "area") {
-    const passo = formaEhLinha(forma) ? TROCA_UNIDADE.areaLinha : TROCA_UNIDADE.area;
-    saldo += -areaDelta / passo;
-  }
+  // Alcance: reduzir (negativo) devolve unidade; aumentar gasta.
+  saldo += -alcanceDelta / taxas.alcance;
+  // Área: só em Feitiço de área, e independente do alcance (aditivo).
+  if (alvo === "area") saldo += -areaDelta / taxas.area;
   // Arredonda ruído de ponto flutuante.
   return Math.round(saldo * 100) / 100;
 }
