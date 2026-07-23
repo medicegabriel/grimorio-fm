@@ -141,8 +141,14 @@ export const FORMAS_AREA = [
 ];
 export const formaEhLinha = (forma) => forma === "linha" || forma === "cone";
 
-// A área é SEMPRE múltipla de 1,5m (autor). Arredonda para o múltiplo mais próximo.
-export const arredondaArea = (m) => (m == null ? null : Math.round(m / 1.5) * 1.5);
+// A área é SEMPRE múltipla de 1,5m (autor), arredondada PARA BAIXO ao múltiplo
+// de 1,5 (o piso padrão do sistema). O epsilon evita erro de ponto flutuante
+// engolir um múltiplo exato (ex.: 9/1,5 vindo como 5,9999).
+export const arredondaArea = (m) => {
+  if (m == null) return null;
+  const passos = Math.floor(m / 1.5 + 1e-9);
+  return Math.round(passos * 1.5 * 10) / 10;
+};
 
 // ---------------------------------------------------------------
 // AÇÕES (Conjuração). As tabelas de dano assumem "ação comum".
@@ -256,23 +262,26 @@ export const DANO_SUBTIPOS = [
 // outro. As condições, ação, subtipo, requisito e linha NÃO entram nesta proporção.
 //
 // Em Feitiços de ÁREA (autor): cada +1 dado sai de 12m de alcance OU 3m de área
-// (9m em linha/cone) OU o par 6m de alcance + 1,5m de área, que somam. Ou seja,
-// no alvo em área alcance e área valem METADE do padrão de alvo único, e cada
-// eixo é independente e aditivo.
+// OU o par 6m de alcance + 1,5m de área, que somam. Alcance e área valem METADE
+// do padrão de alvo único, e cada eixo é independente e aditivo.
+//
+// O modificador de área entra na área BASE (de 1,5m em 1,5m), e SÓ DEPOIS os
+// multiplicadores × 1,5 do Destrutivo e da Linha/Cone escalam o resultado:
+//   área = arredonda( (base + modificador) × mult Destrutivo × mult Linha ).
+// Por isso a taxa de 3m/dado vale para o modificador na base, sem distinção de forma.
 // ---------------------------------------------------------------
 export const TROCA_UNIDADE = {
   dado: 1, acerto: 2, cd: 1,
   alcanceUnico: 6,   // alvo único: 6m = 1 dado
   alcanceArea: 12,   // área: 12m = 1 dado
-  area: 3,           // área normal: 3m = 1 dado
-  areaLinha: 9,      // linha/cone: 9m = 1 dado
+  area: 3,           // área (na base): 3m = 1 dado
 };
 
-// Metros de alcance/área que valem 1 dado, conforme o tipo de alvo e a forma.
-export function taxasTroca(alvo, forma) {
+// Metros de alcance/área que valem 1 dado, conforme o tipo de alvo.
+export function taxasTroca(alvo) {
   return {
     alcance: alvo === "area" ? TROCA_UNIDADE.alcanceArea : TROCA_UNIDADE.alcanceUnico,
-    area: formaEhLinha(forma) ? TROCA_UNIDADE.areaLinha : TROCA_UNIDADE.area,
+    area: TROCA_UNIDADE.area,
   };
 }
 
@@ -378,16 +387,18 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
   // que o OR bitwise truncaria (-1.5 vira -1).
   // Destrutivo PODE reduzir alcance e área; Cataclísmico NÃO pode (autor).
   const linhaOuCone = formaEhLinha(f.formaArea);
-  // Área "própria" antes das trocas: Destrutivo e Linha/Cone são base × 1,5;
-  // esfera comum é a base; Cataclísmico é o mapa (sem valor de metros).
-  const areaBaseEfetiva = (alvo === "area" && !cataclismico)
-    ? ((destrutivo || linhaOuCone) ? areaBase * 1.5 : areaBase)
-    : null;
+  // Multiplicador de área: Destrutivo × 1,5 E Linha/Cone × 1,5 ACUMULAM (autor),
+  // então um Destrutivo em Linha fica × 2,25. Aplicado DEPOIS do modificador,
+  // que entra na BASE (de 1,5m em 1,5m). Cataclísmico é o mapa (sem valor).
+  const multArea = (destrutivo ? 1.5 : 1) * (linhaOuCone ? 1.5 : 1);
   let alcanceDelta = cataclismico ? 0 : (Number(t.alcance) || 0);   // metros +/-
+  // Number() (não | 0): o modificador de área tem passo fracionário (1,5m),
+  // que o OR bitwise truncaria.
   let areaDelta = (cataclismico || alvo !== "area") ? 0 : (Number(t.area) || 0);
   // AUMENTO de alcance e área tem teto de (1 + nível), o mesmo padrão dos dados
-  // (autor). A redução vai livre até o piso (0 para os dois).
-  const taxas = taxasTroca(alvo, f.formaArea);
+  // (autor). A redução vai livre até o piso (0 para os dois). O modificador de
+  // área é medido na BASE (antes dos × 1,5), então o piso é a área base.
+  const taxas = taxasTroca(alvo);
   const maxAumentoUnid = 1 + nNum;
   if (alcanceBase != null && !cataclismico) {
     if (alcanceDelta > maxAumentoUnid * taxas.alcance) {
@@ -396,16 +407,16 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
     }
     alcanceDelta = Math.max(alcanceDelta, -alcanceBase);
   }
-  if (areaBaseEfetiva != null) {
+  if (areaBase != null && !cataclismico) {
     if (areaDelta > maxAumentoUnid * taxas.area) {
       avisos.push(`Aumento de área passa do limite (+${maxAumentoUnid * taxas.area}m).`);
       areaDelta = maxAumentoUnid * taxas.area;
     }
-    areaDelta = Math.max(areaDelta, -areaBaseEfetiva);
+    areaDelta = Math.max(areaDelta, -areaBase);
   }
 
   // Saldo de trocas em UNIDADES (1 = 1 dado). Reduções liberam, aumentos gastam.
-  const saldo = saldoTrocas({ alvo, forma: f.formaArea, trocaDados, trocaAcerto, trocaCd, alcanceDelta, areaDelta });
+  const saldo = saldoTrocas({ alvo, trocaDados, trocaAcerto, trocaCd, alcanceDelta, areaDelta });
   if (saldo < 0) avisos.push(`Trocas desbalanceadas: faltam ${-saldo} unidade(s) de troca (1 dado = 2 acerto = 6m = 1 CD).`);
 
   // 3) Empurrão: cada dado gasto vira +6m de empurrão (exige TR, metade se passar).
@@ -486,9 +497,10 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
     if (req) dados += req.dados;
   }
 
-  // 7) Área final. Sempre múltipla de 1,5m. Linha e Cone contam como LINHA
-  //    (comprimento = área × 1,5 e dados extras). Destrutivo tem área própria
-  //    (base × 1,5) mas PODE ser reduzida pelas trocas. Cataclísmico é o mapa.
+  // 7) Área final: o modificador entra na BASE e SÓ DEPOIS os × 1,5 escalam:
+  //    (base + modificador) × mult Destrutivo × mult Linha, arredondado para
+  //    baixo ao múltiplo de 1,5. Linha/Cone ainda dão os dados extras de linha.
+  //    Cataclísmico é o mapa inteiro.
   let areaFinal = null;
   if (alvo === "area") {
     if (cataclismico) {
@@ -496,7 +508,7 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
       detalhes.areaMapa = true;
     } else {
       if (linhaOuCone) dados += dadosLinha(nNum);
-      areaFinal = arredondaArea(areaBaseEfetiva + areaDelta);
+      areaFinal = arredondaArea((areaBase + areaDelta) * multArea);
       if (destrutivo) detalhes.areaPropria = true;
     }
   }
@@ -579,8 +591,8 @@ function clampAviso(valor, limite, avisos, rotulo) {
 // Saldo de trocas em unidades. Reduções (valores negativos de alcance/área,
 // ou trocas positivas em dados/acerto/CD financiadas) devem se pagar.
 // Convenção: aumento gasta unidade (saldo -), redução libera (saldo +).
-function saldoTrocas({ alvo, forma, trocaDados, trocaAcerto, trocaCd, alcanceDelta, areaDelta }) {
-  const taxas = taxasTroca(alvo, forma);
+function saldoTrocas({ alvo, trocaDados, trocaAcerto, trocaCd, alcanceDelta, areaDelta }) {
+  const taxas = taxasTroca(alvo);
   let saldo = 0;
   // Dados/acerto/CD: aumento gasta, redução (negativo) devolve.
   saldo -= trocaDados;

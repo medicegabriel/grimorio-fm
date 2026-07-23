@@ -827,18 +827,17 @@ function FeiticoDanoEditor({ feitico, calc, onPatch }) {
   // Destrutivo e Cataclísmico são sempre área + Ritual Estendido (autor).
   const areaObrigatoria = destrutivo || cataclismico;
   const emArea = f.alvo === "area" || areaObrigatoria;
-  const linhaOuCone = ["linha", "cone"].includes(f.formaArea);
   const setTroca = (chave, v) => onPatch({ trocas: { ...f.trocas, [chave]: v } });
   const limDados = 1 + nNum;
   const limAcerto = 2 * nNum;
   const limCd = 1 + nNum;
   // Alcance/área: aumento com teto de (1 + nível), redução até 0.
-  const taxas = taxasTroca(emArea ? "area" : "unico", f.formaArea);
+  const taxas = taxasTroca(emArea ? "area" : "unico");
   const capAlcance = (1 + nNum) * taxas.alcance;
   const capArea = (1 + nNum) * taxas.area;
   const baseAlcance = ALCANCE_POR_NIVEL[f.nivel] ?? 0;
-  // Área efetiva antes das trocas: Destrutivo e Linha/Cone são base × 1,5.
-  const baseArea = ((destrutivo || linhaOuCone) ? 1.5 : 1) * (AREA_POR_NIVEL[f.nivel] ?? 0);
+  // O modificador de área entra na BASE (crua): o piso de redução é a base.
+  const baseArea = AREA_POR_NIVEL[f.nivel] ?? 0;
   // Cabeçalho da seção de Trocas: a proporção muda entre alvo único e área.
   const trocasTitulo = emArea
     ? "Trocas · 1 dado = 2 acerto = 1 CD = 12m = 3m² = 6m + 1,5m²"
@@ -949,7 +948,7 @@ function FeiticoDanoEditor({ feitico, calc, onPatch }) {
             <TrocaLinha rotulo="Alcance"><DeltaStepper value={f.trocas.alcance} step={6} min={-baseAlcance} max={capAlcance} unit="m" onChange={(v) => setTroca("alcance", v)} /></TrocaLinha>
           )}
           {emArea && !cataclismico && (
-            <TrocaLinha rotulo="Área"><DeltaStepper value={f.trocas.area} step={linhaOuCone ? 4.5 : 1.5} min={-baseArea} max={capArea} unit="m" onChange={(v) => setTroca("area", v)} /></TrocaLinha>
+            <TrocaLinha rotulo="Área"><DeltaStepper value={f.trocas.area} step={1.5} min={-baseArea} max={capArea} unit="m" onChange={(v) => setTroca("area", v)} /></TrocaLinha>
           )}
           <TrocaLinha rotulo="Empurrão (Gasta Dados)"><DeltaStepper value={f.trocas.empurraoDados} step={1} min={0} onChange={(v) => setTroca("empurraoDados", v)} /></TrocaLinha>
         </div>
