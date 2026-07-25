@@ -78,7 +78,7 @@ export function createBlankAfty() {
     core: {
       tipo: "combatente",       // dirige coeficientes
       patamar: "comum",         // multiplica HP, escala Resistência/Atributos
-      nd: 3,                    // Nível de Desafio (piso 3 na UI, → ∞ sem teto)
+      nd: 20,                   // Nível de Desafio (piso 3 na UI, → ∞ sem teto)
       tamanho: "medio",
       tecnicaAttr: "inteligencia", // atributo da Técnica (CD / RD específico)
       tecnicaDescricao: "",        // Funcionamento Básico / "Descrição da Técnica" (texto livre)

@@ -56,9 +56,15 @@ import { validateExpression } from "../../components/fm-dsl";
 import { deriveAfty } from "./afty-derive";
 import {
   createBlankFeitico, calcularFeiticoDano, ALCANCE_POR_NIVEL, AREA_POR_NIVEL, taxasTroca,
+  calcularFeiticoCurativo, CURA_ACOES, CURA_REMOCAO,
+  calcularFeiticoEspecial, ESPECIAL_SUBTIPOS, maxGolpesGolpeador, ITEM_CUSTO_MAX,
+  TRANSF_DURACOES, TRANSF_ACOES,
   NIVEL_LABEL, FEITICO_ACOES, FORMAS_AREA, DANO_SUBTIPOS, REQUISITO_DIFICULDADE,
   CONDICAO_FORCAS, CONDICOES_CATALOGO, CONDICAO_FORCAS_POR_NIVEL,
   SANGRAMENTO, notacaoDano,
+  calcularFeiticoAuxiliar, AUX_EFEITOS, AUX_TABELAS, AUX_DURACOES, faixaRodadasDuradoura,
+  createBlankAuxEffect, efeitosDisponiveisMult, primeiroEfeitoLivre,
+  resultaEspecialAux, ofereceUmGolpe, aplicaUmGolpe, podeEventoUnico,
 } from "./afty-feiticos";
 
 /**
@@ -561,7 +567,6 @@ const TIPO_FEITICO = [
   { value: "passivo",  label: "Passivo" },
 ];
 const TIPO_FEITICO_LABEL = Object.fromEntries(TIPO_FEITICO.map((t) => [t.value, t.label]));
-const TIPO_IMPLEMENTADO = new Set(["dano"]);
 
 function TabHabilidades({ draft, derived, patchCore, addFeitico, removeFeitico, patchFeitico, duplicarFeitico }) {
   const origem = draft.core.origem?.id;
@@ -630,7 +635,11 @@ function PerfilAmaldicoadoCard({ draft, derived, patchCore }) {
 function FeiticosCard({ draft, derived, addFeitico, removeFeitico, patchFeitico, duplicarFeitico }) {
   const lista = Array.isArray(draft.feiticos) ? draft.feiticos : [];
   const { total, gastos, excedeu, nivelMax } = derived.feiticos;
-  const ctx = { nd: derived.nd, cdBase: derived.feiticos.cdBase };
+  const ctx = {
+    nd: derived.nd,
+    cdBase: derived.feiticos.cdBase,
+    temEnergiaReversa: Array.isArray(draft.aptidoesAmaldicoadas) && draft.aptidoesAmaldicoadas.includes("energia_reversa"),
+  };
   return (
     <Card
       title="Feitiços"
@@ -679,8 +688,22 @@ function FeiticosCard({ draft, derived, addFeitico, removeFeitico, patchFeitico,
 function FeiticoCard({ feitico, ctx, nivelMax, onPatch, onRemove, onDuplicate }) {
   const [open, setOpen] = useState(!feitico.nome);
   const [confirmDel, setConfirmDel] = useState(false);
-  const calc = feitico.tipo === "dano" ? calcularFeiticoDano(feitico, ctx) : null;
-  const temAviso = calc && calc.avisos.length > 0;
+  const calc = feitico.tipo === "dano" ? calcularFeiticoDano(feitico, ctx)
+    : feitico.tipo === "auxiliar" ? calcularFeiticoAuxiliar(feitico, ctx)
+    : feitico.tipo === "curativo" ? calcularFeiticoCurativo(feitico, ctx)
+    : feitico.tipo === "especial" ? calcularFeiticoEspecial(feitico, ctx)
+    : null;
+  // Agrega avisos do Feitiço e dos sub-efeitos (Múltiplos Efeitos), para o ícone
+  // e o tooltip do cabeçalho não mentirem o número/mensagem.
+  const avisosTodos = calc
+    ? [...(calc.avisos || []), ...((calc.efeitos || []).flatMap((e) => e.avisos || []))]
+    : [];
+  const temAviso = avisosTodos.length > 0;
+  const resumo = feitico.tipo === "dano" ? calc?.dano
+    : feitico.tipo === "auxiliar" ? formatAuxValor(calc)
+    : feitico.tipo === "curativo" ? calc?.cura
+    : feitico.tipo === "especial" ? (calc?.dano ?? calc?.resumo)
+    : null;
 
   return (
     <div className="rounded-lg border border-slate-700/80 bg-slate-950/40">
@@ -693,16 +716,19 @@ function FeiticoCard({ feitico, ctx, nivelMax, onPatch, onRemove, onDuplicate })
         >
           <ChevronDown className={`w-4 h-4 text-slate-500 flex-shrink-0 transition-transform ${open ? "" : "-rotate-90"}`} aria-hidden="true" />
           <span className={`text-sm font-semibold truncate ${feitico.nome ? "text-white" : "text-slate-500"}`}>
-            {feitico.nome || "Feitiço sem nome"}
+            {feitico.nome || "Feitiço Sem Nome"}
           </span>
           <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded border border-purple-800/60 bg-purple-950/40 text-purple-300 flex-shrink-0 whitespace-nowrap">
             {TIPO_FEITICO_LABEL[feitico.tipo]} · {NIVEL_LABEL[feitico.nivel]}
           </span>
-          {temAviso && <AlertTriangle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" aria-label={`${calc.avisos.length} aviso(s)`} title={calc.avisos.join("\n")} />}
+          {temAviso && <AlertTriangle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" aria-label={`${avisosTodos.length} aviso(s)`} title={avisosTodos.join("\n")} />}
         </button>
         {calc && (
           <span className="hidden sm:flex items-center gap-2 flex-shrink-0 font-mono text-[11px] tabular-nums text-slate-400">
-            <span title="Dano">{calc.dano}</span>
+            <span title={feitico.tipo === "dano" ? "Dano"
+              : feitico.tipo === "especial" ? (["golpeador", "danoAlma"].includes(feitico.especialSubtipo) ? "Dano" : "Efeito")
+              : feitico.tipo === "curativo" ? (calc?.ehTemporario ? "PV Temporário" : "Cura")
+              : "Efeito"}>{resumo}</span>
             <span title="Custo em PE" className="text-purple-300">{calc.custoPE} PE</span>
           </span>
         )}
@@ -729,17 +755,23 @@ function FeiticoCard({ feitico, ctx, nivelMax, onPatch, onRemove, onDuplicate })
             </div>
             <div>
               <FieldLabel>Tipo</FieldLabel>
-              <OptionChips value={feitico.tipo} options={TIPO_FEITICO} onChange={(v) => onPatch({ tipo: v })} />
+              <OptionChips value={feitico.tipo} options={TIPO_FEITICO} onChange={(v) => onPatch({ tipo: v, ...(v === "curativo" && feitico.nivel === 0 ? { nivel: 1 } : {}) })} />
             </div>
           </div>
 
           <div>
             <FieldLabel>Nível do Feitiço</FieldLabel>
-            <NivelFeiticoPicker value={feitico.nivel} onChange={(n) => onPatch({ nivel: n })} nivelMax={nivelMax} />
+            <NivelFeiticoPicker value={feitico.nivel} onChange={(n) => onPatch(patchNivelFeitico(feitico, n))} nivelMax={nivelMax} nivelMin={feitico.tipo === "curativo" ? 1 : 0} />
           </div>
 
-          {TIPO_IMPLEMENTADO.has(feitico.tipo) ? (
+          {feitico.tipo === "dano" ? (
             <FeiticoDanoEditor feitico={feitico} calc={calc} onPatch={onPatch} />
+          ) : feitico.tipo === "auxiliar" ? (
+            <FeiticoAuxiliarEditor feitico={feitico} calc={calc} onPatch={onPatch} />
+          ) : feitico.tipo === "curativo" ? (
+            <FeiticoCurativoEditor feitico={feitico} calc={calc} onPatch={onPatch} />
+          ) : feitico.tipo === "especial" ? (
+            <FeiticoEspecialEditor feitico={feitico} calc={calc} onPatch={onPatch} />
           ) : (
             <div className="text-center py-5 border border-dashed border-slate-700 rounded-lg text-sm text-slate-400">
               Feitiços {TIPO_FEITICO_LABEL[feitico.tipo]} entram num próximo incremento.
@@ -770,12 +802,12 @@ function SecaoFeitico({ titulo, children }) {
 }
 
 /* Picker segmentado 0..5 do nível do Feitiço (medidor, não campo numérico). */
-function NivelFeiticoPicker({ value, onChange, nivelMax }) {
+function NivelFeiticoPicker({ value, onChange, nivelMax, nivelMin = 0 }) {
   return (
     <div className="flex gap-1.5" role="group" aria-label="Nível do Feitiço">
       {[0, 1, 2, 3, 4, 5].map((n) => {
         const on = n === value;
-        const off = n > nivelMax && !on;
+        const off = (n > nivelMax || n < nivelMin) && !on;
         return (
           <button
             key={n}
@@ -783,7 +815,7 @@ function NivelFeiticoPicker({ value, onChange, nivelMax }) {
             onClick={() => !off && onChange(n)}
             disabled={off}
             aria-pressed={on}
-            title={off ? `Inacessível no ND atual (máximo ${NIVEL_LABEL[nivelMax]})` : NIVEL_LABEL[n]}
+            title={off ? (n < nivelMin ? "Nível 0 não cura" : `Inacessível no ND atual (máximo ${NIVEL_LABEL[nivelMax]})`) : NIVEL_LABEL[n]}
             className={`grow py-1.5 rounded-lg text-sm font-bold tabular-nums border transition-colors focus:outline-none focus:ring-1 focus:ring-purple-500 ${
               on
                 ? "bg-purple-700 border-purple-600 text-white"
@@ -828,9 +860,14 @@ function FeiticoDanoEditor({ feitico, calc, onPatch }) {
   const areaObrigatoria = destrutivo || cataclismico;
   const emArea = f.alvo === "area" || areaObrigatoria;
   const setTroca = (chave, v) => onPatch({ trocas: { ...f.trocas, [chave]: v } });
-  const limDados = 1 + nNum;
   const limAcerto = 2 * nNum;
   const limCd = 1 + nNum;
+  // Feitiço de Ataque só tem CD ao anexar uma Condição, e aí a CD só sobe (autor).
+  // Área é sempre TR (tem CD), Múltiplos Disparos é sempre Ataque.
+  const resolEff = emArea ? "tr" : (multiplos ? "ataque" : f.resolucao);
+  const temCondicao = (Array.isArray(f.condicoes) && f.condicoes.length > 0) || !!f.sangramento;
+  const temCD = resolEff !== "ataque" || temCondicao;
+  const cdMin = resolEff === "ataque" ? 0 : -limCd;
   // Alcance/área: aumento com teto de (1 + nível), redução até 0.
   const taxas = taxasTroca(emArea ? "area" : "unico");
   const capAlcance = (1 + nNum) * taxas.alcance;
@@ -875,7 +912,7 @@ function FeiticoDanoEditor({ feitico, calc, onPatch }) {
         </div>
 
         <div>
-          <FieldLabel>Conjuração (ação)</FieldLabel>
+          <FieldLabel>Conjuração (Ação)</FieldLabel>
           <OptionChips
             value={areaObrigatoria ? "ritual" : f.acao}
             onChange={(v) => !areaObrigatoria && onPatch({ acao: v })}
@@ -938,11 +975,12 @@ function FeiticoDanoEditor({ feitico, calc, onPatch }) {
       {/* Trocas */}
       <SecaoFeitico titulo={trocasTitulo}>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
-          <TrocaLinha rotulo="Dados de dano"><DeltaStepper value={f.trocas.dados} step={1} min={-limDados} max={limDados} onChange={(v) => setTroca("dados", v)} /></TrocaLinha>
           {f.resolucao === "ataque" && !multiplos && (
-            <TrocaLinha rotulo="Acerto"><DeltaStepper value={f.trocas.acerto} step={1} min={-limAcerto} max={limAcerto} onChange={(v) => setTroca("acerto", v)} /></TrocaLinha>
+            <TrocaLinha rotulo="Acerto"><DeltaStepper value={f.trocas.acerto} step={2} min={-limAcerto} max={limAcerto} onChange={(v) => setTroca("acerto", v)} /></TrocaLinha>
           )}
-          <TrocaLinha rotulo="CD"><DeltaStepper value={f.trocas.cd} step={1} min={-limCd} max={limCd} onChange={(v) => setTroca("cd", v)} /></TrocaLinha>
+          {temCD && (
+            <TrocaLinha rotulo="CD"><DeltaStepper value={f.trocas.cd} step={1} min={cdMin} max={limCd} onChange={(v) => setTroca("cd", v)} /></TrocaLinha>
+          )}
           {/* Cataclísmico não reduz alcance nem área (autor). Destrutivo reduz os dois. */}
           {!cataclismico && (
             <TrocaLinha rotulo="Alcance"><DeltaStepper value={f.trocas.alcance} step={6} min={-baseAlcance} max={capAlcance} unit="m" onChange={(v) => setTroca("alcance", v)} /></TrocaLinha>
@@ -975,11 +1013,11 @@ function FeiticoDanoEditor({ feitico, calc, onPatch }) {
 }
 
 /* Medidor segmentado min..max (mesma linguagem do NivelPicker). */
-function NivelSegmentos({ value, min, max, onChange }) {
+function NivelSegmentos({ value, min, max, onChange, compacto }) {
   const nums = [];
   for (let n = min; n <= max; n += 1) nums.push(n);
   return (
-    <div className="flex gap-1.5" role="group" aria-label="Quantidade">
+    <div className={`flex gap-1.5 ${compacto ? "flex-wrap" : ""}`} role="group" aria-label="Quantidade">
       {nums.map((n) => {
         const on = n === value;
         return (
@@ -988,7 +1026,9 @@ function NivelSegmentos({ value, min, max, onChange }) {
             type="button"
             onClick={() => onChange(n)}
             aria-pressed={on}
-            className={`grow py-1.5 rounded-lg text-sm font-bold tabular-nums border transition-colors focus:outline-none focus:ring-1 focus:ring-purple-500 ${
+            // compacto: largura fixa em vez de esticar. Com 2 ou 3 opções o
+            // medidor esticado vira um par de botões gigantes.
+            className={`${compacto ? "w-9" : "grow"} py-1.5 rounded-lg text-sm font-bold tabular-nums border transition-colors focus:outline-none focus:ring-1 focus:ring-purple-500 ${
               on ? "bg-purple-700 border-purple-600 text-white" : "border-slate-700 text-slate-300 hover:text-white hover:border-slate-600"
             }`}
           >
@@ -1009,8 +1049,9 @@ function TrocaLinha({ rotulo, children }) {
   );
 }
 
-/* Anexar condições ao Feitiço (reduzem dados) + sangramento variável. */
-function CondicaoEditor({ feitico, onPatch }) {
+/* Anexar condições ao Feitiço (reduzem dados) + sangramento variável.
+   showFoco: mostra o toggle "Somente Condição" (só o Dano comum usa). */
+function CondicaoEditor({ feitico, onPatch, showFoco = true }) {
   const f = feitico;
   // Somente Condição: escolhe do nível ACIMA (o motor só deixa UMA dessas).
   const permitidas = f.focoCondicao
@@ -1037,7 +1078,9 @@ function CondicaoEditor({ feitico, onPatch }) {
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <span className="text-[11px] text-slate-500">Máximo {maxCond} no {NIVEL_LABEL[f.nivel]}</span>
-        <BoolChip ativo={f.focoCondicao} onToggle={() => onPatch({ focoCondicao: !f.focoCondicao })}>Somente Condição</BoolChip>
+        {showFoco && (
+          <BoolChip ativo={f.focoCondicao} onToggle={() => onPatch({ focoCondicao: !f.focoCondicao })}>Somente Condição</BoolChip>
+        )}
       </div>
 
       {permitidas.length === 0 ? (
@@ -1121,10 +1164,6 @@ function ResultadoFeitico({ calc, feitico }) {
         ))}
       </div>
 
-      <div className={`text-[11px] font-mono ${calc.saldoTrocas < 0 ? "text-rose-400" : "text-purple-300"}`}>
-        Saldo de Trocas: {calc.saldoTrocas > 0 ? "+" : ""}{calc.saldoTrocas}
-      </div>
-
       {calc.contInicial && (
         <div className="text-[11px] text-slate-300 font-mono border-t border-slate-800 pt-2">
           Golpe {calc.contInicial}, depois {calc.contPorRodada} por rodada
@@ -1143,6 +1182,1247 @@ function ResultadoFeitico({ calc, feitico }) {
       {calc.avisos.length > 0 && (
         <ul className="space-y-0.5 border-t border-slate-800 pt-2">
           {calc.avisos.map((a, i) => (
+            <li key={i} className="text-[11px] text-amber-400 flex items-start gap-1">
+              <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" /> {a}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------
+   FEITIÇO CURATIVO. Variante do de Dano: recupera PV (ou PV Temporário
+   sem Energia Reversa). Mesmo vocabulário visual, sem resolução nem CD.
+   --------------------------------------------------------------- */
+function FeiticoCurativoEditor({ feitico, calc, onPatch }) {
+  const f = feitico;
+  const nNum = f.nivel === "max" ? 6 : f.nivel;
+  const emArea = f.alvo === "area";
+  const setTroca = (chave, v) => onPatch({ trocas: { ...f.trocas, [chave]: v } });
+  const limDados = 1 + nNum;
+  const taxas = taxasTroca(emArea ? "area" : "unico");
+  const capAlcance = (1 + nNum) * taxas.alcance;
+  const capArea = (1 + nNum) * taxas.area;
+  const baseAlcance = ALCANCE_POR_NIVEL[f.nivel] ?? 0;
+  const baseArea = AREA_POR_NIVEL[f.nivel] ?? 0;
+  const trocasTitulo = emArea ? "Trocas · 1 dado = 12m = 3m²" : "Trocas · 1 dado = 6m";
+
+  return (
+    <div className="rounded-lg border border-slate-800 bg-slate-950/30 p-3 space-y-3">
+      {/* Perfil */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
+        <div>
+          <FieldLabel>Alvo</FieldLabel>
+          <OptionChips
+            value={f.alvo}
+            onChange={(v) => onPatch({ alvo: v })}
+            options={[
+              { value: "unico", label: "Alvo Único" },
+              { value: "area", label: "Área" },
+            ]}
+          />
+        </div>
+        <div>
+          <FieldLabel>Conjuração (Ação)</FieldLabel>
+          <OptionChips value={f.acao} onChange={(v) => onPatch({ acao: v })} options={CURA_ACOES} />
+        </div>
+      </div>
+
+      {emArea && (
+        <div>
+          <FieldLabel>Forma da Área</FieldLabel>
+          <OptionChips value={f.formaArea} onChange={(v) => onPatch({ formaArea: v })} options={FORMAS_AREA} />
+        </div>
+      )}
+
+      {/* Trocas */}
+      <SecaoFeitico titulo={trocasTitulo}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
+          <TrocaLinha rotulo="Dados de Cura"><DeltaStepper value={f.trocas.dados} step={1} min={-limDados} max={limDados} onChange={(v) => setTroca("dados", v)} /></TrocaLinha>
+          <TrocaLinha rotulo="Alcance"><DeltaStepper value={f.trocas.alcance} step={6} min={-baseAlcance} max={capAlcance} unit="m" onChange={(v) => setTroca("alcance", v)} /></TrocaLinha>
+          {emArea && (
+            <TrocaLinha rotulo="Área"><DeltaStepper value={f.trocas.area} step={1.5} min={-baseArea} max={capArea} unit="m" onChange={(v) => setTroca("area", v)} /></TrocaLinha>
+          )}
+        </div>
+      </SecaoFeitico>
+
+      {/* Remoção de Condições / Ferimentos Complexos */}
+      <SecaoFeitico titulo="Remoção">
+        <CuraRemocaoEditor feitico={f} onPatch={onPatch} />
+      </SecaoFeitico>
+
+      {/* Requisito */}
+      <SecaoFeitico titulo="Requisito">
+        <OptionChips
+          value={f.requisito || "nenhum"}
+          onChange={(v) => onPatch({ requisito: v === "nenhum" ? null : v })}
+          options={[{ value: "nenhum", label: "Nenhum" }, ...REQUISITO_DIFICULDADE.map((r) => ({ value: r.value, label: `${r.label} (+${r.dados}d)` }))]}
+        />
+      </SecaoFeitico>
+
+      {calc && <ResultadoCurativo calc={calc} feitico={f} />}
+    </div>
+  );
+}
+
+/* Seletor do modo de remoção. As duas "todas" são Nível 5 e se excluem. */
+function CuraRemocaoEditor({ feitico, onPatch }) {
+  const f = feitico;
+  const modo = f.remocao || "nenhuma";
+  return (
+    <div className="space-y-3">
+      <OptionChips
+        value={modo}
+        onChange={(v) => onPatch({ remocao: v })}
+        options={CURA_REMOCAO.map((m) => ({
+          value: m.value,
+          label: m.custoDados ? `${m.label} (−${m.custoDados}d)` : m.label,
+        }))}
+      />
+      {modo === "especificas" && <CondicaoRemocaoLista feitico={f} onPatch={onPatch} />}
+      {(modo === "todasCondicoes" || modo === "todosComplexos") && (
+        <p className="text-[11px] text-slate-400">
+          {modo === "todasCondicoes"
+            ? "Remove todas as Condições do alvo e cura 1 Ferimento Complexo. Exige Nível 5."
+            : "Cura todos os Ferimentos Complexos do alvo (Pernas, Braços, Olhos, Ferida Interna). Exige Nível 5."}
+        </p>
+      )}
+    </div>
+  );
+}
+
+/* Escolhe quais Condições o Feitiço remove (cada uma reduz dados pela força).
+   Diferente do CondicaoEditor do Dano, Sangramento é uma condição removível. */
+function CondicaoRemocaoLista({ feitico, onPatch }) {
+  const f = feitico;
+  const permitidas = CONDICAO_FORCAS_POR_NIVEL[f.nivel] || [];
+  const [forca, setForca] = useState(permitidas[0] || "fraca");
+  const forcaAtual = permitidas.includes(forca) ? forca : (permitidas[0] || "fraca");
+  const opcoesNome = CONDICOES_CATALOGO[forcaAtual] || [];
+  const [nome, setNome] = useState(opcoesNome[0] || "");
+  const redLabel = { fraca: "−1d", media: "−3d", forte: "−5d", extrema: "−8d" };
+  const maxCond = f.nivel === "max" ? 6 : f.nivel;
+
+  const adicionar = () => {
+    const alvo = nome && opcoesNome.includes(nome) ? nome : opcoesNome[0];
+    if (!alvo) return;
+    onPatch({ condicoes: [...(f.condicoes || []), { nome: alvo, forca: forcaAtual }] });
+  };
+  const remover = (i) => onPatch({ condicoes: (f.condicoes || []).filter((_, j) => j !== i) });
+
+  if (permitidas.length === 0) return <p className="text-[11px] text-slate-500">Nível 0 não remove condições.</p>;
+
+  return (
+    <div className="space-y-2">
+      <span className="text-[11px] text-slate-500">Máximo {maxCond} no {NIVEL_LABEL[f.nivel]}</span>
+      <OptionChips
+        value={forcaAtual}
+        onChange={(v) => { setForca(v); setNome((CONDICOES_CATALOGO[v] || [])[0] || ""); }}
+        options={CONDICAO_FORCAS.filter((c) => permitidas.includes(c.value)).map((c) => ({ value: c.value, label: `${c.label} ${redLabel[c.value]}` }))}
+      />
+      <div className="flex items-end gap-2">
+        <div className="flex-1 min-w-0">
+          <Select value={nome} onChange={setNome} options={opcoesNome.map((n) => ({ value: n, label: n }))} />
+        </div>
+        <SmallButtonLocal onClick={adicionar}>Adicionar</SmallButtonLocal>
+      </div>
+      {(f.condicoes || []).length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {f.condicoes.map((c, i) => (
+            <span key={i} className="inline-flex items-center gap-1 px-2 py-0.5 rounded border text-xs bg-purple-950/40 text-purple-200 border-purple-900/70">
+              {c.nome} <span className="text-purple-400/70">{redLabel[c.forca]}</span>
+              <button type="button" onClick={() => remover(i)} className="ml-0.5 opacity-60 hover:opacity-100" aria-label={`Remover ${c.nome}`}>×</button>
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* Resultado computado do Feitiço Curativo. */
+function ResultadoCurativo({ calc, feitico }) {
+  const ehArea = feitico.alvo === "area";
+  const curaLabel = calc.ehTemporario ? "PV Temporário" : "Cura";
+  const tiles = [
+    { label: curaLabel, value: calc.cura, icon: Heart, accent: true },
+    { label: "Média", value: calc.media != null ? calc.media : "-" },
+    { label: "Custo", value: calc.custoPE != null ? `${calc.custoPE} PE` : "-" },
+    { label: "Alcance", value: calc.alcance != null ? `${calc.alcance} m` : "-", icon: Footprints },
+  ];
+  if (ehArea) tiles.push({ label: "Área", value: calc.area != null ? `${calc.area} m ${calc.forma || ""}`.trim() : "-" });
+
+  return (
+    <div className="rounded-lg border border-slate-800 bg-slate-950/60 p-3 space-y-2.5">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+        {tiles.map((t) => (
+          <StatMini key={t.label} label={t.label} value={t.value} accent={t.accent} icon={t.icon} />
+        ))}
+      </div>
+
+      <div className={`text-[11px] font-mono ${calc.saldoTrocas < 0 ? "text-rose-400" : "text-purple-300"}`}>
+        Saldo de Trocas: {calc.saldoTrocas > 0 ? "+" : ""}{calc.saldoTrocas}
+      </div>
+
+      {calc.ehTemporario && (
+        <div className="text-[11px] text-amber-300/80 border-t border-slate-800 pt-2">
+          Sem a aptidão Energia Reversa a cura vira Pontos de Vida Temporários.
+        </div>
+      )}
+      {calc.detalhes?.curaTudo?.condicoes && (
+        <div className="text-[11px] text-slate-300 border-t border-slate-800 pt-2">Remove todas as Condições e cura 1 Ferimento Complexo.</div>
+      )}
+      {calc.detalhes?.curaTudo?.ferimentosComplexos && (
+        <div className="text-[11px] text-slate-300 border-t border-slate-800 pt-2">Cura todos os Ferimentos Complexos.</div>
+      )}
+      {calc.detalhes?.removeCondicoes?.length > 0 && (
+        <div className="text-[11px] text-slate-300 border-t border-slate-800 pt-2">Remove: {calc.detalhes.removeCondicoes.join(", ")}.</div>
+      )}
+
+      {calc.avisos.length > 0 && (
+        <ul className="space-y-0.5 border-t border-slate-800 pt-2">
+          {calc.avisos.map((a, i) => (
+            <li key={i} className="text-[11px] text-amber-400 flex items-start gap-1">
+              <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" /> {a}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------
+   FEITIÇO ESPECIAL. O tipo reúne subtipos bem diferentes. Por ora só
+   Golpeador e Dano na Alma (variantes de dano de alvo único). Os outros
+   quatro (Itens, Shikigami, Transformação, Invisibilidade) vêm depois.
+   --------------------------------------------------------------- */
+function FeiticoEspecialEditor({ feitico, calc, onPatch }) {
+  const f = feitico;
+  const sub = f.especialSubtipo || "golpeador";
+  return (
+    <div className="rounded-lg border border-slate-800 bg-slate-950/30 p-3 space-y-3">
+      <div>
+        <FieldLabel>Tipo de Especial</FieldLabel>
+        <OptionChips
+          value={sub}
+          onChange={(v) => onPatch({ especialSubtipo: v })}
+          options={ESPECIAL_SUBTIPOS.map((s) => ({ value: s.value, label: s.label }))}
+        />
+      </div>
+      {sub === "golpeador" ? (
+        <GolpeadorEditor feitico={f} calc={calc} onPatch={onPatch} />
+      ) : sub === "danoAlma" ? (
+        <DanoAlmaEditor feitico={f} calc={calc} onPatch={onPatch} />
+      ) : sub === "invisibilidade" ? (
+        <InvisibilidadeEditor feitico={f} calc={calc} onPatch={onPatch} />
+      ) : sub === "itens" ? (
+        <ItensEditor feitico={f} calc={calc} onPatch={onPatch} />
+      ) : sub === "transformacao" ? (
+        <TransformacaoEditor feitico={f} calc={calc} onPatch={onPatch} />
+      ) : (
+        <div className="text-center py-5 border border-dashed border-slate-700 rounded-lg text-sm text-slate-400">
+          {ESPECIAL_SUBTIPOS.find((s) => s.value === sub)?.label} entra num próximo incremento.
+          <div className="mt-2 inline-block text-[10px] font-bold uppercase tracking-wide text-amber-400 border border-amber-800/60 rounded px-2 py-0.5">
+            próximo incremento
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* Requisito: chips reusados pelos editores de dano/variantes. */
+function RequisitoSecao({ feitico, onPatch }) {
+  return (
+    <SecaoFeitico titulo="Requisito">
+      <OptionChips
+        value={feitico.requisito || "nenhum"}
+        onChange={(v) => onPatch({ requisito: v === "nenhum" ? null : v })}
+        options={[{ value: "nenhum", label: "Nenhum" }, ...REQUISITO_DIFICULDADE.map((r) => ({ value: r.value, label: `${r.label} (+${r.dados}d)` }))]}
+      />
+    </SecaoFeitico>
+  );
+}
+
+/* Feitiço Golpeador: dano adicional num ataque, alcance por movimento. */
+function GolpeadorEditor({ feitico, calc, onPatch }) {
+  const f = feitico;
+  const nNum = f.nivel === "max" ? 6 : f.nivel;
+  const setTroca = (chave, v) => onPatch({ trocas: { ...f.trocas, [chave]: v } });
+  const limAcerto = 2 * nNum;
+  const limCd = 1 + nNum;
+  const temCondicao = (Array.isArray(f.condicoes) && f.condicoes.length > 0) || !!f.sangramento;
+  const maxGolpes = maxGolpesGolpeador(f.nivel);
+  const golpes = Math.min(Math.max(1, f.golpesGolpeador || 1), maxGolpes);
+  return (
+    <div className="space-y-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
+        <div>
+          <FieldLabel>Conjuração (Ação)</FieldLabel>
+          <OptionChips
+            value={f.acao === "completa" ? "completa" : "comum"}
+            onChange={(v) => onPatch({ acao: v })}
+            options={[{ value: "comum", label: "Ação Comum" }, { value: "completa", label: "Ação Completa" }]}
+          />
+        </div>
+        {maxGolpes > 1 && (
+          <div>
+            <FieldLabel hint="divide o dano adicional, −3 de acerto por golpe extra">Golpes</FieldLabel>
+            <NivelSegmentos value={golpes} min={1} max={maxGolpes} onChange={(v) => onPatch({ golpesGolpeador: v })} />
+          </div>
+        )}
+      </div>
+
+      <SecaoFeitico titulo="Trocas · 1 dado = 2 acerto = 1 CD">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
+          <TrocaLinha rotulo="Acerto"><DeltaStepper value={f.trocas.acerto} step={2} min={-limAcerto} max={limAcerto} onChange={(v) => setTroca("acerto", v)} /></TrocaLinha>
+          {temCondicao && (
+            <TrocaLinha rotulo="CD"><DeltaStepper value={f.trocas.cd} step={1} min={0} max={limCd} onChange={(v) => setTroca("cd", v)} /></TrocaLinha>
+          )}
+          <TrocaLinha rotulo="Empurrão (Gasta Dados)"><DeltaStepper value={f.trocas.empurraoDados} step={1} min={0} onChange={(v) => setTroca("empurraoDados", v)} /></TrocaLinha>
+        </div>
+      </SecaoFeitico>
+
+      <SecaoFeitico titulo="Condições">
+        <CondicaoEditor feitico={f} onPatch={onPatch} showFoco={false} />
+      </SecaoFeitico>
+
+      <RequisitoSecao feitico={f} onPatch={onPatch} />
+
+      {calc && <ResultadoEspecial calc={calc} feitico={f} kind="golpeador" />}
+    </div>
+  );
+}
+
+/* Feitiço de Dano na Alma: alvo único, fura tudo, alcance base pela metade. */
+function DanoAlmaEditor({ feitico, calc, onPatch }) {
+  const f = feitico;
+  const nNum = f.nivel === "max" ? 6 : f.nivel;
+  const setTroca = (chave, v) => onPatch({ trocas: { ...f.trocas, [chave]: v } });
+  const limAcerto = 2 * nNum;
+  const limCd = 1 + nNum;
+  const ehAtaque = f.resolucao === "ataque";
+  const temCondicao = (Array.isArray(f.condicoes) && f.condicoes.length > 0) || !!f.sangramento;
+  const temCD = !ehAtaque || temCondicao;
+  const cdMin = ehAtaque ? 0 : -limCd;
+  const baseAlcance = Math.floor((ALCANCE_POR_NIVEL[f.nivel] ?? 0) / 2);
+  const capAlcance = (1 + nNum) * 6;
+  return (
+    <div className="space-y-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
+        <div>
+          <FieldLabel>Resolução</FieldLabel>
+          <OptionChips
+            value={ehAtaque ? "ataque" : "tr"}
+            onChange={(v) => onPatch({ resolucao: v })}
+            options={[{ value: "tr", label: "Resistência" }, { value: "ataque", label: "Ataque" }]}
+          />
+        </div>
+        <div>
+          <FieldLabel>Conjuração (Ação)</FieldLabel>
+          <OptionChips value={f.acao} onChange={(v) => onPatch({ acao: v })} options={FEITICO_ACOES.filter((a) => a.value !== "ritual")} />
+        </div>
+      </div>
+
+      <SecaoFeitico titulo="Trocas · 1 dado = 2 acerto = 1 CD = 6m">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
+          {ehAtaque && (
+            <TrocaLinha rotulo="Acerto"><DeltaStepper value={f.trocas.acerto} step={2} min={-limAcerto} max={limAcerto} onChange={(v) => setTroca("acerto", v)} /></TrocaLinha>
+          )}
+          {temCD && (
+            <TrocaLinha rotulo="CD"><DeltaStepper value={f.trocas.cd} step={1} min={cdMin} max={limCd} onChange={(v) => setTroca("cd", v)} /></TrocaLinha>
+          )}
+          <TrocaLinha rotulo="Alcance"><DeltaStepper value={f.trocas.alcance} step={6} min={-baseAlcance} max={capAlcance} unit="m" onChange={(v) => setTroca("alcance", v)} /></TrocaLinha>
+          <TrocaLinha rotulo="Empurrão (Gasta Dados)"><DeltaStepper value={f.trocas.empurraoDados} step={1} min={0} onChange={(v) => setTroca("empurraoDados", v)} /></TrocaLinha>
+        </div>
+      </SecaoFeitico>
+
+      <SecaoFeitico titulo="Condições">
+        <CondicaoEditor feitico={f} onPatch={onPatch} showFoco={false} />
+      </SecaoFeitico>
+
+      <RequisitoSecao feitico={f} onPatch={onPatch} />
+
+      {calc && <ResultadoEspecial calc={calc} feitico={f} kind="danoAlma" />}
+    </div>
+  );
+}
+
+/* Resultado dos Feitiços Especiais de dano (Golpeador e Dano na Alma). */
+function ResultadoEspecial({ calc, feitico, kind }) {
+  const tiles = [
+    { label: kind === "golpeador" ? "Dano Adicional" : "Dano", value: calc.dano, icon: Zap, accent: true },
+    { label: "Média", value: calc.media != null ? calc.media : "-" },
+    { label: "Custo", value: calc.custoPE != null ? `${calc.custoPE} PE` : "-" },
+  ];
+  if (calc.cd != null) tiles.push({ label: "CD", value: calc.cd, icon: Shield });
+  if (kind === "danoAlma") tiles.push({ label: "Alcance", value: calc.alcance != null ? `${calc.alcance} m` : "-", icon: Footprints });
+  if (feitico.resolucao === "ataque" && calc.acertoDelta) tiles.push({ label: "Acerto", value: `${calc.acertoDelta > 0 ? "+" : ""}${calc.acertoDelta}` });
+  if (calc.empurraoMetros) tiles.push({ label: "Empurrão", value: `${calc.empurraoMetros} m` });
+
+  return (
+    <div className="rounded-lg border border-slate-800 bg-slate-950/60 p-3 space-y-2.5">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+        {tiles.map((t) => (
+          <StatMini key={t.label} label={t.label} value={t.value} accent={t.accent} icon={t.icon} />
+        ))}
+      </div>
+
+      {kind === "golpeador" && (
+        <div className="text-[11px] text-slate-300 font-mono border-t border-slate-800 pt-2">
+          Alcance: {calc.alcanceTexto}
+        </div>
+      )}
+      {calc.golpes && (
+        <div className="text-[11px] text-slate-300 font-mono border-t border-slate-800 pt-2">
+          {calc.golpes.golpes} golpes de {notacaoDano(calc.golpes.porGolpe, calc.tipoDado)}, ou {notacaoDano(calc.golpes.concentradoTotal, calc.tipoDado)} concentrado. Prejuízo de −{calc.golpes.penalidadePorGolpe} no acerto por golpe após o primeiro (cumulativo).
+        </div>
+      )}
+      {kind === "golpeador" && (
+        <div className="text-[11px] text-amber-300/80 border-t border-slate-800 pt-2">
+          Dano Após Ataque, não multiplica em crítico. Aplica os efeitos de um golpe desarmado ou de arma.
+        </div>
+      )}
+      {kind === "danoAlma" && (
+        <div className="text-[11px] text-amber-300/80 border-t border-slate-800 pt-2">
+          Passa por Vida Temporária, RD e demais efeitos, ferindo a integridade da alma. Aumentos que não venham da criação são cortados pela metade.
+        </div>
+      )}
+
+      {calc.avisos.length > 0 && (
+        <ul className="space-y-0.5 border-t border-slate-800 pt-2">
+          {calc.avisos.map((a, i) => (
+            <li key={i} className="text-[11px] text-amber-400 flex items-start gap-1">
+              <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" /> {a}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+/* Feitiço de Invisibilidade: nível narrativo, sempre Sustentado + Concentração. */
+function InvisibilidadeEditor({ feitico, calc, onPatch }) {
+  const f = feitico;
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap gap-1.5">
+        <BoolChip ativo={f.tecnicaInvisibilidade} onToggle={() => onPatch({ tecnicaInvisibilidade: !f.tecnicaInvisibilidade })}>
+          Técnica é Invisibilidade (permite Nível 0)
+        </BoolChip>
+      </div>
+      <div>
+        <FieldLabel hint={calc?.exigeFraqueza ? "obrigatória no Nível 1 e 2" : "opcional nos demais níveis"}>Forma de Ser Anulado</FieldLabel>
+        <TextArea
+          value={f.fraquezaInvis}
+          onChange={(v) => onPatch({ fraquezaInvis: v })}
+          rows={2}
+          placeholder="Como o Feitiço pode ser desfeito. Ex.: caso a sombra que o esconde seja desfeita por luz, o Feitiço se encerra."
+        />
+      </div>
+      {calc && <ResultadoInvisibilidade calc={calc} />}
+    </div>
+  );
+}
+
+function ResultadoInvisibilidade({ calc }) {
+  return (
+    <div className="rounded-lg border border-slate-800 bg-slate-950/60 p-3 space-y-2.5">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+        <StatMini label="Custo" value={calc.custoPE != null ? `${calc.custoPE} PE` : "-"} accent icon={Sparkles} />
+        <StatMini label="Conjuração" value="Sustentado" />
+        <StatMini label="Foco" value="Concentração" />
+      </div>
+      <div className="text-[11px] text-amber-300/80 border-t border-slate-800 pt-2">
+        Sempre Sustentado e usa Concentração. Não pode ser Imediato nem Duradouro.
+      </div>
+      {calc.avisos.length > 0 && (
+        <ul className="space-y-0.5 border-t border-slate-800 pt-2">
+          {calc.avisos.map((a, i) => (
+            <li key={i} className="text-[11px] text-amber-400 flex items-start gap-1">
+              <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" /> {a}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+/* Feitiço de Criação de Itens de Custo. */
+function ItensEditor({ feitico, calc, onPatch }) {
+  const f = feitico;
+  const nivel = f.nivel === "max" ? 6 : f.nivel;
+  const foco = !!f.tecnicaFocoItens;
+  const nivelEfetivo = nivel + (foco ? 1 : 0);
+  const maxCusto = Math.max(1, Math.min(nivelEfetivo, ITEM_CUSTO_MAX));
+  const custo = Math.min(Math.max(1, f.itemCusto || 1), maxCusto);
+  const qtdBase = nivelEfetivo - custo + 1;
+  const maxReducao = Math.max(0, Math.min(qtdBase - 1, nivel));
+  const grauTroca = Math.min(Math.max(0, f.itemGrauTroca || 0), maxReducao);
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap gap-1.5">
+        <BoolChip ativo={foco} onToggle={() => onPatch({ tecnicaFocoItens: !foco })}>
+          Técnica Focada em Criação (um nível mais cedo)
+        </BoolChip>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
+        <div>
+          <FieldLabel hint={`quantidade = ${nivelEfetivo} − Custo + 1`}>Custo do Item</FieldLabel>
+          <NivelSegmentos value={custo} min={1} max={maxCusto} onChange={(v) => onPatch({ itemCusto: v })} />
+        </div>
+        <div>
+          <FieldLabel>Natureza</FieldLabel>
+          <OptionChips
+            value={f.itemNatureza === "permanente" ? "permanente" : "consumivel"}
+            onChange={(v) => onPatch({ itemNatureza: v })}
+            options={[{ value: "consumivel", label: "Consumível" }, { value: "permanente", label: "Permanente" }]}
+          />
+        </div>
+      </div>
+
+      {maxReducao > 0 && (
+        <div>
+          <FieldLabel hint="reduz a quantidade (mínimo 1 item) para +Grau num item">Trocar Itens por Grau</FieldLabel>
+          <NivelSegmentos value={grauTroca} min={0} max={maxReducao} onChange={(v) => onPatch({ itemGrauTroca: v })} />
+        </div>
+      )}
+
+      <div>
+        <FieldLabel hint="especifique os itens criados">Itens Criados</FieldLabel>
+        <TextArea
+          value={f.itemDescricao}
+          onChange={(v) => onPatch({ itemDescricao: v })}
+          rows={2}
+          placeholder="Descreva os itens que o Feitiço cria (devem ser especificados previamente)."
+        />
+      </div>
+
+      {calc && <ResultadoItens calc={calc} />}
+    </div>
+  );
+}
+
+function ResultadoItens({ calc }) {
+  return (
+    <div className="rounded-lg border border-slate-800 bg-slate-950/60 p-3 space-y-2.5">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+        <StatMini label="Itens" value={calc.quantidade > 0 ? `${calc.quantidade}× Custo ${calc.custo}` : "-"} accent icon={FlaskConical} />
+        {calc.grauBonus > 0 && <StatMini label="Grau" value={`+${calc.grauBonus} em 1 item`} />}
+        <StatMini label="Custo" value={calc.custoPE != null ? `${calc.custoPE} PE` : "-"} />
+        <StatMini label="Conjuração" value="Bônus" />
+      </div>
+
+      <div className="text-[11px] text-slate-300 border-t border-slate-800 pt-2">
+        {calc.detalhes?.restricao}
+      </div>
+      <div className="text-[11px] text-slate-400">{calc.detalhes?.duracao}</div>
+
+      {calc.avisos.length > 0 && (
+        <ul className="space-y-0.5 border-t border-slate-800 pt-2">
+          {calc.avisos.map((a, i) => (
+            <li key={i} className="text-[11px] text-amber-400 flex items-start gap-1">
+              <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" /> {a}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+/* Feitiço de Transformação: concede efeitos auxiliares Duradouros. */
+function TransformacaoEditor({ feitico, calc, onPatch }) {
+  const f = feitico;
+  const duracao = f.transfDuracao || "sustentada";
+  const efeitos = calc?.efeitos || [];
+  const setEfeito = (i, id) => {
+    const arr = Array.isArray(f.transfEfeitos) ? [...f.transfEfeitos] : [];
+    arr[i] = id;
+    onPatch({ transfEfeitos: arr });
+  };
+  return (
+    <div className="space-y-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
+        <div>
+          <FieldLabel>Duração</FieldLabel>
+          <OptionChips value={duracao} onChange={(v) => onPatch({ transfDuracao: v })} options={TRANSF_DURACOES} />
+        </div>
+        <div>
+          <FieldLabel>Conjuração (Ação)</FieldLabel>
+          <OptionChips value={f.transfAcao || "comum"} onChange={(v) => onPatch({ transfAcao: v })} options={TRANSF_ACOES} />
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-end gap-x-4 gap-y-2">
+        <div>
+          <FieldLabel hint="−1 efeito por +1 nível em todos os outros">Trocar Efeitos por Nível</FieldLabel>
+          <DeltaStepper value={f.transfNivelTroca || 0} step={1} min={0} onChange={(v) => onPatch({ transfNivelTroca: v })} />
+        </div>
+        {duracao === "sustentada" && (
+          <BoolChip ativo={!!f.transfCustoVida} onToggle={() => onPatch({ transfCustoVida: !f.transfCustoVida })}>
+            Sustentar com Vida
+          </BoolChip>
+        )}
+      </div>
+
+      <SecaoFeitico titulo={`Efeitos (${efeitos.length})`}>
+        <div className="space-y-2">
+          {efeitos.map((e, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <span className="text-[10px] font-bold text-purple-300 w-16 flex-shrink-0">Nível {e.auxNivel}</span>
+              <div className="flex-1 min-w-0">
+                <Select value={e.efeito} onChange={(v) => setEfeito(i, v)} options={AUX_EFEITOS.map((a) => ({ value: a.value, label: a.label }))} />
+              </div>
+              <span className={`text-xs font-mono w-16 text-right flex-shrink-0 ${e.disponivel ? "text-purple-200" : "text-amber-400"}`}>{e.texto}</span>
+            </div>
+          ))}
+        </div>
+      </SecaoFeitico>
+
+      {calc && <ResultadoTransformacao calc={calc} />}
+    </div>
+  );
+}
+
+function ResultadoTransformacao({ calc }) {
+  const tiles = [
+    { label: "Efeitos", value: calc.efeitos.length, icon: Sparkles, accent: true },
+    { label: "Custo", value: calc.custoPE != null ? `${calc.custoPE} PE` : "-" },
+  ];
+  if (calc.sustentacaoPE) tiles.push({ label: "Sustentação", value: `${calc.sustentacaoPE} PE/rod` });
+  if (calc.sustentacaoVida) tiles.push({ label: "Sustentação", value: `${calc.sustentacaoVida} PV/rod` });
+  if (calc.duracaoRodadas) tiles.push({ label: "Duração", value: `${calc.duracaoRodadas} rodadas` });
+  if (calc.exaustaoFim) tiles.push({ label: "Exaustão", value: calc.exaustaoFim });
+
+  return (
+    <div className="rounded-lg border border-slate-800 bg-slate-950/60 p-3 space-y-2.5">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+        {tiles.map((t) => (
+          <StatMini key={t.label} label={t.label} value={t.value} accent={t.accent} icon={t.icon} />
+        ))}
+      </div>
+
+      {calc.efeitos.length > 0 && (
+        <div className="text-[11px] text-slate-300 font-mono border-t border-slate-800 pt-2">
+          {calc.efeitos.map((e) => `${e.label} ${e.texto}`).join("  ·  ")}
+        </div>
+      )}
+      <div className="text-[11px] text-amber-300/80 border-t border-slate-800 pt-2">{calc.notaExaustao}</div>
+
+      {calc.avisos.length > 0 && (
+        <ul className="space-y-0.5 border-t border-slate-800 pt-2">
+          {calc.avisos.map((a, i) => (
+            <li key={i} className="text-[11px] text-amber-400 flex items-start gap-1">
+              <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" /> {a}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------
+   FEITIÇO AUXILIAR. O editor despacha efeito único ou Múltiplos Efeitos;
+   Enfraquecedores vêm depois. No modo múltiplo, Duração, Ação e Alvos são
+   do Feitiço inteiro. Mesmo vocabulário visual do editor de Dano.
+   --------------------------------------------------------------- */
+
+/* Durações com célula preenchida (≠ null) para o efeito/nível atual. */
+function auxDuracoesDisponiveis(efeito, nivel) {
+  const linha = AUX_TABELAS[efeito]?.[nivel];
+  if (!linha) return [];
+  return AUX_DURACOES.map((d) => d.value).filter((d) => linha[d] != null);
+}
+
+/* Ações oferecidas por efeito (só as definidas pelo livro para Fase A). */
+function acoesAux(efeito, duracao) {
+  const imediata = duracao === "imediata";
+  switch (efeito) {
+    case "defesa":
+    case "rd":         return ["padrao", "bonus", ...(imediata ? ["reacao"] : [])];
+    case "tr":
+    case "cd":         return ["padrao", "comum"];
+    case "rolagem":    return ["padrao", "comum", "completa"];
+    case "ataque":     return imediata ? ["padrao"] : ["padrao", "comum", "completa"];
+    case "danoDurante":
+    case "danoApos":
+    case "danoFixo":
+    case "niveisDano": return ["padrao", "comum"];
+    case "margemCritico": return ["padrao", "completa"];
+    case "negacaoRd":  return ["padrao", "bonus"];
+    default:           return ["padrao"];
+  }
+}
+
+const ACAO_LABEL_AUX = { bonus: "Ação Bônus", comum: "Ação Comum", completa: "Ação Completa", reacao: "Reação" };
+/* Alcance do Auxiliar. Próprio = só a própria criatura, então nunca múltiplos alvos. */
+const ALCANCE_AUX_OPCOES = [{ value: "alvo", label: "Alvo" }, { value: "propria", label: "Próprio" }];
+// Hierarquia de ação (menor → maior), para o seletor único do Múltiplos Efeitos.
+const HIERARQUIA_ACAO_UI = ["reacao", "bonus", "comum", "completa"];
+
+/* Ação assumida pela tabela (o "Padrão" do chip). TR e Ataque imediatos
+   usam Reação como padrão; os demais usam o acaoPadrao do efeito. */
+function acaoPadraoAux(efeito, duracao) {
+  if ((efeito === "tr" || efeito === "ataque") && duracao === "imediata") return "reacao";
+  return AUX_EFEITOS.find((e) => e.value === efeito)?.acaoPadrao || "comum";
+}
+
+/* Patch de nível do Feitiço. Num Auxiliar de efeito único, revalida a Duração
+   contra o novo nível (o picker fica fora do editor e só mandava {nivel}). */
+function patchNivelFeitico(feitico, n) {
+  if (feitico.tipo === "auxiliar" && !feitico.multiplosAtivo) {
+    const disp = auxDuracoesDisponiveis(feitico.efeitoAux || "defesa", n);
+    const atual = feitico.duracaoAux || "imediata";
+    return { nivel: n, duracaoAux: disp.includes(atual) ? atual : (disp[0] || "imediata") };
+  }
+  return { nivel: n };
+}
+
+/* Texto curto do valor computado (cabeçalho e tiles). */
+function formatAuxValor(calc) {
+  if (!calc) return "-";
+  if (calc.multiplos) return `${calc.efeitos.length} Efeito${calc.efeitos.length === 1 ? "" : "s"}`;
+  if (!calc.disponivel) return "-";
+  if (calc.especial) return calc.especial;
+  if (calc.dado) return calc.notacao;
+  if (calc.valor == null) return "-";
+  const sinal = calc.valor > 0 ? "+" : "";
+  const num = String(calc.valor).replace(".", ",");
+  return `${sinal}${num}${calc.unidade ? ` ${calc.unidade}` : ""}`;
+}
+
+/* Ações concretas oferecidas para um efeito, já sem o pseudo-valor "padrao" e
+   na ordem da hierarquia. Os dois modos passam a mostrar a mesma coisa: nomes
+   de ação de verdade, com a padrão apenas pré-selecionada. */
+function acaoOpcoesAux(efeito, duracao) {
+  const padrao = acaoPadraoAux(efeito, duracao);
+  const concretas = new Set(acoesAux(efeito, duracao).map((a) => (a === "padrao" ? padrao : a)));
+  return HIERARQUIA_ACAO_UI.filter((a) => concretas.has(a)).map((a) => ({ value: a, label: ACAO_LABEL_AUX[a] }));
+}
+
+/* Seletor de modo do Auxiliar. */
+function ModoAuxToggle({ f, onPatch }) {
+  // Os dois efeitos iniciais nascem DIFERENTES (não se repete efeito).
+  const trocar = (v) => {
+    if (v === "unico") { onPatch({ multiplosAtivo: false }); return; }
+    if (Array.isArray(f.efeitosMult) && f.efeitosMult.length >= 2) {
+      onPatch({ multiplosAtivo: true, efeitosMult: f.efeitosMult });
+      return;
+    }
+    const primeiro = createBlankAuxEffect(0);
+    const segundo = { ...createBlankAuxEffect(0), efeito: primeiroEfeitoLivre([primeiro]) };
+    onPatch({ multiplosAtivo: true, efeitosMult: [primeiro, segundo] });
+  };
+  return (
+    <OptionChips
+      value={f.multiplosAtivo ? "mult" : "unico"}
+      onChange={trocar}
+      options={[{ value: "unico", label: "Efeito Único" }, { value: "mult", label: "Múltiplos Efeitos" }]}
+    />
+  );
+}
+
+/* Parâmetros do FEITIÇO, idênticos nos dois modos e na mesma ordem: o que o
+   Feitiço é, depois como ele é conjurado, depois em quem cai. `p` é a forma
+   normalizada que cada editor monta. `children` ocupa a primeira célula da
+   grade (o seletor de Efeito, no modo de efeito único). */
+function AuxParametros({ p, children }) {
+  return (
+    <div className="space-y-2.5">
+      {/* Só os controles EMPARELHÁVEIS ficam na grade de 2 colunas. Alvos some com
+          Alcance Próprio, mas os controles de largura livre (Tipos, Restrições)
+          saíram da grade para não deixar buraco ao lado. */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2.5">
+        {children}
+        <div>
+          <FieldLabel>Duração</FieldLabel>
+          <OptionChips value={p.duracao} onChange={p.setDuracao} options={AUX_DURACOES} disabledValues={p.duracoesBloqueadas} />
+        </div>
+        {p.acaoOpcoes.length > 1 && (
+          <div>
+            <FieldLabel>Conjuração</FieldLabel>
+            <OptionChips value={p.acao} onChange={p.setAcao} options={p.acaoOpcoes} />
+          </div>
+        )}
+        {p.duracao === "duradoura" && (
+          <div>
+            <FieldLabel>Rodadas</FieldLabel>
+            <NivelSegmentos value={p.rodadas} min={p.faixa.min} max={p.faixa.max} onChange={p.setRodadas} compacto />
+          </div>
+        )}
+        <div>
+          <FieldLabel>Alcance</FieldLabel>
+          <OptionChips value={p.propria ? "propria" : "alvo"} onChange={p.setAlcance} options={p.alcanceOpcoes} />
+        </div>
+        {p.mostraAlvos && (
+          <div>
+            <FieldLabel>Alvos</FieldLabel>
+            <NivelSegmentos value={p.alvos} min={1} max={6} onChange={p.setAlvos} compacto />
+          </div>
+        )}
+      </div>
+
+      {p.mostraTipos && (
+        <div>
+          <FieldLabel>Tipos de Dano Extras</FieldLabel>
+          <ContadorCompacto value={p.tipos} min={0} onChange={p.setTipos} />
+        </div>
+      )}
+
+      {/* Restrições e Uso da Concentração lado a lado quando cabem (ex.: com
+          Alcance Próprio, onde não há linha de Alvos ocupando o par). */}
+      <div className="flex flex-wrap gap-x-6 gap-y-2.5">
+        <div>
+          <FieldLabel>Restrições</FieldLabel>
+          <div className="flex flex-wrap gap-1.5">
+            {p.mostraUmGolpe && (
+              <BoolChip ativo={p.umGolpe} onToggle={p.setUmGolpe} bloqueado={p.umGolpeBloqueado} lockTitle={p.umGolpeLock}>
+                Um Único Evento
+              </BoolChip>
+            )}
+            <BoolChip ativo={p.concentracao} onToggle={p.setConcentracao} bloqueado={p.concBloqueada} lockTitle={p.concLock}>
+              Concentração
+            </BoolChip>
+          </div>
+        </div>
+        {p.concentracao && p.usosConc && (
+          <div>
+            <FieldLabel>Uso da Concentração</FieldLabel>
+            <OptionChips value={p.usoConc} onChange={p.setUsoConc} disabledValues={p.usosConcBloqueados} options={p.usosConc} />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+
+/* Contador compacto de inteiros (− N +): escala para faixas que os segmentos
+   não comportam, como os tipos de dano. */
+function ContadorCompacto({ value, min = 0, max, onChange }) {
+  const v = Math.max(min, Math.min(max ?? Infinity, value || 0));
+  const btn = "w-8 h-8 flex items-center justify-center text-base font-bold text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 disabled:opacity-30 disabled:hover:bg-slate-800 focus:outline-none focus:z-10 focus:ring-1 focus:ring-purple-500";
+  return (
+    <div className="inline-flex items-center">
+      <button type="button" onClick={() => onChange(Math.max(min, v - 1))} disabled={v <= min} className={`${btn} rounded-l`} aria-label="Diminuir">−</button>
+      <span className={`w-10 h-8 flex items-center justify-center border-y border-slate-700 bg-slate-950 font-mono text-sm tabular-nums ${v === 0 ? "text-slate-500" : "text-purple-200"}`}>{v}</span>
+      <button type="button" onClick={() => onChange(Math.min(max ?? Infinity, v + 1))} disabled={max != null && v >= max} className={`${btn} rounded-r`} aria-label="Aumentar">+</button>
+    </div>
+  );
+}
+
+function FeiticoAuxiliarEditor({ feitico, calc, onPatch }) {
+  const f = feitico;
+  if (f.multiplosAtivo) return <FeiticoAuxMultiplos feitico={f} calc={calc} onPatch={onPatch} />;
+
+  const efeito = f.efeitoAux || "defesa";
+  const nivel = f.nivel;
+  const duracao = f.duracaoAux || "imediata";
+  const meta = AUX_EFEITOS.find((m) => m.value === efeito);
+  const dispon = auxDuracoesDisponiveis(efeito, nivel);
+  const faixa = faixaRodadasDuradoura(nivel);
+  const padraoAcao = acaoPadraoAux(efeito, duracao);
+  const acaoOpcoes = acaoOpcoesAux(efeito, duracao);
+  const acao = (!f.acaoAux || f.acaoAux === "padrao") ? padraoAcao : f.acaoAux;
+  const propria = !!f.alcancePropria;
+  // A marca de evento vale em qualquer ação, mas some quando a Reação já implica
+  // um golpe. Resultado especial não é número: some com o seletor de Alvos.
+  const mostraUmGolpe = ofereceUmGolpe(efeito, nivel, duracao, acao);
+  const especialAtivo = resultaEspecialAux(efeito, nivel, duracao,
+    aplicaUmGolpe(efeito, nivel, duracao, acao, !!f.umGolpe));
+
+  const revalidarDur = (efeitoV) => {
+    const dispV = auxDuracoesDisponiveis(efeitoV, nivel);
+    return dispV.includes(duracao) ? duracao : (dispV[0] || "imediata");
+  };
+  // Um Único Evento e Concentração são exclusivos (autor). Alcance Próprio trava
+  // em 1 alvo, e aqui a Concentração só renderia alvos, então ela fica travada.
+  const p = {
+    duracao,
+    setDuracao: (v) => onPatch({ duracaoAux: v, acaoAux: "padrao" }),
+    duracoesBloqueadas: AUX_DURACOES.map((d) => d.value).filter((d) => !dispon.includes(d)),
+    rodadas: Math.min(Math.max(f.rodadasDur || faixa.min, faixa.min), faixa.max),
+    setRodadas: (v) => onPatch({ rodadasDur: v }),
+    faixa,
+    acao, acaoOpcoes,
+    setAcao: (v) => onPatch({
+      acaoAux: v === padraoAcao ? "padrao" : v,
+      ...(v === "comum" || v === "completa" ? { umGolpe: false } : {}),
+    }),
+    propria,
+    alcanceOpcoes: ALCANCE_AUX_OPCOES,
+    setAlcance: (v) => onPatch(v === "propria"
+      ? { alcancePropria: true, alvosAux: 1, concentracaoAux: false }
+      : { alcancePropria: false }),
+    mostraAlvos: !propria && !especialAtivo,
+    alvos: Math.max(1, f.alvosAux || 1),
+    setAlvos: (v) => onPatch({ alvosAux: v }),
+    mostraTipos: !!meta?.multiTipo,
+    tipos: Math.max(0, f.tiposDanoExtra || 0),
+    setTipos: (v) => onPatch({ tiposDanoExtra: v }),
+    mostraUmGolpe,
+    umGolpe: !!f.umGolpe,
+    setUmGolpe: () => onPatch(f.umGolpe ? { umGolpe: false } : { umGolpe: true, concentracaoAux: false }),
+    concentracao: !!f.concentracaoAux,
+    setConcentracao: () => onPatch(f.concentracaoAux
+      ? { concentracaoAux: false }
+      : { concentracaoAux: true, umGolpe: false }),
+    concBloqueada: propria,
+    concLock: "Alcance Próprio não atinge outros alvos",
+  };
+
+  return (
+    <div className="rounded-xl border border-slate-800 bg-slate-950/30 p-3 space-y-3">
+      <ModoAuxToggle f={f} onPatch={onPatch} />
+
+      <SecaoFeitico titulo="Feitiço">
+        <AuxParametros p={p}>
+          <div>
+            <FieldLabel>Efeito Auxiliar</FieldLabel>
+            <Select
+              value={efeito}
+              onChange={(v) => onPatch({
+                efeitoAux: v, duracaoAux: revalidarDur(v),
+                acaoAux: "padrao", umGolpe: false, tiposDanoExtra: 0,
+              })}
+              options={AUX_EFEITOS}
+            />
+          </div>
+        </AuxParametros>
+      </SecaoFeitico>
+
+      {calc && <ResultadoAuxiliar calc={calc} feitico={f} />}
+    </div>
+  );
+}
+
+/* Múltiplos Efeitos: orçamento de PE (ganhos) + lista de efeitos. */
+function FeiticoAuxMultiplos({ feitico, calc, onPatch }) {
+  const f = feitico;
+  const entries = Array.isArray(f.efeitosMult) ? f.efeitosMult : [];
+  const duracaoMult = f.duracaoMult || "imediata";
+  const faixa = faixaRodadasDuradoura(f.nivel);
+  const rodadasMult = Math.min(Math.max(f.rodadasMult || faixa.min, faixa.min), faixa.max);
+  // Ação única do Feitiço: opções do piso SELECIONÁVEL (a menor ação aceita
+  // por todos) para cima, então variações como Defesa em Ação Bônus aparecem.
+  // Escolher a ação PADRÃO (natural) volta para "padrao" (segue os efeitos).
+  const acaoPiso = calc?.acaoPiso || "bonus";
+  const acaoDefault = calc?.acaoDefault || acaoPiso;
+  const acaoOpts = HIERARQUIA_ACAO_UI.slice(HIERARQUIA_ACAO_UI.indexOf(acaoPiso)).map((a) => ({ value: a, label: ACAO_LABEL_AUX[a] }));
+  const acaoValor = calc?.acaoResultante || acaoDefault;
+  const setAcao = (v) => onPatch({ acaoMult: v === acaoDefault ? "padrao" : v });
+  // Alcance Próprio trava em 1 alvo, então a Concentração só pode render o
+  // efeito extra. Alvos são do Feitiço inteiro, escolhidos uma vez só.
+  const propria = !!f.alcancePropria;
+  const nivelPE = f.nivel === "max" ? 5 : f.nivel;
+  const usoConc = propria ? "efeito" : (f.concUsoAux || "alvos");
+  const setAlcance = (v) => onPatch(v === "propria"
+    ? { alcancePropria: true, alvosMult: 1, concUsoAux: "efeito" }
+    : { alcancePropria: false });
+  // Um efeito especial (Esquiva Garantida, Garantido) trava o Feitiço em 1 alvo:
+  // ali os Alvos só vêm da Concentração, que soma sem dividir o valor.
+  const alvosTravados = !!calc?.alvosTravados;
+  const alvosMult = (propria || alvosTravados) ? 1 : Math.max(1, f.alvosMult || 1);
+  const setEfeito = (id, partial) => onPatch({ efeitosMult: entries.map((en) => (en.id === id ? { ...en, ...partial } : en)) });
+  const removeEfeito = (id) => onPatch({ efeitosMult: entries.filter((en) => en.id !== id) });
+  // Evento único é do Feitiço inteiro: só entra com todos os efeitos do mesmo
+  // lado, e é exclusivo com a Concentração (autor).
+  const eventoUnico = !!f.umGolpe && duracaoMult === "imediata";
+  const podeEvento = duracaoMult === "imediata" && podeEventoUnico(entries);
+  const toggleEventoUnico = () => onPatch(f.umGolpe
+    ? { umGolpe: false }
+    : { umGolpe: true, concentracaoAux: false });
+  const toggleConcentracao = () => onPatch(f.concentracaoAux
+    ? { concentracaoAux: false }
+    : { concentracaoAux: true, umGolpe: false });
+  // Efeito novo nasce no primeiro efeito ainda livre e compatível com o Feitiço.
+  const livre = efeitosDisponiveisMult(entries, null, eventoUnico, { nivel: 0, duracao: duracaoMult })[0]?.value ?? null;
+  const addEfeito = () => {
+    if (!livre) return;
+    onPatch({ efeitosMult: [...entries, { ...createBlankAuxEffect(0), efeito: livre }] });
+  };
+
+  const p = {
+    duracao: duracaoMult,
+    setDuracao: (v) => onPatch({ duracaoMult: v }),
+    rodadas: rodadasMult,
+    setRodadas: (v) => onPatch({ rodadasMult: v }),
+    faixa,
+    acao: acaoValor, acaoOpcoes: acaoOpts, setAcao,
+    propria,
+    alcanceOpcoes: [
+      { value: "alvo", label: "Alvo" },
+      { value: "propria", label: `Próprio (+${nivelPE} PE)` },
+    ],
+    setAlcance,
+    mostraAlvos: !propria && !alvosTravados,
+    alvos: alvosMult,
+    setAlvos: (v) => onPatch({ alvosMult: v }),
+    mostraUmGolpe: duracaoMult === "imediata",
+    umGolpe: eventoUnico,
+    setUmGolpe: toggleEventoUnico,
+    umGolpeBloqueado: !podeEvento && !eventoUnico,
+    umGolpeLock: "Só com efeitos de um único evento e todos do mesmo lado (ofensivo ou defensivo)",
+    concentracao: !!f.concentracaoAux,
+    setConcentracao: toggleConcentracao,
+    usoConc,
+    setUsoConc: (v) => onPatch({ concUsoAux: v }),
+    usosConc: [
+      { value: "alvos", label: "Mais Alvos (+½ nível)", lockTitle: "Alcance Próprio não atinge outros alvos" },
+      { value: "efeito", label: "Efeito Auxiliar Extra" },
+    ],
+    usosConcBloqueados: propria ? ["alvos"] : undefined,
+  };
+
+  return (
+    <div className="rounded-xl border border-slate-800 bg-slate-950/30 p-3 space-y-3">
+      <ModoAuxToggle f={f} onPatch={onPatch} />
+
+      <SecaoFeitico titulo="Feitiço">
+        <AuxParametros p={p}>
+          <div>
+            <FieldLabel>Requisito</FieldLabel>
+            <Select
+              value={f.requisito || "nenhum"}
+              onChange={(v) => onPatch({ requisito: v === "nenhum" ? null : v })}
+              options={[{ value: "nenhum", label: "Nenhum" }, ...REQUISITO_DIFICULDADE.map((r) => ({ value: r.value, label: `${r.label} (+${r.pe} PE)` }))]}
+            />
+          </div>
+        </AuxParametros>
+      </SecaoFeitico>
+
+      <SecaoFeitico titulo="Efeitos">
+        {calc?.orcamento && <OrcamentoBar calc={calc} />}
+        <div className="mt-2.5 space-y-2">
+          {entries.map((en) => (
+            <EfeitoMultLinha
+              key={en.id}
+              entry={en}
+              sub={calc?.efeitos?.find((x) => x.id === en.id)}
+              nivelFeitico={f.nivel}
+              opcoesEfeito={efeitosDisponiveisMult(entries, en.efeito, eventoUnico, { nivel: en.nivel, duracao: duracaoMult })}
+              onChange={(partial) => setEfeito(en.id, partial)}
+              onRemove={() => removeEfeito(en.id)}
+            />
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={addEfeito}
+          disabled={!livre}
+          className="mt-2 w-full inline-flex items-center justify-center gap-1.5 text-[12px] font-semibold px-3 py-1.5 rounded-lg border border-dashed border-slate-700 text-slate-400 hover:text-white hover:border-slate-600 transition-colors focus:outline-none focus:ring-1 focus:ring-purple-500 disabled:text-slate-700 disabled:border-slate-800 disabled:hover:text-slate-700 disabled:hover:border-slate-800 disabled:cursor-not-allowed"
+        >
+          <Plus className="w-4 h-4" /> Adicionar Efeito
+        </button>
+      </SecaoFeitico>
+
+      {calc && <ResultadoAuxiliar calc={calc} feitico={f} />}
+    </div>
+  );
+}
+
+/* Barra do orçamento de Múltiplos Efeitos: gasto / total, com a repartição. */
+function OrcamentoBar({ calc }) {
+  const { orcamento: orc, gasto, restante, excedeu } = calc;
+  const partes = [];
+  if (orc.base) partes.push(`Base ${orc.base}`);
+  if (orc.peReq) partes.push(`Requisito +${orc.peReq}`);
+  if (orc.pePropria) partes.push(`Própria +${orc.pePropria}`);
+  if (orc.peCompleta) partes.push(`Completa +${orc.peCompleta}`);
+  if (orc.peConcentracao) partes.push(`Concentração +${orc.peConcentracao}`);
+  const pct = orc.total > 0 ? Math.min(100, Math.round((gasto / orc.total) * 100)) : (gasto > 0 ? 100 : 0);
+  return (
+    <div className="rounded-lg border border-slate-700/70 bg-slate-950/70 px-3 py-2.5">
+      <div className="flex items-baseline justify-between gap-2">
+        <span className="text-[10px] uppercase tracking-wider text-slate-400">Orçamento</span>
+        <span className="font-mono tabular-nums">
+          <span className={`text-base font-bold ${excedeu ? "text-rose-400" : "text-purple-200"}`}>{gasto}</span>
+          <span className="text-sm text-slate-500"> / {orc.total} PE</span>
+        </span>
+      </div>
+      <div className="mt-1.5 h-1.5 rounded-full bg-slate-800 overflow-hidden">
+        <div className={`h-full rounded-full transition-all ${excedeu ? "bg-rose-500" : "bg-purple-500"}`} style={{ width: `${pct}%` }} />
+      </div>
+      <div className="mt-1.5 flex items-center justify-between gap-2">
+        <span className="text-[10px] text-slate-500 truncate">{partes.join(" · ")}</span>
+        <span className={`flex-shrink-0 text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded border ${excedeu ? "bg-rose-950/60 text-rose-300 border-rose-900/70" : "bg-slate-800/70 text-slate-300 border-slate-700"}`}>
+          {excedeu ? `Excede ${-restante}` : `Restante ${restante}`}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/* Valor de um efeito na linha do Múltiplos Efeitos, com destaque: o número
+   grande, a unidade menor ao lado e o custo em PE embaixo. Ocupa a coluna fixa
+   à direita; texto especial ("Esquiva Garantida") cai para um corpo menor. */
+function ValorEfeito({ sub, indisponivel }) {
+  let main = "-", unit = null, especial = false;
+  if (sub) {
+    if (sub.especial) { main = sub.especial; especial = true; }
+    else if (sub.dado) { main = sub.notacao; }
+    else if (sub.valor != null) { main = `${sub.valor > 0 ? "+" : ""}${String(sub.valor).replace(".", ",")}`; unit = sub.unidade || null; }
+  }
+  const corMain = indisponivel ? "text-slate-600" : "text-white";
+  return (
+    <div className="w-28 flex-shrink-0 text-right font-mono leading-none">
+      <div className={especial ? "flex justify-end" : "flex items-baseline justify-end gap-1"}>
+        <span className={`font-bold break-words ${corMain} ${especial ? "text-[13px] leading-tight" : "text-xl"}`}>{main}</span>
+        {unit && <span className="text-[11px] font-semibold text-purple-300/80">{unit}</span>}
+      </div>
+      {sub?.custoMult != null && <div className="text-[11px] text-slate-500 mt-1">{sub.custoMult} PE</div>}
+    </div>
+  );
+}
+
+/* Um controle secundário de efeito (rótulo curto + controle), alinhado com os
+   irmãos numa linha que quebra. É a vaga onde entram Nível, Tipos de Dano e, no
+   futuro, Perícia (Rolagem) e Teste (TR): todo controle por efeito vem aqui. */
+function SubControleEfeito({ rotulo, children }) {
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className="text-[10px] uppercase tracking-wider text-slate-500 whitespace-nowrap">{rotulo}</span>
+      {children}
+    </div>
+  );
+}
+
+/* Um efeito dentro de Múltiplos Efeitos. Duração, Conjuração, Alcance, Alvos e
+   Evento Único são do Feitiço, então cada efeito guarda só o próprio: linha 1 é
+   nome + valor em COLUNAS FIXAS (o valor não empurra o resto), linha 2 são os
+   controles do efeito. Sem recolher, o valor sempre visível. */
+function EfeitoMultLinha({ entry, sub, nivelFeitico, opcoesEfeito, onChange, onRemove }) {
+  const meta = AUX_EFEITOS.find((m) => m.value === (entry.efeito || "defesa"));
+  const indisponivel = sub && sub.disponivel === false;
+  return (
+    <div className="rounded-lg border border-slate-800 bg-slate-950/40 p-2 space-y-2.5">
+      <div className="flex items-center gap-2">
+        <div className="flex-1 min-w-0">
+          <Select
+            value={entry.efeito}
+            onChange={(v) => onChange({ efeito: v, tiposDanoExtra: 0 })}
+            options={opcoesEfeito}
+          />
+        </div>
+        {/* Coluna de valor de largura fixa, em destaque: número grande + unidade
+            menor. O texto quebra dentro dela e as colunas seguintes não se movem. */}
+        <ValorEfeito sub={sub} indisponivel={indisponivel} />
+        {/* Vaga fixa do aviso, para o botão de remover não dançar entre linhas. */}
+        <div className="w-4 flex-shrink-0">
+          {sub?.avisos?.length > 0 && (
+            <AlertTriangle className="w-4 h-4 text-amber-400" title={sub.avisos.join("\n")} aria-label={`${sub.avisos.length} aviso(s)`} />
+          )}
+        </div>
+        <button type="button" onClick={onRemove} className="p-1 rounded text-slate-600 hover:text-rose-300 flex-shrink-0" title="Remover efeito" aria-label={`Remover ${meta?.label || "efeito"}`}>
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+        <SubControleEfeito rotulo="Nível">
+          <NivelSegmentos value={Math.min(entry.nivel ?? 0, nivelFeitico)} min={0} max={nivelFeitico} onChange={(v) => onChange({ nivel: v })} compacto />
+        </SubControleEfeito>
+        {meta?.multiTipo && (
+          <SubControleEfeito rotulo="Tipos de Dano">
+            <ContadorCompacto value={Math.max(0, entry.tiposDanoExtra || 0)} min={0} onChange={(v) => onChange({ tiposDanoExtra: v })} />
+          </SubControleEfeito>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* Pill secundário do resultado (rótulo pequeno + valor mono). */
+function AuxPill({ rotulo, valor }) {
+  return (
+    <span className="inline-flex items-baseline gap-1.5 rounded-md border border-slate-700/70 bg-slate-900/70 px-2 py-1">
+      <span className="text-[9px] uppercase tracking-wider text-slate-500">{rotulo}</span>
+      <span className="font-mono font-semibold text-[12px] tabular-nums text-slate-200">{valor}</span>
+    </span>
+  );
+}
+
+/* Resultado do Auxiliar, o mesmo hero nos dois modos: o que o Feitiço entrega em
+   destaque, selo de duração, pills de custo e os avisos agregados. No efeito
+   único o destaque é o valor; no múltiplo é a lista de efeitos com seus valores. */
+function ResultadoAuxiliar({ calc, feitico }) {
+  const multiplo = !!calc.multiplos;
+  const duracao = multiplo ? calc.duracao : (feitico.duracaoAux || "imediata");
+  const durLabel = AUX_DURACOES.find((d) => d.value === duracao)?.label;
+  const rodadas = multiplo ? feitico.rodadasMult : calc.rodadas;
+
+  const pills = [];
+  if (calc.custoPE != null) pills.push({ k: "Custo", v: `${calc.custoPE} PE` });
+  if (duracao === "sustentada" && calc.upkeepPE) pills.push({ k: "Sustentar", v: `${calc.upkeepPE} PE/rd` });
+  if (duracao === "duradoura" && rodadas != null) pills.push({ k: "Rodadas", v: rodadas });
+  if (calc.alvos > 1) pills.push({ k: "Alvos", v: calc.alvos });
+  if (!multiplo && calc.dado) pills.push({ k: "Média", v: calc.valor ?? "-" });
+
+  // Avisos do Feitiço e dos sub-efeitos juntos: um lugar só para olhar.
+  const avisos = [...(calc.avisos || []), ...((calc.efeitos || []).flatMap((e) => e.avisos || []))];
+
+  // Destaque do efeito único: número grande + unidade; especial é texto.
+  const indisponivel = !multiplo && !calc.disponivel;
+  let bigMain, bigUnit = null, bigClass;
+  if (multiplo) { bigMain = null; }
+  else if (indisponivel) { bigMain = "—"; bigClass = "text-2xl text-slate-600"; }
+  else if (calc.especial) { bigMain = calc.especial; bigClass = "text-xl text-purple-100"; }
+  else if (calc.dado) { bigMain = calc.notacao; bigClass = "text-3xl text-white"; }
+  else {
+    const v = calc.valor;
+    bigMain = `${v > 0 ? "+" : ""}${String(v).replace(".", ",")}`;
+    bigUnit = calc.unidade || null;
+    bigClass = "text-3xl text-white";
+  }
+
+  const titulo = multiplo
+    ? `${calc.efeitos.length} Efeito${calc.efeitos.length === 1 ? "" : "s"}`
+    : calc.efeitoLabel;
+
+  return (
+    <div className="rounded-xl border border-purple-900/40 bg-gradient-to-br from-purple-950/40 via-slate-950/50 to-slate-950/70 p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="text-[10px] font-semibold uppercase tracking-wider text-purple-300/80 truncate">{titulo}</div>
+          {!multiplo && (
+            <div className="mt-0.5 flex items-baseline gap-1.5 leading-tight">
+              <span className={`font-mono font-bold tabular-nums ${bigClass}`}>{bigMain}</span>
+              {bigUnit && <span className="text-sm font-semibold text-purple-300/80">{bigUnit}</span>}
+            </div>
+          )}
+        </div>
+        {durLabel && (
+          <span className="flex-shrink-0 text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full border border-purple-700/50 bg-purple-950/60 text-purple-200">{durLabel}</span>
+        )}
+      </div>
+
+      {multiplo && calc.efeitos.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {calc.efeitos.map((e) => (
+            <span key={e.id} className="inline-flex items-baseline gap-1.5 rounded-md border border-purple-900/50 bg-purple-950/30 px-2 py-1">
+              <span className="text-[10px] text-purple-200/70 truncate max-w-[11rem]">{e.efeitoLabel}</span>
+              <span className={`font-mono font-bold text-[13px] tabular-nums ${e.disponivel === false ? "text-slate-600" : "text-white"}`}>{formatAuxValor(e)}</span>
+            </span>
+          ))}
+        </div>
+      )}
+
+      {!indisponivel && pills.length > 0 && (
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          {pills.map((p) => <AuxPill key={p.k} rotulo={p.k} valor={p.v} />)}
+        </div>
+      )}
+
+      {avisos.length > 0 && (
+        <ul className="mt-3 space-y-0.5 border-t border-slate-800/70 pt-2.5">
+          {avisos.map((a, i) => (
             <li key={i} className="text-[11px] text-amber-400 flex items-start gap-1">
               <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" /> {a}
             </li>
@@ -4951,16 +6231,23 @@ function EfeitosSecao({ titulo, itens, resolvidos, render, onAdd, addLabel }) {
 }
 
 /* Chip booleano (liga/desliga). */
-function BoolChip({ ativo, onToggle, children }) {
+function BoolChip({ ativo, onToggle, bloqueado, lockTitle, children }) {
   return (
     <button
       type="button"
-      onClick={onToggle}
+      onClick={() => !bloqueado && onToggle()}
+      disabled={bloqueado}
       aria-pressed={ativo}
+      title={bloqueado ? lockTitle : undefined}
       className={`inline-flex items-center gap-1 text-[12px] font-semibold px-2.5 py-1 rounded-lg border transition-colors ${
-        ativo ? "bg-purple-700 border-purple-600 text-white" : "border-slate-700 text-slate-300 hover:text-white hover:border-slate-600"
+        ativo
+          ? "bg-purple-700 border-purple-600 text-white"
+          : bloqueado
+            ? "border-slate-800 text-slate-600 cursor-not-allowed"
+            : "border-slate-700 text-slate-300 hover:text-white hover:border-slate-600"
       }`}
     >
+      {bloqueado && <Lock className="w-2.5 h-2.5" />}
       {children}
     </button>
   );
