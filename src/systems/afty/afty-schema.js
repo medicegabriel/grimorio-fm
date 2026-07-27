@@ -125,6 +125,10 @@ export function createBlankAfty() {
     // afty-feiticos.js computa dano/alcance/custo/CD. Variações de Liberação
     // (variacaoDe apontando outro feitiço) não contam no orçamento.
     feiticos: [],               // [ feiticoCriado ] — ver afty-feiticos.js
+    // Habilidades Gerais: qualquer origem pode pegar, e gastam o MESMO
+    // contador dos Feitiços (dobro da Maestria + patamar, ver afty-gerais.js).
+    // Lista COM repetição, igual a melhoriasSuperiores: cada entrada é uma pega.
+    habilidadesGerais: [],      // [ 'ger_...' ]
     habilidades: [],            // Habilidades de Especialização (ex-Dotes)
     // Escolhas aninhadas das Habilidades: { [habId]: [opcaoId, ...] }. Guarda
     // qual opção (Estilo de Controle no Apogeu, Melhoria de Controlador...) foi

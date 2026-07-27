@@ -123,6 +123,11 @@ const AftyCreatureSchema = {
   melhoriasSuperiores: [],   // Melhorias Superiores
   habilidadesLendarias: [],  // Habilidades Lendárias
 
+  // ---------- HABILIDADES GERAIS ----------
+  // Abertas a qualquer origem, gastam o mesmo contador dos Feitiços.
+  // Lista COM repetição (cada entrada é uma pega). Ver afty-gerais.js.
+  habilidadesGerais: [],
+
   // ---------- STATS DERIVADOS (CACHE, calculado por derive()) ----------
   // Preenchido por fórmula a partir de tipo + nivel + attributes + itens +
   // habilidades. Editável como override, igual à 2.5.2. Nunca é a fonte da

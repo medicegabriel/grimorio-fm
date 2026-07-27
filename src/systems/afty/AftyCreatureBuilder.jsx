@@ -33,6 +33,7 @@ import { gruposDeTalento, avaliarAcessoTalento } from "./afty-talentos";
 import {
   MELHORIAS_SUPERIORES, HABILIDADES_LENDARIAS, avaliarAcessoAltoNivel,
 } from "./afty-alto-nivel";
+import { HABILIDADES_GERAIS } from "./afty-gerais";
 import {
   createBlankInvocacao, cloneInvocacao, createBlankAcao, createBlankCaracteristica, createBlankHorda, AFTY_INV_GRAUS,
   grausDisponiveis, grauMeta, INV_ATRIBUTOS_POR_GRAU, INV_ATTR_MIN, mod as invMod,
@@ -222,6 +223,16 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
       const next = [...lista];
       next.splice(i + 1, 0, copia);
       return { ...d, feiticos: next };
+    });
+
+  // Habilidades Gerais. Mesmo shape das Melhorias Superiores: lista COM
+  // repetição, então definir "vezes" é reescrever as entradas daquele id.
+  // Quem apara no teto (metade da Maestria, 1 + ND/10) é o resolver.
+  const setGeralVezes = (id, vezes) =>
+    setDraft((d) => {
+      const atual = Array.isArray(d.habilidadesGerais) ? d.habilidadesGerais : [];
+      const outras = atual.filter((x) => x !== id);
+      return { ...d, habilidadesGerais: [...outras, ...Array(Math.max(0, vezes)).fill(id)] };
     });
 
   // Alto Nível (21+) · Melhoria Superior. A ficha guarda uma lista COM
@@ -502,7 +513,7 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
         <div className="lg:col-span-2 space-y-4">
           {tab === "identidade" && <TabIdentidade draft={draft} patch={patch} patchCore={patchCore} setOrigemBonus={setOrigemBonus} setOrigemId={setOrigemId} />}
           {tab === "informacoes" && <TabInformacoes draft={draft} derived={derived} patch={patch} patchCore={patchCore} patchAttr={patchAttr} patchNivel={patchNivel} />}
-          {tab === "habilidades" && <TabHabilidades draft={draft} derived={derived} patchCore={patchCore} addFeitico={addFeitico} removeFeitico={removeFeitico} patchFeitico={patchFeitico} duplicarFeitico={duplicarFeitico} />}
+          {tab === "habilidades" && <TabHabilidades draft={draft} derived={derived} patchCore={patchCore} addFeitico={addFeitico} removeFeitico={removeFeitico} patchFeitico={patchFeitico} duplicarFeitico={duplicarFeitico} setGeralVezes={setGeralVezes} />}
           {tab === "especializacoes" && <TabEspecializacoes draft={draft} derived={derived} setEspecializacoes={setEspecializacoes} toggleHabilidade={toggleHabilidade} toggleEscolhaHabilidade={toggleEscolhaHabilidade} toggleTalento={toggleTalento} setMelhoriaVezes={setMelhoriaVezes} toggleLendaria={toggleLendaria} toggleEscolhaAltoNivel={toggleEscolhaAltoNivel} />}
           {tab === "aptidoes" && <TabAptidoes draft={draft} derived={derived} setAptidaoNivel={setAptidaoNivel} toggleAptidao={toggleAptidao} />}
           {tab === "invocacoes" && <TabInvocacoes draft={draft} derived={derived} addInvocacao={addInvocacao} removeInvocacao={removeInvocacao} duplicarInvocacao={duplicarInvocacao} moverInvocacao={moverInvocacao} patchInvocacao={patchInvocacao} patchInvocacaoAttr={patchInvocacaoAttr} efeitosApi={efeitosApi} addHorda={addHorda} removeHorda={removeHorda} patchHorda={patchHorda} />}
@@ -557,7 +568,11 @@ function StubCard({ title, text }) {
    combinados (autor, 2026-07): origem comum = Feitiços, Sem Técnica =
    Estilo das Sombras no lugar dos Feitiços, Restringido = Habilidades
    Marciais no lugar dos Feitiços. Feitiços são CRIADOS pelo jogador
-   (não é catálogo): o motor em afty-feiticos.js computa cada um. */
+   (não é catálogo): o motor em afty-feiticos.js computa cada um.
+
+   As HABILIDADES GERAIS (autor, 2026-07-26) ficam FORA dessa troca: toda
+   origem as vê, e elas gastam o MESMO contador do subsistema. Por isso o
+   contador aparece igual nos dois cards, e é o da aba inteira. */
 
 const TIPO_FEITICO = [
   { value: "dano",     label: "Dano" },
@@ -568,15 +583,145 @@ const TIPO_FEITICO = [
 ];
 const TIPO_FEITICO_LABEL = Object.fromEntries(TIPO_FEITICO.map((t) => [t.value, t.label]));
 
-function TabHabilidades({ draft, derived, patchCore, addFeitico, removeFeitico, patchFeitico, duplicarFeitico }) {
+function TabHabilidades({ draft, derived, patchCore, addFeitico, removeFeitico, patchFeitico, duplicarFeitico, setGeralVezes }) {
   const origem = draft.core.origem?.id;
-  if (origem === "sem_tecnica") return <SubsistemaPendente titulo="Estilo das Sombras" origem="Sem Técnica" />;
-  if (origem === "restringido") return <SubsistemaPendente titulo="Habilidades Marciais" origem="Restringido" />;
+  const gerais = <HabilidadesGeraisCard derived={derived} setGeralVezes={setGeralVezes} />;
+  if (origem === "sem_tecnica") {
+    return (
+      <>
+        <SubsistemaPendente titulo="Estilo das Sombras" origem="Sem Técnica" />
+        {gerais}
+      </>
+    );
+  }
+  if (origem === "restringido") {
+    return (
+      <>
+        <SubsistemaPendente titulo="Habilidades Marciais" origem="Restringido" />
+        {gerais}
+      </>
+    );
+  }
   return (
     <>
       <PerfilAmaldicoadoCard draft={draft} derived={derived} patchCore={patchCore} />
       <FeiticosCard draft={draft} derived={derived} addFeitico={addFeitico} removeFeitico={removeFeitico} patchFeitico={patchFeitico} duplicarFeitico={duplicarFeitico} />
+      {gerais}
     </>
+  );
+}
+
+/* Medidor do contador único da aba (Feitiços + Habilidades Gerais).
+   Aparece igual nos dois cards, para o gasto de um lado ser visível do outro. */
+function ContadorHabilidades({ derived }) {
+  const { gastos, total, excedeu } = derived.orcamentoHabilidades;
+  return (
+    <div className="flex items-center gap-2" title="Feitiços e Habilidades Gerais gastam o mesmo contador">
+      <span className={`font-mono text-sm font-bold tabular-nums ${excedeu ? "text-rose-400" : "text-slate-200"}`}>
+        {gastos} / {total}
+      </span>
+      <span className="text-[9px] uppercase tracking-wider text-slate-400">Habilidades</span>
+    </div>
+  );
+}
+
+/* Habilidades Gerais: catálogo curto e repetível, aberto a qualquer origem.
+   Reusa o vocabulário do card de Níveis Lendários (linha de 32px que abre sob
+   demanda + medidor de repetições), mas sem pré-requisito: o que limita é o
+   contador da aba e o teto de vezes de cada uma. */
+function HabilidadesGeraisCard({ derived, setGeralVezes }) {
+  const { escolhidas, maxVezes } = derived.gerais;
+  const { excedeu } = derived.orcamentoHabilidades;
+  const vezesDe = (id) => escolhidas.find((g) => g.id === id)?.vezes ?? 0;
+
+  return (
+    <Card title="Habilidades Gerais" headerRight={<ContadorHabilidades derived={derived} />}>
+      {excedeu && (
+        <p className="text-[11px] text-rose-400 mb-3">
+          Você gastou mais do que o contador permite. Remova uma ou aumente o ND.
+        </p>
+      )}
+      <div className="space-y-1">
+        {HABILIDADES_GERAIS.map((g) => (
+          <HabilidadeGeralCard
+            key={g.id}
+            item={g}
+            vezes={vezesDe(g.id)}
+            max={maxVezes[g.id] ?? 1}
+            onSetVezes={(n) => setGeralVezes(g.id, n)}
+          />
+        ))}
+      </div>
+    </Card>
+  );
+}
+
+function HabilidadeGeralCard({ item, vezes, max, onSetVezes }) {
+  const [open, setOpen] = useState(false);
+  const escolhida = vezes > 0;
+  // Teto 0 (metade da Maestria é 0 só se a Maestria for 0) tranca a linha.
+  const bloqueada = max < 1;
+  const repetivel = max > 1;
+
+  return (
+    <div className={`rounded-lg border transition-colors ${
+      escolhida ? "border-purple-700 bg-purple-950/30" : "border-slate-800 bg-slate-950/40"
+    }`}>
+      <div className="flex items-center gap-2.5 px-2.5 h-8">
+        <button
+          type="button"
+          onClick={() => onSetVezes(escolhida ? 0 : 1)}
+          disabled={bloqueada}
+          aria-pressed={escolhida}
+          aria-label={`${escolhida ? "Remover" : "Escolher"} ${item.nome}`}
+          title={bloqueada ? "Indisponível neste ND" : escolhida ? "Remover" : "Escolher"}
+          className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 border transition-colors ${
+            escolhida
+              ? "bg-purple-700 border-purple-600 text-white"
+              : bloqueada
+                ? "border-slate-800 text-slate-700 cursor-not-allowed"
+                : "border-slate-600 text-slate-500 hover:border-purple-600 hover:text-purple-300"
+          }`}
+        >
+          {escolhida ? <Check className="w-3 h-3" /> : bloqueada ? <Lock className="w-2.5 h-2.5" /> : <Plus className="w-3 h-3" />}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          aria-expanded={open}
+          className="flex-1 min-w-0 flex items-center text-left overflow-hidden"
+        >
+          <span
+            className={`text-[12px] font-semibold truncate ${bloqueada ? "text-slate-500" : "text-slate-100"}`}
+            title={item.nome}
+          >
+            {item.nome}
+          </span>
+        </button>
+
+        {/* Medidor só depois de escolhida: o 1º segmento duplicaria o toggle.
+            Acima de 6 vezes o medidor não cabe e vira contador. */}
+        {repetivel && escolhida && (
+          max <= 6
+            ? <VezesGauge vezes={vezes} max={max} nome={item.nome} onSet={onSetVezes} />
+            : <ContadorCompacto value={vezes} min={1} max={max} onChange={onSetVezes} />
+        )}
+
+        <ChevronDown
+          className={`w-3.5 h-3.5 text-slate-600 flex-shrink-0 transition-transform ${open ? "" : "-rotate-90"}`}
+          aria-hidden="true"
+        />
+      </div>
+
+      {open && (
+        <div className="px-2.5 pb-2.5 pl-[38px]">
+          <p className="text-[11px] text-slate-400 leading-relaxed whitespace-pre-line">
+            {item.descricao}
+          </p>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -634,24 +779,15 @@ function PerfilAmaldicoadoCard({ draft, derived, patchCore }) {
 /* Card dos Feitiços: orçamento no cabeçalho + lista de entradas criadas. */
 function FeiticosCard({ draft, derived, addFeitico, removeFeitico, patchFeitico, duplicarFeitico }) {
   const lista = Array.isArray(draft.feiticos) ? draft.feiticos : [];
-  const { total, gastos, excedeu, nivelMax } = derived.feiticos;
+  const { nivelMax } = derived.feiticos;
   const ctx = {
     nd: derived.nd,
     cdBase: derived.feiticos.cdBase,
     temEnergiaReversa: Array.isArray(draft.aptidoesAmaldicoadas) && draft.aptidoesAmaldicoadas.includes("energia_reversa"),
+    invocacoes: Array.isArray(draft.invocacoes) ? draft.invocacoes : [],
   };
   return (
-    <Card
-      title="Feitiços"
-      headerRight={
-        <div className="flex items-center gap-2" title="Feitiços criados / orçamento (Variações de Liberação não contam)">
-          <span className={`font-mono text-sm font-bold tabular-nums ${excedeu ? "text-rose-400" : "text-slate-200"}`}>
-            {gastos} / {total}
-          </span>
-          <span className="text-[9px] uppercase tracking-wider text-slate-400">Feitiços</span>
-        </div>
-      }
-    >
+    <Card title="Feitiços" headerRight={<ContadorHabilidades derived={derived} />}>
       {lista.length === 0 && (
         <div className="text-center py-6 border border-dashed border-slate-700 rounded-lg text-sm text-slate-400">
           Nenhum Feitiço criado ainda.
@@ -1420,6 +1556,8 @@ function FeiticoEspecialEditor({ feitico, calc, onPatch }) {
         <InvisibilidadeEditor feitico={f} calc={calc} onPatch={onPatch} />
       ) : sub === "itens" ? (
         <ItensEditor feitico={f} calc={calc} onPatch={onPatch} />
+      ) : sub === "shikigami" ? (
+        <ShikigamiEditor feitico={f} calc={calc} onPatch={onPatch} />
       ) : sub === "transformacao" ? (
         <TransformacaoEditor feitico={f} calc={calc} onPatch={onPatch} />
       ) : (
@@ -1723,6 +1861,83 @@ function ResultadoItens({ calc }) {
         {calc.detalhes?.restricao}
       </div>
       <div className="text-[11px] text-slate-400">{calc.detalhes?.duracao}</div>
+
+      {calc.avisos.length > 0 && (
+        <ul className="space-y-0.5 border-t border-slate-800 pt-2">
+          {calc.avisos.map((a, i) => (
+            <li key={i} className="text-[11px] text-amber-400 flex items-start gap-1">
+              <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" /> {a}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+/* Feitiço de Criação de Shikigamis: referencia uma Invocação da aba Invocações.
+   O nível do Feitiço dita o grau exigido, então o seletor destaca o casamento. */
+function ShikigamiEditor({ feitico, calc, onPatch }) {
+  const f = feitico;
+  const opcoes = calc?.opcoes || [];
+  const temInvocacoes = opcoes.length > 0;
+  return (
+    <div className="space-y-3">
+      <div>
+        <FieldLabel hint={calc ? `exige ${calc.grauLabel}` : undefined}>Invocação Referenciada</FieldLabel>
+        {temInvocacoes ? (
+          <OptionChips
+            value={f.shikigamiInvocacaoId || "nenhuma"}
+            onChange={(v) => onPatch({ shikigamiInvocacaoId: v === "nenhuma" ? null : v })}
+            options={[
+              { value: "nenhuma", label: "Nenhuma" },
+              ...opcoes.map((o) => ({ value: o.id, label: `${o.nome || "Sem Nome"} · ${o.grauLabel}` })),
+            ]}
+          />
+        ) : (
+          <div className="text-center py-4 border border-dashed border-slate-700 rounded-lg text-[11px] text-slate-400">
+            Nenhuma Invocação na ficha. Monte uma na aba Invocações, no {calc?.grauLabel || "grau exigido"}.
+          </div>
+        )}
+      </div>
+      {calc && <ResultadoShikigami calc={calc} />}
+    </div>
+  );
+}
+
+function ResultadoShikigami({ calc }) {
+  const tiles = [
+    { label: "Grau Exigido", value: calc.grauLabel, icon: Shield, accent: true },
+    { label: "Redução de PE", value: calc.reducaoPE, icon: Zap },
+    { label: "Custo de Invocação", value: calc.custoPE != null ? `${calc.custoPE} PE` : "-", icon: Sparkles },
+    { label: "Conjuração", value: "Comum" },
+  ];
+  if (calc.ajusteAcoes) tiles.push({ label: "Ações/Caract.", value: `${calc.ajusteAcoes > 0 ? "+" : ""}${calc.ajusteAcoes}` });
+
+  return (
+    <div className="rounded-lg border border-slate-800 bg-slate-950/60 p-3 space-y-2.5">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+        {tiles.map((t) => (
+          <StatMini key={t.label} label={t.label} value={t.value} accent={t.accent} icon={t.icon} />
+        ))}
+      </div>
+
+      {calc.refNome != null && (
+        <div className={`text-[11px] font-mono border-t border-slate-800 pt-2 flex items-center gap-1.5 ${calc.grauConfere ? "text-slate-300" : "text-amber-300/80"}`}>
+          {calc.grauConfere ? <Check className="w-3 h-3 flex-shrink-0" /> : <AlertTriangle className="w-3 h-3 flex-shrink-0" />}
+          {calc.refNome || "Sem Nome"} · {grauMeta(calc.refGrau).label}
+        </div>
+      )}
+
+      {calc.notas?.length > 0 && (
+        <ul className="space-y-1 border-t border-slate-800 pt-2">
+          {calc.notas.map((n, i) => (
+            <li key={i} className="text-[11px] text-slate-400 flex items-start gap-1.5">
+              <span className="text-slate-600 mt-px flex-shrink-0">•</span> {n}
+            </li>
+          ))}
+        </ul>
+      )}
 
       {calc.avisos.length > 0 && (
         <ul className="space-y-0.5 border-t border-slate-800 pt-2">
@@ -4356,6 +4571,7 @@ function AltoNivel({ derived, setMelhoriaVezes, toggleLendaria, toggleEscolhaAlt
                 on ? "bg-purple-700 text-white" : "text-slate-400 hover:text-white hover:bg-slate-800/60"
               }`}
             >
+              {!r.destravado && <Lock className="w-3 h-3 flex-shrink-0" aria-hidden="true" />}
               {t.label}
               {r.gastos > 0 && (
                 <span className={`font-mono text-[10px] font-bold px-1 rounded ${on ? "bg-white/20 text-white" : "bg-purple-500/25 text-purple-300"}`}>
@@ -4369,12 +4585,21 @@ function AltoNivel({ derived, setMelhoriaVezes, toggleLendaria, toggleEscolhaAlt
 
       {(emMelhorias ? melhorias : lendarias).excedeu && (
         <p className="text-[11px] text-rose-400 mb-3">
-          Você escolheu mais do que o orçamento permite. Remova uma ou aumente o ND.
+          {(emMelhorias ? melhorias : lendarias).destravado
+            ? "Você escolheu mais do que o orçamento permite. Remova uma ou aumente o ND."
+            : `Nada aqui vale sem a Habilidade Geral: ${emMelhorias ? "Melhoria Superior" : "Habilidade Lendária"}. Remova o que escolheu ou pegue a Habilidade Geral.`}
         </p>
       )}
 
+      {!(emMelhorias ? melhorias : lendarias).destravado && (
+        <div className="text-center py-6 border border-dashed border-slate-700 rounded-lg text-sm text-slate-400 flex items-center justify-center gap-2">
+          <Lock className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
+          Requer a Habilidade Geral: {emMelhorias ? "Melhoria Superior" : "Habilidade Lendária"}
+        </div>
+      )}
+
       <div className="space-y-1">
-        {emMelhorias
+        {!(emMelhorias ? melhorias : lendarias).destravado ? null : emMelhorias
           ? MELHORIAS_SUPERIORES.map((m) => {
               const vezes = vezesDe(m.id);
               return (

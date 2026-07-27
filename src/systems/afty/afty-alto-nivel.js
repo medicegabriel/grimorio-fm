@@ -12,6 +12,9 @@
  *    Uma Melhoria Superior em todo nível ÍMPAR a partir do 21 (21, 23, 25...)
  *    e uma Habilidade Lendária em todo nível PAR a partir do 22 (22, 24...).
  *    Abaixo do ND 21 os dois são zero e a UI nem aparece.
+ *    ⚠ 2026-07-26: além do ND, cada trilha exige a Habilidade Geral
+ *    correspondente (Melhoria Superior / Habilidade Lendária, em
+ *    afty-gerais.js), que só DESTRAVA e não concede vaga. Ver `ctx.destravado`.
  * 3. **Melhoria não repete, salvo quando o texto diz.** As que repetem trazem
  *    `maxVezes` e o incremento das repetições no próprio texto (Vida: 20 na
  *    primeira e 15 nas outras duas). As Lendárias NÃO repetem, nenhuma.
@@ -591,11 +594,22 @@ function resolveEscolhas(itens, escolhasBrutas) {
  * O aparo do `maxVezes` é de LEITURA, não gravado (mesma convenção de
  * resolveEspecializacoes / resolveNiveisAptidao).
  *
- * ctx = { nd, niveisPorEspec, habilidades: [id] }.
+ * ctx = { nd, niveisPorEspec, habilidades: [id], destravado }.
+ *
+ * `ctx.destravado` = { melhorias, lendarias }, vindo das Habilidades Gerais
+ * (autor, 2026-07-26): as Gerais Melhoria Superior e Habilidade Lendária são o
+ * PORTÃO das duas trilhas, e não dão vaga nenhuma. Sem elas o orçamento do
+ * lado correspondente é ZERO mesmo no ND 21+, e o que já estiver escolhido
+ * acusa excedeu. Quando o ctx não traz `destravado`, os dois ficam abertos
+ * (o resolver segue chamável fora do builder).
  */
 export function resolveAltoNivel(creature, ctx = {}) {
   const nd = Math.max(1, Math.trunc(Number(creature?.core?.nd) || 1));
   const ativo = altoNivelAtivo(nd);
+  const destravado = {
+    melhorias: ctx.destravado ? !!ctx.destravado.melhorias : true,
+    lendarias: ctx.destravado ? !!ctx.destravado.lendarias : true,
+  };
 
   /* ---- Melhorias Superiores (repetíveis) ---- */
   const vezesPorId = new Map();
@@ -612,7 +626,7 @@ export function resolveAltoNivel(creature, ctx = {}) {
     .filter((m) => vezesPorId.has(m.id))
     .map((m) => ({ id: m.id, vezes: vezesPorId.get(m.id) }));
   const melGastos = melhoriasEscolhidas.reduce((s, m) => s + m.vezes, 0);
-  const melTotal = totalMelhoriasSuperiores(nd);
+  const melTotal = destravado.melhorias ? totalMelhoriasSuperiores(nd) : 0;
 
   /* ---- Habilidades Lendárias (uma vez cada) ---- */
   const vistos = new Set();
@@ -622,7 +636,7 @@ export function resolveAltoNivel(creature, ctx = {}) {
     vistos.add(id);
     lendariasEscolhidas.push(id);
   }
-  const lenTotal = totalHabilidadesLendarias(nd);
+  const lenTotal = destravado.lendarias ? totalHabilidadesLendarias(nd) : 0;
 
   const ctxReq = { nd, niveisPorEspec: ctx.niveisPorEspec, habilidades: ctx.habilidades };
   const inacessiveis = lendariasEscolhidas.filter(
@@ -647,6 +661,7 @@ export function resolveAltoNivel(creature, ctx = {}) {
       gastos: melGastos,
       restante: melTotal - melGastos,
       excedeu: melGastos > melTotal,
+      destravado: destravado.melhorias,
     },
     lendarias: {
       escolhidas: lendariasEscolhidas,   // [id]
@@ -655,6 +670,7 @@ export function resolveAltoNivel(creature, ctx = {}) {
       restante: lenTotal - lendariasEscolhidas.length,
       excedeu: lendariasEscolhidas.length > lenTotal,
       inacessiveis,
+      destravado: destravado.lendarias,
     },
     escolhas,                            // { porItem, mapa }
     apiceId,

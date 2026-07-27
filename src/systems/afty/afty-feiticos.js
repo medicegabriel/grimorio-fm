@@ -31,6 +31,10 @@
  * ============================================================
  */
 
+// grauMeta: fonte da verdade dos graus de Invocação (Shikigami usa o motor de
+// Invocações). afty-invocacoes não importa daqui, então não há ciclo.
+import { grauMeta } from "./afty-invocacoes";
+
 // ---------------------------------------------------------------
 // NÍVEIS. Feitiços vão do nível 0 ao 5. Técnica Máxima ("max") é um
 // degrau acima, presente nas tabelas mas destravado por Aptidão
@@ -73,18 +77,13 @@ export function nivelMaxFeitico(nd) {
 }
 
 // ---------------------------------------------------------------
-// ORÇAMENTO de Feitiços (quantos a criatura pode ter).
-// "inicia com dois Feitiços" + "um novo Feitiço em todo nível par"
-// + "um Feitiço adicional no nível 10 e outro no nível 20".
-// Variações de Liberação NÃO contam para este máximo.
-// ND 20 → 2 + 10 + 1 + 1 = 14.
-// ⚠ Acima de 20 os níveis pares seguem dando +1 (a tabela de acesso
-//   para, o ganho de Feitiços não é limitado por ela). Confirmar.
+// ORÇAMENTO: os Feitiços NÃO têm mais contador próprio.
+// Autor, 2026-07-26: Feitiços e Habilidades Gerais gastam o MESMO
+// caixa, `contadorHabilidades(maestria, patamar)` em afty-gerais.js
+// (dobro da Maestria, +2 Desafio, +4 Calamidade, triplo no Beyond).
+// O antigo `totalFeiticos(nd)` (2 + ND/2 + marcos de 10 e 20) foi
+// substituído por ele. Variações de Liberação seguem sem contar.
 // ---------------------------------------------------------------
-export function totalFeiticos(nd) {
-  const n = Math.max(1, nd | 0);
-  return 2 + Math.floor(n / 2) + (n >= 10 ? 1 : 0) + (n >= 20 ? 1 : 0);
-}
 
 // Custo padrão por nível, com o piso de 1 (salvo nível 0).
 export function custoPadrao(nivel) {
@@ -851,12 +850,12 @@ export function calcularFeiticoCurativo(feitico, ctx = {}) {
 export const ESPECIAL_SUBTIPOS = [
   { value: "golpeador",     label: "Golpeador" },
   { value: "danoAlma",      label: "Dano na Alma" },
-  { value: "itens",         label: "Criação de Itens", pendente: true },
-  { value: "shikigami",     label: "Shikigami",        pendente: true },
-  { value: "transformacao", label: "Transformação",    pendente: true },
-  { value: "invisibilidade",label: "Invisibilidade",   pendente: true },
+  { value: "itens",         label: "Criação de Itens" },
+  { value: "shikigami",     label: "Shikigami" },
+  { value: "transformacao", label: "Transformação" },
+  { value: "invisibilidade",label: "Invisibilidade" },
 ];
-export const ESPECIAL_IMPLEMENTADO = new Set(["golpeador", "danoAlma", "invisibilidade", "itens", "transformacao"]);
+export const ESPECIAL_IMPLEMENTADO = new Set(["golpeador", "danoAlma", "invisibilidade", "itens", "transformacao", "shikigami"]);
 
 // TABELAS (verbatim). Média recalculada por piso (o livro erra, autor).
 // Golpeador: dano ADICIONAL de um ataque. Tem Nível 0.
@@ -1106,6 +1105,97 @@ export function calcularFeiticoInvisibilidade(feitico, ctx = {}) {
 }
 
 // ---------------------------------------------------------------
+// MOTOR — Feitiço de Criação de Shikigamis.
+// O nível do Feitiço dita o GRAU da invocação (e um ajuste de Ações/
+// Características no Nível 0 e na Técnica Máxima). A criatura em si é montada
+// na aba Invocações: o Feitiço só a REFERENCIA por id, é a autoridade do grau
+// (avisa se o grau da invocação escolhida não bater) e calcula o que o nível
+// dita: redução permanente de PE (2×nível, com a TM contando como "Nível 6" =
+// 12), custo de invocação (= custo do Feitiço) e as notas de regra.
+// ---------------------------------------------------------------
+export const SHIKIGAMI_TABELA = {
+  0:   { grau: "quarto",   ajusteAcoes: -1 },
+  1:   { grau: "quarto",   ajusteAcoes: 0 },
+  2:   { grau: "terceiro", ajusteAcoes: 0 },
+  3:   { grau: "segundo",  ajusteAcoes: 0 },
+  4:   { grau: "primeiro", ajusteAcoes: 0 },
+  5:   { grau: "especial", ajusteAcoes: 0 },
+  max: { grau: "especial", ajusteAcoes: 2 },
+};
+
+export function calcularFeiticoShikigami(feitico, ctx = {}) {
+  const avisos = [];
+  const f = feitico || {};
+  const nivel = f.nivel ?? 1;
+  if (ctx.nd != null && nivel !== "max" && nivel > nivelMaxFeitico(ctx.nd)) {
+    avisos.push(`Nível ${nivel} inacessível: no ND ${ctx.nd} o máximo é ${nivelMaxFeitico(ctx.nd)}.`);
+  }
+  const linha = SHIKIGAMI_TABELA[nivel] || SHIKIGAMI_TABELA[1];
+  const grau = grauMeta(linha.grau);
+  const ajusteAcoes = linha.ajusteAcoes;
+
+  // Redução permanente de PE = 2×nível (TM = "Nível 6" = 12) enquanto existir.
+  const nivelNum = nivel === "max" ? 6 : nivel;
+  const reducaoPE = 2 * nivelNum;
+
+  // Custo de invocação = custo do Feitiço (sobrepõe o custo próprio da invocação).
+  const custoPE = custoPadrao(nivel === "max" ? 5 : nivel);
+
+  // Invocação referenciada (montada na aba Invocações). Lista de opções para o
+  // seletor, com o grau exigido destacado.
+  const lista = Array.isArray(ctx.invocacoes) ? ctx.invocacoes : [];
+  const opcoes = lista.map((x) => ({
+    id: x.id,
+    nome: x.nome || "",
+    grau: x.grau,
+    grauLabel: grauMeta(x.grau).label,
+    confere: x.grau === linha.grau,
+  }));
+  const ref = f.shikigamiInvocacaoId ? lista.find((x) => x && x.id === f.shikigamiInvocacaoId) : null;
+  let refNome = null, refGrau = null, grauConfere = null;
+  if (f.shikigamiInvocacaoId && !ref) {
+    avisos.push("A invocação referenciada não existe mais. Escolha outra na aba Invocações.");
+  } else if (ref) {
+    refNome = ref.nome || "";
+    refGrau = ref.grau;
+    grauConfere = ref.grau === linha.grau;
+    if (!grauConfere) {
+      avisos.push(`A invocação está em ${grauMeta(ref.grau).label}, mas o Nível ${nivel === "max" ? "TM" : nivel} exige ${grau.label}.`);
+    }
+  } else {
+    avisos.push("Escolha uma invocação na aba Invocações para este Shikigami.");
+  }
+
+  const notas = [
+    "Invocar usa Ação Comum. Em campo, o shikigami faz uma Ação Complexa ou Simples e uma de Movimento por rodada, sem gastar as próprias ações.",
+    "Invocar conta como a ação Conjurar: não recebe Autonomia, mas recebe Manipulação Perfeita (no custo base).",
+    "Depois de conjurado não é um Feitiço: sem Explosão Encadeada nem Técnica Potente.",
+    "Sem Liberação Máxima e sem Ritual. O grau só sobe subindo o nível do Feitiço.",
+  ];
+  if (nivel === "max") {
+    notas.push("Sendo Técnica Máxima, a recarga só começa a contar depois que o shikigami é dissipado.");
+  }
+
+  return {
+    nivel,
+    resumo: `Shikigami ${grau.label}`,
+    grau: linha.grau,
+    grauLabel: grau.label,
+    ajusteAcoes,
+    reducaoPE,
+    custoPE,
+    acao: "Comum",
+    invocacaoId: f.shikigamiInvocacaoId || null,
+    refNome,
+    refGrau,
+    grauConfere,
+    opcoes,
+    avisos,
+    notas,
+  };
+}
+
+// ---------------------------------------------------------------
 // MOTOR — Feitiço de Criação de Itens de Custo.
 // Autocontido (os itens criados NÃO entram no limite de custo).
 // Base: Nível N cria 1 item de Custo N (N = 1 a 4). No Nível 5, 2 itens de
@@ -1331,6 +1421,7 @@ export function calcularFeiticoEspecial(feitico, ctx = {}) {
     case "danoAlma":      return calcularFeiticoDanoAlma(feitico, ctx);
     case "invisibilidade":return calcularFeiticoInvisibilidade(feitico, ctx);
     case "itens":         return calcularFeiticoItens(feitico, ctx);
+    case "shikigami":     return calcularFeiticoShikigami(feitico, ctx);
     case "transformacao": return calcularFeiticoTransformacao(feitico, ctx);
     default: return null;
   }
@@ -2262,6 +2353,7 @@ export function createBlankFeitico() {
     tecnicaFocoItens: false,        // Itens: Técnica focada em criação (cria um nível mais cedo)
     itemNatureza: "consumivel",     // Itens: consumivel | permanente
     itemDescricao: "",              // Itens: especificação dos itens criados
+    shikigamiInvocacaoId: null,     // Shikigami: id da Invocação referenciada (aba Invocações)
     transfAcao: "comum",            // Transformação: comum | bonus | completa
     transfDuracao: "sustentada",    // Transformação: sustentada | duradoura | cena
     transfNivelTroca: 0,            // Transformação: trocas de efeito por +nível

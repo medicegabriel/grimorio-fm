@@ -5865,8 +5865,12 @@ export const habilidadesDaEspecializacao = (espId, tipo) =>
  *
  * O orçamento é ÚNICO (vem do ND total, não do nível de cada especialização)
  * e cobre Base e por Nível juntas.
+ *
+ * `bonus` são as vagas concedidas de fora, hoje só a Habilidade Geral
+ * Especialização (1 + metade da Maestria por pega, ver afty-gerais.js).
  */
-export const totalHabilidades = (nd) => 1 + Math.floor(Math.max(1, nd) / 3);
+export const totalHabilidades = (nd, bonus = 0) =>
+  1 + Math.floor(Math.max(1, nd) / 3) + Math.max(0, Math.trunc(Number(bonus) || 0));
 
 /**
  * Quantos Estilos de Combate (ou escolha aninhada equivalente) a habilidade
@@ -6149,7 +6153,7 @@ export function efeitosInvocacaoControlador(escolhidasIds = []) {
   return out;
 }
 
-export function resolveHabilidades(creature, escolhidasEspec, talentosGastos = 0, bt = 0) {
+export function resolveHabilidades(creature, escolhidasEspec, talentosGastos = 0, bt = 0, bonusVagas = 0) {
   const nd = Math.max(1, Math.trunc(Number(creature?.core?.nd) || 1));
   const niveisPorEspec = niveisPorEspecializacao(escolhidasEspec);
   const vistos = new Set();
@@ -6159,7 +6163,7 @@ export function resolveHabilidades(creature, escolhidasEspec, talentosGastos = 0
     vistos.add(id);
     escolhidas.push(id);
   }
-  const total = totalHabilidades(nd);
+  const total = totalHabilidades(nd, bonusVagas);
   // Escolhas aninhadas (Estilo de Controle no Apogeu, Melhorias...). O mapa
   // alimenta a verificação de requisito `escolha` e a passada de efeitos.
   const escolhas = resolveEscolhasHabilidade({

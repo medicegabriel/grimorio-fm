@@ -34,7 +34,8 @@ import { resolveTalentos } from "./afty-talentos";
 import { resolveAltoNivel } from "./afty-alto-nivel";
 import { resolveInvocacoesList, resolveHordasList } from "./afty-invocacoes";
 import { resolveEquipamentos, resolveCarga, grauFeiticeiro } from "./afty-equipamentos";
-import { totalFeiticos, nivelMaxFeitico } from "./afty-feiticos";
+import { nivelMaxFeitico } from "./afty-feiticos";
+import { resolveGerais, contadorHabilidades } from "./afty-gerais";
 
 export const mod = (attr) => Math.floor(((attr ?? 10) - 10) / 2);
 
@@ -184,18 +185,28 @@ export function deriveAfty(creature) {
     /* combatente | restringido */ INT(nd / 1.75);
   const cd = 10 + cdTipo + (modTecnica + bt) + equip.cdBonus;
 
-  // ---------- Feitiços ----------
-  // Orçamento e acesso são fórmula fechada. A CD base dos Feitiços é a CD de
-  // Feitiçaria da criatura (acima), que já usa o Atributo Principal da Técnica
+  // ---------- Aba Habilidades: Feitiços + Habilidades Gerais ----------
+  // Contador ÚNICO para os dois (autor, 2026-07-26): dobro da Maestria, +2 no
+  // Desafio, +4 na Calamidade, triplo da Maestria no Beyond. Substituiu o
+  // antigo totalFeiticos(nd). A CD base dos Feitiços é a CD de Feitiçaria da
+  // criatura (acima), que já usa o Atributo Principal da Técnica
   // (core.tecnicaAttr) e a Maestria. A criação de cada Feitiço só a desloca.
   const feiticosLista = Array.isArray(creature.feiticos) ? creature.feiticos : [];
   const feiticosGastos = feiticosLista.filter((f) => !f.variacaoDe).length;
+  const gerais = resolveGerais(creature, { nd, maestria: bt });
+  const contadorTotal = contadorHabilidades(bt, patamar);
+  const contadorGastos = feiticosGastos + gerais.gastos;
+  const orcamentoHabilidades = {
+    total: contadorTotal,
+    feiticos: feiticosGastos,
+    gerais: gerais.gastos,
+    gastos: contadorGastos,
+    restante: contadorTotal - contadorGastos,
+    excedeu: contadorGastos > contadorTotal,
+  };
   const feiticos = {
-    total: totalFeiticos(nd),
     nivelMax: nivelMaxFeitico(nd),
     gastos: feiticosGastos,
-    restante: totalFeiticos(nd) - feiticosGastos,
-    excedeu: feiticosGastos > totalFeiticos(nd),
     cdBase: cd,
   };
 
@@ -242,7 +253,8 @@ export function deriveAfty(creature) {
   // 2026-07-16): 1 no ND 1, mais 1 a cada 3 ND (3, 6, 9, 12, ...).
   // Sem teto (ND 1 → ∞), ao contrário do orçamento de NÍVEIS de aptidão,
   // que para no ND 20. São dois orçamentos separados e independentes.
-  const totalAptidoesAmaldicoadas = 1 + Math.floor(nd / 3);
+  // A Habilidade Geral Aptidão soma aqui (1 + metade da Maestria por pega).
+  const totalAptidoesAmaldicoadas = 1 + Math.floor(nd / 3) + gerais.ganhos.aptidoes;
 
   // Especializações: NÃO entram em nenhum stat (quem dirige fórmula é o
   // Tipo). Resolvidas aqui só para a UI e a validação lerem de um lugar
@@ -265,17 +277,23 @@ export function deriveAfty(creature) {
     origemId: creature?.core?.origem?.id ?? null,
   });
   // bt entra por causa do Roubo de Habilidade, cujo limite de repetições é o
-  // Bônus de Treinamento, e não o tamanho do pool.
-  const habilidades = resolveHabilidades(creature, especializacoes.escolhidas, talentos.gastos, bt);
+  // Bônus de Treinamento, e não o tamanho do pool. O último parâmetro são as
+  // vagas extras da Habilidade Geral Especialização.
+  const habilidades = resolveHabilidades(
+    creature, especializacoes.escolhidas, talentos.gastos, bt, gerais.ganhos.habilidades,
+  );
 
   // Alto Nível (21+): Melhorias Superiores e Habilidades Lendárias. Orçamentos
   // PRÓPRIOS, um por nível ímpar e um por nível par a partir do 21/22, sem
   // relação com o orçamento de Habilidades. Não dependem de especialização: só
   // as Habilidades Ápice leem nível de classe, e no pré-requisito.
   // ⚠ Nenhum EFEITO é aplicado (mesmo bloqueio das Habilidades, ver docs).
+  // ⚠ 2026-07-26: cada trilha exige também a Habilidade Geral correspondente,
+  // que só DESTRAVA (não dá vaga). Sem ela o total do lado é zero.
   const altoNivel = resolveAltoNivel(creature, {
     niveisPorEspec: habilidades.niveisPorEspec,
     habilidades: habilidades.escolhidas,
+    destravado: gerais.destravado,
   });
 
   // Invocações: a invocação lê valores do DONO (ND, BT = maestria(ND) e o Nível
@@ -298,8 +316,9 @@ export function deriveAfty(creature) {
 
   // Focos de interlúdio (orçamento de Treinamento) = ND + Outros.
   // "Outros" = bônus de poderes que concedem treinos (sistema futuro),
-  // lido de creature.focosBonus (0 por ora).
-  const focosTotais = nd + (creature?.focosBonus ?? 0);
+  // lido de creature.focosBonus (0 por ora), mais a Habilidade Geral
+  // Treinamentos (metade do ND por pega).
+  const focosTotais = nd + (creature?.focosBonus ?? 0) + gerais.ganhos.focos;
 
   // (Pontos de atributo agora vêm do método + pool de nível — ver afty-atributos.js.)
 
@@ -321,7 +340,9 @@ export function deriveAfty(creature) {
     totalAptidao,               // orçamento de NÍVEIS de aptidão (para no ND 20)
     totalAptidoesAmaldicoadas,  // quantas Aptidões Amaldiçoadas pode ter (sem teto)
     aptidao,              // níveis por trilha: { alocado, concedido, efetivo, gastos }
-    feiticos,             // { total, nivelMax, gastos, restante, excedeu, cdBase }
+    feiticos,             // { nivelMax, gastos, cdBase } — o orçamento é o de baixo
+    gerais,               // { escolhidas, gastos, ganhos, destravado, maxVezes }
+    orcamentoHabilidades, // contador ÚNICO da aba: Feitiços + Habilidades Gerais
     especializacoes,      // { escolhidas, total, max, obrigatoria, completa, erro }
     habilidades,          // { escolhidas, total, gastos, restante, excedeu, inacessiveis, niveisPorEspec }
     talentos,             // { escolhidas, gastos, inacessiveis } — gasto já somado em habilidades.gastos
