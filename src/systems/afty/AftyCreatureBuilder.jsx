@@ -17,7 +17,7 @@ import {
   desenvolvimentoTotal, desenvolvimentoUsado, POINT_BUY_MIN, POINT_BUY_MAX,
 } from "./afty-atributos";
 import {
-  AFTY_TREINAMENTOS, ETAPAS_POR_LINHA, focosGastos, avaliarRequisito,
+  AFTY_TREINAMENTOS, ETAPAS_POR_LINHA, focosGastos, avaliarRequisito, rotuloAlvo,
 } from "./afty-treinamentos";
 import {
   APTIDAO_TRILHAS, APTIDAO_NIVEL_MAX,
@@ -34,6 +34,7 @@ import {
   MELHORIAS_SUPERIORES, HABILIDADES_LENDARIAS, avaliarAcessoAltoNivel,
 } from "./afty-alto-nivel";
 import { HABILIDADES_GERAIS } from "./afty-gerais";
+import { AFTY_PERICIAS } from "./afty-pericias";
 import {
   createBlankInvocacao, cloneInvocacao, createBlankAcao, createBlankCaracteristica, createBlankHorda, AFTY_INV_GRAUS,
   grausDisponiveis, grauMeta, INV_ATRIBUTOS_POR_GRAU, INV_ATTR_MIN, mod as invMod,
@@ -606,6 +607,27 @@ const INDICE_POR_PROF = { treinado: 1, mestre: 2 };
 function TabPericias({ draft, derived, patch, setProficiencia, toggleAtaqueProf }) {
   const { pericias, resistencias, ataques, orcamento } = derived.testes;
 
+  const linhaTR = (r) => (
+    <TesteLinha
+      key={r.value}
+      item={{ ...r, id: r.value, nome: r.label }}
+      onCicla={(prof) => setProficiencia("resistenciasProf", r.value, prof)}
+      tag={r.critico ? "Sucesso Crítico" : null}
+    />
+  );
+  const linhaAtaque = (a) => (
+    <TesteLinha
+      key={a.id}
+      // Ataque não recebe treino de fora, então escolhida e resolvida são a
+      // mesma coisa. Sem a escolhida, a linha se pintaria de verde (concedido).
+      item={{ ...a, prof: a.treinado ? "treinado" : null, profEscolhida: a.treinado ? "treinado" : null }}
+      maxProf={1}
+      travado={a.sempreTreinado}
+      onCicla={() => toggleAtaqueProf(a.id)}
+    />
+  );
+  const ataquePor = (id) => ataques.filter((a) => a.id === id).map(linhaAtaque);
+
   return (
     <>
       <Card
@@ -616,29 +638,30 @@ function TabPericias({ draft, derived, patch, setProficiencia, toggleAtaqueProf 
           </BoolChip>
         }
       >
-        <div className="space-y-1">
-          {ataques.map((a) => (
-            <TesteLinha
-              key={a.id}
-              item={{ ...a, prof: a.treinado ? "treinado" : null }}
-              maxProf={1}
-              travado={a.sempreTreinado}
-              onCicla={() => toggleAtaqueProf(a.id)}
-            />
-          ))}
+        {/* Layout do autor (2026-07-27): Corpo a Corpo à esquerda, A Distância à
+            direita, Amaldiçoado embaixo em largura cheia. */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-2 gap-y-1">
+          <div className="space-y-1">{ataquePor("corpo")}</div>
+          <div className="space-y-1">{ataquePor("distancia")}</div>
         </div>
+        <div className="space-y-1 mt-1">{ataquePor("amaldicoado")}</div>
       </Card>
 
+
+      {/* Layout do autor (2026-07-27): Reflexos e Fortitude à esquerda, Vontade
+          e Astúcia à direita, Integridade sozinha embaixo em largura cheia.
+          Filtro pela `escala` e não por índice, porque o agrupamento que ele
+          pediu É o das escalas: os dois da Defesa, os dois da CD, e a fixa. */}
       <Card title="Testes de Resistência" headerRight={<ContadorVagas orcamento={orcamento} />}>
-        <div className="space-y-1">
-          {resistencias.map((r) => (
-            <TesteLinha
-              key={r.value}
-              item={{ ...r, id: r.value, nome: r.label }}
-              onCicla={(prof) => setProficiencia("resistenciasProf", r.value, prof)}
-              tag={r.critico ? "Sucesso Crítico" : null}
-            />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-2 gap-y-1">
+          {["defesa", "cd"].map((esc) => (
+            <div key={esc} className="space-y-1">
+              {resistencias.filter((r) => r.escala === esc).map(linhaTR)}
+            </div>
           ))}
+        </div>
+        <div className="space-y-1 mt-1">
+          {resistencias.filter((r) => r.escala === "fixa").map(linhaTR)}
         </div>
       </Card>
 
@@ -648,24 +671,35 @@ function TabPericias({ draft, derived, patch, setProficiencia, toggleAtaqueProf 
             Você treinou mais do que as vagas permitem. Remova um treino ou eleve Inteligência, Sabedoria ou o ND.
           </p>
         )}
-        <div className="space-y-1">
-          {pericias.map((p) => (
-            <TesteLinha
-              key={p.id}
-              item={p}
-              onCicla={(prof) => setProficiencia("pericias", p.id, prof)}
-            >
-              {p.subcategoria && p.prof && (
-                <div className="mt-2">
-                  <FieldLabel>Subcategoria</FieldLabel>
-                  <TextInput
-                    value={draft.periciaOficio || ""}
-                    onChange={(v) => patch({ periciaOficio: v })}
-                    placeholder="ex.: Ferreiro, Farmacêutico"
+        {/* Duas colunas, não uma lista longa (autor, 2026-07-27). São DUAS
+            listas independentes, e não um grid de duas colunas: numa grade, a
+            linha que abre a descrição esticaria a célula vizinha junto. Assim,
+            abrir uma perícia só empurra as de baixo na coluna dela. A ordem
+            alfabética segue lendo de cima para baixo em cada coluna. */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-2 gap-y-1">
+          {[pericias.slice(0, Math.ceil(pericias.length / 2)),
+            pericias.slice(Math.ceil(pericias.length / 2))].map((coluna, i) => (
+            <div key={i} className="space-y-1">
+              {coluna.map((p) => (
+                <React.Fragment key={p.id}>
+                  <TesteLinha
+                    item={p}
+                    onCicla={(prof) => setProficiencia("pericias", p.id, prof)}
                   />
-                </div>
-              )}
-            </TesteLinha>
+                  {/* Ofício pede uma subcategoria ao ser treinado. Sem o
+                      abrir/fechar, o campo mora logo abaixo da linha dele. */}
+                  {p.subcategoria && p.prof && (
+                    <div className="pl-[26px]">
+                      <TextInput
+                        value={draft.periciaOficio || ""}
+                        onChange={(v) => patch({ periciaOficio: v })}
+                        placeholder="Subcategoria: Ferreiro, Farmacêutico..."
+                      />
+                    </div>
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
           ))}
         </div>
       </Card>
@@ -686,20 +720,72 @@ function ContadorVagas({ orcamento }) {
   );
 }
 
+/* Painel de fontes que aparece ao passar o mouse sobre um valor. Mostra de onde
+   vem cada parcela (atributo, escala de nível, Maestria, Treinamentos...) e o
+   total. É só CSS (group-hover), sem estado nem posicionamento em JS. */
+const sinalDe = (v) => `${v >= 0 ? "+" : "−"}${Math.abs(v)}`;
+
+/* O painel em si. Uma linha por fonte e o total. `texto` numa parcela substitui
+   o número, para as que não somam (os multiplicadores de Alma e Patamar no PV).
+   Zeros NÃO são filtrados: "Destreza +0" diz qual atributo dirige o valor. */
+function PainelDeFontes({ partes, total, ancora = "direita" }) {
+  return (
+    <span className={`hidden group-hover:block absolute top-full mt-1 z-30 w-max max-w-[16rem] rounded-lg border border-slate-700 bg-slate-950 shadow-xl shadow-black/50 p-2 text-left ${
+      ancora === "esquerda" ? "left-0" : "right-0"
+    }`}>
+      {(partes || []).filter(Boolean).map((p, i) => (
+        <span key={i} className="flex items-baseline justify-between gap-3 whitespace-nowrap">
+          <span className="text-[10px] text-slate-400">{p.label}</span>
+          <span className="font-mono text-[10px] tabular-nums text-slate-200">
+            {p.texto ?? sinalDe(p.valor)}
+          </span>
+        </span>
+      ))}
+      <span className="flex items-baseline justify-between gap-3 whitespace-nowrap border-t border-slate-800 mt-1 pt-1">
+        <span className="text-[10px] uppercase tracking-wider text-slate-500">Total</span>
+        <span className="font-mono text-[10px] font-bold tabular-nums text-white">{total}</span>
+      </span>
+    </span>
+  );
+}
+
+function ValorComFontes({ valor, partes }) {
+  const lista = (partes || []).filter(Boolean);
+  return (
+    <span className="relative group flex-shrink-0">
+      <span className="font-mono text-sm font-bold tabular-nums text-white w-9 block cursor-help text-right">
+        {sinalDe(valor)}
+      </span>
+      {lista.length > 0 && <PainelDeFontes partes={lista} total={sinalDe(valor)} />}
+    </span>
+  );
+}
+
 /* Uma linha de teste. Serve perícia, ataque e Teste de Resistência: o que muda
-   é quantas faixas de proficiência existem (ataque só tem Treinado). */
-function TesteLinha({ item, onCicla, maxProf = 2, travado, tag, children }) {
-  const [open, setOpen] = useState(false);
-  const indice = travado ? maxProf : (INDICE_POR_PROF[item.prof] ?? 0);
-  const temTexto = !!(item.descricao || item.exemplos || item.nota || children);
+   é quantas faixas de proficiência existem (ataque só tem Treinado).
+
+   Sem descrição e sem abrir/fechar (autor, 2026-07-27): o texto do livro não
+   agrega nada na hora de montar a ficha. O que a linha entrega é o número, e a
+   explicação dele fica no hover, que mostra as fontes.
+
+   VERDE = faixa concedida de fora (Treino de Perícia). Continua CLICÁVEL: o
+   medidor mexe na proficiência ESCOLHIDA, então marcar por cima do verde
+   converte a concessão no bônus numérico (+1 Treinado, +2 Mestre). */
+function TesteLinha({ item, onCicla, maxProf = 2, travado, tag }) {
+  const escolhido = travado ? maxProf : (INDICE_POR_PROF[item.profEscolhida] ?? 0);
+  const resolvido = travado ? maxProf : (INDICE_POR_PROF[item.prof] ?? 0);
+  const soConcedido = resolvido > escolhido;
 
   return (
     <div className={`rounded-lg border transition-colors ${
-      indice > 0 ? "border-purple-700 bg-purple-950/30" : "border-slate-800 bg-slate-950/40"
+      soConcedido ? "border-emerald-700 bg-emerald-950/30"
+        : resolvido > 0 ? "border-purple-700 bg-purple-950/30"
+        : "border-slate-800 bg-slate-950/40"
     }`}>
       <div className="flex items-center gap-2.5 px-2.5 h-8">
         <VezesGauge
-          vezes={indice}
+          vezes={escolhido}
+          concedido={resolvido}
           max={maxProf}
           nome={item.nome}
           rotulos={PROF_ROTULOS}
@@ -707,12 +793,7 @@ function TesteLinha({ item, onCicla, maxProf = 2, travado, tag, children }) {
           onSet={(n) => onCicla(PROF_POR_INDICE[n] ?? null)}
         />
 
-        <button
-          type="button"
-          onClick={() => temTexto && setOpen((o) => !o)}
-          aria-expanded={temTexto ? open : undefined}
-          className="flex-1 min-w-0 flex items-center gap-x-2 text-left overflow-hidden"
-        >
+        <span className="flex-1 min-w-0 flex items-center gap-x-2 overflow-hidden">
           <span className="text-[12px] font-semibold text-slate-100 truncate" title={item.nome}>
             {item.nome}
           </span>
@@ -722,38 +803,10 @@ function TesteLinha({ item, onCicla, maxProf = 2, travado, tag, children }) {
           {tag && (
             <span className="text-[10px] font-medium text-purple-300 whitespace-nowrap flex-shrink-0">{tag}</span>
           )}
-        </button>
-
-        <span className="font-mono text-sm font-bold tabular-nums text-white flex-shrink-0 w-9 text-right">
-          {item.bonus >= 0 ? "+" : ""}{item.bonus}
         </span>
 
-        {temTexto ? (
-          <ChevronDown
-            className={`w-3.5 h-3.5 text-slate-600 flex-shrink-0 transition-transform ${open ? "" : "-rotate-90"}`}
-            aria-hidden="true"
-          />
-        ) : (
-          <span className="w-3.5 flex-shrink-0" aria-hidden="true" />
-        )}
+        <ValorComFontes valor={item.bonus} partes={item.partes} />
       </div>
-
-      {open && temTexto && (
-        <div className="px-2.5 pb-2.5 pl-[38px]">
-          {item.descricao && (
-            <p className="text-[11px] text-slate-400 leading-relaxed">{item.descricao}</p>
-          )}
-          {item.exemplos && (
-            <p className="text-[11px] text-slate-400 leading-relaxed mt-1.5">
-              <span className="text-slate-500">Exemplos de aplicações:</span> {item.exemplos}
-            </p>
-          )}
-          {item.nota && (
-            <p className="text-[11px] text-amber-400/90 leading-relaxed mt-1.5">{item.nota}</p>
-          )}
-          {children}
-        </div>
-      )}
     </div>
   );
 }
@@ -780,13 +833,71 @@ const TIPO_FEITICO = [
 ];
 const TIPO_FEITICO_LABEL = Object.fromEntries(TIPO_FEITICO.map((t) => [t.value, t.label]));
 
+/* Dano · uma linha por FONTE (autor, 2026-07-27): o Ataque Básico, que engloba
+   Desarmado, Faixas, Manoplas e o Corpo Treinado, e mais uma para cada arma
+   equipada. Todas usam a MESMA conta: o dano listado na tabela da arma não
+   entra, e dela vêm só o Alcance e as Propriedades. */
+function DanoCard({ derived }) {
+  const entradas = derived.dano?.entradas ?? [];
+  return (
+    <Card title="Dano">
+      <div className="space-y-1">
+        {entradas.map((e) => (
+          <div
+            key={e.id}
+            className={`rounded-lg border px-2.5 py-2 ${
+              e.fonte === "basico" ? "border-purple-700 bg-purple-950/30" : "border-slate-800 bg-slate-950/40"
+            }`}
+          >
+            <div className="relative group flex items-center gap-2.5">
+              <span className="flex-1 min-w-0 text-[12px] font-semibold text-slate-100 truncate" title={e.nome}>
+                {e.nome}
+              </span>
+              <span className="text-[9px] uppercase tracking-wider text-slate-500 flex-shrink-0">
+                {ABREV_ATTR[e.atributo] || ""}
+              </span>
+              {e.niveisDano > 0 && (
+                <span className="text-[10px] font-medium text-purple-300 whitespace-nowrap flex-shrink-0">
+                  {e.niveisDano} Nível{e.niveisDano > 1 ? "s" : ""} de Dano
+                </span>
+              )}
+              {e.alcance && (
+                <span className="text-[10px] text-slate-400 whitespace-nowrap flex-shrink-0">{e.alcance.texto}</span>
+              )}
+              <span className="font-mono text-[13px] font-bold tabular-nums text-white whitespace-nowrap">
+                {e.texto}
+              </span>
+              <PainelDeFontes partes={e.partes} total={e.total} ancora="direita" />
+            </div>
+            {e.propriedades?.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-1.5">
+                {e.propriedades.map((p) => (
+                  <span
+                    key={p.id}
+                    className="text-[10px] px-1.5 py-0.5 rounded border border-slate-700 bg-slate-900/60 text-slate-300"
+                  >
+                    {p.rotulo}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
 function TabHabilidades({ draft, derived, patchCore, addFeitico, removeFeitico, patchFeitico, duplicarFeitico, setGeralVezes }) {
   const origem = draft.core.origem?.id;
   const gerais = <HabilidadesGeraisCard derived={derived} setGeralVezes={setGeralVezes} />;
+  // O Dano vale para toda origem: até quem não tem Feitiço ataca.
+  const dano = <DanoCard derived={derived} />;
   if (origem === "sem_tecnica") {
     return (
       <>
         <SubsistemaPendente titulo="Estilo das Sombras" origem="Sem Técnica" />
+        {dano}
         {gerais}
       </>
     );
@@ -795,6 +906,7 @@ function TabHabilidades({ draft, derived, patchCore, addFeitico, removeFeitico, 
     return (
       <>
         <SubsistemaPendente titulo="Habilidades Marciais" origem="Restringido" />
+        {dano}
         {gerais}
       </>
     );
@@ -803,6 +915,7 @@ function TabHabilidades({ draft, derived, patchCore, addFeitico, removeFeitico, 
     <>
       <PerfilAmaldicoadoCard draft={draft} derived={derived} patchCore={patchCore} />
       <FeiticosCard draft={draft} derived={derived} addFeitico={addFeitico} removeFeitico={removeFeitico} patchFeitico={patchFeitico} duplicarFeitico={duplicarFeitico} />
+      {dano}
       {gerais}
     </>
   );
@@ -3526,10 +3639,20 @@ function TreinoEtapas({ linha, progresso, attrEff, nd, onSet, readOnly = false }
   );
 }
 
-/* Rótulo do alvo de uma instância repetível (atributo → nome; texto → literal). */
-function alvoLabelDe(linha, alvo) {
-  if (linha.alvoTipo === "atributo") return AFTY_ATTRS.find((a) => a.key === alvo)?.label ?? alvo;
-  return alvo;
+/* O rótulo do alvo mora no motor (`rotuloAlvo` em afty-treinamentos.js), porque
+   o nome do treino no hover de fontes usa o mesmo. */
+const alvoLabelDe = rotuloAlvo;
+
+/* Opções de alvo de uma linha repetível que ainda não foram treinadas. */
+function opcoesDeAlvo(linha, instances) {
+  const usados = new Set(instances.map((i) => i.alvo));
+  if (linha.alvoTipo === "atributo") {
+    return AFTY_ATTRS.filter((a) => !usados.has(a.key)).map((a) => ({ value: a.key, label: a.label }));
+  }
+  if (linha.alvoTipo === "pericia") {
+    return AFTY_PERICIAS.filter((p) => !usados.has(p.id)).map((p) => ({ value: p.id, label: p.nome }));
+  }
+  return null;   // texto livre
 }
 
 /* Uma Linha de Treinamento. Não repetível → uma trilha só. Repetível → várias
@@ -3545,7 +3668,9 @@ function TreinoLinha({ linha, valor, attrEff, nd, onSetProgresso, onSetInstance 
   const [novoTexto, setNovoTexto] = useState("");
 
   const usados = new Set(instances.map((it) => String(it.alvo).toLowerCase()));
-  const attrOptions = AFTY_ATTRS.filter((a) => !usados.has(a.key.toLowerCase())).map((a) => ({ value: a.key, label: a.label }));
+  // `null` = alvo de texto livre (Manejo de Arma). Atributo e Perícia saem do
+  // catálogo, já sem os que a criatura treinou.
+  const alvoOptions = opcoesDeAlvo(linha, instances);
   const textoDup = !!novoTexto.trim() && usados.has(novoTexto.trim().toLowerCase());
   const addTexto = () => {
     const v = novoTexto.trim();
@@ -3645,18 +3770,20 @@ function TreinoLinha({ linha, valor, attrEff, nd, onSetProgresso, onSetInstance 
               {/* zona de adicionar novo alvo */}
               <div className="flex items-center gap-2 rounded-md border border-dashed border-slate-700 bg-slate-950/30 px-2.5 py-2">
                 <Plus className="w-3.5 h-3.5 text-purple-400 flex-shrink-0" />
-                {linha.alvoTipo === "atributo" ? (
-                  attrOptions.length > 0 ? (
+                {alvoOptions ? (
+                  alvoOptions.length > 0 ? (
                     <div className="w-44">
                       <Select
                         value=""
                         onChange={(v) => v && onSetInstance(linha.id, v, 1)}
-                        options={attrOptions}
+                        options={alvoOptions}
                         placeholder={`Treinar ${(linha.alvoLabel || "alvo").toLowerCase()}...`}
                       />
                     </div>
                   ) : (
-                    <span className="text-[11px] text-slate-500">Todos os atributos já foram treinados.</span>
+                    <span className="text-[11px] text-slate-500">
+                      Tudo já foi treinado nesta linha.
+                    </span>
                   )
                 ) : (
                   <>
@@ -4504,27 +4631,40 @@ function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, toggleEsc
 /** Medidor de faixas: repetições de uma Melhoria Superior, ou a proficiência
     (Treinado / Mestre) de uma perícia. `rotulos` nomeia cada segmento no
     tooltip, e sem ele o segmento é a enésima vez. `bloqueado` deixa o medidor
-    só de leitura (ataque Amaldiçoado, que é sempre treinado). */
-function VezesGauge({ vezes, max, nome, onSet, rotulos, bloqueado }) {
+    só de leitura (ataque Amaldiçoado, que é sempre treinado).
+
+    `concedido` (opcional) é a faixa que veio de FORA, tipicamente do Treino de
+    Perícia. Ela pinta de VERDE os segmentos acima do que a ficha escolheu, e o
+    medidor segue clicável: marcar por cima converte a concessão em bônus
+    numérico, que é como o livro trata o "Caso já seja". */
+function VezesGauge({ vezes, max, nome, onSet, rotulos, bloqueado, concedido = 0 }) {
   return (
-    <span className="flex items-center gap-0.5 flex-shrink-0" role="group" aria-label={`${nome}: faixa ${vezes} de ${max}`}>
-      {Array.from({ length: max }, (_, i) => i + 1).map((n) => (
-        <button
-          key={n}
-          type="button"
-          /* Clicar no segmento que já é o último desce um, então dá para
-             voltar de 3 para 2 sem passar pelo zero. */
-          onClick={() => !bloqueado && onSet(n === vezes ? n - 1 : n)}
-          disabled={bloqueado}
-          aria-pressed={n <= vezes}
-          title={rotulos?.[n - 1] ?? `${n}ª vez`}
-          className={`w-3.5 h-3.5 rounded-sm border transition-colors ${
-            n <= vezes
-              ? "bg-purple-600 border-purple-500"
-              : "border-slate-700 hover:border-purple-600"
-          } ${bloqueado ? "cursor-not-allowed" : ""}`}
-        />
-      ))}
+    <span className="flex items-center gap-0.5 flex-shrink-0" role="group" aria-label={`${nome}: faixa ${Math.max(vezes, concedido)} de ${max}`}>
+      {Array.from({ length: max }, (_, i) => i + 1).map((n) => {
+        const proprio = n <= vezes;
+        const deFora = !proprio && n <= concedido;
+        return (
+          <button
+            key={n}
+            type="button"
+            /* Clicar no segmento que já é o último desce um, então dá para
+               voltar de 3 para 2 sem passar pelo zero. */
+            onClick={() => !bloqueado && onSet(n === vezes ? n - 1 : n)}
+            disabled={bloqueado}
+            aria-pressed={proprio || deFora}
+            title={
+              deFora
+                ? `${rotulos?.[n - 1] ?? `${n}ª vez`} (concedido, clique para treinar por conta)`
+                : (rotulos?.[n - 1] ?? `${n}ª vez`)
+            }
+            className={`w-3.5 h-3.5 rounded-sm border transition-colors ${
+              proprio ? "bg-purple-600 border-purple-500"
+                : deFora ? "bg-emerald-600 border-emerald-500 hover:bg-emerald-500"
+                : "border-slate-700 hover:border-purple-600"
+            } ${bloqueado ? "cursor-not-allowed" : ""}`}
+          />
+        );
+      })}
     </span>
   );
 }
@@ -6152,6 +6292,7 @@ const CALC_ROWS = [
   { key: "movimento",    label: "Movimento (m)" },
   { key: "resParcial",   label: "Resistência Parcial" },
   { key: "atencao",      label: "Atenção" },
+  { key: "iniciativa",   label: "Iniciativa" },
 ];
 
 function TabCalculos({ derived, setStatOverride }) {
@@ -6165,20 +6306,31 @@ function TabCalculos({ derived, setStatOverride }) {
         </span>
       </div>
 
+      {/* O `group` fica no wrapper para o painel de fontes abrir no hover da
+          célula inteira, e não só do número dentro do StatField. */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-        {CALC_ROWS.map((row) => (
-          <StatField
-            key={row.key}
-            label={row.label}
-            calculatedValue={derived.calc[row.key]}
-            overrideValue={derived.isOverridden(row.key) ? derived[row.key] : null}
-            onOverride={(v) => setStatOverride(row.key, v)}
-          />
-        ))}
+        {CALC_ROWS.map((row) => {
+          const fontes = derived.partes?.[row.key];
+          return (
+            <div key={row.key} className="relative group">
+              <StatField
+                label={row.label}
+                calculatedValue={derived.calc[row.key]}
+                overrideValue={derived.isOverridden(row.key) ? derived[row.key] : null}
+                onOverride={(v) => setStatOverride(row.key, v)}
+              />
+              {/* Aqui o card é largo e sobra espaço à direita, então o painel
+                  alinha pela esquerda e fica embaixo do rótulo do stat. */}
+              {fontes?.length > 0 && !derived.isOverridden(row.key) && (
+                <PainelDeFontes partes={fontes} total={derived.calc[row.key]} ancora="esquerda" />
+              )}
+            </div>
+          );
+        })}
       </div>
 
       <p className="text-[11px] text-slate-500 mt-4">
-        Contribuições de <span className="text-amber-400/80">Treinamento</span> e a <span className="text-amber-400/80">Guarda</span> ainda não entram nestes valores (em desenvolvimento).
+        A <span className="text-amber-400/80">Guarda</span> ainda não entra nestes valores (em desenvolvimento).
       </p>
     </Card>
   );
@@ -7387,15 +7539,17 @@ function HordasCard({ fichas, resolvidas, custoTotal, addHorda, removeHorda, pat
 function AftyPreview({ draft, derived }) {
   const tipoLabel = AFTY_TIPOS.find((t) => t.value === draft.core.tipo)?.label ?? draft.core.tipo;
   const patamarLabel = AFTY_PATAMARES.find((p) => p.value === draft.core.patamar)?.label ?? draft.core.patamar;
+  // `p` é a chave em derived.partes: quem tem, ganha o hover com as fontes.
   const stats = [
-    { k: "Vida", v: derived.hp, accent: "text-purple-300" },
-    { k: "Energia", v: derived.pe, accent: "text-sky-400" },
-    { k: "Defesa", v: derived.defesa },
-    { k: "CD", v: derived.cd },
-    { k: "RD Geral", v: derived.rdGeral },
-    { k: "RD Espec.", v: derived.rdEspecifico },
-    { k: "Movimento", v: `${derived.movimento}m` },
-    { k: "Res. Parcial", v: derived.resParcial },
+    { k: "Vida", v: derived.hp, p: "hp", accent: "text-purple-300" },
+    { k: "Energia", v: derived.pe, p: "pe", accent: "text-sky-400" },
+    { k: "Defesa", v: derived.defesa, p: "defesa" },
+    { k: "CD", v: derived.cd, p: "cd" },
+    { k: "RD Geral", v: derived.rdGeral, p: "rdGeral" },
+    { k: "RD Espec.", v: derived.rdEspecifico, p: "rdEspecifico" },
+    { k: "Movimento", v: `${derived.movimento}m`, p: "movimento" },
+    { k: "Res. Parcial", v: derived.resParcial, p: "resParcial" },
+    { k: "Iniciativa", v: `+${derived.iniciativa}`, p: "iniciativa" },
     { k: "Maestria", v: `+${derived.maestria}` },
   ];
   return (
@@ -7423,12 +7577,23 @@ function AftyPreview({ draft, derived }) {
           )}
         </div>
         <div className="grid grid-cols-2 gap-2 mt-4">
-          {stats.map((s) => (
-            <div key={s.k} className="bg-slate-950/60 border border-slate-800 rounded-lg px-2.5 py-2">
-              <div className="text-[10px] uppercase tracking-wider text-slate-400">{s.k}</div>
-              <div className={`font-mono font-bold text-lg tabular-nums ${s.accent || "text-white"}`}>{s.v}</div>
-            </div>
-          ))}
+          {stats.map((s, i) => {
+            const fontes = s.p ? derived.partes?.[s.p] : null;
+            return (
+              <div key={s.k} className="relative group bg-slate-950/60 border border-slate-800 rounded-lg px-2.5 py-2">
+                <div className="text-[10px] uppercase tracking-wider text-slate-400">{s.k}</div>
+                <div className={`font-mono font-bold text-lg tabular-nums ${s.accent || "text-white"} ${fontes?.length ? "cursor-help" : ""}`}>
+                  {s.v}
+                </div>
+                {/* Grade de 2 colunas: a da esquerda abre o painel para a
+                    direita e a da direita para a esquerda, senão ele sai do
+                    Preview, que já encosta na borda da página. */}
+                {fontes?.length > 0 && (
+                  <PainelDeFontes partes={fontes} total={s.v} ancora={i % 2 === 0 ? "esquerda" : "direita"} />
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

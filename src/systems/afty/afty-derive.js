@@ -35,17 +35,25 @@ import { resolveOrigemAttrBonus, resolveDesenvolvimento } from "./afty-origens";
 import { efeitosDeTreino } from "./afty-treinamentos";
 import { resolveNiveisAptidao } from "./afty-aptidoes";
 import { resolveEspecializacoes } from "./afty-especializacoes";
-import { resolveHabilidades, efeitosInvocacaoControlador } from "./afty-habilidades";
-import { resolveTalentos } from "./afty-talentos";
-import { resolveAltoNivel } from "./afty-alto-nivel";
+import {
+  resolveHabilidades, efeitosInvocacaoControlador, getHabilidade, OPCAO_ESCOLHA_NOME,
+} from "./afty-habilidades";
+import { resolveTalentos, getTalento } from "./afty-talentos";
+import {
+  resolveAltoNivel, getMelhoriaSuperior, getHabilidadeLendaria, getHabilidadeApice,
+} from "./afty-alto-nivel";
 import { resolveInvocacoesList, resolveHordasList } from "./afty-invocacoes";
-import { resolveEquipamentos, resolveCarga, grauFeiticeiro } from "./afty-equipamentos";
+import {
+  resolveEquipamentos, resolveCarga, grauFeiticeiro, alcanceDaArma, propriedadesDaArma,
+  AFTY_GRAUS,
+} from "./afty-equipamentos";
 import { nivelMaxFeitico } from "./afty-feiticos";
-import { resolveTestes } from "./afty-pericias";
+import { resolveTestes, resolveDano } from "./afty-pericias";
 import {
   buildCriaturaDslContext, coletarEfeitosCriatura, coletarEfeitosMontante,
   aplicarEfeitos, valorCanal, furaTetoEm,
-  ehAtributoPermanente, ehAtributoTemporario, ehEstagio2, mesclarEfeitos,
+  ehAtributoPermanente, ehAtributoTemporario, ehEstagio2, ehPreContexto,
+  mesclarEfeitos, detalhesDoCanal,
 } from "./afty-efeitos";
 import { resolveGerais, contadorHabilidades, GERAL_BY_ID } from "./afty-gerais";
 
@@ -69,9 +77,12 @@ export const maestria = (nd) => {
 export const HP_PATAMAR_MULT = { comum: 1, desafio: 2, calamidade: 3, beyond: 4 };
 
 // Stats que a aba Cálculos permite sobrescrever (valor final, padrão StatField).
-export const OVERRIDABLE = ["hp", "pe", "defesa", "cd", "rdGeral", "rdEspecifico", "movimento", "resParcial", "atencao"];
+export const OVERRIDABLE = ["hp", "pe", "defesa", "cd", "rdGeral", "rdEspecifico", "movimento", "resParcial", "atencao", "iniciativa"];
 
 const INT = (x) => Math.floor(x); // INT() da planilha (ND > 0 → floor)
+
+/** Rank de um grau de Ferramenta Amaldiçoada, para comparar dois. */
+const grauRank = (v) => AFTY_GRAUS.find((g) => g.value === v)?.rank ?? 0;
 
 export function deriveAfty(creature) {
   const core = creature?.core ?? {};
@@ -144,6 +155,7 @@ export function deriveAfty(creature) {
   const ctxMontante = buildCriaturaDslContext({
     nd, bt, grauRank: grau.rank, patamar, tipo, almaAtual,
     attrEff: attrBase, mods: modBase, modTecnica: modBase[tecnicaAttr] ?? 0,
+    periciasProf: creature?.pericias,
   });
   const efMontante = aplicarEfeitos(
     [...efeitosDeTreino(creature), ...coletarEfeitosMontante(creature, gerais, GERAL_BY_ID)],
@@ -171,8 +183,9 @@ export function deriveAfty(creature) {
   // nenhum de habilidade). Sem essa regra, habilidade que concede atributo
   // morde a própria conta. Ver o topo de afty-efeitos.js.
 
-  // Níveis de aptidão por trilha: alocado (pago) + concedido (grátis, direcionado).
-  const aptidao = resolveNiveisAptidao(creature?.aptidoes, treino.aptidaoTrilha);
+  // ⚠ Os níveis de aptidão saem MAIS ABAIXO, depois das Habilidades: elas
+  // também concedem trilha (Aptidões de Luta, Aptidões de Combate), e a
+  // concessão precisa entrar antes de `dom/au/cl/bar/er` virarem variável.
 
   // Especializações: NÃO entram em nenhum stat (quem dirige fórmula é o Tipo).
   // Resolvidas para a UI, a validação e o nível que os efeitos escalam.
@@ -215,11 +228,31 @@ export function deriveAfty(creature) {
   // atributo se parte em permanente e temporário porque só o PERMANENTE conta
   // para pré-requisito ("Se o Modificador de Força for temporário, não! Se for
   // permanente, sim!"). Ver o topo de afty-efeitos.js.
-  const efeitosTodos = coletarEfeitosCriatura({ habilidades, talentos: talentosPre, altoNivel });
+  const efeitosTodos = coletarEfeitosCriatura({
+    habilidades, talentos: talentosPre, altoNivel,
+    catalogos: {
+      habilidades: getHabilidade, talentos: getTalento, opcoes: OPCAO_ESCOLHA_NOME,
+      altoNivel: (id) => getMelhoriaSuperior(id) || getHabilidadeLendaria(id) || getHabilidadeApice(id),
+    },
+  });
+
+  // Estágio 0b: os canais que ALIMENTAM o contexto principal. Só nível de
+  // aptidão por ora, porque `dom/au/cl/bar/er` são variáveis do DSL e uma
+  // habilidade que concede trilha tem de entrar antes de o contexto existir.
+  // Mesma regra do estágio de atributo: dentro dele um efeito não vê o irmão.
+  const efPreContexto = aplicarEfeitos(efeitosTodos.filter(ehPreContexto), ctxMontante);
+  // Níveis de aptidão por trilha: alocado (pago) + concedido (grátis,
+  // direcionado). A concessão vem de dois lados, Treinamento e Habilidade.
+  const trilhasConcedidas = { ...treino.aptidaoTrilha };
+  for (const [k, v] of Object.entries(efPreContexto.porAlvo.nivelAptidao || {})) {
+    trilhasConcedidas[k] = (trilhasConcedidas[k] || 0) + v;
+  }
+  const aptidao = resolveNiveisAptidao(creature?.aptidoes, trilhasConcedidas);
+
   const montarCtx = (attrs, mods) => buildCriaturaDslContext({
     nd, bt, grauRank: grau.rank, patamar, tipo, almaAtual,
     attrEff: attrs, mods, modTecnica: mods[tecnicaAttr] ?? 0,
-    aptidao: aptidao.efetivo, nivelEspec,
+    aptidao: aptidao.efetivo, nivelEspec, periciasProf: creature?.pericias,
   });
   // Soma um canal de atributo sobre uma base, respeitando o teto duro de 30 e a
   // exceção `furaTeto` (Aperfeiçoamento de Atributo diz "podendo superar o
@@ -279,7 +312,7 @@ export function deriveAfty(creature) {
   const efMontanteSemAtributo = { ...efMontante, porAlvo: { ...efMontante.porAlvo } };
   delete efMontanteSemAtributo.porAlvo.atributo;
   const ef = mesclarEfeitos(
-    efMontanteSemAtributo, efAttrPerm, efAttrTemp,
+    efMontanteSemAtributo, efPreContexto, efAttrPerm, efAttrTemp,
     aplicarEfeitos(efeitosTodos.filter(ehEstagio2), montarCtx(attrEff, modByAttr)),
   );
   const canal = (id, alvo = null) => valorCanal(ef, id, alvo);
@@ -335,10 +368,13 @@ export function deriveAfty(creature) {
     tipo === "misto" ? (nd >= 10 ? 2 * modTecnica : modTecnica) : 0;
 
   // ---------- CD ----------
-  const cdTipo =
-    tipo === "conjurador" ? INT(nd / 1.25) :
-    tipo === "misto" ? INT(nd / 1.5) :
-    /* combatente | restringido */ INT(nd / 1.75);
+  // O DIVISOR fica numa constante porque ele é o que a UI mostra como fonte do
+  // valor ("Nível ÷ 1,75"), e não o nome da escala.
+  const divisorCD =
+    tipo === "conjurador" ? 1.25 :
+    tipo === "misto" ? 1.5 :
+    /* combatente | restringido */ 1.75;
+  const cdTipo = INT(nd / divisorCD);
   const cd = 10 + cdTipo + (modTecnica + bt) + equip.cdBonus + canal("cd");
 
   // ---------- Aba Habilidades: Feitiços + Habilidades Gerais ----------
@@ -372,10 +408,11 @@ export function deriveAfty(creature) {
   const rdFisico = equip.rdFisico + canal("rdFisico");
 
   // ---------- Defesa / CA (+ uniforme, - sobrecarga; Treino de Luta ADIADO) ----------
-  const defTipo =
-    tipo === "conjurador" ? INT(nd / 1.75) :
-    tipo === "misto" ? INT(nd / 1.5) :
-    /* combatente | restringido */ INT(nd / 1.25);
+  const divisorDefesa =
+    tipo === "conjurador" ? 1.75 :
+    tipo === "misto" ? 1.5 :
+    /* combatente | restringido */ 1.25;
+  const defTipo = INT(nd / divisorDefesa);
   const defesa = 10 + defTipo + modDes + bt + equip.uniformeDefesa + carga.defesa + equip.defesaBonus + canal("defesa");
 
   // ---------- Perícias, Jogadas de Ataque e Testes de Resistência ----------
@@ -391,11 +428,51 @@ export function deriveAfty(creature) {
   const testes = resolveTestes(creature, {
     nd, bt, mods: modByAttr, tecnicaAttr, grauRank: grau.rank,
     escalaCD: cdTipo, escalaDefesa: defTipo,
+    divisorCD, divisorDefesa,
     bonusVagas: canal("vagasPericia"),
+    efeitos: ef,   // bonusPericia / bonusTR / bonusAcerto / proficienciaPericia
+  });
+
+  // ---------- Dano (planilha do autor, 2026-07-27) ----------
+  // Uma linha por FONTE: o Ataque Básico e mais uma para cada arma equipada.
+  // Todas usam a MESMA conta, e o dano listado na tabela da arma é ignorado. Da
+  // arma vêm o Alcance, as Propriedades e o grau da Ferramenta Amaldiçoada.
+  // Faixas e Manoplas não viram linha própria: são o Ataque Básico (grupo
+  // "pugilato"). O Nível de Aptidão em Controle e Leitura entra na conta, daí
+  // depender do `aptidao` já resolvido lá em cima.
+  // ⚠ É "arma CARREGADA", não "equipada": a aba Equipamentos só deixa equipar
+  // uniforme, escudo e item com efeito, então exigir `equipado` deixaria a lista
+  // de dano sem nenhuma arma, para sempre. O autor pediu uma linha "para cada
+  // Tipo de Arma colocado".
+  const armasCarregadas = equip.entradas.filter((e) => e.tipo === "arma");
+  const armasParaDano = armasCarregadas
+    .filter((e) => e.def?.grupo !== "pugilato")
+    .map((e) => ({
+      id: e.def.id,
+      nome: e.def.nome,
+      grauArma: e.fa?.grau ?? null,
+      fineza: !!e.def.props?.fineza,
+      distancia: e.def.categoria === "distancia" || e.def.categoria === "arremesso",
+      alcance: alcanceDaArma(e.def),
+      propriedades: propriedadesDaArma(e.def),
+    }));
+  // O Ataque Básico só sobe de grau com Manoplas ou Faixas (autor, 2026-07-27).
+  // Sem elas é Desarmado, que não soma nada. Com as duas vale o grau mais alto.
+  const grauBasico = armasCarregadas
+    .filter((e) => e.def?.grupo === "pugilato" && e.fa?.grau)
+    .map((e) => e.fa.grau)
+    .sort((x, y) => (grauRank(y) - grauRank(x)))[0] ?? null;
+  const dano = resolveDano(creature, {
+    nd, patamar, mods: modByAttr, aptidaoCL: aptidao.efetivo.cl,
+    efeitos: ef, armas: armasParaDano, grauBasico,
   });
 
   // ---------- Atenção = 10 + bônus de Percepção (Percepção passiva) ----------
   const atencao = testes.atencao;
+
+  // ---------- Iniciativa (autor, 2026-07-27) ----------
+  // INT(Maestria / 2) + Mod. Destreza. Não usa o ND direto nem escala por Tipo.
+  const iniciativa = INT(bt / 2) + modDes + canal("iniciativa");
 
   // ---------- Orçamentos (budgets do builder) ----------
   // Orçamento de Níveis de Aptidão. Só entram aqui os pontos LIVRES: os
@@ -453,8 +530,84 @@ export function deriveAfty(creature) {
 
   // (Pontos de atributo agora vêm do método + pool de nível — ver afty-atributos.js.)
 
+  // ---------- FONTES DE CADA VALOR (hover da UI) ----------
+  // Uma parcela por origem, na ordem em que a fórmula soma. `texto` substitui o
+  // número quando a parcela não é uma soma (multiplicadores do HP).
+  // Parcelas do Motor entram nomeadas pela habilidade/treino que as gerou.
+  const rotulo = { forca: "Força", destreza: "Destreza", constituicao: "Constituição",
+    inteligencia: "Inteligência", sabedoria: "Sabedoria", presenca: "Presença" };
+  const doMotor = (id, alvo = null) =>
+    detalhesDoCanal(ef, id, alvo).map((d) => ({ label: d.nome, valor: d.valor }));
+  const TIPO_LABEL = { combatente: "Combatente", misto: "Misto", conjurador: "Conjurador", restringido: "Restringido" };
+  const PATAMAR_LABEL = { comum: "Comum", desafio: "Desafio", calamidade: "Calamidade", beyond: "Beyond" };
+  const divTexto = (d) => String(d).replace(".", ",");
+
+  const partes = {
+    hp: [
+      { label: `Base do Tipo (${TIPO_LABEL[tipo] ?? tipo})`, valor: hpBase },
+      { label: "Constituição × ND", valor: nd * modCon },
+      ...doMotor("hp"),
+      ...(almaMult !== 1 ? [{ label: "Integridade da Alma", texto: `×${divTexto(almaMult)}` }] : []),
+      ...(hpPatamarMult !== 1 ? [{ label: `Patamar (${PATAMAR_LABEL[patamar] ?? patamar})`, texto: `×${hpPatamarMult}` }] : []),
+      ...(equip.hpMaxBonus ? [{ label: "Equipamento", valor: equip.hpMaxBonus }] : []),
+    ],
+    pe: [
+      { label: `Base do Tipo (${TIPO_LABEL[tipo] ?? tipo})`, valor: peBase },
+      ...(peQnt ? [{ label: "Quantidade de PE", valor: peQnt }] : []),
+      { label: `Mod. da Técnica (${rotulo[tecnicaAttr] ?? tecnicaAttr})`, valor: modTecnica },
+      ...(equip.peBonus ? [{ label: "Equipamento", valor: equip.peBonus }] : []),
+      ...doMotor("pe"),
+    ],
+    defesa: [
+      { label: "Base", valor: 10 },
+      { label: `Nível ÷ ${divTexto(divisorDefesa)}`, valor: defTipo },
+      { label: "Destreza", valor: modDes },
+      { label: "Maestria", valor: bt },
+      ...(equip.uniformeDefesa ? [{ label: "Uniforme", valor: equip.uniformeDefesa }] : []),
+      ...(carga.defesa ? [{ label: "Sobrecarga", valor: carga.defesa }] : []),
+      ...(equip.defesaBonus ? [{ label: "Equipamento", valor: equip.defesaBonus }] : []),
+      ...doMotor("defesa"),
+    ],
+    cd: [
+      { label: "Base", valor: 10 },
+      { label: `Nível ÷ ${divTexto(divisorCD)}`, valor: cdTipo },
+      { label: `Mod. da Técnica (${rotulo[tecnicaAttr] ?? tecnicaAttr})`, valor: modTecnica },
+      { label: "Maestria", valor: bt },
+      ...(equip.cdBonus ? [{ label: "Equipamento", valor: equip.cdBonus }] : []),
+      ...doMotor("cd"),
+    ],
+    rdGeral: [
+      { label: `Base do Tipo (${TIPO_LABEL[tipo] ?? tipo})`, valor: rdGeralBase },
+      ...(equip.rdGeralBonus ? [{ label: "Equipamento", valor: equip.rdGeralBonus }] : []),
+      ...doMotor("rdGeral"),
+    ],
+    rdEspecifico: [
+      { label: `Base do Tipo (${TIPO_LABEL[tipo] ?? tipo})`, valor: rdEspecifico - canal("rdEspecifico") },
+      ...doMotor("rdEspecifico"),
+    ],
+    movimento: [
+      { label: "Base", valor: 9 },
+      { label: "Maior de Força e Destreza × 1,5", valor: maxForDex * 1.5 },
+      ...(carga.movimento ? [{ label: "Sobrecarga", valor: carga.movimento }] : []),
+      ...(equip.movimentoBonus ? [{ label: "Equipamento", valor: equip.movimentoBonus }] : []),
+      ...doMotor("movimento"),
+    ],
+    iniciativa: [
+      { label: "Maestria ÷ 2", valor: INT(bt / 2) },
+      { label: "Destreza", valor: modDes },
+      ...doMotor("iniciativa"),
+    ],
+    atencao: [
+      { label: "Base", valor: 10 },
+      { label: "Percepção", valor: atencao - 10 },
+    ],
+    resParcial: [
+      { label: `Patamar (${PATAMAR_LABEL[patamar] ?? patamar})`, valor: resParcial },
+    ],
+  };
+
   // ---------- overrides de valor final (aba Cálculos) ----------
-  const calc = { hp, pe, defesa, cd, rdGeral, rdEspecifico, movimento, resParcial, atencao };
+  const calc = { hp, pe, defesa, cd, rdGeral, rdEspecifico, movimento, resParcial, atencao, iniciativa };
   const stats = {};
   for (const k of OVERRIDABLE) stats[k] = ov[k] != null ? ov[k] : calc[k];
   const isOverridden = (k) => ov[k] != null;
@@ -475,6 +628,8 @@ export function deriveAfty(creature) {
     gerais,               // { escolhidas, gastos, ganhos, destravado, maxVezes, acesso, inacessiveis }
     efeitos: ef,          // Motor de Automação: { porCanal, porAlvo, detalhes, avisos }
     testes,               // { pericias, resistencias, ataques, orcamento, atencao }
+    dano,                 // { entradas: [{ id, nome, fonte, texto, alcance, propriedades, partes }] }
+    partes,               // fontes de cada stat, para o hover da UI
     orcamentoHabilidades, // contador ÚNICO da aba: Feitiços + Habilidades Gerais
     especializacoes,      // { escolhidas, total, max, obrigatoria, completa, erro }
     habilidades,          // { escolhidas, total, gastos, restante, excedeu, inacessiveis, niveisPorEspec }

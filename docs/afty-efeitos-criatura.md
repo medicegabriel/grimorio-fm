@@ -310,3 +310,106 @@ Na prática quase toda melhoria cai nas duas primeiras linhas. Quando bater na t
 e pergunto. Consequência: `docs/automacao-dsl.md` espelha só o `fm-dsl.js`, então as variáveis
 que o Afty adiciona precisam de referência própria (o motor de invocação já adiciona `grau`,
 `marcada` e `nivel_controlador` sem estarem lá).
+
+---
+
+## Fase 2 · LUTADOR (2026-07-27)
+
+Primeira especialização passada balde a balde. **70 habilidades**, **12 ligadas** ao Motor,
+mais Aptidões de Luta, que entra pela escolha aninhada.
+
+### O que ligou
+
+| Habilidade | Canal | Expressão |
+|---|---|---|
+| Corpo Treinado | `finezaAtaque` (corpo) | `1` |
+| Reflexo Evasivo | `rdGeral` | `piso(esc_lutador / 2)` |
+| Implemento Marcial | `cd` | `2 + (esc_lutador >= 8) + (esc_lutador >= 16)` |
+| Gosto pela Luta | `bonusAcerto` (corpo), `bonusTR` (fortitude) | degraus por nível |
+| Caminho da Mão Vazia | `bonusAcerto` (corpo) | `piso(maestria / 2)` |
+| Defesa Marcial | `defesa` | `1 + piso(maestria / 2)` |
+| Músculos Desenvolvidos | `defesa` | `max(0, mod_forca - mod_destreza)` |
+| Aprimoramento Marcial | `cd` | `piso(maestria / 2)` |
+| Corpo Calejado | `defesa`, `hp` | `piso(mod_constituicao / 2)`, `esc_lutador` |
+| Seja Água | `movimento` | `3` |
+| Corpo Supremo | `movimento`, `defesa`, `rdFisico`, `rdGeral` | `3`, `4`, `piso(nd/2)`, `piso(nd/4)` |
+| Aptidões de Luta | `nivelAptidao` (au ou cl) | `1`, via escolha aninhada |
+
+### As três extensões que o Lutador exigiu
+
+1. **`ESCOLHA_EFEITOS`** — efeito chaveado pelo id da OPÇÃO de uma escolha aninhada, não pela
+   habilidade dona. Quem pegou a habilidade e marcou outra opção não recebe nada. Serve
+   Aptidões de Luta hoje e os Estilos de Combate do Combatente depois.
+2. **Estágio 0b (`CANAIS_PRE_CONTEXTO`)** — `nivelAptidao` é variável do DSL (`au`, `cl`...),
+   então uma habilidade que concede trilha precisa entrar ANTES do contexto principal. Vale a
+   mesma regra do estágio de atributo: dentro dele um efeito não vê o irmão.
+3. **Canais `proficienciaTR` e `finezaAtaque`** — irmãos de `proficienciaPericia` e do traço
+   Fineza do ataque. O primeiro atende "Teste de Resistência Mestre", que existe nas SEIS
+   especializações.
+
+### O que NÃO coube, e por quê
+
+| Motivo | Quantas | Exemplos |
+|---|---|---|
+| Estado de combate (Empolgação, Brutalidade, PV temporário) | ~14 | Fluxo, Ignorar Dor, Eliminar e Continuar |
+| **Dano** (nível de dado, dano adicional, margem de crítico) | ~16 | Corpo Treinado (parte), Poder Corporal, Punhos Letais |
+| Reação, ação bônus, "uma vez por rodada" | ~20 | Aparar Ataque, Ataque Extra, Voadora |
+| Vantagem, desvantagem e condições | ~5 | Alma Quieta, Mente em Paz |
+| Manobras e testes opostos (Agarrar, Derrubar, Empurrar) | ~4 | Complementação Marcial, Potência Superior |
+| Sistema de armas | ~4 | Dedicação em Arma, Um com a Arma |
+
+O balde de **dano** deixou de ser bloqueio: o autor mandou as fórmulas de Dano do Ataque Básico
+em 2026-07-27. Falta resolver as células (ver `docs/afty-status.md`) antes de programar.
+
+### Pendente do Lutador
+
+- **Teste de Resistência Mestre** (9°): o canal existe, mas falta saber **qual TR a
+  especialização Lutador concede**. Não está no texto transcrito.
+- **Poder Corporal** (6°): o cabeçalho se perdeu no PDF, o nome foi deduzido. Confirmar.
+- Corpo Supremo: a RD Física soma com a RD Geral na mesa, ou substitui contra dano físico?
+
+---
+
+## DANO (2026-07-27, mesma leva)
+
+O autor mandou as fórmulas no meio da passada do Lutador, o que destravou o maior balde de
+"não coube". A lógica é ao contrário do habitual: calcula-se o **Dano Total** alvo, e o **Dano
+Fixo** é só o resto que falta para a média da rolagem bater nesse total.
+
+```
+Dano Total  = coefND × (ND + Níveis de Dano) + escala × (mod do atributo + Aptidão CL)
+              + Dano Adicional da Arma + canal danoBonus
+Dados       = modificador do atributo + 1      (piso de 1)
+Dado        = Comum d8 · Desafio d10 · Calamidade d12 · Beyond d12
+Dano Fixo   = teto(Dano Total − Dados × média do dado)
+```
+
+`coefND` e `escala` por Patamar: Comum 2/1 · Desafio 3/2 · Calamidade 4/2 · Beyond 4/3.
+Dano Adicional da Arma por grau: Desarmado 0 · Quarto 4 · Terceiro 8 · Segundo 12 ·
+Primeiro 16 · Especial 40.
+
+⚠ O **arredondamento é PARA CIMA**, única exceção conhecida à regra de piso do sistema.
+
+### Decisões do autor que mudaram o que já estava escrito
+
+- **Lacaio e Grau Zero deixaram de existir. "Maldição" é o Beyond.** Nada a mudar nos catálogos.
+- **Nem o grau nem o atributo são escolha da ficha.** O grau é o da Ferramenta Amaldiçoada
+  DAQUELA arma, e o Ataque Básico só sobe de grau com Manoplas ou Faixas. O atributo vem da
+  arma: Força no corpo a corpo, Destreza a distância, e o maior dos dois com o traço Fineza.
+- **Uma linha de dano por FONTE**, na aba Habilidades: o Ataque Básico (que engloba Desarmado,
+  Faixas, Manoplas e o Corpo Treinado) e mais uma por arma carregada.
+- **O dano listado na tabela da arma NÃO entra.** Da arma vêm só o Alcance e as Propriedades.
+- **Nível de Dano** soma 1 no ND, e só no cálculo de dano: "um ND 17 com 3 Níveis de Dano, para
+  unicamente DANO, seria considerado um ND 20".
+- **Corpo Treinado** não dá "1d8 que sobe": dá 1 Nível de Dano, +1 nos níveis 5, 9, 13 e 17.
+
+### Canais novos
+
+`danoBonus` e `nivelDano`, os dois com alvo `fonteDano` (`basico` ou o id da arma). Sem alvo
+valem para todas as linhas.
+
+### ⚠ Achado: arma não é equipável
+
+A aba Equipamentos só deixa equipar uniforme, escudo e item com efeito. Exigir `equipado` na
+lista de dano deixaria a lista sem nenhuma arma, para sempre. Por isso o critério é **arma
+CARREGADA**, que também é a palavra do autor ("para cada Tipo de Arma colocado").

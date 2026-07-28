@@ -1308,10 +1308,23 @@ export const AFTY_HABILIDADES = [
       "Você aprimora suas aptidões de energia necessárias para a luta. Ao obter esta habilidade, " +
       "você pode aumentar o seu nível de aptidão em Aura ou Controle e Leitura em 1. Você pode " +
       "pegar esta habilidade duas vezes, uma para cada aptidão.",
-    // ⚠ REPETÍVEL e CONCEDE NÍVEL DE TRILHA, exatamente como Aptidões de
-    // Combate (Combatente 8°). Os dois problemas seguem abertos: creature.
-    // habilidades é lista de ids ÚNICOS, e a concessão entra na passada de
-    // efeitos + em resolveNiveisAptidao. Resolver os dois juntos.
+    // "Pegar duas vezes, uma para cada aptidão" é exatamente uma ESCOLHA
+    // ANINHADA REPETÍVEL: a habilidade entra uma vez na lista de ids únicos e
+    // a segunda pega vira uma segunda opção marcada, que já cobra a vaga extra
+    // (vagasExtras em resolveEscolhasHabilidade). A concessão de trilha sai por
+    // ESCOLHA_EFEITOS, no estágio pré-contexto do Motor.
+    escolha: {
+      id: "aptidao_de_luta",
+      label: "Nível de Aptidão",
+      niveis: [8],
+      repetivel: true,
+      opcoes: [
+        { id: "lut_aptidao_aura", nome: "Aura",
+          descricao: "Seu Nível de Aptidão em Aura aumenta em 1." },
+        { id: "lut_aptidao_controle_leitura", nome: "Controle e Leitura",
+          descricao: "Seu Nível de Aptidão em Controle e Leitura aumenta em 1." },
+      ],
+    },
     requisitos: [],
   },
   {
@@ -5853,6 +5866,22 @@ AFTY_HABILIDADES.find((h) => h.id === "res_roubo_de_habilidade").escolha.opcoes 
 const BY_ID = Object.fromEntries(AFTY_HABILIDADES.map((h) => [h.id, h]));
 
 export const getHabilidade = (id) => BY_ID[id] || null;
+
+/**
+ * Nome de cada OPÇÃO de escolha aninhada, por id (Estilo Defensivo, Ajuste,
+ * Aura...). Existe para o Motor de Automação rotular a fonte de um número no
+ * hover: o efeito é chaveado pela opção, não pela habilidade dona.
+ *
+ * ⚠ Montado DEPOIS do enxerto das Habilidades Roubáveis (linha acima), senão o
+ * pool do Roubo de Habilidade ficaria de fora.
+ */
+export const OPCAO_ESCOLHA_NOME = (() => {
+  const out = {};
+  for (const h of AFTY_HABILIDADES) {
+    for (const o of h.escolha?.opcoes || []) if (o?.id && !out[o.id]) out[o.id] = o.nome ?? o.id;
+  }
+  return out;
+})();
 
 /** Habilidades de uma especialização (opcionalmente de um tipo), na ordem do catálogo. */
 export const habilidadesDaEspecializacao = (espId, tipo) =>

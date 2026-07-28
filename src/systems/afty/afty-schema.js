@@ -143,7 +143,7 @@ export function createBlankAfty() {
     periciasBonus: 0,          // vagas extras vindas de fora ("+ OUTROS" da fórmula)
     resistenciasProf: {},      // { [trValue]: "treinado" | "mestre" }
     ataquesProf: {},           // { corpo: true, distancia: true }
-    ataqueFineza: false,       // arma com o traço Fineza: corpo a corpo usa Destreza
+    ataqueFineza: false,       // arma com o traço Fineza: corpo a corpo pode usar Destreza
 
     // Equipamentos (aba Equipamentos, ex-Inventário). Defesa vem da modificação
     // do uniforme, RD Físico vem do escudo. O shape dos itens fecha junto com a

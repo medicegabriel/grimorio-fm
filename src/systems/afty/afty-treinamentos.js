@@ -11,12 +11,26 @@
  * comum). Custos: 1ª/2ª/3ª = 1 foco, 4ª = 2 focos → linha inteira
  * = 5 focos. Etapas em ORDEM; não se repete linha já completa.
  *
- * `efeitos`: contribuições LEGÍVEIS PELO MOTOR (deriveAfty soma).
- *   tipo ∈ { hp, pe, movimento, aptidao, atributo, defesa }.
- * Efeitos não-modelados (bônus de perícia, aptidões específicas,
- * PE temporário/rodada, paredes de barreira, confrontos de
- * domínio) vivem só no texto `beneficio` — entram no cálculo
- * quando esses sistemas existirem.
+ * `efeitos`: contribuições LEGÍVEIS PELO MOTOR de Automação, traduzidas
+ *   por `paraCanal` para `{ canal, expr }`. Tipos aceitos:
+ *     hp · pe · movimento · defesa          → canal de mesmo nome
+ *     atributo                              → canal `atributo`, no alvo da instância
+ *     aptidao (com trilha)                  → `nivelAptidao` direcionado (grátis)
+ *     aptidao (sem trilha)                  → `pontosAptidao` (orçamento livre)
+ *     pericia (com `pericia`, ou o alvo)    → `bonusPericia`
+ *     tr (com `tr`)                         → `bonusTR`
+ *     ataque (com `ataque`)                 → `bonusAcerto`
+ *     profPericia                           → `proficienciaPericia` (1 Treinado, 2 Mestre)
+ *     nivelDano                             → `nivelDano` no Ataque Básico
+ *   `quandoProf: N` num efeito de perícia vira a condição "Caso já seja":
+ *   o bônus só entra se a FICHA já tiver aquela faixa.
+ *
+ * ⚠ AINDA SEM CANAL (vivem só no texto `beneficio`, e entram quando o
+ * sistema existir): confrontos e
+ * contestações de **expansões de domínio** (Domínios 2ª e 4ª), bônus de
+ * ataque com **uma arma específica** (Manejo de Arma 2ª, depende do
+ * sistema de armas), pontos de vida de **paredes de barreira**, PE
+ * temporário por cena, dados de vida por descanso e margem de crítico.
  *
  * `requisito` por etapa (além da etapa anterior):
  *   { tipo:"atributo", attr, valor }  → VERIFICÁVEL (bloqueia).
@@ -31,6 +45,9 @@
  * pode estar desatualizada.
  * ============================================================
  */
+
+import { AFTY_ATTRS } from "./afty-schema";
+import { AFTY_PERICIAS } from "./afty-pericias";
 
 // Texto completo da aptidão concedida pelo Treino de Domínios (Completo).
 const MODIFICACAO_COMPLETA =
@@ -59,11 +76,14 @@ export const AFTY_TREINAMENTOS = [
         beneficio: "Seu Deslocamento aumenta em 1,5 metros.",
         efeitos: [{ tipo: "movimento", valor: 1.5 }] },
       { n: 2, focos: 1, requisito: null,
-        beneficio: "Você recebe um bônus de +2 em rolagens de Acrobacia." },
+        beneficio: "Você recebe um bônus de +2 em rolagens de Acrobacia.",
+        efeitos: [{ tipo: "pericia", pericia: "acrobacia", valor: 2 }] },
       { n: 3, focos: 1, requisito: { tipo: "atributo", attr: "destreza", valor: 14 },
-        beneficio: "Você recebe um bônus de +2 em rolagens de Iniciativa." },
+        beneficio: "Você recebe um bônus de +2 em rolagens de Iniciativa.",
+        efeitos: [{ tipo: "iniciativa", valor: 2 }] },
       { n: 4, focos: 2, requisito: { tipo: "atributo", attr: "destreza", valor: 16 },
-        beneficio: "Você recebe um bônus de +2 em rolagens de Reflexos." },
+        beneficio: "Você recebe um bônus de +2 em rolagens de Reflexos.",
+        efeitos: [{ tipo: "tr", tr: "reflexos", valor: 2 }] },
     ],
     completo: {
       beneficio:
@@ -107,12 +127,14 @@ export const AFTY_TREINAMENTOS = [
         beneficio: "Seu máximo de energia amaldiçoada aumenta em 2.",
         efeitos: [{ tipo: "pe", valor: 2 }] },
       { n: 2, focos: 1, requisito: null,
-        beneficio: "Você recebe um bônus de +1 em rolagens de Feitiçaria e Ocultismo." },
+        beneficio: "Você recebe um bônus de +1 em rolagens de Feitiçaria e Ocultismo.",
+        efeitos: [{ tipo: "pericia", pericia: "feiticaria", valor: 1 }, { tipo: "pericia", pericia: "ocultismo", valor: 1 }] },
       { n: 3, focos: 1, requisito: { tipo: "nota", label: "Nível de Aptidão em Aura 2" },
         beneficio: "Seu máximo de energia amaldiçoada aumenta em 3.",
         efeitos: [{ tipo: "pe", valor: 3 }] },
       { n: 4, focos: 2, requisito: { tipo: "nota", label: "Nível de Aptidão em Aura 3" },
-        beneficio: "Você recebe um bônus de +2 em rolagens de Feitiçaria e Ocultismo." },
+        beneficio: "Você recebe um bônus de +2 em rolagens de Feitiçaria e Ocultismo.",
+        efeitos: [{ tipo: "pericia", pericia: "feiticaria", valor: 2 }, { tipo: "pericia", pericia: "ocultismo", valor: 2 }] },
     ],
     completo: {
       beneficio:
@@ -202,14 +224,17 @@ export const AFTY_TREINAMENTOS = [
       "O treino de luta foca em praticar e dominar meios de conseguir lutar, melhorando os golpes desarmados, guarda e fundamentos da luta.",
     etapas: [
       { n: 1, focos: 1, requisito: null,
-        beneficio: "O dano de seus ataques desarmados aumenta em 1 nível." },
+        beneficio: "O dano de seus ataques desarmados aumenta em 1 nível.",
+        efeitos: [{ tipo: "nivelDano", valor: 1 }] },
       { n: 2, focos: 1, requisito: null,
         beneficio: "Você recebe +2 em sua Defesa e em rolagens para as ações Agarrar, Derrubar e Empurrar.",
         efeitos: [{ tipo: "defesa", valor: 2 }] },
       { n: 3, focos: 1, requisito: { tipo: "atributoOr", attrs: ["forca", "destreza"], valor: 14 },
-        beneficio: "O dano de seus ataques desarmados aumenta em 1 nível." },
+        beneficio: "O dano de seus ataques desarmados aumenta em 1 nível.",
+        efeitos: [{ tipo: "nivelDano", valor: 1 }] },
       { n: 4, focos: 2, requisito: { tipo: "atributoOr", attrs: ["forca", "destreza"], valor: 16 },
-        beneficio: "O dano de seus ataques desarmados aumenta em 2 níveis." },
+        beneficio: "O dano de seus ataques desarmados aumenta em 2 níveis.",
+        efeitos: [{ tipo: "nivelDano", valor: 2 }] },
     ],
     completo: {
       beneficio:
@@ -258,7 +283,8 @@ export const AFTY_TREINAMENTOS = [
         // Tabela: dados de vida por descanso (não é HP máx.). Planilha antiga dizia +5 HP aqui.
         beneficio: "Sua quantidade de dados de vida disponíveis por descanso aumenta em 2." },
       { n: 3, focos: 1, requisito: { tipo: "atributo", attr: "constituicao", valor: 14 },
-        beneficio: "Recebe um bônus de +2 em rolagens de Fortitude." },
+        beneficio: "Recebe um bônus de +2 em rolagens de Fortitude.",
+        efeitos: [{ tipo: "tr", tr: "fortitude", valor: 2 }] },
       { n: 4, focos: 2, requisito: { tipo: "atributo", attr: "constituicao", valor: 16 },
         beneficio: "Seus pontos de vida máximos aumentam em 6.",
         efeitos: [{ tipo: "hp", valor: 6 }] },
@@ -329,17 +355,29 @@ export const AFTY_TREINAMENTOS = [
     nome: "Treino de Perícia",
     // Repetível: cada vez escolhe uma perícia diferente ainda não treinada.
     repetivel: true,
-    alvoTipo: "texto",       // alvo = nome da perícia (sistema de perícias ainda não existe)
+    // O alvo é uma PERÍCIA do catálogo (afty-pericias.js), escolhida num
+    // seletor. Era texto livre enquanto o sistema de perícias não existia.
+    alvoTipo: "pericia",
     alvoLabel: "Perícia",
     resumo:
       "O treino de perícia envolve o domínio de uma habilidade específica, permitindo ao feiticeiro dominá-la em níveis superiores. Este treinamento pode ser repetido, mas escolhendo uma perícia diferente, a qual ainda não tenha sido treinada.",
     etapas: [
+      // "Caso já seja" = `quandoProf`: o bônus só entra se a ficha JÁ tiver a
+      // faixa. Quem não tem recebe a concessão de treino em vez do número.
       { n: 1, focos: 1, requisito: null,
-        beneficio: "Escolha uma perícia: você se torna treinado nela. Caso já seja, adicione +1 em testes de perícia usando-a." },
+        beneficio: "Escolha uma perícia: você se torna treinado nela. Caso já seja, adicione +1 em testes de perícia usando-a.",
+        efeitos: [
+          { tipo: "profPericia", valor: 1 },
+          { tipo: "pericia", valor: 1, quandoProf: 1 },
+        ] },
       { n: 2, focos: 1, requisito: null,
         beneficio: "Duas vezes por descanso, você pode escolher realizar um teste da perícia escolhida para o treinamento com vantagem." },
       { n: 3, focos: 1, requisito: null,
-        beneficio: "Você se torna mestre na perícia escolhida. Caso já seja, adicione +2 em testes de perícia usando-a." },
+        beneficio: "Você se torna mestre na perícia escolhida. Caso já seja, adicione +2 em testes de perícia usando-a.",
+        efeitos: [
+          { tipo: "profPericia", valor: 2 },
+          { tipo: "pericia", valor: 2, quandoProf: 2 },
+        ] },
       { n: 4, focos: 2, requisito: null,
         beneficio: "Uma vez por cena, você pode escolher obter um sucesso garantido em um teste da perícia escolhida, desde que não seja um teste oposto." },
     ],
@@ -424,7 +462,7 @@ function paraCanal(ef, alvoInstancia) {
   if (!valor) return null;
   const expr = String(valor);
   switch (ef.tipo) {
-    case "hp": case "pe": case "movimento": case "defesa":
+    case "hp": case "pe": case "movimento": case "defesa": case "iniciativa":
       return { canal: ef.tipo, expr };
     case "atributo":
       // Sem alvo não há onde somar: a linha repetível sempre traz um.
@@ -433,6 +471,28 @@ function paraCanal(ef, alvoInstancia) {
       return ef.trilha
         ? { canal: "nivelAptidao", alvo: ef.trilha, expr }
         : { canal: "pontosAptidao", expr };
+    // Bônus numa perícia: `pericia` nomeia (Acrobacia, Feitiçaria...), e sem
+    // nome vale a perícia da instância (Treino de Perícia). `quandoProf` é o
+    // "Caso já seja" do livro: o bônus só entra se a ficha JÁ tiver aquela
+    // faixa, senão o que vale é a concessão de treino logo abaixo.
+    case "pericia": {
+      const alvo = ef.pericia || alvoInstancia;
+      if (!alvo) return null;
+      const out = { canal: "bonusPericia", alvo, expr };
+      if (ef.quandoProf) out.quando = `prof_${alvo} >= ${ef.quandoProf}`;
+      return out;
+    }
+    case "tr":
+      return ef.tr ? { canal: "bonusTR", alvo: ef.tr, expr } : null;
+    case "ataque":
+      return ef.ataque ? { canal: "bonusAcerto", alvo: ef.ataque, expr } : null;
+    // Nível de Dano soma no ND, e só no cálculo de dano. "Desarmados" é o
+    // Ataque Básico, que engloba Desarmado, Faixas e Manoplas.
+    case "nivelDano":
+      return { canal: "nivelDano", alvo: "basico", expr };
+    // Concede a faixa de treino numa perícia: 1 = Treinado, 2 = Mestre.
+    case "profPericia":
+      return alvoInstancia ? { canal: "proficienciaPericia", alvo: alvoInstancia, expr } : null;
     default:
       return null;
   }
@@ -450,6 +510,20 @@ function paraCanal(ef, alvoInstancia) {
  * da UI. Ganho de brinde: o Treino de Atributo, cujo canal era somado e depois
  * ignorado, passou a aplicar de verdade no atributo escolhido.
  */
+/**
+ * Rótulo legível do alvo de uma instância repetível. Atributo e Perícia saem do
+ * catálogo (com acento e maiúscula), e o texto livre do Manejo de Arma ganha ao
+ * menos a inicial maiúscula. É o que aparece no nome do treino, tanto na aba de
+ * Interlúdios quanto no hover de fontes de um valor.
+ */
+export function rotuloAlvo(linha, alvo) {
+  if (!alvo) return "";
+  if (linha?.alvoTipo === "atributo") return AFTY_ATTRS.find((a) => a.key === alvo)?.label ?? alvo;
+  if (linha?.alvoTipo === "pericia") return AFTY_PERICIAS.find((p) => p.id === alvo)?.nome ?? alvo;
+  const s = String(alvo);
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
 export function efeitosDeTreino(creature) {
   const prog = normalizeTreinamentos(creature?.treinamentos);
   const out = [];
@@ -460,7 +534,7 @@ export function efeitosDeTreino(creature) {
       out.push({
         ...conv,
         origem: linha.id,
-        nome: alvo && linha.repetivel ? `${linha.nome} (${alvo})` : linha.nome,
+        nome: alvo && linha.repetivel ? `${linha.nome} (${rotuloAlvo(linha, alvo)})` : linha.nome,
       });
     }
   };

@@ -80,6 +80,10 @@
  */
 
 import { evalNumber } from "../../components/fm-dsl";
+import {
+  HABILIDADE_EFEITOS, ESCOLHA_EFEITOS, TALENTO_EFEITOS,
+  MELHORIA_EFEITOS, LENDARIA_EFEITOS, APICE_EFEITOS, GERAL_EFEITOS,
+} from "./afty-efeitos-conteudo";
 
 /* ============================================================ */
 /* CANAIS                                                        */
@@ -99,14 +103,20 @@ export const EFEITO_CANAIS = [
   { id: "rdFisico",      label: "RD Física" },
   { id: "movimento",     label: "Movimento",             nota: "em metros, aceita 1,5" },
   { id: "atencao",       label: "Atenção" },
+  { id: "iniciativa",    label: "Iniciativa" },
   { id: "resParcial",    label: "Resistência Parcial" },
   { id: "almaMax",       label: "Integridade da Alma" },
 
   // Com destino
   { id: "atributo",      label: "Atributo",              alvo: "atributo", aceitaFuraTeto: true },
   { id: "bonusPericia",  label: "Perícia",               alvo: "pericia" },
+  { id: "proficienciaPericia", label: "Treino em Perícia", alvo: "pericia", nota: "1 = Treinado, 2 = Mestre. Concede a faixa, não soma número, e nunca REBAIXA o que a ficha já escolheu" },
   { id: "bonusTR",       label: "Teste de Resistência",  alvo: "tr" },
+  { id: "proficienciaTR", label: "Treino em Resistência", alvo: "tr", nota: "irmão de proficienciaPericia, mesmas regras (1 Treinado, 2 Mestre, nunca rebaixa)" },
   { id: "bonusAcerto",   label: "Acerto",                alvo: "ataque" },
+  { id: "danoBonus",     label: "Dano",                  alvo: "fonteDano", nota: "soma no Dano TOTAL da linha, e daí escorre para o dano fixo. Alvo `basico` ou o id da arma, e sem alvo vale para todas" },
+  { id: "nivelDano",     label: "Nível de Dano",         alvo: "fonteDano", nota: "cada nível soma 1 no ND, e SÓ no cálculo de dano (autor, 2026-07-27)" },
+  { id: "finezaAtaque",  label: "Fineza",                alvo: "ataque", nota: "libera o atributo alternativo do ataque (Destreza no Corpo a Corpo). Vale o maior dos dois" },
   { id: "nivelAptidao",  label: "Nível de Aptidão",      alvo: "trilha", nota: "com alvo é concessão direcionada e grátis" },
 
   // Orçamentos
@@ -183,6 +193,16 @@ export function buildCriaturaDslContext(base = {}) {
 
   };
 
+  // Proficiência ESCOLHIDA NA FICHA por perícia: `prof_furtividade` = 0, 1
+  // (Treinado) ou 2 (Mestre). Existe para o "Caso já seja" do Treino de
+  // Perícia ("você se torna treinado nela. Caso já seja, adicione +1"). É a
+  // escolha do jogador, e NÃO inclui o que o próprio efeito concede, senão a
+  // condição enxergaria a si mesma e sempre daria o bônus.
+  const profFicha = base.periciasProf || {};
+  for (const [id, p] of Object.entries(profFicha)) {
+    ctx[`prof_${id}`] = p === "mestre" ? 2 : p === "treinado" ? 1 : 0;
+  }
+
   // Patamar e Tipo como booleanos nomeados: `patamar_calamidade`, `tipo_conjurador`.
   for (const p of ["comum", "desafio", "calamidade", "beyond"]) ctx[`patamar_${p}`] = base.patamar === p ? 1 : 0;
   for (const t of ["combatente", "misto", "conjurador", "restringido"]) ctx[`tipo_${t}`] = base.tipo === t ? 1 : 0;
@@ -201,35 +221,14 @@ export function buildCriaturaDslContext(base = {}) {
 /* ============================================================ */
 /* CATÁLOGOS DE EFEITO (conteúdo)                                */
 /* ============================================================ */
-/* Um mapa por catálogo, no mesmo shape do CONTROLADOR_EFEITOS_INVOCACAO:
-   `{ [idDaEntrada]: [{ canal, expr, quando?, alvo?, furaTeto? }] }`.
+/* O conteúdo mora em ./afty-efeitos-conteudo.js e é REEXPORTADO daqui: o
+   vocabulário de canal e o validador continuam com um dono só, e o arquivo do
+   motor continua sendo motor. Quem consome importa daqui, como sempre. */
 
-   ⚠ TODOS VAZIOS na Fase 0, de propósito. A infraestrutura vem primeiro e a
-   passada de conteúdo (451 entradas) é a Fase 2/3 de
-   docs/afty-efeitos-criatura.md, com triagem balde a balde junto do autor.
-
-   Ficam AQUI e não em cada catálogo para o vocabulário de canal ter um dono só
-   e o validador cobrir os cinco de uma vez. */
-
-export const HABILIDADE_EFEITOS = {};   // Habilidades de Especialização (367)
-export const TALENTO_EFEITOS = {};      // Talentos (51)
-export const MELHORIA_EFEITOS = {};     // Melhorias Superiores (11, repetíveis)
-export const LENDARIA_EFEITOS = {};     // Habilidades Lendárias (16)
-export const APICE_EFEITOS = {};        // Habilidades Ápice (6)
-
-/**
- * Habilidades Gerais. **NÃO está vazio**: foi a primeira fonte real de conteúdo
- * a entrar no Motor (2026-07-27), absorvendo o `ganhos` que o `resolveGerais`
- * calculava por fora. Todas repetíveis, então o `vezes` multiplica.
- *
- * Melhoria Superior e Habilidade Lendária não aparecem aqui de propósito: elas
- * só DESTRAVAM as trilhas de alto nível e não concedem valor nenhum.
- */
-export const GERAL_EFEITOS = {
-  ger_especializacao: [{ canal: "vagasHabilidade", expr: "1 + piso(maestria / 2)" }],
-  ger_aptidao:        [{ canal: "vagasAptidao",    expr: "1 + piso(maestria / 2)" }],
-  ger_treinamentos:   [{ canal: "focos",           expr: "piso(nd / 2)" }],
-};
+export {
+  HABILIDADE_EFEITOS, ESCOLHA_EFEITOS, TALENTO_EFEITOS,
+  MELHORIA_EFEITOS, LENDARIA_EFEITOS, APICE_EFEITOS, GERAL_EFEITOS,
+} from "./afty-efeitos-conteudo";
 
 /**
  * Os campos "+ OUTROS" que a ficha tem para o Mestre somar à mão. Entram pelo
@@ -254,17 +253,22 @@ export function efeitosManuaisDaFicha(creature) {
 
 /**
  * Junta os efeitos das entradas escolhidas, carimbando origem e nome.
- * `mapa` = { [id]: [efeito, ...] }, `catalogo` = { [id]: { nome } }.
- * `vezesPorId` (opcional) multiplica a entrada para itens repetíveis.
+ * `mapa` = { [id]: [efeito, ...] }. `catalogo` serve só para o NOME que a UI
+ * mostra como fonte, e aceita as duas formas: o mapa `{ [id]: { nome } }` ou o
+ * getter do catálogo (`getHabilidade`, `getTalento`...), que é o que os
+ * catálogos grandes exportam. `vezesPorId` multiplica os repetíveis.
  */
 export function coletarEfeitos(ids, mapa, catalogo = {}, vezesPorId = null) {
+  const nomeDe = typeof catalogo === "function"
+    ? (id) => catalogo(id)?.nome
+    : (id) => catalogo?.[id]?.nome;
   const out = [];
   for (const id of Array.isArray(ids) ? ids : []) {
     const efs = mapa?.[id];
     if (!efs) continue;
     const vezes = vezesPorId ? Math.max(1, vezesPorId[id] ?? 1) : 1;
     for (let v = 1; v <= vezes; v++) {
-      for (const e of efs) out.push({ ...e, origem: id, nome: catalogo[id]?.nome || id, vez: v });
+      for (const e of efs) out.push({ ...e, origem: id, nome: nomeDe(id) || id, vez: v });
     }
   }
   return out;
@@ -277,18 +281,41 @@ export function coletarEfeitos(ids, mapa, catalogo = {}, vezesPorId = null) {
  * Melhorias Superiores são repetíveis, então entram `vezes` vezes: uma Melhoria
  * de Vida pega duas vezes soma duas vezes.
  */
-export function coletarEfeitosCriatura({ habilidades, talentos, altoNivel } = {}) {
+export function coletarEfeitosCriatura({ habilidades, talentos, altoNivel, catalogos } = {}) {
   const vezesMel = Object.fromEntries(
     (altoNivel?.melhorias?.escolhidas || []).map((m) => [m.id, m.vezes]),
   );
   const apiceId = altoNivel?.apiceId ? [altoNivel.apiceId] : [];
   return [
-    ...coletarEfeitos(habilidades?.escolhidas, HABILIDADE_EFEITOS),
-    ...coletarEfeitos(talentos?.escolhidas, TALENTO_EFEITOS),
-    ...coletarEfeitos(Object.keys(vezesMel), MELHORIA_EFEITOS, {}, vezesMel),
-    ...coletarEfeitos(altoNivel?.lendarias?.escolhidas, LENDARIA_EFEITOS),
-    ...coletarEfeitos(apiceId, APICE_EFEITOS),
+    ...coletarEfeitos(habilidades?.escolhidas, HABILIDADE_EFEITOS, catalogos?.habilidades),
+    ...coletarEfeitosDeEscolha(habilidades?.escolhas?.mapa, catalogos?.opcoes),
+    ...coletarEfeitos(talentos?.escolhidas, TALENTO_EFEITOS, catalogos?.talentos),
+    ...coletarEfeitos(Object.keys(vezesMel), MELHORIA_EFEITOS, catalogos?.altoNivel, vezesMel),
+    ...coletarEfeitos(altoNivel?.lendarias?.escolhidas, LENDARIA_EFEITOS, catalogos?.altoNivel),
+    ...coletarEfeitos(apiceId, APICE_EFEITOS, catalogos?.altoNivel),
   ];
+}
+
+/**
+ * Efeitos das OPÇÕES escolhidas dentro de uma habilidade (Estilo de Combate,
+ * Manobra de Empolgação, a trilha de Aptidões de Luta).
+ *
+ * `mapa` é o `habilidades.escolhas.mapa` do resolveHabilidades:
+ * `{ [habId]: [opcaoId] }`. A chave do efeito é a OPÇÃO, então quem pegou a
+ * habilidade e escolheu outra coisa não recebe nada.
+ *
+ * O `nome` sai do catálogo de opções, e é o que aparece no hover de fontes.
+ */
+export function coletarEfeitosDeEscolha(mapa, nomesPorOpcao = {}) {
+  const out = [];
+  for (const opcoes of Object.values(mapa || {})) {
+    for (const opcaoId of Array.isArray(opcoes) ? opcoes : []) {
+      for (const e of ESCOLHA_EFEITOS[opcaoId] || []) {
+        out.push({ ...e, origem: opcaoId, nome: nomesPorOpcao[opcaoId] || opcaoId });
+      }
+    }
+  }
+  return out;
 }
 
 /**
@@ -376,6 +403,22 @@ export const furaTetoEm = (res, alvo) =>
 export const CANAIS_ESTAGIO_1 = ["atributo"];
 
 /**
+ * Canais que ALIMENTAM o contexto principal, e por isso saem antes dele.
+ *
+ * `nivelAptidao` é variável do DSL (`dom`, `au`, `cl`, `bar`, `er`): se ele
+ * fosse resolvido junto do resto, uma habilidade que concede nível de trilha
+ * (Aptidões de Luta, Aptidões de Combate) chegaria tarde demais, depois de o
+ * contexto já estar montado. Vale aqui a mesma regra do estágio de atributo:
+ * DENTRO deste estágio um efeito não enxerga o irmão, o que evita o laço.
+ *
+ * ⚠ Rodam com o contexto reduzido (sem os níveis de aptidão), então a
+ * expressão de um efeito destes tem de ser constante ou depender só de ND,
+ * Maestria e atributo base. Na prática são todas "1".
+ */
+export const CANAIS_PRE_CONTEXTO = ["nivelAptidao"];
+export const ehPreContexto = (e) => CANAIS_PRE_CONTEXTO.includes(e?.canal);
+
+/**
  * A ÚNICA entrada do sistema autorizada a passar do teto de 30 de atributo
  * (autor, 2026-07-27): "Não é para furar além de 30 de nenhuma forma. Com
  * exceção da Habilidade Lendária que te permite, nada no sistema além dela
@@ -387,10 +430,10 @@ export const FURA_TETO_PERMITIDO = ["len_aperfeicoamento_de_atributo"];
 export const ehTemporario = (e) => e?.duracao === "temporaria";
 export const ehPermanente = (e) => !ehTemporario(e);
 
-/** Os três estágios, na ordem em que o deriveAfty aplica. */
+/** Os estágios, na ordem em que o deriveAfty aplica. */
 export const ehAtributoPermanente = (e) => CANAIS_ESTAGIO_1.includes(e?.canal) && ehPermanente(e);
 export const ehAtributoTemporario = (e) => CANAIS_ESTAGIO_1.includes(e?.canal) && ehTemporario(e);
-export const ehEstagio2 = (e) => !CANAIS_ESTAGIO_1.includes(e?.canal);
+export const ehEstagio2 = (e) => !CANAIS_ESTAGIO_1.includes(e?.canal) && !ehPreContexto(e);
 
 /** Soma resultados de `aplicarEfeitos` (os dois estágios) num só. */
 export function mesclarEfeitos(...resultados) {
@@ -422,6 +465,17 @@ export function valorCanal(res, canal, alvo = null) {
 
 /** Todos os alvos tocados num canal, para a UI iterar sem varrer o catálogo. */
 export const alvosDoCanal = (res, canal) => Object.keys(res?.porAlvo?.[canal] || {});
+
+/**
+ * Os efeitos que caíram num canal (e opcionalmente num alvo), um por FONTE.
+ * É o que alimenta o hover que mostra de onde vem cada parcela de um valor.
+ * Inclui os sem alvo, que valem para todos os alvos daquele canal.
+ */
+export function detalhesDoCanal(res, canal, alvo = null) {
+  return (res?.detalhes || []).filter(
+    (d) => d.canal === canal && (d.alvo == null || d.alvo === alvo),
+  );
+}
 
 /* ============================================================ */
 /* VALIDADOR                                                     */

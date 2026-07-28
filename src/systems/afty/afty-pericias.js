@@ -36,6 +36,7 @@
  */
 
 import { AFTY_ATTRS, AFTY_RESISTENCIAS } from "./afty-schema";
+import { valorCanal, detalhesDoCanal } from "./afty-efeitos";
 
 export const AFTY_PERICIAS = [
   {
@@ -299,6 +300,149 @@ export const AFTY_ATAQUES = [
   },
 ];
 
+/* ============================================================ */
+/* DANO DO ATAQUE BÁSICO                                         */
+/* ============================================================ */
+/* Fórmulas da planilha do autor (2026-07-27). A lógica é ao contrário do
+   habitual: primeiro se calcula o DANO TOTAL alvo, depois a quantidade de dados
+   e o tipo de dado, e o DANO FIXO é o resto que falta para a média da rolagem
+   bater no total. Por isso "4d10+7" e não "dado + modificador".
+
+   Células da planilha, já resolvidas com o autor:
+     A55 → atributo-chave do ataque (escolha da ficha). I55 é o modificador dele
+     A57 → o dado, que sai do PATAMAR (Comum d8, Desafio d10, os dois de cima d12)
+     A59 → grau da arma, que dá o dano adicional
+   "Lacaio" e "Grau Zero" saíram do sistema, e "Maldição" é o Beyond. */
+
+/** Média de cada dado, usada para converter o total em dano fixo. */
+export const MEDIA_DADO = { d6: 3.5, d8: 4.5, d10: 5.5, d12: 6.5 };
+
+/** O dado do ataque sai do Patamar. */
+export const DADO_POR_PATAMAR = { comum: "d8", desafio: "d10", calamidade: "d12", beyond: "d12" };
+
+/**
+ * Coeficientes do Dano Total por Patamar: `nd × ND + escala × (mod + Aptidão CL)`.
+ * O modificador e o Nível de Aptidão em Controle e Leitura andam sempre juntos.
+ */
+export const COEF_DANO_PATAMAR = {
+  comum:      { nd: 2, escala: 1 },
+  desafio:    { nd: 3, escala: 2 },
+  calamidade: { nd: 4, escala: 2 },
+  beyond:     { nd: 4, escala: 3 },
+};
+
+/** Dano adicional pelo Grau da arma manejada. Desarmado não soma nada. */
+export const DANO_ADICIONAL_ARMA = [
+  { value: "desarmado", label: "Desarmado",     valor: 0 },
+  { value: "quarto",    label: "Quarto Grau",   valor: 4 },
+  { value: "terceiro",  label: "Terceiro Grau", valor: 8 },
+  { value: "segundo",   label: "Segundo Grau",  valor: 12 },
+  { value: "primeiro",  label: "Primeiro Grau", valor: 16 },
+  { value: "especial",  label: "Grau Especial", valor: 40 },
+];
+const ARMA_BY_VALUE = Object.fromEntries(DANO_ADICIONAL_ARMA.map((a) => [a.value, a]));
+
+/** Texto de exibição do dano: "4d10+7", "4d10-2" ou "4d10" quando o fixo é zero. */
+export const textoDeDano = (dados, dado, fixo) =>
+  `${dados}${dado}${fixo > 0 ? `+${fixo}` : fixo < 0 ? `−${Math.abs(fixo)}` : ""}`;
+
+/**
+ * Uma linha de dano. Todas as fontes usam ESTA conta: o dano listado na tabela
+ * da arma e o "1d8" do Corpo Treinado não entram (autor, 2026-07-27). Da arma
+ * vêm só o Alcance, as Propriedades e o grau da Ferramenta Amaldiçoada.
+ *
+ * `niveisDano` soma no ND, e SÓ para dano: "um ND 17 com 3 Níveis de Dano,
+ * para unicamente DANO, seria considerado um ND 20" (autor, 2026-07-27).
+ *
+ * ⚠ A quantidade de dados é `modificador + 1`, então um atributo-chave com
+ * modificador negativo zeraria a rolagem. Fica no piso de 1 dado (assumido, a
+ * planilha não trata o caso).
+ */
+function linhaDeDano({ nd, patamar, modChave, atributo, cl, grauArma, niveisDano, bonus, fontes = [] }) {
+  const coef = COEF_DANO_PATAMAR[patamar];
+  const arma = ARMA_BY_VALUE[grauArma] ?? ARMA_BY_VALUE.desarmado;
+  const ndDano = nd + niveisDano;
+
+  const total = coef.nd * ndDano + coef.escala * modChave + coef.escala * cl + arma.valor + bonus;
+  const dado = DADO_POR_PATAMAR[patamar] ?? "d8";
+  const dados = Math.max(1, modChave + 1);
+  const fixo = Math.ceil(total - dados * MEDIA_DADO[dado]);
+
+  const rotuloAttr = (k) => AFTY_ATTRS.find((a) => a.key === k)?.label ?? k;
+  return {
+    atributo, dado, dados, fixo, total, niveisDano, grauArma: arma.value,
+    texto: textoDeDano(dados, dado, fixo),
+    partes: [
+      { label: niveisDano ? `Nível ${nd} + ${niveisDano} × ${coef.nd}` : `Nível × ${coef.nd}`,
+        valor: coef.nd * ndDano },
+      { label: `${rotuloAttr(atributo)} × ${coef.escala}`, valor: coef.escala * modChave },
+      ...(cl ? [{ label: `Controle e Leitura × ${coef.escala}`, valor: coef.escala * cl }] : []),
+      ...(arma.valor ? [{ label: arma.label, valor: arma.valor }] : []),
+      ...fontes,
+    ],
+  };
+}
+
+/**
+ * Resolve UMA linha de dano por fonte (autor, 2026-07-27): o Ataque Básico
+ * (que engloba Desarmado, Faixas, Manoplas e o Corpo Treinado) e mais uma para
+ * cada arma equipada.
+ *
+ * ⚠ Nem o GRAU nem o ATRIBUTO são escolha da ficha (autor, 2026-07-27). O grau
+ * é o da Ferramenta Amaldiçoada DAQUELA arma, e o Ataque Básico só sobe de grau
+ * com Manoplas ou Faixas equipadas. O atributo vem da arma: Força no corpo a
+ * corpo, Destreza a distância, e com o traço Fineza vale o maior dos dois.
+ *
+ * ctx = { nd, patamar, mods, aptidaoCL, efeitos, armas, grauBasico }.
+ * `armas` = [{ id, nome, grauArma, alcance, propriedades, fineza, distancia }],
+ * montado pelo deriveAfty a partir dos equipamentos.
+ *
+ * `nivelDano` e `danoBonus` aceitam alvo: sem alvo valem para todas as fontes,
+ * com alvo (`basico` ou o id da arma) valem só naquela linha.
+ */
+export function resolveDano(creature, ctx = {}) {
+  const nd = Math.max(1, Math.trunc(Number(ctx.nd) || 1));
+  const patamar = COEF_DANO_PATAMAR[ctx.patamar] ? ctx.patamar : "comum";
+  const mods = ctx.mods || {};
+  const ef = ctx.efeitos || null;
+  const cl = Math.max(0, Math.trunc(Number(ctx.aptidaoCL) || 0));
+  const modDe = (k) => Math.trunc(Number(mods[k]) || 0);
+
+  const canal = (c, alvo) => (ef ? valorCanal(ef, c, alvo) : 0);
+  const fontesDe = (c, alvo) =>
+    (ef ? detalhesDoCanal(ef, c, alvo) : []).map((dd) => ({ label: dd.nome, valor: dd.valor }));
+
+  // Força por padrão, Destreza a distância, e o maior dos dois quando a arma
+  // tem Fineza (ou quando uma habilidade concede a mesma permissão, como o
+  // Corpo Treinado: "você pode escolher usar tanto Força quanto Destreza").
+  const atributoDe = ({ distancia, fineza }) => {
+    if (distancia) return "destreza";
+    return fineza && modDe("destreza") > modDe("forca") ? "destreza" : "forca";
+  };
+
+  const monta = (alvo, atributo, grauArma) => linhaDeDano({
+    nd, patamar, atributo, modChave: modDe(atributo), cl, grauArma,
+    niveisDano: Math.max(0, Math.trunc(canal("nivelDano", alvo))),
+    bonus: canal("danoBonus", alvo),
+    fontes: fontesDe("danoBonus", alvo),
+  });
+
+  const finezaDesarmado = canal("finezaAtaque", "corpo") > 0;
+  const entradas = [
+    { id: "basico", nome: "Ataque Básico", fonte: "basico", alcance: null, propriedades: [],
+      ...monta("basico", atributoDe({ fineza: finezaDesarmado }), ctx.grauBasico) },
+  ];
+
+  for (const a of Array.isArray(ctx.armas) ? ctx.armas : []) {
+    entradas.push({
+      id: a.id, nome: a.nome, fonte: "arma",
+      alcance: a.alcance ?? null, propriedades: a.propriedades ?? [],
+      ...monta(a.id, atributoDe(a), a.grauArma),
+    });
+  }
+  return { entradas };
+}
+
 /**
  * Orçamento de treinos (autor, 2026-07-27):
  * `3 + maior modificador entre Inteligência e Sabedoria + rank do Grau + outros`.
@@ -346,31 +490,94 @@ export function resolveTestes(creature, ctx = {}) {
     defesa: Math.trunc(Number(ctx.escalaDefesa) || 0),
     fixa: escalaFixa,
   };
+  // A fonte que a UI mostra é a DIVISÃO de verdade, não o nome da escala
+  // (autor, 2026-07-27): os cinco TRs aparecem como "Nível ÷ N", e o N muda
+  // com o Tipo nos quatro primeiros. Integridade é sempre ÷ 1,5.
+  const divisorTexto = (d) => String(d).replace(".", ",");
+  const ESCALA_ROTULO = {
+    cd: `Nível ÷ ${divisorTexto(ctx.divisorCD ?? 1.5)}`,
+    defesa: `Nível ÷ ${divisorTexto(ctx.divisorDefesa ?? 1.5)}`,
+    fixa: "Nível ÷ 1,5",
+  };
 
   const profBruta = creature?.pericias && typeof creature.pericias === "object" ? creature.pericias : {};
   const valida = (p) => (p === "treinado" || p === "mestre" ? p : null);
+
+  // Motor de Automação: bônus e proficiência concedidos por Treinamentos,
+  // Habilidades e afins. `ef` é o resultado já aplicado, vindo do deriveAfty.
+  const ef = ctx.efeitos || null;
+  const bonusDeEfeito = (canal, alvo) => (ef ? valorCanal(ef, canal, alvo) : 0);
+  // Uma parcela por FONTE, para o hover mostrar de onde veio cada número.
+  const partesDeEfeito = (canal, alvo) =>
+    (ef ? detalhesDoCanal(ef, canal, alvo) : []).map((d) => ({ label: d.nome, valor: d.valor }));
+  const rotuloAttr = (k) => AFTY_ATTRS.find((a) => a.key === k)?.label ?? k;
+  const parteProficiencia = (prof) => {
+    const v = bonusProficiencia(bt, prof);
+    if (!prof) return [];
+    return [{ label: prof === "mestre" ? "Maestria (Mestre)" : "Maestria", valor: v }];
+  };
+  // Proficiência concedida NUNCA rebaixa a escolhida: fica a maior das duas.
+  const FAIXA = { treinado: 1, mestre: 2 };
+  const NOME_FAIXA = { 1: "treinado", 2: "mestre" };
+  const profComEfeito = (canal, id, escolhida) => {
+    const concedida = Math.trunc(bonusDeEfeito(canal, id));
+    const nivel = Math.max(FAIXA[escolhida] ?? 0, Math.min(2, Math.max(0, concedida)));
+    return NOME_FAIXA[nivel] ?? null;
+  };
 
   // `requerTreinamento` e `complementar` seguem no catálogo (são a tabela do
   // livro e o filtro das Invocações depende deles), mas NÃO viram marcação na
   // tela: o autor tirou as duas da UI em 2026-07-27. Quem precisa da regra lê
   // a `nota` verbatim dentro da descrição.
   const pericias = AFTY_PERICIAS.map((p) => {
-    const prof = valida(profBruta[p.id]);
-    return { ...p, prof, bonus: bonusDe(p.atributo, prof) };
+    const escolhida = valida(profBruta[p.id]);
+    const prof = profComEfeito("proficienciaPericia", p.id, escolhida);
+    return {
+      ...p,
+      prof,
+      // A faixa que a FICHA escolheu, separada da resolvida: é ela que gasta
+      // vaga. O treino concedido de fora já foi pago (com Focos, no caso do
+      // Treino de Perícia) e não pode cobrar de novo.
+      profEscolhida: escolhida,
+      // `concedida` marca o treino que veio de fora, para a UI poder mostrar
+      // que aquela faixa não é desmarcável ali.
+      concedida: !!prof && prof !== escolhida,
+      bonus: bonusDe(p.atributo, prof) + bonusDeEfeito("bonusPericia", p.id),
+      partes: [
+        { label: rotuloAttr(p.atributo), valor: modDe(p.atributo) },
+        { label: "Metade do ND", valor: meioNivel },
+        ...parteProficiencia(prof),
+        ...partesDeEfeito("bonusPericia", p.id),
+      ],
+    };
   });
 
   const trBruta = creature?.resistenciasProf && typeof creature.resistenciasProf === "object"
     ? creature.resistenciasProf : {};
   const resistencias = AFTY_RESISTENCIAS.map((r) => {
-    const prof = valida(trBruta[r.value]);
+    // Mesma anatomia das perícias: a faixa ESCOLHIDA é a que gasta vaga, e a
+    // resolvida ainda soma o que foi concedido de fora (Teste de Resistência
+    // Mestre e afins). Sem os dois campos a UI trataria todo TR treinado como
+    // concessão externa, pintava de verde e não deixava desmarcar.
+    const escolhida = valida(trBruta[r.value]);
+    const prof = profComEfeito("proficienciaTR", r.value, escolhida);
     return {
       ...r,
       prof,
+      profEscolhida: escolhida,
+      concedida: !!prof && prof !== escolhida,
       // Escala por Tipo no lugar da metade do nível, ver o cabeçalho da função.
-      bonus: modDe(r.atributo) + (ESCALA_TR[r.escala] ?? 0) + bonusProficiencia(bt, prof),
+      bonus: modDe(r.atributo) + (ESCALA_TR[r.escala] ?? 0) + bonusProficiencia(bt, prof)
+        + bonusDeEfeito("bonusTR", r.value),
       // Só quem é mestre num TR consegue sucesso crítico nele (superar a CD
       // por 10 ou mais ignora dano e condições).
       critico: prof === "mestre",
+      partes: [
+        { label: rotuloAttr(r.atributo), valor: modDe(r.atributo) },
+        { label: ESCALA_ROTULO[r.escala] ?? "Escala de Nível", valor: ESCALA_TR[r.escala] ?? 0 },
+        ...parteProficiencia(prof),
+        ...partesDeEfeito("bonusTR", r.value),
+      ],
     };
   });
 
@@ -380,14 +587,26 @@ export function resolveTestes(creature, ctx = {}) {
   const fineza = !!creature?.ataqueFineza;
   const ataques = AFTY_ATAQUES.map((a) => {
     const treinado = a.sempreTreinado || !!atqBruta[a.id];
+    // Fineza libera o atributo alternativo do ataque. Vem da arma manejada
+    // (a marcação da ficha) ou de uma habilidade que dá a mesma permissão
+    // ("você pode escolher usar tanto Força quanto Destreza", Corpo Treinado).
+    // Sendo escolha livre e sem custo, vale o MAIOR dos dois modificadores.
+    const liberado = a.atributoFineza
+      && (fineza || bonusDeEfeito("finezaAtaque", a.id) > 0);
     const attr = a.id === "amaldicoado"
       ? (ctx.tecnicaAttr || "inteligencia")
-      : (a.id === "corpo" && fineza ? a.atributoFineza : a.atributo);
+      : (liberado && modDe(a.atributoFineza) > modDe(a.atributo) ? a.atributoFineza : a.atributo);
     return {
       ...a,
       atributo: attr,
       treinado,
-      bonus: modDe(attr) + escalaFixa + (treinado ? bt : 0),
+      bonus: modDe(attr) + escalaFixa + (treinado ? bt : 0) + bonusDeEfeito("bonusAcerto", a.id),
+      partes: [
+        { label: rotuloAttr(attr), valor: modDe(attr) },
+        { label: "Nível ÷ 1,5", valor: escalaFixa },
+        ...(treinado ? [{ label: "Maestria", valor: bt }] : []),
+        ...partesDeEfeito("bonusAcerto", a.id),
+      ],
     };
   });
 
@@ -400,8 +619,8 @@ export function resolveTestes(creature, ctx = {}) {
   // Perícias E Testes de Resistência dividem as mesmas vagas (autor,
   // 2026-07-27). Jogadas de Ataque ficam fora: elas não têm faixa de Mestre e
   // o treino delas é com a arma que a criatura maneja.
-  const gastoPericias = pericias.reduce((s, p) => s + custoProficiencia(p.prof), 0);
-  const gastoResistencias = resistencias.reduce((s, r) => s + custoProficiencia(r.prof), 0);
+  const gastoPericias = pericias.reduce((s, p) => s + custoProficiencia(p.profEscolhida), 0);
+  const gastoResistencias = resistencias.reduce((s, r) => s + custoProficiencia(r.profEscolhida), 0);
   const gastos = gastoPericias + gastoResistencias;
 
   return {

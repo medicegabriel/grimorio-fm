@@ -197,6 +197,37 @@ export const ARMA_PROPRIEDADES = [
 const PROP_BY_ID = Object.fromEntries(ARMA_PROPRIEDADES.map((p) => [p.id, p]));
 export const getPropriedade = (id) => PROP_BY_ID[id] ?? null;
 
+/** Rótulo de UMA propriedade com o parâmetro dela ("Pesada 14", "Fatal d10"). */
+export function rotuloPropriedade(id, valor) {
+  const p = PROP_BY_ID[id];
+  const nome = p?.nome ?? id;
+  if (valor === true || valor == null) return nome;
+  if (Array.isArray(valor)) return `${nome} ${valor.map((v) => `${v}m`).join(" / ")}`;
+  return `${nome} ${valor}`;
+}
+
+/**
+ * Propriedades de uma arma prontas para exibição, na ordem do catálogo.
+ * `especial: true` não vira linha: o texto próprio dela já é mostrado à parte.
+ */
+export function propriedadesDaArma(def) {
+  const props = def?.props ?? {};
+  return ARMA_PROPRIEDADES
+    .filter((p) => p.id !== "especial" && props[p.id] != null && props[p.id] !== false)
+    .map((p) => ({ id: p.id, nome: p.nome, valor: props[p.id], rotulo: rotuloPropriedade(p.id, props[p.id]) }));
+}
+
+/**
+ * Alcance da arma, em metros. Vem da propriedade `alcance` (armas a distância)
+ * ou de `arremessavel`. Arma corpo a corpo sem nenhuma das duas devolve null:
+ * o alcance dela depende do tamanho de quem maneja, e não é da arma.
+ */
+export function alcanceDaArma(def) {
+  const a = def?.props?.alcance ?? def?.props?.arremessavel;
+  if (!Array.isArray(a)) return null;
+  return { curto: a[0], longo: a[1] ?? a[0], texto: `${a[0]}m / ${a[1] ?? a[0]}m` };
+}
+
 /* ============================================================ */
 /* ARMAS · PROPRIEDADES ESPECIAIS (texto verbatim)              */
 /* ============================================================ */
