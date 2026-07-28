@@ -30,7 +30,7 @@
 
 import { evalNumber } from "../../components/fm-dsl";
 import { AFTY_TAMANHOS, AFTY_RESISTENCIAS } from "./afty-schema";
-import { AFTY_PERICIAS } from "./afty-pericias";
+import { AFTY_PERICIAS, bonusProficiencia, usoPericias } from "./afty-pericias";
 
 export const mod = (attr) => Math.floor(((attr ?? 10) - 10) / 2);
 
@@ -270,12 +270,10 @@ export function bonusTesteInvocacao(inv, dono = {}, { atributo = "forca", treina
 
 // Bônus de proficiência num teste: treinado soma o BT, mestre soma 1,5x o BT
 // (BT + metade do BT, arredondando para baixo). Ex.: BT +2 -> mestre +3.
-export const bonusProficiencia = (bt, prof) =>
-  prof === "mestre" ? bt + Math.floor(bt / 2) : (prof === "treinado" ? bt : 0);
-
-// Perícias gastas por um mapa de proficiência: Mestre custa 2, Treinado custa 1.
-export const usoPericias = (periciasProf = {}) =>
-  Object.values(periciasProf || {}).reduce((s, p) => s + (p === "mestre" ? 2 : 1), 0);
+// Proficiência (Treinado / Mestre) e o custo em vagas moram em afty-pericias.js,
+// que é o dono da regra e serve os três tipos de teste. Re-exportados aqui
+// porque é daqui que a aba de Invocações sempre os importou.
+export { bonusProficiencia, usoPericias };
 
 // Perícias comuns treináveis: 1 + metade do melhor mod entre INT e SAB, mais o
 // ganho por grau. Não conta Ofício (regra de mesa, não travada aqui).

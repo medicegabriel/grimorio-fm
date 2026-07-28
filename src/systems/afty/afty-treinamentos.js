@@ -405,40 +405,78 @@ function progressosDe(linha, val) {
 }
 
 /**
- * Soma as contribuições dos treinamentos (efeitos LEGÍVEIS PELO
- * MOTOR) até o progresso de cada linha/instância. Retorna o agregado
- * { hp, pe, movimento, aptidao, atributo, defesa, aptidaoTrilha }.
+ * Traduz um efeito do catálogo (`{ tipo, valor, trilha? }`) para o vocabulário
+ * do Motor de Automação (`{ canal, expr, alvo? }`).
  *
  * Aptidão tem DOIS canais (decisão do autor, 2026-07-16):
- *   • `{ tipo:"aptidao", trilha:"bar", valor:1 }` → concessão
- *     DIRECIONADA. Vai para `aptidaoTrilha.bar`, é grátis e não
- *     toca no orçamento. É o caso quando a regra nomeia a trilha
- *     ("Seu Nível de Aptidão em Barreiras aumenta em 1").
- *   • `{ tipo:"aptidao", valor:1 }` (sem trilha) → ponto de
- *     ORÇAMENTO livre, somado em `aptidao` e gasto onde o jogador
- *     quiser. É o caso do texto "um nível de aptidão à sua escolha"
- *     (Compreensão Completo).
+ *   • `{ tipo:"aptidao", trilha:"bar" }` → concessão DIRECIONADA, grátis, não
+ *     toca no orçamento. É o caso quando a regra nomeia a trilha ("Seu Nível de
+ *     Aptidão em Barreiras aumenta em 1"). Vira `nivelAptidao` COM alvo.
+ *   • `{ tipo:"aptidao" }` sem trilha → ponto de ORÇAMENTO livre, gasto onde o
+ *     jogador quiser ("um nível de aptidão à sua escolha", Compreensão
+ *     Completo). Vira `pontosAptidao`.
+ *
+ * `alvoInstancia` é o alvo da instância nas linhas repetíveis: no Treino de
+ * Atributo é o atributo escolhido, e é o que faz o `+1` cair no lugar certo.
  */
-export function resolveTreinoEfeitos(creature) {
+function paraCanal(ef, alvoInstancia) {
+  const valor = Number(ef?.valor) || 0;
+  if (!valor) return null;
+  const expr = String(valor);
+  switch (ef.tipo) {
+    case "hp": case "pe": case "movimento": case "defesa":
+      return { canal: ef.tipo, expr };
+    case "atributo":
+      // Sem alvo não há onde somar: a linha repetível sempre traz um.
+      return alvoInstancia ? { canal: "atributo", alvo: alvoInstancia, expr } : null;
+    case "aptidao":
+      return ef.trilha
+        ? { canal: "nivelAptidao", alvo: ef.trilha, expr }
+        : { canal: "pontosAptidao", expr };
+    default:
+      return null;
+  }
+}
+
+/**
+ * Efeitos dos Treinamentos no vocabulário do Motor de Automação, até o
+ * progresso de cada linha/instância.
+ *
+ * ⚠ Absorvido pelo Motor em 2026-07-27 (decisão do autor). Antes isto era um
+ * agregador paralelo com canais próprios (`{ hp, pe, movimento, aptidao,
+ * atributo, defesa, aptidaoTrilha }`) e valores fixos, o que dava DOIS
+ * vocabulários de canal no mesmo sistema. Agora emite `{ canal, expr }` igual
+ * a qualquer outra fonte de efeito, e o `origem`/`nome` alimenta o detalhamento
+ * da UI. Ganho de brinde: o Treino de Atributo, cujo canal era somado e depois
+ * ignorado, passou a aplicar de verdade no atributo escolhido.
+ */
+export function efeitosDeTreino(creature) {
   const prog = normalizeTreinamentos(creature?.treinamentos);
-  const acc = { hp: 0, pe: 0, movimento: 0, aptidao: 0, atributo: 0, defesa: 0, aptidaoTrilha: {} };
-  const add = (efeitos) => {
+  const out = [];
+  const add = (efeitos, linha, alvo) => {
     for (const ef of efeitos || []) {
-      if (ef.tipo === "aptidao" && ef.trilha) {
-        acc.aptidaoTrilha[ef.trilha] = (acc.aptidaoTrilha[ef.trilha] || 0) + (ef.valor || 0);
-      } else {
-        acc[ef.tipo] = (acc[ef.tipo] || 0) + (ef.valor || 0);
-      }
+      const conv = paraCanal(ef, alvo);
+      if (!conv) continue;
+      out.push({
+        ...conv,
+        origem: linha.id,
+        nome: alvo && linha.repetivel ? `${linha.nome} (${alvo})` : linha.nome,
+      });
     }
   };
   for (const [id, val] of Object.entries(prog)) {
     const linha = BY_ID[id];
-    for (const p of progressosDe(linha, val)) {
-      for (const et of linha.etapas) if (et.n <= p) add(et.efeitos);
-      if (p >= ETAPAS_POR_LINHA) add(linha.completo?.efeitos);
+    if (!linha) continue;
+    const instancias = linha.repetivel && Array.isArray(val)
+      ? val
+      : [{ alvo: null, progresso: Number(val) || 0 }];
+    for (const inst of instancias) {
+      const p = clampProg(inst.progresso);
+      for (const et of linha.etapas) if (et.n <= p) add(et.efeitos, linha, inst.alvo);
+      if (p >= ETAPAS_POR_LINHA) add(linha.completo?.efeitos, linha, inst.alvo);
     }
   }
-  return acc;
+  return out;
 }
 
 /** Custo em Focos de uma linha até um dado progresso (0..4). */

@@ -3,16 +3,18 @@
  *
  * Regras confirmadas pelo autor (2026-07-17):
  *
- * 1. **Orçamento = 1 + floor(ND/3)**, idêntico ao das Aptidões Amaldiçoadas.
- *    ⚠ DIVERGE DO LIVRO DE PROPÓSITO. O texto transcrito diz "No 2° nível e
- *    a cada nível seguinte, você recebe uma habilidade", o que daria ND-1
- *    (19 no ND 20 contra 7 na regra do Afty). O autor confirmou que vale a
- *    regra do Afty. Não "corrigir" para o livro.
+ * 1. **O ORÇAMENTO NÃO VEM DO ND** (autor, 2026-07-27). A única fonte é a
+ *    Habilidade Geral **Especialização** (1 + metade da Maestria por pega,
+ *    ver ./afty-gerais.js), que chega em `resolveHabilidades` como
+ *    `bonusVagas`. Sem pegar a Geral, o orçamento é 0 em qualquer ND.
+ *    ⚠ Isso SUBSTITUIU a regra antiga (`1 + floor(ND/3)`, de 2026-07-17), que
+ *    por sua vez já divergia do livro de propósito. Não reinstalar nenhuma
+ *    das duas: hoje quem manda é a Habilidade Geral.
  * 2. **Base e por Nível gastam O MESMO orçamento.** No livro as Bases são de
  *    graça; no Afty elas são escolhidas, igual às por Nível.
- * 3. **Orçamento único**, vindo do ND total, gasto onde o jogador quiser.
- *    O que muda por especialização é o ACESSO: cada habilidade exige nível
- *    NAQUELA especialização (o lado da multiclasse), não o ND.
+ * 3. **Orçamento único**, gasto onde o jogador quiser, e dividido com os
+ *    Talentos. O que muda por especialização é o ACESSO: cada habilidade
+ *    exige nível NAQUELA especialização (o lado da multiclasse), não o ND.
  * 4. "Base" NÃO quer dizer "inicial": quer dizer fixa da especialização.
  *    Elas têm nível próprio (1, 4, 6, 9, 20 no Combatente).
  *
@@ -5856,21 +5858,13 @@ export const getHabilidade = (id) => BY_ID[id] || null;
 export const habilidadesDaEspecializacao = (espId, tipo) =>
   AFTY_HABILIDADES.filter((h) => h.especializacaoId === espId && (!tipo || h.tipo === tipo));
 
-/**
- * Quantas Habilidades de Especialização a criatura PODE ter.
- *
- * ⚠ REGRA DO AFTY, que DIVERGE do livro de propósito (autor, 2026-07-17):
- * 1 no ND 1, mais 1 a cada 3 ND — a mesma fórmula das Aptidões Amaldiçoadas.
- * O livro diz "no 2° nível e a cada nível seguinte" (= ND-1). Não trocar.
- *
- * O orçamento é ÚNICO (vem do ND total, não do nível de cada especialização)
- * e cobre Base e por Nível juntas.
- *
- * `bonus` são as vagas concedidas de fora, hoje só a Habilidade Geral
- * Especialização (1 + metade da Maestria por pega, ver afty-gerais.js).
- */
-export const totalHabilidades = (nd, bonus = 0) =>
-  1 + Math.floor(Math.max(1, nd) / 3) + Math.max(0, Math.trunc(Number(bonus) || 0));
+/* Não existe mais um `totalHabilidades(nd)`: depois que o ND parou de conceder
+   vagas (regra 1 do topo do arquivo), a conta virou "o que a Habilidade Geral
+   Especialização deu", e quem faz essa conta é `resolveGerais` em
+   afty-gerais.js. O valor chega em `resolveHabilidades` como `bonusVagas`.
+   Um helper aqui só reembalaria o número, e um export com a mesma assinatura
+   antiga de dois parâmetros aceitaria `totalHabilidades(nd, bonus)` calado,
+   devolvendo o ND como orçamento. */
 
 /**
  * Quantos Estilos de Combate (ou escolha aninhada equivalente) a habilidade
@@ -6154,7 +6148,6 @@ export function efeitosInvocacaoControlador(escolhidasIds = []) {
 }
 
 export function resolveHabilidades(creature, escolhidasEspec, talentosGastos = 0, bt = 0, bonusVagas = 0) {
-  const nd = Math.max(1, Math.trunc(Number(creature?.core?.nd) || 1));
   const niveisPorEspec = niveisPorEspecializacao(escolhidasEspec);
   const vistos = new Set();
   const escolhidas = [];
@@ -6163,7 +6156,8 @@ export function resolveHabilidades(creature, escolhidasEspec, talentosGastos = 0
     vistos.add(id);
     escolhidas.push(id);
   }
-  const total = totalHabilidades(nd, bonusVagas);
+  // Orçamento: só o que a Habilidade Geral Especialização concedeu.
+  const total = Math.max(0, Math.trunc(Number(bonusVagas) || 0));
   // Escolhas aninhadas (Estilo de Controle no Apogeu, Melhorias...). O mapa
   // alimenta a verificação de requisito `escolha` e a passada de efeitos.
   const escolhas = resolveEscolhasHabilidade({

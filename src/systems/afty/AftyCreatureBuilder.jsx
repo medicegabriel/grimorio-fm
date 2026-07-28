@@ -86,6 +86,7 @@ import {
 const TABS = [
   { id: "identidade",    label: "Identidade" },
   { id: "informacoes",   label: "Informações" },
+  { id: "pericias",      label: "Perícias" },
   { id: "habilidades",   label: "Habilidades" },
   { id: "especializacoes", label: "Especializações" },
   { id: "aptidoes",      label: "Aptidões" },
@@ -171,9 +172,9 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
   const setAptidaoNivel = (trilha, val) =>
     setDraft((d) => ({ ...d, aptidoes: { ...d.aptidoes, [trilha]: val } }));
 
-  // Habilidades de Especialização: Base e por Nível gastam o MESMO orçamento
-  // (1 + floor(ND/3)). Escolher não é bloqueado pelo orçamento, só pelo
-  // requisito de nível — mesma postura das Aptidões.
+  // Habilidades de Especialização: Base e por Nível gastam o MESMO orçamento,
+  // que vem da Habilidade Geral Especialização. Escolher não é bloqueado pelo
+  // orçamento, só pelo requisito de nível — mesma postura das Aptidões.
   const toggleHabilidade = (id) =>
     setDraft((d) => {
       const atual = Array.isArray(d.habilidades) ? d.habilidades : [];
@@ -223,6 +224,24 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
       const next = [...lista];
       next.splice(i + 1, 0, copia);
       return { ...d, feiticos: next };
+    });
+
+  // Perícias / Testes de Resistência: mapa de proficiência { [id]: "treinado" |
+  // "mestre" }. Destreinado é a AUSÊNCIA da chave, não um null gravado, para a
+  // ficha não encher de lixo. O medidor da UI manda a faixa alvo.
+  const setProficiencia = (campo, id, prof) =>
+    setDraft((d) => {
+      const mapa = d[campo] && typeof d[campo] === "object" ? d[campo] : {};
+      const next = { ...mapa };
+      if (prof) next[id] = prof; else delete next[id];
+      return { ...d, [campo]: next };
+    });
+  const toggleAtaqueProf = (id) =>
+    setDraft((d) => {
+      const mapa = d.ataquesProf && typeof d.ataquesProf === "object" ? d.ataquesProf : {};
+      const next = { ...mapa };
+      if (next[id]) delete next[id]; else next[id] = true;
+      return { ...d, ataquesProf: next };
     });
 
   // Habilidades Gerais. Mesmo shape das Melhorias Superiores: lista COM
@@ -513,6 +532,7 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
         <div className="lg:col-span-2 space-y-4">
           {tab === "identidade" && <TabIdentidade draft={draft} patch={patch} patchCore={patchCore} setOrigemBonus={setOrigemBonus} setOrigemId={setOrigemId} />}
           {tab === "informacoes" && <TabInformacoes draft={draft} derived={derived} patch={patch} patchCore={patchCore} patchAttr={patchAttr} patchNivel={patchNivel} />}
+          {tab === "pericias" && <TabPericias draft={draft} derived={derived} patch={patch} setProficiencia={setProficiencia} toggleAtaqueProf={toggleAtaqueProf} />}
           {tab === "habilidades" && <TabHabilidades draft={draft} derived={derived} patchCore={patchCore} addFeitico={addFeitico} removeFeitico={removeFeitico} patchFeitico={patchFeitico} duplicarFeitico={duplicarFeitico} setGeralVezes={setGeralVezes} />}
           {tab === "especializacoes" && <TabEspecializacoes draft={draft} derived={derived} setEspecializacoes={setEspecializacoes} toggleHabilidade={toggleHabilidade} toggleEscolhaHabilidade={toggleEscolhaHabilidade} toggleTalento={toggleTalento} setMelhoriaVezes={setMelhoriaVezes} toggleLendaria={toggleLendaria} toggleEscolhaAltoNivel={toggleEscolhaAltoNivel} />}
           {tab === "aptidoes" && <TabAptidoes draft={draft} derived={derived} setAptidaoNivel={setAptidaoNivel} toggleAptidao={toggleAptidao} />}
@@ -558,6 +578,183 @@ function StubCard({ title, text }) {
         </div>
       </div>
     </Card>
+  );
+}
+
+/* ============================================================ */
+/* Aba: Perícias (Perícias + Jogadas de Ataque + Testes)        */
+/* ============================================================ */
+/* Os três tipos de teste têm a MESMA forma (mod do atributo + metade
+   do ND + bônus de treinamento), então dividem a mesma linha de 32px:
+   medidor de proficiência, nome, atributo, bônus e a descrição que
+   abre sob demanda. O motor entrega tudo pronto em `derived.testes`.
+
+   Ordem dos cards (autor, 2026-07-27): Jogadas de Ataque, Testes de
+   Resistência e Perícias por último.
+
+   Orçamento (autor, 2026-07-27): 3 + maior mod entre INT e SAB + rank
+   do Grau do Feiticeiro. Mestre custa 2 vagas, Treinado custa 1.
+   PERÍCIAS e TESTES DE RESISTÊNCIA dividem esse mesmo caixa, então o
+   contador aparece igual nos dois cards. Jogadas de Ataque ficam fora
+   (não têm faixa de Mestre e o treino é com a arma). */
+
+const ABREV_ATTR = Object.fromEntries(AFTY_ATTRS.map((a) => [a.key, a.abbr]));
+const PROF_ROTULOS = ["Treinado", "Mestre"];
+const PROF_POR_INDICE = [null, "treinado", "mestre"];
+const INDICE_POR_PROF = { treinado: 1, mestre: 2 };
+
+function TabPericias({ draft, derived, patch, setProficiencia, toggleAtaqueProf }) {
+  const { pericias, resistencias, ataques, orcamento } = derived.testes;
+
+  return (
+    <>
+      <Card
+        title="Jogadas de Ataque"
+        headerRight={
+          <BoolChip ativo={!!draft.ataqueFineza} onToggle={() => patch({ ataqueFineza: !draft.ataqueFineza })}>
+            Fineza
+          </BoolChip>
+        }
+      >
+        <div className="space-y-1">
+          {ataques.map((a) => (
+            <TesteLinha
+              key={a.id}
+              item={{ ...a, prof: a.treinado ? "treinado" : null }}
+              maxProf={1}
+              travado={a.sempreTreinado}
+              onCicla={() => toggleAtaqueProf(a.id)}
+            />
+          ))}
+        </div>
+      </Card>
+
+      <Card title="Testes de Resistência" headerRight={<ContadorVagas orcamento={orcamento} />}>
+        <div className="space-y-1">
+          {resistencias.map((r) => (
+            <TesteLinha
+              key={r.value}
+              item={{ ...r, id: r.value, nome: r.label }}
+              onCicla={(prof) => setProficiencia("resistenciasProf", r.value, prof)}
+              tag={r.critico ? "Sucesso Crítico" : null}
+            />
+          ))}
+        </div>
+      </Card>
+
+      <Card title="Perícias" headerRight={<ContadorVagas orcamento={orcamento} />}>
+        {orcamento.excedeu && (
+          <p className="text-[11px] text-rose-400 mb-3">
+            Você treinou mais do que as vagas permitem. Remova um treino ou eleve Inteligência, Sabedoria ou o ND.
+          </p>
+        )}
+        <div className="space-y-1">
+          {pericias.map((p) => (
+            <TesteLinha
+              key={p.id}
+              item={p}
+              onCicla={(prof) => setProficiencia("pericias", p.id, prof)}
+            >
+              {p.subcategoria && p.prof && (
+                <div className="mt-2">
+                  <FieldLabel>Subcategoria</FieldLabel>
+                  <TextInput
+                    value={draft.periciaOficio || ""}
+                    onChange={(v) => patch({ periciaOficio: v })}
+                    placeholder="ex.: Ferreiro, Farmacêutico"
+                  />
+                </div>
+              )}
+            </TesteLinha>
+          ))}
+        </div>
+      </Card>
+    </>
+  );
+}
+
+/* Vagas de treino gastas / disponíveis. Aparece igual nos dois cards que
+   gastam o mesmo caixa, Perícias e Testes de Resistência. */
+function ContadorVagas({ orcamento }) {
+  return (
+    <span
+      className={`font-mono text-sm font-bold tabular-nums ${orcamento.excedeu ? "text-rose-400" : "text-slate-200"}`}
+      title="Vagas de treino gastas / disponíveis (Mestre custa 2, e Perícias e Testes de Resistência dividem as mesmas)"
+    >
+      {orcamento.gastos} / {orcamento.total}
+    </span>
+  );
+}
+
+/* Uma linha de teste. Serve perícia, ataque e Teste de Resistência: o que muda
+   é quantas faixas de proficiência existem (ataque só tem Treinado). */
+function TesteLinha({ item, onCicla, maxProf = 2, travado, tag, children }) {
+  const [open, setOpen] = useState(false);
+  const indice = travado ? maxProf : (INDICE_POR_PROF[item.prof] ?? 0);
+  const temTexto = !!(item.descricao || item.exemplos || item.nota || children);
+
+  return (
+    <div className={`rounded-lg border transition-colors ${
+      indice > 0 ? "border-purple-700 bg-purple-950/30" : "border-slate-800 bg-slate-950/40"
+    }`}>
+      <div className="flex items-center gap-2.5 px-2.5 h-8">
+        <VezesGauge
+          vezes={indice}
+          max={maxProf}
+          nome={item.nome}
+          rotulos={PROF_ROTULOS}
+          bloqueado={travado}
+          onSet={(n) => onCicla(PROF_POR_INDICE[n] ?? null)}
+        />
+
+        <button
+          type="button"
+          onClick={() => temTexto && setOpen((o) => !o)}
+          aria-expanded={temTexto ? open : undefined}
+          className="flex-1 min-w-0 flex items-center gap-x-2 text-left overflow-hidden"
+        >
+          <span className="text-[12px] font-semibold text-slate-100 truncate" title={item.nome}>
+            {item.nome}
+          </span>
+          <span className="text-[9px] uppercase tracking-wider text-slate-500 flex-shrink-0">
+            {ABREV_ATTR[item.atributo] || ""}
+          </span>
+          {tag && (
+            <span className="text-[10px] font-medium text-purple-300 whitespace-nowrap flex-shrink-0">{tag}</span>
+          )}
+        </button>
+
+        <span className="font-mono text-sm font-bold tabular-nums text-white flex-shrink-0 w-9 text-right">
+          {item.bonus >= 0 ? "+" : ""}{item.bonus}
+        </span>
+
+        {temTexto ? (
+          <ChevronDown
+            className={`w-3.5 h-3.5 text-slate-600 flex-shrink-0 transition-transform ${open ? "" : "-rotate-90"}`}
+            aria-hidden="true"
+          />
+        ) : (
+          <span className="w-3.5 flex-shrink-0" aria-hidden="true" />
+        )}
+      </div>
+
+      {open && temTexto && (
+        <div className="px-2.5 pb-2.5 pl-[38px]">
+          {item.descricao && (
+            <p className="text-[11px] text-slate-400 leading-relaxed">{item.descricao}</p>
+          )}
+          {item.exemplos && (
+            <p className="text-[11px] text-slate-400 leading-relaxed mt-1.5">
+              <span className="text-slate-500">Exemplos de aplicações:</span> {item.exemplos}
+            </p>
+          )}
+          {item.nota && (
+            <p className="text-[11px] text-amber-400/90 leading-relaxed mt-1.5">{item.nota}</p>
+          )}
+          {children}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -626,11 +823,12 @@ function ContadorHabilidades({ derived }) {
 }
 
 /* Habilidades Gerais: catálogo curto e repetível, aberto a qualquer origem.
-   Reusa o vocabulário do card de Níveis Lendários (linha de 32px que abre sob
-   demanda + medidor de repetições), mas sem pré-requisito: o que limita é o
-   contador da aba e o teto de vezes de cada uma. */
+   Reusa o vocabulário do card de Níveis Lendários: linha de 32px que abre sob
+   demanda, medidor de repetições e chip de requisito com cadeado. O que limita
+   é o contador da aba, o teto de vezes de cada uma e o ND das duas de alto
+   nível (que vem resolvido do motor em `gerais.acesso`). */
 function HabilidadesGeraisCard({ derived, setGeralVezes }) {
-  const { escolhidas, maxVezes } = derived.gerais;
+  const { escolhidas, maxVezes, acesso } = derived.gerais;
   const { excedeu } = derived.orcamentoHabilidades;
   const vezesDe = (id) => escolhidas.find((g) => g.id === id)?.vezes ?? 0;
 
@@ -647,7 +845,8 @@ function HabilidadesGeraisCard({ derived, setGeralVezes }) {
             key={g.id}
             item={g}
             vezes={vezesDe(g.id)}
-            max={maxVezes[g.id] ?? 1}
+            max={maxVezes[g.id] ?? 0}
+            acesso={acesso[g.id]}
             onSetVezes={(n) => setGeralVezes(g.id, n)}
           />
         ))}
@@ -656,11 +855,13 @@ function HabilidadesGeraisCard({ derived, setGeralVezes }) {
   );
 }
 
-function HabilidadeGeralCard({ item, vezes, max, onSetVezes }) {
+function HabilidadeGeralCard({ item, vezes, max, acesso, onSetVezes }) {
   const [open, setOpen] = useState(false);
   const escolhida = vezes > 0;
-  // Teto 0 (metade da Maestria é 0 só se a Maestria for 0) tranca a linha.
-  const bloqueada = max < 1;
+  // Já escolhida nunca trava (mesma regra do AltoNivelCard e do AptidaoCard):
+  // senão baixar o ND prenderia a pega na ficha, gastando contador, sem como
+  // remover. O motor devolve a pega mesmo inacessível justamente para isso.
+  const bloqueada = (!acesso.ok || max < 1) && !escolhida;
   const repetivel = max > 1;
 
   return (
@@ -674,7 +875,7 @@ function HabilidadeGeralCard({ item, vezes, max, onSetVezes }) {
           disabled={bloqueada}
           aria-pressed={escolhida}
           aria-label={`${escolhida ? "Remover" : "Escolher"} ${item.nome}`}
-          title={bloqueada ? "Indisponível neste ND" : escolhida ? "Remover" : "Escolher"}
+          title={bloqueada ? "Pré-requisito não atendido" : escolhida ? "Remover" : "Escolher"}
           className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 border transition-colors ${
             escolhida
               ? "bg-purple-700 border-purple-600 text-white"
@@ -690,7 +891,7 @@ function HabilidadeGeralCard({ item, vezes, max, onSetVezes }) {
           type="button"
           onClick={() => setOpen((o) => !o)}
           aria-expanded={open}
-          className="flex-1 min-w-0 flex items-center text-left overflow-hidden"
+          className="flex-1 min-w-0 flex items-center gap-x-2 text-left overflow-hidden"
         >
           <span
             className={`text-[12px] font-semibold truncate ${bloqueada ? "text-slate-500" : "text-slate-100"}`}
@@ -698,6 +899,7 @@ function HabilidadeGeralCard({ item, vezes, max, onSetVezes }) {
           >
             {item.nome}
           </span>
+          <RequisitoLista reqs={acesso.extras} />
         </button>
 
         {/* Medidor só depois de escolhida: o 1º segmento duplicaria o toggle.
@@ -4153,7 +4355,7 @@ function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, toggleEsc
       headerRight={
         <div
           className="flex items-center gap-1.5 border border-slate-800 bg-slate-950/50 rounded-md px-2 py-1"
-          title="Habilidades escolhidas / permitidas (1 no ND 1, mais 1 a cada 3 ND)"
+          title="Habilidades escolhidas / permitidas (vêm da Habilidade Geral Especialização)"
         >
           <GraduationCap className="w-3 h-3 text-purple-400 flex-shrink-0" />
           <span className="text-[9px] uppercase tracking-wider text-slate-400">Habilidades</span>
@@ -4207,7 +4409,7 @@ function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, toggleEsc
 
       {excedeu && (
         <p className="text-[11px] text-rose-400 mb-3">
-          Você escolheu mais habilidades do que o orçamento permite. Remova uma ou aumente o ND.
+          Você escolheu mais habilidades do que o orçamento permite. Remova uma ou pegue a Habilidade Geral Especialização.
         </p>
       )}
 
@@ -4299,24 +4501,28 @@ function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, toggleEsc
    de requisito com cadeado, e MEDIDOR (não campo numérico) para as
    melhorias que o livro deixa repetir. */
 
-/** Medidor de repetições de uma Melhoria Superior (2 ou 3 segmentos). */
-function VezesGauge({ vezes, max, nome, onSet }) {
+/** Medidor de faixas: repetições de uma Melhoria Superior, ou a proficiência
+    (Treinado / Mestre) de uma perícia. `rotulos` nomeia cada segmento no
+    tooltip, e sem ele o segmento é a enésima vez. `bloqueado` deixa o medidor
+    só de leitura (ataque Amaldiçoado, que é sempre treinado). */
+function VezesGauge({ vezes, max, nome, onSet, rotulos, bloqueado }) {
   return (
-    <span className="flex items-center gap-0.5 flex-shrink-0" role="group" aria-label={`Vezes em ${nome}`}>
+    <span className="flex items-center gap-0.5 flex-shrink-0" role="group" aria-label={`${nome}: faixa ${vezes} de ${max}`}>
       {Array.from({ length: max }, (_, i) => i + 1).map((n) => (
         <button
           key={n}
           type="button"
           /* Clicar no segmento que já é o último desce um, então dá para
              voltar de 3 para 2 sem passar pelo zero. */
-          onClick={() => onSet(n === vezes ? n - 1 : n)}
+          onClick={() => !bloqueado && onSet(n === vezes ? n - 1 : n)}
+          disabled={bloqueado}
           aria-pressed={n <= vezes}
-          title={`${n}ª vez`}
+          title={rotulos?.[n - 1] ?? `${n}ª vez`}
           className={`w-3.5 h-3.5 rounded-sm border transition-colors ${
             n <= vezes
               ? "bg-purple-600 border-purple-500"
               : "border-slate-700 hover:border-purple-600"
-          }`}
+          } ${bloqueado ? "cursor-not-allowed" : ""}`}
         />
       ))}
     </span>
@@ -4571,7 +4777,10 @@ function AltoNivel({ derived, setMelhoriaVezes, toggleLendaria, toggleEscolhaAlt
                 on ? "bg-purple-700 text-white" : "text-slate-400 hover:text-white hover:bg-slate-800/60"
               }`}
             >
-              {!r.destravado && <Lock className="w-3 h-3 flex-shrink-0" aria-hidden="true" />}
+              {/* Cadeado só quando a Habilidade Geral é o que falta. Se o ND
+                  ainda não abriu a trilha (vagasND 0), a aba já mostra 0 / 0 e
+                  apontar a Geral seria mandar pegar algo que o ND também tranca. */}
+              {!r.destravado && r.vagasND > 0 && <Lock className="w-3 h-3 flex-shrink-0" aria-hidden="true" />}
               {t.label}
               {r.gastos > 0 && (
                 <span className={`font-mono text-[10px] font-bold px-1 rounded ${on ? "bg-white/20 text-white" : "bg-purple-500/25 text-purple-300"}`}>
@@ -4583,23 +4792,27 @@ function AltoNivel({ derived, setMelhoriaVezes, toggleLendaria, toggleEscolhaAlt
         })}
       </div>
 
+      {/* O catálogo NUNCA some, mesmo travado: escondê-lo prenderia na ficha o
+          que já foi escolhido, sem como remover (é a mesma razão do "já
+          escolhida nunca trava" nos cards). Travado, o aviso explica e o
+          orçamento fica 0, então qualquer escolha acusa excesso. */}
+      {!(emMelhorias ? melhorias : lendarias).destravado && (emMelhorias ? melhorias : lendarias).vagasND > 0 && (
+        <p className="text-[11px] text-amber-400 mb-3 flex items-center gap-1.5">
+          <Lock className="w-3 h-3 flex-shrink-0" aria-hidden="true" />
+          Requer a Habilidade Geral: {emMelhorias ? "Melhoria Superior" : "Habilidade Lendária"}
+        </p>
+      )}
+
       {(emMelhorias ? melhorias : lendarias).excedeu && (
         <p className="text-[11px] text-rose-400 mb-3">
           {(emMelhorias ? melhorias : lendarias).destravado
             ? "Você escolheu mais do que o orçamento permite. Remova uma ou aumente o ND."
-            : `Nada aqui vale sem a Habilidade Geral: ${emMelhorias ? "Melhoria Superior" : "Habilidade Lendária"}. Remova o que escolheu ou pegue a Habilidade Geral.`}
+            : `Remova o que escolheu ou pegue a Habilidade Geral: ${emMelhorias ? "Melhoria Superior" : "Habilidade Lendária"}.`}
         </p>
       )}
 
-      {!(emMelhorias ? melhorias : lendarias).destravado && (
-        <div className="text-center py-6 border border-dashed border-slate-700 rounded-lg text-sm text-slate-400 flex items-center justify-center gap-2">
-          <Lock className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
-          Requer a Habilidade Geral: {emMelhorias ? "Melhoria Superior" : "Habilidade Lendária"}
-        </div>
-      )}
-
       <div className="space-y-1">
-        {!(emMelhorias ? melhorias : lendarias).destravado ? null : emMelhorias
+        {emMelhorias
           ? MELHORIAS_SUPERIORES.map((m) => {
               const vezes = vezesDe(m.id);
               return (
@@ -4642,7 +4855,7 @@ function TabAptidoes({ draft, derived, setAptidaoNivel, toggleAptidao }) {
   const restante = total - gastos;
 
   const escolhidas = Array.isArray(draft.aptidoesAmaldicoadas) ? draft.aptidoesAmaldicoadas : [];
-  const totalAptidoes = derived.totalAptidoesAmaldicoadas;  // 1 no ND 1, +1 a cada 3 ND
+  const totalAptidoes = derived.totalAptidoesAmaldicoadas;  // só da Habilidade Geral Aptidão
   const overAptidoes = escolhidas.length > totalAptidoes;
   // Contexto de requisito: nível de trilha EFETIVO (alocado + concedido).
   const ctx = {
@@ -4718,7 +4931,7 @@ function TabAptidoes({ draft, derived, setAptidaoNivel, toggleAptidao }) {
         headerRight={
           <div
             className="flex items-center gap-1.5 border border-slate-800 bg-slate-950/50 rounded-md px-2 py-1"
-            title="Aptidões escolhidas / permitidas (1 no ND 1, mais 1 a cada 3 ND)"
+            title="Aptidões escolhidas / permitidas (vêm da Habilidade Geral Aptidão)"
           >
             <Sparkles className="w-3 h-3 text-purple-400 flex-shrink-0" />
             <span className="text-[9px] uppercase tracking-wider text-slate-400">Aptidões</span>
@@ -4807,8 +5020,8 @@ function TabAptidoes({ draft, derived, setAptidaoNivel, toggleAptidao }) {
 
         {overAptidoes && (
           <p className="text-[11px] text-rose-400 mt-3">
-            Você escolheu mais Aptidões Amaldiçoadas do que o ND permite. Remova{" "}
-            {escolhidas.length - totalAptidoes} ou aumente o ND.
+            Você escolheu mais Aptidões Amaldiçoadas do que o orçamento permite. Remova{" "}
+            {escolhidas.length - totalAptidoes} ou pegue a Habilidade Geral Aptidão.
           </p>
         )}
       </Card>

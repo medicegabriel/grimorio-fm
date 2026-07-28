@@ -4,8 +4,10 @@
  * Regras confirmadas pelo autor (2026-07-22):
  *
  * 1. **Talentos são pegos NO LUGAR de Habilidades de Especialização**, então
- *    dividem o MESMO orçamento (`totalHabilidades(nd)`). Também podem vir de
- *    outras fontes (origens, treinamentos), que ainda não concedem nenhum.
+ *    dividem o MESMO orçamento, que desde 2026-07-27 vem só da Habilidade
+ *    Geral Especialização (ver ./afty-gerais.js) e não mais do ND. Também
+ *    podem vir de outras fontes (origens, treinamentos), que ainda não
+ *    concedem nenhum.
  * 2. **Qualquer especialização pode pegar qualquer talento.** Não há
  *    `especializacaoId` aqui: o acesso não depende de classe.
  * 3. **"Nível N" nos pré-requisitos é o ND**, não o nível de classe. É a

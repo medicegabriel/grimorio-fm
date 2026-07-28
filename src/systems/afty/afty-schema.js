@@ -4,6 +4,15 @@
  * Fórmulas em ../../../docs/afty-formulas-base.md.
  */
 
+/* ND em que cada trilha de alto nível abre. Moram AQUI, no módulo folha que
+   todo mundo importa, e não em afty-alto-nivel.js: afty-gerais.js precisa dos
+   dois no corpo do catálogo (tempo de avaliação do módulo) para o pré-requisito
+   das Habilidades Gerais Melhoria Superior e Habilidade Lendária. Importar de
+   afty-alto-nivel.js funcionaria hoje, mas deixaria armado um ReferenceError de
+   TDZ no dia em que alto-nivel importar qualquer coisa de gerais. */
+export const MELHORIA_NIVEL_INICIAL = 21;   // ímpares: 21, 23, 25...
+export const LENDARIA_NIVEL_INICIAL = 22;   // pares:   22, 24, 26...
+
 export const AFTY_ATTRS = [
   { key: "forca",        abbr: "FOR", label: "Força" },
   { key: "destreza",     abbr: "DES", label: "Destreza" },
@@ -43,16 +52,31 @@ export const AFTY_TECNICA_ATTRS = AFTY_ATTRS.map((a) => ({ value: a.key, label: 
 
 // Testes de Resistência (saves nomeados). O livro diz "divididas em quatro" mas
 // LISTA CINCO (inconsistência preservada). Cada um usa um atributo fixo.
-// Fórmula (player): TR = d20 + mod(atributo) + metade do nível + BT (se treinado) + outros.
+//
+// ⚠ FÓRMULA DA CRIATURA (planilha do autor, 2026-07-27), que DIVERGE da do
+// jogador: o livro diz "mod + metade do nível + BT (se treinado)", mas a
+// criatura usa a MESMA escala por Tipo da CD e da Defesa no lugar da metade do
+// nível. O campo `escala` diz qual:
+//   • "cd"     (Astúcia, Vontade)      → Conjurador ND/1,25 · Misto ND/1,5 · Combatente e Restringido ND/1,75
+//   • "defesa" (Reflexos, Fortitude)   → Combatente e Restringido ND/1,25 · Misto ND/1,5 · Conjurador ND/1,75
+//   • "fixa"   (Integridade)           → ND/1,5 em TODO Tipo
+// Sobre isso: + mod do atributo + Maestria (treinado) ou INT(Maestria × 1,5)
+// (mestre) + outros bônus. Resolvido em ./afty-pericias.js.
+//
 // CD padrão de uma habilidade: 10 + metade do nível + mod de um atributo + BT + outros.
 // O atributo da CD varia: Habilidades de Especialização especificam (2+ opções),
 // Aptidões e Feitiços usam o atributo principal de jujutsu.
+// ⚠ ORDEM DEFINIDA PELO AUTOR (2026-07-27), NÃO é a alfabética do livro: os
+// dois da escala da Defesa primeiro, depois os dois da escala da CD, e
+// Integridade por último. Não "arrumar" para alfabética. A ordem daqui é a
+// que sai na aba Perícias, no stat block das Invocações, no Select de TR
+// treinável e nos pools de escolha do Alto Nível.
 export const AFTY_RESISTENCIAS = [
-  { value: "astucia",     label: "Astúcia",     atributo: "inteligencia", descricao: "Mede a capacidade de resistir a sobrecarga de informações e raciocinar rapidamente para defender sua mente." },
-  { value: "fortitude",   label: "Fortitude",   atributo: "constituicao", descricao: "Permite resistir a efeitos que busquem afetar e debilitar o corpo." },
-  { value: "integridade", label: "Integridade", atributo: "constituicao", descricao: "Mede a resistência da sua alma, indo contra efeitos que busquem a danificar ou modificar." },
-  { value: "reflexos",    label: "Reflexos",    atributo: "destreza",     descricao: "Mede sua velocidade e agilidade para reagir e desviar de efeitos, evitando-os." },
-  { value: "vontade",     label: "Vontade",     atributo: "sabedoria",    descricao: "Mede a capacidade de resistir a ataques, influências e perturbação contra a mente e o espírito." },
+  { value: "reflexos",    label: "Reflexos",    atributo: "destreza",     escala: "defesa", descricao: "Mede sua velocidade e agilidade para reagir e desviar de efeitos, evitando-os." },
+  { value: "fortitude",   label: "Fortitude",   atributo: "constituicao", escala: "defesa", descricao: "Permite resistir a efeitos que busquem afetar e debilitar o corpo." },
+  { value: "vontade",     label: "Vontade",     atributo: "sabedoria",    escala: "cd",     descricao: "Mede a capacidade de resistir a ataques, influências e perturbação contra a mente e o espírito." },
+  { value: "astucia",     label: "Astúcia",     atributo: "inteligencia", escala: "cd",     descricao: "Mede a capacidade de resistir a sobrecarga de informações e raciocinar rapidamente para defender sua mente." },
+  { value: "integridade", label: "Integridade", atributo: "constituicao", escala: "fixa",   descricao: "Mede a resistência da sua alma, indo contra efeitos que busquem a danificar ou modificar." },
 ];
 
 export const AFTY_TAMANHOS = [
@@ -110,6 +134,16 @@ export function createBlankAfty() {
       forca: 0, destreza: 0, constituicao: 0,
       inteligencia: 0, sabedoria: 0, presenca: 0,
     },
+
+    // Perícias, Jogadas de Ataque e Testes de Resistência (aba Perícias).
+    // Proficiência é { [id]: "treinado" | "mestre" }. Ataque só tem treinado
+    // (o Amaldiçoado é sempre treinado, nem entra no mapa). Ver afty-pericias.js.
+    pericias: {},              // { [periciaId]: "treinado" | "mestre" }
+    periciaOficio: "",         // subcategoria escolhida ao treinar Ofício (Ferreiro...)
+    periciasBonus: 0,          // vagas extras vindas de fora ("+ OUTROS" da fórmula)
+    resistenciasProf: {},      // { [trValue]: "treinado" | "mestre" }
+    ataquesProf: {},           // { corpo: true, distancia: true }
+    ataqueFineza: false,       // arma com o traço Fineza: corpo a corpo usa Destreza
 
     // Equipamentos (aba Equipamentos, ex-Inventário). Defesa vem da modificação
     // do uniforme, RD Físico vem do escudo. O shape dos itens fecha junto com a

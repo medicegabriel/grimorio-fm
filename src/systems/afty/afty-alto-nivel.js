@@ -39,14 +39,17 @@
  * o teto duro de 30 de `deriveAfty` quando esse canal existir.
  */
 
-import { AFTY_ATTRS, AFTY_RESISTENCIAS } from "./afty-schema";
+import {
+  AFTY_ATTRS, AFTY_RESISTENCIAS, MELHORIA_NIVEL_INICIAL, LENDARIA_NIVEL_INICIAL,
+} from "./afty-schema";
 import { AFTY_PERICIAS } from "./afty-pericias";
 import { getHabilidade } from "./afty-habilidades";
 import { getEspecializacao } from "./afty-especializacoes";
 
-/** Primeiro nível em que cada trilha começa a render escolha. */
-export const MELHORIA_NIVEL_INICIAL = 21;   // ímpares: 21, 23, 25...
-export const LENDARIA_NIVEL_INICIAL = 22;   // pares:   22, 24, 26...
+/** Primeiro nível em que cada trilha começa a render escolha.
+    Definidos em afty-schema.js (módulo folha) e re-exportados aqui, que é onde
+    o resto do projeto sempre os procurou. Ver o comentário lá. */
+export { MELHORIA_NIVEL_INICIAL, LENDARIA_NIVEL_INICIAL };
 
 /* Pools reusados por escolhas aninhadas. Vêm dos catálogos existentes, então
    uma perícia nova entra aqui sozinha. */
@@ -626,7 +629,10 @@ export function resolveAltoNivel(creature, ctx = {}) {
     .filter((m) => vezesPorId.has(m.id))
     .map((m) => ({ id: m.id, vezes: vezesPorId.get(m.id) }));
   const melGastos = melhoriasEscolhidas.reduce((s, m) => s + m.vezes, 0);
-  const melTotal = destravado.melhorias ? totalMelhoriasSuperiores(nd) : 0;
+  // vagasND = o que o ND sozinho concede. Separado do total para a UI saber
+  // distinguir "o ND ainda não abriu nada" de "falta a Habilidade Geral".
+  const melVagasND = totalMelhoriasSuperiores(nd);
+  const melTotal = destravado.melhorias ? melVagasND : 0;
 
   /* ---- Habilidades Lendárias (uma vez cada) ---- */
   const vistos = new Set();
@@ -636,7 +642,8 @@ export function resolveAltoNivel(creature, ctx = {}) {
     vistos.add(id);
     lendariasEscolhidas.push(id);
   }
-  const lenTotal = destravado.lendarias ? totalHabilidadesLendarias(nd) : 0;
+  const lenVagasND = totalHabilidadesLendarias(nd);
+  const lenTotal = destravado.lendarias ? lenVagasND : 0;
 
   const ctxReq = { nd, niveisPorEspec: ctx.niveisPorEspec, habilidades: ctx.habilidades };
   const inacessiveis = lendariasEscolhidas.filter(
@@ -662,6 +669,7 @@ export function resolveAltoNivel(creature, ctx = {}) {
       restante: melTotal - melGastos,
       excedeu: melGastos > melTotal,
       destravado: destravado.melhorias,
+      vagasND: melVagasND,
     },
     lendarias: {
       escolhidas: lendariasEscolhidas,   // [id]
@@ -671,6 +679,7 @@ export function resolveAltoNivel(creature, ctx = {}) {
       excedeu: lendariasEscolhidas.length > lenTotal,
       inacessiveis,
       destravado: destravado.lendarias,
+      vagasND: lenVagasND,
     },
     escolhas,                            // { porItem, mapa }
     apiceId,

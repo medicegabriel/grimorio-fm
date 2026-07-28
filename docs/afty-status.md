@@ -17,6 +17,21 @@ Estado atual do sistema Afty (atualizado 2026-07-17). Leia junto com:
 >
 > **Falta transcrever:** Arsenal Amaldiçoado e Estilo Marcial (citados pelo Restringido).
 >
+> **HABILIDADES GERAIS** (2026-07-26/27), em `src/systems/afty/afty-gerais.js`, card próprio na
+> aba Habilidades. São 5, abertas a QUALQUER origem: Especialização, Aptidão, Melhoria Superior,
+> Habilidade Lendária e Treinamentos. Três consequências que **invalidam números escritos mais
+> abaixo neste doc**:
+>
+> 1. **Contador único da aba Habilidades** = `2 × Maestria`, **+2** Desafio, **+4** Calamidade,
+>    `3 × Maestria` no Beyond (troca o dobro, não soma). Feitiços e Habilidades Gerais gastam o
+>    MESMO caixa. Matou o `totalFeiticos(nd)` (era `2 + ND/2 + marcos de 10 e 20`).
+> 2. **O ND não concede mais Habilidades de Especialização nem Aptidões Amaldiçoadas.** As duas
+>    fórmulas `1 + floor(ND/3)` foram removidas. Só as Gerais Especialização e Aptidão dão vaga
+>    (`+1 + metade da Maestria` por pega), e cada uma sai metade da Maestria de vezes.
+> 3. **Melhorias Superiores e Habilidades Lendárias exigem a Geral correspondente** para
+>    destravar, além do ND 21/22 de sempre. A Geral em si pede ND 21 e ND 22.
+>    Treinamentos dá `metade do ND` em Focos, e sai `1 + ND/10` de vezes.
+>
 > 👉 **Começando um chat novo? Vá direto para
 > [PENDÊNCIAS DE ESPECIALIZAÇÕES](#-pendências-de-especializações-lista-de-retomada).**
 
@@ -357,12 +372,15 @@ O autor enviou a seção "NÍVEIS DE APTIDÃO", que bate com o que já estava im
 | | Fórmula | Teto | Onde |
 |---|---|---|---|
 | **Níveis de Aptidão** (sobe trilha) | limiares de ND pares + Raio Negro + treino livre | **para no ND 20** | `derived.totalAptidao` |
-| **Aptidões Amaldiçoadas** (quantas pode ter) | `1 + floor(ND/3)` | **sem teto** | `derived.totalAptidoesAmaldicoadas` |
+| **Aptidões Amaldiçoadas** (quantas pode ter) | só a **Habilidade Geral Aptidão** | 0 sem ela | `derived.totalAptidoesAmaldicoadas` |
 
-A regra da quantidade (autor, 2026-07-16): **1 no ND 1, mais 1 a cada 3 ND** (3, 6, 9, 12, 15,
-18, 21, 24, 27, 30 "e por aí vai"). ND 30 → 11 aptidões, ND 60 → 21. Isso **corrigiu** o que
-estava aqui antes: eu tinha registrado que aptidão não tinha orçamento e era limitada só pelo
-requisito. Tem orçamento sim, é só um orçamento **diferente** do de níveis.
+⚠ **ATUALIZADO EM 2026-07-27.** A regra da quantidade era `1 + floor(ND/3)` (1 no ND 1, mais 1
+a cada 3 ND), e o autor a **REMOVEU**: o ND não concede Aptidão Amaldiçoada nenhuma. A única
+fonte agora é a Habilidade Geral **Aptidão** (`+1 + metade da Maestria` por pega, podendo ser
+pega metade da Maestria de vezes). Sem pegar a Geral, o orçamento é **0** em qualquer ND.
+Ver a seção HABILIDADES GERAIS e `src/systems/afty/afty-gerais.js`.
+
+O orçamento de **níveis** (a linha de cima) NÃO mudou e segue independente deste.
 
 ⚠ **Em aberto**: a origem Derivado concede "uma Aptidão Amaldiçoada de Aura"
 (`grants` em `afty-origens.js`). Essa concessão **gasta** o orçamento de aptidões ou é grátis,
@@ -771,15 +789,18 @@ sob demanda, igual a `HabilidadeCard`. Duas coisas novas no vocabulário:
 `afty-habilidades.js` + `TabHabilidades` (2026-07-17). Motor ligado (`derived.habilidades`),
 catálogo do Combatente transcrito (38 habilidades), aba construída e navegável.
 
-### 🔴 DIVERGÊNCIA DELIBERADA DO LIVRO (a mais importante desta seção)
+### 🔴 O ORÇAMENTO NÃO VEM DO ND (atualizado em 2026-07-27)
 | | Regra |
 |---|---|
 | **Livro** | "No 2° nível e a cada nível seguinte, você recebe uma habilidade" (= **ND − 1**, ou 19 no ND 20) |
-| **Afty (VALE ESTA)** | **`1 + floor(ND/3)`**, a MESMA fórmula das Aptidões Amaldiçoadas (7 no ND 20) |
+| **Afty até 2026-07-26** | `1 + floor(ND/3)`, a mesma fórmula das Aptidões Amaldiçoadas (7 no ND 20) |
+| **Afty hoje (VALE ESTA)** | só a **Habilidade Geral Especialização**: `+1 + metade da Maestria` por pega, e **0 sem ela** |
 
-O autor confirmou a regra do Afty em 2026-07-17, ciente do conflito. **Não "corrigir" para o
-livro.** O texto verbatim da seção "HABILIDADES DO ESPECIALISTA EM COMBATE" continua dizendo a
-regra do livro porque é transcrição, igual ao caso planilha × tabelas.
+O autor removeu a fórmula por ND em 2026-07-27. As duas regras acima são história: **não
+reinstalar nenhuma das duas**. Hoje quem dá vaga de Habilidade de Especialização (e, por
+tabela, de Talento, que divide o mesmo orçamento) é a Habilidade Geral, em
+`src/systems/afty/afty-gerais.js`. O texto verbatim da seção "HABILIDADES DO ESPECIALISTA EM
+COMBATE" continua dizendo a regra do livro porque é transcrição, igual ao caso planilha × tabelas.
 
 ### Regras (autor, 2026-07-17)
 - **Base e por Nível gastam o MESMO orçamento.** No livro as Bases são de graça, no Afty são

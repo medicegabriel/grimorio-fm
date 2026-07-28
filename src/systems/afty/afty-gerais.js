@@ -4,7 +4,8 @@
  * Habilidades que QUALQUER criatura pode pegar, independente da origem
  * (comum, Sem Técnica ou Restringido) e da especialização. Por isso o
  * arquivo não importa catálogo de classe nenhum: o que ele lê é ND,
- * Maestria e Patamar.
+ * Maestria e Patamar. A única importação é de `afty-schema.js`, o módulo
+ * folha, de onde vêm os dois limiares de ND do alto nível.
  *
  * Regras confirmadas pelo autor (2026-07-26):
  *
@@ -18,11 +19,21 @@
  *    da Maestria de vezes; Treinamentos sai 1 + ND/10 de vezes ("só uma vez
  *    a cada 10 níveis", com a primeira valendo desde o ND 1); Melhoria
  *    Superior e Habilidade Lendária são uma vez só.
+ * 2b. **Melhoria Superior pede ND 21 e Habilidade Lendária pede ND 22**
+ *    (autor, 2026-07-27), os mesmos limiares das trilhas que elas abrem. Isso
+ *    é PRÉ-REQUISITO (`ndMin` + `acessoGeral`), NÃO teto de repetição: uma
+ *    pega que deixou de alcançar o ND continua contada e visível, para poder
+ *    ser removida. Trancar uma escolha já feita a prenderia na ficha, que é a
+ *    regra "já escolhida nunca trava" dos outros cards do builder.
  * 3. **Melhoria Superior e Habilidade Lendária SÓ DESTRAVAM.** Elas não dão
  *    vaga nenhuma: o orçamento continua vindo dos níveis ímpares/pares a
  *    partir do 21/22, "do jeito que já está programado" (autor). Sem a
  *    Habilidade Geral correspondente, a trilha fica trancada mesmo no ND 21+.
- * 4. Todo arredondamento é para baixo (regra geral do projeto).
+ * 4. **Especialização e Aptidão são a ÚNICA fonte** de Habilidades de
+ *    Especialização e de Aptidões Amaldiçoadas (autor, 2026-07-27). As duas
+ *    fórmulas por ND (`1 + floor(ND/3)` nos dois casos) foram REMOVIDAS de
+ *    afty-habilidades.js e afty-derive.js. Sem pegar a Geral, o orçamento é 0.
+ * 5. Todo arredondamento é para baixo (regra geral do projeto).
  *
  * ⚠ Ids levam prefixo `ger_`, mesma convenção de `mel_`/`len_`/`tal_`.
  *
@@ -31,6 +42,8 @@
  * foram escritas aqui: o texto original era instrução de implementação
  * ("do jeito que já está programado"), não regra para a tela.
  */
+
+import { MELHORIA_NIVEL_INICIAL, LENDARIA_NIVEL_INICIAL } from "./afty-schema";
 
 /** Metade da Maestria, para baixo. Aparece nos dois lados de Especialização e Aptidão. */
 export const metadeMaestria = (maestria) => Math.floor(Math.max(0, maestria) / 2);
@@ -55,11 +68,13 @@ export const HABILIDADES_GERAIS = [
     id: "ger_melhoria_superior",
     nome: "Melhoria Superior",
     descricao: "Libera as Melhorias Superiores.",
+    ndMin: MELHORIA_NIVEL_INICIAL,
   },
   {
     id: "ger_habilidade_lendaria",
     nome: "Habilidade Lendária",
     descricao: "Libera as Habilidades Lendárias.",
+    ndMin: LENDARIA_NIVEL_INICIAL,
   },
   {
     id: "ger_treinamentos",
@@ -86,7 +101,8 @@ export function contadorHabilidades(maestria, patamar) {
 }
 
 /**
- * Quantas vezes a Habilidade Geral pode ser pega.
+ * Quantas vezes a Habilidade Geral pode ser pega. SÓ o teto de repetição:
+ * o pré-requisito de ND das duas de alto nível vive em `acessoGeral`.
  * ctx = { nd, maestria }.
  */
 export function maxVezesGeral(id, ctx = {}) {
@@ -104,11 +120,31 @@ export function maxVezesGeral(id, ctx = {}) {
 }
 
 /**
+ * Pré-requisito de uma Habilidade Geral. Mesmo shape de
+ * `avaliarAcessoAltoNivel`: `{ ok, extras }`, com `extras` no formato que o
+ * RequisitoChip do builder consome. Hoje só existe o `ndMin`, mas é aqui que
+ * entra qualquer portão futuro (Patamar, Origem, outra Geral).
+ * ctx = { nd }.
+ */
+export function acessoGeral(id, ctx = {}) {
+  const nd = Math.max(1, Math.trunc(Number(ctx.nd) || 1));
+  const ndMin = GERAL_BY_ID[id]?.ndMin;
+  if (ndMin == null) return { ok: true, extras: [] };
+  const ok = nd >= ndMin;
+  return { ok, extras: [{ label: `Nível ${ndMin}`, verificavel: true, ok }] };
+}
+
+/**
  * Resolve o bloco de Habilidades Gerais da ficha.
  *
  * `creature.habilidadesGerais` é lista de ids COM REPETIÇÃO (cada entrada é
- * uma pega), mesmo shape de `melhoriasSuperiores`. O aparo no teto é de
+ * uma pega), mesmo shape de `melhoriasSuperiores`. O aparo no TETO é de
  * LEITURA, não gravado, convenção do projeto.
+ *
+ * ⚠ Pré-requisito NÃO apara: uma pega que deixou de alcançar o ND continua
+ * contada, aparece em `inacessiveis` e segue gastando o contador, igual às
+ * Habilidades Lendárias. Aparar aqui a esconderia da UI e a deixaria presa na
+ * ficha, voltando sozinha ao subir o ND de novo.
  *
  * ctx = { nd, maestria }.
  */
@@ -117,12 +153,17 @@ export function resolveGerais(creature, ctx = {}) {
   const maestria = Math.max(0, Math.trunc(Number(ctx.maestria) || 0));
   const tetoCtx = { nd, maestria };
 
+  // Teto por id, calculado uma vez: serve o aparo aqui embaixo e o medidor da UI.
+  const maxVezes = Object.fromEntries(
+    HABILIDADES_GERAIS.map((g) => [g.id, maxVezesGeral(g.id, tetoCtx)]),
+  );
+
   const vezesPorId = new Map();
   const brutas = Array.isArray(creature?.habilidadesGerais) ? creature.habilidadesGerais : [];
   for (const id of brutas) {
     if (!GERAL_BY_ID[id]) continue;
     const atual = vezesPorId.get(id) ?? 0;
-    if (atual >= maxVezesGeral(id, tetoCtx)) continue;   // apara no teto
+    if (atual >= maxVezes[id]) continue;   // apara no teto
     vezesPorId.set(id, atual + 1);
   }
 
@@ -133,24 +174,26 @@ export function resolveGerais(creature, ctx = {}) {
   const gastos = escolhidas.reduce((s, g) => s + g.vezes, 0);
   const vezesDe = (id) => vezesPorId.get(id) ?? 0;
 
-  // Especialização e Aptidão rendem o mesmo por pega: 1 + metade da Maestria.
-  const ganhoPorVez = 1 + metadeMaestria(maestria);
-  const ganhos = {
-    habilidades: vezesDe("ger_especializacao") * ganhoPorVez,
-    aptidoes: vezesDe("ger_aptidao") * ganhoPorVez,
-    focos: vezesDe("ger_treinamentos") * Math.floor(nd / 2),
-  };
+  // Acesso por id, e as pegas que a criatura não alcança mais (ex.: o ND caiu).
+  const acesso = Object.fromEntries(
+    HABILIDADES_GERAIS.map((g) => [g.id, acessoGeral(g.id, { nd })]),
+  );
+  const inacessiveis = escolhidas.filter((g) => !acesso[g.id].ok).map((g) => g.id);
+
+  // ⚠ O QUE CADA UMA CONCEDE não mora mais aqui. Em 2026-07-27 as concessões
+  // foram absorvidas pelo Motor de Automação: viraram `GERAL_EFEITOS` em
+  // afty-efeitos.js, nos canais `vagasHabilidade`, `vagasAptidao` e `focos`.
+  // Este resolver ficou com o que é dele: quem foi pego, quantas vezes, o teto,
+  // o acesso e o destravamento do Alto Nível. Calcular o ganho aqui TAMBÉM
+  // daria duas fontes para a mesma regra, que é o que a absorção veio matar.
 
   // Alto Nível: a Habilidade Geral é o portão, o ND continua dando as vagas.
+  // Uma pega inacessível não destrava (senão o pré-requisito não valeria nada).
+  const abre = (id) => vezesDe(id) > 0 && acesso[id].ok;
   const destravado = {
-    melhorias: vezesDe("ger_melhoria_superior") > 0,
-    lendarias: vezesDe("ger_habilidade_lendaria") > 0,
+    melhorias: abre("ger_melhoria_superior"),
+    lendarias: abre("ger_habilidade_lendaria"),
   };
 
-  // Teto por id, pronto para o medidor da UI não recalcular.
-  const maxVezes = Object.fromEntries(
-    HABILIDADES_GERAIS.map((g) => [g.id, maxVezesGeral(g.id, tetoCtx)]),
-  );
-
-  return { escolhidas, gastos, ganhos, destravado, maxVezes };
+  return { escolhidas, gastos, destravado, maxVezes, acesso, inacessiveis };
 }
