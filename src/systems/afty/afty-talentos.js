@@ -29,6 +29,30 @@
  */
 
 import { getOrigem } from "./afty-origens";
+import { AFTY_ATTRS, AFTY_RESISTENCIAS } from "./afty-schema";
+import { APTIDAO_TRILHAS } from "./afty-aptidoes";
+// O Adepto de Combate empresta o pool de Estilos do Combatente. Sem ciclo:
+// afty-habilidades.js não importa daqui.
+import { ESTILOS_DE_COMBATE } from "./afty-habilidades";
+
+/**
+ * Opções de escolha aninhada geradas dos catálogos que já existem, para
+ * "escolha um atributo", "escolha uma aptidão" e "escolha um Teste de
+ * Resistência" não virarem lista copiada à mão.
+ *
+ * O id leva o prefixo do que a escolha SIGNIFICA, porque ele é a chave do
+ * ESCOLHA_EFEITOS: dois efeitos diferentes não podem dividir a mesma chave.
+ */
+const opcoesDeAtributo = (prefixo, descricao, chaves = null) =>
+  AFTY_ATTRS
+    .filter((a) => !chaves || chaves.includes(a.key))
+    .map((a) => ({ id: `${prefixo}_${a.key}`, nome: a.label, descricao: descricao(a.label) }));
+const opcoesDeTrilha = (prefixo, descricao) =>
+  APTIDAO_TRILHAS.map((t) => ({ id: `${prefixo}_${t.key}`, nome: t.label, descricao: descricao(t.label) }));
+const opcoesDeTR = (prefixo, descricao, fora = []) =>
+  AFTY_RESISTENCIAS
+    .filter((r) => !fora.includes(r.value))
+    .map((r) => ({ id: `${prefixo}_${r.value}`, nome: r.label, descricao: descricao(r.label) }));
 
 export const TALENTO_GRUPOS = [
   { id: "geral",  titulo: "Talentos Gerais" },
@@ -124,9 +148,15 @@ export const AFTY_TALENTOS = [
       "esforço. Ao obter esse talento, você aumenta o valor e o limite de um atributo à sua " +
       "escolha em 2. Você pode pegar este talento várias vezes, mas apenas uma vez para cada " +
       "atributo.",
-    // ⚠ REPETÍVEL (uma vez por atributo) e eleva VALOR e LIMITE, igual ao
-    // Desenvolvimento Inesperado da origem Derivado. Precisa de escolha
-    // aninhada com pool dos 6 atributos. Ver a nota no doc de status.
+    // "Várias vezes, uma por atributo" vira escolha REPETÍVEL: a ficha guarda
+    // ids únicos, então repetir o TALENTO não é representável, mas repetir a
+    // ESCOLHA é, e cada pega além da primeira custa uma vaga (vagasExtras).
+    escolha: {
+      id: "incremento_atributo",
+      label: "Atributo",
+      repetivel: true,
+      opcoes: opcoesDeAtributo("tal_incremento", (n) => `Seu valor de ${n} aumenta em 2.`),
+    },
     requisitos: [],
   },
   {
@@ -150,6 +180,13 @@ export const AFTY_TALENTOS = [
       "você escolhe aumentar o valor de sua Força ou Destreza em 2 e pode escolher entre se tornar " +
       "treinado em quatro armas quaisquer à sua escolha ou receber acesso ao efeito de crítico de " +
       "um grupo de armas à sua escolha.",
+    // "escolhe aumentar o valor de sua Força ou Destreza em 2". O treino em
+    // quatro armas e o efeito de crítico de grupo não têm canal.
+    escolha: {
+      id: "mestre_armas_atributo",
+      label: "Atributo",
+      opcoes: opcoesDeAtributo("tal_mestre_armas", (n) => `Seu valor de ${n} aumenta em 2.`, ["forca", "destreza"]),
+    },
     requisitos: [],
   },
   {
@@ -161,6 +198,12 @@ export const AFTY_TALENTOS = [
       "escolhe aumentar o valor de sua Força ou Constituição em 2 e se torna treinado em escudos. " +
       "Caso já seja treinado, você recebe Redução de Dano adicional com o escudo igual a metade do " +
       "valor base de RD dele (um Escudo Pesado concederia 9 ao invés de 6).",
+    // "escolhe aumentar o valor de sua Força ou Constituição em 2".
+    escolha: {
+      id: "mestre_defensivo_atributo",
+      label: "Atributo",
+      opcoes: opcoesDeAtributo("tal_mestre_defensivo", (n) => `Seu valor de ${n} aumenta em 2.`, ["forca", "constituicao"]),
+    },
     requisitos: [],
   },
   {
@@ -195,6 +238,15 @@ export const AFTY_TALENTOS = [
       "Ao obter este talento, escolha um teste de resistência, exceto Integridade: você se torna " +
       "treinado nele ou, caso já seja treinado, se torna mestre. O valor do atributo usado no TR " +
       "escolhido aumenta em 1.",
+    // "treinado nele ou, caso já seja treinado, se torna mestre": a opção olha
+    // o que a ficha marcou e decide sozinha, igual à Força Imparável.
+    escolha: {
+      id: "resiliencia_tr",
+      label: "Teste de Resistência",
+      opcoes: opcoesDeTR("tal_resiliencia",
+        (n) => `Você se torna treinado (ou mestre) em ${n}, e o atributo dele aumenta em 1.`,
+        ["integridade"]),
+    },
     requisitos: [],
   },
   {
@@ -268,6 +320,13 @@ export const AFTY_TALENTOS = [
       "sua escolha. Além disso, escolha uma perícia na qual seja treinado: uma quantidade de vezes " +
       "igual a metade do seu bônus de treinamento, por descanso curto, você pode escolher receber " +
       "vantagem em um teste com ela.",
+    // "Aumenta um atributo a sua escolha em 1." Os treinos em perícia e
+    // ferramenta, e a vantagem por descanso, seguem na mesa.
+    escolha: {
+      id: "tempestade_atributo",
+      label: "Atributo",
+      opcoes: opcoesDeAtributo("tal_tempestade", (n) => `Seu valor de ${n} aumenta em 1.`),
+    },
     requisitos: [],
   },
 
@@ -313,9 +372,17 @@ export const AFTY_TALENTOS = [
       "e incorporando seus detalhes. Ao obter este talento você aprende um dos estilos de combate " +
       "da especialização Especialista em Combate, o qual considera seu Nível de Personagem para os " +
       "efeitos.",
-    // ⚠ CONCEDE uma escolha do pool ESTILOS_DE_COMBATE (afty-habilidades.js),
-    // mas contando o ND no lugar do nível de Combatente. Escolha aninhada que
-    // atravessa arquivos: ligar junto com a passada de efeitos.
+    // O pool é o MESMO dos Estilos de Combate do Combatente, e o id da opção é
+    // o mesmo: quem pega os dois não recebe em dobro, porque o efeito é
+    // chaveado pela opção e a coleta não repete id.
+    // ⚠ "considera seu Nível de Personagem para os efeitos": os degraus dos
+    // Estilos leem `max(esc_combatente, nd * tem_tal_adepto_de_combate)`, que
+    // resolve os dois casos com uma expressão só (ver ESCOLHA_EFEITOS).
+    escolha: {
+      id: "adepto_estilo",
+      label: "Estilo de Combate",
+      opcoes: ESTILOS_DE_COMBATE,
+    },
     requisitos: [
       { tipo: "nota", texto: "Mestre em Intuição" },
       { tipo: "maxComNome", prefixo: "Adepto", max: 2 },
@@ -374,9 +441,13 @@ export const AFTY_TALENTOS = [
       "Você desenvolve uma de suas aptidões e capacidade de uso da energia amaldiçoada. Ao obter " +
       "este talento, escolha uma aptidão amaldiçoada para ter o seu nível de aptidão aumentado em " +
       "1. Você pode pegar esse talento múltiplas vezes, mas apenas uma vez para cada Aptidão.",
-    // ⚠ REPETÍVEL e CONCEDE nível de trilha à escolha (ORÇAMENTO, não
-    // direcionada). Quarto caso do mesmo par de problemas, com Aptidões de
-    // Combate, de Luta e de Suporte.
+    // Mesmo shape do Incremento de Atributo: repetível, uma por trilha.
+    escolha: {
+      id: "aptidao_desenvolvida",
+      label: "Aptidão",
+      repetivel: true,
+      opcoes: opcoesDeTrilha("tal_aptidao", (n) => `Seu Nível de Aptidão em ${n} aumenta em 1.`),
+    },
     requisitos: [{ tipo: "nd", valor: 4 }],
   },
   {
@@ -415,6 +486,12 @@ export const AFTY_TALENTOS = [
       "ataque corpo a corpo, ele é aumentado em um nível. Uma vez por turno, ao acertar uma " +
       "criatura e infligir dano de impacto, você pode mover ela até 3 metros para um espaço " +
       "desocupado, desde que o alvo não seja duas categorias de tamanho acima de você.",
+    // "Seu valor de força ou constituição aumenta em 1."
+    escolha: {
+      id: "concussao_atributo",
+      label: "Atributo",
+      opcoes: opcoesDeAtributo("tal_concussao", (n) => `Seu valor de ${n} aumenta em 1.`, ["forca", "constituicao"]),
+    },
     requisitos: [{ tipo: "nd", valor: 8 }],
   },
   {
@@ -426,6 +503,12 @@ export const AFTY_TALENTOS = [
       "corpo a corpo, ele é aumentado em um nível. Uma vez por turno, ao acertar uma criatura e " +
       "infligir dano cortante, você pode reduzir o movimento dela em 4,5 metros até o começo do " +
       "seu próximo turno.",
+    // "Seu valor de força ou destreza aumenta em 1."
+    escolha: {
+      id: "cortes_atributo",
+      label: "Atributo",
+      opcoes: opcoesDeAtributo("tal_cortes", (n) => `Seu valor de ${n} aumenta em 1.`, ["forca", "destreza"]),
+    },
     requisitos: [{ tipo: "nd", valor: 8 }],
   },
   {
@@ -437,6 +520,12 @@ export const AFTY_TALENTOS = [
       "corpo a corpo, ele é aumentado em um nível. Uma vez por turno, ao acertar uma criatura e " +
       "infligir dano perfurante você pode rolar novamente os dados de dano, usando o melhor " +
       "resultado total.",
+    // "Seu valor de força ou destreza aumenta em 1."
+    escolha: {
+      id: "perfuracao_atributo",
+      label: "Atributo",
+      opcoes: opcoesDeAtributo("tal_perfuracao", (n) => `Seu valor de ${n} aumenta em 1.`, ["forca", "destreza"]),
+    },
     requisitos: [{ tipo: "nd", valor: 8 }],
   },
   {
@@ -625,8 +714,16 @@ export const AFTY_TALENTOS = [
       "ordinária. Ao obter este talento, você aumenta o valor de dois atributos diferentes à sua " +
       "escolha em 2, com exceção do seu atributo com maior limite. Além disso, o limite dos dois " +
       "atributos escolhidos é aumentado em 2.",
-    // ⚠ Eleva VALOR e LIMITE de dois atributos, como o Desenvolvimento
-    // Inesperado da mesma origem. Precisa de escolha aninhada de atributo.
+    // DOIS atributos: `niveis: [1, 1]` conta duas concessões desde o começo (o
+    // pré-requisito de ND já trava o acesso).
+    // ⚠ "com exceção do seu atributo com maior limite" não é checado: o pool
+    // traz os seis e a restrição fica com o Mestre.
+    escolha: {
+      id: "quebra_atributo",
+      label: "Atributo",
+      niveis: [1, 1],
+      opcoes: opcoesDeAtributo("tal_quebra", (n) => `Seu valor e seu limite de ${n} aumentam em 2.`),
+    },
     requisitos: [{ tipo: "origem", id: "derivado" }, { tipo: "nd", valor: 6 }],
   },
   {
@@ -643,9 +740,25 @@ export const AFTY_TALENTOS = [
       "aumentada em 3 metros.\n" +
       "• A distância de todo pulo que você realizar aumenta em um valor igual a metade da " +
       "distância total.",
-    // ⚠ Escolha de 1 entre 4 efeitos. Ficou como texto porque os 4 são
-    // canais distintos (deslocamento, perícia, manobra, pulo) e nenhum deles
-    // existe ainda no motor do lado da criatura.
+    // Uma entre quatro. A do bônus em perícia é ela mesma um "ou", então virou
+    // duas opções separadas: escolher Acrobacia e escolher Atletismo.
+    // ⚠ O pulo continua sem canal (a ficha não tem distância de salto).
+    escolha: {
+      id: "fisico_aperfeicoado",
+      label: "Efeito",
+      opcoes: [
+        { id: "tal_fisico_deslocamento", nome: "Deslocamento",
+          descricao: "Seu Deslocamento aumenta em 4,5 metros." },
+        { id: "tal_fisico_acrobacia", nome: "Acrobacia",
+          descricao: "Você recebe um bônus de +2 em testes de Acrobacia." },
+        { id: "tal_fisico_atletismo", nome: "Atletismo",
+          descricao: "Você recebe um bônus de +2 em testes de Atletismo." },
+        { id: "tal_fisico_empurrao", nome: "Empurrão",
+          descricao: "Ao empurrar uma criatura ou arremessar um objeto, a distância aumenta em 3 metros." },
+        { id: "tal_fisico_pulo", nome: "Pulo",
+          descricao: "A distância de todo pulo que você realizar aumenta em metade da distância total." },
+      ],
+    },
     requisitos: [{ tipo: "origem", id: "feto_amaldicoado_hibrido" }, { tipo: "nd", valor: 6 }],
   },
   {
@@ -666,7 +779,12 @@ export const AFTY_TALENTOS = [
       "Você estuda sobre a energia amaldiçoada ao máximo, conseguindo descobrir uma nova maneira " +
       "de a utilizar. Ao obter este talento, você pode escolher dois Níveis de Aptidão diferentes " +
       "para serem aumentados em 1.",
-    // ⚠ CONCEDE 2 níveis de trilha à escolha (orçamento). Quinto caso.
+    escolha: {
+      id: "estudo_aptidao",
+      label: "Aptidão",
+      niveis: [1, 1],
+      opcoes: opcoesDeTrilha("tal_estudo", (n) => `Seu Nível de Aptidão em ${n} aumenta em 1.`),
+    },
     requisitos: [{ tipo: "origem", id: "sem_tecnica" }, { tipo: "nd", valor: 8 }],
   },
   {
@@ -796,8 +914,69 @@ export function resolveTalentos(creature, ctx = {}) {
   // lista inteira é seguro e deixa a ordem de escolha irrelevante.
   const full = { ...ctx, talentos: escolhidas };
   const inacessiveis = escolhidas.filter((id) => !avaliarAcessoTalento(BY_ID[id], full).ok);
-  return { escolhidas, gastos: escolhidas.length, inacessiveis };
+  const escolhas = resolveEscolhasTalento(escolhidas, creature?.escolhasTalento, ctx.nd ?? 1);
+  return {
+    escolhidas,
+    // A vaga extra da repetível entra no MESMO caixa: "você pode pegar este
+    // talento várias vezes" é uma escolha a mais, e cada uma custa uma vaga.
+    gastos: escolhidas.length + escolhas.vagasExtras,
+    inacessiveis,
+    escolhas,
+  };
 }
+
+/**
+ * Escolhas aninhadas dos Talentos. Irmã da resolveEscolhasHabilidade, com duas
+ * diferenças que vêm do próprio catálogo:
+ *
+ *   • o nível que conta é o **ND**, e não o nível de uma especialização
+ *     (talento não pertence a classe nenhuma);
+ *   • a repetível é o jeito de representar "você pode pegar este talento
+ *     várias vezes, mas apenas uma vez para cada atributo" (Incremento de
+ *     Atributo, Aptidão Desenvolvida). A ficha guarda ids únicos, então
+ *     repetir o TALENTO não é representável: repetir a ESCOLHA é.
+ *
+ * Guarda escolhas, nunca resultados, e não remove excedente: reporta em
+ * `excedeu`, que é o padrão do projeto.
+ */
+export function resolveEscolhasTalento(escolhidasIds = [], escolhasTalento = {}, nd = 1) {
+  const porTal = {};
+  const mapa = {};
+  let vagasExtras = 0;
+  for (const talId of escolhidasIds) {
+    const tal = BY_ID[talId];
+    if (!tal?.escolha) continue;
+    const validas = new Set(tal.escolha.opcoes.map((o) => o.id));
+    const brutas = Array.isArray(escolhasTalento?.[talId]) ? escolhasTalento[talId] : [];
+    const vistos = new Set();
+    const opcoes = [];
+    for (const id of brutas) {
+      if (!validas.has(id) || vistos.has(id)) continue;
+      vistos.add(id);
+      opcoes.push(id);
+    }
+    const allowance = tal.escolha.repetivel
+      ? tal.escolha.opcoes.length
+      : (tal.escolha.niveis ?? [1]).filter((n) => nd >= n).length;
+    porTal[talId] = { opcoes, allowance, repetivel: !!tal.escolha.repetivel, excedeu: opcoes.length > allowance };
+    mapa[talId] = opcoes;
+    if (tal.escolha.repetivel) vagasExtras += Math.max(0, opcoes.length - 1);
+  }
+  return { porTal, mapa, vagasExtras };
+}
+
+/**
+ * Nome de cada OPÇÃO de escolha aninhada de Talento, por id. Irmão do
+ * OPCAO_ESCOLHA_NOME das Habilidades, e serve ao mesmo fim: rotular a fonte de
+ * um número no hover, já que o efeito é chaveado pela opção e não pelo talento.
+ */
+export const OPCAO_TALENTO_NOME = (() => {
+  const out = {};
+  for (const t of AFTY_TALENTOS) {
+    for (const o of t.escolha?.opcoes || []) if (o?.id && !out[o.id]) out[o.id] = o.nome ?? o.id;
+  }
+  return out;
+})();
 
 /** Erros de conteúdo do catálogo. Rodar a cada leva nova. */
 export function validarCatalogoTalentos() {

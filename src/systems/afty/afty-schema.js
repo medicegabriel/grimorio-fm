@@ -106,6 +106,13 @@ export function createBlankAfty() {
       tamanho: "medio",
       tecnicaAttr: "inteligencia", // atributo da Técnica (CD / RD específico)
       tecnicaDescricao: "",        // Funcionamento Básico / "Descrição da Técnica" (texto livre)
+      // Origem. Além do `id`, guarda o que ela abre:
+      //   cla             — só o Herdado se divide em clãs (`cla_gojo`...)
+      //   bonusAtributos  — a escolha +2/+1, ou a distribuição livre
+      //   pools           — alocações extras, { [caracteristicaId]: { attr: n } }
+      //   escolhas        — escolhas aninhadas, { [escolhaId]: [opcaoId, ...] }
+      //   anatomias       — Características de Anatomia (só o Feto Híbrido)
+      //   desenvolvimento — Desenvolvimento Inesperado (só o Derivado)
       origem: { id: "inato" },     // ver ./afty-origens.js
     },
 
@@ -145,6 +152,38 @@ export function createBlankAfty() {
     ataquesProf: {},           // { corpo: true, distancia: true }
     ataqueFineza: false,       // arma com o traço Fineza: corpo a corpo pode usar Destreza
 
+    // Armas Dedicadas (Lutador 2°). Ids do catálogo de armas, até 3. A escolha
+    // é marcada na linha de dano da arma, não num pool dentro da habilidade.
+    armasDedicadas: [],
+
+    // ---------- SIMULAÇÃO DE COMBATE ----------
+    // Bancada de balanceamento (autor, 2026-07-28): ligar os estados aqui e ver
+    // os números do Preview se mexerem, sem precisar rodar a mesa. NÃO é um
+    // rastreador de combate: é entrada, como qualquer outra escolha da ficha, e
+    // por isso fica salva. Vira variável de DSL e as habilidades com `quando`
+    // ligam e desligam sozinhas. Ver ./afty-combate.js.
+    combate: {
+      ativo: false,             // fora de combate, nada disso vale
+      empolgacao: 1,            // Lutador, 1 ao teto (Insistência baixa em 1)
+      insistenciaUsada: false,
+      manobraAjuste: false,     // Manobras de Empolgação: cada uma é 1x por rodada,
+      manobraDesarme: false,    // mas várias cabem na mesma rodada, então são
+      manobraEsquiva: false,    // gatilhos independentes e não uma escolha só
+      manobraTrabalhoDePes: false,
+      manobraFinalizadora: null,   // "circular" | "certeiro" | "cranio"
+      brutalidade: false,       // Lutador
+      brutalidadePE: 0,         // incrementos de 2 PE além da entrada
+      brutalidadePilha: 0,      // pilhas de Brutalidade Sanguinária
+      ataqueInconsequente: false,
+      impactoMisto: false,      // acertou com arma marcial neste turno
+      resistirPE: 0,            // 0 a 2 PE gastos em Resistir
+      furiaVinganca: false,
+      imprudenciaMotivadora: false,
+      machucado: false,         // abaixo da metade dos PV (Sobrevivente)
+      abates: 0,                // inimigos caídos, para Eliminar e Continuar
+      armasAbsolutas: null,     // "defesa" | "acerto"
+    },
+
     // Equipamentos (aba Equipamentos, ex-Inventário). Defesa vem da modificação
     // do uniforme, RD Físico vem do escudo. O shape dos itens fecha junto com a
     // aba. Ver afty-equipamentos.js.
@@ -168,6 +207,10 @@ export function createBlankAfty() {
     // qual opção (Estilo de Controle no Apogeu, Melhoria de Controlador...) foi
     // escolhida. Habilidade repetível guarda várias. Ver afty-habilidades.js.
     escolhasHabilidade: {},
+    // Escolhas aninhadas dos TALENTOS (o atributo do Incremento, a trilha da
+    // Aptidão Desenvolvida, o Estilo do Adepto de Combate). Mapa separado do
+    // das Habilidades porque os catálogos são separados.
+    escolhasTalento: {},
     // Talentos: pegos NO LUGAR de Habilidades de Especialização, então dividem
     // o mesmo orçamento. Acessíveis a qualquer classe e usam o ND, não o nível
     // de especialização. Ver afty-talentos.js.

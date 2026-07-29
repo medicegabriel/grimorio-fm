@@ -19,6 +19,8 @@
  *     aptidao (sem trilha)                  → `pontosAptidao` (orçamento livre)
  *     pericia (com `pericia`, ou o alvo)    → `bonusPericia`
  *     tr (com `tr`)                         → `bonusTR`
+ *     margemCriticoTR (com `tr`)            → `margemCriticoTR`
+ *     manobra (com `manobra`)               → `bonusManobra`
  *     ataque (com `ataque`)                 → `bonusAcerto`
  *     profPericia                           → `proficienciaPericia` (1 Treinado, 2 Mestre)
  *     nivelDano                             → `nivelDano` no Ataque Básico
@@ -30,7 +32,7 @@
  * contestações de **expansões de domínio** (Domínios 2ª e 4ª), bônus de
  * ataque com **uma arma específica** (Manejo de Arma 2ª, depende do
  * sistema de armas), pontos de vida de **paredes de barreira**, PE
- * temporário por cena, dados de vida por descanso e margem de crítico.
+ * temporário por cena, dados de vida por descanso.
  *
  * `requisito` por etapa (além da etapa anterior):
  *   { tipo:"atributo", attr, valor }  → VERIFICÁVEL (bloqueia).
@@ -90,7 +92,10 @@ export const AFTY_TREINAMENTOS = [
         "Com grande velocidade e agilidade, você se torna rápido e capaz de um nível superior " +
         "de mobilidade e esquivas. Sua margem necessária para um sucesso crítico em um TR de " +
         "Reflexos reduz em 2. Seu Deslocamento aumenta em 4,5 metros.",
-      efeitos: [{ tipo: "movimento", valor: 4.5 }],
+      efeitos: [
+        { tipo: "movimento", valor: 4.5 },
+        { tipo: "margemCriticoTR", tr: "reflexos", valor: 2 },
+      ],
     },
   },
 
@@ -228,7 +233,12 @@ export const AFTY_TREINAMENTOS = [
         efeitos: [{ tipo: "nivelDano", valor: 1 }] },
       { n: 2, focos: 1, requisito: null,
         beneficio: "Você recebe +2 em sua Defesa e em rolagens para as ações Agarrar, Derrubar e Empurrar.",
-        efeitos: [{ tipo: "defesa", valor: 2 }] },
+        efeitos: [
+          { tipo: "defesa", valor: 2 },
+          { tipo: "manobra", manobra: "agarrar", valor: 2 },
+          { tipo: "manobra", manobra: "derrubar", valor: 2 },
+          { tipo: "manobra", manobra: "empurrar", valor: 2 },
+        ] },
       { n: 3, focos: 1, requisito: { tipo: "atributoOr", attrs: ["forca", "destreza"], valor: 14 },
         beneficio: "O dano de seus ataques desarmados aumenta em 1 nível.",
         efeitos: [{ tipo: "nivelDano", valor: 1 }] },
@@ -294,7 +304,10 @@ export const AFTY_TREINAMENTOS = [
         "Seu físico atinge um nível superior, concedendo-o uma grande resistência e vigor. Sua margem " +
         "necessária para conseguir um sucesso crítico em um TR de Fortitude reduz em 2. Uma vez por cena, " +
         "você ignora a primeira falha em testes de morte. Seus pontos de vida máximos aumentam em mais 10 pontos.",
-      efeitos: [{ tipo: "hp", valor: 10 }],
+      efeitos: [
+        { tipo: "hp", valor: 10 },
+        { tipo: "margemCriticoTR", tr: "fortitude", valor: 2 },
+      ],
     },
   },
 
@@ -484,6 +497,12 @@ function paraCanal(ef, alvoInstancia) {
     }
     case "tr":
       return ef.tr ? { canal: "bonusTR", alvo: ef.tr, expr } : null;
+    // Manobra: Agarrar, Derrubar, Desarmar ou Empurrar.
+    case "manobra":
+      return ef.manobra ? { canal: "bonusManobra", alvo: ef.manobra, expr } : null;
+    // Reduz a margem de crítico de UM Teste de Resistência.
+    case "margemCriticoTR":
+      return ef.tr ? { canal: "margemCriticoTR", alvo: ef.tr, expr } : null;
     case "ataque":
       return ef.ataque ? { canal: "bonusAcerto", alvo: ef.ataque, expr } : null;
     // Nível de Dano soma no ND, e só no cálculo de dano. "Desarmados" é o

@@ -20,9 +20,11 @@
  *
  * ⚠ Ids levam PREFIXO da especialização (`cmb_` = Combatente), pelo mesmo
  * motivo do `mal_` em ./afty-aptidoes.js: os nomes repetem entre as
- * especializações de propósito. "Teste de Resistência Mestre" existe em
- * todas ("mestre no concedido pela SUA especialização"), com texto próprio.
- * O validador aceita nome repetido ENTRE especializações e acusa dentro de uma.
+ * especializações de propósito, cada uma com o seu texto. O validador aceita
+ * nome repetido ENTRE especializações e acusa dentro de uma.
+ *
+ * ⚠ "Teste de Resistência Mestre" existia nas seis e foi REMOVIDA do sistema
+ * (autor, 2026-07-27). Não reintroduzir.
  *
  * ⚠ Ordem do array = ordem do livro, NÃO alfabética (convenção do projeto).
  *
@@ -32,6 +34,23 @@
 
 import { getEspecializacao } from "./afty-especializacoes";
 import { getAptidao } from "./afty-aptidoes";
+import { ARMA_GRUPOS } from "./afty-equipamentos";
+import { AFTY_RESISTENCIAS } from "./afty-schema";
+// Do módulo FOLHA: afty-pericias.js importa afty-efeitos.js, que volta até aqui.
+import { AFTY_PERICIAS } from "./afty-pericias-catalogo";
+
+/**
+ * Opções de escolha aninhada geradas a partir de catálogos que já existem, para
+ * "escolha um grupo de arma" e "escolha um Teste de Resistência" não virarem
+ * lista copiada à mão (Combatente 4°).
+ *
+ * O id leva o prefixo do que a escolha significa, porque ele é a CHAVE do
+ * ESCOLHA_EFEITOS e dois efeitos diferentes não podem dividir a mesma chave.
+ */
+const opcoesDeGrupoArma = (prefixo, descricao) =>
+  ARMA_GRUPOS.map((g) => ({ id: `${prefixo}_${g.value}`, nome: g.label, descricao: descricao(g.label) }));
+const opcoesDeResistencia = (prefixo, descricao) =>
+  AFTY_RESISTENCIAS.map((r) => ({ id: `${prefixo}_${r.value}`, nome: r.label, descricao: descricao(r.label) }));
 
 export const HABILIDADE_TIPOS = [
   { id: "base",  label: "Habilidades Base" },
@@ -678,17 +697,6 @@ export const AFTY_HABILIDADES = [
     requisitos: [],
   },
   {
-    id: "lut_teste_de_resistencia_mestre",
-    nome: "Teste de Resistência Mestre",
-    especializacaoId: "lutador",
-    tipo: "base",
-    nivel: 9,
-    descricao:
-      "Você se torna treinado em um segundo teste de resistência e mestre no concedido pela sua " +
-      "especialização.",
-    requisitos: [],
-  },
-  {
     id: "lut_empolgacao_maxima",
     nome: "Empolgação Máxima",
     especializacaoId: "lutador",
@@ -1247,10 +1255,9 @@ export const AFTY_HABILIDADES = [
     especializacaoId: "lutador",
     tipo: "nivel",
     nivel: 6,
-    // ⚠ O CABEÇALHO desta habilidade se perdeu no PDF (as duas colunas comeram
-    // o título entre "Manobras Finalizadoras" e "Potência Superior"). O nome
-    // vem de Punhos Letais (8°), cujo pré-requisito é "Poder Corporal", e a
-    // posição bate com a ordem quase alfabética da lista. CONFIRMAR com o autor.
+    // O cabeçalho tinha se perdido no PDF e o nome foi deduzido por Punhos
+    // Letais (8°), cujo pré-requisito é "Poder Corporal". CONFIRMADO pelo autor
+    // em 2026-07-27, com o texto das duas.
     descricao:
       "Cultivando e priorizando seu próprio corpo, você expande o poder dele. O dano de seus " +
       "ataques desarmados aumenta em 2 níveis e, uma vez por rodada, ao realizar um ataque " +
@@ -1690,17 +1697,6 @@ export const AFTY_HABILIDADES = [
     requisitos: [],
   },
   {
-    id: "cmb_teste_de_resistencia_mestre",
-    nome: "Teste de Resistência Mestre",
-    especializacaoId: "combatente",
-    tipo: "base",
-    nivel: 9,
-    descricao:
-      "Você se torna treinado em um segundo teste de resistência e mestre no concedido pela sua " +
-      "especialização.",
-    requisitos: [],
-  },
-  {
     id: "cmb_autossuficiente",
     nome: "Autossuficiente",
     especializacaoId: "combatente",
@@ -1959,9 +1955,9 @@ export const AFTY_HABILIDADES = [
       "Você continua seu estudo sobre as posturas utilizadas em combate, expandindo seu " +
       "repertório. Você aprende uma postura adicional à sua escolha. No 10° nível você aprende " +
       "outra postura.",
-    // Concede +1 escolha do MESMO pool de Posturas (POSTURAS_DE_COMBATE),
-    // nos níveis 4 e 10. A escolha aninhada é exibida sob Assumir Postura;
-    // aqui é só a concessão extra, a somar quando o estado da escolha existir.
+    // +1 Postura no 4° e outra no 10°, escolhidas no card do Assumir Postura:
+    // é o mesmo pool, e um segundo card deixaria pegar a mesma duas vezes.
+    concedeEscolha: { habilidade: "cmb_assumir_postura", niveis: [4, 10] },
     requisitos: [{ tipo: "habilidade", id: "cmb_assumir_postura" }],
   },
   {
@@ -1973,7 +1969,14 @@ export const AFTY_HABILIDADES = [
     descricao:
       "Um tipo de arma ressoa de maneira única com você, e ela foi escolhida como seu caminho. " +
       "Escolha um grupo de arma: seus ataques com armas dele tem o nível de dano aumentado em 3.",
-    // "Escolha um grupo de arma" espera o catálogo de Armas (não existe).
+    // O grupo escolhido também é o que Armas Perfeitas (10°) usa: "seus ataques
+    // com uma arma do grupo escolhido em Armas Escolhidas ignoram 10 de RD".
+    escolha: {
+      id: "grupo_escolhido",
+      label: "Grupo de Arma",
+      niveis: [4],
+      opcoes: opcoesDeGrupoArma("cmb_grupo", (n) => `Seus ataques com armas do grupo ${n} têm o nível de dano aumentado em 3.`),
+    },
     requisitos: [],
   },
   {
@@ -2081,6 +2084,12 @@ export const AFTY_HABILIDADES = [
       "Sua guarda surge a partir do estudo e da reflexão. Você passa a somar metade do seu " +
       "modificador de Sabedoria na sua Defesa, limitado pelo seu nível. Além disso, você pode " +
       "escolher um Teste de Resistência para receber um bônus de +2.",
+    escolha: {
+      id: "guarda_resistencia",
+      label: "Teste de Resistência",
+      niveis: [4],
+      opcoes: opcoesDeResistencia("cmb_guarda", (n) => `Você recebe +2 em ${n}.`),
+    },
     requisitos: [],
   },
   {
@@ -2143,8 +2152,9 @@ export const AFTY_HABILIDADES = [
       "Seu acervo para o combate é amplo, conseguindo internalizar e manifestar qualquer estilo " +
       "que desejar. Ao obter esta habilidade, você aprende mais um Estilo de Combate. Após meditar " +
       "por 1 hora, você pode trocar quais estilos de combate você possui.",
-    // Concede +1 Estilo de Combate (ver ESTILOS_DE_COMBATE / a escolha
-    // aninhada do Repertório). Amarrar quando o estado de escolha existir.
+    // +1 Estilo, escolhido no card do Repertório do Especialista. A troca por
+    // meditação é procedimento de mesa: na ficha basta remarcar.
+    concedeEscolha: { habilidade: "cmb_repertorio_do_especialista", niveis: [6] },
     requisitos: [],
   },
   {
@@ -2298,9 +2308,20 @@ export const AFTY_HABILIDADES = [
       "Você aprimora suas aptidões de energia necessárias para dominar o combate. Ao obter esta " +
       "habilidade, você pode aumentar o seu nível de aptidão em Aura ou Controle e Leitura em 1. " +
       "Você pode pegar esta habilidade duas vezes, uma para cada aptidão.",
-    // ⚠ REPETÍVEL ("duas vezes, uma para cada aptidão") E concede nível de
-    // trilha (au OU cl, à escolha). O shape atual (lista de ids únicos) não
-    // suporta 2x, e a concessão de trilha ainda não é aplicada. Ver status.
+    // Mesmo texto e mesmo shape das Aptidões de Luta (Lutador 8°): repetível,
+    // uma pega por trilha, e a concessão sai pelo canal `nivelAptidao`.
+    escolha: {
+      id: "aptidao_de_combate",
+      label: "Nível de Aptidão",
+      niveis: [8],
+      repetivel: true,
+      opcoes: [
+        { id: "cmb_aptidao_aura", nome: "Aura",
+          descricao: "Seu Nível de Aptidão em Aura aumenta em 1." },
+        { id: "cmb_aptidao_controle_leitura", nome: "Controle e Leitura",
+          descricao: "Seu Nível de Aptidão em Controle e Leitura aumenta em 1." },
+      ],
+    },
     requisitos: [],
   },
   {
@@ -2653,17 +2674,6 @@ export const AFTY_HABILIDADES = [
     requisitos: [],
   },
   {
-    id: "cnj_teste_de_resistencia_mestre",
-    nome: "Teste de Resistência Mestre",
-    especializacaoId: "conjurador",
-    tipo: "base",
-    nivel: 9,
-    descricao:
-      "Você se torna treinado em um segundo teste de resistência e mestre no concedido pela sua " +
-      "especialização.",
-    requisitos: [],
-  },
-  {
     id: "cnj_foco_amaldicoado",
     nome: "Foco Amaldiçoado",
     especializacaoId: "conjurador",
@@ -2936,6 +2946,22 @@ export const AFTY_HABILIDADES = [
       "resistência sua. Você escolhe uma perícia de Teste de Resistência (Fortitude, Reflexos, " +
       "Astúcia e Vontade) para ter metade do seu modificador de Sabedoria ou Inteligência somado " +
       "a rolagens dela.",
+    // O texto LISTA os quatro e deixa Integridade de fora, então o pool são os
+    // quatro nomeados, e não os cinco do AFTY_RESISTENCIAS.
+    escolha: {
+      id: "energia_focalizada",
+      label: "Teste de Resistência",
+      // Uma só, ao pegar a habilidade (que é de 4° nível).
+      niveis: [4],
+      opcoes: ["reflexos", "fortitude", "vontade", "astucia"].map((v) => {
+        const r = AFTY_RESISTENCIAS.find((x) => x.value === v);
+        return {
+          id: `cnj_focalizada_${v}`,
+          nome: r?.label ?? v,
+          descricao: `Metade do seu modificador de Inteligência ou Sabedoria entra no TR de ${r?.label ?? v}.`,
+        };
+      }),
+    },
     requisitos: [],
   },
   {
@@ -3251,8 +3277,9 @@ export const AFTY_HABILIDADES = [
       "as técnicas. Ao obter esta habilidade, você aprende mais uma Mudança de Fundamento. No " +
       "nível 12, você aprende outro adicional.",
     // Concede +1 escolha do MESMO pool de Mudanças de Fundamento, nos níveis 8
-    // e 12. A escolha aninhada é exibida sob Domínio dos Fundamentos; aqui é
-    // só a concessão extra, a somar quando a passada de efeitos existir.
+    // e 12, marcadas no card do Domínio dos Fundamentos: um segundo card
+    // deixaria pegar a mesma Mudança duas vezes.
+    concedeEscolha: { habilidade: "cnj_dominio_dos_fundamentos", niveis: [8, 12] },
     requisitos: [],
   },
   {
@@ -3564,17 +3591,6 @@ export const AFTY_HABILIDADES = [
     requisitos: [],
   },
   {
-    id: "sup_teste_de_resistencia_mestre",
-    nome: "Teste de Resistência Mestre",
-    especializacaoId: "suporte",
-    tipo: "base",
-    nivel: 9,
-    descricao:
-      "Você se torna treinado em um segundo teste de resistência e mestre no concedido pela sua " +
-      "especialização.",
-    requisitos: [],
-  },
-  {
     id: "sup_medicina_infalivel",
     nome: "Medicina Infalível",
     especializacaoId: "suporte",
@@ -3705,6 +3721,19 @@ export const AFTY_HABILIDADES = [
       "Estudando para se tornar mais versátil, você consegue dominar outros campos de estudos. " +
       "Você se torna treinado em uma quantidade de perícias igual a metade do seu bônus de " +
       "treinamento. Você recebe também um bônus de +2 em uma perícia qualquer.",
+    // O TREINO é orçamento (a aba Perícias é onde se escolhe). O "+2 em uma
+    // perícia qualquer" é direcionado, então vira escolha aninhada, gerada do
+    // catálogo para uma perícia nova entrar sozinha.
+    escolha: {
+      id: "expandir_repertorio",
+      label: "Perícia",
+      niveis: [2],
+      opcoes: AFTY_PERICIAS.filter((p) => !p.complementar).map((p) => ({
+        id: `sup_repertorio_${p.id}`,
+        nome: p.nome,
+        descricao: `Você recebe +2 em testes de ${p.nome}.`,
+      })),
+    },
     requisitos: [],
   },
   {
@@ -3794,9 +3823,10 @@ export const AFTY_HABILIDADES = [
     descricao:
       "Ao obter esta habilidade, você aprende um apoio avançado adicional. No 10° nível você " +
       "recebe outro apoio avançado.",
-    // Concede +1 escolha do MESMO pool de Apoios Avançados, nos níveis 4 e 10.
-    // A escolha aninhada é exibida sob Apoio Avançado; aqui é só a concessão
-    // extra, a somar quando a passada de efeitos existir.
+    // Concede +1 escolha do MESMO pool de Apoios Avançados, nos níveis 4 e 10,
+    // marcadas no card do Apoio Avançado: um segundo card deixaria pegar o
+    // mesmo Apoio duas vezes.
+    concedeEscolha: { habilidade: "sup_apoio_avancado", niveis: [4, 10] },
     requisitos: [{ tipo: "habilidade", id: "sup_apoio_avancado" }],
   },
   {
@@ -4005,8 +4035,20 @@ export const AFTY_HABILIDADES = [
       "Você aprimora suas aptidões de energia necessárias para ser um grande suporte. Ao obter " +
       "esta habilidade, você pode aumentar o seu nível de aptidão em Aura, Controle e Leitura ou " +
       "Energia Reversa em 1. Você pode pegar esta habilidade três vezes, uma para cada aptidão.",
-    // ⚠ REPETÍVEL (3x) e CONCEDE nível de trilha, igual a Aptidões de Combate
-    // e Aptidões de Luta. Terceiro caso do mesmo par de problemas.
+    // "uma para cada aptidão" vira escolha REPETÍVEL sobre as três trilhas
+    // nomeadas: a ficha guarda ids únicos, então repetir a HABILIDADE não é
+    // representável, mas repetir a ESCOLHA é, e o pool de três é exatamente o
+    // limite de "três vezes". Mesma solução do Incremento de Atributo.
+    escolha: {
+      id: "aptidoes_de_suporte",
+      label: "Aptidão",
+      repetivel: true,
+      opcoes: [
+        { id: "sup_aptidao_au", nome: "Aura", descricao: "Seu Nível de Aptidão em Aura aumenta em 1." },
+        { id: "sup_aptidao_cl", nome: "Controle e Leitura", descricao: "Seu Nível de Aptidão em Controle e Leitura aumenta em 1." },
+        { id: "sup_aptidao_er", nome: "Energia Reversa", descricao: "Seu Nível de Aptidão em Energia Reversa aumenta em 1." },
+      ],
+    },
     requisitos: [],
   },
   {
@@ -4355,17 +4397,6 @@ export const AFTY_HABILIDADES = [
       niveis: [6],
       opcoes: ESTILOS_DE_CONTROLE,
     },
-    requisitos: [],
-  },
-  {
-    id: "ctr_teste_de_resistencia_mestre",
-    nome: "Teste de Resistência Mestre",
-    especializacaoId: "controlador",
-    tipo: "base",
-    nivel: 9,
-    descricao:
-      "Você se torna treinado em um segundo teste de resistência e mestre no concedido pela sua " +
-      "especialização.",
     requisitos: [],
   },
   {
@@ -5118,18 +5149,6 @@ export const AFTY_HABILIDADES = [
     requisitos: [],
   },
   {
-    id: "res_teste_de_resistencia_mestre",
-    nome: "Teste de Resistência Mestre",
-    especializacaoId: "restringido",
-    tipo: "base",
-    nivel: 9,
-    descricao:
-      "Você se torna mestre nos dois Testes de Resistência conferidos por sua Especialização.",
-    // ⚠ DIFERE das outras 5: aqui são os DOIS TRs da especialização, e não
-    // "treinado num segundo e mestre no concedido". Transcrito verbatim.
-    requisitos: [],
-  },
-  {
     id: "res_restricao_definitiva",
     nome: "Restrição Definitiva",
     especializacaoId: "restringido",
@@ -5618,6 +5637,16 @@ export const AFTY_HABILIDADES = [
       "modificador de Destreza, você pode gastar 2 pontos de estamina para transformar o resultado " +
       "natural do dado no seu modificador de Destreza. Você se torna treinado em um teste de " +
       "resistência à sua escolha e mestre em outro TR no qual já seja treinado.",
+    // Duas concessões de treino, e o canal `proficienciaTR` nunca REBAIXA o que
+    // a ficha já escolheu, então marcar Mestre onde já era Treinado funciona.
+    // ⚠ O pool é o mesmo para as duas, e o "no qual já seja treinado" da
+    // segunda não é checado: o card não sabe qual das duas é qual.
+    escolha: {
+      id: "imparavel_resistencia",
+      label: "Teste de Resistência",
+      niveis: [8, 8],
+      opcoes: opcoesDeResistencia("res_imparavel", (n) => `Você se torna treinado (ou mestre) em ${n}.`),
+    },
     requisitos: [],
   },
   {
@@ -5670,8 +5699,11 @@ export const AFTY_HABILIDADES = [
       "Seu poder e desenvolvimento te garantem o respeito dos céus, que concedem a sua benção para " +
       "si. Ao obter essa habilidade, você recebe uma dádiva do céu adicional. A partir do nível 12, " +
       "você pode pegar esta habilidade outra vez.",
-    // Concede +1 escolha do MESMO pool de Dádivas do Céu. REPETÍVEL (2x, a 2ª
-    // a partir do nível 12), o que o shape de lista de ids únicos não suporta.
+    // +1 Dádiva no 8° e outra no 12°, escolhidas no card do Restrito pelos Céus:
+    // é o mesmo pool, e um segundo card deixaria pegar a mesma duas vezes.
+    // ⚠ Isto vale por "pegar a habilidade duas vezes": as duas concessões vêm
+    // de uma pega só, porque a ficha guarda ids únicos e não conta repetição.
+    concedeEscolha: { habilidade: "res_restrito_pelos_ceus", niveis: [8, 12] },
     requisitos: [],
   },
 
@@ -5766,8 +5798,21 @@ export const AFTY_HABILIDADES = [
       "Você recebe +4 pontos de estamina máximos e pode escolher aumentar o valor de dois " +
       "atributos entre Força, Destreza e Constituição em 2. No nível 16, o valor de ambos os " +
       "atributos escolhidos aumentam novamente em 2.",
-    // ⚠ Eleva VALOR de dois atributos (2 no 12, mais 2 no 16). Precisa de
-    // escolha aninhada de atributo, igual a Incremento de Atributo (talento).
+    // DOIS atributos, entre três: `niveis: [12, 12]` é como escolhasConcedidas
+    // conta duas concessões no mesmo nível (mesmo truque da Empolgação).
+    escolha: {
+      id: "pinaculo_atributo",
+      label: "Atributo",
+      niveis: [12, 12],
+      opcoes: [
+        { id: "res_pinaculo_forca", nome: "Força",
+          descricao: "Seu valor de Força aumenta em 2, e em mais 2 no nível 16." },
+        { id: "res_pinaculo_destreza", nome: "Destreza",
+          descricao: "Seu valor de Destreza aumenta em 2, e em mais 2 no nível 16." },
+        { id: "res_pinaculo_constituicao", nome: "Constituição",
+          descricao: "Seu valor de Constituição aumenta em 2, e em mais 2 no nível 16." },
+      ],
+    },
     requisitos: [],
   },
   {
@@ -5901,7 +5946,10 @@ export const habilidadesDaEspecializacao = (espId, tipo) =>
  * Especialista tem niveis [1, 6, 12] → 1 estilo no nível 1, 2 no 6, 3 no 12.
  */
 export function escolhasConcedidas(habilidade, nivelEspec) {
-  if (!habilidade?.escolha) return 0;
+  // ⚠ `niveis` é opcional: a escolha REPETÍVEL não concede por nível, o limite
+  // dela é o tamanho do pool (ver escolhasMaximas). Sem esta guarda, um
+  // Talento repetível (Incremento de Atributo) derrubava o card.
+  if (!habilidade?.escolha?.niveis) return 0;
   return habilidade.escolha.niveis.filter((n) => nivelEspec >= n).length;
 }
 
@@ -5944,6 +5992,20 @@ export function resolveEscolhasHabilidade({ escolhidasIds = [], niveisPorEspec =
   const porHab = {};
   const mapa = {};
   let vagasExtras = 0;
+
+  // Habilidades que só AUMENTAM a escolha de outra: Aprender Postura dá mais
+  // Posturas ao Assumir Postura, Acervo Amplo dá mais um Estilo ao Repertório.
+  // Somam vaga no pool da dona em vez de abrir um segundo pool, senão daria
+  // para escolher a mesma Postura duas vezes, uma em cada card.
+  const concedidas = {};
+  for (const habId of escolhidasIds) {
+    const c = BY_ID[habId]?.concedeEscolha;
+    if (!c) continue;
+    const nivel = niveisPorEspec?.[BY_ID[habId].especializacaoId] ?? 0;
+    concedidas[c.habilidade] = (concedidas[c.habilidade] || 0)
+      + c.niveis.filter((n) => nivel >= n).length;
+  }
+
   for (const habId of escolhidasIds) {
     const hab = BY_ID[habId];
     if (!hab?.escolha) continue;
@@ -5957,7 +6019,7 @@ export function resolveEscolhasHabilidade({ escolhidasIds = [], niveisPorEspec =
       opcoes.push(id);
     }
     const nivelEspec = niveisPorEspec?.[hab.especializacaoId] ?? 0;
-    const allowance = escolhasMaximas(hab, nivelEspec, bt);
+    const allowance = escolhasMaximas(hab, nivelEspec, bt) + (concedidas[habId] || 0);
     porHab[habId] = { opcoes, allowance, repetivel: !!hab.escolha.repetivel, excedeu: opcoes.length > allowance };
     mapa[habId] = opcoes;
     // Repetível: a 1ª escolha vem junto da vaga da própria habilidade; cada
@@ -6176,6 +6238,119 @@ export function efeitosInvocacaoControlador(escolhidasIds = []) {
   return out;
 }
 
+/* ============================================================ */
+/* EMPOLGAÇÃO (Lutador 1°)                                       */
+/* ============================================================ */
+/* O recurso-assinatura do Lutador. O NÍVEL é estado de combate (sobe ao
+   acertar, desce ao passar uma rodada sem acertar) e a ficha NÃO o guarda
+   (decisão do autor, 2026-07-28): o que entra aqui é só a parte DERIVADA, que
+   é a tabela de dados e o nível em que se começa o combate.
+
+   Duas habilidades mexem nisso:
+     • Empolgação Máxima (11°) troca a tabela inteira, não soma nada.
+     • Lutador Superior (20°) faz começar um nível acima.
+
+   O nível 1 não tem dado: a tabela do livro começa no 2. */
+
+export const EMPOLGACAO_NIVEL_MAX = 5;
+
+export const EMPOLGACAO_DADOS = {
+  base:   { 2: "1d4", 3: "1d6", 4: "2d4", 5: "2d6" },
+  maxima: { 2: "2d4", 3: "2d6", 4: "2d8", 5: "3d6" },
+};
+
+/**
+ * Resolve o quadro de Empolgação.
+ *
+ * `escolhidasIds` são as Habilidades de Especialização da ficha, e os dois
+ * números vêm dos canais `empolgacaoMaxima` e `empolgacaoInicial` do Motor
+ * (resolvidos pelo deriveAfty, que é quem fala com o motor).
+ */
+export function resolveEmpolgacao(escolhidasIds = [], { maxima = 0, bonusInicial = 0 } = {}) {
+  const ativa = (Array.isArray(escolhidasIds) ? escolhidasIds : []).includes("lut_empolgacao");
+  const aprimorada = maxima > 0;
+  const tabelaFonte = aprimorada ? EMPOLGACAO_DADOS.maxima : EMPOLGACAO_DADOS.base;
+  const inicial = Math.min(EMPOLGACAO_NIVEL_MAX, 1 + Math.max(0, Math.trunc(bonusInicial)));
+  return {
+    ativa,
+    aprimorada,
+    inicial,
+    max: EMPOLGACAO_NIVEL_MAX,
+    // Uma linha por nível COM dado (o 1 não tem), marcando onde o combate começa.
+    tabela: Object.entries(tabelaFonte).map(([nivel, dado]) => ({
+      nivel: Number(nivel), dado, inicial: Number(nivel) === inicial,
+    })),
+  };
+}
+
+/* ============================================================ */
+/* ARMAS DEDICADAS (Lutador 2°)                                  */
+/* ============================================================ */
+/* "Escolha três armas para serem suas Armas Dedicadas, as quais não podem
+   possuir as propriedades Duas Mãos ou Pesada, exceto caso já possuam a
+   propriedade Marcial. Suas armas escolhidas passam a ser contadas como
+   marciais, se não forem, e enquanto empunhar uma Arma Dedicada, o dano dela
+   aumenta em 1 nível."
+
+   ⚠ A escolha NÃO usa a `escolha` aninhada padrão, e é de propósito: o pool
+   seria o catálogo de armas inteiro (52) dentro do card da habilidade, que é
+   exatamente o paredão que o `escolhaEmAbas` teve de resolver no Roubo de
+   Habilidade. Aqui a marcação vive na LINHA DE DANO da arma, que já existe uma
+   por arma carregada, e o efeito aparece na mesma linha que se clica.
+
+   Consequência assumida: só dá para dedicar arma que a criatura carrega. O
+   texto diz "escolha três armas", sem essa amarra, mas o benefício só vale
+   "enquanto empunhar", então na mesa dá no mesmo.
+
+   A ficha guarda a lista inteira (`creature.armasDedicadas`), e a leitura é que
+   cruza com as armas carregadas. Tirar a arma da mochila não apaga a escolha:
+   mesma convenção do aparo de níveis em resolveNiveisAptidao. */
+
+export const ARMA_DEDICADA_HABILIDADE = "lut_dedicacao_em_arma";
+export const ARMA_DEDICADA_MAX = 3;
+
+/**
+ * Resolve as Armas Dedicadas.
+ *
+ * `armasCarregadas` = [{ id, nome, def }] montado pelo deriveAfty.
+ * Devolve { ativa, escolhidas, elegiveis, max, restante }, onde `escolhidas` já
+ * é a interseção com o que está carregado, aparada no teto.
+ */
+export function resolveArmasDedicadas(creature, armasCarregadas = [], escolhidasIds = []) {
+  const ativa = (Array.isArray(escolhidasIds) ? escolhidasIds : []).includes(ARMA_DEDICADA_HABILIDADE);
+  const elegiveis = ativa ? armasCarregadas.filter((a) => a.elegivelDedicada).map((a) => a.id) : [];
+  const brutas = Array.isArray(creature?.armasDedicadas) ? creature.armasDedicadas : [];
+  const permitidas = new Set(elegiveis);
+  const vistos = new Set();
+  const escolhidas = [];
+  for (const id of brutas) {
+    if (!permitidas.has(id) || vistos.has(id)) continue;
+    vistos.add(id);
+    escolhidas.push(id);
+    if (escolhidas.length >= ARMA_DEDICADA_MAX) break;
+  }
+  return {
+    ativa, escolhidas, elegiveis,
+    max: ARMA_DEDICADA_MAX,
+    restante: ARMA_DEDICADA_MAX - escolhidas.length,
+  };
+}
+
+/**
+ * Efeitos das Armas Dedicadas, no vocabulário do Motor. Um par por arma: o
+ * nível de dano e a concessão da propriedade Marcial, que é o que engata nos
+ * outros poderes do Lutador que dizem "desarmado ou com arma marcial".
+ */
+export function efeitosArmasDedicadas(dedicadas) {
+  const out = [];
+  const nome = BY_ID[ARMA_DEDICADA_HABILIDADE]?.nome || "Dedicação em Arma";
+  for (const id of dedicadas?.escolhidas || []) {
+    out.push({ canal: "nivelDano", alvo: id, expr: "1", origem: ARMA_DEDICADA_HABILIDADE, nome });
+    out.push({ canal: "propMarcial", alvo: id, expr: "1", origem: ARMA_DEDICADA_HABILIDADE, nome });
+  }
+  return out;
+}
+
 export function resolveHabilidades(creature, escolhidasEspec, talentosGastos = 0, bt = 0, bonusVagas = 0) {
   const niveisPorEspec = niveisPorEspecializacao(escolhidasEspec);
   const vistos = new Set();
@@ -6268,10 +6443,15 @@ export function validarCatalogoHabilidades() {
         if (opcaoIds.has(o.id)) problemas.push(`${h.nome}: opção duplicada (${o.id})`);
         opcaoIds.add(o.id);
       }
-      if (!h.escolha.niveis?.length) problemas.push(`${h.nome}: escolha sem niveis`);
-      // A 1ª concessão não pode vir antes da própria habilidade existir.
-      if (Math.min(...(h.escolha.niveis || [0])) < h.nivel) {
-        problemas.push(`${h.nome}: escolha concedida antes do nível da habilidade`);
+      // A REPETÍVEL não concede por nível: o limite dela é o tamanho do pool
+      // ("você pode pegar esta habilidade três vezes, uma para cada aptidão"),
+      // então `niveis` é opcional nela. Mesma regra do catálogo de Talentos.
+      if (!h.escolha.repetivel) {
+        if (!h.escolha.niveis?.length) problemas.push(`${h.nome}: escolha sem niveis`);
+        // A 1ª concessão não pode vir antes da própria habilidade existir.
+        if (Math.min(...(h.escolha.niveis || [0])) < h.nivel) {
+          problemas.push(`${h.nome}: escolha concedida antes do nível da habilidade`);
+        }
       }
     }
   }

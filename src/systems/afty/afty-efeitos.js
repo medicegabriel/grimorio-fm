@@ -80,9 +80,20 @@
  */
 
 import { evalNumber } from "../../components/fm-dsl";
+import { combateDslVars, COMBATE_VARS } from "./afty-combate";
+// afty-origens.js só importa folhas de propósito, então a seta aponta para cá:
+// é este arquivo que junta os efeitos de origem, não aquele. Ver coletarEfeitosOrigem.
+import {
+  getOrigem, getCla, resolveEscolhasOrigem, ORIGEM_ESCOLHA_EFEITOS, OPCAO_ORIGEM_NOME,
+} from "./afty-origens";
+import { getAnatomia } from "./afty-anatomias";
 import {
   HABILIDADE_EFEITOS, ESCOLHA_EFEITOS, TALENTO_EFEITOS,
-  MELHORIA_EFEITOS, LENDARIA_EFEITOS, APICE_EFEITOS, GERAL_EFEITOS,
+  MELHORIA_EFEITOS, MELHORIA_EFEITOS_ALVO, LENDARIA_EFEITOS, LENDARIA_EFEITOS_ALVO,
+  APICE_EFEITOS, GERAL_EFEITOS,
+  // Os três de origem entram no ESCOPO LOCAL (o `export ... from` mais abaixo
+  // só reexporta, não declara), porque o coletarEfeitosOrigem daqui os usa.
+  ORIGEM_EFEITOS, CLA_EFEITOS, ANATOMIA_EFEITOS,
 } from "./afty-efeitos-conteudo";
 
 /* ============================================================ */
@@ -95,36 +106,55 @@ import {
 export const EFEITO_CANAIS = [
   // Stats de combate
   { id: "hp",            label: "PV",                    nota: "entra ANTES do multiplicador de Integridade da Alma (autor, 2026-07-27)" },
+  { id: "pvTemporario",  label: "PV Temporário",         nota: "não é PV máximo: é a casca que some no fim do efeito. Quase sempre vem da simulação de combate" },
   { id: "pe",            label: "PE" },
   { id: "defesa",        label: "Defesa" },
   { id: "cd",            label: "CD" },
   { id: "rdGeral",       label: "RD Geral" },
   { id: "rdEspecifico",  label: "RD Específica" },
   { id: "rdFisico",      label: "RD Física" },
+  { id: "rdAlma",        label: "RD a Alma",             nota: "a RD Geral vale para todo tipo EXCETO alma, então o Dano na Alma tem canal próprio. Entra antes do teste de Integridade (autor, 2026-07-29)" },
   { id: "movimento",     label: "Movimento",             nota: "em metros, aceita 1,5" },
   { id: "atencao",       label: "Atenção" },
   { id: "iniciativa",    label: "Iniciativa" },
+  { id: "regeneracao",   label: "Regeneração",           nota: "cura no INÍCIO do turno, parte fixa. Irmão do dadosRegeneracao" },
+  { id: "dadosRegeneracao", label: "Dados de Regeneração", nota: "quantos dados de cura no início do turno" },
+  { id: "regeneracaoDado",  label: "Dado da Regeneração",  nota: "faces do dado de regeneração (6, 8...). Vale o MAIOR entre as fontes: duas regenerações de dados diferentes viram uma só, aproximada" },
   { id: "resParcial",    label: "Resistência Parcial" },
   { id: "almaMax",       label: "Integridade da Alma" },
+  { id: "empolgacaoMaxima",  label: "Empolgação Máxima",  nota: "sinalizador: troca a tabela de dados de Empolgação inteira, não soma" },
+  { id: "empolgacaoInicial", label: "Empolgação Inicial", nota: "quantos níveis acima do 1 o combate começa" },
 
   // Com destino
   { id: "atributo",      label: "Atributo",              alvo: "atributo", aceitaFuraTeto: true },
-  { id: "bonusPericia",  label: "Perícia",               alvo: "pericia" },
+  { id: "bonusPericia",  label: "Perícia",               alvo: "pericia", nota: "aceita `atr:destreza` para atingir toda perícia daquele atributo (Dádivas do Céu)" },
   { id: "proficienciaPericia", label: "Treino em Perícia", alvo: "pericia", nota: "1 = Treinado, 2 = Mestre. Concede a faixa, não soma número, e nunca REBAIXA o que a ficha já escolheu" },
-  { id: "bonusTR",       label: "Teste de Resistência",  alvo: "tr" },
+  { id: "bonusTR",       label: "Teste de Resistência",  alvo: "tr", nota: "aceita `atr:constituicao` para atingir todo TR daquele atributo" },
+  { id: "margemCriticoTR", label: "Crítico em Resistência", alvo: "tr", nota: "quanto a margem DIMINUI, com piso de 2. Irmão do margemCritico do ataque" },
   { id: "proficienciaTR", label: "Treino em Resistência", alvo: "tr", nota: "irmão de proficienciaPericia, mesmas regras (1 Treinado, 2 Mestre, nunca rebaixa)" },
   { id: "bonusAcerto",   label: "Acerto",                alvo: "ataque" },
+  { id: "bonusManobra",  label: "Manobra",               alvo: "manobra", nota: "Agarrar, Derrubar, Desarmar e Empurrar. Sem alvo vale para as quatro" },
+  { id: "resistirManobra", label: "Resistir a Manobra",  alvo: "manobra" },
+  { id: "distanciaEmpurrao", label: "Empurrão",          nota: "em metros, por cima do 1,5 padrão" },
   { id: "danoBonus",     label: "Dano",                  alvo: "fonteDano", nota: "soma no Dano TOTAL da linha, e daí escorre para o dano fixo. Alvo `basico` ou o id da arma, e sem alvo vale para todas" },
   { id: "nivelDano",     label: "Nível de Dano",         alvo: "fonteDano", nota: "cada nível soma 1 no ND, e SÓ no cálculo de dano (autor, 2026-07-27)" },
+  { id: "dadosDano",     label: "Dados de Dano",         alvo: "fonteDano", nota: "dado ADICIONAL, somado depois do dano fixo. Não confundir com nivelDano" },
+  { id: "margemCritico", label: "Margem de Crítico",     alvo: "fonteDano", nota: "quanto a margem DIMINUI, com piso de 2" },
+  { id: "ignoraRD",      label: "Ignora RD",             alvo: "fonteDano" },
+  { id: "propMarcial",   label: "Marcial",               alvo: "fonteDano", nota: "concede a propriedade Marcial à arma, que é o gatilho de vários poderes de Lutador" },
   { id: "finezaAtaque",  label: "Fineza",                alvo: "ataque", nota: "libera o atributo alternativo do ataque (Destreza no Corpo a Corpo). Vale o maior dos dois" },
   { id: "nivelAptidao",  label: "Nível de Aptidão",      alvo: "trilha", nota: "com alvo é concessão direcionada e grátis" },
 
   // Orçamentos
   { id: "vagasPericia",   label: "Vagas de Treino" },
   { id: "vagasHabilidade", label: "Vagas de Habilidade" },
+  { id: "vagasFeitico",   label: "Vagas de Feitiço",     nota: "vaga EXCLUSIVA de Feitiço (= Habilidade de Técnica). Não serve para Habilidade Geral (autor, 2026-07-28)" },
   { id: "vagasAptidao",   label: "Aptidões Amaldiçoadas" },
   { id: "pontosAptidao",  label: "Pontos de Aptidão",    nota: "orçamento LIVRE, gasto onde o jogador quiser" },
   { id: "focos",          label: "Focos de Interlúdio" },
+  { id: "pontosPreparo",  label: "Pontos de Preparo",    nota: "recurso do Combatente (Artes do Combate). Zero sem a habilidade, então o Preview só mostra quem tem" },
+  { id: "estamina",       label: "Pontos de Estamina",   nota: "recurso do Restringido, que não tem energia amaldiçoada. Mesma regra: zero sem a habilidade" },
+  { id: "espacosCarga",   label: "Espaços de Item",      nota: "sobe o LIMITE de carga, não o usado. Entra antes da conta de sobrecarga" },
 
   // Feitiços
   { id: "custoPE",        label: "Custo em PE",          nota: "redução de custo, o piso de 1 PE continua valendo" },
@@ -173,8 +203,18 @@ export function buildCriaturaDslContext(base = {}) {
     nd: base.nd ?? 1,
     bt: base.bt ?? 0,
     maestria: base.bt ?? 0,                          // alias, o texto do livro usa os dois nomes
+    // Qual repetição está sendo avaliada, para as entradas repetíveis cujo
+    // valor muda por pega ("aumenta em 20. Você pode pegar mais duas vezes,
+    // aumentando em 15 ao invés de 20"). O `aplicarEfeitos` sobrescreve com o
+    // `vez` do efeito; 1 é o default de quem não repete.
+    vez: 1,
     grau: base.grauRank ?? 1,                        // Quarto 1 ... Especial 5
     alma_atual: base.almaAtual ?? 100,
+    // RD base do escudo equipado, SEM a parcela da Ferramenta Amaldiçoada. É o
+    // "aumento base em RD do seu escudo" do Especialista em Escudo. Único valor
+    // de equipamento no contexto, e entra porque o equipamento é resolvido antes
+    // dos efeitos (ao contrário dos stats, que vêm depois: ver VARS_ADIADAS).
+    rd_escudo: base.rdEscudoBase ?? 0,
 
     // Atributos (valor e modificador)
     forca: at.forca ?? 10, destreza: at.destreza ?? 10, constituicao: at.constituicao ?? 10,
@@ -191,7 +231,25 @@ export function buildCriaturaDslContext(base = {}) {
     // Níveis de aptidão por trilha (efetivo = alocado + concedido)
     dom: apt.dom ?? 0, au: apt.au ?? 0, cl: apt.cl ?? 0, bar: apt.bar ?? 0, er: apt.er ?? 0,
 
+    // Simulação de combate: `em_combate`, `empolgacao`, `brutalidade`... É o que
+    // as habilidades com `quando` leem para ligar e desligar. Ver afty-combate.js.
+    ...combateDslVars(base.combate),
   };
+
+  /* ⚠ TODA variável de família tem de estar SEMPRE declarada, mesmo que zero.
+     O `evalNumber` da 2.5.2 não trata identificador desconhecido: a expressão
+     INTEIRA cai no fallback, calada. Então `2 + (esc_combatente >= 8)` numa
+     criatura sem Combatente não daria 2, daria 0. `base.vocabulario` traz as
+     listas completas dos catálogos (o deriveAfty é quem as tem) e elas entram
+     antes dos valores de verdade, que sobrescrevem por cima. */
+  const voc = base.vocabulario || {};
+  for (const id of voc.pericias || []) ctx[`prof_${id}`] = 0;
+  for (const id of voc.resistencias || []) ctx[`prof_tr_${id}`] = 0;
+  for (const id of voc.habilidades || []) ctx[`tem_${id}`] = 0;
+  for (const id of voc.especializacoes || []) {
+    ctx[`nivel_${id}`] = 0;
+    ctx[`esc_${id}`] = 0;
+  }
 
   // Proficiência ESCOLHIDA NA FICHA por perícia: `prof_furtividade` = 0, 1
   // (Treinado) ou 2 (Mestre). Existe para o "Caso já seja" do Treino de
@@ -202,6 +260,20 @@ export function buildCriaturaDslContext(base = {}) {
   for (const [id, p] of Object.entries(profFicha)) {
     ctx[`prof_${id}`] = p === "mestre" ? 2 : p === "treinado" ? 1 : 0;
   }
+  // O mesmo para Teste de Resistência, com prefixo próprio para não colidir com
+  // uma perícia homônima. Existe para a Força Imparável (Restringido 8°), que
+  // concede "treinado em um TR e mestre em outro NO QUAL JÁ SEJA TREINADO": a
+  // opção olha o que a ficha marcou e decide entre conceder 1 ou 2.
+  for (const [id, p] of Object.entries(base.resistenciasProf || {})) {
+    ctx[`prof_tr_${id}`] = p === "mestre" ? 2 : p === "treinado" ? 1 : 0;
+  }
+
+  // "Esta habilidade está escolhida?", como booleana: `tem_cmb_armas_perfeitas`.
+  // Existe para o caso de DUAS habilidades dividirem a mesma escolha aninhada:
+  // Armas Escolhidas (4°) e Armas Perfeitas (10°) miram o mesmo grupo de arma,
+  // então os dois efeitos moram na opção e o da segunda se protege com isto.
+  // ⚠ É a habilidade ESCOLHIDA, não a acessível: quem não pegou não recebe.
+  for (const id of base.habilidadesEscolhidas || []) ctx[`tem_${id}`] = 1;
 
   // Patamar e Tipo como booleanos nomeados: `patamar_calamidade`, `tipo_conjurador`.
   for (const p of ["comum", "desafio", "calamidade", "beyond"]) ctx[`patamar_${p}`] = base.patamar === p ? 1 : 0;
@@ -227,7 +299,9 @@ export function buildCriaturaDslContext(base = {}) {
 
 export {
   HABILIDADE_EFEITOS, ESCOLHA_EFEITOS, TALENTO_EFEITOS,
-  MELHORIA_EFEITOS, LENDARIA_EFEITOS, APICE_EFEITOS, GERAL_EFEITOS,
+  MELHORIA_EFEITOS, MELHORIA_EFEITOS_ALVO, LENDARIA_EFEITOS, LENDARIA_EFEITOS_ALVO,
+  APICE_EFEITOS, GERAL_EFEITOS,
+  ORIGEM_EFEITOS, CLA_EFEITOS, ANATOMIA_EFEITOS,
 } from "./afty-efeitos-conteudo";
 
 /**
@@ -281,19 +355,68 @@ export function coletarEfeitos(ids, mapa, catalogo = {}, vezesPorId = null) {
  * Melhorias Superiores são repetíveis, então entram `vezes` vezes: uma Melhoria
  * de Vida pega duas vezes soma duas vezes.
  */
+/**
+ * Escolhas aninhadas cujas OPÇÕES são habilidades de verdade, e não opções
+ * próprias. Roubo de Habilidade (Restringido 2°) tem por pool as 127 habilidades
+ * de nível de Combatente e Lutador: o id da opção É o id da habilidade, então o
+ * efeito dela sai do HABILIDADE_EFEITOS e não do ESCOLHA_EFEITOS.
+ */
+export const ESCOLHAS_DE_HABILIDADE = ["res_roubo_de_habilidade"];
+
 export function coletarEfeitosCriatura({ habilidades, talentos, altoNivel, catalogos } = {}) {
   const vezesMel = Object.fromEntries(
     (altoNivel?.melhorias?.escolhidas || []).map((m) => [m.id, m.vezes]),
   );
   const apiceId = altoNivel?.apiceId ? [altoNivel.apiceId] : [];
+  const roubadas = ESCOLHAS_DE_HABILIDADE.flatMap((id) => habilidades?.escolhas?.mapa?.[id] || []);
   return [
     ...coletarEfeitos(habilidades?.escolhidas, HABILIDADE_EFEITOS, catalogos?.habilidades),
+    ...coletarEfeitos(roubadas, HABILIDADE_EFEITOS, catalogos?.habilidades),
     ...coletarEfeitosDeEscolha(habilidades?.escolhas?.mapa, catalogos?.opcoes),
     ...coletarEfeitos(talentos?.escolhidas, TALENTO_EFEITOS, catalogos?.talentos),
+    // Talento também tem escolha aninhada (o atributo do Incremento, a trilha
+    // da Aptidão Desenvolvida), e cai no mesmo ESCOLHA_EFEITOS.
+    ...coletarEfeitosDeEscolha(talentos?.escolhas?.mapa, catalogos?.opcoes),
     ...coletarEfeitos(Object.keys(vezesMel), MELHORIA_EFEITOS, catalogos?.altoNivel, vezesMel),
+    ...coletarEfeitosComAlvo(
+      Object.keys(vezesMel), altoNivel?.escolhas?.mapa, MELHORIA_EFEITOS_ALVO,
+      catalogos?.altoNivel, vezesMel,
+    ),
     ...coletarEfeitos(altoNivel?.lendarias?.escolhidas, LENDARIA_EFEITOS, catalogos?.altoNivel),
+    ...coletarEfeitosComAlvo(
+      altoNivel?.lendarias?.escolhidas, altoNivel?.escolhas?.mapa, LENDARIA_EFEITOS_ALVO,
+      catalogos?.altoNivel,
+    ),
     ...coletarEfeitos(apiceId, APICE_EFEITOS, catalogos?.altoNivel),
   ];
+}
+
+/**
+ * Efeitos cujo ALVO vem de uma escolha aninhada, e não do catálogo.
+ *
+ * É o caso da Melhoria de Perícia ("uma perícia a sua escolha") e da Melhoria
+ * de Resistência ("escolha um Teste de Resistência"): o canal e a expressão são
+ * fixos, e só o destino é escolhido. Por isso `mapaEfeitos` traz os efeitos SEM
+ * alvo, e `mapaAlvos` (`{ [id]: [alvoId] }`) diz para onde cada um vai.
+ *
+ * Difere do `coletarEfeitosDeEscolha`, onde é a OPÇÃO que carrega o efeito.
+ */
+export function coletarEfeitosComAlvo(ids, mapaAlvos, mapaEfeitos, catalogo = {}, vezesPorId = null) {
+  const nomeDe = typeof catalogo === "function"
+    ? (id) => catalogo(id)?.nome
+    : (id) => catalogo?.[id]?.nome;
+  const out = [];
+  for (const id of Array.isArray(ids) ? ids : []) {
+    const efs = mapaEfeitos?.[id];
+    if (!efs) continue;
+    const vezes = vezesPorId ? Math.max(1, vezesPorId[id] ?? 1) : 1;
+    for (const alvo of mapaAlvos?.[id] || []) {
+      for (let v = 1; v <= vezes; v++) {
+        for (const e of efs) out.push({ ...e, alvo, origem: id, nome: nomeDe(id) || id, vez: v });
+      }
+    }
+  }
+  return out;
 }
 
 /**
@@ -334,6 +457,39 @@ export function coletarEfeitosMontante(creature, gerais, catalogoGerais = {}) {
   ];
 }
 
+/**
+ * Todos os efeitos que a ORIGEM produz: os dela, os do clã, os das Anatomias
+ * escolhidas e os das escolhas aninhadas.
+ *
+ * ⚠ Mora AQUI, e não em afty-origens.js, por ordem de inicialização: aquele
+ * arquivo só pode importar módulos folha (meio mundo lê `getOrigem` dele, e um
+ * import pesado lá fecharia ciclo com o motor). A seta aponta para cá.
+ *
+ * ⚠ Entra no estágio 0 (MONTANTE) do deriveAfty, junto dos Treinamentos e das
+ * Habilidades Gerais, porque origem concede VAGA (de habilidade, de perícia, de
+ * feitiço, de aptidão) e vaga é lida antes de os stats existirem. O `efMontante`
+ * é mesclado inteiro no agregado final, então os canais comuns (`hp`, `pe`,
+ * `movimento`) também chegam.
+ */
+export function coletarEfeitosOrigem(creature, escolhas = null) {
+  const origemId = creature?.core?.origem?.id;
+  if (!origemId) return [];
+  const claId = creature?.core?.origem?.cla;
+  const anatomias = getOrigem(origemId)?.caracteristicas?.some((c) => c.poolAnatomia)
+    ? (creature?.core?.origem?.anatomias || [])
+    : [];
+  const mapa = escolhas?.mapa || resolveEscolhasOrigem(creature, creature?.core?.nd ?? 1).mapa;
+  const opcoesEscolhidas = Object.values(mapa).flat();
+  const nomeOrigem = { [origemId]: { nome: getOrigem(origemId)?.nome } };
+  const nomeCla = claId ? { [claId]: { nome: getCla(claId)?.nome } } : {};
+  return [
+    ...coletarEfeitos([origemId], ORIGEM_EFEITOS, nomeOrigem),
+    ...coletarEfeitos(claId ? [claId] : [], CLA_EFEITOS, nomeCla),
+    ...coletarEfeitos(anatomias, ANATOMIA_EFEITOS, (id) => getAnatomia(id)),
+    ...coletarEfeitos(opcoesEscolhidas, ORIGEM_ESCOLHA_EFEITOS, (id) => ({ nome: OPCAO_ORIGEM_NOME[id] })),
+  ];
+}
+
 /* ============================================================ */
 /* APLICAÇÃO                                                     */
 /* ============================================================ */
@@ -364,10 +520,13 @@ export function aplicarEfeitos(efeitos, ctx = {}) {
     if (e.alvo && !canal.alvo) {
       avisos.push(`Canal "${e.canal}" não aceita alvo (veio "${e.alvo}").`);
     }
+    // `vez` é do EFEITO, não do contexto: uma entrada repetível é coletada
+    // várias vezes, e cada cópia precisa saber qual pega ela é.
+    const ctxE = e.vez != null && e.vez !== ctx.vez ? { ...ctx, vez: e.vez } : ctx;
     // Condição: sem `quando`, sempre aplica.
-    if (e.quando && evalNumber(e.quando, ctx, 0) === 0) continue;
+    if (e.quando && evalNumber(e.quando, ctxE, 0) === 0) continue;
 
-    const valor = evalNumber(e.expr, ctx, 0);
+    const valor = evalNumber(e.expr, ctxE, 0);
     if (!valor) continue;
 
     const alvo = canal.alvo ? (e.alvo || null) : null;
@@ -411,11 +570,15 @@ export const CANAIS_ESTAGIO_1 = ["atributo"];
  * contexto já estar montado. Vale aqui a mesma regra do estágio de atributo:
  * DENTRO deste estágio um efeito não enxerga o irmão, o que evita o laço.
  *
+ * `empolgacaoMaxima` entrou pelo mesmo motivo: ele troca a TABELA de dados de
+ * Empolgação, e a média do dado (`dado_empolgacao`) é o que as Manobras de
+ * Empolgação somam. Sem sair antes, a média seria calculada com a tabela velha.
+ *
  * ⚠ Rodam com o contexto reduzido (sem os níveis de aptidão), então a
  * expressão de um efeito destes tem de ser constante ou depender só de ND,
  * Maestria e atributo base. Na prática são todas "1".
  */
-export const CANAIS_PRE_CONTEXTO = ["nivelAptidao"];
+export const CANAIS_PRE_CONTEXTO = ["nivelAptidao", "empolgacaoMaxima"];
 export const ehPreContexto = (e) => CANAIS_PRE_CONTEXTO.includes(e?.canal);
 
 /**
@@ -466,6 +629,64 @@ export function valorCanal(res, canal, alvo = null) {
 /** Todos os alvos tocados num canal, para a UI iterar sem varrer o catálogo. */
 export const alvosDoCanal = (res, canal) => Object.keys(res?.porAlvo?.[canal] || {});
 
+/* ------------------------------------------------------------ */
+/* ESCOPO DE ARMA                                                */
+/* ------------------------------------------------------------ */
+/**
+ * Uma linha de dano responde a VÁRIOS alvos ao mesmo tempo, e não a um só. Uma
+ * Katana atende pelo próprio id, por ser arma, pela categoria (`cat:corpo`), pelo
+ * grupo (`grupo:espada`) e por cada propriedade (`prop:duas_maos`).
+ *
+ * O Combatente é quem forçou isto: a especialização inteira é escrita em cima de
+ * classes de arma ("ataques com armas de arremesso", "armas do grupo escolhido",
+ * "arma que possua a propriedade pesada"), e mirar pelo id de cada arma não daria
+ * conta. O Lutador não precisou porque fala de desarmado e de armas dedicadas,
+ * que já são alvos concretos.
+ *
+ * Vocabulário dos prefixos, para o conteúdo não inventar:
+ *   `arma`         — qualquer linha vinda de arma (exclui o Ataque Básico)
+ *   `cat:<id>`     — corpo, distancia, arremesso
+ *   `grupo:<id>`   — espada, arco, tiro... (ver ARMA_GRUPOS)
+ *   `prop:<id>`    — duas_maos, pesada, estendida... (ver ARMA_PROPRIEDADES)
+ *   `tipo:<id>`    — ct, im, pf, queimante (ver TIPOS_DANO). Os Especialistas
+ *                    em Cortes, Concussão e Perfuração (Talentos) miram assim
+ *
+ * O mesmo mecanismo serve PERÍCIA e TR pelo atributo, `atr:<id>`: as Dádivas do
+ * Céu do Restringido dizem "bônus em teste de perícia ou resistência usando
+ * destreza", e listar as perícias uma a uma no conteúdo seria lista à mão que
+ * envelhece. Ver `escoposDe` em resolveTestes.
+ */
+export const ESCOPO_PREFIXOS = ["cat:", "grupo:", "prop:", "atr:", "tipo:"];
+
+/** Os alvos a que uma linha de dano responde. Sem arma, é só o Ataque Básico. */
+export function escoposDaArma(arma) {
+  if (!arma) return ["basico"];
+  return [
+    arma.id, "arma",
+    ...(arma.categoria ? [`cat:${arma.categoria}`] : []),
+    ...(arma.grupo ? [`grupo:${arma.grupo}`] : []),
+    ...(arma.tipoDano ? [`tipo:${arma.tipoDano}`] : []),
+    ...(arma.propriedades ?? []).map((p) => `prop:${p.id}`),
+  ];
+}
+
+/**
+ * Como `valorCanal`, mas para uma fonte que responde a vários alvos. O valor
+ * SEM alvo (que vale para todos) entra uma vez só, e os direcionados somam.
+ */
+export function valorCanalEscopos(res, canal, escopos = []) {
+  const dir = res?.porAlvo?.[canal] || {};
+  return escopos.reduce((s, e) => s + (dir[e] || 0), res?.porCanal?.[canal] || 0);
+}
+
+/** Irmão do `detalhesDoCanal` para vários alvos, sem repetir o mesmo efeito. */
+export function detalhesDoCanalEscopos(res, canal, escopos = []) {
+  const alvo = new Set(escopos);
+  return (res?.detalhes || []).filter(
+    (d) => d.canal === canal && (d.alvo == null || alvo.has(d.alvo)),
+  );
+}
+
 /**
  * Os efeitos que caíram num canal (e opcionalmente num alvo), um por FONTE.
  * É o que alimenta o hover que mostra de onde vem cada parcela de um valor.
@@ -512,6 +733,19 @@ export function validarMapaEfeitos(mapa, nomeDoMapa = "efeitos") {
         const re = new RegExp(`\\b${v}\\b`);
         if (re.test(e.expr || "") || re.test(e.quando || "")) {
           problemas.push(`${nomeDoMapa}: ${id} usa "${v}", que o contexto da criatura ainda não expõe`);
+        }
+      }
+      // Estado de combate escrito errado também vira ZERO calado, e aí a
+      // habilidade simplesmente nunca liga. O risco mora nos nomes DERIVADOS
+      // das opções (`armas_absolutas_defesa`), que ninguém escreve à mão duas
+      // vezes igual: qualquer identificador que comece por um estado conhecido
+      // tem de ser um estado conhecido inteiro.
+      for (const texto of [e.expr, e.quando]) {
+        for (const ident of String(texto || "").match(/\b[a-z][a-z0-9_]*\b/g) || []) {
+          if (COMBATE_VARS.includes(ident)) continue;
+          if (COMBATE_VARS.some((v) => ident.startsWith(`${v}_`))) {
+            problemas.push(`${nomeDoMapa}: ${id} usa "${ident}", que não é um estado de combate`);
+          }
         }
       }
     }

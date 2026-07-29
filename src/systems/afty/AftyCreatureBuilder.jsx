@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react";
 import {
   Save, ChevronLeft, ChevronDown, Wand2, Sparkles, FlaskConical,
   Dumbbell, GraduationCap, BookOpen, Check, ArrowRight, Lock, Plus, X, Zap,
-  Copy, ArrowUp, ArrowDown, Heart, Shield, Footprints, AlertTriangle, Star,
+  Copy, ArrowUp, ArrowDown, Heart, Shield, Footprints, AlertTriangle, Star, Swords,
 } from "lucide-react";
 
 import { FieldLabel, TextInput, TextArea, Select, NumberInput, StatField, ExpandableText } from "../../components/builder-controls";
@@ -10,8 +10,13 @@ import {
   createBlankAfty, AFTY_ATTRS, AFTY_TIPOS, AFTY_PATAMARES, AFTY_QNT_PE,
   AFTY_TECNICA_ATTRS, AFTY_TAMANHOS,
 } from "./afty-schema";
-import { AFTY_ORIGENS, getOrigem, origemTemDesenvolvimento } from "./afty-origens";
-import { ANATOMIAS, getAnatomia, anatomiaTotal } from "./afty-anatomias";
+import {
+  AFTY_ORIGENS, getOrigem, origemTemDesenvolvimento,
+  clasDaOrigem, getCla, caracteristicasEfetivas, totalDaAlocacao, usoDaAlocacao,
+} from "./afty-origens";
+// A descrição de cada anatomia agora aparece na própria linha selecionável, em
+// vez de repetida numa lista embaixo: o `getAnatomia` deixou de ser preciso aqui.
+import { ANATOMIAS, anatomiaTotal } from "./afty-anatomias";
 import {
   ATTR_METODOS, VALORES_FIXOS, valoresFixosOk, rolarAtributos, resumoAtributos,
   desenvolvimentoTotal, desenvolvimentoUsado, POINT_BUY_MIN, POINT_BUY_MAX,
@@ -34,7 +39,8 @@ import {
   MELHORIAS_SUPERIORES, HABILIDADES_LENDARIAS, avaliarAcessoAltoNivel,
 } from "./afty-alto-nivel";
 import { HABILIDADES_GERAIS } from "./afty-gerais";
-import { AFTY_PERICIAS } from "./afty-pericias";
+import { AFTY_PERICIAS, EMPURRAO_BASE } from "./afty-pericias";
+import { COMBATE_ESTADOS } from "./afty-combate";
 import {
   createBlankInvocacao, cloneInvocacao, createBlankAcao, createBlankCaracteristica, createBlankHorda, AFTY_INV_GRAUS,
   grausDisponiveis, grauMeta, INV_ATRIBUTOS_POR_GRAU, INV_ATTR_MIN, mod as invMod,
@@ -123,6 +129,13 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
   const derived = useMemo(() => deriveAfty(draft), [draft]);
   const isEditing = !!existingCreature?.id;
 
+  // O Restringido não tem energia amaldiçoada (autor, 2026-07-29): sem PE, sem
+  // Nível de Aptidão e sem Aptidão Amaldiçoada. A aba Aptidões some inteira.
+  // `tabAtiva` cobre quem já estava nela quando o Tipo mudou: em vez de deixar
+  // a tela num limbo (aba escondida, conteúdo aberto), cai nas Informações.
+  const semEnergia = draft.core.tipo === "restringido";
+  const tabAtiva = (tab === "aptidoes" && semEnergia) ? "informacoes" : tab;
+
   // ---------- patches imutáveis ----------
   const patch = (partial) => setDraft((d) => ({ ...d, ...partial }));
   const patchCore = (partial) => setDraft((d) => ({ ...d, core: { ...d.core, ...partial } }));
@@ -164,6 +177,39 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
       especializacoes: normalizeEspecializacoes(d.especializacoes, id),
     }));
 
+  // Clã do Herdado. Trocar de clã zera o que era do clã antigo: o bônus de
+  // atributo (o par muda) e as escolhas aninhadas (os ids são por clã). O
+  // resolver já ignoraria opção de outro clã, mas deixar lixo gravado faria a
+  // escolha voltar sozinha ao trocar de volta, o que confunde.
+  const setOrigemCla = (cla) =>
+    setDraft((d) => ({
+      ...d,
+      core: { ...d.core, origem: { ...d.core.origem, cla, bonusAtributos: {}, escolhas: {} } },
+    }));
+
+  // Escolha aninhada de origem (Treinamentos de Clã, Empenho Implacável).
+  // Mesma mecânica das outras: guarda a escolha, o resolver conta as vagas.
+  const toggleEscolhaOrigem = (escolhaId, opcaoId) =>
+    setDraft((d) => {
+      const origem = d.core.origem || {};
+      const mapa = origem.escolhas && typeof origem.escolhas === "object" ? origem.escolhas : {};
+      const atual = Array.isArray(mapa[escolhaId]) ? mapa[escolhaId] : [];
+      const proxima = atual.includes(opcaoId) ? atual.filter((x) => x !== opcaoId) : [...atual, opcaoId];
+      return { ...d, core: { ...d.core, origem: { ...origem, escolhas: { ...mapa, [escolhaId]: proxima } } } };
+    });
+
+  // Alocação de atributo com pool PRÓPRIO (Ápice Corporal Humano). Separado do
+  // `bonusAtributos` porque a mesma origem tem os dois, e somar no mesmo mapa
+  // faria um comer o outro.
+  const setOrigemPool = (poolId, attrKey, valor) =>
+    setDraft((d) => {
+      const origem = d.core.origem || {};
+      const pools = origem.pools && typeof origem.pools === "object" ? origem.pools : {};
+      const pool = { ...(pools[poolId] || {}) };
+      if (valor > 0) pool[attrKey] = valor; else delete pool[attrKey];
+      return { ...d, core: { ...d.core, origem: { ...origem, pools: { ...pools, [poolId]: pool } } } };
+    });
+
   // Especializações: a ficha guarda { id, nivel }, mas o nível gravado é só
   // o PONTO DE DIVISÃO da multiclasse — quem resolve os níveis finais é
   // resolveEspecializacoes (soma sempre === ND). Ver afty-especializacoes.js.
@@ -202,6 +248,16 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
       const atual = Array.isArray(mapa[habId]) ? mapa[habId] : [];
       const proxima = atual.includes(opcaoId) ? atual.filter((x) => x !== opcaoId) : [...atual, opcaoId];
       return { ...d, escolhasHabilidade: { ...mapa, [habId]: proxima } };
+    });
+
+  // Talento também tem escolha aninhada (o atributo do Incremento, a trilha da
+  // Aptidão Desenvolvida). Mapa próprio, mesma mecânica.
+  const toggleEscolhaTalento = (talId, opcaoId) =>
+    setDraft((d) => {
+      const mapa = d.escolhasTalento && typeof d.escolhasTalento === "object" ? d.escolhasTalento : {};
+      const atual = Array.isArray(mapa[talId]) ? mapa[talId] : [];
+      const proxima = atual.includes(opcaoId) ? atual.filter((x) => x !== opcaoId) : [...atual, opcaoId];
+      return { ...d, escolhasTalento: { ...mapa, [talId]: proxima } };
     });
 
   // Feitiços: entradas CRIADAS pelo jogador. add/remove/patch simples.
@@ -244,6 +300,23 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
       if (next[id]) delete next[id]; else next[id] = true;
       return { ...d, ataquesProf: next };
     });
+
+  // Armas Dedicadas (Lutador 2°). O teto é aplicado na LEITURA
+  // (resolveArmasDedicadas), então aqui é só ligar e desligar: a ficha guarda a
+  // lista inteira e tirar a arma da mochila não apaga a escolha.
+  const toggleArmaDedicada = (id) =>
+    setDraft((d) => {
+      const lista = Array.isArray(d.armasDedicadas) ? d.armasDedicadas : [];
+      return {
+        ...d,
+        armasDedicadas: lista.includes(id) ? lista.filter((x) => x !== id) : [...lista, id],
+      };
+    });
+
+  // Simulação de combate: bancada de balanceamento. Estado é ENTRADA, então
+  // mora na ficha como qualquer outra escolha e sobrevive a fechar e reabrir.
+  const patchCombate = (partial) =>
+    setDraft((d) => ({ ...d, combate: { ...(d.combate ?? {}), ...partial } }));
 
   // Habilidades Gerais. Mesmo shape das Melhorias Superiores: lista COM
   // repetição, então definir "vezes" é reescrever as entradas daquele id.
@@ -453,7 +526,8 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
         ...draft.combatState,
         hpCurrent: derived.hp,
         peCurrent: derived.pe,
-        almaCurrent: draft.alma?.atual ?? 100,
+        // Nasce ÍNTEGRA: a criação não tem mais campo de integridade corrente.
+        almaCurrent: derived.almaMax,
       },
     };
     onSave(creature);
@@ -494,8 +568,8 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
         <div className="bg-slate-950/40 border-t border-slate-800/70">
           <div className="max-w-7xl mx-auto px-4">
             <div className="flex gap-1 overflow-x-auto py-2 no-scrollbar" role="tablist" aria-label="Seções">
-              {TABS.map((t) => {
-                const on = t.id === tab;
+              {TABS.filter((t) => !(t.id === "aptidoes" && semEnergia)).map((t) => {
+                const on = t.id === tabAtiva;
                 return (
                   <button
                     key={t.id}
@@ -531,17 +605,17 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
 
         {/* formulário (aba ativa) */}
         <div className="lg:col-span-2 space-y-4">
-          {tab === "identidade" && <TabIdentidade draft={draft} patch={patch} patchCore={patchCore} setOrigemBonus={setOrigemBonus} setOrigemId={setOrigemId} />}
-          {tab === "informacoes" && <TabInformacoes draft={draft} derived={derived} patch={patch} patchCore={patchCore} patchAttr={patchAttr} patchNivel={patchNivel} />}
-          {tab === "pericias" && <TabPericias draft={draft} derived={derived} patch={patch} setProficiencia={setProficiencia} toggleAtaqueProf={toggleAtaqueProf} />}
-          {tab === "habilidades" && <TabHabilidades draft={draft} derived={derived} patchCore={patchCore} addFeitico={addFeitico} removeFeitico={removeFeitico} patchFeitico={patchFeitico} duplicarFeitico={duplicarFeitico} setGeralVezes={setGeralVezes} />}
-          {tab === "especializacoes" && <TabEspecializacoes draft={draft} derived={derived} setEspecializacoes={setEspecializacoes} toggleHabilidade={toggleHabilidade} toggleEscolhaHabilidade={toggleEscolhaHabilidade} toggleTalento={toggleTalento} setMelhoriaVezes={setMelhoriaVezes} toggleLendaria={toggleLendaria} toggleEscolhaAltoNivel={toggleEscolhaAltoNivel} />}
-          {tab === "aptidoes" && <TabAptidoes draft={draft} derived={derived} setAptidaoNivel={setAptidaoNivel} toggleAptidao={toggleAptidao} />}
-          {tab === "invocacoes" && <TabInvocacoes draft={draft} derived={derived} addInvocacao={addInvocacao} removeInvocacao={removeInvocacao} duplicarInvocacao={duplicarInvocacao} moverInvocacao={moverInvocacao} patchInvocacao={patchInvocacao} patchInvocacaoAttr={patchInvocacaoAttr} efeitosApi={efeitosApi} addHorda={addHorda} removeHorda={removeHorda} patchHorda={patchHorda} />}
-          {tab === "equipamentos" && <TabEquipamentos derived={derived} addEquipamento={addEquipamento} removeEquipamento={removeEquipamento} patchEquipamento={patchEquipamento} toggleFerramenta={toggleFerramenta} patchFerramenta={patchFerramenta} toggleEncantamento={toggleEncantamento} />}
-          {tab === "interludios" && <TabInterludios draft={draft} derived={derived} setTreinoProgresso={setTreinoProgresso} setTreinoInstance={setTreinoInstance} />}
-          {tab === "calculos" && <TabCalculos derived={derived} setStatOverride={setStatOverride} />}
-          {STUBS[tab] && <StubCard title={TABS.find((t) => t.id === tab)?.label} text={STUBS[tab]} />}
+          {tabAtiva === "identidade" && <TabIdentidade draft={draft} derived={derived} patch={patch} patchCore={patchCore} setOrigemBonus={setOrigemBonus} setOrigemId={setOrigemId} setOrigemCla={setOrigemCla} toggleEscolhaOrigem={toggleEscolhaOrigem} setOrigemPool={setOrigemPool} />}
+          {tabAtiva === "informacoes" && <TabInformacoes draft={draft} derived={derived} patch={patch} patchCore={patchCore} patchAttr={patchAttr} patchNivel={patchNivel} />}
+          {tabAtiva === "pericias" && <TabPericias draft={draft} derived={derived} patch={patch} setProficiencia={setProficiencia} toggleAtaqueProf={toggleAtaqueProf} />}
+          {tabAtiva === "habilidades" && <TabHabilidades draft={draft} derived={derived} patchCore={patchCore} toggleArmaDedicada={toggleArmaDedicada} addFeitico={addFeitico} removeFeitico={removeFeitico} patchFeitico={patchFeitico} duplicarFeitico={duplicarFeitico} setGeralVezes={setGeralVezes} />}
+          {tabAtiva === "especializacoes" && <TabEspecializacoes draft={draft} derived={derived} patchCombate={patchCombate} setEspecializacoes={setEspecializacoes} toggleHabilidade={toggleHabilidade} toggleEscolhaHabilidade={toggleEscolhaHabilidade} toggleTalento={toggleTalento} toggleEscolhaTalento={toggleEscolhaTalento} setMelhoriaVezes={setMelhoriaVezes} toggleLendaria={toggleLendaria} toggleEscolhaAltoNivel={toggleEscolhaAltoNivel} />}
+          {tabAtiva === "aptidoes" && <TabAptidoes draft={draft} derived={derived} setAptidaoNivel={setAptidaoNivel} toggleAptidao={toggleAptidao} />}
+          {tabAtiva === "invocacoes" && <TabInvocacoes draft={draft} derived={derived} addInvocacao={addInvocacao} removeInvocacao={removeInvocacao} duplicarInvocacao={duplicarInvocacao} moverInvocacao={moverInvocacao} patchInvocacao={patchInvocacao} patchInvocacaoAttr={patchInvocacaoAttr} efeitosApi={efeitosApi} addHorda={addHorda} removeHorda={removeHorda} patchHorda={patchHorda} />}
+          {tabAtiva === "equipamentos" && <TabEquipamentos derived={derived} addEquipamento={addEquipamento} removeEquipamento={removeEquipamento} patchEquipamento={patchEquipamento} toggleFerramenta={toggleFerramenta} patchFerramenta={patchFerramenta} toggleEncantamento={toggleEncantamento} />}
+          {tabAtiva === "interludios" && <TabInterludios draft={draft} derived={derived} setTreinoProgresso={setTreinoProgresso} setTreinoInstance={setTreinoInstance} />}
+          {tabAtiva === "calculos" && <TabCalculos derived={derived} setStatOverride={setStatOverride} />}
+          {STUBS[tabAtiva] && <StubCard title={TABS.find((t) => t.id === tabAtiva)?.label} text={STUBS[tabAtiva]} />}
         </div>
       </div>
     </div>
@@ -605,7 +679,7 @@ const PROF_POR_INDICE = [null, "treinado", "mestre"];
 const INDICE_POR_PROF = { treinado: 1, mestre: 2 };
 
 function TabPericias({ draft, derived, patch, setProficiencia, toggleAtaqueProf }) {
-  const { pericias, resistencias, ataques, orcamento } = derived.testes;
+  const { pericias, resistencias, ataques, manobras, orcamento } = derived.testes;
 
   const linhaTR = (r) => (
     <TesteLinha
@@ -699,6 +773,33 @@ function TabPericias({ draft, derived, patch, setProficiencia, toggleAtaqueProf 
                   )}
                 </React.Fragment>
               ))}
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      {/* Manobras: Agarrar, Derrubar, Desarmar e Empurrar (autor, 2026-07-28).
+          São testes de perícia, então moram junto dos outros testes. Cada linha
+          traz o valor para EXECUTAR e o para RESISTIR, que é sempre o maior
+          entre Atletismo e Acrobacia. */}
+      <Card title="Manobras">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-2 gap-y-1">
+          {manobras.map((m) => (
+            <div key={m.id} className="rounded-lg border border-slate-800 bg-slate-950/40 flex items-center gap-2.5 px-2.5 h-9">
+              <span className="flex-1 min-w-0 text-[12px] font-semibold text-slate-100 truncate" title={m.nome}>
+                {m.nome}
+              </span>
+              {/* A distância só aparece quando um poder mudou o padrão: o 1,5m
+                  é igual para todo mundo e só fazia ruído (autor, 2026-07-28). */}
+              {m.distancia != null && m.distancia !== EMPURRAO_BASE && (
+                <span className="text-[10px] font-medium text-purple-300 whitespace-nowrap flex-shrink-0">
+                  {String(m.distancia).replace(".", ",")}m
+                </span>
+              )}
+              <span className="text-[9px] uppercase tracking-wider text-slate-500 flex-shrink-0">Exec.</span>
+              <ValorComFontes valor={m.executar} partes={m.partesExecutar} />
+              <span className="text-[9px] uppercase tracking-wider text-slate-500 flex-shrink-0">Resist.</span>
+              <ValorComFontes valor={m.resistir} partes={m.partesResistir} />
             </div>
           ))}
         </div>
@@ -837,10 +938,22 @@ const TIPO_FEITICO_LABEL = Object.fromEntries(TIPO_FEITICO.map((t) => [t.value, 
    Desarmado, Faixas, Manoplas e o Corpo Treinado, e mais uma para cada arma
    equipada. Todas usam a MESMA conta: o dano listado na tabela da arma não
    entra, e dela vêm só o Alcance e as Propriedades. */
-function DanoCard({ derived }) {
+function DanoCard({ derived, toggleArmaDedicada }) {
   const entradas = derived.dano?.entradas ?? [];
+  const ded = derived.dedicadas ?? { ativa: false, escolhidas: [], max: 3, restante: 3 };
+
   return (
-    <Card title="Dano">
+    <Card
+      title="Dano"
+      headerRight={ded.ativa ? (
+        <span
+          className="font-mono text-sm font-bold tabular-nums text-slate-200"
+          title="Armas Dedicadas escolhidas / máximo"
+        >
+          {ded.escolhidas.length} / {ded.max}
+        </span>
+      ) : null}
+    >
       <div className="space-y-1">
         {entradas.map((e) => (
           <div
@@ -850,6 +963,38 @@ function DanoCard({ derived }) {
             }`}
           >
             <div className="relative group flex items-center gap-2.5">
+              {/* Marcar como Arma Dedicada. Só aparece com a habilidade pega, e
+                  a linha do Ataque Básico fica com o espaço vazio para os nomes
+                  seguirem alinhados (mesma anatomia do equipar, na aba
+                  Equipamentos). */}
+              {ded.ativa && (
+                e.fonte === "arma" ? (
+                  <button
+                    type="button"
+                    disabled={!e.elegivelDedicada || (!e.dedicada && ded.restante <= 0)}
+                    onClick={() => toggleArmaDedicada(e.id)}
+                    aria-pressed={!!e.dedicada}
+                    aria-label={`${e.dedicada ? "Remover" : "Marcar"} ${e.nome} como Arma Dedicada`}
+                    title={
+                      !e.elegivelDedicada ? "Duas Mãos ou Pesada, e não é Marcial"
+                        : e.dedicada ? "Remover das Armas Dedicadas"
+                        : ded.restante <= 0 ? "Já são três Armas Dedicadas"
+                        : "Marcar como Arma Dedicada"
+                    }
+                    className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 border transition-colors ${
+                      e.dedicada
+                        ? "bg-purple-700 border-purple-600 text-white"
+                        : !e.elegivelDedicada || ded.restante <= 0
+                          ? "border-slate-800 text-slate-700 cursor-not-allowed"
+                          : "border-slate-600 text-slate-500 hover:border-purple-600 hover:text-purple-300"
+                    }`}
+                  >
+                    {e.dedicada ? <Check className="w-3 h-3" /> : <Swords className="w-2.5 h-2.5" />}
+                  </button>
+                ) : (
+                  <span className="w-5 flex-shrink-0" />
+                )
+              )}
               <span className="flex-1 min-w-0 text-[12px] font-semibold text-slate-100 truncate" title={e.nome}>
                 {e.nome}
               </span>
@@ -858,9 +1003,17 @@ function DanoCard({ derived }) {
               </span>
               {e.niveisDano > 0 && (
                 <span className="text-[10px] font-medium text-purple-300 whitespace-nowrap flex-shrink-0">
-                  {e.niveisDano} Nível{e.niveisDano > 1 ? "s" : ""} de Dano
+                  {e.niveisDano} {e.niveisDano > 1 ? "Níveis" : "Nível"} de Dano
                 </span>
               )}
+              {e.ignoraRD > 0 && (
+                <span className="text-[10px] font-medium text-purple-300 whitespace-nowrap flex-shrink-0">
+                  Ignora RD {e.ignoraRD}
+                </span>
+              )}
+              <span className="text-[10px] text-slate-400 whitespace-nowrap flex-shrink-0" title="Margem de Crítico">
+                Crít. {e.margemCritico}
+              </span>
               {e.alcance && (
                 <span className="text-[10px] text-slate-400 whitespace-nowrap flex-shrink-0">{e.alcance.texto}</span>
               )}
@@ -874,7 +1027,11 @@ function DanoCard({ derived }) {
                 {e.propriedades.map((p) => (
                   <span
                     key={p.id}
-                    className="text-[10px] px-1.5 py-0.5 rounded border border-slate-700 bg-slate-900/60 text-slate-300"
+                    className={`text-[10px] px-1.5 py-0.5 rounded border ${
+                      p.concedida
+                        ? "border-purple-700 bg-purple-950/40 text-purple-200"
+                        : "border-slate-700 bg-slate-900/60 text-slate-300"
+                    }`}
                   >
                     {p.rotulo}
                   </span>
@@ -888,11 +1045,11 @@ function DanoCard({ derived }) {
   );
 }
 
-function TabHabilidades({ draft, derived, patchCore, addFeitico, removeFeitico, patchFeitico, duplicarFeitico, setGeralVezes }) {
+function TabHabilidades({ draft, derived, patchCore, toggleArmaDedicada, addFeitico, removeFeitico, patchFeitico, duplicarFeitico, setGeralVezes }) {
   const origem = draft.core.origem?.id;
   const gerais = <HabilidadesGeraisCard derived={derived} setGeralVezes={setGeralVezes} />;
   // O Dano vale para toda origem: até quem não tem Feitiço ataca.
-  const dano = <DanoCard derived={derived} />;
+  const dano = <DanoCard derived={derived} toggleArmaDedicada={toggleArmaDedicada} />;
   if (origem === "sem_tecnica") {
     return (
       <>
@@ -924,12 +1081,24 @@ function TabHabilidades({ draft, derived, patchCore, addFeitico, removeFeitico, 
 /* Medidor do contador único da aba (Feitiços + Habilidades Gerais).
    Aparece igual nos dois cards, para o gasto de um lado ser visível do outro. */
 function ContadorHabilidades({ derived }) {
-  const { gastos, total, excedeu } = derived.orcamentoHabilidades;
+  const {
+    gastosNoComum, comum, exclusivasFeitico, exclusivasUsadas, excedeu,
+  } = derived.orcamentoHabilidades;
   return (
     <div className="flex items-center gap-2" title="Feitiços e Habilidades Gerais gastam o mesmo contador">
       <span className={`font-mono text-sm font-bold tabular-nums ${excedeu ? "text-rose-400" : "text-slate-200"}`}>
-        {gastos} / {total}
+        {gastosNoComum} / {comum}
       </span>
+      {/* Vagas exclusivas de Feitiço aparecem SEPARADAS: somá-las ao contador
+          faria parecer que sobra espaço para Habilidade Geral, e não sobra. */}
+      {exclusivasFeitico > 0 && (
+        <span
+          className="font-mono text-[11px] font-bold text-purple-300 tabular-nums"
+          title="Vagas exclusivas de Feitiço, que não servem para Habilidade Geral"
+        >
+          +{exclusivasUsadas} / {exclusivasFeitico}
+        </span>
+      )}
       <span className="text-[9px] uppercase tracking-wider text-slate-400">Habilidades</span>
     </div>
   );
@@ -2966,35 +3135,40 @@ function ResultadoAuxiliar({ calc, feitico }) {
 /* ============================================================ */
 /* Aba: Identidade                                              */
 /* ============================================================ */
-function TabIdentidade({ draft, patch, patchCore, setOrigemBonus, setOrigemId }) {
+function TabIdentidade({ draft, derived, patch, patchCore, setOrigemBonus, setOrigemId, setOrigemCla, toggleEscolhaOrigem, setOrigemPool }) {
   return (
-    <Card title="Identidade">
-      <div>
-        <FieldLabel required>Nome</FieldLabel>
-        <TextInput value={draft.name} onChange={(v) => patch({ name: v })} placeholder="Nome da criatura" />
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+    <>
+      <Card title="Identidade">
         <div>
-          <FieldLabel hint="afeta deslocamento e alcance">Tamanho</FieldLabel>
-          <Select value={draft.core.tamanho} onChange={(v) => patchCore({ tamanho: v })} options={AFTY_TAMANHOS} />
+          <FieldLabel required>Nome</FieldLabel>
+          <TextInput value={draft.name} onChange={(v) => patch({ name: v })} placeholder="Nome da criatura" />
         </div>
-        <div>
-          <FieldLabel hint="escolha imutável na criação">Origem</FieldLabel>
-          <Select
-            value={draft.core.origem?.id}
-            onChange={(v) => setOrigemId(v)}
-            options={AFTY_ORIGENS}
-          />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+          <div>
+            <FieldLabel hint="afeta deslocamento e alcance">Tamanho</FieldLabel>
+            <Select value={draft.core.tamanho} onChange={(v) => patchCore({ tamanho: v })} options={AFTY_TAMANHOS} />
+          </div>
+          <div>
+            <FieldLabel hint="URL da imagem (opcional)">Retrato</FieldLabel>
+            <TextInput value={draft.portraitUrl} onChange={(v) => patch({ portraitUrl: v })} placeholder="https://..." />
+          </div>
         </div>
-      </div>
+      </Card>
 
-      <OrigemInfo draft={draft} patchCore={patchCore} setOrigemBonus={setOrigemBonus} />
-
-      <div className="mt-4">
-        <FieldLabel hint="URL da imagem (opcional)">Retrato</FieldLabel>
-        <TextInput value={draft.portraitUrl} onChange={(v) => patch({ portraitUrl: v })} placeholder="https://..." />
-      </div>
-    </Card>
+      {/* A Origem saiu de dentro da Identidade e virou card próprio: ela carrega
+          bônus de atributo, clã, treinamentos, anatomias e a progressão do Sem
+          Técnica, e nada disso cabia numa caixinha ao pé de um formulário. */}
+      <OrigemCard
+        draft={draft}
+        derived={derived}
+        patchCore={patchCore}
+        setOrigemId={setOrigemId}
+        setOrigemBonus={setOrigemBonus}
+        setOrigemCla={setOrigemCla}
+        toggleEscolhaOrigem={toggleEscolhaOrigem}
+        setOrigemPool={setOrigemPool}
+      />
+    </>
   );
 }
 
@@ -3009,14 +3183,59 @@ function grantLabel(g) {
   }
 }
 
-/* Card da origem selecionada: raridade, resumo, características e — quando a
-   origem tem bônus de atributo ESCOLHÍVEL — os seletores +2/+1. */
-function OrigemInfo({ draft, patchCore, setOrigemBonus }) {
+const ATTR_ABBR = Object.fromEntries(AFTY_ATTRS.map((a) => [a.key, a.abbr]));
+
+/* Subtítulo do bloco de clã: o nome da HERANÇA dele, que é o que diferencia um
+   clã do outro (bônus e treinamentos todo clã tem). É sempre a última
+   característica, pela ordem do livro. */
+const resumoDoCla = (c) => c.caracteristicas?.[c.caracteristicas.length - 1]?.nome ?? "";
+
+/* Chip pequeno, o tijolo do cabeçalho da origem. */
+function OrigemChip({ children, tom = "slate", title }) {
+  const tons = {
+    slate:  "text-slate-300 border-slate-700 bg-slate-800/60",
+    amber:  "text-amber-300 border-amber-800 bg-amber-950/40",
+    purple: "text-purple-300 border-purple-800 bg-purple-950/40",
+    rose:   "text-rose-300 border-rose-900/70 bg-rose-950/30",
+  };
+  return (
+    <span title={title} className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border whitespace-nowrap ${tons[tom]}`}>
+      {children}
+    </span>
+  );
+}
+
+/* Uma característica de origem: painel próprio, com cabeçalho e corpo. Antes
+   eram parágrafos empilhados atrás de uma barrinha, e com o Herdado e o
+   Restringido entrando ficou impossível ver onde uma acabava e a outra começava. */
+function CaracteristicaPainel({ nome, estado, estadoAlerta, mesa, children }) {
+  return (
+    <div className="rounded-lg border border-slate-800 bg-slate-950/40 overflow-hidden">
+      <div className="flex items-center gap-2 px-3 py-2 bg-slate-900/60 border-b border-slate-800/80">
+        <span className="text-[12px] font-bold text-slate-100">{nome}</span>
+        {mesa && <OrigemChip title="Sem número na ficha: vale na mesa">Mesa</OrigemChip>}
+        {estado && (
+          <span className={`ml-auto text-[11px] font-mono tabular-nums ${estadoAlerta ? "text-rose-400" : "text-purple-300"}`}>
+            {estado}
+          </span>
+        )}
+      </div>
+      <div className="px-3 py-2.5 space-y-2.5">{children}</div>
+    </div>
+  );
+}
+
+/* Card da Origem: seletor, clã, características e todos os controles que elas
+   abrem (bônus de atributo, alocação, escolhas aninhadas, anatomias). */
+function OrigemCard({ draft, derived, patchCore, setOrigemId, setOrigemBonus, setOrigemCla, toggleEscolhaOrigem, setOrigemPool }) {
   const id = draft.core.origem?.id;
   const origem = getOrigem(id);
-  if (!origem) return null;
-  const rara = origem.raridade === "rara";
-  const fixedBonus = Object.entries(origem.bonusAtributos || {});
+  const nd = draft.core.nd ?? 1;
+  const clas = clasDaOrigem(id);
+  const claId = draft.core.origem?.cla;
+  const cla = getCla(claId);
+  const caracteristicas = origem ? caracteristicasEfetivas(draft) : [];
+  const porEscolha = derived?.origem?.porEscolha || {};
 
   const bonusMap = draft.core.origem?.bonusAtributos || {};
   const attrForPoints = (p) => Object.entries(bonusMap).find(([, v]) => v === p)?.[0] || "";
@@ -3026,7 +3245,8 @@ function OrigemInfo({ draft, patchCore, setOrigemBonus }) {
     if (attrKey) cur[attrKey] = points;
     setOrigemBonus(cur); // aplica e devolve pontos de Nível que passariam do limite
   };
-  // Bônus de distribuir N pontos (máx M por atributo) — ex.: Sem Técnica (4, máx 3).
+  // Bônus de distribuir N pontos (máx M por atributo) — Sem Técnica (4, máx 3),
+  // Restringido (2 entre os físicos).
   const distribUsado = Object.values(bonusMap).reduce((s, v) => s + v, 0);
   const setDistrib = (key, val) => {
     const cur = { ...bonusMap };
@@ -3035,169 +3255,356 @@ function OrigemInfo({ draft, patchCore, setOrigemBonus }) {
   };
   // Características de Anatomia (Feto): escolhe 1 + 1 a cada 5 níveis.
   const anatomiasSel = draft.core.origem?.anatomias || [];
-  const anatTotal = anatomiaTotal(draft.core.nd ?? 1);
+  const anatTotal = anatomiaTotal(nd);
   const toggleAnatomia = (aid) => {
     const cur = anatomiasSel.includes(aid) ? anatomiasSel.filter((x) => x !== aid) : [...anatomiasSel, aid];
     patchCore({ origem: { ...draft.core.origem, anatomias: cur } });
   };
-  const optionsFor = (p) => {
+  // O par +2/+1 pode ser restrito a dois atributos (os clãs do Herdado).
+  const optionsFor = (p, entre) => {
     const usedByOthers = Object.entries(bonusMap).filter(([, v]) => v !== p).map(([k]) => k);
-    return AFTY_TECNICA_ATTRS.filter((o) => !usedByOthers.includes(o.value));
+    return AFTY_TECNICA_ATTRS.filter((o) => !usedByOthers.includes(o.value) && (!entre || entre.includes(o.value)));
   };
 
+  const seletor = (
+    <div className="w-56">
+      <Select value={id} onChange={(v) => setOrigemId(v)} options={AFTY_ORIGENS} />
+    </div>
+  );
+
+  if (!origem) return <Card title="Origem" headerRight={seletor}>{null}</Card>;
+
+  const rara = origem.raridade === "rara";
+  const fixedBonus = Object.entries(origem.bonusAtributos || {});
+  const faltaCla = !!clas && !cla;
+
   return (
-    <div className="mt-4 rounded-lg border border-slate-800 bg-slate-950/40 p-3">
-      <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-sm font-bold text-white">{origem.nome}</span>
-        <span className={`text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded border ${
-          rara ? "text-amber-300 border-amber-800 bg-amber-950/40" : "text-slate-400 border-slate-700 bg-slate-800/50"
-        }`}>
-          {rara ? "Rara" : "Comum"}
-        </span>
-        {origem.id === "restringido" && (
-          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded border text-purple-300 border-purple-800 bg-purple-950/40">
-            destrava Especialização exclusiva
-          </span>
+    <Card title="Origem" headerRight={seletor}>
+      {/* faixa de cabeçalho: nome grande, raridade, travas e o resumo */}
+      <div className="rounded-lg border border-slate-800 bg-gradient-to-br from-slate-900 to-slate-950 p-3.5">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-base font-bold text-white leading-none">{origem.nome}</span>
+          {cla && (
+            <>
+              <ChevronLeft className="w-3 h-3 text-slate-600 rotate-180" aria-hidden="true" />
+              <span className="text-base font-bold text-purple-200 leading-none">{cla.nome}</span>
+            </>
+          )}
+          <OrigemChip tom={rara ? "amber" : "slate"}>{rara ? "Rara" : "Comum"}</OrigemChip>
+          {origem.especializacaoExclusivaId && (
+            <OrigemChip tom="purple">Destrava Especialização Exclusiva</OrigemChip>
+          )}
+          {fixedBonus.map(([k, v]) => (
+            <OrigemChip key={k} tom="purple">{`${ATTR_ABBR[k] ?? k} ${v >= 0 ? `+${v}` : v}`}</OrigemChip>
+          ))}
+        </div>
+
+        {(cla?.resumo || origem.resumo) && (
+          <p className="text-[11px] text-slate-400 leading-relaxed mt-2.5">{cla?.resumo || origem.resumo}</p>
+        )}
+
+        {origem.restricoes?.length > 0 && (
+          <div className="mt-2.5 flex flex-wrap gap-1.5">
+            {origem.restricoes.map((r, i) => <OrigemChip key={i} tom="rose">{r}</OrigemChip>)}
+          </div>
         )}
       </div>
 
-      {origem.resumo && <p className="text-xs text-slate-400 mt-2">{origem.resumo}</p>}
-
-      {origem.restricoes?.length > 0 && (
-        <div className="mt-2 flex flex-wrap gap-1.5">
-          {origem.restricoes.map((r, i) => (
-            <span key={i} className="text-[10px] px-1.5 py-0.5 rounded border border-rose-900/60 text-rose-300/80 bg-rose-950/20">{r}</span>
-          ))}
-        </div>
-      )}
-
-      {/* bônus fixo (origens sem escolha) */}
-      {fixedBonus.length > 0 && (
-        <div className="mt-3">
-          <div className="text-[10px] uppercase tracking-wider text-slate-400 mb-1">Bônus de Atributos</div>
-          <div className="flex flex-wrap gap-1.5">
-            {fixedBonus.map(([k, v]) => (
-              <span key={k} className="text-[11px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-purple-300 border border-slate-700">
-                {k} {v >= 0 ? `+${v}` : v}
-              </span>
-            ))}
+      {/* clãs: só o Herdado se divide, e sem clã ele não tem conteúdo nenhum */}
+      {clas && (
+        <div className="mt-4">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-[10px] uppercase tracking-wider text-slate-400">Clã</span>
+            {faltaCla && <span className="text-[11px] text-amber-300">Escolha um clã para receber as características</span>}
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {clas.map((c) => {
+              const on = c.id === claId;
+              return (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => setOrigemCla(on ? null : c.id)}
+                  aria-pressed={on}
+                  className={`rounded-lg border px-2.5 py-2 text-left transition-colors ${
+                    on
+                      ? "border-purple-700 bg-purple-950/40 text-purple-100"
+                      : "border-slate-800 bg-slate-950/40 text-slate-300 hover:border-purple-700/70 hover:text-white"
+                  }`}
+                >
+                  <span className="text-[12px] font-bold block truncate">{c.nome.replace(/^Clã /, "")}</span>
+                  <span className={`text-[10px] block truncate ${on ? "text-purple-300/80" : "text-slate-500"}`}>
+                    {resumoDoCla(c)}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
 
       {/* características */}
-      {origem.caracteristicas.length > 0 && (
-        <div className="mt-3 space-y-2.5">
+      {caracteristicas.length > 0 && (
+        <div className="mt-4 space-y-2.5">
           <div className="text-[10px] uppercase tracking-wider text-slate-400">Características de Origem</div>
-          {origem.caracteristicas.map((c) => (
-            <div key={c.id} className="border-l-2 border-slate-800 pl-2.5">
-              <div className="text-xs font-semibold text-slate-200">{c.nome}</div>
-              <p className="text-[11px] text-slate-400 leading-relaxed">{c.descricao}</p>
+          {caracteristicas.map((c) => {
+            const escolhas = [c.escolha, ...(c.escolhas || [])].filter(Boolean);
+            // O estado do cabeçalho é o da PRIMEIRA escolha, que é a única
+            // quando existe uma só. Com várias (Empenho Implacável), cada uma
+            // carrega o seu, abaixo.
+            const uma = escolhas.length === 1 ? porEscolha[escolhas[0].id] : null;
+            return (
+              <CaracteristicaPainel
+                key={c.id}
+                nome={c.nome}
+                mesa={c.mesa}
+                estado={uma ? `${uma.gasto} de ${uma.vagas}` : null}
+                estadoAlerta={uma?.excedeu}
+              >
+                <p className="text-[11px] text-slate-400 leading-relaxed">{c.descricao}</p>
 
-              {/* seletor de bônus escolhível */}
-              {c.bonus?.escolhaDoJogador && (
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {c.bonus.pontos.map((p) => (
-                    <div key={p} className="flex items-center gap-1.5">
-                      <span className="text-[11px] font-mono font-bold text-purple-300 whitespace-nowrap">+{p} em</span>
-                      <div className="w-36">
-                        <Select value={attrForPoints(p)} onChange={(v) => setSlot(p, v)} options={optionsFor(p)} placeholder="escolher..." />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* alocador: distribuir N pontos (máx M por atributo) — ex.: Sem Técnica */}
-              {c.bonus?.distribuir && (
-                <div className="mt-2">
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-[10px] uppercase tracking-wider text-slate-500">Distribuir · máx {c.bonus.maxPorAtributo}/atributo</span>
-                    <span className="text-[11px] font-mono text-slate-400 tabular-nums">{distribUsado} / {c.bonus.distribuir}</span>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    {AFTY_ATTRS.map((a) => {
-                      const val = bonusMap[a.key] || 0;
-                      const max = Math.min(c.bonus.maxPorAtributo, val + (c.bonus.distribuir - distribUsado));
-                      return (
-                        <div key={a.key} className="flex items-center justify-between gap-1.5 bg-slate-950/50 border border-slate-800 rounded px-2 py-1">
-                          <span className="text-[11px] font-bold text-slate-400">{a.abbr}</span>
-                          <div className="w-[84px]">
-                            <NumberInput value={val} onChange={(v) => setDistrib(a.key, v)} min={0} max={max} aria-label={`Bônus em ${a.label}`} />
-                          </div>
+                {/* seletor de bônus escolhível (+2 / +1) */}
+                {c.bonus?.escolhaDoJogador && (
+                  <div className="flex flex-wrap gap-2">
+                    {c.bonus.pontos.map((p) => (
+                      <div key={p} className="flex items-center gap-1.5">
+                        <span className="text-[11px] font-mono font-bold text-purple-300 whitespace-nowrap">+{p} em</span>
+                        <div className="w-36">
+                          <Select
+                            value={attrForPoints(p)}
+                            onChange={(v) => setSlot(p, v)}
+                            options={optionsFor(p, c.bonus.entre)}
+                            placeholder="escolher..."
+                          />
                         </div>
-                      );
-                    })}
+                      </div>
+                    ))}
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* seletor de Características de Anatomia (Físico Amaldiçoado) */}
-              {c.poolAnatomia && (
-                <div className="mt-2">
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-[10px] uppercase tracking-wider text-slate-500">Características de Anatomia</span>
-                    <span className="text-[11px] font-mono text-slate-400 tabular-nums">{anatomiasSel.length} / {anatTotal}</span>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {ANATOMIAS.map((an) => {
-                      const sel = anatomiasSel.includes(an.id);
-                      const full = anatomiasSel.length >= anatTotal;
+                {/* alocador: distribuir N pontos (máx M por atributo) */}
+                {c.bonus?.distribuir && (
+                  <AlocadorDeAtributo
+                    titulo={`Distribuir · máx ${c.bonus.maxPorAtributo}/atributo`}
+                    chaves={c.bonus.entre}
+                    valorDe={(k) => bonusMap[k] || 0}
+                    maxDe={(k) => Math.min(c.bonus.maxPorAtributo, (bonusMap[k] || 0) + (c.bonus.distribuir - distribUsado))}
+                    onChange={setDistrib}
+                    usado={distribUsado}
+                    total={c.bonus.distribuir}
+                  />
+                )}
+
+                {/* alocação com pool próprio (Ápice Corporal Humano) */}
+                {c.alocacao && (() => {
+                  const aloc = c.alocacao;
+                  const pool = draft.core.origem?.pools?.[aloc.id] || {};
+                  const total = totalDaAlocacao(aloc, nd);
+                  const usado = usoDaAlocacao(aloc, pool);
+                  return (
+                    <AlocadorDeAtributo
+                      titulo={`A cada ${aloc.porNivel} níveis · +${aloc.valor} por pega`}
+                      chaves={aloc.entre}
+                      passo={aloc.valor}
+                      valorDe={(k) => pool[k] || 0}
+                      maxDe={(k) => (pool[k] || 0) + (total - usado) * aloc.valor}
+                      onChange={(k, v) => setOrigemPool(aloc.id, k, v)}
+                      usado={usado}
+                      total={total}
+                      vazio={total === 0 ? `Abre no nível ${aloc.porNivel}` : null}
+                    />
+                  );
+                })()}
+
+                {/* progressão por nível, quando a característica tem degraus */}
+                {c.niveis?.length > 0 && (
+                  <ol className="space-y-1">
+                    {c.niveis.map((n) => {
+                      const aberto = nd >= n.nd;
                       return (
-                        <button
-                          key={an.id}
-                          type="button"
-                          title={an.descricao}
-                          disabled={!sel && full}
-                          onClick={() => toggleAnatomia(an.id)}
-                          className={`text-[10px] px-2 py-1 rounded border transition-colors ${
-                            sel
-                              ? "bg-purple-800/50 border-purple-700 text-purple-100"
-                              : full
-                                ? "border-slate-800 text-slate-600 cursor-not-allowed"
-                                : "border-slate-700 text-slate-400 hover:text-white hover:border-slate-600"
-                          }`}
-                        >
-                          {an.nome}
-                        </button>
+                        <li key={n.nd} className="flex items-start gap-2 text-[11px] leading-relaxed">
+                          <span className={`font-mono font-bold tabular-nums w-6 flex-shrink-0 text-right ${aberto ? "text-purple-300" : "text-slate-700"}`}>
+                            {n.nd}
+                          </span>
+                          <span className={aberto ? "text-slate-300" : "text-slate-600"}>{n.texto}</span>
+                        </li>
                       );
                     })}
-                  </div>
-                  {anatomiasSel.length > 0 && (
-                    <div className="mt-2 space-y-1.5">
-                      {anatomiasSel.map((aid) => {
-                        const an = getAnatomia(aid);
-                        if (!an) return null;
+                  </ol>
+                )}
+
+                {/* escolhas aninhadas (Treinamentos de Clã, Empenho Implacável) */}
+                {escolhas.map((esc) => {
+                  const estado = porEscolha[esc.id];
+                  if (!estado) return null;               // degrau ainda fechado no ND
+                  return (
+                    <EscolhaDobravel
+                      key={esc.id}
+                      titulo={escolhas.length > 1 ? esc.label : "Escolha"}
+                      escolha={esc}
+                      estado={estado}
+                      onToggleOpcao={(opcaoId) => toggleEscolhaOrigem(esc.id, opcaoId)}
+                    />
+                  );
+                })}
+
+                {/* Características de Anatomia (Físico Amaldiçoado) */}
+                {c.poolAnatomia && (
+                  <div className="border-t border-slate-800 pt-2">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-[10px] uppercase tracking-wider text-slate-500">Características de Anatomia</span>
+                      <span className={`text-[11px] font-mono tabular-nums ${anatomiasSel.length > anatTotal ? "text-rose-400" : "text-purple-300"}`}>
+                        {anatomiasSel.length} / {anatTotal}
+                      </span>
+                    </div>
+                    <div className="space-y-1.5">
+                      {ANATOMIAS.map((an) => {
+                        const sel = anatomiasSel.includes(an.id);
+                        const full = anatomiasSel.length >= anatTotal;
                         return (
-                          <div key={aid} className="text-[11px] leading-relaxed border-l-2 border-purple-900/50 pl-2">
-                            <span className="text-slate-200 font-semibold">{an.nome}.</span>{" "}
-                            <span className="text-slate-400">{an.descricao}</span>
-                          </div>
+                          <button
+                            key={an.id}
+                            type="button"
+                            disabled={!sel && full}
+                            onClick={() => toggleAnatomia(an.id)}
+                            aria-pressed={sel}
+                            className={`w-full text-left rounded-md border px-2 py-1.5 transition-colors flex gap-2 ${
+                              sel
+                                ? "border-purple-700 bg-purple-950/40"
+                                : full
+                                  ? "border-slate-800/60 bg-transparent cursor-not-allowed"
+                                  : "border-slate-800 bg-slate-950/40 hover:border-purple-700/70"
+                            }`}
+                          >
+                            <span
+                              className={`mt-0.5 w-3.5 h-3.5 rounded flex items-center justify-center flex-shrink-0 border ${
+                                sel ? "bg-purple-700 border-purple-600 text-white" : "border-slate-600 text-transparent"
+                              }`}
+                              aria-hidden="true"
+                            >
+                              {sel && <Check className="w-2.5 h-2.5" />}
+                            </span>
+                            <span className={`text-[11px] leading-relaxed ${full && !sel ? "text-slate-600" : "text-slate-400"}`}>
+                              <span className={`font-semibold ${sel ? "text-purple-200" : "text-slate-300"}`}>{an.nome}.</span>
+                              {" "}{an.descricao}
+                            </span>
+                          </button>
                         );
                       })}
                     </div>
-                  )}
-                </div>
-              )}
+                  </div>
+                )}
 
-              {/* concessões (Talento / Feitiço / Aptidão / Perícia) — seletor virá quando os catálogos existirem */}
-              {c.grants && (
-                <div className="mt-1.5 flex flex-wrap gap-1.5">
-                  {c.grants.map((g, i) => (
-                    <span key={i} className="text-[10px] px-1.5 py-0.5 rounded border border-amber-800/60 text-amber-300/90 bg-amber-950/20">
-                      {grantLabel(g)}
-                    </span>
-                  ))}
-                </div>
-              )}
+                {/* concessões (Talento / Feitiço / Aptidão / Perícia) */}
+                {c.grants && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {c.grants.map((g, i) => <OrigemChip key={i} tom="amber">{grantLabel(g)}</OrigemChip>)}
+                  </div>
+                )}
 
-              {/* lembrete roxo: característica com continuação a fazer depois */}
-              {c.continuacao && (
-                <div className="mt-2 flex items-start gap-1.5 text-[11px] text-purple-300 bg-purple-950/30 border border-purple-800/60 rounded px-2 py-1.5">
-                  <span aria-hidden="true">✎</span>
-                  <span>Continuação pendente — completar na aba de Habilidades.</span>
-                </div>
-              )}
+                {/* contador de uma marcação que mora em outra aba (Feitiço Focado) */}
+                {c.contador && (
+                  <OrigemChip tom="amber">
+                    {`${c.contador.nome}: ${c.contador.niveis.filter((n) => nd >= n).length}`}
+                  </OrigemChip>
+                )}
+
+                {/* lembrete roxo: característica com continuação a fazer depois */}
+                {c.continuacao && (
+                  <div className="flex items-start gap-1.5 text-[11px] text-purple-300 bg-purple-950/30 border border-purple-800/60 rounded px-2 py-1.5">
+                    <span aria-hidden="true">✎</span>
+                    <span>Continuação pendente, completar na aba de Habilidades.</span>
+                  </div>
+                )}
+              </CaracteristicaPainel>
+            );
+          })}
+        </div>
+      )}
+    </Card>
+  );
+}
+
+/* Uma escolha aninhada de origem, DOBRADA por padrão.
+   O Empenho Implacável do Sem Técnica tem oito escolhas, e três delas oferecem
+   as dezessete perícias: aberto de uma vez são mais de cem botões numa tela só.
+   Fechada, a linha mostra o que já foi escolhido e quanto falta, que é o que
+   interessa depois da primeira vez. */
+function EscolhaDobravel({ titulo, escolha, estado, onToggleOpcao }) {
+  const [open, setOpen] = useState(false);
+  const nomes = estado.opcoes
+    .map((oid) => escolha.opcoes.find((o) => o.id === oid)?.nome)
+    .filter(Boolean);
+  const falta = estado.vagas - estado.gasto;
+
+  return (
+    <div className="border-t border-slate-800 pt-2">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        className="w-full flex items-center gap-2 text-left group"
+      >
+        <ChevronDown
+          className={`w-3.5 h-3.5 text-slate-600 flex-shrink-0 transition-transform ${open ? "" : "-rotate-90"}`}
+          aria-hidden="true"
+        />
+        <span className="text-[10px] uppercase tracking-wider text-slate-500 group-hover:text-slate-300">{titulo}</span>
+        <span className={`text-[11px] font-mono tabular-nums ml-auto ${estado.excedeu ? "text-rose-400" : falta > 0 ? "text-amber-300" : "text-purple-300"}`}>
+          {estado.gasto} de {estado.vagas}
+        </span>
+      </button>
+
+      {!open && nomes.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mt-1.5 pl-[22px]">
+          {nomes.map((n, i) => <OrigemChip key={i} tom="purple">{n}</OrigemChip>)}
+        </div>
+      )}
+
+      {open && (
+        <div className="mt-1.5">
+          <OpcoesDeEscolha
+            escolha={escolha}
+            opcoesEscolhidas={estado.opcoes}
+            escolhida
+            onToggleOpcao={onToggleOpcao}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* Alocador de pontos de atributo em grade. Serve aos dois casos: a distribuição
+   livre do bônus de origem (passo 1) e a alocação com pool próprio do Ápice
+   Corporal Humano (passo 2). */
+function AlocadorDeAtributo({ titulo, chaves, passo = 1, valorDe, maxDe, onChange, usado, total, vazio }) {
+  const lista = chaves ? AFTY_ATTRS.filter((a) => chaves.includes(a.key)) : AFTY_ATTRS;
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-1.5">
+        <span className="text-[10px] uppercase tracking-wider text-slate-500">{titulo}</span>
+        <span className={`text-[11px] font-mono tabular-nums ${usado > total ? "text-rose-400" : "text-purple-300"}`}>
+          {usado} / {total}
+        </span>
+      </div>
+      {vazio ? (
+        <div className="text-[11px] text-slate-600 border border-dashed border-slate-800 rounded px-2 py-1.5">{vazio}</div>
+      ) : (
+        <div className={`grid gap-2 ${lista.length > 3 ? "grid-cols-3" : "grid-cols-3"}`}>
+          {lista.map((a) => (
+            <div key={a.key} className="flex items-center justify-between gap-1.5 bg-slate-950/50 border border-slate-800 rounded px-2 py-1">
+              <span className="text-[11px] font-bold text-slate-400">{a.abbr}</span>
+              <div className="w-[84px]">
+                <NumberInput
+                  value={valorDe(a.key)}
+                  onChange={(v) => onChange(a.key, v)}
+                  min={0}
+                  max={maxDe(a.key)}
+                  step={passo}
+                  aria-label={`Bônus em ${a.label}`}
+                />
+              </div>
             </div>
           ))}
         </div>
@@ -3446,13 +3853,22 @@ function TabInformacoes({ draft, derived, patch, patchCore, patchAttr, patchNive
             <FieldLabel required>Patamar</FieldLabel>
             <Select value={draft.core.patamar} onChange={(v) => patchCore({ patamar: v })} options={AFTY_PATAMARES} />
           </div>
+          {/* Restringido não tem energia amaldiçoada, então não há quantidade
+              dela para escolher. */}
+          {draft.core.tipo !== "restringido" && (
+            <div>
+              <FieldLabel>Quantidade de PE</FieldLabel>
+              <Select value={draft.qntPE} onChange={(v) => patch({ qntPE: v })} options={AFTY_QNT_PE} />
+            </div>
+          )}
+          {/* A Integridade da Alma saiu do formulário (autor, 2026-07-29): o
+              Máximo já diz tudo, e a ficha é montada com a alma íntegra. O valor
+              corrente nasce cheio, no combatState, e só o jogo o mexe. */}
           <div>
-            <FieldLabel>Quantidade de PE</FieldLabel>
-            <Select value={draft.qntPE} onChange={(v) => patch({ qntPE: v })} options={AFTY_QNT_PE} />
-          </div>
-          <div>
-            <FieldLabel>Integridade da Alma</FieldLabel>
-            <NumberInput value={draft.alma.atual} onChange={(v) => patch({ alma: { ...draft.alma, atual: v } })} min={0} />
+            <FieldLabel>Máximo da Alma</FieldLabel>
+            <div className="h-9 bg-slate-950/60 border border-slate-800 rounded px-3 flex items-center text-sm font-mono text-purple-300">
+              {derived.almaMax}
+            </div>
           </div>
           <div>
             <FieldLabel>Atributo da Técnica</FieldLabel>
@@ -4029,7 +4445,7 @@ function AptidaoCard({ aptidao, escolhida, ctx, onToggle }) {
    Como soma(niveis) === ND e a 2ª leva o resto (ver resolveEspecializacoes),
    os dois ± editam O MESMO ponto de divisão por lados opostos: subir uma
    baixa a outra. Com uma classe só não há o que dividir, e nenhum ± aparece. */
-function TabEspecializacoes({ draft, derived, setEspecializacoes, toggleHabilidade, toggleEscolhaHabilidade, toggleTalento, setMelhoriaVezes, toggleLendaria, toggleEscolhaAltoNivel }) {
+function TabEspecializacoes({ draft, derived, patchCombate, setEspecializacoes, toggleHabilidade, toggleEscolhaHabilidade, toggleTalento, toggleEscolhaTalento, setMelhoriaVezes, toggleLendaria, toggleEscolhaAltoNivel }) {
   const { escolhidas, total, max, obrigatoria } = derived.especializacoes;
   const disponiveis = especializacoesDisponiveis(draft.core.origem?.id);
 
@@ -4167,7 +4583,13 @@ function TabEspecializacoes({ draft, derived, setEspecializacoes, toggleHabilida
         (autor, 2026-07-17): a aba "Habilidades" do topo é de Ações &
         Características, não destas. Mesmo arranjo da aba de Aptidões, que
         tem o alocador em cima e a lista de leitura embaixo. */}
-    <HabilidadesEspecializacao draft={draft} derived={derived} toggleHabilidade={toggleHabilidade} toggleEscolhaHabilidade={toggleEscolhaHabilidade} toggleTalento={toggleTalento} />
+    <HabilidadesEspecializacao draft={draft} derived={derived} toggleHabilidade={toggleHabilidade} toggleEscolhaHabilidade={toggleEscolhaHabilidade} toggleTalento={toggleTalento} toggleEscolhaTalento={toggleEscolhaTalento} />
+
+    {/* Empolgação: some inteira sem a habilidade Base do Lutador. */}
+    <EmpolgacaoCard derived={derived} />
+
+    {/* Bancada de balanceamento: some para quem não tem estado nenhum. */}
+    <SimulacaoCombateCard derived={derived} patchCombate={patchCombate} />
 
     {/* Alto Nível (21+): fica SEPARADO embaixo, e não depende de classe
         nenhuma (autor, 2026-07-22). Some inteiro abaixo do ND 21. */}
@@ -4296,6 +4718,18 @@ function OpcoesDeEscolha({ escolha, opcoesEscolhidas, escolhida, onToggleOpcao }
   );
 }
 
+/* O que está travando esta habilidade, em uma frase. O nível de classe vem
+   primeiro porque é o requisito mais comum; se ele está em dia, o culpado é
+   um dos extras (outra habilidade, uma aptidão, um atributo mínimo). */
+function motivoBloqueio(habilidade, acesso) {
+  if (!acesso.nivelOk && acesso.label) {
+    return `Requer nível ${habilidade.nivel} em ${acesso.label.split(" ")[0]}`;
+  }
+  const faltando = (acesso.extras || []).filter((e) => !e.ok && e.label);
+  if (faltando.length) return `Requer ${faltando.map((e) => e.label).join(", ")}`;
+  return "Pré-requisito não atendido";
+}
+
 function HabilidadeCard({ habilidade, escolhida, acesso, nivelEspec, escolhaEstado, onToggleOpcao }) {
   const [open, setOpen] = useState(false);
   // Já escolhida nunca trava: senão redividir a multiclasse prenderia a
@@ -4320,12 +4754,14 @@ function HabilidadeCard({ habilidade, escolhida, acesso, nivelEspec, escolhaEsta
           aria-pressed={escolhida}
           aria-label={`${escolhida ? "Remover" : "Escolher"} ${habilidade.nome}`}
           title={
+            // O rótulo diz o que REALMENTE falta. Antes ele sempre acusava o
+            // nível de classe, porque `acesso.label` existe mesmo quando o
+            // nível está em dia: um Lutador 20 sem Complementação Marcial era
+            // informado de que precisava de "nível 6 em Lutador".
+            // Talento não tem requisito de nível de classe (não vem com
+            // `label`), só os extras, que já aparecem na linha.
             bloqueada
-              ? // Talento não tem requisito de nível de classe (não vem com
-                // `label`), só os extras, que já aparecem na linha.
-                acesso.label
-                  ? `Requer nível ${habilidade.nivel} em ${acesso.label.split(" ")[0]}`
-                  : "Pré-requisito não atendido"
+              ? motivoBloqueio(habilidade, acesso)
               : escolhida ? "Remover esta habilidade" : "Escolher esta habilidade"
           }
           className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 border transition-colors ${
@@ -4420,7 +4856,7 @@ function HabilidadeCard({ habilidade, escolhida, acesso, nivelEspec, escolhaEsta
 
 const TALENTOS_TAB = "__talentos__";
 
-function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, toggleEscolhaHabilidade, toggleTalento }) {
+function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, toggleEscolhaHabilidade, toggleTalento, toggleEscolhaTalento }) {
   const { escolhidas, escolhas, total, gastos, excedeu, niveisPorEspec } = derived.habilidades;
   const especs = derived.especializacoes.escolhidas;
   const talentosEscolhidos = derived.talentos.escolhidas;
@@ -4591,6 +5027,8 @@ function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, toggleEsc
                   habilidade={{ ...h, onToggle: () => toggleTalento(h.id) }}
                   escolhida={talentosEscolhidos.includes(h.id)}
                   acesso={{ ...avaliarAcessoTalento(h, ctxTalento), nivelOk: true, faltam: 0 }}
+                  escolhaEstado={derived.talentos?.escolhas?.porTal?.[h.id]}
+                  onToggleOpcao={(opcaoId) => toggleEscolhaTalento(h.id, opcaoId)}
                 />
               ) : (
                 <HabilidadeCard
@@ -4850,6 +5288,121 @@ function AltoNivelCard({ item, escolhida, acesso, escolhaEstado, vezes, onToggle
         </div>
       )}
     </div>
+  );
+}
+
+/* Simulação de Combate: a bancada de balanceamento (autor, 2026-07-28).
+   Liga os estados e os números do Preview se mexem, sem precisar rodar a mesa.
+   Cada linha só aparece se a criatura tiver a habilidade que a produz, então o
+   card fica vazio (e some) para quem não tem nenhuma. */
+function SimulacaoCombateCard({ derived, patchCombate }) {
+  const combate = derived.combate;
+  const escolhidas = derived.habilidades?.escolhidas ?? [];
+  // As opções aninhadas escolhidas (Manobra de Empolgação, Estilo de Combate),
+  // achatadas: é o que `requerEscolha` consulta.
+  const opcoes = Object.values(derived.habilidades?.escolhas?.mapa ?? {}).flat();
+  // Uma OPÇÃO também pode exigir escolha: das 8 Posturas, só aparecem as que a
+  // criatura aprendeu. Linha que fica sem opção nenhuma some junto.
+  const opcoesDe = (e) => (e.opcoes ?? []).filter((o) => !o.requerEscolha || opcoes.includes(o.requerEscolha));
+  // `requerHabilidade` aceita lista: Ataque Inconsequente existe no Lutador e no
+  // Restringido com o mesmo texto, e ter qualquer uma das duas mostra a linha.
+  const temHabilidade = (req) =>
+    (Array.isArray(req) ? req : [req]).some((id) => escolhidas.includes(id));
+  const talentos = derived.talentos?.escolhidas ?? [];
+  const linhas = COMBATE_ESTADOS.filter((e) => {
+    const temDono = e.requerEscolha ? opcoes.includes(e.requerEscolha)
+      : e.requerTalento ? talentos.includes(e.requerTalento)
+      : temHabilidade(e.requerHabilidade);
+    return temDono && (e.tipo !== "opcao" || opcoesDe(e).length > 0);
+  });
+  if (!linhas.length) return null;
+
+  const visivel = (e) => !e.requerEstado || combate[e.requerEstado];
+  return (
+    <Card
+      title="Simulação de Combate"
+      headerRight={
+        <BoolChip ativo={combate.ativo} onToggle={() => patchCombate({ ativo: !combate.ativo })}>
+          Em Combate
+        </BoolChip>
+      }
+    >
+      <div className={`space-y-1 ${combate.ativo ? "" : "opacity-40 pointer-events-none"}`}>
+        {linhas.filter(visivel).map((e) => {
+          const teto = typeof e.max === "function" ? e.max(derived) : e.max;
+          const valor = combate[e.id];
+          return (
+            <div
+              key={e.id}
+              className="rounded-lg border border-slate-800 bg-slate-950/40 flex items-center gap-2.5 px-2.5 min-h-10 py-1"
+            >
+              <span className="flex-1 min-w-0 text-[12px] font-semibold text-slate-100 truncate">{e.label}</span>
+              {e.tipo === "bool" ? (
+                <BoolChip ativo={!!valor} onToggle={() => patchCombate({ [e.id]: !valor })}>
+                  {valor ? "Ativa" : "Inativa"}
+                </BoolChip>
+              ) : e.tipo === "opcao" ? (
+                /* Exclusivas entre si: clicar na que já está ligada desliga. */
+                <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                  {opcoesDe(e).map((o) => (
+                    <BoolChip
+                      key={o.id}
+                      ativo={valor === o.id}
+                      onToggle={() => patchCombate({ [e.id]: valor === o.id ? null : o.id })}
+                    >
+                      {o.label}
+                    </BoolChip>
+                  ))}
+                </div>
+              ) : (
+                <VezesGauge
+                  vezes={Math.max(0, valor - (e.min ?? 0))}
+                  max={Math.max(0, teto - (e.min ?? 0))}
+                  nome={e.label}
+                  onSet={(n) => patchCombate({ [e.id]: n + (e.min ?? 0) })}
+                />
+              )}
+              <span className="font-mono text-[13px] font-bold tabular-nums text-white w-6 text-right">
+                {e.tipo === "faixa" ? valor : ""}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </Card>
+  );
+}
+
+/* Empolgação (Lutador). O NÍVEL é estado de combate e a ficha não o guarda
+   (autor, 2026-07-28), então o card é só leitura: a tabela de dados e o nível
+   em que o combate começa. Empolgação Máxima troca a tabela inteira, e Lutador
+   Superior começa um nível acima. */
+function EmpolgacaoCard({ derived }) {
+  const emp = derived.empolgacao;
+  if (!emp?.ativa) return null;
+  return (
+    <Card
+      title="Empolgação"
+      headerRight={
+        <span className="font-mono text-sm font-bold tabular-nums text-slate-200" title="Nível em que o combate começa">
+          {emp.inicial} / {emp.max}
+        </span>
+      }
+    >
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        {emp.tabela.map((l) => (
+          <div
+            key={l.nivel}
+            className={`rounded-lg border px-2.5 py-2 flex items-center justify-between gap-2 ${
+              l.inicial ? "border-purple-700 bg-purple-950/30" : "border-slate-800 bg-slate-950/40"
+            }`}
+          >
+            <span className="text-[11px] font-semibold text-slate-300 whitespace-nowrap">Nível {l.nivel}</span>
+            <span className="font-mono text-[13px] font-bold tabular-nums text-white">{l.dado}</span>
+          </div>
+        ))}
+      </div>
+    </Card>
   );
 }
 
@@ -6289,6 +6842,7 @@ const CALC_ROWS = [
   { key: "cd",           label: "CD" },
   { key: "rdGeral",      label: "RD Geral" },
   { key: "rdEspecifico", label: "RD Específico" },
+  { key: "rdAlma",       label: "RD a Alma" },
   { key: "movimento",    label: "Movimento (m)" },
   { key: "resParcial",   label: "Resistência Parcial" },
   { key: "atencao",      label: "Atenção" },
@@ -7542,11 +8096,40 @@ function AftyPreview({ draft, derived }) {
   // `p` é a chave em derived.partes: quem tem, ganha o hover com as fontes.
   const stats = [
     { k: "Vida", v: derived.hp, p: "hp", accent: "text-purple-300" },
-    { k: "Energia", v: derived.pe, p: "pe", accent: "text-sky-400" },
+    ...(derived.pvTemporario > 0
+      ? [{ k: "PV Temp.", v: derived.pvTemporario, p: "pvTemporario", accent: "text-amber-300" }]
+      : []),
+    // Cura no início do turno, em dados + fixo. Só aparece quando algum poder
+    // liga (hoje Sobrevivente, abaixo da metade dos PV).
+    ...(derived.regeneracao?.dados > 0
+      ? [{
+          k: "Regeneração",
+          v: `${derived.regeneracao.dados}${derived.regeneracao.dado}${derived.regeneracao.fixo ? `+${derived.regeneracao.fixo}` : ""}`,
+          accent: "text-emerald-300",
+        }]
+      : []),
+    // O Restringido não tem energia amaldiçoada: a linha some inteira em vez de
+    // mostrar um zero, que passaria a ideia de "gastou tudo".
+    ...(draft.core.tipo === "restringido"
+      ? []
+      : [{ k: "Energia", v: derived.pe, p: "pe", accent: "text-sky-400" }]),
+    // Recursos de especialização: Preparo é do Combatente e Estamina do
+    // Restringido (que não tem energia amaldiçoada). Somem para quem não tem.
+    ...(derived.pontosPreparo > 0
+      ? [{ k: "Preparo", v: derived.pontosPreparo, p: "pontosPreparo", accent: "text-sky-300" }]
+      : []),
+    ...(derived.estamina > 0
+      ? [{ k: "Estamina", v: derived.estamina, p: "estamina", accent: "text-sky-300" }]
+      : []),
     { k: "Defesa", v: derived.defesa, p: "defesa" },
     { k: "CD", v: derived.cd, p: "cd" },
     { k: "RD Geral", v: derived.rdGeral, p: "rdGeral" },
     { k: "RD Espec.", v: derived.rdEspecifico, p: "rdEspecifico" },
+    // A RD Geral cobre todo tipo MENOS alma, então esta é a única defesa contra
+    // Dano na Alma. Ninguém tem por base: some para quem não tem o poder.
+    ...(derived.rdAlma > 0
+      ? [{ k: "RD a Alma", v: derived.rdAlma, p: "rdAlma", accent: "text-fuchsia-300" }]
+      : []),
     { k: "Movimento", v: `${derived.movimento}m`, p: "movimento" },
     { k: "Res. Parcial", v: derived.resParcial, p: "resParcial" },
     { k: "Iniciativa", v: `+${derived.iniciativa}`, p: "iniciativa" },
@@ -7573,6 +8156,13 @@ function AftyPreview({ draft, derived }) {
           {derived.almaMult !== 1 && (
             <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-rose-950/50 text-rose-300 border border-rose-800">
               Alma {Math.round(derived.almaMult * 100)}%
+            </span>
+          )}
+          {/* A simulação mexe nos números do Preview, então ela PRECISA
+              aparecer aqui: senão os valores mudam sem explicação. */}
+          {derived.combate?.ativo && (
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-950/50 text-amber-300 border border-amber-800">
+              Em Combate
             </span>
           )}
         </div>

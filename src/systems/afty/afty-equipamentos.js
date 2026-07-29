@@ -218,6 +218,17 @@ export function propriedadesDaArma(def) {
 }
 
 /**
+ * A arma pode virar Arma Dedicada (Lutador 2°)? O texto: "as quais não podem
+ * possuir as propriedades Duas Mãos ou Pesada, exceto caso já possuam a
+ * propriedade Marcial".
+ */
+export function podeSerArmaDedicada(def) {
+  const p = def?.props ?? {};
+  if (p.marcial) return true;
+  return !p.duas_maos && p.pesada == null;
+}
+
+/**
  * Alcance da arma, em metros. Vem da propriedade `alcance` (armas a distância)
  * ou de `arremessavel`. Arma corpo a corpo sem nenhuma das duas devolve null:
  * o alcance dela depende do tamanho de quem maneja, e não é da arma.
@@ -1281,6 +1292,7 @@ export function resolveEquipamentos(creature, bt = 2) {
   let espacosUsados = 0;
   let uniformeDefesa = 0;
   let rdFisico = 0;
+  let rdEscudoBase = 0;
   let rdGeralBonus = 0;
   let defesaBonus = 0;
   let movimentoBonus = 0;
@@ -1317,6 +1329,9 @@ export function resolveEquipamentos(creature, bt = 2) {
         penalidadeDestreza += def.penalidade ?? 0;
       } else if (e.tipo === "escudo") {
         rdFisico += def.rdFisico ?? 0;
+        // O "aumento BASE em RD do escudo", separado do que a Ferramenta soma.
+        // O Especialista em Escudo (Combatente 4°) lê justamente essa parcela.
+        rdEscudoBase += def.rdFisico ?? 0;
         // RD Física por grau da Ferramenta: SOMA com a do escudo comum (autor).
         if (fa) rdFisico += fa.rdGrau;
         penalidadeDestreza += def.penalidade ?? 0;
@@ -1361,6 +1376,7 @@ export function resolveEquipamentos(creature, bt = 2) {
     espacosUsados,
     uniformeDefesa,
     rdFisico,
+    rdEscudoBase,        // só a parcela do escudo, sem a Ferramenta Amaldiçoada
     rdGeralBonus,
     defesaBonus,
     movimentoBonus,
@@ -1380,8 +1396,10 @@ export function resolveEquipamentos(creature, bt = 2) {
  * do limite é impossível pelo livro, então vira aviso (a aba não impede,
  * do mesmo jeito que o orçamento não impede).
  */
-export function resolveCarga(espacosUsados, modForca = 0) {
-  const cargaLimite = capacidadeCarga(modForca);
+export function resolveCarga(espacosUsados, modForca = 0, espacosExtras = 0) {
+  // `espacosExtras` é o canal `espacosCarga` do Motor: "Você recebe espaços de
+  // item adicionais no seu inventário" (Otimização de Espaço, Suporte 2°).
+  const cargaLimite = capacidadeCarga(modForca) + espacosExtras;
   const cargaMaxima = cargaLimite * 2;
   const sobrecarregado = espacosUsados > cargaLimite;
   const acimaDoMaximo = espacosUsados > cargaMaxima;

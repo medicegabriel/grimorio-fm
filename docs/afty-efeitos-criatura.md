@@ -315,7 +315,7 @@ que o Afty adiciona precisam de referência própria (o motor de invocação já
 
 ## Fase 2 · LUTADOR (2026-07-27)
 
-Primeira especialização passada balde a balde. **70 habilidades**, **12 ligadas** ao Motor,
+Primeira especialização passada balde a balde. **69 habilidades**, **16 ligadas** ao Motor,
 mais Aptidões de Luta, que entra pela escolha aninhada.
 
 ### O que ligou
@@ -413,3 +413,339 @@ valem para todas as linhas.
 A aba Equipamentos só deixa equipar uniforme, escudo e item com efeito. Exigir `equipado` na
 lista de dano deixaria a lista sem nenhuma arma, para sempre. Por isso o critério é **arma
 CARREGADA**, que também é a palavra do autor ("para cada Tipo de Arma colocado").
+
+---
+
+## Segunda leva do Lutador (2026-07-27, decisões do autor)
+
+| Decisão | Efeito no código |
+|---|---|
+| "1 dado de dano adicional" é **DADO mesmo**, não Nível de Dano | canal `dadosDano`, somado DEPOIS do dano fixo |
+| Grau Especial passa de 40 para **20** | `DANO_ADICIONAL_ARMA` |
+| Arma sem Ferramenta Amaldiçoada soma **zero** | já era o comportamento, agora documentado |
+| **"Teste de Resistência Mestre" sai do sistema** | as SEIS entradas removidas de `AFTY_HABILIDADES` |
+| Poder Corporal e Punhos Letais **confirmados** | nota de "confirmar" removida |
+
+### Por que o dado extra entra depois do fixo
+
+O Dano Fixo é o resto que falta para a média da rolagem bater no Dano Total. Somar um dado
+DENTRO da conta só trocaria dano fixo por variância, com a média intacta. Somando por fora,
+cada dado acrescenta a média dele. É a única ordem em que "dado adicional" adiciona dano, e é
+o que separa `dadosDano` de `nivelDano`.
+
+### Canais novos desta leva
+
+`dadosDano`, `margemCritico` (quanto DIMINUI, piso de 2) e `ignoraRD`, os três com alvo
+`fonteDano`. A margem base de cada arma vem do campo `critico` do catálogo de armas, que até
+então não aparecia em lugar nenhum fora da aba Equipamentos. Desarmado é 20.
+
+### Lutador agora: 15 habilidades ligadas
+
+As três novas são **Lutador Superior** (`dadosDano` +1), **Poder Corporal** (`nivelDano` +2) e
+**Punhos Letais** (`margemCritico` −1, `ignoraRD` = Maestria).
+
+⚠ `proficienciaTR` continua no motor mas ficou **sem nenhum conteúdo** depois da remoção do
+Teste de Resistência Mestre. Fica: é o irmão de `proficienciaPericia` e o mesmo caminho de
+código sustenta a separação escolhido/concedido dos TRs.
+
+### Ainda sem canal no Lutador
+
+Dedicação em Arma ("o dano dela aumenta em 1 nível") é o caso mais próximo de caber: o canal
+`nivelDano` já aceita o id da arma como alvo, mas falta a escolha das três Armas Dedicadas, e o
+"passam a ser contadas como marciais" não tem para onde ir. Fica para quando o autor decidir.
+
+---
+
+## ARMAS DEDICADAS · a decisão de UX (2026-07-27)
+
+Dedicação em Arma (Lutador 2°) pede "escolha três armas" de um catálogo de 52, com uma regra de
+elegibilidade. O caminho óbvio seria a `escolha` aninhada padrão, com o catálogo de armas como
+pool. **Foi recusado**: é exatamente o paredão que o `escolhaEmAbas` teve de resolver no Roubo
+de Habilidade, e ali havia motivo (o pool É a habilidade). Aqui não há.
+
+**O que foi feito:** a marcação vive na **linha de dano da arma**, que já existe uma por arma
+carregada. Um botão de 20px à esquerda do nome, na mesma anatomia do botão de equipar da aba
+Equipamentos, e o contador `1 / 3` no cabeçalho do card, como todo orçamento do app.
+
+Por que ganha:
+
+- **Nenhuma tela nova, nenhum pool.** A lista já estava na tela.
+- **A consequência aparece na linha que se clica**: o dano pula, o chip "1 Nível de Dano"
+  entra e o chip "Marcial" aparece em roxo (concedido) entre as propriedades da arma.
+- **A elegibilidade fica óbvia**: arma de Duas Mãos ou Pesada que não seja Marcial nasce com o
+  botão travado, e o `title` diz o motivo.
+- O botão **só existe com a habilidade pega**. Sem ela, o card não muda em nada.
+
+**Consequência assumida:** só dá para dedicar arma que a criatura carrega. O texto diz "escolha
+três armas", sem essa amarra, mas o benefício só vale "enquanto empunhar", então na mesa dá no
+mesmo. Se o autor quiser dedicar arma que ainda não tem, aí sim vale o pool.
+
+**Estado:** a ficha guarda a lista inteira (`creature.armasDedicadas`), e o teto de 3 e o
+cruzamento com o que está carregado são aplicados na LEITURA. Tirar a arma da mochila libera a
+vaga sem apagar a escolha, e recolocar a arma traz a dedicação de volta. Mesma convenção do
+aparo de níveis em `resolveNiveisAptidao`.
+
+**Canal novo:** `propMarcial` (alvo `fonteDano`), que concede a propriedade Marcial. Ela não é
+enfeite: é o gatilho de seis poderes do Lutador (Corpo Treinado, Gosto pela Luta, Defesa
+Marcial, Complementação Marcial, Impacto Misto, Tempestade Sufocante).
+
+---
+
+## MELHORIAS SUPERIORES · as 11 ligadas (2026-07-27)
+
+| Melhoria | Canal | Expressão |
+|---|---|---|
+| Alma | `almaMax` | `15 * (vez == 1) + 10 * (vez >= 2)` |
+| Atenção | `atencao` | `5` |
+| Defesa | `defesa` | `piso(maestria / 2)` |
+| Classe de Dificuldade | `cd` | `piso(maestria / 2)` |
+| Dano | `danoBonus` (sem alvo) | `maestria` |
+| Energia | `pe` | `maestria` |
+| Movimento | `movimento` | `piso(maestria / 2) * 1.5` |
+| Perícia | `bonusPericia` (alvo escolhido) | `piso(maestria / 2)` |
+| Precisão | `bonusAcerto` (sem alvo) | `piso(maestria / 2)` |
+| Resistência | `bonusTR` + `margemCriticoTR` (alvo escolhido) | `piso(maestria / 2)` |
+| Vida | `hp` | `20 * (vez == 1) + 15 * (vez >= 2)` |
+
+### O que mudou no CATÁLOGO
+
+O autor reescreveu quatro nesta leva, trocando valor fixo por escala de Maestria:
+
+- **"Melhoria de Classe de Armadura" virou "Melhoria de Defesa"** (id `mel_classe_de_armadura`
+  → `mel_defesa`), de "+3, e +2 na segunda vez" para metade da Maestria, uma vez só.
+- **Classe de Dificuldade**, **Energia** e **Movimento**: mesma troca, e as três deixaram de
+  repetir.
+
+### Três extensões do motor
+
+1. **Variável `vez`.** Repetível cujo valor muda por pega (Alma 15/10, Vida 20/15/15) precisa
+   saber qual pega está sendo avaliada. `aplicarEfeitos` injeta o `vez` do efeito no contexto,
+   e o default é 1. No DSL um booleano é 1 ou 0, então `20 * (vez == 1) + 15 * (vez >= 2)`
+   resolve sem condicional. **Nenhuma função nova de DSL foi precisa.**
+2. **`coletarEfeitosComAlvo`.** Para Perícia e Resistência, o canal e a expressão são fixos e só
+   o DESTINO vem da escolha aninhada. Difere do `coletarEfeitosDeEscolha`, onde é a OPÇÃO que
+   carrega o efeito.
+3. **Canal `margemCriticoTR`.** Irmão do `margemCritico` do ataque, com piso de 2. De brinde,
+   fechou dois buracos antigos: os Treinamentos Completos de Agilidade e de Resistência
+   ("margem necessária para um sucesso crítico em um TR de Reflexos reduz em 2") estavam na
+   lista de "AINDA SEM CANAL" do cabeçalho de `afty-treinamentos.js` e agora aplicam.
+
+### Dois canais que estavam declarados e ninguém consumia
+
+`atencao` e `almaMax` existiam em `EFEITO_CANAIS` desde a Fase 0 mas não entravam em conta
+nenhuma. Agora entram: a Atenção soma o canal, e o `almaMax` derivado (100 + Melhoria de Alma)
+aparece na aba Informações ao lado da Integridade da Alma.
+
+### Maestria estendida (autor, 2026-07-27)
+
+ND 31 → 9 e ND 36 → 10. Até o 21 a faixa é de 4 em 4 níveis; do 21 em diante, de 5 em 5
+(21, 26, 31, 36). Isso faz as Melhorias que escalam com Maestria continuarem subindo em campanha
+de nível muito alto.
+
+---
+
+## HABILIDADES LENDÁRIAS · 10 das 16 ligadas (2026-07-28)
+
+| Lendária | Canal | Expressão |
+|---|---|---|
+| Aperfeiçoamento de Atributo | `atributo` (alvo escolhido) | `2`, com `furaTeto` |
+| Conhecimento Iluminado | `proficienciaPericia` (3 alvos) | `2` (Mestre) |
+| Consciência Absoluta da Alma | `almaMax` | `25` |
+| Dominância em Técnica | `vagasFeitico` | `2` |
+| Favorecido pela Energia | `vagasAptidao` | `2` |
+| Inesgotável | `pe` | `6` |
+| Inquebrável | `hp` | `30` |
+| Intocável | `defesa` | `5` |
+| Preparo Absoluto | `iniciativa` | `5` |
+| Um com o Mundo | `bonusPericia` (percepcao) + `atencao` | `10` e `10` |
+
+As seis que ficaram de fora são procedimento de mesa: Agilidade Inigualável (ação de movimento
+extra), Motivação Constante (PV temporário por crítico), Negar a Morte, Resistência Lendária,
+Visar o Sucesso (rerrolagem por PE) e Atingir Ápice, que é um contêiner de escolha.
+
+### Canal novo: `vagasFeitico`
+
+> "Qualquer coisa que dê Habilidade de Técnica ou Feitiço (São a mesma coisa, porém com
+> nomenclaturas diferentes). Você fornece um Slot de Habilidade somente para Feitiços, não
+> podendo ser usada em Habilidades Gerais." (autor, 2026-07-28)
+
+Feitiços e Habilidades Gerais dividem um contador só, então a vaga exclusiva não podia
+simplesmente somar no total. A conta ficou:
+
+```
+exclusivasUsadas = min(feitiços, vagasFeitico)      ← Feitiço gasta a exclusiva PRIMEIRO
+gastosNoComum    = (feitiços − exclusivasUsadas) + gerais
+excedeu          = gastosNoComum > contadorComum    ← o veredito é só no comum
+```
+
+Na UI o contador virou `gastosNoComum / comum` mais um `+usadas / exclusivas` roxo ao lado.
+Somar os dois num número só faria parecer que sobra espaço para Habilidade Geral quando não
+sobra.
+
+### Duas assunções a confirmar
+
+1. **"Especialista" = Mestre** (Conhecimento Iluminado). É o que o texto dos Interlúdios sugere
+   ("Estudar uma perícia sem maestria... ou tornar-se especialista numa perícia já dominada"),
+   ou seja, o degrau acima do treino.
+2. **Um com o Mundo dá +10 em Percepção E +10 em Atenção.** Na ficha a Atenção JÁ é
+   `10 + bônus de Percepção`, então os +10 da perícia sobem a Atenção sozinhos. Com o +10 direto
+   por cima, a Atenção sobe 20 no total. Foi implementada a leitura LITERAL (o texto nomeia as
+   duas coisas), mas pode ser dupla contagem não intencional.
+
+### Inesgotável e a escolha que não muda nada
+
+"Energia amaldiçoada ou vigor" é escolha de NOME, não de mecânica: a ficha tem um recurso só
+(o PE), que o Restringido chama de vigor ou estamina. Por isso o efeito não depende da opção
+marcada, e vive em `LENDARIA_EFEITOS` e não no mapa direcionado.
+
+---
+
+## LUTADOR · fim do lado numérico (2026-07-28)
+
+**16 de 69 ligadas.** O censo por balde (script em scratchpad, `censo-lutador.mjs`) mostra que
+as 53 restantes não esperam um CANAL, esperam um SISTEMA:
+
+| Balde | Quantas | Exemplos |
+|---|---|---|
+| Empolgação e estado de combate | 17 | Fluxo, Ignorar Dor, Brutalidade, Insistência |
+| Reação, ação bônus, ação livre | 9 | Aparar Ataque, Golpear Brecha, Foguete Sem Ré |
+| Vantagem e condições | 6 | Alma Quieta, Corpo Sincronizado, Mente em Paz |
+| Manobras (Agarrar, Derrubar, Empurrar, Desarmar) | 5 | Complementação Marcial, Potência Superior |
+| Situacionais soltas | 13 | Ataque Extra, Voadora, Ataques Ressoantes |
+| Arma e crítico · Cura por turno | 3 | Armas Absolutas, Sobrevivente |
+
+Conferi as 13 "situacionais" uma a uma: nenhuma dá número fixo na ficha. O balde de **reação**
+provavelmente nunca vira número, é procedimento de mesa.
+
+### Empolgação: a parte derivada entrou
+
+Decisão do autor (2026-07-28): a ficha **NÃO guarda o nível atual** de empolgação. O que entrou
+é só o que é derivável, num card na aba Especializações que some sem a habilidade Base:
+
+- a **tabela de dados** por nível (o nível 1 não tem dado),
+- o **nível em que o combate começa**, destacado na tabela.
+
+Duas habilidades mexem nisso, as duas pelo Motor:
+
+- **Empolgação Máxima** (11°) troca a tabela INTEIRA (1d4/1d6/2d4/2d6 → 2d4/2d6/2d8/3d6). Como
+  é troca e não soma, o canal `empolgacaoMaxima` é um sinalizador, no mesmo molde do
+  `finezaAtaque`.
+- **Lutador Superior** (20°) começa um nível acima, pelo canal `empolgacaoInicial`.
+
+O resto das 17 (Fluxo, Ignorar Dor, Insistência, Empolgar-se, Manobras Finalizadoras) depende do
+nível ATUAL, e continua fora até existir estado de combate.
+
+### O que destrava mais, se o autor quiser seguir
+
+1. **Estado de combate** — 17 do Lutador, e o balde cresce nas outras especializações.
+2. **Manobras** — 5 do Lutador e o Treino de Luta 2ª. É o menor, mas falta o texto verbatim de
+   como Agarrar, Derrubar, Empurrar e Desarmar são rolados.
+3. **Condições e vantagem** — 6 do Lutador, e precisa do catálogo de condições.
+
+---
+
+## SIMULAÇÃO DE COMBATE · a bancada de balanceamento (2026-07-28)
+
+> "Criar ficha, principalmente em Níveis mais altos, requer passar muito tempo conferindo
+> valores para dosar a mão no balanceamento. Então seria ideal conseguir fazer isso no
+> criador." (autor)
+
+Não é um rastreador de combate. É um painel de estados que se liga para ver os picos, e por isso
+mora no CRIADOR e fica salvo na ficha: o cenário montado tem de sobreviver a fechar e reabrir.
+
+### Não precisou de canal novo para a condição
+
+O Motor já tinha as duas peças desde o começo, e elas foram feitas exatamente para isto:
+
+- **`quando`** — a condição em DSL que liga e desliga o efeito.
+- **`duracao: "temporaria"`** — marca que o efeito não conta para pré-requisito.
+
+O que entrou foi um módulo (`afty-combate.js`) que transforma o estado da ficha em VARIÁVEIS do
+DSL. Como o contexto é montado na camada Afty, variável nova é de graça e a 2.5.2 segue intocada.
+
+| Variável | Vem de |
+|---|---|
+| `em_combate` | o interruptor mestre. Desligado, zera todo o resto |
+| `empolgacao` | 1 a 5 |
+| `brutalidade` | liga e desliga |
+| `brutalidade_pe` | incrementos de 2 PE, aparados pelos degraus de nível (8, 12, 16, 20) |
+| `brutalidade_pilha` | pilhas de Brutalidade Sanguinária, aparadas na Maestria |
+| `ataque_inconsequente` | liga e desliga |
+
+### Canal novo: `pvTemporario`
+
+Casca por cima do PV, não PV máximo. Aparece no Preview só quando existe.
+
+### As 6 habilidades que isso destravou
+
+| Habilidade | O que faz |
+|---|---|
+| Ataque Inconsequente | `danoBonus` +5 quando ligado |
+| Brutalidade | `bonusAcerto` (corpo) e `danoBonus` `2 + brutalidade_pe` |
+| Fluxo | `danoBonus` `empolgacao − 1`, `pvTemporario` `4 × (empolgacao − 1)` |
+| Brutalidade Sanguinária | `nivelDano` = pilhas |
+| Ignorar Dor | `rdGeral` e `rdFisico` = empolgação (o dobro contra físico) |
+| Brutalidade Aprimorada | DELTA por cima da Brutalidade (+2 na entrada, +1 por incremento) e `pvTemporario` `nd + mod_tecnica` |
+
+**Brutalidade Aprimorada entra como DELTA**, e não reescrevendo a Brutalidade: assim as duas se
+compõem sem uma precisar saber da outra. O texto diz "o bônus inicial em dano se torna +4 e o
+aumento por PE adicional se torna +2", ou seja, +2 e +1 por cima do que a Brutalidade já dá.
+
+### ⚠ Correção no Corpo Supremo
+
+Ignorar Dor diz "contra danos físicos, a redução de dano é dobrada", o que **confirmou que a RD
+Física SOMA com a RD Geral**. Com isso o Corpo Supremo estava errado: a Física levava `nd/2`
+cheio, dando `3nd/4` contra físico. Agora leva só a diferença (`nd/2 − nd/4`), e o total contra
+físico fecha em `nd/2`, como o texto pede.
+
+### Lutador: 23 de 69
+
+Sobram 46, e o balde de estado de combate caiu de 17 para 11. O que ainda falta lá é sobre
+COMO se ganha e gasta empolgação (Empolgar-se, Insistência, Manobras Finalizadoras), não sobre
+o número que ela produz.
+
+---
+
+## MANOBRAS (2026-07-28)
+
+> "Manobras são as ações: Agarrar, Derrubar, Desarmar e Empurrar. Todas envolvendo Testes de
+> Atletismo e Acrobacia." (autor)
+
+São testes de PERÍCIA, então moram junto dos outros testes, num card na aba Perícias, e
+aproveitam o bônus de perícia já resolvido (atributo + escala + treino + efeitos).
+
+| Manobra | Quem executa rola | Quem resiste rola |
+|---|---|---|
+| Agarrar | Atletismo | Atletismo ou Acrobacia |
+| Derrubar | Atletismo | Atletismo ou Acrobacia |
+| Desarmar | Atletismo **ou** Acrobacia | a MESMA que o atacante escolheu |
+| Empurrar | Atletismo | Atletismo ou Acrobacia |
+
+**Onde há escolha, vale o MAIOR.** É a mesma leitura que o autor deu para "Int ou Sabedoria" e
+para o traço Fineza. O card mostra qual perícia está sendo usada no hover.
+
+O Empurrar traz a distância (1,5m padrão). O "+1,5m para cada 5 pontos que seu resultado seja
+maior do que o do alvo" fica na mesa: depende da margem da rolagem.
+
+### Canais novos
+
+`bonusManobra` e `resistirManobra` (alvo: manobra, e sem alvo valem para as quatro), mais
+`distanciaEmpurrao`.
+
+### As três que isso destravou
+
+- **Complementação Marcial** (Lutador 2°): +2 em Desarmar, Derrubar e Empurrar, e +2 para
+  resistir aos três. ⚠ **Agarrar fica de fora**, e é de propósito: o texto nomeia três.
+- **Potência Superior** (Lutador 6°): o empurrão padrão vira 4,5m. O dano de impacto ao
+  Derrubar é rolagem (2d6 + mod de Força), não valor de ficha.
+- **Treino de Luta 2ª**: +2 em Agarrar, Derrubar e Empurrar (aqui é o **Desarmar** que fica de
+  fora). Estava na lista de "AINDA SEM CANAL" do cabeçalho de `afty-treinamentos.js`.
+
+### O resto da Lista de Ações
+
+As outras ações (Apoiar, Desengajar, Esconder, Furtar, Preparar, Fintar, Invocar, Ler Intenções,
+Mirar, Provocar) são testes de perícia comuns, já cobertos pela aba Perícias, ou procedimento de
+mesa. Uma fica pendente: **Finta Melhorada** (Lutador 2°) permite usar Destreza no lugar de
+Presença em Enganação **para fintar**, o que pediria uma linha própria de Fintar.
+
+### Lutador: 25 de 69

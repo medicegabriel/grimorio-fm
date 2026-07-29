@@ -83,21 +83,24 @@ export const MELHORIAS_SUPERIORES = [
     maxVezes: 1,
   },
   {
-    id: "mel_classe_de_armadura",
-    nome: "Melhoria de Classe de Armadura",
+    // ⚠ Era "Melhoria de Classe de Armadura", com "+3, e +2 na segunda vez".
+    // O autor reescreveu em 2026-07-27: virou Defesa, uma vez só, e o valor
+    // passou a escalar com a Maestria. O id mudou junto.
+    id: "mel_defesa",
+    nome: "Melhoria de Defesa",
     descricao:
-      "Seja por resistência ou esquivando, te acertar é mais difícil. Sua Classe de Armadura " +
-      "aumenta em 3. Você pode pegar esta melhoria uma segunda vez, aumentando em mais 2.",
-    maxVezes: 2,
+      "Seja por resistência ou esquivando, te acertar é mais difícil. Você soma metade do seu " +
+      "bônus de maestria ao total de sua Defesa.",
+    maxVezes: 1,
   },
   {
     id: "mel_classe_de_dificuldade",
     nome: "Melhoria de Classe de Dificuldade",
     descricao:
-      "Com técnicas e habilidades refinadas, resistir a elas se torna mais difícil. A CD de todas " +
-      "suas habilidades de técnica, aptidões amaldiçoadas e habilidades de especialização aumenta " +
-      "em 3. Você pode pegar esta melhoria uma segunda vez, aumentando em mais 2.",
-    maxVezes: 2,
+      "Com técnicas e habilidades refinadas, resistir a elas se torna mais difícil. Você soma " +
+      "metade do seu bônus de maestria ao total de CD de todas suas habilidades de técnica, " +
+      "aptidões amaldiçoadas e habilidades de especialização.",
+    maxVezes: 1,
   },
   {
     id: "mel_dano",
@@ -112,15 +115,15 @@ export const MELHORIAS_SUPERIORES = [
     nome: "Melhoria de Energia",
     descricao:
       "A energia amaldiçoada é cultivada com mais facilidade e naturalidade em seu interior. Seu " +
-      "máximo de pontos de energia amaldiçoada aumenta em 6. Você pode pegar esta melhoria uma " +
-      "segunda vez, aumentando em mais 4.",
-    maxVezes: 2,
+      "máximo de pontos de energia amaldiçoada aumenta em um valor igual à sua maestria.",
+    maxVezes: 1,
   },
   {
     id: "mel_movimento",
     nome: "Melhoria de Movimento",
     descricao:
-      "Agilidade e velocidade são importantes. Seu valor de movimento aumenta em 6 metros.",
+      "Agilidade e velocidade são importantes. Seu valor de movimento aumenta em um valor igual " +
+      "metade de sua maestria * 1,5m.",
     maxVezes: 1,
   },
   {

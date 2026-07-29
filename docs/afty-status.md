@@ -7,9 +7,12 @@ Estado atual do sistema Afty (atualizado 2026-07-17). Leia junto com:
 > LUTADOR (2026-07-22) e no restante do sistema de INVOCAÇÕES, que foi construído inteiro
 > (engine, editor, Hordas, efeitos de Controlador) e ainda não foi documentado aqui.
 >
-> **AS 6 ESPECIALIZAÇÕES ESTÃO FECHADAS** (2026-07-22): Combatente 71, Lutador 70, Conjurador 66,
-> Suporte 58, Restringido 54, Controlador 48 = **367 habilidades**. Mais **Talentos** (51), em
+> **AS 6 ESPECIALIZAÇÕES ESTÃO FECHADAS** (2026-07-22): Combatente 70, Lutador 69, Conjurador 65,
+> Suporte 57, Restringido 53, Controlador 47 = **361 habilidades**. Mais **Talentos** (51), em
 > sistema próprio (`afty-talentos.js`).
+>
+> ⚠ Eram 367. O autor mandou **remover "Teste de Resistência Mestre"** (2026-07-27), que existia
+> nas seis, uma por especialização. Não reintroduzir.
 >
 > **NÍVEIS LENDÁRIOS FECHADOS** (2026-07-22): **11 Melhorias Superiores**, **16 Habilidades Lendárias**
 > e **6 Habilidades Ápice**, em sistema próprio (`afty-alto-nivel.js`), com card próprio no fim
@@ -31,6 +34,18 @@ Estado atual do sistema Afty (atualizado 2026-07-17). Leia junto com:
 > 3. **Melhorias Superiores e Habilidades Lendárias exigem a Geral correspondente** para
 >    destravar, além do ND 21/22 de sempre. A Geral em si pede ND 21 e ND 22.
 >    Treinamentos dá `metade do ND` em Focos, e sai `1 + ND/10` de vezes.
+>
+> **MOTOR DE AUTOMAÇÃO — placar em 2026-07-29.** Sete frentes passadas:
+> Lutador **35/69** · Combatente **28/70** · Restringido **28/53** · Talentos **28/51** ·
+> Conjurador **13/65** · Suporte **8/57** · **Origens** (Herdado com os 4 clãs, Restringido,
+> Feto Amaldiçoado Híbrido e Sem Técnica). Falta o **Controlador (47)** e as **Ápices (6)**.
+>
+> As razões do Conjurador e do Suporte são baixas por motivo ESTRUTURAL, não por falta de
+> trabalho: **`afty-feiticos.js` não lê o Motor** (só a CD chega, porque `feiticos.cdBase` É a CD
+> da criatura) e **CURA não é stat da ficha**. As duas são as maiores extensões pendentes.
+>
+> Canais abertos nesta leva: **`rdAlma`** (a RD Geral cobre todo tipo MENOS alma) e
+> **`espacosCarga`** (sobe o limite de carga).
 >
 > 👉 **Começando um chat novo? Vá direto para
 > [PENDÊNCIAS DE ESPECIALIZAÇÕES](#-pendências-de-especializações-lista-de-retomada).**

@@ -31,36 +31,47 @@
  * ============================================================
  */
 
-import { resolveOrigemAttrBonus, resolveDesenvolvimento } from "./afty-origens";
+import { AFTY_RESISTENCIAS } from "./afty-schema";
+import {
+  resolveOrigemAttrBonus, resolveDesenvolvimento, resolveEscolhasOrigem,
+  limiteAtributoDaOrigem,
+} from "./afty-origens";
 import { efeitosDeTreino } from "./afty-treinamentos";
 import { resolveNiveisAptidao } from "./afty-aptidoes";
-import { resolveEspecializacoes } from "./afty-especializacoes";
+import { resolveEspecializacoes, AFTY_ESPECIALIZACOES } from "./afty-especializacoes";
 import {
   resolveHabilidades, efeitosInvocacaoControlador, getHabilidade, OPCAO_ESCOLHA_NOME,
+  AFTY_HABILIDADES,
+  resolveArmasDedicadas, efeitosArmasDedicadas, resolveEmpolgacao,
 } from "./afty-habilidades";
-import { resolveTalentos, getTalento } from "./afty-talentos";
+import { resolveTalentos, getTalento, OPCAO_TALENTO_NOME, AFTY_TALENTOS } from "./afty-talentos";
 import {
   resolveAltoNivel, getMelhoriaSuperior, getHabilidadeLendaria, getHabilidadeApice,
 } from "./afty-alto-nivel";
 import { resolveInvocacoesList, resolveHordasList } from "./afty-invocacoes";
 import {
   resolveEquipamentos, resolveCarga, grauFeiticeiro, alcanceDaArma, propriedadesDaArma,
-  AFTY_GRAUS,
+  podeSerArmaDedicada, AFTY_GRAUS,
 } from "./afty-equipamentos";
 import { nivelMaxFeitico } from "./afty-feiticos";
-import { resolveTestes, resolveDano } from "./afty-pericias";
+import { resolveTestes, resolveDano, AFTY_PERICIAS } from "./afty-pericias";
 import {
-  buildCriaturaDslContext, coletarEfeitosCriatura, coletarEfeitosMontante,
+  buildCriaturaDslContext, coletarEfeitosCriatura, coletarEfeitosMontante, coletarEfeitosOrigem,
   aplicarEfeitos, valorCanal, furaTetoEm,
   ehAtributoPermanente, ehAtributoTemporario, ehEstagio2, ehPreContexto,
   mesclarEfeitos, detalhesDoCanal,
 } from "./afty-efeitos";
 import { resolveGerais, contadorHabilidades, GERAL_BY_ID } from "./afty-gerais";
+import { resolveCombate, degrausBrutalidade } from "./afty-combate";
 
 export const mod = (attr) => Math.floor(((attr ?? 10) - 10) / 2);
 
 // Maestria == Treinamento (mesmo valor), por faixa de ND.
+// Até o 21 a faixa é de 4 em 4 níveis; do 21 em diante, de 5 em 5
+// (21, 26, 31, 36). Os dois últimos degraus vieram do autor em 2026-07-27.
 export const maestria = (nd) => {
+  if (nd >= 36) return 10;
+  if (nd >= 31) return 9;
   if (nd >= 26) return 8;
   if (nd >= 21) return 7;
   if (nd >= 17) return 6;
@@ -77,12 +88,30 @@ export const maestria = (nd) => {
 export const HP_PATAMAR_MULT = { comum: 1, desafio: 2, calamidade: 3, beyond: 4 };
 
 // Stats que a aba Cálculos permite sobrescrever (valor final, padrão StatField).
-export const OVERRIDABLE = ["hp", "pe", "defesa", "cd", "rdGeral", "rdEspecifico", "movimento", "resParcial", "atencao", "iniciativa"];
+export const OVERRIDABLE = ["hp", "pe", "defesa", "cd", "rdGeral", "rdEspecifico", "rdAlma", "movimento", "resParcial", "atencao", "iniciativa"];
 
 const INT = (x) => Math.floor(x); // INT() da planilha (ND > 0 → floor)
 
 /** Rank de um grau de Ferramenta Amaldiçoada, para comparar dois. */
 const grauRank = (v) => AFTY_GRAUS.find((g) => g.value === v)?.rank ?? 0;
+
+/**
+ * As FAMÍLIAS de variável do DSL, completas.
+ *
+ * ⚠ Existe porque o `evalNumber` da 2.5.2 não trata identificador desconhecido:
+ * a expressão inteira cai no fallback, calada. Sem isto, `2 + (esc_combatente
+ * >= 8)` numa criatura sem Combatente daria 0 em vez de 2, e o Roubo de
+ * Habilidade (Restringido 2°), que importa habilidade de outra classe, nunca
+ * funcionaria. Montado uma vez, dos catálogos, e passado ao contexto.
+ */
+const VOCABULARIO_DSL = {
+  pericias: AFTY_PERICIAS.map((p) => p.id),
+  resistencias: AFTY_RESISTENCIAS.map((r) => r.value),
+  // `tem_*` cobre Habilidade E Talento: os Estilos de Combate leem
+  // `tem_tal_adepto_de_combate` para saber se vieram pelo Talento.
+  habilidades: [...AFTY_HABILIDADES.map((h) => h.id), ...AFTY_TALENTOS.map((t) => t.id)],
+  especializacoes: AFTY_ESPECIALIZACOES.map((e) => e.id),
+};
 
 export function deriveAfty(creature) {
   const core = creature?.core ?? {};
@@ -90,10 +119,22 @@ export function deriveAfty(creature) {
   const ov = creature?.statOverrides ?? {};
 
   const tipo = core.tipo || "combatente";
+  // ⚠ O RESTRINGIDO NÃO TEM ENERGIA AMALDIÇOADA (autor, 2026-07-29). É a
+  // definição da origem ("nascem com uma quantidade quase nula de energia") e
+  // vale para três coisas: PE zero, nenhum Nível de Aptidão e nenhuma Aptidão
+  // Amaldiçoada. Segue o TIPO, e não a origem, porque o Tipo é quem dirige toda
+  // fórmula e a origem Restringido já o força.
+  const semEnergia = tipo === "restringido";
   const patamar = core.patamar || "comum";
   const nd = Math.max(1, core.nd ?? 1);
-  const almaAtual = creature?.alma?.atual ?? 100;
-  const almaMult = almaAtual / 100;
+  // ⚠ A ficha do criador é sempre montada com a alma ÍNTEGRA (autor,
+  // 2026-07-29): o campo "Integridade da Alma" saiu do formulário, porque o
+  // Máximo da Alma já diz tudo, e dano na alma é coisa de jogo, não de criação.
+  // Consequência: `almaMult` passou a seguir o MÁXIMO, então a Melhoria de Alma
+  // e a Consciência Absoluta da Alma agora rendem PV de verdade (o multiplicador
+  // era 1 fixo enquanto o campo ficava no 100 padrão).
+  // O valor CORRENTE existe só no jogo, em `combatState.almaCurrent`.
+  const almaMaxBase = creature?.alma?.max ?? 100;
   const qntPE = creature?.qntPE || "normal";
 
   const attrBonus = resolveOrigemAttrBonus(creature);
@@ -106,8 +147,20 @@ export function deriveAfty(creature) {
   const equip = resolveEquipamentos(creature, bt);
 
   // Limite EFETIVO por atributo = limite base (20 / poderes) + Desenvolvimento, teto 30.
+  // O RESTRINGIDO eleva o limite dos FÍSICOS para 30: "Seu limite de atributo
+  // para Força, Destreza e Constituição é 30 ao invés de 20" (Ápice Corporal
+  // Humano). Vale o MAIOR entre o da ficha, o da origem e o do Tipo, para um
+  // limite subido à mão nunca ser rebaixado.
+  //
+  // ⚠ Vem dos DOIS lados de propósito. A origem Restringido força o Tipo
+  // Restringido, mas o Tipo pode ser escolhido sozinho na aba Informações, e o
+  // autor confirmou (2026-07-29) que o limite é do Restringido, não de um
+  // caminho específico até ele.
   const limBase = (creature?.attrLimite && typeof creature.attrLimite === "object") ? creature.attrLimite : {};
-  const limiteEfOf = (key) => Math.min((limBase[key] ?? 20) + (desenv[key] || 0), 30);
+  const limTipo = tipo === "restringido" ? { forca: 30, destreza: 30, constituicao: 30 } : {};
+  const limOrigem = { ...limiteAtributoDaOrigem(core?.origem?.id), ...limTipo };
+  const limiteEfOf = (key) =>
+    Math.min(Math.max(limBase[key] ?? 20, limOrigem[key] ?? 0) + (desenv[key] || 0), 30);
 
   // Atributo EFETIVO = base + nível + Desenvolvimento + bônus de origem.
   // Atributos de ORIGEM NÃO passam o limite (salvo os que digam explicitamente — TODO).
@@ -153,12 +206,26 @@ export function deriveAfty(creature) {
   // e os atributos base), que é tudo de que as expressões deles precisam.
   const gerais = resolveGerais(creature, { nd, maestria: bt });
   const ctxMontante = buildCriaturaDslContext({
-    nd, bt, grauRank: grau.rank, patamar, tipo, almaAtual,
+    nd, bt, grauRank: grau.rank, patamar, tipo, almaAtual: almaMaxBase,
     attrEff: attrBase, mods: modBase, modTecnica: modBase[tecnicaAttr] ?? 0,
     periciasProf: creature?.pericias,
+    // O vocabulário entra AQUI TAMBÉM: o contexto reduzido não tem `esc_*` nem
+    // `tem_*`, e sem eles declarados uma expressão que os citasse cairia inteira
+    // no fallback, calada. Origem não escala com classe, então zero é a resposta
+    // certa — mas ela precisa ser dada, não silenciada.
+    vocabulario: VOCABULARIO_DSL,
   });
+  // ORIGEM entra no montante junto do resto: ela concede vaga de habilidade, de
+  // perícia, de feitiço e de aptidão, e vaga é lida antes de os stats existirem.
+  // As escolhas aninhadas dela (Treinamentos de Clã, Empenho Implacável) saem
+  // primeiro porque carregam efeito próprio.
+  const escolhasOrigem = resolveEscolhasOrigem(creature, nd);
   const efMontante = aplicarEfeitos(
-    [...efeitosDeTreino(creature), ...coletarEfeitosMontante(creature, gerais, GERAL_BY_ID)],
+    [
+      ...efeitosDeTreino(creature),
+      ...coletarEfeitosOrigem(creature, escolhasOrigem),
+      ...coletarEfeitosMontante(creature, gerais, GERAL_BY_ID),
+    ],
     ctxMontante,
   );
   // Os canais que precisam ser lidos ANTES do contexto principal: dois
@@ -228,13 +295,59 @@ export function deriveAfty(creature) {
   // atributo se parte em permanente e temporário porque só o PERMANENTE conta
   // para pré-requisito ("Se o Modificador de Força for temporário, não! Se for
   // permanente, sim!"). Ver o topo de afty-efeitos.js.
-  const efeitosTodos = coletarEfeitosCriatura({
-    habilidades, talentos: talentosPre, altoNivel,
-    catalogos: {
-      habilidades: getHabilidade, talentos: getTalento, opcoes: OPCAO_ESCOLHA_NOME,
-      altoNivel: (id) => getMelhoriaSuperior(id) || getHabilidadeLendaria(id) || getHabilidadeApice(id),
-    },
-  });
+  // Armas carregadas e as Dedicadas (Lutador 2°). Sobem para cá porque a
+  // dedicação EMITE efeito (nível de dano e a propriedade Marcial), e efeito
+  // tem de entrar no mesmo bolo dos outros, antes dos estágios.
+  //
+  // ⚠ É "arma CARREGADA", não "equipada": a aba Equipamentos só deixa equipar
+  // uniforme, escudo e item com efeito, então exigir `equipado` deixaria a lista
+  // de dano sem nenhuma arma, para sempre. O autor pediu uma linha "para cada
+  // Tipo de Arma colocado".
+  const armasCarregadas = equip.entradas.filter((e) => e.tipo === "arma");
+  // Faixas e Manoplas (grupo pugilato) não viram linha: são o Ataque Básico.
+  const armasParaDano = armasCarregadas
+    .filter((e) => e.def?.grupo !== "pugilato")
+    .map((e) => ({
+      id: e.def.id,
+      nome: e.def.nome,
+      grauArma: e.fa?.grau ?? null,
+      fineza: !!e.def.props?.fineza,
+      critico: e.def.critico ?? 20,
+      distancia: e.def.categoria === "distancia" || e.def.categoria === "arremesso",
+      // Categoria e grupo alimentam os escopos de alvo (`cat:arremesso`,
+      // `grupo:espada`), que é como o Combatente mira classes de arma inteiras.
+      categoria: e.def.categoria ?? null,
+      grupo: e.def.grupo ?? null,
+      // Tipo de dano da arma (ct, im, pf), que é como os Especialistas em
+      // Cortes, Concussão e Perfuração (Talentos) miram.
+      tipoDano: e.def.dano?.tipo ?? null,
+      alcance: alcanceDaArma(e.def),
+      propriedades: propriedadesDaArma(e.def),
+      elegivelDedicada: podeSerArmaDedicada(e.def),
+    }));
+  // O Ataque Básico só sobe de grau com Manoplas ou Faixas (autor, 2026-07-27).
+  // Sem elas é Desarmado, que não soma nada. Com as duas vale o grau mais alto.
+  const grauBasico = armasCarregadas
+    .filter((e) => e.def?.grupo === "pugilato" && e.fa?.grau)
+    .map((e) => e.fa.grau)
+    .sort((x, y) => (grauRank(y) - grauRank(x)))[0] ?? null;
+  const dedicadas = resolveArmasDedicadas(creature, armasParaDano, habilidades.escolhidas);
+
+  const efeitosTodos = [
+    ...coletarEfeitosCriatura({
+      habilidades, talentos: talentosPre, altoNivel,
+      catalogos: {
+        habilidades: getHabilidade, talentos: getTalento,
+        // Um mapa só para as opções dos dois catálogos: os ids não colidem
+        // (prefixo `lut_`/`cmb_`/`res_` contra `tal_`).
+        opcoes: { ...OPCAO_ESCOLHA_NOME, ...OPCAO_TALENTO_NOME },
+        altoNivel: (id) => getMelhoriaSuperior(id) || getHabilidadeLendaria(id) || getHabilidadeApice(id),
+      },
+    }),
+    // Direcionados por uma escolha que mora FORA do card da habilidade (a
+    // marcação na linha de dano). Mesmo padrão do efeitosDeTreino.
+    ...efeitosArmasDedicadas(dedicadas),
+  ];
 
   // Estágio 0b: os canais que ALIMENTAM o contexto principal. Só nível de
   // aptidão por ora, porque `dom/au/cl/bar/er` são variáveis do DSL e uma
@@ -247,12 +360,43 @@ export function deriveAfty(creature) {
   for (const [k, v] of Object.entries(efPreContexto.porAlvo.nivelAptidao || {})) {
     trilhasConcedidas[k] = (trilhasConcedidas[k] || 0) + v;
   }
-  const aptidao = resolveNiveisAptidao(creature?.aptidoes, trilhasConcedidas);
+  // Restringido não tem Nível de Aptidão nenhum: entra com a alocação vazia e
+  // sem concessão, para as variáveis `dom/au/cl/bar/er` do DSL saírem zeradas
+  // junto. Uma ficha que trocou de Tipo depois de alocar não fica mentindo.
+  const aptidao = semEnergia
+    ? resolveNiveisAptidao(null, {})
+    : resolveNiveisAptidao(creature?.aptidoes, trilhasConcedidas);
+
+  // ---------- SIMULAÇÃO DE COMBATE ----------
+  // Bancada de balanceamento (autor, 2026-07-28). Vira variável de DSL, e as
+  // habilidades com `quando` ligam e desligam sozinhas. Os tetos dependem da
+  // ficha, por isso saem daqui e não do módulo de combate.
+  // `empolgacaoMaxima` sai do estágio 0b junto do nível de aptidão, e por isso
+  // já está resolvido aqui: ele troca a tabela de dados de Empolgação, e a
+  // média do dado é o que as Manobras de Empolgação somam.
+  const nivelCmb = habilidades.niveisPorEspec?.combatente ?? 0;
+  const nivelRes = habilidades.niveisPorEspec?.restringido ?? 0;
+  const combate = resolveCombate(creature, {
+    brutalidadePE: degrausBrutalidade({ habilidades }),
+    brutalidadePilha: bt,
+    empolgacaoMaxima: valorCanal(efPreContexto, "empolgacaoMaxima") > 0,
+    devastacaoPilha: bt,
+    precisaoPE: 1 + Math.floor(nivelCmb / 4),
+    pistoleiroEmperrar: habilidades.escolhidas.includes("cmb_pistoleiro_avancado") ? 6 : 2,
+    adrenalinaAtletismo: habilidades.escolhidas.includes("res_restricao_definitiva") ? 8 : 4,
+    cacadorFeiticeiros: 1 + Math.floor(nivelRes / 5),
+    corpoDeAco: 1 + (nivelRes >= 10 ? 1 : 0) + (nivelRes >= 15 ? 1 : 0),
+  });
 
   const montarCtx = (attrs, mods) => buildCriaturaDslContext({
-    nd, bt, grauRank: grau.rank, patamar, tipo, almaAtual,
+    nd, bt, grauRank: grau.rank, patamar, tipo, almaAtual: almaMaxBase,
     attrEff: attrs, mods, modTecnica: mods[tecnicaAttr] ?? 0,
     aptidao: aptidao.efetivo, nivelEspec, periciasProf: creature?.pericias,
+    resistenciasProf: creature?.resistenciasProf, combate,
+    rdEscudoBase: equip.rdEscudoBase,
+    // `tem_*` inclui os Talentos escolhidos, não só as Habilidades.
+    habilidadesEscolhidas: [...habilidades.escolhidas, ...(talentosPre.escolhidas ?? [])],
+    vocabulario: VOCABULARIO_DSL,
   });
   // Soma um canal de atributo sobre uma base, respeitando o teto duro de 30 e a
   // exceção `furaTeto` (Aperfeiçoamento de Atributo diz "podendo superar o
@@ -301,8 +445,8 @@ export function deriveAfty(creature) {
   const modTecnica = modByAttr[tecnicaAttr] ?? 0;
   const maxForDex = Math.max(modFor, modDes);                       // Z8:Z9
   const maxAllMods = Math.max(modFor, modDes, modCon, modInt, modSab, modPre); // Z8:Z13
-  // Carga só agora, com o mod de Força já fechado (acessório + efeitos).
-  const carga = resolveCarga(equip.espacosUsados, modFor);
+  // A carga desceu para DEPOIS do agregado de efeitos (`ef`), logo abaixo: o
+  // canal `espacosCarga` sobe o limite, e ele só existe com tudo mesclado.
 
   // Estágio 2: todo o resto, com o contexto REMONTADO nos atributos finais. É
   // aqui que "Defesa igual ao Mod. Força" enxerga a Força 20.
@@ -316,6 +460,16 @@ export function deriveAfty(creature) {
     aplicarEfeitos(efeitosTodos.filter(ehEstagio2), montarCtx(attrEff, modByAttr)),
   );
   const canal = (id, alvo = null) => valorCanal(ef, id, alvo);
+
+  // Alma: o teto (100 + Melhoria de Alma) e o multiplicador de PV, que agora é
+  // o mesmo número, porque a criatura é montada íntegra. Sai aqui, e não lá em
+  // cima, porque o canal `almaMax` só existe com os efeitos mesclados.
+  const almaMax = almaMaxBase + canal("almaMax");
+  const almaMult = almaMax / 100;
+
+  // Carga: mod de Força já fechado (acessório + efeitos) e o limite já somado do
+  // canal `espacosCarga` (Otimização de Espaço, Suporte 2°).
+  const carga = resolveCarga(equip.espacosUsados, modFor, canal("espacosCarga"));
 
   // ---------- HP (+ Treino de Resistência) ----------
   const hpBase =
@@ -331,16 +485,21 @@ export function deriveAfty(creature) {
   const hp = Math.round(almaMult * (hpBase + nd * modCon + canal("hp")) * hpPatamarMult) + equip.hpMaxBonus;
 
   // ---------- PE (+ Treinos de Compreensão/Controle de Energia/…) ----------
-  const peBase =
+  // ⚠ O RESTRINGIDO NÃO TEM ENERGIA AMALDIÇOADA (autor, 2026-07-29). É a
+  // definição da origem ("nascem com uma quantidade quase nula de energia"), e o
+  // recurso dele é a Estamina. Zero DURO: nem a Quantidade de PE, nem o
+  // equipamento, nem o canal `pe` furam, senão um acessório daria energia a quem
+  // não tem nenhuma.
+  const peBase = semEnergia ? 0 :
     tipo === "conjurador" ? 6 * nd :
     tipo === "misto" ? 5 * nd :
-    /* combatente | restringido */ 4 * nd;
-  const peQnt =
+    /* combatente */ 4 * nd;
+  const peQnt = semEnergia ? 0 :
     qntPE === "muito_pouca" ? -nd :
     qntPE === "pouca" ? -Math.floor(nd / 2) :
     qntPE === "grande" ? Math.floor(nd / 2) :
     qntPE === "muito_grande" ? nd : 0;
-  const pe = peBase + peQnt + modTecnica + equip.peBonus + canal("pe");
+  const pe = semEnergia ? 0 : (peBase + peQnt + modTecnica + equip.peBonus + canal("pe"));
 
   // ---------- Resistência Parcial ----------
   // Calamidade ganha +1 em ND 10, 20 e 30 (0 a 3).
@@ -367,6 +526,12 @@ export function deriveAfty(creature) {
     tipo === "conjurador" ? modTecnica :
     tipo === "misto" ? (nd >= 10 ? 2 * modTecnica : modTecnica) : 0;
 
+  // ---------- RD a Alma ----------
+  // A RD Geral vale para todo tipo de dano EXCETO alma, então o Dano na Alma
+  // tem canal próprio (autor, 2026-07-29). Nenhum Tipo nem Patamar concede base:
+  // só existe quem tem um poder que dá (hoje o Talento Alma Inquebrável).
+  const rdAlma = canal("rdAlma");
+
   // ---------- CD ----------
   // O DIVISOR fica numa constante porque ele é o que a UI mostra como fonte do
   // valor ("Nível ÷ 1,75"), e não o nome da escala.
@@ -386,15 +551,29 @@ export function deriveAfty(creature) {
   // (`gerais` já foi resolvido lá em cima, junto dos outros catálogos.)
   const feiticosLista = Array.isArray(creature.feiticos) ? creature.feiticos : [];
   const feiticosGastos = feiticosLista.filter((f) => !f.variacaoDe).length;
-  const contadorTotal = contadorHabilidades(bt, patamar);
+  const contadorComum = contadorHabilidades(bt, patamar);
+  // Vagas EXCLUSIVAS de Feitiço (autor, 2026-07-28): "Você fornece um Slot de
+  // Habilidade somente para Feitiços, não podendo ser usada em Habilidades
+  // Gerais". Hoje só a Lendária Dominância em Técnica concede. Os Feitiços
+  // gastam PRIMEIRO as exclusivas, e só o que sobrar cai no contador comum.
+  const vagasFeitico = canal("vagasFeitico");
+  const feiticosNoExclusivo = Math.min(feiticosGastos, vagasFeitico);
+  const gastosNoComum = (feiticosGastos - feiticosNoExclusivo) + gerais.gastos;
+  const contadorTotal = contadorComum + vagasFeitico;
   const contadorGastos = feiticosGastos + gerais.gastos;
   const orcamentoHabilidades = {
     total: contadorTotal,
+    comum: contadorComum,
+    exclusivasFeitico: vagasFeitico,
+    exclusivasUsadas: feiticosNoExclusivo,
     feiticos: feiticosGastos,
     gerais: gerais.gastos,
     gastos: contadorGastos,
+    gastosNoComum,
     restante: contadorTotal - contadorGastos,
-    excedeu: contadorGastos > contadorTotal,
+    // O excesso é medido no contador COMUM: uma vaga exclusiva sobrando não
+    // libera Habilidade Geral nenhuma.
+    excedeu: gastosNoComum > contadorComum,
   };
   const feiticos = {
     nivelMax: nivelMaxFeitico(nd),
@@ -440,35 +619,49 @@ export function deriveAfty(creature) {
   // Faixas e Manoplas não viram linha própria: são o Ataque Básico (grupo
   // "pugilato"). O Nível de Aptidão em Controle e Leitura entra na conta, daí
   // depender do `aptidao` já resolvido lá em cima.
-  // ⚠ É "arma CARREGADA", não "equipada": a aba Equipamentos só deixa equipar
-  // uniforme, escudo e item com efeito, então exigir `equipado` deixaria a lista
-  // de dano sem nenhuma arma, para sempre. O autor pediu uma linha "para cada
-  // Tipo de Arma colocado".
-  const armasCarregadas = equip.entradas.filter((e) => e.tipo === "arma");
-  const armasParaDano = armasCarregadas
-    .filter((e) => e.def?.grupo !== "pugilato")
-    .map((e) => ({
-      id: e.def.id,
-      nome: e.def.nome,
-      grauArma: e.fa?.grau ?? null,
-      fineza: !!e.def.props?.fineza,
-      distancia: e.def.categoria === "distancia" || e.def.categoria === "arremesso",
-      alcance: alcanceDaArma(e.def),
-      propriedades: propriedadesDaArma(e.def),
-    }));
-  // O Ataque Básico só sobe de grau com Manoplas ou Faixas (autor, 2026-07-27).
-  // Sem elas é Desarmado, que não soma nada. Com as duas vale o grau mais alto.
-  const grauBasico = armasCarregadas
-    .filter((e) => e.def?.grupo === "pugilato" && e.fa?.grau)
-    .map((e) => e.fa.grau)
-    .sort((x, y) => (grauRank(y) - grauRank(x)))[0] ?? null;
   const dano = resolveDano(creature, {
     nd, patamar, mods: modByAttr, aptidaoCL: aptidao.efetivo.cl,
     efeitos: ef, armas: armasParaDano, grauBasico,
   });
 
+  // ---------- Empolgação (Lutador) ----------
+  // Só a parte DERIVADA: a tabela de dados e o nível em que o combate começa.
+  // O nível atual é estado de combate e a ficha não o guarda (autor, 2026-07-28).
+  const empolgacao = resolveEmpolgacao(habilidades.escolhidas, {
+    maxima: canal("empolgacaoMaxima"),
+    bonusInicial: canal("empolgacaoInicial"),
+  });
+
   // ---------- Atenção = 10 + bônus de Percepção (Percepção passiva) ----------
-  const atencao = testes.atencao;
+  const atencao = testes.atencao + canal("atencao");
+
+  // ---------- PV Temporário ----------
+  // Casca por cima do PV, não PV máximo: some quando o efeito acaba. Hoje só a
+  // simulação de combate produz (Fluxo, Brutalidade Aprimorada e Eliminar e
+  // Continuar).
+  const pvTemporario = canal("pvTemporario");
+
+  // ---------- Recursos de especialização ----------
+  // Pontos de Preparo (Combatente) e Estamina (Restringido, que não tem energia
+  // amaldiçoada). Zero para quem não tem a habilidade dona, e o Preview esconde.
+  const pontosPreparo = canal("pontosPreparo");
+  const estamina = canal("estamina");
+
+  // ---------- Regeneração ----------
+  // Cura no INÍCIO do turno, em dados + fixo, igual às linhas de dano.
+  // Sobrevivente (Lutador 4°) rola d6 e Corpo de Aço (Restringido 6°) rola d8:
+  // o canal do DADO carrega as faces, e vale a maior das fontes.
+  // ⚠ O dado é MÁXIMO, não soma: `canal()` somaria 6 + 8 = 14 faces.
+  const facesRegen = detalhesDoCanal(ef, "regeneracaoDado").map((x) => x.valor);
+  const regeneracao = {
+    dados: Math.max(0, canal("dadosRegeneracao")),
+    dado: `d${Math.max(6, ...facesRegen)}`,
+    fixo: canal("regeneracao"),
+  };
+
+  // ---------- Integridade da Alma ----------
+  // O `atual` é estado da ficha e o máximo é 100, elevável pela Melhoria de
+  // Alma. É o teto: passar dele é o que faz o multiplicador de PV subir de 1.
 
   // ---------- Iniciativa (autor, 2026-07-27) ----------
   // INT(Maestria / 2) + Mod. Destreza. Não usa o ND direto nem escala por Tipo.
@@ -488,16 +681,21 @@ export function deriveAfty(creature) {
   // lê aptidões escolhidas): fica para a passada de efeitos, quando o
   // catálogo fechar. Ver docs/afty-status.md.
   const aptidaoThresholds = [[2,1],[4,1],[6,1],[8,1],[10,2],[12,1],[14,1],[16,1],[18,1],[20,2]];
-  const totalAptidao =
+  // ⚠ `canal("pontosAptidao")`, e não `treino.aptidao`: o orçamento vinha só do
+  // estágio MONTANTE (Treinamentos e Habilidades Gerais), então uma HABILIDADE
+  // que concedesse ponto de aptidão era descartada calada. O Elevar Aptidão do
+  // Conjurador ("você aumenta um dos seus Níveis de Aptidão em 1") foi quem
+  // expôs isso. O `ef` já traz o montante mesclado, então não dobra.
+  const totalAptidao = semEnergia ? 0 : (
     aptidaoThresholds.reduce((s, [t, v]) => s + (nd >= t ? v : 0), 0) +
     (qntPE === "muito_grande" ? 1 : 0) +
-    treino.aptidao;
+    canal("pontosAptidao"));
 
   // Quantas Aptidões Amaldiçoadas a criatura PODE ter: só o que a Habilidade
   // Geral Aptidão concedeu (regra 4 em afty-gerais.js, o ND não dá nenhuma).
   // Segue separado e independente do orçamento de NÍVEIS de aptidão
   // (totalAptidao, os limiares de ND), que não mudou.
-  const totalAptidoesAmaldicoadas = canal("vagasAptidao");
+  const totalAptidoesAmaldicoadas = semEnergia ? 0 : canal("vagasAptidao");
 
   // ⚠ Especializações, Talentos, Habilidades, Alto Nível, Aptidão e o MOTOR DE
   // AUTOMAÇÃO subiram para o topo desta função (logo depois dos atributos
@@ -551,7 +749,7 @@ export function deriveAfty(creature) {
       ...(hpPatamarMult !== 1 ? [{ label: `Patamar (${PATAMAR_LABEL[patamar] ?? patamar})`, texto: `×${hpPatamarMult}` }] : []),
       ...(equip.hpMaxBonus ? [{ label: "Equipamento", valor: equip.hpMaxBonus }] : []),
     ],
-    pe: [
+    pe: semEnergia ? [{ label: "Restringido não tem energia amaldiçoada", texto: true, valor: 0 }] : [
       { label: `Base do Tipo (${TIPO_LABEL[tipo] ?? tipo})`, valor: peBase },
       ...(peQnt ? [{ label: "Quantidade de PE", valor: peQnt }] : []),
       { label: `Mod. da Técnica (${rotulo[tecnicaAttr] ?? tecnicaAttr})`, valor: modTecnica },
@@ -585,6 +783,7 @@ export function deriveAfty(creature) {
       { label: `Base do Tipo (${TIPO_LABEL[tipo] ?? tipo})`, valor: rdEspecifico - canal("rdEspecifico") },
       ...doMotor("rdEspecifico"),
     ],
+    rdAlma: doMotor("rdAlma"),
     movimento: [
       { label: "Base", valor: 9 },
       { label: "Maior de Força e Destreza × 1,5", valor: maxForDex * 1.5 },
@@ -597,9 +796,13 @@ export function deriveAfty(creature) {
       { label: "Destreza", valor: modDes },
       ...doMotor("iniciativa"),
     ],
+    pvTemporario: doMotor("pvTemporario"),
+    pontosPreparo: doMotor("pontosPreparo"),
+    estamina: doMotor("estamina"),
     atencao: [
       { label: "Base", valor: 10 },
-      { label: "Percepção", valor: atencao - 10 },
+      { label: "Percepção", valor: testes.atencao - 10 },
+      ...doMotor("atencao"),
     ],
     resParcial: [
       { label: `Patamar (${PATAMAR_LABEL[patamar] ?? patamar})`, valor: resParcial },
@@ -607,7 +810,7 @@ export function deriveAfty(creature) {
   };
 
   // ---------- overrides de valor final (aba Cálculos) ----------
-  const calc = { hp, pe, defesa, cd, rdGeral, rdEspecifico, movimento, resParcial, atencao, iniciativa };
+  const calc = { hp, pe, defesa, cd, rdGeral, rdEspecifico, rdAlma, movimento, resParcial, atencao, iniciativa };
   const stats = {};
   for (const k of OVERRIDABLE) stats[k] = ov[k] != null ? ov[k] : calc[k];
   const isOverridden = (k) => ov[k] != null;
@@ -619,6 +822,7 @@ export function deriveAfty(creature) {
     isOverridden,
     maestria: bt,
     almaMult,
+    almaMax,               // teto da Integridade da Alma (100 + Melhoria de Alma)
     modTecnica,
     tecnicaAttr,
     totalAptidao,               // orçamento de NÍVEIS de aptidão (para no ND 20)
@@ -629,8 +833,16 @@ export function deriveAfty(creature) {
     efeitos: ef,          // Motor de Automação: { porCanal, porAlvo, detalhes, avisos }
     testes,               // { pericias, resistencias, ataques, orcamento, atencao }
     dano,                 // { entradas: [{ id, nome, fonte, texto, alcance, propriedades, partes }] }
+    dedicadas,            // Armas Dedicadas: { ativa, escolhidas, elegiveis, max, restante }
+    empolgacao,           // Lutador: { ativa, aprimorada, inicial, max, tabela }
+    combate,              // simulação: estado já aparado nos tetos da ficha
+    pvTemporario,         // casca de PV vinda da simulação (Fluxo, Brutalidade Aprimorada)
+    regeneracao,          // cura no início do turno: { dados, dado, fixo }
+    pontosPreparo,        // recurso do Combatente (Artes do Combate), 0 sem ela
+    estamina,             // recurso do Restringido (Restrito pelos Céus), 0 sem ela
     partes,               // fontes de cada stat, para o hover da UI
     orcamentoHabilidades, // contador ÚNICO da aba: Feitiços + Habilidades Gerais
+    origem: escolhasOrigem, // { porEscolha, mapa } — escolhas aninhadas de Origem e Clã
     especializacoes,      // { escolhidas, total, max, obrigatoria, completa, erro }
     habilidades,          // { escolhidas, total, gastos, restante, excedeu, inacessiveis, niveisPorEspec }
     talentos,             // { escolhidas, gastos, inacessiveis } — gasto já somado em habilidades.gastos
