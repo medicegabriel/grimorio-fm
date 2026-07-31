@@ -2,7 +2,23 @@
  * ============================================================
  * ATRIBUTOS — GRIMÓRIO AFTY (regras de montagem)
  * ============================================================
- * Valores 0–30. Limite padrão 20 (a ALOCAÇÃO respeita isso);
+ * TRÊS TETOS, e não um (autor, 2026-07-29). Confundi-los foi o bug que a
+ * reforma de 2026-07-29 consertou: até então só o 30 existia no código, e todo
+ * efeito do Motor passava por cima do 20 calado.
+ *
+ *   1. LIMITE DO ATRIBUTO (`ATTR_LIMITE_PADRAO`, 20). Vale para TODA fonte de
+ *      valor, alocada ou concedida, "a não ser que alguma habilidade diga o
+ *      oposto". Sobe por Origem (o Restringido tem 30 nos físicos), por
+ *      Desenvolvimento Inesperado e pelo canal `limiteAtributo` do Motor
+ *      (Incremento de Atributo, Quebra de Limites, Treino de Atributo Completo).
+ *   2. TETO DO SISTEMA (`ATTR_LIMITE_MAX`, 30). Independe da fonte. É onde param
+ *      até os efeitos que dizem em texto que furam o limite do atributo (os 6
+ *      acessórios de atributo: "podendo superar o seu limite de atributo, até o
+ *      máximo de 30").
+ *   3. TETO ABSOLUTO (`ATTR_LIMITE_ABSOLUTO`, 32). Só o Aperfeiçoamento de
+ *      Atributo (Habilidade Lendária) chega aqui, e nada no sistema vai além.
+ *
+ * Valores 0–30 na montagem. Limite padrão 20 (a ALOCAÇÃO respeita isso);
  * poderes/talentos/características/origem entram por cima e podem
  * levar o valor efetivo até o teto duro de 30.
  *
@@ -18,10 +34,17 @@
  * ============================================================
  */
 
+import { AFTY_ATTRS } from "./afty-schema";
+
 export const ATTR_KEYS = ["forca", "destreza", "constituicao", "inteligencia", "sabedoria", "presenca"];
+
+/** Rótulo do atributo, para os avisos não saírem em snake_case. */
+export const ATTR_LABEL = Object.fromEntries(AFTY_ATTRS.map((a) => [a.key, a.label]));
 
 export const ATTR_LIMITE_PADRAO = 20;
 export const ATTR_LIMITE_MAX = 30;
+/** Só o Aperfeiçoamento de Atributo (Lendária) passa do 30, e para aqui. */
+export const ATTR_LIMITE_ABSOLUTO = 32;
 
 export const ATTR_METODOS = [
   { value: "pontos", label: "Compra por Pontos" },
@@ -74,16 +97,21 @@ export const desenvolvimentoUsado = (desenv = {}) =>
 /**
  * Resumo/validação dos atributos para o builder.
  * Retorna trackers e uma lista de avisos (soft — não bloqueiam).
+ *
+ * ⚠ `limitesEfetivos` vem de FORA (`derived.attrLimiteEfetivo`), e não é
+ * opcional por preguiça: só o `deriveAfty` conhece o limite de verdade, porque
+ * ele depende da Origem, do Desenvolvimento e do canal `limiteAtributo` do
+ * Motor. Esta função calculava o seu próprio limite até 2026-07-29, e por isso
+ * avisava errado em toda ficha de Restringido (limite 30 nos físicos) e em toda
+ * ficha com Incremento de Atributo. Sem o mapa, cai no 20 padrão.
  */
-export function resumoAtributos(creature) {
+export function resumoAtributos(creature, limitesEfetivos = null, perdas = null) {
   const metodo = creature?.attrMethod || "pontos";
   const attrs = creature?.attributes || {};
   const nivel = creature?.attrNivel || {};
   const nd = creature?.core?.nd ?? 1;
   const patamar = creature?.core?.patamar || "comum";
-  // Limite POR ATRIBUTO (mapa). Tolera fichas antigas com número/ausente.
-  const limites = (creature?.attrLimite && typeof creature.attrLimite === "object") ? creature.attrLimite : {};
-  const limiteDe = (k) => limites[k] ?? ATTR_LIMITE_PADRAO;
+  const limiteDe = (k) => limitesEfetivos?.[k] ?? ATTR_LIMITE_PADRAO;
 
   const nivelTotal = nivelPontosTotal(nd, patamar);
   const nivelUsado = nivelPontosUsados(nivel);
@@ -94,7 +122,7 @@ export function resumoAtributos(creature) {
     if (gasto > POINT_BUY_TOTAL) warnings.push(`Compra por Pontos: ${gasto} de ${POINT_BUY_TOTAL} pontos (excedeu).`);
     for (const k of ATTR_KEYS) {
       const v = attrs[k];
-      if (v < POINT_BUY_MIN || v > POINT_BUY_MAX) warnings.push(`${k}: base ${v} fora da faixa ${POINT_BUY_MIN}–${POINT_BUY_MAX}.`);
+      if (v < POINT_BUY_MIN || v > POINT_BUY_MAX) warnings.push(`${ATTR_LABEL[k] ?? k}: base ${v} fora da faixa ${POINT_BUY_MIN} a ${POINT_BUY_MAX}.`);
     }
   } else if (metodo === "fixos" && !valoresFixosOk(attrs)) {
     warnings.push("Valores Fixos: distribua exatamente 15, 14, 13, 12, 10 e 8.");
@@ -105,7 +133,20 @@ export function resumoAtributos(creature) {
   for (const k of ATTR_KEYS) {
     const alocado = (attrs[k] || 0) + (nivel[k] || 0);
     const lim = limiteDe(k);
-    if (alocado > lim) warnings.push(`${k}: alocado ${alocado} passa do limite ${lim}.`);
+    if (alocado > lim) warnings.push(`${ATTR_LABEL[k] ?? k}: alocado ${alocado} passa do limite ${lim}.`);
+  }
+
+  // Ponto DESPERDIÇADO no limite. Diferente do aviso de cima: ali a alocação
+  // está ilegal, aqui está legal e um bônus concedido é que não caberia. O
+  // jogador precisa ver, porque a resposta costuma ser mover o ponto de nível
+  // para outro atributo (a origem e o Motor não são movíveis).
+  for (const k of ATTR_KEYS) {
+    const perdido = perdas?.[k] || 0;
+    if (perdido > 0) {
+      warnings.push(
+        `${ATTR_LABEL[k] ?? k}: ${perdido} ${perdido === 1 ? "ponto" : "pontos"} de bônus perdido${perdido === 1 ? "" : "s"} no limite ${limiteDe(k)}.`,
+      );
+    }
   }
 
   return {

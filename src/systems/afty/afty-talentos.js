@@ -155,7 +155,7 @@ export const AFTY_TALENTOS = [
       id: "incremento_atributo",
       label: "Atributo",
       repetivel: true,
-      opcoes: opcoesDeAtributo("tal_incremento", (n) => `Seu valor de ${n} aumenta em 2.`),
+      opcoes: opcoesDeAtributo("tal_incremento", (n) => `Seu valor e seu limite de ${n} aumentam em 2.`),
     },
     requisitos: [],
   },

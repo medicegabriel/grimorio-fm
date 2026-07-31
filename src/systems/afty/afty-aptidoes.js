@@ -54,6 +54,14 @@
  */
 
 import { getOrigem } from "./afty-origens";
+// Só o VALIDADOR usa. afty-efeitos-conteudo.js não importa nada, então a seta
+// para lá é segura (afty-efeitos.js, esse sim, importaria de volta e faria ciclo).
+import { APTIDAO_EFEITOS } from "./afty-efeitos-conteudo";
+// Só o nome da perícia, para o rótulo do requisito. O catálogo não importa nada,
+// então a seta é segura.
+import { AFTY_PERICIAS } from "./afty-pericias-catalogo";
+
+const PERICIA_LABEL = Object.fromEntries(AFTY_PERICIAS.map((p) => [p.id, p.nome]));
 
 /** Teto de Nível de Aptidão por trilha. */
 export const APTIDAO_NIVEL_MAX = 5;
@@ -182,7 +190,7 @@ export const AFTY_APTIDOES = [
       "Furtividade, você pode gastar 1 ponto de energia amaldiçoada para receber o seu nível de " +
       "aptidão de aura por completo, ao invés de metade, controlando ainda mais a sua aura.",
     requisitos: [
-      { tipo: "nota", label: "Treinado em Furtividade" },
+      { tipo: "pericia", pericia: "furtividade", nivel: "treinado" },
       { tipo: "atributo", attr: "destreza", valor: 16 },
     ],
   },
@@ -372,7 +380,7 @@ export const AFTY_APTIDOES = [
       "terá vantagem nesse ataque. Para cada ataque após o primeiro, no mesmo turno, você deve " +
       "pagar 1 ponto de energia amaldiçoada para projetar a ilusão.",
     requisitos: [
-      { tipo: "nota", label: "Treinado em Enganação" },
+      { tipo: "pericia", pericia: "enganacao", nivel: "treinado" },
       { tipo: "atributo", attr: "destreza", valor: 18 },
       { tipo: "nd", valor: 4 },
     ],
@@ -829,7 +837,7 @@ export const AFTY_APTIDOES = [
     requisitos: [
       // O livro diz "Ser de uma época onde ela era utilizada ou Mestre em
       // História". O autor encurtou para só a parte conferível (2026-07-16).
-      { tipo: "nota", label: "Mestre em História" },
+      { tipo: "pericia", pericia: "historia", nivel: "mestre" },
       { tipo: "trilha", trilha: "bar", valor: 1 },
       { tipo: "nd", valor: 5 },
     ],
@@ -866,7 +874,7 @@ export const AFTY_APTIDOES = [
       "nível de aptidão. Curar-se dentro de combate é uma ação comum e você não pode usar essa " +
       "habilidade para curar outras criaturas.",
     requisitos: [
-      { tipo: "nota", label: "Treinado em Feitiçaria" },
+      { tipo: "pericia", pericia: "feiticaria", nivel: "treinado" },
       { tipo: "trilha", trilha: "cl", valor: 3 },
       { tipo: "nd", valor: 8 },
     ],
@@ -1085,7 +1093,7 @@ export const AFTY_APTIDOES = [
       "Uma Técnica Máxima custa 25 PE e, após ser usada, você deve esperar uma quantidade de " +
       "rodadas igual a 6 – metade do seu Bônus de Treinamento para poder utilizá-la novamente.",
     requisitos: [
-      { tipo: "nota", label: "Mestre em Feitiçaria" },
+      { tipo: "pericia", pericia: "feiticaria", nivel: "mestre" },
       { tipo: "nota", label: "Capacidade de Conjurar Feitiços Nível 4" },
     ],
   },
@@ -1191,7 +1199,7 @@ export const AFTY_APTIDOES = [
       "completa aumenta o seu custo em 5 pontos de energia amaldiçoada.",
     requisitos: [
       { tipo: "aptidao", id: "expansao_de_dominio_completa" },
-      { tipo: "nota", label: "Treinamento em Feitiçaria" },
+      { tipo: "pericia", pericia: "feiticaria", nivel: "treinado" },
       { tipo: "trilha", trilha: "bar", valor: 4 },
       { tipo: "trilha", trilha: "dom", valor: 4 },
       { tipo: "nd", valor: 14 },
@@ -1210,7 +1218,7 @@ export const AFTY_APTIDOES = [
       "mesmo superar as barreiras de outras expansões de domínio, atacando-os por fora.",
     requisitos: [
       { tipo: "aptidao", id: "acerto_garantido" },
-      { tipo: "nota", label: "Mestre em Feitiçaria" },
+      { tipo: "pericia", pericia: "feiticaria", nivel: "mestre" },
       { tipo: "trilha", trilha: "bar", valor: 5 },
       { tipo: "trilha", trilha: "dom", valor: 5 },
       { tipo: "nd", valor: 20 },
@@ -1344,7 +1352,7 @@ export const AFTY_APTIDOES = [
       "vantagem em uma rolagem de manobra, como agarrar ou empurrar.",
     requisitos: [
       { tipo: "nd", valor: 5 },
-      { tipo: "nota", label: "Mestre em Atletismo" },
+      { tipo: "pericia", pericia: "atletismo", nivel: "mestre" },
     ],
   },
 
@@ -1358,7 +1366,7 @@ export const AFTY_APTIDOES = [
       "Você consegue absorver vestígios de energia deixados por aqueles que manejam ela. Ao " +
       "matar um usuário de energia, você recupera uma quantidade de energia igual a metade do " +
       "seu bônus de treinamento.",
-    requisitos: [{ tipo: "nota", label: "Treinamento em Feitiçaria" }],
+    requisitos: [{ tipo: "pericia", pericia: "feiticaria", nivel: "treinado" }],
   },
   {
     id: "mal_estoque_ampliado",
@@ -1498,14 +1506,20 @@ export function subgruposDaCategoria(catId) {
 }
 
 /**
- * Saneia o mapa de níveis da ficha: só as 5 trilhas conhecidas,
- * inteiros de 0 a APTIDAO_NIVEL_MAX. Tolera ficha antiga/parcial.
+ * Saneia o mapa de níveis da ficha: só as 5 trilhas conhecidas, inteiros de 0 a
+ * `teto`. Tolera ficha antiga/parcial.
+ *
+ * ⚠ O `teto` é parâmetro desde 2026-07-29, e não é preciosismo: a CONCESSÃO pode
+ * passar de 5 (as duas Habilidades que quebram o teto, a Expansão de Domínio), e
+ * aparar aqui matava o efeito antes de o `resolveNiveisAptidao` sequer ver o
+ * limite. Alocação segue no 5 (o jogador não COMPRA acima do padrão), concessão
+ * entra sem teto e o aparo de verdade acontece lá, contra o limite da trilha.
  */
-export function normalizeAptidaoNiveis(aptidoes) {
+export function normalizeAptidaoNiveis(aptidoes, teto = APTIDAO_NIVEL_MAX) {
   const out = {};
   for (const t of APTIDAO_TRILHAS) {
     const n = Math.trunc(Number(aptidoes?.[t.key]) || 0);
-    out[t.key] = Math.min(Math.max(n, 0), APTIDAO_NIVEL_MAX);
+    out[t.key] = Math.min(Math.max(n, 0), teto);
   }
   return out;
 }
@@ -1533,20 +1547,39 @@ export function niveisAptidaoGastos(aptidoes) {
  * sumir depois (o treino foi desfeito), o nível que o jogador tinha
  * comprado reaparece sozinho.
  *
- * Retorna { alocado, concedido, efetivo, gastos }.
+ * ⚠ O TETO DE 5 DEIXOU DE SER FIXO (autor, 2026-07-29). Existem regras que o
+ * quebram, e são de dois tipos:
+ *   • duas Habilidades do livro dão +1 nível "podendo passar de 5", então quem
+ *     tem as duas chega a 7 numa trilha;
+ *   • dentro de uma Expansão de Domínio, Aura, Controle e Leitura e Energia
+ *     Reversa sobem 2, também por cima do 5.
+ * Elas emitem DOIS canais, `nivelAptidao` (o nível) e `limiteAptidao` (o teto),
+ * exatamente como Incremento de Atributo emite valor e limite juntos. Este
+ * resolver recebe o teto já somado em `limiteRaw`, um mapa por trilha.
+ *
+ * Retorna { alocado, concedido, efetivo, gastos, limite }.
  */
-export function resolveNiveisAptidao(aptidoes, concedidoRaw) {
+export function resolveNiveisAptidao(aptidoes, concedidoRaw, limiteRaw = null) {
   const aloc = normalizeAptidaoNiveis(aptidoes);
-  const concedido = normalizeAptidaoNiveis(concedidoRaw);
+  // Concessão entra SEM teto: quem a apara é o limite da trilha, logo abaixo.
+  const concedido = normalizeAptidaoNiveis(concedidoRaw, Infinity);
   const alocado = {};
   const efetivo = {};
+  const limite = {};
   for (const t of APTIDAO_TRILHAS) {
-    const espaco = Math.max(0, APTIDAO_NIVEL_MAX - concedido[t.key]);
+    // Teto da trilha: o padrão mais o que o Motor somou. Sem piso artificial
+    // para baixo, então um `limiteAptidao` negativo (nenhum existe hoje) ainda
+    // deixaria a trilha em 0, e não em número negativo.
+    limite[t.key] = Math.max(0, APTIDAO_NIVEL_MAX + Math.trunc(Number(limiteRaw?.[t.key]) || 0));
+    // A concessão tem prioridade e pode, sozinha, encostar no teto novo.
+    const concedidoAparado = Math.min(concedido[t.key], limite[t.key]);
+    const espaco = Math.max(0, limite[t.key] - concedidoAparado);
     alocado[t.key] = Math.min(aloc[t.key], espaco);
-    efetivo[t.key] = alocado[t.key] + concedido[t.key];
+    efetivo[t.key] = alocado[t.key] + concedidoAparado;
+    concedido[t.key] = concedidoAparado;
   }
   const gastos = APTIDAO_TRILHAS.reduce((s, t) => s + alocado[t.key], 0);
-  return { alocado, concedido, efetivo, gastos };
+  return { alocado, concedido, efetivo, gastos, limite };
 }
 
 const ATTR_LABEL = {
@@ -1612,7 +1645,26 @@ export function avaliarRequisitoAptidao(requisito, ctx = {}) {
       label: `Origem: ${alvo?.nome || requisito.id}`,
     };
   }
-  // nota (sistema não construído, ex. perícias): exibe, não bloqueia.
+  if (requisito.tipo === "pericia") {
+    // ⚠ Estes eram `nota` (exibia, não bloqueava) até 2026-07-30, de quando as
+    // Perícias ainda não existiam no Afty. Elas existem, então o requisito
+    // passou a ser real, a pedido do autor: "Aptidões que requerem Treinamento e
+    // Mestre em Perícias não estão cobrando o pré-requisito."
+    //
+    // Lê a proficiência RESOLVIDA (`ctx.periciaProf`), e não a escolhida na
+    // ficha, porque o Motor concede faixa: quem ganhou Mestre em Furtividade de
+    // uma habilidade atende ao requisito sem ter gasto vaga.
+    const atual = ctx.periciaProf?.[requisito.pericia] ?? null;
+    const nivel = requisito.nivel === "mestre" ? 2 : 1;
+    const tem = atual === "mestre" ? 2 : atual === "treinado" ? 1 : 0;
+    const nome = PERICIA_LABEL[requisito.pericia] || requisito.pericia;
+    return {
+      ok: tem >= nivel,
+      verificavel: true,
+      label: `${requisito.nivel === "mestre" ? "Mestre" : "Treinado"} em ${nome}`,
+    };
+  }
+  // nota (sistema não construído): exibe, não bloqueia.
   return { ok: true, verificavel: false, label: requisito.label };
 }
 
@@ -1658,7 +1710,23 @@ export function validarCatalogoAptidoes() {
       if (r.tipo === "origem" && !getOrigem(r.id)) {
         erros.push(`${a.id}: requisito aponta para origem inexistente "${r.id}"`);
       }
+      if (r.tipo === "pericia") {
+        if (!PERICIA_LABEL[r.pericia]) erros.push(`${a.id}: requisito aponta para perícia inexistente "${r.pericia}"`);
+        if (r.nivel !== "treinado" && r.nivel !== "mestre") {
+          erros.push(`${a.id}: requisito de perícia com nível inválido "${r.nivel}"`);
+        }
+      }
     }
+  }
+
+  // Efeito órfão: um id em APTIDAO_EFEITOS que não existe no catálogo nunca
+  // seria aplicado, e o Motor não tem como reclamar (ele só recebe os ids que o
+  // coletor achou). Aqui é o único lugar em que o erro aparece.
+  // ⚠ Só a existência do id é conferida daqui. Canal e expressão são conferidos
+  // pelo `validarMapaEfeitos`, que mora em afty-efeitos.js e não pode ser
+  // importado neste arquivo: afty-efeitos já importa este, e fecharia ciclo.
+  for (const id of Object.keys(APTIDAO_EFEITOS)) {
+    if (!vistos.has(id)) erros.push(`APTIDAO_EFEITOS: "${id}" não existe no catálogo`);
   }
   return erros;
 }

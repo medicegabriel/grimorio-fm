@@ -35,10 +35,36 @@ Estado atual do sistema Afty (atualizado 2026-07-17). Leia junto com:
 >    destravar, além do ND 21/22 de sempre. A Geral em si pede ND 21 e ND 22.
 >    Treinamentos dá `metade do ND` em Focos, e sai `1 + ND/10` de vezes.
 >
-> **MOTOR DE AUTOMAÇÃO — placar em 2026-07-29.** Sete frentes passadas:
-> Lutador **35/69** · Combatente **28/70** · Restringido **28/53** · Talentos **28/51** ·
-> Conjurador **13/65** · Suporte **8/57** · **Origens** (Herdado com os 4 clãs, Restringido,
-> Feto Amaldiçoado Híbrido e Sem Técnica). Falta o **Controlador (47)** e as **Ápices (6)**.
+> **MOTOR DE AUTOMAÇÃO — placar RECONTADO em 2026-07-29: 155/412.**
+> Combatente **30/70** · Lutador **35/69** · Restringido **28/53** · Talentos **28/51** ·
+> Conjurador **16/65** · Suporte **10/57** · Controlador **8/47** · **Origens** (Herdado com os
+> 4 clãs, Restringido, Feto Amaldiçoado Híbrido e Sem Técnica). Faltam as **Ápices (6)**.
+>
+> ⚠ **Contar só `HABILIDADE_EFEITOS` SUBESTIMA o placar.** Existem OITO caminhos de ligação, e
+> uma contagem que olha um só erra feio (a de 2026-07-29 errou, e mandou 57 habilidades para uma
+> lista de "livres" que não eram):
+>
+> | # | Caminho | Onde |
+> |---|---|---|
+> | 1 | efeito direto | `HABILIDADE_EFEITOS` / `TALENTO_EFEITOS` (116) |
+> | 2 | opção da escolha aninhada | `ESCOLHA_EFEITOS` (27) |
+> | 3 | canal de invocação | `CONTROLADOR_EFEITOS_INVOCACAO` (8) |
+> | 4 | estado da bancada | `requerHabilidade` em `COMBATE_ESTADOS` (33) |
+> | 5 | parâmetro passado no derive | `resolveCombate({ pistoleiroEmperrar... })` (3) |
+> | 6 | `quando` de OUTRA habilidade | `tem_cmb_armas_perfeitas` na opção de Armas Escolhidas (3) |
+> | 7 | `concedeEscolha` | soma vaga no pool de outra habilidade (5) |
+> | 8 | caminho próprio | `efeitosArmasDedicadas`, `ESCOLHAS_DE_HABILIDADE` do Roubo (2) |
+>
+> **Não existe habilidade "somável e livre" sobrando.** O que falta cai todo em bloqueio nomeado:
+> Feitiços não leem o Motor (39), canal de CURA não existe (20), invocação precisa de marcador
+> por-invocação para as Melhorias e de stat de **RD** e **dados de dano** (36), subsistemas nunca
+> enviados (Apoio, Imitação, Votos, técnicas marciais), e canais que faltam (troca de atributo na
+> fórmula, vantagem por condição, vaga de pool, proficiência de arma, PE de Aptidão).
+>
+> ⚠ **Duas afirmações VELHAS deste doc morreram:** "estados ligáveis em combate são nunca
+> automatizáveis" (a bancada existe, com 31 estados, e `quando` resolve) e "os 4 recursos de
+> classe não existem" (3 existem: `pontosPreparo`, `empolgacaoMaxima`/`Inicial`, e Estamina que É
+> o PE. Falta só o PE temporário exclusivo de Aptidão).
 >
 > As razões do Conjurador e do Suporte são baixas por motivo ESTRUTURAL, não por falta de
 > trabalho: **`afty-feiticos.js` não lê o Motor** (só a CD chega, porque `feiticos.cdBase` É a CD
@@ -46,6 +72,10 @@ Estado atual do sistema Afty (atualizado 2026-07-17). Leia junto com:
 >
 > Canais abertos nesta leva: **`rdAlma`** (a RD Geral cobre todo tipo MENOS alma) e
 > **`espacosCarga`** (sobe o limite de carga).
+>
+> **POOL EXCLUSIVO** (2026-07-30): cinco fontes de bônus numérico **não acumulam
+> entre si**, e vale o maior valor de cada canal. Habilidade Única de item já está
+> ligada, as outras quatro esperam cano. Ver a seção da sessão de 2026-07-30.
 >
 > 👉 **Começando um chat novo? Vá direto para
 > [PENDÊNCIAS DE ESPECIALIZAÇÕES](#-pendências-de-especializações-lista-de-retomada).**
@@ -137,6 +167,427 @@ valendo o bloqueio raiz D. Candidatas diretas: *Otimização de Espaço*, *Ajust
 **Perícias e TRs do personagem** (dezenas de `nota` viram
 requisito real no dia que existir) · **Talentos concedidos por origem/treinamento** (o catálogo
 existe, as fontes de concessão não).
+
+---
+
+## 🆕 SESSÃO DE 2026-07-30 (o que mudou por último)
+
+### POOL EXCLUSIVO: as cinco fontes que NÃO acumulam
+
+Regra de balanceamento que o autor fechou nesta sessão. Cinco fontes de bônus
+numérico disputam entre si, e só o **maior valor de cada canal** entra na ficha.
+Palavras dele:
+
+> "Essas 5 fontes de bônus numéricos e etc, não acumulam entre si, sempre ficando
+> com o maior valor. Por exemplo, se o Efeito Único da minha arma me fornece +8 de
+> Acerto, meu Feitiço Passivo me fornece +4 e um Shikigami está me fornecendo +5,
+> eu só fico com o +8 de Acerto da arma. Caso eu perca a arma ou ela seja
+> desativada de alguma forma, eu fico somente com o +5 do Shikigami."
+
+| # | Fonte | Modo | Ligada ao Motor? |
+|---|---|---|---|
+| 1 | **Habilidade Única** (Equipamentos) | passiva **ou** ativa, por item | ✅ **FEITA** |
+| 2 | Feitiço Auxiliar **Passivo** | passiva | ⬜ o subtipo não existe |
+| 3 | Característica de Shikigami | passiva | ⬜ falta o cano invocação → dono |
+| 4 | Feitiço Auxiliar **Ativo** | ativa | ⬜ `afty-feiticos.js` não lê o Motor |
+| 5 | Ação Ativa de Shikigami | ativa | ⬜ falta o cano invocação → dono |
+
+**As quatro decisões de regra (autor, 2026-07-30):**
+
+1. **Por STAT, não por fonte.** As fontes se misturam: arma com +8 Acerto e +2
+   Defesa contra Shikigami com +5 Acerto e +6 Defesa rende **+8 de Acerto E +6 de
+   Defesa**. Cada canal escolhe o seu vencedor sozinho.
+2. **Vale DENTRO da família também.** Dois Shikigami, ou dois Feitiços Auxiliares
+   ativos, não somam entre si. Por isso o pool é **plano**: a família só serve
+   para a UI dizer de onde veio o número.
+3. **Pega todo bônus numérico**, e não só ataque e defesa. Acerto, Defesa, CD, RD,
+   Dano, Movimento, **Atributo**, PV e PE máximos.
+4. **Passivas na ficha, ativas na bancada** de Simulação de Combate. A Habilidade
+   Única é a exceção: ela pode ser das duas, **a depender do item**, então quem
+   decide é o efeito e não a fonte.
+
+**Como ficou no código** (`afty-efeitos.js`):
+
+- `FAMILIAS_EXCLUSIVAS` (as 5) e o campo `exclusivo: "<familiaId>"` no efeito.
+- `aplicarEfeitos` **desvia** o exclusivo para `res.exclusivos` em vez de somá-lo,
+  porque a disputa precisa da lista inteira junta.
+- `mesclarEfeitos` **concatena** os exclusivos, nunca os soma.
+- `resolverExclusivos(res, jaAplicado)` fecha a disputa e devolve os vencedores já
+  somados em `porCanal` / `porAlvo`. Depois dele o resto do motor não sabe que a
+  regra existe: `valorCanal` e companhia seguem iguais.
+- O `jaAplicado` existe por causa do canal **`atributo`**, o único que o
+  `deriveAfty` resolve em dois estágios. Sem ele, uma Habilidade Única permanente
+  de +6 de Força e um Feitiço Auxiliar temporário de +4 na mesma Força somariam
+  10, quando a regra manda ficar com 6.
+- O **perdedor não some**: ele entra em `detalhes` com `suplantado: true`, e o
+  `PainelDeFontes` o mostra **riscado e apagado**. Sem isso o jogador veria o +5
+  do Shikigami desaparecer da ficha sem nada explicando.
+- `detalhesDoCanal` e `detalhesDoCanalEscopos` **escondem o suplantado por
+  padrão**, e só o entregam com o 4º argumento. Quem SOMA o que leu (as faces do
+  dado de regeneração, os dados de dano) fica protegido de contar um número que a
+  regra já descartou.
+
+⚠ **O limite conhecido**: a disputa é por `(canal, alvo)`, e um efeito **sem
+alvo** não briga com um direcionado do mesmo canal. Hoje não vaza, porque as cinco
+fontes só direcionam no canal `atributo` (onde todas nomeiam o atributo) e são
+globais em todo o resto. Se um dia uma delas der "+N de Acerto só com espadas",
+esta conta precisa passar a comparar o global contra cada alvo.
+
+### A Habilidade Única saiu dos 7 canais e foi para os 48
+
+O exemplo do autor (+8 de **Acerto** vindo da arma) **não era escrevível**:
+`EQUIP_EFEITO_CANAIS` tinha só Defesa, RD Física, RD Geral, CD, Movimento, PV e PE
+máximos, e `bonusAcerto` não estava lá. A Habilidade Única é criada com o Narrador
+e não tinha por que ser mais pobre que a Técnica, que já escrevia nos 48 canais.
+
+- `EQUIP_EFEITO_CANAIS` **continua existindo, mas agora é só dos ENCANTAMENTOS.**
+- A Habilidade Única passou a usar o `CanalPicker` do Motor (o painel de 620px em
+  3 colunas), com **alvo** e com o botão **Ativa / Passiva** por efeito.
+- Dois ids mudaram de nome no caminho (`pvMax` → `hp`, `peMax` → `pe`). A troca é
+  na LEITURA (`CANAL_UNICA_LEGADO`), sem reescrever ficha.
+- ⚠ **`afty-equipamentos.js` NÃO importa `afty-efeitos.js`**, e não é descuido:
+  afty-efeitos → afty-combate → afty-habilidades → afty-equipamentos, então a seta
+  de volta fecharia o ciclo. Por isso o canal da Habilidade Única passa cru, e quem
+  valida é o `aplicarEfeitos`, que já ignora canal desconhecido com aviso.
+- O valor viaja **resolvido, como literal**: a expressão da Habilidade Única lê
+  `grau`, que é do item e não existe no contexto da criatura.
+
+### Bancada: estados que vêm da FICHA, não do catálogo
+
+`COMBATE_ESTADOS` é catálogo, e uma Habilidade Única ativa é **instância**: duas
+armas com habilidade ativa são dois interruptores. Então `resolveCombate` passou a
+aceitar `params.estadosExtras`, e devolve a lista em `combate.estadosExtras`, que o
+`combateDslVars` transforma em variável (`unica_<uid da entrada>`) e o card da
+Simulação de Combate renderiza junto das linhas de catálogo.
+
+⚠ É o mesmo formato que as outras fontes ativas vão pedir: **um Feitiço Auxiliar e
+um Shikigami também são instâncias**, e não linhas de catálogo. Quando os canos
+deles existirem, o interruptor sai de graça por aqui.
+
+⚠ Um estado extra **não pode colidir** com id de catálogo: se colidir, quem manda é
+o catálogo, que é o vocabulário que o conteúdo escrito à mão usa.
+
+### O que falta para fechar a regra
+
+As quatro fontes de fora dependem de infraestrutura que não existe, e são as mesmas
+pendências que o placar do Motor já listava:
+
+1. **`afty-feiticos.js` não lê o Motor.** Trava as fontes 2 e 4, e é o mesmo
+   bloqueio das 39 habilidades do Conjurador.
+2. **Feitiço Auxiliar Passivo não existe** como subtipo (`tipo: "passivo"` está no
+   schema do feitiço e nunca foi desenvolvido).
+3. **Não existe cano invocação → dono.** As Ações de Auxílio (`resolveAcao`,
+   família auxílio) e as Características (`resolveCaracteristica`) resolvem valores
+   que ficam na invocação e nunca chegam na ficha de quem invocou.
+
+Quando cada uma chegar, o trabalho é só emitir o efeito com
+`exclusivo: "<familia>"` e, se for ativa, um `estadosExtras` com o interruptor.
+
+### ✅ As duas perguntas do pool, RESPONDIDAS (autor, 2026-07-30)
+
+**1. Dado de dano: vale a MAIOR MÉDIA.** Entre `2d6` (média 7) e `1d10` (média 5,5)
+fica o `2d6`. Ainda **não há código**, porque nenhuma fonte de dado entrou no pool:
+os dois consumidores são o Feitiço Auxiliar e o Shikigami, e os dois esperam cano. O
+caminho quando chegarem é o emissor converter o dado na média ANTES de emitir, e aí
+a disputa acontece pelo mesmo `resolverExclusivos` de sempre, sem caso especial.
+
+**2. Penalidade: fica sempre a PIOR.** Palavras dele: "Penalidade você pode sempre
+deixar a PIOR. Como por exemplo entre -14 e -8. Ficaria o -14." **Implementado.** O
+SINAL entrou na chave da disputa (`chaveExclusiva`), então bônus e penalidade
+disputam separado: o positivo fica com o maior, o negativo fica com o menor, e os
+dois vencedores somam. Um canal com +8 e -14 resulta em **-6**, porque a disputa só
+acontece entre iguais. O `jaAplicado` dos estágios também respeita o sinal: numa
+penalidade só entra o que PIORA o que já valia, senão um -8 depois de um -14
+somaria +6 e apagaria parte da penalidade.
+
+### EXPANSÃO DE DOMÍNIO (portada da 2.5.2)
+
+`src/systems/afty/afty-dominios.js` + card `DominioCard` na aba **Habilidades**,
+que **só aparece para quem tem a aptidão Expansão de Domínio Incompleta**. Cópia
+adaptada de `src/components/fm-domain-calc.js`, com a procedência anotada no topo
+do arquivo (a 2.5.2 é somente-leitura, então não dá para importar).
+
+O que a criatura escreve: nome, versão, aparência, os efeitos (categoria, tipo,
+Fortalecido, nome e descrição próprios), os dois atributos do Aumento de Atributo,
+os tipos de dano da Redução de Dano, e o Acerto Garantido. O card mostra custo,
+duração, área, PV do domo, o contador de vagas e o **texto pronto** da expansão.
+
+**Uma expansão de cada vez.** `creature.dominioAtivoId` diz qual está no ar, e é
+ela que a bancada aplica. A UI marca com o chip Ativa / Inativa.
+
+**Ponte com o Motor:** os efeitos que caem sobre a PRÓPRIA ficha viram efeitos
+temporários presos ao estado `dominio_ativo` da Simulação de Combate. Entram
+Aumento de CD, Aumento de Dano corporal (`nivelDano` + `danoBonus`), Aumento de
+Atributo (nos dois escolhidos), Redução de Dano, Defesa e Negação de RD dos golpes.
+Ficam de fora, só como texto, os três Ambientais (agem sobre criaturas hostis) e a
+Negação de RD dos Feitiços. Mesmo recorte da 2.5.2.
+
+**O que o livro do AFTY confirma** (e bate com a 2.5.2): custo 15 e 20 PE, +5 do
+Acerto Garantido, duração `1 + DOM` e `3 + DOM`, área `4,5 m × BT` e 9 m.
+
+⚠ **O que NÃO tem fonte no Afty.** O "Guia de Criação de Expansões de Domínio" que
+as aptidões citam nunca foi enviado para cá, então estes vieram da 2.5.2 e são
+ponto de partida, não regra confirmada: as **tabelas de efeito inteiras**, o limite
+de efeitos por DOM (1 no 1-2, 2 no 3-4, 3 no 5), o **Fortalecer** (2 vagas, ×1,5),
+o teto de DOM 3 na Incompleta, os 5 efeitos base e a Modificação Completa (que
+ficou de fora por completo).
+
+**Aparência (2026-07-30, segunda passada).** O autor pediu para replicar o
+acabamento da 2.5.2, que ficou melhor que o primeiro corte. O que entrou:
+
+- **Bloco de regra** (`DominioTexto`, espelho do `DomainText.jsx`): título entre
+  filetes, aparência, faixa com "Nome [Expansão X]" e o corpo em bullets com o
+  título em destaque. O marcador fica em coluna própria, para a linha quebrada
+  alinhar sob o texto e não sob a bolinha.
+- **Bloco de números** em fonte monoespaçada: Execução, Custo, Duração,
+  Distância e PV da barreira numa linha só, mais o contador de vagas e o aviso
+  âmbar do teto de DOM 3 da Incompleta.
+- **Efeito recolhível**: fechado mostra nome, o selo de reforço e a grandeza. O
+  Fortalecido trava quando não há folga de vaga.
+- Um `details` com os efeitos base da abertura, como na 2.5.2.
+
+⚠ **DIFERENÇA DELIBERADA PARA A 2.5.2**: lá os efeitos base ficavam SÓ no
+`details` do formulário e não entravam no texto final. O autor pediu que o retorno
+já venha com eles prontos, então eles entram no texto, na frente dos escolhidos.
+Cada um ganhou TÍTULO separado do corpo, senão o bullet inteiro sairia em negrito.
+
+⚠ **UMA DIVERGÊNCIA CONCRETA JÁ ACHADA, e o Afty venceu.** O PV do domo é `12 ×
+PV da parede` nas duas, mas a parede mudou:
+
+| | PV da parede |
+|---|---|
+| 2.5.2 | `15 + BAR × metade do ND` |
+| **Afty** (Técnicas de Barreira, verbatim) | `5 + BAR × metade do ND` |
+| **Afty** com Paredes Resistentes | `10 + BAR × ND` |
+
+O código segue o Afty, e Paredes Resistentes entra na conta (ela não existe na
+2.5.2). **A confirmar:** que o domo continua valendo 12 paredes no Afty, porque o
+"dobro das seis paredes" é regra da 2.5.2 e o livro do Afty não repete a conta.
+
+### Pré-requisito de PERÍCIA das Aptidões passou a travar
+
+Reportado pelo autor: "Aptidões que requerem Treinamento e Mestre em Pericias não
+estão cobrando o pre requisito." Estava certo. Esses requisitos foram transcritos
+como `nota` em 2026-07-16, quando as Perícias ainda não existiam no Afty, e `nota`
+exibe sem bloquear. As Perícias existem desde então e ninguém voltou para promover.
+
+Entrou o tipo `pericia` no `avaliarRequisitoAptidao`, com `pericia` e `nivel`
+("treinado" ou "mestre"). **Nove requisitos convertidos**, em Aura Controlada,
+Enganação Projetada, Cesta Oca de Vime, Energia Reversa, Anular Técnica, Acerto
+Garantido, Expansão sem Barreiras e Pináculo Físico.
+
+Duas decisões que valem registrar:
+
+- **Lê a proficiência RESOLVIDA** (`derived.periciaProf`), e não a escolhida na
+  ficha. O Motor concede faixa pelo canal `proficienciaPericia`, então quem ganhou
+  Mestre de uma habilidade atende ao requisito sem ter gasto vaga.
+- **Mestre atende a um requisito de Treinado**, porque a faixa é escala e não
+  categoria. O contrário não vale.
+
+⚠ Sobrou **UMA** `nota` no catálogo inteiro, e ela está certa assim: "Capacidade
+de Conjurar Feitiços Nível 4" (Anular Técnica), que é sobre acesso a nível de
+Feitiço e não sobre perícia.
+
+### APTIDÕES AMALDIÇOADAS no Motor (a passada adiada desde 2026-07-16)
+
+Feita a "passada de efeitos" que o autor adiou até o catálogo fechar. Entrou
+`APTIDAO_EFEITOS` (em `afty-efeitos-conteudo.js`), o coletor
+`coletarEfeitosAptidao(creature, semEnergia)` e o `requerAptidao` na bancada, irmão
+do `requerHabilidade` e do `requerTalento`.
+
+**Placar: 11 de 62** nas cinco categorias pedidas.
+
+| Categoria | Ligadas | Total |
+|---|---|---|
+| Aura | 5 | 27 |
+| Controle e Leitura | 4 | 17 |
+| Energia Reversa | 2 | 7 |
+| Barreira | 0 | 5 |
+| Domínio | 0 | 6 |
+
+⚠ **O rendimento é baixo, e não é por falta de trabalho.** As Aptidões
+Amaldiçoadas são, na esmagadora maioria, ATIVAS e pagas em PE, com efeito sobre
+INIMIGOS ou ALIADOS, ou expressas em DADOS com face própria. Nenhuma das três
+coisas é número passivo de ficha. O balanço abaixo nomeia o bloqueio de cada uma
+que ficou de fora, e nenhuma sobrou sem motivo.
+
+**As 11 que entraram:**
+
+| Aptidão | Onde | Como |
+|---|---|---|
+| Aura Controlada | passiva | `bonusPericia` furtividade, `piso(au / 2)` |
+| Aura de Contenção | passiva | `bonusManobra` + `resistirManobra` em agarrar, `piso(au / 2)` |
+| Aura Maciça | passiva | `defesa`, `au` |
+| Aura Reforçada | passiva | `rdFisico`, `dobro(au)` |
+| Aura Excessiva | bancada | `rdGeral`, `dobro(au)` |
+| Cobrir-se | bancada | `pvTemporario`, 4 por PE gasto |
+| Cobertura Avançada | bancada | delta de +4 por PE sobre o Cobrir-se |
+| Estímulo Muscular | bancada | `bonusPericia` +1 por PE, `distanciaEmpurrao` de `cl × 1,5` |
+| Estímulo Muscular Avançado | bancada | deltas de +1 por PE e de mais `cl × 1,5` |
+| Fluxo Constante | bancada | `dadosRegeneracao`, `regeneracaoDado` e `regeneracao` |
+| Cura Amplificada | bancada | dado sobe para d8 e o modificador dobra |
+
+Dois encaixes que valem registrar, porque não eram óbvios:
+
+- **Aura Excessiva → `rdGeral`.** O texto diz "RD contra todos os tipos de dano,
+  exceto na alma", que é a definição EXATA da RD Geral no Afty. É justamente por
+  isso que o Dano na Alma ganhou canal próprio em 2026-07-29.
+- **Fluxo Constante → canais de Regeneração.** A cura de Energia Reversa é Ação
+  Comum, e por isso a aptidão base fica de fora. O Fluxo Constante é quem a torna
+  "no começo do seu turno, como ação livre", e cura no início do turno É o canal de
+  Regeneração, que já carregava dados, faces e parte fixa.
+
+**Os cinco bloqueios, por quantas aptidões cada um trava:**
+
+| # | Bloqueio | Trava | Onde |
+|---|---|---|---|
+| 1 | **Dado com FACE PRÓPRIA** | **13** | Canalizar em Golpe (×3), Projetar Energia (×4), Aura Elemental, Absorção Elemental, Aura Lacerante, Aura Drenadora, Concentrar Aura, Canalizar Energia Reversa |
+| 2 | Efeito em INIMIGO ou ALIADO | 8 | Aura do Bastião, do Comandante (×2), Chamativa, Macabra, Movediça, Enganação Projetada, Aura Inofensiva |
+| 3 | CURA não é stat da ficha | 5 | Energia Reversa, Regeneração Aprimorada, Liberação, Cura em Grupo, e a parte de cura da Amplificada |
+| 4 | Barreira é ENTIDADE, não stat | 5 | as 5 de Barreira (parede tem PV próprio) |
+| 5 | Expansão de Domínio é outro subsistema | 4 | Incompleta, Completa, Acerto Garantido, sem Barreiras |
+
+Mais nove casos avulsos: resistência que é METADE do dano e não RD (Aura
+Impenetrável, Casulo de Energia), RD por tipo elemental (Aura Elemental Reforçada),
+escolha aninhada de elemento (Afinidade Ampliada), chance percentual (Aura
+Embaçada), situacional por rolagem (Aura Anuladora, Golpe com Aura, Aura
+Redirecionadora) e transferir para outro (Transferência de Aura). Mais os três
+testes narrativos de Controle e Leitura (Leitura de Aura, Leitura Rápida, Rastreio
+Avançado), Expandir Aura, Punho Divergente, Emoção da Pétala Decadente, Anular
+Técnica e Revestimento de Domínio.
+
+⚠ **O bloqueio 1 é o maior de todo o sistema, não só das Aptidões.** Um canal que
+carregue "N dados de X faces" resolveria 13 aptidões de uma vez, e ele já é
+conhecido de dois outros lugares: o `dadosDano` de hoje usa o dado da LINHA (então
+"1d6 por ponto gasto" não é escrevível) e o pool exclusivo vai precisar dele para
+comparar `2d6` contra `1d10`, que o autor já respondeu que é pela **maior média**.
+
+### ✅ As quatro perguntas das Aptidões, RESPONDIDAS (autor, 2026-07-30)
+
+1. **Degraus de nível da Energia Reversa: POR PONTO GASTO.** Confirmado pelo
+   AppScript que o autor usa na planilha (`qtdDados = perGasto * dadosPorPer`, com
+   `dadosPorPer` subindo em 10, 15 e 20). A leitura do código estava certa.
+   O mesmo script confirmou d6/d8 e o modificador entrando **uma vez**, dobrado com
+   a Cura Amplificada. E revelou uma peça que faltava: **Cura em Grupo soma +2 no
+   teto de PER**, agora ligada.
+2. **"Presença OU Sabedoria" é o MAIOR dos dois.** A decisão **C3 está FECHADA**, e
+   vale para as ~10 habilidades que usam a mesma fórmula.
+3. **Estímulo Muscular fica como está.** Palavras do autor: "Não precisa de seletor,
+   só aumenta os valores e a pessoa vê o quê ela quer, usa o teste e desativa."
+4. **RD Específica vai VIRAR RD POR TIPO DE DANO.** Ela era o jeito do autor de
+   tratar RD contra um tipo único (Queimante, Congelante e derivados), porque eram
+   poucos casos. Ele decidiu trocar por uma RD por tipo de dano do sistema.
+   ⚠ **BLOQUEADO NA LISTA:** o `TIPOS_DANO` de `afty-equipamentos.js` tem só
+   **quatro** (Cortante, Impacto, Perfurante, Queimante), que são os das armas. Os
+   elementais (Congelante e o resto) não existem no código, e o autor vai mandar a
+   lista.
+
+### ⚠ Três aptidões do AppScript que NÃO existem no catálogo do Afty
+
+O script de Energia Reversa tem passivas que o catálogo transcrito não cobre:
+**Cura Aperfeiçoada** (rerrola 1 e 2 nos dados de cura), **Santidade** (+2 por dado
+de cura) e **Semblante Espiritual** (+2 dados e +1 modificador por PER gasto). Tem
+também um "Treinamento (+1 PER Max)" que não casa com nenhuma linha conhecida.
+Não foram inventadas aqui. Se forem de uma categoria ainda não enviada, o texto
+delas ainda falta.
+
+### Simulação de Combate mudou de aba
+
+Saiu de **Especializações** e foi para **Cálculos** (autor, 2026-07-30). Ela é
+bancada de balanceamento, então o lugar dela é do lado dos números que ela mexe, e
+não no meio das escolhas de especialização. Fica embaixo do card de Cálculos: liga
+um estado e a grade acima se move.
+
+⚠ **É arranjo PROVISÓRIO.** Palavras do autor: "Na ficha final vamos precisar
+trabalhar bem nela, mas não é o momento." Não tratar a posição atual como decidida.
+
+`patchCombate` deixou de ser prop de `TabEspecializacoes` (ninguém mais o usava lá)
+e passou a ser prop de `TabCalculos`.
+
+### 🐛 Hover de fontes cortado nos dois últimos atributos
+
+Sintoma do autor: passar o mouse em **Presença ou Sabedoria** para ver as fontes não
+mostrava nada, o painel "ficava para trás da tela".
+
+**Causa:** a tabela de atributos tinha `overflow-hidden`, e ele estava lá só para o
+fundo do cabeçalho respeitar o canto arredondado. O `PainelDeFontes` abre para baixo
+(`absolute top-full`), então nas duas ÚLTIMAS linhas ele passava da borda de baixo da
+tabela e era **recortado**. Nas quatro primeiras havia linha embaixo, e o painel
+cabia dentro do container, o que escondia o problema.
+
+**Conserto:** o `overflow-hidden` saiu, e quem arredonda agora é o próprio cabeçalho
+(`rounded-t-lg`), que é o único filho com fundo. As linhas têm só `border-t`, então o
+canto de baixo não tem nada para recortar.
+
+**Varredura:** os outros 8 pontos com `PainelDeFontes` (Manobras, Perícias e TRs,
+linha de Dano, CD de Feitiçaria, aba Cálculos e o Preview) **não** têm ancestral que
+recorte. Os demais `overflow-hidden` do arquivo são de duas famílias inofensivas:
+truncar texto em cabeçalho recolhível (`flex-1 min-w-0 ... truncate`) e barra de
+progresso. O `Card` não recorta.
+
+⚠ **A lição para quem for mexer:** `overflow-hidden` para arredondar canto e painel
+absoluto de hover não convivem. Quando o canto precisar de recorte, arredonde o filho
+que tem fundo, e não o container.
+
+---
+
+## SESSÃO DE 2026-07-29
+
+Sete frentes fechadas. Cada uma tem detalhe na seção própria mais abaixo.
+
+1. **Atributos reformados.** Três tetos separados (limite 20, sistema 30, absoluto 32), canal
+   `limiteAtributo` novo, o canal `atributo` passou a APARAR no limite (antes 36 efeitos furavam o
+   20 calados). Hover de fontes no valor e no limite. Ver [Sistema de ATRIBUTOS](#sistema-de-atributos-reformado-em-2026-07-29).
+2. **Nível de Aptidão quebra o teto de 5.** Canal `limiteAptidao` novo, irmão do `limiteAtributo`.
+   `resolveNiveisAptidao(aptidoes, concedido, limite)` agora recebe o teto por trilha e devolve
+   `limite`. ⚠ **Falta o conteúdo**: o autor citou DUAS Habilidades que dão "+1 podendo passar de 5"
+   (as duas juntas levam a 7) e a **Expansão de Domínio** (+2 em `au`, `cl` e `er`), e ainda **não
+   mandou o texto de nenhuma**. O mecanismo está pronto e testado, é só escrever as linhas:
+   `{canal:"nivelAptidao", alvo, expr}` mais `{canal:"limiteAptidao", alvo, expr}` juntas.
+3. **Motor de Automação no Funcionamento Básico.** `core.tecnicaEfeitos` é uma lista
+   `[{canal, alvo?, expr, quando?, duracao?}]` que o JOGADOR escreve, com o DSL inteiro e os 48
+   canais. Entra no motor por `efeitosDaTecnica` (em `afty-efeitos.js`) e os filtros de estágio
+   roteiam pelo canal. ⚠ É o **único** lugar do sistema em que efeito é escrito e não escolhido de
+   catálogo, e é por definição: a técnica é única no mundo. Não generalizar isso para habilidade,
+   talento, origem ou aptidão, que vêm de catálogo.
+4. **Origens Inato e Derivado refeitas e automatizadas.** O shape `grants` MORREU (declarava
+   concessão e só pintava selo âmbar, sem alimentar nada) junto do `grantLabel`. Ver [ORIGENS](#origens).
+5. **Bônus de atributo de origem virou ALOCADOR** em todas (era par de dropdowns "+2 em / +1 em").
+   Inato, Derivado e Feto agora são `distribuir: 3, maxPorAtributo: 2`, o que **afrouxa a regra
+   escrita**: passou a caber +1/+1/+1. Foi decisão do autor.
+6. **Placar do Motor RECONTADO**: 155/412, e existem **8 caminhos de ligação**, não 1. Contar só
+   `HABILIDADE_EFEITOS` subestima feio. Ver o quadro no topo deste doc.
+7. **UI**: selo de raridade, `resumo` narrativo das origens, "Ficha em branco" do header, contador
+   duplicado de Níveis de Aptidão e o Atributo da Técnica duplicado saíram todos.
+
+### ⚠️ Regras de UI que este chat aprendeu apanhando
+- **Nada de texto explicativo na tela.** Sem hint, sem nota, sem fórmula escrita, sem lore. Só
+  resultado e aviso. Explicação de número vai no **hover** (`PainelDeFontes` + `derived.partes.*`),
+  explicação de item vai no `title`. Eu pus a nota de cada canal embaixo do nome no seletor do Motor
+  e o autor respondeu **"Você PIOROU"**, porque triplicou a altura da lista.
+- **Lista grande resolve-se com LARGURA, não com agrupamento.** O seletor de canal do Motor é um
+  painel de 620px em **3 colunas**, uma linha por item: os 48 cabem sem rolar (~407px de altura
+  contra ~2310px da versão em lista). Busca sem acento por nome, grupo e nota, mas ela é atalho, e
+  não a única saída.
+- **Aviso na tela usa `<AlertTriangle/>` do lucide, NUNCA o caractere `⚠`.** O caractere vem da
+  fonte de emoji do sistema (Segoe UI Emoji), com baseline e métricas próprias, então nenhum ajuste
+  de flex ou line-height o alinha. Há trava de `no-restricted-syntax` no `eslint.config.js`,
+  escopada em `src/systems/afty/**`. Em COMENTÁRIO o `⚠` segue livre e é o estilo do projeto.
+- O criador de fichas **calcula, não ensina**. Quem quer saber o que a coisa é narrativamente lê o
+  livro.
+
+### Perguntas abertas desta sessão
+- **Clã Zenin** ficou com bônus livre entre os 6 atributos, enquanto Gojo, Inumaki e Kamo têm `entre`
+  com um par. Era para o Zenin ser restrito também? Se sim, quais dois?
+- **Melhorias de Controlador** (as 4) aplicam "numa quantidade de Invocações igual ao seu Bônus de
+  Treinamento", e não existe marcador por invocação para isso (só o `marcada` do Concentrar Poder).
+  Além disso *Agressividade* precisa de canal de dados de dano e *Resistência* precisa de **RD**, e a
+  invocação **não tem RD no stat block**.
+- **Precisão** (Melhoria de Controlador) diz "+2 em Jogadas de Ataque **ou** CD". É escolha do
+  jogador ou vale para os dois?
+- **Controle Disperso** (Apogeu) precisa de um limite de invocações ativas, que não é modelado.
+- **Marca Registrada** (Inato): a vaga de Feitiço está ligada, a **redução de 1 PE não**, porque vale
+  só para aquele feitiço e `afty-feiticos.js` não lê o Motor.
 
 ---
 
@@ -242,26 +693,66 @@ No livro, Maestria == Treinamento (mesmo valor). O autor cogitou renomear para "
 
 ---
 
-## Sistema de ATRIBUTOS (pronto e polido)
+## Sistema de ATRIBUTOS (reformado em 2026-07-29)
 
 - 6 atributos: Força, Destreza, Constituição, Inteligência, Sabedoria, **Presença** (não Carisma).
-  Valores 0 a 30. **Limite POR ATRIBUTO** (default 20, elevável a 30 por poderes).
 - **3 métodos** (o GM escolhe): Compra por Pontos (17 pts, faixa 8 a 15), Valores Fixos
   (15,14,13,12,10,8, dropdown com TROCA, sem travar), Rolagem (4d6 dropa menor). "Nível" == ND.
-- **Pontos de nível**: a cada 4 ND, pool separado, 1:1, teto = limite base. A quantidade por ciclo
+- **Pontos de nível**: a cada 4 ND, pool separado, 1:1, teto = limite efetivo. A quantidade por ciclo
   depende do **Patamar**: Comum/Desafio = 2, Calamidade/Beyond = 3
   (`floor(ND/4) * ATTR_POR_CICLO`, em `afty-atributos.js`). Bate com a planilha (Total.Atributos).
-- **Atributo efetivo = base + nível + Desenvolvimento + bônus de origem** (teto 30). Exposto em
-  `derived.attrEff`, `derived.mods`, `derived.attrLimiteEfetivo`, `derived.attrDesenv`, `derived.attrBonus`.
-- Aba de Atributos = tabela compacta (Atributo, Base, Nível, Efetivo, Limite).
+- **Atributo efetivo = base + nível + Desenvolvimento + origem + equipamento + Motor**, aparado nos
+  três tetos abaixo. Exposto em `derived.attrEff`, `derived.mods`, `derived.attrLimiteEfetivo`,
+  `derived.attrDesenv`, `derived.attrBonus`, `derived.attrEquip`, `derived.attrMotor`,
+  `derived.attrPerda`, `derived.partesAtributo`, `derived.partesLimite`.
+- Aba de Atributos = tabela compacta (Atributo, Base, Nível, Efetivo, Limite), com **hover de fontes
+  no Efetivo e no Limite** (`PainelDeFontes`) e chips verdes por fonte concedida embaixo do nome.
+
+### ⚠️ TRÊS TETOS, não um (autor, 2026-07-29)
+Confundi-los foi o bug que esta reforma consertou: até aqui só o 30 existia no código, e **36
+efeitos do Motor mais o Treino de Atributo furavam o limite de 20 calados**.
+
+| Teto | Valor | Vale para | Constante |
+|---|---|---|---|
+| **Limite do atributo** | 20 | toda fonte de valor, "a não ser que alguma habilidade diga o oposto" | `ATTR_LIMITE_PADRAO` |
+| **Teto do sistema** | 30 | independe da fonte, inclusive quem fura o limite do atributo | `ATTR_LIMITE_MAX` |
+| **Teto absoluto** | 32 | só o Aperfeiçoamento de Atributo (Lendária) | `ATTR_LIMITE_ABSOLUTO` |
+
+Quem apara é o `somarAtributo` de `afty-derive.js`. A parcela do `furaTeto` é somada **separada, por
+último**: aparar o total contra o 32 daria carona às outras fontes da mesma ficha.
+
+### As 5 fontes que sobem o LIMITE (todas ligadas)
+Canal `limiteAtributo` (alvo por atributo), resolvido em `CANAIS_PRE_CONTEXTO`, porque ele É o teto
+contra o qual o estágio 1 apara o canal `atributo`.
+
+| Fonte | Texto | Como entra |
+|---|---|---|
+| **Desenvolvimento Inesperado** (Derivado) | +1 valor e +1 limite por ponto | fora do Motor, `resolveDesenvolvimento` |
+| **Ápice Corporal Humano** (Restringido) | limite 30 em For, Des, Con | `limiteAtributoDaOrigem` + o Tipo |
+| **Incremento de Atributo** (Talento) | "o valor **e o limite**... em 2" | `limiteAtributo` +2 |
+| **Quebra de Limites** (Talento, Derivado) | "o limite dos dois atributos... em 2" | `limiteAtributo` +2, dois alvos |
+| **Treino de Atributo, Completo** | "+2 no limite, até o máximo de 30" | `limiteAtributo` +2 |
+
+⚠ Consequência de REGRA do Treino de Atributo: a linha inteira num atributo já no 20 rende **+2, e
+não +4**, porque as 4 etapas dão +4 de valor e o Completo abre só 2 de espaço.
+
+Os 6 **acessórios de atributo** (Anéis do Conhecimento, Bracelete da Força...) são caso diferente:
+eles não sobem o limite, eles **furam** ("podendo superar o seu limite de atributo, até o máximo de
+30"). Entram pela `folgaEquip`, que levanta o teto daquele atributo só pelo que o acessório
+contribuiu, sem levantar o teto do Motor.
 
 ### Regras de bônus de atributo (IMPORTANTES)
 - Bônus de origem é **efetivo e grátis** (soma no valor, não gasta orçamento).
 - Bônus de origem **NÃO passa o limite**, salvo os que disserem explicitamente (TODO no motor).
-- Se o bônus de origem passaria do limite, os **pontos de Nível são DEVOLVIDOS ao pool** (a origem
-  tem prioridade). Ver `setOrigemBonus` no builder + `nivMax` que reserva espaço pro bônus.
-- **Desenvolvimento Inesperado** (Derivado): pool `floor(ND/4)`, cada ponto dá **+1 no valor E +1 no
-  limite** do atributo escolhido. É a exceção que passa de 20.
+- Se um bônus concedido passaria do limite, os **pontos de Nível são DEVOLVIDOS ao pool** (a
+  concessão tem prioridade). Ver `setOrigemBonus` no builder + o `nivMax` que reserva espaço para
+  origem, Desenvolvimento **e Motor** (`derived.attrMotor`, só o estágio permanente).
+- Quando ainda assim sobra ponto sem espaço, ele aparece em `derived.attrPerda` e o builder mostra o
+  aviso "N pontos de bônus perdidos no limite" mais o número efetivo em âmbar. Nada de perda calada.
+- **`resumoAtributos(creature, limitesEfetivos, perdas)`** recebe o limite de fora. Ele calculava o
+  próprio até esta reforma, e por isso avisava errado em toda ficha de Restringido.
+- `creature.attrLimite` (20 fixo no schema, nenhuma UI edita) sobrou como **piso**, para um override
+  manual do Mestre. Não é mais fonte de verdade: quem manda é `derived.attrLimiteEfetivo`.
 
 ---
 
@@ -271,13 +762,29 @@ Conteúdo em `afty-origens.js`. Bônus de Atributo tem 2 formatos, ambos em `cor
 - **escolhaDoJogador** `{pontos:[2,1]}` → seletores "+2 em / +1 em" (Inato, Derivado, Feto).
 - **distribuir** `{distribuir:N, maxPorAtributo:M}` → alocador (Sem Técnica: 4, máx 3).
 
-Grants que ligam quando os catálogos existirem: `talento`, `feitico`, `aptidao_amaldicoada`,
-`pericia_treinada` (selos âmbar via `grantLabel`).
+⚠ **O shape `grants` MORREU em 2026-07-29.** Ele declarava concessão (`{ tipo: "talento",
+quantidade: 1, ndMin: 1 }`) e só pintava um selo âmbar via `grantLabel`: a UI anunciava e a ficha
+não recebia nada. As duas usuárias (Inato e Derivado) foram refeitas com efeito de verdade em
+`ORIGEM_EFEITOS`, e `grantLabel` foi removido. **Não reintroduzir.**
+
+Concessão de origem agora é canal do Motor, como em qualquer outra fonte: `vagasHabilidade` para
+Talento (mesmo orçamento), `vagasFeitico` para Feitiço, `vagasAptidao` para Aptidão Amaldiçoada,
+`vagasPericia` para perícia treinada. O que o Motor cobre só EM PARTE se declara no campo
+**`parcial`** da característica, que a UI mostra como aviso âmbar em vez de fingir automação.
+
+⚠ **O selo de RARIDADE (Comum / Rara) saiu** a pedido do autor (2026-07-29), do catálogo e da UI.
+Não mudava regra nenhuma e competia por atenção com os chips que mudam.
+
+✅ **RESOLVIDA a pergunta aberta desde 2026-07-16**: a Aptidão Amaldiçoada de Aura do Derivado é
+**vaga, não gasto** de orçamento. Duas razões: alvo NOMEADO é concessão grátis pela convenção do
+projeto, e desde que o ND parou de conceder Aptidão Amaldiçoada o orçamento sem a Habilidade Geral
+é **zero**, então gastar dele deixaria a característica sem efeito. ⚠ A vaga é genérica: não existe
+vaga por categoria para prendê-la em Aura.
 
 | Origem | Status | Notas |
 |---|---|---|
-| **Inato** | ✅ feito | +2/+1, Talento Natural (grants), Marca Registrada (Feitiço −1 PE) |
-| **Derivado** | ✅ feito | +2/+1, Energia Antinatural, **Desenvolvimento Inesperado** (mecânica fiada) |
+| **Inato** | ✅ feito | +2/+1, Talento Natural (`vagasHabilidade: 1 + (nd >= 4)`), Marca Registrada (`vagasFeitico: 1`). **Refeita e automatizada em 2026-07-29.** Falta só a redução de 1 PE do Feitiço |
+| **Derivado** | ✅ feito | +2/+1, Energia Antinatural (`vagasAptidao: 1`), **Desenvolvimento Inesperado** (caminho próprio: +1 valor e +1 limite). **Refeita e automatizada em 2026-07-29** |
 | **Sem Técnica** | ✅ feito | Bônus = distribuir 4 (máx 3), restrições, Estudos Dedicados, **Empenho Implacável tem CONTINUAÇÃO** (lembrete roxo, completar na aba Habilidades, progressão dos 9 níveis em `niveis:[]`) |
 | **Feto Amaldiçoado Híbrido** | ✅ feito | +2/+1, **Físico Amaldiçoado = seletor de anatomia** (pool 1 + 1/5 níveis, 15 anatomias) |
 | **Herdado** | ⬜ pendente | catálogo vazio |
@@ -335,8 +842,9 @@ agrega mas NÃO é consumido** (o motor de atributos usa point-buy + pool de ní
 - Chip roxo com ✓ quando atendido, cadeado quando falta ou não é validável. Sem contagem de "falta N".
 
 ### Pendências dos Treinamentos
-- **Aplicação direcionada** do Treino de Atributo (+1 no atributo escolhido, +2 no limite dele no
-  Completo) espera o sistema de atributos. Hoje a escolha funciona, o efeito não é aplicado.
+- ~~**Aplicação direcionada** do Treino de Atributo~~ **FEITA.** As 4 etapas aplicam +1 no atributo
+  escolhido (canal `atributo`, aparado no limite) e o Completo aplica +2 no limite dele (canal
+  `limiteAtributo`). Ver a seção Sistema de ATRIBUTOS.
 - Bônus de **perícia/arma específica** são texto, esperam esses sistemas.
 
 ---

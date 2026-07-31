@@ -106,6 +106,13 @@ export function createBlankAfty() {
       tamanho: "medio",
       tecnicaAttr: "inteligencia", // atributo da Técnica (CD / RD específico)
       tecnicaDescricao: "",        // Funcionamento Básico / "Descrição da Técnica" (texto livre)
+      // Efeitos do Funcionamento Básico, programados pelo jogador:
+      // [{ canal, alvo?, expr }]. A técnica é ÚNICA NO MUNDO por definição, então
+      // nenhum catálogo pode cobri-la: é a única entrada do sistema em que o
+      // efeito é escrito na ficha, e não escolhido de uma lista. Entram no Motor
+      // por `efeitosDaTecnica`, e os filtros de estágio roteiam pelo canal, igual
+      // a qualquer outra fonte. Mesmo shape do Motor das Ferramentas Amaldiçoadas.
+      tecnicaEfeitos: [],
       // Origem. Além do `id`, guarda o que ela abre:
       //   cla             — só o Herdado se divide em clãs (`cla_gojo`...)
       //   bonusAtributos  — a escolha +2/+1, ou a distribuição livre
@@ -226,6 +233,11 @@ export function createBlankAfty() {
     // Aptidões Amaldiçoadas escolhidas (ids do catálogo). Não custam
     // orçamento: são desbloqueadas pelo nível da trilha.
     aptidoesAmaldicoadas: [],
+    // Expansões de Domínio criadas (ver afty-dominios.js). Uma criatura pode ter
+    // várias escritas, mas expande UMA de cada vez: `dominioAtivoId` diz qual
+    // está no ar, e é ela que a bancada de combate aplica na ficha.
+    dominios: [],
+    dominioAtivoId: null,
     // Interlúdios · Treinamentos: mapa { [linhaId]: progresso 0..4 }.
     // Etapas sequenciais; 4 → concede o bônus de Completo. Ver afty-treinamentos.js.
     treinamentos: {},

@@ -4931,11 +4931,30 @@ export const AFTY_HABILIDADES = [
       "obter esta habilidade, você pode aumentar o seu nível de aptidão em Aura, Controle e " +
       "Leitura ou Barreira em 1. Você pode pegar esta habilidade três vezes, uma para cada " +
       "aptidão.",
-    // ⚠ REPETÍVEL ("três vezes, uma para cada aptidão") E concede nível de
-    // trilha (au, cl OU bar, à escolha). Mesmo par de problemas de Aptidões
-    // de Combate (8° do Combatente): o shape (lista de ids únicos) não
-    // suporta 3x, e a concessão de trilha entra na passada de efeitos +
-    // resolveNiveisAptidao. Ver status.
+    // "Três vezes, uma para cada aptidão" é uma ESCOLHA ANINHADA REPETÍVEL,
+    // idêntica a Aptidões de Luta (Lutador 8°), Aptidões de Combate (Combatente
+    // 8°) e Aptidões de Suporte: a habilidade entra uma vez na lista de ids
+    // únicos e cada pega além da primeira vira outra opção marcada, que já cobra
+    // a vaga extra (vagasExtras em resolveEscolhasHabilidade). A concessão de
+    // trilha sai por ESCOLHA_EFEITOS, no estágio pré-contexto do Motor.
+    //
+    // ⚠ Era a ÚNICA das quatro irmãs sem pool declarado (2026-07-29). As outras
+    // três já estavam ligadas, e o comentário aqui dizia que o shape não
+    // suportava, o que deixou de ser verdade quando `escolha.repetivel` nasceu.
+    escolha: {
+      id: "aptidao_de_controle",
+      label: "Nível de Aptidão",
+      niveis: [8],
+      repetivel: true,
+      opcoes: [
+        { id: "ctr_aptidao_aura", nome: "Aura",
+          descricao: "Seu Nível de Aptidão em Aura aumenta em 1." },
+        { id: "ctr_aptidao_controle_leitura", nome: "Controle e Leitura",
+          descricao: "Seu Nível de Aptidão em Controle e Leitura aumenta em 1." },
+        { id: "ctr_aptidao_barreira", nome: "Barreira",
+          descricao: "Seu Nível de Aptidão em Barreira aumenta em 1." },
+      ],
+    },
     requisitos: [],
   },
   {
@@ -5064,7 +5083,8 @@ export const AFTY_HABILIDADES = [
 
   /* ================= RESTRINGIDO · BASE =================
      Base nos níveis 1, 2, 2, 3, 4, 9, 10 e 20. É a especialização SEM energia
-     amaldiçoada: o recurso é PONTO DE ESTAMINA (4 no ND 1, +4 por nível).
+     amaldiçoada: o recurso chama PONTO DE ESTAMINA (4 no ND 1, +4 por nível),
+     mas é o mesmo PE dos outros Tipos, só com outro nome (autor, 2026-07-29).
      ⚠ Exclusiva da Origem Restringido, que proíbe multiclasse, então aqui
      nível de Restringido == ND sempre. */
   {
@@ -5376,9 +5396,9 @@ export const AFTY_HABILIDADES = [
     descricao:
       "Você otimiza o seu tempo de ação. Uma vez por turno você pode gastar 2 PE para receber uma " +
       "Ação Ágil, a qual pode ser utilizada para: Andar, Desengajar ou Esconder.",
-    // ⚠ O livro escreve "2 PE", mas Restringido NÃO TEM energia amaldiçoada:
-    // o recurso dele é Ponto de Estamina. Provável copiar-colar da homônima do
-    // Lutador (lut_acao_agil). Transcrito verbatim. CONFIRMAR com o autor.
+    // O livro escreve "2 PE" e as irmãs escrevem "ponto de estamina": dá no
+    // mesmo (autor, 2026-07-29). PE é a abreviação dos dois, e o que o
+    // Restringido gasta é sempre Estamina.
     requisitos: [],
   },
   {

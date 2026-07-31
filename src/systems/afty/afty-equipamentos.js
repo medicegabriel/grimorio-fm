@@ -613,7 +613,19 @@ export const faTemHabilidadeUnica = (grauValue) => grauValue === "especial";
    Só cabem aqui os canais que o motor do Afty realmente calcula. Efeitos
    situacionais, por rodada, reação, ou que dependem de stat inexistente
    (Iniciativa, Acerto, manobras, TRs, Perícias, RD por tipo elemental) seguem
-   como texto na descrição do encantamento. */
+   como texto na descrição do encantamento.
+
+   ⚠ Esta lista é dos ENCANTAMENTOS, e só deles (2026-07-30). A Habilidade Única
+   saiu daqui e passou a escrever no catálogo INTEIRO do Motor (`EFEITO_CANAIS`
+   de afty-efeitos.js), porque ela é criada com o Narrador e não tem por que ser
+   mais pobre que a Técnica, que já escrevia nos 48 canais. Foi o que destravou o
+   "+8 de Acerto vindo da arma" do exemplo do autor: `bonusAcerto` nunca existiu
+   nesta lista de sete.
+
+   Este arquivo NÃO importa afty-efeitos.js de propósito: afty-efeitos importa
+   afty-combate, que importa afty-habilidades, que importa este arquivo. A seta
+   de volta fecharia o ciclo. Por isso o canal da Habilidade Única passa cru, e
+   quem valida é o `aplicarEfeitos`, que já ignora canal desconhecido com aviso. */
 export const EQUIP_EFEITO_CANAIS = [
   { value: "defesa",   label: "Defesa" },
   { value: "rdFisico", label: "RD Física" },
@@ -625,6 +637,21 @@ export const EQUIP_EFEITO_CANAIS = [
 ];
 export const EQUIP_EFEITO_CANAL_LABEL = Object.fromEntries(EQUIP_EFEITO_CANAIS.map((c) => [c.value, c.label]));
 const EQUIP_CANAIS_VALIDOS = new Set(EQUIP_EFEITO_CANAIS.map((c) => c.value));
+
+/**
+ * Dois canais desta lista têm nome diferente no Motor, e uma Habilidade Única
+ * gravada antes de 2026-07-30 usa o nome velho. A troca é na LEITURA, sem
+ * reescrever a ficha: quem abrir e salvar de novo já grava o id novo.
+ */
+const CANAL_UNICA_LEGADO = { pvMax: "hp", peMax: "pe" };
+
+/**
+ * O estado da bancada de uma Habilidade Única ATIVA. Um por entrada de
+ * equipamento, porque a ativação é do item: duas armas com habilidade ativa são
+ * dois interruptores. O `uid` da entrada já é minúsculo com underscore, que é o
+ * vocabulário do DSL, então ele entra inteiro.
+ */
+export const estadoDaUnica = (uid) => `unica_${uid}`;
 
 /** Contexto base da DSL para os efeitos de equipamento (sem o grau, que é por item).
     Usa os atributos BASE da ficha (o efetivo ainda não fechou quando o
@@ -1234,20 +1261,23 @@ export function resolveFerramenta(entrada, def, bt = 2, ctxBase = null) {
       efeitos.push({ canal: ef.canal, valor: evalNumber(ef.expr, ctx), origem: x.enc.nome, fonte: "encantamento" });
     }
   }
+  // ⚠ A Habilidade Única NÃO entra mais no `efeitos` daqui (2026-07-30). Ela é
+  // uma das cinco fontes do pool exclusivo, que não acumula com Feitiço Auxiliar
+  // nem com Shikigami, e essa disputa só existe dentro do Motor. Somá-la aqui,
+  // junto dos encantamentos, a deixaria de fora da regra. O que sai deste
+  // resolver é a lista RESOLVIDA, e quem a transforma em efeito de Motor é o
+  // `resolveEquipamentos`.
   const habilidadeEfeitosRaw = Array.isArray(fa.habilidadeEfeitos) ? fa.habilidadeEfeitos : [];
   const habilidadeEfeitos = habilidadeEfeitosRaw.map((ef) => ({
-    canal: ef.canal ?? "defesa",
+    canal: CANAL_UNICA_LEGADO[ef.canal] ?? ef.canal ?? "defesa",
+    alvo: ef.alvo ?? "",
     expr: ef.expr ?? "",
+    // Ativa fica na bancada de Simulação de Combate, passiva vale sempre. Quem
+    // decide é o item, não a família (autor, 2026-07-30).
+    modo: ef.modo === "ativa" ? "ativa" : "passiva",
     valor: evalNumber(ef.expr ?? "", ctx),
     ok: validateExpression(ef.expr ?? "").ok,
   }));
-  if (temHabUnica) {
-    for (const ef of habilidadeEfeitos) {
-      if (ef.ok && EQUIP_CANAIS_VALIDOS.has(ef.canal)) {
-        efeitos.push({ canal: ef.canal, valor: ef.valor, origem: "Habilidade Única", fonte: "habilidade" });
-      }
-    }
-  }
   const efeitosPorCanal = {};
   for (const ef of efeitos) efeitosPorCanal[ef.canal] = (efeitosPorCanal[ef.canal] ?? 0) + ef.valor;
 
@@ -1301,6 +1331,11 @@ export function resolveEquipamentos(creature, bt = 2) {
   let hpMaxBonus = 0;
   let cdBonus = 0;
   let uniformesEquipados = 0;
+  // Habilidade Única: efeitos para o Motor e os interruptores que as ativas
+  // pedem na bancada. Ficam fora dos escalares acima de propósito (ver o
+  // comentário no resolveFerramenta).
+  const efeitosUnica = [];
+  const estadosUnica = [];
 
   // Contexto da DSL dos efeitos de Ferramenta (Motor de Automação).
   const ctxBase = dslEquipCtxBase(creature, bt);
@@ -1347,6 +1382,27 @@ export function resolveEquipamentos(creature, bt = 2) {
           }
         }
       }
+      // Habilidade Única: vira efeito do MOTOR, com a marca do pool exclusivo.
+      // O valor já sai resolvido aqui e viaja como literal porque a expressão
+      // dela lê `grau`, que é do item e não existe no contexto da criatura.
+      if (fa?.temHabUnica) {
+        let temAtiva = false;
+        for (const ex of fa.habilidadeEfeitos) {
+          if (!ex.ok || !ex.canal || !ex.valor) continue;
+          if (ex.modo === "ativa") temAtiva = true;
+          efeitosUnica.push({
+            canal: ex.canal,
+            ...(ex.alvo ? { alvo: ex.alvo } : {}),
+            expr: String(ex.valor),
+            // A ativa só entra com o interruptor dela ligado na bancada.
+            ...(ex.modo === "ativa" ? { quando: estadoDaUnica(e.uid) } : {}),
+            exclusivo: "habilidadeUnica",
+            origem: e.uid,
+            nome: `${def.nome} (Habilidade Única)`,
+          });
+        }
+        if (temAtiva) estadosUnica.push({ id: estadoDaUnica(e.uid), label: `${def.nome} (Habilidade Única)` });
+      }
       // Efeitos de Ferramenta (Motor de Automação): só enquanto equipada.
       if (fa) {
         for (const [canal, val] of Object.entries(fa.efeitosPorCanal)) {
@@ -1386,6 +1442,8 @@ export function resolveEquipamentos(creature, bt = 2) {
     cdBonus,
     attrBonus,
     custoGasto,
+    efeitosUnica,       // para o Motor, já marcados como pool exclusivo
+    estadosUnica,       // interruptores das ativas, para a bancada
     avisos,
   };
 }

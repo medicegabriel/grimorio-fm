@@ -131,17 +131,12 @@ export const CLAS_HERDADO = [
   {
     id: "cla_gojo",
     nome: "Clã Gojo",
-    resumo:
-      "Descende de Michizane Sugawara, um lendário feiticeiro antigo de Jujutsu, e tem como técnicas " +
-      "herdadas o Ilimitado e os Seis Olhos, que juntos têm um poder enorme. O membro de maior destaque " +
-      "é Satoru Gojo, o feiticeiro mais forte, cujo poder sozinho é capaz de manter o clã entre os " +
-      "maiores e mais respeitados.",
     caracteristicas: [
       {
         id: "bonus_atributo",
         nome: "Bônus em Atributo",
         descricao: "Aumenta em 2 a Inteligência ou Sabedoria, e em 1 o que não foi escolhido.",
-        bonus: { escolhaDoJogador: true, pontos: [2, 1], entre: ["inteligencia", "sabedoria"] },
+        bonus: { distribuir: 3, maxPorAtributo: 2, entre: ["inteligencia", "sabedoria"] },
       },
       {
         id: "treinamentos_cla",
@@ -165,16 +160,12 @@ export const CLAS_HERDADO = [
   {
     id: "cla_inumaki",
     nome: "Clã Inumaki",
-    resumo:
-      "Uma das várias famílias menores. Embora não sejam considerados um dos clãs maiores, sua técnica " +
-      "amaldiçoada, Fala Amaldiçoada, é bem respeitada. Possuem um sigilo característico da família, que " +
-      "são os emblemas ao redor da boca do usuário da técnica. O membro de maior destaque é Toge Inumaki.",
     caracteristicas: [
       {
         id: "bonus_atributo",
         nome: "Bônus em Atributo",
         descricao: "Aumenta em 2 a Inteligência ou Presença, e em 1 o que não foi escolhido.",
-        bonus: { escolhaDoJogador: true, pontos: [2, 1], entre: ["inteligencia", "presenca"] },
+        bonus: { distribuir: 3, maxPorAtributo: 2, entre: ["inteligencia", "presenca"] },
       },
       {
         id: "treinamentos_cla",
@@ -201,16 +192,12 @@ export const CLAS_HERDADO = [
   {
     id: "cla_kamo",
     nome: "Clã Kamo",
-    resumo:
-      "Valoriza grandemente os laços de sangue, e herdar a sua técnica é o foco. A sua técnica herdada é " +
-      "a Manipulação de Sangue, herdada pelo membro de maior destaque, que é Noritoshi Kamo. Sua técnica " +
-      "é admirada pelo equilíbrio fornecido e por ser perfeita para aqueles que valorizam o sangue.",
     caracteristicas: [
       {
         id: "bonus_atributo",
         nome: "Bônus em Atributo",
         descricao: "Aumenta em 2 a Constituição ou Sabedoria, e em 1 o que não foi escolhido.",
-        bonus: { escolhaDoJogador: true, pontos: [2, 1], entre: ["constituicao", "sabedoria"] },
+        bonus: { distribuir: 3, maxPorAtributo: 2, entre: ["constituicao", "sabedoria"] },
       },
       {
         id: "treinamentos_cla",
@@ -235,17 +222,14 @@ export const CLAS_HERDADO = [
   {
     id: "cla_zenin",
     nome: "Clã Zenin",
-    resumo:
-      "Incorpora todos os valores nobres de um clã maior, acreditando que técnicas amaldiçoadas poderosas " +
-      "são mais importantes do que tudo. Entretanto, às vezes isso acarreta em problemáticas diante " +
-      "aqueles feiticeiros que não se desenvolvem muito. Possuem várias técnicas herdadas, com grande " +
-      "variedade, mas mantendo o poder e potencial elevado.",
     caracteristicas: [
       {
         id: "bonus_atributo",
         nome: "Bônus em Atributo",
-        descricao: "Aumenta o valor de um atributo em 2 pontos e o de outro em 1 ponto.",
-        bonus: { escolhaDoJogador: true, pontos: [2, 1] },
+        descricao:
+          "Recebe 3 pontos para distribuir entre seus atributos, com um máximo de 2 pontos no " +
+          "mesmo atributo.",
+        bonus: { distribuir: 3, maxPorAtributo: 2 },
       },
       {
         id: "treinamentos_cla",
@@ -287,18 +271,15 @@ export const AFTY_ORIGENS_CATALOG = [
   {
     id: "inato",
     nome: "Inato",
-    raridade: "comum",
-    resumo:
-      "Nasceu com afinidade para energia amaldiçoada e uma técnica própria, única no mundo, " +
-      "imprevisível e com potencial de inovar. A origem mais comum e versátil, combinando com a " +
-      "maioria das especializações.",
     bonusAtributos: {},
     caracteristicas: [
       {
         id: "bonus_atributo",
         nome: "Bônus em Atributo",
-        descricao: "Aumenta o valor de um atributo em 2 pontos e o de outro em 1 ponto.",
-        bonus: { escolhaDoJogador: true, pontos: [2, 1] },
+        descricao:
+          "Recebe 3 pontos para distribuir entre seus atributos, com um máximo de 2 pontos no " +
+          "mesmo atributo.",
+        bonus: { distribuir: 3, maxPorAtributo: 2 },
       },
       {
         id: "talento_natural",
@@ -306,16 +287,23 @@ export const AFTY_ORIGENS_CATALOG = [
         descricao:
           "Recebe um Talento à escolha no 1° nível. Uma única vez, a partir do 4° nível, pode " +
           "escolher receber um Talento adicional ao subir de nível.",
-        grants: [
-          { tipo: "talento", quantidade: 1, ndMin: 1 },
-          { tipo: "talento", quantidade: 1, ndMin: 4 }, // ND ≥ 4 → 2 Talentos no total
-        ],
+        // Talento gasta o MESMO orçamento das Habilidades de Especialização, então
+        // "um Talento" é uma vaga de habilidade. Mesma leitura do Empenho
+        // Implacável do Sem Técnica, que já resolvia assim.
+        // → ORIGEM_EFEITOS.inato, canal vagasHabilidade: 1 + (nd >= 4).
       },
       {
         id: "marca_registrada",
         nome: "Marca Registrada",
         descricao: "Recebe um Feitiço adicional, com o custo reduzido em 1 PE.",
-        grants: [{ tipo: "feitico", quantidade: 1, custoPEReduzido: 1 }],
+        // A VAGA está ligada (canal vagasFeitico, que é a vaga exclusiva de
+        // Feitiço e não serve para Habilidade Geral).
+        //
+        // ⚠ A REDUÇÃO DE 1 PE não está: ela vale só para AQUELE feitiço, e o
+        // canal `custoPE` não tem alvo. Mais fundo que isso, `afty-feiticos.js`
+        // não lê o Motor (só a CD chega), então nenhum canal alcança o custo de
+        // um feitiço hoje. Entra junto com a passada dos Feitiços.
+        parcial: "A redução de 1 PE espera o motor de Feitiços ler o Motor de Automação.",
       },
     ],
     especializacaoExclusivaId: null,
@@ -323,18 +311,15 @@ export const AFTY_ORIGENS_CATALOG = [
   {
     id: "derivado",
     nome: "Derivado",
-    raridade: "rara",
-    resumo:
-      "Energia e técnica vieram de uma fonte alternativa, mais tarde na vida e possivelmente de " +
-      "forma não natural (consumir um objeto amaldiçoado, uma alteração na alma). Raro e complexo, " +
-      "costuma trazer problemas, mas desenvolve-se enormemente num único foco, quebrando limites de atributo.",
     bonusAtributos: {},
     caracteristicas: [
       {
         id: "bonus_atributo",
         nome: "Bônus em Atributo",
-        descricao: "Aumenta o valor de um atributo em 2 pontos e o de outro em 1 ponto.",
-        bonus: { escolhaDoJogador: true, pontos: [2, 1] },
+        descricao:
+          "Recebe 3 pontos para distribuir entre seus atributos, com um máximo de 2 pontos no " +
+          "mesmo atributo.",
+        bonus: { distribuir: 3, maxPorAtributo: 2 },
       },
       {
         id: "energia_antinatural",
@@ -343,8 +328,20 @@ export const AFTY_ORIGENS_CATALOG = [
           "Sua energia deriva de uma fonte anormal. Recebe uma Aptidão Amaldiçoada de Aura (deve atender " +
           "os requisitos). Além disso, uma vez por dia, como Ação Bônus em combate, recupera energia " +
           "amaldiçoada igual ao dobro do seu bônus de treinamento.",
-        grants: [{ tipo: "aptidao_amaldicoada", categoria: "Aura", quantidade: 1 }],
+        // → ORIGEM_EFEITOS.derivado, canal vagasAptidao: 1.
+        //
+        // ⚠ RESOLVE uma pergunta que estava aberta no status desde 2026-07-16
+        // ("essa concessão gasta o orçamento de aptidões ou é grátis?"). É vaga,
+        // e não gasto, por duas razões: o alvo é NOMEADO (a convenção do projeto
+        // é concessão direcionada ser grátis) e, depois que o ND parou de conceder
+        // Aptidão Amaldiçoada, o orçamento sem a Habilidade Geral é ZERO, então
+        // gastar do orçamento faria a característica não fazer nada.
+        //
+        // ⚠ ASSUMIDO: a vaga é genérica, não presa à categoria Aura. Não existe
+        // vaga por categoria, e prender exigiria um canal novo.
+        //
         // A recuperação de PE (2× Maestria, 1/dia) é recurso de cena, não stat.
+        parcial: "A recuperação de PE (2× Maestria, uma vez por dia) é procedimento de mesa.",
       },
       {
         id: "desenvolvimento_inesperado",
@@ -353,6 +350,7 @@ export const AFTY_ORIGENS_CATALOG = [
           "A cada quatro níveis, recebe um ponto de atributo adicional e aumenta em 1 o limite do atributo escolhido.",
         // Mexe no pool de pontos de atributo E no limite por atributo: caminho
         // próprio (`core.origem.desenvolvimento`), fora do Motor, igual ao bônus.
+        // Alocador na aba de Atributos, e o limite entra em `attrLimiteEfetivo`.
         afetaAtributos: true,
       },
     ],
@@ -361,13 +359,6 @@ export const AFTY_ORIGENS_CATALOG = [
   {
     id: "herdado",
     nome: "Herdado",
-    raridade: "comum",
-    resumo:
-      "Certos feiticeiros têm sua capacidade de usar energia amaldiçoada e a sua técnica provinda da sua " +
-      "linhagem sanguínea, formando assim os herdeiros dos clãs. Ao nascer, podem acabar recebendo uma das " +
-      "técnicas que pertencem ao seu clã originário, nas quais costumam focar e desenvolver através dos " +
-      "conhecimentos já estabelecidos e valorizados. As técnicas passadas a frente normalmente são muito " +
-      "poderosas e ainda possuem um manual de uso, facilitando o seu aprendizado.",
     // A única origem que se DIVIDE: escolher Herdado não basta, é preciso
     // escolher o clã, e é ele que carrega atributo, treinamento e herança.
     clas: CLAS_HERDADO,
@@ -399,13 +390,6 @@ export const AFTY_ORIGENS_CATALOG = [
   {
     id: "restringido",
     nome: "Restringido",
-    raridade: "rara",
-    resumo:
-      "Nasceu com uma quantidade quase nula de energia amaldiçoada, recebendo em troca um físico mais " +
-      "desenvolvido e capacidades especiais, além de compensar com o uso magistral de ferramentas " +
-      "amaldiçoadas. No começo são considerados fracassos, pois têm mais dificuldade em tudo aquilo que é " +
-      "fácil para os outros feiticeiros, porém, ao alcançar um nível nulo de energia, se tornam anomalias " +
-      "devastadoras. É difícil saber os limites daqueles que portam a restrição celeste.",
     // "Força, Destreza e Constituição aumentados em 1" é FIXO, e os 2 pontos
     // adicionais são a alocação da característica abaixo.
     bonusAtributos: { forca: 1, destreza: 1, constituicao: 1 },
@@ -467,19 +451,15 @@ export const AFTY_ORIGENS_CATALOG = [
   {
     id: "feto_amaldicoado_hibrido",
     nome: "Feto Amaldiçoado Híbrido",
-    raridade: "rara",
-    resumo:
-      "Um espírito amaldiçoado em estado embrionário que, em condições específicas, virou híbrido de humano " +
-      "e maldição: constituição e anatomia únicas, além da capacidade de dominar o jujutsu e suas técnicas " +
-      "de maneira natural. Origem complexa, com interação única com a energia reversa e uma progressão de " +
-      "anatomia.",
     bonusAtributos: {},
     caracteristicas: [
       {
         id: "bonus_atributo",
         nome: "Bônus em Atributo",
-        descricao: "Aumenta o valor de um atributo em 2 pontos e o de outro em 1 ponto.",
-        bonus: { escolhaDoJogador: true, pontos: [2, 1] },
+        descricao:
+          "Recebe 3 pontos para distribuir entre seus atributos, com um máximo de 2 pontos no " +
+          "mesmo atributo.",
+        bonus: { distribuir: 3, maxPorAtributo: 2 },
       },
       {
         id: "heranca_maldita",
@@ -519,11 +499,6 @@ export const AFTY_ORIGENS_CATALOG = [
   {
     id: "sem_tecnica",
     nome: "Sem Técnica",
-    raridade: "comum",
-    resumo:
-      "Não foi abençoado com uma técnica amaldiçoada, possuindo apenas as capacidades básicas da energia. " +
-      "É um limitador, mas sempre é possível se dedicar e empenhar o suficiente para compensar pela falta " +
-      "de uma técnica: foca em algo, vira um trunfo naquilo e domina certas perícias.",
     restricoes: ["Sem técnica e sem acesso a Feitiços.", "Não pode ter a especialização Especialista em Técnicas."],
     bonusAtributos: {},
     caracteristicas: [
@@ -637,8 +612,6 @@ export const AFTY_ORIGENS_CATALOG = [
   {
     id: "corpo_amaldicoado_mutante",
     nome: "Corpo Amaldiçoado Mutante",
-    raridade: "rara",
-    resumo: "",
     bonusAtributos: {},
     caracteristicas: [],
     especializacaoExclusivaId: null,
@@ -669,15 +642,12 @@ export function caracteristicasEfetivas(creature) {
   return [...proprias.filter((c) => !c.doCla), ...(cla.caracteristicas || [])];
 }
 
-/**
- * A característica que carrega o bônus de atributo ESCOLHÍVEL, já considerando
- * o clã. Devolve `{ pontos, entre? }` ou null.
- */
-export const getOrigemAttrChoice = (creature) => {
-  const alvo = typeof creature === "string" ? { core: { origem: { id: creature } } } : creature;
-  const c = caracteristicasEfetivas(alvo).find((car) => car.bonus?.escolhaDoJogador);
-  return c?.bonus ?? null;
-};
+/* O `getOrigemAttrChoice` foi REMOVIDO em 2026-07-29. Ele procurava a
+   característica com `bonus.escolhaDoJogador`, o shape do par de dropdowns
+   "+2 em / +1 em", que deixou de existir quando todo bônus de atributo virou
+   alocador (`distribuir`). Não tinha consumidor nenhum, era código morto desde
+   antes. Quem lê o bônus é o `resolveOrigemAttrBonus`, logo abaixo, e ele não
+   olha o shape: soma `core.origem.bonusAtributos` direto. */
 
 /**
  * Resolve o bônus de atributo EFETIVO da origem para uma criatura: junta o

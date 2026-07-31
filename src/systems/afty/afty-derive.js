@@ -31,13 +31,24 @@
  * ============================================================
  */
 
+// Avaliador da DSL. Só o editor do Funcionamento Básico o usa aqui, para
+// reexibir o valor de cada linha: a aplicação de verdade é do `aplicarEfeitos`.
+import { evalNumber as evalNumberDsl } from "../../components/fm-dsl";
 import { AFTY_RESISTENCIAS } from "./afty-schema";
+import {
+  ATTR_KEYS, ATTR_LABEL, ATTR_LIMITE_PADRAO, ATTR_LIMITE_MAX, ATTR_LIMITE_ABSOLUTO,
+} from "./afty-atributos";
 import {
   resolveOrigemAttrBonus, resolveDesenvolvimento, resolveEscolhasOrigem,
   limiteAtributoDaOrigem,
 } from "./afty-origens";
 import { efeitosDeTreino } from "./afty-treinamentos";
 import { resolveNiveisAptidao } from "./afty-aptidoes";
+import {
+  efeitosDoDominio, listaDominios, resolveVersao as resolveVersaoDominio,
+  duracaoDominio, areaDominio, custoDominio, pvBarreira, maxEfeitos, vagasUsadas,
+  textoDoDominio,
+} from "./afty-dominios";
 import { resolveEspecializacoes, AFTY_ESPECIALIZACOES } from "./afty-especializacoes";
 import {
   resolveHabilidades, efeitosInvocacaoControlador, getHabilidade, OPCAO_ESCOLHA_NOME,
@@ -57,7 +68,8 @@ import { nivelMaxFeitico } from "./afty-feiticos";
 import { resolveTestes, resolveDano, AFTY_PERICIAS } from "./afty-pericias";
 import {
   buildCriaturaDslContext, coletarEfeitosCriatura, coletarEfeitosMontante, coletarEfeitosOrigem,
-  aplicarEfeitos, valorCanal, furaTetoEm,
+  coletarEfeitosAptidao,
+  aplicarEfeitos, resolverExclusivos, valorCanal, furaTetoEm, efeitosDaTecnica, EFEITO_CANAIS,
   ehAtributoPermanente, ehAtributoTemporario, ehEstagio2, ehPreContexto,
   mesclarEfeitos, detalhesDoCanal,
 } from "./afty-efeitos";
@@ -120,11 +132,17 @@ export function deriveAfty(creature) {
 
   const tipo = core.tipo || "combatente";
   // ⚠ O RESTRINGIDO NÃO TEM ENERGIA AMALDIÇOADA (autor, 2026-07-29). É a
-  // definição da origem ("nascem com uma quantidade quase nula de energia") e
-  // vale para três coisas: PE zero, nenhum Nível de Aptidão e nenhuma Aptidão
-  // Amaldiçoada. Segue o TIPO, e não a origem, porque o Tipo é quem dirige toda
-  // fórmula e a origem Restringido já o força.
+  // definição da origem ("nascem com uma quantidade quase nula de energia").
+  // Mas o RECURSO É O MESMO (autor, 2026-07-29): Ponto de Estamina e Ponto de
+  // Energia são ambos PE, mesma pilha e mesmo valor, só com nome diferente na
+  // boca do Restringido. Toda habilidade que diz "gaste PE" ele paga em
+  // Estamina. O que a falta de energia amaldiçoada tira é a parte de APTIDÃO:
+  // nenhum Nível de Aptidão e nenhuma Aptidão Amaldiçoada.
+  // Segue o TIPO, e não a origem, porque o Tipo é quem dirige toda fórmula e a
+  // origem Restringido já o força.
   const semEnergia = tipo === "restringido";
+  // Nome do recurso na UI. O número é o mesmo dos outros Tipos.
+  const recursoLabel = semEnergia ? "Estamina" : "Energia";
   const patamar = core.patamar || "comum";
   const nd = Math.max(1, core.nd ?? 1);
   // ⚠ A ficha do criador é sempre montada com a alma ÍNTEGRA (autor,
@@ -157,10 +175,15 @@ export function deriveAfty(creature) {
   // autor confirmou (2026-07-29) que o limite é do Restringido, não de um
   // caminho específico até ele.
   const limBase = (creature?.attrLimite && typeof creature.attrLimite === "object") ? creature.attrLimite : {};
-  const limTipo = tipo === "restringido" ? { forca: 30, destreza: 30, constituicao: 30 } : {};
+  const limTipo = tipo === "restringido"
+    ? { forca: ATTR_LIMITE_MAX, destreza: ATTR_LIMITE_MAX, constituicao: ATTR_LIMITE_MAX }
+    : {};
   const limOrigem = { ...limiteAtributoDaOrigem(core?.origem?.id), ...limTipo };
-  const limiteEfOf = (key) =>
-    Math.min(Math.max(limBase[key] ?? 20, limOrigem[key] ?? 0) + (desenv[key] || 0), 30);
+  // Limite de ESTÁGIO 0: o que a ALOCAÇÃO respeita (base, pool de nível e bônus
+  // de origem). O limite FINAL sai mais abaixo, somando o canal `limiteAtributo`
+  // do Motor, que só existe depois de os catálogos serem resolvidos.
+  const limiteBaseOf = (key) =>
+    Math.min(Math.max(limBase[key] ?? ATTR_LIMITE_PADRAO, limOrigem[key] ?? 0) + (desenv[key] || 0), ATTR_LIMITE_MAX);
 
   // Atributo EFETIVO = base + nível + Desenvolvimento + bônus de origem.
   // Atributos de ORIGEM NÃO passam o limite (salvo os que digam explicitamente — TODO).
@@ -170,12 +193,24 @@ export function deriveAfty(creature) {
   // único bônus que PASSA o limite: o texto deles diz "podendo superar o seu
   // limite de atributo, até o máximo de 30". Por isso ele entra depois do
   // clamp do limite, contra o teto duro de 30.
+  //
+  // ⚠ O excedente do acessório é GUARDADO (`folgaEquip`), e não só somado: o
+  // clamp do estágio 1 precisa saber quanto daquele valor está legitimamente
+  // acima do limite, senão ele apararia o acessório de volta ao aparar o Motor.
+  const folgaEquip = {};
+  // Ponto de bônus PERDIDO no limite, por atributo. A convenção do projeto é a
+  // origem ter prioridade e o ponto de nível voltar ao pool (o `nivMax` do
+  // builder reserva o espaço), então a parcela de estágio 0 normalmente é zero.
+  // A do estágio 1 (Motor) não é: Pináculo Físico num Restringido de Força 30 não
+  // tem para onde ir. O builder avisa em vez de esconder.
+  const perdaNoLimite = {};
   const eff = (key) => {
-    const dentroDoLimite = Math.min(
-      (a[key] ?? 10) + (nivelAlloc[key] || 0) + (desenv[key] || 0) + (attrBonus[key] || 0),
-      limiteEfOf(key),
-    );
-    return Math.min(dentroDoLimite + (equip.attrBonus[key] || 0), 30);
+    const somado = (a[key] ?? 10) + (nivelAlloc[key] || 0) + (desenv[key] || 0) + (attrBonus[key] || 0);
+    const dentroDoLimite = Math.min(somado, limiteBaseOf(key));
+    perdaNoLimite[key] = somado - dentroDoLimite;
+    const comEquip = Math.min(dentroDoLimite + (equip.attrBonus[key] || 0), ATTR_LIMITE_MAX);
+    folgaEquip[key] = comEquip - dentroDoLimite;
+    return comEquip;
   };
 
   // Atributo e modificador BASE: tudo menos os efeitos de habilidade. É o que
@@ -186,10 +221,6 @@ export function deriveAfty(creature) {
     inteligencia: eff("inteligencia"), sabedoria: eff("sabedoria"), presenca: eff("presenca"),
   };
   const modBase = Object.fromEntries(Object.entries(attrBase).map(([k, v]) => [k, mod(v)]));
-  const attrLimiteEfetivo = {
-    forca: limiteEfOf("forca"), destreza: limiteEfOf("destreza"), constituicao: limiteEfOf("constituicao"),
-    inteligencia: limiteEfOf("inteligencia"), sabedoria: limiteEfOf("sabedoria"), presenca: limiteEfOf("presenca"),
-  };
 
   // Mod. Técnica = modificador do atributo escolhido para a Técnica/CD
   const tecnicaAttr = core.tecnicaAttr || "inteligencia";
@@ -220,14 +251,17 @@ export function deriveAfty(creature) {
   // As escolhas aninhadas dela (Treinamentos de Clã, Empenho Implacável) saem
   // primeiro porque carregam efeito próprio.
   const escolhasOrigem = resolveEscolhasOrigem(creature, nd);
-  const efMontante = aplicarEfeitos(
+  // Nenhuma das cinco fontes do pool exclusivo alimenta o montante (elas dão
+  // stat, não orçamento), mas a resolução entra aqui do mesmo jeito: sem ela um
+  // exclusivo que aparecesse por engano sairia da soma e nunca voltaria.
+  const efMontante = resolverExclusivos(aplicarEfeitos(
     [
       ...efeitosDeTreino(creature),
       ...coletarEfeitosOrigem(creature, escolhasOrigem),
       ...coletarEfeitosMontante(creature, gerais, GERAL_BY_ID),
     ],
     ctxMontante,
-  );
+  ));
   // Os canais que precisam ser lidos ANTES do contexto principal: dois
   // alimentam resolveNiveisAptidao (nível de aptidão é variável do DSL) e um
   // alimenta o orçamento de Habilidades de Especialização. O resto (hp, pe,
@@ -347,25 +381,65 @@ export function deriveAfty(creature) {
     // Direcionados por uma escolha que mora FORA do card da habilidade (a
     // marcação na linha de dano). Mesmo padrão do efeitosDeTreino.
     ...efeitosArmasDedicadas(dedicadas),
+    // Funcionamento Básico da técnica: os únicos efeitos ESCRITOS pelo jogador,
+    // porque a técnica é única no mundo e nenhum catálogo a cobre. Entram no
+    // mesmo bolo, e os filtros de estágio abaixo roteiam pelo canal.
+    ...efeitosDaTecnica(creature),
+    // Habilidade Única da Ferramenta equipada, a primeira das cinco fontes do
+    // pool exclusivo a chegar no Motor. Já vem com o valor resolvido no contexto
+    // do item (a expressão dela lê `grau`) e com `exclusivo` carimbado.
+    ...equip.efeitosUnica,
+    // Aptidões Amaldiçoadas (2026-07-30). As de bancada leem `au` e `cl`, que
+    // são variáveis do contexto principal, então caem todas no estágio 2.
+    ...coletarEfeitosAptidao(creature, semEnergia),
   ];
 
   // Estágio 0b: os canais que ALIMENTAM o contexto principal. Só nível de
   // aptidão por ora, porque `dom/au/cl/bar/er` são variáveis do DSL e uma
   // habilidade que concede trilha tem de entrar antes de o contexto existir.
   // Mesma regra do estágio de atributo: dentro dele um efeito não vê o irmão.
-  const efPreContexto = aplicarEfeitos(efeitosTodos.filter(ehPreContexto), ctxMontante);
+  const efPreContexto = resolverExclusivos(aplicarEfeitos(efeitosTodos.filter(ehPreContexto), ctxMontante));
+
+  // ---------- LIMITE EFETIVO DE ATRIBUTO (final) ----------
+  // Agora sim: limite de estágio 0 (20 / ficha / Origem / Desenvolvimento) mais o
+  // canal `limiteAtributo`, que chega de dois lugares. Do `efMontante` vem o
+  // Treino de Atributo Completo, e do `efPreContexto` vêm as fontes que dizem
+  // "o valor E o limite" (Incremento de Atributo, Quebra de Limites e o
+  // Aperfeiçoamento de Atributo).
+  const limiteMotorDe = (key) =>
+    (efMontante.porAlvo.limiteAtributo?.[key] || 0) + (efPreContexto.porAlvo.limiteAtributo?.[key] || 0);
+  // Teto do sistema por atributo: 30 para todo mundo, 32 onde o Aperfeiçoamento
+  // de Atributo bateu. É o ÚNICO `furaTeto` do sistema, e ele vale tanto para o
+  // limite quanto para o valor (o autor confirmou em 2026-07-29 que a Lendária
+  // sobe as DUAS coisas em 2, então num atributo de limite 30 ela leva a 32).
+  const tetoSistemaDe = (key) =>
+    furaTetoEm(efPreContexto, key) || furaTetoEm(efMontante, key)
+      ? ATTR_LIMITE_ABSOLUTO
+      : ATTR_LIMITE_MAX;
+  const attrLimiteEfetivo = Object.fromEntries(
+    ATTR_KEYS.map((k) => [k, Math.min(limiteBaseOf(k) + limiteMotorDe(k), tetoSistemaDe(k))]),
+  );
+
   // Níveis de aptidão por trilha: alocado (pago) + concedido (grátis,
   // direcionado). A concessão vem de dois lados, Treinamento e Habilidade.
   const trilhasConcedidas = { ...treino.aptidaoTrilha };
   for (const [k, v] of Object.entries(efPreContexto.porAlvo.nivelAptidao || {})) {
     trilhasConcedidas[k] = (trilhasConcedidas[k] || 0) + v;
   }
+  // TETO por trilha: 5 mais o canal `limiteAptidao`. Chega dos mesmos dois
+  // lugares do nível, porque as regras que quebram o teto emitem os dois canais
+  // juntos (as duas Habilidades que dão "+1 podendo passar de 5", e a Expansão
+  // de Domínio, que dá +2 em Aura, Controle e Leitura e Energia Reversa).
+  const trilhasLimite = {};
+  for (const fonte of [efMontante.porAlvo.limiteAptidao, efPreContexto.porAlvo.limiteAptidao]) {
+    for (const [k, v] of Object.entries(fonte || {})) trilhasLimite[k] = (trilhasLimite[k] || 0) + v;
+  }
   // Restringido não tem Nível de Aptidão nenhum: entra com a alocação vazia e
   // sem concessão, para as variáveis `dom/au/cl/bar/er` do DSL saírem zeradas
   // junto. Uma ficha que trocou de Tipo depois de alocar não fica mentindo.
   const aptidao = semEnergia
-    ? resolveNiveisAptidao(null, {})
-    : resolveNiveisAptidao(creature?.aptidoes, trilhasConcedidas);
+    ? resolveNiveisAptidao(null, {}, null)
+    : resolveNiveisAptidao(creature?.aptidoes, trilhasConcedidas, trilhasLimite);
 
   // ---------- SIMULAÇÃO DE COMBATE ----------
   // Bancada de balanceamento (autor, 2026-07-28). Vira variável de DSL, e as
@@ -376,6 +450,50 @@ export function deriveAfty(creature) {
   // média do dado é o que as Manobras de Empolgação somam.
   const nivelCmb = habilidades.niveisPorEspec?.combatente ?? 0;
   const nivelRes = habilidades.niveisPorEspec?.restringido ?? 0;
+
+  // ---------- Expansão de Domínio ----------
+  // ⚠ Entra numa SEGUNDA lista, e não no `efeitosTodos` lá de cima, por ordem de
+  // declaração: os valores do domínio saem das tabelas indexadas pelo DOM, e o
+  // `aptidao` só existe aqui. Os dois estágios que consomem efeito (atributo e o
+  // resto) rodam depois deste ponto, então nenhum deles perde nada. O único que
+  // roda ANTES é o pré-contexto, e o domínio não escreve em canal nenhum dele.
+  const efeitosDominio = semEnergia ? [] : efeitosDoDominio(creature, {
+    dom: aptidao.efetivo?.dom ?? 0,
+    aptidoesEscolhidas: creature?.aptidoesAmaldicoadas ?? [],
+  });
+  const efeitosComDominio = efeitosDominio.length ? [...efeitosTodos, ...efeitosDominio] : efeitosTodos;
+
+  // Resumo pronto para a aba Habilidades: cada expansão com os números que o
+  // card mostra. A UI não recalcula nada, ela só exibe.
+  const resumoDominios = (() => {
+    const aptidoesIds = semEnergia ? [] : (creature?.aptidoesAmaldicoadas ?? []);
+    const domNivel = aptidao.efetivo?.dom ?? 0;
+    const barNivel = aptidao.efetivo?.bar ?? 0;
+    const paredesResistentes = aptidoesIds.includes("paredes_resistentes");
+    return {
+      domNivel,
+      barNivel,
+      paredesResistentes,
+      temAcertoGarantido: aptidoesIds.includes("acerto_garantido"),
+      maxEfeitos: maxEfeitos(domNivel),
+      ativoId: creature?.dominioAtivoId ?? null,
+      lista: listaDominios(creature).map((d) => {
+        const versao = resolveVersaoDominio(d, aptidoesIds);
+        const comAG = !!d.acertoGarantido?.ativo;
+        return {
+          ...d,
+          versao,
+          custo: custoDominio(versao, comAG),
+          duracao: duracaoDominio(domNivel, versao),
+          area: areaDominio(versao, bt),
+          pvBarreira: pvBarreira(barNivel, nd, paredesResistentes),
+          vagasUsadas: vagasUsadas(d.efeitos),
+          texto: textoDoDominio(d, { dom: domNivel, nd, bt, bar: barNivel, versao, paredesResistentes }),
+        };
+      }),
+    };
+  })();
+
   const combate = resolveCombate(creature, {
     brutalidadePE: degrausBrutalidade({ habilidades }),
     brutalidadePilha: bt,
@@ -386,6 +504,22 @@ export function deriveAfty(creature) {
     adrenalinaAtletismo: habilidades.escolhidas.includes("res_restricao_definitiva") ? 8 : 4,
     cacadorFeiticeiros: 1 + Math.floor(nivelRes / 5),
     corpoDeAco: 1 + (nivelRes >= 10 ? 1 : 0) + (nivelRes >= 15 ? 1 : 0),
+    // Tetos das faixas das Aptidões: os dois dependem do Nível de Aptidão em
+    // Controle e Leitura, que só existe depois do resolveNiveisAptidao.
+    cobrirSePE: 2 + 2 * (aptidao.efetivo?.cl ?? 0),
+    estimuloTeste: aptidao.efetivo?.cl ?? 0,
+    // A Cura Amplificada troca "1 + metade do nível" por "1 + o nível", e a Cura
+    // em Grupo soma +2 no teto ("a quantidade máxima de pontos que podem ser
+    // gastos aumenta em 2"). Confirmado pelo AppScript do autor (2026-07-30).
+    fluxoPER: (() => {
+      const ids = creature?.aptidoesAmaldicoadas ?? [];
+      const er = aptidao.efetivo?.er ?? 0;
+      return 1 + (ids.includes("cura_amplificada") ? er : Math.floor(er / 2))
+        + (ids.includes("cura_em_grupo") ? 2 : 0);
+    })(),
+    // Um interruptor por Habilidade Única marcada como ativa. Vêm da ficha, e
+    // não do catálogo de estados, porque são instâncias de item.
+    estadosExtras: equip.estadosUnica,
   });
 
   const montarCtx = (attrs, mods) => buildCriaturaDslContext({
@@ -398,18 +532,35 @@ export function deriveAfty(creature) {
     habilidadesEscolhidas: [...habilidades.escolhidas, ...(talentosPre.escolhidas ?? [])],
     vocabulario: VOCABULARIO_DSL,
   });
-  // Soma um canal de atributo sobre uma base, respeitando o teto duro de 30 e a
-  // exceção `furaTeto` (Aperfeiçoamento de Atributo diz "podendo superar o
-  // máximo de 30").
+  // Soma um canal de atributo sobre uma base, aparando nos TRÊS tetos do sistema
+  // (ver o topo de afty-atributos.js).
+  //
+  // ⚠ ATÉ 2026-07-29 ISTO APARAVA EM 30, e não no limite do atributo. Era o bug
+  // que deixava 36 efeitos do Motor mais o Treino de Atributo furarem o 20
+  // calados. O limite do atributo é o teto normal, o 30 é o do sistema, e só o
+  // Aperfeiçoamento de Atributo (`furaTeto`) chega ao 32.
+  //
+  // O acessório de atributo entra pela `folgaEquip`: o texto dele diz "podendo
+  // superar o seu limite de atributo, até o máximo de 30", então ele levanta o
+  // teto DAQUELE atributo pelo tanto que já contribuiu, sem levantar o do Motor.
+  //
   // ⚠ O teto NUNCA DERRUBA o que já estava acima dele: como esta função roda
-  // duas vezes (permanente e depois temporário), clampar cru em 30 no segundo
-  // passo desfaria um furaTeto legítimo do primeiro. O que o teto impede é
-  // SUBIR além de 30, não estar além de 30.
+  // duas vezes (permanente e depois temporário), aparar cru no segundo passo
+  // desfaria um furaTeto legítimo do primeiro. O que o teto impede é SUBIR além
+  // dele, não estar além dele.
+  // ⚠ NÃO há caminho separado para o `furaTeto` (revisto em 2026-07-29). Ele
+  // deixou de ser "esta parcela fura o teto" e passou a ser "o teto DESTE
+  // atributo é 32", porque o Aperfeiçoamento sobe o limite junto do valor. Com o
+  // limite subindo, a parcela cabe pelo caminho normal, e a carona que a versão
+  // anterior evitava virou o comportamento certo: quem levanta o limite levanta
+  // para toda fonte, igual ao Incremento de Atributo e à Quebra de Limites.
   const somarAtributo = (partida, res) => {
     const out = {};
     for (const k of Object.keys(partida)) {
-      const somado = partida[k] + valorCanal(res, "atributo", k);
-      out[k] = furaTetoEm(res, k) ? somado : Math.min(somado, Math.max(30, partida[k]));
+      const total = valorCanal(res, "atributo", k);
+      const teto = Math.min(attrLimiteEfetivo[k] + (folgaEquip[k] || 0), tetoSistemaDe(k));
+      out[k] = Math.min(partida[k] + total, Math.max(teto, partida[k]));
+      perdaNoLimite[k] = (perdaNoLimite[k] || 0) + (partida[k] + total - out[k]);
     }
     return out;
   };
@@ -417,10 +568,10 @@ export function deriveAfty(creature) {
   // Estágio 1a: atributo PERMANENTE, lendo o BASE. Dentro deste estágio um
   // efeito de atributo não vê o irmão, o que evita o laço A→B→A. O Treino de
   // Atributo (estágio 0) entra aqui junto, porque também é permanente.
-  const efAttrPerm = mesclarEfeitos(
+  const efAttrPerm = resolverExclusivos(mesclarEfeitos(
     { porAlvo: { atributo: efMontante.porAlvo.atributo || {} } },
-    aplicarEfeitos(efeitosTodos.filter(ehAtributoPermanente), montarCtx(attrBase, modBase)),
-  );
+    aplicarEfeitos(efeitosComDominio.filter(ehAtributoPermanente), montarCtx(attrBase, modBase)),
+  ));
   // Este é o atributo que os PRÉ-REQUISITOS enxergam.
   const attrPermanente = somarAtributo(attrBase, efAttrPerm);
   const modPermanente = Object.fromEntries(Object.entries(attrPermanente).map(([k, v]) => [k, mod(v)]));
@@ -430,9 +581,16 @@ export function deriveAfty(creature) {
 
   // Estágio 1b: atributo TEMPORÁRIO, por cima do permanente. Resulta no
   // atributo FINAL, que é o que a ficha mostra e o que os stats usam.
-  const efAttrTemp = aplicarEfeitos(
-    efeitosTodos.filter(ehAtributoTemporario),
-    montarCtx(attrPermanente, modPermanente),
+  // ⚠ O `efAttrPerm.aplicado` viaja para cá porque `atributo` é o ÚNICO canal que
+  // o motor resolve em dois estágios. Sem ele, uma Habilidade Única permanente de
+  // +6 de Força e um Feitiço Auxiliar temporário de +4 na mesma Força somariam
+  // 10, quando a regra do pool exclusivo manda ficar com 6.
+  const efAttrTemp = resolverExclusivos(
+    aplicarEfeitos(
+      efeitosComDominio.filter(ehAtributoTemporario),
+      montarCtx(attrPermanente, modPermanente),
+    ),
+    efAttrPerm.aplicado,
   );
   const attrEff = somarAtributo(attrPermanente, efAttrTemp);
   const modFor = mod(attrEff.forca);
@@ -455,11 +613,35 @@ export function deriveAfty(creature) {
   // estágio 1a, então sai daqui para não somar duas vezes.
   const efMontanteSemAtributo = { ...efMontante, porAlvo: { ...efMontante.porAlvo } };
   delete efMontanteSemAtributo.porAlvo.atributo;
-  const ef = mesclarEfeitos(
+  // Os quatro primeiros já voltaram do `resolverExclusivos` com a lista vazia e
+  // os vencedores somados, então a disputa que sobra aqui é só a do estágio 2. E
+  // ela não precisa do `aplicado` dos estágios anteriores: `atributo` é o único
+  // canal que roda antes daqui, e o filtro `ehEstagio2` justamente o exclui.
+  const ef = resolverExclusivos(mesclarEfeitos(
     efMontanteSemAtributo, efPreContexto, efAttrPerm, efAttrTemp,
-    aplicarEfeitos(efeitosTodos.filter(ehEstagio2), montarCtx(attrEff, modByAttr)),
-  );
+    aplicarEfeitos(efeitosComDominio.filter(ehEstagio2), montarCtx(attrEff, modByAttr)),
+  ));
   const canal = (id, alvo = null) => valorCanal(ef, id, alvo);
+
+  // Funcionamento Básico da técnica, RESOLVIDO linha a linha, só para o editor
+  // mostrar quanto cada expressão vale enquanto o jogador digita. É reavaliação,
+  // não segunda aplicação: quem entra na conta é o `efeitosTodos` acima. Roda com
+  // o contexto FINAL, então uma expressão que lê `mod_forca` vê a Força fechada.
+  const ctxTecnica = montarCtx(attrEff, modByAttr);
+  const tecnicaEfeitos = (Array.isArray(creature?.core?.tecnicaEfeitos) ? creature.core.tecnicaEfeitos : [])
+    .map((e) => {
+      const def = EFEITO_CANAIS.find((c) => c.id === e?.canal) || null;
+      const expr = String(e?.expr ?? "").trim();
+      return {
+        canal: e?.canal ?? "", alvo: e?.alvo ?? "", expr,
+        quando: e?.quando ?? "", duracao: e?.duracao ?? "permanente",
+        // `alvoTipo` diz à UI qual vocabulário oferecer (atributo, perícia, tr...).
+        alvoTipo: def?.alvo ?? null,
+        nota: def?.nota ?? null,
+        valor: expr ? evalNumberDsl(expr, ctxTecnica, 0) : 0,
+        ativo: !e?.quando || evalNumberDsl(String(e.quando), ctxTecnica, 0) !== 0,
+      };
+    });
 
   // Alma: o teto (100 + Melhoria de Alma) e o multiplicador de PV, que agora é
   // o mesmo número, porque a criatura é montada íntegra. Sai aqui, e não lá em
@@ -485,21 +667,24 @@ export function deriveAfty(creature) {
   const hp = Math.round(almaMult * (hpBase + nd * modCon + canal("hp")) * hpPatamarMult) + equip.hpMaxBonus;
 
   // ---------- PE (+ Treinos de Compreensão/Controle de Energia/…) ----------
-  // ⚠ O RESTRINGIDO NÃO TEM ENERGIA AMALDIÇOADA (autor, 2026-07-29). É a
-  // definição da origem ("nascem com uma quantidade quase nula de energia"), e o
-  // recurso dele é a Estamina. Zero DURO: nem a Quantidade de PE, nem o
-  // equipamento, nem o canal `pe` furam, senão um acessório daria energia a quem
-  // não tem nenhuma.
-  const peBase = semEnergia ? 0 :
+  // UMA pilha só, para todo mundo. O Restringido a chama de Ponto de Estamina
+  // (ou vigor) e os outros de Ponto de Energia, mas a abreviação é PE nos dois
+  // casos e a conta é a mesma. Por isso a base do Restringido bate na régua com
+  // o texto de Restrito pelos Céus: "você inicia com 4 pontos de estamina, e
+  // recebe mais 4 a cada nível" = 4 × ND, igual à do Combatente. A habilidade
+  // NÃO soma esses 4 × ND de novo (ver res_restrito_pelos_ceus).
+  const peBase =
     tipo === "conjurador" ? 6 * nd :
     tipo === "misto" ? 5 * nd :
-    /* combatente */ 4 * nd;
+    /* combatente | restringido */ 4 * nd;
+  // A Quantidade de PE mede a energia amaldiçoada com que se nasce, e o
+  // Restringido não tem nenhuma: o seletor some do formulário e a parcela é 0.
   const peQnt = semEnergia ? 0 :
     qntPE === "muito_pouca" ? -nd :
     qntPE === "pouca" ? -Math.floor(nd / 2) :
     qntPE === "grande" ? Math.floor(nd / 2) :
     qntPE === "muito_grande" ? nd : 0;
-  const pe = semEnergia ? 0 : (peBase + peQnt + modTecnica + equip.peBonus + canal("pe"));
+  const pe = peBase + peQnt + modTecnica + equip.peBonus + canal("pe");
 
   // ---------- Resistência Parcial ----------
   // Calamidade ganha +1 em ND 10, 20 e 30 (0 a 3).
@@ -642,10 +827,10 @@ export function deriveAfty(creature) {
   const pvTemporario = canal("pvTemporario");
 
   // ---------- Recursos de especialização ----------
-  // Pontos de Preparo (Combatente) e Estamina (Restringido, que não tem energia
-  // amaldiçoada). Zero para quem não tem a habilidade dona, e o Preview esconde.
+  // Pontos de Preparo (Combatente). Zero para quem não tem a habilidade dona, e
+  // o Preview esconde. A Estamina do Restringido NÃO mora aqui: é o próprio PE
+  // com outro nome, então tudo que a alimenta usa o canal `pe`.
   const pontosPreparo = canal("pontosPreparo");
-  const estamina = canal("estamina");
 
   // ---------- Regeneração ----------
   // Cura no INÍCIO do turno, em dados + fixo, igual às linhas de dano.
@@ -732,10 +917,15 @@ export function deriveAfty(creature) {
   // Uma parcela por origem, na ordem em que a fórmula soma. `texto` substitui o
   // número quando a parcela não é uma soma (multiplicadores do HP).
   // Parcelas do Motor entram nomeadas pela habilidade/treino que as gerou.
-  const rotulo = { forca: "Força", destreza: "Destreza", constituicao: "Constituição",
-    inteligencia: "Inteligência", sabedoria: "Sabedoria", presenca: "Presença" };
+  const rotulo = ATTR_LABEL;
+  // `suplantado` viaja junto para o hover poder mostrar o perdedor do pool
+  // exclusivo apagado, em vez de escondê-lo. Sem isso o jogador veria o +5 do
+  // Shikigami simplesmente sumir da ficha, sem nada dizendo por quê.
   const doMotor = (id, alvo = null) =>
-    detalhesDoCanal(ef, id, alvo).map((d) => ({ label: d.nome, valor: d.valor }));
+    detalhesDoCanal(ef, id, alvo, true).map((d) => ({
+      label: d.nome, valor: d.valor,
+      ...(d.suplantado ? { suplantado: true } : {}),
+    }));
   const TIPO_LABEL = { combatente: "Combatente", misto: "Misto", conjurador: "Conjurador", restringido: "Restringido" };
   const PATAMAR_LABEL = { comum: "Comum", desafio: "Desafio", calamidade: "Calamidade", beyond: "Beyond" };
   const divTexto = (d) => String(d).replace(".", ",");
@@ -749,7 +939,7 @@ export function deriveAfty(creature) {
       ...(hpPatamarMult !== 1 ? [{ label: `Patamar (${PATAMAR_LABEL[patamar] ?? patamar})`, texto: `×${hpPatamarMult}` }] : []),
       ...(equip.hpMaxBonus ? [{ label: "Equipamento", valor: equip.hpMaxBonus }] : []),
     ],
-    pe: semEnergia ? [{ label: "Restringido não tem energia amaldiçoada", texto: true, valor: 0 }] : [
+    pe: [
       { label: `Base do Tipo (${TIPO_LABEL[tipo] ?? tipo})`, valor: peBase },
       ...(peQnt ? [{ label: "Quantidade de PE", valor: peQnt }] : []),
       { label: `Mod. da Técnica (${rotulo[tecnicaAttr] ?? tecnicaAttr})`, valor: modTecnica },
@@ -798,7 +988,6 @@ export function deriveAfty(creature) {
     ],
     pvTemporario: doMotor("pvTemporario"),
     pontosPreparo: doMotor("pontosPreparo"),
-    estamina: doMotor("estamina"),
     atencao: [
       { label: "Base", valor: 10 },
       { label: "Percepção", valor: testes.atencao - 10 },
@@ -808,6 +997,37 @@ export function deriveAfty(creature) {
       { label: `Patamar (${PATAMAR_LABEL[patamar] ?? patamar})`, valor: resParcial },
     ],
   };
+
+  // ---------- FONTES DE CADA ATRIBUTO E DE CADA LIMITE ----------
+  // Dois hovers por linha da tabela de Atributos: um no valor efetivo e um no
+  // limite. As parcelas do Motor entram NOMEADAS pela habilidade, talento ou
+  // treino que as gerou, que é o que o `detalhes` do agregado carrega.
+  //
+  // A ordem é a da fórmula, e a última linha é a PERDA no limite, quando existe.
+  // Ela é o que fecha a conta para o jogador: sem ela o hover soma 24 e o número
+  // grande diz 20, sem explicação.
+  const METODO_LABEL = { pontos: "Compra por Pontos", fixos: "Valores Fixos", rolagem: "Rolagem" };
+  const partesAtributo = {};
+  const partesLimite = {};
+  for (const k of ATTR_KEYS) {
+    const perdido = perdaNoLimite[k] || 0;
+    partesAtributo[k] = [
+      { label: `Base (${METODO_LABEL[creature?.attrMethod || "pontos"]})`, valor: a[k] ?? 10 },
+      ...(nivelAlloc[k] ? [{ label: "Pontos de Nível", valor: nivelAlloc[k] }] : []),
+      ...(attrBonus[k] ? [{ label: "Origem", valor: attrBonus[k] }] : []),
+      ...(desenv[k] ? [{ label: "Desenvolvimento Inesperado", valor: desenv[k] }] : []),
+      ...(equip.attrBonus[k] ? [{ label: "Equipamento", valor: equip.attrBonus[k] }] : []),
+      ...doMotor("atributo", k),
+      ...(perdido ? [{ label: `Perdido no limite ${attrLimiteEfetivo[k]}`, texto: `−${perdido}` }] : []),
+    ];
+    const daOrigem = Math.max(limBase[k] ?? ATTR_LIMITE_PADRAO, limOrigem[k] ?? 0) - ATTR_LIMITE_PADRAO;
+    partesLimite[k] = [
+      { label: "Limite padrão", valor: ATTR_LIMITE_PADRAO },
+      ...(daOrigem ? [{ label: tipo === "restringido" ? "Ápice Corporal Humano" : "Origem", valor: daOrigem }] : []),
+      ...(desenv[k] ? [{ label: "Desenvolvimento Inesperado", valor: desenv[k] }] : []),
+      ...doMotor("limiteAtributo", k),
+    ];
+  }
 
   // ---------- overrides de valor final (aba Cálculos) ----------
   const calc = { hp, pe, defesa, cd, rdGeral, rdEspecifico, rdAlma, movimento, resParcial, atencao, iniciativa };
@@ -828,7 +1048,15 @@ export function deriveAfty(creature) {
     totalAptidao,               // orçamento de NÍVEIS de aptidão (para no ND 20)
     totalAptidoesAmaldicoadas,  // quantas pode ter (só da Habilidade Geral Aptidão, 0 sem ela)
     aptidao,              // níveis por trilha: { alocado, concedido, efetivo, gastos }
+    // As Aptidões Amaldiçoadas escolhidas, para o `requerAptidao` da bancada
+    // saber quais linhas mostrar. Segue a trava do semEnergia, igual ao motor.
+    aptidoesEscolhidas: semEnergia ? [] : (Array.isArray(creature?.aptidoesAmaldicoadas) ? creature.aptidoesAmaldicoadas : []),
+    dominios: resumoDominios,
+    // Proficiência RESOLVIDA por perícia (a escolhida mais a concedida pelo
+    // Motor). É o que os requisitos de perícia das Aptidões conferem.
+    periciaProf: Object.fromEntries((testes.pericias ?? []).map((p) => [p.id, p.prof ?? null])),
     feiticos,             // { nivelMax, gastos, cdBase } — o orçamento é o de baixo
+    tecnicaEfeitos,       // Funcionamento Básico resolvido, para o editor mostrar o valor de cada linha
     gerais,               // { escolhidas, gastos, ganhos, destravado, maxVezes, acesso, inacessiveis }
     efeitos: ef,          // Motor de Automação: { porCanal, porAlvo, detalhes, avisos }
     testes,               // { pericias, resistencias, ataques, orcamento, atencao }
@@ -839,7 +1067,7 @@ export function deriveAfty(creature) {
     pvTemporario,         // casca de PV vinda da simulação (Fluxo, Brutalidade Aprimorada)
     regeneracao,          // cura no início do turno: { dados, dado, fixo }
     pontosPreparo,        // recurso do Combatente (Artes do Combate), 0 sem ela
-    estamina,             // recurso do Restringido (Restrito pelos Céus), 0 sem ela
+    recursoLabel,         // "Estamina" no Restringido, "Energia" no resto — mesmo PE
     partes,               // fontes de cada stat, para o hover da UI
     orcamentoHabilidades, // contador ÚNICO da aba: Feitiços + Habilidades Gerais
     origem: escolhasOrigem, // { porEscolha, mapa } — escolhas aninhadas de Origem e Clã
@@ -853,11 +1081,24 @@ export function deriveAfty(creature) {
     treino,               // contribuições agregadas dos Treinamentos (hp/pe/movimento/aptidao/defesa)
     nd, tipo, patamar,
     mods: { forca: modFor, destreza: modDes, constituicao: modCon, inteligencia: modInt, sabedoria: modSab, presenca: modPre },
-    attrEff,              // valor EFETIVO por atributo (base + efeitos, teto 30 salvo furaTeto)
+    attrEff,              // valor EFETIVO por atributo (base + efeitos, aparado no limite)
     attrPermanente,       // o que os PRÉ-REQUISITOS enxergam (sem os efeitos temporários)
-    attrLimiteEfetivo,    // limite por atributo (base + Desenvolvimento, teto 30)
+    attrLimiteEfetivo,    // limite por atributo (padrão + Origem + Desenvolvimento + Motor, teto 30)
     attrDesenv: desenv,   // pontos de Desenvolvimento Inesperado por atributo
     attrBonus,            // bônus de atributo da origem (efetivo)
+    attrEquip: equip.attrBonus, // acessórios de atributo (passam o limite, param em 30)
+    attrPerda: perdaNoLimite,   // ponto de bônus desperdiçado no limite, por atributo
+    // Quanto o Motor soma em cada atributo. O builder RESERVA este espaço no pool
+    // de nível, pela mesma convenção do bônus de origem: a concessão tem
+    // prioridade e o ponto alocado volta ao pool, em vez de sumir no teto.
+    //
+    // ⚠ Só o estágio PERMANENTE entra. Um efeito de atributo temporário (nenhum
+    // existe hoje, mas o estágio 1b existe para eles) encolheria o pool de nível
+    // do criador por causa de um estado ligado na bancada de simulação, e o
+    // jogador perderia pontos de ficha ao ligar Brutalidade.
+    attrMotor: Object.fromEntries(ATTR_KEYS.map((k) => [k, valorCanal(efAttrPerm, "atributo", k)])),
+    partesAtributo,       // fontes de cada atributo, para o hover da UI
+    partesLimite,         // fontes de cada limite, para o hover da UI
     // ---------- Equipamentos ----------
     grauFeiticeiro: grau,  // { value, label, rank, ndMin } derivado do ND
     equip,                 // parcelas do equipamento (entradas, custoGasto, avisos...)

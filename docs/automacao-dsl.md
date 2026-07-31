@@ -19,6 +19,11 @@ Onde se usa:
 - `forca, destreza, constituicao, inteligencia, sabedoria, presenca` — Valor do atributo (ex.: 18).
 - `mod_forca, mod_destreza, ...` — Modificador do atributo (ex.: +4).
 
+> ⚠ **Canal `atributo` respeita o limite** (2026-07-29). Ele apara no limite daquele atributo (20
+> padrão), não no teto de 30. Efeito que diz em texto que o limite sobe junto emite **as duas
+> metades**: `atributo` para o valor e `limiteAtributo` para o teto. Ver a seção Sistema de
+> ATRIBUTOS em `afty-status.md`.
+
 ### Núcleo
 - `nd` — Nível de Desafio.
 - `bt` — Bônus de Treinamento.

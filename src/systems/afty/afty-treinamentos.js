@@ -341,10 +341,15 @@ export const AFTY_TREINAMENTOS = [
   {
     id: "atributo",
     nome: "Treino de Atributo",
-    // Repetível: uma vez POR ATRIBUTO. Cada etapa dá +1 no atributo ESCOLHIDO;
-    // o Completo eleva o LIMITE do atributo em 2 (até 30). A aplicação direcionada
-    // (somar no atributo/limite escolhido) depende da integração com o sistema de
-    // atributos. O canal "atributo" abaixo agrega o total, mas o motor ainda não o consome.
+    // Repetível: uma vez POR ATRIBUTO. Cada etapa dá +1 no atributo ESCOLHIDO, e
+    // o Completo eleva o LIMITE dele em 2 (até 30).
+    //
+    // ⚠ As duas metades andam juntas desde 2026-07-29. O canal `atributo` das 4
+    // etapas já aplicava, mas passava POR CIMA do limite de 20, e o Completo não
+    // tinha efeito nenhum. Agora a etapa apara no limite, e o Completo é quem
+    // sobe o limite, pelo canal `limiteAtributo`. Consequência de REGRA: a linha
+    // inteira num atributo que já está no 20 rende +2, e não +4, porque o
+    // Completo abre só 2 de espaço.
     repetivel: true,
     alvoTipo: "atributo",    // alvo = um dos 6 atributos
     alvoLabel: "Atributo",
@@ -360,6 +365,7 @@ export const AFTY_TREINAMENTOS = [
       beneficio:
         "Você aprimorou ao limite um de seus atributos, extraindo o máximo do seu potencial nessa área e " +
         "forçando-a a evoluir ainda mais, aumentando o valor de limite desse atributo em 2, até o máximo de 30.",
+      efeitos: [{ tipo: "limiteAtributo", valor: 2 }],
     },
   },
 
@@ -480,6 +486,10 @@ function paraCanal(ef, alvoInstancia) {
     case "atributo":
       // Sem alvo não há onde somar: a linha repetível sempre traz um.
       return alvoInstancia ? { canal: "atributo", alvo: alvoInstancia, expr } : null;
+    // Sobe o TETO do atributo, sem somar valor. Só o Completo do Treino de
+    // Atributo usa ("aumentando o valor de limite desse atributo em 2").
+    case "limiteAtributo":
+      return alvoInstancia ? { canal: "limiteAtributo", alvo: alvoInstancia, expr } : null;
     case "aptidao":
       return ef.trilha
         ? { canal: "nivelAptidao", alvo: ef.trilha, expr }

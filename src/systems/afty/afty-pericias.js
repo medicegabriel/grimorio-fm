@@ -258,8 +258,13 @@ export function resolveDano(creature, ctx = {}) {
   // arma responde pelo id, por "arma", pela categoria, pelo grupo e por cada
   // propriedade. O Ataque Básico responde só por "basico".
   const canal = (c, escopos) => (ef ? valorCanalEscopos(ef, c, escopos) : 0);
+  // `true` no fim pede os SUPLANTADOS junto: são os perdedores do pool
+  // exclusivo, que o hover mostra riscados. Só o hover os quer, e é por isso que
+  // o `canal` logo acima segue sem eles: quem soma não pode contá-los.
   const fontesDe = (c, escopos) =>
-    (ef ? detalhesDoCanalEscopos(ef, c, escopos) : []).map((dd) => ({ label: dd.nome, valor: dd.valor }));
+    (ef ? detalhesDoCanalEscopos(ef, c, escopos, true) : []).map((dd) => ({
+      label: dd.nome, valor: dd.valor, ...(dd.suplantado ? { suplantado: true } : {}),
+    }));
 
   // Força por padrão, Destreza a distância, e o maior dos dois quando a arma
   // tem Fineza (ou quando uma habilidade concede a mesma permissão, como o
@@ -382,8 +387,11 @@ export function resolveTestes(creature, ctx = {}) {
   const ef = ctx.efeitos || null;
   const bonusDeEfeito = (canal, alvo) => (ef ? valorCanal(ef, canal, alvo) : 0);
   // Uma parcela por FONTE, para o hover mostrar de onde veio cada número.
+  // Com os suplantados (perdedores do pool exclusivo), que o hover risca.
   const partesDeEfeito = (canal, alvo) =>
-    (ef ? detalhesDoCanal(ef, canal, alvo) : []).map((d) => ({ label: d.nome, valor: d.valor }));
+    (ef ? detalhesDoCanal(ef, canal, alvo, true) : []).map((d) => ({
+      label: d.nome, valor: d.valor, ...(d.suplantado ? { suplantado: true } : {}),
+    }));
 
   /* Perícia e TR respondem por DOIS alvos: o próprio id e o atributo que usam
      (`atr:destreza`). As Dádivas do Céu do Restringido são escritas assim,
@@ -393,8 +401,8 @@ export function resolveTestes(creature, ctx = {}) {
   const bonusPorAtributo = (canal, id, atributo) =>
     (ef ? valorCanalEscopos(ef, canal, escoposDe(id, atributo)) : 0);
   const partesPorAtributo = (canal, id, atributo) =>
-    (ef ? detalhesDoCanalEscopos(ef, canal, escoposDe(id, atributo)) : [])
-      .map((d) => ({ label: d.nome, valor: d.valor }));
+    (ef ? detalhesDoCanalEscopos(ef, canal, escoposDe(id, atributo), true) : [])
+      .map((d) => ({ label: d.nome, valor: d.valor, ...(d.suplantado ? { suplantado: true } : {}) }));
   const rotuloAttr = (k) => AFTY_ATTRS.find((a) => a.key === k)?.label ?? k;
   const parteProficiencia = (prof) => {
     const v = bonusProficiencia(bt, prof);

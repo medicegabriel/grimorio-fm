@@ -87,6 +87,8 @@ import {
   getOrigem, getCla, resolveEscolhasOrigem, ORIGEM_ESCOLHA_EFEITOS, OPCAO_ORIGEM_NOME,
 } from "./afty-origens";
 import { getAnatomia } from "./afty-anatomias";
+// afty-aptidoes só importa afty-origens, que já é dependência daqui: sem ciclo.
+import { getAptidao } from "./afty-aptidoes";
 import {
   HABILIDADE_EFEITOS, ESCOLHA_EFEITOS, TALENTO_EFEITOS,
   MELHORIA_EFEITOS, MELHORIA_EFEITOS_ALVO, LENDARIA_EFEITOS, LENDARIA_EFEITOS_ALVO,
@@ -94,6 +96,8 @@ import {
   // Os três de origem entram no ESCOPO LOCAL (o `export ... from` mais abaixo
   // só reexporta, não declara), porque o coletarEfeitosOrigem daqui os usa.
   ORIGEM_EFEITOS, CLA_EFEITOS, ANATOMIA_EFEITOS,
+  // Aptidão entra no escopo local pelo mesmo motivo: o coletor mora aqui.
+  APTIDAO_EFEITOS,
 } from "./afty-efeitos-conteudo";
 
 /* ============================================================ */
@@ -107,7 +111,7 @@ export const EFEITO_CANAIS = [
   // Stats de combate
   { id: "hp",            label: "PV",                    nota: "entra ANTES do multiplicador de Integridade da Alma (autor, 2026-07-27)" },
   { id: "pvTemporario",  label: "PV Temporário",         nota: "não é PV máximo: é a casca que some no fim do efeito. Quase sempre vem da simulação de combate" },
-  { id: "pe",            label: "PE" },
+  { id: "pe",            label: "PE",                    nota: "pilha ÚNICA: Ponto de Energia e Ponto de Estamina (o nome do Restringido) são o mesmo recurso" },
   { id: "defesa",        label: "Defesa" },
   { id: "cd",            label: "CD" },
   { id: "rdGeral",       label: "RD Geral" },
@@ -126,7 +130,8 @@ export const EFEITO_CANAIS = [
   { id: "empolgacaoInicial", label: "Empolgação Inicial", nota: "quantos níveis acima do 1 o combate começa" },
 
   // Com destino
-  { id: "atributo",      label: "Atributo",              alvo: "atributo", aceitaFuraTeto: true },
+  { id: "atributo",      label: "Atributo",              alvo: "atributo", aceitaFuraTeto: true, nota: "o valor é aparado no LIMITE do atributo (20 padrão). Quem sobe o limite usa o canal limiteAtributo, e as duas coisas andam juntas nas regras que dizem \"o valor e o limite\"" },
+  { id: "limiteAtributo", label: "Limite de Atributo",   alvo: "atributo", aceitaFuraTeto: true, nota: "sobe o teto daquele atributo por cima do 20 padrão, até o máximo de 30 (32 com furaTeto). Não soma valor: quem soma é o canal atributo" },
   { id: "bonusPericia",  label: "Perícia",               alvo: "pericia", nota: "aceita `atr:destreza` para atingir toda perícia daquele atributo (Dádivas do Céu)" },
   { id: "proficienciaPericia", label: "Treino em Perícia", alvo: "pericia", nota: "1 = Treinado, 2 = Mestre. Concede a faixa, não soma número, e nunca REBAIXA o que a ficha já escolheu" },
   { id: "bonusTR",       label: "Teste de Resistência",  alvo: "tr", nota: "aceita `atr:constituicao` para atingir todo TR daquele atributo" },
@@ -143,17 +148,25 @@ export const EFEITO_CANAIS = [
   { id: "ignoraRD",      label: "Ignora RD",             alvo: "fonteDano" },
   { id: "propMarcial",   label: "Marcial",               alvo: "fonteDano", nota: "concede a propriedade Marcial à arma, que é o gatilho de vários poderes de Lutador" },
   { id: "finezaAtaque",  label: "Fineza",                alvo: "ataque", nota: "libera o atributo alternativo do ataque (Destreza no Corpo a Corpo). Vale o maior dos dois" },
-  { id: "nivelAptidao",  label: "Nível de Aptidão",      alvo: "trilha", nota: "com alvo é concessão direcionada e grátis" },
+  { id: "nivelAptidao",  label: "Nível de Aptidão",      alvo: "trilha", nota: "com alvo é concessão direcionada e grátis. Apara no teto da trilha (5 por padrão). Quem sobe o teto é o canal Limite de Aptidão" },
+  { id: "limiteAptidao", label: "Limite de Aptidão",     alvo: "trilha", nota: "sobe o teto daquela trilha por cima do 5 padrão. Não concede nível: quem concede é o canal Nível de Aptidão, e as regras que quebram o teto emitem os dois juntos" },
 
   // Orçamentos
   { id: "vagasPericia",   label: "Vagas de Treino" },
   { id: "vagasHabilidade", label: "Vagas de Habilidade" },
   { id: "vagasFeitico",   label: "Vagas de Feitiço",     nota: "vaga EXCLUSIVA de Feitiço (= Habilidade de Técnica). Não serve para Habilidade Geral (autor, 2026-07-28)" },
-  { id: "vagasAptidao",   label: "Aptidões Amaldiçoadas" },
-  { id: "pontosAptidao",  label: "Pontos de Aptidão",    nota: "orçamento LIVRE, gasto onde o jogador quiser" },
+  // "Vagas de" no rótulo para o canal cair junto dos irmãos numa busca por
+  // "vaga". O que ele dá é QUANTAS Aptidões Amaldiçoadas a criatura pode ter.
+  { id: "vagasAptidao",   label: "Vagas de Aptidão",     nota: "quantas Aptidões Amaldiçoadas a criatura pode ter. Sem fonte nenhuma o orçamento é ZERO: o ND não concede" },
+  // ⚠ O nome "Pontos de Aptidão" foi TROCADO em 2026-07-29: o autor perguntou o
+  // que era, e a pergunta em si já era a resposta. "Ponto de Aptidão" não existe
+  // no sistema (o que existe é NÍVEL de aptidão), e o rótulo velho parecia um
+  // recurso gastável, tipo PE. O que este canal faz é dar ORÇAMENTO de nível,
+  // gasto na trilha que o jogador quiser. É o par livre do `nivelAptidao`, que
+  // nomeia a trilha e é concessão direta.
+  { id: "pontosAptidao",  label: "Nível de Aptidão (à escolha)", nota: "orçamento LIVRE de níveis: cada ponto sobe 1 nível na trilha que o jogador quiser. O irmão direcionado é o canal Nível de Aptidão, que nomeia a trilha" },
   { id: "focos",          label: "Focos de Interlúdio" },
   { id: "pontosPreparo",  label: "Pontos de Preparo",    nota: "recurso do Combatente (Artes do Combate). Zero sem a habilidade, então o Preview só mostra quem tem" },
-  { id: "estamina",       label: "Pontos de Estamina",   nota: "recurso do Restringido, que não tem energia amaldiçoada. Mesma regra: zero sem a habilidade" },
   { id: "espacosCarga",   label: "Espaços de Item",      nota: "sobe o LIMITE de carga, não o usado. Entra antes da conta de sobrecarga" },
 
   // Feitiços
@@ -162,6 +175,132 @@ export const EFEITO_CANAIS = [
 
 const CANAL_BY_ID = Object.fromEntries(EFEITO_CANAIS.map((c) => [c.id, c]));
 export const getCanal = (id) => CANAL_BY_ID[id] ?? null;
+
+/* ============================================================ */
+/* GRUPO EXCLUSIVO — as fontes que NÃO acumulam entre si         */
+/* ============================================================ */
+/**
+ * Cinco fontes de bônus numérico que o autor fechou num POOL ÚNICO
+ * (2026-07-30), por balanceamento. Palavras dele:
+ *
+ *   "Essas 5 fontes de bônus numéricos e etc, não acumulam entre si, sempre
+ *    ficando com o maior valor. Por exemplo, se o Efeito Único da minha arma me
+ *    fornece +8 de Acerto, meu Feitiço Passivo me fornece +4 e um Shikigami está
+ *    me fornecendo +5, eu só fico com o +8 de Acerto da arma. Caso eu perca a
+ *    arma ou ela seja desativada de alguma forma, eu fico somente com o +5 do
+ *    Shikigami."
+ *
+ * As três decisões que fecham o modelo (autor, 2026-07-30):
+ *
+ *  1. A disputa é POR STAT, não por fonte. Arma com +8 Acerto e +2 Defesa contra
+ *     Shikigami com +5 Acerto e +6 Defesa rende +8 de Acerto E +6 de Defesa: as
+ *     fontes se misturam, cada canal decide o seu vencedor sozinho.
+ *  2. Vale DENTRO da família também. Dois Shikigami, ou dois Feitiços Auxiliares
+ *     ativos, não somam entre si. Por isso o pool é PLANO: a família serve para a
+ *     UI dizer de onde veio o número, e não para agrupar a disputa.
+ *  3. Pega TODO bônus numérico que essas fontes produzem (Acerto, Defesa, CD, RD,
+ *     Dano, Movimento, Atributo, PV e PE máximos), canal por canal.
+ *
+ * Tudo que NÃO é uma destas cinco (habilidade, talento, origem, treino,
+ * encantamento, grau de item) segue somando normal, e soma POR CIMA do vencedor.
+ *
+ * ⚠ A disputa é por `(canal, alvo)`, e um efeito SEM alvo não briga com um
+ * direcionado do mesmo canal. Hoje isso não vaza, porque as cinco fontes só
+ * direcionam no canal `atributo` (onde todas nomeiam o atributo) e são globais em
+ * todo o resto. Se um dia uma delas der "+N de Acerto só com espadas", esta conta
+ * precisa passar a comparar o global contra cada alvo.
+ *
+ * `modo` diz onde a fonte fica ligada (autor, 2026-07-30): passiva entra na ficha
+ * em repouso, ativa só na bancada de Simulação de Combate. A Habilidade Única é
+ * "ambos" porque depende do item, então quem decide é o efeito, não a família.
+ */
+export const FAMILIAS_EXCLUSIVAS = [
+  { id: "habilidadeUnica",         label: "Habilidade Única",            modo: "ambos" },
+  { id: "feiticoAuxiliarPassivo",  label: "Feitiço Auxiliar Passivo",    modo: "passiva" },
+  { id: "shikigamiCaracteristica", label: "Característica de Shikigami", modo: "passiva" },
+  { id: "feiticoAuxiliarAtivo",    label: "Feitiço Auxiliar Ativo",      modo: "ativa" },
+  { id: "shikigamiAcao",           label: "Ação Ativa de Shikigami",     modo: "ativa" },
+];
+
+const FAMILIA_EXCLUSIVA_BY_ID = Object.fromEntries(FAMILIAS_EXCLUSIVAS.map((f) => [f.id, f]));
+export const getFamiliaExclusiva = (id) => FAMILIA_EXCLUSIVA_BY_ID[id] ?? null;
+
+/**
+ * A chave da disputa. Um canal sem alvo usa `*`, e não briga com os alvos dele.
+ *
+ * O SINAL entra na chave porque bônus e penalidade disputam separado (autor,
+ * 2026-07-30): "Penalidade você pode sempre deixar a PIOR. Como por exemplo
+ * entre -14 e -8. Ficaria o -14." Então o positivo fica com o MAIOR, o negativo
+ * fica com o MENOR, e os dois vencedores somam. Um canal com +8 e -14 resulta
+ * em -6: o melhor bônus e a pior penalidade valem ao mesmo tempo, e é só entre
+ * iguais que a disputa acontece.
+ */
+export const chaveExclusiva = (canal, alvo, valor = 1) =>
+  `${canal}|${alvo ?? "*"}|${valor < 0 ? "-" : "+"}`;
+
+/**
+ * Os canais agrupados por assunto, para o `<optgroup>` do editor de efeitos.
+ * Espelha o `MODIFIER_TARGET_GROUPS` da 2.5.2, que resolve o mesmo problema:
+ * uma lista chapada de 47 itens é impossível de varrer com o olho.
+ *
+ * ⚠ DERIVADO da lista, não uma segunda cópia dela. Aqui embaixo ficam só os
+ * IDS por grupo, e o `EFEITO_CANAL_GRUPOS` resolve os objetos. Canal que não
+ * apareça em grupo nenhum cai automaticamente em "Outros", então adicionar canal
+ * novo nunca o faz desaparecer do editor por esquecimento (o teste de catálogo
+ * confere que "Outros" está vazio).
+ */
+const GRUPOS_DE_CANAL = [
+  ["Vitalidade e Recursos", [
+    "hp", "pvTemporario", "pe", "almaMax",
+    "regeneracao", "dadosRegeneracao", "regeneracaoDado", "pontosPreparo", "custoPE",
+  ]],
+  ["Defesa", ["defesa", "rdGeral", "rdEspecifico", "rdFisico", "rdAlma", "resParcial"]],
+  ["Ataque e Dano", [
+    "cd", "bonusAcerto", "danoBonus", "nivelDano", "dadosDano",
+    "margemCritico", "ignoraRD", "propMarcial", "finezaAtaque",
+  ]],
+  // Atributo, limite e nível de trilha: o que a criatura É, em número próprio.
+  // `nivelAptidao` entra aqui, e não num grupo de Aptidões, porque ele é
+  // concessão DIRETA de nível (a regra nomeia a trilha). O orçamento livre é
+  // outro canal e está em Orçamentos.
+  ["Atributos e Aptidões", ["atributo", "limiteAtributo", "nivelAptidao", "limiteAptidao"]],
+  ["Perícias e Resistências", [
+    "bonusPericia", "proficienciaPericia", "bonusTR", "proficienciaTR", "margemCriticoTR",
+  ]],
+  ["Manobras", ["bonusManobra", "resistirManobra", "distanciaEmpurrao"]],
+  ["Movimento e Percepção", ["movimento", "iniciativa", "atencao"]],
+  // Tudo que é "quantos X você pode ter". ⚠ `espacosCarga` estava em Movimento
+  // (2026-07-29) porque sobrecarga derruba o deslocamento. Era consequência, não
+  // categoria, e o autor pegou: o canal sobe o LIMITE de espaços de item, então
+  // ele é orçamento, irmão das vagas. `pontosAptidao` veio junto pelo mesmo
+  // motivo, ele é orçamento de nível de aptidão.
+  ["Orçamentos", [
+    "vagasPericia", "vagasHabilidade", "vagasFeitico", "vagasAptidao",
+    "pontosAptidao", "focos", "espacosCarga",
+  ]],
+  ["Empolgação", ["empolgacaoMaxima", "empolgacaoInicial"]],
+];
+
+export const EFEITO_CANAL_GRUPOS = (() => {
+  const usados = new Set();
+  const grupos = GRUPOS_DE_CANAL.map(([label, ids]) => {
+    const itens = [];
+    for (const id of ids) {
+      const c = CANAL_BY_ID[id];
+      if (!c || usados.has(id)) continue;   // id inexistente ou repetido: ignora
+      usados.add(id);
+      itens.push(c);
+    }
+    return { label, itens };
+  }).filter((g) => g.itens.length);
+  const sobrando = EFEITO_CANAIS.filter((c) => !usados.has(c.id));
+  if (sobrando.length) grupos.push({ label: "Outros", itens: sobrando });
+  return grupos;
+})();
+
+/** Canais que ficaram fora dos grupos nomeados. Vazio = catálogo em ordem. */
+export const canaisSemGrupo = () =>
+  (EFEITO_CANAL_GRUPOS.find((g) => g.label === "Outros")?.itens ?? []).map((c) => c.id);
 
 /* ============================================================ */
 /* CONTEXTO DE VARIÁVEIS                                         */
@@ -300,7 +439,7 @@ export function buildCriaturaDslContext(base = {}) {
 export {
   HABILIDADE_EFEITOS, ESCOLHA_EFEITOS, TALENTO_EFEITOS,
   MELHORIA_EFEITOS, MELHORIA_EFEITOS_ALVO, LENDARIA_EFEITOS, LENDARIA_EFEITOS_ALVO,
-  APICE_EFEITOS, GERAL_EFEITOS,
+  APICE_EFEITOS, GERAL_EFEITOS, APTIDAO_EFEITOS,
   ORIGEM_EFEITOS, CLA_EFEITOS, ANATOMIA_EFEITOS,
 } from "./afty-efeitos-conteudo";
 
@@ -317,6 +456,40 @@ export function efeitosManuaisDaFicha(creature) {
   for (const [campo, canal] of campos) {
     const v = Math.trunc(Number(creature?.[campo]) || 0);
     if (v) out.push({ canal, expr: String(v), origem: campo, nome: "Outros" });
+  }
+  return out;
+}
+
+/**
+ * Efeitos do FUNCIONAMENTO BÁSICO da técnica, escritos pelo jogador na ficha
+ * (`core.tecnicaEfeitos`).
+ *
+ * ⚠ É a ÚNICA fonte do sistema em que o efeito é ESCRITO e não escolhido de um
+ * catálogo, e é por definição: a técnica amaldiçoada é única no mundo, então
+ * nenhuma lista pode cobri-la. O jogador tem o DSL inteiro à disposição, os 47
+ * canais, alvo, `quando` e `duracao`.
+ *
+ * Sai daqui como qualquer outra fonte (`{ canal, expr, origem, nome }`), então os
+ * filtros de estágio do deriveAfty roteiam pelo canal sozinhos: um efeito de
+ * `atributo` cai no estágio 1, um de `nivelAptidao` no pré-contexto, o resto no 2.
+ *
+ * Entrada inválida é DESCARTADA em silêncio de propósito: a validação e a
+ * mensagem de erro são da UI, que mostra a expressão quebrada em vermelho na
+ * hora de escrever. O motor não é o lugar de reclamar de digitação.
+ */
+export function efeitosDaTecnica(creature) {
+  const lista = creature?.core?.tecnicaEfeitos;
+  if (!Array.isArray(lista)) return [];
+  const out = [];
+  for (const e of lista) {
+    if (!e?.canal || !CANAL_BY_ID[e.canal]) continue;
+    const expr = String(e.expr ?? "").trim();
+    if (!expr) continue;
+    const ef = { canal: e.canal, expr, origem: "tecnica", nome: "Técnica" };
+    if (e.alvo) ef.alvo = e.alvo;
+    if (e.quando) ef.quando = String(e.quando).trim();
+    if (e.duracao === "temporaria") ef.duracao = "temporaria";
+    out.push(ef);
   }
   return out;
 }
@@ -372,11 +545,11 @@ export function coletarEfeitosCriatura({ habilidades, talentos, altoNivel, catal
   return [
     ...coletarEfeitos(habilidades?.escolhidas, HABILIDADE_EFEITOS, catalogos?.habilidades),
     ...coletarEfeitos(roubadas, HABILIDADE_EFEITOS, catalogos?.habilidades),
-    ...coletarEfeitosDeEscolha(habilidades?.escolhas?.mapa, catalogos?.opcoes),
+    ...coletarEfeitosDeEscolha(habilidades?.escolhas?.mapa, catalogos?.opcoes, catalogos?.habilidades),
     ...coletarEfeitos(talentos?.escolhidas, TALENTO_EFEITOS, catalogos?.talentos),
     // Talento também tem escolha aninhada (o atributo do Incremento, a trilha
     // da Aptidão Desenvolvida), e cai no mesmo ESCOLHA_EFEITOS.
-    ...coletarEfeitosDeEscolha(talentos?.escolhas?.mapa, catalogos?.opcoes),
+    ...coletarEfeitosDeEscolha(talentos?.escolhas?.mapa, catalogos?.opcoes, catalogos?.talentos),
     ...coletarEfeitos(Object.keys(vezesMel), MELHORIA_EFEITOS, catalogos?.altoNivel, vezesMel),
     ...coletarEfeitosComAlvo(
       Object.keys(vezesMel), altoNivel?.escolhas?.mapa, MELHORIA_EFEITOS_ALVO,
@@ -429,12 +602,21 @@ export function coletarEfeitosComAlvo(ids, mapaAlvos, mapaEfeitos, catalogo = {}
  *
  * O `nome` sai do catálogo de opções, e é o que aparece no hover de fontes.
  */
-export function coletarEfeitosDeEscolha(mapa, nomesPorOpcao = {}) {
+export function coletarEfeitosDeEscolha(mapa, nomesPorOpcao = {}, catalogoPai = null) {
+  const nomeDoPai = typeof catalogoPai === "function"
+    ? (id) => catalogoPai(id)?.nome
+    : (id) => catalogoPai?.[id]?.nome;
   const out = [];
-  for (const opcoes of Object.values(mapa || {})) {
+  for (const [paiId, opcoes] of Object.entries(mapa || {})) {
+    // ⚠ O nome da fonte é "Pai (Opção)", e não só a opção (2026-07-29). Uma
+    // escolha de atributo se chama "Destreza", então o hover do atributo Destreza
+    // mostrava a linha "Destreza +4", que não diz de onde vem nada. Com o pai
+    // vira "Pináculo Físico (Destreza)". Sem catálogo de pai, volta ao antigo.
+    const pai = catalogoPai ? nomeDoPai(paiId) : null;
     for (const opcaoId of Array.isArray(opcoes) ? opcoes : []) {
+      const opcao = nomesPorOpcao[opcaoId] || opcaoId;
       for (const e of ESCOLHA_EFEITOS[opcaoId] || []) {
-        out.push({ ...e, origem: opcaoId, nome: nomesPorOpcao[opcaoId] || opcaoId });
+        out.push({ ...e, origem: opcaoId, nome: pai ? `${pai} (${opcao})` : opcao });
       }
     }
   }
@@ -490,6 +672,20 @@ export function coletarEfeitosOrigem(creature, escolhas = null) {
   ];
 }
 
+/**
+ * Efeitos das Aptidões Amaldiçoadas escolhidas.
+ *
+ * ⚠ `semEnergia` zera tudo. O Restringido não tem energia amaldiçoada, então
+ * não tem Aptidão nenhuma: o orçamento dele já é zero, mas uma ficha que trocou
+ * de origem depois de escolher aptidões ainda carrega a lista, e sem esta trava
+ * ela continuaria valendo calada.
+ */
+export function coletarEfeitosAptidao(creature, semEnergia = false) {
+  if (semEnergia) return [];
+  const ids = Array.isArray(creature?.aptidoesAmaldicoadas) ? creature.aptidoesAmaldicoadas : [];
+  return coletarEfeitos(ids, APTIDAO_EFEITOS, (id) => getAptidao(id));
+}
+
 /* ============================================================ */
 /* APLICAÇÃO                                                     */
 /* ============================================================ */
@@ -503,6 +699,9 @@ export function coletarEfeitosOrigem(creature, escolhas = null) {
  *   • porAlvo  — { [canal]: { [alvo]: número } }, os direcionados.
  *   • detalhes — um item por efeito aplicado, para a UI mostrar a origem.
  *   • avisos   — canal inexistente, alvo em canal que não aceita, etc.
+ *   • exclusivos — os do pool que NÃO acumula (ver FAMILIAS_EXCLUSIVAS). Saem
+ *     avaliados mas AINDA NÃO somados: quem decide o vencedor de cada canal é o
+ *     `resolverExclusivos`, que precisa ver a lista inteira de uma vez.
  */
 export function aplicarEfeitos(efeitos, ctx = {}) {
   const porCanal = {};
@@ -510,6 +709,7 @@ export function aplicarEfeitos(efeitos, ctx = {}) {
   const furaTetoPor = {};
   const detalhes = [];
   const avisos = [];
+  const exclusivos = [];
 
   for (const e of Array.isArray(efeitos) ? efeitos : []) {
     const canal = CANAL_BY_ID[e?.canal];
@@ -530,6 +730,21 @@ export function aplicarEfeitos(efeitos, ctx = {}) {
     if (!valor) continue;
 
     const alvo = canal.alvo ? (e.alvo || null) : null;
+
+    // Pool exclusivo: sai da soma e vai para a disputa. O `detalhes` também
+    // espera, porque só depois de conhecer o vencedor dá para dizer quem entrou
+    // e quem foi suplantado.
+    if (e.exclusivo) {
+      if (!FAMILIA_EXCLUSIVA_BY_ID[e.exclusivo]) {
+        avisos.push(`Família exclusiva desconhecida "${e.exclusivo}" em ${e.nome || e.origem || "efeito"}.`);
+      }
+      exclusivos.push({
+        canal: e.canal, alvo, valor, exclusivo: e.exclusivo,
+        origem: e.origem || null, nome: e.nome || e.origem || "Efeito",
+      });
+      continue;
+    }
+
     if (alvo) {
       if (!porAlvo[e.canal]) porAlvo[e.canal] = {};
       porAlvo[e.canal][alvo] = (porAlvo[e.canal][alvo] || 0) + valor;
@@ -547,7 +762,82 @@ export function aplicarEfeitos(efeitos, ctx = {}) {
     });
   }
 
-  return { porCanal, porAlvo, furaTeto: furaTetoPor, detalhes, avisos };
+  return { porCanal, porAlvo, furaTeto: furaTetoPor, detalhes, avisos, exclusivos };
+}
+
+/**
+ * Fecha a disputa do pool exclusivo e devolve o resultado com os vencedores JÁ
+ * somados em `porCanal` / `porAlvo`. Depois disto o resto do motor não precisa
+ * saber que a regra existe: `valorCanal`, `valorCanalEscopos` e `detalhesDoCanal`
+ * seguem funcionando iguais.
+ *
+ * `jaAplicado` é o mapa `{ [chaveExclusiva]: valor que já entrou }` de uma
+ * chamada anterior, e existe por causa do canal `atributo`, que é o único que o
+ * deriveAfty resolve em DOIS estágios (permanente e temporário). Sem ele, um
+ * Feitiço Auxiliar temporário de +4 de Força somaria por cima de uma Habilidade
+ * Única permanente de +6, e o total daria 10 em vez dos 6 que a regra manda. Com
+ * ele, o segundo estágio só acrescenta o que passa do que já valia.
+ *
+ * Todo efeito do pool entra em `detalhes`, inclusive quem perdeu, marcado com
+ * `suplantado: true`. É o que deixa o hover de fontes mostrar por que o +5 do
+ * Shikigami sumiu da conta, em vez de ele simplesmente não aparecer.
+ */
+export function resolverExclusivos(res, jaAplicado = {}) {
+  const porAlvo = {};
+  for (const [c, alvos] of Object.entries(res?.porAlvo || {})) porAlvo[c] = { ...alvos };
+  const out = {
+    porCanal: { ...(res?.porCanal || {}) },
+    porAlvo,
+    furaTeto: { ...(res?.furaTeto || {}) },
+    detalhes: [...(res?.detalhes || [])],
+    avisos: [...(res?.avisos || [])],
+    exclusivos: [],
+  };
+  const aplicado = { ...jaAplicado };
+  const lista = res?.exclusivos ?? [];
+  if (!lista.length) return { ...out, aplicado };
+
+  // Um grupo por (canal, alvo, sinal): a disputa é por STAT, então cada canal
+  // escolhe o seu vencedor sem olhar o que os outros canais fizeram, e o bônus
+  // não briga com a penalidade.
+  const grupos = new Map();
+  for (const e of lista) {
+    const k = chaveExclusiva(e.canal, e.alvo, e.valor);
+    if (!grupos.has(k)) grupos.set(k, []);
+    grupos.get(k).push(e);
+  }
+
+  for (const [k, itens] of grupos) {
+    // Bônus fica com o MAIOR, penalidade fica com a PIOR (a mais negativa).
+    const negativo = k.endsWith("|-");
+    const melhor = (a, b) => ((negativo ? b.valor < a.valor : b.valor > a.valor) ? b : a);
+    const vencedor = itens.reduce(melhor);
+    const delta = vencedor.valor - (aplicado[k] || 0);
+    // O `delta` também respeita o sinal: numa penalidade só entra o que PIORA o
+    // que um estágio anterior já tinha aplicado. Sem isto, um -8 depois de um
+    // -14 somaria +6 e apagaria parte da penalidade.
+    const entra = negativo ? delta < 0 : delta > 0;
+    if (entra) {
+      if (vencedor.alvo) {
+        if (!out.porAlvo[vencedor.canal]) out.porAlvo[vencedor.canal] = {};
+        out.porAlvo[vencedor.canal][vencedor.alvo] = (out.porAlvo[vencedor.canal][vencedor.alvo] || 0) + delta;
+      } else {
+        out.porCanal[vencedor.canal] = (out.porCanal[vencedor.canal] || 0) + delta;
+      }
+      aplicado[k] = vencedor.valor;
+    }
+    for (const e of itens) {
+      out.detalhes.push({
+        canal: e.canal, alvo: e.alvo, valor: e.valor,
+        origem: e.origem, nome: e.nome, furaTeto: false,
+        exclusivo: e.exclusivo,
+        // Perdeu para um irmão, ou empatou com o que um estágio anterior já
+        // tinha aplicado. Nos dois casos o número não entrou nesta conta.
+        suplantado: e !== vencedor || !entra,
+      });
+    }
+  }
+  return { ...out, aplicado };
 }
 
 /** O alvo recebeu algum efeito autorizado a passar do teto duro de 30? */
@@ -574,11 +864,20 @@ export const CANAIS_ESTAGIO_1 = ["atributo"];
  * Empolgação, e a média do dado (`dado_empolgacao`) é o que as Manobras de
  * Empolgação somam. Sem sair antes, a média seria calculada com a tabela velha.
  *
+ * `limiteAtributo` entrou em 2026-07-29 pelo motivo mais direto de todos: ele É
+ * o teto contra o qual o estágio 1 apara o canal `atributo`. Se ele saísse junto
+ * do resto, a aparagem aconteceria contra o limite velho e a regra que diz "o
+ * valor E o limite aumentam" (Incremento de Atributo, Quebra de Limites) perderia
+ * metade do efeito.
+ *
+ * `limiteAptidao` entrou junto do `nivelAptidao` e pela mesma razão que o
+ * `limiteAtributo`: ele é o teto contra o qual a concessão de trilha apara.
+ *
  * ⚠ Rodam com o contexto reduzido (sem os níveis de aptidão), então a
  * expressão de um efeito destes tem de ser constante ou depender só de ND,
  * Maestria e atributo base. Na prática são todas "1".
  */
-export const CANAIS_PRE_CONTEXTO = ["nivelAptidao", "empolgacaoMaxima"];
+export const CANAIS_PRE_CONTEXTO = ["nivelAptidao", "limiteAptidao", "empolgacaoMaxima", "limiteAtributo"];
 export const ehPreContexto = (e) => CANAIS_PRE_CONTEXTO.includes(e?.canal);
 
 /**
@@ -586,6 +885,10 @@ export const ehPreContexto = (e) => CANAIS_PRE_CONTEXTO.includes(e?.canal);
  * (autor, 2026-07-27): "Não é para furar além de 30 de nenhuma forma. Com
  * exceção da Habilidade Lendária que te permite, nada no sistema além dela
  * permite passar." O validador recusa `furaTeto` em qualquer outro id.
+ *
+ * ⚠ Passar do 30 não é passar do infinito (autor, 2026-07-29): o Aperfeiçoamento
+ * leva ao ATRIBUTO 32, e nada leva além. Quem apara é o `ATTR_LIMITE_ABSOLUTO`
+ * de afty-atributos.js.
  */
 export const FURA_TETO_PERMITIDO = ["len_aperfeicoamento_de_atributo"];
 
@@ -598,10 +901,18 @@ export const ehAtributoPermanente = (e) => CANAIS_ESTAGIO_1.includes(e?.canal) &
 export const ehAtributoTemporario = (e) => CANAIS_ESTAGIO_1.includes(e?.canal) && ehTemporario(e);
 export const ehEstagio2 = (e) => !CANAIS_ESTAGIO_1.includes(e?.canal) && !ehPreContexto(e);
 
-/** Soma resultados de `aplicarEfeitos` (os dois estágios) num só. */
+/**
+ * Soma resultados de `aplicarEfeitos` (os dois estágios) num só.
+ *
+ * ⚠ Os `exclusivos` são CONCATENADOS, nunca somados: a disputa do maior valor só
+ * pode ser fechada quando a lista inteira estiver junta, e quem fecha é o
+ * `resolverExclusivos`. Mesclar um resultado já resolvido é seguro, porque ele
+ * volta de lá com a lista vazia e os vencedores já em `porCanal` / `porAlvo`.
+ */
 export function mesclarEfeitos(...resultados) {
-  const out = { porCanal: {}, porAlvo: {}, furaTeto: {}, detalhes: [], avisos: [] };
+  const out = { porCanal: {}, porAlvo: {}, furaTeto: {}, detalhes: [], avisos: [], exclusivos: [] };
   for (const r of resultados) {
+    out.exclusivos.push(...(r?.exclusivos || []));
     for (const [c, v] of Object.entries(r?.porCanal || {})) {
       out.porCanal[c] = (out.porCanal[c] || 0) + v;
     }
@@ -679,11 +990,20 @@ export function valorCanalEscopos(res, canal, escopos = []) {
   return escopos.reduce((s, e) => s + (dir[e] || 0), res?.porCanal?.[canal] || 0);
 }
 
+/**
+ * O perdedor do pool exclusivo fica em `detalhes` para o hover poder mostrá-lo,
+ * mas ele NÃO entrou em `porCanal`. Por isso os dois leitores abaixo o escondem
+ * por padrão: quem só quer exibir a fonte pede `incluirSuplantados`, e quem SOMA
+ * o que leu (as faces do dado de regeneração, os dados de dano) fica protegido
+ * de contar um número que a regra já descartou.
+ */
+const contaNoTotal = (d, incluirSuplantados) => incluirSuplantados || !d.suplantado;
+
 /** Irmão do `detalhesDoCanal` para vários alvos, sem repetir o mesmo efeito. */
-export function detalhesDoCanalEscopos(res, canal, escopos = []) {
+export function detalhesDoCanalEscopos(res, canal, escopos = [], incluirSuplantados = false) {
   const alvo = new Set(escopos);
   return (res?.detalhes || []).filter(
-    (d) => d.canal === canal && (d.alvo == null || alvo.has(d.alvo)),
+    (d) => d.canal === canal && (d.alvo == null || alvo.has(d.alvo)) && contaNoTotal(d, incluirSuplantados),
   );
 }
 
@@ -692,9 +1012,9 @@ export function detalhesDoCanalEscopos(res, canal, escopos = []) {
  * É o que alimenta o hover que mostra de onde vem cada parcela de um valor.
  * Inclui os sem alvo, que valem para todos os alvos daquele canal.
  */
-export function detalhesDoCanal(res, canal, alvo = null) {
+export function detalhesDoCanal(res, canal, alvo = null, incluirSuplantados = false) {
   return (res?.detalhes || []).filter(
-    (d) => d.canal === canal && (d.alvo == null || d.alvo === alvo),
+    (d) => d.canal === canal && (d.alvo == null || d.alvo === alvo) && contaNoTotal(d, incluirSuplantados),
   );
 }
 
@@ -726,6 +1046,11 @@ export function validarMapaEfeitos(mapa, nomeDoMapa = "efeitos") {
       }
       if (e.duracao && e.duracao !== "permanente" && e.duracao !== "temporaria") {
         problemas.push(`${nomeDoMapa}: ${id} tem duracao inválida "${e.duracao}"`);
+      }
+      // Família errada faria o efeito cair no pool sem disputar com ninguém, o
+      // que é pior que não marcar nada: ele sairia da soma e não voltaria.
+      if (e.exclusivo && !FAMILIA_EXCLUSIVA_BY_ID[e.exclusivo]) {
+        problemas.push(`${nomeDoMapa}: ${id} marca a família exclusiva "${e.exclusivo}", que não existe`);
       }
       // Variável adiada vira ZERO calado dentro da expressão, então é erro de
       // conteúdo, não de runtime. Pegar aqui.

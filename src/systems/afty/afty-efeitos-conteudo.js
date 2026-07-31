@@ -93,22 +93,29 @@ const TRILHAS = ["dom", "au", "cl", "bar", "er"];
 
 /**
  * Os Talentos que dizem "aumenta o valor de X à sua escolha", cada um com o seu
- * valor e o seu pool. `[prefixo do id da opção, quanto soma, atributos do pool]`
- * — o pool tem de bater com o `opcoesDeAtributo` do catálogo, senão sobra chave
- * de efeito que ninguém escolhe (o teste confere os dois lados).
+ * valor e o seu pool. `[prefixo do id da opção, quanto soma, atributos do pool,
+ * sobeLimite]` — o pool tem de bater com o `opcoesDeAtributo` do catálogo, senão
+ * sobra chave de efeito que ninguém escolhe (o teste confere os dois lados).
+ *
+ * O 4º item é o que separa os dois grupos. A maioria sobe só o VALOR, e por isso
+ * apara no limite de 20. Dois deles dizem em texto que o LIMITE sobe junto, e
+ * ganham o canal `limiteAtributo` no mesmo pacote:
+ *   • Incremento de Atributo: "você aumenta o valor e o limite de um atributo à
+ *     sua escolha em 2".
+ *   • Quebra de Limites: "o limite dos dois atributos escolhidos é aumentado em 2".
  */
 const TODOS_ATRIBUTOS = ["forca", "destreza", "constituicao", "inteligencia", "sabedoria", "presenca"];
 const FOR_DES = ["forca", "destreza"];
 const FOR_CON = ["forca", "constituicao"];
 const ESCOLHAS_DE_ATRIBUTO = [
-  ["tal_incremento",       2, TODOS_ATRIBUTOS],   // Incremento de Atributo
-  ["tal_quebra",           2, TODOS_ATRIBUTOS],   // Quebra de Limites
-  ["tal_tempestade",       1, TODOS_ATRIBUTOS],   // Tempestade de Ideias
-  ["tal_mestre_armas",     2, FOR_DES],           // Mestre das Armas
-  ["tal_mestre_defensivo", 2, FOR_CON],           // Mestre Defensivo
-  ["tal_concussao",        1, FOR_CON],           // Especialista em Concussão
-  ["tal_cortes",           1, FOR_DES],           // Especialista em Cortes
-  ["tal_perfuracao",       1, FOR_DES],           // Especialista em Perfuração
+  ["tal_incremento",       2, TODOS_ATRIBUTOS, true],   // Incremento de Atributo
+  ["tal_quebra",           2, TODOS_ATRIBUTOS, true],   // Quebra de Limites
+  ["tal_tempestade",       1, TODOS_ATRIBUTOS],  // Tempestade de Ideias
+  ["tal_mestre_armas",     2, FOR_DES],          // Mestre das Armas
+  ["tal_mestre_defensivo", 2, FOR_CON],          // Mestre Defensivo
+  ["tal_concussao",        1, FOR_CON],          // Especialista em Concussão
+  ["tal_cortes",           1, FOR_DES],          // Especialista em Cortes
+  ["tal_perfuracao",       1, FOR_DES],          // Especialista em Perfuração
 ];
 /** Os 4 TRs da Resiliência Melhorada (sem Integridade) com o atributo de cada. */
 const RESISTENCIAS_COM_ATRIBUTO = [
@@ -679,9 +686,10 @@ export const HABILIDADE_EFEITOS = {
   ],
 
   /* ================= RESTRINGIDO ================= */
-  /* O Restringido não tem energia amaldiçoada: o recurso dele é a ESTAMINA, e
-     quase toda habilidade ativa gasta dela. `esc_restringido` é o nível de
-     escalonamento da classe. */
+  /* O Restringido não tem energia amaldiçoada: ele chama o recurso de ESTAMINA
+     (ou vigor), e quase toda habilidade ativa gasta dela. É a MESMA pilha dos
+     outros Tipos, o PE (autor, 2026-07-29), então tudo que mexe nela usa o canal
+     `pe`. `esc_restringido` é o nível de escalonamento da classe. */
 
   /* ---- Base ---- */
 
@@ -689,11 +697,12 @@ export const HABILIDADE_EFEITOS = {
   // Constituição na sua Defesa, limitado pelo seu nível." O "ou" é escolha
   // livre e sem custo, então vale o maior (mesmo critério de Int ou Sabedoria).
   // "Você inicia com 4 pontos de estamina, e recebe mais 4 a cada nível."
+  // NÃO entra como efeito: 4 × ND é exatamente a base de PE do Tipo Restringido
+  // no deriveAfty, e Estamina é o próprio PE. Somar aqui daria a pilha dobrada.
   // A ferramenta de quarto grau e o meio de ver maldições são equipamento, e as
   // Dádivas saem pela escolha aninhada.
   res_restrito_pelos_ceus: [
     { canal: "defesa", expr: "min(max(mod_forca, mod_constituicao), nd)" },
-    { canal: "estamina", expr: "4 * nd" },
   ],
 
   // "você pode adicionar 1d8 ao dano dele [...] No nível 3, o dano se torna
@@ -908,7 +917,7 @@ export const HABILIDADE_EFEITOS = {
   // "Você recebe +4 pontos de estamina máximos." Os dois atributos saem pela
   // escolha aninhada.
   res_pinaculo_fisico: [
-    { canal: "estamina", expr: "4" },
+    { canal: "pe", expr: "4" },
   ],
 
   /* ---- 16° nível ---- */
@@ -1404,6 +1413,14 @@ export const ESCOLHA_EFEITOS = {
   sup_aptidao_cl: [{ canal: "nivelAptidao", alvo: "cl", expr: "1" }],
   sup_aptidao_er: [{ canal: "nivelAptidao", alvo: "er", expr: "1" }],
 
+  // Aptidões de Controle (8°): "você pode aumentar o seu nível de aptidão em
+  // Aura, Controle e Leitura ou Barreira em 1. Você pode pegar esta habilidade
+  // três vezes, uma para cada aptidão." A quarta irmã do mesmo padrão, e a
+  // última a ser ligada (2026-07-29): o pool dela não existia no catálogo.
+  ctr_aptidao_aura: [{ canal: "nivelAptidao", alvo: "au", expr: "1" }],
+  ctr_aptidao_controle_leitura: [{ canal: "nivelAptidao", alvo: "cl", expr: "1" }],
+  ctr_aptidao_barreira: [{ canal: "nivelAptidao", alvo: "bar", expr: "1" }],
+
   // Expandir Repertório (2°): "você recebe também um bônus de +2 em uma perícia
   // qualquer". Os ids são gerados do catálogo, do lado do afty-habilidades.js.
   sup_repertorio_acrobacia:        [{ canal: "bonusPericia", alvo: "acrobacia", expr: "2" }],
@@ -1452,7 +1469,7 @@ export const ESCOLHA_EFEITOS = {
   // personagem e, a cada 2 níveis, você recebe 1 ponto de estamina adicional."
   res_dadiva_vigor_infindavel: [
     { canal: "hp", expr: "nd" },
-    { canal: "estamina", expr: "piso(nd / 2)" },
+    { canal: "pe", expr: "piso(nd / 2)" },
   ],
 
   // Reposição Sanguinária recupera estamina por abate: é evento, não máximo.
@@ -1479,15 +1496,21 @@ export const ESCOLHA_EFEITOS = {
   /* ============================================================ */
 
   /* ---- Escolhas de atributo ----
-     Cinco talentos diferentes dizem "aumenta o valor de X à sua escolha", com
+     Oito talentos diferentes dizem "aumenta o valor de X à sua escolha", com
      valores e pools diferentes. O canal é o mesmo `atributo`, que roda no
      estágio 1 e propaga para tudo que lê o modificador.
 
-     ⚠ Onde o texto diz "e o limite também" (Incremento de Atributo, Quebra de
-     Limites), só o VALOR entra: o canal já passa por cima do limite por
-     atributo (só o teto duro de 30 vale), então o efeito prático é o mesmo. */
-  ...Object.fromEntries(ESCOLHAS_DE_ATRIBUTO.flatMap(([prefixo, valor, pool]) =>
-    pool.map((a) => [`${prefixo}_${a}`, [{ canal: "atributo", alvo: a, expr: String(valor) }]]),
+     ⚠ CORRIGIDO EM 2026-07-29. O comentário antigo aqui dizia que onde o texto
+     fala "e o limite também" (Incremento de Atributo, Quebra de Limites) bastava
+     somar o VALOR, "porque o canal já passa por cima do limite por atributo".
+     Era verdade e era o BUG: o canal `atributo` não respeitava o limite de 20 de
+     ninguém. Agora ele respeita, então os dois que sobem o limite emitem as duas
+     metades, e os outros seis aparam no 20 como deveriam desde sempre. */
+  ...Object.fromEntries(ESCOLHAS_DE_ATRIBUTO.flatMap(([prefixo, valor, pool, sobeLimite]) =>
+    pool.map((a) => [`${prefixo}_${a}`, [
+      { canal: "atributo", alvo: a, expr: String(valor) },
+      ...(sobeLimite ? [{ canal: "limiteAtributo", alvo: a, expr: String(valor) }] : []),
+    ]]),
   )),
 
   /* ---- Escolhas de trilha de aptidão ---- */
@@ -1716,7 +1739,18 @@ export const LENDARIA_EFEITOS_ALVO = {
   // "você aumenta o valor de um atributo em 2, podendo superar o máximo de 30."
   // É a ÚNICA entrada do sistema autorizada a passar do teto duro de 30, e o
   // validador recusa `furaTeto` em qualquer outro id (FURA_TETO_PERMITIDO).
-  len_aperfeicoamento_de_atributo: [{ canal: "atributo", expr: "2", furaTeto: true }],
+  //
+  // ⚠ Sobe o LIMITE junto do valor, os dois em 2 (autor, 2026-07-29). O texto
+  // fala só do valor, e por isso a primeira versão só somava valor, mas o autor
+  // corrigiu: é a Lendária que "permite ir para 32", e ir para 32 é o LIMITE
+  // chegar lá. Num atributo de limite 20 ela faz 22, e num de 30 faz 32.
+  //
+  // O `furaTeto` vai nas DUAS metades porque ele não é mais "esta parcela fura",
+  // é "o teto deste atributo é 32", e o deriveAfty o lê dos dois canais.
+  len_aperfeicoamento_de_atributo: [
+    { canal: "atributo", expr: "2", furaTeto: true },
+    { canal: "limiteAtributo", expr: "2", furaTeto: true },
+  ],
 
   // "você escolhe 3 perícias para se tornar especialista em."
   // ⚠ ASSUMIDO: "especialista" é a faixa de Mestre. É o que o texto dos
@@ -1833,6 +1867,38 @@ export const GERAL_EFEITOS = {
  * é justo, porque origem não escala com nível de classe.
  */
 export const ORIGEM_EFEITOS = {
+  // ⚠ INATO e DERIVADO foram as duas PRIMEIRAS origens feitas, e ficaram para
+  // trás: elas declaravam concessão no shape antigo (`grants`), que só pintava um
+  // selo âmbar na UI e não alimentava nada. Refeitas no estilo do Restringido e
+  // do Sem Técnica em 2026-07-29, com efeito de verdade.
+
+  // Talento Natural: "Recebe um Talento à escolha no 1° nível. Uma única vez, a
+  // partir do 4° nível, pode escolher receber um Talento adicional."
+  // Talento gasta o orçamento das Habilidades de Especialização, então é vaga de
+  // habilidade, igual aos degraus do Empenho Implacável.
+  //
+  // Marca Registrada: "Recebe um Feitiço adicional" → vaga EXCLUSIVA de Feitiço
+  // (não serve para Habilidade Geral). A redução de 1 PE fica de fora: vale só
+  // para aquele feitiço, `custoPE` não tem alvo, e afty-feiticos.js não lê o
+  // Motor. Entra na passada dos Feitiços.
+  inato: [
+    { canal: "vagasHabilidade", expr: "1 + (nd >= 4)" },
+    { canal: "vagasFeitico", expr: "1" },
+  ],
+
+  // Energia Antinatural: "Recebe uma Aptidão Amaldiçoada de Aura." Vaga, e não
+  // gasto do orçamento: alvo NOMEADO é concessão grátis pela convenção do
+  // projeto, e desde que o ND parou de conceder Aptidão Amaldiçoada o orçamento
+  // sem a Habilidade Geral é zero, então gastar dele anularia a característica.
+  // ⚠ A vaga é genérica: não existe vaga por categoria para prendê-la em Aura.
+  //
+  // A recuperação de PE (2× Maestria, 1/dia) é recurso de cena, não stat.
+  // O Desenvolvimento Inesperado tem caminho próprio, fora do Motor
+  // (`core.origem.desenvolvimento`), porque mexe no LIMITE do atributo.
+  derivado: [
+    { canal: "vagasAptidao", expr: "1" },
+  ],
+
   // "Seu Deslocamento aumenta em 3 metros." O resto do Físico Abençoado é mesa
   // (imunidade a doença, vantagem contra veneno, dados de descanso curto).
   restringido: [
@@ -1938,5 +2004,162 @@ export const ANATOMIA_EFEITOS = {
   bracos_extras: [
     { canal: "bonusPericia", alvo: "prestidigitacao", expr: "2" },
     { canal: "bonusPericia", alvo: "atletismo", expr: "2" },
+  ],
+};
+
+/* ============================================================ */
+/* APTIDÕES AMALDIÇOADAS                                         */
+/* ============================================================ */
+/**
+ * Sexta frente do Motor (2026-07-30). A "passada de efeitos" que o autor adiou
+ * em 2026-07-16 até o catálogo fechar. O catálogo fechou, então ela saiu.
+ *
+ * ⚠ O RENDIMENTO AQUI É BAIXO, e não é por falta de trabalho: as Aptidões
+ * Amaldiçoadas são, na esmagadora maioria, ATIVAS e pagas em PE, com efeito
+ * sobre INIMIGOS ou ALIADOS, ou expressas em DADOS com face própria. Nenhuma
+ * dessas três coisas é número passivo de ficha. Ver o balanço por categoria em
+ * `docs/afty-status.md`, que nomeia o bloqueio de cada uma que ficou de fora.
+ *
+ * As que entraram se dividem em duas famílias:
+ *
+ *  • PASSIVAS — valem sempre, e são o caso simples.
+ *  • DE BANCADA — pagam PE por rodada ou por uso, então valem só com o estado
+ *    ligado na Simulação de Combate (`quando` + `duracao: "temporaria"`). É o
+ *    mesmo arranjo das habilidades de Lutador e Combatente, e o motivo de a
+ *    bancada existir.
+ *
+ * ⚠ Uma escolha de modelagem que vale registrar: `estimulo_muscular` dá "+1 por
+ * PE gasto em UM teste", e entrou como bônus de PERÍCIA da bancada inteira. É
+ * generoso de propósito, porque a bancada existe para ver o PICO. Se o autor
+ * preferir que ele não apareça na ficha, basta tirar as duas linhas.
+ *
+ * ⚠ As duas duplas de melhoria (`cobertura_avancada` sobre `cobrir_se`, e
+ * `estimulo_muscular_avancado` sobre `estimulo_muscular`) entram como DELTA por
+ * cima da base, e não reescrevendo o valor. Mesmo padrão da Brutalidade
+ * Aprimorada: assim as duas se compõem sem uma precisar saber da outra.
+ */
+export const APTIDAO_EFEITOS = {
+  /* ---------- Aura: passivas ---------- */
+
+  // "Você soma metade do seu Nível de Aptidão em Aura em testes de Furtividade."
+  // O gasto de 1 PE para receber o nível INTEIRO no lugar da metade é por
+  // rolagem, então fica de fora: não é estado, é decisão de uma jogada.
+  aura_controlada: [
+    { canal: "bonusPericia", alvo: "furtividade", expr: "piso(au / 2)" },
+  ],
+
+  // "Sempre que for agarrar um alvo, você adiciona metade do seu Nível de
+  // Aptidão em Aura na rolagem de Atletismo, assim como na rolagem para evitar
+  // que uma criatura escape."
+  // Os dois lados do Agarrar: executar a manobra e segurar quem tenta escapar.
+  aura_de_contencao: [
+    { canal: "bonusManobra",    alvo: "agarrar", expr: "piso(au / 2)" },
+    { canal: "resistirManobra", alvo: "agarrar", expr: "piso(au / 2)" },
+  ],
+
+  // "Sua Defesa aumenta em um valor igual a seu Nível de Aptidão em Aura."
+  aura_macica: [
+    { canal: "defesa", expr: "au" },
+  ],
+
+  // "Você recebe redução contra danos físicos, cortes, perfurações e impactos,
+  // igual ao dobro do seu Nível de Aptidão em Aura."
+  // É a base numérica que Aura Excessiva e Aura Elemental Reforçada citam.
+  aura_reforcada: [
+    { canal: "rdFisico", expr: "dobro(au)" },
+  ],
+
+  /* ---------- Aura: de bancada ---------- */
+
+  // "No começo de toda rodada você pode escolher pagar 2 PE. Caso o faça, você
+  // recebe RD contra todos os tipos de dano, exceto na alma, igual ao valor de
+  // redução fornecido por Aura Reforçada."
+  // "Todos os tipos exceto na alma" é a definição EXATA da RD Geral no Afty (é
+  // por isso que o Dano na Alma ganhou canal próprio), então o encaixe é direto.
+  // O valor é o de Aura Reforçada, que é dobro(au), e não uma segunda regra.
+  aura_excessiva: [
+    { canal: "rdGeral", expr: "dobro(au)", quando: "aura_excessiva", duracao: "temporaria" },
+  ],
+
+  /* ---------- Controle e Leitura: de bancada ---------- */
+
+  // "Como uma Reação, quando receber dano, você pode gastar uma quantidade de PE
+  // igual a 2 + o dobro do seu CL para receber pontos de vida temporários: para
+  // cada ponto gasto, você recebe 4 PVs temporários."
+  // O teto da faixa (2 + 2·CL) sai do resolveCombate, porque depende da ficha.
+  cobrir_se: [
+    { canal: "pvTemporario", expr: "4 * cobrir_se_pe", duracao: "temporaria" },
+  ],
+
+  // "Ao usar sua Reação para cobrir-se, cada ponto gasto passa a conceder 8
+  // pontos de vida temporários." DELTA de +4 por ponto sobre o cobrir_se.
+  cobertura_avancada: [
+    { canal: "pvTemporario", expr: "4 * cobrir_se_pe", duracao: "temporaria" },
+  ],
+
+  // "Caso seja um teste (comum ou oposto), você pode gastar até uma quantidade
+  // de PE igual a seu Nível de Aptidão em Controle e Leitura, recebendo um bônus
+  // de +1 para cada PE gasto."
+  // ⚠ Entra SEM alvo, ou seja, em toda perícia. Ver a nota do topo.
+  //
+  // "Caso seja uma ação que empurre uma criatura ou arremesse um objeto
+  // (Desarmar ou Empurrar), você pode gastar 2 PE para aumentar a distância em
+  // um valor igual ao seu Nível de Aptidão em Controle e Leitura multiplicado
+  // por 1,5 metros."
+  //
+  // Os outros dois estímulos (deslocamento de uma ação de movimento, e dobrar a
+  // distância de um Pulo) ficam de fora: os dois mexem numa AÇÃO, e não no
+  // deslocamento da ficha.
+  estimulo_muscular: [
+    { canal: "bonusPericia",       expr: "estimulo_teste", duracao: "temporaria" },
+    { canal: "distanciaEmpurrao",  expr: "cl * 1.5", quando: "estimulo_empurrao", duracao: "temporaria" },
+  ],
+
+  // "Caso gaste para receber bônus em um teste, cada PE gasto passa a somar +2
+  // no teste." DELTA de +1 por ponto sobre o estimulo_muscular.
+  // "Caso gaste para aprimorar uma ação de empurrar criatura ou arremessar
+  // objeto, a distância é aumentada em um valor igual ao seu Nível de Aptidão
+  // multiplicado por 3 metros." DELTA de mais cl · 1,5 sobre os cl · 1,5 da base.
+  estimulo_muscular_avancado: [
+    { canal: "bonusPericia",      expr: "estimulo_teste", duracao: "temporaria" },
+    { canal: "distanciaEmpurrao", expr: "cl * 1.5", quando: "estimulo_empurrao", duracao: "temporaria" },
+  ],
+
+  /* ---------- Energia Reversa: de bancada ---------- */
+
+  // A cura de Energia Reversa é AÇÃO COMUM, e por isso a aptidão base fica de
+  // fora do Motor. Quem a traz para cá é o Fluxo Constante: "no começo do seu
+  // turno, você pode se curar com energia reversa seguindo as mesmas regras da
+  // cura básica, porém como uma ação livre". Cura no início do turno É o canal
+  // de Regeneração, que já existe e já carrega dados, faces e parte fixa.
+  //
+  // A regra que ele importa, de Energia Reversa: "para cada ponto de energia
+  // reversa gasto, você se cura em 2d6, somando seu modificador de presença ou
+  // sabedoria ao total de cura. Nos níveis 10, 15 e 20, a cura aumenta em 1d6."
+  //
+  // ⚠ DUAS ASSUNÇÕES, as duas a confirmar:
+  //  1. Os degraus de 10, 15 e 20 sobem o dado POR PONTO gasto, e não uma vez
+  //     só. É o que "para cada ponto... a cura aumenta" sugere, mas o texto não
+  //     fecha a questão.
+  //  2. "Presença OU Sabedoria" entrou como o MAIOR dos dois. É a decisão C3 do
+  //     doc, que vale para umas dez habilidades e ainda não foi tomada. O
+  //     modificador entra UMA vez, e não por ponto, porque o texto diz "ao total
+  //     de cura".
+  fluxo_constante: [
+    { canal: "dadosRegeneracao", expr: "fluxo_per * (2 + (nd >= 10) + (nd >= 15) + (nd >= 20))", duracao: "temporaria" },
+    { canal: "regeneracaoDado",  expr: "6", quando: "fluxo_per", duracao: "temporaria" },
+    { canal: "regeneracao",      expr: "max(mod_presenca, mod_sabedoria)", quando: "fluxo_per", duracao: "temporaria" },
+  ],
+
+  // "O dado da cura se torna d8 e você passa a somar o dobro do seu modificador
+  // de presença ou sabedoria."
+  // O dado vale o MAIOR entre as fontes (é assim que o canal funciona), então o
+  // 8 simplesmente vence o 6 do Fluxo. O modificador entra como DELTA de mais
+  // uma vez, que somado ao do Fluxo dá o dobro pedido.
+  // O teto de PER ("1 + seu nível de aptidão", no lugar de 1 + metade) é da
+  // FAIXA da bancada, e sai do resolveCombate.
+  cura_amplificada: [
+    { canal: "regeneracaoDado", expr: "8", quando: "fluxo_per", duracao: "temporaria" },
+    { canal: "regeneracao",     expr: "max(mod_presenca, mod_sabedoria)", quando: "fluxo_per", duracao: "temporaria" },
   ],
 };

@@ -48,6 +48,8 @@ const POSTURA_OPCOES = POSTURAS_DE_COMBATE.map((p) => ({
  *                        especialização (Ataque Inconsequente), e aí basta uma.
  *   `requerTalento`    — o Talento está escolhido. Talento não é habilidade
  *                        de especialização e mora em outro catálogo.
+ *   `requerAptidao`    — a Aptidão Amaldiçoada está escolhida (2026-07-30).
+ *                        Terceiro catálogo, mesma ideia dos dois de cima.
  *   `requerEscolha`    — a OPÇÃO aninhada está escolhida (Manobra de
  *                        Empolgação, Estilo de Combate...). É o irmão do
  *                        ESCOLHA_EFEITOS: quem pegou Empolgação mas escolheu
@@ -423,6 +425,71 @@ export const COMBATE_ESTADOS = [
     },
     requerHabilidade: "res_corpo_de_aco",
   },
+
+  /* ---- Aptidões Amaldiçoadas (2026-07-30) ---- */
+  {
+    // "No começo de toda rodada você pode escolher pagar 2 PE. Caso o faça, você
+    // recebe RD contra todos os tipos de dano, exceto na alma."
+    id: "auraExcessiva",
+    label: "Aura Excessiva",
+    tipo: "bool",
+    requerAptidao: "aura_excessiva",
+  },
+  {
+    // "gastar uma quantidade de PE igual a 2 + o dobro do seu CL... para cada
+    // ponto gasto, você recebe 4 PVs temporários" (8 com Cobertura Avançada).
+    id: "cobrirSePE",
+    label: "Cobrir-se · PE Gasto",
+    tipo: "faixa",
+    min: 0,
+    max: (d) => 2 + 2 * (d?.aptidao?.efetivo?.cl ?? 0),
+    requerAptidao: "cobrir_se",
+  },
+  {
+    // "você pode gastar até uma quantidade de PE igual a seu Nível de Aptidão em
+    // Controle e Leitura, recebendo um bônus de +1 para cada PE gasto" (+2 com
+    // o Avançado).
+    id: "estimuloTeste",
+    label: "Estímulo Muscular · PE no Teste",
+    tipo: "faixa",
+    min: 0,
+    max: (d) => d?.aptidao?.efetivo?.cl ?? 0,
+    requerAptidao: "estimulo_muscular",
+  },
+  {
+    // "gastar 2 PE para aumentar a distância em um valor igual ao seu Nível de
+    // Aptidão em Controle e Leitura multiplicado por 1,5 metros."
+    id: "estimuloEmpurrao",
+    label: "Estímulo Muscular · Empurrão",
+    tipo: "bool",
+    requerAptidao: "estimulo_muscular",
+  },
+  {
+    // "Você pode gastar um máximo de pontos de energia reversa por vez igual a
+    // 1 + metade do seu nível de aptidão", que a Cura Amplificada sobe para
+    // "1 + seu nível de aptidão".
+    id: "fluxoPER",
+    label: "Fluxo Constante · PER Gasto",
+    tipo: "faixa",
+    min: 0,
+    max: (d) => {
+      const er = d?.aptidao?.efetivo?.er ?? 0;
+      const ids = d?.aptidoesEscolhidas ?? [];
+      return 1 + (ids.includes("cura_amplificada") ? er : Math.floor(er / 2))
+        + (ids.includes("cura_em_grupo") ? 2 : 0);
+    },
+    requerAptidao: "fluxo_constante",
+  },
+  {
+    // A expansão no ar. Vale para a que estiver marcada como ativa na aba
+    // Habilidades, porque expandir é uma de cada vez.
+    // ⚠ Basta a Incompleta para a linha aparecer: quem tem a Completa tem a
+    // Incompleta como pré-requisito, então a checagem de uma cobre as duas.
+    id: "dominioAtivo",
+    label: "Expansão de Domínio",
+    tipo: "bool",
+    requerAptidao: "expansao_de_dominio_incompleta",
+  },
 ];
 
 /** Quantos incrementos de 2 PE a Brutalidade já liberou, pelo nível de Lutador. */
@@ -464,9 +531,21 @@ export function mediaDadoEmpolgacao(nivel, aprimorada = false) {
  *   • `empolgacaoMaxima` — a habilidade de 12° que troca a tabela de dados,
  *     necessária para a média sair certa.
  */
+/**
+ * Estados que não vêm do catálogo, e sim da FICHA. Hoje só as Habilidades Únicas
+ * marcadas como ativas (uma por item equipado), mas o formato é o mesmo que as
+ * outras fontes ativas do pool exclusivo vão pedir quando existirem: um Feitiço
+ * Auxiliar e um Shikigami também são instâncias, e não linhas de catálogo.
+ *
+ * Só `bool`, de propósito. Instância se liga e se desliga, não tem faixa.
+ */
+const listaExtras = (params) => (Array.isArray(params?.estadosExtras) ? params.estadosExtras : [])
+  .filter((e) => e?.id);
+
 export function resolveCombate(creature, params = {}) {
   const c = (creature?.combate && typeof creature.combate === "object") ? creature.combate : {};
   const ativo = !!c.ativo;
+  const extras = listaExtras(params);
   // Insistência (10°): "até que realize um descanso longo, o seu nível máximo
   // de empolgação abaixa em 1". Não passa por canal porque é TETO de um estado,
   // e o estado é montado antes de o Motor rodar. Mesmo caso do brutalidadePE.
@@ -481,14 +560,17 @@ export function resolveCombate(creature, params = {}) {
 
   // Zerado é o padrão de TODO estado, e o que sai fora de combate. Vem do
   // catálogo para um estado novo não escapar da regra por esquecimento.
-  const zerado = Object.fromEntries(COMBATE_ESTADOS.map((e) => [
-    e.id, e.tipo === "bool" ? false : e.tipo === "opcao" ? null : 0,
-  ]));
+  const zerado = {
+    ...Object.fromEntries(COMBATE_ESTADOS.map((e) => [
+      e.id, e.tipo === "bool" ? false : e.tipo === "opcao" ? null : 0,
+    ])),
+    ...Object.fromEntries(extras.map((e) => [e.id, false])),
+  };
 
   if (!ativo) {
     return {
       ...zerado,
-      ativo: false, empolgacaoMax, dadoEmpolgacao: 0,
+      ativo: false, empolgacaoMax, dadoEmpolgacao: 0, estadosExtras: extras,
     };
   }
   const brutalidade = !!c.brutalidade;
@@ -509,13 +591,17 @@ export function resolveCombate(creature, params = {}) {
     adrenalinaAtletismo: params.adrenalinaAtletismo ?? 0,
     cacadorFeiticeiros: params.cacadorFeiticeiros ?? 0,
     corpoDeAco: params.corpoDeAco ?? 0,
+    cobrirSePE: params.cobrirSePE ?? 0,
+    estimuloTeste: params.estimuloTeste ?? 0,
+    fluxoPER: params.fluxoPER ?? 0,
   };
-  const out = { ...zerado, ativo: true, empolgacaoMax };
+  const out = { ...zerado, ativo: true, empolgacaoMax, estadosExtras: extras };
   for (const e of COMBATE_ESTADOS) {
     if (e.tipo === "bool") out[e.id] = !!c[e.id];
     else if (e.tipo === "opcao") out[e.id] = opcaoDe(e.id);
     else out[e.id] = intDe(c[e.id], e.min ?? 0, Math.max(e.min ?? 0, tetoFaixa[e.id] ?? 0));
   }
+  for (const e of extras) out[e.id] = !!c[e.id];
   const surto = !!c.surtoAdrenalina;
   return {
     ...out,
@@ -563,6 +649,15 @@ export function combateDslVars(combate = {}) {
     } else {
       out[nome] = boolDe(valor);
     }
+  }
+  // Os estados que vieram da ficha (Habilidade Única ativa, e no futuro Feitiço
+  // Auxiliar e Shikigami). Entram DEPOIS do catálogo: se um id colidisse com o
+  // de um estado de catálogo, quem manda é o catálogo, que é o vocabulário que o
+  // conteúdo escrito à mão usa.
+  for (const e of (Array.isArray(combate.estadosExtras) ? combate.estadosExtras : [])) {
+    const nome = varDoEstado(e.id);
+    if (nome in out) continue;
+    out[nome] = boolDe(combate[e.id]);
   }
   // Média do Dado de Empolgação, o que as Manobras somam.
   out.dado_empolgacao = Math.max(0, Math.trunc(Number(combate.dadoEmpolgacao) || 0));
