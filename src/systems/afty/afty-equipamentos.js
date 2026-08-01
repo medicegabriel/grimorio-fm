@@ -52,6 +52,49 @@ export function grauFeiticeiro(nd) {
 }
 
 /* ============================================================ */
+/* GRAU PARA CÁLCULO (redução por encantamento)                 */
+/* ============================================================ */
+/* Ficha de CRIATURA (autor, 2026-08-01): encantamento em arma, escudo ou
+   uniforme não é recomendado para criatura, e o preço dele é o grau. Cada
+   encantamento escolhido desce UM degrau na hora de calcular Dano, Acerto,
+   Defesa e RD. Uma arma de Grau Especial com um encantamento calcula como
+   Primeiro Grau, com dois calcula como Segundo, e assim por diante.
+
+   Duas coisas ficam DE FORA da conta:
+     • A Habilidade Única do Grau Especial (autor). Ela não é encantamento e
+       não desce nada, e o `grau` que a expressão dela lê é o REAL.
+     • Quantos encantamentos o item aceita, que segue vindo do grau real
+       (faEncantamentosPermitidos). Se descesse junto, a conta se morderia:
+       pegar um encantamento cortaria o limite que autorizou pegá-lo. */
+
+/** Rank do grau depois da redução por encantamento. Piso 0, que é "sem grau"
+    e não soma nada em lugar nenhum. */
+export function grauRankCalculo(grauValue, nEncantamentos = 0) {
+  const rank = AFTY_GRAUS.find((g) => g.value === grauValue)?.rank ?? 0;
+  return Math.max(0, rank - Math.max(0, Math.trunc(nEncantamentos ?? 0)));
+}
+
+/** O grau de um rank, ou null no rank 0 (que não é grau nenhum). */
+export const grauDoRank = (rank) => AFTY_GRAUS.find((g) => g.rank === rank) ?? null;
+
+/**
+ * Defesa de uma armadura vestida (autor, 2026-08-01, segunda passada): o CUSTO
+ * dela, mais 1 por grau de Ferramenta. Um Revestimento Robusto (custo 3) de
+ * Segundo Grau dá 3 + 3 = 6.
+ *
+ * ⚠ Substituiu o "+1 fixo para toda armadura" da primeira passada do mesmo dia.
+ * A coluna de Defesa da tabela de modificações (Leve +2, Robusto +6) segue sem
+ * valer: quem manda é o custo.
+ *
+ * O Uniforme Comum tem custo 0 (é o inicial), então ele dá 0 de Defesa.
+ *
+ * `defesaCriatura` no catálogo é a exceção declarada: hoje só Sob Medida a tem,
+ * porque ela custa 2 e dá 1 (o benefício dela é em Perícia).
+ */
+export const defesaDaArmadura = (def, grauDefesa = 0) =>
+  (def?.defesaCriatura ?? def?.custo ?? 0) + Math.max(0, grauDefesa);
+
+/* ============================================================ */
 /* ORÇAMENTO (INDICATIVO)                                       */
 /* ============================================================ */
 /* O autor definiu (2026-07-22) que o orçamento é INDICATIVO: a aba
@@ -499,7 +542,16 @@ export const ARMA_CATEGORIAS = [
 /* ============================================================ */
 /* Um uniforme só pode possuir uma modificação, sendo ela uma alteração
    completa da sua forma e base. Os espaços vêm da seção de carregamento,
-   não da tabela de modificações. */
+   não da tabela de modificações.
+
+   ⚠ Na ficha de CRIATURA (autor, 2026-08-01), o campo `defesa` desta tabela
+   NÃO é aplicado: a armadura dá o CUSTO dela de Defesa, mais o grau da
+   Ferramenta (ver defesaDaArmadura). O campo fica aqui porque é o texto do
+   livro e volta a valer na ficha de jogador.
+
+   A `penalidade` VOLTOU a valer (autor, 2026-08-01, segunda passada) e é
+   aplicada em testes de perícia que usam Destreza, cumulativa com a do
+   escudo. */
 
 export const UNIFORME_MODIFICACOES = [
   { id: "unif_comum", nome: "Uniforme Comum", defesa: 0, penalidade: 0, custo: 0, espacos: 0, inicial: true,
@@ -510,26 +562,39 @@ export const UNIFORME_MODIFICACOES = [
     descricao: "O uniforme tem uma quantidade demorada de revestimentos colocados, através de algumas placas e camadas adicionais, o que dá um peso considerável ao uniforme." },
   { id: "unif_revestimento_robusto", nome: "Revestimento Robusto", defesa: 6, penalidade: -4, custo: 3, espacos: 4,
     descricao: "Um revestimento pesado é implementado no uniforme, com placas fortes, camadas densas e a adição de peças que se assemelham a armaduras ou coletes, o que o dá um peso equivalente." },
-  { id: "unif_sob_medida", nome: "Sob Medida", defesa: 1, penalidade: 0, custo: 2, espacos: 0,
+  // ⚠ `defesaCriatura` é a EXCEÇÃO à regra do custo (autor, 2026-08-01): Sob
+  // Medida custa 2 mas dá 1 de Defesa, "já que ela já dá benefícios em Perícia".
+  // É a única modificação com o campo, e ele bate com o +1 da tabela do livro.
+  { id: "unif_sob_medida", nome: "Sob Medida", defesa: 1, defesaCriatura: 1, penalidade: 0, custo: 2, espacos: 0,
     descricao: "O uniforme é feito sob medida, encaixando-se perfeitamente no corpo do feiticeiro, beneficiando-o em acrobacias e destacando a sua agilidade. Enquanto estiver usando um uniforme sob medida, você recebe +2 em testes de Acrobacia e Furtividade.",
-    efeito: { pericia: { acrobacia: 2, furtividade: 2 }, aplicado: false } },
+    efeito: { pericia: { acrobacia: 2, furtividade: 2 }, aplicado: true } },
 ];
 
 /* ============================================================ */
 /* ESCUDOS                                                      */
 /* ============================================================ */
-/* A RD do escudo é RD FÍSICO (autor, 2026-07-22), não RD Geral.
+/* A RD do escudo é RD GERAL (autor, 2026-08-01), e não RD Física como valia
+   desde 2026-07-22. As palavras dele foram "RD Geral, exceto Alma", que é a
+   definição EXATA da RD Geral no Afty (é por isso que o Dano na Alma ganhou
+   canal próprio em 2026-07-29), então o campo troca de destino sem precisar de
+   canal novo. O campo se chama `rdEscudo` justamente para não sugerir tipo.
+
+   A RD do grau da Ferramenta SOMA com a do escudo comum: um Escudo Pesado (6)
+   de Grau Especial (5) dá 11 de RD Geral e -4 de penalidade (exemplo do autor).
+
    Todos ocupam 2 espaços pela regra geral de carregamento.
-   O dano do escudo é de impacto (autor, o livro não diz). */
+   O dano do escudo é de impacto (autor, o livro não diz).
+   A penalidade É aplicada, em testes de perícia que usam Destreza, e é
+   cumulativa com a do uniforme. */
 
 export const ESCUDOS = [
-  { id: "esc_pequeno", nome: "Escudo Pequeno", dano: { dado: "1d3", tipo: "im" }, rdFisico: 2, penalidade: 0, custo: 2, espacos: 2, ocupaMao: false,
+  { id: "esc_pequeno", nome: "Escudo Pequeno", dano: { dado: "1d3", tipo: "im" }, rdEscudo: 2, penalidade: 0, custo: 2, espacos: 2, ocupaMao: false,
     descricao: "Um escudo pequeno, otimizado para ser preso ao braço, mantendo uma mão livre enquanto dá um impulso na guarda. O escudo pequeno não ocupa uma das suas mãos." },
-  { id: "esc_leve", nome: "Escudo Leve", dano: { dado: "1d4", tipo: "im" }, rdFisico: 2, penalidade: -1, custo: 1, espacos: 2, ocupaMao: true,
+  { id: "esc_leve", nome: "Escudo Leve", dano: { dado: "1d4", tipo: "im" }, rdEscudo: 2, penalidade: -1, custo: 1, espacos: 2, ocupaMao: true,
     descricao: "Um pequeno escudo, leve em peso e capaz de auxiliar na defesa de golpes mais simples." },
-  { id: "esc_medio", nome: "Escudo Médio", dano: { dado: "1d6", tipo: "im" }, rdFisico: 4, penalidade: -2, custo: 2, espacos: 2, ocupaMao: true,
+  { id: "esc_medio", nome: "Escudo Médio", dano: { dado: "1d6", tipo: "im" }, rdEscudo: 4, penalidade: -2, custo: 2, espacos: 2, ocupaMao: true,
     descricao: "Um escudo de porte médio, equilibrando uma boa defesa com um sacrifício mediano de sua agilidade." },
-  { id: "esc_pesado", nome: "Escudo Pesado", dano: { dado: "1d8", tipo: "im" }, rdFisico: 6, penalidade: -4, custo: 3, espacos: 2, ocupaMao: true,
+  { id: "esc_pesado", nome: "Escudo Pesado", dano: { dado: "1d8", tipo: "im" }, rdEscudo: 6, penalidade: -4, custo: 3, espacos: 2, ocupaMao: true,
     descricao: "Um escudo maior e pesado, cobrindo uma parte considerável do corpo, em troca de uma certa dificuldade no seu manejo." },
 ];
 
@@ -550,11 +615,14 @@ export const ESCUDOS = [
    O que É aplicado no motor:
      • RD Física do escudo por grau (SOMA com a RD do escudo comum de base,
        decisão do autor 2026-07-22).
-   O que NÃO é aplicado (dado inerte, mesmo bloqueio das aptidões/itens):
-     • Bônus de Arma, que soma às rolagens de dano da arma (dano de arma não é
-       stat da ficha, só é exibido no item, igual às armas comuns).
-     • Efeitos mecânicos dos Encantamentos (Reforçado +2 RD, Blindado +2 Defesa,
-       etc.). Ficam como texto até a "passada de efeitos" do lado da criatura. */
+     • Defesa do uniforme por grau, somada ao +1 de toda armadura (2026-08-01).
+     • Acerto da arma por grau, na linha de dano daquela arma (2026-08-01). O
+       dano fixo por grau já vinha da DANO_ADICIONAL_ARMA.
+     • Os quatro encantamentos com efeito de stat, e a Habilidade Única.
+   Os três primeiros usam o grau de CÁLCULO, que desce um degrau por
+   encantamento escolhido (ver grauRankCalculo).
+   O que NÃO é aplicado:
+     • Encantamentos situacionais ou de combate, que seguem como texto. */
 
 /** Processo de criação por grau: bônus de treinamento necessário e CD do teste.
     São necessárias duas rolagens, Ofício (Ferreiro) e Ofício (Canalizador),
@@ -605,38 +673,36 @@ export const faTemHabilidadeUnica = (grauValue) => grauValue === "especial";
 /* ---------- MOTOR DE AUTOMAÇÃO (efeitos da Ferramenta) ---------- */
 /* Efeitos estáticos de ficha que uma Ferramenta aplica ENQUANTO EQUIPADA (a
    arma empunhada, o escudo em guarda, o uniforme vestido), escritos como
-   fórmulas da DSL (`{ canal, expr }`), no mesmo espírito do Motor de Automação
-   das Invocações. Cada `expr` é avaliada num contexto com bt, nd, grau (rank da
-   Ferramenta), atributos e modificadores. Alimenta os encantamentos numéricos e
-   a Habilidade Única do Grau Especial (editada pelo jogador).
+   fórmulas da DSL (`{ canal, alvo?, expr }`), no mesmo espírito do Motor de
+   Automação das Invocações.
 
-   Só cabem aqui os canais que o motor do Afty realmente calcula. Efeitos
-   situacionais, por rodada, reação, ou que dependem de stat inexistente
-   (Iniciativa, Acerto, manobras, TRs, Perícias, RD por tipo elemental) seguem
-   como texto na descrição do encantamento.
-
-   ⚠ Esta lista é dos ENCANTAMENTOS, e só deles (2026-07-30). A Habilidade Única
-   saiu daqui e passou a escrever no catálogo INTEIRO do Motor (`EFEITO_CANAIS`
-   de afty-efeitos.js), porque ela é criada com o Narrador e não tem por que ser
-   mais pobre que a Técnica, que já escrevia nos 48 canais. Foi o que destravou o
-   "+8 de Acerto vindo da arma" do exemplo do autor: `bonusAcerto` nunca existiu
-   nesta lista de sete.
+   ⚠ Em 2026-08-01 os ENCANTAMENTOS seguiram a Habilidade Única e passaram a
+   escrever no catálogo INTEIRO do Motor. A lista `EQUIP_EFEITO_CANAIS` de sete
+   canais MORREU: ela era o teto que mantinha metade dos encantamentos como
+   texto morto, porque Perícia, Manobra, TR, Iniciativa, Acerto e Dano não
+   cabiam nela. Nada mais valida canal aqui: quem valida é o `aplicarEfeitos`,
+   que já ignora canal desconhecido com aviso.
 
    Este arquivo NÃO importa afty-efeitos.js de propósito: afty-efeitos importa
    afty-combate, que importa afty-habilidades, que importa este arquivo. A seta
-   de volta fecharia o ciclo. Por isso o canal da Habilidade Única passa cru, e
-   quem valida é o `aplicarEfeitos`, que já ignora canal desconhecido com aviso. */
-export const EQUIP_EFEITO_CANAIS = [
-  { value: "defesa",   label: "Defesa" },
-  { value: "rdFisico", label: "RD Física" },
-  { value: "rdGeral",  label: "RD Geral" },
-  { value: "cd",       label: "CD Amaldiçoada" },
-  { value: "movimento", label: "Deslocamento" },
-  { value: "pvMax",    label: "PV máximo" },
-  { value: "peMax",    label: "PE máximo" },
-];
-export const EQUIP_EFEITO_CANAL_LABEL = Object.fromEntries(EQUIP_EFEITO_CANAIS.map((c) => [c.value, c.label]));
-const EQUIP_CANAIS_VALIDOS = new Set(EQUIP_EFEITO_CANAIS.map((c) => c.value));
+   de volta fecharia o ciclo. Por isso o canal passa cru.
+
+   Dois campos são deste arquivo e não chegam ao Motor:
+     alvoItem: true -> o alvo é o id do item (canais de `fonteDano`, que miram
+                       "esta arma" e não uma categoria).
+   E dois PSEUDO-CANAIS, resolvidos aqui porque não são stat de ficha:
+     acertoArma      -> Acerto só quando manejando ESTA arma. O canal
+                        `bonusAcerto` do Motor mira categoria (corpo, distância),
+                        e usá-lo faria o bônus vazar para as outras armas.
+     penalidadeEquip -> quanto a penalidade de Destreza DESTE item é reduzida
+                        (Polido no escudo, Ajustado no uniforme). */
+
+/** Contexto da DSL de um item, além do que dslEquipCtxBase já dá. */
+const dslItemVars = (def, grauRank) => ({
+  grau: grauRank,
+  custo: def?.custo ?? 0,
+  penalidade: def?.penalidade ?? 0,
+});
 
 /**
  * Dois canais desta lista têm nome diferente no Motor, e uma Habilidade Única
@@ -688,7 +754,8 @@ export const ENCANTAMENTOS_ARMA = [
   { id: "enc_arma_armazenadora", nome: "Armazenadora",
     descricao: "A ferramenta amaldiçoada é capaz de guardar energia e deixar a sua disposição. Durante um descanso longo você pode armazenar até 5 PE na arma, não gastando estes pontos de energia pois armazenou eles durante um longo período. Você pode, desde que esteja empunhando a arma, recuperar os cinco pontos de energia armazenados nela. Só é possível recuperar energia amaldiçoada de uma arma armazenadora por vez." },
   { id: "enc_arma_balanceada", nome: "Balanceada",
-    descricao: "Uma ferramenta perfeitamente balanceada para permitir uma mobilidade maior. Enquanto empunhar a arma você recebe um bônus de +2 em testes de manobras." },
+    descricao: "Uma ferramenta perfeitamente balanceada para permitir uma mobilidade maior. Enquanto empunhar a arma você recebe um bônus de +2 em testes de manobras.",
+    efeitos: [{ canal: "bonusManobra", expr: "2" }] },
   { id: "enc_arma_canalizadora", nome: "Canalizadora",
     descricao: "A ferramenta amaldiçoada serve como uma forma de canalizar a sua energia amaldiçoada. Enquanto empunhar a arma, a sua CD Amaldiçoada aumenta em 2.",
     efeitos: [{ canal: "cd", expr: "2" }] },
@@ -698,13 +765,15 @@ export const ENCANTAMENTOS_ARMA = [
     requisitos: [{ tipo: "categoriaArma", categorias: ["distancia"] }] },
   { id: "enc_arma_certeira", nome: "Certeira",
     descricao: "A arma se torna perfeitamente balanceada para golpes certeiros. Reduza a margem de crítico da arma em 1. Uma arma não pode ser certeira e destruidora ao mesmo tempo.",
-    exclusivoCom: ["enc_arma_destruidora"] },
+    exclusivoCom: ["enc_arma_destruidora"],
+    efeitos: [{ canal: "margemCritico", alvoItem: true, expr: "1" }] },
   { id: "enc_arma_compartimento", nome: "Compartimento",
     descricao: "Um compartimento é criado na arma, o qual pode armazenar um item de Mistura que seja um óleo ou um veneno que possa ser aplicado na arma. Durante um combate, você pode usar a arma com a mistura armazenada como uma ação livre, consumindo o veneno ou óleo imediatamente." },
   { id: "enc_arma_complementar", nome: "Complementar",
     descricao: "A arma se torna perfeita para suas capacidades e forças, complementando com eficiência. Enquanto empunhar esta arma o portador da arma recebe +2 na sua CD de Especialização e de Estilo Marcial." },
   { id: "enc_arma_cruel", nome: "Cruel",
-    descricao: "A arma passa a ter espinhos e partes que aumentam o perigo dela. Uma arma com esta melhoria recebe +3 em rolagens de dano." },
+    descricao: "A arma passa a ter espinhos e partes que aumentam o perigo dela. Uma arma com esta melhoria recebe +3 em rolagens de dano.",
+    efeitos: [{ canal: "danoBonus", alvoItem: true, expr: "3" }] },
   { id: "enc_arma_defensora", nome: "Defensora",
     descricao: "Esta arma lhe concede uma capacidade de defesa adicional. A arma recebe o traço de arma: Aparar. Se já possuir o traço o bônus em Defesa fornecido por Aparar aumenta em 1.",
     preReq: "Esta melhoria apenas pode ser aplicada em armas corpo a corpo",
@@ -731,19 +800,24 @@ export const ENCANTAMENTOS_ARMA = [
     preReq: "Esta melhoria apenas pode ser aplicada em armas corpo a corpo",
     requisitos: [{ tipo: "categoriaArma", categorias: ["corpo"] }] },
   { id: "enc_arma_otimizada", nome: "Otimizada",
-    descricao: "Uma arma cujo saque foi otimizado, para ser mais ágil e rápido. Sacar uma arma Otimizada é uma Ação Livre e, enquanto empunhar a arma, o portador recebe +2 em testes de Iniciativa." },
+    descricao: "Uma arma cujo saque foi otimizado, para ser mais ágil e rápido. Sacar uma arma Otimizada é uma Ação Livre e, enquanto empunhar a arma, o portador recebe +2 em testes de Iniciativa.",
+    efeitos: [{ canal: "iniciativa", expr: "2" }] },
   { id: "enc_arma_penetrante", nome: "Penetrante",
-    descricao: "Uma ferramenta preparada para penetrar através de resistências. Todo ataque com uma ferramenta penetrante ignora redução de dano em um valor igual ao bônus de treinamento do portador." },
+    descricao: "Uma ferramenta preparada para penetrar através de resistências. Todo ataque com uma ferramenta penetrante ignora redução de dano em um valor igual ao bônus de treinamento do portador.",
+    efeitos: [{ canal: "ignoraRD", alvoItem: true, expr: "bt" }] },
   { id: "enc_arma_poderosa", nome: "Poderosa",
     descricao: "Adiciona +2 as rolagens de dano da arma.",
     preReq: "Ter Cruel na arma",
-    requisitos: [{ tipo: "encantamento", encantamento: "enc_arma_cruel" }] },
+    requisitos: [{ tipo: "encantamento", encantamento: "enc_arma_cruel" }],
+    efeitos: [{ canal: "danoBonus", alvoItem: true, expr: "2" }] },
   { id: "enc_arma_potente", nome: "Potente",
     descricao: "Adiciona mais um dado de dano ao dano padrão da arma.",
     preReq: "Primeiro Grau",
-    requisitos: [{ tipo: "grauMin", grauMin: "primeiro" }] },
+    requisitos: [{ tipo: "grauMin", grauMin: "primeiro" }],
+    efeitos: [{ canal: "dadosDano", alvoItem: true, expr: "1" }] },
   { id: "enc_arma_precisa", nome: "Precisa",
-    descricao: "A arma foi modificada e trabalhada para permitir um manejo mais preciso. Você recebe um bônus de +2 em jogadas de ataque manejando esta arma." },
+    descricao: "A arma foi modificada e trabalhada para permitir um manejo mais preciso. Você recebe um bônus de +2 em jogadas de ataque manejando esta arma.",
+    efeitos: [{ canal: "acertoArma", expr: "2" }] },
   { id: "enc_arma_reluzente", nome: "Reluzente",
     descricao: "Sua arma reluz, distraindo o inimigo. Enquanto empunhar esta arma, seu portador recebe +2 em testes para fintar e quando tem um acerto crítico com esta arma contra uma criatura ela deve realizar um TR contra a CD de especialização ou estilo marcial do portador, em uma falha ela fica Desprevenida (e se já estiver, fica Cega) por uma rodada. Enquanto estiver empunhando esta arma ela causa -5 de penalidade em testes de Furtividade em qualquer lugar minimamente iluminado." },
   { id: "enc_arma_retorno", nome: "Retorno",
@@ -778,20 +852,34 @@ export const ENCANTAMENTOS_ESCUDO = [
     descricao: "Como uma ação bônus, o escudo se fragmenta em uma versão maior dele feito de pura energia. Escolha uma segunda criatura dentro de 1,5 metros para receber os benefícios do escudo." },
   { id: "enc_esc_intangivel", nome: "Intangível",
     descricao: "O escudo se manifesta como uma mera sombra, uma torrente de água sempre em movimento ou qualquer outro meio que permita ao portador mover sua mão com liberdade. Utilizar um escudo com esta propriedade não ocupa a mão do portador para propósitos de habilidades, mas ainda não o permite empunhar ou carregar outros objetos." },
-  { id: "enc_esc_isolante", nome: "Isolante",
-    descricao: "A redução de dano do escudo passa também a ser aplicado a um tipo de dano elemental à sua escolha. Esta propriedade pode ser pega diversas vezes para tipos de dano diferentes." },
+  // ⚠ "Isolante" do ESCUDO foi REMOVIDO em 2026-08-01, a pedido do autor. Ele
+  // dizia "a redução de dano do escudo passa também a ser aplicada a um tipo de
+  // dano elemental à sua escolha", e virou letra morta quando a RD do escudo
+  // passou a ser RD Geral, que já cobre todo tipo menos alma. O Isolante de
+  // UNIFORME é outro encantamento, com outro texto, e continua existindo.
   { id: "enc_esc_polido", nome: "Polido",
-    descricao: "O escudo foi polido, removendo pesos desnecessários e o dando uma forma e composição mais leve. A penalidade do escudo é reduzida em 2." },
+    descricao: "O escudo foi polido, removendo pesos desnecessários e o dando uma forma e composição mais leve. A penalidade do escudo é reduzida em 2.",
+    efeitos: [{ canal: "penalidadeEquip", expr: "2" }] },
   { id: "enc_esc_reforcado", nome: "Reforçado",
     descricao: "Recebe 2 de RD adicional contra dano físico.",
-    efeitos: [{ canal: "rdFisico", expr: "2" }] },
+    // ⚠ RD GERAL, e não RD Física, a pedido do autor (2026-08-01), mesmo o
+    // texto dizendo "contra dano físico": a RD do escudo inteira virou Geral, e
+    // o adicional dela acompanha.
+    efeitos: [{ canal: "rdGeral", expr: "2" }] },
 ];
 
 export const ENCANTAMENTOS_UNIFORME = [
   { id: "enc_unif_aeronauta", nome: "Aeronauta",
     descricao: "Seu uniforme possui uma espécie de capa ou tecido extra que lhe permite planar no ar normalmente. Enquanto estiver caindo, como uma reação o portador pode puxar suas roupas e planar no ar, no final dos turnos do portador ele cai apenas 6 metros até chegar ao chão ou alguma superfície." },
   { id: "enc_unif_ajustado", nome: "Ajustado",
-    descricao: "Mesmo com modificações, o uniforme é ajustado perfeitamente para o seu próprio corpo, requerendo um sacrifício menor da agilidade. Ao utilizar um uniforme ajustado, a penalidade dele é reduzida em 1, caso possua. Se o uniforme já possuir 0 de penalidade ele concede um bônus em testes de Furtividade de +2." },
+    descricao: "Mesmo com modificações, o uniforme é ajustado perfeitamente para o seu próprio corpo, requerendo um sacrifício menor da agilidade. Ao utilizar um uniforme ajustado, a penalidade dele é reduzida em 1, caso possua. Se o uniforme já possuir 0 de penalidade ele concede um bônus em testes de Furtividade de +2.",
+    // As duas metades da regra numa expressão só: a redução vale sempre (num
+    // uniforme sem penalidade ela não tem o que reduzir) e o bônus de
+    // Furtividade só existe quando a penalidade base é zero.
+    efeitos: [
+      { canal: "penalidadeEquip", expr: "1" },
+      { canal: "bonusPericia", alvo: "furtividade", expr: "2 * (penalidade == 0)" },
+    ] },
   { id: "enc_unif_blindado", nome: "Blindado",
     descricao: "Adiciona-se uma blindagem no uniforme, eliminando as possíveis brechas. A Defesa concedida pelo uniforme aumenta em 2.",
     efeitos: [{ canal: "defesa", expr: "2" }] },
@@ -802,7 +890,8 @@ export const ENCANTAMENTOS_UNIFORME = [
   { id: "enc_unif_estimulante", nome: "Estimulante", usaCargas: true,
     descricao: "O uniforme passa a contar com um compartimento cheio de estimulantes, os quais podem ser diretamente aplicados no usuário. Este Encantamento possui cargas. Você pode gastar uma reação e uma carga para conceder vantagem a uma rolagem de Fortitude, Reflexos ou Vontade que esteja fazendo." },
   { id: "enc_unif_furtivo", nome: "Furtivo",
-    descricao: "Um uniforme que busca ocultar o fluxo de energia de um feiticeiro, além de ser mais fácil de se camuflar e eliminar o barulho de passos. O portador de um uniforme com esta melhoria recebe um bônus em rolagens de Furtividade igual ao custo do uniforme." },
+    descricao: "Um uniforme que busca ocultar o fluxo de energia de um feiticeiro, além de ser mais fácil de se camuflar e eliminar o barulho de passos. O portador de um uniforme com esta melhoria recebe um bônus em rolagens de Furtividade igual ao custo do uniforme.",
+    efeitos: [{ canal: "bonusPericia", alvo: "furtividade", expr: "custo" }] },
   { id: "enc_unif_impulso", nome: "Impulso", usaCargas: true,
     descricao: "Você propulsiona o uniforme por meio de uma explosão de energia amaldiçoada. Este Encantamento possui cargas. O portador pode gastar uma carga e uma ação de movimento, então ele deve traçar uma linha com tamanho igual ao dobro do movimento dele. Ele se move até o final da linha. Se o movimento do portador por meio da linha passar por uma estrutura, objeto ou criatura ela deve realizar um TR de Reflexos e recebe 1d10 de dano de impacto para cada 6 metros percorrido até ela em uma falha ou metade disso em um sucesso.",
     preReq: "Propulsor",
@@ -810,11 +899,13 @@ export const ENCANTAMENTOS_UNIFORME = [
   { id: "enc_unif_isolante", nome: "Isolante",
     descricao: "Seu uniforme é feito de materiais únicos, propícios para resistir a altas e baixas temperaturas. Você recebe 5 de RD contra dano Queimante e Congelante." },
   { id: "enc_unif_marcial", nome: "Marcial",
-    descricao: "Pensado e projetado perfeitamente para artes marciais. Um uniforme marcial concede um bônus de +2 em testes para realizar manobras." },
+    descricao: "Pensado e projetado perfeitamente para artes marciais. Um uniforme marcial concede um bônus de +2 em testes para realizar manobras.",
+    efeitos: [{ canal: "bonusManobra", expr: "2" }] },
   { id: "enc_unif_material_pesado", nome: "Material Pesado",
     descricao: "Este uniforme possui mais camadas de tecido, pedaços de metal ou uma capa embutida nele. Este uniforme concede +2 em TRs de Fortitude.",
     preReq: "O uniforme precisa possuir revestimento médio ou robusto",
-    requisitos: [{ tipo: "refUniforme", refIds: ["unif_revestimento_medio", "unif_revestimento_robusto"] }] },
+    requisitos: [{ tipo: "refUniforme", refIds: ["unif_revestimento_medio", "unif_revestimento_robusto"] }],
+    efeitos: [{ canal: "bonusTR", alvo: "fortitude", expr: "2" }] },
   { id: "enc_unif_propulsor", nome: "Propulsor",
     descricao: "Ao imbuir o uniforme com energia amaldiçoada, o fluxo constante parece acelerar o usuário. Enquanto vestir o uniforme o usuário recebe 3 metros de Deslocamento adicional.",
     efeitos: [{ canal: "movimento", expr: "3" }] },
@@ -1218,11 +1309,24 @@ export function resolveFerramenta(entrada, def, bt = 2, ctxBase = null) {
   const escolhidos = Array.isArray(fa.encantamentos) ? fa.encantamentos : [];
   const permitidos = faEncantamentosPermitidos(tipo, grauValue);
 
-  const bonusArma = tipo === "arma" ? (FA_BONUS_ARMA[grauValue] ?? 0) : 0;
-  const rdGrau = tipo === "escudo" ? (FA_RD_ESCUDO[grauValue] ?? 0) : 0;
+  // Grau PARA CÁLCULO: cada encantamento escolhido desce um degrau (ver
+  // grauRankCalculo). O `permitidos` acima segue no grau REAL, de propósito.
+  const rankCalculo = grauRankCalculo(grauValue, escolhidos.length);
+  const grauCalculo = grauDoRank(rankCalculo);
 
-  // Contexto da DSL para este item (o grau é o rank da Ferramenta).
-  const ctx = { ...(ctxBase ?? { bt, nd: 1 }), grau: grauMeta.rank };
+  // Os três benefícios de grau são o próprio rank: +1 por degrau. Bate com as
+  // tabelas FA_BONUS_ARMA e FA_RD_ESCUDO do livro, e o rank ainda cobre o 0,
+  // que é onde a redução por encantamento chega e as tabelas não iam.
+  // Arma: o rank é o ACERTO. O dano fixo por grau é outra tabela, a
+  // DANO_ADICIONAL_ARMA de afty-pericias.js, que a linha de dano consome.
+  const bonusArma = tipo === "arma" ? rankCalculo : 0;
+  const rdGrau = tipo === "escudo" ? rankCalculo : 0;
+  const defesaGrau = tipo === "uniforme" ? rankCalculo : 0;
+
+  // Contexto da DSL para este item. O grau aqui é o rank REAL, e não o de
+  // cálculo: quem lê esta variável é a Habilidade Única, que o autor deixou
+  // fora da redução por encantamento.
+  const ctx = { ...(ctxBase ?? { bt, nd: 1 }), ...dslItemVars(def, grauMeta.rank) };
 
   // Cada encantamento escolhido com o estado dos pré-requisitos e da exclusão.
   const encantamentos = escolhidos.map((id) => {
@@ -1254,11 +1358,33 @@ export function resolveFerramenta(entrada, def, bt = 2, ctxBase = null) {
   // Encantamentos (só os que ATENDEM ao pré-requisito) + a Habilidade Única do
   // Grau Especial (editada pelo jogador). Resolvidos aqui, aplicados no motor
   // só quando a Ferramenta está equipada.
-  const efeitos = [];
+  const efeitos = [];        // o que vai virar efeito de MOTOR
+  let acertoEncantamento = 0;  // pseudo-canal acertoArma
+  let reducaoPenalidade = 0;   // pseudo-canal penalidadeEquip
+  const fontesAcerto = [];
   for (const x of encantamentos) {
     if (!x.atende) continue;
     for (const ef of x.enc?.efeitos ?? []) {
-      efeitos.push({ canal: ef.canal, valor: evalNumber(ef.expr, ctx), origem: x.enc.nome, fonte: "encantamento" });
+      const valor = evalNumber(ef.expr, ctx);
+      // Efeito que resolve em zero não vira linha: é o caso do Ajustado num
+      // uniforme que já tem penalidade, cuja metade de Furtividade não vale.
+      if (!valor) continue;
+      if (ef.canal === "acertoArma") {
+        acertoEncantamento += valor;
+        fontesAcerto.push({ label: x.enc.nome, valor });
+        continue;
+      }
+      if (ef.canal === "penalidadeEquip") {
+        reducaoPenalidade += valor;
+        continue;
+      }
+      efeitos.push({
+        canal: ef.canal,
+        ...(ef.alvoItem ? { alvo: def?.id } : ef.alvo ? { alvo: ef.alvo } : {}),
+        valor,
+        origem: x.enc.nome,
+        fonte: "encantamento",
+      });
     }
   }
   // ⚠ A Habilidade Única NÃO entra mais no `efeitos` daqui (2026-07-30). Ela é
@@ -1278,14 +1404,25 @@ export function resolveFerramenta(entrada, def, bt = 2, ctxBase = null) {
     valor: evalNumber(ef.expr ?? "", ctx),
     ok: validateExpression(ef.expr ?? "").ok,
   }));
-  const efeitosPorCanal = {};
-  for (const ef of efeitos) efeitosPorCanal[ef.canal] = (efeitosPorCanal[ef.canal] ?? 0) + ef.valor;
+  // Penalidade DESTE item já com o Polido / Ajustado descontados. A redução
+  // nunca inverte o sinal: reduzir -1 em 2 dá 0, e não +1.
+  const penalidadeBase = def?.penalidade ?? 0;
+  const penalidade = Math.min(0, penalidadeBase + reducaoPenalidade);
 
   return {
     grau: grauValue,
     grauLabel: grauMeta.label,
+    rankCalculo,
+    grauCalculoLabel: grauCalculo?.label ?? "Sem grau",
+    reduzido: rankCalculo < grauMeta.rank,
     bonusArma,
+    // Acerto total desta arma: o grau mais o que os encantamentos somam.
+    acertoArma: bonusArma + acertoEncantamento,
+    fontesAcerto,
     rdGrau,
+    defesaGrau,
+    penalidade,
+    reducaoPenalidade,
     permitidos,
     escolhidos,
     encantamentos,
@@ -1295,8 +1432,7 @@ export function resolveFerramenta(entrada, def, bt = 2, ctxBase = null) {
     temHabUnica,
     habilidadeUnica: fa.habilidadeUnica ?? "",
     habilidadeEfeitos,   // resolvidos, com expr para a edição
-    efeitos,             // lista achatada (encantamento + habilidade)
-    efeitosPorCanal,     // soma por canal (aplicada quando equipado)
+    efeitos,             // efeitos de encantamento, prontos para o Motor
     avisos,
   };
 }
@@ -1321,12 +1457,8 @@ export function resolveEquipamentos(creature, bt = 2) {
 
   let espacosUsados = 0;
   let uniformeDefesa = 0;
-  let rdFisico = 0;
   let rdEscudoBase = 0;
   let rdGeralBonus = 0;
-  let defesaBonus = 0;
-  let movimentoBonus = 0;
-  let peBonus = 0;
   let penalidadeDestreza = 0;
   let hpMaxBonus = 0;
   let cdBonus = 0;
@@ -1336,6 +1468,11 @@ export function resolveEquipamentos(creature, bt = 2) {
   // comentário no resolveFerramenta).
   const efeitosUnica = [];
   const estadosUnica = [];
+  // Encantamentos: também viram efeito do MOTOR desde 2026-08-01, e não mais
+  // uma soma em escalar por canal. Foi o que destravou Perícia, Manobra, TR,
+  // Iniciativa e Dano, que não cabiam nos sete escalares de antes. Não levam
+  // `exclusivo`: encantamento soma normal, não é fonte do pool exclusivo.
+  const efeitosEncantamento = [];
 
   // Contexto da DSL dos efeitos de Ferramenta (Motor de Automação).
   const ctxBase = dslEquipCtxBase(creature, bt);
@@ -1360,16 +1497,23 @@ export function resolveEquipamentos(creature, bt = 2) {
     if (equipado) {
       if (e.tipo === "uniforme") {
         uniformesEquipados += 1;
-        uniformeDefesa += def.defesa ?? 0;
-        penalidadeDestreza += def.penalidade ?? 0;
+        // A armadura dá o CUSTO dela de Defesa, mais 1 por grau da Ferramenta
+        // (autor, 2026-08-01). A tabela de Defesa por modificação não entra.
+        uniformeDefesa += defesaDaArmadura(def, fa?.defesaGrau ?? 0);
+        // Com Ferramenta, a penalidade é a já reduzida pelo Ajustado.
+        penalidadeDestreza += fa ? fa.penalidade : (def.penalidade ?? 0);
       } else if (e.tipo === "escudo") {
-        rdFisico += def.rdFisico ?? 0;
+        // ⚠ A RD do escudo é RD GERAL, e não RD Física (autor, 2026-08-01).
+        // "RD Geral" no Afty já significa todo tipo de dano MENOS alma, que é
+        // exatamente o que o autor pediu, então não precisa de canal novo.
+        rdGeralBonus += def.rdEscudo ?? 0;
         // O "aumento BASE em RD do escudo", separado do que a Ferramenta soma.
         // O Especialista em Escudo (Combatente 4°) lê justamente essa parcela.
-        rdEscudoBase += def.rdFisico ?? 0;
-        // RD Física por grau da Ferramenta: SOMA com a do escudo comum (autor).
-        if (fa) rdFisico += fa.rdGrau;
-        penalidadeDestreza += def.penalidade ?? 0;
+        rdEscudoBase += def.rdEscudo ?? 0;
+        // RD por grau da Ferramenta: SOMA com a do escudo comum (autor).
+        if (fa) rdGeralBonus += fa.rdGrau;
+        // Com Ferramenta, a penalidade é a já reduzida pelo Polido.
+        penalidadeDestreza += fa ? fa.penalidade : (def.penalidade ?? 0);
       }
       // Efeitos de item, só os que o motor sabe aplicar.
       const ef = def.efeito;
@@ -1380,6 +1524,14 @@ export function resolveEquipamentos(creature, bt = 2) {
           for (const [k, v] of Object.entries(ef.atributo)) {
             if (k in attrBonus) attrBonus[k] += v;
           }
+        }
+        // Bônus de perícia de item. Ligado em 2026-08-01: as Perícias existem
+        // desde 2026-07-29 e este dado ficou inerte esse tempo todo.
+        for (const [pericia, valor] of Object.entries(ef.pericia ?? {})) {
+          efeitosEncantamento.push({
+            canal: "bonusPericia", alvo: pericia, expr: String(valor),
+            origem: e.uid, nome: def.nome,
+          });
         }
       }
       // Habilidade Única: vira efeito do MOTOR, com a marca do pool exclusivo.
@@ -1403,20 +1555,18 @@ export function resolveEquipamentos(creature, bt = 2) {
         }
         if (temAtiva) estadosUnica.push({ id: estadoDaUnica(e.uid), label: `${def.nome} (Habilidade Única)` });
       }
-      // Efeitos de Ferramenta (Motor de Automação): só enquanto equipada.
-      if (fa) {
-        for (const [canal, val] of Object.entries(fa.efeitosPorCanal)) {
-          switch (canal) {
-            case "defesa":    defesaBonus += val; break;
-            case "rdFisico":  rdFisico += val; break;
-            case "rdGeral":   rdGeralBonus += val; break;
-            case "cd":        cdBonus += val; break;
-            case "movimento": movimentoBonus += val; break;
-            case "pvMax":     hpMaxBonus += val; break;
-            case "peMax":     peBonus += val; break;
-            default: break;
-          }
-        }
+      // Encantamentos (Motor de Automação): só enquanto a Ferramenta está
+      // equipada. Viajam com o valor já resolvido, como literal, porque a
+      // expressão lê `grau`, `custo` e `penalidade`, que são do item e não
+      // existem no contexto da criatura.
+      for (const ex of fa?.efeitos ?? []) {
+        efeitosEncantamento.push({
+          canal: ex.canal,
+          ...(ex.alvo ? { alvo: ex.alvo } : {}),
+          expr: String(ex.valor),
+          origem: e.uid,
+          nome: `${def.nome} (${ex.origem})`,
+        });
       }
     }
 
@@ -1431,19 +1581,16 @@ export function resolveEquipamentos(creature, bt = 2) {
     entradas,
     espacosUsados,
     uniformeDefesa,
-    rdFisico,
     rdEscudoBase,        // só a parcela do escudo, sem a Ferramenta Amaldiçoada
-    rdGeralBonus,
-    defesaBonus,
-    movimentoBonus,
-    peBonus,
-    penalidadeDestreza,
+    rdGeralBonus,        // escudo + grau da Ferramenta
+    penalidadeDestreza,  // uniforme + escudos, cumulativos, já com Polido/Ajustado
     hpMaxBonus,
     cdBonus,
     attrBonus,
     custoGasto,
-    efeitosUnica,       // para o Motor, já marcados como pool exclusivo
-    estadosUnica,       // interruptores das ativas, para a bancada
+    efeitosUnica,        // para o Motor, já marcados como pool exclusivo
+    efeitosEncantamento, // para o Motor, sem marca de pool (somam normal)
+    estadosUnica,        // interruptores das ativas, para a bancada
     avisos,
   };
 }
@@ -1564,7 +1711,14 @@ export function validarCatalogoEquipamentos() {
         if (!refsEncant.has(x)) erros.push(`ENCANTAMENTOS(${tipo}): "${enc.id}" exclui "${x}", que não existe.`);
       }
       for (const ef of enc.efeitos ?? []) {
-        if (!EQUIP_CANAIS_VALIDOS.has(ef.canal)) erros.push(`ENCANTAMENTOS(${tipo}): "${enc.id}" tem efeito em canal desconhecido "${ef.canal}".`);
+        // O canal não é conferido aqui: este arquivo não pode importar
+        // afty-efeitos.js (fecharia o ciclo, ver o cabeçalho da seção), e quem
+        // confere é o `aplicarEfeitos`, que avisa em canal desconhecido. Os
+        // dois pseudo-canais deste arquivo nunca chegam lá.
+        if (!ef.canal) erros.push(`ENCANTAMENTOS(${tipo}): "${enc.id}" tem efeito sem canal.`);
+        if (ef.alvoItem && ef.alvo) {
+          erros.push(`ENCANTAMENTOS(${tipo}): "${enc.id}" declara alvoItem e alvo ao mesmo tempo.`);
+        }
         const chk = validateExpression(ef.expr ?? "");
         if (!chk.ok) erros.push(`ENCANTAMENTOS(${tipo}): "${enc.id}" tem expressão inválida (${chk.error}).`);
       }

@@ -407,6 +407,16 @@ export function buildCriaturaDslContext(base = {}) {
     ctx[`prof_tr_${id}`] = p === "mestre" ? 2 : p === "treinado" ? 1 : 0;
   }
 
+  // Escolha de uma APTIDÃO, como booleana: `opt_<aptidao>_<valor>`. Hoje só a
+  // Superioridade Física tem ("atletismo OU acrobacia"), e a alternativa seria
+  // uma escolha aninhada inteira só para ela. Declarados a zero pelo
+  // vocabulário, pelo mesmo motivo dos `tem_*`: expressão que cita variável
+  // inexistente cai no fallback calada.
+  for (const nome of voc.opcoesAptidao || []) ctx[nome] = 0;
+  for (const [aptId, valor] of Object.entries(base.aptidaoOpcoes || {})) {
+    if (valor) ctx[`opt_${aptId}_${valor}`] = 1;
+  }
+
   // "Esta habilidade está escolhida?", como booleana: `tem_cmb_armas_perfeitas`.
   // Existe para o caso de DUAS habilidades dividirem a mesma escolha aninhada:
   // Armas Escolhidas (4°) e Armas Perfeitas (10°) miram o mesmo grupo de arma,

@@ -613,7 +613,61 @@ export const AFTY_ORIGENS_CATALOG = [
     id: "corpo_amaldicoado_mutante",
     nome: "Corpo Amaldiçoado Mutante",
     bonusAtributos: {},
+    // ⚠ VAZIA: o texto desta origem nunca foi enviado. Ela aparece na lista e
+    // não concede nada. Não confundir com a Maldição, que é outra origem.
     caracteristicas: [],
+    especializacaoExclusivaId: null,
+  },
+  {
+    id: "maldicao",
+    nome: "Maldição",
+    // ⚠ O id `maldicao` já era esperado por `abasAptidao` (afty-aptidoes.js) e
+    // pelas 18 Aptidões de Maldição desde 2026-07-16. A origem em si só entrou
+    // em 2026-08-01, e até lá aquele conteúdo era inalcançável: ninguém tinha
+    // como escolher a origem que o destrava.
+    //
+    // ⚠ "Maldição" aqui é a ORIGEM. O PATAMAR que se chamava Maldição virou
+    // Beyond em 2026-07-16, e os dois não têm relação.
+    bonusAtributos: {},
+    caracteristicas: [
+      {
+        id: "bonus_atributo",
+        nome: "Bônus em Atributo",
+        descricao:
+          "Uma maldição recebe 4 pontos adicionais para distribuir entre os seus atributos, com um " +
+          "máximo de 3 pontos no mesmo atributo. A cada 4 níveis, você pode aumentar o limite de um " +
+          "atributo em 2.",
+        bonus: { distribuir: 4, maxPorAtributo: 3 },
+        // Pool que sobe SÓ o limite, ao contrário do Desenvolvimento Inesperado
+        // do Derivado, que sobe valor e limite juntos. A cadência de 4 níveis é
+        // a mesma dele, e o degrau é 2 em vez de 1.
+        poolLimite: { porNivel: 4, valor: 2 },
+      },
+      {
+        id: "existencia_metafisica",
+        nome: "Existência Metafísica",
+        descricao:
+          "Sua existência é composta de energia amaldiçoada pura. Você não pode ser percebido nem " +
+          "tocado por pessoas que não sejam feiticeiros, com exceção a situações de morte. Você é " +
+          "imune a dano que não provenha de energia amaldiçoada (ferramentas amaldiçoadas, golpes " +
+          "imbuídos com energia, técnicas amaldiçoadas). Entretanto, você é vulnerável a dano de " +
+          "energia reversa.",
+        // Imunidade e vulnerabilidade por ORIGEM do dano, mais um recorte de
+        // percepção. Nada disso é número de ficha, e o Afty não tem sistema de
+        // imunidade nem de dano por origem.
+        mesa: true,
+      },
+      {
+        id: "natureza_amaldicoada",
+        nome: "Natureza Amaldiçoada",
+        descricao:
+          "Com uma natureza que deriva da própria energia, você já surgiu mais familiarizado com ela " +
+          "e consegue atingir novos patamares mais facilmente. Você recebe uma aptidão amaldiçoada a " +
+          "sua escolha, e outra no 10° e 15° nível, as quais você deve atender os requisitos. Além " +
+          "disso, você recebe 1 ponto de energia amaldiçoada adicional por nível.",
+        // → ORIGEM_EFEITOS.maldicao: vagasAptidao 1 + (nd>=10) + (nd>=15), e pe = nd.
+      },
+    ],
     especializacaoExclusivaId: null,
   },
 ];
@@ -691,6 +745,31 @@ export const origemTemDesenvolvimento = (id) =>
 export function resolveDesenvolvimento(creature) {
   if (!origemTemDesenvolvimento(creature?.core?.origem?.id)) return {};
   return creature?.core?.origem?.desenvolvimento || {};
+}
+
+/** Configuração do pool de LIMITE da origem, ou null. Hoje só a Maldição tem. */
+export const origemPoolLimite = (id) =>
+  getOrigem(id)?.caracteristicas?.find((c) => c.poolLimite)?.poolLimite ?? null;
+
+/**
+ * Quanto a origem SOBE O LIMITE de cada atributo (Maldição, "a cada 4 níveis
+ * você pode aumentar o limite de um atributo em 2").
+ *
+ * ⚠ Irmão do resolveDesenvolvimento, e a diferença é toda: aqui o ponto sobe só
+ * o LIMITE, e não o valor. Guardado em `creature.core.origem.limites` como
+ * QUANTAS vezes cada atributo foi escolhido, e é aqui que o degrau (2) entra,
+ * para o contador da UI contar escolhas e a ficha somar pontos de limite.
+ */
+export function resolveLimitePoolOrigem(creature) {
+  const cfg = origemPoolLimite(creature?.core?.origem?.id);
+  if (!cfg) return {};
+  const escolhas = creature?.core?.origem?.limites || {};
+  const out = {};
+  for (const [k, n] of Object.entries(escolhas)) {
+    const vezes = Math.max(0, Math.trunc(Number(n) || 0));
+    if (vezes) out[k] = vezes * (cfg.valor ?? 1);
+  }
+  return out;
 }
 
 /* ============================================================ */

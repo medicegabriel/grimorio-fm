@@ -1918,6 +1918,29 @@ export const ORIGEM_EFEITOS = {
     { canal: "vagasPericia", expr: "2" },
     { canal: "vagasHabilidade", expr: "(nd >= 6) + (nd >= 15) + 2 * (nd >= 19)" },
   ],
+
+  // Natureza Amaldiçoada: "Você recebe uma aptidão amaldiçoada a sua escolha, e
+  // outra no 10° e 15° nível. Além disso, você recebe 1 ponto de energia
+  // amaldiçoada adicional por nível."
+  //
+  // As três aptidões são VAGA, e não gasto de orçamento: alvo NOMEADO é
+  // concessão grátis pela convenção do projeto, e desde que o ND parou de
+  // conceder Aptidão Amaldiçoada o orçamento sem a Habilidade Geral é zero.
+  // Mesma leitura da Energia Antinatural do Derivado.
+  //
+  // ⚠ O que a Maldição PODE pegar com essas vagas é outro assunto, e já estava
+  // resolvido desde 2026-07-16: `abasAptidao` troca a categoria Energia Reversa
+  // pela Maldição (as 18 exclusivas), porque uma maldição não usa energia
+  // reversa, que é o que a destrói. Bate com o livro: "pode escolher aptidões da
+  // lista padrão, exceto pelas aptidões de energia reversa".
+  //
+  // A Existência Metafísica é mesa inteira, e o "+2 no limite de um atributo a
+  // cada 4 níveis" do Bônus em Atributo tem caminho próprio
+  // (`core.origem.limites`), fora do Motor, igual ao Desenvolvimento Inesperado.
+  maldicao: [
+    { canal: "vagasAptidao", expr: "1 + (nd >= 10) + (nd >= 15)" },
+    { canal: "pe", expr: "nd" },
+  ],
 };
 
 export const CLA_EFEITOS = {
@@ -2161,5 +2184,142 @@ export const APTIDAO_EFEITOS = {
   cura_amplificada: [
     { canal: "regeneracaoDado", expr: "8", quando: "fluxo_per", duracao: "temporaria" },
     { canal: "regeneracao",     expr: "max(mod_presenca, mod_sabedoria)", quando: "fluxo_per", duracao: "temporaria" },
+  ],
+
+  /* ========== APTIDÕES DE MALDIÇÃO (2026-08-01) ========== */
+  /* Exclusivas da origem Maldição, que OCUPA o lugar da Energia Reversa: uma
+     maldição não usa energia reversa, que é o que a destrói. Por isso o
+     sub-grupo "Especiais" abaixo é o espelho da cura de Energia Reversa, com a
+     moeda trocada de PER para PE. */
+
+  // "Você pode utilizar tanto força quanto destreza com a sua arma natural."
+  // ⚠ O DADO da arma natural (1d8 subindo a 2d12) NÃO entra: o dano da criatura
+  // tem fórmula própria e o dado listado de arma nenhuma conta (autor,
+  // 2026-07-27, a mesma decisão que deixou o "1d8" do Corpo Treinado de fora).
+  // O que sobra de mecânico é a Fineza, e ela é o mesmo canal do Corpo Treinado.
+  mal_armas_naturais: [
+    { canal: "finezaAtaque", alvo: "corpo", expr: "1" },
+  ],
+
+  // "você recebe um bônus de +1 nível de dano nos níveis 8, 12, 16 e 20."
+  // A escada de dado (1d10 a 3d10) é a mesma história da aptidão acima.
+  mal_armas_naturais_aprimoradas: [
+    { canal: "nivelDano", alvo: "basico", expr: "(nd >= 8) + (nd >= 12) + (nd >= 16) + (nd >= 20)" },
+  ],
+
+  // "passa a receber +1 de vida máxima por nível." A categoria de tamanho é
+  // campo da ficha, não canal, e o segundo uso (repetível no 10°) não é
+  // suportado pelo shape de ids únicos.
+  mal_crescimento_corporal: [
+    { canal: "hp", expr: "nd" },
+  ],
+
+  // "Você recebe seu bônus de treinamento em sua percepção; além disso, sua
+  // atenção passa a ter como base 12 ao invés de 10."
+  // ⚠ Os dois efeitos empilham de propósito: Atenção = 10 + bônus de Percepção,
+  // então a Maestria na Percepção já sobe a Atenção junto, e o +2 é a troca da
+  // BASE por cima disso. É o que o texto diz, em duas frases separadas.
+  mal_olhos_adicionais: [
+    { canal: "bonusPericia", alvo: "percepcao", expr: "maestria" },
+    { canal: "atencao", expr: "2" },
+  ],
+
+  // "Você recebe RD a danos físicos igual ao seu bônus de treinamento."
+  mal_revestimento: [
+    { canal: "rdFisico", expr: "maestria" },
+  ],
+
+  // "A RD a danos físicos conferido pela aptidão passam a ser o seu modificador
+  // de constituição." É TROCA, não soma, e o Motor não tem canal de substituição:
+  // entra como DELTA sobre o Revestimento, que é o mesmo desenho da Cobertura
+  // Avançada sobre o Cobrir-se.
+  //
+  // ⚠ Protegido por `tem_mal_revestimento`, porque o livro NÃO lista o
+  // Revestimento como pré-requisito (ver a nota no catálogo) e sem ele o delta
+  // daria um número inventado. Sem Revestimento não há RD para trocar, então
+  // não há efeito. Foi por esta linha que o `tem_*` passou a cobrir Aptidões.
+  mal_revestimento_evoluido: [
+    { canal: "rdFisico", expr: "mod_constituicao - maestria", quando: "tem_mal_revestimento" },
+  ],
+
+  // "Você recebe seu bônus de treinamento em rolagens de atletismo OU
+  // acrobacia." UM ou OUTRO (autor, 2026-08-01), e não os dois nem o maior:
+  // a aptidão declara `opcoes` no catálogo e cada valor vira a booleana
+  // `opt_mal_superioridade_fisica_<valor>`. As duas linhas convivem porque só
+  // uma delas tem o `quando` satisfeito.
+  //
+  // A vantagem na manobra por 5 PE fica de fora: vantagem não é número.
+  mal_superioridade_fisica: [
+    { canal: "bonusPericia", alvo: "atletismo", expr: "maestria",
+      quando: "opt_mal_superioridade_fisica_atletismo" },
+    { canal: "bonusPericia", alvo: "acrobacia", expr: "maestria",
+      quando: "opt_mal_superioridade_fisica_acrobacia" },
+  ],
+
+  // "Seu máximo de energia amaldiçoada aumenta em um valor igual ao seu bônus
+  // de treinamento."
+  mal_estoque_ampliado: [
+    { canal: "pe", expr: "maestria" },
+  ],
+
+  // "Caso não possua, você recebe treinamento em Feitiçaria; caso possua, você
+  // se torna mestre em feitiçaria. Além disso, você recebe uma habilidade de
+  // técnica adicional, recebendo mais uma no 10° nível."
+  //
+  // O `prof_feiticaria` é a proficiência ESCOLHIDA na ficha (0, 1 ou 2), então
+  // a expressão concede 1 (Treinado) para quem não tem e 2 (Mestre) para quem
+  // já tem. Mesmo truque da Força Imparável do Restringido.
+  // "Habilidade de técnica" É Feitiço, e a vaga é a EXCLUSIVA (não serve para
+  // Habilidade Geral).
+  mal_extracao_de_potencial: [
+    { canal: "proficienciaPericia", alvo: "feiticaria", expr: "1 + (prof_feiticaria >= 1)" },
+    { canal: "vagasFeitico", expr: "1 + (nd >= 10)" },
+  ],
+
+  // "No começo de toda rodada você recebe uma quantidade de pontos de vida
+  // temporários igual ao seu modificador de Constituição multiplicado pela
+  // metade do seu bônus de treinamento."
+  // Automática, mas só existe em combate: mesmo desenho da Atenção do Instinto
+  // Sanguinário, que também é passiva presa ao `em_combate`.
+  mal_protecao_constante: [
+    { canal: "pvTemporario", quando: "em_combate",
+      expr: "mod_constituicao * piso(maestria / 2)", duracao: "temporaria" },
+  ],
+
+  // A Regeneração Corporal é AÇÃO COMUM, e por isso a aptidão base não vira
+  // número de ficha sozinha. Quem a torna automática é o FLUXO IMPARÁVEL ("no
+  // começo do seu turno, como uma ação livre"), e cura no início do turno É o
+  // canal de Regeneração. Espelho exato do Fluxo Constante da Energia Reversa,
+  // com PE no lugar de PER.
+  //
+  // "para cada 2 pontos gastos, você se cura em 2d6 + seu modificador de
+  // constituição ou presença. Nos níveis 10, 15 e 20, a cura aumenta em 1d6."
+  // ⚠ O modificador entra UMA VEZ, e não por par de pontos: é a leitura que o
+  // autor confirmou para a Energia Reversa em 2026-07-30, e a Regeneração
+  // Ampliada ("passa a somar o dobro") só faz sentido com ela.
+  // ⚠ "constituição OU presença" é o MAIOR dos dois (decisão C3, autor
+  // 2026-07-30, que vale para todas as fórmulas com esse "ou").
+  mal_fluxo_imparavel: [
+    { canal: "dadosRegeneracao",
+      expr: "piso(regeneracao_pe / 2) * (2 + (nd >= 10) + (nd >= 15) + (nd >= 20))",
+      duracao: "temporaria" },
+    { canal: "regeneracaoDado", expr: "6", quando: "regeneracao_pe", duracao: "temporaria" },
+    { canal: "regeneracao", expr: "max(mod_constituicao, mod_presenca)",
+      quando: "regeneracao_pe", duracao: "temporaria" },
+  ],
+
+  // "O seu dado de cura aumenta para d8 e você passa a somar o dobro do seu
+  // modificador." O dado vale o MAIOR entre as fontes, então o 8 vence o 6; o
+  // modificador entra como DELTA de mais uma vez, que somado ao do Fluxo dá o
+  // dobro. O teto de PE dobrado é da FAIXA da bancada (ver regeneracaoPE).
+  mal_regeneracao_ampliada: [
+    { canal: "regeneracaoDado", expr: "8", quando: "regeneracao_pe", duracao: "temporaria" },
+    { canal: "regeneracao", expr: "max(mod_constituicao, mod_presenca)",
+      quando: "regeneracao_pe", duracao: "temporaria" },
+  ],
+
+  // "O seu dado de cura com a Regeneração Corporal aumenta para d10."
+  mal_regeneracao_maxima: [
+    { canal: "regeneracaoDado", expr: "10", quando: "regeneracao_pe", duracao: "temporaria" },
   ],
 };

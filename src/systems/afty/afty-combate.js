@@ -490,6 +490,26 @@ export const COMBATE_ESTADOS = [
     tipo: "bool",
     requerAptidao: "expansao_de_dominio_incompleta",
   },
+  {
+    // Regeneração Corporal (Maldição) é AÇÃO COMUM, e por isso a aptidão base
+    // não vira número de ficha sozinha. Quem a torna automática é o Fluxo
+    // Imparável ("no começo do seu turno, como uma ação livre"), e cura no
+    // início do turno É o canal de Regeneração. Exatamente o mesmo desenho do
+    // fluxoPER da Energia Reversa, com a moeda trocada: aqui é PE.
+    //
+    // "gastar até 2 pontos... a quantidade máxima passa a ser igual ao seu
+    // bônus de treinamento por rodada", que a Ampliada dobra.
+    id: "regeneracaoPE",
+    label: "Regeneração Corporal · PE Gasto",
+    tipo: "faixa",
+    min: 0,
+    max: (d) => {
+      const bt = d?.maestria ?? 2;
+      const ids = d?.aptidoesEscolhidas ?? [];
+      return ids.includes("mal_regeneracao_ampliada") ? 2 * bt : bt;
+    },
+    requerAptidao: "mal_fluxo_imparavel",
+  },
 ];
 
 /** Quantos incrementos de 2 PE a Brutalidade já liberou, pelo nível de Lutador. */
@@ -576,8 +596,9 @@ export function resolveCombate(creature, params = {}) {
   const brutalidade = !!c.brutalidade;
   const empolgacao = intDe(c.empolgacao ?? 1, 1, empolgacaoMax);
   const espiritoDeLuta = !!c.espiritoDeLuta;
-  // Faixas cujo teto vem da ficha. As demais usam o `max` do catálogo, que a UI
-  // já aplica, e aqui só precisam do piso em zero.
+  // ⚠ TODA faixa precisa estar aqui. O clamp abaixo usa `tetoFaixa[e.id] ?? 0`,
+  // então uma faixa ausente é aparada em ZERO e o estado nunca sai do lugar, sem
+  // erro nenhum. O `max` do catálogo é só da UI, e não chega aqui.
   const tetoFaixa = {
     empolgacao: empolgacaoMax,
     brutalidadePE: params.brutalidadePE ?? 0,
@@ -594,6 +615,7 @@ export function resolveCombate(creature, params = {}) {
     cobrirSePE: params.cobrirSePE ?? 0,
     estimuloTeste: params.estimuloTeste ?? 0,
     fluxoPER: params.fluxoPER ?? 0,
+    regeneracaoPE: params.regeneracaoPE ?? 0,
   };
   const out = { ...zerado, ativo: true, empolgacaoMax, estadosExtras: extras };
   for (const e of COMBATE_ESTADOS) {

@@ -120,6 +120,9 @@ export function createBlankAfty() {
       //   escolhas        — escolhas aninhadas, { [escolhaId]: [opcaoId, ...] }
       //   anatomias       — Características de Anatomia (só o Feto Híbrido)
       //   desenvolvimento — Desenvolvimento Inesperado (só o Derivado)
+      //   limites         — pool que sobe SÓ o limite (só a Maldição), como
+      //                     { attr: quantasVezes }. O degrau (+2) entra no
+      //                     resolveLimitePoolOrigem, não aqui.
       origem: { id: "inato" },     // ver ./afty-origens.js
     },
 
@@ -233,6 +236,10 @@ export function createBlankAfty() {
     // Aptidões Amaldiçoadas escolhidas (ids do catálogo). Não custam
     // orçamento: são desbloqueadas pelo nível da trilha.
     aptidoesAmaldicoadas: [],
+    // Escolha de uma Aptidão que oferece "um OU outro", como
+    // { [aptidaoId]: valorId }. Só a Superioridade Física tem (atletismo ou
+    // acrobacia), e cada valor vira a booleana `opt_<aptidao>_<valor>` no DSL.
+    aptidaoOpcoes: {},
     // Expansões de Domínio criadas (ver afty-dominios.js). Uma criatura pode ter
     // várias escritas, mas expande UMA de cada vez: `dominioAtivoId` diz qual
     // está no ar, e é ela que a bancada de combate aplica na ficha.

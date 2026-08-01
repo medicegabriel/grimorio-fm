@@ -1354,6 +1354,18 @@ export const AFTY_APTIDOES = [
       { tipo: "nd", valor: 5 },
       { tipo: "pericia", pericia: "atletismo", nivel: "mestre" },
     ],
+    // "seu bônus de treinamento em rolagens de atletismo OU acrobacia": é UM ou
+    // OUTRO (autor, 2026-08-01), então a aptidão carrega uma escolha própria.
+    // Cada valor vira a booleana `opt_<aptidao>_<valor>` no DSL, e o efeito se
+    // protege com `quando`. É a única escolha de Aptidão do catálogo.
+    opcoes: {
+      id: "pericia",
+      label: "Perícia",
+      valores: [
+        { id: "atletismo", label: "Atletismo" },
+        { id: "acrobacia", label: "Acrobacia" },
+      ],
+    },
   },
 
   /* --- sub-grupo: Controle e Leitura --- */

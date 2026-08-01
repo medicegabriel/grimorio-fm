@@ -94,6 +94,16 @@ export const desenvolvimentoTotal = (nd) => Math.floor((nd ?? 1) / 4);
 export const desenvolvimentoUsado = (desenv = {}) =>
   ATTR_KEYS.reduce((s, k) => s + (desenv[k] || 0), 0);
 
+// ---------- Pool de LIMITE (Maldição: +2 no limite a cada 4 ND) ----------
+// Irmão do Desenvolvimento, e a diferença é toda: aqui o ponto sobe SÓ o limite,
+// e não o valor. A Maldição paga o valor com os 4 pontos distribuíveis dela.
+// O mapa guarda QUANTAS vezes cada atributo foi escolhido, e o resolver da
+// origem multiplica pelo tamanho do degrau (2), para o número na ficha e o
+// contador da UI serem a mesma unidade.
+export const limitePoolTotal = (nd, porNivel = 4) => Math.floor((nd ?? 1) / (porNivel || 4));
+export const limitePoolUsado = (mapa = {}) =>
+  ATTR_KEYS.reduce((s, k) => s + (mapa[k] || 0), 0);
+
 /**
  * Resumo/validação dos atributos para o builder.
  * Retorna trackers e uma lista de avisos (soft — não bloqueiam).

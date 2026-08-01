@@ -40,10 +40,10 @@ import {
 } from "./afty-atributos";
 import {
   resolveOrigemAttrBonus, resolveDesenvolvimento, resolveEscolhasOrigem,
-  limiteAtributoDaOrigem,
+  limiteAtributoDaOrigem, resolveLimitePoolOrigem,
 } from "./afty-origens";
 import { efeitosDeTreino } from "./afty-treinamentos";
-import { resolveNiveisAptidao } from "./afty-aptidoes";
+import { resolveNiveisAptidao, AFTY_APTIDOES } from "./afty-aptidoes";
 import {
   efeitosDoDominio, listaDominios, resolveVersao as resolveVersaoDominio,
   duracaoDominio, areaDominio, custoDominio, pvBarreira, maxEfeitos, vagasUsadas,
@@ -62,7 +62,7 @@ import {
 import { resolveInvocacoesList, resolveHordasList } from "./afty-invocacoes";
 import {
   resolveEquipamentos, resolveCarga, grauFeiticeiro, alcanceDaArma, propriedadesDaArma,
-  podeSerArmaDedicada, AFTY_GRAUS,
+  podeSerArmaDedicada, grauDoRank,
 } from "./afty-equipamentos";
 import { nivelMaxFeitico } from "./afty-feiticos";
 import { resolveTestes, resolveDano, AFTY_PERICIAS } from "./afty-pericias";
@@ -104,9 +104,6 @@ export const OVERRIDABLE = ["hp", "pe", "defesa", "cd", "rdGeral", "rdEspecifico
 
 const INT = (x) => Math.floor(x); // INT() da planilha (ND > 0 → floor)
 
-/** Rank de um grau de Ferramenta Amaldiçoada, para comparar dois. */
-const grauRank = (v) => AFTY_GRAUS.find((g) => g.value === v)?.rank ?? 0;
-
 /**
  * As FAMÍLIAS de variável do DSL, completas.
  *
@@ -119,10 +116,20 @@ const grauRank = (v) => AFTY_GRAUS.find((g) => g.value === v)?.rank ?? 0;
 const VOCABULARIO_DSL = {
   pericias: AFTY_PERICIAS.map((p) => p.id),
   resistencias: AFTY_RESISTENCIAS.map((r) => r.value),
-  // `tem_*` cobre Habilidade E Talento: os Estilos de Combate leem
-  // `tem_tal_adepto_de_combate` para saber se vieram pelo Talento.
-  habilidades: [...AFTY_HABILIDADES.map((h) => h.id), ...AFTY_TALENTOS.map((t) => t.id)],
+  // `tem_*` cobre Habilidade, Talento E Aptidão: os Estilos de Combate leem
+  // `tem_tal_adepto_de_combate` para saber se vieram pelo Talento, e o
+  // Revestimento Evoluído (Maldição) lê `tem_mal_revestimento` para saber sobre
+  // o que ele está melhorando. Os prefixos de id não colidem entre os três.
+  habilidades: [
+    ...AFTY_HABILIDADES.map((h) => h.id),
+    ...AFTY_TALENTOS.map((t) => t.id),
+    ...AFTY_APTIDOES.map((a) => a.id),
+  ],
   especializacoes: AFTY_ESPECIALIZACOES.map((e) => e.id),
+  // Toda booleana de escolha de Aptidão que pode existir, para nenhuma
+  // expressão que a cite cair no fallback por ela não estar declarada.
+  opcoesAptidao: AFTY_APTIDOES.flatMap((a) =>
+    (a.opcoes?.valores ?? []).map((v) => `opt_${a.id}_${v.id}`)),
 };
 
 export function deriveAfty(creature) {
@@ -158,6 +165,10 @@ export function deriveAfty(creature) {
   const attrBonus = resolveOrigemAttrBonus(creature);
   const nivelAlloc = creature?.attrNivel ?? {};
   const desenv = resolveDesenvolvimento(creature);
+  // Pool que sobe SÓ o limite (Maldição). Irmão do desenvolvimento, e por isso
+  // NÃO entra no `eff` lá embaixo: ele abre espaço, quem preenche é o jogador
+  // com os pontos distribuíveis da origem.
+  const limPool = resolveLimitePoolOrigem(creature);
   // Equipamento primeiro: os acessórios de atributo entram no cálculo do
   // efetivo. A CARGA não sai daqui, porque depende do mod de Força final.
   // BT antecipado só para as Cargas de Encantamento das Ferramentas (= BT).
@@ -183,7 +194,11 @@ export function deriveAfty(creature) {
   // de origem). O limite FINAL sai mais abaixo, somando o canal `limiteAtributo`
   // do Motor, que só existe depois de os catálogos serem resolvidos.
   const limiteBaseOf = (key) =>
-    Math.min(Math.max(limBase[key] ?? ATTR_LIMITE_PADRAO, limOrigem[key] ?? 0) + (desenv[key] || 0), ATTR_LIMITE_MAX);
+    Math.min(
+      Math.max(limBase[key] ?? ATTR_LIMITE_PADRAO, limOrigem[key] ?? 0)
+        + (desenv[key] || 0) + (limPool[key] || 0),
+      ATTR_LIMITE_MAX,
+    );
 
   // Atributo EFETIVO = base + nível + Desenvolvimento + bônus de origem.
   // Atributos de ORIGEM NÃO passam o limite (salvo os que digam explicitamente — TODO).
@@ -333,18 +348,26 @@ export function deriveAfty(creature) {
   // dedicação EMITE efeito (nível de dano e a propriedade Marcial), e efeito
   // tem de entrar no mesmo bolo dos outros, antes dos estágios.
   //
-  // ⚠ É "arma CARREGADA", não "equipada": a aba Equipamentos só deixa equipar
-  // uniforme, escudo e item com efeito, então exigir `equipado` deixaria a lista
-  // de dano sem nenhuma arma, para sempre. O autor pediu uma linha "para cada
-  // Tipo de Arma colocado".
-  const armasCarregadas = equip.entradas.filter((e) => e.tipo === "arma");
+  // ⚠ É "arma EQUIPADA" desde 2026-08-01, quando a arma ganhou botão de equipar
+  // na aba Equipamentos. Antes era toda arma CARREGADA, porque não havia como
+  // equipar uma. Com o Acerto por grau entrando na linha, carregar uma arma na
+  // mochila não pode mais render número.
+  const armasCarregadas = equip.entradas.filter((e) => e.tipo === "arma" && e.equipado);
+  // Grau de CÁLCULO da Ferramenta: cada encantamento desce um degrau, e o rank 0
+  // não é grau nenhum (vira "desarmado" na tabela de dano adicional).
+  const grauCalcDaArma = (e) => (e.fa ? (grauDoRank(e.fa.rankCalculo)?.value ?? null) : null);
   // Faixas e Manoplas (grupo pugilato) não viram linha: são o Ataque Básico.
   const armasParaDano = armasCarregadas
     .filter((e) => e.def?.grupo !== "pugilato")
     .map((e) => ({
       id: e.def.id,
       nome: e.def.nome,
-      grauArma: e.fa?.grau ?? null,
+      grauArma: grauCalcDaArma(e),
+      // Acerto DESTA arma: +1 por grau da Ferramenta mais o que o encantamento
+      // Precisa somar (autor, 2026-08-01). Fica na linha e não no Ataque da
+      // categoria, senão o bônus vazaria para as outras armas.
+      acertoGrau: e.fa?.acertoArma ?? 0,
+      fontesAcerto: e.fa?.fontesAcerto ?? [],
       fineza: !!e.def.props?.fineza,
       critico: e.def.critico ?? 20,
       distancia: e.def.categoria === "distancia" || e.def.categoria === "arremesso",
@@ -360,11 +383,13 @@ export function deriveAfty(creature) {
       elegivelDedicada: podeSerArmaDedicada(e.def),
     }));
   // O Ataque Básico só sobe de grau com Manoplas ou Faixas (autor, 2026-07-27).
-  // Sem elas é Desarmado, que não soma nada. Com as duas vale o grau mais alto.
-  const grauBasico = armasCarregadas
-    .filter((e) => e.def?.grupo === "pugilato" && e.fa?.grau)
-    .map((e) => e.fa.grau)
-    .sort((x, y) => (grauRank(y) - grauRank(x)))[0] ?? null;
+  // Sem elas é Desarmado, que não soma nada. Com as duas vale o grau mais alto,
+  // e é o grau de CÁLCULO que compara, porque é ele que vira número.
+  const pugilato = armasCarregadas
+    .filter((e) => e.def?.grupo === "pugilato" && e.fa)
+    .sort((x, y) => (y.fa.rankCalculo - x.fa.rankCalculo))[0] ?? null;
+  const grauBasico = pugilato ? grauCalcDaArma(pugilato) : null;
+  const acertoGrauBasico = pugilato?.fa?.acertoArma ?? 0;
   const dedicadas = resolveArmasDedicadas(creature, armasParaDano, habilidades.escolhidas);
 
   const efeitosTodos = [
@@ -389,6 +414,11 @@ export function deriveAfty(creature) {
     // pool exclusivo a chegar no Motor. Já vem com o valor resolvido no contexto
     // do item (a expressão dela lê `grau`) e com `exclusivo` carimbado.
     ...equip.efeitosUnica,
+    // Encantamentos das Ferramentas equipadas. Passaram a entrar pelo Motor em
+    // 2026-08-01, no lugar de somarem em escalar: era o teto de sete canais que
+    // mantinha metade deles como texto morto. Sem `exclusivo`, porque
+    // encantamento soma normal e não é fonte do pool exclusivo.
+    ...equip.efeitosEncantamento,
     // Aptidões Amaldiçoadas (2026-07-30). As de bancada leem `au` e `cl`, que
     // são variáveis do contexto principal, então caem todas no estágio 2.
     ...coletarEfeitosAptidao(creature, semEnergia),
@@ -517,6 +547,11 @@ export function deriveAfty(creature) {
       return 1 + (ids.includes("cura_amplificada") ? er : Math.floor(er / 2))
         + (ids.includes("cura_em_grupo") ? 2 : 0);
     })(),
+    // Regeneração Corporal (Maldição): "a quantidade máxima de pontos que podem
+    // ser gastos passa a ser igual ao seu bônus de treinamento por rodada", que
+    // a Regeneração Ampliada dobra. Irmão do fluxoPER, com PE no lugar de PER.
+    regeneracaoPE: (creature?.aptidoesAmaldicoadas ?? []).includes("mal_regeneracao_ampliada")
+      ? 2 * bt : bt,
     // Um interruptor por Habilidade Única marcada como ativa. Vêm da ficha, e
     // não do catálogo de estados, porque são instâncias de item.
     estadosExtras: equip.estadosUnica,
@@ -527,9 +562,16 @@ export function deriveAfty(creature) {
     attrEff: attrs, mods, modTecnica: mods[tecnicaAttr] ?? 0,
     aptidao: aptidao.efetivo, nivelEspec, periciasProf: creature?.pericias,
     resistenciasProf: creature?.resistenciasProf, combate,
+    aptidaoOpcoes: semEnergia ? {} : creature?.aptidaoOpcoes,
     rdEscudoBase: equip.rdEscudoBase,
-    // `tem_*` inclui os Talentos escolhidos, não só as Habilidades.
-    habilidadesEscolhidas: [...habilidades.escolhidas, ...(talentosPre.escolhidas ?? [])],
+    // `tem_*` inclui Talentos e Aptidões escolhidos, não só as Habilidades.
+    // ⚠ A lista de aptidões respeita o `semEnergia`: um Restringido não tem
+    // Aptidões, e `tem_*` não pode dizer que tem.
+    habilidadesEscolhidas: [
+      ...habilidades.escolhidas,
+      ...(talentosPre.escolhidas ?? []),
+      ...(semEnergia ? [] : (Array.isArray(creature?.aptidoesAmaldicoadas) ? creature.aptidoesAmaldicoadas : [])),
+    ],
     vocabulario: VOCABULARIO_DSL,
   });
   // Soma um canal de atributo sobre uma base, aparando nos TRÊS tetos do sistema
@@ -660,11 +702,9 @@ export function deriveAfty(creature) {
     /* misto | conjurador */ 10 + (nd - 1) * 5;
   const hpPatamarMult = HP_PATAMAR_MULT[patamar] ?? 1;
   // O bônus de item ("os seus pontos de vida máximos aumentam em 10") entra
-  // DEPOIS da Alma e do Patamar, ao contrário do treino: é um valor fixo de
-  // PV máximo, não uma parcela da base que o Patamar multiplicaria.
-  // O canal `hp` do Motor entra ANTES do multiplicador de Alma (autor,
-  // 2026-07-27), então fica junto do treino, dentro do parêntese.
-  const hp = Math.round(almaMult * (hpBase + nd * modCon + canal("hp")) * hpPatamarMult) + equip.hpMaxBonus;
+  // ANTES da Alma e do Patamar (autor, 2026-08-01), junto do treino e do canal
+  // `hp` do Motor. Num Beyond, um item de +10 vale 40.
+  const hp = Math.round(almaMult * (hpBase + nd * modCon + canal("hp") + equip.hpMaxBonus) * hpPatamarMult);
 
   // ---------- PE (+ Treinos de Compreensão/Controle de Energia/…) ----------
   // UMA pilha só, para todo mundo. O Restringido a chama de Ponto de Estamina
@@ -684,7 +724,7 @@ export function deriveAfty(creature) {
     qntPE === "pouca" ? -Math.floor(nd / 2) :
     qntPE === "grande" ? Math.floor(nd / 2) :
     qntPE === "muito_grande" ? nd : 0;
-  const pe = peBase + peQnt + modTecnica + equip.peBonus + canal("pe");
+  const pe = peBase + peQnt + modTecnica + canal("pe");
 
   // ---------- Resistência Parcial ----------
   // Calamidade ganha +1 em ND 10, 20 e 30 (0 a 3).
@@ -697,7 +737,7 @@ export function deriveAfty(creature) {
     patamar === "beyond" ? 1 + resThresh : 0;
 
   // ---------- Movimento (+ Treino de Agilidade, - sobrecarga) ----------
-  const movimento = 9 + maxForDex * 1.5 + carga.movimento + equip.movimentoBonus + canal("movimento");
+  const movimento = 9 + maxForDex * 1.5 + carga.movimento + canal("movimento");
 
   // ---------- RD Geral ----------
   const rdGeralBase =
@@ -766,10 +806,12 @@ export function deriveAfty(creature) {
     cdBase: cd,
   };
 
-  // ---------- RD Física (só escudo por ora) ----------
-  // Canal NOVO, separado de RD Geral e RD Específico. O autor confirmou que
-  // a RD do escudo é FÍSICA. O sistema de RD Física em si ainda vem.
-  const rdFisico = equip.rdFisico + canal("rdFisico");
+  // ---------- RD Física ----------
+  // Canal separado de RD Geral e RD Específico. ⚠ O ESCUDO saiu daqui em
+  // 2026-08-01: a RD dele virou RD Geral (ver rdGeral acima). Sobrou o que é
+  // explicitamente físico, como o encantamento Reforçado ("contra dano
+  // físico") e a Aura Reforçada.
+  const rdFisico = canal("rdFisico");
 
   // ---------- Defesa / CA (+ uniforme, - sobrecarga; Treino de Luta ADIADO) ----------
   const divisorDefesa =
@@ -777,7 +819,7 @@ export function deriveAfty(creature) {
     tipo === "misto" ? 1.5 :
     /* combatente | restringido */ 1.25;
   const defTipo = INT(nd / divisorDefesa);
-  const defesa = 10 + defTipo + modDes + bt + equip.uniformeDefesa + carga.defesa + equip.defesaBonus + canal("defesa");
+  const defesa = 10 + defTipo + modDes + bt + equip.uniformeDefesa + carga.defesa + canal("defesa");
 
   // ---------- Perícias, Jogadas de Ataque e Testes de Resistência ----------
   // Depende de cdTipo e defTipo: a planilha do autor (2026-07-27) mostra que a
@@ -795,6 +837,9 @@ export function deriveAfty(creature) {
     divisorCD, divisorDefesa,
     bonusVagas: canal("vagasPericia"),
     efeitos: ef,   // bonusPericia / bonusTR / bonusAcerto / proficienciaPericia
+    // Penalidade de armadura e escudo, cumulativa, em testes de perícia que
+    // usam Destreza. Voltou a valer em 2026-08-01.
+    penalidadeDestreza: equip.penalidadeDestreza,
   });
 
   // ---------- Dano (planilha do autor, 2026-07-27) ----------
@@ -806,7 +851,10 @@ export function deriveAfty(creature) {
   // depender do `aptidao` já resolvido lá em cima.
   const dano = resolveDano(creature, {
     nd, patamar, mods: modByAttr, aptidaoCL: aptidao.efetivo.cl,
-    efeitos: ef, armas: armasParaDano, grauBasico,
+    efeitos: ef, armas: armasParaDano, grauBasico, acertoGrauBasico,
+    // Os Ataques já resolvidos, para cada linha fechar o Acerto dela: o ataque
+    // da categoria mais o grau da arma daquela linha.
+    ataques: testes.ataques,
   });
 
   // ---------- Empolgação (Lutador) ----------
@@ -935,15 +983,14 @@ export function deriveAfty(creature) {
       { label: `Base do Tipo (${TIPO_LABEL[tipo] ?? tipo})`, valor: hpBase },
       { label: "Constituição × ND", valor: nd * modCon },
       ...doMotor("hp"),
+      ...(equip.hpMaxBonus ? [{ label: "Equipamento", valor: equip.hpMaxBonus }] : []),
       ...(almaMult !== 1 ? [{ label: "Integridade da Alma", texto: `×${divTexto(almaMult)}` }] : []),
       ...(hpPatamarMult !== 1 ? [{ label: `Patamar (${PATAMAR_LABEL[patamar] ?? patamar})`, texto: `×${hpPatamarMult}` }] : []),
-      ...(equip.hpMaxBonus ? [{ label: "Equipamento", valor: equip.hpMaxBonus }] : []),
     ],
     pe: [
       { label: `Base do Tipo (${TIPO_LABEL[tipo] ?? tipo})`, valor: peBase },
       ...(peQnt ? [{ label: "Quantidade de PE", valor: peQnt }] : []),
       { label: `Mod. da Técnica (${rotulo[tecnicaAttr] ?? tecnicaAttr})`, valor: modTecnica },
-      ...(equip.peBonus ? [{ label: "Equipamento", valor: equip.peBonus }] : []),
       ...doMotor("pe"),
     ],
     defesa: [
@@ -953,7 +1000,6 @@ export function deriveAfty(creature) {
       { label: "Maestria", valor: bt },
       ...(equip.uniformeDefesa ? [{ label: "Uniforme", valor: equip.uniformeDefesa }] : []),
       ...(carga.defesa ? [{ label: "Sobrecarga", valor: carga.defesa }] : []),
-      ...(equip.defesaBonus ? [{ label: "Equipamento", valor: equip.defesaBonus }] : []),
       ...doMotor("defesa"),
     ],
     cd: [
@@ -978,7 +1024,6 @@ export function deriveAfty(creature) {
       { label: "Base", valor: 9 },
       { label: "Maior de Força e Destreza × 1,5", valor: maxForDex * 1.5 },
       ...(carga.movimento ? [{ label: "Sobrecarga", valor: carga.movimento }] : []),
-      ...(equip.movimentoBonus ? [{ label: "Equipamento", valor: equip.movimentoBonus }] : []),
       ...doMotor("movimento"),
     ],
     iniciativa: [
@@ -1025,6 +1070,7 @@ export function deriveAfty(creature) {
       { label: "Limite padrão", valor: ATTR_LIMITE_PADRAO },
       ...(daOrigem ? [{ label: tipo === "restringido" ? "Ápice Corporal Humano" : "Origem", valor: daOrigem }] : []),
       ...(desenv[k] ? [{ label: "Desenvolvimento Inesperado", valor: desenv[k] }] : []),
+      ...(limPool[k] ? [{ label: "Bônus em Atributo", valor: limPool[k] }] : []),
       ...doMotor("limiteAtributo", k),
     ];
   }
@@ -1103,7 +1149,7 @@ export function deriveAfty(creature) {
     grauFeiticeiro: grau,  // { value, label, rank, ndMin } derivado do ND
     equip,                 // parcelas do equipamento (entradas, custoGasto, avisos...)
     carga,                 // { espacosUsados, cargaLimite, cargaMaxima, sobrecarregado... }
-    rdFisico,              // RD Física (escudo). Canal separado da RD Geral.
+    rdFisico,              // RD Física. O escudo NÃO entra mais aqui (é RD Geral).
     penalidadeDestreza: equip.penalidadeDestreza, // uniforme + escudos, cumulativos
     guarda: null,         // TODO: depende do contador de ataques consecutivos
   };

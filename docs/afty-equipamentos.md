@@ -99,26 +99,80 @@ Os espaços vêm da tabela de carregamento, não desta.
 | Revestimento Robusto | +6 | -4 | 3 | 4 |
 | Sob Medida | +1 | 0 | 2 | 0 |
 
-A **penalidade** vale em testes de perícia que usem **Destreza**.
+⚠ **A coluna de Defesa NÃO vale na ficha de criatura** (autor, 2026-08-01). A tabela fica aqui porque
+é o texto do livro e volta a valer na ficha de jogador. Na criatura:
+
+**Defesa da armadura = o CUSTO dela, mais 1 por grau** da Ferramenta Amaldiçoada. Um Revestimento
+Robusto (custo 3) de Segundo Grau dá 3 + 3 = 6. Helper: `defesaDaArmadura(def, grauDefesa)`.
+
+⚠ **Sob Medida é a EXCEÇÃO declarada** (autor, 2026-08-01): custa 2 e dá **1** de Defesa, "já que ela
+já dá benefícios em Perícia". É a única modificação com o campo `defesaCriatura`, e o valor bate com
+o +1 da tabela do livro.
+
+| Modificação | Custo | Defesa na criatura | Penalidade |
+|---|---|---|---|
+| Comum | 0 | 0 | 0 |
+| Revestimento Leve | 1 | 1 | 0 |
+| Revestimento Médio | 2 | 2 | -2 |
+| Revestimento Robusto | 3 | 3 | -4 |
+| Sob Medida | 2 | **1** (exceção) | 0 |
+
+A **penalidade VALE e é aplicada** (autor, 2026-08-01, segunda passada), em testes de perícia que
+usam Destreza, cumulativa com a do escudo. Ver a seção "O que o motor aplica". Os encantamentos
+**Ajustado** (uniforme) e **Polido** (escudo) reduzem a penalidade do item, e a redução nunca
+inverte o sinal: um Escudo Leve de -1 com Polido fica em 0, não em +1.
+
+A tabela e as descrições foram **reconferidas com o texto do livro em 2026-08-01** e batem com o
+catálogo.
+
+✅ A exceção do Sob Medida resolveu de quebra o problema de dominância que a regra do custo tinha
+criado: ele e o Revestimento Médio custavam 2 e davam a mesma Defesa, mas só o Médio tinha
+penalidade e ocupava espaço. Agora o Médio dá 2 e o Sob Medida dá 1.
+
+O motivo do recorte é a aba: a criatura tem inventário simplificado, para o mestre não precisar
+pensar em qual item pegar.
+
+<details><summary>Regra que valeu por algumas horas em 2026-08-01 (histórico)</summary>
+
+A primeira passada do dia dizia "toda armadura fornece +1 de Defesa, mais 1 por grau", com a
+penalidade removida. O autor trocou o +1 fixo pelo custo e mandou a penalidade de volta na mesma
+sessão.
+</details>
 
 ---
 
 ## Escudos
 
-Cada escudo fornece **Redução de Dano enquanto empunhado**, e essa RD é **RD Física** (autor), não RD
-Geral. Penalidades de escudos e uniformes são **cumulativas**. Atacar com o escudo o faz deixar de
-fornecer RD até o início do próximo turno (estado de combate, não modelado). O dano do escudo é de
-**impacto** (o livro não diz, o autor confirmou).
+Cada escudo fornece **Redução de Dano enquanto empunhado**, assim como um valor de penalidade em
+testes de perícia que utilizam Destreza. Penalidades de escudos e uniformes são **cumulativas**.
+Atacar com o escudo o faz deixar de fornecer RD até o início do próximo turno (estado de combate,
+não modelado). O dano do escudo é de **impacto** (o livro não diz, o autor confirmou).
 
-| Escudo | Dano | RD Física | Penalidade | Custo | Espaços |
+⚠ **A RD do escudo é RD GERAL** (autor, 2026-08-01), e não RD Física como valia desde 2026-07-22.
+As palavras dele foram "RD Geral, exceto Alma", que é a definição EXATA da RD Geral no Afty (foi por
+isso que o Dano na Alma ganhou canal próprio em 2026-07-29), então não precisou de canal novo. O
+campo do catálogo se chama `rdEscudo`, e não `rdFisico`, justamente para não sugerir tipo.
+
+| Escudo | Dano | RD Geral | Penalidade | Custo | Espaços |
 |---|---|---|---|---|---|
 | Pequeno | 1d3 | 2 | 0 | 2 | 2 |
 | Leve | 1d4 | 2 | -1 | 1 | 2 |
 | Médio | 1d6 | 4 | -2 | 2 | 2 |
 | Pesado | 1d8 | 6 | -4 | 3 | 2 |
 
-O Escudo Pequeno **não ocupa uma das mãos**. O livro escreve "escudo leve" nessa frase, que o autor
-confirmou ser erro do texto.
+A tabela foi **reconferida com o texto do livro em 2026-08-01** e os quatro números batem com o que
+já estava no catálogo. Os Espaços não vêm desta tabela, vêm da regra geral de carregamento.
+
+**Exemplo do autor, virado assert:** Escudo Pesado (6) de Grau Especial (5) dá **11 de RD Geral e -4
+de penalidade**.
+
+O Escudo Pequeno **não ocupa uma das mãos**. ⚠ O livro escreve "escudo leve" nessa frase, e o autor
+já confirmou ser erro do texto, então o catálogo diz "pequeno". O texto reenviado em 2026-08-01
+repete o "leve", o que é só a mesma fonte, e não uma retratação. **Confirmar se ainda vale.**
+
+O encantamento **Reforçado** seguiu o escudo e também é **RD Geral** (autor, 2026-08-01), mesmo o
+texto dele dizendo "contra dano físico". O encantamento **Isolante de escudo foi removido** na mesma
+decisão: ver a seção de Ferramentas Amaldiçoadas.
 
 ---
 
@@ -149,10 +203,47 @@ seu grau, escolhido pelo jogador, independente do ND. Benefícios por grau (`FA_
 | Primeiro | +4 | 4 | +2 | +1 | +1 |
 | Especial | +5 | 5 | hab. única | hab. única | hab. única |
 
+⚠ **O que cada grau entrega na ficha de criatura mudou em 2026-08-01.** O rank do grau (1 no Quarto,
+5 no Especial) é o mesmo número em três lugares, e o dano é o único que escala diferente:
+
+| Grau | Acerto da arma | Defesa da armadura | RD do escudo | Dano fixo da arma |
+|---|---|---|---|---|
+| Quarto | +1 | +1 | +1 | +4 |
+| Terceiro | +2 | +2 | +2 | +8 |
+| Segundo | +3 | +3 | +3 | +12 |
+| Primeiro | +4 | +4 | +4 | +16 |
+| Especial | +5 | +5 | +5 | +20 |
+
+As três primeiras colunas são o **próprio rank do grau**, e somam por cima do equipamento comum: a
+Defesa parte do **custo da armadura** e a RD parte da **RD do escudo**. Só o Dano escala diferente.
+
+O **Acerto** entra na **linha daquela arma**, na aba Habilidades, e não no Ataque da aba Perícias:
+o bônus é da arma, e somá-lo na categoria faria duas armas de graus diferentes disputarem o mesmo
+número. O **Dano fixo** já existia, em `DANO_ADICIONAL_ARMA` (`afty-pericias.js`).
+
+### Encantamento desce um grau (ficha de criatura)
+
+Encantamento **não é recomendado para criatura**, e o preço é o grau: cada encantamento escolhido
+faz o item **descer um degrau** nas quatro contas acima. Uma arma de Grau Especial com o encantamento
+Potente calcula como **Primeiro Grau**, com dois calcula como Segundo, e assim por diante. O piso é
+**zero**, que é grau nenhum e não soma nada (uma arma de Quarto Grau com um encantamento vira uma
+arma comum para efeito de números).
+
+Duas coisas ficam **de fora** da redução:
+
+- A **Habilidade Única** do Grau Especial (autor). Ela não é encantamento, e o `grau` que a expressão
+  dela lê no Motor é o **real**.
+- **Quantos encantamentos o item aceita**, que segue vindo do grau real. Se descesse junto, a conta
+  se morderia: pegar um encantamento cortaria o limite que autorizou pegá-lo.
+
+Em código: `grauRankCalculo(grauValue, nEncantamentos)` e `grauDoRank(rank)`, e o resolver devolve
+`rankCalculo`, `grauCalculoLabel` e `reduzido`. A UI mostra um chip âmbar "Calcula como X" quando há
+redução.
+
 - **Encantamentos ACUMULAM** entre os graus (`faEncantamentosPermitidos` soma até o grau atual):
   arma no Primeiro Grau = 1+1+2 = **4**, escudo = **3**, uniforme = **4**. O Especial não ganha
   encantamento novo, concede a **habilidade única** (texto livre criado com o Narrador).
-- **Bônus de Arma e RD do escudo NÃO acumulam** entre graus (usam só o valor do grau atual).
+- **Acerto, Dano, Defesa e RD NÃO acumulam** entre graus (usam só o valor do grau atual).
 - **RD do escudo SOMA com a RD do escudo comum** (decisão do autor, 2026-07-22): Escudo Pesado (6) de
   Segundo Grau = 6 + 3 = 9. É a única regra desta seção que **o motor aplica** hoje, via `rdFisico`.
 - **Cargas de Encantamento = bônus de treinamento do portador** (`derived.maestria`), compartilhadas
@@ -185,13 +276,79 @@ pvMax, peMax`. `resolveEquipamentos` soma `fa.efeitosPorCanal` nos acumuladores 
 aplica (novos canais: `equip.defesaBonus, movimentoBonus, rdGeralBonus, peBonus`, mais os já
 existentes `cdBonus, rdFisico, hpMaxBonus`).
 
-**Encantamentos com efeito ligado** (os únicos que mapeiam para um stat que o Afty calcula):
-- **Canalizadora** (arma): `cd += 2`.
-- **Reforçado** (escudo): `rdFisico += 2`.
-- **Blindado** (uniforme): `defesa += 2`.
-- **Propulsor** (uniforme): `movimento += 3`.
+⚠ **`EQUIP_EFEITO_CANAIS` MORREU em 2026-08-01.** Era a lista de sete canais (defesa, rdFisico,
+rdGeral, cd, movimento, pvMax, peMax) e era o teto que mantinha metade dos encantamentos como texto
+morto, porque Perícia, Manobra, TR, Iniciativa, Acerto e Dano não cabiam nela. Os encantamentos
+seguiram a Habilidade Única e passaram a escrever no **catálogo inteiro do Motor**, saindo por
+`equip.efeitosEncantamento`. Diferença para a Habilidade Única: encantamento **não leva `exclusivo`**,
+porque soma normal e não é fonte do pool exclusivo.
+
+Dois campos são só deste arquivo e não chegam ao Motor:
+
+- `alvoItem: true` no efeito: o alvo é o id do item. É como os canais de `fonteDano` miram "esta
+  arma" em vez de uma categoria.
+- Dois **pseudo-canais**: `acertoArma` (Acerto só manejando ESTA arma, porque o `bonusAcerto` do
+  Motor mira categoria e vazaria para as outras) e `penalidadeEquip` (quanto a penalidade de
+  Destreza deste item é reduzida).
+
+A DSL do item ganhou `custo` e `penalidade`, além do `grau` que já tinha.
+
+**Os 17 encantamentos ligados**, de 52:
+
+| Encantamento | Onde | Como |
+|---|---|---|
+| Balanceada | arma | `bonusManobra` 2, nas quatro |
+| Canalizadora | arma | `cd` 2 |
+| Certeira | arma | `margemCritico` 1, nesta arma |
+| Cruel | arma | `danoBonus` 3, nesta arma |
+| Otimizada | arma | `iniciativa` 2 |
+| Penetrante | arma | `ignoraRD` = BT, nesta arma |
+| Poderosa | arma | `danoBonus` 2, nesta arma |
+| Potente | arma | `dadosDano` 1, nesta arma |
+| Precisa | arma | `acertoArma` 2 |
+| Polido | escudo | `penalidadeEquip` 2 |
+| Reforçado | escudo | `rdGeral` 2 |
+| Ajustado | uniforme | `penalidadeEquip` 1, mais Furtividade 2 se a penalidade base for zero |
+| Blindado | uniforme | `defesa` 2 |
+| Furtivo | uniforme | `bonusPericia` furtividade = custo do uniforme |
+| Marcial | uniforme | `bonusManobra` 2 |
+| Material Pesado | uniforme | `bonusTR` fortitude 2 |
+| Propulsor | uniforme | `movimento` 3 |
+
+⚠ **Reforçado é `rdGeral`, e não `rdFisico`** (autor, 2026-08-01), mesmo o texto dizendo "contra dano
+físico": a RD do escudo inteira virou Geral, e o adicional acompanha.
+
+**O Ajustado num único efeito declarativo.** As duas metades da regra ("a penalidade é reduzida em 1,
+caso possua" e "se já possuir 0 de penalidade, +2 em Furtividade") viram
+`2 * (penalidade == 0)` na expressão do bônus, e um efeito que resolve em zero não vira linha. Foi
+isso que evitou um caso especial em código.
+
+**Os 35 que seguem como texto** caem em cinco bloqueios: efeito por gatilho ou reação (Amplificadora,
+Harmonizada, Drenadora, Destruidora, Reluzente, Esponja, Repulsor, Ricochete, Revestido com
+Espinhos, Escaldante, Distorcivo, Impulso, Estimulante), traço de arma que a linha de dano não usa
+(Afiada, Defensora, Disco, Espinhoso, Destruidor, Avassalador), alcance e manejo (Cano Alongado,
+Longa, Retorno, Compartimento, Armazenadora, Intangível, Aeronauta), efeito em OUTRA criatura
+(Bloqueador, Expansão de Escudo), e **RD ou dano por tipo elemental** (Elemental, Sintonizada,
+Isolante de uniforme, Resiliente), que esperam a lista de tipos de dano do autor.
+
+⚠ Uma pendência real: **Complementar** dá "+2 na sua CD de Especialização e de Estilo Marcial". O
+Afty tem UMA CD só (a Amaldiçoada, que a Canalizadora usa). Se as duas forem a mesma coisa, é uma
+linha de `cd`. **Confirmar com o autor.**
+
+⚠ **Discreta** dá "+5 em Furtividade e Prestidigitação **para esconder apenas a arma**". Ficou como
+texto porque aplicá-lo sempre seria errado: o bônus é para um uso específico da perícia.
 
 Um efeito só entra se o encantamento **atende ao pré-requisito** (senão fica inerte, além do aviso).
+
+**Removido: o encantamento Isolante de ESCUDO** (autor, 2026-08-01). Ele dizia "a redução de dano do
+escudo passa também a ser aplicada a um tipo de dano elemental à sua escolha", e virou letra morta
+quando a RD do escudo passou a ser RD Geral, que já cobre todo tipo menos alma. O **Isolante de
+uniforme é outro encantamento**, com outro texto, e continua existindo.
+
+**Efeitos de perícia de ITEM também foram ligados** na mesma passada, pelo mesmo cano: Sob Medida
+(+2 Acrobacia e Furtividade) e Amuleto do Vislumbre (+2 Percepção). Sobraram as duas Pulseiras
+(Magistral e Primacial), que concedem treino numa perícia **à escolha do jogador** e precisam de uma
+escolha na UI.
 
 **Habilidade Única (Grau Especial):** além do texto (`fa.habilidadeUnica`), tem um **Motor de
 Automação editável pelo jogador** (`fa.habilidadeEfeitos: [{canal, expr}]`), aplicado quando a
@@ -283,21 +440,33 @@ Em `afty-derive.js`, via `resolveEquipamentos` e `resolveCarga`:
 
 | Canal | De onde vem |
 |---|---|
-| **Defesa** | bônus da modificação do uniforme equipado, mais -5 se sobrecarregado |
+| **Defesa** | custo da armadura vestida, mais o grau da Ferramenta, mais -5 se sobrecarregado |
+| **Acerto** | grau da Ferramenta da arma, na linha de dano daquela arma |
+| **Dano** | grau da Ferramenta da arma (`DANO_ADICIONAL_ARMA`), na linha daquela arma |
 | **Deslocamento** | -4,5m se sobrecarregado |
-| **RD Física** (`derived.rdFisico`) | escudos equipados. Canal NOVO, separado de RD Geral e Específico |
+| **RD Geral** | escudos equipados + grau da Ferramenta |
+| **RD Física** (`derived.rdFisico`) | só o que nomeia o tipo (encantamento Reforçado, Aura Reforçada). O ESCUDO saiu daqui em 2026-08-01 |
+| **Perícias de Destreza** (`derived.penalidadeDestreza`) | penalidade da armadura + a dos escudos, cumulativas. Não pega TR nem Jogada de Ataque |
 | **PV máximo** | Bracelete do Vigor (+10) e Ombreiras do Vigor Superior (+20) |
 | **CD** | Chaveiro Canalizador (+1) |
 | **Atributo** | os 6 acessórios de +2. **Passam o limite** do atributo, teto duro de 30 |
 | **Carga** | espaços usados, limite, teto e sobrecarga |
-| `derived.penalidadeDestreza` | uniforme + escudos, cumulativos. Calculado mas **não aplicado** |
 
 ⚠ **Ordem importa.** Os acessórios de atributo entram DEPOIS do clamp do limite (por isso passam
 dele) e ANTES do cálculo de carga (por isso o Bracelete da Força aumenta o quanto você carrega).
 `resolveEquipamentos` não calcula carga justamente por causa disso.
 
-⚠ O bônus de **PV máximo de item entra depois da Alma e do Patamar**, ao contrário do treino. Um
-item que diz "+10 pontos de vida máximos" dá 10, não 40 num Beyond. **Confirmar com o autor.**
+✅ O bônus de **PV máximo de item entra ANTES da Alma e do Patamar** (autor, 2026-08-01), junto do
+treino e do canal `hp` do Motor. Um item de "+10 pontos de vida máximos" vale 40 num Beyond.
+
+⚠ **Só o que está EQUIPADO conta**, e desde 2026-08-01 isso inclui as **armas**, que ganharam botão
+de equipar. A linha de dano da arma só sai com ela equipada, o que **muda a decisão de 2026-07-27**
+("uma linha para cada Tipo de Arma colocado"). O motivo é o Acerto: carregar uma arma na mochila não
+pode render número.
+
+A penalidade vale só em **"testes de perícia que utilizam Destreza"**, que é o que o livro escreve:
+não pega Teste de Resistência (nem o de Reflexos) nem Jogada de Ataque. Aparece no hover da perícia
+como a fonte "Armadura e Escudo". As Manobras herdam de graça pela Acrobacia, que é o que elas leem.
 
 ---
 
@@ -308,7 +477,15 @@ item que diz "+10 pontos de vida máximos" dá 10, não 40 num Beyond. **Confirm
    do texto especial, porque a coluna da tabela ficou sem tipo. O validador cobra isso.
 2. **A tabela manda no espaço.** A regra geral ("armas de duas mãos ocupam dois espaços") é só o
    default de item sem valor declarado. Manoplas e Kusarigama ficam em 1 mesmo sendo de duas mãos.
-3. **Orçamento é indicativo** (autor). A aba conta e destaca quando passa, mas não bloqueia.
+3. **Orçamento é indicativo** (autor). A aba conta e destaca quando passa, mas não bloqueia. O
+   catálogo tem **filtro por custo** (2026-08-01), que é a pergunta direta do orçamento: "o que
+   ainda cabe na vaga que me sobrou". Os chips oferecidos saem dos custos que EXISTEM no recorte
+   atual (aba mais sub-filtro), então a aba de Kits, onde tudo custa 1, não mostra filtro nenhum, e
+   Armas Simples oferece só C1 e C2 enquanto as Complexas vão até C4. O recorte para no sub-filtro
+   de propósito: incluir a busca faria as opções mudarem a cada tecla. O custo escolhido é
+   **derivado, não corrigido em estado**: se a aba nova não tiver aquele custo, ele é ignorado em
+   vez de esvaziar a lista, e sem `useEffect` com `setState` (que o eslint barra por renderização
+   em cascata).
 4. **Besta Leve** foi movida do grupo Arco para o grupo **Besta** (autor), casando com a Besta Pesada.
 5. **Faixas continuam na tabela de armas** (autor), mesmo o texto dizendo que não são armas, porque
    contam como arma para Ferramenta Amaldiçoada. Marcadas com `contaComoArma: false`.
@@ -323,10 +500,20 @@ item que diz "+10 pontos de vida máximos" dá 10, não 40 num Beyond. **Confirm
 1. **Espaço de Fármacos e Espirituais.** O livro diz "itens consumíveis **como** talismãs e misturas
    ocupam meio espaço". Tratei "como" como exemplo, então Fármaco e Espiritual também ocupam 0,5 e
    só Acessório fica em 1. Se a leitura for literal, mude `ESPACOS_POR_CATEGORIA_ITEM`.
-2. **PV máximo de item** entra depois da Alma e do Patamar (ver acima).
-3. **Espaço de um kit de ferramentas.** O livro não diz, então vale o padrão dele (1 espaço).
+2. ✅ **PV máximo de item**: entra ANTES da Alma e do Patamar (autor, 2026-08-01). Feito.
+3. ✅ **Espaço de um kit de ferramentas**: 1 espaço (autor, 2026-08-01), que já era o padrão.
 4. O título da seção sai como **"FERRAMENTAS DE ALFAITE"** no PDF. Transcrito como **Alfaiate**,
    que é como o corpo do texto escreve.
+5. ✅ **Números dos escudos**: reenviados em 2026-08-01 e idênticos aos que já estavam. Só a RD
+   trocou de canal (Física para Geral).
+6. ⬜ **"Escudo leve" na descrição do Escudo Pequeno**: o texto reenviado repete o erro. Confirmar
+   que a correção para "pequeno" segue valendo.
+7. ✅ **Sob Medida**: dá 1 de Defesa, quebrando a regra do custo (autor, 2026-08-01).
+8. ⬜ **Complementar** (encantamento de arma) dá "+2 na CD de Especialização e de Estilo Marcial". O
+   Afty tem uma CD só. Se for a mesma, é uma linha de `cd`.
+9. ⬜ **Tipos de dano elementais**: `TIPOS_DANO` tem só os quatro das armas (Cortante, Impacto,
+   Perfurante, Queimante). O autor vai mandar a lista completa, que é o que destrava a RD por tipo
+   de dano prometida na sessão de 2026-07-30.
 
 ### Do sistema
 - **Ferramentas Amaldiçoadas** foram feitas em 2026-07-22 (ver a seção própria acima), com Motor de
@@ -337,8 +524,10 @@ item que diz "+10 pontos de vida máximos" dá 10, não 40 num Beyond. **Confirm
 - **RD Física** existe hoje só como número devolvido pelo motor (escudos comuns + grau da Ferramenta +
   Reforçado). O sistema de RD Física em si ainda não foi definido.
 - **Efeitos inertes**, marcados com `aplicado: false` no catálogo, esperando sistema que não existe:
-  Perícias (Sob Medida, Amuleto do Vislumbre, Pulseira Magistral, Pulseira Primacial e a própria
-  penalidade de Destreza), Estamina, Dados de Vida, Exaustão e condições.
+  Perícias (Sob Medida, Amuleto do Vislumbre, Pulseira Magistral, Pulseira Primacial), Estamina,
+  Dados de Vida, Exaustão e condições. ⚠ As **Perícias existem desde 2026-07-29**, com canal
+  `bonusPericia`: os quatro itens de perícia podem ser ligados a qualquer momento, e ninguém voltou
+  para fazê-lo. É o mesmo envelhecimento calado do requisito `nota` das Aptidões.
 - **Habilidades que cobravam o Inventário** e agora podem ser ligadas: *Otimização de Espaço*
   (espaços adicionais iguais ao BT), *Ajustes em Equipamento*, e o grupo **Pugilato** citado por um
   Talento. Nenhuma foi ligada ainda, porque continua valendo o bloqueio raiz (não existe canal de

@@ -239,12 +239,19 @@ function linhaDeDano({
  * com Manoplas ou Faixas equipadas. O atributo vem da arma: Força no corpo a
  * corpo, Destreza a distância, e com o traço Fineza vale o maior dos dois.
  *
- * ctx = { nd, patamar, mods, aptidaoCL, efeitos, armas, grauBasico }.
- * `armas` = [{ id, nome, grauArma, alcance, propriedades, fineza, distancia }],
- * montado pelo deriveAfty a partir dos equipamentos.
+ * ctx = { nd, patamar, mods, aptidaoCL, efeitos, armas, grauBasico,
+ *         acertoGrauBasico, ataques }.
+ * `armas` = [{ id, nome, grauArma, acertoGrau, alcance, propriedades, fineza,
+ * distancia }], montado pelo deriveAfty a partir dos equipamentos.
  *
  * `nivelDano` e `danoBonus` aceitam alvo: sem alvo valem para todas as fontes,
  * com alvo (`basico` ou o id da arma) valem só naquela linha.
+ *
+ * ⚠ O ACERTO fecha AQUI, e não na aba de Testes (autor, 2026-08-01). O grau da
+ * Ferramenta dá +1 de Acerto por degrau, e esse bônus é DAQUELA arma: somá-lo no
+ * Ataque da categoria faria duas armas de graus diferentes disputarem o mesmo
+ * número. Então a linha mostra o ataque da categoria (Corpo a Corpo ou A
+ * Distância, já resolvido em resolveTestes) mais o grau da própria arma.
  */
 export function resolveDano(creature, ctx = {}) {
   const nd = Math.max(1, Math.trunc(Number(ctx.nd) || 1));
@@ -293,11 +300,34 @@ export function resolveDano(creature, ctx = {}) {
     return linha;
   };
 
+  // Ataque da categoria, já resolvido em resolveTestes. A linha soma o grau da
+  // arma por cima disso para fechar o número que o jogador rola.
+  const ataques = Array.isArray(ctx.ataques) ? ctx.ataques : [];
+  const acertoDe = (ataqueId, grauBonus, fontes = []) => {
+    const atq = ataques.find((a) => a.id === ataqueId);
+    if (!atq) return null;
+    // As fontes de encantamento saem do total do grau para aparecerem com o
+    // nome delas no hover: o resto é o rank, que é a Ferramenta em si.
+    const doEncantamento = fontes.reduce((s, f) => s + (f.valor ?? 0), 0);
+    const doGrau = grauBonus - doEncantamento;
+    return {
+      acerto: atq.bonus + grauBonus,
+      acertoAtaque: atq.nome,
+      partesAcerto: [
+        ...atq.partes,
+        ...(doGrau ? [{ label: "Grau da Ferramenta", valor: doGrau }] : []),
+        ...fontes,
+      ],
+    };
+  };
+
   const finezaDesarmado = valorCanal(ef, "finezaAtaque", "corpo") > 0;
   const entradas = [
     // Desarmado não tem margem de crítico listada em lugar nenhum: é 20.
     { id: "basico", nome: "Ataque Básico", fonte: "basico", alcance: null, propriedades: [],
-      ...monta(escoposDaArma(null), atributoDe({ fineza: finezaDesarmado }), ctx.grauBasico, 20) },
+      ...monta(escoposDaArma(null), atributoDe({ fineza: finezaDesarmado }), ctx.grauBasico, 20),
+      // Manoplas e Faixas são o Ataque Básico, então o grau delas entra aqui.
+      ...acertoDe("corpo", Math.max(0, Math.trunc(Number(ctx.acertoGrauBasico) || 0))) },
   ];
 
   for (const a of Array.isArray(ctx.armas) ? ctx.armas : []) {
@@ -317,6 +347,10 @@ export function resolveDano(creature, ctx = {}) {
       dedicada,
       elegivelDedicada: !!a.elegivelDedicada,
       ...monta(escoposDaArma({ ...a, propriedades }), atributoDe(a), a.grauArma, a.critico ?? 20),
+      // A arma a distância rola o Ataque A Distância, a de corpo a corpo rola o
+      // Corpo a Corpo. O atributo já seguiu a mesma regra logo acima.
+      ...acertoDe(a.distancia ? "distancia" : "corpo",
+        Math.max(0, Math.trunc(Number(a.acertoGrau) || 0)), a.fontesAcerto ?? []),
     });
   }
   return { entradas };
@@ -350,7 +384,8 @@ export function totalPericias({ modInt = 0, modSab = 0, grauRank = 1, bonus = 0 
  *     livro. **PENDENTE:** as outras duas tinham fórmula própria da criatura,
  *     então esta provavelmente também tem. Perguntado, sem resposta ainda.
  *
- * ctx = { nd, bt, mods, tecnicaAttr, grauRank, escalaCD, escalaDefesa, bonusVagas }.
+ * ctx = { nd, bt, mods, tecnicaAttr, grauRank, escalaCD, escalaDefesa, bonusVagas,
+ *         efeitos, penalidadeDestreza }.
  */
 export function resolveTestes(creature, ctx = {}) {
   const nd = Math.max(1, Math.trunc(Number(ctx.nd) || 1));
@@ -404,6 +439,16 @@ export function resolveTestes(creature, ctx = {}) {
     (ef ? detalhesDoCanalEscopos(ef, canal, escoposDe(id, atributo), true) : [])
       .map((d) => ({ label: d.nome, valor: d.valor, ...(d.suplantado ? { suplantado: true } : {}) }));
   const rotuloAttr = (k) => AFTY_ATTRS.find((a) => a.key === k)?.label ?? k;
+
+  /* Penalidade de armadura e escudo, cumulativa (autor, 2026-08-01). Vale só em
+     "testes de perícia que utilizam Destreza", que é o que o livro escreve:
+     não pega Teste de Resistência nem Jogada de Ataque. Chega como número
+     negativo. */
+  const penalidadeEquip = Math.min(0, Math.trunc(Number(ctx.penalidadeDestreza) || 0));
+  const penalidadeDe = (atributo) => (atributo === "destreza" ? penalidadeEquip : 0);
+  const partePenalidade = (atributo) =>
+    (penalidadeDe(atributo) ? [{ label: "Armadura e Escudo", valor: penalidadeEquip }] : []);
+
   const parteProficiencia = (prof) => {
     const v = bonusProficiencia(bt, prof);
     if (!prof) return [];
@@ -435,11 +480,13 @@ export function resolveTestes(creature, ctx = {}) {
       // `concedida` marca o treino que veio de fora, para a UI poder mostrar
       // que aquela faixa não é desmarcável ali.
       concedida: !!prof && prof !== escolhida,
-      bonus: bonusDe(p.atributo, prof) + bonusPorAtributo("bonusPericia", p.id, p.atributo),
+      bonus: bonusDe(p.atributo, prof) + bonusPorAtributo("bonusPericia", p.id, p.atributo)
+        + penalidadeDe(p.atributo),
       partes: [
         { label: rotuloAttr(p.atributo), valor: modDe(p.atributo) },
         { label: "Metade do ND", valor: meioNivel },
         ...parteProficiencia(prof),
+        ...partePenalidade(p.atributo),
         ...partesPorAtributo("bonusPericia", p.id, p.atributo),
       ],
     };

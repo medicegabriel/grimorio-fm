@@ -35,6 +35,10 @@ Estado atual do sistema Afty (atualizado 2026-07-17). Leia junto com:
 >    destravar, além do ND 21/22 de sempre. A Geral em si pede ND 21 e ND 22.
 >    Treinamentos dá `metade do ND` em Focos, e sai `1 + ND/10` de vezes.
 >
+> **APTIDÕES**: 11/62 em 2026-07-30, mais **13 das 18 de Maldição** em 2026-08-01 (a origem que as
+> destrava foi criada no mesmo dia). A razão da Maldição é melhor porque as dela são passivas de
+> corpo, e não ativas pagas em PE com efeito sobre terceiros.
+>
 > **MOTOR DE AUTOMAÇÃO — placar RECONTADO em 2026-07-29: 155/412.**
 > Combatente **30/70** · Lutador **35/69** · Restringido **28/53** · Talentos **28/51** ·
 > Conjurador **16/65** · Suporte **10/57** · Controlador **8/47** · **Origens** (Herdado com os
@@ -76,6 +80,12 @@ Estado atual do sistema Afty (atualizado 2026-07-17). Leia junto com:
 > **POOL EXCLUSIVO** (2026-07-30): cinco fontes de bônus numérico **não acumulam
 > entre si**, e vale o maior valor de cada canal. Habilidade Única de item já está
 > ligada, as outras quatro esperam cano. Ver a seção da sessão de 2026-07-30.
+>
+> **EQUIPAMENTOS revisado** (2026-08-01): a aba de inventário da CRIATURA é simplificada por
+> decisão. Defesa da armadura = o CUSTO dela mais o grau, RD do escudo virou **RD Geral**, a arma
+> dá +1 de Acerto por grau na linha dela, a arma virou EQUIPÁVEL (e a linha de dano exige isso),
+> cada encantamento DESCE UM GRAU nas contas, e a **penalidade de Destreza passou a ser aplicada**
+> (era calculada e ficava parada desde 2026-07-22). Ver a sessão de 2026-08-01.
 >
 > 👉 **Começando um chat novo? Vá direto para
 > [PENDÊNCIAS DE ESPECIALIZAÇÕES](#-pendências-de-especializações-lista-de-retomada).**
@@ -170,7 +180,298 @@ existe, as fontes de concessão não).
 
 ---
 
-## 🆕 SESSÃO DE 2026-07-30 (o que mudou por último)
+## 🆕 SESSÃO DE 2026-08-01 (o que mudou por último)
+
+### 🎭 ORIGEM MALDIÇÃO: o conteúdo existia, a porta não
+
+Auditei as origens a pedido do autor (a pergunta era se o Talento adicional do Inato estava ligado:
+está, e roda ponta a ponta). A auditoria achou um buraco maior.
+
+⚠ **As 18 Aptidões de Maldição estavam no catálogo desde 2026-07-16, e o `abasAptidao` já trocava a
+categoria Energia Reversa pela Maldição quando `core.origem.id === "maldicao"`. Mas a ORIGEM nunca
+foi criada.** `getOrigem("maldicao")` devolvia `null`, então ninguém tinha como escolhê-la, e as 18
+aptidões eram conteúdo inalcançável. O texto chegou em 2026-08-01 e a origem entrou.
+
+⚠ **"Maldição" aqui é a ORIGEM.** O PATAMAR que se chamava Maldição virou Beyond em 2026-07-16, e os
+dois não têm relação nenhuma.
+
+**As três características:**
+
+| Característica | Como ficou |
+|---|---|
+| Bônus em Atributo | 4 pontos, máximo 3 no mesmo, mais o pool de limite abaixo |
+| Existência Metafísica | `mesa: true` inteira |
+| Natureza Amaldiçoada | `vagasAptidao: 1 + (nd >= 10) + (nd >= 15)` e `pe: nd` |
+
+**Existência Metafísica é mesa por falta de sistema, não por descuido.** Imunidade a dano que não
+venha de energia amaldiçoada e vulnerabilidade a energia reversa são recortes por ORIGEM do dano, e
+o Afty não tem imunidade nem dano por origem. O recorte de percepção ("não pode ser percebido por
+quem não é feiticeiro") também não é número.
+
+### As 18 Aptidões de Maldição no Motor: 12 ligadas
+
+Feita na mesma sessão, agora que a origem existe. **13 de 18** com efeito, que é uma razão bem
+melhor que a das outras categorias (11 de 62 em 2026-07-30), e o motivo é estrutural: as de
+Maldição são majoritariamente **passivas de corpo**, e não ativas pagas em PE com efeito sobre
+terceiros.
+
+| Aptidão | Como |
+|---|---|
+| Armas Naturais | `finezaAtaque` corpo (a Fineza é o que sobra de mecânico) |
+| Armas Naturais Aprimoradas | `nivelDano` basico, nos marcos 8, 12, 16 e 20 |
+| Crescimento Corporal | `hp` = ND |
+| Olhos Adicionais | `bonusPericia` percepção = Maestria, mais `atencao` +2 |
+| Revestimento | `rdFisico` = Maestria |
+| Revestimento Evoluído | `rdFisico` = `mod_constituicao - maestria`, com `quando` |
+| Estoque Ampliado | `pe` = Maestria |
+| Extração de Potencial | `proficienciaPericia` feitiçaria e `vagasFeitico` |
+| Proteção Constante | `pvTemporario` na bancada, preso ao `em_combate` |
+| Fluxo Imparável | os três canais de Regeneração |
+| Regeneração Ampliada | dado d8 e o modificador dobrado |
+| Regeneração Máxima | dado d10 |
+| Superioridade Física | `bonusPericia` na perícia escolhida (ver abaixo) |
+
+**Três decisões que valem registrar:**
+
+1. **O `tem_*` passou a cobrir APTIDÕES**, e não só Habilidade e Talento. Quem obrigou foi o
+   **Revestimento Evoluído**: ele TROCA a RD do Revestimento pelo modificador de Constituição, e
+   troca não tem canal, então entra como DELTA (`mod_constituicao - maestria`), o mesmo desenho da
+   Cobertura Avançada sobre o Cobrir-se. Só que o livro **não lista o Revestimento como
+   pré-requisito** (a nota já estava no catálogo desde julho), então sem a guarda o delta daria um
+   número inventado para quem pegasse só o Evoluído. Com `quando: "tem_mal_revestimento"`, sem
+   Revestimento não há RD para trocar e não há efeito.
+2. **Extração de Potencial usa o `prof_feiticaria`**, que já existia. "Caso não possua, você recebe
+   treinamento; caso possua, você se torna mestre" vira `1 + (prof_feiticaria >= 1)`, exatamente o
+   truque da Força Imparável do Restringido.
+3. **A cura da Maldição é o espelho da Energia Reversa**, com PE no lugar de PER. A Regeneração
+   Corporal é Ação Comum e por isso não vira número sozinha, igual à cura de Energia Reversa: quem
+   a torna automática é o **Fluxo Imparável** ("no começo do seu turno, como uma ação livre"), e
+   cura no início do turno É o canal de Regeneração. Estado novo `regeneracaoPE` na bancada, irmão
+   do `fluxoPER`. O modificador entra UMA vez (leitura confirmada pelo autor em 2026-07-30) e
+   "Constituição OU Presença" é o maior dos dois (decisão C3).
+
+**As 5 que ficaram de fora**, cada uma com bloqueio nomeado: Composição Elemental e Absorção
+Elemental (tipos de dano elementais, que o autor ainda vai mandar), Absorção Amaldiçoada (gatilho de
+morte), Regeneração de Membros (narrativa pura) e Regeneração Corporal (Ação Comum, coberta pelo
+Fluxo Imparável).
+
+### 🐛 Toda faixa da bancada precisa estar no `tetoFaixa`
+
+Achado ao ligar o `regeneracaoPE`: o `resolveCombate` apara faixa com
+`intDe(c[e.id], min, max(min, tetoFaixa[e.id] ?? 0))`, então uma faixa **ausente do `tetoFaixa` é
+aparada em ZERO** e o estado nunca sai do lugar, sem erro nenhum. O `max` do catálogo é só da UI, e
+não chega no resolver.
+
+O comentário que estava lá dizia o contrário ("As demais usam o `max` do catálogo, que a UI já
+aplica, e aqui só precisam do piso em zero"), e foi ele que me fez perder uma depuração. Reescrito
+para avisar.
+
+### Pool que sobe SÓ o limite
+
+"A cada 4 níveis, você pode aumentar o limite de um atributo em 2" é irmão do **Desenvolvimento
+Inesperado** do Derivado, e a diferença é toda: lá o ponto sobe **valor e limite** juntos, aqui ele
+sobe **só o limite**. A Maldição paga o valor com os 4 pontos distribuíveis dela.
+
+Por isso não deu para reusar o `afetaAtributos`, e entrou um shape novo:
+
+- `poolLimite: { porNivel: 4, valor: 2 }` na característica.
+- `core.origem.limites` guarda **quantas vezes** cada atributo foi escolhido, e o degrau (2) entra no
+  `resolveLimitePoolOrigem`. Assim o contador da UI conta escolhas e a ficha soma pontos de limite,
+  sem os dois números se confundirem.
+- `limitePoolTotal(nd, porNivel)` e `limitePoolUsado(mapa)` em `afty-atributos.js`, irmãos dos
+  `desenvolvimento*`.
+- Entra no `limiteBaseOf` do `deriveAfty` e aparece no hover do limite como "Bônus em Atributo".
+
+A cadência bate redondo com os três tetos: 5 escolhas no ND 20 levam o limite de 20 a **30**, que é o
+teto do sistema. Acima disso o clamp segura.
+
+### ✅ Superioridade Física: um OU outro, e a escolha de Aptidão que nasceu daí
+
+"Seu bônus de treinamento em rolagens de **atletismo ou acrobacia**" é **um OU outro** (autor,
+2026-08-01), e não os dois nem o maior. As Aptidões não tinham escolha modelada, e montar uma
+escolha aninhada inteira para um caso só era desproporcional. O caminho foi o DSL:
+
+- A aptidão declara `opcoes: { id, label, valores: [...] }` no catálogo.
+- Cada valor vira a booleana **`opt_<aptidao>_<valor>`** no contexto, alimentada por
+  `creature.aptidaoOpcoes` (`{ [aptidaoId]: valorId }`).
+- O conteúdo emite as DUAS linhas, cada uma protegida pelo `quando` dela. Só uma tem a condição
+  satisfeita, então nada de novo precisou entrar no coletor nem no `aplicarEfeitos`.
+- As booleanas entram no vocabulário declaradas a zero, pelo mesmo motivo dos `tem_*`.
+
+Na UI são **chips**, e não dropdown: são duas opções, e a regra da aba de Aptidões (aprovada pelo
+autor) é manter as opções à mostra. Só aparecem com a aptidão escolhida.
+
+Com isso o placar da Maldição foi para **13 de 18**.
+
+(A parte de "5 PE para vantagem numa manobra" segue fora: vantagem não é número, e um interruptor de
+bancada que não muda nada seria UI morta.)
+
+⚠ **O Corpo Amaldiçoado Mutante continua VAZIO.** É outra origem, não é a Maldição, e o texto dela
+nunca foi enviado. Hoje ela aparece na lista e não concede nada.
+
+
+Revisão da aba **Equipamentos**. Detalhe completo em `docs/afty-equipamentos.md`.
+
+### A aba de inventário da CRIATURA é simplificada, por decisão
+
+Palavras do autor: a aba existe "para o mestre não precisar ficar pensando em quais itens pegar",
+e o **Dano da criatura tem cálculo próprio que não segue o da arma**. Todas as mudanças abaixo saem
+disso. O que sair da ficha de criatura **volta na ficha de jogador**, e não está sendo apagado do
+catálogo, só desligado do motor.
+
+### Armadura: Defesa é o CUSTO dela, e a penalidade voltou
+
+- **Defesa da armadura = o custo dela**, mais 1 por grau da Ferramenta. Um Revestimento Robusto
+  (custo 3) de Segundo Grau dá 3 + 3 = 6. Helper `defesaDaArmadura(def, grauDefesa)`.
+- ⚠ **Sob Medida é a exceção declarada**: custa 2 e dá **1**, "já que ela já dá benefícios em
+  Perícia". Campo `defesaCriatura` no catálogo, e o valor bate com o +1 da tabela do livro. Ela
+  também resolveu de quebra a dominância que a regra do custo tinha criado sobre o Revestimento
+  Médio, que custa o mesmo e tem penalidade.
+- ⚠ **A coluna de Defesa da tabela de modificações NÃO vale** (autor). Quem manda é o custo. O
+  Uniforme Comum tem custo 0, então dá 0 de Defesa.
+- **A penalidade de Destreza VOLTOU e agora é APLICADA**, o que ela nunca tinha sido: desde
+  2026-07-22 ela era calculada e ficava parada, primeiro porque Perícias não existiam e depois
+  porque ninguém voltou. Vale só em **testes de perícia que usam Destreza**, que é o que o livro
+  escreve, então não pega TR (nem Reflexos) nem Jogada de Ataque. Aparece no hover como a fonte
+  "Armadura e Escudo", e as Manobras herdam de graça pela Acrobacia.
+- ⚠ Isto **substituiu a primeira passada do mesmo dia**, que dizia "+1 fixo para toda armadura" e
+  tinha removido a penalidade. As duas regras viveram algumas horas.
+
+### Os encantamentos saíram do teto de sete canais
+
+⚠ **`EQUIP_EFEITO_CANAIS` MORREU** (2026-08-01). Era a lista de sete canais dos encantamentos, e era
+o teto que mantinha metade deles como texto morto: Perícia, Manobra, TR, Iniciativa, Acerto e Dano
+não cabiam nela. Os encantamentos seguiram o caminho que a Habilidade Única abriu em 2026-07-30 e
+passaram a escrever no **catálogo inteiro do Motor**, saindo por `equip.efeitosEncantamento`. A
+diferença para a Habilidade Única é que encantamento **não leva `exclusivo`**: ele soma normal e não
+é fonte do pool exclusivo.
+
+Com isso o placar foi de **4 para 17 encantamentos ligados**, de 52. Os novos: Balanceada, Certeira,
+Cruel, Otimizada, Penetrante, Poderosa, Potente, Precisa (arma), Polido (escudo), Ajustado, Furtivo,
+Marcial, Material Pesado (uniforme).
+
+Duas invenções que valem registrar:
+
+- **Pseudo-canais**, resolvidos no `afty-equipamentos.js` e que nunca chegam ao Motor. `acertoArma`
+  existe porque o `bonusAcerto` do Motor mira CATEGORIA (corpo, distância), e o +2 do encantamento
+  Precisa vazaria para as outras armas. `penalidadeEquip` existe porque a penalidade de Destreza não
+  é canal de Motor. Um assert cobre justamente o não-vazamento.
+- **O Ajustado num efeito declarativo.** As duas metades da regra ("a penalidade é reduzida em 1,
+  caso possua" e "se já possuir 0 de penalidade, +2 em Furtividade") viraram
+  `2 * (penalidade == 0)` na expressão, com `penalidade` e `custo` entrando na DSL do item. Efeito
+  que resolve em zero não vira linha. Foi o que evitou um caso especial em código.
+
+⚠ **35 seguem como texto**, e cada um tem bloqueio nomeado: gatilho ou reação (13), traço de arma
+que a linha de dano não usa (6), alcance e manejo (7), efeito em outra criatura (2) e **RD ou dano
+por tipo elemental** (4), que esperam a lista de tipos de dano do autor.
+
+⚠ **Complementar** ("+2 na sua CD de Especialização e de Estilo Marcial") ficou de fora porque o
+Afty tem UMA CD só, a Amaldiçoada. Se forem a mesma coisa, é uma linha. **Pergunta aberta.**
+
+**Efeitos de perícia de ITEM entraram pelo mesmo cano**: Sob Medida (+2 Acrobacia e Furtividade) e
+Amuleto do Vislumbre (+2 Percepção), que eram `aplicado: false` desde 2026-07-22. Sobraram as duas
+Pulseiras, que concedem treino numa perícia à ESCOLHA do jogador e precisam de UI.
+
+### Escudo: a RD dele é RD GERAL
+
+Trocou de canal (autor, 2026-08-01). As palavras dele foram "RD Geral, exceto Alma", que é a
+definição EXATA da RD Geral no Afty, então não precisou de canal novo: é por isso que o Dano na Alma
+ganhou canal próprio em 2026-07-29. O campo do catálogo virou `rdEscudo`, e não `rdFisico`, para não
+sugerir tipo.
+
+O exemplo do autor virou assert: Escudo Pesado (6) de Grau Especial (5) dá **11 de RD Geral e -4 de
+penalidade**.
+
+O encantamento **Reforçado** seguiu o escudo e também virou RD Geral (autor), mesmo o texto dele
+dizendo "contra dano físico". `derived.rdFisico` ficou só com quem nomeia o tipo fora do
+equipamento (Aura Reforçada e afins). ⚠ O `rd_escudo` do DSL não mudou: ele alimenta `bonusTR`
+(Especialista em Escudo e Técnicas Defensivas de Escudo), e não RD.
+
+**Removido: o encantamento Isolante de ESCUDO** (autor). Ele fazia a RD do escudo valer também
+contra um tipo elemental à escolha, e virou letra morta quando ela passou a ser RD Geral, que já
+cobre todo tipo menos alma. O **Isolante de UNIFORME é outro encantamento** e continua existindo.
+
+A tabela de escudos foi reconferida com o texto do livro e os quatro números batem com o catálogo.
+
+### Arma: Acerto por grau, e a arma passou a ser EQUIPÁVEL
+
+- **+1 de Acerto por grau** da Ferramenta (Quarto 1 até Especial 5). O dano fixo por grau já existia
+  (`DANO_ADICIONAL_ARMA`, 4/8/12/16/20).
+- O Acerto aparece **na linha daquela arma**, na aba Habilidades, e não no Ataque da aba Perícias
+  (autor). O bônus é da arma: no Ataque da categoria, duas armas de graus diferentes disputariam o
+  mesmo número. `resolveDano` recebe `ataques` já resolvido e fecha `acerto` e `partesAcerto` por
+  linha, com hover próprio.
+- ⚠ **A linha de dano passou a exigir arma EQUIPADA** (autor), o que **muda a decisão de
+  2026-07-27** ("uma linha para cada Tipo de Arma colocado"). A arma ganhou botão de equipar, que
+  antes só uniforme, escudo e item com efeito tinham.
+- ⚠ Isso obrigou **dois painéis de fontes na mesma linha**, e o `group-hover` sem nome responde a
+  QUALQUER ancestral com a classe `group`. O `PainelDeFontes` ganhou o prop `aparecer`, e cada
+  número carrega o grupo NOMEADO dele (`group/acerto`, `group/dano`). A string vem literal do
+  chamador porque o Tailwind lê o código-fonte e não enxerga classe montada em template.
+- 🐛 **A primeira tentativa consertou só metade**, e o autor pegou por screenshot: nomear só o
+  painel de dentro impede ele de vazar para fora, mas a LINHA continuava sendo `group`, então passar
+  o mouse no Acerto acendia os DOIS painéis, sobrepostos. O conserto certo é a linha **não ser
+  `group`** e cada número ter o seu.
+  **A lição:** num container `group` só cabe UM painel de hover. A partir do segundo, o grupo tem de
+  descer do container para cada gatilho.
+- Varredura dos outros 8 pontos com `PainelDeFontes`: nenhum repete o problema. As Manobras têm dois
+  painéis por linha (Executar e Resistir), mas cada um já vem embrulhado no próprio `relative group`
+  pelo `ValorComFontes`, e a linha delas nunca foi `group`.
+
+### Encantamento DESCE UM GRAU (o preço de encantar uma criatura)
+
+Encantamento não é recomendado para criatura, e o preço é o grau: cada encantamento escolhido faz o
+item descer um degrau nas contas de **Acerto, Dano, Defesa e RD**. Grau Especial com um encantamento
+calcula como Primeiro, com dois calcula como Segundo. Piso **zero**, que é grau nenhum.
+
+Duas coisas ficam de fora, e as duas são decisão registrada:
+
+1. A **Habilidade Única** do Grau Especial (autor). O `grau` que a expressão dela lê no Motor segue
+   sendo o **real**.
+2. **Quantos encantamentos o item aceita**, que segue vindo do grau real. Se descesse junto, a conta
+   se morderia: pegar um encantamento cortaria o limite que autorizou pegá-lo.
+
+`grauRankCalculo(grau, n)` e `grauDoRank(rank)` em `afty-equipamentos.js`. O resolver devolve
+`rankCalculo`, `grauCalculoLabel` e `reduzido`, e a UI mostra um chip âmbar "Calcula como X".
+
+### Três correções da revisão da aba
+
+1. **PV máximo de item entra ANTES da Alma e do Patamar** (autor), junto do treino e do canal `hp`.
+   Um item de +10 vale 40 num Beyond. Era a pendência número 2 do doc de Equipamentos.
+2. **A Habilidade Única aparece no card Efeito do Equipado.** Ela passou a viajar pelo Motor em
+   2026-07-30 (pool exclusivo) e os escalares do card não a enxergavam, então uma ferramenta de Grau
+   Especial não aparecia em lugar nenhum da aba.
+3. **Poda de texto explicativo.** A aba nasceu antes da regra de 2026-07-29 e nunca tinha passado:
+   saíram o parágrafo do Orçamento, a frase de vazio do Efeito do Equipado, a narração do aviso de
+   Sobrecarregado, o parágrafo de apresentação do card de referência e o parágrafo âmbar que
+   explicava o motor. Notas de número viraram `title` ("passa o limite, teto 30", "Cargas (= BT)").
+
+### Filtro por custo no catálogo
+
+Pedido do autor. É a pergunta direta do orçamento, que é contado por custo: "o que ainda cabe na
+vaga que me sobrou". Chips no mesmo desenho do sub-filtro, com o rótulo `C1` que a linha do catálogo
+e a do carregado já usam.
+
+Duas decisões que valem registrar:
+
+- **Os chips saem dos custos que EXISTEM no recorte atual** (aba mais sub-filtro), e não de uma
+  lista fixa de 1 a 4. A aba de Kits, onde tudo custa 1, não mostra filtro nenhum. Armas Simples
+  oferece C1 e C2, Complexas vai até C4, e Uniformes tem um C0 (o Comum). O recorte para no
+  sub-filtro de propósito: incluir a busca faria as opções mudarem a cada tecla, e o que some
+  debaixo do dedo é pior que uma opção que não acha nada.
+- **O custo ativo é DERIVADO, não corrigido em estado.** Trocar de aba pode deixar o custo escolhido
+  sem item para casar, e a primeira versão consertava isso com um `useEffect` que chamava
+  `setCustoFiltro`. O eslint barrou (`react-hooks/set-state-in-effect`, renderização em cascata) e
+  estava certo: basta calcular `custoAtivo` na renderização e ignorar o escolhido quando ele não
+  existe no recorte. O valor guardado continua lá, e volta a valer quando a aba tiver aquele custo.
+
+### Kit ocupa 1 espaço
+
+Confirmado pelo autor, que já era o padrão. Pendência 3 do doc fechada.
+
+---
+
+## SESSÃO DE 2026-07-30
 
 ### POOL EXCLUSIVO: as cinco fontes que NÃO acumulam
 

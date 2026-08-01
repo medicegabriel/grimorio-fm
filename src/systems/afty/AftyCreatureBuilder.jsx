@@ -12,7 +12,7 @@ import {
   AFTY_TECNICA_ATTRS, AFTY_TAMANHOS, AFTY_RESISTENCIAS,
 } from "./afty-schema";
 import {
-  AFTY_ORIGENS, getOrigem, origemTemDesenvolvimento,
+  AFTY_ORIGENS, getOrigem, origemTemDesenvolvimento, origemPoolLimite,
   clasDaOrigem, getCla, caracteristicasEfetivas, totalDaAlocacao, usoDaAlocacao,
 } from "./afty-origens";
 // A descrição de cada anatomia agora aparece na própria linha selecionável, em
@@ -20,7 +20,8 @@ import {
 import { ANATOMIAS, anatomiaTotal } from "./afty-anatomias";
 import {
   ATTR_METODOS, VALORES_FIXOS, valoresFixosOk, rolarAtributos, resumoAtributos,
-  desenvolvimentoTotal, desenvolvimentoUsado, POINT_BUY_MIN, POINT_BUY_MAX,
+  desenvolvimentoTotal, desenvolvimentoUsado, limitePoolTotal, limitePoolUsado,
+  POINT_BUY_MIN, POINT_BUY_MAX,
   ATTR_LIMITE_PADRAO,
 } from "./afty-atributos";
 import {
@@ -58,17 +59,17 @@ import {
   alvosDanoDisponiveis, curaMultiplosDisponivel,
   INV_CUSTO_BENEFICIOS, INV_CUSTO_CONDICAO, resistenciasTreinaveis, usoPericias,
 } from "./afty-invocacoes";
-import { periciasParaInvocacao } from "./afty-pericias";
+import { periciasParaInvocacao, DANO_ADICIONAL_ARMA } from "./afty-pericias";
 import {
-  EQUIP_TIPOS, EQUIP_INICIAL, CUSTOS, ARMA_CATEGORIAS, ARMA_GRUPOS, TIPOS_DANO,
+  EQUIP_TIPOS, CUSTOS, ARMA_CATEGORIAS, ARMA_GRUPOS, TIPOS_DANO,
   ITEM_CATEGORIAS, catalogoDoTipo, novaEntradaEquip,
   orcamentoDoGrau, espacosDoEquipamento, custoDoEquipamento,
   getPropriedade, getEspecial, grupoLabel,
   CRIA_LABEL, REFEICOES_COZINHEIRO,
-  AFTY_GRAUS, FA_TIPOS_EQUIP, FA_CRIACAO, FA_BONUS_ARMA, FA_RD_ESCUDO,
+  AFTY_GRAUS, FA_TIPOS_EQUIP, FA_CRIACAO, defesaDaArmadura,
   FA_ENCANT_GANHO, FA_IDENTIFICACAO_CD, FA_GRAU_ESPECIAL_EXEMPLO,
   ENCANTAMENTOS_POR_TIPO, getEncantamento,
-  avaliarRequisitoEncantamento, EQUIP_EFEITO_CANAIS,
+  avaliarRequisitoEncantamento,
 } from "./afty-equipamentos";
 import { validateExpression } from "../../components/fm-dsl";
 import { deriveAfty } from "./afty-derive";
@@ -376,6 +377,8 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
     });
 
   // Aptidões Amaldiçoadas: escolher é de graça (o requisito é o que trava).
+  const setAptidaoOpcao = (id, valor) =>
+    patch({ aptidaoOpcoes: { ...(draft.aptidaoOpcoes || {}), [id]: valor } });
   const toggleAptidao = (id) =>
     setDraft((d) => {
       const atual = Array.isArray(d.aptidoesAmaldicoadas) ? d.aptidoesAmaldicoadas : [];
@@ -643,7 +646,7 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
           {tabAtiva === "pericias" && <TabPericias draft={draft} derived={derived} patch={patch} setProficiencia={setProficiencia} toggleAtaqueProf={toggleAtaqueProf} />}
           {tabAtiva === "habilidades" && <TabHabilidades draft={draft} derived={derived} patchCore={patchCore} toggleArmaDedicada={toggleArmaDedicada} addFeitico={addFeitico} removeFeitico={removeFeitico} patchFeitico={patchFeitico} duplicarFeitico={duplicarFeitico} setGeralVezes={setGeralVezes} addDominio={addDominio} removeDominio={removeDominio} patchDominio={patchDominio} setDominioAtivo={setDominioAtivo} />}
           {tabAtiva === "especializacoes" && <TabEspecializacoes draft={draft} derived={derived} setEspecializacoes={setEspecializacoes} toggleHabilidade={toggleHabilidade} toggleEscolhaHabilidade={toggleEscolhaHabilidade} toggleTalento={toggleTalento} toggleEscolhaTalento={toggleEscolhaTalento} setMelhoriaVezes={setMelhoriaVezes} toggleLendaria={toggleLendaria} toggleEscolhaAltoNivel={toggleEscolhaAltoNivel} />}
-          {tabAtiva === "aptidoes" && <TabAptidoes draft={draft} derived={derived} setAptidaoNivel={setAptidaoNivel} toggleAptidao={toggleAptidao} />}
+          {tabAtiva === "aptidoes" && <TabAptidoes draft={draft} derived={derived} setAptidaoNivel={setAptidaoNivel} toggleAptidao={toggleAptidao} setAptidaoOpcao={setAptidaoOpcao} />}
           {tabAtiva === "invocacoes" && <TabInvocacoes draft={draft} derived={derived} addInvocacao={addInvocacao} removeInvocacao={removeInvocacao} duplicarInvocacao={duplicarInvocacao} moverInvocacao={moverInvocacao} patchInvocacao={patchInvocacao} patchInvocacaoAttr={patchInvocacaoAttr} efeitosApi={efeitosApi} addHorda={addHorda} removeHorda={removeHorda} patchHorda={patchHorda} />}
           {tabAtiva === "equipamentos" && <TabEquipamentos derived={derived} addEquipamento={addEquipamento} removeEquipamento={removeEquipamento} patchEquipamento={patchEquipamento} toggleFerramenta={toggleFerramenta} patchFerramenta={patchFerramenta} toggleEncantamento={toggleEncantamento} />}
           {tabAtiva === "interludios" && <TabInterludios draft={draft} derived={derived} setTreinoProgresso={setTreinoProgresso} setTreinoInstance={setTreinoInstance} />}
@@ -862,9 +865,15 @@ const sinalDe = (v) => `${v >= 0 ? "+" : "−"}${Math.abs(v)}`;
 /* O painel em si. Uma linha por fonte e o total. `texto` numa parcela substitui
    o número, para as que não somam (os multiplicadores de Alma e Patamar no PV).
    Zeros NÃO são filtrados: "Destreza +0" diz qual atributo dirige o valor. */
-function PainelDeFontes({ partes, total, ancora = "direita" }) {
+/* `aparecer` existe para o caso de DOIS painéis na mesma linha (a de Dano tem
+   Acerto e Dano, cada um com as fontes dele). O `group-hover` sem nome responde
+   a qualquer ancestral com a classe `group`, então o painel de dentro abriria
+   junto com o de fora. Quem precisa de hover próprio passa um grupo NOMEADO, e
+   a string vem literal do chamador porque o Tailwind lê o código-fonte e não
+   enxerga classe montada em template. */
+function PainelDeFontes({ partes, total, ancora = "direita", aparecer = "group-hover:block" }) {
   return (
-    <span className={`hidden group-hover:block absolute top-full mt-1 z-30 w-max max-w-[16rem] rounded-lg border border-slate-700 bg-slate-950 shadow-xl shadow-black/50 p-2 text-left ${
+    <span className={`hidden ${aparecer} absolute top-full mt-1 z-30 w-max max-w-[16rem] rounded-lg border border-slate-700 bg-slate-950 shadow-xl shadow-black/50 p-2 text-left ${
       ancora === "esquerda" ? "left-0" : "right-0"
     }`}>
       {/* `suplantado` é o perdedor do pool exclusivo (a arma venceu o shikigami).
@@ -998,7 +1007,12 @@ function DanoCard({ derived, toggleArmaDedicada }) {
               e.fonte === "basico" ? "border-purple-700 bg-purple-950/30" : "border-slate-800 bg-slate-950/40"
             }`}
           >
-            <div className="relative group flex items-center gap-2.5">
+            {/* ⚠ A linha NÃO é `group`. Ela tem DOIS painéis de fontes (Acerto e
+                Dano) e o `group-hover` sem nome responde a qualquer ancestral
+                com a classe, então a linha inteira acendia os dois de uma vez,
+                sobrepostos. Cada número carrega o grupo NOMEADO dele, e abre
+                sozinho. */}
+            <div className="flex items-center gap-2.5">
               {/* Marcar como Arma Dedicada. Só aparece com a habilidade pega, e
                   a linha do Ataque Básico fica com o espaço vazio para os nomes
                   seguirem alinhados (mesma anatomia do equipar, na aba
@@ -1053,10 +1067,24 @@ function DanoCard({ derived, toggleArmaDedicada }) {
               {e.alcance && (
                 <span className="text-[10px] text-slate-400 whitespace-nowrap flex-shrink-0">{e.alcance.texto}</span>
               )}
-              <span className="font-mono text-[13px] font-bold tabular-nums text-white whitespace-nowrap">
+              {e.acerto != null && (
+                <span
+                  className="relative group/acerto text-[10px] text-slate-400 whitespace-nowrap flex-shrink-0 cursor-help"
+                  title={e.acertoAtaque}
+                >
+                  Acerto{" "}
+                  <span className="font-mono font-semibold tabular-nums text-slate-200">{sinalDe(e.acerto)}</span>
+                  <PainelDeFontes
+                    partes={e.partesAcerto}
+                    total={sinalDe(e.acerto)}
+                    aparecer="group-hover/acerto:block"
+                  />
+                </span>
+              )}
+              <span className="relative group/dano font-mono text-[13px] font-bold tabular-nums text-white whitespace-nowrap cursor-help">
                 {e.texto}
+                <PainelDeFontes partes={e.partes} total={e.total} aparecer="group-hover/dano:block" />
               </span>
-              <PainelDeFontes partes={e.partes} total={e.total} ancora="direita" />
             </div>
             {e.propriedades?.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-1.5">
@@ -4323,6 +4351,19 @@ function AttributesCard({ draft, derived, patch, patchCore, patchAttr, patchNive
     patchCore({ origem: { ...draft.core.origem, desenvolvimento: cur } });
   };
 
+  // Pool de LIMITE (Maldição): sobe só o teto, e não o valor. O contador conta
+  // ESCOLHAS, e cada uma vale o degrau declarado na origem.
+  const poolLim = origemPoolLimite(draft.core.origem?.id);
+  const limites = draft.core.origem?.limites || {};
+  const limTotal = poolLim ? limitePoolTotal(draft.core.nd ?? 1, poolLim.porNivel) : 0;
+  const limUsado = limitePoolUsado(limites);
+  const limRestante = limTotal - limUsado;
+  const setLimite = (key, val) => {
+    const cur = { ...limites };
+    if (val) cur[key] = val; else delete cur[key];
+    patchCore({ origem: { ...draft.core.origem, limites: cur } });
+  };
+
   // Valores Fixos SEM travar: todo dropdown mostra os 6 valores. Escolher um
   // que já está em outro atributo TROCA os dois — o array fica sempre válido,
   // sem beco sem saída.
@@ -4541,6 +4582,37 @@ function AttributesCard({ draft, derived, patch, patchCore, patchAttr, patchNive
                   <span className="text-[11px] font-bold text-slate-400">{a.abbr}</span>
                   <div className="w-[92px]">
                     <NumberInput value={d} onChange={(v) => setDesenv(a.key, v)} min={0} max={d + desenvRestante} aria-label={`Desenvolvimento em ${a.label}`} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Pool de limite da Maldição. Mesma anatomia do Desenvolvimento, e a
+          diferença está no rótulo: aqui o ponto abre espaço, não preenche. */}
+      {poolLim && (
+        <div className="mt-4 pt-3 border-t border-slate-800">
+          <div className="flex items-center justify-between gap-3 mb-2">
+            <div className="text-[11px] uppercase tracking-wider text-slate-400">
+              Aumento de Limite
+              <span className="normal-case tracking-normal text-slate-500 ml-1.5">
+                · +{poolLim.valor} no limite por escolha
+              </span>
+            </div>
+            <span className={`text-[11px] font-mono tabular-nums ${limUsado > limTotal ? "text-red-400" : "text-slate-400"}`}>
+              {limUsado} / {limTotal}
+            </span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {AFTY_ATTRS.map((a) => {
+              const n = limites[a.key] || 0;
+              return (
+                <div key={a.key} className="flex items-center justify-between gap-2 bg-slate-950/50 border border-slate-800 rounded px-2 py-1.5">
+                  <span className="text-[11px] font-bold text-slate-400">{a.abbr}</span>
+                  <div className="w-[92px]">
+                    <NumberInput value={n} onChange={(v) => setLimite(a.key, v)} min={0} max={n + limRestante} aria-label={`Aumento de limite em ${a.label}`} />
                   </div>
                 </div>
               );
@@ -5060,7 +5132,7 @@ function NivelPicker({ value, concedido, restante, onChange, label }) {
    parágrafo do livro: abertas todas de uma vez viram um paredão que
    ninguém lê. Recolhida, a linha mostra o que serve para ESCOLHER
    (nome + requisitos) e o texto abre sob demanda. */
-function AptidaoCard({ aptidao, escolhida, ctx, onToggle }) {
+function AptidaoCard({ aptidao, escolhida, ctx, onToggle, opcaoAtual, onOpcao }) {
   const [open, setOpen] = useState(false);
   const reqs = (aptidao.requisitos || []).map((r) => avaliarRequisitoAptidao(r, ctx));
   const faltando = reqs.filter((r) => r.verificavel && !r.ok);
@@ -5130,6 +5202,31 @@ function AptidaoCard({ aptidao, escolhida, ctx, onToggle }) {
         <p className="text-[11px] text-slate-400 leading-relaxed whitespace-pre-line px-2.5 pb-2.5 pl-[38px]">
           {aptidao.descricao}
         </p>
+      )}
+
+      {/* Escolha do "um OU outro" (só a Superioridade Física). CHIPS, e não
+          dropdown: são duas opções, e a regra desta aba é manter tudo à mostra.
+          Só aparece com a aptidão escolhida, porque antes disso não há o que
+          decidir. */}
+      {escolhida && aptidao.opcoes && (
+        <div className="flex flex-wrap items-center gap-1 px-2.5 pb-2.5 pl-[38px]">
+          {aptidao.opcoes.valores.map((v) => {
+            const on = opcaoAtual === v.id;
+            return (
+              <button
+                key={v.id}
+                type="button"
+                onClick={() => onOpcao(on ? "" : v.id)}
+                aria-pressed={on}
+                className={`text-[10px] px-2 py-1 rounded transition-colors ${
+                  on ? "bg-purple-700 text-white" : "bg-slate-800/70 text-slate-400 hover:text-white"
+                }`}
+              >
+                {v.label}
+              </button>
+            );
+          })}
+        </div>
       )}
     </div>
   );
@@ -6270,7 +6367,7 @@ function AltoNivel({ derived, setMelhoriaVezes, toggleLendaria, toggleEscolhaAlt
   );
 }
 
-function TabAptidoes({ draft, derived, setAptidaoNivel, toggleAptidao }) {
+function TabAptidoes({ draft, derived, setAptidaoNivel, toggleAptidao, setAptidaoOpcao }) {
   // O motor resolve alocado + concedido (e devolve ao orçamento o que
   // não coube junto da concessão). A aba só exibe.
   const { alocado, concedido, efetivo, gastos } = derived.aptidao;
@@ -6425,6 +6522,8 @@ function TabAptidoes({ draft, derived, setAptidaoNivel, toggleAptidao }) {
                       escolhida={escolhidas.includes(ap.id)}
                       ctx={ctx}
                       onToggle={() => toggleAptidao(ap.id)}
+                      opcaoAtual={(draft.aptidaoOpcoes || {})[ap.id]}
+                      onOpcao={(v) => setAptidaoOpcao(ap.id, v)}
                     />
                   ))}
                 </div>
@@ -6440,6 +6539,8 @@ function TabAptidoes({ draft, derived, setAptidaoNivel, toggleAptidao }) {
                 escolhida={escolhidas.includes(ap.id)}
                 ctx={ctx}
                 onToggle={() => toggleAptidao(ap.id)}
+                opcaoAtual={(draft.aptidaoOpcoes || {})[ap.id]}
+                onOpcao={(v) => setAptidaoOpcao(ap.id, v)}
               />
             ))}
           </div>
@@ -6690,8 +6791,9 @@ function FerramentaEditor({ entrada, onPatch, onToggleEnc, onRemove }) {
   const { tipo, def, fa } = entrada;
   const lista = ENCANTAMENTOS_POR_TIPO[tipo] ?? [];
   const beneficio =
-    tipo === "arma" ? `Bônus de Arma +${fa.bonusArma}` :
-    tipo === "escudo" ? `RD Física +${fa.rdGrau} (grau, soma com o escudo)` : null;
+    tipo === "arma" ? `Acerto +${fa.bonusArma}` :
+    tipo === "escudo" ? `RD Geral +${(def.rdEscudo ?? 0) + fa.rdGrau}` :
+    tipo === "uniforme" ? `Defesa +${defesaDaArmadura(def, fa.defesaGrau)}` : null;
   const nomesEscolhidos = fa.escolhidos.map((id) => getEncantamento(id)?.nome ?? id);
   const resumoEnc = nomesEscolhidos.length ? nomesEscolhidos.join(", ") : "Nenhum";
 
@@ -6704,12 +6806,30 @@ function FerramentaEditor({ entrada, onPatch, onToggleEnc, onRemove }) {
         )}
         <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono ${
           fa.excedeu ? "bg-rose-950/50 text-rose-300" : "bg-slate-800 text-slate-300"
-        }`} title="Encantamentos escolhidos / permitidos no grau (acumulam)">
+        }`} title="Encantamentos escolhidos / permitidos no grau (acumulam entre os graus)">
           Encantamentos {fa.escolhidos.length}/{fa.permitidos}
         </span>
+        {fa.reduzido && (
+          <span
+            className="text-[10px] px-1.5 py-0.5 rounded bg-amber-950/40 text-amber-300 font-mono"
+            title="Cada encantamento desce um grau nas contas de Acerto, Dano, Defesa e RD"
+          >
+            Calcula como {fa.grauCalculoLabel}
+          </span>
+        )}
+        {fa.penalidade !== 0 && (
+          <span
+            className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-amber-300 font-mono"
+            title={fa.reducaoPenalidade
+              ? "Penalidade em perícias de Destreza, já reduzida pelo encantamento"
+              : "Penalidade em testes de perícia que usam Destreza"}
+          >
+            {fa.penalidade} Destreza
+          </span>
+        )}
         {fa.usaCargas && (
-          <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-sky-300 font-mono" title="Cargas de Encantamento = bônus de treinamento do portador">
-            Cargas {fa.cargas} (= BT)
+          <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-sky-300 font-mono" title="Cargas de Encantamento, iguais ao bônus de treinamento do portador">
+            Cargas {fa.cargas}
           </span>
         )}
         {fa.temHabUnica && (
@@ -6816,7 +6936,9 @@ function FerramentaEditor({ entrada, onPatch, onToggleEnc, onRemove }) {
 /** Uma linha do que está carregado (com o editor de Ferramenta, se aplicável). */
 function LinhaCarregada({ entrada, onPatch, onRemove, onToggleFerramenta, onPatchFerramenta, onToggleEncantamento }) {
   const { def, tipo, uid, qtd, equipado, fa } = entrada;
-  const equipavel = tipo === "uniforme" || tipo === "escudo" || def?.efeito;
+  // Arma entrou em 2026-08-01: ela passou a render Acerto por grau, e a linha de
+  // dano dela só sai com a arma equipada.
+  const equipavel = tipo === "arma" || tipo === "uniforme" || tipo === "escudo" || def?.efeito;
   const podeSerFerramenta = FA_TIPOS_EQUIP.includes(tipo);
   const [faOpen, setFaOpen] = useState(false);
 
@@ -6972,14 +7094,16 @@ function CatalogoLinha({ tipo, def, onAdd, jaTem }) {
               {def.critico}+
             </span>
           )}
-          {tipo === "uniforme" && def.defesa > 0 && (
-            <span className="text-[10px] text-emerald-400 font-mono flex-shrink-0">+{def.defesa} Def</span>
+          {/* A Defesa da armadura é o custo dela, MENOS Sob Medida, que é a
+              exceção declarada. Por causa dela o número volta a valer a pena. */}
+          {tipo === "uniforme" && defesaDaArmadura(def) > 0 && (
+            <span className="text-[10px] text-emerald-400 font-mono flex-shrink-0">+{defesaDaArmadura(def)} Def</span>
           )}
           {tipo === "escudo" && (
-            <span className="text-[10px] text-emerald-400 font-mono flex-shrink-0">{def.rdFisico} RD Fís</span>
+            <span className="text-[10px] text-emerald-400 font-mono flex-shrink-0">{def.rdEscudo} RD</span>
           )}
           {def.penalidade < 0 && (
-            <span className="text-[10px] text-amber-400 font-mono flex-shrink-0" title="Penalidade em testes de Destreza">
+            <span className="text-[10px] text-amber-400 font-mono flex-shrink-0" title="Penalidade em testes de perícia que usam Destreza">
               {def.penalidade} Des
             </span>
           )}
@@ -7043,9 +7167,12 @@ function CatalogoLinha({ tipo, def, onAdd, jaTem }) {
               {especial.descricao}
             </p>
           )}
+          {/* Aviso, e não explicação: sem ele o jogador espera um número que a
+              ficha não vai somar. */}
           {def.efeito && !def.efeito.aplicado && (
-            <p className="text-[10px] text-amber-400/80">
-              O motor ainda não aplica este efeito (depende de sistema que não existe).
+            <p className="text-[10px] text-amber-400 flex items-center gap-1">
+              <AlertTriangle className="w-3 h-3 flex-shrink-0" aria-hidden="true" />
+              <span>Efeito não aplicado na ficha.</span>
             </p>
           )}
         </div>
@@ -7061,6 +7188,9 @@ function TabEquipamentos({ derived, addEquipamento, removeEquipamento, patchEqui
   const [catTab, setCatTab] = useState("arma");
   const [busca, setBusca] = useState("");
   const [subFiltro, setSubFiltro] = useState("todos");
+  // Custo é o que o orçamento do grau conta, então filtrar por ele é a pergunta
+  // mais direta do catálogo: "o que ainda cabe na vaga que me sobrou".
+  const [custoFiltro, setCustoFiltro] = useState("todos");
   // As armas são duas listas separadas no livro (simples e complexas), então
   // são duas abas, e não um filtro. A categoria (corpo, distância, arremesso)
   // continua como filtro por cima.
@@ -7075,10 +7205,33 @@ function TabEquipamentos({ derived, addEquipamento, removeEquipamento, patchEqui
     : catTab === "item" ? ITEM_CATEGORIAS
     : null;
 
-  const lista = useMemo(() => {
+  // O recorte antes do filtro de custo, que é de onde saem os custos oferecidos.
+  // Ele para no sub-filtro de propósito: incluir a BUSCA faria as opções
+  // mudarem a cada tecla, e o que some debaixo do dedo é pior que uma opção que
+  // não acha nada.
+  const listaDoTipo = useMemo(() => {
     let l = catalogoDoTipo(catTab);
     if (catTab === "arma") l = l.filter((d) => d.classe === classeArma);
     if (subFiltro !== "todos") l = l.filter((d) => d.categoria === subFiltro);
+    return l;
+  }, [catTab, classeArma, subFiltro]);
+
+  // Só os custos que existem no recorte atual: uma aba de kits, onde tudo custa
+  // 1, não oferece quatro botões dos quais três não acham nada.
+  const custosOferecidos = useMemo(() => {
+    const vistos = new Set(listaDoTipo.map((d) => custoDoEquipamento(catTab, d)));
+    return [...vistos].sort((a, b) => a - b);
+  }, [listaDoTipo, catTab]);
+
+  // O custo que VALE agora. O escolhido fica guardado, mas se a aba nova não
+  // tiver aquele custo ele é ignorado em vez de esvaziar a lista sem motivo
+  // aparente. Derivar em vez de corrigir o estado evita a renderização em
+  // cascata que um useEffect com setState traria.
+  const custoAtivo = custosOferecidos.includes(custoFiltro) ? custoFiltro : "todos";
+
+  const lista = useMemo(() => {
+    let l = listaDoTipo;
+    if (custoAtivo !== "todos") l = l.filter((d) => custoDoEquipamento(catTab, d) === custoAtivo);
     const q = busca.trim().toLowerCase();
     if (q) {
       l = l.filter((d) =>
@@ -7086,7 +7239,7 @@ function TabEquipamentos({ derived, addEquipamento, removeEquipamento, patchEqui
         (catTab === "arma" && grupoLabel(d.grupo).toLowerCase().includes(q)));
     }
     return l;
-  }, [catTab, classeArma, subFiltro, busca]);
+  }, [listaDoTipo, catTab, custoAtivo, busca]);
 
   // Quantas unidades de cada refId já estão no inventário, para o contador
   // do catálogo.
@@ -7100,10 +7253,15 @@ function TabEquipamentos({ derived, addEquipamento, removeEquipamento, patchEqui
     .map((t) => ({ ...t, entradas: equip.entradas.filter((e) => e.tipo === t.value) }))
     .filter((t) => t.entradas.length > 0);
 
+  // Habilidade Única e encantamentos não passam pelos escalares: os dois viajam
+  // pelo Motor. Sem estas duas linhas, uma ferramenta encantada não apareceria
+  // em lugar nenhum desta aba.
+  const efeitosMotor = [...(equip.efeitosUnica ?? []), ...(equip.efeitosEncantamento ?? [])];
+
   const temEfeito =
-    equip.uniformeDefesa !== 0 || equip.rdFisico !== 0 || equip.penalidadeDestreza !== 0 ||
-    equip.hpMaxBonus !== 0 || equip.cdBonus !== 0 ||
-    equip.defesaBonus !== 0 || equip.movimentoBonus !== 0 || equip.rdGeralBonus !== 0 || equip.peBonus !== 0 ||
+    equip.uniformeDefesa !== 0 || equip.penalidadeDestreza !== 0 ||
+    equip.hpMaxBonus !== 0 || equip.cdBonus !== 0 || equip.rdGeralBonus !== 0 ||
+    efeitosMotor.length > 0 ||
     Object.values(equip.attrBonus).some((v) => v !== 0);
 
   return (
@@ -7128,9 +7286,7 @@ function TabEquipamentos({ derived, addEquipamento, removeEquipamento, patchEqui
             {/* w-3 + mt-0.5 é a convenção de aviso da ficha (ver as Invocações):
                 o ícone de 14px ficava alto demais para um texto de 11px. */}
             <AlertTriangle className="w-3 h-3 flex-shrink-0 mt-0.5" aria-hidden="true" />
-            <span>
-              <strong>Sobrecarregado.</strong> Já aplicado no motor: -5 na Defesa e -4,5m no Deslocamento.
-            </span>
+            <span><strong>Sobrecarregado.</strong> -5 na Defesa e -4,5m no Deslocamento.</span>
           </p>
         )}
         {equip.avisos.map((a) => (
@@ -7148,11 +7304,6 @@ function TabEquipamentos({ derived, addEquipamento, removeEquipamento, patchEqui
           </div>
         }
       >
-        <p className="text-[11px] text-slate-400 mb-3">
-          Conjunto concedido no começo de toda missão, pelo grau do feiticeiro (que vem do ND).
-          É <strong>indicativo</strong>: a aba conta mas não bloqueia, porque o livro prevê item vindo
-          de talento, recompensa, saque e confecção.
-        </p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {CUSTOS.map((c) => {
             const concedido = orcamento[c];
@@ -7171,32 +7322,32 @@ function TabEquipamentos({ derived, addEquipamento, removeEquipamento, patchEqui
             );
           })}
         </div>
-        <p className="text-[11px] text-slate-500 mt-3">
-          <span className="text-slate-400 font-semibold">Equipamento inicial: </span>
-          {EQUIP_INICIAL.texto}
-        </p>
       </Card>
 
       <Card title="Efeito do Equipado">
         {temEfeito ? (
           <div className="flex flex-wrap gap-2">
-            {equip.uniformeDefesa !== 0 && <EfeitoPill icon={Shield} label="Defesa" valor={`+${equip.uniformeDefesa}`} nota="uniforme" />}
-            {equip.defesaBonus !== 0 && <EfeitoPill icon={Shield} label="Defesa" valor={`+${equip.defesaBonus}`} nota="ferramenta" />}
-            {equip.rdFisico !== 0 && <EfeitoPill icon={Shield} label="RD Física" valor={equip.rdFisico} nota="escudo + grau" />}
-            {equip.rdGeralBonus !== 0 && <EfeitoPill icon={Shield} label="RD Geral" valor={`+${equip.rdGeralBonus}`} nota="ferramenta" />}
-            {equip.movimentoBonus !== 0 && <EfeitoPill icon={Footprints} label="Deslocamento" valor={`+${fmtEspacos(equip.movimentoBonus)}m`} nota="ferramenta" />}
-            {equip.penalidadeDestreza !== 0 && <EfeitoPill icon={AlertTriangle} label="Testes de Destreza" valor={equip.penalidadeDestreza} nota="não aplicado, Perícias não existem" alerta />}
+            {equip.uniformeDefesa !== 0 && <EfeitoPill icon={Shield} label="Defesa" valor={`+${equip.uniformeDefesa}`} nota="armadura" titulo="Custo da armadura, mais o grau da Ferramenta" />}
+            {equip.rdGeralBonus !== 0 && <EfeitoPill icon={Shield} label="RD Geral" valor={`+${equip.rdGeralBonus}`} nota="escudo + grau" />}
+            {equip.penalidadeDestreza !== 0 && <EfeitoPill icon={Footprints} label="Perícias de Destreza" valor={equip.penalidadeDestreza} nota="armadura + escudo" />}
             {equip.hpMaxBonus !== 0 && <EfeitoPill icon={Heart} label="PV máximo" valor={`+${equip.hpMaxBonus}`} />}
-            {equip.peBonus !== 0 && <EfeitoPill icon={Zap} label="PE máximo" valor={`+${equip.peBonus}`} nota="ferramenta" />}
             {equip.cdBonus !== 0 && <EfeitoPill icon={Sparkles} label="CD" valor={`+${equip.cdBonus}`} />}
             {AFTY_ATTRS.filter((at) => equip.attrBonus[at.key] !== 0).map((at) => (
-              <EfeitoPill key={at.key} icon={ArrowUp} label={at.label} valor={`+${equip.attrBonus[at.key]}`} nota="passa o limite, teto 30" />
+              <EfeitoPill key={at.key} icon={ArrowUp} label={at.label} valor={`+${equip.attrBonus[at.key]}`} titulo="Passa o limite do atributo, com teto de 30" />
+            ))}
+            {efeitosMotor.map((ex, i) => (
+              <EfeitoPill
+                key={`${ex.origem}-${ex.canal}-${i}`}
+                icon={Sparkles}
+                label={rotuloCanalUnica(ex)}
+                valor={sinalDe(Number(ex.expr) || 0)}
+                nota={ex.quando ? "ativa" : ex.exclusivo ? "única" : "encantamento"}
+                titulo={ex.nome}
+              />
             ))}
           </div>
         ) : (
-          <p className="text-[11px] text-slate-500">
-            Nada equipado ainda. Uniforme dá Defesa, escudo dá RD Física e acessório dá o bônus dele.
-          </p>
+          <p className="text-[11px] text-slate-500">Nada equipado.</p>
         )}
       </Card>
 
@@ -7293,6 +7444,31 @@ function TabEquipamentos({ derived, addEquipamento, removeEquipamento, patchEqui
           </div>
         )}
 
+        {/* Custo. Mesma anatomia de chip do sub-filtro, e o "C1" é o rótulo que
+            a linha do catálogo e a do carregado já usam. Só aparece quando há
+            mais de um custo para escolher. */}
+        {custosOferecidos.length > 1 && (
+          <div className="flex flex-wrap gap-1 mb-2">
+            {[{ value: "todos", label: "Todo Custo" },
+              ...custosOferecidos.map((c) => ({ value: c, label: `C${c}` }))].map((o) => {
+              const on = o.value === custoAtivo;
+              return (
+                <button
+                  key={o.value}
+                  type="button"
+                  onClick={() => setCustoFiltro(o.value)}
+                  title={o.value === "todos" ? "Qualquer custo" : `Custo ${o.value}`}
+                  className={`text-[10px] px-2 py-1 rounded font-mono transition-colors ${
+                    on ? "bg-purple-700 text-white" : "bg-slate-800/70 text-slate-400 hover:text-white"
+                  }`}
+                >
+                  {o.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
         <div className="mb-3">
           <TextInput value={busca} onChange={setBusca} placeholder="Buscar por nome ou grupo" />
         </div>
@@ -7327,8 +7503,10 @@ function FerramentasReferencia() {
   const [encTipo, setEncTipo] = useState("arma");
   const linhasBeneficio = AFTY_GRAUS.map((g) => ({
     grau: g.label,
-    bonusArma: FA_BONUS_ARMA[g.value],
-    rdEscudo: FA_RD_ESCUDO[g.value],
+    // Acerto, Defesa e RD são o próprio rank do grau. O Dano vem da tabela do
+    // dano, que é a única das quatro que não escala de um em um.
+    rank: g.rank,
+    dano: DANO_ADICIONAL_ARMA.find((d) => d.value === g.value)?.valor ?? 0,
     ganho: FA_ENCANT_GANHO,
     value: g.value,
   }));
@@ -7354,12 +7532,7 @@ function FerramentasReferencia() {
         </button>
       }
     >
-      {!aberto ? (
-        <p className="text-[11px] text-slate-500">
-          Tabelas de benefício por grau, o processo de criação, a identificação e o catálogo completo de
-          encantamentos. Para transformar um item, use a varinha na linha dele acima.
-        </p>
-      ) : (
+      {!aberto ? null : (
         <div className="space-y-5">
           {/* Benefícios por grau */}
           <div>
@@ -7369,8 +7542,8 @@ function FerramentasReferencia() {
                 <thead>
                   <tr className="text-slate-400 text-left">
                     <th className="py-1 pr-3 font-medium">Grau</th>
-                    <th className="py-1 px-2 font-medium">Bônus de Arma</th>
-                    <th className="py-1 px-2 font-medium">RD do Escudo</th>
+                    <th className="py-1 px-2 font-medium" title="Acerto da arma, Defesa da armadura e RD do escudo">Acerto, Defesa e RD</th>
+                    <th className="py-1 px-2 font-medium">Dano</th>
                     <th className="py-1 px-2 font-medium">Enc. Arma</th>
                     <th className="py-1 px-2 font-medium">Enc. Escudo</th>
                     <th className="py-1 px-2 font-medium">Enc. Uniforme</th>
@@ -7380,8 +7553,8 @@ function FerramentasReferencia() {
                   {linhasBeneficio.map((l) => (
                     <tr key={l.value} className="border-t border-slate-800">
                       <td className="py-1 pr-3 font-sans text-slate-300 whitespace-nowrap">{l.grau}</td>
-                      <td className="py-1 px-2">+{l.bonusArma}</td>
-                      <td className="py-1 px-2">{l.rdEscudo}</td>
+                      <td className="py-1 px-2">+{l.rank}</td>
+                      <td className="py-1 px-2">+{l.dano}</td>
                       <td className="py-1 px-2">{l.value === "especial" ? "hab. única" : `+${l.ganho.arma[l.value]}`}</td>
                       <td className="py-1 px-2">{l.value === "especial" ? "hab. única" : `+${l.ganho.escudo[l.value]}`}</td>
                       <td className="py-1 px-2">{l.value === "especial" ? "hab. única" : `+${l.ganho.uniforme[l.value]}`}</td>
@@ -7391,10 +7564,11 @@ function FerramentasReferencia() {
               </table>
             </div>
             <p className="text-[10px] text-slate-500 mt-1.5">
-              Os encantamentos acumulam entre os graus. Bônus de Arma e RD do escudo usam só o valor do grau
-              atual (não somam entre graus), e a RD do escudo soma com a RD do escudo comum. Cargas de
-              Encantamento = bônus de treinamento do portador, compartilhadas por todos os encantamentos com
-              carga do item.
+              Os encantamentos acumulam entre os graus. Acerto, Dano, Defesa e RD usam só o valor do grau
+              atual, e somam por cima do equipamento comum: a Defesa da armadura parte do custo dela, e a
+              RD parte da RD do escudo. Cada encantamento escolhido desce o item um grau para essas quatro
+              contas, e a Habilidade Única não entra nessa redução. Cargas de Encantamento são o bônus de
+              treinamento do portador, compartilhadas por todos os encantamentos com carga do item.
             </p>
           </div>
 
@@ -7503,30 +7677,30 @@ function FerramentasReferencia() {
             </div>
           </div>
 
-          <p className="text-[10px] text-amber-400/80">
-            O motor aplica, enquanto a ferramenta está equipada: a RD Física por grau do escudo, e os
-            efeitos estáticos de <strong>Canalizadora</strong> (CD), <strong>Reforçado</strong> (RD Física),
-            <strong> Blindado</strong> (Defesa) e <strong>Propulsor</strong> (Deslocamento), mais o que você
-            programar no Motor de Automação da Habilidade Única. Os demais encantamentos são situacionais ou
-            de combate (Iniciativa, manobras, TRs, Perícias, RD por elemento), que o motor do Afty ainda não
-            calcula, então seguem como texto.
-          </p>
         </div>
       )}
     </Card>
   );
 }
 
+/* Rótulo de um efeito da Habilidade Única no card de Efeito do Equipado: o nome
+   do canal do Motor, com o alvo entre parênteses quando ele direciona. */
+function rotuloCanalUnica(ex) {
+  const canal = getCanal(ex.canal);
+  const base = canal?.label ?? ex.canal;
+  if (!ex.alvo) return base;
+  const alvo = (ALVO_OPCOES[canal?.alvo] ?? []).find((o) => o.value === ex.alvo);
+  return `${base} (${alvo?.label ?? ex.alvo})`;
+}
+
 /* Mesmo desenho do StatMini das Invocações: o ícone vive DENTRO da linha do
    rótulo, não ao lado do bloco inteiro. Ao lado, ele se centralizava contra as
    duas linhas (rótulo + valor) e não batia com nenhuma das duas. */
-function EfeitoPill({ icon: Icon, label, valor, nota, alerta }) {
+function EfeitoPill({ icon: Icon, label, valor, nota, titulo }) {
   return (
-    <div className={`border rounded-lg px-2.5 py-1.5 ${
-      alerta ? "border-amber-800/60 bg-amber-950/20" : "border-slate-800 bg-slate-950/40"
-    }`}>
+    <div className="border border-slate-800 bg-slate-950/40 rounded-lg px-2.5 py-1.5" title={titulo}>
       <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-slate-400">
-        <Icon className={`w-3 h-3 flex-shrink-0 ${alerta ? "text-amber-400" : "text-purple-400"}`} aria-hidden="true" />
+        <Icon className="w-3 h-3 flex-shrink-0 text-purple-400" aria-hidden="true" />
         <span className="truncate">{label}</span>
       </div>
       <div className="font-mono text-sm font-bold text-white leading-tight">
