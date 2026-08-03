@@ -1,9 +1,9 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef, useCallback } from "react";
 import {
   Save, ChevronLeft, ChevronDown, Wand2, Sparkles, FlaskConical,
   Dumbbell, GraduationCap, BookOpen, Check, ArrowRight, Lock, Plus, X, Zap,
   Copy, ArrowUp, ArrowDown, Heart, Shield, Footprints, AlertTriangle, Star, Swords,
-  Trash2,
+  Trash2, Image as ImageIcon, Eye, Crosshair,
 } from "lucide-react";
 
 import { FieldLabel, TextInput, TextArea, Select, NumberInput, StatField, ExpandableText } from "../../components/builder-controls";
@@ -25,7 +25,7 @@ import {
   ATTR_LIMITE_PADRAO,
 } from "./afty-atributos";
 import {
-  AFTY_TREINAMENTOS, ETAPAS_POR_LINHA, focosGastos, avaliarRequisito, rotuloAlvo,
+  ETAPAS_POR_LINHA, focosGastos, avaliarRequisito, rotuloAlvo, treinamentosDaOrigem,
 } from "./afty-treinamentos";
 import {
   APTIDAO_TRILHAS, APTIDAO_NIVEL_MAX,
@@ -3886,10 +3886,12 @@ function TabIdentidade({ draft, derived, patch, patchCore, setOrigemBonus, setOr
             <FieldLabel hint="afeta deslocamento e alcance">Tamanho</FieldLabel>
             <Select value={draft.core.tamanho} onChange={(v) => patchCore({ tamanho: v })} options={AFTY_TAMANHOS} />
           </div>
-          <div>
-            <FieldLabel hint="URL da imagem (opcional)">Retrato</FieldLabel>
-            <TextInput value={draft.portraitUrl} onChange={(v) => patch({ portraitUrl: v })} placeholder="https://..." />
-          </div>
+          <RetratoCampo
+            url={draft.portraitUrl}
+            focus={draft.portraitFocus}
+            onUrl={(v) => patch({ portraitUrl: v })}
+            onFocus={(f) => patch({ portraitFocus: f })}
+          />
         </div>
       </Card>
 
@@ -6371,6 +6373,8 @@ function TabAptidoes({ draft, derived, setAptidaoNivel, toggleAptidao, setAptida
   // O motor resolve alocado + concedido (e devolve ao orçamento o que
   // não coube junto da concessão). A aba só exibe.
   const { alocado, concedido, efetivo, gastos } = derived.aptidao;
+  // A Maldição não tem Energia Reversa, então a trilha nem aparece.
+  const trilhas = derived.trilhasAptidao ?? APTIDAO_TRILHAS;
   const total = derived.totalAptidao;        // limiares de ND + Raio Negro + treinos "à sua escolha"
   const overBudget = gastos > total;
   const restante = total - gastos;
@@ -6417,9 +6421,14 @@ function TabAptidoes({ draft, derived, setAptidaoNivel, toggleAptidao, setAptida
           </div>
         }
       >
-        {/* As 5 trilhas lado a lado no desktop; reempilham sozinhas quando aperta. */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-2">
-          {APTIDAO_TRILHAS.map((t) => (
+        {/* As trilhas lado a lado no desktop; reempilham sozinhas quando aperta.
+            São 5, ou 4 na Maldição (que não tem Energia Reversa), e a coluna
+            acompanha para não sobrar buraco na fileira. As duas classes vêm
+            literais porque o Tailwind lê o código-fonte. */}
+        <div className={`grid grid-cols-2 sm:grid-cols-3 gap-2 ${
+          trilhas.length >= 5 ? "xl:grid-cols-5" : "xl:grid-cols-4"
+        }`}>
+          {trilhas.map((t) => (
             <div key={t.key} className="border border-slate-800 bg-slate-950/40 rounded-lg px-2 py-2">
               <div className="flex items-baseline gap-1.5 mb-1.5">
                 <span className="text-[11px] text-slate-400 truncate" title={t.label}>{t.label}</span>
@@ -7714,7 +7723,11 @@ function EfeitoPill({ icon: Icon, label, valor, nota, titulo }) {
 function TabInterludios({ draft, derived, setTreinoProgresso, setTreinoInstance }) {
   const treinos = (draft.treinamentos && !Array.isArray(draft.treinamentos) && typeof draft.treinamentos === "object")
     ? draft.treinamentos : {};
-  const gastos = focosGastos(treinos);
+  // A origem esconde a linha que ela não alcança (a Maldição não tem Energia
+  // Reversa), e o gasto acompanha: o Foco preso numa linha escondida volta.
+  const origemId = draft.core.origem?.id;
+  const linhasTreino = treinamentosDaOrigem(origemId);
+  const gastos = focosGastos(treinos, origemId);
   const total = derived.focosTotais;                // = ND + bônus de poderes
   const overBudget = gastos > total;
 
@@ -7739,7 +7752,7 @@ function TabInterludios({ draft, derived, setTreinoProgresso, setTreinoInstance 
       >
         {/* linhas de treinamento */}
         <div className="space-y-1.5">
-          {AFTY_TREINAMENTOS.map((linha) => (
+          {linhasTreino.map((linha) => (
             <TreinoLinha
               key={linha.id}
               linha={linha}
@@ -9038,6 +9051,151 @@ function HordasCard({ fichas, resolvidas, custoTotal, addHorda, removeHorda, pat
 }
 
 /* ============================================================ */
+/* ============================================================ */
+/* RETRATO                                                      */
+/* ============================================================ */
+/* Portado da 2.5.2, que já tinha o sistema pronto e resolvido:
+     • o seletor de foco de `sections/SectionIdentity.jsx` (PortraitFocusPicker)
+     • o banner de `sections/LivePreview.jsx` (PortraitHeader)
+   Os dois são `function` LOCAL nos arquivos de lá, sem export, e a 2.5.2 é
+   somente-leitura: não dava para importar, então foram copiados. Se um dia eles
+   forem exportados, dá para trocar por import e apagar daqui.
+
+   ⚠ O `erroredUrl` guarda a URL que falhou, e não um booleano. Assim o erro fica
+   preso ÀQUELA url: trocar a imagem faz o retrato voltar sozinho, sem precisar
+   de um efeito para limpar a marca. É da 2.5.2 e vale a pena manter. */
+
+const FOCO_PADRAO = { x: 50, y: 50 };
+const focoDe = (f) => ({ x: f?.x ?? 50, y: f?.y ?? 50 });
+
+/** Miniatura com ponto focal arrastável. Sem imagem, é só o ícone. */
+function RetratoFocoPicker({ src, focus, onFocusChange, onError }) {
+  const containerRef = useRef(null);
+  const arrastandoRef = useRef(false);
+  const [arrastando, setArrastando] = useState(false);
+  const f = focoDe(focus);
+
+  const doPonteiro = useCallback((clientX, clientY) => {
+    const el = containerRef.current;
+    if (!el || !onFocusChange) return;
+    const r = el.getBoundingClientRect();
+    if (r.width === 0 || r.height === 0) return;
+    onFocusChange({
+      x: Math.max(0, Math.min(100, ((clientX - r.left) / r.width) * 100)),
+      y: Math.max(0, Math.min(100, ((clientY - r.top) / r.height) * 100)),
+    });
+  }, [onFocusChange]);
+
+  const aoDescer = (e) => {
+    if (!src) return;
+    e.preventDefault();
+    arrastandoRef.current = true;
+    setArrastando(true);
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+    doPonteiro(e.clientX, e.clientY);
+  };
+  const aoMover = (e) => { if (arrastandoRef.current) doPonteiro(e.clientX, e.clientY); };
+  const aoSoltar = (e) => {
+    if (!arrastandoRef.current) return;
+    arrastandoRef.current = false;
+    setArrastando(false);
+    try { e.currentTarget.releasePointerCapture?.(e.pointerId); } catch { /* já solto */ }
+  };
+
+  return (
+    <div
+      ref={containerRef}
+      onPointerDown={aoDescer}
+      onPointerMove={aoMover}
+      onPointerUp={aoSoltar}
+      onPointerCancel={aoSoltar}
+      className={`relative flex-shrink-0 w-20 h-20 rounded-lg border-2 border-slate-700 overflow-hidden bg-slate-950 flex items-center justify-center select-none ${
+        src ? "cursor-crosshair touch-none" : ""
+      }`}
+      title={src ? "Arraste para escolher o ponto focal" : undefined}
+    >
+      {!src ? (
+        <ImageIcon className="w-7 h-7 text-slate-700" aria-hidden="true" />
+      ) : (
+        <>
+          <img
+            src={src}
+            alt=""
+            className="w-full h-full object-cover pointer-events-none"
+            style={{ objectPosition: `${f.x}% ${f.y}%` }}
+            onError={onError}
+            referrerPolicy="no-referrer"
+            draggable={false}
+          />
+          <span
+            aria-hidden="true"
+            className="absolute w-3 h-3 rounded-full border-2 border-white bg-purple-500 shadow-md pointer-events-none transition-transform"
+            style={{
+              left: `${f.x}%`, top: `${f.y}%`,
+              transform: `translate(-50%, -50%) scale(${arrastando ? 1.3 : 1})`,
+            }}
+          />
+        </>
+      )}
+    </div>
+  );
+}
+
+/** O campo Retrato da aba Identidade: url + a miniatura com o foco. */
+function RetratoCampo({ url, focus, onUrl, onFocus }) {
+  const [erroredUrl, setErroredUrl] = useState(null);
+  const src = url && erroredUrl !== url ? url : null;
+  return (
+    <div className="flex gap-3">
+      <RetratoFocoPicker
+        src={src}
+        focus={focus}
+        onFocusChange={onFocus}
+        onError={() => setErroredUrl(url)}
+      />
+      <div className="flex-1 min-w-0">
+        <FieldLabel>Retrato</FieldLabel>
+        <TextInput value={url ?? ""} onChange={onUrl} placeholder="https://..." />
+        {url && erroredUrl === url && (
+          <p className="text-[10px] text-amber-400 flex items-center gap-1 mt-1">
+            <AlertTriangle className="w-3 h-3 flex-shrink-0" aria-hidden="true" />
+            <span>Imagem não carregou.</span>
+          </p>
+        )}
+        {src && (
+          <p className="text-[10px] text-slate-500 flex items-center gap-1 mt-1">
+            <Crosshair className="w-3 h-3 flex-shrink-0" aria-hidden="true" />
+            <span>{Math.round(focoDe(focus).x)}% · {Math.round(focoDe(focus).y)}%</span>
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** O banner do Preview. Devolve null sem imagem, e o Preview cai no cabeçalho de texto. */
+function RetratoBanner({ url, focus, nome, children }) {
+  const [erroredUrl, setErroredUrl] = useState(null);
+  if (!url || erroredUrl === url) return null;
+  const f = focoDe(focus);
+  return (
+    <div className="relative h-40 overflow-hidden rounded-t-xl">
+      <img
+        src={url}
+        alt={nome || "Retrato"}
+        className="w-full h-full object-cover"
+        style={{ objectPosition: `${f.x}% ${f.y}%` }}
+        onError={() => setErroredUrl(url)}
+        referrerPolicy="no-referrer"
+      />
+      {/* Gradiente para o texto continuar legível sobre qualquer imagem. */}
+      <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 p-3">{children}</div>
+    </div>
+  );
+}
+
+/* ============================================================ */
 /* Preview lateral (prévia em tempo real)                       */
 /* ============================================================ */
 function AftyPreview({ draft, derived }) {
@@ -9074,43 +9232,92 @@ function AftyPreview({ draft, derived }) {
     ...(derived.rdAlma > 0
       ? [{ k: "RD a Alma", v: derived.rdAlma, p: "rdAlma", accent: "text-fuchsia-300" }]
       : []),
+    // RD Física ficou só com quem NOMEIA o tipo (Reforçado, Aura Reforçada): o
+    // escudo saiu daqui em 2026-08-01 e virou RD Geral.
+    ...(derived.rdFisico > 0 ? [{ k: "RD Física", v: derived.rdFisico }] : []),
     { k: "Movimento", v: `${derived.movimento}m`, p: "movimento" },
     { k: "Res. Parcial", v: derived.resParcial, p: "resParcial" },
     { k: "Iniciativa", v: `+${derived.iniciativa}`, p: "iniciativa" },
+    // Atenção era calculada e não aparecia em lugar nenhum da ficha.
+    { k: "Atenção", v: derived.atencao, p: "atencao" },
     { k: "Maestria", v: `+${derived.maestria}` },
   ];
+
+  // Só as perícias em que a criatura tem faixa: as 20 com zero encheriam o
+  // Preview de linha morta.
+  const periciasDominadas = (derived.testes?.pericias ?? []).filter((x) => x.prof);
+  const linhasDano = derived.dano?.entradas ?? [];
+  const carga = derived.carga;
+
+  const chips = (
+    <div className="flex flex-wrap gap-1.5">
+      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-purple-950/60 text-purple-300 border border-purple-800">
+        {tipoLabel}
+      </span>
+      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700">
+        {patamarLabel}
+      </span>
+      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700">
+        ND {derived.nd}
+      </span>
+      <span
+        className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700"
+        title="Grau do Feiticeiro, que vem do ND"
+      >
+        {derived.grauFeiticeiro.label}
+      </span>
+      {derived.almaMult !== 1 && (
+        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-rose-950/50 text-rose-300 border border-rose-800">
+          Alma {Math.round(derived.almaMult * 100)}%
+        </span>
+      )}
+      {/* A simulação mexe nos números do Preview, então ela PRECISA
+          aparecer aqui: senão os valores mudam sem explicação. */}
+      {derived.combate?.ativo && (
+        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-950/50 text-amber-300 border border-amber-800">
+          Em Combate
+        </span>
+      )}
+      {carga?.sobrecarregado && (
+        <span
+          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-950/50 text-amber-300 border border-amber-800"
+          title={`${fmtEspacos(carga.espacosUsados)} de ${carga.cargaLimite} espaços`}
+        >
+          <AlertTriangle className="w-3 h-3 flex-shrink-0" aria-hidden="true" />
+          Sobrecarregado
+        </span>
+      )}
+    </div>
+  );
+
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-xl">
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-800">
-        <Sparkles className="w-4 h-4 text-purple-400" />
-        <h3 className="text-xs font-bold text-white">Preview</h3>
-      </div>
-      <div className="p-4">
-        <div className="text-base font-bold text-white truncate">{draft.name || "Sem nome"}</div>
-        <div className="flex flex-wrap gap-1.5 mt-2">
-          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-purple-950/60 text-purple-300 border border-purple-800">
-            {tipoLabel}
-          </span>
-          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700">
-            {patamarLabel}
-          </span>
-          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700">
-            ND {derived.nd}
-          </span>
-          {derived.almaMult !== 1 && (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-rose-950/50 text-rose-300 border border-rose-800">
-              Alma {Math.round(derived.almaMult * 100)}%
-            </span>
-          )}
-          {/* A simulação mexe nos números do Preview, então ela PRECISA
-              aparecer aqui: senão os valores mudam sem explicação. */}
-          {derived.combate?.ativo && (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-950/50 text-amber-300 border border-amber-800">
-              Em Combate
-            </span>
-          )}
+      {/* Com retrato, o nome e os chips vivem SOBRE a imagem. Sem retrato, o
+          banner devolve null e eles caem no corpo, logo abaixo. */}
+      <RetratoBanner url={draft.portraitUrl} focus={draft.portraitFocus} nome={draft.name}>
+        <div className="text-base font-bold text-white truncate drop-shadow-lg">{draft.name || "Sem nome"}</div>
+        <div className="mt-1.5">{chips}</div>
+      </RetratoBanner>
+
+      {/* Sem retrato, a faixa de titulo faz o papel de cabecalho. Com retrato,
+          o banner JA e o cabecalho (nome e chips estao sobre a imagem) e a
+          faixa viraria uma linha repetindo o obvio no meio do card. */}
+      {!draft.portraitUrl && (
+        <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-800">
+          <Sparkles className="w-4 h-4 text-purple-400" />
+          <h3 className="text-xs font-bold text-white">Preview</h3>
         </div>
-        <div className="grid grid-cols-2 gap-2 mt-4">
+      )}
+
+      <div className="p-4">
+        {!draft.portraitUrl && (
+          <>
+            <div className="text-base font-bold text-white truncate">{draft.name || "Sem nome"}</div>
+            <div className="mt-2">{chips}</div>
+          </>
+        )}
+
+        <div className={`grid grid-cols-2 gap-2 ${draft.portraitUrl ? "" : "mt-4"}`}>
           {stats.map((s, i) => {
             const fontes = s.p ? derived.partes?.[s.p] : null;
             return (
@@ -9129,6 +9336,50 @@ function AftyPreview({ draft, derived }) {
             );
           })}
         </div>
+
+        {/* Dano: uma linha por fonte, com o Acerto ao lado. É a mesma conta da
+            aba Habilidades, sem as propriedades e o alcance. */}
+        {linhasDano.length > 0 && (
+          <div className="mt-4">
+            <div className="text-[10px] uppercase tracking-wider text-slate-400 mb-1.5">Dano</div>
+            <div className="space-y-1">
+              {linhasDano.map((e) => (
+                <div key={e.id} className="flex items-baseline gap-2 bg-slate-950/60 border border-slate-800 rounded-lg px-2.5 py-1.5">
+                  <span className="flex-1 min-w-0 text-[11px] text-slate-300 truncate" title={e.nome}>{e.nome}</span>
+                  {e.acerto != null && (
+                    <span className="font-mono text-[11px] tabular-nums text-slate-200 flex-shrink-0" title="Jogada de Ataque">
+                      {sinalDe(e.acerto)}
+                    </span>
+                  )}
+                  <span className="font-mono text-[12px] font-bold tabular-nums text-white flex-shrink-0">{e.texto}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Perícias com faixa. Mestre em roxo, treinado em cinza. */}
+        {periciasDominadas.length > 0 && (
+          <div className="mt-4">
+            <div className="text-[10px] uppercase tracking-wider text-slate-400 mb-1.5">Perícias</div>
+            <div className="flex flex-wrap gap-1">
+              {periciasDominadas.map((x) => (
+                <span
+                  key={x.id}
+                  title={x.prof === "mestre" ? "Mestre" : "Treinado"}
+                  className={`inline-flex items-baseline gap-1 text-[10px] px-1.5 py-0.5 rounded border ${
+                    x.prof === "mestre"
+                      ? "border-purple-700 bg-purple-950/40 text-purple-200"
+                      : "border-slate-700 bg-slate-900/60 text-slate-300"
+                  }`}
+                >
+                  {x.nome}
+                  <span className="font-mono tabular-nums font-semibold">{sinalDe(x.bonus)}</span>
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

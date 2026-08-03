@@ -97,6 +97,9 @@ export function createBlankAfty() {
     rulesVersion: "afty",
     name: "",
     portraitUrl: null,
+    // Ponto focal do retrato, em porcentagem (0 a 100). Vira o `object-position`
+    // da imagem, para um retrato de corpo inteiro não cortar a cabeça quando o
+    // banner do Preview o recorta. Mesmo campo da 2.5.2.
     portraitFocus: { x: 50, y: 50 },
 
     core: {

@@ -180,7 +180,52 @@ existe, as fontes de concessão não).
 
 ---
 
-## 🆕 SESSÃO DE 2026-08-01 (o que mudou por último)
+## 🆕 SESSÃO DE 2026-08-02
+
+### O RETRATO passou a existir
+
+`portraitUrl` estava no schema e tinha campo na aba Identidade **desde sempre**, e não era exibido
+em lugar nenhum do Afty: digitar a URL não fazia nada. Agora aparece.
+
+Portado da 2.5.2, que já tinha o sistema resolvido. Os dois componentes são `function` LOCAL nos
+arquivos de lá, **sem export**, e a 2.5.2 é somente-leitura: não dava para importar, então foram
+copiados com a procedência anotada no topo do bloco.
+
+| Copiado de | Virou |
+|---|---|
+| `sections/SectionIdentity.jsx` (PortraitFocusPicker) | `RetratoFocoPicker` + `RetratoCampo` |
+| `sections/LivePreview.jsx` (PortraitHeader) | `RetratoBanner` |
+
+- **Campo `portraitFocus`** novo no schema (`{ x, y }` em porcentagem), que vira o `object-position`
+  da imagem. Sem ele um retrato de corpo inteiro cortaria a cabeça no banner. A miniatura da
+  Identidade é **arrastável** e marca o ponto focal com uma cruz.
+- **Ficha antiga não quebra**: `focoDe()` resolve para 50/50 quando o campo não existe.
+- ⚠ O `erroredUrl` guarda **a URL que falhou**, e não um booleano. É da 2.5.2 e vale manter: o erro
+  fica preso ÀQUELA url, então trocar a imagem faz o retrato voltar sozinho, sem `useEffect` para
+  limpar a marca.
+
+### O Preview cresceu
+
+Entraram quatro coisas (autor, 2026-08-02):
+
+1. **Atenção.** O motor calculava e o Preview simplesmente não mostrava. Buraco puro.
+2. **Dano e Acerto**, uma linha por fonte, resumidas da aba Habilidades (sem propriedades nem
+   alcance).
+3. **Perícias dominadas**, só as que têm faixa: mestre em roxo, treinado em cinza. As 20 com zero
+   encheriam o painel de linha morta.
+4. **Grau do Feiticeiro** como chip, e o aviso de **Sobrecarregado**, que só existia na aba
+   Equipamentos.
+
+Mais a **RD Física**, que passou a aparecer quando alguém a concede (depois de 2026-08-01 ela ficou
+só com quem nomeia o tipo, então o normal é ser zero e sumir).
+
+⚠ **A faixa de título "Preview" some quando há retrato**, e é de propósito: o banner JÁ é o
+cabeçalho (o nome e os chips ficam sobre a imagem), e a faixa viraria uma linha repetindo o óbvio no
+meio do card. Sem retrato ela continua lá, fazendo o papel dela.
+
+---
+
+## SESSÃO DE 2026-08-01
 
 ### 🎭 ORIGEM MALDIÇÃO: o conteúdo existia, a porta não
 
@@ -254,6 +299,33 @@ terceiros.
 Elemental (tipos de dano elementais, que o autor ainda vai mandar), Absorção Amaldiçoada (gatilho de
 morte), Regeneração de Membros (narrativa pura) e Regeneração Corporal (Ação Comum, coberta pelo
 Fluxo Imparável).
+
+### Maldição não tem Energia Reversa (autor, 2026-08-02)
+
+Nem a **trilha** (Nível de Aptidão em Energia Reversa) nem o **Treino de Energia Reversa**. Fecha o
+desenho que já existia por metade: as Aptidões de Maldição OCUPAM o lugar das de Energia Reversa na
+aba desde 2026-07-16, e o livro diz que uma maldição pega da lista padrão "exceto pelas aptidões de
+energia reversa". Faltavam a trilha e o treino, que continuavam abertos.
+
+- `TRILHAS_FORA_DA_ORIGEM` e `trilhasDaOrigem(origemId)` em `afty-aptidoes.js`. O
+  `resolveNiveisAptidao` ganhou um 4º argumento com as trilhas da origem.
+- `foraDaOrigem: ["maldicao"]` na linha do Treino, mais `treinoDisponivel` e
+  `treinamentosDaOrigem(origemId)` em `afty-treinamentos.js`. O `focosGastos` passou a receber a
+  origem.
+- A UI esconde as duas: a grade de trilhas vem de `derived.trilhasAptidao` e alterna entre 5 e 4
+  colunas para não sobrar buraco na fileira, e a aba de Interlúdios lista só as linhas alcançáveis.
+
+⚠ **A trilha sai ZERADA, e não ausente.** Meio sistema lê `aptidao.efetivo.er` direto, e uma chave
+faltando viraria `undefined` num lugar que espera número.
+
+⚠ **Ponto e Foco gastos antes da troca de origem VOLTAM.** Uma ficha que alocou 3 níveis em Energia
+Reversa e virou Maldição não perde os 3 pontos: eles saem de `gastos` e voltam ao orçamento. O mesmo
+com os Focos presos no Treino. É a escolha certa porque a alternativa é o jogador pagar por um
+recurso que a aba nem mostra mais.
+
+⚠ **O RESTRINGIDO tem o mesmo problema e NÃO foi mexido.** Ele é `semEnergia` (não tem Aptidão
+nenhuma), mas o Treino de Energia Reversa continua aparecendo e cobrando Foco na aba dele. O
+mecanismo agora existe e é uma linha, mas mudar isso não foi pedido. **Pergunta para o autor.**
 
 ### 🐛 Toda faixa da bancada precisa estar no `tetoFaixa`
 

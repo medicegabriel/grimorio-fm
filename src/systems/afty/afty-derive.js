@@ -43,7 +43,7 @@ import {
   limiteAtributoDaOrigem, resolveLimitePoolOrigem,
 } from "./afty-origens";
 import { efeitosDeTreino } from "./afty-treinamentos";
-import { resolveNiveisAptidao, AFTY_APTIDOES } from "./afty-aptidoes";
+import { resolveNiveisAptidao, trilhasDaOrigem, AFTY_APTIDOES } from "./afty-aptidoes";
 import {
   efeitosDoDominio, listaDominios, resolveVersao as resolveVersaoDominio,
   duracaoDominio, areaDominio, custoDominio, pvBarreira, maxEfeitos, vagasUsadas,
@@ -467,9 +467,11 @@ export function deriveAfty(creature) {
   // Restringido não tem Nível de Aptidão nenhum: entra com a alocação vazia e
   // sem concessão, para as variáveis `dom/au/cl/bar/er` do DSL saírem zeradas
   // junto. Uma ficha que trocou de Tipo depois de alocar não fica mentindo.
+  // Trilhas que a ORIGEM tem: a Maldição não possui Energia Reversa.
+  const trilhasOrigem = trilhasDaOrigem(core?.origem?.id);
   const aptidao = semEnergia
     ? resolveNiveisAptidao(null, {}, null)
-    : resolveNiveisAptidao(creature?.aptidoes, trilhasConcedidas, trilhasLimite);
+    : resolveNiveisAptidao(creature?.aptidoes, trilhasConcedidas, trilhasLimite, trilhasOrigem);
 
   // ---------- SIMULAÇÃO DE COMBATE ----------
   // Bancada de balanceamento (autor, 2026-07-28). Vira variável de DSL, e as
@@ -1146,6 +1148,7 @@ export function deriveAfty(creature) {
     partesAtributo,       // fontes de cada atributo, para o hover da UI
     partesLimite,         // fontes de cada limite, para o hover da UI
     // ---------- Equipamentos ----------
+    trilhasAptidao: trilhasOrigem,  // as que a ORIGEM tem (a Maldição não tem `er`)
     grauFeiticeiro: grau,  // { value, label, rank, ndMin } derivado do ND
     equip,                 // parcelas do equipamento (entradas, custoGasto, avisos...)
     carga,                 // { espacosUsados, cargaLimite, cargaMaxima, sobrecarregado... }

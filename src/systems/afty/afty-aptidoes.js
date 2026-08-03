@@ -1571,14 +1571,46 @@ export function niveisAptidaoGastos(aptidoes) {
  *
  * Retorna { alocado, concedido, efetivo, gastos, limite }.
  */
-export function resolveNiveisAptidao(aptidoes, concedidoRaw, limiteRaw = null) {
+/**
+ * Trilhas que uma ORIGEM não tem. A Maldição não possui Nível de Energia
+ * Reversa (autor, 2026-08-02): ela é feita de energia amaldiçoada, e a reversa
+ * é justamente o que a destrói. Bate com o resto do desenho, que já existia: as
+ * Aptidões de Maldição OCUPAM o lugar das de Energia Reversa na aba, e o livro
+ * diz que uma maldição pode pegar da lista padrão "exceto pelas aptidões de
+ * energia reversa".
+ */
+export const TRILHAS_FORA_DA_ORIGEM = { maldicao: ["er"] };
+
+/** As trilhas que a origem realmente tem. */
+export const trilhasDaOrigem = (origemId) => {
+  const fora = TRILHAS_FORA_DA_ORIGEM[origemId];
+  return fora ? APTIDAO_TRILHAS.filter((t) => !fora.includes(t.key)) : APTIDAO_TRILHAS;
+};
+
+/**
+ * `trilhas` é a lista que a origem tem (ver trilhasDaOrigem). As de fora saem
+ * ZERADAS, e não ausentes: meio sistema lê `aptidao.efetivo.er` direto, e uma
+ * chave faltando viraria `undefined` num lugar que espera número.
+ */
+export function resolveNiveisAptidao(aptidoes, concedidoRaw, limiteRaw = null, trilhas = APTIDAO_TRILHAS) {
   const aloc = normalizeAptidaoNiveis(aptidoes);
   // Concessão entra SEM teto: quem a apara é o limite da trilha, logo abaixo.
   const concedido = normalizeAptidaoNiveis(concedidoRaw, Infinity);
   const alocado = {};
   const efetivo = {};
   const limite = {};
+  const temTrilha = new Set(trilhas.map((t) => t.key));
   for (const t of APTIDAO_TRILHAS) {
+    if (!temTrilha.has(t.key)) {
+      // A origem não tem esta trilha: nada alocado, nada concedido, teto zero.
+      // O ponto alocado numa ficha que trocou de origem simplesmente não conta,
+      // e volta para o orçamento por não entrar em `gastos`.
+      alocado[t.key] = 0;
+      efetivo[t.key] = 0;
+      concedido[t.key] = 0;
+      limite[t.key] = 0;
+      continue;
+    }
     // Teto da trilha: o padrão mais o que o Motor somou. Sem piso artificial
     // para baixo, então um `limiteAptidao` negativo (nenhum existe hoje) ainda
     // deixaria a trilha em 0, e não em número negativo.

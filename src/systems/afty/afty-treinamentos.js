@@ -201,6 +201,12 @@ export const AFTY_TREINAMENTOS = [
   {
     id: "energia_reversa",
     nome: "Treino de Energia Reversa",
+    // ⚠ Uma MALDIÇÃO não tem acesso a este treino (autor, 2026-08-02), pelo
+    // mesmo motivo de ela não ter Nível de Aptidão em Energia Reversa: ela é
+    // feita de energia amaldiçoada, e a reversa é o que a destrói. A trilha
+    // inteira some da aba, e um Foco gasto nela antes de trocar de origem deixa
+    // de contar e volta para o orçamento.
+    foraDaOrigem: ["maldicao"],
     resumo:
       "O treino de energia reversa permite se aprimorar no uso da energia positiva, capaz de curar humanos e destruir maldições, sendo o completo oposto da energia amaldiçoada.",
     etapas: [
@@ -553,7 +559,16 @@ export function rotuloAlvo(linha, alvo) {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
+/** A linha de treino está disponível para esta origem? */
+export const treinoDisponivel = (linha, origemId) =>
+  !(linha?.foraDaOrigem ?? []).includes(origemId);
+
+/** As linhas de treino que a origem alcança (a Maldição não tem Energia Reversa). */
+export const treinamentosDaOrigem = (origemId) =>
+  AFTY_TREINAMENTOS.filter((l) => treinoDisponivel(l, origemId));
+
 export function efeitosDeTreino(creature) {
+  const origemId = creature?.core?.origem?.id;
   const prog = normalizeTreinamentos(creature?.treinamentos);
   const out = [];
   const add = (efeitos, linha, alvo) => {
@@ -570,6 +585,8 @@ export function efeitosDeTreino(creature) {
   for (const [id, val] of Object.entries(prog)) {
     const linha = BY_ID[id];
     if (!linha) continue;
+    // Treino que a origem não alcança não rende efeito, mesmo gravado na ficha.
+    if (!treinoDisponivel(linha, origemId)) continue;
     const instancias = linha.repetivel && Array.isArray(val)
       ? val
       : [{ alvo: null, progresso: Number(val) || 0 }];
@@ -588,12 +605,18 @@ export function focosDaLinha(linha, progresso) {
   return linha.etapas.reduce((s, et) => (et.n <= progresso ? s + (et.focos || 0) : s), 0);
 }
 
-/** Total de Focos gastos por todos os treinamentos da ficha (soma instâncias). */
-export function focosGastos(treinos) {
+/**
+ * Total de Focos gastos por todos os treinamentos da ficha (soma instâncias).
+ * `origemId` faz a linha indisponível deixar de cobrar: quem trocou para
+ * Maldição depois de gastar no Treino de Energia Reversa recebe os Focos de
+ * volta, em vez de pagar por um treino que a aba nem mostra mais.
+ */
+export function focosGastos(treinos, origemId = null) {
   const prog = normalizeTreinamentos(treinos);
   let total = 0;
   for (const [id, val] of Object.entries(prog)) {
     const linha = BY_ID[id];
+    if (!treinoDisponivel(linha, origemId)) continue;
     for (const p of progressosDe(linha, val)) total += focosDaLinha(linha, p);
   }
   return total;
