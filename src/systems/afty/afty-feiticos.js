@@ -2423,3 +2423,76 @@ export function validarConteudoFeiticos() {
   }
   return erros;
 }
+
+// ---------------------------------------------------------------
+// RESUMO da ficha: uma linha pronta por Feitiço criado.
+// ---------------------------------------------------------------
+/**
+ * Texto curto do valor de um Feitiço Auxiliar (cabeçalho, tiles e Preview).
+ *
+ * ⚠ Morava no AftyCreatureBuilder.jsx e subiu para cá em 2026-08-03, quando o
+ * Preview passou a listar os Feitiços: o resumo é computado no motor, e uma
+ * cópia do formatador na UI faria os dois lugares divergirem na primeira
+ * errata.
+ */
+export function formatAuxValor(calc) {
+  if (!calc) return "-";
+  if (calc.multiplos) return `${calc.efeitos.length} Efeito${calc.efeitos.length === 1 ? "" : "s"}`;
+  if (!calc.disponivel) return "-";
+  if (calc.especial) return calc.especial;
+  if (calc.dado) return calc.notacao;
+  if (calc.valor == null) return "-";
+  const sinal = calc.valor > 0 ? "+" : "";
+  const num = String(calc.valor).replace(".", ",");
+  return `${sinal}${num}${calc.unidade ? ` ${calc.unidade}` : ""}`;
+}
+
+/** O calculador daquele tipo de Feitiço, ou null quando o tipo não computa. */
+function calculadorDe(tipo) {
+  if (tipo === "dano") return calcularFeiticoDano;
+  if (tipo === "auxiliar") return calcularFeiticoAuxiliar;
+  if (tipo === "curativo") return calcularFeiticoCurativo;
+  if (tipo === "especial") return calcularFeiticoEspecial;
+  // "passivo" está no schema desde sempre e nunca foi desenvolvido.
+  return null;
+}
+
+/**
+ * Uma linha pronta por Feitiço da ficha, para o Preview exibir sem recalcular
+ * (mesma convenção do `resumoDominios` em afty-derive.js).
+ *
+ * ⚠ As VARIAÇÕES de liberação entram na lista, mas marcadas: elas não gastam
+ * vaga (`feitico.variacaoDe` é o que o contador da aba já isenta), e escondê-las
+ * faria o Preview mostrar menos Feitiços do que a aba Habilidades.
+ */
+export function resumoFeiticos(creature, ctx = {}) {
+  const lista = Array.isArray(creature?.feiticos) ? creature.feiticos : [];
+  return lista.map((f) => {
+    const calc = calculadorDe(f.tipo)?.(f, ctx) ?? null;
+    const avisos = calc
+      ? [...(calc.avisos || []), ...((calc.efeitos || []).flatMap((e) => e.avisos || []))]
+      : [];
+    const valor = !calc ? null
+      : f.tipo === "dano" ? calc.dano
+      : f.tipo === "auxiliar" ? formatAuxValor(calc)
+      : f.tipo === "curativo" ? calc.cura
+      : f.tipo === "especial" ? (calc.dano ?? calc.resumo)
+      : null;
+    return {
+      id: f.id,
+      nome: f.nome || "",
+      tipo: f.tipo,
+      nivel: f.nivel,
+      nivelLabel: NIVEL_LABEL[f.nivel] ?? String(f.nivel),
+      custoPE: calc?.custoPE ?? null,
+      valor: valor ?? null,
+      // O rótulo do valor muda com o tipo, e o Preview o usa como `title`.
+      valorLabel: f.tipo === "dano" ? "Dano"
+        : f.tipo === "curativo" ? (calc?.ehTemporario ? "PV Temporário" : "Cura")
+        : f.tipo === "especial" && ["golpeador", "danoAlma"].includes(f.especialSubtipo) ? "Dano"
+        : "Efeito",
+      variacao: !!f.variacaoDe,
+      avisos,
+    };
+  });
+}

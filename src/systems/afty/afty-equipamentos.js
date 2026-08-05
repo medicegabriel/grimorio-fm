@@ -1020,7 +1020,21 @@ export const ITEM_CATEGORIAS = [
 /* `efeito` só existe nos itens cujo benefício o motor consegue ler.
    `aplicado: true` significa que deriveAfty realmente soma. Os demais
    dependem de sistema que não existe (Perícias, Estamina, Dados de Vida,
-   Exaustão, condições) e ficam inertes de propósito. */
+   Exaustão, condições) e ficam inertes de propósito.
+
+   `efeito.motor` é a saída GERAL, aberta em 2026-08-03: `{ canal, alvo?, expr }`
+   no catálogo inteiro do Motor, como os encantamentos já faziam. Os campos
+   nomeados acima dela (`hpMax`, `cd`, `atributo`, `pericia`) são os antigos e
+   continuam valendo, mas item novo deve usar o `motor`.
+
+   `cura` marca o item que CURA, e vira uma linha no card de Cura da aba
+   Habilidades. Basta CARREGAR (consumir um talismã não pede equipar):
+     fixo      -> pontos de vida curados, número fechado
+     fracaoPV  -> fração do PV MÁXIMO do portador (1 = tudo, 0,5 = metade)
+     alcance   -> rótulo da linha
+   ⚠ Item que cura é FLAT: os canais de cura não entram nele. "curando-se em 10
+   pontos de vida" é número do talismã, e não uma cura que a criatura realiza.
+   Ver o cabeçalho de afty-cura.js. */
 
 export const ITENS_ESPECIAIS = [
   /* ---------- CUSTO 1 ---------- */
@@ -1044,7 +1058,8 @@ export const ITENS_ESPECIAIS = [
   { id: "it_remedio_simples", nome: "Remédio Simples", categoria: "farmaco", custo: 1,
     descricao: "Um simples remédio, capaz de forçar uma reação regenerativa do corpo. Como uma ação comum, é possível consumir o remédio e gastar seus dados de vida para se curar, com um limite igual a quatro dados de vida." },
   { id: "it_simbolo_da_vida", nome: "Símbolo da Vida", categoria: "talisma", custo: 1,
-    descricao: "Uma espécie de pequena ficha ou amuleto, encravado em madeira e imbuído com energia reversa. Como uma ação bônus, é possível o destruir para liberar a energia em si mesmo, curando-se em 10 pontos de vida." },
+    descricao: "Uma espécie de pequena ficha ou amuleto, encravado em madeira e imbuído com energia reversa. Como uma ação bônus, é possível o destruir para liberar a energia em si mesmo, curando-se em 10 pontos de vida.",
+    cura: { fixo: 10, alcance: "Você" } },
   { id: "it_talisma_de_barreira", nome: "Talismã de Barreira", categoria: "talisma", custo: 1,
     descricao: "Um pequeno talismã que armazena uma barreira amaldiçoada. Pode usá-lo como uma ação bônus, invocando quatro paredes, cada uma possuindo 15 pontos de vida e ocupando 1,5 metros cada. Após usado, o talismã se esvai." },
   { id: "it_veneno_debilitante", nome: "Veneno Debilitante", categoria: "mistura", custo: 1,
@@ -1059,7 +1074,11 @@ export const ITENS_ESPECIAIS = [
   { id: "it_antidoto_intermediario", nome: "Antídoto Intermediário", categoria: "farmaco", custo: 2,
     descricao: "Um simples antídoto, capaz de neutralizar venenos mais leves. O antídoto pode ser consumido como uma ação bônus, curando da condição envenenado e/ou qualquer veneno de custo 2 ou que venha de uma maldição de terceiro grau ou inferior." },
   { id: "it_apanhador_de_saude", nome: "Apanhador de Saúde", categoria: "acessorio", custo: 2,
-    descricao: "Um pequeno amuleto com formato semelhante ao de um apanhador de sonhos, o qual atrai boas energias. Sempre que um portador do acessório for curado, recebe +1 de cura por dado, com um limite de cura adicional igual a metade do seu nível." },
+    descricao: "Um pequeno amuleto com formato semelhante ao de um apanhador de sonhos, o qual atrai boas energias. Sempre que um portador do acessório for curado, recebe +1 de cura por dado, com um limite de cura adicional igual a metade do seu nível.",
+    efeito: { aplicado: true, motor: [
+      { canal: "curaPorDado", expr: "1" },
+      { canal: "curaPorDadoTeto", expr: "piso(nd / 2)" },
+    ] } },
   { id: "it_bracelete_do_vigor", nome: "Bracelete do Vigor", categoria: "acessorio", custo: 2,
     descricao: "Um bracelete que entra em sintonia com o corpo e acentua o físico, concedendo um maior vigor para o seu portador. Enquanto estiver utilizando o bracelete do vigor, os seus pontos de vida máximos aumentam em 10.",
     efeito: { hpMax: 10, aplicado: true } },
@@ -1077,7 +1096,8 @@ export const ITENS_ESPECIAIS = [
   { id: "it_remedio_intermediario", nome: "Remédio Intermediário", categoria: "farmaco", custo: 2,
     descricao: "Um remédio mais complexo, capaz de forçar uma reação regenerativa avançada no corpo. Como uma ação comum, é possível consumir o remédio e gastar seus dados de vida para se curar, com um limite igual a oito dados de vida." },
   { id: "it_simbolo_de_vida_florescente", nome: "Símbolo de Vida Florescente", categoria: "talisma", custo: 2,
-    descricao: "Uma ficha ou amuleto encravado em madeira e com quantidades modestas de energia reversa, o que dá um sutil brilho e calor. Como uma ação bônus, é possível o destruir para liberar energia em si mesmo, curando-se em 25 pontos de vida." },
+    descricao: "Uma ficha ou amuleto encravado em madeira e com quantidades modestas de energia reversa, o que dá um sutil brilho e calor. Como uma ação bônus, é possível o destruir para liberar energia em si mesmo, curando-se em 25 pontos de vida.",
+    cura: { fixo: 25, alcance: "Você" } },
   { id: "it_talisma_de_barreira_superior", nome: "Talismã de Barreira Superior", categoria: "talisma", custo: 2,
     descricao: "Melhorando no talismã de barreira, ela é tecida com mais cuidado e foco em uma maior agilidade. Pode usá-lo como uma ação bônus ou como uma reação, invocando quatro paredes, cada uma possuindo 25 pontos de vida e ocupando 1,5 metros cada. Após usado, o talismã se esvai." },
   { id: "it_veneno_desnorteante", nome: "Veneno Desnorteante", categoria: "mistura", custo: 2,
@@ -1131,11 +1151,13 @@ export const ITENS_ESPECIAIS = [
   { id: "it_elixir_da_vida", nome: "Elixir da Vida", categoria: "espiritual", custo: 4,
     descricao: "Sendo o suprassumo da energia amaldiçoada, o elixir da vida incita uma vitalidade sem precedentes naquele que o consumir, usando da essência de várias maldições e junção de energia reversa. Como uma ação bônus, é possível consumir o elixir da vida, podendo usar todos os seus dados de vida para se curar, somando o dobro do seu modificador de constituição em cada um; você recebe vantagem e +5 em testes de resistência de Fortitude pelo resto da cena, assim como em Integridade." },
   { id: "it_laco_da_vida", nome: "Laço da Vida", categoria: "acessorio", custo: 4,
-    descricao: "Um pequeno laço vermelho, imbuído com quantidades excessivas de energia reversa. Um feiticeiro que tenha o laço preso a si é capaz de se prender a vida: caso um personagem com um laço da vida vá morrer, tal morte é ignorada e o laço se desgasta, sumindo. Ao evitar a morte com este item, o personagem cura metade dos seus pontos de vida, mas recebe 1 nível de exaustão. O Laço da Vida não funciona caso o feiticeiro já esteja com 5 níveis de Exaustão." },
+    descricao: "Um pequeno laço vermelho, imbuído com quantidades excessivas de energia reversa. Um feiticeiro que tenha o laço preso a si é capaz de se prender a vida: caso um personagem com um laço da vida vá morrer, tal morte é ignorada e o laço se desgasta, sumindo. Ao evitar a morte com este item, o personagem cura metade dos seus pontos de vida, mas recebe 1 nível de exaustão. O Laço da Vida não funciona caso o feiticeiro já esteja com 5 níveis de Exaustão.",
+    cura: { fracaoPV: 0.5, alcance: "Você" } },
   { id: "it_lagrima_de_shinigami", nome: "Lágrima de Shinigami", categoria: "mistura", custo: 4,
     descricao: "O mais letal veneno já conhecido, capaz de imbuir uma arma com tamanha letalidade que passou a ser conhecido como a lágrima de um shinigami. Contato, o alvo perde 2d10 pontos de vida e tem sua Defesa reduzida em 4, e passa a gastar 2 PE adicionais sempre que usar energia amaldiçoada até o final da cena (perde 2d10 de vida, fica Amedrontado e Exposto por 2 rodadas)." },
   { id: "it_simbolo_de_vida_absoluta", nome: "Símbolo de Vida Absoluta", categoria: "talisma", custo: 4,
-    descricao: "Encravado e entalhado com os símbolos de absoluta saúde e vida, esse símbolo consegue canalizar em sua máxima a vida. Como uma ação livre, é possível o destruir para liberar energia em si mesmo, recuperando todos os seus pontos de vida, até o máximo, além de receber pontos de vida temporários igual ao triplo do seu nível de personagem." },
+    descricao: "Encravado e entalhado com os símbolos de absoluta saúde e vida, esse símbolo consegue canalizar em sua máxima a vida. Como uma ação livre, é possível o destruir para liberar energia em si mesmo, recuperando todos os seus pontos de vida, até o máximo, além de receber pontos de vida temporários igual ao triplo do seu nível de personagem.",
+    cura: { fracaoPV: 1, alcance: "Você" } },
   { id: "it_talisma_do_apice", nome: "Talismã do Ápice", categoria: "talisma", custo: 4,
     descricao: "Um talismã que quando destruído liberta uma quantidade excessiva de energia, a qual é direcionada a um atributo específico do usuário. Ao usar o talismã, o valor de um atributo a sua escolha se torna 30 durante um minuto (10 rodadas dentro de um combate) e ele se quebra." },
 ];
@@ -1530,6 +1552,24 @@ export function resolveEquipamentos(creature, bt = 2) {
         for (const [pericia, valor] of Object.entries(ef.pericia ?? {})) {
           efeitosEncantamento.push({
             canal: "bonusPericia", alvo: pericia, expr: String(valor),
+            origem: e.uid, nome: def.nome,
+          });
+        }
+        // Saída GERAL do item para o Motor (2026-08-03), no mesmo caminho dos
+        // encantamentos: canal livre, expressão da DSL. Ela existe para o item
+        // novo não precisar de um campo nomeado e de um `if` aqui a cada vez.
+        // O valor viaja resolvido, como literal, porque o contexto de item tem
+        // `grau`, `custo` e `penalidade`, que não existem no da criatura.
+        for (const ex of ef.motor ?? []) {
+          // O `rankCalculo` é o grau JÁ REBAIXADO por encantamento, que é o que
+          // vale em toda conta do item desde 2026-08-01.
+          const valor = evalNumber(ex.expr, { ...ctxBase, ...dslItemVars(def, fa?.rankCalculo ?? 0) });
+          // Efeito que resolve em zero não vira linha, igual aos encantamentos.
+          if (!valor) continue;
+          efeitosEncantamento.push({
+            canal: ex.canal,
+            ...(ex.alvo ? { alvo: ex.alvo } : {}),
+            expr: String(valor),
             origem: e.uid, nome: def.nome,
           });
         }

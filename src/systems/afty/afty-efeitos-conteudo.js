@@ -62,8 +62,9 @@
  *     aqui inflaria o dado nos Patamares altos, que é justamente onde o
  *     balanceamento importa. Ataque Furtivo, Quebra Crânio, Foco no Inimigo.
  *
- * A exceção é a REGENERAÇÃO, que tem canal próprio para o tamanho do dado
- * (`regeneracaoDado`) e por isso guarda a rolagem de verdade.
+ * As exceções são a REGENERAÇÃO e a CURA, que têm canal próprio para as faces
+ * do dado (`regeneracaoFaces`, `curaFaces`) e por isso guardam a rolagem de
+ * verdade, e não a média dela.
  * ============================================================
  */
 
@@ -296,10 +297,19 @@ export const HABILIDADE_EFEITOS = {
   // Os dados vão inteiros no canal próprio em vez de virar média: é cura por
   // turno, o número que mais pesa no balanceamento de nível alto.
   lut_sobrevivente: [
-    { canal: "dadosRegeneracao", quando: "machucado",
+    { canal: "regeneracaoDados", quando: "machucado",
       expr: "1 + (esc_lutador >= 8) + (esc_lutador >= 12) + (esc_lutador >= 16) + (esc_lutador >= 20)",
       duracao: "temporaria" },
-    { canal: "regeneracao", quando: "machucado", expr: "mod_constituicao", duracao: "temporaria" },
+    { canal: "regeneracaoFixa", quando: "machucado", expr: "mod_constituicao", duracao: "temporaria" },
+  ],
+
+  // "Você pode, como uma Ação Bônus, realizar uma rolagem do seu dano desarmado
+  // e se curar nesse valor. Esta habilidade pode ser usada uma quantidade de
+  // vezes igual ao seu bônus de treinamento."
+  // A linha ESPELHA o Ataque Básico e por isso não recebe canal de cura nenhum
+  // (ver o cabeçalho de afty-cura.js). Só os usos são dela.
+  lut_puxar_um_ar: [
+    { canal: "curaUsos", alvo: "cura_puxar_um_ar", expr: "maestria" },
   ],
 
   /* ---- 6° nível ---- */
@@ -414,6 +424,15 @@ export const HABILIDADE_EFEITOS = {
       expr: "2 + brutalidade_pe", duracao: "temporaria" },
     { canal: "pvTemporario", quando: "brutalidade",
       expr: "nd + mod_tecnica", duracao: "temporaria" },
+  ],
+
+  // "Uma vez por cena, caso você fosse ter os seus pontos de vida reduzidos a 0,
+  // você pode escolher retornar ao nível de empolgação 1 para continuar de pé,
+  // curando-se em um valor igual a uma rolagem de dano do seu ataque desarmado."
+  // ESPELHA o Ataque Básico, igual ao Puxar um Ar. O preço (voltar à Empolgação
+  // 1 e perder um nível máximo) já é o estado `insistenciaUsada` da bancada.
+  lut_insistencia: [
+    { canal: "curaUsos", alvo: "cura_insistencia", expr: "1" },
   ],
 
   /* ---- 12° nível ---- */
@@ -549,6 +568,19 @@ export const HABILIDADE_EFEITOS = {
   // próximo turno com a arma trocada."
   cmb_arsenal_ciclico: [
     { canal: "dadosDano", quando: "arsenal_ciclico", expr: "1", duracao: "temporaria" },
+  ],
+
+  // "Uma quantidade de vezes igual ao seu bônus de treinamento você pode usar
+  // sua ação bônus para se curar em um valor igual a 1d10 + o dobro do seu
+  // modificador de Constituição + bônus de treinamento, aumentando em um dado a
+  // cada 4 níveis."
+  // ⚠ ASSUMIDO: "a cada 4 níveis" é o nível de COMBATENTE, como no resto da
+  // especialização, que usa `esc_combatente` em toda escada.
+  cmb_revigorar: [
+    { canal: "curaDados", alvo: "cura_revigorar", expr: "1 + piso(esc_combatente / 4)" },
+    { canal: "curaFaces", alvo: "cura_revigorar", expr: "10" },
+    { canal: "curaFixa",  alvo: "cura_revigorar", expr: "dobro(mod_constituicao) + maestria" },
+    { canal: "curaUsos",  alvo: "cura_revigorar", expr: "maestria" },
   ],
 
   // "Seu alcance em ataques com armas corpo a corpo aumenta em 1,5 metros e
@@ -882,10 +914,10 @@ export const HABILIDADE_EFEITOS = {
   // cada ponto além soma 1d8.
   res_corpo_de_aco: [
     { canal: "hp", expr: "constituicao" },
-    { canal: "dadosRegeneracao", quando: "corpo_de_aco",
+    { canal: "regeneracaoDados", quando: "corpo_de_aco",
       expr: "1 + corpo_de_aco", duracao: "temporaria" },
-    { canal: "regeneracaoDado", quando: "corpo_de_aco", expr: "8", duracao: "temporaria" },
-    { canal: "regeneracao", quando: "corpo_de_aco", expr: "mod_constituicao", duracao: "temporaria" },
+    { canal: "regeneracaoFaces", quando: "corpo_de_aco", expr: "8", duracao: "temporaria" },
+    { canal: "regeneracaoFixa", quando: "corpo_de_aco", expr: "mod_constituicao", duracao: "temporaria" },
   ],
 
   // "sempre que realizar um ataque, ele causa +4 de dano adicional. No 12°
@@ -896,6 +928,18 @@ export const HABILIDADE_EFEITOS = {
   ],
 
   /* ---- 8° nível ---- */
+
+  // "Uma vez por descanso curto ou longo, quando você for chegar a 0 pontos de
+  // vida e cair você pode escolher se manter de pé e curar em 3d10 + nível de
+  // personagem, aumentando em +1d10 nos níveis 12, 16 e 20."
+  // ⚠ "Nível de personagem" aqui é o ND, e não o nível de Restringido: o texto
+  // diz personagem com todas as letras, ao contrário das irmãs dele.
+  res_ainda_de_pe: [
+    { canal: "curaDados", alvo: "cura_ainda_de_pe", expr: "3 + (nd >= 12) + (nd >= 16) + (nd >= 20)" },
+    { canal: "curaFaces", alvo: "cura_ainda_de_pe", expr: "10" },
+    { canal: "curaFixa",  alvo: "cura_ainda_de_pe", expr: "nd" },
+    { canal: "curaUsos",  alvo: "cura_ainda_de_pe", expr: "1" },
+  ],
 
   // "Ao realizar o Ataque Furtivo da rodada, você recebe vantagem no golpe.
   // Caso o acerto dele já tenha sido garantido por qualquer motivo, você recebe
@@ -1089,6 +1133,89 @@ export const HABILIDADE_EFEITOS = {
   ],
   sup_liberacao_de_energia_reversa: [
     { canal: "vagasAptidao", expr: "1" },
+  ],
+
+  /* ---------- SUPORTE: a CURA (2026-08-03) ---------- */
+
+  // "Você pode, como uma ação bônus, curar uma criatura em alcance de toque em
+  // um valor igual a 2d6 + seu modificador de Presença ou Sabedoria, uma
+  // quantidade de vezes igual ao seu modificador de Presença ou Sabedoria, por
+  // descanso curto ou longo. No nível 4, essa cura se torna 2d12, no nível 8, se
+  // torna 3d12, no nível 12 se torna 6d8, no nível 16 se torna 6d10."
+  //
+  // ⚠ O nível é o de SUPORTE, com metade do nível das outras classes junto
+  // (autor, 2026-08-03), que é exatamente o que `esc_suporte` significa. As
+  // irmãs dela ("seu nível de Suporte", em Medicina Infalível e Sobrecura) já
+  // liam esse mesmo número.
+  //
+  // ⚠ A escada TROCA a rolagem, não soma, e as faces até DESCEM (d12 no 8, d8 no
+  // 12). Por isso as faces saem de uma expressão só, com sinal negativo no meio:
+  // o canal `curaFaces` vale o MAIOR entre as FONTES, e uma fonte que emitisse
+  // 12 e outra 8 deixaria o d12 vencer para sempre.
+  //
+  //        nível   <4     4      8      12     16
+  //        dados    2     2      3      6      6
+  //        faces    6    12     12      8     10
+  sup_suporte_em_combate: [
+    { canal: "curaDados", alvo: "cura_suporte_em_combate",
+      expr: "2 + (esc_suporte >= 8) + 3 * (esc_suporte >= 12)" },
+    { canal: "curaFaces", alvo: "cura_suporte_em_combate",
+      expr: "6 + 6 * (esc_suporte >= 4) - 4 * (esc_suporte >= 12) + 2 * (esc_suporte >= 16)" },
+    { canal: "curaFixa", alvo: "cura_suporte_em_combate", expr: "mod_pre_ou_sab" },
+    { canal: "curaUsos", alvo: "cura_suporte_em_combate", expr: "mod_pre_ou_sab" },
+  ],
+
+  // "você soma o seu bônus de treinamento no total de toda cura que realizar."
+  // ⚠ SEM ALVO de propósito: "toda cura" é toda linha do card, e é para isso que
+  // o alvo do canal é opcional. A parte de maximizar dados é usos por descanso
+  // que a ficha não conta, e fica no texto.
+  sup_medicina_infalivel: [
+    { canal: "curaFixa", expr: "maestria" },
+  ],
+
+  // "sua quantidade de usos da habilidade Suporte em Combate são dobrados e você
+  // soma seu modificador de atributo escolhido para CD de especialização em toda
+  // cura que realizar."
+  // Dobrar é DELTA de mais uma vez o valor base (o mesmo desenho da Cobertura
+  // Avançada sobre o Cobrir-se). O Afty tem uma CD só, a Amaldiçoada, então o
+  // "atributo escolhido para CD" é o `mod_tecnica`.
+  sup_suporte_absoluto: [
+    { canal: "curaUsos", alvo: "cura_suporte_em_combate", expr: "mod_pre_ou_sab" },
+    { canal: "curaFixa", expr: "mod_tecnica" },
+  ],
+
+  // "o seu Bônus de Treinamento é adicionado ao número de usos da sua cura."
+  // "A sua cura" é a de Suporte em Combate, que é a habilidade de cura da
+  // especialização. A restauração de 50% de Integridade fica de fora: a
+  // Integridade da Alma saiu do criador e é sempre máxima.
+  sup_purificacao_da_alma: [
+    { canal: "curaUsos", alvo: "cura_suporte_em_combate", expr: "maestria" },
+  ],
+
+  // "Durante um descanso curto, você pode escolher recuperar 2 pontos de energia
+  // a menos para criar uma quantidade de remédios igual a metade do seu bônus de
+  // treinamento; em um descanso longo, a quantidade é igual ao seu bônus de
+  // treinamento. Um remédio cura em um valor igual a sua cura da habilidade
+  // Suporte em Combate."
+  // A linha ESPELHA a de Suporte em Combate, então só os usos entram por canal.
+  // Vale o descanso longo, que é o número maior e o que a ficha mostra.
+  sup_criar_medicina: [
+    { canal: "curaUsos", alvo: "cura_criar_medicina", expr: "maestria" },
+  ],
+
+  // Invocação Às, uma das três capacidades do companheiro amaldiçoado: "Curar a
+  // você em 2d10 + seu modificador de Sabedoria ou Presença. Nos níveis 5, 9, 13
+  // e 17, a cura aumenta em +1d10. [...] Você pode utilizar cada um dos efeitos
+  // uma vez por descanso curto ou longo."
+  // ⚠ É cura que a criatura RECEBE, e por isso vira linha: quem rola é a
+  // invocação, mas quem sara é o dono. As outras duas capacidades (dano em área
+  // e cegueira) são da invocação e não entram aqui.
+  ctr_invocacao_as: [
+    { canal: "curaDados", alvo: "cura_invocacao_as",
+      expr: "2 + (esc_controlador >= 5) + (esc_controlador >= 9) + (esc_controlador >= 13) + (esc_controlador >= 17)" },
+    { canal: "curaFaces", alvo: "cura_invocacao_as", expr: "10" },
+    { canal: "curaFixa",  alvo: "cura_invocacao_as", expr: "mod_pre_ou_sab" },
+    { canal: "curaUsos",  alvo: "cura_invocacao_as", expr: "1" },
   ],
 
   // "Você passa a somar seu modificador de presença ou de sabedoria, ao invés de
@@ -1874,15 +2001,19 @@ export const ORIGEM_EFEITOS = {
 
   // Talento Natural: "Recebe um Talento à escolha no 1° nível. Uma única vez, a
   // partir do 4° nível, pode escolher receber um Talento adicional."
-  // Talento gasta o orçamento das Habilidades de Especialização, então é vaga de
-  // habilidade, igual aos degraus do Empenho Implacável.
+  //
+  // ⚠ Vaga EXCLUSIVA de TALENTO (autor, 2026-08-03). Até aqui saía por
+  // `vagasHabilidade`, que é a pilha COMUM, então uma característica que o livro
+  // escreve como "um Talento" pagava Habilidade de Especialização qualquer, e
+  // confundia quem lia o contador. O canal `vagasTalento` é o irmão do
+  // `vagasFeitico`: só Talento gasta, e o que sobra não vira nada.
   //
   // Marca Registrada: "Recebe um Feitiço adicional" → vaga EXCLUSIVA de Feitiço
   // (não serve para Habilidade Geral). A redução de 1 PE fica de fora: vale só
   // para aquele feitiço, `custoPE` não tem alvo, e afty-feiticos.js não lê o
   // Motor. Entra na passada dos Feitiços.
   inato: [
-    { canal: "vagasHabilidade", expr: "1 + (nd >= 4)" },
+    { canal: "vagasTalento", expr: "1 + (nd >= 4)" },
     { canal: "vagasFeitico", expr: "1" },
   ],
 
@@ -1913,10 +2044,15 @@ export const ORIGEM_EFEITOS = {
   //   nível 6  → uma Habilidade de Especialização adicional
   //   nível 15 → uma Habilidade de Especialização adicional
   //   nível 19 → uma Habilidade de Especialização E um Talento adicional
-  // Talento divide o mesmo orçamento das Habilidades, então o 19 vale 2 vagas.
+  //
+  // ⚠ O degrau 19 SEPAROU em 2026-08-03 (autor), quando a vaga exclusiva de
+  // Talento nasceu: ele valia 2 vagas comuns, o que deixava as duas metades
+  // gastáveis em Habilidade de Especialização. Agora o texto sai ao pé da letra,
+  // uma vaga de cada pilha.
   sem_tecnica: [
     { canal: "vagasPericia", expr: "2" },
-    { canal: "vagasHabilidade", expr: "(nd >= 6) + (nd >= 15) + 2 * (nd >= 19)" },
+    { canal: "vagasHabilidade", expr: "(nd >= 6) + (nd >= 15) + (nd >= 19)" },
+    { canal: "vagasTalento", expr: "(nd >= 19)" },
   ],
 
   // Natureza Amaldiçoada: "Você recebe uma aptidão amaldiçoada a sua escolha, e
@@ -2148,42 +2284,85 @@ export const APTIDAO_EFEITOS = {
     { canal: "distanciaEmpurrao", expr: "cl * 1.5", quando: "estimulo_empurrao", duracao: "temporaria" },
   ],
 
-  /* ---------- Energia Reversa: de bancada ---------- */
+  /* ---------- Energia Reversa: a CURA e a bancada ---------- */
+
+  // "Sua capacidade básica é se curar: para cada ponto de energia reversa
+  // gasto, você se cura em 2d6, somando seu modificador de presença ou
+  // sabedoria ao total de cura. Nos níveis 10, 15 e 20, a cura aumenta em 1d6.
+  // Você pode gastar um máximo de pontos de energia reversa por vez igual a
+  // 1 + metade do seu nível de aptidão."
+  //
+  // ⚠ A escada de 10/15/20 vale POR PONTO GASTO (autor, 2026-08-03), e não uma
+  // vez na rolagem: um ND 20 gastando 3 PER rola 3 × 5d6. Era assunção desde
+  // 2026-08-01 e agora é regra confirmada.
+  // ⚠ O MODIFICADOR entra UMA vez, no total, e é o MAIOR entre Presença e
+  // Sabedoria (decisão C3). Por isso `curaDados` é por ponto e `curaFixa` não.
+  //
+  // A linha aparece na aba Habilidades. Ela é AÇÃO COMUM, então não vira número
+  // de ficha sozinha: quem a traz para a Regeneração é o Fluxo Constante, mais
+  // abaixo.
+  energia_reversa: [
+    { canal: "curaDados",  alvo: "cura_energia_reversa", expr: "2 + (nd >= 10) + (nd >= 15) + (nd >= 20)" },
+    { canal: "curaFaces",  alvo: "cura_energia_reversa", expr: "6" },
+    { canal: "curaFixa",   alvo: "cura_energia_reversa", expr: "mod_pre_ou_sab" },
+    { canal: "curaPontos", alvo: "cura_energia_reversa", expr: "1 + piso(er / 2)" },
+  ],
+
+  // "Ao invés de decidir um alvo, você pode optar por realizar a rolagem de cura
+  // e dividir o total do resultado entre todas as criaturas dentro de um
+  // alcance. A quantidade máxima de pontos que podem ser gastos aumenta em 2."
+  // O alcance em metros é da mesa (não há alvo múltiplo na ficha), e o que sobra
+  // de número é o teto de pontos. O rótulo "Grupo" da linha sai do catálogo.
+  cura_em_grupo: [
+    { canal: "curaPontos", alvo: "cura_energia_reversa", expr: "2" },
+  ],
 
   // A cura de Energia Reversa é AÇÃO COMUM, e por isso a aptidão base fica de
-  // fora do Motor. Quem a traz para cá é o Fluxo Constante: "no começo do seu
-  // turno, você pode se curar com energia reversa seguindo as mesmas regras da
-  // cura básica, porém como uma ação livre". Cura no início do turno É o canal
-  // de Regeneração, que já existe e já carrega dados, faces e parte fixa.
+  // fora da REGENERAÇÃO. Quem a traz para cá é o Fluxo Constante: "no começo do
+  // seu turno, você pode se curar com energia reversa seguindo as mesmas regras
+  // da cura básica, porém como uma ação livre". Cura no início do turno É o
+  // canal de Regeneração, que já carrega dados, faces e parte fixa.
   //
-  // A regra que ele importa, de Energia Reversa: "para cada ponto de energia
-  // reversa gasto, você se cura em 2d6, somando seu modificador de presença ou
-  // sabedoria ao total de cura. Nos níveis 10, 15 e 20, a cura aumenta em 1d6."
-  //
-  // ⚠ DUAS ASSUNÇÕES, as duas a confirmar:
-  //  1. Os degraus de 10, 15 e 20 sobem o dado POR PONTO gasto, e não uma vez
-  //     só. É o que "para cada ponto... a cura aumenta" sugere, mas o texto não
-  //     fecha a questão.
-  //  2. "Presença OU Sabedoria" entrou como o MAIOR dos dois. É a decisão C3 do
-  //     doc, que vale para umas dez habilidades e ainda não foi tomada. O
-  //     modificador entra UMA vez, e não por ponto, porque o texto diz "ao total
-  //     de cura".
+  // ⚠ As mesmas duas leituras da cura acima valem aqui, e as duas linhas têm de
+  // andar juntas: são a MESMA regra em dois lugares (uma por ação, uma por
+  // turno). Mexeu numa, confira a outra.
   fluxo_constante: [
-    { canal: "dadosRegeneracao", expr: "fluxo_per * (2 + (nd >= 10) + (nd >= 15) + (nd >= 20))", duracao: "temporaria" },
-    { canal: "regeneracaoDado",  expr: "6", quando: "fluxo_per", duracao: "temporaria" },
-    { canal: "regeneracao",      expr: "max(mod_presenca, mod_sabedoria)", quando: "fluxo_per", duracao: "temporaria" },
+    { canal: "regeneracaoDados", expr: "fluxo_per * (2 + (nd >= 10) + (nd >= 15) + (nd >= 20))", duracao: "temporaria" },
+    { canal: "regeneracaoFaces",  expr: "6", quando: "fluxo_per", duracao: "temporaria" },
+    { canal: "regeneracaoFixa",      expr: "max(mod_presenca, mod_sabedoria)", quando: "fluxo_per", duracao: "temporaria" },
   ],
 
   // "O dado da cura se torna d8 e você passa a somar o dobro do seu modificador
-  // de presença ou sabedoria."
+  // de presença ou sabedoria. A quantidade máxima de pontos que podem ser gastos
+  // passa a ser igual a 1 + seu nível de aptidão."
   // O dado vale o MAIOR entre as fontes (é assim que o canal funciona), então o
-  // 8 simplesmente vence o 6 do Fluxo. O modificador entra como DELTA de mais
-  // uma vez, que somado ao do Fluxo dá o dobro pedido.
-  // O teto de PER ("1 + seu nível de aptidão", no lugar de 1 + metade) é da
-  // FAIXA da bancada, e sai do resolveCombate.
+  // 8 simplesmente vence o 6. O modificador entra como DELTA de mais uma vez,
+  // que somado ao da base dá o dobro pedido.
+  //
+  // ⚠ O teto de PER é DELTA também: `1 + er` menos o `1 + piso(er / 2)` da base
+  // dá `teto(er / 2)`. Na REGENERAÇÃO ele não passa por canal nenhum, porque lá
+  // ele é o teto da FAIXA da bancada e sai do resolveCombate.
   cura_amplificada: [
-    { canal: "regeneracaoDado", expr: "8", quando: "fluxo_per", duracao: "temporaria" },
-    { canal: "regeneracao",     expr: "max(mod_presenca, mod_sabedoria)", quando: "fluxo_per", duracao: "temporaria" },
+    { canal: "curaFaces",  alvo: "cura_energia_reversa", expr: "8" },
+    { canal: "curaFixa",   alvo: "cura_energia_reversa", expr: "mod_pre_ou_sab" },
+    { canal: "curaPontos", alvo: "cura_energia_reversa", expr: "teto(er / 2)" },
+    { canal: "regeneracaoFaces", expr: "8", quando: "fluxo_per", duracao: "temporaria" },
+    { canal: "regeneracaoFixa",     expr: "max(mod_presenca, mod_sabedoria)", quando: "fluxo_per", duracao: "temporaria" },
+  ],
+
+  /* ---------- Especiais ---------- */
+
+  // Reversão de Técnica: "Ao obter esta aptidão, você recebe um Feitiço
+  // adicional, a qual obrigatoriamente deve ser uma reversão."
+  // ⚠ Vaga EXCLUSIVA de Feitiço, e não vaga comum (autor, 2026-08-03): quem dá
+  // Feitiço adicional dá vaga que não serve para Habilidade Geral. Estava sem
+  // efeito nenhum até aqui, então a aptidão concedia o Feitiço só no texto.
+  //
+  // O "obrigatoriamente uma reversão" e o custo aumentado pelo nível do Feitiço
+  // ficam de fora: são regra do Feitiço criado, e afty-feiticos.js não lê o
+  // Motor. Entram junto com a passada dos Feitiços.
+  reversao_de_tecnica: [
+    { canal: "vagasFeitico", expr: "1" },
   ],
 
   /* ========== APTIDÕES DE MALDIÇÃO (2026-08-01) ========== */
@@ -2286,40 +2465,63 @@ export const APTIDAO_EFEITOS = {
       expr: "mod_constituicao * piso(maestria / 2)", duracao: "temporaria" },
   ],
 
+  // "Como uma ação comum, você pode gastar até 2 pontos de energia amaldiçoada
+  // para se curar; para cada 2 pontos gastos, você se cura em 2d6 + seu
+  // modificador de constituição ou presença. Nos níveis 10, 15 e 20, a cura
+  // aumenta em 1d6. A quantidade máxima de pontos que podem ser gastos para se
+  // curar passa a ser igual ao seu bônus de treinamento por rodada."
+  //
+  // Espelho exato da cura de Energia Reversa, com a moeda trocada: aqui o bloco
+  // custa 2 PE, e não 1 PER. As duas escalas valem POR BLOCO GASTO (autor,
+  // 2026-08-03) e o modificador entra UMA vez, no total.
+  mal_regeneracao_corporal: [
+    { canal: "curaDados",  alvo: "cura_regeneracao_corporal", expr: "2 + (nd >= 10) + (nd >= 15) + (nd >= 20)" },
+    { canal: "curaFaces",  alvo: "cura_regeneracao_corporal", expr: "6" },
+    { canal: "curaFixa",   alvo: "cura_regeneracao_corporal", expr: "max(mod_constituicao, mod_presenca)" },
+    { canal: "curaPontos", alvo: "cura_regeneracao_corporal", expr: "maestria" },
+  ],
+
   // A Regeneração Corporal é AÇÃO COMUM, e por isso a aptidão base não vira
   // número de ficha sozinha. Quem a torna automática é o FLUXO IMPARÁVEL ("no
   // começo do seu turno, como uma ação livre"), e cura no início do turno É o
   // canal de Regeneração. Espelho exato do Fluxo Constante da Energia Reversa,
   // com PE no lugar de PER.
   //
-  // "para cada 2 pontos gastos, você se cura em 2d6 + seu modificador de
-  // constituição ou presença. Nos níveis 10, 15 e 20, a cura aumenta em 1d6."
   // ⚠ O modificador entra UMA VEZ, e não por par de pontos: é a leitura que o
   // autor confirmou para a Energia Reversa em 2026-07-30, e a Regeneração
   // Ampliada ("passa a somar o dobro") só faz sentido com ela.
   // ⚠ "constituição OU presença" é o MAIOR dos dois (decisão C3, autor
   // 2026-07-30, que vale para todas as fórmulas com esse "ou").
   mal_fluxo_imparavel: [
-    { canal: "dadosRegeneracao",
+    { canal: "regeneracaoDados",
       expr: "piso(regeneracao_pe / 2) * (2 + (nd >= 10) + (nd >= 15) + (nd >= 20))",
       duracao: "temporaria" },
-    { canal: "regeneracaoDado", expr: "6", quando: "regeneracao_pe", duracao: "temporaria" },
-    { canal: "regeneracao", expr: "max(mod_constituicao, mod_presenca)",
+    { canal: "regeneracaoFaces", expr: "6", quando: "regeneracao_pe", duracao: "temporaria" },
+    { canal: "regeneracaoFixa", expr: "max(mod_constituicao, mod_presenca)",
       quando: "regeneracao_pe", duracao: "temporaria" },
   ],
 
-  // "O seu dado de cura aumenta para d8 e você passa a somar o dobro do seu
-  // modificador." O dado vale o MAIOR entre as fontes, então o 8 vence o 6; o
-  // modificador entra como DELTA de mais uma vez, que somado ao do Fluxo dá o
-  // dobro. O teto de PE dobrado é da FAIXA da bancada (ver regeneracaoPE).
+  // "O seu dado de cura com a Regeneração Corporal aumenta para d8 e você passa
+  // a somar o dobro do seu modificador de constituição ou presença. A quantidade
+  // máxima de pontos que podem ser gastos passa a ser igual ao dobro do seu
+  // bônus de treinamento por rodada."
+  // O dado vale o MAIOR entre as fontes, então o 8 vence o 6; o modificador
+  // entra como DELTA de mais uma vez, que somado ao da base dá o dobro. O teto
+  // de PE é DELTA de mais uma Maestria, que dobra a da base.
+  // ⚠ Na REGENERAÇÃO o teto dobrado não passa por canal: lá ele é o teto da
+  // FAIXA da bancada (ver regeneracaoPE no resolveCombate).
   mal_regeneracao_ampliada: [
-    { canal: "regeneracaoDado", expr: "8", quando: "regeneracao_pe", duracao: "temporaria" },
-    { canal: "regeneracao", expr: "max(mod_constituicao, mod_presenca)",
+    { canal: "curaFaces",  alvo: "cura_regeneracao_corporal", expr: "8" },
+    { canal: "curaFixa",   alvo: "cura_regeneracao_corporal", expr: "max(mod_constituicao, mod_presenca)" },
+    { canal: "curaPontos", alvo: "cura_regeneracao_corporal", expr: "maestria" },
+    { canal: "regeneracaoFaces", expr: "8", quando: "regeneracao_pe", duracao: "temporaria" },
+    { canal: "regeneracaoFixa", expr: "max(mod_constituicao, mod_presenca)",
       quando: "regeneracao_pe", duracao: "temporaria" },
   ],
 
   // "O seu dado de cura com a Regeneração Corporal aumenta para d10."
   mal_regeneracao_maxima: [
-    { canal: "regeneracaoDado", expr: "10", quando: "regeneracao_pe", duracao: "temporaria" },
+    { canal: "curaFaces", alvo: "cura_regeneracao_corporal", expr: "10" },
+    { canal: "regeneracaoFaces", expr: "10", quando: "regeneracao_pe", duracao: "temporaria" },
   ],
 };

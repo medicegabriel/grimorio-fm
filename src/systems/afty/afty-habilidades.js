@@ -6371,7 +6371,24 @@ export function efeitosArmasDedicadas(dedicadas) {
   return out;
 }
 
-export function resolveHabilidades(creature, escolhidasEspec, talentosGastos = 0, bt = 0, bonusVagas = 0) {
+/**
+ * Resolve as Habilidades de Especialização e o orçamento que elas dividem com
+ * os Talentos.
+ *
+ * ⚠ O orçamento tem DUAS pilhas desde 2026-08-03, no mesmo desenho das vagas
+ * exclusivas de Feitiço (ver `orcamentoHabilidades` em afty-derive.js):
+ *
+ *   • `bonusVagas` é a pilha COMUM, que serve para Habilidade de Especialização
+ *     e para Talento, indiferente. Vem da Habilidade Geral Especialização.
+ *   • `vagasTalento` é a pilha EXCLUSIVA de Talento, que NÃO serve para
+ *     Habilidade de Especialização. Quem concede é o Talento Natural do Inato e
+ *     o degrau 19 do Empenho Implacável do Sem Técnica.
+ *
+ * Os Talentos gastam PRIMEIRO as exclusivas, e só o que sobrar cai no comum.
+ * O excesso é medido no COMUM: uma vaga exclusiva de Talento sobrando não
+ * libera Habilidade de Especialização nenhuma.
+ */
+export function resolveHabilidades(creature, escolhidasEspec, talentosGastos = 0, bt = 0, bonusVagas = 0, vagasTalento = 0) {
   const niveisPorEspec = niveisPorEspecializacao(escolhidasEspec);
   const vistos = new Set();
   const escolhidas = [];
@@ -6380,8 +6397,10 @@ export function resolveHabilidades(creature, escolhidasEspec, talentosGastos = 0
     vistos.add(id);
     escolhidas.push(id);
   }
-  // Orçamento: só o que a Habilidade Geral Especialização concedeu.
-  const total = Math.max(0, Math.trunc(Number(bonusVagas) || 0));
+  // Pilha COMUM: só o que a Habilidade Geral Especialização concedeu.
+  const comum = Math.max(0, Math.trunc(Number(bonusVagas) || 0));
+  // Pilha EXCLUSIVA de Talento, que não serve para Habilidade de Especialização.
+  const exclusivasTalento = Math.max(0, Math.trunc(Number(vagasTalento) || 0));
   // Escolhas aninhadas (Estilo de Controle no Apogeu, Melhorias...). O mapa
   // alimenta a verificação de requisito `escolha` e a passada de efeitos.
   const escolhas = resolveEscolhasHabilidade({
@@ -6398,15 +6417,27 @@ export function resolveHabilidades(creature, escolhidasEspec, talentosGastos = 0
   // Cada Melhoria de Controlador (repetível) além da 1ª consome uma vaga
   // extra. Talentos entram no MESMO orçamento ("obtidos no lugar de
   // habilidades de especialização", autor 2026-07-22), por isso vêm de fora.
-  const gastos = escolhidas.length + escolhas.vagasExtras + Math.max(0, talentosGastos);
+  const talentos = Math.max(0, talentosGastos);
+  const gastosHabilidade = escolhidas.length + escolhas.vagasExtras;
+  // Talento gasta a exclusiva primeiro, e o resto cai no comum.
+  const talentosNoExclusivo = Math.min(talentos, exclusivasTalento);
+  const gastosNoComum = gastosHabilidade + (talentos - talentosNoExclusivo);
+  const total = comum + exclusivasTalento;
+  const gastos = gastosHabilidade + talentos;
   return {
     escolhidas,
     escolhas,               // { porHab, mapa, vagasExtras }
     talentosGastos,
     total,
+    comum,
+    exclusivasTalento,
+    exclusivasUsadas: talentosNoExclusivo,
     gastos,
+    gastosNoComum,
     restante: total - gastos,
-    excedeu: gastos > total,
+    // O excesso é medido no COMUM: vaga exclusiva de Talento sobrando não
+    // libera Habilidade de Especialização nenhuma.
+    excedeu: gastosNoComum > comum,
     inacessiveis,
     niveisPorEspec,
   };

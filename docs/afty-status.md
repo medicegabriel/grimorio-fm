@@ -58,21 +58,24 @@ Estado atual do sistema Afty (atualizado 2026-07-17). Leia junto com:
 > | 6 | `quando` de OUTRA habilidade | `tem_cmb_armas_perfeitas` na opção de Armas Escolhidas (3) |
 > | 7 | `concedeEscolha` | soma vaga no pool de outra habilidade (5) |
 > | 8 | caminho próprio | `efeitosArmasDedicadas`, `ESCOLHAS_DE_HABILIDADE` do Roubo (2) |
+> | 9 | linha do catálogo de CURA | `requer` em `FONTES_CURA` (afty-cura.js). A Descarga Reanimadora não tem canal nenhum e mesmo assim tem linha, porque ela ESPELHA outra (1) |
 >
 > **Não existe habilidade "somável e livre" sobrando.** O que falta cai todo em bloqueio nomeado:
-> Feitiços não leem o Motor (39), canal de CURA não existe (20), invocação precisa de marcador
-> por-invocação para as Melhorias e de stat de **RD** e **dados de dano** (36), subsistemas nunca
-> enviados (Apoio, Imitação, Votos, técnicas marciais), e canais que faltam (troca de atributo na
-> fórmula, vantagem por condição, vaga de pool, proficiência de arma, PE de Aptidão).
+> Feitiços não leem o Motor (39), ~~canal de CURA não existe (20)~~ ✅ **RESOLVIDO em 2026-08-03**
+> (ver a sessão), invocação precisa de marcador por-invocação para as Melhorias e de stat de **RD**
+> e **dados de dano** (36), subsistemas nunca enviados (Apoio, Imitação, Votos, técnicas marciais),
+> e canais que faltam (troca de atributo na fórmula, vantagem por condição, vaga de pool,
+> proficiência de arma, PE de Aptidão).
 >
 > ⚠ **Duas afirmações VELHAS deste doc morreram:** "estados ligáveis em combate são nunca
 > automatizáveis" (a bancada existe, com 31 estados, e `quando` resolve) e "os 4 recursos de
 > classe não existem" (3 existem: `pontosPreparo`, `empolgacaoMaxima`/`Inicial`, e Estamina que É
 > o PE. Falta só o PE temporário exclusivo de Aptidão).
 >
-> As razões do Conjurador e do Suporte são baixas por motivo ESTRUTURAL, não por falta de
-> trabalho: **`afty-feiticos.js` não lê o Motor** (só a CD chega, porque `feiticos.cdBase` É a CD
-> da criatura) e **CURA não é stat da ficha**. As duas são as maiores extensões pendentes.
+> A razão do Conjurador segue baixa por motivo ESTRUTURAL: **`afty-feiticos.js` não lê o Motor**
+> (só a CD chega, porque `feiticos.cdBase` É a CD da criatura). Era a maior das duas extensões
+> pendentes, e agora é a única: **CURA virou sistema em 2026-08-03** (`afty-cura.js`), com 7 canais
+> novos e card próprio na aba Habilidades.
 >
 > Canais abertos nesta leva: **`rdAlma`** (a RD Geral cobre todo tipo MENOS alma) e
 > **`espacosCarga`** (sobe o limite de carga).
@@ -86,6 +89,16 @@ Estado atual do sistema Afty (atualizado 2026-07-17). Leia junto com:
 > dá +1 de Acerto por grau na linha dela, a arma virou EQUIPÁVEL (e a linha de dano exige isso),
 > cada encantamento DESCE UM GRAU nas contas, e a **penalidade de Destreza passou a ser aplicada**
 > (era calculada e ficava parada desde 2026-07-22). Ver a sessão de 2026-08-01.
+>
+> **RESTRINGIDO fechado** (2026-08-03): a trava Tipo ↔ Origem virou BIDIRECIONAL, e ele perdeu os 5
+> Treinamentos de energia amaldiçoada. **VAGA EXCLUSIVA DE TALENTO** (`vagasTalento`) nasceu na mesma
+> sessão, irmã da de Feitiço. E o criador ganhou **RASCUNHO AUTOMÁTICO** (`afty-rascunho.js`), que
+> não existia: até aqui recarregar a página perdia a ficha inteira. Ver a sessão de 2026-08-03.
+>
+> **FICHA FINAL** (plano escrito em 2026-08-05, nada construído ainda): até aqui o Afty só tem o
+> CRIADOR. A tela de USO da criatura foi planejada em `docs/afty-ficha-final.md`, com as 4 decisões
+> do autor (ficha de jogo da criatura, rola dados com histórico, desktop 75%, vitais fixos no topo
+> mais abas), as 7 fases, os 3 acréscimos que o motor vai precisar e as 10 perguntas abertas.
 >
 > 👉 **Começando um chat novo? Vá direto para
 > [PENDÊNCIAS DE ESPECIALIZAÇÕES](#-pendências-de-especializações-lista-de-retomada).**
@@ -150,7 +163,7 @@ Quando ela existir, saem quase de graça (já estão escritos como fórmula nas 
 especialização): 11 do Lutador, 10 do Conjurador, 4 do Suporte, além das do Combatente.
 
 **Canais que ainda NÃO existem e vão precisar de desenho:**
-- **CURA** — o Suporte gira em torno disso (8 habilidades). É o maior sistema novo.
+- ~~**CURA**~~ ✅ **FEITO em 2026-08-03** (`afty-cura.js`, 7 canais, 12 linhas, card próprio).
 - **TROCA de atributo na fórmula** (substituição, não soma), 3 consumidores:
   *Músculos Desenvolvidos* (Defesa usa Força), *Físico Controlado* (HP usa Presença/Sabedoria,
   teto +4), *Restrito pelos Céus* (Defesa usa Força ou Constituição).
@@ -177,6 +190,273 @@ valendo o bloqueio raiz D. Candidatas diretas: *Otimização de Espaço*, *Ajust
 **Perícias e TRs do personagem** (dezenas de `nota` viram
 requisito real no dia que existir) · **Talentos concedidos por origem/treinamento** (o catálogo
 existe, as fontes de concessão não).
+
+---
+
+## 🆕 SESSÃO DE 2026-08-03
+
+### 💚 CURA virou sistema (`afty-cura.js`)
+
+Era o **bloqueio raiz número 2** do doc, atrás só dos Feitiços: "canal de CURA não existe (20
+habilidades)". Existe agora, e é irmão declarado do Dano.
+
+⚠ **A diferença para o Dano é de onde vem o número, e ela decide a arquitetura.** O dano da
+criatura sai de uma FÓRMULA única (ND, Patamar, atributo-chave), e por isso o catálogo de armas não
+guarda dado nenhum. A cura NÃO tem fórmula: cada poder escreve a rolagem no próprio texto ("2d6 +
+seu modificador de presença ou sabedoria") e elas não se parecem entre si. Então `FONTES_CURA` diz
+só QUE LINHA EXISTE e quando, e **todo número entra pelo Motor**, nomeando a linha em `alvo`.
+
+Nomear a linha não é enfeite: `curaFixa` **sem alvo** é exatamente o que "em toda cura que
+realizar" (Medicina Infalível) significa, então o alvo é o que impede o bônus de uma fonte de
+vazar para as outras.
+
+**As 12 linhas**, cada uma com alcance, custo e usos próprios:
+
+| Linha | De onde | Como |
+|---|---|---|
+| Energia Reversa | aptidão | `2 + degraus 10/15/20` dados **por PER**, d6 → d8 com a Cura Amplificada |
+| Regeneração Corporal | aptidão | o espelho da de cima, com **2 PE** no lugar de 1 PER, d6 → d8 → d10 |
+| Suporte em Combate | habilidade | a escada 2d6 → 2d12 → 3d12 → 6d8 → 6d10 |
+| Revigorar | habilidade | `1 + piso(nível / 4)` d10, mais o dobro da Constituição |
+| Ainda de Pé | habilidade | `3 + degraus 12/16/20` d10 + ND |
+| Invocação Às | habilidade | `2 + degraus 5/9/13/17` d10 (quem rola é o companheiro, quem sara é o dono) |
+| Puxar um Ar · Insistência | habilidade | espelham o **Ataque Básico** |
+| Descarga Reanimadora · Criar Medicina | habilidade | espelham **Suporte em Combate** |
+| Símbolo da Vida (3) · Laço da Vida | item | flat, ou uma fração do PV do portador |
+
+**Sete canais novos**, com a mesma anatomia dos três de Regeneração mais o que a cura pede por ser
+gasto de ação: `curaDados`, `curaFaces`, `curaFixa`, `curaPorDado`, `curaPorDadoTeto`, `curaUsos` e
+`curaPontos`.
+
+**Três decisões que fecham o modelo:**
+
+1. **A escada de 10/15/20 vale POR PONTO GASTO** (autor, 2026-08-03), e não uma vez na rolagem. Um
+   ND 20 gastando 3 PER rola 3 × 5d6, e não 6d6 + 3d6. Era assunção desde 2026-08-01 e virou regra.
+   ⚠ **O MODIFICADOR não**: ele entra UMA vez, porque o texto diz "ao TOTAL de cura". É por isso que
+   `curaDados` é por bloco e `curaFixa` é do uso inteiro.
+2. **O nível do Suporte em Combate é o de SUPORTE**, com metade do nível das outras classes junto
+   (autor), que é o `esc_suporte` de sempre. ⚠ A escada dele TROCA a rolagem e as faces até
+   **descem** (d12 no 8, d8 no 12), então elas saem de UMA expressão com sinal negativo no meio:
+   `curaFaces` vale o maior entre as FONTES, e duas fontes emitindo 12 e 8 deixariam o d12 vencer
+   para sempre.
+3. **Linha espelhada não recebe canal de cura.** "Uma rolagem do seu dano desarmado" e "uma rolagem
+   da sua cura de Suporte em Combate" copiam uma rolagem que já existe, inteira. Aplicar os canais
+   por cima contaria o bônus global DUAS vezes, porque ele já está dentro do que foi copiado. Só
+   `curaUsos` é da linha espelhada, porque o limite de usos é dela. **Item que cura é flat pelo
+   mesmo motivo.**
+
+**Na tela**, card próprio na aba Habilidades, ao lado do de Dano, que **some inteiro** para quem não
+cura. A linha mostra o que UM ponto compra (autor), e não a rolagem do gasto máximo, com o custo em
+chip verde. O uso inteiro fecha no hover, na linha do Total.
+
+⚠ Com o custo por ponto, o **valor fixo não cabe** no `5d8`: ele entra uma vez no total, e não por
+ponto. Vira um número próprio na linha, com o mesmo desenho do Acerto na linha de Dano. Sem custo
+por ponto a rolagem fecha inteira (`6d10+17`) e o número separado não aparece.
+
+⚠ **UM painel de hover por linha, de propósito.** A linha de Dano precisou de dois (Acerto e Dano) e
+isso obrigou grupos nomeados em 2026-08-01. Aqui o hover único carrega dados, faces, multiplicação
+pelo gasto máximo e cada parcela fixa, então a linha continua sendo `group` e nada colide. As faces
+só viram linha do hover **quando há disputa**, e a perdedora aparece riscada, que é o vocabulário
+que o pool exclusivo já tinha.
+
+**13 entradas novas** nos mapas de efeito (10 habilidades, 3 aptidões), mais a Descarga Reanimadora,
+que **não tem canal nenhum** e ainda assim tem linha, porque espelha. É o 9° caminho de ligação.
+
+**O que ficou de fora, com bloqueio nomeado:** os três **Remédios**, o **Elixir da Vida** e o
+**Incitar Vigor** dependem de **Dados de Vida**, que não existe no Afty. Cura Aperfeiçoada (rerrolar
+1 e 2), Sobrecura (excedente vira PV temporário), Sintonização Vital, Cura Avançada em Grupo e
+Disseminar Cura mexem em ALVO ou em ROLAGEM, e não em número de linha. A restauração de 50% de
+Integridade da **Purificação da Alma** não tem onde cair: a Integridade saiu do criador e é sempre
+máxima.
+
+### 🏷 Os três canais de Regeneração foram RENOMEADOS
+
+⚠ **Os nomes velhos eram indefensáveis**, e quem apontou foi o autor: *"a ponto de eu, o criador do
+site, não entender o que cada um faz"*. Eram `Regeneração`, `Dados de Regeneração` e `Dado da
+Regeneração`: duas variações da mesma palavra, e **nenhuma dizendo qual parte da rolagem escrevia**.
+
+| Antes | Agora | O que escreve em `3d8+5` |
+|---|---|---|
+| `dadosRegeneracao` · "Dados de Regeneração" | `regeneracaoDados` · **"Regeneração: Dados"** | o `3` |
+| `regeneracaoDado` · "Dado da Regeneração" | `regeneracaoFaces` · **"Regeneração: Faces do Dado"** | o `8` |
+| `regeneracao` · "Regeneração" | `regeneracaoFixa` · **"Regeneração: Valor Fixo"** | o `+5` |
+
+Os sete de Cura seguem o mesmo padrão (`Cura: Dados`, `Cura: Faces do Dado`, `Cura: Valor Fixo`...),
+então **o prefixo agrupa e o sufixo diz qual parte é**. Os dez ganharam grupo próprio no seletor,
+**"Cura e Regeneração"**: os três viviam soltos em "Vitalidade e Recursos", entre PV e Pontos de
+Preparo, e lá não havia como perceber que os três eram partes da mesma rolagem.
+
+⚠ **Os IDS mudaram junto**, e o `CANAL_LEGADO` traduz os antigos **na leitura** do Funcionamento
+Básico da técnica, que é o único lugar onde o jogador escreve canal à mão. Sem reescrever a ficha:
+quem abrir e salvar de novo já grava o id novo. Mesmo desenho do `CANAL_UNICA_LEGADO` da Habilidade
+Única. Coberto por assert.
+
+### 🎒 Item ganhou saída GERAL para o Motor
+
+`efeito.motor` (`[{ canal, alvo?, expr }]`), no mesmo caminho dos encantamentos. Até aqui o item só
+alcançava o Motor por campo NOMEADO (`hpMax`, `cd`, `atributo`, `pericia`) com um `if` para cada um
+no `resolveEquipamentos`, e o **Apanhador de Saúde** não cabia em nenhum. Item novo usa o `motor` e
+não precisa de campo nem de `if`.
+
+O Apanhador é o primeiro consumidor: "+1 de cura por dado, com um limite de cura adicional igual a
+metade do seu nível" vira `curaPorDado: 1` mais `curaPorDadoTeto: piso(nd / 2)`. ⚠ Ele conta os
+dados do **gasto máximo**, então numa Energia Reversa de 5d8 por PER com teto de 5 PER são 25 dados,
+e o teto é justamente o que impede isso de virar +25.
+
+⚠ **Item que CURA basta CARREGAR, item que MELHORA cura precisa estar EQUIPADO.** Consumir um
+talismã não pede equipar, e o botão de equipar é dos itens que valem enquanto vestidos. Coberto por
+assert nos dois sentidos.
+
+### ⚔️ RESTRINGIDO: a trava virou bidirecional, e 5 Treinamentos saíram
+
+⚠ **"Restringido" era duas coisas meio soltas.** Existe a ORIGEM Restringido e o TIPO Restringido
+(o `semEnergia`, que troca PE por Estamina e esconde a aba de Aptidões). Até aqui só a metade
+`origem → tipo` era travada, e o Tipo Restringido podia ser escolhido com qualquer origem. Palavras
+do autor: **"a origem força o Tipo, e o tipo força a origem, é impossível ver um Restringido sem a
+Origem e Tipo Restringido ao mesmo tempo"**.
+
+- `tiposDisponiveis(origemId)` e `tipoDaOrigem(origemId, tipoAtual)` em `afty-especializacoes.js`,
+  irmãos do `especializacoesDisponiveis`. A Origem Restringido vê SÓ o Tipo Restringido, e as outras
+  origens veem todos MENOS ele.
+- O `setOrigemId` do builder passou a chamar `tipoDaOrigem`. O `tipoObrigatorio(id) ?? d.core.tipo`
+  que estava lá **deixava a metade de volta gravada**: sair da origem Restringido mantinha o Tipo.
+
+**Os 5 Treinamentos que o Restringido não tem** (autor): Barreiras, Compreensão, Controle de
+Energia, Domínios e Energia Reversa. As cinco são de energia amaldiçoada, e ele não tem nenhuma.
+Reusou o `foraDaOrigem` que a Maldição abriu em 2026-08-02, então **saiu de graça** o que o autor
+pediu junto: um Treino de Barreiras Completo numa ficha que vira Restringido **perde os efeitos e
+devolve os 5 Focos**, porque `efeitosDeTreino` pula a linha indisponível e `focosGastos` não a cobra.
+As Aptidões já caíam pelo `semEnergia`, que agora está preso à origem pela trava nova.
+
+⚠ O Treino de Energia Reversa acumula as duas exclusões: `foraDaOrigem: ["maldicao", "restringido"]`,
+pelo motivo oposto e simétrico.
+
+### 🎓 VAGA EXCLUSIVA DE TALENTO (canal `vagasTalento`)
+
+O **Talento Natural** do Inato dava `vagasHabilidade`, a pilha COMUM, então uma característica que o
+livro escreve como "um Talento à escolha" pagava Habilidade de Especialização qualquer. O autor
+apontou que isso confunde. Nasceu o irmão do `vagasFeitico`:
+
+| | Pilha comum | Exclusiva de Feitiço | Exclusiva de Talento |
+|---|---|---|---|
+| Canal | `vagasHabilidade` | `vagasFeitico` | `vagasTalento` |
+| Serve para | Habilidade de Especialização **e** Talento | só Feitiço | só Talento |
+| Quem concede | Habilidade Geral Especialização | Marca Registrada, Gojo, Nova Habilidade, Extração de Potencial, Dominância em Técnica, Reversão de Técnica | Talento Natural, Empenho Implacável |
+
+`resolveHabilidades` ganhou o 6º parâmetro e devolve `comum`, `exclusivasTalento`,
+`exclusivasUsadas` e `gastosNoComum`, exatamente o shape do `orcamentoHabilidades`. Talento gasta
+**primeiro a exclusiva**, e o `excedeu` é medido no COMUM: vaga exclusiva sobrando não libera
+Habilidade de Especialização nenhuma. O contador da aba mostra as duas separadas (`+1 / 2` em roxo).
+
+⚠ **O degrau 19 do Empenho Implacável SEPAROU** (autor): "uma Habilidade de Especialização E um
+Talento adicional" valia 2 vagas comuns, e agora é uma de cada pilha. Os degraus de escolha
+`st_n1_talento` e `st_n10_talento` também trocaram: davam vaga comum, então quem escolhia Talento no
+degrau podia gastá-la numa Habilidade e a escolha não valia nada.
+
+### 🔮 Feitiços adicionais: a regra já valia, faltava um consumidor
+
+"Habilidade que dá Feitiço adicional é exclusiva para Feitiços / Estilo das Sombras / Técnicas
+Marciais, não podendo ser usada para Habilidades Gerais" **é o que `vagasFeitico` significa desde
+2026-07-28**, e a varredura confirmou que nenhuma concessão de Feitiço passava pelo canal comum.
+
+Uma estava **sem efeito nenhum**: a aptidão **Reversão de Técnica** ("você recebe um Feitiço
+adicional, a qual obrigatoriamente deve ser uma reversão") concedia o Feitiço só no texto. Ligada.
+O "obrigatoriamente uma reversão" e o custo aumentado seguem fora, porque são regra do Feitiço criado
+e `afty-feiticos.js` não lê o Motor.
+
+⚠ ***Familiaridade com Técnica*** (Talento) parece dar Feitiço e **não dá**: ela marca Feitiços que
+você já tem como Marca Registrada. Não é vaga, e por isso continua sem efeito.
+
+### 👁 O Preview cresceu de novo
+
+1. **Resistências**, as CINCO sempre. É a exceção deliberada à regra das Perícias (que só mostram
+   quem tem faixa): todo mundo rola os cinco TRs, e o TR sem treino é justamente o número que o
+   mestre procura. Mestre em roxo, treinado em branco, sem faixa em cinza.
+2. **Ataque**, as três categorias, com hover de fontes.
+3. **Níveis de Aptidão**, só as trilhas com nível. Some inteira no Restringido.
+4. **Feitiços criados**, uma linha por Feitiço com nível, valor e custo em PE, mais o triângulo de
+   aviso e a marca `Var.` das variações de liberação (que não gastam vaga).
+
+**`derived.feiticos.lista`** é nova, e vem de `resumoFeiticos(creature, ctx)` em `afty-feiticos.js`:
+o Preview **não recalcula nada**, só exibe (mesma convenção do `resumoDominios`). O
+`formatAuxValor` **subiu do builder para o motor** na mesma passada, porque com dois consumidores
+uma cópia na UI divergiria na primeira errata.
+
+### 🎨 Perfil Amaldiçoado, segunda passada
+
+- O **Atributo da Técnica subiu para o cabeçalho** do card.
+- A caixa de **CD de Feitiçaria SAIU**: ela já está no Preview, ao lado, e gastava a largura da
+  primeira linha inteira para repetir um número.
+- Com isso o corpo ficou **inteiro** para o Funcionamento Básico e o Motor de Automação.
+
+**`TextoLongo`**, componente novo. O autor descreveu o campo como "tanto coisas pequenas de 1
+parágrafo quanto habilidades com 3 páginas", e um `rows` fixo serve mal aos dois extremos de uma vez:
+4 linhas desperdiçam meia tela no caso curto e escondem 95% do texto no caso longo. Ele cresce
+sozinho até 18 linhas e daí rola por dentro, com um botão de expandir que tira o teto. O botão **só
+aparece quando há o que revelar**.
+
+⚠ O `el.style.height = "auto"` antes de ler o `scrollHeight` não é enfeite: sem ele a caixa cresce e
+**nunca encolhe** ao apagar texto.
+
+### 💾 RASCUNHO AUTOMÁTICO (`afty-rascunho.js`)
+
+⚠ **O criador do Afty não guardava NADA até o botão Salvar.** Recarregar a página, fechar a aba ou
+um remount do Vite em desenvolvimento levavam a ficha inteira junto. Palavras do autor: *"a ficha
+fica resetando o tempo inteiro"*.
+
+É uma **reescrita** do bloco "Autosave do rascunho" do `CreatureBuilder.jsx` da 2.5.2, e não uma
+cópia (a 2.5.2 é somente-leitura). Dois comportamentos mudaram de propósito, a pedido do autor
+("podemos refazer de maneira melhorada"):
+
+| | 2.5.2 | Afty |
+|---|---|---|
+| Ao voltar | banner "Rascunho encontrado" + botão **Restaurar** | **restaura sozinho** |
+| Ao recarregar | `beforeunload` pergunta se quer mesmo sair | não pergunta |
+
+**Por que restaurar sozinho.** O banner transforma "não perder a ficha" numa ação que o usuário
+precisa lembrar de fazer, e quem recarrega no meio de uma edição não está pedindo ficha em branco. O
+preço do automático é a surpresa, e quem paga é o botão **Descartar**: a restauração é desfazível,
+então o caminho errado tem volta. O banner faz o contrário, e cobra um clique do caso comum para
+proteger o caso raro.
+
+**Por que NÃO avisar ao sair.** O aviso do navegador existe para o dado que morre ao fechar a aba, e
+com o autosave ele não morre mais. Sobrou atrito puro em cima de quem recarrega para testar, que é
+exatamente o fluxo do autor.
+
+- Chave por ALVO: `fm_builder_draft_afty_v1:<id da criatura | new>`. Sufixo `_afty_` pela convenção
+  de isolamento (a mesma de `fm_creatures_afty_v1`). Editar uma criatura não pisa no rascunho da
+  outra, e a ficha nova tem a dela.
+- Debounce de **600ms**: digitar não escreve por tecla.
+- ⚠ O rascunho **é aplicado no inicializador do `useState`**, e não num efeito depois de montar.
+  Restaurar depois faria a tela piscar a ficha em branco antes de trocar, e todo estado derivado do
+  draft nasceria do valor errado.
+- ⚠ **O Salvar APAGA o rascunho** e move a régua do "tem alteração pendente" para a ficha
+  recém-gravada. Um rascunho sobrando faria a próxima abertura restaurar por cima do que acabou de
+  entrar no compêndio.
+- **Rascunho idêntico à ficha gravada não conta**, e se apaga sozinho: não é trabalho perdido, é
+  lixo de uma sessão que terminou limpa, e restaurá-lo acenderia o indicador sem motivo.
+- Nada disso pode derrubar o criador: JSON corrompido, `draft` nulo e `localStorage` indisponível
+  (modo privado, cota estourada) viram "rascunho ausente", em silêncio. Coberto por asserts.
+
+**Na tela**, um chip ao lado do Salvar, que SOME quando não há nada pendente (um indicador
+permanente dizendo "tudo certo" deixa de ser lido justo quando tem algo a dizer). Dois estados, de
+propósito diferentes: **Restaurado** (azul) avisa que a ficha na tela veio do rascunho e não do
+compêndio, que é o único momento em que o automático pode surpreender, e **Rascunho** (cinza) é só a
+marca de que o trabalho está guardado. O X desfaz nos dois.
+
+⚠ A marca "Restaurado" **some assim que o usuário edita**: dali em diante o que está na tela é dele,
+e oferecer "descartar a restauração" seria oferecer jogar fora o que ele acabou de fazer.
+
+### Pendências desta sessão
+- **Treino de Estudos** e **Treinamento para Habilidade**: o autor vai mandar o texto. Nada feito.
+- **Corpo Amaldiçoado Mutante** segue vazia (de 2026-08-01).
+- **Dados de Vida** não existe no Afty, e é o que trava os três Remédios, o Elixir da Vida e o
+  Incitar Vigor. É o próximo bloqueio nomeado da Cura.
+- ⚠ **ASSUMIDO no Revigorar**: "aumentando em um dado a cada 4 níveis" foi lido como nível de
+  COMBATENTE, porque é o que a especializacão usa em toda escada. O texto não diz.
+- **Suporte Absoluto** soma "seu modificador de atributo escolhido para CD de especialização" na
+  cura, e o Afty tem UMA CD só. Foi lido como o Atributo da Técnica. É a mesma pergunta aberta do
+  encantamento **Complementar** ("+2 na sua CD de Especialização e de Estilo Marcial").
 
 ---
 
@@ -323,9 +603,10 @@ Reversa e virou Maldição não perde os 3 pontos: eles saem de `gastos` e volta
 com os Focos presos no Treino. É a escolha certa porque a alternativa é o jogador pagar por um
 recurso que a aba nem mostra mais.
 
-⚠ **O RESTRINGIDO tem o mesmo problema e NÃO foi mexido.** Ele é `semEnergia` (não tem Aptidão
-nenhuma), mas o Treino de Energia Reversa continua aparecendo e cobrando Foco na aba dele. O
-mecanismo agora existe e é uma linha, mas mudar isso não foi pedido. **Pergunta para o autor.**
+~~⚠ **O RESTRINGIDO tem o mesmo problema e NÃO foi mexido.**~~ ✅ **RESOLVIDO em 2026-08-03**, e maior
+do que a pergunta: o autor tirou CINCO treinos dele (Barreiras, Compreensão, Controle de Energia,
+Domínios e Energia Reversa) e fechou a trava Tipo ↔ Origem nos dois sentidos. Ver a sessão de
+2026-08-03.
 
 ### 🐛 Toda faixa da bancada precisa estar no `tetoFaixa`
 
@@ -1005,6 +1286,9 @@ Sete frentes fechadas. Cada uma tem detalhe na seção própria mais abaixo.
   `maxEspecializacoes`, `especializacaoObrigatoria`, `tipoObrigatorio`, `normalizeEspecializacoes`,
   `resolveEspecializacoes`, `validarCatalogoEspecializacoes`). **Texto do livro pendente.**
 - `afty-derive.js` motor de cálculo por FÓRMULA (ND 1→∞, sem tabela). Adiados: Guarda e Perícias.
+- `afty-cura.js` catálogo das LINHAS de cura (`FONTES_CURA`) + `resolveCura` + os dois validadores
+  (`validarCatalogoCura`, `validarAlvosDeCura`). Irmão do `resolveDano`, mas o número vem todo do
+  Motor: aqui só mora qual linha existe, quando, e o alcance dela.
 - `afty-treinamentos.js` catálogo dos 12 Treinamentos (Interlúdios) + resolvers.
 - `afty-aptidoes.js` (~1600 linhas) catálogo COMPLETO das 85 Aptidões Amaldiçoadas + trilhas,
   categorias, sub-grupos, `avaliarRequisitoAptidao`, `resolveNiveisAptidao`,

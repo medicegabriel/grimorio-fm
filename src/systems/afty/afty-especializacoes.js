@@ -34,6 +34,7 @@
  */
 
 import { getOrigem } from "./afty-origens";
+import { AFTY_TIPOS } from "./afty-schema";
 
 /** Teto de Especializações por ficha (multiclasse trivial: até 2). */
 export const ESPECIALIZACAO_MAX = 2;
@@ -122,6 +123,38 @@ export function especializacaoObrigatoria(origemId) {
  */
 export function tipoObrigatorio(origemId) {
   return origemId === "restringido" ? "restringido" : null;
+}
+
+/**
+ * Tipos que a origem alcança, na ordem do catálogo.
+ *
+ * ⚠ A trava do Restringido é BIDIRECIONAL também no eixo do Tipo (autor,
+ * 2026-08-03): "a origem força o Tipo, e o tipo força a origem, é impossível
+ * ver um Restringido sem a Origem e o Tipo Restringido ao mesmo tempo". Até
+ * aqui só a metade origem → tipo existia, e o Tipo Restringido podia ser
+ * escolhido com qualquer origem, o que fazia uma criatura sem energia
+ * amaldiçoada (`semEnergia` lê o TIPO) continuar com aba de Aptidões
+ * escondida e, ainda assim, com os Treinamentos de energia à mostra.
+ *
+ * Mesmo formato de `especializacoesDisponiveis`: a Origem Restringido vê SÓ
+ * Restringido, e as outras veem todos MENOS Restringido.
+ */
+export function tiposDisponiveis(origemId) {
+  const forcado = tipoObrigatorio(origemId);
+  if (forcado) return AFTY_TIPOS.filter((t) => t.value === forcado);
+  return AFTY_TIPOS.filter((t) => t.value !== "restringido");
+}
+
+/**
+ * O Tipo que a ficha deve ficar ao trocar de origem: o forçado, ou o atual
+ * quando ele continua alcançável, ou o primeiro da lista. Chamado na TROCA
+ * (não na leitura), como o `especializacoesDisponiveis` do normalize: o Tipo é
+ * escolha guardada, e deixá-lo ilegal na ficha faria `semEnergia` mentir.
+ */
+export function tipoDaOrigem(origemId, tipoAtual) {
+  const permitidos = tiposDisponiveis(origemId);
+  if (permitidos.some((t) => t.value === tipoAtual)) return tipoAtual;
+  return permitidos[0]?.value ?? tipoAtual;
 }
 
 /**

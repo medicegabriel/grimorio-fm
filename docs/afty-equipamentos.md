@@ -450,7 +450,36 @@ Em `afty-derive.js`, via `resolveEquipamentos` e `resolveCarga`:
 | **PV máximo** | Bracelete do Vigor (+10) e Ombreiras do Vigor Superior (+20) |
 | **CD** | Chaveiro Canalizador (+1) |
 | **Atributo** | os 6 acessórios de +2. **Passam o limite** do atributo, teto duro de 30 |
+| **Cura** | Apanhador de Saúde (+1 por dado, teto = metade do ND), por `efeito.motor` |
 | **Carga** | espaços usados, limite, teto e sobrecarga |
+
+### Item no Motor: `efeito.motor` (2026-08-03)
+
+Saída GERAL do item para o catálogo inteiro de canais, `[{ canal, alvo?, expr }]`, no mesmo caminho
+dos encantamentos. Até aqui o item só alcançava o Motor por campo NOMEADO (`hpMax`, `cd`,
+`atributo`, `pericia`), cada um com um `if` no `resolveEquipamentos`, e o **Apanhador de Saúde** não
+cabia em nenhum. Item novo usa o `motor` e não precisa de campo nem de `if`.
+
+O valor viaja resolvido, como literal, pelo mesmo motivo dos encantamentos: a expressão lê `grau`,
+`custo` e `penalidade`, que são do item e não existem no contexto da criatura. O `grau` que ela vê é
+o `rankCalculo`, já rebaixado por encantamento. Efeito que resolve em zero não vira linha.
+
+### Item que CURA: o campo `cura` (2026-08-03)
+
+`{ fixo }` ou `{ fracaoPV }` mais `alcance`, e vira uma linha no card de Cura da aba Habilidades
+(ver `afty-cura.js`). Hoje são quatro: Símbolo da Vida (10), Símbolo de Vida Florescente (25),
+Símbolo de Vida Absoluta (`fracaoPV: 1`) e Laço da Vida (`fracaoPV: 0,5`).
+
+⚠ **Item que CURA basta CARREGAR. Item que MELHORA cura precisa estar EQUIPADO.** Consumir um
+talismã ou um remédio não pede equipar, e o botão de equipar é dos itens que valem enquanto
+vestidos. É a única exceção ao "só o que está equipado conta" logo abaixo, e ela é da regra, não do
+código.
+
+⚠ **Item que cura é FLAT**: os canais de cura não entram nele. "Curando-se em 10 pontos de vida" é
+número do talismã, e não uma cura que a criatura realiza.
+
+⚠ Os três **Remédios** e o **Elixir da Vida** ficaram de fora, e o bloqueio é nomeado: os quatro
+gastam **Dados de Vida**, que não existe no Afty.
 
 ⚠ **Ordem importa.** Os acessórios de atributo entram DEPOIS do clamp do limite (por isso passam
 dele) e ANTES do cálculo de carga (por isso o Bracelete da Força aumenta o quanto você carrega).

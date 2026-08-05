@@ -121,9 +121,8 @@ export const EFEITO_CANAIS = [
   { id: "movimento",     label: "Movimento",             nota: "em metros, aceita 1,5" },
   { id: "atencao",       label: "Atenção" },
   { id: "iniciativa",    label: "Iniciativa" },
-  { id: "regeneracao",   label: "Regeneração",           nota: "cura no INÍCIO do turno, parte fixa. Irmão do dadosRegeneracao" },
-  { id: "dadosRegeneracao", label: "Dados de Regeneração", nota: "quantos dados de cura no início do turno" },
-  { id: "regeneracaoDado",  label: "Dado da Regeneração",  nota: "faces do dado de regeneração (6, 8...). Vale o MAIOR entre as fontes: duas regenerações de dados diferentes viram uma só, aproximada" },
+  // ⚠ Os três de Regeneração e os sete de Cura moram no grupo "Cura e
+  // Regeneração", e não aqui. Ver GRUPOS_DE_CANAL.
   { id: "resParcial",    label: "Resistência Parcial" },
   { id: "almaMax",       label: "Integridade da Alma" },
   { id: "empolgacaoMaxima",  label: "Empolgação Máxima",  nota: "sinalizador: troca a tabela de dados de Empolgação inteira, não soma" },
@@ -154,7 +153,8 @@ export const EFEITO_CANAIS = [
   // Orçamentos
   { id: "vagasPericia",   label: "Vagas de Treino" },
   { id: "vagasHabilidade", label: "Vagas de Habilidade" },
-  { id: "vagasFeitico",   label: "Vagas de Feitiço",     nota: "vaga EXCLUSIVA de Feitiço (= Habilidade de Técnica). Não serve para Habilidade Geral (autor, 2026-07-28)" },
+  { id: "vagasFeitico",   label: "Vagas de Feitiço",     nota: "vaga EXCLUSIVA de Feitiço (= Habilidade de Técnica, Estilo das Sombras ou Habilidade Marcial). Não serve para Habilidade Geral (autor, 2026-07-28)" },
+  { id: "vagasTalento",   label: "Vagas de Talento",     nota: "vaga EXCLUSIVA de Talento. Não serve para Habilidade de Especialização (autor, 2026-08-03)" },
   // "Vagas de" no rótulo para o canal cair junto dos irmãos numa busca por
   // "vaga". O que ele dá é QUANTAS Aptidões Amaldiçoadas a criatura pode ter.
   { id: "vagasAptidao",   label: "Vagas de Aptidão",     nota: "quantas Aptidões Amaldiçoadas a criatura pode ter. Sem fonte nenhuma o orçamento é ZERO: o ND não concede" },
@@ -171,7 +171,45 @@ export const EFEITO_CANAIS = [
 
   // Feitiços
   { id: "custoPE",        label: "Custo em PE",          nota: "redução de custo, o piso de 1 PE continua valendo" },
+
+  /* ---------- REGENERAÇÃO: cura automática no INÍCIO DO TURNO ----------
+     Os três escrevem uma parte diferente da MESMA rolagem (`3d8+5`), e é por
+     isso que o nome de cada um diz qual parte é. Os rótulos velhos eram
+     "Regeneração", "Dados de Regeneração" e "Dado da Regeneração": duas
+     variações da mesma palavra e nenhuma dizendo o que escrevia. ⚠ Os IDS
+     também mudaram (2026-08-03), e o CANAL_LEGADO abaixo traduz os antigos. */
+  { id: "regeneracaoDados", label: "Regeneração: Dados",  nota: "QUANTOS dados de cura por turno. As faces são o canal Regeneração: Faces do Dado, e a parte fixa é Regeneração: Valor Fixo" },
+  { id: "regeneracaoFaces", label: "Regeneração: Faces do Dado", nota: "as FACES do dado (6, 8, 10...). Vale o MAIOR entre as fontes, e não a soma: duas regenerações de dados diferentes viram uma só" },
+  { id: "regeneracaoFixa",  label: "Regeneração: Valor Fixo", nota: "o que soma no TOTAL da cura por turno, uma vez, por fora dos dados" },
+
+  /* ---------- CURA: a que a criatura realiza, por ação ----------
+     Irmãos exatos dos três de Regeneração, com a mesma anatomia de rolagem.
+     A diferença é que Regeneração acontece sozinha no início do turno e Cura
+     é gasto de ação, então ela tem custo, usos e alvo. TODO efeito de cura
+     nomeia a LINHA em que entra (`alvo`), senão o bônus de uma fonte vazaria
+     para as outras: ver FONTES_CURA em afty-cura.js. Sem alvo vale para todas,
+     que é o que "em toda cura que realizar" pede. */
+  { id: "curaDados",       label: "Cura: Dados",          alvo: "fonteCura", nota: "QUANTOS dados naquela linha de cura. Nas fontes por ponto gasto (Energia Reversa, Regeneração Corporal) é o que UM ponto compra" },
+  { id: "curaFaces",       label: "Cura: Faces do Dado",  alvo: "fonteCura", nota: "as FACES do dado de cura. Vale o MAIOR entre as fontes daquela linha, e não a soma" },
+  { id: "curaFixa",        label: "Cura: Valor Fixo",     alvo: "fonteCura", nota: "soma no TOTAL da cura, uma vez, mesmo quando os dados escalam por ponto gasto. Sem alvo vale para toda cura que a criatura realizar" },
+  { id: "curaPorDado",     label: "Cura: Bônus por Dado", alvo: "fonteCura", nota: "soma este valor uma vez POR DADO rolado. O teto do que ele acrescenta é o canal Cura: Teto do Bônus por Dado" },
+  { id: "curaPorDadoTeto", label: "Cura: Teto do Bônus por Dado", alvo: "fonteCura", nota: "quanto o Bônus por Dado pode acrescentar no máximo. Sem ele o bônus não tem teto" },
+  { id: "curaUsos",        label: "Cura: Usos por Descanso", alvo: "fonteCura", nota: "quantas vezes aquela cura pode ser usada por descanso. A linha sem usos é a que só depende de pagar o custo" },
+  { id: "curaPontos",      label: "Cura: Pontos por Uso", alvo: "fonteCura", nota: "o TETO de pontos (PER ou PE) que podem ser gastos de uma vez. Os dados são multiplicados por ele" },
 ];
+
+/**
+ * Canais que mudaram de ID e ainda podem estar gravados numa ficha, no
+ * Funcionamento Básico da técnica (`core.tecnicaEfeitos`), que é o único lugar
+ * onde o JOGADOR escreve o canal à mão. A troca é na LEITURA, sem reescrever a
+ * ficha: quem abrir e salvar de novo já grava o id novo. Mesmo desenho do
+ * `CANAL_UNICA_LEGADO` da Habilidade Única, em afty-equipamentos.js.
+ */
+export const CANAL_LEGADO = {
+  regeneracao: "regeneracaoFixa",
+  dadosRegeneracao: "regeneracaoDados",
+  regeneracaoDado: "regeneracaoFaces",
+};
 
 const CANAL_BY_ID = Object.fromEntries(EFEITO_CANAIS.map((c) => [c.id, c]));
 export const getCanal = (id) => CANAL_BY_ID[id] ?? null;
@@ -241,7 +279,7 @@ export const chaveExclusiva = (canal, alvo, valor = 1) =>
 /**
  * Os canais agrupados por assunto, para o `<optgroup>` do editor de efeitos.
  * Espelha o `MODIFIER_TARGET_GROUPS` da 2.5.2, que resolve o mesmo problema:
- * uma lista chapada de 47 itens é impossível de varrer com o olho.
+ * uma lista chapada de 56 itens é impossível de varrer com o olho.
  *
  * ⚠ DERIVADO da lista, não uma segunda cópia dela. Aqui embaixo ficam só os
  * IDS por grupo, e o `EFEITO_CANAL_GRUPOS` resolve os objetos. Canal que não
@@ -251,8 +289,16 @@ export const chaveExclusiva = (canal, alvo, valor = 1) =>
  */
 const GRUPOS_DE_CANAL = [
   ["Vitalidade e Recursos", [
-    "hp", "pvTemporario", "pe", "almaMax",
-    "regeneracao", "dadosRegeneracao", "regeneracaoDado", "pontosPreparo", "custoPE",
+    "hp", "pvTemporario", "pe", "almaMax", "pontosPreparo", "custoPE",
+  ]],
+  // ⚠ Grupo PRÓPRIO desde 2026-08-03. Os três de Regeneração viviam soltos em
+  // "Vitalidade e Recursos", entre PV e Pontos de Preparo, e lá o leitor não
+  // tinha como perceber que os três são partes da MESMA rolagem. Juntos, e ao
+  // lado dos sete irmãos de Cura, a anatomia (dados, faces, fixo) se lê sozinha.
+  ["Cura e Regeneração", [
+    "regeneracaoDados", "regeneracaoFaces", "regeneracaoFixa",
+    "curaDados", "curaFaces", "curaFixa",
+    "curaPorDado", "curaPorDadoTeto", "curaUsos", "curaPontos",
   ]],
   ["Defesa", ["defesa", "rdGeral", "rdEspecifico", "rdFisico", "rdAlma", "resParcial"]],
   ["Ataque e Dano", [
@@ -275,7 +321,7 @@ const GRUPOS_DE_CANAL = [
   // ele é orçamento, irmão das vagas. `pontosAptidao` veio junto pelo mesmo
   // motivo, ele é orçamento de nível de aptidão.
   ["Orçamentos", [
-    "vagasPericia", "vagasHabilidade", "vagasFeitico", "vagasAptidao",
+    "vagasPericia", "vagasHabilidade", "vagasFeitico", "vagasTalento", "vagasAptidao",
     "pontosAptidao", "focos", "espacosCarga",
   ]],
   ["Empolgação", ["empolgacaoMaxima", "empolgacaoInicial"]],
@@ -492,13 +538,52 @@ export function efeitosDaTecnica(creature) {
   if (!Array.isArray(lista)) return [];
   const out = [];
   for (const e of lista) {
-    if (!e?.canal || !CANAL_BY_ID[e.canal]) continue;
+    // Canal renomeado numa ficha antiga vira o novo aqui, na leitura.
+    const canal = CANAL_LEGADO[e?.canal] ?? e?.canal;
+    if (!canal || !CANAL_BY_ID[canal]) continue;
     const expr = String(e.expr ?? "").trim();
     if (!expr) continue;
-    const ef = { canal: e.canal, expr, origem: "tecnica", nome: "Técnica" };
+    const ef = { canal, expr, origem: "tecnica", nome: "Técnica" };
     if (e.alvo) ef.alvo = e.alvo;
     if (e.quando) ef.quando = String(e.quando).trim();
     if (e.duracao === "temporaria") ef.duracao = "temporaria";
+    out.push(ef);
+  }
+  return out;
+}
+
+/**
+ * Os BUFFS DE MESA, escritos na Ficha Final durante o jogo ("o mestre deu +2 de
+ * Defesa por 3 rodadas"). Mesmo shape do Funcionamento Básico, e de propósito:
+ * o seletor de canal, o validador de expressão e o painel de fontes já existem,
+ * e um formato novo só daria trabalho.
+ *
+ * ⚠ `duracao: "temporaria"` é FORÇADA aqui, e não é escolha do jogador. Um buff
+ * de mesa nunca conta para pré-requisito, que é exatamente a regra do autor
+ * (2026-07-28): *"se o aumento de Força for temporário, não! Se for permanente,
+ * sim!"*. Sem isso, um +4 de Força emprestado pelo aliado destravaria uma
+ * Habilidade que pede Força 18.
+ *
+ * A lista chega em `creature.buffsSessao`, que a Ficha injeta na hora de
+ * derivar. Ela NÃO existe no `createBlankAfty`: buff de mesa é runtime, e a
+ * ficha guarda só escolhas.
+ */
+export function efeitosDaSessao(creature) {
+  const lista = creature?.buffsSessao;
+  if (!Array.isArray(lista)) return [];
+  const out = [];
+  for (const e of lista) {
+    const canal = CANAL_LEGADO[e?.canal] ?? e?.canal;
+    if (!canal || !CANAL_BY_ID[canal]) continue;
+    const expr = String(e.expr ?? "").trim();
+    if (!expr) continue;
+    const ef = {
+      canal, expr, duracao: "temporaria",
+      origem: "sessao",
+      nome: String(e.nome ?? "").trim() || "Buff",
+    };
+    if (e.alvo) ef.alvo = e.alvo;
+    if (e.quando) ef.quando = String(e.quando).trim();
     out.push(ef);
   }
   return out;

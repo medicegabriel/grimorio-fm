@@ -64,12 +64,13 @@ import {
   resolveEquipamentos, resolveCarga, grauFeiticeiro, alcanceDaArma, propriedadesDaArma,
   podeSerArmaDedicada, grauDoRank,
 } from "./afty-equipamentos";
-import { nivelMaxFeitico } from "./afty-feiticos";
+import { nivelMaxFeitico, resumoFeiticos } from "./afty-feiticos";
 import { resolveTestes, resolveDano, AFTY_PERICIAS } from "./afty-pericias";
+import { resolveCura } from "./afty-cura";
 import {
   buildCriaturaDslContext, coletarEfeitosCriatura, coletarEfeitosMontante, coletarEfeitosOrigem,
   coletarEfeitosAptidao,
-  aplicarEfeitos, resolverExclusivos, valorCanal, furaTetoEm, efeitosDaTecnica, EFEITO_CANAIS,
+  aplicarEfeitos, resolverExclusivos, valorCanal, furaTetoEm, efeitosDaTecnica, efeitosDaSessao, EFEITO_CANAIS,
   ehAtributoPermanente, ehAtributoTemporario, ehEstagio2, ehPreContexto,
   mesclarEfeitos, detalhesDoCanal,
 } from "./afty-efeitos";
@@ -132,7 +133,12 @@ const VOCABULARIO_DSL = {
     (a.opcoes?.valores ?? []).map((v) => `opt_${a.id}_${v.id}`)),
 };
 
-export function deriveAfty(creature) {
+/**
+ * @param creature ficha (só escolhas)
+ * @param opcoes   ajustes de JOGO, que o CRIADOR nunca passa:
+ *   • almaAtual — Integridade da Alma CORRENTE. Ver a nota do `almaMult` abaixo.
+ */
+export function deriveAfty(creature, opcoes = {}) {
   const core = creature?.core ?? {};
   const a = creature?.attributes ?? {};
   const ov = creature?.statOverrides ?? {};
@@ -160,6 +166,13 @@ export function deriveAfty(creature) {
   // era 1 fixo enquanto o campo ficava no 100 padrão).
   // O valor CORRENTE existe só no jogo, em `combatState.almaCurrent`.
   const almaMaxBase = creature?.alma?.max ?? 100;
+  // A Alma que o DSL enxerga (`alma_atual`). No criador é o máximo, em jogo é o
+  // corrente, e é o que faz um `quando: "alma_atual < 50"` significar algo. Sai
+  // aqui em cima porque o contexto do DSL é montado bem antes de `almaMax`
+  // existir (ele depende do canal, que depende do contexto).
+  const almaAtualDsl = opcoes.almaAtual != null
+    ? Math.max(0, Math.trunc(Number(opcoes.almaAtual) || 0))
+    : almaMaxBase;
   const qntPE = creature?.qntPE || "normal";
 
   const attrBonus = resolveOrigemAttrBonus(creature);
@@ -252,7 +265,7 @@ export function deriveAfty(creature) {
   // e os atributos base), que é tudo de que as expressões deles precisam.
   const gerais = resolveGerais(creature, { nd, maestria: bt });
   const ctxMontante = buildCriaturaDslContext({
-    nd, bt, grauRank: grau.rank, patamar, tipo, almaAtual: almaMaxBase,
+    nd, bt, grauRank: grau.rank, patamar, tipo, almaAtual: almaAtualDsl,
     attrEff: attrBase, mods: modBase, modTecnica: modBase[tecnicaAttr] ?? 0,
     periciasProf: creature?.pericias,
     // O vocabulário entra AQUI TAMBÉM: o contexto reduzido não tem `esc_*` nem
@@ -287,6 +300,10 @@ export function deriveAfty(creature) {
     aptidaoTrilha: efMontante.porAlvo.nivelAptidao || {},
   };
   const vagasHabilidade = valorCanal(efMontante, "vagasHabilidade");
+  // Vaga EXCLUSIVA de Talento (autor, 2026-08-03): o Talento Natural do Inato
+  // dava vaga COMUM, e assim uma característica que o livro escreve como "um
+  // Talento à escolha" pagava Habilidade de Especialização qualquer.
+  const vagasTalento = valorCanal(efMontante, "vagasTalento");
 
   // ============================================================
   // CATÁLOGOS ESCOLHIDOS + MOTOR DE AUTOMAÇÃO
@@ -318,7 +335,7 @@ export function deriveAfty(creature) {
   // Bônus de Treinamento. O último parâmetro são as vagas extras da Habilidade
   // Geral Especialização.
   const habilidades = resolveHabilidades(
-    creature, especializacoes.escolhidas, talentosPre.gastos, bt, vagasHabilidade,
+    creature, especializacoes.escolhidas, talentosPre.gastos, bt, vagasHabilidade, vagasTalento,
   );
   // Alto Nível (21+). Além do ND, cada trilha exige a Habilidade Geral
   // correspondente, que só DESTRAVA (não dá vaga).
@@ -410,6 +427,10 @@ export function deriveAfty(creature) {
     // porque a técnica é única no mundo e nenhum catálogo a cobre. Entram no
     // mesmo bolo, e os filtros de estágio abaixo roteiam pelo canal.
     ...efeitosDaTecnica(creature),
+    // Buffs de MESA, escritos na Ficha Final durante o jogo. Mesmo shape do
+    // Funcionamento Básico, e por isso entram na mesma linha. Só existem quando
+    // a Ficha injeta `buffsSessao`: o criador nunca os vê.
+    ...efeitosDaSessao(creature),
     // Habilidade Única da Ferramenta equipada, a primeira das cinco fontes do
     // pool exclusivo a chegar no Motor. Já vem com o valor resolvido no contexto
     // do item (a expressão dela lê `grau`) e com `exclusivo` carimbado.
@@ -560,7 +581,7 @@ export function deriveAfty(creature) {
   });
 
   const montarCtx = (attrs, mods) => buildCriaturaDslContext({
-    nd, bt, grauRank: grau.rank, patamar, tipo, almaAtual: almaMaxBase,
+    nd, bt, grauRank: grau.rank, patamar, tipo, almaAtual: almaAtualDsl,
     attrEff: attrs, mods, modTecnica: mods[tecnicaAttr] ?? 0,
     aptidao: aptidao.efetivo, nivelEspec, periciasProf: creature?.pericias,
     resistenciasProf: creature?.resistenciasProf, combate,
@@ -687,11 +708,16 @@ export function deriveAfty(creature) {
       };
     });
 
-  // Alma: o teto (100 + Melhoria de Alma) e o multiplicador de PV, que agora é
-  // o mesmo número, porque a criatura é montada íntegra. Sai aqui, e não lá em
-  // cima, porque o canal `almaMax` só existe com os efeitos mesclados.
+  // Alma: o teto (100 + Melhoria de Alma) e o multiplicador de PV. Sai aqui, e
+  // não lá em cima, porque o canal `almaMax` só existe com os efeitos mesclados.
+  //
+  // ⚠ NO CRIADOR os dois são o MESMO número, porque a criatura é montada íntegra
+  // (o campo de Integridade saiu do formulário em 2026-07-29). EM JOGO não: a
+  // fórmula do autor é `HP × (Alma.Atual / 100)`, então uma criatura com a alma
+  // em 60 tem 60% do PV máximo, e o número grande da Ficha tem de cair junto. A
+  // Ficha Final passa `opcoes.almaAtual`, e sem ele nada muda para o criador.
   const almaMax = almaMaxBase + canal("almaMax");
-  const almaMult = almaMax / 100;
+  const almaMult = (opcoes.almaAtual != null ? almaAtualDsl : almaMax) / 100;
 
   // Carga: mod de Força já fechado (acessório + efeitos) e o limite já somado do
   // canal `espacosCarga` (Otimização de Espaço, Suporte 2°).
@@ -806,6 +832,18 @@ export function deriveAfty(creature) {
     nivelMax: nivelMaxFeitico(nd),
     gastos: feiticosGastos,
     cdBase: cd,
+    // Resumo pronto de cada Feitiço, para o Preview só exibir (mesma convenção
+    // do `resumoDominios`: a UI não recalcula nada). O card da aba Habilidades
+    // segue chamando os `calcularFeitico*` por conta própria, porque ele precisa
+    // do objeto INTEIRO do cálculo, e não do resumo.
+    lista: resumoFeiticos(creature, {
+      nd,
+      cdBase: cd,
+      temEnergiaReversa: !semEnergia
+        && Array.isArray(creature?.aptidoesAmaldicoadas)
+        && creature.aptidoesAmaldicoadas.includes("energia_reversa"),
+      invocacoes: Array.isArray(creature?.invocacoes) ? creature.invocacoes : [],
+    }),
   };
 
   // ---------- RD Física ----------
@@ -859,6 +897,25 @@ export function deriveAfty(creature) {
     ataques: testes.ataques,
   });
 
+  // ---------- Cura (2026-08-03) ----------
+  // Uma linha por FONTE, igual ao Dano, mas o número vem todo do Motor: cada
+  // poder escreve a rolagem dele no próprio texto, e não há fórmula única que
+  // as cubra. Ver afty-cura.js.
+  //
+  // ⚠ Roda DEPOIS do dano e do PV: as fontes que espelham ("uma rolagem do seu
+  // dano desarmado") copiam a linha do Ataque Básico, e os dois itens que curam
+  // uma fração do PV precisam do PV já fechado.
+  const cura = resolveCura({
+    efeitos: ef,
+    // O `semEnergia` já zera as aptidões, então o Restringido não ganha linha de
+    // Energia Reversa por engano.
+    aptidoes: semEnergia ? [] : (Array.isArray(creature?.aptidoesAmaldicoadas) ? creature.aptidoesAmaldicoadas : []),
+    habilidades: habilidades.escolhidas,
+    itens: equip.entradas,
+    hp,
+    danoBasico: dano.entradas.find((e) => e.id === "basico") ?? null,
+  });
+
   // ---------- Empolgação (Lutador) ----------
   // Só a parte DERIVADA: a tabela de dados e o nível em que o combate começa.
   // O nível atual é estado de combate e a ficha não o guarda (autor, 2026-07-28).
@@ -887,11 +944,11 @@ export function deriveAfty(creature) {
   // Sobrevivente (Lutador 4°) rola d6 e Corpo de Aço (Restringido 6°) rola d8:
   // o canal do DADO carrega as faces, e vale a maior das fontes.
   // ⚠ O dado é MÁXIMO, não soma: `canal()` somaria 6 + 8 = 14 faces.
-  const facesRegen = detalhesDoCanal(ef, "regeneracaoDado").map((x) => x.valor);
+  const facesRegen = detalhesDoCanal(ef, "regeneracaoFaces").map((x) => x.valor);
   const regeneracao = {
-    dados: Math.max(0, canal("dadosRegeneracao")),
+    dados: Math.max(0, canal("regeneracaoDados")),
     dado: `d${Math.max(6, ...facesRegen)}`,
-    fixo: canal("regeneracao"),
+    fixo: canal("regeneracaoFixa"),
   };
 
   // ---------- Integridade da Alma ----------
@@ -1109,6 +1166,7 @@ export function deriveAfty(creature) {
     efeitos: ef,          // Motor de Automação: { porCanal, porAlvo, detalhes, avisos }
     testes,               // { pericias, resistencias, ataques, orcamento, atencao }
     dano,                 // { entradas: [{ id, nome, fonte, texto, alcance, propriedades, partes }] }
+    cura,                 // { linhas: [{ id, nome, grupo, alcance, texto, fixo, usos, unidade, partes }] }
     dedicadas,            // Armas Dedicadas: { ativa, escolhidas, elegiveis, max, restante }
     empolgacao,           // Lutador: { ativa, aprimorada, inicial, max, tabela }
     combate,              // simulação: estado já aparado nos tetos da ficha

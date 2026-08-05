@@ -287,10 +287,9 @@ export const AFTY_ORIGENS_CATALOG = [
         descricao:
           "Recebe um Talento à escolha no 1° nível. Uma única vez, a partir do 4° nível, pode " +
           "escolher receber um Talento adicional ao subir de nível.",
-        // Talento gasta o MESMO orçamento das Habilidades de Especialização, então
-        // "um Talento" é uma vaga de habilidade. Mesma leitura do Empenho
-        // Implacável do Sem Técnica, que já resolvia assim.
-        // → ORIGEM_EFEITOS.inato, canal vagasHabilidade: 1 + (nd >= 4).
+        // "Um Talento" é vaga EXCLUSIVA de Talento (autor, 2026-08-03), e não a
+        // vaga comum que serve para Habilidade de Especialização também.
+        // → ORIGEM_EFEITOS.inato, canal vagasTalento: 1 + (nd >= 4).
       },
       {
         id: "marca_registrada",
@@ -891,11 +890,13 @@ export const ORIGEM_ESCOLHA_EFEITOS = (() => {
     }
   }
 
-  // Sem Técnica, Empenho Implacável. Talento e Habilidade de Especialização
-  // dividem o MESMO orçamento, então "um Talento adicional" é uma vaga de
-  // habilidade. A Aptidão Amaldiçoada tem orçamento próprio.
+  // Sem Técnica, Empenho Implacável. "Um Talento adicional" é vaga EXCLUSIVA de
+  // Talento (autor, 2026-08-03): era `vagasHabilidade`, a pilha comum, então
+  // quem escolhia o Talento no degrau podia gastar a vaga numa Habilidade de
+  // Especialização e a escolha do degrau não valia nada. A Aptidão Amaldiçoada
+  // tem orçamento próprio.
   for (const n of [1, 10]) {
-    out[`st_n${n}_talento`] = [{ canal: "vagasHabilidade", expr: "1" }];
+    out[`st_n${n}_talento`] = [{ canal: "vagasTalento", expr: "1" }];
     out[`st_n${n}_aptidao`] = [{ canal: "vagasAptidao", expr: "1" }];
   }
 

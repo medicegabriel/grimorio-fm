@@ -3,6 +3,7 @@ import Dashboard from "./components/Dashboard";
 import CombatTracker from "./components/CombatTracker";
 import CreatureBuilder from "./components/CreatureBuilder";
 import AftyCreatureBuilder from "./systems/afty/AftyCreatureBuilder";
+import AftyFicha from "./systems/afty/ficha/AftyFicha";
 import EncounterTracker from "./components/EncounterTracker";
 import EncountersDashboard from "./components/EncountersDashboard";
 import TemplateLibrary from "./components/TemplateLibrary";
@@ -71,6 +72,13 @@ export default function App() {
     }
     setView({ name: "builder", creatureId: id });
   }, [storage]);
+
+  // A FICHA FINAL do Afty: a criatura já montada, aberta para USO. É o que o
+  // clique no card abre em /Afty desde 2026-08-05 (o lápis continua indo para o
+  // criador). Só existe em aftyMode, então o caminho da 2.5.2 não muda.
+  const goToAftyFicha = useCallback((id) => {
+    setView({ name: "aftyFicha", creatureId: id });
+  }, []);
 
   const goToEncounter = useCallback((id) => {
     setView({ name: "encounter", encounterId: id });
@@ -171,7 +179,7 @@ export default function App() {
         manager={storage}
         compendium={COMPENDIUM}
         encounters={encounterManager.encounters}
-        onOpenCreature={aftyMode ? goToBuilder : goToTracker}
+        onOpenCreature={aftyMode ? goToAftyFicha : goToTracker}
         onEditCreature={goToBuilder}
         onCreateNew={() => goToBuilder(null)}
         onGoToEncounters={goToEncounters}
@@ -188,6 +196,22 @@ export default function App() {
           creature={activeCreature}
           onUpdate={(patch) => storage.update(activeCreature.id, patch)}
           onExit={goToDashboard}
+        />
+      );
+    },
+    aftyFicha: () => {
+      if (!activeCreature) {
+        goToDashboard();
+        return null;
+      }
+      return (
+        <AftyFicha
+          creature={activeCreature}
+          onVoltar={goToDashboard}
+          onEditar={() => goToBuilder(activeCreature.id)}
+          // O tema da ficha é gravado na própria criatura, para viajar no
+          // export. O update faz merge, então só o campo `aparencia` é tocado.
+          onSalvarTema={(aparencia) => storage.update(activeCreature.id, { aparencia })}
         />
       );
     },

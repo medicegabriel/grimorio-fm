@@ -102,6 +102,11 @@ export const AFTY_TREINAMENTOS = [
   {
     id: "barreiras",
     nome: "Treino de Barreiras",
+    // ⚠ Fora do RESTRINGIDO (autor, 2026-08-03), junto de Compreensão, Controle
+    // de Energia, Domínios e Energia Reversa: as cinco linhas são de energia
+    // amaldiçoada, e um Restringido não tem energia nenhuma (a Estamina É o PE,
+    // com outro nome). Mesmo desenho do corte da Maldição em 2026-08-02.
+    foraDaOrigem: ["restringido"],
     resumo:
       "O treino de barreiras desenvolve a resistência e excelência do ramo de aptidões amaldiçoadas que envolvem as barreiras.",
     etapas: [
@@ -125,6 +130,7 @@ export const AFTY_TREINAMENTOS = [
   {
     id: "compreensao",
     nome: "Treino de Compreensão",
+    foraDaOrigem: ["restringido"],
     resumo:
       "O treino de compreensão permite ao feiticeiro se aprofundar na essência da energia, compreendendo-a cada vez mais.",
     etapas: [
@@ -152,6 +158,7 @@ export const AFTY_TREINAMENTOS = [
   {
     id: "controle_energia",
     nome: "Treino de Controle de Energia",
+    foraDaOrigem: ["restringido"],
     resumo:
       "O treino de controle de energia é um extenso processo para conseguir melhorar a administração e produção de energia amaldiçoada do feiticeiro.",
     etapas: [
@@ -177,6 +184,7 @@ export const AFTY_TREINAMENTOS = [
   {
     id: "dominios",
     nome: "Treino de Domínios",
+    foraDaOrigem: ["restringido"],
     resumo:
       "O treino de domínios é uma sequência de passos para refinar as manifestações do próprio domínio, aperfeiçoando ainda mais aquela técnica dita como o pináculo da feitiçaria.",
     etapas: [
@@ -206,7 +214,10 @@ export const AFTY_TREINAMENTOS = [
     // feita de energia amaldiçoada, e a reversa é o que a destrói. A trilha
     // inteira some da aba, e um Foco gasto nela antes de trocar de origem deixa
     // de contar e volta para o orçamento.
-    foraDaOrigem: ["maldicao"],
+    //
+    // O RESTRINGIDO entrou em 2026-08-03, pelo motivo oposto e simétrico: ele
+    // não tem energia amaldiçoada nenhuma, então também não tem a reversa.
+    foraDaOrigem: ["maldicao", "restringido"],
     resumo:
       "O treino de energia reversa permite se aprimorar no uso da energia positiva, capaz de curar humanos e destruir maldições, sendo o completo oposto da energia amaldiçoada.",
     etapas: [
@@ -563,7 +574,12 @@ export function rotuloAlvo(linha, alvo) {
 export const treinoDisponivel = (linha, origemId) =>
   !(linha?.foraDaOrigem ?? []).includes(origemId);
 
-/** As linhas de treino que a origem alcança (a Maldição não tem Energia Reversa). */
+/**
+ * As linhas de treino que a origem alcança. Hoje cortam duas: a Maldição não
+ * tem Energia Reversa, e o Restringido não tem nenhuma das cinco de energia
+ * amaldiçoada (Barreiras, Compreensão, Controle de Energia, Domínios e
+ * Energia Reversa).
+ */
 export const treinamentosDaOrigem = (origemId) =>
   AFTY_TREINAMENTOS.filter((l) => treinoDisponivel(l, origemId));
 
@@ -608,7 +624,8 @@ export function focosDaLinha(linha, progresso) {
 /**
  * Total de Focos gastos por todos os treinamentos da ficha (soma instâncias).
  * `origemId` faz a linha indisponível deixar de cobrar: quem trocou para
- * Maldição depois de gastar no Treino de Energia Reversa recebe os Focos de
+ * Maldição depois de gastar no Treino de Energia Reversa (ou para Restringido
+ * depois de gastar em qualquer uma das cinco de energia) recebe os Focos de
  * volta, em vez de pagar por um treino que a aba nem mostra mais.
  */
 export function focosGastos(treinos, origemId = null) {

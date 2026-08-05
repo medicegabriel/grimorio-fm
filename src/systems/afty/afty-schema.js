@@ -90,6 +90,31 @@ export const AFTY_TAMANHOS = [
 
 // As origens do Afty ficam em ./afty-origens.js (catálogo de conteúdo).
 
+/**
+ * A ficha COMO ELA ESTÁ GRAVADA: o que veio do compêndio mesclado com os
+ * defaults, ou a ficha em branco. Merge DEFENSIVO, para os defaults preencherem
+ * lacunas de fichas antigas ou parciais sem descartar o que já existe (id, nome,
+ * escolhas). Os objetos aninhados são mesclados um a um de propósito: um spread
+ * raso trocaria `core` inteiro e perderia os campos que a ficha antiga não tem.
+ *
+ * Mora aqui, e não no criador, porque a Ficha Final precisa exatamente do mesmo
+ * saneamento antes de derivar, e duas cópias divergiriam na primeira errata.
+ */
+export function mesclaFichaAfty(existente) {
+  const blank = createBlankAfty();
+  if (!existente) return blank;
+  return {
+    ...blank,
+    ...existente,
+    core: { ...blank.core, ...(existente.core || {}) },
+    attributes: { ...blank.attributes, ...(existente.attributes || {}) },
+    attrNivel: { ...blank.attrNivel, ...(existente.attrNivel || {}) },
+    attrLimite: { ...blank.attrLimite, ...(typeof existente.attrLimite === "object" ? existente.attrLimite : {}) },
+    aptidoes: { ...blank.aptidoes, ...(existente.aptidoes || {}) },
+    formulaOverrides: { ...(existente.formulaOverrides || {}) },
+  };
+}
+
 /** Ficha Afty em branco — só ESCOLHAS, os stats são derivados. */
 export function createBlankAfty() {
   return {
@@ -269,6 +294,12 @@ export function createBlankAfty() {
     // Escolhas aninhadas dos dois (perícia, atributo, Teste de Resistência,
     // recurso do Inesgotável, Habilidade Ápice): { [id]: [opcaoId, ...] }.
     escolhasAltoNivel: {},
+
+    // Aparência da Ficha Final: preset, cores, imagem de fundo e CSS livre.
+    // ⚠ Mora NA CRIATURA (autor, 2026-08-05: "quero mandar minha ficha
+    // bonitinha para os outros"), então viaja no export e no import de graça,
+    // porque os dois copiam a criatura inteira. Ver ./ficha/ficha-tema.js.
+    aparencia: null,
 
     narratorNotes: "",
 

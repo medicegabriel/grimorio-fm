@@ -1,0 +1,760 @@
+/**
+ * ============================================================
+ * FICHA FINAL — a pintura, por TOKEN
+ * ============================================================
+ * ⚠ A Ficha NÃO é pintada com classe de utilidade do Tailwind, ao contrário do
+ * criador. Cor escrita como `bg-slate-900` não é tematizável: para trocar o roxo
+ * o usuário teria que sobrescrever dezenas de utilidades e adivinhar quais.
+ *
+ * Aqui: **Tailwind só para LAYOUT** (flex, grid, espaçamento, tamanho), e cor,
+ * borda, raio, sombra, fundo e fonte saem das variáveis `--afty-*` abaixo.
+ *
+ * Isso é o que torna o CSS personalizado possível, e o Tailwind v4 joga a favor:
+ * as utilidades dele vivem em `@layer`, e CSS SEM camada vence CSS EM camada
+ * independente de especificidade. Então este arquivo, e depois o `<style>` do
+ * usuário, sobrepõem a folha do app sem precisar de um `!important` sequer.
+ *
+ * ⚠ CONTRATO DE CLASSES. Os nomes daqui são a API pública do tema e não mudam.
+ * Classe do Tailwind NÃO é API, e quem mirar nela assume o risco.
+ * ============================================================
+ */
+
+.afty-ficha {
+  /* ---------- superfícies ---------- */
+  --afty-fundo: #060910;
+  --afty-fundo-brilho: radial-gradient(120% 60% at 50% -10%, #7e22ce33, transparent 70%);
+  --afty-card: #0f172a;
+  --afty-poco: #020617;
+  --afty-borda: #1e293b;
+  --afty-borda-forte: #334155;
+
+  /* ---------- texto ---------- */
+  --afty-texto: #f1f5f9;
+  --afty-texto-suave: #94a3b8;
+  --afty-texto-fraco: #64748b;
+
+  /* ---------- destaque ---------- */
+  --afty-destaque: #a855f7;
+  --afty-destaque-texto: #d8b4fe;
+  --afty-destaque-fundo: #581c8766;
+
+  /* ---------- recursos ---------- */
+  --afty-pv: #f43f5e;
+  --afty-pe: #38bdf8;
+  --afty-pvtemp: #fbbf24;
+  --afty-alma: #e879f9;
+  --afty-cura: #34d399;
+  --afty-aviso: #fbbf24;
+
+  /* Véu das camadas de cima (busca, aparência). É token porque num tema CLARO
+     um véu preto empasta a tela inteira. */
+  --afty-veu: rgb(0 0 0 / 0.55);
+
+  /* ---------- forma ---------- */
+  --afty-raio: 12px;
+  --afty-raio-peq: 8px;
+  --afty-sombra: 0 2px 10px rgb(0 0 0 / 0.45);
+  --afty-fonte: ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif;
+  --afty-fonte-titulo: var(--afty-fonte);
+  --afty-fonte-num: ui-monospace, Consolas, monospace;
+
+  /* ---------- imagem de fundo (o tema do usuário) ---------- */
+  --afty-imagem: none;
+  --afty-imagem-opacidade: 0.25;
+  --afty-imagem-encaixe: cover;
+  --afty-imagem-posicao: center;
+
+  position: relative;
+  min-height: 100dvh;
+  background-color: var(--afty-fundo);
+  background-image: var(--afty-fundo-brilho);
+  background-attachment: fixed;
+  color: var(--afty-texto);
+  font-family: var(--afty-fonte);
+}
+
+/* A imagem do usuário vive numa camada própria, atrás de tudo, para a opacidade
+   dela não apagar o texto junto. `pointer-events: none` para não comer clique. */
+.afty-ficha::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: var(--afty-imagem);
+  background-size: var(--afty-imagem-encaixe);
+  background-position: var(--afty-imagem-posicao);
+  background-repeat: no-repeat;
+  opacity: var(--afty-imagem-opacidade);
+}
+
+.afty-ficha > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ============================================================ */
+/* CABEÇALHO — o que nunca sai da tela                          */
+/* ============================================================ */
+
+.afty-cabecalho {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background-color: color-mix(in srgb, var(--afty-fundo) 88%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--afty-borda);
+}
+
+/* O fio de luz embaixo do cabeçalho. É a única linha decorativa da Ficha, e
+   existe para separar o que é fixo do que rola sem precisar de sombra pesada. */
+.afty-cabecalho::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--afty-destaque), transparent);
+  opacity: 0.5;
+}
+
+.afty-nome {
+  font-family: var(--afty-fonte-titulo);
+  color: var(--afty-texto);
+}
+
+/* ============================================================ */
+/* CHIPS                                                         */
+/* ============================================================ */
+
+.afty-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  border: 1px solid var(--afty-borda-forte);
+  background: var(--afty-poco);
+  color: var(--afty-texto-suave);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.afty-chip[data-afty-tom="destaque"] {
+  border-color: color-mix(in srgb, var(--afty-destaque) 55%, transparent);
+  background: var(--afty-destaque-fundo);
+  color: var(--afty-destaque-texto);
+}
+
+.afty-chip[data-afty-tom="aviso"] {
+  border-color: color-mix(in srgb, var(--afty-aviso) 55%, transparent);
+  background: color-mix(in srgb, var(--afty-aviso) 12%, transparent);
+  color: var(--afty-aviso);
+}
+
+/* ============================================================ */
+/* VITAIS — as barras de recurso                                 */
+/* ============================================================ */
+
+/* ⚠ Desenho da 2.5.2, a pedido do autor (2026-08-05): ícone e rótulo à
+   esquerda, o número GRANDE à direita, barra embaixo. A versão anterior tinha o
+   número do mesmo tamanho do rótulo e a barra fininha, e sumia no cabeçalho. */
+.afty-vital {
+  --afty-vital-cor: var(--afty-destaque);
+  border: 1px solid color-mix(in srgb, var(--afty-vital-cor) 28%, var(--afty-borda));
+  border-radius: var(--afty-raio);
+  background: var(--afty-card);
+  padding: 0.625rem 0.75rem;
+  transition: border-color 160ms;
+}
+
+.afty-vital:hover {
+  border-color: color-mix(in srgb, var(--afty-vital-cor) 55%, var(--afty-borda));
+}
+
+.afty-vital[data-afty-vital="pv"]     { --afty-vital-cor: var(--afty-pv); }
+.afty-vital[data-afty-vital="pe"]     { --afty-vital-cor: var(--afty-pe); }
+.afty-vital[data-afty-vital="pvtemp"] { --afty-vital-cor: var(--afty-pvtemp); }
+.afty-vital[data-afty-vital="alma"]   { --afty-vital-cor: var(--afty-alma); }
+
+.afty-vital-icone {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  color: var(--afty-vital-cor);
+}
+
+.afty-vital-rotulo {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--afty-texto-suave);
+}
+
+/* O número é um `input` sem cara de input: só vira campo ao receber o foco. */
+.afty-vital-numero {
+  width: 3.5rem;
+  text-align: right;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--afty-raio-peq);
+  outline: none;
+  font-family: var(--afty-fonte-num);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 1.5rem;
+  line-height: 1.1;
+  color: var(--afty-vital-cor);
+}
+
+.afty-vital-numero:hover { border-color: var(--afty-borda); }
+
+.afty-vital-numero:focus {
+  border-color: var(--afty-vital-cor);
+  background: var(--afty-poco);
+}
+
+.afty-vital-max {
+  font-family: var(--afty-fonte-num);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.75rem;
+  color: var(--afty-texto-fraco);
+  flex-shrink: 0;
+}
+
+.afty-vital-temp {
+  font-family: var(--afty-fonte-num);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: var(--afty-pvtemp);
+  flex-shrink: 0;
+}
+
+/* Abaixo da metade o número puxa para o âmbar, e abaixo de um quarto ele fica
+   na cor do próprio recurso e a barra pulsa. É a informação que o jogador
+   procura primeiro ao olhar a ficha. */
+.afty-vital[data-afty-nivel="baixo"] .afty-vital-numero {
+  color: var(--afty-aviso);
+}
+
+.afty-vital[data-afty-nivel="critico"] .afty-vital-barra {
+  animation: afty-pulso 1.6s ease-in-out infinite;
+}
+
+.afty-vital-trilho {
+  height: 0.625rem;
+  border-radius: 9999px;
+  background: var(--afty-poco);
+  overflow: hidden;
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.5);
+}
+
+.afty-vital-barra {
+  height: 100%;
+  border-radius: 9999px;
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--afty-vital-cor) 85%, white),
+    var(--afty-vital-cor) 55%,
+    color-mix(in srgb, var(--afty-vital-cor) 75%, black));
+  box-shadow: 0 0 8px color-mix(in srgb, var(--afty-vital-cor) 45%, transparent);
+  transition: width 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes afty-pulso {
+  50% { opacity: 0.55; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .afty-vital[data-afty-nivel="critico"] .afty-vital-barra { animation: none; }
+  .afty-vital-barra { transition: none; }
+}
+
+/* Passo de 1 nos recursos. Pequeno no mouse e grande no dedo. */
+.afty-passo {
+  width: 1.25rem;
+  height: 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--afty-borda-forte);
+  border-radius: var(--afty-raio-peq);
+  color: var(--afty-texto-suave);
+  font-size: 0.75rem;
+  line-height: 1;
+  transition: color 140ms, border-color 140ms;
+}
+
+.afty-passo:hover {
+  color: var(--afty-texto);
+  border-color: var(--afty-vital-cor, var(--afty-destaque));
+}
+
+@media (pointer: coarse) {
+  .afty-passo { width: 2rem; height: 2rem; font-size: 1rem; }
+}
+
+.afty-retrato {
+  border: 1px solid var(--afty-borda-forte);
+}
+
+/* ============================================================ */
+/* STATS — cada número derivado                                  */
+/* ============================================================ */
+
+/* ⚠ CÉLULA DE TAMANHO FIXO, numa grade. Antes era `flex-wrap` e cada caixa
+   ficava do tamanho do próprio texto, com "CD" minúscula ao lado de
+   "Res. Parcial" larga: a fileira virava uma serra. O autor apontou em
+   2026-08-05. Rótulo em cima, número embaixo, os dois centrados. */
+.afty-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.125rem;
+  min-height: 3rem;
+  padding: 0.25rem 0.375rem;
+  border: 1px solid var(--afty-borda);
+  border-radius: var(--afty-raio-peq);
+  background: var(--afty-poco);
+  transition: border-color 140ms ease-out;
+}
+
+.afty-stat:hover {
+  border-color: var(--afty-borda-forte);
+}
+
+.afty-stat-rotulo {
+  display: block;
+  max-width: 100%;
+  font-size: 0.5625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--afty-texto-fraco);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.afty-stat-valor {
+  font-family: var(--afty-fonte-num);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 1.0625rem;
+  line-height: 1.1;
+  color: var(--afty-texto);
+}
+
+/* ⚠ A fileira de defesas some ao rolar SÓ EM TELA BAIXA. Num monitor grande o
+   cabeçalho inteiro cabe de sobra, e escondê-lo trocaria carga cognitiva por
+   rolagem, que é justo o que a Ficha existe para evitar. */
+@media (max-height: 820px) {
+  .afty-cabecalho[data-afty-compacto="sim"] .afty-stats {
+    display: none;
+  }
+}
+
+/* ============================================================ */
+/* ABAS                                                          */
+/* ============================================================ */
+
+.afty-abas {
+  display: flex;
+  gap: 0.25rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.afty-abas::-webkit-scrollbar { display: none; }
+
+.afty-aba {
+  position: relative;
+  padding: 0.5rem 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--afty-texto-suave);
+  border-bottom: 2px solid transparent;
+  transition: color 140ms ease-out;
+}
+
+.afty-aba:hover { color: var(--afty-texto); }
+
+.afty-aba[aria-selected="true"] {
+  color: var(--afty-destaque-texto);
+  border-bottom-color: var(--afty-destaque);
+}
+
+/* ============================================================ */
+/* CORPO                                                         */
+/* ============================================================ */
+
+.afty-card {
+  border: 1px solid var(--afty-borda);
+  border-radius: var(--afty-raio);
+  background: var(--afty-card);
+  box-shadow: var(--afty-sombra);
+}
+
+.afty-card-titulo {
+  font-family: var(--afty-fonte-titulo);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--afty-texto-suave);
+}
+
+/* ⚠ O canto arredondado do card NÃO usa `overflow: hidden`: ele cortaria o
+   painel de fontes das últimas linhas. Quem arredonda é o filho com fundo. */
+.afty-linha {
+  border: 1px solid var(--afty-borda);
+  border-radius: var(--afty-raio-peq);
+  background: var(--afty-poco);
+  transition: border-color 140ms ease-out;
+}
+
+.afty-linha:hover { border-color: var(--afty-borda-forte); }
+
+.afty-linha[data-afty-destacada="sim"] {
+  border-color: color-mix(in srgb, var(--afty-destaque) 55%, transparent);
+  background: var(--afty-destaque-fundo);
+}
+
+.afty-rotulo {
+  font-size: 0.75rem;
+  color: var(--afty-texto-suave);
+}
+
+.afty-valor {
+  font-family: var(--afty-fonte-num);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--afty-texto);
+}
+
+.afty-valor[data-afty-tom="dano"]  { color: var(--afty-texto); }
+.afty-valor[data-afty-tom="cura"]  { color: var(--afty-cura); }
+.afty-valor[data-afty-tom="custo"] { color: var(--afty-pe); }
+
+.afty-vazio {
+  color: var(--afty-texto-fraco);
+  font-size: 0.8125rem;
+}
+
+/* Número que ROLA ao clique. O sublinhado pontilhado é a única marca, e ela
+   precisa existir: sem nada, um número clicável e um número morto ficam
+   idênticos, e o jogador não descobre que a ficha rola. */
+.afty-rolavel {
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+  text-decoration-color: color-mix(in srgb, var(--afty-destaque) 60%, transparent);
+  border-radius: var(--afty-raio-peq);
+  transition: color 120ms, background-color 120ms;
+}
+
+.afty-rolavel:hover {
+  color: var(--afty-destaque-texto);
+  background: var(--afty-destaque-fundo);
+}
+
+/* ============================================================ */
+/* BOTÕES                                                        */
+/* ============================================================ */
+
+.afty-botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  border: 1px solid var(--afty-borda-forte);
+  border-radius: var(--afty-raio-peq);
+  background: var(--afty-card);
+  color: var(--afty-texto-suave);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  padding: 0.375rem 0.75rem;
+  transition: color 140ms, border-color 140ms, background-color 140ms;
+}
+
+.afty-botao:hover {
+  color: var(--afty-texto);
+  border-color: var(--afty-destaque);
+}
+
+.afty-botao[data-afty-tom="destaque"] {
+  background: var(--afty-destaque-fundo);
+  border-color: color-mix(in srgb, var(--afty-destaque) 55%, transparent);
+  color: var(--afty-destaque-texto);
+}
+
+.afty-botao[data-afty-tom="dano"]:hover { border-color: var(--afty-pv); color: var(--afty-pv); }
+.afty-botao[data-afty-tom="cura"]:hover { border-color: var(--afty-cura); color: var(--afty-cura); }
+
+/* Alvo de toque decente no celular, que é 25% do uso. 44px é o mínimo que
+   passa em qualquer diretriz de acessibilidade. */
+@media (pointer: coarse) {
+  .afty-botao { min-height: 44px; padding-inline: 1rem; }
+  .afty-aba { padding-block: 0.75rem; }
+}
+
+/* ============================================================ */
+/* TEXTO DO LIVRO                                                */
+/* ============================================================ */
+
+/* ⚠ Medida de leitura limitada e entrelinha larga: isto é PARÁGRAFO DE REGRA,
+   às vezes com três páginas, e não rótulo de campo. Linha que atravessa um
+   monitor de 27 polegadas perde o começo da seguinte. */
+.afty-texto {
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: var(--afty-texto-suave);
+  max-width: 78ch;
+  white-space: pre-line;
+}
+
+.afty-opcao {
+  border-left: 2px solid color-mix(in srgb, var(--afty-destaque) 55%, transparent);
+  border-radius: 0 var(--afty-raio-peq) var(--afty-raio-peq) 0;
+  background: var(--afty-destaque-fundo);
+}
+
+.afty-estrela {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  flex-shrink: 0;
+  border-radius: var(--afty-raio-peq);
+  color: var(--afty-texto-fraco);
+  transition: color 140ms;
+}
+
+.afty-estrela:hover { color: var(--afty-texto-suave); }
+.afty-estrela[data-afty-ativa="sim"] { color: var(--afty-aviso); }
+
+@media (pointer: coarse) {
+  .afty-estrela { width: 2.25rem; height: 2.25rem; }
+}
+
+/* O item para onde a busca navegou. Anel em vez de fundo, para o destaque não
+   competir com o `data-afty-destacada` das linhas que já são especiais. */
+.afty-linha[data-afty-alvo="sim"],
+[data-afty-alvo="sim"] {
+  outline: 2px solid var(--afty-destaque);
+  outline-offset: 1px;
+}
+
+.afty-campo {
+  font-size: 0.8125rem;
+  color: var(--afty-texto);
+}
+
+.afty-campo::placeholder { color: var(--afty-texto-fraco); }
+
+/* O seletor de cor nativo, sem a moldura grossa que os navegadores dão. */
+.afty-cor {
+  width: 1.75rem;
+  height: 1.75rem;
+  flex-shrink: 0;
+  padding: 0;
+  border: 1px solid var(--afty-borda-forte);
+  border-radius: var(--afty-raio-peq);
+  background: transparent;
+  cursor: pointer;
+}
+
+.afty-cor::-webkit-color-swatch-wrapper { padding: 2px; }
+.afty-cor::-webkit-color-swatch { border: none; border-radius: 4px; }
+.afty-cor::-moz-color-swatch { border: none; border-radius: 4px; }
+
+/* ============================================================ */
+/* BUSCA GLOBAL                                                  */
+/* ============================================================ */
+
+.afty-busca-fundo {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  justify-content: center;
+  padding: 12vh 1rem 1rem;
+  background: var(--afty-veu);
+  backdrop-filter: blur(2px);
+}
+
+.afty-busca {
+  width: min(38rem, 100%);
+  align-self: flex-start;
+  max-height: 70dvh;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--afty-borda-forte);
+  border-radius: var(--afty-raio);
+  background: var(--afty-card);
+  box-shadow: var(--afty-sombra);
+  overflow: hidden;
+}
+
+.afty-busca-lista {
+  border-top: 1px solid var(--afty-borda);
+  overflow-y: auto;
+}
+
+.afty-busca-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  color: var(--afty-texto-suave);
+}
+
+.afty-busca-item + .afty-busca-item {
+  border-top: 1px solid var(--afty-borda);
+}
+
+.afty-busca-item[data-afty-cursor="sim"] {
+  background: var(--afty-destaque-fundo);
+  color: var(--afty-texto);
+}
+
+/* ============================================================ */
+/* PAINEL DE ROLAGENS                                            */
+/* ============================================================ */
+
+.afty-log {
+  position: fixed;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  z-index: 45;
+  width: min(22rem, calc(100vw - 1.5rem));
+  border: 1px solid var(--afty-borda-forte);
+  border-radius: var(--afty-raio);
+  background: color-mix(in srgb, var(--afty-card) 94%, transparent);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--afty-sombra);
+  overflow: hidden;
+}
+
+.afty-log-topo {
+  border-bottom: 1px solid var(--afty-borda);
+  color: var(--afty-texto-suave);
+}
+
+.afty-log-corpo {
+  max-height: 3.75rem;
+  overflow: hidden;
+}
+
+.afty-log[data-afty-aberto="sim"] .afty-log-corpo {
+  max-height: min(24rem, 50dvh);
+  overflow-y: auto;
+}
+
+.afty-log-modo {
+  padding: 0.125rem 0.375rem;
+  border-radius: var(--afty-raio-peq);
+  border: 1px solid transparent;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--afty-texto-fraco);
+}
+
+.afty-log-modo:hover { color: var(--afty-texto); }
+
+.afty-log-modo[data-afty-ativo="sim"] {
+  color: var(--afty-destaque-texto);
+  border-color: color-mix(in srgb, var(--afty-destaque) 55%, transparent);
+  background: var(--afty-destaque-fundo);
+}
+
+/* Vantagem e desvantagem ligadas mudam a COR do próprio interruptor, e é o que
+   substitui o modo se desarmar sozinho: dá para ver o estado sem procurar. */
+.afty-log-modo[data-afty-modo="vantagem"][data-afty-ativo="sim"] {
+  color: var(--afty-cura);
+  border-color: color-mix(in srgb, var(--afty-cura) 55%, transparent);
+  background: color-mix(in srgb, var(--afty-cura) 14%, transparent);
+}
+
+.afty-log-modo[data-afty-modo="desvantagem"][data-afty-ativo="sim"] {
+  color: var(--afty-pv);
+  border-color: color-mix(in srgb, var(--afty-pv) 55%, transparent);
+  background: color-mix(in srgb, var(--afty-pv) 14%, transparent);
+}
+
+.afty-rolagem + .afty-rolagem {
+  border-top: 1px solid var(--afty-borda);
+}
+
+.afty-rolagem[data-afty-marca="critico"] {
+  background: color-mix(in srgb, var(--afty-destaque) 12%, transparent);
+}
+
+.afty-rolagem[data-afty-marca="pifia"] {
+  background: color-mix(in srgb, var(--afty-pv) 12%, transparent);
+}
+
+.afty-rolagem-total {
+  font-family: var(--afty-fonte-num);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 1.125rem;
+  line-height: 1;
+  color: var(--afty-texto);
+}
+
+.afty-rolagem[data-afty-marca="critico"] .afty-rolagem-total { color: var(--afty-destaque-texto); }
+.afty-rolagem[data-afty-marca="pifia"] .afty-rolagem-total { color: var(--afty-pv); }
+
+.afty-dado {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.125rem;
+  padding: 0 0.1875rem;
+  border: 1px solid var(--afty-borda-forte);
+  border-radius: 0.25rem;
+  background: var(--afty-poco);
+  font-family: var(--afty-fonte-num);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.625rem;
+  color: var(--afty-texto-suave);
+}
+
+.afty-dado[data-afty-descartado="sim"] {
+  color: var(--afty-texto-fraco);
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+/* A rolagem nova pisca uma vez. Sem isso, rolar duas vezes o mesmo número
+   parece que o botão não funcionou. */
+.afty-rolagem[data-afty-nova="sim"] {
+  animation: afty-entrada 320ms ease-out;
+}
+
+@keyframes afty-entrada {
+  from { background: var(--afty-destaque-fundo); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .afty-rolagem[data-afty-nova="sim"] { animation: none; }
+}
+
+/* ============================================================ */
+/* FOCO — um só, visível em qualquer tema                        */
+/* ============================================================ */
+
+.afty-ficha :focus-visible {
+  outline: 2px solid var(--afty-destaque);
+  outline-offset: 2px;
+  border-radius: var(--afty-raio-peq);
+}

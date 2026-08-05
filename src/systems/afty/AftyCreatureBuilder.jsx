@@ -1,16 +1,22 @@
-import React, { useState, useMemo, useRef, useCallback } from "react";
+import React, { useState, useMemo, useRef, useCallback, useLayoutEffect } from "react";
 import {
   Save, ChevronLeft, ChevronDown, Wand2, Sparkles, FlaskConical,
   Dumbbell, GraduationCap, BookOpen, Check, ArrowRight, Lock, Plus, X, Zap,
   Copy, ArrowUp, ArrowDown, Heart, Shield, Footprints, AlertTriangle, Star, Swords,
-  Trash2, Image as ImageIcon, Eye, Crosshair,
+  Trash2, Image as ImageIcon, Eye, Crosshair, RotateCcw,
 } from "lucide-react";
 
 import { FieldLabel, TextInput, TextArea, Select, NumberInput, StatField, ExpandableText } from "../../components/builder-controls";
 import {
-  createBlankAfty, AFTY_ATTRS, AFTY_TIPOS, AFTY_PATAMARES, AFTY_QNT_PE,
+  mesclaFichaAfty, AFTY_ATTRS, AFTY_TIPOS, AFTY_PATAMARES, AFTY_QNT_PE,
   AFTY_TECNICA_ATTRS, AFTY_TAMANHOS, AFTY_RESISTENCIAS,
 } from "./afty-schema";
+// Primitivos compartilhados com a Ficha Final. Eram locais deste arquivo até
+// 2026-08-05, e saíram porque duas cópias divergiriam na primeira errata.
+import { PainelDeFontes, ValorComFontes } from "./ui/fontes";
+import { sinalDe } from "./ui/formato";
+import { Card, BoolChip, VezesGauge } from "./ui/primitivos";
+import { estadoInicialComRascunho, useRascunhoAfty, formatarSalvoEm } from "./afty-rascunho";
 import {
   AFTY_ORIGENS, getOrigem, origemTemDesenvolvimento, origemPoolLimite,
   clasDaOrigem, getCla, caracteristicasEfetivas, totalDaAlocacao, usoDaAlocacao,
@@ -33,6 +39,7 @@ import {
 } from "./afty-aptidoes";
 import {
   especializacoesDisponiveis, getEspecializacao, normalizeEspecializacoes, tipoObrigatorio,
+  tiposDisponiveis, tipoDaOrigem,
 } from "./afty-especializacoes";
 import {
   gruposDeHabilidade, avaliarAcessoHabilidade, escolhasConcedidas, abasDeOpcoes,
@@ -43,7 +50,8 @@ import {
 } from "./afty-alto-nivel";
 import { HABILIDADES_GERAIS } from "./afty-gerais";
 import { AFTY_PERICIAS, AFTY_ATAQUES, AFTY_MANOBRAS, EMPURRAO_BASE } from "./afty-pericias";
-// Os 47 canais do Motor, já agrupados por assunto para o <optgroup> do editor
+import { rotuloBloco } from "./afty-cura";
+// Os canais do Motor, já agrupados por assunto para o <optgroup> do editor
 // do Funcionamento Básico.
 import { EFEITO_CANAL_GRUPOS, getCanal } from "./afty-efeitos";
 import {
@@ -84,6 +92,7 @@ import {
   calcularFeiticoAuxiliar, AUX_EFEITOS, AUX_TABELAS, AUX_DURACOES, faixaRodadasDuradoura,
   createBlankAuxEffect, efeitosDisponiveisMult, primeiroEfeitoLivre,
   resultaEspecialAux, ofereceUmGolpe, aplicaUmGolpe, podeEventoUnico,
+  formatAuxValor,
 } from "./afty-feiticos";
 
 /**
@@ -118,24 +127,74 @@ const TABS = [
 // Marciais, conforme a origem). Nenhuma aba está em stub por ora.
 const STUBS = {};
 
+/* Estado do rascunho automático, no cabeçalho e ao lado do Salvar.
+   Some quando não há nada pendente: um indicador permanente que passa o dia
+   dizendo "tudo certo" deixa de ser lido justo quando tem algo a dizer.
+
+   ⚠ Os dois estados são diferentes de propósito. "Restaurado" avisa que a ficha
+   na tela veio do rascunho, e não do compêndio, que é o único momento em que a
+   restauração automática pode surpreender. "Rascunho" é só a marca de que o
+   trabalho está guardado. O X desfaz nos dois casos, o que é o que paga pela
+   restauração ser automática. */
+function IndicadorRascunho({ rascunho }) {
+  const { pendente, salvoEm, restaurado, descartar } = rascunho;
+  if (!restaurado && !(pendente && salvoEm)) return null;
+  return (
+    <div
+      className={`flex items-center gap-1.5 pl-2 pr-1 py-1 rounded border text-[11px] font-semibold flex-shrink-0 ${
+        restaurado
+          ? "border-sky-800 bg-sky-950/60 text-sky-300"
+          : "border-slate-700 bg-slate-900/70 text-slate-400"
+      }`}
+      title={
+        restaurado
+          ? "A ficha na tela veio do rascunho automático, e não do compêndio"
+          : "Guardado automaticamente neste navegador. O compêndio só recebe pelo Salvar"
+      }
+    >
+      <RotateCcw className="w-3 h-3 flex-shrink-0" aria-hidden="true" />
+      <span className="whitespace-nowrap">
+        {restaurado ? "Restaurado" : "Rascunho"}
+        {salvoEm && <span className="font-normal opacity-70"> {formatarSalvoEm(salvoEm)}</span>}
+      </span>
+      <button
+        type="button"
+        onClick={descartar}
+        title="Descartar o rascunho e voltar à ficha salva"
+        aria-label="Descartar o rascunho e voltar à ficha salva"
+        className="p-0.5 rounded hover:bg-slate-800 hover:text-white transition-colors"
+      >
+        <X className="w-3.5 h-3.5" />
+      </button>
+    </div>
+  );
+}
+
+/* A ficha COMO ELA ESTÁ GRAVADA: o `existingCreature` mesclado com os defaults,
+   ou a ficha em branco. É a régua do "tem alteração pendente" e o destino do
+   Descartar. O merge em si mora no schema desde 2026-08-05, porque a Ficha Final
+   precisa exatamente do mesmo saneamento antes de derivar. */
+const fichaGravada = mesclaFichaAfty;
+
 export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel }) {
-  const [draft, setDraft] = useState(() => {
-    if (!existingCreature) return createBlankAfty();
-    // Merge defensivo: os defaults do Afty preenchem lacunas de fichas
-    // antigas/parciais sem descartar o que já existe (id, nome, etc.).
-    const blank = createBlankAfty();
-    return {
-      ...blank,
-      ...existingCreature,
-      core: { ...blank.core, ...(existingCreature.core || {}) },
-      attributes: { ...blank.attributes, ...(existingCreature.attributes || {}) },
-      attrNivel: { ...blank.attrNivel, ...(existingCreature.attrNivel || {}) },
-      attrLimite: { ...blank.attrLimite, ...(typeof existingCreature.attrLimite === "object" ? existingCreature.attrLimite : {}) },
-      aptidoes: { ...blank.aptidoes, ...(existingCreature.aptidoes || {}) },
-      formulaOverrides: { ...(existingCreature.formulaOverrides || {}) },
-    };
-  });
+  // A ficha gravada é capturada UMA vez, na montagem, igual ao draft: trocar de
+  // criatura passa pelo Dashboard, que desmonta este componente.
+  const [base] = useState(() => fichaGravada(existingCreature));
+  const alvoId = existingCreature?.id ?? null;
+  // ⚠ O rascunho é aplicado AQUI, no inicializador, e não num efeito depois de
+  // montar: restaurar depois faria a tela piscar a ficha em branco antes de
+  // trocar, e todo `useState` derivado do draft nasceria do valor errado.
+  const [rascunhoInicial] = useState(() => estadoInicialComRascunho(alvoId, base));
+  const [draft, setDraft] = useState(rascunhoInicial.draft);
   const [tab, setTab] = useState("informacoes");
+
+  const rascunho = useRascunhoAfty({
+    id: alvoId,
+    draft,
+    base,
+    restauradoEm: rascunhoInicial.restaurado,
+    onDescartar: () => setDraft(base),
+  });
 
   const derived = useMemo(() => deriveAfty(draft), [draft]);
   const isEditing = !!existingCreature?.id;
@@ -190,7 +249,10 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
   const setOrigemId = (id) =>
     setDraft((d) => ({
       ...d,
-      core: { ...d.core, origem: { id }, tipo: tipoObrigatorio(id) ?? d.core.tipo },
+      // ⚠ A trava do Restringido é nos dois sentidos (autor, 2026-08-03), então
+      // sair da origem Restringido também tira o TIPO Restringido: um
+      // `tipoObrigatorio(id) ?? d.core.tipo` deixava a metade de volta gravada.
+      core: { ...d.core, origem: { id }, tipo: tipoDaOrigem(id, d.core.tipo) },
       especializacoes: normalizeEspecializacoes(d.especializacoes, id),
     }));
 
@@ -566,6 +628,9 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
         almaCurrent: derived.almaMax,
       },
     };
+    // Apaga o rascunho e move a régua do "tem alteração pendente" para a ficha
+    // recém-gravada. Sem isso a próxima abertura restauraria por cima dela.
+    rascunho.aoSalvar(creature);
     onSave(creature);
   };
 
@@ -591,6 +656,7 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
               {isEditing ? "Editar Criatura" : "Nova Criatura"} · Afty
             </h1>
           </div>
+          <IndicadorRascunho rascunho={rascunho} />
           <button
             onClick={handleSave}
             className="flex items-center gap-1.5 px-4 py-2 rounded text-sm font-bold transition-colors bg-purple-700 hover:bg-purple-600 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 flex-shrink-0"
@@ -654,27 +720,6 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
           {STUBS[tabAtiva] && <StubCard title={TABS.find((t) => t.id === tabAtiva)?.label} text={STUBS[tabAtiva]} />}
         </div>
       </div>
-    </div>
-  );
-}
-
-/* ============================================================ */
-/* Cartão / cabeçalho de seção — mesmo visual do builder 2.5.2  */
-/* ============================================================ */
-function Card({ title, children, headerRight }) {
-  return (
-    <div className="bg-slate-900 border border-slate-800 rounded-xl">
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-800">
-        {/* Ícone DENTRO do h2 (mesmo padrão do builder 2.5.2): como irmão do
-            título ele se alinhava contra a altura da barra inteira, e não
-            contra a linha do texto, o que deixava ele visivelmente alto. */}
-        <h2 className="text-sm font-semibold text-white flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-purple-400 flex-shrink-0" />
-          {title}
-        </h2>
-        {headerRight && <div className="ml-auto flex-shrink-0">{headerRight}</div>}
-      </div>
-      <div className="p-4">{children}</div>
     </div>
   );
 }
@@ -853,56 +898,6 @@ function ContadorVagas({ orcamento }) {
       title="Vagas de treino gastas / disponíveis (Mestre custa 2, e Perícias e Testes de Resistência dividem as mesmas)"
     >
       {orcamento.gastos} / {orcamento.total}
-    </span>
-  );
-}
-
-/* Painel de fontes que aparece ao passar o mouse sobre um valor. Mostra de onde
-   vem cada parcela (atributo, escala de nível, Maestria, Treinamentos...) e o
-   total. É só CSS (group-hover), sem estado nem posicionamento em JS. */
-const sinalDe = (v) => `${v >= 0 ? "+" : "−"}${Math.abs(v)}`;
-
-/* O painel em si. Uma linha por fonte e o total. `texto` numa parcela substitui
-   o número, para as que não somam (os multiplicadores de Alma e Patamar no PV).
-   Zeros NÃO são filtrados: "Destreza +0" diz qual atributo dirige o valor. */
-/* `aparecer` existe para o caso de DOIS painéis na mesma linha (a de Dano tem
-   Acerto e Dano, cada um com as fontes dele). O `group-hover` sem nome responde
-   a qualquer ancestral com a classe `group`, então o painel de dentro abriria
-   junto com o de fora. Quem precisa de hover próprio passa um grupo NOMEADO, e
-   a string vem literal do chamador porque o Tailwind lê o código-fonte e não
-   enxerga classe montada em template. */
-function PainelDeFontes({ partes, total, ancora = "direita", aparecer = "group-hover:block" }) {
-  return (
-    <span className={`hidden ${aparecer} absolute top-full mt-1 z-30 w-max max-w-[16rem] rounded-lg border border-slate-700 bg-slate-950 shadow-xl shadow-black/50 p-2 text-left ${
-      ancora === "esquerda" ? "left-0" : "right-0"
-    }`}>
-      {/* `suplantado` é o perdedor do pool exclusivo (a arma venceu o shikigami).
-          Ele aparece riscado e apagado, e não some: sem a linha, o jogador veria
-          o bônus do shikigami desaparecer da ficha sem nada explicando. */}
-      {(partes || []).filter(Boolean).map((p, i) => (
-        <span key={i} className="flex items-baseline justify-between gap-3 whitespace-nowrap">
-          <span className={`text-[10px] ${p.suplantado ? "text-slate-600 line-through" : "text-slate-400"}`}>{p.label}</span>
-          <span className={`font-mono text-[10px] tabular-nums ${p.suplantado ? "text-slate-600 line-through" : "text-slate-200"}`}>
-            {p.texto ?? sinalDe(p.valor)}
-          </span>
-        </span>
-      ))}
-      <span className="flex items-baseline justify-between gap-3 whitespace-nowrap border-t border-slate-800 mt-1 pt-1">
-        <span className="text-[10px] uppercase tracking-wider text-slate-500">Total</span>
-        <span className="font-mono text-[10px] font-bold tabular-nums text-white">{total}</span>
-      </span>
-    </span>
-  );
-}
-
-function ValorComFontes({ valor, partes }) {
-  const lista = (partes || []).filter(Boolean);
-  return (
-    <span className="relative group flex-shrink-0">
-      <span className="font-mono text-sm font-bold tabular-nums text-white w-9 block cursor-help text-right">
-        {sinalDe(valor)}
-      </span>
-      {lista.length > 0 && <PainelDeFontes partes={lista} total={sinalDe(valor)} />}
     </span>
   );
 }
@@ -1102,6 +1097,77 @@ function DanoCard({ derived, toggleArmaDedicada }) {
                 ))}
               </div>
             )}
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
+/* Card de CURA, irmão do de Dano: uma linha por fonte, com a rolagem à direita
+   e o hover mostrando de onde cada pedaço veio. Some inteiro para quem não cura.
+
+   A linha mostra o que UM ponto compra (autor, 2026-08-03), e não a rolagem do
+   gasto máximo: a Energia Reversa e a Regeneração Corporal escalam por ponto, e
+   é o valor por ponto que o jogador decide na mesa. O uso inteiro fecha no
+   hover, na linha do Total.
+
+   ⚠ Com o custo por ponto, o valor FIXO não cabe no `5d8`: ele entra uma vez no
+   total, e não por ponto. Por isso ele vira um número próprio na linha, com o
+   mesmo desenho do Acerto na linha de Dano. Sem custo por ponto a rolagem fecha
+   inteira (`6d10+17`) e o número separado não aparece.
+
+   ⚠ UM painel de hover por linha, de propósito: a linha de Dano precisou de dois
+   (Acerto e Dano) e isso obrigou grupos nomeados. Aqui o hover único já carrega
+   dados, faces, multiplicação e parcelas fixas, então a linha continua sendo
+   `group` e nada colide. */
+function CuraCard({ derived }) {
+  const linhas = derived.cura?.linhas ?? [];
+  if (!linhas.length) return null;
+
+  return (
+    <Card title="Cura">
+      <div className="space-y-1">
+        {linhas.map((l) => (
+          <div key={l.id} className="rounded-lg border border-slate-800 bg-slate-950/40 px-2.5 py-2">
+            <div className="group flex items-center gap-2.5">
+              <span className="flex-1 min-w-0 text-[12px] font-semibold text-slate-100 truncate" title={l.nome}>
+                {l.nome}
+                {l.qtd ? <span className="text-slate-500"> ×{l.qtd}</span> : null}
+              </span>
+              <span className="text-[9px] uppercase tracking-wider text-slate-500 flex-shrink-0">
+                {l.alcance}
+              </span>
+              {l.espelhaNome && (
+                <span
+                  className="text-[10px] text-slate-400 whitespace-nowrap flex-shrink-0"
+                  title={`Rola a mesma coisa que ${l.espelhaNome}`}
+                >
+                  {l.espelhaNome}
+                </span>
+              )}
+              {l.usos != null && (
+                <span className="text-[10px] text-slate-400 whitespace-nowrap flex-shrink-0" title="Usos por descanso">
+                  Usos{" "}
+                  <span className="font-mono font-semibold tabular-nums text-slate-200">{l.usos}</span>
+                </span>
+              )}
+              {l.unidade && (
+                <span className="text-[10px] font-medium text-emerald-300 whitespace-nowrap flex-shrink-0">
+                  {rotuloBloco(l.unidade)}, até {l.unidade.pontos}
+                </span>
+              )}
+              {l.unidade && l.fixo !== 0 && (
+                <span className="text-[10px] text-slate-400 whitespace-nowrap flex-shrink-0" title="Soma uma vez no total">
+                  Total{" "}
+                  <span className="font-mono font-semibold tabular-nums text-slate-200">{sinalDe(l.fixo)}</span>
+                </span>
+              )}
+              <span className="relative font-mono text-[13px] font-bold tabular-nums text-white whitespace-nowrap cursor-help">
+                {l.texto}
+                <PainelDeFontes partes={l.partes} total={l.textoNoMaximo} />
+              </span>
+            </div>
           </div>
         ))}
       </div>
@@ -1464,11 +1530,16 @@ function TabHabilidades({ draft, derived, patchCore, toggleArmaDedicada, addFeit
   const gerais = <HabilidadesGeraisCard derived={derived} setGeralVezes={setGeralVezes} />;
   // O Dano vale para toda origem: até quem não tem Feitiço ataca.
   const dano = <DanoCard derived={derived} toggleArmaDedicada={toggleArmaDedicada} />;
+  // A Cura some sozinha para quem não tem fonte nenhuma, então ela acompanha o
+  // Dano em toda origem: um Restringido cura com Ainda de Pé e um Combatente com
+  // Revigorar, sem nada de energia amaldiçoada no meio.
+  const cura = <CuraCard derived={derived} />;
   if (origem === "sem_tecnica") {
     return (
       <>
         <SubsistemaPendente titulo="Estilo das Sombras" origem="Sem Técnica" />
         {dano}
+        {cura}
         {dominio}
         {gerais}
       </>
@@ -1479,6 +1550,7 @@ function TabHabilidades({ draft, derived, patchCore, toggleArmaDedicada, addFeit
       <>
         <SubsistemaPendente titulo="Habilidades Marciais" origem="Restringido" />
         {dano}
+        {cura}
         {dominio}
         {gerais}
       </>
@@ -1489,6 +1561,7 @@ function TabHabilidades({ draft, derived, patchCore, toggleArmaDedicada, addFeit
       <PerfilAmaldicoadoCard draft={draft} derived={derived} patchCore={patchCore} />
       <FeiticosCard draft={draft} derived={derived} addFeitico={addFeitico} removeFeitico={removeFeitico} patchFeitico={patchFeitico} duplicarFeitico={duplicarFeitico} />
       {dano}
+      {cura}
       {dominio}
       {gerais}
     </>
@@ -1640,7 +1713,7 @@ function SubsistemaPendente({ titulo, origem }) {
   );
 }
 
-/* Motor de Automação do Funcionamento Básico: o DSL COMPLETO, os 47 canais.
+/* Motor de Automação do Funcionamento Básico: o DSL COMPLETO, todos os canais.
    Uma linha é `{ canal, alvo?, expr, quando?, duracao? }`, o shape inteiro que o
    `aplicarEfeitos` entende. Irmão do MotorEfeitosEditor das Ferramentas
    Amaldiçoadas, com duas diferenças: lá o pool de canais é o subconjunto do
@@ -1947,8 +2020,67 @@ function TecnicaMotorEditor({ efeitos, onChange }) {
   );
 }
 
+/* Caixa de texto longo: cresce sozinha com o conteúdo até um teto, e daí rola
+   por dentro. O botão do canto tira o teto e devolve.
+
+   ⚠ Existe por causa do Funcionamento Básico, que o autor descreve como "tanto
+   coisas pequenas de 1 parágrafo quanto habilidades com 3 páginas" (2026-08-03).
+   Um `rows` fixo serve mal aos dois extremos de uma vez: 4 linhas desperdiçam
+   meia tela no caso curto e escondem 95% do texto no caso longo. O `resize-y`
+   que o TextArea da 2.5.2 traz continua sendo trabalho manual, e repetido a cada
+   ficha.
+
+   A altura é medida a cada mudança de valor, e não a cada tecla, porque uma
+   ficha carregada de fora (ou o botão de expandir) também muda o tamanho. */
+function TextoLongo({ value, onChange, placeholder, minRows = 4, maxRows = 18 }) {
+  const ref = useRef(null);
+  const [expandido, setExpandido] = useState(false);
+  const [rolando, setRolando] = useState(false);
+
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    // O `auto` zera a altura para o scrollHeight refletir só o conteúdo: sem
+    // isso a caixa cresce e nunca encolhe ao apagar texto.
+    el.style.height = "auto";
+    const linha = parseFloat(getComputedStyle(el).lineHeight) || 20;
+    const respiro = el.offsetHeight - el.clientHeight + 16;   // bordas + padding
+    const min = linha * minRows + respiro;
+    const teto = expandido ? Infinity : linha * maxRows + respiro;
+    const alvo = Math.max(min, Math.min(el.scrollHeight + respiro, teto));
+    el.style.height = `${alvo}px`;
+    setRolando(el.scrollHeight + respiro > teto);
+  }, [value, expandido, minRows, maxRows]);
+
+  return (
+    <div className="relative">
+      <textarea
+        ref={ref}
+        value={value || ""}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 pb-7 text-sm leading-relaxed text-white placeholder:text-slate-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 resize-none transition-colors"
+      />
+      {/* Só aparece quando há o que revelar: um botão que não faz nada é pior
+          que botão nenhum. */}
+      {(rolando || expandido) && (
+        <button
+          type="button"
+          onClick={() => setExpandido((e) => !e)}
+          aria-expanded={expandido}
+          title={expandido ? "Recolher" : "Expandir"}
+          aria-label={expandido ? "Recolher o texto" : "Expandir o texto"}
+          className="absolute bottom-1.5 right-2 flex items-center justify-center w-6 h-6 rounded text-slate-500 hover:text-white hover:bg-slate-800 transition-colors"
+        >
+          <ChevronDown className={`w-4 h-4 transition-transform ${expandido ? "rotate-180" : ""}`} aria-hidden="true" />
+        </button>
+      )}
+    </div>
+  );
+}
+
 /* Perfil Amaldiçoado: o Atributo da Técnica (É `core.tecnicaAttr`, o mesmo que
-   dirige a CD), a CD resultante e o Funcionamento Básico.
+   dirige a CD) e o Funcionamento Básico.
 
    ⚠ REDESENHADO em 2026-07-29 (o autor chamou o anterior de "bem feio"). O que
    estava errado, e vale para qualquer card novo:
@@ -1958,42 +2090,47 @@ function TecnicaMotorEditor({ efeitos, onChange }) {
        Maestria"), que é justamente o texto explicativo que o builder não usa. O
        lugar disso é o hover de fontes, que já existe (`derived.partes.cd`);
      • o Atributo da Técnica aparecia AQUI e em Informações, os dois escrevendo o
-       mesmo campo. Ficou só aqui, ao lado da CD que ele move.
+       mesmo campo. Ficou só aqui.
+
+   ⚠ SEGUNDA PASSADA em 2026-08-03 (autor). O Atributo da Técnica subiu para o
+   cabeçalho do card e a caixa de CD de Feitiçaria SAIU: a CD já está no Preview,
+   ao lado, e repeti-la aqui gastava a largura da primeira linha inteira para
+   dizer duas coisas que cabem no cabeçalho. Com isso o corpo do card ficou
+   inteiro para o Funcionamento Básico e o Motor de Automação, que são o que a
+   pessoa vem editar aqui.
 
    O Funcionamento Básico deixou de ser só texto: ele tem o Motor de Automação
    completo, porque a técnica é única no mundo e nenhum catálogo pode cobri-la. */
 function PerfilAmaldicoadoCard({ draft, derived, patchCore }) {
   return (
-    <Card title="Perfil Amaldiçoado">
-      <div className="flex flex-wrap items-end gap-3">
-        <div className="w-full sm:w-56">
-          <FieldLabel>Atributo da Técnica</FieldLabel>
-          <Select
-            value={draft.core.tecnicaAttr}
-            onChange={(v) => patchCore({ tecnicaAttr: v })}
-            options={AFTY_TECNICA_ATTRS}
-          />
+    <Card
+      title="Perfil Amaldiçoado"
+      headerRight={
+        <div className="flex items-center gap-2">
+          <span className="text-[9px] uppercase tracking-wider text-slate-400 whitespace-nowrap">
+            Atributo da Técnica
+          </span>
+          <div className="w-40">
+            <Select
+              value={draft.core.tecnicaAttr}
+              onChange={(v) => patchCore({ tecnicaAttr: v })}
+              options={AFTY_TECNICA_ATTRS}
+              aria-label="Atributo da Técnica"
+            />
+          </div>
         </div>
-        <div className="relative group flex items-center gap-2 h-9 px-3 rounded border border-slate-800 bg-slate-950/60 cursor-help">
-          <span className="text-[10px] uppercase tracking-wider text-slate-400">CD de Feitiçaria</span>
-          <span className="font-mono text-base font-bold text-white tabular-nums leading-none">{derived.feiticos.cdBase}</span>
-          <PainelDeFontes partes={derived.partes?.cd} total={derived.feiticos.cdBase} ancora="esquerda" />
-        </div>
-      </div>
-
-      <div className="mt-4">
-        <FieldLabel>Funcionamento Básico</FieldLabel>
-        <TextArea
-          value={draft.core.tecnicaDescricao}
-          onChange={(v) => patchCore({ tecnicaDescricao: v })}
-          rows={4}
-          placeholder="Descreva o núcleo da técnica: o que ela faz, seus limites e o que ela concede (equipamentos, elemento, mecânicas próprias...)."
-        />
-        <TecnicaMotorEditor
-          efeitos={derived.tecnicaEfeitos}
-          onChange={(v) => patchCore({ tecnicaEfeitos: v })}
-        />
-      </div>
+      }
+    >
+      <FieldLabel>Funcionamento Básico</FieldLabel>
+      <TextoLongo
+        value={draft.core.tecnicaDescricao}
+        onChange={(v) => patchCore({ tecnicaDescricao: v })}
+        placeholder="Descreva o núcleo da técnica: o que ela faz, seus limites e o que ela concede (equipamentos, elemento, mecânicas próprias...)."
+      />
+      <TecnicaMotorEditor
+        efeitos={derived.tecnicaEfeitos}
+        onChange={(v) => patchCore({ tecnicaEfeitos: v })}
+      />
     </Card>
   );
 }
@@ -3323,18 +3460,9 @@ function patchNivelFeitico(feitico, n) {
   return { nivel: n };
 }
 
-/* Texto curto do valor computado (cabeçalho e tiles). */
-function formatAuxValor(calc) {
-  if (!calc) return "-";
-  if (calc.multiplos) return `${calc.efeitos.length} Efeito${calc.efeitos.length === 1 ? "" : "s"}`;
-  if (!calc.disponivel) return "-";
-  if (calc.especial) return calc.especial;
-  if (calc.dado) return calc.notacao;
-  if (calc.valor == null) return "-";
-  const sinal = calc.valor > 0 ? "+" : "";
-  const num = String(calc.valor).replace(".", ",");
-  return `${sinal}${num}${calc.unidade ? ` ${calc.unidade}` : ""}`;
-}
+/* O `formatAuxValor` subiu para afty-feiticos.js em 2026-08-03, quando o Preview
+   passou a listar os Feitiços: com dois consumidores, uma cópia local aqui
+   divergiria do motor na primeira errata. Vem pelo import lá de cima. */
 
 /* Ações concretas oferecidas para um efeito, já sem o pseudo-valor "padrao" e
    na ordem da hierarquia. Os dois modos passam a mostrar a mesma coisa: nomes
@@ -4630,7 +4758,10 @@ function TabInformacoes({ draft, derived, patch, patchCore, patchAttr, patchNive
   // A Origem Restringido força o Tipo (e a Especialização) em Restringido.
   // É o único ponto em que os dois eixos se tocam: fora dele, Tipo e
   // Especialização são independentes, apesar de compartilharem nomes.
+  // ⚠ A trava vale nos DOIS sentidos (autor, 2026-08-03), então a lista de
+  // Tipos também esconde o Restringido para quem não tem a origem.
   const tipoTravado = tipoObrigatorio(draft.core.origem?.id);
+  const tipos = tiposDisponiveis(draft.core.origem?.id);
   return (
     <>
       <Card title="Valores Básicos">
@@ -4644,7 +4775,7 @@ function TabInformacoes({ draft, derived, patch, patchCore, patchAttr, patchNive
             <Select
               value={draft.core.tipo}
               onChange={(v) => patchCore({ tipo: v })}
-              options={AFTY_TIPOS}
+              options={tipos}
               disabled={!!tipoTravado}
             />
           </div>
@@ -5679,7 +5810,10 @@ function HabilidadeCard({ habilidade, escolhida, acesso, nivelEspec, escolhaEsta
 const TALENTOS_TAB = "__talentos__";
 
 function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, toggleEscolhaHabilidade, toggleTalento, toggleEscolhaTalento }) {
-  const { escolhidas, escolhas, total, gastos, excedeu, niveisPorEspec } = derived.habilidades;
+  const {
+    escolhidas, escolhas, gastosNoComum, comum, exclusivasTalento, exclusivasUsadas,
+    excedeu, niveisPorEspec,
+  } = derived.habilidades;
   const especs = derived.especializacoes.escolhidas;
   const talentosEscolhidos = derived.talentos.escolhidas;
 
@@ -5745,10 +5879,21 @@ function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, toggleEsc
           <GraduationCap className="w-3 h-3 text-purple-400 flex-shrink-0" />
           <span className="text-[9px] uppercase tracking-wider text-slate-400">Habilidades</span>
           <span className="font-mono text-xs font-bold tabular-nums whitespace-nowrap">
-            <span className={excedeu ? "text-rose-400" : "text-white"}>{gastos}</span>
+            <span className={excedeu ? "text-rose-400" : "text-white"}>{gastosNoComum}</span>
             <span className="text-slate-600"> / </span>
-            <span className="text-white">{total}</span>
+            <span className="text-white">{comum}</span>
           </span>
+          {/* Vagas exclusivas de Talento aparecem SEPARADAS, mesma anatomia do
+              ContadorHabilidades: somá-las ao contador faria parecer que sobra
+              espaço para Habilidade de Especialização, e não sobra. */}
+          {exclusivasTalento > 0 && (
+            <span
+              className="font-mono text-[11px] font-bold text-purple-300 tabular-nums"
+              title="Vagas exclusivas de Talento, que não servem para Habilidade de Especialização"
+            >
+              +{exclusivasUsadas} / {exclusivasTalento}
+            </span>
+          )}
         </div>
       }
     >
@@ -5887,47 +6032,6 @@ function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, toggleEsc
    Reusa o vocabulário aprovado: linha de 32px que abre sob demanda, chips
    de requisito com cadeado, e MEDIDOR (não campo numérico) para as
    melhorias que o livro deixa repetir. */
-
-/** Medidor de faixas: repetições de uma Melhoria Superior, ou a proficiência
-    (Treinado / Mestre) de uma perícia. `rotulos` nomeia cada segmento no
-    tooltip, e sem ele o segmento é a enésima vez. `bloqueado` deixa o medidor
-    só de leitura (ataque Amaldiçoado, que é sempre treinado).
-
-    `concedido` (opcional) é a faixa que veio de FORA, tipicamente do Treino de
-    Perícia. Ela pinta de VERDE os segmentos acima do que a ficha escolheu, e o
-    medidor segue clicável: marcar por cima converte a concessão em bônus
-    numérico, que é como o livro trata o "Caso já seja". */
-function VezesGauge({ vezes, max, nome, onSet, rotulos, bloqueado, concedido = 0 }) {
-  return (
-    <span className="flex items-center gap-0.5 flex-shrink-0" role="group" aria-label={`${nome}: faixa ${Math.max(vezes, concedido)} de ${max}`}>
-      {Array.from({ length: max }, (_, i) => i + 1).map((n) => {
-        const proprio = n <= vezes;
-        const deFora = !proprio && n <= concedido;
-        return (
-          <button
-            key={n}
-            type="button"
-            /* Clicar no segmento que já é o último desce um, então dá para
-               voltar de 3 para 2 sem passar pelo zero. */
-            onClick={() => !bloqueado && onSet(n === vezes ? n - 1 : n)}
-            disabled={bloqueado}
-            aria-pressed={proprio || deFora}
-            title={
-              deFora
-                ? `${rotulos?.[n - 1] ?? `${n}ª vez`} (concedido, clique para treinar por conta)`
-                : (rotulos?.[n - 1] ?? `${n}ª vez`)
-            }
-            className={`w-3.5 h-3.5 rounded-sm border transition-colors ${
-              proprio ? "bg-purple-600 border-purple-500"
-                : deFora ? "bg-emerald-600 border-emerald-500 hover:bg-emerald-500"
-                : "border-slate-700 hover:border-purple-600"
-            } ${bloqueado ? "cursor-not-allowed" : ""}`}
-          />
-        );
-      })}
-    </span>
-  );
-}
 
 function AltoNivelCard({ item, escolhida, acesso, escolhaEstado, vezes, onToggle, onSetVezes, onToggleOpcao, ctxReq }) {
   const [open, setOpen] = useState(false);
@@ -6711,7 +6815,7 @@ function SecaoRecolhivel({ titulo, resumo, defaultOpen = false, children }) {
    edição devolve só os campos de dado. Aplicado enquanto a Ferramenta está
    equipada.
 
-   ⚠ Passou a usar o CanalPicker do Motor em 2026-07-30, com os 48 canais, no
+   ⚠ Passou a usar o CanalPicker do Motor em 2026-07-30, com o catálogo inteiro de canais, no
    lugar do `<select>` de sete. A Habilidade Única é criada com o Narrador e não
    tinha por que escrever em menos canais que a Técnica. Foi o que destravou o
    Acerto, que a lista curta não tinha.
@@ -8337,29 +8441,6 @@ function EfeitosSecao({ titulo, itens, resolvidos, render, onAdd, addLabel }) {
   );
 }
 
-/* Chip booleano (liga/desliga). */
-function BoolChip({ ativo, onToggle, bloqueado, lockTitle, children }) {
-  return (
-    <button
-      type="button"
-      onClick={() => !bloqueado && onToggle()}
-      disabled={bloqueado}
-      aria-pressed={ativo}
-      title={bloqueado ? lockTitle : undefined}
-      className={`inline-flex items-center gap-1 text-[12px] font-semibold px-2.5 py-1 rounded-lg border transition-colors ${
-        ativo
-          ? "bg-purple-700 border-purple-600 text-white"
-          : bloqueado
-            ? "border-slate-800 text-slate-600 cursor-not-allowed"
-            : "border-slate-700 text-slate-300 hover:text-white hover:border-slate-600"
-      }`}
-    >
-      {bloqueado && <Lock className="w-2.5 h-2.5" />}
-      {children}
-    </button>
-  );
-}
-
 /* Campo de expressão da DSL, com validação e prévia do valor resolvido. */
 function ExprField({ value, onChange, resultado }) {
   const check = validateExpression(value || "");
@@ -9247,7 +9328,22 @@ function AftyPreview({ draft, derived }) {
   // Preview de linha morta.
   const periciasDominadas = (derived.testes?.pericias ?? []).filter((x) => x.prof);
   const linhasDano = derived.dano?.entradas ?? [];
+  const linhasCura = derived.cura?.linhas ?? [];
   const carga = derived.carga;
+  // ⚠ Os TRs vêm TODOS, ao contrário das perícias: são cinco, todo mundo rola
+  // os cinco, e um TR ausente da ficha é justamente o número que o mestre
+  // procura. Perícia sem faixa é ruído, TR sem faixa é informação.
+  const resistencias = derived.testes?.resistencias ?? [];
+  const ataques = derived.testes?.ataques ?? [];
+  // Feitiços já resumidos pelo motor (derived.feiticos.lista): o Preview não
+  // recalcula nada, só exibe.
+  const feiticosLista = derived.feiticos?.lista ?? [];
+  // Trilhas que a ORIGEM alcança (a Maldição não tem Energia Reversa), e só as
+  // que têm nível: uma fileira de zeros não diz nada. Some inteira no
+  // Restringido, que não tem Nível de Aptidão nenhum.
+  const trilhas = (derived.trilhasAptidao ?? [])
+    .map((t) => ({ ...t, nivel: derived.aptidao?.efetivo?.[t.key] ?? 0 }))
+    .filter((t) => t.nivel > 0);
 
   const chips = (
     <div className="flex flex-wrap gap-1.5">
@@ -9352,6 +9448,154 @@ function AftyPreview({ draft, derived }) {
                     </span>
                   )}
                   <span className="font-mono text-[12px] font-bold tabular-nums text-white flex-shrink-0">{e.texto}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Cura: mesmo desenho do Dano, resumida da aba Habilidades. A rolagem
+            é a do USO INTEIRO aqui (`textoNoMaximo`), e não a por ponto: quem
+            lê o Preview quer o teto, e o custo por ponto não cabe na linha. */}
+        {linhasCura.length > 0 && (
+          <div className="mt-4">
+            <div className="text-[10px] uppercase tracking-wider text-slate-400 mb-1.5">Cura</div>
+            <div className="space-y-1">
+              {linhasCura.map((l) => (
+                <div key={l.id} className="flex items-baseline gap-2 bg-slate-950/60 border border-slate-800 rounded-lg px-2.5 py-1.5">
+                  <span className="flex-1 min-w-0 text-[11px] text-slate-300 truncate" title={l.nome}>{l.nome}</span>
+                  <span className="text-[10px] text-slate-500 flex-shrink-0">{l.alcance}</span>
+                  {l.usos != null && (
+                    <span className="font-mono text-[11px] tabular-nums text-slate-400 flex-shrink-0" title="Usos por descanso">
+                      {l.usos}×
+                    </span>
+                  )}
+                  <span className="font-mono text-[12px] font-bold tabular-nums text-emerald-200 flex-shrink-0">
+                    {l.textoNoMaximo}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Testes de Resistência: os cinco, sempre. Mestre em roxo (só ele
+            critica), treinado em cinza claro, sem faixa em cinza apagado. */}
+        {resistencias.length > 0 && (
+          <div className="mt-4">
+            <div className="text-[10px] uppercase tracking-wider text-slate-400 mb-1.5">Resistências</div>
+            <div className="grid grid-cols-2 gap-1">
+              {resistencias.map((r, i) => (
+                <div
+                  key={r.value}
+                  className={`relative group flex items-baseline gap-1.5 rounded-lg border px-2 py-1 ${
+                    r.prof === "mestre"
+                      ? "border-purple-700 bg-purple-950/40"
+                      : "border-slate-800 bg-slate-950/60"
+                  }`}
+                >
+                  <span className={`flex-1 min-w-0 text-[10px] truncate ${r.prof ? "text-slate-200" : "text-slate-500"}`}>
+                    {r.label}
+                  </span>
+                  <span className={`font-mono text-[11px] font-bold tabular-nums flex-shrink-0 ${
+                    r.prof === "mestre" ? "text-purple-200" : r.prof ? "text-white" : "text-slate-400"
+                  } ${r.partes?.length ? "cursor-help" : ""}`}>
+                    {sinalDe(r.bonus)}
+                  </span>
+                  {r.partes?.length > 0 && (
+                    <PainelDeFontes partes={r.partes} total={r.bonus} ancora={i % 2 === 0 ? "esquerda" : "direita"} />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Jogadas de Ataque por categoria. São três, e não têm faixa de Mestre:
+            a fórmula do autor só testa "treinado". */}
+        {ataques.length > 0 && (
+          <div className="mt-4">
+            <div className="text-[10px] uppercase tracking-wider text-slate-400 mb-1.5">Ataque</div>
+            <div className="grid grid-cols-3 gap-1">
+              {ataques.map((a, i) => (
+                <div
+                  key={a.id}
+                  className={`relative group rounded-lg border px-2 py-1 ${
+                    a.treinado ? "border-slate-700 bg-slate-950/60" : "border-slate-800 bg-slate-950/40"
+                  }`}
+                >
+                  <div className={`text-[9px] uppercase tracking-wider truncate ${a.treinado ? "text-slate-400" : "text-slate-600"}`} title={a.nome}>
+                    {a.nome}
+                  </div>
+                  <div className={`font-mono text-[13px] font-bold tabular-nums ${
+                    a.treinado ? "text-white" : "text-slate-400"
+                  } ${a.partes?.length ? "cursor-help" : ""}`}>
+                    {sinalDe(a.bonus)}
+                  </div>
+                  {a.partes?.length > 0 && (
+                    <PainelDeFontes partes={a.partes} total={a.bonus} ancora={i === 2 ? "direita" : "esquerda"} />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Níveis de Aptidão, só as trilhas com nível. Some inteira num
+            Restringido, que não tem Nível de Aptidão nenhum. */}
+        {trilhas.length > 0 && (
+          <div className="mt-4">
+            <div className="text-[10px] uppercase tracking-wider text-slate-400 mb-1.5">Níveis de Aptidão</div>
+            <div className="flex flex-wrap gap-1">
+              {trilhas.map((t) => (
+                <span
+                  key={t.key}
+                  title={`Nível de Aptidão em ${t.label}`}
+                  className="inline-flex items-baseline gap-1 text-[10px] px-1.5 py-0.5 rounded border border-sky-800 bg-sky-950/40 text-sky-200"
+                >
+                  {t.key.toUpperCase()}
+                  <span className="font-mono tabular-nums font-semibold text-white">{t.nivel}</span>
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Feitiços criados, já resumidos pelo motor. O nível vira chip, o
+            custo em PE fica em roxo (mesma cor da pilha de energia na aba). */}
+        {feiticosLista.length > 0 && (
+          <div className="mt-4">
+            <div className="text-[10px] uppercase tracking-wider text-slate-400 mb-1.5">Feitiços</div>
+            <div className="space-y-1">
+              {feiticosLista.map((f) => (
+                <div key={f.id} className="flex items-baseline gap-1.5 bg-slate-950/60 border border-slate-800 rounded-lg px-2.5 py-1.5">
+                  <span
+                    className={`flex-1 min-w-0 text-[11px] truncate ${f.nome ? "text-slate-300" : "text-slate-500"}`}
+                    title={f.nome || "Feitiço Sem Nome"}
+                  >
+                    {f.nome || "Feitiço Sem Nome"}
+                  </span>
+                  {f.variacao && (
+                    <span className="text-[9px] uppercase tracking-wider text-slate-500 flex-shrink-0" title="Variação de liberação, não gasta vaga">
+                      Var.
+                    </span>
+                  )}
+                  {f.avisos.length > 0 && (
+                    <AlertTriangle className="w-3 h-3 text-amber-400 flex-shrink-0" aria-hidden="true" title={f.avisos.join("\n")} />
+                  )}
+                  <span className="text-[9px] font-semibold px-1 py-0.5 rounded border border-purple-800/60 bg-purple-950/40 text-purple-300 flex-shrink-0 whitespace-nowrap">
+                    {f.nivelLabel}
+                  </span>
+                  {f.valor != null && (
+                    <span className="font-mono text-[11px] font-bold tabular-nums text-white flex-shrink-0" title={f.valorLabel}>
+                      {f.valor}
+                    </span>
+                  )}
+                  {f.custoPE != null && (
+                    <span className="font-mono text-[10px] tabular-nums text-sky-400 flex-shrink-0" title="Custo em PE">
+                      {f.custoPE} PE
+                    </span>
+                  )}
                 </div>
               ))}
             </div>
