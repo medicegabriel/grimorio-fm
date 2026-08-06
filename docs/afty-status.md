@@ -105,6 +105,21 @@ Estado atual do sistema Afty (atualizado 2026-07-17). Leia junto com:
 
 ---
 
+## 🆕 PENDÊNCIAS DE UI (2026-08-06)
+
+1. **RD Física:** o hover do valor não mostra as fontes que compõem a RD. Deve listar as fontes no
+   mesmo padrão dos demais valores derivados.
+2. **Motor de Automação de efeitos especiais:** quando existem dois efeitos diferentes, as linhas
+   ficam desalinhadas e não permanecem rentes entre si. Ajustar o layout para manter a mesma
+   estrutura e o mesmo alinhamento entre os efeitos.
+3. **Alma Livre:** precisa ser programada.
+4. **Imagem do personagem na ficha final:** encontrar uma apresentação melhor e com mais destaque
+   do que a imagem pequena e circular no canto.
+5. **Modificador de Força:** um personagem com Força 30 está retornando modificador +3 em vez do
+   valor de `mod_forca` correspondente ao atributo.
+
+---
+
 ## 🎯 PENDÊNCIAS DE ESPECIALIZAÇÕES (lista de retomada)
 
 Fechada em 2026-07-22, quando as 6 especializações e os Talentos foram transcritos. **Tudo aqui
