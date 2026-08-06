@@ -103,6 +103,9 @@ export const AFTY_TAMANHOS = [
 export function mesclaFichaAfty(existente) {
   const blank = createBlankAfty();
   if (!existente) return blank;
+  const oficios = Array.isArray(existente.periciaOficios)
+    ? existente.periciaOficios
+    : (existente.periciaOficio ? [existente.periciaOficio] : []);
   return {
     ...blank,
     ...existente,
@@ -112,6 +115,7 @@ export function mesclaFichaAfty(existente) {
     attrLimite: { ...blank.attrLimite, ...(typeof existente.attrLimite === "object" ? existente.attrLimite : {}) },
     aptidoes: { ...blank.aptidoes, ...(existente.aptidoes || {}) },
     formulaOverrides: { ...(existente.formulaOverrides || {}) },
+    periciaOficios: oficios,
   };
 }
 
@@ -184,7 +188,12 @@ export function createBlankAfty() {
     // Proficiência é { [id]: "treinado" | "mestre" }. Ataque só tem treinado
     // (o Amaldiçoado é sempre treinado, nem entra no mapa). Ver afty-pericias.js.
     pericias: {},              // { [periciaId]: "treinado" | "mestre" }
-    periciaOficio: "",         // subcategoria escolhida ao treinar Ofício (Ferreiro...)
+    // `null` usa as perícias padrão do livro. Depois da primeira edição, a
+    // ordem explícita também diz quais complementares estão ativas.
+    periciasOrdem: null,       // [periciaId, ...]
+    periciasPersonalizadas: [], // [{ id, nome, atributo }]
+    periciaOficio: "",         // legado: migrado para periciaOficios ao abrir
+    periciaOficios: [],         // subcategorias de Ofício escolhidas na ficha
     periciasBonus: 0,          // vagas extras vindas de fora ("+ OUTROS" da fórmula)
     resistenciasProf: {},      // { [trValue]: "treinado" | "mestre" }
     ataquesProf: {},           // { corpo: true, distancia: true }

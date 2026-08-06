@@ -3,7 +3,7 @@ import {
   Save, ChevronLeft, ChevronDown, Wand2, Sparkles, FlaskConical,
   Dumbbell, GraduationCap, BookOpen, Check, ArrowRight, Lock, Plus, X, Zap,
   Copy, ArrowUp, ArrowDown, Heart, Shield, Footprints, AlertTriangle, Star, Swords,
-  Trash2, Image as ImageIcon, Eye, Crosshair, RotateCcw,
+  Trash2, Image as ImageIcon, Eye, Crosshair, RotateCcw, Pencil,
 } from "lucide-react";
 
 import { FieldLabel, TextInput, TextArea, Select, NumberInput, StatField, ExpandableText } from "../../components/builder-controls";
@@ -49,7 +49,10 @@ import {
   MELHORIAS_SUPERIORES, HABILIDADES_LENDARIAS, avaliarAcessoAltoNivel,
 } from "./afty-alto-nivel";
 import { HABILIDADES_GERAIS } from "./afty-gerais";
-import { AFTY_PERICIAS, AFTY_ATAQUES, AFTY_MANOBRAS, EMPURRAO_BASE } from "./afty-pericias";
+import {
+  AFTY_PERICIAS, AFTY_ATAQUES, AFTY_MANOBRAS, EMPURRAO_BASE,
+  idsPericiasAtivas, novaPericiaPersonalizada, sugestoesPericias,
+} from "./afty-pericias";
 import { rotuloBloco } from "./afty-cura";
 // Os canais do Motor, já agrupados por assunto para o <optgroup> do editor
 // do Funcionamento Básico.
@@ -371,6 +374,52 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
       const next = { ...mapa };
       if (prof) next[id] = prof; else delete next[id];
       return { ...d, [campo]: next };
+    });
+  const adicionarPericiaPersonalizada = () => {
+    const nova = novaPericiaPersonalizada();
+    setDraft((d) => {
+      const personalizadas = Array.isArray(d.periciasPersonalizadas) ? d.periciasPersonalizadas : [];
+      return {
+        ...d,
+        periciasPersonalizadas: [...personalizadas, nova],
+        periciasOrdem: [...idsPericiasAtivas(d), nova.id],
+      };
+    });
+    return nova.id;
+  };
+  const adicionarPericiaDoCatalogo = (id) =>
+    setDraft((d) => {
+      const ordem = idsPericiasAtivas(d);
+      return ordem.includes(id) ? d : { ...d, periciasOrdem: [...ordem, id] };
+    });
+  const editarPericiaPersonalizada = (id, partial) =>
+    setDraft((d) => ({
+      ...d,
+      periciasPersonalizadas: (Array.isArray(d.periciasPersonalizadas) ? d.periciasPersonalizadas : [])
+        .map((p) => (p.id === id ? { ...p, ...partial } : p)),
+    }));
+  const moverPericia = (id, delta) =>
+    setDraft((d) => {
+      const ordem = idsPericiasAtivas(d);
+      const de = ordem.indexOf(id);
+      const para = de + delta;
+      if (de < 0 || para < 0 || para >= ordem.length) return d;
+      const next = [...ordem];
+      [next[de], next[para]] = [next[para], next[de]];
+      return { ...d, periciasOrdem: next };
+    });
+  const removerPericia = (id) =>
+    setDraft((d) => {
+      const pericias = { ...(d.pericias && typeof d.pericias === "object" ? d.pericias : {}) };
+      delete pericias[id];
+      return {
+        ...d,
+        pericias,
+        periciasOrdem: idsPericiasAtivas(d).filter((x) => x !== id),
+        periciasPersonalizadas: (Array.isArray(d.periciasPersonalizadas) ? d.periciasPersonalizadas : [])
+          .filter((p) => p.id !== id),
+        ...(id === "oficio" ? { periciaOficio: "", periciaOficios: [] } : {}),
+      };
     });
   const toggleAtaqueProf = (id) =>
     setDraft((d) => {
@@ -709,7 +758,20 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
         <div className="lg:col-span-2 space-y-4">
           {tabAtiva === "identidade" && <TabIdentidade draft={draft} derived={derived} patch={patch} patchCore={patchCore} setOrigemBonus={setOrigemBonus} setOrigemId={setOrigemId} setOrigemCla={setOrigemCla} toggleEscolhaOrigem={toggleEscolhaOrigem} setOrigemPool={setOrigemPool} />}
           {tabAtiva === "informacoes" && <TabInformacoes draft={draft} derived={derived} patch={patch} patchCore={patchCore} patchAttr={patchAttr} patchNivel={patchNivel} />}
-          {tabAtiva === "pericias" && <TabPericias draft={draft} derived={derived} patch={patch} setProficiencia={setProficiencia} toggleAtaqueProf={toggleAtaqueProf} />}
+          {tabAtiva === "pericias" && (
+            <TabPericias
+              draft={draft}
+              derived={derived}
+              patch={patch}
+              setProficiencia={setProficiencia}
+              toggleAtaqueProf={toggleAtaqueProf}
+              adicionarPericiaPersonalizada={adicionarPericiaPersonalizada}
+              adicionarPericiaDoCatalogo={adicionarPericiaDoCatalogo}
+              editarPericiaPersonalizada={editarPericiaPersonalizada}
+              moverPericia={moverPericia}
+              removerPericia={removerPericia}
+            />
+          )}
           {tabAtiva === "habilidades" && <TabHabilidades draft={draft} derived={derived} patchCore={patchCore} toggleArmaDedicada={toggleArmaDedicada} addFeitico={addFeitico} removeFeitico={removeFeitico} patchFeitico={patchFeitico} duplicarFeitico={duplicarFeitico} setGeralVezes={setGeralVezes} addDominio={addDominio} removeDominio={removeDominio} patchDominio={patchDominio} setDominioAtivo={setDominioAtivo} />}
           {tabAtiva === "especializacoes" && <TabEspecializacoes draft={draft} derived={derived} setEspecializacoes={setEspecializacoes} toggleHabilidade={toggleHabilidade} toggleEscolhaHabilidade={toggleEscolhaHabilidade} toggleTalento={toggleTalento} toggleEscolhaTalento={toggleEscolhaTalento} setMelhoriaVezes={setMelhoriaVezes} toggleLendaria={toggleLendaria} toggleEscolhaAltoNivel={toggleEscolhaAltoNivel} />}
           {tabAtiva === "aptidoes" && <TabAptidoes draft={draft} derived={derived} setAptidaoNivel={setAptidaoNivel} toggleAptidao={toggleAptidao} setAptidaoOpcao={setAptidaoOpcao} />}
@@ -758,9 +820,34 @@ const ABREV_ATTR = Object.fromEntries(AFTY_ATTRS.map((a) => [a.key, a.abbr]));
 const PROF_ROTULOS = ["Treinado", "Mestre"];
 const PROF_POR_INDICE = [null, "treinado", "mestre"];
 const INDICE_POR_PROF = { treinado: 1, mestre: 2 };
+const OFICIO_OPCOES = [...new Set(catalogoDoTipo("kit").map((item) => item.oficio).filter(Boolean))];
 
-function TabPericias({ draft, derived, patch, setProficiencia, toggleAtaqueProf }) {
+function TabPericias({
+  draft, derived, patch, setProficiencia, toggleAtaqueProf,
+  adicionarPericiaPersonalizada, adicionarPericiaDoCatalogo,
+  editarPericiaPersonalizada, moverPericia, removerPericia,
+}) {
   const { pericias, resistencias, ataques, manobras, orcamento } = derived.testes;
+  const [mostrarSugestoes, setMostrarSugestoes] = useState(false);
+  const [periciaEditando, setPericiaEditando] = useState(null);
+  const [oficiosAbertos, setOficiosAbertos] = useState(false);
+  const sugestoes = sugestoesPericias(draft);
+  const personalizadas = Array.isArray(draft.periciasPersonalizadas) ? draft.periciasPersonalizadas : [];
+  const oficios = [...new Set((Array.isArray(draft.periciaOficios)
+    ? draft.periciaOficios
+    : (draft.periciaOficio ? [draft.periciaOficio] : []))
+    .map((nome) => String(nome || "").trim()).filter(Boolean))];
+  const alternarOficio = (nome) => {
+    const next = oficios.includes(nome) ? oficios.filter((item) => item !== nome) : [...oficios, nome];
+    patch({ periciaOficios: next, periciaOficio: "" });
+  };
+  const finalizarEdicao = (p) => {
+    const bruta = personalizadas.find((item) => item.id === p.id);
+    if (bruta && !String(bruta.nome || "").trim()) {
+      editarPericiaPersonalizada(p.id, { nome: "Nova perícia" });
+    }
+    setPericiaEditando(null);
+  };
 
   const linhaTR = (r) => (
     <TesteLinha
@@ -826,6 +913,43 @@ function TabPericias({ draft, derived, patch, setProficiencia, toggleAtaqueProf 
             Você treinou mais do que as vagas permitem. Remova um treino ou eleve Inteligência, Sabedoria ou o ND.
           </p>
         )}
+        <div className="flex flex-wrap items-center gap-2 mb-3">
+          <button
+            type="button"
+            onClick={() => setPericiaEditando(adicionarPericiaPersonalizada())}
+            className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1.5 rounded-lg border border-purple-700/70 bg-purple-950/40 text-purple-200 hover:bg-purple-900/50 transition-colors"
+          >
+            <Plus className="w-3.5 h-3.5" /> Nova perícia
+          </button>
+          {sugestoes.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setMostrarSugestoes((v) => !v)}
+              aria-expanded={mostrarSugestoes}
+              className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1.5 rounded-lg border border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800 transition-colors"
+            >
+              <BookOpen className="w-3.5 h-3.5" /> Sugestões {sugestoes.length}
+            </button>
+          )}
+        </div>
+
+        {mostrarSugestoes && sugestoes.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mb-3 rounded-lg border border-slate-800 bg-slate-950/40 p-2">
+            {sugestoes.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => adicionarPericiaDoCatalogo(p.id)}
+                className="inline-flex items-center gap-1 px-2 py-1 rounded text-[11px] bg-slate-900 hover:bg-purple-900/40 border border-slate-800 hover:border-purple-700 text-slate-300 hover:text-white transition-colors"
+                title={p.nome}
+              >
+                <Plus className="w-3 h-3" /> {p.nome}
+                <span className="text-[9px] uppercase text-slate-500">{ABREV_ATTR[p.atributo]}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Duas colunas, não uma lista longa (autor, 2026-07-27). São DUAS
             listas independentes, e não um grid de duas colunas: numa grade, a
             linha que abre a descrição esticaria a célula vizinha junto. Assim,
@@ -835,25 +959,129 @@ function TabPericias({ draft, derived, patch, setProficiencia, toggleAtaqueProf 
           {[pericias.slice(0, Math.ceil(pericias.length / 2)),
             pericias.slice(Math.ceil(pericias.length / 2))].map((coluna, i) => (
             <div key={i} className="space-y-1">
-              {coluna.map((p) => (
-                <React.Fragment key={p.id}>
-                  <TesteLinha
-                    item={p}
-                    onCicla={(prof) => setProficiencia("pericias", p.id, prof)}
-                  />
-                  {/* Ofício pede uma subcategoria ao ser treinado. Sem o
-                      abrir/fechar, o campo mora logo abaixo da linha dele. */}
-                  {p.subcategoria && p.prof && (
-                    <div className="pl-[26px]">
-                      <TextInput
-                        value={draft.periciaOficio || ""}
-                        onChange={(v) => patch({ periciaOficio: v })}
-                        placeholder="Subcategoria: Ferreiro, Farmacêutico..."
-                      />
-                    </div>
-                  )}
-                </React.Fragment>
-              ))}
+              {coluna.map((p) => {
+                const bruta = p.personalizada
+                  ? (personalizadas.find((item) => item.id === p.id) ?? p)
+                  : null;
+                const editando = periciaEditando === p.id;
+                const editandoOficio = p.id === "oficio" && oficiosAbertos;
+                const concluir = () => {
+                  if (p.personalizada) finalizarEdicao(p);
+                  if (p.id === "oficio") setOficiosAbertos(false);
+                };
+                return (
+                  <React.Fragment key={p.id}>
+                    <TesteLinha
+                      item={p}
+                      onCicla={(prof) => setProficiencia("pericias", p.id, prof)}
+                      nomeConteudo={editando ? (
+                        <input
+                          value={bruta?.nome ?? ""}
+                          onChange={(e) => editarPericiaPersonalizada(p.id, { nome: e.target.value })}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") concluir();
+                            if (e.key === "Escape") setPericiaEditando(null);
+                          }}
+                          className="h-6 min-w-0 flex-1 rounded border border-purple-700 bg-slate-950 px-1.5 text-[12px] font-semibold text-slate-100 outline-none focus:border-purple-400"
+                          aria-label="Nome da perícia"
+                          autoFocus
+                        />
+                      ) : p.id === "oficio" ? (
+                        <button
+                          type="button"
+                          onClick={() => setOficiosAbertos((aberto) => !aberto)}
+                          className="min-w-0 truncate text-left text-[12px] font-semibold text-slate-100 hover:text-purple-200"
+                          title={p.nome}
+                        >
+                          {p.nome}
+                        </button>
+                      ) : null}
+                      atributoConteudo={editando ? (
+                        <select
+                          value={bruta?.atributo || "inteligencia"}
+                          onChange={(e) => editarPericiaPersonalizada(p.id, { atributo: e.target.value })}
+                          className="h-6 w-12 rounded border border-slate-700 bg-slate-950 px-1 text-[9px] font-semibold text-slate-300 outline-none focus:border-purple-500"
+                          aria-label={`Atributo de ${p.nome}`}
+                        >
+                          {AFTY_ATTRS.map((a) => <option key={a.key} value={a.key}>{a.abbr}</option>)}
+                        </select>
+                      ) : null}
+                      edicao={(p.personalizada || p.id === "oficio") ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (editando || editandoOficio) concluir();
+                            else if (p.personalizada) setPericiaEditando(p.id);
+                            else setOficiosAbertos(true);
+                          }}
+                          className="w-5 h-5 rounded flex-shrink-0 text-slate-500 hover:text-purple-300 hover:bg-slate-800"
+                          title={editando || editandoOficio ? "Salvar" : (p.id === "oficio" ? "Selecionar Ofícios" : "Editar perícia")}
+                          aria-label={editando || editandoOficio ? `Salvar ${p.nome}` : `Editar ${p.nome}`}
+                        >
+                          {editando || editandoOficio
+                            ? <Check className="w-3 h-3 mx-auto" />
+                            : <Pencil className="w-3 h-3 mx-auto" />}
+                        </button>
+                      ) : null}
+                      acoes={(
+                        <div className="flex items-center gap-px flex-shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => moverPericia(p.id, -1)}
+                            disabled={pericias[0]?.id === p.id}
+                            className="w-5 h-5 rounded text-slate-600 hover:text-slate-300 hover:bg-slate-800 disabled:opacity-25"
+                            title="Mover para cima"
+                            aria-label={`Mover ${p.nome} para cima`}
+                          >
+                            <ArrowUp className="w-3 h-3 mx-auto" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => moverPericia(p.id, 1)}
+                            disabled={pericias[pericias.length - 1]?.id === p.id}
+                            className="w-5 h-5 rounded text-slate-600 hover:text-slate-300 hover:bg-slate-800 disabled:opacity-25"
+                            title="Mover para baixo"
+                            aria-label={`Mover ${p.nome} para baixo`}
+                          >
+                            <ArrowDown className="w-3 h-3 mx-auto" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => removerPericia(p.id)}
+                            className="w-5 h-5 rounded text-slate-600 hover:text-rose-400 hover:bg-rose-950/40"
+                            title="Remover da ficha"
+                            aria-label={`Remover ${p.nome}`}
+                          >
+                            <X className="w-3 h-3 mx-auto" />
+                          </button>
+                        </div>
+                      )}
+                    />
+                    {editandoOficio && (
+                      <div className="flex flex-wrap gap-1 rounded-lg border border-slate-800 bg-slate-950/60 p-1.5">
+                        {OFICIO_OPCOES.map((nome) => {
+                          const ativo = oficios.includes(nome);
+                          return (
+                            <button
+                              key={nome}
+                              type="button"
+                              onClick={() => alternarOficio(nome)}
+                              aria-pressed={ativo}
+                              className={`rounded border px-2 py-1 text-[10px] font-semibold transition-colors ${
+                                ativo
+                                  ? "border-purple-600 bg-purple-950/60 text-purple-200"
+                                  : "border-slate-700 bg-slate-900 text-slate-400 hover:text-slate-200"
+                              }`}
+                            >
+                              {nome}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </React.Fragment>
+                );
+              })}
             </div>
           ))}
         </div>
@@ -912,7 +1140,9 @@ function ContadorVagas({ orcamento }) {
    VERDE = faixa concedida de fora (Treino de Perícia). Continua CLICÁVEL: o
    medidor mexe na proficiência ESCOLHIDA, então marcar por cima do verde
    converte a concessão no bônus numérico (+1 Treinado, +2 Mestre). */
-function TesteLinha({ item, onCicla, maxProf = 2, travado, tag }) {
+function TesteLinha({
+  item, onCicla, maxProf = 2, travado, tag, edicao, acoes, nomeConteudo, atributoConteudo,
+}) {
   const escolhido = travado ? maxProf : (INDICE_POR_PROF[item.profEscolhida] ?? 0);
   const resolvido = travado ? maxProf : (INDICE_POR_PROF[item.prof] ?? 0);
   const soConcedido = resolvido > escolhido;
@@ -935,18 +1165,24 @@ function TesteLinha({ item, onCicla, maxProf = 2, travado, tag }) {
         />
 
         <span className="flex-1 min-w-0 flex items-center gap-x-2 overflow-hidden">
-          <span className="text-[12px] font-semibold text-slate-100 truncate" title={item.nome}>
-            {item.nome}
-          </span>
-          <span className="text-[9px] uppercase tracking-wider text-slate-500 flex-shrink-0">
-            {ABREV_ATTR[item.atributo] || ""}
-          </span>
+          {nomeConteudo ?? (
+            <span className="text-[12px] font-semibold text-slate-100 truncate" title={item.nome}>
+              {item.nome}
+            </span>
+          )}
+          {atributoConteudo ?? (
+            <span className="text-[9px] uppercase tracking-wider text-slate-500 flex-shrink-0">
+              {ABREV_ATTR[item.atributo] || ""}
+            </span>
+          )}
           {tag && (
             <span className="text-[10px] font-medium text-purple-300 whitespace-nowrap flex-shrink-0">{tag}</span>
           )}
         </span>
 
+        {edicao}
         <ValorComFontes valor={item.bonus} partes={item.partes} />
+        {acoes}
       </div>
     </div>
   );
@@ -1867,16 +2103,20 @@ function CanalPicker({ value, onChange }) {
   );
 }
 
-const ALVO_OPCOES = {
+const ALVO_OPCOES_BASE = {
   atributo: AFTY_ATTRS.map((a) => ({ value: a.key, label: a.label })),
-  pericia: AFTY_PERICIAS.map((p) => ({ value: p.id, label: p.nome })),
   tr: AFTY_RESISTENCIAS.map((r) => ({ value: r.value, label: r.label })),
   ataque: AFTY_ATAQUES.map((a) => ({ value: a.id, label: a.nome })),
   manobra: AFTY_MANOBRAS.map((m) => ({ value: m.id, label: m.nome })),
   trilha: APTIDAO_TRILHAS.map((t) => ({ value: t.key, label: t.label })),
 };
 
-function TecnicaMotorEditor({ efeitos, onChange }) {
+function alvoOpcoes(tipo, pericias = AFTY_PERICIAS) {
+  if (tipo === "pericia") return pericias.map((p) => ({ value: p.id, label: p.nome }));
+  return ALVO_OPCOES_BASE[tipo] ?? null;
+}
+
+function TecnicaMotorEditor({ efeitos, onChange, pericias }) {
   const lista = Array.isArray(efeitos) ? efeitos : [];
   // Devolve só os campos de DADO, nunca os resolvidos: `valor` e `ativo` são
   // derivados, e gravá-los deixaria a ficha mentindo no próximo render.
@@ -1915,7 +2155,7 @@ function TecnicaMotorEditor({ efeitos, onChange }) {
           const exprRuim = ef.expr && !chk.ok;
           const chkQuando = ef.quando ? validateExpression(ef.quando) : { ok: true };
           const quandoRuim = ef.quando && !chkQuando.ok;
-          const alvos = ef.alvoTipo ? ALVO_OPCOES[ef.alvoTipo] : null;
+          const alvos = ef.alvoTipo ? alvoOpcoes(ef.alvoTipo, pericias) : null;
           return (
             <div key={i} className="rounded border border-slate-800 bg-slate-950/50 p-2">
               <div className="flex flex-wrap items-center gap-2">
@@ -2130,6 +2370,7 @@ function PerfilAmaldicoadoCard({ draft, derived, patchCore }) {
       <TecnicaMotorEditor
         efeitos={derived.tecnicaEfeitos}
         onChange={(v) => patchCore({ tecnicaEfeitos: v })}
+        pericias={derived.testes?.pericias}
       />
     </Card>
   );
@@ -4985,20 +5226,20 @@ function TreinoEtapas({ linha, progresso, attrEff, nd, onSet, readOnly = false }
 const alvoLabelDe = rotuloAlvo;
 
 /* Opções de alvo de uma linha repetível que ainda não foram treinadas. */
-function opcoesDeAlvo(linha, instances) {
+function opcoesDeAlvo(linha, instances, pericias = AFTY_PERICIAS) {
   const usados = new Set(instances.map((i) => i.alvo));
   if (linha.alvoTipo === "atributo") {
     return AFTY_ATTRS.filter((a) => !usados.has(a.key)).map((a) => ({ value: a.key, label: a.label }));
   }
   if (linha.alvoTipo === "pericia") {
-    return AFTY_PERICIAS.filter((p) => !usados.has(p.id)).map((p) => ({ value: p.id, label: p.nome }));
+    return pericias.filter((p) => !usados.has(p.id)).map((p) => ({ value: p.id, label: p.nome }));
   }
   return null;   // texto livre
 }
 
 /* Uma Linha de Treinamento. Não repetível → uma trilha só. Repetível → várias
    instâncias, cada uma com um alvo distinto (atributo/perícia/arma). */
-function TreinoLinha({ linha, valor, attrEff, nd, onSetProgresso, onSetInstance }) {
+function TreinoLinha({ linha, valor, attrEff, nd, onSetProgresso, onSetInstance, pericias }) {
   const repetivel = !!linha.repetivel;
   const progresso = repetivel ? 0 : (Number(valor) || 0);
   const completa = !repetivel && progresso >= ETAPAS_POR_LINHA;
@@ -5011,7 +5252,7 @@ function TreinoLinha({ linha, valor, attrEff, nd, onSetProgresso, onSetInstance 
   const usados = new Set(instances.map((it) => String(it.alvo).toLowerCase()));
   // `null` = alvo de texto livre (Manejo de Arma). Atributo e Perícia saem do
   // catálogo, já sem os que a criatura treinou.
-  const alvoOptions = opcoesDeAlvo(linha, instances);
+  const alvoOptions = opcoesDeAlvo(linha, instances, pericias);
   const textoDup = !!novoTexto.trim() && usados.has(novoTexto.trim().toLowerCase());
   const addTexto = () => {
     const v = novoTexto.trim();
@@ -5070,7 +5311,7 @@ function TreinoLinha({ linha, valor, attrEff, nd, onSetProgresso, onSetInstance 
                     {/* cabeçalho da instância: mesma anatomia da linha (alvo + segmentos + estado) */}
                     <div className="flex items-center gap-2 mb-2 pb-1.5 border-b border-slate-800">
                       <span className="text-[11px] font-bold text-purple-200 flex-1 min-w-0 truncate">
-                        {alvoLabelDe(linha, inst.alvo)}
+                        {alvoLabelDe(linha, inst.alvo, pericias)}
                       </span>
                       <ProgressoSegmentos progresso={inst.progresso} total={ETAPAS_POR_LINHA} />
                       {instCompleta ? (
@@ -5086,8 +5327,8 @@ function TreinoLinha({ linha, valor, attrEff, nd, onSetProgresso, onSetInstance 
                         type="button"
                         onClick={() => onSetInstance(linha.id, inst.alvo, 0)}
                         className="text-slate-600 hover:text-rose-300 p-0.5 rounded flex-shrink-0"
-                        title={`Remover treino de ${alvoLabelDe(linha, inst.alvo)}`}
-                        aria-label={`Remover treino de ${alvoLabelDe(linha, inst.alvo)}`}
+                        title={`Remover treino de ${alvoLabelDe(linha, inst.alvo, pericias)}`}
+                        aria-label={`Remover treino de ${alvoLabelDe(linha, inst.alvo, pericias)}`}
                       >
                         <X className="w-3.5 h-3.5" />
                       </button>
@@ -6823,7 +7064,7 @@ function SecaoRecolhivel({ titulo, resumo, defaultOpen = false, children }) {
    O botão Ativa/Passiva decide onde o efeito vive (autor, 2026-07-30): passiva
    vale sempre, ativa vira um interruptor na bancada de Simulação de Combate.
    Depende do item, então é escolha por efeito, e não da fonte inteira. */
-function MotorEfeitosEditor({ efeitos, onChange }) {
+function MotorEfeitosEditor({ efeitos, onChange, pericias }) {
   const bruto = () => efeitos.map((e) => ({
     canal: e.canal, ...(e.alvo ? { alvo: e.alvo } : {}), expr: e.expr,
     ...(e.modo === "ativa" ? { modo: "ativa" } : {}),
@@ -6842,7 +7083,7 @@ function MotorEfeitosEditor({ efeitos, onChange }) {
       <FieldLabel>Motor de Automação (efeitos enquanto equipada)</FieldLabel>
       {efeitos.map((ef, i) => {
         const chk = validateExpression(ef.expr || "");
-        const alvos = ALVO_OPCOES[getCanal(ef.canal)?.alvo] ?? null;
+        const alvos = alvoOpcoes(getCanal(ef.canal)?.alvo, pericias);
         return (
           <div key={i} className="flex flex-wrap items-start gap-2">
             <CanalPicker value={ef.canal} onChange={(v) => patch(i, { canal: v })} />
@@ -6900,7 +7141,7 @@ function MotorEfeitosEditor({ efeitos, onChange }) {
    escolha de encantamentos (com pré-requisito) e a habilidade única do Especial.
    Grau e Encantamentos são RECOLHÍVEIS (o autor pediu), colapsados por padrão.
    `fa` aqui é o resumo JÁ resolvido pelo motor (entrada.fa). */
-function FerramentaEditor({ entrada, onPatch, onToggleEnc, onRemove }) {
+function FerramentaEditor({ entrada, onPatch, onToggleEnc, onRemove, pericias }) {
   const { tipo, def, fa } = entrada;
   const lista = ENCANTAMENTOS_POR_TIPO[tipo] ?? [];
   const beneficio =
@@ -7039,6 +7280,7 @@ function FerramentaEditor({ entrada, onPatch, onToggleEnc, onRemove }) {
           <MotorEfeitosEditor
             efeitos={fa.habilidadeEfeitos}
             onChange={(arr) => onPatch({ habilidadeEfeitos: arr })}
+            pericias={pericias}
           />
         </div>
       )}
@@ -7047,7 +7289,10 @@ function FerramentaEditor({ entrada, onPatch, onToggleEnc, onRemove }) {
 }
 
 /** Uma linha do que está carregado (com o editor de Ferramenta, se aplicável). */
-function LinhaCarregada({ entrada, onPatch, onRemove, onToggleFerramenta, onPatchFerramenta, onToggleEncantamento }) {
+function LinhaCarregada({
+  entrada, onPatch, onRemove, onToggleFerramenta, onPatchFerramenta,
+  onToggleEncantamento, pericias,
+}) {
   const { def, tipo, uid, qtd, equipado, fa } = entrada;
   // Arma entrou em 2026-08-01: ela passou a render Acerto por grau, e a linha de
   // dano dela só sai com a arma equipada.
@@ -7159,6 +7404,7 @@ function LinhaCarregada({ entrada, onPatch, onRemove, onToggleFerramenta, onPatc
           onPatch={(partial) => onPatchFerramenta(uid, partial)}
           onToggleEnc={(encId) => onToggleEncantamento(uid, encId)}
           onRemove={() => { onToggleFerramenta(uid); setFaOpen(false); }}
+          pericias={pericias}
         />
       )}
     </div>
@@ -7452,7 +7698,7 @@ function TabEquipamentos({ derived, addEquipamento, removeEquipamento, patchEqui
               <EfeitoPill
                 key={`${ex.origem}-${ex.canal}-${i}`}
                 icon={Sparkles}
-                label={rotuloCanalUnica(ex)}
+                label={rotuloCanalUnica(ex, derived.testes?.pericias)}
                 valor={sinalDe(Number(ex.expr) || 0)}
                 nota={ex.quando ? "ativa" : ex.exclusivo ? "única" : "encantamento"}
                 titulo={ex.nome}
@@ -7487,6 +7733,7 @@ function TabEquipamentos({ derived, addEquipamento, removeEquipamento, patchEqui
                       onToggleFerramenta={toggleFerramenta}
                       onPatchFerramenta={patchFerramenta}
                       onToggleEncantamento={toggleEncantamento}
+                      pericias={derived.testes?.pericias}
                     />
                   ))}
                 </div>
@@ -7798,11 +8045,11 @@ function FerramentasReferencia() {
 
 /* Rótulo de um efeito da Habilidade Única no card de Efeito do Equipado: o nome
    do canal do Motor, com o alvo entre parênteses quando ele direciona. */
-function rotuloCanalUnica(ex) {
+function rotuloCanalUnica(ex, pericias) {
   const canal = getCanal(ex.canal);
   const base = canal?.label ?? ex.canal;
   if (!ex.alvo) return base;
-  const alvo = (ALVO_OPCOES[canal?.alvo] ?? []).find((o) => o.value === ex.alvo);
+  const alvo = (alvoOpcoes(canal?.alvo, pericias) ?? []).find((o) => o.value === ex.alvo);
   return `${base} (${alvo?.label ?? ex.alvo})`;
 }
 
@@ -7863,6 +8110,7 @@ function TabInterludios({ draft, derived, setTreinoProgresso, setTreinoInstance 
               valor={treinos[linha.id]}
               attrEff={derived.attrEff}
               nd={derived.nd}
+              pericias={derived.testes?.pericias}
               onSetProgresso={setTreinoProgresso}
               onSetInstance={setTreinoInstance}
             />

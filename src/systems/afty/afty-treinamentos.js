@@ -49,7 +49,7 @@
  */
 
 import { AFTY_ATTRS } from "./afty-schema";
-import { AFTY_PERICIAS } from "./afty-pericias";
+import { AFTY_PERICIAS, catalogoPericiasDaFicha } from "./afty-pericias";
 
 // Texto completo da aptidão concedida pelo Treino de Domínios (Completo).
 const MODIFICACAO_COMPLETA =
@@ -562,10 +562,10 @@ function paraCanal(ef, alvoInstancia) {
  * menos a inicial maiúscula. É o que aparece no nome do treino, tanto na aba de
  * Interlúdios quanto no hover de fontes de um valor.
  */
-export function rotuloAlvo(linha, alvo) {
+export function rotuloAlvo(linha, alvo, pericias = AFTY_PERICIAS) {
   if (!alvo) return "";
   if (linha?.alvoTipo === "atributo") return AFTY_ATTRS.find((a) => a.key === alvo)?.label ?? alvo;
-  if (linha?.alvoTipo === "pericia") return AFTY_PERICIAS.find((p) => p.id === alvo)?.nome ?? alvo;
+  if (linha?.alvoTipo === "pericia") return pericias.find((p) => p.id === alvo)?.nome ?? alvo;
   const s = String(alvo);
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
@@ -585,6 +585,7 @@ export const treinamentosDaOrigem = (origemId) =>
 
 export function efeitosDeTreino(creature) {
   const origemId = creature?.core?.origem?.id;
+  const pericias = catalogoPericiasDaFicha(creature);
   const prog = normalizeTreinamentos(creature?.treinamentos);
   const out = [];
   const add = (efeitos, linha, alvo) => {
@@ -594,7 +595,7 @@ export function efeitosDeTreino(creature) {
       out.push({
         ...conv,
         origem: linha.id,
-        nome: alvo && linha.repetivel ? `${linha.nome} (${rotuloAlvo(linha, alvo)})` : linha.nome,
+        nome: alvo && linha.repetivel ? `${linha.nome} (${rotuloAlvo(linha, alvo, pericias)})` : linha.nome,
       });
     }
   };

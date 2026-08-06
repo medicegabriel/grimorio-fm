@@ -50,6 +50,85 @@ const BY_ID = Object.fromEntries(AFTY_PERICIAS.map((p) => [p.id, p]));
 export const getPericia = (id) => BY_ID[id] || null;
 
 /* ============================================================ */
+/* CATÁLOGO DA FICHA                                             */
+/* ============================================================ */
+/*
+ * O catálogo do livro continua imutável em afty-pericias-catalogo.js. A
+ * campanha escolhe quais linhas dele entram na ficha e pode acrescentar
+ * perícias de homebrew. A ordem também pertence à ficha, porque duas mesas
+ * podem organizar o mesmo catálogo de formas diferentes.
+ *
+ * `periciasOrdem === null` significa ficha ainda não configurada: entram só
+ * as perícias padrão. As complementares ficam disponíveis como sugestões.
+ * Uma lista vazia é uma escolha válida e não pode ser confundida com o padrão.
+ */
+
+const ATTR_KEYS = new Set(AFTY_ATTRS.map((a) => a.key));
+const CUSTOM_PREFIX = "custom_";
+
+const textoSeguro = (valor, max = 80) => String(valor ?? "").trim().slice(0, max);
+
+export function normalizarPericiasPersonalizadas(creature) {
+  const lista = Array.isArray(creature?.periciasPersonalizadas) ? creature.periciasPersonalizadas : [];
+  const ids = new Set(AFTY_PERICIAS.map((p) => p.id));
+  const out = [];
+  for (const item of lista) {
+    const id = textoSeguro(item?.id, 100);
+    const nome = textoSeguro(item?.nome) || "Nova perícia";
+    const atributo = ATTR_KEYS.has(item?.atributo) ? item.atributo : "inteligencia";
+    if (!id.startsWith(CUSTOM_PREFIX) || ids.has(id)) continue;
+    ids.add(id);
+    out.push({ id, nome, atributo, personalizada: true });
+  }
+  return out;
+}
+
+export function novaPericiaPersonalizada() {
+  const token = globalThis.crypto?.randomUUID?.().replaceAll("-", "_")
+    ?? `${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 9)}`;
+  return { id: `${CUSTOM_PREFIX}${token}`, nome: "Nova perícia", atributo: "inteligencia" };
+}
+
+export function idsPericiasAtivas(creature) {
+  const personalizadas = normalizarPericiasPersonalizadas(creature);
+  const disponiveis = new Set([
+    ...AFTY_PERICIAS.map((p) => p.id),
+    ...personalizadas.map((p) => p.id),
+  ]);
+  const ordemBruta = Array.isArray(creature?.periciasOrdem)
+    ? creature.periciasOrdem
+    : periciasPadrao().map((p) => p.id);
+  const vistos = new Set();
+  const ordem = [];
+  for (const id of ordemBruta) {
+    if (!disponiveis.has(id) || vistos.has(id)) continue;
+    vistos.add(id);
+    ordem.push(id);
+  }
+  // Uma perícia personalizada de uma ficha importada não pode desaparecer só
+  // porque uma versão antiga ainda não gravava a ordem explicitamente.
+  for (const p of personalizadas) {
+    if (!vistos.has(p.id)) ordem.push(p.id);
+  }
+  return ordem;
+}
+
+export function catalogoPericiasDaFicha(creature) {
+  const personalizadas = normalizarPericiasPersonalizadas(creature);
+  const porId = new Map([
+    ...AFTY_PERICIAS.map((p) => [p.id, p]),
+    ...personalizadas.map((p) => [p.id, p]),
+  ]);
+  return idsPericiasAtivas(creature).map((id) => porId.get(id)).filter(Boolean);
+}
+
+/** Linhas do livro fora da ficha, prontas para o painel de sugestões. */
+export function sugestoesPericias(creature) {
+  const ativas = new Set(idsPericiasAtivas(creature));
+  return AFTY_PERICIAS.filter((p) => !ativas.has(p.id));
+}
+
+/* ============================================================ */
 /* PROFICIÊNCIA                                                  */
 /* ============================================================ */
 /* Duas faixas: Treinado soma o Bônus de Treinamento (== Maestria) cheio,
@@ -467,11 +546,24 @@ export function resolveTestes(creature, ctx = {}) {
   // livro e o filtro das Invocações depende deles), mas NÃO viram marcação na
   // tela: o autor tirou as duas da UI em 2026-07-27. Quem precisa da regra lê
   // a `nota` verbatim dentro da descrição.
-  const pericias = AFTY_PERICIAS.map((p) => {
+  const catalogoPericias = catalogoPericiasDaFicha(creature);
+  const pericias = catalogoPericias.map((p) => {
+    const oficiosBrutos = Array.isArray(creature?.periciaOficios)
+      ? creature.periciaOficios
+      : (creature?.periciaOficio ? [creature.periciaOficio] : []);
+    const oficios = [...new Set(oficiosBrutos.map((nome) => textoSeguro(nome)).filter(Boolean))];
+    const atributo = p.id === "oficio" && modDe("sabedoria") > modDe("inteligencia")
+      ? "sabedoria"
+      : p.atributo;
+    const nome = p.id === "oficio" && oficios.length > 0
+      ? `${p.nome} (${oficios.join(", ")})`
+      : p.nome;
     const escolhida = valida(profBruta[p.id]);
     const prof = profComEfeito("proficienciaPericia", p.id, escolhida);
     return {
       ...p,
+      nome,
+      atributo,
       prof,
       // A faixa que a FICHA escolheu, separada da resolvida: é ela que gasta
       // vaga. O treino concedido de fora já foi pago (com Focos, no caso do
@@ -480,14 +572,14 @@ export function resolveTestes(creature, ctx = {}) {
       // `concedida` marca o treino que veio de fora, para a UI poder mostrar
       // que aquela faixa não é desmarcável ali.
       concedida: !!prof && prof !== escolhida,
-      bonus: bonusDe(p.atributo, prof) + bonusPorAtributo("bonusPericia", p.id, p.atributo)
-        + penalidadeDe(p.atributo),
+      bonus: bonusDe(atributo, prof) + bonusPorAtributo("bonusPericia", p.id, atributo)
+        + penalidadeDe(atributo),
       partes: [
-        { label: rotuloAttr(p.atributo), valor: modDe(p.atributo) },
+        { label: rotuloAttr(atributo), valor: modDe(atributo) },
         { label: "Metade do ND", valor: meioNivel },
         ...parteProficiencia(prof),
-        ...partePenalidade(p.atributo),
-        ...partesPorAtributo("bonusPericia", p.id, p.atributo),
+        ...partePenalidade(atributo),
+        ...partesPorAtributo("bonusPericia", p.id, atributo),
       ],
     };
   });
@@ -562,7 +654,7 @@ export function resolveTestes(creature, ctx = {}) {
   const atletismo = bonusPericiaDe("atletismo");
   const acrobacia = bonusPericiaDe("acrobacia");
   const melhorDasDuas = Math.max(atletismo, acrobacia);
-  const nomePericia = (id) => AFTY_PERICIAS.find((p) => p.id === id)?.nome ?? id;
+  const nomePericia = (id) => catalogoPericias.find((p) => p.id === id)?.nome ?? id;
 
   const manobras = AFTY_MANOBRAS.map((m) => {
     const usaMelhor = m.pericia === "melhor";

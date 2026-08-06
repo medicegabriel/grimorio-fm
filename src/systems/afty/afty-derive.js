@@ -65,7 +65,7 @@ import {
   podeSerArmaDedicada, grauDoRank,
 } from "./afty-equipamentos";
 import { nivelMaxFeitico, resumoFeiticos } from "./afty-feiticos";
-import { resolveTestes, resolveDano, AFTY_PERICIAS } from "./afty-pericias";
+import { resolveTestes, resolveDano, catalogoPericiasDaFicha } from "./afty-pericias";
 import { resolveCura } from "./afty-cura";
 import {
   buildCriaturaDslContext, coletarEfeitosCriatura, coletarEfeitosMontante, coletarEfeitosOrigem,
@@ -115,7 +115,7 @@ const INT = (x) => Math.floor(x); // INT() da planilha (ND > 0 → floor)
  * funcionaria. Montado uma vez, dos catálogos, e passado ao contexto.
  */
 const VOCABULARIO_DSL = {
-  pericias: AFTY_PERICIAS.map((p) => p.id),
+  pericias: [],
   resistencias: AFTY_RESISTENCIAS.map((r) => r.value),
   // `tem_*` cobre Habilidade, Talento E Aptidão: os Estilos de Combate leem
   // `tem_tal_adepto_de_combate` para saber se vieram pelo Talento, e o
@@ -142,6 +142,10 @@ export function deriveAfty(creature, opcoes = {}) {
   const core = creature?.core ?? {};
   const a = creature?.attributes ?? {};
   const ov = creature?.statOverrides ?? {};
+  const vocabularioDsl = {
+    ...VOCABULARIO_DSL,
+    pericias: catalogoPericiasDaFicha(creature).map((p) => p.id),
+  };
 
   const tipo = core.tipo || "combatente";
   // ⚠ O RESTRINGIDO NÃO TEM ENERGIA AMALDIÇOADA (autor, 2026-07-29). É a
@@ -272,7 +276,7 @@ export function deriveAfty(creature, opcoes = {}) {
     // `tem_*`, e sem eles declarados uma expressão que os citasse cairia inteira
     // no fallback, calada. Origem não escala com classe, então zero é a resposta
     // certa — mas ela precisa ser dada, não silenciada.
-    vocabulario: VOCABULARIO_DSL,
+    vocabulario: vocabularioDsl,
   });
   // ORIGEM entra no montante junto do resto: ela concede vaga de habilidade, de
   // perícia, de feitiço e de aptidão, e vaga é lida antes de os stats existirem.
@@ -595,7 +599,7 @@ export function deriveAfty(creature, opcoes = {}) {
       ...(talentosPre.escolhidas ?? []),
       ...(semEnergia ? [] : (Array.isArray(creature?.aptidoesAmaldicoadas) ? creature.aptidoesAmaldicoadas : [])),
     ],
-    vocabulario: VOCABULARIO_DSL,
+    vocabulario: vocabularioDsl,
   });
   // Soma um canal de atributo sobre uma base, aparando nos TRÊS tetos do sistema
   // (ver o topo de afty-atributos.js).
