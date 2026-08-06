@@ -40,7 +40,9 @@ export default function BuscaGlobal({ onFechar, itens, alvos, onIr }) {
     const casa = (x) => partes.every((p) => x.busca.includes(p));
     return [
       ...itens.filter(casa).map((i) => ({
-        chave: i.chave, nome: i.nome, grupo: i.grupo, aba: "habilidades", detalhe: null,
+        chave: i.chave, nome: i.nome, grupo: i.grupo, detalhe: null,
+        // O inventário mora em aba própria. O resto do conteúdo é Habilidades.
+        aba: i.grupo === "equipamento" ? "equipamentos" : "habilidades",
       })),
       ...alvos.filter(casa).map((a) => ({
         chave: a.chave, nome: a.nome, grupo: a.grupo, aba: a.aba, detalhe: a.detalhe,

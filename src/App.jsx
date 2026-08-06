@@ -9,7 +9,6 @@ import EncountersDashboard from "./components/EncountersDashboard";
 import TemplateLibrary from "./components/TemplateLibrary";
 import EncounterSyncModal from "./components/EncounterSyncModal";
 import PdfFab from "./components/PdfFab";
-import { FeedbackPopup, FeedbackFooter } from "./components/FeedbackPrompt";
 import useCreatureStorage from "./components/useCreatureStorage";
 import useEncounterManager from "./useEncounterManager";
 import { COMPENDIUM, getCompendiumById, isBuiltInId } from "./fm-compendium";
@@ -277,13 +276,13 @@ export default function App() {
 
   return (
     <>
-      {/* Coluna de altura mínima de tela: empurra o rodapé para o fim
-          quando o conteúdo é curto (sticky footer), sem cobrir nada. */}
+      {/* Coluna de altura mínima de tela. O rodapé de feedback saiu em
+          2026-08-06 (a pesquisa fechou), junto com o aviso de abertura. O
+          componente continua em `components/FeedbackPrompt.jsx`, sem uso. */}
       <div className="min-h-screen flex flex-col">
         <div className="flex-1">
           {views[view.name] ? views[view.name]() : views.dashboard()}
         </div>
-        <FeedbackFooter />
       </div>
       {encounterSyncState && (
         <EncounterSyncModal
@@ -295,7 +294,6 @@ export default function App() {
         />
       )}
       <PdfFab />
-      <FeedbackPopup />
       {aftyMode && (
         <div
           title="Ambiente privado — Grimório Homebrew do Afty. Dados isolados do grimório público."

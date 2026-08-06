@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { Search, X } from "lucide-react";
 
-import ItemDeFicha from "../ItemDeFicha";
+import GrupoComSubAbas from "../GrupoComSubAbas";
 import { GRUPOS, filtraConteudo } from "../ficha-conteudo";
 
 /**
@@ -53,28 +53,18 @@ export default function AbaHabilidades({ itens, abertos, onAberto, favoritos, on
         </span>
       </div>
 
-      {GRUPOS.map((g) => {
-        const lista = porGrupo.get(g.id) ?? [];
-        if (!lista.length) return null;
-        return (
-          <section key={g.id} className="afty-card p-3">
-            <h2 className="afty-card-titulo mb-2">{g.label}</h2>
-            <div className="space-y-1">
-              {lista.map((i) => (
-                <ItemDeFicha
-                  key={i.chave}
-                  item={i}
-                  aberto={abertos.has(i.chave)}
-                  onAberto={onAberto}
-                  favorito={favoritos.includes(i.chave)}
-                  onFavorito={onFavorito}
-                  destacado={destaque === i.chave}
-                />
-              ))}
-            </div>
-          </section>
-        );
-      })}
+      {GRUPOS.map((g) => (
+        <GrupoComSubAbas
+          key={g.id}
+          grupo={g}
+          lista={porGrupo.get(g.id) ?? []}
+          abertos={abertos}
+          onAberto={onAberto}
+          favoritos={favoritos}
+          onFavorito={onFavorito}
+          destaque={destaque}
+        />
+      ))}
     </div>
   );
 }

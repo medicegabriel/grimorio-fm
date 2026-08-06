@@ -4,8 +4,15 @@ import { X, RotateCcw, AlertTriangle, Check, Copy } from "lucide-react";
 import {
   PRESETS, GRUPOS_DE_TOKEN, FONTES, ENCAIXES, CSS_MAX,
   corEfetiva, temaEmBranco, escopoSuportado, saneiaCss, CONTRATO_DE_CLASSES,
-  promptParaIA,
+  ATRIBUTOS_DOC, promptParaIA,
 } from "./ficha-tema";
+
+/* Agrupado na ordem em que os grupos aparecem no contrato. Uma lista corrida de
+   45 seletores não se lê. */
+const SELETORES_POR_GRUPO = CONTRATO_DE_CLASSES.reduce((acc, c) => {
+  (acc[c.grupo] ??= []).push(c);
+  return acc;
+}, {});
 
 const ABAS_CSS = [
   { id: "css", label: "CSS" },
@@ -272,13 +279,31 @@ export default function PainelDeAparencia({ tema, onTema, onFechar, onGlobal }) 
             )}
 
             {abaCss === "seletores" && (
-              <div className="space-y-0.5">
-                {CONTRATO_DE_CLASSES.map((c) => (
-                  <div key={c.seletor} className="flex items-baseline gap-2">
-                    <code className="afty-valor text-[11px] flex-shrink-0">{c.seletor}</code>
-                    <span className="afty-rotulo text-[10px] truncate">{c.oque}</span>
+              <div className="space-y-2">
+                {Object.entries(SELETORES_POR_GRUPO).map(([grupo, lista]) => (
+                  <div key={grupo}>
+                    <h4 className="afty-card-titulo mb-1">{grupo}</h4>
+                    <div className="space-y-0.5">
+                      {lista.map((c) => (
+                        <div key={c.seletor} className="flex items-baseline gap-2">
+                          <code className="afty-valor text-[11px] flex-shrink-0">{c.seletor}</code>
+                          <span className="afty-rotulo text-[10px] truncate">{c.oque}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 ))}
+                <div>
+                  <h4 className="afty-card-titulo mb-1">Atributos</h4>
+                  <div className="space-y-0.5">
+                    {ATRIBUTOS_DOC.map((a) => (
+                      <div key={a.seletor} className="flex items-baseline gap-2">
+                        <code className="afty-valor text-[11px] flex-shrink-0">{a.seletor}</code>
+                        <span className="afty-rotulo text-[10px] truncate">{a.oque}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             )}
 

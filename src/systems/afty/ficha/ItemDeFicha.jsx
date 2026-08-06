@@ -63,8 +63,13 @@ export default function ItemDeFicha({ item, aberto, onAberto, favorito, onFavori
             {item.opcoes.map((o) => o.nome).join(", ")}
           </span>
         )}
+        {/* ⚠ O `data-afty-tag` é o que dá LARGURA FIXA às marcas que são
+            número. "Nível 1" e "Nível 20" têm textos de tamanhos diferentes, e
+            sem isso a coluna da direita serrilhava. Ver o `marca()`. */}
         {item.tags.map((t) => (
-          <span key={t} className="afty-chip hidden sm:inline-flex">{t}</span>
+          <span key={t.label} className="afty-chip hidden sm:inline-flex" data-afty-tag={t.tipo ?? undefined}>
+            {t.label}
+          </span>
         ))}
         {item.aviso && (
           <span className="afty-chip" data-afty-tom="aviso" title={item.aviso}>

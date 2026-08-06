@@ -26,6 +26,18 @@ import { getMelhoriaSuperior, getHabilidadeLendaria, getHabilidadeApice } from "
 import { getEspecializacao } from "../afty-especializacoes";
 import { caracteristicasEfetivas, getOrigem, getCla } from "../afty-origens";
 
+/**
+ * O rótulo de cada tipo de equipamento. Tipo que não estiver aqui vira uma
+ * sub-aba "Outros" em vez de sumir da tela: o inventário nunca esconde item.
+ */
+export const ROTULO_EQUIPAMENTO = {
+  arma: "Armas",
+  uniforme: "Uniformes",
+  escudo: "Escudos",
+  kit: "Kits",
+  item: "Itens",
+};
+
 /** Os grupos, na ordem em que aparecem na aba. */
 export const GRUPOS = [
   { id: "origem", label: "Origem" },
@@ -56,12 +68,43 @@ function opcoesEscolhidas(item, mapa) {
     .map((o) => ({ id: o.id, nome: o.nome, descricao: o.descricao ?? null }));
 }
 
-const item = ({ id, chave, nome, texto, grupo, tags = [], opcoes = [], aviso = null }) => ({
+/**
+ * As divisões de dentro de um grupo, e a ordem delas.
+ *
+ * ⚠ Só existem porque a lista fica GRANDE em ficha de nível alto (autor,
+ * 2026-08-06). Um multiclasse ND 40 empilha as Habilidades das duas
+ * Especializações numa coluna só, e achar a do Lutador no meio das do Conjurador
+ * é rolar até topar. As Especializações viram sub-aba pelo id da própria
+ * Especialização, então uma classe nova não precisa de nada aqui.
+ *
+ * Nos Níveis Lendários a divisão é fixa, porque são três coisas de natureza
+ * diferente que nunca foram uma lista só de verdade.
+ */
+export const SUBS_ALTO_NIVEL = [
+  { id: "melhoria", label: "Melhorias Superiores" },
+  { id: "lendaria", label: "Habilidades Lendárias" },
+  { id: "apice", label: "Habilidade Ápice" },
+];
+
+/**
+ * Uma marca de linha, normalizada para `{ label, tipo }`.
+ *
+ * ⚠ O `tipo` existe por causa da LARGURA. "Nível 1" e "Nível 20" são textos de
+ * tamanhos diferentes, e como marca eles serrilhavam a coluna da direita: a
+ * fileira virava uma serra, que é o mesmo problema que a grade de defesas teve
+ * no cabeçalho (autor, 2026-08-06). Com o tipo, o CSS dá largura fixa e número
+ * tabular só às marcas que são NÚMERO, sem mexer nas que são palavra.
+ *
+ * Aceita string, porque a maioria das marcas não precisa de tipo nenhum.
+ */
+const marca = (t) => (typeof t === "string" ? { label: t, tipo: null } : { label: t.label, tipo: t.tipo ?? null });
+
+const item = ({ id, chave, nome, texto, grupo, sub = null, tags = [], opcoes = [], aviso = null }) => ({
   // `chave` é única na Ficha inteira. O `id` sozinho não serve: uma Melhoria
   // repetível aparece mais de uma vez, e duas listas diferentes podem trazer o
   // mesmo id (o Ataque Inconsequente existe no Lutador e no Restringido).
   chave: chave ?? `${grupo}:${id}`,
-  id, nome, texto, grupo, tags, opcoes, aviso,
+  id, nome, texto, grupo, sub, tags: tags.filter(Boolean).map(marca), opcoes, aviso,
   busca: semAcento(`${nome} ${texto} ${opcoes.map((o) => o.nome).join(" ")}`),
 });
 
@@ -106,7 +149,11 @@ export function conteudoDaFicha(creature, derived) {
       nome: h.nome,
       texto: h.descricao ?? "",
       grupo: "especializacao",
-      tags: [espec?.nome, h.nivel ? `Nível ${h.nivel}` : null].filter(Boolean),
+      // ⚠ A sub-aba sai da PRÓPRIA Especialização, e não de uma lista escrita à
+      // mão: classe nova entra sozinha. Sem `especializacaoId` (não deveria
+      // acontecer) o item cai numa aba "Outras" em vez de sumir da tela.
+      sub: { id: h.especializacaoId ?? "outras", label: espec?.nome ?? "Outras" },
+      tags: [espec?.nome, h.nivel ? { label: `Nível ${h.nivel}`, tipo: "nivel" } : null],
       opcoes: opcoesEscolhidas(h, mapaHab),
       aviso: inacessiveisHab.has(id) ? "Pré-requisito não atendido" : null,
     }));
@@ -123,7 +170,7 @@ export function conteudoDaFicha(creature, derived) {
       nome: t.nome,
       texto: t.descricao ?? "",
       grupo: "talento",
-      tags: t.nivel ? [`Nível ${t.nivel}`] : [],
+      tags: t.nivel ? [{ label: `Nível ${t.nivel}`, tipo: "nivel" }] : [],
       opcoes: opcoesEscolhidas(t, mapaTal),
       aviso: inacessiveisTal.has(id) ? "Pré-requisito não atendido" : null,
     }));
@@ -144,7 +191,7 @@ export function conteudoDaFicha(creature, derived) {
       nome: g.nome,
       texto: g.descricao ?? "",
       grupo: "geral",
-      tags: vezes > 1 ? [`${vezes}×`] : [],
+      tags: vezes > 1 ? [{ label: `${vezes}×`, tipo: "vezes" }] : [],
       aviso: inacessiveisGer.has(id) ? "Pré-requisito não atendido" : null,
     }));
   }
@@ -178,7 +225,8 @@ export function conteudoDaFicha(creature, derived) {
       nome: def.nome,
       texto: def.descricao ?? "",
       grupo: "altoNivel",
-      tags: ["Melhoria Superior", ...(m.vezes > 1 ? [`${m.vezes}×`] : [])],
+      sub: SUBS_ALTO_NIVEL[0],
+      tags: m.vezes > 1 ? [{ label: `${m.vezes}×`, tipo: "vezes" }] : [],
       opcoes: opcoesEscolhidas(def, mapaAlto),
     }));
   }
@@ -192,7 +240,8 @@ export function conteudoDaFicha(creature, derived) {
       nome: def.nome,
       texto: def.descricao ?? "",
       grupo: "altoNivel",
-      tags: ["Habilidade Lendária"],
+      sub: SUBS_ALTO_NIVEL[1],
+      tags: [],
       opcoes: opcoesEscolhidas(def, mapaAlto),
       aviso: inacessiveisLen.has(id) ? "Pré-requisito não atendido" : null,
     }));
@@ -205,11 +254,61 @@ export function conteudoDaFicha(creature, derived) {
       nome: apice.nome,
       texto: apice.descricao ?? "",
       grupo: "altoNivel",
-      tags: ["Habilidade Ápice"],
+      sub: SUBS_ALTO_NIVEL[2],
+      tags: [],
     }));
   }
 
   return itens;
+}
+
+/**
+ * O INVENTÁRIO, no mesmo formato dos outros itens.
+ *
+ * ⚠ Ele mora numa lista SEPARADA do `conteudoDaFicha`, e não junto, porque o
+ * critério é outro: aquela lista é "o que a criatura ESCOLHEU e sabe fazer", e
+ * esta é "o que ela está CARREGANDO". Misturar as duas faria a aba Habilidades
+ * mostrar espada no meio de Habilidade, e o contador de "193 itens" contaria
+ * bandagem.
+ *
+ * O formato, porém, é o mesmo de propósito: assim o inventário ganha de graça o
+ * texto verbatim, o Rápido, o destaque da busca e o filtro.
+ *
+ * ⚠ NADA aqui é editável. Comprar, equipar e encantar são escolhas de ficha, e
+ * escolha mora no criador. A Ficha carrega e consulta.
+ */
+export function equipamentosDaFicha(derived) {
+  const entradas = derived?.equip?.entradas ?? [];
+  return entradas.map((e, i) => {
+    const def = e.def ?? {};
+    const tipo = e.tipo ?? "item";
+    const tags = [];
+    // ⚠ "Equipado" só aparece no que PODE ser equipado. Num talismã, a ausência
+    // da marca seria lida como "não está usando", e talismã não se equipa.
+    if (e.equipado) tags.push("Equipado");
+    if (e.qtd > 1) tags.push({ label: `${e.qtd}×`, tipo: "vezes" });
+    if (e.fa?.grauLabel) tags.push(e.fa.grauLabel);
+    if (e.espacos) tags.push({ label: `${e.espacos} Esp.`, tipo: "espacos" });
+    return item({
+      id: e.uid ?? `${tipo}:${e.refId}:${i}`,
+      // O `uid` é único por entrada, e é ele que separa duas Katanas iguais com
+      // encantamentos diferentes.
+      chave: `equipamento:${e.uid ?? `${tipo}-${e.refId}-${i}`}`,
+      nome: def.nome ?? e.refId ?? "Item",
+      texto: def.descricao ?? "",
+      grupo: "equipamento",
+      sub: { id: tipo, label: ROTULO_EQUIPAMENTO[tipo] ?? "Outros" },
+      tags,
+      // Os encantamentos da Ferramenta Amaldiçoada aparecem como as opções
+      // aninhadas de uma Habilidade: é a mesma coisa, uma escolha dentro do item.
+      opcoes: (e.fa?.encantamentos ?? [])
+        .map((x) => ({
+          id: x.id,
+          nome: x.enc?.nome ?? x.id,
+          descricao: x.enc?.descricao ?? null,
+        })),
+    });
+  });
 }
 
 /**
@@ -248,6 +347,7 @@ export function alvosDeBusca(derived) {
 /** Rótulo do grupo, para a busca mostrar de onde o resultado veio. */
 export const ROTULO_GRUPO = {
   ...Object.fromEntries(GRUPOS.map((g) => [g.id, g.label])),
+  equipamento: "Equipamentos",
   dano: "Dano",
   cura: "Cura",
   feitico: "Feitiços",

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, ChevronDown, ChevronRight } from "lucide-react";
 
 import { NumeroComFontes } from "../../ui/fontes";
 import { sinalDe } from "../../ui/formato";
@@ -179,8 +179,23 @@ function LinhaCura({ l, rolar, destacado }) {
   );
 }
 
-function LinhaFeitico({ f, destacado }) {
+/**
+ * Um Feitiço.
+ *
+ * ⚠ O NÚMERO ROLA, desde 2026-08-06. Ele era texto morto porque o
+ * `resumoFeiticos` só devolvia o `valor` já formatado ("8d6", "3× 4d8"), e a
+ * Ficha não vai parsear string: o `rolagensDoFeitico` passou a entregar
+ * `{ dados, faces }` do mesmo lugar de onde sai a notação.
+ *
+ * ⚠ São VÁRIAS rolagens quando o Feitiço tem várias de verdade: o dano contínuo
+ * tem o golpe inicial e o por rodada, e os dois são rolados em momentos
+ * diferentes da mesma luta. `vezes` (disparos, golpes) NÃO multiplica os dados,
+ * porque cada disparo é uma rolagem com acerto próprio: ele vira um contador ao
+ * lado, e cada clique rola um.
+ */
+function LinhaFeitico({ f, rolar, destacado }) {
   const raiz = useDestaque(destacado);
+  const rolagens = f.rolagens ?? [];
   return (
     <div
       ref={raiz}
@@ -205,11 +220,87 @@ function LinhaFeitico({ f, destacado }) {
         />
       )}
       <span className="afty-chip" data-afty-tom="destaque">{f.nivelLabel}</span>
-      {f.valor != null && (
+      {rolagens.length === 0 && f.valor != null && (
         <span className="afty-valor text-[13px]" title={f.valorLabel}>{f.valor}</span>
       )}
+      {rolagens.map((r) => (
+        <span key={r.rotulo} className="flex items-center gap-1 flex-shrink-0">
+          {/* O rótulo só aparece quando há MAIS DE UMA rolagem: com uma só, ele
+              repetiria o que o nome da seção já diz. */}
+          {rolagens.length > 1 && (
+            <span className="afty-rotulo text-[10px] whitespace-nowrap">{r.rotulo}</span>
+          )}
+          {r.vezes > 1 && (
+            <span className="afty-chip" title={`${r.vezes} ${r.rotulo}s`}>×{r.vezes}</span>
+          )}
+          <NumeroComFontes
+            valor={`${r.dados}d${r.faces}`}
+            formatar={false}
+            className="afty-valor text-[13px] whitespace-nowrap"
+            titulo={r.rotulo}
+            onRolar={() => rolar({
+              tipo: "dano", tom: r.tom,
+              rotulo: f.nome || "Feitiço Sem Nome",
+              detalhe: rolagens.length > 1 || r.vezes > 1 ? r.rotulo : f.nivelLabel,
+              dados: r.dados, faces: r.faces, fixo: 0,
+            })}
+          />
+        </span>
+      ))}
       {f.custoPE != null && (
         <span className="afty-valor text-[11px]" data-afty-tom="custo">{f.custoPE} PE</span>
+      )}
+    </div>
+  );
+}
+
+
+/**
+ * UM DOMÍNIO.
+ *
+ * A Expansão de Domínio é uma AÇÃO de combate, com custo em PE e duração em
+ * rodadas, e por isso ela mora aqui e não numa aba própria: o jogador procura
+ * por ela no mesmo lugar onde procura o resto do que faz no turno.
+ *
+ * O TEXTO já vem montado pelo `textoDoDominio`, com a área, a duração, o PV da
+ * barreira e os efeitos escolhidos resolvidos. A Ficha não remonta nada: ela
+ * abre e mostra, como faz com o texto do livro.
+ */
+function LinhaDominio({ d, ativo, destacado }) {
+  const [aberto, setAberto] = useState(false);
+  const raiz = useDestaque(destacado);
+  return (
+    <div
+      ref={raiz}
+      id={`afty-item-dominio:${d.id}`}
+      className="afty-linha"
+      data-afty-destacada={ativo ? "sim" : "nao"}
+      data-afty-alvo={destacado ? "sim" : undefined}
+    >
+      <div className="flex items-center gap-2 px-2.5 py-2 flex-wrap">
+        <button
+          type="button"
+          className="flex-1 min-w-0 flex items-center gap-2 text-left"
+          onClick={() => setAberto((x) => !x)}
+          aria-expanded={aberto}
+        >
+          {aberto
+            ? <ChevronDown className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
+            : <ChevronRight className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />}
+          <span className="text-[12px] font-semibold truncate">{d.nome || "Domínio Sem Nome"}</span>
+        </button>
+        {ativo && <span className="afty-chip" data-afty-tom="destaque">Ativo</span>}
+        <span className="afty-rotulo text-[10px] whitespace-nowrap">{d.area}</span>
+        <span className="afty-rotulo text-[10px] whitespace-nowrap">{d.duracao}</span>
+        <span className="afty-valor text-[11px]" title="Pontos de vida da barreira">{d.pvBarreira} PV</span>
+        {d.custo != null && (
+          <span className="afty-valor text-[11px]" data-afty-tom="custo">{d.custo} PE</span>
+        )}
+      </div>
+      {aberto && d.texto && (
+        <div className="px-2.5 pb-2 pl-8">
+          <p className="afty-texto">{d.texto}</p>
+        </div>
       )}
     </div>
   );
@@ -256,6 +347,8 @@ export default function AbaAcoes({ derived, rolar, destaque, rapido = [], aberto
   const dano = derived.dano?.entradas ?? [];
   const cura = derived.cura?.linhas ?? [];
   const feiticos = derived.feiticos?.lista ?? [];
+  const dominios = derived.dominios?.lista ?? [];
+  const dominioAtivo = derived.dominios?.ativoId ?? null;
   const manobras = derived.testes?.manobras ?? [];
   // Crítico pendente por linha de dano. Local e não persistido: é um estado de
   // meio segundo entre o Acerto e o Dano, e guardá-lo faria a ficha reabrir
@@ -309,7 +402,20 @@ export default function AbaAcoes({ derived, rolar, destaque, rapido = [], aberto
       {feiticos.length > 0 && (
         <Secao titulo="Feitiços">
           {feiticos.map((f) => (
-            <LinhaFeitico key={f.id} f={f} destacado={destaque === `feitico:${f.id}`} />
+            <LinhaFeitico key={f.id} f={f} rolar={rolar} destacado={destaque === `feitico:${f.id}`} />
+          ))}
+        </Secao>
+      )}
+
+      {dominios.length > 0 && (
+        <Secao titulo="Expansão de Domínio">
+          {dominios.map((d) => (
+            <LinhaDominio
+              key={d.id}
+              d={d}
+              ativo={d.id === dominioAtivo}
+              destacado={destaque === `dominio:${d.id}`}
+            />
           ))}
         </Secao>
       )}

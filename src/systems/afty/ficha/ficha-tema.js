@@ -15,11 +15,11 @@
  *   3. IMAGEM      url de fundo, com opacidade e encaixe
  *   4. CSS LIVRE   texto injetado num `<style>` dentro da raiz da Ficha
  *
- * ⚠ ONDE O TEMA MORA: chave própria no armazenamento, e NÃO dentro da criatura.
- * Mesmo motivo da sessão: o criador tem rascunho automático e um Salvar que
- * grava a ficha inteira, e um rascunho de ontem apagaria o tema de hoje, calado.
- * O preço é que o tema não viaja no export da criatura. Ver a pergunta D8 em
- * `docs/afty-ficha-final.md`.
+ * ⚠ ONDE O TEMA MORA: em `creature.aparencia`, DENTRO da criatura (autor,
+ * 2026-08-05: *"quero mandar minha ficha bonitinha para os outros"*). Assim ele
+ * viaja no export e no import de graça, porque os dois copiam a criatura
+ * inteira. A chave local do armazenamento sobrou para duas coisas: as fichas
+ * temadas antes dessa mudança e o padrão GLOBAL. Ver `carregarTema`.
  * ============================================================
  */
 
@@ -82,9 +82,10 @@ const PADRAO = Object.fromEntries(TOKENS_DOC.map((t) => [t.id, t.valor]));
 /* ============================================================ */
 
 /**
- * ⚠ É um RECORTE, e não a lista inteira do `ficha.css`. São 24 variáveis lá, e
- * um formulário com 24 seletores de cor não é personalização, é planilha. As que
- * ficaram de fora continuam alcançáveis pelo CSS livre, que é o lugar delas.
+ * ⚠ É um RECORTE, e não a lista inteira do `TOKENS_DOC`. São 29 variáveis lá, e
+ * um formulário com 29 seletores de cor não é personalização, é planilha. As que
+ * ficaram de fora continuam alcançáveis pelo CSS livre, que é o lugar delas, e
+ * o prompt para a IA entrega TODAS.
  */
 export const GRUPOS_DE_TOKEN = [
   {
@@ -337,6 +338,41 @@ export function limparTema(id) {
 }
 
 /* ============================================================ */
+/* DENSIDADE                                                     */
+/* ============================================================ */
+
+/**
+ * Confortável ou compacta. Muda o quanto cada linha respira, e nada mais: nenhum
+ * número, nenhuma linha, nenhum texto some.
+ *
+ * ⚠ A densidade NÃO mora na criatura, ao contrário do tema. Ela é preferência de
+ * APARELHO e não de personagem: a mesma ficha quer compacta no tablet de mesa e
+ * confortável no monitor, e se viajasse no export chegaria imposta na tela dos
+ * outros. Por isso ela é uma chave global, e uma só.
+ */
+export const DENSIDADES = [
+  { id: "confortavel", label: "Confortável" },
+  { id: "compacta", label: "Compacta" },
+];
+
+const CHAVE_DENSIDADE = "fm_ficha_densidade_afty_v1";
+
+export function carregarDensidade() {
+  try {
+    const cru = localStorage.getItem(CHAVE_DENSIDADE);
+    if (DENSIDADES.some((d) => d.id === cru)) return cru;
+  } catch { /* modo privado: cai no padrão */ }
+  return "confortavel";
+}
+
+export function salvarDensidade(id) {
+  try {
+    localStorage.setItem(CHAVE_DENSIDADE, DENSIDADES.some((d) => d.id === id) ? id : "confortavel");
+    return true;
+  } catch { return false; }
+}
+
+/* ============================================================ */
 /* Do tema para o CSS                                            */
 /* ============================================================ */
 
@@ -425,7 +461,13 @@ export function promptParaIA(tema) {
   const t = normalizaTema(tema);
   const atual = saneiaCss(t.css).trim();
   const tokens = TOKENS_DOC.map((x) => `  ${x.id}: ${x.valor};   /* ${x.oque} */`).join("\n");
-  const classes = CONTRATO_DE_CLASSES.map((c) => `- \`${c.seletor}\` ${c.oque}`).join("\n");
+  const porGrupo = CONTRATO_DE_CLASSES.reduce((acc, c) => {
+    (acc[c.grupo] ??= []).push(`- \`${c.seletor}\` ${c.oque}`);
+    return acc;
+  }, {});
+  const classes = Object.entries(porGrupo)
+    .map(([grupo, linhas]) => `### ${grupo}\n${linhas.join("\n")}`).join("\n\n");
+  const atributos = ATRIBUTOS_DOC.map((a) => `- \`${a.seletor}\` ${a.oque}`).join("\n");
 
   return `Você vai escrever CSS para personalizar uma ficha de RPG.
 
@@ -437,14 +479,20 @@ pronta: você NÃO escreve HTML nem JavaScript, só o CSS que muda a aparência 
 O CSS que você escrever é injetado dentro de \`@scope (#afty-ficha) { ... }\`, então ele afeta só a
 ficha e nada mais do site. Escreva os seletores normalmente, SEM repetir \`#afty-ficha\` na frente.
 
-A ficha tem: um cabeçalho fixo no topo (nome, marcas, três barras de recurso e uma fileira de
-defesas), uma barra de abas, e o corpo que troca por aba (Ações, Habilidades, Perícias). No canto
-inferior direito fica um painel de rolagem de dados.
+## O mapa da página
+
+\`\`\`
+${MAPA_DA_PAGINA}
+\`\`\`
+
+**IMPORTANTE: o CORPO é a maior parte da ficha, e é onde o jogador passa o tempo.** Um tema que pinta só o
+cabeçalho fica pela metade e é o erro mais comum. Estilize também \`.afty-card\`, \`.afty-card-titulo\`,
+\`.afty-linha\`, \`.afty-valor\`, \`.afty-texto\` e \`.afty-aba\`.
 
 ## O jeito CERTO de mudar cor
 
-Quase tudo na ficha é pintado por VARIÁVEL CSS. Trocar a variável repinta de uma vez tudo que a usa.
-Prefira SEMPRE isto a mirar classe por classe:
+Quase tudo na ficha é pintado por VARIÁVEL CSS. Trocar a variável repinta de uma vez tudo que a usa,
+no cabeçalho E no corpo. Comece SEMPRE por aqui, e só depois vá para classe específica:
 
 \`\`\`css
 #afty-ficha {
@@ -459,9 +507,8 @@ Estes nomes são um contrato e não mudam. Qualquer outra classe que você veja 
 
 ${classes}
 
-Atributos úteis: \`[data-afty-vital="pv"|"pe"|"alma"]\`, \`[data-afty-stat="defesa"|"cd"|"rd-geral"|...]\`,
-\`[data-afty-aba="acoes"|"habilidades"|"pericias"]\`, \`[data-afty-tom="destaque"|"aviso"|"dano"|"cura"]\`,
-\`[data-afty-nivel="baixo"|"critico"]\` (nas barras, quando o recurso está baixo).
+### Atributos
+${atributos}
 
 ## Regras
 
@@ -471,9 +518,12 @@ Atributos úteis: \`[data-afty-vital="pv"|"pe"|"alma"]\`, \`[data-afty-stat="def
 3. Imagem e gif entram por URL pública: \`background-image: url("https://...")\`. Não use data URI,
    que estoura o armazenamento do navegador.
 4. Não esconda a ficha inteira, e não mexa em \`position\` do cabeçalho: ele é fixo de propósito.
-5. Cuide do CONTRASTE. Se escurecer o fundo, clareie \`--afty-texto\` e \`--afty-texto-suave\` junto.
-6. Não use \`!important\`: este CSS já entra por último e vence tudo.
-7. Mantenha o resultado abaixo de 64 KB.
+5. **IMPORTANTE: não ponha \`overflow: hidden\` em \`.afty-card\` nem em \`.afty-linha\`.** O painel que explica os
+   números abre a partir de dentro deles, e o corte o decapita. Para arredondar canto, use
+   \`border-radius\` no próprio elemento, que já basta.
+6. Cuide do CONTRASTE. Se escurecer o fundo, clareie \`--afty-texto\` e \`--afty-texto-suave\` junto.
+7. Não use \`!important\`: este CSS já entra por último e vence tudo.
+8. Mantenha o resultado abaixo de 64 KB.
 
 ## O que eu quero
 
@@ -489,23 +539,129 @@ ${atual ? `\`\`\`css\n${atual}\n\`\`\`` : "(nenhum, estou começando do zero)"}
 /**
  * As classes que o CSS do usuário pode mirar. É um CONTRATO: estes nomes não
  * mudam. Classe do Tailwind não é API, e quem mirar nela assume o risco.
+ *
+ * ⚠ A lista era de 17 entradas até 2026-08-06, quase todas do CABEÇALHO, e o
+ * resultado apareceu na prática: as IAs devolviam CSS que pintava só o topo da
+ * ficha e não descia para as abas. Não era burrice do modelo, era o contrato que
+ * não contava que existia um corpo. Agora ela cobre as 45 classes de verdade,
+ * agrupadas, e o `MAPA_DA_PAGINA` mostra onde cada uma vive.
  */
 export const CONTRATO_DE_CLASSES = [
-  { seletor: "#afty-ficha", oque: "a raiz" },
-  { seletor: ".afty-cabecalho", oque: "a faixa fixa do topo" },
-  { seletor: ".afty-nome", oque: "o nome da criatura" },
-  { seletor: ".afty-chip", oque: "as marcas (Tipo, Patamar, ND)" },
-  { seletor: ".afty-vital", oque: "a caixa de um recurso" },
-  { seletor: "[data-afty-vital=\"pv\"]", oque: "a de Vida (pe, alma)" },
-  { seletor: ".afty-vital-numero", oque: "o número grande" },
-  { seletor: ".afty-vital-barra", oque: "o preenchimento da barra" },
-  { seletor: ".afty-stat", oque: "cada defesa do cabeçalho" },
-  { seletor: "[data-afty-stat]", oque: "uma defesa nomeada" },
-  { seletor: ".afty-abas / .afty-aba", oque: "a navegação" },
-  { seletor: ".afty-card", oque: "um cartão do corpo" },
-  { seletor: ".afty-linha", oque: "uma linha de lista" },
-  { seletor: ".afty-valor", oque: "todo número derivado" },
-  { seletor: ".afty-texto", oque: "o texto do livro" },
-  { seletor: ".afty-fontes-raiz", oque: "o painel de fontes" },
-  { seletor: ".afty-log", oque: "o painel de rolagens" },
+  /* ---------- estrutura ---------- */
+  { grupo: "Estrutura", seletor: "#afty-ficha", oque: "a raiz de tudo" },
+  { grupo: "Estrutura", seletor: ".afty-cabecalho", oque: "a faixa fixa do topo" },
+  { grupo: "Estrutura", seletor: ".afty-abas", oque: "a barra de abas" },
+  { grupo: "Estrutura", seletor: ".afty-aba", oque: "cada aba (a ativa tem aria-selected=\"true\")" },
+
+  /* ---------- cabeçalho ---------- */
+  { grupo: "Cabeçalho", seletor: ".afty-nome", oque: "o nome da criatura" },
+  { grupo: "Cabeçalho", seletor: ".afty-retrato", oque: "a miniatura do retrato" },
+  { grupo: "Cabeçalho", seletor: ".afty-chip", oque: "as marcas: Tipo, Patamar, ND, Rodada" },
+  { grupo: "Cabeçalho", seletor: ".afty-controles", oque: "a fileira de botões: densidade, aparência, busca, rodada, descanso, editar" },
+  { grupo: "Cabeçalho", seletor: ".afty-vital", oque: "a caixa de um recurso" },
+  { grupo: "Cabeçalho", seletor: ".afty-vital-icone", oque: "o ícone do recurso" },
+  { grupo: "Cabeçalho", seletor: ".afty-vital-rotulo", oque: "o nome do recurso" },
+  { grupo: "Cabeçalho", seletor: ".afty-vital-numero", oque: "o número grande, que é um campo" },
+  { grupo: "Cabeçalho", seletor: ".afty-vital-max", oque: "o \"/ 210\" ao lado" },
+  { grupo: "Cabeçalho", seletor: ".afty-vital-temp", oque: "o PV temporário" },
+  { grupo: "Cabeçalho", seletor: ".afty-vital-trilho", oque: "o sulco da barra" },
+  { grupo: "Cabeçalho", seletor: ".afty-vital-barra", oque: "o preenchimento da barra" },
+  { grupo: "Cabeçalho", seletor: ".afty-stats", oque: "a grade das defesas" },
+  { grupo: "Cabeçalho", seletor: ".afty-stat", oque: "cada célula de defesa" },
+  { grupo: "Cabeçalho", seletor: ".afty-stat-rotulo", oque: "o nome da defesa" },
+  { grupo: "Cabeçalho", seletor: ".afty-stat-valor", oque: "o número da defesa" },
+
+  /* ---------- corpo ---------- */
+  { grupo: "Corpo", seletor: ".afty-card", oque: "cada bloco do corpo, em TODAS as abas" },
+  { grupo: "Corpo", seletor: ".afty-card-titulo", oque: "o título do bloco" },
+  { grupo: "Corpo", seletor: ".afty-atributo", oque: "a célula de um atributo, na aba Perícias" },
+  { grupo: "Corpo", seletor: ".afty-atributo-rotulo", oque: "a abreviação do atributo" },
+  { grupo: "Corpo", seletor: ".afty-atributo-valor", oque: "o valor do atributo" },
+  { grupo: "Corpo", seletor: ".afty-atributo-mod", oque: "o modificador, que é a pastilha que rola" },
+  { grupo: "Corpo", seletor: ".afty-subabas", oque: "a fileira de divisões de um bloco (uma por Especialização, três nos Níveis Lendários)" },
+  { grupo: "Corpo", seletor: ".afty-subaba", oque: "cada divisão. A aberta tem aria-selected=\"true\"" },
+  { grupo: "Corpo", seletor: ".afty-subaba-conta", oque: "quantos itens a divisão tem" },
+  { grupo: "Corpo", seletor: ".afty-linha", oque: "cada linha de lista dentro do bloco" },
+  { grupo: "Corpo", seletor: ".afty-rotulo", oque: "o texto secundário da linha" },
+  { grupo: "Corpo", seletor: ".afty-valor", oque: "todo número derivado" },
+  { grupo: "Corpo", seletor: ".afty-rolavel", oque: "número que ROLA ao clique" },
+  { grupo: "Corpo", seletor: ".afty-texto", oque: "o texto de regra do livro" },
+  { grupo: "Corpo", seletor: ".afty-opcao", oque: "a opção escolhida dentro de uma habilidade" },
+  { grupo: "Corpo", seletor: ".afty-estrela", oque: "o botão de fixar no Rápido" },
+  { grupo: "Corpo", seletor: ".afty-vazio", oque: "o texto de lista vazia" },
+
+  /* ---------- controles ---------- */
+  { grupo: "Controles", seletor: ".afty-botao", oque: "todo botão de texto" },
+  { grupo: "Controles", seletor: ".afty-passo", oque: "os botões de menos e mais" },
+  { grupo: "Controles", seletor: ".afty-campo", oque: "campo de texto" },
+  { grupo: "Controles", seletor: ".afty-cor", oque: "o seletor de cor" },
+  { grupo: "Controles", seletor: ".afty-canal-gatilho", oque: "o botão que abre a lista de canais, na aba Buffs" },
+  { grupo: "Controles", seletor: ".afty-canal-painel", oque: "a lista de canais aberta, em colunas" },
+  { grupo: "Controles", seletor: ".afty-canal-grupo", oque: "o nome de um grupo de canais" },
+  { grupo: "Controles", seletor: ".afty-canal-item", oque: "cada canal da lista" },
+
+  /* ---------- camadas que flutuam ---------- */
+  { grupo: "Camadas", seletor: ".afty-fontes", oque: "o painel que explica um número" },
+  { grupo: "Camadas", seletor: ".afty-fonte-linha", oque: "uma parcela dentro dele" },
+  { grupo: "Camadas", seletor: ".afty-fonte-rotulo", oque: "o nome da parcela" },
+  { grupo: "Camadas", seletor: ".afty-fonte-valor", oque: "o valor da parcela" },
+  { grupo: "Camadas", seletor: ".afty-fonte-total", oque: "a linha do total" },
+  { grupo: "Camadas", seletor: ".afty-log", oque: "o painel de rolagens, no canto" },
+  { grupo: "Camadas", seletor: ".afty-log-topo", oque: "a barra dele" },
+  { grupo: "Camadas", seletor: ".afty-log-corpo", oque: "a lista de rolagens" },
+  { grupo: "Camadas", seletor: ".afty-log-modo", oque: "os botões de vantagem" },
+  { grupo: "Camadas", seletor: ".afty-rolagem", oque: "uma rolagem no histórico" },
+  { grupo: "Camadas", seletor: ".afty-rolagem-total", oque: "o resultado dela" },
+  { grupo: "Camadas", seletor: ".afty-dado", oque: "cada dado que caiu" },
+  { grupo: "Camadas", seletor: ".afty-busca-fundo", oque: "o véu da busca" },
+  { grupo: "Camadas", seletor: ".afty-busca", oque: "a caixa da busca" },
+  { grupo: "Camadas", seletor: ".afty-busca-item", oque: "cada resultado" },
 ];
+
+/** Os atributos que dão alvo mais fino que a classe. */
+export const ATRIBUTOS_DOC = [
+  { seletor: "[data-afty-vital=\"pv\"]", oque: "a barra de Vida. Também `pe` e `alma`" },
+  { seletor: "[data-afty-nivel=\"critico\"]", oque: "recurso abaixo de um quarto. Também `baixo`" },
+  { seletor: "[data-afty-stat=\"defesa\"]", oque: "uma defesa nomeada: cd, rd-geral, rd-especifica, rd-alma, rd-fisica, movimento, iniciativa, atencao, res-parcial, maestria, preparo" },
+  { seletor: "[data-afty-aba=\"acoes\"]", oque: "uma aba: acoes, habilidades, pericias, buffs" },
+  { seletor: "[data-afty-tom=\"destaque\"]", oque: "variante de chip, botão ou valor. Também `aviso`, `dano`, `cura`, `custo`" },
+  { seletor: "[data-afty-destacada=\"sim\"]", oque: "a linha do Ataque Básico e a perícia de Mestre" },
+  { seletor: "[data-afty-alvo=\"sim\"]", oque: "a linha para onde a busca acabou de navegar" },
+  { seletor: "[data-afty-marca=\"critico\"]", oque: "uma rolagem crítica no histórico. Também `pifia`" },
+  { seletor: "[data-afty-compacto=\"sim\"]", oque: "o cabeçalho depois de rolar a página" },
+  { seletor: "[data-afty-atributo=\"forca\"]", oque: "um atributo: forca, destreza, constituicao, inteligencia, sabedoria, presenca (as chaves não têm acento)" },
+  { seletor: "[data-afty-carga=\"baixo\"]", oque: "o cartão de Carga com a criatura sobrecarregada. Também `critico` acima do máximo" },
+  { seletor: "[data-afty-subaba]", oque: "uma divisão de bloco pelo id dela: a Especialização, ou melhoria, lendaria e apice" },
+  { seletor: "[data-afty-densidade=\"compacta\"]", oque: "a raiz quando o jogador pediu menos respiro. Também `confortavel`" },
+];
+
+/**
+ * O mapa da página, para a IA saber que existe um CORPO.
+ *
+ * ⚠ Sem isto o modelo escreve CSS só para o que ele consegue imaginar, e o que
+ * ele imagina é o topo da ficha, porque é o que o contrato descrevia.
+ */
+export const MAPA_DA_PAGINA = `#afty-ficha                     a raiz
+├── .afty-cabecalho             FIXO no topo, nunca sai da tela
+│   ├── .afty-nome + .afty-retrato + vários .afty-chip
+│   ├── 3 × .afty-vital         Vida, Energia e Alma, lado a lado
+│   │   ├── .afty-vital-icone .afty-vital-rotulo .afty-vital-numero .afty-vital-max
+│   │   └── .afty-vital-trilho > .afty-vital-barra
+│   ├── .afty-stats             grade de .afty-stat (Defesa, CD, RD, Movimento...)
+│   └── .afty-abas > .afty-aba  Ações · Habilidades · Perícias · Buffs
+│
+├── <main>                      O CORPO. É a maior parte da ficha.
+│   ├── aba AÇÕES         vários .afty-card (Rápido, Dano, Cura, Feitiços, Manobras),
+│   │                     cada um com .afty-card-titulo e muitas .afty-linha
+│   ├── aba HABILIDADES   um .afty-card por grupo (Origem, Especialização, Talentos,
+│   │                     Gerais, Aptidões, Níveis Lendários). A .afty-linha abre e
+│   │                     revela .afty-texto (o texto do livro) e .afty-opcao.
+│   │                     Os grupos grandes têm .afty-subabas > .afty-subaba: uma
+│   │                     por Especialização, e três nos Níveis Lendários
+│   ├── aba PERÍCIAS      .afty-atributo (os seis), depois .afty-card por tipo de
+│   │                     teste, com .afty-linha em duas colunas
+│   ├── aba EQUIPAMENTOS  a Carga, os avisos e o inventário em .afty-subabas
+│   └── aba BUFFS         .afty-card de Estados, Buffs e Condições
+│
+├── .afty-log                   painel de rolagens, fixo no canto de baixo
+└── .afty-fontes                painel flutuante que explica um número`;

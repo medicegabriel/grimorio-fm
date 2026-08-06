@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ChevronLeft, Pencil, AlertTriangle, Moon, ChevronRight, Search, Heart, Zap, Sparkles, Palette,
+  Rows2, Rows3,
 } from "lucide-react";
 
 import "./ficha.css";
@@ -13,9 +14,10 @@ import {
   aplicaDano, aplicaCura, proximaRodada, descansar, registraRolagem,
 } from "./ficha-sessao";
 import { rolarTeste, rolarDano } from "./ficha-rolagem";
-import { conteudoDaFicha, alvosDeBusca } from "./ficha-conteudo";
+import { conteudoDaFicha, equipamentosDaFicha, alvosDeBusca } from "./ficha-conteudo";
 import {
   carregarTema, salvarTemaGlobal, cssDasVars, cssDoUsuario, temCssLivre,
+  carregarDensidade, salvarDensidade,
 } from "./ficha-tema";
 import PainelDeRolagens from "./PainelDeRolagens";
 import BuscaGlobal from "./BuscaGlobal";
@@ -24,6 +26,8 @@ import AbaAcoes from "./abas/AbaAcoes";
 import AbaPericias from "./abas/AbaPericias";
 import AbaHabilidades from "./abas/AbaHabilidades";
 import AbaBuffs from "./abas/AbaBuffs";
+import AbaEquipamentos from "./abas/AbaEquipamentos";
+import AbaInvocacoes from "./abas/AbaInvocacoes";
 import { deltaDosEstados } from "./ficha-buffs";
 
 /**
@@ -50,6 +54,8 @@ const TABS = [
   { id: "acoes", label: "Ações" },
   { id: "habilidades", label: "Habilidades" },
   { id: "pericias", label: "Perícias" },
+  { id: "equipamentos", label: "Equipamentos" },
+  { id: "invocacoes", label: "Invocações" },
   { id: "buffs", label: "Buffs" },
 ];
 
@@ -183,6 +189,16 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
   const [destaque, setDestaque] = useState(null);
   const [tema, setTema] = useState(() => carregarTema(ficha, alvoId));
   const [aparenciaAberta, setAparenciaAberta] = useState(false);
+  // ⚠ A densidade é gravada NA HORA, e não por debounce como o tema: ela muda por
+  // clique num interruptor de duas posições, e não por arrastar um seletor de cor.
+  const [densidade, setDensidade] = useState(carregarDensidade);
+  const trocaDensidade = useCallback(() => {
+    setDensidade((d) => {
+      const proxima = d === "compacta" ? "confortavel" : "compacta";
+      salvarDensidade(proxima);
+      return proxima;
+    });
+  }, []);
 
   // ⚠ O `combate` que a Ficha deriva é o DA SESSÃO, e não o da ficha: o da ficha
   // é a bancada de balanceamento do criador, e misturar os dois faria cada
@@ -264,7 +280,13 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
   // Tudo que a criatura escolheu, dos seis catálogos, num formato só. É o que a
   // aba Habilidades exibe e o que a busca varre.
   const itens = useMemo(() => conteudoDaFicha(ficha, derived), [ficha, derived]);
+  // ⚠ O inventário é uma lista SEPARADA, e não parte do `itens`: aquela é "o que
+  // a criatura sabe fazer" e esta é "o que ela carrega". Junta-las faria a aba
+  // Habilidades mostrar espada no meio de Habilidade.
+  const equipamentos = useMemo(() => equipamentosDaFicha(derived), [derived]);
   const alvos = useMemo(() => alvosDeBusca(derived), [derived]);
+  // A busca global varre as DUAS listas, e cada resultado sabe para qual aba ir.
+  const itensBuscaveis = useMemo(() => [...itens, ...equipamentos], [itens, equipamentos]);
 
   const alternaItem = useCallback((chave) => {
     setAbertos((s) => {
@@ -286,7 +308,9 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
   // A busca navega: troca de aba, abre o item e rola até ele.
   const irPara = useCallback((r) => {
     setTab(r.aba);
-    if (r.aba === "habilidades") setAbertos((s) => new Set(s).add(r.chave));
+    if (r.aba === "habilidades" || r.aba === "equipamentos") {
+      setAbertos((s) => new Set(s).add(r.chave));
+    }
     setDestaque(r.chave);
   }, []);
 
@@ -360,6 +384,18 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
       />
     ),
     pericias: () => <AbaPericias derived={derived} rolar={rolar} destaque={destaque} />,
+    equipamentos: () => (
+      <AbaEquipamentos
+        derived={derived}
+        itens={equipamentos}
+        abertos={abertos}
+        onAberto={alternaItem}
+        favoritos={sessao.favoritos}
+        onFavorito={alternaFavorito}
+        destaque={destaque}
+      />
+    ),
+    invocacoes: () => <AbaInvocacoes derived={derived} rolar={rolar} destaque={destaque} />,
     buffs: () => (
       <AbaBuffs
         derived={derived}
@@ -377,7 +413,7 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
 
   return (
     <>
-    <div className="afty-ficha" id="afty-ficha">
+    <div className="afty-ficha" id="afty-ficha" data-afty-densidade={densidade}>
       {/* ⚠ A ORDEM É A REGRA. Os dois blocos são CSS sem camada e de mesma
           especificidade, então quem vem depois vence: o CSS livre sobrepõe o
           formulário, que é o que se espera da ferramenta mais avançada das
@@ -388,8 +424,12 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
 
       <header className="afty-cabecalho" data-afty-compacto={compacto ? "sim" : "nao"}>
         <div className="max-w-7xl mx-auto px-3 sm:px-4">
-          {/* ---------- identidade ---------- */}
-          <div className="flex items-center gap-2 py-2">
+          {/* ---------- identidade ----------
+              ⚠ `flex-wrap` e a fileira de controles em LINHA PRÓPRIA no celular.
+              São sete botões mais o contador de rodada, e com alvo de toque de
+              44px eles somam mais de 300px: ao lado do nome, numa tela de 360,
+              esmagavam o nome da criatura até três letras. */}
+          <div className="flex flex-wrap items-center gap-2 py-2">
             <button type="button" className="afty-botao" onClick={onVoltar} aria-label="Voltar">
               <ChevronLeft className="w-4 h-4" />
             </button>
@@ -418,7 +458,19 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
                 )}
               </div>
             </div>
-            <div className="flex items-center gap-1.5 flex-shrink-0">
+            <div className="afty-controles flex items-center justify-end gap-1.5 w-full order-last sm:w-auto sm:order-none sm:flex-shrink-0">
+              <button
+                type="button"
+                className="afty-botao"
+                onClick={trocaDensidade}
+                title={densidade === "compacta" ? "Densidade compacta" : "Densidade confortável"}
+                aria-label="Trocar a densidade da ficha"
+                aria-pressed={densidade === "compacta"}
+              >
+                {densidade === "compacta"
+                  ? <Rows3 className="w-4 h-4" />
+                  : <Rows2 className="w-4 h-4" />}
+              </button>
               <button
                 type="button"
                 className="afty-botao"
@@ -513,13 +565,14 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
           </div>
 
           {/* ---------- abas ---------- */}
-          <div className="afty-abas" role="tablist">
+          <div className="afty-abas" role="tablist" aria-label="Seções da ficha">
             {TABS.map((t) => (
               <button
                 key={t.id}
                 type="button"
                 role="tab"
                 id={`afty-aba-${t.id}`}
+                data-afty-aba={t.id}
                 aria-selected={tab === t.id}
                 aria-controls="afty-painel"
                 className="afty-aba"
@@ -540,8 +593,10 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
       >
         {(corpo[tab] ?? corpo.acoes)()}
         {/* O painel de rolagens é fixo no canto e cobre o fim do conteúdo.
-            Este respiro impede que a última linha da aba fique embaixo dele. */}
-        <div className="h-24" aria-hidden="true" />
+            Este respiro impede que a última linha da aba fique embaixo dele.
+            ⚠ Ele cresceu em 2026-08-06: o painel subiu para não cobrir o botão
+            dos Livros, e o respiro tem que cobrir a soma dos dois. */}
+        <div className="afty-respiro h-48" aria-hidden="true" />
       </main>
 
       <PainelDeRolagens
@@ -556,7 +611,7 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
       {buscaAberta && (
         <BuscaGlobal
           onFechar={() => setBuscaAberta(false)}
-          itens={itens}
+          itens={itensBuscaveis}
           alvos={alvos}
           onIr={irPara}
         />

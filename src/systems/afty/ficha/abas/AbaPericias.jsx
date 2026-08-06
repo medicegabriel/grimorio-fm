@@ -59,6 +59,55 @@ function LinhaTeste({ nome, atributo, bonus, partes, prof, tag, margem, rolar, c
   );
 }
 
+/**
+ * OS SEIS ATRIBUTOS.
+ *
+ * ⚠ Eles nunca estiveram na Ficha, e isso era um buraco: o jogador via os
+ * derivados (Defesa, CD, os testes) e não via de onde eles saem. Numa mesa,
+ * "faz um teste de Força pura" acontece o tempo todo.
+ *
+ * Mostra o VALOR grande e o modificador embaixo, porque os dois se usam: o valor
+ * em pré-requisito e em regra que lê atributo, o modificador em toda conta. O
+ * modificador ROLA como teste puro, e o valor não rola nada.
+ *
+ * ⚠ O valor exibido é o EFETIVO (`attrEff`), já com o que o Motor soma e já
+ * aparado no limite. As fontes ficam no hover, como em todo número da Ficha.
+ */
+function Atributos({ derived, rolar }) {
+  return (
+    <section className="afty-card p-3">
+      <h2 className="afty-card-titulo mb-2">Atributos</h2>
+      <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
+        {AFTY_ATTRS.map((a) => {
+          const valor = derived.attrEff?.[a.key] ?? 0;
+          const mod = derived.mods?.[a.key] ?? 0;
+          return (
+            <span key={a.key} className="afty-atributo" data-afty-atributo={a.key}>
+              <span className="afty-atributo-rotulo" title={a.label}>{a.abbr}</span>
+              <NumeroComFontes
+                valor={valor}
+                partes={derived.partesAtributo?.[a.key]}
+                total={valor}
+                formatar={false}
+                className="afty-atributo-valor"
+                titulo={a.label}
+              />
+              <NumeroComFontes
+                valor={mod}
+                total={sinalDe(mod)}
+                className="afty-atributo-mod"
+                ancora="direita"
+                titulo={`Teste de ${a.label}`}
+                onRolar={() => rolar({ tipo: "teste", rotulo: a.label, bonus: mod })}
+              />
+            </span>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 function Secao({ titulo, children, colunas = 1 }) {
   return (
     <section className="afty-card p-3">
@@ -73,6 +122,8 @@ export default function AbaPericias({ derived, rolar, destaque }) {
 
   return (
     <div className="space-y-3">
+      <Atributos derived={derived} rolar={rolar} />
+
       {ataques.length > 0 && (
         <Secao titulo="Jogadas de Ataque" colunas={2}>
           {ataques.map((a) => (

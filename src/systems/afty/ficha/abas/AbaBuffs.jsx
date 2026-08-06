@@ -3,7 +3,8 @@ import { Plus, X, AlertTriangle } from "lucide-react";
 
 import { COMBATE_ESTADOS } from "../../afty-combate";
 import { CONDICOES_CATALOGO } from "../../afty-feiticos";
-import { EFEITO_CANAIS, getCanal } from "../../afty-efeitos";
+import { getCanal } from "../../afty-efeitos";
+import CanalPicker from "../CanalPicker";
 
 /**
  * ============================================================
@@ -136,16 +137,10 @@ function NovoBuff({ onCriar }) {
         placeholder="Nome" aria-label="Nome do buff"
         className="afty-campo bg-transparent outline-none flex-1 min-w-[6rem]"
       />
-      <select
-        value={canal} onChange={(e) => setCanal(e.target.value)}
-        aria-label="Canal do buff"
-        className="afty-campo bg-transparent outline-none"
-        style={{ border: "1px solid var(--afty-borda)", borderRadius: "var(--afty-raio-peq)", padding: "2px 4px" }}
-      >
-        {EFEITO_CANAIS.map((c) => (
-          <option key={c.id} value={c.id} style={{ background: "var(--afty-card)" }}>{c.label}</option>
-        ))}
-      </select>
+      {/* ⚠ Era um `<select>` com os canais numa lista corrida, e o autor pediu o
+          do Motor em 2026-08-06: são dezenas de canais, e o nativo os despeja
+          num tubo sem grupo nenhum. Ver `CanalPicker`. */}
+      <CanalPicker value={canal} onChange={setCanal} />
       <input
         type="text" value={expr} onChange={(e) => setExpr(e.target.value)}
         onKeyDown={(e) => { if (e.key === "Enter") cria(); }}

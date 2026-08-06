@@ -473,6 +473,10 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
   // 5) Subtipos.
   let danoContInicial = null;   // notação do golpe principal do contínuo
   let contPorRodada = null;
+  // ⚠ A QUANTIDADE de dados do contínuo, e não só a notação: a Ficha rola o
+  // dano por rodada, e reler "4d8" de volta de uma string seria desfazer
+  // trabalho já feito aqui.
+  let contDadosPorRodada = 0;
   let disparosInfo = null;
   const detalhes = {};
 
@@ -572,6 +576,7 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
     danoContInicial = notacaoDano(dados, tipoDado);
     const contDados = Math.max(1, Math.floor(dados / 2));
     contPorRodada = notacaoDano(contDados, tipoDado);
+    contDadosPorRodada = contDados;
     detalhes.continuo = {
       modo: f.continuoModo === "concentrado" ? "concentrado" : "sustentado",
       custoSustentacao: f.continuoModo === "concentrado" ? 0 : nNum,
@@ -609,6 +614,7 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
     reducaoCondicoes: reducaoCond,
     contInicial: danoContInicial,
     contPorRodada,
+    contDadosPorRodada,
     disparos: disparosInfo,
     avisos,
     detalhes,
@@ -2458,6 +2464,71 @@ function calculadorDe(tipo) {
 }
 
 /**
+ * AS ROLAGENS de um Feitiço, estruturadas: `{ rotulo, dados, faces, tom, vezes }`.
+ *
+ * ⚠ Existe porque o `valor` do resumo é TEXTO PRONTO PARA EXIBIR ("8d6", "3×
+ * 4d8", "Somente Condição"), e a Ficha Final precisa rolar. Ler os dados de
+ * volta de uma string seria desfazer trabalho que o motor já fez, e quebraria no
+ * primeiro formato novo. Os números daqui vêm dos mesmos campos que a notação.
+ *
+ * É uma LISTA porque um Feitiço pode ter mais de uma rolagem de verdade: o
+ * contínuo tem o golpe inicial e o dano por rodada, e os dois são rolados em
+ * momentos diferentes da mesma luta.
+ *
+ * `vezes` é quantas vezes AQUELA rolagem acontece (disparos, golpes). Ela não
+ * multiplica os dados: cada disparo é uma rolagem separada, com acerto próprio.
+ */
+export function rolagensDoFeitico(f, calc) {
+  if (!calc || !f) return [];
+
+  // O Auxiliar guarda os dados em `dado` ([qtd, faces]) e não em `dados`,
+  // porque lá o dano é um efeito entre muitos e não o valor do Feitiço.
+  if (f.tipo === "auxiliar") {
+    // Múltiplos Efeitos não tem UMA rolagem: cada efeito é o seu.
+    if (calc.multiplos || !Array.isArray(calc.dado)) return [];
+    const [qtd, faces] = calc.dado;
+    return qtd > 0 && faces > 1 ? [{ rotulo: "Dano", dados: qtd, faces, tom: "dano", vezes: 1 }] : [];
+  }
+
+  const faces = Math.trunc(calc.tipoDado) || 0;
+  const dados = Math.trunc(calc.dados) || 0;
+  if (faces < 2 || dados < 1) return [];
+
+  if (f.tipo === "curativo") {
+    return [{ rotulo: calc.ehTemporario ? "PV Temporário" : "Cura", dados, faces, tom: "cura", vezes: 1 }];
+  }
+
+  if (f.tipo === "dano") {
+    // ⚠ "Somente Condição" não rola dano nenhum: o Feitiço trocou o dano inteiro
+    // pela condição, e oferecer o botão seria mentir sobre o que ele faz.
+    if (f.focoCondicao) return [];
+    if (calc.disparos) {
+      const d = calc.disparos;
+      return [{ rotulo: "Disparo", dados: d.porDisparo, faces, tom: "dano", vezes: d.disparos }];
+    }
+    if (calc.contDadosPorRodada > 0) {
+      return [
+        { rotulo: "Golpe Inicial", dados, faces, tom: "dano", vezes: 1 },
+        { rotulo: "Por Rodada", dados: calc.contDadosPorRodada, faces, tom: "dano", vezes: 1 },
+      ];
+    }
+    return [{ rotulo: "Dano", dados, faces, tom: "dano", vezes: 1 }];
+  }
+
+  if (f.tipo === "especial") {
+    // Os quatro subtipos sem dano (Invisibilidade, Itens, Transformação e
+    // Shikigami) não devolvem `dados`, então já caíram fora lá em cima.
+    if (calc.golpes) {
+      const g = calc.golpes;
+      return [{ rotulo: "Golpe", dados: g.porGolpe, faces, tom: "dano", vezes: g.golpes }];
+    }
+    return [{ rotulo: "Dano", dados, faces, tom: "dano", vezes: 1 }];
+  }
+
+  return [];
+}
+
+/**
  * Uma linha pronta por Feitiço da ficha, para o Preview exibir sem recalcular
  * (mesma convenção do `resumoDominios` em afty-derive.js).
  *
@@ -2492,6 +2563,9 @@ export function resumoFeiticos(creature, ctx = {}) {
         : f.tipo === "especial" && ["golpeador", "danoAlma"].includes(f.especialSubtipo) ? "Dano"
         : "Efeito",
       variacao: !!f.variacaoDe,
+      // O que a Ficha rola. Vazio quando não há dado nenhum a rolar, e é o que a
+      // linha consulta para decidir se o número é clicável.
+      rolagens: rolagensDoFeitico(f, calc),
       avisos,
     };
   });

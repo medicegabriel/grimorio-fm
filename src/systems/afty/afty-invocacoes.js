@@ -431,6 +431,32 @@ function degrauDe(str) {
   return prev;
 }
 
+/**
+ * A notação de dano, ESTRUTURADA: `"3d12 + 1d8"` vira
+ * `[{ dados: 3, faces: 12 }, { dados: 1, faces: 8 }]`.
+ *
+ * ⚠ EXISTE PARA A FICHA ROLAR, e é o mesmo remédio do `rolagensDoFeitico`: quem
+ * tem o número entrega o número, e ninguém relê notação de volta de uma string.
+ *
+ * ⚠ E é uma LISTA porque a escada de dano do Afty tem degraus de DOIS dados
+ * diferentes (`degrau()` devolve `"2d12 + 1d6"` a partir do oitavo). Um parser
+ * ingênuo que quebrasse no "d" leria `"3d12 + 1d8"` como 3 dados de face
+ * inválida, e a Invocação rolaria um dano errado sem avisar ninguém. Isso quase
+ * chegou à mesa em 2026-08-06.
+ *
+ * Degrau de dado fixo (`"1"`, o piso da escada) devolve lista vazia: não há dado
+ * a rolar ali, e um `{ dados: 1, faces: 1 }` inventado rolaria um d1.
+ */
+export function dadosDaNotacao(str) {
+  const grupos = [];
+  for (const m of String(str ?? "").matchAll(/(\d+)\s*d\s*(\d+)/gi)) {
+    const dados = Number(m[1]);
+    const faces = Number(m[2]);
+    if (dados > 0 && faces > 1) grupos.push({ dados, faces });
+  }
+  return grupos;
+}
+
 /** Sobe (ou baixa) N níveis de dano num dado, pela escada canônica. Piso em "1". */
 export function subirNiveisDano(dado, n) {
   if (!n) return { dado, niveisPendentes: false };
@@ -778,7 +804,21 @@ export function resolveInvocacao(inv, dono = {}) {
     allowance: periciasAllowanceInvocacao(inv) + efe.pericias,
     usadas: usoPericias(perProf), // Mestre gasta 2, Treinado gasta 1
   };
-  const acoes = (inv?.acoes || []).map((a) => resolveAcao(a, inv, donoLocal));
+  /* ⚠ A notação sai daqui JÁ ESTRUTURADA, num lugar só. O `resolveAcao` remonta
+     o dado em vários pontos (níveis de dano, habilidades da Invocação), e
+     estruturar em cada um deles seria quatro cópias da mesma conta. Ver
+     `dadosDaNotacao` para o porquê de ser uma LISTA. */
+  const comGrupos = (bloco) =>
+    (bloco?.dado ? { ...bloco, grupos: dadosDaNotacao(bloco.dado) } : bloco);
+  const acoes = (inv?.acoes || []).map((a) => {
+    const r = resolveAcao(a, inv, donoLocal);
+    return {
+      ...r,
+      dano: comGrupos(r.dano),
+      cura: comGrupos(r.cura),
+      danoAdicional: comGrupos(r.danoAdicional),
+    };
+  });
   const caracteristicas = (inv?.caracteristicas || []).map((c) => resolveCaracteristica(c, inv, dono));
 
   const warnings = [...atributos.warnings];

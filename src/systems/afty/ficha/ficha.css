@@ -148,6 +148,22 @@
   color: var(--afty-destaque-texto);
 }
 
+/* ⚠ MARCA QUE É NÚMERO TEM LARGURA FIXA. "Nível 1" e "Nível 20" são textos de
+   tamanhos diferentes, e como chip eles serrilhavam a coluna da direita das
+   listas: cada linha empurrava o próprio chip para um lugar (autor,
+   2026-08-06). É o mesmo problema que a grade de defesas teve no cabeçalho, e
+   a resposta é a mesma: célula de tamanho igual.
+
+   A largura é dimensionada pelo MAIOR caso real, que é "Nível 20" no ND 40. */
+.afty-chip[data-afty-tag] {
+  justify-content: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.afty-chip[data-afty-tag="nivel"]   { min-width: 4.25rem; }
+.afty-chip[data-afty-tag="vezes"]   { min-width: 2.25rem; }
+.afty-chip[data-afty-tag="espacos"] { min-width: 3.5rem; }
+
 .afty-chip[data-afty-tom="aviso"] {
   border-color: color-mix(in srgb, var(--afty-aviso) 55%, transparent);
   background: color-mix(in srgb, var(--afty-aviso) 12%, transparent);
@@ -389,6 +405,127 @@
 }
 
 /* ============================================================ */
+/* ATRIBUTOS                                                     */
+/* ============================================================ */
+
+/* Os seis, numa fileira de células iguais. O valor é o número grande e o
+   modificador é a pastilha embaixo, que é a que ROLA. */
+.afty-atributo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.125rem;
+  padding: 0.375rem 0.25rem;
+  border: 1px solid var(--afty-borda);
+  border-radius: var(--afty-raio-peq);
+  background: var(--afty-poco);
+  transition: border-color 140ms ease-out;
+}
+
+.afty-atributo:hover { border-color: var(--afty-borda-forte); }
+
+.afty-atributo-rotulo {
+  font-size: 0.5625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--afty-texto-fraco);
+}
+
+.afty-atributo-valor {
+  font-family: var(--afty-fonte-num);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 1.375rem;
+  line-height: 1.1;
+  color: var(--afty-texto);
+}
+
+.afty-atributo-mod {
+  font-family: var(--afty-fonte-num);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0 0.375rem;
+  border-radius: 9999px;
+  color: var(--afty-destaque-texto);
+  background: var(--afty-destaque-fundo);
+}
+
+/* ============================================================ */
+/* CARGA                                                         */
+/* ============================================================ */
+
+/* A barra de carga reusa a anatomia dos vitais (trilho e barra), e por isso não
+   tem regra própria. O que muda é o AVISO: acima do limite a barra vira âmbar,
+   e é o componente que troca a variável de cor. */
+.afty-card[data-afty-carga="critico"] {
+  border-color: color-mix(in srgb, var(--afty-pv) 45%, var(--afty-borda));
+}
+
+.afty-card[data-afty-carga="baixo"] {
+  border-color: color-mix(in srgb, var(--afty-aviso) 45%, var(--afty-borda));
+}
+
+/* ============================================================ */
+/* SUB-ABAS                                                      */
+/* ============================================================ */
+
+/* As divisões de dentro de um cartão: uma por Especialização, e as três dos
+   Níveis Lendários. Elas são visivelmente MENORES que as abas do cabeçalho, e
+   isso é hierarquia e não enfeite: duas fileiras de abas do mesmo peso fazem o
+   jogador perder qual delas manda em qual. */
+.afty-subabas {
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.375rem;
+  border-bottom: 1px solid var(--afty-borda);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.afty-subabas::-webkit-scrollbar { display: none; }
+
+.afty-subaba {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3125rem;
+  flex-shrink: 0;
+  padding: 0.1875rem 0.5rem;
+  border: 1px solid transparent;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--afty-texto-suave);
+  transition: color 140ms, border-color 140ms, background-color 140ms;
+}
+
+.afty-subaba:hover { color: var(--afty-texto); }
+
+.afty-subaba[aria-selected="true"] {
+  color: var(--afty-destaque-texto);
+  border-color: color-mix(in srgb, var(--afty-destaque) 55%, transparent);
+  background: var(--afty-destaque-fundo);
+}
+
+/* Quantos itens tem a divisão. Ele existe para o jogador saber o tamanho do que
+   está escondido atrás da outra aba antes de clicar nela. */
+.afty-subaba-conta {
+  font-family: var(--afty-fonte-num);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.625rem;
+  color: var(--afty-texto-fraco);
+}
+
+.afty-subaba[aria-selected="true"] .afty-subaba-conta { color: inherit; }
+
+@media (pointer: coarse) {
+  .afty-subaba { padding-block: 0.5rem; }
+}
+
+/* ============================================================ */
 /* CORPO                                                         */
 /* ============================================================ */
 
@@ -573,13 +710,103 @@
 .afty-cor::-moz-color-swatch { border: none; border-radius: 4px; }
 
 /* ============================================================ */
+/* SELETOR DE CANAL                                              */
+/* ============================================================ */
+
+/* O do Motor, repintado por token. Ver o cabeçalho do `CanalPicker.jsx`. */
+.afty-canal { min-width: 10.5rem; }
+
+.afty-canal-gatilho {
+  padding: 0.125rem 0.375rem;
+  border: 1px solid var(--afty-borda);
+  border-radius: var(--afty-raio-peq);
+  font-size: 0.8125rem;
+  color: var(--afty-texto);
+  transition: border-color 140ms;
+}
+
+.afty-canal-gatilho:hover { border-color: var(--afty-borda-forte); }
+
+.afty-canal-painel {
+  border: 1px solid var(--afty-borda-forte);
+  border-radius: var(--afty-raio);
+  background: var(--afty-card);
+  box-shadow: var(--afty-sombra);
+}
+
+.afty-canal-busca { border-bottom: 1px solid var(--afty-borda); }
+
+.afty-canal-grupo {
+  padding: 0 0.25rem 0.125rem;
+  margin-bottom: 0.125rem;
+  border-bottom: 1px solid var(--afty-borda);
+  font-size: 0.5625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--afty-texto-fraco);
+}
+
+.afty-canal-item {
+  padding: 0.1875rem 0.25rem;
+  border-radius: 0.25rem;
+  font-size: 0.6875rem;
+  line-height: 1.25;
+  color: var(--afty-texto-suave);
+  transition: background-color 120ms, color 120ms;
+}
+
+.afty-canal-item[data-afty-escolhido="sim"] {
+  color: var(--afty-destaque-texto);
+  font-weight: 600;
+}
+
+.afty-canal-item[data-afty-cursor="sim"] { background: var(--afty-destaque-fundo); }
+
+/* ============================================================ */
+/* PAINEL DE FONTES                                              */
+/* ============================================================ */
+
+/* ⚠ TODA cor aqui tem FALLBACK, e não é enfeite: este mesmo painel é usado pelo
+   CRIADOR, que não tem a raiz `.afty-ficha` e portanto não tem nenhuma variável
+   `--afty-*` declarada. Sem o segundo argumento do `var()`, o painel do criador
+   ficaria transparente e sem borda. Os fallbacks são exatamente as cores que ele
+   tinha em classe do Tailwind antes de 2026-08-06. */
+.afty-fontes {
+  border: 1px solid var(--afty-borda-forte, #334155);
+  border-radius: var(--afty-raio-peq, 8px);
+  background: var(--afty-poco, #020617);
+  box-shadow: var(--afty-sombra, 0 10px 25px rgb(0 0 0 / 0.5));
+}
+
+/* ⚠ z-index ALTO e `fixed`: o painel flutuante é filho direto da raiz da Ficha,
+   então ele não está mais preso ao contexto de empilhamento do cartão de onde
+   veio. Ver a nota do `PainelFlutuante` sobre o vidro fosco. */
+.afty-fontes-flutuante {
+  z-index: 1000;
+}
+
+.afty-fonte-rotulo { color: var(--afty-texto-suave, #94a3b8); }
+.afty-fonte-valor { color: var(--afty-texto, #e2e8f0); }
+
+.afty-fonte-total {
+  border-top: 1px solid var(--afty-borda, #1e293b);
+}
+
+.afty-fonte-total > span:first-child { color: var(--afty-texto-fraco, #64748b); }
+.afty-fonte-total > span:last-child { color: var(--afty-texto, #ffffff); }
+
+/* ============================================================ */
 /* BUSCA GLOBAL                                                  */
 /* ============================================================ */
 
 .afty-busca-fundo {
   position: fixed;
   inset: 0;
-  z-index: 60;
+  /* Acima do painel de fontes (1000), que por sua vez fica acima do cabeçalho
+     (40) e do painel de rolagens (45). O bote salva-vidas mora fora da raiz e
+     usa o teto do z-index. */
+  z-index: 1200;
   display: flex;
   justify-content: center;
   padding: 12vh 1rem 1rem;
@@ -628,10 +855,15 @@
 /* PAINEL DE ROLAGENS                                            */
 /* ============================================================ */
 
+/* ⚠ O `bottom` NÃO é 0.75rem, e o motivo mora fora do Afty: o botão dos Livros
+   (`components/PdfFab.jsx`, do grimório 2.5.2) é um círculo de 56px fixo em
+   `bottom-4 right-4`, e o painel caía exatamente em cima dele. 5.5rem é a altura
+   dele mais o respiro dele mais uma folga. Isso vale no celular também, onde o
+   painel ocupa a largura toda e passaria por cima do botão de ponta a ponta. */
 .afty-log {
   position: fixed;
   right: 0.75rem;
-  bottom: 0.75rem;
+  bottom: 5.5rem;
   z-index: 45;
   width: min(22rem, calc(100vw - 1.5rem));
   border: 1px solid var(--afty-borda-forte);
@@ -757,4 +989,142 @@
   outline: 2px solid var(--afty-destaque);
   outline-offset: 2px;
   border-radius: var(--afty-raio-peq);
+}
+
+/* ============================================================ */
+/* DENSIDADE                                                     */
+/* ============================================================ */
+
+/* ⚠ A densidade compacta APERTA, e não ESCONDE. Nenhum número, nenhuma linha e
+   nenhum texto some: quem escolhe compacta quer ver MAIS de uma vez, e uma
+   densidade que apaga conteúdo obriga a voltar para a confortável para conferir
+   qualquer coisa, o que é o oposto do pedido.
+
+   O padding daqui vence o do Tailwind pela mesma razão que o tema vence: as
+   utilidades vivem em `@layer` e isto não. */
+.afty-ficha[data-afty-densidade="compacta"] .afty-linha {
+  padding-block: 0.25rem;
+}
+
+.afty-ficha[data-afty-densidade="compacta"] .afty-card {
+  padding: 0.5rem;
+}
+
+.afty-ficha[data-afty-densidade="compacta"] .afty-stat {
+  min-height: 2.375rem;
+  padding-block: 0.125rem;
+}
+
+.afty-ficha[data-afty-densidade="compacta"] .afty-stat-valor { font-size: 0.9375rem; }
+
+.afty-ficha[data-afty-densidade="compacta"] .afty-vital { padding: 0.375rem 0.625rem; }
+.afty-ficha[data-afty-densidade="compacta"] .afty-vital-numero { font-size: 1.25rem; }
+.afty-ficha[data-afty-densidade="compacta"] .afty-vital-trilho { height: 0.4375rem; }
+
+.afty-ficha[data-afty-densidade="compacta"] .afty-aba { padding-block: 0.375rem; }
+
+/* O texto do livro NÃO encolhe junto: parágrafo de regra em corpo menor é o
+   primeiro lugar onde a compacta viraria ilegível. Só a entrelinha cede. */
+.afty-ficha[data-afty-densidade="compacta"] .afty-texto { line-height: 1.45; }
+
+/* ============================================================ */
+/* CELULAR E TABLET — 25% do uso                                 */
+/* ============================================================ */
+
+/* ⚠ O problema do celular NÃO é largura, é ALTURA. O cabeçalho é fixo e leva
+   identidade, três vitais, doze defesas e as abas: numa tela de 360×740 isso come
+   a tela inteira e o corpo da ficha, que é o que se veio ler, nasce fora dela.
+
+   A resposta é o cabeçalho ENCOLHER ao rolar, e não sumir. O que ele perde é
+   sempre o que dá para reaver rolando de volta uma vez. */
+@media (max-width: 640px) {
+  /* A fileira de defesas cabe em quatro colunas antes de virar tira de fita. */
+  .afty-stats { gap: 0.25rem; }
+  .afty-stat { min-height: 2.5rem; }
+  .afty-stat-rotulo { font-size: 0.5rem; }
+  .afty-stat-valor { font-size: 0.9375rem; }
+
+  /* Rolou: os vitais viram uma faixa de números, sem barra e sem os passos. O
+     campo continua lá, e ele é o que importa no meio da luta. */
+  .afty-cabecalho[data-afty-compacto="sim"] .afty-vital-trilho { display: none; }
+  .afty-cabecalho[data-afty-compacto="sim"] .afty-vital { padding: 0.25rem 0.5rem; }
+  .afty-cabecalho[data-afty-compacto="sim"] .afty-vital-numero { font-size: 1.125rem; }
+  .afty-cabecalho[data-afty-compacto="sim"] .afty-passo { display: none; }
+  .afty-cabecalho[data-afty-compacto="sim"] .afty-retrato { display: none; }
+
+  /* O painel de rolagens ocupa a largura toda no celular: encolhido no canto ele
+     fica com duas palavras por linha. */
+  .afty-log {
+    left: 0.5rem;
+    right: 0.5rem;
+    width: auto;
+  }
+
+  .afty-busca-fundo { padding-top: 6vh; }
+}
+
+/* Entre 641 e 1024 (o tablet) o cabeçalho cabe inteiro, e o que falta é alvo de
+   toque. Isso já vem das regras de `pointer: coarse` lá em cima. */
+
+/* ============================================================ */
+/* IMPRESSÃO                                                     */
+/* ============================================================ */
+
+/**
+ * ⚠ O QUE IMPRIME É O QUE ESTÁ NA TELA. A aba aberta imprime, as outras três
+ * não existem no documento, e Habilidade fechada não tem o texto renderizado.
+ * Não é limitação a corrigir: abrir tudo para imprimir sairia com trinta páginas
+ * de regra que ninguém pediu. Quem quer o texto de uma Habilidade no papel abre
+ * ela antes.
+ */
+@media print {
+  /* Fundo escuro em papel gasta a tinta toda e sai cinza. A impressão é preta no
+     branco, independente do tema, e as variáveis são reescritas para o CSS do
+     usuário sair junto em vez de brigar. */
+  .afty-ficha {
+    --afty-fundo: #ffffff;
+    --afty-fundo-brilho: none;
+    --afty-card: #ffffff;
+    --afty-poco: #ffffff;
+    --afty-borda: #cbd5e1;
+    --afty-borda-forte: #94a3b8;
+    --afty-texto: #0f172a;
+    --afty-texto-suave: #334155;
+    --afty-texto-fraco: #64748b;
+    --afty-sombra: none;
+    --afty-imagem: none;
+    min-height: 0;
+    background: #ffffff;
+  }
+
+  .afty-ficha::before { display: none; }
+
+  /* Cabeçalho fixo em papel repete em toda página ou cobre o conteúdo. */
+  .afty-cabecalho {
+    position: static;
+    backdrop-filter: none;
+  }
+
+  .afty-cabecalho::after { display: none; }
+
+  /* Nada que só serve para clicar vai para o papel. */
+  .afty-passo,
+  .afty-abas,
+  .afty-log,
+  .afty-busca-fundo,
+  .afty-fontes,
+  .afty-estrela,
+  .afty-botao {
+    display: none !important;
+  }
+
+  /* O respiro que existe por causa do painel de rolagens. */
+  .afty-respiro { display: none; }
+
+  /* Cartão e linha não podem ser partidos ao meio pela quebra de página. */
+  .afty-card { break-inside: avoid; }
+  .afty-linha { break-inside: avoid; }
+
+  .afty-vital-barra { box-shadow: none; }
+  .afty-vital-numero { border-color: transparent; }
 }

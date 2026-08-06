@@ -9,6 +9,43 @@ qualquer código. Leia junto com `afty-status.md` (estado do sistema), `automaca
 
 ---
 
+## ONDE ESTAMOS (atualizado em 2026-08-06)
+
+**Todas as fases estão feitas.** A Ficha está usável na mesa de ponta a ponta. O que
+resta é conteúdo travado em decisão do autor, e não tela.
+
+| # | Fase | Estado | O que ela entregou | Seção |
+|---|---|---|---|---|
+| 0 | Fundação | Feita | rota, sessão isolada, tokens de tema | 13 |
+| 1 | Sessão | Feita | PV, PE, Alma, rodada, descanso, autosave | 13 |
+| 2 | Ações e rolagem | Feita | Dano, Cura, Manobras, histórico de rolagens | 14 |
+| 3 | Locomoção | Feita | busca global (Ctrl+K), Rápido, filtro por aba | 15 |
+| 4 | Buffs | Feita | três camadas: catalogados, ad-hoc, condições | 17 |
+| 5 | Aparência | Feita | CSS personalizado, presets, prompt para IA | 16 |
+| 6 | Acabamento | Feita | celular, densidade, impressão | 19 |
+| 7 | Inventário e atributos | Feita | aba Equipamentos, carga, os seis atributos | 22 |
+| 8 | Domínios e Invocações | Feita | Domínio nas Ações, Invocações em aba própria | 23 |
+| 9 | Nenhuma rolagem de string | Feita | dano estruturado, dois grupos de dado | 25 |
+
+**As seis abas da Ficha hoje:** Ações, Habilidades, Perícias, Equipamentos, Invocações e
+Buffs.
+
+**O que falta, e por que não está feito:**
+
+| O que | Travado em |
+|---|---|
+| Habilidades na aba Ações | **D7**: nenhum catálogo tem metadado de ação, custo ou usos |
+| Descanso curto e longo | **D3**: falta a regra do que cada um devolve |
+| Condições com mecânica | **D6**: as 26 condições não têm efeito modelado |
+| RD abatendo dano sozinha | **D9**: decisão do autor |
+| Trilho lateral de Buffs | **D10**: preferência do autor |
+| PV por Invocação | pergunta 3 da seção 24 |
+
+**Antes de começar qualquer coisa:** ler a **seção 24**, que é a lista viva de dúvidas e
+de decisões que eu tomei sozinho.
+
+---
+
 ## 0. As quatro decisões que o autor tomou (2026-08-05)
 
 | Pergunta | Resposta | Consequência |
@@ -414,7 +451,7 @@ Cada fase fecha com `npx eslint src/systems/afty/`, `npx vite build` e asserts d
 | ✅ **3. Locomoção** | **FEITA em 2026-08-05.** Ver a seção 15 | 2 |
 | ✅ **4. Buffs** | **FEITA em 2026-08-05.** Ver a seção 17 | 1 |
 | ✅ **5. Aparência** | **FEITA em 2026-08-05.** Ver a seção 16 | 0 |
-| **6. Acabamento** | celular e tablet a sério, impressão, revisão de acessibilidade | todas |
+| ✅ **6. Acabamento** | **FEITA em 2026-08-06.** Ver a seção 19 | todas |
 
 ---
 
@@ -824,3 +861,499 @@ onde fica visível e rastreável. É a pergunta D6.
 
 `npx eslint src/systems/afty/ src/App.jsx` limpo, `npx vite build` limpo, **117 asserts** no total
 (24 sessão, 25 rolagem, 20 conteúdo, 33 tema, 15 buffs).
+
+---
+
+## 18. Dois consertos do CSS personalizado (2026-08-06)
+
+Os dois vieram do autor usando a coisa de verdade, e os dois eram meus.
+
+### O painel de fontes ficava ATRÁS do conteúdo
+
+O painel era `position: absolute` dentro da linha, o que o prende ao **contexto de empilhamento** do
+cartão em que ele nasceu. Basta o cartão ganhar `backdrop-filter`, `transform`, `filter` ou
+`opacity` para virar um contexto próprio, e a partir daí **nenhum z-index salva**: o cartão seguinte,
+que vem depois no documento, pinta por cima dele inteiro.
+
+⚠ No criador isso nunca apareceu porque o CSS é meu. Na Ficha o CSS é do usuário, e **vidro fosco nos
+cartões é das primeiras coisas que qualquer IA escreve**.
+
+**O conserto:** na Ficha o painel virou **flutuante**. Ele é enviado por portal e posicionado em
+`fixed`, a partir do retângulo do gatilho, e com isso sai de dentro do cartão de vez.
+
+⚠ **O portal vai para `#afty-ficha`, e NÃO para o `document.body`.** Dois motivos, e os dois são
+fatais se errar: as variáveis `--afty-*` são declaradas em `.afty-ficha` e não chegariam ao body, e o
+`@scope (#afty-ficha)` do CSS do usuário também não alcançaria o painel. Ele ficaria sem tema nenhum.
+
+Com o painel em `fixed` e coordenadas calculadas na abertura, **rolar e redimensionar fecham**, senão
+ele fica plantado no ar longe do número que explica. Ele também abre para CIMA quando o gatilho está
+na metade de baixo da tela.
+
+**De quebra, o painel passou a ser tematizável.** Ele era pintado com classe do Tailwind
+(`bg-slate-950`), então num tema Pergaminho seria uma caixa preta. Agora sai de token, com
+**fallback em todo `var()`**: o mesmo componente é usado pelo criador, que não tem a raiz
+`.afty-ficha` e portanto não tem variável nenhuma declarada.
+
+⚠ O `PainelDeFontes` ancorado **continua igual** para o criador. Lá o hover é CSS puro e funciona.
+
+### As IAs pintavam só o cabeçalho
+
+Não era limitação do modelo: **o contrato tinha 17 seletores e quase todos eram do cabeçalho**. A IA
+não tinha como saber que existia um corpo com quatro abas.
+
+Três mudanças no prompt:
+
+1. **O contrato foi para 45 seletores**, agrupados em Estrutura, Cabeçalho, Corpo, Controles e
+   Camadas. O grupo **Corpo** sozinho tem 10.
+2. **`MAPA_DA_PAGINA`**, uma árvore que mostra o cabeçalho, as quatro abas e o que cada uma contém.
+3. Um aviso explícito de que **o corpo é a maior parte da ficha** e um tema que pinta só o topo fica
+   pela metade.
+
+Mais **`ATRIBUTOS_DOC`**, com os nove `data-afty-*` que permitem mira fina, e uma regra nova: **não
+pôr `overflow: hidden` em `.afty-card` nem em `.afty-linha`**, que era a outra metade do bug do
+painel.
+
+Também entrou o `data-afty-aba` nos botões de aba, que o contrato prometia e ninguém emitia. Foi o
+assert de contrato que pegou.
+
+### Verificação
+
+`npx eslint src/systems/afty/ src/App.jsx` limpo, `npx vite build` limpo, **121 asserts** (24 sessão,
+25 rolagem, 20 conteúdo, 37 tema, 15 buffs). Sete asserts novos, entre eles um que reprova se o
+prompt deixar de citar o mapa, as quatro abas ou os seletores do corpo.
+
+### Sobre o repositório com mais gente
+
+O commit **#018 do GoliasK** (perícias personalizadas e ofícios) entrou em cima do #017 e foi trazido
+por fast-forward antes de qualquer edição. Ele mexe em `afty-pericias.js`, `afty-derive.js` e
+`afty-schema.js`, que a Ficha consome, e **não quebrou nada**: perícia personalizada e Ofício chegam
+na aba Perícias com o shape de sempre, são roláveis e a busca global as acha. O campo `aparencia` que
+eu tinha somado ao schema sobreviveu ao merge dele.
+
+---
+
+## 19. Fase 6, o acabamento (2026-08-06)
+
+A última fase do plano: **celular e tablet a sério, densidade e impressão**. Nenhum
+número novo e nenhuma regra nova, só a Ficha se comportando em tela pequena e em papel.
+
+### Densidade, e o que ela NÃO faz
+
+Duas posições, num interruptor no cabeçalho: **Confortável** e **Compacta**. A raiz
+carrega `data-afty-densidade`, e o resto é CSS.
+
+A decisão que vale registrar é o **limite**: a compacta **aperta e não esconde**.
+Nenhum número, nenhuma linha e nenhum texto sai da tela. Uma densidade que apaga
+conteúdo obriga a voltar para a confortável para conferir qualquer coisa, o que é o
+oposto de por que alguém troca de densidade: quem escolhe compacta quer ver **mais**
+de uma vez. Tem assert varrendo as regras da compacta e reprovando qualquer
+`display: none` ou `visibility: hidden`.
+
+A exceção interna é o **texto do livro**, que não encolhe junto. Parágrafo de regra
+em corpo menor é o primeiro lugar onde a compacta viraria ilegível, então lá só a
+entrelinha cede.
+
+**Onde ela mora:** chave global no `localStorage`, e **não** na criatura como o tema.
+Densidade é preferência de **aparelho** e não de personagem: a mesma ficha quer
+compacta no tablet de mesa e confortável no monitor, e se viajasse no export chegaria
+imposta na tela dos outros. É a razão de ela não ter entrado no objeto do tema.
+
+### Celular: o problema é ALTURA, não largura
+
+O cabeçalho é fixo e leva identidade, três vitais, até doze defesas e as abas. Numa
+tela de 360×740 isso come a tela inteira, e o corpo da ficha (que é o que se veio ler)
+nasce fora dela.
+
+Duas mudanças:
+
+1. **A fileira de controles vai para linha própria.** São sete botões mais o contador
+   de rodada, e com o alvo de toque de 44px que o `pointer: coarse` já impunha eles
+   somam mais de 300px. Ao lado do nome, numa tela de 360, esmagavam o nome da
+   criatura até três letras.
+2. **O cabeçalho encolhe ao rolar, e só então.** Rolou: as barras dos vitais somem, os
+   passos de `−`/`+` somem, o retrato sai, e os vitais viram uma faixa de números com
+   o campo ainda editável, que é o que importa no meio da luta.
+
+O ponto 2 tem uma regra explícita: **nada some do cabeçalho parado**. Tudo que
+desaparece está atrás do `data-afty-compacto="sim"`, senão o jogador abre a ficha e
+não vê a barra de PV nenhuma vez. Um assert varre a media query do celular e reprova
+qualquer `display: none` que não esteja atrás desse atributo.
+
+O painel de rolagens passa a ocupar a largura toda no celular: encolhido no canto ele
+ficava com duas palavras por linha.
+
+### Impressão
+
+**O que imprime é o que está na tela.** A aba aberta imprime, as outras três não
+existem no documento, e Habilidade fechada não tem o texto renderizado. Isso é
+deliberado e não é limitação a corrigir: abrir tudo para imprimir sairia com trinta
+páginas de regra que ninguém pediu. Quem quer o texto de uma Habilidade no papel abre
+ela antes.
+
+O papel é preto no branco, o cabeçalho fixo vira estático (fixo em papel repete em
+toda página ou cobre o conteúdo), cartão e linha ganham `break-inside: avoid`, e nada
+que só serve para clicar vai para o papel: botões, abas, passos, estrelas de favorito,
+o painel de rolagens e o painel de fontes.
+
+**A decisão técnica:** a impressão **reescreve os tokens**, e não pinta com cor
+literal. Se ela pintasse com cor escrita à mão, o CSS do usuário (que vem depois e no
+mesmo peso, ver a seção 14) brigaria com ela e o papel sairia escuro de novo.
+Reescrevendo `--afty-fundo` e companhia, o tema do usuário sai claro junto, de graça.
+
+### Contrato
+
+Duas entradas novas, e as duas entram no prompt para a IA: a classe
+`.afty-controles` (a fileira de botões do cabeçalho) e o atributo
+`[data-afty-densidade]`. O respiro do fim do `<main>`, que era mirado por
+`main > .h-24`, ganhou a classe `.afty-respiro`: classe de utilidade do Tailwind não é
+API, e trocar o respiro de 24 para 28 quebraria a impressão em silêncio.
+
+### Verificação
+
+`npx eslint src/systems/afty/` e `npx vite build` limpos, **133 asserts** (24 sessão,
+25 rolagem, 20 conteúdo, 37 tema, 15 buffs, **12 da fase 6**), `src/components/`
+intocado.
+
+### O que fica de fora, e por quê
+
+- **Impressão de tudo de uma vez.** Ver acima: é decisão, não pendência.
+- **Rolagem de Feitiço**, que continua parada no `resumoFeiticos` devolver `valor`
+  pronto para exibir em vez de `{dados, faces, fixo}`. Ela entra junto com o
+  `afty-feiticos.js` passar a ler o Motor.
+- **Habilidades na aba Ações**, que continua na pergunta D7: nenhum catálogo tem
+  metadado de ação, custo ou usos.
+- **D3, D6, D9 e D10** seguem sem resposta do autor.
+
+---
+
+## 20. Feitiço que rola, seletor de canal e dois consertos (2026-08-06, tarde)
+
+### O Feitiço passou a rolar
+
+Era a lacuna funcional mais antiga da aba Ações: o Feitiço mostrava `8d6` como texto
+morto enquanto Dano, Cura e Manobra já rolavam.
+
+**A causa não era o motor, era o formato.** O `resumoFeiticos` devolvia só o `valor` já
+pronto para exibir (`"8d6"`, `"3× 4d8"`, `"Somente Condição"`), e a Ficha não parseia
+string: reler os dados de uma notação seria desfazer trabalho que o motor já fez, e
+quebraria no primeiro formato novo. Os números sempre estiveram lá, em `calc.dados` e
+`calc.tipoDado`, no mesmo lugar de onde a notação sai.
+
+Entrou o `rolagensDoFeitico(f, calc)`, exportado do `afty-feiticos.js`, e o campo
+`rolagens` no resumo. É uma **lista** porque um Feitiço tem mais de uma rolagem de
+verdade:
+
+| Caso | O que sai |
+|---|---|
+| Dano comum, Dano na Alma | uma rolagem |
+| Curativo | uma rolagem, com `tom: "cura"` (senão o log pinta cura de vermelho) |
+| Dano contínuo | **duas**: o Golpe Inicial e o Por Rodada |
+| Múltiplos Disparos | uma, com `vezes` = os disparos |
+| Golpeador com vários golpes | uma, com `vezes` = os golpes |
+| Somente Condição | **nenhuma** |
+| Auxiliar de Múltiplos Efeitos, Passivo, Especial sem dano | nenhuma |
+
+Duas decisões:
+
+- **`vezes` não multiplica os dados.** Cada disparo e cada golpe tem acerto próprio, e
+  somar tudo numa rolagem só sairia com o dano de todos acertando. Ele vira um contador
+  `×3` ao lado, e cada clique rola um.
+- **"Somente Condição" não oferece botão.** O Feitiço trocou o dano inteiro pela
+  condição, e um botão ali mentiria sobre o que ele faz.
+
+Uma linha nova no `calcularFeiticoDano`: `contDadosPorRodada`, a **quantidade** de dados
+do contínuo e não só a notação, pelo mesmo motivo de sempre.
+
+### O seletor de canal dos Buffs
+
+Pedido do autor: o `<select>` nativo de canais no buff ad-hoc virou o **seletor do
+Motor** (Habilidades > Funcionamento Básico). São dezenas de canais, e o nativo os
+despeja num tubo de 300px sem grupo nenhum: achar "Margem de Crítico" era rolar até
+topar com ele. O do Motor usa a **largura**, com três colunas, e procurar vira varrer
+com o olho. Busca sem acento, setas, Enter e Esc.
+
+⚠ Ele foi **copiado e repintado**, não importado. O `CanalPicker` do criador é uma
+função local sem export, e a pintura dele é classe de cor do Tailwind (`bg-slate-950`),
+que não sobrevive ao tema da Ficha. A lógica é a mesma de propósito; a pintura saiu por
+token, e um assert reprova se qualquer `bg-slate` ou `text-purple` voltar para a cópia.
+As quatro classes novas entraram no contrato do tema.
+
+O `<select>` das **Condições** continua nativo, e está certo: são 26 nomes numa lista
+chapada, sem grupo e sem nota, que é exatamente o caso em que o nativo serve.
+
+### Dois consertos
+
+- **O painel de rolagens cobria o botão dos Livros.** O `PdfFab.jsx` do grimório 2.5.2
+  é um círculo de 56px fixo em `bottom-4 right-4`, e o painel caía em cima dele. Aquilo
+  é somente-leitura, então quem desvia é o Afty: o painel subiu para `bottom: 5.5rem` e
+  o respiro do fim da aba cresceu junto. Tem assert, porque a correção é um número que
+  parece arbitrário e alguém "arrumaria" o painel de volta para o canto.
+- **O rodapé de feedback e o aviso de abertura saíram**, a pedido do autor: a pesquisa
+  fechou. É a única mudança fora de `src/systems/afty/`, e foi autorizada
+  explicitamente. O `components/FeedbackPrompt.jsx` continua no lugar, sem uso, e
+  `src/components/` não foi editado.
+
+### Verificação
+
+`npx eslint src/App.jsx src/systems/afty/` e `npx vite build` limpos, **150 asserts**
+(24 sessão, 25 rolagem, 20 conteúdo, 37 tema, 15 buffs, 16 da fase 6, **13 do Feitiço
+que rola**), `src/components/` intocado.
+
+---
+
+## 21. Sub-abas na aba Habilidades (2026-08-06)
+
+Pedido do autor: a lista de **Habilidades de Especialização** ficou grande demais em
+ficha de nível alto, e os **Níveis Lendários** precisavam separar Melhorias Superiores
+de Habilidades Lendárias.
+
+### Como a divisão funciona
+
+Cada item ganhou um campo `sub` (`{ id, label }`), e o componente monta as sub-abas a
+partir do que os itens trazem. Duas fontes:
+
+- **Especialização**: a sub sai do próprio `h.especializacaoId`, e não de uma lista
+  escrita à mão. Classe nova entra sozinha, sem tocar em nada.
+- **Níveis Lendários**: divisão fixa em `SUBS_ALTO_NIVEL`, com Melhorias Superiores,
+  Habilidades Lendárias e Habilidade Ápice. São três coisas de natureza diferente que
+  nunca foram uma lista só de verdade. O Ápice ganhou aba própria em vez de ser
+  empurrado para dentro das Lendárias: é um item só, e a aba dele é auto-explicativa.
+
+Quatro regras, todas com assert:
+
+1. **Uma divisão só não vira aba.** Numa ficha de classe única, "Lutador" apareceria
+   sozinho por cima de uma lista que já é toda do Lutador: pura perda de fileira. As
+   sub-abas aparecem a partir de duas.
+2. **Dividir não some com item nenhum.** A soma das divisões é a lista inteira, e há
+   assert conferindo isso: é o que impede a sub-aba de virar um filtro que engole
+   conteúdo.
+3. **A busca abre a divisão onde o item mora.** Sem isso o jogador buscaria uma
+   Habilidade, a Ficha trocaria para a aba certa e não mostraria nada.
+4. **A divisão vazia cede a vez.** O filtro local pode esvaziar a que está aberta, e aí
+   a primeira com item assume.
+
+A etiqueta que virou aba saiu das linhas: "Melhoria Superior" repetido em toda linha,
+logo abaixo de um cabeçalho que já diz "Melhorias Superiores", é ruído. O mesmo vale
+para o nome da Especialização quando ela é a aba aberta.
+
+### A decisão técnica que se repetiu
+
+A sub-aba ativa é conta de **leitura**, e não estado escrito por efeito. A escolha
+guarda junto qual destaque estava valendo quando ela foi feita (`destaqueVisto`), e é
+isso que deixa a busca mandar na aba sem precisar de um `useEffect` que escreveria
+estado. É a terceira vez que o `react-hooks/set-state-in-effect` do projeto empurra
+para a solução melhor: já tinha acontecido com o clamp da sessão e com a busca global.
+
+### Verificação
+
+Lint e build limpos, **163 asserts** (28 no conteúdo, 21 na fase 6), `src/components/`
+intocado.
+
+---
+
+## 22. Fase 7: o inventário e os atributos (2026-08-06)
+
+As sete fases do plano estavam fechadas, então esta fase saiu de uma varredura do que
+o `deriveAfty` calcula e a Ficha nunca mostrava. Achei quatro coisas: **atributos**,
+**equipamentos**, **domínios** e **invocações**. Esta fase entrega as duas primeiras.
+
+### Os seis atributos
+
+Buraco antigo e simples: a Ficha mostrava os derivados (Defesa, CD, os três tipos de
+teste) e não mostrava **de onde eles saem**. Na mesa, "faz um teste de Força pura"
+acontece o tempo todo, e não havia onde ler o número.
+
+Entraram no topo da aba Perícias, que é a aba dos testes. O **valor** é o número
+grande e o **modificador** é a pastilha embaixo, porque os dois se usam: o valor em
+pré-requisito e em regra que lê atributo, o modificador em toda conta. **Só o
+modificador rola**, como teste puro. O valor exibido é o `attrEff`, já com o que o
+Motor soma e já aparado no limite, com as fontes no hover como todo número da Ficha.
+
+### O inventário
+
+Armas, uniformes, escudos e itens existiam no criador e **nunca chegavam à mesa**: quem
+quisesse ler o que o próprio talismã faz voltava ao criador. Agora há uma aba
+**Equipamentos**, com sub-abas por tipo (as mesmas da fase anterior, com o componente
+extraído para `GrupoComSubAbas.jsx` e usado pelas duas abas).
+
+Três decisões:
+
+1. **O inventário é uma lista SEPARADA do conteúdo**, e não um sétimo grupo da aba
+   Habilidades. Os critérios são outros: aquela lista é "o que a criatura **sabe
+   fazer**" e esta é "o que ela **carrega**". Juntas, a aba Habilidades mostraria espada
+   no meio de Habilidade e o contador de 193 itens contaria bandagem. O **formato**,
+   porém, é o mesmo de propósito, e é o que dá ao inventário o texto verbatim, o
+   Rápido, o destaque da busca e o filtro sem uma linha nova.
+2. **Os números do equipamento não se repetem na aba.** O bônus de Defesa do uniforme,
+   a RD do escudo e o acerto da Ferramenta já entram na Defesa, na RD e na linha de
+   Dano, com as fontes no hover de cada um. Repetir aqui seria convidar a somar duas
+   vezes. A aba mostra o que não está em lugar nenhum: o que se carrega, quanto pesa e
+   o texto de cada item.
+3. **A sobrecarga ganhou destaque**, com barra e as duas penalidades escritas. É
+   penalidade que se esquece: −5 de Defesa e −4,5m de Deslocamento saem do nada se
+   ninguém disser de onde vêm. Os dois já estão descontados nos números do topo.
+
+A chave de cada linha é o `uid` da **entrada**, e não o id do catálogo: duas Katanas
+com encantamentos diferentes são duas linhas, e chave repetida faria as duas abrirem
+juntas. Os encantamentos da Ferramenta Amaldiçoada aparecem como as opções aninhadas de
+uma Habilidade, porque é a mesma coisa: uma escolha dentro do item.
+
+Como em Habilidades, **a aba não edita nada**. Comprar, equipar e encantar são escolhas
+de ficha, e escolha mora no criador. Tem assert reprovando qualquer controle de edição
+que apareça no arquivo.
+
+### Verificação
+
+Lint e build limpos, **176 asserts** (13 novos do inventário e dos atributos),
+`src/components/` intocado.
+
+### O que sobrou desta varredura
+
+- **Domínios** (`derived.dominios`) e **Invocações e Hordas** (`derived.invocacoes`,
+  `derived.hordas`) continuam fora da Ficha. Os dois são conteúdo de combate, com texto
+  e números já resolvidos, e a casa deles provavelmente é a aba Ações. É o próximo
+  passo natural.
+- **D3, D6, D9 e D10** seguem sem resposta do autor, e **D7** (Habilidades na aba
+  Ações) continua travada na falta de metadado de ação nos catálogos.
+
+---
+
+## 23. Fase 8: Domínios e Invocações, e o chip serrilhado (2026-08-06)
+
+### O conserto: marca que é número tem largura fixa
+
+O autor apontou que **os Níveis nas Habilidades de Especialização estavam em tamanhos
+diferentes**. "Nível 1" e "Nível 20" são textos de larguras diferentes, e como chip eles
+serrilhavam a coluna da direita: cada linha empurrava o próprio chip para um lugar. É
+exatamente o mesmo problema que a grade de defesas teve no cabeçalho, e a resposta é a
+mesma: **célula de tamanho igual**.
+
+As marcas deixaram de ser string e viraram `{ label, tipo }`. Só as que são **número**
+ganham tipo (`nivel`, `vezes`, `espacos`), e só elas recebem largura mínima e número
+tabular. As que são palavra ("Lutador", "Equipado") ficam do tamanho do texto, porque
+forçar largura nelas abriria buraco no meio da linha. Tem assert reprovando `min-width`
+no `.afty-chip` genérico.
+
+### Domínios
+
+A **Expansão de Domínio** entrou na aba **Ações**, e não em aba própria: ela É uma ação
+de combate, com custo em PE e duração em rodadas, e o jogador procura por ela onde
+procura o resto do turno dele. Cada linha traz área, duração, PV da barreira e custo, e
+abre com o texto inteiro. O texto **já vem montado** pelo `textoDoDominio`, o mesmo que
+o criador usa: a Ficha não remonta nada.
+
+### Invocações
+
+Ganharam **aba própria**, e o motivo é o oposto do anterior: uma Invocação não é uma
+ação, é uma **criatura**, com PV, Defesa, Deslocamento, CD, cinco Testes de Resistência
+e ações próprias. Empurrá-la para a aba Ações misturaria dois níveis de coisa.
+
+O ponto inteiro da aba é que **as ações dela rolam**, com o acerto e o dano da própria
+Invocação: no meio da luta o jogador rola pela Invocação sem sair da Ficha. Os avisos do
+resolver aparecem, no cartão e por ação, porque eles dizem que a Invocação está fora das
+regras e escondê-los seria esconder o que precisa ser consertado. As Hordas entram numa
+lista simples no fim.
+
+### Verificação
+
+Lint e build limpos, **186 asserts** (9 novos), `src/components/` intocado.
+
+---
+
+## 24. DÚVIDAS E PROBLEMAS PARA REVISAR COM O AUTOR
+
+Lista pedida pelo autor em 2026-08-06. Nada aqui está errado a ponto de travar o uso, e
+nada aqui foi decidido por mim sem estar escrito.
+
+### Achados no código, que podem ser bug de regra
+
+1. **Domínio sem a Aptidão fica meio resolvido.** Uma criatura que tem um Domínio
+   gravado mas não tem nenhuma das três Aptidões de Expansão recebe `versao: ""`, e daí
+   saem `area: ""` e `custo: 0` — mas o **texto continua sendo gerado inteiro**, com
+   área e duração dentro dele. Na Ficha isso aparece como uma linha sem área e sem
+   custo, com um parágrafo completo embaixo. É inconsistência do resolver, não da Ficha.
+   **Pergunta:** domínio sem Aptidão deveria sumir da Ficha, ou aparecer com um aviso?
+
+2. **A Invocação valida a ação mas o criador deixa gravar.** Uma Ação de Ataque marcada
+   como Simples gera o aviso "Ação de Ataque deve ser Complexa" e continua valendo.
+   Segue a convenção do projeto (avisa, não impede), então só confirmo se é intencional
+   aqui também.
+
+3. **O PV das Invocações não entra na sessão.** O número que a Ficha mostra é o
+   **máximo**, e não um recurso que se gasta. Dar barra própria a cada Invocação sem o
+   descanso saber o que fazer com elas deixaria a ficha com números que ninguém zera.
+   **Pergunta:** a Invocação deve ter PV rastreado na sessão?
+
+### Dívida técnica que eu criei ou herdei
+
+4. **O dano da Invocação ainda é string.** O `resolveInvocacao` guarda o dado como
+   `"2d12"` e a aba quebra o texto para rolar. É a última coisa da Ficha que parseia
+   notação, e é o mesmo problema que o Feitiço tinha antes do `rolagensDoFeitico`. O
+   conserto é do mesmo tamanho: devolver `{ dados, faces }` do lugar onde a notação é
+   montada.
+
+5. **A Ficha está com sete abas.** Ações, Habilidades, Perícias, Equipamentos,
+   Invocações, Buffs. No celular elas rolam na horizontal, o que funciona, mas passou do
+   ponto em que tudo cabe de uma vez num monitor estreito. **Pergunta:** vale agrupar,
+   ou sete está bom?
+
+6. **Domínio na aba Ações e Invocação em aba própria** é uma assimetria deliberada, e
+   está justificada acima, mas é decisão minha e o autor pode discordar.
+
+### Do que já estava aberto
+
+7. **D3** (descanso curto e longo, e o que cada um devolve), **D6** (condições com
+   mecânica), **D9** (RD abatendo dano automaticamente) e **D10** (trilho lateral)
+   continuam sem resposta.
+
+8. **D7** segue travada: nenhum catálogo tem metadado de ação, custo ou usos, então as
+   Habilidades não podem entrar na aba Ações sem inventar a classificação.
+
+9. **Sub-aba única não aparece** (uma Especialização só). Foi decisão minha, e é
+   reversível numa linha se o autor preferir a aba sempre visível.
+
+10. **O Ápice ganhou sub-aba própria** nos Níveis Lendários, em vez de entrar junto das
+    Lendárias. Também é decisão minha.
+
+---
+
+## 25. Fase 9: nenhuma rolagem nasce de string (2026-08-06)
+
+Fase curta e de uma regra só, que fecha a dívida número 4 da seção 24: **quem tem o
+número entrega o número, e ninguém relê notação de volta de uma string.**
+
+### O bug que quase chegou à mesa
+
+Ao ligar as ações da Invocação na fase anterior eu quebrei a notação no `"d"`, porque o
+`resolveInvocacao` guarda o dado como texto. Funciona em `"2d12"`. **Não funciona na
+escada de dano do Afty**, que a partir do oitavo degrau devolve dois dados diferentes:
+`"3d12 + 1d8"`. Quebrado no `"d"`, aquilo vira `["3", "12 + 1", "8"]`, ou seja três
+dados de face inválida, e a Invocação rolaria um dano errado **sem avisar ninguém**.
+
+Foi achado escrevendo o assert, e não em jogo.
+
+### O conserto
+
+- `dadosDaNotacao(str)` no `afty-invocacoes.js` devolve `[{ dados, faces }, ...]`. É uma
+  **lista** exatamente por causa dos degraus de dois dados, e devolve **vazio** no piso
+  da escada (o dado fixo `"1"`), porque ali não há dado a rolar e um `1d1` inventado
+  rolaria um d1.
+- O `resolveInvocacao` anexa `grupos` ao dano, à cura e ao dano adicional **num lugar
+  só**: o `resolveAcao` remonta o dado em vários pontos, e estruturar em cada um seria
+  quatro cópias da mesma conta.
+- O `rolarDano` aceita `grupos` e rola tudo numa **rolagem só**, com o crítico dobrando
+  todos os grupos e o valor fixo entrando uma vez. Sem isso, rolar `"2d12 + 1d6"`
+  exigiria duas chamadas e uma soma de cabeça, e o log mostraria duas rolagens onde a
+  regra vê uma. O caminho de um grupo (`dados`/`faces`) continua idêntico, porque é o de
+  quase toda linha da Ficha.
+
+### O assert que impede a volta
+
+Uma varredura em `ficha/` reprova qualquer `split("d")` ou regex de notação. A exceção
+nomeada é o `facesDe`, que lê `"d8"` (só a face) nas linhas de dano e cura, e existe para
+esse caso e só para ele. Outro assert percorre **os 40 primeiros degraus da escada** e
+confere que cada um vira rolagem com o máximo certo.
+
+### Verificação
+
+Lint e build limpos, **193 asserts** (7 novos), `src/components/` intocado.
