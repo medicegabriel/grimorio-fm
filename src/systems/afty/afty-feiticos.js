@@ -306,6 +306,29 @@ const mediaDoDado = (tipo) => (tipo + 1) / 2;
 export const mediaDano = (qtd, tipo) => Math.floor(qtd * mediaDoDado(tipo));
 export const notacaoDano = (qtd, tipo) => `${qtd}d${tipo}`;
 
+/**
+ * Conjuração Aprimorada é gratuita para toda criatura ao criar um Feitiço de
+ * Dano. O atributo é o da Técnica e o nível de personagem da regra é o ND.
+ * Nível 0 não aparece na tabela da habilidade, então não recebe bônus.
+ */
+export function bonusConjuracaoAprimorada(nivel, ctx = {}) {
+  const modTecnica = Math.trunc(Number(ctx.modTecnica) || 0);
+  const nd = Math.max(0, Math.trunc(Number(ctx.nd) || 0));
+  if (nivel === "max") return 3 * modTecnica + 3 * nd;
+  if (nivel === 5) return 2 * modTecnica + 2 * nd;
+  if (nivel === 4) return 2 * modTecnica + nd;
+  if (nivel === 3) return 2 * modTecnica;
+  if (nivel === 1 || nivel === 2) return modTecnica;
+  return 0;
+}
+
+export function notacaoDanoComBonus(qtd, tipo, bonus = 0) {
+  const base = notacaoDano(qtd, tipo);
+  const fixo = Math.trunc(Number(bonus) || 0);
+  if (fixo === 0) return base;
+  return `${base}${fixo > 0 ? "+" : ""}${fixo}`;
+}
+
 function tabelaDano(alvo, resolucao) {
   if (alvo === "area") return DANO_AREA_TR;               // área só tem tabela de TR
   return resolucao === "ataque" ? DANO_UNICO_ATAQUE : DANO_UNICO_TR;
@@ -557,6 +580,12 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
     dados = 1;
   }
 
+  // Conjuração Aprimorada é um bônus FIXO por alvo. Ele não entra no saldo de
+  // customização e não muda a quantidade de dados. Em Múltiplos Disparos o
+  // cálculo continua sendo por um alvo: separar os disparos reduz os dados, mas
+  // conserva o mesmo bônus na fórmula daquele alvo.
+  const bonusDano = bonusConjuracaoAprimorada(nivel, ctx);
+
   // 9) Múltiplos disparos: divide os dados finais (piso, mín 1) pelo nº de disparos.
   let danoTexto;
   if (subtipo === "multiplos") {
@@ -564,16 +593,22 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
     let disparos = Math.min(Math.max(1, f.disparos | 0 || 1), maxDisparos);
     if ((f.disparos | 0) > maxDisparos) avisos.push(`Máximo de ${maxDisparos} disparos no ${NIVEL_LABEL[nivel]}.`);
     const porDisparo = Math.max(1, Math.floor(dados / disparos));
-    disparosInfo = { disparos, porDisparo, concentradoTotal: dados };
-    danoTexto = `${disparos}× ${notacaoDano(porDisparo, tipoDado)}`;
+    disparosInfo = {
+      disparos,
+      porDisparo,
+      concentradoTotal: dados,
+      porDisparoTexto: notacaoDanoComBonus(porDisparo, tipoDado, bonusDano),
+      concentradoTexto: notacaoDanoComBonus(dados, tipoDado, bonusDano),
+    };
+    danoTexto = `${disparos}× ${disparosInfo.porDisparoTexto}`;
     detalhes.multiplos = disparosInfo;
   } else {
-    danoTexto = f.focoCondicao ? "Somente Condição" : notacaoDano(dados, tipoDado);
+    danoTexto = f.focoCondicao ? "Somente Condição" : notacaoDanoComBonus(dados, tipoDado, bonusDano);
   }
 
   // Dano contínuo: metade dos dados (piso) por rodada.
   if (subtipo === "continuo") {
-    danoContInicial = notacaoDano(dados, tipoDado);
+    danoContInicial = notacaoDanoComBonus(dados, tipoDado, bonusDano);
     const contDados = Math.max(1, Math.floor(dados / 2));
     contPorRodada = notacaoDano(contDados, tipoDado);
     contDadosPorRodada = contDados;
@@ -601,8 +636,12 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
     dados,
     tipoDado,
     dano: danoTexto,
+    bonusDano,
+    partesDano: bonusDano
+      ? [{ label: "Conjuração Aprimorada", valor: bonusDano }]
+      : [],
     // Somente Condição e Múltiplos Disparos não têm média de dano única.
-    media: (subtipo === "multiplos" || f.focoCondicao) ? null : mediaDano(dados, tipoDado),
+    media: (subtipo === "multiplos" || f.focoCondicao) ? null : mediaDano(dados, tipoDado) + bonusDano,
     alcance: alcanceFinal,
     area: areaFinal,
     forma: alvo === "area" ? (f.formaArea || null) : null,
@@ -2504,15 +2543,24 @@ export function rolagensDoFeitico(f, calc) {
     if (f.focoCondicao) return [];
     if (calc.disparos) {
       const d = calc.disparos;
-      return [{ rotulo: "Disparo", dados: d.porDisparo, faces, tom: "dano", vezes: d.disparos }];
+      return [{
+        rotulo: "Disparo", dados: d.porDisparo, faces, fixo: calc.bonusDano || 0,
+        partes: calc.partesDano || [], tom: "dano", vezes: d.disparos,
+      }];
     }
     if (calc.contDadosPorRodada > 0) {
       return [
-        { rotulo: "Golpe Inicial", dados, faces, tom: "dano", vezes: 1 },
-        { rotulo: "Por Rodada", dados: calc.contDadosPorRodada, faces, tom: "dano", vezes: 1 },
+        {
+          rotulo: "Golpe Inicial", dados, faces, fixo: calc.bonusDano || 0,
+          partes: calc.partesDano || [], tom: "dano", vezes: 1,
+        },
+        { rotulo: "Por Rodada", dados: calc.contDadosPorRodada, faces, fixo: 0, partes: [], tom: "dano", vezes: 1 },
       ];
     }
-    return [{ rotulo: "Dano", dados, faces, tom: "dano", vezes: 1 }];
+    return [{
+      rotulo: "Dano", dados, faces, fixo: calc.bonusDano || 0,
+      partes: calc.partesDano || [], tom: "dano", vezes: 1,
+    }];
   }
 
   if (f.tipo === "especial") {

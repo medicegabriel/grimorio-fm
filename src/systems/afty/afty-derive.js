@@ -334,12 +334,15 @@ export function deriveAfty(creature, opcoes = {}) {
   // `inacessiveis` é refeito mais abaixo, com o atributo já somado dos efeitos
   // PERMANENTES. Talento é o único catálogo cujo pré-requisito lê atributo.
   const origemId = creature?.core?.origem?.id ?? null;
-  const talentosPre = resolveTalentos(creature, { nd, attrEff: attrBase, origemId });
+  const talentosPre = resolveTalentos(creature, {
+    nd, attrEff: attrBase, origemId, especializacoes: especializacoes.escolhidas,
+  });
   // bt entra por causa do Roubo de Habilidade, cujo limite de repetições é o
   // Bônus de Treinamento. O último parâmetro são as vagas extras da Habilidade
   // Geral Especialização.
   const habilidades = resolveHabilidades(
     creature, especializacoes.escolhidas, talentosPre.gastos, bt, vagasHabilidade, vagasTalento,
+    { nd, almaLivreEspecializacao: talentosPre.almaLivreEspecializacao },
   );
   // Alto Nível (21+). Além do ND, cada trilha exige a Habilidade Geral
   // correspondente, que só DESTRAVA (não dá vaga).
@@ -354,6 +357,12 @@ export function deriveAfty(creature, opcoes = {}) {
   const nivelEspec = {};
   for (const e of especializacoes.escolhidas) {
     nivelEspec[e.id] = { real: e.nivel ?? 0, escalonamento: e.nivelEscalonamento ?? e.nivel ?? 0 };
+  }
+  if (habilidades.almaLivre?.habilidadeId) {
+    nivelEspec[habilidades.almaLivre.especializacaoId] = {
+      real: habilidades.almaLivre.nivel,
+      escalonamento: habilidades.almaLivre.nivel,
+    };
   }
 
   // Efeitos de ficha das entradas escolhidas. O catálogo de efeitos ainda está
@@ -505,8 +514,8 @@ export function deriveAfty(creature, opcoes = {}) {
   // `empolgacaoMaxima` sai do estágio 0b junto do nível de aptidão, e por isso
   // já está resolvido aqui: ele troca a tabela de dados de Empolgação, e a
   // média do dado é o que as Manobras de Empolgação somam.
-  const nivelCmb = habilidades.niveisPorEspec?.combatente ?? 0;
-  const nivelRes = habilidades.niveisPorEspec?.restringido ?? 0;
+  const nivelCmb = habilidades.niveisPorEfeito?.combatente ?? 0;
+  const nivelRes = habilidades.niveisPorEfeito?.restringido ?? 0;
 
   // ---------- Expansão de Domínio ----------
   // ⚠ Entra numa SEGUNDA lista, e não no `efeitosTodos` lá de cima, por ordem de
@@ -646,7 +655,9 @@ export function deriveAfty(creature, opcoes = {}) {
   const modPermanente = Object.fromEntries(Object.entries(attrPermanente).map(([k, v]) => [k, mod(v)]));
 
   // Talentos de novo, agora com o atributo permanente: só o `inacessiveis` muda.
-  const talentos = resolveTalentos(creature, { nd, attrEff: attrPermanente, origemId });
+  const talentos = resolveTalentos(creature, {
+    nd, attrEff: attrPermanente, origemId, especializacoes: especializacoes.escolhidas,
+  });
 
   // Estágio 1b: atributo TEMPORÁRIO, por cima do permanente. Resulta no
   // atributo FINAL, que é o que a ficha mostra e o que os stats usam.
@@ -697,6 +708,39 @@ export function deriveAfty(creature, opcoes = {}) {
   // não segunda aplicação: quem entra na conta é o `efeitosTodos` acima. Roda com
   // o contexto FINAL, então uma expressão que lê `mod_forca` vê a Força fechada.
   const ctxTecnica = montarCtx(attrEff, modByAttr);
+  // A Habilidade Unica da Ferramenta precisa mostrar o mesmo valor que entra no
+  // Motor. O equipamento e carregado antes de os atributos fecharem, mas a
+  // expressao permanece viva e e reavaliada aqui com o contexto FINAL. As
+  // variaveis proprias do item, como `grau`, continuam sobrescrevendo as da
+  // criatura somente para aquela expressao.
+  const equipFinal = {
+    ...equip,
+    efeitosUnica: equip.efeitosUnica.map((efeito) => ({
+      ...efeito,
+      valor: evalNumberDsl(
+        efeito.expr,
+        { ...ctxTecnica, ...(efeito.contextoDsl || {}) },
+        0,
+      ),
+    })),
+    entradas: equip.entradas.map((entrada) => {
+      if (!entrada.fa) return entrada;
+      return {
+        ...entrada,
+        fa: {
+          ...entrada.fa,
+          habilidadeEfeitos: entrada.fa.habilidadeEfeitos.map((efeito) => ({
+            ...efeito,
+            valor: evalNumberDsl(
+              efeito.expr,
+              { ...ctxTecnica, ...(efeito.contextoDsl || {}) },
+              0,
+            ),
+          })),
+        },
+      };
+    }),
+  };
   const tecnicaEfeitos = (Array.isArray(creature?.core?.tecnicaEfeitos) ? creature.core.tecnicaEfeitos : [])
     .map((e) => {
       const def = EFEITO_CANAIS.find((c) => c.id === e?.canal) || null;
@@ -843,6 +887,7 @@ export function deriveAfty(creature, opcoes = {}) {
     lista: resumoFeiticos(creature, {
       nd,
       cdBase: cd,
+      modTecnica,
       temEnergiaReversa: !semEnergia
         && Array.isArray(creature?.aptidoesAmaldicoadas)
         && creature.aptidoesAmaldicoadas.includes("energia_reversa"),
@@ -1004,7 +1049,7 @@ export function deriveAfty(creature, opcoes = {}) {
   // Invocações usam o nível de ESCALONAMENTO de Controlador (real + metade da
   // outra classe): acesso a graus, metade do nível no bônus de teste, e os
   // limiares 6/12/18 de Invocações Móveis. Pré-requisitos de habilidade usam o real.
-  const nivelControlador = especializacoes.escolhidas.find((e) => e.id === "controlador")?.nivelEscalonamento ?? 0;
+  const nivelControlador = nivelEspec.controlador?.escalonamento ?? 0;
   // Efeitos estáticos das Habilidades de Controlador escolhidas, aplicados a
   // TODAS as invocações do dono (via Motor de Automação, ver afty-habilidades.js).
   const efeitosInvoc = efeitosInvocacaoControlador(habilidades.escolhidas);
@@ -1083,6 +1128,7 @@ export function deriveAfty(creature, opcoes = {}) {
       ...doMotor("rdEspecifico"),
     ],
     rdAlma: doMotor("rdAlma"),
+    rdFisico: doMotor("rdFisico"),
     movimento: [
       { label: "Base", valor: 9 },
       { label: "Maior de Força e Destreza × 1,5", valor: maxForDex * 1.5 },
@@ -1212,7 +1258,7 @@ export function deriveAfty(creature, opcoes = {}) {
     // ---------- Equipamentos ----------
     trilhasAptidao: trilhasOrigem,  // as que a ORIGEM tem (a Maldição não tem `er`)
     grauFeiticeiro: grau,  // { value, label, rank, ndMin } derivado do ND
-    equip,                 // parcelas do equipamento (entradas, custoGasto, avisos...)
+    equip: equipFinal,     // parcelas do equipamento (entradas, custoGasto, avisos...)
     carga,                 // { espacosUsados, cargaLimite, cargaMaxima, sobrecarregado... }
     rdFisico,              // RD Física. O escudo NÃO entra mais aqui (é RD Geral).
     penalidadeDestreza: equip.penalidadeDestreza, // uniforme + escudos, cumulativos

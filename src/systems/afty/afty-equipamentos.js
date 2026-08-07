@@ -1348,7 +1348,8 @@ export function resolveFerramenta(entrada, def, bt = 2, ctxBase = null) {
   // Contexto da DSL para este item. O grau aqui é o rank REAL, e não o de
   // cálculo: quem lê esta variável é a Habilidade Única, que o autor deixou
   // fora da redução por encantamento.
-  const ctx = { ...(ctxBase ?? { bt, nd: 1 }), ...dslItemVars(def, grauMeta.rank) };
+  const contextoDsl = dslItemVars(def, grauMeta.rank);
+  const ctx = { ...(ctxBase ?? { bt, nd: 1 }), ...contextoDsl };
 
   // Cada encantamento escolhido com o estado dos pré-requisitos e da exclusão.
   const encantamentos = escolhidos.map((id) => {
@@ -1425,6 +1426,7 @@ export function resolveFerramenta(entrada, def, bt = 2, ctxBase = null) {
     modo: ef.modo === "ativa" ? "ativa" : "passiva",
     valor: evalNumber(ef.expr ?? "", ctx),
     ok: validateExpression(ef.expr ?? "").ok,
+    contextoDsl,
   }));
   // Penalidade DESTE item já com o Polido / Ajustado descontados. A redução
   // nunca inverte o sinal: reduzir -1 em 2 dá 0, e não +1.
@@ -1580,12 +1582,13 @@ export function resolveEquipamentos(creature, bt = 2) {
       if (fa?.temHabUnica) {
         let temAtiva = false;
         for (const ex of fa.habilidadeEfeitos) {
-          if (!ex.ok || !ex.canal || !ex.valor) continue;
+          if (!ex.ok || !ex.canal || !String(ex.expr ?? "").trim()) continue;
           if (ex.modo === "ativa") temAtiva = true;
           efeitosUnica.push({
             canal: ex.canal,
             ...(ex.alvo ? { alvo: ex.alvo } : {}),
-            expr: String(ex.valor),
+            expr: ex.expr,
+            contextoDsl: ex.contextoDsl,
             // A ativa só entra com o interruptor dela ligado na bancada.
             ...(ex.modo === "ativa" ? { quando: estadoDaUnica(e.uid) } : {}),
             exclusivo: "habilidadeUnica",

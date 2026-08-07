@@ -105,18 +105,49 @@ Estado atual do sistema Afty (atualizado 2026-07-17). Leia junto com:
 
 ---
 
-## 🆕 PENDÊNCIAS DE UI (2026-08-06)
+## 🆕 PENDÊNCIAS DE UI E IMPLEMENTAÇÃO (2026-08-06)
 
-1. **RD Física:** o hover do valor não mostra as fontes que compõem a RD. Deve listar as fontes no
-   mesmo padrão dos demais valores derivados.
-2. **Motor de Automação de efeitos especiais:** quando existem dois efeitos diferentes, as linhas
-   ficam desalinhadas e não permanecem rentes entre si. Ajustar o layout para manter a mesma
-   estrutura e o mesmo alinhamento entre os efeitos.
-3. **Alma Livre:** precisa ser programada.
-4. **Imagem do personagem na ficha final:** encontrar uma apresentação melhor e com mais destaque
-   do que a imagem pequena e circular no canto.
-5. **Modificador de Força:** um personagem com Força 30 está retornando modificador +3 em vez do
-   valor de `mod_forca` correspondente ao atributo.
+1. **RD Física — concluído em 2026-08-06:** o preview e a ficha final encaminham `rdFisico` para o
+   mesmo componente de fontes dos demais valores derivados. O hover agora lista as parcelas que
+   compõem a RD Física.
+2. **Motor de Automação de efeitos especiais — concluído em 2026-08-06:** cada efeito usa a mesma
+   grade responsiva para canal, alvo, expressão, modo e remoção. Quando o canal não pede alvo, a
+   coluna continua reservada no desktop, mantendo efeitos diferentes alinhados entre si.
+3. **Alma Livre — concluído em 2026-08-06:** disponível a partir do ND 10. Ao escolher o Talento,
+   a ficha pede uma Especialização diferente das Especializações atuais e não oferece Restringido.
+   A Especialização escolhida ganha uma aba própria, onde é possível comprar uma única Habilidade
+   usando uma vaga normal. O Talento não concede a Habilidade. Para o acesso e os efeitos da
+   Habilidade comprada, o nível efetivo da Especialização é o ND, sem alterar os níveis reais usados
+   pela multiclasse ou pelos Níveis Lendários.
+4. **Imagem do personagem na ficha final — concluído em 2026-08-06:** quando existe imagem, a ficha
+   final mostra um portrait vertical na lateral direita do cabeçalho em telas de tablet e desktop,
+   usando o mesmo ponto focal configurado no criador. O portrait sai no modo compacto e não ocupa o
+   cabeçalho do celular.
+5. **Modificador de Força — concluído em 2026-08-06:** expressões da Habilidade Única de equipamento
+   são reavaliadas depois do fechamento dos atributos. Assim, `mod_forca` usa o modificador final da
+   criatura, preservando no mesmo contexto as variáveis próprias do item, como `grau`.
+6. **Conjuração Aprimorada no Dano de Habilidade — concluído em 2026-08-06:** toda criatura recebe
+   gratuitamente o bônus nos Feitiços de Dano. O cálculo usa o modificador do Atributo da Técnica e
+   o ND como nível de personagem. A fórmula aparece no criador e a ficha final rola os dados com o
+   bônus fixo. O cálculo é por alvo. Em Dano Contínuo contra o mesmo alvo, o bônus entra apenas no
+   golpe inicial.
+
+   > Todos podem utilizar Feitiços, mas você consegue os aprimorar e extrair um maior potencial.
+   > Sempre que utilizar um Feitiço que cause dano, você soma um bônus ao total de dano causado
+   > baseado no nível do Feitiço, de acordo com a tabela abaixo. Além disso, você passa a receber
+   > novos Feitiços em todo nível, ao invés de apenas nos níveis pares.
+   >
+   > Nível da Habilidade · Bônus de Dano
+   > • Nível 1: Modificador de Atributo
+   > • Nível 2: Modificador de Atributo
+   > • Nível 3: Dobro do Modificador de Atributo
+   > • Nível 4: 2x Mod. de Atributo + Nível de Personagem
+   > • Nível 5: 2x Mod. de Atributo + 2x Nível de Personagem
+   > • Técnica Máxima: 3x Mod. de Atributo + 3x Nível de Personagem
+7. **Regeneração Corporal de Maldição e Energia Reversa — concluído em 2026-08-06:** o seletor da
+   ficha final agora mostra o gasto real de PE ou PER, e a fórmula, o hover de fontes e o histórico
+   acompanham a quantidade selecionada. Regeneração Corporal avança em blocos de 2 PE. O bônus por
+   dado também é recalculado para o gasto atual, respeitando seu teto, em vez de usar o gasto máximo.
 
 ---
 

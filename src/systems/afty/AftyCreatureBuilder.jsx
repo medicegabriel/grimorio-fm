@@ -44,7 +44,7 @@ import {
 import {
   gruposDeHabilidade, avaliarAcessoHabilidade, escolhasConcedidas, abasDeOpcoes,
 } from "./afty-habilidades";
-import { gruposDeTalento, avaliarAcessoTalento } from "./afty-talentos";
+import { ALMA_LIVRE_TALENTO_ID, gruposDeTalento, avaliarAcessoTalento } from "./afty-talentos";
 import {
   MELHORIAS_SUPERIORES, HABILIDADES_LENDARIAS, avaliarAcessoAltoNivel,
 } from "./afty-alto-nivel";
@@ -1390,7 +1390,7 @@ function CuraCard({ derived }) {
               )}
               {l.unidade && (
                 <span className="text-[10px] font-medium text-emerald-300 whitespace-nowrap flex-shrink-0">
-                  {rotuloBloco(l.unidade)}, até {l.unidade.pontos}
+                  {rotuloBloco(l.unidade)}, até {l.unidade.pontosUsaveis ?? l.unidade.pontos}
                 </span>
               )}
               {l.unidade && l.fixo !== 0 && (
@@ -2383,6 +2383,7 @@ function FeiticosCard({ draft, derived, addFeitico, removeFeitico, patchFeitico,
   const ctx = {
     nd: derived.nd,
     cdBase: derived.feiticos.cdBase,
+    modTecnica: derived.modTecnica,
     temEnergiaReversa: Array.isArray(draft.aptidoesAmaldicoadas) && draft.aptidoesAmaldicoadas.includes("energia_reversa"),
     invocacoes: Array.isArray(draft.invocacoes) ? draft.invocacoes : [],
   };
@@ -2908,7 +2909,7 @@ function ResultadoFeitico({ calc, feitico }) {
       )}
       {calc.disparos && (
         <div className="text-[11px] text-slate-300 font-mono border-t border-slate-800 pt-2">
-          {calc.disparos.disparos} disparos de {notacaoDano(calc.disparos.porDisparo, calc.tipoDado)}, ou {notacaoDano(calc.disparos.concentradoTotal, calc.tipoDado)} concentrado num alvo
+          {calc.disparos.disparos} disparos de {calc.disparos.porDisparoTexto}, ou {calc.disparos.concentradoTexto} concentrado num alvo
         </div>
       )}
       {feitico.subtipo === "cataclismico" && (
@@ -5916,6 +5917,7 @@ function OpcoesDeEscolha({ escolha, opcoesEscolhidas, escolhida, onToggleOpcao }
    primeiro porque é o requisito mais comum; se ele está em dia, o culpado é
    um dos extras (outra habilidade, uma aptidão, um atributo mínimo). */
 function motivoBloqueio(habilidade, acesso) {
+  if (acesso.almaLivreOcupada) return "Alma Livre permite uma habilidade";
   if (!acesso.nivelOk && acesso.label) {
     return `Requer nível ${habilidade.nivel} em ${acesso.label.split(" ")[0]}`;
   }
@@ -5984,7 +5986,7 @@ function HabilidadeCard({ habilidade, escolhida, acesso, nivelEspec, escolhaEsta
           <span className="flex items-center gap-1 flex-shrink-0">
             {/* Requisito de NÍVEL: só aparece quando falta, e diz quanto.
                 Atendido, some — o nível já está no cabeçalho do grupo. */}
-            {!acesso.nivelOk && (
+            {!acesso.nivelOk && !acesso.almaLivreOcupada && (
               <span className="inline-flex items-center gap-0.5 text-[10px] font-medium text-purple-300 whitespace-nowrap" title={acesso.titulo}>
                 <Lock className="w-2.5 h-2.5 flex-shrink-0" />
                 {acesso.label} · Faltam {acesso.faltam}
@@ -6057,6 +6059,11 @@ function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, toggleEsc
   } = derived.habilidades;
   const especs = derived.especializacoes.escolhidas;
   const talentosEscolhidos = derived.talentos.escolhidas;
+  const especializacoesAtuais = new Set(especs.map((e) => e.id));
+  const almaLivreEspId = derived.habilidades.almaLivre?.especializacaoId;
+  const especsVisiveis = almaLivreEspId && !especializacoesAtuais.has(almaLivreEspId)
+    ? [...especs, { id: almaLivreEspId, nivel: derived.habilidades.almaLivre.nivel, almaLivre: true }]
+    : especs;
 
   // Tabulada pelas especializações ESCOLHIDAS (1 ou 2), não pelas 6:
   // habilidade de especialização que a criatura não tem é ruído. Talentos são
@@ -6066,9 +6073,9 @@ function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, toggleEsc
   // Abre na primeira que TEM catálogo: sem isso, uma multiclasse com uma
   // especialização ainda não transcrita abriria num card vazio, escondendo a
   // que tem conteúdo atrás dele. (Falta transcrever só o Restringido.)
-  const comConteudo = especs.filter((e) => gruposDeHabilidade(e.id).length > 0);
+  const comConteudo = especsVisiveis.filter((e) => gruposDeHabilidade(e.id).length > 0);
   const emTalentos = espTab === TALENTOS_TAB;
-  const ativa = especs.find((e) => e.id === espTab) ?? comConteudo[0] ?? especs[0];
+  const ativa = especsVisiveis.find((e) => e.id === espTab) ?? comConteudo[0] ?? especsVisiveis[0];
 
   // Segundo nível de abas: os grupos (Base, 2°, 4°... ou Gerais/Origem nos
   // Talentos). Com 71 habilidades no Combatente, empilhá-las todas era um
@@ -6093,6 +6100,7 @@ function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, toggleEsc
     escolhasHabilidade: escolhas?.mapa,
     attrEff: derived.attrEff,
     aptidoes: Array.isArray(draft.aptidoesAmaldicoadas) ? draft.aptidoesAmaldicoadas : [],
+    almaLivre: derived.habilidades.almaLivre,
   };
   // Talento lê o ND e a origem, nunca o nível de classe.
   const ctxTalento = {
@@ -6108,6 +6116,15 @@ function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, toggleEsc
     g.id === "base"
       ? "Base"
       : g.titulo.replace("Habilidades de ", "").replace("Talentos ", "").replace(" Nível", "");
+  const talentoParaTela = (talento) => talento.id === ALMA_LIVRE_TALENTO_ID
+    ? {
+        ...talento,
+        escolha: {
+          ...talento.escolha,
+          opcoes: talento.escolha.opcoes.filter((o) => !especializacoesAtuais.has(o.especializacaoId)),
+        },
+      }
+    : talento;
 
   return (
     <Card
@@ -6143,7 +6160,7 @@ function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, toggleEsc
           especializações, Talentos não mostra nível: o requisito deles é o ND,
           que já está no cabeçalho da ficha. */}
       <div className="flex gap-1 overflow-x-auto no-scrollbar border-b border-slate-800 pb-2 mb-3" role="tablist" aria-label="Especializações e Talentos">
-        {especs.map((e) => {
+        {especsVisiveis.map((e) => {
           const on = !emTalentos && e.id === ativa.id;
           return (
             <button
@@ -6151,6 +6168,7 @@ function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, toggleEsc
               role="tab"
               aria-selected={on}
               onClick={() => setEspTab(e.id)}
+              title={e.almaLivre ? "Alma Livre" : undefined}
               className={`grow justify-center whitespace-nowrap px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-1.5 ${
                 on ? "bg-purple-700 text-white" : "text-slate-400 hover:text-white hover:bg-slate-800/60"
               }`}
@@ -6232,7 +6250,7 @@ function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, toggleEsc
                 // é sempre true e o chip de nível do card não aparece.
                 <HabilidadeCard
                   key={h.id}
-                  habilidade={{ ...h, onToggle: () => toggleTalento(h.id) }}
+                  habilidade={{ ...talentoParaTela(h), onToggle: () => toggleTalento(h.id) }}
                   escolhida={talentosEscolhidos.includes(h.id)}
                   acesso={{ ...avaliarAcessoTalento(h, ctxTalento), nivelOk: true, faltam: 0 }}
                   escolhaEstado={derived.talentos?.escolhas?.porTal?.[h.id]}
@@ -6506,6 +6524,8 @@ function SimulacaoCombateCard({ derived, patchCombate }) {
         {linhas.filter(visivel).map((e) => {
           const teto = typeof e.max === "function" ? e.max(derived) : e.max;
           const valor = combate[e.id];
+          const min = e.min ?? 0;
+          const passo = Math.max(1, Math.trunc(Number(e.passo) || 1));
           return (
             <div
               key={e.id}
@@ -6531,10 +6551,10 @@ function SimulacaoCombateCard({ derived, patchCombate }) {
                 </div>
               ) : (
                 <VezesGauge
-                  vezes={Math.max(0, valor - (e.min ?? 0))}
-                  max={Math.max(0, teto - (e.min ?? 0))}
+                  vezes={Math.max(0, Math.floor((valor - min) / passo))}
+                  max={Math.max(0, Math.floor((teto - min) / passo))}
                   nome={e.label}
-                  onSet={(n) => patchCombate({ [e.id]: n + (e.min ?? 0) })}
+                  onSet={(n) => patchCombate({ [e.id]: min + n * passo })}
                 />
               )}
               <span className="font-mono text-[13px] font-bold tabular-nums text-white w-6 text-right">
@@ -7085,10 +7105,15 @@ function MotorEfeitosEditor({ efeitos, onChange, pericias }) {
         const chk = validateExpression(ef.expr || "");
         const alvos = alvoOpcoes(getCanal(ef.canal)?.alvo, pericias);
         return (
-          <div key={i} className="flex flex-wrap items-start gap-2">
-            <CanalPicker value={ef.canal} onChange={(v) => patch(i, { canal: v })} />
+          <div
+            key={i}
+            className="grid grid-cols-[minmax(0,1fr)_auto] sm:grid-cols-[170px_120px_minmax(130px,1fr)_auto_24px] items-start gap-2"
+          >
+            <div className="col-span-2 sm:col-span-1 min-w-0">
+              <CanalPicker value={ef.canal} onChange={(v) => patch(i, { canal: v })} />
+            </div>
             {alvos && (
-              <div className="relative flex-shrink-0 min-w-[120px]">
+              <div className="relative col-span-2 sm:col-span-1 min-w-0">
                 <select
                   value={ef.alvo || ""}
                   onChange={(e) => patch(i, { alvo: e.target.value })}
@@ -7101,7 +7126,8 @@ function MotorEfeitosEditor({ efeitos, onChange, pericias }) {
                 <MotorChevron />
               </div>
             )}
-            <div className="flex-1 min-w-[130px]">
+            {!alvos && <div className="hidden sm:block h-9" aria-hidden="true" />}
+            <div className="col-span-2 sm:col-span-1 min-w-0">
               <TextInput value={ef.expr} onChange={(v) => patch(i, { expr: v })} placeholder="ex.: 2 + piso(bt / 2)" />
               {ef.expr && (
                 chk.ok
@@ -7118,7 +7144,7 @@ function MotorEfeitosEditor({ efeitos, onChange, pericias }) {
             <button
               type="button"
               onClick={() => remove(i)}
-              className="text-slate-600 hover:text-rose-300 p-1 rounded flex-shrink-0"
+              className="justify-self-end text-slate-600 hover:text-rose-300 p-1 rounded flex-shrink-0"
               aria-label="Remover efeito"
             >
               <X className="w-3.5 h-3.5" />
@@ -7699,7 +7725,7 @@ function TabEquipamentos({ derived, addEquipamento, removeEquipamento, patchEqui
                 key={`${ex.origem}-${ex.canal}-${i}`}
                 icon={Sparkles}
                 label={rotuloCanalUnica(ex, derived.testes?.pericias)}
-                valor={sinalDe(Number(ex.expr) || 0)}
+                valor={sinalDe(Number(ex.valor ?? ex.expr) || 0)}
                 nota={ex.quando ? "ativa" : ex.exclusivo ? "única" : "encantamento"}
                 titulo={ex.nome}
               />
@@ -9563,7 +9589,7 @@ function AftyPreview({ draft, derived }) {
       : []),
     // RD Física ficou só com quem NOMEIA o tipo (Reforçado, Aura Reforçada): o
     // escudo saiu daqui em 2026-08-01 e virou RD Geral.
-    ...(derived.rdFisico > 0 ? [{ k: "RD Física", v: derived.rdFisico }] : []),
+    ...(derived.rdFisico > 0 ? [{ k: "RD Física", v: derived.rdFisico, p: "rdFisico" }] : []),
     { k: "Movimento", v: `${derived.movimento}m`, p: "movimento" },
     { k: "Res. Parcial", v: derived.resParcial, p: "resParcial" },
     { k: "Iniciativa", v: `+${derived.iniciativa}`, p: "iniciativa" },

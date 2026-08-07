@@ -817,7 +817,11 @@ export function aplicarEfeitos(efeitos, ctx = {}) {
     }
     // `vez` é do EFEITO, não do contexto: uma entrada repetível é coletada
     // várias vezes, e cada cópia precisa saber qual pega ela é.
-    const ctxE = e.vez != null && e.vez !== ctx.vez ? { ...ctx, vez: e.vez } : ctx;
+    const temContextoExtra = e.contextoDsl && typeof e.contextoDsl === "object";
+    const temVezPropria = e.vez != null && e.vez !== ctx.vez;
+    const ctxE = temContextoExtra || temVezPropria
+      ? { ...ctx, ...(temContextoExtra ? e.contextoDsl : {}), ...(temVezPropria ? { vez: e.vez } : {}) }
+      : ctx;
     // Condição: sem `quando`, sempre aplica.
     if (e.quando && evalNumber(e.quando, ctxE, 0) === 0) continue;
 

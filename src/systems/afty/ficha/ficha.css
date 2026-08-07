@@ -124,6 +124,67 @@
   color: var(--afty-texto);
 }
 
+/* O retrato da ficha pronta é uma peça vertical do cabeçalho, não um avatar.
+   Ele ocupa a lateral direita sem roubar largura dos vitais e das defesas no
+   celular, onde fica oculto. O ponto focal continua vindo do mesmo campo do
+   criador e por isso uma imagem de corpo inteiro não perde o rosto. */
+.afty-cabecalho-conteudo {
+  min-width: 0;
+}
+
+.afty-cabecalho-principal {
+  min-width: 0;
+}
+
+.afty-retrato-painel {
+  display: none;
+  position: relative;
+  min-height: 10.5rem;
+  margin-block: 0.5rem;
+  overflow: hidden;
+  border: 1px solid var(--afty-borda-forte);
+  border-radius: var(--afty-raio);
+  background: var(--afty-poco);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--afty-destaque) 18%, transparent);
+}
+
+.afty-retrato-painel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, transparent 58%, color-mix(in srgb, var(--afty-fundo) 72%, transparent)),
+    linear-gradient(90deg, color-mix(in srgb, var(--afty-destaque) 12%, transparent), transparent 45%);
+}
+
+.afty-retrato {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@media (min-width: 768px) {
+  .afty-cabecalho-conteudo[data-afty-com-retrato="sim"] {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 10.5rem;
+    gap: 0.75rem;
+  }
+
+  .afty-retrato-painel {
+    display: block;
+  }
+}
+
+@media (min-width: 1024px) {
+  .afty-cabecalho-conteudo[data-afty-com-retrato="sim"] {
+    grid-template-columns: minmax(0, 1fr) 12rem;
+    gap: 1rem;
+  }
+}
+
 /* ============================================================ */
 /* CHIPS                                                         */
 /* ============================================================ */
@@ -313,10 +374,6 @@
   .afty-passo { width: 2rem; height: 2rem; font-size: 1rem; }
 }
 
-.afty-retrato {
-  border: 1px solid var(--afty-borda-forte);
-}
-
 /* ============================================================ */
 /* STATS — cada número derivado                                  */
 /* ============================================================ */
@@ -370,6 +427,14 @@
 @media (max-height: 820px) {
   .afty-cabecalho[data-afty-compacto="sim"] .afty-stats {
     display: none;
+  }
+
+  .afty-cabecalho[data-afty-compacto="sim"] .afty-retrato-painel {
+    display: none;
+  }
+
+  .afty-cabecalho[data-afty-compacto="sim"] .afty-cabecalho-conteudo[data-afty-com-retrato="sim"] {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -1050,8 +1115,6 @@
   .afty-cabecalho[data-afty-compacto="sim"] .afty-vital { padding: 0.25rem 0.5rem; }
   .afty-cabecalho[data-afty-compacto="sim"] .afty-vital-numero { font-size: 1.125rem; }
   .afty-cabecalho[data-afty-compacto="sim"] .afty-passo { display: none; }
-  .afty-cabecalho[data-afty-compacto="sim"] .afty-retrato { display: none; }
-
   /* O painel de rolagens ocupa a largura toda no celular: encolhido no canto ele
      fica com duas palavras por linha. */
   .afty-log {
@@ -1106,6 +1169,11 @@
   }
 
   .afty-cabecalho::after { display: none; }
+
+  .afty-retrato-painel {
+    display: block;
+    min-height: 9rem;
+  }
 
   /* Nada que só serve para clicar vai para o papel. */
   .afty-passo,

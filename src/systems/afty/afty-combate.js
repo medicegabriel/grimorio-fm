@@ -39,6 +39,11 @@ const POSTURA_OPCOES = POSTURAS_DE_COMBATE.map((p) => ({
   requerEscolha: p.id,
 }));
 
+const nivelDeEfeito = (derived, especializacaoId) =>
+  derived?.habilidades?.niveisPorEfeito?.[especializacaoId]
+  ?? derived?.habilidades?.niveisPorEspec?.[especializacaoId]
+  ?? 0;
+
 /**
  * Os estados, com o alcance de cada um. A UI esconde o que a criatura não tem
  * como usar, por dois caminhos:
@@ -291,7 +296,7 @@ export const COMBATE_ESTADOS = [
     tipo: "faixa",
     min: 0,
     // "1 PE para +2. A cada quatro níveis, você pode gastar 1 ponto a mais."
-    max: (d) => 1 + Math.floor((d?.habilidades?.niveisPorEspec?.combatente ?? 0) / 4),
+    max: (d) => 1 + Math.floor(nivelDeEfeito(d, "combatente") / 4),
     requerHabilidade: "cmb_precisao_definitiva",
   },
   {
@@ -386,7 +391,7 @@ export const COMBATE_ESTADOS = [
     min: 0,
     // "A cada 5 níveis você pode gastar mais 2 pontos": 1 par de saída, mais um
     // a cada 5 níveis de Restringido.
-    max: (d) => 1 + Math.floor((d?.habilidades?.niveisPorEspec?.restringido ?? 0) / 5),
+    max: (d) => 1 + Math.floor(nivelDeEfeito(d, "restringido") / 5),
     requerHabilidade: "res_cacador_de_feiticeiros",
   },
   {
@@ -420,7 +425,7 @@ export const COMBATE_ESTADOS = [
     // 0 = sem gastar. "No nível 10, você pode pagar 1 ponto adicional para
     // aumentar a cura em 1d8", e outro no 15: são os degraus além da ativação.
     max: (d) => {
-      const n = d?.habilidades?.niveisPorEspec?.restringido ?? 0;
+      const n = nivelDeEfeito(d, "restringido");
       return 1 + (n >= 10 ? 1 : 0) + (n >= 15 ? 1 : 0);
     },
     requerHabilidade: "res_corpo_de_aco",
@@ -503,6 +508,7 @@ export const COMBATE_ESTADOS = [
     label: "Regeneração Corporal · PE Gasto",
     tipo: "faixa",
     min: 0,
+    passo: 2,
     max: (d) => {
       const bt = d?.maestria ?? 2;
       const ids = d?.aptidoesEscolhidas ?? [];
@@ -514,7 +520,7 @@ export const COMBATE_ESTADOS = [
 
 /** Quantos incrementos de 2 PE a Brutalidade já liberou, pelo nível de Lutador. */
 export function degrausBrutalidade(derived) {
-  const n = derived?.habilidades?.niveisPorEspec?.lutador ?? 0;
+  const n = nivelDeEfeito(derived, "lutador");
   return (n >= 8 ? 1 : 0) + (n >= 12 ? 1 : 0) + (n >= 16 ? 1 : 0) + (n >= 20 ? 1 : 0);
 }
 
@@ -621,7 +627,12 @@ export function resolveCombate(creature, params = {}) {
   for (const e of COMBATE_ESTADOS) {
     if (e.tipo === "bool") out[e.id] = !!c[e.id];
     else if (e.tipo === "opcao") out[e.id] = opcaoDe(e.id);
-    else out[e.id] = intDe(c[e.id], e.min ?? 0, Math.max(e.min ?? 0, tetoFaixa[e.id] ?? 0));
+    else {
+      const min = e.min ?? 0;
+      const passo = Math.max(1, Math.trunc(Number(e.passo) || 1));
+      const valor = intDe(c[e.id], min, Math.max(min, tetoFaixa[e.id] ?? 0));
+      out[e.id] = min + Math.floor((valor - min) / passo) * passo;
+    }
   }
   for (const e of extras) out[e.id] = !!c[e.id];
   const surto = !!c.surtoAdrenalina;

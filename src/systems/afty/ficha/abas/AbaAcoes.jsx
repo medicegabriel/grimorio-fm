@@ -3,7 +3,7 @@ import { AlertTriangle, ChevronDown, ChevronRight } from "lucide-react";
 
 import { NumeroComFontes } from "../../ui/fontes";
 import { sinalDe } from "../../ui/formato";
-import { rotuloBloco } from "../../afty-cura";
+import { curaNoGasto, rotuloBloco } from "../../afty-cura";
 import { facesDe } from "../ficha-rolagem";
 import { useDestaque } from "../usar-destaque";
 import ItemDeFicha from "../ItemDeFicha";
@@ -120,9 +120,10 @@ function LinhaDano({ e, rolar, critico, onCritico, destacado }) {
  * gasto e o valor fixo entra UMA vez, porque o texto diz "ao TOTAL de cura".
  */
 function LinhaCura({ l, rolar, destacado }) {
-  const [pontos, setPontos] = useState(1);
+  const [blocos, setBlocos] = useState(1);
   const teto = l.unidade ? Math.max(1, l.blocos) : 1;
-  const gasto = Math.min(pontos, teto);
+  const blocosUsados = Math.min(blocos, teto);
+  const estado = curaNoGasto(l, blocosUsados);
   const faces = facesDe(l.dado);
   const raiz = useDestaque(destacado);
   return (
@@ -149,30 +150,39 @@ function LinhaCura({ l, rolar, destacado }) {
       )}
       {l.unidade && (
         <span className="flex items-center gap-1 flex-shrink-0">
-          <button type="button" className="afty-passo" onClick={() => setPontos(Math.max(1, gasto - 1))} aria-label="Gastar um ponto a menos">−</button>
-          <span className="afty-chip" data-afty-tom="destaque" title={`${rotuloBloco(l.unidade)}, até ${l.unidade.pontos}`}>
-            {gasto} {rotuloBloco(l.unidade)}
+          <button
+            type="button"
+            className="afty-passo"
+            onClick={() => setBlocos(Math.max(1, blocosUsados - 1))}
+            aria-label={`Gastar ${rotuloBloco(l.unidade)} a menos`}
+          >−</button>
+          <span
+            className="afty-chip"
+            data-afty-tom="destaque"
+            title={`Até ${estado.pontosMaximos} ${l.unidade.rotulo}`}
+          >
+            {estado.pontos} {l.unidade.rotulo}
           </span>
-          <button type="button" className="afty-passo" onClick={() => setPontos(Math.min(teto, gasto + 1))} aria-label="Gastar um ponto a mais">+</button>
-        </span>
-      )}
-      {l.unidade && l.fixo !== 0 && (
-        <span className="afty-rotulo text-[10px] whitespace-nowrap" title="Soma uma vez no total">
-          Total <span className="afty-valor text-[11px]">{sinalDe(l.fixo)}</span>
+          <button
+            type="button"
+            className="afty-passo"
+            onClick={() => setBlocos(Math.min(teto, blocosUsados + 1))}
+            aria-label={`Gastar ${rotuloBloco(l.unidade)} a mais`}
+          >+</button>
         </span>
       )}
       <NumeroComFontes
-        valor={l.texto}
-        partes={l.partes}
-        total={l.textoNoMaximo}
+        valor={estado.texto}
+        partes={estado.partes}
+        total={estado.texto}
         formatar={false}
         className="afty-valor text-[13px] whitespace-nowrap"
         ancora="direita"
         onRolar={() => rolar({
           tipo: "dano", tom: "cura",
           rotulo: l.nome,
-          detalhe: l.unidade ? `${gasto} ${rotuloBloco(l.unidade)}` : null,
-          dados: l.dados, faces, fixo: l.fixo, blocos: gasto,
+          detalhe: l.unidade ? `${estado.pontos} ${l.unidade.rotulo}` : null,
+          dados: l.dados, faces, fixo: estado.fixo, blocos: estado.blocos,
         })}
       />
     </div>
@@ -234,7 +244,9 @@ function LinhaFeitico({ f, rolar, destacado }) {
             <span className="afty-chip" title={`${r.vezes} ${r.rotulo}s`}>×{r.vezes}</span>
           )}
           <NumeroComFontes
-            valor={`${r.dados}d${r.faces}`}
+            valor={`${r.dados}d${r.faces}${r.fixo ? `${r.fixo > 0 ? "+" : ""}${r.fixo}` : ""}`}
+            partes={r.partes}
+            total={`${r.dados}d${r.faces}${r.fixo ? `${r.fixo > 0 ? "+" : ""}${r.fixo}` : ""}`}
             formatar={false}
             className="afty-valor text-[13px] whitespace-nowrap"
             titulo={r.rotulo}
@@ -242,7 +254,7 @@ function LinhaFeitico({ f, rolar, destacado }) {
               tipo: "dano", tom: r.tom,
               rotulo: f.nome || "Feitiço Sem Nome",
               detalhe: rolagens.length > 1 || r.vezes > 1 ? r.rotulo : f.nivelLabel,
-              dados: r.dados, faces: r.faces, fixo: 0,
+              dados: r.dados, faces: r.faces, fixo: r.fixo || 0,
             })}
           />
         </span>

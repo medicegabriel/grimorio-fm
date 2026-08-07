@@ -201,6 +201,49 @@ const inteiro = (v) => Math.trunc(Number(v) || 0);
 export const rotuloBloco = (u) => (u.porBloco === 1 ? u.rotulo : `${u.porBloco} ${u.rotulo}`);
 
 /**
+ * Fecha uma linha no gasto escolhido pela Ficha Final.
+ *
+ * `blocos` conta compras da cura, não pontos da moeda. Na Energia Reversa um
+ * bloco custa 1 PER. Na Regeneração Corporal um bloco custa 2 PE. O retorno
+ * separa os dois para a interface nunca exibir algo ambíguo como "3 2 PE".
+ *
+ * O bônus por dado também nasce aqui, porque ele depende da quantidade de
+ * dados realmente rolada. Calculá-lo no teto faria uma rolagem de 2 PE receber
+ * o bônus reservado ao gasto máximo.
+ */
+export function curaNoGasto(linha, blocos = 1) {
+  if (!linha) return null;
+  const limite = linha.unidade ? Math.max(1, inteiro(linha.blocos)) : 1;
+  const usados = linha.unidade
+    ? Math.min(limite, Math.max(1, inteiro(blocos)))
+    : 1;
+  const dados = Math.max(0, inteiro(linha.dados)) * usados;
+  const porDado = linha.curaPorDado;
+  const bruto = porDado ? dados * inteiro(porDado.valor) : 0;
+  const bonusPorDado = porDado
+    ? (inteiro(porDado.teto) > 0 ? Math.min(bruto, inteiro(porDado.teto)) : bruto)
+    : 0;
+  const fixo = inteiro(linha.fixoBase ?? linha.fixo) + bonusPorDado;
+  const partes = linha.partesDados
+    ? [...linha.partesDados]
+    : [...(linha.partes || [])];
+  if (usados > 1) partes.push({ label: "Gasto", texto: `× ${usados}` });
+  if (linha.partesFixas) partes.push(...linha.partesFixas);
+  for (const label of porDado?.fontes ?? []) partes.push({ label, valor: bonusPorDado });
+  const pontos = linha.unidade ? usados * linha.unidade.porBloco : 0;
+  return {
+    blocos: usados,
+    pontos,
+    pontosMaximos: linha.unidade ? limite * linha.unidade.porBloco : 0,
+    dados,
+    fixo,
+    bonusPorDado,
+    texto: textoDeRolagem(dados, linha.dado, fixo),
+    partes,
+  };
+}
+
+/**
  * Uma linha de cura, já fechada.
  *
  * `dados` é o que UM bloco compra, e é assim que a linha aparece na tela
@@ -208,25 +251,36 @@ export const rotuloBloco = (u) => (u.porBloco === 1 ? u.rotulo : `${u.porBloco} 
  * "1 PER, até 4", e não a rolagem do gasto máximo. O total no gasto cheio fica
  * em `dadosNoMaximo`, que é o número que o bônus por dado usa.
  */
-function montaLinha({ id, nome, grupo, alcance, dados, faces, fixo, usos, pontos, unidade, partes }) {
+function montaLinha({
+  id, nome, grupo, alcance, dados, faces, fixoBase, usos, pontos, unidade,
+  partesDados, partesFixas, curaPorDado,
+}) {
   const blocos = unidade ? Math.max(1, Math.floor(pontos / unidade.porBloco)) : 1;
   const dadosNoMaximo = dados * blocos;
   const dado = `d${faces}`;
-  return {
+  const base = {
     id, nome, grupo, alcance,
-    dados, dado, fixo,
+    dados, dado, fixoBase,
     usos: usos > 0 ? usos : null,
-    unidade: unidade ? { ...unidade, pontos } : null,
+    unidade: unidade ? { ...unidade, pontos, pontosUsaveis: blocos * unidade.porBloco } : null,
     blocos,
     dadosNoMaximo,
+    partesDados,
+    partesFixas,
+    curaPorDado,
+  };
+  const noMaximo = curaNoGasto(base, blocos);
+  return {
+    ...base,
+    fixo: noMaximo.fixo,
     // Sem unidade a linha é uma rolagem só, e o texto fecha inteiro. Com
     // unidade o fixo entra uma vez no total e não cabe no `2d6 por PER`.
-    texto: unidade ? textoDeRolagem(dados, dado, 0) : textoDeRolagem(dados, dado, fixo),
+    texto: unidade ? textoDeRolagem(dados, dado, 0) : noMaximo.texto,
     // A rolagem do uso INTEIRO, no gasto máximo. É o que fecha o hover: a linha
     // mostra o que um ponto compra e o hover mostra onde isso chega. Quem não
     // tem unidade já mostra o total na própria linha, e os dois são iguais.
-    textoNoMaximo: textoDeRolagem(dadosNoMaximo, dado, fixo),
-    partes,
+    textoNoMaximo: noMaximo.texto,
+    partes: noMaximo.partes,
   };
 }
 
@@ -300,7 +354,7 @@ export function resolveCura(ctx = {}) {
     // O hover tem de fechar a conta sozinho, então ele mostra os dados (já com
     // as faces finais), o que trocou as faces, a multiplicação pelo gasto
     // máximo e cada parcela fixa.
-    const partes = fontesDe("curaDados", f.id).map((p) => ({
+    const partesDados = fontesDe("curaDados", f.id).map((p) => ({
       label: p.label,
       texto: `${p.valor}${dadoTexto}${f.unidade ? ` por ${rotuloBloco(f.unidade)}` : ""}`,
     }));
@@ -310,37 +364,28 @@ export function resolveCura(ctx = {}) {
     const fontesFaces = fontesDe("curaFaces", f.id);
     if (fontesFaces.length > 1) {
       for (const p of fontesFaces) {
-        partes.push({ label: p.label, texto: `d${p.valor}`, ...(p.valor < faces ? { suplantado: true } : {}) });
+        partesDados.push({ label: p.label, texto: `d${p.valor}`, ...(p.valor < faces ? { suplantado: true } : {}) });
       }
     }
 
-    // Quantos blocos cabem no gasto máximo, e a linha do hover que explica o
-    // salto de `5d6 por PER` para os `15d6` do uso inteiro.
-    const blocos = f.unidade ? Math.max(1, Math.floor(pontos / f.unidade.porBloco)) : 1;
-    if (blocos > 1) partes.push({ label: "Gasto Máximo", texto: `× ${blocos}` });
-
-    for (const p of fontesDe("curaFixa", f.id)) partes.push(p);
+    const partesFixas = fontesDe("curaFixa", f.id);
 
     // "+1 de cura por dado, com um limite de cura adicional igual a metade do
     // seu nível" (Apanhador de Saúde). Vale por dado ROLADO, então conta os do
     // gasto máximo, e cai no fixo porque é uma soma no total do uso.
     const porDado = inteiro(canal("curaPorDado", f.id));
-    let bonusPorDado = 0;
-    if (porDado) {
-      const teto = inteiro(canal("curaPorDadoTeto", f.id));
-      const bruto = dados * blocos * porDado;
-      bonusPorDado = teto > 0 ? Math.min(bruto, teto) : bruto;
-      for (const p of fontesDe("curaPorDado", f.id)) {
-        partes.push({ label: p.label, valor: bonusPorDado });
-      }
-    }
+    const tetoPorDado = inteiro(canal("curaPorDadoTeto", f.id));
+    const fontesPorDado = porDado ? fontesDe("curaPorDado", f.id).map((p) => p.label) : [];
+    const fixoBase = inteiro(canal("curaFixa", f.id));
 
     const linha = montaLinha({
       id: f.id, nome: f.nome, grupo: f.grupo, alcance,
       dados, faces,
-      fixo: inteiro(canal("curaFixa", f.id)) + bonusPorDado,
+      fixoBase,
       usos, pontos, unidade: f.unidade,
-      partes,
+      partesDados,
+      partesFixas,
+      curaPorDado: porDado ? { valor: porDado, teto: tetoPorDado, fontes: fontesPorDado } : null,
     });
     linhas.push(linha);
     porId[f.id] = linha;

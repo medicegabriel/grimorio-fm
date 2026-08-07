@@ -334,7 +334,7 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
     { id: "rd-geral", k: "RD Geral", v: derived.rdGeral, p: "rdGeral" },
     ...(derived.rdEspecifico > 0 ? [{ id: "rd-especifica", k: "RD Espec.", v: derived.rdEspecifico, p: "rdEspecifico" }] : []),
     ...(derived.rdAlma > 0 ? [{ id: "rd-alma", k: "RD a Alma", v: derived.rdAlma, p: "rdAlma" }] : []),
-    ...(derived.rdFisico > 0 ? [{ id: "rd-fisica", k: "RD Física", v: derived.rdFisico }] : []),
+    ...(derived.rdFisico > 0 ? [{ id: "rd-fisica", k: "RD Física", v: derived.rdFisico, p: "rdFisico" }] : []),
     { id: "movimento", k: "Movimento", v: `${numeroBr(derived.movimento)}m`, p: "movimento" },
     { id: "iniciativa", k: "Iniciativa", v: derived.iniciativa, p: "iniciativa", sinal: true },
     { id: "atencao", k: "Atenção", v: derived.atencao, p: "atencao" },
@@ -424,6 +424,11 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
 
       <header className="afty-cabecalho" data-afty-compacto={compacto ? "sim" : "nao"}>
         <div className="max-w-7xl mx-auto px-3 sm:px-4">
+          <div
+            className="afty-cabecalho-conteudo"
+            data-afty-com-retrato={ficha.portraitUrl ? "sim" : "nao"}
+          >
+            <div className="afty-cabecalho-principal min-w-0">
           {/* ---------- identidade ----------
               ⚠ `flex-wrap` e a fileira de controles em LINHA PRÓPRIA no celular.
               São sete botões mais o contador de rodada, e com alvo de toque de
@@ -433,14 +438,6 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
             <button type="button" className="afty-botao" onClick={onVoltar} aria-label="Voltar">
               <ChevronLeft className="w-4 h-4" />
             </button>
-            {ficha.portraitUrl && (
-              <img
-                src={ficha.portraitUrl}
-                alt=""
-                className="afty-retrato w-9 h-9 rounded-full object-cover flex-shrink-0"
-                style={{ objectPosition: `${ficha.portraitFocus?.x ?? 50}% ${ficha.portraitFocus?.y ?? 50}%` }}
-              />
-            )}
             <div className="min-w-0 flex-1">
               <div className="afty-nome text-sm sm:text-base font-bold truncate">
                 {ficha.name || "Sem nome"}
@@ -562,6 +559,19 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
                 />
               </span>
             ))}
+          </div>
+            </div>
+
+            {ficha.portraitUrl && (
+              <div className="afty-retrato-painel" aria-hidden="true">
+                <img
+                  src={ficha.portraitUrl}
+                  alt=""
+                  className="afty-retrato"
+                  style={{ objectPosition: `${ficha.portraitFocus?.x ?? 50}% ${ficha.portraitFocus?.y ?? 50}%` }}
+                />
+              </div>
+            )}
           </div>
 
           {/* ---------- abas ---------- */}

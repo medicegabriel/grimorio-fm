@@ -6008,7 +6008,9 @@ export function escolhasMaximas(habilidade, nivelEspec, bt = 0) {
  *           mapa: { [habId]: [opcaoId] }, vagasExtras } — vagasExtras é quanto
  * as escolhas repetíveis gastam ALÉM da vaga da própria habilidade.
  */
-export function resolveEscolhasHabilidade({ escolhidasIds = [], niveisPorEspec = {}, escolhasHabilidade = {}, bt = 0 } = {}) {
+export function resolveEscolhasHabilidade({
+  escolhidasIds = [], niveisPorEspec = {}, nivelPorHabilidade = {}, escolhasHabilidade = {}, bt = 0,
+} = {}) {
   const porHab = {};
   const mapa = {};
   let vagasExtras = 0;
@@ -6021,7 +6023,9 @@ export function resolveEscolhasHabilidade({ escolhidasIds = [], niveisPorEspec =
   for (const habId of escolhidasIds) {
     const c = BY_ID[habId]?.concedeEscolha;
     if (!c) continue;
-    const nivel = niveisPorEspec?.[BY_ID[habId].especializacaoId] ?? 0;
+    const nivel = nivelPorHabilidade?.[habId]
+      ?? niveisPorEspec?.[BY_ID[habId].especializacaoId]
+      ?? 0;
     concedidas[c.habilidade] = (concedidas[c.habilidade] || 0)
       + c.niveis.filter((n) => nivel >= n).length;
   }
@@ -6038,7 +6042,7 @@ export function resolveEscolhasHabilidade({ escolhidasIds = [], niveisPorEspec =
       vistos.add(id);
       opcoes.push(id);
     }
-    const nivelEspec = niveisPorEspec?.[hab.especializacaoId] ?? 0;
+    const nivelEspec = nivelPorHabilidade?.[habId] ?? niveisPorEspec?.[hab.especializacaoId] ?? 0;
     const allowance = escolhasMaximas(hab, nivelEspec, bt) + (concedidas[habId] || 0);
     porHab[habId] = { opcoes, allowance, repetivel: !!hab.escolha.repetivel, excedeu: opcoes.length > allowance };
     mapa[habId] = opcoes;
@@ -6171,12 +6175,18 @@ export function avaliarRequisitoHabilidade(requisito, ctx = {}) {
  */
 export function avaliarAcessoHabilidade(habilidade, ctx = {}) {
   const esp = getEspecializacao(habilidade.especializacaoId);
-  const nivel = ctx.niveisPorEspec?.[habilidade.especializacaoId] ?? 0;
-  const nivelOk = nivel >= habilidade.nivel;
+  const nivelReal = ctx.niveisPorEspec?.[habilidade.especializacaoId] ?? 0;
+  const pertenceAlmaLivre = ctx.almaLivre?.especializacaoId === habilidade.especializacaoId;
+  const almaLivreOcupada = pertenceAlmaLivre
+    && !!ctx.almaLivre?.habilidadeId
+    && ctx.almaLivre.habilidadeId !== habilidade.id;
+  const nivel = pertenceAlmaLivre && !almaLivreOcupada ? ctx.almaLivre?.nivel ?? 0 : nivelReal;
+  const nivelOk = !almaLivreOcupada && nivel >= habilidade.nivel;
   const extras = (habilidade.requisitos || []).map((r) => avaliarRequisitoHabilidade(r, ctx));
   return {
     ok: nivelOk && extras.every((e) => e.ok),
     nivelOk,
+    almaLivreOcupada,
     // Quanto falta, para a UI dizer "faltam N" (decisão do autor, roadmap).
     faltam: Math.max(0, habilidade.nivel - nivel),
     label: `${esp?.nome || habilidade.especializacaoId} ${habilidade.nivel}`,
@@ -6388,7 +6398,15 @@ export function efeitosArmasDedicadas(dedicadas) {
  * O excesso é medido no COMUM: uma vaga exclusiva de Talento sobrando não
  * libera Habilidade de Especialização nenhuma.
  */
-export function resolveHabilidades(creature, escolhidasEspec, talentosGastos = 0, bt = 0, bonusVagas = 0, vagasTalento = 0) {
+export function resolveHabilidades(
+  creature,
+  escolhidasEspec,
+  talentosGastos = 0,
+  bt = 0,
+  bonusVagas = 0,
+  vagasTalento = 0,
+  { nd = 1, almaLivreEspecializacao = null } = {},
+) {
   const niveisPorEspec = niveisPorEspecializacao(escolhidasEspec);
   const vistos = new Set();
   const escolhidas = [];
@@ -6397,6 +6415,18 @@ export function resolveHabilidades(creature, escolhidasEspec, talentosGastos = 0
     vistos.add(id);
     escolhidas.push(id);
   }
+  const habilidadesAlmaLivre = almaLivreEspecializacao
+    ? escolhidas.filter((id) => BY_ID[id]?.especializacaoId === almaLivreEspecializacao)
+    : [];
+  const habilidadeAlmaLivreId = habilidadesAlmaLivre[0] ?? null;
+  const almaLivre = almaLivreEspecializacao ? {
+    especializacaoId: almaLivreEspecializacao,
+    habilidadeId: habilidadeAlmaLivreId,
+    nivel: Math.max(1, Math.trunc(Number(nd) || 1)),
+    excedeu: habilidadesAlmaLivre.length > 1,
+  } : null;
+  const nivelPorHabilidade = {};
+  if (habilidadeAlmaLivreId) nivelPorHabilidade[habilidadeAlmaLivreId] = almaLivre.nivel;
   // Pilha COMUM: só o que a Habilidade Geral Especialização concedeu.
   const comum = Math.max(0, Math.trunc(Number(bonusVagas) || 0));
   // Pilha EXCLUSIVA de Talento, que não serve para Habilidade de Especialização.
@@ -6406,10 +6436,11 @@ export function resolveHabilidades(creature, escolhidasEspec, talentosGastos = 0
   const escolhas = resolveEscolhasHabilidade({
     escolhidasIds: escolhidas,
     niveisPorEspec,
+    nivelPorHabilidade,
     escolhasHabilidade: creature?.escolhasHabilidade,
     bt,
   });
-  const ctx = { niveisPorEspec, escolhidas, escolhasHabilidade: escolhas.mapa };
+  const ctx = { niveisPorEspec, escolhidas, escolhasHabilidade: escolhas.mapa, almaLivre };
   // Habilidades escolhidas que a criatura deixou de alcançar (ex.: a
   // multiclasse foi redividida depois da escolha). Reportado, não removido.
   const inacessiveis = escolhidas.filter((id) => !avaliarAcessoHabilidade(BY_ID[id], ctx).ok);
@@ -6424,6 +6455,8 @@ export function resolveHabilidades(creature, escolhidasEspec, talentosGastos = 0
   const gastosNoComum = gastosHabilidade + (talentos - talentosNoExclusivo);
   const total = comum + exclusivasTalento;
   const gastos = gastosHabilidade + talentos;
+  const niveisPorEfeito = { ...niveisPorEspec };
+  if (habilidadeAlmaLivreId) niveisPorEfeito[almaLivreEspecializacao] = almaLivre.nivel;
   return {
     escolhidas,
     escolhas,               // { porHab, mapa, vagasExtras }
@@ -6440,6 +6473,8 @@ export function resolveHabilidades(creature, escolhidasEspec, talentosGastos = 0
     excedeu: gastosNoComum > comum,
     inacessiveis,
     niveisPorEspec,
+    niveisPorEfeito,
+    almaLivre,
   };
 }
 

@@ -31,9 +31,29 @@
 import { getOrigem } from "./afty-origens";
 import { AFTY_ATTRS, AFTY_RESISTENCIAS } from "./afty-schema";
 import { APTIDAO_TRILHAS } from "./afty-aptidoes";
+import { AFTY_ESPECIALIZACOES } from "./afty-especializacoes";
 // O Adepto de Combate empresta o pool de Estilos do Combatente. Sem ciclo:
 // afty-habilidades.js não importa daqui.
 import { ESTILOS_DE_COMBATE } from "./afty-habilidades";
+
+export const ALMA_LIVRE_TALENTO_ID = "tal_alma_livre";
+const ALMA_LIVRE_OPCAO_PREFIXO = "tal_alma_livre_esp_";
+
+const ALMA_LIVRE_ESPECIALIZACOES = AFTY_ESPECIALIZACOES
+  .filter((e) => e.id !== "restringido")
+  .map((e) => ({
+    id: `${ALMA_LIVRE_OPCAO_PREFIXO}${e.id}`,
+    nome: e.nome,
+    descricao: "",
+    especializacaoId: e.id,
+  }));
+
+export function especializacaoDeAlmaLivre(opcoes = []) {
+  const opcao = Array.isArray(opcoes) ? opcoes[0] : null;
+  if (typeof opcao !== "string" || !opcao.startsWith(ALMA_LIVRE_OPCAO_PREFIXO)) return null;
+  const id = opcao.slice(ALMA_LIVRE_OPCAO_PREFIXO.length);
+  return ALMA_LIVRE_ESPECIALIZACOES.some((e) => e.especializacaoId === id) ? id : null;
+}
 
 /**
  * Opções de escolha aninhada geradas dos catálogos que já existem, para
@@ -416,6 +436,20 @@ export const AFTY_TALENTOS = [
       "difícil de se quebrar. Você se torna treinado em Integridade e recebe Redução de Dano " +
       "contra Dano na Alma igual a 1/4 do seu Nível de Personagem.",
     requisitos: [{ tipo: "atributo", attr: "constituicao", valor: 14 }],
+  },
+  {
+    id: ALMA_LIVRE_TALENTO_ID,
+    nome: "Alma Livre",
+    grupo: "geral",
+    descricao:
+      "Sua recusa em se prender a uma única doutrina ou estilo de combate permite que seu potencial se manifeste de formas totalmente heterodoxas.\n" +
+      "Ao escolher esse Talento, selecione uma Especialização diferente da sua (com exceção de Restringido). Você pode escolher uma habilidade dessa Especialização como se pertencesse a ela (para efeitos de nível na Especialização desse poder, considere seu nível de personagem ). Note que você não recebe o poder, apenas o direito de escolhê-lo mais tarde",
+    escolha: {
+      id: "alma_livre_especializacao",
+      label: "Especialização",
+      opcoes: ALMA_LIVRE_ESPECIALIZACOES,
+    },
+    requisitos: [{ tipo: "nd", valor: 10 }],
   },
   {
     id: "tal_apaziguador_de_tecnica",
@@ -914,7 +948,12 @@ export function resolveTalentos(creature, ctx = {}) {
   // lista inteira é seguro e deixa a ordem de escolha irrelevante.
   const full = { ...ctx, talentos: escolhidas };
   const inacessiveis = escolhidas.filter((id) => !avaliarAcessoTalento(BY_ID[id], full).ok);
-  const escolhas = resolveEscolhasTalento(escolhidas, creature?.escolhasTalento, ctx.nd ?? 1);
+  const escolhas = resolveEscolhasTalento(
+    escolhidas,
+    creature?.escolhasTalento,
+    ctx.nd ?? 1,
+    ctx.especializacoes,
+  );
   return {
     escolhidas,
     // A vaga extra da repetível entra no MESMO caixa: "você pode pegar este
@@ -922,6 +961,7 @@ export function resolveTalentos(creature, ctx = {}) {
     gastos: escolhidas.length + escolhas.vagasExtras,
     inacessiveis,
     escolhas,
+    almaLivreEspecializacao: especializacaoDeAlmaLivre(escolhas.mapa[ALMA_LIVRE_TALENTO_ID]),
   };
 }
 
@@ -939,14 +979,19 @@ export function resolveTalentos(creature, ctx = {}) {
  * Guarda escolhas, nunca resultados, e não remove excedente: reporta em
  * `excedeu`, que é o padrão do projeto.
  */
-export function resolveEscolhasTalento(escolhidasIds = [], escolhasTalento = {}, nd = 1) {
+export function resolveEscolhasTalento(escolhidasIds = [], escolhasTalento = {}, nd = 1, especializacoes = []) {
   const porTal = {};
   const mapa = {};
   let vagasExtras = 0;
+  const especializacoesAtuais = new Set(
+    (Array.isArray(especializacoes) ? especializacoes : []).map((e) => typeof e === "string" ? e : e?.id),
+  );
   for (const talId of escolhidasIds) {
     const tal = BY_ID[talId];
     if (!tal?.escolha) continue;
-    const validas = new Set(tal.escolha.opcoes.map((o) => o.id));
+    const validas = new Set(tal.escolha.opcoes
+      .filter((o) => talId !== ALMA_LIVRE_TALENTO_ID || !especializacoesAtuais.has(o.especializacaoId))
+      .map((o) => o.id));
     const brutas = Array.isArray(escolhasTalento?.[talId]) ? escolhasTalento[talId] : [];
     const vistos = new Set();
     const opcoes = [];
