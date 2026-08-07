@@ -71,7 +71,8 @@ import { resolveCura } from "./afty-cura";
 import {
   buildCriaturaDslContext, coletarEfeitosCriatura, coletarEfeitosMontante, coletarEfeitosOrigem,
   coletarEfeitosAptidao,
-  aplicarEfeitos, resolverExclusivos, valorCanal, furaTetoEm, efeitosDaTecnica, efeitosDaSessao, EFEITO_CANAIS,
+  aplicarEfeitos, resolverExclusivos, valorCanal, furaTetoEm, efeitosDaTecnica, efeitosDosPassivos,
+  efeitosDaSessao, EFEITO_CANAIS,
   ehAtributoPermanente, ehAtributoTemporario, ehEstagio2, ehPreContexto,
   mesclarEfeitos, detalhesDoCanal,
 } from "./afty-efeitos";
@@ -448,6 +449,9 @@ export function deriveAfty(creature, opcoes = {}) {
     // porque a técnica é única no mundo e nenhum catálogo a cobre. Entram no
     // mesmo bolo, e os filtros de estágio abaixo roteiam pelo canal.
     ...efeitosDaTecnica(creature),
+    // Passivos / Características criados pelo jogador usam o mesmo Motor, mas
+    // entram na família exclusiva própria dos Feitiços Passivos.
+    ...efeitosDosPassivos(creature),
     // Buffs de MESA, escritos na Ficha Final durante o jogo. Mesmo shape do
     // Funcionamento Básico, e por isso entram na mesma linha. Só existem quando
     // a Ficha injeta `buffsSessao`: o criador nunca os vê.
@@ -751,7 +755,7 @@ export function deriveAfty(creature, opcoes = {}) {
       };
     }),
   };
-  const tecnicaEfeitos = (Array.isArray(creature?.core?.tecnicaEfeitos) ? creature.core.tecnicaEfeitos : [])
+  const resolverEfeitosEditaveis = (lista) => (Array.isArray(lista) ? lista : [])
     .map((e) => {
       const def = EFEITO_CANAIS.find((c) => c.id === e?.canal) || null;
       const expr = String(e?.expr ?? "").trim();
@@ -765,6 +769,12 @@ export function deriveAfty(creature, opcoes = {}) {
         ativo: !e?.quando || evalNumberDsl(String(e.quando), ctxTecnica, 0) !== 0,
       };
     });
+  const tecnicaEfeitos = resolverEfeitosEditaveis(creature?.core?.tecnicaEfeitos);
+  const passivosEfeitos = Object.fromEntries(
+    (Array.isArray(creature?.feiticos) ? creature.feiticos : [])
+      .filter((f) => f?.tipo === "passivo")
+      .map((f) => [f.id, resolverEfeitosEditaveis(f.efeitosPassivo)]),
+  );
 
   // Alma: o teto (100 + Melhoria de Alma) e o multiplicador de PV. Sai aqui, e
   // não lá em cima, porque o canal `almaMax` só existe com os efeitos mesclados.
@@ -915,6 +925,8 @@ export function deriveAfty(creature, opcoes = {}) {
       nd,
       cdBase: cd,
       modTecnica,
+      efeitos: ef,
+      habilidades: habilidades.escolhidas,
       temEnergiaReversa: !semEnergia
         && Array.isArray(creature?.aptidoesAmaldicoadas)
         && creature.aptidoesAmaldicoadas.includes("energia_reversa"),
@@ -1239,6 +1251,7 @@ export function deriveAfty(creature, opcoes = {}) {
     periciaProf: Object.fromEntries((testes.pericias ?? []).map((p) => [p.id, p.prof ?? null])),
     feiticos,             // { nivelMax, gastos, cdBase } — o orçamento é o de baixo
     tecnicaEfeitos,       // Funcionamento Básico resolvido, para o editor mostrar o valor de cada linha
+    passivosEfeitos,      // Motor resolvido por Feitiço Passivo / Característica
     gerais,               // { escolhidas, gastos, ganhos, destravado, maxVezes, acesso, inacessiveis }
     efeitos: ef,          // Motor de Automação: { porCanal, porAlvo, detalhes, avisos }
     testes,               // { pericias, resistencias, ataques, orcamento, atencao }

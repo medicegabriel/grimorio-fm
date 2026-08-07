@@ -244,9 +244,9 @@ function LinhaFeitico({ f, rolar, destacado }) {
             <span className="afty-chip" title={`${r.vezes} ${r.rotulo}s`}>×{r.vezes}</span>
           )}
           <NumeroComFontes
-            valor={`${r.dados}d${r.faces}${r.fixo ? `${r.fixo > 0 ? "+" : ""}${r.fixo}` : ""}`}
+            valor={`${r.dados}d${r.faces}${r.explosiva ? "!" : ""}${r.fixo ? `${r.fixo > 0 ? "+" : ""}${r.fixo}` : ""}`}
             partes={r.partes}
-            total={`${r.dados}d${r.faces}${r.fixo ? `${r.fixo > 0 ? "+" : ""}${r.fixo}` : ""}`}
+            total={`${r.dados}d${r.faces}${r.explosiva ? "!" : ""}${r.fixo ? `${r.fixo > 0 ? "+" : ""}${r.fixo}` : ""}`}
             formatar={false}
             className="afty-valor text-[13px] whitespace-nowrap"
             titulo={r.rotulo}
@@ -255,6 +255,7 @@ function LinhaFeitico({ f, rolar, destacado }) {
               rotulo: f.nome || "Feitiço Sem Nome",
               detalhe: rolagens.length > 1 || r.vezes > 1 ? r.rotulo : f.nivelLabel,
               dados: r.dados, faces: r.faces, fixo: r.fixo || 0,
+              explosiva: !!r.explosiva,
             })}
           />
         </span>
@@ -358,7 +359,7 @@ function LinhaManobra({ m, rolar, destacado }) {
 export default function AbaAcoes({ derived, rolar, destaque, rapido = [], abertos, onAberto, onFavorito }) {
   const dano = derived.dano?.entradas ?? [];
   const cura = derived.cura?.linhas ?? [];
-  const feiticos = derived.feiticos?.lista ?? [];
+  const feiticos = (derived.feiticos?.lista ?? []).filter((f) => f.tipo !== "passivo");
   const dominios = derived.dominios?.lista ?? [];
   const dominioAtivo = derived.dominios?.ativoId ?? null;
   const manobras = derived.testes?.manobras ?? [];

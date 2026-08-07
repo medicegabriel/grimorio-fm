@@ -83,7 +83,10 @@ export function rolarTeste({ rotulo, detalhe, bonus = 0, modo = "normal", margem
  * dobro, então os dois se compõem sem regra nova.
  */
 export function rolarDano(
-  { rotulo, detalhe, dados, faces, grupos, fixo = 0, blocos = 1, critico = false, tom = "dano" },
+  {
+    rotulo, detalhe, dados, faces, grupos, fixo = 0, blocos = 1,
+    critico = false, explosiva = false, tom = "dano",
+  },
   rng = Math.random,
 ) {
   const fixoInt = Math.trunc(Number(fixo) || 0);
@@ -104,7 +107,7 @@ export function rolarDano(
     const quantos = Math.max(0, Math.trunc(g.dados) || 0) * mult;
     const face = Math.max(2, Math.trunc(g.faces) || 6);
     rolados.push(...rolarDados(quantos, face, rng));
-    if (quantos > 0) partes.push(`${quantos}d${face}`);
+    if (quantos > 0) partes.push(`${quantos}d${face}${explosiva ? "!" : ""}`);
   }
 
   const soma = rolados.reduce((s, n) => s + n, 0);

@@ -140,8 +140,8 @@ export function createBlankAfty() {
       tecnicaDescricao: "",        // Funcionamento Básico / "Descrição da Técnica" (texto livre)
       // Efeitos do Funcionamento Básico, programados pelo jogador:
       // [{ canal, alvo?, expr }]. A técnica é ÚNICA NO MUNDO por definição, então
-      // nenhum catálogo pode cobri-la: é a única entrada do sistema em que o
-      // efeito é escrito na ficha, e não escolhido de uma lista. Entram no Motor
+      // nenhum catálogo pode cobri-la: é uma das entradas do sistema em que o
+      // efeito é escrito na ficha, junto dos Passivos / Características. Entra no Motor
       // por `efeitosDaTecnica`, e os filtros de estágio roteiam pelo canal, igual
       // a qualquer outra fonte. Mesmo shape do Motor das Ferramentas Amaldiçoadas.
       tecnicaEfeitos: [],

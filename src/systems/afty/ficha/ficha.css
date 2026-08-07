@@ -61,8 +61,10 @@
   /* ---------- imagem de fundo (o tema do usuário) ---------- */
   --afty-imagem: none;
   --afty-imagem-opacidade: 0.25;
+  --afty-imagem-opacidade-ambiente: 0.125;
+  --afty-imagem-opacidade-banner: 0.15;
   --afty-imagem-encaixe: cover;
-  --afty-imagem-posicao: center;
+  --afty-imagem-posicao: center top;
 
   position: relative;
   min-height: 100dvh;
@@ -73,19 +75,56 @@
   font-family: var(--afty-fonte);
 }
 
-/* A imagem do usuário vive numa camada própria, atrás de tudo, para a opacidade
-   dela não apagar o texto junto. `pointer-events: none` para não comer clique. */
-.afty-ficha::before {
+/* A imagem do usuário começa depois do cabeçalho. A camada de ambiente acompanha
+   toda a altura da aba, inclusive quando o conteúdo passa de uma tela. */
+.afty-ficha-corpo {
+  position: relative;
+  min-height: 100dvh;
+  isolation: isolate;
+}
+
+.afty-ficha-corpo::before {
   content: "";
-  position: fixed;
+  position: absolute;
   inset: 0;
+  min-height: 100dvh;
+  z-index: 0;
+  pointer-events: none;
+  background-image: var(--afty-imagem);
+  background-size: cover;
+  background-position: var(--afty-imagem-posicao);
+  background-repeat: no-repeat;
+  opacity: var(--afty-imagem-opacidade);
+}
+
+/* Em Caber e Tamanho Real, o primeiro plano conserva o enquadramento escolhido.
+   A cópia de ambiente permanece por baixo para a imagem não terminar em uma
+   faixa preta quando a aba é mais alta do que ela. */
+.afty-ficha-corpo[data-afty-imagem-encaixe="contain"]::before,
+.afty-ficha-corpo[data-afty-imagem-encaixe="auto"]::before {
+  opacity: var(--afty-imagem-opacidade-ambiente);
+}
+
+.afty-ficha-corpo[data-afty-imagem-encaixe="contain"]::after,
+.afty-ficha-corpo[data-afty-imagem-encaixe="auto"]::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100dvh;
   z-index: 0;
   pointer-events: none;
   background-image: var(--afty-imagem);
   background-size: var(--afty-imagem-encaixe);
   background-position: var(--afty-imagem-posicao);
   background-repeat: no-repeat;
-  opacity: var(--afty-imagem-opacidade);
+  opacity: var(--afty-imagem-opacidade-banner);
+}
+
+.afty-ficha-corpo > * {
+  position: relative;
+  z-index: 1;
 }
 
 .afty-ficha > * {

@@ -25,6 +25,7 @@ import { getHabilidadeGeral } from "../afty-gerais";
 import { getMelhoriaSuperior, getHabilidadeLendaria, getHabilidadeApice } from "../afty-alto-nivel";
 import { getEspecializacao } from "../afty-especializacoes";
 import { caracteristicasEfetivas, getOrigem, getCla } from "../afty-origens";
+import { NIVEL_LABEL } from "../afty-feiticos";
 
 /**
  * O rótulo de cada tipo de equipamento. Tipo que não estiver aqui vira uma
@@ -42,6 +43,7 @@ export const ROTULO_EQUIPAMENTO = {
 export const GRUPOS = [
   { id: "origem", label: "Origem" },
   { id: "especializacao", label: "Habilidades de Especialização" },
+  { id: "passivo", label: "Passivos e Características" },
   { id: "talento", label: "Talentos" },
   { id: "geral", label: "Habilidades Gerais" },
   { id: "aptidao", label: "Aptidões Amaldiçoadas" },
@@ -156,6 +158,19 @@ export function conteudoDaFicha(creature, derived) {
       tags: [espec?.nome, h.nivel ? { label: `Nível ${h.nivel}`, tipo: "nivel" } : null],
       opcoes: opcoesEscolhidas(h, mapaHab),
       aviso: inacessiveisHab.has(id) ? "Pré-requisito não atendido" : null,
+    }));
+  }
+
+  /* ---------- Passivos e Características ---------- */
+  for (const f of Array.isArray(creature?.feiticos) ? creature.feiticos : []) {
+    if (f?.tipo !== "passivo") continue;
+    itens.push(item({
+      id: f.id,
+      chave: `passivo:${f.id}`,
+      nome: f.nome || "Passivo Sem Nome",
+      texto: f.descricao ?? "",
+      grupo: "passivo",
+      tags: [NIVEL_LABEL[f.nivel] ?? String(f.nivel)],
     }));
   }
 
@@ -336,7 +351,9 @@ export function alvosDeBusca(derived) {
 
   for (const e of derived?.dano?.entradas ?? []) add("acoes", "dano", e.id, e.nome, e.texto);
   for (const l of derived?.cura?.linhas ?? []) add("acoes", "cura", l.id, l.nome, l.texto);
-  for (const f of derived?.feiticos?.lista ?? []) add("acoes", "feitico", f.id, f.nome || "Feitiço Sem Nome", f.nivelLabel);
+  for (const f of derived?.feiticos?.lista ?? []) {
+    if (f.tipo !== "passivo") add("acoes", "feitico", f.id, f.nome || "Feitiço Sem Nome", f.nivelLabel);
+  }
   for (const m of derived?.testes?.manobras ?? []) add("acoes", "manobra", m.id, m.nome, m.periciaUsada);
   for (const a of derived?.testes?.ataques ?? []) add("pericias", "ataque", a.id, a.nome, null);
   for (const r of derived?.testes?.resistencias ?? []) add("pericias", "tr", r.value, r.label, null);

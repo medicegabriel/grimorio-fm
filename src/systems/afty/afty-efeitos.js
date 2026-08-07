@@ -540,10 +540,9 @@ export function efeitosManuaisDaFicha(creature) {
  * Efeitos do FUNCIONAMENTO BÁSICO da técnica, escritos pelo jogador na ficha
  * (`core.tecnicaEfeitos`).
  *
- * ⚠ É a ÚNICA fonte do sistema em que o efeito é ESCRITO e não escolhido de um
- * catálogo, e é por definição: a técnica amaldiçoada é única no mundo, então
- * nenhuma lista pode cobri-la. O jogador tem o DSL inteiro à disposição, os 47
- * canais, alvo, `quando` e `duracao`.
+ * É uma das fontes em que o efeito é ESCRITO e não escolhido de um catálogo. A
+ * outra é o Passivo / Característica criado pelo jogador. O jogador tem o DSL
+ * inteiro à disposição, os canais, alvo, `quando` e `duracao`.
  *
  * Sai daqui como qualquer outra fonte (`{ canal, expr, origem, nome }`), então os
  * filtros de estágio do deriveAfty roteiam pelo canal sozinhos: um efeito de
@@ -568,6 +567,41 @@ export function efeitosDaTecnica(creature) {
     if (e.quando) ef.quando = String(e.quando).trim();
     if (e.duracao === "temporaria") ef.duracao = "temporaria";
     out.push(ef);
+  }
+  return out;
+}
+
+/**
+ * Efeitos dos Feitiços Passivos / Características escritos pelo jogador.
+ *
+ * Eles usam o mesmo formato livre do Funcionamento Básico, mas pertencem à
+ * família exclusiva dos Feitiços Passivos. Assim, participam do pool que não
+ * acumula com Habilidade Única, Shikigami e Feitiço Auxiliar, conforme a regra
+ * já modelada pelo Motor.
+ */
+export function efeitosDosPassivos(creature) {
+  const feiticos = Array.isArray(creature?.feiticos) ? creature.feiticos : [];
+  const out = [];
+  for (const feitico of feiticos) {
+    if (feitico?.tipo !== "passivo") continue;
+    const lista = Array.isArray(feitico.efeitosPassivo) ? feitico.efeitosPassivo : [];
+    for (const e of lista) {
+      const canal = CANAL_LEGADO[e?.canal] ?? e?.canal;
+      if (!canal || !CANAL_BY_ID[canal]) continue;
+      const expr = String(e.expr ?? "").trim();
+      if (!expr) continue;
+      const ef = {
+        canal,
+        expr,
+        origem: `feitico:${feitico.id}`,
+        nome: String(feitico.nome ?? "").trim() || "Passivo",
+        exclusivo: "feiticoAuxiliarPassivo",
+      };
+      if (e.alvo) ef.alvo = e.alvo;
+      if (e.quando) ef.quando = String(e.quando).trim();
+      if (e.duracao === "temporaria") ef.duracao = "temporaria";
+      out.push(ef);
+    }
   }
   return out;
 }

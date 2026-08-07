@@ -595,19 +595,24 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
         </div>
       </header>
 
-      <main
-        id="afty-painel"
-        role="tabpanel"
-        aria-labelledby={`afty-aba-${tab}`}
-        className="max-w-7xl mx-auto px-3 sm:px-4 py-4"
+      <div
+        className="afty-ficha-corpo"
+        data-afty-imagem-encaixe={tema.imagem.encaixe || "cover"}
       >
-        {(corpo[tab] ?? corpo.acoes)()}
-        {/* O painel de rolagens é fixo no canto e cobre o fim do conteúdo.
-            Este respiro impede que a última linha da aba fique embaixo dele.
-            ⚠ Ele cresceu em 2026-08-06: o painel subiu para não cobrir o botão
-            dos Livros, e o respiro tem que cobrir a soma dos dois. */}
-        <div className="afty-respiro h-48" aria-hidden="true" />
-      </main>
+        <main
+          id="afty-painel"
+          role="tabpanel"
+          aria-labelledby={`afty-aba-${tab}`}
+          className="max-w-7xl mx-auto px-3 sm:px-4 py-4"
+        >
+          {(corpo[tab] ?? corpo.acoes)()}
+          {/* O painel de rolagens é fixo no canto e cobre o fim do conteúdo.
+              Este respiro impede que a última linha da aba fique embaixo dele.
+              ⚠ Ele cresceu em 2026-08-06: o painel subiu para não cobrir o botão
+              dos Livros, e o respiro tem que cobrir a soma dos dois. */}
+          <div className="afty-respiro h-48" aria-hidden="true" />
+        </main>
+      </div>
 
       <PainelDeRolagens
         log={sessao.log}

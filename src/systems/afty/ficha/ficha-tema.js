@@ -72,7 +72,7 @@ export const TOKENS_DOC = [
   { id: "--afty-imagem", valor: "none", oque: "imagem de fundo, como url(\"...\")" },
   { id: "--afty-imagem-opacidade", valor: "0.25", oque: "opacidade da imagem de fundo, de 0 a 1" },
   { id: "--afty-imagem-encaixe", valor: "cover", oque: "background-size da imagem" },
-  { id: "--afty-imagem-posicao", valor: "center", oque: "background-position da imagem" },
+  { id: "--afty-imagem-posicao", valor: "center top", oque: "background-position da imagem" },
 ];
 
 const PADRAO = Object.fromEntries(TOKENS_DOC.map((t) => [t.id, t.valor]));
@@ -270,7 +270,7 @@ export function temaEmBranco() {
     vars: {},                 // o que o formulário mudou, POR CIMA do preset
     fonte: null,
     raio: null,
-    imagem: { url: "", opacidade: 0.25, encaixe: "cover", posicao: "center" },
+    imagem: { url: "", opacidade: 0.25, encaixe: "cover", posicao: "center top" },
     css: "",
     ligado: true,
   };
@@ -292,6 +292,7 @@ export function normalizaTema(bruto) {
       ...img,
       url: typeof img.url === "string" ? img.url : "",
       opacidade: Math.min(1, Math.max(0, Number(img.opacidade ?? base.imagem.opacidade) || 0)),
+      posicao: img.posicao === "center" ? "center top" : (img.posicao || base.imagem.posicao),
     },
   };
 }
@@ -396,10 +397,13 @@ export function cssDasVars(tema) {
 
   const url = urlSegura(t.imagem.url);
   if (url) {
+    const opacidade = t.imagem.opacidade;
     põe("--afty-imagem", `url("${url}")`);
-    põe("--afty-imagem-opacidade", String(t.imagem.opacidade));
+    põe("--afty-imagem-opacidade", String(opacidade));
+    põe("--afty-imagem-opacidade-ambiente", String(opacidade * 0.5));
+    põe("--afty-imagem-opacidade-banner", String(opacidade * 0.6));
     põe("--afty-imagem-encaixe", t.imagem.encaixe === "auto" ? "auto" : t.imagem.encaixe);
-    põe("--afty-imagem-posicao", t.imagem.posicao || "center");
+    põe("--afty-imagem-posicao", t.imagem.posicao || "center top");
   }
 
   if (!linhas.length) return "";

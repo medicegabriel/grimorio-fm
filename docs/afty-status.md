@@ -61,7 +61,8 @@ Estado atual do sistema Afty (atualizado 2026-07-17). Leia junto com:
 > | 9 | linha do catálogo de CURA | `requer` em `FONTES_CURA` (afty-cura.js). A Descarga Reanimadora não tem canal nenhum e mesmo assim tem linha, porque ela ESPELHA outra (1) |
 >
 > **Não existe habilidade "somável e livre" sobrando.** O que falta cai todo em bloqueio nomeado:
-> Feitiços não leem o Motor (39), ~~canal de CURA não existe (20)~~ ✅ **RESOLVIDO em 2026-08-03**
+> Feitiços ainda têm efeitos pendentes (39), mas os Feitiços de Dano passaram a ler os canais
+> `dadosDano` e `danoBonus` em 2026-08-07. ~~Canal de CURA não existe (20)~~ ✅ **RESOLVIDO em 2026-08-03**
 > (ver a sessão), invocação precisa de marcador por-invocação para as Melhorias e de stat de **RD**
 > e **dados de dano** (36), subsistemas nunca enviados (Apoio, Imitação, Votos, técnicas marciais),
 > e canais que faltam (troca de atributo na fórmula, vantagem por condição, vaga de pool,
@@ -72,10 +73,11 @@ Estado atual do sistema Afty (atualizado 2026-07-17). Leia junto com:
 > classe não existem" (3 existem: `pontosPreparo`, `empolgacaoMaxima`/`Inicial`, e Estamina que É
 > o PE. Falta só o PE temporário exclusivo de Aptidão).
 >
-> A razão do Conjurador segue baixa por motivo ESTRUTURAL: **`afty-feiticos.js` não lê o Motor**
-> (só a CD chega, porque `feiticos.cdBase` É a CD da criatura). Era a maior das duas extensões
-> pendentes, e agora é a única: **CURA virou sistema em 2026-08-03** (`afty-cura.js`), com 7 canais
-> novos e card próprio na aba Habilidades.
+> A razão do Conjurador segue baixa por motivo ESTRUTURAL: `afty-feiticos.js` agora lê
+> `dadosDano` e `danoBonus`, além da CD que já chegava por `feiticos.cdBase`, mas custo, nível de
+> acesso, alcance, área, liberações e efeitos dependentes do uso continuam sem integração.
+> **CURA virou sistema em 2026-08-03** (`afty-cura.js`), com 7 canais novos e card próprio na aba
+> Habilidades.
 >
 > Canais abertos nesta leva: **`rdAlma`** (a RD Geral cobre todo tipo MENOS alma) e
 > **`espacosCarga`** (sobe o limite de carga).
@@ -102,6 +104,48 @@ Estado atual do sistema Afty (atualizado 2026-07-17). Leia junto com:
 >
 > 👉 **Começando um chat novo? Vá direto para
 > [PENDÊNCIAS DE ESPECIALIZAÇÕES](#-pendências-de-especializações-lista-de-retomada).**
+
+---
+
+## SESSÃO DE 2026-08-07
+
+### Dano de Feitiço ligado ao Motor e Explosão Encadeada
+
+- `calcularFeiticoDano` passou a consumir `dadosDano` e `danoBonus` do Motor. Os efeitos podem
+  valer para todas as fontes, para todos os Feitiços de Dano com alvo `feitico`, ou para uma
+  entrada específica com alvo `feitico:<id>`.
+- A habilidade `cnj_explosao_encadeada` marca somente a notação dos dados com `!`, antes da parcela
+  fixa. Exemplo: `27d12!+52`. O rolador estruturado continua recebendo a mesma quantidade de dados,
+  sem executar uma segunda rolagem dentro do Afty.
+- A notação com `!` aparece no criador, no resumo derivado, na aba Ações e na fórmula registrada
+  no histórico da ficha final.
+
+### Passivo / Característica configurável
+
+- O tipo antigo `passivo` agora aparece como **Passivo / Característica** e possui o mesmo editor
+  livre do Motor usado pelo Funcionamento Básico: canal, alvo, expressão, duração e condição.
+- O alvo de fonte de dano oferece todos os Feitiços de Dano, cada Feitiço criado separadamente e as
+  linhas normais de dano da criatura.
+- Os efeitos gravados em `feitico.efeitosPassivo` entram no Motor pela família exclusiva
+  `feiticoAuxiliarPassivo`, preservando a regra do maior bônus entre as cinco fontes do pool.
+- Na ficha final, estas entradas aparecem em **Passivos e Características**, dentro de Habilidades.
+  Elas não aparecem em Ações.
+
+### Fora desta etapa
+
+- A ativação do Funcionamento Básico na ficha final não foi alterada.
+- Habilidades de Conjurador que dependem do último Feitiço usado, de uma ação de preparação, da
+  quantidade de criaturas atingidas ou dos resultados dos dados continuam exigindo estado de uso.
+
+### Pendências de Conjurador identificadas nos testes
+
+- **Foco Amaldiçoado: Destruição:** não está aplicando seus efeitos ao dano dos Feitiços.
+- **Potência Concentrada:** não possui ativação e não altera o dano do próximo Feitiço.
+- **Ciclagem Maldita:** não acompanha o último Feitiço usado e não aplica os dados adicionais.
+- **Rituais e Aprimoramento de Rituais:** ainda não estão ligados ao funcionamento dos Feitiços.
+- **Destruição Ampla:** não possui forma de informar a quantidade de criaturas afetadas e ativar o
+  dano adicional.
+- **Destruição Focada:** não possui forma de ativar seus efeitos no Feitiço de alvo único.
 
 ---
 

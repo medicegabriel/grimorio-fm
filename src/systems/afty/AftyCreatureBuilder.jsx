@@ -1232,7 +1232,7 @@ const TIPO_FEITICO = [
   { value: "auxiliar", label: "Auxiliar" },
   { value: "curativo", label: "Curativo" },
   { value: "especial", label: "Especial" },
-  { value: "passivo",  label: "Passivo" },
+  { value: "passivo",  label: "Passivo / Característica" },
 ];
 const TIPO_FEITICO_LABEL = Object.fromEntries(TIPO_FEITICO.map((t) => [t.value, t.label]));
 
@@ -2143,12 +2143,13 @@ const ALVO_OPCOES_BASE = {
   trilha: APTIDAO_TRILHAS.map((t) => ({ value: t.key, label: t.label })),
 };
 
-function alvoOpcoes(tipo, pericias = AFTY_PERICIAS) {
+function alvoOpcoes(tipo, pericias = AFTY_PERICIAS, fontesDano = []) {
   if (tipo === "pericia") return pericias.map((p) => ({ value: p.id, label: p.nome }));
+  if (tipo === "fonteDano") return fontesDano;
   return ALVO_OPCOES_BASE[tipo] ?? null;
 }
 
-function TecnicaMotorEditor({ efeitos, onChange, pericias }) {
+function TecnicaMotorEditor({ efeitos, onChange, pericias, fontesDano = [] }) {
   const lista = Array.isArray(efeitos) ? efeitos : [];
   // Devolve só os campos de DADO, nunca os resolvidos: `valor` e `ativo` são
   // derivados, e gravá-los deixaria a ficha mentindo no próximo render.
@@ -2187,7 +2188,7 @@ function TecnicaMotorEditor({ efeitos, onChange, pericias }) {
           const exprRuim = ef.expr && !chk.ok;
           const chkQuando = ef.quando ? validateExpression(ef.quando) : { ok: true };
           const quandoRuim = ef.quando && !chkQuando.ok;
-          const alvos = ef.alvoTipo ? alvoOpcoes(ef.alvoTipo, pericias) : null;
+          const alvos = ef.alvoTipo ? alvoOpcoes(ef.alvoTipo, pericias, fontesDano) : null;
           return (
             <div key={i} className="rounded border border-slate-800 bg-slate-950/50 p-2">
               <div className="flex flex-wrap items-center gap-2">
@@ -2412,10 +2413,19 @@ function PerfilAmaldicoadoCard({ draft, derived, patchCore }) {
 function FeiticosCard({ draft, derived, addFeitico, removeFeitico, patchFeitico, duplicarFeitico }) {
   const lista = Array.isArray(draft.feiticos) ? draft.feiticos : [];
   const { nivelMax } = derived.feiticos;
+  const fontesDano = [
+    { value: "feitico", label: "Todos os Feitiços de Dano" },
+    ...lista
+      .filter((f) => f.tipo === "dano")
+      .map((f) => ({ value: `feitico:${f.id}`, label: f.nome || "Feitiço Sem Nome" })),
+    ...(derived.dano?.entradas ?? []).map((e) => ({ value: e.id, label: e.nome })),
+  ];
   const ctx = {
     nd: derived.nd,
     cdBase: derived.feiticos.cdBase,
     modTecnica: derived.modTecnica,
+    efeitos: derived.efeitos,
+    habilidades: derived.habilidades?.escolhidas ?? [],
     temEnergiaReversa: Array.isArray(draft.aptidoesAmaldicoadas) && draft.aptidoesAmaldicoadas.includes("energia_reversa"),
     invocacoes: Array.isArray(draft.invocacoes) ? draft.invocacoes : [],
   };
@@ -2434,6 +2444,8 @@ function FeiticosCard({ draft, derived, addFeitico, removeFeitico, patchFeitico,
             feitico={f}
             ctx={ctx}
             nivelMax={nivelMax}
+            efeitosPassivo={derived.passivosEfeitos?.[f.id] ?? []}
+            fontesDano={fontesDano}
             onPatch={(partial) => patchFeitico(f.id, partial)}
             onRemove={() => removeFeitico(f.id)}
             onDuplicate={() => duplicarFeitico(f.id)}
@@ -2454,7 +2466,7 @@ function FeiticosCard({ draft, derived, addFeitico, removeFeitico, patchFeitico,
 
 /* Uma entrada de Feitiço: cabeçalho recolhível + editor por tipo.
    Mesmo chrome do InvocacaoCard (o editor complexo já aprovado). */
-function FeiticoCard({ feitico, ctx, nivelMax, onPatch, onRemove, onDuplicate }) {
+function FeiticoCard({ feitico, ctx, nivelMax, efeitosPassivo, fontesDano, onPatch, onRemove, onDuplicate }) {
   const [open, setOpen] = useState(!feitico.nome);
   const [confirmDel, setConfirmDel] = useState(false);
   const calc = feitico.tipo === "dano" ? calcularFeiticoDano(feitico, ctx)
@@ -2541,6 +2553,12 @@ function FeiticoCard({ feitico, ctx, nivelMax, onPatch, onRemove, onDuplicate })
             <FeiticoCurativoEditor feitico={feitico} calc={calc} onPatch={onPatch} />
           ) : feitico.tipo === "especial" ? (
             <FeiticoEspecialEditor feitico={feitico} calc={calc} onPatch={onPatch} />
+          ) : feitico.tipo === "passivo" ? (
+            <TecnicaMotorEditor
+              efeitos={efeitosPassivo}
+              onChange={(v) => onPatch({ efeitosPassivo: v })}
+              fontesDano={fontesDano}
+            />
           ) : (
             <div className="text-center py-5 border border-dashed border-slate-700 rounded-lg text-sm text-slate-400">
               Feitiços {TIPO_FEITICO_LABEL[feitico.tipo]} entram num próximo incremento.
