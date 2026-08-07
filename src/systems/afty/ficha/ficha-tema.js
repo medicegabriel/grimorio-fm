@@ -555,7 +555,10 @@ export const CONTRATO_DE_CLASSES = [
 
   /* ---------- cabeçalho ---------- */
   { grupo: "Cabeçalho", seletor: ".afty-nome", oque: "o nome da criatura" },
-  { grupo: "Cabeçalho", seletor: ".afty-retrato", oque: "a miniatura do retrato" },
+  { grupo: "Cabeçalho", seletor: ".afty-cabecalho-conteudo", oque: "a grade do cabeçalho: o conteúdo à esquerda e o retrato à direita" },
+  { grupo: "Cabeçalho", seletor: ".afty-cabecalho-principal", oque: "a coluna do conteúdo, sem o retrato" },
+  { grupo: "Cabeçalho", seletor: ".afty-retrato-painel", oque: "a moldura vertical do retrato, só em tablet e desktop" },
+  { grupo: "Cabeçalho", seletor: ".afty-retrato", oque: "a imagem do retrato dentro da moldura" },
   { grupo: "Cabeçalho", seletor: ".afty-chip", oque: "as marcas: Tipo, Patamar, ND, Rodada" },
   { grupo: "Cabeçalho", seletor: ".afty-controles", oque: "a fileira de botões: densidade, aparência, busca, rodada, descanso, editar" },
   { grupo: "Cabeçalho", seletor: ".afty-vital", oque: "a caixa de um recurso" },
@@ -631,6 +634,7 @@ export const ATRIBUTOS_DOC = [
   { seletor: "[data-afty-compacto=\"sim\"]", oque: "o cabeçalho depois de rolar a página" },
   { seletor: "[data-afty-atributo=\"forca\"]", oque: "um atributo: forca, destreza, constituicao, inteligencia, sabedoria, presenca (as chaves não têm acento)" },
   { seletor: "[data-afty-carga=\"baixo\"]", oque: "o cartão de Carga com a criatura sobrecarregada. Também `critico` acima do máximo" },
+  { seletor: "[data-afty-com-retrato=\"sim\"]", oque: "o cabeçalho de uma criatura QUE TEM retrato" },
   { seletor: "[data-afty-subaba]", oque: "uma divisão de bloco pelo id dela: a Especialização, ou melhoria, lendaria e apice" },
   { seletor: "[data-afty-densidade=\"compacta\"]", oque: "a raiz quando o jogador pediu menos respiro. Também `confortavel`" },
 ];
@@ -643,7 +647,9 @@ export const ATRIBUTOS_DOC = [
  */
 export const MAPA_DA_PAGINA = `#afty-ficha                     a raiz
 ├── .afty-cabecalho             FIXO no topo, nunca sai da tela
-│   ├── .afty-nome + .afty-retrato + vários .afty-chip
+│   ├── .afty-cabecalho-conteudo   grade: conteúdo à esquerda, retrato à direita
+│   │   ├── .afty-nome + vários .afty-chip
+│   │   └── .afty-retrato-painel > .afty-retrato   (tablet e desktop)
 │   ├── 3 × .afty-vital         Vida, Energia e Alma, lado a lado
 │   │   ├── .afty-vital-icone .afty-vital-rotulo .afty-vital-numero .afty-vital-max
 │   │   └── .afty-vital-trilho > .afty-vital-barra

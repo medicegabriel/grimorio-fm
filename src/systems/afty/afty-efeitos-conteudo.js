@@ -1994,6 +1994,123 @@ export const GERAL_EFEITOS = {
  * é justo, porque origem não escala com nível de classe.
  */
 export const ORIGEM_EFEITOS = {
+  /* ================= GÊMEOS ================= */
+  /* ⚠ TUDO AQUI É ESCRITO EM DOIS ESTÁGIOS. A Restrição Celestial tem um efeito
+     inicial e um efeito depois da MORTE DO IRMÃO, e a variável `irmao_morto`
+     (0 ou 1) escolhe qual vale. O padrão da expressão é sempre o mesmo:
+
+         antes * (1 - irmao_morto) + depois * irmao_morto
+
+     ⚠ E TUDO É SEPARADO POR RAMO. O texto tem duas Restrições Celestiais
+     diferentes, uma para o Gêmeo Restringido e outra para o Gêmeo Feiticeiro, e
+     quem separa é o `tipo_restringido`, que o contexto já dá. Nenhuma escolha
+     nova foi criada para isso: o Tipo já diz o que a criatura é.
+
+     ⚠ O QUE NÃO ESTÁ AQUI, e por quê:
+       • a proibição de Controlador e de Invocações (é uma TRAVA, e trava não é
+         canal: ela vive em afty-especializacoes.js e afty-invocacoes.js);
+       • o "1 habilidade de técnica a cada 3 níveis" e o "1 por nível" do
+         pós-morte (o contador de Feitiço é ORÇAMENTO, e trocar a cadência dele
+         não é somar num canal);
+       • a redução dos atributos de CD de técnica (pergunta aberta: no Afty
+         QUALQUER atributo pode ser o da Técnica, e o livro fala de um conjunto);
+       • a Restrição Definitiva concedida independente do nível (é uma
+         Habilidade, e conceder Habilidade tem caminho próprio);
+       • o Lutador Superior sem custo de PE (a habilidade base escolhida vira
+         efeito em ORIGEM_ESCOLHA_EFEITOS, e o "sem custo" não tem canal porque
+         o ataque de graça do Lutador Superior já ficava de fora do Motor: ver
+         `lut_lutador_superior`, "economia de ação"). */
+  gemeos: [
+    // ---------- Bônus em Atributo ----------
+    // "Caso um deles seja restringido, ao invés disso, apenas seus atributos
+    // físicos são aumentados em 1." Os 2 pontos livres do outro caso são o pool
+    // da característica, e não um canal: eles são DISTRIBUÍDOS pelo jogador.
+    // ⚠ Cada efeito leva o NOME da característica que o gerou, e não o da
+    // origem. Sem isso o hover de fontes mostrava "Gêmeos +1" e "Gêmeos −2" na
+    // mesma Força, e não havia como saber qual linha era qual.
+    { canal: "atributo", alvo: "forca", expr: "1 * tipo_restringido", nome: "Gêmeos: Bônus em Atributo" },
+    { canal: "atributo", alvo: "destreza", expr: "1 * tipo_restringido", nome: "Gêmeos: Bônus em Atributo" },
+    { canal: "atributo", alvo: "constituicao", expr: "1 * tipo_restringido", nome: "Gêmeos: Bônus em Atributo" },
+
+    // ---------- Restrição Celestial · Restringido ----------
+    // "seus atributos de força e destreza são reduzidos em 2 cada" e, depois da
+    // morte, "você aumenta em 2 a sua força e destreza". O segundo CANCELA o
+    // primeiro, então o efeito líquido é a redução enquanto o irmão vive.
+    { canal: "atributo", alvo: "forca", expr: "-2 * tipo_restringido * (1 - irmao_morto)", nome: "Gêmeos: Restrição Celestial" },
+    { canal: "atributo", alvo: "destreza", expr: "-2 * tipo_restringido * (1 - irmao_morto)", nome: "Gêmeos: Restrição Celestial" },
+    // "recebe apenas 2 pontos de vigor por nível" e, depois, "+2 pontos de vigor
+    // por nível". A base do Restringido é 4 por nível (ver `peBase`), então a
+    // redução é de 2 por nível e o pós-morte volta ao normal.
+    // ⚠ Vigor É o PE: mesma pilha, outro nome. Ver afty-restringido-sem-energia.
+    { canal: "pe", expr: "-2 * nd * tipo_restringido * (1 - irmao_morto)", nome: "Gêmeos: Restrição Celestial" },
+
+    // ---------- Restrição Celestial · Feiticeiros ----------
+    // "Você recebe apenas 2 de energia por nível". A base do Tipo é 6 no
+    // Conjurador, 5 no Misto e 4 no Combatente, então a redução é a diferença
+    // até 2. Depois da morte: "+20 de energia máxima, recebendo também o base de
+    // sua especialização +2 de energia por nível" (autor, 2026-08-07: um
+    // Conjurador fica com 20 mais 8 por nível).
+    {
+      canal: "pe",
+      expr: "(1 - tipo_restringido) * (1 - irmao_morto) * (-1) * nd * "
+        + "(6 * tipo_conjurador + 5 * tipo_misto + 4 * tipo_combatente - 2)",
+      nome: "Gêmeos: Restrição Celestial",
+    },
+    {
+      canal: "pe",
+      expr: "(1 - tipo_restringido) * irmao_morto * (20 + 2 * nd)",
+      nome: "Gêmeos: Restrição Celestial",
+    },
+    /* "todos os atributos que podem ser usados para sua CD de técnica são
+       reduzidos em 2" e, depois da morte, "seus atributos que tinham sido
+       reduzidos aumentam em 2". O segundo CANCELA o primeiro, igual ao ramo do
+       Restringido, então o efeito líquido é a redução enquanto o irmão vive.
+
+       ⚠ LEITURA DA REGRA (autor, 2026-08-07): é o atributo que a criatura
+       ESCOLHEU como o da Técnica, e só ele. No Afty qualquer um dos seis pode
+       ser (`AFTY_TECNICA_ATTRS`), então a leitura literal de "todos os que
+       podem ser usados" reduziria os seis, o que não é jogável. Os seis efeitos
+       abaixo existem porque o canal `atributo` exige `alvo` fixo: a bandeira
+       `tecnica_*` zera cinco deles. */
+    ...["forca", "destreza", "constituicao", "inteligencia", "sabedoria", "presenca"].map((k) => ({
+      canal: "atributo",
+      alvo: k,
+      expr: `-2 * (1 - tipo_restringido) * (1 - irmao_morto) * tecnica_${k}`,
+      nome: "Gêmeos: Restrição Celestial",
+    })),
+
+    /* ---------- Ápice Corporal Humano (só depois da morte do irmão) ----------
+       ⚠ O LIMITE DE 30 NÃO PRECISA DE EFEITO NENHUM, e isso foi medido: o
+       `limTipo` do deriveAfty já dá 30 em Força, Destreza e Constituição a
+       TODO Tipo Restringido, e esta característica só existe para o Gêmeo
+       Restringido. Um canal `limiteAtributo` aqui somaria +10 sobre 30 e
+       morreria no teto do sistema, virando linha morta no hover de fontes.
+
+       O que a característica TRAZ de novo é o pool de alocação (+2 num físico a
+       cada 6 níveis), que é declarado no catálogo e só aparece depois do
+       interruptor da morte. Ver `apice_corporal_humano` em afty-origens.js. */
+
+    /* ---------- Limite natural de 30 depois da morte ----------
+       ⚠ NÃO ESTÁ AQUI, E FOI DE PROPÓSITO. Ele era um canal `limiteAtributo`
+       de +10 nos seis, e o canal só existe no ESTÁGIO 1 do deriveAfty. O bônus
+       de atributo da ORIGEM é aparado no estágio 0, então o mostrador subia
+       para 30 e o bônus da própria origem continuava aparado em 20, com a ficha
+       avisando "1 ponto de bônus perdido no limite 30" (relato do autor,
+       2026-08-07: *"Pq estou limitado a 22? Se gêmeo levou meu limite para
+       30?"*).
+
+       Agora ele mora em `limiteAtributoDaOrigem`, junto do Ápice Corporal
+       Humano do Restringido, que é o outro limite de origem do sistema. Limite
+       que precisa valer para a ALOCAÇÃO e para o bônus de origem não pode
+       chegar depois deles. */
+
+    // ---------- Dupla Empenhada ----------
+    // "o bônus de iniciativa de vocês são aplicados como um só". O número do
+    // irmão é DIGITADO (`core.origem.iniciativaIrmao`), porque ele mora em outra
+    // ficha. Ver a nota no topo da origem, em afty-origens.js.
+    { canal: "iniciativa", expr: "iniciativa_irmao", nome: "Gêmeos: Dupla Empenhada" },
+  ],
+
   // ⚠ INATO e DERIVADO foram as duas PRIMEIRAS origens feitas, e ficaram para
   // trás: elas declaravam concessão no shape antigo (`grants`), que só pintava um
   // selo âmbar na UI e não alimentava nada. Refeitas no estilo do Restringido e

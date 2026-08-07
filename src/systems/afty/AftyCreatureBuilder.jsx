@@ -20,6 +20,7 @@ import { estadoInicialComRascunho, useRascunhoAfty, formatarSalvoEm } from "./af
 import {
   AFTY_ORIGENS, getOrigem, origemTemDesenvolvimento, origemPoolLimite,
   clasDaOrigem, getCla, caracteristicasEfetivas, totalDaAlocacao, usoDaAlocacao,
+  origensQualificadas,
 } from "./afty-origens";
 // A descrição de cada anatomia agora aparece na própria linha selecionável, em
 // vez de repetida numa lista embaixo: o `getAnatomia` deixou de ser preciso aqui.
@@ -76,6 +77,8 @@ import {
   ITEM_CATEGORIAS, catalogoDoTipo, novaEntradaEquip,
   orcamentoDoGrau, espacosDoEquipamento, custoDoEquipamento,
   getPropriedade, getEspecial, grupoLabel,
+  ARMA_PROPRIEDADES, ARMA_DADOS, ARMA_CRITICOS, novaArmaCustom, rotuloPropriedade,
+  armasCustomDaFicha,
   CRIA_LABEL, REFEICOES_COZINHEIRO,
   AFTY_GRAUS, FA_TIPOS_EQUIP, FA_CRIACAO, defesaDaArmadura,
   FA_ENCANT_GANHO, FA_IDENTIFICACAO_CD, FA_GRAU_ESPECIAL_EXEMPLO,
@@ -557,6 +560,29 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
       }));
     });
 
+  // Armas criadas pelo jogador. Guardadas na ficha e injetadas no catálogo de
+  // armas pela `catalogoDoTipo`, então elas entram no inventário pelo mesmo
+  // caminho das do livro.
+  const armasArr = (d) => (Array.isArray(d.armasCustom) ? d.armasCustom : []);
+  const addArmaCustom = () => {
+    const nova = novaArmaCustom();
+    setDraft((d) => ({ ...d, armasCustom: [...armasArr(d), nova] }));
+    return nova.id;
+  };
+  const patchArmaCustom = (id, partial) =>
+    setDraft((d) => ({
+      ...d,
+      armasCustom: armasArr(d).map((x) => (x.id === id ? { ...x, ...partial } : x)),
+    }));
+  // ⚠ Apagar a arma tem de tirar do INVENTÁRIO junto. Sem isso a entrada fica
+  // apontando para um id que não existe mais e o resolvedor a reporta como
+  // "equipamento desconhecido", o que é verdade e não ajuda ninguém.
+  const removeArmaCustom = (id) =>
+    setDraft((d) => setEquipArr(
+      { ...d, armasCustom: armasArr(d).filter((x) => x.id !== id) },
+      equipArr(d).filter((e) => !(e.tipo === "arma" && e.refId === id)),
+    ));
+
   // Expansões de Domínio. Uma criatura pode ter várias escritas, e só uma no ar:
   // por isso `dominioAtivoId` é campo próprio, e não uma flag por domínio.
   const domArr = (d) => (Array.isArray(d.dominios) ? d.dominios : []);
@@ -776,7 +802,7 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
           {tabAtiva === "especializacoes" && <TabEspecializacoes draft={draft} derived={derived} setEspecializacoes={setEspecializacoes} toggleHabilidade={toggleHabilidade} toggleEscolhaHabilidade={toggleEscolhaHabilidade} toggleTalento={toggleTalento} toggleEscolhaTalento={toggleEscolhaTalento} setMelhoriaVezes={setMelhoriaVezes} toggleLendaria={toggleLendaria} toggleEscolhaAltoNivel={toggleEscolhaAltoNivel} />}
           {tabAtiva === "aptidoes" && <TabAptidoes draft={draft} derived={derived} setAptidaoNivel={setAptidaoNivel} toggleAptidao={toggleAptidao} setAptidaoOpcao={setAptidaoOpcao} />}
           {tabAtiva === "invocacoes" && <TabInvocacoes draft={draft} derived={derived} addInvocacao={addInvocacao} removeInvocacao={removeInvocacao} duplicarInvocacao={duplicarInvocacao} moverInvocacao={moverInvocacao} patchInvocacao={patchInvocacao} patchInvocacaoAttr={patchInvocacaoAttr} efeitosApi={efeitosApi} addHorda={addHorda} removeHorda={removeHorda} patchHorda={patchHorda} />}
-          {tabAtiva === "equipamentos" && <TabEquipamentos derived={derived} addEquipamento={addEquipamento} removeEquipamento={removeEquipamento} patchEquipamento={patchEquipamento} toggleFerramenta={toggleFerramenta} patchFerramenta={patchFerramenta} toggleEncantamento={toggleEncantamento} />}
+          {tabAtiva === "equipamentos" && <TabEquipamentos draft={draft} derived={derived} addEquipamento={addEquipamento} removeEquipamento={removeEquipamento} patchEquipamento={patchEquipamento} toggleFerramenta={toggleFerramenta} patchFerramenta={patchFerramenta} toggleEncantamento={toggleEncantamento} addArmaCustom={addArmaCustom} patchArmaCustom={patchArmaCustom} removeArmaCustom={removeArmaCustom} />}
           {tabAtiva === "interludios" && <TabInterludios draft={draft} derived={derived} setTreinoProgresso={setTreinoProgresso} setTreinoInstance={setTreinoInstance} />}
           {tabAtiva === "calculos" && <TabCalculos derived={derived} setStatOverride={setStatOverride} patchCombate={patchCombate} />}
           {STUBS[tabAtiva] && <StubCard title={TABS.find((t) => t.id === tabAtiva)?.label} text={STUBS[tabAtiva]} />}
@@ -1808,12 +1834,18 @@ function TabHabilidades({ draft, derived, patchCore, toggleArmaDedicada, addFeit
    Aparece igual nos dois cards, para o gasto de um lado ser visível do outro. */
 function ContadorHabilidades({ derived }) {
   const {
-    gastosNoComum, comum, exclusivasFeitico, exclusivasUsadas, excedeu,
+    gastosNoComum, comum, partesComum, exclusivasFeitico, exclusivasUsadas, excedeu,
   } = derived.orcamentoHabilidades;
   return (
     <div className="flex items-center gap-2" title="Feitiços e Habilidades Gerais gastam o mesmo contador">
-      <span className={`font-mono text-sm font-bold tabular-nums ${excedeu ? "text-rose-400" : "text-slate-200"}`}>
-        {gastosNoComum} / {comum}
+      {/* O contador pode ser MULTIPLICADO pela origem (os Gêmeos ficam com
+          metade, ou uma vez e meia depois da morte do irmão), então ele ganhou
+          hover de fontes: sem isso o número reduzido não teria explicação. */}
+      <span className="relative group">
+        <span className={`font-mono text-sm font-bold tabular-nums ${excedeu ? "text-rose-400" : "text-slate-200"}`}>
+          {gastosNoComum} / {comum}
+        </span>
+        {partesComum?.length > 1 && <PainelDeFontes partes={partesComum} total={comum} />}
       </span>
       {/* Vagas exclusivas de Feitiço aparecem SEPARADAS: somá-las ao contador
           faria parecer que sobra espaço para Habilidade Geral, e não sobra. */}
@@ -4313,11 +4345,22 @@ function OrigemChip({ children, tom = "slate", title }) {
 /* Uma característica de origem: painel próprio, com cabeçalho e corpo. Antes
    eram parágrafos empilhados atrás de uma barrinha, e com o Herdado e o
    Restringido entrando ficou impossível ver onde uma acabava e a outra começava. */
-function CaracteristicaPainel({ nome, estado, estadoAlerta, mesa, children }) {
+function CaracteristicaPainel({ nome, estado, estadoAlerta, mesa, verdadeiraOrigem, children }) {
   return (
-    <div className="rounded-lg border border-slate-800 bg-slate-950/40 overflow-hidden">
-      <div className="flex items-center gap-2 px-3 py-2 bg-slate-900/60 border-b border-slate-800/80">
+    <div className={`rounded-lg border bg-slate-950/40 overflow-hidden ${
+      verdadeiraOrigem ? "border-amber-900/60" : "border-slate-800"
+    }`}
+    >
+      {/* ⚠ `flex-wrap`: o chip da origem copiada pode ser longo ("Herdado (Clã
+          Inumaki)") e o chip é `whitespace-nowrap`. Numa linha só ele estouraria
+          o card no celular. */}
+      <div className="flex flex-wrap items-center gap-2 px-3 py-2 bg-slate-900/60 border-b border-slate-800/80">
         <span className="text-[12px] font-bold text-slate-100">{nome}</span>
+        {/* De onde a característica veio, quando ela NÃO é da origem da criatura.
+            Sem isso a copiada aparece no meio das nativas e some. */}
+        {verdadeiraOrigem && (
+          <OrigemChip tom="amber" title="Verdadeiras Origens">{verdadeiraOrigem}</OrigemChip>
+        )}
         {mesa && <OrigemChip title="Sem número na ficha: vale na mesa">Mesa</OrigemChip>}
         {estado && (
           <span className={`ml-auto text-[11px] font-mono tabular-nums ${estadoAlerta ? "text-rose-400" : "text-purple-300"}`}>
@@ -4405,6 +4448,55 @@ function OrigemCard({ draft, derived, patchCore, setOrigemId, setOrigemBonus, se
         )}
       </div>
 
+      {/* ⚠ SÓ OS GÊMEOS. Duas coisas que nenhuma outra origem tem, e as duas
+          existem porque essa origem é de DUPLA (ver afty-origens.js):
+
+            • a MORTE DO IRMÃO, que é o segundo estágio da Restrição Celestial e
+              inverte quase tudo dela. É interruptor de FICHA, e não estado de
+              combate: ele é permanente e tem de sobreviver à sessão.
+            • a INICIATIVA DO IRMÃO, digitada, porque a Dupla Empenhada soma os
+              dois bônus e o irmão mora em outra ficha.
+
+          Os dois ficam no topo do card, antes das características, porque o
+          interruptor MUDA o que as características abaixo dizem. */}
+      {id === "gemeos" && (
+        <div className="mt-4 grid gap-2 sm:grid-cols-2">
+          <button
+            type="button"
+            onClick={() => patchCore({ origem: { ...draft.core.origem, irmaoMorto: !draft.core.origem?.irmaoMorto } })}
+            aria-pressed={!!draft.core.origem?.irmaoMorto}
+            className={`rounded-lg border px-3 py-2.5 text-left transition-colors ${
+              draft.core.origem?.irmaoMorto
+                ? "border-rose-700 bg-rose-950/40 text-rose-100"
+                : "border-slate-800 bg-slate-950/40 text-slate-300 hover:border-rose-700/70 hover:text-white"
+            }`}
+          >
+            <span className="text-[12px] font-bold block">
+              {draft.core.origem?.irmaoMorto ? "Irmão Morto" : "Irmão Vivo"}
+            </span>
+            <span className={`text-[10px] block ${draft.core.origem?.irmaoMorto ? "text-rose-300/80" : "text-slate-500"}`}>
+              Restrição Celestial
+            </span>
+          </button>
+
+          <label className="rounded-lg border border-slate-800 bg-slate-950/40 px-3 py-2.5 flex items-center gap-2">
+            <span className="text-[11px] text-slate-400 flex-1 min-w-0">Iniciativa do Irmão</span>
+            <input
+              type="text"
+              inputMode="numeric"
+              value={draft.core.origem?.iniciativaIrmao ?? ""}
+              onChange={(e) => {
+                const cru = e.target.value.replace(/[^0-9+-]/g, "");
+                patchCore({ origem: { ...draft.core.origem, iniciativaIrmao: cru } });
+              }}
+              placeholder="0"
+              aria-label="Bônus de Iniciativa do irmão"
+              className="w-14 bg-transparent text-right font-mono text-sm font-bold text-white outline-none border border-slate-800 rounded px-1.5 py-0.5 focus:border-purple-500"
+            />
+          </label>
+        </div>
+      )}
+
       {/* clãs: só o Herdado se divide, e sem clã ele não tem conteúdo nenhum */}
       {clas && (
         <div className="mt-4">
@@ -4453,6 +4545,7 @@ function OrigemCard({ draft, derived, patchCore, setOrigemId, setOrigemBonus, se
                 key={c.id}
                 nome={c.nome}
                 mesa={c.mesa}
+                verdadeiraOrigem={c.verdadeiraOrigem}
                 estado={uma ? `${uma.gasto} de ${uma.vagas}` : null}
                 estadoAlerta={uma?.excedeu}
               >
@@ -4463,7 +4556,13 @@ function OrigemCard({ draft, derived, patchCore, setOrigemId, setOrigemBonus, se
                     os seis atributos de uma vez, é a mesma linguagem do resto do
                     builder, e permite espalhar os 3 pontos como +1/+1/+1 em vez
                     de travar em dois atributos. */}
-                {c.bonus?.distribuir && (
+                {/* ⚠ `semEnergiaNao` some com o alocador para o Restringido. O
+                    Bônus em Atributo dos Gêmeos diz "2 pontos para distribuir.
+                    Caso um deles seja restringido, AO INVÉS DISSO, apenas seus
+                    atributos físicos são aumentados em 1": os dois casos são
+                    excludentes, e deixar o alocador na tela ofereceria pontos
+                    que o `resolveOrigemAttrBonus` recusa a somar. */}
+                {c.bonus?.distribuir && !(c.bonus.semEnergiaNao && draft.core.tipo === "restringido") && (
                   <AlocadorDeAtributo
                     titulo={`Distribuir · máx ${c.bonus.maxPorAtributo}/atributo`}
                     chaves={c.bonus.entre}
@@ -4487,7 +4586,13 @@ function OrigemCard({ draft, derived, patchCore, setOrigemId, setOrigemBonus, se
                       chaves={aloc.entre}
                       passo={aloc.valor}
                       valorDe={(k) => pool[k] || 0}
-                      maxDe={(k) => (pool[k] || 0) + (total - usado) * aloc.valor}
+                      /* ⚠ O teto POR ATRIBUTO é opcional e vem da alocação. Sem
+                         ele o jogador põe os 4 pontos do pós-morte todos na
+                         Força, e o texto diz "2 em um mesmo atributo". */
+                      maxDe={(k) => Math.min(
+                        aloc.maxPorAtributo ?? Infinity,
+                        (pool[k] || 0) + (total - usado) * aloc.valor,
+                      )}
                       onChange={(k, v) => setOrigemPool(aloc.id, k, v)}
                       usado={usado}
                       total={total}
@@ -5639,7 +5744,11 @@ function AptidaoCard({ aptidao, escolhida, ctx, onToggle, opcaoAtual, onOpcao })
    baixa a outra. Com uma classe só não há o que dividir, e nenhum ± aparece. */
 function TabEspecializacoes({ draft, derived, setEspecializacoes, toggleHabilidade, toggleEscolhaHabilidade, toggleTalento, toggleEscolhaTalento, setMelhoriaVezes, toggleLendaria, toggleEscolhaAltoNivel }) {
   const { escolhidas, total, max, obrigatoria } = derived.especializacoes;
-  const disponiveis = especializacoesDisponiveis(draft.core.origem?.id);
+  // A origem copiada em Verdadeiras Origens ABRE o que for exclusivo dela: o
+  // Físico Abençoado do Restringido diz que dá acesso à Especialização
+  // Restringido, e sem passar isso aqui a lista da tela negaria o que o
+  // resolveEspecializacoes já aceita.
+  const disponiveis = especializacoesDisponiveis(draft.core.origem?.id, origensQualificadas(draft));
 
   // Multiclasse pede 2 slots E nível para dividir (cada uma tem mínimo 1),
   // então o ND 1 não comporta.
@@ -6107,6 +6216,8 @@ function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, toggleEsc
     nd: derived.nd,
     attrEff: derived.attrEff,
     origemId: draft.core?.origem?.id ?? null,
+    // A origem copiada em Verdadeiras Origens qualifica junto com a própria.
+    origensQualificadas: origensQualificadas(draft),
     talentos: talentosEscolhidos,
   };
 
@@ -6754,6 +6865,7 @@ function TabAptidoes({ draft, derived, setAptidaoNivel, toggleAptidao, setAptida
     attrEff: derived.attrEff,
     escolhidas,
     origemId: draft.core?.origem?.id,
+    origensQualificadas: origensQualificadas(draft),
     // Proficiência resolvida (escolhida + concedida pelo Motor), para os
     // requisitos de "Treinado em X" e "Mestre em X" travarem de verdade.
     periciaProf: derived.periciaProf,
@@ -7466,6 +7578,18 @@ function CatalogoLinha({ tipo, def, onAdd, jaTem }) {
           className="flex-1 min-w-0 flex items-center gap-x-2 text-left overflow-hidden"
         >
           <span className="text-[12px] font-semibold text-slate-100 truncate" title={def.nome}>{def.nome}</span>
+          {/* Arma criada pelo jogador. Ela fica no meio das do livro de
+              propósito, porque é uma arma como as outras, mas precisa se
+              anunciar: sem a marca não há como saber qual foi feita à mão.
+
+              ⚠ Mesma anatomia do RequisitoChip (autor, 2026-08-07): texto solto,
+              sem caixa nem borda. A versão anterior tinha fundo, borda e
+              maiúsculas, e pesava mais que o nome da arma ao lado. */}
+          {def.custom && (
+            <span className="text-[10px] font-medium text-amber-400 whitespace-nowrap flex-shrink-0">
+              Criada
+            </span>
+          )}
           {jaTem > 0 && (
             <span className="text-[9px] font-mono font-bold px-1 rounded bg-purple-500/25 text-purple-300 flex-shrink-0">
               {jaTem}
@@ -7568,7 +7692,317 @@ function CatalogoLinha({ tipo, def, onAdd, jaTem }) {
 
 // Só `derived`: o motor já devolve as entradas resolvidas (equip.entradas),
 // com a definição do catálogo junto, então a aba não precisa do draft cru.
-function TabEquipamentos({ derived, addEquipamento, removeEquipamento, patchEquipamento, toggleFerramenta, patchFerramenta, toggleEncantamento }) {
+/* Uma propriedade no editor de arma custom: o botão que liga e desliga, mais o
+   campo do parâmetro quando ela tem um.
+
+   ⚠ O parâmetro NÃO é decoração. "Pesada" sem o número não trava ataque nenhum,
+   "Fatal" sem o dado não muda crítico, e "Arremessável" sem alcance não diz a
+   que distância. Ligar a propriedade já grava o valor padrão dela, senão o
+   jogador sairia da tela com meia regra. */
+function PropriedadeCustom({ prop, valor, onChange }) {
+  const ligada = valor != null && valor !== false;
+  const padrao = {
+    dado: "1d6", tipo: "ct", numero: 1, alcance: [6, 18],
+  }[prop.param] ?? true;
+
+  return (
+    <div className={`rounded border px-2 py-1.5 ${ligada ? "border-purple-800 bg-purple-950/20" : "border-slate-800 bg-slate-950/40"}`}>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => onChange(ligada ? null : padrao)}
+          aria-pressed={ligada}
+          title={prop.descricao}
+          className={`text-[11px] font-semibold transition-colors ${ligada ? "text-purple-200" : "text-slate-400 hover:text-white"}`}
+        >
+          {prop.nome}
+        </button>
+      </div>
+
+      {ligada && prop.param === "dado" && (
+        <div className="mt-1.5">
+          <Select value={valor} onChange={onChange} options={ARMA_DADOS.map((d) => ({ value: d, label: d }))} />
+        </div>
+      )}
+      {ligada && prop.param === "tipo" && (
+        <div className="mt-1.5">
+          <Select
+            value={valor}
+            onChange={onChange}
+            options={Object.entries(TIPOS_DANO).map(([v, l]) => ({ value: v, label: l }))}
+          />
+        </div>
+      )}
+      {ligada && prop.param === "numero" && (
+        <div className="mt-1.5">
+          <NumberInput value={valor} onChange={onChange} min={1} max={30} />
+        </div>
+      )}
+      {ligada && prop.param === "alcance" && (
+        <div className="mt-1.5 grid grid-cols-2 gap-1.5">
+          <NumberInput value={valor?.[0] ?? 6} onChange={(v) => onChange([v, valor?.[1] ?? v * 3])} min={1} max={999} />
+          <NumberInput value={valor?.[1] ?? 18} onChange={(v) => onChange([valor?.[0] ?? 6, v])} min={1} max={9999} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* Editor de UMA arma custom. Dobrado por padrão: a fileira de propriedades é
+   longa, e o que interessa depois de criada é a linha de resumo. */
+function ArmaCustomEditor({ arma, onPatch, onRemove }) {
+  const [aberto, setAberto] = useState(!arma.nome);
+  const props = arma.props || {};
+  const setProp = (id, v) => {
+    const novo = { ...props };
+    if (v == null) delete novo[id]; else novo[id] = v;
+    onPatch({ props: novo });
+  };
+  const resumo = ARMA_PROPRIEDADES
+    .filter((p) => props[p.id] != null && props[p.id] !== false)
+    .map((p) => rotuloPropriedade(p.id, props[p.id]));
+
+  return (
+    <div className="rounded-lg border border-slate-800 bg-slate-950/40 overflow-hidden">
+      <div className="flex items-center gap-2 px-3 py-2 bg-slate-900/60">
+        <button
+          type="button"
+          onClick={() => setAberto((o) => !o)}
+          aria-expanded={aberto}
+          className="flex items-center gap-1.5 grow text-left group min-w-0"
+        >
+          <ChevronDown
+            className={`w-3.5 h-3.5 text-slate-600 flex-shrink-0 transition-transform ${aberto ? "" : "-rotate-90"}`}
+            aria-hidden="true"
+          />
+          <span className="text-[12px] font-bold text-slate-100 truncate">{arma.nome || "Arma sem Nome"}</span>
+          <span className="font-mono text-[10px] text-slate-500 whitespace-nowrap">
+            {arma.dano?.dado} {TIPOS_DANO[arma.dano?.tipo] ?? ""}
+          </span>
+        </button>
+        <button
+          type="button"
+          onClick={onRemove}
+          title="Apagar a arma e tirá-la do inventário"
+          className="text-[10px] px-2 py-0.5 rounded text-slate-500 hover:text-rose-300 hover:bg-rose-950/40 transition-colors flex-shrink-0"
+        >
+          Apagar
+        </button>
+      </div>
+
+      {!aberto && resumo.length > 0 && (
+        <div className="flex flex-wrap gap-1 px-3 py-2">
+          {resumo.map((r, i) => (
+            <span key={i} className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800/70 text-slate-400">{r}</span>
+          ))}
+        </div>
+      )}
+
+      {aberto && (
+        <div className="px-3 py-2.5 space-y-2.5">
+          <div>
+            <FieldLabel>Nome</FieldLabel>
+            <TextInput value={arma.nome ?? ""} onChange={(v) => onPatch({ nome: v })} placeholder="Nome da arma" />
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <FieldLabel>Classe</FieldLabel>
+              <Select
+                value={arma.classe}
+                onChange={(v) => onPatch({ classe: v })}
+                options={[{ value: "simples", label: "Simples" }, { value: "complexa", label: "Complexa" }]}
+              />
+            </div>
+            <div>
+              <FieldLabel>Categoria</FieldLabel>
+              <Select value={arma.categoria} onChange={(v) => onPatch({ categoria: v })} options={ARMA_CATEGORIAS} />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-2">
+            <div>
+              <FieldLabel>Dado</FieldLabel>
+              <Select
+                value={arma.dano?.dado}
+                onChange={(v) => onPatch({ dano: { ...arma.dano, dado: v } })}
+                options={ARMA_DADOS.map((d) => ({ value: d, label: d }))}
+              />
+            </div>
+            <div>
+              <FieldLabel>Tipo</FieldLabel>
+              <Select
+                value={arma.dano?.tipo}
+                onChange={(v) => onPatch({ dano: { ...arma.dano, tipo: v } })}
+                options={Object.entries(TIPOS_DANO).map(([v, l]) => ({ value: v, label: l }))}
+              />
+            </div>
+            <div>
+              <FieldLabel>Crítico</FieldLabel>
+              <Select
+                value={String(arma.critico)}
+                onChange={(v) => onPatch({ critico: Number(v) })}
+                options={ARMA_CRITICOS.map((c) => ({ value: String(c), label: `${c}+` }))}
+              />
+            </div>
+          </div>
+
+          {/* O dado de duas mãos só existe com Versátil, que é a propriedade que
+              lhe dá sentido. Aparecer sem ela ofereceria um campo que o
+              saneamento descarta na leitura seguinte. */}
+          {props.versatil && (
+            <div>
+              <FieldLabel>Dado com Duas Mãos</FieldLabel>
+              <Select
+                value={arma.dano?.duasMaos ?? arma.dano?.dado}
+                onChange={(v) => onPatch({ dano: { ...arma.dano, duasMaos: v } })}
+                options={ARMA_DADOS.map((d) => ({ value: d, label: d }))}
+              />
+            </div>
+          )}
+
+          <div className="grid grid-cols-3 gap-2">
+            <div>
+              <FieldLabel>Grupo</FieldLabel>
+              <Select value={arma.grupo} onChange={(v) => onPatch({ grupo: v })} options={ARMA_GRUPOS} />
+            </div>
+            <div>
+              <FieldLabel>Custo</FieldLabel>
+              <Select
+                value={String(arma.custo)}
+                onChange={(v) => onPatch({ custo: Number(v) })}
+                options={CUSTOS.map((c) => ({ value: String(c), label: `C${c}` }))}
+              />
+            </div>
+            <div>
+              <FieldLabel>Espaços</FieldLabel>
+              <NumberInput value={arma.espacos} onChange={(v) => onPatch({ espacos: v })} min={0} max={10} />
+            </div>
+          </div>
+
+          <div>
+            <FieldLabel>Propriedades</FieldLabel>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+              {ARMA_PROPRIEDADES.filter((p) => p.id !== "especial").map((p) => (
+                <PropriedadeCustom key={p.id} prop={p} valor={props[p.id]} onChange={(v) => setProp(p.id, v)} />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* Card das armas criadas pelo jogador. Fica ACIMA do catálogo porque uma arma
+   criada aqui aparece lá embaixo na lista, e a ordem inversa esconderia o
+   resultado da ação que o jogador acabou de fazer. */
+function ArmasCustomCard({ armas, onAdd, onPatch, onRemove }) {
+  return (
+    <Card
+      title="Armas Criadas"
+      headerRight={
+        <button
+          type="button"
+          onClick={onAdd}
+          className="text-[11px] font-semibold px-2.5 py-1 rounded-md bg-purple-700/70 text-white hover:bg-purple-700 transition-colors"
+        >
+          Nova Arma
+        </button>
+      }
+    >
+      {armas.length === 0 ? (
+        <p className="text-[11px] text-slate-600">Nenhuma arma criada.</p>
+      ) : (
+        <div className="space-y-1.5">
+          {armas.map((a) => (
+            <ArmaCustomEditor
+              key={a.id}
+              arma={a}
+              onPatch={(partial) => onPatch(a.id, partial)}
+              onRemove={() => onRemove(a.id)}
+            />
+          ))}
+        </div>
+      )}
+    </Card>
+  );
+}
+
+/* Filtro por propriedade da arma. Dobrado por padrão, e a linha fechada carrega
+   as marcadas: quem já escolheu não precisa reabrir para lembrar do que filtrou.
+
+   ⚠ O botão de limpar SÓ existe quando há o que limpar. Um filtro que esconde
+   metade do catálogo e não se anuncia é como um bug se parece. */
+function FiltroPropriedades({ opcoes, ativas, onToggle, onLimpar }) {
+  const [aberto, setAberto] = useState(false);
+  return (
+    <div className="mb-2 border-t border-slate-800 pt-2">
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setAberto((o) => !o)}
+          aria-expanded={aberto}
+          className="flex items-center gap-1.5 text-left group"
+        >
+          <ChevronDown
+            className={`w-3.5 h-3.5 text-slate-600 flex-shrink-0 transition-transform ${aberto ? "" : "-rotate-90"}`}
+            aria-hidden="true"
+          />
+          <span className="text-[10px] uppercase tracking-wider text-slate-500 group-hover:text-slate-300">
+            Propriedades
+          </span>
+        </button>
+        {ativas.length > 0 && (
+          <>
+            <span className="font-mono text-[11px] font-bold text-purple-300 tabular-nums">{ativas.length}</span>
+            <button
+              type="button"
+              onClick={onLimpar}
+              className="ml-auto text-[10px] px-2 py-0.5 rounded text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors"
+            >
+              Limpar
+            </button>
+          </>
+        )}
+      </div>
+
+      {!aberto && ativas.length > 0 && (
+        <div className="flex flex-wrap gap-1 mt-1.5 pl-[22px]">
+          {ativas.map((id) => (
+            <span key={id} className="text-[10px] px-2 py-0.5 rounded bg-purple-950/40 border border-purple-800 text-purple-300">
+              {getPropriedade(id)?.nome ?? id}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {aberto && (
+        <div className="flex flex-wrap gap-1 mt-1.5">
+          {opcoes.map((p) => {
+            const on = ativas.includes(p.id);
+            return (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => onToggle(p.id)}
+                aria-pressed={on}
+                title={p.descricao}
+                className={`text-[10px] px-2 py-1 rounded transition-colors ${
+                  on ? "bg-purple-700 text-white" : "bg-slate-800/70 text-slate-400 hover:text-white"
+                }`}
+              >
+                {p.nome}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TabEquipamentos({ draft, derived, addEquipamento, removeEquipamento, patchEquipamento, toggleFerramenta, patchFerramenta, toggleEncantamento, addArmaCustom, patchArmaCustom, removeArmaCustom }) {
   const { equip, carga, grauFeiticeiro: grau } = derived;
   const [catTab, setCatTab] = useState("arma");
   const [busca, setBusca] = useState("");
@@ -7590,16 +8024,48 @@ function TabEquipamentos({ derived, addEquipamento, removeEquipamento, patchEqui
     : catTab === "item" ? ITEM_CATEGORIAS
     : null;
 
+  // Propriedades da arma exigidas, todas ao mesmo tempo. É MULTI-ESCOLHA e o
+  // combinador é E, e não OU: a pergunta que se faz ao catálogo é "quais armas
+  // são Marciais E de Fineza", e não "quais são uma coisa ou outra". Com uma
+  // marcada só, ele se comporta igual aos outros chips.
+  const [propsFiltro, setPropsFiltro] = useState([]);
+  const togglePropFiltro = (id) =>
+    setPropsFiltro((atual) => (atual.includes(id) ? atual.filter((p) => p !== id) : [...atual, id]));
+
   // O recorte antes do filtro de custo, que é de onde saem os custos oferecidos.
   // Ele para no sub-filtro de propósito: incluir a BUSCA faria as opções
   // mudarem a cada tecla, e o que some debaixo do dedo é pior que uma opção que
   // não acha nada.
+  // ⚠ A dependência é `draft.armasCustom`, e NÃO o `draft` inteiro: o rascunho
+  // muda a cada tecla em qualquer aba, e o catálogo só depende das armas
+  // criadas. Por isso a chamada recebe um objeto com esse campo só.
   const listaDoTipo = useMemo(() => {
-    let l = catalogoDoTipo(catTab);
+    let l = catalogoDoTipo(catTab, { armasCustom: draft.armasCustom });
     if (catTab === "arma") l = l.filter((d) => d.classe === classeArma);
     if (subFiltro !== "todos") l = l.filter((d) => d.categoria === subFiltro);
     return l;
-  }, [catTab, classeArma, subFiltro]);
+  }, [catTab, classeArma, subFiltro, draft.armasCustom]);
+
+  // Só as propriedades que EXISTEM no recorte: uma aba de armas a distância não
+  // oferece Fineza para não achar nada. Mesma regra dos custos oferecidos, e ela
+  // é o que impede a fileira de virar 21 chips mortos.
+  const propsOferecidas = useMemo(() => {
+    if (catTab !== "arma") return [];
+    const vistos = new Set();
+    for (const d of listaDoTipo) {
+      for (const [k, v] of Object.entries(d.props || {})) {
+        if (v != null && v !== false && k !== "especial") vistos.add(k);
+      }
+    }
+    return ARMA_PROPRIEDADES.filter((p) => vistos.has(p.id));
+  }, [listaDoTipo, catTab]);
+
+  // As que valem AGORA. Igual ao custo: a marcada que sumiu do recorte é
+  // ignorada em vez de esvaziar a lista sem explicação na tela.
+  const propsAtivas = useMemo(
+    () => propsFiltro.filter((id) => propsOferecidas.some((p) => p.id === id)),
+    [propsFiltro, propsOferecidas],
+  );
 
   // Só os custos que existem no recorte atual: uma aba de kits, onde tudo custa
   // 1, não oferece quatro botões dos quais três não acham nada.
@@ -7617,6 +8083,10 @@ function TabEquipamentos({ derived, addEquipamento, removeEquipamento, patchEqui
   const lista = useMemo(() => {
     let l = listaDoTipo;
     if (custoAtivo !== "todos") l = l.filter((d) => custoDoEquipamento(catTab, d) === custoAtivo);
+    // Todas as marcadas, e não qualquer uma delas.
+    if (propsAtivas.length) {
+      l = l.filter((d) => propsAtivas.every((p) => d.props?.[p] != null && d.props[p] !== false));
+    }
     const q = busca.trim().toLowerCase();
     if (q) {
       l = l.filter((d) =>
@@ -7624,7 +8094,7 @@ function TabEquipamentos({ derived, addEquipamento, removeEquipamento, patchEqui
         (catTab === "arma" && grupoLabel(d.grupo).toLowerCase().includes(q)));
     }
     return l;
-  }, [listaDoTipo, catTab, custoAtivo, busca]);
+  }, [listaDoTipo, catTab, custoAtivo, propsAtivas, busca]);
 
   // Quantas unidades de cada refId já estão no inventário, para o contador
   // do catálogo.
@@ -7769,6 +8239,13 @@ function TabEquipamentos({ derived, addEquipamento, removeEquipamento, patchEqui
         )}
       </Card>
 
+      <ArmasCustomCard
+        armas={armasCustomDaFicha(draft)}
+        onAdd={addArmaCustom}
+        onPatch={patchArmaCustom}
+        onRemove={removeArmaCustom}
+      />
+
       <Card title="Catálogo">
         <div className="flex gap-1 overflow-x-auto no-scrollbar border-b border-slate-800 pb-2 mb-3" role="tablist" aria-label="Tipos de equipamento">
           {EQUIP_TIPOS.map((t) => {
@@ -7853,6 +8330,18 @@ function TabEquipamentos({ derived, addEquipamento, removeEquipamento, patchEqui
               );
             })}
           </div>
+        )}
+
+        {/* Propriedades. Fica DOBRADA por padrão: são até 21 chips, e a fileira
+            aberta empurraria a lista de armas para fora da tela. Fechada, ela
+            mostra as marcadas, que é o que interessa depois da primeira vez. */}
+        {propsOferecidas.length > 0 && (
+          <FiltroPropriedades
+            opcoes={propsOferecidas}
+            ativas={propsAtivas}
+            onToggle={togglePropFiltro}
+            onLimpar={() => setPropsFiltro([])}
+          />
         )}
 
         <div className="mb-3">

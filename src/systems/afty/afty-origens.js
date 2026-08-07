@@ -669,7 +669,390 @@ export const AFTY_ORIGENS_CATALOG = [
     ],
     especializacaoExclusivaId: null,
   },
+  {
+    id: "gemeos",
+    nome: "Gêmeos",
+    // ⚠ ORIGEM DE DUPLA. O texto do livro é explícito: *"ela DEVE ser feita em
+    // dupla, seja com outro jogador ou com algum NPC"*, e recomenda que ao menos
+    // um dos dois seja Restringido. Isso tem duas consequências no código:
+    //
+    //   • a **Iniciativa** soma a do irmão, e o irmão é OUTRA ficha. O número
+    //     dele é digitado num campo (`core.origem.iniciativaIrmao`), decisão do
+    //     autor em 2026-08-07: ler a outra criatura do armazenamento criaria
+    //     dependência entre fichas por um bônus só.
+    //   • a **Restrição Celestial** tem dois estágios, e o segundo começa com a
+    //     MORTE DO IRMÃO. Isso é um interruptor na Origem
+    //     (`core.origem.irmaoMorto`), e não um estado de combate: é permanente e
+    //     precisa sobreviver à sessão. Ver a nota do `irmaoMorto` no schema.
+    //
+    // ⚠ Os dois RAMOS da Restrição Celestial (Restringido e Feiticeiro) saem do
+    // que a criatura É, e não de mais uma escolha: `semEnergia` (o Tipo
+    // Restringido) já separa os dois no deriveAfty inteiro.
+    bonusAtributos: {},
+    caracteristicas: [
+      {
+        id: "bonus_atributo",
+        nome: "Bônus em Atributo",
+        descricao:
+          "Os gêmeos recebem 2 pontos para distribuir entre seus atributos. Caso um deles seja " +
+          "restringido, ao invés disso, apenas seus atributos físicos são aumentados em 1",
+        // ⚠ Os dois casos são EXCLUDENTES, e quem decide é o Tipo: o Restringido
+        // recebe +1 fixo em Força, Destreza e Constituição (via ORIGEM_EFEITOS,
+        // porque `bonusAtributos` é do catálogo e não sabe o Tipo), e todo o
+        // resto recebe os 2 pontos livres abaixo. O pool some para o Restringido
+        // no criador, senão ele ganharia as duas coisas.
+        bonus: { distribuir: 2, maxPorAtributo: 2, semEnergiaNao: true },
+      },
+      {
+        id: "restricao_celestial",
+        nome: "Restrição Celestial",
+        descricao:
+          "Gêmeos possuem uma restrição celestial que limita bastante suas capacidades, mas que " +
+          "também varia a depender se eles possuem ou não energia. Essa característica de origem " +
+          "será explicada com melhores detalhes na próxima página. Esse “Voto” não entra no limite " +
+          "de votos, sendo algo a parte da origem.",
+        // ⚠ Este NÃO é um Voto do sistema de votos: o texto diz que ele fica
+        // "a parte da origem". Ele não entra no limite e não aparece na aba de
+        // Votos. O conteúdo mecânico dele está nas duas características abaixo,
+        // separadas por ramo, para o jogador ler só a que vale para ele.
+      },
+      {
+        id: "restricao_celestial_restringido",
+        nome: "Restrição Celestial: Restringido",
+        // ⚠ SÓ COM O IRMÃO VIVO. O texto do livro tem dois parágrafos e eles são
+        // dois ESTADOS, não duas partes: um vale antes da morte e o outro
+        // depois. Mostrar os dois juntos fazia o jogador ler uma regra que não é
+        // a dele e ter de descobrir sozinho qual valia (autor, 2026-08-07:
+        // *"tudo que precisar da Morte do Irmão, deixe visível só quando o irmão
+        // estiver morto. O inverso também é válido"*).
+        // O NOME é o mesmo do estágio de baixo de propósito: só um dos dois
+        // aparece por vez, então é o mesmo card mudando de conteúdo.
+        soSemEnergia: true,
+        soIrmaoVivo: true,
+        descricao:
+          "Por ainda estar conectado ao seu irmão, você possui um pouco de energia amaldiçoada, " +
+          "mesmo que insignificante, você é incapaz de receber a habilidade Restrição Definitiva, " +
+          "além disso, seus atributos de força e destreza são reduzidos em 2 cada. Você também " +
+          "recebe apenas 2 pontos de vigor por nível.",
+      },
+      {
+        id: "restricao_celestial_restringido_morto",
+        nome: "Restrição Celestial: Restringido",
+        soSemEnergia: true,
+        soIrmaoMorto: true,
+        descricao:
+          "Mas quando seu irmão vem a morrer, ele tira toda a energia que ainda existia em você, " +
+          "liberando todo seu potencial e força de uma única vez. Você recebe a habilidade " +
+          "“Restrição Definitiva”, independente de seu nível, a característica de desenvolvimento " +
+          "“Vingativo”, você aumenta em 2 a sua força e destreza, além de receber mais 4 pontos " +
+          "para distribuir em seus atributos físicos, com limite natural de 30 e 2 em um mesmo " +
+          "atributo. Você também recebe +2 pontos de vigor por nível. A critério do mestre você " +
+          "também pode “fazer” uma arma de grau especial com a alma de seu irmão, criando uma arma " +
+          "para seu arsenal, com base na técnica de seu irmão.",
+        // "mais 4 pontos para distribuir em seus atributos físicos, com limite
+        // natural de 30 e 2 em um mesmo atributo."
+        // ⚠ Pool PRÓPRIO, e não o "Bônus em Atributo": são regras diferentes
+        // (aquele é 2 livres, este é 4 só nos físicos), e o limite natural aqui
+        // é 30, que o Tipo Restringido já dá nos três físicos.
+        //
+        // ⚠ A alocação NÃO precisa mais de `soIrmaoMorto` própria: a
+        // característica inteira já só existe depois da morte, e o
+        // `alocacoesDaOrigem` lê a lista já filtrada.
+        alocacao: {
+          id: "gemeos_pos_morte_fisicos",
+          quantidade: 4, valor: 1, entre: FISICOS, maxPorAtributo: 2,
+        },
+        // A arma de grau especial feita com a alma do irmão é procedimento de
+        // mesa ("a critério do mestre"), e o mesmo vale para a "característica de
+        // desenvolvimento Vingativo", que não existe em catálogo nenhum do Afty.
+        parcial: "A arma da alma do irmão e a característica Vingativo resolvem na mesa",
+      },
+      {
+        id: "restricao_celestial_feiticeiro",
+        nome: "Restrição Celestial: Feiticeiros",
+        // Some para o Restringido, que lê a característica dele. E só com o
+        // irmão VIVO: ver a nota do ramo Restringido acima.
+        soComEnergia: true,
+        soIrmaoVivo: true,
+        descricao:
+          "Sua energia é drenada pelo elo com seu irmão. Você recebe apenas 2 de energia por " +
+          "nível, todos os atributos que podem ser usados para sua CD de técnica são reduzidos em " +
+          "2, devido a sua ligação já estar com seu irmão você não tem energia suficiente para se " +
+          "conectar com invocações, tornando impossível obter a especialização “Controlador” ou " +
+          "invocações e você recebe 1 habilidade de técnica apenas a cada 3 níveis (2 níveis caso " +
+          "seja especialista em técnica)",
+      },
+      {
+        id: "restricao_celestial_feiticeiro_morto",
+        nome: "Restrição Celestial: Feiticeiros",
+        soComEnergia: true,
+        soIrmaoMorto: true,
+        descricao:
+          "Mas quando seu irmão morre, toda a sua energia voltar para você, com você despertando " +
+          "todo o potencial possível. Seus atributos que tinham sido reduzidos aumentam em 2 e " +
+          "você recebe 2 pontos para distribuir entre seus atributos, com limite natural de 30, " +
+          "você recebe +20 de energia máxima, recebendo também o base de sua especialização +2 de " +
+          "energia por nível, você recebe 1 técnica por nível (incluindo nos próximos níveis) e " +
+          "independente de seu nível, você recebe o efeito de redução de custos da habilidade base " +
+          "O Honrado. A critério do mestre você também recebe uma técnica máxima, baseando-se em " +
+          "seu irmão que veio a morrer, com seu custo sendo reduzido em 10 pontos.",
+        // "você recebe 2 pontos para distribuir entre seus atributos, com
+        // limite natural de 30". O limite de 30 sai pelo canal `limiteAtributo`
+        // em ORIGEM_EFEITOS.gemeos, e só neste ramo: no Restringido os físicos
+        // já são 30 pelo Tipo.
+        alocacao: {
+          id: "gemeos_pos_morte_livres",
+          quantidade: 2, valor: 1, maxPorAtributo: 2,
+        },
+        // ⚠ A habilidade base de 20° nível que vem no pós-morte é ESCOLHIDA
+        // (autor, 2026-08-07: *"Ao invés de receber O Honrado, podemos receber
+        // no lugar alguma outra Habilidade Base de Nível 20"*), e por ora só o
+        // Lutador Superior está ligado.
+        escolha: {
+          id: "gemeos_habilidade_base",
+          label: "Habilidade Base de 20° Nível",
+          vagas: 1,
+          opcoes: [
+            {
+              id: "gem_base_o_honrado",
+              nome: "O Honrado",
+              descricao: "Você recebe o efeito de redução de custos da habilidade base O Honrado.",
+            },
+            {
+              id: "gem_base_lutador_superior",
+              nome: "Lutador Superior",
+              descricao:
+                "Você recebe o efeito da habilidade base Lutador Superior, e o ataque desarmado " +
+                "como ação livre não custa PE.",
+            },
+          ],
+        },
+      },
+      /* ⚠ AS DUAS DE BAIXO SÃO DO RESTRINGIDO, e chegam ao Gêmeo só com a
+         MORTE DO IRMÃO (autor, 2026-08-07). O texto delas é o mesmo, copiado
+         verbatim de `restringido`, porque é a MESMA característica: duplicar o
+         texto é pior que divergir dele, e um `soIrmaoMorto` no catálogo do
+         Restringido faria a origem dele carregar regra de Gêmeos.
+
+         ⚠ O `limiteAtributo` da outra origem é campo do CATÁLOGO (estático), e
+         aqui ele precisa depender do interruptor. Por isso o teto de 30 sai
+         pelo CANAL `limiteAtributo` do Motor, em ORIGEM_EFEITOS.gemeos: o canal
+         SOMA no limite, então +10 leva o padrão de 20 a 30. */
+      {
+        id: "apice_corporal_humano",
+        nome: "Ápice Corporal Humano",
+        soSemEnergia: true,
+        soIrmaoMorto: true,
+        descricao:
+          "Seu corpo tem um potencial extraordinário, sendo capaz de alcançar o ápice das capacidades " +
+          "físicas humanas. Seu limite de atributo para Força, Destreza e Constituição é 30 ao invés de 20. " +
+          "Além disso, a cada 6 níveis, escolha um desses atributos para receber +2 em seu valor. Sempre que " +
+          "realizar um teste de Atletismo para erguer peso ou saltar distâncias, dobre o limite de peso ou a " +
+          "distância saltada.",
+        alocacao: { id: "apice_corporal_humano", porNivel: 6, valor: 2, entre: FISICOS },
+      },
+      {
+        id: "resiliencia_imediata",
+        nome: "Resiliência Imediata",
+        soSemEnergia: true,
+        soIrmaoMorto: true,
+        descricao:
+          "Seu corpo é mais resistente do que o padrão humano, permitindo-o encarar a dor facilmente. Uma " +
+          "quantidade de vezes igual ao seu bônus de treinamento, ao receber dano, você pode escolher reduzir " +
+          "esse dano em um valor igual à metade do seu nível (mínimo 1) multiplicado por 5. Alternativamente, " +
+          "você pode escolher gastar um uso dessa habilidade para evitar um desmembramento. Você recupera os " +
+          "usos após um descanso longo.",
+        // Reação com usos por descanso, e a redução é de UM golpe, não RD. É o
+        // mesmo `mesa: true` que ela tem na origem Restringido.
+        mesa: true,
+      },
+      {
+        id: "dupla_empenhada",
+        nome: "Dupla Empenhada",
+        descricao:
+          "Vocês dois são uma excelente dupla, afinal, vocês só possuem um ao outro para confiar e " +
+          "se apoiar, devido a isso, vocês estão sempre lutando juntos, combinando seus movimentos " +
+          "e estando sempre em perfeita sincronia. Vocês possuem um turno próprio, com cada um " +
+          "tendo suas próprias ações, o bônus de iniciativa de vocês são aplicados como um só (se " +
+          "um tem +4 de destreza e o outro tem +1, ficaria +5, por exemplo, isso se aplica para " +
+          "todos os bônus que vocês possuírem PARA INICIATIVA, mas apenas uma vez de mesmas " +
+          "habilidades). Além disso, técnicas em conjunto entre vocês não possuem limite de " +
+          "quantas podem ser feitas.",
+        // ⚠ O bônus do irmão vem de um CAMPO, e não da outra ficha: ver a nota
+        // no topo da origem.
+        //
+        // ⚠ NÃO existe uma marca `campoIniciativaIrmao` aqui, e ela já existiu:
+        // era metadado que ninguém lia, porque o campo é renderizado atrás de
+        // `id === "gemeos"` no criador. Marca decorativa é a mesma classe de bug
+        // do `semEnergiaNao`, que passou uma revisão inteira fingindo valer.
+      },
+      {
+        id: "verdadeiras_origens",
+        nome: "Verdadeiras Origens",
+        descricao:
+          "Apesar de serem gêmeos, vocês possuem uma origem tanto de sua técnica quanto de vocês, " +
+          "repercutindo inclusive naquilo que vocês possam fazer. Vocês escolhem uma característica " +
+          "de outra origem, com exceção de derivado, corpo amaldiçoado mutante, reencarnado, sem " +
+          "técnica e Maldição/Shikigami mutante. Caso pegue a de restringido, obrigatoriamente ela " +
+          "será a característica “Restrição Celestial” dele.\n\n" +
+          "Vocês consideram a origem escolhida na habilidade “Verdadeiras Origens” como sua para " +
+          "todos os fins de qualificação. Dessa forma, vocês têm total liberdade para selecionar e " +
+          "adquirir os Talentos de Origem exclusivos daquela origem, expandindo suas capacidades " +
+          "como se tivessem nascido nela.",
+        // As opções são GERADAS das outras origens (ver `opcoesVerdadeirasOrigens`),
+        // e não copiadas: característica nova numa origem entra sozinha aqui.
+        escolha: {
+          id: "verdadeiras_origens",
+          label: "Característica de Outra Origem",
+          vagas: 1,
+          // ⚠ GETTER, e não uma chamada direta. Esta lista é montada a partir
+          // do próprio `AFTY_ORIGENS_CATALOG`, que ainda está sendo construído
+          // quando este objeto nasce. Avaliar aqui dentro estoura o TDZ; o
+          // getter só roda no primeiro acesso, que é depois do módulo pronto.
+          get opcoes() { return opcoesVerdadeirasOrigens(); },
+        },
+      },
+    ],
+    especializacaoExclusivaId: null,
+  },
 ];
+
+/* ============================================================ */
+/* VERDADEIRAS ORIGENS (Gemeos)                                  */
+/* ============================================================ */
+
+/**
+ * As origens que o Gemeo NAO pode copiar em "Verdadeiras Origens".
+ *
+ * O texto exclui *"derivado, corpo amaldicoado mutante, reencarnado, sem
+ * tecnica e Maldicao/Shikigami mutante"*. Tres desses nomes nao existem como
+ * origem no catalogo do Afty (corpo amaldicoado mutante, reencarnado e
+ * shikigami mutante), entao a lista abaixo so nomeia o que EXISTE.
+ *
+ * PERGUNTA ABERTA (2026-08-07): "Maldicao/Shikigami mutante" foi lido como a
+ * origem Maldicao. Se o livro quis dizer um "Shikigami Mutante" que ainda nao
+ * existe aqui, a origem Maldicao volta para a lista permitida.
+ */
+const VERDADEIRAS_ORIGENS_PROIBIDAS = ["derivado", "sem_tecnica", "maldicao", "gemeos"];
+
+/**
+ * "Caso pegue a de restringido, obrigatoriamente ela sera a caracteristica
+ * Restricao Celestial dele."
+ *
+ * O Restringido do nosso catalogo nao tem caracteristica com esse nome: ele tem
+ * Bonus em Atributo, Fisico Abencoado, Apice Corporal Humano e Resiliencia
+ * Imediata. O autor resolveu em 2026-08-07: e o **Fisico Abencoado**, que e a
+ * que da acesso a Especializacao Restringido.
+ */
+const RESTRINGIDO_CARACTERISTICA_OBRIGATORIA = "fisico_abencoado";
+
+/**
+ * Uma opcao por caracteristica de outra origem, GERADA do catalogo.
+ *
+ * Caracteristica nova numa origem entra aqui sozinha, e e por isso que a lista
+ * nao e escrita a mao. Ficam de fora:
+ *   - as origens proibidas pelo texto;
+ *   - o "Bonus em Atributo", que toda origem tem e que o Gemeo ja recebe pela
+ *     propria (copiar dois bonus de atributo seria dobrar a mesma coisa).
+ *
+ * O HERDADO ENTRA PELO CLA (2026-08-07). Ele nao tem caracteristica propria: as
+ * dele so dizem "depende do cla" (`doCla`), e antes disso o Herdado inteiro
+ * ficava de fora, o que deixava a lista com seis opcoes. Agora cada
+ * caracteristica de cada cla vira uma opcao, e o rotulo diz de qual cla ela
+ * veio ("Herdado (Cla Gojo): Seis Olhos"). Escolher a caracteristica traz o cla
+ * dela junto, porque uma sem a outra nao quer dizer nada.
+ *
+ * ⚠ CADA OPCAO CARREGA DE ONDE VEIO (`origemId`, `claId`, `caracteristicaId`).
+ * Sem isso o id gerado teria de ser desmontado por string para achar a
+ * caracteristica de volta, e id de cla e de origem tem `_` no meio.
+ */
+let cacheVerdadeirasOrigens = null;
+
+function opcaoVerdadeiraOrigem(origem, c, cla = null) {
+  return {
+    id: cla ? `vo_${origem.id}_${cla.id}_${c.id}` : `vo_${origem.id}_${c.id}`,
+    nome: cla ? `${origem.nome} (${cla.nome}): ${c.nome}` : `${origem.nome}: ${c.nome}`,
+    descricao: c.descricao,
+    origemId: origem.id,
+    claId: cla?.id ?? null,
+    caracteristicaId: c.id,
+  };
+}
+
+function opcoesVerdadeirasOrigens() {
+  if (cacheVerdadeirasOrigens) return cacheVerdadeirasOrigens;
+  const out = [];
+  for (const origem of AFTY_ORIGENS_CATALOG) {
+    if (VERDADEIRAS_ORIGENS_PROIBIDAS.includes(origem.id)) continue;
+    for (const c of origem.caracteristicas || []) {
+      if (c.id === "bonus_atributo") continue;
+      if (origem.id === "restringido" && c.id !== RESTRINGIDO_CARACTERISTICA_OBRIGATORIA) continue;
+      // A promessa de conteudo nao e conteudo: quem entra e a caracteristica do
+      // cla, logo abaixo, e nao a linha que diz que ela depende do cla.
+      if (c.doCla) continue;
+      out.push(opcaoVerdadeiraOrigem(origem, c));
+    }
+    for (const cla of origem.clas || []) {
+      for (const c of cla.caracteristicas || []) {
+        if (c.id === "bonus_atributo") continue;
+        out.push(opcaoVerdadeiraOrigem(origem, c, cla));
+      }
+    }
+  }
+  cacheVerdadeirasOrigens = out;
+  return out;
+}
+
+/** A opcao de Verdadeiras Origens gravada na ficha, ou null. */
+export function verdadeiraOrigemEscolhida(creature) {
+  if (creature?.core?.origem?.id !== "gemeos") return null;
+  const guardadas = creature?.core?.origem?.escolhas?.verdadeiras_origens;
+  const id = Array.isArray(guardadas) ? guardadas[0] : null;
+  if (!id) return null;
+  const opcao = opcoesVerdadeirasOrigens().find((o) => o.id === id);
+  if (!opcao) return null;
+  const origem = getOrigem(opcao.origemId);
+  const cla = opcao.claId ? getCla(opcao.claId) : null;
+  const dona = cla || origem;
+  const caracteristica = (dona?.caracteristicas || []).find((c) => c.id === opcao.caracteristicaId);
+  if (!caracteristica) return null;
+  return { opcao, origem, cla, caracteristica };
+}
+
+/**
+ * As origens que a criatura CONTA como tendo, para todo fim de qualificacao.
+ *
+ * Quase sempre e uma so. O Gemeo com Verdadeiras Origens conta duas: *"Voces
+ * consideram a origem escolhida na habilidade Verdadeiras Origens como sua para
+ * todos os fins de qualificacao. Dessa forma, voces tem total liberdade para
+ * selecionar e adquirir os Talentos de Origem exclusivos daquela origem"*.
+ */
+/**
+ * Fator do contador de SLOTS DE HABILIDADE (o caixa unico de Feiticos e
+ * Habilidades Gerais). 1 para todo mundo, menos o Gemeo.
+ *
+ * Regra do autor (2026-08-07): *"Gemeos recebem 1,5x a quantidade de Slots de
+ * Habilidades quando o Irmao Morrer. E ficam com somente metade quando o irmao
+ * esta vivo"*.
+ *
+ * ⚠ E MULTIPLICADOR, e por isso ele NAO passa pelo Motor. Todo canal de vaga
+ * soma, e nao ha como escrever "metade do que veio" numa expressao que nao
+ * enxerga o proprio total. Fica aqui, ao lado das outras regras de origem que
+ * mexem em orcamento, e o `deriveAfty` aplica no contador comum.
+ *
+ * ⚠ O ARREDONDAMENTO E PARA BAIXO, que e a regra geral do Afty. Metade de 9 da
+ * 4, e 1,5x de 9 da 13.
+ */
+export function fatorSlotsHabilidade(creature) {
+  if (creature?.core?.origem?.id !== "gemeos") return 1;
+  return creature?.core?.origem?.irmaoMorto ? 1.5 : 0.5;
+}
+
+export function origensQualificadas(creature) {
+  const propria = creature?.core?.origem?.id ?? null;
+  const copiada = verdadeiraOrigemEscolhida(creature)?.origem?.id ?? null;
+  return [propria, copiada].filter((id, i, a) => id && a.indexOf(id) === i);
+}
 
 // Opções para <Select> (value/label).
 export const AFTY_ORIGENS = AFTY_ORIGENS_CATALOG.map((o) => ({ value: o.id, label: o.nome }));
@@ -682,6 +1065,36 @@ export const getOrigem = (id) => BY_ID[id] ?? null;
 export const clasDaOrigem = (id) => getOrigem(id)?.clas ?? null;
 
 /**
+ * A caracteristica vale para ESTA criatura?
+ *
+ * ⚠ Nasceu com os GEMEOS (2026-08-07), a primeira origem cujas caracteristicas
+ * NAO valem todas ao mesmo tempo. Ela tem duas Restricoes Celestiais diferentes
+ * (uma para o Gemeo Restringido e outra para o Feiticeiro) e um bloco inteiro
+ * que so existe DEPOIS da morte do irmao. Mostrar as quatro juntas faria o
+ * jogador ler duas regras que se contradizem e ter de adivinhar qual e a dele.
+ *
+ * Tres marcas, todas declarativas, e nenhuma outra origem as usa:
+ *   • `soSemEnergia` — so o Tipo Restringido
+ *   • `soComEnergia` — todo mundo MENOS o Restringido
+ *   • `soIrmaoVivo`  — so ANTES do interruptor da morte
+ *   • `soIrmaoMorto` — so DEPOIS do interruptor da morte
+ *
+ * ⚠ Ela filtra a lista que alimenta as ALOCACOES e as ESCOLHAS aninhadas, e nao
+ * so a UI: um pool de atributos que so existe apos a morte do irmao nao pode
+ * aparecer no criador antes dela.
+ */
+function valeParaEsta(c, creature) {
+  if (!c) return false;
+  const restringido = creature?.core?.tipo === "restringido";
+  if (c.soSemEnergia && !restringido) return false;
+  if (c.soComEnergia && restringido) return false;
+  const morto = !!creature?.core?.origem?.irmaoMorto;
+  if (c.soIrmaoMorto && !morto) return false;
+  if (c.soIrmaoVivo && morto) return false;
+  return true;
+}
+
+/**
  * Características EFETIVAS: as da origem mais as do clã escolhido. As do
  * Herdado que só dizem "depende do clã" (`doCla`) somem assim que há clã, para
  * a UI não mostrar a promessa e o conteúdo lado a lado.
@@ -690,9 +1103,49 @@ export function caracteristicasEfetivas(creature) {
   const origem = getOrigem(creature?.core?.origem?.id);
   if (!origem) return [];
   const cla = getCla(creature?.core?.origem?.cla);
-  const proprias = origem.caracteristicas || [];
-  if (!cla) return proprias;
-  return [...proprias.filter((c) => !c.doCla), ...(cla.caracteristicas || [])];
+  const proprias = (origem.caracteristicas || []).filter((c) => valeParaEsta(c, creature));
+  const base = cla
+    ? [
+      ...proprias.filter((c) => !c.doCla),
+      ...(cla.caracteristicas || []).filter((c) => valeParaEsta(c, creature)),
+    ]
+    : proprias;
+  return [...base, ...caracteristicaCopiada(creature)];
+}
+
+/**
+ * A caracteristica que o Gemeo COPIOU em Verdadeiras Origens, como uma
+ * caracteristica de verdade. Lista de zero ou um, para o chamador so espalhar.
+ *
+ * ⚠ ISTO E O QUE FALTAVA (2026-08-07). Antes a escolha era gravada e mais nada
+ * acontecia: nao havia card, nao havia texto, nao havia pool. O autor relatou
+ * como *"nao consigo pegar Heranca Maldita"*, e ele estava certo: pegar sem
+ * receber e nao ter pego. Entrando aqui, a caracteristica copiada passa a andar
+ * por todos os caminhos que ja liam esta funcao de uma vez so, e sao muitos:
+ * o card no criador, as ESCOLHAS aninhadas dela (`escolhasDaOrigem`), as
+ * ALOCACOES de atributo (`alocacoesDaOrigem`) e o pool de Anatomia.
+ *
+ * ⚠ O `id` ganha o prefixo `vo_` de proposito. Ele e a chave de estado da UI e
+ * dos mapas de escolha, e sem o prefixo a Heranca Maldita copiada colidiria com
+ * a Heranca Maldita de um Feto Amaldicoado Hibrido de verdade.
+ *
+ * ⚠ O QUE NAO VEM JUNTO: os efeitos de `ORIGEM_EFEITOS`. Aquele mapa e chaveado
+ * pela ORIGEM inteira, e nao por caracteristica, entao nao ha como saber qual
+ * das linhas do Feto pertence a Heranca Maldita. Copiar a origem toda daria a
+ * criatura coisas que ela nao escolheu. Quem precisar de canal declara em
+ * ORIGEM_ESCOLHA_EFEITOS, pelo id `vo_*`, que e o caminho que ja existe.
+ */
+function caracteristicaCopiada(creature) {
+  const vo = verdadeiraOrigemEscolhida(creature);
+  if (!vo || !valeParaEsta(vo.caracteristica, creature)) return [];
+  const de = vo.cla ? `${vo.origem.nome} (${vo.cla.nome})` : vo.origem.nome;
+  return [{
+    ...vo.caracteristica,
+    id: `vo_${vo.caracteristica.id}`,
+    // De onde ela veio, para o card poder dizer. Sem isso a caracteristica
+    // aparece no meio das dos Gemeos como se fosse deles.
+    verdadeiraOrigem: de,
+  }];
 }
 
 /* O `getOrigemAttrChoice` foi REMOVIDO em 2026-07-29. Ele procurava a
@@ -710,6 +1163,19 @@ export function caracteristicasEfetivas(creature) {
  *
  * ⚠ Fica FORA do Motor de propósito: atributo de origem respeita o LIMITE do
  * atributo, e o canal `atributo` só respeita o teto duro de 30.
+ *
+ * ⚠ ELE IGNORA O QUE NÃO VALE MAIS, e isso não é detalhe. O que está GRAVADO na
+ * ficha não é o que está VALENDO: os dois casos abaixo foram bugs reais,
+ * achados na revisão dos Gêmeos em 2026-08-07.
+ *
+ *   • `semEnergiaNao` — o Bônus em Atributo dos Gêmeos diz "2 pontos para
+ *     distribuir. Caso um deles seja restringido, AO INVÉS DISSO, apenas seus
+ *     atributos físicos são aumentados em 1". Os dois casos são excludentes, e
+ *     sem esta trava o Gêmeo Restringido levava as duas coisas.
+ *   • POOL DESLIGADO — uma alocação pode deixar de existir sem que os pontos
+ *     gravados sumam (os do pós-morte, quando o interruptor do irmão volta para
+ *     Vivo). Gravar e desligar não pode continuar valendo, então só entram os
+ *     pools que `alocacoesDaOrigem` ainda reconhece.
  */
 export function resolveOrigemAttrBonus(creature) {
   const origem = getOrigem(creature?.core?.origem?.id);
@@ -720,8 +1186,19 @@ export function resolveOrigemAttrBonus(creature) {
       if (n) out[k] = (out[k] || 0) + n;
     }
   };
-  somar(creature?.core?.origem?.bonusAtributos);
-  for (const pool of Object.values(creature?.core?.origem?.pools || {})) somar(pool);
+
+  // A distribuição livre, se ela ainda vale para esta criatura.
+  const distrib = caracteristicasEfetivas(creature).find((c) => c.bonus?.distribuir)?.bonus;
+  const semEnergia = creature?.core?.tipo === "restringido";
+  if (!(distrib?.semEnergiaNao && semEnergia)) {
+    somar(creature?.core?.origem?.bonusAtributos);
+  }
+
+  // Só os pools ATIVOS. Um pool gravado cuja alocação sumiu fica inerte.
+  const ativos = new Set(alocacoesDaOrigem(creature).map((a) => a.id));
+  for (const [id, pool] of Object.entries(creature?.core?.origem?.pools || {})) {
+    if (ativos.has(id)) somar(pool);
+  }
   return out;
 }
 
@@ -729,8 +1206,49 @@ export function resolveOrigemAttrBonus(creature) {
  * Limite de atributo que a ORIGEM eleva, por atributo. O Ápice Corporal Humano
  * do Restringido diz "Seu limite de atributo para Força, Destreza e Constituição
  * é 30 ao invés de 20". Devolve {} para quem não tem.
+ *
+ * Aceita a CRIATURA ou o id da origem. A criatura é necessária porque um limite
+ * de origem pode depender do estado dela, e não só do catálogo: hoje o Gêmeo
+ * com o irmão morto.
+ *
+ * ⚠ POR QUE ISTO NÃO É UM CANAL DO MOTOR, e a lição custou um bug. O
+ * `limiteAtributo` do Motor só existe no ESTÁGIO 1, e o bônus de atributo da
+ * ORIGEM é aparado no estágio 0. Escrito como canal, o limite do Gêmeo morto
+ * subia para 30 no mostrador e o bônus da própria origem continuava aparado em
+ * 20, com a ficha avisando "1 ponto de bônus perdido no limite 30" (relato do
+ * autor, 2026-08-07: *"Pq estou limitado a 22? Se gêmeo levou meu limite para
+ * 30?"*). Limite que precisa valer para a alocação e para o bônus de origem
+ * mora AQUI, junto do Ápice Corporal Humano, e não no Motor.
  */
-export const limiteAtributoDaOrigem = (id) => getOrigem(id)?.limiteAtributo ?? {};
+export function limiteAtributoDaOrigem(creatureOuId) {
+  const id = typeof creatureOuId === "string"
+    ? creatureOuId
+    : creatureOuId?.core?.origem?.id;
+  const doCatalogo = getOrigem(id)?.limiteAtributo ?? {};
+  const creature = typeof creatureOuId === "string" ? null : creatureOuId;
+  // "Você recebe 2 pontos para distribuir entre seus atributos, com limite
+  // natural de 30" (Restrição Celestial dos Feiticeiros, depois da morte). Os
+  // seis, porque o texto não separa. O Gêmeo Restringido não passa por aqui: os
+  // três físicos dele já são 30 pelo Tipo, e o texto dele fala de "atributos
+  // físicos", então subir os mentais seria dar o que a regra não deu.
+  if (
+    creature?.core?.origem?.id === "gemeos"
+    && creature?.core?.origem?.irmaoMorto
+    && creature?.core?.tipo !== "restringido"
+  ) {
+    return {
+      ...doCatalogo,
+      ...Object.fromEntries(ATTR_KEYS_ORIGEM.map((k) => [k, 30])),
+    };
+  }
+  return doCatalogo;
+}
+
+// Os seis atributos, para o limite dos Gêmeos. Local de propósito: este arquivo
+// não importa nada, e é a regra dele.
+const ATTR_KEYS_ORIGEM = [
+  "forca", "destreza", "constituicao", "inteligencia", "sabedoria", "presenca",
+];
 
 // A origem concede "Desenvolvimento Inesperado" (pool que sobe valor+limite)?
 export const origemTemDesenvolvimento = (id) =>
@@ -775,9 +1293,20 @@ export function resolveLimitePoolOrigem(creature) {
 /* ALOCAÇÕES E ESCOLHAS ANINHADAS                                */
 /* ============================================================ */
 
-/** Toda alocação de atributo declarada pela origem (com o clã junto). */
+/**
+ * Toda alocação de atributo declarada pela origem (com o clã junto).
+ *
+ * ⚠ A própria ALOCAÇÃO pode ser condicional, e não só a característica que a
+ * carrega. Nos Gêmeos, a Restrição Celestial é uma característica só, visível
+ * o tempo todo, mas os pontos que ela dá só existem DEPOIS da morte do irmão:
+ * o `soIrmaoMorto` na alocação é o que separa as duas coisas sem precisar
+ * inventar uma característica com nome que o livro não tem.
+ */
 export function alocacoesDaOrigem(creature) {
-  return caracteristicasEfetivas(creature).map((c) => c.alocacao).filter(Boolean);
+  const morto = !!creature?.core?.origem?.irmaoMorto;
+  return caracteristicasEfetivas(creature)
+    .map((c) => c.alocacao)
+    .filter((a) => a && (!a.soIrmaoMorto || morto));
 }
 
 /** Quantos pontos uma alocação dá no ND: fixo, ou 1 a cada `porNivel` níveis. */
@@ -916,6 +1445,26 @@ export const ORIGEM_ESCOLHA_EFEITOS = (() => {
       out[`st_n${nivel}_tr_${r.value}`] = [{ canal: "bonusTR", alvo: r.value, expr: String(valor) }];
     }
   }
+
+  /* ---------------- GÊMEOS · Habilidade Base de 20° nível ----------------
+     O Gêmeo Feiticeiro recebe uma Habilidade Base de 20° nível quando o irmão
+     morre. O livro nomeia O Honrado, e o autor abriu para outras
+     (2026-08-07: *"podemos receber no lugar alguma outra Habilidade Base de
+     Nível 20. Vamos programar inicialmente só com Lutador Superior"*).
+
+     ⚠ Os efeitos são os MESMOS da habilidade original, copiados de
+     `lut_lutador_superior` em afty-efeitos-conteudo.js. Copiar aqui é o único
+     jeito hoje: aquele mapa é chaveado pela HABILIDADE, e esta é uma opção de
+     escolha de origem, que nunca compra a habilidade.
+
+     ⚠ O BUFF DE NÃO CUSTAR PE não tem efeito porque não tem o que ligar: o
+     ataque desarmado de graça do Lutador Superior JÁ ficava de fora do Motor
+     (é economia de ação, não stat), então o "sem custo" muda um texto que o
+     Motor nunca leu. Ele fica na descrição da opção, e só. */
+  out.gem_base_lutador_superior = [
+    { canal: "dadosDano", alvo: "basico", expr: "1" },
+    { canal: "empolgacaoInicial", expr: "1" },
+  ];
 
   return out;
 })();

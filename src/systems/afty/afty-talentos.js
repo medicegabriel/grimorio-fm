@@ -889,7 +889,12 @@ export function avaliarRequisitoTalento(requisito, ctx = {}) {
   if (requisito?.tipo === "origem") {
     const alvo = getOrigem(requisito.id);
     if (!alvo) return { ok: true, verificavel: false, label: requisito.id };
-    return { ok: ctx.origemId === requisito.id, verificavel: true, label: `Origem ${alvo.nome}` };
+    // ⚠ Pode ser MAIS DE UMA origem. O Gêmeo com Verdadeiras Origens *"considera
+    // a origem escolhida como sua para todos os fins de qualificação"*, e é
+    // justamente aqui que "todos os fins" cobra: os Talentos de Origem
+    // exclusivos daquela origem. `origemId` continua valendo como o caso de um.
+    const tem = ctx.origensQualificadas ?? (ctx.origemId ? [ctx.origemId] : []);
+    return { ok: tem.includes(requisito.id), verificavel: true, label: `Origem ${alvo.nome}` };
   }
   if (requisito?.tipo === "talento") {
     const alvo = BY_ID[requisito.id];

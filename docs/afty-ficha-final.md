@@ -1357,3 +1357,60 @@ confere que cada um vira rolagem com o máximo certo.
 ### Verificação
 
 Lint e build limpos, **193 asserts** (7 novos), `src/components/` intocado.
+
+---
+
+## 26. Revisão do trabalho do GoliasK (2026-08-07)
+
+Dois commits novos no `origin/main`, os dois dele, trazidos por fast-forward com a
+árvore limpa. Ele mexeu em treze arquivos, **incluindo três meus** (`AftyFicha.jsx`,
+`AbaAcoes.jsx` e `ficha.css`).
+
+### O que ele entregou
+
+| Frente | O que mudou |
+|---|---|
+| **Conjuração Aprimorada** | bônus FIXO de dano em todo Feitiço, grátis para toda criatura. Modificador da Técnica mais ND, por nível do Feitiço |
+| **Alma Livre** | Talento novo, a partir do ND 10: dá uma aba de outra Especialização com uma Habilidade comprável, e o nível efetivo dela é o ND |
+| **Cura por gasto** | `curaNoGasto` fecha a linha no gasto escolhido, e o bônus por dado passou a nascer da quantidade REALMENTE rolada |
+| **Retrato da Ficha** | virou painel vertical na lateral do cabeçalho, em tablet e desktop, com o ponto focal do criador |
+| **Modificador de Força** | a Habilidade Única de equipamento é reavaliada depois do fechamento dos atributos, então `mod_forca` usa o valor final |
+| **RD Física** | ganhou as fontes no hover, que faltavam |
+| **Motor** | as linhas de efeito ficaram alinhadas entre si |
+
+### O que eu verifiquei
+
+**Ele respeitou as convenções da Ficha, e isso importa mais do que parece.** A regra da
+Conjuração Aprimorada exigia mexer na rolagem que eu tinha acabado de escrever, e ele fez
+o caminho inteiro: `rolagensDoFeitico` ganhou `fixo` e `partes`, e a linha da aba passa os
+dois adiante, com as fontes no hover. Nada ficou pela metade e nada precisou ser refeito.
+
+**Um assert meu quebrou, e o errado era o assert.** Eu tinha travado o valor exibido do
+Feitiço em "termina com NdM", e agora ele termina com o bônus ("3× 5d10+20"). Corrigido.
+
+**Sete asserts novos** trancam a regra dele, porque ela entrou DEPOIS da rolagem e uma
+regressão ali mentiria em todo dano da mesa: o bônus sobe com o nível, entra no total,
+**não dobra no crítico** (o crítico dobra dados, e bônus não é dado), fica **só no golpe
+inicial** do dano contínuo, é **por disparo** nos Múltiplos Disparos e **não vaza** para
+Cura nem para os Especiais.
+
+**Uma lacuna que a integração deixou:** o retrato virou painel e o **contrato do tema não
+sabia disso**. A entrada `.afty-retrato` descrevia "a miniatura do retrato", que não existe
+mais, e as três classes novas não estavam listadas. Corrigido: entraram
+`.afty-cabecalho-conteudo`, `.afty-cabecalho-principal`, `.afty-retrato-painel` e o
+atributo `[data-afty-com-retrato]`, e o mapa da página foi redesenhado. Sem isso, quem
+pedisse um tema a uma IA receberia CSS mirando um seletor morto.
+
+⚠ **A lição para a próxima:** o assert de contrato só confere **contrato → existe**, e não
+**existe → contrato**. Classe nova de outra pessoa entra sem ninguém notar. Vale inverter
+a varredura um dia.
+
+### Verificação
+
+Lint e build limpos, **200 asserts**, `src/components/` intocado.
+
+### Para confirmar com o autor
+
+- **O bônus fora do golpe inicial no dano contínuo.** Ele documentou "em Dano Contínuo
+  contra o mesmo alvo, o bônus entra apenas no golpe inicial". Está implementado assim e
+  eu travei com assert, mas é regra e vale a confirmação de quem manda no livro.

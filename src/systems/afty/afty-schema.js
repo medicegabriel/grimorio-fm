@@ -155,6 +155,18 @@ export function createBlankAfty() {
       //   limites         — pool que sobe SÓ o limite (só a Maldição), como
       //                     { attr: quantasVezes }. O degrau (+2) entra no
       //                     resolveLimitePoolOrigem, não aqui.
+      //   irmaoMorto      — só os Gêmeos. INTERRUPTOR PERMANENTE, e não estado
+      //                     de combate (autor, 2026-08-07): a morte do irmão é
+      //                     o segundo estágio da Restrição Celestial e inverte
+      //                     quase tudo dela. Fica aqui, e não na sessão da
+      //                     Ficha, porque tem de sobreviver ao fim da sessão.
+      //   iniciativaIrmao — só os Gêmeos. O bônus de Iniciativa do outro gêmeo,
+      //                     DIGITADO. A Dupla Empenhada soma os dois, e o irmão
+      //                     é outra ficha: ler a criatura dele do armazenamento
+      //                     criaria dependência entre fichas por um bônus só.
+      //   pontosPosMorte  — só os Gêmeos. A distribuição que só existe depois
+      //                     da morte do irmão, separada do `bonusAtributos`
+      //                     porque o limite natural dela é 30, e não 20.
       origem: { id: "inato" },     // ver ./afty-origens.js
     },
 
@@ -235,6 +247,12 @@ export function createBlankAfty() {
     // do uniforme, RD Físico vem do escudo. O shape dos itens fecha junto com a
     // aba. Ver afty-equipamentos.js.
     equipamentos: { itens: [] },
+    // Armas CRIADAS pelo jogador, no mesmo shape das do catálogo (ver ARMAS em
+    // afty-equipamentos.js). Elas entram no catálogo de armas pela `catalogoDoTipo`,
+    // e a partir daí andam por todos os caminhos que uma arma do livro anda:
+    // linha do catálogo, inventário, Ferramenta Amaldiçoada e Arma Dedicada.
+    // O id nasce com o prefixo `armc_`, que nenhuma arma do livro usa.
+    armasCustom: [],            // [ armaCustom ] — ver novaArmaCustom()
 
     // Especializações (classes). Até 2, e soma(niveis) === core.nd — o
     // nível de Especialização É o ND. Não mudam cálculo: só destravam

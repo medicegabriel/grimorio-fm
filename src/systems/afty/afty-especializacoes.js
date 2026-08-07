@@ -33,7 +33,7 @@
  * mandar o texto do livro. O texto vem VERBATIM, sem parafrasear.
  */
 
-import { getOrigem } from "./afty-origens";
+import { getOrigem, origensQualificadas } from "./afty-origens";
 import { AFTY_TIPOS } from "./afty-schema";
 
 /** Teto de Especializações por ficha (multiclasse trivial: até 2). */
@@ -94,16 +94,25 @@ export const getEspecializacao = (id) => BY_ID[id] || null;
  *
  * A trava é nos dois sentidos: a Origem Restringido vê SÓ Restringido, e
  * as outras origens veem todas MENOS as exclusivas.
+ *
+ * `extras` são OUTRAS origens que a criatura conta como suas sem ser dela. Hoje
+ * só o Gêmeo tem isso, por Verdadeiras Origens: pegando o Físico Abençoado ele
+ * *"recebe acesso a especialização Restringido"*, que é o que a característica
+ * literalmente diz. A diferença entre a origem própria e uma extra importa: a
+ * própria TRANCA (a Origem Restringido vê só Restringido), a extra só ABRE.
  */
-export function especializacoesDisponiveis(origemId) {
+export function especializacoesDisponiveis(origemId, extras = []) {
   const exclusiva = AFTY_ESPECIALIZACOES.find((e) => e.exclusivaOrigemId === origemId);
   if (exclusiva) return [exclusiva];
-  return AFTY_ESPECIALIZACOES.filter((e) => e.exclusivaOrigemId == null);
+  const abertas = extras.filter((x) => x && x !== origemId);
+  return AFTY_ESPECIALIZACOES.filter(
+    (e) => e.exclusivaOrigemId == null || abertas.includes(e.exclusivaOrigemId),
+  );
 }
 
 /** Quantas Especializações a origem permite. Restringido não multiclassa. */
-export function maxEspecializacoes(origemId) {
-  return especializacoesDisponiveis(origemId).length === 1 ? 1 : ESPECIALIZACAO_MAX;
+export function maxEspecializacoes(origemId, extras = []) {
+  return especializacoesDisponiveis(origemId, extras).length === 1 ? 1 : ESPECIALIZACAO_MAX;
 }
 
 /**
@@ -139,9 +148,27 @@ export function tipoObrigatorio(origemId) {
  * Mesmo formato de `especializacoesDisponiveis`: a Origem Restringido vê SÓ
  * Restringido, e as outras veem todos MENOS Restringido.
  */
+/**
+ * ⚠ A ORIGEM GÊMEOS FURA A TRAVA DO TIPO (autor, 2026-08-07: *"Gêmeo
+ * Restringido deveria ser do Tipo: Restringido"*).
+ *
+ * Ela é a única exceção, e o motivo está no próprio livro: a Restrição
+ * Celestial dos Gêmeos tem DOIS ramos, um para o Gêmeo Restringido e outro para
+ * o Feiticeiro, e o texto ainda recomenda que *"ao menos um dos gêmeos seja
+ * restringido"*. Sem esta exceção o ramo inteiro do Restringido era
+ * INALCANÇÁVEL no criador: `tiposDisponiveis` devolvia todos os Tipos menos
+ * Restringido, e a metade da origem simplesmente não podia ser montada.
+ *
+ * ⚠ Isto abre só o TIPO. A Especialização Restringido continua exclusiva da
+ * Origem Restringido: no livro ela chega ao Gêmeo pelo Físico Abençoado das
+ * Verdadeiras Origens, e aquela escolha ainda não tem efeito ligado.
+ */
+const ORIGENS_QUE_ALCANCAM_RESTRINGIDO = ["restringido", "gemeos"];
+
 export function tiposDisponiveis(origemId) {
   const forcado = tipoObrigatorio(origemId);
   if (forcado) return AFTY_TIPOS.filter((t) => t.value === forcado);
+  if (ORIGENS_QUE_ALCANCAM_RESTRINGIDO.includes(origemId)) return AFTY_TIPOS;
   return AFTY_TIPOS.filter((t) => t.value !== "restringido");
 }
 
@@ -166,17 +193,17 @@ export function tipoDaOrigem(origemId, tipoAtual) {
  * gravar o rótulo junto faria uma errata de nome deixar fichas velhas
  * mentindo. Quem precisa do nome chama getEspecializacao(id).
  */
-export function normalizeEspecializacoes(lista, origemId) {
+export function normalizeEspecializacoes(lista, origemId, extras = []) {
   const arr = Array.isArray(lista) ? lista : [];
   const vistos = new Set();
-  const disponiveis = new Set(especializacoesDisponiveis(origemId).map((e) => e.id));
+  const disponiveis = new Set(especializacoesDisponiveis(origemId, extras).map((e) => e.id));
   const out = [];
   for (const item of arr) {
     const id = item?.id;
     if (!BY_ID[id] || vistos.has(id) || !disponiveis.has(id)) continue;
     vistos.add(id);
     out.push({ id, nivel: Math.max(1, Math.trunc(Number(item?.nivel) || 0) || 1) });
-    if (out.length >= maxEspecializacoes(origemId)) break;
+    if (out.length >= maxEspecializacoes(origemId, extras)) break;
   }
   return out;
 }
@@ -209,9 +236,12 @@ export function normalizeEspecializacoes(lista, origemId) {
  */
 export function resolveEspecializacoes(creature) {
   const origemId = creature?.core?.origem?.id;
+  // As origens que a criatura conta como suas além da própria (Verdadeiras
+  // Origens). Só ABREM especialização exclusiva, nunca trancam.
+  const extras = origensQualificadas(creature);
   const total = Math.max(1, Math.trunc(Number(creature?.core?.nd) || 1));
-  const lista = normalizeEspecializacoes(creature?.especializacoes, origemId);
-  const max = maxEspecializacoes(origemId);
+  const lista = normalizeEspecializacoes(creature?.especializacoes, origemId, extras);
+  const max = maxEspecializacoes(origemId, extras);
   const obrigatoria = especializacaoObrigatoria(origemId);
 
   let escolhidas;

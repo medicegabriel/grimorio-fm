@@ -538,6 +538,127 @@ export const ARMA_CATEGORIAS = [
 ];
 
 /* ============================================================ */
+/* ARMAS CRIADAS PELO JOGADOR                                   */
+/* ============================================================ */
+/* Uma arma custom é uma entrada NO MESMO SHAPE das do catálogo, e é isso que
+   faz ela funcionar sem nenhum caso especial no resto do sistema. Ela mora na
+   ficha (`creature.armasCustom`) e entra na lista pela `catalogoDoTipo`.
+
+   ⚠ ELA É SANEADA NA LEITURA, e não na escrita. A ficha vem do localStorage e
+   pode ter sido editada à mão, importada de outra versão ou salva no meio de um
+   formulário. Um `dado` inválido ou um `custo` fora de 1 a 4 quebraria o cálculo
+   de orçamento e o de dano em silêncio, então tudo passa por aqui antes de ser
+   arma. O preço é uma passada por leitura, e a ficha não tem muitas. */
+
+/** Os tamanhos de dado que uma arma pode ter. */
+export const ARMA_DADOS = ["1d4", "1d6", "1d8", "1d10", "1d12", "2d6"];
+
+/** Faixa de crítico. 20 é "só no 20 natural", 18 é a mais larga do livro. */
+export const ARMA_CRITICOS = [20, 19, 18];
+
+const DADO_OK = new Set(ARMA_DADOS);
+const TIPO_DANO_OK = new Set(Object.keys(TIPOS_DANO));
+const CATEGORIA_OK = new Set(ARMA_CATEGORIAS.map((c) => c.value));
+const GRUPO_OK = new Set(ARMA_GRUPOS.map((g) => g.value));
+
+let armaCustomSeq = 0;
+
+/** Uma arma custom nova, com os padrões de uma arma simples de corpo a corpo. */
+export function novaArmaCustom(patch = {}) {
+  armaCustomSeq += 1;
+  return {
+    id: `armc_${Date.now().toString(36)}_${armaCustomSeq}`,
+    nome: "",
+    classe: "simples",
+    categoria: "corpo",
+    dano: { dado: "1d6", tipo: "ct" },
+    critico: 20,
+    espacos: 1,
+    custo: 1,
+    grupo: "espada",
+    props: {},
+    ...patch,
+  };
+}
+
+/** Um número inteiro dentro de uma faixa, ou o padrão. */
+const naFaixa = (v, min, max, padrao) => {
+  const n = Math.trunc(Number(v));
+  return Number.isFinite(n) && n >= min && n <= max ? n : padrao;
+};
+
+/**
+ * Saneia UMA propriedade escrita pelo jogador. Devolve `null` quando ela não
+ * deve existir, e o valor pronto quando deve.
+ *
+ * O `param` do catálogo diz o que o valor significa, e cada forma tem a sua
+ * validação. Uma propriedade booleana guarda `true` e nada mais.
+ */
+function saneiaValorProp(id, valor) {
+  const def = PROP_BY_ID[id];
+  if (!def || valor == null || valor === false) return null;
+  if (def.param === "dado") return DADO_OK.has(valor) ? valor : "1d6";
+  if (def.param === "tipo") return TIPO_DANO_OK.has(valor) ? valor : "ct";
+  if (def.param === "numero") return naFaixa(valor, 1, 30, 1);
+  if (def.param === "alcance") {
+    const a = Array.isArray(valor) ? valor : [];
+    const curto = naFaixa(a[0], 1, 999, 6);
+    return [curto, naFaixa(a[1], curto, 9999, curto * 3)];
+  }
+  return true;
+}
+
+/** Uma arma custom saneada, ou `null` quando nem isso dá para salvar. */
+export function saneiaArmaCustom(bruta) {
+  if (!bruta || typeof bruta !== "object") return null;
+  const id = typeof bruta.id === "string" && bruta.id.startsWith("armc_") ? bruta.id : null;
+  if (!id) return null;
+  const props = {};
+  for (const [k, v] of Object.entries(bruta.props || {})) {
+    const val = saneiaValorProp(k, v);
+    if (val != null) props[k] = val;
+  }
+  const dado = DADO_OK.has(bruta.dano?.dado) ? bruta.dano.dado : "1d6";
+  const duasMaos = DADO_OK.has(bruta.dano?.duasMaos) ? bruta.dano.duasMaos : null;
+  return {
+    id,
+    // Sem nome, a linha do catálogo ficaria em branco e o jogador não acharia a
+    // arma que acabou de criar.
+    nome: String(bruta.nome ?? "").trim() || "Arma sem Nome",
+    classe: bruta.classe === "complexa" ? "complexa" : "simples",
+    categoria: CATEGORIA_OK.has(bruta.categoria) ? bruta.categoria : "corpo",
+    dano: {
+      dado,
+      // O segundo dado só existe com a propriedade Versátil, que é quem lhe dá
+      // sentido ("o primeiro dado é com uma mão e o segundo com duas").
+      ...(props.versatil && duasMaos ? { duasMaos } : {}),
+      tipo: TIPO_DANO_OK.has(bruta.dano?.tipo) ? bruta.dano.tipo : "ct",
+    },
+    critico: ARMA_CRITICOS.includes(Math.trunc(Number(bruta.critico))) ? Math.trunc(Number(bruta.critico)) : 20,
+    espacos: naFaixa(bruta.espacos, 0, 10, 1),
+    custo: naFaixa(bruta.custo, 1, 4, 1),
+    grupo: GRUPO_OK.has(bruta.grupo) ? bruta.grupo : "espada",
+    props,
+    // A marca que a UI usa para dar botão de editar e apagar, e para o chip.
+    custom: true,
+  };
+}
+
+/** As armas custom da ficha, saneadas e sem id repetido. */
+export function armasCustomDaFicha(creature) {
+  const brutas = Array.isArray(creature?.armasCustom) ? creature.armasCustom : [];
+  const vistos = new Set();
+  const out = [];
+  for (const b of brutas) {
+    const a = saneiaArmaCustom(b);
+    if (!a || vistos.has(a.id)) continue;
+    vistos.add(a.id);
+    out.push(a);
+  }
+  return out;
+}
+
+/* ============================================================ */
 /* UNIFORMES                                                    */
 /* ============================================================ */
 /* Um uniforme só pode possuir uma modificação, sendo ela uma alteração
@@ -1267,11 +1388,26 @@ const CATALOGO_POR_TIPO = {
   kit: KITS_FERRAMENTAS,
 };
 
-export const catalogoDoTipo = (tipo) => CATALOGO_POR_TIPO[tipo] ?? [];
+/**
+ * O catálogo de um tipo. Passando a CRIATURA, as armas criadas por ela entram
+ * na lista das armas.
+ *
+ * ⚠ É de propósito que elas entrem AQUI, e não numa lista paralela. Este é o
+ * único lugar em que uma arma vira uma arma para o resto do sistema: a linha do
+ * catálogo, o inventário, o `getEquipamento` do resolvedor, a Ferramenta
+ * Amaldiçoada e a Arma Dedicada leem todos daqui. Uma lista paralela teria de
+ * ser costurada em cinco lugares e esqueceria um.
+ */
+export const catalogoDoTipo = (tipo, creature = null) => {
+  const base = CATALOGO_POR_TIPO[tipo] ?? [];
+  if (tipo !== "arma" || !creature) return base;
+  const custom = armasCustomDaFicha(creature);
+  return custom.length ? [...base, ...custom] : base;
+};
 
 /** Busca uma entrada do catálogo pelo tipo + id. */
-export function getEquipamento(tipo, id) {
-  return catalogoDoTipo(tipo).find((e) => e.id === id) ?? null;
+export function getEquipamento(tipo, id, creature = null) {
+  return catalogoDoTipo(tipo, creature).find((e) => e.id === id) ?? null;
 }
 
 /** Espaços que UMA unidade do equipamento ocupa. */
@@ -1502,7 +1638,10 @@ export function resolveEquipamentos(creature, bt = 2) {
   const ctxBase = dslEquipCtxBase(creature, bt);
 
   for (const e of listaEntradas(creature)) {
-    const def = getEquipamento(e?.tipo, e?.refId);
+    // ⚠ A criatura vai junto porque as armas CUSTOM moram nela. Sem isso, uma
+    // arma criada pelo jogador cairia no aviso de "equipamento desconhecido" e
+    // sumiria do inventário na primeira releitura.
+    const def = getEquipamento(e?.tipo, e?.refId, creature);
     if (!def) {
       avisos.push(`Equipamento desconhecido na ficha (${e?.tipo ?? "?"}/${e?.refId ?? "?"}).`);
       continue;

@@ -400,6 +400,26 @@ export function buildCriaturaDslContext(base = {}) {
     // de equipamento no contexto, e entra porque o equipamento é resolvido antes
     // dos efeitos (ao contrário dos stats, que vêm depois: ver VARS_ADIADAS).
     rd_escudo: base.rdEscudoBase ?? 0,
+    /* ⚠ Só os GÊMEOS. A morte do irmão é o segundo estágio da Restrição
+       Celestial e inverte quase tudo dela, então ela precisa ser LEGÍVEL numa
+       expressão: quase todo efeito da origem é escrito como
+       `pre_morte * (1 - irmao_morto) + pos_morte * irmao_morto`. Vale 0 para
+       todo mundo que não é Gêmeo. */
+    irmao_morto: base.irmaoMorto ? 1 : 0,
+    /* Só os Gêmeos. O bônus de Iniciativa do OUTRO gêmeo, digitado pelo jogador:
+       a Dupla Empenhada soma os dois e o irmão é outra ficha. */
+    iniciativa_irmao: Math.trunc(Number(base.iniciativaIrmao) || 0),
+
+    /* Qual dos seis atributos é o da TÉCNICA desta criatura, como seis bandeiras
+       0/1. `mod_tecnica` já entrega o modificador, mas ele não serve para uma
+       regra que precisa MEXER no atributo escolhido: um canal `atributo` tem de
+       nomear um `alvo` fixo, então a única forma de escrever "o atributo da
+       Técnica" é emitir os seis efeitos e deixar cinco valerem zero.
+       Ver a Restrição Celestial dos Gêmeos Feiticeiros. */
+    ...Object.fromEntries(
+      ["forca", "destreza", "constituicao", "inteligencia", "sabedoria", "presenca"]
+        .map((k) => [`tecnica_${k}`, base.tecnicaAttr === k ? 1 : 0]),
+    ),
 
     // Atributos (valor e modificador)
     forca: at.forca ?? 10, destreza: at.destreza ?? 10, constituicao: at.constituicao ?? 10,
@@ -610,7 +630,13 @@ export function coletarEfeitos(ids, mapa, catalogo = {}, vezesPorId = null) {
     if (!efs) continue;
     const vezes = vezesPorId ? Math.max(1, vezesPorId[id] ?? 1) : 1;
     for (let v = 1; v <= vezes; v++) {
-      for (const e of efs) out.push({ ...e, origem: id, nome: nomeDe(id) || id, vez: v });
+      // ⚠ O `nome` do PRÓPRIO efeito vence o do catálogo. Ele é o rótulo que
+      // aparece no hover de fontes, e uma origem com várias características
+      // mandava a mesma palavra em todas as linhas: um Gêmeo Restringido via
+      // "Gêmeos +1" e "Gêmeos −2" e não tinha como saber qual era qual
+      // (autor, 2026-08-07). Quem não declara `nome` continua herdando o do
+      // catálogo, que é o caso de quase todo efeito.
+      for (const e of efs) out.push({ ...e, origem: id, nome: e.nome ?? (nomeDe(id) || id), vez: v });
     }
   }
   return out;

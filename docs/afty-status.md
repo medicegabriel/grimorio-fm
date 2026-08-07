@@ -2516,3 +2516,413 @@ dois talentos com o nome Adepto" — conta os escolhidos com o prefixo e bloquei
    a aba inteira de Aptidões de Maldição (18 aptidões hoje inalcançáveis).
 5. **Talentos** (destrava Inato/Derivado/Sem Técnica, é base de Habilidades, e o livro diz que
    talentos também concedem Nível de Aptidão).
+
+---
+
+## ORIGEM: GÊMEOS (2026-08-07)
+
+Origem nova, e a mais estranha do sistema: **ela é de DUPLA**. O livro é explícito
+("ela DEVE ser feita em dupla, seja com outro jogador ou com algum NPC"), e isso tem
+duas consequências que não existem em nenhuma outra origem.
+
+### As quatro decisões do autor (2026-08-07)
+
+1. **A morte do irmão é um INTERRUPTOR na Origem** (`core.origem.irmaoMorto`), e não um
+   estado de combate. Ela é o segundo estágio da Restrição Celestial, é permanente, e
+   precisa sobreviver ao fim da sessão. A mesma ficha serve antes e depois.
+2. **A "Restrição Celestial" do Restringido, em Verdadeiras Origens, é o Físico
+   Abençoado.** O texto pede uma característica com esse nome, que não existe no nosso
+   catálogo do Restringido; o autor resolveu que é a que dá acesso à Especialização.
+3. **O PE do pós-morte é 20 fixos MAIS a base do Tipo com +2 por nível.** Um Conjurador
+   fica com 20 e 8 por nível.
+4. **A Iniciativa do irmão é um CAMPO digitado** (`core.origem.iniciativaIrmao`). Ler a
+   criatura do irmão do armazenamento criaria dependência entre fichas por um bônus só.
+
+### O que está LIGADO
+
+| O que | Como |
+|---|---|
+| Bônus em Atributo | +1 nos três físicos se Restringido, senão 2 pontos livres |
+| Restrição Celestial · Restringido | Força e Destreza −2, vigor 2 por nível; a morte devolve os dois |
+| Ápice Corporal Humano e Resiliência Imediata | chegam ao Gêmeo Restringido **com a morte do irmão** (autor, 2026-08-07) |
+| Restrição Celestial · Feiticeiros | 2 de energia por nível; a morte dá 20 mais base do Tipo +2 |
+| Restrição Celestial · Feiticeiros, atributo | −2 no atributo da Técnica, seja ele qual for; a morte devolve (ver TERCEIRA REVISÃO) |
+| Slots de Habilidade | metade com o irmão vivo, 1,5x depois da morte, com hover de fontes (ver SLOTS DE HABILIDADE) |
+| Limite de atributo 30 no pós-morte | em `limiteAtributoDaOrigem`, e NÃO no canal do Motor (ver O LIMITE 30 CHEGAVA TARDE) |
+| Dupla Empenhada | a Iniciativa do irmão soma, com a fonte no hover |
+| Verdadeiras Origens | escolha GERADA das outras origens, com as exclusões do livro; a escolhida VIRA característica da criatura, qualifica para os Talentos de Origem dela e abre a Especialização exclusiva (ver QUARTA REVISÃO) |
+
+Tudo em dois estágios, pela variável `irmao_morto` do DSL, no padrão
+`antes * (1 - irmao_morto) + depois * irmao_morto`. Os dois ramos saem do
+`tipo_restringido`, que o contexto já dava: nenhuma escolha nova foi criada para separar
+Restringido de Feiticeiro, porque o Tipo já diz o que a criatura é.
+
+**16 asserts**, e os números conferidos: Conjurador ND 10 sai com 20 de PE vivo e 100
+morto; Restringido sai com 20 e 40; Força do Restringido vai de 9 para 11.
+
+### As características que a morte concede
+
+O Gêmeo Restringido recebe, na morte do irmão, o **Ápice Corporal Humano** e a
+**Resiliência Imediata** do Restringido. Elas entraram no catálogo dos Gêmeos com o
+**texto verbatim copiado**, e um assert reprova se os dois textos divergirem: é a MESMA
+característica, e duplicar texto é pior que divergir dele.
+
+Isso obrigou a primeira origem com características **condicionais**. O
+`caracteristicasEfetivas` passou a filtrar por três marcas declarativas: `soSemEnergia`,
+`soComEnergia` e `soIrmaoMorto`. O filtro vale para as **alocações e escolhas aninhadas**,
+e não só para a UI: um pool de atributos que só existe depois da morte não pode aparecer
+no criador antes dela. Nenhuma origem antiga usa as marcas, e há assert conferindo que
+todas continuam entregando a lista inteira.
+
+⚠ **O limite de 30 do Ápice não precisou de efeito nenhum**, e isso foi medido: o
+`limTipo` do deriveAfty já dá 30 nos três físicos a todo Tipo Restringido, e esta
+característica só existe para o Gêmeo Restringido. Um canal `limiteAtributo` ali somaria
++10 sobre 30 e morreria no teto, virando linha morta no hover de fontes. O que ela traz de
+novo é o **pool de +2 num físico a cada 6 níveis**.
+
+### Onde a morte do irmão fica na tela
+
+No **card da Origem, no topo**, antes das características: dois controles que nenhuma
+outra origem tem.
+
+- **Irmão Vivo / Irmão Morto** — um botão que troca de cor (vermelho quando morto). Ele
+  fica ANTES das características de propósito, porque o interruptor **muda o que as
+  características abaixo dizem**: o ramo da Restrição Celestial, o Ápice e a Resiliência
+  do Restringido, e os pools de atributo do pós-morte.
+- **Iniciativa do Irmão** — um campo de texto, e não numérico, para o sinal poder ser
+  digitado. Tudo que ele produz enquanto se digita (`""`, `-`, `+`, `--`) resolve em
+  zero, e há assert para cada um desses estados.
+
+**Os pontos do pós-morte** (4 físicos no Restringido, 2 livres no Feiticeiro) saem como
+pool de alocação, no mesmo alocador de todo o criador. ⚠ A **alocação** é que ficou
+condicional, e não a característica que a carrega: a Restrição Celestial é visível o
+tempo todo, mas os pontos só aparecem depois do interruptor. Foi assim para não inventar
+uma característica com nome que o livro não tem. O alocador ganhou teto por atributo
+(`maxPorAtributo`), porque o texto diz "2 em um mesmo atributo" e sem isso os 4 pontos
+iriam todos para a Força.
+
+### O que FALTA, e por quê
+
+| O que | Por quê |
+|---|---|
+| Proibir Controlador e Invocações | é uma TRAVA, e trava não é canal: mora em `afty-especializacoes.js` e `afty-invocacoes.js` |
+| "1 Habilidade de Técnica a cada 3 níveis" (2 se especialista) e "1 por nível" no pós-morte | o contador de Feitiço é ORÇAMENTO, e trocar a cadência dele não é somar num canal |
+| Restrição Definitiva concedida independente do nível | conceder Habilidade tem caminho próprio, e ainda falta a trava que a proíbe antes da morte |
+| O Honrado, na escolha de Habilidade Base | o Lutador Superior está ligado; o efeito de redução de custos do Honrado espera o motor de Feitiços ler o Motor |
+| Canal de Motor na característica copiada | ela traz texto, pools e escolhas, mas não os efeitos de `ORIGEM_EFEITOS`: aquele mapa é chaveado pela ORIGEM inteira, e não por característica (ver QUARTA REVISÃO) |
+
+### REVISÃO DA ORIGEM (2026-08-07)
+
+Três bugs achados e corrigidos, e o padrão dos dois primeiros é o mesmo: **marca de
+catálogo que ninguém lê finge valer**.
+
+1. **O Gêmeo Restringido levava as DUAS coisas do Bônus em Atributo.** O texto diz "2
+   pontos para distribuir. Caso um deles seja restringido, **ao invés disso**, apenas
+   seus atributos físicos são aumentados em 1" — os casos são excludentes. A marca
+   `semEnergiaNao` existia no catálogo e **nada a lia**: o `resolveOrigemAttrBonus`
+   somava os 2 pontos livres por cima do +1 físico, e o criador ainda oferecia o
+   alocador. Corrigido nos dois lugares.
+2. **Pool gravado com o interruptor desligado continuava valendo.** O jogador ligava a
+   morte do irmão, distribuía os 4 pontos físicos, voltava o interruptor para Vivo, e os
+   pontos seguiam somando. O `resolveOrigemAttrBonus` agora só soma os pools que
+   `alocacoesDaOrigem` ainda reconhece. **Isso vale para todas as origens**, não só
+   para os Gêmeos: qualquer pool que deixe de existir fica inerte.
+3. **As oito opções de escolha da origem não faziam nada.** Verdadeiras Origens e
+   Habilidade Base de 20° nível apareciam na tela e não tinham efeito nenhum ligado. O
+   **Lutador Superior** foi ligado (o autor pediu explicitamente): um dado de dano
+   adicional no Ataque Básico e um Nível de Empolgação a mais.
+
+Também saiu a marca `campoIniciativaIrmao`, que era decorativa pelo mesmo motivo. Um
+assert novo varre o catálogo dos Gêmeos e reprova qualquer marca que apareça só uma vez
+no código (ou seja, declarada e nunca lida).
+
+⚠ **O "buff de não possuir Custo de PE" do Lutador Superior não tem efeito**, e não é
+esquecimento: o ataque desarmado de graça daquela habilidade **já ficava de fora do
+Motor** (é economia de ação, não stat). O "sem custo" muda um texto que o Motor nunca
+leu, então ele vive na descrição da opção e em nenhum canal.
+
+### SEGUNDA REVISÃO (2026-08-07)
+
+Três achados do autor, e o primeiro era o pior de todos.
+
+1. **O Gêmeo não podia ser do Tipo Restringido.** A trava do Restringido é
+   bidirecional (`tiposDisponiveis` devolvia todos os Tipos MENOS Restringido para
+   qualquer origem que não fosse a Restringido), então **metade da origem era
+   inalcançável no criador**: o ramo Restringido da Restrição Celestial não podia ser
+   montado por ninguém. Os asserts não pegaram porque montam a ficha na mão, sem passar
+   pelas travas do criador. A origem Gêmeos virou a **única exceção** da trava, e a
+   Origem Restringido continua forçando o Tipo como sempre.
+   ⚠ Isto abre só o **Tipo**. A **Especialização** Restringido continua exclusiva da
+   Origem Restringido: no livro ela chega ao Gêmeo pelo Físico Abençoado das Verdadeiras
+   Origens, e aquela escolha ainda não tem efeito ligado.
+2. **A redução de −2 funcionava, mas era invisível.** As duas linhas do hover da Força
+   diziam só "Gêmeos", e não dava para saber qual era o +1 e qual era a redução. O
+   `coletarEfeitos` passou a respeitar um `nome` declarado pelo PRÓPRIO efeito, e os
+   dos Gêmeos agora dizem "Gêmeos: Bônus em Atributo" e "Gêmeos: Restrição Celestial".
+   Vale para todo o Motor: qualquer efeito pode nomear a própria fonte.
+3. **O limite de atributo vai a 30 com a morte do irmão**, pelo canal `limiteAtributo`.
+   Só no ramo Feiticeiro: no Restringido os três físicos já são 30 pelo Tipo, e o texto
+   dele fala de "atributos físicos", então subir os mentais seria dar o que a regra não
+   deu.
+
+### Cada estágio só aparece no estado dele
+
+Pedido do autor: *"tudo que precisar da Morte do Irmão, deixe visível só quando o irmão
+estiver morto. O inverso também é válido"*.
+
+Os dois parágrafos de cada Restrição Celestial eram um card só. Agora são **dois cards
+com o mesmo nome**, e só um aparece por vez: é o mesmo card mudando de conteúdo, e não
+dois cards concorrentes. O texto de cada um é o parágrafo inteiro do livro, e há assert
+reprovando se um deles levar o outro junto.
+
+Isso encerrou a marca `soIrmaoMorto` na alocação: a característica que carrega o pool já
+só existe depois da morte, então o pool some com ela.
+
+### PENDENTE: técnica máxima do irmão morto
+
+*"A critério do mestre você também recebe uma técnica máxima, baseando-se em seu irmão
+que veio a morrer, com seu custo sendo reduzido em 10 pontos."*
+
+Saiu da tela como aviso (a pedido do autor, 2026-08-07) e fica registrado aqui. Para
+ligar, seria preciso: conceder uma vaga de Feitiço de nível Máximo e aplicar −10 no custo
+**daquele** Feitiço. O segundo pedaço esbarra no mesmo lugar de sempre: `afty-feiticos.js`
+ainda não lê o Motor de Automação, e `custoPE` não tem alvo.
+
+### TERCEIRA REVISÃO (2026-08-07): a redução do atributo da Técnica
+
+**Relato do autor:** *"A Redução de -2 não está funcionando. Coloquei meu Atributo de
+Técnica em Força, e ela não foi reduzida em 2"*.
+
+Não era uma regressão. A redução do ramo **Feiticeiro** nunca tinha sido escrita: ela
+estava parada como pergunta aberta, e o que existia no Motor era só a do ramo
+**Restringido** (Força e Destreza, texto próprio). Ou seja, o Gêmeo Feiticeiro não
+perdia atributo nenhum.
+
+**Decisão de regra (autor, 2026-08-07):** *"todos os atributos que podem ser usados para
+sua CD de técnica"* é **o atributo que a criatura escolheu** como o da Técnica, e só ele.
+A leitura literal reduziria os seis, porque no Afty qualquer um dos seis pode ser o da
+Técnica (`AFTY_TECNICA_ATTRS`), e isso não é jogável.
+
+**Como ficou ligado:**
+
+- Seis bandeiras novas no contexto do DSL, `tecnica_forca` até `tecnica_presenca`, valendo
+  1 no atributo escolhido e 0 nos outros cinco. Existem porque o canal `atributo` exige
+  `alvo` fixo, então "o atributo da Técnica" só pode ser escrito emitindo os seis efeitos
+  e deixando cinco valerem zero. `mod_tecnica` não servia: ele entrega o modificador, e a
+  regra precisa mexer no ATRIBUTO.
+- Seis efeitos em `ORIGEM_EFEITOS.gemeos`, com `-2 * (1 - tipo_restringido) *
+  (1 - irmao_morto) * tecnica_<attr>`. O `(1 - tipo_restringido)` é o que impede a Força
+  de um Gêmeo Restringido com Técnica em Força de cair 4 numa criatura só.
+- `tecnicaAttr` passou a viajar nos dois `buildCriaturaDslContext` do `deriveAfty`.
+
+**Efeito colateral que é da regra, e não bug:** `pe = peBase + peQnt + modTecnica + Motor`.
+Baixar o atributo da Técnica baixa o `modTecnica`, então o Feiticeiro perde PE **duas
+vezes**: no canal de PE da Restrição e, de tabela, no modificador que caiu junto. Os
+asserts do PE foram reescritos para somar o `modTecnica` explicitamente, em vez de fingir
+que ele é zero, para ninguém "consertar" isso depois.
+
+7 asserts novos em `testes-gemeos.mjs` (45 no arquivo), incluindo um que varre os seis
+atributos, um que garante que os outros cinco NÃO caem, um para o Restringido e um que
+exige a linha nomeada no hover de fontes.
+
+### QUARTA REVISÃO (2026-08-07): Verdadeiras Origens virou alguma coisa
+
+**Relato do autor:** *"Verdadeiras Origens precisa ser melhorada. Por exemplo, não
+consigo pegar Herança Maldita"*.
+
+A opção **estava** na lista e o clique **gravava**. O que não existia era o depois:
+a escolha ficava guardada como um chip dentro da linha dobrada e nada mais acontecia.
+Sem card, sem texto, sem pool, sem qualificação. Herança Maldita é o exemplo mais cru
+porque ela é `mesa: true`, ou seja, ela é **só texto**, e texto que não aparece em lugar
+nenhum é indistinguível de não ter pego.
+
+**O que foi ligado:**
+
+| O que | Como |
+|---|---|
+| A característica escolhida VIRA característica da criatura | `caracteristicasEfetivas` passou a devolvê-la, com o id prefixado (`vo_heranca_maldita`) e um campo `verdadeiraOrigem` dizendo de onde veio |
+| Card próprio no criador | borda âmbar e um chip com a origem de origem, para a copiada não se passar por nativa |
+| Pools e escolhas aninhadas dela | vêm de graça: entrar em `caracteristicasEfetivas` já a coloca em `escolhasDaOrigem`, `alocacoesDaOrigem` e no pool de Anatomia de uma vez |
+| Talentos de Origem | `origensQualificadas(creature)` devolve a própria mais a copiada, e o requisito `tipo: "origem"` passou a ler a lista |
+| Especialização exclusiva | o Físico Abençoado diz *"você recebe acesso a especialização Restringido"*, e agora dá: `especializacoesDisponiveis(origemId, extras)` |
+| O HERDADO entrou na lista | ele não tem característica própria, todas são `doCla`. Agora cada característica de cada clã é uma opção, com o clã no rótulo. A lista foi de **6 para 14 opções** |
+
+**Duas assimetrias que valem ser lidas antes de mexer:**
+
+1. **Abrir não é trancar.** A origem PRÓPRIA tranca (a Origem Restringido vê só a
+   Especialização Restringido, e sem multiclasse). Uma origem COPIADA só soma. Sem essa
+   distinção, pegar o Físico Abençoado tiraria do Gêmeo todas as outras Especializações
+   e a multiclasse junto, que é o oposto do que a característica promete.
+2. **O id da copiada leva prefixo.** Ele é chave de estado da UI e dos mapas de escolha,
+   e sem o prefixo a Herança Maldita copiada colidiria com a de um Feto de verdade.
+
+**O que continua de fora, e por quê:** os efeitos de `ORIGEM_EFEITOS`. Aquele mapa é
+chaveado pela **origem inteira**, e não por característica, então não há como saber qual
+linha do Feto pertence à Herança Maldita. Copiar a origem toda daria à criatura coisas
+que ela não escolheu. Quem precisar de canal declara em `ORIGEM_ESCOLHA_EFEITOS` pelo id
+`vo_*`, que é o caminho que já existe (é assim que o Lutador Superior está ligado).
+
+**19 asserts novos** em `testes-gemeos.mjs` (63 no arquivo), incluindo os dois sentidos da
+trava do Restringido, a não recursão da própria Verdadeiras Origens, e o descarte de uma
+escolha aninhada gravada quando o clã copiado muda.
+
+### SLOTS DE HABILIDADE (2026-08-07)
+
+**Regra do autor:** *"Gêmeos recebem 1,5x a quantidade de Slots de Habilidades quando o
+Irmão Morrer. E ficam com somente metade quando o irmão está vivo"*.
+
+O alvo é o **contador único da aba Habilidades** (`orcamentoHabilidades.comum`), que é o
+caixa que Feitiços e Habilidades Gerais dividem, e que o livro chama de "Slot de
+Habilidade". Base `2 × Maestria + patamar` (`3 × Maestria` no Beyond).
+
+**É MULTIPLICADOR, então não passou pelo Motor.** Todo canal de vaga soma, e não há como
+escrever "metade do que veio" numa expressão que não enxerga o próprio total. Virou
+`fatorSlotsHabilidade(creature)` em `afty-origens.js`, aplicado no `deriveAfty` logo
+depois do contador base.
+
+**Arredonda para baixo**, como todo o resto do Afty. A base só é ímpar no patamar Beyond
+com Maestria ímpar, e é lá que o assert testa os dois sentidos.
+
+**Não toca as vagas exclusivas de Feitiço.** Elas são concedidas nominalmente por uma
+Lendária, e multiplicar uma vaga dada por nome seria inventar regra.
+
+O medidor da aba ganhou **hover de fontes** (`partesComum`), porque um contador que cai
+pela metade sem nada explicando foi exatamente a queixa do autor duas vezes neste mesmo
+dia. Ele só aparece quando há mais de uma linha, então nenhuma outra origem mudou.
+
+**9 asserts** (72 no arquivo).
+
+⚠ **ATENÇÃO À SOMA COM A OUTRA PENDÊNCIA.** A tabela "O que FALTA" ainda tem *"1
+Habilidade de Técnica a cada 3 níveis (2 se especialista)"*, que também corta a
+capacidade do Gêmeo vivo, e pelo mesmo contador. Se as duas valerem juntas, o Gêmeo vivo
+é cortado duas vezes. **Pergunta 6 abaixo.**
+
+### O LIMITE 30 CHEGAVA TARDE (2026-08-07)
+
+**Relato do autor:** *"Pq estou limitado a 22? Se gêmeo levou meu limite para 30?"*, com
+a tela mostrando Força 22, limite 30, e o aviso *"1 ponto de bônus perdido no limite 30"*.
+A contradição estava na própria linha: perdeu ponto num limite em que cabia.
+
+**A causa é de ORDEM, e não dos Gêmeos.** O `deriveAfty` tem dois limites:
+
+| | Quem é | Quando existe |
+|---|---|---|
+| `limiteBaseOf` | padrão 20, ficha, Origem, Desenvolvimento, pool de limite | **estágio 0** |
+| `attrLimiteEfetivo` | o de cima **mais o canal `limiteAtributo` do Motor** | **estágio 1** |
+
+O bônus de atributo da **origem** é aparado no **estágio 0**. O limite de 30 dos Gêmeos
+tinha sido escrito como canal `limiteAtributo`, que só nasce no estágio 1. Resultado: o
+mostrador dizia 30 e o bônus da própria origem continuava sendo aparado em 20.
+
+**O conserto:** o limite saiu do Motor e foi para `limiteAtributoDaOrigem`, junto do Ápice
+Corporal Humano do Restringido, que é o outro limite de origem do sistema. A função passou
+a aceitar a **criatura** (antes só o id), porque o limite do Gêmeo depende da morte do
+irmão, e o `limOrigem` já entra por `Math.max`, que é a semântica certa de *"é 30 ao invés
+de 20"*.
+
+**A regra que fica:** limite que precisa valer para a **alocação** ou para o **bônus de
+origem** mora em `afty-origens.js`, e não no Motor. O canal `limiteAtributo` serve para
+quem chega depois (Incremento de Atributo, Quebra de Limites, Aperfeiçoamento), e esses
+sobem valor e limite no mesmo pacote, então não sentem a ordem.
+
+**8 asserts** (80 no arquivo), incluindo um que reprova se o canal voltar para os Gêmeos.
+
+### PERGUNTAS ABERTAS
+
+1. **"Maldição/Shikigami mutante"** na lista de exclusões foi lido como a origem
+   **Maldição**. Se o livro quis dizer um "Shikigami Mutante" que ainda não existe aqui,
+   a Maldição volta para a lista permitida.
+2. **"A característica de desenvolvimento Vingativo"** não existe em catálogo nenhum do
+   Afty. Ficou como procedimento de mesa.
+3. **"Os gêmeos só podem subir de nível juntos"** é regra de mesa, e não entrou como
+   trava. Confirma?
+4. **O Tipo Restringido do Gêmeo não exige o Físico Abençoado.** Hoje qualquer Gêmeo pode
+   ser do Tipo Restringido, porque o ramo Restringido da Restrição Celestial existe por
+   si. Mas o caminho do livro para o Gêmeo alcançar o Restringido é Verdadeiras Origens.
+   Amarrar o Tipo à escolha, ou deixar solto como está?
+5. **A característica copiada é uma só, e para sempre.** Trocar a escolha depois descarta
+   o que estava aninhado nela (os treinos do clã antigo, por exemplo). Isso está certo, e
+   não há custo nenhum em trocar. Confirma que a troca deve ser livre?
+6. **Os slots pela metade e a cadência de Habilidade de Técnica se somam?** As duas
+   regras cortam a capacidade do Gêmeo vivo, e pelo mesmo contador: a primeira já entrou
+   (metade dos Slots), a segunda ainda não (*"1 habilidade de técnica apenas a cada 3
+   níveis"*). Valendo juntas, o Gêmeo vivo é cortado duas vezes. São cortes
+   independentes, ou a cadência é só o jeito de o livro descrever o mesmo corte?
+
+## EQUIPAMENTOS: FILTRO POR PROPRIEDADE E ARMAS CRIADAS (2026-08-07)
+
+**Pedido do autor:** *"na aba de Equipamento. Preciso de Filtros por Propriedade da Arma,
+como Marcial, Fineza, Dupla e etc. Além disso, preciso da possibilidade de poder criar
+armas custom."*
+
+### Filtro por propriedade
+
+Fileira nova de chips no catálogo, ao lado das que já existiam (classe, categoria, custo).
+
+- **Multi-escolha, combinada com E.** A pergunta que se faz ao catálogo é *"quais armas
+  são Marciais **e** de Fineza"*, e não "quais são uma coisa ou outra". Com uma marcada
+  só, ela se comporta igual aos outros chips.
+- **Só oferece o que existe no recorte atual**, pela mesma regra dos custos oferecidos:
+  uma aba de armas a distância não mostra Fineza para não achar nada. Isso é o que impede
+  a fileira de virar 21 chips, sendo a maioria morta.
+- **Dobrada por padrão**, e a linha fechada carrega as marcadas. O botão de limpar só
+  existe quando há o que limpar, porque um filtro que esconde metade do catálogo e não se
+  anuncia é como um bug se parece.
+- Propriedade **com parâmetro** conta como presente (`pesada: 14`, `fatal: "1d10"`). Um
+  filtro escrito com `=== true` deixaria essas armas de fora, e tem assert para isso.
+- **Especial** não vira chip: ela não é uma propriedade que se compara, é a marca de que a
+  arma tem texto próprio, e o texto já aparece à parte.
+
+### Armas criadas pelo jogador
+
+Card **Armas Criadas**, acima do catálogo (a arma criada aparece na lista de baixo, e a
+ordem inversa esconderia o resultado da ação). Campos: nome, classe, categoria, dado,
+tipo de dano, crítico, grupo, custo, espaços e as 20 propriedades, cada uma com o campo do
+parâmetro dela quando tem um.
+
+**A decisão de desenho que segura tudo:** a arma custom é uma entrada **no mesmo shape**
+das do catálogo, e entra na lista pela própria `catalogoDoTipo(tipo, creature)`. Não há
+lista paralela. Por isso ela funciona, sem nenhum caso especial, em:
+
+| Onde | Como chega |
+|---|---|
+| Linha do catálogo, com selo **Criada** | `catalogoDoTipo("arma", draft)` |
+| Inventário e orçamento de espaços e custo | `getEquipamento(tipo, id, creature)` no `resolveEquipamentos` |
+| Ferramenta Amaldiçoada e encantamentos | a entrada resolvida é uma arma como as outras |
+| Arma Dedicada | `podeSerArmaDedicada(def)` lê as propriedades, e a regra do livro decide |
+| Aba Equipamentos da Ficha Final | ela lê `e.def` do derivado |
+
+**O saneamento é na LEITURA, e não na escrita** (`saneiaArmaCustom`). A ficha vem do
+localStorage e pode ter sido editada à mão, importada de outra versão ou salva no meio de
+um formulário. Um `dado` inválido ou um `custo` fora de 1 a 4 quebraria orçamento e dano em
+silêncio. O que ele garante:
+
+- id **obrigatoriamente** com o prefixo `armc_`, senão uma ficha editada à mão poderia
+  sobrescrever uma arma do livro;
+- dado, tipo de dano, crítico, custo, espaços, grupo, classe e categoria caem no padrão
+  quando inválidos;
+- propriedade que não existe no catálogo é descartada, e booleana guarda `true` e nada
+  mais;
+- o **parâmetro** de cada propriedade é validado pela forma dela (dado, tipo, número,
+  alcance);
+- o **dado de duas mãos só existe com Versátil**, que é a propriedade que lhe dá sentido;
+- arma sem nome ganha um, para não sumir da lista.
+
+**Apagar a arma tira do inventário junto.** Sem isso a entrada fica apontando para um id
+que não existe e o resolvedor a reporta como "equipamento desconhecido", o que é verdade e
+não ajuda ninguém.
+
+**26 asserts** em `testes-armas-custom.mjs`, incluindo o caminho inteiro da ficha ao
+inventário e um que reprova se uma arma do livro passar a usar uma propriedade fora do
+catálogo (o chip dela nunca apareceria).
+
+### PERGUNTAS ABERTAS DO EQUIPAMENTO
+
+1. **A arma criada não tem texto de propriedade Especial.** O campo `especial` do catálogo
+   aponta para uma entrada de `ARMA_ESPECIAIS` com texto verbatim do livro, e não há como
+   um jogador escrever um verbatim. Deixei de fora. Vale abrir um campo de texto livre
+   para o traço único da arma criada?
+2. **Não há teto para a arma criada.** Nada impede um `2d6` Marcial de Fineza custo 1. Isso
+   é procedimento de mesa, ou o criador deve barrar alguma combinação?
+3. **A arma criada mora na FICHA, e não numa biblioteca.** Criar a mesma arma em duas
+   criaturas é criar duas vezes. Vale uma biblioteca compartilhada entre fichas depois?

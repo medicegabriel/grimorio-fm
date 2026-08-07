@@ -40,7 +40,8 @@ import {
 } from "./afty-atributos";
 import {
   resolveOrigemAttrBonus, resolveDesenvolvimento, resolveEscolhasOrigem,
-  limiteAtributoDaOrigem, resolveLimitePoolOrigem,
+  limiteAtributoDaOrigem, resolveLimitePoolOrigem, origensQualificadas,
+  fatorSlotsHabilidade,
 } from "./afty-origens";
 import { efeitosDeTreino } from "./afty-treinamentos";
 import { resolveNiveisAptidao, trilhasDaOrigem, AFTY_APTIDOES } from "./afty-aptidoes";
@@ -206,7 +207,10 @@ export function deriveAfty(creature, opcoes = {}) {
   const limTipo = tipo === "restringido"
     ? { forca: ATTR_LIMITE_MAX, destreza: ATTR_LIMITE_MAX, constituicao: ATTR_LIMITE_MAX }
     : {};
-  const limOrigem = { ...limiteAtributoDaOrigem(core?.origem?.id), ...limTipo };
+  // ⚠ Recebe a CRIATURA, e não o id: o limite do Gêmeo depende da morte do
+  // irmão. Ele precisa estar aqui, no estágio 0, porque é aqui que o bônus de
+  // atributo da própria origem é aparado.
+  const limOrigem = { ...limiteAtributoDaOrigem(creature), ...limTipo };
   // Limite de ESTÁGIO 0: o que a ALOCAÇÃO respeita (base, pool de nível e bônus
   // de origem). O limite FINAL sai mais abaixo, somando o canal `limiteAtributo`
   // do Motor, que só existe depois de os catálogos serem resolvidos.
@@ -270,7 +274,9 @@ export function deriveAfty(creature, opcoes = {}) {
   const gerais = resolveGerais(creature, { nd, maestria: bt });
   const ctxMontante = buildCriaturaDslContext({
     nd, bt, grauRank: grau.rank, patamar, tipo, almaAtual: almaAtualDsl,
-    attrEff: attrBase, mods: modBase, modTecnica: modBase[tecnicaAttr] ?? 0,
+    irmaoMorto: !!creature?.core?.origem?.irmaoMorto,
+    iniciativaIrmao: creature?.core?.origem?.iniciativaIrmao,
+    attrEff: attrBase, mods: modBase, modTecnica: modBase[tecnicaAttr] ?? 0, tecnicaAttr,
     periciasProf: creature?.pericias,
     // O vocabulário entra AQUI TAMBÉM: o contexto reduzido não tem `esc_*` nem
     // `tem_*`, e sem eles declarados uma expressão que os citasse cairia inteira
@@ -334,8 +340,10 @@ export function deriveAfty(creature, opcoes = {}) {
   // `inacessiveis` é refeito mais abaixo, com o atributo já somado dos efeitos
   // PERMANENTES. Talento é o único catálogo cujo pré-requisito lê atributo.
   const origemId = creature?.core?.origem?.id ?? null;
+  // Mais de uma quando o Gêmeo copia uma origem em Verdadeiras Origens.
+  const origensQuali = origensQualificadas(creature);
   const talentosPre = resolveTalentos(creature, {
-    nd, attrEff: attrBase, origemId, especializacoes: especializacoes.escolhidas,
+    nd, attrEff: attrBase, origemId, origensQualificadas: origensQuali, especializacoes: especializacoes.escolhidas,
   });
   // bt entra por causa do Roubo de Habilidade, cujo limite de repetições é o
   // Bônus de Treinamento. O último parâmetro são as vagas extras da Habilidade
@@ -595,7 +603,9 @@ export function deriveAfty(creature, opcoes = {}) {
 
   const montarCtx = (attrs, mods) => buildCriaturaDslContext({
     nd, bt, grauRank: grau.rank, patamar, tipo, almaAtual: almaAtualDsl,
-    attrEff: attrs, mods, modTecnica: mods[tecnicaAttr] ?? 0,
+    irmaoMorto: !!creature?.core?.origem?.irmaoMorto,
+    iniciativaIrmao: creature?.core?.origem?.iniciativaIrmao,
+    attrEff: attrs, mods, modTecnica: mods[tecnicaAttr] ?? 0, tecnicaAttr,
     aptidao: aptidao.efetivo, nivelEspec, periciasProf: creature?.pericias,
     resistenciasProf: creature?.resistenciasProf, combate,
     aptidaoOpcoes: semEnergia ? {} : creature?.aptidaoOpcoes,
@@ -656,7 +666,7 @@ export function deriveAfty(creature, opcoes = {}) {
 
   // Talentos de novo, agora com o atributo permanente: só o `inacessiveis` muda.
   const talentos = resolveTalentos(creature, {
-    nd, attrEff: attrPermanente, origemId, especializacoes: especializacoes.escolhidas,
+    nd, attrEff: attrPermanente, origemId, origensQualificadas: origensQuali, especializacoes: especializacoes.escolhidas,
   });
 
   // Estágio 1b: atributo TEMPORÁRIO, por cima do permanente. Resulta no
@@ -852,7 +862,23 @@ export function deriveAfty(creature, opcoes = {}) {
   // (`gerais` já foi resolvido lá em cima, junto dos outros catálogos.)
   const feiticosLista = Array.isArray(creature.feiticos) ? creature.feiticos : [];
   const feiticosGastos = feiticosLista.filter((f) => !f.variacaoDe).length;
-  const contadorComum = contadorHabilidades(bt, patamar);
+  // ⚠ O contador comum pode ser MULTIPLICADO pela origem. Só os Gêmeos têm
+  // isso hoje: metade com o irmão vivo, uma vez e meia depois da morte dele.
+  // Arredonda para baixo, como todo o resto do Afty.
+  const contadorBase = contadorHabilidades(bt, patamar);
+  const fatorSlots = fatorSlotsHabilidade(creature);
+  const contadorComum = Math.floor(contadorBase * fatorSlots);
+  // As fontes do contador, para o hover poder dizer de onde o número veio. Sem
+  // isso o Gêmeo vê metade das vagas e nada explicando.
+  const partesContador = [
+    { label: "Maestria e Patamar", valor: contadorBase },
+    ...(fatorSlots !== 1
+      ? [{
+        label: creature?.core?.origem?.irmaoMorto ? "Gêmeos: irmão morto" : "Gêmeos: irmão vivo",
+        texto: `× ${String(fatorSlots).replace(".", ",")}`,
+      }]
+      : []),
+  ];
   // Vagas EXCLUSIVAS de Feitiço (autor, 2026-07-28): "Você fornece um Slot de
   // Habilidade somente para Feitiços, não podendo ser usada em Habilidades
   // Gerais". Hoje só a Lendária Dominância em Técnica concede. Os Feitiços
@@ -865,6 +891,7 @@ export function deriveAfty(creature, opcoes = {}) {
   const orcamentoHabilidades = {
     total: contadorTotal,
     comum: contadorComum,
+    partesComum: partesContador,
     exclusivasFeitico: vagasFeitico,
     exclusivasUsadas: feiticosNoExclusivo,
     feiticos: feiticosGastos,
