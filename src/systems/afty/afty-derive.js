@@ -73,7 +73,7 @@ import {
   coletarEfeitosAptidao,
   aplicarEfeitos, resolverExclusivos, valorCanal, furaTetoEm, efeitosDaTecnica, efeitosDosPassivos,
   efeitosDaSessao, EFEITO_CANAIS,
-  ehAtributoPermanente, ehAtributoTemporario, ehEstagio2, ehPreContexto,
+  ehAtributoPermanente, ehAtributoTemporario, ehEstagio2, ehPreContexto, efeitoUsaDadosDanoFinal,
   mesclarEfeitos, detalhesDoCanal,
 } from "./afty-efeitos";
 import { resolveGerais, contadorHabilidades, GERAL_BY_ID } from "./afty-gerais";
@@ -540,6 +540,10 @@ export function deriveAfty(creature, opcoes = {}) {
     aptidoesEscolhidas: creature?.aptidoesAmaldicoadas ?? [],
   });
   const efeitosComDominio = efeitosDominio.length ? [...efeitosTodos, ...efeitosDominio] : efeitosTodos;
+  // Expressões que leem `dados_dano_final` só podem ser avaliadas quando cada
+  // linha de dano já sabe quantos dados vai rolar. Elas não entram no agregado
+  // geral e viajam cruas até o calculador de Feitiços.
+  const efeitosLinhaDano = efeitosComDominio.filter(efeitoUsaDadosDanoFinal);
 
   // Resumo pronto para a aba Habilidades: cada expansão com os números que o
   // card mostra. A UI não recalcula nada, ela só exibe.
@@ -926,6 +930,8 @@ export function deriveAfty(creature, opcoes = {}) {
       cdBase: cd,
       modTecnica,
       efeitos: ef,
+      efeitosLinhaDano,
+      contextoDsl: ctxTecnica,
       habilidades: habilidades.escolhidas,
       temEnergiaReversa: !semEnergia
         && Array.isArray(creature?.aptidoesAmaldicoadas)
@@ -1252,6 +1258,7 @@ export function deriveAfty(creature, opcoes = {}) {
     feiticos,             // { nivelMax, gastos, cdBase } — o orçamento é o de baixo
     tecnicaEfeitos,       // Funcionamento Básico resolvido, para o editor mostrar o valor de cada linha
     passivosEfeitos,      // Motor resolvido por Feitiço Passivo / Característica
+    motorLinhaDano: { efeitos: efeitosLinhaDano, contexto: ctxTecnica },
     gerais,               // { escolhidas, gastos, ganhos, destravado, maxVezes, acesso, inacessiveis }
     efeitos: ef,          // Motor de Automação: { porCanal, porAlvo, detalhes, avisos }
     testes,               // { pericias, resistencias, ataques, orcamento, atencao }

@@ -1505,9 +1505,9 @@ export const ESCOLHA_EFEITOS = {
 
   // Foco Amaldiçoado (10°), uma entre três.
   //
-  // ⚠ Destruição fica INTEIRO de fora: "+1 de dano para cada dado rolado" e "soma
-  // o bônus de treinamento no total" são dano de FEITIÇO, e o motor de feitiços
-  // não lê o Motor de Automação (ver o aviso no topo do bloco do Conjurador).
+  // ⚠ Destruição segue fora do catálogo. O Motor de Feitiços já lê `danoBonus`
+  // e oferece `dados_dano_final`, mas a habilidade ainda depende da transcrição
+  // completa de seus efeitos e da decisão de ativação registrada nas pendências.
   //
   // Economia: "você passa a somar o seu bônus de treinamento no seu máximo de
   // energia amaldiçoada." A redução de 2 no custo é do lado do feitiço.

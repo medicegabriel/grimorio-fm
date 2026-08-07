@@ -131,6 +131,16 @@ Estado atual do sistema Afty (atualizado 2026-07-17). Leia junto com:
 - Na ficha final, estas entradas aparecem em **Passivos e Características**, dentro de Habilidades.
   Elas não aparecem em Ações.
 
+### Quantidade final de dados no Motor
+
+- A variável de linha `dados_dano_final` pode ser usada no canal `danoBonus`. Ela é avaliada depois
+  que o Feitiço fecha sua quantidade real de dados, incluindo as alterações do canal `dadosDano`.
+- Um Passivo / Característica com alvo `feitico:<id>` mostra no editor o valor calculado para aquele
+  Feitiço. O alvo geral `feitico` não mostra uma prévia numérica, pois cada Feitiço pode possuir uma
+  quantidade diferente de dados.
+- Em Múltiplos Disparos, a variável representa os dados de cada disparo. Ela não pode ser usada no
+  canal `dadosDano`, pois a quantidade de dados passaria a depender dela mesma.
+
 ### Fora desta etapa
 
 - A ativação do Funcionamento Básico na ficha final não foi alterada.

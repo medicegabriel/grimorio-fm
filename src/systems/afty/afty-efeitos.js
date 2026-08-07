@@ -377,6 +377,19 @@ export const VARS_ADIADAS = [
   "deslocamento", "iniciativa", "acerto", "guarda_max", "guarda_atual",
   "hp_atual", "pe_atual", "hp_temp", "hp_pct", "pe_pct",
 ];
+
+/**
+ * Variável de LINHA, disponível somente quando uma fonte de dano já fechou a
+ * quantidade que realmente vai rolar. Ela não pode entrar no contexto geral da
+ * criatura: naquele estágio ainda não existe Feitiço, arma ou Ataque Básico.
+ */
+export const VAR_DADOS_DANO_FINAL = "dados_dano_final";
+const RE_DADOS_DANO_FINAL = /\bdados_dano_final\b/i;
+
+export const efeitoUsaDadosDanoFinal = (efeito) =>
+  RE_DADOS_DANO_FINAL.test(String(efeito?.expr ?? ""))
+  || RE_DADOS_DANO_FINAL.test(String(efeito?.quando ?? ""));
+
 export function buildCriaturaDslContext(base = {}) {
   const at = base.attrEff || {};
   const md = base.mods || {};
@@ -999,6 +1012,33 @@ export function resolverExclusivos(res, jaAplicado = {}) {
   return { ...out, aplicado };
 }
 
+/**
+ * Resolve a parcela do Motor que depende da quantidade final de dados de UMA
+ * linha. Esses efeitos ficaram deliberadamente fora do estágio geral, evitando
+ * que `dados_dano_final + 2` aplique apenas o 2 antes de a linha existir e volte
+ * a aplicar a expressão inteira depois.
+ *
+ * Por ora a variável só tem semântica no canal `danoBonus`: ler a quantidade de
+ * dados para produzir mais dados criaria uma dependência circular.
+ */
+export function resolverEfeitosDanoFinal(efeitos, ctx = {}, dados = 0, jaAplicado = {}) {
+  const dependentes = (Array.isArray(efeitos) ? efeitos : []).filter(efeitoUsaDadosDanoFinal);
+  const suportados = dependentes.filter((e) => e?.canal === "danoBonus");
+  const res = resolverExclusivos(
+    aplicarEfeitos(suportados, {
+      ...ctx,
+      [VAR_DADOS_DANO_FINAL]: Math.max(0, Math.trunc(Number(dados) || 0)),
+    }),
+    jaAplicado,
+  );
+  const ignorados = dependentes.filter((e) => e?.canal !== "danoBonus");
+  if (ignorados.length) {
+    res.avisos.push(...ignorados.map((e) =>
+      `${VAR_DADOS_DANO_FINAL} só pode ser usado no canal danoBonus em ${e.nome || e.origem || "efeito"}.`));
+  }
+  return res;
+}
+
 /** O alvo recebeu algum efeito autorizado a passar do teto duro de 30? */
 export const furaTetoEm = (res, alvo) =>
   !!(res?.furaTeto?.[alvo] || res?.furaTeto?.todos);
@@ -1037,7 +1077,8 @@ export const CANAIS_ESTAGIO_1 = ["atributo"];
  * Maestria e atributo base. Na prática são todas "1".
  */
 export const CANAIS_PRE_CONTEXTO = ["nivelAptidao", "limiteAptidao", "empolgacaoMaxima", "limiteAtributo"];
-export const ehPreContexto = (e) => CANAIS_PRE_CONTEXTO.includes(e?.canal);
+export const ehPreContexto = (e) =>
+  CANAIS_PRE_CONTEXTO.includes(e?.canal) && !efeitoUsaDadosDanoFinal(e);
 
 /**
  * A ÚNICA entrada do sistema autorizada a passar do teto de 30 de atributo
@@ -1056,9 +1097,14 @@ export const ehTemporario = (e) => e?.duracao === "temporaria";
 export const ehPermanente = (e) => !ehTemporario(e);
 
 /** Os estágios, na ordem em que o deriveAfty aplica. */
-export const ehAtributoPermanente = (e) => CANAIS_ESTAGIO_1.includes(e?.canal) && ehPermanente(e);
-export const ehAtributoTemporario = (e) => CANAIS_ESTAGIO_1.includes(e?.canal) && ehTemporario(e);
-export const ehEstagio2 = (e) => !CANAIS_ESTAGIO_1.includes(e?.canal) && !ehPreContexto(e);
+export const ehAtributoPermanente = (e) =>
+  CANAIS_ESTAGIO_1.includes(e?.canal) && ehPermanente(e) && !efeitoUsaDadosDanoFinal(e);
+export const ehAtributoTemporario = (e) =>
+  CANAIS_ESTAGIO_1.includes(e?.canal) && ehTemporario(e) && !efeitoUsaDadosDanoFinal(e);
+export const ehEstagio2 = (e) =>
+  !CANAIS_ESTAGIO_1.includes(e?.canal)
+  && !ehPreContexto(e)
+  && !efeitoUsaDadosDanoFinal(e);
 
 /**
  * Soma resultados de `aplicarEfeitos` (os dois estágios) num só.

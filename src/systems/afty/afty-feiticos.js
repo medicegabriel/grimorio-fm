@@ -33,7 +33,9 @@
 // grauMeta: fonte da verdade dos graus de Invocação (Shikigami usa o motor de
 // Invocações). afty-invocacoes não importa daqui, então não há ciclo.
 import { grauMeta } from "./afty-invocacoes";
-import { detalhesDoCanalEscopos, valorCanalEscopos } from "./afty-efeitos";
+import {
+  detalhesDoCanalEscopos, resolverEfeitosDanoFinal, valorCanalEscopos,
+} from "./afty-efeitos";
 
 // ---------------------------------------------------------------
 // NÍVEIS. Feitiços vão do nível 0 ao 5. Técnica Máxima ("max") é um
@@ -590,26 +592,53 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
   dados = Math.max(1, dados + dadosMotor);
   const bonusMotor = Math.trunc(valorCanalEscopos(ctx.efeitos, "danoBonus", escoposDano));
 
+  // Múltiplos Disparos fecha a quantidade de dados de CADA rolagem antes de o
+  // Motor avaliar `dados_dano_final`. Usar o montante concentrado daria o bônus
+  // inteiro em cada disparo e multiplicaria o dano fixo sem a regra mandar.
+  let disparosCalculados = null;
+  let dadosDanoFinal = dados;
+  if (subtipo === "multiplos") {
+    const maxDisparos = nNum + 1;
+    const disparos = Math.min(Math.max(1, f.disparos | 0 || 1), maxDisparos);
+    if ((f.disparos | 0) > maxDisparos) avisos.push(`Máximo de ${maxDisparos} disparos no ${NIVEL_LABEL[nivel]}.`);
+    const porDisparo = Math.max(1, Math.floor(dados / disparos));
+    disparosCalculados = { disparos, porDisparo };
+    dadosDanoFinal = porDisparo;
+  }
+
+  const resolveBonusDanoFinal = (quantidade) => {
+    const efeitos = resolverEfeitosDanoFinal(
+      ctx.efeitosLinhaDano,
+      ctx.contextoDsl,
+      quantidade,
+      ctx.efeitos?.aplicado,
+    );
+    return {
+      efeitos,
+      valor: Math.trunc(valorCanalEscopos(efeitos, "danoBonus", escoposDano)),
+    };
+  };
+  const bonusDanoFinal = resolveBonusDanoFinal(dadosDanoFinal);
+  avisos.push(...(bonusDanoFinal.efeitos.avisos || []));
+
   // Conjuração Aprimorada é um bônus FIXO por alvo. Ele não entra no saldo de
   // customização e não muda a quantidade de dados. Em Múltiplos Disparos o
   // cálculo continua sendo por um alvo: separar os disparos reduz os dados, mas
   // conserva o mesmo bônus na fórmula daquele alvo.
   const bonusConjuracao = bonusConjuracaoAprimorada(nivel, ctx);
-  const bonusDano = bonusConjuracao + bonusMotor;
+  const bonusDano = bonusConjuracao + bonusMotor + bonusDanoFinal.valor;
 
   // 9) Múltiplos disparos: divide os dados finais (piso, mín 1) pelo nº de disparos.
   let danoTexto;
   if (subtipo === "multiplos") {
-    const maxDisparos = nNum + 1;
-    let disparos = Math.min(Math.max(1, f.disparos | 0 || 1), maxDisparos);
-    if ((f.disparos | 0) > maxDisparos) avisos.push(`Máximo de ${maxDisparos} disparos no ${NIVEL_LABEL[nivel]}.`);
-    const porDisparo = Math.max(1, Math.floor(dados / disparos));
+    const { disparos, porDisparo } = disparosCalculados;
+    const bonusConcentrado = bonusConjuracao + bonusMotor + resolveBonusDanoFinal(dados).valor;
     disparosInfo = {
       disparos,
       porDisparo,
       concentradoTotal: dados,
       porDisparoTexto: notacaoDanoComBonus(porDisparo, tipoDado, bonusDano, explosiva),
-      concentradoTexto: notacaoDanoComBonus(dados, tipoDado, bonusDano, explosiva),
+      concentradoTexto: notacaoDanoComBonus(dados, tipoDado, bonusConcentrado, explosiva),
     };
     danoTexto = `${disparos}× ${disparosInfo.porDisparoTexto}`;
     detalhes.multiplos = disparosInfo;
@@ -645,6 +674,7 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
   return {
     nivel,
     dados,
+    dadosDanoFinal,
     tipoDado,
     dano: danoTexto,
     bonusDano,
@@ -657,6 +687,11 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
         ...(d.suplantado ? { suplantado: true } : {}),
       })),
       ...detalhesDoCanalEscopos(ctx.efeitos, "danoBonus", escoposDano, true).map((d) => ({
+        label: d.nome,
+        valor: d.valor,
+        ...(d.suplantado ? { suplantado: true } : {}),
+      })),
+      ...detalhesDoCanalEscopos(bonusDanoFinal.efeitos, "danoBonus", escoposDano, true).map((d) => ({
         label: d.nome,
         valor: d.valor,
         ...(d.suplantado ? { suplantado: true } : {}),

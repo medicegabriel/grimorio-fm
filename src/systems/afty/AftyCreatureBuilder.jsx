@@ -57,7 +57,9 @@ import {
 import { rotuloBloco } from "./afty-cura";
 // Os canais do Motor, já agrupados por assunto para o <optgroup> do editor
 // do Funcionamento Básico.
-import { EFEITO_CANAL_GRUPOS, getCanal } from "./afty-efeitos";
+import {
+  EFEITO_CANAL_GRUPOS, VAR_DADOS_DANO_FINAL, efeitoUsaDadosDanoFinal, getCanal,
+} from "./afty-efeitos";
 import {
   DOMINIO_CATEGORIAS, tiposDaCategoria, categoriaLivre, valorDoEfeito,
   novoEfeitoDominio, novoDominio, versoesDisponiveis, ATRIBUTOS_FISICOS,
@@ -85,7 +87,7 @@ import {
   ENCANTAMENTOS_POR_TIPO, getEncantamento,
   avaliarRequisitoEncantamento,
 } from "./afty-equipamentos";
-import { validateExpression } from "../../components/fm-dsl";
+import { evalNumber as evalNumberDsl, validateExpression } from "../../components/fm-dsl";
 import { deriveAfty } from "./afty-derive";
 import {
   createBlankFeitico, calcularFeiticoDano, ALCANCE_POR_NIVEL, AREA_POR_NIVEL, taxasTroca,
@@ -2225,7 +2227,7 @@ function TecnicaMotorEditor({ efeitos, onChange, pericias, fontesDano = [] }) {
 
                 {/* Prévia do valor, no lugar em que a 2.5.2 a mostra: colada na
                     expressão, não numa linha própria. */}
-                {ef.expr && !exprRuim && (
+                {ef.expr && !exprRuim && ef.valor != null && (
                   <span
                     className={`font-mono text-sm tabular-nums flex-shrink-0 ${ef.ativo ? "text-emerald-300" : "text-slate-600"}`}
                     title={ef.ativo ? undefined : "A condição é falsa agora, então este efeito não entra na conta"}
@@ -2425,10 +2427,39 @@ function FeiticosCard({ draft, derived, addFeitico, removeFeitico, patchFeitico,
     cdBase: derived.feiticos.cdBase,
     modTecnica: derived.modTecnica,
     efeitos: derived.efeitos,
+    efeitosLinhaDano: derived.motorLinhaDano?.efeitos ?? [],
+    contextoDsl: derived.motorLinhaDano?.contexto ?? {},
     habilidades: derived.habilidades?.escolhidas ?? [],
     temEnergiaReversa: Array.isArray(draft.aptidoesAmaldicoadas) && draft.aptidoesAmaldicoadas.includes("energia_reversa"),
     invocacoes: Array.isArray(draft.invocacoes) ? draft.invocacoes : [],
   };
+
+  // `dados_dano_final` pertence a uma linha concreta, por isso o preview do
+  // editor só pode resolvê-lo quando o Passivo aponta para um Feitiço
+  // específico. O alvo geral continua ativo, mas não possui um único número
+  // correto para mostrar.
+  const dadosDanoPorFeitico = Object.fromEntries(
+    lista
+      .filter((f) => f.tipo === "dano")
+      .map((f) => [f.id, calcularFeiticoDano(f, ctx).dadosDanoFinal]),
+  );
+  const efeitosPassivoComPreview = (feitico) =>
+    (derived.passivosEfeitos?.[feitico.id] ?? []).map((efeito) => {
+      if (!efeitoUsaDadosDanoFinal(efeito)) return efeito;
+      const alvo = String(efeito.alvo ?? "");
+      if (!alvo.startsWith("feitico:")) return { ...efeito, valor: null };
+      const dados = dadosDanoPorFeitico[alvo.slice("feitico:".length)];
+      if (!Number.isFinite(dados)) return { ...efeito, valor: null };
+      const contexto = {
+        ...(derived.motorLinhaDano?.contexto ?? {}),
+        [VAR_DADOS_DANO_FINAL]: dados,
+      };
+      return {
+        ...efeito,
+        valor: evalNumberDsl(efeito.expr, contexto, 0),
+        ativo: !efeito.quando || evalNumberDsl(String(efeito.quando), contexto, 0) !== 0,
+      };
+    });
   return (
     <Card title="Feitiços" headerRight={<ContadorHabilidades derived={derived} />}>
       {lista.length === 0 && (
@@ -2444,7 +2475,7 @@ function FeiticosCard({ draft, derived, addFeitico, removeFeitico, patchFeitico,
             feitico={f}
             ctx={ctx}
             nivelMax={nivelMax}
-            efeitosPassivo={derived.passivosEfeitos?.[f.id] ?? []}
+            efeitosPassivo={efeitosPassivoComPreview(f)}
             fontesDano={fontesDano}
             onPatch={(partial) => patchFeitico(f.id, partial)}
             onRemove={() => removeFeitico(f.id)}
