@@ -22,6 +22,8 @@
  *     margemCriticoTR (com `tr`)            → `margemCriticoTR`
  *     manobra (com `manobra`)               → `bonusManobra`
  *     ataque (com `ataque`)                 → `bonusAcerto`
+ *     danoArma                              → `danoBonus` na arma da instância
+ *     acertoArma                            → `acertoArma` na arma da instância
  *     profPericia                           → `proficienciaPericia` (1 Treinado, 2 Mestre)
  *     nivelDano                             → `nivelDano` no Ataque Básico
  *   `quandoProf: N` num efeito de perícia vira a condição "Caso já seja":
@@ -29,9 +31,9 @@
  *
  * ⚠ AINDA SEM CANAL (vivem só no texto `beneficio`, e entram quando o
  * sistema existir): confrontos e
- * contestações de **expansões de domínio** (Domínios 2ª e 4ª), bônus de
- * ataque com **uma arma específica** (Manejo de Arma 2ª, depende do
- * sistema de armas), pontos de vida de **paredes de barreira**, PE
+ * contestações de **expansões de domínio** (Domínios 2ª e 4ª), **efeito
+ * crítico** de grupo de arma e de pugilato (Manejo de Arma 3ª e Luta
+ * Completo), pontos de vida de **paredes de barreira**, PE
  * temporário por cena, dados de vida por descanso.
  *
  * `requisito` por etapa (além da etapa anterior):
@@ -50,6 +52,7 @@
 
 import { AFTY_ATTRS } from "./afty-schema";
 import { AFTY_PERICIAS, catalogoPericiasDaFicha } from "./afty-pericias";
+import { catalogoDoTipo } from "./afty-equipamentos";
 
 // Texto completo da aptidão concedida pelo Treino de Domínios (Completo).
 const MODIFICACAO_COMPLETA =
@@ -333,25 +336,47 @@ export const AFTY_TREINAMENTOS = [
     id: "manejo_arma",
     nome: "Treino de Manejo de Arma",
     // Repetível: cada vez escolhe uma arma diferente ainda não treinada.
+    //
+    // ⚠ O alvo era TEXTO LIVRE até 2026-08-07, porque o sistema de armas não
+    // existia quando a linha foi transcrita. Agora ele é o id de uma arma do
+    // INVENTÁRIO (a mesma chave que a Arma Dedicada usa: o id do catálogo,
+    // não o `uid` da entrada), e é o que faz os bônus caírem na linha de dano
+    // daquela arma em vez de viverem só no texto.
     repetivel: true,
-    alvoTipo: "texto",       // alvo = nome da arma (sistema de armas ainda não existe)
+    alvoTipo: "arma",
     alvoLabel: "Arma",
     resumo:
       "O treino de manejo de arma permite ao feiticeiro se tornar mestre em uma arma específica, elevando seu nível de manejo com ela. Este treinamento pode ser repetido, mas escolhendo uma arma diferente, a qual ainda não tenha sido treinada.",
     etapas: [
+      // "você se torna treinado com ela. Caso já seja, +2 em rolagens de dano."
+      // ⚠ Treino POR ARMA não existe na ficha de criatura: o treino de ataque é
+      // por CATEGORIA (Corpo a Corpo, A Distância, Amaldiçoado) e é de graça,
+      // sem gastar vaga. Então o ramo "caso já seja" é o único que sobra, e a
+      // etapa vale sempre +2 de dano (autor, 2026-08-07).
       { n: 1, focos: 1, requisito: null,
-        beneficio: "Escolha uma arma específica: você se torna treinado com ela. Caso já seja, adicione +2 em rolagens de dano com ela." },
+        beneficio: "Escolha uma arma específica: você se torna treinado com ela. Caso já seja, adicione +2 em rolagens de dano com ela.",
+        efeitos: [{ tipo: "danoArma", valor: 2 }] },
       { n: 2, focos: 1, requisito: null,
-        beneficio: "Você recebe um bônus de +1 em jogadas de ataque com a arma escolhida." },
+        beneficio: "Você recebe um bônus de +1 em jogadas de ataque com a arma escolhida.",
+        efeitos: [{ tipo: "acertoArma", valor: 1 }] },
+      // ⚠ SEM CANAL: efeito de crítico por grupo de arma não existe como
+      // sistema (nem o do pugilato, que o Treino de Luta Completo também
+      // concede). Vive no texto até o dia em que a tabela chegar.
       { n: 3, focos: 1, requisito: null,
         beneficio: "Enquanto estiver manejando a arma escolhida, você recebe acesso ao efeito crítico dela." },
       { n: 4, focos: 2, requisito: null,
-        beneficio: "Você recebe +1 em jogadas de ataque e +2 em rolagens de dano com a arma escolhida." },
+        beneficio: "Você recebe +1 em jogadas de ataque e +2 em rolagens de dano com a arma escolhida.",
+        efeitos: [{ tipo: "acertoArma", valor: 1 }, { tipo: "danoArma", valor: 2 }] },
     ],
     completo: {
       beneficio:
         "Você se torna um mestre no manejo da arma para qual se dedicou a treinar e dominar. Enquanto estiver " +
         "manejando a arma escolhida, ela recebe um Encantamento de ferramenta amaldiçoada adicional.",
+      // Não é canal do Motor: é uma VAGA de encantamento naquela arma, e ela é
+      // LIVRE (autor, 2026-08-07), ou seja, não desce o grau de cálculo como um
+      // encantamento comprado desce. Ver `vagasEncantamentoDeTreino` no fim
+      // deste arquivo e o `vagasLivres` do resolveFerramenta.
+      vagaEncantamento: 1,
     },
   },
 
@@ -532,6 +557,14 @@ function paraCanal(ef, alvoInstancia) {
       return ef.tr ? { canal: "margemCriticoTR", alvo: ef.tr, expr } : null;
     case "ataque":
       return ef.ataque ? { canal: "bonusAcerto", alvo: ef.ataque, expr } : null;
+    // Os dois do Manejo de Arma. O alvo é sempre a ARMA da instância, e é por
+    // isso que eles não têm irmão sem alvo: "com a arma escolhida" não existe
+    // sem a arma. `acertoArma` é o Acerto de UMA linha de dano, e não o da
+    // jogada de ataque inteira (que é o `bonusAcerto` logo acima).
+    case "danoArma":
+      return alvoInstancia ? { canal: "danoBonus", alvo: alvoInstancia, expr } : null;
+    case "acertoArma":
+      return alvoInstancia ? { canal: "acertoArma", alvo: alvoInstancia, expr } : null;
     // Nível de Dano soma no ND, e só no cálculo de dano. "Desarmados" é o
     // Ataque Básico, que engloba Desarmado, Faixas e Manoplas.
     case "nivelDano":
@@ -557,15 +590,24 @@ function paraCanal(ef, alvoInstancia) {
  * ignorado, passou a aplicar de verdade no atributo escolhido.
  */
 /**
- * Rótulo legível do alvo de uma instância repetível. Atributo e Perícia saem do
- * catálogo (com acento e maiúscula), e o texto livre do Manejo de Arma ganha ao
- * menos a inicial maiúscula. É o que aparece no nome do treino, tanto na aba de
- * Interlúdios quanto no hover de fontes de um valor.
+ * Rótulo legível do alvo de uma instância repetível. Atributo, Perícia e Arma
+ * saem do catálogo (com acento e maiúscula), e um alvo que não está em catálogo
+ * nenhum ganha ao menos a inicial maiúscula. É o que aparece no nome do treino,
+ * tanto na aba de Interlúdios quanto no hover de fontes de um valor.
+ *
+ * ⚠ O fallback do Manejo de Arma cobre DOIS casos: a ficha antiga, gravada
+ * quando o alvo era texto livre ("Katana" digitado à mão), e a arma custom que
+ * o jogador apagou depois de treinar. Nos dois o treino segue na aba, com o que
+ * está gravado, em vez de sumir.
  */
-export function rotuloAlvo(linha, alvo, pericias = AFTY_PERICIAS) {
+export function rotuloAlvo(linha, alvo, pericias = AFTY_PERICIAS, armas = null) {
   if (!alvo) return "";
   if (linha?.alvoTipo === "atributo") return AFTY_ATTRS.find((a) => a.key === alvo)?.label ?? alvo;
   if (linha?.alvoTipo === "pericia") return pericias.find((p) => p.id === alvo)?.nome ?? alvo;
+  if (linha?.alvoTipo === "arma") {
+    const achada = (armas ?? catalogoDoTipo("arma")).find((a) => a.id === alvo);
+    if (achada) return achada.nome;
+  }
   const s = String(alvo);
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
@@ -586,6 +628,7 @@ export const treinamentosDaOrigem = (origemId) =>
 export function efeitosDeTreino(creature) {
   const origemId = creature?.core?.origem?.id;
   const pericias = catalogoPericiasDaFicha(creature);
+  const armas = catalogoDoTipo("arma", creature);
   const prog = normalizeTreinamentos(creature?.treinamentos);
   const out = [];
   const add = (efeitos, linha, alvo) => {
@@ -595,7 +638,7 @@ export function efeitosDeTreino(creature) {
       out.push({
         ...conv,
         origem: linha.id,
-        nome: alvo && linha.repetivel ? `${linha.nome} (${rotuloAlvo(linha, alvo, pericias)})` : linha.nome,
+        nome: alvo && linha.repetivel ? `${linha.nome} (${rotuloAlvo(linha, alvo, pericias, armas)})` : linha.nome,
       });
     }
   };
@@ -611,6 +654,38 @@ export function efeitosDeTreino(creature) {
       const p = clampProg(inst.progresso);
       for (const et of linha.etapas) if (et.n <= p) add(et.efeitos, linha, inst.alvo);
       if (p >= ETAPAS_POR_LINHA) add(linha.completo?.efeitos, linha, inst.alvo);
+    }
+  }
+  return out;
+}
+
+/**
+ * Vagas de Encantamento que os Treinamentos concedem, por ARMA:
+ * `{ [armaId]: n }`. Hoje só o Completo do Treino de Manejo de Arma concede,
+ * uma por arma treinada até o fim.
+ *
+ * ⚠ NÃO é efeito de Motor, e por isso não passa pelo `efeitosDeTreino`: o que
+ * ela mexe é o `permitidos` de uma Ferramenta Amaldiçoada, que é resolvido em
+ * afty-equipamentos.js bem antes de o Motor existir. A vaga é LIVRE: o
+ * encantamento posto nela não desce o grau de cálculo (autor, 2026-08-07), o
+ * que preserva o Acerto e o Dano Fixo do grau real da arma.
+ *
+ * Lê a ficha CRUA de propósito, como o `resolveArmasDedicadas` faz: o
+ * deriveAfty precisa deste número antes de resolver o equipamento, que é o
+ * primeiro passo dele.
+ */
+export function vagasEncantamentoDeTreino(creature) {
+  const origemId = creature?.core?.origem?.id;
+  const prog = normalizeTreinamentos(creature?.treinamentos);
+  const out = {};
+  for (const [id, val] of Object.entries(prog)) {
+    const linha = BY_ID[id];
+    const vaga = linha?.completo?.vagaEncantamento ?? 0;
+    if (!vaga || !linha.repetivel || !Array.isArray(val)) continue;
+    if (!treinoDisponivel(linha, origemId)) continue;
+    for (const inst of val) {
+      if (clampProg(inst.progresso) < ETAPAS_POR_LINHA) continue;
+      out[inst.alvo] = (out[inst.alvo] || 0) + vaga;
     }
   }
   return out;

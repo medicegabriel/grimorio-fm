@@ -157,6 +157,198 @@ Estado atual do sistema Afty (atualizado 2026-07-17). Leia junto com:
   dano adicional.
 - **Destruição Focada:** não possui forma de ativar seus efeitos no Feitiço de alvo único.
 
+### Treino de Manejo de Arma e Manejo Especial
+
+Duas frentes que dependiam do sistema de armas e ficaram esperando desde a transcrição.
+
+**Canal novo `acertoArma`** (alvo `fonteDano`). O `bonusAcerto` mira a JOGADA de ataque inteira
+(Corpo a Corpo, A Distância, Amaldiçoado), então "bônus com a arma escolhida" vazava para todas as
+armas da mesma categoria. O canal novo soma na LINHA DE DANO, que é onde cada arma fecha o Acerto
+dela, e aceita os escopos de arma (`arma`, `grupo:espada`, `prop:pesada`). Mesmo nome do
+pseudo-canal dos encantamentos, que resolve antes do Motor e chega como `acertoGrau`.
+
+**Treino de Manejo de Arma:** o alvo deixou de ser texto livre e passou a ser uma arma do
+INVENTÁRIO, pela mesma chave da Arma Dedicada (o id do catálogo, não o `uid` da entrada).
+
+- 1ª etapa → `danoBonus` +2 na arma. Treino POR ARMA não existe na ficha de criatura (o de ataque é
+  por categoria e é de graça, sem gastar vaga), então o ramo "caso já seja" é o único que sobra e a
+  etapa vale sempre (autor, 2026-08-07).
+- 2ª etapa → `acertoArma` +1 na arma.
+- 3ª etapa → **sem canal**: efeito de crítico por grupo de arma não existe como sistema, igual ao
+  crítico de pugilato do Treino de Luta Completo.
+- 4ª etapa → `acertoArma` +1 e `danoBonus` +2 na arma.
+- Completo → uma **vaga LIVRE de encantamento** naquela arma. Livre significa que o encantamento
+  posto nela NÃO desce o grau de cálculo (autor, 2026-08-07), então a arma não perde Acerto nem
+  Dano Fixo do Grau. Sai por `vagasEncantamentoDeTreino`, que não é canal de Motor: o que ela mexe é
+  o `permitidos` do `resolveFerramenta`, resolvido antes de o Motor existir.
+
+**Manejo Especial (Combatente 6°):** ganhou escolha aninhada com o catálogo de Encantamentos de
+Arma como pool ("propriedade de ferramenta amaldiçoada" é um Encantamento). O pool fica no card da
+habilidade, e não na linha de dano como na Arma Dedicada, porque a escolha aqui NÃO é de uma arma:
+vale para todas as equipadas.
+
+- O encantamento é **concedido**: não entra no `fa.encantamentos`, não consome vaga e não desce o
+  grau de cálculo.
+- Vale para arma SEM Ferramenta Amaldiçoada também, e nesse caso o `grau` da expressão é 0.
+- O "se possível" do texto é o pré-requisito conferido ARMA A ARMA (Afiada não pega num martelo,
+  Cano Alongado não pega num corpo a corpo, Poderosa só onde já houver Cruel), mais a exclusão
+  mútua. A arma que não atende simplesmente não recebe, sem aviso.
+- A arma que já COMPROU aquele encantamento não o ganha de novo.
+- Efeito que mira o ITEM (dano, crítico, acerto daquela arma) entra uma vez por arma. Efeito do
+  PORTADOR (Canalizadora +2 CD, Balanceada +2 manobras, Otimizada +2 iniciativa) entra UMA VEZ SÓ:
+  a propriedade é uma, e manejar três armas não a triplica.
+
+**Fica de fora, e é dívida antiga:** encantamento com `alvoItem` numa arma do grupo pugilato
+(Faixas, Manoplas, Soco Inglês) é perdido. Elas não viram linha de dano própria, são o Ataque
+Básico, e o alvo `arm_manoplas` não existe em escopo nenhum. Vale para o caminho comprado também,
+não só para o Manejo Especial.
+
+**Ficha legada:** um Treino de Manejo de Arma gravado com o alvo em texto ("Katana" digitado à mão)
+continua aparecendo na aba de Interlúdios com o texto dele e sem conceder nada, até ser apagado e
+refeito apontando para a arma. Não quebra e não some.
+
+### Novo Estilo da Sombra (Sem Técnica)
+
+Sistema novo em `afty-estilo-sombras.js`, card `EstiloSombrasCard` na aba Habilidades. Substituiu o
+`SubsistemaPendente` que estava lá desde o começo. Sobrou só um placeholder: as Habilidades
+Marciais do Restringido.
+
+**Porta de entrada:** ND 4, junto do Domínio Simples (`ESTILO_ND_MINIMO`). Abaixo disso o card
+aparece TRANCADO, e não escondido.
+
+**Orçamento (autor, 2026-08-07):** *"Consome o Contador de Habilidades. E Talentos e coisas do
+gênero que aumentam isso, fazem que nem Afinidade com Técnica com Feitiços, e só aumentam o
+contador de habilidades para Estilos."* Ou seja, a Técnica de Estilo **é um Feitiço** para efeito de
+orçamento: gasta o contador único da aba e consome primeiro as vagas exclusivas do canal
+`vagasFeitico`. O `orcamentoHabilidades` ganhou o campo `estilos`, ao lado de `feiticos`.
+
+⚠ **Consequência assumida:** a progressão por ND do livro ("duas no 4°, mais uma nos 7, 10, 13, 16,
+19 e a cada 3 depois") NÃO virou orçamento. Teve o mesmo destino que a progressão por ND dos
+Feitiços, substituída pelo contador único em 2026-07-27. Do texto sobra o ND 4 como porta.
+
+**Dois tipos de Técnica de Estilo:**
+
+| Tipo | O que é |
+|---|---|
+| `modificacao` | Modificação do Domínio Simples. Tabela FECHADA de 5 efeitos, orçada pelo Nível de Aptidão em Domínio. |
+| `especial` | Texto livre mais o Motor completo, com Passiva/Ativa por linha. É onde entram as Aptidões Amaldiçoadas incorporadas. |
+
+**A tabela de Modificação, e o que cada linha liga:**
+
+| Efeito | Canal | Repetição |
+|---|---|---|
+| Ataque com Gatilho | **nenhum** (ataque extra por rodada não é stat de ficha) | +1 ataque |
+| Aumento de Defesa | `defesa` = `piso(maestria / 2)` | máx. 2, e a 2ª estende aos aliados sem somar na sua Defesa |
+| Bônus de Acerto | `bonusAcerto` = `piso(maestria / 2) * n` | +metade da Maestria por vez (autor, 2026-08-07: o livro só diz "aumentando o bônus") |
+| Dano Adicional | `nivelDano` = `2 * n` | +2 níveis por vez |
+| Efeito Especial | Motor livre | abre o editor dentro da Modificação |
+
+⚠ A repetição vira **uma linha com o valor já multiplicado**, e não N linhas iguais. N linhas
+cairiam na mesma chave do pool exclusivo e só a maior valeria, comendo as repetições pagas.
+
+**Pool exclusivo:** nasceu a SEXTA família, `estiloSombra` (autor, 2026-08-07). O Estilo é o Feitiço
+Auxiliar do Sem Técnica: sem entrar no pool, seria a única origem cujo bônus escrito à mão soma por
+cima de tudo. Vale para os dois tipos, inclusive os efeitos de tabela. Testado: duas Modificações
+com Aumento de Defesa rendem um só, e o Estilo disputa de igual para igual com a Habilidade Única.
+
+**Bancada:** cada Modificação ganha um interruptor próprio nos `estadosExtras` (os efeitos dela só
+valem "enquanto o Domínio Simples estiver ativo"), e a Especial ganha um quando tem linha marcada
+como ativa. Mesmo caminho da Habilidade Única de Ferramenta, que o comentário do `resolveCombate` já
+antecipava.
+
+**Ficha Final:** grupo próprio "Técnicas de Estilo" na aba Habilidades, entre Passivos e Talentos.
+Sai do resolvido, não da ficha crua: quem perdeu o acesso não vê a Técnica na tela de jogo.
+
+**Fica no texto, sem canal:** Ataque com Gatilho (quantidade de ataques), a extensão do Aumento de
+Defesa aos aliados (efeito no outro não tem canal) e tudo que a Técnica Especial descrever fora do
+Motor.
+
+### Aptidão CONCEDIDA por nome, e o Domínio Simples que faltava
+
+Relatado pelo autor logo depois: *"A Origem Sem Técnica não está fornecendo a Aptidão Domínio
+Simples."* Estava certo, e eram **três** travas ao mesmo tempo:
+
+1. `sem_tecnica` não tinha `vagasAptidao` nenhuma em `ORIGEM_EFEITOS`, então o orçamento de Aptidões
+   do Sem Técnica era **zero** e marcar qualquer uma já mostrava `1 / 0` em vermelho.
+2. O Domínio Simples pede **BAR 1 e Nível 5**, e a origem o entrega no **Nível 4** sem exigir
+   Barreira nenhuma. O `AptidaoCard` travava o botão.
+3. Não existia caminho para conceder uma aptidão **por nome**. A convenção até aqui era sempre vaga
+   (`vagasAptidao`) mais escolha do jogador, o que não serve para uma regra que nomeia a aptidão.
+
+**Caminho novo: `concedeAptidoes` na característica de origem.**
+
+```js
+concedeAptidoes: [{ id: "dominio_simples", ndMin: 4 }]
+```
+
+Resolvido por `aptidoesConcedidasPelaOrigem(creature, nd)`, que varre `caracteristicasEfetivas`.
+A aptidão concedida:
+
+- entra na ficha sozinha, marcada e **travada** (não dá para desmarcar);
+- **ignora os pré-requisitos dela mesma**, porque quem concede pelo nome não está qualificando a
+  criatura, está dando;
+- **não gasta orçamento**. O contador da aba passou a medir só o que foi escolhido à mão, e a
+  concedida aparece ao lado como `+1` em verde, mesma leitura da faixa concedida em Perícias;
+- **conta para os requisitos de terceiros**. Testado: ela satisfaz o requisito cruzado de Anular
+  Técnica, que pede Domínio Simples.
+
+⚠ **Fora do Motor**, e pelo mesmo motivo do `resolveOrigemAttrBonus`: a lista de aptidões precisa
+estar fechada ANTES de `coletarEfeitosAptidao` rodar, e um canal chegaria tarde demais, deixando a
+aptidão na ficha sem os efeitos dela.
+
+**Efeito colateral bom:** o `deriveAfty` lia `creature.aptidoesAmaldicoadas` cru em **oito** lugares
+(Motor, Expansão de Domínio, Cura, bancada, `tem_*` do DSL, Feitiços, Preview). Todos passaram a ler
+um `aptidoesIds` único, resolvido uma vez no topo, com a trava do `semEnergia` já aplicada. Antes,
+qualquer leitor novo que esquecesse o `semEnergia` daria aptidão a um Restringido em silêncio.
+
+O Gêmeo que copiar o Empenho Implacável em Verdadeiras Origens leva a concessão junto, porque
+`caracteristicaCopiada` já entra em `caracteristicasEfetivas`.
+
+### Texto rico no Funcionamento Básico
+
+Sistema novo em `afty-texto-rico.js`, ligado no campo Funcionamento Básico. O autor está escrevendo
+um texto longo e pediu formatação para *"destacar os Títulos deixando eles em Negrito para me
+achar"*, mais tabelas.
+
+**Marcação, e não editor rico.** Um `contentEditable` guardaria HTML na ficha, e a ficha viaja:
+localStorage, JSON de exportação e Ficha Final (que ainda aceita CSS do usuário). HTML gravado seria
+uma porta de injeção em três lugares de uma vez. Com marcação o campo continua sendo uma `string`,
+as fichas antigas seguem válidas, e o renderizador devolve **nós React**, nunca
+`dangerouslySetInnerHTML`.
+
+Sintaxe (subconjunto do Markdown):
+
+| Marcação | Resultado |
+|---|---|
+| `**x**` `*x*` `__x__` `~~x~~` | negrito, itálico, sublinhado, riscado |
+| `# x` / `## x` | título e subtítulo, no começo da linha |
+| `\| a \| b \|` + `\| --- \| --- \|` | tabela, com `:---:` e `---:` para alinhar |
+| `\*` e `\|` | o caractere literal |
+
+Barra com **B I U S · H1 H2 Tabela · 👁**, mais `Ctrl+B/I/U`. Os botões escrevem a marcação e
+devolvem o cursor ao lugar, e clicar de novo DESFAZ. O olho alterna entre editar e ver formatado.
+
+**Três decisões que evitam falso positivo:**
+
+1. **O escopo de um marcador é a LINHA.** Um `*` solto não pode italizar meio documento até achar
+   outro cinco linhas abaixo, então `dano 3 * 4 por turno` sai intacto.
+2. **Título só vale no COMEÇO da linha.** `gasta 3 # de energia` é texto.
+3. **Tabela exige a linha separadora** logo abaixo do cabeçalho. Sem ela, `Reação | Ação Bônus`
+   segue sendo uma frase.
+
+⚠ O modelo do parser é de **blocos** (`vazio`, `titulo`, `texto`, `tabela`), e não de linhas soltas:
+tabela ocupa várias linhas de origem e vira um elemento só.
+
+⚠ **O Funcionamento Básico não é exibido em lugar nenhum além do editor.** `tecnicaDescricao` só
+existe no schema e nesse campo: não aparece no Preview nem na Ficha Final. A formatação, hoje, só se
+vê pelo botão de prévia. Levar o texto para a Ficha Final é o passo que fecha isto, e o
+`TextoRico`/`parseTextoRico` já estão prontos para ser reusados lá.
+
+⚠ **CANCELADO a pedido do autor:** trocar o `textarea` por uma superfície que mostre o negrito
+enquanto se digita. As duas saídas eram um overlay (quebra, porque negrito muda a largura do glifo e
+o cursor sai do lugar) ou `contentEditable` (cursor, colar e desfazer viram código nosso). O botão
+de prévia resolveu o caso de uso.
+
 ---
 
 ## 🆕 PENDÊNCIAS DE UI E IMPLEMENTAÇÃO (2026-08-06)
@@ -1581,7 +1773,11 @@ Potencial Físico, Resistência, **Manejo de Arma, Atributo, Perícia** (as 3 re
 **Manejo de Arma, Atributo e Perícia** podem ser pegas várias vezes, **uma por alvo distinto**
 (não repete o mesmo alvo). Escolha do alvo:
 - `alvoTipo: "atributo"` → dropdown dos 6 atributos (Treino de Atributo).
-- `alvoTipo: "texto"` → campo livre (Perícia e Arma, porque esses catálogos não existem).
+- `alvoTipo: "pericia"` → dropdown do catálogo de perícias da ficha (Treino de Perícia).
+- `alvoTipo: "arma"` → dropdown das armas do INVENTÁRIO (Treino de Manejo de Arma, desde
+  2026-08-07). Vale a arma carregada, não só a equipada: treinar não é empunhar.
+- `alvoTipo: "texto"` → campo livre. Nenhuma linha usa mais, e o caminho fica para uma linha nova
+  nascer sem catálogo.
 
 Com 0 instâncias a linha mostra um chip "Repetível" e uma **prévia consultável** das etapas +
 Completo em modo `readOnly` (sem botões), para ler a regra sem ativar.

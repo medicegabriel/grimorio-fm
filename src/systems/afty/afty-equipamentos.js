@@ -1457,7 +1457,7 @@ const listaEntradas = (creature) => {
  * cargas (= BT) e a habilidade única. `bt` é o bônus de treinamento do
  * portador, de onde saem as cargas.
  */
-export function resolveFerramenta(entrada, def, bt = 2, ctxBase = null) {
+export function resolveFerramenta(entrada, def, bt = 2, ctxBase = null, vagasLivres = 0) {
   const fa = entrada?.fa;
   if (!fa || !FA_TIPOS_EQUIP.includes(entrada?.tipo)) return null;
 
@@ -1465,11 +1465,17 @@ export function resolveFerramenta(entrada, def, bt = 2, ctxBase = null) {
   const grauValue = fa.grau ?? "quarto";
   const grauMeta = AFTY_GRAUS.find((g) => g.value === grauValue) ?? AFTY_GRAUS[0];
   const escolhidos = Array.isArray(fa.encantamentos) ? fa.encantamentos : [];
-  const permitidos = faEncantamentosPermitidos(tipo, grauValue);
+  // Vaga LIVRE: encantamento a mais que a arma pode ter E que não cobra o grau
+  // (Completo do Treino de Manejo de Arma). Ela soma no permitido e sai da
+  // conta da redução, que é o que significa "não perder Acerto e Dano Fixo do
+  // Grau" (autor, 2026-08-07).
+  const livres = Math.max(0, Math.trunc(Number(vagasLivres) || 0));
+  const permitidos = faEncantamentosPermitidos(tipo, grauValue) + livres;
 
   // Grau PARA CÁLCULO: cada encantamento escolhido desce um degrau (ver
-  // grauRankCalculo). O `permitidos` acima segue no grau REAL, de propósito.
-  const rankCalculo = grauRankCalculo(grauValue, escolhidos.length);
+  // grauRankCalculo), fora os que ocupam vaga livre. O `permitidos` acima segue
+  // no grau REAL, de propósito.
+  const rankCalculo = grauRankCalculo(grauValue, Math.max(0, escolhidos.length - livres));
   const grauCalculo = grauDoRank(rankCalculo);
 
   // Os três benefícios de grau são o próprio rank: +1 por degrau. Bate com as
@@ -1584,6 +1590,7 @@ export function resolveFerramenta(entrada, def, bt = 2, ctxBase = null) {
     penalidade,
     reducaoPenalidade,
     permitidos,
+    vagasLivres: livres,
     escolhidos,
     encantamentos,
     excedeu: escolhidos.length > permitidos,
@@ -1608,8 +1615,19 @@ export function resolveFerramenta(entrada, def, bt = 2, ctxBase = null) {
  * resolvida aqui, ela usaria um modificador desatualizado. Então o motor
  * chama esta função primeiro, fecha os atributos com o bônus de item, e
  * só então chama resolveCarga com o modificador final.
+ *
+ * `opcoes` traz o que OUTROS sistemas concedem ao equipamento, e chega pronto
+ * do deriveAfty porque este resolvedor roda antes de tudo:
+ *   vagasEncantamento  { [armaId]: n } — vagas LIVRES de encantamento naquela
+ *                       arma (Completo do Treino de Manejo de Arma). Livre =
+ *                       não desce o grau de cálculo.
+ *   encantamentosExtras [encId] — encantamentos CONCEDIDOS a toda arma
+ *                       equipada (Manejo Especial, Combatente 6°), também sem
+ *                       custo de grau.
  */
-export function resolveEquipamentos(creature, bt = 2) {
+export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
+  const vagasEncantamento = opcoes.vagasEncantamento ?? {};
+  const encantamentosExtras = Array.isArray(opcoes.encantamentosExtras) ? opcoes.encantamentosExtras : [];
   const entradas = [];
   const custoGasto = { 1: 0, 2: 0, 3: 0, 4: 0 };
   const attrBonus = { forca: 0, destreza: 0, constituicao: 0, inteligencia: 0, sabedoria: 0, presenca: 0 };
@@ -1633,6 +1651,11 @@ export function resolveEquipamentos(creature, bt = 2) {
   // Iniciativa e Dano, que não cabiam nos sete escalares de antes. Não levam
   // `exclusivo`: encantamento soma normal, não é fonte do pool exclusivo.
   const efeitosEncantamento = [];
+  // Manejo Especial: quais bônus DO PORTADOR já foram emitidos. A propriedade
+  // é UMA, concedida a todas as armas de uma vez, então "enquanto empunhar a
+  // arma, sua CD aumenta em 2" não triplica por manejar três armas. O que mira
+  // o ITEM (dano, crítico, acerto daquela arma) entra por arma, normalmente.
+  const globaisConcedidos = new Set();
 
   // Contexto da DSL dos efeitos de Ferramenta (Motor de Automação).
   const ctxBase = dslEquipCtxBase(creature, bt);
@@ -1653,8 +1676,9 @@ export function resolveEquipamentos(creature, bt = 2) {
     espacosUsados += espacosUn * qtd;
     if (custoUn >= 1 && custoUn <= 4) custoGasto[custoUn] += qtd;
 
-    // Ferramenta Amaldiçoada da entrada (se houver e o tipo permitir).
-    const fa = resolveFerramenta(e, def, bt, ctxBase);
+    // Ferramenta Amaldiçoada da entrada (se houver e o tipo permitir). As vagas
+    // livres são por ARMA do catálogo, a mesma chave que a Arma Dedicada usa.
+    const fa = resolveFerramenta(e, def, bt, ctxBase, vagasEncantamento[def.id] ?? 0);
 
     const equipado = !!e?.equipado;
     if (equipado) {
@@ -1749,6 +1773,51 @@ export function resolveEquipamentos(creature, bt = 2) {
           origem: e.uid,
           nome: `${def.nome} (${ex.origem})`,
         });
+      }
+      // ---------- Manejo Especial (Combatente 6°) ----------
+      // "uma propriedade de ferramenta amaldiçoada aplicada em toda arma que
+      // você estiver manejando, se possível." O encantamento é CONCEDIDO: não
+      // entra no `fa.encantamentos`, não consome vaga e não desce o grau de
+      // cálculo, então a arma não perde Acerto nem Dano Fixo do Grau.
+      //
+      // Vale para arma SEM Ferramenta Amaldiçoada também (o texto diz "toda
+      // arma"), e nesse caso o `grau` da expressão é 0.
+      if (e.tipo === "arma" && encantamentosExtras.length) {
+        const jaNaArma = fa?.escolhidos ?? [];
+        const ctxItem = { ...ctxBase, ...dslItemVars(def, fa?.rankCalculo ?? 0) };
+        for (const encId of encantamentosExtras) {
+          const enc = getEncantamento(encId);
+          // A arma que já comprou o encantamento não o ganha duas vezes.
+          if (!enc || jaNaArma.includes(encId)) continue;
+          const reqs = (enc.requisitos ?? []).map((r) => avaliarRequisitoEncantamento(
+            r, { def, grauValue: fa?.grau ?? null, escolhidos: jaNaArma, selfId: encId },
+          ));
+          // O "se possível" do texto: a arma que não atende ao pré-requisito
+          // (Afiada num martelo, Cano Alongado num corpo a corpo) simplesmente
+          // não recebe a propriedade, sem aviso.
+          if (!reqs.every((r) => r.ok)) continue;
+          if ((enc.exclusivoCom ?? []).some((x) => jaNaArma.includes(x))) continue;
+          for (const ef of enc.efeitos ?? []) {
+            const valor = evalNumber(ef.expr, ctxItem);
+            if (!valor) continue;
+            // `acertoArma` é canal de Motor com alvo de fonte de dano, então
+            // ele mira o item como qualquer `alvoItem`. Aqui ele NÃO é o
+            // pseudo-canal do caminho comprado, que resolve dentro do `fa`.
+            const doItem = !!ef.alvoItem || ef.canal === "acertoArma";
+            const chave = `${encId}|${ef.canal}|${ef.alvo ?? ""}`;
+            if (!doItem) {
+              if (globaisConcedidos.has(chave)) continue;
+              globaisConcedidos.add(chave);
+            }
+            efeitosEncantamento.push({
+              canal: ef.canal,
+              ...(doItem ? { alvo: def.id } : ef.alvo ? { alvo: ef.alvo } : {}),
+              expr: String(valor),
+              origem: e.uid,
+              nome: `${enc.nome} (Manejo Especial)`,
+            });
+          }
+        }
       }
     }
 

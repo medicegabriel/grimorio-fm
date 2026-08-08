@@ -522,6 +522,17 @@ export const AFTY_ORIGENS_CATALOG = [
           "Para compensar pela falta de uma técnica, você se empenha de maneira implacável, sempre buscando " +
           "evoluir na dedicação e no treino. Além disso, no 4° nível, você recebe acesso ao Novo Estilo da " +
           "Sombra e, por meio do funcionamento básico deste, recebe a aptidão amaldiçoada Domínio Simples.",
+        // Aptidão Amaldiçoada CONCEDIDA por nome, e não vaga para escolher.
+        //
+        // ⚠ Ela IGNORA os pré-requisitos da própria aptidão, de propósito: o
+        // Domínio Simples pede BAR 1 e Nível 5, e a origem o entrega no 4 sem
+        // pedir Barreira nenhuma. Quem concede pelo nome não está qualificando a
+        // criatura, está dando. Ver `aptidoesConcedidasPelaOrigem`.
+        //
+        // É o caminho que faltava: até 2026-08-07 esta linha existia só no
+        // texto, e o Sem Técnica não tinha como marcar a aptidão (o requisito
+        // travava, e a origem não dá vaga de Aptidão nenhuma).
+        concedeAptidoes: [{ id: "dominio_simples", ndMin: 4 }],
         niveis: [
           { nd: 1,  texto: "um Talento OU Aptidão Amaldiçoada (escolha)" },
           { nd: 3,  texto: "+1 em 2 perícias e +1 em um tipo de ataque ou TR (escolha)" },
@@ -1111,6 +1122,32 @@ export function caracteristicasEfetivas(creature) {
     ]
     : proprias;
   return [...base, ...caracteristicaCopiada(creature)];
+}
+
+/**
+ * As Aptidões Amaldiçoadas que a ORIGEM concede POR NOME, já filtradas pelo ND.
+ *
+ * ⚠ Diferente da VAGA (`vagasAptidao`), que é orçamento e o jogador gasta onde
+ * quiser. Aqui a regra nomeia a aptidão, então não há escolha: ela entra na
+ * ficha sozinha, de graça, e IGNORA os pré-requisitos dela mesma. Hoje só o
+ * Empenho Implacável do Sem Técnica usa (Domínio Simples no ND 4, sem os BAR 1
+ * e Nível 5 que a aptidão pediria).
+ *
+ * ⚠ FORA DO MOTOR, e é o mesmo motivo do `resolveOrigemAttrBonus`: a lista de
+ * aptidões precisa estar fechada ANTES de o `coletarEfeitosAptidao` rodar, e o
+ * Motor só resolve depois. Um canal aqui chegaria tarde demais e a aptidão
+ * concedida entraria na ficha sem os efeitos dela.
+ */
+export function aptidoesConcedidasPelaOrigem(creature, nd = 1) {
+  const nivel = Math.max(1, Math.trunc(Number(nd) || 1));
+  const out = [];
+  for (const c of caracteristicasEfetivas(creature)) {
+    for (const a of c.concedeAptidoes ?? []) {
+      if (!a?.id || nivel < (a.ndMin ?? 1) || out.includes(a.id)) continue;
+      out.push(a.id);
+    }
+  }
+  return out;
 }
 
 /**

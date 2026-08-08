@@ -263,6 +263,10 @@ export function createBlankAfty() {
     // afty-feiticos.js computa dano/alcance/custo/CD. Variações de Liberação
     // (variacaoDe apontando outro feitiço) não contam no orçamento.
     feiticos: [],               // [ feiticoCriado ] — ver afty-feiticos.js
+    // Técnicas de Estilo do Novo Estilo da Sombra, o subsistema do SEM TÉCNICA
+    // que ocupa o lugar dos Feitiços. Destrava no ND 4 e gasta o MESMO contador
+    // que Feitiço e Habilidade Geral gastam. Ver afty-estilo-sombras.js.
+    estilosSombra: [],          // [{ id, nome, tipo, descricao, efeitosModificacao, efeitos }]
     // Habilidades Gerais: qualquer origem pode pegar, e gastam o MESMO
     // contador dos Feitiços (dobro da Maestria + patamar, ver afty-gerais.js).
     // Lista COM repetição, igual a melhoriasSuperiores: cada entrada é uma pega.

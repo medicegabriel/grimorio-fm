@@ -137,6 +137,15 @@ export const EFEITO_CANAIS = [
   { id: "margemCriticoTR", label: "Crítico em Resistência", alvo: "tr", nota: "quanto a margem DIMINUI, com piso de 2. Irmão do margemCritico do ataque" },
   { id: "proficienciaTR", label: "Treino em Resistência", alvo: "tr", nota: "irmão de proficienciaPericia, mesmas regras (1 Treinado, 2 Mestre, nunca rebaixa)" },
   { id: "bonusAcerto",   label: "Acerto",                alvo: "ataque" },
+  // Irmão do `bonusAcerto` para quando o bônus é de UMA arma, e não da jogada
+  // de ataque inteira ("+1 em jogadas de ataque com a arma escolhida", Treino
+  // de Manejo de Arma). `bonusAcerto` mira a categoria (Corpo a Corpo, A
+  // Distância), e usá-lo faria o bônus vazar para as outras armas da mesma
+  // categoria. Este soma na LINHA DE DANO, que é onde cada arma fecha o Acerto
+  // dela. Mesmo nome do pseudo-canal dos encantamentos em afty-equipamentos.js,
+  // que resolve antes do Motor e chega como `acertoGrau`: a semântica é a
+  // mesma, só o caminho é outro.
+  { id: "acertoArma",    label: "Acerto (nesta Arma)",   alvo: "fonteDano", nota: "só quando manejando aquela fonte. Alvo `basico` ou o id da arma, e aceita os escopos (`arma`, `grupo:espada`, `prop:pesada`). Sem alvo vale para todas as linhas" },
   { id: "bonusManobra",  label: "Manobra",               alvo: "manobra", nota: "Agarrar, Derrubar, Desarmar e Empurrar. Sem alvo vale para as quatro" },
   { id: "resistirManobra", label: "Resistir a Manobra",  alvo: "manobra" },
   { id: "distanciaEmpurrao", label: "Empurrão",          nota: "em metros, por cima do 1,5 padrão" },
@@ -258,6 +267,12 @@ export const FAMILIAS_EXCLUSIVAS = [
   { id: "shikigamiCaracteristica", label: "Característica de Shikigami", modo: "passiva" },
   { id: "feiticoAuxiliarAtivo",    label: "Feitiço Auxiliar Ativo",      modo: "ativa" },
   { id: "shikigamiAcao",           label: "Ação Ativa de Shikigami",     modo: "ativa" },
+  // ⚠ A SEXTA (autor, 2026-08-07). O Novo Estilo da Sombra é o Feitiço Auxiliar
+  // do Sem Técnica: sem entrar no pool, ele seria a única origem cujo bônus
+  // escrito à mão soma por cima de tudo. "ambos" porque o modo é declarado por
+  // linha, como na Habilidade Única, e a Modificação de Domínio Simples é
+  // sempre ativa (só vale com o Domínio no ar).
+  { id: "estiloSombra",            label: "Estilo da Sombra",            modo: "ambos" },
 ];
 
 const FAMILIA_EXCLUSIVA_BY_ID = Object.fromEntries(FAMILIAS_EXCLUSIVAS.map((f) => [f.id, f]));
@@ -302,7 +317,7 @@ const GRUPOS_DE_CANAL = [
   ]],
   ["Defesa", ["defesa", "rdGeral", "rdEspecifico", "rdFisico", "rdAlma", "resParcial"]],
   ["Ataque e Dano", [
-    "cd", "bonusAcerto", "danoBonus", "nivelDano", "dadosDano",
+    "cd", "bonusAcerto", "acertoArma", "danoBonus", "nivelDano", "dadosDano",
     "margemCritico", "ignoraRD", "propMarcial", "finezaAtaque",
   ]],
   // Atributo, limite e nível de trilha: o que a criatura É, em número próprio.

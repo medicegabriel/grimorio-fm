@@ -34,7 +34,7 @@
 
 import { getEspecializacao } from "./afty-especializacoes";
 import { getAptidao } from "./afty-aptidoes";
-import { ARMA_GRUPOS } from "./afty-equipamentos";
+import { ARMA_GRUPOS, ENCANTAMENTOS_ARMA } from "./afty-equipamentos";
 import { AFTY_RESISTENCIAS } from "./afty-schema";
 // Do módulo FOLHA: afty-pericias.js importa afty-efeitos.js, que volta até aqui.
 import { AFTY_PERICIAS } from "./afty-pericias-catalogo";
@@ -49,6 +49,21 @@ import { AFTY_PERICIAS } from "./afty-pericias-catalogo";
  */
 const opcoesDeGrupoArma = (prefixo, descricao) =>
   ARMA_GRUPOS.map((g) => ({ id: `${prefixo}_${g.value}`, nome: g.label, descricao: descricao(g.label) }));
+
+/**
+ * "Propriedade de ferramenta amaldiçoada" do Manejo Especial (Combatente 6°) é
+ * um ENCANTAMENTO DE ARMA, e o pool é o catálogo inteiro deles. O prefixo
+ * `me_` separa o id da escolha do id do encantamento: o primeiro é chave de
+ * escolha aninhada, o segundo é chave do catálogo de equipamento, e eles
+ * viajam por caminhos diferentes.
+ */
+export const MANEJO_ESPECIAL_PREFIXO = "me_";
+const opcoesDeEncantamentoArma = () =>
+  ENCANTAMENTOS_ARMA.map((e) => ({
+    id: `${MANEJO_ESPECIAL_PREFIXO}${e.id}`,
+    nome: e.nome,
+    descricao: e.descricao,
+  }));
 const opcoesDeResistencia = (prefixo, descricao) =>
   AFTY_RESISTENCIAS.map((r) => ({ id: `${prefixo}_${r.value}`, nome: r.label, descricao: descricao(r.label) }));
 
@@ -2248,6 +2263,24 @@ export const AFTY_HABILIDADES = [
       "A maneira a qual você maneja suas armas é única, feita com maestria inerente ao portador. " +
       "Você pode escolher uma propriedade de ferramenta amaldiçoada para ser aplicada em toda " +
       "arma que você estiver manejando, se possível.",
+    // "Propriedade de ferramenta amaldiçoada" = Encantamento de Arma. A escolha
+    // é uma só, e vale para TODA arma equipada, não para uma escolhida: por
+    // isso o pool fica no card da habilidade, e não na linha de dano como na
+    // Arma Dedicada (lá a escolha É de uma arma, aqui não).
+    //
+    // ⚠ "se possível" é o pré-requisito de cada encantamento, conferido ARMA A
+    // ARMA em resolveEquipamentos: Afiada não pega numa arma de impacto e Cano
+    // Alongado não pega numa arma corpo a corpo.
+    //
+    // ⚠ O encantamento concedido é LIVRE (autor, 2026-08-07): ele não entra no
+    // `fa.encantamentos` da arma e não desce o grau de cálculo, então a arma
+    // não perde Acerto nem Dano Fixo do Grau.
+    escolha: {
+      id: "manejo_especial",
+      label: "Propriedade de Ferramenta",
+      niveis: [6],
+      opcoes: opcoesDeEncantamentoArma(),
+    },
     requisitos: [],
   },
   {
@@ -6377,6 +6410,44 @@ export function efeitosArmasDedicadas(dedicadas) {
   for (const id of dedicadas?.escolhidas || []) {
     out.push({ canal: "nivelDano", alvo: id, expr: "1", origem: ARMA_DEDICADA_HABILIDADE, nome });
     out.push({ canal: "propMarcial", alvo: id, expr: "1", origem: ARMA_DEDICADA_HABILIDADE, nome });
+  }
+  return out;
+}
+
+/* ============================================================ */
+/* MANEJO ESPECIAL (Combatente 6°)                               */
+/* ============================================================ */
+/* "Você pode escolher uma propriedade de ferramenta amaldiçoada para ser
+   aplicada em toda arma que você estiver manejando, se possível."
+
+   A propriedade é um ENCANTAMENTO DE ARMA, concedido de graça: ele não ocupa
+   vaga no `fa.encantamentos` e não desce o grau de cálculo (autor,
+   2026-08-07), então a arma mantém o Acerto e o Dano Fixo do grau real. É a
+   diferença entre este e o encantamento comprado, cujo preço É o grau.
+
+   ⚠ Lê a ficha CRUA, e não o `habilidades.escolhidas` resolvido, porque o
+   equipamento é o PRIMEIRO passo do deriveAfty e as habilidades só são
+   resolvidas bem depois. Dá no mesmo: `resolveHabilidades` não filtra a lista
+   por acessibilidade, só deduplica. */
+
+export const MANEJO_ESPECIAL_HABILIDADE = "cmb_manejo_especial";
+
+/**
+ * Os encantamentos que o Manejo Especial concede a toda arma equipada, pelos
+ * ids do CATÁLOGO DE EQUIPAMENTO (sem o prefixo `me_` da escolha).
+ * Lista vazia quando a habilidade não está pega ou nada foi escolhido.
+ */
+export function encantamentosDeManejoEspecial(creature) {
+  const pegas = Array.isArray(creature?.habilidades) ? creature.habilidades : [];
+  if (!pegas.includes(MANEJO_ESPECIAL_HABILIDADE)) return [];
+  const hab = BY_ID[MANEJO_ESPECIAL_HABILIDADE];
+  const validas = new Set((hab?.escolha?.opcoes ?? []).map((o) => o.id));
+  const brutas = creature?.escolhasHabilidade?.[MANEJO_ESPECIAL_HABILIDADE];
+  const out = [];
+  for (const id of Array.isArray(brutas) ? brutas : []) {
+    if (!validas.has(id)) continue;
+    const encId = id.slice(MANEJO_ESPECIAL_PREFIXO.length);
+    if (!out.includes(encId)) out.push(encId);
   }
   return out;
 }

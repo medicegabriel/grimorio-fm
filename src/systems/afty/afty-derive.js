@@ -41,9 +41,9 @@ import {
 import {
   resolveOrigemAttrBonus, resolveDesenvolvimento, resolveEscolhasOrigem,
   limiteAtributoDaOrigem, resolveLimitePoolOrigem, origensQualificadas,
-  fatorSlotsHabilidade,
+  fatorSlotsHabilidade, aptidoesConcedidasPelaOrigem,
 } from "./afty-origens";
-import { efeitosDeTreino } from "./afty-treinamentos";
+import { efeitosDeTreino, vagasEncantamentoDeTreino } from "./afty-treinamentos";
 import { resolveNiveisAptidao, trilhasDaOrigem, AFTY_APTIDOES } from "./afty-aptidoes";
 import {
   efeitosDoDominio, listaDominios, resolveVersao as resolveVersaoDominio,
@@ -55,6 +55,7 @@ import {
   resolveHabilidades, efeitosInvocacaoControlador, getHabilidade, OPCAO_ESCOLHA_NOME,
   AFTY_HABILIDADES,
   resolveArmasDedicadas, efeitosArmasDedicadas, resolveEmpolgacao,
+  encantamentosDeManejoEspecial,
 } from "./afty-habilidades";
 import { resolveTalentos, getTalento, OPCAO_TALENTO_NOME, AFTY_TALENTOS } from "./afty-talentos";
 import {
@@ -66,6 +67,7 @@ import {
   podeSerArmaDedicada, grauDoRank,
 } from "./afty-equipamentos";
 import { nivelMaxFeitico, resumoFeiticos } from "./afty-feiticos";
+import { resolveEstilos, efeitosDoEstilo } from "./afty-estilo-sombras";
 import { resolveTestes, resolveDano, catalogoPericiasDaFicha } from "./afty-pericias";
 import { resolveCura } from "./afty-cura";
 import {
@@ -164,6 +166,25 @@ export function deriveAfty(creature, opcoes = {}) {
   const recursoLabel = semEnergia ? "Estamina" : "Energia";
   const patamar = core.patamar || "comum";
   const nd = Math.max(1, core.nd ?? 1);
+  // ---------- Aptidões Amaldiçoadas EFETIVAS ----------
+  // As escolhidas na aba mais as CONCEDIDAS POR NOME pela origem (o Domínio
+  // Simples do Sem Técnica no ND 4). Fecha aqui em cima porque quase tudo lê
+  // esta lista: o `coletarEfeitosAptidao`, a Expansão de Domínio, a Cura, a
+  // bancada, o `tem_*` do DSL e a UI.
+  //
+  // ⚠ O Restringido zera as duas metades: sem energia amaldiçoada não há
+  // aptidão nenhuma, nem escolhida nem concedida.
+  const aptidoesConcedidas = semEnergia ? [] : aptidoesConcedidasPelaOrigem(creature, nd);
+  const aptidoesEscolhidasFicha = semEnergia || !Array.isArray(creature?.aptidoesAmaldicoadas)
+    ? []
+    : creature.aptidoesAmaldicoadas;
+  // A concedida NÃO duplica quando o jogador também a marcou à mão.
+  const aptidoesIds = [...new Set([...aptidoesEscolhidasFicha, ...aptidoesConcedidas])];
+  // A ficha que o resto do motor enxerga já vem com a concedida dentro, para
+  // nenhum leitor precisar lembrar de somar as duas listas.
+  const creatureComAptidoes = aptidoesConcedidas.length
+    ? { ...creature, aptidoesAmaldicoadas: aptidoesIds }
+    : creature;
   // ⚠ A ficha do criador é sempre montada com a alma ÍNTEGRA (autor,
   // 2026-07-29): o campo "Integridade da Alma" saiu do formulário, porque o
   // Máximo da Alma já diz tudo, e dano na alma é coisa de jogo, não de criação.
@@ -192,7 +213,18 @@ export function deriveAfty(creature, opcoes = {}) {
   // efetivo. A CARGA não sai daqui, porque depende do mod de Força final.
   // BT antecipado só para as Cargas de Encantamento das Ferramentas (= BT).
   const bt = maestria(nd);                                          // Maestria == Treinamento
-  const equip = resolveEquipamentos(creature, bt);
+  // ⚠ Os dois abaixo leem a ficha CRUA, e não os catálogos já resolvidos, e é
+  // por causa desta ordem: o equipamento é o primeiro passo, e Treinamentos e
+  // Habilidades só são resolvidos bem mais abaixo. Nenhum dos dois depende de
+  // stat, então a leitura crua dá o mesmo resultado.
+  //   • Completo do Treino de Manejo de Arma: uma vaga LIVRE de encantamento na
+  //     arma treinada (não desce o grau de cálculo).
+  //   • Manejo Especial (Combatente 6°): um encantamento CONCEDIDO a toda arma
+  //     equipada, também sem custo de grau.
+  const equip = resolveEquipamentos(creature, bt, {
+    vagasEncantamento: vagasEncantamentoDeTreino(creature),
+    encantamentosExtras: encantamentosDeManejoEspecial(creature),
+  });
 
   // Limite EFETIVO por atributo = limite base (20 / poderes) + Desenvolvimento, teto 30.
   // O RESTRINGIDO eleva o limite dos FÍSICOS para 30: "Seu limite de atributo
@@ -467,7 +499,7 @@ export function deriveAfty(creature, opcoes = {}) {
     ...equip.efeitosEncantamento,
     // Aptidões Amaldiçoadas (2026-07-30). As de bancada leem `au` e `cl`, que
     // são variáveis do contexto principal, então caem todas no estágio 2.
-    ...coletarEfeitosAptidao(creature, semEnergia),
+    ...coletarEfeitosAptidao(creatureComAptidoes, semEnergia),
   ];
 
   // Estágio 0b: os canais que ALIMENTAM o contexto principal. Só nível de
@@ -537,9 +569,18 @@ export function deriveAfty(creature, opcoes = {}) {
   // roda ANTES é o pré-contexto, e o domínio não escreve em canal nenhum dele.
   const efeitosDominio = semEnergia ? [] : efeitosDoDominio(creature, {
     dom: aptidao.efetivo?.dom ?? 0,
-    aptidoesEscolhidas: creature?.aptidoesAmaldicoadas ?? [],
+    aptidoesEscolhidas: aptidoesIds,
   });
-  const efeitosComDominio = efeitosDominio.length ? [...efeitosTodos, ...efeitosDominio] : efeitosTodos;
+  // ---------- Novo Estilo da Sombra (Sem Técnica) ----------
+  // Entra na mesma SEGUNDA lista do Domínio, e pelo mesmo motivo: os efeitos de
+  // tabela da Modificação de Domínio Simples são orçados pelo Nível de Aptidão
+  // em Domínio, que só existe a partir daqui.
+  const estiloCtx = { origemId: core?.origem?.id ?? null, nd, dom: aptidao.efetivo?.dom ?? 0 };
+  const estilo = resolveEstilos(creature, estiloCtx);
+  const efeitosEstilo = efeitosDoEstilo(creature, estiloCtx);
+  const efeitosComDominio = (efeitosDominio.length || efeitosEstilo.length)
+    ? [...efeitosTodos, ...efeitosDominio, ...efeitosEstilo]
+    : efeitosTodos;
   // Expressões que leem `dados_dano_final` só podem ser avaliadas quando cada
   // linha de dano já sabe quantos dados vai rolar. Elas não entram no agregado
   // geral e viajam cruas até o calculador de Feitiços.
@@ -548,7 +589,6 @@ export function deriveAfty(creature, opcoes = {}) {
   // Resumo pronto para a aba Habilidades: cada expansão com os números que o
   // card mostra. A UI não recalcula nada, ela só exibe.
   const resumoDominios = (() => {
-    const aptidoesIds = semEnergia ? [] : (creature?.aptidoesAmaldicoadas ?? []);
     const domNivel = aptidao.efetivo?.dom ?? 0;
     const barNivel = aptidao.efetivo?.bar ?? 0;
     const paredesResistentes = aptidoesIds.includes("paredes_resistentes");
@@ -594,19 +634,19 @@ export function deriveAfty(creature, opcoes = {}) {
     // em Grupo soma +2 no teto ("a quantidade máxima de pontos que podem ser
     // gastos aumenta em 2"). Confirmado pelo AppScript do autor (2026-07-30).
     fluxoPER: (() => {
-      const ids = creature?.aptidoesAmaldicoadas ?? [];
       const er = aptidao.efetivo?.er ?? 0;
-      return 1 + (ids.includes("cura_amplificada") ? er : Math.floor(er / 2))
-        + (ids.includes("cura_em_grupo") ? 2 : 0);
+      return 1 + (aptidoesIds.includes("cura_amplificada") ? er : Math.floor(er / 2))
+        + (aptidoesIds.includes("cura_em_grupo") ? 2 : 0);
     })(),
     // Regeneração Corporal (Maldição): "a quantidade máxima de pontos que podem
     // ser gastos passa a ser igual ao seu bônus de treinamento por rodada", que
     // a Regeneração Ampliada dobra. Irmão do fluxoPER, com PE no lugar de PER.
-    regeneracaoPE: (creature?.aptidoesAmaldicoadas ?? []).includes("mal_regeneracao_ampliada")
-      ? 2 * bt : bt,
-    // Um interruptor por Habilidade Única marcada como ativa. Vêm da ficha, e
-    // não do catálogo de estados, porque são instâncias de item.
-    estadosExtras: equip.estadosUnica,
+    regeneracaoPE: aptidoesIds.includes("mal_regeneracao_ampliada") ? 2 * bt : bt,
+    // Interruptores que vêm da FICHA, e não do catálogo de estados, porque são
+    // instâncias: uma por Habilidade Única ativa, e uma por Técnica de Estilo
+    // que precisa de gatilho (toda Modificação de Domínio Simples, mais a
+    // Técnica Especial com linha ativa).
+    estadosExtras: [...equip.estadosUnica, ...estilo.estados],
   });
 
   const montarCtx = (attrs, mods) => buildCriaturaDslContext({
@@ -624,7 +664,7 @@ export function deriveAfty(creature, opcoes = {}) {
     habilidadesEscolhidas: [
       ...habilidades.escolhidas,
       ...(talentosPre.escolhidas ?? []),
-      ...(semEnergia ? [] : (Array.isArray(creature?.aptidoesAmaldicoadas) ? creature.aptidoesAmaldicoadas : [])),
+      ...aptidoesIds,
     ],
     vocabulario: vocabularioDsl,
   });
@@ -766,6 +806,10 @@ export function deriveAfty(creature, opcoes = {}) {
       return {
         canal: e?.canal ?? "", alvo: e?.alvo ?? "", expr,
         quando: e?.quando ?? "", duracao: e?.duracao ?? "permanente",
+        // `modo` só existe nas fontes do pool exclusivo que decidem por LINHA
+        // se o efeito é passivo ou de bancada (Habilidade Única, Técnica de
+        // Estilo Especial). Quem não usa nunca o grava, e ele fica ausente.
+        ...(e?.modo ? { modo: e.modo } : {}),
         // `alvoTipo` diz à UI qual vocabulário oferecer (atributo, perícia, tr...).
         alvoTipo: def?.alvo ?? null,
         nota: def?.nota ?? null,
@@ -778,6 +822,11 @@ export function deriveAfty(creature, opcoes = {}) {
     (Array.isArray(creature?.feiticos) ? creature.feiticos : [])
       .filter((f) => f?.tipo === "passivo")
       .map((f) => [f.id, resolverEfeitosEditaveis(f.efeitosPassivo)]),
+  );
+  // Um mapa por Técnica de Estilo, no mesmo formato: o editor do Motor mostra o
+  // valor e o estado de cada linha escrita à mão.
+  const estiloEfeitos = Object.fromEntries(
+    estilo.linhas.map((l) => [l.id, resolverEfeitosEditaveis(l.efeitos)]),
   );
 
   // Alma: o teto (100 + Melhoria de Alma) e o multiplicador de PV. Sai aqui, e
@@ -876,6 +925,16 @@ export function deriveAfty(creature, opcoes = {}) {
   // (`gerais` já foi resolvido lá em cima, junto dos outros catálogos.)
   const feiticosLista = Array.isArray(creature.feiticos) ? creature.feiticos : [];
   const feiticosGastos = feiticosLista.filter((f) => !f.variacaoDe).length;
+  // ⚠ A Técnica de Estilo gasta o MESMO caixa que o Feitiço (autor,
+  // 2026-08-07): "Consome o Contador de Habilidades. E Talentos e coisas do
+  // gênero que aumentam isso... só aumentam o contador de habilidades para
+  // Estilos." Para efeito de orçamento ela É um Feitiço, inclusive na vaga
+  // exclusiva do canal `vagasFeitico`.
+  //
+  // As duas listas não convivem numa ficha bem montada (o Estilo é do Sem
+  // Técnica, que não tem Feitiço), mas somar é mais honesto que escolher uma:
+  // quem trocou de origem vê o excesso em vez de o excesso sumir calado.
+  const criacoesGastas = feiticosGastos + estilo.gastos;
   // ⚠ O contador comum pode ser MULTIPLICADO pela origem. Só os Gêmeos têm
   // isso hoje: metade com o irmão vivo, uma vez e meia depois da morte dele.
   // Arredonda para baixo, como todo o resto do Afty.
@@ -898,10 +957,10 @@ export function deriveAfty(creature, opcoes = {}) {
   // Gerais". Hoje só a Lendária Dominância em Técnica concede. Os Feitiços
   // gastam PRIMEIRO as exclusivas, e só o que sobrar cai no contador comum.
   const vagasFeitico = canal("vagasFeitico");
-  const feiticosNoExclusivo = Math.min(feiticosGastos, vagasFeitico);
-  const gastosNoComum = (feiticosGastos - feiticosNoExclusivo) + gerais.gastos;
+  const feiticosNoExclusivo = Math.min(criacoesGastas, vagasFeitico);
+  const gastosNoComum = (criacoesGastas - feiticosNoExclusivo) + gerais.gastos;
   const contadorTotal = contadorComum + vagasFeitico;
-  const contadorGastos = feiticosGastos + gerais.gastos;
+  const contadorGastos = criacoesGastas + gerais.gastos;
   const orcamentoHabilidades = {
     total: contadorTotal,
     comum: contadorComum,
@@ -909,6 +968,9 @@ export function deriveAfty(creature, opcoes = {}) {
     exclusivasFeitico: vagasFeitico,
     exclusivasUsadas: feiticosNoExclusivo,
     feiticos: feiticosGastos,
+    // Separado do `feiticos` de propósito: os dois gastam o mesmo caixa, mas o
+    // card que mostra cada número é outro.
+    estilos: estilo.gastos,
     gerais: gerais.gastos,
     gastos: contadorGastos,
     gastosNoComum,
@@ -933,9 +995,7 @@ export function deriveAfty(creature, opcoes = {}) {
       efeitosLinhaDano,
       contextoDsl: ctxTecnica,
       habilidades: habilidades.escolhidas,
-      temEnergiaReversa: !semEnergia
-        && Array.isArray(creature?.aptidoesAmaldicoadas)
-        && creature.aptidoesAmaldicoadas.includes("energia_reversa"),
+      temEnergiaReversa: aptidoesIds.includes("energia_reversa"),
       invocacoes: Array.isArray(creature?.invocacoes) ? creature.invocacoes : [],
     }),
   };
@@ -1003,7 +1063,7 @@ export function deriveAfty(creature, opcoes = {}) {
     efeitos: ef,
     // O `semEnergia` já zera as aptidões, então o Restringido não ganha linha de
     // Energia Reversa por engano.
-    aptidoes: semEnergia ? [] : (Array.isArray(creature?.aptidoesAmaldicoadas) ? creature.aptidoesAmaldicoadas : []),
+    aptidoes: aptidoesIds,
     habilidades: habilidades.escolhidas,
     itens: equip.entradas,
     hp,
@@ -1248,14 +1308,20 @@ export function deriveAfty(creature, opcoes = {}) {
     totalAptidao,               // orçamento de NÍVEIS de aptidão (para no ND 20)
     totalAptidoesAmaldicoadas,  // quantas pode ter (só da Habilidade Geral Aptidão, 0 sem ela)
     aptidao,              // níveis por trilha: { alocado, concedido, efetivo, gastos }
-    // As Aptidões Amaldiçoadas escolhidas, para o `requerAptidao` da bancada
-    // saber quais linhas mostrar. Segue a trava do semEnergia, igual ao motor.
-    aptidoesEscolhidas: semEnergia ? [] : (Array.isArray(creature?.aptidoesAmaldicoadas) ? creature.aptidoesAmaldicoadas : []),
+    // As Aptidões Amaldiçoadas EFETIVAS (escolhidas + concedidas por nome pela
+    // origem), para o `requerAptidao` da bancada saber quais linhas mostrar.
+    // Segue a trava do semEnergia, igual ao motor.
+    aptidoesEscolhidas: aptidoesIds,
+    // Só as CONCEDIDAS, para a aba poder marcá-las como travadas: elas não são
+    // escolha, e não podem ser desmarcadas nem cobrar orçamento.
+    aptidoesConcedidas,
     dominios: resumoDominios,
     // Proficiência RESOLVIDA por perícia (a escolhida mais a concedida pelo
     // Motor). É o que os requisitos de perícia das Aptidões conferem.
     periciaProf: Object.fromEntries((testes.pericias ?? []).map((p) => [p.id, p.prof ?? null])),
     feiticos,             // { nivelMax, gastos, cdBase } — o orçamento é o de baixo
+    estilo,               // Novo Estilo da Sombra: { disponivel, linhas, gastos, orcamentoEfeitos, estados, avisos }
+    estiloEfeitos,        // Motor resolvido por Técnica de Estilo, para o editor mostrar cada linha
     tecnicaEfeitos,       // Funcionamento Básico resolvido, para o editor mostrar o valor de cada linha
     passivosEfeitos,      // Motor resolvido por Feitiço Passivo / Característica
     motorLinhaDano: { efeitos: efeitosLinhaDano, contexto: ctxTecnica },

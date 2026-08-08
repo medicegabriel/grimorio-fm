@@ -44,6 +44,7 @@ export const GRUPOS = [
   { id: "origem", label: "Origem" },
   { id: "especializacao", label: "Habilidades de Especialização" },
   { id: "passivo", label: "Passivos e Características" },
+  { id: "estilo", label: "Técnicas de Estilo" },
   { id: "talento", label: "Talentos" },
   { id: "geral", label: "Habilidades Gerais" },
   { id: "aptidao", label: "Aptidões Amaldiçoadas" },
@@ -174,6 +175,32 @@ export function conteudoDaFicha(creature, derived) {
     }));
   }
 
+  /* ---------- Técnicas de Estilo (Novo Estilo da Sombra) ---------- */
+  // Sai do RESOLVIDO, e não da ficha crua, porque a Técnica gravada por quem
+  // perdeu o acesso (trocou de origem, ou o ND caiu abaixo de 4) não vale nada
+  // e não pode aparecer na tela de jogo como se valesse.
+  if (derived?.estilo?.disponivel) {
+    for (const l of derived.estilo.linhas) {
+      const daTabela = l.efeitosModificacao
+        .filter((e) => e.def)
+        .map((e) => (e.vezes > 1 ? `${e.def.nome} ${e.vezes}×` : e.def.nome));
+      itens.push(item({
+        id: l.id,
+        chave: `estilo:${l.id}`,
+        nome: l.nome,
+        texto: l.descricao ?? "",
+        grupo: "estilo",
+        tags: [
+          l.tipo === "modificacao" ? "Domínio Simples" : "Especial",
+          ...daTabela,
+        ],
+        aviso: l.excedeuEfeitos
+          ? `${l.gastoEfeitos} efeitos, o Nível de Aptidão em Domínio permite ${l.orcamentoEfeitos}`
+          : null,
+      }));
+    }
+  }
+
   /* ---------- Talentos ---------- */
   const mapaTal = derived?.talentos?.escolhas?.mapa ?? {};
   const inacessiveisTal = new Set(derived?.talentos?.inacessiveis ?? []);
@@ -213,6 +240,9 @@ export function conteudoDaFicha(creature, derived) {
 
   /* ---------- Aptidões Amaldiçoadas ---------- */
   const opcoesAptidao = creature?.aptidaoOpcoes ?? {};
+  // As CONCEDIDAS por nome pela origem entram na mesma lista, com uma tag que
+  // as distingue: elas não foram escolhidas e não gastaram vaga.
+  const concedidasOrigem = new Set(derived?.aptidoesConcedidas ?? []);
   for (const id of derived?.aptidoesEscolhidas ?? []) {
     const a = getAptidao(id);
     if (!a) continue;
@@ -224,7 +254,10 @@ export function conteudoDaFicha(creature, derived) {
       nome: a.nome,
       texto: a.descricao ?? "",
       grupo: "aptidao",
-      tags: [getCategoriaAptidao(a.categoria)?.nome].filter(Boolean),
+      tags: [
+        getCategoriaAptidao(a.categoria)?.nome,
+        concedidasOrigem.has(id) ? "Origem" : null,
+      ].filter(Boolean),
       opcoes: escolhida ? [{ id: escolhida.id, nome: escolhida.nome ?? escolhida.label, descricao: null }] : [],
     }));
   }

@@ -381,32 +381,40 @@ export function resolveDano(creature, ctx = {}) {
 
   // Ataque da categoria, já resolvido em resolveTestes. A linha soma o grau da
   // arma por cima disso para fechar o número que o jogador rola.
+  //
+  // `escopos` traz o canal `acertoArma`, que é o Acerto de UMA fonte: o
+  // `bonusAcerto` mira a jogada de ataque inteira, e quem diz "com a arma
+  // escolhida" (Treino de Manejo de Arma) vazaria para as outras armas da mesma
+  // categoria se usasse aquele canal.
   const ataques = Array.isArray(ctx.ataques) ? ctx.ataques : [];
-  const acertoDe = (ataqueId, grauBonus, fontes = []) => {
+  const acertoDe = (ataqueId, grauBonus, escopos, fontes = []) => {
     const atq = ataques.find((a) => a.id === ataqueId);
     if (!atq) return null;
     // As fontes de encantamento saem do total do grau para aparecerem com o
     // nome delas no hover: o resto é o rank, que é a Ferramenta em si.
     const doEncantamento = fontes.reduce((s, f) => s + (f.valor ?? 0), 0);
     const doGrau = grauBonus - doEncantamento;
+    const doMotor = Math.trunc(canal("acertoArma", escopos));
     return {
-      acerto: atq.bonus + grauBonus,
+      acerto: atq.bonus + grauBonus + doMotor,
       acertoAtaque: atq.nome,
       partesAcerto: [
         ...atq.partes,
         ...(doGrau ? [{ label: "Grau da Ferramenta", valor: doGrau }] : []),
         ...fontes,
+        ...fontesDe("acertoArma", escopos),
       ],
     };
   };
 
   const finezaDesarmado = valorCanal(ef, "finezaAtaque", "corpo") > 0;
+  const escoposBasico = escoposDaArma(null);
   const entradas = [
     // Desarmado não tem margem de crítico listada em lugar nenhum: é 20.
     { id: "basico", nome: "Ataque Básico", fonte: "basico", alcance: null, propriedades: [],
-      ...monta(escoposDaArma(null), atributoDe({ fineza: finezaDesarmado }), ctx.grauBasico, 20),
+      ...monta(escoposBasico, atributoDe({ fineza: finezaDesarmado }), ctx.grauBasico, 20),
       // Manoplas e Faixas são o Ataque Básico, então o grau delas entra aqui.
-      ...acertoDe("corpo", Math.max(0, Math.trunc(Number(ctx.acertoGrauBasico) || 0))) },
+      ...acertoDe("corpo", Math.max(0, Math.trunc(Number(ctx.acertoGrauBasico) || 0)), escoposBasico) },
   ];
 
   for (const a of Array.isArray(ctx.armas) ? ctx.armas : []) {
@@ -419,17 +427,18 @@ export function resolveDano(creature, ctx = {}) {
     if (dedicada && !propriedades.some((p) => p.id === "marcial")) {
       propriedades.push({ id: "marcial", nome: "Marcial", valor: true, rotulo: "Marcial", concedida: true });
     }
+    const escopos = escoposDaArma({ ...a, propriedades });
     entradas.push({
       id: a.id, nome: a.nome, fonte: "arma",
       alcance: a.alcance ?? null, propriedades,
       grupo: a.grupo ?? null, categoria: a.categoria ?? null, tipoDano: a.tipoDano ?? null,
       dedicada,
       elegivelDedicada: !!a.elegivelDedicada,
-      ...monta(escoposDaArma({ ...a, propriedades }), atributoDe(a), a.grauArma, a.critico ?? 20),
+      ...monta(escopos, atributoDe(a), a.grauArma, a.critico ?? 20),
       // A arma a distância rola o Ataque A Distância, a de corpo a corpo rola o
       // Corpo a Corpo. O atributo já seguiu a mesma regra logo acima.
       ...acertoDe(a.distancia ? "distancia" : "corpo",
-        Math.max(0, Math.trunc(Number(a.acertoGrau) || 0)), a.fontesAcerto ?? []),
+        Math.max(0, Math.trunc(Number(a.acertoGrau) || 0)), escopos, a.fontesAcerto ?? []),
     });
   }
   return { entradas };
