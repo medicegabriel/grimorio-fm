@@ -16,7 +16,7 @@ import {
   configuraRitual, usosRitualista,
   ritualEmAndamento,
   iniciaRitualComum, iniciaRitualSemTeste, iniciaRitualEstendido,
-  concluiPreparacaoRitual, cancelaRitual, finalizaRitual, encerraRitual,
+  concluiPreparacaoRitual, cancelaRitual, finalizaRitual, encerraRitual, desativaRitual,
 } from "./ficha-sessao";
 import { rolarTeste, rolarDano } from "./ficha-rolagem";
 import { conteudoDaFicha, equipamentosDaFicha, alvosDeBusca } from "./ficha-conteudo";
@@ -403,6 +403,7 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
         onAberto={alternaItem}
         onFavorito={alternaFavorito}
         onRitual={(feiticoId, proxima) => atualiza((s) => configuraRitual(s, feiticoId, proxima))}
+        onDesativarRitual={(feiticoId) => atualiza((s) => desativaRitual(s, feiticoId))}
         onIniciarRitualEstendido={(feiticoId, usaRitualista) => (
           atualiza((s) => iniciaRitualEstendido(s, feiticoId, usaRitualista))
         )}

@@ -95,6 +95,74 @@ export function custoPadrao(nivel) {
   return c == null ? null : Math.max(1, c);
 }
 
+const DOMINANCIA_EM_FEITICO_ID = "cnj_dominancia_em_feitico";
+const MANIPULACAO_PERFEITA_ID = "cnj_manipulacao_perfeita";
+
+function nivelNumericoParaReducao(nivel) {
+  return nivel === "max" ? 6 : Math.max(0, Math.trunc(Number(nivel) || 0));
+}
+
+/**
+ * Aplica as reduções de custo escolhidas para um Feitiço.
+ *
+ * Dominância em Feitiço é a exceção explícita do livro e arredonda para cima.
+ * Manipulação Perfeita reduz o custo-base pela metade, arredondada para baixo.
+ * O bônus de treinamento limita somente quantos Feitiços podem ser escolhidos.
+ * As duas acumulam, o custo positivo nunca cai abaixo de 1 PE e uma Variação de
+ * Liberação usa a seleção e o nível do Feitiço-base apontado por `variacaoDe`.
+ */
+export function aplicaReducoesCustoFeitico(feitico, calculo, ctx = {}) {
+  if (!calculo || calculo.custoPE == null) return calculo;
+
+  const custoBase = calculo.custoPEBase ?? calculo.custoPE;
+  const habilidades = Array.isArray(ctx.habilidades) ? ctx.habilidades : [];
+  const escolhas = ctx.reducoesCustoFeitico && typeof ctx.reducoesCustoFeitico === "object"
+    ? ctx.reducoesCustoFeitico
+    : {};
+  const lista = Array.isArray(ctx.feiticos) ? ctx.feiticos : [];
+  const baseId = feitico?.variacaoDe || feitico?.id || null;
+  const feiticoBase = lista.find((item) => item.id === baseId) || feitico || {};
+  const reducoes = [];
+
+  if (habilidades.includes(DOMINANCIA_EM_FEITICO_ID) && escolhas.dominancia === baseId) {
+    const valor = Math.ceil(nivelNumericoParaReducao(feiticoBase.nivel) / 2);
+    if (valor > 0) reducoes.push({ fonte: "Dominância em Feitiço", valor });
+  }
+
+  const bonusTreinamento = Math.max(0, Math.trunc(Number(ctx.bonusTreinamento) || 0));
+  const escolhidosManipulacao = Array.isArray(escolhas.manipulacao)
+    ? [...new Set(escolhas.manipulacao)].slice(0, bonusTreinamento)
+    : [];
+  if (
+    habilidades.includes(MANIPULACAO_PERFEITA_ID)
+    && escolhidosManipulacao.includes(baseId)
+  ) {
+    const custoPelaMetade = Math.floor(custoBase / 2);
+    const valor = custoBase - custoPelaMetade;
+    if (valor > 0) reducoes.push({ fonte: "Manipulação Perfeita", valor });
+  }
+
+  const reducaoTotal = reducoes.reduce((total, reducao) => total + reducao.valor, 0);
+  const custoPE = custoBase > 0 ? Math.max(1, custoBase - reducaoTotal) : custoBase;
+  return {
+    ...calculo,
+    custoPE,
+    custoPEBase: custoBase,
+    reducoesCustoPE: reducoes,
+  };
+}
+
+/** Texto das fontes numéricas do custo, usado somente no hover. */
+export function tituloCustoFeitico(calculo) {
+  if (!calculo || calculo.custoPE == null) return "Custo em PE";
+  const linhas = [`Custo base: ${calculo.custoPEBase ?? calculo.custoPE} PE`];
+  for (const reducao of calculo.reducoesCustoPE ?? []) {
+    linhas.push(`${reducao.fonte}: -${reducao.valor} PE`);
+  }
+  linhas.push(`Total: ${calculo.custoPE} PE`);
+  return linhas.join("\n");
+}
+
 // ---------------------------------------------------------------
 // TABELAS DE DANO (verbatim). Cada linha = [quantidadeDeDados, tipoDeDado].
 // A média impressa no livro é referência (com arredondamentos irregulares
@@ -2753,6 +2821,139 @@ export function rolagensDoFeitico(f, calc) {
   return [];
 }
 
+const ACAO_RESUMO_LABEL = {
+  bonus: "Ação Bônus",
+  comum: "Ação Comum",
+  completa: "Ação Completa",
+  ritual: "Ritual Estendido",
+  reacao: "Reação",
+  livre: "Ação Livre",
+};
+
+const DURACAO_RESUMO_LABEL = {
+  imediata: "Instantânea",
+  duradoura: "Duradoura",
+  sustentada: "Sustentada",
+  concentrado: "Concentração",
+  cena: "Cena",
+};
+
+const FORMA_AREA_RESUMO_LABEL = {
+  esfera: "Esfera",
+  linha: "Linha",
+  cone: "Cone",
+};
+
+const FORCA_CONDICAO_RESUMO_LABEL = {
+  fraca: "Fraca",
+  media: "Média",
+  forte: "Forte",
+  extrema: "Extrema",
+};
+
+const numeroResumo = (valor) => String(valor).replace(".", ",");
+const metrosResumo = (valor) => `${numeroResumo(valor)} metros`;
+
+function chaveAcaoResumo(valor) {
+  const texto = String(valor || "").trim().toLowerCase();
+  if (!texto) return null;
+  return texto
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/^acao\s+/, "");
+}
+
+function acaoResumoFeitico(f, calc) {
+  let valor = calc?.ritual?.acaoFinal ?? calc?.acaoResultante ?? calc?.acao ?? null;
+  if (!valor && f.tipo === "auxiliar" && !f.multiplosAtivo) {
+    valor = resolverAcaoAux(f.efeitoAux || "defesa", f.duracaoAux || "imediata", f.acaoAux);
+  }
+  if (!valor) valor = f.acao ?? f.transfAcao ?? null;
+  if (!valor) return null;
+  return ACAO_RESUMO_LABEL[chaveAcaoResumo(valor)] ?? String(valor);
+}
+
+function duracaoResumoFeitico(f, calc) {
+  const continuo = calc?.detalhes?.continuo;
+  if (continuo) return DURACAO_RESUMO_LABEL[continuo.modo] ?? continuo.modo;
+
+  const duracao = calc?.duracao
+    ?? (f.tipo === "auxiliar" ? (f.multiplosAtivo ? f.duracaoMult : f.duracaoAux) : null);
+  if (duracao === "duradoura") {
+    const rodadas = calc?.duracaoRodadas
+      ?? calc?.rodadas
+      ?? calc?.efeitos?.find((efeito) => efeito?.rodadas != null)?.rodadas
+      ?? (f.multiplosAtivo ? f.rodadasMult : f.rodadasDur);
+    return rodadas ? `${rodadas} rodada${rodadas === 1 ? "" : "s"}` : "Duradoura";
+  }
+  if (duracao) return DURACAO_RESUMO_LABEL[duracao] ?? String(duracao);
+  if (calc?.sustentado) return "Sustentada";
+  if (["dano", "curativo"].includes(f.tipo)) return "Instantânea";
+  if (f.tipo === "especial" && ["golpeador", "danoAlma"].includes(f.especialSubtipo)) {
+    return "Instantânea";
+  }
+  return null;
+}
+
+function alvoResumoFeitico(f, calc) {
+  if (["dano", "curativo"].includes(f.tipo)) {
+    const emArea = f.alvo === "area" || ["destrutivo", "cataclismico"].includes(f.subtipo);
+    return emArea ? "Múltiplos" : "Único";
+  }
+  if (f.tipo !== "auxiliar") return null;
+  if (calc?.propria) return "Próprio";
+  const alvos = Math.max(1, Number(calc?.alvos) || 1);
+  return `${alvos} criatura${alvos === 1 ? "" : "s"}`;
+}
+
+function areaResumoFeitico(calc) {
+  if (calc?.detalhes?.areaMapa) return "Mapa inteiro";
+  if (calc?.area == null) return null;
+  const forma = FORMA_AREA_RESUMO_LABEL[calc.forma] ?? "Área";
+  return `${forma} de ${metrosResumo(calc.area)}`;
+}
+
+function condicoesResumoFeitico(f) {
+  const condicoes = Array.isArray(f.condicoes) ? f.condicoes : [];
+  const textos = condicoes.map((condicao) => {
+    const nome = condicao?.nome || "Condição";
+    const forca = FORCA_CONDICAO_RESUMO_LABEL[condicao?.forca];
+    return forca ? `${nome} (${forca})` : nome;
+  });
+  if (f.sangramento) textos.push("Sangramento");
+  return textos.length > 0 ? textos.join(", ") : null;
+}
+
+function propriedadesResumoFeitico(f, calc, valor, valorLabel) {
+  const alcance = calc?.alcanceTexto ?? (calc?.alcance != null ? metrosResumo(calc.alcance) : null);
+  const area = areaResumoFeitico(calc);
+  const acerto = Number(calc?.acertoDelta) || 0;
+  const propriedades = [
+    { id: "conjuracao", nome: "Conjuração", valor: acaoResumoFeitico(f, calc) },
+    { id: "alcance", nome: "Alcance", valor: alcance },
+    { id: "alvo", nome: "Alvo", valor: alvoResumoFeitico(f, calc) },
+    { id: "area", nome: "Área", valor: area },
+    { id: "duracao", nome: "Duração", valor: duracaoResumoFeitico(f, calc) },
+    { id: "resolucao", nome: "Resolução", valor: f.resolucao === "ataque"
+      ? "Jogada de Ataque"
+      : f.tipo === "dano" ? "Teste de Resistência" : null },
+    { id: "cd", nome: "CD", valor: calc?.cd != null ? String(calc.cd) : null },
+    { id: "acerto", nome: "Acerto", valor: acerto ? `${acerto > 0 ? "+" : ""}${acerto}` : null },
+    { id: "valor", nome: valorLabel, valor: valor },
+    { id: "condicoes", nome: "Condições", valor: condicoesResumoFeitico(f) },
+    { id: "empurrao", nome: "Empurrão", valor: calc?.empurraoMetros > 0
+      ? metrosResumo(calc.empurraoMetros)
+      : null },
+    { id: "alvosProtegidos", nome: "Alvos Protegidos", valor: calc?.detalhes?.ajusteAlvos > 0
+      ? String(calc.detalhes.ajusteAlvos)
+      : null },
+    { id: "sustentacao", nome: "Sustentação", valor: calc?.detalhes?.continuo?.custoSustentacao > 0
+      ? `${calc.detalhes.continuo.custoSustentacao} PE`
+      : null },
+  ];
+  return propriedades.filter((propriedade) => propriedade.valor != null && propriedade.valor !== "");
+}
+
 /**
  * Uma linha pronta por Feitiço da ficha, para o Preview exibir sem recalcular
  * (mesma convenção do `resumoDominios` em afty-derive.js).
@@ -2779,12 +2980,17 @@ export function resumoFeiticos(creature, ctx = {}) {
     const ritualBloqueado = ritualEmOutroFeitico;
     const dispensaTesteRitual = ctx.rituaisSemTeste === true
       || ctx.rituaisSemTeste?.[f.id] === true;
-    const calc = calculadorDe(f.tipo)?.(f, {
+    const calculoBase = calculadorDe(f.tipo)?.(f, {
       ...ctx,
       ritual: configRitual,
       ritualistaExtra,
       dispensaTesteRitual,
     }) ?? null;
+    const calc = aplicaReducoesCustoFeitico(f, calculoBase, {
+      ...ctx,
+      feiticos: lista,
+      reducoesCustoFeitico: creature?.reducoesCustoFeitico,
+    });
     const avisos = calc
       ? [...(calc.avisos || []), ...((calc.efeitos || []).flatMap((e) => e.avisos || []))]
       : [];
@@ -2794,6 +3000,10 @@ export function resumoFeiticos(creature, ctx = {}) {
       : f.tipo === "curativo" ? calc.cura
       : f.tipo === "especial" ? (calc.dano ?? calc.resumo)
       : null;
+    const valorLabel = f.tipo === "dano" ? "Dano"
+      : f.tipo === "curativo" ? (calc?.ehTemporario ? "PV Temporário" : "Cura")
+      : f.tipo === "especial" && ["golpeador", "danoAlma"].includes(f.especialSubtipo) ? "Dano"
+      : "Efeito";
     const rolagens = rolagensDoFeitico(f, calc);
     const etapaRitual = ritualAtual?.etapa ?? null;
     const ritualPronto = etapaRitual === "pronto";
@@ -2812,12 +3022,14 @@ export function resumoFeiticos(creature, ctx = {}) {
       nivel: f.nivel,
       nivelLabel: NIVEL_LABEL[f.nivel] ?? String(f.nivel),
       custoPE: calc?.custoPE ?? null,
+      custoPEBase: calc?.custoPEBase ?? calc?.custoPE ?? null,
+      reducoesCustoPE: calc?.reducoesCustoPE ?? [],
       valor: valor ?? null,
+      descricao: f.descricao || "",
+      conjuracaoTexto: f.conjuracaoTexto || "",
       // O rótulo do valor muda com o tipo, e o Preview o usa como `title`.
-      valorLabel: f.tipo === "dano" ? "Dano"
-        : f.tipo === "curativo" ? (calc?.ehTemporario ? "PV Temporário" : "Cura")
-        : f.tipo === "especial" && ["golpeador", "danoAlma"].includes(f.especialSubtipo) ? "Dano"
-        : "Efeito",
+      valorLabel,
+      propriedades: calc ? propriedadesResumoFeitico(f, calc, valor, valorLabel) : [],
       variacao: !!f.variacaoDe,
       consomeEstado,
       ritual: calc?.ritual ? {

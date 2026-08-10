@@ -114,6 +114,15 @@ export function mesclaFichaAfty(existente) {
     attrNivel: { ...blank.attrNivel, ...(existente.attrNivel || {}) },
     attrLimite: { ...blank.attrLimite, ...(typeof existente.attrLimite === "object" ? existente.attrLimite : {}) },
     aptidoes: { ...blank.aptidoes, ...(existente.aptidoes || {}) },
+    reducoesCustoFeitico: {
+      ...blank.reducoesCustoFeitico,
+      ...(existente.reducoesCustoFeitico && typeof existente.reducoesCustoFeitico === "object"
+        ? existente.reducoesCustoFeitico
+        : {}),
+      manipulacao: Array.isArray(existente.reducoesCustoFeitico?.manipulacao)
+        ? [...new Set(existente.reducoesCustoFeitico.manipulacao.filter((id) => typeof id === "string"))]
+        : [],
+    },
     formulaOverrides: { ...(existente.formulaOverrides || {}) },
     periciaOficios: oficios,
   };
@@ -263,6 +272,13 @@ export function createBlankAfty() {
     // afty-feiticos.js computa dano/alcance/custo/CD. Variações de Liberação
     // (variacaoDe apontando outro feitiço) não contam no orçamento.
     feiticos: [],               // [ feiticoCriado ] — ver afty-feiticos.js
+    // Feitiços-base escolhidos pelas Habilidades de Conjurador que reduzem custo.
+    // Variações de Liberação herdam a escolha de `variacaoDe` e não aparecem como
+    // opções separadas no criador.
+    reducoesCustoFeitico: {
+      dominancia: null,         // id do Feitiço-base escolhido
+      manipulacao: [],          // ids dos Feitiços-base, até o bônus de treinamento
+    },
     // Técnicas de Estilo do Novo Estilo da Sombra, o subsistema do SEM TÉCNICA
     // que ocupa o lugar dos Feitiços. Destrava no ND 4 e gasta o MESMO contador
     // que Feitiço e Habilidade Geral gastam. Ver afty-estilo-sombras.js.

@@ -665,6 +665,99 @@
   background: var(--afty-destaque-fundo);
 }
 
+.afty-feitico-topo {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 2rem;
+  padding: 0.375rem 0.75rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--afty-destaque) 45%, var(--afty-borda));
+  border-radius: calc(var(--afty-raio-peq) - 1px) calc(var(--afty-raio-peq) - 1px) 0 0;
+  background: var(--afty-destaque-fundo);
+  cursor: pointer;
+  list-style: none;
+}
+
+.afty-feitico-topo::-webkit-details-marker { display: none; }
+
+.afty-feitico-seta {
+  position: absolute;
+  left: 0.625rem;
+  width: 0.875rem;
+  height: 0.875rem;
+  color: var(--afty-texto-suave);
+  transition: transform 140ms ease-out;
+}
+
+.afty-feitico[open] .afty-feitico-seta { transform: rotate(90deg); }
+
+.afty-feitico:not([open]) .afty-feitico-meta { display: none; }
+
+.afty-feitico-meta {
+  flex-shrink: 0;
+  font-family: var(--afty-fonte-num);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--afty-texto-suave);
+}
+
+.afty-feitico-nome {
+  min-width: 0;
+  font-family: var(--afty-fonte-titulo);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--afty-texto);
+  text-align: center;
+}
+
+.afty-feitico-custo {
+  color: var(--afty-pe);
+}
+
+.afty-feitico-corpo {
+  padding: 0.625rem 0.75rem 0.75rem;
+}
+
+.afty-feitico-propriedades {
+  display: grid;
+  gap: 0.125rem;
+}
+
+.afty-feitico-propriedade {
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  min-width: 0;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: var(--afty-texto-suave);
+}
+
+.afty-feitico-propriedade dt {
+  flex-shrink: 0;
+  font-weight: 700;
+  color: var(--afty-texto);
+}
+
+.afty-feitico-propriedade dd {
+  min-width: 0;
+}
+
+.afty-feitico-efeito {
+  max-width: 78ch;
+  margin-top: 0.625rem;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--afty-texto-suave);
+  white-space: pre-line;
+}
+
+.afty-feitico-efeito strong {
+  color: var(--afty-texto);
+}
+
 .afty-rotulo {
   font-size: 0.75rem;
   color: var(--afty-texto-suave);

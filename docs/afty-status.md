@@ -1,11 +1,10 @@
 # Status do Grimório Afty (handoff para chat novo)
 
-Estado atual do sistema Afty (atualizado 2026-07-17). Leia junto com:
+Estado atual do sistema Afty (atualizado 2026-08-10). Leia junto com:
 `docs/roadmap-versionamento-e-fichas.md` (arquitetura) e `docs/afty-formulas-base.md` (fórmulas).
 
-> ⚠ **Este doc parou em 2026-07-17 e o trabalho seguiu.** O que veio depois está nas seções
-> LUTADOR (2026-07-22) e no restante do sistema de INVOCAÇÕES, que foi construído inteiro
-> (engine, editor, Hordas, efeitos de Controlador) e ainda não foi documentado aqui.
+> ⚠ **Este documento começou em 2026-07-17 e o trabalho posterior está registrado por sessão.**
+> Ao retomar, leia primeiro a sessão mais recente e depois o Contexto rápido.
 >
 > **AS 6 ESPECIALIZAÇÕES ESTÃO FECHADAS** (2026-07-22): Combatente 70, Lutador 69, Conjurador 65,
 > Suporte 57, Restringido 53, Controlador 47 = **361 habilidades**. Mais **Talentos** (51), em
@@ -73,9 +72,11 @@ Estado atual do sistema Afty (atualizado 2026-07-17). Leia junto com:
 > classe não existem" (3 existem: `pontosPreparo`, `empolgacaoMaxima`/`Inicial`, e Estamina que É
 > o PE. Falta só o PE temporário exclusivo de Aptidão).
 >
-> A razão do Conjurador segue baixa por motivo ESTRUTURAL: `afty-feiticos.js` agora lê
-> `dadosDano` e `danoBonus`, além da CD que já chegava por `feiticos.cdBase`, mas custo, nível de
-> acesso, alcance, área, liberações e efeitos dependentes do uso continuam sem integração.
+> A automação do Conjurador ainda tem bloqueios estruturais, mas `afty-feiticos.js` já lê
+> `dadosDano`, `danoBonus`, CD, reduções de custo por Feitiço-base e melhorias de Ritual. A ficha
+> final mostra as propriedades calculadas do Feitiço e atualiza alcance, área, dano, CD, acerto,
+> conjuração e demais resultados afetados pelo Ritual. Auxiliares, Especiais e outras fontes de
+> custo continuam pendentes conforme a revisão de 2026-08-09.
 > **CURA virou sistema em 2026-08-03** (`afty-cura.js`), com 7 canais novos e card próprio na aba
 > Habilidades.
 >
@@ -97,10 +98,10 @@ Estado atual do sistema Afty (atualizado 2026-07-17). Leia junto com:
 > sessão, irmã da de Feitiço. E o criador ganhou **RASCUNHO AUTOMÁTICO** (`afty-rascunho.js`), que
 > não existia: até aqui recarregar a página perdia a ficha inteira. Ver a sessão de 2026-08-03.
 >
-> **FICHA FINAL** (plano escrito em 2026-08-05, nada construído ainda): até aqui o Afty só tem o
-> CRIADOR. A tela de USO da criatura foi planejada em `docs/afty-ficha-final.md`, com as 4 decisões
-> do autor (ficha de jogo da criatura, rola dados com histórico, desktop 75%, vitais fixos no topo
-> mais abas), as 7 fases, os 3 acréscimos que o motor vai precisar e as 10 perguntas abertas.
+> **FICHA FINAL construída:** a rota de uso da criatura possui vitais, abas, rolagens com histórico,
+> estados de combate, Feitiços e Rituais. O plano original permanece em `docs/afty-ficha-final.md`.
+> Os Feitiços ficam recolhidos por padrão e, quando abertos, mostram propriedades, descrição
+> verbatim, resultados clicáveis e os controles de Ritual.
 >
 > 👉 **Começando um chat novo? Vá direto para
 > [PENDÊNCIAS DE ESPECIALIZAÇÕES](#-pendências-de-especializações-lista-de-retomada).**
@@ -186,6 +187,25 @@ continuam sem integração completa:
   modelar Feitiço Favorito e decidir os casos ambíguos de Potencialização de Efeito descritos nas
   perguntas abertas desta sessão.
 
+  **Propriedades na ficha final em 2026-08-10:** cada linha de Feitiço na aba Ações passou a mostrar
+  os resultados calculados disponíveis, incluindo Conjuração, Alcance, Alvo, Área, Duração,
+  Resolução, CD, Acerto, Dano, Cura, Efeito, Condições, Empurrão, Alvos Protegidos e Sustentação.
+  A linha usa o mesmo cálculo que alimenta as rolagens. Alterar uma melhoria de Ritual atualiza
+  imediatamente Dano, Alcance, Área, CD, Acerto, Conjuração e os demais resultados afetados.
+  `descricao` e `conjuracaoTexto` seguem verbatim no `title` do nome do Feitiço.
+
+  **Correção do ciclo em 2026-08-10:** o Ritual pode ser desativado em qualquer etapa pelo
+  botão da própria linha. Desativar limpa o uso atual e libera outro Feitiço, mas conserva as
+  melhorias configuradas para uma ativação futura. A etapa Pronto também ganhou Cancelar, que
+  abandona o uso atual e destrava a configuração sem desligar o Ritual daquele Feitiço.
+
+  **Apresentação vertical em 2026-08-10:** os Feitiços da ficha final usam um cartão com nome,
+  nível e custo no cabeçalho. Conjuração, alcance, alvo, área, duração e demais resultados ficam
+  em linhas verticais. A descrição verbatim aparece no corpo como Efeito. As rolagens continuam
+  clicáveis na linha do resultado correspondente, e os controles de Ritual permanecem no rodapé.
+  Cada cartão fica recolhido por padrão e mostra somente o nome. Nível, custo e todo o corpo aparecem
+  ao abrir o Feitiço.
+
   **Perguntas abertas para não inventar regra:**
 
   1. Em Potencialização de Efeito, "aumenta o nível dos dados adicionais em 6 ou 3" soma 6 ou 3
@@ -202,17 +222,19 @@ continuam sem integração completa:
 
 ### Custo de Feitiços e Habilidades
 
-**Situação atual:** `afty-feiticos.js` fecha `custoPE` diretamente com `custoPadrao(nivel)`. A ficha
-final apenas exibe esse resultado. Não existe um resolvedor de custo por Feitiço, nem seleção dos
-Feitiços afetados, ordem de aplicação das reduções ou estado de uso para benefícios temporários.
+**Situação atual:** `afty-feiticos.js` possui `aplicaReducoesCustoFeitico`, usado pelo criador e pelo
+`resumoFeiticos` da ficha final. **Dominância em Feitiço** e **Manipulação Perfeita** já possuem
+seleção por Feitiço-base no card de Feitiços. Variações de Liberação herdam a seleção do Feitiço-base,
+as duas reduções acumulam e o hover do custo mostra as fontes numéricas. As demais fontes abaixo
+continuam pendentes.
 
 Reduções e alterações de custo de Feitiço já localizadas e ainda não aplicadas ao resultado:
 
 | Fonte | Escopo que precisa ser modelado |
 |---|---|
 | **Foco Amaldiçoado: Economia** | Todos os Feitiços, redução de 2, incluindo Nível 1 a custo 0 |
-| **Dominância em Feitiço** | Um Feitiço escolhido, redução igual à metade do nível dele, arredondado para cima |
-| **Manipulação Perfeita** | Uma quantidade de Feitiços igual ao bônus de treinamento, redução igual à metade dele |
+| **Dominância em Feitiço** | ✅ Um Feitiço-base escolhido, redução igual à metade do nível dele, arredondado para cima, piso final 1 PE |
+| **Manipulação Perfeita** | ✅ Até o bônus de treinamento em Feitiços-base, custo-base reduzido pela metade com arredondamento para baixo, piso final 1 PE |
 | **O Honrado** | Feitiços de nível 1, 2 e 3 com custo reduzido pela metade |
 | **Preparação de Técnicas** | Dois Feitiços preparados por descanso longo, metade do custo no primeiro uso, com o nível permitido escalando |
 | **Marca Registrada** | O Feitiço adicional escolhido recebe redução de 1 PE |
@@ -236,7 +258,32 @@ Regras relacionadas a custo de Habilidade, mas que não são apenas custo-base d
 - Habilidades de Controlador também reduzem custo de invocação, ativação ou Habilidades das
   Invocações. Elas pertencem ao resolvedor de Invocações, não ao custo-base de Feitiço.
 
-Antes de implementar, confirmar com o autor:
+Confirmado pelo autor para Dominância em Feitiço e Manipulação Perfeita:
+
+1. As duas reduções acumulam quando escolhem o mesmo Feitiço.
+2. Dominância mantém o arredondamento para cima escrito na própria regra. Todo arredondamento sem
+   indicação contrária é feito para baixo.
+3. O custo final mínimo é 1 PE.
+4. Variações e liberações recebem a redução escolhida para o Feitiço-base.
+5. Em Manipulação Perfeita, o bônus de treinamento limita somente a quantidade de Feitiços
+   escolhidos. O custo-base é reduzido pela metade, arredondada para baixo, antes da redução fixa de
+   Dominância em Feitiço.
+
+**Fechamento técnico de 2026-08-10:**
+
+- As escolhas ficam em `reducoesCustoFeitico`, com uma seleção para Dominância e até o bônus de
+  treinamento para Manipulação. Os seletores aparecem somente quando a criatura possui a Habilidade.
+- O criador e a ficha final usam o mesmo resolvedor. O hover do custo mostra custo-base, cada
+  redução aplicada e o total.
+- Caso validado: Feitiço de Nível 5 com custo-base 20 recebe redução 10 de Manipulação e redução 3
+  de Dominância, resultando em 7 PE. Ao desligar Manipulação, o resultado volta para 17 PE.
+- ESLint, build do Vite, `git diff --check` e 16 asserts de lógica passaram. O teste visual da rota
+  `/Afty` não apresentou erros ou avisos no console.
+- **Robustez futura, não bloqueante:** um JSON editado manualmente que coloque o id de um Feitiço
+  apagado antes de um id válido em `manipulacao` pode fazer o seletor mostrar a escolha válida sem
+  aplicar a redução. O fluxo normal da interface remove esses ids e não produz esse estado.
+
+Antes de implementar as demais fontes, ainda confirmar com o autor:
 
 1. A ordem quando uma redução fixa e uma divisão pela metade se aplicam ao mesmo custo.
 2. Quais reduções acumulam e quais disputam entre si.

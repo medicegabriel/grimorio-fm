@@ -413,6 +413,23 @@ export function encerraRitual(sessao, feiticoId) {
   return atual.usaRitualista ? desarmaRitualistaDoFeitico(limpo, feiticoId) : limpo;
 }
 
+/**
+ * Desliga o Ritual daquele Feitiço e libera imediatamente outro uso.
+ * As melhorias permanecem salvas para uma ativação futura. Ritualista já
+ * consumido não é devolvido, seguindo o mesmo caminho de Cancelar e Encerrar.
+ */
+export function desativaRitual(sessao, feiticoId) {
+  if (!feiticoId) return sessao;
+  const atual = ritualEmAndamento(sessao);
+  let proxima = sessao;
+  if (atual?.feiticoId === feiticoId) {
+    proxima = atual.etapa === "resolvido"
+      ? encerraRitual(sessao, feiticoId)
+      : cancelaRitual(sessao, feiticoId);
+  }
+  return configuraRitual(proxima, feiticoId, (ritual) => ({ ...ritual, ativo: false }));
+}
+
 /** Empilha uma rolagem no log, com teto. O mais novo fica em cima. */
 export function registraRolagem(sessao, rolagem) {
   return { ...sessao, log: [rolagem, ...sessao.log].slice(0, LOG_MAX) };

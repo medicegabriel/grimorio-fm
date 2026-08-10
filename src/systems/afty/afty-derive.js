@@ -999,6 +999,7 @@ export function deriveAfty(creature, opcoes = {}) {
       efeitos: ef,
       efeitosLinhaDano,
       contextoDsl: ctxTecnica,
+      bonusTreinamento: bt,
       combate,
       habilidades: habilidades.escolhidas,
       ultimoFeiticoDanoId: opcoes.ultimoFeiticoDanoId ?? null,

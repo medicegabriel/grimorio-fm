@@ -4,6 +4,7 @@ import { AlertTriangle, ChevronDown, ChevronRight } from "lucide-react";
 import { NumeroComFontes } from "../../ui/fontes";
 import { sinalDe } from "../../ui/formato";
 import { curaNoGasto, rotuloBloco } from "../../afty-cura";
+import { tituloCustoFeitico } from "../../afty-feiticos";
 import { RITUAL_MELHORIAS } from "../../afty-rituais";
 import { facesDe } from "../ficha-rolagem";
 import { useDestaque } from "../usar-destaque";
@@ -211,7 +212,7 @@ const ACAO_RITUAL_LABEL = {
 };
 
 function ControlesRitual({
-  f, rolar, onRitual, onIniciarRitualEstendido, onIniciarRitualSemTeste,
+  f, rolar, onRitual, onDesativarRitual, onIniciarRitualEstendido, onIniciarRitualSemTeste,
   onConcluirPreparacaoRitual, onCancelarRitual, onFinalizarRitual, onEncerrarRitual,
 }) {
   const ritual = f.ritual;
@@ -251,10 +252,14 @@ function ControlesRitual({
             className="afty-chip"
             data-afty-tom={ritual.ativo ? "destaque" : undefined}
             aria-pressed={ritual.ativo}
-            disabled={ritual.forcado || configuracaoTravada}
-            onClick={() => patchRitual({ ativo: !ritual.ativo })}
+            disabled={ritual.forcado || ritual.bloqueado}
+            onClick={() => (
+              ritual.ativo
+                ? onDesativarRitual?.(f.id)
+                : patchRitual({ ativo: true })
+            )}
           >
-            {ritual.ativo ? "Ativo" : "Inativo"}
+            {ritual.ativo ? "Desativar" : "Ativar"}
           </button>
           {ritual.ativo && ritual.temRitualista && (
             <button
@@ -356,6 +361,11 @@ function ControlesRitual({
               </button>
             </>
           )}
+          {ritual.ativo && ritual.etapa === "pronto" && (
+            <button type="button" className="afty-chip" onClick={() => onCancelarRitual?.(f.id)}>
+              Cancelar
+            </button>
+          )}
           {ritual.ativo && ritual.podeResolver && f.rolagens?.length === 0 && (
             <button type="button" className="afty-chip" onClick={() => onFinalizarRitual?.(f.id)}>
               Conjurar
@@ -409,85 +419,116 @@ function ControlesRitual({
 }
 
 function LinhaFeitico({
-  f, rolar, destacado, onRitual, onIniciarRitualEstendido, onIniciarRitualSemTeste,
+  f, rolar, destacado, onRitual, onDesativarRitual, onIniciarRitualEstendido, onIniciarRitualSemTeste,
   onConcluirPreparacaoRitual, onCancelarRitual, onFinalizarRitual, onEncerrarRitual,
 }) {
   const raiz = useDestaque(destacado);
   const rolagens = f.rolagens ?? [];
+  const propriedades = f.propriedades ?? [];
+  const propriedadesFixas = propriedades.filter((propriedade) => propriedade.id !== "valor");
+  const propriedadeValor = propriedades.find((propriedade) => propriedade.id === "valor");
+  const descricaoTemRotulo = /^\s*efeito\s*:/i.test(f.descricao || "");
+  const titulo = [f.conjuracaoTexto, f.descricao].filter(Boolean).join("\n\n")
+    || f.nome
+    || "Feitiço Sem Nome";
+  const rolarFeitico = (r, indice) => rolar({
+    tipo: "dano", tom: r.tom,
+    rotulo: f.nome || "Feitiço Sem Nome",
+    detalhe: rolagens.length > 1 || r.vezes > 1 ? r.rotulo : f.nivelLabel,
+    dados: r.dados, faces: r.faces, fixo: r.fixo || 0,
+    explosiva: !!r.explosiva,
+    consomeEstado: indice === 0 ? f.consomeEstado : null,
+    feiticoDanoId: indice === 0 && f.tipo === "dano" ? f.id : null,
+    finalizaRitualId: indice === 0 && f.ritual?.ativo && f.ritual?.podeResolver
+      ? f.id
+      : null,
+  });
   return (
-    <div
+    <details
       ref={raiz}
       id={`afty-item-feitico:${f.id}`}
-      className="afty-linha px-2.5 py-2 flex items-center gap-2 flex-wrap"
+      className="afty-linha afty-feitico"
       data-afty-alvo={destacado ? "sim" : undefined}
     >
-      <span className="flex-1 min-w-0 text-[12px] font-semibold truncate" title={f.nome || "Feitiço Sem Nome"}>
-        {f.nome || "Feitiço Sem Nome"}
-      </span>
-      {f.variacao && (
-        <span className="afty-rotulo text-[9px] uppercase tracking-wider" title="Variação de liberação">
-          Var.
+      <summary className="afty-feitico-topo" title={titulo}>
+        <ChevronRight className="afty-feitico-seta" aria-hidden="true" />
+        <span className="afty-feitico-nome">
+          {f.nome || "Feitiço Sem Nome"}
         </span>
-      )}
-      {f.avisos.length > 0 && (
-        <AlertTriangle
-          className="w-3.5 h-3.5 flex-shrink-0"
-          style={{ color: "var(--afty-aviso)" }}
-          aria-hidden="true"
-          title={f.avisos.join("\n")}
-        />
-      )}
-      <span className="afty-chip" data-afty-tom="destaque">{f.nivelLabel}</span>
-      {rolagens.length === 0 && f.valor != null && (
-        <span className="afty-valor text-[13px]" title={f.valorLabel}>{f.valor}</span>
-      )}
-      {rolagens.map((r, indice) => (
-        <span key={r.rotulo} className="flex items-center gap-1 flex-shrink-0">
-          {/* O rótulo só aparece quando há MAIS DE UMA rolagem: com uma só, ele
-              repetiria o que o nome da seção já diz. */}
-          {rolagens.length > 1 && (
-            <span className="afty-rotulo text-[10px] whitespace-nowrap">{r.rotulo}</span>
-          )}
-          {r.vezes > 1 && (
-            <span className="afty-chip" title={`${r.vezes} ${r.rotulo}s`}>×{r.vezes}</span>
-          )}
-          <NumeroComFontes
-            valor={`${r.dados}d${r.faces}${r.explosiva ? "!" : ""}${r.fixo ? `${r.fixo > 0 ? "+" : ""}${r.fixo}` : ""}`}
-            partes={r.partes}
-            total={`${r.dados}d${r.faces}${r.explosiva ? "!" : ""}${r.fixo ? `${r.fixo > 0 ? "+" : ""}${r.fixo}` : ""}`}
-            formatar={false}
-            className="afty-valor text-[13px] whitespace-nowrap"
-            titulo={r.rotulo}
-            onRolar={f.ritual?.ativo && !f.ritual?.podeRolarFeitico ? undefined : () => rolar({
-              tipo: "dano", tom: r.tom,
-              rotulo: f.nome || "Feitiço Sem Nome",
-              detalhe: rolagens.length > 1 || r.vezes > 1 ? r.rotulo : f.nivelLabel,
-              dados: r.dados, faces: r.faces, fixo: r.fixo || 0,
-              explosiva: !!r.explosiva,
-              consomeEstado: indice === 0 ? f.consomeEstado : null,
-              feiticoDanoId: indice === 0 && f.tipo === "dano" ? f.id : null,
-              finalizaRitualId: indice === 0 && f.ritual?.ativo && f.ritual?.podeResolver
-                ? f.id
-                : null,
-            })}
+        <span className="afty-feitico-meta">- {f.nivelLabel}</span>
+        {f.custoPE != null && (
+          <span className="afty-feitico-custo afty-feitico-meta" title={tituloCustoFeitico(f)}>({f.custoPE} PE)</span>
+        )}
+        {f.variacao && (
+          <span className="afty-chip afty-feitico-meta" title="Variação de liberação">Var.</span>
+        )}
+        {f.avisos.length > 0 && (
+          <AlertTriangle
+            className="afty-feitico-meta w-3.5 h-3.5 flex-shrink-0"
+            style={{ color: "var(--afty-aviso)" }}
+            aria-hidden="true"
+            title={f.avisos.join("\n")}
           />
-        </span>
-      ))}
-      {f.custoPE != null && (
-        <span className="afty-valor text-[11px]" data-afty-tom="custo">{f.custoPE} PE</span>
-      )}
-      <ControlesRitual
-        f={f}
-        rolar={rolar}
-        onRitual={onRitual}
-        onIniciarRitualEstendido={onIniciarRitualEstendido}
-        onIniciarRitualSemTeste={onIniciarRitualSemTeste}
-        onConcluirPreparacaoRitual={onConcluirPreparacaoRitual}
-        onCancelarRitual={onCancelarRitual}
-        onFinalizarRitual={onFinalizarRitual}
-        onEncerrarRitual={onEncerrarRitual}
-      />
-    </div>
+        )}
+      </summary>
+      <div className="afty-feitico-corpo">
+        {(propriedadesFixas.length > 0 || propriedadeValor || rolagens.length > 0) && (
+          <dl className="afty-feitico-propriedades">
+            {propriedadesFixas.map((propriedade) => (
+              <div key={propriedade.id} className="afty-feitico-propriedade" data-afty-propriedade={propriedade.id}>
+                <dt>{propriedade.nome}:</dt>
+                <dd>{propriedade.valor}</dd>
+              </div>
+            ))}
+            {rolagens.length === 0 && propriedadeValor && (
+              <div className="afty-feitico-propriedade" data-afty-propriedade="valor">
+                <dt>{propriedadeValor.nome}:</dt>
+                <dd className="afty-valor">{propriedadeValor.valor}</dd>
+              </div>
+            )}
+            {rolagens.map((r, indice) => (
+              <div key={`${r.rotulo}:${indice}`} className="afty-feitico-propriedade" data-afty-propriedade="rolagem">
+                <dt>{rolagens.length > 1 ? r.rotulo : (propriedadeValor?.nome || f.valorLabel)}:</dt>
+                <dd className="flex items-center gap-1.5">
+                  <NumeroComFontes
+                    valor={`${r.dados}d${r.faces}${r.explosiva ? "!" : ""}${r.fixo ? `${r.fixo > 0 ? "+" : ""}${r.fixo}` : ""}`}
+                    partes={r.partes}
+                    total={`${r.dados}d${r.faces}${r.explosiva ? "!" : ""}${r.fixo ? `${r.fixo > 0 ? "+" : ""}${r.fixo}` : ""}`}
+                    formatar={false}
+                    className="afty-valor text-[13px] whitespace-nowrap"
+                    titulo={r.rotulo}
+                    onRolar={f.ritual?.ativo && !f.ritual?.podeRolarFeitico
+                      ? undefined
+                      : () => rolarFeitico(r, indice)}
+                  />
+                  {r.vezes > 1 && (
+                    <span className="afty-chip" title={`${r.vezes} ${r.rotulo}s`}>×{r.vezes}</span>
+                  )}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        )}
+        {f.descricao && (
+          <p className="afty-feitico-efeito">
+            {!descricaoTemRotulo && <strong>Efeito: </strong>}
+            {f.descricao}
+          </p>
+        )}
+        <ControlesRitual
+          f={f}
+          rolar={rolar}
+          onRitual={onRitual}
+          onDesativarRitual={onDesativarRitual}
+          onIniciarRitualEstendido={onIniciarRitualEstendido}
+          onIniciarRitualSemTeste={onIniciarRitualSemTeste}
+          onConcluirPreparacaoRitual={onConcluirPreparacaoRitual}
+          onCancelarRitual={onCancelarRitual}
+          onFinalizarRitual={onFinalizarRitual}
+          onEncerrarRitual={onEncerrarRitual}
+        />
+      </div>
+    </details>
   );
 }
 
@@ -582,6 +623,7 @@ function LinhaManobra({ m, rolar, destacado }) {
 
 export default function AbaAcoes({
   derived, rolar, destaque, rapido = [], abertos, onAberto, onFavorito, onRitual,
+  onDesativarRitual,
   onIniciarRitualEstendido, onIniciarRitualSemTeste, onConcluirPreparacaoRitual,
   onCancelarRitual, onFinalizarRitual, onEncerrarRitual,
 }) {
@@ -649,6 +691,7 @@ export default function AbaAcoes({
               rolar={rolar}
               destacado={destaque === `feitico:${f.id}`}
               onRitual={onRitual}
+              onDesativarRitual={onDesativarRitual}
               onIniciarRitualEstendido={onIniciarRitualEstendido}
               onIniciarRitualSemTeste={onIniciarRitualSemTeste}
               onConcluirPreparacaoRitual={onConcluirPreparacaoRitual}
