@@ -1034,6 +1034,16 @@ export const HABILIDADE_EFEITOS = {
     { canal: "defesa", expr: "min(mod_int_ou_sab, nd)" },
   ],
 
+  // Potência Concentrada (6°): a ficha liga o estado ao gastar a Ação de
+  // Movimento. O próximo Feitiço de Dano de alvo único recebe 5 × o nível do
+  // próprio Feitiço, e a Ficha consome o estado na primeira rolagem de dano.
+  cnj_potencia_concentrada: [
+    {
+      canal: "danoBonus", alvo: "feitico:unico",
+      expr: "5 * nivel_feitico", quando: "potencia_concentrada", duracao: "temporaria",
+    },
+  ],
+
   // "Você recebe um bônus de +2 em rolagens de ataque para Feitiços e aptidões
   // amaldiçoadas. A cada 4 níveis, esse bônus aumenta em +1."
   cnj_olhar_preciso: [
@@ -1504,10 +1514,15 @@ export const ESCOLHA_EFEITOS = {
   cnj_focalizada_astucia:   [{ canal: "bonusTR", alvo: "astucia",   expr: "piso(mod_int_ou_sab / 2)" }],
 
   // Foco Amaldiçoado (10°), uma entre três.
-  //
-  // ⚠ Destruição segue fora do catálogo. O Motor de Feitiços já lê `danoBonus`
-  // e oferece `dados_dano_final`, mas a habilidade ainda depende da transcrição
-  // completa de seus efeitos e da decisão de ativação registrada nas pendências.
+  // Destruição: "+1 de dano para cada dado rolado" + Maestria no total. O
+  // calculador avalia `dados_dano_final` depois de fechar a quantidade real da
+  // linha. Em Múltiplos Disparos, a variável representa os dados de CADA
+  // disparo, então cada rolagem recebe exatamente o bônus dos dados que rola.
+  // ⚠ A metade sobre Aptidão Amaldiçoada segue sem consumidor: as Aptidões
+  // ainda não possuem linhas estruturadas de dano na Ficha Final.
+  cnj_foco_destruicao: [
+    { canal: "danoBonus", alvo: "feitico", expr: "dados_dano_final + maestria" },
+  ],
   //
   // Economia: "você passa a somar o seu bônus de treinamento no seu máximo de
   // energia amaldiçoada." A redução de 2 no custo é do lado do feitiço.

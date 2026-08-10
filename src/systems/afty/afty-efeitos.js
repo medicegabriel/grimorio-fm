@@ -393,17 +393,16 @@ export const VARS_ADIADAS = [
   "hp_atual", "pe_atual", "hp_temp", "hp_pct", "pe_pct",
 ];
 
-/**
- * Variável de LINHA, disponível somente quando uma fonte de dano já fechou a
- * quantidade que realmente vai rolar. Ela não pode entrar no contexto geral da
- * criatura: naquele estágio ainda não existe Feitiço, arma ou Ataque Básico.
- */
+/** Variáveis de LINHA, disponíveis somente depois que o Feitiço fecha. */
 export const VAR_DADOS_DANO_FINAL = "dados_dano_final";
-const RE_DADOS_DANO_FINAL = /\bdados_dano_final\b/i;
+export const VAR_NIVEL_FEITICO = "nivel_feitico";
+const RE_VARIAVEL_LINHA_DANO = /\b(?:dados_dano_final|nivel_feitico)\b/i;
 
+// O nome histórico permanece porque o editor dos Passivos já o importa. Hoje
+// ele identifica qualquer variável tardia da linha de dano, não só os dados.
 export const efeitoUsaDadosDanoFinal = (efeito) =>
-  RE_DADOS_DANO_FINAL.test(String(efeito?.expr ?? ""))
-  || RE_DADOS_DANO_FINAL.test(String(efeito?.quando ?? ""));
+  RE_VARIAVEL_LINHA_DANO.test(String(efeito?.expr ?? ""))
+  || RE_VARIAVEL_LINHA_DANO.test(String(efeito?.quando ?? ""));
 
 export function buildCriaturaDslContext(base = {}) {
   const at = base.attrEff || {};
@@ -1036,20 +1035,23 @@ export function resolverExclusivos(res, jaAplicado = {}) {
  * Por ora a variável só tem semântica no canal `danoBonus`: ler a quantidade de
  * dados para produzir mais dados criaria uma dependência circular.
  */
-export function resolverEfeitosDanoFinal(efeitos, ctx = {}, dados = 0, jaAplicado = {}) {
+export function resolverEfeitosDanoFinal(
+  efeitos, ctx = {}, dados = 0, jaAplicado = {}, { nivelFeitico = 0 } = {},
+) {
   const dependentes = (Array.isArray(efeitos) ? efeitos : []).filter(efeitoUsaDadosDanoFinal);
   const suportados = dependentes.filter((e) => e?.canal === "danoBonus");
   const res = resolverExclusivos(
     aplicarEfeitos(suportados, {
       ...ctx,
       [VAR_DADOS_DANO_FINAL]: Math.max(0, Math.trunc(Number(dados) || 0)),
+      [VAR_NIVEL_FEITICO]: Math.max(0, Math.trunc(Number(nivelFeitico) || 0)),
     }),
     jaAplicado,
   );
   const ignorados = dependentes.filter((e) => e?.canal !== "danoBonus");
   if (ignorados.length) {
     res.avisos.push(...ignorados.map((e) =>
-      `${VAR_DADOS_DANO_FINAL} só pode ser usado no canal danoBonus em ${e.nome || e.origem || "efeito"}.`));
+      `Variável de linha de dano só pode ser usada no canal danoBonus em ${e.nome || e.origem || "efeito"}.`));
   }
   return res;
 }

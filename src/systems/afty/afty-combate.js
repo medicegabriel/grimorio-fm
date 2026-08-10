@@ -338,6 +338,18 @@ export const COMBATE_ESTADOS = [
   },
 
   /* ============================================================ */
+  /* CONJURADOR                                                    */
+  /* ============================================================ */
+
+  {
+    id: "potenciaConcentrada",
+    label: "Potência Concentrada",
+    tipo: "bool",
+    umaVezPorRodada: true,
+    requerHabilidade: "cnj_potencia_concentrada",
+  },
+
+  /* ============================================================ */
   /* RESTRINGIDO                                                   */
   /* ============================================================ */
 

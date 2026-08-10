@@ -4,6 +4,7 @@ import { AlertTriangle, ChevronDown, ChevronRight } from "lucide-react";
 import { NumeroComFontes } from "../../ui/fontes";
 import { sinalDe } from "../../ui/formato";
 import { curaNoGasto, rotuloBloco } from "../../afty-cura";
+import { RITUAL_MELHORIAS } from "../../afty-rituais";
 import { facesDe } from "../ficha-rolagem";
 import { useDestaque } from "../usar-destaque";
 import ItemDeFicha from "../ItemDeFicha";
@@ -203,7 +204,214 @@ function LinhaCura({ l, rolar, destacado }) {
  * porque cada disparo é uma rolagem com acerto próprio: ele vira um contador ao
  * lado, e cada clique rola um.
  */
-function LinhaFeitico({ f, rolar, destacado }) {
+const ACAO_RITUAL_LABEL = {
+  comum: "Ação Comum",
+  completa: "Ação Completa",
+  ritual: "Ritual Estendido",
+};
+
+function ControlesRitual({
+  f, rolar, onRitual, onIniciarRitualEstendido, onIniciarRitualSemTeste,
+  onConcluirPreparacaoRitual, onCancelarRitual, onFinalizarRitual, onEncerrarRitual,
+}) {
+  const ritual = f.ritual;
+  if (!ritual || ritual.proibido) return null;
+  const patchRitual = (parcial) => onRitual?.(f.id, (atual) => ({ ...atual, ...parcial }));
+  const mudaMelhoria = (id, delta) => onRitual?.(f.id, (atual) => {
+    const melhorias = atual.melhorias && typeof atual.melhorias === "object" ? atual.melhorias : {};
+    const def = RITUAL_MELHORIAS.find((m) => m.id === id);
+    const valor = Math.max(0, Math.min(def?.max ?? 1, (melhorias[id] || 0) + delta));
+    return { ...atual, melhorias: { ...melhorias, [id]: valor } };
+  });
+  const consomeNoTeste = ritual.extraRitualista ? f.id : null;
+  const configuracaoTravada = ritual.configuracaoTravada || ritual.bloqueado;
+  const status = ritual.podeResolver ? "Pronto"
+    : ritual.etapa === "falhou" ? "Falha"
+      : ritual.etapa === "preparando" ? "Preparando"
+        : ritual.etapa === "resolvido" ? "Resolvido"
+          : ritual.bloqueado ? "Indisponível"
+            : null;
+  const podeDesarmarRitualista = ritual.quantidade <= ritual.limiteBase;
+
+  return (
+    <details className="w-full mt-1.5">
+      <summary className="cursor-pointer text-[10px] font-semibold">
+        Ritual
+        {ritual.ativo && (
+          <span className="afty-rotulo ml-2">
+            {ritual.quantidade}/{ritual.limite} · {ACAO_RITUAL_LABEL[ritual.acaoFinal] ?? ritual.acaoFinal}
+          </span>
+        )}
+        {status && <span className="afty-chip ml-2">{status}</span>}
+      </summary>
+      <div className="mt-2 pl-2 border-l space-y-2" style={{ borderColor: "var(--afty-borda)" }}>
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <button
+            type="button"
+            className="afty-chip"
+            data-afty-tom={ritual.ativo ? "destaque" : undefined}
+            aria-pressed={ritual.ativo}
+            disabled={ritual.forcado || configuracaoTravada}
+            onClick={() => patchRitual({ ativo: !ritual.ativo })}
+          >
+            {ritual.ativo ? "Ativo" : "Inativo"}
+          </button>
+          {ritual.ativo && ritual.temRitualista && (
+            <button
+              type="button"
+              className="afty-chip"
+              data-afty-tom={ritual.extraRitualista ? "destaque" : undefined}
+              aria-pressed={ritual.extraRitualista}
+              disabled={
+                configuracaoTravada
+                || (!ritual.extraRitualista && ritual.usosRitualista >= ritual.limiteRitualista)
+                || (ritual.extraRitualista && !podeDesarmarRitualista)
+              }
+              onClick={() => patchRitual({ extraRitualista: !ritual.extraRitualista })}
+              title="Ritualista"
+            >
+              Ritualista {ritual.usosRitualista}/{ritual.limiteRitualista}
+            </button>
+          )}
+          {ritual.ativo && ritual.permiteInteligencia && ritual.exigeTeste && (
+            <>
+              <button
+                type="button"
+                className="afty-chip"
+                data-afty-tom={ritual.atributoRitual === "destreza" ? "destaque" : undefined}
+                aria-pressed={ritual.atributoRitual === "destreza"}
+                disabled={configuracaoTravada}
+                onClick={() => patchRitual({ atributoRitual: "destreza" })}
+              >Destreza</button>
+              <button
+                type="button"
+                className="afty-chip"
+                data-afty-tom={ritual.atributoRitual === "inteligencia" ? "destaque" : undefined}
+                aria-pressed={ritual.atributoRitual === "inteligencia"}
+                disabled={configuracaoTravada}
+                onClick={() => patchRitual({ atributoRitual: "inteligencia" })}
+              >Inteligência</button>
+            </>
+          )}
+          {ritual.ativo && ritual.teste && (
+            <span className="afty-rotulo text-[10px] whitespace-nowrap">
+              Prestidigitação{" "}
+              <NumeroComFontes
+                valor={ritual.teste.bonus}
+                partes={ritual.teste.partes}
+                total={sinalDe(ritual.teste.bonus)}
+                className="afty-valor text-[11px]"
+                ancora="direita"
+                titulo={`CD ${ritual.teste.cd}`}
+                onRolar={!ritual.podeIniciar ? undefined : () => rolar({
+                  tipo: "teste",
+                  rotulo: `${f.nome || "Feitiço Sem Nome"} · Ritual`,
+                  detalhe: `CD ${ritual.teste.cd}`,
+                  bonus: ritual.teste.bonus,
+                  cd: ritual.teste.cd,
+                  testaRitualId: f.id,
+                  consomeRitualistaId: consomeNoTeste,
+                })}
+              />
+              <span className="ml-1">CD {ritual.teste.cd}</span>
+            </span>
+          )}
+          {ritual.ativo && ritual.estendido && !ritual.emAndamento && (
+            <button
+              type="button"
+              className="afty-chip"
+              disabled={!ritual.podeIniciar}
+              onClick={() => onIniciarRitualEstendido?.(f.id, ritual.extraRitualista)}
+            >
+              Iniciar
+            </button>
+          )}
+          {ritual.ativo && !ritual.exigeTeste && !ritual.estendido && !ritual.emAndamento && (
+            <button
+              type="button"
+              className="afty-chip"
+              disabled={!ritual.podeIniciar}
+              onClick={() => onIniciarRitualSemTeste?.(f.id, ritual.extraRitualista)}
+            >
+              Usar
+            </button>
+          )}
+          {ritual.ativo && ritual.etapa === "falhou" && (
+            <>
+              <button type="button" className="afty-chip" onClick={() => onCancelarRitual?.(f.id)}>
+                Cancelar
+              </button>
+              <button type="button" className="afty-chip" onClick={() => onConcluirPreparacaoRitual?.(f.id)}>
+                Finalizar
+              </button>
+            </>
+          )}
+          {ritual.ativo && ritual.etapa === "preparando" && (
+            <>
+              <button type="button" className="afty-chip" onClick={() => onConcluirPreparacaoRitual?.(f.id)}>
+                Finalizar
+              </button>
+              <button type="button" className="afty-chip" onClick={() => onCancelarRitual?.(f.id)}>
+                Interromper
+              </button>
+            </>
+          )}
+          {ritual.ativo && ritual.podeResolver && f.rolagens?.length === 0 && (
+            <button type="button" className="afty-chip" onClick={() => onFinalizarRitual?.(f.id)}>
+              Conjurar
+            </button>
+          )}
+          {ritual.ativo && ritual.resolvido && (
+            <button type="button" className="afty-chip" onClick={() => onEncerrarRitual?.(f.id)}>
+              Encerrar
+            </button>
+          )}
+        </div>
+        {ritual.ativo && (
+          <div className="grid gap-1">
+            {RITUAL_MELHORIAS.filter((melhoria) => (
+              ritual.melhoriasDisponiveis?.includes(melhoria.id)
+              || (ritual.melhorias?.[melhoria.id] || 0) > 0
+            )).map((melhoria) => {
+              const valor = ritual.melhorias?.[melhoria.id] || 0;
+              return (
+                <div key={melhoria.id} className="flex items-center gap-1.5">
+                  <span className="flex-1 min-w-0 text-[10px] truncate" title={melhoria.descricao}>
+                    {melhoria.nome}
+                  </span>
+                  <button
+                    type="button"
+                    className="afty-passo"
+                    disabled={valor <= 0 || configuracaoTravada}
+                    onClick={() => mudaMelhoria(melhoria.id, -1)}
+                    aria-label={`Remover ${melhoria.nome}`}
+                  >−</button>
+                  <span className="afty-chip">{valor}</span>
+                  <button
+                    type="button"
+                    className="afty-passo"
+                    disabled={
+                      configuracaoTravada
+                      || valor >= melhoria.max
+                      || ritual.quantidade >= ritual.limite
+                    }
+                    onClick={() => mudaMelhoria(melhoria.id, 1)}
+                    aria-label={`Adicionar ${melhoria.nome}`}
+                  >+</button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </details>
+  );
+}
+
+function LinhaFeitico({
+  f, rolar, destacado, onRitual, onIniciarRitualEstendido, onIniciarRitualSemTeste,
+  onConcluirPreparacaoRitual, onCancelarRitual, onFinalizarRitual, onEncerrarRitual,
+}) {
   const raiz = useDestaque(destacado);
   const rolagens = f.rolagens ?? [];
   return (
@@ -233,7 +441,7 @@ function LinhaFeitico({ f, rolar, destacado }) {
       {rolagens.length === 0 && f.valor != null && (
         <span className="afty-valor text-[13px]" title={f.valorLabel}>{f.valor}</span>
       )}
-      {rolagens.map((r) => (
+      {rolagens.map((r, indice) => (
         <span key={r.rotulo} className="flex items-center gap-1 flex-shrink-0">
           {/* O rótulo só aparece quando há MAIS DE UMA rolagem: com uma só, ele
               repetiria o que o nome da seção já diz. */}
@@ -250,12 +458,17 @@ function LinhaFeitico({ f, rolar, destacado }) {
             formatar={false}
             className="afty-valor text-[13px] whitespace-nowrap"
             titulo={r.rotulo}
-            onRolar={() => rolar({
+            onRolar={f.ritual?.ativo && !f.ritual?.podeRolarFeitico ? undefined : () => rolar({
               tipo: "dano", tom: r.tom,
               rotulo: f.nome || "Feitiço Sem Nome",
               detalhe: rolagens.length > 1 || r.vezes > 1 ? r.rotulo : f.nivelLabel,
               dados: r.dados, faces: r.faces, fixo: r.fixo || 0,
               explosiva: !!r.explosiva,
+              consomeEstado: indice === 0 ? f.consomeEstado : null,
+              feiticoDanoId: indice === 0 && f.tipo === "dano" ? f.id : null,
+              finalizaRitualId: indice === 0 && f.ritual?.ativo && f.ritual?.podeResolver
+                ? f.id
+                : null,
             })}
           />
         </span>
@@ -263,6 +476,17 @@ function LinhaFeitico({ f, rolar, destacado }) {
       {f.custoPE != null && (
         <span className="afty-valor text-[11px]" data-afty-tom="custo">{f.custoPE} PE</span>
       )}
+      <ControlesRitual
+        f={f}
+        rolar={rolar}
+        onRitual={onRitual}
+        onIniciarRitualEstendido={onIniciarRitualEstendido}
+        onIniciarRitualSemTeste={onIniciarRitualSemTeste}
+        onConcluirPreparacaoRitual={onConcluirPreparacaoRitual}
+        onCancelarRitual={onCancelarRitual}
+        onFinalizarRitual={onFinalizarRitual}
+        onEncerrarRitual={onEncerrarRitual}
+      />
     </div>
   );
 }
@@ -356,7 +580,11 @@ function LinhaManobra({ m, rolar, destacado }) {
   );
 }
 
-export default function AbaAcoes({ derived, rolar, destaque, rapido = [], abertos, onAberto, onFavorito }) {
+export default function AbaAcoes({
+  derived, rolar, destaque, rapido = [], abertos, onAberto, onFavorito, onRitual,
+  onIniciarRitualEstendido, onIniciarRitualSemTeste, onConcluirPreparacaoRitual,
+  onCancelarRitual, onFinalizarRitual, onEncerrarRitual,
+}) {
   const dano = derived.dano?.entradas ?? [];
   const cura = derived.cura?.linhas ?? [];
   const feiticos = (derived.feiticos?.lista ?? []).filter((f) => f.tipo !== "passivo");
@@ -415,7 +643,19 @@ export default function AbaAcoes({ derived, rolar, destaque, rapido = [], aberto
       {feiticos.length > 0 && (
         <Secao titulo="Feitiços">
           {feiticos.map((f) => (
-            <LinhaFeitico key={f.id} f={f} rolar={rolar} destacado={destaque === `feitico:${f.id}`} />
+            <LinhaFeitico
+              key={f.id}
+              f={f}
+              rolar={rolar}
+              destacado={destaque === `feitico:${f.id}`}
+              onRitual={onRitual}
+              onIniciarRitualEstendido={onIniciarRitualEstendido}
+              onIniciarRitualSemTeste={onIniciarRitualSemTeste}
+              onConcluirPreparacaoRitual={onConcluirPreparacaoRitual}
+              onCancelarRitual={onCancelarRitual}
+              onFinalizarRitual={onFinalizarRitual}
+              onEncerrarRitual={onEncerrarRitual}
+            />
           ))}
         </Secao>
       )}

@@ -58,7 +58,8 @@ import { rotuloBloco } from "./afty-cura";
 // Os canais do Motor, já agrupados por assunto para o <optgroup> do editor
 // do Funcionamento Básico.
 import {
-  EFEITO_CANAL_GRUPOS, VAR_DADOS_DANO_FINAL, efeitoUsaDadosDanoFinal, getCanal,
+  EFEITO_CANAL_GRUPOS, VAR_DADOS_DANO_FINAL, VAR_NIVEL_FEITICO,
+  efeitoUsaDadosDanoFinal, getCanal,
 } from "./afty-efeitos";
 import {
   DOMINIO_CATEGORIAS, tiposDaCategoria, categoriaLivre, valorDoEfeito,
@@ -2959,6 +2960,9 @@ function FeiticosCard({ draft, derived, addFeitico, removeFeitico, patchFeitico,
       .filter((f) => f.tipo === "dano")
       .map((f) => [f.id, calcularFeiticoDano(f, ctx).dadosDanoFinal]),
   );
+  const nivelPorFeitico = Object.fromEntries(
+    lista.filter((f) => f.tipo === "dano").map((f) => [f.id, f.nivel === "max" ? 6 : f.nivel]),
+  );
   const efeitosPassivoComPreview = (feitico) =>
     (derived.passivosEfeitos?.[feitico.id] ?? []).map((efeito) => {
       if (!efeitoUsaDadosDanoFinal(efeito)) return efeito;
@@ -2969,6 +2973,7 @@ function FeiticosCard({ draft, derived, addFeitico, removeFeitico, patchFeitico,
       const contexto = {
         ...(derived.motorLinhaDano?.contexto ?? {}),
         [VAR_DADOS_DANO_FINAL]: dados,
+        [VAR_NIVEL_FEITICO]: nivelPorFeitico[alvo.slice("feitico:".length)] ?? 0,
       };
       return {
         ...efeito,

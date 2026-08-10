@@ -12,6 +12,11 @@ import { numeroBr } from "../ui/formato";
 import {
   carregarSessao, salvarSessao, aparaSessao,
   aplicaDano, aplicaCura, proximaRodada, descansar, registraRolagem,
+  alteraEstadoCombate, consomeEstadoCombate, registraFeiticoDano,
+  configuraRitual, usosRitualista,
+  ritualEmAndamento,
+  iniciaRitualComum, iniciaRitualSemTeste, iniciaRitualEstendido,
+  concluiPreparacaoRitual, cancelaRitual, finalizaRitual, encerraRitual,
 } from "./ficha-sessao";
 import { rolarTeste, rolarDano } from "./ficha-rolagem";
 import { conteudoDaFicha, equipamentosDaFicha, alvosDeBusca } from "./ficha-conteudo";
@@ -207,9 +212,15 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
   const derived = useMemo(
     () => deriveAfty(
       { ...ficha, combate: sessaoBruta.combate, buffsSessao: sessaoBruta.buffs },
-      { almaAtual: sessaoBruta.almaAtual },
+      {
+        almaAtual: sessaoBruta.almaAtual,
+        ultimoFeiticoDanoId: sessaoBruta.ultimoFeiticoDanoId,
+        rituais: sessaoBruta.rituais,
+        usosRitualista: usosRitualista(sessaoBruta),
+        ritualAtual: ritualEmAndamento(sessaoBruta),
+      },
     ),
-    [ficha, sessaoBruta.combate, sessaoBruta.buffs, sessaoBruta.almaAtual],
+    [ficha, sessaoBruta],
   );
 
   // ⚠ O clamp é de LEITURA, e não um efeito que reescreve o estado. O teto muda
@@ -321,9 +332,29 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
     const r = desc.tipo === "dano"
       ? rolarDano(desc)
       : rolarTeste({ ...desc, modo });
-    atualiza((s) => registraRolagem(s, r));
+    atualiza((s) => {
+      let proxima = registraRolagem(s, r);
+      if (desc.consomeEstado) proxima = consomeEstadoCombate(proxima, desc.consomeEstado);
+      if (desc.feiticoDanoId) proxima = registraFeiticoDano(proxima, desc.feiticoDanoId);
+      if (desc.testaRitualId) {
+        proxima = iniciaRitualComum(
+          proxima,
+          desc.testaRitualId,
+          r.sucesso === true,
+          !!desc.consomeRitualistaId,
+        );
+      }
+      if (desc.finalizaRitualId) {
+        proxima = finalizaRitual(proxima, desc.finalizaRitualId);
+      }
+      return proxima;
+    });
     return r;
   }, [atualiza, modo]);
+
+  const alteraEstado = useCallback((estado, valor) => {
+    atualiza((s) => alteraEstadoCombate(s, estado, valor));
+  }, [atualiza]);
 
   /* `id` é o gancho estável do tema (`[data-afty-stat="defesa"]`), e por isso
      ele NÃO é derivado do rótulo: renomear "RD Espec." na tela não pode quebrar
@@ -371,6 +402,19 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
         abertos={abertos}
         onAberto={alternaItem}
         onFavorito={alternaFavorito}
+        onRitual={(feiticoId, proxima) => atualiza((s) => configuraRitual(s, feiticoId, proxima))}
+        onIniciarRitualEstendido={(feiticoId, usaRitualista) => (
+          atualiza((s) => iniciaRitualEstendido(s, feiticoId, usaRitualista))
+        )}
+        onIniciarRitualSemTeste={(feiticoId, usaRitualista) => (
+          atualiza((s) => iniciaRitualSemTeste(s, feiticoId, usaRitualista))
+        )}
+        onConcluirPreparacaoRitual={(feiticoId) => (
+          atualiza((s) => concluiPreparacaoRitual(s, feiticoId))
+        )}
+        onCancelarRitual={(feiticoId) => atualiza((s) => cancelaRitual(s, feiticoId))}
+        onFinalizarRitual={(feiticoId) => atualiza((s) => finalizaRitual(s, feiticoId))}
+        onEncerrarRitual={(feiticoId) => atualiza((s) => encerraRitual(s, feiticoId))}
       />
     ),
     habilidades: () => (
@@ -402,6 +446,7 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
         sessao={sessao}
         deltaPorEstado={deltaPorEstado}
         onPatchCombate={(parcial) => atualiza((s) => ({ ...s, combate: { ...s.combate, ...parcial } }))}
+        onEstado={alteraEstado}
         onBuffs={(buffs) => atualiza((s) => ({ ...s, buffs }))}
         onCondicoes={(condicoes) => atualiza((s) => ({ ...s, condicoes }))}
       />

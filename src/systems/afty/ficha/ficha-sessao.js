@@ -51,6 +51,9 @@ export function sessaoEmBranco(derived = null) {
     condicoes: [],
     buffs: [],
     usos: {},
+    ultimoFeiticoDanoId: null,
+    rituais: {},
+    ritualAtual: null,
     favoritos: [],
     log: [],
     atualizadoEm: null,
@@ -76,6 +79,11 @@ export function normalizaSessao(bruta, derived = null) {
     rodada: Math.max(0, inteiro(bruta.rodada, 0)),
     combate: bruta.combate && typeof bruta.combate === "object" ? bruta.combate : {},
     usos: bruta.usos && typeof bruta.usos === "object" ? bruta.usos : {},
+    ultimoFeiticoDanoId: typeof bruta.ultimoFeiticoDanoId === "string"
+      ? bruta.ultimoFeiticoDanoId
+      : null,
+    rituais: bruta.rituais && typeof bruta.rituais === "object" ? bruta.rituais : {},
+    ritualAtual: normalizaRitualAtual(bruta.ritualAtual),
     condicoes: lista(bruta.condicoes),
     buffs: lista(bruta.buffs),
     favoritos: lista(bruta.favoritos),
@@ -204,8 +212,205 @@ export function descansar(sessao, derived) {
     rodada: 0,
     usos: {},
     buffs: sessao.buffs.filter((b) => b.rodadas == null),
-    condicoes: sessao.condicoes.filter((c) => c.rodadas == null),
+    condicoes: sessao.condicoes
+      .filter((c) => c.rodadas == null)
+      .filter((c) => c.id !== CHAVE_CONDICAO_RITUAL_ESTENDIDO),
+    ritualAtual: null,
   };
+}
+
+const chaveUsoEstado = (id) => `estado:${id}:rodada`;
+
+/** Um estado limitado já foi ativado na rodada atual? */
+export function estadoUsadoNestaRodada(sessao, id) {
+  return sessao?.usos?.[chaveUsoEstado(id)] === sessao?.rodada;
+}
+
+/**
+ * Altera um estado catalogado e registra a ativação dos que só podem ser usados
+ * uma vez por rodada. Desligar continua permitido, mas não libera uma segunda
+ * ativação na mesma rodada.
+ */
+export function alteraEstadoCombate(sessao, estado, valor) {
+  if (!estado?.id) return sessao;
+  const combate = sessao?.combate && typeof sessao.combate === "object" ? sessao.combate : {};
+  const ativando = !!valor && !combate[estado.id];
+  if (ativando && estado.umaVezPorRodada && estadoUsadoNestaRodada(sessao, estado.id)) {
+    return sessao;
+  }
+  return {
+    ...sessao,
+    combate: { ...combate, [estado.id]: valor },
+    usos: ativando && estado.umaVezPorRodada
+      ? { ...(sessao.usos || {}), [chaveUsoEstado(estado.id)]: sessao.rodada }
+      : sessao.usos,
+  };
+}
+
+/** Consome um estado de próximo uso sem apagar o registro da rodada. */
+export function consomeEstadoCombate(sessao, id) {
+  if (!id || !sessao?.combate?.[id]) return sessao;
+  return { ...sessao, combate: { ...sessao.combate, [id]: false } };
+}
+
+/** Guarda o Feitiço de dano cuja primeira rolagem foi usada por último. */
+export function registraFeiticoDano(sessao, id) {
+  if (!id || sessao?.ultimoFeiticoDanoId === id) return sessao;
+  return { ...sessao, ultimoFeiticoDanoId: id };
+}
+
+/** Atualiza a preparação de Ritual de um Feitiço sem tocar nas outras linhas. */
+export function configuraRitual(sessao, feiticoId, proxima) {
+  if (!feiticoId) return sessao;
+  const rituais = sessao?.rituais && typeof sessao.rituais === "object" ? sessao.rituais : {};
+  const atual = rituais[feiticoId] && typeof rituais[feiticoId] === "object"
+    ? rituais[feiticoId]
+    : {};
+  const valor = typeof proxima === "function" ? proxima(atual) : proxima;
+  if (!valor || typeof valor !== "object") return sessao;
+  return { ...sessao, rituais: { ...rituais, [feiticoId]: valor } };
+}
+
+const CHAVE_USO_RITUALISTA = "cnj_ritualista";
+const CHAVE_CONDICAO_RITUAL_ESTENDIDO = "ritual:desprevenido";
+
+const ETAPAS_RITUAL = new Set(["pronto", "falhou", "preparando", "resolvido"]);
+
+function normalizaRitualAtual(valor) {
+  if (!valor || typeof valor !== "object" || typeof valor.feiticoId !== "string") return null;
+  const etapa = valor.etapa === "adiado" ? "pronto" : valor.etapa;
+  if (!ETAPAS_RITUAL.has(etapa)) return null;
+  return {
+    feiticoId: valor.feiticoId,
+    tipo: valor.tipo === "estendido" ? "estendido" : "comum",
+    etapa,
+    usaRitualista: !!valor.usaRitualista,
+  };
+}
+
+export function ritualEmAndamento(sessao) {
+  return normalizaRitualAtual(sessao?.ritualAtual);
+}
+
+export function usosRitualista(sessao) {
+  return Math.max(0, inteiro(sessao?.usos?.[CHAVE_USO_RITUALISTA], 0));
+}
+
+/** Consome uma aplicação da melhoria adicional de Ritualista. */
+export function consomeRitualista(sessao) {
+  return {
+    ...sessao,
+    usos: { ...(sessao.usos || {}), [CHAVE_USO_RITUALISTA]: usosRitualista(sessao) + 1 },
+  };
+}
+
+const comRitualistaConsumido = (sessao, usaRitualista) => (
+  usaRitualista ? consomeRitualista(sessao) : sessao
+);
+
+const removeCondicaoRitualEstendido = (sessao) => ({
+  ...sessao,
+  condicoes: (sessao.condicoes ?? []).filter((c) => c.id !== CHAVE_CONDICAO_RITUAL_ESTENDIDO),
+});
+
+const desarmaRitualistaDoFeitico = (sessao, feiticoId) => configuraRitual(
+  sessao,
+  feiticoId,
+  (ritual) => ({ ...ritual, extraRitualista: false }),
+);
+
+/** Registra o resultado do teste do Ritual comum. */
+export function iniciaRitualComum(sessao, feiticoId, sucesso, usaRitualista = false) {
+  if (!feiticoId || ritualEmAndamento(sessao)) return sessao;
+  const consumido = comRitualistaConsumido(sessao, usaRitualista);
+  return {
+    ...consumido,
+    ritualAtual: {
+      feiticoId,
+      tipo: "comum",
+      etapa: sucesso ? "pronto" : "falhou",
+      usaRitualista: !!usaRitualista,
+    },
+  };
+}
+
+/** Inicia um Ritual comum cuja fonte dispensa o teste de Prestidigitação. */
+export function iniciaRitualSemTeste(sessao, feiticoId, usaRitualista = false) {
+  return iniciaRitualComum(sessao, feiticoId, true, usaRitualista);
+}
+
+/** Começa o primeiro turno do Ritual Estendido e aplica Desprevenido. */
+export function iniciaRitualEstendido(sessao, feiticoId, usaRitualista = false) {
+  if (!feiticoId || ritualEmAndamento(sessao)) return sessao;
+  const consumido = comRitualistaConsumido(sessao, usaRitualista);
+  const semMarcadorAnterior = (consumido.condicoes ?? [])
+    .filter((c) => c.id !== CHAVE_CONDICAO_RITUAL_ESTENDIDO);
+  return {
+    ...consumido,
+    condicoes: [
+      ...semMarcadorAnterior,
+      {
+        id: CHAVE_CONDICAO_RITUAL_ESTENDIDO,
+        nome: "Desprevenido",
+        forca: "fraca",
+        rodadas: null,
+      },
+    ],
+    ritualAtual: {
+      feiticoId,
+      tipo: "estendido",
+      etapa: "preparando",
+      usaRitualista: !!usaRitualista,
+    },
+  };
+}
+
+/** O botão conclui a preparação estendida ou a continuação escolhida após a falha. */
+export function concluiPreparacaoRitual(sessao, feiticoId) {
+  const atual = ritualEmAndamento(sessao);
+  if (!atual || atual.feiticoId !== feiticoId) return sessao;
+  if (!["falhou", "preparando"].includes(atual.etapa)) return sessao;
+  return {
+    ...sessao,
+    ritualAtual: {
+      ...atual,
+      etapa: "pronto",
+    },
+  };
+}
+
+/** Cancela ou interrompe o Ritual sem devolver Ritualista já gasto. */
+export function cancelaRitual(sessao, feiticoId) {
+  const atual = ritualEmAndamento(sessao);
+  if (!atual || atual.feiticoId !== feiticoId) return sessao;
+  const limpo = removeCondicaoRitualEstendido({ ...sessao, ritualAtual: null });
+  return atual.usaRitualista ? desarmaRitualistaDoFeitico(limpo, feiticoId) : limpo;
+}
+
+/** O Feitiço pode ser resolvido agora, depois do teste ou da preparação. */
+export function ritualProntoParaResolver(sessao, feiticoId) {
+  const atual = ritualEmAndamento(sessao);
+  return !!atual && atual.feiticoId === feiticoId && atual.etapa === "pronto";
+}
+
+/** Marca o Feitiço como resolvido e conserva o estado até o botão Encerrar. */
+export function finalizaRitual(sessao, feiticoId) {
+  const atual = ritualEmAndamento(sessao);
+  if (!atual || atual.feiticoId !== feiticoId || !ritualProntoParaResolver(sessao, feiticoId)) {
+    return sessao;
+  }
+  return removeCondicaoRitualEstendido({
+    ...sessao,
+    ritualAtual: { ...atual, etapa: "resolvido" },
+  });
+}
+
+/** Encerra o Ritual resolvido e libera o botão para outro uso. */
+export function encerraRitual(sessao, feiticoId) {
+  const atual = ritualEmAndamento(sessao);
+  if (!atual || atual.feiticoId !== feiticoId || atual.etapa !== "resolvido") return sessao;
+  const limpo = { ...sessao, ritualAtual: null };
+  return atual.usaRitualista ? desarmaRitualistaDoFeitico(limpo, feiticoId) : limpo;
 }
 
 /** Empilha uma rolagem no log, com teto. O mais novo fica em cima. */

@@ -44,7 +44,7 @@ export function rolarDados(quantidade, faces, rng = Math.random) {
  * `margem` é a margem de crítico DAQUELA linha (o motor já a calcula, com o piso
  * de 2 aplicado). Sem ela, crítico é só no 20 natural.
  */
-export function rolarTeste({ rotulo, detalhe, bonus = 0, modo = "normal", margem = 20 }, rng = Math.random) {
+export function rolarTeste({ rotulo, detalhe, bonus = 0, modo = "normal", margem = 20, cd = null }, rng = Math.random) {
   const bonusInt = Math.trunc(Number(bonus) || 0);
   const dupla = modo === "vantagem" || modo === "desvantagem";
   const d20 = rolarDados(dupla ? 2 : 1, 20, rng);
@@ -54,6 +54,8 @@ export function rolarTeste({ rotulo, detalhe, bonus = 0, modo = "normal", margem
   // Qual dos dois foi descartado, para o painel poder riscá-lo. Com os dois
   // iguais não há descarte visível, e o índice 1 serve igual.
   const descartado = dupla ? (d20[0] === escolhido ? 1 : 0) : null;
+  const total = escolhido + bonusInt;
+  const cdFinal = cd == null ? null : Math.trunc(Number(cd));
   return {
     id: novoId(),
     ts: Date.now(),
@@ -65,7 +67,9 @@ export function rolarTeste({ rotulo, detalhe, bonus = 0, modo = "normal", margem
     descartado,
     natural: escolhido,
     bonus: bonusInt,
-    total: escolhido + bonusInt,
+    total,
+    cd: Number.isFinite(cdFinal) ? cdFinal : null,
+    sucesso: Number.isFinite(cdFinal) ? total >= cdFinal : null,
     // ⚠ Crítico do d20 é do ACERTO, e o que ele faz é habilitar o dano dobrado.
     // Um 1 natural fica marcado também: quem lê o log quer ver a pedra.
     critico: escolhido >= Math.max(2, Math.trunc(margem) || 20),

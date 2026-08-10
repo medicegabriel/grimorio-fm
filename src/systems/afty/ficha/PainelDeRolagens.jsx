@@ -37,6 +37,9 @@ function Rolagem({ r, destaque }) {
           </span>
         )}
         {r.critico && <span className="afty-chip" data-afty-tom="destaque">Crítico</span>}
+        {r.sucesso === true && <span className="afty-chip" data-afty-tom="destaque">Sucesso</span>}
+        {r.sucesso === false && <span className="afty-chip">Falha</span>}
+        {r.cd != null && <span className="afty-rotulo text-[10px]">CD {r.cd}</span>}
         <span className="afty-rolagem-total">{r.total}</span>
       </div>
       <div className="flex items-baseline gap-1.5 mt-0.5">

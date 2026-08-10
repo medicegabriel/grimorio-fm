@@ -141,6 +141,11 @@ const VOCABULARIO_DSL = {
  * @param creature ficha (só escolhas)
  * @param opcoes   ajustes de JOGO, que o CRIADOR nunca passa:
  *   • almaAtual — Integridade da Alma CORRENTE. Ver a nota do `almaMult` abaixo.
+ *   • ultimoFeiticoDanoId — última manifestação de dano usada na Ficha Final.
+ *   • rituais — melhorias escolhidas para o próximo uso de cada Feitiço.
+ *   • usosRitualista — melhorias adicionais gastas desde o último descanso.
+ *   • ritualAtual — Ritual aguardando teste, escolha ou conclusão na Ficha Final.
+ *   • rituaisSemTeste — mapa de Feitiços cuja fonte dispensa Prestidigitação.
  */
 export function deriveAfty(creature, opcoes = {}) {
   const core = creature?.core ?? {};
@@ -979,7 +984,7 @@ export function deriveAfty(creature, opcoes = {}) {
     // libera Habilidade Geral nenhuma.
     excedeu: gastosNoComum > contadorComum,
   };
-  const feiticos = {
+  let feiticos = {
     nivelMax: nivelMaxFeitico(nd),
     gastos: feiticosGastos,
     cdBase: cd,
@@ -994,7 +999,14 @@ export function deriveAfty(creature, opcoes = {}) {
       efeitos: ef,
       efeitosLinhaDano,
       contextoDsl: ctxTecnica,
+      combate,
       habilidades: habilidades.escolhidas,
+      ultimoFeiticoDanoId: opcoes.ultimoFeiticoDanoId ?? null,
+      rituais: opcoes.rituais ?? {},
+      usosRitualista: Math.max(0, Math.trunc(Number(opcoes.usosRitualista) || 0)),
+      limiteRitualista: Math.floor(bt / 2),
+      ritualAtual: opcoes.ritualAtual ?? null,
+      rituaisSemTeste: opcoes.rituaisSemTeste ?? {},
       temEnergiaReversa: aptidoesIds.includes("energia_reversa"),
       invocacoes: Array.isArray(creature?.invocacoes) ? creature.invocacoes : [],
     }),
@@ -1035,6 +1047,52 @@ export function deriveAfty(creature, opcoes = {}) {
     // usam Destreza. Voltou a valer em 2026-08-01.
     penalidadeDestreza: equip.penalidadeDestreza,
   });
+
+  // O teste de Conjuração em Ritual parte de Prestidigitação. Naturalidade com
+  // Rituais abre uma escolha por uso, então a ficha guarda o atributo escolhido
+  // na configuração daquele Feitiço em vez de trocar Destreza por Inteligência
+  // silenciosamente. Ritualista soma +2 em qualquer uma das duas versões.
+  const prestidigitacao = (testes.pericias ?? []).find((p) => p.id === "prestidigitacao") ?? null;
+  const temNaturalidadeRitual = habilidades.escolhidas.includes("cnj_naturalidade_com_rituais");
+  const temRitualista = habilidades.escolhidas.includes("cnj_ritualista");
+  const partesPrestidigitacao = prestidigitacao?.partes ?? [];
+  const parteAtributoPrest = partesPrestidigitacao[0] ?? { label: "Destreza", valor: modDes };
+  const partePenalidadePrest = partesPrestidigitacao.find((p) => p.label === "Armadura e Escudo") ?? null;
+  const bonusRitualista = temRitualista ? 2 : 0;
+  feiticos = {
+    ...feiticos,
+    lista: (feiticos.lista ?? []).map((f) => {
+      if (!f.ritual) return f;
+      const config = opcoes.rituais?.[f.id] ?? {};
+      const usaInteligencia = temNaturalidadeRitual && config.atributoRitual === "inteligencia";
+      const bonusPrestBase = prestidigitacao?.bonus ?? 0;
+      const bonusAtributo = usaInteligencia
+        ? bonusPrestBase - (parteAtributoPrest.valor || 0) - (partePenalidadePrest?.valor || 0) + modInt
+        : bonusPrestBase;
+      const partesAtributo = usaInteligencia
+        ? [
+          { label: "Inteligência", valor: modInt },
+          ...partesPrestidigitacao.slice(1).filter((p) => p.label !== "Armadura e Escudo"),
+        ]
+        : partesPrestidigitacao;
+      return {
+        ...f,
+        ritual: {
+          ...f.ritual,
+          atributoRitual: usaInteligencia ? "inteligencia" : "destreza",
+          permiteInteligencia: temNaturalidadeRitual,
+          teste: f.ritual.exigeTeste ? {
+            bonus: bonusAtributo + bonusRitualista,
+            cd: f.ritual.cd,
+            partes: [
+              ...partesAtributo,
+              ...(bonusRitualista ? [{ label: "Ritualista", valor: bonusRitualista }] : []),
+            ],
+          } : null,
+        },
+      };
+    }),
+  };
 
   // ---------- Dano (planilha do autor, 2026-07-27) ----------
   // Uma linha por FONTE: o Ataque Básico e mais uma para cada arma equipada.

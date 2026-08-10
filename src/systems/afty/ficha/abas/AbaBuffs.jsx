@@ -5,6 +5,7 @@ import { COMBATE_ESTADOS } from "../../afty-combate";
 import { CONDICOES_CATALOGO } from "../../afty-feiticos";
 import { getCanal } from "../../afty-efeitos";
 import CanalPicker from "../CanalPicker";
+import { estadoUsadoNestaRodada } from "../ficha-sessao";
 
 /**
  * ============================================================
@@ -44,7 +45,7 @@ function Secao({ titulo, children, direita }) {
 
 /* Uma linha do catálogo de estados. `delta` é o que ligar este estado muda na
    ficha, calculado por fora (ver `deltaDosEstados`). */
-function LinhaEstado({ estado, valor, delta, opcoes, onPatch, derived }) {
+function LinhaEstado({ estado, valor, delta, opcoes, onValor, derived, bloqueado }) {
   const teto = typeof estado.max === "function" ? estado.max(derived) : estado.max;
   return (
     <div className="afty-linha px-2.5 py-1.5 flex items-center gap-2 flex-wrap">
@@ -66,9 +67,11 @@ function LinhaEstado({ estado, valor, delta, opcoes, onPatch, derived }) {
           className="afty-botao"
           data-afty-tom={valor ? "destaque" : undefined}
           aria-pressed={!!valor}
-          onClick={() => onPatch({ [estado.id]: !valor })}
+          disabled={bloqueado && !valor}
+          title={bloqueado && !valor ? "Já usada nesta rodada" : undefined}
+          onClick={() => onValor(estado, !valor)}
         >
-          {valor ? "Ativa" : "Inativa"}
+          {valor ? "Ativa" : bloqueado ? "Usada" : "Inativa"}
         </button>
       ) : estado.tipo === "opcao" ? (
         <span className="flex items-center gap-1 flex-wrap justify-end">
@@ -79,7 +82,7 @@ function LinhaEstado({ estado, valor, delta, opcoes, onPatch, derived }) {
               className="afty-botao"
               data-afty-tom={valor === o.id ? "destaque" : undefined}
               aria-pressed={valor === o.id}
-              onClick={() => onPatch({ [estado.id]: valor === o.id ? null : o.id })}
+              onClick={() => onValor(estado, valor === o.id ? null : o.id)}
             >
               {o.label}
             </button>
@@ -89,7 +92,7 @@ function LinhaEstado({ estado, valor, delta, opcoes, onPatch, derived }) {
         <span className="flex items-center gap-1 flex-shrink-0">
           <button
             type="button" className="afty-passo"
-            onClick={() => onPatch({ [estado.id]: Math.max(estado.min ?? 0, (valor || 0) - 1) })}
+            onClick={() => onValor(estado, Math.max(estado.min ?? 0, (valor || 0) - 1))}
             aria-label={`${estado.label} menos 1`}
           >
             −
@@ -97,7 +100,7 @@ function LinhaEstado({ estado, valor, delta, opcoes, onPatch, derived }) {
           <span className="afty-valor text-[13px] w-8 text-center">{valor || 0}</span>
           <button
             type="button" className="afty-passo"
-            onClick={() => onPatch({ [estado.id]: Math.min(teto ?? 0, (valor || 0) + 1) })}
+            onClick={() => onValor(estado, Math.min(teto ?? 0, (valor || 0) + 1))}
             aria-label={`${estado.label} mais 1`}
           >
             +
@@ -163,7 +166,7 @@ function NovoBuff({ onCriar }) {
 }
 
 export default function AbaBuffs({
-  derived, sessao, onPatchCombate, onBuffs, onCondicoes, deltaPorEstado,
+  derived, sessao, onPatchCombate, onEstado, onBuffs, onCondicoes, deltaPorEstado,
 }) {
   const combate = derived.combate ?? {};
   const [novaCondicao, setNovaCondicao] = useState("");
@@ -228,8 +231,9 @@ export default function AbaBuffs({
                 valor={combate[e.id]}
                 opcoes={e.opcoesVisiveis}
                 delta={deltaPorEstado[e.id] ?? []}
-                onPatch={onPatchCombate}
+                onValor={onEstado}
                 derived={derived}
+                bloqueado={e.umaVezPorRodada && estadoUsadoNestaRodada(sessao, e.id)}
               />
             ))}
           </div>
@@ -267,6 +271,8 @@ export default function AbaBuffs({
             {c.rodadas != null && <span className="afty-chip">{c.rodadas}</span>}
             <button
               type="button" className="afty-passo"
+              disabled={c.id === "ritual:desprevenido"}
+              title={c.id === "ritual:desprevenido" ? "Ritual Estendido" : undefined}
               onClick={() => onCondicoes(condicoes.filter((x) => x.id !== c.id))}
               aria-label={`Remover ${c.nome}`}
             >

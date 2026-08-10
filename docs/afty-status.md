@@ -107,6 +107,168 @@ Estado atual do sistema Afty (atualizado 2026-07-17). Leia junto com:
 
 ---
 
+## REVISÃO DE PENDÊNCIAS DE 2026-08-09
+
+Revisão das anotações do autor contra o estado atual do código. A seção começou como auditoria e
+também registra as correções implementadas na sequência.
+
+### Já resolvido
+
+- **Descrição de Habilidades na ficha final:** já existe. A aba Habilidades monta o conteúdo em
+  `ficha/ficha-conteudo.js`, e `ItemDeFicha.jsx` mostra a `descricao` verbatim quando o item é
+  aberto. A descrição fica fechada por padrão.
+- **Crítico comum na ficha final:** já é automático nas linhas de dano. A rolagem de Acerto usa a
+  margem daquela linha, marca o Crítico e o Dano seguinte dobra somente os dados. A marca é
+  consumida depois da rolagem de Dano. Isso ainda não implementa Raio Negro.
+
+### Conjurador após a primeira correção
+
+Das seis pendências registradas na sessão de 2026-08-07, **Foco Amaldiçoado: Destruição**,
+**Potência Concentrada** e **Ciclagem Maldita** foram ligados em 2026-08-09. As outras três
+continuam sem integração completa:
+
+- ~~**Foco Amaldiçoado: Destruição**~~ ✅ **Feito para Feitiços de Dano em 2026-08-09.** A opção
+  emite `danoBonus` com alvo `feitico` e expressão `dados_dano_final + maestria`. A quantidade real
+  de dados fecha antes da expressão, inclusive por disparo em Múltiplos Disparos. A fonte aparece
+  no hover da rolagem. A parcela de Aptidões Amaldiçoadas continua esperando linhas estruturadas de
+  dano para elas.
+- ~~**Potência Concentrada**~~ ✅ **Feito em 2026-08-09.** Virou o estado catalogado
+  `potenciaConcentrada`, visível na ficha somente para quem escolheu a Habilidade. A ativação fica
+  bloqueada depois do primeiro uso na rodada. O próximo Feitiço de Dano de alvo único recebe
+  `5 * nivel_feitico`, e a primeira rolagem de dano consome o estado automaticamente.
+
+  **Leitura conservadora adotada após o autor mandar continuar sem responder às três perguntas:**
+  a preparação persiste até um Feitiço elegível ser usado, o bônus entra apenas no dano inicial do
+  Dano Contínuo e somente no primeiro disparo de Múltiplos Disparos. As três decisões ficam abertas
+  para revisão do autor.
+- ~~**Ciclagem Maldita**~~ ✅ **Feito em 2026-08-09.** A sessão guarda
+  `ultimoFeiticoDanoId` quando a primeira rolagem de um Feitiço de Dano é usada. Outro Feitiço de
+  Dano recebe dados adicionais iguais a `piso(maestria / 2)`, com a habilidade identificada no
+  hover da fonte. O primeiro Feitiço da sessão e a repetição do mesmo Feitiço não recebem bônus.
+
+  **Leitura conservadora adotada após o autor mandar continuar:** somente Feitiços de Dano com
+  rolagem estruturada participam do histórico. Dano Contínuo recebe os dados apenas no golpe
+  inicial. Em Múltiplos Disparos, os dados adicionais entram somente na primeira rolagem, sem serem
+  multiplicados pela quantidade de disparos. Essas decisões ficam abertas para revisão do autor.
+- **Rituais e Aprimoramento de Rituais:** implementação iniciada em 2026-08-09 a partir do texto
+  integral enviado pelo autor. O motor puro de Ritual fecha ação final, quantidade de melhorias,
+  Ritual Estendido e CD de Prestidigitação, incluindo a exceção do Nível 0. A ficha final guarda
+  uma configuração por Feitiço, permite escolher as melhorias e rola o teste contra a CD,
+  registrando Sucesso ou Falha no histórico. Naturalidade com Rituais abre a escolha entre
+  Destreza e Inteligência. Ritualista soma +2 no teste e controla a melhoria adicional por
+  Descanso Longo. A sessão registra qual Feitiço está usando Ritual e bloqueia outro enquanto o
+  primeiro não for encerrado, preservando as rolagens restantes dele.
+
+  **Correção de estado em 2026-08-10:** o Ritual comum agora bloqueia a resolução do Feitiço até o
+  resultado do teste. Sucesso libera a resolução. Falha exige cancelar a conjuração ou apertar
+  Finalizar antes de resolver o Feitiço. O Ritual Estendido usa Iniciar e Finalizar, mantendo
+  Desprevenido entre os dois estados. Interromper remove Desprevenido. A configuração fica travada
+  durante o processo.
+
+  **Ajuste do autor em 2026-08-10:** o fluxo não consulta nem avança a rodada da ficha. Iniciar,
+  Finalizar, Conjurar, Resolver e Encerrar são estados controlados apenas pelos botões. Enquanto o
+  Ritual não for encerrado, outro Feitiço não pode iniciar Ritual. Fontes futuras de Especialização
+  ou Expansão de Domínio que dispensem Prestidigitação entram pelo mapa `rituaisSemTeste`, e a ficha
+  mostra Usar no lugar da rolagem. Nenhuma fonte foi ligada sem o texto específico da regra.
+
+  Ritualista é consumido quando o teste ou a preparação começa, mas a vaga adicional permanece no
+  uso atual até ele ser encerrado ou cancelado. Depois da resolução, as rolagens restantes do mesmo
+  Feitiço conservam a vaga enquanto o estado Resolvido estiver aberto. Configuração acima do limite
+  não pode iniciar teste, preparação ou resolução.
+
+  Nos Feitiços de Dano já funcionam Ajuste de Alvos, Aumento de Alcance, Aumento de Dano, Aumento
+  de Precisão, Conversão de Sustento, Expansão de Área e Potencialização de Dificuldade. A parcela
+  fixa do Aumento de Dano entra somente na primeira aplicação de Dano Contínuo e no primeiro
+  disparo de Múltiplos Disparos. Nos Feitiços Curativos já funcionam Ajuste de Alvos, Aumento de
+  Alcance e Expansão de Área.
+
+  **Ainda pendente nesta frente:** aplicar as melhorias nos Feitiços Auxiliares e Especiais,
+  modelar Feitiço Favorito e decidir os casos ambíguos de Potencialização de Efeito descritos nas
+  perguntas abertas desta sessão.
+
+  **Perguntas abertas para não inventar regra:**
+
+  1. Em Potencialização de Efeito, "aumenta o nível dos dados adicionais em 6 ou 3" soma 6 ou 3
+     diretamente às faces do dado, avança uma escala de dados ou usa outra tabela?
+  2. Potencialização de Efeito pode aumentar a rolagem de um Feitiço Curativo, ou "benefício
+     numérico" fica restrito aos efeitos Auxiliares?
+  3. Em Múltiplos Efeitos, a melhoria precisa guardar qual efeito recebe a potencialização. Essa
+     escolha é feita em cada ritual ou fica presa ao Feitiço?
+  4. Dano na Alma corta pela metade os aumentos de dano e alcance que não vêm da criação. Isso
+     inclui as melhorias do Ritual? Se incluir, como arredondar valores fracionários?
+- **Destruição Ampla:** não recebe a quantidade de criaturas afetadas para calcular o dano
+  adicional.
+- **Destruição Focada:** não ativa os dados adicionais e a RD ignorada no Feitiço de alvo único.
+
+### Custo de Feitiços e Habilidades
+
+**Situação atual:** `afty-feiticos.js` fecha `custoPE` diretamente com `custoPadrao(nivel)`. A ficha
+final apenas exibe esse resultado. Não existe um resolvedor de custo por Feitiço, nem seleção dos
+Feitiços afetados, ordem de aplicação das reduções ou estado de uso para benefícios temporários.
+
+Reduções e alterações de custo de Feitiço já localizadas e ainda não aplicadas ao resultado:
+
+| Fonte | Escopo que precisa ser modelado |
+|---|---|
+| **Foco Amaldiçoado: Economia** | Todos os Feitiços, redução de 2, incluindo Nível 1 a custo 0 |
+| **Dominância em Feitiço** | Um Feitiço escolhido, redução igual à metade do nível dele, arredondado para cima |
+| **Manipulação Perfeita** | Uma quantidade de Feitiços igual ao bônus de treinamento, redução igual à metade dele |
+| **O Honrado** | Feitiços de nível 1, 2 e 3 com custo reduzido pela metade |
+| **Preparação de Técnicas** | Dois Feitiços preparados por descanso longo, metade do custo no primeiro uso, com o nível permitido escalando |
+| **Marca Registrada** | O Feitiço adicional escolhido recebe redução de 1 PE |
+| **Técnica Registrada** | Aumenta a redução da primeira Marca Registrada para 2 ou reduz a sustentação em 1, e concede Marcas adicionais |
+| **Manual de Técnica** | O Feitiço criado acima do nível acessível tem custo aumentado em 50% |
+| **Verdadeiras Origens, irmão morto** | Recebe a redução de O Honrado e reduz em 10 o custo da Técnica Máxima concedida |
+| **Expansão de Domínio, benefício Custo de Feitiço** | Reduz o custo em DOM enquanto o Feitiço é usado dentro da expansão |
+
+Regras relacionadas a custo de Habilidade, mas que não são apenas custo-base de Feitiço:
+
+- **Arma Harmonizada:** reduz em 1 o custo da próxima Habilidade que gaste PE ou Estamina depois de
+  um acerto crítico.
+- **Mistura Profana:** reduz em 1 o custo das Habilidades que utilizam energia amaldiçoada durante
+  uma cena.
+- **Infinitude:** transforma em zero o custo de Habilidades de Técnica de nível 1 e 2 enquanto o
+  estado estiver ativo.
+- **Adepto de Feitiçaria:** reduz o custo da Mudança de Fundamento, que não é necessariamente o
+  mesmo campo do custo-base do Feitiço.
+- **Mudanças de Fundamento e recarga de arma:** também alteram custo em ações. Precisam ficar
+  separados do custo em PE.
+- Habilidades de Controlador também reduzem custo de invocação, ativação ou Habilidades das
+  Invocações. Elas pertencem ao resolvedor de Invocações, não ao custo-base de Feitiço.
+
+Antes de implementar, confirmar com o autor:
+
+1. A ordem quando uma redução fixa e uma divisão pela metade se aplicam ao mesmo custo.
+2. Quais reduções acumulam e quais disputam entre si.
+3. O piso final de custo de cada fonte. Economia permite explicitamente custo 0, mas as outras não
+   dizem isso.
+4. Se "custo de Habilidade" nesta frente inclui PE, PER, Estamina e custo em ações, ou somente PE.
+5. Como guardar os Feitiços escolhidos e os estados por descanso, cena, próximo uso e primeiro uso.
+
+### Fonte de bônus de Perícia do Sem Técnica
+
+O bônus de **Empenho Implacável** é aplicado ao número pelo canal `bonusPericia`. O problema está no
+rótulo da fonte: `coletarEfeitosOrigem` usa `OPCAO_ORIGEM_NOME`, então o hover recebe apenas o nome
+da opção escolhida, como **Acrobacia**, sem identificar **Empenho Implacável** ou o degrau que
+concedeu o bônus. Os degraus de ND 3, 13 e 17 podem atingir a mesma Perícia, então o nome do degrau
+também é necessário para diferenciar as parcelas.
+
+Correção pendente de UI de fontes, sem mudar a regra ou o valor: rotular cada parcela com a
+característica e o degrau, preservando a Perícia escolhida no nome.
+
+### Crítico e Raio Negro na ficha final
+
+- **Crítico comum:** feito para Acerto seguido de Dano, como descrito acima.
+- **Raio Negro:** não existe no motor de rolagem nem no estado de combate. A ficha não distingue um
+  Crítico comum de um Kokusen, não aplica o dano de 1,5x, não ignora RD, não controla o Estado de
+  Consciência Absoluta e não reduz a margem dos Kokusen seguintes.
+- A automação deve olhar a Aptidão escolhida e o valor natural do d20. **Abençoado pelas Faíscas
+  Negras** também altera o limiar inicial e concede efeitos depois do Kokusen.
+- O dano adicional do Kokusen precisa entrar antes do Dano Após Ataque, conforme o texto já
+  transcrito em `afty-aptidoes.js`.
+
+---
+
 ## SESSÃO DE 2026-08-07
 
 ### Dano de Feitiço ligado ao Motor e Explosão Encadeada
@@ -144,14 +306,17 @@ Estado atual do sistema Afty (atualizado 2026-07-17). Leia junto com:
 ### Fora desta etapa
 
 - A ativação do Funcionamento Básico na ficha final não foi alterada.
-- Habilidades de Conjurador que dependem do último Feitiço usado, de uma ação de preparação, da
-  quantidade de criaturas atingidas ou dos resultados dos dados continuam exigindo estado de uso.
+- Habilidades de Conjurador que dependem da quantidade de criaturas atingidas ou dos resultados
+  dos dados continuam exigindo estado de uso.
 
 ### Pendências de Conjurador identificadas nos testes
 
-- **Foco Amaldiçoado: Destruição:** não está aplicando seus efeitos ao dano dos Feitiços.
-- **Potência Concentrada:** não possui ativação e não altera o dano do próximo Feitiço.
-- **Ciclagem Maldita:** não acompanha o último Feitiço usado e não aplica os dados adicionais.
+- ~~**Foco Amaldiçoado: Destruição**~~ ✅ **Feito para Feitiços de Dano em 2026-08-09.** A parte de
+  Aptidões Amaldiçoadas continua sem consumidor de dano estruturado.
+- ~~**Potência Concentrada**~~ ✅ **Feito em 2026-08-09.** Estado de uma vez por rodada, consumido
+  pela primeira rolagem do próximo Feitiço de Dano de alvo único.
+- ~~**Ciclagem Maldita**~~ ✅ **Feito em 2026-08-09.** A ficha acompanha a primeira rolagem do último
+  Feitiço de Dano e aplica `piso(maestria / 2)` dados ao alternar para outro.
 - **Rituais e Aprimoramento de Rituais:** ainda não estão ligados ao funcionamento dos Feitiços.
 - **Destruição Ampla:** não possui forma de informar a quantidade de criaturas afetadas e ativar o
   dano adicional.

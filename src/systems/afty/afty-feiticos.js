@@ -36,6 +36,7 @@ import { grauMeta } from "./afty-invocacoes";
 import {
   detalhesDoCanalEscopos, resolverEfeitosDanoFinal, valorCanalEscopos,
 } from "./afty-efeitos";
+import { bonusRitual, resolveRitual } from "./afty-rituais";
 
 // ---------------------------------------------------------------
 // NÍVEIS. Feitiços vão do nível 0 ao 5. Técnica Máxima ("max") é um
@@ -374,6 +375,17 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
   const resolucao = subtipo === "multiplos" ? "ataque"
     : alvo === "area" ? "tr"
     : (f.resolucao === "ataque" ? "ataque" : "tr");
+  const ritual = resolveRitual({
+    nivel,
+    acaoBase: acaoEff,
+    configuracao: ctx.ritual,
+    extraRitualista: !!ctx.ritualistaExtra,
+    dispensaTeste: !!ctx.dispensaTesteRitual,
+  });
+  const bonusDoRitual = bonusRitual(ritual, nivel);
+  if (ritual.excedeu) {
+    avisos.push(`Ritual excede o limite: ${ritual.quantidade} melhorias para ${ritual.limite} vagas.`);
+  }
 
   // Acesso: o nível do Feitiço não pode passar do máximo da faixa de ND.
   if (ctx.nd != null && nivel !== "max" && nivel > nivelMaxFeitico(ctx.nd)) {
@@ -552,8 +564,14 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
     } else {
       if (linhaOuCone) dados += dadosLinha(nNum);
       areaFinal = arredondaArea((areaBase + areaDelta) * multArea);
+      if (bonusDoRitual.expansaoArea > 0) {
+        const aumentoPorMelhoria = f.formaArea === "linha" ? 4.5 : 1.5;
+        areaFinal = arredondaArea(areaFinal + aumentoPorMelhoria * bonusDoRitual.expansaoArea);
+      }
       if (destrutivo) detalhes.areaPropria = true;
     }
+  } else if (bonusDoRitual.expansaoArea > 0) {
+    avisos.push("Expansão de Área exige um Feitiço em área.");
   }
 
   // 8) SALDO UNIFICADO (autor 2026-07-24). O dano é o RESÍDUO. `dados` já é o
@@ -590,6 +608,19 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
   // Passivos / Características, enquanto `feitico` cobre todos os de dano.
   const dadosMotor = Math.trunc(valorCanalEscopos(ctx.efeitos, "dadosDano", escoposDano));
   dados = Math.max(1, dados + dadosMotor);
+  // Ciclagem Maldita depende de estado da sessão e da identidade DESTA linha,
+  // por isso fecha aqui, depois dos dados do Motor. Sem Feitiço anterior não há
+  // comparação, e repetir o mesmo id não concede nada.
+  const dadosCiclagem = ctx.ultimoFeiticoDanoId
+    && ctx.ultimoFeiticoDanoId !== f.id
+    && (ctx.habilidades ?? []).includes("cnj_ciclagem_maldita")
+    ? Math.floor(Math.max(0, Number(ctx.contextoDsl?.maestria) || 0) / 2)
+    : 0;
+  const dadosAntesCiclagem = dados;
+  // Múltiplos Disparos recebe os dados adicionais na primeira rolagem, depois
+  // que o pool comum é dividido. Assim a habilidade acrescenta exatamente a
+  // quantidade escrita, sem multiplicá-la pela quantidade de disparos.
+  if (subtipo !== "multiplos") dados += dadosCiclagem;
   const bonusMotor = Math.trunc(valorCanalEscopos(ctx.efeitos, "danoBonus", escoposDano));
 
   // Múltiplos Disparos fecha a quantidade de dados de CADA rolagem antes de o
@@ -601,7 +632,7 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
     const maxDisparos = nNum + 1;
     const disparos = Math.min(Math.max(1, f.disparos | 0 || 1), maxDisparos);
     if ((f.disparos | 0) > maxDisparos) avisos.push(`Máximo de ${maxDisparos} disparos no ${NIVEL_LABEL[nivel]}.`);
-    const porDisparo = Math.max(1, Math.floor(dados / disparos));
+    const porDisparo = Math.max(1, Math.floor(dados / disparos)) + dadosCiclagem;
     disparosCalculados = { disparos, porDisparo };
     dadosDanoFinal = porDisparo;
   }
@@ -612,6 +643,7 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
       ctx.contextoDsl,
       quantidade,
       ctx.efeitos?.aplicado,
+      { nivelFeitico: nNum },
     );
     return {
       efeitos,
@@ -626,7 +658,12 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
   // cálculo continua sendo por um alvo: separar os disparos reduz os dados, mas
   // conserva o mesmo bônus na fórmula daquele alvo.
   const bonusConjuracao = bonusConjuracaoAprimorada(nivel, ctx);
-  const bonusDano = bonusConjuracao + bonusMotor + bonusDanoFinal.valor;
+  const bonusRitualDano = f.focoCondicao ? 0 : bonusDoRitual.dano;
+  if (f.focoCondicao && bonusDoRitual.dano > 0) {
+    avisos.push("Aumento de Dano não se aplica a um Feitiço de Somente Condição.");
+  }
+  const bonusSemRitual = bonusConjuracao + bonusMotor + bonusDanoFinal.valor;
+  const bonusDano = bonusSemRitual + bonusRitualDano;
 
   // 9) Múltiplos disparos: divide os dados finais (piso, mín 1) pelo nº de disparos.
   let danoTexto;
@@ -637,10 +674,15 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
       disparos,
       porDisparo,
       concentradoTotal: dados,
-      porDisparoTexto: notacaoDanoComBonus(porDisparo, tipoDado, bonusDano, explosiva),
-      concentradoTexto: notacaoDanoComBonus(dados, tipoDado, bonusConcentrado, explosiva),
+      bonusPorDisparo: bonusSemRitual,
+      bonusRitualDano,
+      porDisparoTexto: notacaoDanoComBonus(porDisparo, tipoDado, bonusSemRitual, explosiva),
+      primeiroDisparoTexto: notacaoDanoComBonus(porDisparo, tipoDado, bonusDano, explosiva),
+      concentradoTexto: notacaoDanoComBonus(dados, tipoDado, bonusConcentrado + bonusRitualDano, explosiva),
     };
-    danoTexto = `${disparos}× ${disparosInfo.porDisparoTexto}`;
+    danoTexto = bonusRitualDano && disparos > 1
+      ? `${disparosInfo.primeiroDisparoTexto} + ${disparos - 1}× ${disparosInfo.porDisparoTexto}`
+      : `${disparos}× ${disparosInfo.porDisparoTexto}`;
     detalhes.multiplos = disparosInfo;
   } else {
     danoTexto = f.focoCondicao ? "Somente Condição" : notacaoDanoComBonus(dados, tipoDado, bonusDano, explosiva);
@@ -649,27 +691,56 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
   // Dano contínuo: metade dos dados (piso) por rodada.
   if (subtipo === "continuo") {
     danoContInicial = notacaoDanoComBonus(dados, tipoDado, bonusDano, explosiva);
-    const contDados = Math.max(1, Math.floor(dados / 2));
+    // Os dados da Ciclagem pertencem ao uso inicial, não ao dano que se repete
+    // nas rodadas seguintes.
+    const contDados = Math.max(1, Math.floor(dadosAntesCiclagem / 2));
     contPorRodada = notacaoDanoComBonus(contDados, tipoDado, 0, explosiva);
     contDadosPorRodada = contDados;
+    const continuoConcentrado = f.continuoModo === "concentrado" || bonusDoRitual.converteSustento;
     detalhes.continuo = {
-      modo: f.continuoModo === "concentrado" ? "concentrado" : "sustentado",
-      custoSustentacao: f.continuoModo === "concentrado" ? 0 : nNum,
+      modo: continuoConcentrado ? "concentrado" : "sustentado",
+      custoSustentacao: continuoConcentrado ? 0 : nNum,
       golpe: danoContInicial, porRodada: contPorRodada,
     };
+  } else if (bonusDoRitual.converteSustento) {
+    avisos.push("Conversão de Sustento exige um Feitiço sustentado.");
   }
 
   // Alcance final.
   let alcanceFinal = null;
-  if (alcanceBase != null) alcanceFinal = alcanceBase + alcanceDelta;
+  if (alcanceBase != null) alcanceFinal = alcanceBase + alcanceDelta + bonusDoRitual.alcance;
 
   // CD e acerto. Feitiço de Ataque sem condição não tem CD (temCD = false).
-  const cd = (temCD && (ctx.cdBase ?? null) != null) ? ctx.cdBase + trocaCd : null;
-  const acertoDelta = trocaAcerto;
+  const cd = (temCD && (ctx.cdBase ?? null) != null)
+    ? ctx.cdBase + trocaCd + bonusDoRitual.cd
+    : null;
+  if (!temCD && bonusDoRitual.cd > 0) {
+    avisos.push("Potencialização de Dificuldade exige um Feitiço com CD.");
+  }
+  const acertoDelta = trocaAcerto + (resolucao === "ataque" ? bonusDoRitual.acerto : 0);
+  if (resolucao !== "ataque" && bonusDoRitual.acerto > 0) {
+    avisos.push("Aumento de Precisão exige uma rolagem de ataque do Feitiço.");
+  }
+  if (bonusDoRitual.potencializaEfeito) {
+    avisos.push("Potencialização de Efeito exige um benefício numérico de Feitiço Auxiliar.");
+  }
+  if (bonusDoRitual.alvosProtegidos > 0) {
+    if (alvo === "area") detalhes.ajusteAlvos = bonusDoRitual.alvosProtegidos;
+    else avisos.push("Ajuste de Alvos exige um Feitiço em área.");
+  }
 
   // Custo em PE (a criação não altera o custo; requisito de dano dá dados, não muda PE).
   // A sustentação do dano contínuo vai em detalhes.continuo.custoSustentacao.
   const custoPE = custoPadrao(nivel === "max" ? 5 : nivel);
+  const melhoriasDisponiveis = [
+    ...(alvo === "area" ? ["ajusteAlvos"] : []),
+    ...(alcanceBase != null ? ["aumentoAlcance"] : []),
+    ...(!f.focoCondicao ? ["aumentoDano"] : []),
+    ...(resolucao === "ataque" ? ["aumentoPrecisao"] : []),
+    ...(subtipo === "continuo" && f.continuoModo !== "concentrado" ? ["conversaoSustento"] : []),
+    ...(alvo === "area" ? ["expansaoArea"] : []),
+    ...(temCD ? ["potencializacaoDificuldade"] : []),
+  ];
 
   return {
     nivel,
@@ -686,6 +757,11 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
         texto: `${d.valor >= 0 ? "+" : ""}${d.valor}d${tipoDado}`,
         ...(d.suplantado ? { suplantado: true } : {}),
       })),
+      ...(dadosCiclagem ? [{
+        label: "Ciclagem Maldita",
+        texto: `+${dadosCiclagem}d${tipoDado}`,
+      }] : []),
+      ...(bonusRitualDano ? [{ label: "Aumento de Dano", valor: bonusRitualDano }] : []),
       ...detalhesDoCanalEscopos(ctx.efeitos, "danoBonus", escoposDano, true).map((d) => ({
         label: d.nome,
         valor: d.valor,
@@ -712,6 +788,8 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
     contPorRodada,
     contDadosPorRodada,
     disparos: disparosInfo,
+    ritual: { ...ritual, melhoriasDisponiveis },
+    bonusRitualDano,
     avisos,
     detalhes,
   };
@@ -817,6 +895,17 @@ export function calcularFeiticoCurativo(feitico, ctx = {}) {
   const acao = f.acao || "comum";
   const t = f.trocas || {};
   const ehTemporario = !ctx.temEnergiaReversa;
+  const ritual = resolveRitual({
+    nivel,
+    acaoBase: acao,
+    configuracao: ctx.ritual,
+    extraRitualista: !!ctx.ritualistaExtra,
+    dispensaTeste: !!ctx.dispensaTesteRitual,
+  });
+  const bonusDoRitual = bonusRitual(ritual, nivel);
+  if (ritual.excedeu) {
+    avisos.push(`Ritual excede o limite: ${ritual.quantidade} melhorias para ${ritual.limite} vagas.`);
+  }
 
   // Acesso: o nível do Feitiço não pode passar do máximo da faixa de ND.
   if (ctx.nd != null && nivel !== "max" && nivel > nivelMaxFeitico(ctx.nd)) {
@@ -831,7 +920,10 @@ export function calcularFeiticoCurativo(feitico, ctx = {}) {
       : alvo === "area"
         ? `Não há cura em área para ${NIVEL_LABEL[nivel]} (área começa no Nível 1).`
         : `Sem linha de cura para ${NIVEL_LABEL[nivel]}.`);
-    return { nivel, dados: 0, tipoDado: 0, cura: "-", media: 0, ehTemporario, custoPE: null, saldoTrocas: 0, avisos, detalhes: {} };
+    return {
+      nivel, dados: 0, tipoDado: 0, cura: "-", media: 0, ehTemporario,
+      custoPE: null, saldoTrocas: 0, ritual, avisos, detalhes: {},
+    };
   }
   let [dados, tipoDado] = linha;
 
@@ -908,6 +1000,10 @@ export function calcularFeiticoCurativo(feitico, ctx = {}) {
   if (alvo === "area") {
     if (linhaOuCone) dados += dadosLinha(nNum);
     areaFinal = arredondaArea((areaBase + areaDelta) * multArea);
+    if (bonusDoRitual.expansaoArea > 0) {
+      const aumentoPorMelhoria = f.formaArea === "linha" ? 4.5 : 1.5;
+      areaFinal = arredondaArea(areaFinal + aumentoPorMelhoria * bonusDoRitual.expansaoArea);
+    }
   }
 
   // 6) Piso de 1 dado.
@@ -916,9 +1012,15 @@ export function calcularFeiticoCurativo(feitico, ctx = {}) {
     dados = 1;
   }
 
-  const alcanceFinal = alcanceBase != null ? alcanceBase + alcanceDelta : null;
+  const alcanceFinal = alcanceBase != null ? alcanceBase + alcanceDelta + bonusDoRitual.alcance : null;
   const custoPE = custoPadrao(nivel === "max" ? 5 : nivel);
   const notacao = notacaoDano(dados, tipoDado);
+  if (bonusDoRitual.alvosProtegidos > 0) detalhes.ajusteAlvos = bonusDoRitual.alvosProtegidos;
+  const melhoriasDisponiveis = [
+    ...(alvo === "area" ? ["ajusteAlvos"] : []),
+    ...(alcanceBase != null ? ["aumentoAlcance"] : []),
+    ...(alvo === "area" ? ["expansaoArea"] : []),
+  ];
 
   return {
     nivel,
@@ -935,6 +1037,7 @@ export function calcularFeiticoCurativo(feitico, ctx = {}) {
     saldoTrocas: saldo,
     reducaoCondicoes: reducaoCond,
     remocao: modo,
+    ritual: { ...ritual, melhoriasDisponiveis },
     avisos,
     detalhes,
   };
@@ -2602,6 +2705,21 @@ export function rolagensDoFeitico(f, calc) {
     if (f.focoCondicao) return [];
     if (calc.disparos) {
       const d = calc.disparos;
+      if (d.bonusRitualDano > 0 && d.disparos > 1) {
+        const partesSemRitual = (calc.partesDano || []).filter((p) => p.label !== "Aumento de Dano");
+        return [
+          {
+            rotulo: "Primeiro Disparo", dados: d.porDisparo, faces,
+            fixo: (d.bonusPorDisparo || 0) + d.bonusRitualDano,
+            partes: calc.partesDano || [], tom: "dano", vezes: 1, explosiva: !!calc.explosiva,
+          },
+          {
+            rotulo: "Disparos Restantes", dados: d.porDisparo, faces,
+            fixo: d.bonusPorDisparo || 0, partes: partesSemRitual,
+            tom: "dano", vezes: d.disparos - 1, explosiva: !!calc.explosiva,
+          },
+        ];
+      }
       return [{
         rotulo: "Disparo", dados: d.porDisparo, faces, fixo: calc.bonusDano || 0,
         partes: calc.partesDano || [], tom: "dano", vezes: d.disparos, explosiva: !!calc.explosiva,
@@ -2646,7 +2764,27 @@ export function rolagensDoFeitico(f, calc) {
 export function resumoFeiticos(creature, ctx = {}) {
   const lista = Array.isArray(creature?.feiticos) ? creature.feiticos : [];
   return lista.map((f) => {
-    const calc = calculadorDe(f.tipo)?.(f, ctx) ?? null;
+    const configRitual = ctx.rituais?.[f.id] ?? null;
+    const temRitualista = (ctx.habilidades ?? []).includes("cnj_ritualista");
+    const ritualAtual = ctx.ritualAtual?.feiticoId === f.id ? ctx.ritualAtual : null;
+    const ritualEmOutroFeitico = !!ctx.ritualAtual?.feiticoId && !ritualAtual;
+    const ritualistaDoUsoAtual = !!ritualAtual?.usaRitualista;
+    const ritualistaExtra = temRitualista && (
+      ritualistaDoUsoAtual
+      || (
+        !!configRitual?.extraRitualista
+        && (ctx.usosRitualista ?? 0) < (ctx.limiteRitualista ?? 0)
+      )
+    );
+    const ritualBloqueado = ritualEmOutroFeitico;
+    const dispensaTesteRitual = ctx.rituaisSemTeste === true
+      || ctx.rituaisSemTeste?.[f.id] === true;
+    const calc = calculadorDe(f.tipo)?.(f, {
+      ...ctx,
+      ritual: configRitual,
+      ritualistaExtra,
+      dispensaTesteRitual,
+    }) ?? null;
     const avisos = calc
       ? [...(calc.avisos || []), ...((calc.efeitos || []).flatMap((e) => e.avisos || []))]
       : [];
@@ -2655,6 +2793,17 @@ export function resumoFeiticos(creature, ctx = {}) {
       : f.tipo === "auxiliar" ? formatAuxValor(calc)
       : f.tipo === "curativo" ? calc.cura
       : f.tipo === "especial" ? (calc.dano ?? calc.resumo)
+      : null;
+    const rolagens = rolagensDoFeitico(f, calc);
+    const etapaRitual = ritualAtual?.etapa ?? null;
+    const ritualPronto = etapaRitual === "pronto";
+    const ritualResolvido = etapaRitual === "resolvido";
+    const consomeEstado = ctx.combate?.potenciaConcentrada
+      && (ctx.habilidades ?? []).includes("cnj_potencia_concentrada")
+      && f.tipo === "dano"
+      && f.alvo === "unico"
+      && rolagens.length > 0
+      ? "potenciaConcentrada"
       : null;
     return {
       id: f.id,
@@ -2670,9 +2819,26 @@ export function resumoFeiticos(creature, ctx = {}) {
         : f.tipo === "especial" && ["golpeador", "danoAlma"].includes(f.especialSubtipo) ? "Dano"
         : "Efeito",
       variacao: !!f.variacaoDe,
+      consomeEstado,
+      ritual: calc?.ritual ? {
+        ...calc.ritual,
+        temRitualista,
+        extraRitualista: ritualistaExtra,
+        extraRitualistaSolicitado: !!configRitual?.extraRitualista,
+        usosRitualista: Math.max(0, ctx.usosRitualista ?? 0),
+        limiteRitualista: Math.max(0, ctx.limiteRitualista ?? 0),
+        bloqueado: ritualBloqueado,
+        etapa: etapaRitual,
+        emAndamento: !!ritualAtual,
+        configuracaoTravada: !!ritualAtual,
+        podeIniciar: !ritualBloqueado && !ritualAtual && !calc.ritual.excedeu,
+        podeResolver: ritualPronto && !calc.ritual.excedeu,
+        podeRolarFeitico: ritualPronto || ritualResolvido,
+        resolvido: ritualResolvido,
+      } : null,
       // O que a Ficha rola. Vazio quando não há dado nenhum a rolar, e é o que a
       // linha consulta para decidir se o número é clicável.
-      rolagens: rolagensDoFeitico(f, calc),
+      rolagens,
       avisos,
     };
   });
