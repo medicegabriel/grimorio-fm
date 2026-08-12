@@ -4,6 +4,7 @@ import { Plus, X, AlertTriangle } from "lucide-react";
 import { COMBATE_ESTADOS } from "../../afty-combate";
 import { CONDICOES_CATALOGO } from "../../afty-feiticos";
 import { getCanal } from "../../afty-efeitos";
+import { sinalDe } from "../../ui/formato";
 import CanalPicker from "../CanalPicker";
 import { estadoUsadoNestaRodada } from "../ficha-sessao";
 
@@ -18,7 +19,16 @@ import { estadoUsadoNestaRodada } from "../ficha-sessao";
  *      `quando` de cada habilidade liga e desliga sozinho desde 2026-07-28.
  *   2. AD-HOC       "+2 de Defesa por 3 rodadas", escrito na hora. É uma linha
  *      do Motor com duração, no mesmo shape do Funcionamento Básico.
- *   3. CONDIÇÕES    marcadores com duração.
+ *   3. TEMPORÁRIOS  o que a própria criatura concede com `duracao: "temporaria"`
+ *      (Feitiço Auxiliar, Habilidade Única, linha do Funcionamento Básico). Só
+ *      LISTA, e não liga nem desliga: ver o aviso abaixo.
+ *   4. CONDIÇÕES    marcadores com duração.
+ *
+ * ⚠ OS TEMPORÁRIOS SÃO SÓ LEITURA, e isso segue a assunção do Motor (ver
+ * `afty-efeitos.js`): efeito temporário fica sempre ligado na ficha. Eles já
+ * estavam entrando na conta desde sempre, o que faltava era APARECER — sem a
+ * lista, um +4 de Força temporário e um permanente eram o mesmo número, e o
+ * jogador não tinha como saber qual dos dois ele perde no fim da cena.
  *
  * ⚠ AS CONDIÇÕES SÃO SÓ MARCADORES, e isso é honestidade e não preguiça: o
  * `CONDICOES_CATALOGO` tem as 26 condições em quatro forças, e NENHUMA tem
@@ -44,11 +54,16 @@ function Secao({ titulo, children, direita }) {
 }
 
 /* Uma linha do catálogo de estados. `delta` é o que ligar este estado muda na
-   ficha, calculado por fora (ver `deltaDosEstados`). */
+   ficha, calculado por fora (ver `deltaDosEstados`).
+
+   Ela NÃO desenha a própria caixa: quem desenha é o `GrupoDeEstados`, para o
+   estado e os que dependem dele lerem como uma coisa só. A classe
+   `afty-estado-linha` é o gancho estável do CSS do usuário e da densidade
+   compacta, que antes apertava a `.afty-linha` de cada estado. */
 function LinhaEstado({ estado, valor, delta, opcoes, onValor, derived, bloqueado }) {
   const teto = typeof estado.max === "function" ? estado.max(derived) : estado.max;
   return (
-    <div className="afty-linha px-2.5 py-1.5 flex items-center gap-2 flex-wrap">
+    <div className="afty-estado-linha px-2.5 py-1.5 flex items-center gap-2 flex-wrap">
       <span className="flex-1 min-w-0 text-[12px] font-semibold truncate">{estado.label}</span>
 
       {delta.length > 0 && (
@@ -107,6 +122,25 @@ function LinhaEstado({ estado, valor, delta, opcoes, onValor, derived, bloqueado
           </button>
         </span>
       )}
+    </div>
+  );
+}
+
+/* Um estado e os que DEPENDEM dele, numa caixa só.
+
+   `requerEstado` sempre significou "esta linha só existe com aquela ligada", mas
+   a lista era achatada e as duas liam como assuntos separados: o autor apontou
+   isso na imbuição das Técnicas de Estilo, que apareciam soltas embaixo do
+   interruptor do Novo Estilo das Sombras (2026-08-10). Vale igual para as pilhas
+   da Brutalidade e para o PE Extra dela, que declaram a mesma dependência.
+
+   O pai desenha a caixa, os filhos entram dentro dela recuados e com um fio
+   correndo ao lado. Nenhum estado precisou de campo novo. */
+function GrupoDeEstados({ pai, filhos, children }) {
+  return (
+    <div className="afty-linha afty-estado-caixa" data-afty-estado={pai.id}>
+      {children}
+      {filhos.length > 0 && <div className="afty-estado-filhos">{filhos}</div>}
     </div>
   );
 }
@@ -202,8 +236,61 @@ export default function AbaBuffs({
           : temHabilidade(e.requerHabilidade);
         return temDono && (!["opcao", "dominio"].includes(e.tipo) || opcoesDe(e).length > 0);
       }),
-      ...(derived.combate?.estadosExtras ?? []).map((e) => ({ ...e, tipo: "bool" })),
+      // ⚠ O `tipo` vem antes do espalhamento: a imbuição de Técnica de Estilo é
+      // `faixa`, e o extra que não declara nada continua caindo em `bool`.
+      ...(derived.combate?.estadosExtras ?? []).map((e) => ({ tipo: "bool", ...e })),
     ].map((e) => ({ ...e, opcoesVisiveis: opcoesDe(e) }));
+  }, [derived]);
+
+  /* As linhas em ÁRVORE: quem declara `requerEstado` apontando para outra linha
+     desta mesma lista é filho dela, e desenha dentro da caixa do pai. Um
+     `requerEstado` que aponta para fora da lista NÃO vira raiz por acidente: ele
+     continua caindo no `visivel` abaixo, que é o comportamento de sempre. */
+  const grupos = useMemo(() => {
+    const existe = new Set(linhas.map((e) => e.id));
+    const filhosDe = new Map();
+    const raizes = [];
+    for (const e of linhas) {
+      if (e.requerEstado && existe.has(e.requerEstado)) {
+        filhosDe.set(e.requerEstado, [...(filhosDe.get(e.requerEstado) ?? []), e]);
+      } else {
+        raizes.push(e);
+      }
+    }
+    return raizes.map((pai) => ({ pai, filhos: filhosDe.get(pai.id) ?? [] }));
+  }, [linhas]);
+
+  /* Os efeitos TEMPORÁRIOS que a criatura carrega, tirados dos `detalhes` do
+     Motor (é lá que cada efeito aplicado deixa rastro, com origem e valor).
+
+     ⚠ Desduplica por (nome, canal, alvo, valor): o `ef` é a mescla de vários
+     estágios, e um efeito que apareça em dois deles viraria duas linhas iguais
+     na tela sem estar contando duas vezes na ficha. */
+  const temporarios = useMemo(() => {
+    const vistos = new Set();
+    const out = [];
+    for (const d of derived.efeitos?.detalhes ?? []) {
+      if (d.duracao !== "temporaria" || !d.valor) continue;
+      // ⚠ Buff ad-hoc da SESSÃO fica de fora (2026-08-10). O `efeitosDaSessao`
+      // carimba `duracao: "temporaria"` em tudo que o jogador cria na seção de
+      // cima desta mesma aba, então o mesmo +2 saía duas vezes: uma editável,
+      // com botão de apagar, e outra aqui em só leitura. Lido de cima a baixo
+      // aquilo são dois bônus, e o segundo parece não ser dele para desligar.
+      if (d.origem === "sessao") continue;
+      const chave = `${d.nome}|${d.canal}|${d.alvo ?? ""}|${d.valor}`;
+      if (vistos.has(chave)) continue;
+      vistos.add(chave);
+      const def = getCanal(d.canal);
+      out.push({
+        chave,
+        nome: d.nome || d.origem || "Efeito",
+        origem: d.origem || null,
+        canalLabel: (def?.label ?? d.canal) + (d.alvo ? ` (${d.alvo})` : ""),
+        valor: d.valor,
+        suplantado: !!d.suplantado,
+      });
+    }
+    return out;
   }, [derived]);
 
   const visivel = (e) => !e.requerEstado || combate[e.requerEstado];
@@ -232,18 +319,25 @@ export default function AbaBuffs({
               em vez de sumir: o jogador precisa ver o que existe para saber que
               tem de entrar em combate primeiro. */}
           <div className={combate.ativo ? "space-y-1" : "space-y-1 opacity-40 pointer-events-none"}>
-            {linhas.filter(visivel).map((e) => (
-              <LinhaEstado
-                key={e.id}
-                estado={e}
-                valor={combate[e.id]}
-                opcoes={e.opcoesVisiveis}
-                delta={deltaPorEstado[e.id] ?? []}
-                onValor={onEstado}
-                derived={derived}
-                bloqueado={e.umaVezPorRodada && estadoUsadoNestaRodada(sessao, e.id)}
-              />
-            ))}
+            {grupos.filter(({ pai }) => visivel(pai)).map(({ pai, filhos }) => {
+              const linha = (e) => (
+                <LinhaEstado
+                  key={e.id}
+                  estado={e}
+                  valor={combate[e.id]}
+                  opcoes={e.opcoesVisiveis}
+                  delta={deltaPorEstado[e.id] ?? []}
+                  onValor={onEstado}
+                  derived={derived}
+                  bloqueado={e.umaVezPorRodada && estadoUsadoNestaRodada(sessao, e.id)}
+                />
+              );
+              return (
+                <GrupoDeEstados key={pai.id} pai={pai} filhos={filhos.filter(visivel).map(linha)}>
+                  {linha(pai)}
+                </GrupoDeEstados>
+              );
+            })}
           </div>
         </Secao>
       )}
@@ -269,6 +363,31 @@ export default function AbaBuffs({
         ))}
         <NovoBuff onCriar={(b) => onBuffs([...buffs, b])} />
       </Secao>
+
+      {/* ---------- temporários da própria criatura ---------- */}
+      {temporarios.length > 0 && (
+        <Secao titulo="Temporários">
+          {temporarios.map((t) => (
+            <div key={t.chave} className="afty-linha px-2.5 py-1.5 flex items-center gap-2">
+              <span className="flex-1 min-w-0 text-[12px] font-semibold truncate" title={t.nome}>{t.nome}</span>
+              {t.origem && t.origem !== t.nome && (
+                <span className="afty-rotulo text-[10px] truncate max-w-[8rem] hidden sm:block">{t.origem}</span>
+              )}
+              <span className="afty-rotulo text-[10px] truncate">{t.canalLabel}</span>
+              <span className="afty-valor text-[12px]">{sinalDe(t.valor)}</span>
+              {t.suplantado && (
+                <span className="afty-chip" title="Perdeu o pool exclusivo para uma fonte maior: não está somando">
+                  Suplantado
+                </span>
+              )}
+            </div>
+          ))}
+          <div className="afty-chip mt-1" data-afty-tom="aviso">
+            <AlertTriangle className="w-3 h-3 flex-shrink-0" aria-hidden="true" />
+            Já estão somados. Duram até o fim do efeito que os concedeu
+          </div>
+        </Secao>
+      )}
 
       {/* ---------- condições ---------- */}
       <Secao titulo="Condições">

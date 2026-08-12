@@ -255,6 +255,14 @@
    a resposta é a mesma: célula de tamanho igual.
 
    A largura é dimensionada pelo MAIOR caso real, que é "Nível 20" no ND 40. */
+/* Chip que É botão (as melhorias da Liberação Máxima). Sem isto ele fica com a
+   aparência de rótulo e o jogador não descobre que clica. O desligado por ter
+   enchido a cota precisa se distinguir do desligado por escolha, ou clicar e
+   nada acontecer parece defeito. Nenhum token novo: só estados. */
+button.afty-chip { cursor: pointer; }
+button.afty-chip:hover:not(:disabled) { border-color: var(--afty-destaque); }
+button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
+
 .afty-chip[data-afty-tag] {
   justify-content: center;
   font-variant-numeric: tabular-nums;
@@ -665,6 +673,55 @@
   background: var(--afty-destaque-fundo);
 }
 
+/* Estados FILHOS: os que declaram `requerEstado` moram na caixa do pai, e não
+   soltos embaixo dela (autor, 2026-08-10, sobre a imbuição das Técnicas de
+   Estilo aparecer desligada do Novo Estilo das Sombras). Vale igual para o PE
+   Extra e as pilhas da Brutalidade.
+
+   ⚠ O laço é feito com BORDA, e não com tom de fundo: no tema claro `--afty-poco`
+   e `--afty-card` são os dois branco, então um degradê de fundo não separaria
+   nada. */
+.afty-estado-filhos {
+  position: relative;
+  margin: 0 0.5rem 0.375rem 1.375rem;
+  padding-left: 0.75rem;
+  border-top: 1px solid var(--afty-borda);
+}
+
+/* O fio que corre ao lado dos filhos. Começa no topo do bloco e para na altura
+   da última linha, para não sobrar rabo pendurado. */
+.afty-estado-filhos::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0.875rem;
+  width: 1px;
+  background: var(--afty-borda-forte);
+}
+
+.afty-estado-filhos > * + * { border-top: 1px solid var(--afty-borda); }
+
+/* O gancho que liga cada filho ao fio. */
+.afty-estado-filhos > * {
+  position: relative;
+}
+
+.afty-estado-filhos > *::before {
+  content: "";
+  position: absolute;
+  left: -0.75rem;
+  top: 50%;
+  width: 0.5rem;
+  height: 1px;
+  background: var(--afty-borda-forte);
+}
+
+/* ⚠ Quem tem o respiro agora é a LINHA, e não mais a caixa: a caixa passou a
+   segurar o pai mais os filhos, e um padding nela empurraria o grupo inteiro
+   para dentro. A densidade compacta segue a mesma mudança logo abaixo. */
+.afty-estado-caixa { padding-block: 0; }
+
 .afty-feitico-topo {
   position: relative;
   display: flex;
@@ -756,6 +813,54 @@
 
 .afty-feitico-efeito strong {
   color: var(--afty-texto);
+}
+
+/* ============================================================ */
+/* LIBERAÇÃO MÁXIMA e a DICA de regra                           */
+/* ============================================================ */
+
+/* A categoria fica na PRÓPRIA linha, acima das pastilhas dela. Inline, ela
+   empurrava as pastilhas para a direita e as três categorias produziam três
+   recuos diferentes, sem alinhamento nenhum. */
+.afty-liberacao-grupo {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.afty-liberacao-categoria {
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--afty-texto-fraco);
+}
+
+/* A dica de regra. Ela é TEXTO CORRIDO, ao contrário do painel de fontes, que é
+   uma tabela de números: precisa de medida de leitura e de entrelinha. */
+.afty-dica-titulo {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--afty-texto);
+  margin-bottom: 0.25rem;
+}
+
+.afty-dica-texto {
+  font-size: 0.6875rem;
+  line-height: 1.5;
+  color: var(--afty-texto-suave);
+  white-space: normal;
+}
+
+/* A nota é a exceção da regra ("não pode ser usado em feitiços de múltiplos
+   alvos"), e ela precisa se separar do texto principal ou some no meio dele. */
+.afty-dica-nota {
+  margin-top: 0.375rem;
+  padding-top: 0.375rem;
+  border-top: 1px solid var(--afty-borda);
+  font-size: 0.6875rem;
+  line-height: 1.45;
+  color: var(--afty-texto-fraco);
+  white-space: normal;
 }
 
 .afty-rotulo {
@@ -1202,6 +1307,11 @@
 .afty-ficha[data-afty-densidade="compacta"] .afty-linha {
   padding-block: 0.25rem;
 }
+
+/* A caixa de estados não tem padding próprio (ver `.afty-estado-caixa`): quem
+   aperta é cada linha dentro dela. */
+.afty-ficha[data-afty-densidade="compacta"] .afty-estado-caixa { padding-block: 0; }
+.afty-ficha[data-afty-densidade="compacta"] .afty-estado-linha { padding-block: 0.25rem; }
 
 .afty-ficha[data-afty-densidade="compacta"] .afty-card {
   padding: 0.5rem;

@@ -70,6 +70,29 @@ Onde se usa:
 - `max(mod_presenca, 1)` — O modificador de Presença, no mínimo 1.
 - `dom >= 3 e pe_atual >= 10` — Combina dois pré-requisitos.
 
+## ⚠ No Grimório Afty o vocabulário é MUITO maior
+
+Este arquivo espelha o `fm-dsl.js` da 2.5.2, e ele é só a base. O Afty acrescenta
+a maior parte das variáveis em `buildCriaturaDslContext` (`src/systems/afty/afty-efeitos.js`):
+patamar e tipo como booleanas, grau, maestria, níveis por especialização, os estados
+da bancada de Simulação de Combate, uma booleana por habilidade do catálogo, uma por
+perícia, e mais. Numa criatura qualquer são cerca de **660 variáveis**.
+
+**Não existe lista escrita delas, e é de propósito.** Uma lista à mão envelheceria
+calada no dia em que alguém somasse uma variável ao contexto. Quem monta a lista é
+`vocabularioDsl` (`src/systems/afty/afty-dsl-vocabulario.js`), que **classifica o
+contexto real** em grupos: variável nova aparece sozinha, e o que nenhuma regra
+reconhece cai num grupo "Outras" em vez de sumir.
+
+👉 **Para ver o vocabulário com o VALOR de cada variável**, use o seletor `{ }` ao lado
+de qualquer campo de expressão do Motor de Automação, no criador do Afty. Ele lista as
+variáveis agrupadas com o valor atual daquela criatura, busca sem acento, e clicar
+insere o nome no ponto do cursor.
+
+⚠ As famílias grandes (`tem_*`, `prof_*`) mostram só o que **não é zero**, porque são
+centenas de entradas e apenas uma dúzia costuma valer algo. A busca alcança todas, e o
+cabeçalho do grupo mostra quantas estão visíveis do total.
+
 ## Notas
 - Identificadores são normalizados (minúsculas, sem acento): `Constituição` e `constituicao` são a mesma variável.
 - As expressões leem os valores **base** (sem os próprios buffs) + os recursos atuais — então um efeito que modifica Defesa não lê a Defesa já modificada (evita laço).

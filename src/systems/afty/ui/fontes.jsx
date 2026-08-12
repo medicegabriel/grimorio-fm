@@ -102,10 +102,18 @@ export function ValorComFontes({ valor, partes }) {
  * A saída é tirar o painel de dentro do cartão: ele é enviado por PORTAL para a
  * raiz da Ficha e posicionado em `fixed`, a partir do retângulo do gatilho.
  *
- * ⚠ O portal vai para `#afty-ficha`, e NÃO para o `document.body`. Dois motivos,
- * e os dois são fatais se errar: as variáveis `--afty-*` são declaradas em
- * `.afty-ficha` e não chegariam ao body, e o `@scope (#afty-ficha)` do CSS do
+ * ⚠ O portal vai para o container do TEMA, e NÃO para o `document.body`. Dois
+ * motivos, e os dois são fatais se errar: as variáveis `--afty-*` são declaradas
+ * em `.afty-ficha` e não chegariam ao body, e o `@scope (#afty-ficha)` do CSS do
  * usuário também não alcançaria o painel. Ele ficaria sem tema nenhum.
+ *
+ * ⚠ Quem acha o container é o `closest(".afty-ficha")` A PARTIR DO GATILHO
+ * (2026-08-10), e não mais o `getElementById` direto. O id só existe na
+ * `AftyFicha`, e a tela de ENCONTRO tem a classe sem o id: todo hover de dentro
+ * do painel do combatente estava escapando para o `document.body` e caindo nos
+ * fallbacks embutidos, com sombra e cor erradas. Procurar pelo ancestral resolve
+ * as duas telas e qualquer outra que reuse as abas, sem precisar espalhar um id
+ * que tem que ser único.
  */
 const ESPERA_TOQUE_LONGO = 450;
 
@@ -113,10 +121,23 @@ const ESPERA_TOQUE_LONGO = 450;
 const temHover = () =>
   typeof window !== "undefined" && window.matchMedia?.("(hover: hover)").matches;
 
-function PainelFlutuante({ partes, total, retangulo, ancora }) {
+/**
+ * A MOLDURA flutuante: portal, posicionamento e nada mais.
+ *
+ * ⚠ Extraída em 2026-08-10, quando a descrição das melhorias de Liberação
+ * Máxima passou a precisar do mesmo painel. Havia UMA implementação de portal
+ * bem comentada aqui e a alternativa era copiá-la, o que garantiria duas versões
+ * divergentes na primeira errata de posicionamento.
+ */
+function MolduraFlutuante({ retangulo, ancora, gatilho, largura = "16rem", children }) {
   if (!retangulo) return null;
+  // O gatilho já está montado aqui: só existe `retangulo` porque o `abrir()`
+  // mediu o elemento. `getElementById` fica de rede de segurança para um gatilho
+  // que por algum motivo não esteja dentro de um `.afty-ficha`.
   const alvo = (typeof document !== "undefined"
-    && (document.getElementById("afty-ficha") ?? document.body)) || null;
+    && (gatilho?.current?.closest?.(".afty-ficha")
+      ?? document.getElementById("afty-ficha")
+      ?? document.body)) || null;
   if (!alvo) return null;
 
   // Abre para CIMA quando o gatilho está na metade de baixo da tela, senão o
@@ -124,6 +145,7 @@ function PainelFlutuante({ partes, total, retangulo, ancora }) {
   const paraCima = retangulo.bottom > window.innerHeight * 0.6;
   const estilo = {
     position: "fixed",
+    maxWidth: `min(${largura}, calc(100vw - 1rem))`,
     ...(paraCima
       ? { bottom: Math.round(window.innerHeight - retangulo.top + 4) }
       : { top: Math.round(retangulo.bottom + 4) }),
@@ -133,25 +155,30 @@ function PainelFlutuante({ partes, total, retangulo, ancora }) {
   };
 
   return createPortal(
-    <span className="afty-fontes afty-fontes-flutuante block w-max max-w-[min(16rem,calc(100vw-1rem))] p-2 text-left" style={estilo}>
-      <LinhasDeFonte partes={partes} total={total} />
+    <span className="afty-fontes afty-fontes-flutuante block w-max p-2 text-left" style={estilo}>
+      {children}
     </span>,
     alvo,
   );
 }
 
+function PainelFlutuante({ partes, total, retangulo, ancora, gatilho }) {
+  return (
+    <MolduraFlutuante retangulo={retangulo} ancora={ancora} gatilho={gatilho}>
+      <LinhasDeFonte partes={partes} total={total} />
+    </MolduraFlutuante>
+  );
+}
+
 /**
- * ⚠ COM `onRolar`, O CLIQUE ROLA. É a inversão que a mesa pede: rolar é o que se
- * faz o tempo todo e conferir a conta é o que se faz de vez em quando, então a
- * ação comum fica no gesto barato. As fontes continuam alcançáveis pelos dois
- * caminhos que sobram: **hover** no mouse (75% do uso) e **toque longo** no
- * dedo. Sem `onRolar`, o clique volta a abrir as fontes, que é o que os números
- * do cabeçalho (Defesa, CD, RD) fazem, porque não se rola nenhum deles.
+ * A mecânica de abrir e fechar um painel flutuante: medir o gatilho, fechar no
+ * Escape, no clique fora, ao rolar e ao redimensionar.
+ *
+ * ⚠ Rolar e redimensionar FECHAM. O painel é `fixed` com coordenadas calculadas
+ * na abertura, então rolar a página o deixaria plantado no ar, longe do que ele
+ * explica.
  */
-export function NumeroComFontes({
-  valor, partes, total, ancora = "esquerda", className = "", titulo, formatar = true, onRolar,
-}) {
-  const lista = (partes || []).filter(Boolean);
+function useFlutuante() {
   const [retangulo, setRetangulo] = useState(null);
   const gatilho = useRef(null);
   const timer = useRef(null);
@@ -168,9 +195,6 @@ export function NumeroComFontes({
     if (!aberto) return undefined;
     const fora = (e) => { if (!gatilho.current?.contains(e.target)) fechar(); };
     const esc = (e) => { if (e.key === "Escape") fechar(); };
-    // ⚠ Rolar e redimensionar FECHAM o painel. Ele é `fixed` com coordenadas
-    // calculadas na abertura, então rolar a página o deixaria plantado no ar,
-    // longe do número que ele explica.
     document.addEventListener("pointerdown", fora);
     document.addEventListener("keydown", esc);
     window.addEventListener("scroll", fechar, true);
@@ -187,17 +211,104 @@ export function NumeroComFontes({
   // depois de o componente sair da tela.
   useEffect(() => () => clearTimeout(timer.current), []);
 
-  const seguraComeca = () => {
-    if (!onRolar || !lista.length || temHover()) return;
+  /* O TOQUE LONGO mora aqui dentro, e não em quem chama: o relógio e a marca são
+     estado do painel, e mexer neles de fora é o que o `react-hooks` proíbe (com
+     razão, era a mesma lógica escrita duas vezes). */
+  const segurarComeca = useCallback((habilitado) => {
+    if (!habilitado || temHover()) return;
     abriuNoSegurar.current = false;
     timer.current = setTimeout(() => { abriuNoSegurar.current = true; abrir(); }, ESPERA_TOQUE_LONGO);
-  };
-  const seguraTermina = () => clearTimeout(timer.current);
+  }, [abrir]);
+  const segurarTermina = useCallback(() => clearTimeout(timer.current), []);
+  /* Devolve `true` quando o clique que acabou de chegar é o do gesto que ABRIU o
+     painel, e portanto não deve acionar nada. Consome a marca ao responder. */
+  const consumiuToqueLongo = useCallback(() => {
+    if (!abriuNoSegurar.current) return false;
+    abriuNoSegurar.current = false;
+    return true;
+  }, []);
+
+  return { gatilho, retangulo, aberto, abrir, fechar, segurarComeca, segurarTermina, consumiuToqueLongo };
+}
+
+/**
+ * ============================================================
+ * DICA DE TEXTO — a regra do livro, no hover
+ * ============================================================
+ * Autor, 2026-08-10: *"coloca a descrição nos efeitos de Liberação Máxima
+ * quando eu passar o mouse em cima. Por ser suplemento, fica difícil acessar."*
+ *
+ * ⚠ Isto NÃO contradiz a regra de "nada de texto explicativo na UI". A regra
+ * sempre teve a saída de que explicação de ITEM vive no hover. O que muda é o
+ * veículo: o `title` nativo demora quase um segundo para nascer, some ao mexer o
+ * mouse, não abre no teclado e não existe no toque. Para um catálogo de
+ * suplemento, que é justamente o texto que ninguém tem na mão, isso é o mesmo
+ * que não ter.
+ *
+ * ⚠ ENVOLVE o gatilho em vez de virar o gatilho. A pastilha da melhoria já é um
+ * botão com ação própria (ligar e desligar), e botão dentro de botão é HTML
+ * inválido. O `<span>` de fora escuta o ponteiro e o foco, e o botão de dentro
+ * segue sendo o que clica.
+ * ============================================================
+ */
+export function DicaDeTexto({ titulo, texto, nota, ancora = "esquerda", children }) {
+  const {
+    gatilho, retangulo, aberto, abrir, fechar, segurarComeca, segurarTermina, consumiuToqueLongo,
+  } = useFlutuante();
+  const temTexto = !!(texto || nota);
+
+  if (!temTexto) return children;
+  return (
+    <span
+      ref={gatilho}
+      className="inline-flex"
+      onPointerEnter={() => { if (temHover()) abrir(); }}
+      onPointerLeave={() => { segurarTermina(); if (temHover()) fechar(); }}
+      onPointerDown={() => segurarComeca(true)}
+      onPointerUp={segurarTermina}
+      // O toque longo abriu a dica: o clique que vem junto não pode acionar o
+      // botão de dentro, ou ler a regra ligaria a melhoria sem querer.
+      onClickCapture={(e) => {
+        if (consumiuToqueLongo()) { e.stopPropagation(); e.preventDefault(); }
+      }}
+      onFocusCapture={abrir}
+      onBlurCapture={fechar}
+    >
+      {children}
+      {aberto && (
+        <MolduraFlutuante retangulo={retangulo} ancora={ancora} gatilho={gatilho} largura="22rem">
+          {titulo && <span className="afty-dica-titulo block">{titulo}</span>}
+          {texto && <span className="afty-dica-texto block">{texto}</span>}
+          {nota && <span className="afty-dica-nota block">{nota}</span>}
+        </MolduraFlutuante>
+      )}
+    </span>
+  );
+}
+
+/**
+ * ⚠ COM `onRolar`, O CLIQUE ROLA. É a inversão que a mesa pede: rolar é o que se
+ * faz o tempo todo e conferir a conta é o que se faz de vez em quando, então a
+ * ação comum fica no gesto barato. As fontes continuam alcançáveis pelos dois
+ * caminhos que sobram: **hover** no mouse (75% do uso) e **toque longo** no
+ * dedo. Sem `onRolar`, o clique volta a abrir as fontes, que é o que os números
+ * do cabeçalho (Defesa, CD, RD) fazem, porque não se rola nenhum deles.
+ */
+export function NumeroComFontes({
+  valor, partes, total, ancora = "esquerda", className = "", titulo, formatar = true, onRolar,
+}) {
+  const lista = (partes || []).filter(Boolean);
+  const {
+    gatilho, retangulo, aberto, abrir, fechar, segurarComeca, segurarTermina, consumiuToqueLongo,
+  } = useFlutuante();
+
+  const seguraComeca = () => segurarComeca(!!onRolar && lista.length > 0);
+  const seguraTermina = segurarTermina;
 
   const aoClicar = () => {
     if (!onRolar) { if (aberto) fechar(); else abrir(); return; }
     // O toque longo já abriu o painel: o clique que vem junto não pode rolar.
-    if (abriuNoSegurar.current) { abriuNoSegurar.current = false; return; }
+    if (consumiuToqueLongo()) return;
     onRolar();
   };
 
@@ -225,7 +336,7 @@ export function NumeroComFontes({
         {texto}
       </button>
       {aberto && lista.length > 0 && (
-        <PainelFlutuante partes={lista} total={total ?? texto} retangulo={retangulo} ancora={ancora} />
+        <PainelFlutuante partes={lista} total={total ?? texto} retangulo={retangulo} ancora={ancora} gatilho={gatilho} />
       )}
     </span>
   );

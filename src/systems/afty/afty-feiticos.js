@@ -37,6 +37,16 @@ import {
   detalhesDoCanalEscopos, resolverEfeitosDanoFinal, valorCanalEscopos,
 } from "./afty-efeitos";
 import { bonusRitual, resolveRitual } from "./afty-rituais";
+// Liberações Máximas. ⚠ `multArea` chega renomeado: o calculador de Dano já tem
+// uma local com esse nome (a do Destrutivo × 1,5 com a da Linha).
+import {
+  alvosExtras, categoriasDoFeitico, custoLiberacao, estimuloBonus, explosaoDados,
+  explosaoValor, LIBERACAO_CATEGORIAS, LIBERACAO_ND_MINIMO, maxMelhorias,
+  melhoriasDoFeitico, multAlcance,
+  multArea as multAreaLiberacao, nivelTemLiberacao, pressaoAcerto, pressaoCd,
+  regrasDaLiberacao, resolveLiberacao, rodadasExtras, rodadasSemUpkeep,
+  rupturaRd, sobrecargaDados, vigorCura,
+} from "./afty-liberacoes";
 
 // ---------------------------------------------------------------
 // NÍVEIS. Feitiços vão do nível 0 ao 5. Técnica Máxima ("max") é um
@@ -438,6 +448,8 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
   const destrutivo = subtipo === "destrutivo";
   const cataclismico = subtipo === "cataclismico";
   const t = f.trocas || {};
+  // Liberação Máxima: `null` quando não foi declarada, e aí tudo abaixo soma 0.
+  const lib = resolveLiberacao(f, ctx);
 
   // Destrutivo e Cataclísmico NUNCA são alvo único e SEMPRE são Ritual
   // Estendido (autor). Área é sempre teste de resistência.
@@ -637,7 +649,17 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
       detalhes.areaMapa = true;
     } else {
       if (linhaOuCone) dados += dadosLinha(nNum);
-      areaFinal = arredondaArea((areaBase + areaDelta) * multArea);
+      // A melhoria Área (Liberação Máxima) dobra o resultado JÁ escalado pelo
+      // Destrutivo e pela Linha, porque o texto fala das "dimensões da área de
+      // efeito", que é o que se mede na mesa, e não da base antes dos
+      // multiplicadores.
+      areaFinal = arredondaArea((areaBase + areaDelta) * multArea * multAreaLiberacao(lib));
+      // A Expansão de Área (Ritual) soma metros DEPOIS do dobro.
+      //
+      // ⚠ ASSUNÇÃO de composição entre os dois suplementos (2026-08-10): nenhum
+      // dos dois textos fala do outro. Somar antes faria a Liberação dobrar
+      // também o bônus do Ritual, e aí os metros impressos na regra do Ritual
+      // deixariam de bater com o que aparece na tela. Anotado em a-fazer.md.
       if (bonusDoRitual.expansaoArea > 0) {
         const aumentoPorMelhoria = f.formaArea === "linha" ? 4.5 : 1.5;
         areaFinal = arredondaArea(areaFinal + aumentoPorMelhoria * bonusDoRitual.expansaoArea);
@@ -698,6 +720,13 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
   const bonusMotor = Math.trunc(valorCanalEscopos(ctx.efeitos, "danoBonus", escoposDano));
   const ignoraRD = Math.max(0, Math.trunc(valorCanalEscopos(ctx.efeitos, "ignoraRD", escoposDano)));
   const removeResistencia = valorCanalEscopos(ctx.efeitos, "removeResistencia", escoposDano) > 0;
+
+  // Sobrecarga Energética (Liberação Máxima): "+ Nível do Feitiço + 1" nos
+  // dados de dano base. ⚠ Entra AQUI, antes das divisões de Múltiplos Disparos
+  // e do Dano Contínuo. Autor, 2026-08-09: "Antes da divisão." Depois delas, a
+  // Sobrecarga entregaria o pacote inteiro em CADA disparo.
+  const dadosSobrecarga = sobrecargaDados(lib, nNum);
+  dados += dadosSobrecarga;
 
   // Múltiplos Disparos fecha a quantidade de dados de CADA rolagem antes de o
   // Motor avaliar `dados_dano_final`. Usar o montante concentrado daria o bônus
@@ -782,18 +811,34 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
     avisos.push("Conversão de Sustento exige um Feitiço sustentado.");
   }
 
-  // Alcance final.
+  // Alcance final. A Expansão de Limites multiplica o alcance JÁ trocado.
+  // ⚠ Toque é 0m, e 0 × qualquer coisa é 0: Toque continua Toque (autor).
   let alcanceFinal = null;
-  if (alcanceBase != null) alcanceFinal = alcanceBase + alcanceDelta + bonusDoRitual.alcance;
+  // ⚠ O multiplicador da Liberação Máxima escala o alcance PRÓPRIO do Feitiço, e
+  // os metros do Ritual entram DEPOIS, pela mesma razão da área: os números
+  // impressos na regra do Ritual têm que continuar batendo com a tela.
+  if (alcanceBase != null) {
+    alcanceFinal = (alcanceBase + alcanceDelta) * multAlcance(lib, nNum) + bonusDoRitual.alcance;
+  }
 
   // CD e acerto. Feitiço de Ataque sem condição não tem CD (temCD = false).
+  // A Pressão Amaldiçoada (Liberação) e a Potencialização de Dificuldade
+  // (Ritual) SOMAM: são bônus de sistemas diferentes no mesmo número.
+  //
+  // Cada metade da Pressão só entra onde a coisa existe: o acerto só onde há
+  // jogada de ataque, a CD só onde há CD. É o que resolve o "(Não dá pra se ter
+  // ambos os efeitos de CD e Acerto)" sem escolha nenhuma do jogador, porque um
+  // Feitiço nunca é os dois.
+  const pressaoNaCd = temCD ? pressaoCd(lib, nNum) : 0;
+  const pressaoNoAcerto = resolucao === "ataque" ? pressaoAcerto(lib, nNum) : 0;
   const cd = (temCD && (ctx.cdBase ?? null) != null)
-    ? ctx.cdBase + trocaCd + bonusDoRitual.cd
+    ? ctx.cdBase + trocaCd + pressaoNaCd + bonusDoRitual.cd
     : null;
   if (!temCD && bonusDoRitual.cd > 0) {
     avisos.push("Potencialização de Dificuldade exige um Feitiço com CD.");
   }
-  const acertoDelta = trocaAcerto + (resolucao === "ataque" ? bonusDoRitual.acerto : 0);
+  const acertoDelta = trocaAcerto + pressaoNoAcerto
+    + (resolucao === "ataque" ? bonusDoRitual.acerto : 0);
   if (resolucao !== "ataque" && bonusDoRitual.acerto > 0) {
     avisos.push("Aumento de Precisão exige uma rolagem de ataque do Feitiço.");
   }
@@ -826,8 +871,19 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
     dano: danoTexto,
     bonusDano,
     explosiva,
+    // ⚠ Os três valores EFETIVOS (2026-08-09). O Destrutivo e o Cataclísmico
+    // ignoram o que o jogador marcou: os dois são SEMPRE área, SEMPRE Ritual
+    // Estendido e SEMPRE teste de resistência. Sem estes campos a Ficha lia o
+    // `f.acao` e o `f.resolucao` crus e imprimia "Ação Comum, Jogada de Ataque"
+    // para um Ritual de TR, que é a regra errada na mão do jogador.
+    acaoResultante: acaoEff,
+    resolucao,
+    alvo,
     partesDano: [
       ...(bonusConjuracao ? [{ label: "Conjuração Aprimorada", valor: bonusConjuracao }] : []),
+      // Sobrecarga Energética entra no POOL, como o canal `dadosDano` do Motor
+      // logo abaixo, e por isso aparece aqui com a mesma cara.
+      ...(dadosSobrecarga ? [{ label: "Sobrecarga Energética", texto: `+${dadosSobrecarga}d${tipoDado}` }] : []),
       ...detalhesDoCanalEscopos(ctx.efeitos, "dadosDano", escoposDano, true).map((d) => ({
         label: d.nome,
         texto: `${d.valor >= 0 ? "+" : ""}${d.valor}d${tipoDado}`,
@@ -868,7 +924,17 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
     disparos: disparosInfo,
     ritual: { ...ritual, melhoriasDisponiveis },
     bonusRitualDano,
-    avisos,
+    // ---- Liberação Máxima ----
+    // `null` quando não foi declarada. Os campos abaixo são o que ela ACRESCENTA
+    // e que não cabia em nenhum campo existente.
+    liberacao: lib,
+    ignoraRd: rupturaRd(lib, nNum) || null,
+    alvosExtras: alvosExtras(lib, nNum) || null,
+    // Rodadas somadas às Condições anexadas. Quem monta a linha da condição é o
+    // `fichaDoFeitico`, que lê a tabela de duração, então o número viaja daqui.
+    rodadasExtras: rodadasExtras(lib, nNum) || null,
+    regrasLiberacao: regrasDaLiberacao(lib, f),
+    avisos: [...avisos, ...(lib?.avisos ?? [])],
     detalhes,
   };
 }
@@ -985,6 +1051,8 @@ export function calcularFeiticoCurativo(feitico, ctx = {}) {
   if (ritual.excedeu) {
     avisos.push(`Ritual excede o limite: ${ritual.quantidade} melhorias para ${ritual.limite} vagas.`);
   }
+  // Liberação Máxima: `null` quando não foi declarada.
+  const lib = resolveLiberacao(f, ctx);
 
   // Acesso: o nível do Feitiço não pode passar do máximo da faixa de ND.
   if (ctx.nd != null && nivel !== "max" && nivel > nivelMaxFeitico(ctx.nd)) {
@@ -1078,7 +1146,9 @@ export function calcularFeiticoCurativo(feitico, ctx = {}) {
   let areaFinal = null;
   if (alvo === "area") {
     if (linhaOuCone) dados += dadosLinha(nNum);
-    areaFinal = arredondaArea((areaBase + areaDelta) * multArea);
+    // Mesma ordem do Feitiço de Dano: a Liberação Máxima dobra a área própria e
+    // os metros do Ritual entram depois.
+    areaFinal = arredondaArea((areaBase + areaDelta) * multArea * multAreaLiberacao(lib));
     if (bonusDoRitual.expansaoArea > 0) {
       const aumentoPorMelhoria = f.formaArea === "linha" ? 4.5 : 1.5;
       areaFinal = arredondaArea(areaFinal + aumentoPorMelhoria * bonusDoRitual.expansaoArea);
@@ -1091,9 +1161,16 @@ export function calcularFeiticoCurativo(feitico, ctx = {}) {
     dados = 1;
   }
 
-  const alcanceFinal = alcanceBase != null ? alcanceBase + alcanceDelta + bonusDoRitual.alcance : null;
+  const alcanceFinal = alcanceBase != null
+    ? (alcanceBase + alcanceDelta) * multAlcance(lib, nNum) + bonusDoRitual.alcance
+    : null;
   const custoPE = custoPadrao(nivel === "max" ? 5 : nivel);
-  const notacao = notacaoDano(dados, tipoDado);
+  // Vigor Absoluto é PARCELA FIXA no total curado, e não dado a mais: "aumente
+  // o valor total curado/concedido em 6 por Nível do Feitiço".
+  const bonusCura = vigorCura(lib, nNum);
+  const notacao = bonusCura
+    ? notacaoDanoComBonus(dados, tipoDado, bonusCura, false)
+    : notacaoDano(dados, tipoDado);
   if (bonusDoRitual.alvosProtegidos > 0) detalhes.ajusteAlvos = bonusDoRitual.alvosProtegidos;
   const melhoriasDisponiveis = [
     ...(alvo === "area" ? ["ajusteAlvos"] : []),
@@ -1107,7 +1184,8 @@ export function calcularFeiticoCurativo(feitico, ctx = {}) {
     tipoDado,
     cura: notacao,
     notacao,
-    media: mediaDano(dados, tipoDado),
+    bonusCura,
+    media: mediaDano(dados, tipoDado) + bonusCura,
     ehTemporario,
     alcance: alcanceFinal,
     area: areaFinal,
@@ -1117,7 +1195,11 @@ export function calcularFeiticoCurativo(feitico, ctx = {}) {
     reducaoCondicoes: reducaoCond,
     remocao: modo,
     ritual: { ...ritual, melhoriasDisponiveis },
-    avisos,
+    // ---- Liberação Máxima ----
+    liberacao: lib,
+    alvosExtras: alvosExtras(lib, nNum) || null,
+    regrasLiberacao: regrasDaLiberacao(lib, f),
+    avisos: [...avisos, ...(lib?.avisos ?? [])],
     detalhes,
   };
 }
@@ -1592,6 +1674,21 @@ export function formatValorAuxCru(efeito, valor) {
   return `${sinal}${String(valor).replace(".", ",")}${def?.unidade ? ` ${def.unidade}` : ""}`;
 }
 
+/**
+ * Efeito padrão de um slot: o primeiro do catálogo que TEM valor naquele nível
+ * de aux.
+ *
+ * ⚠ CORRIGIDO em 2026-08-09. Era `AUX_EFEITOS[0]` fixo, que é o Aumento de
+ * Defesa, e a Defesa não existe no NÍVEL 0 de aux (nem na coluna Duradoura nem
+ * na Sustentada). Como a Transformação de Nível 1 tem os dois slots no nível 0,
+ * ela NASCIA com dois avisos sobre uma escolha que o jogador nunca fez, e o
+ * triângulo de aviso acendia na Ficha numa ficha recém-criada.
+ */
+function efeitoPadraoTransf(auxNivel) {
+  const achado = AUX_EFEITOS.find((e) => valorTransfEfeito(e.value, auxNivel).valor != null);
+  return (achado ?? AUX_EFEITOS[0]).value;
+}
+
 export function calcularFeiticoTransformacao(feitico, ctx = {}) {
   const avisos = [];
   const f = feitico || {};
@@ -1639,7 +1736,7 @@ export function calcularFeiticoTransformacao(feitico, ctx = {}) {
   // Resolve os efeitos atribuídos a cada slot (id de aux por slot).
   const atribuidos = Array.isArray(f.transfEfeitos) ? f.transfEfeitos : [];
   const efeitos = slots.map((auxNivel, i) => {
-    const efeitoId = atribuidos[i] || AUX_EFEITOS[0].value;
+    const efeitoId = atribuidos[i] || efeitoPadraoTransf(auxNivel);
     const def = AUX_EFEITOS.find((e) => e.value === efeitoId) || AUX_EFEITOS[0];
     const { valor, coluna } = valorTransfEfeito(efeitoId, auxNivel);
     const disponivel = valor != null;
@@ -1667,7 +1764,10 @@ export function calcularFeiticoTransformacao(feitico, ctx = {}) {
   if (duracao === "duradoura") {
     duracaoRodadas = Math.ceil(nNum / 2);
     exaustaoFim = Math.floor(nNum / 2);
-    notaExaustao = `${exaustaoFim} de exaustão quando acabar.`;
+    // ⚠ No Nível 1 a metade do nível arredondada para baixo é ZERO, e a nota
+    // saía como "0 de exaustão quando acabar.", que é uma linha de tela
+    // avisando que nada acontece. Sem exaustão, sem nota.
+    notaExaustao = exaustaoFim > 0 ? `${exaustaoFim} de exaustão quando acabar.` : "";
   } else if (duracao === "cena") {
     exaustaoFim = nivel === "max" ? 5 : Math.max(1, Math.ceil(nNum / 2));
     notaExaustao = nivel === "max"
@@ -2355,6 +2455,14 @@ export function calcularEfeitoAux(e, ctx = {}) {
       notas.push("Ação comum: +⌊nível/2⌋ dados. Bônus de imediata indisponível.");
     }
     if (alvosBase > 1) { qtd = Math.max(1, Math.floor(qtd / alvosBase)); notas.push(`Dividido entre ${alvosBase} alvos.`); }
+    // Explosão Extrema (Liberação Máxima), ponta dos DADOS. Nível e duração são
+    // os do FEITIÇO (`e.liberacao` guarda o nível dele), e não os do efeito:
+    // num Múltiplos Efeitos a Liberação foi declarada sobre o Feitiço inteiro.
+    const dadosExplosao = explosaoDados(e.liberacao, e.liberacao?.nivel, efeitoKey, spellDur);
+    if (dadosExplosao) {
+      qtd += dadosExplosao;
+      notas.push(`Explosão Extrema: +${dadosExplosao} dado(s).`);
+    }
     out.dado = [qtd, tipo];
     out.valor = mediaDano(qtd, tipo);
     out.notacao = notacaoDano(qtd, tipo);
@@ -2372,9 +2480,14 @@ export function calcularEfeitoAux(e, ctx = {}) {
   // No efeito único não há fallback, então é a própria duração do efeito.
   const divN = divisorDuradoura();
   if (divN) {
-    // A UI só oferece rodadas dentro da faixa; um valor fora daqui é sempre
+    // A UI só oferece rodadas dentro da faixa. Um valor fora daqui é sempre
     // resíduo do padrão ou de troca de nível, então corrige em silêncio.
-    const vd = divN.denom < 1 ? null : Math.floor(bruto / divN.denom);
+    //
+    // ⚠ Passou a CHAMAR `valorDuradoura` em 2026-08-09. A conta estava
+    // reescrita aqui, idêntica, e a função exportada era código MORTO (única
+    // ocorrência dela em todo o `src/` era a própria declaração). Duas cópias
+    // da mesma regra, e mexer na função canônica não mudaria nada.
+    const vd = valorDuradoura(bruto, divN.nDur, divN.rodadas);
     valor = vd == null ? valor : vd;
     out.rodadas = divN.rodadas;
     notas.push(`Duradoura: ${bruto} ÷ (${divN.rodadas} − ⌈${divN.nDur}/2⌉) = ${valor} por ${divN.rodadas} rodada(s).`);
@@ -2411,6 +2524,29 @@ export function calcularEfeitoAux(e, ctx = {}) {
       avisos.push(`${meta.label} zera dividido entre ${alvosBase} alvos.`);
     }
   }
+  // Liberação Máxima, ponta NUMÉRICA. Os dois Sets são disjuntos, então no
+  // máximo um dos dois rende: Estímulo de Saída cuida dos bônus e penalidades,
+  // Explosão Extrema cuida de Dano Fixo e Níveis de Dano.
+  //
+  // ⚠ Entra DEPOIS da divisão entre alvos, de propósito: a melhoria fala do
+  // "valor do bônus", que é o número que cada alvo recebe. Dividi-la junto
+  // faria a mesma Liberação valer menos em cada alvo quanto mais alvos houver,
+  // e o texto não diz isso. ASSUNÇÃO, anotada em docs/a-fazer.md.
+  const nLib = e.liberacao?.nivel;
+  const bumpLib = estimuloBonus(e.liberacao, nLib, efeitoKey, spellDur)
+    + explosaoValor(e.liberacao, nLib, efeitoKey, spellDur);
+  if (bumpLib) {
+    // `prejuizoRolagem` é guardado NEGATIVO, e "aumentar a penalidade" é
+    // afastar de zero. Somar cru transformaria um −6 em −4.
+    //
+    // ⚠ O sinal sai do valor CRU da tabela (`bruto`), e não do `valor` já
+    // processado. Um prejuízo que a divisão por rodadas ou por alvos tenha
+    // levado a 0 perdeu o sinal, e somar nele viraria a penalidade em BÔNUS
+    // para o inimigo.
+    const negativo = bruto < 0;
+    valor = negativo ? valor - bumpLib : valor + bumpLib;
+    notas.push(`Liberação Máxima: ${negativo ? "−" : "+"}${bumpLib} no valor.`);
+  }
   out.alvos = alvosBase;
   out.valor = valor;
   aplicarConcentracao(e, out, notas, nNum);
@@ -2422,6 +2558,21 @@ export function calcularFeiticoAuxiliar(feitico, ctx = {}) {
   const f = feitico || {};
   const nivel = f.nivel ?? 1;
   const nBase = nivel === "max" ? 5 : nivel;
+  // Liberação Máxima do FEITIÇO. Ela desce em cada `e` porque `calcularEfeitoAux`
+  // enxerga o efeito e não o Feitiço, e as duas melhorias do Manto que mexem em
+  // valor (Estímulo de Saída e Explosão Extrema) são aplicadas lá dentro.
+  const lib = resolveLiberacao(f, ctx);
+  // Duração Prolongada: rodadas a mais na Duradoura. ⚠ Somadas DEPOIS, sobre o
+  // resultado, para furarem o teto de (1 + nível) sem entrar no divisor do
+  // valor. Se entrassem no divisor, a melhoria diluiria o bônus (autor).
+  const rodadasLib = rodadasExtras(lib, nBase);
+  const somarRodadas = (r) => {
+    if (rodadasLib && r.rodadas) {
+      r.rodadas += rodadasLib;
+      r.notas.push(`Duração Prolongada: +${rodadasLib} rodada(s).`);
+    }
+    return r;
+  };
 
   if (!f.multiplosAtivo) {
     const e = {
@@ -2431,11 +2582,18 @@ export function calcularFeiticoAuxiliar(feitico, ctx = {}) {
       // Múltiplos Efeitos), então força concUso "alvos".
       alvos: f.alvosAux, propria: !!f.alcancePropria,
       concentracao: f.concentracaoAux, concUso: "alvos", rodadas: f.rodadasDur,
+      liberacao: lib,
     };
-    const r = calcularEfeitoAux(e, ctx);
+    const r = somarRodadas(calcularEfeitoAux(e, ctx));
     r.multiplos = false;
     r.custoPE = custoPadrao(nBase);
     r.upkeepPE = e.duracao === "sustentada" ? upkeepSustentar(nivel) : 0;
+    // ---- Liberação Máxima ----
+    r.liberacao = lib;
+    r.rodadasSemUpkeep = e.duracao === "sustentada" ? (rodadasSemUpkeep(lib, nBase) || null) : null;
+    r.alvosExtras = alvosExtras(lib, nBase) || null;
+    r.regrasLiberacao = regrasDaLiberacao(lib, f);
+    r.avisos = [...r.avisos, ...(lib?.avisos ?? [])];
     return r;
   }
 
@@ -2479,9 +2637,9 @@ export function calcularFeiticoAuxiliar(feitico, ctx = {}) {
       efeito: en.efeito, nivel: en.nivel, duracao: col, semRounds,
       acao: acaoAplicada, umGolpe: eventoUnico, tiposDanoExtra: en.tiposDanoExtra,
       alvos: alvosSpell, propria, rodadas: f.rodadasMult, nivelDuracao: nivel,
-      duracaoSpell,
+      duracaoSpell, liberacao: lib,
     };
-    const r = calcularEfeitoAux(e, ctx);
+    const r = somarRodadas(calcularEfeitoAux(e, ctx));
     r.id = en.id;
     r.timing = duracaoSpell;           // duração real do Feitiço (para exibir)
     r.custoMult = custoEfeitoMult(en.nivel);
@@ -2515,7 +2673,14 @@ export function calcularFeiticoAuxiliar(feitico, ctx = {}) {
     alvos: alvosSpell + concExtraAlvos, propria, alvosTravados,
     umGolpe: eventoUnico, grupoEvento: grupoEventoAux(entries),
     upkeepPE: duracaoSpell === "sustentada" ? upkeepSustentar(nivel) : 0,
-    custoPE: custoPadrao(nBase), avisos, notas,
+    custoPE: custoPadrao(nBase),
+    // ---- Liberação Máxima ----
+    liberacao: lib,
+    rodadasSemUpkeep: duracaoSpell === "sustentada" ? (rodadasSemUpkeep(lib, nBase) || null) : null,
+    alvosExtras: alvosExtras(lib, nBase) || null,
+    regrasLiberacao: regrasDaLiberacao(lib, f),
+    avisos: [...avisos, ...(lib?.avisos ?? [])],
+    notas,
   };
 }
 
@@ -2775,7 +2940,13 @@ export function rolagensDoFeitico(f, calc) {
   if (faces < 2 || dados < 1) return [];
 
   if (f.tipo === "curativo") {
-    return [{ rotulo: calc.ehTemporario ? "PV Temporário" : "Cura", dados, faces, tom: "cura", vezes: 1 }];
+    return [{
+      rotulo: calc.ehTemporario ? "PV Temporário" : "Cura", dados, faces, tom: "cura", vezes: 1,
+      // Vigor Absoluto é parcela fixa somada ao total curado. O painel de
+      // rolagem já sabe somar `fixo`, é o mesmo campo do dano.
+      fixo: calc.bonusCura || 0,
+      partes: calc.bonusCura ? [{ label: "Vigor Absoluto", valor: calc.bonusCura }] : [],
+    }];
   }
 
   if (f.tipo === "dano") {
@@ -2924,19 +3095,63 @@ function areaResumoFeitico(calc) {
   return `${forma} de ${metrosResumo(calc.area)}`;
 }
 
-function condicoesResumoFeitico(f) {
+function condicoesResumoFeitico(f, calc) {
   const condicoes = Array.isArray(f.condicoes) ? f.condicoes : [];
+  // ⚠ No CURATIVO estas condições são as que ele REMOVE (autor, 2026-08-09), e
+  // removida não tem duração: só a força faz sentido ali.
+  const aplica = f.tipo !== "curativo";
   const textos = condicoes.map((condicao) => {
     const nome = condicao?.nome || "Condição";
     const forca = FORCA_CONDICAO_RESUMO_LABEL[condicao?.forca];
-    return forca ? `${nome} (${forca})` : nome;
+    if (!aplica) return forca ? `${nome} (${forca})` : nome;
+    // A duração da condição APLICADA, com as rodadas que a Duração Prolongada
+    // (Liberação Máxima) somou. "cena" não é número e não recebe soma: já dura
+    // até o alvo passar na CD.
+    const base = CONDICAO_DURACAO[f.nivel]?.[condicao?.forca];
+    const rodadas = (typeof base === "number" && calc?.rodadasExtras)
+      ? base + calc.rodadasExtras
+      : base;
+    const dur = rodadas === "cena" ? "cena"
+      : typeof rodadas === "number" ? `${rodadas} rodada${rodadas === 1 ? "" : "s"}`
+      : null;
+    const partes = [forca, dur].filter(Boolean).join(", ");
+    return partes ? `${nome} (${partes})` : nome;
   });
   if (f.sangramento) textos.push("Sangramento");
   return textos.length > 0 ? textos.join(", ") : null;
 }
 
+/* As linhas que a Liberação Máxima acrescenta. Só existem quando ela foi
+   declarada naquele uso, e por isso não entram na lista fixa de propriedades. */
+function liberacaoResumoFeitico(calc) {
+  const lib = calc?.liberacao;
+  if (!lib) return [];
+  return [
+    /* ⚠ NÃO entram aqui o custo em PE nem a lista de melhorias (2026-08-10). O
+       custo já está no cabeçalho do cartão e no resumo do controle, e as
+       melhorias já estão acesas nas pastilhas logo abaixo. Repetir os dois em
+       forma de propriedade fazia a mesma informação aparecer três vezes na
+       mesma tela, e a coluna de propriedades é para o que o Feitiço FAZ.
+
+       O que sobra aqui é justamente o que a Liberação acrescenta e não cabia em
+       nenhuma propriedade existente. */
+    { id: "ignoraRd", nome: "Ignora RD", valor: calc.ignoraRd ? String(calc.ignoraRd) : null },
+    { id: "alvosExtras", nome: "Alvos Extras", valor: calc.alvosExtras ? `+${calc.alvosExtras}` : null },
+    { id: "semUpkeep", nome: "Sem Upkeep", valor: calc.rodadasSemUpkeep
+      ? `${calc.rodadasSemUpkeep} rodada${calc.rodadasSemUpkeep === 1 ? "" : "s"}`
+      : null },
+    ...(calc.regrasLiberacao ?? []).map((regra, i) => ({
+      id: `liberacaoRegra${i}`, nome: "Regra", valor: regra,
+    })),
+  ].filter((p) => p.valor != null && p.valor !== "");
+}
+
 function propriedadesResumoFeitico(f, calc, valor, valorLabel) {
-  const alcance = calc?.alcanceTexto ?? (calc?.alcance != null ? metrosResumo(calc.alcance) : null);
+  // ⚠ Alcance 0 é TOQUE, e não "0 metros" (2026-08-10). O número cru fazia a
+  // Ficha imprimir "Alcance: 0 metros" numa mordida corpo-a-corpo, que lê como
+  // Feitiço sem alcance nenhum em vez de Feitiço que precisa encostar.
+  const alcance = calc?.alcanceTexto
+    ?? (calc?.alcance === 0 ? "Toque" : calc?.alcance != null ? metrosResumo(calc.alcance) : null);
   const area = areaResumoFeitico(calc);
   const acerto = Number(calc?.acertoDelta) || 0;
   const propriedades = [
@@ -2945,7 +3160,11 @@ function propriedadesResumoFeitico(f, calc, valor, valorLabel) {
     { id: "alvo", nome: "Alvo", valor: alvoResumoFeitico(f, calc) },
     { id: "area", nome: "Área", valor: area },
     { id: "duracao", nome: "Duração", valor: duracaoResumoFeitico(f, calc) },
-    { id: "resolucao", nome: "Resolução", valor: f.resolucao === "ataque"
+    // ⚠ A resolução EFETIVA, e não o campo cru (2026-08-09). O Destrutivo e o
+    // Cataclísmico são sempre teste de resistência por regra, e o motor os
+    // converte mesmo com a ficha marcada como ataque. Lendo `f.resolucao`, a
+    // Ficha imprimia "Jogada de Ataque" para um Ritual Estendido de TR.
+    { id: "resolucao", nome: "Resolução", valor: (calc?.resolucao ?? f.resolucao) === "ataque"
       ? "Jogada de Ataque"
       : f.tipo === "dano" ? "Teste de Resistência" : null },
     { id: "cd", nome: "CD", valor: calc?.cd != null ? String(calc.cd) : null },
@@ -2953,7 +3172,11 @@ function propriedadesResumoFeitico(f, calc, valor, valorLabel) {
     { id: "ignoraRD", nome: "Ignora RD", valor: calc?.ignoraRD > 0 ? String(calc.ignoraRD) : null },
     { id: "removeResistencia", nome: "Resistência", valor: calc?.removeResistencia ? "Removida" : null },
     { id: "valor", nome: valorLabel, valor: valor },
-    { id: "condicoes", nome: "Condições", valor: condicoesResumoFeitico(f) },
+    // ⚠ No CURATIVO a lista de condições é o que ele REMOVE, e não o que ele
+    // aplica (autor, 2026-08-09). Só o rótulo muda, mas "Condições: Atordoado"
+    // numa cura se lê como se ela atordoasse o alvo.
+    { id: "condicoes", nome: f.tipo === "curativo" ? "Remove" : "Condições",
+      valor: condicoesResumoFeitico(f, calc) },
     { id: "empurrao", nome: "Empurrão", valor: calc?.empurraoMetros > 0
       ? metrosResumo(calc.empurraoMetros)
       : null },
@@ -2963,6 +3186,17 @@ function propriedadesResumoFeitico(f, calc, valor, valorLabel) {
     { id: "sustentacao", nome: "Sustentação", valor: calc?.detalhes?.continuo?.custoSustentacao > 0
       ? `${calc.detalhes.continuo.custoSustentacao} PE`
       : null },
+    // ⚠ O upkeep do AUXILIAR e o da TRANSFORMAÇÃO (2026-08-09). O da linha
+    // acima é só do Dano Contínuo, e sem estas duas um Auxiliar Sustentado e uma
+    // Transformação Sustentada não mostravam o custo por rodada em lugar nenhum
+    // da Ficha, embora os dois calculadores já o produzissem.
+    { id: "upkeep", nome: "Upkeep", valor: calc?.upkeepPE > 0
+      ? `${calc.upkeepPE} PE por rodada`
+      : calc?.sustentacaoPE > 0 ? `${calc.sustentacaoPE} PE por rodada`
+      : calc?.sustentacaoVida > 0 ? `${calc.sustentacaoVida} PV por rodada`
+      : null },
+    { id: "exaustao", nome: "Exaustão", valor: calc?.notaExaustao || null },
+    ...liberacaoResumoFeitico(calc),
   ];
   return propriedades.filter((propriedade) => propriedade.valor != null && propriedade.valor !== "");
 }
@@ -2977,7 +3211,51 @@ function propriedadesResumoFeitico(f, calc, valor, valorLabel) {
  */
 export function resumoFeiticos(creature, ctx = {}) {
   const lista = Array.isArray(creature?.feiticos) ? creature.feiticos : [];
-  return lista.map((f) => {
+  return lista.map((f) => linhaDoFeitico(f, ctx, creature));
+}
+
+/**
+ * A mesma linha, de UM Feitiço só, pelo id.
+ *
+ * ⚠ Existe por causa da Liberação Máxima: ela é escolhida na HORA DA
+ * CONJURAÇÃO, e por isso não cabe na lista pré-calculada do `deriveAfty`. A
+ * Ficha pede aqui a versão liberada do Feitiço que o jogador acabou de
+ * declarar, em vez de recalcular a regra por conta própria.
+ */
+export function resumoDeUmFeitico(creature, id, ctx = {}) {
+  const lista = Array.isArray(creature?.feiticos) ? creature.feiticos : [];
+  const f = lista.find((x) => x.id === id);
+  return f ? linhaDoFeitico(f, ctx, creature) : null;
+}
+
+/**
+ * O que o jogador PODE declarar de Liberação Máxima neste Feitiço. `null`
+ * quando ele não alcança a mecânica, e aí a Ficha não mostra controle nenhum.
+ */
+function infoLiberacao(f, ctx) {
+  if (!nivelTemLiberacao(f.nivel)) return null;
+  if (categoriasDoFeitico(f).length === 0) return null;
+  if ((ctx.nd ?? 0) < LIBERACAO_ND_MINIMO) return null;
+  const melhorias = melhoriasDoFeitico(f);
+  return {
+    custoPE: custoLiberacao(f.nivel),
+    max: maxMelhorias(ctx.nd ?? 0),
+    // Só as categorias que este Feitiço alcança, e só com melhoria dentro.
+    categorias: LIBERACAO_CATEGORIAS
+      .map((c) => ({ ...c, melhorias: melhorias.filter((m) => m.categoria === c.value && m.disponivel) }))
+      .filter((c) => c.melhorias.length > 0),
+  };
+}
+
+/* O corpo de UMA linha. ⚠ Virou função nomeada em 2026-08-10, quando a
+   Conjuração em Ritual e a Liberação Máxima se encontraram: o Ritual precisa da
+   lista inteira e a Liberação precisa refazer UM Feitiço com as melhorias
+   declaradas na mesa, e as duas têm que sair exatamente do mesmo lugar. */
+function linhaDoFeitico(f, ctx, creature) {
+  {
+    // As reduções de custo olham o repertório INTEIRO da criatura, então a
+    // lista desce junto com o Feitiço da vez.
+    const lista = Array.isArray(creature?.feiticos) ? creature.feiticos : [];
     const configRitual = ctx.rituais?.[f.id] ?? null;
     const temRitualista = (ctx.habilidades ?? []).includes("cnj_ritualista");
     const ritualAtual = ctx.ritualAtual?.feiticoId === f.id ? ctx.ritualAtual : null;
@@ -3034,7 +3312,12 @@ export function resumoFeiticos(creature, ctx = {}) {
       tipo: f.tipo,
       nivel: f.nivel,
       nivelLabel: NIVEL_LABEL[f.nivel] ?? String(f.nivel),
-      custoPE: calc?.custoPE ?? null,
+      // ⚠ O custo da Liberação Máxima SUBSTITUI o do Feitiço (autor), então ele
+      // toma o lugar aqui em vez de virar uma segunda linha. Ver dois números de
+      // PE na mesma linha seria pior que ver o certo sozinho. O `custoPEBase`
+      // logo abaixo continua sendo o do Feitiço, para as reduções de custo do
+      // Ritual seguirem mostrando de onde saíram.
+      custoPE: calc?.liberacao?.custoPE ?? calc?.custoPE ?? null,
       custoPEBase: calc?.custoPEBase ?? calc?.custoPE ?? null,
       reducoesCustoPE: calc?.reducoesCustoPE ?? [],
       valor: valor ?? null,
@@ -3044,6 +3327,9 @@ export function resumoFeiticos(creature, ctx = {}) {
       valorLabel,
       propriedades: calc ? propriedadesResumoFeitico(f, calc, valor, valorLabel) : [],
       variacao: !!f.variacaoDe,
+      // O menu de Liberação Máxima deste Feitiço: o que dá para escolher na
+      // hora da conjuração. `null` quando ele não alcança a mecânica.
+      liberacao: infoLiberacao(f, ctx),
       consomeEstado,
       ritual: calc?.ritual ? {
         ...calc.ritual,
@@ -3066,5 +3352,5 @@ export function resumoFeiticos(creature, ctx = {}) {
       rolagens,
       avisos,
     };
-  });
+  }
 }

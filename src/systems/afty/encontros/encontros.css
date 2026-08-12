@@ -1,0 +1,242 @@
+/* ============================================================
+   ENCONTROS DO AFTY — o que a Ficha não tinha
+   ============================================================
+   Arquivo PRÓPRIO, e não regras novas no `ficha.css`. Dois motivos:
+
+   1. O `ficha.css` tem um assert de contrato de tema que lê o arquivo e compara
+      valor a valor. Encher ele de classes que nenhum tema pinta faria o contrato
+      crescer sem ninguém precisar delas.
+   2. A tela de encontro é do MESTRE, e não do jogador. Ela não aceita CSS
+      personalizado — o mestre não escolhe tema para a mesa dele em cima da
+      ficha de um inimigo.
+
+   As variáveis (`--afty-*`) vêm do `.afty-ficha`, que o `AftyEncontro` põe na
+   raiz: é ele que dá cor, borda e fonte a tudo aqui dentro.
+   ============================================================ */
+
+/* ============================================================
+   COR POR LADO
+   ============================================================
+   ⚠ O lado é a informação que o mestre lê MAIS RÁPIDO numa fila de doze linhas,
+   e ele estava só num chip de texto. Cor resolve isso antes da leitura.
+
+   As três saem de variáveis que a Ficha já tem, e não de valores novos: inimigo
+   é o vermelho do PV, aliado é o verde da cura, jogador é o azul do PE. Um tema
+   que troque a paleta leva os três junto. */
+[data-afty-lado="inimigo"] { --afty-lado: var(--afty-pv); }
+[data-afty-lado="aliado"]  { --afty-lado: var(--afty-cura); }
+[data-afty-lado="jogador"] { --afty-lado: var(--afty-pe); }
+
+/* Na linha de planejamento, o lado vira um filete na borda esquerda. */
+.afty-linha[data-afty-lado] {
+  border-left: 3px solid color-mix(in srgb, var(--afty-lado) 70%, transparent);
+}
+
+/* ---------- retrato circular da fila de iniciativa ---------- */
+.afty-encontro-retrato {
+  width: 1.75rem;
+  height: 1.75rem;
+  flex-shrink: 0;
+  border-radius: 9999px;
+  border: 1px solid var(--afty-borda-forte);
+  background: var(--afty-poco);
+}
+
+/* ---------- uma linha da fila de iniciativa ---------- */
+/* ⚠ `position: relative` não é enfeite: o X de remover fica absoluto no canto e
+   só aparece no hover, e sem isto ele se ancoraria na página. */
+.afty-encontro-fila {
+  position: relative;
+  display: block;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  border: 1px solid var(--afty-borda);
+  /* O filete do LADO fica aqui, e a vez do turno o substitui por roxo. Uma
+     borda só, com dois donos em ordem de prioridade: saber de quem é a vez
+     importa mais que saber de que lado ele está, porque o lado também está no
+     chip logo abaixo. */
+  border-left: 3px solid color-mix(in srgb, var(--afty-lado, var(--afty-borda)) 65%, transparent);
+  border-radius: var(--afty-raio-peq);
+  background: color-mix(in srgb, var(--afty-poco) 70%, transparent);
+  transition: border-color 140ms ease-out, background-color 140ms ease-out;
+}
+
+.afty-encontro-fila:hover {
+  border-color: var(--afty-borda-forte);
+}
+
+.afty-encontro-fila:focus-visible {
+  outline: 2px solid var(--afty-destaque);
+  outline-offset: 1px;
+}
+
+/* Foco de LEITURA: o mestre clicou para ver este, mas não é a vez dele. */
+.afty-encontro-fila[data-afty-foco="sim"] {
+  border-color: var(--afty-borda-forte);
+  background: color-mix(in srgb, var(--afty-card) 85%, transparent);
+}
+
+/* A VEZ. A barra grossa na esquerda é o que se acha de relance numa lista de
+   doze linhas, e é por isso que ela vence o foco de leitura na ordem. */
+.afty-encontro-fila[data-afty-vez="sim"] {
+  border-color: color-mix(in srgb, var(--afty-destaque) 45%, var(--afty-borda));
+  border-left: 3px solid var(--afty-destaque);
+  background: var(--afty-destaque-fundo);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--afty-destaque) 18%, transparent);
+}
+
+/* O pulso do turno ativo. ⚠ É LENTO (2,4s) e só na borda esquerda: a fila fica
+   na lateral durante a luta inteira, e animação rápida no canto do olho cansa.
+   Some para quem pediu menos movimento. */
+.afty-encontro-fila[data-afty-vez="sim"]::before {
+  content: "";
+  position: absolute;
+  left: -3px;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--afty-destaque);
+  animation: afty-encontro-pulso 2.4s ease-in-out infinite;
+}
+
+@keyframes afty-encontro-pulso {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .afty-encontro-fila[data-afty-vez="sim"]::before { animation: none; }
+}
+
+/* Fora da ordem. Abatido apaga mais que oculto, porque oculto volta. */
+.afty-encontro-fila[data-afty-fora="abatido"] {
+  opacity: 0.4;
+  filter: grayscale(1);
+}
+
+.afty-encontro-fila[data-afty-fora="oculto"] {
+  opacity: 0.6;
+}
+
+.afty-linha[data-afty-fora="abatido"] {
+  opacity: 0.6;
+}
+
+/* ---------- barrinha de PV da fila ---------- */
+.afty-encontro-trilho {
+  display: block;
+  height: 3px;
+  min-width: 1.5rem;
+  border-radius: 9999px;
+  background: var(--afty-poco);
+  overflow: hidden;
+}
+
+.afty-encontro-barra {
+  display: block;
+  height: 100%;
+  border-radius: 9999px;
+  background: var(--afty-pv);
+  transition: width 200ms ease-out, background-color 200ms ease-out;
+}
+
+/* Mesmas duas faixas do vital da Ficha: âmbar abaixo da metade, vermelho forte
+   abaixo de um quarto. A fila é onde o mestre decide em quem bater, e ela
+   precisa dizer quem está caindo sem ele abrir cada um. */
+.afty-encontro-barra[data-afty-nivel="baixo"] { background: var(--afty-aviso); }
+.afty-encontro-barra[data-afty-nivel="critico"] { background: var(--afty-pv); }
+
+/* ---------- cabeçalho do encontro ---------- */
+/* A barra de ações do topo agrupada, para os cinco botões não flutuarem soltos
+   sobre o fundo. */
+.afty-encontro-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem;
+  border: 1px solid var(--afty-borda);
+  border-radius: var(--afty-raio-peq);
+  background: color-mix(in srgb, var(--afty-poco) 60%, transparent);
+}
+
+/* A barra de abas do painel do combatente ganha o filete de base que a da Ficha
+   tem pelo cabeçalho. Sem ele, a aba selecionada fica sublinhada no vazio. */
+.afty-encontro-abas {
+  border-bottom: 1px solid var(--afty-borda);
+  margin-bottom: 0.25rem;
+}
+
+/* ---------- cartão de encontro no painel ---------- */
+/* ⚠ A faixa de status é a borda SUPERIOR, e não a esquerda: os cartões vivem
+   numa grade de três colunas, e a faixa lateral no meio da grade some entre os
+   vizinhos. No topo ela lê como cabeçalho do cartão. */
+.afty-encontro-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  text-align: left;
+  border: 1px solid var(--afty-borda);
+  border-top: 3px solid var(--afty-borda-forte);
+  border-radius: var(--afty-raio);
+  background: var(--afty-card);
+  transition: border-color 140ms ease-out, transform 140ms ease-out, box-shadow 140ms ease-out;
+}
+
+.afty-encontro-card:hover {
+  border-color: var(--afty-borda-forte);
+  transform: translateY(-1px);
+  box-shadow: var(--afty-sombra);
+}
+
+/* O encontro EM COMBATE é o único que o mestre precisa achar sem procurar: é a
+   luta que está acontecendo agora, com a mesa esperando. */
+.afty-encontro-card[data-afty-status="ativo"] {
+  border-color: color-mix(in srgb, var(--afty-destaque) 50%, var(--afty-borda));
+  border-top-color: var(--afty-destaque);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--afty-destaque) 20%, transparent);
+}
+
+.afty-encontro-card[data-afty-status="finalizado"] {
+  border-top-color: color-mix(in srgb, var(--afty-aviso) 55%, var(--afty-borda));
+  opacity: 0.75;
+}
+
+.afty-encontro-card[data-afty-status="finalizado"]:hover {
+  opacity: 1;
+}
+
+/* O nome do encontro é o alvo grande do cartão. */
+.afty-encontro-nome {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--afty-texto);
+  transition: color 140ms ease-out;
+}
+
+.afty-encontro-nome:hover { color: var(--afty-destaque-texto); }
+
+/* A contagem por lado, em pastilhas coloridas: "3 inimigos, 4 jogadores" diz o
+   tamanho da luta antes de abrir. */
+.afty-encontro-lado {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.25rem;
+  padding: 0.0625rem 0.375rem;
+  font-size: 0.625rem;
+  border-radius: 9999px;
+  border: 1px solid color-mix(in srgb, var(--afty-lado) 35%, transparent);
+  background: color-mix(in srgb, var(--afty-lado) 12%, transparent);
+  color: color-mix(in srgb, var(--afty-lado) 75%, var(--afty-texto));
+  white-space: nowrap;
+}
+
+.afty-encontro-lado-num {
+  font-family: var(--afty-fonte-num);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}

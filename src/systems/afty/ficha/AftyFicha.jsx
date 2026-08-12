@@ -5,7 +5,7 @@ import {
 } from "lucide-react";
 
 import "./ficha.css";
-import { mesclaFichaAfty, AFTY_TIPOS, AFTY_PATAMARES } from "../afty-schema";
+import { mesclaFichaAfty, AFTY_TIPOS, AFTY_PATAMARES, funcionamentosDaFicha } from "../afty-schema";
 import { deriveAfty } from "../afty-derive";
 import { NumeroComFontes } from "../ui/fontes";
 import { numeroBr } from "../ui/formato";
@@ -420,6 +420,7 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
     ),
     habilidades: () => (
       <AbaHabilidades
+        funcionamentos={funcionamentosDaFicha(ficha)}
         itens={itens}
         abertos={abertos}
         onAberto={alternaItem}
@@ -493,6 +494,11 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
                 <Chip>{rotuloDe(AFTY_PATAMARES, ficha.core.patamar)}</Chip>
                 <Chip>ND {derived.nd}</Chip>
                 <Chip title="Grau do Feiticeiro, que vem do ND">{derived.grauFeiticeiro.label}</Chip>
+                {/* Só quando saiu de Médio: um chip "Médio" em toda ficha é
+                    ruído, porque é o padrão de quase todas. */}
+                {derived.tamanhoDegraus !== 0 && (
+                  <Chip title="Mexe em Atletismo e Furtividade">{derived.tamanhoLabel}</Chip>
+                )}
                 {derived.carga?.sobrecarregado && (
                   <Chip tom="aviso" title={`${derived.carga.cargaLimite} espaços de limite`}>
                     <AlertTriangle className="w-3 h-3 flex-shrink-0" aria-hidden="true" />

@@ -89,6 +89,8 @@ import {
 import { getAnatomia } from "./afty-anatomias";
 // afty-aptidoes só importa afty-origens, que já é dependência daqui: sem ciclo.
 import { getAptidao } from "./afty-aptidoes";
+// Módulo folha (não importa nada), então a seta é segura.
+import { funcionamentosDaFicha } from "./afty-schema";
 import {
   HABILIDADE_EFEITOS, ESCOLHA_EFEITOS, TALENTO_EFEITOS,
   MELHORIA_EFEITOS, MELHORIA_EFEITOS_ALVO, LENDARIA_EFEITOS, LENDARIA_EFEITOS_ALVO,
@@ -122,6 +124,11 @@ export const EFEITO_CANAIS = [
   { id: "movimentoMult", label: "Multiplicador de Movimento", nota: "multiplica o movimento final. A Expansão de Domínio usa 2" },
   { id: "atencao",       label: "Atenção" },
   { id: "iniciativa",    label: "Iniciativa" },
+  // ⚠ Conta DEGRAUS de categoria, e não metros: +1 leva Médio a Grande. A
+  // criatura parte sempre de Médio, e este canal é o ÚNICO jeito de tirá-la de
+  // lá (autor, 2026-08-08): tamanho não é escolha de ficha, é consequência de
+  // uma Aptidão ou poder que diga que o corpo mudou. Apara nas pontas da lista.
+  { id: "tamanho",       label: "Categoria de Tamanho",  nota: "em DEGRAUS a partir de Médio, e não em metros: +1 = Grande, +2 = Enorme, −1 = Pequeno. Apara em Minúsculo e Colossal. Cada degrau mexe em Atletismo e Furtividade" },
   // ⚠ Os três de Regeneração e os sete de Cura moram no grupo "Cura e
   // Regeneração", e não aqui. Ver GRUPOS_DE_CANAL.
   { id: "resParcial",    label: "Resistência Parcial" },
@@ -132,6 +139,13 @@ export const EFEITO_CANAIS = [
   // Com destino
   { id: "atributo",      label: "Atributo",              alvo: "atributo", aceitaFuraTeto: true, nota: "o valor é aparado no LIMITE do atributo (20 padrão). Quem sobe o limite usa o canal limiteAtributo, e as duas coisas andam juntas nas regras que dizem \"o valor e o limite\"" },
   { id: "limiteAtributo", label: "Limite de Atributo",   alvo: "atributo", aceitaFuraTeto: true, nota: "sobe o teto daquele atributo por cima do 20 padrão, até o máximo de 30 (32 com furaTeto). Não soma valor: quem soma é o canal atributo" },
+  // ⚠ SUBSTITUI, não soma. É o único canal com esta semântica, e ele existe
+  // porque a alternativa era o truque da DIFERENÇA (`max(0, mod_forca -
+  // mod_destreza)`), que chega no mesmo número mas MENTE no detalhamento: o
+  // hover mostrava "Destreza +3" e "Músculos Desenvolvidos +2" lado a lado, e o
+  // autor leu como soma dos dois (2026-08-08). Aqui a linha da Destreza some e
+  // dá lugar à da Força.
+  { id: "defesaAtributo", label: "Atributo da Defesa",   alvo: "atributo", nota: "TROCA a Destreza no cálculo da Defesa, e não soma nada. Com mais de um concedido vale o de maior modificador, porque a regra é sempre \"você pode optar\"" },
   { id: "bonusPericia",  label: "Perícia",               alvo: "pericia", nota: "aceita `atr:destreza` para atingir toda perícia daquele atributo (Dádivas do Céu)" },
   { id: "proficienciaPericia", label: "Treino em Perícia", alvo: "pericia", nota: "1 = Treinado, 2 = Mestre. Concede a faixa, não soma número, e nunca REBAIXA o que a ficha já escolheu" },
   { id: "bonusTR",       label: "Teste de Resistência",  alvo: "tr", nota: "aceita `atr:constituicao` para atingir todo TR daquele atributo" },
@@ -275,6 +289,21 @@ export const FAMILIAS_EXCLUSIVAS = [
   // linha, como na Habilidade Única, e a Modificação de Domínio Simples é
   // sempre ativa (só vale com o Domínio no ar).
   { id: "estiloSombra",            label: "Estilo da Sombra",            modo: "ambos" },
+  // ⚠ A SÉTIMA (autor, 2026-08-12): *"Funcionamento Básico não acumula com
+  // Feitiços Ativos, Feitiços Passivos, Ações Shikigamis, Caracteristica
+  // Shikigamis, Técnicas Marciais, Novo Estilo das Sombras e etc"*. Ela cobre o
+  // Funcionamento Básico da técnica E os adicionais, e como o pool é PLANO isso
+  // já resolve a outra metade da regra do mesmo dia, *"Efeitos de dois
+  // funcionamentos básicos não funcionam"*: dois deles com o mesmo canal
+  // disputam entre si e vale o maior.
+  //
+  // "ambos" porque a linha decide: o Funcionamento Básico é passivo por
+  // natureza, mas o Motor dele aceita `duracao` e `quando`.
+  //
+  // ⚠ Técnica Marcial ainda NÃO é uma família: o subsistema nunca foi enviado.
+  // Quando ele nascer, entra aqui, e o Funcionamento Básico já para de acumular
+  // com ele sem precisar de mais nada.
+  { id: "funcionamentoBasico",     label: "Funcionamento Básico",        modo: "ambos" },
 ];
 
 const FAMILIA_EXCLUSIVA_BY_ID = Object.fromEntries(FAMILIAS_EXCLUSIVAS.map((f) => [f.id, f]));
@@ -326,12 +355,12 @@ const GRUPOS_DE_CANAL = [
   // `nivelAptidao` entra aqui, e não num grupo de Aptidões, porque ele é
   // concessão DIRETA de nível (a regra nomeia a trilha). O orçamento livre é
   // outro canal e está em Orçamentos.
-  ["Atributos e Aptidões", ["atributo", "limiteAtributo", "nivelAptidao", "limiteAptidao"]],
+  ["Atributos e Aptidões", ["atributo", "limiteAtributo", "defesaAtributo", "nivelAptidao", "limiteAptidao"]],
   ["Perícias e Resistências", [
     "bonusPericia", "proficienciaPericia", "bonusTR", "proficienciaTR", "margemCriticoTR",
   ]],
   ["Manobras", ["bonusManobra", "resistirManobra", "distanciaEmpurrao"]],
-  ["Movimento e Percepção", ["movimento", "movimentoMult", "iniciativa", "atencao"]],
+  ["Movimento e Percepção", ["movimento", "movimentoMult", "iniciativa", "atencao", "tamanho"]],
   // Tudo que é "quantos X você pode ter". ⚠ `espacosCarga` estava em Movimento
   // (2026-07-29) porque sobrecarga derruba o deslocamento. Era consequência, não
   // categoria, e o autor pegou: o canal sobe o LIMITE de espaços de item, então
@@ -566,8 +595,10 @@ export function efeitosManuaisDaFicha(creature) {
 }
 
 /**
- * Efeitos do FUNCIONAMENTO BÁSICO da técnica, escritos pelo jogador na ficha
- * (`core.tecnicaEfeitos`).
+ * Efeitos dos FUNCIONAMENTOS BÁSICOS, escritos pelo jogador na ficha: o da
+ * própria técnica (`core.tecnicaEfeitos`) e os adicionais
+ * (`core.funcionamentosAdicionais`), que o `funcionamentosDaFicha` entrega numa
+ * lista só.
  *
  * É uma das fontes em que o efeito é ESCRITO e não escolhido de um catálogo. A
  * outra é o Passivo / Característica criado pelo jogador. O jogador tem o DSL
@@ -577,25 +608,42 @@ export function efeitosManuaisDaFicha(creature) {
  * filtros de estágio do deriveAfty roteiam pelo canal sozinhos: um efeito de
  * `atributo` cai no estágio 1, um de `nivelAptidao` no pré-contexto, o resto no 2.
  *
+ * ⚠ TODA linha leva `exclusivo: "funcionamentoBasico"` desde 2026-08-12, sem
+ * exceção e sem interruptor por linha. É a regra do autor, e ela é dupla: dois
+ * Funcionamentos Básicos não somam entre si (o pool é plano, então eles disputam
+ * dentro da própria família) e nenhum deles soma com Feitiço, Shikigami,
+ * Técnica Marcial ou Estilo da Sombra. Habilidade, talento, origem e treino
+ * seguem somando por cima do vencedor, como sempre.
+ *
+ * ⚠ O `origem` do principal continua sendo `"tecnica"`, e não o id novo: ele já
+ * aparece assim no hover de fontes das fichas existentes, e renomear trocaria o
+ * rótulo de todo mundo para ganhar simetria com uma lista que o jogador nem vê.
+ *
  * Entrada inválida é DESCARTADA em silêncio de propósito: a validação e a
  * mensagem de erro são da UI, que mostra a expressão quebrada em vermelho na
  * hora de escrever. O motor não é o lugar de reclamar de digitação.
  */
 export function efeitosDaTecnica(creature) {
-  const lista = creature?.core?.tecnicaEfeitos;
-  if (!Array.isArray(lista)) return [];
   const out = [];
-  for (const e of lista) {
-    // Canal renomeado numa ficha antiga vira o novo aqui, na leitura.
-    const canal = CANAL_LEGADO[e?.canal] ?? e?.canal;
-    if (!canal || !CANAL_BY_ID[canal]) continue;
-    const expr = String(e.expr ?? "").trim();
-    if (!expr) continue;
-    const ef = { canal, expr, origem: "tecnica", nome: "Técnica" };
-    if (e.alvo) ef.alvo = e.alvo;
-    if (e.quando) ef.quando = String(e.quando).trim();
-    if (e.duracao === "temporaria") ef.duracao = "temporaria";
-    out.push(ef);
+  for (const fb of funcionamentosDaFicha(creature)) {
+    for (const e of fb.efeitos) {
+      // Canal renomeado numa ficha antiga vira o novo aqui, na leitura.
+      const canal = CANAL_LEGADO[e?.canal] ?? e?.canal;
+      if (!canal || !CANAL_BY_ID[canal]) continue;
+      const expr = String(e.expr ?? "").trim();
+      if (!expr) continue;
+      const ef = {
+        canal,
+        expr,
+        origem: fb.principal ? "tecnica" : `funcionamento:${fb.id}`,
+        nome: fb.principal ? "Técnica" : fb.nome,
+        exclusivo: "funcionamentoBasico",
+      };
+      if (e.alvo) ef.alvo = e.alvo;
+      if (e.quando) ef.quando = String(e.quando).trim();
+      if (e.duracao === "temporaria") ef.duracao = "temporaria";
+      out.push(ef);
+    }
   }
   return out;
 }
@@ -929,6 +977,7 @@ export function aplicarEfeitos(efeitos, ctx = {}) {
       exclusivos.push({
         canal: e.canal, alvo, valor, exclusivo: e.exclusivo,
         origem: e.origem || null, nome: e.nome || e.origem || "Efeito",
+        duracao: e.duracao || "permanente",
       });
       continue;
     }
@@ -947,6 +996,10 @@ export function aplicarEfeitos(efeitos, ctx = {}) {
       canal: e.canal, alvo, valor,
       origem: e.origem || null, nome: e.nome || e.origem || "Efeito",
       furaTeto,
+      // A duração viaja junto porque a aba Buffs LISTA os temporários: sem ela
+      // o efeito com duração some dentro da soma e o jogador não tem como saber
+      // que aquele +4 não é dele para sempre.
+      duracao: e.duracao || "permanente",
     });
   }
 
@@ -1018,7 +1071,7 @@ export function resolverExclusivos(res, jaAplicado = {}) {
       out.detalhes.push({
         canal: e.canal, alvo: e.alvo, valor: e.valor,
         origem: e.origem, nome: e.nome, furaTeto: false,
-        exclusivo: e.exclusivo,
+        exclusivo: e.exclusivo, duracao: e.duracao || "permanente",
         // Perdeu para um irmão, ou empatou com o que um estágio anterior já
         // tinha aplicado. Nos dois casos o número não entrou nesta conta.
         suplantado: e !== vencedor || !entra,
@@ -1134,9 +1187,19 @@ export const ehEstagio2 = (e) =>
  * volta de lá com a lista vazia e os vencedores já em `porCanal` / `porAlvo`.
  */
 export function mesclarEfeitos(...resultados) {
-  const out = { porCanal: {}, porAlvo: {}, furaTeto: {}, detalhes: [], avisos: [], exclusivos: [] };
+  const out = { porCanal: {}, porAlvo: {}, furaTeto: {}, detalhes: [], avisos: [], exclusivos: [], aplicado: {} };
   for (const r of resultados) {
     out.exclusivos.push(...(r?.exclusivos || []));
+    // ⚠ `aplicado` PRECISA sobreviver à mescla (2026-08-09). Ele é o placar do
+    // pool exclusivo (quanto de cada canal um estágio anterior já entregou), e
+    // quem o produz é o `resolverExclusivos`. O `out` era montado sem o campo,
+    // então mesclar um resultado JÁ resolvido com outro apagava o placar.
+    //
+    // Isso mordia de verdade: `deriveAfty` mescla a régua de TAMANHO depois do
+    // `resolverExclusivos`, então toda criatura que saísse de Médio perdia o
+    // `aplicado`, e o `resolverEfeitosDanoFinal` dos Feitiços voltava a somar o
+    // efeito exclusivo INTEIRO em vez do delta. Dano maior por ser Grande.
+    Object.assign(out.aplicado, r?.aplicado || {});
     for (const [c, v] of Object.entries(r?.porCanal || {})) {
       out.porCanal[c] = (out.porCanal[c] || 0) + v;
     }

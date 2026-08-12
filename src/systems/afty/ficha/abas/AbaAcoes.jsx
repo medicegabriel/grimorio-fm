@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { AlertTriangle, ChevronDown, ChevronRight } from "lucide-react";
 
-import { NumeroComFontes } from "../../ui/fontes";
+import { DicaDeTexto, NumeroComFontes } from "../../ui/fontes";
 import { sinalDe } from "../../ui/formato";
 import { curaNoGasto, rotuloBloco } from "../../afty-cura";
 import { tituloCustoFeitico } from "../../afty-feiticos";
@@ -9,6 +9,7 @@ import { RITUAL_MELHORIAS } from "../../afty-rituais";
 import { facesDe } from "../ficha-rolagem";
 import { useDestaque } from "../usar-destaque";
 import ItemDeFicha from "../ItemDeFicha";
+import TextoRico from "../../ui/TextoRico";
 
 /**
  * ============================================================
@@ -420,9 +421,31 @@ function ControlesRitual({
 }
 
 function LinhaFeitico({
-  f, rolar, destacado, onRitual, onDesativarRitual, onIniciarRitualEstendido, onIniciarRitualSemTeste,
+  f: base, rolar, destacado, comLiberacao,
+  onRitual, onDesativarRitual, onIniciarRitualEstendido, onIniciarRitualSemTeste,
   onConcluirPreparacaoRitual, onCancelarRitual, onFinalizarRitual, onEncerrarRitual,
 }) {
+  /* LIBERAÇÃO MÁXIMA declarada AGORA. Local e não persistida, pelo mesmo motivo
+     do crítico pendente: é a decisão de uma conjuração só, e guardá-la faria a
+     ficha reabrir amanhã com a técnica sobrecarregada de ontem.
+
+     ⚠ O Feitiço EXIBIDO passa a ser o liberado assim que há melhoria escolhida.
+     Quem recalcula é o motor (`derived.feiticos.comLiberacao`), nunca esta tela,
+     e a versão que volta já vem com o teste de Ritual aplicado por cima. */
+  const [melhorias, setMelhorias] = useState([]);
+  const menu = base.liberacao;
+  const liberado = useMemo(
+    () => ((melhorias.length > 0 && comLiberacao) ? comLiberacao(base.id, melhorias) : null),
+    [base.id, melhorias, comLiberacao],
+  );
+  const f = liberado ?? base;
+  const cheioLiberacao = menu ? melhorias.length >= menu.max : false;
+  const alternarMelhoria = (id) => setMelhorias((atual) => (
+    atual.includes(id) ? atual.filter((x) => x !== id)
+      : atual.length >= (menu?.max ?? 2) ? atual
+      : [...atual, id]
+  ));
+
   const raiz = useDestaque(destacado);
   const rolagens = f.rolagens ?? [];
   const propriedades = f.propriedades ?? [];
@@ -515,6 +538,62 @@ function LinhaFeitico({
             {!descricaoTemRotulo && <strong>Efeito: </strong>}
             {f.descricao}
           </p>
+        )}
+        {/* LIBERAÇÃO MÁXIMA. Só aparece em Feitiço que a alcança (Nível 3 ao 5,
+            Dano, Auxiliar ou Curativo, do ND 9 em diante).
+
+            ⚠ Fica ACIMA dos controles de Ritual porque os dois convivem no
+            mesmo uso: a Liberação é o que SAI, o Ritual é COMO se conjura, e a
+            ordem na tela segue a da mesa.
+
+            ⚠ É um `<details>` com a MESMA gramática do Ritual (mesmo resumo com
+            contador, mesma barra à esquerda no corpo). São dois controles
+            irmãos, no mesmo cartão, e duas aparências diferentes fariam o
+            jogador achar que são coisas de natureza diferente.
+
+            ⚠ ABERTO por padrão só quando há melhoria ligada: fechado ele é uma
+            linha discreta em quem não usa a mecânica, e quem já declarou vê o
+            que declarou sem precisar abrir. */}
+        {menu && (
+          <details className="w-full mt-1.5" open={melhorias.length > 0}>
+            <summary className="cursor-pointer text-[10px] font-semibold">
+              Liberação Máxima
+              <span className="afty-rotulo ml-2">
+                {melhorias.length}/{menu.max} · {menu.custoPE} PE
+              </span>
+            </summary>
+            <div className="mt-2 pl-2 border-l space-y-1.5" style={{ borderColor: "var(--afty-borda)" }}>
+              {menu.categorias.map((c) => (
+                <div key={c.value} className="afty-liberacao-grupo">
+                  <span className="afty-liberacao-categoria">{c.label}</span>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {c.melhorias.map((m) => {
+                      const ligada = melhorias.includes(m.id);
+                      return (
+                        /* A REGRA VERBATIM no hover, e não no `title` nativo
+                           (autor, 2026-08-10): "por ser suplemento, fica difícil
+                           acessar". O `title` demora um segundo para nascer,
+                           some ao mexer o mouse e não existe no teclado nem no
+                           dedo. Ver `DicaDeTexto`. */
+                        <DicaDeTexto key={m.id} titulo={m.nome} texto={m.descricao} nota={m.nota}>
+                          <button
+                            type="button"
+                            className="afty-chip"
+                            data-afty-tom={ligada ? "destaque" : undefined}
+                            disabled={!ligada && cheioLiberacao}
+                            aria-pressed={ligada}
+                            onClick={() => alternarMelhoria(m.id)}
+                          >
+                            {m.nome}
+                          </button>
+                        </DicaDeTexto>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </details>
         )}
         <ControlesRitual
           f={f}
@@ -699,6 +778,7 @@ export default function AbaAcoes({
               onCancelarRitual={onCancelarRitual}
               onFinalizarRitual={onFinalizarRitual}
               onEncerrarRitual={onEncerrarRitual}
+              comLiberacao={derived.feiticos?.comLiberacao}
             />
           ))}
         </Secao>

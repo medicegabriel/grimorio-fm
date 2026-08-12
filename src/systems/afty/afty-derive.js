@@ -34,7 +34,9 @@
 // Avaliador da DSL. Só o editor do Funcionamento Básico o usa aqui, para
 // reexibir o valor de cada linha: a aplicação de verdade é do `aplicarEfeitos`.
 import { evalNumber as evalNumberDsl } from "../../components/fm-dsl";
-import { AFTY_RESISTENCIAS } from "./afty-schema";
+import {
+  AFTY_RESISTENCIAS, TAMANHO_BASE, tamanhoPorDegraus, funcionamentosDaFicha,
+} from "./afty-schema";
 import {
   ATTR_KEYS, ATTR_LABEL, ATTR_LIMITE_PADRAO, ATTR_LIMITE_MAX, ATTR_LIMITE_ABSOLUTO,
 } from "./afty-atributos";
@@ -67,9 +69,9 @@ import {
 import { resolveInvocacoesList, resolveHordasList } from "./afty-invocacoes";
 import {
   resolveEquipamentos, resolveCarga, grauFeiticeiro, alcanceDaArma, propriedadesDaArma,
-  podeSerArmaDedicada, grauDoRank,
+  podeSerArmaDedicada, grauDoRank, efeitosEspeciaisDeArma,
 } from "./afty-equipamentos";
-import { nivelMaxFeitico, resumoFeiticos } from "./afty-feiticos";
+import { nivelMaxFeitico, resumoDeUmFeitico, resumoFeiticos } from "./afty-feiticos";
 import { resolveEstilos, efeitosDoEstilo } from "./afty-estilo-sombras";
 import { resolveTestes, resolveDano, catalogoPericiasDaFicha } from "./afty-pericias";
 import { resolveCura } from "./afty-cura";
@@ -520,6 +522,10 @@ export function deriveAfty(creature, opcoes = {}) {
     // mantinha metade deles como texto morto. Sem `exclusivo`, porque
     // encantamento soma normal e não é fonte do pool exclusivo.
     ...equip.efeitosEncantamento,
+    // O texto ESPECIAL da arma equipada, quando ele é número. Hoje só as
+    // Manoplas ("seu dano desarmado aumenta em 1 nível para cada 2 no seu
+    // modificador de força"), que estavam sem efeito nenhum até 2026-08-08.
+    ...efeitosEspeciaisDeArma(armasCarregadas),
     // Aptidões Amaldiçoadas (2026-07-30). As de bancada leem `au` e `cl`, que
     // são variáveis do contexto principal, então caem todas no estágio 2.
     ...coletarEfeitosAptidao(creatureComAptidoes, semEnergia),
@@ -629,9 +635,13 @@ export function deriveAfty(creature, opcoes = {}) {
     ? {}
     : beneficiosRitualDoDominio(creature, aptidoesIds);
   // ---------- Novo Estilo da Sombra (Sem Técnica) ----------
-  // Entra na mesma SEGUNDA lista do Domínio, e pelo mesmo motivo: os efeitos de
-  // tabela da Modificação de Domínio Simples são orçados pelo Nível de Aptidão
-  // em Domínio, que só existe a partir daqui.
+  // Entra na mesma SEGUNDA lista do Domínio, e pelo mesmo motivo: as vagas de
+  // imbuição no Domínio Simples são o Nível de Aptidão em Domínio, que só existe
+  // a partir daqui.
+  //
+  // ⚠ Os efeitos saem daqui com a quantidade imbuída como VARIÁVEL do DSL, e por
+  // isso não dependem do `resolveCombate` lá embaixo: a linha é estática e o
+  // valor só é lido quando as expressões rodam, com o contexto já montado.
   const estiloCtx = { origemId: core?.origem?.id ?? null, nd, dom: aptidao.efetivo?.dom ?? 0 };
   const estilo = resolveEstilos(creature, estiloCtx);
   const efeitosEstilo = efeitosDoEstilo(creature, estiloCtx);
@@ -815,10 +825,36 @@ export function deriveAfty(creature, opcoes = {}) {
   // os vencedores somados, então a disputa que sobra aqui é só a do estágio 2. E
   // ela não precisa do `aplicado` dos estágios anteriores: `atributo` é o único
   // canal que roda antes daqui, e o filtro `ehEstagio2` justamente o exclui.
-  const ef = resolverExclusivos(mesclarEfeitos(
+  const efSemTamanho = resolverExclusivos(mesclarEfeitos(
     efMontanteSemAtributo, efPreContexto, efAttrPerm, efAttrTemp,
     aplicarEfeitos(efeitosComDominio.filter(ehEstagio2), montarCtx(attrEff, modByAttr)),
   ));
+
+  // ---------- Tamanho (autor, 2026-08-08) ----------
+  // A criatura parte de Médio e SÓ o Motor a tira de lá: tamanho não é escolha
+  // de ficha, é consequência de uma Aptidão ou poder que diga que o corpo mudou.
+  //
+  // ⚠ TERCEIRA LISTA de efeitos, pelo mesmo motivo do Domínio e do Estilo: a
+  // régua de Atletismo e Furtividade DEPENDE do tamanho, e o tamanho depende do
+  // canal `tamanho`, que só fecha com o estágio 2 pronto. Resolver o tamanho
+  // primeiro e mesclar a régua depois quebra o laço, e é seguro porque a régua
+  // escreve num canal (`bonusPericia`) que nada do `tamanho` lê de volta.
+  //
+  // Entram como EFEITO, e não como número somado à mão, para o hover de fontes
+  // mostrar "Colossal −10" na linha da Furtividade em vez de um −10 sem dono.
+  const degrausTamanho = Math.trunc(valorCanal(efSemTamanho, "tamanho"));
+  const tamanho = tamanhoPorDegraus(degrausTamanho);
+  const efeitosTamanho = [];
+  for (const pericia of ["atletismo", "furtividade"]) {
+    if (!tamanho[pericia]) continue;
+    efeitosTamanho.push({
+      canal: "bonusPericia", alvo: pericia, expr: String(tamanho[pericia]),
+      origem: "tamanho", nome: tamanho.label,
+    });
+  }
+  const ef = efeitosTamanho.length
+    ? mesclarEfeitos(efSemTamanho, aplicarEfeitos(efeitosTamanho, montarCtx(attrEff, modByAttr)))
+    : efSemTamanho;
   const canal = (id, alvo = null) => valorCanal(ef, id, alvo);
 
   // Funcionamento Básico da técnica, RESOLVIDO linha a linha, só para o editor
@@ -878,15 +914,27 @@ export function deriveAfty(creature, opcoes = {}) {
       };
     });
   const tecnicaEfeitos = resolverEfeitosEditaveis(creature?.core?.tecnicaEfeitos);
+  // Um mapa por Funcionamento Básico ADICIONAL, no mesmo formato do principal:
+  // cada editor precisa ver o valor e o estado das linhas dele. O principal fica
+  // de fora do mapa porque já tem o `tecnicaEfeitos` acima, que meia dúzia de
+  // telas lê pelo nome.
+  const funcionamentoEfeitos = Object.fromEntries(
+    funcionamentosDaFicha(creature)
+      .filter((fb) => !fb.principal)
+      .map((fb) => [fb.id, resolverEfeitosEditaveis(fb.efeitos)]),
+  );
   const passivosEfeitos = Object.fromEntries(
     (Array.isArray(creature?.feiticos) ? creature.feiticos : [])
       .filter((f) => f?.tipo === "passivo")
       .map((f) => [f.id, resolverEfeitosEditaveis(f.efeitosPassivo)]),
   );
-  // Um mapa por Técnica de Estilo, no mesmo formato: o editor do Motor mostra o
-  // valor e o estado de cada linha escrita à mão.
+  // Um mapa por Técnica de Estilo ESPECIAL, no mesmo formato: o editor do Motor
+  // mostra o valor e o estado de cada linha escrita à mão. As de tabela não
+  // entram, porque a expressão delas é do catálogo e não é editável.
   const estiloEfeitos = Object.fromEntries(
-    estilo.linhas.map((l) => [l.id, resolverEfeitosEditaveis(l.efeitos)]),
+    estilo.conhecidas
+      .filter((t) => t.tipo === "especial")
+      .map((t) => [t.id, resolverEfeitosEditaveis(t.efeitos)]),
   );
 
   // Alma: o teto (100 + Melhoria de Alma) e o multiplicador de PV. Sai aqui, e
@@ -1041,6 +1089,30 @@ export function deriveAfty(creature, opcoes = {}) {
     // libera Habilidade Geral nenhuma.
     excedeu: gastosNoComum > contadorComum,
   };
+  // ⚠ O contexto virou VARIÁVEL porque agora dois caminhos precisam dele: a
+  // lista pronta e o `comLiberacao` lá embaixo, que refaz UM Feitiço com as
+  // melhorias de Liberação Máxima declaradas na mesa. Duas cópias do objeto
+  // divergiriam no primeiro campo novo (e este já tem quinze).
+  const ctxFeiticos = {
+    nd,
+    cdBase: cd,
+    modTecnica,
+    efeitos: ef,
+    efeitosLinhaDano,
+    contextoDsl: ctxTecnica,
+    bonusTreinamento: bt,
+    combate,
+    habilidades: habilidades.escolhidas,
+    ultimoFeiticoDanoId: opcoes.ultimoFeiticoDanoId ?? null,
+    rituais: opcoes.rituais ?? {},
+    usosRitualista: Math.max(0, Math.trunc(Number(opcoes.usosRitualista) || 0)),
+    limiteRitualista: Math.floor(bt / 2),
+    ritualAtual: opcoes.ritualAtual ?? null,
+    rituaisSemTeste: opcoes.rituaisSemTeste ?? {},
+    beneficiosRitualDominio,
+    temEnergiaReversa: aptidoesIds.includes("energia_reversa"),
+    invocacoes: Array.isArray(creature?.invocacoes) ? creature.invocacoes : [],
+  };
   let feiticos = {
     nivelMax: nivelMaxFeitico(nd),
     gastos: feiticosGastos,
@@ -1049,26 +1121,7 @@ export function deriveAfty(creature, opcoes = {}) {
     // do `resumoDominios`: a UI não recalcula nada). O card da aba Habilidades
     // segue chamando os `calcularFeitico*` por conta própria, porque ele precisa
     // do objeto INTEIRO do cálculo, e não do resumo.
-    lista: resumoFeiticos(creature, {
-      nd,
-      cdBase: cd,
-      modTecnica,
-      efeitos: ef,
-      efeitosLinhaDano,
-      contextoDsl: ctxTecnica,
-      bonusTreinamento: bt,
-      combate,
-      habilidades: habilidades.escolhidas,
-      ultimoFeiticoDanoId: opcoes.ultimoFeiticoDanoId ?? null,
-      rituais: opcoes.rituais ?? {},
-      usosRitualista: Math.max(0, Math.trunc(Number(opcoes.usosRitualista) || 0)),
-      limiteRitualista: Math.floor(bt / 2),
-      ritualAtual: opcoes.ritualAtual ?? null,
-      rituaisSemTeste: opcoes.rituaisSemTeste ?? {},
-      beneficiosRitualDominio,
-      temEnergiaReversa: aptidoesIds.includes("energia_reversa"),
-      invocacoes: Array.isArray(creature?.invocacoes) ? creature.invocacoes : [],
-    }),
+    lista: resumoFeiticos(creature, ctxFeiticos),
   };
 
   // ---------- RD Física ----------
@@ -1084,7 +1137,23 @@ export function deriveAfty(creature, opcoes = {}) {
     tipo === "misto" ? 1.5 :
     /* combatente | restringido */ 1.25;
   const defTipo = INT(nd / divisorDefesa);
-  const defesa = 10 + defTipo + modDes + bt + equip.uniformeDefesa + carga.defesa + canal("defesa");
+
+  // Qual atributo entra na Defesa. Destreza por padrão, e o canal
+  // `defesaAtributo` TROCA (Músculos Desenvolvidos: "você pode optar por somar
+  // seu Modificador de Força ao invés de Destreza").
+  //
+  // ⚠ SUBSTITUIÇÃO, e não soma. Isto era `max(0, mod_forca - mod_destreza)` no
+  // canal `defesa`, que dá o mesmo número mas mente no hover: "Destreza +3" e
+  // "Músculos Desenvolvidos +2" um embaixo do outro se leem como soma dos dois
+  // atributos (autor, 2026-08-08).
+  //
+  // Vale o MAIOR entre a Destreza e os concedidos, porque a regra diz "você pode
+  // OPTAR": ninguém opta por piorar a própria Defesa.
+  const atributosDefesa = ATTR_KEYS.filter((k) => valorCanal(ef, "defesaAtributo", k) > 0);
+  const attrDefesa = [...atributosDefesa, "destreza"]
+    .reduce((melhor, k) => ((modByAttr[k] ?? 0) > (modByAttr[melhor] ?? 0) ? k : melhor), "destreza");
+  const modDefesa = modByAttr[attrDefesa] ?? 0;
+  const defesa = 10 + defTipo + modDefesa + bt + equip.uniformeDefesa + carga.defesa + canal("defesa");
 
   // ---------- Perícias, Jogadas de Ataque e Testes de Resistência ----------
   // Depende de cdTipo e defTipo: a planilha do autor (2026-07-27) mostra que a
@@ -1118,9 +1187,16 @@ export function deriveAfty(creature, opcoes = {}) {
   const parteAtributoPrest = partesPrestidigitacao[0] ?? { label: "Destreza", valor: modDes };
   const partePenalidadePrest = partesPrestidigitacao.find((p) => p.label === "Armadura e Escudo") ?? null;
   const bonusRitualista = temRitualista ? 2 : 0;
-  feiticos = {
-    ...feiticos,
-    lista: (feiticos.lista ?? []).map((f) => {
+  /* O teste de Conjuração em Ritual entra DEPOIS do `resumoFeiticos`, porque
+     depende da perícia de Prestidigitação, que só fecha aqui embaixo.
+
+     ⚠ Virou FUNÇÃO NOMEADA (2026-08-10) porque dois caminhos precisam dela: a
+     lista pronta e o `comLiberacao`. Um Feitiço pode ser Ritual E Liberação
+     Máxima no mesmo uso, e sem isto a versão liberada voltaria da mesa sem o
+     teste de ritual, ou seja, o jogador perderia a rolagem por ter declarado a
+     Liberação. */
+  const comTesteDeRitual = (f) => {
+    {
       if (!f.ritual) return f;
       const config = opcoes.rituais?.[f.id] ?? {};
       const usaInteligencia = temNaturalidadeRitual && config.atributoRitual === "inteligencia";
@@ -1150,7 +1226,23 @@ export function deriveAfty(creature, opcoes = {}) {
           } : null,
         },
       };
-    }),
+    }
+  };
+  feiticos = {
+    ...feiticos,
+    lista: (feiticos.lista ?? []).map(comTesteDeRitual),
+    /* ⚠ FUNÇÃO, e não valor. A Liberação Máxima é escolhida na HORA DA
+       CONJURAÇÃO, então ela não tem como estar na lista pré-calculada: o jogador
+       declara as melhorias na mesa e a Ficha pede a versão liberada daquele
+       Feitiço. Continua valendo que a UI não recalcula regra nenhuma, ela só
+       pergunta de novo com a escolha em mãos.
+
+       Passa pelo `comTesteDeRitual` pelo mesmo motivo que a lista: os dois
+       sistemas convivem no mesmo uso. */
+    comLiberacao: (id, melhorias) => {
+      const linha = resumoDeUmFeitico(creature, id, { ...ctxFeiticos, liberacao: { melhorias } });
+      return linha ? comTesteDeRitual(linha) : null;
+    },
   };
 
   // ---------- Dano (planilha do autor, 2026-07-27) ----------
@@ -1244,6 +1336,11 @@ export function deriveAfty(creature, opcoes = {}) {
   // lê aptidões escolhidas): fica para a passada de efeitos, quando o
   // catálogo fechar. Ver docs/afty-status.md.
   const aptidaoThresholds = [[2,1],[4,1],[6,1],[8,1],[10,2],[12,1],[14,1],[16,1],[18,1],[20,2]];
+  // ⚠ A tabela do livro para no ND 20, e o orçamento parava junto. O autor
+  // estendeu em 2026-08-12: a partir do 20 continua saindo 1 nível a cada 2 ND,
+  // ou seja, nos ND 22, 24, 26, 28, 30 e daí para cima sem fim (o ND não tem
+  // teto no Afty). Os ímpares não dão nada, então é divisão inteira.
+  const aptidaoAlem20 = Math.max(0, Math.floor((nd - 20) / 2));
   // ⚠ `canal("pontosAptidao")`, e não `treino.aptidao`: o orçamento vinha só do
   // estágio MONTANTE (Treinamentos e Habilidades Gerais), então uma HABILIDADE
   // que concedesse ponto de aptidão era descartada calada. O Elevar Aptidão do
@@ -1251,6 +1348,7 @@ export function deriveAfty(creature, opcoes = {}) {
   // expôs isso. O `ef` já traz o montante mesclado, então não dobra.
   const totalAptidao = semEnergia ? 0 : (
     aptidaoThresholds.reduce((s, [t, v]) => s + (nd >= t ? v : 0), 0) +
+    aptidaoAlem20 +
     (qntPE === "muito_grande" ? 1 : 0) +
     canal("pontosAptidao"));
 
@@ -1326,7 +1424,15 @@ export function deriveAfty(creature, opcoes = {}) {
     defesa: [
       { label: "Base", valor: 10 },
       { label: `Nível ÷ ${divTexto(divisorDefesa)}`, valor: defTipo },
-      { label: "Destreza", valor: modDes },
+      // O atributo TROCADO aparece com o nome dele, e não somado por baixo de
+      // uma "Destreza" que não está mais na conta. Quem trocou vem junto no
+      // rótulo, senão o jogador vê "Força" e não sabe de onde saiu.
+      { label: attrDefesa === "destreza"
+          ? "Destreza"
+          : `${rotulo[attrDefesa] ?? attrDefesa} (no lugar da Destreza)`,
+        valor: modDefesa },
+      ...detalhesDoCanal(ef, "defesaAtributo", attrDefesa)
+        .map((d) => ({ label: d.nome, texto: "substitui" })),
       { label: "Maestria", valor: bt },
       ...(equip.uniformeDefesa ? [{ label: "Uniforme", valor: equip.uniformeDefesa }] : []),
       ...(carga.defesa ? [{ label: "Sobrecarga", valor: carga.defesa }] : []),
@@ -1427,9 +1533,9 @@ export function deriveAfty(creature, opcoes = {}) {
     almaMax,               // teto da Integridade da Alma (100 + Melhoria de Alma)
     modTecnica,
     tecnicaAttr,
-    totalAptidao,               // orçamento de NÍVEIS de aptidão (para no ND 20)
+    totalAptidao,               // orçamento de NÍVEIS de aptidão (1 a cada 2 ND depois do 20)
     totalAptidoesAmaldicoadas,  // quantas pode ter (só da Habilidade Geral Aptidão, 0 sem ela)
-    aptidao,              // níveis por trilha: { alocado, concedido, efetivo, gastos }
+    aptidao,              // níveis por trilha: { alocado, concedido, efetivo, gastos, limite }
     // As Aptidões Amaldiçoadas EFETIVAS (escolhidas + concedidas por nome pela
     // origem), para o `requerAptidao` da bancada saber quais linhas mostrar.
     // Segue a trava do semEnergia, igual ao motor.
@@ -1444,9 +1550,15 @@ export function deriveAfty(creature, opcoes = {}) {
     // Motor). É o que os requisitos de perícia das Aptidões conferem.
     periciaProf: Object.fromEntries((testes.pericias ?? []).map((p) => [p.id, p.prof ?? null])),
     feiticos,             // { nivelMax, gastos, cdBase } — o orçamento é o de baixo
-    estilo,               // Novo Estilo da Sombra: { disponivel, linhas, gastos, orcamentoEfeitos, estados, avisos }
-    estiloEfeitos,        // Motor resolvido por Técnica de Estilo, para o editor mostrar cada linha
+    // ⚠ O contexto CRU do DSL, exposto para o seletor de variáveis do Motor
+    // (`vocabularioDsl` em afty-dsl-vocabulario.js). Sai cru de propósito: o
+    // agrupamento custa uma varredura das ~663 chaves, e o `deriveAfty` roda por
+    // combatente e por estado de combate. Quem monta a lista é a UI, num memo.
+    contextoDsl: ctxTecnica,
+    estilo,               // Novo Estilo da Sombra: { disponivel, conhecidas, gastos, vagas, gastoVagas, estados, avisos }
+    estiloEfeitos,        // Motor resolvido por Técnica de Estilo Especial, para o editor mostrar cada linha
     tecnicaEfeitos,       // Funcionamento Básico resolvido, para o editor mostrar o valor de cada linha
+    funcionamentoEfeitos, // o mesmo, por Funcionamento Básico ADICIONAL, chaveado pelo id
     passivosEfeitos,      // Motor resolvido por Feitiço Passivo / Característica
     motorLinhaDano: { efeitos: efeitosLinhaDano, contexto: ctxTecnica },
     gerais,               // { escolhidas, gastos, ganhos, destravado, maxVezes, acesso, inacessiveis }
@@ -1473,6 +1585,12 @@ export function deriveAfty(creature, opcoes = {}) {
     focosTotais,          // orçamento de Focos de interlúdio = ND + bônus de poderes
     treino,               // contribuições agregadas dos Treinamentos (hp/pe/movimento/aptidao/defesa)
     nd, tipo, patamar,
+    // Categoria de tamanho DERIVADA: Médio mais o que o Motor mover. A ficha não
+    // a escolhe (autor, 2026-08-08). `tamanhoDegraus` é quanto o Motor moveu, e
+    // vale para a UI dizer de onde veio.
+    tamanho: tamanho.value,
+    tamanhoLabel: tamanho.label,
+    tamanhoDegraus: degrausTamanho,
     mods: { forca: modFor, destreza: modDes, constituicao: modCon, inteligencia: modInt, sabedoria: modSab, presenca: modPre },
     attrEff,              // valor EFETIVO por atributo (base + efeitos, aparado no limite)
     attrPermanente,       // o que os PRÉ-REQUISITOS enxergam (sem os efeitos temporários)

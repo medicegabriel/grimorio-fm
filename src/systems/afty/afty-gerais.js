@@ -45,7 +45,8 @@
 
 import { MELHORIA_NIVEL_INICIAL, LENDARIA_NIVEL_INICIAL } from "./afty-schema";
 
-/** Metade da Maestria, para baixo. Aparece nos dois lados de Especialização e Aptidão. */
+/** Metade da Maestria, para baixo. É o TETO DE REPETIÇÃO das duas, e o valor por
+    pega só da Especialização: o da Aptidão virou o Grau em 2026-08-12. */
 export const metadeMaestria = (maestria) => Math.floor(Math.max(0, maestria) / 2);
 
 export const HABILIDADES_GERAIS = [
@@ -59,9 +60,12 @@ export const HABILIDADES_GERAIS = [
   },
   {
     id: "ger_aptidao",
+    // ⚠ O valor por pega era "1 + Metade da Maestria", igual ao da
+    // Especialização, e virou "1 + Grau" em 2026-08-12 (autor). O TETO DE
+    // REPETIÇÃO não mudou: continua metade da Maestria, em `maxVezesGeral`.
     nome: "Aptidão",
     descricao:
-      "Fornece uma quantidade de Aptidões Amaldiçoadas adicionais igual a 1 + Metade da Maestria. " +
+      "Fornece uma quantidade de Aptidões Amaldiçoadas adicionais igual a 1 + Grau Numérico. " +
       "Essa habilidade pode ser pega uma quantidade de vezes igual a metade da maestria do usuário.",
   },
   {

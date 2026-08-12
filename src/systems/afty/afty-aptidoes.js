@@ -1524,8 +1524,15 @@ export function subgruposDaCategoria(catId) {
  * ⚠ O `teto` é parâmetro desde 2026-07-29, e não é preciosismo: a CONCESSÃO pode
  * passar de 5 (as duas Habilidades que quebram o teto, a Expansão de Domínio), e
  * aparar aqui matava o efeito antes de o `resolveNiveisAptidao` sequer ver o
- * limite. Alocação segue no 5 (o jogador não COMPRA acima do padrão), concessão
- * entra sem teto e o aparo de verdade acontece lá, contra o limite da trilha.
+ * limite.
+ *
+ * ⚠ 2026-08-12: a ALOCAÇÃO também deixou de parar no 5. Antes ela era aparada
+ * aqui, com o argumento de que o jogador não COMPRA acima do padrão, e isso só
+ * funcionava porque toda regra que subia o limite subia um nível junto. A
+ * Versatilidade Extrema (Lendária) separou as duas coisas: ela sobe o limite de
+ * uma trilha para 6 e entrega os níveis como ORÇAMENTO, então o 6° nível chega
+ * alocado. Com o aparo aqui, a metade do limite não fazia nada. Quem apara agora
+ * é sempre o limite da trilha, dentro de resolveNiveisAptidao.
  */
 export function normalizeAptidaoNiveis(aptidoes, teto = APTIDAO_NIVEL_MAX) {
   const out = {};
@@ -1593,7 +1600,10 @@ export const trilhasDaOrigem = (origemId) => {
  * chave faltando viraria `undefined` num lugar que espera número.
  */
 export function resolveNiveisAptidao(aptidoes, concedidoRaw, limiteRaw = null, trilhas = APTIDAO_TRILHAS) {
-  const aloc = normalizeAptidaoNiveis(aptidoes);
+  // Alocação entra SEM teto, pelo mesmo motivo da concessão: o limite da trilha
+  // é quem apara, logo abaixo. Aparar no 5 aqui esconderia o 6° nível de quem
+  // subiu o limite (Versatilidade Extrema).
+  const aloc = normalizeAptidaoNiveis(aptidoes, Infinity);
   // Concessão entra SEM teto: quem a apara é o limite da trilha, logo abaixo.
   const concedido = normalizeAptidaoNiveis(concedidoRaw, Infinity);
   const alocado = {};

@@ -79,14 +79,45 @@ export const AFTY_RESISTENCIAS = [
   { value: "integridade", label: "Integridade", atributo: "constituicao", escala: "fixa",   descricao: "Mede a resistência da sua alma, indo contra efeitos que busquem a danificar ou modificar." },
 ];
 
+/**
+ * As categorias de tamanho, com a régua de perícia que cada uma impõe (autor,
+ * 2026-08-08). Corpo grande empurra e alcança, corpo pequeno se esconde: é a
+ * MESMA magnitude com o sinal trocado nas duas perícias.
+ *
+ * ⚠ `passo` é a distância de Médio, e é ele que o Motor move. O canal `tamanho`
+ * soma degraus, e o resultado é aparado nas pontas da lista: nada abaixo de
+ * Minúsculo nem acima de Colossal.
+ */
 export const AFTY_TAMANHOS = [
-  { value: "minusculo", label: "Minúsculo" },
-  { value: "pequeno",   label: "Pequeno" },
-  { value: "medio",     label: "Médio" },
-  { value: "grande",    label: "Grande" },
-  { value: "enorme",    label: "Enorme" },
-  { value: "colossal",  label: "Colossal" },
+  { value: "minusculo", label: "Minúsculo", passo: -2, atletismo: -5,  furtividade: 5 },
+  { value: "pequeno",   label: "Pequeno",   passo: -1, atletismo: -2,  furtividade: 2 },
+  { value: "medio",     label: "Médio",     passo: 0,  atletismo: 0,   furtividade: 0 },
+  { value: "grande",    label: "Grande",    passo: 1,  atletismo: 2,   furtividade: -2 },
+  { value: "enorme",    label: "Enorme",    passo: 2,  atletismo: 5,   furtividade: -5 },
+  { value: "colossal",  label: "Colossal",  passo: 3,  atletismo: 10,  furtividade: -10 },
 ];
+
+/** O tamanho de onde toda criatura parte. Só o Motor tira ela daqui. */
+export const TAMANHO_BASE = "medio";
+
+const TAMANHO_POR_PASSO = Object.fromEntries(AFTY_TAMANHOS.map((t) => [t.passo, t]));
+const PASSO_MIN = Math.min(...AFTY_TAMANHOS.map((t) => t.passo));
+const PASSO_MAX = Math.max(...AFTY_TAMANHOS.map((t) => t.passo));
+
+/**
+ * A categoria que sai de `degraus` passos a partir de Médio.
+ *
+ * ⚠ APARA em vez de estourar: uma criatura Colossal que pegue Crescimento
+ * Corporal de novo continua Colossal, e o excedente simplesmente não tem para
+ * onde ir. Devolver `null` obrigaria todo chamador a tratar o caso.
+ */
+export function tamanhoPorDegraus(degraus = 0) {
+  const passo = Math.min(PASSO_MAX, Math.max(PASSO_MIN, Math.trunc(Number(degraus) || 0)));
+  return TAMANHO_POR_PASSO[passo] ?? TAMANHO_POR_PASSO[0];
+}
+
+export const getTamanho = (value) =>
+  AFTY_TAMANHOS.find((t) => t.value === value) ?? TAMANHO_POR_PASSO[0];
 
 // As origens do Afty ficam em ./afty-origens.js (catálogo de conteúdo).
 
@@ -144,7 +175,10 @@ export function createBlankAfty() {
       tipo: "combatente",       // dirige coeficientes
       patamar: "comum",         // multiplica HP, escala Resistência/Atributos
       nd: 20,                   // Nível de Desafio (piso 3 na UI, → ∞ sem teto)
-      tamanho: "medio",
+      // ⚠ MORTO desde 2026-08-08, e mantido só para não quebrar ficha antiga na
+      // leitura: o tamanho virou DERIVADO (Médio mais o canal `tamanho` do
+      // Motor). Nada lê este campo. Ver `tamanhoPorDegraus`.
+      tamanho: TAMANHO_BASE,
       tecnicaAttr: "inteligencia", // atributo da Técnica (CD / RD específico)
       tecnicaDescricao: "",        // Funcionamento Básico / "Descrição da Técnica" (texto livre)
       // Efeitos do Funcionamento Básico, programados pelo jogador:
@@ -154,6 +188,14 @@ export function createBlankAfty() {
       // por `efeitosDaTecnica`, e os filtros de estágio roteiam pelo canal, igual
       // a qualquer outra fonte. Mesmo shape do Motor das Ferramentas Amaldiçoadas.
       tecnicaEfeitos: [],
+      // Funcionamentos Básicos ADICIONAIS (autor, 2026-08-12): algumas técnicas
+      // entregam mais de um (o Ilimitado que também tem os Seis Olhos), e a
+      // Cópia permite colocar os dos outros. Cada entrada é
+      // `{ id, nome, descricao, efeitos }`, com o mesmo Motor livre do
+      // principal. Os dois campos acima seguem sendo o Funcionamento Básico da
+      // própria técnica, que é o primeiro da lista e não tem nome (ele É a
+      // técnica). Quem junta os dois lados é `funcionamentosDaFicha`.
+      funcionamentosAdicionais: [],
       // Origem. Além do `id`, guarda o que ela abre:
       //   cla             — só o Herdado se divide em clãs (`cla_gojo`...)
       //   bonusAtributos  — a escolha +2/+1, ou a distribuição livre
@@ -282,7 +324,11 @@ export function createBlankAfty() {
     // Técnicas de Estilo do Novo Estilo da Sombra, o subsistema do SEM TÉCNICA
     // que ocupa o lugar dos Feitiços. Destrava no ND 4 e gasta o MESMO contador
     // que Feitiço e Habilidade Geral gastam. Ver afty-estilo-sombras.js.
-    estilosSombra: [],          // [{ id, nome, tipo, descricao, efeitosModificacao, efeitos }]
+    // ⚠ Só o que a criatura CONHECE. A IMBUIÇÃO no Domínio Simples é estado de
+    // combate (`combate.estilo_*`), porque é combinação de mesa e troca durante
+    // a luta. Duas formas: { id, tipo: "tabela" } e
+    // { id, tipo: "especial", nome, descricao, efeitos }.
+    estilosSombra: [],
     // Habilidades Gerais: qualquer origem pode pegar, e gastam o MESMO
     // contador dos Feitiços (dobro da Maestria + patamar, ver afty-gerais.js).
     // Lista COM repetição, igual a melhoriasSuperiores: cada entrada é uma pega.
@@ -359,5 +405,68 @@ export function createBlankAfty() {
       customCounters: [],
       combatLog: [],
     },
+  };
+}
+
+/* ============================================================ */
+/* FUNCIONAMENTOS BÁSICOS                                        */
+/* ============================================================ */
+/**
+ * A técnica tem UM Funcionamento Básico, e algumas entregam mais (autor,
+ * 2026-08-12): *"algumas Técnicas entregam Funcionamentos Básicos adicionais.
+ * Como o Ilimitado que as vezes também possui os Seis Olhos. E Cópia que
+ * permite colocar outros Funcionamentos Básicos."*
+ *
+ * ⚠ O principal continua morando em `core.tecnicaDescricao` + `core.tecnicaEfeitos`,
+ * e os adicionais numa lista à parte. Não foram unificados num array só porque
+ * os dois campos são lidos direto em quatro telas e por fichas já salvas: o
+ * ganho de simetria não paga a migração. Quem precisa dos dois lados juntos
+ * chama esta função, e para ela os dois são iguais.
+ *
+ * ⚠ Todos eles disputam o POOL EXCLUSIVO na mesma família (autor, mesmo dia):
+ * *"Efeitos de dois funcionamentos básicos não funcionam"*, e o Funcionamento
+ * Básico também não acumula com Feitiço Ativo, Feitiço Passivo, Ação e
+ * Característica de Shikigami, Técnica Marcial ou Novo Estilo das Sombras. Quem
+ * carimba é o `efeitosDaTecnica`, em afty-efeitos.js.
+ */
+export const FUNCIONAMENTO_PRINCIPAL_ID = "tecnica";
+
+/** O rótulo de quem não tem nome próprio: o principal, e o adicional em branco. */
+export const FUNCIONAMENTO_NOME_PADRAO = "Funcionamento Básico";
+
+export function funcionamentosDaFicha(creature) {
+  const core = creature?.core ?? {};
+  const extras = Array.isArray(core.funcionamentosAdicionais) ? core.funcionamentosAdicionais : [];
+  return [
+    {
+      id: FUNCIONAMENTO_PRINCIPAL_ID,
+      principal: true,
+      // O principal É a técnica, então ele não tem nome próprio.
+      nome: FUNCIONAMENTO_NOME_PADRAO,
+      descricao: String(core.tecnicaDescricao ?? ""),
+      efeitos: Array.isArray(core.tecnicaEfeitos) ? core.tecnicaEfeitos : [],
+    },
+    // Índice no id de reserva: uma ficha escrita à mão sem `id` ainda rende uma
+    // chave estável dentro da mesma lista, em vez de todas colidirem em "".
+    ...extras.filter(Boolean).map((f, i) => ({
+      id: String(f.id || `fb_${i + 1}`),
+      principal: false,
+      nome: String(f.nome ?? "").trim() || FUNCIONAMENTO_NOME_PADRAO,
+      descricao: String(f.descricao ?? ""),
+      efeitos: Array.isArray(f.efeitos) ? f.efeitos : [],
+    })),
+  ];
+}
+
+let funcionamentoSeq = 0;
+
+/** Um Funcionamento Básico adicional em branco. Mesmo padrão do createBlankEstiloEspecial. */
+export function createBlankFuncionamento() {
+  funcionamentoSeq += 1;
+  return {
+    id: `fb_${Date.now().toString(36)}_${funcionamentoSeq}`,
+    nome: "",
+    descricao: "",
+    efeitos: [],
   };
 }

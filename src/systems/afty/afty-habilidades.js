@@ -3150,6 +3150,26 @@ export const AFTY_HABILIDADES = [
 
   /* ---------------- CONJURADOR · POR NÍVEL (6° nível) ---------------- */
   {
+    // ⚠ Vem de OUTRA VERSÃO do livro (a 2.0), e o autor pediu a tag `[2.0]`
+    // antes do nome (2026-08-12). A tag mora no `nome` mesmo, e não num campo
+    // à parte, porque ela tem de aparecer em todo lugar que mostra o nome: o
+    // card, o pool de escolha, o hover de fontes e o rótulo de pré-requisito.
+    // A posição na lista segue o nome REAL, então ela abre o bloco do 6°.
+    id: "cnj_agilidade_no_campo_de_batalha",
+    nome: "[2.0] Agilidade no Campo de Batalha",
+    especializacaoId: "conjurador",
+    tipo: "nivel",
+    nivel: 6,
+    descricao:
+      "Em certos momentos, é necessário demonstrar uma maior agilidade enquanto no campo de " +
+      "batalha. Uma quantidade de vezes igual a metade do seu nível de especialização, você pode " +
+      "gastar 2 pontos de energia para realizar uma segunda ação bônus no seu turno.",
+    // O "Pré-Requisito: Nível 6" do livro É a vaga de 6° nível, igual ao resto
+    // do bloco. Sem canal: usos por cena, custo em PE e ação extra são
+    // procedimento de mesa, e a ficha não modela economia de ações.
+    requisitos: [],
+  },
+  {
     id: "cnj_bastiao_interior",
     nome: "Bastião Interior",
     especializacaoId: "conjurador",
@@ -3346,18 +3366,12 @@ export const AFTY_HABILIDADES = [
       "aplicando-o diretamente, com exceção de Condições, que ainda irão exigir um TR.",
     requisitos: [{ tipo: "habilidade", id: "cnj_combate_amaldicoado" }],
   },
-  {
-    id: "cnj_liberacoes_expandidas",
-    nome: "Liberações Expandidas",
-    especializacaoId: "conjurador",
-    tipo: "nivel",
-    nivel: 8,
-    descricao:
-      "Você encontra maneiras de ter um repertório de liberações máximas maior. Ao obter esta " +
-      "habilidade, você recebe uma Liberação Máxima adicional. Nos níveis 12 e 16 você recebe mais " +
-      "uma liberação máxima.",
-    requisitos: [],
-  },
+  // ⚠ "Liberações Expandidas" (`cnj_liberacoes_expandidas`, Conjurador nível 8)
+  // foi REMOVIDA em 2026-08-09, por ordem do autor. Ela existia para dar vagas
+  // de Liberação Máxima, e o suplemento O Ápice da Liberação acabou com a ideia
+  // de vaga: a Saída Adaptável, a Sincronia de Nível 16 e a Versatilidade viraram
+  // regra de TODA Liberação Máxima, sem habilidade nenhuma no caminho. As três
+  // estão verbatim em `afty-liberacoes.js`. Não reintroduzir.
   {
     id: "cnj_mira_aperfeicoada",
     nome: "Mira Aperfeiçoada",

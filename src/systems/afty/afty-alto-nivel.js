@@ -45,6 +45,10 @@ import {
 import { AFTY_PERICIAS } from "./afty-pericias";
 import { getHabilidade } from "./afty-habilidades";
 import { getEspecializacao } from "./afty-especializacoes";
+// Só o pool de trilhas da Versatilidade Extrema. Sem ciclo: afty-aptidoes.js
+// puxa origens, o conteúdo de efeitos e o catálogo de perícias, e nenhum deles
+// volta para cá.
+import { APTIDAO_TRILHAS } from "./afty-aptidoes";
 
 /** Primeiro nível em que cada trilha começa a render escolha.
     Definidos em afty-schema.js (módulo folha) e re-exportados aqui, que é onde
@@ -56,6 +60,9 @@ export { MELHORIA_NIVEL_INICIAL, LENDARIA_NIVEL_INICIAL };
 const OPCOES_PERICIA = AFTY_PERICIAS.map((p) => ({ id: p.id, nome: p.nome }));
 const OPCOES_ATRIBUTO = AFTY_ATTRS.map((a) => ({ id: a.key, nome: a.label }));
 const OPCOES_RESISTENCIA = AFTY_RESISTENCIAS.map((r) => ({ id: r.value, nome: r.label }));
+/* O id da opção É a chave da trilha (`dom`, `au`...), porque ele vira o `alvo`
+   do canal `limiteAptidao` em LENDARIA_EFEITOS_ALVO. */
+const OPCOES_TRILHA = APTIDAO_TRILHAS.map((t) => ({ id: t.key, nome: t.label }));
 
 /* ============================================================ */
 /* MELHORIAS SUPERIORES                                          */
@@ -446,6 +453,23 @@ export const HABILIDADES_LENDARIAS = [
       "Você é um com o mundo, não deixando nada passar despercebido. Ao obter esta habilidade, você " +
       "recebe +10 em Percepção e Atenção.",
     requisitos: [],
+  },
+  {
+    // Os 2 aumentos são ORÇAMENTO (canal `pontosAptidao`), e não concessão
+    // direcionada: "para distribuir" é o jogador quem faz, na aba Aptidões, e é
+    // lá que "uma única em dois níveis ou duas aptidões em um nível" acontece
+    // sem precisar de escolha aninhada. Mesmo caminho do Elevar Aptidão
+    // (Conjurador 12°). A escolha aninhada aqui é só a do LIMITE, que é
+    // direcionada por texto ("o limite de um Nível de Aptidão").
+    id: "len_versatilidade_extrema",
+    nome: "Versatilidade Extrema",
+    descricao:
+      "Buscando aprimorar-se em diversas áreas, você consegue desenvolver com perfeição suas " +
+      "aptidões, recebendo 2 aumentos de nível de aptidão para distribuir, podendo aumentar uma " +
+      "única em dois níveis ou duas aptidões em um nível. Além disso, você pode aumentar o limite " +
+      "de um Nível de Aptidão para 6.",
+    requisitos: [],
+    escolha: { label: "Limite de Aptidão", quantidade: 1, opcoes: OPCOES_TRILHA },
   },
   {
     id: "len_visar_o_sucesso",

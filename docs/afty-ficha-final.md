@@ -1414,3 +1414,48 @@ Lint e build limpos, **200 asserts**, `src/components/` intocado.
 - **O bônus fora do golpe inicial no dano contínuo.** Ele documentou "em Dano Contínuo
   contra o mesmo alvo, o bônus entra apenas no golpe inicial". Está implementado assim e
   eu travei com assert, mas é regra e vale a confirmação de quem manda no livro.
+
+---
+
+## FASE: FUNCIONAMENTO BÁSICO E BUFFS TEMPORÁRIOS (2026-08-08)
+
+Duas coisas que a criatura tinha e a Ficha não mostrava.
+
+### O Funcionamento Básico
+
+O `core.tecnicaDescricao` não era exibido em lugar nenhum além do campo de edição do criador. O
+autor tinha acabado de ganhar negrito, títulos e tabelas nele, e nada disso chegava à mesa.
+
+O renderizador saiu do criador e virou `src/systems/afty/ui/TextoRico.jsx`, ao lado dos outros
+primitivos compartilhados. **Cor por variável CSS com fallback**, porque criador e Ficha têm paletas
+diferentes e o componente é o mesmo.
+
+Na Ficha ele é um cartão no topo da aba Habilidades, dobrável e **aberto por padrão**: é um só, e é
+o texto que descreve a criatura, ao contrário dos 40 itens do livro que abrem fechados. Obedece ao
+filtro local da aba, casando contra o `textoPuro`.
+
+⚠ **Não é um `ItemDeFicha`.** O item renderiza um `<p>` corrido e achataria a formatação justamente
+onde ela foi pedida.
+
+**Classes novas no contrato do tema:** `.afty-tr`, `.afty-tr-h1`, `.afty-tr-h2`, `.afty-tr-p`,
+`.afty-tr-forte`, `.afty-tr-tabela`, `.afty-tr-tabela-caixa`, `.afty-tr-vazio`, `.afty-tecnica`.
+
+⚠ **A cor do Texto Rico vai por `style` inline**, e não por regra de folha. Isso é o preço de o
+componente servir aos dois donos, e significa que o CSS do usuário precisa de `!important` para
+repintar esses sete seletores. É a única parte da Ficha onde isso vale. Se incomodar, o conserto é
+mover as regras para o `ficha.css` e dar ao criador uma folha própria.
+
+### Buffs Temporários
+
+`duracao` passou a viajar nos `detalhes` do Motor, e a aba Buffs ganhou a seção **Temporários**
+(nome, origem, canal, valor, marca de *Suplantado*). É **só leitura**, seguindo a assunção de que
+efeito temporário fica sempre ligado na ficha.
+
+### Para confirmar com o autor
+
+- **O cartão do Funcionamento Básico mora na aba Habilidades.** Foi escolha minha, por ser o texto
+  da Técnica e as Habilidades serem o que ele descreve. Se o lugar dele é o topo da aba Ações, ou um
+  bloco no cabeçalho, é troca de uma linha.
+- **Temporário não se desliga.** Se a intenção é poder apagar um buff temporário na mesa (a magia
+  acabou antes da cena), isso é mudança no Motor e não na aba, porque hoje nada carrega quantas
+  rodadas o efeito ainda tem.

@@ -3,24 +3,63 @@
  * NOVO ESTILO DA SOMBRA — exclusivo do Sem Técnica
  * ============================================================
  * O trunfo de quem não tem técnica amaldiçoada. Destrava no ND 4, junto da
- * aptidão Domínio Simples, e se expressa por TÉCNICAS DE ESTILO, criadas pelo
- * jogador. Ocupa na aba Habilidades o lugar que os Feitiços ocupam nas outras
- * origens.
+ * aptidão Domínio Simples, e se expressa por TÉCNICAS DE ESTILO. Ocupa na aba
+ * Habilidades o lugar que os Feitiços ocupam nas outras origens.
  *
  * ⚠ Ao contrário dos Feitiços, a Técnica de Estilo NÃO tem nível: ela escala
  * pelo Nível de Aptidão em Domínio do usuário. Por isso não há aqui nada
  * parecido com `nivelMaxFeitico` nem tabela por nível.
  *
- * DOIS TIPOS (o jogador escolhe por Técnica):
+ * ------------------------------------------------------------
+ * ⚠ MODELO REFEITO EM 2026-08-10 (autor). O anterior estava invertido.
+ * ------------------------------------------------------------
+ * O modelo velho tratava "Modificação do Domínio Simples" como um RECIPIENTE:
+ * uma linha da ficha que custava 1 do contador e carregava dentro dela até
+ * `dom` efeitos da tabela. Isso errava as duas pontas: Aumento de Defesa mais
+ * Bônus de Acerto na mesma Modificação custavam 1 só, e criar uma segunda
+ * Modificação dava um orçamento de `dom` efeitos novo e inteiro.
  *
- *   modificacao — Modificação do Domínio Simples. Ativa como Ação Livre junto
- *                 da ativação do Domínio Simples, e concede efeitos escolhidos
- *                 de uma TABELA FECHADA (EFEITOS_MODIFICACAO). A quantidade de
- *                 efeitos é o Nível de Aptidão em Domínio.
- *   especial    — Técnica de Estilo Especial. Texto livre mais o Motor de
- *                 Automação completo, no mesmo desenho do Funcionamento Básico
- *                 e do Feitiço Passivo. É onde entram as Aptidões Amaldiçoadas
- *                 incorporadas e os efeitos únicos (a Lua Nebulosa do livro).
+ * O modelo certo separa DUAS coisas que eram uma só:
+ *
+ *   CONHECER — cada efeito É uma Técnica de Estilo e custa 1 do contador por
+ *              si. Autor: *"O Contador é por Técnica de Estilo. Logo, 'Aumento
+ *              de Defesa' contaria como 1. 'Aumento de Acerto' contaria como
+ *              outro."* Conhecer a mesma duas vezes não existe.
+ *   IMBUIR   — o Nível de Aptidão em Domínio é a quantidade de VAGAS DE
+ *              IMBUIÇÃO no Domínio Simples, e a mesma Técnica pode ocupar
+ *              várias. Autor: *"se eu tiver 5 Níveis de Domínio e só tiver uma
+ *              Técnica de Estilo 'Aumento de Acerto', eu poderia imbuir ele 5x
+ *              no meu Domínio Simples. É sobre ter várias Técnicas de Estilo, e
+ *              sair imbuindo elas fazendo combinações em meio ao combate."*
+ *
+ * ⚠ A imbuição é decisão de MESA, e não de ficha (autor, 2026-08-10). Por isso
+ * ela mora no estado de combate (`creature.combate`), que é a bancada de
+ * Simulação no criador e a SESSÃO na Ficha Final, trocável a qualquer momento.
+ * Mesmo desenho da Liberação Máxima, que é modo de saída declarado na hora.
+ *
+ * Cada Técnica conhecida vira uma FAIXA nos `estadosExtras`, mais um único
+ * interruptor `estilo_ativo` que representa o Estilo no ar. A quantidade imbuída
+ * entra na expressão como VARIÁVEL do DSL, então o valor acompanha a mesa sem o
+ * motor recalcular linha nenhuma. As faixas declaram `requerEstado` no
+ * interruptor, e é isso que a UI usa para desenhá-las DENTRO dele.
+ *
+ * DOIS TIPOS de Técnica de Estilo:
+ *
+ *   tabela   — uma das 4 do livro (TECNICAS_TABELA). Nome, texto e efeito são
+ *              do catálogo, e o jogador só decide se tem ou não.
+ *   especial — Técnica de Estilo Especial: nome, texto livre e o Motor de
+ *              Automação completo, no mesmo desenho do Funcionamento Básico e
+ *              do Feitiço Passivo. É onde entram as Aptidões Amaldiçoadas
+ *              incorporadas e os efeitos únicos (a Lua Nebulosa do livro).
+ *
+ * ⚠ O "Efeito Especial" SAIU da tabela em 2026-08-10 (autor): ele e a Técnica
+ * de Estilo Especial eram a mesma coisa escrita duas vezes. O texto do livro
+ * dele virou o `title` do botão que cria uma Especial, e está preservado na
+ * constante TEXTO_EFEITO_ESPECIAL abaixo.
+ *
+ * ⚠ A Especial também precisa de vaga de imbuição para valer (autor). Com isso
+ * o `modo: "ativa"` por linha do Motor MORREU: nada do Estilo fica no ar sem o
+ * Domínio Simples, então não sobrou linha passiva para distinguir.
  *
  * ------------------------------------------------------------
  * ORÇAMENTO (autor, 2026-08-07)
@@ -46,11 +85,11 @@
  * O Estilo da Sombra é a sexta fonte do pool que não acumula (a família
  * `estiloSombra` em afty-efeitos.js). Ele é o Feitiço Auxiliar do Sem Técnica:
  * sem isso, seria a única origem cujo bônus escrito à mão soma por cima de
- * tudo. Vale para os DOIS tipos, inclusive os efeitos de tabela da Modificação.
+ * tudo. Vale para os dois tipos, inclusive os efeitos de tabela.
  *
- * ⚠ Por isso a repetição de um efeito de tabela vira UMA linha com o valor já
- * multiplicado, e não N linhas iguais: N linhas cairiam na mesma chave do pool
- * e só a maior valeria, comendo as repetições que o jogador pagou.
+ * ⚠ Cada Técnica de tabela escreve UMA linha só, com a quantidade imbuída
+ * dentro da expressão. N linhas iguais cairiam na mesma chave do pool e só a
+ * maior valeria, comendo as imbuições que o jogador pagou.
  * ============================================================
  */
 
@@ -60,25 +99,51 @@ export const ESTILO_ND_MINIMO = 4;
 /** A origem que tem o Estilo. Uma só, e é o que a aba Habilidades consulta. */
 export const ESTILO_ORIGEM = "sem_tecnica";
 
-export const ESTILO_TIPOS = [
-  { value: "modificacao", label: "Modificação do Domínio Simples" },
-  { value: "especial",    label: "Técnica de Estilo Especial" },
-];
+/**
+ * O interruptor do Estilo no ar. Um por ficha, e não um por Técnica: o que liga
+ * e desliga é a expansão, e as Técnicas imbuídas vão junto.
+ *
+ * ⚠ Pela REGRA quem está no ar é o Domínio Simples ("enquanto ele estiver
+ * ativo", no texto de cada efeito). O rótulo diz **Novo Estilo das Sombras** por
+ * decisão do autor (2026-08-10): na Ficha Final, uma linha solta chamada
+ * "Domínio Simples" lia como aptidão avulsa, sem laço com as Técnicas logo
+ * abaixo dela.
+ */
+export const ESTADO_ESTILO_ATIVO = "estilo_ativo";
 
-export const ESTILO_TIPO_LABEL = Object.fromEntries(ESTILO_TIPOS.map((t) => [t.value, t.label]));
+/** O rótulo do interruptor, na boca do autor. */
+export const ESTILO_LABEL = "Novo Estilo das Sombras";
+
+/**
+ * A faixa de imbuição de uma Técnica. O id vira variável do DSL pelo
+ * `varDoEstado` de afty-combate.js, que só troca maiúscula por underscore, e
+ * por isso a chave já sai em minúsculas daqui.
+ */
+export const estadoDaTecnica = (id) =>
+  `estilo_${String(id).replace(/[^a-z0-9_]/gi, "_").toLowerCase()}`;
+
+/**
+ * Texto VERBATIM do "Efeito Especial", que era a 5ª linha da tabela até
+ * 2026-08-10. Vira o `title` do botão que cria uma Técnica de Estilo Especial:
+ * é explicação de ITEM, que a regra de UI manda para o `title`.
+ */
+export const TEXTO_EFEITO_ESPECIAL =
+  "O Domínio Simples possui um efeito único, desenvolvido pelo Jogador e aprovado pelo " +
+  "Narrador. Exemplos seriam: possuir alcance para ataques corpo a corpo igual a área do " +
+  "Domínio Simples ou poder manipular o tamanho do seu Domínio Simples.";
 
 /* ============================================================ */
-/* TABELA DE EFEITOS · MODIFICAÇÃO DE DOMÍNIO SIMPLES           */
+/* AS TÉCNICAS DE ESTILO DE TABELA                              */
 /* ============================================================ */
 /* Texto VERBATIM do livro. Campos:
-     max        -> quantas vezes o efeito cabe. `null` = sem teto declarado.
-     canal      -> o que ele escreve no Motor. `null` = procedimento de mesa.
-     expr(n)    -> a expressão da DSL para `n` colocações, JÁ somadas. Ver o
-                   aviso do cabeçalho sobre por que não são N linhas.
-     livre      -> abre o editor do Motor (só o Efeito Especial).
-     notaVezes  -> o que a repetição faz, quando não é somar o próprio valor. */
+     max        -> quantas imbuições cabem. `null` = sem teto declarado, e aí
+                   quem limita é a quantidade de vagas do Domínio Simples.
+     canal      -> o que ela escreve no Motor. `null` = procedimento de mesa.
+     expr(v)    -> a expressão da DSL, onde `v` é o NOME DA VARIÁVEL que guarda
+                   quantas vezes a Técnica está imbuída.
+     notaVezes  -> o que a imbuição repetida faz, quando não é somar o valor. */
 
-export const EFEITOS_MODIFICACAO = [
+export const TECNICAS_TABELA = [
   {
     id: "gatilho",
     nome: "Ataque com Gatilho",
@@ -95,7 +160,7 @@ export const EFEITOS_MODIFICACAO = [
   {
     id: "defesa",
     nome: "Aumento de Defesa",
-    // "pode ser colocado mais uma vez": duas colocações no total.
+    // "pode ser colocado mais uma vez": duas imbuições no total.
     max: 2,
     canal: "defesa",
     expr: () => "piso(maestria / 2)",
@@ -103,9 +168,9 @@ export const EFEITOS_MODIFICACAO = [
       "O usuário do Domínio Simples recebe um aumento em sua Defesa igual a metade do seu Bônus " +
       "de Treinamento, enquanto ele estiver ativo. Este efeito pode ser colocado mais uma vez, " +
       "passando a conceder o Aumento de Defesa também para aliados dentro do Domínio Simples.",
-    // ⚠ A segunda colocação NÃO aumenta a Defesa de quem usa: ela estende o
+    // ⚠ A segunda imbuição NÃO aumenta a Defesa de quem usa: ela estende o
     // mesmo bônus aos aliados, e efeito no OUTRO não tem canal (a ficha só
-    // conhece a si mesma). Por isso a expressão ignora `n`.
+    // conhece a si mesma). Por isso a expressão ignora a variável.
     notaVezes: "a 2ª estende aos aliados, sem somar na sua Defesa",
   },
   {
@@ -113,10 +178,10 @@ export const EFEITOS_MODIFICACAO = [
     nome: "Bônus de Acerto",
     max: null,
     canal: "bonusAcerto",
-    // Cada colocação soma outra metade da Maestria (autor, 2026-08-07). O livro
+    // Cada imbuição soma outra metade da Maestria (autor, 2026-08-07). O livro
     // só diz "aumentando o bônus", sem número, e o irmão dele (Dano Adicional)
     // repete o próprio valor base.
-    expr: (n) => (n > 1 ? `piso(maestria / 2) * ${n}` : "piso(maestria / 2)"),
+    expr: (v) => `piso(maestria / 2) * ${v}`,
     descricao:
       "O usuário do Domínio Simples recebe um bônus igual a metade do seu Bônus de Treinamento " +
       "em jogadas de ataque que realizar enquanto o Domínio Simples estiver ativo. Este efeito " +
@@ -127,65 +192,42 @@ export const EFEITOS_MODIFICACAO = [
     nome: "Dano Adicional",
     max: null,
     canal: "nivelDano",
-    expr: (n) => String(2 * n),
+    expr: (v) => `2 * ${v}`,
     descricao:
       "Os ataques do usuário do Domínio Simples tem seu dano aumentado em 2 níveis enquanto ele " +
       "estiver ativo. Este dano é considerado Durante Ataque e o efeito pode ser colocado mais " +
       "de uma vez, aumentando +2 níveis para cada outra vez.",
   },
-  {
-    id: "especial",
-    nome: "Efeito Especial",
-    max: null,
-    canal: null,
-    livre: true,
-    descricao:
-      "O Domínio Simples possui um efeito único, desenvolvido pelo Jogador e aprovado pelo " +
-      "Narrador. Exemplos seriam: possuir alcance para ataques corpo a corpo igual a área do " +
-      "Domínio Simples ou poder manipular o tamanho do seu Domínio Simples.",
-  },
 ];
 
-const EFEITO_BY_ID = Object.fromEntries(EFEITOS_MODIFICACAO.map((e) => [e.id, e]));
-export const getEfeitoModificacao = (id) => EFEITO_BY_ID[id] ?? null;
-
-/* ============================================================ */
-/* ESTADO DA BANCADA                                             */
-/* ============================================================ */
-/**
- * O interruptor de uma Técnica de Estilo na Simulação de Combate. Mesmo
- * desenho do `estadoDaUnica` das Ferramentas: instância da ficha, e não linha
- * de catálogo, então o id é gerado e entra pelos `estadosExtras`.
- *
- * Uma Modificação SEMPRE tem interruptor (os efeitos dela só valem "enquanto o
- * Domínio Simples estiver ativo"). Uma Especial só tem quando alguma linha dela
- * é marcada como ativa.
- */
-export const estadoDoEstilo = (id) => `estilo_${String(id).replace(/[^a-z0-9_]/gi, "_").toLowerCase()}`;
+const TABELA_BY_ID = Object.fromEntries(TECNICAS_TABELA.map((e) => [e.id, e]));
+export const getTecnicaTabela = (id) => TABELA_BY_ID[id] ?? null;
 
 /* ============================================================ */
 /* FICHA                                                         */
 /* ============================================================ */
-/* Uma Técnica de Estilo na ficha (`creature.estilosSombra`):
-     {
-       id, nome, tipo: "modificacao" | "especial", descricao,
-       // só na modificacao: quais efeitos da tabela, e quantas vezes cada um
-       efeitosModificacao: [{ id, vezes }],
-       // o Motor livre. Na modificacao é o Efeito Especial; na especial é a
-       // técnica inteira.
-       efeitos: [{ canal, alvo?, expr, quando?, duracao?, modo? }],
-     } */
+/* Uma Técnica de Estilo na ficha (`creature.estilosSombra`). Duas formas:
+
+     { id, tipo: "tabela" }
+       O `id` É o id da linha de TECNICAS_TABELA, e por isso conhecer a mesma
+       duas vezes é impossível por construção. Nome e texto vêm do catálogo.
+
+     { id, tipo: "especial", nome, descricao,
+       efeitos: [{ canal, alvo?, expr, quando?, duracao? }] }
+       O Motor livre, no mesmo formato do `core.tecnicaEfeitos`.
+
+   ⚠ A IMBUIÇÃO NÃO MORA AQUI. Ela é estado de combate, em
+   `creature.combate[estadoDaTecnica(id)]`. Ver o cabeçalho. */
 
 let estiloSeq = 0;
 
-export function createBlankEstilo(tipo = "modificacao") {
+export function createBlankEstiloEspecial() {
   estiloSeq += 1;
   return {
     id: `est_${Date.now().toString(36)}_${estiloSeq}`,
+    tipo: "especial",
     nome: "",
-    tipo: ESTILO_TIPO_LABEL[tipo] ? tipo : "modificacao",
     descricao: "",
-    efeitosModificacao: [],
     efeitos: [],
   };
 }
@@ -196,39 +238,69 @@ const inteiro = (v, min, max) => {
   return Math.max(min, Math.min(max, n));
 };
 
-/** As Técnicas de Estilo da ficha, saneadas e sem id repetido. */
+/**
+ * As Técnicas de Estilo que a ficha CONHECE, saneadas e sem repetição.
+ *
+ * ⚠ Converte o shape ANTIGO (a Modificação-recipiente, morta em 2026-08-10).
+ * Uma `modificacao` gravada explode nas Técnicas que ela carregava: cada efeito
+ * de tabela vira uma Técnica conhecida, e a parte de Motor livre dela (o antigo
+ * "Efeito Especial") vira uma Técnica Especial com o nome e o texto da linha.
+ * Sem isso, a ficha do autor abriria com o card vazio e o contador liberado, que
+ * é perda calada. O que NÃO sobrevive é a quantidade de vezes de cada efeito:
+ * ela virou imbuição, que é decisão de mesa e não de ficha.
+ */
 export function estilosDaFicha(creature) {
   const brutas = Array.isArray(creature?.estilosSombra) ? creature.estilosSombra : [];
-  const vistos = new Set();
-  const out = [];
+  const daTabela = new Set();
+  const especiais = [];
+  const idsEspeciais = new Set();
+
+  const guardaEspecial = (bruta, efeitos) => {
+    const id = String(bruta?.id ?? "").trim();
+    if (!id || idsEspeciais.has(id)) return;
+    idsEspeciais.add(id);
+    especiais.push({
+      id,
+      tipo: "especial",
+      nome: String(bruta.nome ?? "").trim(),
+      descricao: String(bruta.descricao ?? ""),
+      // ⚠ O `modo` de cada linha é descartado: ele morreu em 2026-08-10, quando
+      // a Especial passou a exigir imbuição. Deixá-lo passar manteria um campo
+      // morto viajando na ficha a cada edição, sem editor que o mostrasse.
+      efeitos: (Array.isArray(efeitos) ? efeitos : [])
+        .map(({ modo, ...resto }) => resto),  // eslint-disable-line no-unused-vars
+    });
+  };
+
   for (const b of brutas) {
     if (!b || typeof b !== "object") continue;
     const id = String(b.id ?? "").trim();
-    if (!id || vistos.has(id)) continue;
-    vistos.add(id);
-    const tipo = ESTILO_TIPO_LABEL[b.tipo] ? b.tipo : "modificacao";
-    // Um efeito por id, com as colocações somadas e aparadas no teto do
-    // catálogo. Duplicata na ficha vira repetição, que é o que ela significa.
-    const porId = new Map();
-    if (tipo === "modificacao") {
-      for (const e of Array.isArray(b.efeitosModificacao) ? b.efeitosModificacao : []) {
-        const def = EFEITO_BY_ID[e?.id];
-        if (!def) continue;
-        const vezes = inteiro(e.vezes ?? 1, 1, def.max ?? 99);
-        const atual = porId.get(def.id) ?? 0;
-        porId.set(def.id, inteiro(atual + vezes, 1, def.max ?? 99));
-      }
+    if (!id) continue;
+
+    if (b.tipo === "especial") {
+      guardaEspecial(b, b.efeitos);
+      continue;
     }
-    out.push({
-      id,
-      nome: String(b.nome ?? "").trim(),
-      tipo,
-      descricao: String(b.descricao ?? ""),
-      efeitosModificacao: [...porId].map(([eid, vezes]) => ({ id: eid, vezes })),
-      efeitos: Array.isArray(b.efeitos) ? b.efeitos : [],
-    });
+    if (b.tipo === "tabela" || (!b.tipo && TABELA_BY_ID[id])) {
+      if (TABELA_BY_ID[id]) daTabela.add(id);
+      continue;
+    }
+    // ---- shape ANTIGO: a Modificação-recipiente ----
+    if (b.tipo === "modificacao") {
+      for (const e of Array.isArray(b.efeitosModificacao) ? b.efeitosModificacao : []) {
+        if (TABELA_BY_ID[e?.id]) daTabela.add(e.id);
+      }
+      const efeitos = Array.isArray(b.efeitos) ? b.efeitos : [];
+      if (efeitos.length) guardaEspecial(b, efeitos);
+    }
   }
-  return out;
+
+  return [
+    // Ordem do catálogo primeiro, para a lista não dançar conforme o jogador
+    // marca e desmarca. As Especiais vêm depois, na ordem em que foram criadas.
+    ...TECNICAS_TABELA.filter((t) => daTabela.has(t.id)).map((t) => ({ id: t.id, tipo: "tabela" })),
+    ...especiais,
+  ];
 }
 
 /** O Estilo está disponível para esta criatura? */
@@ -241,58 +313,61 @@ export const estiloDisponivel = (origemId, nd) =>
 /**
  * Resolve as Técnicas de Estilo da ficha.
  *
- * `dom` é o Nível de Aptidão em Domínio EFETIVO, que é o orçamento de efeitos
- * de cada Modificação. Ele não limita a quantidade de Técnicas: quem limita é o
- * contador da aba, resolvido no deriveAfty junto dos Feitiços.
+ * `dom` é o Nível de Aptidão em Domínio EFETIVO, e ele é a quantidade de VAGAS
+ * DE IMBUIÇÃO. Ele não limita quantas Técnicas a criatura conhece: quem limita é
+ * o contador da aba, resolvido no deriveAfty junto dos Feitiços.
  *
- * Devolve { disponivel, linhas, gastos, estados, avisos }, onde `linhas` já traz
- * o orçamento de efeitos de cada Modificação resolvido, para a UI só exibir.
+ * A quantidade imbuída sai de `creature.combate`, que é a bancada no criador e a
+ * sessão na Ficha Final. Lida CRUA de propósito: o resolveCombate zera tudo fora
+ * de combate, e a combinação montada tem de continuar aparecendo na tela.
+ *
+ * Devolve { disponivel, conhecidas, gastos, vagas, gastoVagas, estados, avisos }.
  */
 export function resolveEstilos(creature, { origemId = null, nd = 1, dom = 0 } = {}) {
   const disponivel = estiloDisponivel(origemId, nd);
-  const linhas = estilosDaFicha(creature);
+  const conhecidasCru = estilosDaFicha(creature);
   const avisos = [];
-  const estados = [];
 
-  const orcamentoEfeitos = Math.max(0, Math.trunc(Number(dom) || 0));
+  const vagas = Math.max(0, Math.trunc(Number(dom) || 0));
+  const combate = (creature?.combate && typeof creature.combate === "object") ? creature.combate : {};
 
-  const resolvidas = linhas.map((l) => {
-    const nome = l.nome || (l.tipo === "modificacao" ? "Modificação Sem Nome" : "Técnica Sem Nome");
-    const efeitos = l.efeitosModificacao.map((e) => ({
-      ...e,
-      def: EFEITO_BY_ID[e.id],
-    }));
-    const gastoEfeitos = efeitos.reduce((s, e) => s + e.vezes, 0);
-    const excedeuEfeitos = l.tipo === "modificacao" && gastoEfeitos > orcamentoEfeitos;
-    if (excedeuEfeitos) {
-      avisos.push(`${nome}: ${gastoEfeitos} efeitos escolhidos, o Nível de Aptidão em Domínio permite ${orcamentoEfeitos}.`);
-    }
-    // Interruptor da bancada. A Modificação sempre tem um (ela só vale com o
-    // Domínio Simples no ar); a Especial só quando alguma linha é ativa.
-    const temAtiva = (l.efeitos ?? []).some((e) => e?.modo === "ativa" && String(e?.expr ?? "").trim());
-    const precisaEstado = l.tipo === "modificacao" || temAtiva;
-    if (disponivel && precisaEstado) {
-      estados.push({
-        id: estadoDoEstilo(l.id),
-        label: l.tipo === "modificacao" ? `${nome} (Domínio Simples)` : nome,
-      });
-    }
-    return {
-      ...l,
-      nome,
-      efeitos: l.efeitos,
-      efeitosModificacao: efeitos,
-      gastoEfeitos,
-      orcamentoEfeitos,
-      excedeuEfeitos,
-      estado: precisaEstado ? estadoDoEstilo(l.id) : null,
-    };
+  // Primeira passada: quanto cada Técnica pede, já aparado no teto do livro.
+  // A soma disso é o que ocupa as vagas do Domínio Simples.
+  const pedido = conhecidasCru.map((t) => {
+    const def = t.tipo === "tabela" ? TABELA_BY_ID[t.id] : null;
+    // ⚠ A Especial não tem cláusula de repetição no livro, então ela ocupa UMA
+    // vaga. Assunção anotada: só repete quem o texto manda repetir.
+    const teto = t.tipo === "tabela" ? (def?.max ?? vagas) : 1;
+    return { t, def, teto, vezes: inteiro(combate[estadoDaTecnica(t.id)], 0, Math.max(0, teto)) };
   });
+  const gastoVagas = pedido.reduce((s, p) => s + p.vezes, 0);
+  const folga = vagas - gastoVagas;
+
+  const conhecidas = pedido.map(({ t, def, teto, vezes }) => ({
+    ...t,
+    def,
+    nome: t.tipo === "tabela"
+      ? (def?.nome ?? t.id)
+      : (t.nome || "Técnica Sem Nome"),
+    descricao: t.tipo === "tabela" ? (def?.descricao ?? "") : t.descricao,
+    estado: estadoDaTecnica(t.id),
+    vezes,
+    // O teto da faixa na bancada: nem passa do que o livro escreve, nem estoura
+    // as vagas do Domínio. Mesmo desenho do orçamento de efeitos que existia
+    // antes, e é o que impede a combinação de exceder sem aviso.
+    maxImbuicao: Math.max(vezes, Math.min(teto, vezes + Math.max(0, folga))),
+  }));
+
+  if (disponivel && gastoVagas > vagas) {
+    avisos.push(
+      `${gastoVagas} imbuições no Domínio Simples, o Nível de Aptidão em Domínio permite ${vagas}.`,
+    );
+  }
 
   // A Técnica gravada numa ficha que perdeu o acesso (trocou de origem, ou o ND
   // caiu abaixo de 4) NÃO é apagada: ela some da conta e volta sozinha se o
   // acesso voltar. Mesma convenção do aparo de níveis em resolveNiveisAptidao.
-  if (!disponivel && linhas.length) {
+  if (!disponivel && conhecidas.length) {
     avisos.push(
       origemId === ESTILO_ORIGEM
         ? `Novo Estilo da Sombra destrava no Nível ${ESTILO_ND_MINIMO}.`
@@ -300,13 +375,31 @@ export function resolveEstilos(creature, { origemId = null, nd = 1, dom = 0 } = 
     );
   }
 
+  // Interruptores da bancada. Um bool para o Domínio Simples no ar, e uma faixa
+  // de imbuição por Técnica conhecida, que só aparece com o Domínio ligado.
+  const estados = disponivel && conhecidas.length
+    ? [
+      { id: ESTADO_ESTILO_ATIVO, label: ESTILO_LABEL, tipo: "bool" },
+      ...conhecidas.map((t) => ({
+        id: t.estado,
+        label: t.nome,
+        tipo: "faixa",
+        min: 0,
+        max: t.maxImbuicao,
+        requerEstado: ESTADO_ESTILO_ATIVO,
+      })),
+    ]
+    : [];
+
   return {
     disponivel,
     ndMinimo: ESTILO_ND_MINIMO,
-    linhas: resolvidas,
-    // O que a aba cobra do contador de Habilidades. Zero sem acesso.
-    gastos: disponivel ? resolvidas.length : 0,
-    orcamentoEfeitos,
+    conhecidas,
+    // O que a aba cobra do contador de Habilidades: uma por Técnica conhecida.
+    gastos: disponivel ? conhecidas.length : 0,
+    vagas,
+    gastoVagas,
+    excedeuVagas: disponivel && gastoVagas > vagas,
     estados,
     avisos,
   };
@@ -316,8 +409,12 @@ export function resolveEstilos(creature, { origemId = null, nd = 1, dom = 0 } = 
  * Efeitos das Técnicas de Estilo no vocabulário do Motor.
  *
  * Todos levam `exclusivo: "estiloSombra"` (a sexta família do pool que não
- * acumula) e, quando presos a um interruptor, `quando` mais
- * `duracao: "temporaria"`.
+ * acumula), `duracao: "temporaria"` e um `quando` que exige o Domínio Simples no
+ * ar E pelo menos uma imbuição daquela Técnica.
+ *
+ * ⚠ A quantidade imbuída entra como VARIÁVEL, e não como número: a linha é
+ * estática e o valor acompanha a bancada e a sessão sozinho. É o que permite a
+ * imbuição ser trocada em meio ao combate sem o motor remontar efeito nenhum.
  *
  * ⚠ Entrada inválida é descartada em silêncio, igual ao `efeitosDaTecnica`: a
  * validação de expressão e a mensagem de erro são da UI, que pinta a linha de
@@ -328,52 +425,44 @@ export function efeitosDoEstilo(creature, ctx = {}) {
   if (!resolvido.disponivel) return [];
   const out = [];
 
-  for (const l of resolvido.linhas) {
-    const origem = `estilo:${l.id}`;
-    const quando = l.estado;
+  for (const t of resolvido.conhecidas) {
+    const origem = `estilo:${t.id}`;
+    const porta = `${ESTADO_ESTILO_ATIVO} && ${t.estado} >= 1`;
 
-    // ---- Efeitos de TABELA (só a Modificação) ----
-    for (const e of l.efeitosModificacao) {
-      const def = e.def;
+    if (t.tipo === "tabela") {
+      const def = t.def;
       if (!def?.canal || typeof def.expr !== "function") continue;
-      const expr = def.expr(e.vezes);
+      const expr = def.expr(t.estado);
       if (!expr) continue;
       out.push({
         canal: def.canal,
         expr,
-        quando,
+        quando: porta,
         duracao: "temporaria",
         exclusivo: "estiloSombra",
         origem,
-        nome: `${l.nome} · ${def.nome}`,
+        nome: def.nome,
       });
+      continue;
     }
 
-    // ---- Motor LIVRE (Efeito Especial da Modificação, e a Técnica Especial) ----
-    for (const e of l.efeitos ?? []) {
+    for (const e of t.efeitos ?? []) {
       const canal = String(e?.canal ?? "").trim();
       const expr = String(e?.expr ?? "").trim();
       if (!canal || !expr) continue;
+      const proprio = String(e?.quando ?? "").trim();
       const ef = {
         canal,
         expr,
+        // Preso ao Domínio Simples é sempre temporário: ele não pode contar para
+        // pré-requisito, que é a regra do autor para tudo que liga e desliga.
+        quando: proprio ? `${porta} && (${proprio})` : porta,
+        duracao: "temporaria",
         exclusivo: "estiloSombra",
         origem,
-        nome: l.nome,
+        nome: t.nome,
       };
       if (e.alvo) ef.alvo = e.alvo;
-      // A Modificação inteira depende do Domínio Simples estar no ar, então o
-      // interruptor dela vale também para as linhas livres. Um `quando` escrito
-      // à mão soma por cima, com E.
-      const gatilhos = [];
-      if (l.tipo === "modificacao" || e.modo === "ativa") {
-        if (quando) gatilhos.push(quando);
-      }
-      if (e.quando) gatilhos.push(`(${String(e.quando).trim()})`);
-      if (gatilhos.length) ef.quando = gatilhos.join(" && ");
-      // Preso a interruptor é sempre temporário: ele não pode contar para
-      // pré-requisito, que é a regra do autor para tudo que liga e desliga.
-      if (gatilhos.length || e.duracao === "temporaria") ef.duracao = "temporaria";
       out.push(ef);
     }
   }
@@ -387,21 +476,25 @@ export function efeitosDoEstilo(creature, ctx = {}) {
 export function validarConteudoEstilos() {
   const erros = [];
   const vistos = new Set();
-  for (const e of EFEITOS_MODIFICACAO) {
-    if (!e.id) erros.push(`EFEITOS_MODIFICACAO: entrada sem id (${e.nome ?? "?"}).`);
-    if (vistos.has(e.id)) erros.push(`EFEITOS_MODIFICACAO: id duplicado "${e.id}".`);
+  for (const e of TECNICAS_TABELA) {
+    if (!e.id) erros.push(`TECNICAS_TABELA: entrada sem id (${e.nome ?? "?"}).`);
+    if (vistos.has(e.id)) erros.push(`TECNICAS_TABELA: id duplicado "${e.id}".`);
     vistos.add(e.id);
-    if (!e.nome) erros.push(`EFEITOS_MODIFICACAO: "${e.id}" sem nome.`);
-    if (!e.descricao) erros.push(`EFEITOS_MODIFICACAO: "${e.id}" sem descrição.`);
+    if (!e.nome) erros.push(`TECNICAS_TABELA: "${e.id}" sem nome.`);
+    if (!e.descricao) erros.push(`TECNICAS_TABELA: "${e.id}" sem descrição.`);
     // Canal e expressão andam juntos: um sem o outro é efeito morto ou linha
     // sem valor. O efeito de mesa declara os dois como ausentes.
     if (e.canal && typeof e.expr !== "function") {
-      erros.push(`EFEITOS_MODIFICACAO: "${e.id}" declara canal sem expressão.`);
+      erros.push(`TECNICAS_TABELA: "${e.id}" declara canal sem expressão.`);
     }
     if (!e.canal && typeof e.expr === "function") {
-      erros.push(`EFEITOS_MODIFICACAO: "${e.id}" declara expressão sem canal.`);
+      erros.push(`TECNICAS_TABELA: "${e.id}" declara expressão sem canal.`);
     }
-    if (e.max != null && e.max < 1) erros.push(`EFEITOS_MODIFICACAO: "${e.id}" tem max menor que 1.`);
+    if (e.max != null && e.max < 1) erros.push(`TECNICAS_TABELA: "${e.id}" tem max menor que 1.`);
+    // A faixa de imbuição não pode colidir com o interruptor do Domínio.
+    if (estadoDaTecnica(e.id) === ESTADO_ESTILO_ATIVO) {
+      erros.push(`TECNICAS_TABELA: "${e.id}" colide com o estado do Domínio Simples.`);
+    }
   }
   return erros;
 }

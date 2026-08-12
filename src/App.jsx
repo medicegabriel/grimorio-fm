@@ -4,6 +4,8 @@ import CombatTracker from "./components/CombatTracker";
 import CreatureBuilder from "./components/CreatureBuilder";
 import AftyCreatureBuilder from "./systems/afty/AftyCreatureBuilder";
 import AftyFicha from "./systems/afty/ficha/AftyFicha";
+import AftyEncontros from "./systems/afty/encontros/AftyEncontros";
+import AftyEncontro from "./systems/afty/encontros/AftyEncontro";
 import EncounterTracker from "./components/EncounterTracker";
 import EncountersDashboard from "./components/EncountersDashboard";
 import TemplateLibrary from "./components/TemplateLibrary";
@@ -11,6 +13,7 @@ import EncounterSyncModal from "./components/EncounterSyncModal";
 import PdfFab from "./components/PdfFab";
 import useCreatureStorage from "./components/useCreatureStorage";
 import useEncounterManager from "./useEncounterManager";
+import useEncontrosAfty from "./systems/afty/encontros/usar-encontros-afty";
 import { COMPENDIUM, getCompendiumById, isBuiltInId } from "./fm-compendium";
 import { Analytics } from '@vercel/analytics/react';
 
@@ -41,6 +44,12 @@ export default function App() {
     aftyMode ? { namespace: "afty", defaultRulesVersion: "afty" } : undefined
   );
   const encounterManager = useEncounterManager(aftyMode ? "afty" : "");
+  // ⚠ Gerenciador PRÓPRIO do Afty, e não o de cima com namespace: o combatente
+  // do Afty guarda `ficha` e `sessao`, e o da 2.5.2 guarda `snapshot` e
+  // `combatState`. Chave própria (`afty_encontros_v1`), shape próprio. O hook
+  // roda nos dois modos porque hook não pode ser condicional; fora do /Afty ele
+  // só lê uma chave vazia.
+  const encontrosAfty = useEncontrosAfty();
 
   const [view, setView] = useState({ name: "dashboard", creatureId: null, encounterId: null });
   const [encounterSyncState, setEncounterSyncState] = useState(null);
@@ -92,9 +101,10 @@ export default function App() {
   }, []);
 
   const handleDuplicateEncounter = useCallback((id) => {
-    encounterManager.duplicate(id);
+    if (aftyMode) encontrosAfty.duplicar(id);
+    else encounterManager.duplicate(id);
     goToEncounters();
-  }, [encounterManager, goToEncounters]);
+  }, [aftyMode, encontrosAfty, encounterManager, goToEncounters]);
 
   // ---------- Save de criatura com verificação de encontros ----------
   const handleCreatureSave = useCallback((data) => {
@@ -112,7 +122,10 @@ export default function App() {
     };
 
     if (isEditing) {
-      const affected = encounterManager.encounters.filter((enc) =>
+      // ⚠ Só a 2.5.2 sincroniza: o encontro do Afty guarda a ficha CLONADA de
+      // propósito, para uma edição no criador não mudar o número de uma luta em
+      // andamento. Ver `afty-encontro.js`.
+      const affected = aftyMode ? [] : encounterManager.encounters.filter((enc) =>
         enc.combatants?.some((c) => c.creatureId === stamped.id)
       );
       if (affected.length > 0) {
@@ -124,7 +137,7 @@ export default function App() {
       storage.create(stamped);
     }
     goToDashboard();
-  }, [storage, encounterManager.encounters, goToDashboard]);
+  }, [aftyMode, storage, encounterManager.encounters, goToDashboard]);
 
   const handleSyncConfirm = useCallback((selectedIds) => {
     if (!encounterSyncState) return;
@@ -177,7 +190,7 @@ export default function App() {
       <Dashboard
         manager={storage}
         compendium={COMPENDIUM}
-        encounters={encounterManager.encounters}
+        encounters={aftyMode ? encontrosAfty.encontros : encounterManager.encounters}
         onOpenCreature={aftyMode ? goToAftyFicha : goToTracker}
         onEditCreature={goToBuilder}
         onCreateNew={() => goToBuilder(null)}
@@ -234,6 +247,18 @@ export default function App() {
         goToEncounters();
         return null;
       }
+      if (aftyMode) {
+        return (
+          <AftyEncontro
+            encontroId={view.encounterId}
+            gerenciador={encontrosAfty}
+            criaturas={storage.creatures}
+            pastas={storage.folders}
+            onVoltar={goToEncounters}
+            onDuplicar={handleDuplicateEncounter}
+          />
+        );
+      }
       return (
         <EncounterTracker
           encounterId={view.encounterId}
@@ -253,6 +278,14 @@ export default function App() {
       );
     },
     encounters: () => (
+      aftyMode ? (
+        <AftyEncontros
+          gerenciador={encontrosAfty}
+          pastas={storage.folders}
+          onAbrir={goToEncounter}
+          onVoltar={goToDashboard}
+        />
+      ) : (
       <EncountersDashboard
         manager={encounterManager}
         folders={storage.folders}
@@ -263,6 +296,7 @@ export default function App() {
         onOpenEncounter={goToEncounter}
         onBackToGrimoire={goToDashboard}
       />
+      )
     ),
     templates: () => (
       <TemplateLibrary

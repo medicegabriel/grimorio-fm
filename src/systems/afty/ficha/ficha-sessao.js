@@ -202,8 +202,15 @@ export function proximaRodada(sessao) {
  * autor responder, o botão é um só e devolve tudo, que é o comportamento que
  * não engana: um descanso que devolvesse metade sem regra escrita seria número
  * inventado.
+ *
+ * ⚠ SEM `derived` a sessão volta INTACTA (2026-08-09). O `?? 0` abaixo fazia um
+ * descanso sem os derivados ZERAR o PV e o PE em vez de reenchê-los, que é o
+ * oposto do que o botão promete e não tem desfazer. Quem chama sem derivados é
+ * quem não conseguiu calcular a ficha, e nesse caso não mexer é a única resposta
+ * honesta: não dá para reencher até um máximo que ninguém sabe qual é.
  */
 export function descansar(sessao, derived) {
+  if (!derived) return sessao;
   return {
     ...sessao,
     hpAtual: Math.max(0, derived?.hp ?? 0),

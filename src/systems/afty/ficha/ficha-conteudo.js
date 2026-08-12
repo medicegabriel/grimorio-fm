@@ -180,22 +180,25 @@ export function conteudoDaFicha(creature, derived) {
   // perdeu o acesso (trocou de origem, ou o ND caiu abaixo de 4) não vale nada
   // e não pode aparecer na tela de jogo como se valesse.
   if (derived?.estilo?.disponivel) {
-    for (const l of derived.estilo.linhas) {
-      const daTabela = l.efeitosModificacao
-        .filter((e) => e.def)
-        .map((e) => (e.vezes > 1 ? `${e.def.nome} ${e.vezes}×` : e.def.nome));
+    const estilo = derived.estilo;
+    for (const t of estilo.conhecidas) {
       itens.push(item({
-        id: l.id,
-        chave: `estilo:${l.id}`,
-        nome: l.nome,
-        texto: l.descricao ?? "",
+        id: t.id,
+        chave: `estilo:${t.id}`,
+        nome: t.nome,
+        texto: t.descricao ?? "",
         grupo: "estilo",
+        // A quantidade IMBUÍDA entra como tag porque ela muda no meio do
+        // combate: quem lê a lista precisa ver a combinação que está no ar. Quem
+        // a TROCA é a aba de Estados, onde cada Técnica tem a faixa dela.
         tags: [
-          l.tipo === "modificacao" ? "Domínio Simples" : "Especial",
-          ...daTabela,
-        ],
-        aviso: l.excedeuEfeitos
-          ? `${l.gastoEfeitos} efeitos, o Nível de Aptidão em Domínio permite ${l.orcamentoEfeitos}`
+          t.tipo === "especial" ? "Especial" : null,
+          t.vezes > 0 ? `Imbuída ${t.vezes}×` : null,
+        ].filter(Boolean),
+        // O estouro é da combinação inteira, e não de uma Técnica só, mas o
+        // aviso tem de aparecer onde o jogador está olhando.
+        aviso: estilo.excedeuVagas
+          ? `${estilo.gastoVagas} imbuições, o Nível de Aptidão em Domínio permite ${estilo.vagas}`
           : null,
       }));
     }

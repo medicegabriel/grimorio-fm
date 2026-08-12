@@ -3,15 +3,23 @@
 Estado atual do sistema Afty (atualizado 2026-08-12). Leia junto com:
 `docs/roadmap-versionamento-e-fichas.md` (arquitetura) e `docs/afty-formulas-base.md` (fórmulas).
 
+> 📋 **A FILA DE TRABALHO NÃO É ESTE ARQUIVO.** Desde 2026-08-09 toda pendência mora em
+> **`docs/a-fazer.md`**, que vale para o repositório inteiro (2.5.2 e Afty) e é onde os outros
+> colaboradores também anotam. Este doc é o LOG das sessões e o porquê das decisões.
+
 > ⚠ **Este documento começou em 2026-07-17 e o trabalho posterior está registrado por sessão.**
 > Ao retomar, leia primeiro a sessão mais recente e depois o Contexto rápido.
 >
-> **AS 6 ESPECIALIZAÇÕES ESTÃO FECHADAS** (2026-07-22): Combatente 70, Lutador 69, Conjurador 65,
-> Suporte 57, Restringido 53, Controlador 47 = **361 habilidades**. Mais **Talentos** (51), em
+> **AS 6 ESPECIALIZAÇÕES ESTÃO FECHADAS** (2026-07-22): Combatente 70, Lutador 69, Conjurador 64,
+> Suporte 57, Restringido 53, Controlador 47 = **360 habilidades**. Mais **Talentos** (51), em
 > sistema próprio (`afty-talentos.js`).
 >
 > ⚠ Eram 367. O autor mandou **remover "Teste de Resistência Mestre"** (2026-07-27), que existia
 > nas seis, uma por especialização. Não reintroduzir.
+>
+> ⚠ E **"Liberações Expandidas"** (Conjurador nível 8) saiu em 2026-08-09, levando o Conjurador de
+> 65 para 64. Ela dava VAGAS de Liberação Máxima, e o suplemento acabou com a ideia de vaga. Não
+> reintroduzir. Ver a sessão de 2026-08-09.
 >
 > **NÍVEIS LENDÁRIOS FECHADOS** (2026-07-22): **11 Melhorias Superiores**, **16 Habilidades Lendárias**
 > e **6 Habilidades Ápice**, em sistema próprio (`afty-alto-nivel.js`), com card próprio no fim
@@ -28,8 +36,9 @@ Estado atual do sistema Afty (atualizado 2026-08-12). Leia junto com:
 >    `3 × Maestria` no Beyond (troca o dobro, não soma). Feitiços e Habilidades Gerais gastam o
 >    MESMO caixa. Matou o `totalFeiticos(nd)` (era `2 + ND/2 + marcos de 10 e 20`).
 > 2. **O ND não concede mais Habilidades de Especialização nem Aptidões Amaldiçoadas.** As duas
->    fórmulas `1 + floor(ND/3)` foram removidas. Só as Gerais Especialização e Aptidão dão vaga
->    (`+1 + metade da Maestria` por pega), e cada uma sai metade da Maestria de vezes.
+>    fórmulas `1 + floor(ND/3)` foram removidas. Só as Gerais Especialização e Aptidão dão vaga, e
+>    cada uma sai metade da Maestria de vezes. Por pega, a Especialização dá `1 + metade da
+>    Maestria` e a **Aptidão dá `1 + Grau`** (mudou em 2026-08-12, ver a sessão daquele dia).
 > 3. **Melhorias Superiores e Habilidades Lendárias exigem a Geral correspondente** para
 >    destravar, além do ND 21/22 de sempre. A Geral em si pede ND 21 e ND 22.
 >    Treinamentos dá `metade do ND` em Focos, e sai `1 + ND/10` de vezes.
@@ -40,7 +49,7 @@ Estado atual do sistema Afty (atualizado 2026-08-12). Leia junto com:
 >
 > **MOTOR DE AUTOMAÇÃO — placar RECONTADO em 2026-07-29: 155/412.**
 > Combatente **30/70** · Lutador **35/69** · Restringido **28/53** · Talentos **28/51** ·
-> Conjurador **16/65** · Suporte **10/57** · Controlador **8/47** · **Origens** (Herdado com os
+> Conjurador **16/64** · Suporte **10/57** · Controlador **8/47** · **Origens** (Herdado com os
 > 4 clãs, Restringido, Feto Amaldiçoado Híbrido e Sem Técnica). Faltam as **Ápices (6)**.
 >
 > ⚠ **Contar só `HABILIDADE_EFEITOS` SUBESTIMA o placar.** Existem OITO caminhos de ligação, e
@@ -105,6 +114,409 @@ Estado atual do sistema Afty (atualizado 2026-08-12). Leia junto com:
 >
 > 👉 **Começando um chat novo? Vá direto para
 > [PENDÊNCIAS DE ESPECIALIZAÇÕES](#-pendências-de-especializações-lista-de-retomada).**
+
+---
+
+## SESSÃO DE 2026-08-12 (parte 2): O TETO DE APTIDÃO E O FUNCIONAMENTO BÁSICO EM LISTA
+
+Seis frentes, e quatro delas mexem em regra velha: o teto de Aptidão por trilha, o orçamento de
+níveis depois do ND 20, o valor da Habilidade Geral Aptidão e o Funcionamento Básico, que virou
+lista e entrou no pool que não acumula. Sobrou a primeira habilidade vinda da versão 2.0 do livro, e
+no fim a integração com o commit do GoliasK do mesmo dia (item 7).
+
+### 1. Habilidade Lendária **Versatilidade Extrema** (a 17ª)
+
+Texto do autor, verbatim no catálogo. Ela faz duas coisas, e cada metade entra por um caminho
+diferente do Motor:
+
+| Metade | Canal | Por quê |
+|---|---|---|
+| "2 aumentos de nível de aptidão **para distribuir**" | `pontosAptidao` (2) | é ORÇAMENTO, sem alvo |
+| "aumentar o limite de **um** Nível de Aptidão para 6" | `limiteAptidao` (1), alvo da escolha aninhada | é DIRECIONADO, o texto nomeia uma trilha só |
+
+⚠ **Os 2 aumentos não viraram escolha aninhada, e é de propósito.** O texto autoriza "uma única em
+dois níveis ou duas aptidões em um nível", que são exatamente as duas maneiras de gastar 2 pontos
+de orçamento na aba Aptidões. Modelar como concessão direcionada exigiria uma escolha com
+REPETIÇÃO (a mesma trilha duas vezes), que o `resolveEscolhas` do alto nível não tem, e entregaria
+o mesmo número por um caminho mais caro. É o mesmo raciocínio do *Elevar Aptidão* (Conjurador 6°),
+que já usava `pontosAptidao` por dizer "um dos seus".
+
+Esta é a **primeira fonte de conteúdo do canal `limiteAptidao`**, que estava pronto e vazio desde
+2026-07-29 (ver o item 2 da sessão daquele dia: "falta o conteúdo"). As duas Habilidades citadas lá
+continuam sem texto.
+
+### 2. ⚠ A ALOCAÇÃO passou a respeitar o limite da trilha, e não o 5 fixo
+
+Era aqui que a Lendária morria calada. Até hoje o `resolveNiveisAptidao` aparava a alocação em 5
+**mesmo quando o limite da trilha era maior**, e só a CONCESSÃO podia passar do teto padrão. A
+regra escrita em julho dizia "o jogador não COMPRA acima do padrão", e ela funcionava porque **toda
+regra que subia o limite subia um nível junto**: as duas metades vinham no mesmo efeito.
+
+A Versatilidade Extrema separa as duas coisas: o limite sobe numa trilha e os níveis chegam como
+orçamento. Com o aparo velho, o autor marcaria a Lendária, veria o limite de Domínio virar 6 e não
+teria como clicar no 6. Agora quem apara é sempre o limite da trilha, dos dois lados.
+
+Mudou junto o **`NivelPicker`** da aba Aptidões, que desenhava 0 a 5 literais: ele recebe o
+`limite` daquela trilha e cresce um botão. Sem aviso nem nota na tela, porque o botão a mais É o
+aviso.
+
+### 3. Níveis de Aptidão continuam depois do ND 20
+
+`Total.Aptidão += piso((ND - 20) / 2)`, ou seja, mais 1 nos ND 22, 24, 26, 28, 30 e daí para cima
+sem fim. A tabela do livro parava no 20 e o orçamento congelava ali, o que era estranho num sistema
+de ND sem teto. Fórmula atualizada em `docs/afty-formulas-base.md`.
+
+Confere: ND 20 = 12 · ND 22 = 13 · ND 30 = 17 · ND 36 = 20.
+
+### 4. Habilidade de outra versão do livro: a tag `[2.0]`
+
+O autor começou a trazer habilidades da **versão 2.0**. A primeira é *Agilidade no Campo de Batalha*
+(Conjurador, 6° nível), e a marca pedida é a tag antes do nome:
+`nome: "[2.0] Agilidade no Campo de Batalha"`.
+
+⚠ A tag mora no `nome` mesmo, e não num campo `versao` à parte, porque ela tem de aparecer em TODO
+lugar que mostra o nome: o card, o pool de escolha, o hover de fontes e o rótulo de pré-requisito.
+Um campo novo obrigaria cada um desses lugares a saber da tag.
+
+Sem canal: usos por cena, custo em PE e "uma segunda ação bônus" são procedimento de mesa, e a
+ficha não modela economia de ações.
+
+⚠ **Achado**: o Ápice *Rei do Tabuleiro* (Controlador 20°) cita "Agilidade no Campo de Batalha" num
+requisito `nota` (habilidade que o livro cita e o Afty não tinha), e o texto dele bate com esta
+("o custo para utilizar Agilidade no Campo de Batalha se torna zero, além de você poder a utilizar
+uma segunda vez"). Só que a que nasceu é de **Conjurador**, e apontar o requisito para ela
+transformaria o Ápice do Controlador em exigência de multiclasse. Ficou como `nota`, e a pergunta
+está em `docs/a-fazer.md`. É o caso que a regra do requisito `nota` prevê: ele envelhece calado
+quando o alvo dele nasce.
+
+### 5. FUNCIONAMENTO BÁSICO virou lista, e entrou no pool exclusivo
+
+Autor: *"algumas Técnicas entregam Funcionamentos Básicos adicionais. Como o Ilimitado que as vezes
+também possui os Seis Olhos. E Cópia que permite colocar outros Funcionamentos Básicos."*
+
+**O modelo.** O principal continua onde sempre esteve, em `core.tecnicaDescricao` +
+`core.tecnicaEfeitos`, e os adicionais entram numa lista nova, `core.funcionamentosAdicionais`, com
+`{ id, nome, descricao, efeitos }` cada. Quem precisa dos dois lados juntos chama
+**`funcionamentosDaFicha(creature)`** (em `afty-schema.js`, o módulo folha), que devolve o principal
+primeiro, já normalizado.
+
+⚠ **Não foram unificados num array só**, e a assimetria é deliberada: os dois campos são lidos
+direto em quatro telas (criador, Ficha Final, Painel de Combatente, aba Habilidades) e por fichas já
+salvas, então o ganho de simetria não paga a migração. Para quem consome a função, os dois lados
+são iguais.
+
+O principal também não tem NOME próprio, e isso não é campo faltando: ele É a técnica. Na tela ele
+aparece com o rótulo do sistema, e só os adicionais pedem nome ao jogador.
+
+**A regra que veio junto.** Autor: *"Efeitos de dois funcionamentos básicos não funcionam"* e
+*"Funcionamento Básico não acumula com Feitiços Ativos, Feitiços Passivos, Ações Shikigamis,
+Caracteristica Shikigamis, Técnicas Marciais, Novo Estilo das Sombras e etc"*. Isso é exatamente o
+**POOL EXCLUSIVO** de 2026-07-30, então nasceu a **sétima família**, `funcionamentoBasico`, e o
+`efeitosDaTecnica` carimba TODA linha de TODO Funcionamento Básico com ela.
+
+As duas metades da regra saem de um mecanismo só, porque o pool é **plano**: dois Funcionamentos
+Básicos com o mesmo canal disputam entre si (vale o maior, o perdedor aparece no hover marcado como
+suplantado) e nenhum deles soma com Feitiço, Shikigami ou Estilo da Sombra. Habilidade, talento,
+origem, treino e encantamento seguem somando POR CIMA do vencedor, como sempre.
+
+⚠ **Isso MUDA o comportamento do Funcionamento Básico que já existia**: até ontem as linhas dele
+somavam com tudo. Uma ficha com Funcionamento Básico de +4 de Defesa e um Feitiço Passivo de +9
+mostrava 13, e agora mostra 9.
+
+⚠ **Técnica Marcial ainda não é família nenhuma**, porque o subsistema nunca foi enviado. Quando ele
+nascer, entra na lista e o Funcionamento Básico para de acumular com ele sozinho.
+
+**Sem interruptor por linha.** A Habilidade Única decide passiva ou ativa por efeito, mas o
+`exclusivo` do Funcionamento Básico é blanket: a regra do autor é sobre a FONTE, não sobre a linha,
+e um seletor "esta linha acumula" seria uma exceção que ele não pediu.
+
+**UI.** No criador, o card Perfil Amaldiçoado ganhou os adicionais embaixo do principal (nome, texto
+com formatação e o Motor completo, mesmo desenho do `EstiloEspecialCard`) e um botão para somar
+outro. Na Ficha Final e no Painel de Combatente, a aba Habilidades passou a render **um cartão por
+Funcionamento Básico** em vez de um só, e o cartão sem texto continua não aparecendo.
+
+### 6. A Habilidade Geral **Aptidão** passou a valer `1 + Grau`
+
+Era `1 + metade da Maestria` por pega, igual à Especialização. Agora é `1 + grau`, onde `grau` é o
+rank do Grau do Feiticeiro (Quarto 1, Terceiro 2, Segundo 3, Primeiro 4, Especial 5), que sai da
+faixa de ND em `grauFeiticeiro` e já chegava no contexto MONTANTE, onde as Gerais rodam. A
+Especialização **não** mudou, e as duas deixaram de ser gêmeas.
+
+⚠ **É um aumento no meio da escada, e não uma troca neutra.** O Grau chega ao 5 no ND 17 e a metade
+da Maestria só no ND 36:
+
+| ND | 1 a 4 | 5 a 12 | 13 a 25 | 26 a 35 | 36+ |
+|---|---|---|---|---|---|
+| Antes (1 + metade da Maestria) | 2 | 2 a 3 | 3 a 4 | 5 | 6 |
+| Agora (1 + Grau) | 2 | 3 a 4 | 5 a 6 | 6 | 6 |
+| Diferença por pega | 0 | +1 | +2 | +1 | 0 |
+
+O TETO DE REPETIÇÃO segue sendo metade da Maestria, em `maxVezesGeral`. No ND 17 isso dá 3 pegas de
+6, ou seja, 18 Aptidões Amaldiçoadas contra as 12 de antes.
+
+O texto do card mudou junto ("igual a 1 + Grau Numérico"), senão a tela mostraria a fórmula velha.
+
+### 7. Integração com o commit 985bb79 do GoliasK
+
+Ele subiu a **Expansão de Domínio aplicada na ficha final** (mais os canais `movimentoMult` e
+`removeResistencia`, e as três Bases de Suporte viraram concessão automática) enquanto este trabalho
+estava na árvore sem commit. Fast-forward mais `git stash apply`: **quatro conflitos**, todos de
+vizinhança e nenhum de regra.
+
+| Arquivo | O choque | Como ficou |
+|---|---|---|
+| `afty-efeitos.js` | ele somou `movimentoMult` ao grupo Movimento, eu somei `tamanho` | os dois no grupo |
+| `afty-derive.js` | ele passou o ctx do Feitiço INLINE com `beneficiosRitualDominio`, eu havia extraído o mesmo objeto para `ctxFeiticos` | ficou o `ctxFeiticos`, com o campo dele dentro. A Liberação Máxima, que reusa o ctx, passou a enxergar o benefício de Ritual do Domínio de graça |
+| `afty-formulas-base.md` | os dois escreveram embaixo de Total.Aptidão | os dois parágrafos, o dele primeiro |
+| `afty-status.md` | as duas sessões de 2026-08-12 no mesmo lugar | a dele sem rótulo e a minha como "(parte 2)", que é a convenção do bloco de 2026-08-10 |
+
+⚠ **A mescla criou uma ponta que nenhum dos dois lados tinha sozinho.** A Expansão de Domínio sobe o
+LIMITE da trilha em 2, e a Versatilidade Extrema fez a ALOCAÇÃO respeitar o limite. Juntas, elas
+deixam comprar o 6° e o 7° nível enquanto o domínio está ligado na bancada. Não é destrutivo (o
+aparo é de leitura, e desligar o domínio devolve o ponto ao orçamento), mas é compra permanente
+numa janela temporária. Pergunta em `docs/a-fazer.md`.
+
+Assert novo cobrindo a costura: limite 7 e efetivo 5 com o domínio ligado, Domínio e Barreira de
+fora do bônus, trilha zerada que não recebe nada, e a Aura alocada em 6 voltando para 5 quando ele
+cai.
+
+### Verificação
+`npx eslint src/systems/afty/` limpo, `npx vite build` limpo (o import novo
+`afty-alto-nivel → afty-aptidoes` não fecha ciclo) e 70 asserts de lógica via `node`, cobrindo o
+orçamento por ND de 1 a 36, as duas metades da Lendária, a trilha sem limite que segue parando no
+5, a ficha sem a escolha marcada, o Restringido zerado, as duas linhas de fonte no detalhamento, a
+escada nova da Geral Aptidão conferida contra `grauFeiticeiro` do ND 1 ao 40, a Especialização
+provando que continua no `1 + metade da Maestria`, e os Funcionamentos Básicos (ficha antiga sem o
+campo, dois deles disputando o mesmo canal, canais diferentes que não disputam, a derrota para o
+Feitiço Passivo e a Lendária somando por cima).
+
+---
+
+## SESSÃO DE 2026-08-10 (parte 4): O MOTOR GANHOU VOCABULÁRIO E VIROU FRASE
+
+Autor: *"O DSL mostrando os valores e derivados não existe em nenhum lugar no Grimório Afty. Com eu
+precisando adivinhar o nome das variáveis. A Aparência ficou muito pouco intuitiva."*
+
+Os dois estavam certos. O `docs/automacao-dsl.md` espelha só o `fm-dsl.js` da 2.5.2, e o Afty
+acrescenta a maior parte do vocabulário por fora dele, em `buildCriaturaDslContext`. Numa criatura
+qualquer o contexto tem **663 variáveis**, das quais **497 são `tem_*`** (uma por habilidade do
+catálogo). Numa ficha em branco só **15** valem algo. Dentro do app não havia nada.
+
+### 1. `afty-dsl-vocabulario.js`, que CLASSIFICA em vez de listar
+O módulo novo recebe o contexto real e devolve grupos com o valor de cada variável. ⚠ Ele **não
+mantém uma lista paralela**: cada chave do contexto cai em exatamente um grupo por regra de nome ou
+de prefixo, e o que nenhuma regra reconhece cai em **"Outras"** em vez de sumir. Uma lista à mão
+envelheceria calada no dia em que alguém somasse variável ao contexto, e o seletor passaria a mentir
+sobre o que existe. Hoje o grupo "Outras" está vazio, e há assert provando isso.
+
+⚠ **A ordem das regras de prefixo importa**: `prof_tr_` tem de ser testada antes de `prof_`, senão
+todo Teste de Resistência entraria no grupo de Perícias.
+
+`deriveAfty` passou a expor **`contextoDsl`** no topo. Cru, de propósito: agrupar custa uma varredura
+das 663 chaves, e o derive roda por combatente e por estado de combate. Quem monta a lista é a UI,
+num memo chaveado pela identidade do contexto (`useDslGrupos`), e o memo vive nos DONOS do `derived`,
+não dentro do editor: um Feitiço Passivo por card faria a varredura rodar uma vez por card.
+
+### 2. O seletor `{ }`, que insere no cursor
+Mesmo desenho do `CanalPicker` (painel de 620px em colunas, busca sem acento, setas e Enter), com
+três diferenças que o vocabulário obrigou:
+
+1. **cada linha traz o VALOR à direita.** Saber que `esc_lutador` existe não ajuda sem saber que ele
+   vale 8 nesta criatura;
+2. **as famílias grandes listam só o que não é zero** (autor). O cabeçalho mostra `visíveis de
+   total`, então o escondido não fica invisível, e a busca alcança as 497 para escrever condição
+   sobre habilidade que a criatura ainda não tem;
+3. **clicar INSERE no ponto do cursor**, e não troca um valor. É o que mata o adivinhar: o nome nunca
+   precisa ser digitado. Função entra como `piso()` com o cursor DENTRO dos parênteses.
+
+⚠ `dados_dano_final` e `nivel_feitico` aparecem com valor **`—`, e não zero**: elas só existem dentro
+de uma linha de dano fechada, e um zero faria o jogador achar que a expressão dele daria zero.
+
+As funções do DSL entram no mesmo painel, e não numa tela separada: elas são metade do que se escreve
+numa expressão, e um segundo lugar para procurá-las seria um lugar a mais para esquecer.
+
+### 3. A linha de efeito virou FRASE
+Estava: duas fileiras de controles sem rótulo nenhum, em que o campo de VALOR e o de CONDIÇÃO eram
+caixas idênticas lado a lado, e nada dizia qual era qual sem clicar. Agora se lê da esquerda para a
+direita:
+
+```
+[Defesa ▾] em [todos ▾]                        🗑
+  vale     [2 + piso(bt / 2)      ] { }   = +4
+  enquanto [surto_adrenalina      ] { }
+  e dura   [Permanente ▾]
+```
+
+⚠ Os conectores (`em`, `vale`, `enquanto`, `e dura`, `e é`) **não são texto explicativo**: eles são o
+que IDENTIFICA cada campo. A alternativa era um rótulo empilhado sobre cada controle, que dobraria a
+altura da linha, que é exatamente o erro que a nota de canal cometeu em julho ("Você PIOROU").
+
+A prévia do valor ganhou largura fixa, e a linha da condição um espaçador da mesma largura, para as
+duas caixas de expressão ficarem alinhadas uma sob a outra.
+
+**Vale nos três lugares que usam o Motor**: Funcionamento Básico, Feitiço Passivo e Técnica de Estilo
+Especial, porque os três são o mesmo `TecnicaMotorEditor`.
+
+### Verificação
+`npx eslint src/systems/afty/` limpo, `npx vite build` limpo e **38 asserts** novos sobre o
+vocabulário: nenhuma variável do contexto se perde, nenhuma cai em dois grupos, cada família foi para
+o grupo certo, `prof_tr_` não invade Perícias, os valores batem com o contexto, as variáveis de linha
+de dano vêm `null`, os estados extras da bancada aparecem, e contexto ausente não quebra.
+⚠ O seletor e o layout são UI: **não têm assert**, o teste real é na tela.
+
+### O que ficou de fora
+- **A Ficha Final não ganhou o seletor.** O buff ad-hoc da aba Buffs também aceita expressão do DSL e
+  também é um campo cego. Ele usa outro componente (`CanalPicker` da ficha, pintado por token), então
+  seria um `VariavelPicker` repintado. Não foi pedido.
+- **Não há painel de referência do DSL inteiro** (operadores, exemplos), no molde do
+  `AutomationDocsModal` da 2.5.2. O autor escolheu o seletor por campo sozinho.
+
+---
+
+## SESSÃO DE 2026-08-10 (parte 3): O ESTILO DA SOMBRA ESTAVA INVERTIDO
+
+O autor relatou que o Novo Estilo da Sombra "funcionou de maneira errada", e não era um número
+errado: era o **modelo ao contrário**.
+
+**Como estava.** "Modificação do Domínio Simples" era um RECIPIENTE. Uma linha da ficha que custava
+**1** do contador e carregava dentro dela até `dom` efeitos da tabela. Errava as duas pontas:
+Aumento de Defesa mais Bônus de Acerto na mesma Modificação custavam 1 só, e criar uma segunda
+Modificação dava um orçamento de `dom` efeitos **novo e inteiro**.
+
+**Como ficou.** Duas coisas que eram uma só passaram a ser duas:
+
+| | O quê | Onde mora | Quem limita |
+|---|---|---|---|
+| **CONHECER** | cada efeito É uma Técnica de Estilo, e custa 1 do contador por si | ficha (`estilosSombra`) | o contador único da aba |
+| **IMBUIR** | a Técnica ocupa vagas do Domínio Simples, e a mesma pode ocupar várias | estado de COMBATE (`combate.estilo_*`) | o Nível de Aptidão em Domínio |
+
+Autor: *"O Contador é por Técnica de Estilo. Logo, 'Aumento de Defesa' contaria como 1. 'Aumento de
+Acerto' contaria como outro. E você pode imbuir eles em seu Domínio Simples para receber os efeitos.
+Então se eu tiver 5 Níveis de Domínio e só tiver uma Técnica de Estilo 'Aumento de Acerto', eu
+poderia imbuir ele 5x no meu Domínio Simples. É sobre ter várias Técnicas de Estilo, e sair imbuindo
+elas fazendo combinações em meio ao combate."*
+
+### As 4 decisões que ele tomou antes de eu mexer
+1. **A imbuição é SÓ da sessão de combate.** O criador guarda apenas o que a criatura conhece.
+2. **A Técnica de Estilo Especial virou Técnica normal**: custa 1 do contador e **precisa de vaga de
+   imbuição** para valer. A linha "Efeito Especial" **saiu da tabela** (as duas eram a mesma coisa
+   escrita duas vezes), e a tabela caiu de 5 para 4.
+3. **Conhecer a mesma Técnica duas vezes não existe.** A repetição é a imbuição.
+4. **Os tetos escritos limitam a IMBUIÇÃO** ("colocado" agora quer dizer "imbuído"): Aumento de
+   Defesa para em 2, e os outros três não têm teto além das vagas.
+
+### O desenho: a imbuição é uma FAIXA da bancada
+Ela não virou campo novo de ficha. Cada Técnica conhecida vira uma **faixa** nos `estadosExtras`,
+mais um bool `estilo_ativo` que representa o Estilo no ar (as faixas têm `requerEstado` nele, então
+só aparecem com ele ligado). Com isso:
+
+- a bancada de Simulação do criador e a aba **Estados** da Ficha Final ganharam o controle **sem uma
+  linha de UI nova**, porque as duas já montam a lista a partir dos `estadosExtras`;
+- a sessão da Ficha Final já sobrescreve `combate`, então "trocar a combinação em meio ao combate"
+  saiu de graça, e nada disso suja a ficha;
+- a quantidade imbuída entra na expressão como **VARIÁVEL do DSL** (`piso(maestria / 2) *
+  estilo_acerto`), e não como número. A linha de efeito é estática e o valor acompanha a mesa
+  sozinho, sem o motor remontar efeito nenhum.
+
+⚠ **`estadosExtras` deixou de ser só `bool`** (`afty-combate.js`). Um extra pode declarar
+`tipo: "faixa"` com `min`/`max` próprios. O teto sai da ficha (o Nível de Aptidão em Domínio) e por
+isso viaja no próprio extra, e não no catálogo: quem cria o extra já enxergava a ficha inteira, então
+`max` aqui **nunca é função**, ao contrário do `COMBATE_ESTADOS`.
+
+⚠ **O `modo: "ativa"` por linha MORREU no Estilo.** Com tudo preso ao Domínio Simples, não sobrou
+linha passiva para distinguir da ativa. O `TecnicaMotorEditor` da Especial perdeu o `comModo`.
+
+### Ficha legada
+`estilosDaFicha` CONVERTE o shape antigo. Uma `modificacao` gravada explode: cada efeito de tabela
+vira uma Técnica conhecida, e a parte de Motor livre dela (o antigo "Efeito Especial") vira uma
+Técnica Especial com o nome e o texto da linha. Duas Modificações com o mesmo efeito colapsam numa
+Técnica só. **O que não sobrevive é a quantidade de vezes**, que virou imbuição e não é mais dado de
+ficha, nem o `modo` de cada linha do Motor, que morreu junto. Sem essa conversão o rascunho
+automático do autor abriria com o card vazio e o contador liberado, que é perda calada.
+
+### 🐛 A conversão era só de LEITURA, e travava a ficha antiga
+Relatado pelo autor no mesmo dia: *"Nas fichas antigas, eu não consigo editar e remover Estilos que
+eu já tinha pego."* Estava certo, e o buraco era entre a leitura e a escrita.
+
+A `estilosDaFicha` convertia na leitura, mas a ficha continuava guardando a `modificacao` velha, e
+os escritores do builder trabalhavam no ARRAY CRU, no shape novo. Os dois nunca se encontravam:
+
+- **desmarcar não desmarcava.** `toggleEstiloTabela("defesa")` procurava `{id:"defesa"}` no cru, não
+  achava (o que existia era a Modificação que o CONTINHA), então ADICIONAVA. A conversão deduplica,
+  então a tela não mudava. Clicar de novo removia o que acabara de entrar, e a Modificação velha
+  seguia marcando o efeito. Um alternador que pisca sem sair do lugar;
+- **a Modificação só com efeitos de tabela não tinha card nenhum** para remover, porque o card de
+  Especial só existe para quem tem linha de Motor;
+- **remover a Especial herdada levava as Técnicas de tabela junto**, porque as três saíam da mesma
+  linha crua.
+
+**Conserto:** todo escritor parte da lista NORMALIZADA (`estilosArr = (d) => estilosDaFicha(d)`), e
+não do array cru. A ficha migra na primeira edição, e a operação é idempotente para quem já está no
+shape novo. **22 asserts** cobrem os três sintomas, a migração na primeira escrita, a Especial
+criada pelo `createBlankEstilo` velho e a idempotência.
+
+⚠ **A lição vale para o resto do sistema:** normalizador que só roda na leitura deixa a ficha num
+shape que a UI não sabe escrever. Todo `resolveX` que converte tem de ter o irmão na escrita, ou o
+usuário fica olhando para um botão que não obedece.
+
+### O interruptor virou "Novo Estilo das Sombras", e os Estados viraram ÁRVORE
+Autor, na Ficha Final: *"Deixe como 'Novo Estilo das Sombras' ao invés de 'Domínio Simples'. E
+melhore a aparência, deixando os Efeitos de Estilo mais ligados a caixa de seleção do Novo Estilo das
+Sombras. Atualmente parecem coisas completamente separadas."*
+
+**O rótulo.** `ESTADO_DOMINIO_SIMPLES` virou **`ESTADO_ESTILO_ATIVO`** (id `estilo_ativo`, era
+`estilo_dominio_simples`) e o rótulo saiu para a constante `ESTILO_LABEL`. ⚠ Pela REGRA quem está no
+ar continua sendo o Domínio Simples ("enquanto ele estiver ativo", no texto de cada efeito): o que
+mudou foi o nome na tela, porque uma linha solta chamada "Domínio Simples" lia como aptidão avulsa.
+O comentário do módulo registra a diferença, para ninguém achar que a regra mudou.
+
+**A aparência.** O `requerEstado` sempre significou "esta linha só existe com aquela ligada", mas a
+lista de Estados era ACHATADA e as duas liam como assuntos separados. Agora o pai desenha a caixa e
+os filhos moram **dentro** dela, recuados, com um fio correndo ao lado e um gancho por linha.
+Nenhum estado precisou de campo novo: a árvore sai do `requerEstado` que já estava declarado.
+
+⚠ **Isso pega mais quatro grupos além do Estilo**, porque a relação é a mesma: PE Extra e Pilhas sob
+**Brutalidade**, Espírito Incansável sob **Espírito de Luta**, Adrenalina Absoluta e Atletismo sob
+**Surto de Adrenalina**, e Golpe Garantido sob **Ataque Furtivo**. Não foi pedido, e é o mesmo
+desenho: separar o Estilo do resto seria caso especial na lista geral.
+
+⚠ **O laço é feito com BORDA, e não com tom de fundo**: no tema claro `--afty-poco` e `--afty-card`
+são os dois branco, então um degradê de fundo não separaria nada.
+
+⚠ **A `.afty-linha` de cada estado virou `.afty-estado-linha`**, e a `.afty-linha` passou a ser a
+CAIXA do grupo. A densidade compacta foi junto (ela apertava a `.afty-linha` de cada estado, e agora
+aperta a linha e zera a caixa), e as duas classes novas mais o `data-afty-estado` no grupo são
+ganchos estáveis para o CSS do usuário. Ver [[afty-css-personalizado]].
+
+**Não mexi na bancada do criador.** Ela monta a mesma lista de forma achatada e tem o mesmo
+problema, mas o pedido foi sobre a Ficha Final. É a mesma mudança, se você quiser.
+
+### Assunções anotadas (o autor não foi perguntado)
+- **A Especial ocupa 1 vaga e não repete.** O livro não dá cláusula de repetição para ela, e a
+  decisão 4 diz que só repete quem o texto manda repetir.
+- **O estouro de vagas AVISA e não trunca.** Mesmo comportamento do orçamento de efeitos anterior:
+  a combinação passa, e o aviso âmbar aparece no card do criador e no item da Ficha Final.
+- **O autor escreveu "Aumento de Acerto"** na mensagem, mas o nome do livro no catálogo é **Bônus de
+  Acerto**. Mantido o do livro.
+- **A imbuição não gera chip de delta** na Ficha Final. `deltaDosEstados` só varre `COMBATE_ESTADOS`,
+  e extras nunca tiveram delta (a Habilidade Única também não tem). Estender custaria um `deriveAfty`
+  por Técnica conhecida a cada mudança de sessão.
+
+### Verificação
+`npx eslint src/systems/afty/` limpo, `npx vite build` limpo e **40 asserts de lógica** novos
+passando, incluindo o exemplo do autor (uma Técnica só, imbuída 5x com DOM 5, gasta 1 do contador e
+rende `piso(maestria/2) × 5` no Acerto), a 2ª imbuição de Aumento de Defesa que **não** soma na
+própria Defesa, o Domínio desligado zerando tudo e a conversão do shape antigo.
+⚠ As mudanças de UI (card do criador, faixa na bancada e na aba Estados) **não têm assert**: o teste
+real é na tela.
+
+---
+
+## SESSÃO DE 2026-08-10 (parte 2): MERGE COM A CONJURAÇÃO EM RITUAL
+
+O GoliasK subiu **Conjuração em Ritual** (`afty-rituais.js` mais 15 arquivos) enquanto a Liberação
+Máxima estava na árvore sem commit. Os dois sistemas mexem nos MESMOS calculadores, então a mescla
+teve decisão de regra e não só de texto. Detalhe completo na seção MERGE, mais abaixo nesta sessão.
 
 ---
 
@@ -383,6 +795,631 @@ característica e o degrau, preservando a Perícia escolhida no nome.
   Negras** também altera o limiar inicial e concede efeitos depois do Kokusen.
 - O dano adicional do Kokusen precisa entrar antes do Dano Após Ataque, conforme o texto já
   transcrito em `afty-aptidoes.js`.
+---
+
+## SESSÃO DE 2026-08-10
+
+### As quatro sobras do code review, feitas sem supervisão
+
+O autor foi dormir pedindo *"só faça o quê você conseguir fazer sem meu apoio"*. Da fila do
+`a-fazer.md`, quatro eram conserto puro e saíram. **Seis ficaram intocadas de propósito**, porque
+dependem de regra ou de escolha de produto (largura de linha, Estímulo de Saída nos 7 efeitos que
+faltam, Liberação em Especiais e Passivos, efeito repetido na Transformação, o que duplicar um
+encontro deve preservar, e a migração das pendências antigas do `afty-status.md`).
+
+**1. Buff da sessão aparecia duas vezes na aba Buffs.** `efeitosDaSessao` carimba
+`duracao: "temporaria"` em tudo que o jogador cria na seção de cima da própria aba, e a seção
+Temporários filtrava só por duração. O mesmo +2 saía duas vezes: uma editável, com botão de apagar,
+e outra em só leitura. Lido de cima a baixo aquilo são dois bônus, e o segundo parece não ser dele
+para desligar. Filtro agora exclui `origem === "sessao"`. ⚠ Conferido que ele **não come o que não
+deve**: um efeito temporário vindo da Técnica continua na lista.
+
+**2. Iniciativa negativa era impossível de digitar.** O input era controlado pelo NÚMERO, então o
+mestre digitava "-", o `Number("-")` dava NaN, o `|| 0` virava 0 e o campo repintava "0" antes do
+dígito seguinte chegar: "-2" saía como "+2". Novo `CampoNumerico`, que guarda a string enquanto o
+campo está sendo digitado e solta no blur. É o que o `AdicionarJogador` já fazia, e a divergência
+entre os dois campos era a prova de qual estava certo.
+
+**3. O painel de fontes escapava do tema dentro do Encontro.** O portal fazia
+`getElementById("afty-ficha")`, e só a `AftyFicha` declara esse id. A tela de Encontro tem a
+CLASSE e não o id, então todo hover do painel do combatente ia parar no `document.body`, fora do
+container que declara os tokens `--afty-*`, e caía nos fallbacks embutidos. Passou a procurar com
+**`closest(".afty-ficha")` a partir do gatilho**, e não pelo id. Resolve as duas telas e qualquer
+outra que reuse as abas, sem espalhar um id que tem que ser único. O `getElementById` ficou de rede
+de segurança.
+
+**4. Os dois `useMemo`.** O `LinhaFeitico` chamava `comLiberacao` no corpo do componente, então
+qualquer render recalculava o Feitiço inteiro. E o memo de `derivados` do encontro dependia do
+encontro INTEIRO: cada tecla no campo de PV, cada rolagem e cada entrada de log re-derivavam TODOS
+os combatentes, os ~14ms por criatura vezes N.
+
+⚠ **A primeira versão do cache usava `useRef` e o eslint reprovou, com razão**: ref lido durante o
+render não é seguro sob renderização concorrente. A versão final é um **WeakMap de módulo** chaveado
+pelo objeto `ficha`, que entra clonado uma vez e nunca mais muda de identidade (os patches fazem
+`{ ...c, sessao }`). Como é cache de função PURA, viver fora do componente é correto, e o WeakMap
+deixa o combatente removido ser coletado sozinho. A chave de invalidação são as três coisas que o
+`derivarCombatente` realmente lê: `sessao.combate`, `sessao.buffs` e `sessao.almaAtual`.
+
+Efeito colateral bom do nº 4: o `derived` conserva a IDENTIDADE quando nada relevante muda, e com
+isso o memo de `deltaDosEstados` no `PainelDeCombatente` para de ser invalidado à toa, que era mais
+um `deriveAfty` por estado de combate ligado.
+
+Verificação: 129 asserts de regra e 29 de integração seguem passando, os 6 achados do code review
+seguem sem reproduzir, `npx eslint src/systems/afty/` limpo e `npx vite build` limpo. ⚠ Os quatro
+consertos são de UI e de hook, então **não têm assert de node**: o teste real é na tela.
+
+---
+
+## SESSÃO DE 2026-08-09
+
+### 📋 NASCEU O `docs/a-fazer.md`, e ele é a fila de trabalho agora
+
+Pedido do autor: *"padronize as anotações de COISAS A FAZER em um único arquivo md. Para outros
+colaboradores usarem ele também e ir anotando oq for preciso."*
+
+- **Toda pendência nasce lá.** Nada de `// TODO` no código sem a linha correspondente no arquivo.
+- **Este doc (`afty-status.md`) continua sendo o LOG de sessões** e a explicação de por que as
+  coisas são como são. Ele não é mais a lista de tarefas.
+- ⚠ As pendências históricas espalhadas pelas seções antigas **não foram migradas**: seriam um
+  diff enorme num arquivo que outros colaboradores também editam, e o pedido foi padronizar daqui
+  para frente. A migração completa está anotada como pendência dentro do próprio `a-fazer.md`.
+
+### LIBERAÇÕES MÁXIMAS (suplemento "O Ápice da Liberação")
+
+Sistema novo em `src/systems/afty/afty-liberacoes.js`. **A Liberação Máxima não é um Feitiço nem
+um objeto guardado na ficha**: ela é um MODO DE SAÍDA declarado na hora da conjuração.
+
+Isso é a decisão que segura o resto. O suplemento tem duas versões, a "Saída Rígida" (duas
+melhorias congeladas na criação) e a "Saída Adaptável" (escolhidas no momento), e o autor mandou
+construir **a adaptável**: *"é a versão COM a habilidade. Você pode usar com as melhorias
+escolhidas na hora."* Por isso `createBlankFeitico` não ganhou campo nenhum, e a escolha viaja em
+`ctx.liberacao`.
+
+| Regra | Como ficou |
+|---|---|
+| Acesso | ND 9, **constante**. ⚠ NÃO derivado de quando o Nível 3 destrava: o autor avisou que uma habilidade base de Conjurador dá Nível 3 já no nível 7, e derivar daria Liberação dois níveis cedo |
+| Quem alcança | qualquer criatura com Feitiços, e só os de **Nível 3, 4 e 5** |
+| Custo | **12 / 20 / 25**, o custo do PRÓXIMO nível, e **SUBSTITUI** o custo do Feitiço |
+| Melhorias | 2, e **3 a partir do ND 16**. Só o ND manda |
+| Tipos | Dano (Doutrina), Auxiliar e Curativo (Manto), Universais em todos. Misturar é permitido |
+
+**"LIBERAÇÕES EXPANDIDAS" FOI REMOVIDA** (Conjurador nível 8). Ela existia para dar VAGAS de
+Liberação Máxima, e o suplemento acabou com a ideia de vaga. As três regras dela (Saída Adaptável,
+Sincronia de Nível 16 e Versatilidade) passaram a valer para **toda** Liberação Máxima, sem
+habilidade nenhuma destravando nada. O texto verbatim das três está no cabeçalho de
+`afty-liberacoes.js`. Conjurador foi de 65 para 64, e o total de 361 para 360. Nenhum requisito
+apontava para ela, então não sobrou referência órfã.
+
+⚠ **O "+2 de Custo de Estabilização" foi REMOVIDO** pelo autor no mesmo dia, e com ele a tabela
+deixou de ter número solto. Era 14 / 22 / 24 e virou **12 / 20 / 25**, que é exatamente o custo do
+próximo nível: 12 é o Nível 4, 20 é o Nível 5, e **25 é a Técnica Máxima** (o texto da aptidão
+homônima em `afty-aptidoes.js` diz *"Uma Técnica Máxima custa 25 PE"*). Antes disso o 24 do Nível 5
+não saía de lugar nenhum, porque não existe custo de Nível 6.
+
+Mesmo virando fórmula, a **tabela continua sendo a fonte**: derivar de `FEITICO_CUSTO_PE[n + 1]`
+amarraria os dois arquivos e quebraria calado no dia em que um deles mudasse sozinho.
+
+**Onde cada melhoria entra no pipeline** (foi o trabalho de verdade):
+
+- **Sobrecarga Energética** entra em `calcularFeiticoDano` **antes das divisões** de Múltiplos
+  Disparos e de Dano Contínuo (autor: *"Antes da divisão."*). Depois delas, ela entregaria o
+  pacote inteiro em cada disparo.
+- **Pressão Amaldiçoada** soma nos dois lados, e cada metade só entra onde a coisa existe: acerto
+  onde há jogada de ataque, CD onde há CD. É isso que resolve o *"não dá pra se ter ambos os
+  efeitos de CD e Acerto"* sem escolha nenhuma do jogador, porque um Feitiço nunca é os dois.
+- **Estímulo de Saída** e **Explosão Extrema** entram em `calcularEfeitoAux`, por efeito. ⚠ O
+  `prejuizoRolagem` é guardado NEGATIVO, e "aumentar a penalidade" é afastar de zero: somar cru
+  transformaria um −6 em −4, ou seja, a melhoria ENFRAQUECERIA o Feitiço.
+- **Duração Prolongada** soma rodadas **fora do divisor** da Duradoura (autor confirmou). Dentro
+  dele, a melhoria diluiria o bônus e pioraria o Feitiço.
+- **Vigor Absoluto** é parcela FIXA no total curado, e por isso a rolagem de cura ganhou `fixo`,
+  o mesmo campo que o dano já usava.
+- **Resiliência Energética** não vira número nenhum: é troca de vantagem por desvantagem, e sai
+  como linha de regra.
+
+**A UI continua sem recalcular regra.** `derived.feiticos.comLiberacao(id, melhorias)` é uma
+FUNÇÃO exposta pelo derive: a aba Ações declara as melhorias e pede a versão liberada daquele
+Feitiço de volta. A lista pré-calculada não tinha como conter a Liberação, porque a escolha é da
+mesa e não da ficha. O estado é local e **não persiste**, pelo mesmo motivo do crítico pendente:
+recarregar amanhã com a técnica sobrecarregada de ontem seria errado.
+
+O controle aparece dentro da linha de Feitiço que já abria, como pastilhas por categoria, e o
+texto verbatim de cada melhoria vai no `title`. A aba Ações é reusada pelo painel do combatente,
+então o mestre ganhou o mesmo controle no Encontro sem uma linha a mais.
+
+**Decisões do autor nesta leva** (perguntas 1 a 17): custo substitui, o limite de uma por Cena é
+**só regra escrita** por ora, Técnica Máxima **ainda não** entra, Especiais e Passivos ficam para
+depois, e a Explosão Extrema em Níveis de Dano é **+4 no Nv3 e +16 no Nv5 imediato** mesmo (foi
+perguntado por ser uma ordem de grandeza acima das outras, e confirmado).
+
+⚠ **LARGURA DE LINHA vai ter que existir.** A melhoria Área diz *"Linhas ganham o dobro de sua
+Largura também"*, e o Afty guarda a área como um número só. Hoje dobra só o comprimento. Autor:
+*"ANOTE ISSO, VAMOS PRECISAR DA LARGURA DA LINHA, pq eu esqueci disso."* Está em `a-fazer.md`.
+
+### 🐛 TRÊS BUGS ACHADOS NA REVISÃO (2026-08-09), dois deles ANTIGOS
+
+O autor pediu uma revisão de lógica e escrita por cima de tudo. Os três foram provados rodando o
+código, e não por leitura.
+
+**1. A ficha do Auxiliar lia campos de OUTRO calculador.** O bloco do Auxiliar em `fichaDoFeitico`
+consultava `duracaoRodadas`, `sustentacaoPE`, `sustentacaoVida` e `notaExaustao`. Quem produz esses
+quatro é o calculador da **Transformação**, e não o do Auxiliar. Eram `undefined` sempre, em
+silêncio, e por isso:
+- um Feitiço Auxiliar **Duradouro nunca mostrou as rodadas dele** na Ficha,
+- um Feitiço Auxiliar **Sustentado nunca mostrou o upkeep** (o `upkeepPE` existe e valia 2),
+- e a melhoria **Duração Prolongada calculava certo e não aparecia na tela** (4 rodadas virando 5
+  no cálculo, e "4" nenhum na Ficha, porque a linha inteira não existia).
+
+Os nomes certos do Auxiliar são `rodadas` e `upkeepPE`. ⚠ É o tipo de bug que passa despercebido
+porque um `undefined` num `if` não quebra nada, só apaga a linha.
+
+**2. A Transformação produzia os quatro campos e ninguém os lia.** A outra ponta do mesmo engano:
+o bloco dos Especiais nunca consultou `duracaoRodadas`, `sustentacaoPE`, `sustentacaoVida` nem
+`notaExaustao`, então **o upkeep e a exaustão de uma Transformação nunca apareceram na Ficha**. As
+quatro linhas foram para o lugar certo.
+
+**3. Penalidade diluída a zero virava BÔNUS PARA O INIMIGO** (bug meu, do mesmo dia). O Estímulo de
+Saída decidia o sinal olhando o valor JÁ processado (`valor < 0 ? valor - bump : valor + bump`). Um
+`prejuizoRolagem` que a divisão por rodadas ou por alvos tivesse levado a 0 perdia o sinal, e a
+melhoria somava: uma penalidade de −4 dividida entre 5 alvos virava 0 e depois **+2**, ou seja, a
+Liberação Máxima AJUDAVA o alvo. O sinal passou a sair do valor CRU da tabela (`bruto`), que não
+tem como ser diluído.
+
+### Sobre segurança, já que foi perguntado
+
+A superfície é pequena e não achei nada explorável. O que foi conferido:
+- **Não existe `eval` nem `new Function` em lugar nenhum.** O avaliador do DSL
+  (`src/components/fm-dsl.js`) é um parser recursivo de verdade, com tokenizador próprio, então a
+  expressão que o jogador escreve no Funcionamento Básico **não vira código**.
+- **Não existe `dangerouslySetInnerHTML` nem `innerHTML`.** O `TextoRico` devolve NÓS do React, e
+  não HTML, então marcação do autor não injeta tag.
+- **O CSS do usuário é injetado sem filtro**, num `<style>` dentro da raiz da Ficha
+  (`AftyFicha.jsx`). Isso é a funcionalidade, não um descuido: CSS não executa script. O que ele
+  PODE fazer é buscar URL externa (`url(...)`, `@import`), o que vaza que a página foi aberta. Só
+  vira problema no dia em que um tema for **importado de outra pessoa**, e hoje o tema não viaja na
+  ficha, ele mora em chave própria do `localStorage`.
+- **Nenhum caminho de poluição de protótipo.** Os `JSON.parse` do rascunho, da sessão, do tema e
+  dos encontros passam por normalizadores que usam espalhamento, e espalhamento cria propriedade
+  própria em vez de mexer no protótipo.
+
+### 🐛 REVISÃO DE TRANSFORMAÇÃO E AUXILIARES (2026-08-09)
+
+Segunda passada, pedida pelo autor. Mais três achados, todos provados rodando o código.
+
+**4. A Transformação de Nível 1 nascia com dois avisos.** O efeito padrão de um slot era
+`AUX_EFEITOS[0]` fixo, que é o Aumento de Defesa, e **a Defesa não existe no nível 0 de aux** (nem
+na coluna Duradoura nem na Sustentada). Como a Transformação de Nível 1 tem os dois slots no nível
+0, ela saía do forno com *"Aumento de Defesa não tem valor no Nível 0 de aux"* duas vezes, e o
+triângulo de aviso acendia na Ficha por uma escolha que o jogador nunca fez. O padrão agora é o
+primeiro efeito que TEM valor naquele nível (`efeitoPadraoTransf`).
+
+**5. "0 de exaustão quando acabar."** A exaustão de uma Transformação Duradoura é metade do nível
+para baixo, e no Nível 1 isso é ZERO. A nota era montada de qualquer jeito, virando uma linha de
+tela que avisa que nada acontece. ⚠ Esse ficou VISÍVEL justamente por causa do conserto nº 2 desta
+mesma sessão: enquanto a linha "Exaustão" não era lida por ninguém, o texto ruim não aparecia.
+
+**6. `valorDuradoura` era código MORTO, com a conta duplicada.** A função exportada é a regra
+canônica da Duradoura (valor da tabela ÷ (rodadas − ⌈nível/2⌉), piso), e a **única ocorrência dela
+em todo o `src/` era a própria declaração**: `calcularEfeitoAux` reescrevia a mesma conta inline.
+Duas cópias da mesma regra, e mexer na canônica não mudaria nada. Agora a inline chama a função,
+com assert cobrindo toda a faixa de rodadas de todos os níveis.
+
+⚠ A ponta dos DADOS continua com conta própria e **isso é de propósito**: lá existe piso de 1 dado
+(`Math.max(1, ...)`), que a regra do valor numérico não tem.
+
+**O que NÃO era bug**, e eu conferi: a base `TRANSFORMACAO_BASE` não é mutada entre chamadas, a
+troca de nível respeita o teto de 5 e o mínimo de 1 efeito, o clamp de rodadas da Duradoura obedece
+`faixaRodadasDuradoura` em todos os níveis, e a diluição de bônus entre alvos avisa quando zera.
+
+**Pendência de REGRA achada aqui:** a Transformação aceita o **mesmo efeito repetido** em vários
+slots (três Aumentos de Defesa passam sem aviso), enquanto Múltiplos Efeitos proíbe repetir e o
+seletor de lá nem oferece o efeito já usado. As duas telas concedem conjuntos de efeitos
+auxiliares, então a divergência parece descuido e não decisão. Está em `a-fazer.md`.
+
+### 🐛 CODE REVIEW: seis correções, quatro delas de código antigo
+
+Terceira passada, do `/code-review`. Doze achados, **todos confirmados** (seis rodando o motor, o
+resto por leitura). Nenhum falso positivo. Estes seis foram consertados, na ordem de gravidade.
+
+**7. `ef.aplicado` sumia em toda criatura que não fosse Média.** O pior da leva, e o mais quieto.
+`resolverExclusivos` produz o campo `aplicado`, que é o placar do POOL EXCLUSIVO (quanto de cada
+canal um estágio já entregou). O `mesclarEfeitos` montava o objeto de saída **sem esse campo**,
+então mesclar um resultado já resolvido com outro apagava o placar.
+
+Isso mordia porque o `deriveAfty` mescla a régua de TAMANHO **depois** do `resolverExclusivos`
+(a régua depende do tamanho, que depende do canal, que só fecha com o estágio 2 pronto). Resultado:
+saiu de Médio, perdeu o `aplicado`, e o `resolverEfeitosDanoFinal` dos Feitiços voltava a somar o
+efeito exclusivo INTEIRO em vez do delta. **Dano de Feitiço maior só por ser Grande**, sem nada na
+tela dizendo. Consertado no `mesclarEfeitos`, que é onde não volta a acontecer.
+
+**8. A Ficha mentia a regra do Destrutivo e do Cataclísmico.** O `fichaDoFeitico` lia `f.acao`,
+`f.resolucao` e `f.alvo` CRUS, e os dois subtipos ignoram o que o jogador marcou: são sempre área,
+sempre Ritual Estendido e sempre teste de resistência. Um Destrutivo saía impresso como *"Ação
+Comum, Jogada de Ataque"* e **sem a CD que o motor calculou**, porque a linha da CD estava atrás de
+uma guarda que lia o campo cru. O Cataclísmico dizia *"Alvo: Único"* para um Feitiço que pega o
+mapa. O calculador de Dano passou a devolver `acaoResultante`, `resolucao` e `alvo` efetivos, e a
+guarda da CD saiu (quem decide se existe CD é o `temCD` do calculador, que já devolve `null`).
+⚠ Contradizia o próprio cabeçalho da função, que promete que nada é recalculado ali.
+
+**9. Duplicar um encontro zerava o PV e o PE de todo mundo.** `duplicarEncontro` chamava
+`sessaoEmBranco(null)`, e sem `derived` a sessão não tem de onde tirar o máximo: 126 PV viravam 0.
+A cópia abre em Planejando, onde o botão que reenche recursos nem existe. Autor decidiu (2026-08-09)
+que a cópia **herda o estado atual**, dano tomado incluído, porque duplicar serve para ramificar uma
+luta em andamento. As `flags` passaram a vir junto pelo mesmo motivo: PV em 0 com o abatido
+desmarcado seria a cópia se contradizendo.
+
+**10. Descansar Todos apagava o PV de quem não derivou.** `descansar(sessao, null)` fazia
+`Math.max(0, null ?? 0)` e ZERAVA em vez de reencher. Bastava um combatente com ficha que o
+`derivarCombatente` não conseguisse calcular. Consertado nas duas pontas: o redutor pula quem não
+tem derivados, e a **própria `descansar` devolve a sessão intacta sem `derived`**, porque não dá
+para reencher até um máximo que ninguém sabe qual é.
+
+**11. Destrutivo e Cataclísmico contavam como alvo único na Liberação Máxima** (bug meu).
+`ehMultiAlvo` e `melhoriaSemEfeito` liam `f.alvo` cru. A melhoria Área dobrava a área de 18m para
+36m **e avisava "o Feitiço não tem área"**, e Alvos Adicionais era oferecida num Feitiço que já pega
+todo mundo. Novo `temArea`, que sabe dos dois subtipos. ⚠ Com uma nuance que o review não pegou: o
+Cataclísmico É área e mesmo assim a melhoria Área não rende, porque a área dele é o **mapa inteiro**
+e dobrar o mapa não significa nada. Ele avisa isso, em vez de fingir que dobrou.
+
+**12. Condição num Curativo é REMOÇÃO, e a ficha imprimia como aplicação** (bug meu, mais um vizinho
+que o review não viu). A Duração Prolongada era aceita sem aviso num Curativo com condição e não
+fazia nada. O review propôs expor `rodadasExtras` na cura, e **isso estaria errado**: a lista de
+condições de um Curativo é o que ele REMOVE (autor confirmou), e removida não tem duração. Olhando
+de perto, o laço de condições do `fichaDoFeitico` era compartilhado com o Dano e a ficha saía com:
+
+```
+Remove    = Atordoado
+Condição  = Atordoado (1 rodada(s))
+```
+
+A mesma condição duas vezes, e a segunda lendo como se a CURA aplicasse Atordoado no alvo. O laço
+agora pula o Curativo, e a melhoria avisa que não rende ali.
+
+**O que ficou de fora desta leva** (menor gravidade, nada de número errado): buff de sessão
+aparecendo em duplicata na aba Buffs, campo de iniciativa que não aceita negativo, o painel de
+fontes escapando do tema no Encontro, e dois `useMemo` faltando (um deles meu, no `comLiberacao`).
+Estão em `a-fazer.md`.
+
+**O que eu discordei do review:** ele tratou a remoção de "Liberações Expandidas" como bug de
+migração. Não é regressão: `resolveHabilidades` sempre descartou id desconhecido em silêncio, e
+"Teste de Resistência Mestre" saiu em julho pelo mesmo caminho. É comportamento do catálogo, e vale
+uma linha no `a-fazer.md`, não um conserto.
+
+Verificação final: **129 asserts** de regra mais **29** de integração pelo `deriveAfty`,
+`npx eslint src/systems/afty/` limpo e `npx vite build` limpo.
+
+---
+
+## SESSÃO DE 2026-08-08
+
+### O Funcionamento Básico chegou à Ficha Final
+
+O autor apontou o buraco: `core.tecnicaDescricao` existia no schema, tinha marcação desde
+2026-08-07, e **não era exibido em lugar nenhum além do campo de edição**. Nem Preview, nem Ficha.
+A formatação só se via pelo olhinho.
+
+- O renderizador **mudou de casa**: saiu do `AftyCreatureBuilder.jsx` e virou
+  `src/systems/afty/ui/TextoRico.jsx`, ao lado dos outros primitivos que criador e Ficha dividem.
+  Duas cópias divergiriam na primeira marcação nova, e aí o jogador leria na mesa algo diferente do
+  que o autor escreveu.
+- **Cor por variável CSS, e não por classe do Tailwind.** O mesmo componente serve dois donos com
+  paletas diferentes: o criador (slate + roxo, tela do app) e a Ficha (pintada por variável, com CSS
+  do usuário por cima). Cada `var()` leva o tom do criador como fallback, então lá nada precisa ser
+  declarado e na Ficha o tema manda.
+- As classes `afty-tr`, `afty-tr-h1`, `afty-tr-h2`, `afty-tr-p`, `afty-tr-forte`, `afty-tr-tabela` e
+  `afty-tr-tabela-caixa` entram no **contrato** de classes estáveis do CSS personalizado.
+- Na Ficha, o texto é um cartão no topo da aba **Habilidades**, dobrável e **aberto por padrão** (é
+  um só, e é o texto que descreve a criatura, ao contrário dos 40 itens do livro). Ele obedece ao
+  filtro local da aba, casando contra o `textoPuro`, para um `**` no meio da palavra não esconder o
+  acerto.
+- ⚠ **Não virou um `ItemDeFicha`**, e a diferença importa: o item renderiza um `<p>` corrido e
+  achataria título, subtítulo e tabela justamente onde a formatação foi pedida.
+- ⚠ **CORRIGIDO no mesmo dia, em duas passadas.** O cartão saía com metade da largura. A causa era a
+  classe `afty-texto` no container: ela carrega `max-width: 78ch`, a medida de leitura clássica.
+  - **1ª passada:** tirei a classe do container e desci a medida para bloco (parágrafo e título com
+    78ch, tabela sem nenhuma). Isso soltou a tabela, mas o texto continuou em metade da largura, e o
+    autor apontou de novo.
+  - **2ª passada:** a medida saiu de vez. **O `TextoRico` não declara `max-width` em lugar nenhum** —
+    quem manda na largura é o container que o hospeda.
+  - Se a linha longa incomodar num monitor largo, o conserto é **estreitar o cartão**, e não
+    recolocar a medida no componente: o Funcionamento Básico tem tabela dentro, e tabela quer a
+    largura toda.
+
+### A prévia começa LIGADA
+
+Pedido do autor: com texto escrito, o olhinho já vem ativado. Campo vazio começa desligado, porque
+não há o que ver e a caixa de edição é o que ele precisa.
+
+- Duas guardas evitam que o automático atropele o jogador: assim que ele clica no olho, a decisão
+  dele passa a mandar (`decidiu`), e o ajuste **não age com o campo em foco** — sem isso, digitar a
+  primeira letra num campo vazio atiraria a prévia por cima de quem está escrevendo.
+- O ajuste continua vivo depois da montagem de propósito: o **rascunho automático** restaura a ficha
+  sozinho, e importar um JSON também troca o valor com o campo já na tela. Sem isso o campo montaria
+  vazio, com a prévia desligada, e ficaria assim mesmo depois de encher.
+
+### A escada de dado das Armas Naturais virou Nível de Dano
+
+Regra do autor (2026-08-08): *"a cada vez que o Dano subir, sobe +1 Nível. Isso vale para ambas e se
+somam."*
+
+Até aqui a escada de dado das duas aptidões era descartada, pela decisão de 2026-07-27 de que o dado
+listado de arma nenhuma conta. **A regra do dado continua de pé** — o que mudou é que o DEGRAU dela
+não se perde mais: cada subida do texto vale um Nível de Dano no Ataque Básico, que é onde a arma
+natural bate.
+
+- **Armas Naturais** (`mal_armas_naturais`): 1d8 → 1d10 no 5 → 1d12 no 9 → 2d10 no 13 → 2d12 no 17.
+  Quatro subidas → `(nd>=5)+(nd>=9)+(nd>=13)+(nd>=17)`. A Fineza que ela já dava continua.
+- **Armas Naturais Aprimoradas**: começa um degrau acima, porque *"o dano se torna 1d10"* já é uma
+  subida a partir do 1d8, e daí sobe de novo no 5, 9, 13 e 17. Cinco subidas →
+  `1 + (nd>=5)+(nd>=9)+(nd>=13)+(nd>=17)`.
+- O `+1 nível de dano nos níveis 8, 12, 16 e 20` é OUTRA frase do texto e segue sendo outra linha.
+  As três convivem, e cada uma leva `nome` próprio para o hover de fontes não repetir o mesmo rótulo
+  com números diferentes.
+- Resultado com as duas: +3 no ND 5, +6 no 9, +9 no 13, +12 no 17 e +13 no 20.
+
+⚠ A anatomia `arma_natural` do Feto Híbrido (*"se o desarmado for maior, aumente-o em 1 nível"*)
+**continua só texto**: o catálogo inteiro de `afty-anatomias.js` ainda é descritivo, e ligar uma
+linha só dele deixaria o arquivo meio ligado e meio não.
+
+### ABA DE ENCONTROS (nova, 2026-08-08)
+
+Portada da 2.5.2 a pedido do autor: *"copie como funciona a da 2.5.2 e deixe adaptada para o Grimório
+do Afty. Seguindo layout e derivados"*. Vive em `src/systems/afty/encontros/`, cinco arquivos:
+
+| Arquivo | O que é | Espelha |
+| --- | --- | --- |
+| `afty-encontro.js` | modelo puro: status, lados, iniciativa, turnos, cópias, log | `fm-encounter.js` |
+| `usar-encontros-afty.js` | a lista, em `localStorage` | `useEncounterManager.js` |
+| `usar-encontro-afty.js` | redutor de um encontro | `useEncounter.js` |
+| `AftyEncontros.jsx` | o painel com os cartões | `EncountersDashboard.jsx` |
+| `AftyEncontro.jsx` | o rastreador (3 telas por status) | `EncounterTracker.jsx` |
+| `PainelDeCombatente.jsx` | a ficha de combate do focado | `CombatantPanel.jsx` |
+
+**A decisão que segura tudo: o estado de combate de um combatente É uma SESSÃO do Afty**
+(`ficha/ficha-sessao.js`), e não o `combatState` da 2.5.2.
+
+Isso não é economia de código. A Ficha Final já sabe aplicar dano com PV temporário comendo primeiro,
+virar rodada expirando buffs e condições, e aparar os correntes quando a Alma muda o PV máximo. Um
+`combatState` paralelo reimplementaria tudo isso e divergiria no primeiro ajuste de regra — e aí a
+mesma criatura teria PV diferente conforme a tela em que o mestre a abriu.
+
+A consequência boa: o painel do combatente **reusa as abas Ações, Perícias e Buffs da Ficha**, com os
+mesmos números e os mesmos hovers de fonte. O que não é reusado é o cabeçalho, porque tema do
+usuário, retrato e busca global não cabem numa coluna dividida com a lista de iniciativa.
+
+**O combatente não guarda stats derivados**, ele guarda `ficha` e `sessao`. Quem quer número roda
+`deriveAfty`, e isso acontece uma vez por combatente dentro de um `useMemo` amarrado ao encontro.
+
+**Chave própria** (`afty_encontros_v1`), e não a `fm_encounters_afty_v1` que o `useEncounterManager`
+usaria com namespace: duas formas de combatente na mesma chave é o tipo de coisa que só quebra meses
+depois.
+
+**A ficha entra CLONADA** no encontro, e por isso a sincronização de edição da 2.5.2 (o
+`EncounterSyncModal`) **não roda no Afty**: uma edição no criador não pode mudar o número de uma luta
+em andamento.
+
+⚠ **Os ganchos de automação da 2.5.2 não vieram junto.** Lá o `useEncounter` dispara
+`applyTriggeredEffects` a cada `turn_start` / `round_end`. No Afty um efeito de rodada já é resolvido
+pelo `quando` a cada `deriveAfty`, e não existe pilha de gatilhos para disparar — copiar aqueles
+ganchos criaria um segundo motor fantasma. A virada de rodada faz o que a Ficha faz: `proximaRodada`.
+
+⚠ **A duração desce para TODOS na virada**, e não no turno de cada um como na 2.5.2. É o que a Ficha
+já faz, e as duas telas precisam contar as mesmas rodadas: um buff de 3 rodadas não pode durar mais
+na mesa do mestre do que na ficha do jogador.
+
+**Ficaram de fora, de propósito:** arrastar-e-soltar para reordenar (`@dnd-kit`), seleção múltipla com
+Shift e o medidor de armazenamento. Os três resolvem o problema de quem tem centenas de encontros, e
+o Afty começa com zero.
+
+**Pintura por variável CSS**, importando o `ficha.css` mais um `encontros.css` próprio. Arquivo
+separado porque o `ficha.css` tem assert de contrato de tema, e a tela do mestre não aceita CSS do
+usuário.
+
+### "O que o Feitiço FAZ", e não só quanto ele rola
+
+Autor, 2026-08-08: *"preciso conseguir ver o que meus Feitiços e derivados fazem, sem precisar ir na
+aba de Edição para saber."*
+
+A linha de Feitiço da Ficha mostrava **nome, nível, dados e custo** — quanto ele custa e quanto ele
+rola, e nada do que ele faz. Alcance, área, ação, duração, condições anexadas e subtipo só existiam
+dentro do criador, no formulário que os produziu.
+
+- Novo **`fichaDoFeitico(f, calc)`** em `afty-feiticos.js`, que devolve `[{ rotulo, valor }]` por
+  tipo de Feitiço. ⚠ **Nada é recalculado ali:** tudo sai do `calc` que o calculador do tipo já
+  produziu, e o que não estiver lá simplesmente não vira linha. Recalcular seria uma segunda
+  implementação da regra, envelhecendo à parte.
+- ⚠ Devolve **dados, e não texto pronto**. Quem monta a frase é a tela, na mesma convenção das
+  `partes` do detalhamento.
+- O `resumoFeiticos` passou a carregar também **`descricao`** (a narrativa do autor) e
+  **`conjuracao`**, que existiam no schema e não eram exibidas em lugar nenhum.
+- A linha de Feitiço na aba Ações **ABRE**, com a ficha técnica em cima e o texto do autor embaixo,
+  renderizado pelo `TextoRico` (mesma marcação do Funcionamento Básico). Sem nada para abrir, o nome
+  não vira botão.
+- Dois detalhes de leitura: o Auxiliar de **efeito único** não tem lista (`calc.efeitos` só existe em
+  Múltiplos Efeitos), então o efeito é o próprio `calc`; e as regras em texto dos Especiais entram
+  como **"Regra"**, porque a chave delas é interna (`aposAtaque`) e "AposAtaque" na tela é pior que
+  rótulo nenhum.
+
+### Encontros: aparência e as duas abas que faltavam
+
+- **Habilidades e Equipamentos** entraram no painel do combatente. Com Ações, Perícias e Buffs só, o
+  mestre tinha os NÚMEROS da criatura e nenhum dos TEXTOS: ler o que uma Aptidão faz exigia sair do
+  encontro e abrir o criador. São as mesmas cinco abas da Ficha Final, menos Invocações.
+- A barra de abas passou a ser **a da Ficha** (`afty-abas` / `afty-aba`), e não uma fileira de
+  botões: é a mesma ferramenta, e duas gramáticas de aba na mesma sessão confundem quem alterna
+  entre a tela do mestre e a do jogador.
+- **Cor por lado** (`--afty-lado`), saindo de variáveis que a Ficha já tem: inimigo é o vermelho do
+  PV, aliado é o verde da cura, jogador é o azul do PE. Um tema que troque a paleta leva os três
+  junto. O lado é o que o mestre lê mais rápido numa fila de doze linhas, e estava só num chip de
+  texto.
+- A **barra de PV da fila** ganhou as duas faixas do vital da Ficha (âmbar abaixo da metade, vermelho
+  abaixo de um quarto): a fila é onde se decide em quem bater.
+- O turno ativo pulsa na borda esquerda. ⚠ **Lento (2,4s) e só na borda**, porque a fila fica na
+  lateral a luta inteira e animação rápida no canto do olho cansa. Respeita `prefers-reduced-motion`.
+- Cartão de encontro: faixa de status na borda **superior**, e não na esquerda — numa grade de três
+  colunas a faixa lateral some entre os vizinhos. Contagem por lado em pastilhas coloridas, para o
+  cartão dizer o tamanho da luta sem abrir.
+
+### Tamanho virou DERIVADO, com régua de Atletismo e Furtividade
+
+Regra do autor (2026-08-08): *"a Altura só pode ser maleável com Aptidões e poderes que mexam com
+isso"*. Era um `<Select>` livre na aba Identidade, e o campo `core.tamanho` **não era lido por
+ninguém** — a escolha não fazia nada.
+
+- Toda criatura parte de **Médio**, e só o canal novo `tamanho` a tira de lá. Ele conta **degraus**,
+  e não metros: +1 leva a Grande, +2 a Enorme, −1 a Pequeno. Apara em Minúsculo e Colossal, então
+  pegar Crescimento Corporal já sendo Colossal não estoura a lista.
+- A régua vem junto do degrau: Grande **+2 / −2**, Enorme **+5 / −5**, Colossal **+10 / −10**,
+  Pequeno **−2 / +2**, Minúsculo **−5 / +5** (Atletismo / Furtividade).
+- A régua entra como **efeito**, e não como número somado à mão, para o hover mostrar "Colossal −10"
+  na linha da Furtividade em vez de um −10 sem dono.
+- ⚠ **TERCEIRA lista de efeitos no derive**, pelo mesmo motivo do Domínio e do Estilo: a régua
+  depende do tamanho e o tamanho depende do canal, que só fecha com o estágio 2 pronto. Resolver o
+  tamanho primeiro e mesclar a régua depois quebra o laço, e é seguro porque a régua escreve num
+  canal (`bonusPericia`) que nada do `tamanho` lê de volta.
+- `desenvolvimento_exagerado` e `mal_crescimento_corporal` passaram a emitir o degrau. O segundo uso
+  do Crescimento (repetível a partir do 10°) continua fora, pelo shape de ids únicos.
+- No criador o campo virou **leitura** com a régua ao lado, e não um Select desabilitado: campo
+  cinza que não abre parece defeito. `core.tamanho` fica no schema como campo morto, só para não
+  quebrar ficha antiga.
+- Na Ficha, um chip no cabeçalho **só quando saiu de Médio**.
+
+### A propriedade especial das Manoplas foi programada
+
+*"Seu dano desarmado aumenta em 1 nível para cada 2 no seu modificador de força."* Estava sem efeito
+nenhum. Novo mapa `ARMA_ESPECIAL_EFEITOS` em `afty-equipamentos.js`: a chave é o `especial` da arma,
+e o valor é o que ela concede ao Motor **enquanto equipada**.
+
+⚠ O mapa é curto de propósito, e vai continuar curto. Quase todo texto especial não é canal: a
+Metralhadora dá um ataque de ação bônus, a Rede aplica Enredado, o Leque troca o tipo de dano. Entra
+ali só o que é número somando num canal que já existe.
+
+Piso em 0 (`max(0, piso(mod_forca / 2))`): Força ruim não TIRA nível, ela só não dá.
+
+### Músculos Desenvolvidos SUBSTITUI a Destreza, e agora o detalhamento diz isso
+
+O efeito era `{ canal: "defesa", expr: "max(0, mod_forca - mod_destreza)" }`, o truque da diferença.
+O número saía certo, mas o hover mostrava **"Destreza +3"** e **"Músculos Desenvolvidos +2"** um
+embaixo do outro, e lido de cima a baixo aquilo é uma soma dos dois atributos. O autor pegou.
+
+- Canal novo **`defesaAtributo`**, o único do Motor com semântica de **troca**: ele não soma, ele diz
+  qual atributo entra na fórmula da Defesa.
+- Com mais de um concedido, vale o de **maior modificador**, porque a regra é sempre "você pode
+  optar" e ninguém opta por piorar a própria Defesa.
+- No detalhamento a linha da Destreza **some** e no lugar dela entra "Força (no lugar da Destreza)",
+  com a habilidade logo abaixo marcada *substitui* em vez de um número.
+
+### Buffs Temporários aparecem na aba Buffs
+
+Um efeito com `duracao: "temporaria"` já entrava na conta desde sempre — o que faltava era
+**aparecer**. Sem a lista, um +4 de Força temporário e um permanente eram o mesmo número, e o
+jogador não tinha como saber qual dos dois ele perde no fim da cena.
+
+- `duracao` passou a viajar nos `detalhes` do Motor (nos dois lugares que empurram detalhe: a soma
+  comum e o fechamento do pool exclusivo).
+- Nova seção **Temporários** na aba Buffs, entre os ad-hoc e as Condições: nome, origem, canal,
+  valor e a marca *Suplantado* para quem perdeu o pool exclusivo.
+- ⚠ É **só leitura**, e isso segue a assunção do Motor: efeito temporário fica sempre ligado na
+  ficha. A seção não liga nem desliga nada, ela conta o que está ligado.
+- Desduplica por (nome, canal, alvo, valor): o `ef` é a mescla de vários estágios, e um efeito que
+  apareça em dois deles viraria duas linhas iguais na tela sem estar contando duas vezes.
+
+### UX do cartão de Feitiço, e a regra do suplemento no hover
+
+Autor, 2026-08-10, olhando o cartão da Mordida Dilacerante: *"o UX/Design disso precisa ser
+melhorado urgente"*, e *"coloca a descrição nos efeitos de Liberação Máxima quando eu passar o mouse
+em cima. Por ser suplemento, fica difícil acessar."*
+
+**A mesma informação aparecia três vezes.** O cabeçalho do cartão dizia `(12 PE)`, a lista de
+propriedades dizia `Liberação Máxima: 12 PE` e `Melhorias: Sobrecarga Energética`, e o controle
+logo abaixo repetia as duas coisas. As duas propriedades saíram: o custo já está no cabeçalho e as
+melhorias já estão ACESAS nas pastilhas. A coluna de propriedades é para o que o Feitiço FAZ, então
+lá ficaram só `Ignora RD`, `Alvos Extras`, `Sem Upkeep` e as `Regra`, que são o que a Liberação
+acrescenta e não cabia em propriedade nenhuma.
+
+**O bloco virou irmão do Ritual.** Era um `<div>` solto com as categorias inline empurrando as
+pastilhas, e o Ritual logo abaixo era um `<details>` com contador no resumo e barra à esquerda no
+corpo. Dois controles irmãos no mesmo cartão com duas aparências diferentes fazem o jogador achar
+que são coisas de natureza diferente. Agora é o mesmo `<details>`, com o mesmo
+`Liberação Máxima  1/3 · 12 PE`, e **aberto por padrão só quando há melhoria ligada**: quem não usa a
+mecânica vê uma linha discreta, quem já declarou vê o que declarou.
+
+As categorias saíram de inline para a **própria linha**, acima das pastilhas delas. Inline, cada uma
+empurrava as pastilhas para um recuo diferente e as três não alinhavam entre si.
+
+**`Alcance: 0 metros` virou `Toque`.** O número cru fazia uma mordida corpo-a-corpo ler como Feitiço
+sem alcance nenhum, em vez de Feitiço que precisa encostar.
+
+### A DICA DE TEXTO, e por que ela não fere a regra de UI
+
+⚠ **Isto NÃO contradiz "nada de texto explicativo na UI".** A regra sempre teve a saída de que
+explicação de ITEM vive no hover. O que mudou foi o VEÍCULO: era o `title` nativo, que demora quase
+um segundo para nascer, some ao mexer o mouse, não abre no teclado e não existe no toque. Para um
+catálogo de suplemento, que é justamente o texto que ninguém tem na mão, isso é o mesmo que não ter.
+
+Novo `DicaDeTexto` em `ui/fontes.jsx`: nome da melhoria, descrição verbatim e a nota (a exceção,
+separada por uma linha, ou ela some no meio do texto).
+
+⚠ Ele **ENVOLVE** o gatilho em vez de virar o gatilho. A pastilha já é um botão com ação própria
+(ligar e desligar), e botão dentro de botão é HTML inválido. O `<span>` de fora escuta ponteiro e
+foco, o botão de dentro segue clicando. No dedo, o **toque longo** abre a regra e o `onClickCapture`
+engole o clique que vem junto, senão ler a regra ligaria a melhoria sem querer.
+
+**Nada disso foi escrito duas vezes.** O portal, o posicionamento e o fechar-no-Escape já existiam
+no painel de fontes, então saíram de lá para uma `MolduraFlutuante` e um hook `useFlutuante`, usados
+pelos dois. ⚠ O eslint reprovou a primeira versão do hook: ele devolvia os `ref` do toque longo para
+quem chamava mutar, e mutar valor devolvido por hook é proibido. O gesto inteiro (`segurarComeca`,
+`segurarTermina`, `consumiuToqueLongo`) mudou-se para dentro do hook, o que de quebra apagou a
+segunda cópia da lógica.
+
+### MERGE: Conjuração em Ritual encontra a Liberação Máxima
+
+O GoliasK subiu dois commits com a **Conjuração em Ritual** enquanto a Liberação Máxima ainda
+estava na árvore, sem commit. Os dois suplementos mexem nos mesmos calculadores, então a mescla teve
+**decisão de regra**, e não só de texto. Os quatro conflitos foram em `afty-derive.js`,
+`afty-feiticos.js`, `AbaAcoes.jsx` e neste doc.
+
+**A camada de exibição dele SUBSTITUIU a minha.** O `fichaDoFeitico` (que devolvia
+`{ rotulo, valor }`) virou `propriedadesResumoFeitico` (`{ id, nome, valor }`), e a `AbaAcoes` já
+consome `f.propriedades`. Adotei a dele inteira, porque é a versão commitada e a que a UI usa.
+
+⚠ **Convergência**: ele tinha resolvido sozinho três das coisas que eu tinha consertado no dia
+anterior. O `alvoResumoFeitico` já tratava Destrutivo e Cataclísmico como área, o `areaResumoFeitico`
+já escrevia **"Mapa inteiro"** (a mesma frase que eu escolhi) e a CD já não tinha a guarda errada de
+resolução. Duas cabeças chegaram na mesma solução com um dia de diferença.
+
+⚠ **Mas três correções minhas se perderam junto com a função apagada, e voltaram**: a Resolução
+efetiva (o Destrutivo marcado como ataque ainda imprimia "Jogada de Ataque"), o **upkeep do Auxiliar
+e da Transformação** (o `propriedadesResumoFeitico` só mostrava a sustentação do Dano Contínuo) e a
+**duração das Condições aplicadas**, que é justamente o que a melhoria Duração Prolongada modifica.
+Sem esta última, a melhoria calculava certo e não aparecia em lugar nenhum.
+
+**As três decisões de composição** (nenhum dos dois textos fala do outro, então são ASSUNÇÕES,
+anotadas em `a-fazer.md`):
+
+| Número | Ritual | Liberação | Ordem escolhida |
+|---|---|---|---|
+| Área | soma metros (1,5 ou 4,5 por escolha) | dobra | dobra primeiro, soma depois |
+| Alcance | soma metros | multiplica | multiplica primeiro, soma depois |
+| CD e Acerto | soma | soma | somam juntos, sem ordem |
+
+O critério do "multiplica antes, soma depois" é que os metros do Ritual estão escritos em ABSOLUTO
+no texto dele. Somar antes faria a Liberação dobrar também o bônus do Ritual, e aí os números
+impressos na regra dele deixariam de bater com o que aparece na tela.
+
+**Um buraco que a mescla criou e foi fechado:** o teste de Conjuração em Ritual é aplicado DEPOIS do
+`resumoFeiticos` (ele depende da perícia de Prestidigitação, que só fecha no fim do derive). O
+`comLiberacao`, que refaz UM Feitiço com as melhorias declaradas na mesa, pulava esse enriquecimento.
+Um Feitiço que fosse Ritual E Liberação Máxima voltaria da mesa **sem o teste de ritual**, ou seja, o
+jogador perderia a rolagem por ter declarado a Liberação. O enriquecimento virou a função
+`comTesteDeRitual`, usada pelos dois caminhos.
+
+Na tela, o cartão de Liberação Máxima fica **acima** dos controles de Ritual dentro da linha do
+Feitiço: a Liberação é o que SAI e o Ritual é COMO se conjura, e a ordem segue a da mesa.
+
+Verificação da mescla: 129 asserts de regra e 29 de integração passando (os de exibição foram
+reescritos para a camada nova), os 6 achados do code review seguem sem reproduzir, `npx eslint
+src/systems/afty/` limpo e `npx vite build` limpo.
 
 ---
 
@@ -508,14 +1545,19 @@ orçamento: gasta o contador único da aba e consome primeiro as vagas exclusiva
 19 e a cada 3 depois") NÃO virou orçamento. Teve o mesmo destino que a progressão por ND dos
 Feitiços, substituída pelo contador único em 2026-07-27. Do texto sobra o ND 4 como porta.
 
+⚠⚠ **O MODELO DESTA SEÇÃO MORREU EM 2026-08-10.** A "Modificação-recipiente" descrita daqui até o
+fim do bloco estava invertida, e o autor a derrubou. Leia a **SESSÃO DE 2026-08-10 (parte 3)**, no
+topo do doc, e trate o que segue como histórico. O que continua valendo é a porta de entrada
+(ND 4), o orçamento acima, o pool exclusivo `estiloSombra` e as fórmulas de cada efeito.
+
 **Dois tipos de Técnica de Estilo:**
 
 | Tipo | O que é |
 |---|---|
-| `modificacao` | Modificação do Domínio Simples. Tabela FECHADA de 5 efeitos, orçada pelo Nível de Aptidão em Domínio. |
-| `especial` | Texto livre mais o Motor completo, com Passiva/Ativa por linha. É onde entram as Aptidões Amaldiçoadas incorporadas. |
+| `modificacao` | ❌ **MORTO.** Modificação do Domínio Simples. Tabela FECHADA de 5 efeitos, orçada pelo Nível de Aptidão em Domínio. Virou `tabela`, uma Técnica por efeito. |
+| `especial` | Texto livre mais o Motor completo. ❌ O "Passiva/Ativa por linha" morreu junto: tudo depende do Domínio Simples imbuído. |
 
-**A tabela de Modificação, e o que cada linha liga:**
+**A tabela, e o que cada linha liga** (as fórmulas seguem valendo):
 
 | Efeito | Canal | Repetição |
 |---|---|---|
@@ -523,7 +1565,10 @@ Feitiços, substituída pelo contador único em 2026-07-27. Do texto sobra o ND 
 | Aumento de Defesa | `defesa` = `piso(maestria / 2)` | máx. 2, e a 2ª estende aos aliados sem somar na sua Defesa |
 | Bônus de Acerto | `bonusAcerto` = `piso(maestria / 2) * n` | +metade da Maestria por vez (autor, 2026-08-07: o livro só diz "aumentando o bônus") |
 | Dano Adicional | `nivelDano` = `2 * n` | +2 níveis por vez |
-| Efeito Especial | Motor livre | abre o editor dentro da Modificação |
+| Efeito Especial | Motor livre | ❌ **SAIU DA TABELA em 2026-08-10**: era a Técnica de Estilo Especial escrita duas vezes |
+
+⚠ Desde 2026-08-10 o `n` das duas fórmulas não é número, e sim a **variável do DSL** que guarda
+quantas vezes a Técnica está imbuída.
 
 ⚠ A repetição vira **uma linha com o valor já multiplicado**, e não N linhas iguais. N linhas
 cairiam na mesma chave do pool exclusivo e só a maior valeria, comendo as repetições pagas.
@@ -533,10 +1578,9 @@ Auxiliar do Sem Técnica: sem entrar no pool, seria a única origem cujo bônus 
 cima de tudo. Vale para os dois tipos, inclusive os efeitos de tabela. Testado: duas Modificações
 com Aumento de Defesa rendem um só, e o Estilo disputa de igual para igual com a Habilidade Única.
 
-**Bancada:** cada Modificação ganha um interruptor próprio nos `estadosExtras` (os efeitos dela só
-valem "enquanto o Domínio Simples estiver ativo"), e a Especial ganha um quando tem linha marcada
-como ativa. Mesmo caminho da Habilidade Única de Ferramenta, que o comentário do `resolveCombate` já
-antecipava.
+**Bancada:** ❌ cada Modificação ganhava um interruptor próprio nos `estadosExtras`. Desde
+2026-08-10 é **um bool para o Domínio Simples inteiro, mais uma FAIXA de imbuição por Técnica
+conhecida**.
 
 **Ficha Final:** grupo próprio "Técnicas de Estilo" na aba Habilidades, entre Passivos e Talentos.
 Sai do resolvido, não da ficha crua: quem perdeu o acesso não vê a Técnica na tela de jogo.

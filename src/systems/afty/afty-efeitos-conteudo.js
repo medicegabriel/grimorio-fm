@@ -256,10 +256,16 @@ export const HABILIDADE_EFEITOS = {
   ],
 
   // "você pode optar por somar seu Modificador de Força ao invés de Destreza em
-  // sua Defesa". A Defesa já soma Destreza, então o efeito é a DIFERENÇA, e
-  // nunca negativa: quem tem Força pior simplesmente não opta.
+  // sua Defesa".
+  //
+  // ⚠ Era `{ canal: "defesa", expr: "max(0, mod_forca - mod_destreza)" }`, o
+  // truque da DIFERENÇA. O número saía certo, mas o detalhamento mentia: o hover
+  // mostrava "Destreza +3" e "Músculos Desenvolvidos +2" lado a lado, e lido de
+  // cima a baixo aquilo é uma SOMA dos dois atributos. O autor pegou em
+  // 2026-08-08. Agora o canal `defesaAtributo` troca a Destreza pela Força na
+  // própria fórmula, e a linha da Destreza deixa de existir.
   lut_musculos_desenvolvidos: [
-    { canal: "defesa", expr: "max(0, mod_forca - mod_destreza)" },
+    { canal: "defesaAtributo", alvo: "forca", expr: "1" },
   ],
 
   // "Ao ver um personagem aliado (Invocações não são consideradas) chegar a 0
@@ -1860,6 +1866,14 @@ export const LENDARIA_EFEITOS = {
     { canal: "bonusPericia", alvo: "percepcao", expr: "10" },
     { canal: "atencao", expr: "10" },
   ],
+
+  // "recebendo 2 aumentos de nível de aptidão para distribuir, podendo aumentar
+  // uma única em dois níveis ou duas aptidões em um nível."
+  // ⚠ ORÇAMENTO (`pontosAptidao`), igual ao Elevar Aptidão: as duas divisões que
+  // o texto autoriza são as duas maneiras de gastar 2 pontos na aba Aptidões, e
+  // por isso não existe escolha aninhada para elas. A outra metade da Lendária
+  // (o limite) é direcionada e sai no LENDARIA_EFEITOS_ALVO.
+  len_versatilidade_extrema: [{ canal: "pontosAptidao", expr: "2" }],
 };
 
 /**
@@ -1882,6 +1896,17 @@ export const LENDARIA_EFEITOS_ALVO = {
     { canal: "atributo", expr: "2", furaTeto: true },
     { canal: "limiteAtributo", expr: "2", furaTeto: true },
   ],
+
+  // "você pode aumentar o limite de um Nível de Aptidão para 6."
+  // O canal é SOMA, e não "passa a valer 6": é a convenção do `limiteAptidao`
+  // desde que ele nasceu (duas fontes na mesma trilha levam o teto a 7). Numa
+  // trilha em que nada mais mexeu, +1 sobre o 5 padrão dá exatamente os 6 do
+  // texto. ⚠ A CONFIRMAR com o autor se, empilhada com outra fonte de limite,
+  // ela deve parar no 6 em vez de somar.
+  //
+  // Sozinho o limite não dá nível nenhum: quem preenche o 6° é o orçamento, e a
+  // trilha só aceita alocação até o limite dela (ver resolveNiveisAptidao).
+  len_versatilidade_extrema: [{ canal: "limiteAptidao", expr: "1" }],
 
   // "você escolhe 3 perícias para se tornar especialista em."
   // ⚠ ASSUMIDO: "especialista" é a faixa de Mestre. É o que o texto dos
@@ -1968,7 +1993,16 @@ export const MELHORIA_EFEITOS_ALVO = {
  */
 export const GERAL_EFEITOS = {
   ger_especializacao: [{ canal: "vagasHabilidade", expr: "1 + piso(maestria / 2)" }],
-  ger_aptidao:        [{ canal: "vagasAptidao",    expr: "1 + piso(maestria / 2)" }],
+  // ⚠ A Aptidão trocou "1 + metade da Maestria" por "1 + Grau" (autor,
+  // 2026-08-12), e as duas Gerais deixaram de ser gêmeas. `grau` é o rank do
+  // Grau do Feiticeiro (Quarto 1 ... Especial 5), que sai da faixa de ND em
+  // `grauFeiticeiro` e já vem no contexto MONTANTE, onde as Gerais rodam.
+  //
+  // ⚠ É um AUMENTO no meio da escada, e não uma troca neutra: o Grau chega ao 5
+  // no ND 17 e a metade da Maestria só no ND 36. Por pega, a diferença é 0 nos
+  // ND 1 a 4, +1 nos 5 a 12, +2 nos 13 a 25, +1 nos 26 a 35 e 0 do 36 em diante.
+  // No ND 17 são 6 Aptidões por pega, contra as 4 de antes.
+  ger_aptidao:        [{ canal: "vagasAptidao",    expr: "1 + grau" }],
   ger_treinamentos:   [{ canal: "focos",           expr: "piso(nd / 2)" }],
 };
 
@@ -2251,8 +2285,12 @@ export const ANATOMIA_EFEITOS = {
   ],
 
   // "Você aumenta sua categoria de tamanho em 1 e recebe 1 ponto de vida
-  // adicional por nível." O tamanho é campo da ficha, não canal.
+  // adicional por nível."
+  // O tamanho passou a ser CANAL em 2026-08-08: era campo livre da ficha, e o
+  // autor fechou (*"a Altura só pode ser maleável com Aptidões e poderes que
+  // mexam com isso"*). O degrau traz junto a régua de Atletismo e Furtividade.
   desenvolvimento_exagerado: [
+    { canal: "tamanho", expr: "1" },
     { canal: "hp", expr: "nd" },
   ],
 
@@ -2493,24 +2531,46 @@ export const APTIDAO_EFEITOS = {
      moeda trocada de PER para PE. */
 
   // "Você pode utilizar tanto força quanto destreza com a sua arma natural."
-  // ⚠ O DADO da arma natural (1d8 subindo a 2d12) NÃO entra: o dano da criatura
-  // tem fórmula própria e o dado listado de arma nenhuma conta (autor,
-  // 2026-07-27, a mesma decisão que deixou o "1d8" do Corpo Treinado de fora).
-  // O que sobra de mecânico é a Fineza, e ela é o mesmo canal do Corpo Treinado.
+  //
+  // ⚠ A ESCADA DE DADO VIROU NÍVEL DE DANO (autor, 2026-08-08): *"a cada vez que
+  // o Dano subir, sobe +1 Nível. Isso vale para ambas e se somam."* Até aqui ela
+  // era descartada, pela regra de que o dado listado de arma nenhuma conta
+  // (2026-07-27). A regra do dado continua de pé — o que mudou é que o DEGRAU
+  // dela não se perde mais: cada subida do texto vale um Nível de Dano no Ataque
+  // Básico, que é onde a arma natural bate.
+  //
+  // 1d8 → 1d10 no 5 → 1d12 no 9 → 2d10 no 13 → 2d12 no 17. Quatro subidas.
   mal_armas_naturais: [
     { canal: "finezaAtaque", alvo: "corpo", expr: "1" },
+    { canal: "nivelDano", alvo: "basico", expr: "(nd >= 5) + (nd >= 9) + (nd >= 13) + (nd >= 17)" },
   ],
 
-  // "você recebe um bônus de +1 nível de dano nos níveis 8, 12, 16 e 20."
-  // A escada de dado (1d10 a 3d10) é a mesma história da aptidão acima.
+  // A escada desta é a mesma leitura, e SOMA com a de cima (as duas são tidas
+  // juntas: esta exige aquela). Ela começa um degrau acima, porque "o dano de
+  // suas armas naturais SE TORNA 1d10" já é uma subida a partir do 1d8, e daí
+  // sobe de novo no 5, no 9, no 13 e no 17. Cinco subidas.
+  //
+  // O `+1 nível de dano nos níveis 8, 12, 16 e 20` é OUTRA frase do texto, e por
+  // isso é outra linha: as duas convivem de propósito.
+  //
+  // ⚠ Cada uma leva `nome` PRÓPRIO: sem isso o hover de fontes mostraria "Armas
+  // Naturais Aprimoradas" duas vezes com números diferentes, e não haveria como
+  // saber qual linha do texto é qual.
   mal_armas_naturais_aprimoradas: [
-    { canal: "nivelDano", alvo: "basico", expr: "(nd >= 8) + (nd >= 12) + (nd >= 16) + (nd >= 20)" },
+    { canal: "nivelDano", alvo: "basico", nome: "Armas Naturais Aprimoradas (escada)",
+      expr: "1 + (nd >= 5) + (nd >= 9) + (nd >= 13) + (nd >= 17)" },
+    { canal: "nivelDano", alvo: "basico", nome: "Armas Naturais Aprimoradas (bônus)",
+      expr: "(nd >= 8) + (nd >= 12) + (nd >= 16) + (nd >= 20)" },
   ],
 
-  // "passa a receber +1 de vida máxima por nível." A categoria de tamanho é
-  // campo da ficha, não canal, e o segundo uso (repetível no 10°) não é
-  // suportado pelo shape de ids únicos.
+  // "você aumenta uma categoria de tamanho e passa a receber +1 de vida máxima
+  // por nível."
+  // O tamanho virou canal em 2026-08-08 (ver `desenvolvimento_exagerado`).
+  // ⚠ O SEGUNDO uso (repetível a partir do 10°, até Enorme) continua de fora: o
+  // shape de ids únicos não deixa escolher a mesma aptidão duas vezes. Quem
+  // pegar as duas vezes na mesa soma o segundo degrau à mão.
   mal_crescimento_corporal: [
+    { canal: "tamanho", expr: "1" },
     { canal: "hp", expr: "nd" },
   ],
 

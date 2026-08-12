@@ -570,15 +570,22 @@ export function mediaDadoEmpolgacao(nivel, aprimorada = false) {
  *     necessária para a média sair certa.
  */
 /**
- * Estados que não vêm do catálogo, e sim da FICHA. Hoje só as Habilidades Únicas
- * marcadas como ativas (uma por item equipado), mas o formato é o mesmo que as
- * outras fontes ativas do pool exclusivo vão pedir quando existirem: um Feitiço
- * Auxiliar e um Shikigami também são instâncias, e não linhas de catálogo.
+ * Estados que não vêm do catálogo, e sim da FICHA: as Habilidades Únicas de item
+ * marcadas como ativas, e as Técnicas de Estilo do Novo Estilo da Sombra. O
+ * formato é o mesmo que as outras fontes ativas do pool exclusivo vão pedir
+ * quando existirem: um Feitiço Auxiliar e um Shikigami também são instâncias, e
+ * não linhas de catálogo.
  *
- * Só `bool`, de propósito. Instância se liga e se desliga, não tem faixa.
+ * ⚠ `bool` continua sendo o padrão, mas a instância pode declarar
+ * `tipo: "faixa"` com `min`/`max` próprios (2026-08-10). Quem abriu a porta foi
+ * a IMBUIÇÃO das Técnicas de Estilo, que não é liga-desliga: a mesma Técnica
+ * ocupa várias vagas do Domínio Simples, e a quantidade É o valor que a
+ * expressão lê. O teto sai da ficha (o Nível de Aptidão em Domínio) e por isso
+ * viaja no próprio extra, e não no catálogo.
  */
 const listaExtras = (params) => (Array.isArray(params?.estadosExtras) ? params.estadosExtras : [])
-  .filter((e) => e?.id);
+  .filter((e) => e?.id)
+  .map((e) => (e.tipo === "faixa" ? e : { ...e, tipo: "bool" }));
 
 export function resolveCombate(creature, params = {}) {
   const c = (creature?.combate && typeof creature.combate === "object") ? creature.combate : {};
@@ -612,7 +619,7 @@ export function resolveCombate(creature, params = {}) {
     ...Object.fromEntries(COMBATE_ESTADOS.map((e) => [
       e.id, e.tipo === "bool" ? false : ["opcao", "dominio"].includes(e.tipo) ? null : 0,
     ])),
-    ...Object.fromEntries(extras.map((e) => [e.id, false])),
+    ...Object.fromEntries(extras.map((e) => [e.id, e.tipo === "faixa" ? 0 : false])),
   };
 
   if (!ativo) {
@@ -657,7 +664,14 @@ export function resolveCombate(creature, params = {}) {
       out[e.id] = min + Math.floor((valor - min) / passo) * passo;
     }
   }
-  for (const e of extras) out[e.id] = !!c[e.id];
+  for (const e of extras) {
+    // O teto do extra vem PRONTO de quem o montou (a faixa de imbuição sai do
+    // Nível de Aptidão em Domínio), então aqui é só aparar. Nunca é função: o
+    // extra é instância da ficha, e quem o cria já enxergava a ficha inteira.
+    out[e.id] = e.tipo === "faixa"
+      ? intDe(c[e.id], e.min ?? 0, Math.max(e.min ?? 0, e.max ?? 0))
+      : !!c[e.id];
+  }
   const surto = !!c.surtoAdrenalina;
   return {
     ...out,
@@ -706,14 +720,16 @@ export function combateDslVars(combate = {}) {
       out[nome] = boolDe(valor);
     }
   }
-  // Os estados que vieram da ficha (Habilidade Única ativa, e no futuro Feitiço
-  // Auxiliar e Shikigami). Entram DEPOIS do catálogo: se um id colidisse com o
-  // de um estado de catálogo, quem manda é o catálogo, que é o vocabulário que o
-  // conteúdo escrito à mão usa.
+  // Os estados que vieram da ficha (Habilidade Única ativa, imbuição de Técnica
+  // de Estilo, e no futuro Feitiço Auxiliar e Shikigami). Entram DEPOIS do
+  // catálogo: se um id colidisse com o de um estado de catálogo, quem manda é o
+  // catálogo, que é o vocabulário que o conteúdo escrito à mão usa.
   for (const e of (Array.isArray(combate.estadosExtras) ? combate.estadosExtras : [])) {
     const nome = varDoEstado(e.id);
     if (nome in out) continue;
-    out[nome] = boolDe(combate[e.id]);
+    out[nome] = e.tipo === "faixa"
+      ? Math.max(0, Math.trunc(Number(combate[e.id]) || 0))
+      : boolDe(combate[e.id]);
   }
   // Média do Dado de Empolgação, o que as Manobras somam.
   out.dado_empolgacao = Math.max(0, Math.trunc(Number(combate.dadoEmpolgacao) || 0));

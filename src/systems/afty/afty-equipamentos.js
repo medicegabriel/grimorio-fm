@@ -538,6 +538,45 @@ export const ARMA_CATEGORIAS = [
 ];
 
 /* ============================================================ */
+/* O TEXTO ESPECIAL DE UMA ARMA, QUANDO ELE É NÚMERO             */
+/* ============================================================ */
+/* A chave é o `especial` da arma, e o valor é o que ela concede ao Motor
+   enquanto estiver EQUIPADA. Nasceu em 2026-08-08 com as Manoplas, que o autor
+   pegou sem efeito nenhum.
+
+   ⚠ Quase todo texto especial NÃO cabe aqui, e é por isso que o mapa é curto: a
+   Metralhadora dá um ataque de ação bônus, a Rede aplica Enredado, o Leque
+   troca o tipo de dano. Nada disso é canal, é procedimento de mesa. Entra aqui
+   só o que é um número somando num canal que já existe.
+
+   As Manoplas e as Faixas são o Ataque Básico (grupo pugilato), então o alvo
+   delas é sempre `basico`. */
+export const ARMA_ESPECIAL_EFEITOS = {
+  // "Seu dano desarmado aumenta em 1 nível para cada 2 no seu modificador de
+  // força." Piso em 0: Força ruim não TIRA nível, ela só não dá.
+  manoplas: [
+    { canal: "nivelDano", alvo: "basico", expr: "max(0, piso(mod_forca / 2))" },
+  ],
+};
+
+/**
+ * Os efeitos do texto especial das armas EQUIPADAS.
+ *
+ * Recebe as entradas já resolvidas (o que `resolveEquipamentos` devolve em
+ * `entradas`, filtrado por `equipado`), e não a ficha crua: quem decide o que
+ * está na mão é o equipamento, não o Motor.
+ */
+export function efeitosEspeciaisDeArma(equipadas = []) {
+  const out = [];
+  for (const e of Array.isArray(equipadas) ? equipadas : []) {
+    const efs = ARMA_ESPECIAL_EFEITOS[e?.def?.especial];
+    if (!efs) continue;
+    for (const ef of efs) out.push({ ...ef, origem: e.def.id, nome: e.def.nome });
+  }
+  return out;
+}
+
+/* ============================================================ */
 /* ARMAS CRIADAS PELO JOGADOR                                   */
 /* ============================================================ */
 /* Uma arma custom é uma entrada NO MESMO SHAPE das do catálogo, e é isso que

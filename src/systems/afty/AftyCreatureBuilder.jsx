@@ -1,15 +1,16 @@
-import React, { useState, useMemo, useRef, useCallback, useLayoutEffect } from "react";
+import React, { useState, useMemo, useRef, useCallback, useEffect, useLayoutEffect } from "react";
 import {
   Save, ChevronLeft, ChevronDown, Wand2, Sparkles, FlaskConical,
   Dumbbell, GraduationCap, BookOpen, Check, ArrowRight, Lock, Plus, X, Zap,
   Copy, ArrowUp, ArrowDown, Heart, Shield, Footprints, AlertTriangle, Star, Swords,
-  Trash2, Image as ImageIcon, Eye, Crosshair, RotateCcw, Pencil, Table,
+  Trash2, Image as ImageIcon, Eye, Crosshair, RotateCcw, Pencil, Table, Braces,
 } from "lucide-react";
 
 import { FieldLabel, TextInput, TextArea, Select, NumberInput, StatField, ExpandableText } from "../../components/builder-controls";
 import {
   mesclaFichaAfty, AFTY_ATTRS, AFTY_TIPOS, AFTY_PATAMARES, AFTY_QNT_PE,
-  AFTY_TECNICA_ATTRS, AFTY_TAMANHOS, AFTY_RESISTENCIAS,
+  AFTY_TECNICA_ATTRS, AFTY_TAMANHOS, AFTY_RESISTENCIAS, getTamanho,
+  createBlankFuncionamento, funcionamentosDaFicha,
 } from "./afty-schema";
 // Primitivos compartilhados com a Ficha Final. Eram locais deste arquivo até
 // 2026-08-05, e saíram porque duas cópias divergiriam na primeira errata.
@@ -104,10 +105,12 @@ import {
   resultaEspecialAux, ofereceUmGolpe, aplicaUmGolpe, podeEventoUnico,
   formatAuxValor, aplicaReducoesCustoFeitico, tituloCustoFeitico,
 } from "./afty-feiticos";
-import { createBlankEstilo, ESTILO_TIPOS, EFEITOS_MODIFICACAO } from "./afty-estilo-sombras";
+import { createBlankEstiloEspecial, estilosDaFicha, TECNICAS_TABELA, TEXTO_EFEITO_ESPECIAL } from "./afty-estilo-sombras";
+import { vocabularioDsl, DSL_FUNCOES } from "./afty-dsl-vocabulario";
 import {
-  MARCADORES, TITULOS, parseTextoRico, alternarMarcador, alternarTitulo, inserirTabela,
+  MARCADORES, TITULOS, alternarMarcador, alternarTitulo, inserirTabela,
 } from "./afty-texto-rico";
+import TextoRico from "./ui/TextoRico";
 
 /**
  * ============================================================
@@ -381,12 +384,53 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
       ...d,
       feiticos: (Array.isArray(d.feiticos) ? d.feiticos : []).map((f) => (f.id === id ? { ...f, ...partial } : f)),
     }));
-  // Técnicas de Estilo (Novo Estilo da Sombra, só o Sem Técnica). Mesmo
-  // add/remove/patch dos Feitiços: o motor em afty-estilo-sombras.js resolve
-  // orçamento de efeitos, interruptores da bancada e canais.
-  const estilosArr = (d) => (Array.isArray(d.estilosSombra) ? d.estilosSombra : []);
-  const addEstilo = (tipo) =>
-    setDraft((d) => ({ ...d, estilosSombra: [...estilosArr(d), createBlankEstilo(tipo)] }));
+  // Técnicas de Estilo (Novo Estilo da Sombra, só o Sem Técnica). A ficha guarda
+  // só o que a criatura CONHECE: a imbuição no Domínio Simples é estado de
+  // combate, e mora na bancada de Simulação (autor, 2026-08-10).
+  // ⚠ TODA escrita parte da lista NORMALIZADA, e não do array cru da ficha
+  // (conserto de 2026-08-10). A `estilosDaFicha` converte o shape antigo da
+  // Modificação-recipiente, mas só na LEITURA: a ficha continuava guardando a
+  // linha velha, e o botão escrevia no shape novo, então os dois nunca se
+  // encontravam. Numa ficha antiga, desmarcar "Aumento de Defesa" tirava um
+  // `{id:"defesa"}` que a Modificação velha repunha na conversão, e o efeito
+  // ficava preso na tela. Normalizar aqui migra a ficha na primeira edição, e
+  // a operação é idempotente para quem já está no shape novo.
+  const estilosArr = (d) => estilosDaFicha(d);
+  // As de tabela têm id fixo (o id do efeito no catálogo), e por isso conhecer a
+  // mesma duas vezes é impossível: o botão só alterna.
+  const toggleEstiloTabela = (id) =>
+    setDraft((d) => {
+      const atuais = estilosArr(d);
+      return atuais.some((e) => e.id === id)
+        ? { ...d, estilosSombra: atuais.filter((e) => e.id !== id) }
+        : { ...d, estilosSombra: [...atuais, { id, tipo: "tabela" }] };
+    });
+  // Funcionamentos Básicos ADICIONAIS (autor, 2026-08-12). Moram em `core`, ao
+  // lado do principal, e por isso passam pelo `patchCore` como todo o resto do
+  // Perfil Amaldiçoado.
+  const funcsArr = (d) =>
+    (Array.isArray(d.core?.funcionamentosAdicionais) ? d.core.funcionamentosAdicionais : []);
+  const addFuncionamento = () =>
+    setDraft((d) => ({
+      ...d,
+      core: { ...d.core, funcionamentosAdicionais: [...funcsArr(d), createBlankFuncionamento()] },
+    }));
+  const removeFuncionamento = (id) =>
+    setDraft((d) => ({
+      ...d,
+      core: { ...d.core, funcionamentosAdicionais: funcsArr(d).filter((f) => f.id !== id) },
+    }));
+  const patchFuncionamento = (id, partial) =>
+    setDraft((d) => ({
+      ...d,
+      core: {
+        ...d.core,
+        funcionamentosAdicionais: funcsArr(d).map((f) => (f.id === id ? { ...f, ...partial } : f)),
+      },
+    }));
+
+  const addEstiloEspecial = () =>
+    setDraft((d) => ({ ...d, estilosSombra: [...estilosArr(d), createBlankEstiloEspecial()] }));
   const removeEstilo = (id) =>
     setDraft((d) => ({ ...d, estilosSombra: estilosArr(d).filter((e) => e.id !== id) }));
   const patchEstilo = (id, partial) =>
@@ -837,7 +881,7 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
               removerPericia={removerPericia}
             />
           )}
-          {tabAtiva === "habilidades" && <TabHabilidades draft={draft} derived={derived} patchCore={patchCore} toggleArmaDedicada={toggleArmaDedicada} addFeitico={addFeitico} removeFeitico={removeFeitico} patchFeitico={patchFeitico} duplicarFeitico={duplicarFeitico} setReducoesCustoFeitico={setReducoesCustoFeitico} addEstilo={addEstilo} removeEstilo={removeEstilo} patchEstilo={patchEstilo} setGeralVezes={setGeralVezes} addDominio={addDominio} removeDominio={removeDominio} patchDominio={patchDominio} setDominioAtivo={setDominioAtivo} />}
+          {tabAtiva === "habilidades" && <TabHabilidades draft={draft} derived={derived} patchCore={patchCore} toggleArmaDedicada={toggleArmaDedicada} addFeitico={addFeitico} removeFeitico={removeFeitico} patchFeitico={patchFeitico} duplicarFeitico={duplicarFeitico} setReducoesCustoFeitico={setReducoesCustoFeitico} toggleEstiloTabela={toggleEstiloTabela} addEstiloEspecial={addEstiloEspecial} removeEstilo={removeEstilo} patchEstilo={patchEstilo} addFuncionamento={addFuncionamento} removeFuncionamento={removeFuncionamento} patchFuncionamento={patchFuncionamento} setGeralVezes={setGeralVezes} addDominio={addDominio} removeDominio={removeDominio} patchDominio={patchDominio} setDominioAtivo={setDominioAtivo} />}
           {tabAtiva === "especializacoes" && <TabEspecializacoes draft={draft} derived={derived} setEspecializacoes={setEspecializacoes} toggleHabilidade={toggleHabilidade} toggleEscolhaHabilidade={toggleEscolhaHabilidade} toggleTalento={toggleTalento} toggleEscolhaTalento={toggleEscolhaTalento} setMelhoriaVezes={setMelhoriaVezes} toggleLendaria={toggleLendaria} toggleEscolhaAltoNivel={toggleEscolhaAltoNivel} />}
           {tabAtiva === "aptidoes" && <TabAptidoes draft={draft} derived={derived} setAptidaoNivel={setAptidaoNivel} toggleAptidao={toggleAptidao} setAptidaoOpcao={setAptidaoOpcao} />}
           {tabAtiva === "invocacoes" && <TabInvocacoes draft={draft} derived={derived} addInvocacao={addInvocacao} removeInvocacao={removeInvocacao} duplicarInvocacao={duplicarInvocacao} moverInvocacao={moverInvocacao} patchInvocacao={patchInvocacao} patchInvocacaoAttr={patchInvocacaoAttr} efeitosApi={efeitosApi} addHorda={addHorda} removeHorda={removeHorda} patchHorda={patchHorda} />}
@@ -1840,7 +1884,7 @@ function DominioCard({ derived, addDominio, removeDominio, patchDominio, setDomi
   );
 }
 
-function TabHabilidades({ draft, derived, patchCore, toggleArmaDedicada, addFeitico, removeFeitico, patchFeitico, duplicarFeitico, setReducoesCustoFeitico, addEstilo, removeEstilo, patchEstilo, setGeralVezes, addDominio, removeDominio, patchDominio, setDominioAtivo }) {
+function TabHabilidades({ draft, derived, patchCore, toggleArmaDedicada, addFeitico, removeFeitico, patchFeitico, duplicarFeitico, setReducoesCustoFeitico, toggleEstiloTabela, addEstiloEspecial, removeEstilo, patchEstilo, addFuncionamento, removeFuncionamento, patchFuncionamento, setGeralVezes, addDominio, removeDominio, patchDominio, setDominioAtivo }) {
   const dominio = (
     <DominioCard
       derived={derived}
@@ -1863,7 +1907,8 @@ function TabHabilidades({ draft, derived, patchCore, toggleArmaDedicada, addFeit
       <>
         <EstiloSombrasCard
           derived={derived}
-          addEstilo={addEstilo}
+          toggleEstiloTabela={toggleEstiloTabela}
+          addEstiloEspecial={addEstiloEspecial}
           removeEstilo={removeEstilo}
           patchEstilo={patchEstilo}
         />
@@ -1887,7 +1932,14 @@ function TabHabilidades({ draft, derived, patchCore, toggleArmaDedicada, addFeit
   }
   return (
     <>
-      <PerfilAmaldicoadoCard draft={draft} derived={derived} patchCore={patchCore} />
+      <PerfilAmaldicoadoCard
+        draft={draft}
+        derived={derived}
+        patchCore={patchCore}
+        addFuncionamento={addFuncionamento}
+        removeFuncionamento={removeFuncionamento}
+        patchFuncionamento={patchFuncionamento}
+      />
       <FeiticosCard draft={draft} derived={derived} addFeitico={addFeitico} removeFeitico={removeFeitico} patchFeitico={patchFeitico} duplicarFeitico={duplicarFeitico} setReducoesCustoFeitico={setReducoesCustoFeitico} />
       {dano}
       {cura}
@@ -2040,48 +2092,42 @@ function HabilidadeGeralCard({ item, vezes, max, acesso, onSetVezes }) {
 /* Ocupa o lugar dos Feitiços na aba, e gasta o MESMO contador que eles: por
    isso o cabeçalho traz o `ContadorHabilidades`, idêntico ao dos outros cards.
 
-   Duas formas de Técnica, e a UI muda inteira entre elas:
-     modificacao — tabela FECHADA de efeitos (afty-estilo-sombras.js), orçada
-                   pelo Nível de Aptidão em Domínio, mais o Motor livre do
-                   Efeito Especial.
-     especial    — só nome, texto e o Motor livre, com Passiva/Ativa por linha.
+   ⚠ ESTE CARD SÓ GUARDA O QUE A CRIATURA CONHECE (2026-08-10). Cada Técnica
+   custa 1 do contador, e a IMBUIÇÃO no Domínio Simples não mora aqui: ela é
+   combinação de mesa e vive na bancada de Simulação de Combate (no criador) e na
+   sessão da Ficha Final. Ver o cabeçalho de afty-estilo-sombras.js.
+
+   Duas formas de Técnica:
+     tabela   — uma das 4 do livro. Alternador e o texto verbatim, nada a editar.
+     especial — nome, texto livre e o Motor completo.
 
    ⚠ O card SOME para quem não é Sem Técnica. Abaixo do ND 4 ele aparece
    trancado, e não escondido: o jogador precisa saber que aquilo existe e
    quando chega. */
 
-/* Uma linha da tabela de efeitos de Modificação. Mesma anatomia do
-   HabilidadeGeralCard: alternador, nome, medidor de repetição e o texto
-   verbatim no corpo recolhível. */
-function EfeitoModificacaoLinha({ def, vezes, maxVezes, semOrcamento, onSetVezes }) {
+/* Uma Técnica de Estilo de tabela. Mesma anatomia do HabilidadeGeralCard:
+   alternador, nome e o texto verbatim no corpo recolhível. */
+function TecnicaTabelaLinha({ def, escolhida, onToggle }) {
   const [open, setOpen] = useState(false);
-  const escolhido = vezes > 0;
-  // Já escolhido nunca trava, mesma regra do resto dos cards: senão baixar o
-  // Nível de Aptidão em Domínio prenderia o efeito na ficha sem como remover.
-  const bloqueado = semOrcamento && !escolhido;
-  const repetivel = maxVezes > 1;
 
   return (
     <div className={`rounded-lg border transition-colors ${
-      escolhido ? "border-purple-700 bg-purple-950/30" : "border-slate-800 bg-slate-950/40"
+      escolhida ? "border-purple-700 bg-purple-950/30" : "border-slate-800 bg-slate-950/40"
     }`}>
       <div className="flex items-center gap-2.5 px-2.5 h-8">
         <button
           type="button"
-          onClick={() => onSetVezes(escolhido ? 0 : 1)}
-          disabled={bloqueado}
-          aria-pressed={escolhido}
-          aria-label={`${escolhido ? "Remover" : "Escolher"} ${def.nome}`}
-          title={bloqueado ? "Sem efeitos disponíveis no Nível de Aptidão em Domínio" : escolhido ? "Remover" : "Escolher"}
+          onClick={onToggle}
+          aria-pressed={escolhida}
+          aria-label={`${escolhida ? "Remover" : "Escolher"} ${def.nome}`}
+          title={escolhida ? "Remover" : "Escolher"}
           className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 border transition-colors ${
-            escolhido
+            escolhida
               ? "bg-purple-700 border-purple-600 text-white"
-              : bloqueado
-                ? "border-slate-800 text-slate-700 cursor-not-allowed"
-                : "border-slate-600 text-slate-500 hover:border-purple-600 hover:text-purple-300"
+              : "border-slate-600 text-slate-500 hover:border-purple-600 hover:text-purple-300"
           }`}
         >
-          {escolhido ? <Check className="w-3 h-3" /> : bloqueado ? <Lock className="w-2.5 h-2.5" /> : <Plus className="w-3 h-3" />}
+          {escolhida ? <Check className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
         </button>
 
         <button
@@ -2090,20 +2136,8 @@ function EfeitoModificacaoLinha({ def, vezes, maxVezes, semOrcamento, onSetVezes
           aria-expanded={open}
           className="flex-1 min-w-0 flex items-center gap-x-2 text-left overflow-hidden"
         >
-          <span className={`text-[12px] font-semibold truncate ${bloqueado ? "text-slate-500" : "text-slate-100"}`}>
-            {def.nome}
-          </span>
-          {/* O que a repetição faz, quando não é somar o próprio valor. */}
-          {escolhido && def.notaVezes && vezes > 1 && (
-            <span className="text-[10px] text-slate-500 truncate">{def.notaVezes}</span>
-          )}
+          <span className="text-[12px] font-semibold truncate text-slate-100">{def.nome}</span>
         </button>
-
-        {repetivel && escolhido && (
-          maxVezes <= 6
-            ? <VezesGauge vezes={vezes} max={maxVezes} nome={def.nome} onSet={onSetVezes} />
-            : <ContadorCompacto value={vezes} min={1} max={maxVezes} onChange={onSetVezes} />
-        )}
 
         <ChevronDown
           className={`w-3.5 h-3.5 text-slate-600 flex-shrink-0 transition-transform ${open ? "" : "-rotate-90"}`}
@@ -2120,30 +2154,18 @@ function EfeitoModificacaoLinha({ def, vezes, maxVezes, semOrcamento, onSetVezes
   );
 }
 
-function EstiloCard({ linha, efeitosMotor, fontesDano, pericias, onPatch, onRemove }) {
-  const modificacao = linha.tipo === "modificacao";
-  const vezesDe = (id) => linha.efeitosModificacao.find((e) => e.id === id)?.vezes ?? 0;
-  const setVezes = (id, n) => {
-    const atuais = linha.efeitosModificacao.filter((e) => e.id !== id).map((e) => ({ id: e.id, vezes: e.vezes }));
-    onPatch({ efeitosModificacao: n > 0 ? [...atuais, { id, vezes: n }] : atuais });
-  };
-  const sobra = linha.orcamentoEfeitos - linha.gastoEfeitos;
-  // O Efeito Especial é o único da tabela que abre o Motor livre. Sem ele
-  // marcado, a Modificação não tem onde escrever expressão.
-  const temEspecial = vezesDe("especial") > 0;
-
+/* Uma Técnica de Estilo Especial: nome, Motor livre e texto. Sem `comModo` no
+   editor, porque nada do Estilo fica no ar sem o Domínio Simples imbuído. */
+function EstiloEspecialCard({ linha, efeitosMotor, fontesDano, pericias, dslGrupos, onPatch, onRemove }) {
   return (
     <div className="rounded-lg border border-purple-900/50 bg-purple-950/10 p-3 space-y-3">
       <div className="flex flex-wrap items-center gap-2">
         <div className="flex-1 min-w-[160px]">
           <TextInput
-            value={linha.nome === "Modificação Sem Nome" || linha.nome === "Técnica Sem Nome" ? "" : linha.nome}
+            value={linha.nome === "Técnica Sem Nome" ? "" : linha.nome}
             onChange={(v) => onPatch({ nome: v })}
             placeholder="Nome da Técnica de Estilo"
           />
-        </div>
-        <div className="min-w-[210px]">
-          <Select value={linha.tipo} onChange={(v) => onPatch({ tipo: v })} options={ESTILO_TIPOS} />
         </div>
         <button
           type="button"
@@ -2155,53 +2177,13 @@ function EstiloCard({ linha, efeitosMotor, fontesDano, pericias, onPatch, onRemo
         </button>
       </div>
 
-      {modificacao && (
-        <div className="bg-slate-900/60 border border-slate-800 rounded p-3 space-y-2">
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-              Efeitos da Modificação
-            </span>
-            <span
-              className={`text-[11px] font-mono tabular-nums ${linha.excedeuEfeitos ? "text-rose-400" : "text-slate-300"}`}
-              title="Efeitos escolhidos / Nível de Aptidão em Domínio"
-            >
-              {linha.gastoEfeitos} / {linha.orcamentoEfeitos}
-            </span>
-          </div>
-          <div className="space-y-1">
-            {EFEITOS_MODIFICACAO.map((def) => {
-              const vezes = vezesDe(def.id);
-              // Sem teto declarado, o próprio orçamento é o teto: não há como
-              // colocar mais efeitos do que o Nível de Aptidão em Domínio paga.
-              const teto = Math.min(def.max ?? 99, Math.max(1, vezes + Math.max(0, sobra)));
-              return (
-                <EfeitoModificacaoLinha
-                  key={def.id}
-                  def={def}
-                  vezes={vezes}
-                  maxVezes={teto}
-                  semOrcamento={sobra <= 0}
-                  onSetVezes={(n) => setVezes(def.id, n)}
-                />
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Motor livre. Na Modificação ele é o Efeito Especial e só abre com ele
-          marcado; na Técnica Especial ele É a técnica. O `modo` por linha só
-          faz sentido na Especial: a Modificação inteira já depende do Domínio
-          Simples estar no ar. */}
-      {(!modificacao || temEspecial) && (
-        <TecnicaMotorEditor
-          efeitos={efeitosMotor}
-          onChange={(v) => onPatch({ efeitos: v })}
-          pericias={pericias}
-          fontesDano={fontesDano}
-          comModo={!modificacao}
-        />
-      )}
+      <TecnicaMotorEditor
+        efeitos={efeitosMotor}
+        onChange={(v) => onPatch({ efeitos: v })}
+        pericias={pericias}
+        fontesDano={fontesDano}
+        dslGrupos={dslGrupos}
+      />
 
       <div>
         <FieldLabel>Descrição</FieldLabel>
@@ -2209,18 +2191,19 @@ function EstiloCard({ linha, efeitosMotor, fontesDano, pericias, onPatch, onRemo
           value={linha.descricao}
           onChange={(v) => onPatch({ descricao: v })}
           rows={2}
-          placeholder={modificacao
-            ? "Como o Domínio Simples muda de forma e o que ele passa a fazer."
-            : "O que a Técnica de Estilo faz e qual Aptidão Amaldiçoada ela incorpora."}
+          placeholder="O que a Técnica de Estilo faz e qual Aptidão Amaldiçoada ela incorpora."
         />
       </div>
     </div>
   );
 }
 
-function EstiloSombrasCard({ derived, addEstilo, removeEstilo, patchEstilo }) {
+function EstiloSombrasCard({ derived, toggleEstiloTabela, addEstiloEspecial, removeEstilo, patchEstilo }) {
   const info = derived.estilo;
   const fontesDano = (derived.dano?.entradas ?? []).map((e) => ({ value: e.id, label: e.nome }));
+  const conhecidas = new Set(info.conhecidas.map((t) => t.id));
+  const especiais = info.conhecidas.filter((t) => t.tipo === "especial");
+  const dslGrupos = useDslGrupos(derived);
 
   return (
     <Card title="Estilo das Sombras" headerRight={<ContadorHabilidades derived={derived} />}>
@@ -2238,37 +2221,43 @@ function EstiloSombrasCard({ derived, addEstilo, removeEstilo, patchEstilo }) {
             </p>
           ))}
 
-          {info.linhas.length === 0 && (
-            <div className="text-center py-6 border border-dashed border-slate-700 rounded-lg text-sm text-slate-400">
-              Nenhuma Técnica de Estilo criada ainda.
-            </div>
-          )}
-
-          <div className="space-y-3">
-            {info.linhas.map((l) => (
-              <EstiloCard
-                key={l.id}
-                linha={l}
-                efeitosMotor={derived.estiloEfeitos?.[l.id] ?? []}
-                fontesDano={fontesDano}
-                pericias={derived.testes?.pericias}
-                onPatch={(partial) => patchEstilo(l.id, partial)}
-                onRemove={() => removeEstilo(l.id)}
+          <div className="space-y-1">
+            {TECNICAS_TABELA.map((def) => (
+              <TecnicaTabelaLinha
+                key={def.id}
+                def={def}
+                escolhida={conhecidas.has(def.id)}
+                onToggle={() => toggleEstiloTabela(def.id)}
               />
             ))}
           </div>
 
+          {especiais.length > 0 && (
+            <div className="space-y-3 mt-3">
+              {especiais.map((t) => (
+                <EstiloEspecialCard
+                  key={t.id}
+                  linha={t}
+                  efeitosMotor={derived.estiloEfeitos?.[t.id] ?? []}
+                  fontesDano={fontesDano}
+                  pericias={derived.testes?.pericias}
+                  dslGrupos={dslGrupos}
+                  onPatch={(partial) => patchEstilo(t.id, partial)}
+                  onRemove={() => removeEstilo(t.id)}
+                />
+              ))}
+            </div>
+          )}
+
           <div className="flex flex-wrap gap-2 mt-3">
-            {ESTILO_TIPOS.map((t) => (
-              <button
-                key={t.value}
-                type="button"
-                onClick={() => addEstilo(t.value)}
-                className="flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1.5 rounded border border-purple-700 bg-purple-800/40 text-purple-200 hover:bg-purple-700/50 transition-colors"
-              >
-                <Plus className="w-3 h-3" /> {t.label}
-              </button>
-            ))}
+            <button
+              type="button"
+              onClick={addEstiloEspecial}
+              title={TEXTO_EFEITO_ESPECIAL}
+              className="flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1.5 rounded border border-purple-700 bg-purple-800/40 text-purple-200 hover:bg-purple-700/50 transition-colors"
+            >
+              <Plus className="w-3 h-3" /> Técnica de Estilo Especial
+            </button>
           </div>
         </>
       )}
@@ -2444,6 +2433,236 @@ function CanalPicker({ value, onChange }) {
   );
 }
 
+/* Seletor de VARIÁVEL do DSL, com o valor atual de cada uma ao lado.
+
+   Autor, 2026-08-10: *"O DSL mostrando os valores e derivados não existe em
+   nenhum lugar no Grimório Afty. Com eu precisando adivinhar o nome das
+   variáveis."* Ele estava certo: o `docs/automacao-dsl.md` espelha só o fm-dsl
+   da 2.5.2, e o Afty acrescenta a maior parte do vocabulário por fora dele.
+
+   Mesmo desenho do CanalPicker (painel largo em colunas, busca sem acento,
+   setas e Enter), com três diferenças que o vocabulário obrigou:
+
+   1. cada linha traz o VALOR à direita, porque saber que `esc_lutador` existe
+      não ajuda sem saber que ele vale 8 nesta criatura;
+   2. as famílias grandes (`tem_*` são ~497) listam só o que NÃO é zero, e a
+      busca alcança o resto. O cabeçalho mostra `visíveis de total`, então o que
+      está escondido não fica invisível;
+   3. clicar INSERE no ponto do cursor, em vez de trocar um valor. É o que mata
+      o adivinhar: o nome nunca precisa ser digitado. */
+function VariavelPicker({ grupos, onInserir, ancora = "esquerda" }) {
+  const [aberto, setAberto] = useState(false);
+  const [busca, setBusca] = useState("");
+  const [cursor, setCursor] = useState(0);
+
+  const termo = semAcento(busca.trim());
+  const visiveis = useMemo(() => {
+    const out = [];
+    for (const g of grupos) {
+      const casam = termo
+        ? g.itens.filter((v) => semAcento(v.nome).includes(termo)
+          || semAcento(g.label).includes(termo)
+          || semAcento(v.nota ?? "").includes(termo))
+        // Sem busca, a família grande mostra só o que é verdade. As outras
+        // mostram tudo: elas têm poucas linhas e o zero delas é informação
+        // (saber que `bar` é 0 vale tanto quanto saber que `dom` é 3).
+        : g.sobPedido ? g.itens.filter((v) => v.valor) : g.itens;
+      if (casam.length) out.push({ ...g, itens: casam, total: g.itens.length });
+    }
+    return out;
+  }, [grupos, termo]);
+
+  const chapada = useMemo(() => visiveis.flatMap((g) => g.itens), [visiveis]);
+
+  const fechar = () => { setAberto(false); setBusca(""); setCursor(0); };
+  const escolher = (nome) => { onInserir(nome); fechar(); };
+
+  const teclado = (e) => {
+    if (e.key === "Escape") { e.preventDefault(); fechar(); return; }
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault();
+      const passo = e.key === "ArrowDown" ? 1 : -1;
+      setCursor((c) => (chapada.length ? (c + passo + chapada.length) % chapada.length : 0));
+      return;
+    }
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (chapada[cursor]) escolher(chapada[cursor].nome);
+    }
+  };
+
+  return (
+    <div className="relative flex-shrink-0">
+      <button
+        type="button"
+        onClick={() => (aberto ? fechar() : setAberto(true))}
+        aria-label="Inserir variável"
+        aria-expanded={aberto}
+        title="Inserir variável"
+        className="h-9 w-9 flex items-center justify-center rounded border border-slate-700 bg-slate-950 text-slate-400 hover:text-emerald-300 hover:border-emerald-700 transition-colors"
+      >
+        <Braces className="w-3.5 h-3.5" aria-hidden="true" />
+      </button>
+
+      {aberto && (
+        <>
+          <button
+            type="button"
+            className="fixed inset-0 z-20 cursor-default"
+            onClick={fechar}
+            aria-hidden="true"
+            tabIndex={-1}
+          />
+          <div className={`absolute z-30 mt-1 w-[620px] max-w-[92vw] rounded-lg border border-slate-700 bg-slate-950 shadow-xl shadow-black/50 overflow-hidden ${
+            ancora === "direita" ? "right-0" : "left-0"
+          }`}>
+            <div className="p-1.5 border-b border-slate-800">
+              <input
+                type="text"
+                value={busca}
+                onChange={(e) => { setBusca(e.target.value); setCursor(0); }}
+                onKeyDown={teclado}
+                placeholder="Buscar..."
+                spellCheck={false}
+                autoFocus
+                className="w-full h-7 bg-slate-900 border border-slate-700 rounded px-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-purple-500"
+              />
+            </div>
+            <div className="max-h-[60vh] overflow-y-auto p-2 columns-1 sm:columns-2 gap-3">
+              {chapada.length === 0 && (
+                <p className="text-[11px] text-slate-500">Nenhuma variável com esse termo.</p>
+              )}
+              {visiveis.map((g) => (
+                <div key={g.id} className="break-inside-avoid mb-2.5">
+                  <div className="flex items-baseline gap-2 px-1 pb-0.5 border-b border-slate-800/80 mb-0.5">
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500 flex-1 truncate">
+                      {g.label}
+                    </span>
+                    {g.itens.length < g.total && (
+                      <span className="text-[9px] font-mono tabular-nums text-slate-600">
+                        {g.itens.length} de {g.total}
+                      </span>
+                    )}
+                  </div>
+                  {g.itens.map((v) => {
+                    const idx = chapada.indexOf(v);
+                    return (
+                      <button
+                        key={v.nome}
+                        type="button"
+                        onClick={() => escolher(v.nome)}
+                        onMouseEnter={() => setCursor(idx)}
+                        title={v.nota || undefined}
+                        className={`flex w-full items-baseline gap-2 rounded px-1 py-[3px] text-left transition-colors ${
+                          idx === cursor ? "bg-slate-800" : ""
+                        }`}
+                      >
+                        <span className="flex-1 truncate font-mono text-[11px] leading-tight text-emerald-200">
+                          {v.nome}
+                        </span>
+                        {/* Valor `null` é a variável de linha de dano, que só
+                            existe dentro de um Feitiço fechado. Um traço diz
+                            "existe, mas não aqui", e o zero mentiria. */}
+                        <span className="font-mono text-[11px] tabular-nums text-slate-400 flex-shrink-0">
+                          {v.valor == null ? "—" : v.valor}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              ))}
+              {/* As funções entram no mesmo painel: elas são metade do que se
+                  escreve numa expressão, e um segundo lugar para procurá-las
+                  seria um lugar a mais para esquecer. */}
+              <div className="break-inside-avoid mb-2.5">
+                <div className="text-[9px] font-bold uppercase tracking-wider text-slate-500 px-1 pb-0.5 border-b border-slate-800/80 mb-0.5">
+                  Funções
+                </div>
+                {DSL_FUNCOES.map((f) => (
+                  <button
+                    key={f.nome}
+                    type="button"
+                    onClick={() => escolher(f.insere)}
+                    title={f.nota}
+                    className="flex w-full items-baseline rounded px-1 py-[3px] text-left"
+                  >
+                    <span className="flex-1 truncate font-mono text-[11px] leading-tight text-sky-200">
+                      {f.nome}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+/* Campo de expressão do Motor: o input mais o seletor que INSERE no cursor.
+
+   ⚠ A inserção respeita a seleção, e não empurra tudo para o fim: escrever
+   `2 + ` e pedir `bt` tem de render `2 + bt`, com o cursor depois do `bt`. E uma
+   função entra como `piso()` com o cursor DENTRO dos parênteses, que é onde o
+   próximo caractere vai. */
+function CampoExpressao({ value, onChange, invalida, placeholder, rotulo, grupos, ancora }) {
+  const ref = useRef(null);
+
+  const inserir = (texto) => {
+    const campo = ref.current;
+    const atual = value ?? "";
+    const ini = campo?.selectionStart ?? atual.length;
+    const fim = campo?.selectionEnd ?? atual.length;
+    const novo = atual.slice(0, ini) + texto + atual.slice(fim);
+    onChange(novo);
+    // O cursor vai para DENTRO dos parênteses de uma função, e para depois do
+    // nome de uma variável.
+    const salto = texto.endsWith("()") ? texto.length - 1 : texto.length;
+    requestAnimationFrame(() => {
+      if (!campo) return;
+      campo.focus();
+      campo.setSelectionRange(ini + salto, ini + salto);
+    });
+  };
+
+  return (
+    <div className="flex items-center gap-1.5 flex-1 min-w-[180px]">
+      <input
+        ref={ref}
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        spellCheck={false}
+        className={`w-full h-9 bg-slate-950 border rounded px-2 py-1.5 text-sm font-mono leading-tight text-emerald-200 focus:outline-none ${
+          invalida ? "border-red-600 focus:border-red-500" : "border-slate-700 focus:border-purple-500"
+        }`}
+        aria-label={rotulo}
+      />
+      <VariavelPicker grupos={grupos} onInserir={inserir} ancora={ancora} />
+    </div>
+  );
+}
+
+/* Os conectores que fazem a linha do Motor se ler como frase. Não são
+   explicação: são o que identifica cada campo sem virar rótulo empilhado. */
+const Conector = ({ children }) => (
+  <span className="text-[11px] text-slate-500 flex-shrink-0 select-none">{children}</span>
+);
+
+/* O vocabulário agrupado, memoizado pela IDENTIDADE do contexto.
+
+   ⚠ Ele vive nos donos do `derived`, e não dentro do TecnicaMotorEditor: um
+   Feitiço Passivo por card e uma Técnica de Estilo Especial por card fariam a
+   varredura das ~663 chaves rodar uma vez por card, sempre com a mesma resposta.
+   O `contextoDsl` só troca de identidade quando o `deriveAfty` roda de novo. */
+function useDslGrupos(derived) {
+  const ctx = derived?.contextoDsl;
+  const extras = derived?.combate?.estadosExtras;
+  return useMemo(() => vocabularioDsl(ctx, extras), [ctx, extras]);
+}
+
 const ALVO_OPCOES_BASE = {
   atributo: AFTY_ATTRS.map((a) => ({ value: a.key, label: a.label })),
   tr: AFTY_RESISTENCIAS.map((r) => ({ value: r.value, label: r.label })),
@@ -2461,8 +2680,20 @@ function alvoOpcoes(tipo, pericias = AFTY_PERICIAS, fontesDano = []) {
 /* `comModo` liga a coluna Passiva / Ativa, que só as fontes do POOL EXCLUSIVO
    com decisão por linha usam (Habilidade Única, Técnica de Estilo Especial).
    Passiva vale sempre; ativa só com o interruptor ligado na bancada de
-   Simulação de Combate. Quem não passa a prop nunca grava o campo. */
-function TecnicaMotorEditor({ efeitos, onChange, pericias, fontesDano = [], comModo = false }) {
+   Simulação de Combate. Quem não passa a prop nunca grava o campo.
+
+   ⚠ A LINHA VIROU FRASE em 2026-08-10. Autor: *"A Aparência ficou muito pouco
+   intuitiva."* Estava: duas fileiras de controles sem rótulo nenhum, em que o
+   campo de VALOR e o de CONDIÇÃO eram caixas idênticas lado a lado, e nada dizia
+   qual era qual sem clicar. Agora ela se lê da esquerda para a direita:
+
+     [Defesa] em [todos] vale [2 + piso(bt/2)] = +4
+     enquanto [surto_adrenalina] e dura [Permanente]
+
+   Os conectores não são texto explicativo: eles são o que IDENTIFICA cada campo,
+   e um rótulo empilhado em cima de cada controle dobraria a altura da linha, que
+   é exatamente o erro que a nota de canal cometeu ("Você PIOROU"). */
+function TecnicaMotorEditor({ efeitos, onChange, pericias, fontesDano = [], comModo = false, dslGrupos = [] }) {
   const lista = Array.isArray(efeitos) ? efeitos : [];
   // Devolve só os campos de DADO, nunca os resolvidos: `valor` e `ativo` são
   // derivados, e gravá-los deixaria a ficha mentindo no próximo render.
@@ -2506,48 +2737,27 @@ function TecnicaMotorEditor({ efeitos, onChange, pericias, fontesDano = [], comM
           const quandoRuim = ef.quando && !chkQuando.ok;
           const alvos = ef.alvoTipo ? alvoOpcoes(ef.alvoTipo, pericias, fontesDano) : null;
           return (
-            <div key={i} className="rounded border border-slate-800 bg-slate-950/50 p-2">
+            <div key={i} className="rounded border border-slate-800 bg-slate-950/50 p-2 space-y-2">
+              {/* ---- O QUE o efeito é, e quanto ele VALE ---- */}
               <div className="flex flex-wrap items-center gap-2">
                 <CanalPicker value={ef.canal} onChange={(v) => patch(i, { canal: v })} />
 
                 {alvos && (
-                  <div className="relative flex-shrink-0 min-w-[130px]">
-                    <select
-                      value={ef.alvo}
-                      onChange={(e) => patch(i, { alvo: e.target.value })}
-                      className={MOTOR_SELECT_CLS}
-                      aria-label="Alvo"
-                    >
-                      <option value="">todos</option>
-                      {alvos.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-                    </select>
-                    <MotorChevron />
-                  </div>
-                )}
-
-                <div className="flex-1 min-w-[130px]">
-                  <input
-                    type="text"
-                    value={ef.expr}
-                    onChange={(e) => patch(i, { expr: e.target.value })}
-                    placeholder="2 + piso(bt / 2)"
-                    spellCheck={false}
-                    className={`w-full h-9 bg-slate-950 border rounded px-2 py-1.5 text-sm font-mono leading-tight text-emerald-200 focus:outline-none ${
-                      exprRuim ? "border-red-600 focus:border-red-500" : "border-slate-700 focus:border-purple-500"
-                    }`}
-                    aria-label="Expressão"
-                  />
-                </div>
-
-                {/* Prévia do valor, no lugar em que a 2.5.2 a mostra: colada na
-                    expressão, não numa linha própria. */}
-                {ef.expr && !exprRuim && ef.valor != null && (
-                  <span
-                    className={`font-mono text-sm tabular-nums flex-shrink-0 ${ef.ativo ? "text-emerald-300" : "text-slate-600"}`}
-                    title={ef.ativo ? undefined : "A condição é falsa agora, então este efeito não entra na conta"}
-                  >
-                    {ef.valor >= 0 ? "+" : "−"}{Math.abs(ef.valor)}
-                  </span>
+                  <>
+                    <Conector>em</Conector>
+                    <div className="relative flex-shrink-0 min-w-[130px]">
+                      <select
+                        value={ef.alvo}
+                        onChange={(e) => patch(i, { alvo: e.target.value })}
+                        className={MOTOR_SELECT_CLS}
+                        aria-label="Alvo"
+                      >
+                        <option value="">todos</option>
+                        {alvos.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                      </select>
+                      <MotorChevron />
+                    </div>
+                  </>
                 )}
 
                 <button
@@ -2560,7 +2770,51 @@ function TecnicaMotorEditor({ efeitos, onChange, pericias, fontesDano = [], comM
                 </button>
               </div>
 
-              <div className="flex flex-wrap items-center gap-2 mt-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <Conector>vale</Conector>
+                <CampoExpressao
+                  value={ef.expr}
+                  onChange={(v) => patch(i, { expr: v })}
+                  invalida={!!exprRuim}
+                  placeholder="2 + piso(bt / 2)"
+                  rotulo="Expressão"
+                  grupos={dslGrupos}
+                />
+                {/* Prévia do valor, no lugar em que a 2.5.2 a mostra: colada na
+                    expressão, não numa linha própria. */}
+                <span
+                  className={`font-mono text-sm tabular-nums flex-shrink-0 w-10 text-right ${
+                    ef.ativo ? "text-emerald-300" : "text-slate-600"
+                  }`}
+                  title={ef.expr && !exprRuim && !ef.ativo
+                    ? "A condição é falsa agora, então este efeito não entra na conta"
+                    : undefined}
+                >
+                  {ef.expr && !exprRuim && ef.valor != null
+                    ? `${ef.valor >= 0 ? "+" : "−"}${Math.abs(ef.valor)}`
+                    : ""}
+                </span>
+              </div>
+
+              {/* ---- QUANDO ele vale, e por quanto tempo ---- */}
+              <div className="flex flex-wrap items-center gap-2">
+                <Conector>enquanto</Conector>
+                <CampoExpressao
+                  value={ef.quando}
+                  onChange={(v) => patch(i, { quando: v })}
+                  invalida={!!quandoRuim}
+                  placeholder="sempre"
+                  rotulo="Condição"
+                  grupos={dslGrupos}
+                  ancora="direita"
+                />
+                {/* O espaçador espelha a largura da prévia do valor, para as duas
+                    caixas de expressão ficarem alinhadas uma sob a outra. */}
+                <span className="w-10 flex-shrink-0" aria-hidden="true" />
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <Conector>e dura</Conector>
                 <div className="relative flex-shrink-0 min-w-[150px]">
                   <select
                     value={ef.duracao}
@@ -2574,32 +2828,22 @@ function TecnicaMotorEditor({ efeitos, onChange, pericias, fontesDano = [], comM
                   <MotorChevron />
                 </div>
                 {comModo && (
-                  <div className="relative flex-shrink-0 min-w-[130px]">
-                    <select
-                      value={ef.modo === "ativa" ? "ativa" : "passiva"}
-                      onChange={(e) => patch(i, { modo: e.target.value })}
-                      className={MOTOR_SELECT_CLS}
-                      aria-label="Modo"
-                    >
-                      <option value="passiva">Passiva</option>
-                      <option value="ativa">Ativa</option>
-                    </select>
-                    <MotorChevron />
-                  </div>
+                  <>
+                    <Conector>e é</Conector>
+                    <div className="relative flex-shrink-0 min-w-[130px]">
+                      <select
+                        value={ef.modo === "ativa" ? "ativa" : "passiva"}
+                        onChange={(e) => patch(i, { modo: e.target.value })}
+                        className={MOTOR_SELECT_CLS}
+                        aria-label="Modo"
+                      >
+                        <option value="passiva">Passiva</option>
+                        <option value="ativa">Ativa</option>
+                      </select>
+                      <MotorChevron />
+                    </div>
+                  </>
                 )}
-                <div className="flex-1 min-w-[130px]">
-                  <input
-                    type="text"
-                    value={ef.quando}
-                    onChange={(e) => patch(i, { quando: e.target.value })}
-                    placeholder="quando (opcional): surto_adrenalina"
-                    spellCheck={false}
-                    className={`w-full h-9 bg-slate-950 border rounded px-2 py-1.5 text-sm font-mono leading-tight text-emerald-200 focus:outline-none ${
-                      quandoRuim ? "border-red-600 focus:border-red-500" : "border-slate-700 focus:border-purple-500"
-                    }`}
-                    aria-label="Condição"
-                  />
-                </div>
               </div>
 
               {(exprRuim || quandoRuim) && (
@@ -2635,97 +2879,13 @@ function TecnicaMotorEditor({ efeitos, onChange, pericias, fontesDano = [], comM
 
    A altura é medida a cada mudança de valor, e não a cada tecla, porque uma
    ficha carregada de fora (ou o botão de expandir) também muda o tamanho. */
-/* Os trechos de uma linha ou célula viram nós. Devolve NÓS, nunca HTML: o
-   parser em afty-texto-rico.js entrega dados e aqui eles viram
-   <strong>/<em>/<u>/<s>. É o que deixa o campo continuar sendo uma `string` na
-   ficha, sem `dangerouslySetInnerHTML` em lugar nenhum. */
-function trechosEmNos(trechos) {
-  return trechos.map((t, i) => {
-    let no = t.texto;
-    if (t.riscado) no = <s>{no}</s>;
-    if (t.sublinhado) no = <u>{no}</u>;
-    if (t.italico) no = <em>{no}</em>;
-    if (t.negrito) no = <strong className="font-semibold text-white">{no}</strong>;
-    return <React.Fragment key={i}>{no}</React.Fragment>;
-  });
-}
+/* ⚠ O `TextoRico` MUDOU DE CASA em 2026-08-08: foi para `ui/TextoRico.jsx`,
+   porque a Ficha Final passou a exibir o Funcionamento Básico e as duas telas
+   precisam do MESMO renderizador. Duas cópias divergiriam na primeira marcação
+   nova, e o jogador leria na mesa algo diferente do que o autor escreveu.
 
-const ALINHA_CELULA = { esquerda: "text-left", centro: "text-center", direita: "text-right" };
-
-/* Texto com marcação renderizado, bloco a bloco.
-
-   ⚠ O modelo é de BLOCOS, e não de linhas soltas com "\n" (como era até a
-   tabela existir): título quer margem e filete, tabela ocupa várias linhas de
-   origem e vira um elemento só. A linha comum leva `whitespace-pre-wrap` para
-   a indentação que o autor tenha digitado sobreviver.
-
-   A tabela rola sozinha no eixo X (`overflow-x-auto`), porque o campo é
-   estreito e uma tabela de cinco colunas não pode empurrar o card inteiro. */
-function TextoRico({ texto, className = "" }) {
-  const blocos = useMemo(() => parseTextoRico(texto), [texto]);
-  return (
-    <div className={className}>
-      {blocos.map((b, bi) => {
-        // Linha em branco: o parágrafo vazio é do autor, então ele fica.
-        if (b.tipo === "vazio") return <div key={bi} className="h-3" aria-hidden="true" />;
-
-        if (b.tipo === "tabela") {
-          const alinha = (ci) => ALINHA_CELULA[b.alinhamentos[ci]] ?? "text-left";
-          return (
-            <div key={bi} className="my-2 overflow-x-auto">
-              <table className="w-full text-[12px] border-collapse">
-                <thead>
-                  <tr>
-                    {b.cabecalho.map((c, ci) => (
-                      <th
-                        key={ci}
-                        className={`border border-slate-700 bg-slate-900/70 px-2 py-1 font-semibold text-slate-200 ${alinha(ci)}`}
-                      >
-                        {trechosEmNos(c)}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {b.linhas.map((linha, li) => (
-                    <tr key={li}>
-                      {/* A linha pode ter menos células que o cabeçalho, e é o
-                          cabeçalho que manda: sem isso a tabela sai torta. */}
-                      {b.cabecalho.map((_, ci) => (
-                        <td key={ci} className={`border border-slate-800 px-2 py-1 text-slate-300 ${alinha(ci)}`}>
-                          {trechosEmNos(linha[ci] ?? [])}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          );
-        }
-
-        // `first:mt-0` para o texto não começar com um buraco quando a primeira
-        // linha já é um título, que é justamente o caso comum.
-        if (b.tipo === "titulo" && b.nivel === 1) {
-          return (
-            <div key={bi} className="text-[15px] font-bold text-white mt-4 first:mt-0 mb-1.5 pb-1 border-b border-slate-700">
-              {trechosEmNos(b.trechos)}
-            </div>
-          );
-        }
-        if (b.tipo === "titulo") {
-          return (
-            <div key={bi} className="text-[13px] font-semibold text-purple-200 mt-3 first:mt-0 mb-1">
-              {trechosEmNos(b.trechos)}
-            </div>
-          );
-        }
-        return <div key={bi} className="whitespace-pre-wrap">{trechosEmNos(b.trechos)}</div>;
-      })}
-    </div>
-  );
-}
-
+   Ficou daquele lado também o `trechosEmNos`. Aqui só sobrou o que é do
+   CRIADOR: a barra de formatação e a caixa de edição. */
 /* Barra de formatação. Escreve a MARCAÇÃO no texto e devolve o cursor ao lugar,
    que é o que separa isto de mandar o jogador digitar os asteriscos à mão. */
 function BarraFormatacao({ onAplicar, onTitulo, onTabela, previa, onPrevia }) {
@@ -2796,11 +2956,21 @@ function BarraFormatacao({ onAplicar, onTitulo, onTabela, previa, onPrevia }) {
   );
 }
 
+const temTexto = (v) => !!String(v ?? "").trim();
+
 function TextoLongo({ value, onChange, placeholder, minRows = 4, maxRows = 18, formatacao = false }) {
   const ref = useRef(null);
   const [expandido, setExpandido] = useState(false);
   const [rolando, setRolando] = useState(false);
-  const [previa, setPrevia] = useState(false);
+  // ⚠ A PRÉVIA COMEÇA LIGADA quando já existe texto (autor, 2026-08-08): o que
+  // se faz com um Funcionamento Básico pronto é LER, e só de vez em quando
+  // editar. Campo vazio começa desligado, porque não há o que ver e a caixa de
+  // edição é o que ele precisa.
+  const [previa, setPrevia] = useState(() => formatacao && temTexto(value));
+  // O jogador já mexeu no olho? Depois que ele decide, a decisão dele manda e o
+  // ajuste automático abaixo sai de cena.
+  const decidiu = useRef(false);
+  const trocaPrevia = (v) => { decidiu.current = true; setPrevia(v); };
   // A seleção nova só pode ser aplicada DEPOIS de o React repintar o valor, por
   // isso ela fica pendurada aqui e o efeito abaixo a devolve ao campo.
   const selPendente = useRef(null);
@@ -2839,6 +3009,20 @@ function TextoLongo({ value, onChange, placeholder, minRows = 4, maxRows = 18, f
     el.setSelectionRange(sel.ini, sel.fim);
   }, [value]);
 
+  // O texto pode CHEGAR depois da montagem: o rascunho automático restaura a
+  // ficha sozinho, e importar um JSON também troca o valor com o campo já na
+  // tela. Sem isto o campo montaria vazio (prévia desligada) e ficaria assim
+  // mesmo depois de encher.
+  //
+  // ⚠ Só age enquanto o campo NÃO está em foco e enquanto o jogador não mexeu
+  // no olho. Sem a guarda de foco, digitar a primeira letra num campo vazio
+  // atiraria a prévia por cima de quem está escrevendo.
+  useEffect(() => {
+    if (!formatacao || decidiu.current) return;
+    if (ref.current && ref.current === document.activeElement) return;
+    setPrevia(temTexto(value));
+  }, [value, formatacao]);
+
   // As duas escrevem no texto e devolvem a seleção nova pelo mesmo caminho: só
   // muda qual transformação do afty-texto-rico.js roda.
   const comSelecao = (fn) => {
@@ -2869,7 +3053,7 @@ function TextoLongo({ value, onChange, placeholder, minRows = 4, maxRows = 18, f
           onTitulo={titulo}
           onTabela={tabela}
           previa={previa}
-          onPrevia={setPrevia}
+          onPrevia={trocaPrevia}
         />
       )}
       <div className="relative">
@@ -2933,7 +3117,59 @@ function TextoLongo({ value, onChange, placeholder, minRows = 4, maxRows = 18, f
 
    O Funcionamento Básico deixou de ser só texto: ele tem o Motor de Automação
    completo, porque a técnica é única no mundo e nenhum catálogo pode cobri-la. */
-function PerfilAmaldicoadoCard({ draft, derived, patchCore }) {
+/* Um Funcionamento Básico ADICIONAL: nome, texto e o Motor livre, os mesmos três
+   campos do principal. Mesmo desenho do EstiloEspecialCard, que é o outro lugar
+   onde o jogador cria uma entrada nomeada com Motor próprio.
+
+   ⚠ A descrição usa o `TextoLongo` com formatação, e não o `TextArea` do Estilo:
+   um Funcionamento Básico adicional é do mesmo tamanho e da mesma natureza do
+   principal (os Seis Olhos não são uma nota de rodapé do Ilimitado), então ele
+   ganha título, tabela e negrito igual. */
+function FuncionamentoAdicionalCard({ linha, efeitosMotor, pericias, dslGrupos, onPatch, onRemove }) {
+  return (
+    <div className="rounded-lg border border-purple-900/50 bg-purple-950/10 p-3 space-y-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="flex-1 min-w-[160px]">
+          <TextInput
+            value={linha.nome}
+            onChange={(v) => onPatch({ nome: v })}
+            placeholder="Nome do Funcionamento Básico"
+          />
+        </div>
+        <button
+          type="button"
+          onClick={onRemove}
+          className="inline-flex items-center justify-center w-7 h-7 rounded text-slate-500 hover:text-red-400 hover:bg-red-950/40 transition-colors flex-shrink-0"
+          aria-label="Remover Funcionamento Básico"
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+        </button>
+      </div>
+
+      <TextoLongo
+        value={linha.descricao}
+        onChange={(v) => onPatch({ descricao: v })}
+        placeholder="O que este Funcionamento Básico faz, seus limites e o que ele concede."
+        formatacao
+      />
+
+      <TecnicaMotorEditor
+        efeitos={efeitosMotor}
+        onChange={(v) => onPatch({ efeitos: v })}
+        pericias={pericias}
+        dslGrupos={dslGrupos}
+      />
+    </div>
+  );
+}
+
+function PerfilAmaldicoadoCard({
+  draft, derived, patchCore, addFuncionamento, removeFuncionamento, patchFuncionamento,
+}) {
+  const dslGrupos = useDslGrupos(derived);
+  // O principal sai da lista: ele já tem o bloco fixo acima, com os campos que
+  // moram direto no `core`.
+  const adicionais = funcionamentosDaFicha(draft).filter((f) => !f.principal);
   return (
     <Card
       title="Perfil Amaldiçoado"
@@ -2964,7 +3200,34 @@ function PerfilAmaldicoadoCard({ draft, derived, patchCore }) {
         efeitos={derived.tecnicaEfeitos}
         onChange={(v) => patchCore({ tecnicaEfeitos: v })}
         pericias={derived.testes?.pericias}
+        dslGrupos={dslGrupos}
       />
+
+      {adicionais.length > 0 && (
+        <div className="space-y-3 mt-3">
+          {adicionais.map((f) => (
+            <FuncionamentoAdicionalCard
+              key={f.id}
+              linha={f}
+              efeitosMotor={derived.funcionamentoEfeitos?.[f.id] ?? []}
+              pericias={derived.testes?.pericias}
+              dslGrupos={dslGrupos}
+              onPatch={(partial) => patchFuncionamento(f.id, partial)}
+              onRemove={() => removeFuncionamento(f.id)}
+            />
+          ))}
+        </div>
+      )}
+
+      <div className="flex flex-wrap gap-2 mt-3">
+        <button
+          type="button"
+          onClick={addFuncionamento}
+          className="flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1.5 rounded border border-purple-700 bg-purple-800/40 text-purple-200 hover:bg-purple-700/50 transition-colors"
+        >
+          <Plus className="w-3 h-3" /> Funcionamento Básico
+        </button>
+      </div>
     </Card>
   );
 }
@@ -2973,6 +3236,7 @@ function PerfilAmaldicoadoCard({ draft, derived, patchCore }) {
 function FeiticosCard({ draft, derived, addFeitico, removeFeitico, patchFeitico, duplicarFeitico, setReducoesCustoFeitico }) {
   const lista = Array.isArray(draft.feiticos) ? draft.feiticos : [];
   const feiticosBase = lista.filter((feitico) => !feitico.variacaoDe);
+  const dslGrupos = useDslGrupos(derived);
   const { nivelMax } = derived.feiticos;
   const habilidades = derived.habilidades?.escolhidas ?? [];
   const temDominancia = habilidades.includes("cnj_dominancia_em_feitico");
@@ -3115,6 +3379,7 @@ function FeiticosCard({ draft, derived, addFeitico, removeFeitico, patchFeitico,
             nivelMax={nivelMax}
             efeitosPassivo={efeitosPassivoComPreview(f)}
             fontesDano={fontesDano}
+            dslGrupos={dslGrupos}
             onPatch={(partial) => patchFeitico(f.id, partial)}
             onRemove={() => removeFeitico(f.id)}
             onDuplicate={() => duplicarFeitico(f.id)}
@@ -3135,7 +3400,7 @@ function FeiticosCard({ draft, derived, addFeitico, removeFeitico, patchFeitico,
 
 /* Uma entrada de Feitiço: cabeçalho recolhível + editor por tipo.
    Mesmo chrome do InvocacaoCard (o editor complexo já aprovado). */
-function FeiticoCard({ feitico, ctx, nivelMax, efeitosPassivo, fontesDano, onPatch, onRemove, onDuplicate }) {
+function FeiticoCard({ feitico, ctx, nivelMax, efeitosPassivo, fontesDano, dslGrupos, onPatch, onRemove, onDuplicate }) {
   const [open, setOpen] = useState(!feitico.nome);
   const [confirmDel, setConfirmDel] = useState(false);
   const calculoBase = feitico.tipo === "dano" ? calcularFeiticoDano(feitico, ctx)
@@ -3228,6 +3493,7 @@ function FeiticoCard({ feitico, ctx, nivelMax, efeitosPassivo, fontesDano, onPat
               efeitos={efeitosPassivo}
               onChange={(v) => onPatch({ efeitosPassivo: v })}
               fontesDano={fontesDano}
+              dslGrupos={dslGrupos}
             />
           ) : (
             <div className="text-center py-5 border border-dashed border-slate-700 rounded-lg text-sm text-slate-400">
@@ -4963,6 +5229,34 @@ function ResultadoAuxiliar({ calc, feitico }) {
 /* ============================================================ */
 /* Aba: Identidade                                              */
 /* ============================================================ */
+/* O Tamanho não é mais escolha (autor, 2026-08-08): *"a Altura só pode ser
+   maleável com Aptidões e poderes que mexam com isso"*. Toda criatura parte de
+   Médio, e só o canal `tamanho` do Motor a tira de lá.
+
+   ⚠ Era um `<Select>` livre. Virou LEITURA, e não um Select desabilitado: um
+   campo cinza que não abre parece defeito, e o que o jogador precisa saber é
+   qual é o tamanho dele e o que ele está pagando por isso. */
+function TamanhoDerivado({ derived }) {
+  const tam = getTamanho(derived?.tamanho);
+  const regua = [
+    { label: "Atletismo", valor: tam.atletismo },
+    { label: "Furtividade", valor: tam.furtividade },
+  ].filter((r) => r.valor);
+  return (
+    <div className="w-full min-h-9 bg-slate-950 border border-slate-800 rounded px-2 py-1.5 flex items-center gap-2 flex-wrap">
+      <span className="text-sm text-white">{tam.label}</span>
+      {regua.map((r) => (
+        <span
+          key={r.label}
+          className={`text-[10px] font-medium whitespace-nowrap ${r.valor > 0 ? "text-emerald-400" : "text-rose-400"}`}
+        >
+          {r.label} {r.valor > 0 ? `+${r.valor}` : r.valor}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 function TabIdentidade({ draft, derived, patch, patchCore, setOrigemBonus, setOrigemId, setOrigemCla, toggleEscolhaOrigem, setOrigemPool }) {
   return (
     <>
@@ -4973,8 +5267,8 @@ function TabIdentidade({ draft, derived, patch, patchCore, setOrigemBonus, setOr
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
           <div>
-            <FieldLabel hint="afeta deslocamento e alcance">Tamanho</FieldLabel>
-            <Select value={draft.core.tamanho} onChange={(v) => patchCore({ tamanho: v })} options={AFTY_TAMANHOS} />
+            <FieldLabel>Tamanho</FieldLabel>
+            <TamanhoDerivado derived={derived} />
           </div>
           <RetratoCampo
             url={draft.portraitUrl}
@@ -6268,14 +6562,19 @@ function InterludioInfo({ icon: Icon, titulo, children }) {
  * grid, então as 5 trilhas ficam lado a lado no desktop e reempilham
  * sozinhas quando a tela aperta.
  */
-function NivelPicker({ value, concedido, restante, onChange, label }) {
+function NivelPicker({ value, concedido, restante, onChange, label, limite = APTIDAO_NIVEL_MAX }) {
   const efetivo = value + concedido;
+  // ⚠ O teto é POR TRILHA, e não o 5 do sistema: a Versatilidade Extrema leva
+  // uma delas a 6. O picker cresce um botão junto, senão o nível existiria no
+  // motor e não teria onde ser clicado. Piso no efetivo para uma ficha que
+  // perdeu a fonte do limite ainda desenhar o que ela tem.
+  const teto = Math.max(APTIDAO_NIVEL_MAX, limite, efetivo);
   // Sempre dá para baixar até o piso concedido (inclusive se a ficha já
   // estourou o orçamento). Subir respeita o que sobra e o teto da trilha.
-  const alcancavel = Math.max(efetivo, Math.min(APTIDAO_NIVEL_MAX, efetivo + restante));
+  const alcancavel = Math.max(efetivo, Math.min(limite, efetivo + restante));
   return (
     <div className="flex gap-px w-full" role="group" aria-label={label}>
-      {Array.from({ length: APTIDAO_NIVEL_MAX + 1 }, (_, n) => {
+      {Array.from({ length: teto + 1 }, (_, n) => {
         const ehConcedido = n >= 1 && n <= concedido;
         const preenchido = n > concedido && n <= efetivo;
         const zeroAtivo = n === 0 && efetivo === 0;
@@ -7372,10 +7671,13 @@ function SimulacaoCombateCard({ derived, patchCombate }) {
         : temHabilidade(e.requerHabilidade);
       return temDono && (!["opcao", "dominio"].includes(e.tipo) || opcoesDe(e).length > 0);
     }),
-    // Estados que vêm da FICHA, e não do catálogo: hoje as Habilidades Únicas de
-    // item marcadas como ativas. Não têm `requer*` porque a própria existência
-    // do interruptor já depende do item estar equipado.
-    ...(combate.estadosExtras ?? []).map((e) => ({ ...e, tipo: "bool" })),
+    // Estados que vêm da FICHA, e não do catálogo: as Habilidades Únicas de item
+    // marcadas como ativas e a IMBUIÇÃO das Técnicas de Estilo. Não têm `requer*`
+    // porque a própria existência do interruptor já depende do item estar
+    // equipado, ou da Técnica estar conhecida.
+    // ⚠ O `tipo` vem antes do espalhamento: a imbuição é `faixa` e o extra que
+    // não declara nada continua caindo em `bool`.
+    ...(combate.estadosExtras ?? []).map((e) => ({ tipo: "bool", ...e })),
   ];
   if (!linhas.length) return null;
 
@@ -7606,7 +7908,8 @@ function AltoNivel({ derived, setMelhoriaVezes, toggleLendaria, toggleEscolhaAlt
 function TabAptidoes({ draft, derived, setAptidaoNivel, toggleAptidao, setAptidaoOpcao }) {
   // O motor resolve alocado + concedido (e devolve ao orçamento o que
   // não coube junto da concessão). A aba só exibe.
-  const { alocado, concedido, efetivo, gastos } = derived.aptidao;
+  // `limite` é por trilha: 5 mais o que o Motor somou no canal limiteAptidao.
+  const { alocado, concedido, efetivo, gastos, limite } = derived.aptidao;
   // A Maldição não tem Energia Reversa, então a trilha nem aparece.
   const trilhas = derived.trilhasAptidao ?? APTIDAO_TRILHAS;
   const total = derived.totalAptidao;        // limiares de ND + Raio Negro + treinos "à sua escolha"
@@ -7689,6 +7992,7 @@ function TabAptidoes({ draft, derived, setAptidaoNivel, toggleAptidao, setAptida
                 value={alocado[t.key]}
                 concedido={concedido[t.key]}
                 restante={restante}
+                limite={limite[t.key]}
                 onChange={(v) => setAptidaoNivel(t.key, v)}
                 label={`Nível de Aptidão em ${t.label}, atualmente ${efetivo[t.key]}`}
               />
