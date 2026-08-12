@@ -142,6 +142,11 @@ export function aplicaReducoesCustoFeitico(feitico, calculo, ctx = {}) {
     if (valor > 0) reducoes.push({ fonte: "Manipulação Perfeita", valor });
   }
 
+  for (const fonte of detalhesDoCanalEscopos(ctx.efeitos, "custoPE")) {
+    const valor = Math.max(0, Math.trunc(Number(fonte.valor) || 0));
+    if (valor > 0) reducoes.push({ fonte: fonte.nome, valor });
+  }
+
   const reducaoTotal = reducoes.reduce((total, reducao) => total + reducao.valor, 0);
   const custoPE = custoBase > 0 ? Math.max(1, custoBase - reducaoTotal) : custoBase;
   return {
@@ -449,6 +454,7 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
     configuracao: ctx.ritual,
     extraRitualista: !!ctx.ritualistaExtra,
     dispensaTeste: !!ctx.dispensaTesteRitual,
+    beneficioGratuito: ctx.beneficiosRitualDominio?.[f.tipo],
   });
   const bonusDoRitual = bonusRitual(ritual, nivel);
   if (ritual.excedeu) {
@@ -690,6 +696,8 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
   // quantidade escrita, sem multiplicá-la pela quantidade de disparos.
   if (subtipo !== "multiplos") dados += dadosCiclagem;
   const bonusMotor = Math.trunc(valorCanalEscopos(ctx.efeitos, "danoBonus", escoposDano));
+  const ignoraRD = Math.max(0, Math.trunc(valorCanalEscopos(ctx.efeitos, "ignoraRD", escoposDano)));
+  const removeResistencia = valorCanalEscopos(ctx.efeitos, "removeResistencia", escoposDano) > 0;
 
   // Múltiplos Disparos fecha a quantidade de dados de CADA rolagem antes de o
   // Motor avaliar `dados_dano_final`. Usar o montante concentrado daria o bônus
@@ -849,6 +857,8 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
     custoPE,
     cd,
     acertoDelta,
+    ignoraRD,
+    removeResistencia,
     empurraoMetros,
     faltamDados,
     reducaoCondicoes: reducaoCond,
@@ -969,6 +979,7 @@ export function calcularFeiticoCurativo(feitico, ctx = {}) {
     configuracao: ctx.ritual,
     extraRitualista: !!ctx.ritualistaExtra,
     dispensaTeste: !!ctx.dispensaTesteRitual,
+    beneficioGratuito: ctx.beneficiosRitualDominio?.[f.tipo],
   });
   const bonusDoRitual = bonusRitual(ritual, nivel);
   if (ritual.excedeu) {
@@ -2939,6 +2950,8 @@ function propriedadesResumoFeitico(f, calc, valor, valorLabel) {
       : f.tipo === "dano" ? "Teste de Resistência" : null },
     { id: "cd", nome: "CD", valor: calc?.cd != null ? String(calc.cd) : null },
     { id: "acerto", nome: "Acerto", valor: acerto ? `${acerto > 0 ? "+" : ""}${acerto}` : null },
+    { id: "ignoraRD", nome: "Ignora RD", valor: calc?.ignoraRD > 0 ? String(calc.ignoraRD) : null },
+    { id: "removeResistencia", nome: "Resistência", valor: calc?.removeResistencia ? "Removida" : null },
     { id: "valor", nome: valorLabel, valor: valor },
     { id: "condicoes", nome: "Condições", valor: condicoesResumoFeitico(f) },
     { id: "empurrao", nome: "Empurrão", valor: calc?.empurraoMetros > 0

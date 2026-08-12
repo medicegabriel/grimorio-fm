@@ -46,7 +46,9 @@ import {
 import { efeitosDeTreino, vagasEncantamentoDeTreino } from "./afty-treinamentos";
 import { resolveNiveisAptidao, trilhasDaOrigem, AFTY_APTIDOES } from "./afty-aptidoes";
 import {
-  efeitosDoDominio, listaDominios, resolveVersao as resolveVersaoDominio,
+  efeitosDoDominio, efeitosDeAptidaoDoDominio, beneficiosRitualDoDominio,
+  dominioEmUso,
+  listaDominios, resolveVersao as resolveVersaoDominio,
   duracaoDominio, areaDominio, custoDominio, pvBarreira, maxEfeitos, vagasUsadas,
   textoDoDominio,
 } from "./afty-dominios";
@@ -55,7 +57,8 @@ import {
   resolveHabilidades, efeitosInvocacaoControlador, getHabilidade, OPCAO_ESCOLHA_NOME,
   AFTY_HABILIDADES,
   resolveArmasDedicadas, efeitosArmasDedicadas, resolveEmpolgacao,
-  encantamentosDeManejoEspecial,
+  encantamentosDeManejoEspecial, habilidadesConcedidasPelasEspecializacoes,
+  aptidoesConcedidasPelasHabilidades,
 } from "./afty-habilidades";
 import { resolveTalentos, getTalento, OPCAO_TALENTO_NOME, AFTY_TALENTOS } from "./afty-talentos";
 import {
@@ -171,15 +174,30 @@ export function deriveAfty(creature, opcoes = {}) {
   const recursoLabel = semEnergia ? "Estamina" : "Energia";
   const patamar = core.patamar || "comum";
   const nd = Math.max(1, core.nd ?? 1);
+  // Especializações precisam existir antes das Aptidões porque três Bases do
+  // Suporte são concedidas pelo nível, e duas delas concedem Aptidões por nome.
+  const especializacoes = resolveEspecializacoes(creature);
+  const habilidadesConcedidas = habilidadesConcedidasPelasEspecializacoes(especializacoes.escolhidas);
+  const trilhasOrigem = trilhasDaOrigem(core?.origem?.id);
   // ---------- Aptidões Amaldiçoadas EFETIVAS ----------
-  // As escolhidas na aba mais as CONCEDIDAS POR NOME pela origem (o Domínio
-  // Simples do Sem Técnica no ND 4). Fecha aqui em cima porque quase tudo lê
-  // esta lista: o `coletarEfeitosAptidao`, a Expansão de Domínio, a Cura, a
-  // bancada, o `tem_*` do DSL e a UI.
+  // As escolhidas na aba mais as CONCEDIDAS POR NOME pela origem ou pela
+  // Especialização. Fecha aqui em cima porque quase tudo lê esta lista: o
+  // `coletarEfeitosAptidao`, a Expansão de Domínio, a Cura, a bancada, o
+  // `tem_*` do DSL e a UI.
   //
   // ⚠ O Restringido zera as duas metades: sem energia amaldiçoada não há
   // aptidão nenhuma, nem escolhida nem concedida.
-  const aptidoesConcedidas = semEnergia ? [] : aptidoesConcedidasPelaOrigem(creature, nd);
+  const aptidoesConcedidasOrigem = semEnergia ? [] : aptidoesConcedidasPelaOrigem(creature, nd);
+  // A origem Maldição não possui a trilha de Energia Reversa. A concessão do
+  // Suporte respeita essa trava já estabelecida e não reabre a categoria.
+  const podeReceberEnergiaReversa = trilhasOrigem.some((t) => t.key === "er");
+  const aptidoesConcedidasEspecializacao = semEnergia || !podeReceberEnergiaReversa
+    ? []
+    : aptidoesConcedidasPelasHabilidades(habilidadesConcedidas);
+  const aptidoesConcedidas = [...new Set([
+    ...aptidoesConcedidasOrigem,
+    ...aptidoesConcedidasEspecializacao,
+  ])];
   const aptidoesEscolhidasFicha = semEnergia || !Array.isArray(creature?.aptidoesAmaldicoadas)
     ? []
     : creature.aptidoesAmaldicoadas;
@@ -368,9 +386,9 @@ export function deriveAfty(creature, opcoes = {}) {
   // também concedem trilha (Aptidões de Luta, Aptidões de Combate), e a
   // concessão precisa entrar antes de `dom/au/cl/bar/er` virarem variável.
 
-  // Especializações: NÃO entram em nenhum stat (quem dirige fórmula é o Tipo).
-  // Resolvidas para a UI, a validação e o nível que os efeitos escalam.
-  const especializacoes = resolveEspecializacoes(creature);
+  // Especializações não entram diretamente em nenhum stat (quem dirige
+  // fórmula é o Tipo). Foram resolvidas no início porque agora também concedem
+  // três Bases do Suporte pelo nível.
 
   // Talentos dividem o orçamento das Habilidades de Especialização, então saem
   // antes. O acesso deles lê ND, origem e atributos, nunca nível de classe.
@@ -511,7 +529,42 @@ export function deriveAfty(creature, opcoes = {}) {
   // aptidão por ora, porque `dom/au/cl/bar/er` são variáveis do DSL e uma
   // habilidade que concede trilha tem de entrar antes de o contexto existir.
   // Mesma regra do estágio de atributo: dentro dele um efeito não vê o irmão.
-  const efPreContexto = resolverExclusivos(aplicarEfeitos(efeitosTodos.filter(ehPreContexto), ctxMontante));
+  const efPreContextoBase = resolverExclusivos(aplicarEfeitos(
+    efeitosTodos.filter(ehPreContexto),
+    ctxMontante,
+  ));
+
+  // A expansão só pode conceder os +2 depois de sabermos quais trilhas já têm
+  // ao menos Nível 1 sem ela. Esta primeira resolução não vai para a saída, ela
+  // existe apenas para a expansão não habilitar o próprio bônus numa trilha 0.
+  const mapasAptidao = (preContexto) => {
+    const concedidas = { ...treino.aptidaoTrilha };
+    for (const [k, v] of Object.entries(preContexto?.porAlvo?.nivelAptidao || {})) {
+      concedidas[k] = (concedidas[k] || 0) + v;
+    }
+    const limites = {};
+    for (const fonte of [efMontante.porAlvo.limiteAptidao, preContexto?.porAlvo?.limiteAptidao]) {
+      for (const [k, v] of Object.entries(fonte || {})) limites[k] = (limites[k] || 0) + v;
+    }
+    return { concedidas, limites };
+  };
+  const mapasSemDominio = mapasAptidao(efPreContextoBase);
+  const aptidaoSemDominio = semEnergia
+    ? resolveNiveisAptidao(null, {}, null)
+    : resolveNiveisAptidao(
+      creature?.aptidoes,
+      mapasSemDominio.concedidas,
+      mapasSemDominio.limites,
+      trilhasOrigem,
+    );
+  const efPreContextoDominio = resolverExclusivos(aplicarEfeitos(
+    efeitosDeAptidaoDoDominio(creature, {
+      aptidoesEscolhidas: aptidoesIds,
+      niveisAptidao: aptidaoSemDominio.efetivo,
+    }),
+    ctxMontante,
+  ));
+  const efPreContexto = mesclarEfeitos(efPreContextoBase, efPreContextoDominio);
 
   // ---------- LIMITE EFETIVO DE ATRIBUTO (final) ----------
   // Agora sim: limite de estágio 0 (20 / ficha / Origem / Desenvolvimento) mais o
@@ -535,26 +588,23 @@ export function deriveAfty(creature, opcoes = {}) {
 
   // Níveis de aptidão por trilha: alocado (pago) + concedido (grátis,
   // direcionado). A concessão vem de dois lados, Treinamento e Habilidade.
-  const trilhasConcedidas = { ...treino.aptidaoTrilha };
-  for (const [k, v] of Object.entries(efPreContexto.porAlvo.nivelAptidao || {})) {
-    trilhasConcedidas[k] = (trilhasConcedidas[k] || 0) + v;
-  }
+  const mapasComDominio = mapasAptidao(efPreContexto);
   // TETO por trilha: 5 mais o canal `limiteAptidao`. Chega dos mesmos dois
   // lugares do nível, porque as regras que quebram o teto emitem os dois canais
   // juntos (as duas Habilidades que dão "+1 podendo passar de 5", e a Expansão
   // de Domínio, que dá +2 em Aura, Controle e Leitura e Energia Reversa).
-  const trilhasLimite = {};
-  for (const fonte of [efMontante.porAlvo.limiteAptidao, efPreContexto.porAlvo.limiteAptidao]) {
-    for (const [k, v] of Object.entries(fonte || {})) trilhasLimite[k] = (trilhasLimite[k] || 0) + v;
-  }
   // Restringido não tem Nível de Aptidão nenhum: entra com a alocação vazia e
   // sem concessão, para as variáveis `dom/au/cl/bar/er` do DSL saírem zeradas
   // junto. Uma ficha que trocou de Tipo depois de alocar não fica mentindo.
   // Trilhas que a ORIGEM tem: a Maldição não possui Energia Reversa.
-  const trilhasOrigem = trilhasDaOrigem(core?.origem?.id);
   const aptidao = semEnergia
     ? resolveNiveisAptidao(null, {}, null)
-    : resolveNiveisAptidao(creature?.aptidoes, trilhasConcedidas, trilhasLimite, trilhasOrigem);
+    : resolveNiveisAptidao(
+      creature?.aptidoes,
+      mapasComDominio.concedidas,
+      mapasComDominio.limites,
+      trilhasOrigem,
+    );
 
   // ---------- SIMULAÇÃO DE COMBATE ----------
   // Bancada de balanceamento (autor, 2026-07-28). Vira variável de DSL, e as
@@ -567,15 +617,17 @@ export function deriveAfty(creature, opcoes = {}) {
   const nivelRes = habilidades.niveisPorEfeito?.restringido ?? 0;
 
   // ---------- Expansão de Domínio ----------
-  // ⚠ Entra numa SEGUNDA lista, e não no `efeitosTodos` lá de cima, por ordem de
-  // declaração: os valores do domínio saem das tabelas indexadas pelo DOM, e o
-  // `aptidao` só existe aqui. Os dois estágios que consomem efeito (atributo e o
-  // resto) rodam depois deste ponto, então nenhum deles perde nada. O único que
-  // roda ANTES é o pré-contexto, e o domínio não escreve em canal nenhum dele.
+  // ⚠ Os efeitos escolhidos entram numa SEGUNDA lista, e não no `efeitosTodos`
+  // lá de cima, por ordem de declaração: seus valores saem das tabelas
+  // indexadas pelo DOM, e o `aptidao` só existe aqui. O benefício básico dos
+  // níveis de Aptidão já entrou no pré-contexto acima.
   const efeitosDominio = semEnergia ? [] : efeitosDoDominio(creature, {
     dom: aptidao.efetivo?.dom ?? 0,
     aptidoesEscolhidas: aptidoesIds,
   });
+  const beneficiosRitualDominio = semEnergia
+    ? {}
+    : beneficiosRitualDoDominio(creature, aptidoesIds);
   // ---------- Novo Estilo da Sombra (Sem Técnica) ----------
   // Entra na mesma SEGUNDA lista do Domínio, e pelo mesmo motivo: os efeitos de
   // tabela da Modificação de Domínio Simples são orçados pelo Nível de Aptidão
@@ -597,31 +649,34 @@ export function deriveAfty(creature, opcoes = {}) {
     const domNivel = aptidao.efetivo?.dom ?? 0;
     const barNivel = aptidao.efetivo?.bar ?? 0;
     const paredesResistentes = aptidoesIds.includes("paredes_resistentes");
+    const lista = listaDominios(creature).map((d) => {
+      const versao = resolveVersaoDominio(d, aptidoesIds);
+      const comAG = !!d.acertoGarantido?.ativo;
+      return {
+        ...d,
+        versao,
+        custo: custoDominio(versao, comAG),
+        duracao: duracaoDominio(domNivel, versao),
+        area: areaDominio(versao, bt),
+        pvBarreira: pvBarreira(barNivel, nd, paredesResistentes),
+        vagasUsadas: vagasUsadas(d.efeitos),
+        texto: textoDoDominio(d, { dom: domNivel, nd, bt, bar: barNivel, versao, paredesResistentes }),
+      };
+    });
     return {
       domNivel,
       barNivel,
       paredesResistentes,
       temAcertoGarantido: aptidoesIds.includes("acerto_garantido"),
       maxEfeitos: maxEfeitos(domNivel),
-      ativoId: creature?.dominioAtivoId ?? null,
-      lista: listaDominios(creature).map((d) => {
-        const versao = resolveVersaoDominio(d, aptidoesIds);
-        const comAG = !!d.acertoGarantido?.ativo;
-        return {
-          ...d,
-          versao,
-          custo: custoDominio(versao, comAG),
-          duracao: duracaoDominio(domNivel, versao),
-          area: areaDominio(versao, bt),
-          pvBarreira: pvBarreira(barNivel, nd, paredesResistentes),
-          vagasUsadas: vagasUsadas(d.efeitos),
-          texto: textoDoDominio(d, { dom: domNivel, nd, bt, bar: barNivel, versao, paredesResistentes }),
-        };
-      }),
+      ativoId: dominioEmUso(creature, aptidoesIds)?.id ?? null,
+      beneficiosRitualAtivos: beneficiosRitualDominio,
+      lista,
     };
   })();
 
   const combate = resolveCombate(creature, {
+    dominios: resumoDominios.lista,
     brutalidadePE: degrausBrutalidade({ habilidades }),
     brutalidadePilha: bt,
     empolgacaoMaxima: valorCanal(efPreContexto, "empolgacaoMaxima") > 0,
@@ -891,7 +946,9 @@ export function deriveAfty(creature, opcoes = {}) {
     patamar === "beyond" ? 1 + resThresh : 0;
 
   // ---------- Movimento (+ Treino de Agilidade, - sobrecarga) ----------
-  const movimento = 9 + maxForDex * 1.5 + carga.movimento + canal("movimento");
+  const movimentoBase = 9 + maxForDex * 1.5 + carga.movimento + canal("movimento");
+  const movimentoMult = Math.max(1, canal("movimentoMult") || 1);
+  const movimento = movimentoBase * movimentoMult;
 
   // ---------- RD Geral ----------
   const rdGeralBase =
@@ -1008,6 +1065,7 @@ export function deriveAfty(creature, opcoes = {}) {
       limiteRitualista: Math.floor(bt / 2),
       ritualAtual: opcoes.ritualAtual ?? null,
       rituaisSemTeste: opcoes.rituaisSemTeste ?? {},
+      beneficiosRitualDominio,
       temEnergiaReversa: aptidoesIds.includes("energia_reversa"),
       invocacoes: Array.isArray(creature?.invocacoes) ? creature.invocacoes : [],
     }),
@@ -1298,6 +1356,11 @@ export function deriveAfty(creature, opcoes = {}) {
       { label: "Maior de Força e Destreza × 1,5", valor: maxForDex * 1.5 },
       ...(carga.movimento ? [{ label: "Sobrecarga", valor: carga.movimento }] : []),
       ...doMotor("movimento"),
+      ...doMotor("movimentoMult").map((fonte) => ({
+        ...fonte,
+        valor: undefined,
+        texto: `× ${fonte.valor}`,
+      })),
     ],
     iniciativa: [
       { label: "Maestria ÷ 2", valor: INT(bt / 2) },
@@ -1374,6 +1437,8 @@ export function deriveAfty(creature, opcoes = {}) {
     // Só as CONCEDIDAS, para a aba poder marcá-las como travadas: elas não são
     // escolha, e não podem ser desmarcadas nem cobrar orçamento.
     aptidoesConcedidas,
+    aptidoesConcedidasOrigem,
+    aptidoesConcedidasEspecializacao,
     dominios: resumoDominios,
     // Proficiência RESOLVIDA por perícia (a escolhida mais a concedida pelo
     // Motor). É o que os requisitos de perícia das Aptidões conferem.

@@ -129,6 +129,7 @@ export function cdConjuracaoRitual(nivel, melhorias) {
  */
 export function resolveRitual({
   nivel, acaoBase, configuracao, extraRitualista = false, dispensaTeste = false,
+  beneficioGratuito = "",
 } = {}) {
   const config = configuracao && typeof configuracao === "object" ? configuracao : {};
   const base = acaoBase || "comum";
@@ -138,8 +139,17 @@ export function resolveRitual({
   const estendido = ativo && (forcado || base === "completa");
   const limiteBase = !ativo ? 0 : estendido ? 5 : base === "bonus" ? 1 : 2;
   const limiteExtra = ativo && extraRitualista ? 1 : 0;
-  const melhorias = ativo ? normalizaMelhoriasRitual(config.melhorias) : normalizaMelhoriasRitual(null);
-  const quantidade = quantidadeMelhoriasRitual(melhorias);
+  const melhoriasPagas = ativo
+    ? normalizaMelhoriasRitual(config.melhorias)
+    : normalizaMelhoriasRitual(null);
+  const melhoriasGratuitas = normalizaMelhoriasRitual(
+    RITUAL_MELHORIA_BY_ID[beneficioGratuito] ? { [beneficioGratuito]: 1 } : null,
+  );
+  const melhorias = Object.fromEntries(RITUAL_MELHORIAS.map((def) => [
+    def.id,
+    Math.min(def.max, melhoriasPagas[def.id] + melhoriasGratuitas[def.id]),
+  ]));
+  const quantidade = quantidadeMelhoriasRitual(melhoriasPagas);
   const limite = limiteBase + limiteExtra;
   return {
     ativo,
@@ -152,6 +162,8 @@ export function resolveRitual({
     limiteExtra,
     limite,
     melhorias,
+    melhoriasPagas,
+    melhoriasGratuitas,
     quantidade,
     restante: limite - quantidade,
     excedeu: quantidade > limite,

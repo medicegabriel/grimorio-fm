@@ -38,7 +38,7 @@ const OBSERVADOS = [
 
 /** O valor "desligado" de cada tipo de estado. */
 const padraoDe = (e) =>
-  (e.tipo === "bool" ? false : e.tipo === "opcao" ? null : (e.min ?? 0));
+  (e.tipo === "bool" ? false : ["opcao", "dominio"].includes(e.tipo) ? null : (e.min ?? 0));
 
 /** Está ligado? Faixa conta a partir do mínimo, que é o piso dela. */
 const estaLigado = (e, v) =>

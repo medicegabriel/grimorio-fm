@@ -1134,17 +1134,6 @@ export const HABILIDADE_EFEITOS = {
     { canal: "vagasPericia", expr: "piso(maestria / 2)" },
   ],
 
-  // "No nível 6, você recebe a aptidão amaldiçoada Energia Reversa."
-  // ⚠ ASSUMIDO: uma concessão NOMEADA vira uma VAGA de aptidão, porque não
-  // existe canal para conceder uma aptidão específica. Na prática o jogador
-  // marca a aptidão do texto e a vaga paga por ela.
-  sup_energia_reversa: [
-    { canal: "vagasAptidao", expr: "1" },
-  ],
-  sup_liberacao_de_energia_reversa: [
-    { canal: "vagasAptidao", expr: "1" },
-  ],
-
   /* ---------- SUPORTE: a CURA (2026-08-03) ---------- */
 
   // "Você pode, como uma ação bônus, curar uma criatura em alcance de toque em

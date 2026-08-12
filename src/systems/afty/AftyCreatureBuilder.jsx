@@ -64,8 +64,9 @@ import {
 import {
   DOMINIO_CATEGORIAS, tiposDaCategoria, categoriaLivre, valorDoEfeito,
   novoEfeitoDominio, novoDominio, versoesDisponiveis, ATRIBUTOS_FISICOS,
-  DOMINIO_EFEITOS_BASE, rotuloDoEfeito, rotuloVersao,
+  DOMINIO_EFEITOS_BASE, DOMINIO_RITUAL_CATEGORIAS, rotuloDoEfeito, rotuloVersao,
 } from "./afty-dominios";
+import { RITUAL_MELHORIAS } from "./afty-rituais";
 import { COMBATE_ESTADOS } from "./afty-combate";
 import {
   createBlankInvocacao, cloneInvocacao, createBlankAcao, createBlankCaracteristica, createBlankHorda, AFTY_INV_GRAUS,
@@ -1356,6 +1357,11 @@ function DanoCard({ derived, toggleArmaDedicada }) {
                   Ignora RD {e.ignoraRD}
                 </span>
               )}
+              {e.removeResistencia && (
+                <span className="text-[10px] font-medium text-purple-300 whitespace-nowrap flex-shrink-0">
+                  Remove Resistência
+                </span>
+              )}
               <span className="text-[10px] text-slate-400 whitespace-nowrap flex-shrink-0" title="Margem de Crítico">
                 Crít. {e.margemCritico}
               </span>
@@ -1740,6 +1746,24 @@ function DominioCard({ derived, addDominio, removeDominio, patchDominio, setDomi
               <div>
                 <FieldLabel>Aparência</FieldLabel>
                 <TextArea value={d.aparencia} onChange={(v) => patch({ aparencia: v })} rows={2} placeholder="Como a expansão se manifesta" />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+                {DOMINIO_RITUAL_CATEGORIAS.map((categoria) => (
+                  <div key={categoria.key}>
+                    <FieldLabel>{`Ritual: ${categoria.label}`}</FieldLabel>
+                    <Select
+                      value={d.beneficiosRitual?.[categoria.key] ?? ""}
+                      onChange={(valor) => patch({
+                        beneficiosRitual: { ...d.beneficiosRitual, [categoria.key]: valor },
+                      })}
+                      options={[
+                        { value: "", label: "Escolher" },
+                        ...RITUAL_MELHORIAS.map((melhoria) => ({ value: melhoria.id, label: melhoria.nome })),
+                      ]}
+                    />
+                  </div>
+                ))}
               </div>
 
               <div className="bg-slate-900/60 border border-slate-800 rounded p-3 space-y-2.5">
@@ -2994,6 +3018,7 @@ function FeiticosCard({ draft, derived, addFeitico, removeFeitico, patchFeitico,
     contextoDsl: derived.motorLinhaDano?.contexto ?? {},
     habilidades: derived.habilidades?.escolhidas ?? [],
     bonusTreinamento: derived.maestria,
+    beneficiosRitualDominio: derived.dominios?.beneficiosRitualAtivos ?? {},
     reducoesCustoFeitico: reducoes,
     feiticos: lista,
     temEnergiaReversa: Array.isArray(draft.aptidoesAmaldicoadas) && draft.aptidoesAmaldicoadas.includes("energia_reversa"),
@@ -6294,7 +6319,7 @@ function NivelPicker({ value, concedido, restante, onChange, label }) {
    parágrafo do livro: abertas todas de uma vez viram um paredão que
    ninguém lê. Recolhida, a linha mostra o que serve para ESCOLHER
    (nome + requisitos) e o texto abre sob demanda. */
-function AptidaoCard({ aptidao, escolhida, concedida, ctx, onToggle, opcaoAtual, onOpcao }) {
+function AptidaoCard({ aptidao, escolhida, concedida, concessao = "origem", ctx, onToggle, opcaoAtual, onOpcao }) {
   const [open, setOpen] = useState(false);
   const reqs = (aptidao.requisitos || []).map((r) => avaliarRequisitoAptidao(r, ctx));
   const faltando = reqs.filter((r) => r.verificavel && !r.ok);
@@ -6324,7 +6349,7 @@ function AptidaoCard({ aptidao, escolhida, concedida, ctx, onToggle, opcaoAtual,
           aria-label={`${escolhida ? "Remover" : "Escolher"} ${aptidao.nome}`}
           title={
             concedida
-              ? "Concedida pela origem"
+              ? `Concedida pela ${concessao === "especializacao" ? "Especialização" : "origem"}`
               : bloqueada
                 ? `Requisito não atendido: ${faltando.map((r) => r.label).join(", ")}`
                 : escolhida ? "Remover esta aptidão" : "Escolher esta aptidão"
@@ -6369,9 +6394,9 @@ function AptidaoCard({ aptidao, escolhida, concedida, ctx, onToggle, opcaoAtual,
             ? (
               <span
                 className="inline-flex items-center gap-0.5 text-[10px] font-medium whitespace-nowrap text-emerald-400 flex-shrink-0"
-                title="Concedida pela origem"
+                title={`Concedida pela ${concessao === "especializacao" ? "Especialização" : "origem"}`}
               >
-                Origem
+                {concessao === "especializacao" ? "Especialização" : "Origem"}
               </span>
             )
             : <RequisitoLista reqs={reqs} />}
@@ -6743,11 +6768,11 @@ function motivoBloqueio(habilidade, acesso) {
   return "Pré-requisito não atendido";
 }
 
-function HabilidadeCard({ habilidade, escolhida, acesso, nivelEspec, escolhaEstado, onToggleOpcao }) {
+function HabilidadeCard({ habilidade, escolhida, concedida = false, acesso, nivelEspec, escolhaEstado, onToggleOpcao }) {
   const [open, setOpen] = useState(false);
   // Já escolhida nunca trava: senão redividir a multiclasse prenderia a
   // habilidade na ficha, sem como remover (mesma regra do AptidaoCard).
-  const bloqueada = !acesso.ok && !escolhida;
+  const bloqueada = !acesso.ok && !escolhida && !concedida;
   const reqExtras = (acesso.extras || []).filter((e) => e.label);
   // Estado da escolha aninhada: quantas opções liberadas e quais escolhidas.
   const opcoesEscolhidas = escolhaEstado?.opcoes || [];
@@ -6756,16 +6781,18 @@ function HabilidadeCard({ habilidade, escolhida, acesso, nivelEspec, escolhaEsta
 
   return (
     <div className={`rounded-lg border transition-colors ${
-      escolhida ? "border-purple-700 bg-purple-950/30" : "border-slate-800 bg-slate-950/40"
+      concedida
+        ? "border-emerald-700 bg-emerald-950/30"
+        : escolhida ? "border-purple-700 bg-purple-950/30" : "border-slate-800 bg-slate-950/40"
     }`}>
       {/* Altura FIXA de 32px, com ou sem chip (mesma lição do AptidaoCard). */}
       <div className="flex items-center gap-2.5 px-2.5 h-8">
         <button
           type="button"
           onClick={habilidade.onToggle}
-          disabled={bloqueada}
-          aria-pressed={escolhida}
-          aria-label={`${escolhida ? "Remover" : "Escolher"} ${habilidade.nome}`}
+          disabled={bloqueada || concedida}
+          aria-pressed={escolhida || concedida}
+          aria-label={concedida ? `${habilidade.nome} concedida pela Especialização` : `${escolhida ? "Remover" : "Escolher"} ${habilidade.nome}`}
           title={
             // O rótulo diz o que REALMENTE falta. Antes ele sempre acusava o
             // nível de classe, porque `acesso.label` existe mesmo quando o
@@ -6773,19 +6800,23 @@ function HabilidadeCard({ habilidade, escolhida, acesso, nivelEspec, escolhaEsta
             // informado de que precisava de "nível 6 em Lutador".
             // Talento não tem requisito de nível de classe (não vem com
             // `label`), só os extras, que já aparecem na linha.
-            bloqueada
-              ? motivoBloqueio(habilidade, acesso)
+            concedida
+              ? "Concedida pela Especialização"
+              : bloqueada
+                ? motivoBloqueio(habilidade, acesso)
               : escolhida ? "Remover esta habilidade" : "Escolher esta habilidade"
           }
           className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 border transition-colors ${
-            escolhida
-              ? "bg-purple-700 border-purple-600 text-white"
+            concedida
+              ? "bg-emerald-700 border-emerald-600 text-white cursor-not-allowed"
+              : escolhida
+                ? "bg-purple-700 border-purple-600 text-white"
               : bloqueada
                 ? "border-slate-800 text-slate-700 cursor-not-allowed"
                 : "border-slate-600 text-slate-500 hover:border-purple-600 hover:text-purple-300"
           }`}
         >
-          {escolhida ? <Check className="w-3 h-3" /> : bloqueada ? <Lock className="w-2.5 h-2.5" /> : <Plus className="w-3 h-3" />}
+          {escolhida || concedida ? <Check className="w-3 h-3" /> : bloqueada ? <Lock className="w-2.5 h-2.5" /> : <Plus className="w-3 h-3" />}
         </button>
 
         <button
@@ -6801,6 +6832,14 @@ function HabilidadeCard({ habilidade, escolhida, acesso, nivelEspec, escolhaEsta
             {habilidade.nome}
           </span>
           <span className="flex items-center gap-1 flex-shrink-0">
+            {concedida && (
+              <span
+                className="inline-flex items-center text-[10px] font-medium whitespace-nowrap text-emerald-400"
+                title="Concedida pela Especialização"
+              >
+                Especialização
+              </span>
+            )}
             {/* Requisito de NÍVEL: só aparece quando falta, e diz quanto.
                 Atendido, some — o nível já está no cabeçalho do grupo. */}
             {!acesso.nivelOk && !acesso.almaLivreOcupada && (
@@ -6871,7 +6910,7 @@ const TALENTOS_TAB = "__talentos__";
 
 function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, toggleEscolhaHabilidade, toggleTalento, toggleEscolhaTalento }) {
   const {
-    escolhidas, escolhas, gastosNoComum, comum, exclusivasTalento, exclusivasUsadas,
+    escolhidas, selecionadas, concedidas, escolhas, gastosNoComum, comum, exclusivasTalento, exclusivasUsadas,
     excedeu, niveisPorEspec,
   } = derived.habilidades;
   const especs = derived.especializacoes.escolhidas;
@@ -6916,7 +6955,7 @@ function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, toggleEsc
     escolhidas,
     escolhasHabilidade: escolhas?.mapa,
     attrEff: derived.attrEff,
-    aptidoes: Array.isArray(draft.aptidoesAmaldicoadas) ? draft.aptidoesAmaldicoadas : [],
+    aptidoes: derived.aptidoesEscolhidas ?? [],
     almaLivre: derived.habilidades.almaLivre,
   };
   // Talento lê o ND e a origem, nunca o nível de classe.
@@ -7031,13 +7070,15 @@ function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, toggleEsc
         </p>
       ) : (
         <>
-          {/* Abas de nível (Base, 2°, 4°...). Contador de escolhidas por aba:
+          {/* Abas de nível (Base, 2°, 4°...). Contador de escolhas pagas por aba:
               com as habilidades separadas em abas, o que foi pego nas OUTRAS
-              some da vista, então o número devolve essa visibilidade. */}
+              some da vista, então o número devolve essa visibilidade. As
+              concedidas pelo nível aparecem na lista, mas não entram neste
+              contador porque não gastam vaga. */}
           <div className="flex gap-1 overflow-x-auto no-scrollbar border-b border-slate-800 pb-2 mb-3" role="tablist" aria-label="Níveis de habilidade">
             {grupos.map((g) => {
               const on = g.id === grupoAtivo.id;
-              const lista = emTalentos ? talentosEscolhidos : escolhidas;
+              const lista = emTalentos ? talentosEscolhidos : selecionadas;
               const nEsc = g.habilidades.filter((h) => lista.includes(h.id)).length;
               return (
                 <button
@@ -7080,6 +7121,7 @@ function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, toggleEsc
                   key={h.id}
                   habilidade={{ ...h, onToggle: () => toggleHabilidade(h.id) }}
                   escolhida={escolhidas.includes(h.id)}
+                  concedida={concedidas.includes(h.id)}
                   acesso={avaliarAcessoHabilidade(h, ctx)}
                   nivelEspec={ativa.nivel}
                   escolhaEstado={escolhas?.porHab?.[h.id]}
@@ -7307,7 +7349,15 @@ function SimulacaoCombateCard({ derived, patchCombate }) {
   const opcoes = Object.values(derived.habilidades?.escolhas?.mapa ?? {}).flat();
   // Uma OPÇÃO também pode exigir escolha: das 8 Posturas, só aparecem as que a
   // criatura aprendeu. Linha que fica sem opção nenhuma some junto.
-  const opcoesDe = (e) => (e.opcoes ?? []).filter((o) => !o.requerEscolha || opcoes.includes(o.requerEscolha));
+  const opcoesDe = (e) => {
+    if (e.tipo === "dominio") {
+      return (derived.dominios?.lista ?? []).map((d) => ({
+        id: d.id,
+        label: d.nome || "Domínio Sem Nome",
+      }));
+    }
+    return (e.opcoes ?? []).filter((o) => !o.requerEscolha || opcoes.includes(o.requerEscolha));
+  };
   // `requerHabilidade` aceita lista: Ataque Inconsequente existe no Lutador e no
   // Restringido com o mesmo texto, e ter qualquer uma das duas mostra a linha.
   const temHabilidade = (req) =>
@@ -7320,7 +7370,7 @@ function SimulacaoCombateCard({ derived, patchCombate }) {
         : e.requerTalento ? talentos.includes(e.requerTalento)
         : e.requerAptidao ? aptidoes.includes(e.requerAptidao)
         : temHabilidade(e.requerHabilidade);
-      return temDono && (e.tipo !== "opcao" || opcoesDe(e).length > 0);
+      return temDono && (!["opcao", "dominio"].includes(e.tipo) || opcoesDe(e).length > 0);
     }),
     // Estados que vêm da FICHA, e não do catálogo: hoje as Habilidades Únicas de
     // item marcadas como ativas. Não têm `requer*` porque a própria existência
@@ -7355,7 +7405,7 @@ function SimulacaoCombateCard({ derived, patchCombate }) {
                 <BoolChip ativo={!!valor} onToggle={() => patchCombate({ [e.id]: !valor })}>
                   {valor ? "Ativa" : "Inativa"}
                 </BoolChip>
-              ) : e.tipo === "opcao" ? (
+              ) : ["opcao", "dominio"].includes(e.tipo) ? (
                 /* Exclusivas entre si: clicar na que já está ligada desliga. */
                 <div className="flex items-center gap-1.5 flex-wrap justify-end">
                   {opcoesDe(e).map((o) => (
@@ -7567,6 +7617,7 @@ function TabAptidoes({ draft, derived, setAptidaoNivel, toggleAptidao, setAptida
   // 4) entram marcadas e travadas, e NÃO gastam orçamento: quem concede pelo
   // nome já pagou. Só o que a ficha escolheu à mão cobra vaga.
   const concedidas = derived.aptidoesConcedidas ?? [];
+  const concedidasPelaEspecializacao = new Set(derived.aptidoesConcedidasEspecializacao ?? []);
   const daFicha = Array.isArray(draft.aptidoesAmaldicoadas) ? draft.aptidoesAmaldicoadas : [];
   const gastasNaMao = daFicha.filter((id) => !concedidas.includes(id));
   // O requisito de "ter a aptidão X" enxerga as duas, senão a concedida não
@@ -7728,6 +7779,7 @@ function TabAptidoes({ draft, derived, setAptidaoNivel, toggleAptidao, setAptida
                       aptidao={ap}
                       escolhida={escolhidas.includes(ap.id)}
                       concedida={concedidas.includes(ap.id)}
+                      concessao={concedidasPelaEspecializacao.has(ap.id) ? "especializacao" : "origem"}
                       ctx={ctx}
                       onToggle={() => toggleAptidao(ap.id)}
                       opcaoAtual={(draft.aptidaoOpcoes || {})[ap.id]}
@@ -7746,6 +7798,7 @@ function TabAptidoes({ draft, derived, setAptidaoNivel, toggleAptidao, setAptida
                 aptidao={ap}
                 escolhida={escolhidas.includes(ap.id)}
                 concedida={concedidas.includes(ap.id)}
+                concessao={concedidasPelaEspecializacao.has(ap.id) ? "especializacao" : "origem"}
                 ctx={ctx}
                 onToggle={() => toggleAptidao(ap.id)}
                 opcaoAtual={(draft.aptidaoOpcoes || {})[ap.id]}

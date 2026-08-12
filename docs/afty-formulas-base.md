@@ -154,6 +154,9 @@ Implementado em `afty-derive.js`. Como `nd` tem piso 1, o limiar de ND 1 do Beyo
 +SE(Treinamentos!I8;4,5;0)   // Agilidade Completo
 ```
 
+No Afty derivado, os bônus aditivos do Motor entram nessa base antes de `movimentoMult`. Uma
+Expansão de Domínio ativa usa multiplicador 2, portanto dobra o resultado final dentro da expansão.
+
 ### RD.Geral
 ```
 =SWITCH(Tipo;
@@ -200,6 +203,10 @@ Implementado em `afty-derive.js`. Como `nd` tem piso 1, o limiar de ND 1 do Beyo
 +SE(Treinamentos!AJ8;1;0)   // Controle de Energia 4ª
 +SE(Treinamentos!AA18;1;0)  // Energia Reversa 2ª
 ```
+
+O total acima é orçamento permanente. Bônus temporário de nível não gasta esse total. A Expansão de
+Domínio ativa soma 2 ao nível efetivo e ao limite de Aura, Controle e Leitura e Energia Reversa,
+somente nas trilhas que já possuem ao menos Nível 1. Barreira e Domínio não recebem esse bônus.
 
 ### Total.Atributos (pontos de atributo)
 ```

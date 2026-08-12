@@ -119,6 +119,7 @@ export const EFEITO_CANAIS = [
   { id: "rdFisico",      label: "RD Física" },
   { id: "rdAlma",        label: "RD a Alma",             nota: "a RD Geral vale para todo tipo EXCETO alma, então o Dano na Alma tem canal próprio. Entra antes do teste de Integridade (autor, 2026-07-29)" },
   { id: "movimento",     label: "Movimento",             nota: "em metros, aceita 1,5" },
+  { id: "movimentoMult", label: "Multiplicador de Movimento", nota: "multiplica o movimento final. A Expansão de Domínio usa 2" },
   { id: "atencao",       label: "Atenção" },
   { id: "iniciativa",    label: "Iniciativa" },
   // ⚠ Os três de Regeneração e os sete de Cura moram no grupo "Cura e
@@ -154,6 +155,7 @@ export const EFEITO_CANAIS = [
   { id: "dadosDano",     label: "Dados de Dano",         alvo: "fonteDano", nota: "dado ADICIONAL, somado depois do dano fixo. Não confundir com nivelDano" },
   { id: "margemCritico", label: "Margem de Crítico",     alvo: "fonteDano", nota: "quanto a margem DIMINUI, com piso de 2" },
   { id: "ignoraRD",      label: "Ignora RD",             alvo: "fonteDano" },
+  { id: "removeResistencia", label: "Remove Resistência", alvo: "fonteDano", nota: "sinalizador para golpes ou Feitiços que retiram a resistência do alvo" },
   { id: "propMarcial",   label: "Marcial",               alvo: "fonteDano", nota: "concede a propriedade Marcial à arma, que é o gatilho de vários poderes de Lutador" },
   { id: "finezaAtaque",  label: "Fineza",                alvo: "ataque", nota: "libera o atributo alternativo do ataque (Destreza no Corpo a Corpo). Vale o maior dos dois" },
   { id: "nivelAptidao",  label: "Nível de Aptidão",      alvo: "trilha", nota: "com alvo é concessão direcionada e grátis. Apara no teto da trilha (5 por padrão). Quem sobe o teto é o canal Limite de Aptidão" },
@@ -318,7 +320,7 @@ const GRUPOS_DE_CANAL = [
   ["Defesa", ["defesa", "rdGeral", "rdEspecifico", "rdFisico", "rdAlma", "resParcial"]],
   ["Ataque e Dano", [
     "cd", "bonusAcerto", "acertoArma", "danoBonus", "nivelDano", "dadosDano",
-    "margemCritico", "ignoraRD", "propMarcial", "finezaAtaque",
+    "margemCritico", "ignoraRD", "removeResistencia", "propMarcial", "finezaAtaque",
   ]],
   // Atributo, limite e nível de trilha: o que a criatura É, em número próprio.
   // `nivelAptidao` entra aqui, e não num grupo de Aptidões, porque ele é
@@ -329,7 +331,7 @@ const GRUPOS_DE_CANAL = [
     "bonusPericia", "proficienciaPericia", "bonusTR", "proficienciaTR", "margemCriticoTR",
   ]],
   ["Manobras", ["bonusManobra", "resistirManobra", "distanciaEmpurrao"]],
-  ["Movimento e Percepção", ["movimento", "iniciativa", "atencao"]],
+  ["Movimento e Percepção", ["movimento", "movimentoMult", "iniciativa", "atencao"]],
   // Tudo que é "quantos X você pode ter". ⚠ `espacosCarga` estava em Movimento
   // (2026-07-29) porque sobrecarga derruba o deslocamento. Era consequência, não
   // categoria, e o autor pegou: o canal sobe o LIMITE de espaços de item, então

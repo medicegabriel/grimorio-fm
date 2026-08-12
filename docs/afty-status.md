@@ -1,6 +1,6 @@
 # Status do Grimório Afty (handoff para chat novo)
 
-Estado atual do sistema Afty (atualizado 2026-08-10). Leia junto com:
+Estado atual do sistema Afty (atualizado 2026-08-12). Leia junto com:
 `docs/roadmap-versionamento-e-fichas.md` (arquitetura) e `docs/afty-formulas-base.md` (fórmulas).
 
 > ⚠ **Este documento começou em 2026-07-17 e o trabalho posterior está registrado por sessão.**
@@ -105,6 +105,76 @@ Estado atual do sistema Afty (atualizado 2026-08-10). Leia junto com:
 >
 > 👉 **Começando um chat novo? Vá direto para
 > [PENDÊNCIAS DE ESPECIALIZAÇÕES](#-pendências-de-especializações-lista-de-retomada).**
+
+---
+
+## SESSÃO DE 2026-08-12
+
+### Expansão de Domínio aplicada na ficha final
+
+O estado da aba Buffs guardava apenas `true`, enquanto `efeitosDoDominio` procurava o
+`creature.dominioAtivoId` persistente do criador. Na ficha final o combate vem da sessão e substitui
+a bancada do criador, então a linha acendia visualmente sem identificar qual expansão o Motor devia
+usar. Com mais de uma expansão, não havia escolha segura possível.
+
+`dominioAtivo` agora é um estado catalogado do tipo `dominio`. A aba Buffs e a Simulação de Combate
+mostram uma opção por expansão e guardam o id escolhido. `resolveCombate` valida o id contra a lista
+derivada. O booleano antigo continua compatível: usa `dominioAtivoId` ou a única expansão existente.
+`dominioEmUso` centraliza essa resolução para o Motor, os níveis de Aptidão, os Rituais e o resumo da
+ficha.
+
+Efeitos básicos ligados enquanto a expansão escolhida está ativa:
+
+| Efeito | Estado atual |
+|---|---|
+| Níveis de Aptidão | +2 em Aura, Controle e Leitura e Energia Reversa quando a trilha já tem ao menos Nível 1. O limite da trilha também sobe 2, permitindo passar de 5 |
+| Confronto de Domínio | Adiado por decisão do autor nesta etapa |
+| Movimento | Multiplica o movimento final por 2 pelo canal `movimentoMult` |
+| Custo de Feitiço | O canal `custoPE` reduz todos os Feitiços em DOM, mantendo o piso final de 1 PE |
+| Benefício de Ritual | A expansão guarda uma escolha para Dano, Especiais, Auxiliares e Cura. O benefício é gratuito e não concede nem ocupa vaga adicional |
+
+O benefício gratuito já entra nos resolvedores de **Dano** e **Cura**. **Auxiliares e Especiais
+continuam pendentes**, porque essas duas categorias ainda não passam por `resolveRitual`. Os seletores
+ficam preservados no modelo para a ligação futura, sem inventar uma aplicação diferente da regra.
+
+Os efeitos escolhidos também passaram a alcançar a ficha:
+
+- Amplificação de Técnica aplica dados, dano fixo, CD, RD ignorada e remoção de resistência aos
+  Feitiços correspondentes.
+- Amplificação Corporal aplica nível de dano, dano fixo, RD ignorada e remoção de resistência apenas
+  a armas e Ataque Básico. Os alvos explícitos impedem o bônus corporal de vazar para Feitiços.
+- Aumento de Atributo, Redução de Dano e Defesa continuam pelo Motor já existente.
+- Efeitos Ambientais permanecem fora da ficha do dono, conforme decisão do autor. Condições da aba
+  Buffs continuam somente como marcadores.
+
+As propriedades calculadas mostram `Ignora RD` e `Resistência: Removida` nos Feitiços. As linhas de
+dano armado e básico mostram `Remove Resistência` quando o efeito corporal alcançar esse degrau.
+
+Assert de sessão com duas expansões confirmou seleção isolada: movimento 9 para 18, CD 23 para 29,
+custo 8 para 5 com DOM 3 e dano 12d8 para 15d8+10. Trocar de expansão removeu o efeito da anterior.
+
+### Atualizações já presentes no worktree
+
+O diff anterior à correção de Domínio também contém duas frentes preservadas e verificadas:
+
+- As Bases **Suporte em Combate**, **Energia Reversa** e **Liberação de Energia Reversa** são
+  concedidas automaticamente pelo nível de Suporte e não gastam vaga. As duas últimas concedem a
+  Aptidão nomeada. A origem Maldição continua sem trilha de Energia Reversa e não recebe essa
+  concessão.
+- Cura por dado passou a fechar o teto por fonte. O teto de Apanhador de Saúde não apara um bônus
+  separado do Funcionamento Básico. Descarga Reanimadora continua copiando uma cura pronta sem
+  reaplicar canais. Puxar um Ar e Insistência copiam o Ataque Básico e depois recebem os bônus de
+  cura uma vez, porque o dano copiado não os contém.
+
+### Verificação
+
+- `HEAD` e `origin/main` estão iguais após `git fetch --prune origin`: divergência `0 0`.
+- `npx eslint src/systems/afty/` passou.
+- `npx vite build` passou. Permanece o aviso de versão: Node 22.11.0, enquanto o Vite pede 22.12 ou
+  superior na linha 22.
+- Asserts do `deriveAfty` passaram pelo hook de resolução documentado no Contexto rápido.
+- `git diff --check` passou.
+- `src/components/` não possui alteração.
 
 ---
 
@@ -241,7 +311,7 @@ Reduções e alterações de custo de Feitiço já localizadas e ainda não apli
 | **Técnica Registrada** | Aumenta a redução da primeira Marca Registrada para 2 ou reduz a sustentação em 1, e concede Marcas adicionais |
 | **Manual de Técnica** | O Feitiço criado acima do nível acessível tem custo aumentado em 50% |
 | **Verdadeiras Origens, irmão morto** | Recebe a redução de O Honrado e reduz em 10 o custo da Técnica Máxima concedida |
-| **Expansão de Domínio, benefício Custo de Feitiço** | Reduz o custo em DOM enquanto o Feitiço é usado dentro da expansão |
+| **Expansão de Domínio, benefício Custo de Feitiço** | ✅ Reduz o custo em DOM enquanto a expansão escolhida está ativa, com piso final de 1 PE |
 
 Regras relacionadas a custo de Habilidade, mas que não são apenas custo-base de Feitiço:
 
@@ -743,11 +813,10 @@ gasto de ação: `curaDados`, `curaFaces`, `curaFixa`, `curaPorDado`, `curaPorDa
    **descem** (d12 no 8, d8 no 12), então elas saem de UMA expressão com sinal negativo no meio:
    `curaFaces` vale o maior entre as FONTES, e duas fontes emitindo 12 e 8 deixariam o d12 vencer
    para sempre.
-3. **Linha espelhada não recebe canal de cura.** "Uma rolagem do seu dano desarmado" e "uma rolagem
-   da sua cura de Suporte em Combate" copiam uma rolagem que já existe, inteira. Aplicar os canais
-   por cima contaria o bônus global DUAS vezes, porque ele já está dentro do que foi copiado. Só
-   `curaUsos` é da linha espelhada, porque o limite de usos é dela. **Item que cura é flat pelo
-   mesmo motivo.**
+3. **Espelho de cura e espelho de dano seguem caminhos diferentes.** Descarga Reanimadora copia a
+   cura pronta de Suporte em Combate e não reaplica canais, porque os bônus já estão nela. Puxar um
+   Ar e Insistência copiam o Ataque Básico, que não contém bônus de cura, e depois recebem esses
+   bônus uma vez. Item que cura continua flat.
 
 **Na tela**, card próprio na aba Habilidades, ao lado do de Dano, que **some inteiro** para quem não
 cura. A linha mostra o que UM ponto compra (autor), e não a rolagem do gasto máximo, com o custo em
@@ -1470,15 +1539,19 @@ Fortalecido, nome e descrição próprios), os dois atributos do Aumento de Atri
 os tipos de dano da Redução de Dano, e o Acerto Garantido. O card mostra custo,
 duração, área, PV do domo, o contador de vagas e o **texto pronto** da expansão.
 
-**Uma expansão de cada vez.** `creature.dominioAtivoId` diz qual está no ar, e é
-ela que a bancada aplica. A UI marca com o chip Ativa / Inativa.
+**Uma expansão de cada vez.** `creature.dominioAtivoId` guarda a escolha da bancada do criador. Na
+ficha final, a sessão guarda o id em `combate.dominioAtivo`, porque o combate da sessão substitui a
+bancada. A aba Buffs mostra uma opção por expansão. `dominioEmUso` resolve os dois caminhos e mantém
+compatibilidade com o booleano antigo.
 
 **Ponte com o Motor:** os efeitos que caem sobre a PRÓPRIA ficha viram efeitos
-temporários presos ao estado `dominio_ativo` da Simulação de Combate. Entram
-Aumento de CD, Aumento de Dano corporal (`nivelDano` + `danoBonus`), Aumento de
-Atributo (nos dois escolhidos), Redução de Dano, Defesa e Negação de RD dos golpes.
-Ficam de fora, só como texto, os três Ambientais (agem sobre criaturas hostis) e a
-Negação de RD dos Feitiços. Mesmo recorte da 2.5.2.
+temporários presos ao estado `dominio_ativo` da Simulação de Combate ou da sessão. Entram os efeitos
+básicos de nível de Aptidão, Movimento, Custo de Feitiço e benefício gratuito de Ritual, além de
+Aumento de CD, Aumento de Dano corporal e de Feitiço, Aumento de Atributo, Redução de Dano, Defesa,
+RD ignorada e remoção de resistência. Os alvos `feitico`, `arma` e `basico` mantêm cada bônus no
+escopo correto. Ficam de fora da ficha do dono os três Ambientais, que agem sobre criaturas hostis.
+Confronto de Domínio foi adiado pelo autor. Ritual já calcula Dano e Cura, enquanto Auxiliares e
+Especiais aguardam integração dessas categorias com `resolveRitual`.
 
 **O que o livro do AFTY confirma** (e bate com a 2.5.2): custo 15 e 20 PE, +5 do
 Acerto Garantido, duração `1 + DOM` e `3 + DOM`, área `4,5 m × BT` e 9 m.
@@ -1698,10 +1771,9 @@ Sete frentes fechadas. Cada uma tem detalhe na seção própria mais abaixo.
    20 calados). Hover de fontes no valor e no limite. Ver [Sistema de ATRIBUTOS](#sistema-de-atributos-reformado-em-2026-07-29).
 2. **Nível de Aptidão quebra o teto de 5.** Canal `limiteAptidao` novo, irmão do `limiteAtributo`.
    `resolveNiveisAptidao(aptidoes, concedido, limite)` agora recebe o teto por trilha e devolve
-   `limite`. ⚠ **Falta o conteúdo**: o autor citou DUAS Habilidades que dão "+1 podendo passar de 5"
-   (as duas juntas levam a 7) e a **Expansão de Domínio** (+2 em `au`, `cl` e `er`), e ainda **não
-   mandou o texto de nenhuma**. O mecanismo está pronto e testado, é só escrever as linhas:
-   `{canal:"nivelAptidao", alvo, expr}` mais `{canal:"limiteAptidao", alvo, expr}` juntas.
+   `limite`. A **Expansão de Domínio** foi ligada em 2026-08-12: +2 em `au`, `cl` e `er`, somente
+   quando a trilha já possui ao menos Nível 1, com `nivelAptidao` e `limiteAptidao` juntos. As duas
+   Habilidades citadas na época continuam dependentes do texto correspondente.
 3. **Motor de Automação no Funcionamento Básico.** `core.tecnicaEfeitos` é uma lista
    `[{canal, alvo?, expr, quando?, duracao?}]` que o JOGADOR escreve, com o DSL inteiro e os 48
    canais. Entra no motor por `efeitosDaTecnica` (em `afty-efeitos.js`) e os filtros de estágio
@@ -2775,12 +2847,10 @@ MESMO pool, e *Apoio Abrangente* (14°) deixa aplicar DOIS efeitos por apoio em 
 
 - **Único grupo de 14° nível do sistema.** `gruposDeHabilidade` ordena por nível sozinho, então
   ele entrou entre o 12° e o 16° sem ajuste nenhum no código.
-- **Único caso de Base que é CONCESSÃO PURA**: nos níveis 6 e 8 o livro só diz "você recebe a
-  aptidão amaldiçoada X", sem nomear uma habilidade. Viraram `sup_energia_reversa` e
-  `sup_liberacao_de_energia_reversa`, batizadas com o nome do que concedem.
-  ⚠ **PERGUNTA ABERTA:** pela regra do projeto, alvo NOMEADO = concessão direcionada e GRÁTIS,
-  mas pela regra do Afty toda Base gasta vaga de orçamento. As duas regras se chocam aqui.
-  **Decidir com o autor** se estas duas custam vaga ou vêm de graça.
+- **Bases automáticas do Suporte:** Suporte em Combate, Energia Reversa e Liberação de Energia
+  Reversa são recebidas ao alcançar o nível e não gastam vaga (autor, 2026-08-10). As duas últimas
+  concedem gratuitamente a Aptidão nomeada. O resolvedor separa `selecionadas` de `concedidas`, e a
+  UI marca as automáticas como Especialização.
 
 ### Coisas que este catálogo trouxe de novo
 - **Cura é um eixo inteiro** (Suporte em Combate, Medicina Infalível, Cura Avançada em Grupo,

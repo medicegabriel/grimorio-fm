@@ -276,7 +276,8 @@ export const textoDeDano = (dados, dado, fixo) =>
  */
 function linhaDeDano({
   nd, patamar, modChave, atributo, cl, grauArma, niveisDano, bonus,
-  dadosExtras = 0, margemBase = 20, reducaoMargem = 0, ignoraRD = 0, fontes = [],
+  dadosExtras = 0, margemBase = 20, reducaoMargem = 0, ignoraRD = 0,
+  removeResistencia = false, fontes = [],
 }) {
   const coef = COEF_DANO_PATAMAR[patamar];
   const arma = ARMA_BY_VALUE[grauArma] ?? ARMA_BY_VALUE.desarmado;
@@ -295,7 +296,7 @@ function linhaDeDano({
     // Margem de crítico: o piso é 2 (crítico só em 20 natural seria margem 20,
     // e reduzir sem limite chegaria a acertar crítico em qualquer rolagem).
     margemCritico: Math.max(2, margemBase - reducaoMargem),
-    ignoraRD,
+    ignoraRD, removeResistencia,
     texto: textoDeDano(dados, dado, fixo),
     partes: [
       { label: niveisDano ? `Nível ${nd} + ${niveisDano} × ${coef.nd}` : `Nível × ${coef.nd}`,
@@ -370,6 +371,7 @@ export function resolveDano(creature, ctx = {}) {
       margemBase,
       reducaoMargem: Math.trunc(canal("margemCritico", escopos)),
       ignoraRD: Math.max(0, Math.trunc(canal("ignoraRD", escopos))),
+      removeResistencia: canal("removeResistencia", escopos) > 0,
       fontes: fontesDe("danoBonus", escopos),
     });
     // Dado extra não é número, então entra no detalhamento como texto.

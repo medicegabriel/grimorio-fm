@@ -195,7 +195,14 @@ export const DOMINIO_EFEITOS = {
           const dados = F([1, 2, 3, 4, 5][i], f);
           const fixo = F([5, 5, 10, 10, 15][i], f);
           const valor = `+${dados} ${plural(dados, "dado", "dados")} de dano e +${fixo} de dano fixo`;
-          return { valor, frase: `Todos os seus Feitiços de dano recebem ${valor}.` };
+          return {
+            valor,
+            frase: `Todos os seus Feitiços de dano recebem ${valor}.`,
+            motor: [
+              { canal: "dadosDano", alvo: "feitico", expr: String(dados) },
+              { canal: "danoBonus", alvo: "feitico", expr: String(fixo) },
+            ],
+          };
         },
       },
       cd: {
@@ -218,6 +225,10 @@ export const DOMINIO_EFEITOS = {
           return {
             valor,
             frase: `Seus Feitiços ignoram ${rd} de RD dos alvos${resist ? ", e inimigos resistentes perdem a resistência" : ""}.`,
+            motor: [
+              { canal: "ignoraRD", alvo: "feitico", expr: String(rd) },
+              ...(resist ? [{ canal: "removeResistencia", alvo: "feitico", expr: "1" }] : []),
+            ],
           };
         },
       },
@@ -237,8 +248,10 @@ export const DOMINIO_EFEITOS = {
             valor,
             frase: `Todos os seus ataques armados e desarmados recebem ${valor}.`,
             motor: [
-              { canal: "nivelDano", expr: String(niveis) },
-              { canal: "danoBonus", expr: String(fixo) },
+              { canal: "nivelDano", alvo: "arma", expr: String(niveis) },
+              { canal: "nivelDano", alvo: "basico", expr: String(niveis) },
+              { canal: "danoBonus", alvo: "arma", expr: String(fixo) },
+              { canal: "danoBonus", alvo: "basico", expr: String(fixo) },
             ],
           };
         },
@@ -293,7 +306,14 @@ export const DOMINIO_EFEITOS = {
           return {
             valor,
             frase: `Seus golpes ignoram ${rd} de RD dos alvos${resist ? ", e inimigos resistentes perdem a resistência" : ""}.`,
-            motor: [{ canal: "ignoraRD", expr: String(rd) }],
+            motor: [
+              { canal: "ignoraRD", alvo: "arma", expr: String(rd) },
+              { canal: "ignoraRD", alvo: "basico", expr: String(rd) },
+              ...(resist ? [
+                { canal: "removeResistencia", alvo: "arma", expr: "1" },
+                { canal: "removeResistencia", alvo: "basico", expr: "1" },
+              ] : []),
+            ],
           };
         },
       },
@@ -384,6 +404,54 @@ export const DOMINIO_EFEITOS_BASE = [
   { titulo: "Benefício de Ritual", texto: "Todos os seus Feitiços recebem um benefício de ritual, escolhido por categoria (Dano, Especiais, Auxiliares e Cura)." },
 ];
 
+export const DOMINIO_RITUAL_CATEGORIAS = [
+  { key: "dano", label: "Dano" },
+  { key: "especial", label: "Especiais" },
+  { key: "auxiliar", label: "Auxiliares" },
+  { key: "curativo", label: "Cura" },
+];
+
+const normalizaBeneficiosRitual = (beneficios) => Object.fromEntries(
+  DOMINIO_RITUAL_CATEGORIAS.map(({ key }) => [key, String(beneficios?.[key] ?? "")]),
+);
+
+/**
+ * O benefício básico "Níveis de Aptidão" precisa entrar ANTES do contexto
+ * principal do Motor, porque `au`, `cl` e `er` são variáveis do próprio DSL.
+ * Por isso ele fica separado dos efeitos escolhidos da expansão, que dependem
+ * do DOM efetivo e são resolvidos mais tarde.
+ *
+ * A regra só alcança uma trilha em que a criatura já tenha ao menos Nível 1.
+ * O chamador entrega os níveis resolvidos sem a própria expansão, evitando que
+ * o bônus se habilite sozinho numa trilha zerada.
+ */
+export function efeitosDeAptidaoDoDominio(
+  creature,
+  { aptidoesEscolhidas = [], niveisAptidao = {} } = {},
+) {
+  const combate = creature?.combate;
+  if (!combate?.ativo || !combate?.dominioAtivo) return [];
+
+  const ativo = dominioEmUso(creature, aptidoesEscolhidas);
+  if (!ativo) return [];
+
+  const nome = `${ativo.nome || "Expansão de Domínio"}: Níveis de Aptidão`;
+  return ["au", "cl", "er"].flatMap((alvo) => {
+    if ((niveisAptidao?.[alvo] ?? 0) < 1) return [];
+    const base = {
+      alvo,
+      expr: "2",
+      nome,
+      origem: ativo.id,
+      duracao: "temporaria",
+    };
+    return [
+      { ...base, canal: "nivelAptidao" },
+      { ...base, canal: "limiteAptidao" },
+    ];
+  });
+}
+
 /* ------------------------------------------------------------ */
 /* RESOLUÇÃO DE UM EFEITO                                        */
 /* ------------------------------------------------------------ */
@@ -445,6 +513,7 @@ export function novoDominio(versao = "") {
     versao,
     aparencia: "",
     efeitos: [],
+    beneficiosRitual: normalizaBeneficiosRitual(null),
     acertoGarantido: { ativo: false, escopo: "" },
   };
 }
@@ -456,12 +525,41 @@ export function normalizeDominio(d = {}) {
     efeitos: Array.isArray(d.efeitos)
       ? d.efeitos.map((e) => ({ ...novoEfeitoDominio(e.categoria), ...e }))
       : [],
+    beneficiosRitual: normalizaBeneficiosRitual(d.beneficiosRitual),
     acertoGarantido: { ativo: false, escopo: "", ...(d.acertoGarantido ?? {}) },
   };
 }
 
 export const listaDominios = (creature) =>
   (Array.isArray(creature?.dominios) ? creature.dominios : []).map(normalizeDominio);
+
+/**
+ * Qual expansão a sessão está usando. A ficha final grava o id diretamente no
+ * estado `dominioAtivo`. O booleano antigo continua válido: usa a escolha do
+ * criador ou, quando só existe uma expansão, a única opção possível.
+ */
+export function dominioEmUso(creature, aptidoesEscolhidas = []) {
+  const lista = listaDominios(creature);
+  const estado = creature?.combate?.dominioAtivo;
+  const candidatos = [
+    typeof estado === "string" ? estado : null,
+    creature?.dominioAtivoId,
+    lista.length === 1 ? lista[0].id : null,
+  ].filter(Boolean);
+  const ativo = candidatos
+    .map((id) => lista.find((dominio) => dominio.id === id))
+    .find((dominio) => dominio && resolveVersao(dominio, aptidoesEscolhidas));
+  return ativo ?? null;
+}
+
+/** Benefícios gratuitos de Ritual da expansão que está realmente em uso. */
+export function beneficiosRitualDoDominio(creature, aptidoesEscolhidas = []) {
+  const combate = creature?.combate;
+  if (!combate?.ativo || !combate?.dominioAtivo) return normalizaBeneficiosRitual(null);
+  const ativo = dominioEmUso(creature, aptidoesEscolhidas);
+  if (!ativo) return normalizaBeneficiosRitual(null);
+  return normalizaBeneficiosRitual(ativo.beneficiosRitual);
+}
 
 /* ------------------------------------------------------------ */
 /* TEXTO FINAL                                                   */
@@ -545,8 +643,7 @@ export function textoDoDominio(dominio, { dom = 0, nd = 0, bt = 2, bar = 0, vers
  * expansões escritas, e expandir é uma de cada vez.
  */
 export function efeitosDoDominio(creature, { dom = 0, aptidoesEscolhidas = [] } = {}) {
-  const lista = listaDominios(creature);
-  const ativo = lista.find((d) => d.id === creature?.dominioAtivoId);
+  const ativo = dominioEmUso(creature, aptidoesEscolhidas);
   if (!ativo) return [];
   const versao = resolveVersao(ativo, aptidoesEscolhidas);
   if (!versao) return [];
@@ -557,11 +654,17 @@ export function efeitosDoDominio(creature, { dom = 0, aptidoesEscolhidas = [] } 
     quando: "dominio_ativo", duracao: "temporaria",
   });
 
+  const nomeBase = `${ativo.nome || "Expansão de Domínio"}: Efeito básico`;
+  out.push(marca("movimentoMult", "2", nomeBase));
+  out.push(marca("custoPE", "dom", nomeBase));
+
   for (const efeito of ativo.efeitos) {
     const r = resolvido(efeito, dom, versao);
     if (!r) continue;
     const nome = `${ativo.nome || "Expansão de Domínio"}: ${rotuloDoEfeito(efeito)}`;
-    for (const m of r.motor ?? []) out.push(marca(m.canal, m.expr, nome));
+    for (const m of r.motor ?? []) {
+      out.push({ ...marca(m.canal, m.expr, nome), ...(m.alvo ? { alvo: m.alvo } : {}) });
+    }
     // O Aumento de Atributo precisa dos dois atributos que o jogador escolheu,
     // então ele não cabe no `motor` da tabela, que é fixo.
     if (r.motorAtributo) {

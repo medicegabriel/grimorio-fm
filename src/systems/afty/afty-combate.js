@@ -498,13 +498,13 @@ export const COMBATE_ESTADOS = [
     requerAptidao: "fluxo_constante",
   },
   {
-    // A expansão no ar. Vale para a que estiver marcada como ativa na aba
-    // Habilidades, porque expandir é uma de cada vez.
+    // A expansão no ar. A sessão guarda o id da escolhida, porque uma criatura
+    // pode ter várias e expandir é uma de cada vez.
     // ⚠ Basta a Incompleta para a linha aparecer: quem tem a Completa tem a
     // Incompleta como pré-requisito, então a checagem de uma cobre as duas.
     id: "dominioAtivo",
     label: "Expansão de Domínio",
-    tipo: "bool",
+    tipo: "dominio",
     requerAptidao: "expansao_de_dominio_incompleta",
   },
   {
@@ -595,12 +595,22 @@ export function resolveCombate(creature, params = {}) {
     const escolhida = c[id];
     return def?.opcoes?.some((o) => o.id === escolhida) ? escolhida : null;
   };
+  const dominioDe = () => {
+    const ids = new Set((Array.isArray(params.dominios) ? params.dominios : []).map((d) => d.id));
+    const escolhido = c.dominioAtivo;
+    if (typeof escolhido === "string" && ids.has(escolhido)) return escolhido;
+    if (escolhido === true) {
+      if (ids.has(creature?.dominioAtivoId)) return creature.dominioAtivoId;
+      if (ids.size === 1) return [...ids][0];
+    }
+    return null;
+  };
 
   // Zerado é o padrão de TODO estado, e o que sai fora de combate. Vem do
   // catálogo para um estado novo não escapar da regra por esquecimento.
   const zerado = {
     ...Object.fromEntries(COMBATE_ESTADOS.map((e) => [
-      e.id, e.tipo === "bool" ? false : e.tipo === "opcao" ? null : 0,
+      e.id, e.tipo === "bool" ? false : ["opcao", "dominio"].includes(e.tipo) ? null : 0,
     ])),
     ...Object.fromEntries(extras.map((e) => [e.id, false])),
   };
@@ -639,6 +649,7 @@ export function resolveCombate(creature, params = {}) {
   for (const e of COMBATE_ESTADOS) {
     if (e.tipo === "bool") out[e.id] = !!c[e.id];
     else if (e.tipo === "opcao") out[e.id] = opcaoDe(e.id);
+    else if (e.tipo === "dominio") out[e.id] = dominioDe();
     else {
       const min = e.min ?? 0;
       const passo = Math.max(1, Math.trunc(Number(e.passo) || 1));

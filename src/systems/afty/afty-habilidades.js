@@ -11,7 +11,10 @@
  *    por sua vez já divergia do livro de propósito. Não reinstalar nenhuma
  *    das duas: hoje quem manda é a Habilidade Geral.
  * 2. **Base e por Nível gastam O MESMO orçamento.** No livro as Bases são de
- *    graça; no Afty elas são escolhidas, igual às por Nível.
+ *    graça; no Afty elas são escolhidas, igual às por Nível. A exceção é o
+ *    Suporte: Suporte em Combate, Energia Reversa e Liberação de Energia
+ *    Reversa são recebidas automaticamente ao alcançar o nível (autor,
+ *    2026-08-10) e não gastam orçamento.
  * 3. **Orçamento único**, gasto onde o jogador quiser, e dividido com os
  *    Talentos. O que muda por especialização é o ACESSO: cada habilidade
  *    exige nível NAQUELA especialização (o lado da multiclasse), não o ND.
@@ -3563,6 +3566,7 @@ export const AFTY_HABILIDADES = [
     especializacaoId: "suporte",
     tipo: "base",
     nivel: 1,
+    automatica: true,
     descricao:
       "Um suporte dispõe de um leque de capacidades que o permite auxiliar dentro do combate:\n\n" +
       "• Você pode usar Apoiar como uma ação bônus.\n" +
@@ -3608,9 +3612,10 @@ export const AFTY_HABILIDADES = [
     nivel: 6,
     // ⚠ NÃO TEM NOME NO LIVRO: o texto é só "No nível 6, você recebe a aptidão
     // amaldiçoada 'Energia Reversa'". Batizada com o nome do que concede.
-    // É CONCESSÃO DIRECIONADA (a regra NOMEIA o alvo), logo deveria ser
-    // GRÁTIS, mas no Afty toda Base gasta orçamento. CONFIRMAR com o autor se
-    // esta e a de 8° custam vaga ou vêm de graça.
+    // O Suporte recebe esta Base automaticamente no nível 6 e a Base concede
+    // a Aptidão nomeada sem gastar orçamento (autor, 2026-08-10).
+    automatica: true,
+    concedeAptidao: "energia_reversa",
     descricao: "No nível 6, você recebe a aptidão amaldiçoada “Energia Reversa”.",
     requisitos: [],
   },
@@ -3620,6 +3625,8 @@ export const AFTY_HABILIDADES = [
     especializacaoId: "suporte",
     tipo: "base",
     nivel: 8,
+    automatica: true,
+    concedeAptidao: "liberacao_de_energia_reversa",
     descricao: "No nível 8, você recebe a aptidão amaldiçoada “Liberação de Energia Reversa”.",
     requisitos: [],
   },
@@ -5966,6 +5973,30 @@ const BY_ID = Object.fromEntries(AFTY_HABILIDADES.map((h) => [h.id, h]));
 export const getHabilidade = (id) => BY_ID[id] || null;
 
 /**
+ * Bases que a Especialização concede ao alcançar o nível, sem escolha e sem
+ * gastar orçamento. Hoje esta é uma exceção exclusiva do Suporte.
+ */
+export function habilidadesConcedidasPelasEspecializacoes(escolhidasEspec = []) {
+  const niveis = Object.fromEntries(
+    (Array.isArray(escolhidasEspec) ? escolhidasEspec : [])
+      .map((e) => [e?.id, Math.max(0, Math.trunc(Number(e?.nivel) || 0))]),
+  );
+  return AFTY_HABILIDADES
+    .filter((h) => h.automatica && (niveis[h.especializacaoId] ?? 0) >= h.nivel)
+    .map((h) => h.id);
+}
+
+/** Aptidões nomeadas que as Habilidades automáticas concedem de graça. */
+export function aptidoesConcedidasPelasHabilidades(habilidadesIds = []) {
+  const out = [];
+  for (const id of Array.isArray(habilidadesIds) ? habilidadesIds : []) {
+    const aptidaoId = BY_ID[id]?.concedeAptidao;
+    if (aptidaoId && !out.includes(aptidaoId)) out.push(aptidaoId);
+  }
+  return out;
+}
+
+/**
  * Nome de cada OPÇÃO de escolha aninhada, por id (Estilo Defensivo, Ajuste,
  * Aura...). Existe para o Motor de Automação rotular a fonte de um número no
  * hover: o efeito é chaveado pela opção, não pela habilidade dona.
@@ -6479,15 +6510,20 @@ export function resolveHabilidades(
   { nd = 1, almaLivreEspecializacao = null } = {},
 ) {
   const niveisPorEspec = niveisPorEspecializacao(escolhidasEspec);
+  const concedidas = habilidadesConcedidasPelasEspecializacoes(escolhidasEspec);
+  const concedidasSet = new Set(concedidas);
   const vistos = new Set();
-  const escolhidas = [];
+  const selecionadas = [];
   for (const id of Array.isArray(creature?.habilidades) ? creature.habilidades : []) {
-    if (!BY_ID[id] || vistos.has(id)) continue;
+    // Uma ficha antiga pode ter gravado manualmente uma Base que agora é
+    // automática. Ela continua efetiva, mas deixa de gastar vaga.
+    if (!BY_ID[id] || vistos.has(id) || concedidasSet.has(id)) continue;
     vistos.add(id);
-    escolhidas.push(id);
+    selecionadas.push(id);
   }
+  const escolhidas = [...selecionadas, ...concedidas];
   const habilidadesAlmaLivre = almaLivreEspecializacao
-    ? escolhidas.filter((id) => BY_ID[id]?.especializacaoId === almaLivreEspecializacao)
+    ? selecionadas.filter((id) => BY_ID[id]?.especializacaoId === almaLivreEspecializacao)
     : [];
   const habilidadeAlmaLivreId = habilidadesAlmaLivre[0] ?? null;
   const almaLivre = almaLivreEspecializacao ? {
@@ -6520,7 +6556,7 @@ export function resolveHabilidades(
   // extra. Talentos entram no MESMO orçamento ("obtidos no lugar de
   // habilidades de especialização", autor 2026-07-22), por isso vêm de fora.
   const talentos = Math.max(0, talentosGastos);
-  const gastosHabilidade = escolhidas.length + escolhas.vagasExtras;
+  const gastosHabilidade = selecionadas.length + escolhas.vagasExtras;
   // Talento gasta a exclusiva primeiro, e o resto cai no comum.
   const talentosNoExclusivo = Math.min(talentos, exclusivasTalento);
   const gastosNoComum = gastosHabilidade + (talentos - talentosNoExclusivo);
@@ -6530,6 +6566,8 @@ export function resolveHabilidades(
   if (habilidadeAlmaLivreId) niveisPorEfeito[almaLivreEspecializacao] = almaLivre.nivel;
   return {
     escolhidas,
+    selecionadas,
+    concedidas,
     escolhas,               // { porHab, mapa, vagasExtras }
     talentosGastos,
     total,

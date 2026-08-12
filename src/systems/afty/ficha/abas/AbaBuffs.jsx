@@ -73,7 +73,7 @@ function LinhaEstado({ estado, valor, delta, opcoes, onValor, derived, bloqueado
         >
           {valor ? "Ativa" : bloqueado ? "Usada" : "Inativa"}
         </button>
-      ) : estado.tipo === "opcao" ? (
+      ) : ["opcao", "dominio"].includes(estado.tipo) ? (
         <span className="flex items-center gap-1 flex-wrap justify-end">
           {opcoes.map((o) => (
             <button
@@ -184,15 +184,23 @@ export default function AbaBuffs({
     const opcoesEscolhidas = Object.values(derived.habilidades?.escolhas?.mapa ?? {}).flat();
     const temHabilidade = (req) =>
       (Array.isArray(req) ? req : [req]).some((id) => escolhidas.includes(id));
-    const opcoesDe = (e) => (e.opcoes ?? [])
-      .filter((o) => !o.requerEscolha || opcoesEscolhidas.includes(o.requerEscolha));
+    const opcoesDe = (e) => {
+      if (e.tipo === "dominio") {
+        return (derived.dominios?.lista ?? []).map((d) => ({
+          id: d.id,
+          label: d.nome || "Domínio Sem Nome",
+        }));
+      }
+      return (e.opcoes ?? [])
+        .filter((o) => !o.requerEscolha || opcoesEscolhidas.includes(o.requerEscolha));
+    };
     return [
       ...COMBATE_ESTADOS.filter((e) => {
         const temDono = e.requerEscolha ? opcoesEscolhidas.includes(e.requerEscolha)
           : e.requerTalento ? talentos.includes(e.requerTalento)
           : e.requerAptidao ? aptidoes.includes(e.requerAptidao)
           : temHabilidade(e.requerHabilidade);
-        return temDono && (e.tipo !== "opcao" || opcoesDe(e).length > 0);
+        return temDono && (!["opcao", "dominio"].includes(e.tipo) || opcoesDe(e).length > 0);
       }),
       ...(derived.combate?.estadosExtras ?? []).map((e) => ({ ...e, tipo: "bool" })),
     ].map((e) => ({ ...e, opcoesVisiveis: opcoesDe(e) }));

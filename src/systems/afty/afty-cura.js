@@ -45,14 +45,14 @@
  * é do uso inteiro, e a linha mostra os dois separados.
  *
  * ------------------------------------------------------------
- * LINHA ESPELHADA NÃO RECEBE CANAL DE CURA
+ * ESPELHO DE CURA E ESPELHO DE DANO SÃO DIFERENTES
  * ------------------------------------------------------------
- * "curando-se em um valor igual a uma rolagem do seu dano desarmado" (Puxar um
- * Ar) e "recupere pontos de vida igual a uma rolagem da sua cura de Suporte em
- * Combate" (Descarga Reanimadora) copiam uma rolagem que já existe, inteira.
- * Aplicar os canais por cima contaria o bônus global DUAS vezes: ele já está
- * dentro da rolagem copiada. Só `curaUsos` é da linha espelhada, porque o limite
- * de usos é dela e não da fonte.
+ * Descarga Reanimadora copia uma CURA pronta, que já contém Medicina Infalível,
+ * Apanhador de Saúde e outros bônus globais. Aplicá-los outra vez duplicaria.
+ *
+ * Puxar um Ar e Insistência copiam o ATAQUE BÁSICO. Ele não contém bônus de
+ * cura, então os dados e o valor fixo do ataque viram a base da nova rolagem e
+ * os canais globais de cura entram uma vez sobre ela.
  *
  * Item que cura é flat pelo mesmo motivo: "curando-se em 10 pontos de vida" é
  * um número do talismã, não uma cura que a criatura realiza.
@@ -197,6 +197,37 @@ export const getFonteCura = (id) => FONTE_BY_ID[id] ?? null;
 
 const inteiro = (v) => Math.trunc(Number(v) || 0);
 
+/**
+ * Fecha o bônus por dado por FONTE. O teto acompanha somente a fonte que o
+ * declarou: o limite do Apanhador de Saúde não pode aparar um bônus separado
+ * escrito no Funcionamento Básico.
+ */
+function resolveCuraPorDado(ef, alvo) {
+  if (!ef) return null;
+  const bonus = detalhesDoCanal(ef, "curaPorDado", alvo);
+  if (!bonus.length) return null;
+
+  const chave = (p) => `${p.origem ?? ""}\u0000${p.nome ?? ""}`;
+  const tetos = new Map();
+  for (const p of detalhesDoCanal(ef, "curaPorDadoTeto", alvo)) {
+    const k = chave(p);
+    tetos.set(k, (tetos.get(k) ?? 0) + inteiro(p.valor));
+  }
+
+  const agrupadas = new Map();
+  for (const p of bonus) {
+    const k = chave(p);
+    const atual = agrupadas.get(k) ?? { label: p.nome, valor: 0, teto: null };
+    atual.valor += inteiro(p.valor);
+    agrupadas.set(k, atual);
+  }
+  for (const [k, p] of agrupadas) {
+    if (tetos.has(k)) p.teto = Math.max(0, tetos.get(k));
+  }
+
+  return { parcelas: [...agrupadas.values()] };
+}
+
 /** O custo de UM bloco, por extenso: "PER" quando é um, "2 PE" quando são dois. */
 export const rotuloBloco = (u) => (u.porBloco === 1 ? u.rotulo : `${u.porBloco} ${u.rotulo}`);
 
@@ -219,17 +250,29 @@ export function curaNoGasto(linha, blocos = 1) {
     : 1;
   const dados = Math.max(0, inteiro(linha.dados)) * usados;
   const porDado = linha.curaPorDado;
-  const bruto = porDado ? dados * inteiro(porDado.valor) : 0;
-  const bonusPorDado = porDado
-    ? (inteiro(porDado.teto) > 0 ? Math.min(bruto, inteiro(porDado.teto)) : bruto)
-    : 0;
+  const parcelasPorDado = Array.isArray(porDado?.parcelas)
+    ? porDado.parcelas.map((p) => {
+      const bruto = dados * inteiro(p.valor);
+      const valor = p.teto == null ? bruto : Math.min(bruto, inteiro(p.teto));
+      return { label: p.label, valor };
+    })
+    // Compatibilidade com linhas montadas no formato anterior.
+    : porDado
+      ? [{
+        label: porDado.fontes?.[0] ?? "Bônus por Dado",
+        valor: inteiro(porDado.teto) > 0
+          ? Math.min(dados * inteiro(porDado.valor), inteiro(porDado.teto))
+          : dados * inteiro(porDado.valor),
+      }]
+      : [];
+  const bonusPorDado = parcelasPorDado.reduce((s, p) => s + p.valor, 0);
   const fixo = inteiro(linha.fixoBase ?? linha.fixo) + bonusPorDado;
   const partes = linha.partesDados
     ? [...linha.partesDados]
     : [...(linha.partes || [])];
   if (usados > 1) partes.push({ label: "Gasto", texto: `× ${usados}` });
   if (linha.partesFixas) partes.push(...linha.partesFixas);
-  for (const label of porDado?.fontes ?? []) partes.push({ label, valor: bonusPorDado });
+  for (const p of parcelasPorDado) partes.push(p);
   const pontos = linha.unidade ? usados * linha.unidade.porBloco : 0;
   return {
     blocos: usados,
@@ -321,14 +364,13 @@ export function resolveCura(ctx = {}) {
     const usos = Math.max(0, inteiro(canal("curaUsos", f.id)));
     const alcance = f.alcance(cond);
 
-    // ---------- Linha ESPELHADA: copia a rolagem inteira ----------
-    // Nenhum canal de cura entra, para o bônus global não contar duas vezes
-    // (ele já está dentro da rolagem copiada). Ver o cabeçalho do arquivo.
-    if (f.espelhaDanoBasico || f.espelha) {
-      const molde = f.espelhaDanoBasico ? ctx.danoBasico : porId[f.espelha];
+    // ---------- Espelho de CURA: copia a rolagem inteira ----------
+    // Nenhum canal entra de novo, porque ele já está dentro da cura copiada.
+    if (f.espelha) {
+      const molde = porId[f.espelha];
       if (!molde) continue;                    // a fonte espelhada não existe
       const texto = textoDeRolagem(molde.dados, molde.dado, molde.fixo);
-      const espelhaNome = f.espelhaDanoBasico ? "Ataque Básico" : molde.nome;
+      const espelhaNome = molde.nome;
       const linha = {
         id: f.id, nome: f.nome, grupo: f.grupo, alcance,
         dados: molde.dados, dado: molde.dado, fixo: molde.fixo,
@@ -336,6 +378,40 @@ export function resolveCura(ctx = {}) {
         unidade: null, blocos: 1, dadosNoMaximo: molde.dados,
         texto, textoNoMaximo: texto, espelhaNome,
         partes: [{ label: espelhaNome, texto }],
+      };
+      linhas.push(linha);
+      porId[f.id] = linha;
+      continue;
+    }
+
+    // ---------- Espelho de DANO: vira cura e recebe bônus de cura ----------
+    // O Ataque Básico não carrega Medicina Infalível nem Apanhador de Saúde.
+    // Puxar um Ar e Insistência copiam os dados dele, mas a rolagem resultante
+    // é cura e recebe os bônus globais uma vez.
+    if (f.espelhaDanoBasico) {
+      const molde = ctx.danoBasico;
+      if (!molde) continue;
+      const espelhaNome = "Ataque Básico";
+      const partesFixas = fontesDe("curaFixa", f.id);
+      const curaPorDado = resolveCuraPorDado(ef, f.id);
+      const base = {
+        id: f.id, nome: f.nome, grupo: f.grupo, alcance,
+        dados: molde.dados, dado: molde.dado,
+        fixoBase: inteiro(molde.fixo) + inteiro(canal("curaFixa", f.id)),
+        usos: usos > 0 ? usos : null,
+        unidade: null, blocos: 1, dadosNoMaximo: molde.dados,
+        espelhaNome,
+        partesDados: [{ label: espelhaNome, texto: textoDeRolagem(molde.dados, molde.dado, molde.fixo) }],
+        partesFixas,
+        curaPorDado,
+      };
+      const estado = curaNoGasto(base, 1);
+      const linha = {
+        ...base,
+        fixo: estado.fixo,
+        texto: estado.texto,
+        textoNoMaximo: estado.texto,
+        partes: estado.partes,
       };
       linhas.push(linha);
       porId[f.id] = linha;
@@ -373,9 +449,6 @@ export function resolveCura(ctx = {}) {
     // "+1 de cura por dado, com um limite de cura adicional igual a metade do
     // seu nível" (Apanhador de Saúde). Vale por dado ROLADO, então conta os do
     // gasto máximo, e cai no fixo porque é uma soma no total do uso.
-    const porDado = inteiro(canal("curaPorDado", f.id));
-    const tetoPorDado = inteiro(canal("curaPorDadoTeto", f.id));
-    const fontesPorDado = porDado ? fontesDe("curaPorDado", f.id).map((p) => p.label) : [];
     const fixoBase = inteiro(canal("curaFixa", f.id));
 
     const linha = montaLinha({
@@ -385,7 +458,7 @@ export function resolveCura(ctx = {}) {
       usos, pontos, unidade: f.unidade,
       partesDados,
       partesFixas,
-      curaPorDado: porDado ? { valor: porDado, teto: tetoPorDado, fontes: fontesPorDado } : null,
+      curaPorDado: resolveCuraPorDado(ef, f.id),
     });
     linhas.push(linha);
     porId[f.id] = linha;

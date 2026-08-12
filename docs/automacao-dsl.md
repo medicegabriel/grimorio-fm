@@ -40,6 +40,12 @@ Onde se usa:
 - `guarda_atual, alma_atual, hp_temp` — Guarda atual, Alma atual e PV temporário.
 - `hp_pct, pe_pct` — Percentual de PV/PE atual (0–100).
 
+### Estados de combate do Afty
+- `em_combate` — 1 enquanto a bancada ou a sessão está em combate.
+- `dominio_ativo` — 1 quando a sessão selecionou uma Expansão de Domínio válida.
+- Os demais ids de `COMBATE_ESTADOS` viram identificadores normalizados pelo mesmo caminho. Estados
+  de opção também geram uma variável para cada opção.
+
 ## Funções
 - `metade(x)` — Metade de x.
 - `dobro(x)` — Dobro de x.
@@ -68,3 +74,7 @@ Onde se usa:
 - Identificadores são normalizados (minúsculas, sem acento): `Constituição` e `constituicao` são a mesma variável.
 - As expressões leem os valores **base** (sem os próprios buffs) + os recursos atuais — então um efeito que modifica Defesa não lê a Defesa já modificada (evita laço).
 - Em caso de erro na expressão, o valor cai no fallback (valor fixo do efeito, ou pré-requisito tratado como atendido), sem quebrar o app.
+- Os canais são consumidores do resultado da DSL, não parte da linguagem. A integração de Domínio
+  usa `movimentoMult` para multiplicar o movimento final, `custoPE` como redução de custo,
+  `removeResistencia` como sinalizador por fonte de dano e `nivelAptidao` com `limiteAptidao` para o
+  bônus que pode passar do teto normal.

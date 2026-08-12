@@ -65,6 +65,7 @@ function LinhaDano({ e, rolar, critico, onCritico, destacado }) {
           {e.nome}
         </span>
         {e.ignoraRD > 0 && <span className="afty-rotulo text-[10px] whitespace-nowrap">Ignora RD {e.ignoraRD}</span>}
+        {e.removeResistencia && <span className="afty-rotulo text-[10px] whitespace-nowrap">Remove Resistência</span>}
         <span className="afty-rotulo text-[10px] whitespace-nowrap" title="Margem de Crítico">
           Crít. {e.margemCritico}
         </span>
