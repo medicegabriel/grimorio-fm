@@ -3275,6 +3275,7 @@ function FeiticosCard({ draft, derived, addFeitico, removeFeitico, patchFeitico,
   ];
   const ctx = {
     nd: derived.nd,
+    nivelConjurador: derived.feiticos.nivelConjurador,
     cdBase: derived.feiticos.cdBase,
     modTecnica: derived.modTecnica,
     efeitos: derived.efeitos,

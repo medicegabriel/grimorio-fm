@@ -16,7 +16,8 @@
  *
  * O que é fórmula FECHADA e derivável sozinho:
  *   - Orçamento de Feitiços: 2 + 1 por nível par + 1 no ND 10 e no 20.
- *   - Nível máximo acessível pela faixa de ND (bônus de treinamento).
+ *   - Nível máximo acessível pela faixa de ND, antecipado por Adiantar a
+ *     Evolução para quem alcança os níveis exigidos de Conjurador.
  *   - Custo padrão por nível, com piso de 1 PE (salvo nível 0).
  *   - CD da técnica: derived.cd (já usa o Atributo Principal da
  *     Técnica = core.tecnicaAttr e a Maestria). A criação só
@@ -78,16 +79,20 @@ export const FEITICO_CUSTO_PE = { 0: 0, 1: 2, 2: 5, 3: 8, 4: 12, 5: 20 };
 // ACESSO DE FEITIÇOS por faixa de Nível de Personagem (== ND).
 // A tabela é o próprio bônus de treinamento subindo. Para no ND 20
 // (nível 5). Acima de 20 mantenho o teto no nível 5 (a tabela do
-// livro não vai além). Devolve o MAIOR nível de Feitiço acessível.
+// livro não vai além). Adiantar a Evolução antecipa os mesmos degraus
+// para quem alcançou o 4° nível de Conjurador. Devolve o MAIOR nível
+// de Feitiço acessível entre a progressão comum e a antecipada.
 // ---------------------------------------------------------------
-export function nivelMaxFeitico(nd) {
+export function nivelMaxFeitico(nd, nivelConjurador = 0) {
   const n = Math.max(1, nd | 0);
-  if (n >= 17) return 5;
-  if (n >= 13) return 4;
-  if (n >= 9) return 3;
-  if (n >= 5) return 2;
-  return 1;
+  const nc = Math.max(0, nivelConjurador | 0);
+  const comum = n >= 17 ? 5 : n >= 13 ? 4 : n >= 9 ? 3 : n >= 5 ? 2 : 1;
+  const adiantado = nc >= 15 ? 5 : nc >= 11 ? 4 : nc >= 7 ? 3 : nc >= 4 ? 2 : 1;
+  return Math.max(comum, adiantado);
 }
+
+const nivelMaxFeiticoDoContexto = (ctx = {}) =>
+  nivelMaxFeitico(ctx.nd, ctx.nivelConjurador);
 
 // ---------------------------------------------------------------
 // ORÇAMENTO: os Feitiços NÃO têm mais contador próprio.
@@ -474,8 +479,8 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
   }
 
   // Acesso: o nível do Feitiço não pode passar do máximo da faixa de ND.
-  if (ctx.nd != null && nivel !== "max" && nivel > nivelMaxFeitico(ctx.nd)) {
-    avisos.push(`Nível ${nivel} inacessível: no ND ${ctx.nd} o máximo é ${nivelMaxFeitico(ctx.nd)}.`);
+  if (ctx.nd != null && nivel !== "max" && nivel > nivelMaxFeiticoDoContexto(ctx)) {
+    avisos.push(`Nível ${nivel} inacessível: no ND ${ctx.nd} o máximo é ${nivelMaxFeiticoDoContexto(ctx)}.`);
   }
 
   // Base da tabela.
@@ -1055,8 +1060,8 @@ export function calcularFeiticoCurativo(feitico, ctx = {}) {
   const lib = resolveLiberacao(f, ctx);
 
   // Acesso: o nível do Feitiço não pode passar do máximo da faixa de ND.
-  if (ctx.nd != null && nivel !== "max" && nivel > nivelMaxFeitico(ctx.nd)) {
-    avisos.push(`Nível ${nivel} inacessível: no ND ${ctx.nd} o máximo é ${nivelMaxFeitico(ctx.nd)}.`);
+  if (ctx.nd != null && nivel !== "max" && nivel > nivelMaxFeiticoDoContexto(ctx)) {
+    avisos.push(`Nível ${nivel} inacessível: no ND ${ctx.nd} o máximo é ${nivelMaxFeiticoDoContexto(ctx)}.`);
   }
 
   // Base da tabela. Nível 0 não cura, área começa no Nível 1.
@@ -1328,8 +1333,8 @@ export function calcularFeiticoGolpeador(feitico, ctx = {}) {
   const f = feitico || {};
   const nivel = f.nivel ?? 1;
   const nNum = nivel === "max" ? 6 : nivel;
-  if (ctx.nd != null && nivel !== "max" && nivel > nivelMaxFeitico(ctx.nd)) {
-    avisos.push(`Nível ${nivel} inacessível: no ND ${ctx.nd} o máximo é ${nivelMaxFeitico(ctx.nd)}.`);
+  if (ctx.nd != null && nivel !== "max" && nivel > nivelMaxFeiticoDoContexto(ctx)) {
+    avisos.push(`Nível ${nivel} inacessível: no ND ${ctx.nd} o máximo é ${nivelMaxFeiticoDoContexto(ctx)}.`);
   }
   const linha = GOLPEADOR[nivel];
   if (!linha) {
@@ -1392,8 +1397,8 @@ export function calcularFeiticoDanoAlma(feitico, ctx = {}) {
   const f = feitico || {};
   const nivel = f.nivel ?? 1;
   const nNum = nivel === "max" ? 6 : nivel;
-  if (ctx.nd != null && nivel !== "max" && nivel > nivelMaxFeitico(ctx.nd)) {
-    avisos.push(`Nível ${nivel} inacessível: no ND ${ctx.nd} o máximo é ${nivelMaxFeitico(ctx.nd)}.`);
+  if (ctx.nd != null && nivel !== "max" && nivel > nivelMaxFeiticoDoContexto(ctx)) {
+    avisos.push(`Nível ${nivel} inacessível: no ND ${ctx.nd} o máximo é ${nivelMaxFeiticoDoContexto(ctx)}.`);
   }
   const linha = DANO_ALMA[nivel];
   if (!linha) {
@@ -1445,8 +1450,8 @@ export function calcularFeiticoInvisibilidade(feitico, ctx = {}) {
   const avisos = [];
   const f = feitico || {};
   const nivel = f.nivel ?? 1;
-  if (ctx.nd != null && nivel !== "max" && nivel > nivelMaxFeitico(ctx.nd)) {
-    avisos.push(`Nível ${nivel} inacessível: no ND ${ctx.nd} o máximo é ${nivelMaxFeitico(ctx.nd)}.`);
+  if (ctx.nd != null && nivel !== "max" && nivel > nivelMaxFeiticoDoContexto(ctx)) {
+    avisos.push(`Nível ${nivel} inacessível: no ND ${ctx.nd} o máximo é ${nivelMaxFeiticoDoContexto(ctx)}.`);
   }
   if (nivel === 0 && !f.tecnicaInvisibilidade) {
     avisos.push("Nível 0 só é possível se a Técnica Amaldiçoada for diretamente a capacidade de ficar invisível.");
@@ -1493,8 +1498,8 @@ export function calcularFeiticoShikigami(feitico, ctx = {}) {
   const avisos = [];
   const f = feitico || {};
   const nivel = f.nivel ?? 1;
-  if (ctx.nd != null && nivel !== "max" && nivel > nivelMaxFeitico(ctx.nd)) {
-    avisos.push(`Nível ${nivel} inacessível: no ND ${ctx.nd} o máximo é ${nivelMaxFeitico(ctx.nd)}.`);
+  if (ctx.nd != null && nivel !== "max" && nivel > nivelMaxFeiticoDoContexto(ctx)) {
+    avisos.push(`Nível ${nivel} inacessível: no ND ${ctx.nd} o máximo é ${nivelMaxFeiticoDoContexto(ctx)}.`);
   }
   const linha = SHIKIGAMI_TABELA[nivel] || SHIKIGAMI_TABELA[1];
   const grau = grauMeta(linha.grau);
@@ -1577,8 +1582,8 @@ export function calcularFeiticoItens(feitico, ctx = {}) {
   const avisos = [];
   const f = feitico || {};
   const nivel = f.nivel ?? 1;
-  if (ctx.nd != null && nivel !== "max" && nivel > nivelMaxFeitico(ctx.nd)) {
-    avisos.push(`Nível ${nivel} inacessível: no ND ${ctx.nd} o máximo é ${nivelMaxFeitico(ctx.nd)}.`);
+  if (ctx.nd != null && nivel !== "max" && nivel > nivelMaxFeiticoDoContexto(ctx)) {
+    avisos.push(`Nível ${nivel} inacessível: no ND ${ctx.nd} o máximo é ${nivelMaxFeiticoDoContexto(ctx)}.`);
   }
   if (nivel === "max" || nivel < 1) {
     avisos.push("Criação de Itens é do Nível 1 ao 5.");
@@ -1694,8 +1699,8 @@ export function calcularFeiticoTransformacao(feitico, ctx = {}) {
   const f = feitico || {};
   const nivel = f.nivel ?? 1;
   const nNum = nivel === "max" ? 6 : nivel;
-  if (ctx.nd != null && nivel !== "max" && nivel > nivelMaxFeitico(ctx.nd)) {
-    avisos.push(`Nível ${nivel} inacessível: no ND ${ctx.nd} o máximo é ${nivelMaxFeitico(ctx.nd)}.`);
+  if (ctx.nd != null && nivel !== "max" && nivel > nivelMaxFeiticoDoContexto(ctx)) {
+    avisos.push(`Nível ${nivel} inacessível: no ND ${ctx.nd} o máximo é ${nivelMaxFeiticoDoContexto(ctx)}.`);
   }
   const base = TRANSFORMACAO_BASE[nivel];
   if (!base) {
@@ -2380,8 +2385,8 @@ export function calcularEfeitoAux(e, ctx = {}) {
   if (!meta) { avisos.push(`Efeito auxiliar desconhecido: ${efeitoKey}.`); return out; }
 
   // Acesso: o nível não pode passar do máximo da faixa de ND.
-  if (ctx.nd != null && nivel !== "max" && nivel > nivelMaxFeitico(ctx.nd)) {
-    avisos.push(`Nível ${nivel} inacessível: no ND ${ctx.nd} o máximo é ${nivelMaxFeitico(ctx.nd)}.`);
+  if (ctx.nd != null && nivel !== "max" && nivel > nivelMaxFeiticoDoContexto(ctx)) {
+    avisos.push(`Nível ${nivel} inacessível: no ND ${ctx.nd} o máximo é ${nivelMaxFeiticoDoContexto(ctx)}.`);
   }
 
   const raw = AUX_TABELAS[efeitoKey]?.[nivel]?.[duracao];

@@ -176,9 +176,12 @@ export function deriveAfty(creature, opcoes = {}) {
   const recursoLabel = semEnergia ? "Estamina" : "Energia";
   const patamar = core.patamar || "comum";
   const nd = Math.max(1, core.nd ?? 1);
-  // Especializações precisam existir antes das Aptidões porque três Bases do
-  // Suporte são concedidas pelo nível, e duas delas concedem Aptidões por nome.
+  // Especializações precisam existir antes das Aptidões e dos Feitiços: as
+  // Bases automáticas dependem do nível da classe, duas Bases do Suporte
+  // concedem Aptidões e Adiantar a Evolução antecipa o acesso de Conjurador.
   const especializacoes = resolveEspecializacoes(creature);
+  const nivelConjurador = especializacoes.escolhidas
+    .find((e) => e.id === "conjurador")?.nivel ?? 0;
   const habilidadesConcedidas = habilidadesConcedidasPelasEspecializacoes(especializacoes.escolhidas);
   const trilhasOrigem = trilhasDaOrigem(core?.origem?.id);
   // ---------- Aptidões Amaldiçoadas EFETIVAS ----------
@@ -1095,6 +1098,7 @@ export function deriveAfty(creature, opcoes = {}) {
   // divergiriam no primeiro campo novo (e este já tem quinze).
   const ctxFeiticos = {
     nd,
+    nivelConjurador,
     cdBase: cd,
     modTecnica,
     efeitos: ef,
@@ -1114,7 +1118,8 @@ export function deriveAfty(creature, opcoes = {}) {
     invocacoes: Array.isArray(creature?.invocacoes) ? creature.invocacoes : [],
   };
   let feiticos = {
-    nivelMax: nivelMaxFeitico(nd),
+    nivelMax: nivelMaxFeitico(nd, nivelConjurador),
+    nivelConjurador,
     gastos: feiticosGastos,
     cdBase: cd,
     // Resumo pronto de cada Feitiço, para o Preview só exibir (mesma convenção

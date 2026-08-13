@@ -2654,7 +2654,7 @@ export const AFTY_HABILIDADES = [
   /* ================= CONJURADOR · BASE =================
      No livro: "Especialista em Técnicas". O autor escreve Conjurador, mesmo
      caso de Combatente x Especialista em Combate. Base nos níveis 1, 1, 4,
-     9, 10 e 20. */
+     9, 10 e 20. Conjuração Aprimorada e Adiantar a Evolução são automáticas. */
   {
     id: "cnj_dominio_dos_fundamentos",
     nome: "Domínio dos Fundamentos",
@@ -2681,6 +2681,7 @@ export const AFTY_HABILIDADES = [
     especializacaoId: "conjurador",
     tipo: "base",
     nivel: 1,
+    automatica: true,
     descricao:
       "Todos podem utilizar Feitiços, mas você consegue os aprimorar e extrair um maior potencial. " +
       "Sempre que utilizar um Feitiço que cause dano, você soma um bônus ao total de dano causado " +
@@ -2701,6 +2702,7 @@ export const AFTY_HABILIDADES = [
     especializacaoId: "conjurador",
     tipo: "base",
     nivel: 4,
+    automatica: true,
     descricao:
       "Focado em sua técnica, você consegue adiantar a evolução das suas habilidades. Ao invés de " +
       "seguir o padrão para conseguir Feitiços de nível superior, com o aumento de treinamento, " +
@@ -5988,7 +5990,7 @@ export const getHabilidade = (id) => BY_ID[id] || null;
 
 /**
  * Bases que a Especialização concede ao alcançar o nível, sem escolha e sem
- * gastar orçamento. Hoje esta é uma exceção exclusiva do Suporte.
+ * gastar orçamento. Usado pelo Conjurador e pelo Suporte.
  */
 export function habilidadesConcedidasPelasEspecializacoes(escolhidasEspec = []) {
   const niveis = Object.fromEntries(
