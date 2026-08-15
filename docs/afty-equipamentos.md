@@ -355,6 +355,12 @@ Automação editável pelo jogador** (`fa.habilidadeEfeitos: [{canal, expr}]`), 
 ferramenta está equipada. É a via para dar efeito mecânico à habilidade única, que por definição é
 livre.
 
+O editor usa o mesmo guia de variáveis e funções dos Funcionamentos Básicos. O valor exibido de
+`grau` é o grau real da Ferramenta, e o contexto também oferece `custo` e `penalidade`. Canais que
+pedem uma fonte de dano oferecem Ataque Básico, todas as armas, categorias, grupos, propriedades,
+tipos de dano, Feitiços de Dano e as fontes concretas da ficha. Sem alvo continua significando
+`todos`. Canais que pedem uma fonte de Cura oferecem as fontes catalogadas em `afty-cura.js`.
+
 ### O que o motor NÃO aplica
 
 - **Bônus de Arma** (dano de arma não é stat da ficha, igual às armas comuns): só exibido no item.

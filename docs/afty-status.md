@@ -117,6 +117,30 @@ Estado atual do sistema Afty (atualizado 2026-08-12). Leia junto com:
 
 ---
 
+## SESSÃO DE 2026-08-15: ALVOS E GUIA DA HABILIDADE ÚNICA DE GRAU ESPECIAL
+
+Relato do autor: ao programar uma Habilidade Única de Ferramenta Amaldiçoada de Grau Especial,
+o seletor `em` de um canal como Dados de Dano oferecia somente `todos`. O editor também não tinha
+o guia de variáveis que já existia no Funcionamento Básico.
+
+A causa eram dois caminhos incompletos na UI. O editor da Habilidade Única não recebia as fontes
+de dano da ficha, e o Funcionamento Básico principal e os adicionais também chamavam o editor sem
+essa lista. O alvo continuava funcionando no Motor quando escrito na ficha, mas não havia como
+escolhê-lo na tela.
+
+Como ficou:
+
+- os editores livres usam a mesma lista de destinos de dano, com Ataque Básico, armas, categorias,
+  grupos, propriedades, tipos de dano, Feitiços de Dano e fontes concretas da ficha;
+- canais de Cura agora oferecem as fontes catalogadas de Cura;
+- a Habilidade Única ganhou o seletor de variáveis e funções ao lado da expressão;
+- o guia da Habilidade Única mescla o contexto da criatura com o contexto real do item, então
+  `grau` mostra o grau da Ferramenta e também aparecem `custo` e `penalidade`.
+
+Assert do `deriveAfty`: uma Habilidade Única com Dados de Dano em `basico` somou só no Ataque
+Básico, e os alvos `cat:corpo` mais `arm_adaga` somaram apenas na Adaga. O contexto do item mostrou
+`grau = 5` no Grau Especial. ESLint e build passaram.
+
 ## SESSÃO DE 2026-08-12 (parte 2): O TETO DE APTIDÃO E O FUNCIONAMENTO BÁSICO EM LISTA
 
 Seis frentes, e quatro delas mexem em regra velha: o teto de Aptidão por trilha, o orçamento de

@@ -55,7 +55,7 @@ import {
   AFTY_PERICIAS, AFTY_ATAQUES, AFTY_MANOBRAS, EMPURRAO_BASE,
   idsPericiasAtivas, novaPericiaPersonalizada, sugestoesPericias,
 } from "./afty-pericias";
-import { rotuloBloco } from "./afty-cura";
+import { FONTES_CURA, rotuloBloco } from "./afty-cura";
 // Os canais do Motor, já agrupados por assunto para o <optgroup> do editor
 // do Funcionamento Básico.
 import {
@@ -1906,6 +1906,7 @@ function TabHabilidades({ draft, derived, patchCore, toggleArmaDedicada, addFeit
     return (
       <>
         <EstiloSombrasCard
+          draft={draft}
           derived={derived}
           toggleEstiloTabela={toggleEstiloTabela}
           addEstiloEspecial={addEstiloEspecial}
@@ -2198,9 +2199,9 @@ function EstiloEspecialCard({ linha, efeitosMotor, fontesDano, pericias, dslGrup
   );
 }
 
-function EstiloSombrasCard({ derived, toggleEstiloTabela, addEstiloEspecial, removeEstilo, patchEstilo }) {
+function EstiloSombrasCard({ draft, derived, toggleEstiloTabela, addEstiloEspecial, removeEstilo, patchEstilo }) {
   const info = derived.estilo;
-  const fontesDano = (derived.dano?.entradas ?? []).map((e) => ({ value: e.id, label: e.nome }));
+  const fontesDano = fontesDanoDaFicha(draft, derived);
   const conhecidas = new Set(info.conhecidas.map((t) => t.id));
   const especiais = info.conhecidas.filter((t) => t.tipo === "especial");
   const dslGrupos = useDslGrupos(derived);
@@ -2674,7 +2675,42 @@ const ALVO_OPCOES_BASE = {
 function alvoOpcoes(tipo, pericias = AFTY_PERICIAS, fontesDano = []) {
   if (tipo === "pericia") return pericias.map((p) => ({ value: p.id, label: p.nome }));
   if (tipo === "fonteDano") return fontesDano;
+  if (tipo === "fonteCura") return FONTES_CURA.map((f) => ({ value: f.id, label: f.nome }));
   return ALVO_OPCOES_BASE[tipo] ?? null;
+}
+
+/* Destinos dos canais de dano escritos pelo jogador.
+
+   O Motor já entende todos estes escopos em `escoposDaArma` e nos Feitiços,
+   mas o editor oferecia somente as linhas concretas que algum chamador
+   lembrasse de passar. Quando a lista não era passada, sobrava apenas a opção
+   vazia "todos". A lista fica centralizada aqui para Funcionamentos Básicos,
+   Passivos, Técnicas de Estilo e Habilidades Únicas enxergarem o mesmo guia. */
+function fontesDanoDaFicha(draft, derived) {
+  const feiticos = Array.isArray(draft?.feiticos) ? draft.feiticos : [];
+  const opcoes = [
+    { value: "basico", label: "Ataque Básico" },
+    { value: "arma", label: "Todas as Armas" },
+    ...ARMA_CATEGORIAS.map((c) => ({ value: `cat:${c.value}`, label: `Armas: ${c.label}` })),
+    ...ARMA_GRUPOS.map((g) => ({ value: `grupo:${g.value}`, label: `Grupo: ${g.label}` })),
+    ...ARMA_PROPRIEDADES
+      .filter((p) => p.id !== "especial")
+      .map((p) => ({ value: `prop:${p.id}`, label: `Propriedade: ${p.nome}` })),
+    ...Object.entries(TIPOS_DANO).map(([id, label]) => ({ value: `tipo:${id}`, label: `Dano: ${label}` })),
+    { value: "feitico", label: "Todos os Feitiços de Dano" },
+    { value: "feitico:unico", label: "Feitiços de Alvo Único" },
+    { value: "feitico:area", label: "Feitiços em Área" },
+    ...feiticos
+      .filter((f) => f?.tipo === "dano")
+      .map((f) => ({ value: `feitico:${f.id}`, label: f.nome || "Feitiço Sem Nome" })),
+    ...(derived?.dano?.entradas ?? []).map((e) => ({ value: e.id, label: e.nome })),
+  ];
+  const vistos = new Set();
+  return opcoes.filter((o) => {
+    if (!o.value || vistos.has(o.value)) return false;
+    vistos.add(o.value);
+    return true;
+  });
 }
 
 /* `comModo` liga a coluna Passiva / Ativa, que só as fontes do POOL EXCLUSIVO
@@ -3125,7 +3161,7 @@ function TextoLongo({ value, onChange, placeholder, minRows = 4, maxRows = 18, f
    um Funcionamento Básico adicional é do mesmo tamanho e da mesma natureza do
    principal (os Seis Olhos não são uma nota de rodapé do Ilimitado), então ele
    ganha título, tabela e negrito igual. */
-function FuncionamentoAdicionalCard({ linha, efeitosMotor, pericias, dslGrupos, onPatch, onRemove }) {
+function FuncionamentoAdicionalCard({ linha, efeitosMotor, pericias, fontesDano, dslGrupos, onPatch, onRemove }) {
   return (
     <div className="rounded-lg border border-purple-900/50 bg-purple-950/10 p-3 space-y-3">
       <div className="flex flex-wrap items-center gap-2">
@@ -3157,6 +3193,7 @@ function FuncionamentoAdicionalCard({ linha, efeitosMotor, pericias, dslGrupos, 
         efeitos={efeitosMotor}
         onChange={(v) => onPatch({ efeitos: v })}
         pericias={pericias}
+        fontesDano={fontesDano}
         dslGrupos={dslGrupos}
       />
     </div>
@@ -3167,6 +3204,7 @@ function PerfilAmaldicoadoCard({
   draft, derived, patchCore, addFuncionamento, removeFuncionamento, patchFuncionamento,
 }) {
   const dslGrupos = useDslGrupos(derived);
+  const fontesDano = fontesDanoDaFicha(draft, derived);
   // O principal sai da lista: ele já tem o bloco fixo acima, com os campos que
   // moram direto no `core`.
   const adicionais = funcionamentosDaFicha(draft).filter((f) => !f.principal);
@@ -3200,6 +3238,7 @@ function PerfilAmaldicoadoCard({
         efeitos={derived.tecnicaEfeitos}
         onChange={(v) => patchCore({ tecnicaEfeitos: v })}
         pericias={derived.testes?.pericias}
+        fontesDano={fontesDano}
         dslGrupos={dslGrupos}
       />
 
@@ -3211,6 +3250,7 @@ function PerfilAmaldicoadoCard({
               linha={f}
               efeitosMotor={derived.funcionamentoEfeitos?.[f.id] ?? []}
               pericias={derived.testes?.pericias}
+              fontesDano={fontesDano}
               dslGrupos={dslGrupos}
               onPatch={(partial) => patchFuncionamento(f.id, partial)}
               onRemove={() => removeFuncionamento(f.id)}
@@ -3266,13 +3306,7 @@ function FeiticosCard({ draft, derived, addFeitico, removeFeitico, patchFeitico,
         : [...manipulacao, id],
     });
   };
-  const fontesDano = [
-    { value: "feitico", label: "Todos os Feitiços de Dano" },
-    ...lista
-      .filter((f) => f.tipo === "dano")
-      .map((f) => ({ value: `feitico:${f.id}`, label: f.nome || "Feitiço Sem Nome" })),
-    ...(derived.dano?.entradas ?? []).map((e) => ({ value: e.id, label: e.nome })),
-  ];
+  const fontesDano = fontesDanoDaFicha(draft, derived);
   const ctx = {
     nd: derived.nd,
     nivelConjurador: derived.feiticos.nivelConjurador,
@@ -8277,7 +8311,18 @@ function SecaoRecolhivel({ titulo, resumo, defaultOpen = false, children }) {
    O botão Ativa/Passiva decide onde o efeito vive (autor, 2026-07-30): passiva
    vale sempre, ativa vira um interruptor na bancada de Simulação de Combate.
    Depende do item, então é escolha por efeito, e não da fonte inteira. */
-function MotorEfeitosEditor({ efeitos, onChange, pericias }) {
+function MotorEfeitosEditor({
+  efeitos, onChange, pericias, fontesDano, dslContexto, dslExtras,
+}) {
+  // A Habilidade Única lê o contexto normal da criatura mais as variáveis do
+  // próprio item. `grau`, por exemplo, é o grau REAL da Ferramenta, não o grau
+  // do feiticeiro. O seletor precisa mostrar exatamente os valores que a
+  // expressão vai receber para servir de guia de verdade.
+  const contextoItem = efeitos.find((e) => e?.contextoDsl)?.contextoDsl;
+  const dslGrupos = useMemo(
+    () => vocabularioDsl({ ...(dslContexto ?? {}), ...(contextoItem ?? {}) }, dslExtras),
+    [dslContexto, dslExtras, contextoItem],
+  );
   const bruto = () => efeitos.map((e) => ({
     canal: e.canal, ...(e.alvo ? { alvo: e.alvo } : {}), expr: e.expr,
     ...(e.modo === "ativa" ? { modo: "ativa" } : {}),
@@ -8296,7 +8341,7 @@ function MotorEfeitosEditor({ efeitos, onChange, pericias }) {
       <FieldLabel>Motor de Automação (efeitos enquanto equipada)</FieldLabel>
       {efeitos.map((ef, i) => {
         const chk = validateExpression(ef.expr || "");
-        const alvos = alvoOpcoes(getCanal(ef.canal)?.alvo, pericias);
+        const alvos = alvoOpcoes(getCanal(ef.canal)?.alvo, pericias, fontesDano);
         return (
           <div
             key={i}
@@ -8321,7 +8366,15 @@ function MotorEfeitosEditor({ efeitos, onChange, pericias }) {
             )}
             {!alvos && <div className="hidden sm:block h-9" aria-hidden="true" />}
             <div className="col-span-2 sm:col-span-1 min-w-0">
-              <TextInput value={ef.expr} onChange={(v) => patch(i, { expr: v })} placeholder="ex.: 2 + piso(bt / 2)" />
+              <CampoExpressao
+                value={ef.expr}
+                onChange={(v) => patch(i, { expr: v })}
+                invalida={!!(ef.expr && !chk.ok)}
+                placeholder="2 + piso(bt / 2)"
+                rotulo="Expressão"
+                grupos={dslGrupos}
+                ancora="direita"
+              />
               {ef.expr && (
                 chk.ok
                   ? <p className="text-[10px] text-emerald-400 mt-0.5">= {ef.valor ?? 0}</p>
@@ -8360,7 +8413,10 @@ function MotorEfeitosEditor({ efeitos, onChange, pericias }) {
    escolha de encantamentos (com pré-requisito) e a habilidade única do Especial.
    Grau e Encantamentos são RECOLHÍVEIS (o autor pediu), colapsados por padrão.
    `fa` aqui é o resumo JÁ resolvido pelo motor (entrada.fa). */
-function FerramentaEditor({ entrada, onPatch, onToggleEnc, onRemove, pericias }) {
+function FerramentaEditor({
+  entrada, onPatch, onToggleEnc, onRemove, pericias,
+  fontesDano, dslContexto, dslExtras,
+}) {
   const { tipo, def, fa } = entrada;
   const lista = ENCANTAMENTOS_POR_TIPO[tipo] ?? [];
   const beneficio =
@@ -8508,6 +8564,9 @@ function FerramentaEditor({ entrada, onPatch, onToggleEnc, onRemove, pericias })
             efeitos={fa.habilidadeEfeitos}
             onChange={(arr) => onPatch({ habilidadeEfeitos: arr })}
             pericias={pericias}
+            fontesDano={fontesDano}
+            dslContexto={dslContexto}
+            dslExtras={dslExtras}
           />
         </div>
       )}
@@ -8518,7 +8577,7 @@ function FerramentaEditor({ entrada, onPatch, onToggleEnc, onRemove, pericias })
 /** Uma linha do que está carregado (com o editor de Ferramenta, se aplicável). */
 function LinhaCarregada({
   entrada, onPatch, onRemove, onToggleFerramenta, onPatchFerramenta,
-  onToggleEncantamento, pericias,
+  onToggleEncantamento, pericias, fontesDano, dslContexto, dslExtras,
 }) {
   const { def, tipo, uid, qtd, equipado, fa } = entrada;
   // Arma entrou em 2026-08-01: ela passou a render Acerto por grau, e a linha de
@@ -8661,6 +8720,9 @@ function LinhaCarregada({
           onToggleEnc={(encId) => onToggleEncantamento(uid, encId)}
           onRemove={() => { onToggleFerramenta(uid); setFaOpen(false); }}
           pericias={pericias}
+          fontesDano={fontesDano}
+          dslContexto={dslContexto}
+          dslExtras={dslExtras}
         />
       )}
     </div>
@@ -9150,6 +9212,7 @@ function FiltroPropriedades({ opcoes, ativas, onToggle, onLimpar }) {
 
 function TabEquipamentos({ draft, derived, addEquipamento, removeEquipamento, patchEquipamento, toggleFerramenta, patchFerramenta, toggleEncantamento, addArmaCustom, patchArmaCustom, removeArmaCustom }) {
   const { equip, carga, grauFeiticeiro: grau } = derived;
+  const fontesDano = fontesDanoDaFicha(draft, derived);
   const [catTab, setCatTab] = useState("arma");
   const [busca, setBusca] = useState("");
   const [subFiltro, setSubFiltro] = useState("todos");
@@ -9376,6 +9439,9 @@ function TabEquipamentos({ draft, derived, addEquipamento, removeEquipamento, pa
                       onPatchFerramenta={patchFerramenta}
                       onToggleEncantamento={toggleEncantamento}
                       pericias={derived.testes?.pericias}
+                      fontesDano={fontesDano}
+                      dslContexto={derived.contextoDsl}
+                      dslExtras={derived.combate?.estadosExtras}
                     />
                   ))}
                 </div>
