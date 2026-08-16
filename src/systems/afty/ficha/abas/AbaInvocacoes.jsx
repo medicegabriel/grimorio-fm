@@ -36,6 +36,28 @@ function Numero({ icone: Icone, rotulo, valor }) {
   );
 }
 
+/* Rótulos curtos das escolhas que a Ação guarda. Ficam aqui porque são de
+   EXIBIÇÃO: o motor guarda a chave, a mesa lê o nome. */
+const AUXILIO_ROTULO = {
+  cura: "Cura", defesa: "Defesa", acerto: "Acerto", danoAdicional: "Dano Adicional", rd: "RD",
+};
+const CONDICAO_ROTULO = { fraca: "Fraca", media: "Média", forte: "Forte" };
+const ALVO_AUXILIO_ROTULO = { invocacao: "Nela mesma", aliados: "Aliados" };
+
+/** A notação de uma lista de grupos de dado: `[{2,12},{1,6}]` vira "2d12 + 1d6". */
+const notacaoDe = (grupos) => grupos.map((g) => `${g.dados}d${g.faces}`).join(" + ");
+
+/** O que uma Característica resolvida CONCEDE, em uma linha curta. */
+function resumoCaracteristica(c) {
+  switch (c.subtipo) {
+    case "vida": return `+${c.valor} PV`;
+    case "rd": return `${c.valor} RD ${c.rdTipoLabel || ""}`.trim();
+    case "teste": return `${c.valor >= 0 ? "+" : ""}${c.valor}`;
+    case "tamanho": return c.tamanhoLabel || "";
+    default: return "";
+  }
+}
+
 /**
  * Uma AÇÃO da Invocação.
  *
@@ -43,58 +65,133 @@ function Numero({ icone: Icone, rotulo, valor }) {
  * LISTA porque a escada de dano do Afty tem degraus de dois dados diferentes
  * ("2d12 + 1d6"), e o parser ingênuo que eu tinha escrito antes lia aquilo como
  * três dados de face inválida. Ver `dadosDaNotacao`.
+ *
+ * ⚠ ELA MOSTRAVA SÓ ATAQUE COM JOGADA (2026-08-16). O `resolveAcao` sempre
+ * devolveu CD, qual TR, cura, área, condição, o valor dos auxílios e o dano
+ * adicional, e nada disso aparecia: uma Invocação médica não tinha o que rolar
+ * na Ficha, e um ataque por Teste de Resistência não mostrava a CD, que é o
+ * número inteiro da jogada. Era o mesmo buraco das Características, do outro
+ * lado do motor.
  */
-function Acao({ a, nomeDono, rolar }) {
-  const grupos = a.dano?.grupos ?? [];
-  const temDano = grupos.length > 0;
-  const notacao = grupos.map((g) => `${g.dados}d${g.faces}`).join(" + ");
+function Acao({ a, nomeDono, margemCritico = 20, rolar }) {
+  /* ⚠ O dado extra da Melhoria Agressividade entra NA MESMA ROLAGEM. Ele é
+     "dano adicional" em todo ataque da invocação, sem tipo próprio, então
+     mostrá-lo numa linha separada e rolar só o dado da tabela entregaria menos
+     dano do que a ficha promete. */
+  const grupos = [...(a.dano?.grupos ?? []), ...(a.danoExtraAtaque?.grupos ?? [])];
+  const rotulo = `${nomeDono} · ${a.nome || "Ação"}`;
+  const chip = "afty-rotulo text-[10px] whitespace-nowrap";
+
   return (
-    <div className="afty-linha px-2.5 py-1.5 flex items-center gap-2 flex-wrap">
-      <span className="flex-1 min-w-0 text-[12px] font-semibold truncate" title={a.nome}>
-        {a.nome || "Ação Sem Nome"}
-      </span>
-      {a.warnings?.length > 0 && (
-        <AlertTriangle
-          className="w-3.5 h-3.5 flex-shrink-0"
-          style={{ color: "var(--afty-aviso)" }}
-          aria-hidden="true"
-          title={a.warnings.join("\n")}
-        />
-      )}
-      {a.alcance && <span className="afty-rotulo text-[10px] whitespace-nowrap">{a.alcance}</span>}
-      {a.custoPE > 0 && (
-        <span className="afty-valor text-[11px]" data-afty-tom="custo">{a.custoPE} PE</span>
-      )}
-      {a.bonusAtaque != null && a.familia === "ataque" && (
-        <span className="afty-rotulo text-[10px] whitespace-nowrap">
-          Acerto{" "}
+    <div className="afty-linha px-2.5 py-1.5 space-y-1">
+      {/* Linha 1: identidade e custo. A CLASSE importa na mesa, porque é ela que
+          diz qual comando o dono gasta (Comum para Complexa, Bônus para Simples). */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="flex-1 min-w-0 text-[12px] font-semibold truncate" title={a.descricao || a.nome}>
+          {a.nome || "Ação Sem Nome"}
+        </span>
+        {a.warnings?.length > 0 && (
+          <AlertTriangle
+            className="w-3.5 h-3.5 flex-shrink-0"
+            style={{ color: "var(--afty-aviso)" }}
+            aria-hidden="true"
+            title={a.warnings.join("\n")}
+          />
+        )}
+        <span className={chip}>{a.classe === "complexa" ? "Complexa" : "Simples"}</span>
+        {a.familia === "auxilio" && a.auxilioSub && (
+          <span className={chip}>{AUXILIO_ROTULO[a.auxilioSub] ?? a.auxilioSub}</span>
+        )}
+        {a.custoPE > 0 && (
+          <span className="afty-valor text-[11px]" data-afty-tom="custo">{a.custoPE} PE</span>
+        )}
+      </div>
+
+      {/* Linha 2: os números da mesa. Tudo que rola é clicável. */}
+      <div className="flex items-center gap-2 flex-wrap">
+        {a.alcance && <span className={chip}>{a.alcance}</span>}
+        {a.area && <span className={chip}>Área {a.area}</span>}
+        {a.familia === "auxilio" && a.alvoAuxilio && (
+          <span className={chip}>{ALVO_AUXILIO_ROTULO[a.alvoAuxilio] ?? a.alvoAuxilio}</span>
+        )}
+        {a.tipoDano && <span className={chip}>{a.tipoDano}</span>}
+        {(a.condicoes ?? []).map((c, i) => (
+          <span key={i} className="afty-chip" data-afty-tom="destaque">
+            {CONDICAO_ROTULO[c] ?? c}
+          </span>
+        ))}
+        {a.prejuizoMultiplos && (
+          <span className={chip} title={a.prejuizoMultiplos}>Prejuízo por Repetição</span>
+        )}
+
+        {/* Ataque por Jogada: o acerto rola. */}
+        {a.familia === "ataque" && a.bonusAtaque != null && (
+          <span className={chip}>
+            Acerto{" "}
+            <NumeroComFontes
+              valor={a.bonusAtaque}
+              total={sinalDe(a.bonusAtaque)}
+              className="afty-valor text-[11px]"
+              ancora="direita"
+              /* Crítico Aprimorado (Controlador 10°) desce a margem das jogadas
+                 dela para 19, e a rolagem precisa saber disso para marcar o
+                 acerto crítico. */
+              onRolar={() => rolar({ tipo: "teste", rotulo, bonus: a.bonusAtaque, margem: margemCritico })}
+            />
+          </span>
+        )}
+
+        {/* Ataque por Teste de Resistência: quem rola é o alvo, então a CD é um
+            número de leitura e não um botão. Sem ela a ação é inutilizável. */}
+        {a.familia === "ataque" && a.cd != null && (
+          <span className="afty-valor text-[11px]" data-afty-tom="destaque" title="O alvo rola contra esta CD">
+            CD {a.cd}{a.trTipoLabel ? ` ${a.trTipoLabel}` : ""}
+          </span>
+        )}
+
+        {grupos.length > 0 && (
           <NumeroComFontes
-            valor={a.bonusAtaque}
-            total={sinalDe(a.bonusAtaque)}
-            className="afty-valor text-[11px]"
+            valor={`${notacaoDe(grupos)}${a.dano.bonus ? sinalDe(a.dano.bonus) : ""}`}
+            formatar={false}
+            className="afty-valor text-[13px] whitespace-nowrap"
             ancora="direita"
+            titulo="Dano"
+            onRolar={() => rolar({ tipo: "dano", rotulo, grupos, fixo: a.dano.bonus ?? 0 })}
+          />
+        )}
+
+        {(a.cura?.grupos ?? []).length > 0 && (
+          <NumeroComFontes
+            valor={`${notacaoDe(a.cura.grupos)}${a.cura.bonus ? sinalDe(a.cura.bonus) : ""}`}
+            formatar={false}
+            className="afty-valor text-[13px] whitespace-nowrap"
+            ancora="direita"
+            titulo="Cura"
             onRolar={() => rolar({
-              tipo: "teste",
-              rotulo: `${nomeDono} · ${a.nome || "Ataque"}`,
-              bonus: a.bonusAtaque,
+              tipo: "dano", tom: "cura", rotulo,
+              grupos: a.cura.grupos, fixo: a.cura.bonus ?? 0,
             })}
           />
-        </span>
-      )}
-      {temDano && (
-        <NumeroComFontes
-          valor={`${notacao}${a.dano.bonus ? sinalDe(a.dano.bonus) : ""}`}
-          formatar={false}
-          className="afty-valor text-[13px] whitespace-nowrap"
-          ancora="direita"
-          titulo="Dano"
-          onRolar={() => rolar({
-            tipo: "dano",
-            rotulo: `${nomeDono} · ${a.nome || "Dano"}`,
-            grupos, fixo: a.dano.bonus ?? 0,
-          })}
-        />
-      )}
+        )}
+
+        {(a.danoAdicional?.grupos ?? []).length > 0 && (
+          <NumeroComFontes
+            valor={notacaoDe(a.danoAdicional.grupos)}
+            formatar={false}
+            className="afty-valor text-[13px] whitespace-nowrap"
+            ancora="direita"
+            titulo="Dano Adicional"
+            onRolar={() => rolar({ tipo: "dano", rotulo, grupos: a.danoAdicional.grupos })}
+          />
+        )}
+
+        {/* Auxílio de valor fixo (Defesa, Acerto, RD): número, não rolagem. */}
+        {a.familia === "auxilio" && a.valor != null && (
+          <span className="afty-valor text-[13px]" data-afty-tom="destaque">
+            {a.auxilioSub === "rd" ? `${a.valor} RD` : sinalDe(a.valor)}
+          </span>
+        )}
+      </div>
     </div>
   );
 }
@@ -129,11 +226,36 @@ function Invocacao({ inv, rolar, destacado }) {
             {inv.warnings.length}
           </span>
         )}
+        {/* O tipo diz o Intermediário que ela precisa e como ela sai de campo
+            (dissipada/exorcizada contra desativada/destruída). */}
+        {inv.tipoLabel && (
+          <span className="afty-chip" title={`Intermediário: ${inv.intermediario}. Retirada: ${inv.retirada}`}>
+            {inv.tipoLabel}
+          </span>
+        )}
         <span className="afty-chip" data-afty-tom="destaque">{inv.grauLabel}</span>
         <span className="afty-valor text-[11px]" data-afty-tom="custo" title="Custo em PE">
           {inv.custo} PE
         </span>
       </div>
+
+      {/* Por que ESTA invocação é diferente das outras: o Feitiço que a criou e
+          os marcadores ligados nela. Sem isso o jogador vê um PV maior na mesa e
+          nenhuma pista da origem. */}
+      {(inv.shikigami || (inv.marcadores ?? []).length > 0) && (
+        <div className="flex flex-wrap gap-1 mb-2">
+          {inv.shikigami && (
+            <span className="afty-chip" title="Feitiço de Criação de Shikigamis que a criou">
+              {inv.shikigami.fonte}
+            </span>
+          )}
+          {(inv.marcadores ?? []).map((m) => (
+            <span key={m.id} className="afty-chip" data-afty-tom="destaque">
+              {m.label}{m.opcao ? ` · ${m.opcao}` : ""}
+            </span>
+          ))}
+        </div>
+      )}
 
       <div className="grid grid-cols-4 gap-1.5">
         <Numero icone={Heart} rotulo="PV" valor={inv.pv} />
@@ -145,6 +267,33 @@ function Invocacao({ inv, rolar, destacado }) {
         </span>
       </div>
 
+      {/* Corpo: RD e Tamanho, os dois derivados. A RD Geral vale contra todo
+          tipo, e cada linha por tipo já traz o total que vale contra ele. */}
+      <div className="flex flex-wrap gap-1 mt-1.5">
+        {(inv.rd?.geral ?? 0) > 0 && (
+          <span className="afty-chip" title="Redução de Dano contra todos os tipos">RD {inv.rd.geral}</span>
+        )}
+        {(inv.rd?.porTipo ?? []).map((l) => (
+          <span key={l.chave} className="afty-chip" title="Redução de Dano contra este tipo">
+            RD {l.label} {l.total}
+          </span>
+        ))}
+        {inv.tamanhoLabel && (
+          <span className="afty-chip" title="Tamanho">{inv.tamanhoLabel}</span>
+        )}
+        {/* Habilidades de USO que o dono pode gastar nesta invocação, com o
+            número fechado, e a margem de crítico das jogadas dela. */}
+        {(inv.opcoesDeUso ?? []).map((o) => (
+          <span key={o.id} className="afty-chip" title={o.nome}>{o.nome} {o.valor}</span>
+        ))}
+        {inv.margemCritico < 20 && (
+          <span className="afty-chip" title="Margem de acerto crítico das jogadas dela">
+            Crítico {inv.margemCritico}+
+          </span>
+        )}
+        {inv.criticoBrutal && <span className="afty-chip" title="Crítico Brutal">Crítico +1 dado</span>}
+      </div>
+
       {aberto && (
         <div className="mt-2 space-y-2">
           {(testes.resistencias ?? []).length > 0 && (
@@ -154,6 +303,13 @@ function Invocacao({ inv, rolar, destacado }) {
                 {testes.resistencias.map((r) => (
                   <div key={r.value} className="afty-linha px-2.5 py-1 flex items-center gap-2">
                     <span className="flex-1 min-w-0 text-[12px] truncate">{r.label}</span>
+                    {/* Bônus de Característica em TR exige gatilho, então não
+                        entra no número que a linha rola. */}
+                    {r.comGatilho > 0 && (
+                      <span className="afty-chip" title="Bônus de Característica, só quando o gatilho ocorre">
+                        +{r.comGatilho} com gatilho
+                      </span>
+                    )}
                     {r.mestre && <span className="afty-chip">Mestre</span>}
                     <NumeroComFontes
                       valor={r.bonus}
@@ -177,7 +333,13 @@ function Invocacao({ inv, rolar, destacado }) {
               <h3 className="afty-card-titulo mb-1">Ações</h3>
               <div className="space-y-1">
                 {inv.acoes.map((a, i) => (
-                  <Acao key={`${a.nome}-${i}`} a={a} nomeDono={inv.nome || "Invocação"} rolar={rolar} />
+                  <Acao
+                    key={`${a.nome}-${i}`}
+                    a={a}
+                    nomeDono={inv.nome || "Invocação"}
+                    margemCritico={inv.margemCritico ?? 20}
+                    rolar={rolar}
+                  />
                 ))}
               </div>
             </div>
@@ -186,11 +348,23 @@ function Invocacao({ inv, rolar, destacado }) {
           {(inv.caracteristicas ?? []).length > 0 && (
             <div>
               <h3 className="afty-card-titulo mb-1">Características</h3>
-              <div className="flex flex-wrap gap-1">
+              <div className="space-y-1">
+                {/* ⚠ Elas eram um chip com o NOME e mais nada. O valor já vinha
+                    resolvido do motor e ficava só embutido no stat block, então
+                    a mesa via "Couraça" sem saber que aquilo é +15 PV, e a
+                    descrição que a pessoa escreveu não aparecia em lugar nenhum. */}
                 {inv.caracteristicas.map((c, i) => (
-                  <span key={`${c.nome}-${i}`} className="afty-chip" title={c.subtipo || undefined}>
-                    {c.nome || "Característica"}
-                  </span>
+                  <div key={`${c.nome}-${i}`} className="afty-linha px-2.5 py-1 flex items-center gap-2 flex-wrap">
+                    <span className="flex-1 min-w-0 text-[12px] truncate" title={c.descricao || undefined}>
+                      {c.nome || "Característica"}
+                    </span>
+                    {c.requerGatilho && (
+                      <span className="afty-rotulo text-[10px]" title="Exige um gatilho específico">Gatilho</span>
+                    )}
+                    {resumoCaracteristica(c) && (
+                      <span className="afty-valor text-[12px] whitespace-nowrap">{resumoCaracteristica(c)}</span>
+                    )}
+                  </div>
                 ))}
               </div>
             </div>
@@ -201,10 +375,108 @@ function Invocacao({ inv, rolar, destacado }) {
   );
 }
 
+/**
+ * Uma HORDA. Em combate ela é uma criatura só, e por isso tem PV, tamanho e as
+ * ações do líder JÁ ESCALADAS pelo número de membros.
+ *
+ * ⚠ A aba mostrava só nome, membros e custo (2026-08-16). O `resolveHorda`
+ * sempre devolveu o PV somado, o tamanho subido e as ações do líder com o
+ * escalonamento aplicado, e nada disso chegava à mesa: quem jogasse uma horda
+ * tinha de abrir o criador para saber o dano dela.
+ */
+function Horda({ h, rolar }) {
+  const rotulo = h.nome || "Horda";
+  return (
+    <div className="afty-linha px-2.5 py-1.5 space-y-1">
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="flex-1 min-w-0 text-[12px] font-semibold truncate">{rotulo}</span>
+        {h.warnings?.length > 0 && (
+          <AlertTriangle
+            className="w-3.5 h-3.5 flex-shrink-0"
+            style={{ color: "var(--afty-aviso)" }}
+            aria-hidden="true"
+            title={h.warnings.join("\n")}
+          />
+        )}
+        {/* `membros` é a lista de ids, e imprimi-la saía como "M1,M2 Membros".
+            O número é o `membrosCount`. */}
+        {h.membrosCount != null && (
+          <span className="afty-rotulo text-[10px] whitespace-nowrap">{h.membrosCount} Membros</span>
+        )}
+        {h.custo != null && (
+          <span className="afty-valor text-[11px]" data-afty-tom="custo">{h.custo} PE</span>
+        )}
+      </div>
+
+      <div className="flex items-center gap-2 flex-wrap">
+        {h.pv != null && <span className="afty-chip" title="Pontos de Vida da horda">PV {h.pv}</span>}
+        {h.deslocamento != null && <span className="afty-chip" title="Deslocamento">{h.deslocamento}m</span>}
+        {h.tamanhoLabel && <span className="afty-chip" title="Tamanho">{h.tamanhoLabel}</span>}
+        {h.escala?.prejuizoExtra > 0 && (
+          <span className="afty-chip" title="Usos adicionais antes do prejuízo por repetição">
+            +{h.escala.prejuizoExtra} uso antes do prejuízo
+          </span>
+        )}
+      </div>
+
+      {/* As ações do LÍDER, com o escalonamento da horda já aplicado. */}
+      {(h.acoes ?? []).map((a, i) => {
+        /* O dado extra da Melhoria Agressividade entra aqui também: o
+           escalonamento da horda mexe no dado da TABELA, e o extra continua
+           somando por fora. Ler só o `danoGrupos` deixaria a horda batendo mais
+           fraco que a mesma invocação sozinha. */
+        const grupos = [
+          ...(a.horda?.danoGrupos ?? a.base?.dano?.grupos ?? []),
+          ...(a.base?.danoExtraAtaque?.grupos ?? []),
+        ];
+        const curaGrupos = a.horda?.curaGrupos ?? a.base?.cura?.grupos ?? [];
+        const valor = a.horda?.valor ?? a.base?.valor;
+        return (
+          <div key={`${a.nome}-${i}`} className="flex items-center gap-2 flex-wrap pl-2">
+            <span className="flex-1 min-w-0 text-[11px] truncate" title={a.nome}>{a.nome || "Ação"}</span>
+            {grupos.length > 0 && (
+              <NumeroComFontes
+                valor={`${notacaoDe(grupos)}${a.base?.dano?.bonus ? sinalDe(a.base.dano.bonus) : ""}`}
+                formatar={false}
+                className="afty-valor text-[12px] whitespace-nowrap"
+                ancora="direita"
+                titulo="Dano da horda"
+                onRolar={() => rolar({
+                  tipo: "dano", rotulo: `${rotulo} · ${a.nome || "Dano"}`,
+                  grupos, fixo: a.base?.dano?.bonus ?? 0,
+                })}
+              />
+            )}
+            {curaGrupos.length > 0 && (
+              <NumeroComFontes
+                valor={`${notacaoDe(curaGrupos)}${a.base?.cura?.bonus ? sinalDe(a.base.cura.bonus) : ""}`}
+                formatar={false}
+                className="afty-valor text-[12px] whitespace-nowrap"
+                ancora="direita"
+                titulo="Cura da horda"
+                onRolar={() => rolar({
+                  tipo: "dano", tom: "cura", rotulo: `${rotulo} · ${a.nome || "Cura"}`,
+                  grupos: curaGrupos, fixo: a.base?.cura?.bonus ?? 0,
+                })}
+              />
+            )}
+            {grupos.length === 0 && curaGrupos.length === 0 && valor != null && (
+              <span className="afty-valor text-[12px]">
+                {a.auxilioSub === "rd" ? `${valor} RD` : sinalDe(valor)}
+              </span>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function AbaInvocacoes({ derived, rolar, destaque }) {
   const invocacoes = derived.invocacoes?.lista ?? [];
   const hordas = derived.hordas?.lista ?? [];
-  const cp = derived.invocacoes?.concentrarPoder;
+  const marcadores = derived.invocacoes?.marcadores ?? [];
+  const controle = derived.invocacoes?.controle;
 
   if (!invocacoes.length && !hordas.length) {
     return (
@@ -216,18 +488,44 @@ export default function AbaInvocacoes({ derived, rolar, destaque }) {
 
   return (
     <div className="space-y-3">
-      {/* Concentrar Poder só existe para quem tem a habilidade, e o excesso é um
-          aviso e não um bloqueio, igual ao resto do sistema. */}
-      {cp?.ativo && (
-        <section className="afty-card p-3 flex items-center gap-2 flex-wrap">
-          <h2 className="afty-card-titulo flex-1">Concentrar Poder</h2>
-          {cp.excedeu && (
-            <span className="afty-chip" data-afty-tom="aviso">
-              <AlertTriangle className="w-3 h-3 flex-shrink-0" aria-hidden="true" />
-              Excedeu
+      {/* Marcadores só existem para quem tem a Habilidade que os concede, e o
+          excesso é um aviso e não um bloqueio, igual ao resto do sistema. */}
+      {/* Roster do Controlador: quantas cabem em campo, quantas a ação Invocar
+          traz e quantos comandos ele dá por ação. São números de COMBATE, e sem
+          eles a mesa decide de cabeça quantas invocações pode manter. */}
+      {controle?.ativo && (
+        <section className="afty-card p-3 flex items-center gap-1.5 flex-wrap">
+          <span className="afty-chip" title="Invocações que você pode manter em campo">
+            Em campo {controle.limiteCampo}
+          </span>
+          <span className="afty-chip" title="Invocações que a ação Invocar traz">
+            Por Invocar {controle.invocarPorAcao}
+          </span>
+          <span className="afty-chip" title="Comandos por Ação Comum e por Ação Bônus">
+            Comandos {controle.comandos}
+          </span>
+          {controle.criarHorda && (
+            <span className="afty-chip" title="Hordas que você pode manter em campo">
+              Hordas {controle.limiteHordas}
             </span>
           )}
-          <span className="afty-valor text-[13px] tabular-nums">{cp.marcadas} / {cp.limite}</span>
+          {controle.invocarAcaoLivre && (
+            <span className="afty-chip" data-afty-tom="destaque">Invocar como Ação Livre</span>
+          )}
+        </section>
+      )}
+
+      {marcadores.length > 0 && (
+        <section className="afty-card p-3 flex items-center gap-2 flex-wrap">
+          {marcadores.map((m) => (
+            <span key={m.id} className="afty-linha px-2.5 py-1 flex items-center gap-2">
+              <span className="text-[12px]">{m.label}</span>
+              {m.excedeu && (
+                <AlertTriangle className="w-3 h-3 flex-shrink-0 afty-tom-aviso" aria-label="Excedeu" />
+              )}
+              <span className="afty-valor text-[13px] tabular-nums">{m.marcadas} / {m.limite}</span>
+            </span>
+          ))}
         </section>
       )}
 
@@ -243,20 +541,8 @@ export default function AbaInvocacoes({ derived, rolar, destaque }) {
       {hordas.length > 0 && (
         <section className="afty-card p-3">
           <h2 className="afty-card-titulo mb-2">Hordas</h2>
-          <div className="space-y-1">
-            {hordas.map((h) => (
-              <div key={h.id} className="afty-linha px-2.5 py-1.5 flex items-center gap-2 flex-wrap">
-                <span className="flex-1 min-w-0 text-[12px] font-semibold truncate">
-                  {h.nome || "Horda Sem Nome"}
-                </span>
-                {h.membros != null && (
-                  <span className="afty-rotulo text-[10px] whitespace-nowrap">{h.membros} Membros</span>
-                )}
-                {h.custo != null && (
-                  <span className="afty-valor text-[11px]" data-afty-tom="custo">{h.custo} PE</span>
-                )}
-              </div>
-            ))}
+          <div className="space-y-2">
+            {hordas.map((h) => <Horda key={h.id} h={h} rolar={rolar} />)}
           </div>
         </section>
       )}

@@ -101,6 +101,24 @@ texto da melhoria fala do "valor do bônus", que é o número que chega em quem 
 um Auxiliar de área.
 **Anotado:** 2026-08-09, chat de Liberações Máximas (não foi perguntado, apareceu na implementação)
 
+### ASSUNÇÃO: Otimização de Energia vale só para Ação com Custo
+**Onde:** `src/systems/afty/afty-invocacoes.js` (`resolveAcao`)
+**Situação:** a habilidade diz *"escolher uma habilidade com custo de cada invocação para ter esse
+custo reduzido em 1PE"*. Foi implementada valendo só para **Ação com Custo**, que é o termo
+definido do capítulo. A outra leitura possível é "qualquer ação que tenha custo", e aí ela também
+morderia os **2 PE obrigatórios da Cura**, que são custo de regra e não a mecânica opcional.
+**Precisa:** o autor confirmar. É uma condição só, no ponto em que hoje se lê `acaoComCusto`.
+**Anotado:** 2026-08-16, ao ligar a habilidade
+
+### ASSUNÇÃO: Crítico Aprimorado desce a margem só das JOGADAS DE ATAQUE
+**Onde:** `src/systems/afty/afty-invocacoes.js` (`margemCritico`) e `ficha/abas/AbaInvocacoes.jsx`
+**Situação:** o texto diz *"Um 19 se torna crítico também para suas invocações"*, sem dizer em quê.
+Como ele é pré-requisitado por Crítico Brutal, que fala de acertos críticos em ação de ataque, a
+margem 19 foi aplicada só às Jogadas de Ataque da invocação. Perícias e Testes de Resistência dela
+continuam em 20.
+**Precisa:** o autor confirmar, ou dizer que vale para toda rolagem dela.
+**Anotado:** 2026-08-16, ao ligar a habilidade
+
 ### A Transformação aceita o MESMO efeito em vários slots
 **Onde:** `src/systems/afty/afty-feiticos.js` (`calcularFeiticoTransformacao`) e o
 `TransformacaoEditor` em `AftyCreatureBuilder.jsx`
@@ -197,6 +215,47 @@ pelo mesmo caminho. Hoje só morde o rascunho automático do autor.
 
 ## AFTY — outros
 
+### O Intermediário ocupa meio espaço e ninguém conta
+**Onde:** `src/systems/afty/afty-invocacoes.js` (`espacosDeIntermediario`) e
+`afty-equipamentos.js` (`resolveCarga`)
+**Situação:** o capítulo diz, sem margem, *"Todo Intermediário ocupa meio espaço no inventário de
+um personagem"*, e toda Invocação tem um (Talismã para shikigami, o próprio dispositivo para
+Corpo Amaldiçoado). O número passou a ser **calculado e mostrado** no cabeçalho da aba em
+2026-08-16, mas **não entra no `resolveCarga`**.
+Não liguei porque a carga alimenta os penais de Sobrecarga (-Defesa e -Movimento), e um Controlador
+de nível alto tem até 9 invocações, ou seja, 4,5 espaços que apareceriam do nada em fichas já
+prontas. É mudança visível de número, e a decisão é sua.
+**Precisa:** o autor dizer se liga. Se sim, é somar `derived.invocacoes.espacosIntermediarios` ao
+`espacosUsados` antes do `resolveCarga`, no `deriveAfty`.
+**Anotado:** 2026-08-16, ao dar tela ao tipo mecânico da Invocação
+
+### O PV da Invocação não entra na sessão, e agora dói mais
+**Onde:** `src/systems/afty/ficha/ficha-sessao.js`, `ficha/abas/AbaInvocacoes.jsx`
+**Situação:** o PV que a aba mostra é o MÁXIMO, e não um recurso gasto. A sessão guarda os
+recursos do dono e nada das invocações, então não há onde marcar o dano que um shikigami levou.
+Isso era só incômodo enquanto a aba vivia na Ficha. **Em 2026-08-16 a aba entrou no painel de
+Encontros**, que é exatamente onde o mestre precisa abater dano de uma invocação em campo, e aí a
+falta virou buraco de uso.
+Não é só somar um campo: o capítulo tem regra própria para invocação que chega a 0 (dissipada ou
+desativada, volta com metade do PV até um descanso) e para dano excedente (exorcizada ou destruída,
+sai da lista de vez), e o descanso precisaria saber restaurar essas barras.
+**Precisa:** decidir se a sessão passa a guardar `invocacoes: { [id]: { pvAtual, estado } }`, com
+`estado` em campo / dissipada / exorcizada, e o que o descanso faz com cada um.
+**Anotado:** 2026-08-16, ao ligar as Invocações no painel de Encontros
+
+### Shikigami: a redução permanente de PE não sai do painel
+**Onde:** `src/systems/afty/afty-feiticos.js` (`calcularFeiticoShikigami`), `afty-derive.js`
+**Situação:** o Feitiço de Criação de Shikigamis calcula `reducaoPE = 2 × nível` (Técnica Máxima
+conta como Nível 6, então 12) e o painel do Feitiço mostra o número. **Ele nunca é descontado do
+PE máximo do dono.** É o mesmo tipo de ligação de mão única que o `ajusteAcoes` e o custo tinham,
+e que foi consertado do lado da invocação em 2026-08-15. Este ficou porque mexe na fórmula de PE
+da criatura, e não na ficha da invocação.
+**Precisa:** o autor confirmar quando a redução vale. O texto diz "enquanto existir", e o
+shikigami existe desde que o Feitiço é criado, o que faria a redução ser sempre ativa, some ela
+com quantos Feitiços de Shikigami a ficha tiver. Se for isso, é um canal de `pe` a menos no
+derive.
+**Anotado:** 2026-08-15
+
 ### Clã Zenin ficou com bônus de atributo livre
 **Onde:** `src/systems/afty/afty-origens.js`
 **Situação:** Gojo, Inumaki e Kamo têm `entre` com um par de atributos. O Zenin ficou livre entre
@@ -204,21 +263,23 @@ os 6, e não se sabe se foi decisão ou esquecimento.
 **Precisa:** o autor dizer se o Zenin é restrito também e, se for, quais dois atributos.
 **Anotado:** 2026-07-29, migrado de `afty-status.md` em 2026-08-09
 
-### Precisão (Melhoria de Controlador): "Ataque ou CD"
-**Onde:** `src/systems/afty/afty-alto-nivel.js`
-**Situação:** o texto diz *"+2 em Jogadas de Ataque ou CD"*, e não se sabe se é escolha do
-jogador ou se vale para os dois.
-**Precisa:** decisão do autor.
-**Anotado:** 2026-07-29, migrado de `afty-status.md` em 2026-08-09
+### ~~Precisão (Melhoria de Controlador): "Ataque ou CD"~~ ✅ RESOLVIDO
+**Onde:** `src/systems/afty/afty-habilidades.js` (`MELHORIA_EFEITOS_INVOCACAO`)
+**Situação:** o texto diz *"+2 em Jogadas de Ataque ou CD"*, e não se sabia se era escolha do
+jogador ou se valia para os dois.
+**Resolvido:** o autor decidiu em 2026-08-15 que é **escolha do jogador**, feita por invocação
+marcada. O marcador `mel_precisao` tem `opcoes` e o `quando` deixa passar só o lado escolhido.
+**Anotado:** 2026-07-29, migrado de `afty-status.md` em 2026-08-09, fechado em 2026-08-15
 
 ---
 
 ## Migração pendente deste próprio arquivo
 
-`afty-status.md` ainda tem pendências espalhadas pelas seções de sessão (Melhorias de
-Controlador sem marcador por invocação, Controle Disperso sem limite de invocações ativas,
-Marca Registrada com a redução de PE desligada, subsistemas nunca enviados como Apoio, Imitação,
-Votos e técnicas marciais, e a lista de retomada das Especializações). Elas **não** foram
+`afty-status.md` ainda tem pendências espalhadas pelas seções de sessão (~~Melhorias de
+Controlador sem marcador por invocação~~ ✅ 2026-08-15, ~~Controle Disperso sem limite de
+invocações ativas~~ ✅ 2026-08-15, Marca Registrada com a redução de PE desligada, subsistemas
+nunca enviados como Apoio, Imitação, Votos e técnicas marciais, e a lista de retomada das
+Especializações). Elas **não** foram
 movidas para cá: seriam um diff enorme num arquivo que outros colaboradores também editam, e o
 autor pediu padronização daqui para frente, não migração.
 

@@ -263,6 +263,10 @@ export function estilosDaFicha(creature) {
       id,
       tipo: "especial",
       nome: String(bruta.nome ?? "").trim(),
+      // ⚠ O cru, para o EDITOR (bug de 2026-08-12): um campo de texto alimentado
+      // pelo nome aparado não aceita ESPAÇO, porque o caractere é gravado e a
+      // releitura o remove antes do próximo chegar. Ver funcionamentosDaFicha.
+      nomeCru: String(bruta.nome ?? ""),
       descricao: String(bruta.descricao ?? ""),
       // ⚠ O `modo` de cada linha é descartado: ele morreu em 2026-08-10, quando
       // a Especial passou a exigir imbuição. Deixá-lo passar manteria um campo

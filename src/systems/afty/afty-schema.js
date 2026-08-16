@@ -451,7 +451,14 @@ export function funcionamentosDaFicha(creature) {
     ...extras.filter(Boolean).map((f, i) => ({
       id: String(f.id || `fb_${i + 1}`),
       principal: false,
+      // ⚠ DUAS versões do nome, e a distinção não é preciosismo (bug de
+      // 2026-08-12): `nome` é para EXIBIR (aparado, nunca vazio) e `nomeCru` é o
+      // que o jogador digitou. Um campo de edição alimentado pelo aparado não
+      // aceita ESPAÇO, porque o caractere é gravado e a releitura o remove antes
+      // do próximo caractere chegar: "Seis Olhos" vira "SeisOlhos". Editor lê o
+      // cru, tela lê o pronto.
       nome: String(f.nome ?? "").trim() || FUNCIONAMENTO_NOME_PADRAO,
+      nomeCru: String(f.nome ?? ""),
       descricao: String(f.descricao ?? ""),
       efeitos: Array.isArray(f.efeitos) ? f.efeitos : [],
     })),

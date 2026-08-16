@@ -13,6 +13,7 @@ import AbaBuffs from "../ficha/abas/AbaBuffs";
 import AbaPericias from "../ficha/abas/AbaPericias";
 import AbaHabilidades from "../ficha/abas/AbaHabilidades";
 import AbaEquipamentos from "../ficha/abas/AbaEquipamentos";
+import AbaInvocacoes from "../ficha/abas/AbaInvocacoes";
 
 /**
  * ============================================================
@@ -43,13 +44,18 @@ import AbaEquipamentos from "../ficha/abas/AbaEquipamentos";
    *"preciso conseguir ver o que meus Feitiços e derivados fazem, sem precisar ir
    na aba de Edição para saber."* Com Ações, Perícias e Buffs só, o mestre tinha
    os NÚMEROS da criatura e nenhum dos TEXTOS — e ler o que uma Aptidão faz
-   exigia sair do encontro e abrir o criador. São as mesmas cinco abas da Ficha
-   Final, menos Invocações. */
+   exigia sair do encontro e abrir o criador.
+
+   ⚠ INVOCAÇÕES entrou em 2026-08-16, e a falta dela era grave: o encontro é
+   exatamente onde um Controlador usa a especialização inteira, e o painel não
+   tinha como rolar o ataque de um shikigami nem ver o PV dele. Agora são as
+   MESMAS SEIS abas da Ficha Final. */
 const ABAS = [
   { id: "acoes", rotulo: "Ações", icone: Swords },
   { id: "habilidades", rotulo: "Habilidades", icone: BookOpen },
   { id: "pericias", rotulo: "Perícias", icone: Shield },
   { id: "equipamentos", rotulo: "Equipamentos", icone: Backpack },
+  { id: "invocacoes", rotulo: "Invocações", icone: Sparkles },
   { id: "buffs", rotulo: "Buffs", icone: Wand2 },
 ];
 
@@ -370,6 +376,9 @@ export default function PainelDeCombatente({
           onFavorito={() => {}}
           destaque={destaque}
         />
+      )}
+      {aba === "invocacoes" && (
+        <AbaInvocacoes derived={derived} rolar={rolar} destaque={destaque} />
       )}
       {aba === "buffs" && (
         <AbaBuffs

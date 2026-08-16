@@ -1803,6 +1803,54 @@ export function calcularFeiticoTransformacao(feitico, ctx = {}) {
   };
 }
 
+/**
+ * Overrides que os Feitiços de Criação de Shikigamis impõem às Invocações que
+ * referenciam, chaveados pelo id da invocação.
+ *
+ * ⚠ Existe porque a ligação era de MÃO ÚNICA: `calcularFeiticoShikigami` já
+ * calculava o grau exigido, o `ajusteAcoes` (-1 no Nível 0, +2 na Técnica
+ * Máxima) e o custo, mostrava tudo no painel do Feitiço, e nada disso chegava
+ * na ficha da invocação. O orçamento e o custo dela ignoravam o Feitiço que a
+ * criou.
+ *
+ * O custo do Feitiço SUBSTITUI o custo próprio da invocação (o shikigami é
+ * conjurado, não invocado pelo custo do grau), e por isso viaja como
+ * `custoFixo` e não como desconto.
+ */
+export function overridesShikigami(feiticos = [], ctx = {}) {
+  const out = {};
+  for (const f of Array.isArray(feiticos) ? feiticos : []) {
+    if (f?.tipo !== "especial" || f?.especialSubtipo !== "shikigami") continue;
+    if (!f?.shikigamiInvocacaoId) continue;
+    /* ⚠ AS REDUÇÕES DE CUSTO ENTRAM AQUI TAMBÉM. O card do Feitiço passa pelo
+       `aplicaReducoesCustoFeitico` (é o que `linhaDoFeitico` faz) e este caminho
+       não passava: com Manipulação Perfeita marcada, o Feitiço mostrava o custo
+       pela metade e a ficha da invocação cobrava o cheio. Dois números para a
+       mesma coisa, e o próprio texto do Shikigami diz que ele RECEBE Manipulação
+       Perfeita. */
+    const calc = aplicaReducoesCustoFeitico(f, calcularFeiticoShikigami(f, ctx), ctx);
+    const fonte = f.nome?.trim() || "Feitiço de Shikigami";
+    /* ⚠ DOIS Feitiços apontando para a MESMA invocação: o último vencia calado,
+       e a ficha mostrava o grau e o custo de um deles sem dizer que o outro
+       existia. Agora o primeiro manda (é o que a ordem da lista sugere) e a
+       disputa vira aviso na invocação, que é onde a ambiguidade morde. */
+    const jaTem = out[f.shikigamiInvocacaoId];
+    if (jaTem) {
+      jaTem.disputa = [...(jaTem.disputa ?? [jaTem.fonte]), fonte];
+      continue;
+    }
+    out[f.shikigamiInvocacaoId] = {
+      fonte,
+      grauExigido: calc.grau,
+      ajusteAcoes: calc.ajusteAcoes,
+      custoFixo: calc.custoPE,
+      reducaoPE: calc.reducaoPE,
+      disputa: null,
+    };
+  }
+  return out;
+}
+
 // Despacho do tipo Especial pelo subtipo escolhido.
 export function calcularFeiticoEspecial(feitico, ctx = {}) {
   switch (feitico?.especialSubtipo) {
@@ -3201,6 +3249,20 @@ function propriedadesResumoFeitico(f, calc, valor, valorLabel) {
       : calc?.sustentacaoVida > 0 ? `${calc.sustentacaoVida} PV por rodada`
       : null },
     { id: "exaustao", nome: "Exaustão", valor: calc?.notaExaustao || null },
+    /* ⚠ O SHIKIGAMI só mostrava "Shikigami Grau Especial" e mais nada na Ficha
+       (2026-08-16). Faltavam as duas coisas que a mesa precisa: QUAL invocação
+       ele conjura, que é uma criatura inteira montada noutra aba, e a redução
+       PERMANENTE de PE, que o jogador tem de lembrar em toda conta de energia. */
+    // `refNome` é "" numa invocação sem nome, e o filtro do fim descartaria a
+    // linha inteira. Quem decide se há referência é o id, não o nome.
+    { id: "shikigami", nome: "Invocação",
+      valor: f.especialSubtipo === "shikigami" && calc?.invocacaoId
+        ? (calc.refNome || "Sem Nome")
+        : null },
+    { id: "shikigamiReducao", nome: "Redução de PE",
+      valor: f.especialSubtipo === "shikigami" && calc?.reducaoPE > 0
+        ? `${calc.reducaoPE} PE`
+        : null },
     ...liberacaoResumoFeitico(calc),
   ];
   return propriedades.filter((propriedade) => propriedade.valor != null && propriedade.valor !== "");

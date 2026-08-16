@@ -57,6 +57,7 @@ import {
 import { resolveEspecializacoes, AFTY_ESPECIALIZACOES } from "./afty-especializacoes";
 import {
   resolveHabilidades, efeitosInvocacaoControlador, getHabilidade, OPCAO_ESCOLHA_NOME,
+  resolveMarcadoresInvocacao, resolveControleInvocacoes,
   AFTY_HABILIDADES,
   resolveArmasDedicadas, efeitosArmasDedicadas, resolveEmpolgacao,
   encantamentosDeManejoEspecial, habilidadesConcedidasPelasEspecializacoes,
@@ -71,7 +72,7 @@ import {
   resolveEquipamentos, resolveCarga, grauFeiticeiro, alcanceDaArma, propriedadesDaArma,
   podeSerArmaDedicada, grauDoRank, efeitosEspeciaisDeArma,
 } from "./afty-equipamentos";
-import { nivelMaxFeitico, resumoDeUmFeitico, resumoFeiticos } from "./afty-feiticos";
+import { nivelMaxFeitico, resumoDeUmFeitico, resumoFeiticos, overridesShikigami } from "./afty-feiticos";
 import { resolveEstilos, efeitosDoEstilo } from "./afty-estilo-sombras";
 import { resolveTestes, resolveDano, catalogoPericiasDaFicha } from "./afty-pericias";
 import { resolveCura } from "./afty-cura";
@@ -1377,13 +1378,42 @@ export function deriveAfty(creature, opcoes = {}) {
   const nivelControlador = nivelEspec.controlador?.escalonamento ?? 0;
   // Efeitos estáticos das Habilidades de Controlador escolhidas, aplicados a
   // TODAS as invocações do dono (via Motor de Automação, ver afty-habilidades.js).
-  const efeitosInvoc = efeitosInvocacaoControlador(habilidades.escolhidas);
-  // Concentrar Poder (6°): marca até floor(BT/2) invocações. O limite alimenta o
-  // contador/validação da UI; o efeito em si é filtrado por `marcada` no motor.
-  const temConcentrarPoder = habilidades.escolhidas.includes("ctr_concentrar_poder");
-  const concentrarPoder = { ativo: temConcentrarPoder, limite: temConcentrarPoder ? Math.floor(bt / 2) : 0 };
-  const donoInvoc = { nd, bt, nivelControlador, efeitos: efeitosInvoc, concentrarPoder };
-  const invocacoes = resolveInvocacoesList(creature?.invocacoes, donoInvoc);
+  const escolhasMapa = habilidades.escolhas?.mapa ?? {};
+  const efeitosInvoc = efeitosInvocacaoControlador(habilidades.escolhidas, escolhasMapa);
+  // MARCADORES: uma Habilidade que vale só para ALGUMAS invocações (Concentrar
+  // Poder, as 4 Melhorias, Fantoche Supremo, Companheiro, Econômicas) entra por
+  // marcador. O limite sai de uma expressão da DSL avaliada no contexto do dono.
+  const ctxDono = { nd, bt, nivel_controlador: nivelControlador };
+  const marcadores = resolveMarcadoresInvocacao({
+    escolhidasIds: habilidades.escolhidas, escolhasMapa, ctxDono,
+  });
+  // Roster do Controlador: invocações iniciais, limite em campo, comandos e
+  // hordas. É de REFERÊNCIA (mostra, não valida).
+  const controle = resolveControleInvocacoes({
+    escolhidasIds: habilidades.escolhidas, escolhasMapa, nivelControlador,
+  });
+  // Feitiço de Criação de Shikigamis: o nível do Feitiço manda no grau, no
+  // orçamento e no custo da invocação que ele referencia.
+  // O ctx leva as duas peças que o `linhaDoFeitico` também junta na hora de
+  // aplicar as reduções de custo: o repertório inteiro e as escolhas da ficha.
+  const overridesPorInvocacao = overridesShikigami(feiticosLista, {
+    ...ctxFeiticos,
+    feiticos: feiticosLista,
+    reducoesCustoFeitico: creature?.reducoesCustoFeitico,
+  });
+  const donoInvoc = {
+    nd, bt, nivelControlador,
+    efeitos: efeitosInvoc,
+    marcadores,
+    overridesPorInvocacao,
+    membroQuartoGrauGratis: controle.membroQuartoGrauGratis,
+    otimizacaoEnergia: controle.otimizacaoEnergia,
+    autonomia: controle.autonomia,
+    resistenciaSobrecarregada: controle.resistenciaSobrecarregada,
+    margemCritico: controle.margemCritico,
+    criticoBrutal: controle.criticoBrutal,
+  };
+  const invocacoes = { ...resolveInvocacoesList(creature?.invocacoes, donoInvoc), controle };
   const hordas = resolveHordasList(creature?.hordas, creature?.invocacoes, donoInvoc);
 
   // Focos de interlúdio (orçamento de Treinamento) = ND + Outros.

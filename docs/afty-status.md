@@ -117,6 +117,255 @@ Estado atual do sistema Afty (atualizado 2026-08-12). Leia junto com:
 
 ---
 
+## SESSÃO DE 2026-08-16: O SHIKIGAMI NA MESA, E O QUE A FICHA NÃO MOSTRAVA
+
+Revisão da aparência do Shikigami e da Ficha Final, mais os poderes que o motor novo destravou.
+O tema da sessão é o mesmo da anterior, e por isso ele fica registrado como padrão: **valor
+calculado que não chega a lugar nenhum**. Sete achados desta vez.
+
+### 1. ⚠ A Ficha só mostrava ATAQUE COM JOGADA
+
+O maior deles. `resolveAcao` sempre devolveu CD, qual Teste de Resistência, cura, área, condição, o
+valor dos auxílios e o dano adicional, e a aba mostrava só o acerto e o dano de uma Jogada de
+Ataque. Na prática:
+
+- um ataque por **Teste de Resistência** não mostrava a **CD**, que é o número inteiro da jogada,
+  nem qual TR o alvo rola. A ação era inutilizável na mesa;
+- uma Invocação **médica** não tinha o que rolar: a cura não aparecia em lugar nenhum;
+- **Defesa, Acerto e RD** de auxílio, o **dano adicional**, a **área**, a **condição** e o tipo de
+  dano não apareciam.
+
+A ação virou duas linhas: identidade e custo em cima, os números da mesa embaixo, e tudo que rola é
+clicável. A **classe** (Complexa ou Simples) entrou junto, porque é ela que diz qual comando o dono
+gasta.
+
+### 2. As Invocações eram invisíveis para a busca global
+
+A aba tinha a âncora de destaque (`afty-item-invocacao:<id>`) e **nenhuma fonte**: o alvo existia e
+nada apontava para ele. Agora `alvosDeBusca` as inclui, e os nomes das Ações e Características
+entram na string de busca (no meio da luta se procura pelo nome do golpe). Linha única por
+invocação, porque a `chave` é o alvo do destaque E a chave de lista do resultado.
+
+### 3. ⚠ O painel de ENCONTROS não tinha Invocações
+
+Ele reusa cinco abas da Ficha e essa faltava. O encontro é exatamente onde um Controlador usa a
+especialização inteira, e o mestre não tinha como rolar o ataque de um shikigami nem ver o PV dele
+sem sair para o criador. Agora são as mesmas **seis** abas.
+
+### 4. ⚠ O custo do Shikigami ignorava Manipulação Perfeita
+
+Bug que eu mesmo abri na sessão anterior. O card do Feitiço passa pelo `aplicaReducoesCustoFeitico`
+e o `overridesShikigami` não passava: com Manipulação Perfeita marcada, o Feitiço mostrava o custo
+pela metade e a ficha da invocação cobrava o cheio. Dois números para a mesma coisa, e o próprio
+texto do Shikigami diz que ele **recebe** Manipulação Perfeita.
+
+### 5. Dois Feitiços na mesma invocação, e a trava de grau que travava demais
+
+- **Disputa:** dois Feitiços de Shikigami apontando para a mesma invocação faziam o último vencer
+  calado. Agora o primeiro manda e a disputa vira aviso.
+- **Trava de grau:** a tabela do Controlador desabilitava graus na invocação, inclusive num
+  shikigami de Feitiço, onde quem manda é o nível do FEITIÇO. Um Controlador de nível 1 com um
+  Feitiço de Nível 5 via o Grau Especial desabilitado e não tinha como satisfazer o aviso que a
+  própria ficha dava. A trava agora não vale para invocação amarrada a Feitiço.
+
+### 6. Aparência da criação de Shikigamis
+
+- O `confere` de cada opção era **calculado e ignorado**: o motor já dizia quais invocações batem
+  com o grau exigido e a tela mostrava todas iguais. Agora quem confere vem primeiro e marcado, e
+  quem não confere vem apagado com o grau dela ao lado.
+- O painel mostra os **stats reais** da invocação conjurada (PV, Defesa, Deslocamento, orçamento),
+  para não obrigar a troca de aba só para conferir o tamanho do próprio shikigami.
+- "Redução de PE" saía sem unidade ao lado de "Custo de Invocação: 2 PE".
+- Na Ficha, o Feitiço de Shikigami mostrava só "Shikigami Grau Especial". Ganhou as duas coisas que
+  a mesa precisa: **qual invocação** ele conjura e a **redução permanente de PE**.
+
+### 7. Poderes ligados nesta leva
+
+| Habilidade | O que entrou |
+|---|---|
+| **Otimização de Energia** (2°) | marca por AÇÃO: uma Ação com Custo por invocação sai 1 PE mais barata, com piso em 1 |
+| **Autonomia** (4°) | o custo por uso (`2 × rank do grau`) vira linha no card |
+| **Resistência Sobrecarregada** (10°) | o PE gastável e o PV que ele compra (`piso(BT/2)`, +10 PV cada) |
+| **Crítico Aprimorado** (10°) | margem 19 nas Jogadas de Ataque dela, e a Ficha rola com ela |
+| **Crítico Brutal** (4°) | o dado adicional aparece no card |
+| ~~Aptidões de Controle (8°)~~ | **já estava ligada** por `ESCOLHA_EFEITOS`, ao contrário do que a doc dizia |
+
+Também entrou a **Horda na Ficha**, que mostrava só nome, membros e custo: agora tem PV, tamanho,
+deslocamento e as ações do líder **já escaladas**, roláveis. E as **Características** na Ficha eram
+um chip com o nome e nada mais, sem o valor resolvido e sem a descrição que a pessoa escreveu.
+
+### 8. ⚠ O TIPO MECÂNICO da Invocação não tinha tela nenhuma
+
+`AFTY_INV_TIPOS` e `AFTY_INV_SABORES` existiam no motor desde a Fatia 1, o campo era guardado na
+ficha, e **nenhum arquivo importava os dois**. Toda invocação ficava calada em "Shikigami". O tipo
+decide o **Intermediário** (Talismã contra Dispositivo) e a **regra de retirada** (dissipada e
+exorcizada contra desativada e destruída), que são regras de mesa. Agora tem seletor no criador,
+com o sabor (Corpo Amaldiçoado ou Marionete) aparecendo só quando é Dispositivo, e o tipo é um chip
+na Ficha com o Intermediário e a retirada no `title`.
+
+### 9. O Intermediário ocupa meio espaço, e ninguém contava
+
+*"Todo Intermediário ocupa meio espaço no inventário de um personagem."* O número agora é calculado
+(`espacosDeIntermediario`) e aparece no cabeçalho da aba, mas **NÃO entra no `resolveCarga`**: a
+carga alimenta os penais de Sobrecarga, e um Controlador de nível alto tem 9 invocações, ou seja
+4,5 espaços que apareceriam do nada em fichas prontas. Está em `a-fazer.md` esperando a decisão.
+
+Fechando, dois consertos pequenos: o **roster** (campo, Invocar, comandos, hordas) passou a
+aparecer também na Ficha, porque são números de combate, e o **dado extra da Agressividade sumia
+dentro da Horda** (o escalonamento mexe no dado da tabela e o extra soma por fora, então ler só o
+`danoGrupos` fazia a horda bater mais fraco que a mesma invocação sozinha).
+
+### Placar
+
+Controlador **17 de 47** (as duas somadas à conta da sessão anterior são Aptidões de Controle, que
+já estava, e Invocação Às, ligada pela linha de Cura). As 30 restantes seguem em economia de ação,
+posicional de campo e estado de combate.
+
+### Assunções anotadas em `a-fazer.md`
+
+Otimização de Energia valendo só para Ação com Custo, Crítico Aprimorado descendo a margem só das
+Jogadas de Ataque, e o **PV da Invocação fora da sessão**, que virou buraco de uso agora que a aba
+entrou no painel de Encontros.
+
+---
+
+## SESSÃO DE 2026-08-15: MARCADORES DE INVOCAÇÃO, E AS CARACTERÍSTICAS QUE NÃO CHEGAVAM A LUGAR NENHUM
+
+Controlador e Shikigamis. O placar do **Controlador foi de 8 para 15 de 47**, e o que destravou
+isso foi um mecanismo só. Também caiu um bug antigo e calado, que é o item 3.
+
+### 1. MARCADORES por invocação (o desbloqueio)
+
+Existia **um** marcador, o booleano `inv.marcada` do Concentrar Poder, e por isso toda Habilidade
+que vale para ALGUMAS invocações ficou parada: o motor não tinha onde guardar "esta sim, aquela
+não". Agora existe um registro, `MARCADORES_INVOCACAO` (`afty-habilidades.js`), com oito:
+
+| Marcador | Habilidade | Limite |
+|---|---|---|
+| Concentrar Poder | Concentrar Poder (6°) | `piso(bt / 2)` |
+| Companheiro Amaldiçoado | Companheiro Amaldiçoado (2°) | `1` |
+| Fantoche Supremo | Fantoche Supremo (16°) | `1` |
+| Invocações Econômicas | Invocações Econômicas (6°) | `2 + (nc>=12) + (nc>=18)` |
+| Agressividade / Resistência / Mobilidade / Precisão | Melhoria de Controlador (2°), uma por opção | `bt` cada |
+
+A ficha guarda `inv.marcadores` e `inv.marcadorOpcoes`, o contexto de DSL ganha uma booleana
+`marc_<id>` por marcador, e os efeitos entram por `quando: "marc_<id>"`. **Compat:** `inv.marcada`
+continua lendo como `marc_concentrar_poder`, então rascunho velho não perde nada.
+
+**Marcador com ESCOLHA.** Precisão diz "+2 em Jogadas de Ataque **ou** CD", e o autor decidiu
+(2026-08-15) que é **escolha do jogador**. Um marcador pode declarar `opcoes`, e aí o contexto
+ganha `marc_<id>_<opcao>` além da `marc_<id>`. A escolha mora no card da invocação, ao lado do
+toggle, que é onde o efeito aparece.
+
+### 2. Canais novos, e o corte entre DANO e CURA
+
+`EFEITO_CANAIS` foi de 11 para 18. Os que nasceram: **`rd`**, **`acerto`**, **`cd`**,
+**`custoReducao`**, **`ataqueDanoAdicional`**, **`curaNivel`** e **`curaBonus`**.
+
+⚠ **`danoNivel`/`danoBonus` valiam para dano E cura.** Concentrar Poder diz "toda rolagem de dano
+ou cura" e estava certo, mas Agressividade diz **só dano**, e no par único ela engordaria a cura de
+graça. Agora são dois pares, e o Concentrar Poder emite os quatro.
+
+⚠ **`ataqueDanoAdicional` trafega o MÁXIMO do dado, não o dado.** O Motor só produz número, e
+Agressividade concede 1d6 que vira 1d8/1d10/1d12. Um índice de degrau não serviria porque o Motor
+**soma** os valores de um mesmo canal, e somar índices daria a escada errada (duas fontes de 1d6
+virariam 1d10). Somar máximos é a própria regra de conversão do livro: 6 + 6 = 12 = 1d12.
+`dadoDoMaximo(n)` faz o caminho de volta.
+
+### 3. ⚠ As Características eram calculadas e JOGADAS FORA
+
+Bug antigo, e o pior desta leva porque não tinha sintoma. `resolveCaracteristica` computava tudo
+certo e **nada disso saía do card**: a Característica de Vida dizia "+15 PV" e o PV da invocação
+não mudava, a de Tamanho não mexia no tamanho, a de RD não existia como stat e a de Teste não
+entrava em teste nenhum. Só o texto do resumo mostrava o número.
+
+Agora `agregarCaracteristicas` junta as passivas e o `resolveInvocacao` aplica: PV, tamanho, RD e
+os bônus de teste. Duas de Vida ou de Tamanho **não acumulam** (vale a maior / a primeira), como o
+aviso já dizia e o cálculo não cumpria.
+
+Junto vieram três campos que faltavam na criação:
+- **Tipo de dano da RD** (`rdTipo` + `rdTipoOutro`). A lista fechada é o `TIPOS_DANO` das armas
+  mais **Outro** com texto livre (autor, 2026-08-15), porque o livro deixa o tipo aberto e o resto
+  da lista nunca foi transcrito. É o tipo que decide se duas RDs colidem.
+- **Qual perícia** e **qual TR** da Característica de Teste. O livro diz "bônus fixo em um teste
+  específico" e não havia onde dizer qual.
+
+### 4. A INVOCAÇÃO GANHOU RD
+
+Ela não tinha, nem stat nem canal, e duas fontes produziam RD. Agora `resolveInvocacao` devolve
+`rd: { geral, porTipo }`: a Geral vem do canal (Melhoria Resistência, "contra todos os tipos") e
+cada linha por tipo já traz o total que vale contra aquele tipo. Aparece no stat block do criador
+e no card da Ficha.
+
+### 5. O Shikigami era ligação de MÃO ÚNICA
+
+`calcularFeiticoShikigami` já calculava o grau exigido, o `ajusteAcoes` (-1 no Nível 0, +2 na
+Técnica Máxima) e o custo, mostrava tudo no painel do Feitiço, e **nada chegava na ficha da
+invocação**. O orçamento e o custo dela ignoravam o Feitiço que a criou.
+
+`overridesShikigami` (`afty-feiticos.js`) devolve um mapa por id de invocação, e o `resolveInvocacao`
+aplica: o custo do Feitiço **substitui** o do grau (`custoFixo`, não desconto, porque o shikigami é
+conjurado e não invocado), o `ajusteAcoes` entra no orçamento e o grau divergente vira aviso. O card
+da invocação mostra um selo com o nome do Feitiço dono.
+
+### 6. Roster do Controlador (mostra, não valida)
+
+`resolveControleInvocacoes` calcula os quatro números que Treinamento em Controle e o Apogeu movem:
+invocações recebidas, limite em campo, quantas a ação Invocar traz, comandos por ação, mais o
+limite de hordas do Controle Disperso. Bases do capítulo: 1 em campo, Invocar traz 2, um comando.
+
+⚠ **É de REFERÊNCIA, não valida** (autor, 2026-08-15). Invocação também nasce de Interlúdio e de
+Feitiço de Shikigami, e travar pelo nível de Controlador bloquearia quem não é Controlador.
+
+**Buchas de Canhão** (10°) entrou junto: membro de quarto grau para de cobrar PE extra na horda.
+
+### 7. Canal desconhecido deixou de sumir calado
+
+`efeitosHabilidade` descartava efeito de canal inválido com um `continue` sem rastro: um erro de
+digitação num nome de canal viraria uma habilidade que simplesmente não faz nada. Agora vira aviso
+na ficha. E `validarMarcadoresInvocacao` confere que todo `marc_*` citado num `quando` existe no
+registro, pelo mesmo motivo: renomear um marcador sem renomear o `quando` desligaria a habilidade
+inteira sem sintoma.
+
+### Decisões do autor nesta sessão
+
+1. **Precisão** = escolha do jogador entre Ataque e CD, por invocação marcada.
+2. **"No nível 4, 8, 12, 16 e 18" das Melhorias** = **nível de Controlador**, seguindo Invocações
+   Móveis e Concentrar Poder, que dizem isso por escrito.
+3. **Roster** = mostrar sem validar.
+4. **Tipo de RD** = lista fechada mais Outro.
+
+### 8. Passada de revisão: cinco achados, todos do mesmo feitio
+
+Revendo o próprio trabalho apareceu mais do MESMO bug do item 3, valor calculado que não chega a
+lugar nenhum. Cada um virou assert antes de virar correção:
+
+1. **A Horda recomputava as ações do líder** com o `dono` cru em vez do `donoLocal` dele. A mesma
+   ação rolava um dano dentro da horda e outro fora: Concentrar Poder, Agressividade e Precisão
+   sumiam, e os `grupos` estruturados junto. Agora as ações vêm do `liderRes`.
+2. **A Horda subia o tamanho a partir de `lider.tamanho` cru**, ignorando a Característica de
+   Tamanho. Um líder Enorme com 2 membros virava Grande.
+3. **`comGatilho` era computado e ninguém mostrava.** Pior: o bônus de Característica de Teste em
+   **TR** entrava no número plano enquanto o de **Ataque** ficava de fora, e o livro cobra gatilho
+   nos dois. Agora os dois saem à parte, e a ficha mostra como condicional. Só a Perícia entra no
+   número, que é o que o livro manda ("o bônus é aplicado por completo").
+4. **Perícia não treinada com bônus de Característica aparecia como "Treinado (BT)"**, roxa,
+   mentindo sobre um BT que não soma nela.
+5. **A Horda imprimia a lista de ids** onde queria o número de membros (`membros` em vez de
+   `membrosCount`), o que saía como "M1,M2 Membros" na Ficha. Esse era antigo.
+
+Entrou junto o aviso de **duas Características no mesmo teste**, que é a mesma proibição de efeito
+repetido que Vida, Tamanho e RD já tinham.
+
+### O que continua fora
+
+As 32 restantes do Controlador seguem nos bloqueios já nomeados em
+`docs/afty-invocacoes.md`: economia de ação (ação/reação/reroll/vantagem), posicional de campo
+(contagem em alcance, flanqueamento), e o que depende de estado de combate. Nenhum deles é falta de
+marcador agora.
+
+---
+
 ## SESSÃO DE 2026-08-15: ALVOS E GUIA DA HABILIDADE ÚNICA DE GRAU ESPECIAL
 
 Relato do autor: ao programar uma Habilidade Única de Ferramenta Amaldiçoada de Grau Especial,
@@ -140,6 +389,8 @@ Como ficou:
 Assert do `deriveAfty`: uma Habilidade Única com Dados de Dano em `basico` somou só no Ataque
 Básico, e os alvos `cat:corpo` mais `arm_adaga` somaram apenas na Adaga. O contexto do item mostrou
 `grau = 5` no Grau Especial. ESLint e build passaram.
+
+---
 
 ## SESSÃO DE 2026-08-12 (parte 2): O TETO DE APTIDÃO E O FUNCIONAMENTO BÁSICO EM LISTA
 
@@ -279,6 +530,44 @@ O TETO DE REPETIÇÃO segue sendo metade da Maestria, em `maxVezesGeral`. No ND 
 6, ou seja, 18 Aptidões Amaldiçoadas contra as 12 de antes.
 
 O texto do card mudou junto ("igual a 1 + Grau Numérico"), senão a tela mostraria a fórmula velha.
+
+### 6b. ⚠ O NOME APARADO NÃO ACEITA ESPAÇO (bug do mesmo dia, e antigo)
+
+Autor, com print: *"na hora de colocar nome para alguma habilidade no Motor de Automação. Eu não
+consigo colocar Espaços"*. Ele escreveu **"Seis..Olhos"** porque a barra de espaço não entrava.
+
+A causa vale para qualquer campo do projeto: **o campo de edição estava sendo alimentado pelo nome
+NORMALIZADO**. O `funcionamentosDaFicha` devolve `nome` já com `.trim()` e com o rótulo padrão no
+lugar do vazio, e o editor lia esse valor. Digitar espaço grava `"Seis "`, o resolver relê e devolve
+`"Seis"`, e o caractere morre antes do próximo chegar. O segundo sintoma vinha do mesmo lugar: uma
+entrada nova abria com o texto literal "Funcionamento Básico" DENTRO do campo, em vez do
+placeholder, porque o fallback de exibição também voltava para o editor.
+
+Conserto: o resolver passou a devolver **as duas versões**, `nome` para EXIBIR e **`nomeCru`** para
+EDITAR. Tela lê o pronto, campo lê o cru.
+
+⚠ **O mesmo bug existia na Técnica de Estilo Especial** (`estilosDaFicha` também apara), e ninguém
+tinha reportado. Consertado junto, pelo mesmo caminho, e de quebra morreu o remendo
+`linha.nome === "Técnica Sem Nome" ? "" : linha.nome` que existia lá para disfarçar a metade do
+problema que aparecia.
+
+Assert novo simula a digitação caractere a caractere pelos dois caminhos, e o do jeito velho é
+mantido como prova: ele produz `"Funcionamento BásicoSeisOlhos"`.
+
+### 6c. O card do adicional era um cartão aninhado, e virou irmão do principal
+
+Autor: *"o segundo Funcionamento Básico ficou extremamente feio e não consigo nem sequer formatar o
+texto e fazer as coisas igualmente faço no principal"*.
+
+A primeira versão copiou o `EstiloEspecialCard`: caixa roxa com borda, aninhada dentro do card
+Perfil Amaldiçoado. Errado, porque um Funcionamento Básico adicional **não é sub-item do principal,
+é irmão dele** (os Seis Olhos não são nota de rodapé do Ilimitado). O aninhamento criava três
+larguras diferentes no mesmo card e estreitava a caixa de texto e o Motor em relação aos de cima,
+que é o que fazia parecer que ali não dava para fazer as mesmas coisas.
+
+Agora ele repete a estrutura do principal na MESMA largura: rótulo, texto com formatação e Motor,
+separados por um divisor mais forte que o divisor interno do Motor. A única diferença que sobra é
+que o rótulo do principal é fixo (ele É a técnica) e o do adicional é um campo.
 
 ### 7. Integração com o commit 985bb79 do GoliasK
 

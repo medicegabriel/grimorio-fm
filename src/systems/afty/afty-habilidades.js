@@ -35,6 +35,7 @@
  * estilo do autor vale para texto que o CÓDIGO escreve, não para a transcrição.
  */
 
+import { evalNumber } from "../../components/fm-dsl";
 import { getEspecializacao } from "./afty-especializacoes";
 import { getAptidao } from "./afty-aptidoes";
 import { ARMA_GRUPOS, ENCANTAMENTOS_ARMA } from "./afty-equipamentos";
@@ -6330,20 +6331,301 @@ export const CONTROLADOR_EFEITOS_INVOCACAO = {
   //   TRs      : +0 / +2  / +3  / +5
   //   Dano/Cura: +1 / +2  / +3  / +5 níveis, e +0 / +3 / +5 / +10 ao total
   ctr_concentrar_poder: [
-    { canal: "pv", quando: "marcada", expr: "5 + 5*(nivel_controlador >= 6) + 10*(nivel_controlador >= 12) + 10*(nivel_controlador >= 18)" },
-    { canal: "defesa", quando: "marcada", expr: "1 + (nivel_controlador >= 6) + (nivel_controlador >= 12) + 2*(nivel_controlador >= 18)" },
-    { canal: "bonusTR", quando: "marcada", expr: "2*(nivel_controlador >= 6) + (nivel_controlador >= 12) + 2*(nivel_controlador >= 18)" },
-    { canal: "danoNivel", quando: "marcada", expr: "1 + (nivel_controlador >= 6) + (nivel_controlador >= 12) + 2*(nivel_controlador >= 18)" },
-    { canal: "danoBonus", quando: "marcada", expr: "3*(nivel_controlador >= 6) + 2*(nivel_controlador >= 12) + 5*(nivel_controlador >= 18)" },
+    { canal: "pv", quando: "marc_concentrar_poder", expr: "5 + 5*(nivel_controlador >= 6) + 10*(nivel_controlador >= 12) + 10*(nivel_controlador >= 18)" },
+    { canal: "defesa", quando: "marc_concentrar_poder", expr: "1 + (nivel_controlador >= 6) + (nivel_controlador >= 12) + 2*(nivel_controlador >= 18)" },
+    { canal: "bonusTR", quando: "marc_concentrar_poder", expr: "2*(nivel_controlador >= 6) + (nivel_controlador >= 12) + 2*(nivel_controlador >= 18)" },
+    // "Toda rolagem de dano OU CURA": os dois pares de canais, mesma fórmula.
+    { canal: "danoNivel", quando: "marc_concentrar_poder", expr: "1 + (nivel_controlador >= 6) + (nivel_controlador >= 12) + 2*(nivel_controlador >= 18)" },
+    { canal: "curaNivel", quando: "marc_concentrar_poder", expr: "1 + (nivel_controlador >= 6) + (nivel_controlador >= 12) + 2*(nivel_controlador >= 18)" },
+    { canal: "danoBonus", quando: "marc_concentrar_poder", expr: "3*(nivel_controlador >= 6) + 2*(nivel_controlador >= 12) + 5*(nivel_controlador >= 18)" },
+    { canal: "curaBonus", quando: "marc_concentrar_poder", expr: "3*(nivel_controlador >= 6) + 2*(nivel_controlador >= 12) + 5*(nivel_controlador >= 18)" },
+  ],
+  // Fantoche Supremo (16°): uma invocação escolhida num descanso longo. A ação
+  // complexa adicional por turno é economia de ação e não tem canal.
+  ctr_fantoche_supremo: [
+    { canal: "pv", quando: "marc_fantoche_supremo", expr: "bt * 5" },
+    { canal: "defesa", quando: "marc_fantoche_supremo", expr: "2 * bt" },
+    { canal: "deslocamento", quando: "marc_fantoche_supremo", expr: "4.5" },
+  ],
+  // Invocações Econômicas (6°): "custo da invocação ou ativação reduzido em 2".
+  ctr_invocacoes_economicas: [
+    { canal: "custoReducao", quando: "marc_invocacoes_economicas", expr: "2" },
   ],
 };
 
-/** Efeitos de invocação concedidos pelas Habilidades de Controlador escolhidas. */
-export function efeitosInvocacaoControlador(escolhidasIds = []) {
+/**
+ * ============================================================
+ * MELHORIAS DE CONTROLADOR → EFEITOS DE INVOCAÇÃO
+ * ============================================================
+ * As Melhorias são OPÇÕES da escolha aninhada de `ctr_melhoria_de_controlador`,
+ * não habilidades, então têm tabela própria, chaveada pelo id da opção.
+ *
+ * Cada uma vale em "uma quantidade de Invocações à sua escolha igual ao seu
+ * Bônus de Treinamento", e é por isso que cada uma tem um MARCADOR próprio: o
+ * `quando` filtra pelas invocações que o jogador marcou.
+ *
+ * ⚠ "No nível 4, 8, 12, 16 e 18" = NÍVEL DE CONTROLADOR (autor, 2026-08-15),
+ * seguindo Invocações Móveis e Concentrar Poder, que dizem isso por escrito.
+ */
+export const MELHORIA_EFEITOS_INVOCACAO = {
+  // Agressividade: 1d6 de dano adicional nos ataques (1d8 no 8, 1d10 no 16,
+  // 1d12 no 18) e +3 em rolagens de dano no 4, que "aumenta para" +6 no 12.
+  //
+  // ⚠ O canal `ataqueDanoAdicional` trafega o MÁXIMO do dado, não o dado:
+  // 6 = 1d6, 8 = 1d8, 10 = 1d10, 12 = 1d12. Ver dadoDoMaximo em afty-invocacoes.js.
+  ctr_melhoria_agressividade: [
+    { canal: "ataqueDanoAdicional", quando: "marc_mel_agressividade", expr: "6 + 2*(nivel_controlador >= 8) + 2*(nivel_controlador >= 16) + 2*(nivel_controlador >= 18)" },
+    { canal: "danoBonus", quando: "marc_mel_agressividade", expr: "3*(nivel_controlador >= 4) + 3*(nivel_controlador >= 12)" },
+  ],
+  // Resistência: Defesa +2 (+1 no 8, +1 no 16, +2 no 18) e RD contra TODOS os
+  // tipos, 2 no nível 4 e "mais 3" no 12 (soma, não substitui).
+  ctr_melhoria_resistencia: [
+    { canal: "defesa", quando: "marc_mel_resistencia", expr: "2 + (nivel_controlador >= 8) + (nivel_controlador >= 16) + 2*(nivel_controlador >= 18)" },
+    { canal: "rd", quando: "marc_mel_resistencia", expr: "2*(nivel_controlador >= 4) + 3*(nivel_controlador >= 12)" },
+  ],
+  // Mobilidade: +1,5 m, e +1,5 m em cada um dos cinco degraus.
+  ctr_melhoria_mobilidade: [
+    { canal: "deslocamento", quando: "marc_mel_mobilidade", expr: "1.5 * (1 + (nivel_controlador >= 4) + (nivel_controlador >= 8) + (nivel_controlador >= 12) + (nivel_controlador >= 16) + (nivel_controlador >= 18))" },
+  ],
+  // Precisão: "+2 em Jogadas de Ataque OU CD". É ESCOLHA DO JOGADOR (autor,
+  // 2026-08-15), feita por invocação marcada: a mesma fórmula vai para os dois
+  // canais e o `quando` deixa passar só o lado escolhido. A rolagem de novo dos
+  // níveis 8 e 12 é economia de ação e não tem canal.
+  ctr_melhoria_precisao: [
+    { canal: "acerto", quando: "marc_mel_precisao_acerto", expr: "2 + 2*(nivel_controlador >= 4) + (nivel_controlador >= 8) + 2*(nivel_controlador >= 16) + 2*(nivel_controlador >= 18)" },
+    { canal: "cd", quando: "marc_mel_precisao_cd", expr: "2 + 2*(nivel_controlador >= 4) + (nivel_controlador >= 8) + 2*(nivel_controlador >= 16) + 2*(nivel_controlador >= 18)" },
+  ],
+};
+
+/**
+ * ============================================================
+ * MARCADORES DE INVOCAÇÃO
+ * ============================================================
+ * Uma Habilidade de Controlador que vale para ALGUMAS invocações, e não para
+ * todas, vira um MARCADOR: o jogador liga o marcador na ficha da invocação e os
+ * efeitos entram por `quando: "marc_<id>"`.
+ *
+ * Antes disto existia um marcador só, o booleano `inv.marcada` do Concentrar
+ * Poder, e por isso as Melhorias, o Fantoche Supremo, o Companheiro e as
+ * Econômicas ficaram anos sem poder ser ligados: o motor não tinha onde guardar
+ * "esta invocação sim, aquela não".
+ *
+ * `limiteExpr` é avaliado no contexto do DONO (nd, bt, nivel_controlador).
+ * `opcoes`, quando existe, é uma escolha por invocação marcada, e gera as
+ * variáveis `marc_<id>_<opcao>` além da `marc_<id>`.
+ */
+export const MARCADORES_INVOCACAO = [
+  {
+    id: "concentrar_poder",
+    label: "Concentrar Poder",
+    habilidadeId: "ctr_concentrar_poder",
+    limiteExpr: "piso(bt / 2)",
+  },
+  {
+    id: "companheiro",
+    label: "Companheiro Amaldiçoado",
+    habilidadeId: "ctr_companheiro_amaldicoado",
+    limiteExpr: "1",
+    // Sem canal: o que ele concede é Apoiar como Ação Livre (economia de ação).
+    // O marcador existe porque Companheiro Avançado e Invocação Às precisam
+    // saber QUAL invocação é o companheiro.
+  },
+  {
+    id: "fantoche_supremo",
+    label: "Fantoche Supremo",
+    habilidadeId: "ctr_fantoche_supremo",
+    limiteExpr: "1",
+  },
+  {
+    id: "invocacoes_economicas",
+    label: "Invocações Econômicas",
+    habilidadeId: "ctr_invocacoes_economicas",
+    // "duas invocações. No nível 12 você pode escolher mais uma, assim como no 18."
+    limiteExpr: "2 + (nivel_controlador >= 12) + (nivel_controlador >= 18)",
+  },
+  {
+    id: "mel_agressividade",
+    label: "Agressividade",
+    habilidadeId: "ctr_melhoria_de_controlador",
+    opcaoId: "ctr_melhoria_agressividade",
+    limiteExpr: "bt",
+  },
+  {
+    id: "mel_resistencia",
+    label: "Resistência",
+    habilidadeId: "ctr_melhoria_de_controlador",
+    opcaoId: "ctr_melhoria_resistencia",
+    limiteExpr: "bt",
+  },
+  {
+    id: "mel_mobilidade",
+    label: "Mobilidade",
+    habilidadeId: "ctr_melhoria_de_controlador",
+    opcaoId: "ctr_melhoria_mobilidade",
+    limiteExpr: "bt",
+  },
+  {
+    id: "mel_precisao",
+    label: "Precisão",
+    habilidadeId: "ctr_melhoria_de_controlador",
+    opcaoId: "ctr_melhoria_precisao",
+    limiteExpr: "bt",
+    opcoes: [
+      { value: "acerto", label: "Jogadas de Ataque" },
+      { value: "cd", label: "CD das Ações" },
+    ],
+  },
+];
+
+/**
+ * Confere que todo `marc_*` citado num `quando` existe no registro.
+ *
+ * ⚠ Um `quando` que cita marcador inexistente avalia 0 e o efeito NUNCA entra,
+ * calado. Renomear um marcador sem renomear o `quando` desligaria a habilidade
+ * inteira sem nenhum sintoma na tela.
+ */
+export function validarMarcadoresInvocacao() {
+  const erros = [];
+  const validos = new Set();
+  for (const m of MARCADORES_INVOCACAO) {
+    if (validos.has(`marc_${m.id}`)) erros.push(`MARCADORES_INVOCACAO: id duplicado "${m.id}"`);
+    validos.add(`marc_${m.id}`);
+    for (const o of m.opcoes || []) validos.add(`marc_${m.id}_${o.value}`);
+    if (!BY_ID[m.habilidadeId]) erros.push(`Marcador "${m.id}": habilidade "${m.habilidadeId}" não existe.`);
+    if (m.opcaoId && !MELHORIAS_DE_CONTROLADOR.some((o) => o.id === m.opcaoId)) {
+      erros.push(`Marcador "${m.id}": opção "${m.opcaoId}" não existe no pool de Melhorias.`);
+    }
+  }
+  const tabelas = { CONTROLADOR_EFEITOS_INVOCACAO, MELHORIA_EFEITOS_INVOCACAO };
+  for (const [nome, tab] of Object.entries(tabelas)) {
+    for (const [chave, efs] of Object.entries(tab)) {
+      for (const e of efs) {
+        for (const ref of String(e.quando || "").match(/marc_[a-z0-9_]+/gi) || []) {
+          if (!validos.has(ref)) erros.push(`${nome}.${chave}: "quando" cita marcador inexistente "${ref}".`);
+        }
+      }
+    }
+  }
+  // Toda Melhoria do pool precisa de marcador: sem ele o efeito dela ficaria
+  // com um `quando` que nunca liga.
+  for (const o of MELHORIAS_DE_CONTROLADOR) {
+    if (!MARCADORES_INVOCACAO.some((m) => m.opcaoId === o.id)) {
+      erros.push(`Melhoria "${o.id}" não tem marcador.`);
+    }
+  }
+  return erros;
+}
+
+/** Um marcador está DISPONÍVEL: a habilidade dona está escolhida (e a opção, quando tem). */
+function marcadorDisponivel(m, escolhidasIds, escolhasMapa) {
+  if (!escolhidasIds.includes(m.habilidadeId)) return false;
+  if (!m.opcaoId) return true;
+  return (escolhasMapa?.[m.habilidadeId] || []).includes(m.opcaoId);
+}
+
+/**
+ * Marcadores disponíveis para esta ficha, com o limite já avaliado.
+ * `ctxDono` = { nd, bt, nivel_controlador }.
+ */
+export function resolveMarcadoresInvocacao({ escolhidasIds = [], escolhasMapa = {}, ctxDono = {} } = {}) {
+  const ids = Array.isArray(escolhidasIds) ? escolhidasIds : [];
+  return MARCADORES_INVOCACAO
+    .filter((m) => marcadorDisponivel(m, ids, escolhasMapa))
+    .map((m) => ({
+      id: m.id,
+      label: m.label,
+      opcoes: m.opcoes || null,
+      limite: Math.max(0, Math.floor(evalNumber(m.limiteExpr, ctxDono, 0))),
+    }));
+}
+
+/**
+ * ============================================================
+ * ROSTER DO CONTROLADOR (invocações iniciais, campo, comandos)
+ * ============================================================
+ * Os quatro números que Treinamento em Controle e o Apogeu movem. São de
+ * REFERÊNCIA: a aba mostra e não valida (autor, 2026-08-15), porque invocação
+ * também nasce de Interlúdio e de Feitiço de Criação de Shikigamis, e travar
+ * pelo nível de Controlador bloquearia quem não é Controlador.
+ *
+ * Bases do capítulo (docs/afty-invocacoes.md, "CONTROLANDO INVOCAÇÕES"):
+ * 1 invocação em campo, a ação Invocar traz 2, e um comando por ação.
+ */
+export function resolveControleInvocacoes({ escolhidasIds = [], escolhasMapa = {}, nivelControlador = 0 } = {}) {
+  const ids = Array.isArray(escolhidasIds) ? escolhidasIds : [];
+  const nc = nivelControlador || 0;
+  const degraus = (...niveis) => niveis.filter((n) => nc >= n).length;
+  const estilo = (escolhasMapa?.ctr_apogeu || [])[0] || null;
+
+  const treinamento = ids.includes("ctr_treinamento_em_controle");
+  const disperso = estilo === "ctr_controle_disperso";
+  const concentrado = estilo === "ctr_controle_concentrado";
+  const apice = ids.includes("ctr_apice_do_controle");
+
+  // Invocações recebidas: duas no 1° e mais uma em cada degrau.
+  const iniciais = treinamento ? 2 + degraus(3, 6, 9, 10, 12, 15, 18) : 0;
+
+  // Em campo: 1 de base, +1 do Treinamento, +1 do Disperso e mais +1 no 12.
+  let limiteCampo = 1;
+  if (treinamento) limiteCampo += 1;
+  if (disperso) limiteCampo += 1 + degraus(12);
+
+  // A ação Invocar traz 2 por padrão. O Disperso soma, e o Concentrado troca
+  // "duas como Ação Bônus" por "uma como Ação Livre".
+  let invocarPorAcao = 2;
+  if (disperso) invocarPorAcao += 1 + degraus(12);
+  if (concentrado) invocarPorAcao = 1;
+
+  // Comandos por Ação Comum (Complexa) e por Ação Bônus (Simples).
+  const comandos = 1 + (treinamento ? degraus(6, 12, 18) : 0);
+
+  return {
+    ativo: treinamento || !!estilo || apice,
+    estilo,
+    iniciais,
+    limiteCampo,
+    invocarPorAcao,
+    invocarAcaoLivre: concentrado || apice,
+    comandos,
+    criarHorda: disperso,
+    // "limite de Hordas em campo igual a metade do seu limite de Invocações em campo"
+    limiteHordas: disperso ? Math.floor(limiteCampo / 2) : 0,
+    // Buchas de Canhão (10°): membro de quarto grau deixa de cobrar PE extra.
+    membroQuartoGrauGratis: ids.includes("ctr_buchas_de_canhao"),
+    // Otimização de Energia (2°): uma Ação com Custo por invocação sai 1 PE mais barata.
+    otimizacaoEnergia: ids.includes("ctr_otimizacao_de_energia"),
+    /* Habilidades de USO, que não mudam a ficha da invocação mas têm número
+       fechado. Elas viram uma linha no card em vez de ficarem só no texto: sem
+       isso a pessoa precisa reabrir o livro no meio da luta para saber quanto
+       custa dar um turno próprio a uma invocação de Segundo Grau. */
+    autonomia: ids.includes("ctr_autonomia"),
+    resistenciaSobrecarregada: ids.includes("ctr_resistencia_sobrecarregada"),
+    // Crítico Aprimorado (10°): "Um 19 se torna crítico também para suas invocações."
+    margemCritico: ids.includes("ctr_critico_aprimorado") ? 19 : 20,
+    // Crítico Brutal (4°): "Os acertos críticos da sua invocação causam 1 dado
+    // de dano adicional." Os prejuízos que ele escolhe são de mesa.
+    criticoBrutal: ids.includes("ctr_critico_brutal"),
+  };
+}
+
+/**
+ * Efeitos de invocação concedidos pelas Habilidades de Controlador escolhidas,
+ * mais os das Melhorias marcadas (que são opções, não habilidades).
+ */
+export function efeitosInvocacaoControlador(escolhidasIds = [], escolhasMapa = {}) {
   const out = [];
-  for (const id of Array.isArray(escolhidasIds) ? escolhidasIds : []) {
+  const ids = Array.isArray(escolhidasIds) ? escolhidasIds : [];
+  for (const id of ids) {
     const efs = CONTROLADOR_EFEITOS_INVOCACAO[id];
     if (efs) for (const e of efs) out.push({ ...e, origem: id, nome: BY_ID[id]?.nome || id });
+  }
+  // Melhorias: só as opções realmente escolhidas dentro de Melhoria de Controlador.
+  if (ids.includes("ctr_melhoria_de_controlador")) {
+    const nomePorOpcao = Object.fromEntries(MELHORIAS_DE_CONTROLADOR.map((o) => [o.id, o.nome]));
+    for (const opcaoId of escolhasMapa?.ctr_melhoria_de_controlador || []) {
+      const efs = MELHORIA_EFEITOS_INVOCACAO[opcaoId];
+      if (efs) for (const e of efs) out.push({ ...e, origem: opcaoId, nome: nomePorOpcao[opcaoId] || opcaoId });
+    }
   }
   return out;
 }

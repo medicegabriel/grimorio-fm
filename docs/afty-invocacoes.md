@@ -1077,6 +1077,65 @@ escolhidas em `donoInvoc.efeitos`.
 > condição de campo ("enquanto for a única marcada em campo") NÃO é modelada (estado de combate):
 > a ficha mostra o buff que a marcada RECEBE, com a ressalva no texto.
 
+### ✅ SEGUNDA LEVA (2026-08-15): marcadores, canais novos e o Shikigami de volta
+
+O placar do Controlador foi de **8 para 15 de 47**. Detalhe completo na sessão de 2026-08-15 em
+`afty-status.md`. O resumo:
+
+| Habilidade | Efeito | Fórmula DSL | Canal |
+|---|---|---|---|
+| Fantoche Supremo (16°) | +PV / +Defesa / +Deslocamento | `bt * 5` · `2 * bt` · `4.5` | pv, defesa, deslocamento |
+| Invocações Econômicas (6°) | custo reduzido em 2 | `2` | custoReducao |
+| **Agressividade** (Melhoria) | dado extra em todo ataque | `6 + 2*(nc>=8) + 2*(nc>=16) + 2*(nc>=18)` | ataqueDanoAdicional |
+| " | +3 em dano, +6 no 12 | `3*(nc>=4) + 3*(nc>=12)` | danoBonus |
+| **Resistência** (Melhoria) | +Defesa | `2 + (nc>=8) + (nc>=16) + 2*(nc>=18)` | defesa |
+| " | RD contra todos os tipos | `2*(nc>=4) + 3*(nc>=12)` | rd |
+| **Mobilidade** (Melhoria) | +Deslocamento | `1.5 * (1 + (nc>=4) + (nc>=8) + (nc>=12) + (nc>=16) + (nc>=18))` | deslocamento |
+| **Precisão** (Melhoria) | +Acerto **ou** +CD, à escolha | `2 + 2*(nc>=4) + (nc>=8) + 2*(nc>=16) + 2*(nc>=18)` | acerto / cd |
+| Companheiro Amaldiçoado (2°) | designa a invocação (sem canal) | — | marcador só |
+| Treinamento em Controle (1°) e Apogeu (6°) | roster: recebidas, campo, Invocar, comandos, hordas | `resolveControleInvocacoes` | referência |
+| Buchas de Canhão (10°) | membro de quarto grau sai de graça na horda | — | custo de horda |
+
+> **MARCADORES (o desbloqueio).** `MARCADORES_INVOCACAO` em `afty-habilidades.js`. Uma Habilidade
+> que vale só para ALGUMAS invocações tem marcador, o jogador liga na ficha (`inv.marcadores`) e o
+> efeito entra por `quando: "marc_<id>"`. `limiteExpr` é avaliado no contexto do DONO. Marcador com
+> `opcoes` (Precisão) gera também `marc_<id>_<opcao>`, e a escolha mora no card da invocação.
+> `inv.marcada` segue valendo como `marc_concentrar_poder`.
+>
+> **Canais novos:** `rd`, `acerto`, `cd`, `custoReducao`, `ataqueDanoAdicional`, `curaNivel`,
+> `curaBonus`. ⚠ `danoNivel`/`danoBonus` deixaram de valer para cura: Agressividade é só dano.
+> ⚠ `ataqueDanoAdicional` trafega o **máximo do dado** (6 = 1d6), porque o Motor soma os valores de
+> um canal e somar máximos é a regra de conversão do próprio livro.
+>
+> **RD:** a invocação passou a ter. `rd: { geral, porTipo }`, com a Geral do canal e cada linha por
+> tipo vinda de Característica. A Característica de RD ganhou campo de **tipo de dano**.
+>
+> **⚠ As Características eram calculadas e jogadas fora.** Vida, Tamanho, RD e Teste resolviam
+> certo e nada saía do card: o PV não subia, o tamanho não mudava, o bônus não entrava em teste
+> nenhum. `agregarCaracteristicas` fechou isso.
+>
+> **Shikigami:** `overridesShikigami` (`afty-feiticos.js`) leva grau exigido, `ajusteAcoes` e custo
+> do Feitiço para a ficha da invocação. Antes o Feitiço calculava e a invocação ignorava.
+
+### ✅ TERCEIRA LEVA (2026-08-16): o Shikigami na mesa
+
+Detalhe na sessão de 2026-08-16 em `afty-status.md`. Ligadas: **Otimização de Energia** (marca por
+AÇÃO, não por invocação: uma Ação com Custo sai 1 PE mais barata, piso em 1), **Autonomia** e
+**Resistência Sobrecarregada** (custo por uso calculado no card), **Crítico Aprimorado** (margem 19
+nas Jogadas de Ataque dela) e **Crítico Brutal**. **Aptidões de Controle já estava ligada** por
+`ESCOLHA_EFEITOS`, ao contrário do que esta doc dizia. Placar: **17 de 47**.
+
+O resto da leva foi ligar o que o motor já calculava e ninguém mostrava:
+
+- a Ficha exibia só ATAQUE COM JOGADA. CD, qual TR, cura, área, condição, valor de auxílio e dano
+  adicional saíam do `resolveAcao` e não chegavam à mesa;
+- o painel de **Encontros** não tinha a aba de Invocações, que é onde o Controlador joga;
+- a **busca global** não alcançava invocação nenhuma, embora a âncora de destaque já existisse;
+- a **Horda** mostrava nome, membros e custo, sem PV, tamanho nem as ações escaladas do líder;
+- o custo do Shikigami **ignorava as reduções** (Manipulação Perfeita), divergindo do card do Feitiço;
+- dois Feitiços na mesma invocação faziam o último vencer calado, e a trava de grau do Controlador
+  travava um shikigami de Feitiço num grau que o próprio Feitiço exigia.
+
 ### ⚠ GAPS DO MOTOR (adicionar depois, não dá com o motor atual)
 
 O motor (fm-dsl) só produz UM NÚMERO para um stat. O que sobra precisa de mecanismos novos:

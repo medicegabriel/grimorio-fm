@@ -31,8 +31,33 @@
 import { evalNumber } from "../../components/fm-dsl";
 import { AFTY_TAMANHOS, AFTY_RESISTENCIAS } from "./afty-schema";
 import { AFTY_PERICIAS, bonusProficiencia, usoPericias } from "./afty-pericias";
+import { TIPOS_DANO } from "./afty-equipamentos";
 
 export const mod = (attr) => Math.floor(((attr ?? 10) - 10) / 2);
+
+/**
+ * Tipos de dano que uma RD de Invocação pode cobrir. Os quatro primeiros são o
+ * `TIPOS_DANO` das armas (afty-equipamentos.js), que é a única lista de tipos
+ * catalogada do Afty. "Outro" abre um campo livre de propósito: o livro deixa o
+ * tipo aberto ("qualquer tipo exceto Energia Reversa e Dano na Alma") e o resto
+ * da lista nunca foi transcrito. Fechar a lista aqui esconderia tipo que existe.
+ */
+export const INV_RD_TIPOS = [
+  ...Object.entries(TIPOS_DANO).map(([value, label]) => ({ value, label })),
+  { value: "outro", label: "Outro" },
+];
+
+/** Rótulo do tipo de dano de uma RD, com o texto livre quando for "outro". */
+export function rdTipoLabel(tipo, outro = "") {
+  if (tipo === "outro") return (outro || "").trim() || "Outro";
+  return TIPOS_DANO[tipo] ?? "";
+}
+
+/** Chave de comparação de tipo de RD (é o que decide se duas RDs colidem). */
+const rdTipoChave = (tipo, outro = "") =>
+  tipo === "outro"
+    ? `outro:${String(outro || "").trim().toLowerCase()}`
+    : String(tipo || "");
 
 const TAMANHO_ORDEM = AFTY_TAMANHOS.map((t) => t.value);
 
@@ -53,6 +78,34 @@ export const AFTY_INV_SABORES = [
   { value: "corpo_amaldicoado", label: "Corpo Amaldiçoado" },
   { value: "marionete",         label: "Marionete" },
 ];
+
+const TIPO_BY_VALUE = Object.fromEntries(AFTY_INV_TIPOS.map((t) => [t.value, t]));
+const SABOR_BY_VALUE = Object.fromEntries(AFTY_INV_SABORES.map((s) => [s.label, s]));
+
+/** Metadados do tipo mecânico (rótulo, Intermediário, regra de retirada). */
+export const tipoInvocacaoMeta = (tipo) => TIPO_BY_VALUE[tipo] || AFTY_INV_TIPOS[0];
+
+/**
+ * O nome que a ficha mostra para o tipo: o sabor narrativo quando é dispositivo
+ * (Corpo Amaldiçoado ou Marionete são a MESMA coisa mecânica, e o autor decidiu
+ * que a diferença é só de rótulo), e o próprio tipo quando é shikigami.
+ */
+export function tipoInvocacaoLabel(inv) {
+  const t = tipoInvocacaoMeta(inv?.tipoMecanico);
+  if (t.value !== "dispositivo") return t.label;
+  return AFTY_INV_SABORES.find((s) => s.value === inv?.saborNarrativo)?.label ?? t.label;
+}
+
+/**
+ * Espaços de inventário que os Intermediários ocupam.
+ *
+ * ⚠ "Todo Intermediário ocupa meio espaço no inventário de um personagem"
+ * (capítulo de Invocações). O número é CALCULADO e ainda NÃO entra no
+ * `resolveCarga`: ligar isso mexe em Defesa e Movimento de toda ficha que já
+ * existe, e a decisão é do autor. Ver docs/a-fazer.md.
+ */
+export const espacosDeIntermediario = (lista) =>
+  (Array.isArray(lista) ? lista.length : 0) * 0.5;
 
 /**
  * Graus. `rank` cresce com o poder (1 = mais fraco), `num` é o número do livro
@@ -156,6 +209,10 @@ export function createBlankAcao() {
     // Ação com Custo
     custoPE: 0,
     beneficiosCusto: [],
+    // Otimização de Energia (Controlador 2°): UMA ação com custo por invocação
+    // fica 1 PE mais barata. É por AÇÃO, e não por invocação, então não entra no
+    // registro de marcadores.
+    custoOtimizado: false,
     // Escape hatch de DSL
     modificadorExpr: "",
   };
@@ -168,6 +225,10 @@ export function createBlankCaracteristica() {
     descricao: "",
     subtipo: "vida",          // "vida" | "teste" | "rd" | "tamanho" | "livre"
     alvoTeste: "pericia",     // "pericia" | "ataque" | "tr"
+    periciaId: "",            // qual perícia, quando alvoTeste === "pericia"
+    trTipo: "",               // qual TR, quando alvoTeste === "tr"
+    rdTipo: "",               // tipo de dano coberto (INV_RD_TIPOS)
+    rdTipoOutro: "",          // texto livre quando rdTipo === "outro"
     rdTiposExtras: 0,
     tamanho: "",
     modificadorExpr: "",
@@ -196,7 +257,8 @@ export function createBlankInvocacao(grau = "quarto") {
     trMestre: false,           // mestre no save treinado (1,5x BT)
     periciasProf: {},          // { [periciaId]: "treinado" | "mestre" }
     tamanho: "medio",          // só muda por Característica de Tamanho
-    marcada: false,            // Invocação marcada (Concentrar Poder). Limite = floor(BT/2).
+    marcadores: {},            // { [marcadorId]: true } — ver MARCADORES_INVOCACAO
+    marcadorOpcoes: {},        // { [marcadorId]: opcaoValue } — marcador que pede escolha
     acoes: [],                 // Fatia 2
     caracteristicas: [],       // Fatia 2
   };
@@ -414,10 +476,9 @@ function dadoMax(str) {
   }, 0);
 }
 
-// Degrau de um dado pela regra do "maior resultado": soma o máximo e acha o
-// degrau mais próximo (monotônico e distinto, então dá para varrer).
-function degrauDe(str) {
-  const alvo = dadoMax(str);
+// Degrau cujo "maior resultado" é o mais próximo de `alvo`. A escada é
+// monotônica e distinta, então dá para varrer.
+function degrauDoMaximo(alvo) {
   let prev = 0;
   for (let i = 0; i < 300; i++) {
     const cur = degrau(i).max;
@@ -429,6 +490,27 @@ function degrauDe(str) {
     prev = i;
   }
   return prev;
+}
+
+// Degrau de um dado pela regra do "maior resultado": soma o máximo e acha o
+// degrau mais próximo.
+function degrauDe(str) {
+  return degrauDoMaximo(dadoMax(str));
+}
+
+/**
+ * O dado da escada cujo maior resultado é `maximo`. É o caminho de volta do
+ * canal `ataqueDanoAdicional`, que trafega o MÁXIMO do dado em vez do dado.
+ *
+ * ⚠ O canal viaja como máximo, e não como um índice de degrau, porque o Motor
+ * SOMA os valores de um mesmo canal. Somar índices de degrau daria a escada
+ * errada (duas fontes de 1d6 virariam 1d10). Somar máximos é a própria regra de
+ * conversão do livro: 6 + 6 = 12 = 1d12, o degrau de mesmo maior resultado.
+ */
+export function dadoDoMaximo(maximo) {
+  const n = Math.max(0, Math.floor(Number(maximo) || 0));
+  if (n <= 0) return null;
+  return degrau(degrauDoMaximo(n)).str;
 }
 
 /**
@@ -488,7 +570,12 @@ export function resolveAcao(acao, inv, dono = {}) {
   // confundir com o custo obrigatório de 2 PE que a Cura ganha embaixo: aquele
   // é um custo por uso, não a mecânica opcional de Ação com Custo.
   const acaoComCusto = (acao?.custoPE ?? 0) > 0;
-  const out = { id: acao?.id, nome: acao?.nome || "", classe, familia, custoPE: acao?.custoPE ?? 0, acaoComCusto };
+  // A `descricao` viaja junto pelo mesmo motivo da Característica: é o texto da
+  // ação, e a Ficha não tem outra fonte para ele.
+  const out = {
+    id: acao?.id, nome: acao?.nome || "", descricao: acao?.descricao || "",
+    classe, familia, custoPE: acao?.custoPE ?? 0, acaoComCusto,
+  };
   const warnings = [];
 
   // Benefícios da Ação com Custo, agregados por tipo (cada PE compra o efeito da
@@ -541,6 +628,9 @@ export function resolveAcao(acao, inv, dono = {}) {
     } else {
       out.cd = cdAtaqueInvocacao(inv, dono, atributoChave);
       out.trTipo = acao?.trTipo || "reflexos";
+      // O rótulo sai resolvido: a Ficha mostra "CD 18 Reflexos", e quem tem o
+      // catálogo dos Testes de Resistência é este lado, não a tela.
+      out.trTipoLabel = AFTY_RESISTENCIAS.find((r) => r.value === out.trTipo)?.label ?? out.trTipo;
     }
 
     alcanceMetros = acao?.corpoACorpo ? "corpo" : INV_ALCANCE[grau];
@@ -601,20 +691,34 @@ export function resolveAcao(acao, inv, dono = {}) {
   }
   if (bens.condicoes.length) out.condicoes = bens.condicoes;
 
-  // Escalonamento de dano/cura vindo de Habilidade da invocação marcada
-  // (Concentrar Poder): +N níveis no dado e +M ao total. Já vem 0 quando a
-  // invocação não é marcada (o efeito é filtrado por `quando` antes). Aplica só
-  // às rolagens principais (dano e cura), o +M uma vez por rolagem.
+  // Escalonamento vindo de Habilidade do Controlador (Concentrar Poder,
+  // Melhorias). Já chega 0 quando o marcador que o condiciona está desligado (o
+  // `quando` filtra antes). DANO e CURA são canais separados: Concentrar Poder
+  // alimenta os quatro, Agressividade só os dois de dano.
   const danoNivel = dono.danoNivelHabilidade ?? 0;
   const danoBonusHab = dono.danoBonusHabilidade ?? 0;
-  if (danoNivel > 0 || danoBonusHab > 0) {
-    if (out.dano?.dado) {
-      out.dano = { ...out.dano, dado: subirNiveisDano(out.dano.dado, danoNivel).dado, bonus: (out.dano.bonus || 0) + danoBonusHab };
-    }
-    if (out.cura?.dado) {
-      out.cura = { ...out.cura, dado: subirNiveisDano(out.cura.dado, danoNivel).dado, bonus: (out.cura.bonus || 0) + danoBonusHab };
-    }
+  if (out.dano?.dado && (danoNivel > 0 || danoBonusHab > 0)) {
+    out.dano = { ...out.dano, dado: subirNiveisDano(out.dano.dado, danoNivel).dado, bonus: (out.dano.bonus || 0) + danoBonusHab };
   }
+  const curaNivel = dono.curaNivelHabilidade ?? 0;
+  const curaBonusHab = dono.curaBonusHabilidade ?? 0;
+  if (out.cura?.dado && (curaNivel > 0 || curaBonusHab > 0)) {
+    out.cura = { ...out.cura, dado: subirNiveisDano(out.cura.dado, curaNivel).dado, bonus: (out.cura.bonus || 0) + curaBonusHab };
+  }
+
+  // Dado extra que todo ataque da invocação carrega (Melhoria Agressividade).
+  // Vale para as duas formas de ataque: a Jogada de Ataque e o Teste de
+  // Resistência são "ações de ataque" iguais para o texto da Melhoria.
+  const extraMax = dono.ataqueDanoAdicionalHabilidade ?? 0;
+  if (familia === "ataque" && extraMax > 0) {
+    const dado = dadoDoMaximo(extraMax);
+    if (dado) out.danoExtraAtaque = { dado, grupos: dadosDaNotacao(dado) };
+  }
+
+  // Acerto e CD concedidos por Habilidade (Melhoria Precisão). Entram depois
+  // dos benefícios da Ação com Custo, no mesmo lugar em que ela mexe.
+  if (out.bonusAtaque != null && dono.acertoHabilidade) out.bonusAtaque += dono.acertoHabilidade;
+  if (out.cd != null && dono.cdHabilidade) out.cd += dono.cdHabilidade;
 
   // Alcance / área finais (base + benefícios por PE).
   if (alcanceMetros === "corpo") {
@@ -638,6 +742,25 @@ export function resolveAcao(acao, inv, dono = {}) {
     out.beneficiosPE = peBeneficios;
   }
 
+  /* Otimização de Energia (Controlador 2°): "escolher uma habilidade com custo
+     de cada invocação para ter esse custo reduzido em 1PE".
+
+     ⚠ Vale só para AÇÃO COM CUSTO, que é o termo definido do capítulo. Os 2 PE
+     obrigatórios da Cura são custo de regra, e não a mecânica opcional, então
+     ficam de fora. Está anotado em docs/a-fazer.md como assunção.
+
+     O piso é 1 PE, que é o mínimo que uma Ação com Custo pode gastar. */
+  out.custoOtimizado = false;
+  if (dono.otimizacaoEnergia && acao?.custoOtimizado) {
+    if (acaoComCusto) {
+      out.custoOtimizado = true;
+      out.custoAntesDaOtimizacao = out.custoPE;
+      out.custoPE = Math.max(1, out.custoPE - 1);
+    } else {
+      warnings.push("Otimização de Energia só vale para uma Ação com Custo.");
+    }
+  }
+
   // Escape hatch DSL: um modificador numérico livre no contexto da invocação.
   if (acao?.modificadorExpr) out.modificador = evalNumber(acao.modificadorExpr, ctxParaExpr(inv, dono), 0);
 
@@ -649,7 +772,10 @@ export function resolveAcao(acao, inv, dono = {}) {
 export function resolveCaracteristica(carac, inv, dono = {}) {
   const grau = grauMeta(inv?.grau).value;
   const sub = ["vida", "teste", "rd", "tamanho", "livre"].includes(carac?.subtipo) ? carac.subtipo : "livre";
-  const out = { id: carac?.id, nome: carac?.nome || "", subtipo: sub };
+  // ⚠ A `descricao` viaja resolvida: é o texto que a pessoa escreveu para dizer
+  // o que a Característica faz, e sem ela a Ficha mostrava só o nome, deixando
+  // toda Característica "livre" (a que não tem número) sem conteúdo nenhum.
+  const out = { id: carac?.id, nome: carac?.nome || "", subtipo: sub, descricao: carac?.descricao || "" };
   const warnings = [];
 
   if (sub === "vida") {
@@ -660,14 +786,34 @@ export function resolveCaracteristica(carac, inv, dono = {}) {
     // Perícia: bônus cheio. Jogada de Ataque ou TR: metade (e exige gatilho).
     out.valor = emPericia ? cheio : Math.floor(cheio / 2);
     out.alvoTeste = carac?.alvoTeste || "pericia";
-    if (!emPericia) out.requerGatilho = true;
+    // O livro diz "bônus fixo em um teste ESPECÍFICO", então o alvo viaja
+    // resolvido: qual perícia, ou qual Teste de Resistência. Em Jogadas de
+    // Ataque vale para todas, com o gatilho que o livro exige.
+    if (emPericia) {
+      out.periciaId = carac?.periciaId || "";
+      if (!out.periciaId) warnings.push("Escolha a perícia deste bônus.");
+    } else if (carac?.alvoTeste === "tr") {
+      out.trTipo = carac?.trTipo || "";
+      out.requerGatilho = true;
+      if (!out.trTipo) warnings.push("Escolha o Teste de Resistência deste bônus.");
+    } else {
+      out.requerGatilho = true;
+    }
   } else if (sub === "rd") {
     const tiposExtras = Math.max(0, carac?.rdTiposExtras ?? 0);
     out.valor = Math.max(0, INV_CARACT_RD[grau] - 2 * tiposExtras);
     out.tiposExtras = tiposExtras;
+    // A RD da Característica cobre UM tipo de dano, escolhido na criação. O
+    // tipo é o que decide se duas Características colidem (o livro proíbe
+    // acumular RD ao mesmo tipo), então viaja resolvido.
+    out.rdTipo = carac?.rdTipo || "";
+    out.rdTipoLabel = rdTipoLabel(carac?.rdTipo, carac?.rdTipoOutro);
+    out.rdChave = rdTipoChave(carac?.rdTipo, carac?.rdTipoOutro);
+    if (!out.rdTipo) warnings.push("Escolha o tipo de dano desta RD.");
   } else if (sub === "tamanho") {
     out.faixa = tamanhosNaFaixa(grau);
     out.tamanho = carac?.tamanho || "";
+    out.tamanhoLabel = AFTY_TAMANHOS.find((t) => t.value === out.tamanho)?.label ?? out.tamanho;
     if (out.tamanho && !out.faixa.includes(out.tamanho)) {
       warnings.push(`Tamanho "${out.tamanho}" fora da faixa do grau.`);
     }
@@ -682,10 +828,47 @@ export function resolveCaracteristica(carac, inv, dono = {}) {
 // ------------------------------------------------------------
 // Contexto de DSL (namespace próprio da invocação) + delega a fm-dsl
 // ------------------------------------------------------------
+/**
+ * Um marcador está LIGADO nesta invocação? O registro dos marcadores é conteúdo
+ * do Controlador e mora em `afty-habilidades.js`: aqui só se lê o estado.
+ *
+ * ⚠ Compat: antes do registro existia um marcador só, o booleano `inv.marcada`
+ * do Concentrar Poder. Rascunho salvo com o shape velho continua valendo.
+ */
+export function marcadorLigado(inv, id) {
+  const m = inv?.marcadores;
+  if (m && typeof m === "object" && id in m) return !!m[id];
+  if (id === "concentrar_poder") return !!inv?.marcada;
+  return false;
+}
+
+/** A opção escolhida de um marcador que tem `opcoes` (ex.: Precisão: acerto ou CD). */
+export function marcadorOpcao(inv, id) {
+  const p = inv?.marcadorOpcoes;
+  return (p && typeof p === "object" ? p[id] : null) || null;
+}
+
+// Variáveis `marc_*` do contexto: uma booleana por marcador ligado e, para os
+// que têm opção, uma por opção (`marc_<id>_<opcao>`). É assim que um efeito
+// como Precisão escolhe entre Acerto e CD sem precisar de canal condicional.
+function varsDeMarcador(inv, dono) {
+  const out = {};
+  for (const m of Array.isArray(dono?.marcadores) ? dono.marcadores : []) {
+    if (!m?.id) continue;
+    const on = marcadorLigado(inv, m.id) ? 1 : 0;
+    out[`marc_${m.id}`] = on;
+    for (const o of Array.isArray(m.opcoes) ? m.opcoes : []) {
+      out[`marc_${m.id}_${o.value}`] = on && marcadorOpcao(inv, m.id) === o.value ? 1 : 0;
+    }
+  }
+  return out;
+}
+
 export function buildInvocacaoDslContext(inv, dono = {}, resolved = {}) {
   const at = inv?.atributos || {};
   const g = grauMeta(inv?.grau);
   return {
+    ...varsDeMarcador(inv, dono),
     // Invocação (nomes diretos)
     forca: at.forca ?? 8, destreza: at.destreza ?? 8, constituicao: at.constituicao ?? 8,
     inteligencia: at.inteligencia ?? 8, sabedoria: at.sabedoria ?? 8, presenca: at.presenca ?? 8,
@@ -695,9 +878,9 @@ export function buildInvocacaoDslContext(inv, dono = {}, resolved = {}) {
     pv_max: resolved.pv ?? pvInvocacao(inv, dono),
     defesa: resolved.defesa ?? defesaInvocacao(inv, dono),
     deslocamento: resolved.deslocamento ?? deslocamentoInvocacao(),
-    // Estado da invocação usado como condição de efeito (Concentrar Poder só
-    // vale para invocações marcadas). 1/0 para casar com a álgebra da DSL.
-    marcada: inv?.marcada ? 1 : 0,
+    // Alias herdado do tempo em que Concentrar Poder era o único marcador.
+    // Prefira `marc_concentrar_poder`, que é o nome do registro.
+    marcada: marcadorLigado(inv, "concentrar_poder") ? 1 : 0,
     // Dono
     nd: dono.nd ?? 0, bt: dono.bt ?? 0, nivel_controlador: dono.nivelControlador ?? 0,
   };
@@ -710,19 +893,53 @@ export function buildInvocacaoDslContext(inv, dono = {}, resolved = {}) {
 // Controlador escolhidas (ver afty-habilidades.js). Cada expr é avaliada pelo
 // Motor no contexto DESTA invocação (grau, bt, nd, nivel_controlador, marcada...).
 // `quando` (opcional) é uma expressão-condição: o efeito só entra se avaliar
-// diferente de zero (ex.: "marcada", para Concentrar Poder). Aplicação canal a
-// canal: pv, deslocamento, pericias, orcamentoLivre, orcamentoPago,
-// atributoPontos, bonusTeste (todos os testes), bonusTR (só TRs), defesa,
-// danoNivel (dano/cura +N níveis), danoBonus (dano/cura +N ao total).
-export const EFEITO_CANAIS = ["pv", "deslocamento", "pericias", "orcamentoLivre", "orcamentoPago", "atributoPontos", "bonusTeste", "bonusTR", "defesa", "danoNivel", "danoBonus"];
+// diferente de zero (ex.: "marc_concentrar_poder"). Aplicação canal a canal.
+//
+// ⚠ DANO e CURA têm canais SEPARADOS desde 2026-08-15. Concentrar Poder diz
+// "toda rolagem de dano ou cura" e emite os quatro; Agressividade diz só dano e
+// emite os dois de dano. Enquanto era um par só, Agressividade engordava a cura
+// de graça.
+export const EFEITO_CANAIS = [
+  "pv",              // Pontos de Vida máximos
+  "defesa",          // Defesa
+  "rd",              // Redução de Dano contra TODOS os tipos (a RD por tipo vem de Característica)
+  "deslocamento",    // metros de Deslocamento
+  "pericias",        // vagas de perícia treinada
+  "orcamentoLivre",  // Ações/Características que NÃO entram no custo
+  "orcamentoPago",   // Ações/Características que entram no custo normalmente
+  "atributoPontos",  // pontos de atributo para distribuir
+  "custoReducao",    // abate do custo em PE para invocar
+  "bonusTeste",      // todos os testes da invocação
+  "bonusTR",         // só os Testes de Resistência
+  "acerto",          // só as Jogadas de Ataque das Ações
+  "cd",              // só a CD das Ações por Teste de Resistência
+  "danoNivel",       // +N níveis na rolagem de DANO
+  "danoBonus",       // +N ao total da rolagem de DANO
+  "curaNivel",       // +N níveis na rolagem de CURA
+  "curaBonus",       // +N ao total da rolagem de CURA
+  "ataqueDanoAdicional", // MÁXIMO do dado extra que todo ataque da invocação carrega (ver dadoDoMaximo)
+];
+const CANAL_VALIDO = new Set(EFEITO_CANAIS);
+
 function efeitosHabilidade(inv, dono) {
   const acc = Object.fromEntries(EFEITO_CANAIS.map((c) => [c, 0]));
   acc.detalhes = []; // { nome (fonte), canal, valor } por efeito aplicado
+  // ⚠ Canal que não existe some CALADO se ninguém olhar: o `continue` abaixo
+  // descartava o efeito inteiro sem deixar rastro, e um erro de digitação num
+  // nome de canal viraria uma habilidade que simplesmente não faz nada. Vira
+  // aviso na ficha (resolveInvocacao) em vez de silêncio.
+  acc.canaisDesconhecidos = [];
   const efeitos = Array.isArray(dono?.efeitos) ? dono.efeitos : [];
   if (!efeitos.length) return acc;
   const ctx = buildInvocacaoDslContext(inv, dono);
   for (const e of efeitos) {
-    if (!e || !(e.canal in acc)) continue;
+    if (!e) continue;
+    // Contra a lista, não contra as chaves do acumulador: `detalhes` e
+    // `canaisDesconhecidos` também são chaves dele e não são canais.
+    if (!CANAL_VALIDO.has(e.canal)) {
+      acc.canaisDesconhecidos.push({ nome: e.nome || e.origem || "Habilidade", canal: e.canal });
+      continue;
+    }
     // Condição do efeito: sem `quando`, sempre aplica; com, só se != 0.
     if (e.quando && evalNumber(e.quando, ctx, 0) === 0) continue;
     const valor = evalNumber(e.expr, ctx, 0);
@@ -733,27 +950,104 @@ function efeitosHabilidade(inv, dono) {
 }
 
 // ------------------------------------------------------------
+// Agregado das Características passivas
+// ------------------------------------------------------------
+/**
+ * As Características são PASSIVAS e estão "sempre em efeito", então o que elas
+ * concedem tem de chegar no stat block. Esta função junta as resolvidas num
+ * pacote que o `resolveInvocacao` aplica.
+ *
+ * ⚠ Até 2026-08-15 elas eram resolvidas e JOGADAS FORA: a Característica de
+ * Vida calculava "+15 PV" e o PV da invocação não mudava, a de Tamanho não
+ * mexia no tamanho e a de Teste não entrava em teste nenhum. Só o texto do card
+ * mostrava o número.
+ */
+export function agregarCaracteristicas(resolvidas = []) {
+  const out = {
+    pv: 0,
+    tamanho: null,
+    rdPorTipo: [],                                   // [{ chave, label, valor }]
+    testes: { pericias: {}, resistencias: {}, ataque: 0 },
+    warnings: [],
+  };
+  const rdIndex = new Map();
+  const vistosTeste = new Set();
+  for (const c of resolvidas) {
+    if (c.subtipo === "vida") {
+      // Duas Características de Vida não acumulam (o livro proíbe efeitos
+      // iguais): vale a maior. O aviso de duplicata sai no resolveInvocacao.
+      out.pv = Math.max(out.pv, c.valor ?? 0);
+    } else if (c.subtipo === "tamanho") {
+      // Mesma regra: a primeira manda, e a duplicata vira aviso.
+      if (c.tamanho && !out.tamanho) out.tamanho = c.tamanho;
+    } else if (c.subtipo === "rd") {
+      if (!c.rdTipo) continue;
+      // "É impossível acumular RD ao mesmo tipo": a segunda do mesmo tipo não
+      // soma, e o aviso sai no resolveInvocacao.
+      if (rdIndex.has(c.rdChave)) {
+        out.warnings.push(`Duas Características dão RD contra ${c.rdTipoLabel}: elas não acumulam.`);
+        const atual = rdIndex.get(c.rdChave);
+        atual.valor = Math.max(atual.valor, c.valor ?? 0);
+        continue;
+      }
+      const linha = { chave: c.rdChave, label: c.rdTipoLabel, valor: c.valor ?? 0 };
+      rdIndex.set(c.rdChave, linha);
+      out.rdPorTipo.push(linha);
+    } else if (c.subtipo === "teste") {
+      // Mesmo teste duas vezes é o mesmo efeito, e o livro proíbe: vale a maior.
+      // ⚠ `ataque` já nasce 0 no acumulador, então quem decide se é repetição é
+      // o conjunto de vistos, e não o valor guardado.
+      const v = c.valor ?? 0;
+      const guardar = (mapa, chave, marca) => {
+        if (vistosTeste.has(marca)) {
+          out.warnings.push("Duas Características dão bônus no mesmo teste: elas não acumulam.");
+          mapa[chave] = Math.max(mapa[chave] ?? 0, v);
+          return;
+        }
+        vistosTeste.add(marca);
+        mapa[chave] = v;
+      };
+      if (c.alvoTeste === "ataque") guardar(out.testes, "ataque", "ataque");
+      else if (c.alvoTeste === "tr") {
+        if (c.trTipo) guardar(out.testes.resistencias, c.trTipo, `tr:${c.trTipo}`);
+      } else if (c.periciaId) {
+        guardar(out.testes.pericias, c.periciaId, `per:${c.periciaId}`);
+      }
+    }
+  }
+  return out;
+}
+
+// ------------------------------------------------------------
 // Testes da invocação (Acerto / TR / Perícias / CD) para o stat block
 // ------------------------------------------------------------
 // Bônus de teste = mod(atributo) + BT (se treinado) + metade do Nível de
 // Controlador + bônus de Habilidade. `dono` deve trazer bonusTesteHabilidade
 // (o donoLocal do resolveInvocacao) para incluir Controle Aprimorado etc.
-export function resolveTestesInvocacao(inv, dono = {}) {
+export function resolveTestesInvocacao(inv, dono = {}, caract = null) {
   const at = inv?.atributos || {};
   const bt = dono.bt ?? 0;
   const meio = Math.floor((dono.nivelControlador ?? 0) / 2);
   const hab = dono.bonusTesteHabilidade ?? 0;
   const base = meio + hab; // parte comum a todos os testes da invocação
   const baseTR = base + (dono.bonusTRHabilidade ?? 0); // TRs recebem um bônus extra (Concentrar Poder)
+  // Bônus fixos vindos de Característica de Teste (passivas, sempre em efeito).
+  const cTes = caract?.testes || { pericias: {}, resistencias: {}, ataque: 0 };
 
   // Acerto: jogada usa Força OU Destreza (o melhor), com BT no tipo treinado.
   const modFor = mod(at.forca ?? 8);
   const modDes = mod(at.destreza ?? 8);
   const best = modFor >= modDes ? { m: modFor, attr: "forca" } : { m: modDes, attr: "destreza" };
+  /* ⚠ O bônus de Característica de Teste em Ataque ou TR NÃO entra no número
+     do teste. O livro cobra "um gatilho específico" nos dois casos (só a
+     Perícia recebe o bônus por completo, e sem gatilho), então somá-lo ao valor
+     plano prometeria um bônus que quase nunca vale. Sai em `comGatilho`, à
+     parte, para a ficha mostrar como condicional. */
   const acertoDe = (tipo) => ({
     bonus: best.m + (inv?.ataqueTreinado === tipo ? bt : 0) + base,
     attr: best.attr,
     treinado: inv?.ataqueTreinado === tipo,
+    comGatilho: cTes.ataque || 0,
   });
 
   // Testes de Resistência: os 5 saves. Treinado soma BT, Mestre soma 1,5x BT.
@@ -761,18 +1055,28 @@ export function resolveTestesInvocacao(inv, dono = {}) {
   const resistencias = AFTY_RESISTENCIAS.map((r) => {
     const treinado = inv?.trTreinado === r.value;
     const p = treinado ? (trMestre ? "mestre" : "treinado") : null;
-    return { value: r.value, label: r.label, treinado, mestre: treinado && trMestre, bonus: mod(at[r.atributo] ?? 8) + bonusProficiencia(bt, p) + baseTR };
+    return {
+      value: r.value, label: r.label, treinado, mestre: treinado && trMestre,
+      bonus: mod(at[r.atributo] ?? 8) + bonusProficiencia(bt, p) + baseTR,
+      comGatilho: cTes.resistencias[r.value] || 0,
+    };
   });
 
-  // Perícias: proficiência por perícia (treinado ou mestre).
+  // Perícias: proficiência por perícia (treinado ou mestre). Uma Característica
+  // de Teste pode dar bônus numa perícia em que a invocação NÃO é treinada, e
+  // nesse caso a linha existe mesmo assim (o bônus vale, o BT é que não soma).
   const prof = (inv?.periciasProf && typeof inv.periciasProf === "object") ? inv.periciasProf : {};
-  const pericias = AFTY_PERICIAS.filter((p) => prof[p.id])
-    .map((p) => ({ id: p.id, nome: p.nome, mestre: prof[p.id] === "mestre", bonus: mod(at[p.atributo] ?? 8) + bonusProficiencia(bt, prof[p.id]) + base }));
+  const pericias = AFTY_PERICIAS
+    .filter((p) => prof[p.id] || cTes.pericias[p.id])
+    .map((p) => ({
+      id: p.id, nome: p.nome, mestre: prof[p.id] === "mestre", treinado: !!prof[p.id],
+      bonus: mod(at[p.atributo] ?? 8) + bonusProficiencia(bt, prof[p.id] || null) + base + (cTes.pericias[p.id] || 0),
+    }));
 
   // CD representativa de um ataque por TR (usa o melhor atributo; cada Ação por
   // TR mostra a sua CD exata pelo atributo chave dela). Não soma bônus de teste.
   const nd = Math.max(1, dono.nd ?? 1);
-  const cd = 10 + Math.max(1, Math.floor(nd / 2)) + best.m;
+  const cd = 10 + Math.max(1, Math.floor(nd / 2)) + best.m + (dono.cdHabilidade ?? 0);
 
   return { acerto: { corpo: acertoDe("corpo"), distancia: acertoDe("distancia") }, cd, resistencias, pericias };
 }
@@ -780,6 +1084,45 @@ export function resolveTestesInvocacao(inv, dono = {}) {
 // ------------------------------------------------------------
 // Resolver principal
 // ------------------------------------------------------------
+/**
+ * As Habilidades de USO que o dono pode gastar NESTA invocação, com o número já
+ * fechado. Elas não mudam a ficha dela (dependem de uma decisão no momento do
+ * uso), mas têm valor calculável, e sem isso a mesa reabre o livro para saber
+ * quanto custa um turno próprio de uma invocação de Segundo Grau.
+ */
+function opcoesDeUso(inv, dono) {
+  const out = [];
+  const g = grauMeta(inv?.grau);
+  if (dono?.autonomia) {
+    // "pagar uma quantidade adicional de PE igual a 2 para cada grau dela
+    // (2 para quarto grau, 10 para grau especial)".
+    out.push({ id: "autonomia", nome: "Autonomia", valor: `${2 * g.rank} PE` });
+  }
+  if (dono?.resistenciaSobrecarregada) {
+    // "gastar uma quantidade de PE igual a metade do seu bônus de treinamento e,
+    // para cada ponto gasto, a invocação tem seus pontos de vida aumentados em 10".
+    const pe = Math.floor((dono.bt ?? 0) / 2);
+    out.push({ id: "sobrecarga", nome: "Resistência Sobrecarregada", valor: `${pe} PE, +${pe * 10} PV` });
+  }
+  return out;
+}
+
+/**
+ * Os marcadores LIGADOS nesta invocação, já com rótulo e a opção escolhida.
+ * A Ficha precisa disso para dizer, no card, por que esta invocação é diferente
+ * das outras: sem isso o jogador vê um PV maior e nenhuma pista da origem.
+ */
+function marcadoresDaInvocacao(inv, dono) {
+  const out = [];
+  for (const m of Array.isArray(dono?.marcadores) ? dono.marcadores : []) {
+    if (!marcadorLigado(inv, m.id)) continue;
+    const escolha = marcadorOpcao(inv, m.id);
+    const opcao = (m.opcoes || []).find((o) => o.value === escolha) || null;
+    out.push({ id: m.id, label: m.label, opcao: opcao?.label ?? null, faltaOpcao: !!m.opcoes?.length && !opcao });
+  }
+  return out;
+}
+
 export function resolveInvocacao(inv, dono = {}) {
   const g = grauMeta(inv?.grau);
   const efe = efeitosHabilidade(inv, dono);
@@ -789,16 +1132,42 @@ export function resolveInvocacao(inv, dono = {}) {
   const donoLocal = { ...dono };
   if (efe.bonusTeste) donoLocal.bonusTesteHabilidade = efe.bonusTeste;
   if (efe.bonusTR) donoLocal.bonusTRHabilidade = efe.bonusTR;
+  if (efe.acerto) donoLocal.acertoHabilidade = efe.acerto;
+  if (efe.cd) donoLocal.cdHabilidade = efe.cd;
   if (efe.danoNivel) donoLocal.danoNivelHabilidade = efe.danoNivel;
   if (efe.danoBonus) donoLocal.danoBonusHabilidade = efe.danoBonus;
+  if (efe.curaNivel) donoLocal.curaNivelHabilidade = efe.curaNivel;
+  if (efe.curaBonus) donoLocal.curaBonusHabilidade = efe.curaBonus;
+  if (efe.ataqueDanoAdicional) donoLocal.ataqueDanoAdicionalHabilidade = efe.ataqueDanoAdicional;
+
+  // Override de Feitiço de Criação de Shikigamis: quando esta invocação É o
+  // shikigami de um Feitiço, o NÍVEL do Feitiço manda no grau, no orçamento e
+  // no custo. Ver `overridesShikigami` no fim deste arquivo.
+  const ovr = dono.overridesPorInvocacao?.[inv?.id] || null;
+
+  // As Características são passivas e resolvem ANTES dos stats, porque o PV, o
+  // tamanho, a RD e os testes leem o que elas concedem.
+  const caracteristicas = (inv?.caracteristicas || []).map((c) => resolveCaracteristica(c, inv, dono));
+  const caract = agregarCaracteristicas(caracteristicas);
 
   const atributos = resumoAtributosInvocacao(inv, efe.atributoPontos);
-  const pv = pvInvocacao(inv, dono) + efe.pv;
+  const pv = pvInvocacao(inv, dono) + efe.pv + caract.pv;
   const defesa = defesaInvocacao(inv, dono) + efe.defesa;
   const deslocamento = deslocamentoInvocacao() + efe.deslocamento;
+  // Tamanho: Médio até que uma Característica de Tamanho diga outro.
+  const tamanho = caract.tamanho || inv?.tamanho || "medio";
+  // RD: a Geral (Melhoria Resistência, "contra todos os tipos") cobre tudo, e
+  // cada Característica soma no tipo dela. A linha por tipo mostra o total que
+  // vale contra aquele tipo, que é o número que a mesa usa.
+  const rd = {
+    geral: efe.rd,
+    porTipo: caract.rdPorTipo.map((l) => ({ ...l, total: l.valor + efe.rd })),
+  };
   // Ápice do Controle (efe.orcamentoLivre) dá slots que NÃO influenciam no custo.
-  const custo = custoInvocacao(inv, efe.orcamentoLivre);
-  const orcamento = orcamentoAcoesCaract(inv, efe.orcamentoLivre + efe.orcamentoPago);
+  // Invocações Econômicas abate o custo, com piso em zero.
+  const custoBruto = ovr?.custoFixo != null ? ovr.custoFixo : custoInvocacao(inv, efe.orcamentoLivre);
+  const custo = Math.max(0, custoBruto - efe.custoReducao);
+  const orcamento = orcamentoAcoesCaract(inv, efe.orcamentoLivre + efe.orcamentoPago + (ovr?.ajusteAcoes ?? 0));
   const perProf = (inv?.periciasProf && typeof inv.periciasProf === "object") ? inv.periciasProf : {};
   const pericias = {
     allowance: periciasAllowanceInvocacao(inv) + efe.pericias,
@@ -819,9 +1188,17 @@ export function resolveInvocacao(inv, dono = {}) {
       danoAdicional: comGrupos(r.danoAdicional),
     };
   });
-  const caracteristicas = (inv?.caracteristicas || []).map((c) => resolveCaracteristica(c, inv, dono));
-
-  const warnings = [...atributos.warnings];
+  const warnings = [...atributos.warnings, ...caract.warnings];
+  // Grau ditado pelo Feitiço de Criação de Shikigamis: o nível do Feitiço manda,
+  // e a invocação que não bate com ele é um erro de ficha.
+  if (ovr?.grauExigido && ovr.grauExigido !== g.value) {
+    warnings.push(`${ovr.fonte || "Feitiço de Shikigami"} exige ${grauMeta(ovr.grauExigido).label}.`);
+  }
+  // Mais de um Feitiço de Shikigami apontando para esta mesma invocação: vale o
+  // primeiro, e os outros ficam sem shikigami nenhum.
+  if (ovr?.disputa?.length > 1) {
+    warnings.push(`${ovr.disputa.length} Feitiços apontam para esta invocação (${ovr.disputa.join(", ")}), e só o primeiro vale.`);
+  }
   if (orcamento.usados > orcamento.total) {
     warnings.push(`Ações/Características: ${orcamento.usados} de ${orcamento.total} (excedeu).`);
   }
@@ -846,8 +1223,18 @@ export function resolveInvocacao(inv, dono = {}) {
   if (comCusto > (INV_ACOES_COM_CUSTO_MAX[g.value] ?? 0)) {
     warnings.push(`Ações com Custo: ${comCusto} de ${INV_ACOES_COM_CUSTO_MAX[g.value]} (excedeu).`);
   }
+  // Otimização de Energia: "UMA habilidade com custo de CADA invocação".
+  const otimizadas = acoes.filter((a) => a.custoOtimizado).length;
+  if (otimizadas > 1) {
+    warnings.push(`Otimização de Energia: ${otimizadas} ações marcadas, e vale só uma por invocação.`);
+  }
   for (const a of acoes) for (const w of a.warnings || []) warnings.push(`${a.nome || "Ação"}: ${w}`);
   for (const c of caracteristicas) for (const w of c.warnings || []) warnings.push(`${c.nome || "Característica"}: ${w}`);
+  // Canal de efeito que não existe: erro de catálogo, não de ficha, mas aparece
+  // aqui porque é o único lugar que enxerga o efeito aplicado.
+  for (const d of efe.canaisDesconhecidos || []) {
+    warnings.push(`${d.nome}: canal de efeito desconhecido "${d.canal}".`);
+  }
 
   return {
     id: inv?.id,
@@ -855,30 +1242,57 @@ export function resolveInvocacao(inv, dono = {}) {
     grau: g.value,
     grauLabel: g.label,
     tipoMecanico: inv?.tipoMecanico || "shikigami",
-    pv, defesa, deslocamento, custo,
+    tipoLabel: tipoInvocacaoLabel(inv),
+    intermediario: tipoInvocacaoMeta(inv?.tipoMecanico).intermediario,
+    retirada: tipoInvocacaoMeta(inv?.tipoMecanico).retirada,
+    pv, defesa, deslocamento, custo, tamanho, rd,
+    // O rótulo sai resolvido, como o `grauLabel`: quem tem o catálogo de
+    // tamanhos é este lado.
+    tamanhoLabel: AFTY_TAMANHOS.find((t) => t.value === tamanho)?.label ?? tamanho,
     atributos, orcamento, pericias,
     bonusTesteHabilidade: efe.bonusTeste,
     efeitosHabilidade: efe,
-    testes: resolveTestesInvocacao(inv, donoLocal),
+    caract,
+    marcadores: marcadoresDaInvocacao(inv, dono),
+    opcoesDeUso: opcoesDeUso(inv, dono),
+    // O editor precisa saber se a marca de Otimização de Energia sequer existe
+    // para esta ficha, e isso vem do dono, não da invocação.
+    otimizacaoEnergia: !!dono.otimizacaoEnergia,
+    // Crítico Aprimorado desce a margem das jogadas DELA para 19, e a Ficha
+    // precisa do número na hora de rolar o acerto.
+    margemCritico: dono.margemCritico ?? 20,
+    criticoBrutal: !!dono.criticoBrutal,
+    shikigami: ovr || null,
+    testes: resolveTestesInvocacao(inv, donoLocal, caract),
     acoes, caracteristicas,
     warnings,
   };
 }
 
-/** Lista de invocações do dono, resolvida. `dono` já traz nd/bt/nivelControlador. */
+/**
+ * Lista de invocações do dono, resolvida. `dono` traz nd/bt/nivelControlador,
+ * os `efeitos` das Habilidades, os `marcadores` disponíveis (com o limite já
+ * avaliado) e os `overridesPorInvocacao` dos Feitiços de Shikigami.
+ */
 export function resolveInvocacoesList(lista, dono = {}) {
   const arr = Array.isArray(lista) ? lista : [];
   const resolvidas = arr.map((inv) => resolveInvocacao(inv, dono));
-  // Concentrar Poder: quantas invocações estão marcadas contra o limite
-  // (floor(BT/2)). Só faz sentido quando o Controlador tem a habilidade.
-  const cp = dono.concentrarPoder || { ativo: false, limite: 0 };
-  const marcadas = arr.filter((inv) => inv?.marcada).length;
+  // Contagem por marcador: quantas invocações estão marcadas contra o limite
+  // daquele marcador. É o que a aba mostra e o que dispara o aviso de excesso.
+  const marcadores = (Array.isArray(dono.marcadores) ? dono.marcadores : []).map((m) => {
+    const marcadas = arr.filter((inv) => marcadorLigado(inv, m.id)).length;
+    const semOpcao = Array.isArray(m.opcoes) && m.opcoes.length
+      ? arr.filter((inv) => marcadorLigado(inv, m.id) && !marcadorOpcao(inv, m.id)).length
+      : 0;
+    return { ...m, marcadas, semOpcao, excedeu: marcadas > (m.limite ?? 0) };
+  });
   return {
     lista: resolvidas,
     total: resolvidas.length,
     custoTotal: resolvidas.reduce((s, r) => s + r.custo, 0),
     temWarnings: resolvidas.some((r) => r.warnings.length > 0),
-    concentrarPoder: { ativo: !!cp.ativo, limite: cp.limite ?? 0, marcadas, excedeu: marcadas > (cp.limite ?? 0) },
+    marcadores,
+    espacosIntermediarios: espacosDeIntermediario(arr),
   };
 }
 
@@ -928,14 +1342,21 @@ function subirTamanho(tam, n) {
 // Ajusta o resultado de UMA ação do líder pelo escalonamento da horda.
 function ajusteHordaAcao(base, escala) {
   const h = {};
-  if (base.familia === "ataque" && base.dano && escala.danoNiveis > 0) {
+  /* O dado sai com os `grupos` junto, pela mesma razão do `resolveInvocacao`:
+     quem tem o número entrega o número, e ninguém relê notação de volta de uma
+     string. Ver `dadosDaNotacao`. */
+  const comDado = (dado) => ({ dado, grupos: dadosDaNotacao(dado) });
+  if (base.familia === "ataque" && base.dano?.dado && escala.danoNiveis > 0) {
     h.dano = subirNiveisDano(base.dano.dado, escala.danoNiveis).dado;
+    h.danoGrupos = comDado(h.dano).grupos;
   }
-  if (base.auxilioSub === "cura" && base.cura && escala.curaNiveis > 0) {
+  if (base.auxilioSub === "cura" && base.cura?.dado && escala.curaNiveis > 0) {
     h.cura = subirNiveisDano(base.cura.dado, escala.curaNiveis).dado;
+    h.curaGrupos = comDado(h.cura).grupos;
   }
-  if (base.auxilioSub === "danoAdicional" && base.danoAdicional && escala.danoAdicionalNiveis > 0) {
+  if (base.auxilioSub === "danoAdicional" && base.danoAdicional?.dado && escala.danoAdicionalNiveis > 0) {
     h.danoAdicional = subirNiveisDano(base.danoAdicional.dado, escala.danoAdicionalNiveis).dado;
+    h.danoAdicionalGrupos = comDado(h.danoAdicional).grupos;
   }
   if ((base.auxilioSub === "defesa" || base.auxilioSub === "acerto") && escala.defesaAcertoBonus > 0) {
     h.valor = (base.valor ?? 0) + escala.defesaAcertoBonus;
@@ -970,7 +1391,10 @@ export function resolveHorda(horda, invocacoes = [], dono = {}) {
     }
     const mRes = resolveInvocacao(m, dono);
     pvExtra += Math.floor(mRes.pv / 2);                                   // metade do PV do membro
-    custoMembros += INV_HORDA_CUSTO_MEMBRO[grauMeta(m.grau).value] ?? 0;
+    // Buchas de Canhão (10°): membro de quarto grau para de cobrar PE extra.
+    const grauMembro = grauMeta(m.grau).value;
+    const gratis = dono.membroQuartoGrauGratis && grauMembro === "quarto";
+    custoMembros += gratis ? 0 : (INV_HORDA_CUSTO_MEMBRO[grauMembro] ?? 0);
     const g2 = grauMeta(m.grau).value === "segundo";
     if (g2) nGrau2 += 1;
     danoNiveis += g2 ? 2 : 1;   // +1 por membro, dobrado para membro de Grau 2
@@ -990,12 +1414,20 @@ export function resolveHorda(horda, invocacoes = [], dono = {}) {
   out.pv = liderRes.pv + pvExtra;
   out.custo = liderRes.custo + custoMembros;
   out.deslocamento = liderRes.deslocamento;
-  out.tamanho = subirTamanho(lider.tamanho, escala.tamanhoCategorias);
+  // ⚠ O tamanho parte do RESOLVIDO do líder, não do `lider.tamanho` cru: quem
+  // define o tamanho de uma invocação é a Característica de Tamanho, e ler o
+  // campo bruto fazia toda horda subir a partir de Médio.
+  out.tamanho = subirTamanho(liderRes.tamanho, escala.tamanhoCategorias);
+  out.tamanhoLabel = AFTY_TAMANHOS.find((t) => t.value === out.tamanho)?.label ?? out.tamanho;
   out.escala = escala;
-  out.acoes = (lider.acoes || []).map((a) => {
-    const base = resolveAcao(a, lider, dono);
-    return { nome: base.nome, familia: base.familia, auxilioSub: base.auxilioSub, base, horda: ajusteHordaAcao(base, escala) };
-  });
+  /* ⚠ As ações vêm do `liderRes`, e NÃO de um `resolveAcao` refeito aqui.
+     Refazer perdia tudo que mora no `donoLocal` do líder (Concentrar Poder,
+     Agressividade, Precisão) e também os `grupos` estruturados: a mesma ação
+     rolava um dano dentro da horda e outro fora dela. */
+  out.acoes = (liderRes.acoes || []).map((base) => ({
+    nome: base.nome, familia: base.familia, auxilioSub: base.auxilioSub,
+    base, horda: ajusteHordaAcao(base, escala),
+  }));
 
   return out;
 }

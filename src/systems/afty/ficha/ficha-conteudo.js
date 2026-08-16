@@ -379,10 +379,11 @@ export function filtraConteudo(itens, termo) {
  */
 export function alvosDeBusca(derived) {
   const fora = [];
-  const add = (aba, grupo, id, nome, detalhe) => fora.push({
+  // `extra` entra só na string de busca, sem aparecer na linha do resultado.
+  const add = (aba, grupo, id, nome, detalhe, extra = "") => fora.push({
     chave: `${grupo}:${id}`, id, nome, aba, grupo,
     detalhe: detalhe ?? null,
-    busca: semAcento(`${nome} ${detalhe ?? ""}`),
+    busca: semAcento(`${nome} ${detalhe ?? ""} ${extra}`),
   });
 
   for (const e of derived?.dano?.entradas ?? []) add("acoes", "dano", e.id, e.nome, e.texto);
@@ -391,6 +392,19 @@ export function alvosDeBusca(derived) {
     if (f.tipo !== "passivo") add("acoes", "feitico", f.id, f.nome || "Feitiço Sem Nome", f.nivelLabel);
   }
   for (const m of derived?.testes?.manobras ?? []) add("acoes", "manobra", m.id, m.nome, m.periciaUsada);
+  /* ⚠ As Invocações tinham a âncora de destaque (`afty-item-invocacao:<id>` em
+     AbaInvocacoes) e NENHUMA fonte: o alvo existia e nada apontava para ele,
+     então a aba inteira era invisível para a busca.
+
+     Os nomes das Ações e Características entram na string de busca em vez de
+     virar linha própria, porque no meio da luta se procura pelo nome do golpe,
+     mas o destino é sempre o card da invocação. Linha própria também repetiria a
+     `chave`, que é o alvo do destaque E a chave de lista do resultado. */
+  for (const i of derived?.invocacoes?.lista ?? []) {
+    const dentro = [...(i.acoes ?? []), ...(i.caracteristicas ?? [])]
+      .map((x) => x.nome).filter(Boolean).join(" ");
+    add("invocacoes", "invocacao", i.id, i.nome || "Invocação Sem Nome", i.grauLabel, dentro);
+  }
   for (const a of derived?.testes?.ataques ?? []) add("pericias", "ataque", a.id, a.nome, null);
   for (const r of derived?.testes?.resistencias ?? []) add("pericias", "tr", r.value, r.label, null);
   for (const p of derived?.testes?.pericias ?? []) add("pericias", "pericia", p.id, p.nome, null);
@@ -405,6 +419,7 @@ export const ROTULO_GRUPO = {
   cura: "Cura",
   feitico: "Feitiços",
   manobra: "Manobras",
+  invocacao: "Invocações",
   ataque: "Jogadas de Ataque",
   tr: "Testes de Resistência",
   pericia: "Perícias",
