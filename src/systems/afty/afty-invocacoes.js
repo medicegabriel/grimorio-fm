@@ -67,11 +67,25 @@ export const resistenciasTreinaveis = () => AFTY_RESISTENCIAS.filter((r) => r.va
 
 export const INV_ATTR_KEYS = ["forca", "destreza", "constituicao", "inteligencia", "sabedoria", "presenca"];
 
-/** Tipos mecânicos. Corpo Amaldiçoado e Marionete colapsam em "dispositivo". */
+/**
+ * Tipos mecânicos. Corpo Amaldiçoado e Marionete colapsam em "dispositivo".
+ *
+ * ⚠ SHIKIGAMI DE TÉCNICA é um tipo à parte, e não um sabor: ele muda números
+ * (base de atributo, PV, bônus, orçamento) e a economia de ação. O capítulo já o
+ * tratava como categoria, na limitação de Características sobre imunidade a tipo
+ * de dano, e a seção de Intermediários diz que "certas técnicas inatas permitem
+ * que a necessidade de Talismãs seja ignorada... como é o caso da Dez Sombras".
+ * Por isso ele é o único sem Intermediário, e o único que não ocupa espaço de
+ * inventário.
+ */
 export const AFTY_INV_TIPOS = [
-  { value: "shikigami",   label: "Shikigami",   intermediario: "Talismã",     retirada: "dissipar / exorcizar" },
-  { value: "dispositivo", label: "Dispositivo", intermediario: "Dispositivo", retirada: "desativar / destruir" },
+  { value: "shikigami",   label: "Shikigami",             intermediario: "Talismã",     retirada: "dissipar / exorcizar" },
+  { value: "tecnica",     label: "Shikigami de Técnica",  intermediario: null,          retirada: "dissipar / exorcizar" },
+  { value: "dispositivo", label: "Dispositivo",           intermediario: "Dispositivo", retirada: "desativar / destruir" },
 ];
+
+/** Este é um Shikigami de Técnica? É a chave de quase toda regra própria dele. */
+export const ehShikigamiDeTecnica = (inv) => inv?.tipoMecanico === "tecnica";
 
 /** Sabores narrativos do tipo "dispositivo" (só rótulo, sem efeito mecânico). */
 export const AFTY_INV_SABORES = [
@@ -103,9 +117,15 @@ export function tipoInvocacaoLabel(inv) {
  * (capítulo de Invocações). O número é CALCULADO e ainda NÃO entra no
  * `resolveCarga`: ligar isso mexe em Defesa e Movimento de toda ficha que já
  * existe, e a decisão é do autor. Ver docs/a-fazer.md.
+ *
+ * ⚠ O SHIKIGAMI DE TÉCNICA não conta: ele não tem Intermediário, porque a
+ * técnica inata dispensa o Talismã ("substituindo-a apenas por movimentos ou
+ * sinais de mão, como é o caso da Dez Sombras").
  */
 export const espacosDeIntermediario = (lista) =>
-  (Array.isArray(lista) ? lista.length : 0) * 0.5;
+  (Array.isArray(lista) ? lista : [])
+    .filter((inv) => tipoInvocacaoMeta(inv?.tipoMecanico).intermediario != null)
+    .length * 0.5;
 
 /**
  * Graus. `rank` cresce com o poder (1 = mais fraco), `num` é o número do livro
@@ -135,6 +155,16 @@ export const INV_ATRIBUTOS_POR_GRAU = {
   especial: { pontos: 40, max: 30 },
 };
 export const INV_ATTR_MIN = 6; // pode reduzir de 8 até 6, devolvendo pontos.
+
+/**
+ * Base e piso de atributo. O Shikigami de Técnica começa em 10 e reduz só até 8
+ * (autor, 2026-08-16): a base sobe e o piso acompanha, então a margem de
+ * redução continua sendo de 2 pontos, como em toda outra invocação.
+ */
+export const INV_ATTR_BASE = 8;
+export const INV_ATTR_BASE_TECNICA = 10;
+export const atributoBaseInvocacao = (inv) => (ehShikigamiDeTecnica(inv) ? INV_ATTR_BASE_TECNICA : INV_ATTR_BASE);
+export const atributoMinInvocacao = (inv) => (ehShikigamiDeTecnica(inv) ? INV_ATTR_BASE : INV_ATTR_MIN);
 
 /** Quantidade base de Ações/Características por grau (some com adicionais). */
 export const INV_ACOES_CARACT_BASE = {
@@ -213,8 +243,10 @@ export function createBlankAcao() {
     // fica 1 PE mais barata. É por AÇÃO, e não por invocação, então não entra no
     // registro de marcadores.
     custoOtimizado: false,
-    // Escape hatch de DSL
+    // Escape hatch de DSL. `modificadorAlvo` diz ONDE o número cai: sem ele a
+    // expressão era avaliada e o resultado descartado (ver MODIFICADOR_ALVOS).
     modificadorExpr: "",
+    modificadorAlvo: "",
   };
 }
 
@@ -232,6 +264,7 @@ export function createBlankCaracteristica() {
     rdTiposExtras: 0,
     tamanho: "",
     modificadorExpr: "",
+    modificadorAlvo: "",
   };
 }
 
@@ -244,14 +277,16 @@ export function cloneInvocacao(inv) {
   return c;
 }
 
-export function createBlankInvocacao(grau = "quarto") {
+export function createBlankInvocacao(grau = "quarto", tipoMecanico = "shikigami") {
+  // A base de atributo depende do TIPO: o Shikigami de Técnica começa em 10.
+  const b = tipoMecanico === "tecnica" ? INV_ATTR_BASE_TECNICA : INV_ATTR_BASE;
   return {
     id: novoId(),
     nome: "",
-    tipoMecanico: "shikigami",
+    tipoMecanico,
     saborNarrativo: "corpo_amaldicoado", // usado só quando tipoMecanico === "dispositivo"
     grau,
-    atributos: { forca: 8, destreza: 8, constituicao: 8, inteligencia: 8, sabedoria: 8, presenca: 8 },
+    atributos: { forca: b, destreza: b, constituicao: b, inteligencia: b, sabedoria: b, presenca: b },
     ataqueTreinado: "corpo",   // "corpo" | "distancia"
     trTreinado: "reflexos",    // save treinado (nomeado, exceto Integridade)
     trMestre: false,           // mestre no save treinado (1,5x BT)
@@ -267,10 +302,11 @@ export function createBlankInvocacao(grau = "quarto") {
 // ------------------------------------------------------------
 // Atributos: point-buy linear
 // ------------------------------------------------------------
-/** Pontos gastos = soma de (valor - 8) por atributo (redução vira negativo). */
+/** Pontos gastos = soma de (valor - base) por atributo (redução vira negativo). */
 export function pontosAtributoUsados(inv) {
   const at = inv?.atributos || {};
-  return INV_ATTR_KEYS.reduce((s, k) => s + ((at[k] ?? 8) - 8), 0);
+  const base = atributoBaseInvocacao(inv);
+  return INV_ATTR_KEYS.reduce((s, k) => s + ((at[k] ?? base) - base), 0);
 }
 
 // bonusPontos: pontos de atributo extras (ex.: Potencial Superior do Controlador).
@@ -279,16 +315,28 @@ export function resumoAtributosInvocacao(inv, bonusPontos = 0) {
   const g = grauMeta(inv?.grau);
   const tab = INV_ATRIBUTOS_POR_GRAU[g.value] || INV_ATRIBUTOS_POR_GRAU.quarto;
   const at = inv?.atributos || {};
+  const base = atributoBaseInvocacao(inv);
+  const min = atributoMinInvocacao(inv);
   const total = tab.pontos + (bonusPontos || 0);
   const usados = pontosAtributoUsados(inv);
   const warnings = [];
   if (usados > total) warnings.push(`Atributos: ${usados} de ${total} pontos (excedeu).`);
   for (const k of INV_ATTR_KEYS) {
-    const v = at[k] ?? 8;
-    if (v < INV_ATTR_MIN) warnings.push(`${k}: ${v} abaixo do mínimo ${INV_ATTR_MIN}.`);
+    const v = at[k] ?? base;
+    if (v < min) warnings.push(`${k}: ${v} abaixo do mínimo ${min}.`);
     if (v > tab.max) warnings.push(`${k}: ${v} passa do máximo ${tab.max} do grau.`);
   }
-  return { usados, total, max: tab.max, restante: total - usados, warnings };
+  // `base` e `min` saem daqui porque o editor precisa deles e eles dependem do
+  // TIPO da invocação, não do grau.
+  //
+  // ⚠ `valores` e `mods` saem junto porque este objeto é TUDO que a Ficha recebe
+  // sobre os atributos da invocação. Sem eles ela tinha só o orçamento gasto, e
+  // os seis atributos da criatura invocada não apareciam em lugar nenhum na mesa.
+  return {
+    usados, total, max: tab.max, base, min, restante: total - usados, warnings,
+    valores: Object.fromEntries(INV_ATTR_KEYS.map((k) => [k, at[k] ?? base])),
+    mods: Object.fromEntries(INV_ATTR_KEYS.map((k) => [k, mod(at[k] ?? base)])),
+  };
 }
 
 // ------------------------------------------------------------
@@ -353,24 +401,45 @@ export function periciasAllowanceInvocacao(inv) {
 // Capacidade = base do grau + adicionais (1 por rank de grau: 4°=1 ... especial=5).
 // Habilidades de Controlador ampliam depois (passada de efeitos pendente).
 // extra: slots adicionais de Habilidade (Ápice do Controle, Visionário).
-export function orcamentoAcoesCaract(inv, extra = 0) {
+/**
+ * `livresCaract` são vagas que SÓ uma Característica pode ocupar (Shikigami de
+ * Técnica). O orçamento normal é um pool único ("A quantidade serve tanto para
+ * ações quanto características"), então uma vaga exclusiva não pode entrar nele:
+ * ela absorve as primeiras N características e o resto disputa o pool comum.
+ */
+export function orcamentoAcoesCaract(inv, extra = 0, livresCaract = 0) {
   const g = grauMeta(inv?.grau);
   const base = INV_ACOES_CARACT_BASE[g.value] ?? 2;
   const maxAdicionais = g.rank; // 4°=1, 3°=2, 2°=3, 1°=4, especial=5
-  const usados = (inv?.acoes?.length ?? 0) + (inv?.caracteristicas?.length ?? 0);
+  const nAcoes = inv?.acoes?.length ?? 0;
+  const nCaract = inv?.caracteristicas?.length ?? 0;
+  const exclusivas = Math.max(0, livresCaract || 0);
+  const caractNoPool = Math.max(0, nCaract - exclusivas);
+  const usados = nAcoes + caractNoPool;
   const total = base + maxAdicionais + (extra || 0);
-  return { base, maxAdicionais, extra: extra || 0, total, usados, restante: total - usados };
+  return {
+    base, maxAdicionais, extra: extra || 0, exclusivas,
+    // Quantas das vagas exclusivas estão realmente ocupadas, para a tela mostrar.
+    exclusivasUsadas: Math.min(exclusivas, nCaract),
+    total, usados, restante: total - usados,
+  };
 }
 
 // Custo total em PE para invocar = custo base + acréscimos das escolhas:
 // Ação Simples ou Característica = +1, Ação Complexa = +2.
 // `gratis` = itens que NÃO custam (ex.: Ápice do Controle dá 2 grátis). Abatemos
 // os itens mais caros primeiro, que é o que o jogador escolheria.
-export function custoInvocacao(inv, gratis = 0) {
+export function custoInvocacao(inv, gratis = 0, gratisCaract = 0) {
   const g = grauMeta(inv?.grau);
+  const nCaract = inv?.caracteristicas?.length ?? 0;
+  /* ⚠ `gratisCaract` (Shikigami de Técnica) abate CARACTERÍSTICA, e não "o item
+     mais caro". O `gratis` genérico do Ápice do Controle abate os maiores
+     primeiro, que é o que o jogador escolheria; aqui o texto diz qual item é de
+     graça, então ele sai da conta antes da ordenação. */
+  const caractPagas = Math.max(0, nCaract - Math.max(0, gratisCaract));
   const custos = [];
   for (const a of inv?.acoes || []) custos.push(a?.classe === "complexa" ? 2 : 1);
-  for (let i = 0; i < (inv?.caracteristicas?.length ?? 0); i++) custos.push(1);
+  for (let i = 0; i < caractPagas; i++) custos.push(1);
   custos.sort((a, b) => b - a); // maiores primeiro
   const soma = custos.slice(Math.max(0, gratis)).reduce((s, c) => s + c, 0);
   return g.custoBase + soma;
@@ -558,6 +627,102 @@ function ctxParaExpr(inv, dono) {
 }
 
 /**
+ * ============================================================
+ * ONDE O MODIFICADOR DA DSL CAI
+ * ============================================================
+ * ⚠ ATÉ 2026-08-17 ELE NÃO CAÍA EM LUGAR NENHUM. O `modificadorExpr` era
+ * avaliado, guardado em `out.modificador`, e nada lia esse campo: o editor
+ * pintava o resultado em verde e a invocação saía idêntica. É o escape hatch que
+ * `docs/afty-invocacoes.md` promete ("DSL para os modificadores") e o pior caso
+ * do padrão de sempre, porque a tela CONFIRMAVA um número que não existia.
+ *
+ * O alvo é explícito e não adivinhado: numa Ação de Ataque "modificador" tanto
+ * pode ser dano quanto acerto, e escolher por conta própria seria supor. Quem
+ * não escolhe fica com o primeiro alvo da lista, que é o número principal da
+ * ação (Dano, Cura ou Valor).
+ */
+/* ⚠ Rótulo e APLICADOR na mesma entrada, de propósito. Com um `switch` à parte,
+   um alvo novo entraria na lista de opções, apareceria no editor e cairia no
+   `default` sem fazer nada, que é exatamente o bug que este bloco conserta. O
+   validador confere que toda entrada tem os dois. */
+const MODIFICADOR_ALVOS = {
+  dano: {
+    label: "Dano",
+    aplica: (out, v) => { if (out.dano) out.dano.bonus = (out.dano.bonus ?? 0) + v; },
+  },
+  danoNivel: {
+    // Sobe degraus na escada, e não soma no total: um nível de dano NÃO é
+    // "+1 de dano" (ver `subirNiveisDano` e a escada canônica).
+    label: "Níveis de Dano",
+    aplica: (out, v) => { if (out.dano?.dado) out.dano = { ...out.dano, ...subirNiveisDano(out.dano.dado, v) }; },
+  },
+  acerto: {
+    label: "Acerto",
+    aplica: (out, v) => { if (out.bonusAtaque != null) out.bonusAtaque += v; },
+  },
+  cd: {
+    label: "CD",
+    aplica: (out, v) => { if (out.cd != null) out.cd += v; },
+  },
+  cura: {
+    label: "Cura",
+    aplica: (out, v) => { if (out.cura) out.cura.bonus = (out.cura.bonus ?? 0) + v; },
+  },
+  curaNivel: {
+    label: "Níveis de Cura",
+    aplica: (out, v) => { if (out.cura?.dado) out.cura = { ...out.cura, ...subirNiveisDano(out.cura.dado, v) }; },
+  },
+  valor: {
+    label: "Valor",
+    aplica: (out, v) => { if (out.valor != null) out.valor += v; },
+  },
+};
+
+const comLabel = (ids) => ids.map((v) => ({ value: v, label: MODIFICADOR_ALVOS[v].label }));
+
+/**
+ * Os alvos válidos para a Ação, na ordem: o primeiro é o padrão. Uma Ação de
+ * Auxílio de valor fixo só tem um, e a de Ataque tem quatro.
+ */
+export function alvosDeModificador(acao) {
+  const familia = acao?.familia === "auxilio" ? "auxilio" : "ataque";
+  if (familia === "ataque") {
+    return comLabel(["dano", "danoNivel", acao?.ataqueTipo === "tr" ? "cd" : "acerto"]);
+  }
+  if (acao?.auxilioSub === "cura") return comLabel(["cura", "curaNivel"]);
+  return comLabel(["valor"]);
+}
+
+/**
+ * Os alvos de uma Característica. As de Vida, Teste e RD concedem um número e o
+ * modificador entra nele. As de Tamanho e as livres NÃO têm número, então a
+ * expressão não teria onde cair: em vez de somer calada, ela vira aviso.
+ */
+export function alvosDeModificadorCaract(carac) {
+  return ["vida", "teste", "rd"].includes(carac?.subtipo) ? comLabel(["valor"]) : [];
+}
+
+/**
+ * Avalia o `modificadorExpr` e SOMA no alvo escolhido. Devolve o que a tela
+ * precisa para dizer onde o número caiu, porque um modificador invisível é
+ * indistinguível de um modificador que não funciona.
+ */
+function aplicaModificador(out, item, inv, dono, warnings, alvos) {
+  if (!item?.modificadorExpr) return;
+  const valor = evalNumber(item.modificadorExpr, ctxParaExpr(inv, dono), 0);
+  out.modificador = valor;
+  if (!alvos.length) {
+    warnings.push("O Modificador não tem onde ser aplicado neste tipo.");
+    return;
+  }
+  const escolhido = alvos.find((a) => a.value === item.modificadorAlvo) ?? alvos[0];
+  out.modificadorAlvo = escolhido.value;
+  out.modificadorLabel = escolhido.label;
+  if (!valor) return;
+  MODIFICADOR_ALVOS[escolhido.value].aplica(out, valor);
+}
+
+/**
  * Resolve uma Ação: devolve os valores concretos pelas tabelas do grau. `dado`
  * de dano/cura sai como base (a distância), com `niveisPendentes` quando um
  * "+N níveis" (corpo a corpo etc.) se aplica e a escada ainda não existe.
@@ -676,6 +841,12 @@ export function resolveAcao(acao, inv, dono = {}) {
       out.danoAdicional = subirNiveisDano(INV_DANO_ADICIONAL[grau], classe === "complexa" ? 3 : 0);
       out.prejuizoMultiplos = "-2 níveis por uso repetido na rodada (até 1d4)";
     }
+    // "Recebe imunidade à mecânica Prejuízo por Múltiplos Auxílios."
+    // Sai depois de os quatro sub-tipos escreverem, para pegar todos de uma vez.
+    if (ehShikigamiDeTecnica(inv)) {
+      out.prejuizoMultiplos = null;
+      out.imunePrejuizoMultiplos = true;
+    }
   }
 
   // Aplica os benefícios da Ação com Custo aos valores já resolvidos.
@@ -761,8 +932,9 @@ export function resolveAcao(acao, inv, dono = {}) {
     }
   }
 
-  // Escape hatch DSL: um modificador numérico livre no contexto da invocação.
-  if (acao?.modificadorExpr) out.modificador = evalNumber(acao.modificadorExpr, ctxParaExpr(inv, dono), 0);
+  // Escape hatch DSL: um modificador numérico livre no contexto da invocação,
+  // somado no alvo escolhido (Dano, Níveis de Dano, Acerto/CD, Cura ou Valor).
+  aplicaModificador(out, acao, inv, dono, warnings, alvosDeModificador(acao));
 
   out.warnings = warnings;
   return out;
@@ -819,7 +991,7 @@ export function resolveCaracteristica(carac, inv, dono = {}) {
     }
   }
 
-  if (carac?.modificadorExpr) out.modificador = evalNumber(carac.modificadorExpr, ctxParaExpr(inv, dono), 0);
+  aplicaModificador(out, carac, inv, dono, warnings, alvosDeModificadorCaract(carac));
 
   out.warnings = warnings;
   return out;
@@ -864,9 +1036,25 @@ function varsDeMarcador(inv, dono) {
   return out;
 }
 
+/**
+ * O tamanho da invocação SEM resolver nada: quem manda é a Característica de
+ * Tamanho, e o campo `inv.tamanho` é só o padrão.
+ *
+ * ⚠ Existe separado do `resolveInvocacao` de propósito. O contexto de DSL é
+ * montado ANTES das Características resolverem (uma delas pode ler `tamanho`),
+ * então ler o resultado delas aqui seria circular. O valor bruto da
+ * Característica não depende de expressão nenhuma, e por isso é seguro.
+ */
+function tamanhoBrutoDaInvocacao(inv) {
+  const c = (inv?.caracteristicas || []).find((x) => x?.subtipo === "tamanho" && x?.tamanho);
+  return c?.tamanho || inv?.tamanho || "medio";
+}
+
 export function buildInvocacaoDslContext(inv, dono = {}, resolved = {}) {
   const at = inv?.atributos || {};
   const g = grauMeta(inv?.grau);
+  const tipo = tipoInvocacaoMeta(inv?.tipoMecanico).value;
+  const tam = resolved.tamanho ?? tamanhoBrutoDaInvocacao(inv);
   return {
     ...varsDeMarcador(inv, dono),
     // Invocação (nomes diretos)
@@ -878,6 +1066,18 @@ export function buildInvocacaoDslContext(inv, dono = {}, resolved = {}) {
     pv_max: resolved.pv ?? pvInvocacao(inv, dono),
     defesa: resolved.defesa ?? defesaInvocacao(inv, dono),
     deslocamento: resolved.deslocamento ?? deslocamentoInvocacao(),
+    /* TIPO MECÂNICO como booleana. Sem isto não dava para escrever efeito que
+       vale só para um tipo, e o próprio `TECNICA_EFEITOS` precisou de um desvio
+       em código (`efeitosDoTipo`) por falta de `quando: "tipo_tecnica"`. */
+    tipo_shikigami: tipo === "shikigami" ? 1 : 0,
+    tipo_tecnica: tipo === "tecnica" ? 1 : 0,
+    tipo_dispositivo: tipo === "dispositivo" ? 1 : 0,
+    /* Tamanho como DEGRAU (Miúdo 1 ... Colossal N), porque é assim que ele se
+       move: a Característica de Tamanho sobe degraus, não centímetros. */
+    tamanho: Math.max(0, TAMANHO_ORDEM.indexOf(tam)) + 1,
+    // Quantas Ações e Características ela tem, para efeito que escala com isso.
+    acoes: (inv?.acoes || []).length,
+    caracteristicas: (inv?.caracteristicas || []).length,
     // Alias herdado do tempo em que Concentrar Poder era o único marcador.
     // Prefira `marc_concentrar_poder`, que é o nome do registro.
     marcada: marcadorLigado(inv, "concentrar_poder") ? 1 : 0,
@@ -918,8 +1118,45 @@ export const EFEITO_CANAIS = [
   "curaNivel",       // +N níveis na rolagem de CURA
   "curaBonus",       // +N ao total da rolagem de CURA
   "ataqueDanoAdicional", // MÁXIMO do dado extra que todo ataque da invocação carrega (ver dadoDoMaximo)
+  "caracteristicasLivres", // vagas que SÓ uma Característica ocupa, e que não entram no custo
 ];
 const CANAL_VALIDO = new Set(EFEITO_CANAIS);
+
+/**
+ * ============================================================
+ * SHIKIGAMI DE TÉCNICA — o que o TIPO concede
+ * ============================================================
+ * Escrito como efeito de canal, e não como conta solta no `resolveInvocacao`,
+ * por dois motivos: a `expr` enxerga `grau` (o rank, 1 no Quarto e 5 no
+ * Especial), que é exatamente como as três regras escalam, e assim as parcelas
+ * aparecem nomeadas no hover de fontes junto das Habilidades de Controlador.
+ *
+ * As regras que NÃO têm canal (turno próprio, retorno com vida cheia na primeira
+ * dissipação, desvantagem alheia e a imunidade ao Prejuízo por Múltiplos
+ * Auxílios) saem em `tracosDeTecnica` e no `resolveAcao`.
+ */
+/**
+ * ⚠ Eles são efeitos NORMAIS, com `quando`, e não um caso especial. Até a
+ * variável `tipo_tecnica` existir (2026-08-17) o motor não tinha como dizer
+ * "este efeito vale só para este tipo", e a seleção precisava de um desvio em
+ * código. Agora a regra de tipo se escreve como qualquer outra, o que vale para
+ * o próximo tipo que o autor inventar.
+ */
+export const TECNICA_EFEITOS = [
+  // "Sua Vida base aumenta em 10, aumentado em +5 para cada grau subsequente."
+  { canal: "pv", expr: "10 + 5 * (grau - 1)", quando: "tipo_tecnica" },
+  // "Recebe um bônus em todas as rolagens igual seu grau (G4 = +1, até GE = +5)."
+  // ⚠ Só TESTES (autor, 2026-08-16): acerto, Testes de Resistência e perícias.
+  { canal: "bonusTeste", expr: "grau", quando: "tipo_tecnica" },
+  // "Recebe +1 Característica no 4º Grau (que não aumenta o custo da Invocação)."
+  // ⚠ ACUMULA por grau (autor): 1 no Quarto e 5 no Especial. Vai num canal
+  // próprio porque a vaga é exclusiva de Característica, e o orçamento comum
+  // aceitaria uma Ação no lugar.
+  { canal: "caracteristicasLivres", expr: "grau", quando: "tipo_tecnica" },
+];
+
+/** Os efeitos do TIPO da invocação, que se somam aos das Habilidades do dono. */
+const EFEITOS_DE_TIPO = TECNICA_EFEITOS.map((e) => ({ ...e, origem: "tecnica", nome: "Shikigami de Técnica" }));
 
 function efeitosHabilidade(inv, dono) {
   const acc = Object.fromEntries(EFEITO_CANAIS.map((c) => [c, 0]));
@@ -929,7 +1166,9 @@ function efeitosHabilidade(inv, dono) {
   // nome de canal viraria uma habilidade que simplesmente não faz nada. Vira
   // aviso na ficha (resolveInvocacao) em vez de silêncio.
   acc.canaisDesconhecidos = [];
-  const efeitos = Array.isArray(dono?.efeitos) ? dono.efeitos : [];
+  // Os efeitos do TIPO entram junto dos das Habilidades, no mesmo acumulador,
+  // para o hover mostrar as duas origens lado a lado.
+  const efeitos = [...EFEITOS_DE_TIPO, ...(Array.isArray(dono?.efeitos) ? dono.efeitos : [])];
   if (!efeitos.length) return acc;
   const ctx = buildInvocacaoDslContext(inv, dono);
   for (const e of efeitos) {
@@ -1090,10 +1329,43 @@ export function resolveTestesInvocacao(inv, dono = {}, caract = null) {
  * uso), mas têm valor calculável, e sem isso a mesa reabre o livro para saber
  * quanto custa um turno próprio de uma invocação de Segundo Grau.
  */
+/**
+ * As regras do Shikigami de Técnica que NÃO têm canal: elas mudam a economia de
+ * ação, o estado de sessão ou pedem vantagem/desvantagem, e nenhuma das três
+ * existe no motor. Saem como MARCAS, com o texto da regra no `title` da tela.
+ */
+export function tracosDeTecnica(inv) {
+  if (!ehShikigamiDeTecnica(inv)) return [];
+  return [
+    {
+      id: "turno_proprio",
+      nome: "Turno Próprio",
+      regra: "Possui um turno próprio na Iniciativa, com uma Ação para realizar uma ação complexa ou simples, além de uma ação de movimento. Não se beneficia de Autonomia.",
+    },
+    {
+      id: "retorno_completo",
+      nome: "Retorno Completo",
+      regra: "Na primeira vez em um combate que for dissipado, pode ser invocado novamente com a vida máxima em vez da metade. Da segunda vez em diante, volta com metade da vida normalmente.",
+    },
+    {
+      id: "desvantagem_alheia",
+      nome: "Desvantagem Alheia",
+      regra: "Outras invocações de até 1 grau abaixo dele possuem desvantagem em rolagens ofensivas contra ele.",
+    },
+    {
+      id: "imune_prejuizo",
+      nome: "Imune a Prejuízo por Repetição",
+      regra: "Recebe imunidade à mecânica de Prejuízo por Múltiplos Auxílios.",
+    },
+  ];
+}
+
 function opcoesDeUso(inv, dono) {
   const out = [];
   const g = grauMeta(inv?.grau);
-  if (dono?.autonomia) {
+  // ⚠ "A Invocação não se beneficia da habilidade Autonomia": ela já tem turno
+  // próprio, então pagar por um seria pagar duas vezes pela mesma coisa.
+  if (dono?.autonomia && !ehShikigamiDeTecnica(inv)) {
     // "pagar uma quantidade adicional de PE igual a 2 para cada grau dela
     // (2 para quarto grau, 10 para grau especial)".
     out.push({ id: "autonomia", nome: "Autonomia", valor: `${2 * g.rank} PE` });
@@ -1165,9 +1437,15 @@ export function resolveInvocacao(inv, dono = {}) {
   };
   // Ápice do Controle (efe.orcamentoLivre) dá slots que NÃO influenciam no custo.
   // Invocações Econômicas abate o custo, com piso em zero.
-  const custoBruto = ovr?.custoFixo != null ? ovr.custoFixo : custoInvocacao(inv, efe.orcamentoLivre);
+  const custoBruto = ovr?.custoFixo != null
+    ? ovr.custoFixo
+    : custoInvocacao(inv, efe.orcamentoLivre, efe.caracteristicasLivres);
   const custo = Math.max(0, custoBruto - efe.custoReducao);
-  const orcamento = orcamentoAcoesCaract(inv, efe.orcamentoLivre + efe.orcamentoPago + (ovr?.ajusteAcoes ?? 0));
+  const orcamento = orcamentoAcoesCaract(
+    inv,
+    efe.orcamentoLivre + efe.orcamentoPago + (ovr?.ajusteAcoes ?? 0),
+    efe.caracteristicasLivres,
+  );
   const perProf = (inv?.periciasProf && typeof inv.periciasProf === "object") ? inv.periciasProf : {};
   const pericias = {
     allowance: periciasAllowanceInvocacao(inv) + efe.pericias,
@@ -1254,6 +1532,7 @@ export function resolveInvocacao(inv, dono = {}) {
     efeitosHabilidade: efe,
     caract,
     marcadores: marcadoresDaInvocacao(inv, dono),
+    tracos: tracosDeTecnica(inv),
     opcoesDeUso: opcoesDeUso(inv, dono),
     // O editor precisa saber se a marca de Otimização de Energia sequer existe
     // para esta ficha, e isso vem do dono, não da invocação.
@@ -1265,6 +1544,11 @@ export function resolveInvocacao(inv, dono = {}) {
     shikigami: ovr || null,
     testes: resolveTestesInvocacao(inv, donoLocal, caract),
     acoes, caracteristicas,
+    /* O contexto que o `modificadorExpr` enxerga, para o seletor de variáveis do
+       editor. Sai SEM os valores resolvidos de propósito: é exatamente o que o
+       `ctxParaExpr` avalia, e um seletor mostrando o PV final enquanto a
+       expressão lê o PV base seria um seletor que mente. */
+    contextoDsl: buildInvocacaoDslContext(inv, dono),
     warnings,
   };
 }
@@ -1496,6 +1780,43 @@ export function validarCatalogoInvocacoes() {
   cobre("INV_CARACT_TESTE", INV_CARACT_TESTE, cinco);
   cobre("INV_CARACT_RD", INV_CARACT_RD, cinco);
   cobre("INV_CARACT_TAMANHO", INV_CARACT_TAMANHO, cinco);
+
+  /* Alvos de modificador: rótulo e aplicador. Um alvo sem `aplica` entraria no
+     seletor do editor e não faria nada, que é o bug que o alvo veio consertar. */
+  for (const [id, a] of Object.entries(MODIFICADOR_ALVOS)) {
+    if (!a.label) erros.push(`MODIFICADOR_ALVOS: "${id}" sem rótulo`);
+    if (typeof a.aplica !== "function") erros.push(`MODIFICADOR_ALVOS: "${id}" sem aplicador`);
+  }
+  /* Todo alvo OFERECIDO tem de existir no registro. As duas listas são geradas
+     por família, e uma família nova poderia oferecer um alvo que não existe. */
+  const amostras = [
+    { familia: "ataque", ataqueTipo: "jogada" },
+    { familia: "ataque", ataqueTipo: "tr" },
+    { familia: "auxilio", auxilioSub: "cura" },
+    { familia: "auxilio", auxilioSub: "defesa" },
+  ];
+  for (const a of amostras) {
+    for (const o of alvosDeModificador(a)) {
+      if (!MODIFICADOR_ALVOS[o.value]) erros.push(`alvosDeModificador: alvo desconhecido "${o.value}"`);
+    }
+  }
+  for (const sub of ["vida", "teste", "rd", "tamanho", "livre"]) {
+    for (const o of alvosDeModificadorCaract({ subtipo: sub })) {
+      if (!MODIFICADOR_ALVOS[o.value]) erros.push(`alvosDeModificadorCaract: alvo desconhecido "${o.value}"`);
+    }
+  }
+
+  /* Efeitos de TIPO: canal existente e `quando` que o contexto realmente expõe.
+     Um canal com erro de digitação só apareceria como aviso numa ficha que por
+     acaso tivesse aquele tipo, e um `quando` inexistente avalia 0 e apaga o
+     efeito inteiro CALADO (o mesmo buraco de `validarMarcadoresInvocacao`). */
+  const ctxAmostra = buildInvocacaoDslContext(createBlankInvocacao(), {});
+  for (const e of EFEITOS_DE_TIPO) {
+    if (!CANAL_VALIDO.has(e.canal)) erros.push(`TECNICA_EFEITOS: canal desconhecido "${e.canal}"`);
+    if (e.quando && !(e.quando in ctxAmostra)) {
+      erros.push(`TECNICA_EFEITOS: "quando" usa variável inexistente "${e.quando}"`);
+    }
+  }
 
   return erros;
 }

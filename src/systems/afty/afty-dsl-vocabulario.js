@@ -209,6 +209,112 @@ export function vocabularioDsl(ctx = {}, extras = []) {
 
 const porNome = (a, b) => a.nome.localeCompare(b.nome);
 
+/**
+ * ============================================================
+ * VOCABULÁRIO DA INVOCAÇÃO — outro namespace, outro seletor
+ * ============================================================
+ * A Invocação tem contexto PRÓPRIO (`buildInvocacaoDslContext`): ali `forca` é a
+ * força DELA e `grau` é o grau DELA, não os da criatura. Passar esse contexto
+ * pelo `vocabularioDsl` de cima daria rótulos errados ("Grau de feiticeiro") e
+ * jogaria `pv_max`, `defesa` e os `marc_*` todos em "Outras".
+ *
+ * ⚠ Até 2026-08-17 o campo de expressão da Invocação era o ÚNICO do Afty sem
+ * seletor: um input de texto com sete nomes escritos à mão no hint. Justo o
+ * campo cujo namespace ninguém tem como adivinhar, que é o que motivou este
+ * arquivo a existir.
+ *
+ * Mesma disciplina do de cima: classifica o contexto REAL. Variável nova no
+ * `buildInvocacaoDslContext` aparece aqui sozinha, no pior caso em "Outras".
+ */
+const INV_POR_NOME = [
+  {
+    id: "invocacao",
+    label: "Invocação",
+    nomes: [
+      ["grau", "Grau dela, Quarto 1 até Especial 5"],
+      ["grau_num", "Grau como número do livro (4 a 1, e 0 no Especial)"],
+      ["pv_max", "Pontos de Vida máximos dela"],
+      ["defesa", "Defesa dela"],
+      ["deslocamento", "Deslocamento dela, em metros"],
+      ["tamanho", "Tamanho como degrau, Miúdo 1 em diante"],
+      ["acoes", "Quantas Ações ela tem"],
+      ["caracteristicas", "Quantas Características ela tem"],
+    ],
+  },
+  {
+    id: "tipo",
+    label: "Tipo Mecânico",
+    nomes: [
+      ["tipo_shikigami", "É um Shikigami de Talismã"],
+      ["tipo_tecnica", "É um Shikigami de Técnica"],
+      ["tipo_dispositivo", "É um Dispositivo (Corpo Amaldiçoado ou Marionete)"],
+    ],
+  },
+  {
+    id: "atributos",
+    label: "Atributos da Invocação",
+    nomes: [
+      ["forca", "Valor de Força"], ["mod_forca", "Modificador de Força"],
+      ["destreza", "Valor de Destreza"], ["mod_destreza", "Modificador de Destreza"],
+      ["constituicao", "Valor de Constituição"], ["mod_constituicao", "Modificador de Constituição"],
+      ["inteligencia", "Valor de Inteligência"], ["mod_inteligencia", "Modificador de Inteligência"],
+      ["sabedoria", "Valor de Sabedoria"], ["mod_sabedoria", "Modificador de Sabedoria"],
+      ["presenca", "Valor de Presença"], ["mod_presenca", "Modificador de Presença"],
+    ],
+  },
+  {
+    id: "dono",
+    label: "Dono",
+    nomes: [
+      ["nd", "Nível de Desafio do dono"],
+      ["bt", "Bônus de Treinamento do dono"],
+      ["nivel_controlador", "Nível de Controlador, já com o escalonamento"],
+    ],
+  },
+];
+
+const INV_POR_PREFIXO = [
+  { id: "marcadores", label: "Marcadores", prefixo: "marc_" },
+];
+
+/** O vocabulário do contexto de UMA invocação, no formato do seletor. */
+export function vocabularioInvocacao(ctx = {}) {
+  const notaDe = new Map();
+  for (const g of INV_POR_NOME) for (const [n, nota] of g.nomes) notaDe.set(n, nota);
+  // `marcada` é o alias antigo do Concentrar Poder e continua valendo em ficha
+  // salva, então ele aparece no grupo dos marcadores com a nota que o explica.
+  notaDe.set("marcada", "Alias antigo de marc_concentrar_poder");
+
+  const balde = new Map();
+  const guarda = (id, item) => {
+    if (!balde.has(id)) balde.set(id, []);
+    balde.get(id).push(item);
+  };
+  const grupoDe = (nome) => {
+    for (const g of INV_POR_NOME) if (g.nomes.some(([n]) => n === nome)) return g.id;
+    if (nome === "marcada") return "marcadores";
+    for (const r of INV_POR_PREFIXO) if (nome.startsWith(r.prefixo)) return r.id;
+    return GRUPO_OUTRAS.id;
+  };
+
+  for (const nome of Object.keys(ctx)) {
+    guarda(grupoDe(nome), { nome, valor: numero(ctx[nome]), nota: notaDe.get(nome) ?? null });
+  }
+
+  const naOrdem = (g) => {
+    const pos = new Map(g.nomes.map(([n], i) => [n, i]));
+    return [...(balde.get(g.id) ?? [])].sort((a, b) => (pos.get(a.nome) ?? 999) - (pos.get(b.nome) ?? 999));
+  };
+
+  return [
+    ...INV_POR_NOME.map((g) => ({ id: g.id, label: g.label, sobPedido: false, itens: naOrdem(g) })),
+    ...INV_POR_PREFIXO.map((r) => ({
+      id: r.id, label: r.label, sobPedido: false, itens: (balde.get(r.id) ?? []).sort(porNome),
+    })),
+    { ...GRUPO_OUTRAS, sobPedido: false, itens: (balde.get(GRUPO_OUTRAS.id) ?? []).sort(porNome) },
+  ].filter((g) => g.itens.length);
+}
+
 /** As funções do DSL, para o seletor oferecer o que não é variável. */
 export const DSL_FUNCOES = [
   { nome: "metade(x)", insere: "metade()", nota: "Metade de x" },

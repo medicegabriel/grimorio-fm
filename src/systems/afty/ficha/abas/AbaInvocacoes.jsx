@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { AlertTriangle, ChevronDown, ChevronRight, Heart, Shield, Wind } from "lucide-react";
 
+import { AFTY_ATTRS } from "../../afty-schema";
 import { NumeroComFontes } from "../../ui/fontes";
 import { sinalDe } from "../../ui/formato";
 import { useDestaque } from "../usar-destaque";
@@ -56,6 +57,71 @@ function resumoCaracteristica(c) {
     case "tamanho": return c.tamanhoLabel || "";
     default: return "";
   }
+}
+
+/**
+ * Uma linha de teste rolável (Teste de Resistência ou Perícia). As duas têm a
+ * mesma anatomia: nome, o que é condicional, a proficiência e o número que rola.
+ *
+ * ⚠ AS PERÍCIAS NÃO EXISTIAM NESTA ABA. O `resolveTestesInvocacao` sempre
+ * devolveu `testes.pericias` com o bônus fechado, e a Ficha lia só as
+ * resistências: uma invocação treinada em Percepção ou Furtividade não tinha o
+ * que rolar na mesa, e o bônus de Característica numa perícia era invisível.
+ */
+function LinhaDeTeste({ nome, bonus, comGatilho = 0, mestre = false, treinado = true, rotulo, rolar }) {
+  return (
+    <div className="afty-linha px-2.5 py-1 flex items-center gap-2">
+      <span className="flex-1 min-w-0 text-[12px] truncate">{nome}</span>
+      {/* Bônus de Característica em Ataque ou TR exige gatilho, então não entra
+          no número que a linha rola. Em Perícia ele já está somado. */}
+      {comGatilho > 0 && (
+        <span className="afty-chip" title="Bônus de Característica, só quando o gatilho ocorre">
+          +{comGatilho} com gatilho
+        </span>
+      )}
+      {mestre
+        ? <span className="afty-chip">Mestre</span>
+        : !treinado && <span className="afty-rotulo text-[10px]">Não Treinado</span>}
+      <NumeroComFontes
+        valor={bonus}
+        total={sinalDe(bonus)}
+        className="afty-valor text-[13px] w-10 text-right"
+        ancora="direita"
+        onRolar={() => rolar({ tipo: "teste", rotulo, bonus })}
+      />
+    </div>
+  );
+}
+
+/**
+ * Os seis atributos da invocação. Ela É uma criatura, e a mesa pede o atributo
+ * dela a toda hora (uma manobra de Agarrar, um teste improvisado, resistir a um
+ * empurrão). Só o MODIFICADOR rola, como teste puro, igual ao painel de
+ * atributos da criatura.
+ */
+function Atributos({ atributos, nomeDono, rolar }) {
+  const valores = atributos?.valores;
+  if (!valores) return null;
+  return (
+    <div className="grid grid-cols-3 sm:grid-cols-6 gap-1">
+      {AFTY_ATTRS.map((a) => {
+        const m = atributos.mods?.[a.key] ?? 0;
+        return (
+          <span key={a.key} className="afty-stat" title={a.label}>
+            <span className="afty-stat-rotulo">{a.abbr}</span>
+            <span className="afty-stat-valor">{valores[a.key]}</span>
+            <NumeroComFontes
+              valor={m}
+              total={sinalDe(m)}
+              className="afty-valor text-[11px]"
+              ancora="direita"
+              onRolar={() => rolar({ tipo: "teste", rotulo: `${nomeDono} · ${a.label}`, bonus: m })}
+            />
+          </span>
+        );
+      })}
+    </div>
+  );
 }
 
 /**
@@ -200,6 +266,7 @@ function Invocacao({ inv, rolar, destacado }) {
   const [aberto, setAberto] = useState(false);
   const raiz = useDestaque(destacado);
   const testes = inv.testes ?? {};
+  const nome = inv.nome || "Invocação";
 
   return (
     <section
@@ -249,8 +316,17 @@ function Invocacao({ inv, rolar, destacado }) {
               {inv.shikigami.fonte}
             </span>
           )}
+          {/* Marcador que PEDE escolha e está sem ela não entrega o efeito: o
+              `quando` do canal testa `marc_<id>_<opcao>` e nenhuma bate. Sem
+              este aviso a invocação aparecia marcada e o número não vinha. */}
           {(inv.marcadores ?? []).map((m) => (
-            <span key={m.id} className="afty-chip" data-afty-tom="destaque">
+            <span
+              key={m.id}
+              className="afty-chip"
+              data-afty-tom={m.faltaOpcao ? "aviso" : "destaque"}
+              title={m.faltaOpcao ? "Falta escolher a opção deste marcador" : undefined}
+            >
+              {m.faltaOpcao && <AlertTriangle className="w-3 h-3 flex-shrink-0" aria-hidden="true" />}
               {m.label}{m.opcao ? ` · ${m.opcao}` : ""}
             </span>
           ))}
@@ -292,37 +368,77 @@ function Invocacao({ inv, rolar, destacado }) {
           </span>
         )}
         {inv.criticoBrutal && <span className="afty-chip" title="Crítico Brutal">Crítico +1 dado</span>}
+        {/* Regras do Shikigami de Técnica que não têm canal: turno próprio,
+            retorno com vida cheia na primeira dissipação, desvantagem alheia e
+            imunidade ao Prejuízo por Repetição. O texto vai no `title`. */}
+        {(inv.tracos ?? []).map((t) => (
+          <span key={t.id} className="afty-chip" data-afty-tom="destaque" title={t.regra}>{t.nome}</span>
+        ))}
       </div>
 
       {aberto && (
         <div className="mt-2 space-y-2">
+          <Atributos atributos={inv.atributos} nomeDono={nome} rolar={rolar} />
+
+          {/* Jogada de Ataque da criatura, fora de qualquer Ação. É o número de
+              um ataque improvisado, e é o único lugar onde o bônus de
+              Característica em Ataque (que exige gatilho) aparece. */}
+          {testes.acerto && (
+            <div>
+              <h3 className="afty-card-titulo mb-1">Ataque</h3>
+              <div className="grid gap-1 sm:grid-cols-2">
+                {[["corpo", "Corpo a Corpo"], ["distancia", "À Distância"]].map(([k, label]) => {
+                  const t = testes.acerto[k];
+                  return t ? (
+                    <LinhaDeTeste
+                      key={k}
+                      nome={label}
+                      bonus={t.bonus}
+                      comGatilho={t.comGatilho}
+                      treinado={t.treinado}
+                      rotulo={`${nome} · ${label}`}
+                      rolar={rolar}
+                    />
+                  ) : null;
+                })}
+              </div>
+            </div>
+          )}
+
           {(testes.resistencias ?? []).length > 0 && (
             <div>
               <h3 className="afty-card-titulo mb-1">Testes de Resistência</h3>
               <div className="grid gap-1 sm:grid-cols-2">
                 {testes.resistencias.map((r) => (
-                  <div key={r.value} className="afty-linha px-2.5 py-1 flex items-center gap-2">
-                    <span className="flex-1 min-w-0 text-[12px] truncate">{r.label}</span>
-                    {/* Bônus de Característica em TR exige gatilho, então não
-                        entra no número que a linha rola. */}
-                    {r.comGatilho > 0 && (
-                      <span className="afty-chip" title="Bônus de Característica, só quando o gatilho ocorre">
-                        +{r.comGatilho} com gatilho
-                      </span>
-                    )}
-                    {r.mestre && <span className="afty-chip">Mestre</span>}
-                    <NumeroComFontes
-                      valor={r.bonus}
-                      total={sinalDe(r.bonus)}
-                      className="afty-valor text-[13px] w-10 text-right"
-                      ancora="direita"
-                      onRolar={() => rolar({
-                        tipo: "teste",
-                        rotulo: `${inv.nome || "Invocação"} · ${r.label}`,
-                        bonus: r.bonus,
-                      })}
-                    />
-                  </div>
+                  <LinhaDeTeste
+                    key={r.value}
+                    nome={r.label}
+                    bonus={r.bonus}
+                    comGatilho={r.comGatilho}
+                    mestre={r.mestre}
+                    treinado={r.treinado}
+                    rotulo={`${nome} · ${r.label}`}
+                    rolar={rolar}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {(testes.pericias ?? []).length > 0 && (
+            <div>
+              <h3 className="afty-card-titulo mb-1">Perícias</h3>
+              <div className="grid gap-1 sm:grid-cols-2">
+                {testes.pericias.map((p) => (
+                  <LinhaDeTeste
+                    key={p.id}
+                    nome={p.nome}
+                    bonus={p.bonus}
+                    mestre={p.mestre}
+                    treinado={p.treinado}
+                    rotulo={`${nome} · ${p.nome}`}
+                    rolar={rolar}
+                  />
                 ))}
               </div>
             </div>
@@ -336,7 +452,7 @@ function Invocacao({ inv, rolar, destacado }) {
                   <Acao
                     key={`${a.nome}-${i}`}
                     a={a}
-                    nomeDono={inv.nome || "Invocação"}
+                    nomeDono={nome}
                     margemCritico={inv.margemCritico ?? 20}
                     rolar={rolar}
                   />

@@ -117,6 +117,107 @@ Estado atual do sistema Afty (atualizado 2026-08-18). Leia junto com:
 
 ---
 
+## SESSÃO DE 2026-08-18 (parte 2): TREINOS ESPECIAIS (INTERLÚDIOS ADICIONAIS)
+
+Pedido do autor: programar os **Treinos Especiais**, com o texto de **Treinamento para Feitiço**
+em mãos. É a regra de **Interlúdios Adicionais** do Livro do Narrador p. 22, e fecha um dos dois
+cartões "em breve" que estavam na aba de Interlúdios desde 2026-07-2X. Numa segunda passada do
+mesmo dia entrou o **Treinamento para Habilidade**, o teto por ND dos dois e o conserto da
+aparência do card.
+
+Sistema novo em **`src/systems/afty/afty-treinos-especiais.js`**, card próprio
+`Interlúdios · Treinos Especiais` na aba, embaixo das 12 Linhas.
+
+### A terceira família de Interlúdio
+
+Uma Linha de Treinamento tem 4 etapas sequenciais, pré-requisito por etapa e um bônus de Completo.
+Um **Treino Especial não tem etapa nenhuma**: é uma escolha REPETÍVEL, e cada pega custa Foco e
+concede uma coisa. Por isso ele não reusa o `TreinoLinha`, e sim a anatomia do
+`HabilidadeGeralCard` (quadrado que liga, nome, medidor de repetições, chevron): a interação é
+escolher e repetir, não avançar quatro etapas em ordem.
+
+**Ficha:** `creature.treinosEspeciais`, lista COM repetição (`[{ id, alvo }]`), uma entrada por
+pega, no mesmo espírito de `habilidadesGerais` e `melhoriasSuperiores`. O `alvo` nasce nulo e
+existe por antecipação: Estudos vai nomear uma perícia.
+
+### As quatro respostas do autor (as quatro viraram regra do sistema)
+
+1. **Sucesso automático.** O texto manda rolar quatro testes, guardar os sucessos e tentar de novo
+   no interlúdio seguinte. Para CRIATURA nada disso é rolado: vale a regra já registrada na seção
+   INTERLÚDIOS ("qualquer interlúdio que peça teste é sucesso automático"). Consequência de
+   desenho: **não existe contador de sucessos, nem treino em andamento, nem o atributo escolhido**.
+   Escolher já concede. O fato mora no `title` do botão, que é onde explicação de item vive.
+2. **1 Foco por pega**, e não o interlúdio inteiro (2 Focos). Cabe junto de uma etapa de 1ª/2ª/3ª
+   no mesmo interlúdio. O medidor do cabeçalho da aba passou a **somar as duas famílias**, porque o
+   caixa é um só: `focosGastos(...) + focosDeTreinosEspeciais(...)`.
+3. **O Feitiço vem em VAGA EXCLUSIVA** (canal `vagasFeitico`), a mesma da Lendária Dominância em
+   Técnica. O Feitiço obtido não gasta o contador comum de Habilidades, e a vaga não serve para
+   Habilidade Geral. O medidor `+usadas / exclusivas` do card de Habilidades já mostrava isso, e
+   não precisou de tela nova.
+4. **A CD do texto estava errada.** O autor mandou "12 + seu Bônus de Treinamento" e corrigiu no
+   mesmo dia para **12 + metade do seu Nível**, igual à do Treinamento para Habilidade. A
+   `descricao` do catálogo leva a correção, e o resto do texto é verbatim. Como o teste é sucesso
+   automático, **a CD não entra em conta nenhuma hoje**: ela vive só no texto.
+
+### Onde entra no motor
+
+`efeitosDeTreinoEspecial(creature)` emite `{ canal, expr, origem, nome }` igual a qualquer outra
+fonte, e entra na lista **MONTANTE** do `deriveAfty`, ao lado do `efeitosDeTreino`. É o lugar certo
+porque o que ele emite é **vaga de orçamento**, lida antes de os stats existirem. Nenhuma linha
+nova foi precisa no `orcamentoHabilidades`: o canal já existia e já era consumido.
+
+### Segunda passada, no mesmo dia: teto por ND, o irmão, e a aparência
+
+O autor voltou com três pedidos. *"Melhore a Aparência de como ficou o Treino, ficou muito feio"*,
+mais o teto e mais o Treinamento para Habilidade.
+
+**Teto de repetição = `1 + piso(ND / N)`**, com o N em `vezesACada` no catálogo. Feitiço tem N 5
+(ND 5 = 2, ND 10 = 3, ND 15 = 4) e Habilidade tem N 10 (ND 10 = 2, ND 20 = 3, ND 30 = 4). Não
+param, porque o ND do Afty não tem teto. A conta mora no resolver e o catálogo só declara o número,
+mesmo desenho do `maxVezesGeral`. O aparo é de **leitura**: baixar o ND devolve a pega excedente em
+vez de apagá-la da ficha, e o Foco preso nela volta junto. Isso obrigou `normalizeTreinosEspeciais`
+a receber `{ nd }`, e nasceu `tetosDeTreinoEspecial(creature)` para a UI pedir os dois de uma vez.
+
+**Treinamento para Habilidade** (`tes_habilidade`) entrou, emitindo `vagasHabilidade`, que é a
+pilha das Habilidades de Especialização (a mesma que a Habilidade Geral Especialização alimenta).
+⚠ **A `descricao` dele ainda é a paráfrase antiga da aba**, e está marcada como tal no catálogo: o
+autor mandou construir o Treino antes de mandar o texto. Só o mecanismo veio dele. Está em
+`a-fazer.md`. Sobrou **um** cartão "em breve", o Estudos.
+
+### O que estava feio, e o que consertou
+
+Três coisas, e as três eram de layout:
+
+1. **O `ContadorCompacto` era o medidor padrão.** Um controle de 32px de altura e ~104px de largura
+   metido numa faixa de 32px, encostando nas bordas do card: um bloco cinza no meio da lista. Com o
+   teto por ND ele virou exceção (só acima de 6 vezes, ou seja, Feitiço no ND 30+), e o normal
+   passou a ser o `VezesGauge`, que é o vocabulário do resto do criador.
+2. **O card eram DUAS listas empilhadas.** As linhas de Treino tinham 32px, quadrado de 20px e
+   texto de 12px, e as "em breve" tinham 42px, ícone de 16px e texto de 14px. Nada alinhava.
+   Agora as três dividem um esqueleto só (`LINHA_INTERLUDIO` / `CORPO_INTERLUDIO`), de 36px, e o
+   ícone do "em breve" ocupa o lugar do quadrado que liga, então as colunas batem.
+3. **O meio da linha era vazio.** Entrou o chip `concede` ("Vaga de Feitiço", "Vaga de
+   Habilidade"), que é RESULTADO e não explicação, e o número de Focos deixou de ser rótulo estático
+   para virar **preço enquanto não pegou, gasto depois**.
+
+O medidor de Focos virou `ContadorFocos` e **aparece nos dois cards**, pelo mesmo motivo do
+`ContadorHabilidades`: as duas famílias gastam o mesmo caixa, então o gasto de um lado tem de ser
+visível do outro.
+
+De brinde, os textos placeholder perderam os **ponto-e-vírgula** que violavam a regra de estilo do
+autor (viraram vírgula).
+
+**Asserts**: catálogo válido com as duas entradas, `createBlankAfty` com o campo, normalize
+descartando lixo e aceitando string crua, o teto de cada um conferido ND a ND nas duas escadas
+(1/4/5/9/10/14/15/20/30/50 e 1/9/10/19/20/30/100), o aparo valendo na leitura com a ficha crua
+intacta, Foco e efeito acompanhando o aparo, `tetosDeTreinoEspecial` devolvendo os dois, o DELTA de
+vagas exclusivas no `deriveAfty` (a origem padrão Inato já concede 1, então o valor absoluto
+engana), o Feitiço ocupando a exclusiva sem tocar no comum, as vagas de Habilidade entrando em
+`habilidades.total` com a quarta pega aparada pelo teto do ND 20, a soma das duas famílias de Foco,
+e ficha suja não derrubando o derive.
+
+---
+
 ## SESSÃO DE 2026-08-18: PERÍCIAS PERSONALIZADAS, ATAQUE DA ARMA E COMBATE DO CONJURADOR
 
 Três relatos do autor fecharam a mesma lacuna: escolhas gravadas na ficha existiam, mas os sistemas
@@ -183,6 +284,177 @@ neste documento, entre sessões independentes, e foi resolvido preservando as du
   Imbuir com Técnica.
 - `git diff --check` passou, com apenas o aviso de conversão LF para CRLF deste documento.
 - `src/components/` não possui alteração.
+
+---
+
+## SESSÃO DE 2026-08-17: O CAMPO QUE CONFIRMAVA UM NÚMERO QUE NÃO EXISTIA
+
+Pedido do autor: *"melhore a Ficha de Invocações e o Motor de Automação dela"*. Mais o bug do card
+listando criatura **Beyond** como Comum.
+
+### O Beyond, e a única linha da 2.5.2
+
+`PATAMAR_STYLES` no `Dashboard.jsx` tem os cinco patamares da 2.5.2 e o `/Afty` usa esse Dashboard
+direto, então toda criatura Beyond caía no fallback `?? PATAMAR_STYLES.comum` e saía rotulada e
+pintada como Comum. O arquivo é `src/components/`, somente-leitura para mim, e **o autor liberou a
+exceção pontual**: uma entrada `beyond` no dicionário. Nenhuma criatura 2.5.2 tem esse patamar,
+então o comportamento de lá não muda. O **filtro** de patamar continua sem Beyond de propósito e
+está em `a-fazer.md`: ali a opção seria visível na 2.5.2 e não casaria com nada.
+
+### O achado: `modificadorExpr` era um no-op que a tela confirmava
+
+O `docs/afty-invocacoes.md` promete "DSL para os modificadores" desde a Fatia 2. Metade existia:
+`resolveAcao` e `resolveCaracteristica` avaliavam a expressão e guardavam em `out.modificador`, e
+**nada no sistema inteiro lia esse campo**. O único consumidor era o próprio editor, que pintava
+`= 7` em verde.
+
+Isso é pior que o padrão de sempre (motor calcula, tela não mostra). Aqui a tela **confirmava**: a
+pessoa escrevia a expressão, via o número certo, salvava, e a invocação saía idêntica. Não há
+sintoma nenhum a perseguir depois.
+
+Duas decisões de desenho:
+
+1. **O alvo é explícito, não adivinhado.** Numa Ação de Ataque "modificador" tanto pode ser dano
+   quanto acerto. Escolher por conta própria seria supor, então `modificadorAlvo` guarda a escolha
+   e o padrão é o número principal da ação (Dano, Cura ou Valor), que é o que uma ficha já salva
+   passa a significar. Numa Característica de Tamanho ou livre não existe alvo, e aí a expressão
+   vira **aviso** em vez de sumir calada.
+2. **Rótulo e aplicador na mesma entrada** do `MODIFICADOR_ALVOS`. Com um `switch` à parte, um alvo
+   novo entraria na lista de opções, apareceria no editor e cairia no `default` sem fazer nada, que
+   é o mesmo bug uma camada acima. O validador de catálogo confere que toda entrada tem os dois.
+
+### A variável que faltava para escrever regra de tipo
+
+O contexto da invocação não tinha como dizer de que TIPO ela é, e por isso os três efeitos do
+Shikigami de Técnica precisavam de um desvio em código (`efeitosDoTipo`) para serem selecionados.
+Com `tipo_shikigami` / `tipo_tecnica` / `tipo_dispositivo` no contexto, eles viraram efeitos
+normais com `quando: "tipo_tecnica"`, no mesmo caminho de todo o resto: o próximo tipo se escreve
+como dado. Entraram junto `tamanho` (como degrau) e as contagens de `acoes` e `caracteristicas`.
+
+⚠ `tamanho` lê a Característica **crua**, e não o `resolveInvocacao`. O contexto é montado antes das
+Características resolverem, e uma delas pode ler `tamanho`: ler o resultado seria circular. O valor
+bruto da Característica não depende de expressão nenhuma, então é seguro.
+
+### O último campo de expressão sem seletor
+
+O campo de Modificador era um `TextInput` cego com sete nomes de variável escritos à mão no hint.
+Justo o campo cujo namespace é o da INVOCAÇÃO e não o da criatura, ou seja, o único que ninguém tem
+como adivinhar, que é a queixa que criou o `afty-dsl-vocabulario.js`. Ganhou `CampoExpressao` com o
+`VariavelPicker`, alimentado por um `vocabularioInvocacao` novo.
+
+Ele sai **sem** os valores resolvidos, de propósito: é exatamente o contexto que o `ctxParaExpr`
+avalia. Um seletor mostrando o PV final enquanto a expressão lê o PV base seria um seletor que
+mente, e o `resolveInvocacao` passou a expor esse mesmo objeto (`contextoDsl`) para não haver duas
+verdades.
+
+### Na Ficha, o de sempre: calculado e sem tela
+
+- **Perícias.** `testes.pericias` sempre saiu resolvido, com bônus fechado, e a aba lia só as
+  resistências. Uma invocação treinada em Percepção ou Furtividade não tinha o que rolar na mesa.
+- **Jogada de Ataque da criatura**, fora de qualquer Ação: o número do ataque improvisado, e o
+  único lugar onde o bônus de Característica em Ataque (que exige gatilho) aparece.
+- **Os seis atributos.** O `resumoAtributosInvocacao` devolvia só o orçamento gasto. A Ficha não
+  tinha os valores, e ela É uma criatura: a mesa pede atributo dela a toda hora.
+- **Marcador sem opção escolhida** aparecia igual aos outros e não entregava efeito nenhum, porque
+  o `quando` testa `marc_<id>_<opcao>` e nenhuma bate.
+
+TR e Perícia viraram a mesma `LinhaDeTeste`: têm a mesma anatomia, e a de TR já existia inline.
+
+**Bloco 19** de asserts: o modificador em cada um dos sete alvos (com o vizinho que NÃO pode mexer),
+nível de dano conferido contra a escada canônica, o PV da invocação inteira mudando ponta a ponta
+por uma Característica com expressão, o aviso do alvo inexistente, as flags de tipo usadas dentro de
+uma expressão, `tamanho` lendo a Característica e batendo com o `resolveInvocacao`, o vocabulário
+sem nada caindo em "Outras" e cobrindo toda chave do contexto, e as perícias e o acerto chegando
+resolvidos para a aba.
+
+---
+
+## SESSÃO DE 2026-08-16 (parte 3): AS DUAS PRIMEIRAS BASES DO CONTROLADOR SÃO DE GRAÇA
+
+Pedido do autor: **Treinamento em Controle (1°) e Controle Aprimorado (4°) chegam sozinhas**, sem
+gastar vaga. Os dois ganharam `automatica: true` em `afty-habilidades.js`.
+
+**Não foi preciso motor novo.** O caminho já existia desde 2026-08-10, aberto para as três Bases do
+Suporte, e o Conjurador já usava duas. `habilidadesConcedidasPelasEspecializacoes` lê a flag,
+`resolveHabilidades` junta `concedidas` em `escolhidas` **depois** de contar o orçamento, e todo
+consumidor rio abaixo (`resolveControleInvocacoes`, `efeitosInvocacaoControlador`,
+`resolveMarcadoresInvocacao`, `resolveAltoNivel`, o DSL via `habilidadesEscolhidas`) já lia
+`habilidades.escolhidas`. A UI também: `HabilidadeCard` tem o estado `concedida` (chip verde,
+botão travado). Somam **sete** Bases automáticas agora, e o comentário do topo do arquivo virou
+uma lista das sete, porque ele ainda dizia que a exceção era só o Suporte.
+
+**Nível REAL, não o de escalonamento.** A concessão usa o mesmo `e.nivel` que
+`niveisPorEspecializacao` usa para liberar acesso, então ela segue o lado de pré-requisito da
+multiclasse: um Controlador 1 / Lutador 4 recebe Treinamento em Controle e **não** Controle
+Aprimorado, mesmo com escalonamento 3. Já o `resolveControleInvocacoes` continua no escalonamento,
+que é o certo para o que ESCALA. As duas réguas convivem de propósito.
+
+**Ficha antiga não quebra nem cobra duas vezes.** Quem já tinha gravado as duas na mão continua com
+elas efetivas: o laço de `resolveHabilidades` descarta o id que está no `concedidasSet` antes de
+entrar em `selecionadas`, então a habilidade sai do contador de gasto e não vira duplicata.
+
+**Um texto morreu junto.** O editor de Horda dizia que o limite de membros vinha do Treinamento em
+Controle "(sistema futuro)". Era falso em duas frentes: o sistema existe desde 2026-08-15 e o
+número já aparece como chip no `ControleInvocacoesResumo`, e texto explicativo na UI é contra a
+regra do autor. Saiu.
+
+**Bloco 18** de asserts: os degraus de concessão (0/1/3/4/20), a especialização alheia que não
+recebe nada, orçamento intocado, a ficha antiga sem duplicata, uma habilidade escolhida de verdade
+que continua cobrando, o roster ligado no nível 1 sem escolher nada, e o ponta a ponta pelo
+`deriveAfty` medindo o `bonusTeste` contra outra especialização no mesmo ND (porque com uma
+especialização só o `resolveEspecializacoes` dá o ND inteiro a ela, e metade do nível de
+Controlador já entra no acerto por fora da habilidade).
+
+---
+
+## SESSÃO DE 2026-08-16 (parte 2): SHIKIGAMI DE TÉCNICA
+
+Tipo novo de Invocação, enviado pelo autor. As regras estão **verbatim** em
+`docs/afty-invocacoes.md`, seção "SHIKIGAMI DE TÉCNICA", junto das quatro decisões dele e da tabela
+de como cada linha virou motor.
+
+Ele é o **terceiro tipo mecânico**, irmão do Shikigami de talismã e do Dispositivo, e não um sabor:
+muda base de atributo, PV, bônus, orçamento e economia de ação. O capítulo já o tratava como
+categoria (na limitação de Características sobre imunidade a tipo de dano), e a seção de
+Intermediários diz que *"certas técnicas inatas permitem que a necessidade de Talismãs seja
+ignorada... como é o caso da Dez Sombras"*. Por isso ele é **o único sem Intermediário**, e o único
+que não ocupa espaço de inventário.
+
+### O canal novo, e por que não foi o `orcamentoLivre`
+
+`caracteristicasLivres` nasceu para "+1 Característica que não aumenta o custo". O `orcamentoLivre`
+não servia: o orçamento é um **pool único** ("A quantidade serve tanto para ações quanto
+características"), então somar ali daria uma vaga que aceita **Ação**, e o texto diz Característica.
+A vaga é exclusiva: absorve as primeiras N características e o resto disputa o pool comum. O
+`custoInvocacao` ganhou o parâmetro junto, porque "não aumenta o custo" abate **característica**
+(1 PE cada), e não "o item mais caro" como faz o grátis genérico do Ápice do Controle.
+
+### Os efeitos do TIPO passaram pelo mesmo cano das Habilidades
+
+`TECNICA_EFEITOS` são efeitos de canal com `grau` na expressão (`10 + 5 * (grau - 1)` para o PV,
+`grau` para o bônus e para as vagas), injetados no mesmo acumulador que as Habilidades de
+Controlador. Dois ganhos: as três regras escalam sozinhas, e as parcelas aparecem **nomeadas no
+hover de fontes** ao lado das outras, em vez de serem uma conta anônima dentro do `resolveInvocacao`.
+
+### O que não deu para mecanizar
+
+Três regras não têm canal e saem como **marca com o texto no `title`**: o **turno próprio** é
+economia de ação, o **retorno com vida cheia na primeira dissipação** depende do PV da invocação
+estar na sessão (pendência já aberta) e a **desvantagem alheia** precisa de vantagem/desvantagem,
+que o Motor não tem. A quarta marca, a **imunidade ao Prejuízo por Múltiplos Auxílios**, essa sim
+está aplicada de verdade no `resolveAcao`.
+
+⚠ **"Até 1 Grau abaixo" ficou sem interpretação de propósito.** A frase admite duas leituras e a
+regra não é mecanizada, então a marca mostra o texto inteiro e ninguém precisou escolher. Quando o
+canal de desvantagem existir, é pergunta obrigatória.
+
+### Verificação
+
+Dois blocos de assert novos (15 e 16) cobrindo atributos, os cinco degraus de PV, os cinco de
+bônus, o que o bônus **não** toca (dano e CD), as vagas exclusivas com a sexta característica
+voltando a custar, a imunidade nos quatro sub-tipos de auxílio, a ausência de Autonomia e o
+Intermediário. Mais o 17, ponta a ponta pelo `deriveAfty` com um Feitiço de Shikigami apontando
+para um de Técnica.
 
 ---
 
@@ -3354,6 +3626,12 @@ Sete frentes fechadas. Cada uma tem detalhe na seção própria mais abaixo.
   (`validarCatalogoCura`, `validarAlvosDeCura`). Irmão do `resolveDano`, mas o número vem todo do
   Motor: aqui só mora qual linha existe, quando, e o alcance dela.
 - `afty-treinamentos.js` catálogo dos 12 Treinamentos (Interlúdios) + resolvers.
+- `afty-treinos-especiais.js` catálogo dos **Treinos Especiais** (Interlúdios Adicionais,
+  Livro do Narrador p. 22) + resolvers (`normalizeTreinosEspeciais`, `maxVezesTreinoEspecial`,
+  `tetosDeTreinoEspecial`, `vezesPorTreinoEspecial`, `focosDeTreinosEspeciais`,
+  `efeitosDeTreinoEspecial`, `validarCatalogoTreinosEspeciais`). Escolha REPETÍVEL, sem etapa,
+  1 Foco por pega, teto `1 + piso(ND / vezesACada)`. Dois: Treinamento para Feitiço (vaga de
+  Feitiço, N 5) e Treinamento para Habilidade (vaga de Habilidade, N 10).
 - `afty-aptidoes.js` (~1600 linhas) catálogo COMPLETO das 85 Aptidões Amaldiçoadas + trilhas,
   categorias, sub-grupos, `avaliarRequisitoAptidao`, `resolveNiveisAptidao`,
   `validarCatalogoAptidoes`. **É o arquivo mais maduro do sistema: use de modelo.**
@@ -3522,9 +3800,10 @@ do sistema, por isso pulou para Interlúdios.
 
 `TabInterludios` é um container. Seções:
 1. **Treinamento** (funcional): as 12 trilhas do catálogo.
-2. **Estudos** e **Treinamento para Habilidade**: cards informativos recolhíveis, dependem de
-   Perícias/Especializações. Regra do autor: para criaturas, qualquer interlúdio que peça teste é
-   **sucesso automático**.
+2. **Treinos Especiais** (funcional desde 2026-08-18): o catálogo de `afty-treinos-especiais.js`,
+   mais o card informativo que sobrou (**Estudos**), parado esperando o texto verbatim. Regra do autor: para criaturas, qualquer interlúdio que peça
+   teste é **sucesso automático**, e é por isso que um Treino Especial não tem contador de sucessos.
+   Ver a sessão de 2026-08-18.
 
 ### Modelo
 - Cada linha tem **4 etapas sequenciais** + **Completo** automático ao concluir a 4ª.

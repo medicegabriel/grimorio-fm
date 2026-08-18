@@ -947,6 +947,68 @@ característica.
 
 ---
 
+## SHIKIGAMI DE TÉCNICA (enviado pelo autor em 2026-08-16)
+
+> Texto do autor, VERBATIM. O cabeçalho dele diz *"Fundamento Adaptado para 2.5.2"*.
+
+**Shikigami de Técnica**
+
+- Seus Atributos iniciais começam em 10 ao invés de 8
+- Recebe um bônus em todas as rolagens igual seu grau (G4 = +1, até GE = +5)
+- Recebe +1 Característica no 4º Grau (Que não aumenta o custo da Invocação).
+- Sua Vida base aumenta em 10, Aumentado em +5 para cada grau Subsequente.
+- Outras invocações de Até 1 Grau abaixo do Shikigami, possuem desvantagem em rolagens ofensivas
+  contra o mesmo.
+- O Shikigami possui um Turno próprio na Iniciativa (Recebe uma Ação, para realizar uma ação
+  complexa ou simples, além de uma ação de movimento), Porém, a Invocação não se beneficia da
+  habilidade "Autonomia".
+- Na 1ª Vez em um combate que seu Shikigami for dissipado, pode ser invocado novamente, com sua
+  vida máxima ao invés da metade. Caso seja dissipado novamente, será invocado com metade da vida
+  normalmente.
+- Recebe imunidade a mecânica: Prejuízo por Múltiplos Auxílios
+
+### Decisões do autor sobre este texto (2026-08-16)
+
+1. **Acesso:** é a terceira opção do seletor de Tipo, livre. Não exige Habilidade nem Fundamento.
+2. **"Bônus em todas as rolagens" = só TESTES** (Jogadas de Ataque, Testes de Resistência e
+   perícias). Dano, cura e CD ficam de fora.
+3. **A Característica extra ACUMULA por grau**: 1 no Quarto e 5 no Grau Especial.
+4. **Base 10 e piso 8**: a base de atributo sobe e o piso de redução acompanha, então a margem de
+   redução continua sendo de 2 pontos. Pontos para distribuir e máximo por atributo seguem a tabela
+   normal do grau.
+
+### Como ficou no motor
+
+| Regra | Onde | Fórmula |
+|---|---|---|
+| Atributos em 10, piso 8 | `atributoBaseInvocacao` / `atributoMinInvocacao` | — |
+| +Vida | canal `pv` | `10 + 5 * (grau - 1)` |
+| +Bônus em testes | canal `bonusTeste` | `grau` |
+| +Característica grátis | canal `caracteristicasLivres` (novo) | `grau` |
+| Sem Intermediário | `AFTY_INV_TIPOS` | não ocupa espaço de inventário |
+| Imune a Prejuízo por Múltiplos Auxílios | `resolveAcao` | `prejuizoMultiplos = null` |
+| Não recebe Autonomia | `opcoesDeUso` | a opção some do card |
+| Turno próprio, retorno completo, desvantagem alheia | `tracosDeTecnica` | marca com a regra no `title` |
+
+> **`caracteristicasLivres` é canal NOVO, e não `orcamentoLivre`.** O orçamento de Ações e
+> Características é um pool único ("A quantidade serve tanto para ações quanto características"),
+> então uma vaga somada nele aceitaria uma AÇÃO. O texto diz Característica, então a vaga é
+> exclusiva: ela absorve as primeiras N características e o resto disputa o pool comum. O
+> `custoInvocacao` também ganhou o parâmetro, porque "não aumenta o custo" abate CARACTERÍSTICA
+> (1 PE), e não "o item mais caro" como faz o grátis genérico do Ápice do Controle.
+
+> ⚠ **Três regras não têm canal** e saem como marca, com o texto no `title`: o **turno próprio** é
+> economia de ação, o **retorno com vida cheia na primeira dissipação** depende do PV da invocação
+> estar na sessão (que ainda não está, ver `a-fazer.md`) e a **desvantagem alheia** precisa de um
+> canal de vantagem/desvantagem que o Motor não tem.
+
+> ⚠ **"Até 1 Grau abaixo" ficou sem interpretação de propósito.** A frase admite ler como "grau
+> igual ou um abaixo" e como "um abaixo ou qualquer coisa mais fraca". Como a regra não é
+> mecanizada (falta o canal), a marca mostra o texto inteiro e ninguém precisou escolher. Quando o
+> canal existir, é pergunta obrigatória.
+
+---
+
 ## NÍVEIS DE DANO (regra geral, referência para os "+N níveis")
 
 > Enviada pelo autor em 2026-07-17. É uma mecânica GERAL de armas (não exclusiva de Invocação),
@@ -1096,6 +1158,13 @@ O placar do Controlador foi de **8 para 15 de 47**. Detalhe completo na sessão 
 | Treinamento em Controle (1°) e Apogeu (6°) | roster: recebidas, campo, Invocar, comandos, hordas | `resolveControleInvocacoes` | referência |
 | Buchas de Canhão (10°) | membro de quarto grau sai de graça na horda | — | custo de horda |
 
+> **AS DUAS PRIMEIRAS BASES SÃO AUTOMÁTICAS** (autor, 2026-08-16). Treinamento em Controle (1°) e
+> Controle Aprimorado (4°) levam `automatica: true` em `afty-habilidades.js`: chegam sozinhas ao
+> alcançar o nível REAL de Controlador e não gastam vaga de orçamento. Sem elas o Controlador não
+> tem invocação nenhuma para controlar, então o roster (`controle.ativo`) e o `bonusTeste` de toda
+> invocação passam a existir sem ninguém escolher nada. Ficha antiga que gravou as duas na mão
+> continua válida: `resolveHabilidades` tira a repetida das `selecionadas` e ela deixa de cobrar.
+
 > **MARCADORES (o desbloqueio).** `MARCADORES_INVOCACAO` em `afty-habilidades.js`. Uma Habilidade
 > que vale só para ALGUMAS invocações tem marcador, o jogador liga na ficha (`inv.marcadores`) e o
 > efeito entra por `quando: "marc_<id>"`. `limiteExpr` é avaliado no contexto do DONO. Marcador com
@@ -1135,6 +1204,66 @@ O resto da leva foi ligar o que o motor já calculava e ninguém mostrava:
 - o custo do Shikigami **ignorava as reduções** (Manipulação Perfeita), divergindo do card do Feitiço;
 - dois Feitiços na mesma invocação faziam o último vencer calado, e a trava de grau do Controlador
   travava um shikigami de Feitiço num grau que o próprio Feitiço exigia.
+
+### ✅ QUARTA LEVA (2026-08-17): o escape hatch da DSL saiu do limbo
+
+Detalhe na sessão de 2026-08-17 em `afty-status.md`.
+
+**O `modificadorExpr` não fazia nada.** Este doc promete "DSL para os modificadores" desde a Fatia
+2, e o que existia era só metade: `resolveAcao` e `resolveCaracteristica` avaliavam a expressão,
+guardavam em `out.modificador`, e **nenhum consumidor lia esse campo**. Pior que um campo ausente,
+porque o editor pintava o resultado em verde e confirmava um número que a invocação não tinha.
+
+- **O alvo é explícito.** Numa Ação de Ataque "modificador" tanto pode ser dano quanto acerto, e
+  escolher por conta própria seria supor. `modificadorAlvo` guarda a escolha, e quem não escolhe
+  fica com o primeiro alvo da lista, que é o número principal da ação.
+
+  | Item | Alvos oferecidos |
+  |---|---|
+  | Ataque por Jogada | Dano · Níveis de Dano · Acerto |
+  | Ataque por Teste de Resistência | Dano · Níveis de Dano · CD |
+  | Auxílio de Cura | Cura · Níveis de Cura |
+  | Auxílio de valor fixo (Defesa, Acerto, RD) | Valor |
+  | Característica de Vida, Teste ou RD | Valor |
+  | Característica de Tamanho ou livre | **nenhum**, e a expressão vira aviso |
+
+- **Rótulo e aplicador moram na mesma entrada** (`MODIFICADOR_ALVOS`). Com um `switch` à parte, um
+  alvo novo entraria no seletor, apareceria na tela e cairia no `default` sem fazer nada, que é o
+  mesmo bug uma camada acima. O validador confere que toda entrada tem os dois.
+- **Nível de Dano sobe a ESCADA**, não soma no total: `subirNiveisDano`, não `+N`.
+
+**O contexto ganhou o que faltava para escrever regra de tipo:**
+
+| Variável | O que é |
+|---|---|
+| `tipo_shikigami`, `tipo_tecnica`, `tipo_dispositivo` | qual tipo mecânico ela é |
+| `tamanho` | tamanho como DEGRAU (Miúdo 1 em diante), lido da Característica de Tamanho |
+| `acoes`, `caracteristicas` | quantas ela tem |
+
+Com `tipo_tecnica` no ar, o `TECNICA_EFEITOS` deixou de precisar de desvio em código: os três
+efeitos do Shikigami de Técnica viraram efeitos normais com `quando: "tipo_tecnica"`, no mesmo
+caminho de todo o resto. O próximo tipo que o autor inventar se escreve como dado.
+
+⚠ `tamanho` sai da Característica **crua**, e não do `resolveInvocacao`: o contexto é montado antes
+das Características resolverem (uma delas pode ler `tamanho`), e ler o resultado delas seria
+circular. O valor bruto não depende de expressão nenhuma.
+
+**Seletor de variáveis no campo de Modificador.** Era o único campo de expressão do Afty sem ele,
+justo o de namespace que ninguém adivinha. `vocabularioInvocacao` (em `afty-dsl-vocabulario.js`)
+classifica o contexto REAL da invocação em Invocação · Tipo Mecânico · Atributos · Dono ·
+Marcadores. Sai **sem** os valores resolvidos de propósito: é exatamente o que a expressão enxerga,
+e um seletor mostrando o PV final enquanto a expressão lê o PV base seria um seletor que mente.
+
+**Na Ficha, o que o motor calculava e a aba não lia:**
+
+- **Perícias.** `testes.pericias` sempre saiu resolvido e a aba lia só as resistências: uma
+  invocação treinada em Percepção ou Furtividade não tinha o que rolar na mesa.
+- **Jogada de Ataque da criatura** (corpo e distância), fora de qualquer Ação, que é o número do
+  ataque improvisado e o único lugar onde o bônus de Característica em Ataque aparece.
+- **Os seis atributos.** `resumoAtributosInvocacao` devolvia só o orçamento gasto, sem os valores.
+  Agora leva `valores` e `mods`, e o modificador rola como teste puro.
+- **Marcador sem a opção escolhida** aparecia igual aos outros e não entregava efeito nenhum (o
+  `quando` testa `marc_<id>_<opcao>` e nenhuma bate). Virou aviso.
 
 ### ⚠ GAPS DO MOTOR (adicionar depois, não dá com o motor atual)
 

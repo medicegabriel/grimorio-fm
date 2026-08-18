@@ -36,6 +36,10 @@ import {
   ETAPAS_POR_LINHA, focosGastos, avaliarRequisito, rotuloAlvo, treinamentosDaOrigem,
 } from "./afty-treinamentos";
 import {
+  AFTY_TREINOS_ESPECIAIS, focosDeTreinosEspeciais, focosDoTreinoEspecial,
+  tetosDeTreinoEspecial, vezesPorTreinoEspecial,
+} from "./afty-treinos-especiais";
+import {
   APTIDAO_TRILHAS, APTIDAO_NIVEL_MAX,
   aptidoesDaCategoria, subgruposDaCategoria, abasAptidao, avaliarRequisitoAptidao,
 } from "./afty-aptidoes";
@@ -76,6 +80,7 @@ import {
   alvosDanoDisponiveis, curaMultiplosDisponivel, marcadorLigado, marcadorOpcao, dadoDoMaximo,
   AFTY_INV_TIPOS, AFTY_INV_SABORES,
   INV_CUSTO_BENEFICIOS, INV_CUSTO_CONDICAO, INV_RD_TIPOS, resistenciasTreinaveis, usoPericias,
+  alvosDeModificador, alvosDeModificadorCaract,
 } from "./afty-invocacoes";
 import { periciasParaInvocacao, DANO_ADICIONAL_ARMA } from "./afty-pericias";
 import {
@@ -107,7 +112,7 @@ import {
   formatAuxValor, aplicaReducoesCustoFeitico, tituloCustoFeitico,
 } from "./afty-feiticos";
 import { createBlankEstiloEspecial, estilosDaFicha, TECNICAS_TABELA, TEXTO_EFEITO_ESPECIAL } from "./afty-estilo-sombras";
-import { vocabularioDsl, DSL_FUNCOES } from "./afty-dsl-vocabulario";
+import { vocabularioDsl, vocabularioInvocacao, DSL_FUNCOES } from "./afty-dsl-vocabulario";
 import {
   MARCADORES, TITULOS, alternarMarcador, alternarTitulo, inserirTabela,
 } from "./afty-texto-rico";
@@ -629,6 +634,19 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
       return { ...d, treinamentos: next };
     });
 
+  // Interlúdios · Treinos Especiais. Lista COM repetição (cada entrada é uma
+  // pega), então definir "vezes" é reescrever as entradas daquele id, igual ao
+  // setGeralVezes. Nenhum tem alvo hoje, e por isso a reescrita é simples: no
+  // dia em que Estudos chegar com uma perícia, quem preserva o alvo entre as
+  // pegas é este setter.
+  const setTreinoEspecialVezes = (id, vezes) =>
+    setDraft((d) => {
+      const atual = Array.isArray(d.treinosEspeciais) ? d.treinosEspeciais : [];
+      const outros = atual.filter((x) => (typeof x === "string" ? x : x?.id) !== id);
+      const minhas = Array.from({ length: Math.max(0, vezes) }, () => ({ id, alvo: null }));
+      return { ...d, treinosEspeciais: [...outros, ...minhas] };
+    });
+
   // Invocações: cada uma é uma ficha própria em creature.invocacoes. O motor
   // (deriveAfty) resolve os stats lendo o dono. Aqui só editamos as escolhas.
   const invocacoesArr = (d) => (Array.isArray(d.invocacoes) ? d.invocacoes : []);
@@ -898,7 +916,7 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
           {tabAtiva === "aptidoes" && <TabAptidoes draft={draft} derived={derived} setAptidaoNivel={setAptidaoNivel} toggleAptidao={toggleAptidao} setAptidaoOpcao={setAptidaoOpcao} />}
           {tabAtiva === "invocacoes" && <TabInvocacoes draft={draft} derived={derived} addInvocacao={addInvocacao} removeInvocacao={removeInvocacao} duplicarInvocacao={duplicarInvocacao} moverInvocacao={moverInvocacao} patchInvocacao={patchInvocacao} patchInvocacaoAttr={patchInvocacaoAttr} efeitosApi={efeitosApi} addHorda={addHorda} removeHorda={removeHorda} patchHorda={patchHorda} />}
           {tabAtiva === "equipamentos" && <TabEquipamentos draft={draft} derived={derived} addEquipamento={addEquipamento} removeEquipamento={removeEquipamento} patchEquipamento={patchEquipamento} toggleFerramenta={toggleFerramenta} patchFerramenta={patchFerramenta} toggleEncantamento={toggleEncantamento} addArmaCustom={addArmaCustom} patchArmaCustom={patchArmaCustom} removeArmaCustom={removeArmaCustom} />}
-          {tabAtiva === "interludios" && <TabInterludios draft={draft} derived={derived} setTreinoProgresso={setTreinoProgresso} setTreinoInstance={setTreinoInstance} />}
+          {tabAtiva === "interludios" && <TabInterludios draft={draft} derived={derived} setTreinoProgresso={setTreinoProgresso} setTreinoInstance={setTreinoInstance} setTreinoEspecialVezes={setTreinoEspecialVezes} />}
           {tabAtiva === "calculos" && <TabCalculos derived={derived} setStatOverride={setStatOverride} patchCombate={patchCombate} />}
           {STUBS[tabAtiva] && <StubCard title={TABS.find((t) => t.id === tabAtiva)?.label} text={STUBS[tabAtiva]} />}
         </div>
@@ -6673,8 +6691,149 @@ function TreinoLinha({ linha, valor, attrEff, nd, onSetProgresso, onSetInstance,
   );
 }
 
-/* Card informativo recolhível de um foco de interlúdio que depende de
-   sistema ainda não construído (Estudos, Treinamento para Habilidade). */
+/* Medidor do orçamento de Focos do interlúdio. Aparece igual nos DOIS cards da
+   aba, pelo mesmo motivo do ContadorHabilidades: Linha de Treinamento e Treino
+   Especial gastam o mesmo caixa, então o gasto de um lado tem de ser visível do
+   outro. */
+function ContadorFocos({ gastos, total, excedeu }) {
+  return (
+    <div
+      className="flex items-center gap-1.5 border border-slate-800 bg-slate-950/50 rounded-md px-2 py-1"
+      title="Focos gastos / totais (ND + bônus de poderes). Linhas de Treinamento e Treinos Especiais dividem o mesmo orçamento"
+    >
+      <Dumbbell className="w-3 h-3 text-purple-400 flex-shrink-0" />
+      <span className="text-[9px] uppercase tracking-wider text-slate-400">Focos</span>
+      <span className="font-mono text-xs font-bold tabular-nums whitespace-nowrap">
+        <span className={excedeu ? "text-rose-400" : "text-white"}>{gastos}</span>
+        <span className="text-slate-600"> / </span>
+        <span className="text-white">{total}</span>
+      </span>
+    </div>
+  );
+}
+
+/* As três linhas do card de Treinos Especiais (a escolhida, a disponível e a
+   "em breve") dividem UM esqueleto: quadrado de 20px, nome, chips, direita e
+   chevron, tudo numa faixa de 36px. Sem isso o card virava duas listas
+   empilhadas com alturas e recuos diferentes, que é o que estava feio.
+
+   O recuo do corpo aberto é o mesmo: 10px de padding + 20px do quadrado + 10px
+   do gap, então o texto começa alinhado com o nome. */
+const LINHA_INTERLUDIO = "w-full flex items-center gap-2.5 px-2.5 h-9 text-left";
+const CORPO_INTERLUDIO = "px-2.5 pb-2.5 pl-10";
+
+/* Chip do que a pega concede. É RESULTADO (a vaga que entra no orçamento da aba
+   Habilidades), e não explicação, então pode ficar na tela. Apagado enquanto o
+   treino não foi escolhido, aceso depois. */
+function ChipConcede({ texto, aceso }) {
+  return (
+    <span className={`text-[10px] font-medium px-1.5 py-px rounded border whitespace-nowrap flex-shrink-0 ${
+      aceso
+        ? "border-purple-800/60 bg-purple-950/40 text-purple-300"
+        : "border-slate-800 bg-slate-900/40 text-slate-500"
+    }`}>
+      {texto}
+    </span>
+  );
+}
+
+/* Uma linha de TREINO ESPECIAL (Interlúdios Adicionais). Não tem etapa nem
+   progresso: é uma escolha REPETÍVEL, e cada pega custa Foco e concede uma
+   coisa. Por isso a anatomia é a do HabilidadeGeralCard (quadrado que liga,
+   nome, medidor de repetições, chevron) e não a do TreinoLinha: a interação é
+   escolher e repetir, não avançar 4 etapas em ordem.
+
+   O teste que o texto pede não aparece aqui de propósito: interlúdio que pede
+   teste é sucesso automático para criaturas, então escolher já concede. O fato
+   vive no `title` do botão, que é onde explicação de item mora.
+
+   `max` vem de fora porque o teto depende do ND (1 + 1 a cada 5 ou 10 níveis),
+   e quem tem o ND é a aba. */
+function TreinoEspecialCard({ item, vezes, max, onSetVezes }) {
+  const [open, setOpen] = useState(false);
+  const escolhido = vezes > 0;
+  const repetivel = max == null || max > 1;
+  const focos = focosDoTreinoEspecial(item);
+  // Preço enquanto não pegou, gasto depois: o número que interessa muda de um
+  // estado para o outro, e os dois cabem no mesmo lugar.
+  const custo = escolhido ? vezes * focos : focos;
+
+  return (
+    <div className={`rounded-lg border transition-colors ${
+      escolhido ? "border-purple-700 bg-purple-950/30" : "border-slate-800 bg-slate-950/40"
+    }`}>
+      <div className={LINHA_INTERLUDIO}>
+        <button
+          type="button"
+          onClick={() => onSetVezes(escolhido ? 0 : 1)}
+          aria-pressed={escolhido}
+          aria-label={`${escolhido ? "Remover" : "Escolher"} ${item.nome}`}
+          title={escolhido
+            ? "Remover"
+            : "Escolher. Interlúdio que pede teste é sucesso automático para criaturas"}
+          className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 border transition-colors ${
+            escolhido
+              ? "bg-purple-700 border-purple-600 text-white"
+              : "border-slate-600 text-slate-500 hover:border-purple-600 hover:text-purple-300"
+          }`}
+        >
+          {escolhido ? <Check className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          aria-expanded={open}
+          className="flex-1 min-w-0 flex items-center gap-x-2 text-left overflow-hidden"
+        >
+          <span
+            className={`text-[12px] font-semibold truncate ${escolhido ? "text-white" : "text-slate-200"}`}
+            title={item.nome}
+          >
+            {item.nome}
+          </span>
+          <ChipConcede texto={item.concede} aceso={escolhido} />
+        </button>
+
+        <span
+          className={`font-mono text-[11px] tabular-nums whitespace-nowrap flex-shrink-0 ${
+            escolhido ? "text-purple-200" : "text-slate-500"
+          }`}
+          title={escolhido ? "Focos gastos neste treino" : "Focos por pega"}
+        >
+          {custo} Foco{custo > 1 ? "s" : ""}
+        </span>
+
+        {/* Medidor só depois de escolhido: o 1º segmento duplicaria o toggle.
+            Acima de 6 vezes ele não cabe e vira contador, e sem teto nenhum o
+            contador é a única saída (o medidor precisa de um máximo para
+            desenhar os segmentos). */}
+        {repetivel && escolhido && (
+          max != null && max <= 6
+            ? <VezesGauge vezes={vezes} max={max} nome={item.nome} onSet={onSetVezes} />
+            : <ContadorCompacto value={vezes} min={1} max={max ?? undefined} onChange={onSetVezes} />
+        )}
+
+        <ChevronDown
+          className={`w-3.5 h-3.5 text-slate-600 flex-shrink-0 transition-transform ${open ? "" : "-rotate-90"}`}
+          aria-hidden="true"
+        />
+      </div>
+
+      {open && (
+        <div className={CORPO_INTERLUDIO}>
+          <p className="text-[11px] text-slate-400 leading-relaxed whitespace-pre-line">
+            {item.descricao}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* O Treino Especial cujo texto de regra ainda não chegou. Mesmo esqueleto do
+   TreinoEspecialCard, com o ícone ocupando o lugar do quadrado que liga: assim
+   as colunas do card batem e a lista lê como uma só. */
 function InterludioInfo({ icon: Icon, titulo, children }) {
   const [open, setOpen] = useState(false);
   return (
@@ -6683,17 +6842,22 @@ function InterludioInfo({ icon: Icon, titulo, children }) {
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
-        className="w-full flex items-center gap-2 px-3 py-2.5 text-left"
+        className={LINHA_INTERLUDIO}
       >
-        <Icon className="w-4 h-4 text-slate-400 flex-shrink-0" />
-        <span className="text-sm font-semibold text-slate-200 flex-1 min-w-0 truncate">{titulo}</span>
-        <span className="text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700 flex-shrink-0">
+        <span className="w-5 h-5 rounded flex items-center justify-center flex-shrink-0 border border-slate-800 text-slate-600">
+          <Icon className="w-3 h-3" />
+        </span>
+        <span className="text-[12px] font-semibold text-slate-400 flex-1 min-w-0 truncate">{titulo}</span>
+        <span className="text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-slate-900 text-slate-500 border border-slate-800 flex-shrink-0">
           em breve
         </span>
-        <ChevronDown className={`w-4 h-4 text-slate-500 flex-shrink-0 transition-transform ${open ? "" : "-rotate-90"}`} />
+        <ChevronDown
+          className={`w-3.5 h-3.5 text-slate-600 flex-shrink-0 transition-transform ${open ? "" : "-rotate-90"}`}
+          aria-hidden="true"
+        />
       </button>
       {open && (
-        <div className="px-3 pb-3 pt-0 text-[11px] text-slate-400 leading-relaxed">{children}</div>
+        <div className={`${CORPO_INTERLUDIO} text-[11px] text-slate-400 leading-relaxed`}>{children}</div>
       )}
     </div>
   );
@@ -10000,7 +10164,7 @@ function EfeitoPill({ icon: Icon, label, valor, nota, titulo }) {
   );
 }
 
-function TabInterludios({ draft, derived, setTreinoProgresso, setTreinoInstance }) {
+function TabInterludios({ draft, derived, setTreinoProgresso, setTreinoInstance, setTreinoEspecialVezes }) {
   const treinos = (draft.treinamentos && !Array.isArray(draft.treinamentos) && typeof draft.treinamentos === "object")
     ? draft.treinamentos : {};
   // Pool do Treino de Manejo de Arma: as armas do INVENTÁRIO, carregadas ou
@@ -10012,7 +10176,14 @@ function TabInterludios({ draft, derived, setTreinoProgresso, setTreinoInstance 
   // Reversa), e o gasto acompanha: o Foco preso numa linha escondida volta.
   const origemId = draft.core.origem?.id;
   const linhasTreino = treinamentosDaOrigem(origemId);
-  const gastos = focosGastos(treinos, origemId);
+  // As duas famílias de Interlúdio dividem o MESMO orçamento de Focos, então o
+  // medidor do cabeçalho soma as duas: uma pega de Treino Especial e uma etapa
+  // de Linha saem do mesmo caixa.
+  const vezesEspeciais = vezesPorTreinoEspecial(draft);
+  // O teto de cada Treino Especial é 1 + 1 a cada 5 ou 10 ND, então ele muda com
+  // a ficha e não pode ser constante do catálogo.
+  const tetosEspeciais = tetosDeTreinoEspecial(draft);
+  const gastos = focosGastos(treinos, origemId) + focosDeTreinosEspeciais(draft);
   const total = derived.focosTotais;                // = ND + bônus de poderes
   const overBudget = gastos > total;
 
@@ -10020,20 +10191,7 @@ function TabInterludios({ draft, derived, setTreinoProgresso, setTreinoInstance 
     <>
       <Card
         title="Interlúdios · Treinamento"
-        headerRight={
-          <div
-            className="flex items-center gap-1.5 border border-slate-800 bg-slate-950/50 rounded-md px-2 py-1"
-            title="Focos gastos / totais (ND + bônus de poderes)"
-          >
-            <Dumbbell className="w-3 h-3 text-purple-400 flex-shrink-0" />
-            <span className="text-[9px] uppercase tracking-wider text-slate-400">Focos</span>
-            <span className="font-mono text-xs font-bold tabular-nums whitespace-nowrap">
-              <span className={overBudget ? "text-rose-400" : "text-white"}>{gastos}</span>
-              <span className="text-slate-600"> / </span>
-              <span className="text-white">{total}</span>
-            </span>
-          </div>
-        }
+        headerRight={<ContadorFocos gastos={gastos} total={total} excedeu={overBudget} />}
       >
         {/* linhas de treinamento */}
         <div className="space-y-1.5">
@@ -10053,18 +10211,29 @@ function TabInterludios({ draft, derived, setTreinoProgresso, setTreinoInstance 
         </div>
       </Card>
 
-      <Card title="Outros Focos de Interlúdio">
-        <div className="space-y-1.5">
+      {/* Os Treinos Especiais gastam o MESMO Foco das Linhas, e por isso ficam
+          na mesma aba e sob o mesmo medidor. O card é separado porque o modelo é
+          outro: escolha repetível, sem etapa e sem pré-requisito.
+          O "em breve" fecha a lista dos Interlúdios Adicionais, e entra no
+          catálogo assim que o texto de regra chegar verbatim. */}
+      <Card
+        title="Interlúdios · Treinos Especiais"
+        headerRight={<ContadorFocos gastos={gastos} total={total} excedeu={overBudget} />}
+      >
+        <div className="space-y-1">
+          {AFTY_TREINOS_ESPECIAIS.map((t) => (
+            <TreinoEspecialCard
+              key={t.id}
+              item={t}
+              vezes={vezesEspeciais[t.id] ?? 0}
+              max={tetosEspeciais[t.id]}
+              onSetVezes={(n) => setTreinoEspecialVezes(t.id, n)}
+            />
+          ))}
           <InterludioInfo icon={BookOpen} titulo="Estudos">
-            Estudar uma perícia sem maestria (4 testes de INT/SAB, CD 12 + maestria; 2 sucessos
+            Estudar uma perícia sem maestria (4 testes de INT/SAB, CD 12 + maestria, 2 sucessos
             concedem maestria), ou tornar-se especialista numa perícia já dominada (3 testes,
-            CD 15 + nível; 2 sucessos). Ativa quando a aba de Perícias existir.
-          </InterludioInfo>
-          <InterludioInfo icon={GraduationCap} titulo="Treinamento para Habilidade">
-            Escolher uma habilidade de especialização cujos requisitos você atende como objetivo do
-            treino (4 testes de um atributo, CD 12 + metade do nível; 3 sucessos concluem). Até o 9º
-            nível, uma habilidade adicional por essa via; a partir do 10º, mais uma. Ativa quando as
-            Especializações/Habilidades existirem.
+            CD 15 + nível, 2 sucessos). Ativa quando a aba de Perícias existir.
           </InterludioInfo>
         </div>
       </Card>
@@ -10215,6 +10384,7 @@ const EFEITO_CANAL_LABEL = {
   curaNivel: "Cura (níveis)",
   curaBonus: "Cura (total)",
   ataqueDanoAdicional: "Dado Extra no Ataque",
+  caracteristicasLivres: "Características Grátis",
 };
 
 /* Efeitos das Habilidades de Controlador aplicados nesta invocação (já embutidos
@@ -10401,6 +10571,27 @@ function InvocacaoOpcoesDeUso({ opcoes, margemCritico, criticoBrutal }) {
   );
 }
 
+/* As regras do Shikigami de Técnica que NÃO têm canal: turno próprio na
+   Iniciativa, retorno com vida cheia na primeira dissipação, desvantagem alheia
+   e imunidade ao Prejuízo por Repetição. Vêm como marca, com o texto da regra no
+   `title`, que é onde explicação de item mora. */
+function InvocacaoTracos({ tracos }) {
+  if (!tracos?.length) return null;
+  return (
+    <div className="flex flex-wrap items-center gap-1.5">
+      {tracos.map((t) => (
+        <span
+          key={t.id}
+          title={t.regra}
+          className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] border border-sky-800/60 bg-sky-950/40 text-sky-300"
+        >
+          <Star className="w-3 h-3 flex-shrink-0" aria-hidden="true" /> {t.nome}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 /* Linha do corpo da invocação: RD (a Geral e a de cada tipo) e Tamanho. Ambos
    são DERIVADOS das Características e das Habilidades, então vivem no stat
    block e não têm campo. */
@@ -10433,10 +10624,17 @@ function InvocacaoCorpo({ rd, tamanho }) {
   );
 }
 
-/* Atributos da invocação: point-buy linear (base 8, mín 6, máx do grau). Mesma
-   anatomia compacta do bloco de Desenvolvimento na aba Atributos. */
+/* Atributos da invocação: point-buy linear, máximo do grau. Mesma anatomia
+   compacta do bloco de Desenvolvimento na aba Atributos.
+
+   ⚠ A BASE E O PISO vêm do `resumo`, e não de constante: o Shikigami de Técnica
+   começa em 10 e reduz só até 8, enquanto o resto começa em 8 e reduz até 6.
+   Com o piso fixo em 6 o campo deixava baixar um Shikigami de Técnica abaixo do
+   que a regra dele permite. */
 function InvocacaoAtributos({ inv, resumo, max, onPatchAttr }) {
   const over = resumo && resumo.usados > resumo.total;
+  const base = resumo?.base ?? INV_ATTR_MIN + 2;
+  const min = resumo?.min ?? INV_ATTR_MIN;
   return (
     <div>
       <div className="flex items-center justify-between mb-1.5">
@@ -10451,7 +10649,7 @@ function InvocacaoAtributos({ inv, resumo, max, onPatchAttr }) {
           número e deixa os botões +/- proporcionalmente menores. */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
         {AFTY_ATTRS.map((a) => {
-          const v = inv.atributos?.[a.key] ?? 8;
+          const v = inv.atributos?.[a.key] ?? base;
           const m = invMod(v);
           return (
             <div key={a.key} className="bg-slate-950/50 border border-slate-800 rounded px-2 py-1.5">
@@ -10459,7 +10657,7 @@ function InvocacaoAtributos({ inv, resumo, max, onPatchAttr }) {
                 <span className="text-[11px] font-bold text-slate-300" title={a.label}>{a.abbr}</span>
                 <span className="font-mono text-[10px] text-purple-300">{m >= 0 ? `+${m}` : m}</span>
               </div>
-              <NumberInput value={v} onChange={(val) => onPatchAttr(a.key, val)} min={INV_ATTR_MIN} max={max} aria-label={`${a.label} da invocação`} />
+              <NumberInput value={v} onChange={(val) => onPatchAttr(a.key, val)} min={min} max={max} aria-label={`${a.label} da invocação`} />
             </div>
           );
         })}
@@ -10536,6 +10734,11 @@ function InvocacaoCard({ inv, resolvida, grausOk, marcadores, podeSubir, podeDes
   const nAcoes = (inv.acoes || []).length;
   const nCaract = (inv.caracteristicas || []).length;
   const avisos = r.warnings || [];
+  /* Vocabulário do namespace DESTA invocação, para o seletor de variáveis dos
+     campos de Modificador. Memoizado pela identidade do contexto, que só troca
+     quando o `deriveAfty` roda: montá-lo por card de Ação seria varrer a mesma
+     resposta uma vez por cartão. */
+  const grupos = useMemo(() => vocabularioInvocacao(r.contextoDsl), [r.contextoDsl]);
   const SUBABAS = [
     { id: "atributos", label: "Atributos" },
     { id: "treino", label: "Treino" },
@@ -10676,6 +10879,7 @@ function InvocacaoCard({ inv, resolvida, grausOk, marcadores, podeSubir, podeDes
               <StatMini icon={Zap} label="Custo (PE)" value={r.custo} accent />
             </div>
             <InvocacaoCorpo rd={r.rd} tamanho={r.tamanho} />
+            <InvocacaoTracos tracos={r.tracos} />
             <InvocacaoOpcoesDeUso opcoes={r.opcoesDeUso} margemCritico={r.margemCritico} criticoBrutal={r.criticoBrutal} />
             <InvocacaoTestes testes={r.testes} />
             <EfeitosHabilidadeNota efe={r.efeitosHabilidade} />
@@ -10745,11 +10949,24 @@ function InvocacaoCard({ inv, resolvida, grausOk, marcadores, podeSubir, podeDes
 
           {(subtab === "acoes" || subtab === "caracteristicas") && (
             <div>
-              <div className="flex items-center justify-between mb-1.5">
+              <div className="flex items-center justify-between mb-1.5 gap-2">
                 <span className="text-[10px] uppercase tracking-wider text-slate-500">Orçamento (Ações + Características)</span>
-                <span className={`font-mono text-[11px] tabular-nums px-2 py-0.5 rounded border ${
-                  orcOver ? "text-rose-300 border-rose-800 bg-rose-950/30" : "text-slate-300 border-slate-700 bg-slate-800/50"
-                }`}>{orcBadge}</span>
+                <span className="flex items-center gap-1.5 flex-shrink-0">
+                  {/* Vagas que SÓ Característica ocupa e que não entram no custo
+                      (Shikigami de Técnica). Ficam fora do contador comum, senão
+                      pareceriam aceitar Ação. */}
+                  {r.orcamento?.exclusivas > 0 && (
+                    <span
+                      className="font-mono text-[11px] tabular-nums px-2 py-0.5 rounded border border-sky-800/60 bg-sky-950/40 text-sky-300"
+                      title="Vagas exclusivas de Característica, que não aumentam o custo"
+                    >
+                      {r.orcamento.exclusivasUsadas} / {r.orcamento.exclusivas} Caract.
+                    </span>
+                  )}
+                  <span className={`font-mono text-[11px] tabular-nums px-2 py-0.5 rounded border ${
+                    orcOver ? "text-rose-300 border-rose-800 bg-rose-950/30" : "text-slate-300 border-slate-700 bg-slate-800/50"
+                  }`}>{orcBadge}</span>
+                </span>
               </div>
               {subtab === "acoes" ? (
                 <EfeitosSecao
@@ -10759,7 +10976,7 @@ function InvocacaoCard({ inv, resolvida, grausOk, marcadores, podeSubir, podeDes
                   onAdd={acoesApi.add}
                   addLabel="Nova ação"
                   render={(item, res) => (
-                    <AcaoCard key={item.id} acao={item} res={res} grau={inv.grau} otimizacaoEnergia={r.otimizacaoEnergia} onPatch={(p) => acoesApi.patch(item.id, p)} onRemove={() => acoesApi.remove(item.id)} />
+                    <AcaoCard key={item.id} acao={item} res={res} grau={inv.grau} otimizacaoEnergia={r.otimizacaoEnergia} grupos={grupos} onPatch={(p) => acoesApi.patch(item.id, p)} onRemove={() => acoesApi.remove(item.id)} />
                   )}
                 />
               ) : (
@@ -10770,7 +10987,7 @@ function InvocacaoCard({ inv, resolvida, grausOk, marcadores, podeSubir, podeDes
                   onAdd={caracApi.add}
                   addLabel="Nova característica"
                   render={(item, res) => (
-                    <CaracteristicaCard key={item.id} carac={item} res={res} grau={inv.grau} onPatch={(p) => caracApi.patch(item.id, p)} onRemove={() => caracApi.remove(item.id)} />
+                    <CaracteristicaCard key={item.id} carac={item} res={res} grau={inv.grau} grupos={grupos} onPatch={(p) => caracApi.patch(item.id, p)} onRemove={() => caracApi.remove(item.id)} />
                   )}
                 />
               )}
@@ -10804,17 +11021,46 @@ function EfeitosSecao({ titulo, itens, resolvidos, render, onAdd, addLabel }) {
   );
 }
 
-/* Campo de expressão da DSL, com validação e prévia do valor resolvido. */
-function ExprField({ value, onChange, resultado }) {
+/* Campo de expressão da DSL da Invocação: seletor de variáveis, validação, o
+   ALVO onde o número cai e a prévia do resultado.
+
+   ⚠ Era um TextInput cego, com sete nomes de variável escritos à mão no hint,
+   num namespace (o da invocação) que não é o da criatura. E o resultado que ele
+   pintava em verde não ia a lugar nenhum: `modificadorExpr` era avaliado e
+   descartado. Ver `aplicaModificador` em afty-invocacoes.js. */
+function ExprField({ value, alvo, alvos, onChange, onAlvo, resultado, resultadoLabel, grupos }) {
   const check = validateExpression(value || "");
+  const escolhido = alvos.find((a) => a.value === alvo) ?? alvos[0] ?? null;
   return (
     <div>
-      <FieldLabel hint="opcional: forca, mod_destreza, pv_max, grau, nd, bt, nivel_controlador...">Modificador (DSL)</FieldLabel>
-      <TextInput value={value} onChange={onChange} placeholder="ex.: mod_forca + metade(nd)" />
+      <FieldLabel>Modificador</FieldLabel>
+      <CampoExpressao
+        value={value}
+        onChange={onChange}
+        invalida={!!value && !check.ok}
+        placeholder="ex.: mod_forca + metade(nd)"
+        rotulo="Modificador da DSL"
+        grupos={grupos}
+        ancora="direita"
+      />
       {value ? (
-        check.ok
-          ? <p className="text-[10px] text-emerald-400 mt-1">= {resultado ?? 0}</p>
-          : <p className="text-[10px] text-rose-400 mt-1">{check.error}</p>
+        check.ok ? (
+          <div className="flex items-center gap-2 mt-1 flex-wrap">
+            {/* O alvo só vira escolha quando há mais de um. Numa Característica
+                ou num Auxílio de valor fixo existe um lugar só, e um seletor de
+                uma opção seria um controle que não decide nada. */}
+            {alvos.length > 1 ? (
+              <OptionChips value={escolhido?.value} options={alvos} onChange={onAlvo} />
+            ) : escolhido ? (
+              <span className="text-[10px] text-slate-500">{escolhido.label}</span>
+            ) : null}
+            <span className="text-[10px] text-emerald-400 font-mono">
+              {resultadoLabel ? `${resultadoLabel} ` : ""}{(resultado ?? 0) >= 0 ? "+" : ""}{resultado ?? 0}
+            </span>
+          </div>
+        ) : (
+          <p className="text-[10px] text-rose-400 mt-1">{check.error}</p>
+        )
       ) : null}
     </div>
   );
@@ -10915,7 +11161,7 @@ function resumoAcaoTexto(res) {
 
 /* Uma Ação: cabeçalho recolhível + editor. Ataque é sempre Complexa, e Cura
    também, então a classe fica travada nesses casos. */
-function AcaoCard({ acao, res, grau, otimizacaoEnergia, onPatch, onRemove }) {
+function AcaoCard({ acao, res, grau, otimizacaoEnergia, grupos, onPatch, onRemove }) {
   const [open, setOpen] = useState(!acao.nome);
   const isAtaque = acao.familia === "ataque";
   const isCura = acao.familia === "auxilio" && acao.auxilioSub === "cura";
@@ -11111,7 +11357,16 @@ function AcaoCard({ acao, res, grau, otimizacaoEnergia, onPatch, onRemove }) {
             </div>
           )}
 
-          <ExprField value={acao.modificadorExpr} onChange={(v) => onPatch({ modificadorExpr: v })} resultado={res?.modificador} />
+          <ExprField
+            value={acao.modificadorExpr}
+            alvo={acao.modificadorAlvo}
+            alvos={alvosDeModificador(acao)}
+            onChange={(v) => onPatch({ modificadorExpr: v })}
+            onAlvo={(v) => onPatch({ modificadorAlvo: v })}
+            resultado={res?.modificador}
+            resultadoLabel={res?.modificadorLabel}
+            grupos={grupos}
+          />
 
           <div>
             <FieldLabel>Descrição</FieldLabel>
@@ -11136,7 +11391,7 @@ function resumoCaracTexto(res) {
 }
 
 /* Uma Característica passiva: cabeçalho recolhível + editor. */
-function CaracteristicaCard({ carac, res, grau, onPatch, onRemove }) {
+function CaracteristicaCard({ carac, res, grau, grupos, onPatch, onRemove }) {
   const [open, setOpen] = useState(!carac.nome);
   const tamOpts = tamanhosNaFaixa(grau).map((v) => AFTY_TAMANHOS.find((t) => t.value === v)).filter(Boolean);
 
@@ -11232,7 +11487,16 @@ function CaracteristicaCard({ carac, res, grau, onPatch, onRemove }) {
             </div>
           )}
 
-          <ExprField value={carac.modificadorExpr} onChange={(v) => onPatch({ modificadorExpr: v })} resultado={res?.modificador} />
+          <ExprField
+            value={carac.modificadorExpr}
+            alvo={carac.modificadorAlvo}
+            alvos={alvosDeModificadorCaract(carac)}
+            onChange={(v) => onPatch({ modificadorExpr: v })}
+            onAlvo={(v) => onPatch({ modificadorAlvo: v })}
+            resultado={res?.modificador}
+            resultadoLabel={res?.modificadorLabel}
+            grupos={grupos}
+          />
 
           <div>
             <FieldLabel>Descrição</FieldLabel>
@@ -11474,9 +11738,6 @@ function HordaCard({ horda, res, fichas, onPatch, onRemove }) {
                   ))}
                 </div>
               )}
-              <p className="text-[10px] text-slate-500 mt-1.5">
-                O limite de membros e de hordas em campo vem da habilidade Treinamento em Controle (sistema futuro), então não é travado aqui.
-              </p>
             </div>
           )}
 

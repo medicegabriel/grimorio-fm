@@ -386,6 +386,12 @@ export function createBlankAfty() {
     // Interlúdios · Treinamentos: mapa { [linhaId]: progresso 0..4 }.
     // Etapas sequenciais; 4 → concede o bônus de Completo. Ver afty-treinamentos.js.
     treinamentos: {},
+    // Interlúdios · Treinos Especiais (Interlúdios Adicionais, Livro do
+    // Narrador p. 22): lista COM repetição, uma entrada por pega, no mesmo
+    // espírito de habilidadesGerais. Cada pega custa 1 Foco do MESMO orçamento
+    // dos Treinamentos. `alvo` fica nulo enquanto nenhum Treino Especial pedir
+    // um. Ver afty-treinos-especiais.js.
+    treinosEspeciais: [],       // [{ id: 'tes_...', alvo: null }]
     // Orçamento de Focos = ND + bônus de poderes (derivado; ver deriveAfty).
     // "Outros" (poderes que dão treinos) virá do sistema de poderes:
     focosBonus: 0,

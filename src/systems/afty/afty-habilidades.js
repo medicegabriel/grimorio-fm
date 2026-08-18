@@ -11,10 +11,15 @@
  *    por sua vez já divergia do livro de propósito. Não reinstalar nenhuma
  *    das duas: hoje quem manda é a Habilidade Geral.
  * 2. **Base e por Nível gastam O MESMO orçamento.** No livro as Bases são de
- *    graça; no Afty elas são escolhidas, igual às por Nível. A exceção é o
- *    Suporte: Suporte em Combate, Energia Reversa e Liberação de Energia
- *    Reversa são recebidas automaticamente ao alcançar o nível (autor,
- *    2026-08-10) e não gastam orçamento.
+ *    graça; no Afty elas são escolhidas, igual às por Nível. A exceção é a
+ *    Base marcada `automatica: true`, recebida ao alcançar o nível na
+ *    especialização e sem gastar orçamento. Hoje são sete, liberadas caso a
+ *    caso pelo autor:
+ *      • Conjurador: Conjuração Aprimorada (1°), Adiantar a Evolução (4°).
+ *      • Suporte: Suporte em Combate (1°), Energia Reversa (6°), Liberação
+ *        de Energia Reversa (8°) (autor, 2026-08-10).
+ *      • Controlador: Treinamento em Controle (1°), Controle Aprimorado (4°)
+ *        (autor, 2026-08-16).
  * 3. **Orçamento único**, gasto onde o jogador quiser, e dividido com os
  *    Talentos. O que muda por especialização é o ACESSO: cada habilidade
  *    exige nível NAQUELA especialização (o lado da multiclasse), não o ND.
@@ -4403,13 +4408,16 @@ export const AFTY_HABILIDADES = [
 
   /* ================= CONTROLADOR · BASE =================
      No livro a especialização controla Invocações (shikigamis e corpos
-     amaldiçoados). Base nos níveis 1, 4, 6, 9, 10 e 20. */
+     amaldiçoados). Base nos níveis 1, 4, 6, 9, 10 e 20. Treinamento em
+     Controle e Controle Aprimorado são automáticas: sem elas o Controlador
+     não tem invocação nenhuma para controlar. */
   {
     id: "ctr_treinamento_em_controle",
     nome: "Treinamento em Controle",
     especializacaoId: "controlador",
     tipo: "base",
     nivel: 1,
+    automatica: true,
     descricao:
       "Você é treinado para controlar Invocações com maior eficiência. Ao obter esta habilidade, " +
       "você:\n\n" +
@@ -4427,6 +4435,7 @@ export const AFTY_HABILIDADES = [
     especializacaoId: "controlador",
     tipo: "base",
     nivel: 4,
+    automatica: true,
     descricao:
       "Você é naturalmente mais capaz em comandar invocações, aprimorando o desempenho e " +
       "aplicação delas. Suas invocações recebem um bônus em testes que realizarem igual a +2, " +

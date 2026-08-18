@@ -131,6 +131,38 @@ efeitos auxiliares, então a divergência parece descuido.
 pelo mesmo caminho que o Múltiplos Efeitos já usa.
 **Anotado:** 2026-08-09, revisão de Transformação e Auxiliares
 
+### FALTA o texto verbatim do Estudos, e o do Treinamento para Habilidade
+**Onde:** `src/systems/afty/afty-treinos-especiais.js` (catálogo) e o card
+`Interlúdios · Treinos Especiais` do criador
+**Situação:** os Treinos Especiais (Interlúdios Adicionais, Livro do Narrador p. 22) ganharam
+sistema em 2026-08-18. Dois estão no catálogo (**Treinamento para Feitiço** e **Treinamento para
+Habilidade**) e o **Estudos** segue como cartão "em breve". Faltam DOIS textos, por motivos
+diferentes:
+- **Estudos** nem entrou no catálogo, porque só existe a paráfrase da aba ("4 testes de INT/SAB,
+  CD 12 + maestria, 2 sucessos concedem maestria, ou 3 testes CD 15 + nível para especialista").
+- **Treinamento para Habilidade** já funciona (vaga e teto), mas a `descricao` dele **ainda é a
+  paráfrase antiga** ("4 testes de um atributo, CD 12 + metade do nível, 3 sucessos concluem"). O
+  autor mandou construir o Treino antes de mandar o texto. Só o mecanismo foi confirmado por ele.
+
+Nenhuma das duas paráfrases foi conferida contra o livro.
+**Precisa:** o autor mandar o texto de cada um. Entram como DADO no catálogo (`id`, `nome`,
+`focos`, `vezesACada`, `concede`, `descricao`, `efeitos`), sem tocar em código. No Estudos isso
+apaga o `InterludioInfo` correspondente, e no Treinamento para Habilidade é só trocar a string. O
+Estudos provavelmente é o primeiro a usar o campo `alvo` da instância (ele nomeia uma perícia) e o
+canal `proficienciaPericia`.
+**Anotado:** 2026-08-18, ao criar os Treinos Especiais
+
+### ASSUNÇÃO: Treinamento para Feitiço vale para Restringido e Sem Técnica
+**Onde:** `src/systems/afty/afty-treinos-especiais.js` (`tes_feitico`)
+**Situação:** o texto diz "Feitiço", e o Restringido não tem Feitiço (tem Habilidade Marcial) e o
+Sem Técnica também não (tem Técnica de Estilo). Foi deixado **aberto a toda origem**, porque a vaga
+que ele concede é o canal `vagasFeitico`, cuja própria nota diz que ela vale para "Feitiço, Estilo
+das Sombras ou Habilidade Marcial", e porque o `deriveAfty` já soma `feiticos + estilo` no mesmo
+gasto. Se estivesse errado, o conserto é um `foraDaOrigem: [...]` na entrada, igual às cinco Linhas
+de energia amaldiçoada.
+**Precisa:** o autor confirmar, ou dizer quais origens ficam de fora.
+**Anotado:** 2026-08-18, ao criar os Treinos Especiais
+
 ---
 
 ## AFTY — Feitiços
@@ -214,6 +246,19 @@ pelo mesmo caminho. Hoje só morde o rascunho automático do autor.
 ---
 
 ## AFTY — outros
+
+### O filtro de patamar do Dashboard não lista Beyond
+**Onde:** `src/components/Dashboard.jsx` (o `<select>` de patamar, dentro do painel de filtros)
+**Situação:** o CARD já mostra Beyond certo desde 2026-08-17 (o autor liberou a linha no
+`PATAMAR_STYLES`, que sem ela caía no fallback `?? comum` e rotulava toda criatura Beyond como
+"Comum"). O **filtro** continua com os cinco patamares da 2.5.2, então em `/Afty` não dá para
+filtrar por Beyond.
+Não incluí na mesma liberação porque é outra superfície: a entrada no `PATAMAR_STYLES` é invisível
+para a 2.5.2 (nenhuma criatura de lá é `beyond`), enquanto uma `<option>` nova **aparece** no
+filtro da 2.5.2 e nunca casa com nada.
+**Precisa:** o autor dizer se aceita a opção visível na 2.5.2, ou se prefere que ela só exista
+quando o app está em `aftyMode` (o que exigiria passar a flag para o Dashboard).
+**Anotado:** 2026-08-17, ao consertar o rótulo do card
 
 ### O Intermediário ocupa meio espaço e ninguém conta
 **Onde:** `src/systems/afty/afty-invocacoes.js` (`espacosDeIntermediario`) e

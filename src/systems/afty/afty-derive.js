@@ -46,6 +46,7 @@ import {
   fatorSlotsHabilidade, aptidoesConcedidasPelaOrigem,
 } from "./afty-origens";
 import { efeitosDeTreino, vagasEncantamentoDeTreino } from "./afty-treinamentos";
+import { efeitosDeTreinoEspecial } from "./afty-treinos-especiais";
 import { resolveNiveisAptidao, trilhasDaOrigem, AFTY_APTIDOES } from "./afty-aptidoes";
 import {
   efeitosDoDominio, efeitosDeAptidaoDoDominio, beneficiosRitualDoDominio,
@@ -361,6 +362,10 @@ export function deriveAfty(creature, opcoes = {}) {
   const efMontante = resolverExclusivos(aplicarEfeitos(
     [
       ...efeitosDeTreino(creature),
+      // Treino Especial entra ao lado da Linha de Treinamento porque é a mesma
+      // família (Interlúdio) e emite a mesma classe de coisa: VAGA de orçamento,
+      // lida antes de os stats existirem. Hoje só `vagasFeitico`.
+      ...efeitosDeTreinoEspecial(creature),
       ...coletarEfeitosOrigem(creature, escolhasOrigem),
       ...coletarEfeitosMontante(creature, gerais, GERAL_BY_ID),
     ],

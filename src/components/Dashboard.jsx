@@ -68,6 +68,10 @@ const PATAMAR_STYLES = {
   comum:      { label: "Comum",      badge: "bg-sky-950 text-sky-300 border-sky-800",             accent: "border-l-sky-600" },
   desafio:    { label: "Desafio",    badge: "bg-amber-950 text-amber-300 border-amber-800",       accent: "border-l-amber-600" },
   calamidade: { label: "Calamidade", badge: "bg-red-950 text-red-300 border-red-800",             accent: "border-l-red-600" },
+  // Patamar EXCLUSIVO do Grimório do Afty (/Afty). Sem esta entrada a criatura
+  // Beyond caía no fallback `?? PATAMAR_STYLES.comum` e o card a rotulava
+  // "Comum". Nenhuma criatura 2.5.2 tem patamar `beyond`, então a 2.5.2 não muda.
+  beyond:     { label: "Beyond",     badge: "bg-fuchsia-950 text-fuchsia-300 border-fuchsia-800", accent: "border-l-fuchsia-600" },
 };
 
 const VIEW_TITLE = {
