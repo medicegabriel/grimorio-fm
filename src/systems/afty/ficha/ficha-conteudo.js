@@ -62,11 +62,12 @@ export const semAcento = (s) => String(s ?? "")
  * catálogo (`item.escolha.opcoes`). Uma opção que não existe mais no catálogo é
  * descartada em silêncio, que é o que o resolver já faz.
  */
-function opcoesEscolhidas(item, mapa) {
+function opcoesEscolhidas(item, mapa, opcoesPorItem = null) {
   const ids = mapa?.[item?.id];
   if (!Array.isArray(ids) || !ids.length || !item?.escolha?.opcoes) return [];
+  const opcoes = opcoesPorItem?.[item.id] ?? item.escolha.opcoes;
   return ids
-    .map((id) => item.escolha.opcoes.find((o) => o.id === id))
+    .map((id) => opcoes.find((o) => o.id === id))
     .filter(Boolean)
     .map((o) => ({ id: o.id, nome: o.nome, descricao: o.descricao ?? null }));
 }
@@ -267,6 +268,7 @@ export function conteudoDaFicha(creature, derived) {
 
   /* ---------- Níveis Lendários ---------- */
   const mapaAlto = derived?.altoNivel?.escolhas?.mapa ?? {};
+  const opcoesAlto = derived?.altoNivel?.escolhas?.opcoesPorItem ?? {};
   for (const m of derived?.altoNivel?.melhorias?.escolhidas ?? []) {
     const def = getMelhoriaSuperior(m.id);
     if (!def) continue;
@@ -278,7 +280,7 @@ export function conteudoDaFicha(creature, derived) {
       grupo: "altoNivel",
       sub: SUBS_ALTO_NIVEL[0],
       tags: m.vezes > 1 ? [{ label: `${m.vezes}×`, tipo: "vezes" }] : [],
-      opcoes: opcoesEscolhidas(def, mapaAlto),
+      opcoes: opcoesEscolhidas(def, mapaAlto, opcoesAlto),
     }));
   }
   const inacessiveisLen = new Set(derived?.altoNivel?.lendarias?.inacessiveis ?? []);
@@ -293,7 +295,7 @@ export function conteudoDaFicha(creature, derived) {
       grupo: "altoNivel",
       sub: SUBS_ALTO_NIVEL[1],
       tags: [],
-      opcoes: opcoesEscolhidas(def, mapaAlto),
+      opcoes: opcoesEscolhidas(def, mapaAlto, opcoesAlto),
       aviso: inacessiveisLen.has(id) ? "Pré-requisito não atendido" : null,
     }));
   }

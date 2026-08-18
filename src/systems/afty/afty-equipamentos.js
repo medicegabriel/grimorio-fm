@@ -25,6 +25,7 @@
  */
 
 import { evalNumber, validateExpression } from "../../components/fm-dsl";
+import { normalizarAlvoEfeito } from "./afty-efeitos";
 
 /* ============================================================ */
 /* GRAU DO FEITICEIRO                                           */
@@ -1484,6 +1485,15 @@ export function novaEntradaEquip(tipo, refId) {
   };
 }
 
+/** Jogada de ataque usada por uma arma desta entrada do inventário.
+    Fichas antigas e valores inválidos mantêm o ataque físico da categoria. */
+export function ataqueDaArma(entrada, def) {
+  const fisico = def?.categoria === "distancia" || def?.categoria === "arremesso"
+    ? "distancia"
+    : "corpo";
+  return entrada?.ataqueId === "amaldicoado" ? "amaldicoado" : fisico;
+}
+
 const listaEntradas = (creature) => {
   const itens = creature?.equipamentos?.itens;
   return Array.isArray(itens) ? itens : [];
@@ -1600,7 +1610,7 @@ export function resolveFerramenta(entrada, def, bt = 2, ctxBase = null, vagasLiv
   const habilidadeEfeitosRaw = Array.isArray(fa.habilidadeEfeitos) ? fa.habilidadeEfeitos : [];
   const habilidadeEfeitos = habilidadeEfeitosRaw.map((ef) => ({
     canal: CANAL_UNICA_LEGADO[ef.canal] ?? ef.canal ?? "defesa",
-    alvo: ef.alvo ?? "",
+    alvo: normalizarAlvoEfeito(ef.alvo) ?? "",
     expr: ef.expr ?? "",
     // Ativa fica na bancada de Simulação de Combate, passiva vale sempre. Quem
     // decide é o item, não a família (autor, 2026-07-30).
@@ -1860,7 +1870,17 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
       }
     }
 
-    entradas.push({ ...e, qtd, def, fa, espacosUn, custoUn, espacos: espacosUn * qtd, equipado });
+    entradas.push({
+      ...e,
+      qtd,
+      def,
+      fa,
+      espacosUn,
+      custoUn,
+      espacos: espacosUn * qtd,
+      equipado,
+      ...(e.tipo === "arma" ? { ataqueId: ataqueDaArma(e, def) } : {}),
+    });
   }
 
   if (uniformesEquipados > 1) {

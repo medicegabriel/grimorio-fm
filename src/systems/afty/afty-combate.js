@@ -585,7 +585,7 @@ export function mediaDadoEmpolgacao(nivel, aprimorada = false) {
  */
 const listaExtras = (params) => (Array.isArray(params?.estadosExtras) ? params.estadosExtras : [])
   .filter((e) => e?.id)
-  .map((e) => (e.tipo === "faixa" ? e : { ...e, tipo: "bool" }));
+  .map((e) => (["faixa", "opcao"].includes(e.tipo) ? e : { ...e, tipo: "bool" }));
 
 export function resolveCombate(creature, params = {}) {
   const c = (creature?.combate && typeof creature.combate === "object") ? creature.combate : {};
@@ -619,7 +619,10 @@ export function resolveCombate(creature, params = {}) {
     ...Object.fromEntries(COMBATE_ESTADOS.map((e) => [
       e.id, e.tipo === "bool" ? false : ["opcao", "dominio"].includes(e.tipo) ? null : 0,
     ])),
-    ...Object.fromEntries(extras.map((e) => [e.id, e.tipo === "faixa" ? 0 : false])),
+    ...Object.fromEntries(extras.map((e) => [
+      e.id,
+      e.tipo === "faixa" ? 0 : e.tipo === "opcao" ? null : false,
+    ])),
   };
 
   if (!ativo) {
@@ -668,9 +671,15 @@ export function resolveCombate(creature, params = {}) {
     // O teto do extra vem PRONTO de quem o montou (a faixa de imbuição sai do
     // Nível de Aptidão em Domínio), então aqui é só aparar. Nunca é função: o
     // extra é instância da ficha, e quem o cria já enxergava a ficha inteira.
-    out[e.id] = e.tipo === "faixa"
-      ? intDe(c[e.id], e.min ?? 0, Math.max(e.min ?? 0, e.max ?? 0))
-      : !!c[e.id];
+    if (e.tipo === "faixa") {
+      out[e.id] = intDe(c[e.id], e.min ?? 0, Math.max(e.min ?? 0, e.max ?? 0));
+    } else if (e.tipo === "opcao") {
+      out[e.id] = (Array.isArray(e.opcoes) ? e.opcoes : []).some((o) => o.id === c[e.id])
+        ? c[e.id]
+        : null;
+    } else {
+      out[e.id] = !!c[e.id];
+    }
   }
   const surto = !!c.surtoAdrenalina;
   return {
@@ -727,9 +736,16 @@ export function combateDslVars(combate = {}) {
   for (const e of (Array.isArray(combate.estadosExtras) ? combate.estadosExtras : [])) {
     const nome = varDoEstado(e.id);
     if (nome in out) continue;
-    out[nome] = e.tipo === "faixa"
-      ? Math.max(0, Math.trunc(Number(combate[e.id]) || 0))
-      : boolDe(combate[e.id]);
+    if (e.tipo === "faixa") {
+      out[nome] = Math.max(0, Math.trunc(Number(combate[e.id]) || 0));
+    } else if (e.tipo === "opcao") {
+      out[nome] = boolDe(combate[e.id]);
+      for (const o of (Array.isArray(e.opcoes) ? e.opcoes : [])) {
+        out[`${nome}_${varDoEstado(o.id)}`] = boolDe(combate[e.id] === o.id);
+      }
+    } else {
+      out[nome] = boolDe(combate[e.id]);
+    }
   }
   // Média do Dado de Empolgação, o que as Manobras somam.
   out.dado_empolgacao = Math.max(0, Math.trunc(Number(combate.dadoEmpolgacao) || 0));

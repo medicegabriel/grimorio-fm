@@ -528,6 +528,17 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
       };
     });
 
+  const patchTecnicasCombate = (partial) =>
+    setDraft((d) => ({
+      ...d,
+      tecnicasCombate: {
+        armas: [],
+        atributo: "inteligencia",
+        ...(d.tecnicasCombate ?? {}),
+        ...partial,
+      },
+    }));
+
   // Simulação de combate: bancada de balanceamento. Estado é ENTRADA, então
   // mora na ficha como qualquer outra escolha e sobrevive a fechar e reabrir.
   const patchCombate = (partial) =>
@@ -883,7 +894,7 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
             />
           )}
           {tabAtiva === "habilidades" && <TabHabilidades draft={draft} derived={derived} patchCore={patchCore} toggleArmaDedicada={toggleArmaDedicada} addFeitico={addFeitico} removeFeitico={removeFeitico} patchFeitico={patchFeitico} duplicarFeitico={duplicarFeitico} setReducoesCustoFeitico={setReducoesCustoFeitico} toggleEstiloTabela={toggleEstiloTabela} addEstiloEspecial={addEstiloEspecial} removeEstilo={removeEstilo} patchEstilo={patchEstilo} addFuncionamento={addFuncionamento} removeFuncionamento={removeFuncionamento} patchFuncionamento={patchFuncionamento} setGeralVezes={setGeralVezes} addDominio={addDominio} removeDominio={removeDominio} patchDominio={patchDominio} setDominioAtivo={setDominioAtivo} />}
-          {tabAtiva === "especializacoes" && <TabEspecializacoes draft={draft} derived={derived} setEspecializacoes={setEspecializacoes} toggleHabilidade={toggleHabilidade} toggleEscolhaHabilidade={toggleEscolhaHabilidade} toggleTalento={toggleTalento} toggleEscolhaTalento={toggleEscolhaTalento} setMelhoriaVezes={setMelhoriaVezes} toggleLendaria={toggleLendaria} toggleEscolhaAltoNivel={toggleEscolhaAltoNivel} />}
+          {tabAtiva === "especializacoes" && <TabEspecializacoes draft={draft} derived={derived} setEspecializacoes={setEspecializacoes} toggleHabilidade={toggleHabilidade} toggleEscolhaHabilidade={toggleEscolhaHabilidade} toggleTalento={toggleTalento} toggleEscolhaTalento={toggleEscolhaTalento} setMelhoriaVezes={setMelhoriaVezes} toggleLendaria={toggleLendaria} toggleEscolhaAltoNivel={toggleEscolhaAltoNivel} patchTecnicasCombate={patchTecnicasCombate} />}
           {tabAtiva === "aptidoes" && <TabAptidoes draft={draft} derived={derived} setAptidaoNivel={setAptidaoNivel} toggleAptidao={toggleAptidao} setAptidaoOpcao={setAptidaoOpcao} />}
           {tabAtiva === "invocacoes" && <TabInvocacoes draft={draft} derived={derived} addInvocacao={addInvocacao} removeInvocacao={removeInvocacao} duplicarInvocacao={duplicarInvocacao} moverInvocacao={moverInvocacao} patchInvocacao={patchInvocacao} patchInvocacaoAttr={patchInvocacaoAttr} efeitosApi={efeitosApi} addHorda={addHorda} removeHorda={removeHorda} patchHorda={patchHorda} />}
           {tabAtiva === "equipamentos" && <TabEquipamentos draft={draft} derived={derived} addEquipamento={addEquipamento} removeEquipamento={removeEquipamento} patchEquipamento={patchEquipamento} toggleFerramenta={toggleFerramenta} patchFerramenta={patchFerramenta} toggleEncantamento={toggleEncantamento} addArmaCustom={addArmaCustom} patchArmaCustom={patchArmaCustom} removeArmaCustom={removeArmaCustom} />}
@@ -5000,6 +5011,26 @@ function FeiticoAuxiliarEditor({ feitico, calc, onPatch }) {
               options={AUX_EFEITOS}
             />
           </div>
+          {efeito === "atributo" && (
+            <div>
+              <FieldLabel>Atributo</FieldLabel>
+              <Select
+                value={f.alvoAuxAtributo || "forca"}
+                onChange={(v) => onPatch({ alvoAuxAtributo: v })}
+                options={AFTY_ATTRS.map((a) => ({ value: a.key, label: a.label }))}
+              />
+            </div>
+          )}
+          {efeito === "tr" && (
+            <div>
+              <FieldLabel>Teste de Resistência</FieldLabel>
+              <Select
+                value={f.alvoAuxTR || "reflexos"}
+                onChange={(v) => onPatch({ alvoAuxTR: v })}
+                options={AFTY_RESISTENCIAS.map((r) => ({ value: r.value, label: r.label }))}
+              />
+            </div>
+          )}
         </AuxParametros>
       </SecaoFeitico>
 
@@ -5236,6 +5267,24 @@ function EfeitoMultLinha({ entry, sub, nivelFeitico, opcoesEfeito, onChange, onR
         {meta?.multiTipo && (
           <SubControleEfeito rotulo="Tipos de Dano">
             <ContadorCompacto value={Math.max(0, entry.tiposDanoExtra || 0)} min={0} onChange={(v) => onChange({ tiposDanoExtra: v })} />
+          </SubControleEfeito>
+        )}
+        {entry.efeito === "atributo" && (
+          <SubControleEfeito rotulo="Atributo">
+            <Select
+              value={entry.alvoAuxAtributo || "forca"}
+              onChange={(v) => onChange({ alvoAuxAtributo: v })}
+              options={AFTY_ATTRS.map((a) => ({ value: a.key, label: a.label }))}
+            />
+          </SubControleEfeito>
+        )}
+        {entry.efeito === "tr" && (
+          <SubControleEfeito rotulo="Teste de Resistência">
+            <Select
+              value={entry.alvoAuxTR || "reflexos"}
+              onChange={(v) => onChange({ alvoAuxTR: v })}
+              options={AFTY_RESISTENCIAS.map((r) => ({ value: r.value, label: r.label }))}
+            />
           </SubControleEfeito>
         )}
       </div>
@@ -6885,7 +6934,7 @@ function AptidaoCard({ aptidao, escolhida, concedida, concessao = "origem", ctx,
    Como soma(niveis) === ND e a 2ª leva o resto (ver resolveEspecializacoes),
    os dois ± editam O MESMO ponto de divisão por lados opostos: subir uma
    baixa a outra. Com uma classe só não há o que dividir, e nenhum ± aparece. */
-function TabEspecializacoes({ draft, derived, setEspecializacoes, toggleHabilidade, toggleEscolhaHabilidade, toggleTalento, toggleEscolhaTalento, setMelhoriaVezes, toggleLendaria, toggleEscolhaAltoNivel }) {
+function TabEspecializacoes({ draft, derived, setEspecializacoes, toggleHabilidade, toggleEscolhaHabilidade, toggleTalento, toggleEscolhaTalento, setMelhoriaVezes, toggleLendaria, toggleEscolhaAltoNivel, patchTecnicasCombate }) {
   const { escolhidas, total, max, obrigatoria } = derived.especializacoes;
   // A origem copiada em Verdadeiras Origens ABRE o que for exclusivo dela: o
   // Físico Abençoado do Restringido diz que dá acesso à Especialização
@@ -7027,7 +7076,7 @@ function TabEspecializacoes({ draft, derived, setEspecializacoes, toggleHabilida
         (autor, 2026-07-17): a aba "Habilidades" do topo é de Ações &
         Características, não destas. Mesmo arranjo da aba de Aptidões, que
         tem o alocador em cima e a lista de leitura embaixo. */}
-    <HabilidadesEspecializacao draft={draft} derived={derived} toggleHabilidade={toggleHabilidade} toggleEscolhaHabilidade={toggleEscolhaHabilidade} toggleTalento={toggleTalento} toggleEscolhaTalento={toggleEscolhaTalento} />
+    <HabilidadesEspecializacao draft={draft} derived={derived} toggleHabilidade={toggleHabilidade} toggleEscolhaHabilidade={toggleEscolhaHabilidade} toggleTalento={toggleTalento} toggleEscolhaTalento={toggleEscolhaTalento} patchTecnicasCombate={patchTecnicasCombate} />
 
     {/* Empolgação: some inteira sem a habilidade Base do Lutador. */}
     <EmpolgacaoCard derived={derived} />
@@ -7178,7 +7227,52 @@ function motivoBloqueio(habilidade, acesso) {
   return "Pré-requisito não atendido";
 }
 
-function HabilidadeCard({ habilidade, escolhida, concedida = false, acesso, nivelEspec, escolhaEstado, onToggleOpcao }) {
+function TecnicasCombateEscolhas({ draft, escolhida, onPatch }) {
+  const config = draft?.tecnicasCombate ?? {};
+  const armas = Array.isArray(config.armas) ? config.armas.slice(0, 2) : [];
+  const opcoes = catalogoDoTipo("arma", draft).map((a) => ({ value: a.id, label: a.nome }));
+  const defineArma = (indice, id) => {
+    const proxima = [...armas];
+    proxima[indice] = id || null;
+    onPatch({ armas: proxima.filter(Boolean) });
+  };
+  return (
+    <div className="mt-2 border-t border-slate-800 pt-2 grid grid-cols-1 sm:grid-cols-3 gap-2">
+      <div>
+        <FieldLabel>Arma 1</FieldLabel>
+        <Select
+          value={armas[0] ?? ""}
+          onChange={(v) => defineArma(0, v)}
+          options={[{ value: "", label: "Nenhuma" }, ...opcoes.filter((o) => o.value !== armas[1])]}
+          disabled={!escolhida}
+        />
+      </div>
+      <div>
+        <FieldLabel>Arma 2</FieldLabel>
+        <Select
+          value={armas[1] ?? ""}
+          onChange={(v) => defineArma(1, v)}
+          options={[{ value: "", label: "Nenhuma" }, ...opcoes.filter((o) => o.value !== armas[0])]}
+          disabled={!escolhida}
+        />
+      </div>
+      <div>
+        <FieldLabel>Atributo</FieldLabel>
+        <OptionChips
+          value={config.atributo === "sabedoria" ? "sabedoria" : "inteligencia"}
+          onChange={(atributo) => onPatch({ atributo })}
+          options={[
+            { value: "inteligencia", label: "Inteligência" },
+            { value: "sabedoria", label: "Sabedoria" },
+          ]}
+          disabledValues={!escolhida ? ["inteligencia", "sabedoria"] : undefined}
+        />
+      </div>
+    </div>
+  );
+}
+
+function HabilidadeCard({ habilidade, escolhida, concedida = false, acesso, nivelEspec, escolhaEstado, onToggleOpcao, extra }) {
   const [open, setOpen] = useState(false);
   // Já escolhida nunca trava: senão redividir a multiclasse prenderia a
   // habilidade na ficha, sem como remover (mesma regra do AptidaoCard).
@@ -7286,6 +7380,7 @@ function HabilidadeCard({ habilidade, escolhida, concedida = false, acesso, nive
           <p className="text-[11px] text-slate-400 leading-relaxed whitespace-pre-line">
             {habilidade.descricao}
           </p>
+          {extra}
           {/* Escolha aninhada (Estilo de Controle, Melhoria...). Selecionável
               só quando a habilidade está escolhida; senão é leitura, para o
               texto do livro estar visível. */}
@@ -7318,7 +7413,7 @@ function HabilidadeCard({ habilidade, escolhida, concedida = false, acesso, nive
 
 const TALENTOS_TAB = "__talentos__";
 
-function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, toggleEscolhaHabilidade, toggleTalento, toggleEscolhaTalento }) {
+function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, toggleEscolhaHabilidade, toggleTalento, toggleEscolhaTalento, patchTecnicasCombate }) {
   const {
     escolhidas, selecionadas, concedidas, escolhas, gastosNoComum, comum, exclusivasTalento, exclusivasUsadas,
     excedeu, niveisPorEspec,
@@ -7536,6 +7631,13 @@ function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, toggleEsc
                   nivelEspec={ativa.nivel}
                   escolhaEstado={escolhas?.porHab?.[h.id]}
                   onToggleOpcao={(opcaoId) => toggleEscolhaHabilidade(h.id, opcaoId)}
+                  extra={h.id === "cnj_tecnicas_de_combate" ? (
+                    <TecnicasCombateEscolhas
+                      draft={draft}
+                      escolhida={escolhidas.includes(h.id)}
+                      onPatch={patchTecnicasCombate}
+                    />
+                  ) : null}
                 />
               )
             )}
@@ -7900,6 +8002,11 @@ function AltoNivel({ derived, setMelhoriaVezes, toggleLendaria, toggleEscolhaAlt
 
   const emMelhorias = aba === "melhorias";
   const vezesDe = (id) => melhorias.escolhidas.find((m) => m.id === id)?.vezes ?? 0;
+  const itemComOpcoesResolvidas = (item) => {
+    const opcoes = escolhas.opcoesPorItem?.[item.id];
+    if (!item.escolha || !opcoes) return item;
+    return { ...item, escolha: { ...item.escolha, opcoes } };
+  };
   // Pré-requisitos das Lendárias e das Ápices: ND, nível real por
   // especialização e Habilidades de Especialização já escolhidas.
   const ctxReq = {
@@ -7988,7 +8095,7 @@ function AltoNivel({ derived, setMelhoriaVezes, toggleLendaria, toggleEscolhaAlt
               return (
                 <AltoNivelCard
                   key={m.id}
-                  item={m}
+                  item={itemComOpcoesResolvidas(m)}
                   escolhida={vezes > 0}
                   vezes={vezes}
                   escolhaEstado={escolhas.porItem?.[m.id]}
@@ -8002,7 +8109,7 @@ function AltoNivel({ derived, setMelhoriaVezes, toggleLendaria, toggleEscolhaAlt
           : HABILIDADES_LENDARIAS.map((l) => (
               <AltoNivelCard
                 key={l.id}
-                item={l}
+                item={itemComOpcoesResolvidas(l)}
                 escolhida={lendarias.escolhidas.includes(l.id)}
                 acesso={avaliarAcessoAltoNivel(l, ctxReq)}
                 escolhaEstado={escolhas.porItem?.[l.id]}
@@ -8453,7 +8560,9 @@ function MotorEfeitosEditor({
               />
               {ef.expr && (
                 chk.ok
-                  ? <p className="text-[10px] text-emerald-400 mt-0.5">= {ef.valor ?? 0}</p>
+                  ? (ef.valor != null
+                    ? <p className="text-[10px] text-emerald-400 mt-0.5">= {ef.valor}</p>
+                    : null)
                   : <p className="text-[10px] text-rose-400 mt-0.5">{chk.error}</p>
               )}
             </div>
@@ -8660,6 +8769,12 @@ function LinhaCarregada({
   // dano dela só sai com a arma equipada.
   const equipavel = tipo === "arma" || tipo === "uniforme" || tipo === "escudo" || def?.efeito;
   const podeSerFerramenta = FA_TIPOS_EQUIP.includes(tipo);
+  const ataqueFisico = def?.categoria === "distancia" || def?.categoria === "arremesso"
+    ? "distancia"
+    : "corpo";
+  const ataqueOpcoes = ataqueFisico === "distancia"
+    ? [{ value: "distancia", label: "A Distância" }, { value: "amaldicoado", label: "Amaldiçoado" }]
+    : [{ value: "corpo", label: "Corpo a Corpo" }, { value: "amaldicoado", label: "Amaldiçoado" }];
   const [faOpen, setFaOpen] = useState(false);
   // Remover pede confirmação (autor, 2026-08-07). Mesmo padrão do FeiticoCard: o
   // X vira "Remover?" com ✓ e ✕, sem modal. Aqui ela pesa mais que numa linha
@@ -8788,6 +8903,17 @@ function LinhaCarregada({
           </button>
         )}
       </div>
+
+      {tipo === "arma" && (
+        <div className="flex items-center gap-2 border-t border-slate-800/70 px-2.5 py-1.5">
+          <span className="text-[10px] uppercase tracking-wider text-slate-500 flex-shrink-0">Ataque</span>
+          <OptionChips
+            value={entrada.ataqueId ?? ataqueFisico}
+            options={ataqueOpcoes}
+            onChange={(ataqueId) => onPatch(uid, { ataqueId })}
+          />
+        </div>
+      )}
 
       {fa && faOpen && (
         <FerramentaEditor

@@ -42,7 +42,7 @@
 import {
   AFTY_ATTRS, AFTY_RESISTENCIAS, MELHORIA_NIVEL_INICIAL, LENDARIA_NIVEL_INICIAL,
 } from "./afty-schema";
-import { AFTY_PERICIAS } from "./afty-pericias";
+import { AFTY_PERICIAS, catalogoPericiasDaFicha } from "./afty-pericias";
 import { getHabilidade } from "./afty-habilidades";
 import { getEspecializacao } from "./afty-especializacoes";
 // Só o pool de trilhas da Versatilidade Extrema. Sem ciclo: afty-aptidoes.js
@@ -140,7 +140,12 @@ export const MELHORIAS_SUPERIORES = [
       "Uma certa perícia é sua especialidade, e você domina ela cada vez mais. Uma perícia a sua " +
       "escolha recebe um bônus adicional igual a metade do seu bônus de maestria.",
     maxVezes: 1,
-    escolha: { label: "Perícia", quantidade: 1, opcoes: OPCOES_PERICIA },
+    escolha: {
+      label: "Perícia",
+      quantidade: 1,
+      opcoes: OPCOES_PERICIA,
+      fonteOpcoes: "periciasDaFicha",
+    },
   },
   {
     id: "mel_precisao",
@@ -590,12 +595,13 @@ export function avaliarAcessoAltoNivel(item, ctx = {}) {
  *
  * Retorna { porItem: { [id]: { opcoes, quantidade, excedeu } }, mapa }.
  */
-function resolveEscolhas(itens, escolhasBrutas) {
+function resolveEscolhas(itens, escolhasBrutas, opcoesPorItem = {}) {
   const porItem = {};
   const mapa = {};
   for (const item of itens) {
     if (!item?.escolha) continue;
-    const validas = new Set(item.escolha.opcoes.map((o) => o.id));
+    const opcoesDisponiveis = opcoesPorItem[item.id] ?? item.escolha.opcoes;
+    const validas = new Set(opcoesDisponiveis.map((o) => o.id));
     const brutas = Array.isArray(escolhasBrutas?.[item.id]) ? escolhasBrutas[item.id] : [];
     const vistos = new Set();
     const opcoes = [];
@@ -682,7 +688,18 @@ export function resolveAltoNivel(creature, ctx = {}) {
     ...melhoriasEscolhidas.map((m) => MELHORIA_BY_ID[m.id]),
     ...lendariasEscolhidas.map((id) => LENDARIA_BY_ID[id]),
   ];
-  const escolhas = resolveEscolhas(escolhidasComEscolha, creature?.escolhasAltoNivel);
+  const itensComEscolha = [...MELHORIAS_SUPERIORES, ...HABILIDADES_LENDARIAS]
+    .filter((item) => item.escolha);
+  const opcoesPorItem = Object.fromEntries(itensComEscolha.map((item) => {
+    const opcoes = item.escolha.fonteOpcoes === "periciasDaFicha"
+      ? catalogoPericiasDaFicha(creature).map((p) => ({ id: p.id, nome: p.nome }))
+      : item.escolha.opcoes;
+    return [item.id, opcoes];
+  }));
+  const escolhas = {
+    ...resolveEscolhas(escolhidasComEscolha, creature?.escolhasAltoNivel, opcoesPorItem),
+    opcoesPorItem,
+  };
 
   // A Ápice escolhida dentro de Atingir Ápice, para quem precisar do id.
   const apiceId = escolhas.mapa?.len_atingir_apice?.[0] ?? null;

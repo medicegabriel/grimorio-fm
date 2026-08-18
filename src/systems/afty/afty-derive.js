@@ -70,7 +70,7 @@ import {
 import { resolveInvocacoesList, resolveHordasList } from "./afty-invocacoes";
 import {
   resolveEquipamentos, resolveCarga, grauFeiticeiro, alcanceDaArma, propriedadesDaArma,
-  podeSerArmaDedicada, grauDoRank, efeitosEspeciaisDeArma,
+  podeSerArmaDedicada, grauDoRank, efeitosEspeciaisDeArma, catalogoDoTipo,
 } from "./afty-equipamentos";
 import { nivelMaxFeitico, resumoDeUmFeitico, resumoFeiticos, overridesShikigami } from "./afty-feiticos";
 import { resolveEstilos, efeitosDoEstilo } from "./afty-estilo-sombras";
@@ -82,10 +82,14 @@ import {
   aplicarEfeitos, resolverExclusivos, valorCanal, furaTetoEm, efeitosDaTecnica, efeitosDosPassivos,
   efeitosDaSessao, EFEITO_CANAIS,
   ehAtributoPermanente, ehAtributoTemporario, ehEstagio2, ehPreContexto, efeitoUsaDadosDanoFinal,
-  mesclarEfeitos, detalhesDoCanal,
+  mesclarEfeitos, detalhesDoCanal, normalizarAlvoEfeito,
 } from "./afty-efeitos";
 import { resolveGerais, contadorHabilidades, GERAL_BY_ID } from "./afty-gerais";
 import { resolveCombate, degrausBrutalidade } from "./afty-combate";
+import {
+  resolveTecnicasCombate, estadosCombateConjurador, efeitosCombateAmaldicoado,
+  resolveAuxiliaresAtivos, aplicarImbuicaoNoDano, dadosAuxiliaresNaLinha,
+} from "./afty-combate-conjurador";
 
 export const mod = (attr) => Math.floor(((attr ?? 10) - 10) / 2);
 
@@ -468,6 +472,7 @@ export function deriveAfty(creature, opcoes = {}) {
       // categoria, senão o bônus vazaria para as outras armas.
       acertoGrau: e.fa?.acertoArma ?? 0,
       fontesAcerto: e.fa?.fontesAcerto ?? [],
+      ataqueId: e.ataqueId,
       fineza: !!e.def.props?.fineza,
       critico: e.def.critico ?? 20,
       distancia: e.def.categoria === "distancia" || e.def.categoria === "arremesso",
@@ -482,6 +487,11 @@ export function deriveAfty(creature, opcoes = {}) {
       propriedades: propriedadesDaArma(e.def),
       elegivelDedicada: podeSerArmaDedicada(e.def),
     }));
+  const tecnicasCombate = resolveTecnicasCombate(
+    creature,
+    catalogoDoTipo("arma", creature),
+    habilidades.escolhidas,
+  );
   // O Ataque Básico só sobe de grau com Manoplas ou Faixas (autor, 2026-07-27).
   // Sem elas é Desarmado, que não soma nada. Com as duas vale o grau mais alto,
   // e é o grau de CÁLCULO que compara, porque é ele que vira número.
@@ -652,10 +662,6 @@ export function deriveAfty(creature, opcoes = {}) {
   const efeitosComDominio = (efeitosDominio.length || efeitosEstilo.length)
     ? [...efeitosTodos, ...efeitosDominio, ...efeitosEstilo]
     : efeitosTodos;
-  // Expressões que leem `dados_dano_final` só podem ser avaliadas quando cada
-  // linha de dano já sabe quantos dados vai rolar. Elas não entram no agregado
-  // geral e viajam cruas até o calculador de Feitiços.
-  const efeitosLinhaDano = efeitosComDominio.filter(efeitoUsaDadosDanoFinal);
 
   // Resumo pronto para a aba Habilidades: cada expansão com os números que o
   // card mostra. A UI não recalcula nada, ela só exibe.
@@ -689,6 +695,12 @@ export function deriveAfty(creature, opcoes = {}) {
     };
   })();
 
+  const estadosConjurador = estadosCombateConjurador({
+    habilidades: habilidades.escolhidas,
+    tecnicas: tecnicasCombate,
+    armas: armasParaDano,
+    feiticos: creature?.feiticos,
+  });
   const combate = resolveCombate(creature, {
     dominios: resumoDominios.lista,
     brutalidadePE: degrausBrutalidade({ habilidades }),
@@ -720,8 +732,21 @@ export function deriveAfty(creature, opcoes = {}) {
     // instâncias: uma por Habilidade Única ativa, e uma por Técnica de Estilo
     // que precisa de gatilho (toda Modificação de Domínio Simples, mais a
     // Técnica Especial com linha ativa).
-    estadosExtras: [...equip.estadosUnica, ...estilo.estados],
+    estadosExtras: [...equip.estadosUnica, ...estilo.estados, ...estadosConjurador],
   });
+  const auxiliaresAtivos = resolveAuxiliaresAtivos(creature, combate, estadosConjurador, {
+    nd,
+    habilidades: habilidades.escolhidas,
+  });
+  const efeitosAtivos = [
+    ...efeitosComDominio,
+    ...efeitosCombateAmaldicoado(tecnicasCombate, combate, habilidades.escolhidas, bt),
+    ...auxiliaresAtivos.efeitos,
+  ];
+  // Expressões que leem `dados_dano_final` só podem ser avaliadas quando cada
+  // linha de dano já sabe quantos dados vai rolar. Elas não entram no agregado
+  // geral e viajam cruas até o calculador de Feitiços.
+  const efeitosLinhaDano = efeitosAtivos.filter(efeitoUsaDadosDanoFinal);
 
   const montarCtx = (attrs, mods) => buildCriaturaDslContext({
     nd, bt, grauRank: grau.rank, patamar, tipo, almaAtual: almaAtualDsl,
@@ -780,7 +805,7 @@ export function deriveAfty(creature, opcoes = {}) {
   // Atributo (estágio 0) entra aqui junto, porque também é permanente.
   const efAttrPerm = resolverExclusivos(mesclarEfeitos(
     { porAlvo: { atributo: efMontante.porAlvo.atributo || {} } },
-    aplicarEfeitos(efeitosComDominio.filter(ehAtributoPermanente), montarCtx(attrBase, modBase)),
+    aplicarEfeitos(efeitosAtivos.filter(ehAtributoPermanente), montarCtx(attrBase, modBase)),
   ));
   // Este é o atributo que os PRÉ-REQUISITOS enxergam.
   const attrPermanente = somarAtributo(attrBase, efAttrPerm);
@@ -799,7 +824,7 @@ export function deriveAfty(creature, opcoes = {}) {
   // 10, quando a regra do pool exclusivo manda ficar com 6.
   const efAttrTemp = resolverExclusivos(
     aplicarEfeitos(
-      efeitosComDominio.filter(ehAtributoTemporario),
+      efeitosAtivos.filter(ehAtributoTemporario),
       montarCtx(attrPermanente, modPermanente),
     ),
     efAttrPerm.aplicado,
@@ -831,7 +856,7 @@ export function deriveAfty(creature, opcoes = {}) {
   // canal que roda antes daqui, e o filtro `ehEstagio2` justamente o exclui.
   const efSemTamanho = resolverExclusivos(mesclarEfeitos(
     efMontanteSemAtributo, efPreContexto, efAttrPerm, efAttrTemp,
-    aplicarEfeitos(efeitosComDominio.filter(ehEstagio2), montarCtx(attrEff, modByAttr)),
+    aplicarEfeitos(efeitosAtivos.filter(ehEstagio2), montarCtx(attrEff, modByAttr)),
   ));
 
   // ---------- Tamanho (autor, 2026-08-08) ----------
@@ -875,11 +900,13 @@ export function deriveAfty(creature, opcoes = {}) {
     ...equip,
     efeitosUnica: equip.efeitosUnica.map((efeito) => ({
       ...efeito,
-      valor: evalNumberDsl(
-        efeito.expr,
-        { ...ctxTecnica, ...(efeito.contextoDsl || {}) },
-        0,
-      ),
+      valor: efeitoUsaDadosDanoFinal(efeito)
+        ? null
+        : evalNumberDsl(
+          efeito.expr,
+          { ...ctxTecnica, ...(efeito.contextoDsl || {}) },
+          0,
+        ),
     })),
     entradas: equip.entradas.map((entrada) => {
       if (!entrada.fa) return entrada;
@@ -889,11 +916,13 @@ export function deriveAfty(creature, opcoes = {}) {
           ...entrada.fa,
           habilidadeEfeitos: entrada.fa.habilidadeEfeitos.map((efeito) => ({
             ...efeito,
-            valor: evalNumberDsl(
-              efeito.expr,
-              { ...ctxTecnica, ...(efeito.contextoDsl || {}) },
-              0,
-            ),
+            valor: efeitoUsaDadosDanoFinal(efeito)
+              ? null
+              : evalNumberDsl(
+                efeito.expr,
+                { ...ctxTecnica, ...(efeito.contextoDsl || {}) },
+                0,
+              ),
           })),
         },
       };
@@ -903,8 +932,10 @@ export function deriveAfty(creature, opcoes = {}) {
     .map((e) => {
       const def = EFEITO_CANAIS.find((c) => c.id === e?.canal) || null;
       const expr = String(e?.expr ?? "").trim();
+      const valorTardio = efeitoUsaDadosDanoFinal(e);
+      const condicaoTardia = efeitoUsaDadosDanoFinal({ expr: e?.quando });
       return {
-        canal: e?.canal ?? "", alvo: e?.alvo ?? "", expr,
+        canal: e?.canal ?? "", alvo: normalizarAlvoEfeito(e?.alvo) ?? "", expr,
         quando: e?.quando ?? "", duracao: e?.duracao ?? "permanente",
         // `modo` só existe nas fontes do pool exclusivo que decidem por LINHA
         // se o efeito é passivo ou de bancada (Habilidade Única, Técnica de
@@ -913,8 +944,8 @@ export function deriveAfty(creature, opcoes = {}) {
         // `alvoTipo` diz à UI qual vocabulário oferecer (atributo, perícia, tr...).
         alvoTipo: def?.alvo ?? null,
         nota: def?.nota ?? null,
-        valor: expr ? evalNumberDsl(expr, ctxTecnica, 0) : 0,
-        ativo: !e?.quando || evalNumberDsl(String(e.quando), ctxTecnica, 0) !== 0,
+        valor: expr ? (valorTardio ? null : evalNumberDsl(expr, ctxTecnica, 0)) : 0,
+        ativo: !e?.quando || condicaoTardia || evalNumberDsl(String(e.quando), ctxTecnica, 0) !== 0,
       };
     });
   const tecnicaEfeitos = resolverEfeitosEditaveis(creature?.core?.tecnicaEfeitos);
@@ -1108,6 +1139,7 @@ export function deriveAfty(creature, opcoes = {}) {
     bonusTreinamento: bt,
     combate,
     habilidades: habilidades.escolhidas,
+    reducaoSustentacao: habilidades.escolhidas.includes("cnj_sustentacao_mestre") ? 1 : 0,
     ultimoFeiticoDanoId: opcoes.ultimoFeiticoDanoId ?? null,
     rituais: opcoes.rituais ?? {},
     usosRitualista: Math.max(0, Math.trunc(Number(opcoes.usosRitualista) || 0)),
@@ -1258,13 +1290,28 @@ export function deriveAfty(creature, opcoes = {}) {
   // Faixas e Manoplas não viram linha própria: são o Ataque Básico (grupo
   // "pugilato"). O Nível de Aptidão em Controle e Leitura entra na conta, daí
   // depender do `aptidao` já resolvido lá em cima.
-  const dano = resolveDano(creature, {
+  let dano = resolveDano(creature, {
     nd, patamar, mods: modByAttr, aptidaoCL: aptidao.efetivo.cl,
     efeitos: ef, armas: armasParaDano, grauBasico, acertoGrauBasico,
+    efeitosLinhaDano, contextoDsl: ctxTecnica,
+    tecnicasCombate: { ...tecnicasCombate, bt },
     // Os Ataques já resolvidos, para cada linha fechar o Acerto dela: o ataque
     // da categoria mais o grau da arma daquela linha.
     ataques: testes.ataques,
   });
+  dano = {
+    ...dano,
+    entradas: (dano.entradas ?? []).map((entrada) => (
+      dadosAuxiliaresNaLinha(entrada, auxiliaresAtivos.dados)
+    )),
+  };
+  dano = aplicarImbuicaoNoDano(
+    dano,
+    creature,
+    combate,
+    habilidades.escolhidas,
+    feiticos.lista,
+  );
 
   // ---------- Cura (2026-08-03) ----------
   // Uma linha por FONTE, igual ao Dano, mas o número vem todo do Motor: cada
@@ -1600,6 +1647,8 @@ export function deriveAfty(creature, opcoes = {}) {
     efeitos: ef,          // Motor de Automação: { porCanal, porAlvo, detalhes, avisos }
     testes,               // { pericias, resistencias, ataques, orcamento, atencao }
     dano,                 // { entradas: [{ id, nome, fonte, texto, alcance, propriedades, partes }] }
+    tecnicasCombate,
+    auxiliaresAtivos,
     cura,                 // { linhas: [{ id, nome, grupo, alcance, texto, fixo, usos, unidade, partes }] }
     dedicadas,            // Armas Dedicadas: { ativa, escolhidas, elegiveis, max, restante }
     empolgacao,           // Lutador: { ativa, aprimorada, inicial, max, tabela }

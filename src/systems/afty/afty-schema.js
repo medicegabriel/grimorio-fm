@@ -144,6 +144,15 @@ export function mesclaFichaAfty(existente) {
     attributes: { ...blank.attributes, ...(existente.attributes || {}) },
     attrNivel: { ...blank.attrNivel, ...(existente.attrNivel || {}) },
     attrLimite: { ...blank.attrLimite, ...(typeof existente.attrLimite === "object" ? existente.attrLimite : {}) },
+    tecnicasCombate: {
+      ...blank.tecnicasCombate,
+      ...(existente.tecnicasCombate && typeof existente.tecnicasCombate === "object"
+        ? existente.tecnicasCombate
+        : {}),
+      armas: Array.isArray(existente.tecnicasCombate?.armas)
+        ? existente.tecnicasCombate.armas
+        : [],
+    },
     aptidoes: { ...blank.aptidoes, ...(existente.aptidoes || {}) },
     reducoesCustoFeitico: {
       ...blank.reducoesCustoFeitico,
@@ -265,6 +274,14 @@ export function createBlankAfty() {
     // Armas Dedicadas (Lutador 2°). Ids do catálogo de armas, até 3. A escolha
     // é marcada na linha de dano da arma, não num pool dentro da habilidade.
     armasDedicadas: [],
+
+    // Técnicas de Combate (Conjurador 2°). As armas são ids do catálogo e o
+    // atributo é uma escolha única, compartilhada pelas duas. O estado de
+    // Combate Amaldiçoado não mora aqui: ele pertence à sessão de jogo.
+    tecnicasCombate: {
+      armas: [],
+      atributo: "inteligencia",
+    },
 
     // ---------- SIMULAÇÃO DE COMBATE ----------
     // Bancada de balanceamento (autor, 2026-07-28): ligar os estados aqui e ver

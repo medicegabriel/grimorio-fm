@@ -1,6 +1,6 @@
 # Status do Grimório Afty (handoff para chat novo)
 
-Estado atual do sistema Afty (atualizado 2026-08-12). Leia junto com:
+Estado atual do sistema Afty (atualizado 2026-08-18). Leia junto com:
 `docs/roadmap-versionamento-e-fichas.md` (arquitetura) e `docs/afty-formulas-base.md` (fórmulas).
 
 > 📋 **A FILA DE TRABALHO NÃO É ESTE ARQUIVO.** Desde 2026-08-09 toda pendência mora em
@@ -114,6 +114,75 @@ Estado atual do sistema Afty (atualizado 2026-08-12). Leia junto com:
 >
 > 👉 **Começando um chat novo? Vá direto para
 > [PENDÊNCIAS DE ESPECIALIZAÇÕES](#-pendências-de-especializações-lista-de-retomada).**
+
+---
+
+## SESSÃO DE 2026-08-18: PERÍCIAS PERSONALIZADAS, ATAQUE DA ARMA E COMBATE DO CONJURADOR
+
+Três relatos do autor fecharam a mesma lacuna: escolhas gravadas na ficha existiam, mas os sistemas
+que dependiam delas ainda liam apenas catálogos fixos ou uma única fórmula de ataque.
+
+### 1. Melhoria Superior de Perícia lê a ficha atual
+
+Melhoria de Perícia usava somente `AFTY_PERICIAS` para montar e validar a escolha. Por isso uma
+perícia personalizada podia aparecer normalmente na aba Perícias e ainda assim não existir dentro
+da Melhoria Superior.
+
+O Alto Nível agora recebe `catalogoPericiasDaFicha(creature)` para esse item. A mesma lista dinâmica
+é usada no seletor, na validação da escolha gravada e no conteúdo da Ficha Final. As demais escolhas
+de Alto Nível continuam usando os catálogos próprios.
+
+### 2. Cada arma escolhe a jogada de ataque
+
+Cada entrada de arma no inventário ganhou `ataqueId`. Uma arma corpo a corpo escolhe entre Corpo a
+Corpo e Amaldiçoado. Uma arma a distância ou de arremesso escolhe entre A Distância e Amaldiçoado.
+Fichas antigas continuam usando o ataque físico da categoria quando o campo não existe ou é
+inválido.
+
+A escolha altera somente a jogada de ataque da linha. O atributo do dano continua vindo da arma,
+salvo quando Técnicas de Combate determina Inteligência ou Sabedoria para as armas escolhidas.
+
+### 3. Técnicas de Combate e a sequência de especializações
+
+O Conjurador ganhou um resolvedor próprio em `afty-combate-conjurador.js`, ligado ao criador, à
+bancada de Buffs e à Ficha Final.
+
+- Técnicas de Combate guarda até duas armas e uma escolha compartilhada entre Inteligência e
+  Sabedoria. As linhas escolhidas recebem treinamento e usam o atributo na jogada de ataque e no
+  dano.
+- Combate Amaldiçoado acrescenta o Bônus de Treinamento ao dano das armas escolhidas. Na bancada,
+  a ativação seleciona uma dessas armas e sobe o nível de dano dela em 1 durante o combate. O custo
+  de 2 PE é exibido, mas o desconto permanece manual.
+- Imbuir com Técnica fica disponível somente na arma selecionada pelo Combate Amaldiçoado. O seletor
+  aceita Feitiços de Dano Comuns ou Vampíricos, sem área, com Ação Bônus ou Ação Comum. O ataque
+  executa o dano da arma junto com o dano ou efeito calculado do Feitiço. Condições continuam
+  mostrando o TR e a CD aplicáveis.
+- Esgrimista Jujutsu permite selecionar na bancada um Feitiço Auxiliar cuja ação padrão seja Bônus.
+  O efeito calculado é aplicado ao próprio personagem enquanto Combate Amaldiçoado estiver ativo.
+  Efeitos de Atributo e Teste de Resistência ganharam seus seletores de alvo no criador.
+- Sustentação Avançada abre duas seleções sustentadas. Sustentação Mestre abre três e reduz em 1 o
+  custo de sustentação mostrado, com mínimo de 1. O gasto de PE permanece manual.
+
+Os estados extras de combate agora aceitam o tipo `opcao`, com validação do valor selecionado e
+variáveis correspondentes no contexto do DSL. Isso permite que arma, Feitiço Auxiliar e Feitiços
+sustentados usem o mesmo fluxo de Buffs já existente.
+
+### 4. Integração com Controlador e Invocações
+
+A branch local foi atualizada por fast-forward para `efc85c4`, Grimorio Afty #024. Os seis arquivos
+de código alterados pelos dois trabalhos foram mesclados automaticamente. O único conflito ocorreu
+neste documento, entre sessões independentes, e foi resolvido preservando as duas integralmente.
+
+### Verificação
+
+- `npx eslint src/systems/afty/` passou.
+- `npx vite build` passou. Permanece o aviso de Node 22.11.0, pois o Vite pede 22.12 ou superior na
+  linha 22.
+- 12 asserts do `deriveAfty` passaram depois da integração. Eles cobrem seleção de Inteligência e
+  Sabedoria, treinamento, bônus de dano, aumento de nível de dano, estado de opção e os filtros de
+  Imbuir com Técnica.
+- `git diff --check` passou, com apenas o aviso de conversão LF para CRLF deste documento.
+- `src/components/` não possui alteração.
 
 ---
 
@@ -365,6 +434,65 @@ As 32 restantes do Controlador seguem nos bloqueios já nomeados em
 marcador agora.
 
 ---
+## SESSÃO DE 2026-08-16: ALVOS DO ESTÍMULO MUSCULAR
+
+Correção do autor: o bônus de teste do Estímulo Muscular vale apenas em Acrobacia ou Atletismo.
+O efeito estava sem alvo no Motor e, por isso, aumentava todas as perícias da ficha.
+
+Como ficou:
+
+- Estímulo Muscular emite o mesmo bônus temporário separadamente para `acrobacia` e `atletismo`;
+- Estímulo Muscular Avançado emite o delta nos mesmos dois alvos;
+- a bancada continua sem seletor, conforme a decisão anterior. O jogador usa uma das duas perícias
+  e desativa o estado depois;
+- nenhuma outra perícia recebe o bônus.
+
+Assert do `deriveAfty`: com 2 PE no estado, Acrobacia e Atletismo recebem +2, enquanto Furtividade,
+Percepção e as demais perícias permanecem sem essa parcela. Com o Avançado, somente os mesmos dois
+alvos recebem o segundo +2.
+
+## SESSÃO DE 2026-08-15: `dados_dano_final` EM DADOS DE DANO
+
+Relato do autor: uma linha global de Dados de Dano com expressão `dados_dano_final` não alterava
+nem os ataques físicos nem as Habilidades de dano.
+
+A variável já era separada para avaliação tardia, mas o resolvedor aceitava somente o canal
+`danoBonus`, e apenas os Feitiços consumiam essa passagem. No canal `dadosDano`, a linha era
+descartada com aviso interno. Ataque Básico e armas nem chegavam a executar o resolvedor tardio.
+
+Como ficou:
+
+- `dados_dano_final` funciona nos canais `dadosDano` e `danoBonus`;
+- Ataque Básico, armas e Feitiços de Dano resolvem os efeitos tardios por linha;
+- no canal `dadosDano`, a variável lê a quantidade fechada antes do próprio efeito e acrescenta o
+  resultado uma única vez. Uma linha com 3 dados recebe +3 e termina em 6, sem recursão;
+- alvo vazio continua atingindo todas as linhas, enquanto os alvos específicos continuam isolados;
+- editores não mostram zero falso para expressões tardias cujo valor depende da linha de dano.
+
+Asserts do `deriveAfty`: um Funcionamento Básico global com
+`{ canal: "dadosDano", expr: "dados_dano_final" }` levou o Ataque Básico de `1d8+36` para
+`2d8+36` e um Feitiço de Dano de `3d8` para `6d8`. A mesma passagem foi conferida na Habilidade
+Única de uma Ferramenta de Grau Especial.
+
+## SESSÃO DE 2026-08-15: EFEITOS GRAVADOS COM ALVO LITERAL `todos`
+
+Relato do autor: efeitos do Funcionamento Básico e da Habilidade Única de Ferramentas de Grau
+Especial mostravam valor no editor, mas os bônus desapareciam das aplicações na ficha.
+
+A reprodução encontrou uma incompatibilidade de dado. No Motor, a ausência de `alvo` significa
+"todos". Uma ficha com o texto literal `alvo: "todos"` passava pela avaliação, mas era guardada em
+`porAlvo[canal].todos`. Como nenhuma perícia, ataque, fonte de dano ou fonte de cura tem esse id, o
+valor não era consumido por nenhuma linha da ficha.
+
+Como ficou:
+
+- a fronteira comum do Motor normaliza o alvo literal `todos` para ausência de alvo;
+- Funcionamentos Básicos e Habilidades Únicas também devolvem o alvo já normalizado ao editor, então
+  a próxima edição grava o formato canônico;
+- a compatibilidade vale para canais globais e direcionáveis sem mudar a disputa do pool exclusivo.
+
+Asserts do `deriveAfty` cobrem Funcionamento Básico e Habilidade Única com Dados de Dano, usando
+`alvo: "todos"`, e confirmam que o bônus volta a atingir o Ataque Básico e as armas equipadas.
 
 ## SESSÃO DE 2026-08-15: ALVOS E GUIA DA HABILIDADE ÚNICA DE GRAU ESPECIAL
 
@@ -1762,13 +1890,14 @@ src/systems/afty/` limpo e `npx vite build` limpo.
 
 ### Quantidade final de dados no Motor
 
-- A variável de linha `dados_dano_final` pode ser usada no canal `danoBonus`. Ela é avaliada depois
-  que o Feitiço fecha sua quantidade real de dados, incluindo as alterações do canal `dadosDano`.
+- A variável de linha `dados_dano_final` pode ser usada nos canais `danoBonus` e `dadosDano`. Ela é
+  avaliada depois que cada ataque físico ou Feitiço fecha sua quantidade de dados comum.
+- No canal `dadosDano`, a avaliação é uma passagem tardia única. A variável lê a quantidade anterior
+  ao próprio efeito, o resultado é acrescentado uma vez e não é reavaliado sobre o novo total.
 - Um Passivo / Característica com alvo `feitico:<id>` mostra no editor o valor calculado para aquele
   Feitiço. O alvo geral `feitico` não mostra uma prévia numérica, pois cada Feitiço pode possuir uma
   quantidade diferente de dados.
-- Em Múltiplos Disparos, a variável representa os dados de cada disparo. Ela não pode ser usada no
-  canal `dadosDano`, pois a quantidade de dados passaria a depender dela mesma.
+- Em Múltiplos Disparos, a variável representa os dados de cada disparo.
 
 ### Fora desta etapa
 
@@ -3010,8 +3139,8 @@ que ficou de fora, e nenhuma sobrou sem motivo.
 | Aura Excessiva | bancada | `rdGeral`, `dobro(au)` |
 | Cobrir-se | bancada | `pvTemporario`, 4 por PE gasto |
 | Cobertura Avançada | bancada | delta de +4 por PE sobre o Cobrir-se |
-| Estímulo Muscular | bancada | `bonusPericia` +1 por PE, `distanciaEmpurrao` de `cl × 1,5` |
-| Estímulo Muscular Avançado | bancada | deltas de +1 por PE e de mais `cl × 1,5` |
+| Estímulo Muscular | bancada | `bonusPericia` +1 por PE em Acrobacia e Atletismo, `distanciaEmpurrao` de `cl × 1,5` |
+| Estímulo Muscular Avançado | bancada | deltas de +1 por PE nos mesmos dois alvos e de mais `cl × 1,5` |
 | Fluxo Constante | bancada | `dadosRegeneracao`, `regeneracaoDado` e `regeneracao` |
 | Cura Amplificada | bancada | dado sobe para d8 e o modificador dobra |
 
@@ -3062,6 +3191,8 @@ comparar `2d6` contra `1d10`, que o autor já respondeu que é pela **maior méd
    vale para as ~10 habilidades que usam a mesma fórmula.
 3. **Estímulo Muscular fica como está.** Palavras do autor: "Não precisa de seletor,
    só aumenta os valores e a pessoa vê o quê ela quer, usa o teste e desativa."
+   **Correção de alvo em 2026-08-16:** continuar sem seletor não significa atingir toda perícia.
+   O bônus vale somente em Acrobacia ou Atletismo.
 4. **RD Específica vai VIRAR RD POR TIPO DE DANO.** Ela era o jeito do autor de
    tratar RD contra um tipo único (Queimante, Congelante e derivados), porque eram
    poucos casos. Ele decidiu trocar por uma RD por tipo de dano do sistema.

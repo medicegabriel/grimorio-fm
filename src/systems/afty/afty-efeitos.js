@@ -239,6 +239,21 @@ export const CANAL_LEGADO = {
 const CANAL_BY_ID = Object.fromEntries(EFEITO_CANAIS.map((c) => [c.id, c]));
 export const getCanal = (id) => CANAL_BY_ID[id] ?? null;
 
+/**
+ * Alvo vazio é o valor canônico de "todos" no Motor.
+ *
+ * Fichas que passaram por versões anteriores do editor podem carregar a
+ * palavra literal `todos`. Ela nunca foi id de atributo, ataque, perícia,
+ * fonte de dano ou fonte de cura, mas sem esta compatibilidade era tratada
+ * como um alvo real. O efeito então entrava em `porAlvo[canal].todos` e nenhum
+ * consumidor o encontrava. Normalizar na fronteira do Motor recupera tanto o
+ * Funcionamento Básico quanto a Habilidade Única e qualquer outra fonte livre.
+ */
+export function normalizarAlvoEfeito(alvo) {
+  const valor = String(alvo ?? "").trim();
+  return !valor || valor.toLowerCase() === "todos" ? null : valor;
+}
+
 /* ============================================================ */
 /* GRUPO EXCLUSIVO — as fontes que NÃO acumulam entre si         */
 /* ============================================================ */
@@ -639,7 +654,8 @@ export function efeitosDaTecnica(creature) {
         nome: fb.principal ? "Técnica" : fb.nome,
         exclusivo: "funcionamentoBasico",
       };
-      if (e.alvo) ef.alvo = e.alvo;
+      const alvo = normalizarAlvoEfeito(e.alvo);
+      if (alvo) ef.alvo = alvo;
       if (e.quando) ef.quando = String(e.quando).trim();
       if (e.duracao === "temporaria") ef.duracao = "temporaria";
       out.push(ef);
@@ -965,7 +981,7 @@ export function aplicarEfeitos(efeitos, ctx = {}) {
     const valor = evalNumber(e.expr, ctxE, 0);
     if (!valor) continue;
 
-    const alvo = canal.alvo ? (e.alvo || null) : null;
+    const alvo = canal.alvo ? normalizarAlvoEfeito(e.alvo) : null;
 
     // Pool exclusivo: sai da soma e vai para a disputa. O `detalhes` também
     // espera, porque só depois de conhecer o vencedor dá para dizer quem entrou
@@ -1083,18 +1099,21 @@ export function resolverExclusivos(res, jaAplicado = {}) {
 
 /**
  * Resolve a parcela do Motor que depende da quantidade final de dados de UMA
- * linha. Esses efeitos ficaram deliberadamente fora do estágio geral, evitando
+ * linha. Esses efeitos ficam deliberadamente fora do estágio geral, evitando
  * que `dados_dano_final + 2` aplique apenas o 2 antes de a linha existir e volte
  * a aplicar a expressão inteira depois.
  *
- * Por ora a variável só tem semântica no canal `danoBonus`: ler a quantidade de
- * dados para produzir mais dados criaria uma dependência circular.
+ * No canal `dadosDano`, a variável lê o valor fechado ANTES dos efeitos que
+ * também dependem dela. A passagem tardia acontece uma vez só: uma linha de 3
+ * dados com `dados_dano_final` recebe +3 e termina em 6, sem reavaliar sobre os
+ * 6 e criar recursão.
  */
 export function resolverEfeitosDanoFinal(
   efeitos, ctx = {}, dados = 0, jaAplicado = {}, { nivelFeitico = 0 } = {},
 ) {
   const dependentes = (Array.isArray(efeitos) ? efeitos : []).filter(efeitoUsaDadosDanoFinal);
-  const suportados = dependentes.filter((e) => e?.canal === "danoBonus");
+  const canaisSuportados = new Set(["danoBonus", "dadosDano"]);
+  const suportados = dependentes.filter((e) => canaisSuportados.has(e?.canal));
   const res = resolverExclusivos(
     aplicarEfeitos(suportados, {
       ...ctx,
@@ -1103,10 +1122,10 @@ export function resolverEfeitosDanoFinal(
     }),
     jaAplicado,
   );
-  const ignorados = dependentes.filter((e) => e?.canal !== "danoBonus");
+  const ignorados = dependentes.filter((e) => !canaisSuportados.has(e?.canal));
   if (ignorados.length) {
     res.avisos.push(...ignorados.map((e) =>
-      `Variável de linha de dano só pode ser usada no canal danoBonus em ${e.nome || e.origem || "efeito"}.`));
+      `Variável de linha de dano só pode ser usada nos canais danoBonus e dadosDano em ${e.nome || e.origem || "efeito"}.`));
   }
   return res;
 }

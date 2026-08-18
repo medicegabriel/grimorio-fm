@@ -50,9 +50,35 @@ function Secao({ titulo, children }) {
  * A marca é CONSUMIDA pelo Dano. Ela some depois de usada, senão o próximo golpe
  * herdaria um crítico que não é dele.
  */
-function LinhaDano({ e, rolar, critico, onCritico, destacado }) {
+function LinhaDano({ e, rolar, critico, onCritico, destacado, onImbuir }) {
   const faces = facesDe(e.dado);
   const raiz = useDestaque(destacado);
+  const feiticoImbuido = e.imbuir?.escolhido ?? null;
+  const condicoesImbuidas = feiticoImbuido?.propriedades?.find((p) => p.id === "condicoes")?.valor;
+  const cdImbuida = feiticoImbuido?.propriedades?.find((p) => p.id === "cd")?.valor;
+  const rolarAdicionais = () => {
+    for (const extra of (e.danoAuxiliar ?? [])) {
+      rolar({
+        tipo: "dano",
+        rotulo: `${e.nome} · ${extra.nome}`,
+        dados: extra.dados,
+        faces: extra.faces,
+        fixo: 0,
+      });
+    }
+    for (const [indice, extra] of (feiticoImbuido?.rolagens ?? []).entries()) {
+      rolar({
+        tipo: "dano",
+        rotulo: `${e.nome} · ${feiticoImbuido.nome || "Feitiço Sem Nome"}`,
+        detalhe: extra.rotulo,
+        dados: extra.dados,
+        faces: extra.faces,
+        fixo: extra.fixo || 0,
+        explosiva: !!extra.explosiva,
+        feiticoDanoId: indice === 0 ? feiticoImbuido.id : null,
+      });
+    }
+  };
   return (
     <div
       ref={raiz}
@@ -99,10 +125,47 @@ function LinhaDano({ e, rolar, critico, onCritico, destacado }) {
             rolar({
               tipo: "dano", rotulo: e.nome, dados: e.dados, faces, fixo: e.fixo, critico,
             });
+            rolarAdicionais();
             if (critico) onCritico(false);
           }}
         />
+        {(e.danoAuxiliar ?? []).map((extra, indice) => (
+          <span key={`${extra.nome}:${indice}`} className="afty-chip" title={extra.nome}>
+            +{extra.dados}d{extra.faces}
+          </span>
+        ))}
+        {feiticoImbuido && (
+          <span
+            className="afty-chip"
+            data-afty-tom="destaque"
+            title={[feiticoImbuido.conjuracaoTexto, feiticoImbuido.descricao].filter(Boolean).join("\n\n")}
+          >
+            +{feiticoImbuido.valor || feiticoImbuido.nome || "Efeito"}
+          </span>
+        )}
+        {condicoesImbuidas && cdImbuida && (
+          <span className="afty-chip" title={condicoesImbuidas}>TR CD {cdImbuida}</span>
+        )}
       </div>
+      {e.imbuir && (
+        <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+          <span className="afty-rotulo text-[10px]">Imbuir</span>
+          <select
+            className="afty-campo bg-transparent outline-none text-[11px]"
+            value={feiticoImbuido?.id ?? ""}
+            onChange={(evento) => onImbuir?.(e.imbuir.estadoId, evento.target.value || null)}
+            aria-label={`Imbuir técnica em ${e.nome}`}
+          >
+            <option value="">Nenhum</option>
+            {e.imbuir.opcoes.map((opcao) => (
+              <option key={opcao.id} value={opcao.id}>{opcao.label}</option>
+            ))}
+          </select>
+          <span className="afty-valor text-[11px]" data-afty-tom="custo">
+            +{e.imbuir.custoAdicional} PE
+          </span>
+        </div>
+      )}
       {e.propriedades?.length > 0 && (
         <div className="flex flex-wrap gap-1 mt-1.5">
           {e.propriedades.map((p) => (
@@ -706,6 +769,7 @@ export default function AbaAcoes({
   onDesativarRitual,
   onIniciarRitualEstendido, onIniciarRitualSemTeste, onConcluirPreparacaoRitual,
   onCancelarRitual, onFinalizarRitual, onEncerrarRitual,
+  onImbuir,
 }) {
   const dano = derived.dano?.entradas ?? [];
   const cura = derived.cura?.linhas ?? [];
@@ -749,6 +813,7 @@ export default function AbaAcoes({
               critico={!!criticos[e.id]}
               onCritico={(v) => setCriticos((c) => ({ ...c, [e.id]: v }))}
               destacado={destaque === `dano:${e.id}`}
+              onImbuir={onImbuir}
             />
           ))}
         </Secao>

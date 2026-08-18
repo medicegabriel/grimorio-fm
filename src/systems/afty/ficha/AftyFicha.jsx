@@ -416,6 +416,7 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
         onCancelarRitual={(feiticoId) => atualiza((s) => cancelaRitual(s, feiticoId))}
         onFinalizarRitual={(feiticoId) => atualiza((s) => finalizaRitual(s, feiticoId))}
         onEncerrarRitual={(feiticoId) => atualiza((s) => encerraRitual(s, feiticoId))}
+        onImbuir={(estadoId, feiticoId) => alteraEstado({ id: estadoId }, feiticoId)}
       />
     ),
     habilidades: () => (

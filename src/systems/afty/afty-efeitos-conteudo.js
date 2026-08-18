@@ -2346,10 +2346,9 @@ export const ANATOMIA_EFEITOS = {
  *    mesmo arranjo das habilidades de Lutador e Combatente, e o motivo de a
  *    bancada existir.
  *
- * ⚠ Uma escolha de modelagem que vale registrar: `estimulo_muscular` dá "+1 por
- * PE gasto em UM teste", e entrou como bônus de PERÍCIA da bancada inteira. É
- * generoso de propósito, porque a bancada existe para ver o PICO. Se o autor
- * preferir que ele não apareça na ficha, basta tirar as duas linhas.
+ * ⚠ `estimulo_muscular` vale somente em Acrobacia ou Atletismo. O estado da
+ * bancada continua único e sem seletor, mas as duas linhas direcionadas impedem
+ * que o bônus apareça nas outras perícias (autor, 2026-08-16).
  *
  * ⚠ As duas duplas de melhoria (`cobertura_avancada` sobre `cobrir_se`, e
  * `estimulo_muscular_avancado` sobre `estimulo_muscular`) entram como DELTA por
@@ -2418,7 +2417,8 @@ export const APTIDAO_EFEITOS = {
   // "Caso seja um teste (comum ou oposto), você pode gastar até uma quantidade
   // de PE igual a seu Nível de Aptidão em Controle e Leitura, recebendo um bônus
   // de +1 para cada PE gasto."
-  // ⚠ Entra SEM alvo, ou seja, em toda perícia. Ver a nota do topo.
+  // As duas perícias citadas recebem o mesmo estado, sem seletor: o jogador usa
+  // o teste desejado e depois desativa a bancada.
   //
   // "Caso seja uma ação que empurre uma criatura ou arremesse um objeto
   // (Desarmar ou Empurrar), você pode gastar 2 PE para aumentar a distância em
@@ -2429,7 +2429,8 @@ export const APTIDAO_EFEITOS = {
   // distância de um Pulo) ficam de fora: os dois mexem numa AÇÃO, e não no
   // deslocamento da ficha.
   estimulo_muscular: [
-    { canal: "bonusPericia",       expr: "estimulo_teste", duracao: "temporaria" },
+    { canal: "bonusPericia", alvo: "acrobacia", expr: "estimulo_teste", duracao: "temporaria" },
+    { canal: "bonusPericia", alvo: "atletismo", expr: "estimulo_teste", duracao: "temporaria" },
     { canal: "distanciaEmpurrao",  expr: "cl * 1.5", quando: "estimulo_empurrao", duracao: "temporaria" },
   ],
 
@@ -2439,7 +2440,8 @@ export const APTIDAO_EFEITOS = {
   // objeto, a distância é aumentada em um valor igual ao seu Nível de Aptidão
   // multiplicado por 3 metros." DELTA de mais cl · 1,5 sobre os cl · 1,5 da base.
   estimulo_muscular_avancado: [
-    { canal: "bonusPericia",      expr: "estimulo_teste", duracao: "temporaria" },
+    { canal: "bonusPericia", alvo: "acrobacia", expr: "estimulo_teste", duracao: "temporaria" },
+    { canal: "bonusPericia", alvo: "atletismo", expr: "estimulo_teste", duracao: "temporaria" },
     { canal: "distanciaEmpurrao", expr: "cl * 1.5", quando: "estimulo_empurrao", duracao: "temporaria" },
   ],
 

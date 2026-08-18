@@ -42,6 +42,7 @@ export { AFTY_PERICIAS, AFTY_ATAQUES };
 import { AFTY_ATTRS, AFTY_RESISTENCIAS } from "./afty-schema";
 import {
   valorCanal, detalhesDoCanal, valorCanalEscopos, detalhesDoCanalEscopos, escoposDaArma,
+  resolverEfeitosDanoFinal,
 } from "./afty-efeitos";
 
 /* AFTY_PERICIAS mora em ./afty-pericias-catalogo.js e é reexportado no topo. */
@@ -319,8 +320,8 @@ function linhaDeDano({
  * com Manoplas ou Faixas equipadas. O atributo vem da arma: Força no corpo a
  * corpo, Destreza a distância, e com o traço Fineza vale o maior dos dois.
  *
- * ctx = { nd, patamar, mods, aptidaoCL, efeitos, armas, grauBasico,
- *         acertoGrauBasico, ataques }.
+ * ctx = { nd, patamar, mods, aptidaoCL, efeitos, efeitosLinhaDano,
+ *         contextoDsl, armas, grauBasico, acertoGrauBasico, ataques }.
  * `armas` = [{ id, nome, grauArma, acertoGrau, alcance, propriedades, fineza,
  * distancia }], montado pelo deriveAfty a partir dos equipamentos.
  *
@@ -340,6 +341,11 @@ export function resolveDano(creature, ctx = {}) {
   const ef = ctx.efeitos || null;
   const cl = Math.max(0, Math.trunc(Number(ctx.aptidaoCL) || 0));
   const modDe = (k) => Math.trunc(Number(mods[k]) || 0);
+  const rotuloAttr = (k) => AFTY_ATTRS.find((a) => a.key === k)?.label ?? k;
+  const tecnicas = ctx.tecnicasCombate ?? {};
+  const armasTecnicas = new Set(Array.isArray(tecnicas.armas) ? tecnicas.armas : []);
+  const atributoTecnicas = tecnicas.atributo === "sabedoria" ? "sabedoria" : "inteligencia";
+  const btTecnicas = Math.max(0, Math.trunc(Number(tecnicas.bt) || 0));
 
   // `alvo` aqui é sempre a LISTA de escopos da fonte (ver escoposDaArma): uma
   // arma responde pelo id, por "arma", pela categoria, pelo grupo e por cada
@@ -378,6 +384,37 @@ export function resolveDano(creature, ctx = {}) {
     for (const d of ef ? detalhesDoCanalEscopos(ef, "dadosDano", escopos) : []) {
       linha.partes.push({ label: d.nome, texto: `+${d.valor}${linha.dado}` });
     }
+
+    // `dados_dano_final` só existe depois que ESTA linha física fechou. A
+    // passagem tardia recebe a quantidade anterior ao próprio efeito, então
+    // `dadosDano = dados_dano_final` dobra os dados uma única vez, sem recursão.
+    const tardios = resolverEfeitosDanoFinal(
+      ctx.efeitosLinhaDano,
+      ctx.contextoDsl,
+      linha.dados,
+      ef?.aplicado,
+    );
+    const dadosTardios = Math.max(0, Math.trunc(valorCanalEscopos(tardios, "dadosDano", escopos)));
+    const bonusTardio = Math.trunc(valorCanalEscopos(tardios, "danoBonus", escopos));
+    linha.dados += dadosTardios;
+    linha.dadosExtras += dadosTardios;
+    linha.fixo += bonusTardio;
+    linha.total += bonusTardio;
+    linha.texto = textoDeDano(linha.dados, linha.dado, linha.fixo);
+    for (const d of detalhesDoCanalEscopos(tardios, "dadosDano", escopos, true)) {
+      linha.partes.push({
+        label: d.nome,
+        texto: `${d.valor >= 0 ? "+" : ""}${d.valor}${linha.dado}`,
+        ...(d.suplantado ? { suplantado: true } : {}),
+      });
+    }
+    for (const d of detalhesDoCanalEscopos(tardios, "danoBonus", escopos, true)) {
+      linha.partes.push({
+        label: d.nome,
+        valor: d.valor,
+        ...(d.suplantado ? { suplantado: true } : {}),
+      });
+    }
     return linha;
   };
 
@@ -389,7 +426,7 @@ export function resolveDano(creature, ctx = {}) {
   // escolhida" (Treino de Manejo de Arma) vazaria para as outras armas da mesma
   // categoria se usasse aquele canal.
   const ataques = Array.isArray(ctx.ataques) ? ctx.ataques : [];
-  const acertoDe = (ataqueId, grauBonus, escopos, fontes = []) => {
+  const acertoDe = (ataqueId, grauBonus, escopos, fontes = [], atributoForcado = null) => {
     const atq = ataques.find((a) => a.id === ataqueId);
     if (!atq) return null;
     // As fontes de encantamento saem do total do grau para aparecerem com o
@@ -397,11 +434,22 @@ export function resolveDano(creature, ctx = {}) {
     const doEncantamento = fontes.reduce((s, f) => s + (f.valor ?? 0), 0);
     const doGrau = grauBonus - doEncantamento;
     const doMotor = Math.trunc(canal("acertoArma", escopos));
+    const bonusAtaque = atributoForcado
+      ? atq.bonus - modDe(atq.atributo) - (atq.treinado ? btTecnicas : 0)
+        + modDe(atributoForcado) + btTecnicas
+      : atq.bonus;
+    const partesAtaque = atributoForcado
+      ? [
+        { label: rotuloAttr(atributoForcado), valor: modDe(atributoForcado) },
+        ...atq.partes.slice(1).filter((p) => !String(p.label).startsWith("Maestria")),
+        ...(btTecnicas ? [{ label: "Maestria", valor: btTecnicas }] : []),
+      ]
+      : atq.partes;
     return {
-      acerto: atq.bonus + grauBonus + doMotor,
+      acerto: bonusAtaque + grauBonus + doMotor,
       acertoAtaque: atq.nome,
       partesAcerto: [
-        ...atq.partes,
+        ...partesAtaque,
         ...(doGrau ? [{ label: "Grau da Ferramenta", valor: doGrau }] : []),
         ...fontes,
         ...fontesDe("acertoArma", escopos),
@@ -430,17 +478,20 @@ export function resolveDano(creature, ctx = {}) {
       propriedades.push({ id: "marcial", nome: "Marcial", valor: true, rotulo: "Marcial", concedida: true });
     }
     const escopos = escoposDaArma({ ...a, propriedades });
+    const usaTecnicas = armasTecnicas.has(a.id);
+    const atributo = usaTecnicas ? atributoTecnicas : atributoDe(a);
     entradas.push({
       id: a.id, nome: a.nome, fonte: "arma",
       alcance: a.alcance ?? null, propriedades,
       grupo: a.grupo ?? null, categoria: a.categoria ?? null, tipoDano: a.tipoDano ?? null,
       dedicada,
       elegivelDedicada: !!a.elegivelDedicada,
-      ...monta(escopos, atributoDe(a), a.grauArma, a.critico ?? 20),
-      // A arma a distância rola o Ataque A Distância, a de corpo a corpo rola o
-      // Corpo a Corpo. O atributo já seguiu a mesma regra logo acima.
-      ...acertoDe(a.distancia ? "distancia" : "corpo",
-        Math.max(0, Math.trunc(Number(a.acertoGrau) || 0)), escopos, a.fontesAcerto ?? []),
+      ...monta(escopos, atributo, a.grauArma, a.critico ?? 20),
+      // A ficha escolhe entre o ataque físico da categoria e o Ataque
+      // Amaldiçoado. O atributo do dano continua vindo da arma.
+      ...acertoDe(a.ataqueId ?? (a.distancia ? "distancia" : "corpo"),
+        Math.max(0, Math.trunc(Number(a.acertoGrau) || 0)), escopos, a.fontesAcerto ?? [],
+        usaTecnicas ? atributoTecnicas : null),
     });
   }
   return { entradas };

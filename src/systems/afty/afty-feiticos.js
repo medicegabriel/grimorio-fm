@@ -747,7 +747,7 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
     dadosDanoFinal = porDisparo;
   }
 
-  const resolveBonusDanoFinal = (quantidade) => {
+  const resolveEfeitoDanoFinal = (quantidade) => {
     const efeitos = resolverEfeitosDanoFinal(
       ctx.efeitosLinhaDano,
       ctx.contextoDsl,
@@ -757,11 +757,25 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
     );
     return {
       efeitos,
-      valor: Math.trunc(valorCanalEscopos(efeitos, "danoBonus", escoposDano)),
+      dados: Math.max(0, Math.trunc(valorCanalEscopos(efeitos, "dadosDano", escoposDano))),
+      bonus: Math.trunc(valorCanalEscopos(efeitos, "danoBonus", escoposDano)),
     };
   };
-  const bonusDanoFinal = resolveBonusDanoFinal(dadosDanoFinal);
-  avisos.push(...(bonusDanoFinal.efeitos.avisos || []));
+  // A variável lê a quantidade fechada ANTES do próprio efeito. A passagem é
+  // única: 3 dados com `dadosDano = dados_dano_final` recebem +3 e terminam em
+  // 6. Em Múltiplos Disparos isso acontece na linha de cada disparo.
+  const efeitoDanoFinal = resolveEfeitoDanoFinal(dadosDanoFinal);
+  avisos.push(...(efeitoDanoFinal.efeitos.avisos || []));
+  if (subtipo === "multiplos") {
+    disparosCalculados = {
+      ...disparosCalculados,
+      porDisparo: disparosCalculados.porDisparo + efeitoDanoFinal.dados,
+    };
+    dadosDanoFinal = disparosCalculados.porDisparo;
+  } else {
+    dados += efeitoDanoFinal.dados;
+    dadosDanoFinal = dados;
+  }
 
   // Conjuração Aprimorada é um bônus FIXO por alvo. Ele não entra no saldo de
   // customização e não muda a quantidade de dados. Em Múltiplos Disparos o
@@ -772,23 +786,25 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
   if (f.focoCondicao && bonusDoRitual.dano > 0) {
     avisos.push("Aumento de Dano não se aplica a um Feitiço de Somente Condição.");
   }
-  const bonusSemRitual = bonusConjuracao + bonusMotor + bonusDanoFinal.valor;
+  const bonusSemRitual = bonusConjuracao + bonusMotor + efeitoDanoFinal.bonus;
   const bonusDano = bonusSemRitual + bonusRitualDano;
 
   // 9) Múltiplos disparos: divide os dados finais (piso, mín 1) pelo nº de disparos.
   let danoTexto;
   if (subtipo === "multiplos") {
     const { disparos, porDisparo } = disparosCalculados;
-    const bonusConcentrado = bonusConjuracao + bonusMotor + resolveBonusDanoFinal(dados).valor;
+    const efeitoConcentrado = resolveEfeitoDanoFinal(dados);
+    const dadosConcentrados = dados + efeitoConcentrado.dados;
+    const bonusConcentrado = bonusConjuracao + bonusMotor + efeitoConcentrado.bonus;
     disparosInfo = {
       disparos,
       porDisparo,
-      concentradoTotal: dados,
+      concentradoTotal: dadosConcentrados,
       bonusPorDisparo: bonusSemRitual,
       bonusRitualDano,
       porDisparoTexto: notacaoDanoComBonus(porDisparo, tipoDado, bonusSemRitual, explosiva),
       primeiroDisparoTexto: notacaoDanoComBonus(porDisparo, tipoDado, bonusDano, explosiva),
-      concentradoTexto: notacaoDanoComBonus(dados, tipoDado, bonusConcentrado + bonusRitualDano, explosiva),
+      concentradoTexto: notacaoDanoComBonus(dadosConcentrados, tipoDado, bonusConcentrado + bonusRitualDano, explosiva),
     };
     danoTexto = bonusRitualDano && disparos > 1
       ? `${disparosInfo.primeiroDisparoTexto} + ${disparos - 1}× ${disparosInfo.porDisparoTexto}`
@@ -802,8 +818,11 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
   if (subtipo === "continuo") {
     danoContInicial = notacaoDanoComBonus(dados, tipoDado, bonusDano, explosiva);
     // Os dados da Ciclagem pertencem ao uso inicial, não ao dano que se repete
-    // nas rodadas seguintes.
-    const contDados = Math.max(1, Math.floor(dadosAntesCiclagem / 2));
+    // nas rodadas seguintes. Já o `dadosDano` tardio pertence ao Feitiço e
+    // entra antes da metade, igual ao `dadosDano` comum do Motor.
+    const dadosContinuos = dadosAntesCiclagem
+      + resolveEfeitoDanoFinal(dadosAntesCiclagem).dados;
+    const contDados = Math.max(1, Math.floor(dadosContinuos / 2));
     contPorRodada = notacaoDanoComBonus(contDados, tipoDado, 0, explosiva);
     contDadosPorRodada = contDados;
     const continuoConcentrado = f.continuoModo === "concentrado" || bonusDoRitual.converteSustento;
@@ -894,6 +913,11 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
         texto: `${d.valor >= 0 ? "+" : ""}${d.valor}d${tipoDado}`,
         ...(d.suplantado ? { suplantado: true } : {}),
       })),
+      ...detalhesDoCanalEscopos(efeitoDanoFinal.efeitos, "dadosDano", escoposDano, true).map((d) => ({
+        label: d.nome,
+        texto: `${d.valor >= 0 ? "+" : ""}${d.valor}d${tipoDado}`,
+        ...(d.suplantado ? { suplantado: true } : {}),
+      })),
       ...(dadosCiclagem ? [{
         label: "Ciclagem Maldita",
         texto: `+${dadosCiclagem}d${tipoDado}`,
@@ -904,7 +928,7 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
         valor: d.valor,
         ...(d.suplantado ? { suplantado: true } : {}),
       })),
-      ...detalhesDoCanalEscopos(bonusDanoFinal.efeitos, "danoBonus", escoposDano, true).map((d) => ({
+      ...detalhesDoCanalEscopos(efeitoDanoFinal.efeitos, "danoBonus", escoposDano, true).map((d) => ({
         label: d.nome,
         valor: d.valor,
         ...(d.suplantado ? { suplantado: true } : {}),
@@ -2863,6 +2887,8 @@ export function createBlankFeitico() {
     transfEfeitos: [],              // Transformação: id de aux por slot
     // --- campos de Feitiço Auxiliar ---
     efeitoAux: "defesa",       // ver AUX_EFEITOS
+    alvoAuxAtributo: "forca",  // destino do Aumento de Atributo
+    alvoAuxTR: "reflexos",     // destino do Bônus em Teste de Resistência
     duracaoAux: "imediata",    // imediata | duradoura | sustentada
     rodadasDur: 1,             // rodadas da Duradoura (dentro da faixa do nível)
     alvosAux: 1,               // alvos afetados (divide o bônus se > 1; 1 se Próprio)
@@ -2893,6 +2919,8 @@ export function createBlankAuxEffect(nivel = 1) {
     efeito: "defesa",
     nivel,
     duracao: "imediata",
+    alvoAuxAtributo: "forca",
+    alvoAuxTR: "reflexos",
     acao: "padrao",
     umGolpe: false,
     tiposDanoExtra: 0,
@@ -3344,11 +3372,27 @@ function linhaDoFeitico(f, ctx, creature) {
       ritualistaExtra,
       dispensaTesteRitual,
     }) ?? null;
-    const calc = aplicaReducoesCustoFeitico(f, calculoBase, {
+    let calc = aplicaReducoesCustoFeitico(f, calculoBase, {
       ...ctx,
       feiticos: lista,
       reducoesCustoFeitico: creature?.reducoesCustoFeitico,
     });
+    const reducaoSustentacao = Math.max(0, Math.trunc(Number(ctx.reducaoSustentacao) || 0));
+    if (calc && reducaoSustentacao > 0) {
+      const reduz = (valor) => (valor > 0 ? Math.max(1, valor - reducaoSustentacao) : valor);
+      calc = {
+        ...calc,
+        upkeepPE: reduz(calc.upkeepPE),
+        sustentacaoPE: reduz(calc.sustentacaoPE),
+        detalhes: calc.detalhes?.continuo ? {
+          ...calc.detalhes,
+          continuo: {
+            ...calc.detalhes.continuo,
+            custoSustentacao: reduz(calc.detalhes.continuo.custoSustentacao),
+          },
+        } : calc.detalhes,
+      };
+    }
     const avisos = calc
       ? [...(calc.avisos || []), ...((calc.efeitos || []).flatMap((e) => e.avisos || []))]
       : [];

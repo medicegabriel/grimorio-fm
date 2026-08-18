@@ -75,6 +75,9 @@ function LinhaEstado({ estado, valor, delta, opcoes, onValor, derived, bloqueado
           ))}
         </span>
       )}
+      {estado.custoPE != null && valor && (
+        <span className="afty-valor text-[11px]" data-afty-tom="custo">{estado.custoPE} PE</span>
+      )}
 
       {estado.tipo === "bool" ? (
         <button

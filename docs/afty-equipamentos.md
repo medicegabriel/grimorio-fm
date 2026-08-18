@@ -361,6 +361,14 @@ pedem uma fonte de dano oferecem Ataque Básico, todas as armas, categorias, gru
 tipos de dano, Feitiços de Dano e as fontes concretas da ficha. Sem alvo continua significando
 `todos`. Canais que pedem uma fonte de Cura oferecem as fontes catalogadas em `afty-cura.js`.
 
+Compatibilidade de ficha: o alvo literal `"todos"`, gravado por versões anteriores, é lido como alvo
+vazio. Sem essa normalização o Motor calculava o valor, mas o colocava numa fonte inexistente chamada
+`todos`, e a Habilidade Única não alterava nenhuma linha final.
+
+Expressões com `dados_dano_final` são resolvidas depois que cada linha de dano fecha sua quantidade
+comum de dados. No canal Dados de Dano, esse valor é acrescentado uma vez ao Ataque Básico, às armas
+e aos Feitiços atingidos pelo alvo da Habilidade Única.
+
 ### O que o motor NÃO aplica
 
 - **Bônus de Arma** (dano de arma não é stat da ficha, igual às armas comuns): só exibido no item.
