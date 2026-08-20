@@ -45,6 +45,7 @@ export const AFTY_ESPECIALIZACOES = [
     nome: "Lutador",
     resumo: "",
     descricao: "",
+    treinamentos: { armas: ["simples", "marciais"], escudos: ["leve"] },
     exclusivaOrigemId: null,
   },
   {
@@ -52,6 +53,7 @@ export const AFTY_ESPECIALIZACOES = [
     nome: "Combatente",
     resumo: "",
     descricao: "",
+    treinamentos: { armas: ["todas"], escudos: ["todos"] },
     exclusivaOrigemId: null,
   },
   {
@@ -59,6 +61,7 @@ export const AFTY_ESPECIALIZACOES = [
     nome: "Conjurador",
     resumo: "",
     descricao: "",
+    treinamentos: { armas: ["simples", "distancia"], escudos: [] },
     exclusivaOrigemId: null,
   },
   {
@@ -66,6 +69,7 @@ export const AFTY_ESPECIALIZACOES = [
     nome: "Suporte",
     resumo: "",
     descricao: "",
+    treinamentos: { armas: ["simples"], escudos: ["todos"] },
     exclusivaOrigemId: null,
   },
   {
@@ -73,6 +77,7 @@ export const AFTY_ESPECIALIZACOES = [
     nome: "Controlador",
     resumo: "",
     descricao: "",
+    treinamentos: { armas: ["simples", "distancia"], escudos: [] },
     exclusivaOrigemId: null,
   },
   {
@@ -80,6 +85,7 @@ export const AFTY_ESPECIALIZACOES = [
     nome: "Restringido",
     resumo: "",
     descricao: "",
+    treinamentos: { armas: ["todas"], escudos: ["todos"] },
     // Só acessível com a Origem Restringido, e ela só dá acesso a esta.
     exclusivaOrigemId: "restringido",
   },
@@ -88,6 +94,23 @@ export const AFTY_ESPECIALIZACOES = [
 const BY_ID = Object.fromEntries(AFTY_ESPECIALIZACOES.map((e) => [e.id, e]));
 
 export const getEspecializacao = (id) => BY_ID[id] || null;
+
+/**
+ * Treinamentos de equipamento concedidos pelas Especializações escolhidas.
+ * Multiclasse reúne as fontes sem duplicar categorias. O resultado continua
+ * sendo dado de regra, não uma escolha gravada na ficha.
+ */
+export function treinamentosDasEspecializacoes(especializacoes = []) {
+  const armas = new Set();
+  const escudos = new Set();
+  for (const entrada of Array.isArray(especializacoes) ? especializacoes : []) {
+    const id = typeof entrada === "string" ? entrada : entrada?.id;
+    const treinamentos = BY_ID[id]?.treinamentos;
+    for (const arma of treinamentos?.armas ?? []) armas.add(arma);
+    for (const escudo of treinamentos?.escudos ?? []) escudos.add(escudo);
+  }
+  return { armas: [...armas], escudos: [...escudos] };
+}
 
 /**
  * Especializações que a origem permite escolher, na ordem do catálogo.

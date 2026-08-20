@@ -55,7 +55,7 @@ import {
   duracaoDominio, areaDominio, custoDominio, pvBarreira, maxEfeitos, vagasUsadas,
   textoDoDominio,
 } from "./afty-dominios";
-import { resolveEspecializacoes, AFTY_ESPECIALIZACOES } from "./afty-especializacoes";
+import { resolveEspecializacoes, AFTY_ESPECIALIZACOES, treinamentosDasEspecializacoes } from "./afty-especializacoes";
 import {
   resolveHabilidades, efeitosInvocacaoControlador, getHabilidade, OPCAO_ESCOLHA_NOME,
   resolveMarcadoresInvocacao, resolveControleInvocacoes,
@@ -64,7 +64,9 @@ import {
   encantamentosDeManejoEspecial, habilidadesConcedidasPelasEspecializacoes,
   aptidoesConcedidasPelasHabilidades,
 } from "./afty-habilidades";
-import { resolveTalentos, getTalento, OPCAO_TALENTO_NOME, AFTY_TALENTOS } from "./afty-talentos";
+import {
+  resolveTalentos, resolveTreinoEscudo, getTalento, OPCAO_TALENTO_NOME, AFTY_TALENTOS,
+} from "./afty-talentos";
 import {
   resolveAltoNivel, getMelhoriaSuperior, getHabilidadeLendaria, getHabilidadeApice,
 } from "./afty-alto-nivel";
@@ -416,6 +418,8 @@ export function deriveAfty(creature, opcoes = {}) {
   const talentosPre = resolveTalentos(creature, {
     nd, attrEff: attrBase, origemId, origensQualificadas: origensQuali, especializacoes: especializacoes.escolhidas,
   });
+  const treinamentosEquipamento = treinamentosDasEspecializacoes(especializacoes.escolhidas);
+  const treinoEscudo = resolveTreinoEscudo(especializacoes.escolhidas, talentosPre.escolhidas);
   // bt entra por causa do Roubo de Habilidade, cujo limite de repetições é o
   // Bônus de Treinamento. O último parâmetro são as vagas extras da Habilidade
   // Geral Especialização.
@@ -762,6 +766,7 @@ export function deriveAfty(creature, opcoes = {}) {
     resistenciasProf: creature?.resistenciasProf, combate,
     aptidaoOpcoes: semEnergia ? {} : creature?.aptidaoOpcoes,
     rdEscudoBase: equip.rdEscudoBase,
+    fontesTreinoEscudo: treinoEscudo.fontes,
     // `tem_*` inclui Talentos e Aptidões escolhidos, não só as Habilidades.
     // ⚠ A lista de aptidões respeita o `semEnergia`: um Restringido não tem
     // Aptidões, e `tem_*` não pode dizer que tem.
@@ -1666,6 +1671,8 @@ export function deriveAfty(creature, opcoes = {}) {
     orcamentoHabilidades, // contador ÚNICO da aba: Feitiços + Habilidades Gerais
     origem: escolhasOrigem, // { porEscolha, mapa } — escolhas aninhadas de Origem e Clã
     especializacoes,      // { escolhidas, total, max, obrigatoria, completa, erro }
+    treinamentosEquipamento,
+    treinoEscudo,
     habilidades,          // { escolhidas, total, gastos, restante, excedeu, inacessiveis, niveisPorEspec }
     talentos,             // { escolhidas, gastos, inacessiveis } — gasto já somado em habilidades.gastos
     altoNivel,            // { ativo, melhorias, lendarias, escolhas, apiceId } — orçamentos próprios

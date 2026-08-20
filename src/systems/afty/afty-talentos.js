@@ -31,13 +31,40 @@
 import { getOrigem } from "./afty-origens";
 import { AFTY_ATTRS, AFTY_RESISTENCIAS } from "./afty-schema";
 import { APTIDAO_TRILHAS } from "./afty-aptidoes";
-import { AFTY_ESPECIALIZACOES } from "./afty-especializacoes";
+import { AFTY_ESPECIALIZACOES, treinamentosDasEspecializacoes } from "./afty-especializacoes";
 // O Adepto de Combate empresta o pool de Estilos do Combatente. Sem ciclo:
 // afty-habilidades.js não importa daqui.
 import { ESTILOS_DE_COMBATE } from "./afty-habilidades";
 
 export const ALMA_LIVRE_TALENTO_ID = "tal_alma_livre";
 const ALMA_LIVRE_OPCAO_PREFIXO = "tal_alma_livre_esp_";
+
+/** Talentos que envolvem escudos e contam como uma fonte de treino. */
+export const TALENTOS_DE_ESCUDO = [
+  "tal_mestre_defensivo",
+  "tal_tecnicas_ofensivas_de_escudo",
+  "tal_tecnicas_defensivas_de_escudo",
+];
+
+/**
+ * Resolve as fontes de treino em escudos sem guardar resultado na ficha.
+ * Uma Especialização treinada conta como a primeira fonte. Cada Talento de
+ * escudo escolhido conta como outra. A segunda fonte ativa efeitos escritos
+ * como "Caso já seja treinado", entre eles a RD do Mestre Defensivo.
+ */
+export function resolveTreinoEscudo(especializacoes = [], talentos = []) {
+  const base = treinamentosDasEspecializacoes(especializacoes);
+  const escolhidos = new Set(Array.isArray(talentos) ? talentos : []);
+  const talentosDeEscudo = TALENTOS_DE_ESCUDO.filter((id) => escolhidos.has(id));
+  const fontes = (base.escudos.length > 0 ? 1 : 0) + talentosDeEscudo.length;
+  return {
+    base: base.escudos,
+    talentos: talentosDeEscudo,
+    fontes,
+    treinado: fontes > 0,
+    redundante: fontes >= 2,
+  };
+}
 
 const ALMA_LIVRE_ESPECIALIZACOES = AFTY_ESPECIALIZACOES
   .filter((e) => e.id !== "restringido")

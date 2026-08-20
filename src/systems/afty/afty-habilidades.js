@@ -13,8 +13,9 @@
  * 2. **Base e por Nível gastam O MESMO orçamento.** No livro as Bases são de
  *    graça; no Afty elas são escolhidas, igual às por Nível. A exceção é a
  *    Base marcada `automatica: true`, recebida ao alcançar o nível na
- *    especialização e sem gastar orçamento. Hoje são sete, liberadas caso a
+ *    especialização e sem gastar orçamento. Hoje são oito, liberadas caso a
  *    caso pelo autor:
+ *      • Lutador: Empolgação (1°) (autor, 2026-08-20).
  *      • Conjurador: Conjuração Aprimorada (1°), Adiantar a Evolução (4°).
  *      • Suporte: Suporte em Combate (1°), Energia Reversa (6°), Liberação
  *        de Energia Reversa (8°) (autor, 2026-08-10).
@@ -656,6 +657,7 @@ export const AFTY_HABILIDADES = [
     especializacaoId: "lutador",
     tipo: "base",
     nivel: 1,
+    automatica: true,
     descricao:
       "Uma boa luta é empolgante e te motiva a se arriscar mais e mais, permitindo movimentos mais " +
       "fortes e únicos. Para isso, você precisa continuar acertando golpes: você começa um combate " +
@@ -6000,7 +6002,7 @@ export const getHabilidade = (id) => BY_ID[id] || null;
 
 /**
  * Bases que a Especialização concede ao alcançar o nível, sem escolha e sem
- * gastar orçamento. Usado pelo Conjurador e pelo Suporte.
+ * gastar orçamento.
  */
 export function habilidadesConcedidasPelasEspecializacoes(escolhidasEspec = []) {
   const niveis = Object.fromEntries(

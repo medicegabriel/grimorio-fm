@@ -1719,6 +1719,13 @@ export const TALENTO_EFEITOS = {
     { canal: "iniciativa", expr: "5" },
   ],
 
+  // "Caso já seja treinado, você recebe Redução de Dano adicional com o
+  // escudo igual a metade do valor base de RD dele". A Especialização conta
+  // como uma fonte de treino, e cada Talento de escudo conta como outra.
+  tal_mestre_defensivo: [
+    { canal: "rdGeral", expr: "piso(rd_escudo / 2) * (fontes_treino_escudo >= 2)" },
+  ],
+
   // "você adiciona o bônus padrão do escudo em TRs de Reflexos." A redução da
   // margem de crítico é por uso e fica na mesa.
   tal_tecnicas_defensivas_de_escudo: [

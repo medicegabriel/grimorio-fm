@@ -473,6 +473,9 @@ export function buildCriaturaDslContext(base = {}) {
     // de equipamento no contexto, e entra porque o equipamento é resolvido antes
     // dos efeitos (ao contrário dos stats, que vêm depois: ver VARS_ADIADAS).
     rd_escudo: base.rdEscudoBase ?? 0,
+    // Uma fonte vem de qualquer Especialização treinada em escudo, e cada
+    // Talento de escudo escolhido soma outra. O Mestre Defensivo lê a segunda.
+    fontes_treino_escudo: base.fontesTreinoEscudo ?? 0,
     /* ⚠ Só os GÊMEOS. A morte do irmão é o segundo estágio da Restrição
        Celestial e inverte quase tudo dela, então ela precisa ser LEGÍVEL numa
        expressão: quase todo efeito da origem é escrito como
