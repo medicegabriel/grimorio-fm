@@ -89,12 +89,12 @@ export const AFTY_RESISTENCIAS = [
  * Minúsculo nem acima de Colossal.
  */
 export const AFTY_TAMANHOS = [
-  { value: "minusculo", label: "Minúsculo", passo: -2, atletismo: -5,  furtividade: 5 },
-  { value: "pequeno",   label: "Pequeno",   passo: -1, atletismo: -2,  furtividade: 2 },
-  { value: "medio",     label: "Médio",     passo: 0,  atletismo: 0,   furtividade: 0 },
-  { value: "grande",    label: "Grande",    passo: 1,  atletismo: 2,   furtividade: -2 },
-  { value: "enorme",    label: "Enorme",    passo: 2,  atletismo: 5,   furtividade: -5 },
-  { value: "colossal",  label: "Colossal",  passo: 3,  atletismo: 10,  furtividade: -10 },
+  { value: "minusculo", label: "Minúsculo", passo: -2, espacoAlcance: 1.5, atletismo: -5,  furtividade: 5 },
+  { value: "pequeno",   label: "Pequeno",   passo: -1, espacoAlcance: 1.5, atletismo: -2,  furtividade: 2 },
+  { value: "medio",     label: "Médio",     passo: 0,  espacoAlcance: 1.5, atletismo: 0,   furtividade: 0 },
+  { value: "grande",    label: "Grande",    passo: 1,  espacoAlcance: 3,   atletismo: 2,   furtividade: -2 },
+  { value: "enorme",    label: "Enorme",    passo: 2,  espacoAlcance: 4.5, atletismo: 5,   furtividade: -5 },
+  { value: "colossal",  label: "Colossal",  passo: 3,  espacoAlcance: 9,   atletismo: 10,  furtividade: -10 },
 ];
 
 /** O tamanho de onde toda criatura parte. Só o Motor tira ela daqui. */
@@ -378,6 +378,9 @@ export function createBlankAfty() {
     // { [aptidaoId]: valorId }. Só a Superioridade Física tem (atletismo ou
     // acrobacia), e cada valor vira a booleana `opt_<aptidao>_<valor>` no DSL.
     aptidaoOpcoes: {},
+    // Escolhas de cada aquisição de uma Aptidão repetível:
+    // { [aptidaoId]: [valorDaPrimeira, valorDaSegunda] }.
+    aptidaoOpcoesRepetidas: {},
     // Expansões de Domínio criadas (ver afty-dominios.js). Uma criatura pode ter
     // várias escritas, mas expande UMA de cada vez: `dominioAtivoId` diz qual
     // está no ar, e é ela que a bancada de combate aplica na ficha.

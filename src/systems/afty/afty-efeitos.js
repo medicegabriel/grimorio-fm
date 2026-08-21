@@ -992,7 +992,10 @@ export function coletarEfeitosOrigem(creature, escolhas = null) {
 export function coletarEfeitosAptidao(creature, semEnergia = false) {
   if (semEnergia) return [];
   const ids = Array.isArray(creature?.aptidoesAmaldicoadas) ? creature.aptidoesAmaldicoadas : [];
-  return coletarEfeitos(ids, APTIDAO_EFEITOS, (id) => getAptidao(id));
+  // A lista pode repetir uma Aptidão para representar aquisições adicionais.
+  // O efeito-base continua entrando uma só vez (Crescimento Corporal não
+  // repete os PV); efeitos próprios de cada aquisição são resolvidos no derive.
+  return coletarEfeitos([...new Set(ids)], APTIDAO_EFEITOS, (id) => getAptidao(id));
 }
 
 /* ============================================================ */

@@ -1,6 +1,6 @@
 # Asserts do Afty
 
-Os asserts de lógica do lado do Afty. São **585, em 17 arquivos**, e cobrem o avaliador do DSL, as
+Os asserts de lógica do lado do Afty. São **649, em 19 arquivos**, e cobrem o avaliador do DSL, as
 primitivas novas do motor, o sistema de Addons de ponta a ponta e regras do catálogo que
 são fáceis de quebrar sem sintoma.
 
@@ -67,6 +67,7 @@ vai para o ar.
 | `t-primitivas` | o campo `permite`: quem enxerga cada primitiva de Addon, e a prova de que criatura raw não vê nenhuma |
 | `t-bases-automaticas` | as Bases que a Especialização concede sozinha (`automatica: true`): quem recebe, o orçamento intocado, e a escolha aninhada que sobrevive à concessão |
 | `t-pugilato` | Faixas, Manoplas e Soco Inglês alimentando o Ataque Básico: os cinco graus, o item que define o golpe, e o efeito de encantamento chegando na linha |
+| `t-tamanho-pingente` | Crescimento Corporal repetível, redução de categoria, distância por tamanho e o Pingente de Amaterasu sob o sol ou com os três tesouros |
 
 ⚠ O `t-exemplo` é o mais importante de manter: ele garante que o JSON que está escrito no doc
 realmente funciona. Foi ele que achou a lacuna do `efeitos` que era validado e nunca aplicado.

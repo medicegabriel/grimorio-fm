@@ -201,7 +201,7 @@ Da lista de retomada em `afty-status.md` (seção C), continuam valendo:
 | C2 | `nivelMin` de escolha aninhada não bloqueia (Restringido 2 rouba habilidade de 16°) |
 | C3 | **"Modificador de Int OU Sab"**: o jogador escolhe qual. Vira estado na ficha ou convenção "usa o maior"? Aparece em ~10 do Conjurador e vários do Suporte e Lutador |
 | C4 | **Repetível que concede nível de trilha à escolha** (6 casos, resolver junto) |
-| C5 | **Repetível que o shape de ids únicos não suporta** (Nova Habilidade ilimitada, Respeito Celeste 2x, Incremento de Atributo, Crescimento Corporal) |
+| C5 | **Repetível sem pool próprio — parcialmente resolvido.** Crescimento Corporal já usa ids repetidos + `aptidaoOpcoesRepetidas`; continuam pendentes Nova Habilidade ilimitada, Respeito Celeste 2x e Incremento de Atributo |
 | C6 | **Escolha aninhada de ATRIBUTO** (Incremento de Atributo, Quebra de Limites, Pináculo Físico) |
 | C7 | **Escolha aninhada que atravessa arquivos** (Adepto de Combate → `ESTILOS_DE_COMBATE`, Adepto de Feitiçaria → `MUDANCAS_DE_FUNDAMENTO`) |
 

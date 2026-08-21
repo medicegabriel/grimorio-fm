@@ -943,10 +943,44 @@ export function deriveAfty(creature, opcoes = {}) {
   // os vencedores somados, então a disputa que sobra aqui é só a do estágio 2. E
   // ela não precisa do `aplicado` dos estágios anteriores: `atributo` é o único
   // canal que roda antes daqui, e o filtro `ehEstagio2` justamente o exclui.
-  const efSemTamanho = resolverExclusivos(mesclarEfeitos(
+  const efSemCrescimento = resolverExclusivos(mesclarEfeitos(
     efMontanteSemAtributo, efPreContexto, efAttrPerm, efAttrTemp,
     aplicarEfeitos(efeitosAtivos.filter(ehEstagio2), montarCtx(attrEff, modByAttr)),
   ));
+
+  // Crescimento Corporal é a única Aptidão que pode aparecer duas vezes e cada
+  // aquisição escolhe o sentido da mudança. O efeito-base dela guarda somente
+  // os PV (uma vez); os degraus são produzidos aqui, um por aquisição.
+  //
+  // O aumento próprio desta Aptidão para em Enorme (+2), conforme o texto. Esse
+  // teto é calculado SÓ sobre os passos da Aptidão; outras fontes de tamanho
+  // continuam somando depois. Assim uma passiva +1 não é absorvida pelo teto e
+  // pode levar uma criatura Enorme por Crescimento Corporal a Colossal.
+  const crescimentoId = "mal_crescimento_corporal";
+  const crescimentoVezes = semEnergia ? 0 : (creature?.aptidoesAmaldicoadas ?? [])
+    .filter((id) => id === crescimentoId).length;
+  const crescimentoOpcoes = creature?.aptidaoOpcoesRepetidas?.[crescimentoId] ?? [];
+  let passoComCrescimento = 0;
+  const efeitosCrescimento = [];
+  for (let indice = 0; indice < crescimentoVezes; indice++) {
+    const direcao = crescimentoOpcoes[indice] === "diminuir" ? "diminuir" : "aumentar";
+    const podeAplicar = direcao === "diminuir" ? passoComCrescimento > -2 : passoComCrescimento < 2;
+    if (!podeAplicar) continue;
+    const valor = direcao === "diminuir" ? -1 : 1;
+    passoComCrescimento += valor;
+    efeitosCrescimento.push({
+      canal: "tamanho",
+      expr: String(valor),
+      origem: crescimentoId,
+      nome: `Crescimento Corporal (${indice + 1}ª aquisição: ${direcao === "diminuir" ? "Diminuir" : "Aumentar"})`,
+    });
+  }
+  const efSemTamanho = efeitosCrescimento.length
+    ? mesclarEfeitos(
+      efSemCrescimento,
+      aplicarEfeitos(efeitosCrescimento, montarCtx(attrEff, modByAttr)),
+    )
+    : efSemCrescimento;
 
   // ---------- Tamanho (autor, 2026-08-08) ----------
   // A criatura parte de Médio e SÓ o Motor a tira de lá: tamanho não é escolha
@@ -1802,6 +1836,7 @@ export function deriveAfty(creature, opcoes = {}) {
     tamanho: tamanho.value,
     tamanhoLabel: tamanho.label,
     tamanhoDegraus: degrausTamanho,
+    tamanhoEspacoAlcance: tamanho.espacoAlcance,
     mods: { forca: modFor, destreza: modDes, constituicao: modCon, inteligencia: modInt, sabedoria: modSab, presenca: modPre },
     attrEff,              // valor EFETIVO por atributo (base + efeitos, aparado no limite)
     attrPermanente,       // o que os PRÉ-REQUISITOS enxergam (sem os efeitos temporários)

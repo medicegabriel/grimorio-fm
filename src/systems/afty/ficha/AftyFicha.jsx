@@ -523,7 +523,9 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
                 {/* Só quando saiu de Médio: um chip "Médio" em toda ficha é
                     ruído, porque é o padrão de quase todas. */}
                 {derived.tamanhoDegraus !== 0 && (
-                  <Chip title="Mexe em Atletismo e Furtividade">{derived.tamanhoLabel}</Chip>
+                  <Chip title="Mexe em Atletismo e Furtividade">
+                    {derived.tamanhoLabel} · {String(derived.tamanhoEspacoAlcance).replace(".", ",")}m
+                  </Chip>
                 )}
                 {derived.carga?.sobrecarregado && (
                   <Chip tom="aviso" title={`${derived.carga.cargaLimite} espaços de limite`}>

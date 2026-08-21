@@ -2407,8 +2407,10 @@ ninguém** — a escolha não fazia nada.
   depende do tamanho e o tamanho depende do canal, que só fecha com o estágio 2 pronto. Resolver o
   tamanho primeiro e mesclar a régua depois quebra o laço, e é seguro porque a régua escreve num
   canal (`bonusPericia`) que nada do `tamanho` lê de volta.
-- `desenvolvimento_exagerado` e `mal_crescimento_corporal` passaram a emitir o degrau. O segundo uso
-  do Crescimento (repetível a partir do 10°) continua fora, pelo shape de ids únicos.
+- `desenvolvimento_exagerado` emite o degrau diretamente. O Crescimento Corporal ganhou aquisições
+  próprias: uma no nível 5 e a segunda no 10, cada uma escolhendo Aumentar ou Diminuir. O bônus de
+  PV continua uma vez só, e o teto próprio da Aptidão é Enorme; outras fontes ainda podem levar a
+  Colossal.
 - No criador o campo virou **leitura** com a régua ao lado, e não um Select desabilitado: campo
   cinza que não abre parece defeito. `core.tamanho` fica no schema como campo morto, só para não
   quebrar ficha antiga.
@@ -2898,7 +2900,7 @@ está anotado mas NÃO feito.** Cada seção por especialização, mais abaixo n
 | C2 | **`nivelMin` de escolha aninhada NÃO bloqueia.** Hoje um Restringido 2 rouba habilidade de 16°. Vale também para as 3 últimas Posturas de Combate. | Roubo, Posturas |
 | C3 | **"Modificador de Int OU Sab" (e Presença ou Sabedoria).** O jogador escolhe qual usar. NÃO é o `atributoOr` existente (aquele é requisito). Vira estado na ficha ou convenção "usa o maior"? | ~10 no Conjurador, vários no Suporte e Lutador |
 | C4 | **Repetível que concede NÍVEL DE TRILHA à escolha (6 casos).** *Aptidões de Combate*, *Aptidões de Luta*, *Aptidões de Suporte*, *Elevar Aptidão*, *Aptidão Desenvolvida*, *Estudo Amaldiçoado*. Todas orçamento, não concessão direcionada. **Resolver os 6 de uma vez.** | 4 especializações + 2 talentos |
-| C5 | **Repetível que o shape de ids únicos não suporta.** *Nova Habilidade* (ilimitado), *Respeito Celeste* (2x), *Incremento de Atributo*, *Crescimento Corporal* (aptidão). O padrão `escolha.repetivel` já resolve quando há pool, mas estes não têm. | Conjurador, Restringido, Talentos |
+| C5 | **Repetível sem pool próprio — parcialmente resolvido.** *Crescimento Corporal* já usa ids repetidos + `aptidaoOpcoesRepetidas`. Continuam *Nova Habilidade* (ilimitado), *Respeito Celeste* (2x) e *Incremento de Atributo*. | Conjurador, Restringido, Talentos |
 | C6 | **Escolha aninhada de ATRIBUTO** (eleva valor, às vezes o limite): *Incremento de Atributo*, *Quebra de Limites*, *Pináculo Físico*. Mesmo padrão do Desenvolvimento Inesperado (Derivado). | Talentos, Restringido |
 | C7 | **Escolha aninhada que ATRAVESSA arquivos**: *Adepto de Combate* → `ESTILOS_DE_COMBATE`, *Adepto de Feitiçaria* → `MUDANCAS_DE_FUNDAMENTO`, os dois pools em `afty-habilidades.js`. | Talentos |
 
@@ -5217,8 +5219,8 @@ dois talentos com o nome Adepto" — conta os escolhidos com o prefixo e bloquei
    - **Modificação Completa** (aptidão de Domínio concedida pelo Treino de Domínios Completo).
      O texto já existe em `MODIFICACAO_COMPLETA` (`afty-treinamentos.js`), mas ela NÃO está no
      catálogo, porque é concedida e não escolhida. Precisa decidir a marca (ex. `apenasConcedida`).
-   - **Crescimento Corporal** é REPETÍVEL ("a partir do 10° nível você pode obter esta aptidão
-     outra vez"). `aptidoesAmaldicoadas` é uma lista de ids únicos e não suporta 2x.
+   - ✅ **Crescimento Corporal repetível resolvido em 2026-08-20.** A lista aceita o mesmo id duas
+     vezes, e `aptidaoOpcoesRepetidas` guarda Aumentar/Diminuir por aquisição.
    - **Revestimento Evoluído** não lista Revestimento como pré-requisito, embora o texto dependa
      dele. Transcrito verbatim. Confirmar se é typo.
    - **Aptidões de Anatomia (Maldição)** × as 15 Características de Anatomia do Feto
@@ -5642,3 +5644,71 @@ catálogo (o chip dela nunca apareceria).
    é procedimento de mesa, ou o criador deve barrar alguma combinação?
 3. **A arma criada mora na FICHA, e não numa biblioteca.** Criar a mesma arma em duas
    criaturas é criar duas vezes. Vale uma biblioteca compartilhada entre fichas depois?
+
+---
+
+## TAMANHO REPETÍVEL, PASSIVA SIMPLES E RELÍQUIA DA YAMATA (2026-08-20, revisado 2026-08-21)
+
+### Crescimento Corporal pode ser adquirido duas vezes
+
+`mal_crescimento_corporal` agora declara `repetivel.maxVezes: 2` e libera a segunda
+aquisição no nível 10. A ficha mantém o id repetido em `aptidoesAmaldicoadas` e guarda a
+decisão de cada ocorrência em:
+
+```js
+aptidaoOpcoesRepetidas: {
+  mal_crescimento_corporal: ["aumentar", "diminuir"],
+}
+```
+
+Cada aquisição escolhe **Aumentar** ou **Diminuir** uma categoria. O bônus `hp = ND` é
+coletado uma única vez, mesmo com o id duplicado. Os passos de tamanho são emitidos à
+parte no `deriveAfty`, identificados pela aquisição, e o limite próprio do Crescimento é
+de −2 a +2 em relação a Médio. Esse limite não consome mudanças vindas de outras fontes:
+dois Crescimentos até Enorme mais uma Passiva de +1 ainda resultam em Colossal.
+
+A Ficha Final mostra `2×` e lista a escolha da 1ª e da 2ª aquisição. Remover a Aptidão
+também remove as opções repetidas órfãs.
+
+### Tamanho em Passivo / Característica
+
+No editor de Passivo / Característica, escolher o canal `tamanho` troca a linha genérica
+do Motor por controles diretos:
+
+- Aumentar ou Diminuir;
+- uma, duas ou três categorias;
+- duração permanente e sem expressão/condição expostas nessa versão simples.
+
+O resultado continua sendo um efeito normal do canal `tamanho`; somente a edição foi
+simplificada. A categoria derivada agora também entrega e exibe **espaço/alcance**:
+
+| Categoria | Espaço/alcance |
+|---|---:|
+| Minúsculo, Pequeno ou Médio | 1,5m |
+| Grande | 3m |
+| Enorme | 4,5m |
+| Colossal | 9m |
+
+Esse valor aparece na Identidade, no Preview e no chip de tamanho da Ficha Final.
+
+### Pingente de Amaterasu
+
+Relíquia pessoal de evento da Yamata: Acessório único de custo 4, fora do catálogo base.
+Ela aparece no card **Relíquias de Evento · Yamata** quando o nome da ficha contém
+“Yamata”. Equipada, concede +2 nos seis atributos quando `solDireto` está ligado.
+
+O conjunto possui **três tesouros no total**. O marcador `conjuntoSagradoCompleto` mantém
+o sol ativo sem depender do ambiente; a coleção `tesouros_sagrados_japao` também está
+preparada para reconhecer automaticamente três ids distintos carregados quando os outros
+dois forem cadastrados. O bônus continua exigindo o Pingente equipado.
+
+### Integração com o Motor de Addons #027
+
+A atualização remota foi aplicada antes do commit local. Não houve conflito textual. Equipamentos
+ainda não são uma família aberta pelos Addons, então a relíquia continua no catálogo privado em
+vez de fingir que um pacote JSON já consegue criá-la.
+
+`asserts/t-tamanho-pingente.mjs` prende 14 casos: as duas direções do Crescimento, cancelamento,
+PV sem duplicação, distância de Enorme, o Pingente sem sol, sob o sol, guardado, com marcador manual
+e com os três ids da coleção carregados, além do aparo de quantidade e das marcas do catálogo. Com
+ela, a suíte passa a **649 asserts em 19 arquivos**.

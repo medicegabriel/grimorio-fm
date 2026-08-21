@@ -612,12 +612,43 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
   // Aptidões Amaldiçoadas: escolher é de graça (o requisito é o que trava).
   const setAptidaoOpcao = (id, valor) =>
     patch({ aptidaoOpcoes: { ...(draft.aptidaoOpcoes || {}), [id]: valor } });
+  const setAptidaoVezes = (id, vezes) =>
+    setDraft((d) => {
+      const atual = Array.isArray(d.aptidoesAmaldicoadas) ? d.aptidoesAmaldicoadas : [];
+      const outras = atual.filter((x) => x !== id);
+      const n = Math.max(0, Math.trunc(Number(vezes) || 0));
+      const mapa = { ...(d.aptidaoOpcoesRepetidas || {}) };
+      if (n > 0) {
+        const anteriores = Array.isArray(mapa[id]) ? mapa[id] : [];
+        mapa[id] = Array.from({ length: n }, (_, i) => anteriores[i] ?? "aumentar");
+      } else {
+        delete mapa[id];
+      }
+      return {
+        ...d,
+        aptidoesAmaldicoadas: [...outras, ...Array(n).fill(id)],
+        aptidaoOpcoesRepetidas: mapa,
+      };
+    });
+  const setAptidaoOpcaoRepetida = (id, indice, valor) =>
+    setDraft((d) => {
+      const vezes = (d.aptidoesAmaldicoadas || []).filter((x) => x === id).length;
+      const mapa = { ...(d.aptidaoOpcoesRepetidas || {}) };
+      const opcoes = Array.from({ length: vezes }, (_, i) => mapa[id]?.[i] ?? "aumentar");
+      opcoes[indice] = valor;
+      mapa[id] = opcoes;
+      return { ...d, aptidaoOpcoesRepetidas: mapa };
+    });
   const toggleAptidao = (id) =>
     setDraft((d) => {
       const atual = Array.isArray(d.aptidoesAmaldicoadas) ? d.aptidoesAmaldicoadas : [];
+      const removendo = atual.includes(id);
+      const opcoesRepetidas = { ...(d.aptidaoOpcoesRepetidas || {}) };
+      if (removendo) delete opcoesRepetidas[id];
       return {
         ...d,
-        aptidoesAmaldicoadas: atual.includes(id) ? atual.filter((x) => x !== id) : [...atual, id],
+        aptidoesAmaldicoadas: removendo ? atual.filter((x) => x !== id) : [...atual, id],
+        aptidaoOpcoesRepetidas: opcoesRepetidas,
       };
     });
 
@@ -936,7 +967,7 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
           )}
           {tabAtiva === "habilidades" && <TabHabilidades draft={draft} derived={derived} patchCore={patchCore} toggleArmaDedicada={toggleArmaDedicada} addFeitico={addFeitico} removeFeitico={removeFeitico} patchFeitico={patchFeitico} duplicarFeitico={duplicarFeitico} setReducoesCustoFeitico={setReducoesCustoFeitico} toggleEstiloTabela={toggleEstiloTabela} addEstiloEspecial={addEstiloEspecial} removeEstilo={removeEstilo} patchEstilo={patchEstilo} addFuncionamento={addFuncionamento} removeFuncionamento={removeFuncionamento} patchFuncionamento={patchFuncionamento} setGeralVezes={setGeralVezes} addDominio={addDominio} removeDominio={removeDominio} patchDominio={patchDominio} setDominioAtivo={setDominioAtivo} />}
           {tabAtiva === "especializacoes" && <TabEspecializacoes draft={draft} derived={derived} setEspecializacoes={setEspecializacoes} toggleHabilidade={toggleHabilidade} toggleEscolhaHabilidade={toggleEscolhaHabilidade} toggleTalento={toggleTalento} toggleEscolhaTalento={toggleEscolhaTalento} setMelhoriaVezes={setMelhoriaVezes} toggleLendaria={toggleLendaria} toggleEscolhaAltoNivel={toggleEscolhaAltoNivel} patchTecnicasCombate={patchTecnicasCombate} />}
-          {tabAtiva === "aptidoes" && <TabAptidoes draft={draft} derived={derived} setAptidaoNivel={setAptidaoNivel} toggleAptidao={toggleAptidao} setAptidaoOpcao={setAptidaoOpcao} />}
+          {tabAtiva === "aptidoes" && <TabAptidoes draft={draft} derived={derived} setAptidaoNivel={setAptidaoNivel} toggleAptidao={toggleAptidao} setAptidaoOpcao={setAptidaoOpcao} setAptidaoVezes={setAptidaoVezes} setAptidaoOpcaoRepetida={setAptidaoOpcaoRepetida} />}
           {tabAtiva === "invocacoes" && <TabInvocacoes draft={draft} derived={derived} addInvocacao={addInvocacao} removeInvocacao={removeInvocacao} duplicarInvocacao={duplicarInvocacao} moverInvocacao={moverInvocacao} patchInvocacao={patchInvocacao} patchInvocacaoAttr={patchInvocacaoAttr} efeitosApi={efeitosApi} addHorda={addHorda} removeHorda={removeHorda} patchHorda={patchHorda} />}
           {tabAtiva === "equipamentos" && <TabEquipamentos draft={draft} derived={derived} addEquipamento={addEquipamento} removeEquipamento={removeEquipamento} patchEquipamento={patchEquipamento} toggleFerramenta={toggleFerramenta} patchFerramenta={patchFerramenta} toggleEncantamento={toggleEncantamento} addArmaCustom={addArmaCustom} patchArmaCustom={patchArmaCustom} removeArmaCustom={removeArmaCustom} />}
           {tabAtiva === "interludios" && <TabInterludios draft={draft} derived={derived} setTreinoProgresso={setTreinoProgresso} setTreinoInstance={setTreinoInstance} setTreinoEspecialVezes={setTreinoEspecialVezes} />}
@@ -2802,7 +2833,10 @@ function fontesDanoDaFicha(draft, derived) {
    Os conectores não são texto explicativo: eles são o que IDENTIFICA cada campo,
    e um rótulo empilhado em cima de cada controle dobraria a altura da linha, que
    é exatamente o erro que a nota de canal cometeu ("Você PIOROU"). */
-function TecnicaMotorEditor({ efeitos, onChange, pericias, fontesDano = [], comModo = false, dslGrupos = [] }) {
+function TecnicaMotorEditor({
+  efeitos, onChange, pericias, fontesDano = [], comModo = false, dslGrupos = [],
+  titulo = "Motor de Automação", simplificarTamanho = false,
+}) {
   const lista = Array.isArray(efeitos) ? efeitos : [];
   // Devolve só os campos de DADO, nunca os resolvidos: `valor` e `ativo` são
   // derivados, e gravá-los deixaria a ficha mentindo no próximo render.
@@ -2820,7 +2854,15 @@ function TecnicaMotorEditor({ efeitos, onChange, pericias, fontesDano = [], comM
     if (idx !== i) return e;
     const next = { ...e, ...partial };
     // Trocar de canal invalida o alvo antigo: o vocabulário é outro.
-    if (partial.canal !== undefined) delete next.alvo;
+    if (partial.canal !== undefined) {
+      delete next.alvo;
+      // Em Passivo/Característica, tamanho é uma escolha permanente direta.
+      if (simplificarTamanho && partial.canal === "tamanho") {
+        next.expr = "1";
+        delete next.quando;
+        delete next.duracao;
+      }
+    }
     return next;
   }));
 
@@ -2830,7 +2872,7 @@ function TecnicaMotorEditor({ efeitos, onChange, pericias, fontesDano = [], comM
     <div className="mt-3 pt-3 border-t border-slate-800">
       <div className="flex items-center gap-2 mb-2">
         <Zap className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
-        <span className="text-xs font-semibold text-emerald-300">Motor de Automação</span>
+        <span className="text-xs font-semibold text-emerald-300">{titulo}</span>
         {lista.length > 0 && (
           <span className="ml-auto text-[10px] font-mono text-slate-500 tabular-nums">
             {ativos} de {lista.length} ativos
@@ -2845,6 +2887,10 @@ function TecnicaMotorEditor({ efeitos, onChange, pericias, fontesDano = [], comM
           const chkQuando = ef.quando ? validateExpression(ef.quando) : { ok: true };
           const quandoRuim = ef.quando && !chkQuando.ok;
           const alvos = ef.alvoTipo ? alvoOpcoes(ef.alvoTipo, pericias, fontesDano) : null;
+          const tamanhoSimples = simplificarTamanho && ef.canal === "tamanho";
+          const tamanhoValor = Math.trunc(Number(ef.expr) || 1);
+          const tamanhoDirecao = tamanhoValor < 0 ? -1 : 1;
+          const tamanhoPassos = Math.min(3, Math.max(1, Math.abs(tamanhoValor)));
           return (
             <div key={i} className="rounded border border-slate-800 bg-slate-950/50 p-2 space-y-2">
               {/* ---- O QUE o efeito é, e quanto ele VALE ---- */}
@@ -2879,6 +2925,48 @@ function TecnicaMotorEditor({ efeitos, onChange, pericias, fontesDano = [], comM
                 </button>
               </div>
 
+              {tamanhoSimples ? (
+                <div className="rounded-lg border border-purple-900/50 bg-purple-950/20 p-2.5 space-y-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-[10px] uppercase tracking-wider text-slate-500">Mudança</span>
+                    {[
+                      { valor: -1, label: "Diminuir" },
+                      { valor: 1, label: "Aumentar" },
+                    ].map((opcao) => (
+                      <button
+                        key={opcao.valor}
+                        type="button"
+                        onClick={() => patch(i, { expr: String(opcao.valor * tamanhoPassos), quando: "", duracao: "permanente" })}
+                        aria-pressed={tamanhoDirecao === opcao.valor}
+                        className={`rounded-md border px-2.5 py-1.5 text-[11px] font-semibold transition-colors ${
+                          tamanhoDirecao === opcao.valor
+                            ? "border-purple-500 bg-purple-700 text-white"
+                            : "border-slate-700 bg-slate-900 text-slate-400 hover:text-white"
+                        }`}
+                      >
+                        {opcao.label}
+                      </button>
+                    ))}
+                    <span className="ml-1 text-[10px] uppercase tracking-wider text-slate-500">Categorias</span>
+                    {[1, 2, 3].map((passos) => (
+                      <button
+                        key={passos}
+                        type="button"
+                        onClick={() => patch(i, { expr: String(tamanhoDirecao * passos), quando: "", duracao: "permanente" })}
+                        aria-pressed={tamanhoPassos === passos}
+                        className={`h-7 min-w-7 rounded-md border px-2 text-[11px] font-bold transition-colors ${
+                          tamanhoPassos === passos
+                            ? "border-purple-500 bg-purple-700 text-white"
+                            : "border-slate-700 bg-slate-900 text-slate-400 hover:text-white"
+                        }`}
+                      >
+                        {passos}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <>
               <div className="flex flex-wrap items-center gap-2">
                 <Conector>vale</Conector>
                 <CampoExpressao
@@ -2954,8 +3042,10 @@ function TecnicaMotorEditor({ efeitos, onChange, pericias, fontesDano = [], comM
                   </>
                 )}
               </div>
+                </>
+              )}
 
-              {(exprRuim || quandoRuim) && (
+              {!tamanhoSimples && (exprRuim || quandoRuim) && (
                 <p className="text-[10px] text-red-400 mt-1">
                   {exprRuim ? chk.error : `Condição: ${chkQuando.error}`}
                 </p>
@@ -3620,6 +3710,8 @@ function FeiticoCard({ feitico, ctx, nivelMax, efeitosPassivo, fontesDano, dslGr
               onChange={(v) => onPatch({ efeitosPassivo: v })}
               fontesDano={fontesDano}
               dslGrupos={dslGrupos}
+              titulo="Efeitos da Passiva"
+              simplificarTamanho
             />
           ) : (
             <div className="text-center py-5 border border-dashed border-slate-700 rounded-lg text-sm text-slate-400">
@@ -5466,6 +5558,9 @@ function TamanhoDerivado({ derived }) {
   return (
     <div className="w-full min-h-9 bg-slate-950 border border-slate-800 rounded px-2 py-1.5 flex items-center gap-2 flex-wrap">
       <span className="text-sm text-white">{tam.label}</span>
+      <span className="text-[10px] font-medium whitespace-nowrap text-sky-300">
+        Espaço/alcance {String(tam.espacoAlcance).replace(".", ",")}m
+      </span>
       {regua.map((r) => (
         <span
           key={r.label}
@@ -6985,7 +7080,10 @@ function NivelPicker({ value, concedido, restante, onChange, label, limite = APT
    parágrafo do livro: abertas todas de uma vez viram um paredão que
    ninguém lê. Recolhida, a linha mostra o que serve para ESCOLHER
    (nome + requisitos) e o texto abre sob demanda. */
-function AptidaoCard({ aptidao, escolhida, concedida, concessao = "origem", ctx, onToggle, opcaoAtual, onOpcao }) {
+function AptidaoCard({
+  aptidao, escolhida, concedida, concessao = "origem", vezes = 0, maxVezes = 1,
+  ctx, onToggle, opcaoAtual, onOpcao, opcoesRepetidas = [], onVezes, onOpcaoRepetida,
+}) {
   const [open, setOpen] = useState(false);
   const reqs = (aptidao.requisitos || []).map((r) => avaliarRequisitoAptidao(r, ctx));
   const faltando = reqs.filter((r) => r.verificavel && !r.ok);
@@ -7105,6 +7203,71 @@ function AptidaoCard({ aptidao, escolhida, concedida, concessao = "origem", ctx,
               </button>
             );
           })}
+        </div>
+      )}
+
+      {/* Cada aquisição de uma Aptidão repetível ocupa uma vaga e possui sua
+          própria escolha. Aptidões concedidas continuam travadas como antes. */}
+      {escolhida && !concedida && aptidao.repetivel && (
+        <div className="border-t border-purple-900/40 px-2.5 py-2.5 pl-[38px] space-y-2">
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              <div className="text-[10px] uppercase tracking-wider text-purple-300 font-semibold">
+                Aquisições {vezes} / {maxVezes}
+              </div>
+            </div>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => onVezes(Math.max(0, vezes - 1))}
+                className="w-7 h-7 rounded border border-slate-700 bg-slate-800 text-slate-300 hover:text-white"
+                aria-label={`Remover uma aquisição de ${aptidao.nome}`}
+              >
+                −
+              </button>
+              <span className="w-6 text-center font-mono text-xs text-white tabular-nums">{vezes}</span>
+              <button
+                type="button"
+                onClick={() => onVezes(vezes + 1)}
+                disabled={vezes >= maxVezes}
+                title={vezes >= maxVezes && ctx.nd < aptidao.repetivel.nivelAdicional
+                  ? `Disponível no nível ${aptidao.repetivel.nivelAdicional}`
+                  : undefined}
+                className={`w-7 h-7 rounded border ${
+                  vezes >= maxVezes
+                    ? "border-slate-800 bg-slate-900 text-slate-700 cursor-not-allowed"
+                    : "border-purple-700 bg-purple-900/50 text-purple-200 hover:bg-purple-800"
+                }`}
+                aria-label={`Adicionar uma aquisição de ${aptidao.nome}`}
+              >
+                +
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            {Array.from({ length: vezes }, (_, indice) => (
+              <div key={indice} className="flex flex-wrap items-center gap-1.5">
+                <span className="w-20 text-[10px] text-slate-500">{indice + 1}ª aquisição</span>
+                {aptidao.repetivel.opcoes.map((opcao) => {
+                  const ativa = (opcoesRepetidas[indice] ?? "aumentar") === opcao.id;
+                  return (
+                    <button
+                      key={opcao.id}
+                      type="button"
+                      onClick={() => onOpcaoRepetida(indice, opcao.id)}
+                      aria-pressed={ativa}
+                      className={`text-[10px] px-2 py-1 rounded transition-colors ${
+                        ativa ? "bg-purple-700 text-white" : "bg-slate-800/70 text-slate-400 hover:text-white"
+                      }`}
+                    >
+                      {opcao.label}
+                    </button>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
@@ -8330,7 +8493,10 @@ function AltoNivel({ derived, setMelhoriaVezes, toggleLendaria, toggleEscolhaAlt
   );
 }
 
-function TabAptidoes({ draft, derived, setAptidaoNivel, toggleAptidao, setAptidaoOpcao }) {
+function TabAptidoes({
+  draft, derived, setAptidaoNivel, toggleAptidao, setAptidaoOpcao,
+  setAptidaoVezes, setAptidaoOpcaoRepetida,
+}) {
   // O motor resolve alocado + concedido (e devolve ao orçamento o que
   // não coube junto da concessão). A aba só exibe.
   // `limite` é por trilha: 5 mais o que o Motor somou no canal limiteAptidao.
@@ -8347,6 +8513,7 @@ function TabAptidoes({ draft, derived, setAptidaoNivel, toggleAptidao, setAptida
   const concedidas = derived.aptidoesConcedidas ?? [];
   const concedidasPelaEspecializacao = new Set(derived.aptidoesConcedidasEspecializacao ?? []);
   const daFicha = Array.isArray(draft.aptidoesAmaldicoadas) ? draft.aptidoesAmaldicoadas : [];
+  const vezesDe = (id) => daFicha.filter((x) => x === id).length;
   const gastasNaMao = daFicha.filter((id) => !concedidas.includes(id));
   // O requisito de "ter a aptidão X" enxerga as duas, senão a concedida não
   // destravaria a Anular Técnica, que pede Domínio Simples.
@@ -8502,38 +8669,60 @@ function TabAptidoes({ draft, derived, setAptidaoNivel, toggleAptidao, setAptida
                 <div className="text-[11px] font-semibold text-slate-300">{sub.label}</div>
                 <p className="text-[10px] text-slate-500 leading-snug mt-0.5 mb-1.5">{sub.resumo}</p>
                 <div className="space-y-1.5">
-                  {aptidoes.map((ap) => (
-                    <AptidaoCard
-                      key={ap.id}
-                      aptidao={ap}
-                      escolhida={escolhidas.includes(ap.id)}
-                      concedida={concedidas.includes(ap.id)}
-                      concessao={concedidasPelaEspecializacao.has(ap.id) ? "especializacao" : "origem"}
-                      ctx={ctx}
-                      onToggle={() => toggleAptidao(ap.id)}
-                      opcaoAtual={(draft.aptidaoOpcoes || {})[ap.id]}
-                      onOpcao={(v) => setAptidaoOpcao(ap.id, v)}
-                    />
-                  ))}
+                  {aptidoes.map((ap) => {
+                    const vezes = vezesDe(ap.id);
+                    const maxVezes = ap.repetivel
+                      ? (derived.nd >= ap.repetivel.nivelAdicional ? ap.repetivel.maxVezes : 1)
+                      : 1;
+                    return (
+                      <AptidaoCard
+                        key={ap.id}
+                        aptidao={ap}
+                        escolhida={escolhidas.includes(ap.id)}
+                        concedida={concedidas.includes(ap.id)}
+                        concessao={concedidasPelaEspecializacao.has(ap.id) ? "especializacao" : "origem"}
+                        vezes={vezes}
+                        maxVezes={maxVezes}
+                        ctx={ctx}
+                        onToggle={() => toggleAptidao(ap.id)}
+                        opcaoAtual={(draft.aptidaoOpcoes || {})[ap.id]}
+                        onOpcao={(v) => setAptidaoOpcao(ap.id, v)}
+                        opcoesRepetidas={(draft.aptidaoOpcoesRepetidas || {})[ap.id] || []}
+                        onVezes={(v) => setAptidaoVezes(ap.id, v)}
+                        onOpcaoRepetida={(i, v) => setAptidaoOpcaoRepetida(ap.id, i, v)}
+                      />
+                    );
+                  })}
                 </div>
               </div>
             ))}
           </div>
         ) : (
           <div className="space-y-1.5">
-            {listaAtiva.map((ap) => (
-              <AptidaoCard
-                key={ap.id}
-                aptidao={ap}
-                escolhida={escolhidas.includes(ap.id)}
-                concedida={concedidas.includes(ap.id)}
-                concessao={concedidasPelaEspecializacao.has(ap.id) ? "especializacao" : "origem"}
-                ctx={ctx}
-                onToggle={() => toggleAptidao(ap.id)}
-                opcaoAtual={(draft.aptidaoOpcoes || {})[ap.id]}
-                onOpcao={(v) => setAptidaoOpcao(ap.id, v)}
-              />
-            ))}
+            {listaAtiva.map((ap) => {
+              const vezes = vezesDe(ap.id);
+              const maxVezes = ap.repetivel
+                ? (derived.nd >= ap.repetivel.nivelAdicional ? ap.repetivel.maxVezes : 1)
+                : 1;
+              return (
+                <AptidaoCard
+                  key={ap.id}
+                  aptidao={ap}
+                  escolhida={escolhidas.includes(ap.id)}
+                  concedida={concedidas.includes(ap.id)}
+                  concessao={concedidasPelaEspecializacao.has(ap.id) ? "especializacao" : "origem"}
+                  vezes={vezes}
+                  maxVezes={maxVezes}
+                  ctx={ctx}
+                  onToggle={() => toggleAptidao(ap.id)}
+                  opcaoAtual={(draft.aptidaoOpcoes || {})[ap.id]}
+                  onOpcao={(v) => setAptidaoOpcao(ap.id, v)}
+                  opcoesRepetidas={(draft.aptidaoOpcoesRepetidas || {})[ap.id] || []}
+                  onVezes={(v) => setAptidaoVezes(ap.id, v)}
+                  onOpcaoRepetida={(i, v) => setAptidaoOpcaoRepetida(ap.id, i, v)}
+                />
+              );
+            })}
           </div>
         )}
 
@@ -8995,6 +9184,7 @@ function LinhaCarregada({
   // comum, porque a entrada carrega a Ferramenta Amaldiçoada inteira junto (grau,
   // encantamentos e a Habilidade Única escrita à mão), e nada disso volta.
   const [confirmDel, setConfirmDel] = useState(false);
+  const temCondicaoSolar = def?.efeito?.condicao === "sol";
 
   const clicarFerramenta = () => {
     if (fa) { setFaOpen((o) => !o); return; }
@@ -9029,6 +9219,11 @@ function LinhaCarregada({
 
         <span className="text-[12px] font-semibold text-slate-100 truncate flex-1 min-w-0" title={def?.nome}>
           {def?.nome}
+          {def?.evento && (
+            <span className="ml-1.5 text-[9px] font-medium text-amber-300 align-middle">
+              Evento · {def.exclusivoDe}
+            </span>
+          )}
           {fa && (
             <span className="ml-1.5 text-[9px] font-mono font-bold px-1 rounded bg-purple-500/25 text-purple-200 align-middle">
               {fa.grauLabel.replace(" Grau", "")}
@@ -9062,26 +9257,30 @@ function LinhaCarregada({
           </span>
         )}
 
-        <div className="flex items-center gap-px flex-shrink-0" role="group" aria-label="Quantidade">
-          <button
-            type="button"
-            onClick={() => onPatch(uid, { qtd: Math.max(1, qtd - 1) })}
-            disabled={qtd <= 1}
-            className="w-5 h-5 rounded-l bg-slate-800 text-slate-400 text-xs disabled:opacity-40 hover:bg-slate-700"
-            aria-label="Diminuir quantidade"
-          >
-            -
-          </button>
-          <span className="w-6 text-center text-[11px] font-mono text-white tabular-nums bg-slate-900">{qtd}</span>
-          <button
-            type="button"
-            onClick={() => onPatch(uid, { qtd: qtd + 1 })}
-            className="w-5 h-5 rounded-r bg-slate-800 text-slate-400 text-xs hover:bg-slate-700"
-            aria-label="Aumentar quantidade"
-          >
-            +
-          </button>
-        </div>
+        {def?.unico ? (
+          <span className="text-[9px] font-medium text-amber-300 flex-shrink-0">Único</span>
+        ) : (
+          <div className="flex items-center gap-px flex-shrink-0" role="group" aria-label="Quantidade">
+            <button
+              type="button"
+              onClick={() => onPatch(uid, { qtd: Math.max(1, qtd - 1) })}
+              disabled={qtd <= 1}
+              className="w-5 h-5 rounded-l bg-slate-800 text-slate-400 text-xs disabled:opacity-40 hover:bg-slate-700"
+              aria-label="Diminuir quantidade"
+            >
+              -
+            </button>
+            <span className="w-6 text-center text-[11px] font-mono text-white tabular-nums bg-slate-900">{qtd}</span>
+            <button
+              type="button"
+              onClick={() => onPatch(uid, { qtd: qtd + 1 })}
+              className="w-5 h-5 rounded-r bg-slate-800 text-slate-400 text-xs hover:bg-slate-700"
+              aria-label="Aumentar quantidade"
+            >
+              +
+            </button>
+          </div>
+        )}
 
         {confirmDel ? (
           <span className="flex items-center gap-1 flex-shrink-0">
@@ -9129,6 +9328,43 @@ function LinhaCarregada({
         </div>
       )}
 
+      {temCondicaoSolar && (
+        <div className="border-t border-slate-800/70 px-2.5 py-2 space-y-1.5">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="text-[10px] uppercase tracking-wider text-slate-500 mr-1">Condição</span>
+            <button
+              type="button"
+              onClick={() => onPatch(uid, { solDireto: !entrada.solDireto })}
+              aria-pressed={!!entrada.solDireto}
+              className={`text-[10px] px-2 py-1 rounded border transition-colors ${
+                entrada.solDireto
+                  ? "border-amber-500/70 bg-amber-950/40 text-amber-200"
+                  : "border-slate-700 bg-slate-900/60 text-slate-400 hover:text-white"
+              }`}
+            >
+              Sob o sol
+            </button>
+            <button
+              type="button"
+              onClick={() => onPatch(uid, { conjuntoSagradoCompleto: !entrada.conjuntoSagradoCompleto })}
+              aria-pressed={!!entrada.conjuntoSagradoReunido}
+              disabled={!!entrada.conjuntoSagradoAutomatico}
+              title={entrada.conjuntoSagradoAutomatico ? "Reconhecido automaticamente pelos três itens carregados" : undefined}
+              className={`text-[10px] px-2 py-1 rounded border transition-colors disabled:cursor-default ${
+                entrada.conjuntoSagradoReunido
+                  ? "border-purple-500/70 bg-purple-950/40 text-purple-200"
+                  : "border-slate-700 bg-slate-900/60 text-slate-400 hover:text-white"
+              }`}
+            >
+              3 tesouros reunidos
+            </button>
+            {equipado && entrada.solAtivo && (
+              <span className="text-[10px] text-emerald-300 font-medium">+2 em todos os atributos ativo</span>
+            )}
+          </div>
+        </div>
+      )}
+
       {fa && faOpen && (
         <FerramentaEditor
           entrada={entrada}
@@ -9153,6 +9389,7 @@ function CatalogoLinha({ tipo, def, onAdd, jaTem }) {
   const espacos = espacosDoEquipamento(tipo, def);
   const custo = custoDoEquipamento(tipo, def);
   const especial = def.especial ? getEspecial(def.especial) : null;
+  const unicoJaAdicionado = !!def.unico && jaTem > 0;
 
   return (
     <div className="rounded-lg border border-slate-800 bg-slate-950/40">
@@ -9160,9 +9397,10 @@ function CatalogoLinha({ tipo, def, onAdd, jaTem }) {
         <button
           type="button"
           onClick={() => onAdd(tipo, def.id)}
+          disabled={unicoJaAdicionado}
           aria-label={`Adicionar ${def.nome}`}
-          title="Adicionar ao inventário"
-          className="w-5 h-5 rounded flex items-center justify-center flex-shrink-0 border border-slate-600 text-slate-500 transition-colors hover:border-purple-600 hover:text-purple-300"
+          title={unicoJaAdicionado ? "Relíquia única já adicionada" : "Adicionar ao inventário"}
+          className="w-5 h-5 rounded flex items-center justify-center flex-shrink-0 border border-slate-600 text-slate-500 transition-colors hover:border-purple-600 hover:text-purple-300 disabled:opacity-35 disabled:hover:border-slate-600 disabled:hover:text-slate-500"
         >
           <Plus className="w-3 h-3" />
         </button>
@@ -9184,6 +9422,11 @@ function CatalogoLinha({ tipo, def, onAdd, jaTem }) {
           {def.custom && (
             <span className="text-[10px] font-medium text-amber-400 whitespace-nowrap flex-shrink-0">
               Criada
+            </span>
+          )}
+          {def.evento && (
+            <span className="text-[10px] font-medium text-amber-400 whitespace-nowrap flex-shrink-0">
+              Relíquia de {def.exclusivoDe}
             </span>
           )}
           {jaTem > 0 && (
@@ -9639,6 +9882,7 @@ function TabEquipamentos({ draft, derived, addEquipamento, removeEquipamento, pa
   // são duas abas, e não um filtro. A categoria (corpo, distância, arremesso)
   // continua como filtro por cima.
   const [classeArma, setClasseArma] = useState("simples");
+  const ehFichaDaYamata = String(draft.name ?? "").trim().toLocaleLowerCase("pt-BR").includes("yamata");
 
   const orcamento = orcamentoDoGrau(grau.value);
 
@@ -9666,10 +9910,20 @@ function TabEquipamentos({ draft, derived, addEquipamento, removeEquipamento, pa
   // criadas. Por isso a chamada recebe um objeto com esse campo só.
   const listaDoTipo = useMemo(() => {
     let l = catalogoDoTipo(catTab, { armasCustom: draft.armasCustom });
+    // Relíquias pessoais não entram no catálogo base. A da Yamata ganha um
+    // card próprio nesta mesma aba, sem contaminar as opções de outras fichas.
+    if (catTab === "item") l = l.filter((d) => !d.evento);
     if (catTab === "arma") l = l.filter((d) => d.classe === classeArma);
     if (subFiltro !== "todos") l = l.filter((d) => d.categoria === subFiltro);
     return l;
   }, [catTab, classeArma, subFiltro, draft.armasCustom]);
+
+  const reliquiasDaYamata = useMemo(
+    () => ehFichaDaYamata
+      ? catalogoDoTipo("item").filter((d) => d.evento && d.exclusivoDe === "Yamata")
+      : [],
+    [ehFichaDaYamata],
+  );
 
   // Só as propriedades que EXISTEM no recorte: uma aba de armas a distância não
   // oferece Fineza para não achar nada. Mesma regra dos custos oferecidos, e ela
@@ -9821,13 +10075,13 @@ function TabEquipamentos({ draft, derived, addEquipamento, removeEquipamento, pa
                 icon={Sparkles}
                 label={rotuloCanalUnica(ex, derived.testes?.pericias)}
                 valor={sinalDe(Number(ex.valor ?? ex.expr) || 0)}
-                nota={ex.quando ? "ativa" : ex.exclusivo ? "única" : "encantamento"}
+                nota={ex.quando ? "ativa" : ex.exclusivo ? "única" : ex.fonte === "item" ? "item" : "encantamento"}
                 titulo={ex.nome}
               />
             ))}
           </div>
         ) : (
-          <p className="text-[11px] text-slate-500">Nada equipado.</p>
+          <p className="text-[11px] text-slate-500">Nenhum efeito de equipamento ativo.</p>
         )}
       </Card>
 
@@ -9873,6 +10127,22 @@ function TabEquipamentos({ draft, derived, addEquipamento, removeEquipamento, pa
         onPatch={patchArmaCustom}
         onRemove={removeArmaCustom}
       />
+
+      {reliquiasDaYamata.length > 0 && (
+        <Card title="Relíquias de Evento · Yamata">
+          <div className="space-y-1.5">
+            {reliquiasDaYamata.map((def) => (
+              <CatalogoLinha
+                key={def.id}
+                tipo="item"
+                def={def}
+                jaTem={contagem[def.id] ?? 0}
+                onAdd={addEquipamento}
+              />
+            ))}
+          </div>
+        </Card>
+      )}
 
       <Card title="Catálogo">
         <div className="flex gap-1 overflow-x-auto no-scrollbar border-b border-slate-800 pb-2 mb-3" role="tablist" aria-label="Tipos de equipamento">
@@ -12094,6 +12364,11 @@ function AftyPreview({ draft, derived }) {
     // escudo saiu daqui em 2026-08-01 e virou RD Geral.
     ...(derived.rdFisico > 0 ? [{ k: "RD Física", v: derived.rdFisico, p: "rdFisico" }] : []),
     { k: "Movimento", v: `${derived.movimento}m`, p: "movimento" },
+    {
+      k: "Tamanho",
+      v: `${derived.tamanhoLabel} · ${String(derived.tamanhoEspacoAlcance).replace(".", ",")}m`,
+      accent: "text-purple-200",
+    },
     { k: "Res. Parcial", v: derived.resParcial, p: "resParcial" },
     { k: "Iniciativa", v: `+${derived.iniciativa}`, p: "iniciativa" },
     // Atenção era calculada e não aparecia em lugar nenhum da ficha.

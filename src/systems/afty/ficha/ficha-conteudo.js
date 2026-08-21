@@ -244,6 +244,10 @@ export function conteudoDaFicha(creature, derived) {
 
   /* ---------- Aptidões Amaldiçoadas ---------- */
   const opcoesAptidao = creature?.aptidaoOpcoes ?? {};
+  const contagemAptidao = new Map();
+  for (const id of creature?.aptidoesAmaldicoadas ?? []) {
+    contagemAptidao.set(id, (contagemAptidao.get(id) ?? 0) + 1);
+  }
   // As CONCEDIDAS por nome pela origem entram na mesma lista, com uma tag que
   // as distingue: elas não foram escolhidas e não gastaram vaga.
   const concedidasOrigem = new Set(derived?.aptidoesConcedidas ?? []);
@@ -253,6 +257,17 @@ export function conteudoDaFicha(creature, derived) {
     // A Aptidão não usa escolha aninhada: ela tem `opcoes` no catálogo e a
     // escolha vira uma booleana do DSL. Ver a Superioridade Física.
     const escolhida = a.opcoes?.valores?.find((v) => v.id === opcoesAptidao[id]);
+    const vezes = Math.max(contagemAptidao.get(id) ?? 0, concedidasOrigem.has(id) ? 1 : 0);
+    const escolhasRepetidas = a.repetivel
+      ? Array.from({ length: vezes }, (_, indice) => creature?.aptidaoOpcoesRepetidas?.[id]?.[indice] ?? "aumentar").map((valor, indice) => {
+          const def = a.repetivel.opcoes.find((o) => o.id === valor);
+          return {
+            id: `${id}:${indice}`,
+            nome: `${indice + 1}ª aquisição: ${def?.label ?? "Aumentar"}`,
+            descricao: null,
+          };
+        })
+      : [];
     itens.push(item({
       id,
       nome: a.nome,
@@ -261,8 +276,12 @@ export function conteudoDaFicha(creature, derived) {
       tags: [
         getCategoriaAptidao(a.categoria)?.nome,
         concedidasOrigem.has(id) ? "Origem" : null,
+        vezes > 1 ? { label: `${vezes}×`, tipo: "vezes" } : null,
       ].filter(Boolean),
-      opcoes: escolhida ? [{ id: escolhida.id, nome: escolhida.nome ?? escolhida.label, descricao: null }] : [],
+      opcoes: [
+        ...(escolhida ? [{ id: escolhida.id, nome: escolhida.nome ?? escolhida.label, descricao: null }] : []),
+        ...escolhasRepetidas,
+      ],
     }));
   }
 

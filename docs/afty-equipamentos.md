@@ -1,9 +1,13 @@
 # Equipamentos (Grimório Afty)
 
-Regras do capítulo de Equipamentos, transcritas em 2026-07-22. O **conteúdo** (52 armas, 48 itens
-especiais, 4 modificações de uniforme, 4 escudos, 21 propriedades e 18 traços especiais) mora em
+Regras do capítulo de Equipamentos, transcritas em 2026-07-22. O **conteúdo base** (52 armas, 48 itens
+especiais do livro, 4 modificações de uniforme, 4 escudos, 21 propriedades e 18 traços especiais) mora em
 `src/systems/afty/afty-equipamentos.js`, com a descrição de cada um verbatim. Este doc guarda as
 **regras de sistema**, que não cabem no catálogo, mais as decisões e o que ficou pendente.
+
+Além do conteúdo base, o mesmo arquivo pode guardar **relíquias pessoais de evento**. Elas são
+identificadas como conteúdo privado, não entram no catálogo geral e não alteram a contagem dos 48
+itens transcritos do livro.
 
 A aba se chamava **Inventário** e foi renomeada para **Equipamentos** a pedido do autor.
 
@@ -517,6 +521,7 @@ Em `afty-derive.js`, via `resolveEquipamentos` e `resolveCarga`:
 | **PV máximo** | Bracelete do Vigor (+10) e Ombreiras do Vigor Superior (+20) |
 | **CD** | Chaveiro Canalizador (+1) |
 | **Atributo** | os 6 acessórios de +2. **Passam o limite** do atributo, teto duro de 30 |
+| **Atributo condicional** | Pingente de Amaterasu (+2 nos seis atributos sob o sol ou com o conjunto sagrado reunido), pelo Motor |
 | **Cura** | Apanhador de Saúde (+1 por dado, teto = metade do ND), por `efeito.motor` |
 | **Carga** | espaços usados, limite, teto e sobrecarga |
 
@@ -530,6 +535,32 @@ cabia em nenhum. Item novo usa o `motor` e não precisa de campo nem de `if`.
 O valor viaja resolvido, como literal, pelo mesmo motivo dos encantamentos: a expressão lê `grau`,
 `custo` e `penalidade`, que são do item e não existem no contexto da criatura. O `grau` que ela vê é
 o `rankCalculo`, já rebaixado por encantamento. Efeito que resolve em zero não vira linha.
+
+### Relíquia pessoal de evento: Pingente de Amaterasu (2026-08-20)
+
+O **Pingente de Amaterasu** é um Acessório de custo 4 exclusivo da Yamata, e não um item do livro.
+Por isso recebe `evento: true`, `exclusivoDe: "Yamata"` e aparece num card próprio, **Relíquias de
+Evento · Yamata**, somente quando o nome da ficha contém “Yamata”. A relíquia permanece resolvível
+se a personagem for renomeada depois; o nome controla apenas onde ela pode ser adicionada.
+
+- `unico: true` impede uma segunda linha, remove o controle de quantidade e apara para 1 qualquer
+  quantidade inválida vinda de ficha importada;
+- equipado e com `solDireto`, emite seis efeitos `atributo +2`, um para cada atributo;
+- `conjuntoSagradoCompleto` é o marcador manual de mesa para os **três tesouros no total** e mantém
+  `solAtivo` mesmo sem sol direto;
+- `colecao: "tesouros_sagrados_japao"` prepara o reconhecimento automático: quando os outros dois
+  itens forem cadastrados com a mesma coleção e os três estiverem carregados, o marcador manual
+  deixa de ser necessário;
+- a coleção conta itens **carregados**, enquanto o bônus do Pingente continua exigindo que ele
+  esteja **equipado**.
+
+Os efeitos do item levam `fonte: "item"` até a interface, para não serem rotulados como
+“encantamento”. Sem a condição solar ativa, a linha permanece equipada, mas não emite os seis
+efeitos.
+
+O Motor de Addons do commit #027 ainda não abre **Itens Especiais** como família. Manter a relíquia
+no catálogo privado é deliberado: migrá-la agora exigiria ampliar o contrato dos Addons, e não
+apenas mover um dado. A regra está coberta por `asserts/t-tamanho-pingente.mjs`.
 
 ### Item que CURA: o campo `cura` (2026-08-03)
 

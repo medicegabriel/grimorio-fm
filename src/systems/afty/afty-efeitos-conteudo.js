@@ -2572,14 +2572,10 @@ export const APTIDAO_EFEITOS = {
       expr: "(nd >= 8) + (nd >= 12) + (nd >= 16) + (nd >= 20)" },
   ],
 
-  // "você aumenta uma categoria de tamanho e passa a receber +1 de vida máxima
-  // por nível."
-  // O tamanho virou canal em 2026-08-08 (ver `desenvolvimento_exagerado`).
-  // ⚠ O SEGUNDO uso (repetível a partir do 10°, até Enorme) continua de fora: o
-  // shape de ids únicos não deixa escolher a mesma aptidão duas vezes. Quem
-  // pegar as duas vezes na mesa soma o segundo degrau à mão.
+  // "passa a receber +1 de vida máxima por nível." O tamanho e o sentido de
+  // cada aquisição são resolvidos no derive. O coletor deduplica este id para
+  // que os PV não sejam aplicados uma segunda vez.
   mal_crescimento_corporal: [
-    { canal: "tamanho", expr: "1" },
     { canal: "hp", expr: "nd" },
   ],
 

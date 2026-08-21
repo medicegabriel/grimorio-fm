@@ -1394,6 +1394,17 @@ export const ITENS_ESPECIAIS = [
   { id: "it_laco_da_vida", nome: "Laço da Vida", categoria: "acessorio", custo: 4,
     descricao: "Um pequeno laço vermelho, imbuído com quantidades excessivas de energia reversa. Um feiticeiro que tenha o laço preso a si é capaz de se prender a vida: caso um personagem com um laço da vida vá morrer, tal morte é ignorada e o laço se desgasta, sumindo. Ao evitar a morte com este item, o personagem cura metade dos seus pontos de vida, mas recebe 1 nível de exaustão. O Laço da Vida não funciona caso o feiticeiro já esteja com 5 níveis de Exaustão.",
     cura: { fracaoPV: 0.5, alcance: "Você" } },
+  { id: "evento_yamata_pingente_amaterasu", nome: "Pingente de Amaterasu", categoria: "acessorio", custo: 4,
+    evento: true, exclusivoDe: "Yamata", unico: true, colecao: "tesouros_sagrados_japao",
+    descricao: "Relíquia de evento de Yamata. Enquanto estiver equipado e sua portadora estiver sob a luz do sol, aumenta todos os seus atributos em 2. Quando reunido aos outros dois Tesouros Sagrados do Japão, o conjunto sempre traz o sol, mantendo o benefício ativo independentemente do ambiente.",
+    efeito: { aplicado: true, condicao: "sol", motor: [
+      { canal: "atributo", alvo: "forca", expr: "2" },
+      { canal: "atributo", alvo: "destreza", expr: "2" },
+      { canal: "atributo", alvo: "constituicao", expr: "2" },
+      { canal: "atributo", alvo: "inteligencia", expr: "2" },
+      { canal: "atributo", alvo: "sabedoria", expr: "2" },
+      { canal: "atributo", alvo: "presenca", expr: "2" },
+    ] } },
   { id: "it_lagrima_de_shinigami", nome: "Lágrima de Shinigami", categoria: "mistura", custo: 4,
     descricao: "O mais letal veneno já conhecido, capaz de imbuir uma arma com tamanha letalidade que passou a ser conhecido como a lágrima de um shinigami. Contato, o alvo perde 2d10 pontos de vida e tem sua Defesa reduzida em 4, e passa a gastar 2 PE adicionais sempre que usar energia amaldiçoada até o final da cena (perde 2d10 de vida, fica Amedrontado e Exposto por 2 rodadas)." },
   { id: "it_simbolo_de_vida_absoluta", nome: "Símbolo de Vida Absoluta", categoria: "talisma", custo: 4,
@@ -1789,6 +1800,18 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
   // Contexto da DSL dos efeitos de Ferramenta (Motor de Automação).
   const ctxBase = dslEquipCtxBase(creature, bt);
 
+  // Relíquias de coleção são contadas pelo que a criatura CARREGA, não pelo que
+  // está equipado. Assim, quando os outros dois Tesouros Sagrados do Japão
+  // forem cadastrados com a mesma `colecao`, o conjunto de três passa a ser
+  // reconhecido sem qualquer regra nova no resolvedor. Até lá, a ficha da
+  // Yamata oferece o marcador manual equivalente para a mesa.
+  const tesourosSagrados = new Set();
+  for (const entrada of listaEntradas(creature)) {
+    const item = getEquipamento(entrada?.tipo, entrada?.refId, creature);
+    if (item?.colecao === "tesouros_sagrados_japao") tesourosSagrados.add(item.id);
+  }
+  const conjuntoSagradoAutomatico = tesourosSagrados.size >= 3;
+
   for (const e of listaEntradas(creature)) {
     // ⚠ A criatura vai junto porque as armas CUSTOM moram nela. Sem isso, uma
     // arma criada pelo jogador cairia no aviso de "equipamento desconhecido" e
@@ -1798,7 +1821,10 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
       avisos.push(`Equipamento desconhecido na ficha (${e?.tipo ?? "?"}/${e?.refId ?? "?"}).`);
       continue;
     }
-    const qtd = Math.max(1, Math.floor(e?.qtd ?? 1));
+    // Relíquia única também é aparada na leitura. A UI já não oferece o botão
+    // de quantidade, mas uma ficha importada ou editada à mão ainda poderia
+    // chegar com `qtd` maior que 1.
+    const qtd = def.unico ? 1 : Math.max(1, Math.floor(e?.qtd ?? 1));
     const espacosUn = espacosDoEquipamento(e.tipo, def);
     const custoUn = custoDoEquipamento(e.tipo, def);
 
@@ -1810,6 +1836,11 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
     const fa = resolveFerramenta(e, def, bt, ctxBase, vagasEncantamento[def.id] ?? 0);
 
     const equipado = !!e?.equipado;
+    const temCondicaoSolar = def.efeito?.condicao === "sol";
+    const conjuntoSagradoReunido = temCondicaoSolar && (
+      conjuntoSagradoAutomatico || !!e?.conjuntoSagradoCompleto
+    );
+    const solAtivo = temCondicaoSolar && (conjuntoSagradoReunido || !!e?.solDireto);
     if (equipado) {
       if (e.tipo === "uniforme") {
         uniformesEquipados += 1;
@@ -1833,7 +1864,8 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
       }
       // Efeitos de item, só os que o motor sabe aplicar.
       const ef = def.efeito;
-      if (ef?.aplicado) {
+      const condicaoAtiva = ef?.condicao !== "sol" || solAtivo;
+      if (ef?.aplicado && condicaoAtiva) {
         if (ef.hpMax) hpMaxBonus += ef.hpMax;
         if (ef.cd) cdBonus += ef.cd;
         if (ef.atributo) {
@@ -1846,7 +1878,7 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
         for (const [pericia, valor] of Object.entries(ef.pericia ?? {})) {
           efeitosEncantamento.push({
             canal: "bonusPericia", alvo: pericia, expr: String(valor),
-            origem: e.uid, nome: def.nome,
+            origem: e.uid, nome: def.nome, fonte: "item",
           });
         }
         // Saída GERAL do item para o Motor (2026-08-03), no mesmo caminho dos
@@ -1864,7 +1896,7 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
             canal: ex.canal,
             ...(ex.alvo ? { alvo: ex.alvo } : {}),
             expr: String(valor),
-            origem: e.uid, nome: def.nome,
+            origem: e.uid, nome: def.nome, fonte: "item",
           });
         }
       }
@@ -1959,6 +1991,11 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
       custoUn,
       espacos: espacosUn * qtd,
       equipado,
+      ...(temCondicaoSolar ? {
+        solAtivo,
+        conjuntoSagradoReunido,
+        conjuntoSagradoAutomatico,
+      } : {}),
       ...(e.tipo === "arma" ? { ataqueId: ataqueDaArma(e, def) } : {}),
     });
   }

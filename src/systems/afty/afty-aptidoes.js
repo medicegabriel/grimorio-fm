@@ -1289,8 +1289,6 @@ export const AFTY_APTIDOES = [
     ],
   },
   {
-    // ⚠ REPETÍVEL ("a partir do 10° nível você pode obter esta aptidão outra
-    // vez"). O modelo não suporta escolher a mesma aptidão 2x. Ver docs.
     id: "mal_crescimento_corporal",
     nome: "Crescimento Corporal",
     categoria: "maldicao",
@@ -1301,6 +1299,16 @@ export const AFTY_APTIDOES = [
       "do 10° nível você pode obter esta aptidão outra vez, até a categoria máxima de Enorme, " +
       "caso pegue uma segunda vez não recebe o aumento de vida uma segunda vez.",
     requisitos: [{ tipo: "nd", valor: 5 }],
+    // Cada aquisição muda o tamanho separadamente. A escolha fica fora de
+    // `opcoes`, pois aquela estrutura guarda somente um valor por aptidão.
+    repetivel: {
+      maxVezes: 2,
+      nivelAdicional: 10,
+      opcoes: [
+        { id: "aumentar", label: "Aumentar" },
+        { id: "diminuir", label: "Diminuir" },
+      ],
+    },
   },
   {
     id: "mal_olhos_adicionais",
