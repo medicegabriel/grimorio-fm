@@ -36,6 +36,77 @@ arquivo md. Para outros colaboradores usarem ele também e ir anotando oq for pr
 
 Coisas paradas esperando decisão de regra. Nada aqui deve ser resolvido por suposição.
 
+### O Ataque Básico pode rolar como Ataque Amaldiçoado?
+
+**Onde:** `src/systems/afty/afty-pericias.js` (`resolveDano`, a linha `basico`)
+**Situação:** toda entrada de arma do inventário escolhe entre a jogada física da categoria e o
+Ataque Amaldiçoado (`ataqueId`, 2026-08-18). As três de pugilato (Faixas, Manoplas, Soco Inglês) não
+têm linha própria, elas são o Ataque Básico, e o básico rola sempre Corpo a Corpo. O seletor aparecia
+nas três e gravava o campo sem mudar número nenhum, e por isso ele foi **escondido** nelas em
+2026-08-20. Esconder um controle que mentia não decidiu a regra.
+**Precisa:** decidir se um golpe desarmado (ou com Faixas) pode usar a jogada de Ataque Amaldiçoado.
+Se puder, o controle não volta para o card do item: o Ataque Básico existe sem item nenhum, então a
+escolha mora na linha do golpe, na aba de Perícias e Testes.
+**Anotado:** 2026-08-20, ao consertar os quatro buracos das Faixas
+
+### BUG: `vagasHabilidade` não chega no orçamento que a tela mostra
+
+**Onde:** `src/systems/afty/afty-derive.js` (`orcamentoHabilidades`, por volta da linha 1186) e
+`resolveHabilidades` em `afty-habilidades.js`
+**Situação:** existem **dois objetos de orçamento** no derivado, e eles nunca se somam.
+
+| Objeto | `comum` sai de | Quem lê |
+|---|---|---|
+| `derived.habilidades` | SÓ o canal `vagasHabilidade` | ninguém na tela |
+| `derived.orcamentoHabilidades` | SÓ `contadorHabilidades(maestria, patamar) × fatorSlots` | o criador |
+
+Consequência: **tudo que emite `vagasHabilidade` promete uma vaga que não aparece.** Medido numa
+criatura 100% raw, ND 12, Lutador 12, zero addons:
+
+- Habilidade Geral **Especialização**: `comum` fica 8 com ela e sem ela. Ela GASTA uma vaga
+  (`gerais: 1`) e não concede nenhuma.
+- Treino Especial **Treinamento para Habilidade** (`tes_habilidade`): idem, 8 dos dois lados.
+- O irmão dele, `tes_feitico`, funciona: emite `vagasFeitico`, e `exclusivasFeitico` vai de 1 para 2.
+
+Efeito colateral: `derived.habilidades.excedeu` fica **true em qualquer ficha** com uma habilidade
+escolhida e nenhum `vagasHabilidade`, porque ali `comum` é zero. Não aparece na tela (o criador lê o
+outro objeto), mas é uma armadilha para quem escrever assert: um assert meu comparava esse campo e
+passava à toa. Já corrigido em `t-concessao.mjs`, com o motivo escrito.
+
+**Precisa:** o autor dizer qual é a regra, porque há duas leituras e elas dão números diferentes.
+1. Os dois orçamentos são o MESMO, e `orcamentoHabilidades.comum` deve somar `vagasHabilidade` (e
+   ganhar a linha de fonte no `partesComum`, para o hover dizer de onde veio).
+2. São orçamentos SEPARADOS de propósito, e aí falta a tela do segundo.
+
+Achado em 2026-08-20 ao montar um addon de teste com um Treino Especial que concede vaga.
+**Anotado:** 2026-08-20, ao gerar os pacotes de teste dos Addons
+
+### Conceder FEITIÇO no meio da luta ainda não dá
+
+**Onde:** `src/systems/afty/afty-concessao.js` (`FAMILIAS_CONCESSAO`)
+**Situação:** a primitiva 8.3 concede as **7 famílias de id de catálogo**, e o autor pediu
+"Habilidades de Especialização, **Feitiços**, Treinos e qualquer coisa". O Feitiço ficou de fora
+porque ele NÃO é id de catálogo: é objeto criado dentro da ficha (`creature.feiticos`), então
+conceder um não é acrescentar um id, é escolher **de onde copiar**. As outras seis famílias
+entraram pelo mesmo caminho de uma linha cada, e esta precisa de uma interação nova.
+**Precisa:** decidir de onde vem o Feitiço concedido. Três leituras que já dão telas diferentes:
+copiar de outra criatura salva, escolher de uma lista que um addon traga pronta, ou o mestre
+montar na hora com a calculadora de criação que já existe.
+**Anotado:** 2026-08-20, ao fechar a 8.3
+
+### Concessão de item com escolha aninhada entra com a escolha VAZIA
+
+**Onde:** `src/systems/afty/afty-concessao.js` e os `resolveEscolhas*` das famílias
+**Situação:** vários Talentos e Habilidades têm escolha aninhada (qual atributo, qual perícia, qual
+estilo). A escolha mora em `creature.escolhasTalento` / `escolhasHabilidade`, que são campos da
+FICHA, e a concessão vive na sessão e não encosta na ficha. Resultado: conceder um item com escolha
+aninhada faz valer o que ele dá sem escolha, e a parte que dependia da escolha fica em nada.
+Não é silencioso a ponto de enganar (o item aparece na lista de concedidos), mas também não avisa.
+**Precisa:** decidir se a escolha da concessão vai junto na pega (um campo `escolhas` ao lado do
+`alvo`, que já existe para o Treino Especial) ou se concessão com escolha simplesmente não é
+oferecida. O `alvo` já abriu meio caminho.
+**Anotado:** 2026-08-20, ao fechar a 8.3
+
 ### "Agilidade no Campo de Batalha" nasceu no Conjurador, e o Ápice do Controlador a cobra
 **Onde:** `src/systems/afty/afty-alto-nivel.js` (`api_rei_do_tabuleiro`) e
 `src/systems/afty/afty-habilidades.js` (`cnj_agilidade_no_campo_de_batalha`)
@@ -152,6 +223,20 @@ Estudos provavelmente é o primeiro a usar o campo `alvo` da instância (ele nom
 canal `proficienciaPericia`.
 **Anotado:** 2026-08-18, ao criar os Treinos Especiais
 
+### DECIDIR: fonte display baixada para a Ficha (arquivo no repositório)
+**Onde:** `public/` mais um `@font-face` em `src/systems/afty/ficha/ficha.css`
+**Situação:** o tema Santuário Malevolente (Sukuna) pede uma display com peso e verticalidade, e
+**tema nenhum consegue trazer fonte**: `@import` é removido pelo `saneiaCss` e `@font-face` não vale
+dentro de `@scope`, ou seja, morre exatamente quando o escopo funciona. Hoje o tema usa pilha mincho
+do sistema (`Yu Mincho`, `Hiragino Mincho ProN`, `Songti SC`, `MS PMincho`) com Georgia atrás, e
+compensa na ESCALA. Funciona, mas o resultado muda de máquina para máquina: quem não tem mincho cai
+no Georgia.
+**Precisa:** o autor decidir se quer um `.woff2` no repositório. É barato (um arquivo em `public/` e
+um `@font-face` na folha), mas **é mudança de app, não de tema**: a fonte passaria a existir para
+TODAS as fichas, e o peso do arquivo entra no bundle de todo mundo. Se sim, definir também a licença
+da fonte escolhida.
+**Anotado:** 2026-08-18, ao montar o tema do Sukuna
+
 ### ASSUNÇÃO: Treinamento para Feitiço vale para Restringido e Sem Técnica
 **Onde:** `src/systems/afty/afty-treinos-especiais.js` (`tes_feitico`)
 **Situação:** o texto diz "Feitiço", e o Restringido não tem Feitiço (tem Habilidade Marcial) e o
@@ -214,6 +299,22 @@ Técnica Máxima podia ser Liberação. Reabrir quando ele decidir.
 uso. O jogador pode declarar quantas quiser.
 **Precisa:** um marcador de gasto na sessão, se o autor quiser rastrear.
 **Anotado:** 2026-08-09, autor: *"Por enquanto Regra Escrita."*
+
+---
+
+## AFTY — fragilidades achadas por assert
+
+### Importar `afty-habilidades.js` PRIMEIRO estoura um ciclo
+**Onde:** `src/systems/afty/afty-combate.js` linha 36, `POSTURA_OPCOES`
+**Situação:** `await import("afty-habilidades.js")` como primeiro módulo do processo morre com
+*"Cannot access 'POSTURAS_DE_COMBATE' before initialization"*. É ciclo entre `afty-habilidades.js` e
+`afty-combate.js`, e a ordem de avaliação só fecha certo quando alguém entra pelo `afty-derive.js`.
+**Confirmado ANTERIOR a 2026-08-20:** a mesma falha acontece com o arquivo do HEAD, então não veio
+dos Addons. Hoje é latente porque o app entra sempre pelo derive e o `vite build` passa.
+**Precisa:** ou quebrar o ciclo (mover `POSTURAS_DE_COMBATE` para um módulo folha, no espírito do
+`afty-pericias-catalogo.js`), ou aceitar e deixar escrito que `afty-derive.js` é a única porta de
+entrada. Enquanto não, todo assert novo tem de importar o derive primeiro.
+**Anotado:** 2026-08-20, ao escrever os asserts do registro de Addons
 
 ---
 

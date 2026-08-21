@@ -1,6 +1,7 @@
 import { useMemo, useCallback } from "react";
 
 import { deriveAfty } from "../afty-derive";
+import { aplicarAddons, unirAddons, epocaAddons } from "../afty-addons";
 import { aparaSessao, proximaRodada, descansar, sessaoEmBranco } from "../ficha/ficha-sessao";
 import {
   ENCONTRO_STATUS, LADO, criarCombatente, criarJogador, renumerarCopias,
@@ -36,9 +37,14 @@ import {
 const derivarCombatente = (c) => {
   if (!c.ficha || !c.sessao) return null;
   try {
+    /* ⚠ OS ADDONS NÃO SÃO APLICADOS AQUI. Quem os aplica é o memo `derivados`,
+       UMA vez para o encontro inteiro, com a UNIÃO de todas as fichas. Ver o
+       comentário lá: aplicar por combatente deixava o mundo com o addon do
+       ÚLTIMO derivado depois do laço, e qualquer leitura de catálogo no render
+       (um `getHabilidade` no painel) via um mundo arbitrário. */
     return deriveAfty(
       { ...c.ficha, combate: c.sessao.combate, buffsSessao: c.sessao.buffs },
-      { almaAtual: c.sessao.almaAtual },
+      { almaAtual: c.sessao.almaAtual, concedido: c.sessao.concedido },
     );
   } catch {
     // Ficha de uma versão antiga que o derive não engole. O encontro continua
@@ -67,20 +73,38 @@ const derivarCombatente = (c) => {
  */
 const CACHE_DERIVE = new WeakMap();
 
-const derivarComCache = (c) => {
+const derivarComCache = (c, epoca) => {
   if (!c.ficha || !c.sessao) return null;
   const anterior = CACHE_DERIVE.get(c.ficha);
   // As três da sessão são exatamente o que o `derivarCombatente` lê. Mudou uma,
   // deriva de novo. Não mudou nenhuma, o número é o mesmo por definição.
+  //
+  // ⚠ A ÉPOCA DOS ADDONS entra na chave junto (2026-08-20). Hoje ela quase nunca
+  // muda o número, porque addon só ACRESCENTA e todo id é prefixado, então uma
+  // união maior não mexe em quem já estava. Mas essa é uma invariante da FASE 1,
+  // e a fase 3 (remendar e desligar o raw) a quebra: lá, um addon que entra no
+  // encontro pode mudar o número de quem já estava. Deixar a época fora da chave
+  // hoje seria plantar um bug para aquele dia, e o custo é zero.
   if (anterior
     && anterior.combate === c.sessao.combate
     && anterior.buffs === c.sessao.buffs
-    && anterior.alma === c.sessao.almaAtual) {
+    && anterior.alma === c.sessao.almaAtual
+    && anterior.concedido === c.sessao.concedido
+    && anterior.epoca === epoca) {
     return anterior.derived;
   }
   const derived = derivarCombatente(c);
   CACHE_DERIVE.set(c.ficha, {
-    combate: c.sessao.combate, buffs: c.sessao.buffs, alma: c.sessao.almaAtual, derived,
+    combate: c.sessao.combate,
+    buffs: c.sessao.buffs,
+    alma: c.sessao.almaAtual,
+    /* ⚠ O CONCEDIDO ENTRA NA CHAVE, senão conceder no meio da luta não mudaria
+       número nenhum: o cache devolveria o derivado de antes da concessão. Igual
+       aos outros três, a comparação é por IDENTIDADE, e os escritores da sessão
+       sempre devolvem lista nova. */
+    concedido: c.sessao.concedido,
+    epoca,
+    derived,
   });
   return derived;
 };
@@ -310,10 +334,28 @@ export default function useEncontroAfty(encontroId, gerenciador) {
      Efeito colateral bom: o `derived` conserva a IDENTIDADE quando nada relevante
      muda, e com isso o memo de `deltaDosEstados` no PainelDeCombatente para de
      ser invalidado à toa, que era mais um `deriveAfty` por estado ligado. */
-  const derivados = useMemo(() => {
+  const { mapa: derivados, divergencias: addonDivergencias } = useMemo(() => {
+    /* ⚠ A UNIÃO DOS ADDONS DE TODOS OS COMBATENTES, aplicada UMA vez antes do
+       laço. É o desenho da seção 3 do docs/afty-addons.md, e o autor mandou
+       permitir encontro misto (2026-08-19): *"pode ser mudança mínima em uma
+       única criatura"*.
+
+       A união é segura nesta fase porque o addon só ACRESCENTA e todo id nasce
+       prefixado, então dois pacotes nunca disputam a mesma entrada.
+
+       Aplicar por COMBATENTE, que era como estava, tinha dois defeitos: o mundo
+       ficava com o addon do último derivado depois do laço (e qualquer leitura
+       de catálogo no render via um mundo arbitrário), e o custo era o catálogo
+       inteiro reescrito N vezes em vez de uma. */
+    const { pacotes, divergencias } = unirAddons(
+      (encontro?.combatentes ?? []).map((c) => c.ficha).filter(Boolean),
+    );
+    aplicarAddons(pacotes);
+    const epoca = epocaAddons();
+
     const mapa = {};
-    for (const c of encontro?.combatentes ?? []) mapa[c.id] = derivarComCache(c);
-    return mapa;
+    for (const c of encontro?.combatentes ?? []) mapa[c.id] = derivarComCache(c, epoca);
+    return { mapa, divergencias };
   }, [encontro]);
 
   const acoes = useMemo(() => ({
@@ -364,8 +406,13 @@ export default function useEncontroAfty(encontroId, gerenciador) {
       total: encontro.combatentes.length,
       abatidos: encontro.combatentes.filter((c) => c.flags.abatido).length,
       derivados,
+      /* Mesmo pacote de addon em duas fichas com versões DIFERENTES. Vale a
+         primeira e a divergência é relatada, porque escolher sozinho qual versão
+         vence mudaria números de uma ficha que o dono não abriu. Lista vazia é o
+         caso normal. */
+      addonDivergencias,
     };
-  }, [encontro, derivados]);
+  }, [encontro, derivados, addonDivergencias]);
 
   return { encontro, derivado, acoes };
 }

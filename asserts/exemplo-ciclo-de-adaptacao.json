@@ -1,0 +1,56 @@
+{
+  "id": "ciclo-de-adaptacao",
+  "nome": "Ciclo de Adaptacao",
+  "versao": "1.0.0",
+  "autor": "Afty",
+  "descricao": "Liga a Concessao do Mestre: o mestre acrescenta Habilidade, Talento, Treino e afins na criatura no meio da luta, ja calculando.",
+  "paraRaw": "afty",
+  "permite": ["concessao"],
+  "acrescenta": {
+    "habilidades": [
+      {
+        "id": "ciclo_de_adaptacao",
+        "nome": "Ciclo de Adaptacao",
+        "especializacaoId": "lutador",
+        "tipo": "base",
+        "nivel": 1,
+        "tags": ["adaptacao"],
+        "descricao": "Seu corpo aprende o que o feriu. A cada condicao cumprida em combate, o mestre acrescenta a voce uma Habilidade, um Talento ou um Treino, que passa a valer imediatamente. O que voce ganhou some quando o combate acaba.",
+        "requisitos": [],
+        "efeitos": []
+      },
+      {
+        "id": "adaptacao_acelerada",
+        "nome": "Adaptacao Acelerada",
+        "especializacaoId": "lutador",
+        "tipo": "nivel",
+        "nivel": 4,
+        "tags": ["adaptacao"],
+        "descricao": "O ciclo fecha mais rapido. Sua iniciativa aumenta em 2.",
+        "requisitos": [{ "tipo": "habilidade", "id": "ciclo_de_adaptacao" }],
+        "efeitos": [{ "canal": "iniciativa", "expr": "2" }]
+      }
+    ],
+    "talentos": [
+      {
+        "id": "tal_forma_roubada",
+        "nome": "Forma Roubada",
+        "grupo": "geral",
+        "tags": ["adaptacao"],
+        "descricao": "Voce guarda a forma de quem te acertou. Sua Defesa aumenta em 1.",
+        "requisitos": [],
+        "efeitos": [{ "canal": "defesa", "expr": "1" }]
+      }
+    ],
+    "treinosEspeciais": [
+      {
+        "id": "tes_repeticao",
+        "nome": "Repeticao do Ciclo",
+        "concede": "Vaga de Feitico",
+        "focos": 1,
+        "descricao": "Voce repete o ciclo ate ele virar seu. Concede uma vaga exclusiva de Feitico.",
+        "efeitos": [{ "canal": "vagasFeitico", "expr": "1" }]
+      }
+    ]
+  }
+}

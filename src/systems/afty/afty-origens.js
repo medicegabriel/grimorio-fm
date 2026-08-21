@@ -29,6 +29,7 @@
  * ============================================================
  */
 
+import { registrarFamilia } from "./afty-addons";
 import { AFTY_ATTRS, AFTY_RESISTENCIAS } from "./afty-schema";
 // Do módulo FOLHA, não de ./afty-pericias.js: os geradores de opção abaixo
 // rodam na INICIALIZAÇÃO deste arquivo, e afty-pericias.js puxa afty-efeitos.js,
@@ -1066,9 +1067,46 @@ export function origensQualificadas(creature) {
 }
 
 // Opções para <Select> (value/label).
-export const AFTY_ORIGENS = AFTY_ORIGENS_CATALOG.map((o) => ({ value: o.id, label: o.nome }));
+/* ============================================================ */
+/* ADDONS: Origem                                                */
+/* ============================================================ */
+/* Nona família (2026-08-20). DUAS estruturas derivadas do catálogo, e a
+   primeira delas é o que o SELETOR da aba usa:
 
-const BY_ID = Object.fromEntries(AFTY_ORIGENS_CATALOG.map((o) => [o.id, o]));
+     1. `AFTY_ORIGENS`  a lista `{ value, label }` do seletor. Reescrita no
+        lugar, porque é `export const` e quem importou guarda a referência.
+     2. `BY_ID`         o índice do `getOrigem`.
+
+   ⚠ A Origem é a entrada de maior CONSEQUÊNCIA do sistema: ela trava quais
+   Especializações aparecem, quais trilhas de Aptidão existem, o bônus de
+   atributo e os clãs. Uma origem de addon com pouca coisa declarada é uma
+   origem PERMISSIVA, e não uma origem quebrada, então o validador não tem o que
+   reprovar. Quem criar uma precisa saber disso. */
+
+export const AFTY_ORIGENS = [];
+
+let BY_ID = {};
+
+const ORIGENS_BASE = AFTY_ORIGENS_CATALOG.slice();
+
+function aplicarExtrasOrigens(extras = []) {
+  AFTY_ORIGENS_CATALOG.splice(0, AFTY_ORIGENS_CATALOG.length, ...ORIGENS_BASE, ...extras);
+  AFTY_ORIGENS.splice(0, AFTY_ORIGENS.length,
+    ...AFTY_ORIGENS_CATALOG.map((o) => ({ value: o.id, label: o.nome })));
+  BY_ID = Object.fromEntries(AFTY_ORIGENS_CATALOG.map((o) => [o.id, o]));
+}
+
+aplicarExtrasOrigens();
+
+registrarFamilia("origens", {
+  rotulo: "Origem",
+  chave: "id",
+  obrigatorios: ["nome"],
+  aplicar: aplicarExtrasOrigens,
+  validador: validarCatalogoOrigens,
+  resolver: (id) => getOrigem(id),
+  idsDaFicha: (c) => (c?.core?.origem?.id ? [c.core.origem.id] : []),
+});
 
 export const getOrigem = (id) => BY_ID[id] ?? null;
 

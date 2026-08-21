@@ -321,9 +321,14 @@ function linhaDeDano({
  * corpo, Destreza a distância, e com o traço Fineza vale o maior dos dois.
  *
  * ctx = { nd, patamar, mods, aptidaoCL, efeitos, efeitosLinhaDano,
- *         contextoDsl, armas, grauBasico, acertoGrauBasico, ataques }.
+ *         contextoDsl, armas, grauBasico, acertoGrauBasico, fontesAcertoBasico,
+ *         escoposBasicoExtra, finezaBasico, ataques }.
  * `armas` = [{ id, nome, grauArma, acertoGrau, alcance, propriedades, fineza,
  * distancia }], montado pelo deriveAfty a partir dos equipamentos.
+ *
+ * Os cinco campos do golpe básico descrevem o item de pugilato equipado que o
+ * define (ver o deriveAfty): o grau dele, o Acerto dele, as fontes de Acerto que não
+ * são o grau, o id para os efeitos de item alcançarem a linha, e a Fineza.
  *
  * `nivelDano` e `danoBonus` aceitam alvo: sem alvo valem para todas as fontes,
  * com alvo (`basico` ou o id da arma) valem só naquela linha.
@@ -457,14 +462,27 @@ export function resolveDano(creature, ctx = {}) {
     };
   };
 
-  const finezaDesarmado = valorCanal(ef, "finezaAtaque", "corpo") > 0;
-  const escoposBasico = escoposDaArma(null);
+  // Fineza no golpe básico vem de duas portas: o canal (Corpo Treinado, "você
+  // pode escolher usar tanto Força quanto Destreza") e a propriedade do item de
+  // pugilato que define o golpe (Soco Inglês).
+  const finezaDesarmado = valorCanal(ef, "finezaAtaque", "corpo") > 0 || !!ctx.finezaBasico;
+  // ⚠ O Ataque Básico responde por "basico" MAIS o id do item de pugilato
+  // equipado, quando existe um. É por esse id que o encantamento com `alvoItem`
+  // (Potente, Poderosa, Penetrante) chega no golpe: sem ele o efeito era gravado
+  // com o alvo do item, ninguém escutava, e o encantamento ainda descia o grau.
+  const escoposBasico = [
+    ...escoposDaArma(null),
+    ...(Array.isArray(ctx.escoposBasicoExtra) ? ctx.escoposBasicoExtra : []),
+  ];
   const entradas = [
     // Desarmado não tem margem de crítico listada em lugar nenhum: é 20.
     { id: "basico", nome: "Ataque Básico", fonte: "basico", alcance: null, propriedades: [],
       ...monta(escoposBasico, atributoDe({ fineza: finezaDesarmado }), ctx.grauBasico, 20),
       // Manoplas e Faixas são o Ataque Básico, então o grau delas entra aqui.
-      ...acertoDe("corpo", Math.max(0, Math.trunc(Number(ctx.acertoGrauBasico) || 0)), escoposBasico) },
+      // As `fontesAcertoBasico` são o que o encantamento somou por fora do grau:
+      // elas saem do total do grau e aparecem com o nome próprio no hover.
+      ...acertoDe("corpo", Math.max(0, Math.trunc(Number(ctx.acertoGrauBasico) || 0)),
+        escoposBasico, ctx.fontesAcertoBasico ?? []) },
   ];
 
   for (const a of Array.isArray(ctx.armas) ? ctx.armas : []) {
@@ -500,8 +518,9 @@ export function resolveDano(creature, ctx = {}) {
 /**
  * Orçamento de treinos (autor, 2026-07-27):
  * `3 + maior modificador entre Inteligência e Sabedoria + rank do Grau + outros`.
- * O rank do Grau do Feiticeiro é 1 no Quarto e vai até 5 no Especial, e sai do
- * ND (ver grauFeiticeiro em ./afty-equipamentos.js). Mestre custa 2 vagas.
+ * O rank do Grau da criatura é 1 no Quarto e PARA NO 5, no Semi-Grau Especial
+ * (autor, 2026-08-19): os quatro graus acima dele não somam mais nada aqui. Sai
+ * do ND (ver grauFeiticeiro em ./afty-equipamentos.js). Mestre custa 2 vagas.
  *
  * ⚠ **Perícias E Testes de Resistência gastam deste mesmo caixa** (autor,
  * 2026-07-27). Jogadas de Ataque não.

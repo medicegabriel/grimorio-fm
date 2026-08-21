@@ -7,6 +7,7 @@ import {
 import "./ficha.css";
 import { mesclaFichaAfty, AFTY_TIPOS, AFTY_PATAMARES, funcionamentosDaFicha } from "../afty-schema";
 import { deriveAfty } from "../afty-derive";
+import { aplicarAddons, addonsDaCriatura } from "../afty-addons";
 import { NumeroComFontes } from "../ui/fontes";
 import { numeroBr } from "../ui/formato";
 import {
@@ -17,8 +18,10 @@ import {
   ritualEmAndamento,
   iniciaRitualComum, iniciaRitualSemTeste, iniciaRitualEstendido,
   concluiPreparacaoRitual, cancelaRitual, finalizaRitual, encerraRitual, desativaRitual,
+  concedeNaSessao, removeConcessao,
 } from "./ficha-sessao";
 import { rolarTeste, rolarDano } from "./ficha-rolagem";
+import PrimitivasDeAddon from "../ui/PrimitivasDeAddon";
 import { conteudoDaFicha, equipamentosDaFicha, alvosDeBusca } from "./ficha-conteudo";
 import {
   carregarTema, salvarTemaGlobal, cssDasVars, cssDoUsuario, temCssLivre,
@@ -210,18 +213,34 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
   // sessão de jogo destruir o cenário montado para dosar a mão. Ver
   // `ficha-sessao.js`.
   const derived = useMemo(
-    () => deriveAfty(
-      { ...ficha, combate: sessaoBruta.combate, buffsSessao: sessaoBruta.buffs },
-      {
-        almaAtual: sessaoBruta.almaAtual,
-        ultimoFeiticoDanoId: sessaoBruta.ultimoFeiticoDanoId,
-        rituais: sessaoBruta.rituais,
-        usosRitualista: usosRitualista(sessaoBruta),
-        ritualAtual: ritualEmAndamento(sessaoBruta),
-      },
-    ),
+    () => {
+      /* ⚠ OS ADDONS DA FICHA ENTRAM ANTES DA DERIVAÇÃO, e no MESMO memo. Sem
+         isto, abrir uma criatura que usa addon mostraria as habilidades dela
+         como ids órfãos, porque o catálogo estaria só com o raw. É a mesma
+         ordem do criador. Ver docs/afty-addons.md. */
+      aplicarAddons(ficha?.addons ?? []);
+      return deriveAfty(
+        { ...ficha, combate: sessaoBruta.combate, buffsSessao: sessaoBruta.buffs },
+        {
+          almaAtual: sessaoBruta.almaAtual,
+          ultimoFeiticoDanoId: sessaoBruta.ultimoFeiticoDanoId,
+          rituais: sessaoBruta.rituais,
+          usosRitualista: usosRitualista(sessaoBruta),
+          ritualAtual: ritualEmAndamento(sessaoBruta),
+          /* O que o mestre concedeu no meio da luta (Addons 8.3). Entra pelo
+             `opcoes`, e não pela criatura mesclada acima, porque não é escolha
+             de ficha: é ganho de combate, de graça, e morre com a sessão. */
+          concedido: sessaoBruta.concedido,
+        },
+      );
+    },
     [ficha, sessaoBruta],
   );
+
+  /* Os addons que ESTA ficha carrega, para a marca do cabeçalho. Sai da própria
+     criatura (a cópia congelada), e não da biblioteca da máquina: a marca tem de
+     valer também para quem recebeu a ficha de fora e não instalou nada. */
+  const addonsDaFicha = useMemo(() => addonsDaCriatura(ficha), [ficha]);
 
   // ⚠ O clamp é de LEITURA, e não um efeito que reescreve o estado. O teto muda
   // por fora (editar a ficha no criador sobe ou desce o PV máximo, e a Alma o
@@ -452,6 +471,8 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
         onEstado={alteraEstado}
         onBuffs={(buffs) => atualiza((s) => ({ ...s, buffs }))}
         onCondicoes={(condicoes) => atualiza((s) => ({ ...s, condicoes }))}
+        onConceder={(familia, id) => atualiza((s) => concedeNaSessao(s, familia, id))}
+        onRemoverConcessao={(uid) => atualiza((s) => removeConcessao(s, uid))}
       />
     ),
   };
@@ -460,6 +481,10 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
   const usuarioCss = SEM_CSS ? "" : cssDoUsuario(tema);
 
   return (
+    /* As primitivas de Addon que ESTA criatura enxerga. Sem provedor, ninguém
+       enxerga nada, que é o certo para quem só usa o raw. Ver
+       `ui/usar-primitiva.js`. */
+    <PrimitivasDeAddon primitivas={derived.primitivas}>
     <>
     <div className="afty-ficha" id="afty-ficha" data-afty-densidade={densidade}>
       {/* ⚠ A ORDEM É A REGRA. Os dois blocos são CSS sem camada e de mesma
@@ -504,6 +529,21 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
                   <Chip tom="aviso" title={`${derived.carga.cargaLimite} espaços de limite`}>
                     <AlertTriangle className="w-3 h-3 flex-shrink-0" aria-hidden="true" />
                     Sobrecarregado
+                  </Chip>
+                )}
+                {/* ⚠ A MARCA DE "NÃO RAW". Não é advertência moral, é
+                    informação: quem recebe esta ficha precisa saber que ela não
+                    é o livro puro ANTES de comparar com a mesa dele. O `title`
+                    nomeia os addons, que é onde explicação de item vive. Ver a
+                    seção 7 de docs/afty-addons.md. */}
+                {addonsDaFicha.length > 0 && (
+                  <Chip
+                    tom="destaque"
+                    title={addonsDaFicha.map((a) => `${a.nome} ${a.versao}`).join("\n")}
+                  >
+                    {addonsDaFicha.length === 1
+                      ? addonsDaFicha[0].nome
+                      : `${addonsDaFicha.length} addons`}
                   </Chip>
                 )}
               </div>
@@ -658,6 +698,24 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
           aria-labelledby={`afty-aba-${tab}`}
           className="max-w-7xl mx-auto px-3 sm:px-4 py-4"
         >
+          {/* ⚠ LINHA MORTA E MARCADA (decisão 4 do autor, 2026-08-20). A ficha
+              SEMPRE abre: o que o mundo não tem aparece aqui, marcado, e não
+              soma nada. Vem antes do corpo porque é a única coisa da tela que
+              pede ação, e some sozinho quando não há nada. Ver
+              docs/afty-addons.md seção 9. */}
+          {(derived.addonProblemas?.length ?? 0) > 0 && (
+            <div className="afty-card mb-4 p-3 space-y-2">
+              {derived.addonProblemas.map((m) => (
+                <div key={`${m.familia}:${m.id}`}>
+                  <p className="text-[11px] flex items-start gap-1" style={{ color: "var(--afty-aviso)" }}>
+                    <AlertTriangle className="w-3 h-3 flex-shrink-0 mt-px" aria-hidden="true" />
+                    <span>{m.motivo}</span>
+                  </p>
+                  <p className="afty-rotulo text-[11px] pl-4">{m.saida}</p>
+                </div>
+              ))}
+            </div>
+          )}
           {(corpo[tab] ?? corpo.acoes)()}
           {/* O painel de rolagens é fixo no canto e cobre o fim do conteúdo.
               Este respiro impede que a última linha da aba fique embaixo dele.
@@ -721,5 +779,6 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
       </button>
     )}
     </>
+    </PrimitivasDeAddon>
   );
 }

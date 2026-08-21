@@ -71,6 +71,8 @@ export const TOKENS_DOC = [
   { id: "--afty-fonte-num", valor: "ui-monospace, Consolas, monospace", oque: "fonte dos números" },
   { id: "--afty-imagem", valor: "none", oque: "imagem de fundo, como url(\"...\")" },
   { id: "--afty-imagem-opacidade", valor: "0.25", oque: "opacidade da imagem de fundo, de 0 a 1" },
+  { id: "--afty-imagem-opacidade-ambiente", valor: "0.125", oque: "opacidade da mesma imagem atrás do corpo" },
+  { id: "--afty-imagem-opacidade-banner", valor: "0.15", oque: "opacidade da mesma imagem atrás do cabeçalho" },
   { id: "--afty-imagem-encaixe", valor: "cover", oque: "background-size da imagem" },
   { id: "--afty-imagem-posicao", valor: "center top", oque: "background-position da imagem" },
 ];
@@ -496,13 +498,22 @@ cabeçalho fica pela metade e é o erro mais comum. Estilize também \`.afty-car
 ## O jeito CERTO de mudar cor
 
 Quase tudo na ficha é pintado por VARIÁVEL CSS. Trocar a variável repinta de uma vez tudo que a usa,
-no cabeçalho E no corpo. Comece SEMPRE por aqui, e só depois vá para classe específica:
+no cabeçalho E no corpo. Comece SEMPRE por aqui, e só depois vá para classe específica.
+
+**IMPORTANTE: copie o seletor abaixo exatamente como está, com as duas linhas.** Dentro de \`@scope\` um
+\`#afty-ficha\` sozinho NÃO acerta a raiz (o escopo o transforma em "um #afty-ficha dentro do
+#afty-ficha", que não existe), e \`:scope\` sozinho perde para o painel de Aparência. \`:scope#afty-ficha\`
+acerta e vence; a segunda linha é para o navegador que ainda não tem \`@scope\`.
 
 \`\`\`css
-#afty-ficha {
+:scope#afty-ficha,
+#afty-ficha#afty-ficha {
 ${tokens}
 }
 \`\`\`
+
+**Nesse bloco vão SÓ as variáveis desta lista.** Ele é forte de propósito, e uma variável de componente
+escrita ali (como \`--afty-vital-cor\`) atropelaria a cor que cada recurso define por conta própria.
 
 ## Os seletores disponíveis
 
@@ -517,17 +528,28 @@ ${atributos}
 ## Regras
 
 1. Responda SÓ com o CSS, sem explicação em volta e sem cerca de markdown.
-2. \`@import\` é removido automaticamente, então fonte externa não funciona. Use as famílias que já
-   estão no sistema do usuário.
+2. \`@import\` é removido automaticamente e \`@font-face\` não vale dentro de \`@scope\`, então fonte
+   baixada não funciona de jeito nenhum. Use as famílias que já estão no sistema do usuário, e
+   compense na ESCALA: um nome de criatura grande vale mais que uma fonte exótica.
 3. Imagem e gif entram por URL pública: \`background-image: url("https://...")\`. Não use data URI,
    que estoura o armazenamento do navegador.
-4. Não esconda a ficha inteira, e não mexa em \`position\` do cabeçalho: ele é fixo de propósito.
-5. **IMPORTANTE: não ponha \`overflow: hidden\` em \`.afty-card\` nem em \`.afty-linha\`.** O painel que explica os
+4. Não esconda a ficha inteira, e não mexa em \`position\` do cabeçalho: ele gruda no topo de
+   propósito, e encolhe sozinho ao rolar.
+5. **IMPORTANTE: não ponha \`overflow\` em \`.afty-card\` nem em \`.afty-linha\`.** O painel que explica os
    números abre a partir de dentro deles, e o corte o decapita. Para arredondar canto, use
-   \`border-radius\` no próprio elemento, que já basta.
+   \`border-radius\` no próprio elemento, que já basta. Pelo mesmo motivo, não ponha \`z-index\` nesses
+   dois, e não ponha \`transform\`, \`filter\`, \`backdrop-filter\`, \`contain\` nem \`will-change\` na raiz
+   \`#afty-ficha\`: qualquer um deles prende o painel e ele passa a abrir no lugar errado.
 6. Cuide do CONTRASTE. Se escurecer o fundo, clareie \`--afty-texto\` e \`--afty-texto-suave\` junto.
-7. Não use \`!important\`: este CSS já entra por último e vence tudo.
-8. Mantenha o resultado abaixo de 64 KB.
+   Repare em \`--afty-texto-fraco\`, que é o mais apagado e é a cor da perícia não treinada.
+7. Não use \`!important\`. Este CSS vence a folha do app sem ele. O que ele NÃO vence é estilo escrito
+   direto no elemento, e alguns pontos da ficha escrevem cor assim: nesses, o único jeito de mudar a
+   cor é trocar a VARIÁVEL que eles usam, e é mais um motivo para começar pelo bloco de tokens.
+8. Não pinte a barra de recurso por \`background\`. \`.afty-vital-barra\` já é um gradiente montado a
+   partir da cor do recurso, e escrever \`background\` ou \`background-image\` nela apaga o gradiente e
+   deixa a barra INVISÍVEL. Para trocar a cor das barras, mexa em \`--afty-pv\`, \`--afty-pe\`,
+   \`--afty-alma\` e \`--afty-pvtemp\`.
+9. Mantenha o resultado abaixo de 64 KB.
 
 ## O que eu quero
 
@@ -630,7 +652,7 @@ export const ATRIBUTOS_DOC = [
   { seletor: "[data-afty-vital=\"pv\"]", oque: "a barra de Vida. Também `pe` e `alma`" },
   { seletor: "[data-afty-nivel=\"critico\"]", oque: "recurso abaixo de um quarto. Também `baixo`" },
   { seletor: "[data-afty-stat=\"defesa\"]", oque: "uma defesa nomeada: cd, rd-geral, rd-especifica, rd-alma, rd-fisica, movimento, iniciativa, atencao, res-parcial, maestria, preparo" },
-  { seletor: "[data-afty-aba=\"acoes\"]", oque: "uma aba: acoes, habilidades, pericias, buffs" },
+  { seletor: "[data-afty-aba=\"acoes\"]", oque: "uma aba: acoes, habilidades, pericias, equipamentos, invocacoes, buffs" },
   { seletor: "[data-afty-tom=\"destaque\"]", oque: "variante de chip, botão ou valor. Também `aviso`, `dano`, `cura`, `custo`" },
   { seletor: "[data-afty-destacada=\"sim\"]", oque: "a linha do Ataque Básico e a perícia de Mestre" },
   { seletor: "[data-afty-alvo=\"sim\"]", oque: "a linha para onde a busca acabou de navegar" },
@@ -650,7 +672,7 @@ export const ATRIBUTOS_DOC = [
  * ele imagina é o topo da ficha, porque é o que o contrato descrevia.
  */
 export const MAPA_DA_PAGINA = `#afty-ficha                     a raiz
-├── .afty-cabecalho             FIXO no topo, nunca sai da tela
+├── .afty-cabecalho             gruda no topo e ENCOLHE ao rolar
 │   ├── .afty-cabecalho-conteudo   grade: conteúdo à esquerda, retrato à direita
 │   │   ├── .afty-nome + vários .afty-chip
 │   │   └── .afty-retrato-painel > .afty-retrato   (tablet e desktop)
@@ -658,7 +680,8 @@ export const MAPA_DA_PAGINA = `#afty-ficha                     a raiz
 │   │   ├── .afty-vital-icone .afty-vital-rotulo .afty-vital-numero .afty-vital-max
 │   │   └── .afty-vital-trilho > .afty-vital-barra
 │   ├── .afty-stats             grade de .afty-stat (Defesa, CD, RD, Movimento...)
-│   └── .afty-abas > .afty-aba  Ações · Habilidades · Perícias · Buffs
+│   └── .afty-abas > .afty-aba  Ações · Habilidades · Perícias · Equipamentos ·
+│                                Invocações · Buffs
 │
 ├── <main>                      O CORPO. É a maior parte da ficha.
 │   ├── aba AÇÕES         vários .afty-card (Rápido, Dano, Cura, Feitiços, Manobras),

@@ -43,7 +43,7 @@ const POR_NOME = [
       ["nd", "Nível de Desafio"],
       ["bt", "Bônus de Treinamento"],
       ["maestria", "Maestria, o mesmo valor do Bônus de Treinamento"],
-      ["grau", "Grau de feiticeiro, Quarto 1 até Especial 5"],
+      ["grau", "Grau da criatura, Quarto 1 até Semi-Grau Especial 5"],
       ["vez", "Qual repetição está sendo avaliada"],
       ["alma_atual", "Integridade da Alma"],
       ["rd_escudo", "RD base do escudo equipado"],
@@ -159,7 +159,7 @@ const numero = (v) => {
  *                de catálogo, então não estão no `COMBATE_VARS`
  * @returns `[{ id, label, sobPedido, itens: [{ nome, valor, nota }] }]`
  */
-export function vocabularioDsl(ctx = {}, extras = []) {
+export function vocabularioDsl(ctx = {}, extras = [], opcoes = {}) {
   const idsExtras = new Set((Array.isArray(extras) ? extras : []).map((e) => e?.id).filter(Boolean));
   const notaDe = new Map();
   for (const g of POR_NOME) for (const [n, nota] of g.nomes) notaDe.set(n, nota);
@@ -172,6 +172,11 @@ export function vocabularioDsl(ctx = {}, extras = []) {
   };
 
   for (const nome of Object.keys(ctx)) {
+    /* ⚠ Chave que começa com `#` NÃO é variável: é dado interno do contexto, e
+       o tokenizer nem aceita `#` num identificador, então ninguém consegue
+       escrevê-la numa expressão. Hoje é só o `#marcas`, que o `contar()` lê.
+       Listá-la mostraria "[object Object]" no seletor. */
+    if (nome.startsWith("#")) continue;
     guarda(grupoDaVariavel(nome, idsExtras), {
       nome,
       valor: numero(ctx[nome]),
@@ -202,6 +207,35 @@ export function vocabularioDsl(ctx = {}, extras = []) {
       itens: (balde.get(r.id) ?? []).sort(porNome),
     })),
     { ...GRUPO_LINHA, sobPedido: false, itens: balde.get(GRUPO_LINHA.id) ?? [] },
+    /* MARCAS: uma linha por marca que a criatura carrega, escrita já como a
+       chamada pronta (`contar("eco")`) e com a contagem atual como valor.
+
+       ⚠ É o único jeito de o `contar()` ser DESCOBERTO sem texto explicativo na
+       tela: uma "lista de funções" seria explicação, e a regra do autor não a
+       permite. Aqui é o mesmo contrato do resto do seletor, "o nome e quanto ele
+       vale agora", e clicar insere a chamada inteira no ponto do cursor.
+
+       Sai do `#marcas` do próprio contexto, então marca que um Addon trouxe
+       aparece sozinha, sem lista paralela para envelhecer. */
+    {
+      id: "marcas",
+      label: "Marcas",
+      sobPedido: false,
+      /* ⚠ SÓ PARA QUEM PEDIU A PRIMITIVA. As marcas automáticas saem da família
+         e da especialização de cada entrada, então uma criatura RAW com uma
+         habilidade de Lutador já teria `contar("lutador")` e `contar("habilidade")`
+         no seletor, sem addon nenhum. O `contar()` nasceu para um caso de Addon
+         (habilidade que escala com quantas outras do mesmo arquétipo a ficha
+         tem), e é lá que ele deve aparecer. Ver `ui/usar-primitiva.js`.
+
+         O grupo vazio é descartado pelo `filter` do fim, então basta não
+         preencher: quem chama sem a opção continua sem o grupo. */
+      itens: opcoes.contar
+        ? Object.entries(ctx?.["#marcas"] ?? {})
+          .map(([marca, quantas]) => ({ nome: `contar("${marca}")`, valor: quantas, nota: null }))
+          .sort(porNome)
+        : [],
+    },
     { ...GRUPO_OUTRAS, sobPedido: false, itens: (balde.get(GRUPO_OUTRAS.id) ?? []).sort(porNome) },
   ];
   return saida.filter((g) => g.itens.length);
@@ -298,6 +332,7 @@ export function vocabularioInvocacao(ctx = {}) {
   };
 
   for (const nome of Object.keys(ctx)) {
+    if (nome.startsWith("#")) continue;   // dado interno, ver o laço do vocabularioDsl
     guarda(grupoDe(nome), { nome, valor: numero(ctx[nome]), nota: notaDe.get(nome) ?? null });
   }
 
@@ -325,4 +360,10 @@ export const DSL_FUNCOES = [
   { nome: "abs(x)", insere: "abs()", nota: "Valor absoluto" },
   { nome: "min(a, b)", insere: "min()", nota: "O menor valor" },
   { nome: "max(a, b)", insere: "max()", nota: "O maior valor" },
+  /* ⚠ A única que não é matemática: ela pergunta à FICHA. Entrou em 2026-08-20
+     com o avaliador próprio do Afty (`afty-dsl.js`), e é a irmã da booleana
+     `tem_*`: uma pergunta se você tem, a outra conta quantas. As marcas que a
+     criatura carrega AGORA aparecem no grupo "Marcas" do seletor de variáveis,
+     já com a chamada pronta e a contagem do lado. */
+  { nome: "contar(marca)", insere: 'contar("")', nota: "Quantas entradas da ficha têm aquela marca" },
 ];

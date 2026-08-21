@@ -3,6 +3,7 @@ import { ChevronDown } from "lucide-react";
 
 import { EFEITO_CANAL_GRUPOS } from "../afty-efeitos";
 import { semAcento } from "./ficha-conteudo";
+import { usePrimitiva } from "../ui/usar-primitiva";
 
 /**
  * ============================================================
@@ -36,6 +37,12 @@ export default function CanalPicker({ value, onChange, ancora = "esquerda" }) {
     [value],
   );
 
+  /* O `hpAtributo` é canal de Addon, e some para quem não pediu a primitiva.
+     Igual ao CanalPicker do criador, o canal JÁ ESCOLHIDO continua à vista: um
+     campo em branco com efeito ativo por trás seria pior. Ver
+     `ui/usar-primitiva.js`. */
+  const veHpAtributo = usePrimitiva("hpAtributo") || value === "hpAtributo";
+
   // Busca SEM acento dos dois lados: ninguém digita acento numa caixa de busca,
   // e sem isso "critico" não acha "Margem de Crítico".
   const grupos = useMemo(() => {
@@ -44,13 +51,14 @@ export default function CanalPicker({ value, onChange, ancora = "esquerda" }) {
       .map((g) => ({
         label: g.label,
         itens: g.itens.filter((c) =>
-          !termo
+          (veHpAtributo || c.id !== "hpAtributo")
+          && (!termo
           || semAcento(c.label).includes(termo)
           || semAcento(g.label).includes(termo)
-          || semAcento(c.nota).includes(termo)),
+          || semAcento(c.nota).includes(termo))),
       }))
       .filter((g) => g.itens.length);
-  }, [busca]);
+  }, [busca, veHpAtributo]);
 
   const chapada = useMemo(() => grupos.flatMap((g) => g.itens), [grupos]);
 

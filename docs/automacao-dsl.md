@@ -1,8 +1,10 @@
 <!--
-  Espelho da referência da DSL de Automação. Fonte única: src/components/fm-dsl.js
-  (catálogos DSL_VARIABLE_GROUPS / DSL_FUNCTIONS / DSL_OPERATORS / DSL_EXAMPLES e
-  os geradores dslReferenceMarkdown / dslLlmPrompt). Ao alterar a DSL, atualize lá
-  e reflita aqui. No app, a mesma referência aparece em AutomationDocsModal.
+  Espelho da referência da DSL de Automação. DUAS fontes desde 2026-08-20:
+    • src/components/fm-dsl.js          o avaliador da 2.5.2 (somente-leitura)
+    • src/systems/afty/afty-dsl.js      a cópia do Afty, que é onde a linguagem cresce
+  A base é a mesma nos dois. O que só existe no Afty está na seção "o PRÓPRIO
+  avaliador" mais abaixo. Ao alterar a DSL do Afty, atualize lá e reflita aqui.
+  No app, a referência da 2.5.2 aparece em AutomationDocsModal.
 -->
 
 # DSL de Automação — Grimório
@@ -69,6 +71,46 @@ Onde se usa:
 - `hp_atual < metade(hp_max)` — Verdadeiro quando estiver com menos da metade da vida.
 - `max(mod_presenca, 1)` — O modificador de Presença, no mínimo 1.
 - `dom >= 3 e pe_atual >= 10` — Combina dois pré-requisitos.
+
+## ⚠ Desde 2026-08-20 o Afty tem o PRÓPRIO avaliador
+
+Até essa data o Afty usava o `fm-dsl.js` da 2.5.2 direto. Como ele é somente-leitura,
+**função ou operador novo era impossível** sem furar a regra. O autor liberou a cópia ao
+desenhar os Addons, e ela vive em **`src/systems/afty/afty-dsl.js`**.
+
+- **A 2.5.2 segue intacta** com o `fm-dsl.js` dela. As duas divergem de propósito a partir
+  de agora, e melhoria daqui **não volta para lá**.
+- Tudo acima neste arquivo continua valendo nos dois: tokenizer, parser, avaliador, as 8
+  funções e os operadores são os mesmos, e há assert de paridade nas duas pontas.
+
+### O que só existe do lado do Afty
+
+**Literal de texto**, entre aspas duplas ou simples. Ele **só vale como argumento de
+função**, e o validador reprova em qualquer outro lugar (`2 + "abc"` é erro, e não 2).
+
+**`contar(marca)`** — quantas entradas da ficha carregam aquela marca. É a irmã da booleana
+`tem_*`: uma pergunta se você tem, a outra conta quantas. Nasceu para a família de
+homebrew *"esta habilidade fica mais forte a cada outra do mesmo arquétipo que eu tiver"*.
+
+```
+2 + contar("adaptacao") - 1     // 2, e mais 1 a cada outra além desta
+contar("lutador") >= 3          // condição em cima da contagem
+```
+
+Cada entrada da ficha rende duas espécies de marca:
+
+| Espécie | De onde vem | Exemplo |
+|---|---|---|
+| escrita | o campo `tags` da entrada | `contar("adaptacao")` |
+| automática | a família e a especialização dona | `contar("habilidade")`, `contar("lutador")` |
+
+Marca é normalizada igual a identificador (minúscula, sem acento), então `contar("Adaptação")`
+e `contar("adaptacao")` são a mesma. Marca que ninguém tem devolve 0, e não quebra a expressão.
+
+⚠ **No estágio MONTANTE o `contar()` devolve 0**, porque ele roda antes de Habilidades,
+Talentos e Aptidões existirem. É a mesma limitação do `tem_*` naquele estágio.
+
+---
 
 ## ⚠ No Grimório Afty o vocabulário é MUITO maior
 

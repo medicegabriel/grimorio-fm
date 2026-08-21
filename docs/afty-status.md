@@ -117,6 +117,423 @@ Estado atual do sistema Afty (atualizado 2026-08-18). Leia junto com:
 
 ---
 
+## SESSÃO DE 2026-08-20 (parte 3): O QUE AS FAIXAS NÃO ESTAVAM ENTREGANDO
+
+Pergunta do autor: *"como está funcionando Faixas atualmente? E o Acerto de Faixas, aumento de Dano
+e etc"*. A varredura respondeu e achou quatro buracos, e ele mandou consertar os quatro.
+
+**O desenho continua o mesmo, e ele está certo.** Faixas, Manoplas e Soco Inglês (`grupo: "pugilato"`)
+não viram linha de ataque: elas **são** o Ataque Básico. Sem Ferramenta Amaldiçoada não rendem número
+nenhum, e com ela dão +1 de Acerto por degrau mais o dano da `DANO_ADICIONAL_ARMA`. O que estava
+quebrado era o que o item levava para a linha ALÉM do grau.
+
+### 1. ⚠ O encantamento de item era descartado calado, e ainda cobrava o degrau
+
+Potente, Poderosa, Penetrante e Cruel emitem efeito com `alvoItem`, ou seja, com o alvo sendo o id do
+item. A linha do Ataque Básico respondia só pelo escopo `basico`, então **ninguém escutava**. E como
+cada encantamento desce um degrau do grau de cálculo, pôr Potente numas Faixas de Primeiro Grau era
+prejuízo puro: perdia 4 de dano e não ganhava o dado.
+
+Agora a linha básica responde por `basico` **mais o id do item de pugilato equipado**. Medido: Faixas
+de Primeiro com Potente saiu de `1d8+28` para `2d8+28`, e a mesma Espada Curta com o mesmo
+encantamento continua exatamente onde estava.
+
+⚠ **Só o id entra no escopo.** `"arma"`, a categoria e o grupo ficam de fora de propósito, porque o
+livro diz que Faixas não são armas, e um efeito que diz "com arma" não pode passar a valer para o
+soco.
+
+### 2. O hover somava o Precisa dentro do Grau
+
+`fa.fontesAcerto` existe justamente para repartir isso, e a linha básica era a única que não o
+recebia: Faixas de Primeiro com Precisa mostrava "Grau da Ferramenta: 5" em vez de 3 mais 2. Número
+certo, detalhamento errado, que é a mesma classe de bug do `defesaAtributo`.
+
+### 3. O seletor de Ataque aparecia nas três e não fazia nada
+
+O card de arma oferece Corpo a Corpo ou Amaldiçoado para toda entrada, mas o golpe básico rola sempre
+Corpo a Corpo. Escolher Amaldiçoado gravava o campo e não mudava número nenhum. O seletor saiu das
+três de pugilato.
+
+⚠ **Isso NÃO decidiu a regra.** Se o Ataque Amaldiçoado tiver de valer para golpe desarmado, a
+pergunta é do autor, e o controle não moraria no card do item de qualquer jeito, porque o Ataque
+Básico existe sem item nenhum.
+
+### 4. A Fineza do Soco Inglês era decorativa
+
+O básico abria Destreza só pelo canal `finezaAtaque` (Corpo Treinado), e a propriedade impressa na
+tabela do Soco Inglês não chegava a lugar nenhum. Com Força 8 e Destreza 18 o golpe saía `1d8+31` de
+Força, e agora sai `5d8+18` de Destreza.
+
+### A regra que os quatro consertos obrigaram a escrever: UM item define o golpe
+
+O grau sempre foi o **maior** entre as de pugilato equipadas, e nunca a soma. Agora que o item leva
+encantamento e Fineza junto, tudo isso vem do **mesmo** item, senão dois pares de Manoplas
+empilhariam encantamento de duas armas num golpe só.
+
+Item **sem** Ferramenta passou a entrar na disputa com rank 0. Ele não muda grau nenhum, e serve para
+ser o dono do golpe quando é o único equipado, que é como ele recebe o encantamento do **Manejo
+Especial** ("toda arma que você estiver manejando").
+
+### O que ficou de fora, e por quê
+
+- **A jogada de ataque com Fineza** continua saindo da marcação da ficha (`ataqueFineza`), e não da
+  arma. Vale igual para a Espada Curta, é anterior a esta sessão, e mexer nisso é decisão de regra.
+- `contaComoArma: false` e `dano: { desarmado: true }` continuam **sem leitor**. Quem separa o
+  pugilato no cálculo é o `grupo`. Os dois campos documentam, e agora o doc diz isso.
+
+### Verificação
+
+- `npx eslint src/systems/afty/` passou.
+- `npx vite build` passou.
+- `npm run asserts`: **585 asserts em 17 arquivos**. O novo é o `t-pugilato.mjs` (37): os cinco graus
+  medidos um a um, a Faixas na mochila e a sem Ferramenta valendo zero, as duas equipadas valendo a
+  maior, os quatro consertos, e a Espada Curta como régua de que nada mudou para arma de verdade.
+- `src/components/` sem alteração.
+
+---
+
+## SESSÃO DE 2026-08-20 (parte 2): ARTES DO COMBATE E EMPOLGAÇÃO CHEGAM SOZINHAS
+
+Pedido do autor: **Artes do Combate** (Combatente 1°) e **Empolgação** (Lutador 1°) são recebidas de
+graça, ao alcançar o nível.
+
+**Não foi preciso motor novo, de novo.** É o mesmo caminho aberto em 2026-08-10 para o Suporte e
+reusado em 2026-08-16 pelo Controlador: `automatica: true` na entrada,
+`habilidadesConcedidasPelasEspecializacoes` lê a flag, e `resolveHabilidades` junta `concedidas` em
+`escolhidas` **depois** de contar o orçamento. Somam **nove** automáticas, e o comentário do topo do
+`afty-habilidades.js` continua listando todas, uma a uma.
+
+**O que muda na mesa:**
+
+- todo Combatente 1 passa a ter **Pontos de Preparo** (nível de Combatente mais o modificador de
+  Sabedoria). Antes eram zero para quem não gastasse vaga na Base, e a Base é a única fonte deles;
+- todo Lutador 1 tem o **quadro de Empolgação** ligado, e as **duas Manobras** do nível 1 continuam
+  sendo escolha dele. Conceder a habilidade não engole a escolha aninhada: `resolveEscolhasHabilidade`
+  recebe `escolhidas`, que já vem com as concedidas dentro.
+
+⚠ **A concedida CONTA no `contar()`**, e foi isso que um assert antigo pegou. O `t-ponta.mjs` media
+`contar("lutador")` num Lutador ND 12 e esperava 0 com a ficha sem habilidade nenhuma. Agora é 1,
+porque a Empolgação está na ficha sem ninguém ter escolhido. Não é efeito colateral, é a definição:
+as marcas saem de `habilidades.escolhidas`, e a concedida mora lá. Os números foram corrigidos e
+entrou o assert que amarra as duas pontas, trocando o Lutador por um Restringido para a conta zerar.
+
+**Ficha antiga não cobra duas vezes.** Quem já tinha gravado as duas na mão continua com elas
+efetivas, e elas saem do contador de gasto pelo descarte contra o `concedidasSet` que
+`resolveHabilidades` já fazia desde o Controlador.
+
+### Verificação
+
+- `npx eslint src/systems/afty/` passou.
+- `npx vite build` passou.
+- `npm run asserts`: **548 asserts em 16 arquivos**. O novo é o `t-bases-automaticas.mjs` (34), que
+  cobre quem recebe e quem não recebe, o orçamento medido contra o Restringido (a única
+  especialização sem Base automática nenhuma), a ficha antiga sem duplicata, os Pontos de Preparo e
+  o quadro de Empolgação chegando sem escolha, e as Manobras sobrevivendo à concessão.
+- `src/components/` sem alteração, conferido por `git status`.
+
+---
+
+## SESSÃO DE 2026-08-20: ADDONS, E POR QUE O CASO MAIS EXTREMO NÃO PEDIA CÓDIGO
+
+Pedido do autor: idealizar uma ferramenta para as pessoas escreverem Addons e Plugins, mudando o
+site para o contexto da mesa delas sem abrir o GitHub. *"O site é para usar o Raw do sistema"*, e
+muita gente faz modificação pequena na hora de criar criatura.
+
+**Nada de código nesta sessão.** O desenho inteiro mora em **`docs/afty-addons.md`**, com as 7
+decisões dele datadas. O que segue é só o porquê.
+
+### O achado que mudou o plano
+
+O autor pediu, explicitamente, para o addon virar quase uma linguagem, e aceitou o risco de
+segurança ("escopo pequeno de pessoas de confiança"). Mesmo assim a camada de JavaScript saiu da
+primeira fase, e o motivo não é segurança: **ela não resolve os casos dele**.
+
+Ele deu quatro exemplos reais de coisas que já tentou fazer e não couberam. Medidos contra o código:
+
+| O caso | O que falta de verdade | Tamanho |
+|---|---|---|
+| Habilidade que escala com quantas do mesmo arquétipo você tem | campo `tags` na entrada, mais `contar()` no DSL | pequeno |
+| Trocar o atributo do cálculo de PV | canal `hpAtributo`, irmão exato do `defesaAtributo` que já existe | pequeno |
+| *Ciclo de Adaptação* (Mahoraga): o mestre acrescenta habilidade no meio da luta, já calculando | conceder entrada de catálogo a partir da SESSÃO | médio |
+| Somar a barra de PV e PE com a de outra criatura | vínculo entre DUAS criaturas | atravessa a arquitetura |
+
+**Zero dos quatro são destravados por deixar escrever JavaScript.** Três pedem primitiva que falta no
+motor, e o quarto pede DADO que a derivação não tem: `deriveAfty` é função pura de UMA criatura,
+então um gancho em JS rodando dentro dela também não enxergaria o amigo.
+
+Daí saiu o princípio que segura o sistema: **o motor ganha o VERBO, o addon guarda o SUBSTANTIVO.**
+`contar()`, `hpAtributo`, conceder-da-sessão e vínculo entram no motor e são genéricos. Mahoraga fica
+no addon do autor e ninguém mais vê. É a diretriz de 2026-07-27 do cabeçalho do `afty-efeitos.js`,
+agora valendo para o homebrew.
+
+### "Generalista" não quer dizer "deixar programar"
+
+Os seis exemplos que o autor deu de conteúdo homebrew (Tipo de Dano novo, Condição nova,
+Especialização nova, Aptidão nova, Treino novo, mudar coisa existente) são **todos linha de tabela**.
+Nenhum precisa de código. Então generalista quer dizer abrir TODA tabela pelo mesmo caminho, e são
+209 constantes de catálogo exportadas no Afty hoje.
+
+### O encontro misto partiu o addon em duas metades
+
+O autor mandou permitir encontro com criaturas de addons diferentes, porque *"nem sempre é mudança
+geral de sistema, pode ser mudança mínima em uma única criatura"*. Isso obriga:
+
+- **Acrescentar é global**, e é seguro porque todo id nasce com o namespace do pacote.
+- **Remendar e desligar são por criatura**, senão desligar *Corpo Treinado* na sua ficha quebraria a
+  do vizinho no mesmo encontro.
+
+A segunda metade pareceu cara e não é: `deriveAfty` é síncrona, tem 8 pontos de chamada, e JS não
+interleava, então um escopo de módulo aberto e fechado em volta da derivação dá remendo por criatura
+sem passar registro por 209 constantes.
+
+### A recomendação que ele aprovou
+
+Fase 0 (as 4 primitivas) e fase 1 (acrescentar por JSON), e **parada obrigatória** depois. O motivo é
+que o autor escreve JSON: as primitivas mais uma caixa de colar JSON já põem os quatro casos dele na
+mesa dele, fora do raw. A Oficina serve a quem NÃO escreve JSON, e ela é a parte cara.
+
+Remendo e desligamento **foram pedidos por ele e estão adiados, não recusados**. O remendo é a única
+parte com preço que não termina: ele aponta para id do raw, e refatorar o catálogo apodrece o
+remendo dos outros calado, que é o problema do requisito `nota` com o agravante de o conteúdo ser de
+terceiro.
+
+### Uma trava do 2.5.2 caiu
+
+Função nova do DSL exigiria editar `src/components/fm-dsl.js`, que é somente-leitura, e o cabeçalho
+do `afty-efeitos.js` mandava parar e perguntar nesse caso. **Perguntei e o autor liberou a cópia do
+avaliador para `src/systems/afty/`.** Daqui para frente a linguagem cresce do lado do Afty.
+
+### O que foi CONSTRUÍDO no mesmo dia: as duas primitivas pequenas
+
+O autor aprovou a recomendação, e a fase 0 começou pelas duas que dá para testar de imediato.
+
+**`src/systems/afty/afty-dsl.js`** nasceu da cópia do `fm-dsl.js`, e os **6 pontos de importação**
+do Afty passaram a apontar para ela (derive, efeitos, equipamentos, habilidades, invocações e o
+builder). A 2.5.2 segue com a cópia dela, intacta, e as duas divergem de propósito daqui em diante.
+
+Duas coisas novas na linguagem:
+
+1. **Literal de texto**, que o `fm-dsl` não tem. Só vale como argumento de função, e o validador
+   reprova em qualquer outro lugar: `2 + "abc"` é erro, e não 2. Deixar o texto virar zero calado
+   esconderia o engano de quem escreveu.
+2. **`contar(marca)`**, a irmã da booleana `tem_*`: uma pergunta se você tem, a outra conta quantas.
+   O caso do autor, `2 + contar("adaptacao") - 1`, roda de ponta a ponta.
+
+⚠ **As marcas AUTOMÁTICAS são decisão minha, e estão anotadas como tal no código e no doc.** Cada
+entrada rende a marca escrita nela (`tags`, que é por onde o Addon vai marcar as dele) mais a
+família e a especialização dona. Sem as automáticas a função nasceria morta, porque nenhuma entrada
+do catálogo raw tem `tags` e só a fase 1 traria a primeira. Com elas, `contar("lutador")` já
+responde hoje. Apagar o bloco é uma linha.
+
+**Canal `hpAtributo`**, irmão exato do `defesaAtributo`: o PV lê `modHp` no lugar de `modCon`, e o
+hover troca "Constituição × ND" por "Força × ND (no lugar da Constituição)" mais a fonte que
+substituiu. Alvo AUSENTE dá literalmente o texto do autor ("para um a minha escolha"): a convenção
+do motor é que canal com destino e sem alvo vale para todos, o que aqui quer dizer o melhor dos
+seis.
+
+### Um bug pré-existente que os asserts acharam
+
+`deriveAfty(null)` morria com *"Cannot read properties of null (reading 'feiticos')"*. Era o **único
+acesso cru a `creature.`** sobrando no arquivo (linha 1076 no HEAD, conferida), e a invariante de
+"ficha suja não derruba o derive" já é assert padrão do projeto desde os Treinos Especiais. Conserto
+de um caractere, e não tem relação com os Addons.
+
+### A FASE 1 inteira, na mesma madrugada
+
+O autor foi dormir por volta das 01:30 e mandou: *"Vá programando isso até chegar no limite. Qualquer
+coisa que precisar de mim, você guarda e continua fazendo o que não precisa."* As duas primitivas
+que faltavam (8.3 e 8.4) travam em decisão dele, então as perguntas foram para o `a-fazer.md` e a
+noite foi gasta na **fase 1**, que estava aprovada e não dependia de resposta.
+
+**Está de pé o caminho inteiro, de colar o JSON até o número mudar na Ficha.**
+
+| Arquivo novo | O que é |
+|---|---|
+| `afty-addons.js` | o registro: famílias, pacote, namespace, validação, reconstrução do mundo |
+| `afty-addons-biblioteca.js` | a morada de instalação (`fm_addons_afty_v1`) |
+| `AftyTabAddons.jsx` | a aba, com a biblioteca em cima e o que a criatura usa embaixo |
+
+**A decisão que carrega o resto: o registro reescreve o array do catálogo NO LUGAR** e manda a
+família religar os índices dela. É estado mutável de módulo, e a escolha é consciente, porque compra
+duas coisas grandes: zero mudança nos ~60 pontos que leem catálogo hoje, e **os 13
+`validarCatalogo*` passam a validar conteúdo de addon de graça**, já que leem o mesmo array. O
+portão de aceitação que o doc prometia já estava escrito desde sempre.
+
+**DOZE famílias ligadas**, e elas cobrem os **seis exemplos de homebrew que o autor deu**:
+habilidades, talentos, aptidões, especializações, origens, treinamentos, treinos especiais, as três
+de alto nível, tipos de dano e condições. O trabalho por família é o RELIGADOR que conhece as estruturas derivadas daquele módulo,
+e esquecer uma dá bug calado. Habilidades tinha **três** (o array, o pool do Roubo de Habilidade e o
+índice) e Tipo de Dano tinha **duas** (o objeto e o `TIPO_DANO_OK`, que sanea arma custom: sem
+religar o `Set`, um tipo de addon apareceria na lista e seria rejeitado calado ao gravar a arma).
+
+As duas últimas são **TABELA e não catálogo**, e provam que a mesma `registrarFamilia` serve para as
+duas formas. A Condição trouxe uma consequência assumida: ela é gravada no Feitiço **pelo NOME**, e
+não por id, então o namespace vale só para o `id` da entrada, o nome entra limpo, e **não existe
+linha morta para condição**. É honesto, porque condição é rótulo, e rótulo que perde a fonte
+continua sendo rótulo.
+
+### Duas lacunas que só o exemplo de ponta a ponta achou
+
+1. **O `efeitos` do addon era validado e nunca aplicado.** O motor lia só o `HABILIDADE_EFEITOS`, e
+   as habilidades de addon entravam na ficha sem somar número nenhum. `coletarEfeitos` passou a ler
+   o mapa PRIMEIRO e a entrada como fallback, o que vale para todas as famílias de uma vez e não
+   muda nada para o raw (nenhuma entrada do livro tem `efeitos` inline). É o argumento para todo
+   exemplo de doc ser coberto por assert: o pacote de exemplo do `afty-addons.md` é executado.
+2. **O validador de Treino Especial reprovava todo addon.** Ele cobrava a convenção de id `tes_`, e
+   o id de addon vem com o namespace na frente. Era a única checagem de FORMATO de id do sistema, e
+   agora ela usa `partirId`.
+
+**Onde os addons entram antes da derivação:** builder, Ficha Final e Encontro, sempre no MESMO memo
+do `deriveAfty`. Num `useEffect` rodaria depois do render e a primeira derivação sairia com o
+catálogo velho.
+
+**Namespace:** o autor do addon escreve id sem prefixo, e o registro prefixa (`minha-mesa:x`).
+Referência a um irmão do próprio pacote ganha o prefixo junto, e referência que não achar irmão fica
+crua e vai procurar no raw, que é o caso comum.
+
+**Linha morta e marcada** (decisão 4), com os dois portões separados: instalar addon quebrado é
+**recusado**, e ficha salva **sempre abre**. O que o mundo não tem aparece marcado, não soma nada, e
+diz de qual addon veio, o que falhou e o que fazer.
+
+### A REVISÃO da madrugada, às 05:33
+
+O trabalho da fase 1 saiu rápido, então a retomada foi gasta revisando o que eu mesmo tinha escrito,
+antes de somar família nova. Achou quatro coisas, e três eram defeito de verdade.
+
+**1. O Encontro contradizia o próprio doc.** A seção 3 do `afty-addons.md` diz que a união dos
+addons entra UMA vez, e eu implementei reaplicação POR COMBATENTE. Dois defeitos: depois do laço o
+mundo ficava com o addon do ÚLTIMO derivado, então qualquer leitura de catálogo no render (um
+`getHabilidade` num painel) via um mundo arbitrário, e o catálogo era reescrito N vezes em vez de
+uma. Agora é `unirAddons` uma vez, antes do laço.
+
+**2. O catálogo dividia OBJETO com a ficha salva.** O pacote que está em `creature.addons` era o
+mesmo que alimentava o mundo, e o `{ ...entrada }` do `prefixarEntrada` é raso: `escolha`,
+`requisitos` e afins continuavam sendo a mesma referência dos dois lados. Como o sistema MUTA
+entrada de catálogo em pelo menos um lugar (`dona.escolha.opcoes = HABILIDADES_ROUBAVEIS`), uma
+mutação do catálogo vazava para dentro da criatura gravada. Agora a entrada é clonada na aplicação,
+por ida e volta em JSON, que de brinde tira o que não for serializável.
+
+**3. Duas funções minhas eram código morto.** `unirAddons` e `epocaAddons` foram escritas na noite e
+nunca chamadas. As duas viraram a solução do item 1: a união é o que se aplica, e a **época entra na
+chave do cache** de derivação do Encontro. Hoje a época quase nunca muda número, porque addon só
+acrescenta e id é prefixado, mas essa invariante é da FASE 1 e a fase 3 a quebra. Deixar a época
+fora da chave seria plantar um bug para aquele dia, e custa zero.
+
+**4. A linha morta faltava no Encontro.** Ela estava no criador e na Ficha, e não no painel de
+combatente, que é justamente onde o mestre abre a criatura de OUTRA pessoa. Ou seja: faltava
+exatamente no caso em que o addon está faltando. Agora está nas três telas.
+
+**5. A aba tinha um beco sem saída.** Addon que chega DENTRO de uma ficha de fora não tinha como ser
+guardado, e addon da biblioteca não tinha como sair. Entraram os dois botões que fecham o ciclo:
+guardar na biblioteca e copiar o JSON. O formato é o mesmo dos dois lados, então o que sai por
+cópia entra de volta por texto colado.
+
+### Verificação
+
+- `npx eslint src/systems/afty/` passou.
+- `npx vite build` passou.
+- **371 asserts** em treze suítes, salvos em `asserts/` (ver a pergunta no `a-fazer.md`). As duas primitivas: 30 de **paridade** entre o avaliador copiado e o da 2.5.2 (mesma
+  entrada, mesmo número, inclusive nos erros e no `validateExpression`), o `contar()` ponta a ponta
+  pelo Funcionamento Básico (0, 1, 2 e 3 habilidades na ficha, marca inexistente, expressão
+  quebrada, e o mapa de marcas não vazando para o seletor `{ }`), e o `hpAtributo` (troca, troca
+  para atributo pior não fazendo nada, duas concedidas valendo a melhor, `quando` ligando e
+  desligando, o Patamar multiplicando por cima, e as quatro linhas do hover).
+- Os da **fase 1**: o ciclo inteiro de instalar, usar e desinstalar sem deixar resto (aplicar A e
+  depois B tem de dar o mesmo que aplicar os dois de uma vez), o namespace com referência a irmão e
+  referência ao raw, as três estruturas derivadas religando, o validador do raw reprovando conteúdo
+  de addon, a criatura usando a habilidade de addon com a `tag` dela chegando no `contar()`, a união
+  de fichas com addons diferentes (encontro misto) e a divergência de versão sendo relatada, a
+  biblioteca com `localStorage` corrompido e com `localStorage` indisponível, e a linha morta nos
+  três motivos dela.
+- `src/components/` sem alteração, conferido por `git status` e `git diff`.
+
+### Um bug pré-existente a mais, achado pelos asserts
+
+Importar `afty-habilidades.js` como PRIMEIRO módulo do processo estoura um ciclo em
+`afty-combate.js` (*"Cannot access 'POSTURAS_DE_COMBATE' before initialization"*). **Confirmado
+idêntico no HEAD**, então não veio dos Addons. Hoje é latente porque o app entra sempre pelo
+`afty-derive.js`. Está no `a-fazer.md`, e enquanto não for resolvido todo assert novo tem de importar
+o derive primeiro.
+
+---
+
+## SESSÃO DE 2026-08-19: O GRAU DA CRIATURA CRESCEU PARA NOVE, E AS DUAS ESCADAS SE SEPARARAM
+
+Pedido do autor: trocar a tabela do Grau das Criaturas. Eram 5 faixas de ND e passaram a ser 9.
+
+| ND | Grau | ordem | rank |
+|---|---|---|---|
+| 1 a 4 | Quarto Grau | 1 | 1 |
+| 5 a 8 | Terceiro Grau | 2 | 2 |
+| 9 a 12 | Segundo Grau | 3 | 3 |
+| 13 a 16 | Primeiro Grau | 4 | 4 |
+| 17 a 20 | Semi-Grau Especial | 5 | 5 |
+| 21 a 25 | Baixo Grau Especial | 6 | 5 |
+| 26 a 30 | Alto Grau Especial | 7 | 5 |
+| 31 a 35 | Calamidade | 8 | 5 |
+| 36+ | Divino | 9 | 5 |
+
+As quatro primeiras faixas não mudaram. O que era "Grau Especial" do ND 17 para cima virou
+**Semi-Grau Especial** de 17 a 20, e ganhou quatro degraus em cima.
+
+### A lista fazia serviço duplo, e esse era o problema de verdade
+
+`AFTY_GRAUS` era ao mesmo tempo o Grau da CRIATURA por faixa de ND e o Grau de EQUIPAMENTO da
+Ferramenta Amaldiçoada. Somar quatro entradas nela teria posto **Calamidade e Divino no seletor de
+grau do item**, e nas tabelas que são chaveadas pelos mesmos valores: `FA_CRIACAO`, `FA_BONUS_ARMA`,
+`DANO_ADICIONAL_ARMA` e os encantamentos, que são todos do item e não da criatura.
+
+Então as duas escadas se separaram:
+
+- **`AFTY_GRAUS`** continua com 5 e é só o **grau do ITEM**, escolhido na aba. Perdeu o `ndMin`, que
+  era resquício do serviço duplo e não queria dizer nada do lado do equipamento.
+- **`AFTY_GRAUS_CRIATURA`** nasceu com 9 e é o que `grauFeiticeiro(nd)` devolve.
+
+### `rank` PARA NO 5, e `ordem` é a posição de verdade
+
+Decisão do autor, perguntada antes de mexer. O Grau da criatura alimenta número em três lugares, e
+todos leem `rank`:
+
+| Onde | Fórmula |
+|---|---|
+| Orçamento de Perícias e TR | `3 + maior mod INT/SAB + rank do Grau` |
+| Habilidade Geral Aptidão (`ger_aptidao`) | `vagasAptidao = 1 + grau` |
+| Controle Aprimorado (`ctr_controle_aprimorado`) | `bonusTeste = 1 + grau` |
+| Potencial Superior (`ctr_potencial_superior`) | `atributoPontos = 2 * grau` |
+
+Se o rank subisse junto com a escada, o ND 36 ganharia +4 vagas de Perícia, a Geral de Aptidão
+passaria a dar 10 vagas e o Potencial Superior daria 18 pontos de atributo. O autor mandou **parar no
+5**: os quatro graus acima do Semi-Grau Especial são **nome e faixa de ND, e não número novo**.
+
+⚠ Por isso `rank` deixou de identificar o grau: cinco entradas têm `rank: 5`. Quem precisar comparar
+dois graus usa **`ordem`**, que vai de 1 a 9 e é a posição na escada. O validador segura as duas
+invariantes (a `ordem` sequencial, o `rank` nunca acima do teto do equipamento e nunca descendo).
+
+### O orçamento de equipamento por missão
+
+`EQUIP_GANHO_POR_GRAU` é chaveado pelo grau da CRIATURA, e não pelo do item, o que só ficou visível
+agora que os dois se separaram. A tabela do livro para no Grau Especial, e o autor mandou os quatro
+degraus novos **repetirem essa linha** (custo 1 ilimitado, quatro de custo 2, três de custo 3, dois
+de custo 4). Vira a constante `EQUIP_GANHO_ESPECIAL`, apontada pelas cinco chaves do topo, e é onde a
+tabela real entra se ela chegar.
+
+Nenhuma ficha migra: o Grau **não é campo da ficha**, sai do ND na hora.
+
+### Verificação
+
+- `npx eslint src/systems/afty/` passou.
+- `npx vite build` passou.
+- **47 asserts** do `deriveAfty` e do catálogo: a escada inteira ND a ND nas duas bordas de cada
+  faixa (1/4/5/8/9/12/13/16/17/20/21/25/26/30/31/35/36/50/999), ND sujo (0, negativo e ausente)
+  caindo no Quarto, os ranks parando no 5 com a `ordem` indo a 9, o grau de equipamento intacto nos
+  5 e sem `ndMin`, o orçamento dos quatro graus novos repetindo o Especial, o `"especial"` do item
+  **não** respondendo mais por orçamento, o validador zerado, os rótulos chegando em
+  `derived.grauFeiticeiro`, e o orçamento de Perícias ganhando a vaga no ND 17 e não ganhando mais
+  nada no 21 nem no 40.
+- `src/components/` sem alteração.
+
+---
+
 ## SESSÃO DE 2026-08-18 (parte 2): TREINOS ESPECIAIS (INTERLÚDIOS ADICIONAIS)
 
 Pedido do autor: programar os **Treinos Especiais**, com o texto de **Treinamento para Feitiço**

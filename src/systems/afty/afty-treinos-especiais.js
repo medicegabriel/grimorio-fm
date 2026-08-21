@@ -54,6 +54,8 @@
  * ============================================================
  */
 
+import { registrarFamilia, partirId } from "./afty-addons";
+
 /** Uma pega de Treino Especial custa isto em Focos, salvo a entrada dizer outro. */
 export const FOCOS_POR_TREINO_ESPECIAL = 1;
 
@@ -102,7 +104,37 @@ export const AFTY_TREINOS_ESPECIAIS = [
   },
 ];
 
-const BY_ID = Object.fromEntries(AFTY_TREINOS_ESPECIAIS.map((t) => [t.id, t]));
+/* ============================================================ */
+/* ADDONS                                                        */
+/* ============================================================ */
+/* Sexta família (2026-08-20), irmã da de Treinamentos. */
+
+let BY_ID = {};
+
+const TREINOS_ESPECIAIS_BASE = AFTY_TREINOS_ESPECIAIS.slice();
+
+function aplicarExtrasTreinosEspeciais(extras = []) {
+  AFTY_TREINOS_ESPECIAIS.splice(0, AFTY_TREINOS_ESPECIAIS.length, ...TREINOS_ESPECIAIS_BASE, ...extras);
+  BY_ID = Object.fromEntries(AFTY_TREINOS_ESPECIAIS.map((t) => [t.id, t]));
+}
+
+aplicarExtrasTreinosEspeciais();
+
+registrarFamilia("treinosEspeciais", {
+  rotulo: "Treino Especial",
+  chave: "id",
+  // `concede` é o chip da linha e `focos` é o preço: o validador do raw cobra
+  // os dois, então cobrar aqui dá a mensagem melhor, antes de instalar.
+  obrigatorios: ["nome", "descricao", "concede", "focos"],
+  aplicar: aplicarExtrasTreinosEspeciais,
+  validador: validarCatalogoTreinosEspeciais,
+  resolver: (id) => getTreinoEspecial(id),
+  // Lista COM repetição (`[{ id, alvo }]`), uma entrada por pega.
+  idsDaFicha: (c) => (Array.isArray(c?.treinosEspeciais)
+    ? c.treinosEspeciais.map((t) => (typeof t === "string" ? t : t?.id)).filter(Boolean)
+    : []),
+});
+
 
 export const getTreinoEspecial = (id) => BY_ID[id] ?? null;
 
@@ -201,9 +233,21 @@ export function focosDeTreinosEspeciais(creature) {
  * pela `efeitosTodos`: o que ele emite é VAGA DE ORÇAMENTO, lida antes de os
  * stats existirem.
  */
-export function efeitosDeTreinoEspecial(creature) {
+export function efeitosDeTreinoEspecial(creature, concedidos = []) {
   const out = [];
-  for (const inst of instanciasDa(creature)) {
+  // ⚠ O CONCEDIDO PELA SESSÃO (Addons 8.3) entra por FORA do `instanciasDa`, e
+  // não somado na lista da ficha antes de normalizar. São duas razões:
+  //   • ele não apara no `maxVezes`, porque o teto é do orçamento de compra e
+  //     conceder não é comprar (mesma regra das Gerais e das Melhorias);
+  //   • ele não pode gastar Foco, e o `focosDeTreinosEspeciais` conta a lista
+  //     da ficha. Ficando de fora dela, o orçamento nem fica sabendo.
+  const pegas = [
+    ...instanciasDa(creature),
+    ...(Array.isArray(concedidos) ? concedidos : [])
+      .map((c) => (typeof c === "string" ? { id: c, alvo: null } : { id: c?.id, alvo: c?.alvo ?? null }))
+      .filter((c) => BY_ID[c.id]),
+  ];
+  for (const inst of pegas) {
     const def = BY_ID[inst.id];
     for (const ef of def.efeitos || []) {
       const alvo = ef.alvo ?? inst.alvo ?? null;
@@ -223,7 +267,13 @@ export function validarCatalogoTreinosEspeciais() {
   const ids = new Set();
   const nomes = new Set();
   for (const t of AFTY_TREINOS_ESPECIAIS) {
-    if (!t.id || !t.id.startsWith("tes_")) problemas.push(`id fora da convenção tes_: ${t.id}`);
+    /* ⚠ A convenção `tes_` vale para o RAW, e o id de Addon vem com o namespace
+       na frente (`minha-mesa:tes_novo`), então a checagem olha o id SEM ele.
+       Sem isto, todo Treino Especial de addon seria reprovado pela convenção de
+       nome do livro, que não é assunto dele. Achado em 2026-08-20, ao ligar a
+       família ao registro: era a única checagem de convenção de id do sistema. */
+    const idProprio = partirId(t.id).id;
+    if (!idProprio || !idProprio.startsWith("tes_")) problemas.push(`id fora da convenção tes_: ${t.id}`);
     if (ids.has(t.id)) problemas.push(`id repetido: ${t.id}`);
     ids.add(t.id);
     if (nomes.has(t.nome)) problemas.push(`nome repetido: ${t.nome}`);

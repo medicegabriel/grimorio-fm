@@ -33,7 +33,7 @@
 
 // Avaliador da DSL. Só o editor do Funcionamento Básico o usa aqui, para
 // reexibir o valor de cada linha: a aplicação de verdade é do `aplicarEfeitos`.
-import { evalNumber as evalNumberDsl } from "../../components/fm-dsl";
+import { evalNumber as evalNumberDsl } from "./afty-dsl";
 import {
   AFTY_RESISTENCIAS, TAMANHO_BASE, tamanhoPorDegraus, funcionamentosDaFicha,
 } from "./afty-schema";
@@ -47,7 +47,7 @@ import {
 } from "./afty-origens";
 import { efeitosDeTreino, vagasEncantamentoDeTreino } from "./afty-treinamentos";
 import { efeitosDeTreinoEspecial } from "./afty-treinos-especiais";
-import { resolveNiveisAptidao, trilhasDaOrigem, AFTY_APTIDOES } from "./afty-aptidoes";
+import { resolveNiveisAptidao, trilhasDaOrigem, getAptidao, AFTY_APTIDOES } from "./afty-aptidoes";
 import {
   efeitosDoDominio, efeitosDeAptidaoDoDominio, beneficiosRitualDoDominio,
   dominioEmUso,
@@ -79,8 +79,11 @@ import { nivelMaxFeitico, resumoDeUmFeitico, resumoFeiticos, overridesShikigami 
 import { resolveEstilos, efeitosDoEstilo } from "./afty-estilo-sombras";
 import { resolveTestes, resolveDano, catalogoPericiasDaFicha } from "./afty-pericias";
 import { resolveCura } from "./afty-cura";
+import { problemasDeAddon, marcasDeclaradas, primitivasDaCriatura } from "./afty-addons";
+import { agrupaConcedido, concessoesDaSessao } from "./afty-concessao";
 import {
-  buildCriaturaDslContext, coletarEfeitosCriatura, coletarEfeitosMontante, coletarEfeitosOrigem,
+  buildCriaturaDslContext, marcasDeEntradas,
+  coletarEfeitosCriatura, coletarEfeitosMontante, coletarEfeitosOrigem,
   coletarEfeitosAptidao,
   aplicarEfeitos, resolverExclusivos, valorCanal, furaTetoEm, efeitosDaTecnica, efeitosDosPassivos,
   efeitosDaSessao, EFEITO_CANAIS,
@@ -162,6 +165,12 @@ const VOCABULARIO_DSL = {
  */
 export function deriveAfty(creature, opcoes = {}) {
   const core = creature?.core ?? {};
+  /* CONCESSÃO VINDA DA SESSÃO (Addons 8.3). Chega pelo `opcoes`, e não pela
+     criatura, porque ela é estado de SESSÃO e nunca ficha: o mestre dá no meio
+     do combate, ela vale para tudo, não gasta vaga nenhuma e morre quando a
+     sessão acaba (decisões do autor, 2026-08-20). Cada família recebe a parte
+     dela pelo CANAL DE CONCESSÃO do resolvedor. Ver `afty-concessao.js`. */
+  const concedido = agrupaConcedido(opcoes.concedido);
   const a = creature?.attributes ?? {};
   const ov = creature?.statOverrides ?? {};
   const vocabularioDsl = {
@@ -207,9 +216,14 @@ export function deriveAfty(creature, opcoes = {}) {
   const aptidoesConcedidasEspecializacao = semEnergia || !podeReceberEnergiaReversa
     ? []
     : aptidoesConcedidasPelasHabilidades(habilidadesConcedidas);
-  const aptidoesConcedidas = [...new Set([
+  // ⚠ A CONCESSÃO DA SESSÃO (Addons 8.3) ENTRA AQUI, no mesmo caixa das que a
+  // origem e as Habilidades já concediam: as três são "vale para tudo e não
+  // gasta vaga". O `semEnergia` continua valendo por cima de todas, porque um
+  // Restringido não tem Aptidão nenhuma, nem escolhida nem dada pelo mestre.
+  const aptidoesConcedidas = semEnergia ? [] : [...new Set([
     ...aptidoesConcedidasOrigem,
     ...aptidoesConcedidasEspecializacao,
+    ...concedido.aptidoes,
   ])];
   const aptidoesEscolhidasFicha = semEnergia || !Array.isArray(creature?.aptidoesAmaldicoadas)
     ? []
@@ -340,7 +354,7 @@ export function deriveAfty(creature, opcoes = {}) {
   // DE APTIDÃO e VAGAS DE ORÇAMENTO, coisas lidas antes de os stats existirem.
   // Por isso rodam com um contexto reduzido (ND, Maestria, grau, patamar, tipo
   // e os atributos base), que é tudo de que as expressões deles precisam.
-  const gerais = resolveGerais(creature, { nd, maestria: bt });
+  const gerais = resolveGerais(creature, { nd, maestria: bt, concedidos: concedido.gerais });
   const ctxMontante = buildCriaturaDslContext({
     nd, bt, grauRank: grau.rank, patamar, tipo, almaAtual: almaAtualDsl,
     irmaoMorto: !!creature?.core?.origem?.irmaoMorto,
@@ -352,6 +366,9 @@ export function deriveAfty(creature, opcoes = {}) {
     // no fallback, calada. Origem não escala com classe, então zero é a resposta
     // certa — mas ela precisa ser dada, não silenciada.
     vocabulario: vocabularioDsl,
+    /* ⚠ SEM `marcas`, e é de propósito: o montante roda ANTES de Habilidades,
+       Talentos e Aptidões serem resolvidos, então não há o que contar. O
+       `contar()` devolve 0 aqui, do mesmo jeito que `tem_*` vale 0. */
   });
   // ORIGEM entra no montante junto do resto: ela concede vaga de habilidade, de
   // perícia, de feitiço e de aptidão, e vaga é lida antes de os stats existirem.
@@ -367,7 +384,7 @@ export function deriveAfty(creature, opcoes = {}) {
       // Treino Especial entra ao lado da Linha de Treinamento porque é a mesma
       // família (Interlúdio) e emite a mesma classe de coisa: VAGA de orçamento,
       // lida antes de os stats existirem. Hoje só `vagasFeitico`.
-      ...efeitosDeTreinoEspecial(creature),
+      ...efeitosDeTreinoEspecial(creature, concedido.treinosEspeciais),
       ...coletarEfeitosOrigem(creature, escolhasOrigem),
       ...coletarEfeitosMontante(creature, gerais, GERAL_BY_ID),
     ],
@@ -417,6 +434,7 @@ export function deriveAfty(creature, opcoes = {}) {
   const origensQuali = origensQualificadas(creature);
   const talentosPre = resolveTalentos(creature, {
     nd, attrEff: attrBase, origemId, origensQualificadas: origensQuali, especializacoes: especializacoes.escolhidas,
+    concedidos: concedido.talentos,
   });
   const treinamentosEquipamento = treinamentosDasEspecializacoes(especializacoes.escolhidas);
   const treinoEscudo = resolveTreinoEscudo(especializacoes.escolhidas, talentosPre.escolhidas);
@@ -425,7 +443,11 @@ export function deriveAfty(creature, opcoes = {}) {
   // Geral Especialização.
   const habilidades = resolveHabilidades(
     creature, especializacoes.escolhidas, talentosPre.gastos, bt, vagasHabilidade, vagasTalento,
-    { nd, almaLivreEspecializacao: talentosPre.almaLivreEspecializacao },
+    {
+      nd,
+      almaLivreEspecializacao: talentosPre.almaLivreEspecializacao,
+      concedidasSessao: concedido.habilidades,
+    },
   );
   // Alto Nível (21+). Além do ND, cada trilha exige a Habilidade Geral
   // correspondente, que só DESTRAVA (não dá vaga).
@@ -433,6 +455,10 @@ export function deriveAfty(creature, opcoes = {}) {
     niveisPorEspec: habilidades.niveisPorEspec,
     habilidades: habilidades.escolhidas,
     destravado: gerais.destravado,
+    concedidos: {
+      melhoriasSuperiores: concedido.melhoriasSuperiores,
+      lendarias: concedido.lendarias,
+    },
   });
 
   // Nível por especialização para o DSL: real (trava pré-requisito) e de
@@ -504,11 +530,31 @@ export function deriveAfty(creature, opcoes = {}) {
   // O Ataque Básico só sobe de grau com Manoplas ou Faixas (autor, 2026-07-27).
   // Sem elas é Desarmado, que não soma nada. Com as duas vale o grau mais alto,
   // e é o grau de CÁLCULO que compara, porque é ele que vira número.
+  //
+  // ⚠ UM item define o Ataque Básico, e não a soma deles (2026-08-20). O grau
+  // sempre foi o maior, e agora o resto do item (encantamento, Fineza) vem do
+  // MESMO item, porque somar dois pares de Manoplas empilharia encantamento de
+  // duas armas num golpe só. Item sem Ferramenta entra na disputa com rank 0:
+  // ele não muda grau nenhum, mas pode receber encantamento do Manejo Especial,
+  // que vale para toda arma manejada.
   const pugilato = armasCarregadas
-    .filter((e) => e.def?.grupo === "pugilato" && e.fa)
-    .sort((x, y) => (y.fa.rankCalculo - x.fa.rankCalculo))[0] ?? null;
+    .filter((e) => e.def?.grupo === "pugilato")
+    .sort((x, y) => ((y.fa?.rankCalculo ?? 0) - (x.fa?.rankCalculo ?? 0))
+      || ((y.fa ? 1 : 0) - (x.fa ? 1 : 0)))[0] ?? null;
   const grauBasico = pugilato ? grauCalcDaArma(pugilato) : null;
   const acertoGrauBasico = pugilato?.fa?.acertoArma ?? 0;
+  // As fontes do Acerto que NÃO são o grau (o encantamento Precisa). Sem elas o
+  // hover jogava o bônus todo dentro de "Grau da Ferramenta".
+  const fontesAcertoBasico = pugilato?.fa?.fontesAcerto ?? [];
+  // O escopo do item, para o efeito de encantamento com `alvoItem` alcançar a
+  // linha do Ataque Básico. Sem isto, Potente e Poderosa numas Faixas eram
+  // descartados calados e o encantamento ainda cobrava o degrau de grau.
+  // ⚠ Só o id: "arma", a categoria e o grupo ficam de fora de propósito, porque
+  // o livro diz que Faixas NÃO são armas.
+  const escoposBasicoExtra = pugilato?.def?.id ? [pugilato.def.id] : [];
+  // Fineza do item que define o golpe (Soco Inglês). A propriedade estava na
+  // tabela e não chegava em lugar nenhum: o básico só olhava o canal.
+  const finezaBasico = !!pugilato?.def?.props?.fineza;
   const dedicadas = resolveArmasDedicadas(creature, armasParaDano, habilidades.escolhidas);
 
   const efeitosTodos = [
@@ -757,6 +803,37 @@ export function deriveAfty(creature, opcoes = {}) {
   // geral e viajam cruas até o calculador de Feitiços.
   const efeitosLinhaDano = efeitosAtivos.filter(efeitoUsaDadosDanoFinal);
 
+  /* MARCAS da ficha, para o `contar()` do DSL (Addons fase 0, 8.1 do
+     docs/afty-addons.md). Sai das MESMAS três listas que alimentam o `tem_*`
+     logo abaixo, então o que a criatura "tem" é a mesma coisa nas duas.
+     Montado UMA vez: o `montarCtx` roda três vezes (os estágios do motor) e o
+     conjunto de entradas não muda entre eles. */
+  /* ⚠ As marcas DECLARADAS pelos addons entram todas, mesmo valendo zero, e só
+     depois vêm as que a criatura realmente tem. Sem isto, uma marca que o addon
+     declara mas a ficha ainda não usa simplesmente NÃO APARECERIA no seletor
+     `{ }`, e não haveria como escrever a expressão dela antes de pegar a
+     primeira habilidade. É a mesma política já documentada para o `tem_*`: a
+     família grande mostra o que não é zero, mas o que é zero continua alcançável.
+     A ordem importa, porque o `marcasDeEntradas` abaixo sobrescreve com a
+     contagem de verdade. */
+  const marcasFicha = Object.assign(
+    Object.fromEntries(marcasDeclaradas().map((m) => [m.marca, 0])),
+    marcasDeEntradas([
+    ...habilidades.escolhidas.map((id) => {
+      const h = getHabilidade(id);
+      return h && { tags: h.tags, familia: "habilidade", especializacaoId: h.especializacaoId };
+    }),
+    ...(talentosPre.escolhidas ?? []).map((id) => {
+      const t = getTalento(id);
+      return t && { tags: t.tags, familia: "talento" };
+    }),
+    ...aptidoesIds.map((id) => {
+      const a = getAptidao(id);
+      return a && { tags: a.tags, familia: "aptidao" };
+    }),
+  ]),
+  );
+
   const montarCtx = (attrs, mods) => buildCriaturaDslContext({
     nd, bt, grauRank: grau.rank, patamar, tipo, almaAtual: almaAtualDsl,
     irmaoMorto: !!creature?.core?.origem?.irmaoMorto,
@@ -776,6 +853,7 @@ export function deriveAfty(creature, opcoes = {}) {
       ...aptidoesIds,
     ],
     vocabulario: vocabularioDsl,
+    marcas: marcasFicha,
   });
   // Soma um canal de atributo sobre uma base, aparando nos TRÊS tetos do sistema
   // (ver o topo de afty-atributos.js).
@@ -824,6 +902,7 @@ export function deriveAfty(creature, opcoes = {}) {
   // Talentos de novo, agora com o atributo permanente: só o `inacessiveis` muda.
   const talentos = resolveTalentos(creature, {
     nd, attrEff: attrPermanente, origemId, origensQualificadas: origensQuali, especializacoes: especializacoes.escolhidas,
+    concedidos: concedido.talentos,
   });
 
   // Estágio 1b: atributo TEMPORÁRIO, por cima do permanente. Resulta no
@@ -1003,10 +1082,23 @@ export function deriveAfty(creature, opcoes = {}) {
     tipo === "restringido" ? 12 * nd :
     /* misto | conjurador */ 10 + (nd - 1) * 5;
   const hpPatamarMult = HP_PATAMAR_MULT[patamar] ?? 1;
+  /* Qual atributo entra no PV. Constituição por padrão, e o canal `hpAtributo`
+     TROCA (Addons fase 0, 8.2 do docs/afty-addons.md).
+
+     ⚠ SUBSTITUIÇÃO, e não soma, e vale o MAIOR entre a Constituição e os
+     concedidos: é o mesmo desenho do `defesaAtributo`, decidido em 2026-08-08,
+     e pelo mesmo motivo. Somar pelo canal `hp` daria o mesmo número e mentiria
+     no hover, com "Constituição × ND" e a fonte nova lado a lado se lendo como
+     dois atributos somados. E o texto de quem troca sempre diz "você pode
+     optar", então ninguém opta por piorar o próprio PV. */
+  const atributosHp = ATTR_KEYS.filter((k) => valorCanal(ef, "hpAtributo", k) > 0);
+  const attrHp = [...atributosHp, "constituicao"]
+    .reduce((melhor, k) => ((modByAttr[k] ?? 0) > (modByAttr[melhor] ?? 0) ? k : melhor), "constituicao");
+  const modHp = modByAttr[attrHp] ?? 0;
   // O bônus de item ("os seus pontos de vida máximos aumentam em 10") entra
   // ANTES da Alma e do Patamar (autor, 2026-08-01), junto do treino e do canal
   // `hp` do Motor. Num Beyond, um item de +10 vale 40.
-  const hp = Math.round(almaMult * (hpBase + nd * modCon + canal("hp") + equip.hpMaxBonus) * hpPatamarMult);
+  const hp = Math.round(almaMult * (hpBase + nd * modHp + canal("hp") + equip.hpMaxBonus) * hpPatamarMult);
 
   // ---------- PE (+ Treinos de Compreensão/Controle de Energia/…) ----------
   // UMA pilha só, para todo mundo. O Restringido a chama de Ponto de Estamina
@@ -1078,7 +1170,10 @@ export function deriveAfty(creature, opcoes = {}) {
   // criatura (acima), que já usa o Atributo Principal da Técnica
   // (core.tecnicaAttr) e a Maestria. A criação de cada Feitiço só a desloca.
   // (`gerais` já foi resolvido lá em cima, junto dos outros catálogos.)
-  const feiticosLista = Array.isArray(creature.feiticos) ? creature.feiticos : [];
+  // ⚠ `creature?.` e não `creature.`: era o ÚNICO acesso cru sobrando no
+  // arquivo, e `deriveAfty(null)` morria aqui em vez de devolver a ficha vazia.
+  // Achado em 2026-08-20 pelos asserts de ficha suja, e é anterior a eles.
+  const feiticosLista = Array.isArray(creature?.feiticos) ? creature.feiticos : [];
   const feiticosGastos = feiticosLista.filter((f) => !f.variacaoDe).length;
   // ⚠ A Técnica de Estilo gasta o MESMO caixa que o Feitiço (autor,
   // 2026-08-07): "Consome o Contador de Habilidades. E Talentos e coisas do
@@ -1303,6 +1398,7 @@ export function deriveAfty(creature, opcoes = {}) {
   let dano = resolveDano(creature, {
     nd, patamar, mods: modByAttr, aptidaoCL: aptidao.efetivo.cl,
     efeitos: ef, armas: armasParaDano, grauBasico, acertoGrauBasico,
+    fontesAcertoBasico, escoposBasicoExtra, finezaBasico,
     efeitosLinhaDano, contextoDsl: ctxTecnica,
     tecnicasCombate: { ...tecnicasCombate, bt },
     // Os Ataques já resolvidos, para cada linha fechar o Acerto dela: o ataque
@@ -1501,7 +1597,14 @@ export function deriveAfty(creature, opcoes = {}) {
   const partes = {
     hp: [
       { label: `Base do Tipo (${TIPO_LABEL[tipo] ?? tipo})`, valor: hpBase },
-      { label: "Constituição × ND", valor: nd * modCon },
+      // O atributo TROCADO aparece com o nome dele, e não somado por baixo de
+      // uma "Constituição" que não está mais na conta. Mesmo desenho da Defesa.
+      { label: attrHp === "constituicao"
+          ? "Constituição × ND"
+          : `${rotulo[attrHp] ?? attrHp} × ND (no lugar da Constituição)`,
+        valor: nd * modHp },
+      ...detalhesDoCanal(ef, "hpAtributo", attrHp)
+        .map((d) => ({ label: d.nome, texto: "substitui" })),
       ...doMotor("hp"),
       ...(equip.hpMaxBonus ? [{ label: "Equipamento", valor: equip.hpMaxBonus }] : []),
       ...(almaMult !== 1 ? [{ label: "Integridade da Alma", texto: `×${divTexto(almaMult)}` }] : []),
@@ -1617,6 +1720,18 @@ export function deriveAfty(creature, opcoes = {}) {
 
   return {
     ...stats,
+    /* LINHA MORTA: o que a ficha cita e o mundo não tem. Lista vazia é o caso
+       normal. Quem mostra é a Ficha e o criador, e ela nunca impede nada de
+       abrir (decisão 4 do autor). Ver afty-addons.js. */
+    addonProblemas: problemasDeAddon(creature),
+    /* O que o mestre concedeu NESTA SESSÃO, já com nome resolvido e com `morta`
+       marcada quando o catálogo não conhece mais o id. Vazio é o caso normal, e
+       é a lista que as duas telas de jogo mostram. Ver afty-concessao.js. */
+    concedido: concessoesDaSessao(opcoes.concedido),
+    /* As primitivas de Addon que ESTA criatura enxerga, pelo `permite` dos
+       pacotes dela. Vazio é o caso normal, e é o que mantém a tela de quem só
+       usa o raw exatamente como era. Ver `PRIMITIVAS` em afty-addons.js. */
+    primitivas: primitivasDaCriatura(creature),
     // metadados / valores não sobrescrevíveis
     calc,                 // valores calculados (antes do override)
     isOverridden,
@@ -1708,7 +1823,7 @@ export function deriveAfty(creature, opcoes = {}) {
     partesLimite,         // fontes de cada limite, para o hover da UI
     // ---------- Equipamentos ----------
     trilhasAptidao: trilhasOrigem,  // as que a ORIGEM tem (a Maldição não tem `er`)
-    grauFeiticeiro: grau,  // { value, label, rank, ndMin } derivado do ND
+    grauFeiticeiro: grau,  // { value, label, ordem, rank, ndMin } derivado do ND
     equip: equipFinal,     // parcelas do equipamento (entradas, custoGasto, avisos...)
     carga,                 // { espacosUsados, cargaLimite, cargaMaxima, sobrecarregado... }
     rdFisico,              // RD Física. O escudo NÃO entra mais aqui (é RD Geral).

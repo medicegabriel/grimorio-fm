@@ -28,6 +28,7 @@
  * ⚠ Texto VERBATIM do livro, com os erros dele preservados.
  */
 
+import { registrarFamilia } from "./afty-addons";
 import { getOrigem } from "./afty-origens";
 import { AFTY_ATTRS, AFTY_RESISTENCIAS } from "./afty-schema";
 import { APTIDAO_TRILHAS } from "./afty-aptidoes";
@@ -861,7 +862,34 @@ export const AFTY_TALENTOS = [
   },
 ];
 
-const BY_ID = Object.fromEntries(AFTY_TALENTOS.map((t) => [t.id, t]));
+/* ============================================================ */
+/* ADDONS                                                        */
+/* ============================================================ */
+/* Segunda família ligada ao registro (2026-08-20). Bem mais simples que a de
+   Habilidades: aqui a única estrutura derivada do catálogo é o índice, porque
+   `talentosDoGrupo` e `gruposDeTalento` filtram na hora da chamada. */
+
+let BY_ID = {};
+
+const TALENTOS_BASE = AFTY_TALENTOS.slice();
+
+function aplicarExtrasTalentos(extras = []) {
+  AFTY_TALENTOS.splice(0, AFTY_TALENTOS.length, ...TALENTOS_BASE, ...extras);
+  BY_ID = Object.fromEntries(AFTY_TALENTOS.map((t) => [t.id, t]));
+}
+
+aplicarExtrasTalentos();
+
+registrarFamilia("talentos", {
+  rotulo: "Talento",
+  chave: "id",
+  obrigatorios: ["nome", "descricao", "grupo"],
+  caminhosDeId: ["requisitos[].id"],
+  aplicar: aplicarExtrasTalentos,
+  validador: validarCatalogoTalentos,
+  resolver: (id) => getTalento(id),
+  idsDaFicha: (c) => (Array.isArray(c?.talentos) ? c.talentos : []),
+});
 
 export const getTalento = (id) => BY_ID[id] || null;
 
@@ -976,6 +1004,16 @@ export function resolveTalentos(creature, ctx = {}) {
     vistos.add(id);
     escolhidas.push(id);
   }
+  // Concessão vinda da sessão (Addons 8.3): vale para tudo e NÃO gasta vaga.
+  // Por isso ela é contada à parte e sai de fora do `gastos`, e não porque o
+  // Talento tenha caixa próprio. Ver `afty-concessao.js`.
+  const concedidos = [];
+  for (const id of Array.isArray(ctx.concedidos) ? ctx.concedidos : []) {
+    if (!BY_ID[id] || vistos.has(id)) continue;
+    vistos.add(id);
+    concedidos.push(id);
+    escolhidas.push(id);
+  }
   // Um talento nunca é pré-requisito de si mesmo, então avaliar contra a
   // lista inteira é seguro e deixa a ordem de escolha irrelevante.
   const full = { ...ctx, talentos: escolhidas };
@@ -988,9 +1026,11 @@ export function resolveTalentos(creature, ctx = {}) {
   );
   return {
     escolhidas,
+    concedidos,
     // A vaga extra da repetível entra no MESMO caixa: "você pode pegar este
     // talento várias vezes" é uma escolha a mais, e cada uma custa uma vaga.
-    gastos: escolhidas.length + escolhas.vagasExtras,
+    // O concedido pela sessão sai da conta: ele é ganho de combate, não compra.
+    gastos: escolhidas.length - concedidos.length + escolhas.vagasExtras,
     inacessiveis,
     escolhas,
     almaLivreEspecializacao: especializacaoDeAlmaLivre(escolhas.mapa[ALMA_LIVRE_TALENTO_ID]),

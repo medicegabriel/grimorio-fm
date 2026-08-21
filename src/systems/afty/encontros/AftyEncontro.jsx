@@ -395,12 +395,31 @@ function Planejando({ encontro, derivado, acoes, criaturas, pastas, onVoltar }) 
             <Secao
               titulo={`Combatentes (${derivado.total})`}
               icone={Swords}
-              direita={!derivado.validacao.valido && derivado.total > 0 ? (
-                <span className="afty-chip" data-afty-tom="aviso">
-                  <AlertTriangle className="w-3 h-3 flex-shrink-0" aria-hidden="true" />
-                  {derivado.validacao.erros[0]}
-                </span>
-              ) : null}
+              direita={
+                /* Duas coisas podem pedir a mesma faixa de aviso, e a validação
+                   do início vem primeiro porque ela IMPEDE começar. A divergência
+                   de addon não impede nada: ela conta que duas fichas trouxeram
+                   versões diferentes do mesmo pacote, e que vale a primeira. */
+                !derivado.validacao.valido && derivado.total > 0 ? (
+                  <span className="afty-chip" data-afty-tom="aviso">
+                    <AlertTriangle className="w-3 h-3 flex-shrink-0" aria-hidden="true" />
+                    {derivado.validacao.erros[0]}
+                  </span>
+                ) : derivado.addonDivergencias?.length ? (
+                  <span
+                    className="afty-chip"
+                    data-afty-tom="aviso"
+                    title={derivado.addonDivergencias
+                      .map((d) => `${d.nome}: ${d.versoes.join(" e ")}, vale a ${d.versoes[0]}`)
+                      .join("\n")}
+                  >
+                    <AlertTriangle className="w-3 h-3 flex-shrink-0" aria-hidden="true" />
+                    {derivado.addonDivergencias.length === 1
+                      ? `${derivado.addonDivergencias[0].nome} em duas versões`
+                      : `${derivado.addonDivergencias.length} addons em versões diferentes`}
+                  </span>
+                ) : null
+              }
             >
               {derivado.total === 0 ? (
                 <div className="afty-rotulo text-[12px] text-center py-10">

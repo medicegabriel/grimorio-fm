@@ -171,11 +171,25 @@ export function resolveGerais(creature, ctx = {}) {
     vezesPorId.set(id, atual + 1);
   }
 
+  // Concessão vinda da sessão (Addons 8.3). Duas diferenças da pega comprada, e
+  // as duas vêm da mesma decisão do autor ("entra de graça"):
+  //   • não gasta vaga, então é contada à parte e descontada do `gastos`;
+  //   • NÃO apara no teto, porque o teto é do orçamento de compra, e conceder
+  //     não é comprar. O Ciclo de Adaptação concede o que a criatura não
+  //     alcançaria, e essa é a razão de a primitiva existir.
+  const vezesConcedidas = new Map();
+  for (const id of Array.isArray(ctx.concedidos) ? ctx.concedidos : []) {
+    if (!GERAL_BY_ID[id]) continue;
+    vezesPorId.set(id, (vezesPorId.get(id) ?? 0) + 1);
+    vezesConcedidas.set(id, (vezesConcedidas.get(id) ?? 0) + 1);
+  }
+
   // Ordem do catálogo, não a de escolha (a UI lista o catálogo inteiro).
   const escolhidas = HABILIDADES_GERAIS
     .filter((g) => vezesPorId.has(g.id))
     .map((g) => ({ id: g.id, vezes: vezesPorId.get(g.id) }));
-  const gastos = escolhidas.reduce((s, g) => s + g.vezes, 0);
+  const concedidasSessao = [...vezesConcedidas].reduce((s, [, n]) => s + n, 0);
+  const gastos = escolhidas.reduce((s, g) => s + g.vezes, 0) - concedidasSessao;
   const vezesDe = (id) => vezesPorId.get(id) ?? 0;
 
   // Acesso por id, e as pegas que a criatura não alcança mais (ex.: o ND caiu).
@@ -199,5 +213,10 @@ export function resolveGerais(creature, ctx = {}) {
     lendarias: abre("ger_habilidade_lendaria"),
   };
 
-  return { escolhidas, gastos, destravado, maxVezes, acesso, inacessiveis };
+  return {
+    escolhidas, gastos, destravado, maxVezes, acesso, inacessiveis,
+    // Quantas pegas de cada id vieram da sessão, para a tela saber separar o
+    // que foi comprado do que o mestre deu no meio da luta.
+    concedidas: Object.fromEntries(vezesConcedidas),
+  };
 }

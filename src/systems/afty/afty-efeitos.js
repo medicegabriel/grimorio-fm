@@ -16,11 +16,12 @@
  * nova, tipo de efeito novo), não um texto solto que a UI só exibe. A ideia é
  * que o motor fique robusto para o autor escrever habilidades próprias depois.
  *
- * ⚠ `src/components/fm-dsl.js` é do grimório 2.5.2 e é SOMENTE-LEITURA. Por
- * isso: variável nova é livre (o contexto é montado aqui, e `evalNumber` é
- * agnóstico de variável), tipo de efeito novo é livre (vive neste arquivo), mas
- * FUNÇÃO ou OPERADOR novo do DSL exigiria editar a 2.5.2, e aí é preciso parar
- * e perguntar ao autor.
+ * ⚠ A TRAVA DO 2.5.2 CAIU EM 2026-08-20. Até aqui o avaliador vinha de
+ * `src/components/fm-dsl.js`, que é do grimório 2.5.2 e somente-leitura, então
+ * variável nova era livre e tipo de efeito novo era livre, mas FUNÇÃO ou
+ * OPERADOR novo exigia parar e perguntar. Perguntei ao desenhar os Addons e o
+ * autor liberou a CÓPIA do avaliador: ela é `./afty-dsl.js`, e a linguagem
+ * cresce deste lado agora. A 2.5.2 segue intacta com a cópia dela.
  *
  * ------------------------------------------------------------
  * FORMA DE UM EFEITO
@@ -79,7 +80,7 @@
  * ============================================================
  */
 
-import { evalNumber } from "../../components/fm-dsl";
+import { evalNumber, CHAVE_MARCAS, normalizarMarca } from "./afty-dsl";
 import { combateDslVars, COMBATE_VARS } from "./afty-combate";
 // afty-origens.js só importa folhas de propósito, então a seta aponta para cá:
 // é este arquivo que junta os efeitos de origem, não aquele. Ver coletarEfeitosOrigem.
@@ -146,6 +147,11 @@ export const EFEITO_CANAIS = [
   // autor leu como soma dos dois (2026-08-08). Aqui a linha da Destreza some e
   // dá lugar à da Força.
   { id: "defesaAtributo", label: "Atributo da Defesa",   alvo: "atributo", nota: "TROCA a Destreza no cálculo da Defesa, e não soma nada. Com mais de um concedido vale o de maior modificador, porque a regra é sempre \"você pode optar\"" },
+  // Irmão do de cima, para o PV (Addons fase 0, 8.2 do docs/afty-addons.md). O
+  // caso que o pediu: *"uma habilidade que me permitiria mudar o Atributo do
+  // Cálculo de vida de uma pessoa para um a minha escolha"*. A regra de
+  // desempate é a MESMA da Defesa, e pelo mesmo motivo.
+  { id: "hpAtributo",     label: "Atributo do PV",       alvo: "atributo", nota: "TROCA a Constituição no cálculo do PV, e não soma nada. Com mais de um concedido vale o de maior modificador, porque a regra é sempre \"você pode optar\"" },
   { id: "bonusPericia",  label: "Perícia",               alvo: "pericia", nota: "aceita `atr:destreza` para atingir toda perícia daquele atributo (Dádivas do Céu)" },
   { id: "proficienciaPericia", label: "Treino em Perícia", alvo: "pericia", nota: "1 = Treinado, 2 = Mestre. Concede a faixa, não soma número, e nunca REBAIXA o que a ficha já escolheu" },
   { id: "bonusTR",       label: "Teste de Resistência",  alvo: "tr", nota: "aceita `atr:constituicao` para atingir todo TR daquele atributo" },
@@ -370,7 +376,7 @@ const GRUPOS_DE_CANAL = [
   // `nivelAptidao` entra aqui, e não num grupo de Aptidões, porque ele é
   // concessão DIRETA de nível (a regra nomeia a trilha). O orçamento livre é
   // outro canal e está em Orçamentos.
-  ["Atributos e Aptidões", ["atributo", "limiteAtributo", "defesaAtributo", "nivelAptidao", "limiteAptidao"]],
+  ["Atributos e Aptidões", ["atributo", "limiteAtributo", "defesaAtributo", "hpAtributo", "nivelAptidao", "limiteAptidao"]],
   ["Perícias e Resistências", [
     "bonusPericia", "proficienciaPericia", "bonusTR", "proficienciaTR", "margemCriticoTR",
   ]],
@@ -450,6 +456,43 @@ export const efeitoUsaDadosDanoFinal = (efeito) =>
   RE_VARIAVEL_LINHA_DANO.test(String(efeito?.expr ?? ""))
   || RE_VARIAVEL_LINHA_DANO.test(String(efeito?.quando ?? ""));
 
+/**
+ * MARCAS da ficha: quantas entradas a criatura tem de cada marca. É o que
+ * `contar("adaptacao")` lê (ver `afty-dsl.js`).
+ *
+ * Nasceu em 2026-08-20, na fase 0 dos Addons (`docs/afty-addons.md`, 8.1). O
+ * caso que a pediu: *"uma delas fornece 2 de RD Geral, e +1 de RD Geral a cada
+ * outro poder do mesmo arquétipo que eu possuir na ficha"*. O DSL já tinha a
+ * booleana `tem_*` por habilidade, e faltava a irmã dela, que CONTA em vez de
+ * perguntar.
+ *
+ * Cada entrada rende:
+ *   • as marcas ESCRITAS nela (`tags`), que é por onde o Addon marca as dele.
+ *   • as marcas AUTOMÁTICAS, que hoje são a família (`habilidade`, `talento`,
+ *     `aptidao`) e a especialização dona.
+ *
+ * ⚠ AS AUTOMÁTICAS SÃO DECISÃO MINHA, não do autor (2026-08-20). Sem elas a
+ * função nasceria morta, porque nenhuma entrada do catálogo raw tem `tags` e só
+ * o Addon (fase 1) traria a primeira. Com elas, `contar("lutador")` já responde
+ * hoje. Marca escrita com o mesmo nome de uma automática apenas SOMA, e é
+ * inofensivo, porque as duas querem dizer "conte estas coisas". Se o autor não
+ * quiser, apagar o bloco das automáticas é uma linha.
+ */
+export function marcasDeEntradas(entradas = []) {
+  const out = {};
+  const add = (m) => {
+    const k = normalizarMarca(m);
+    if (k) out[k] = (out[k] ?? 0) + 1;
+  };
+  for (const e of entradas) {
+    if (!e) continue;
+    for (const t of Array.isArray(e.tags) ? e.tags : []) add(t);
+    if (e.familia) add(e.familia);
+    if (e.especializacaoId) add(e.especializacaoId);
+  }
+  return out;
+}
+
 export function buildCriaturaDslContext(base = {}) {
   const at = base.attrEff || {};
   const md = base.mods || {};
@@ -466,7 +509,7 @@ export function buildCriaturaDslContext(base = {}) {
     // aumentando em 15 ao invés de 20"). O `aplicarEfeitos` sobrescreve com o
     // `vez` do efeito; 1 é o default de quem não repete.
     vez: 1,
-    grau: base.grauRank ?? 1,                        // Quarto 1 ... Especial 5
+    grau: base.grauRank ?? 1,                        // Quarto 1 ... Semi-Grau Especial 5, e para aí
     alma_atual: base.almaAtual ?? 100,
     // RD base do escudo equipado, SEM a parcela da Ferramenta Amaldiçoada. É o
     // "aumento base em RD do seu escudo" do Especialista em Escudo. Único valor
@@ -515,6 +558,12 @@ export function buildCriaturaDslContext(base = {}) {
     // Simulação de combate: `em_combate`, `empolgacao`, `brutalidade`... É o que
     // as habilidades com `quando` leem para ligar e desligar. Ver afty-combate.js.
     ...combateDslVars(base.combate),
+
+    /* Mapa de marcas, para o `contar()`. A chave começa com `#`, que o
+       tokenizer nunca aceita num identificador, então nenhuma expressão
+       consegue lê-la como variável e o `vocabularioDsl` a descarta pelo mesmo
+       sinal. Ver `marcasDeEntradas` logo acima. */
+    [CHAVE_MARCAS]: base.marcas || {},
   };
 
   /* ⚠ TODA variável de família tem de estar SEMPRE declarada, mesmo que zero.
@@ -751,12 +800,21 @@ export function efeitosDaSessao(creature) {
  * catálogos grandes exportam. `vezesPorId` multiplica os repetíveis.
  */
 export function coletarEfeitos(ids, mapa, catalogo = {}, vezesPorId = null) {
-  const nomeDe = typeof catalogo === "function"
-    ? (id) => catalogo(id)?.nome
-    : (id) => catalogo?.[id]?.nome;
+  const entradaDe = typeof catalogo === "function"
+    ? (id) => catalogo(id)
+    : (id) => catalogo?.[id];
+  const nomeDe = (id) => entradaDe(id)?.nome;
   const out = [];
   for (const id of Array.isArray(ids) ? ids : []) {
-    const efs = mapa?.[id];
+    /* ⚠ O efeito de uma entrada de ADDON vem DENTRO dela, e não do mapa.
+       O raw separa catálogo de efeito (`HABILIDADE_EFEITOS` mora em
+       afty-efeitos-conteudo.js) porque o texto do livro e a automação têm donos
+       diferentes e mudam em ritmos diferentes. Num addon isso não existe: quem
+       escreve a habilidade escreve o efeito dela, no mesmo JSON, e separar os
+       dois só criaria uma segunda chave para a pessoa manter em sincronia.
+       Por isso o mapa vem primeiro e a entrada é o fallback: nenhuma entrada do
+       raw tem `efeitos` inline, então nada muda para elas. */
+    const efs = mapa?.[id] ?? entradaDe(id)?.efeitos;
     if (!efs) continue;
     const vezes = vezesPorId ? Math.max(1, vezesPorId[id] ?? 1) : 1;
     for (let v = 1; v <= vezes; v++) {

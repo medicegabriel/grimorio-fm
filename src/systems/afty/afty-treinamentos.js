@@ -50,6 +50,7 @@
  * ============================================================
  */
 
+import { registrarFamilia } from "./afty-addons";
 import { AFTY_ATTRS } from "./afty-schema";
 import { AFTY_PERICIAS, catalogoPericiasDaFicha } from "./afty-pericias";
 import { catalogoDoTipo } from "./afty-equipamentos";
@@ -451,7 +452,36 @@ export const AFTY_TREINAMENTOS = [
   },
 ];
 
-const BY_ID = Object.fromEntries(AFTY_TREINAMENTOS.map((t) => [t.id, t]));
+/* ============================================================ */
+/* ADDONS                                                        */
+/* ============================================================ */
+/* Quinta família (2026-08-20). O autor nomeou "criar Treinos Novos" entre os
+   exemplos do que um Addon deve poder fazer. */
+
+let BY_ID = {};
+
+const TREINAMENTOS_BASE = AFTY_TREINAMENTOS.slice();
+
+function aplicarExtrasTreinamentos(extras = []) {
+  AFTY_TREINAMENTOS.splice(0, AFTY_TREINAMENTOS.length, ...TREINAMENTOS_BASE, ...extras);
+  BY_ID = Object.fromEntries(AFTY_TREINAMENTOS.map((t) => [t.id, t]));
+}
+
+aplicarExtrasTreinamentos();
+
+registrarFamilia("treinamentos", {
+  rotulo: "Linha de Treinamento",
+  chave: "id",
+  obrigatorios: ["nome", "etapas"],
+  aplicar: aplicarExtrasTreinamentos,
+  resolver: (id) => getTreinamento(id),
+  /* A ficha guarda `{ [id]: progresso }`, e não uma lista. Só os ids com
+     progresso contam: uma linha em zero não é uma linha escolhida. */
+  idsDaFicha: (c) => Object.entries(c?.treinamentos ?? {})
+    .filter(([, prog]) => Number(prog) > 0)
+    .map(([id]) => id),
+});
+
 
 export function getTreinamento(id) {
   return BY_ID[id] || null;

@@ -33,6 +33,7 @@
 
 // grauMeta: fonte da verdade dos graus de Invocação (Shikigami usa o motor de
 // Invocações). afty-invocacoes não importa daqui, então não há ciclo.
+import { registrarFamilia } from "./afty-addons";
 import { grauMeta } from "./afty-invocacoes";
 import {
   detalhesDoCanalEscopos, resolverEfeitosDanoFinal, valorCanalEscopos,
@@ -323,6 +324,43 @@ export const CONDICOES_CATALOGO = {
   forte:   ["Aterrorizado", "Cego", "Exposto", "Fragilizado", "Imóvel"],
   extrema: ["Atordoado", "Inconsciente", "Paralisado", "Desmembramento"],
 };
+
+/* ============================================================ */
+/* ADDONS: Condição                                              */
+/* ============================================================ */
+/* Oitava família (2026-08-20). O autor nomeou "Novas Condições" entre os
+   exemplos do que um Addon deve poder fazer.
+
+   ⚠ A CONDIÇÃO É GRAVADA PELO NOME, e não por id: um Feitiço guarda
+   `{ nome, forca }`. Então o namespace vale só para o `id` da entrada, que
+   existe para o pacote não repetir a si mesmo, e o que entra no catálogo é o
+   `nome` LIMPO. Prefixar o nome poria "minha-mesa:Congelado" na tela.
+
+   ⚠ Consequência assumida: **não há linha morta para condição.** Sem id na
+   ficha não há como saber que um nome veio de um addon que sumiu, e o Feitiço
+   simplesmente continua com o nome escrito. É honesto: a condição é rótulo, e
+   rótulo que perde a fonte continua sendo rótulo. */
+
+const CONDICOES_BASE = Object.fromEntries(
+  Object.entries(CONDICOES_CATALOGO).map(([forca, lista]) => [forca, [...lista]]),
+);
+
+function aplicarExtrasCondicoes(extras = []) {
+  for (const [forca, lista] of Object.entries(CONDICOES_BASE)) {
+    CONDICOES_CATALOGO[forca] = [...lista];
+  }
+  for (const e of extras) {
+    if (!CONDICOES_CATALOGO[e.forca]) continue;   // força inválida: o validador já reclamou
+    CONDICOES_CATALOGO[e.forca].push(e.nome);
+  }
+}
+
+registrarFamilia("condicoes", {
+  rotulo: "Condição",
+  chave: "id",
+  obrigatorios: ["nome", "forca"],
+  aplicar: aplicarExtrasCondicoes,
+});
 
 // SANGRAMENTO — condição variável com perda de vida própria por força.
 export const SANGRAMENTO = {

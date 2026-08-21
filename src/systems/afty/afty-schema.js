@@ -417,6 +417,15 @@ export function createBlankAfty() {
     // porque os dois copiam a criatura inteira. Ver ./ficha/ficha-tema.js.
     aparencia: null,
 
+    // ADDONS: as regras próprias da mesa que esta criatura usa, como CÓPIA
+    // congelada do pacote (e não referência a uma biblioteca).
+    // ⚠ Mesma decisão da `aparencia` logo acima, e pelo mesmo motivo: exportar a
+    // ficha exporta as regras dela, então ninguém recebe ficha quebrada e não é
+    // preciso servidor de registro nenhum. Quem manda no cálculo é esta cópia,
+    // e por isso o addon mudar na biblioteca não mexe sozinho nas fichas
+    // antigas. Ver ./afty-addons.js e docs/afty-addons.md.
+    addons: [],
+
     narratorNotes: "",
 
     combatState: {

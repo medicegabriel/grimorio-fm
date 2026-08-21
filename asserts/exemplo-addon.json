@@ -1,0 +1,58 @@
+{
+  "id": "mesa-do-afty",
+  "nome": "Regras da Mesa do Afty",
+  "versao": "1.0.0",
+  "autor": "Afty",
+  "descricao": "Exemplo dos Addons: uma família que escala por marca, uma que troca o atributo do PV, um tipo de dano e uma condição.",
+  "paraRaw": "afty",
+  "permite": ["contar", "hpAtributo"],
+  "acrescenta": {
+    "habilidades": [
+      {
+        "id": "eco_persistente",
+        "nome": "Eco Persistente",
+        "especializacaoId": "lutador",
+        "tipo": "base",
+        "nivel": 1,
+        "tags": ["eco"],
+        "descricao": "Cada eco que você carrega endurece o que sobrou de você. Você recebe 2 de redução de dano geral, e mais 1 para cada outra habilidade de Eco que você possuir.",
+        "requisitos": [],
+        "efeitos": [
+          { "canal": "rdGeral", "expr": "2 + contar(\"eco\") - 1" }
+        ]
+      },
+      {
+        "id": "eco_do_impacto",
+        "nome": "Eco do Impacto",
+        "especializacaoId": "lutador",
+        "tipo": "nivel",
+        "nivel": 4,
+        "tags": ["eco"],
+        "descricao": "O primeiro golpe nunca some. Seu deslocamento aumenta em 1,5 metro.",
+        "requisitos": [{ "tipo": "habilidade", "id": "eco_persistente" }],
+        "efeitos": [
+          { "canal": "movimento", "expr": "1.5" }
+        ]
+      },
+      {
+        "id": "eco_da_carne",
+        "nome": "Eco da Carne",
+        "especializacaoId": "lutador",
+        "tipo": "nivel",
+        "nivel": 6,
+        "tags": ["eco"],
+        "descricao": "Seu corpo passa a se sustentar pelo que ele lembra, e não pelo que ele é. Você pode usar o modificador de um atributo à sua escolha no lugar do de Constituição para calcular seus pontos de vida.",
+        "requisitos": [{ "tipo": "habilidade", "id": "eco_persistente" }],
+        "efeitos": [
+          { "canal": "hpAtributo", "expr": "1" }
+        ]
+      }
+    ],
+    "tiposDano": [
+      { "value": "sonico", "label": "Sônico" }
+    ],
+    "condicoes": [
+      { "id": "cnd_ensurdecido_pelo_eco", "nome": "Ensurdecido pelo Eco", "forca": "media" }
+    ]
+  }
+}

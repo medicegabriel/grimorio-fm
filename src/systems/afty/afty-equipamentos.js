@@ -24,32 +24,66 @@
  * ============================================================
  */
 
-import { evalNumber, validateExpression } from "../../components/fm-dsl";
+import { registrarFamilia } from "./afty-addons";
+import { evalNumber, validateExpression } from "./afty-dsl";
 import { normalizarAlvoEfeito } from "./afty-efeitos";
 
 /* ============================================================ */
-/* GRAU DO FEITICEIRO                                           */
+/* GRAU DE EQUIPAMENTO                                          */
 /* ============================================================ */
-/* Os mesmos 5 graus das Invocações (AFTY_INV_GRAUS). Não existe
-   "Grau Zero" (removido a pedido do autor em 2026-07-22).
-   O grau NÃO é campo da ficha: sai do ND por faixa. */
+/* Os 5 graus da FERRAMENTA AMALDIÇOADA, os mesmos das Invocações
+   (AFTY_INV_GRAUS). Não existe "Grau Zero" (removido a pedido do
+   autor em 2026-07-22). É o grau do ITEM, escolhido na aba, e a
+   chave de FA_CRIACAO, FA_BONUS_ARMA, DANO_ADICIONAL_ARMA e dos
+   encantamentos.
+
+   ⚠ Até 2026-08-19 esta lista fazia serviço duplo, e era também o
+   Grau da CRIATURA por faixa de ND. As duas escadas se separaram
+   quando a da criatura cresceu para 9 degraus: ver AFTY_GRAUS_CRIATURA
+   logo abaixo. O item continua com 5. */
 
 export const AFTY_GRAUS = [
-  { value: "quarto",   label: "Quarto Grau",   rank: 1, ndMin: 1 },
-  { value: "terceiro", label: "Terceiro Grau", rank: 2, ndMin: 5 },
-  { value: "segundo",  label: "Segundo Grau",  rank: 3, ndMin: 9 },
-  { value: "primeiro", label: "Primeiro Grau", rank: 4, ndMin: 13 },
-  { value: "especial", label: "Grau Especial", rank: 5, ndMin: 17 },
+  { value: "quarto",   label: "Quarto Grau",   rank: 1 },
+  { value: "terceiro", label: "Terceiro Grau", rank: 2 },
+  { value: "segundo",  label: "Segundo Grau",  rank: 3 },
+  { value: "primeiro", label: "Primeiro Grau", rank: 4 },
+  { value: "especial", label: "Grau Especial", rank: 5 },
 ];
 
-/** Grau do feiticeiro pela faixa de ND (autor, 2026-07-22). */
+/* ============================================================ */
+/* GRAU DA CRIATURA (GRAU DO FEITICEIRO)                        */
+/* ============================================================ */
+/* Nove degraus (autor, 2026-08-19). O grau NÃO é campo da ficha:
+   sai do ND por faixa, e a última faixa não fecha, porque o ND do
+   Afty não tem teto.
+
+   ⚠ `rank` PARA NO 5 de propósito (decisão do autor, 2026-08-19).
+   Ele é o número que as fórmulas leem, e não a posição na escada:
+   quem soma `rank` (o orçamento de Perícias e TR, e a variável `grau`
+   do DSL) continua com o mesmo teto de antes, então os quatro degraus
+   acima do Semi-Grau Especial são nome e faixa, e não número novo.
+   Para comparar dois graus, use `ordem`, que é a posição de verdade. */
+
+export const AFTY_GRAUS_CRIATURA = [
+  { value: "quarto",         label: "Quarto Grau",          ordem: 1, rank: 1, ndMin: 1 },
+  { value: "terceiro",       label: "Terceiro Grau",        ordem: 2, rank: 2, ndMin: 5 },
+  { value: "segundo",        label: "Segundo Grau",         ordem: 3, rank: 3, ndMin: 9 },
+  { value: "primeiro",       label: "Primeiro Grau",        ordem: 4, rank: 4, ndMin: 13 },
+  { value: "semiEspecial",   label: "Semi-Grau Especial",   ordem: 5, rank: 5, ndMin: 17 },
+  { value: "baixoEspecial",  label: "Baixo Grau Especial",  ordem: 6, rank: 5, ndMin: 21 },
+  { value: "altoEspecial",   label: "Alto Grau Especial",   ordem: 7, rank: 5, ndMin: 26 },
+  { value: "calamidade",     label: "Calamidade",           ordem: 8, rank: 5, ndMin: 31 },
+  { value: "divino",         label: "Divino",               ordem: 9, rank: 5, ndMin: 36 },
+];
+
+/** Grau da criatura pela faixa de ND (autor, 2026-08-19). */
 export function grauFeiticeiro(nd) {
   const n = Math.max(1, nd ?? 1);
   // Do mais alto para o mais baixo: o primeiro que couber é o grau.
-  for (let i = AFTY_GRAUS.length - 1; i >= 0; i--) {
-    if (n >= AFTY_GRAUS[i].ndMin) return AFTY_GRAUS[i];
+  for (let i = AFTY_GRAUS_CRIATURA.length - 1; i >= 0; i--) {
+    if (n >= AFTY_GRAUS_CRIATURA[i].ndMin) return AFTY_GRAUS_CRIATURA[i];
   }
-  return AFTY_GRAUS[0];
+  return AFTY_GRAUS_CRIATURA[0];
 }
 
 /* ============================================================ */
@@ -111,14 +145,25 @@ export const EQUIP_INICIAL = {
   texto: "Dois equipamentos de custo 1 (arma, escudo ou item especial), um uniforme comum e um kit de ferramentas a sua escolha.",
 };
 
-/** Conjunto concedido no começo de toda missão, por grau do feiticeiro.
-    `Infinity` no Grau Especial custo 1 é o "Ilimitado" do livro. */
+/** Conjunto concedido no começo de toda missão, por grau da CRIATURA
+    (AFTY_GRAUS_CRIATURA, e não o grau do item).
+    `Infinity` no custo 1 é o "Ilimitado" do livro.
+
+    ⚠ A tabela do livro para no Grau Especial, e os quatro degraus criados
+    em 2026-08-19 REPETEM essa linha (decisão do autor). Se a tabela real
+    chegar, é aqui que ela entra. */
+const EQUIP_GANHO_ESPECIAL = { 1: Infinity, 2: 4, 3: 3, 4: 2 };
+
 export const EQUIP_GANHO_POR_GRAU = {
-  quarto:   { 1: 2 },
-  terceiro: { 1: 3, 2: 1 },
-  segundo:  { 1: 3, 2: 2, 3: 1 },
-  primeiro: { 1: 3, 2: 3, 3: 2, 4: 1 },
-  especial: { 1: Infinity, 2: 4, 3: 3, 4: 2 },
+  quarto:        { 1: 2 },
+  terceiro:      { 1: 3, 2: 1 },
+  segundo:       { 1: 3, 2: 2, 3: 1 },
+  primeiro:      { 1: 3, 2: 3, 3: 2, 4: 1 },
+  semiEspecial:  EQUIP_GANHO_ESPECIAL,
+  baixoEspecial: EQUIP_GANHO_ESPECIAL,
+  altoEspecial:  EQUIP_GANHO_ESPECIAL,
+  calamidade:    EQUIP_GANHO_ESPECIAL,
+  divino:        EQUIP_GANHO_ESPECIAL,
 };
 
 export const CUSTOS = [1, 2, 3, 4];
@@ -179,6 +224,41 @@ export const TIPOS_DANO = {
   pf: "Perfurante",
   queimante: "Queimante",
 };
+
+/* ============================================================ */
+/* ADDONS: Tipo de Dano                                          */
+/* ============================================================ */
+/* Sétima família (2026-08-20), e a PRIMEIRA que é TABELA em vez de catálogo: o
+   `TIPOS_DANO` é um objeto `chave -> rótulo`, e não uma lista de entradas. Por
+   isso a entrada do addon é `{ value, label }` e a `chave` da família é
+   `value`.
+
+   O autor nomeou "Novos Tipos de Dano" como primeiro exemplo do que um Addon
+   deve poder fazer.
+
+   ⚠ DUAS estruturas para religar, e a segunda é fácil de esquecer: o objeto e o
+   `TIPO_DANO_OK`, que é o `Set` das chaves usado para SANEAR arma custom. Sem
+   religar o Set, um tipo de dano de addon existiria na lista e seria rejeitado
+   calado na hora de gravar a arma. */
+
+const TIPOS_DANO_BASE = { ...TIPOS_DANO };
+
+function aplicarExtrasTiposDano(extras = []) {
+  for (const k of Object.keys(TIPOS_DANO)) delete TIPOS_DANO[k];
+  Object.assign(TIPOS_DANO, TIPOS_DANO_BASE);
+  for (const e of extras) TIPOS_DANO[e.value] = e.label;
+  TIPO_DANO_OK = new Set(Object.keys(TIPOS_DANO));
+}
+
+registrarFamilia("tiposDano", {
+  rotulo: "Tipo de Dano",
+  chave: "value",
+  obrigatorios: ["label"],
+  aplicar: aplicarExtrasTiposDano,
+  /* Sem `resolver` nem `idsDaFicha`: tipo de dano não é escolhido em lista na
+     ficha, ele é um campo de arma. Um tipo órfão numa arma custom já é aparado
+     pelo saneamento do próprio módulo, que é onde essa checagem mora. */
+});
 
 /* ============================================================ */
 /* ARMAS · PROPRIEDADES GERAIS (texto verbatim)                 */
@@ -597,7 +677,7 @@ export const ARMA_DADOS = ["1d4", "1d6", "1d8", "1d10", "1d12", "2d6"];
 export const ARMA_CRITICOS = [20, 19, 18];
 
 const DADO_OK = new Set(ARMA_DADOS);
-const TIPO_DANO_OK = new Set(Object.keys(TIPOS_DANO));
+let TIPO_DANO_OK = new Set(Object.keys(TIPOS_DANO));
 const CATEGORIA_OK = new Set(ARMA_CATEGORIAS.map((c) => c.value));
 const GRUPO_OK = new Set(ARMA_GRUPOS.map((g) => g.value));
 
@@ -1952,6 +2032,34 @@ export function validarCatalogoEquipamentos() {
       if (!e.nome) erros.push(`${rotulo}: "${e.id}" sem nome.`);
     }
   };
+
+  // ---------- As duas escadas de grau ----------
+  // Elas se separaram em 2026-08-19 e nada mais as obriga a bater, então o
+  // validador é quem segura as invariantes de cada uma.
+  const rankTetoEquip = Math.max(...AFTY_GRAUS.map((g) => g.rank));
+  const vistosGrau = new Set();
+  let ndAnterior = 0;
+  let rankAnterior = 0;
+  AFTY_GRAUS_CRIATURA.forEach((g, i) => {
+    if (vistosGrau.has(g.value)) erros.push(`AFTY_GRAUS_CRIATURA: value duplicado "${g.value}".`);
+    vistosGrau.add(g.value);
+    if (!g.label) erros.push(`AFTY_GRAUS_CRIATURA: "${g.value}" sem label.`);
+    if (g.ordem !== i + 1) erros.push(`AFTY_GRAUS_CRIATURA: "${g.value}" tem ordem ${g.ordem}, esperada ${i + 1}.`);
+    if (i === 0 && g.ndMin !== 1) erros.push(`AFTY_GRAUS_CRIATURA: o primeiro grau tem de começar no ND 1.`);
+    if (g.ndMin <= ndAnterior) erros.push(`AFTY_GRAUS_CRIATURA: "${g.value}" começa no ND ${g.ndMin}, que não é depois do grau anterior.`);
+    ndAnterior = g.ndMin;
+    if (g.rank < rankAnterior) erros.push(`AFTY_GRAUS_CRIATURA: "${g.value}" tem rank menor que o do grau anterior.`);
+    rankAnterior = g.rank;
+    // O rank é o número que as fórmulas leem, e o autor mandou parar no 5.
+    if (g.rank > rankTetoEquip) erros.push(`AFTY_GRAUS_CRIATURA: "${g.value}" tem rank ${g.rank}, acima do teto ${rankTetoEquip}.`);
+    if (!EQUIP_GANHO_POR_GRAU[g.value]) erros.push(`EQUIP_GANHO_POR_GRAU: falta a linha do grau "${g.value}".`);
+  });
+  for (const chave of Object.keys(EQUIP_GANHO_POR_GRAU)) {
+    if (!vistosGrau.has(chave)) erros.push(`EQUIP_GANHO_POR_GRAU: "${chave}" não é grau de criatura.`);
+  }
+  for (const g of AFTY_GRAUS) {
+    if (!FA_CRIACAO[g.value]) erros.push(`FA_CRIACAO: falta a linha do grau de equipamento "${g.value}".`);
+  }
 
   checarIds(ARMAS, "ARMAS");
   checarIds(UNIFORME_MODIFICACOES, "UNIFORME_MODIFICACOES");

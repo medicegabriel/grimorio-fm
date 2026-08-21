@@ -28,7 +28,7 @@
  * ============================================================
  */
 
-import { evalNumber } from "../../components/fm-dsl";
+import { evalNumber } from "./afty-dsl";
 import { AFTY_TAMANHOS, AFTY_RESISTENCIAS } from "./afty-schema";
 import { AFTY_PERICIAS, bonusProficiencia, usoPericias } from "./afty-pericias";
 import { TIPOS_DANO } from "./afty-equipamentos";

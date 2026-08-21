@@ -448,6 +448,58 @@ resultado máximo e ache o degrau mais próximo.
 
 ---
 
+## Pugilato: as três que NÃO viram linha de ataque
+
+**Faixas, Manoplas e Soco Inglês** (`grupo: "pugilato"`) ficam na tabela de armas, mas não são armas
+para o cálculo: elas **são o Ataque Básico**. O `deriveAfty` filtra o grupo para fora das linhas de
+arma e passa o item para a linha básica, que é a mesma que existe com a criatura de mãos vazias.
+
+Consequência: uma Faixas equipada não acrescenta linha nenhuma na aba, ela muda os números da linha
+que já estava lá.
+
+**O que rende número, e o que não rende:**
+
+| Situação | Efeito |
+|---|---|
+| Faixas na mochila | nada, só espaço e custo |
+| Faixas equipada, sem Ferramenta Amaldiçoada | nada |
+| Faixas equipada, com Ferramenta | +1 de Acerto por degrau do grau de cálculo, e o dano da `DANO_ADICIONAL_ARMA` (4, 8, 12, 16, 20) |
+
+### ⚠ UM item define o golpe (2026-08-20)
+
+Com duas de pugilato equipadas vale **uma só**, a de maior grau de cálculo, e nunca a soma. A regra
+do grau sempre foi essa, e desde 2026-08-20 o **resto do item vem do MESMO item**: o encantamento e
+a Fineza. Somar dois pares de Manoplas empilharia encantamento de duas armas num golpe só.
+
+Item **sem** Ferramenta entra na disputa com rank 0. Ele não muda grau nenhum, mas pode ser o dono do
+golpe quando é o único equipado, e é assim que ele recebe encantamento do **Manejo Especial**, que
+vale para toda arma manejada.
+
+### O que o item leva para a linha básica
+
+1. **O grau**, que é Acerto e Dano (sempre foi).
+2. **Os efeitos de encantamento com `alvoItem`** (Potente, Poderosa, Penetrante, Cruel). O efeito é
+   gravado com o alvo do ITEM, e a linha básica passou a responder também pelo **id do item**, que é
+   como ela escuta. Antes de 2026-08-20 esses efeitos eram descartados calados, e o encantamento
+   ainda descia o degrau do grau: pôr Potente numas Faixas era prejuízo puro.
+   ⚠ Só o id entra no escopo. `"arma"`, a categoria e o grupo ficam de fora **de propósito**, porque
+   o livro diz que Faixas não são armas.
+3. **As fontes de Acerto que não são o grau** (o encantamento Precisa), para o hover mostrar cada
+   uma com o nome dela. Antes o bônus inteiro aparecia dentro de "Grau da Ferramenta".
+4. **A Fineza** (Soco Inglês). O golpe básico abria a escolha de Destreza só pelo canal
+   `finezaAtaque` (Corpo Treinado), e a propriedade impressa na tabela não chegava a lugar nenhum.
+
+### O que o item NÃO leva
+
+- **A jogada de ataque.** O básico rola sempre **Corpo a Corpo**, e por isso o seletor de Ataque
+  (Corpo a Corpo ou Amaldiçoado) **não aparece** nas três de pugilato. Ele aparecia e gravava o
+  campo sem mudar número nenhum. Se o Ataque Amaldiçoado tiver de valer para golpe desarmado, é
+  regra nova e o seletor não mora no card do item, porque o golpe básico existe sem item nenhum.
+- **A margem de crítico**, que é 20 fixa no básico. As três têm `critico: null` na tabela.
+- **O tipo de dano**, que o golpe desarmado não tem. Quem mira `tipo:im` não alcança o básico.
+
+---
+
 ## O que o motor aplica
 
 Em `afty-derive.js`, via `resolveEquipamentos` e `resolveCarga`:
@@ -457,6 +509,7 @@ Em `afty-derive.js`, via `resolveEquipamentos` e `resolveCarga`:
 | **Defesa** | custo da armadura vestida, mais o grau da Ferramenta, mais -5 se sobrecarregado |
 | **Acerto** | grau da Ferramenta da arma, na linha de dano daquela arma |
 | **Dano** | grau da Ferramenta da arma (`DANO_ADICIONAL_ARMA`), na linha daquela arma |
+| **Acerto e Dano do golpe básico** | o item de pugilato equipado, na linha do Ataque Básico (ver a seção acima) |
 | **Deslocamento** | -4,5m se sobrecarregado |
 | **RD Geral** | escudos equipados + grau da Ferramenta |
 | **RD Física** (`derived.rdFisico`) | só o que nomeia o tipo (encantamento Reforçado, Aura Reforçada). O ESCUDO saiu daqui em 2026-08-01 |
@@ -531,7 +584,9 @@ como a fonte "Armadura e Escudo". As Manobras herdam de graça pela Acrobacia, q
    em cascata).
 4. **Besta Leve** foi movida do grupo Arco para o grupo **Besta** (autor), casando com a Besta Pesada.
 5. **Faixas continuam na tabela de armas** (autor), mesmo o texto dizendo que não são armas, porque
-   contam como arma para Ferramenta Amaldiçoada. Marcadas com `contaComoArma: false`.
+   contam como arma para Ferramenta Amaldiçoada. Marcadas com `contaComoArma: false`. O que separa
+   as três do resto no CÁLCULO é o `grupo: "pugilato"`, e não essa marca: `contaComoArma` e
+   `dano: { desarmado: true }` documentam, não fazem. Ver a seção Pugilato.
 6. Desvios de gênero da tabela normalizados: "Amplo" do Bastão e "pesado" das Manoplas viram Ampla e
    Pesada. Bazuca com alcance "[9/18]" assumido em metros.
 

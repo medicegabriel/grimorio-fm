@@ -13,14 +13,15 @@
  * 2. **Base e por Nível gastam O MESMO orçamento.** No livro as Bases são de
  *    graça; no Afty elas são escolhidas, igual às por Nível. A exceção é a
  *    Base marcada `automatica: true`, recebida ao alcançar o nível na
- *    especialização e sem gastar orçamento. Hoje são oito, liberadas caso a
+ *    especialização e sem gastar orçamento. Hoje são nove, liberadas caso a
  *    caso pelo autor:
- *      • Lutador: Empolgação (1°) (autor, 2026-08-20).
  *      • Conjurador: Conjuração Aprimorada (1°), Adiantar a Evolução (4°).
  *      • Suporte: Suporte em Combate (1°), Energia Reversa (6°), Liberação
  *        de Energia Reversa (8°) (autor, 2026-08-10).
  *      • Controlador: Treinamento em Controle (1°), Controle Aprimorado (4°)
  *        (autor, 2026-08-16).
+ *      • Combatente: Artes do Combate (1°) (autor, 2026-08-20).
+ *      • Lutador: Empolgação (1°) (autor, 2026-08-20).
  * 3. **Orçamento único**, gasto onde o jogador quiser, e dividido com os
  *    Talentos. O que muda por especialização é o ACESSO: cada habilidade
  *    exige nível NAQUELA especialização (o lado da multiclasse), não o ND.
@@ -41,7 +42,9 @@
  * estilo do autor vale para texto que o CÓDIGO escreve, não para a transcrição.
  */
 
-import { evalNumber } from "../../components/fm-dsl";
+import { evalNumber } from "./afty-dsl";
+// Registro de Addons. Módulo FOLHA (só importa o afty-dsl), então não há ciclo.
+import { registrarFamilia } from "./afty-addons";
 import { getEspecializacao } from "./afty-especializacoes";
 import { getAptidao } from "./afty-aptidoes";
 import { ARMA_GRUPOS, ENCANTAMENTOS_ARMA } from "./afty-equipamentos";
@@ -631,7 +634,8 @@ export const AFTY_HABILIDADES = [
   /* ================= LUTADOR · BASE =================
      Especialização de corpo a corpo desarmado. Base nos níveis 1, 1, 2, 4,
      5, 9, 11 e 20. O recurso próprio é o Nível de Empolgação (1 a 5), que é
-     estado de COMBATE, não de ficha. */
+     estado de COMBATE, não de ficha. Empolgação é automática (autor,
+     2026-08-20). */
   {
     id: "lut_corpo_treinado",
     nome: "Corpo Treinado",
@@ -1612,7 +1616,8 @@ export const AFTY_HABILIDADES = [
   },
 
   /* ---------------- COMBATENTE · BASE ----------------
-     No livro: "Especialista em Combate". O autor escreve Combatente. */
+     No livro: "Especialista em Combate". O autor escreve Combatente. Artes do
+     Combate é automática (autor, 2026-08-20). */
   {
     id: "cmb_repertorio_do_especialista",
     nome: "Repertório do Especialista",
@@ -1639,6 +1644,7 @@ export const AFTY_HABILIDADES = [
     especializacaoId: "combatente",
     tipo: "base",
     nivel: 1,
+    automatica: true,
     descricao:
       "Levando o combate como uma arte a se estudar e aperfeiçoar, você sabe como se preparar e " +
       "usar desse preparo para o possibilitar realizar ações especiais dentro de um combate. Você " +
@@ -5978,7 +5984,11 @@ export const AFTY_HABILIDADES = [
  * comparado com o nível de Restringido (que é o ND, já que a especialização é
  * exclusiva da Origem Restringido, que proíbe multiclasse).
  */
-export const HABILIDADES_ROUBAVEIS = AFTY_HABILIDADES.filter(
+/* ⚠ O pool é uma FUNÇÃO desde 2026-08-20, e não mais um filtro de uma vez só:
+   ele precisa ser refeito quando um Addon acrescenta habilidade, senão uma
+   Combatente ou Lutador de nível vinda de addon ficaria de fora do Roubo sem
+   ninguém notar. Ver `aplicarExtrasHabilidades`. */
+const montarRoubaveis = () => AFTY_HABILIDADES.filter(
   (h) =>
     (h.especializacaoId === "combatente" || h.especializacaoId === "lutador") &&
     (h.tipo === "nivel" || h.id === "cmb_golpe_especial")
@@ -5992,11 +6002,65 @@ export const HABILIDADES_ROUBAVEIS = AFTY_HABILIDADES.filter(
   especializacaoId: h.especializacaoId,
 }));
 
+/* Preenchido por `aplicarExtrasHabilidades`, logo abaixo. Fica `const` e é
+   reescrito NO LUGAR: quem importou guarda a referência. */
+export const HABILIDADES_ROUBAVEIS = [];
+
 // O pool só pode ser montado DEPOIS do catálogo existir (ele consulta o
 // próprio array), então a habilidade dona recebe as opções aqui.
-AFTY_HABILIDADES.find((h) => h.id === "res_roubo_de_habilidade").escolha.opcoes = HABILIDADES_ROUBAVEIS;
 
-const BY_ID = Object.fromEntries(AFTY_HABILIDADES.map((h) => [h.id, h]));
+let BY_ID = {};
+
+/* ============================================================ */
+/* ADDONS: as três estruturas derivadas, religadas de uma vez    */
+/* ============================================================ */
+/**
+ * O catálogo do raw, congelado, para o registro de Addons poder reconstruir o
+ * mundo SEMPRE do zero (ver `aplicarAddons` em `afty-addons.js`). Sem esta
+ * cópia, desinstalar um addon deixaria restos.
+ */
+const HABILIDADES_BASE = AFTY_HABILIDADES.slice();
+
+/**
+ * Reescreve o catálogo com o raw mais os acréscimos, e religa TUDO que este
+ * módulo deriva dele. São três coisas, e esquecer qualquer uma dá bug calado:
+ *
+ *   1. `AFTY_HABILIDADES`  o array. Reescrito NO LUGAR (`splice`), porque ele é
+ *      `export const` e quem já o importou guarda a referência: trocar o objeto
+ *      deixaria metade do app lendo o array velho.
+ *   2. `HABILIDADES_ROUBAVEIS`  o pool do Roubo de Habilidade, que é derivado do
+ *      catálogo. Uma habilidade de addon que seja Combatente ou Lutador de nível
+ *      entra no pool, que é o comportamento certo. Também no lugar.
+ *   3. `BY_ID`  o índice do `getHabilidade`.
+ *
+ * ⚠ A ORDEM IMPORTA: o pool tem de ser refeito antes de ser pendurado na
+ * habilidade dona, e o índice depois de tudo.
+ */
+function aplicarExtrasHabilidades(extras = []) {
+  AFTY_HABILIDADES.splice(0, AFTY_HABILIDADES.length, ...HABILIDADES_BASE, ...extras);
+
+  HABILIDADES_ROUBAVEIS.splice(0, HABILIDADES_ROUBAVEIS.length, ...montarRoubaveis());
+  const dona = AFTY_HABILIDADES.find((h) => h.id === "res_roubo_de_habilidade");
+  if (dona?.escolha) dona.escolha.opcoes = HABILIDADES_ROUBAVEIS;
+
+  BY_ID = Object.fromEntries(AFTY_HABILIDADES.map((h) => [h.id, h]));
+}
+
+aplicarExtrasHabilidades();
+
+registrarFamilia("habilidades", {
+  rotulo: "Habilidade de Especialização",
+  chave: "id",
+  obrigatorios: ["nome", "descricao", "especializacaoId", "tipo", "nivel"],
+  // Onde uma entrada cita OUTRO id. Referência que não achar irmão dentro do
+  // próprio pacote fica crua e vai procurar no raw, que é o caso comum.
+  caminhosDeId: ["requisitos[].id", "concedeEscolha.habilidade"],
+  aplicar: aplicarExtrasHabilidades,
+  validador: validarCatalogoHabilidades,
+  // Para a LINHA MORTA: como achar pelo id, e onde a ficha guarda os ids.
+  resolver: (id) => getHabilidade(id),
+  idsDaFicha: (c) => (Array.isArray(c?.habilidades) ? c.habilidades : []),
+});
 
 export const getHabilidade = (id) => BY_ID[id] || null;
 
@@ -6816,10 +6880,17 @@ export function resolveHabilidades(
   bt = 0,
   bonusVagas = 0,
   vagasTalento = 0,
-  { nd = 1, almaLivreEspecializacao = null } = {},
+  { nd = 1, almaLivreEspecializacao = null, concedidasSessao = [] } = {},
 ) {
   const niveisPorEspec = niveisPorEspecializacao(escolhidasEspec);
-  const concedidas = habilidadesConcedidasPelasEspecializacoes(escolhidasEspec);
+  // ⚠ A CONCESSÃO DA SESSÃO ENTRA PELO MESMO CANAL das Bases que a
+  // Especialização concede, e é de propósito: as duas são "vale para tudo e não
+  // gasta vaga", que é exatamente o que `concedidas` sempre significou. A da
+  // sessão vem do mestre no meio do combate (Addons 8.3) e some com a sessão.
+  const concedidas = [...new Set([
+    ...habilidadesConcedidasPelasEspecializacoes(escolhidasEspec),
+    ...(Array.isArray(concedidasSessao) ? concedidasSessao.filter((id) => BY_ID[id]) : []),
+  ])];
   const concedidasSet = new Set(concedidas);
   const vistos = new Set();
   const selecionadas = [];

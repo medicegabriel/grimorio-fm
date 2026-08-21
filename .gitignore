@@ -26,3 +26,7 @@ dist-ssr
 # Arquivos locais e de IA
 .claude/
 prompt.txt
+
+# Bancada de tema da Ficha (Playwright): screenshots e CSS em prova.
+# Fica de fora ate o autor decidir se ela vira ferramenta do projeto.
+tema-lab

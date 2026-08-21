@@ -1,10 +1,13 @@
 import React, { useCallback, useMemo, useState } from "react";
-import { Heart, Zap, Sparkles, Skull, EyeOff, Moon, Swords, Shield, BookOpen, Backpack, Wand2 } from "lucide-react";
+import { Heart, Zap, Sparkles, Skull, EyeOff, Moon, Swords, Shield, BookOpen, Backpack, Wand2, AlertTriangle } from "lucide-react";
 
 import { funcionamentosDaFicha } from "../afty-schema";
 import { NumeroComFontes } from "../ui/fontes";
 import { numeroBr } from "../ui/formato";
-import { aplicaDano, aplicaCura, descansar, registraRolagem } from "../ficha/ficha-sessao";
+import {
+  aplicaDano, aplicaCura, descansar, registraRolagem,
+  concedeNaSessao, removeConcessao,
+} from "../ficha/ficha-sessao";
 import { rolarTeste, rolarDano, textoDaRolagem } from "../ficha/ficha-rolagem";
 import { deltaDosEstados } from "../ficha/ficha-buffs";
 import { conteudoDaFicha, equipamentosDaFicha } from "../ficha/ficha-conteudo";
@@ -14,6 +17,7 @@ import AbaPericias from "../ficha/abas/AbaPericias";
 import AbaHabilidades from "../ficha/abas/AbaHabilidades";
 import AbaEquipamentos from "../ficha/abas/AbaEquipamentos";
 import AbaInvocacoes from "../ficha/abas/AbaInvocacoes";
+import PrimitivasDeAddon from "../ui/PrimitivasDeAddon";
 
 /**
  * ============================================================
@@ -226,6 +230,11 @@ export default function PainelDeCombatente({
   const ultima = sessao.log?.[0] ?? null;
 
   return (
+    /* ⚠ UM PROVEDOR POR COMBATENTE, e não um no topo do Encontro: o mundo dos
+       Addons é a UNIÃO de todas as fichas, mas o que cada criatura ENXERGA na
+       tela sai da ficha dela. Sem isto, um combatente com addon emprestaria o
+       card de concessão para o combatente raw ao lado. */
+    <PrimitivasDeAddon primitivas={derived.primitivas}>
     <div className="space-y-3">
       {/* ---------- cabeçalho do combatente ---------- */}
       <section className="afty-card p-3 space-y-3">
@@ -263,6 +272,28 @@ export default function PainelDeCombatente({
             <Moon className="w-3.5 h-3.5" /> Descansar
           </button>
         </div>
+
+        {/* ⚠ LINHA MORTA E MARCADA, a mesma da Ficha e do criador (decisão 4 do
+            autor). Faltava aqui, e sem ela o mestre abria um encontro com uma
+            criatura de addon órfão e via os números ERRADOS sem sintoma nenhum,
+            que é justamente o que a decisão existe para impedir. Vem ANTES dos
+            vitais porque é a única coisa do painel que pede ação, e some sozinha
+            quando não há nada. */}
+        {(derived.addonProblemas?.length ?? 0) > 0 && (
+          <div className="afty-card p-2 space-y-1">
+            {derived.addonProblemas.map((m) => (
+              <p
+                key={`${m.familia}:${m.id}`}
+                className="text-[11px] flex items-start gap-1"
+                style={{ color: "var(--afty-aviso)" }}
+                title={m.saida}
+              >
+                <AlertTriangle className="w-3 h-3 flex-shrink-0 mt-px" aria-hidden="true" />
+                <span>{m.motivo}</span>
+              </p>
+            ))}
+          </div>
+        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <Vital
@@ -388,8 +419,14 @@ export default function PainelDeCombatente({
           onPatchCombate={(parcial) => onSessao((s) => ({ ...s, combate: { ...s.combate, ...parcial } }))}
           onBuffs={(buffs) => onSessao((s) => ({ ...s, buffs }))}
           onCondicoes={(condicoes) => onSessao((s) => ({ ...s, condicoes }))}
+          /* Concessão do mestre (Addons 8.3). Os mesmos dois escritores da
+             Ficha Final, porque a aba é o MESMO componente: "nos dois lugares"
+             custou passar duas props. */
+          onConceder={(familia, id) => onSessao((s) => concedeNaSessao(s, familia, id))}
+          onRemoverConcessao={(uid) => onSessao((s) => removeConcessao(s, uid))}
         />
       )}
     </div>
+    </PrimitivasDeAddon>
   );
 }

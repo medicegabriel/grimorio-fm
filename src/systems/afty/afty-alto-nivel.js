@@ -39,6 +39,7 @@
  * o teto duro de 30 de `deriveAfty` quando esse canal existir.
  */
 
+import { registrarFamilia } from "./afty-addons";
 import {
   AFTY_ATTRS, AFTY_RESISTENCIAS, MELHORIA_NIVEL_INICIAL, LENDARIA_NIVEL_INICIAL,
 } from "./afty-schema";
@@ -506,9 +507,79 @@ export const HABILIDADES_LENDARIAS = [
 /* Índices e acesso                                              */
 /* ============================================================ */
 
-const MELHORIA_BY_ID = Object.fromEntries(MELHORIAS_SUPERIORES.map((m) => [m.id, m]));
-const LENDARIA_BY_ID = Object.fromEntries(HABILIDADES_LENDARIAS.map((l) => [l.id, l]));
-const APICE_BY_ID = Object.fromEntries(HABILIDADES_APICE.map((a) => [a.id, a]));
+/* ============================================================ */
+/* ADDONS: as TRÊS famílias do alto nível                        */
+/* ============================================================ */
+/* Décima, décima primeira e décima segunda (2026-08-20). São três e não uma
+   porque as regras de acesso são diferentes: Melhoria é REPETÍVEL e vem em
+   nível ímpar, Lendária vem em nível par, e Ápice é uma só, escolhida por uma
+   Lendária. Juntá-las numa família só faria o validador não ter o que cobrar.
+
+   ⚠ As três exigem a Habilidade Geral correspondente além do ND 21/22, e isso
+   vale para as de addon também: o gate é do sistema, e não da entrada. */
+
+let MELHORIA_BY_ID = {};
+let LENDARIA_BY_ID = {};
+let APICE_BY_ID = {};
+
+const MELHORIAS_BASE = MELHORIAS_SUPERIORES.slice();
+const LENDARIAS_BASE = HABILIDADES_LENDARIAS.slice();
+const APICES_BASE = HABILIDADES_APICE.slice();
+
+function aplicarExtrasMelhorias(extras = []) {
+  MELHORIAS_SUPERIORES.splice(0, MELHORIAS_SUPERIORES.length, ...MELHORIAS_BASE, ...extras);
+  MELHORIA_BY_ID = Object.fromEntries(MELHORIAS_SUPERIORES.map((m) => [m.id, m]));
+}
+function aplicarExtrasLendarias(extras = []) {
+  HABILIDADES_LENDARIAS.splice(0, HABILIDADES_LENDARIAS.length, ...LENDARIAS_BASE, ...extras);
+  LENDARIA_BY_ID = Object.fromEntries(HABILIDADES_LENDARIAS.map((l) => [l.id, l]));
+}
+function aplicarExtrasApices(extras = []) {
+  HABILIDADES_APICE.splice(0, HABILIDADES_APICE.length, ...APICES_BASE, ...extras);
+  APICE_BY_ID = Object.fromEntries(HABILIDADES_APICE.map((a) => [a.id, a]));
+}
+
+aplicarExtrasMelhorias();
+aplicarExtrasLendarias();
+aplicarExtrasApices();
+
+registrarFamilia("melhoriasSuperiores", {
+  rotulo: "Melhoria Superior",
+  chave: "id",
+  // `maxVezes` é obrigatório porque a Melhoria é REPETÍVEL: sem ele o validador
+  // do raw reprova, e cobrar aqui dá a mensagem antes de instalar. Uma que não
+  // repete declara `maxVezes: 1`.
+  obrigatorios: ["nome", "descricao", "maxVezes"],
+  aplicar: aplicarExtrasMelhorias,
+  resolver: (id) => getMelhoriaSuperior(id),
+  // Lista COM repetição: cada entrada é uma pega.
+  idsDaFicha: (c) => (Array.isArray(c?.melhoriasSuperiores)
+    ? c.melhoriasSuperiores.map((m) => (typeof m === "string" ? m : m?.id)).filter(Boolean)
+    : []),
+});
+
+registrarFamilia("lendarias", {
+  rotulo: "Habilidade Lendária",
+  chave: "id",
+  obrigatorios: ["nome", "descricao"],
+  aplicar: aplicarExtrasLendarias,
+  resolver: (id) => getHabilidadeLendaria(id),
+  idsDaFicha: (c) => (Array.isArray(c?.habilidadesLendarias) ? c.habilidadesLendarias : []),
+});
+
+registrarFamilia("apices", {
+  rotulo: "Habilidade Ápice",
+  chave: "id",
+  obrigatorios: ["nome", "descricao"],
+  aplicar: aplicarExtrasApices,
+  resolver: (id) => getHabilidadeApice(id),
+  /* O Ápice não é uma lista da ficha: ele é a OPÇÃO escolhida dentro da
+     Lendária "Atingir o Ápice". Ver `resolveAltoNivel`. */
+  idsDaFicha: (c) => {
+    const escolhido = c?.escolhasAltoNivel?.len_atingir_apice?.[0];
+    return escolhido ? [escolhido] : [];
+  },
+});
 
 export const getMelhoriaSuperior = (id) => MELHORIA_BY_ID[id] || null;
 export const getHabilidadeLendaria = (id) => LENDARIA_BY_ID[id] || null;
@@ -657,11 +728,21 @@ export function resolveAltoNivel(creature, ctx = {}) {
     if (atual >= m.maxVezes) continue;       // apara no teto do texto do livro
     vezesPorId.set(id, atual + 1);
   }
+  // Concessão vinda da sessão (Addons 8.3): não gasta vaga e NÃO apara no
+  // `maxVezes`, porque o teto é do orçamento de compra e conceder não é
+  // comprar. Ver `afty-concessao.js`.
+  const melConcedidas = new Map();
+  for (const id of Array.isArray(ctx.concedidos?.melhoriasSuperiores) ? ctx.concedidos.melhoriasSuperiores : []) {
+    if (!MELHORIA_BY_ID[id]) continue;
+    vezesPorId.set(id, (vezesPorId.get(id) ?? 0) + 1);
+    melConcedidas.set(id, (melConcedidas.get(id) ?? 0) + 1);
+  }
   // Ordem do catálogo, não a de escolha: a UI lista o catálogo inteiro.
   const melhoriasEscolhidas = MELHORIAS_SUPERIORES
     .filter((m) => vezesPorId.has(m.id))
     .map((m) => ({ id: m.id, vezes: vezesPorId.get(m.id) }));
-  const melGastos = melhoriasEscolhidas.reduce((s, m) => s + m.vezes, 0);
+  const melConcedidasTotal = [...melConcedidas].reduce((s, [, n]) => s + n, 0);
+  const melGastos = melhoriasEscolhidas.reduce((s, m) => s + m.vezes, 0) - melConcedidasTotal;
   // vagasND = o que o ND sozinho concede. Separado do total para a UI saber
   // distinguir "o ND ainda não abriu nada" de "falta a Habilidade Geral".
   const melVagasND = totalMelhoriasSuperiores(nd);
@@ -675,6 +756,15 @@ export function resolveAltoNivel(creature, ctx = {}) {
     vistos.add(id);
     lendariasEscolhidas.push(id);
   }
+  // Concessão vinda da sessão, mesma regra das Melhorias acima.
+  const lenConcedidas = [];
+  for (const id of Array.isArray(ctx.concedidos?.lendarias) ? ctx.concedidos.lendarias : []) {
+    if (!LENDARIA_BY_ID[id] || vistos.has(id)) continue;
+    vistos.add(id);
+    lenConcedidas.push(id);
+    lendariasEscolhidas.push(id);
+  }
+  const lenGastos = lendariasEscolhidas.length - lenConcedidas.length;
   const lenVagasND = totalHabilidadesLendarias(nd);
   const lenTotal = destravado.lendarias ? lenVagasND : 0;
 
@@ -714,16 +804,18 @@ export function resolveAltoNivel(creature, ctx = {}) {
       excedeu: melGastos > melTotal,
       destravado: destravado.melhorias,
       vagasND: melVagasND,
+      concedidas: Object.fromEntries(melConcedidas),
     },
     lendarias: {
       escolhidas: lendariasEscolhidas,   // [id]
       total: lenTotal,
-      gastos: lendariasEscolhidas.length,
-      restante: lenTotal - lendariasEscolhidas.length,
-      excedeu: lendariasEscolhidas.length > lenTotal,
+      gastos: lenGastos,
+      restante: lenTotal - lenGastos,
+      excedeu: lenGastos > lenTotal,
       inacessiveis,
       destravado: destravado.lendarias,
       vagasND: lenVagasND,
+      concedidas: lenConcedidas,
     },
     escolhas,                            // { porItem, mapa }
     apiceId,

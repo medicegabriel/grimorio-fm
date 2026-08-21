@@ -7,6 +7,8 @@ import {
 } from "lucide-react";
 
 import { FieldLabel, TextInput, TextArea, Select, NumberInput, StatField, ExpandableText } from "../../components/builder-controls";
+import TabAddons from "./AftyTabAddons";
+import { aplicarAddons } from "./afty-addons";
 import {
   mesclaFichaAfty, AFTY_ATTRS, AFTY_TIPOS, AFTY_PATAMARES, AFTY_QNT_PE,
   AFTY_TECNICA_ATTRS, AFTY_TAMANHOS, AFTY_RESISTENCIAS, getTamanho,
@@ -96,7 +98,7 @@ import {
   ENCANTAMENTOS_POR_TIPO, getEncantamento,
   avaliarRequisitoEncantamento,
 } from "./afty-equipamentos";
-import { evalNumber as evalNumberDsl, validateExpression } from "../../components/fm-dsl";
+import { evalNumber as evalNumberDsl, validateExpression } from "./afty-dsl";
 import { deriveAfty } from "./afty-derive";
 import {
   createBlankFeitico, calcularFeiticoDano, ALCANCE_POR_NIVEL, AREA_POR_NIVEL, taxasTroca,
@@ -113,6 +115,8 @@ import {
 } from "./afty-feiticos";
 import { createBlankEstiloEspecial, estilosDaFicha, TECNICAS_TABELA, TEXTO_EFEITO_ESPECIAL } from "./afty-estilo-sombras";
 import { vocabularioDsl, vocabularioInvocacao, DSL_FUNCOES } from "./afty-dsl-vocabulario";
+import PrimitivasDeAddon from "./ui/PrimitivasDeAddon";
+import { usePrimitiva } from "./ui/usar-primitiva";
 import {
   MARCADORES, TITULOS, alternarMarcador, alternarTitulo, inserirTabela,
 } from "./afty-texto-rico";
@@ -143,6 +147,7 @@ const TABS = [
   { id: "invocacoes",    label: "Invocações" },
   { id: "equipamentos",  label: "Equipamentos" },
   { id: "interludios",   label: "Interlúdios" },
+  { id: "addons",        label: "Addons" },
   { id: "calculos",      label: "Cálculos", afty: true },
 ];
 
@@ -219,7 +224,19 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
     onDescartar: () => setDraft(base),
   });
 
-  const derived = useMemo(() => deriveAfty(draft), [draft]);
+  /* ⚠ OS ADDONS ENTRAM ANTES DA DERIVAÇÃO, e no MESMO memo.
+     `aplicarAddons` reescreve os catálogos (ver afty-addons.js), e o
+     `deriveAfty` lê catálogo. Num `useEffect` isto rodaria DEPOIS do render, e
+     a primeira derivação sairia com o catálogo velho.
+
+     Dependência `draft` inteiro, e não `draft.addons`: o `draft` muda a cada
+     edição, então o par sempre roda junto e na ordem. É a armadilha da época
+     nomeada na seção 3 do docs/afty-addons.md, resolvida aqui pela ordem em vez
+     do contador (que existe para quem memoriza catálogo FORA deste par). */
+  const derived = useMemo(() => {
+    aplicarAddons(draft.addons ?? []);
+    return deriveAfty(draft);
+  }, [draft]);
   const isEditing = !!existingCreature?.id;
 
   // O Restringido não tem energia amaldiçoada (autor, 2026-07-29): sem Nível de
@@ -233,6 +250,8 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
   // ---------- patches imutáveis ----------
   const patch = (partial) => setDraft((d) => ({ ...d, ...partial }));
   const patchCore = (partial) => setDraft((d) => ({ ...d, core: { ...d.core, ...partial } }));
+  // Os addons desta criatura, como CÓPIA congelada. Ver AftyTabAddons.jsx.
+  const setAddons = (lista) => setDraft((d) => ({ ...d, addons: lista }));
   const patchAttr = (key, val) =>
     setDraft((d) => ({ ...d, attributes: { ...d.attributes, [key]: val } }));
   const patchNivel = (key, val) =>
@@ -823,6 +842,10 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
   };
 
   return (
+    /* As primitivas de Addon que ESTA criatura enxerga. Elas descem por contexto
+       porque os dois consumidores (`CanalPicker` e `VariavelPicker`) são folhas
+       fundas deste arquivo. Ver `ui/usar-primitiva.js`. */
+    <PrimitivasDeAddon primitivas={derived.primitivas}>
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-purple-950/30 text-white">
       {/* ===== HEADER ===== */}
       <header className="sticky top-0 z-30 bg-slate-950/95 backdrop-blur border-b border-purple-900/50">
@@ -917,11 +940,13 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
           {tabAtiva === "invocacoes" && <TabInvocacoes draft={draft} derived={derived} addInvocacao={addInvocacao} removeInvocacao={removeInvocacao} duplicarInvocacao={duplicarInvocacao} moverInvocacao={moverInvocacao} patchInvocacao={patchInvocacao} patchInvocacaoAttr={patchInvocacaoAttr} efeitosApi={efeitosApi} addHorda={addHorda} removeHorda={removeHorda} patchHorda={patchHorda} />}
           {tabAtiva === "equipamentos" && <TabEquipamentos draft={draft} derived={derived} addEquipamento={addEquipamento} removeEquipamento={removeEquipamento} patchEquipamento={patchEquipamento} toggleFerramenta={toggleFerramenta} patchFerramenta={patchFerramenta} toggleEncantamento={toggleEncantamento} addArmaCustom={addArmaCustom} patchArmaCustom={patchArmaCustom} removeArmaCustom={removeArmaCustom} />}
           {tabAtiva === "interludios" && <TabInterludios draft={draft} derived={derived} setTreinoProgresso={setTreinoProgresso} setTreinoInstance={setTreinoInstance} setTreinoEspecialVezes={setTreinoEspecialVezes} />}
+          {tabAtiva === "addons" && <TabAddons draft={draft} derived={derived} setAddons={setAddons} />}
           {tabAtiva === "calculos" && <TabCalculos derived={derived} setStatOverride={setStatOverride} patchCombate={patchCombate} />}
           {STUBS[tabAtiva] && <StubCard title={TABS.find((t) => t.id === tabAtiva)?.label} text={STUBS[tabAtiva]} />}
         </div>
       </div>
     </div>
+    </PrimitivasDeAddon>
   );
 }
 
@@ -2359,15 +2384,25 @@ function CanalPicker({ value, onChange }) {
   const [cursor, setCursor] = useState(0);
   const atual = EFEITO_CANAL_GRUPOS.flatMap((g) => g.itens).find((c) => c.id === value);
 
+  /* ⚠ O `hpAtributo` NASCEU PARA UM CASO DE ADDON (trocar o atributo do cálculo
+     de PV), e quem não usa addon não tem por que vê-lo entre os 61 canais. Ele
+     continua existindo no motor: o que some é a linha do seletor.
+
+     ⚠ MAS SE A EXPRESSÃO JÁ USA O CANAL, ele aparece. Esconder o canal ESCOLHIDO
+     deixaria o campo mostrando vazio com um efeito ativo por trás, que é pior
+     que mostrar uma linha a mais. */
+  const veHpAtributo = usePrimitiva("hpAtributo") || value === "hpAtributo";
+
   const termo = semAcento(busca.trim());
   const grupos = EFEITO_CANAL_GRUPOS
     .map((g) => ({
       label: g.label,
       itens: g.itens.filter((c) =>
-        !termo
+        (veHpAtributo || c.id !== "hpAtributo")
+        && (!termo
         || semAcento(c.label).includes(termo)
         || semAcento(g.label).includes(termo)
-        || semAcento(c.nota).includes(termo)),
+        || semAcento(c.nota).includes(termo))),
     }))
     .filter((g) => g.itens.length);
   const chapada = grupos.flatMap((g) => g.itens);
@@ -2482,6 +2517,12 @@ function CanalPicker({ value, onChange }) {
    3. clicar INSERE no ponto do cursor, em vez de trocar um valor. É o que mata
       o adivinhar: o nome nunca precisa ser digitado. */
 function VariavelPicker({ grupos, onInserir, ancora = "esquerda" }) {
+  /* ⚠ O `contar()` anda junto do grupo MARCAS, e não separado: quem monta o
+     vocabulário já decidiu se esta criatura enxerga a primitiva, e amarrar a
+     função à presença do grupo faz as duas aparecerem ou sumirem juntas, sem
+     um segundo lugar para a regra envelhecer. */
+  const temMarcas = grupos.some((g) => g.id === "marcas");
+  const funcoes = temMarcas ? DSL_FUNCOES : DSL_FUNCOES.filter((f) => !f.nome.startsWith("contar"));
   const [aberto, setAberto] = useState(false);
   const [busca, setBusca] = useState("");
   const [cursor, setCursor] = useState(0);
@@ -2609,7 +2650,7 @@ function VariavelPicker({ grupos, onInserir, ancora = "esquerda" }) {
                 <div className="text-[9px] font-bold uppercase tracking-wider text-slate-500 px-1 pb-0.5 border-b border-slate-800/80 mb-0.5">
                   Funções
                 </div>
-                {DSL_FUNCOES.map((f) => (
+                {funcoes.map((f) => (
                   <button
                     key={f.nome}
                     type="button"
@@ -2691,7 +2732,9 @@ const Conector = ({ children }) => (
 function useDslGrupos(derived) {
   const ctx = derived?.contextoDsl;
   const extras = derived?.combate?.estadosExtras;
-  return useMemo(() => vocabularioDsl(ctx, extras), [ctx, extras]);
+  // O grupo Marcas é de Addon. Ver `ui/usar-primitiva.js`.
+  const contar = usePrimitiva("contar");
+  return useMemo(() => vocabularioDsl(ctx, extras, { contar }), [ctx, extras, contar]);
 }
 
 const ALVO_OPCOES_BASE = {
@@ -8666,9 +8709,11 @@ function MotorEfeitosEditor({
   // do feiticeiro. O seletor precisa mostrar exatamente os valores que a
   // expressão vai receber para servir de guia de verdade.
   const contextoItem = efeitos.find((e) => e?.contextoDsl)?.contextoDsl;
+  // O grupo Marcas é de Addon, igual ao `useDslGrupos`.
+  const contar = usePrimitiva("contar");
   const dslGrupos = useMemo(
-    () => vocabularioDsl({ ...(dslContexto ?? {}), ...(contextoItem ?? {}) }, dslExtras),
-    [dslContexto, dslExtras, contextoItem],
+    () => vocabularioDsl({ ...(dslContexto ?? {}), ...(contextoItem ?? {}) }, dslExtras, { contar }),
+    [dslContexto, dslExtras, contextoItem, contar],
   );
   const bruto = () => efeitos.map((e) => ({
     canal: e.canal, ...(e.alvo ? { alvo: e.alvo } : {}), expr: e.expr,
@@ -8936,6 +8981,11 @@ function LinhaCarregada({
   const ataqueFisico = def?.categoria === "distancia" || def?.categoria === "arremesso"
     ? "distancia"
     : "corpo";
+  // ⚠ Pugilato (Faixas, Manoplas, Soco Inglês) NÃO escolhe jogada de ataque:
+  // essas três não têm linha própria, elas são o Ataque Básico, e o básico
+  // rola sempre o Corpo a Corpo. O seletor aparecia e gravava o campo sem
+  // mudar número nenhum, que é pior do que não ter seletor.
+  const escolheAtaque = tipo === "arma" && def?.grupo !== "pugilato";
   const ataqueOpcoes = ataqueFisico === "distancia"
     ? [{ value: "distancia", label: "A Distância" }, { value: "amaldicoado", label: "Amaldiçoado" }]
     : [{ value: "corpo", label: "Corpo a Corpo" }, { value: "amaldicoado", label: "Amaldiçoado" }];
@@ -9068,7 +9118,7 @@ function LinhaCarregada({
         )}
       </div>
 
-      {tipo === "arma" && (
+      {escolheAtaque && (
         <div className="flex items-center gap-2 border-t border-slate-800/70 px-2.5 py-1.5">
           <span className="text-[10px] uppercase tracking-wider text-slate-500 flex-shrink-0">Ataque</span>
           <OptionChips

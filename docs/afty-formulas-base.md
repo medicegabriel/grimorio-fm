@@ -192,6 +192,29 @@ Expansão de Domínio ativa usa multiplicador 2, portanto dobra o resultado fina
 +SE(Treinamentos!I17;3;0)   // Luta 2ª
 ```
 
+### Grau da criatura (Grau do Feiticeiro)
+
+Não está na planilha: sai do ND por faixa. Nove degraus desde 2026-08-19 (antes eram 5).
+
+| ND | Grau | ordem | rank |
+|---|---|---|---|
+| 1 a 4 | Quarto Grau | 1 | 1 |
+| 5 a 8 | Terceiro Grau | 2 | 2 |
+| 9 a 12 | Segundo Grau | 3 | 3 |
+| 13 a 16 | Primeiro Grau | 4 | 4 |
+| 17 a 20 | Semi-Grau Especial | 5 | 5 |
+| 21 a 25 | Baixo Grau Especial | 6 | 5 |
+| 26 a 30 | Alto Grau Especial | 7 | 5 |
+| 31 a 35 | Calamidade | 8 | 5 |
+| 36+ | Divino | 9 | 5 |
+
+> ⚠ O **`rank` para no 5** (autor, 2026-08-19). Ele é o número que as fórmulas leem (orçamento de
+> Perícias e TR, e a variável `grau` do DSL), e os quatro graus acima do Semi-Grau Especial são nome
+> e faixa de ND, e não número novo. Para comparar dois graus, use `ordem`.
+>
+> O **Grau de Equipamento** da Ferramenta Amaldiçoada é outra escada, com 5 degraus e sem faixa de
+> ND: ver `AFTY_GRAUS` em `afty-equipamentos.js`.
+
 ### Total.Aptidão (nº de níveis de Aptidão)
 ```
 =SE(ND>=2;1;0)+SE(ND>=4;1;0)+SE(ND>=6;1;0)+SE(ND>=8;1;0)+SE(ND>=10;2;0)

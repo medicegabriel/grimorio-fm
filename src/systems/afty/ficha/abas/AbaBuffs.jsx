@@ -6,6 +6,8 @@ import { CONDICOES_CATALOGO } from "../../afty-feiticos";
 import { getCanal } from "../../afty-efeitos";
 import { sinalDe } from "../../ui/formato";
 import CanalPicker from "../CanalPicker";
+import PainelDeConcessao from "../PainelDeConcessao";
+import { usePrimitiva } from "../../ui/usar-primitiva";
 import { estadoUsadoNestaRodada } from "../ficha-sessao";
 
 /**
@@ -204,9 +206,19 @@ function NovoBuff({ onCriar }) {
 
 export default function AbaBuffs({
   derived, sessao, onPatchCombate, onEstado, onBuffs, onCondicoes, deltaPorEstado,
+  onConceder, onRemoverConcessao,
 }) {
   const combate = derived.combate ?? {};
   const [novaCondicao, setNovaCondicao] = useState("");
+
+  /* ⚠ A CONCESSÃO É RECURSO DE ADDON, e não do raw (autor, 2026-08-20, vendo o
+     card aparecer na tela de quem não usa addon nenhum). Só enxerga quem
+     instalou um pacote com `permite: ["concessao"]`.
+
+     O `|| já tem alguma coisa` não é folga: sem ele, desinstalar o addon
+     deixaria a linha morta presa na sessão sem botão de tirar. */
+  const concedido = derived.concedido ?? [];
+  const mostraConcessao = usePrimitiva("concessao") || concedido.length > 0;
 
   /* Os estados que ESTA criatura alcança. Mesma filtragem da bancada do
      criador: quem não pegou a habilidade não vê a linha.
@@ -302,6 +314,19 @@ export default function AbaBuffs({
 
   return (
     <div className="space-y-3">
+      {/* ---------- concedido pelo mestre (Addons 8.3) ----------
+          Primeiro da aba quando aparece, e de propósito: é o único bloco daqui
+          em que a criatura na mesa passa a ser diferente da criatura no papel.
+
+          Some inteiro para quem só usa o raw. Ver `mostraConcessao`. */}
+      {mostraConcessao && (
+        <PainelDeConcessao
+          concedido={concedido}
+          onConceder={onConceder}
+          onRemover={onRemoverConcessao}
+        />
+      )}
+
       {/* ---------- catalogados ---------- */}
       {linhas.length > 0 && (
         <Secao

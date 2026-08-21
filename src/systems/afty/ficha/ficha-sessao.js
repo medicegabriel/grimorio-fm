@@ -24,6 +24,8 @@
  * ============================================================
  */
 
+import { normalizaConcedido, comConcessao, semConcessao } from "../afty-concessao";
+
 const CHAVE_BASE = "fm_ficha_sessao_afty_v1";
 const LOG_MAX = 50;
 
@@ -50,6 +52,10 @@ export function sessaoEmBranco(derived = null) {
     combate: {},
     condicoes: [],
     buffs: [],
+    // O que o mestre CONCEDEU nesta sessão (Addons 8.3). Estado de sessão e
+    // nunca ficha, por decisão do autor (2026-08-20): vale para tudo, não gasta
+    // vaga nenhuma e morre junto com a sessão. Ver `afty-concessao.js`.
+    concedido: [],
     usos: {},
     ultimoFeiticoDanoId: null,
     rituais: {},
@@ -86,6 +92,10 @@ export function normalizaSessao(bruta, derived = null) {
     ritualAtual: normalizaRitualAtual(bruta.ritualAtual),
     condicoes: lista(bruta.condicoes),
     buffs: lista(bruta.buffs),
+    // ⚠ Passa pelo normalizador PRÓPRIO, e não pelo `lista` genérico: ele é
+    // quem descarta família desconhecida e devolve o uid a quem perdeu o dele.
+    // Id órfão SOBREVIVE de propósito, e vira linha morta na tela.
+    concedido: normalizaConcedido(bruta.concedido),
     favoritos: lista(bruta.favoritos),
     log: lista(bruta.log).slice(0, LOG_MAX),
   };
@@ -139,6 +149,27 @@ export function aparaSessao(sessao, derived) {
     return sessao;
   }
   return { ...sessao, hpAtual, peAtual, almaAtual };
+}
+
+/* ============================================================ */
+/* CONCESSÃO DO MESTRE (Addons 8.3)                              */
+/* ============================================================ */
+/* O mestre dá alguma coisa à criatura no meio da luta, e ela passa a valer na
+   hora, já calculada. As duas funções são escritoras como as outras daqui:
+   recebem a sessão, devolvem outra, e nunca tocam na ficha. */
+
+/** Concede uma entrada de catálogo. Devolve sessão nova. */
+export function concedeNaSessao(sessao, familia, id, alvo = null) {
+  const concedido = comConcessao(sessao.concedido, familia, id, alvo);
+  if (concedido.length === (sessao.concedido?.length ?? 0)) return sessao;
+  return { ...sessao, concedido };
+}
+
+/** Tira UMA pega concedida, pelo uid. */
+export function removeConcessao(sessao, uid) {
+  const concedido = semConcessao(sessao.concedido, uid);
+  if (concedido.length === (sessao.concedido?.length ?? 0)) return sessao;
+  return { ...sessao, concedido };
 }
 
 /**

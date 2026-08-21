@@ -33,6 +33,7 @@
  * mandar o texto do livro. O texto vem VERBATIM, sem parafrasear.
  */
 
+import { registrarFamilia } from "./afty-addons";
 import { getOrigem, origensQualificadas } from "./afty-origens";
 import { AFTY_TIPOS } from "./afty-schema";
 
@@ -91,7 +92,42 @@ export const AFTY_ESPECIALIZACOES = [
   },
 ];
 
-const BY_ID = Object.fromEntries(AFTY_ESPECIALIZACOES.map((e) => [e.id, e]));
+/* ============================================================ */
+/* ADDONS                                                        */
+/* ============================================================ */
+/* Quarta família ligada (2026-08-20), e uma das que o autor nomeou de saída:
+   *"os Addons podem ser usados para criar Novas Especializações"*. O índice é a
+   única estrutura derivada, porque os filtros de origem rodam na chamada.
+
+   ⚠ A Especialização é a família de forma mais SIMPLES do sistema (5 campos),
+   e ao mesmo tempo a de consequência mais larga: quem cria uma precisa criar as
+   Habilidades dela também, senão nasce uma classe vazia. O validador não cobra
+   isso, e nem deveria: classe sem habilidade é ficha incompleta, não é erro. */
+
+let BY_ID = {};
+
+const ESPECIALIZACOES_BASE = AFTY_ESPECIALIZACOES.slice();
+
+function aplicarExtrasEspecializacoes(extras = []) {
+  AFTY_ESPECIALIZACOES.splice(0, AFTY_ESPECIALIZACOES.length, ...ESPECIALIZACOES_BASE, ...extras);
+  BY_ID = Object.fromEntries(AFTY_ESPECIALIZACOES.map((e) => [e.id, e]));
+}
+
+aplicarExtrasEspecializacoes();
+
+registrarFamilia("especializacoes", {
+  rotulo: "Especialização",
+  chave: "id",
+  obrigatorios: ["nome"],
+  aplicar: aplicarExtrasEspecializacoes,
+  validador: validarCatalogoEspecializacoes,
+  resolver: (id) => getEspecializacao(id),
+  // A ficha guarda `[{ id, nivel }]`, e não uma lista de ids crus.
+  idsDaFicha: (c) => (Array.isArray(c?.especializacoes)
+    ? c.especializacoes.map((e) => e?.id).filter(Boolean)
+    : []),
+});
+
 
 export const getEspecializacao = (id) => BY_ID[id] || null;
 
