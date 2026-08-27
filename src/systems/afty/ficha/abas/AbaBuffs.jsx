@@ -465,7 +465,11 @@ export default function AbaBuffs({
             <Plus className="w-3.5 h-3.5" />
           </button>
         </div>
-        {condicoes.length > 0 && (
+        {/* ⚠ O aviso some para quem tem Guarda Inabalável, e some porque
+            PASSOU A SER MENTIRA em 2026-08-26: oito condições derrubam a Guarda
+            do Calamidade e do Beyond, e derrubar a Guarda muda a Defesa e os
+            cinco TRs. Para todo o resto ele continua valendo. */}
+        {condicoes.length > 0 && !derived.guarda?.ativa && (
           <div className="afty-chip mt-1" data-afty-tom="aviso">
             <AlertTriangle className="w-3 h-3 flex-shrink-0" aria-hidden="true" />
             Condição não muda número, resolve na mesa

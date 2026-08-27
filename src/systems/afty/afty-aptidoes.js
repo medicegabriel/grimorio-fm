@@ -53,7 +53,7 @@
  * ============================================================
  */
 
-import { registrarFamilia } from "./afty-addons";
+import { registrarFamilia, remendarLista } from "./afty-addons";
 import { getOrigem } from "./afty-origens";
 // Só o VALIDADOR usa. afty-efeitos-conteudo.js não importa nada, então a seta
 // para lá é segura (afty-efeitos.js, esse sim, importaria de volta e faria ciclo).
@@ -1515,8 +1515,8 @@ let BY_ID = {};
 
 const APTIDOES_BASE = AFTY_APTIDOES.slice();
 
-function aplicarExtrasAptidoes(extras = []) {
-  AFTY_APTIDOES.splice(0, AFTY_APTIDOES.length, ...APTIDOES_BASE, ...extras);
+function aplicarExtrasAptidoes(extras = [], remendos = null) {
+  AFTY_APTIDOES.splice(0, AFTY_APTIDOES.length, ...remendarLista(APTIDOES_BASE, remendos), ...extras);
   BY_ID = Object.fromEntries(AFTY_APTIDOES.map((a) => [a.id, a]));
 }
 
@@ -1528,6 +1528,7 @@ registrarFamilia("aptidoes", {
   obrigatorios: ["nome", "descricao", "trilha", "categoria"],
   caminhosDeId: ["requisitos[].id"],
   aplicar: aplicarExtrasAptidoes,
+  basicos: () => APTIDOES_BASE,
   validador: validarCatalogoAptidoes,
   resolver: (id) => getAptidao(id),
   /* ⚠ O Restringido não tem Aptidão nenhuma, mas isto aqui olha a FICHA CRUA e

@@ -11,7 +11,6 @@
  *   • Alma (Integridade da Alma, 0–100+) multiplica o HP.
  *
  * ADIADO (marcado TODO, conforme o autor):
- *   • GUARDA (depende do contador de ataques consecutivos, CU9).
  *   • Perícias → Atenção usa Percepção = 0 por ora.
  *   • Grau de Equipamento (Ferramentas Amaldiçoadas) ainda não existe. O que
  *     entra hoje é o equipamento base: Defesa do uniforme, RD Física do
@@ -53,7 +52,8 @@ import {
   dominioEmUso,
   listaDominios, resolveVersao as resolveVersaoDominio,
   duracaoDominio, areaDominio, custoDominio, pvBarreira, maxEfeitos, vagasUsadas,
-  textoDoDominio,
+  textoDoDominio, pvDaParede, pvCortina, rdDaParede, maxParedes, conflitoDeDominio,
+  PAREDES_BASE, PAREDES_NA_CORTINA,
 } from "./afty-dominios";
 import { resolveEspecializacoes, AFTY_ESPECIALIZACOES, treinamentosDasEspecializacoes } from "./afty-especializacoes";
 import {
@@ -79,7 +79,9 @@ import { nivelMaxFeitico, resumoDeUmFeitico, resumoFeiticos, overridesShikigami 
 import { resolveEstilos, efeitosDoEstilo } from "./afty-estilo-sombras";
 import { resolveTestes, resolveDano, catalogoPericiasDaFicha } from "./afty-pericias";
 import { resolveCura } from "./afty-cura";
-import { problemasDeAddon, marcasDeclaradas, primitivasDaCriatura } from "./afty-addons";
+import {
+  problemasDeAddon, marcasDeclaradas, primitivasDaCriatura, liberacoesDaCriatura,
+} from "./afty-addons";
 import { agrupaConcedido, concessoesDaSessao } from "./afty-concessao";
 import {
   buildCriaturaDslContext, marcasDeEntradas,
@@ -87,7 +89,7 @@ import {
   coletarEfeitosAptidao,
   aplicarEfeitos, resolverExclusivos, valorCanal, furaTetoEm, efeitosDaTecnica, efeitosDosPassivos,
   efeitosDaSessao, EFEITO_CANAIS,
-  ehAtributoPermanente, ehAtributoTemporario, ehEstagio2, ehPreContexto, efeitoUsaDadosDanoFinal,
+  ehAtributoPermanente, ehAtributoTemporario, ehEstagio2, ehPreContexto, ehPosAptidao, efeitoUsaDadosDanoFinal,
   mesclarEfeitos, detalhesDoCanal, normalizarAlvoEfeito,
 } from "./afty-efeitos";
 import { resolveGerais, contadorHabilidades, GERAL_BY_ID } from "./afty-gerais";
@@ -171,6 +173,10 @@ export function deriveAfty(creature, opcoes = {}) {
      sessão acaba (decisões do autor, 2026-08-20). Cada família recebe a parte
      dela pelo CANAL DE CONCESSÃO do resolvedor. Ver `afty-concessao.js`. */
   const concedido = agrupaConcedido(opcoes.concedido);
+  /* O que os Addons DESTA criatura destravam. Leitura direta da ficha, sem
+     passar pelo Motor: é pergunta estrutural ("esta criatura pode ter Estilo?")
+     e precisa estar respondida antes de quase tudo. Ver `LIBERACOES`. */
+  const liberacoes = liberacoesDaCriatura(creature);
   const a = creature?.attributes ?? {};
   const ov = creature?.statOverrides ?? {};
   const vocabularioDsl = {
@@ -378,8 +384,10 @@ export function deriveAfty(creature, opcoes = {}) {
   // Nenhuma das cinco fontes do pool exclusivo alimenta o montante (elas dão
   // stat, não orçamento), mas a resolução entra aqui do mesmo jeito: sem ela um
   // exclusivo que aparecesse por engano sairia da soma e nunca voltaria.
-  const efMontante = resolverExclusivos(aplicarEfeitos(
-    [
+  /* A lista do montante fica NOMEADA porque ela é lida duas vezes: aqui, no
+     estágio 0, e no estágio 0c lá embaixo, que precisa dos mesmos efeitos com o
+     Nível de Aptidão já no contexto. Ver `CANAIS_POS_APTIDAO`. */
+  const efeitosMontante = [
       ...efeitosDeTreino(creature),
       // Treino Especial entra ao lado da Linha de Treinamento porque é a mesma
       // família (Interlúdio) e emite a mesma classe de coisa: VAGA de orçamento,
@@ -387,9 +395,8 @@ export function deriveAfty(creature, opcoes = {}) {
       ...efeitosDeTreinoEspecial(creature, concedido.treinosEspeciais),
       ...coletarEfeitosOrigem(creature, escolhasOrigem),
       ...coletarEfeitosMontante(creature, gerais, GERAL_BY_ID),
-    ],
-    ctxMontante,
-  ));
+  ];
+  const efMontante = resolverExclusivos(aplicarEfeitos(efeitosMontante, ctxMontante));
   // Os canais que precisam ser lidos ANTES do contexto principal: dois
   // alimentam resolveNiveisAptidao (nível de aptidão é variável do DSL) e um
   // alimenta o orçamento de Habilidades de Especialização. O resto (hp, pe,
@@ -433,7 +440,8 @@ export function deriveAfty(creature, opcoes = {}) {
   // Mais de uma quando o Gêmeo copia uma origem em Verdadeiras Origens.
   const origensQuali = origensQualificadas(creature);
   const talentosPre = resolveTalentos(creature, {
-    nd, attrEff: attrBase, origemId, origensQualificadas: origensQuali, especializacoes: especializacoes.escolhidas,
+    nd, maestria: bt, attrEff: attrBase, origemId, origensQualificadas: origensQuali,
+    especializacoes: especializacoes.escolhidas, aptidoes: aptidoesIds,
     concedidos: concedido.talentos,
   });
   const treinamentosEquipamento = treinamentosDasEspecializacoes(especializacoes.escolhidas);
@@ -681,6 +689,21 @@ export function deriveAfty(creature, opcoes = {}) {
       trilhasOrigem,
     );
 
+  // ---------- Estágio 0c: os canais que leem o Nível de Aptidão ----------
+  // Um passe só, e ele existe por um encaixe: `imbuicoesEstilo` precisa da
+  // variável `dom`, que o pré-contexto ainda não tem, e precisa estar pronto
+  // antes do `resolveEstilos` logo abaixo, que o estágio 2 não alcança.
+  // Ver `CANAIS_POS_APTIDAO` em afty-efeitos.js.
+  const ctxComAptidao = { ...ctxMontante, ...(aptidao.efetivo ?? {}) };
+  /* ⚠ AS DUAS LISTAS. A fonte mais óbvia deste canal é uma Linha de
+     Treinamento, e as Linhas entram pelo MONTANTE, não pelo `efeitosTodos`.
+     Filtrar só o segundo deixava o Completo do Treino de Novo Estilo das
+     Sombras sem efeito nenhum, calado. */
+  const efPosAptidao = resolverExclusivos(aplicarEfeitos(
+    [...efeitosMontante, ...efeitosTodos].filter(ehPosAptidao),
+    ctxComAptidao,
+  ));
+
   // ---------- SIMULAÇÃO DE COMBATE ----------
   // Bancada de balanceamento (autor, 2026-07-28). Vira variável de DSL, e as
   // habilidades com `quando` ligam e desligam sozinhas. Os tetos dependem da
@@ -711,7 +734,18 @@ export function deriveAfty(creature, opcoes = {}) {
   // ⚠ Os efeitos saem daqui com a quantidade imbuída como VARIÁVEL do DSL, e por
   // isso não dependem do `resolveCombate` lá embaixo: a linha é estática e o
   // valor só é lido quando as expressões rodam, com o contexto já montado.
-  const estiloCtx = { origemId: core?.origem?.id ?? null, nd, dom: aptidao.efetivo?.dom ?? 0 };
+  const estiloCtx = {
+    origemId: core?.origem?.id ?? null,
+    nd,
+    dom: aptidao.efetivo?.dom ?? 0,
+    // Addon com `libera: ["estiloSombras"]` solta a trava de ORIGEM. O piso de
+    // Nível 4 continua valendo (autor, 2026-08-21).
+    liberado: liberacoes.includes("estiloSombras"),
+    // Vagas de imbuição ALÉM do Nível de Aptidão em Domínio. Sai do
+    // pré-contexto porque a régua é lida aqui, antes do contexto principal
+    // existir. Ver `CANAIS_PRE_CONTEXTO` em afty-efeitos.js.
+    imbuicoesExtras: valorCanal(efPosAptidao, "imbuicoesEstilo"),
+  };
   const estilo = resolveEstilos(creature, estiloCtx);
   const efeitosEstilo = efeitosDoEstilo(creature, estiloCtx);
   const efeitosComDominio = (efeitosDominio.length || efeitosEstilo.length)
@@ -724,6 +758,14 @@ export function deriveAfty(creature, opcoes = {}) {
     const domNivel = aptidao.efetivo?.dom ?? 0;
     const barNivel = aptidao.efetivo?.bar ?? 0;
     const paredesResistentes = aptidoesIds.includes("paredes_resistentes");
+    /* ⚠ OS SEIS SAEM DO PASSE PÓS-APTIDÃO, e não do `canal()` do estágio
+       principal, que só nasce umas 300 linhas abaixo daqui. É o mesmo passe do
+       `imbuicoesEstilo`, e pelo mesmo motivo: eles dependem de `dom` e `bar` e
+       precisam estar prontos antes deste resumo. Ver CANAIS_POS_APTIDAO. */
+    const canalDominio = (id) => valorCanal(efPosAptidao, id);
+    const bonusArea = canalDominio("areaDominio");
+    const bonusPvParede = canalDominio("pvParede");
+    const bonusEfeitos = canalDominio("efeitosDominio");
     const lista = listaDominios(creature).map((d) => {
       const versao = resolveVersaoDominio(d, aptidoesIds);
       const comAG = !!d.acertoGarantido?.ativo;
@@ -732,20 +774,75 @@ export function deriveAfty(creature, opcoes = {}) {
         versao,
         custo: custoDominio(versao, comAG),
         duracao: duracaoDominio(domNivel, versao),
-        area: areaDominio(versao, bt),
-        pvBarreira: pvBarreira(barNivel, nd, paredesResistentes),
+        area: areaDominio(versao, bt, false, bonusArea),
+        pvBarreira: pvBarreira(barNivel, nd, paredesResistentes, bonusPvParede),
         vagasUsadas: vagasUsadas(d.efeitos),
-        texto: textoDoDominio(d, { dom: domNivel, nd, bt, bar: barNivel, versao, paredesResistentes }),
+        texto: textoDoDominio(d, {
+          dom: domNivel, nd, bt, bar: barNivel, versao, paredesResistentes,
+          bonusArea, bonusPvParede,
+        }),
       };
     });
+    /* A BARREIRA da aptidão Técnicas de Barreira, que é irmã do domo e nunca teve
+       tela: PV e RD de CADA parede, e quantas cabem. O domo continua valendo
+       `PAREDES_NO_DOMO × pvDaParede`, então melhorar a parede melhora os dois. */
+    const pvUnidade = pvDaParede(barNivel, nd, paredesResistentes, bonusPvParede);
+    const partesPvParede = [
+      { label: paredesResistentes ? "Base (Paredes Resistentes)" : "Base", valor: 5 + (paredesResistentes ? 5 : 0) },
+      { label: paredesResistentes
+        ? "Nível de Aptidão em Barreira × ND"
+        : "Nível de Aptidão em Barreira × metade do ND",
+        valor: paredesResistentes ? barNivel * nd : barNivel * Math.floor(nd / 2) },
+      ...detalhesDoCanal(efPosAptidao, "pvParede").map((x) => ({ label: x.nome, valor: x.valor })),
+    ];
+    const barreira = {
+      pvParede: pvUnidade,
+      rdParede: rdDaParede(canalDominio("rdParede")),
+      maxParedes: maxParedes(canalDominio("maxParedes")),
+      /* ⚠ A CORTINA vale 3 paredes (autor, 2026-08-26). Ela é aptidão própria e
+         não tinha número nenhum: o texto dela diz o custo e a área, e nunca a
+         vida. Só aparece para quem tem a aptidão. */
+      pvCortina: pvCortina(barNivel, nd, paredesResistentes, bonusPvParede),
+      temCortina: aptidoesIds.includes("cortina"),
+      /* ⚠ A aptidão é o que faz a Barreira EXISTIR. Sem ela os números acima
+         valem, mas não há o que erguer, e a tela não mostra o card. */
+      tem: aptidoesIds.includes("tecnicas_de_barreira"),
+      partesPvParede,
+      /* A Cortina é três paredes, então o hover dela é o da parede com a
+         multiplicação no fim, e não uma conta paralela. */
+      partesPvCortina: [
+        ...partesPvParede,
+        { label: `× ${PAREDES_NA_CORTINA} paredes`, texto: `× ${PAREDES_NA_CORTINA}` },
+      ],
+      partesRdParede: detalhesDoCanal(efPosAptidao, "rdParede").map((x) => ({ label: x.nome, valor: x.valor })),
+      partesMaxParedes: [
+        { label: "Técnicas de Barreira", valor: PAREDES_BASE },
+        ...detalhesDoCanal(efPosAptidao, "maxParedes").map((x) => ({ label: x.nome, valor: x.valor })),
+      ],
+    };
+    /* O CONFLITO DE DOMÍNIO (autor, 2026-08-26). Ele é da CRIATURA e não de cada
+       expansão, então mora no resumo: quem confronta é o feiticeiro, e o número
+       existe desde que ele tenha Nível de Aptidão em Domínio. */
+    const conflitoBase = conflitoDeDominio({
+      dom: domNivel, nd, bonus: canalDominio("conflitoDominio"),
+    });
+    const conflito = {
+      ...conflitoBase,
+      partes: [
+        ...conflitoBase.partes,
+        ...detalhesDoCanal(efPosAptidao, "conflitoDominio").map((x) => ({ label: x.nome, valor: x.valor })),
+      ],
+    };
     return {
       domNivel,
       barNivel,
       paredesResistentes,
       temAcertoGarantido: aptidoesIds.includes("acerto_garantido"),
-      maxEfeitos: maxEfeitos(domNivel),
+      maxEfeitos: maxEfeitos(domNivel, bonusEfeitos),
       ativoId: dominioEmUso(creature, aptidoesIds)?.id ?? null,
       beneficiosRitualAtivos: beneficiosRitualDominio,
+      barreira,
+      conflito,
       lista,
     };
   })();
@@ -901,7 +998,8 @@ export function deriveAfty(creature, opcoes = {}) {
 
   // Talentos de novo, agora com o atributo permanente: só o `inacessiveis` muda.
   const talentos = resolveTalentos(creature, {
-    nd, attrEff: attrPermanente, origemId, origensQualificadas: origensQuali, especializacoes: especializacoes.escolhidas,
+    nd, maestria: bt, attrEff: attrPermanente, origemId, origensQualificadas: origensQuali,
+    especializacoes: especializacoes.escolhidas, aptidoes: aptidoesIds,
     concedidos: concedido.talentos,
   });
 
@@ -1004,9 +1102,88 @@ export function deriveAfty(creature, opcoes = {}) {
       origem: "tamanho", nome: tamanho.label,
     });
   }
-  const ef = efeitosTamanho.length
+  const efSemGuarda = efeitosTamanho.length
     ? mesclarEfeitos(efSemTamanho, aplicarEfeitos(efeitosTamanho, montarCtx(attrEff, modByAttr)))
     : efSemTamanho;
+
+  /* ---------- GUARDA INABALÁVEL (Calamidade e Beyond) ----------
+     ⚠ QUARTA LISTA de efeitos, pelo mesmo motivo das três de cima (Domínio,
+     Estilo e Tamanho): o bônus da Guarda SOMA na Defesa e nos cinco TRs, e ele
+     mesmo sai de dois canais (`guardaBonus` e `guardaVida`) que só fecham com o
+     estágio 2 pronto. Ler os canais e depois mesclar o resultado quebra o laço.
+
+     Entra como EFEITO, e não como número somado à mão na fórmula da Defesa, por
+     três motivos que valem os cinco TRs de uma vez:
+       • o hover de fontes mostra "Guarda Inabalável +5" com dono, em vez de um
+         +5 órfão no meio da conta;
+       • o TR ROLADO na aba de Perícias já sai certo, porque `resolveTestes`
+         recebe este mesmo `ef`;
+       • um `bonusTR` sem `alvo` vale para os cinco (ver `valorCanalEscopos`),
+         então "aumento em TRs" não vira lista de cinco escrita à mão.
+
+     ⚠ O CORRENTE vem da SESSÃO, pelo `opcoes.guarda`, e não da ficha: quantos
+     golpes já foram desgastados, se um Raio Negro a encerrou e quanta Vida
+     Temporária resta são estado de mesa. Sem sessão (o criador, o Preview) a
+     Guarda aparece com o TETO e sem bônus aplicado, que é a criatura em
+     repouso: fora de combate não há guarda erguida. */
+  const guardaBonusBase = patamar === "calamidade" ? 5 : patamar === "beyond" ? 10 : 0;
+  const guardaVidaBase = patamar === "calamidade" ? 5 * nd : patamar === "beyond" ? 10 * nd : 0;
+  const guardaBonusMax = Math.max(0, guardaBonusBase + valorCanal(efSemGuarda, "guardaBonus"));
+  const guardaVidaMax = Math.max(0, guardaVidaBase + valorCanal(efSemGuarda, "guardaVida"));
+  const guarda = (() => {
+    const ses = opcoes.guarda ?? {};
+    const inteiroNaoNeg = (v) => Math.max(0, Math.trunc(Number(v)) || 0);
+    const golpes = inteiroNaoNeg(ses.golpes);
+    const vida = inteiroNaoNeg(ses.vida);
+    const PASSO = 2;   // "reduzido em 2 a cada ataque ou habilidade que ele sofra"
+    if (guardaBonusBase <= 0) {
+      return {
+        ativa: false, noAr: false, bonus: 0, bonusMax: 0,
+        vida: 0, vidaMax: 0, golpes: 0, passoPorGolpe: PASSO, motivo: null,
+      };
+    }
+    /* ⚠ O BÔNUS ZERADO PELOS GOLPES TAMBÉM QUEBRA (autor, 2026-08-26, segunda
+       passada), e quebrar leva o PV Temporário junto. Antes eu havia tratado o
+       desgaste como coisa separada da quebra, e é a mesma: moer o bônus até zero
+       é o caminho normal de derrubar a Guarda, e é o que faz a característica
+       "exigir trabalho em equipe". Dá 3 golpes no Calamidade e 5 no Beyond.
+
+       A ordem dos motivos é a de quem chegou primeiro no caso comum, e ela põe
+       os golpes ANTES da Vida de propósito: quando são eles que quebram, a Vida
+       é destruída junto, e nomear "Vida Temporária" ali contaria a consequência
+       em vez da causa.
+
+       Sem sessão nenhuma a Vida é zero e a Guarda sai fora do ar, que é o certo:
+       ela é erguida no início da rodada, e não na ficha. */
+    const moido = PASSO * golpes >= guardaBonusMax;
+    const motivo = ses.condicao ? String(ses.condicao)
+      : ses.encerrada ? "Raio Negro"
+      : moido ? "Bônus Zerado"
+      : vida <= 0 ? "Vida Temporária" : null;
+    return {
+      ativa: true,
+      noAr: motivo == null,
+      /* A escada da planilha, indexada pelo contador de golpes: 5, 3, 1, 0 no
+         Calamidade e 10, 8, 6, 4, 2, 0 no Beyond. ⚠ Os números NÃO mudaram com a
+         regra nova: o degrau em que a escada chega a zero é justamente o degrau
+         em que a Guarda quebra, então o `max(0, ...)` e a quebra dão o mesmo. */
+      bonus: motivo == null ? Math.max(0, guardaBonusMax - PASSO * golpes) : 0,
+      bonusMax: guardaBonusMax,
+      vida, vidaMax: guardaVidaMax,
+      golpes, passoPorGolpe: PASSO, motivo,
+    };
+  })();
+  const efeitosGuarda = guarda.bonus > 0
+    ? [
+      { canal: "defesa", expr: String(guarda.bonus), origem: "guarda", nome: "Guarda Inabalável" },
+      // Sem `alvo`: `valorCanalEscopos` soma o `porCanal` em todo escopo, então
+      // um efeito só cobre Reflexos, Fortitude, Vontade, Astúcia e Integridade.
+      { canal: "bonusTR", expr: String(guarda.bonus), origem: "guarda", nome: "Guarda Inabalável" },
+    ]
+    : [];
+  const ef = efeitosGuarda.length
+    ? mesclarEfeitos(efSemGuarda, aplicarEfeitos(efeitosGuarda, montarCtx(attrEff, modByAttr)))
+    : efSemGuarda;
   const canal = (id, alvo = null) => valorCanal(ef, id, alvo);
 
   // Funcionamento Básico da técnica, RESOLVIDO linha a linha, só para o editor
@@ -1164,6 +1341,7 @@ export function deriveAfty(creature, opcoes = {}) {
     patamar === "calamidade" ? resThresh :
     patamar === "beyond" ? 1 + resThresh : 0;
 
+
   // ---------- Movimento (+ Treino de Agilidade, - sobrecarga) ----------
   const movimentoBase = 9 + maxForDex * 1.5 + carga.movimento + canal("movimento");
   const movimentoMult = Math.max(1, canal("movimentoMult") || 1);
@@ -1219,6 +1397,13 @@ export function deriveAfty(creature, opcoes = {}) {
   // Técnica, que não tem Feitiço), mas somar é mais honesto que escolher uma:
   // quem trocou de origem vê o excesso em vez de o excesso sumir calado.
   const criacoesGastas = feiticosGastos + estilo.gastos;
+  // Vaga EXCLUSIVA de Técnica de Estilo (autor, 2026-08-22). Mais estreita que
+  // a de Feitiço, então ela é gasta PRIMEIRO: quem tem as duas usaria a de
+  // Estilo numa Técnica de Estilo de qualquer jeito, e deixar a mais larga para
+  // o final é o que faz o Feitiço ainda caber nela.
+  const vagasEstilo = canal("vagasEstilo");
+  const estilosNoExclusivo = Math.min(estilo.gastos, vagasEstilo);
+  const criacoesForaDoEstilo = criacoesGastas - estilosNoExclusivo;
   // ⚠ O contador comum pode ser MULTIPLICADO pela origem. Só os Gêmeos têm
   // isso hoje: metade com o irmão vivo, uma vez e meia depois da morte dele.
   // Arredonda para baixo, como todo o resto do Afty.
@@ -1241,9 +1426,9 @@ export function deriveAfty(creature, opcoes = {}) {
   // Gerais". Hoje só a Lendária Dominância em Técnica concede. Os Feitiços
   // gastam PRIMEIRO as exclusivas, e só o que sobrar cai no contador comum.
   const vagasFeitico = canal("vagasFeitico");
-  const feiticosNoExclusivo = Math.min(criacoesGastas, vagasFeitico);
-  const gastosNoComum = (criacoesGastas - feiticosNoExclusivo) + gerais.gastos;
-  const contadorTotal = contadorComum + vagasFeitico;
+  const feiticosNoExclusivo = Math.min(criacoesForaDoEstilo, vagasFeitico);
+  const gastosNoComum = (criacoesForaDoEstilo - feiticosNoExclusivo) + gerais.gastos;
+  const contadorTotal = contadorComum + vagasFeitico + vagasEstilo;
   const contadorGastos = criacoesGastas + gerais.gastos;
   const orcamentoHabilidades = {
     total: contadorTotal,
@@ -1251,6 +1436,8 @@ export function deriveAfty(creature, opcoes = {}) {
     partesComum: partesContador,
     exclusivasFeitico: vagasFeitico,
     exclusivasUsadas: feiticosNoExclusivo,
+    exclusivasEstilo: vagasEstilo,
+    exclusivasEstiloUsadas: estilosNoExclusivo,
     feiticos: feiticosGastos,
     // Separado do `feiticos` de propósito: os dois gastam o mesmo caixa, mas o
     // card que mostra cada número é outro.
@@ -1489,6 +1676,39 @@ export function deriveAfty(creature, opcoes = {}) {
   // Continuar).
   const pvTemporario = canal("pvTemporario");
 
+  // ---------- PE Temporário ----------
+  /* Irmão do de cima, e ele faltava desde julho. ⚠ A forma é DIFERENTE: o PV
+     temporário é um número só, e este sai POR FONTE, porque a regra da mesma
+     fonte é "topa, não acumula". Sem o nome da fonte, o Completo do Treino de
+     Controle de Energia ("no começo de toda rodada você ganha metade do BT")
+     viraria uma pilha infinita na rodada 10.
+
+     O ALVO é o GATILHO: `combate` entrega uma vez quando a cena começa, e
+     `rodada` reenche no começo de cada rodada. Quem aplica é a sessão da Ficha
+     (`aplicaPeTemporario` em ficha-sessao.js), não o derivado: aqui só se diz o
+     que a criatura TEM direito de receber.
+
+     Copiado em desenho do `applyRoundStartResources` da 2.5.2
+     (src/components/fm-automation-entities.js), que resolveu isto primeiro. */
+  const peTemporario = (() => {
+    /* ⚠ A CHAVE leva o gatilho junto, e o nome sozinho NÃO serve. O Treino de
+       Controle de Energia emite nos dois gatilhos (4 na cena pela 2ª etapa,
+       metade do BT por rodada pelo Completo) e o `efeitosDeTreino` carimba o
+       nome da LINHA nos dois. Com o nome como chave, os dois viravam a mesma
+       fonte e a regra do "topa, não acumula" comia um deles: a rodada 1 dava 4
+       em vez de 7. São dois benefícios diferentes da mesma linha. */
+    const porGatilho = (gatilho) => detalhesDoCanal(ef, "peTemporario", gatilho)
+      .map((d) => ({
+        chave: `${gatilho}:${d.nome}`,
+        nome: d.nome,
+        valor: Math.max(0, Math.trunc(d.valor) || 0),
+      }))
+      .filter((d) => d.valor > 0);
+    const combate = porGatilho("combate");
+    const rodada = porGatilho("rodada");
+    return { combate, rodada, tem: combate.length > 0 || rodada.length > 0 };
+  })();
+
   // ---------- Recursos de especialização ----------
   // Pontos de Preparo (Combatente). Zero para quem não tem a habilidade dona, e
   // o Preview esconde. A Estamina do Restringido NÃO mora aqui: é o próprio PE
@@ -1712,6 +1932,26 @@ export function deriveAfty(creature, opcoes = {}) {
     resParcial: [
       { label: `Patamar (${PATAMAR_LABEL[patamar] ?? patamar})`, valor: resParcial },
     ],
+    guardaBonus: [
+      { label: `Patamar (${PATAMAR_LABEL[patamar] ?? patamar})`, valor: guardaBonusBase },
+      ...doMotor("guardaBonus"),
+    ],
+    guardaVida: [
+      // A conta escrita como o autor a deu: 5 × ND ou 10 × ND. Uma linha só,
+      // porque o multiplicador sem o ND ao lado não se lê.
+      { label: `Patamar (${PATAMAR_LABEL[patamar] ?? patamar}), ${patamar === "beyond" ? 10 : 5} × ND`, valor: guardaVidaBase },
+      ...doMotor("guardaVida"),
+    ],
+    /* O bônus CORRENTE, que é o que a Defesa e os TRs recebem agora. A primeira
+       linha é o teto da rodada e a segunda é o desgaste, escrita como perda para
+       o hover fechar a conta: sem ela o leitor soma 5 e vê 1 na tela. */
+    guardaAtual: [
+      { label: "Teto da Rodada", valor: guarda.bonusMax },
+      ...(guarda.golpes > 0 && guarda.noAr
+        ? [{ label: `Golpes Sofridos (${guarda.golpes})`, valor: guarda.bonus - guarda.bonusMax }]
+        : []),
+      ...(guarda.motivo ? [{ label: guarda.motivo, valor: -guarda.bonusMax }] : []),
+    ],
   };
 
   // ---------- FONTES DE CADA ATRIBUTO E DE CADA LIMITE ----------
@@ -1766,6 +2006,9 @@ export function deriveAfty(creature, opcoes = {}) {
        pacotes dela. Vazio é o caso normal, e é o que mantém a tela de quem só
        usa o raw exatamente como era. Ver `PRIMITIVAS` em afty-addons.js. */
     primitivas: primitivasDaCriatura(creature),
+    /* O que os Addons desta criatura DESTRAVAM. Vazio é o caso normal. Ao
+       contrário das `primitivas`, isto MUDA REGRA. Ver `LIBERACOES`. */
+    liberacoes,
     // metadados / valores não sobrescrevíveis
     calc,                 // valores calculados (antes do override)
     isOverridden,
@@ -1813,6 +2056,7 @@ export function deriveAfty(creature, opcoes = {}) {
     empolgacao,           // Lutador: { ativa, aprimorada, inicial, max, tabela }
     combate,              // simulação: estado já aparado nos tetos da ficha
     pvTemporario,         // casca de PV vinda da simulação (Fluxo, Brutalidade Aprimorada)
+    peTemporario,         // casca de PE POR FONTE: { combate:[], rodada:[], tem } — a sessão aplica
     regeneracao,          // cura no início do turno: { dados, dado, fixo }
     pontosPreparo,        // recurso do Combatente (Artes do Combate), 0 sem ela
     recursoLabel,         // "Estamina" no Restringido, "Energia" no resto — mesmo PE
@@ -1863,6 +2107,9 @@ export function deriveAfty(creature, opcoes = {}) {
     carga,                 // { espacosUsados, cargaLimite, cargaMaxima, sobrecarregado... }
     rdFisico,              // RD Física. O escudo NÃO entra mais aqui (é RD Geral).
     penalidadeDestreza: equip.penalidadeDestreza, // uniforme + escudos, cumulativos
-    guarda: null,         // TODO: depende do contador de ataques consecutivos
+    /* Guarda Inabalável: { ativa, bonusMax, vidaMax, passoPorGolpe }. O corrente
+       (quantos golpes já levou, se ainda está de pé) é SESSÃO, e quem resolve é
+       o `resolveGuarda` em ficha-sessao.js. */
+    guarda,
   };
 }

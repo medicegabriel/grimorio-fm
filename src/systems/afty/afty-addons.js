@@ -23,10 +23,12 @@
  * ------------------------------------------------------------
  * O QUE ESTA FASE FAZ, E O QUE ELA NÃO FAZ
  * ------------------------------------------------------------
- * FAZ: **acrescentar** entradas a catálogos que já existem.
- * NÃO FAZ: remendar nem desligar entrada do raw (fase 3), trocar tabela
- * (fase 4), rodar código (fase 5). O autor PEDIU remendo e desligamento, e
- * aprovou adiá-los em 2026-08-20: eles estão adiados, não recusados.
+ * FAZ: **acrescentar** entradas a catálogos que já existem, e **remendar** uma
+ * entrada do livro trocando campos dela (`substitui`, ver `remendarLista`).
+ * NÃO FAZ: desligar entrada do raw, trocar tabela (fase 4), rodar código
+ * (fase 5). O autor pediu as duas metades da fase 3 em 2026-08-20 e aprovou
+ * adiá-las; o REMENDO entrou em 2026-08-22, quando ele mandou um Addon que
+ * reescreve Domínio Simples e dois Talentos de Origem. Desligar continua fora.
  *
  * Acrescentar é a metade segura, e por um motivo estrutural: como todo id nasce
  * com o namespace do pacote, a UNIÃO dos addons de todas as criaturas
@@ -100,6 +102,14 @@ export function registrarFamilia(id, def) {
     // daquela família.
     resolver: def.resolver ?? null,
     idsDaFicha: def.idsDaFicha ?? null,
+    // A lista RAW da família, sem addon nenhum. Só o REMENDO usa: ele aponta
+    // para id do livro, e é aqui que se confere se aquele id existe mesmo. Não
+    // dá para perguntar ao `resolver`, que enxerga o mundo já com addons e
+    // deixaria um pacote remendar a entrada de outro sem querer.
+    basicos: def.basicos ?? null,
+    // Família cujo catálogo não é lista de entradas com campos (Tipo de Dano é
+    // um mapa, Condição é uma string). Nelas não existe "trocar um campo".
+    remendavel: def.remendavel !== false,
   });
 }
 
@@ -171,6 +181,50 @@ function prefixarEntrada(entrada, pacoteId, chave, caminhosDeId, idsLocais) {
     }
   }
   return out;
+}
+
+/* ============================================================ */
+/* REMENDO (fase 3, a metade que o autor pediu em 2026-08-22)    */
+/* ============================================================ */
+/**
+ * Um remendo TROCA CAMPOS de uma entrada que já existe no livro, sem criar
+ * entrada nova. É o que o `acrescenta` não sabe fazer: dois Talentos com o
+ * mesmo nome na lista não é remendo, é confusão.
+ *
+ * ⚠ A SUBSTITUIÇÃO É POR CAMPO E É RASA. `{ descricao }` troca a descrição e
+ * deixa `requisitos` como estavam; `{ requisitos: [...] }` troca a lista
+ * INTEIRA, e não mistura item a item. Mesclar fundo pareceria mais gentil e
+ * seria imprevisível: ninguém consegue adivinhar o que sai de duas listas
+ * casadas por índice, e apagar um requisito viraria impossível.
+ *
+ * ⚠ O ID É INTOCÁVEL. Ele é a âncora do remendo e a chave de tudo que já está
+ * gravado nas fichas. Trocar o id seria apagar a entrada e criar outra, que é
+ * exatamente o que o `acrescenta` faz e o remendo não.
+ *
+ * ⚠ O PREÇO, NOMEADO NO PLANO E NÃO RESOLVIDO POR ESTA FUNÇÃO: um remendo
+ * aponta para id do raw, e o dia em que o livro renomear aquele id o remendo
+ * de terceiro apodrece. O que existe contra isso é o portão de instalação
+ * (`validarPacote` confere o id contra a lista RAW da família, e recusa o
+ * pacote inteiro) e a revalidação a cada `aplicarAddons`. Não é manutenção
+ * zero, e o plano já dizia que não seria.
+ *
+ * `remendos` é um Map(id -> patch). Devolve lista NOVA, com as entradas não
+ * remendadas passando por referência.
+ */
+export function remendarLista(base, remendos, chave = "id") {
+  if (!remendos || remendos.size === 0) return base;
+  return base.map((entrada) => {
+    const patch = remendos.get(String(entrada?.[chave]));
+    if (!patch) return entrada;
+    return {
+      ...entrada,
+      ...patch.campos,
+      [chave]: entrada[chave],
+      // De quem veio o remendo, para a tela poder dizer que aquela linha não é
+      // mais a do livro. Lista porque dois pacotes podem tocar a mesma entrada.
+      remendadoPor: [...(entrada.remendadoPor ?? []), ...patch.por],
+    };
+  });
 }
 
 /* ============================================================ */
@@ -251,6 +305,69 @@ export const PRIMITIVAS = [
 
 const PRIMITIVA_IDS = new Set(PRIMITIVAS.map((p) => p.id));
 
+/* ============================================================ */
+/* LIBERAÇÕES                                                    */
+/* ============================================================ */
+/**
+ * O que ter o addon DESTRAVA para a criatura que o carrega.
+ *
+ * ⚠ NÃO CONFUNDIR COM `permite`, e a diferença é a razão de existirem dois
+ * campos em vez de um:
+ *
+ *   • `permite` é TELA. Ele decide quem ENXERGA uma primitiva que o motor já
+ *     tem, e por definição não muda número nenhum (há assert medindo isso).
+ *   • `libera` é REGRA. Ele muda o que a criatura PODE ter, e portanto muda
+ *     número.
+ *
+ * Misturar os dois faria o `permite` às vezes mexer na ficha e às vezes não, o
+ * que quebra a única coisa que ele promete.
+ *
+ * ⚠ A liberação é lida DIRETO DA CRIATURA, e não por canal do Motor. Isso é de
+ * propósito: ela é uma pergunta estrutural ("esta criatura pode ter Estilo?")
+ * que precisa ser respondida antes de quase tudo, e um canal só ficaria pronto
+ * no meio da derivação. Ver `liberacoesDaCriatura`.
+ */
+export const LIBERACOES = [
+  {
+    id: "estiloSombras",
+    rotulo: "Estilo das Sombras",
+    nota: "Destrava o Novo Estilo da Sombra fora do Sem Técnica, inclusive para quem tem Feitiços",
+  },
+  {
+    id: "gemeosSemTecnica",
+    rotulo: "Sem Técnica em Verdadeiras Origens",
+    nota: "O Gêmeo pode copiar Estudos Dedicados ou Empenho Implacável, que o texto proíbe",
+  },
+  {
+    id: "qualificaSemTecnica",
+    rotulo: "Qualifica Como Sem Técnica",
+    nota: "A criatura conta como Origem Sem Técnica para pré-requisito de Talento e de Linha de Treinamento",
+  },
+];
+
+const LIBERACAO_IDS = new Set(LIBERACOES.map((l) => l.id));
+
+/** Nenhuma liberação. Congelado, para virar valor padrão sem alocar. */
+export const SEM_LIBERACOES = Object.freeze([]);
+
+/**
+ * O que os addons DESTA criatura destravam.
+ *
+ * ⚠ Sai da criatura, e não do mundo aplicado, pela mesma razão do
+ * `primitivasDaCriatura`: num Encontro misto o mundo é a UNIÃO de todos, e um
+ * combatente sem o addon não pode herdar a regra de quem tem.
+ */
+export function liberacoesDaCriatura(creature) {
+  const lista = Array.isArray(creature?.addons) ? creature.addons : [];
+  const out = new Set();
+  for (const pacote of lista) {
+    for (const id of Array.isArray(pacote?.libera) ? pacote.libera : []) {
+      if (LIBERACAO_IDS.has(id)) out.add(id);
+    }
+  }
+  return out.size ? [...out] : SEM_LIBERACOES;
+}
+
 /** Nenhuma primitiva. Congelado, para virar valor padrão sem alocar. */
 export const SEM_PRIMITIVAS = Object.freeze([]);
 
@@ -275,6 +392,7 @@ export function primitivasDaCriatura(creature) {
 export function normalizarPacote(cru) {
   const p = cru && typeof cru === "object" ? cru : {};
   const acrescenta = p.acrescenta && typeof p.acrescenta === "object" ? p.acrescenta : {};
+  const substitui = p.substitui && typeof p.substitui === "object" ? p.substitui : {};
   const out = {
     id: String(p.id ?? "").trim().toLowerCase(),
     nome: String(p.nome ?? "").trim(),
@@ -287,10 +405,23 @@ export function normalizarPacote(cru) {
     permite: Array.isArray(p.permite)
       ? [...new Set(p.permite.filter((x) => typeof x === "string").map((x) => x.trim()))]
       : [],
+    /* O que ter este pacote DESTRAVA na criatura. Ao contrário do `permite`,
+       isto muda regra e portanto muda número. Ver `LIBERACOES`. */
+    libera: Array.isArray(p.libera)
+      ? [...new Set(p.libera.filter((x) => typeof x === "string").map((x) => x.trim()))]
+      : [],
     acrescenta: {},
+    /* O que este pacote REESCREVE de entradas que já existem no livro. Ver
+       `remendarLista`. */
+    substitui: {},
   };
   for (const [familia, lista] of Object.entries(acrescenta)) {
     out.acrescenta[familia] = Array.isArray(lista)
+      ? lista.filter((e) => e && typeof e === "object")
+      : [];
+  }
+  for (const [familia, lista] of Object.entries(substitui)) {
+    out.substitui[familia] = Array.isArray(lista)
       ? lista.filter((e) => e && typeof e === "object")
       : [];
   }
@@ -324,9 +455,29 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
       );
     }
   }
+  for (const id of p.libera) {
+    if (!LIBERACAO_IDS.has(id)) {
+      problemas.push(
+        `Liberação desconhecida em "libera": "${id}". Existem hoje: ${LIBERACOES.map((x) => x.id).join(", ")}.`,
+      );
+    }
+  }
 
   const familias = Object.keys(p.acrescenta);
-  if (familias.length === 0) problemas.push("O pacote não acrescenta nada.");
+  /* ⚠ ACRESCENTAR DEIXOU DE SER OBRIGATÓRIO em 2026-08-21. Um pacote que só
+     DESTRAVA (`libera`) ou só MOSTRA (`permite`) é legítimo e não traz conteúdo
+     nenhum: o caso que abriu isto é o addon que solta o Estilo das Sombras fora
+     do Sem Técnica, que não acrescenta uma linha de catálogo. O que continua
+     reprovado é o pacote que não faz NADA das três coisas. */
+  const familiasRemendadas = Object.keys(p.substitui).filter((f) => p.substitui[f].length);
+  if (
+    familias.length === 0
+    && familiasRemendadas.length === 0
+    && p.permite.length === 0
+    && p.libera.length === 0
+  ) {
+    problemas.push("O pacote não acrescenta, não substitui, não libera e não permite nada.");
+  }
 
   const vistos = new Set();
   for (const familia of familias) {
@@ -358,6 +509,48 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
       }
       if (e.tags !== undefined && !Array.isArray(e.tags)) {
         problemas.push(`${onde} ("${id}"): "tags" precisa ser uma lista.`);
+      }
+    }
+  }
+
+  /* O portão do REMENDO. Mais duro que o do acréscimo, e de propósito: um
+     acréscimo que ninguém referencia é inofensivo, e um remendo que erra o alvo
+     é uma regra que a pessoa acha que trocou e não trocou. */
+  const remendados = new Set();
+  for (const familia of Object.keys(p.substitui)) {
+    const def = FAMILIAS.get(familia);
+    if (!def) {
+      problemas.push(
+        `Família desconhecida em "substitui": "${familia}". Abertas hoje: ${familiasDeAddon().map((f) => f.id).join(", ") || "nenhuma"}.`,
+      );
+      continue;
+    }
+    if (!def.remendavel) {
+      problemas.push(`${def.rotulo} não aceita remendo: o catálogo dela não é feito de entradas com campos.`);
+      continue;
+    }
+    const idsRaw = def.basicos ? new Set(def.basicos().map((e) => String(e[def.chave]))) : null;
+    for (const [i, e] of p.substitui[familia].entries()) {
+      const onde = `Remendo de ${def.rotulo} #${i + 1}`;
+      const id = String(e[def.chave] ?? "").trim();
+      if (!id) { problemas.push(`${onde}: falta o campo "${def.chave}", que diz o que remendar.`); continue; }
+      const marca = `${familia}/${id}`;
+      if (remendados.has(marca)) problemas.push(`${onde}: "${id}" remendado duas vezes no mesmo pacote.`);
+      remendados.add(marca);
+      if (ehIdDeAddon(id)) {
+        problemas.push(`${onde}: "${id}" é id de addon. Um remendo aponta para entrada do livro.`);
+        continue;
+      }
+      if (idsRaw && !idsRaw.has(id)) {
+        problemas.push(`${onde}: o livro não tem ${def.rotulo.toLowerCase()} "${id}".`);
+        continue;
+      }
+      const campos = Object.keys(e).filter((k) => k !== def.chave);
+      if (campos.length === 0) problemas.push(`${onde} ("${id}"): o remendo não troca campo nenhum.`);
+      for (const campo of def.obrigatorios) {
+        if (campo in e && (e[campo] === undefined || e[campo] === null || e[campo] === "")) {
+          problemas.push(`${onde} ("${id}"): "${campo}" é obrigatório e o remendo o esvazia.`);
+        }
       }
     }
   }
@@ -442,8 +635,30 @@ export function aplicarAddons(pacotes = []) {
     }
   }
 
+  // Os REMENDOS, juntados na mesma passada. Um Map por família, chaveado pelo
+  // id do raw. Dois pacotes tocando a mesma entrada é permitido e a ORDEM
+  // decide: o último instalado escreve por cima, e os dois ficam anotados em
+  // `remendadoPor` para a tela poder mostrar quem venceu.
+  const remendosPorFamilia = new Map([...FAMILIAS.keys()].map((f) => [f, new Map()]));
+  for (const p of limpos) {
+    for (const [familia, lista] of Object.entries(p.substitui)) {
+      const def = FAMILIAS.get(familia);
+      if (!def || !lista.length) continue;
+      const mapa = remendosPorFamilia.get(familia);
+      for (const e of lista) {
+        const id = String(e[def.chave]);
+        const { [def.chave]: _ignora, ...campos } = clonar(e);
+        const antigo = mapa.get(id);
+        mapa.set(id, {
+          campos: { ...(antigo?.campos ?? {}), ...campos },
+          por: [...(antigo?.por ?? []), { id: p.id, nome: p.nome }],
+        });
+      }
+    }
+  }
+
   for (const [familia, extras] of porFamilia) {
-    FAMILIAS.get(familia).aplicar(extras);
+    FAMILIAS.get(familia).aplicar(extras, remendosPorFamilia.get(familia));
   }
 
   pacotesAtivos = limpos;
@@ -579,7 +794,7 @@ export function problemasDeAddon(creature) {
 export function marcasDeclaradas() {
   const out = new Map();
   for (const p of pacotesAtivos) {
-    for (const lista of Object.values(p.acrescenta)) {
+    for (const lista of [...Object.values(p.acrescenta), ...Object.values(p.substitui)]) {
       for (const e of lista) {
         for (const t of Array.isArray(e.tags) ? e.tags : []) {
           const k = normalizarMarca(t);

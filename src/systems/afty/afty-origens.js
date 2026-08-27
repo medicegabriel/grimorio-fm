@@ -29,7 +29,7 @@
  * ============================================================
  */
 
-import { registrarFamilia } from "./afty-addons";
+import { registrarFamilia, remendarLista, liberacoesDaCriatura } from "./afty-addons";
 import { AFTY_ATTRS, AFTY_RESISTENCIAS } from "./afty-schema";
 // Do módulo FOLHA, não de ./afty-pericias.js: os geradores de opção abaixo
 // rodam na INICIALIZAÇÃO deste arquivo, e afty-pericias.js puxa afty-efeitos.js,
@@ -978,7 +978,6 @@ const RESTRINGIDO_CARACTERISTICA_OBRIGATORIA = "fisico_abencoado";
  * Sem isso o id gerado teria de ser desmontado por string para achar a
  * caracteristica de volta, e id de cla e de origem tem `_` no meio.
  */
-let cacheVerdadeirasOrigens = null;
 
 function opcaoVerdadeiraOrigem(origem, c, cla = null) {
   return {
@@ -991,11 +990,33 @@ function opcaoVerdadeiraOrigem(origem, c, cla = null) {
   };
 }
 
-function opcoesVerdadeirasOrigens() {
-  if (cacheVerdadeirasOrigens) return cacheVerdadeirasOrigens;
+/**
+ * ⚠ O `liberado` vem do Addon com `libera: ["gemeosSemTecnica"]` (autor,
+ * 2026-08-21). Ele tira o **Sem Técnica** da lista de proibidas, e só ele: as
+ * outras três continuam fora.
+ *
+ * O resultado é exatamente as DUAS características que o autor nomeou, e não
+ * por coincidência: o Sem Técnica tem três, e a terceira é o Bônus em Atributo,
+ * que o filtro genérico logo abaixo já tira de toda origem. Sobram Estudos
+ * Dedicados e Empenho Implacável.
+ *
+ * ⚠ O GÊMEO CONTINUA ESCOLHENDO UMA (autor, no mesmo dia: *"é para escolher só
+ * uma, porém deixar as duas como opção"*). O `vagas: 1` da escolha não é
+ * tocado, e as duas entram lado a lado com as das outras origens.
+ *
+ * O cache é POR CHAVE, e não um só, porque a lista agora depende da criatura.
+ */
+const cacheVO = { sim: null, nao: null };
+
+function opcoesVerdadeirasOrigens(liberado = false) {
+  const chave = liberado ? "sim" : "nao";
+  if (cacheVO[chave]) return cacheVO[chave];
+  const proibidas = liberado
+    ? VERDADEIRAS_ORIGENS_PROIBIDAS.filter((id) => id !== "sem_tecnica")
+    : VERDADEIRAS_ORIGENS_PROIBIDAS;
   const out = [];
   for (const origem of AFTY_ORIGENS_CATALOG) {
-    if (VERDADEIRAS_ORIGENS_PROIBIDAS.includes(origem.id)) continue;
+    if (proibidas.includes(origem.id)) continue;
     for (const c of origem.caracteristicas || []) {
       if (c.id === "bonus_atributo") continue;
       if (origem.id === "restringido" && c.id !== RESTRINGIDO_CARACTERISTICA_OBRIGATORIA) continue;
@@ -1011,7 +1032,7 @@ function opcoesVerdadeirasOrigens() {
       }
     }
   }
-  cacheVerdadeirasOrigens = out;
+  cacheVO[chave] = out;
   return out;
 }
 
@@ -1021,7 +1042,14 @@ export function verdadeiraOrigemEscolhida(creature) {
   const guardadas = creature?.core?.origem?.escolhas?.verdadeiras_origens;
   const id = Array.isArray(guardadas) ? guardadas[0] : null;
   if (!id) return null;
-  const opcao = opcoesVerdadeirasOrigens().find((o) => o.id === id);
+  /* ⚠ A LIBERAÇÃO VALE AQUI TAMBÉM. Sem isto, um Gêmeo que copiou o Empenho
+     Implacável continuaria com ele depois de o Addon sair, e a origem passaria
+     a conceder Domínio Simples sem nada explicando de onde veio.
+
+     A escolha some da ficha em silêncio, sem marca de "sem acesso" (autor,
+     2026-08-21). É diferente do Estilo, que fica riscado, e é escolha dele. */
+  const liberado = liberacoesDaCriatura(creature).includes("gemeosSemTecnica");
+  const opcao = opcoesVerdadeirasOrigens(liberado).find((o) => o.id === id);
   if (!opcao) return null;
   const origem = getOrigem(opcao.origemId);
   const cla = opcao.claId ? getCla(opcao.claId) : null;
@@ -1060,10 +1088,31 @@ export function fatorSlotsHabilidade(creature) {
   return creature?.core?.origem?.irmaoMorto ? 1.5 : 0.5;
 }
 
+/**
+ * As origens que a criatura conta como suas para fim de PRÉ-REQUISITO.
+ *
+ * ⚠ SÓ ABRE, NUNCA TRANCA. A própria origem é a que tranca (a Origem
+ * Restringido vê só a Especialização Restringido); o que entra aqui a mais só
+ * destrava conteúdo exclusivo de outra origem, e é lido por
+ * `avaliarRequisitoTalento` (`tipo: "origem"`), por `treinoDisponivel` e por
+ * `especializacoesDisponiveis`.
+ *
+ * Três fontes hoje:
+ *   • a origem própria;
+ *   • a origem COPIADA em Verdadeiras Origens, porque o Gêmeo *"considera a
+ *     origem escolhida como sua para todos os fins de qualificação"*;
+ *   • o Addon com `libera: ["qualificaSemTecnica"]` (autor, 2026-08-22), que
+ *     abre o Sem Técnica a quem carrega o pacote. Ele acompanha o
+ *     `estiloSombras` mas é liberação SEPARADA: uma solta o Estilo, e esta
+ *     solta o Treino e os Talentos de Origem que pedem Sem Técnica.
+ */
 export function origensQualificadas(creature) {
   const propria = creature?.core?.origem?.id ?? null;
   const copiada = verdadeiraOrigemEscolhida(creature)?.origem?.id ?? null;
-  return [propria, copiada].filter((id, i, a) => id && a.indexOf(id) === i);
+  const porAddon = liberacoesDaCriatura(creature).includes("qualificaSemTecnica")
+    ? "sem_tecnica"
+    : null;
+  return [propria, copiada, porAddon].filter((id, i, a) => id && a.indexOf(id) === i);
 }
 
 // Opções para <Select> (value/label).
@@ -1089,11 +1138,18 @@ let BY_ID = {};
 
 const ORIGENS_BASE = AFTY_ORIGENS_CATALOG.slice();
 
-function aplicarExtrasOrigens(extras = []) {
-  AFTY_ORIGENS_CATALOG.splice(0, AFTY_ORIGENS_CATALOG.length, ...ORIGENS_BASE, ...extras);
+function aplicarExtrasOrigens(extras = [], remendos = null) {
+  AFTY_ORIGENS_CATALOG.splice(0, AFTY_ORIGENS_CATALOG.length, ...remendarLista(ORIGENS_BASE, remendos), ...extras);
   AFTY_ORIGENS.splice(0, AFTY_ORIGENS.length,
     ...AFTY_ORIGENS_CATALOG.map((o) => ({ value: o.id, label: o.nome })));
   BY_ID = Object.fromEntries(AFTY_ORIGENS_CATALOG.map((o) => [o.id, o]));
+  /* ⚠ O CACHE DE VERDADEIRAS ORIGENS MORRE AQUI (conserto de 2026-08-21). Ele é
+     montado a partir deste catálogo, e ficava preso ao conteúdo do primeiro
+     acesso: uma origem vinda de Addon nunca aparecia na lista do Gêmeo, calado.
+     O bug entrou junto com a família `origens` dos Addons e não tinha sintoma
+     porque ninguém tinha escrito uma origem de addon ainda. */
+  cacheVO.sim = null;
+  cacheVO.nao = null;
 }
 
 aplicarExtrasOrigens();
@@ -1103,6 +1159,7 @@ registrarFamilia("origens", {
   chave: "id",
   obrigatorios: ["nome"],
   aplicar: aplicarExtrasOrigens,
+  basicos: () => ORIGENS_BASE,
   validador: validarCatalogoOrigens,
   resolver: (id) => getOrigem(id),
   idsDaFicha: (c) => (c?.core?.origem?.id ? [c.core.origem.id] : []),
@@ -1159,8 +1216,29 @@ export function caracteristicasEfetivas(creature) {
       ...(cla.caracteristicas || []).filter((c) => valeParaEsta(c, creature)),
     ]
     : proprias;
-  return [...base, ...caracteristicaCopiada(creature)];
+  return [...base, ...caracteristicaCopiada(creature)].map(comOpcoesDaCriatura(creature));
 }
+
+/**
+ * Troca a lista de opções de Verdadeiras Origens pela desta criatura.
+ *
+ * ⚠ AQUI, e não em `escolhasDaOrigem`, e a razão é que são DOIS consumidores por
+ * caminhos diferentes: o `resolveEscolhasOrigem` passa por `escolhasDaOrigem`,
+ * mas o card do criador lê `c.escolha.opcoes` DIRETO do que esta função devolve.
+ * Filtrar só no resolvedor deixaria a tela oferecendo o que o motor recusa.
+ *
+ * ⚠ COPIA A CARACTERÍSTICA em vez de mexer nela. A entrada é do catálogo, que é
+ * compartilhado por toda criatura carregada: escrever nela vazaria a lista de
+ * uma criatura com Addon para a criatura sem, e é o mesmo estrago que fez a
+ * entrada de Addon passar a ser clonada.
+ */
+const comOpcoesDaCriatura = (creature) => {
+  const liberado = liberacoesDaCriatura(creature).includes("gemeosSemTecnica");
+  return (c) => {
+    if (c?.escolha?.id !== "verdadeiras_origens") return c;
+    return { ...c, escolha: { ...c.escolha, opcoes: opcoesVerdadeirasOrigens(liberado) } };
+  };
+};
 
 /**
  * As Aptidões Amaldiçoadas que a ORIGEM concede POR NOME, já filtradas pelo ND.

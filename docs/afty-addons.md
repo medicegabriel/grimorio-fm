@@ -114,6 +114,15 @@ Todas vieram por pergunta direta. Não re-decidir sem falar com ele.
 | 8 | A pasta `asserts/` fica? | **Fica, com script.** `npm run asserts`. |
 | 9 | Concessão de combate (8.3) | **Ficha Final e Encontro**, **de graça**, e **morre com a sessão**. Detalhe na 8.3. |
 | 10 | Vínculo entre criaturas (8.4) | **Uma barra só**, dano 1 para 1 no pool, e só PV, PE e PV temporário somam. Detalhe na 8.4. |
+| 11 | Quem destrava o Estilo das Sombras? | **Ter o addon.** A criatura em que o addon está ativado destrava, sem gastar vaga. |
+| 12 | O Domínio Simples vem junto? | **Não**, o personagem compra. |
+| 13 | O piso de Nível 4 do Estilo cai? | **Não**, continua valendo. |
+| 14 | O Gêmeo copia UMA ou as DUAS do Sem Técnica? | **Uma**, com as duas na lista de opções. |
+| 15 | Sem o addon, a escolha copiada? | **Some da ficha**, sem marca de linha morta. |
+| 16 | Estudo Amaldiçoado e Noção e Preparação já existem no raw com outros números. Corrigir o livro? | **Não. Só pelo Addon**, com remendo. O raw fica como está. |
+| 17 | Quem tem o addon alcança o Treino e os Talentos exclusivos do Sem Técnica? | **Sim, o Addon abre tudo.** Virou a liberação `qualificaSemTecnica`. |
+| 18 | "Uma Técnica de Estilo adicional" gasta qual contador? | **Vaga exclusiva de Estilo**, canal novo. Feitiço não pode gastá-la. |
+| 19 | O Completo do Treino ("o dobro do Nível de Domínio") soma ou substitui? | **Soma outro Nível de Domínio.** Outras fontes continuam contando por cima. |
 
 ⚠ **O nome "Poderes da Tormenta" é contexto narrativo da mesa dele, e não um sistema.** O autor
 pediu nome generalista: neste doc o padrão se chama **família marcada por tag**.
@@ -328,6 +337,123 @@ muda para elas, e a mudança vale para todas as famílias de uma vez.
 ⚠ Esta era uma **lacuna real**, achada em 2026-08-20 só quando o pacote de exemplo foi testado de
 ponta a ponta: o `efeitos` do addon era validado e nunca aplicado, e as habilidades entravam na
 ficha sem somar número nenhum. É o argumento para todo exemplo de doc ser coberto por assert.
+
+### O campo `libera`, e por que ele NÃO é o `permite`
+
+**O que ter o addon DESTRAVA para a criatura que o carrega.** A liberação de hoje:
+
+| id | O que destrava |
+|---|---|
+| `estiloSombras` | o Novo Estilo da Sombra fora do Sem Técnica, inclusive para quem tem Feitiços |
+| `gemeosSemTecnica` | o Gêmeo pode copiar **Estudos Dedicados** ou **Empenho Implacável** em Verdadeiras Origens |
+
+⚠ **São dois campos e não um, e a diferença é a razão de existirem os dois:**
+
+| Campo | O que é | Muda número? |
+|---|---|---|
+| `permite` | **TELA.** Quem ENXERGA uma primitiva que o motor já tem | **Nunca**, e há assert medindo |
+| `libera` | **REGRA.** O que a criatura PODE ter | **Sim**, é para isso que serve |
+
+Juntá-los faria o `permite` às vezes mexer na ficha e às vezes não, quebrando a única coisa que ele
+promete.
+
+⚠ **A liberação é lida DIRETO DA CRIATURA, e não por canal do Motor.** Foi a primeira coisa que eu
+projetei errado: comecei a acrescentar um canal `estiloLiberado` no estágio de pré-contexto, porque
+a liberação viria de uma habilidade. A decisão do autor (*"a opção libera para a Criatura que o
+Addon for ativado"*) matou o canal inteiro: a pergunta é estrutural (*esta criatura pode ter
+Estilo?*) e a resposta tem de existir antes de quase tudo. Ler a ficha resolve, um canal chegaria
+tarde.
+
+⚠ **Sai da FICHA, e não do mundo aplicado**, pela mesma razão do `permite`: num Encontro misto o
+mundo é a união de todos, e um combatente sem o addon não pode herdar a regra de quem tem.
+
+#### O caso que abriu isto: Estilo das Sombras
+
+A trava era `origemId === "sem_tecnica" && nd >= 4`, **JavaScript e não dado**, então nenhum pacote
+da fase 1 a alcançava. É o caminho previsto na tese 1 ("falta de canal ou de função vira trabalho no
+MOTOR"), só que a peça que faltava era um campo de pacote, não um canal.
+
+Duas descobertas mudaram o desenho, e as duas vieram de ler o raw antes de escrever:
+
+1. **O Estilo vem em par.** O Empenho Implacável do Sem Técnica dá acesso ao Estilo **e** a aptidão
+   Domínio Simples, e é do Nível de Aptidão em **Domínio** que saem as vagas de imbuição. Liberar só
+   o acesso entrega um Estilo que a criatura conhece e não consegue imbuir. O autor decidiu que quem
+   destrava por Addon **compra** o Domínio Simples: o Sem Técnica ganha de graça porque não tem
+   técnica nenhuma, e quem tem Feitiços não está nessa situação.
+2. **O piso de Nível 4 continua valendo** (autor). São duas travas independentes: a origem diz QUEM
+   tem, o nível diz A PARTIR DE QUANDO. O `libera` responde a primeira e não encosta na segunda.
+
+Duas coisas mudaram junto, e as duas são consequência e não escolha:
+
+- **`acrescenta` deixou de ser obrigatório.** O pacote deste caso não traz uma linha de catálogo, e
+  o validador reprovava "o pacote não acrescenta nada". Agora o que reprova é não fazer **nenhuma**
+  das três coisas.
+- **A mensagem de ficha sem acesso mudou.** Ela dizia só "o Novo Estilo da Sombra é do Sem Técnica",
+  e virou meia verdade no dia em que um Addon passou a poder destravar.
+
+⚠ **Desinstalar o addon não destrói a ficha.** A Técnica de Estilo gravada continua lá e some só da
+CONTA, que é a convenção do projeto para acesso perdido. Volta sozinha se o addon voltar.
+
+#### ⚠ A QUARTA TRAVA, e a lição que ela repetiu
+
+O motor liberou, os 54 asserts passaram, e **o card continuou sem aparecer**. O autor instalou o
+addon e mandou print (2026-08-21).
+
+A aba Habilidades do criador **ramifica o layout inteiro por origem**, e só o ramo do Sem Técnica
+montava o `EstiloSombrasCard`. Era uma quarta trava, separada das três de regra, e ela escapou da
+minha varredura porque compara a string crua `"sem_tecnica"` em vez da constante `ESTILO_ORIGEM`,
+que foi o que eu grepei.
+
+**É a segunda vez na mesma semana que o mesmo erro pega**, e as duas com o mesmo formato: eu
+acrescento a capacidade ao motor, provo por assert que o número muda, e esqueço de perguntar **quem
+monta a tela**. Na primeira foi o card de Concessão aparecendo para todo mundo, agora foi o do
+Estilo não aparecendo para ninguém. O mesmo descuido nas duas direções.
+
+O conserto foi tirar a decisão de dentro do JSX: ela virou `mostraCardEstilo(origemId, estilo)` em
+`afty-estilo-sombras.js`, ao lado das outras três travas, com 12 asserts. Dentro do JSX ela era
+intestável, e por isso saiu de sincronia duas vezes.
+
+Regra que fica: **grepar a constante não basta.** Varrer o valor cru dela junto.
+
+#### `gemeosSemTecnica`, a segunda liberação
+
+O texto de Verdadeiras Origens proíbe o Gêmeo de copiar do Sem Técnica. A liberação tira **essa
+origem, e só ela**, da lista de proibidas.
+
+O resultado é **exatamente as duas características que o autor nomeou**, e não por coincidência: o
+Sem Técnica tem três, e a terceira é o Bônus em Atributo, que o filtro genérico já tira de toda
+origem. Não precisou nomear nada.
+
+⚠ **Continua sendo UMA escolha** (autor: *"é para escolher só uma, porém deixar as duas como
+opção"*). O `vagas: 1` não foi tocado, e as duas entram lado a lado com as das outras origens.
+
+⚠ **A lista virou POR CRIATURA, e a troca mora no `caracteristicasEfetivas`.** Não em
+`escolhasDaOrigem`, porque são dois consumidores por caminhos diferentes: o `resolveEscolhasOrigem`
+passa pelo segundo, mas **o card do criador lê `c.escolha.opcoes` direto** do que o primeiro
+devolve. Filtrar só no resolvedor deixaria a tela oferecendo o que o motor recusa, que é o irmão do
+bug da quarta trava.
+
+⚠ **A característica é COPIADA, nunca alterada no lugar.** O catálogo é compartilhado por toda
+criatura carregada, e escrever nele vazaria a lista de quem tem addon para quem não tem. É o mesmo
+estrago que fez a entrada de Addon passar a ser clonada.
+
+**Sem o addon a escolha some da ficha, em silêncio** (autor), sem a marca de "sem acesso" que o
+Estilo usa. O id continua gravado em `core.origem.escolhas`, então reinstalar o addon a traz de
+volta, mas nada na tela a menciona enquanto ele estiver fora.
+
+⚠ **Copiar o Empenho Implacável traz o Domínio Simples junto**, no ND 4 e ignorando os
+pré-requisitos, porque a característica copiada é mecanicamente viva (`caracteristicasEfetivas`
+alimenta o `aptidoesConcedidasPelaOrigem`). Isso **não** dá vaga de imbuição sozinho: a vaga é o
+NÍVEL DE APTIDÃO em Domínio, comprado à parte, e o Sem Técnica raw está na mesma situação. Há assert
+medindo a igualdade entre os dois.
+
+#### Bug anterior consertado junto: o cache da lista
+
+`opcoesVerdadeirasOrigens` guardava o resultado num módulo e **nunca invalidava**. Como a lista é
+montada do `AFTY_ORIGENS_CATALOG`, uma origem vinda de Addon jamais aparecia em Verdadeiras Origens,
+calado. O bug entrou junto com a família `origens` e não tinha sintoma porque ninguém tinha escrito
+uma origem de addon ainda. O `aplicarExtrasOrigens` agora limpa o cache, e há assert com uma origem
+de teste.
 
 ### O campo `permite`, e por que ele existe
 
@@ -688,11 +814,15 @@ escopo declarado hoje é "um punhado de pessoas de confiança".
 A tela de autoria, reusando `TecnicaMotorEditor` e `TextoRico`. Uma família por vez, começando por
 Habilidade. As peças empilham: o formato do pacote não muda quando a tela chegar depois.
 
-### Fase 3: remendar e desligar (condicional)
-⚠ **A única parte com preço que não termina.** Um remendo aponta para id do raw, e no dia em que o
+### Fase 3: remendar e desligar
+**Remendar está FEITO (2026-08-22).** Desligar continua fora. Ver a seção 14.
+
+⚠ **A parte com preço que não termina.** Um remendo aponta para id do raw, e no dia em que o
 catálogo for refatorado, o remendo dos outros apodrece calado. É o mesmo problema do requisito `nota`
-já anotado, com o agravante de o conteúdo ser de terceiro e não ter como ser testado. Dá para
-segurar (versão do raw gravada no pacote, revalidação a cada abertura), mas é manutenção permanente.
+já anotado, com o agravante de o conteúdo ser de terceiro e não ter como ser testado. O que existe
+contra isso hoje: o `validarPacote` confere o id contra a lista RAW da família (`basicos()`) e
+**recusa o pacote inteiro** quando ele erra o alvo, e a conferência refaz a cada `aplicarAddons`.
+Não é manutenção zero, e nunca vai ser.
 
 ### Fase 4: tabelas (condicional)
 Grau novo, Patamar novo, Tipo novo, coeficiente de PV por Tipo.
@@ -725,3 +855,91 @@ O escape hatch em JavaScript. Ver os avisos da seção 1.
 ## 13. Perguntas abertas
 
 Nada bloqueando as fases 0 e 1. Anotar aqui o que aparecer.
+
+---
+
+## 14. O REMENDO (`substitui`), 2026-08-22
+
+A metade da fase 3 que o autor destravou ao mandar um Addon que **reescreve** o Domínio Simples e
+dois Talentos de Origem em vez de criar linhas novas. Criar não servia: dois Talentos com o mesmo
+nome na lista não é remendo, é confusão.
+
+```json
+"substitui": {
+  "aptidoes": [{ "id": "dominio_simples", "descricao": "..." }],
+  "talentos": [{ "id": "tal_nocao_e_preparacao", "descricao": "...", "efeitos": [...] }]
+}
+```
+
+### As quatro regras
+
+1. **A substituição é por CAMPO e é RASA.** `{ descricao }` troca a descrição e deixa `requisitos`
+   como estavam. `{ requisitos: [...] }` troca a lista INTEIRA, e não mistura item a item. Mesclar
+   fundo pareceria mais gentil e seria imprevisível, e apagar um item viraria impossível.
+2. **O id é intocável.** Ele é a âncora do remendo e a chave do que já está gravado nas fichas.
+   Trocá-lo seria apagar a entrada e criar outra, que é o que o `acrescenta` faz.
+3. **O alvo tem de existir no LIVRO.** O id não leva prefixo de pacote, e o validador o confere
+   contra `def.basicos()`, a lista raw da família. Errar o alvo **recusa o pacote inteiro**, e não
+   vira remendo que simplesmente não liga.
+4. **Dois pacotes na mesma entrada: o último vence**, campo a campo, e os dois ficam em
+   `remendadoPor`.
+
+### O que quase passou batido
+
+⚠ **O efeito do raw mora FORA do catálogo.** `TALENTO_EFEITOS`, `HABILIDADE_EFEITOS` e irmãos vivem
+em `afty-efeitos-conteudo.js`, chaveados pelo id, e o id não muda num remendo. Sem uma regra de
+precedência, o remendo trocava o TEXTO da regra e o NÚMERO continuava o antigo, calado. Era
+exatamente o caso do Noção e Preparação, que passa a subir nos níveis 9, 14 e 19 pelo Addon e
+continuaria subindo em 8, 12 e 16 no motor.
+
+A regra que entrou, em `coletarEfeitos`: **entrada remendada que declara `efeitos` vence o mapa do
+raw.** Quem não é remendada continua lendo o mapa primeiro, então nada muda para o livro.
+
+⚠ **Duas famílias recusam remendo, e dizem por quê.** `tiposDano` é um mapa `{ value: label }` e
+`condicoes` é uma lista de strings: nelas não existe "trocar um campo". O validador reprova com a
+razão, em vez de aceitar calado e não fazer nada.
+
+### O conteúdo que veio junto
+
+| Peça | Como |
+|---|---|
+| Domínio Simples com sustentação de 2 PE, sem Durabilidade | remendo em `aptidoes` |
+| Treino de Novo Estilo das Sombras (4 etapas + Completo) | acréscimo em `treinamentos` |
+| Coleta de Talismãs, Expansão de Estilo | acréscimo em `talentos` |
+| Estudo Amaldiçoado e Noção e Preparação reescritos | remendo em `talentos` |
+
+Cinco coisas no motor tiveram de nascer para o conteúdo caber, e nenhuma delas é sobre este Addon:
+
+- **canal `vagasEstilo`**, vaga exclusiva de Técnica de Estilo. Mais estreita que a de Feitiço, e por
+  isso é gasta primeiro.
+- **canal `imbuicoesEstilo`**, quantas Técnicas cabem no Domínio Simples além do Nível de Aptidão em
+  Domínio. ⚠ Ele roda num **passe próprio** (`CANAIS_POS_APTIDAO`, estágio 0c): no pré-contexto a
+  variável `dom` ainda não existe, e no estágio principal o `resolveEstilos` já rodou. E o passe lê
+  as DUAS listas de efeito, porque uma Linha de Treinamento entra pelo montante e não pelo
+  `efeitosTodos` (filtrar só o segundo deixava o Completo mudo).
+- **`soDaOrigem`** na Linha de Treinamento, a trava POSITIVA. Até aqui só existia a negativa
+  (`foraDaOrigem`).
+- **requisitos `aptidao` e `trilha`** na etapa de Treinamento e `aptidao` no Talento. Antes toda
+  etapa que citava aptidão era `nota`, que só exibe.
+- **repetição de Talento** (`maxVezes` / `maxVezesExpr`). ⚠ Não confundir com `escolha.repetivel`,
+  que é a outra repetição e continua valendo: ela é "pegue de novo, para outro alvo" e a ficha a
+  representa repetindo a ESCOLHA. Esta é "pegue de novo e ganhe a mesma coisa", e a ficha a
+  representa repetindo o ID, igual às Habilidades Gerais.
+
+⚠ **`passagem direta` na Linha de Treinamento.** Uma etapa pode declarar `{ canal, expr }` em vez de
+`{ tipo, valor }`. O vocabulário de `tipo` é uma lista fechada escrita para as 12 linhas do livro, e
+um addon que precise de canal fora dela não teria como dizê-lo. Também é o único jeito de escrever
+valor que não é constante: "o dobro do seu Nível de Domínio" é `dom`.
+
+### A liberação `qualificaSemTecnica`
+
+A terceira do sistema. Ela põe `sem_tecnica` em `origensQualificadas`, que é **o mesmo caminho que o
+Gêmeo já usava** para Verdadeiras Origens: *"considera a origem escolhida como sua para todos os fins
+de qualificação"*. Nada de novo precisou existir.
+
+É SEPARADA do `estiloSombras` de propósito: uma solta o Estilo, a outra solta os pré-requisitos de
+origem. Juntá-las faria a primeira mudar duas coisas de uma vez.
+
+⚠ Ela só ABRE, nunca tranca. `origensQualificadas` alimenta também `especializacoesDisponiveis`, e lá
+a origem extra só destrava especialização exclusiva. Nenhuma é exclusiva do Sem Técnica hoje, então
+o efeito colateral é zero, e continua sendo zero enquanto isso for verdade.

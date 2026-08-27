@@ -81,6 +81,77 @@ passava à toa. Já corrigido em `t-concessao.mjs`, com o motivo escrito.
 Achado em 2026-08-20 ao montar um addon de teste com um Treino Especial que concede vaga.
 **Anotado:** 2026-08-20, ao gerar os pacotes de teste dos Addons
 
+### ASSUNÇÃO: `gemeosSemTecnica` abre as DUAS do Sem Técnica, e não só as nomeadas
+
+**Onde:** `src/systems/afty/afty-origens.js` (`opcoesVerdadeirasOrigens`)
+**Situação:** o autor pediu (2026-08-21) que o Gêmeo pudesse copiar **Estudos Dedicados** e
+**Empenho Implacável**. A liberação foi implementada tirando o **Sem Técnica inteiro** da lista de
+proibidas, e não nomeando as duas.
+
+Hoje o resultado é idêntico: o Sem Técnica tem três características, e a terceira é o Bônus em
+Atributo, que o filtro genérico já tira de toda origem. Sobram exatamente as duas.
+
+**Onde isso diverge:** no dia em que o Sem Técnica ganhar uma QUARTA característica, ela entra
+sozinha na lista do Gêmeo, sem ninguém decidir. É o mesmo envelhecimento calado do requisito `nota`.
+**Precisa:** o autor dizer se a regra é "o Gêmeo pode copiar do Sem Técnica" (e aí está certo como
+está) ou "o Gêmeo pode copiar estas duas" (e aí a liberação tem de nomeá-las).
+**Anotado:** 2026-08-21, ao implementar a segunda liberação
+
+### Três etapas do Treino de Novo Estilo das Sombras vivem só no TEXTO
+
+**Onde:** `asserts/exemplo-estilo-liberado.json` (a Linha `novo_estilo_das_sombras`)
+**Situação:** das quatro etapas, só a 1ª e o Completo têm canal. As outras três mexem em coisas que
+o Afty não modela hoje:
+
+- **2ª:** *"A área do seu Domínio Simples aumenta em 3 metros."* A área do Domínio Simples é texto
+  (`1,5m + Nível de DOM x 1,5 metros`), e não número derivado.
+- **3ª:** *"O custo para erguer um Domínio Simples é reduzido..."* O custo em PE de uma Aptidão não
+  passa pelo canal `custoPE`, que é dos Feitiços.
+- **4ª:** *"Reduz o custo de sustentação do Novo Estilo das Sombras..."* Mesma coisa, e a sustentação
+  é por rodada, que também não existe como número.
+
+O benefício aparece escrito no card da etapa, como acontece com as outras linhas do livro que
+esbarram em sistema não construído (Domínios 2ª e 4ª, Luta Completo).
+**Precisa:** nada agora. Entra sozinho no dia em que o custo em PE de Aptidão virar número derivado.
+**Anotado:** 2026-08-22, ao construir a Linha
+
+### Coleta de Talismãs concede shikigami e a aba de Invocações não sabe
+
+**Onde:** `asserts/exemplo-estilo-liberado.json` (o Talento `coleta_de_talismas`)
+**Situação:** o Talento dá um shikigami de 4° grau, e mais um de 3°, 2° e 1° nos níveis 5, 10 e 15.
+A aba de Invocações **não tem orçamento**: a pessoa cria a invocação que quiser, e nada conta quantas
+ela pode ter. Então o Talento entra como texto e a criação acontece à mão, do jeito que já acontece
+com toda invocação.
+**Onde isso incomoda:** o "conforme as regras padrão de invocações" fica com o Mestre, e ninguém
+avisa se a pessoa criar cinco talismãs em vez de um.
+**Precisa:** o autor dizer se a Invocação vai ganhar orçamento algum dia. Se ganhar, este Talento é
+o primeiro cliente, e o canal seria algo como `vagasInvocacao` por grau.
+**Anotado:** 2026-08-22
+
+### O Domínio Simples remendado perdeu a Durabilidade, e outra Aptidão a cita
+
+**Onde:** `asserts/exemplo-estilo-liberado.json` (o remendo em `dominio_simples`)
+**Situação:** o texto novo do autor troca o parágrafo inteiro de Concentração e Durabilidade por
+"pagar 2 PE para sustentar". Nenhum número do Afty lia aquela Durabilidade (ela era só texto), então
+o motor não sente. Mas o **Anular Técnica** (`anular_tecnica`) diz *"Você aprimora o seu domínio
+simples"* e pede `dominio_simples` como pré-requisito, e outras entradas citam o Domínio Simples no
+texto delas sem saber que ele mudou.
+**Precisa:** o autor conferir se alguma outra Aptidão de Domínio precisa acompanhar a mudança.
+**Anotado:** 2026-08-22
+
+### `remendadoPor` existe e nenhuma tela mostra
+
+**Onde:** `src/systems/afty/afty-addons.js` (`remendarLista`)
+**Situação:** uma entrada remendada por Addon carrega `remendadoPor: [{ id, nome }]`, e nada na
+interface diz que aquela linha não é mais a do livro. Quem abre a ficha de outra mesa lê o Domínio
+Simples com sustentação em PE e não tem como saber que aquilo veio de um pacote.
+
+O chip de "não raw" no cabeçalho da Ficha já avisa que a criatura tem Addon, mas ele não aponta QUAL
+linha mudou.
+**Precisa:** decidir onde a marca aparece. O candidato natural é o mesmo chip verde das fontes
+concedidas, na linha da entrada.
+**Anotado:** 2026-08-22, ao construir o remendo
+
 ### Conceder FEITIÇO no meio da luta ainda não dá
 
 **Onde:** `src/systems/afty/afty-concessao.js` (`FAMILIAS_CONCESSAO`)
@@ -343,6 +414,119 @@ Expandidas"**: é como o catálogo sempre funcionou, e "Teste de Resistência Me
 pelo mesmo caminho. Hoje só morde o rascunho automático do autor.
 **Precisa:** decidir se vale um aviso de "esta ficha tinha N escolhas que não existem mais".
 **Anotado:** 2026-08-09, code review
+
+---
+
+## AFTY — Interlúdios (varredura de 2026-08-26)
+
+Os buracos que a revisão das 12 Linhas de Treinamento achou. Todos são **canal que
+não existe**, e não erro no catálogo: o texto de cada etapa está verbatim e no lugar.
+O que já dava para consertar sem decisão de regra foi consertado na mesma sessão
+(os 13 requisitos e a trava do Potencial Físico).
+
+### Não existe orçamento LIVRE de atributo
+
+**Onde:** `src/systems/afty/afty-treinamentos.js` (Potencial Físico, 2ª etapa)
+**Situação:** ⚠ era um efeito MORTO até 2026-08-26. A etapa declarava
+`{ tipo: "atributo", valor: 2 }`, e o `paraCanal` devolve null nesse tipo quando não há
+alvo de instância. A linha não é repetível, então nunca houve alvo, e o efeito era
+descartado calado desde que foi escrito. A declaração saiu e o benefício continua
+verbatim no texto. A planilha (`AJ18`, em `afty-formulas-base.md`) confirma a intenção:
+Potencial Físico 2ª = +2 Atributos.
+**Precisa:** um canal de orçamento livre de atributo, o irmão do `pontosAptidao` do lado
+do atributo, e ele nasce com três perguntas de regra: os 2 pontos respeitam o limite de
+20 do atributo, somam no mesmo pool dos pontos de nível ou moram num pool próprio, e a
+restrição aos três físicos (`ATRIBUTOS_FISICOS`, em `afty-dominios.js`) é do canal ou
+da etapa. O canal `atributo` é direcionado e não serve.
+**Anotado:** 2026-08-26, na varredura dos Interlúdios
+
+### Não existe vaga extra de escolha aninhada
+
+**Onde:** `src/systems/afty/afty-habilidades.js` (`resolveEscolhasHabilidade`)
+**Situação:** Potencial Físico 4ª diz "Você recebe uma Dádiva do Céu adicional", e as
+Dádivas são escolha aninhada de Restrito pelos Céus. O mecanismo que dá vaga a mais num
+pool aninhado é o `concedeEscolha`, e ele lê **só** `escolhidasIds`, ou seja, vai de
+habilidade para habilidade. Uma Linha de Treinamento não tem como emitir.
+**Precisa:** ou um canal (`vagasEscolha`, com alvo sendo o id da habilidade dona), ou
+estender `resolveEscolhasHabilidade` para aceitar concessões vindas do Motor. O segundo
+caminho serve também para Addon, que hoje tem o mesmo teto.
+**Anotado:** 2026-08-26, na varredura dos Interlúdios
+
+### O teto de PER por uso vale a trilha, e o canal só alcança a linha de cura
+
+**Onde:** `src/systems/afty/afty-cura.js` (`curaPontos`) e `afty-treinamentos.js` (Energia Reversa)
+**Situação:** a 1ª etapa diz "A quantidade de pontos de energia reversa que você pode
+gastar em **Aptidões de Energia Reversa** aumenta em 1". O canal `curaPontos` existe e
+mira `cura_energia_reversa`, que é UMA linha de cura. A regra fala da trilha inteira
+(Regeneração Aprimorada, Fluxo Constante, Reversão de Técnica), e essas outras aptidões
+não têm teto de pontos modelado. Além disso `curaPontos` SUBSTITUI
+(`max(porBloco, canal)`) em vez de somar, então um `+1` cru não faria efeito nenhum.
+A 3ª etapa tem o mesmo feitio: reduz em 2 o custo de UMA aptidão nomeada, e não existe
+canal de redução de custo por aptidão.
+**Precisa:** decidir se o teto de PER por uso é um número da criatura (um canal só,
+lido por toda aptidão de Energia Reversa) ou um número por aptidão. Só depois disso o
+canal tem forma.
+**Anotado:** 2026-08-26, na varredura dos Interlúdios
+
+### Dois benefícios de Interlúdio esperam sistema que nunca chegou
+
+**Onde:** `src/systems/afty/afty-treinamentos.js`
+**Situação:** cada um espera um sistema inteiro, e não um canal:
+- **efeito de crítico** por grupo de arma e de pugilato (Manejo de Arma 3ª, Luta Completo).
+  A tabela de efeitos de crítico nunca foi enviada, e a palavra só aparece no texto destas
+  duas etapas.
+- **dados de vida por descanso** (Resistência 2ª). A pilha de dados de vida não é modelada,
+  e três itens do capítulo de Equipamentos já a citam na descrição.
+
+⚠ Eram quatro. O **máximo de paredes** (Barreiras 4ª) e a **rolagem de confronto de**
+**expansões** (Domínios 1ª e 3ª) saíram em 2026-08-26, quando o autor mandou o Domínio ler o
+Motor e deu a fórmula do Conflito.
+**Precisa:** nada, por enquanto. A entrada existe para os dois não envelhecerem calados, que
+é o que aconteceu com os 13 requisitos `nota`.
+**Anotado:** 2026-08-26, na varredura dos Interlúdios
+
+## AFTY — Guarda Inabalável (2026-08-26)
+
+### ASSUNÇÃO: a Guarda drena ANTES das outras cascas de PV temporário
+
+**Onde:** `src/systems/afty/ficha/ficha-sessao.js` (`drenaPvTemp`)
+**Situação:** o autor respondeu que a Vida da Guarda entra no mesmo pote do PV temporário e
+**acumula** com as outras fontes dele, mas não disse em que ordem o dano come as fontes. Está
+implementado com a Guarda PRIMEIRO, por dois motivos: ela é a camada de fora (a criatura a reergue
+toda rodada, e as outras cascas não voltam sozinhas), e ela precisa ser alcançável para a regra
+funcionar como está escrita, senão uma casca comprada a blindaria e a Guarda ficaria praticamente
+inquebrável.
+**Onde isso ainda não morde:** a Guarda é hoje a ÚNICA fonte deste pote, então a ordem não muda
+número nenhum. Ela passa a valer no dia em que uma segunda fonte de PV temporário existir, e a
+primeira candidata é a entrada logo abaixo.
+**Precisa:** o autor confirmar a ordem, ou dizer que a casca comprada some antes.
+**Anotado:** 2026-08-26, ao construir a Guarda Inabalável
+
+### O `pvTemporario` da bancada nunca chegou à sessão
+
+**Onde:** `src/systems/afty/afty-derive.js` (`pvTemporario`) e `ficha/ficha-sessao.js`
+**Situação:** achado ao converter o `pvTempAtual` em mapa por fonte. O canal `pvTemporario` existe,
+é somado, aparece no Preview do criador com hover de fontes, e **nunca chegava à Ficha**: na sessão o
+campo nascia em zero, só o `aplicaDano` o tocava (para baixo) e nada o subia. Quem emite hoje são
+Fluxo, Brutalidade Aprimorada e Eliminar e Continuar, todos pela bancada de Simulação de Combate.
+
+É o irmão exato do buraco que a Guarda acabou de tapar, e a mesma classe do efeito morto do Potencial
+Físico 2ª: número calculado, mostrado, e jogado fora do outro lado.
+**Precisa:** decidir QUANDO ele entra, porque a resposta muda o desenho. Se ele é casca de efeito
+temporário ligado na bancada, ele não é da mesa e a Ficha não deveria mostrá-lo. Se ele é casca de
+começo de cena, é uma linha no `iniciaCombate`, no molde do `peTemporario` do gatilho `combate`. Com
+o mapa por fonte já pronto, o segundo caminho custa uma linha.
+**Anotado:** 2026-08-26, ao construir a Guarda Inabalável
+
+### As duas metades da Guarda não têm fonte no catálogo
+
+**Onde:** `src/systems/afty/afty-efeitos.js` (canais `guardaBonus` e `guardaVida`)
+**Situação:** os dois canais nasceram junto com a característica e **nenhuma entrada do livro os
+emite**. Isso é de propósito e não é bug: foi a falta de DESTINO que deixou o Treino de Domínios sem
+automação nenhuma até esta mesma data, e a Guarda é o tipo de número que um Addon vai querer mexer.
+**Precisa:** nada agora. A entrada existe para os dois não envelhecerem esquecidos, e para quem
+transcrever uma habilidade que fale de Guarda saber que o cano já está lá.
+**Anotado:** 2026-08-26, ao construir a Guarda Inabalável
 
 ---
 

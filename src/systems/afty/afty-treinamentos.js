@@ -14,6 +14,9 @@
  * `efeitos`: contribuições LEGÍVEIS PELO MOTOR de Automação, traduzidas
  *   por `paraCanal` para `{ canal, expr }`. Tipos aceitos:
  *     hp · pe · movimento · defesa          → canal de mesmo nome
+ *     pvParede · maxParedes · areaDominio   → canal de mesmo nome
+ *     efeitosDominio · conflitoDominio      → canal de mesmo nome
+ *     peTemporario (com `gatilho`)          → canal `peTemporario`, alvo = gatilho
  *     atributo                              → canal `atributo`, no alvo da instância
  *     aptidao (com trilha)                  → `nivelAptidao` direcionado (grátis)
  *     aptidao (sem trilha)                  → `pontosAptidao` (orçamento livre)
@@ -29,17 +32,46 @@
  *   `quandoProf: N` num efeito de perícia vira a condição "Caso já seja":
  *   o bônus só entra se a FICHA já tiver aquela faixa.
  *
- * ⚠ AINDA SEM CANAL (vivem só no texto `beneficio`, e entram quando o
- * sistema existir): confrontos e
- * contestações de **expansões de domínio** (Domínios 2ª e 4ª), **efeito
- * crítico** de grupo de arma e de pugilato (Manejo de Arma 3ª e Luta
- * Completo), pontos de vida de **paredes de barreira**, PE
- * temporário por cena, dados de vida por descanso.
+ * ⚠ RESOLVIDO em 2026-08-26, na segunda leva da varredura: o autor mandou a
+ * Expansão de Domínio LER O MOTOR e deu a fórmula do Conflito. Nasceram sete
+ * canais (`peTemporario`, `pvParede`, `rdParede`, `maxParedes`, `areaDominio`,
+ * `efeitosDominio` e `conflitoDominio`), e com eles o Treino de Domínios saiu de
+ * ZERO para as 4 etapas ligadas, o de Barreiras de 1 para 4, e o de Controle de
+ * Energia e o de Potencial Físico ganharam a casca de PE.
+ *
+ * ⚠ AINDA SEM CANAL (vivem só no texto `beneficio`, e entram quando o canal
+ * existir). Recontado na varredura de 2026-08-26, e o bloqueio de cada um está
+ * nomeado em docs/afty-status.md, na sessão daquele dia:
+ *
+ *   • efeito crítico de grupo de arma e de pugilato (Manejo de Arma 3ª e Luta
+ *     Completo): a tabela de efeitos de crítico nunca foi enviada.
+ *   • dados de vida por descanso (Resistência 2ª): a pilha de dados de vida não
+ *     é modelada.
+ *   • orçamento LIVRE de atributo (Potencial Físico 2ª): ver a etapa.
+ *   • teto de PER por uso e reduções por aptidão nomeada (Energia Reversa 1ª e
+ *     3ª): `curaPontos` cobre a linha de CURA e não a trilha inteira.
+ *   • vaga extra de escolha aninhada (Potencial Físico 4ª, "uma Dádiva do Céu
+ *     adicional"): `concedeEscolha` só vai de habilidade para habilidade.
+ *   • procedimento de mesa sem número (Perícia 2ª, 4ª e Completo, Luta Completo,
+ *     Energia Reversa 4ª e Completo). Estes NÃO são pendência: são permissão
+ *     que o jogador exerce, e não valor que a ficha calcula. ⚠ O Completo de
+ *     Barreiras SAIU desta lista em 2026-08-26: a RD da parede virou canal.
  *
  * `requisito` por etapa (além da etapa anterior):
  *   { tipo:"atributo", attr, valor }  → VERIFICÁVEL (bloqueia).
+ *   { tipo:"atributoOr", attrs, valor } → o maior dos dois.
+ *   { tipo:"nd", valor }              → Nível de Personagem.
+ *   { tipo:"aptidao", id }            → possuir a Aptidão Amaldiçoada.
+ *   { tipo:"trilha", trilha, valor }  → Nível de Aptidão naquela trilha.
  *   { tipo:"nota", label }            → referencia sistema ainda
  *       não construído (aptidões/features): exibido, não bloqueia.
+ *
+ * ⚠ Desde 2026-08-26 NENHUMA das 12 linhas do livro usa `nota`. Os 13 que
+ * restavam viraram `aptidao` e `trilha` de verdade, e agora bloqueiam. Eles
+ * eram `nota` porque as Aptidões Amaldiçoadas não existiam quando a transcrição
+ * foi feita, e os dois tipos que os substituem só nasceram em 2026-08-22, com o
+ * Treino de Novo Estilo das Sombras. O `nota` FICA no avaliador, para o Addon
+ * que cite sistema que o Afty ainda não tem.
  *
  * ⚠ DIVERGÊNCIA a confirmar com o autor: a planilha
  * (afty-formulas-base.md) mapeava Compreensão 1ª=+1 PE e 3ª=+2 PE,
@@ -50,7 +82,9 @@
  * ============================================================
  */
 
-import { registrarFamilia } from "./afty-addons";
+import { registrarFamilia, remendarLista } from "./afty-addons";
+import { origensQualificadas } from "./afty-origens";
+import { getAptidao, APTIDAO_TRILHAS } from "./afty-aptidoes";
 import { AFTY_ATTRS } from "./afty-schema";
 import { AFTY_PERICIAS, catalogoPericiasDaFicha } from "./afty-pericias";
 import { catalogoDoTipo } from "./afty-equipamentos";
@@ -114,20 +148,27 @@ export const AFTY_TREINAMENTOS = [
     resumo:
       "O treino de barreiras desenvolve a resistência e excelência do ramo de aptidões amaldiçoadas que envolvem as barreiras.",
     etapas: [
-      { n: 1, focos: 1, requisito: { tipo: "nota", label: "Técnicas de Barreira" },
-        beneficio: "Os pontos de vida das paredes da sua Técnica de Barreira aumentam em 10." },
+      { n: 1, focos: 1, requisito: { tipo: "aptidao", id: "tecnicas_de_barreira" },
+        beneficio: "Os pontos de vida das paredes da sua Técnica de Barreira aumentam em 10.",
+        efeitos: [{ tipo: "pvParede", valor: 10 }] },
       { n: 2, focos: 1, requisito: null,
         beneficio: "Seu Nível de Aptidão em Barreiras aumenta em 1.",
         efeitos: [{ tipo: "aptidao", trilha: "bar", valor: 1 }] },
-      { n: 3, focos: 1, requisito: { tipo: "nota", label: "Nível de Aptidão em Barreiras 2" },
-        beneficio: "Os pontos de vida das paredes da sua Técnica de Barreira aumentam em 10." },
-      { n: 4, focos: 2, requisito: { tipo: "nota", label: "Nível de Aptidão em Barreiras 3" },
-        beneficio: "Ao utilizar Técnicas de Barreira, o máximo de paredes que você pode criar aumenta em 2." },
+      { n: 3, focos: 1, requisito: { tipo: "trilha", trilha: "bar", valor: 2 },
+        beneficio: "Os pontos de vida das paredes da sua Técnica de Barreira aumentam em 10.",
+        efeitos: [{ tipo: "pvParede", valor: 10 }] },
+      { n: 4, focos: 2, requisito: { tipo: "trilha", trilha: "bar", valor: 3 },
+        beneficio: "Ao utilizar Técnicas de Barreira, o máximo de paredes que você pode criar aumenta em 2.",
+        efeitos: [{ tipo: "maxParedes", valor: 2 }] },
     ],
     completo: {
       beneficio:
         "Você domina a técnica de barreiras, conferindo-lhes resistência elevada. Toda parede " +
         "que criar com Técnicas de Barreira recebe RD igual ao seu Nível de Aptidão em Barreiras.",
+      // ⚠ PASSAGEM DIRETA, e é o primeiro Completo do LIVRO a usá-la (2026-08-26).
+      // O valor não é constante, é o `bar` da ficha, e o vocabulário de `tipo`
+      // só sabe escrever número. Ver `paraCanal`.
+      efeitos: [{ canal: "rdParede", expr: "bar" }],
     },
   },
 
@@ -144,10 +185,10 @@ export const AFTY_TREINAMENTOS = [
       { n: 2, focos: 1, requisito: null,
         beneficio: "Você recebe um bônus de +1 em rolagens de Feitiçaria e Ocultismo.",
         efeitos: [{ tipo: "pericia", pericia: "feiticaria", valor: 1 }, { tipo: "pericia", pericia: "ocultismo", valor: 1 }] },
-      { n: 3, focos: 1, requisito: { tipo: "nota", label: "Nível de Aptidão em Aura 2" },
+      { n: 3, focos: 1, requisito: { tipo: "trilha", trilha: "au", valor: 2 },
         beneficio: "Seu máximo de energia amaldiçoada aumenta em 3.",
         efeitos: [{ tipo: "pe", valor: 3 }] },
-      { n: 4, focos: 2, requisito: { tipo: "nota", label: "Nível de Aptidão em Aura 3" },
+      { n: 4, focos: 2, requisito: { tipo: "trilha", trilha: "au", valor: 3 },
         beneficio: "Você recebe um bônus de +2 em rolagens de Feitiçaria e Ocultismo.",
         efeitos: [{ tipo: "pericia", pericia: "feiticaria", valor: 2 }, { tipo: "pericia", pericia: "ocultismo", valor: 2 }] },
     ],
@@ -170,11 +211,12 @@ export const AFTY_TREINAMENTOS = [
         beneficio: "Seu máximo de energia amaldiçoada aumenta em 2.",
         efeitos: [{ tipo: "pe", valor: 2 }] },
       { n: 2, focos: 1, requisito: null,
-        beneficio: "Quando uma cena de combate iniciar, você recebe 4 pontos de energia amaldiçoada temporários." },
-      { n: 3, focos: 1, requisito: { tipo: "nota", label: "Nível de Aptidão em Controle e Leitura 2" },
+        beneficio: "Quando uma cena de combate iniciar, você recebe 4 pontos de energia amaldiçoada temporários.",
+        efeitos: [{ tipo: "peTemporario", gatilho: "combate", valor: 4 }] },
+      { n: 3, focos: 1, requisito: { tipo: "trilha", trilha: "cl", valor: 2 },
         beneficio: "Seu máximo de energia amaldiçoada aumenta em 3.",
         efeitos: [{ tipo: "pe", valor: 3 }] },
-      { n: 4, focos: 2, requisito: { tipo: "nota", label: "Nível de Aptidão em Controle e Leitura 3" },
+      { n: 4, focos: 2, requisito: { tipo: "trilha", trilha: "cl", valor: 3 },
         beneficio: "Seu Nível de Aptidão em Controle e Leitura aumenta em 1.",
         efeitos: [{ tipo: "aptidao", trilha: "cl", valor: 1 }] },
     ],
@@ -182,6 +224,8 @@ export const AFTY_TREINAMENTOS = [
       beneficio:
         "Você já estabeleceu uma profunda conexão com a energia amaldiçoada. Em combate, no " +
         "começo de toda rodada, você ganha PE temporário igual à metade do seu bônus de treinamento.",
+      // Passagem direta: metade do Bônus de Treinamento não é constante.
+      efeitos: [{ canal: "peTemporario", alvo: "rodada", expr: "metade(bt)" }],
     },
   },
 
@@ -192,20 +236,32 @@ export const AFTY_TREINAMENTOS = [
     resumo:
       "O treino de domínios é uma sequência de passos para refinar as manifestações do próprio domínio, aperfeiçoando ainda mais aquela técnica dita como o pináculo da feitiçaria.",
     etapas: [
-      { n: 1, focos: 1, requisito: { tipo: "nota", label: "Expansão de Domínio Incompleta" },
-        beneficio: "Você recebe um bônus de +1 em rolagens para confrontos e contestações de expansões." },
+      { n: 1, focos: 1, requisito: { tipo: "aptidao", id: "expansao_de_dominio_incompleta" },
+        beneficio: "Você recebe um bônus de +1 em rolagens para confrontos e contestações de expansões.",
+        efeitos: [{ tipo: "conflitoDominio", valor: 1 }] },
       { n: 2, focos: 1, requisito: null,
-        beneficio: "A área da sua Expansão de Domínio aumenta em 3 metros." },
-      { n: 3, focos: 1, requisito: { tipo: "nota", label: "Expansão de Domínio Completa" },
-        beneficio: "Você recebe um bônus de +1 em rolagens para confrontos e contestações de expansões." },
-      { n: 4, focos: 2, requisito: { tipo: "nota", label: "Nível de Aptidão em Domínio 5" },
-        beneficio: "Você pode colocar um efeito adicional em sua expansão de domínio." },
+        beneficio: "A área da sua Expansão de Domínio aumenta em 3 metros.",
+        efeitos: [{ tipo: "areaDominio", valor: 3 }] },
+      { n: 3, focos: 1, requisito: { tipo: "aptidao", id: "expansao_de_dominio_completa" },
+        beneficio: "Você recebe um bônus de +1 em rolagens para confrontos e contestações de expansões.",
+        efeitos: [{ tipo: "conflitoDominio", valor: 1 }] },
+      { n: 4, focos: 2, requisito: { tipo: "trilha", trilha: "dom", valor: 5 },
+        beneficio: "Você pode colocar um efeito adicional em sua expansão de domínio.",
+        efeitos: [{ tipo: "efeitosDominio", valor: 1 }] },
     ],
     completo: {
       beneficio:
         "Você se torna um mestre das expansões, moldando-as diante de sua vontade e necessidade. " +
         "Você recebe a aptidão amaldiçoada Modificação Completa.",
-      grant: { tipo: "aptidao_amaldicoada", nome: "Modificação Completa", categoria: "Aptidões de Domínio" },
+      /* ⚠ ELA É SÓ PRÊMIO (autor, 2026-08-26), e não entra no catálogo de
+         Aptidões: ninguém pode gastar vaga nela, e quem a tem ganhou daqui.
+
+         Aqui morava um `grant: { tipo: "aptidao_amaldicoada", ... }` que NINGUÉM
+         LIA. Era o shape morto em 2026-07-29 junto do `grantLabel`, e sobreviveu
+         porque a chave tinha outro nome. Ele prometia um mecanismo que não
+         existe, e a decisão do autor fechou a questão em vez de construí-lo: o
+         que a criatura recebe é o TEXTO abaixo, que a aba já mostrava, e o
+         `concedeAptidoes` não entra porque não há aptidão de catálogo a conceder. */
       detalhe: MODIFICACAO_COMPLETA,
     },
   },
@@ -225,14 +281,14 @@ export const AFTY_TREINAMENTOS = [
     resumo:
       "O treino de energia reversa permite se aprimorar no uso da energia positiva, capaz de curar humanos e destruir maldições, sendo o completo oposto da energia amaldiçoada.",
     etapas: [
-      { n: 1, focos: 1, requisito: { tipo: "nota", label: "Energia Reversa" },
+      { n: 1, focos: 1, requisito: { tipo: "aptidao", id: "energia_reversa" },
         beneficio: "A quantidade de pontos de energia reversa que você pode gastar em Aptidões de Energia Reversa aumenta em 1." },
       { n: 2, focos: 1, requisito: null,
         beneficio: "Seu Nível de Aptidão em Energia Reversa aumenta em 1.",
         efeitos: [{ tipo: "aptidao", trilha: "er", valor: 1 }] },
-      { n: 3, focos: 1, requisito: { tipo: "nota", label: "Nível de Aptidão em Energia Reversa 4" },
+      { n: 3, focos: 1, requisito: { tipo: "trilha", trilha: "er", valor: 4 },
         beneficio: "O custo para regenerar um membro ou ferida interna com Regeneração Aprimorada é reduzido em 2 pontos de energia reversa." },
-      { n: 4, focos: 2, requisito: { tipo: "nota", label: "Nível de Aptidão em Energia Reversa 5" },
+      { n: 4, focos: 2, requisito: { tipo: "trilha", trilha: "er", valor: 5 },
         beneficio: "Você também pode usar Fluxo Constante para regenerar membros, ao invés de apenas se curar." },
     ],
     completo: {
@@ -278,15 +334,34 @@ export const AFTY_TREINAMENTOS = [
   {
     id: "potencial_fisico",
     nome: "Treino de Potencial Físico",
+    // ⚠ SÓ DO RESTRINGIDO (autor, 2026-08-26). O `resumo` abaixo já dizia
+    // *"Este treino só pode ser realizado por Restringidos"* desde a transcrição,
+    // e a trava não existia: a linha aparecia para as 13 origens. É o mesmo
+    // desenho do Treino de Novo Estilo das Sombras (2026-08-22), a trava
+    // POSITIVA, e não o corte negativo das cinco linhas de energia.
+    //
+    // O Foco preso nela por quem não é Restringido volta sozinho, porque
+    // `focosGastos` já descarta linha indisponível.
+    soDaOrigem: ["restringido"],
     resumo:
       "O treino de potencial físico tem como objetivo extrair todo potencial físico que um corpo afetado pela restrição celestial possui. Este treino só pode ser realizado por Restringidos, além de poder utilizar qualquer atributo físico nas rolagens.",
     etapas: [
       { n: 1, focos: 1, requisito: null,
         beneficio: "Seu máximo de pontos de estamina aumenta em 2.",
         efeitos: [{ tipo: "pe", valor: 2 }] },
+      // ⚠ SEM CANAL, e até 2026-08-26 ela FINGIA ter um. A etapa declarava
+      // `{ tipo: "atributo", valor: 2 }`, e o `paraCanal` devolve null nesse tipo
+      // quando não há alvo de instância. Esta linha não é repetível, então nunca
+      // houve alvo: o efeito era descartado calado desde que foi escrito, e o
+      // catálogo parecia automatizado. Medido: PE sobe do 1ª ao 3ª e o atributo
+      // não se move em etapa nenhuma.
+      //
+      // O que falta não é alvo, é CANAL. "2 pontos para distribuir" é orçamento
+      // livre, o irmão do `pontosAptidao` do lado do atributo, e ainda restrito
+      // aos três físicos (`ATRIBUTOS_FISICOS`, em afty-dominios.js). O canal
+      // `atributo` é direcionado e não serve. Ver docs/a-fazer.md.
       { n: 2, focos: 1, requisito: { tipo: "nd", valor: 4 },
-        beneficio: "Você recebe 2 pontos de atributo para distribuir entre seus atributos físicos.",
-        efeitos: [{ tipo: "atributo", valor: 2 }] },
+        beneficio: "Você recebe 2 pontos de atributo para distribuir entre seus atributos físicos." },
       { n: 3, focos: 1, requisito: null,
         beneficio: "Seu máximo de pontos de estamina aumenta em 4.",
         efeitos: [{ tipo: "pe", valor: 4 }] },
@@ -298,6 +373,10 @@ export const AFTY_TREINAMENTOS = [
         "Você conseguiu chegar em um ponto onde seu corpo constantemente se renova e sua energia parece nunca " +
         "ter fim. Durante uma cena de combate, no começo de toda rodada, você recebe uma quantidade de pontos de " +
         "estamina temporários igual à metade do seu bônus de treinamento.",
+      // ⚠ MESMO CANAL do Controle de Energia Completo, porque a Estamina É o PE
+      // (mesma pilha, outro nome). As duas linhas nunca convivem na mesma ficha:
+      // esta é só do Restringido e aquela é fora dele.
+      efeitos: [{ canal: "peTemporario", alvo: "rodada", expr: "metade(bt)" }],
     },
   },
 
@@ -462,8 +541,8 @@ let BY_ID = {};
 
 const TREINAMENTOS_BASE = AFTY_TREINAMENTOS.slice();
 
-function aplicarExtrasTreinamentos(extras = []) {
-  AFTY_TREINAMENTOS.splice(0, AFTY_TREINAMENTOS.length, ...TREINAMENTOS_BASE, ...extras);
+function aplicarExtrasTreinamentos(extras = [], remendos = null) {
+  AFTY_TREINAMENTOS.splice(0, AFTY_TREINAMENTOS.length, ...remendarLista(TREINAMENTOS_BASE, remendos), ...extras);
   BY_ID = Object.fromEntries(AFTY_TREINAMENTOS.map((t) => [t.id, t]));
 }
 
@@ -474,6 +553,7 @@ registrarFamilia("treinamentos", {
   chave: "id",
   obrigatorios: ["nome", "etapas"],
   aplicar: aplicarExtrasTreinamentos,
+  basicos: () => TREINAMENTOS_BASE,
   resolver: (id) => getTreinamento(id),
   /* A ficha guarda `{ [id]: progresso }`, e não uma lista. Só os ids com
      progresso contam: uma linha em zero não é uma linha escolhida. */
@@ -549,11 +629,29 @@ function progressosDe(linha, val) {
  * Atributo é o atributo escolhido, e é o que faz o `+1` cair no lugar certo.
  */
 function paraCanal(ef, alvoInstancia) {
+  /* ⚠ PASSAGEM DIRETA (2026-08-22). Uma etapa pode declarar `{ canal, expr }`
+     em vez de `{ tipo, valor }`, e aí ela vai crua para o Motor. Existe pelo
+     Addon: o vocabulário de `tipo` abaixo é uma lista fechada, escrita para as
+     12 linhas do livro, e uma linha de mesa que precise de um canal fora dela
+     não teria como dizê-lo. Também é o único jeito de escrever valor que não é
+     constante ("o dobro do seu Nível de Domínio" é `dom`, e não um número).
+     O `valor` continua sendo o caminho das 12 linhas do raw. */
+  if (ef?.canal) {
+    const alvo = ef.alvo === "instancia" ? alvoInstancia : ef.alvo;
+    if (ef.alvo === "instancia" && !alvoInstancia) return null;
+    return { canal: ef.canal, expr: String(ef.expr ?? "0"), ...(alvo ? { alvo } : {}) };
+  }
   const valor = Number(ef?.valor) || 0;
   if (!valor) return null;
   const expr = String(valor);
   switch (ef.tipo) {
+    /* Canal de mesmo nome, sem destino. Os cinco de Barreira e Domínio entraram
+       em 2026-08-26: são números da criatura, e não de uma parede ou de uma
+       expansão específica. A RD da parede NÃO está aqui porque o valor dela é
+       `bar`, e não constante, então ela entra pela passagem direta. */
     case "hp": case "pe": case "movimento": case "defesa": case "iniciativa":
+    case "pvParede": case "maxParedes": case "areaDominio":
+    case "efeitosDominio": case "conflitoDominio":
       return { canal: ef.tipo, expr };
     case "atributo":
       // Sem alvo não há onde somar: a linha repetível sempre traz um.
@@ -562,6 +660,11 @@ function paraCanal(ef, alvoInstancia) {
     // Atributo usa ("aumentando o valor de limite desse atributo em 2").
     case "limiteAtributo":
       return alvoInstancia ? { canal: "limiteAtributo", alvo: alvoInstancia, expr } : null;
+    /* ⚠ O ALVO aqui é o GATILHO, e não um destino: `combate` entrega uma vez
+       quando a cena começa, `rodada` reenche a cada rodada. Sem gatilho vale
+       `combate`, que é o caso menos surpreendente (entrega uma vez). */
+    case "peTemporario":
+      return { canal: "peTemporario", alvo: ef.gatilho === "rodada" ? "rodada" : "combate", expr };
     case "aptidao":
       return ef.trilha
         ? { canal: "nivelAptidao", alvo: ef.trilha, expr }
@@ -642,9 +745,28 @@ export function rotuloAlvo(linha, alvo, pericias = AFTY_PERICIAS, armas = null) 
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-/** A linha de treino está disponível para esta origem? */
-export const treinoDisponivel = (linha, origemId) =>
-  !(linha?.foraDaOrigem ?? []).includes(origemId);
+/**
+ * A linha de treino está disponível para esta origem?
+ *
+ * Duas travas, e elas são opostas de propósito:
+ *   • `foraDaOrigem` TIRA a linha de origens nomeadas (a Maldição não tem
+ *     Energia Reversa, o Restringido não tem nenhuma das cinco de energia).
+ *   • `soDaOrigem` deixa a linha SÓ para as origens nomeadas. Entrou em
+ *     2026-08-22 com o Treino de Novo Estilo das Sombras, que diz *"esse treino
+ *     só pode ser realizado por um Sem Técnica"*.
+ *
+ * `qualificadas` são as origens que a criatura conta como suas além da própria
+ * (`origensQualificadas`): a copiada em Verdadeiras Origens e a que um Addon
+ * libera. Elas só ABREM o `soDaOrigem`, e nunca soltam o `foraDaOrigem`: uma
+ * origem que a criatura só EMPRESTA não desfaz o que a origem dela não tem.
+ */
+export const treinoDisponivel = (linha, origemId, qualificadas = null) => {
+  if ((linha?.foraDaOrigem ?? []).includes(origemId)) return false;
+  const so = linha?.soDaOrigem;
+  if (!so?.length) return true;
+  const tem = qualificadas?.length ? qualificadas : (origemId ? [origemId] : []);
+  return so.some((id) => tem.includes(id));
+};
 
 /**
  * As linhas de treino que a origem alcança. Hoje cortam duas: a Maldição não
@@ -652,11 +774,12 @@ export const treinoDisponivel = (linha, origemId) =>
  * amaldiçoada (Barreiras, Compreensão, Controle de Energia, Domínios e
  * Energia Reversa).
  */
-export const treinamentosDaOrigem = (origemId) =>
-  AFTY_TREINAMENTOS.filter((l) => treinoDisponivel(l, origemId));
+export const treinamentosDaOrigem = (origemId, qualificadas = null) =>
+  AFTY_TREINAMENTOS.filter((l) => treinoDisponivel(l, origemId, qualificadas));
 
 export function efeitosDeTreino(creature) {
   const origemId = creature?.core?.origem?.id;
+  const qualificadas = origensQualificadas(creature);
   const pericias = catalogoPericiasDaFicha(creature);
   const armas = catalogoDoTipo("arma", creature);
   const prog = normalizeTreinamentos(creature?.treinamentos);
@@ -676,7 +799,7 @@ export function efeitosDeTreino(creature) {
     const linha = BY_ID[id];
     if (!linha) continue;
     // Treino que a origem não alcança não rende efeito, mesmo gravado na ficha.
-    if (!treinoDisponivel(linha, origemId)) continue;
+    if (!treinoDisponivel(linha, origemId, qualificadas)) continue;
     const instancias = linha.repetivel && Array.isArray(val)
       ? val
       : [{ alvo: null, progresso: Number(val) || 0 }];
@@ -706,13 +829,14 @@ export function efeitosDeTreino(creature) {
  */
 export function vagasEncantamentoDeTreino(creature) {
   const origemId = creature?.core?.origem?.id;
+  const qualificadas = origensQualificadas(creature);
   const prog = normalizeTreinamentos(creature?.treinamentos);
   const out = {};
   for (const [id, val] of Object.entries(prog)) {
     const linha = BY_ID[id];
     const vaga = linha?.completo?.vagaEncantamento ?? 0;
     if (!vaga || !linha.repetivel || !Array.isArray(val)) continue;
-    if (!treinoDisponivel(linha, origemId)) continue;
+    if (!treinoDisponivel(linha, origemId, qualificadas)) continue;
     for (const inst of val) {
       if (clampProg(inst.progresso) < ETAPAS_POR_LINHA) continue;
       out[inst.alvo] = (out[inst.alvo] || 0) + vaga;
@@ -734,12 +858,12 @@ export function focosDaLinha(linha, progresso) {
  * depois de gastar em qualquer uma das cinco de energia) recebe os Focos de
  * volta, em vez de pagar por um treino que a aba nem mostra mais.
  */
-export function focosGastos(treinos, origemId = null) {
+export function focosGastos(treinos, origemId = null, qualificadas = null) {
   const prog = normalizeTreinamentos(treinos);
   let total = 0;
   for (const [id, val] of Object.entries(prog)) {
     const linha = BY_ID[id];
-    if (!treinoDisponivel(linha, origemId)) continue;
+    if (!treinoDisponivel(linha, origemId, qualificadas)) continue;
     for (const p of progressosDe(linha, val)) total += focosDaLinha(linha, p);
   }
   return total;
@@ -768,6 +892,27 @@ export function avaliarRequisito(requisito, ctx = {}) {
   }
   if (requisito.tipo === "nd") {
     return { ok: nd >= requisito.valor, verificavel: true, label: `Nível de Personagem ${requisito.valor}` };
+  }
+  /* ⚠ `aptidao` e `trilha` entraram em 2026-08-22, com o Treino de Novo Estilo
+     das Sombras ("Domínio Simples" na 1ª, "Nível de Aptidão em Domínio 3" na 3ª
+     e 5 na 4ª). Até então TODA etapa que citava aptidão era `nota`, que só
+     exibe. Mesmo shape e mesmos nomes de `avaliarRequisitoAptidao`, para o
+     autor de Addon não ter dois vocabulários para o mesmo requisito.
+
+     Sem o contexto (o chamador não passou `aptidoes` nem `niveisAptidao`) o
+     requisito CAI PARA NÃO VERIFICÁVEL em vez de reprovar: falta de dado não é
+     falta de aptidão, e reprovar aqui esconderia a etapa de quem a tem. */
+  if (requisito.tipo === "aptidao") {
+    const alvo = getAptidao(requisito.id);
+    const nome = alvo?.nome ?? requisito.id;
+    if (!Array.isArray(ctx.aptidoes)) return { ok: true, verificavel: false, label: nome };
+    return { ok: ctx.aptidoes.includes(requisito.id), verificavel: true, label: nome };
+  }
+  if (requisito.tipo === "trilha") {
+    const meta = APTIDAO_TRILHAS.find((t) => t.key === requisito.trilha);
+    const nome = `Nível de Aptidão em ${meta?.label ?? requisito.trilha} ${requisito.valor}`;
+    if (!ctx.niveisAptidao) return { ok: true, verificavel: false, label: nome };
+    return { ok: (ctx.niveisAptidao[requisito.trilha] ?? 0) >= requisito.valor, verificavel: true, label: nome };
   }
   // nota (aptidão/feature de sistema não construído): exibe, não bloqueia.
   return { ok: true, verificavel: false, label: requisito.label };

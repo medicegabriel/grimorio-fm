@@ -4,9 +4,12 @@ import { Heart, Zap, Sparkles, Skull, EyeOff, Moon, Swords, Shield, BookOpen, Ba
 import { funcionamentosDaFicha } from "../afty-schema";
 import { NumeroComFontes } from "../ui/fontes";
 import { numeroBr } from "../ui/formato";
+import { Vital } from "../ui/vital";
+import { Guarda } from "../ui/guarda";
 import {
   aplicaDano, aplicaCura, descansar, registraRolagem,
-  concedeNaSessao, removeConcessao,
+  concedeNaSessao, removeConcessao, peTempTotal, gastaPe, pvTempTotal,
+  sofreGolpeNaGuarda, desfazGolpeNaGuarda, encerraGuarda, defineCondicoes,
 } from "../ficha/ficha-sessao";
 import { rolarTeste, rolarDano, textoDaRolagem } from "../ficha/ficha-rolagem";
 import { deltaDosEstados } from "../ficha/ficha-buffs";
@@ -63,62 +66,6 @@ const ABAS = [
   { id: "buffs", rotulo: "Buffs", icone: Wand2 },
 ];
 
-/* Um vital com barra, campo digitável e passos. Enxuto em relação ao da Ficha:
-   sem hover de fontes no máximo, porque a coluna é estreita. */
-function Vital({ tipo, icone: Icone, rotulo, atual, max, temp = 0, onSet, onDelta }) {
-  const [rascunho, setRascunho] = useState(null);
-  const teto = Math.max(1, max);
-  const pctVida = Math.min(100, (Math.max(0, atual) / teto) * 100);
-  const pctTemp = Math.min(100 - pctVida, (Math.max(0, temp) / teto) * 100);
-  const pct = max > 0 ? (atual / max) * 100 : 100;
-  const nivel = pct <= 25 ? "critico" : pct <= 50 ? "baixo" : "normal";
-
-  // ⚠ Campo VAZIO não vale zero: limpar para redigitar e sair sem terminar
-  // zeraria o PV no meio da luta. Vazio e lixo devolvem o que estava. `+5` e
-  // `-3` são delta, e o número seco é valor absoluto. Mesma regra da Ficha.
-  const confirma = (texto) => {
-    const cru = String(texto).trim();
-    setRascunho(null);
-    if (!cru) return;
-    const n = Math.trunc(Number(cru.replace(",", ".")));
-    if (!Number.isFinite(n)) return;
-    if (/^[+-]/.test(cru)) onDelta(n); else onSet(n);
-  };
-
-  return (
-    <div className="afty-vital" data-afty-vital={tipo} data-afty-nivel={nivel}>
-      <div className="flex items-center gap-2">
-        <Icone className="afty-vital-icone" aria-hidden="true" />
-        <span className="afty-vital-rotulo flex-1 min-w-0 truncate">{rotulo}</span>
-        <input
-          type="text"
-          inputMode="numeric"
-          className="afty-vital-numero"
-          value={rascunho ?? String(atual)}
-          onChange={(e) => setRascunho(e.target.value)}
-          onBlur={(e) => confirma(e.target.value)}
-          onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); }}
-          aria-label={`${rotulo} atual`}
-        />
-        <span className="afty-vital-max">/ {max}</span>
-        {temp > 0 && <span className="afty-vital-temp" title="PV Temporário">+{temp}</span>}
-        <span className="flex items-center gap-0.5 flex-shrink-0">
-          <button type="button" className="afty-passo" onClick={() => onDelta(-1)} aria-label={`${rotulo} menos 1`}>−</button>
-          <button type="button" className="afty-passo" onClick={() => onDelta(1)} aria-label={`${rotulo} mais 1`}>+</button>
-        </span>
-      </div>
-      <div className="afty-vital-trilho mt-2 flex">
-        <span className="afty-vital-barra" style={{ width: `${pctVida}%` }} />
-        {pctTemp > 0 && (
-          <span
-            className="afty-vital-barra"
-            style={{ width: `${pctTemp}%`, "--afty-vital-cor": "var(--afty-pvtemp)" }}
-          />
-        )}
-      </div>
-    </div>
-  );
-}
 
 /* Dano e cura rápidos: um campo, dois botões. É o gesto mais repetido de uma
    luta inteira, e mandá-lo pelo campo do PV obrigaria a lembrar do sinal. */
@@ -298,15 +245,22 @@ export default function PainelDeCombatente({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <Vital
             tipo="pv" icone={Heart} rotulo="PV"
-            atual={sessao.hpAtual} max={derived.hp} temp={sessao.pvTempAtual}
+            atual={sessao.hpAtual} max={derived.hp} temp={pvTempTotal(sessao)}
             onSet={(v) => onSessao((s) => ({ ...s, hpAtual: v }))}
             onDelta={(d) => onSessao((s) => ({ ...s, hpAtual: s.hpAtual + d }))}
           />
           <Vital
             tipo="pe" icone={Zap} rotulo={derived.recursoLabel}
-            atual={sessao.peAtual} max={derived.pe}
+            atual={sessao.peAtual} max={derived.pe} temp={peTempTotal(sessao)}
+            rotuloTemp={`${derived.recursoLabel} Temporário`}
             onSet={(v) => onSessao((s) => ({ ...s, peAtual: v }))}
-            onDelta={(d) => onSessao((s) => ({ ...s, peAtual: s.peAtual + d }))}
+            /* ⚠ Delta NEGATIVO é GASTO, e gasto come a casca primeiro, igual ao
+               dano no PV. É a mesma regra da Ficha, e as duas telas mexem na
+               MESMA sessão: divergir aqui faria o mestre e o jogador chegarem a
+               PVs diferentes na mesma criatura. */
+            onDelta={(d) => onSessao((s) => (
+              d < 0 ? gastaPe(s, -d) : { ...s, peAtual: s.peAtual + d }
+            ))}
           />
           <Vital
             tipo="alma" icone={Sparkles} rotulo="Alma"
@@ -320,11 +274,26 @@ export default function PainelDeCombatente({
           />
         </div>
 
+        {/* Guarda Inabalável, do Calamidade e do Beyond. É AQUI que ela mais
+            trabalha: quem conta os golpes que o chefe sofre é o mestre, e ele
+            está nesta tela. Some inteira para os outros patamares. */}
+        <Guarda
+          guarda={derived.guarda}
+          onGolpe={() => onSessao((s) => sofreGolpeNaGuarda(s, derived))}
+          onDesfazGolpe={() => onSessao(desfazGolpeNaGuarda)}
+          onRaioNegro={() => onSessao(encerraGuarda)}
+        />
+
         {/* Mesma célula de tamanho fixo da Ficha (`afty-stat`), e não uma
             fileira `flex-wrap`: com caixas do tamanho do próprio texto, "CD"
             minúscula ao lado de "Res. Parcial" larga faz a fileira virar uma
-            serra. O autor apontou isso na Ficha em 2026-08-05. */}
-        <div className="afty-stats grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-8 gap-1.5">
+            serra. O autor apontou isso na Ficha em 2026-08-05.
+
+            ⚠ As colunas vêm do `.afty-stats` do `ficha.css`, que este painel já
+            importa. Aqui a coluna é estreita e muda de largura com o painel de
+            iniciativa ao lado, então contar colunas por breakpoint errava mais
+            ainda do que na Ficha. */}
+        <div className="afty-stats">
           {stats.map((s) => (
             <span key={s.k} className="afty-stat" data-afty-stat={s.p ?? s.k}>
               <span className="afty-stat-rotulo" title={s.k}>{s.k}</span>
@@ -418,7 +387,9 @@ export default function PainelDeCombatente({
           deltaPorEstado={deltaPorEstado}
           onPatchCombate={(parcial) => onSessao((s) => ({ ...s, combate: { ...s.combate, ...parcial } }))}
           onBuffs={(buffs) => onSessao((s) => ({ ...s, buffs }))}
-          onCondicoes={(condicoes) => onSessao((s) => ({ ...s, condicoes }))}
+          /* Mesmo caminho da Ficha: oito condições derrubam a Guarda, e as
+             duas telas mexem na MESMA sessão. Ver `defineCondicoes`. */
+          onCondicoes={(condicoes) => onSessao((s) => defineCondicoes(s, condicoes))}
           /* Concessão do mestre (Addons 8.3). Os mesmos dois escritores da
              Ficha Final, porque a aba é o MESMO componente: "nos dois lugares"
              custou passar duas props. */

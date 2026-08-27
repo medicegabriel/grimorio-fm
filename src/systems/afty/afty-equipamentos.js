@@ -255,6 +255,10 @@ registrarFamilia("tiposDano", {
   chave: "value",
   obrigatorios: ["label"],
   aplicar: aplicarExtrasTiposDano,
+  // ⚠ NÃO ACEITA REMENDO: o catálogo é um mapa `{ value: label }`, e não uma
+  // lista de entradas com campos. Trocar o rótulo de um tipo de dano é
+  // acrescentar com o mesmo `value`, que já funciona.
+  remendavel: false,
   /* Sem `resolver` nem `idsDaFicha`: tipo de dano não é escolhido em lista na
      ficha, ele é um campo de arma. Um tipo órfão numa arma custom já é aparado
      pelo saneamento do próprio módulo, que é onde essa checagem mora. */

@@ -115,7 +115,8 @@ HP = (Alma.Atual/100) × (base + ND·Mod.Con + treinoRes) × patamarMult
 =IFS(ND>=26;8;ND>=21;7;ND>=17;6;ND>=13;5;ND>=9;4;ND>=5;3;ND>=1;2)
 ```
 
-### Guarda
+### Guarda Inabalável — IMPLEMENTADA em 2026-08-26
+
 ```
 =SWITCH(Patamar;
  "Lacaio";0;"Comum";0;"Desafio";0;
@@ -124,6 +125,47 @@ HP = (Alma.Atual/100) × (base + ND·Mod.Con + treinoRes) × patamarMult
 ```
 Decodificado: só Calamidade/Maldição têm Guarda; se `CN7>=0`, valor por índice `CU9` (0–5):
 - Calamidade: [5,3,1,0,0,0]; Maldição: [10,8,6,4,2,0].
+
+> ⚠ **O texto da regra chegou em 2026-08-26 e a tabela acima é ele.** O `CU9` é o **contador de
+> golpes sofridos** e o `CN7` é a Vida Temporária da Guarda, e as duas escadas são "começa em 5 (ou
+> 10) e cai **2 por golpe**, com piso em zero". A implementação REPRODUZ a tabela, e há assert
+> medindo os dois degraus a degrau.
+>
+> **Regra completa**, verbatim do autor:
+>
+> *"inimigos de patamar Calamidade receberão um aumento de +5 na sua CA e em TRs no início da*
+> *rodada, o qual será reduzido em 2 a cada ataque ou habilidade que ele sofra, independentemente de*
+> *ser atingido, falhar ou ter sucesso no TR. Para inimigos de patamar Beyond, o aumento temporário*
+> *em CA e TRs será de +10, também sendo reduzido a cada golpe. O bônus se encerra previamente com a*
+> *realização de um Raio Negro, a aplicação das condições Desprevenido, Desorientado, Confuso,*
+> *Incapacitado, Exposto, Fragilizado, Atordoado, Paralisado ou Inconsciente ou a perda dos PVs*
+> *temporários recebidos por essa característica."*
+>
+> *"A Guarda possui 5 x ND de Vida Temporaria para Inimigos Calamidade e 10 x ND para Inimigos*
+> *Beyond. E, caso a Vida Temporaria da Guarda chegue a 0, a guarda é quebrada perdendo seus*
+> *efeitos."*
+>
+> | O que | Calamidade | Beyond |
+> |---|---|---|
+> | bônus de CA e dos 5 TRs | +5 | +10 |
+> | Vida Temporária | 5 × ND | 10 × ND |
+> | queda por golpe sofrido | 2 | 2 |
+>
+> **As decisões do autor** (2026-08-26) que fecharam o comportamento de mesa:
+> 1. as duas metades **voltam cheias a cada rodada**;
+> 2. a Vida entra no **mesmo pote do PV Temporário** e **acumula** com as outras fontes dele;
+> 3. enquanto durar a condição perde o bônus **e** a Vida, e depois volta no início da rodada;
+> 4. **"Incapacitado" foi retirada** do sistema, então são **oito** condições e não nove;
+> 5. ⚠ **o bônus chegando a zero pelos golpes TAMBÉM quebra a Guarda**, e quebrar faz o PV
+>    Temporário se perder. São **3 golpes** no Calamidade e **5** no Beyond, e é o caminho normal de
+>    derrubá-la: é o que faz a característica "exigir trabalho em equipe".
+>
+> ⚠ **A escada de números NÃO muda com a decisão 5.** O degrau em que ela chega a zero é justamente
+> o degrau em que a Guarda quebra, então a tabela da planilha continua exata. O que muda é o que
+> acontece com a casca naquele degrau.
+>
+> Em `afty-derive.js` o teto sai em `derived.guarda`, e o corrente vem da sessão por `opcoes.guarda`.
+> Os canais `guardaBonus` e `guardaVida` mexem nas duas metades.
 
 ### Resistência Parcial  — SUBSTITUÍDA pelo autor (2026-07-16)
 
@@ -312,8 +354,8 @@ somente nas trilhas que já possuem ao menos Nível 1. Barreira e Domínio não 
   TABELAS (fonte mais recente). A planilha pode estar desatualizada — confirmar com o autor.
   **Mesma divergência no Treino de Luta:** planilha (I17) dizia Luta 2ª = +3 Defesa; a TABELA diz
   +2 Defesa. Código seguiu a TABELA (+2). Confirmar.
-- **GUARDA** (`CU9` = contador de ataques consecutivos; a Guarda aumenta Defesa e TRs até ser
-  quebrada). Lembrar o autor depois. `derived.guarda = null` por ora.
+- ~~**GUARDA**~~ ✅ **RESOLVIDO em 2026-08-26.** O autor mandou o texto da regra e respondeu as
+  quatro perguntas de comportamento. Ver a seção Guarda Inabalável acima.
 - **Perícias** → Atenção usa Percepção = 0 provisoriamente.
 - **Grau de item** vem do Inventário (ainda não construído): lido de
   `creature.inventario.{defesaGrau,rdGrau}`, default "Sem Grau" (0).

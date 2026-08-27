@@ -42,6 +42,11 @@
   --afty-pv: #f43f5e;
   --afty-pe: #38bdf8;
   --afty-pvtemp: #fbbf24;
+  /* A casca de PE. ⚠ Não reusa o --afty-pvtemp: o âmbar dele contrasta com o
+     vermelho do PV, e sobre o azul do PE viraria uma terceira cor sem
+     parentesco. Este é o mesmo azul, mais claro, que é como a 2.5.2 pinta a
+     dela (ciano por cima do roxo). */
+  --afty-petemp: #67e8f9;
   --afty-alma: #e879f9;
   --afty-cura: #34d399;
   --afty-aviso: #fbbf24;
@@ -179,6 +184,13 @@
   display: none;
   position: relative;
   min-height: 10.5rem;
+  /* ⚠ O TETO existe para a moldura não virar tira. Ela é uma célula da grade
+     do cabeçalho e estica com a altura da linha, então tudo que cresce à
+     esquerda (uma fileira de defesas a mais, um chip que quebrou) a puxava
+     junto, e a foto ia perdendo as laterais no `object-fit: cover`. Com as
+     defesas em fileira única isso quase não acontece mais, e o teto cobre o
+     que sobra: tablet estreito e ficha com as doze defesas. */
+  max-height: 13rem;
   margin-block: 0.5rem;
   overflow: hidden;
   border: 1px solid var(--afty-borda-forte);
@@ -358,6 +370,12 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
   flex-shrink: 0;
 }
 
+/* ⚠ O "+N" do PE segue a casca DELE. Sem isto o número saía âmbar ao lado de
+   uma barra ciano, e o jogador leria como se fossem duas coisas. */
+.afty-vital[data-afty-vital="pe"] .afty-vital-temp {
+  color: var(--afty-petemp);
+}
+
 /* Abaixo da metade o número puxa para o âmbar, e abaixo de um quarto ele fica
    na cor do próprio recurso e a barra pulsa. É a informação que o jogador
    procura primeiro ao olhar a ficha. */
@@ -370,11 +388,24 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
 }
 
 .afty-vital-trilho {
+  position: relative;
   height: 0.625rem;
   border-radius: 9999px;
   background: var(--afty-poco);
   overflow: hidden;
   box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.5);
+}
+
+/* ⚠ A CASCA SOBREPÕE, e não fica ao lado (2026-08-26). Ao lado ela dividia os
+   100% do trilho com o recurso, e o caso em que ela mais importa é justamente
+   aquele em que ela SOMEM: com o recurso cheio sobram 0% e a faixa não aparecia,
+   e ganhar casca com o recurso cheio é o normal, não a exceção. Pintar por cima
+   é o que o autor pediu ("usar a mesma barra e ir sobrescrevendo ela com outra
+   cor") e é como a 2.5.2 desenha a dela. */
+.afty-vital-casca {
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 .afty-vital-barra {
@@ -422,8 +453,179 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
 }
 
 /* ============================================================ */
+/* GUARDA INABALÁVEL — só Calamidade e Beyond                    */
+/* ============================================================ */
+/* Uma TIRA de uma linha, e não um cartão: ela vive no cabeçalho, que é a parte
+   da tela que o autor já apontou como alta demais, e some inteira para os
+   outros patamares. A casca dela NÃO é desenhada aqui: a Vida da Guarda está no
+   mesmo pote do PV Temporário, então quem a mostra é a barra de PV logo acima.
+
+   `flex-wrap` e não grade: são poucos itens, de larguras muito diferentes, e o
+   que precisa acontecer no celular é os botões caírem para a linha de baixo
+   inteiros. É o caso oposto ao da fileira de defesas. */
+.afty-guarda {
+  display: flex;
+  /* ⚠ LINHA DE BASE, e não centro. O bônus é 1,0625rem e o resto da tira é
+     0,5625rem e 0,75rem, e centrar caixas de alturas diferentes deixa cada
+     número apoiado num lugar. Number se lê pela base: com `center` o "+5"
+     flutuava em relação ao "0 / 145" ao lado (autor, 2026-08-26). O ícone e os
+     botões voltam para o centro logo abaixo, porque eles não têm base. */
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  padding: 0.375rem 0.625rem;
+  border: 1px solid var(--afty-borda);
+  border-left: 3px solid var(--afty-destaque);
+  border-radius: var(--afty-raio-peq);
+  background: var(--afty-poco);
+}
+
+/* Quebrada perde o realce da borda e esmaece: o mestre tem de ver de longe que
+   aquele chefe está aberto, sem ler número nenhum. */
+.afty-guarda[data-afty-guarda="quebrada"] {
+  border-left-color: var(--afty-borda-forte);
+  opacity: 0.72;
+}
+
+.afty-guarda-icone {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  align-self: center;
+  color: var(--afty-destaque);
+}
+
+.afty-guarda[data-afty-guarda="quebrada"] .afty-guarda-icone {
+  color: var(--afty-texto-fraco);
+}
+
+.afty-guarda-rotulo {
+  font-size: 0.5625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--afty-texto-fraco);
+}
+
+.afty-guarda-valor {
+  font-family: var(--afty-fonte-num);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 1.0625rem;
+  line-height: 1.1;
+  color: var(--afty-texto);
+}
+
+.afty-guarda-vida {
+  font-family: var(--afty-fonte-num);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.75rem;
+  /* A mesma entrelinha do bônus. Com a herdada (1,5) a caixa desta ficava mais
+     alta que a do número grande e engordava a tira sem motivo. */
+  line-height: 1.1;
+  color: var(--afty-texto-fraco);
+}
+
+/* ⚠ PALAVRA SOLTA, sem pílula e sem borda. Era um `afty-chip[data-afty-tom=
+   "aviso"]` e o autor apontou em 2026-08-26 que ficava berrante: âmbar, cantos
+   9999px e borda, ao lado dos vitais. Quebrada não é erro do jogador nem coisa
+   a corrigir, é o resultado da luta, e o `--afty-aviso` é para o que pede ação.
+   O roxo do sistema diz o estado sem gritar, e a tira inteira já esmaece por
+   fora (ver o `data-afty-guarda`). Mesmo corpo do rótulo "Guarda" ao lado, para
+   os dois lerem como uma linha só. */
+.afty-guarda-quebrada {
+  font-size: 0.5625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--afty-destaque-texto);
+  white-space: nowrap;
+}
+
+/* Empurra os botões para a direita e os mantém juntos ao quebrar a linha. */
+.afty-guarda-controles {
+  display: flex;
+  align-items: center;
+  /* Botão não tem linha de base útil: alinhado por ela, ele afundava. */
+  align-self: center;
+  gap: 0.25rem;
+  margin-left: auto;
+}
+
+/* ⚠ BOTÃO DISCRETO, e não o `afty-botao` do resto da ficha. O autor apontou em
+   2026-08-26 que Golpe e Raio Negro ficaram "grandes e destacados": eles moram
+   no cabeçalho, encostados nos vitais, e com preenchimento e peso de fonte
+   disputavam a atenção com o PV. Aqui o peso todo é a BORDA, e ela só acende no
+   hover. Mesma altura do `afty-passo`, para a tira não engordar. */
+.afty-guarda-botao {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  height: 1.25rem;
+  padding-inline: 0.375rem;
+  border: 1px solid var(--afty-borda);
+  border-radius: var(--afty-raio-peq);
+  color: var(--afty-texto-fraco);
+  font-size: 0.6875rem;
+  line-height: 1;
+  white-space: nowrap;
+  transition: color 140ms, border-color 140ms;
+}
+
+.afty-guarda-botao:hover:not(:disabled) {
+  color: var(--afty-texto);
+  border-color: var(--afty-destaque);
+}
+
+.afty-guarda-botao:disabled {
+  opacity: 0.4;
+}
+
+.afty-guarda-botao-icone {
+  width: 0.6875rem;
+  height: 0.6875rem;
+  flex-shrink: 0;
+}
+
+/* O contador de golpes gruda no rótulo, como um índice. */
+.afty-guarda-contador {
+  font-family: var(--afty-fonte-num);
+  font-variant-numeric: tabular-nums;
+  margin-left: 0.125rem;
+  color: var(--afty-texto-suave);
+}
+
+/* Alvo de toque: no celular e no tablet os três crescem, como o `afty-passo`
+   já faz. Um botão de 20px de altura não se acerta com o dedo. */
+@media (pointer: coarse) {
+  .afty-guarda-botao { height: 2rem; padding-inline: 0.625rem; font-size: 0.75rem; }
+}
+
+.afty-ficha[data-afty-densidade="compacta"] .afty-guarda {
+  padding-block: 0.1875rem;
+}
+
+/* ============================================================ */
 /* STATS — cada número derivado                                  */
 /* ============================================================ */
+
+/* ⚠ AS COLUNAS SAEM DA LARGURA, e não de um `grid-cols-N` por breakpoint.
+   A fileira tem de 8 a 12 células conforme a criatura: Preparo aparece só para
+   o Combatente, e RD Específica, RD a Alma e RD Física só para quem tem a
+   fonte. Com o número de colunas fixo, a primeira célula a mais abria uma
+   SEGUNDA FILEIRA quase vazia, e o cabeçalho crescia junto. Onde isso mais
+   dói é no retrato: ele é uma célula da grade do cabeçalho e estica com a
+   altura da linha, então a moldura virava uma tira alta e estreita e a foto
+   perdia as laterais. O autor apontou em 2026-08-26, pelo Preparo.
+
+   `auto-fit` resolve dos dois lados: com poucas células as faixas vazias
+   somem e as que ficam se alargam, e com muitas ele cria quantas couberem.
+   O piso de 4,5rem é o ponto em que o número continua legível, e o rótulo
+   apara no `text-overflow` com o nome inteiro no `title`. */
+.afty-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(4.5rem, 1fr));
+  gap: 0.375rem;
+}
 
 /* ⚠ CÉLULA DE TAMANHO FIXO, numa grade. Antes era `flex-wrap` e cada caixa
    ficava do tamanho do próprio texto, com "CD" minúscula ao lado de

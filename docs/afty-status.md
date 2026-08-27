@@ -117,6 +117,596 @@ Estado atual do sistema Afty (atualizado 2026-08-18). Leia junto com:
 
 ---
 
+## SESSÃO DE 2026-08-26 (parte 4): A GUARDA INABALÁVEL, E A FILEIRA QUE ESTICAVA O RETRATO
+
+Dois pedidos do autor, e o segundo fechou um TODO que estava aberto desde julho.
+
+### 1. A fileira de defesas quebrava linha e esticava o retrato
+
+*"quando temos informações adicionais como Pontos de Preparo, as informações dão uma quebra de linha*
+*que esticam a imagem"*.
+
+A fileira de defesas tem de **8 a 12 células** conforme a criatura: Preparo aparece só para o
+Combatente, e RD Específica, RD a Alma e RD Física só para quem tem a fonte. As colunas eram
+`grid-cols-3 sm:5 lg:7 xl:9`, um número FIXO por breakpoint, então a primeira célula a mais abria
+uma segunda fileira quase vazia. No `lg` isso acontecia já com **oito**, que é o mínimo.
+
+⚠ **Onde isso doía não era a fileira, era o RETRATO.** Ele é uma célula da grade do cabeçalho e
+estica com a altura da linha, então crescer à esquerda o transformava numa tira alta e estreita, e o
+`object-fit: cover` ia comendo as laterais da foto.
+
+O conserto é `repeat(auto-fit, minmax(4.5rem, 1fr))` no `.afty-stats`, e ele resolve dos dois lados:
+com poucas células as faixas vazias somem e as que ficam se alargam, e com muitas ele cria quantas
+couberem. Medido na largura útil do `max-w-7xl`: no `lg` cabem 10 numa fileira (antes 7) e no `xl`
+cabem 13 (antes 9), ou seja, a fileira mais cheia que o sistema produz hoje cabe inteira.
+
+⚠ **As colunas saíram do JSX e foram para o `ficha.css`.** Ficaram em UM lugar, e o painel de
+Encontros veio junto: lá a coluna é estreita e muda de largura com a lista de iniciativa ao lado,
+então contar colunas por breakpoint errava ainda mais do que na Ficha.
+
+O retrato ganhou um **teto de 13rem** por cima disso. Não é o conserto, é a rede: sobra o tablet
+estreito e a ficha com as doze defesas, e sem o teto a moldura continuaria podendo virar tira.
+
+### 2. Guarda Inabalável
+
+*"inimigos de patamar Calamidade receberão um aumento de +5 na sua CA e em TRs no início da rodada,*
+*o qual será reduzido em 2 a cada ataque ou habilidade que ele sofra"*, com +10 no Beyond, mais
+`5 × ND` e `10 × ND` de Vida Temporária.
+
+⚠ **Isto fecha o `derived.guarda = null`**, que estava marcado TODO desde julho com o motivo
+"depende do contador de ataques consecutivos, CU9". O contador é estado de SESSÃO, e era isso que
+faltava perceber: o derivado só precisa do teto de cada rodada.
+
+⚠ **E a regra REPRODUZ a tabela da planilha em vez de substituí-la.** Lá a Guarda saía de
+`SWITCH(CU9; 0;5; 1;3; 2;1; 3;0; ...)` no Calamidade e `SWITCH(CU9; 0;10; 1;8; 2;6; 3;4; 4;2; 5;0)`
+no Beyond, que é exatamente "começa em 5 (ou 10) e cai 2 por golpe, com piso em zero". O `CU9` era o
+contador de golpes. Há assert medindo as duas escadas degrau a degrau.
+
+#### As quatro respostas do autor
+
+| Pergunta | Resposta |
+|---|---|
+| A Vida volta a cada rodada? | **Volta cheia toda rodada**, junto do bônus |
+| Barra própria ou o mesmo PV Temporário? | **Mesmo pote**, e ACUMULA com as outras fontes dele |
+| Condição e Raio Negro quebram de vez? | Enquanto durar a condição, perde bônus E Vida. Depois volta no início da rodada |
+| Que força tem "Incapacitado"? | **Foi retirada**, pode ignorar |
+| *(segunda passada)* zerar o bônus quebra? | **Sim**, e o PV Temporário se perde junto |
+
+⚠ **A quinta resposta corrigiu um erro meu**, e vale registrar qual. Eu havia tratado o desgaste
+como coisa separada da quebra: o bônus zerava pelos golpes e a Guarda continuava de pé, esperando o
+dano comer a casca. É o contrário. **Moer o bônus até zero É o caminho normal de derrubar a Guarda**,
+e ele leva a casca junto. Dá **3 golpes no Calamidade e 5 no Beyond**, que é exatamente o que faz a
+característica pedir trabalho em equipe: uma criatura sozinha não tira três ataques numa rodada.
+
+⚠ **E a escada de números não mudou.** O degrau em que ela chega a zero é o degrau em que a Guarda
+quebra, então a tabela da planilha continua exata. O que muda é o que acontece com a casca ali.
+
+Uma consequência de tela: o botão de desfazer golpe **some com a Guarda quebrada**. Depois da quebra
+a casca foi perdida e nada sabe quanto ela valia (o dano pode ter comido parte antes), então
+devolvê-la seria número inventado. A rodada seguinte é quem reergue.
+
+São **oito** condições e não nove: Desprevenido, Desorientado, Confuso, Exposto, Fragilizado,
+Atordoado, Paralisado e Inconsciente. O assert amarra as oito contra o `CONDICOES_CATALOGO`, porque
+uma condição renomeada lá deixaria a Guarda inquebrável por ela **sem sintoma nenhum**, que é a
+mesma armadilha do requisito `nota`.
+
+#### ⚠ O bônus entra como EFEITO, e não somado à mão na fórmula da Defesa
+
+É a decisão que mais economizou código. A Guarda virou a **quarta lista de efeitos** do derive, ao
+lado do Domínio, do Estilo e do Tamanho, pelo mesmo motivo dos três: ela SOMA em números que só
+fecham depois do estágio 2, e ela mesma sai de dois canais.
+
+Três coisas saem de graça por causa disso:
+
+- o hover de fontes da Defesa mostra **"Guarda Inabalável +5"** com dono, e não um +5 órfão;
+- o TR **rolado** na aba de Perícias já sai certo, porque `resolveTestes` recebe o mesmo `ef`;
+- um `bonusTR` **sem alvo** vale para os cinco (ver `valorCanalEscopos`), então "aumento em TRs" é
+  um efeito e não uma lista de cinco escrita à mão.
+
+#### ⚠ O `pvTempAtual` virou mapa por fonte, e nunca tinha tido fonte nenhuma
+
+"Mesmo pote" obriga a saber **de quem** era o PV temporário que se perdeu, porque é a perda da parte
+DELA que quebra a Guarda. Então `pvTempAtual` (um número) virou `pvTempFontes` (um mapa), igual ao
+`peTempFontes` que nasceu na parte 2 desta mesma data. Sessão velha migra: o número vira uma fonte
+com nome, e quem estava no meio de uma luta não perde a casca ao recarregar.
+
+⚠ **Ao converter apareceu que NADA alimentava o pote.** O `derived.pvTemporario` é calculado,
+aparece no Preview do criador e **nunca chegava à sessão**: só o `aplicaDano` mexia no campo, para
+baixo, a partir de um zero que ninguém subia. A Guarda é a primeira fonte de verdade. Ligar o
+`pvTemporario` da bancada é uma linha e ficou em `docs/a-fazer.md`, porque é mudança de
+comportamento que não foi pedida.
+
+#### O que a Guarda tocou, e o que ela deliberadamente não tocou
+
+Nasceu `src/systems/afty/ui/guarda.jsx`, **compartilhado desde o primeiro dia**. É a lição da parte
+3: as duas telas mexem na mesma sessão, e uma errata aplicada de um lado só faria o mestre e o
+jogador contarem golpes diferentes na mesma criatura.
+
+⚠ **A casca NÃO é desenhada no componente da Guarda.** A Vida dela está no mesmo pote do PV
+temporário, então quem a mostra é a barra de PV do `Vital`, como qualquer outra casca. Na tira ficam
+só o bônus corrente, quanto da casca ainda é dela, e os dois botões (Golpe e Raio Negro).
+
+⚠ **Os botões da tira são discretos de propósito.** A primeira versão usava o `afty-botao` cheio e o
+autor apontou que Golpe e Raio Negro ficaram "grandes e destacados". A tira mora no cabeçalho,
+encostada nos vitais, e botão com preenchimento e peso de fonte ali disputa a atenção com o PV, que é
+o que se olha primeiro. Viraram `.afty-guarda-botao`: altura do `afty-passo`, peso todo na borda, e a
+borda só acende no hover. Em tela de toque eles crescem, pelo `pointer: coarse` de sempre.
+
+⚠ **A tira alinha pela LINHA DE BASE, e não pelo centro.** Com `center` o bônus (1,0625rem) flutuava
+uns 1,6px em relação ao "0 / 145" (0,75rem) ao lado: caixas de alturas diferentes centradas não põem
+as bases no mesmo lugar, e número se lê pela base. O ícone e os botões voltam ao centro com
+`align-self`, porque não têm base útil.
+
+⚠ **E "Quebrada" deixou de ser chip de aviso.** Ela nasceu como
+`afty-chip[data-afty-tom="aviso"]` e o autor apontou que ficava berrante: âmbar, cantos de 9999px e
+borda, tudo ao lado dos vitais. O tom de aviso é para o que **pede ação**, e uma Guarda caída não
+pede nada, é o que a luta produziu. Virou palavra solta em `--afty-destaque-texto`, o roxo do
+sistema, sem pílula e sem borda. A tira inteira já esmaece por fora, então a palavra não precisa
+carregar o peso sozinha.
+
+As cinco classes da tira entraram no **contrato de tema** (`ficha-tema.js`), na lista de seletores e
+no mapa da página. Classe que a Ficha desenha e o contrato não lista é classe que o usuário só
+descobre inspecionando o HTML, e aí ele escreve CSS em cima de um nome que ninguém prometeu manter.
+
+⚠ **Fora de combate a Guarda aparece com o TETO e sem bônus aplicado.** É a criatura em repouso: ela
+é erguida no início da rodada, não na ficha. Por isso o criador e o Preview não mostram a Defesa
+inflada, e por isso ela não foi para a bancada de Simulação de Combate, seguindo a mesma resposta que
+o autor deu à casca de PE na parte 3.
+
+⚠ **Um aviso da aba Buffs virou mentira e foi consertado junto.** O chip *"Condição não muda número,*
+*resolve na mesa"* deixou de valer no dia em que oito condições passaram a derrubar a Defesa e os
+cinco TRs de um chefe. Ele some agora para quem tem Guarda, e continua para todo o resto.
+
+**Uma assunção, e ela está anotada:** o autor disse que a Vida soma com as outras cascas e não disse
+em que **ordem** o dano as come. A Guarda drena PRIMEIRO, porque ela é a camada de fora (a criatura a
+reergue toda rodada, e as outras cascas não voltam) e porque precisa ser alcançável para a regra
+funcionar como está escrita. Hoje não muda número nenhum, já que ela é a única fonte do pote.
+
+### Verificação
+
+- `npx eslint src/systems/afty/` passou.
+- `npx vite build` passou.
+- `npm run asserts`: **1139 asserts em 25 arquivos**. O novo é o `t-guarda.mjs` (101): os dois canais,
+  as duas escadas da planilha degrau a degrau, o bônus chegando na Defesa e nos cinco TRs com o hover
+  fechando a conta, as oito condições contra o catálogo, o ciclo inteiro de sessão (erguer, golpe,
+  desfazer, dano, quebrar, reerguer, topar em vez de acumular), o Raio Negro, a condição que destrói
+  e não suspende, o descanso, a criatura que deixou de ser Calamidade, a migração do `pvTempAtual` e
+  a ordem de drenagem.
+- `src/components/` sem alteração.
+
+---
+
+## SESSÃO DE 2026-08-26 (parte 3): TUDO QUE É BARREIRA VALE UM NÚMERO DE PAREDES
+
+As três respostas do autor às perguntas que a parte 2 abriu. Duas fecharam questão sem código, e a
+terceira achou um bug que a própria parte 2 tinha criado.
+
+### 1. A parede é a UNIDADE, e a Cortina vale 3
+
+*"Calculo de Barreiras segue o texto da Aptidão: Técnicas de Barreiras e Paredes Resistentes.*
+*Ficando: [ 10 + (ND * Nível de Barreira) + Outros ] usando Paredes Resistentes."*
+*"Cortina usa a vida 3 de Paredes e Domínio usa a vida de 12 Paredes."*
+
+A fórmula já estava certa, e a resposta a reconfirmou. O que ela acrescentou é a **regra geral** que
+faltava escrita:
+
+| Estrutura | Vale |
+|---|---|
+| parede de Técnica de Barreira | 1 (a unidade) |
+| **Cortina** | 3 paredes |
+| domo da Expansão de Domínio | 12 paredes |
+
+⚠ **Isso responde de vez a pergunta que a parte 2 abriu.** Eu tinha perguntado se o Treino de
+Barreiras devia mesmo escalar o domo doze vezes, e a resposta é que sim, por construção: tudo que é
+barreira é feito de paredes, então melhorar a parede melhora as três de uma vez, sem regra separada
+para cada. O `PAREDES_NO_DOMO = 12` estava marcado "A CONFIRMAR" no código desde a portabilidade,
+porque era regra da 2.5.2 e o livro do Afty não repete a conta. Está confirmado.
+
+⚠ **A Cortina é aptidão desde a transcrição e NUNCA teve número.** O texto dela diz o custo (1 PE
+por 9 metros de área) e diz o que ela faz, e nunca a vida. Agora ela tem, e só aparece para quem tem
+a aptidão.
+
+Medido num Conjurador ND 20, BAR 3, com Paredes Resistentes e o Treino de Barreiras completo:
+o BAR sobe para 4 pela 2ª etapa, o canal `pvParede` põe 20 pelas etapas 1ª e 3ª, e a conta fecha
+exatamente como o autor a escreveu: `10 + (20 × 4) + 20 = 110`. A Cortina fica 330 e o domo 1320.
+
+O hover da Cortina é o da parede com a multiplicação no fim, e não uma conta paralela: o leitor tem
+de ver de onde sai a parede antes do `× 3`.
+
+### 2. O Conflito fica onde está
+
+*"Conflito mora junto com Expansão de Domínio."*
+
+Nada a fazer. Ele já está no cabeçalho do card de Expansão, no criador, e numa linha no topo da
+seção de Expansão, na Ficha, com o botão de rolar. A alternativa que eu havia levantado (mover para
+a aba de Perícias e Testes, junto do Ataque, dos TRs e das Manobras) está descartada.
+
+### 3. ⚠ O `Vital` estava DUPLICADO, e as duas cópias já tinham divergido
+
+*"Deve aparecer na Ficha Final e no Combat Tracker"*, sobre a casca de PE.
+
+A resposta parecia confirmar o que já existia, e ao conferir apareceu o buraco: **o painel de
+Encontros tem uma cópia própria do componente `Vital`**, e ela não recebeu nada da parte 2. O Combat
+Tracker estava com a versão antiga, em que:
+
+- a faixa temporária ficava **ao lado** do recurso, dividindo os 100% do trilho, e por isso **sumia
+  com a barra cheia**, que é justamente quando a casca importa;
+- a cor era sempre a do PV temporário, então uma casca de energia sairia âmbar;
+- o `title` dizia "PV Temporário" fixo, mesmo num vital de PE;
+- e o PE nem recebia a casca: nem `temp`, nem o gasto que drena.
+
+**A extração é o conserto, e não o remendo.** Nasceu `src/systems/afty/ui/vital.jsx`, e as duas
+telas importam de lá. É a mesma história do `fontes.jsx`, extraído em 2026-08-05 pelo mesmo motivo:
+duas cópias de um componente de tela divergem na primeira errata, e aqui a errata já tinha
+acontecido antes de alguém notar.
+
+⚠ **A diferença real entre as duas telas é UMA e ela é deliberada:** no painel de Encontros a coluna
+é estreita e o máximo não abre hover de fontes. Isso virou o `partes` opcional, e não um segundo
+componente.
+
+O gasto que drena a casca primeiro entrou junto no painel de Encontros. As duas telas mexem na
+**mesma sessão**, então divergir ali faria o mestre e o jogador chegarem a números diferentes na
+mesma criatura.
+
+O token `--afty-petemp` e a classe `.afty-vital-casca` moram sob `.afty-ficha` no `ficha.css`, e o
+painel de Encontros já importa esse arquivo e usa a classe na raiz, então nada de CSS precisou ser
+duplicado.
+
+**O assert que entrou é de ARQUIVO**, e não de lógica: ele confere que as duas telas importam o
+componente compartilhado e que nenhuma declara um `Vital` próprio. Assert de lógica não pega
+duplicação de componente, e foi duplicação que causou o bug.
+
+### Verificação
+
+- `npx eslint src/systems/afty/` passou.
+- `npx vite build` passou.
+- `npm run asserts`: **1038 asserts em 24 arquivos**. O `t-dominio-barreira.mjs` foi de 79 para 101:
+  entraram a Cortina e o domo como múltiplos da parede, a fórmula das duas aptidões medida verbatim
+  (com e sem Paredes Resistentes, com e sem o Treino), o hover da Cortina, e a seção 6, que amarra o
+  `Vital` compartilhado.
+- `src/components/` sem alteração.
+
+---
+
+## SESSÃO DE 2026-08-26 (parte 2): O DOMÍNIO PASSA A LER O MOTOR
+
+As quatro respostas do autor à varredura da parte 1, e o que cada uma virou.
+
+Sete canais nasceram, e o placar das 60 posições foi de **36 automatizadas** para **47**, medido e
+não estimado:
+
+| Linha | Antes | Depois |
+|---|---|---|
+| Domínios | **0/5** | 4/5 |
+| Barreiras | 1/5 | **5/5** |
+| Controle de Energia | 3/5 | **5/5** |
+| Potencial Físico | 2/5 | 3/5 |
+
+Agilidade, Compreensão e Atributo já estavam inteiras e continuam. Domínios para em 4/5 porque o
+Completo dele é a Modificação Completa, que a resposta 4 fechou como texto.
+
+### 1. A Expansão de Domínio lê o Motor, e o Conflito ganhou fórmula
+
+*"Domínio Passa a ler o Motor. E preciso do calculo do Conflito de Domínio que é 1d10 + Nível
+Domínio + Metade do ND + Outros"*.
+
+O bloqueio era o destino, e não a linha: `areaDominio`, `maxEfeitos` e `pvDaParede` eram funções
+puras de DOM, BAR, ND e Bônus de Treinamento, e não recebiam nada. As três passaram a aceitar um
+bônus, e nasceram três canais para alimentá-las.
+
+**O Conflito de Domínio não existia em lugar nenhum do sistema.** Era por isso que a 1ª e a 3ª etapa
+do Treino de Domínios ("+1 em rolagens para confrontos e contestações de expansões") não tinham onde
+escrever: o `+1` estava certo e a rolagem é que faltava. Agora `conflitoDeDominio` devolve o dado, o
+bônus e as partes para o hover, e o canal `conflitoDominio` é o "Outros" da fórmula.
+
+⚠ **Ele é da CRIATURA, e não de uma expansão**, então mora no resumo e não em cada linha: quem
+confronta é o feiticeiro, e o número existe desde que haja Nível de Aptidão em Domínio, mesmo sem
+nenhuma expansão escrita na ficha.
+
+Metade do ND é **piso**, pela regra geral de arredondamento.
+
+Medido num Conjurador ND 20, DOM 5: sem treino `1d10+15`, com a linha completa `1d10+17`, área de 9
+para 12 metros, e o limite de efeitos de 3 para 4.
+
+⚠ **O texto do domínio recebe os bônus por ARGUMENTO**, e não os lê. `afty-dominios.js` não conhece
+o Motor e nem pode: quem resolve efeito é o `deriveAfty`, que chama a função depois. Sem passar os
+dois, o parágrafo do domínio diria uma área diferente da que o chip ao lado mostra, que é a classe
+de bug do detalhamento errado.
+
+### 2. Técnicas de Barreira ganhou tela, e ela nunca tinha tido
+
+*"Precisamos de arrumar algum local para colocar a Vida, RD e Máximo de Paredes"*.
+
+A aptidão existe desde a transcrição e o que a ficha mostrava de barreira era só o PV do **domo**,
+dentro do card de Expansão. A parede em si, que é o que o jogador ergue com uma Ação Comum, não
+aparecia em canto nenhum. Nasceu o card **Técnicas de Barreira**, ao lado da Expansão, com três
+números e hover de fontes em cada um. Some junto com a aptidão: sem ela não há o que erguer.
+
+- **PV por Parede**: `5 + BAR × metade do ND`, ou `10 + BAR × ND` com Paredes Resistentes, mais o
+  canal `pvParede`.
+- **RD por Parede**: ⚠ **não existia**. O livro não dá RD a parede nenhuma, e quem concede é o
+  Completo do Treino de Barreiras. Sem fonte o valor é zero, que é o que o livro diz.
+- **Máximo de Paredes**: as 6 do texto verbatim mais o canal `maxParedes`.
+
+⚠ **O Completo de Barreiras é o primeiro Completo do LIVRO a usar a passagem direta.** "RD igual ao
+seu Nível de Aptidão em Barreiras" não é constante, é o `bar` da ficha, e o vocabulário de `tipo` só
+sabe escrever número. A passagem direta existia desde 2026-08-22, mas só um Addon a usava.
+
+### 3. O PE Temporário, como o da 2.5.2
+
+*"De usar a mesma barra de PE, e ir sobreescrevendo ela com outra cor"*.
+
+Nasceu o canal `peTemporario`, que faltava desde julho (o topo deste doc o nomeava como "o PE
+temporário exclusivo de Aptidão"). ⚠ **O alvo dele é o GATILHO**, e não um destino: `combate`
+entrega uma vez quando a cena começa, `rodada` reenche a cada rodada.
+
+⚠ **A mesma fonte TOPA, não acumula.** Copiado em desenho do `applyRoundStartResources` da 2.5.2,
+que resolveu isto primeiro. Sem a regra, "no começo de toda rodada você ganha metade do Bônus de
+Treinamento" viraria uma pilha infinita na rodada 10. O que a rodada faz é devolver ao teto da fonte
+o que foi gasto.
+
+⚠ **A CHAVE da fonte leva o gatilho junto, e o nome sozinho NÃO serve.** O Treino de Controle de
+Energia emite nos dois gatilhos (4 na cena pela 2ª etapa, metade do BT por rodada pelo Completo) e o
+`efeitosDeTreino` carimba o nome da LINHA nos dois. Com o nome como chave os dois viravam a mesma
+fonte, e a rodada 1 dava 4 em vez de 7. São dois benefícios diferentes da mesma linha, e o assert
+mede exatamente isso.
+
+**Uma divergência deliberada da 2.5.2, e ela é de forma, não de comportamento.** Lá o PE temporário
+é PE **acima do máximo** (`peCurrent > peMax`), e aqui é um **buffer separado**, como o
+`pvTempAtual` que a Ficha já tinha. Os dois desenham a mesma barra e gastam na mesma ordem. O buffer
+é melhor deste lado porque o `aparaSessao` continua podendo aparar o `peAtual` no máximo sem apagar
+a casca, e porque PV e PE ficam com a MESMA forma na Ficha em vez de uma casca de cada jeito.
+
+**Onde a cena começa**, em cada tela:
+- na **Ficha**, sair da rodada 0 é começar a cena. Ela não tem botão de iniciar combate, tem o
+  contador de rodada, que o Descansar zera. Sem essa ligação os 4 PE da 2ª etapa nunca chegariam a
+  quem joga pela Ficha, só a quem joga pela aba de Encontros.
+- na aba de **Encontros**, o `COMECAR` entrega as duas cascas de uma vez, e a de `rodada` já vale a
+  primeira rodada, senão o Completo só valeria da segunda em diante.
+
+#### ⚠ A casca SOBREPÕE a barra, e esse foi um conserto do próprio trabalho desta sessão
+
+A primeira versão punha a faixa temporária **ao lado** do recurso, dividindo os 100% do trilho, que
+é como o PV temporário já fazia. O caso em que a casca mais importa é justamente aquele em que ela
+**sumia**: com o recurso cheio sobram 0% e a faixa não aparecia. E ganhar casca com o PE cheio é o
+normal, não a exceção.
+
+Agora ela é `position: absolute` por cima, a partir da esquerda, que é o que o autor pediu com a
+palavra "sobrescrevendo" e é como a 2.5.2 desenha a dela. **O PV temporário foi junto**, porque o
+defeito era o mesmo nos dois.
+
+A cor é token próprio, `--afty-petemp`. O `--afty-pvtemp` é âmbar, que contrasta com o vermelho do
+PV, e sobre o azul do PE viraria uma terceira cor sem parentesco. A casca de PE é o mesmo azul, mais
+claro, e o "+N" ao lado segue a cor dela.
+
+### 4. Modificação Completa é só prêmio
+
+*"Modificação Completa é só Premio."*
+
+A resposta fechou a questão em vez de mandar construir. Ela **não entra no catálogo de Aptidões**,
+então ninguém pode gastar vaga nela: quem a tem, ganhou do Treino de Domínios.
+
+O `grant: { tipo: "aptidao_amaldicoada", ... }` que ninguém lia **saiu**. Ele prometia um mecanismo
+que não existe. O que a criatura recebe continua sendo o TEXTO verbatim no `detalhe`, que é o
+caminho que já funcionava, e o `concedeAptidoes` não entra porque não há aptidão de catálogo a
+conceder.
+
+### Os seis canais novos, e onde eles rodam
+
+| Canal | O que mexe |
+|---|---|
+| `peTemporario` | casca de PE. Alvo = gatilho (`combate` ou `rodada`) |
+| `pvParede` | PV de cada parede, e o domo junto |
+| `rdParede` | RD de cada parede. Não existia |
+| `maxParedes` | quantas paredes de uma vez, por cima das 6 |
+| `areaDominio` | metros no raio da Expansão |
+| `efeitosDominio` | vagas de efeito na Expansão |
+| `conflitoDominio` | o "Outros" da rolagem de Conflito |
+
+⚠ **Os seis de Barreira e Domínio entraram no passe PÓS-APTIDÃO**, junto do `imbuicoesEstilo` e pelo
+mesmo encaixe: dependem de `dom` e `bar`, que o pré-contexto ainda não tem, e precisam estar prontos
+antes do `resumoDominios`, que o estágio principal não alcança. E o passe lê **as duas listas** de
+efeito, porque a fonte mais provável dos seis é uma Linha de Treinamento, que entra pelo montante.
+Filtrar só o `efeitosTodos` deixaria os dois treinos mudos, calados, que é o bug que este passe já
+pegou uma vez com o Estilo das Sombras.
+
+O `peTemporario` **não** é pós-aptidão: quem o consome é a sessão, depois de tudo.
+
+### Três perguntas que este trabalho abriu (e o autor respondeu no mesmo dia)
+
+⚠ **As três estão RESPONDIDAS**, na parte 3 logo acima. Saíram de `docs/a-fazer.md`.
+
+Foram estas, e a primeira era a que mais pesava:
+
+1. **O Treino de Barreiras multiplica por 12 no domo.** O canal `pvParede` mexe nos dois números,
+   porque o domo VALE doze paredes. Medido: a linha completa leva a parede de 35 para 75 PV e o domo
+   de 420 para 900. O `PAREDES_NO_DOMO = 12` já estava marcado "A CONFIRMAR" no código desde a
+   portabilidade, porque é regra da 2.5.2 e o livro do Afty não repete a conta.
+2. **O Conflito de Domínio tem lugar próprio?** Ele está no cabeçalho do card, no criador, e numa
+   linha no topo da seção, na Ficha. Pode ser que ele seja um teste como os outros e deva morar na
+   aba de Perícias e Testes.
+3. **A casca de PE devia aparecer na bancada de Simulação de Combate?** Ela é estado de mesa e não
+   de ficha, então a resposta pode muito bem ser não.
+
+### Verificação
+
+- `npx eslint src/systems/afty/` passou.
+- `npx vite build` passou.
+- `npm run asserts`: **1016 asserts em 24 arquivos**. O novo é o `t-dominio-barreira.mjs` (79): os
+  seis canais e o passe em que rodam, as 4 etapas de Domínios medidas uma a uma, o texto do domínio
+  batendo com o chip, a parede com e sem Paredes Resistentes, o domo subindo doze vezes, o ciclo
+  inteiro da casca de PE (cena, rodada, gasto, descanso, recarregar) e a Modificação Completa fora
+  do catálogo.
+- `src/components/` sem alteração.
+
+---
+
+## SESSÃO DE 2026-08-26: A VARREDURA DOS INTERLÚDIOS
+
+Pergunta do autor: *"notei que o Treino de Domínio não estava automatizado. E que alguns
+Pré-Requisitos não estão sendo considerados"*, mais uma regra nova: *"Treino de Potencial Físico
+é somente para Restringidos"*. A varredura passou nas 12 Linhas do livro, etapa por etapa, e achou
+os dois problemas que ele nomeou e **um terceiro que ninguém tinha visto**.
+
+### O placar, medido e não estimado
+
+Das 12 linhas, contando as 4 etapas mais o Completo (60 posições):
+
+| Estado | Quantas | Quais |
+|---|---|---|
+| automatizada | 36 | tem canal e o número chega |
+| sem canal, com número | 18 | a fila de trabalho, e o assunto do resto desta seção |
+| procedimento de mesa | 6 | Perícia 2ª, 4ª e Completo, Luta Completo, Energia Reversa 4ª e Completo |
+
+⚠ **Estes números são os do MEIO do dia.** A parte 2 desta mesma data levou as automatizadas de
+36 para 47, quando o autor mandou o Domínio ler o Motor. Ver a sessão logo acima.
+
+Por linha, das 5 posições de cada uma: Agilidade 5, Compreensão 5 e Atributo 5 estão inteiras.
+Luta 4, Resistência 4 e Manejo de Arma 4. Controle de Energia 3. Perícia 2 e Potencial Físico 2.
+Barreiras 1 e Energia Reversa 1. **Domínios 0.**
+
+**Só uma linha estava com zero automação: o Treino de Domínios**, nas 4 etapas e no Completo. As
+outras 11 têm ao menos uma etapa ligada.
+
+### 1. ⚠ O efeito da 2ª etapa do Potencial Físico era DESCARTADO CALADO
+
+O achado que não foi pedido. A etapa declarava `efeitos: [{ tipo: "atributo", valor: 2 }]`, e o
+`paraCanal` devolve `null` nesse tipo quando não há alvo de instância:
+
+```js
+case "atributo":
+  return alvoInstancia ? { canal: "atributo", alvo: alvoInstancia, expr } : null;
+```
+
+A linha **não é repetível**, então nunca houve alvo de instância. O efeito era jogado fora desde o
+dia em que foi escrito, e o catálogo parecia automatizado. Medido numa criatura Restringido ND 12:
+o PE sobe 48 → 50 na 1ª e 50 → 54 na 3ª, e nenhum atributo se move em etapa nenhuma.
+
+A declaração morta saiu e o benefício continua verbatim no texto. O que falta não é alvo, é
+**canal**: "2 pontos para distribuir" é orçamento livre, o irmão do `pontosAptidao` do lado do
+atributo, e ainda restrito aos três físicos. A planilha confirma a intenção (`AJ18` =
++2 Atributos, em `afty-formulas-base.md`).
+
+⚠ **O assert estrutural que entrou é o que importa aqui**, e não o conserto. Ele compara, linha a
+linha, quantos efeitos o catálogo DECLARA contra quantos o `efeitosDeTreino` EMITE. Divergir quer
+dizer que o `paraCanal` descartou algum calado. Cobre as 12 e vale para toda linha que um Addon
+acrescentar. Reinjetando o efeito morto, ele acusa: `potencial_fisico: declarou 3, emitiu 2`.
+
+### 2. Os 13 requisitos `nota` viraram requisito de verdade
+
+Esta é a mesma armadilha anotada em 2026-08-22: **requisito `nota` envelhece calado**. Quando o
+sistema que ele cobra nasce, ninguém avisa.
+
+Os 13 eram `nota` porque as Aptidões Amaldiçoadas não existiam na transcrição, e os dois tipos que
+os substituem (`aptidao` e `trilha`) só nasceram em 2026-08-22, com o Treino de Novo Estilo das
+Sombras. Ninguém voltou para varrer o resto. Cada um mapeia 1 para 1 numa entrada que já existe:
+
+| Linha | Etapa | Era | Virou |
+|---|---|---|---|
+| Barreiras | 1ª | nota "Técnicas de Barreira" | `aptidao: tecnicas_de_barreira` |
+| Barreiras | 3ª e 4ª | nota | `trilha bar 2` e `bar 3` |
+| Compreensão | 3ª e 4ª | nota | `trilha au 2` e `au 3` |
+| Controle de Energia | 3ª e 4ª | nota | `trilha cl 2` e `cl 3` |
+| Domínios | 1ª e 3ª | nota | `aptidao: expansao_de_dominio_incompleta` e `..._completa` |
+| Domínios | 4ª | nota | `trilha dom 5` |
+| Energia Reversa | 1ª | nota "Energia Reversa" | `aptidao: energia_reversa` |
+| Energia Reversa | 3ª e 4ª | nota | `trilha er 4` e `er 5` |
+
+**Nenhuma etapa do livro usa `nota` agora**, e há assert que amarra isso. O tipo FICA no avaliador,
+para o Addon que cite sistema que o Afty ainda não tem.
+
+⚠ **Consequência de mesa: eles BLOQUEIAM.** Antes o botão "Treinar" abria em qualquer caso e o chip
+só exibia o texto. Quem não tem a aptidão não pega mais a etapa. O rótulo agora sai do catálogo de
+trilhas, então diz **"Nível de Aptidão em Barreira 2"** no singular, e não "Barreiras": o livro
+define "Aptidão em Barreira (BAR)", e o plural do texto do treino é transcrição, não rótulo gerado.
+Isso já estava anotado em `afty-aptidoes.js` desde 2026-07-16, à espera deste dia.
+
+O `ctxReq` que a aba passa já estava certo (`aptidoes` e `niveisAptidao` vindos do derivado), então
+nada de novo precisou ser ligado.
+
+### 3. Potencial Físico é só do Restringido
+
+`soDaOrigem: ["restringido"]`, a trava POSITIVA aberta em 2026-08-22. É a segunda linha do sistema a
+usá-la e a **primeira do livro**.
+
+⚠ O `resumo` da linha já dizia *"Este treino só pode ser realizado por Restringidos"* desde a
+transcrição. O texto estava certo, a trava é que não existia, e a linha aparecia para as 13 origens.
+Mesma classe do que aconteceu com o encantamento de item em 2026-08-20: a informação escrita e o
+código não conversando.
+
+**Sem migração de ficha.** O Foco preso nela por quem não é Restringido volta sozinho, porque
+`focosGastos` já descarta linha indisponível. É o mesmo caminho do corte da Energia Reversa para a
+Maldição (2026-08-02).
+
+Um assert antigo caiu, e é assert que estava certo em envelhecer: `t-estilo-conteudo.mjs` media
+`treinamentosDaOrigem("inato").length >= 12`. Um Inato vê 11 das 12 agora, e o número virou exato,
+com a linha que falta nomeada.
+
+### O que continua SEM CANAL, e o bloqueio de cada um
+
+Nenhum é erro no catálogo. O texto de cada etapa está verbatim e no lugar, e o que falta é destino.
+As seis entradas foram para `docs/a-fazer.md`.
+
+1. **O Treino de Domínios inteiro.** A causa não é a linha, é o destino: `areaDominio`,
+   `maxEfeitos` e `pvDaParede` (em `afty-dominios.js`) são funções puras de DOM, BAR, ND e Bônus de
+   Treinamento, chamadas em `resumoDominios`, e **nenhuma recebe nada do Motor**. Não existe canal
+   para somar metro na área, efeito na expansão nem PV na parede. Precisa de decisão do autor:
+   a Expansão de Domínio passa a ler o Motor, ou a linha vira procedimento de mesa.
+2. **`peTemporario` não existe.** Há `pvTemporario` e não há o irmão. Pega Controle de Energia 2ª e
+   Completo, e Potencial Físico Completo. O topo deste doc já nomeava o buraco desde julho.
+3. **Orçamento LIVRE de atributo.** O caso do efeito morto acima.
+4. **Vaga extra de escolha aninhada** (Potencial Físico 4ª, "uma Dádiva do Céu adicional"). O
+   `concedeEscolha` lê só `escolhidasIds`, ou seja, vai de habilidade para habilidade, e uma Linha
+   de Treinamento não tem como emitir.
+5. **Teto de PER por uso** (Energia Reversa 1ª e 3ª). O `curaPontos` mira UMA linha de cura e a
+   regra fala da trilha inteira, e ele SUBSTITUI em vez de somar, então um `+1` cru não faria efeito.
+6. **Quatro sistemas que nunca chegaram:** efeito de crítico por grupo de arma e de pugilato
+   (Manejo de Arma 3ª, Luta Completo), dados de vida por descanso (Resistência 2ª), máximo de
+   paredes de Barreira (Barreiras 4ª), e a rolagem de confronto e contestação de expansões
+   (Domínios 1ª e 3ª).
+
+### 4. ⚠ O Completo do Treino de Domínios tem um SEGUNDO shape morto
+
+Achado na contagem final, e ele explica por que a linha de Domínios é a pior das 12. O Completo diz
+*"Você recebe a aptidão amaldiçoada Modificação Completa"* e declara:
+
+```js
+grant: { tipo: "aptidao_amaldicoada", nome: "Modificação Completa", categoria: "Aptidões de Domínio" },
+```
+
+**Ninguém lê esse `grant`.** É o shape que morreu em 2026-07-29 junto do `grantLabel`, e ele
+sobreviveu aqui porque a chave tem outro nome (`grant`, singular, aninhada no `completo`). Pior:
+**"Modificação Completa" não existe no catálogo de Aptidões.** O texto verbatim dela está no
+repositório desde a transcrição, na constante `MODIFICACAO_COMPLETA` do topo de
+`afty-treinamentos.js`, e serve só para o `detalhe` que a aba exibe. O jogador lê o que ganhou e
+não ganha nada.
+
+⚠ **Este é o mais perto de pronto de todos os buracos**, e mesmo assim não foi feito nesta sessão,
+porque tem pergunta de regra no meio. O mecanismo de conceder existe (`concedeAptidoes`, em
+`afty-origens.js`, que ignora o pré-requisito da própria aptidão e não gasta vaga) e o texto está em
+mãos. O que falta decidir é se Modificação Completa, entrando no catálogo, passa a ser comprável
+com vaga por quem tem Nível de Aptidão em Domínio, ou se ela só existe como prêmio deste treino.
+A pergunta está em `docs/a-fazer.md`.
+
+### As 6 que NÃO são pendência
+
+Perícia 2ª, 4ª e Completo, Luta Completo, Energia Reversa 4ª e Completo. São permissão que o jogador
+exerce na mesa, e não valor que a ficha calcula: "duas vezes por descanso você pode rolar com
+vantagem" não tem número para escrever em lugar nenhum. Ficam no texto de propósito, e o cabeçalho
+de `afty-treinamentos.js` agora diz isso.
+
+### Verificação
+
+- `npx eslint src/systems/afty/` passou.
+- `npx vite build` passou.
+- `npm run asserts`: **937 asserts em 23 arquivos**. O novo é o `t-interludios.mjs` (46): os 13
+  requisitos um a um mais o bloqueio de cada, a trava do Potencial Físico contra 6 origens, o Foco
+  que volta, o assert estrutural do efeito morto, e as três linhas já automatizadas como régua de
+  que nada mudou.
+- `src/components/` sem alteração.
+
+---
+
 ## SESSÃO DE 2026-08-20 (parte 3): O QUE AS FAIXAS NÃO ESTAVAM ENTREGANDO
 
 Pergunta do autor: *"como está funcionando Faixas atualmente? E o Acerto de Faixas, aumento de Dano

@@ -595,6 +595,14 @@ export const CONTRATO_DE_CLASSES = [
   { grupo: "Cabeçalho", seletor: ".afty-vital-temp", oque: "o PV temporário" },
   { grupo: "Cabeçalho", seletor: ".afty-vital-trilho", oque: "o sulco da barra" },
   { grupo: "Cabeçalho", seletor: ".afty-vital-barra", oque: "o preenchimento da barra" },
+  /* Guarda Inabalável: só existe no Calamidade e no Beyond, então quem pinta um
+     tema para uma criatura Comum nunca vê esta tira. Fica listada mesmo assim,
+     senão o tema do chefe é feito no escuro. */
+  { grupo: "Cabeçalho", seletor: ".afty-guarda", oque: "a tira da Guarda Inabalável (só Calamidade e Beyond)" },
+  { grupo: "Cabeçalho", seletor: ".afty-guarda-valor", oque: "o bônus corrente de CA e TR" },
+  { grupo: "Cabeçalho", seletor: ".afty-guarda-vida", oque: "a Vida Temporária da Guarda" },
+  { grupo: "Cabeçalho", seletor: ".afty-guarda-quebrada", oque: "a palavra \"Quebrada\"" },
+  { grupo: "Cabeçalho", seletor: ".afty-guarda-botao", oque: "os botões Golpe e Raio Negro" },
   { grupo: "Cabeçalho", seletor: ".afty-stats", oque: "a grade das defesas" },
   { grupo: "Cabeçalho", seletor: ".afty-stat", oque: "cada célula de defesa" },
   { grupo: "Cabeçalho", seletor: ".afty-stat-rotulo", oque: "o nome da defesa" },
@@ -679,6 +687,9 @@ export const MAPA_DA_PAGINA = `#afty-ficha                     a raiz
 │   ├── 3 × .afty-vital         Vida, Energia e Alma, lado a lado
 │   │   ├── .afty-vital-icone .afty-vital-rotulo .afty-vital-numero .afty-vital-max
 │   │   └── .afty-vital-trilho > .afty-vital-barra
+│   ├── .afty-guarda            a Guarda Inabalável, só no Calamidade e no Beyond
+│   │   ├── .afty-guarda-valor .afty-guarda-vida .afty-guarda-quebrada
+│   │   └── .afty-guarda-controles > .afty-guarda-botao
 │   ├── .afty-stats             grade de .afty-stat (Defesa, CD, RD, Movimento...)
 │   └── .afty-abas > .afty-aba  Ações · Habilidades · Perícias · Equipamentos ·
 │                                Invocações · Buffs

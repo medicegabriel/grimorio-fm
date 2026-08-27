@@ -208,15 +208,23 @@ export function conteudoDaFicha(creature, derived) {
   /* ---------- Talentos ---------- */
   const mapaTal = derived?.talentos?.escolhas?.mapa ?? {};
   const inacessiveisTal = new Set(derived?.talentos?.inacessiveis ?? []);
+  /* Um Talento pode ser pego mais de uma vez desde 2026-08-22 (`maxVezes` /
+     `maxVezesExpr`). `escolhidas` é sem repetição e quem conta é `vezes`, então
+     o contador sai daqui, com o mesmo chip das Habilidades Gerais. */
+  const vezesTal = derived?.talentos?.vezes ?? {};
   for (const id of derived?.talentos?.escolhidas ?? []) {
     const t = getTalento(id);
     if (!t) continue;
+    const vezes = vezesTal[id] ?? 1;
     itens.push(item({
       id,
       nome: t.nome,
       texto: t.descricao ?? "",
       grupo: "talento",
-      tags: t.nivel ? [{ label: `Nível ${t.nivel}`, tipo: "nivel" }] : [],
+      tags: [
+        ...(t.nivel ? [{ label: `Nível ${t.nivel}`, tipo: "nivel" }] : []),
+        ...(vezes > 1 ? [{ label: `${vezes}×`, tipo: "vezes" }] : []),
+      ],
       opcoes: opcoesEscolhidas(t, mapaTal),
       aviso: inacessiveisTal.has(id) ? "Pré-requisito não atendido" : null,
     }));

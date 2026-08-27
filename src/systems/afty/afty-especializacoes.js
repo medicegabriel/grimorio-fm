@@ -33,7 +33,7 @@
  * mandar o texto do livro. O texto vem VERBATIM, sem parafrasear.
  */
 
-import { registrarFamilia } from "./afty-addons";
+import { registrarFamilia, remendarLista } from "./afty-addons";
 import { getOrigem, origensQualificadas } from "./afty-origens";
 import { AFTY_TIPOS } from "./afty-schema";
 
@@ -108,8 +108,8 @@ let BY_ID = {};
 
 const ESPECIALIZACOES_BASE = AFTY_ESPECIALIZACOES.slice();
 
-function aplicarExtrasEspecializacoes(extras = []) {
-  AFTY_ESPECIALIZACOES.splice(0, AFTY_ESPECIALIZACOES.length, ...ESPECIALIZACOES_BASE, ...extras);
+function aplicarExtrasEspecializacoes(extras = [], remendos = null) {
+  AFTY_ESPECIALIZACOES.splice(0, AFTY_ESPECIALIZACOES.length, ...remendarLista(ESPECIALIZACOES_BASE, remendos), ...extras);
   BY_ID = Object.fromEntries(AFTY_ESPECIALIZACOES.map((e) => [e.id, e]));
 }
 
@@ -120,6 +120,7 @@ registrarFamilia("especializacoes", {
   chave: "id",
   obrigatorios: ["nome"],
   aplicar: aplicarExtrasEspecializacoes,
+  basicos: () => ESPECIALIZACOES_BASE,
   validador: validarCatalogoEspecializacoes,
   resolver: (id) => getEspecializacao(id),
   // A ficha guarda `[{ id, nivel }]`, e não uma lista de ids crus.

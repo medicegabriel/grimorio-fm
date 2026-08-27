@@ -1,0 +1,165 @@
+{
+  "id": "estilo-liberado",
+  "nome": "Estilo das Sombras Liberado",
+  "versao": "2.0.0",
+  "autor": "Afty",
+  "descricao": "Destrava o Novo Estilo da Sombra para a criatura que carrega este addon, mesmo que ela tenha Feitiços e não seja Sem Técnica, e faz ela contar como Sem Técnica para os Talentos de Origem e para o Treino. Traz o Domínio Simples com sustentação em PE, a Linha de Treinamento do Novo Estilo das Sombras e quatro Talentos de Origem, dois deles reescritos. O piso de Nível 4 do Estilo continua valendo.",
+  "paraRaw": "afty",
+  "libera": [
+    "estiloSombras",
+    "gemeosSemTecnica",
+    "qualificaSemTecnica"
+  ],
+  "acrescenta": {
+    "treinamentos": [
+      {
+        "id": "novo_estilo_das_sombras",
+        "nome": "Treino de Novo Estilo das Sombras",
+        "soDaOrigem": [
+          "sem_tecnica"
+        ],
+        "resumo": "O treino do novo estilo da sombra tem como objetivo aperfeiçoar todo o potencial que um feiticeiro sem uma técnica amaldiçoada pode ter. Esse treino só pode ser realizado por um Sem Técnica.",
+        "etapas": [
+          {
+            "n": 1,
+            "focos": 1,
+            "requisito": {
+              "tipo": "aptidao",
+              "id": "dominio_simples"
+            },
+            "beneficio": "Você recebe uma Técnica de Estilo adicional.",
+            "efeitos": [
+              {
+                "canal": "vagasEstilo",
+                "expr": "1"
+              }
+            ]
+          },
+          {
+            "n": 2,
+            "focos": 1,
+            "requisito": null,
+            "beneficio": "A área do seu Domínio Simples aumenta em 3 metros."
+          },
+          {
+            "n": 3,
+            "focos": 1,
+            "requisito": {
+              "tipo": "trilha",
+              "trilha": "dom",
+              "valor": 3
+            },
+            "beneficio": "O custo para erguer um Domínio Simples é reduzido em um valor igual a seu Nível de Aptidão em Domínio, com mínimo de 1."
+          },
+          {
+            "n": 4,
+            "focos": 2,
+            "requisito": {
+              "tipo": "trilha",
+              "trilha": "dom",
+              "valor": 5
+            },
+            "beneficio": "Reduz o custo de sustentação do Novo Estilo das Sombras em um valor igual a Metade de Sua Maestria."
+          }
+        ],
+        "completo": {
+          "beneficio": "Sua maestria com o Novo Estilo das Sombras chegou ao máximo, a quantidade de Efeitos que você pode manter ativa passa a ser igual ao dobro do seu Nível de Domínio.",
+          "efeitos": [
+            {
+              "canal": "imbuicoesEstilo",
+              "expr": "dom"
+            }
+          ]
+        }
+      }
+    ],
+    "talentos": [
+      {
+        "id": "coleta_de_talismas",
+        "nome": "Coleta de Talismãs",
+        "grupo": "origem",
+        "descricao": "Em busca de novas maneiras de compensar pela sua falta de técnica, você passa a buscar coletar talismãs com shikigamis imbuídos. Ao obter este talento, você recebe o talismã de um shikigami de 4° grau, o qual você pode criar conforme as regras padrão de invocações. No nível 5, você recebe um shikigami de 3° grau; no nível 10 você recebe um shikigami de 2° grau e, no nível 15, você recebe um shikigami de 1° grau. Caso não seja um Controlador, você segue as regras de controle geral.",
+        "requisitos": [
+          {
+            "tipo": "origem",
+            "id": "sem_tecnica"
+          }
+        ]
+      },
+      {
+        "id": "expansao_de_estilo",
+        "nome": "Expansão de Estilo",
+        "grupo": "origem",
+        "descricao": "Você pratica e se dedica a expandir o seu leque de técnicas do Novo Estilo da Sombra, conseguindo um estilo ainda mais extenso e versátil. Ao obter esse talento, você recebe uma Técnica de Estilo Adicional. Você também recebe mais uma técnica de estilo adicional no nível 14.",
+        "requisitos": [
+          {
+            "tipo": "origem",
+            "id": "sem_tecnica"
+          },
+          {
+            "tipo": "aptidao",
+            "id": "dominio_simples"
+          },
+          {
+            "tipo": "nd",
+            "valor": 6
+          }
+        ],
+        "efeitos": [
+          {
+            "canal": "vagasEstilo",
+            "expr": "1 + (nd >= 14)"
+          }
+        ]
+      }
+    ]
+  },
+  "substitui": {
+    "aptidoes": [
+      {
+        "id": "dominio_simples",
+        "descricao": "Conhecido originalmente como o “Domínio dos Fracos”, o Domínio Simples ergue uma barreira ao redor do usuário juntamente de seu domínio, neutralizando os efeitos e Acerto Garantido de uma expansão. Você pode, com uma Reação contra a expansão de um domínio ou como Ação Bônus no seu turno, gastar 5 PE e criar uma esfera de X metros de raio a sua volta (onde X é igual a: 1,5m + Nível de DOM x 1,5 metros). Você e toda criatura dentro do Domínio Simples não são afetados pelo Acerto Garantido e os efeitos de ambiente de um domínio. Para cada rodada após a primeira, é necessário pagar 2 PE para sustentar o domínio simples.\n\nNovo Estilo das Sombras\nCaso tenha acesso ao Novo Estilo das Sombras, como uma Ação Livre ao erguer um Domínio Simples, você pode selecionar uma quantidade de efeitos de estilo igual ao seu Nível de Aptidão de Domínio (esse valor pode ser aumentado por outras fontes). Para cada efeito de estilo escolhido, aumente em 1 PE o custo para erguer o Domínio Simples. Para cada rodada após a primeira, é necessário pagar 1 PE para cada Dois Estilos adicionados para sustentar os efeitos do Novo Estilo Das Sombras."
+      }
+    ],
+    "talentos": [
+      {
+        "id": "tal_estudo_amaldicoado",
+        "descricao": "Você estuda sobre a energia amaldiçoada ao máximo, conseguindo descobrir uma nova maneira de a utilizar. Ao obter este talento, você recebe uma aptidão amaldiçoada a sua escolha, desde que atenda aos requisitos. Você pode pegar este talento uma quantidade de vezes igual ao seu bônus de maestria.",
+        "requisitos": [
+          {
+            "tipo": "origem",
+            "id": "sem_tecnica"
+          }
+        ],
+        "escolha": null,
+        "maxVezesExpr": "maestria",
+        "efeitos": [
+          {
+            "canal": "vagasAptidao",
+            "expr": "1"
+          }
+        ]
+      },
+      {
+        "id": "tal_nocao_e_preparacao",
+        "descricao": "Embora você esteja privado do acesso a uma técnica e certas aplicações da energia, você tem noção e preparação suficiente para o proteger diante certos problemas. Você recebe um bônus de +2 para testes de resistências contra efeitos de aptidões amaldiçoadas. Nos níveis 9, 14 e 19 o bônus aumenta em +1.",
+        "requisitos": [
+          {
+            "tipo": "origem",
+            "id": "sem_tecnica"
+          },
+          {
+            "tipo": "nd",
+            "valor": 4
+          }
+        ],
+        "efeitos": [
+          {
+            "canal": "bonusTR",
+            "expr": "2 + (nd >= 9) + (nd >= 14) + (nd >= 19)"
+          }
+        ]
+      }
+    ]
+  }
+}

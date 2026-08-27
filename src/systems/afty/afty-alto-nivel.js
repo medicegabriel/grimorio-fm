@@ -39,7 +39,7 @@
  * o teto duro de 30 de `deriveAfty` quando esse canal existir.
  */
 
-import { registrarFamilia } from "./afty-addons";
+import { registrarFamilia, remendarLista } from "./afty-addons";
 import {
   AFTY_ATTRS, AFTY_RESISTENCIAS, MELHORIA_NIVEL_INICIAL, LENDARIA_NIVEL_INICIAL,
 } from "./afty-schema";
@@ -526,16 +526,16 @@ const MELHORIAS_BASE = MELHORIAS_SUPERIORES.slice();
 const LENDARIAS_BASE = HABILIDADES_LENDARIAS.slice();
 const APICES_BASE = HABILIDADES_APICE.slice();
 
-function aplicarExtrasMelhorias(extras = []) {
-  MELHORIAS_SUPERIORES.splice(0, MELHORIAS_SUPERIORES.length, ...MELHORIAS_BASE, ...extras);
+function aplicarExtrasMelhorias(extras = [], remendos = null) {
+  MELHORIAS_SUPERIORES.splice(0, MELHORIAS_SUPERIORES.length, ...remendarLista(MELHORIAS_BASE, remendos), ...extras);
   MELHORIA_BY_ID = Object.fromEntries(MELHORIAS_SUPERIORES.map((m) => [m.id, m]));
 }
-function aplicarExtrasLendarias(extras = []) {
-  HABILIDADES_LENDARIAS.splice(0, HABILIDADES_LENDARIAS.length, ...LENDARIAS_BASE, ...extras);
+function aplicarExtrasLendarias(extras = [], remendos = null) {
+  HABILIDADES_LENDARIAS.splice(0, HABILIDADES_LENDARIAS.length, ...remendarLista(LENDARIAS_BASE, remendos), ...extras);
   LENDARIA_BY_ID = Object.fromEntries(HABILIDADES_LENDARIAS.map((l) => [l.id, l]));
 }
-function aplicarExtrasApices(extras = []) {
-  HABILIDADES_APICE.splice(0, HABILIDADES_APICE.length, ...APICES_BASE, ...extras);
+function aplicarExtrasApices(extras = [], remendos = null) {
+  HABILIDADES_APICE.splice(0, HABILIDADES_APICE.length, ...remendarLista(APICES_BASE, remendos), ...extras);
   APICE_BY_ID = Object.fromEntries(HABILIDADES_APICE.map((a) => [a.id, a]));
 }
 
@@ -551,6 +551,7 @@ registrarFamilia("melhoriasSuperiores", {
   // repete declara `maxVezes: 1`.
   obrigatorios: ["nome", "descricao", "maxVezes"],
   aplicar: aplicarExtrasMelhorias,
+  basicos: () => MELHORIAS_BASE,
   resolver: (id) => getMelhoriaSuperior(id),
   // Lista COM repetição: cada entrada é uma pega.
   idsDaFicha: (c) => (Array.isArray(c?.melhoriasSuperiores)
@@ -563,6 +564,7 @@ registrarFamilia("lendarias", {
   chave: "id",
   obrigatorios: ["nome", "descricao"],
   aplicar: aplicarExtrasLendarias,
+  basicos: () => LENDARIAS_BASE,
   resolver: (id) => getHabilidadeLendaria(id),
   idsDaFicha: (c) => (Array.isArray(c?.habilidadesLendarias) ? c.habilidadesLendarias : []),
 });
@@ -572,6 +574,7 @@ registrarFamilia("apices", {
   chave: "id",
   obrigatorios: ["nome", "descricao"],
   aplicar: aplicarExtrasApices,
+  basicos: () => APICES_BASE,
   resolver: (id) => getHabilidadeApice(id),
   /* O Ápice não é uma lista da ficha: ele é a OPÇÃO escolhida dentro da
      Lendária "Atingir o Ápice". Ver `resolveAltoNivel`. */

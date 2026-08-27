@@ -360,6 +360,9 @@ registrarFamilia("condicoes", {
   chave: "id",
   obrigatorios: ["nome", "forca"],
   aplicar: aplicarExtrasCondicoes,
+  // ⚠ NÃO ACEITA REMENDO: cada condição é uma STRING dentro da lista da
+  // força, e não uma entrada com campos. Não há campo para trocar.
+  remendavel: false,
 });
 
 // SANGRAMENTO — condição variável com perda de vida própria por força.

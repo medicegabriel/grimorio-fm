@@ -307,9 +307,49 @@ export function estilosDaFicha(creature) {
   ];
 }
 
-/** O Estilo está disponível para esta criatura? */
-export const estiloDisponivel = (origemId, nd) =>
-  origemId === ESTILO_ORIGEM && (nd ?? 1) >= ESTILO_ND_MINIMO;
+/**
+ * O Estilo está disponível para esta criatura?
+ *
+ * ⚠ O `liberado` vem do campo `libera: ["estiloSombras"]` de um Addon da
+ * criatura (autor, 2026-08-21): *"liberar Estilo das Sombras mesmo que as
+ * pessoas tenham Feitiços e não sejam Sem Técnica"*. Ele solta a trava de
+ * ORIGEM, e só ela.
+ *
+ * ⚠ O PISO DE NÍVEL CONTINUA VALENDO (decisão do autor no mesmo dia). São duas
+ * travas independentes: a origem diz QUEM tem, o nível diz A PARTIR DE QUANDO.
+ * O Addon responde a primeira pergunta e não encosta na segunda.
+ *
+ * ⚠ Quem destrava por Addon NÃO ganha o Domínio Simples junto (decisão do autor
+ * no mesmo dia). O Sem Técnica o recebe de graça pelo Empenho Implacável,
+ * porque não tem técnica nenhuma para compensar, e quem tem Feitiços compra a
+ * aptidão normalmente. Sem Domínio o Estilo é conhecido e não tem vaga de
+ * imbuição, então o card avisa em vez de ficar mudo.
+ */
+export const estiloDisponivel = (origemId, nd, liberado = false) =>
+  (origemId === ESTILO_ORIGEM || liberado) && (nd ?? 1) >= ESTILO_ND_MINIMO;
+
+/**
+ * O card do Estilo aparece na aba Habilidades do criador?
+ *
+ * ⚠ MORA AQUI, e não numa condição solta dentro do JSX, porque ele é a QUARTA
+ * trava do Estilo e as três primeiras moram neste arquivo. Enquanto a decisão
+ * ficou no meio do layout ela saiu de sincronia duas vezes: o `estiloDisponivel`
+ * já dizia sim e a aba continuava ramificando por origem, então o Addon abria o
+ * Estilo no motor e o card nem era montado (autor, 2026-08-21, com print).
+ *
+ * Três casos, e cada um por um motivo diferente:
+ *
+ *   • **Sem Técnica**: sempre, INCLUSIVE trancado. A mensagem "destrava no
+ *     Nível 4" é o que diz a ele que o Estilo existe e está vindo.
+ *   • **as outras origens**: só com a liberação de Addon. Um card trancado na
+ *     tela de quem nunca vai ter é o mesmo erro do card de Concessão.
+ *   • **qualquer uma com Técnica JÁ GRAVADA**: senão desinstalar o addon
+ *     deixaria a linha morta presa na ficha, sem tela para removê-la.
+ */
+export const mostraCardEstilo = (origemId, estilo) =>
+  origemId === ESTILO_ORIGEM
+  || !!estilo?.disponivel
+  || (estilo?.conhecidas?.length ?? 0) > 0;
 
 /* ============================================================ */
 /* RESOLVEDOR                                                    */
@@ -327,12 +367,18 @@ export const estiloDisponivel = (origemId, nd) =>
  *
  * Devolve { disponivel, conhecidas, gastos, vagas, gastoVagas, estados, avisos }.
  */
-export function resolveEstilos(creature, { origemId = null, nd = 1, dom = 0 } = {}) {
-  const disponivel = estiloDisponivel(origemId, nd);
+export function resolveEstilos(
+  creature,
+  { origemId = null, nd = 1, dom = 0, liberado = false, imbuicoesExtras = 0 } = {},
+) {
+  const disponivel = estiloDisponivel(origemId, nd, liberado);
   const conhecidasCru = estilosDaFicha(creature);
   const avisos = [];
 
-  const vagas = Math.max(0, Math.trunc(Number(dom) || 0));
+  const vagas = Math.max(
+    0,
+    Math.trunc(Number(dom) || 0) + Math.trunc(Number(imbuicoesExtras) || 0),
+  );
   const combate = (creature?.combate && typeof creature.combate === "object") ? creature.combate : {};
 
   // Primeira passada: quanto cada Técnica pede, já aparado no teto do livro.
@@ -363,19 +409,24 @@ export function resolveEstilos(creature, { origemId = null, nd = 1, dom = 0 } = 
   }));
 
   if (disponivel && gastoVagas > vagas) {
-    avisos.push(
-      `${gastoVagas} imbuições no Domínio Simples, o Nível de Aptidão em Domínio permite ${vagas}.`,
-    );
+    /* ⚠ A frase deixou de citar só o Nível de Aptidão em Domínio (2026-08-22).
+       Com o canal `imbuicoesEstilo` no ar a régua pode ter outra fonte, e a
+       mensagem velha mandaria a pessoa procurar o número no lugar errado. */
+    avisos.push(`${gastoVagas} imbuições no Domínio Simples, e cabem ${vagas}.`);
   }
 
   // A Técnica gravada numa ficha que perdeu o acesso (trocou de origem, ou o ND
   // caiu abaixo de 4) NÃO é apagada: ela some da conta e volta sozinha se o
   // acesso voltar. Mesma convenção do aparo de níveis em resolveNiveisAptidao.
   if (!disponivel && conhecidas.length) {
+    /* ⚠ A segunda mensagem passou a citar o Addon (2026-08-21). Ela dizia só
+       "o Novo Estilo da Sombra é do Sem Técnica", e virou meia verdade no dia
+       em que um Addon passou a poder destravar: quem lesse aquilo com o addon
+       desinstalado não teria como saber o que faltava. */
     avisos.push(
-      origemId === ESTILO_ORIGEM
+      origemId === ESTILO_ORIGEM || liberado
         ? `Novo Estilo da Sombra destrava no Nível ${ESTILO_ND_MINIMO}.`
-        : "As Técnicas de Estilo gravadas não valem: o Novo Estilo da Sombra é do Sem Técnica.",
+        : "As Técnicas de Estilo gravadas não valem: o Novo Estilo da Sombra é do Sem Técnica, ou de um Addon que o libere.",
     );
   }
 

@@ -46,9 +46,32 @@ export function sessaoEmBranco(derived = null) {
   return {
     hpAtual: derived?.hp ?? 0,
     peAtual: derived?.pe ?? 0,
-    pvTempAtual: 0,
+    /* PV temporário POR FONTE, igual ao de PE logo abaixo. Era um número só até
+       2026-08-26, quando a Guarda Inabalável passou a entregar PV temporário e
+       a regra dela exigiu saber QUAL parte do pote é a da Guarda: "a perda dos
+       PVs temporários recebidos por essa característica" quebra a Guarda, e um
+       número só não distingue o que se perdeu.
+
+       ⚠ As fontes ACUMULAM entre si (autor, 2026-08-26: "mesmo pote, porém se
+       acumula com outros PVs Temporários"), então o total é a SOMA. O que topa
+       em vez de somar é a mesma fonte contra ela mesma, e é o que faz a Guarda
+       voltar cheia a cada rodada sem virar pilha. */
+    pvTempFontes: {},
+    /* PE temporário POR FONTE: { [nome da fonte]: valor }. O total é a soma.
+       ⚠ Por fonte e não um número só, porque a regra da mesma fonte é "TOPA,
+       não acumula": o Completo do Treino de Controle de Energia entrega metade
+       do Bônus de Treinamento no começo de TODA rodada, e somar viraria pilha
+       infinita na rodada 10. O que a rodada faz é devolver ao teto da fonte o
+       que foi gasto. Desenho copiado do `applyRoundStartResources` da 2.5.2. */
+    peTempFontes: {},
     almaAtual: derived?.almaMax ?? 100,
     rodada: 0,
+    /* GUARDA INABALÁVEL: quantos golpes já desgastaram o bônus nesta rodada, e
+       se ela foi encerrada antes da hora (Raio Negro ou uma das oito condições).
+       O bônus corrente e a Vida não moram aqui: o bônus SAI dos golpes e a Vida
+       está no `pvTempFontes`, com a chave da Guarda. Ver `resolveGuarda`. */
+    guardaGolpes: 0,
+    guardaEncerrada: false,
     combate: {},
     condicoes: [],
     buffs: [],
@@ -80,9 +103,15 @@ export function normalizaSessao(bruta, derived = null) {
     ...bruta,
     hpAtual: inteiro(bruta.hpAtual, base.hpAtual),
     peAtual: inteiro(bruta.peAtual, base.peAtual),
-    pvTempAtual: Math.max(0, inteiro(bruta.pvTempAtual, 0)),
+    /* ⚠ MIGRAÇÃO: sessão gravada antes de 2026-08-26 tem `pvTempAtual`, um
+       número. Ele vira uma fonte com nome, e não é descartado: quem estava no
+       meio de uma luta com casca de PV não a perde ao recarregar a página. */
+    pvTempFontes: normalizaPvTemp(bruta.pvTempFontes, bruta.pvTempAtual),
+    peTempFontes: normalizaPeTemp(bruta.peTempFontes),
     almaAtual: Math.max(0, inteiro(bruta.almaAtual, base.almaAtual)),
     rodada: Math.max(0, inteiro(bruta.rodada, 0)),
+    guardaGolpes: Math.max(0, inteiro(bruta.guardaGolpes, 0)),
+    guardaEncerrada: !!bruta.guardaEncerrada,
     combate: bruta.combate && typeof bruta.combate === "object" ? bruta.combate : {},
     usos: bruta.usos && typeof bruta.usos === "object" ? bruta.usos : {},
     ultimoFeiticoDanoId: typeof bruta.ultimoFeiticoDanoId === "string"
@@ -128,8 +157,160 @@ export function limparSessao(id) {
   } catch { /* nada a fazer, e nada a quebrar */ }
 }
 
+/* ============================================================ */
+/* PV TEMPORÁRIO                                                 */
+/* ============================================================ */
+/* A casca de PV, gasta ANTES do PV. Era um NÚMERO até 2026-08-26, e virou mapa
+   por fonte quando a Guarda Inabalável passou a entregar PV temporário: a regra
+   dela diz que a Guarda se quebra com "a perda dos PVs temporários recebidos por
+   essa característica", e um número só não sabe de quem era o que se perdeu.
+
+   ⚠ As fontes ACUMULAM, e o total é a SOMA (autor, 2026-08-26). É a diferença
+   para o de PE, cujas fontes também somam entre si mas cuja regra de reposição
+   ("a mesma fonte topa") é o que mais aparece no dia a dia.
+
+   ⚠ NENHUMA FONTE ALIMENTAVA ESTE POTE até hoje. O `derived.pvTemporario` é
+   calculado, aparece no Preview do criador e NUNCA chegava à sessão: só o
+   `aplicaDano` mexia no campo, para baixo, a partir de um zero que ninguém
+   subia. A Guarda é a primeira fonte de verdade. Ligar o `pvTemporario` da
+   bancada é uma linha e está anotado em docs/a-fazer.md, mas é mudança de
+   comportamento que o autor não pediu, então não entrou junto. */
+
+/** Sanea o mapa de fontes. Aceita o `pvTempAtual` velho, que era um número. */
+function normalizaPvTemp(bruto, legado) {
+  const out = {};
+  if (bruto && typeof bruto === "object" && !Array.isArray(bruto)) {
+    for (const [nome, v] of Object.entries(bruto)) {
+      const n = Math.max(0, inteiro(v, 0));
+      if (nome && n > 0) out[String(nome)] = n;
+    }
+  }
+  const velho = Math.max(0, inteiro(legado, 0));
+  if (velho > 0 && !Object.keys(out).length) out[FONTE_PV_TEMP_LEGADO] = velho;
+  return out;
+}
+
+/** O total de PV temporário disponível agora. */
+export const pvTempTotal = (sessao) =>
+  Object.values(sessao?.pvTempFontes ?? {}).reduce((soma, n) => soma + n, 0);
+
+/**
+ * Gasta `quanto` da casca de PV. Devolve `{ fontes, sobrou }`.
+ *
+ * ⚠ A GUARDA VAI PRIMEIRO, e isso é ASSUNÇÃO minha, não regra escrita: o autor
+ * disse que a Vida da Guarda soma com as outras cascas e não disse em que ordem
+ * o dano as come. A Guarda é a camada de FORA (a criatura a reergue toda rodada,
+ * e as outras cascas não voltam), e ela precisa ser alcançável para a
+ * característica funcionar como está escrita: se uma casca comprada absorvesse
+ * antes, a Guarda ficaria praticamente inquebrável. Hoje a ordem não muda número
+ * nenhum, porque a Guarda é a ÚNICA fonte deste pote. Anotado em a-fazer.md.
+ */
+export function drenaPvTemp(fontes, quanto) {
+  const out = { ...(fontes ?? {}) };
+  let resta = Math.max(0, Math.trunc(Number(quanto)) || 0);
+  const ordem = [
+    ...(out[FONTE_GUARDA] != null ? [FONTE_GUARDA] : []),
+    ...Object.keys(out).filter((k) => k !== FONTE_GUARDA),
+  ];
+  for (const nome of ordem) {
+    if (resta <= 0) break;
+    const tira = Math.min(out[nome], resta);
+    out[nome] -= tira;
+    resta -= tira;
+    if (out[nome] <= 0) delete out[nome];
+  }
+  return { fontes: out, sobrou: resta };
+}
+
+/* ============================================================ */
+/* PE TEMPORÁRIO                                                 */
+/* ============================================================ */
+/* A casca de PE, gasta ANTES do PE normal. O autor pediu em 2026-08-26 que ela
+   funcionasse "igual o da 2.5.2: usar a mesma barra de PE, e ir sobrescrevendo
+   ela com outra cor".
+
+   ⚠ UMA DIVERGÊNCIA DELIBERADA da 2.5.2, e é de forma, não de comportamento. Lá
+   o PE temporário é PE ACIMA DO MÁXIMO (`peCurrent > peMax`), e aqui é um
+   BUFFER separado, como o `pvTempAtual` que a Ficha já tinha. Os dois desenham
+   a mesma barra e gastam na mesma ordem, e o buffer é melhor deste lado por dois
+   motivos: o `aparaSessao` continua podendo aparar o `peAtual` no máximo sem
+   apagar a casca, e o PV e o PE ficam com a MESMA forma na Ficha, em vez de uma
+   casca de cada jeito. */
+
+/** Sanea o mapa de fontes: nome vazio, valor não numérico e zero saem. */
+function normalizaPeTemp(bruto) {
+  if (!bruto || typeof bruto !== "object" || Array.isArray(bruto)) return {};
+  const out = {};
+  for (const [nome, v] of Object.entries(bruto)) {
+    const n = Math.max(0, inteiro(v, 0));
+    if (nome && n > 0) out[String(nome)] = n;
+  }
+  return out;
+}
+
+/** O total de PE temporário disponível agora. */
+export const peTempTotal = (sessao) =>
+  Object.values(sessao?.peTempFontes ?? {}).reduce((soma, n) => soma + n, 0);
+
+/**
+ * Gasta `quanto` da casca, na ordem em que as fontes estão. Devolve
+ * `{ fontes, sobrou }`: `sobrou` é o que a casca não cobriu e tem de sair do PE
+ * normal. Fonte zerada SAI do mapa, e é isso que faz a rodada seguinte reenchê-la.
+ */
+export function drenaPeTemp(fontes, quanto) {
+  const out = { ...(fontes ?? {}) };
+  let resta = Math.max(0, Math.trunc(Number(quanto)) || 0);
+  for (const nome of Object.keys(out)) {
+    if (resta <= 0) break;
+    const tira = Math.min(out[nome], resta);
+    out[nome] -= tira;
+    resta -= tira;
+    if (out[nome] <= 0) delete out[nome];
+  }
+  return { fontes: out, sobrou: resta };
+}
+
+/**
+ * Entrega a casca de um GATILHO. `entradas` é `derived.peTemporario.combate` ou
+ * `.rodada`, no formato `[{ nome, valor }]`.
+ *
+ * ⚠ A MESMA FONTE TOPA, não soma: quem já está com o valor cheio não ganha nada,
+ * e quem gastou recebe de volta só a diferença. É o que separa "ganha metade do
+ * BT toda rodada" de "acumula metade do BT toda rodada".
+ */
+export function aplicaPeTemporario(sessao, entradas = []) {
+  if (!entradas.length) return sessao;
+  const fontes = { ...(sessao.peTempFontes ?? {}) };
+  let mudou = false;
+  for (const entrada of entradas) {
+    /* ⚠ A CHAVE é quem identifica a fonte, e ela leva o gatilho junto (ver
+       `peTemporario` no afty-derive.js). O `nome` sozinho não serve, porque uma
+       Linha de Treinamento pode emitir nos dois gatilhos com o mesmo nome. */
+    const chave = String(entrada.chave ?? entrada.nome ?? "");
+    const teto = Math.max(0, Math.trunc(Number(entrada.valor)) || 0);
+    if (!chave || !teto) continue;
+    if ((fontes[chave] ?? 0) >= teto) continue;
+    fontes[chave] = teto;
+    mudou = true;
+  }
+  return mudou ? { ...sessao, peTempFontes: fontes } : sessao;
+}
+
+/**
+ * Gasto de PE: a casca vai primeiro, e só o que sobra desce no `peAtual`.
+ * `quanto` é positivo. Ganho de PE não passa por aqui, ele é `peAtual` puro.
+ */
+export function gastaPe(sessao, quanto) {
+  const custo = Math.max(0, Math.trunc(Number(quanto)) || 0);
+  if (!custo) return sessao;
+  const { fontes, sobrou } = drenaPeTemp(sessao.peTempFontes, custo);
+  return { ...sessao, peTempFontes: fontes, peAtual: Math.max(0, sessao.peAtual - sobrou) };
+}
+
 /**
  * Apara os correntes nos máximos DA VEZ.
+
+
  *
  * ⚠ Existe por causa de duas coisas que mexem no teto sem passar por aqui: o
  * criador (uma Melhoria de Alma nova sobe o PV máximo) e a própria Alma, que
@@ -187,11 +368,15 @@ export function removeConcessao(sessao, uid) {
 export function aplicaDano(sessao, bruto) {
   const dano = Math.max(0, inteiro(bruto, 0));
   if (!dano) return sessao;
-  const doTemp = Math.min(sessao.pvTempAtual, dano);
+  /* A casca vai primeiro, e a Guarda é a primeira dela (ver `drenaPvTemp`). É
+     aqui que a Guarda se quebra sozinha: zerando a fonte dela, o `resolveGuarda`
+     passa a devolver `noAr: false` e o bônus some, sem flag nenhuma para manter
+     em dia. */
+  const { fontes, sobrou } = drenaPvTemp(sessao.pvTempFontes, dano);
   return {
     ...sessao,
-    pvTempAtual: sessao.pvTempAtual - doTemp,
-    hpAtual: Math.max(0, sessao.hpAtual - (dano - doTemp)),
+    pvTempFontes: fontes,
+    hpAtual: Math.max(0, sessao.hpAtual - sobrou),
   };
 }
 
@@ -202,12 +387,175 @@ export function aplicaCura(sessao, bruto, hpMax) {
   return { ...sessao, hpAtual: entre(sessao.hpAtual + cura, 0, Math.max(0, hpMax)) };
 }
 
+/* ============================================================ */
+/* GUARDA INABALÁVEL (Calamidade e Beyond)                       */
+/* ============================================================ */
+/* "Inimigos poderosos precisam ser enfraquecidos para realmente sofrerem danos
+   significativos." A característica tem DUAS metades e elas se quebram por
+   caminhos diferentes:
+
+     • o BÔNUS  — +5 (Calamidade) ou +10 (Beyond) em CA e nos cinco TRs, no
+                  início da rodada, caindo 2 a cada ataque ou habilidade
+                  sofrida, "independentemente de ser atingido, falhar ou ter
+                  sucesso no TR". Zerar por golpes é o desgaste normal.
+     • a VIDA   — 5 × ND (Calamidade) ou 10 × ND (Beyond) de PV temporário.
+                  Chegando a zero, "a guarda é quebrada perdendo seus efeitos".
+
+   As três respostas do autor (2026-08-26) que fecharam o comportamento:
+
+   1. AS DUAS VOLTAM CHEIAS A CADA RODADA. A Vida não é durabilidade do combate
+      inteiro: quebrar vale até o fim daquela rodada. É o mesmo desenho do
+      `applyNewRoundEffects` da 2.5.2, que reseta a Guarda no vira-rodada.
+   2. A Vida entra no MESMO POTE do PV temporário e ACUMULA com as outras
+      fontes dele. Por isso ela mora no `pvTempFontes` e não num vital próprio:
+      na tela é uma casca só, por cima da barra de PV.
+   3. As condições e o Raio Negro derrubam AS DUAS METADES, e "enquanto durar a
+      condição" nada volta. Saída a condição, a rodada seguinte reergue tudo.
+
+   ⚠ "Incapacitado" está na lista do livro e NÃO entra aqui: o autor a retirou
+   do sistema em 2026-08-26, e ela nunca existiu no CONDICOES_CATALOGO. */
+
+/** A chave da Guarda dentro do `pvTempFontes`. É o nome que a tela mostra. */
+export const FONTE_GUARDA = "Guarda Inabalável";
+
+/** O nome que a casca de PV anônima recebe ao migrar do `pvTempAtual` velho. */
+const FONTE_PV_TEMP_LEGADO = "PV Temporário";
+
+const semAcento = (v) => String(v ?? "")
+  .normalize("NFD").replace(/[̀-ͯ]/g, "").trim().toLowerCase();
+
+/* As oito do livro. ⚠ São NOMES e não ids, porque é assim que a condição é
+   gravada na sessão e no Feitiço (ver CONDICOES_CATALOGO em afty-feiticos.js), e
+   porque uma condição de Addon entra pelo nome limpo. */
+export const CONDICOES_QUEBRAM_GUARDA = [
+  "Desprevenido", "Desorientado", "Confuso", "Exposto",
+  "Fragilizado", "Atordoado", "Paralisado", "Inconsciente",
+];
+
+const QUEBRAM = new Set(CONDICOES_QUEBRAM_GUARDA.map(semAcento));
+
+/** A primeira condição ativa que derruba a Guarda, ou null. */
+export function condicaoQueQuebraGuarda(sessao) {
+  const lista = Array.isArray(sessao?.condicoes) ? sessao.condicoes : [];
+  return lista.find((c) => QUEBRAM.has(semAcento(c?.nome)))?.nome ?? null;
+}
+
+/**
+ * O que a sessão tem a dizer sobre a Guarda, no formato que o `deriveAfty`
+ * espera em `opcoes.guarda`.
+ *
+ * ⚠ QUEM RESOLVE A GUARDA É O DERIVE, e não este arquivo, e a razão não é
+ * arrumação: o bônus SOMA na Defesa e nos cinco TRs, e esses números saem de
+ * dentro do derive. Resolver aqui obrigaria a derivar duas vezes (uma para
+ * saber o bônus, outra para aplicá-lo), e o painel de Encontros faz esse
+ * cálculo por combatente. O resultado sai em `derived.guarda`.
+ */
+export function entradaDaGuarda(sessao) {
+  return {
+    golpes: Math.max(0, inteiro(sessao?.guardaGolpes, 0)),
+    vida: Math.max(0, inteiro(sessao?.pvTempFontes?.[FONTE_GUARDA], 0)),
+    encerrada: !!sessao?.guardaEncerrada,
+    condicao: condicaoQueQuebraGuarda(sessao),
+  };
+}
+
+/**
+ * Reergue a Guarda: Vida cheia e contador de golpes zerado. Chamado pelo
+ * vira-rodada e pelo começo da cena.
+ *
+ * ⚠ NÃO REERGUE debaixo de uma das oito condições ("enquanto durar a condição,
+ * perde o Bônus e os PVs Temporários"), e nesse caso ela sai zerada em vez de
+ * ficar com o que sobrou: a condição destrói, não suspende.
+ *
+ * ⚠ A fonte TOPA em vez de somar, igual à casca de PE. Sem isso a rodada 10 de
+ * um Beyond ND 30 teria 3000 de casca.
+ */
+export function renovaGuarda(sessao, derived) {
+  const base = derived?.guarda;
+  const fontes = { ...(sessao?.pvTempFontes ?? {}) };
+  if (!base?.ativa) {
+    if (fontes[FONTE_GUARDA] == null) return sessao;
+    delete fontes[FONTE_GUARDA];
+    return { ...sessao, pvTempFontes: fontes };
+  }
+  const travada = condicaoQueQuebraGuarda(sessao) != null;
+  const alvo = travada ? 0 : Math.max(0, base.vidaMax);
+  if (alvo > 0) fontes[FONTE_GUARDA] = alvo; else delete fontes[FONTE_GUARDA];
+  return { ...sessao, pvTempFontes: fontes, guardaGolpes: 0, guardaEncerrada: travada };
+}
+
+/**
+ * Um ataque ou habilidade sofrida: o bônus cai 2, tenha atingido ou não.
+ *
+ * ⚠ O GOLPE QUE ZERA O BÔNUS QUEBRA A GUARDA, e a quebra leva o PV Temporário
+ * junto (autor, 2026-08-26). São 3 golpes no Calamidade e 5 no Beyond. É o
+ * caminho normal de derrubar a Guarda, e é o que faz a característica pedir
+ * trabalho em equipe: uma criatura sozinha não tira três ataques numa rodada.
+ *
+ * Precisa do `derived` por causa do teto, que é de onde sai o número de golpes
+ * que zera. Sem ele o contador sobe e nada mais acontece, que é o mesmo cuidado
+ * do `descansar`: quem não conseguiu calcular a ficha não sabe o teto.
+ */
+export function sofreGolpeNaGuarda(sessao, derived = null) {
+  const golpes = Math.max(0, inteiro(sessao?.guardaGolpes, 0)) + 1;
+  const proxima = { ...sessao, guardaGolpes: golpes };
+  const base = derived?.guarda;
+  if (!base?.ativa) return proxima;
+  if (base.passoPorGolpe * golpes < base.bonusMax) return proxima;
+  const fontes = { ...(proxima.pvTempFontes ?? {}) };
+  delete fontes[FONTE_GUARDA];
+  return { ...proxima, pvTempFontes: fontes };
+}
+
+/**
+ * Desfaz um golpe contado a mais. O contador não passa de zero.
+ *
+ * ⚠ NÃO RESSUSCITA O PV TEMPORÁRIO. Depois que a Guarda quebra, a casca dela foi
+ * perdida e nada neste arquivo sabe quanto ela valia (o dano pode ter comido
+ * parte antes). Por isso as telas desabilitam o desfazer com a Guarda quebrada:
+ * ele serve para o golpe contado a mais ANTES da quebra, e prometer mais do que
+ * isso seria devolver um número inventado. A rodada seguinte reergue tudo.
+ */
+export function desfazGolpeNaGuarda(sessao) {
+  const golpes = Math.max(0, inteiro(sessao?.guardaGolpes, 0));
+  if (!golpes) return sessao;
+  return { ...sessao, guardaGolpes: golpes - 1 };
+}
+
+/**
+ * Encerra a Guarda antes da hora: o Raio Negro. Derruba as duas metades, e a
+ * rodada seguinte reergue tudo, porque o Raio Negro é EVENTO e não condição.
+ */
+export function encerraGuarda(sessao) {
+  const fontes = { ...(sessao?.pvTempFontes ?? {}) };
+  delete fontes[FONTE_GUARDA];
+  return { ...sessao, pvTempFontes: fontes, guardaEncerrada: true };
+}
+
+/**
+ * Grava a lista de condições e aplica o efeito delas sobre a Guarda. As duas
+ * telas escrevem condição por aqui, e não direto no campo: se uma escrevesse
+ * cru, a Guarda daquela tela ficaria de pé debaixo de um Atordoado.
+ *
+ * ⚠ A Vida é DESTRUÍDA ao entrar a condição, e não suspensa. Tirar a condição no
+ * meio da rodada não a devolve: "depois, volta no início da rodada normalmente"
+ * (autor, 2026-08-26).
+ */
+export function defineCondicoes(sessao, condicoes) {
+  const lista = Array.isArray(condicoes) ? condicoes : [];
+  const proxima = { ...sessao, condicoes: lista };
+  if (condicaoQueQuebraGuarda(proxima) == null) return proxima;
+  const fontes = { ...(proxima.pvTempFontes ?? {}) };
+  delete fontes[FONTE_GUARDA];
+  return { ...proxima, pvTempFontes: fontes };
+}
+
 /**
  * Fecha a rodada: o contador sobe e toda duração desce um.
  * O que zerou SAI, e volta na lista `expirou` para a Ficha poder avisar (buff
  * que some sem aviso é buff que o jogador continua contando na cabeça).
  */
-export function proximaRodada(sessao) {
+export function proximaRodada(sessao, derived = null) {
   const expirou = [];
   const desce = (item) => {
     if (item.rodadas == null) return item;              // sem duração, fica
@@ -215,15 +563,45 @@ export function proximaRodada(sessao) {
     if (restam <= 0) { expirou.push(item); return null; }
     return { ...item, rodadas: restam };
   };
-  return {
-    sessao: {
-      ...sessao,
-      rodada: sessao.rodada + 1,
-      buffs: sessao.buffs.map(desce).filter(Boolean),
-      condicoes: sessao.condicoes.map(desce).filter(Boolean),
-    },
-    expirou,
+  /* ⚠ A casca de PE do gatilho `rodada` volta ao teto AQUI, e não soma: ver
+     `aplicaPeTemporario`. Sem `derived` nada acontece, que é o mesmo cuidado do
+     `descansar`: quem não conseguiu calcular a ficha não sabe quanto entregar. */
+  const base = {
+    ...sessao,
+    rodada: sessao.rodada + 1,
+    buffs: sessao.buffs.map(desce).filter(Boolean),
+    condicoes: sessao.condicoes.map(desce).filter(Boolean),
   };
+  /* ⚠ SAIR DA RODADA 0 É COMEÇAR A CENA, e por isso a casca de `combate` entra
+     junto aqui. A Ficha não tem botão de "iniciar combate": o que ela tem é o
+     contador de rodada, que o Descansar zera. Sem esta linha, os 4 PE do Treino
+     de Controle de Energia 2ª ("quando uma cena de combate iniciar") nunca
+     chegariam a quem joga pela Ficha, só a quem joga pela aba de Encontros. */
+  const comCena = sessao.rodada === 0
+    ? aplicaPeTemporario(base, derived?.peTemporario?.combate ?? [])
+    : base;
+  /* ⚠ A GUARDA VOLTA CHEIA AQUI, as duas metades (autor, 2026-08-26). E a
+     renovação vem DEPOIS do `desce` das condições: a condição que expirou nesta
+     virada já saiu da lista, então a Guarda dela volta agora, e não só na
+     rodada seguinte. */
+  const comGuarda = renovaGuarda(
+    aplicaPeTemporario(comCena, derived?.peTemporario?.rodada ?? []),
+    derived,
+  );
+  return { sessao: comGuarda, expirou };
+}
+
+/**
+ * A cena de combate COMEÇOU: entrega as duas cascas de uma vez. A de `combate`
+ * vale a cena inteira e a de `rodada` já vale a primeira rodada, senão o Completo
+ * do Treino de Controle de Energia só valeria a partir da segunda.
+ */
+export function iniciaCombate(sessao, derived = null) {
+  if (!derived) return sessao;
+  const comCena = aplicaPeTemporario(sessao, derived.peTemporario?.combate ?? []);
+  // A Guarda entra junto: a primeira rodada já é rodada, e sem isto o mestre
+  // abriria o combate com o chefe sem casca nenhuma até virar a rodada 2.
+  return renovaGuarda(aplicaPeTemporario(comCena, derived.peTemporario?.rodada ?? []), derived);
 }
 
 /**
@@ -246,8 +624,14 @@ export function descansar(sessao, derived) {
     ...sessao,
     hpAtual: Math.max(0, derived?.hp ?? 0),
     peAtual: Math.max(0, derived?.pe ?? 0),
-    pvTempAtual: 0,
+    pvTempFontes: {},
+    // A casca de PE morre com a cena, então o descanso a zera junto com a de PV.
+    peTempFontes: {},
     rodada: 0,
+    // A Guarda volta a zero com a rodada: fora de combate não há guarda erguida,
+    // e o próximo `iniciaCombate` (ou a saída da rodada 0) a reergue cheia.
+    guardaGolpes: 0,
+    guardaEncerrada: false,
     usos: {},
     buffs: sessao.buffs.filter((b) => b.rodadas == null),
     condicoes: sessao.condicoes

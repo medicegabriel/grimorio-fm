@@ -28,10 +28,11 @@
  * ⚠ Texto VERBATIM do livro, com os erros dele preservados.
  */
 
-import { registrarFamilia } from "./afty-addons";
+import { registrarFamilia, remendarLista } from "./afty-addons";
+import { evalNumber } from "./afty-dsl";
 import { getOrigem } from "./afty-origens";
 import { AFTY_ATTRS, AFTY_RESISTENCIAS } from "./afty-schema";
-import { APTIDAO_TRILHAS } from "./afty-aptidoes";
+import { APTIDAO_TRILHAS, AFTY_APTIDOES } from "./afty-aptidoes";
 import { AFTY_ESPECIALIZACOES, treinamentosDasEspecializacoes } from "./afty-especializacoes";
 // O Adepto de Combate empresta o pool de Estilos do Combatente. Sem ciclo:
 // afty-habilidades.js não importa daqui.
@@ -101,6 +102,11 @@ const opcoesDeTR = (prefixo, descricao, fora = []) =>
   AFTY_RESISTENCIAS
     .filter((r) => !fora.includes(r.value))
     .map((r) => ({ id: `${prefixo}_${r.value}`, nome: r.label, descricao: descricao(r.label) }));
+
+/* Nome da Aptidão para o chip de requisito. Procurado na hora, e não
+   memorizado num índice, porque um Addon pode acrescentar aptidão depois de
+   este módulo ter carregado. */
+const nomeDaAptidao = (id) => AFTY_APTIDOES.find((a) => a.id === id)?.nome;
 
 export const TALENTO_GRUPOS = [
   { id: "geral",  titulo: "Talentos Gerais" },
@@ -873,8 +879,8 @@ let BY_ID = {};
 
 const TALENTOS_BASE = AFTY_TALENTOS.slice();
 
-function aplicarExtrasTalentos(extras = []) {
-  AFTY_TALENTOS.splice(0, AFTY_TALENTOS.length, ...TALENTOS_BASE, ...extras);
+function aplicarExtrasTalentos(extras = [], remendos = null) {
+  AFTY_TALENTOS.splice(0, AFTY_TALENTOS.length, ...remendarLista(TALENTOS_BASE, remendos), ...extras);
   BY_ID = Object.fromEntries(AFTY_TALENTOS.map((t) => [t.id, t]));
 }
 
@@ -886,6 +892,7 @@ registrarFamilia("talentos", {
   obrigatorios: ["nome", "descricao", "grupo"],
   caminhosDeId: ["requisitos[].id"],
   aplicar: aplicarExtrasTalentos,
+  basicos: () => TALENTOS_BASE,
   validador: validarCatalogoTalentos,
   resolver: (id) => getTalento(id),
   idsDaFicha: (c) => (Array.isArray(c?.talentos) ? c.talentos : []),
@@ -951,6 +958,19 @@ export function avaliarRequisitoTalento(requisito, ctx = {}) {
     const tem = ctx.origensQualificadas ?? (ctx.origemId ? [ctx.origemId] : []);
     return { ok: tem.includes(requisito.id), verificavel: true, label: `Origem ${alvo.nome}` };
   }
+  /* ⚠ `aptidao` entrou em 2026-08-22, com a Expansão de Estilo, que pede o
+     Domínio Simples. Antes disso todo Talento que citava aptidão o fazia por
+     `nota`, que só exibe. Mesmo nome e mesmo shape de `avaliarRequisitoAptidao`
+     e do requisito de etapa de Treinamento, para não haver dois vocabulários
+     para a mesma pergunta.
+
+     Sem `ctx.aptidoes` o requisito cai para NÃO VERIFICÁVEL em vez de reprovar:
+     falta de contexto não é falta de aptidão. */
+  if (requisito?.tipo === "aptidao") {
+    const nome = nomeDaAptidao(requisito.id) ?? requisito.id;
+    if (!Array.isArray(ctx.aptidoes)) return { ok: true, verificavel: false, label: nome };
+    return { ok: ctx.aptidoes.includes(requisito.id), verificavel: true, label: nome };
+  }
   if (requisito?.tipo === "talento") {
     const alvo = BY_ID[requisito.id];
     if (!alvo) return { ok: true, verificavel: false, label: requisito.id };
@@ -996,14 +1016,54 @@ export function avaliarAcessoTalento(talento, ctx = {}) {
  * ctx = { nd, attrEff, origemId }.
  * Retorna { escolhidas, gastos, inacessiveis }.
  */
+/**
+ * Quantas vezes o Talento pode ser pego.
+ *
+ * ⚠ NÃO CONFUNDIR COM `escolha.repetivel`, que é a OUTRA repetição e continua
+ * valendo. Ela é "pegue de novo, para outro alvo" (Incremento de Atributo, uma
+ * vez por atributo), e a ficha a representa repetindo a ESCOLHA. Esta aqui é
+ * "pegue de novo, e ganhe a mesma coisa outra vez", e a ficha a representa
+ * repetindo o ID. Um Talento usa uma ou outra, nunca as duas.
+ *
+ * O teto vem do catálogo como número (`maxVezes`) ou como expressão do DSL
+ * (`maxVezesExpr`), avaliada com `{ nd, maestria, bt }`. A expressão existe
+ * porque o primeiro caso é "uma quantidade de vezes igual ao seu bônus de
+ * maestria", e um número fixo não sabe dizer isso. Addon escreve DADO, e uma
+ * expressão de DSL é dado.
+ */
+export function maxVezesTalento(id, ctx = {}) {
+  const def = BY_ID[id];
+  if (!def) return 0;
+  if (def.maxVezesExpr) {
+    const nd = Math.max(1, Math.trunc(Number(ctx.nd) || 1));
+    const maestria = Math.max(0, Math.trunc(Number(ctx.maestria) || 0));
+    return Math.max(1, Math.trunc(evalNumber(def.maxVezesExpr, { nd, maestria, bt: maestria }, 1)));
+  }
+  return Math.max(1, Math.trunc(Number(def.maxVezes) || 1));
+}
+
 export function resolveTalentos(creature, ctx = {}) {
   const vistos = new Set();
   const escolhidas = [];
+  /* ⚠ A LISTA DA FICHA ACEITA REPETIÇÃO desde 2026-08-22, e `escolhidas`
+     continua SEM ela. Os dois são usados para coisas diferentes: `escolhidas`
+     responde "a criatura tem este Talento?" (pré-requisito, efeito, tela), e
+     `vezes` responde "quantas". Juntar os dois quebraria todo `includes(id)`
+     que já existe. Mesmo desenho do `resolveGerais`, e o aparo no teto também é
+     de LEITURA: baixar o ND devolve a pega excedente em vez de apagá-la. */
+  const vezes = {};
   for (const id of Array.isArray(creature?.talentos) ? creature.talentos : []) {
-    if (!BY_ID[id] || vistos.has(id)) continue;
+    if (!BY_ID[id]) continue;
+    if (vistos.has(id)) {
+      if ((vezes[id] ?? 1) >= maxVezesTalento(id, ctx)) continue;
+      vezes[id] = (vezes[id] ?? 1) + 1;
+      continue;
+    }
     vistos.add(id);
+    vezes[id] = 1;
     escolhidas.push(id);
   }
+  const pegasExtras = Object.values(vezes).reduce((soma, n) => soma + (n - 1), 0);
   // Concessão vinda da sessão (Addons 8.3): vale para tudo e NÃO gasta vaga.
   // Por isso ela é contada à parte e sai de fora do `gastos`, e não porque o
   // Talento tenha caixa próprio. Ver `afty-concessao.js`.
@@ -1011,6 +1071,7 @@ export function resolveTalentos(creature, ctx = {}) {
   for (const id of Array.isArray(ctx.concedidos) ? ctx.concedidos : []) {
     if (!BY_ID[id] || vistos.has(id)) continue;
     vistos.add(id);
+    vezes[id] = 1;
     concedidos.push(id);
     escolhidas.push(id);
   }
@@ -1030,9 +1091,13 @@ export function resolveTalentos(creature, ctx = {}) {
     // A vaga extra da repetível entra no MESMO caixa: "você pode pegar este
     // talento várias vezes" é uma escolha a mais, e cada uma custa uma vaga.
     // O concedido pela sessão sai da conta: ele é ganho de combate, não compra.
-    gastos: escolhidas.length - concedidos.length + escolhas.vagasExtras,
+    gastos: escolhidas.length - concedidos.length + escolhas.vagasExtras + pegasExtras,
     inacessiveis,
     escolhas,
+    // Quantas pegas de cada id. Alimenta o `coletarEfeitos`, que multiplica o
+    // efeito, e o medidor do card.
+    vezes,
+    maxVezes: Object.fromEntries(escolhidas.map((id) => [id, maxVezesTalento(id, ctx)])),
     almaLivreEspecializacao: especializacaoDeAlmaLivre(escolhas.mapa[ALMA_LIVRE_TALENTO_ID]),
   };
 }

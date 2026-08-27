@@ -104,16 +104,35 @@ const num = (n) => (Number.isInteger(n) ? `${n}` : String(n).replace(".", ","));
 const metros = (n) => `${num(n)} metros`;
 
 /**
+ * O RAIO da expansão, em metros e como número.
+ *
  * Incompleta: 4,5 m × Bônus de Treinamento. Completa: 9 m.
  * Sem Barreiras: 9 m × BT (herdado da 2.5.2, o livro do Afty só diz "alcance
  * superior" sem dar o número).
+ *
+ * ⚠ `bonus` é o canal `areaDominio` do Motor, e entra DEPOIS da conta de
+ * versão, e não dentro dela: a 2ª etapa do Treino de Domínios diz "A área da sua
+ * Expansão de Domínio aumenta em 3 metros", e são 3 metros, não 3 vezes o BT.
+ * Pelo mesmo motivo ele entra depois do dobro do Sem Barreiras.
+ *
+ * O piso é ZERO e não negativo: um efeito de mesa que encolha a expansão além do
+ * tamanho dela não a vira do avesso.
  */
-export function areaDominio(versao, bt = 2, dobraArea = false) {
+export function areaDominioMetros(versao, bt = 2, dobraArea = false, bonus = 0) {
   const b = Math.max(1, Math.trunc(Number(bt) || 1));
-  if (versao === "incompleta") return metros(4.5 * b);
-  if (versao === "completa") return "9 metros";
-  if (versao === "sem_barreiras") return metros(9 * b * (dobraArea ? 2 : 1));
-  return "";
+  const extra = Number(bonus) || 0;
+  let base = 0;
+  if (versao === "incompleta") base = 4.5 * b;
+  else if (versao === "completa") base = 9;
+  else if (versao === "sem_barreiras") base = 9 * b * (dobraArea ? 2 : 1);
+  else return null;
+  return Math.max(0, base + extra);
+}
+
+/** O mesmo, já escrito ("13,5 metros"). Versão desconhecida devolve texto vazio. */
+export function areaDominio(versao, bt = 2, dobraArea = false, bonus = 0) {
+  const m = areaDominioMetros(versao, bt, dobraArea, bonus);
+  return m == null ? "" : metros(m);
 }
 
 /* ------------------------------------------------------------ */
@@ -139,27 +158,126 @@ export function areaDominio(versao, bt = 2, dobraArea = false) {
  * ⚠ A CONFIRMAR: que o domo continua valendo 12 paredes no Afty. O "dobro das
  * seis paredes" é regra da 2.5.2, e o livro do Afty não repete a conta.
  */
+/**
+ * ⚠ TUDO QUE É BARREIRA VALE UM NÚMERO DE PAREDES (autor, 2026-08-26):
+ * *"Cortina usa a vida 3 de Paredes e Domínio usa a vida de 12 Paredes"*.
+ *
+ * A parede da aptidão Técnicas de Barreira é a UNIDADE, e as duas estruturas
+ * maiores são múltiplos dela. Isso é o que faz o Treino de Barreiras e as
+ * Paredes Resistentes alcançarem as três de uma vez, sem regra separada para
+ * cada uma: melhorar a parede melhora tudo que é feito de paredes.
+ *
+ * O 12 do domo já estava aqui, herdado da 2.5.2 ("o dobro das seis paredes"), e
+ * ficou marcado "A CONFIRMAR" desde a portabilidade porque o livro do Afty não
+ * repete a conta. O autor confirmou junto com a Cortina.
+ */
+export const PAREDES_NA_CORTINA = 3;
 export const PAREDES_NO_DOMO = 12;
 
-export function pvDaParede(bar = 0, nd = 0, temParedesResistentes = false) {
+/** Quantas paredes a Técnica de Barreira ergue de uma vez. Verbatim: "até 6 paredes". */
+export const PAREDES_BASE = 6;
+
+/**
+ * O PV de UMA parede, e a régua de tudo que é barreira. VERBATIM das duas
+ * aptidões, e o autor reconfirmou a fórmula em 2026-08-26:
+ *
+ *   Técnicas de Barreira → 5 + (metade do ND × Nível de Barreira) + Outros
+ *   Paredes Resistentes  → 10 + (ND × Nível de Barreira) + Outros
+ *
+ * ⚠ `bonus` é o "Outros": o canal `pvParede` do Motor. Ele entra POR PAREDE, e
+ * por isso alcança a Cortina três vezes e o domo doze. O Treino de Barreiras dá
+ * +10 na 1ª e mais +10 na 3ª.
+ */
+export function pvDaParede(bar = 0, nd = 0, temParedesResistentes = false, bonus = 0) {
   const b = Math.max(0, Math.trunc(Number(bar) || 0));
   const n = Math.max(0, Math.trunc(Number(nd) || 0));
-  return temParedesResistentes ? 10 + b * n : 5 + b * Math.floor(n / 2);
+  const base = temParedesResistentes ? 10 + b * n : 5 + b * Math.floor(n / 2);
+  return Math.max(0, base + (Math.trunc(Number(bonus)) || 0));
 }
 
-export const pvBarreira = (bar = 0, nd = 0, temParedesResistentes = false) =>
-  PAREDES_NO_DOMO * pvDaParede(bar, nd, temParedesResistentes);
+/** A CORTINA vale 3 paredes. */
+export const pvCortina = (bar = 0, nd = 0, temParedesResistentes = false, bonus = 0) =>
+  PAREDES_NA_CORTINA * pvDaParede(bar, nd, temParedesResistentes, bonus);
+
+/** O DOMO da Expansão de Domínio vale 12 paredes. */
+export const pvBarreira = (bar = 0, nd = 0, temParedesResistentes = false, bonus = 0) =>
+  PAREDES_NO_DOMO * pvDaParede(bar, nd, temParedesResistentes, bonus);
+
+/**
+ * RD de cada parede. ⚠ NÃO EXISTIA antes de 2026-08-26: o livro não dá RD a
+ * parede nenhuma, e quem a concede é o Completo do Treino de Barreiras ("toda
+ * parede que criar recebe RD igual ao seu Nível de Aptidão em Barreiras"). Sem
+ * fonte no Motor o valor é ZERO, que é o que o livro diz.
+ */
+export const rdDaParede = (bonus = 0) => Math.max(0, Math.trunc(Number(bonus)) || 0);
+
+/**
+ * Máximo de paredes erguidas de uma vez: as 6 da aptidão mais o canal
+ * `maxParedes` (a 4ª etapa do Treino de Barreiras dá +2).
+ */
+export const maxParedes = (bonus = 0) =>
+  Math.max(0, PAREDES_BASE + (Math.trunc(Number(bonus)) || 0));
+
+/* ------------------------------------------------------------ */
+/* CONFLITO DE DOMÍNIO                                           */
+/* ------------------------------------------------------------ */
+/**
+ * A rolagem de confronto e contestação de expansões, dada pelo autor em
+ * 2026-08-26:
+ *
+ *   1d10 + Nível de Aptidão em Domínio + metade do ND + Outros
+ *
+ * "Outros" é o canal `conflitoDominio` do Motor, e a 1ª e a 3ª etapa do Treino
+ * de Domínios são as duas primeiras fontes dele (+1 cada). Até esta data as duas
+ * etapas não tinham onde escrever, porque a ROLAGEM não existia em lugar nenhum
+ * do sistema.
+ *
+ * ⚠ Metade do ND é PISO, pela regra geral de arredondamento do Afty.
+ *
+ * ⚠ NÃO depende de haver uma expansão montada na ficha: quem confronta é a
+ * CRIATURA, e o número existe desde que ela tenha Nível de Aptidão em Domínio.
+ * Por isso ele mora no resumo e não em cada linha de domínio.
+ *
+ * Devolve o bônus, as partes para o hover de fontes e a anatomia do dado, que é
+ * o que a Ficha precisa para rolar sem remontar nada.
+ */
+export const CONFLITO_FACES = 10;
+
+export function conflitoDeDominio({ dom = 0, nd = 0, bonus = 0 } = {}) {
+  const d = Math.max(0, Math.trunc(Number(dom) || 0));
+  const n = Math.max(0, Math.trunc(Number(nd) || 0));
+  const outros = Math.trunc(Number(bonus)) || 0;
+  const metadeND = Math.floor(n / 2);
+  const partes = [
+    { label: "Nível de Aptidão em Domínio", valor: d },
+    { label: "Metade do Nível de Desafio", valor: metadeND },
+  ];
+  return {
+    dados: 1,
+    faces: CONFLITO_FACES,
+    bonus: d + metadeND + outros,
+    outros,
+    partes,
+  };
+}
 
 /* ------------------------------------------------------------ */
 /* LIMITE DE EFEITOS                                             */
 /* ------------------------------------------------------------ */
-/** ⚠ SEM FONTE NO AFTY. Herdado da 2.5.2: DOM 1-2 → 1, 3-4 → 2, 5 → 3. */
-export function maxEfeitos(dom = 0) {
+/**
+ * ⚠ A ESCADA é SEM FONTE NO AFTY. Herdada da 2.5.2: DOM 1-2 → 1, 3-4 → 2, 5 → 3.
+ *
+ * ⚠ `bonus` é o canal `efeitosDominio` (2026-08-26), e a 4ª etapa do Treino de
+ * Domínios é a primeira a usá-lo ("Você pode colocar um efeito adicional em sua
+ * expansão de domínio"). Ele soma por cima da escada, e NÃO abre vaga em quem
+ * não tem Domínio nenhum: com DOM 0 a expansão não existe, e somar aqui daria
+ * vaga numa coisa que não está no ar.
+ */
+export function maxEfeitos(dom = 0, bonus = 0) {
   const d = Math.trunc(Number(dom) || 0);
-  if (d >= 5) return 3;
-  if (d >= 3) return 2;
-  if (d >= 1) return 1;
-  return 0;
+  const base = d >= 5 ? 3 : d >= 3 ? 2 : d >= 1 ? 1 : 0;
+  if (!base) return 0;
+  return Math.max(0, base + (Math.trunc(Number(bonus)) || 0));
 }
 
 /** ⚠ SEM FONTE NO AFTY. Herdado da 2.5.2: a Incompleta não passa de DOM 3. */
@@ -594,16 +712,24 @@ function linhaAcertoGarantido(ag) {
  * O texto pronto da expansão, em parágrafos. É o que o jogador lê na mesa, e o
  * formato veio da 2.5.2 sem mudança.
  */
-export function textoDoDominio(dominio, { dom = 0, nd = 0, bt = 2, bar = 0, versao, paredesResistentes = false } = {}) {
+export function textoDoDominio(dominio, {
+  dom = 0, nd = 0, bt = 2, bar = 0, versao, paredesResistentes = false,
+  /* ⚠ Os dois entram como ARGUMENTO e não são lidos daqui de dentro (2026-08-26).
+     Este arquivo não conhece o Motor, e nem pode: quem resolve efeito é o
+     deriveAfty, que chama esta função depois. Sem eles o texto do domínio diria
+     uma área e uma vida DIFERENTES das que os chips ao lado mostram, que é a
+     classe de bug do detalhamento errado. */
+  bonusArea = 0, bonusPvParede = 0,
+} = {}) {
   const d = normalizeDominio(dominio);
   const v = versao || d.versao;
   if (!v) return "";
   const paras = [
-    `Sua expansão cria um espaço próprio que ocupa uma área esférica de ${areaDominio(v, bt)}, ` +
+    `Sua expansão cria um espaço próprio que ocupa uma área esférica de ${areaDominio(v, bt, false, bonusArea)}, ` +
       `a qual dura uma quantidade de rodadas igual a ${duracaoDominio(dom, v)}.`,
   ];
 
-  const hp = pvBarreira(bar, nd, paredesResistentes);
+  const hp = pvBarreira(bar, nd, paredesResistentes, bonusPvParede);
   if (v === "sem_barreiras") {
     paras.push(`O Totem no centro da expansão possui ${hp} pontos de vida.`);
   } else {

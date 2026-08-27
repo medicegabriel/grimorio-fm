@@ -114,6 +114,17 @@ export const EFEITO_CANAIS = [
   // Stats de combate
   { id: "hp",            label: "PV",                    nota: "entra ANTES do multiplicador de Integridade da Alma (autor, 2026-07-27)" },
   { id: "pvTemporario",  label: "PV Temporário",         nota: "não é PV máximo: é a casca que some no fim do efeito. Quase sempre vem da simulação de combate" },
+  // ⚠ IRMÃO do de cima, e ele faltava desde julho (o topo de afty-status.md o
+  // nomeava como "o PE temporário exclusivo de Aptidão"). O ALVO aqui é o
+  // GATILHO, e não um destino: `combate` entrega uma vez quando a cena começa,
+  // `rodada` reenche no começo de toda rodada. Sem alvo vale como `combate`.
+  //
+  // ⚠ A MESMA FONTE NÃO ACUMULA, ela TOPA. Copiado do `applyRoundStartResources`
+  // da 2.5.2 (src/components/fm-automation-entities.js), que resolveu isto antes:
+  // sem a regra, "no começo de toda rodada você ganha metade do BT" viraria uma
+  // pilha infinita na rodada 10. O que a rodada faz é devolver ao teto da fonte
+  // o que foi gasto, e não somar de novo.
+  { id: "peTemporario",  label: "PE Temporário",         alvo: "gatilho", nota: "casca de PE, gasta ANTES do PE normal. O alvo é o gatilho: combate entrega uma vez na cena, rodada reenche a cada rodada. A mesma fonte topa, não acumula" },
   { id: "pe",            label: "PE",                    nota: "pilha ÚNICA: Ponto de Energia e Ponto de Estamina (o nome do Restringido) são o mesmo recurso" },
   { id: "defesa",        label: "Defesa" },
   { id: "cd",            label: "CD" },
@@ -180,12 +191,40 @@ export const EFEITO_CANAIS = [
   { id: "finezaAtaque",  label: "Fineza",                alvo: "ataque", nota: "libera o atributo alternativo do ataque (Destreza no Corpo a Corpo). Vale o maior dos dois" },
   { id: "nivelAptidao",  label: "Nível de Aptidão",      alvo: "trilha", nota: "com alvo é concessão direcionada e grátis. Apara no teto da trilha (5 por padrão). Quem sobe o teto é o canal Limite de Aptidão" },
   { id: "limiteAptidao", label: "Limite de Aptidão",     alvo: "trilha", nota: "sobe o teto daquela trilha por cima do 5 padrão. Não concede nível: quem concede é o canal Nível de Aptidão, e as regras que quebram o teto emitem os dois juntos" },
+  // ⚠ NÃO É `nivelAptidao`. Este canal dá VAGA DE IMBUIÇÃO no Domínio Simples e
+  // mais nada; o Nível de Aptidão em Domínio alimenta uma dúzia de outras
+  // fórmulas e subi-lo para ganhar imbuição mexeria em todas elas. A régua base
+  // continua sendo o DOM, e o canal é o "esse valor pode ser aumentado por
+  // outras fontes" que o texto do Domínio Simples escreve.
+  { id: "imbuicoesEstilo", label: "Imbuições de Estilo",  nota: "quantas Técnicas de Estilo cabem no Domínio Simples ALÉM do Nível de Aptidão em Domínio" },
+
+  /* ---------- BARREIRA E EXPANSÃO DE DOMÍNIO ----------
+     Os seis nasceram em 2026-08-26, quando o autor mandou a Expansão de Domínio
+     LER O MOTOR. Até ali `areaDominio`, `maxEfeitos` e `pvDaParede`
+     (afty-dominios.js) eram funções puras de DOM, BAR, ND e BT, e o Treino de
+     Domínios inteiro não tinha onde escrever: era a única Linha de Treinamento
+     com zero efeitos ligados.
+
+     ⚠ `pvParede` mexe no DOMO junto, e é de propósito: o domo vale
+     `PAREDES_NO_DOMO × pvDaParede`, então melhorar a parede melhora o domo. */
+  { id: "pvParede",      label: "PV da Parede",          nota: "PV de CADA parede de Técnica de Barreira. O domo da Expansão vale 12 paredes, então ele sobe junto" },
+  { id: "rdParede",      label: "RD da Parede",          nota: "RD de cada parede de Técnica de Barreira. Não existia RD de parede antes de 2026-08-26" },
+  { id: "maxParedes",    label: "Máximo de Paredes",     nota: "quantas paredes de Técnica de Barreira cabem de uma vez, por cima das 6 da aptidão" },
+  { id: "areaDominio",   label: "Área da Expansão",      nota: "em metros, somado ao raio da Expansão de Domínio depois da conta de versão e Bônus de Treinamento" },
+  { id: "efeitosDominio", label: "Efeitos da Expansão",  nota: "quantas vagas de efeito a Expansão comporta, por cima do que o Nível de Aptidão em Domínio dá" },
+  { id: "conflitoDominio", label: "Conflito de Domínio", nota: "bônus na rolagem de confronto e contestação de expansões, que é 1d10 + Nível de Domínio + metade do ND + este canal" },
 
   // Orçamentos
   { id: "vagasPericia",   label: "Vagas de Treino" },
   { id: "vagasHabilidade", label: "Vagas de Habilidade" },
   { id: "vagasFeitico",   label: "Vagas de Feitiço",     nota: "vaga EXCLUSIVA de Feitiço (= Habilidade de Técnica, Estilo das Sombras ou Habilidade Marcial). Não serve para Habilidade Geral (autor, 2026-07-28)" },
   { id: "vagasTalento",   label: "Vagas de Talento",     nota: "vaga EXCLUSIVA de Talento. Não serve para Habilidade de Especialização (autor, 2026-08-03)" },
+  // ⚠ MAIS ESTREITO que o `vagasFeitico`, e é essa a razão de ele existir. O
+  // autor decidiu em 2026-08-22, sobre a 1ª Etapa do Treino de Novo Estilo das
+  // Sombras: um Feitiço não pode gastar esta vaga, só Técnica de Estilo pode.
+  // Bate com o que ele já dissera em 2026-08-07 ("só aumentam o contador de
+  // habilidades para Estilos").
+  { id: "vagasEstilo",    label: "Vagas de Estilo",      nota: "vaga EXCLUSIVA de Técnica de Estilo. Não serve para Feitiço nem para Habilidade Geral" },
   // "Vagas de" no rótulo para o canal cair junto dos irmãos numa busca por
   // "vaga". O que ele dá é QUANTAS Aptidões Amaldiçoadas a criatura pode ter.
   { id: "vagasAptidao",   label: "Vagas de Aptidão",     nota: "quantas Aptidões Amaldiçoadas a criatura pode ter. Sem fonte nenhuma o orçamento é ZERO: o ND não concede" },
@@ -199,6 +238,19 @@ export const EFEITO_CANAIS = [
   { id: "focos",          label: "Focos de Interlúdio" },
   { id: "pontosPreparo",  label: "Pontos de Preparo",    nota: "recurso do Combatente (Artes do Combate). Zero sem a habilidade, então o Preview só mostra quem tem" },
   { id: "espacosCarga",   label: "Espaços de Item",      nota: "sobe o LIMITE de carga, não o usado. Entra antes da conta de sobrecarga" },
+
+  /* ---------- GUARDA INABALÁVEL (Calamidade e Beyond) ----------
+     Os dois lados da mesma característica, e por isso são dois canais e não um:
+     o bônus é o que o golpe desgasta (2 por golpe) e a Vida é o que o dano
+     consome. Quem não é Calamidade nem Beyond não tem Guarda, e canal nenhum a
+     cria: os dois SOMAM sobre uma base que é zero fora dos dois patamares.
+
+     ⚠ Nascem sem cliente, de propósito. Foi a falta de destino que deixou o
+     Treino de Domínios sem automação nenhuma até 2026-08-26 (a linha estava
+     certa e não havia onde escrever), e a Guarda é exatamente o tipo de número
+     que um Addon vai querer mexer. */
+  { id: "guardaBonus",    label: "Guarda: Bônus",        nota: "o +5 (Calamidade) ou +10 (Beyond) de CA e TR no início da rodada. Continua caindo 2 por golpe sofrido" },
+  { id: "guardaVida",     label: "Guarda: Vida Temporária", nota: "os 5 × ND (Calamidade) ou 10 × ND (Beyond) de PV Temporário que a Guarda entrega no início de cada rodada" },
 
   // Feitiços
   { id: "custoPE",        label: "Custo em PE",          nota: "redução de custo, o piso de 1 PE continua valendo" },
@@ -356,7 +408,7 @@ export const chaveExclusiva = (canal, alvo, valor = 1) =>
  */
 const GRUPOS_DE_CANAL = [
   ["Vitalidade e Recursos", [
-    "hp", "pvTemporario", "pe", "almaMax", "pontosPreparo", "custoPE",
+    "hp", "pvTemporario", "pe", "peTemporario", "almaMax", "pontosPreparo", "custoPE",
   ]],
   // ⚠ Grupo PRÓPRIO desde 2026-08-03. Os três de Regeneração viviam soltos em
   // "Vitalidade e Recursos", entre PV e Pontos de Preparo, e lá o leitor não
@@ -367,7 +419,10 @@ const GRUPOS_DE_CANAL = [
     "curaDados", "curaFaces", "curaFixa",
     "curaPorDado", "curaPorDadoTeto", "curaUsos", "curaPontos",
   ]],
-  ["Defesa", ["defesa", "rdGeral", "rdEspecifico", "rdFisico", "rdAlma", "resParcial"]],
+  ["Defesa", [
+    "defesa", "rdGeral", "rdEspecifico", "rdFisico", "rdAlma", "resParcial",
+    "guardaBonus", "guardaVida",
+  ]],
   ["Ataque e Dano", [
     "cd", "bonusAcerto", "acertoArma", "danoBonus", "nivelDano", "dadosDano",
     "margemCritico", "ignoraRD", "removeResistencia", "propMarcial", "finezaAtaque",
@@ -376,7 +431,7 @@ const GRUPOS_DE_CANAL = [
   // `nivelAptidao` entra aqui, e não num grupo de Aptidões, porque ele é
   // concessão DIRETA de nível (a regra nomeia a trilha). O orçamento livre é
   // outro canal e está em Orçamentos.
-  ["Atributos e Aptidões", ["atributo", "limiteAtributo", "defesaAtributo", "hpAtributo", "nivelAptidao", "limiteAptidao"]],
+  ["Atributos e Aptidões", ["atributo", "limiteAtributo", "defesaAtributo", "hpAtributo", "nivelAptidao", "limiteAptidao", "imbuicoesEstilo"]],
   ["Perícias e Resistências", [
     "bonusPericia", "proficienciaPericia", "bonusTR", "proficienciaTR", "margemCriticoTR",
   ]],
@@ -388,10 +443,16 @@ const GRUPOS_DE_CANAL = [
   // ele é orçamento, irmão das vagas. `pontosAptidao` veio junto pelo mesmo
   // motivo, ele é orçamento de nível de aptidão.
   ["Orçamentos", [
-    "vagasPericia", "vagasHabilidade", "vagasFeitico", "vagasTalento", "vagasAptidao",
+    "vagasPericia", "vagasHabilidade", "vagasFeitico", "vagasEstilo", "vagasTalento", "vagasAptidao",
     "pontosAptidao", "focos", "espacosCarga",
   ]],
   ["Empolgação", ["empolgacaoMaxima", "empolgacaoInicial"]],
+  // ⚠ Grupo próprio desde 2026-08-26. Os seis mexem em coisas que só existem
+  // com uma Expansão ou uma Técnica de Barreira no ar, e espalhá-los por
+  // Defesa e Orçamentos esconderia que eles são um assunto só.
+  ["Barreira e Domínio", [
+    "pvParede", "rdParede", "maxParedes", "areaDominio", "efeitosDominio", "conflitoDominio",
+  ]],
 ];
 
 export const EFEITO_CANAL_GRUPOS = (() => {
@@ -814,7 +875,16 @@ export function coletarEfeitos(ids, mapa, catalogo = {}, vezesPorId = null) {
        dois só criaria uma segunda chave para a pessoa manter em sincronia.
        Por isso o mapa vem primeiro e a entrada é o fallback: nenhuma entrada do
        raw tem `efeitos` inline, então nada muda para elas. */
-    const efs = mapa?.[id] ?? entradaDe(id)?.efeitos;
+    const entrada = entradaDe(id);
+    /* ⚠ E O REMENDO GANHA DOS DOIS (2026-08-22). Uma entrada REMENDADA por
+       Addon que declara `efeitos` manda no mapa do raw, e não o contrário. Sem
+       esta linha o remendo trocava o texto da regra e o número continuava o
+       antigo, calado, porque a chave do mapa é o id e o id não muda: era
+       exatamente o caso do Noção e Preparação, que sobe nos níveis 9, 14 e 19
+       pelo Addon e continuaria subindo em 8, 12 e 16 no motor. */
+    const efs = (entrada?.remendadoPor && entrada.efeitos)
+      ? entrada.efeitos
+      : (mapa?.[id] ?? entrada?.efeitos);
     if (!efs) continue;
     const vezes = vezesPorId ? Math.max(1, vezesPorId[id] ?? 1) : 1;
     for (let v = 1; v <= vezes; v++) {
@@ -855,7 +925,10 @@ export function coletarEfeitosCriatura({ habilidades, talentos, altoNivel, catal
     ...coletarEfeitos(habilidades?.escolhidas, HABILIDADE_EFEITOS, catalogos?.habilidades),
     ...coletarEfeitos(roubadas, HABILIDADE_EFEITOS, catalogos?.habilidades),
     ...coletarEfeitosDeEscolha(habilidades?.escolhas?.mapa, catalogos?.opcoes, catalogos?.habilidades),
-    ...coletarEfeitos(talentos?.escolhidas, TALENTO_EFEITOS, catalogos?.talentos),
+    // `talentos.vezes` multiplica o Talento pego mais de uma vez (o Estudo
+    // Amaldiçoado remendado por Addon é o primeiro). Sem isso a 2ª pega
+    // aparecia na conta de vagas e não rendia efeito nenhum.
+    ...coletarEfeitos(talentos?.escolhidas, TALENTO_EFEITOS, catalogos?.talentos, talentos?.vezes),
     // Talento também tem escolha aninhada (o atributo do Incremento, a trilha
     // da Aptidão Desenvolvida), e cai no mesmo ESCOLHA_EFEITOS.
     ...coletarEfeitosDeEscolha(talentos?.escolhas?.mapa, catalogos?.opcoes, catalogos?.talentos),
@@ -1232,8 +1305,37 @@ export const CANAIS_ESTAGIO_1 = ["atributo"];
  * Maestria e atributo base. Na prática são todas "1".
  */
 export const CANAIS_PRE_CONTEXTO = ["nivelAptidao", "limiteAptidao", "empolgacaoMaxima", "limiteAtributo"];
+
+/**
+ * O canal das vagas de imbuição do Estilo, que roda num PASSE PRÓPRIO, entre o
+ * pré-contexto e o estágio principal.
+ *
+ * ⚠ ELE NÃO CABE EM NENHUM DOS DOIS, e foi por isso que ganhou um passe. No
+ * pré-contexto a variável `dom` ainda não existe, e a fonte mais provável deste
+ * canal é justamente uma expressão que a use (o Completo do Treino de Novo
+ * Estilo das Sombras é `dom`, para dobrar a régua). No estágio principal o
+ * `resolveEstilos` já rodou, e a vaga extra chegaria tarde. Ver `deriveAfty`.
+ */
+/**
+ * ⚠ Os SEIS da Barreira e do Domínio entraram no mesmo passe em 2026-08-26,
+ * quando a Expansão passou a ler o Motor. Eles têm exatamente o mesmo encaixe do
+ * `imbuicoesEstilo`: precisam das variáveis `dom` e `bar`, que o pré-contexto
+ * ainda não tem, e precisam estar prontos antes do `resumoDominios`, que o
+ * estágio principal não alcança.
+ *
+ * A fonte mais provável dos seis é uma Linha de Treinamento, e é por isso que o
+ * passe lê AS DUAS LISTAS de efeito: o montante e o `efeitosTodos`. Filtrar só o
+ * segundo deixaria o Treino de Barreiras e o de Domínios mudos, calados, que foi
+ * o bug que este passe já pegou uma vez com o Estilo das Sombras.
+ */
+export const CANAIS_POS_APTIDAO = [
+  "imbuicoesEstilo",
+  "pvParede", "rdParede", "maxParedes", "areaDominio", "efeitosDominio", "conflitoDominio",
+];
 export const ehPreContexto = (e) =>
   CANAIS_PRE_CONTEXTO.includes(e?.canal) && !efeitoUsaDadosDanoFinal(e);
+export const ehPosAptidao = (e) =>
+  CANAIS_POS_APTIDAO.includes(e?.canal) && !efeitoUsaDadosDanoFinal(e);
 
 /**
  * A ÚNICA entrada do sistema autorizada a passar do teto de 30 de atributo
@@ -1259,6 +1361,9 @@ export const ehAtributoTemporario = (e) =>
 export const ehEstagio2 = (e) =>
   !CANAIS_ESTAGIO_1.includes(e?.canal)
   && !ehPreContexto(e)
+  // Fora do estágio 2 para o canal ter UMA verdade só: quem o lê é o passe
+  // próprio, e deixá-lo cair aqui também daria dois números para a mesma coisa.
+  && !ehPosAptidao(e)
   && !efeitoUsaDadosDanoFinal(e);
 
 /**

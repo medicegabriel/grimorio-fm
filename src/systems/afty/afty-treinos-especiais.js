@@ -54,7 +54,7 @@
  * ============================================================
  */
 
-import { registrarFamilia, partirId } from "./afty-addons";
+import { registrarFamilia, remendarLista, partirId } from "./afty-addons";
 
 /** Uma pega de Treino Especial custa isto em Focos, salvo a entrada dizer outro. */
 export const FOCOS_POR_TREINO_ESPECIAL = 1;
@@ -113,8 +113,8 @@ let BY_ID = {};
 
 const TREINOS_ESPECIAIS_BASE = AFTY_TREINOS_ESPECIAIS.slice();
 
-function aplicarExtrasTreinosEspeciais(extras = []) {
-  AFTY_TREINOS_ESPECIAIS.splice(0, AFTY_TREINOS_ESPECIAIS.length, ...TREINOS_ESPECIAIS_BASE, ...extras);
+function aplicarExtrasTreinosEspeciais(extras = [], remendos = null) {
+  AFTY_TREINOS_ESPECIAIS.splice(0, AFTY_TREINOS_ESPECIAIS.length, ...remendarLista(TREINOS_ESPECIAIS_BASE, remendos), ...extras);
   BY_ID = Object.fromEntries(AFTY_TREINOS_ESPECIAIS.map((t) => [t.id, t]));
 }
 
@@ -127,6 +127,7 @@ registrarFamilia("treinosEspeciais", {
   // os dois, então cobrar aqui dá a mensagem melhor, antes de instalar.
   obrigatorios: ["nome", "descricao", "concede", "focos"],
   aplicar: aplicarExtrasTreinosEspeciais,
+  basicos: () => TREINOS_ESPECIAIS_BASE,
   validador: validarCatalogoTreinosEspeciais,
   resolver: (id) => getTreinoEspecial(id),
   // Lista COM repetição (`[{ id, alvo }]`), uma entrada por pega.

@@ -10,9 +10,13 @@ import { deriveAfty } from "../afty-derive";
 import { aplicarAddons, addonsDaCriatura } from "../afty-addons";
 import { NumeroComFontes } from "../ui/fontes";
 import { numeroBr } from "../ui/formato";
+import { Vital } from "../ui/vital";
+import { Guarda } from "../ui/guarda";
 import {
   carregarSessao, salvarSessao, aparaSessao,
   aplicaDano, aplicaCura, proximaRodada, descansar, registraRolagem,
+  peTempTotal, gastaPe, pvTempTotal,
+  entradaDaGuarda, sofreGolpeNaGuarda, desfazGolpeNaGuarda, encerraGuarda, defineCondicoes,
   alteraEstadoCombate, consomeEstadoCombate, registraFeiticoDano,
   configuraRitual, usosRitualista,
   ritualEmAndamento,
@@ -81,89 +85,6 @@ function Chip({ children, tom, title }) {
   );
 }
 
-/**
- * Uma barra de recurso, no desenho da 2.5.2 (a pedido do autor, 2026-08-05):
- * ícone e rótulo à esquerda, o número grande à direita, e a barra embaixo.
- *
- * ⚠ O NÚMERO É UM CAMPO, e ele aceita as duas coisas:
- *   • `42`  troca o valor
- *   • `-37` e `+8` são DELTA, e é o que substituiu a caixa de Dano e Cura que
- *     ficava solta no cabeçalho (o autor apontou que ela sobrava). Digitar
- *     `-37` no PV é o mesmo gesto de antes com um campo a menos na tela.
- *
- * ⚠ No PV o delta negativo passa pela regra de dano, e não por subtração: o PV
- * TEMPORÁRIO come primeiro. É por isso que existe `onDelta` separado do `onSet`.
- *
- * ⚠ O PV temporário não é uma quarta barra: ele é um pedaço âmbar EMENDADO na
- * de PV, porque é isso que ele é na regra (casca por fora do máximo, gasta antes
- * da vida). Uma barra separada faria o jogador somar dois números de cabeça.
- */
-function Vital({ tipo, icone: Icone, rotulo, atual, max, temp = 0, partes, onSet, onDelta }) {
-  const [rascunho, setRascunho] = useState(null);
-  const teto = Math.max(1, max);
-  const pctVida = Math.min(100, (Math.max(0, atual) / teto) * 100);
-  const pctTemp = Math.min(100 - pctVida, (Math.max(0, temp) / teto) * 100);
-  // Duas faixas, como na 2.5.2: âmbar abaixo da metade e vermelho abaixo de um
-  // quarto. ⚠ O PULSO é só do vermelho: metade do PV é comum no meio da luta, e
-  // uma barra piscando o tempo todo deixa de ser aviso e vira ruído.
-  const pct = max > 0 ? (atual / max) * 100 : 100;
-  const nivel = pct <= 25 ? "critico" : pct <= 50 ? "baixo" : "normal";
-
-  // ⚠ Campo VAZIO não vale zero: limpar para redigitar e sair sem terminar
-  // zeraria o PV do jogador no meio da luta. Vazio e lixo devolvem o que estava.
-  const confirma = (texto) => {
-    const cru = String(texto).trim();
-    setRascunho(null);
-    if (!cru) return;
-    const n = Math.trunc(Number(cru.replace(",", ".")));
-    if (!Number.isFinite(n)) return;
-    if (/^[+-]/.test(cru)) onDelta(n); else onSet(n);
-  };
-
-  return (
-    <div className="afty-vital" data-afty-vital={tipo} data-afty-nivel={nivel}>
-      <div className="flex items-center gap-2">
-        <Icone className="afty-vital-icone" aria-hidden="true" />
-        <span className="afty-vital-rotulo flex-1 min-w-0 truncate">{rotulo}</span>
-        <input
-          type="text"
-          inputMode="numeric"
-          className="afty-vital-numero"
-          value={rascunho ?? String(atual)}
-          onChange={(e) => setRascunho(e.target.value)}
-          onBlur={(e) => confirma(e.target.value)}
-          onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); }}
-          aria-label={`${rotulo} atual`}
-        />
-        <NumeroComFontes
-          valor={`/ ${max}`}
-          partes={partes}
-          total={max}
-          formatar={false}
-          className="afty-vital-max"
-          ancora="direita"
-          titulo={`${rotulo} máximo`}
-        />
-        {temp > 0 && (
-          <span className="afty-vital-temp" title="PV Temporário">+{temp}</span>
-        )}
-        <span className="flex items-center gap-0.5 flex-shrink-0">
-          <button type="button" className="afty-passo" onClick={() => onDelta(-1)} aria-label={`${rotulo} menos 1`}>−</button>
-          <button type="button" className="afty-passo" onClick={() => onDelta(1)} aria-label={`${rotulo} mais 1`}>+</button>
-        </span>
-      </div>
-      <div className="afty-vital-trilho mt-2 flex">
-        <span className="afty-vital-barra" style={{ width: `${pctVida}%` }} />
-        {pctTemp > 0 && (
-          <span
-            className="afty-vital-barra"
-            style={{ width: `${pctTemp}%`, "--afty-vital-cor": "var(--afty-pvtemp)" }}
-          />
-        )}
-      </div>
-    </div>
-  );
-}
 
 /* ============================================================ */
 
@@ -231,6 +152,11 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
              `opcoes`, e não pela criatura mesclada acima, porque não é escolha
              de ficha: é ganho de combate, de graça, e morre com a sessão. */
           concedido: sessaoBruta.concedido,
+          /* A Guarda Inabalável CORRENTE. Vai pelo `opcoes` como a concessão e
+             pelo mesmo motivo: é estado de mesa. O derive precisa dela porque o
+             bônus soma na Defesa e nos cinco TRs, e resolver a Guarda fora dele
+             obrigaria a derivar duas vezes. Ver `entradaDaGuarda`. */
+          guarda: entradaDaGuarda(sessaoBruta),
         },
       );
     },
@@ -470,7 +396,10 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
         onPatchCombate={(parcial) => atualiza((s) => ({ ...s, combate: { ...s.combate, ...parcial } }))}
         onEstado={alteraEstado}
         onBuffs={(buffs) => atualiza((s) => ({ ...s, buffs }))}
-        onCondicoes={(condicoes) => atualiza((s) => ({ ...s, condicoes }))}
+        /* ⚠ PASSA PELO `defineCondicoes`, e não escreve o campo cru: oito
+           condições derrubam a Guarda Inabalável, e escrever direto deixaria o
+           chefe com a Guarda de pé debaixo de um Atordoado. */
+        onCondicoes={(condicoes) => atualiza((s) => defineCondicoes(s, condicoes))}
         onConceder={(familia, id) => atualiza((s) => concedeNaSessao(s, familia, id))}
         onRemoverConcessao={(uid) => atualiza((s) => removeConcessao(s, uid))}
       />
@@ -588,7 +517,7 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
               <button
                 type="button"
                 className="afty-botao"
-                onClick={() => atualiza((s) => proximaRodada(s).sessao)}
+                onClick={() => atualiza((s) => proximaRodada(s, derived).sessao)}
                 title="Próxima rodada"
                 aria-label="Próxima rodada"
               >
@@ -614,7 +543,7 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2 pb-2">
             <Vital
               tipo="pv" icone={Heart} rotulo="Vida"
-              atual={sessao.hpAtual} max={derived.hp} temp={sessao.pvTempAtual}
+              atual={sessao.hpAtual} max={derived.hp} temp={pvTempTotal(sessao)}
               partes={derived.partes?.hp}
               onSet={(v) => setVital("hpAtual", v)}
               /* ⚠ No PV o delta NEGATIVO é dano, e dano come o PV temporário
@@ -623,10 +552,16 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
             />
             <Vital
               tipo="pe" icone={Zap} rotulo={derived.recursoLabel}
-              atual={sessao.peAtual} max={derived.pe}
+              atual={sessao.peAtual} max={derived.pe} temp={peTempTotal(sessao)}
+              rotuloTemp={`${derived.recursoLabel} Temporário`}
               partes={derived.partes?.pe}
               onSet={(v) => setVital("peAtual", v)}
-              onDelta={(n) => setVital("peAtual", sessao.peAtual + n)}
+              /* ⚠ Delta NEGATIVO é GASTO, e gasto come a casca primeiro, igual ao
+                 dano no PV. Subtrair direto pularia o PE temporário e o jogador
+                 pagaria duas vezes: uma na casca que não some e outra no PE. */
+              onDelta={(n) => atualiza((s) => (
+                n < 0 ? gastaPe(s, -n) : { ...s, peAtual: Math.max(0, s.peAtual + n) }
+              ))}
             />
             <Vital
               tipo="alma" icone={Sparkles} rotulo="Alma"
@@ -636,12 +571,30 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
             />
           </div>
 
+          {/* ---------- Guarda Inabalável ----------
+              Some inteira fora do Calamidade e do Beyond, que é a maioria das
+              criaturas. Fica entre os vitais e as defesas porque a casca dela
+              está na barra de PV logo acima, e o bônus já está somado na Defesa
+              logo abaixo: no meio, ela liga as duas. */}
+          <Guarda
+            guarda={derived.guarda}
+            partes={derived.partes?.guardaAtual}
+            onGolpe={() => atualiza((s) => sofreGolpeNaGuarda(s, derived))}
+            onDesfazGolpe={() => atualiza(desfazGolpeNaGuarda)}
+            onRaioNegro={() => atualiza(encerraGuarda)}
+          />
+
           {/* ---------- defesas ----------
               ⚠ GRADE de células iguais, e não `flex-wrap`. Com o wrap cada
               caixa ficava do tamanho do próprio texto ("CD" minúscula ao lado
               de "Res. Parcial" larga) e a fileira virava uma serra. O autor
-              apontou em 2026-08-05. */}
-          <div className="afty-stats grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-7 xl:grid-cols-9 gap-1.5 pb-2">
+              apontou em 2026-08-05.
+
+              ⚠ E as COLUNAS moram no `.afty-stats` do `ficha.css`, não aqui.
+              Eram `grid-cols-N` por breakpoint, e como a fileira tem de 8 a 12
+              células conforme a criatura, a que sobrava abria uma segunda
+              fileira e esticava o cabeçalho e o retrato junto. */}
+          <div className="afty-stats pb-2">
             {stats.map((s) => (
               <span key={s.id} className="afty-stat" data-afty-stat={s.id}>
                 <span className="afty-stat-rotulo" title={s.k}>{s.k}</span>

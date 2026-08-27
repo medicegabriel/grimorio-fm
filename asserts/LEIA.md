@@ -1,6 +1,6 @@
 # Asserts do Afty
 
-Os asserts de lógica do lado do Afty. São **649, em 19 arquivos**, e cobrem o avaliador do DSL, as
+Os asserts de lógica do lado do Afty. São **1038, em 24 arquivos**, e cobrem o avaliador do DSL, as
 primitivas novas do motor, o sistema de Addons de ponta a ponta e regras do catálogo que
 são fáceis de quebrar sem sintoma.
 
@@ -65,9 +65,14 @@ vai para o ar.
 | `t-concessao` | a primitiva 8.3 no MOTOR: as 7 famílias, o "de graça" medido contra a ficha crua, e conceder algo que só existe por addon |
 | `t-concessao-sessao` | a 8.3 na SESSÃO: gravar e ler de volta, o aparo que não perde o campo, e a prova de que a ficha salva não é tocada |
 | `t-primitivas` | o campo `permite`: quem enxerga cada primitiva de Addon, e a prova de que criatura raw não vê nenhuma |
+| `t-estilo-liberado` | o campo `libera`: o Estilo das Sombras fora do Sem Técnica, o Gêmeo copiando do Sem Técnica em Verdadeiras Origens, e a QUARTA trava (o card aparecer na aba) |
+| `t-remendo` | o campo `substitui`: trocar campo de entrada do livro, o id que não se mexe, o alvo que precisa existir, dois pacotes na mesma linha e a volta ao raw ao desinstalar |
+| `t-estilo-conteudo` | o conteúdo do addon do Estilo: Domínio Simples reescrito, a Linha de Treinamento com `soDaOrigem`, os quatro Talentos de Origem, a vaga exclusiva de Estilo e o Estudo Amaldiçoado repetível |
 | `t-bases-automaticas` | as Bases que a Especialização concede sozinha (`automatica: true`): quem recebe, o orçamento intocado, e a escolha aninhada que sobrevive à concessão |
 | `t-pugilato` | Faixas, Manoplas e Soco Inglês alimentando o Ataque Básico: os cinco graus, o item que define o golpe, e o efeito de encantamento chegando na linha |
 | `t-tamanho-pingente` | Crescimento Corporal repetível, redução de categoria, distância por tamanho e o Pingente de Amaterasu sob o sol ou com os três tesouros |
+| `t-interludios` | a varredura das 12 Linhas de Treinamento: os 13 requisitos que deixaram de ser `nota`, a trava do Potencial Físico no Restringido, e ⚠ o assert estrutural que compara efeito DECLARADO contra efeito EMITIDO, para nenhum voltar a ser descartado calado |
+| `t-dominio-barreira` | a Expansão de Domínio lendo o Motor: os seis canais e o passe pós-aptidão em que rodam, as 4 etapas do Treino de Domínios medidas uma a uma, o Conflito de Domínio, a fórmula das duas aptidões de barreira verbatim, a Cortina valendo 3 paredes e o domo 12, o ciclo inteiro da casca de PE (da cena ao descanso), e ⚠ o assert de ARQUIVO que amarra o `Vital` compartilhado, porque assert de lógica não pega componente duplicado |
 
 ⚠ O `t-exemplo` é o mais importante de manter: ele garante que o JSON que está escrito no doc
 realmente funciona. Foi ele que achou a lacuna do `efeitos` que era validado e nunca aplicado.

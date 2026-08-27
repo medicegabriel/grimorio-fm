@@ -2,7 +2,9 @@ import { useMemo, useCallback } from "react";
 
 import { deriveAfty } from "../afty-derive";
 import { aplicarAddons, unirAddons, epocaAddons } from "../afty-addons";
-import { aparaSessao, proximaRodada, descansar, sessaoEmBranco } from "../ficha/ficha-sessao";
+import {
+  aparaSessao, proximaRodada, descansar, sessaoEmBranco, iniciaCombate, entradaDaGuarda,
+} from "../ficha/ficha-sessao";
 import {
   ENCONTRO_STATUS, LADO, criarCombatente, criarJogador, renumerarCopias,
   ordenarPorIniciativa, rolarTodasIniciativas, definirIniciativa, rolarIniciativa,
@@ -44,7 +46,13 @@ const derivarCombatente = (c) => {
        (um `getHabilidade` no painel) via um mundo arbitrário. */
     return deriveAfty(
       { ...c.ficha, combate: c.sessao.combate, buffsSessao: c.sessao.buffs },
-      { almaAtual: c.sessao.almaAtual, concedido: c.sessao.concedido },
+      {
+        almaAtual: c.sessao.almaAtual,
+        concedido: c.sessao.concedido,
+        // A Guarda Inabalável corrente, igual à Ficha: o bônus dela soma na
+        // Defesa e nos cinco TRs desta mesma derivação.
+        guarda: entradaDaGuarda(c.sessao),
+      },
     );
   } catch {
     // Ficha de uma versão antiga que o derive não engole. O encontro continua
@@ -185,7 +193,7 @@ const HANDLERS = {
     combatentes: s.combatentes.map((c) => (c.id === id ? { ...c, sessao } : c)),
   }),
 
-  COMECAR: (s) => {
+  COMECAR: (s, { derivados = {} } = {}) => {
     if (!podeTransicionar(s.status, ENCONTRO_STATUS.ATIVO)) return s;
     const primeiro = ordenarPorIniciativa(s.combatentes)
       .find((c) => !c.flags.abatido && !c.flags.oculto) ?? null;
@@ -195,8 +203,13 @@ const HANDLERS = {
       rodada: 1,
       ativoId: primeiro?.id ?? null,
       // A rodada da sessão de cada um zera junto: ela contava a luta anterior.
+      // ⚠ E a CENA começa aqui, então a casca de PE entra junto: o `iniciaCombate`
+      // entrega a do gatilho `combate` (4 PE do Treino de Controle de Energia 2ª)
+      // e já a da primeira rodada, senão o Completo só valeria da segunda em diante.
       combatentes: s.combatentes.map((c) => (
-        c.sessao ? { ...c, sessao: { ...c.sessao, rodada: 1 } } : c
+        c.sessao
+          ? { ...c, sessao: iniciaCombate({ ...c.sessao, rodada: 1 }, derivados[c.id] ?? null) }
+          : c
       )),
     }, [
       entradaDeLog({ rodada: 1, tipo: LOG_TIPOS.RODADA, mensagem: "Combate iniciado. Rodada 1." }),
@@ -206,7 +219,7 @@ const HANDLERS = {
     ]);
   },
 
-  PROXIMO_TURNO: (s) => {
+  PROXIMO_TURNO: (s, { derivados = {} } = {}) => {
     if (s.status !== ENCONTRO_STATUS.ATIVO) return s;
     const { proximoId, rodada, novaRodada } = proximoTurno(s);
     const entradas = [];
@@ -219,7 +232,11 @@ const HANDLERS = {
       // mesa do mestre do que na ficha do jogador.
       combatentes = combatentes.map((c) => {
         if (!c.sessao) return c;
-        const { sessao, expirou } = proximaRodada(c.sessao);
+        // ⚠ O `derived` entra para a casca de PE do gatilho `rodada` voltar ao
+        // teto. Sem ele o Completo do Treino de Controle de Energia valeria na
+        // Ficha e não valeria na mesa do mestre, e as duas telas têm de contar
+        // a mesma rodada.
+        const { sessao, expirou } = proximaRodada(c.sessao, derivados[c.id] ?? null);
         for (const item of expirou) {
           entradas.push(entradaDeLog({
             rodada, tipo: LOG_TIPOS.CONDICAO, combatenteId: c.id,
@@ -241,13 +258,13 @@ const HANDLERS = {
     return comLog({ ...s, combatentes, rodada, ativoId: proximoId }, entradas);
   },
 
-  NOVA_RODADA: (s) => {
+  NOVA_RODADA: (s, { derivados = {} } = {}) => {
     if (s.status !== ENCONTRO_STATUS.ATIVO) return s;
     const rodada = s.rodada + 1;
     const entradas = [];
     const combatentes = s.combatentes.map((c) => {
       if (!c.sessao) return c;
-      const { sessao, expirou } = proximaRodada(c.sessao);
+      const { sessao, expirou } = proximaRodada(c.sessao, derivados[c.id] ?? null);
       for (const item of expirou) {
         entradas.push(entradaDeLog({
           rodada, tipo: LOG_TIPOS.CONDICAO, combatenteId: c.id,
@@ -375,9 +392,9 @@ export default function useEncontroAfty(encontroId, gerenciador) {
     rolarTodas: (soVazias = false) => despachar({ tipo: "ROLAR_TODAS", soVazias }),
     definirLado: (id, lado) => despachar({ tipo: "DEFINIR_LADO", id, lado }),
     definirFlag: (id, chave, valor) => despachar({ tipo: "DEFINIR_FLAG", id, chave, valor }),
-    comecar: () => despachar({ tipo: "COMECAR" }),
-    proximoTurno: () => despachar({ tipo: "PROXIMO_TURNO" }),
-    novaRodada: () => despachar({ tipo: "NOVA_RODADA" }),
+    comecar: () => despachar({ tipo: "COMECAR", derivados }),
+    proximoTurno: () => despachar({ tipo: "PROXIMO_TURNO", derivados }),
+    novaRodada: () => despachar({ tipo: "NOVA_RODADA", derivados }),
     encerrar: () => despachar({ tipo: "ENCERRAR" }),
     reabrir: () => despachar({ tipo: "REABRIR" }),
     levantarTodos: () => despachar({ tipo: "LEVANTAR_TODOS" }),

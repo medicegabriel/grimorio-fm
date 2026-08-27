@@ -687,6 +687,74 @@ function LinhaFeitico({
  * barreira e os efeitos escolhidos resolvidos. A Ficha não remonta nada: ela
  * abre e mostra, como faz com o texto do livro.
  */
+/**
+ * TÉCNICAS DE BARREIRA e CONFLITO DE DOMÍNIO, a linha de cima da seção.
+ *
+ * ⚠ Os dois são da CRIATURA, e não de uma expansão: a parede se ergue sem
+ * expansão nenhuma, e quem confronta é o feiticeiro. Por isso ficam fora do
+ * laço das expansões, e aparecem mesmo para quem ainda não escreveu uma.
+ *
+ * O Conflito é a única coisa aqui que ROLA, e a rolagem é 1d10 mais o bônus.
+ */
+function LinhaBarreiraConflito({ info, rolar }) {
+  const b = info?.barreira;
+  const c = info?.conflito;
+  const mostraParede = !!b?.tem;
+  const mostraConflito = (info?.domNivel ?? 0) > 0;
+  if (!mostraParede && !mostraConflito) return null;
+  return (
+    <div className="afty-linha px-2.5 py-2 flex items-center gap-2 flex-wrap">
+      {mostraParede && (
+        <>
+          <span className="flex-1 min-w-0 text-[12px] font-semibold truncate">Parede de Barreira</span>
+          <span className="afty-valor text-[11px]" title="Pontos de vida de cada parede">{b.pvParede} PV</span>
+          {b.rdParede > 0 && (
+            <span className="afty-valor text-[11px]" title="Redução de dano de cada parede">{b.rdParede} RD</span>
+          )}
+          <span className="afty-rotulo text-[10px] whitespace-nowrap" title="Máximo de paredes erguidas de uma vez">
+            até {b.maxParedes}
+          </span>
+          {/* A Cortina vale 3 paredes, e só aparece para quem tem a aptidão. */}
+          {b.temCortina && (
+            <span className="afty-rotulo text-[10px] whitespace-nowrap">
+              Cortina{" "}
+              <NumeroComFontes
+                valor={`${b.pvCortina} PV`}
+                partes={b.partesPvCortina}
+                total={b.pvCortina}
+                formatar={false}
+                className="afty-valor text-[11px]"
+                ancora="direita"
+                titulo="Pontos de vida da cortina"
+              />
+            </span>
+          )}
+        </>
+      )}
+      {mostraConflito && (
+        <>
+          {!mostraParede && <span className="flex-1 min-w-0 text-[12px] font-semibold truncate">Conflito de Domínio</span>}
+          <span className="afty-rotulo text-[10px] whitespace-nowrap">
+            {mostraParede ? "Conflito " : ""}
+            <NumeroComFontes
+              valor={`1d${c.faces}+${c.bonus}`}
+              partes={c.partes}
+              total={c.bonus}
+              formatar={false}
+              className="afty-valor text-[11px]"
+              ancora="direita"
+              onRolar={() => rolar({
+                tipo: "dano", rotulo: "Conflito de Domínio",
+                dados: c.dados, faces: c.faces, fixo: c.bonus,
+              })}
+            />
+          </span>
+        </>
+      )}
+    </div>
+  );
+}
+
 function LinhaDominio({ d, ativo, destacado }) {
   const [aberto, setAberto] = useState(false);
   const raiz = useDestaque(destacado);
@@ -849,8 +917,9 @@ export default function AbaAcoes({
         </Secao>
       )}
 
-      {dominios.length > 0 && (
+      {(dominios.length > 0 || derived.dominios?.barreira?.tem || (derived.dominios?.domNivel ?? 0) > 0) && (
         <Secao titulo="Expansão de Domínio">
+          <LinhaBarreiraConflito info={derived.dominios} rolar={rolar} />
           {dominios.map((d) => (
             <LinhaDominio
               key={d.id}

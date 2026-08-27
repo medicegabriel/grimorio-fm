@@ -113,7 +113,10 @@ import {
   resultaEspecialAux, ofereceUmGolpe, aplicaUmGolpe, podeEventoUnico,
   formatAuxValor, aplicaReducoesCustoFeitico, tituloCustoFeitico,
 } from "./afty-feiticos";
-import { createBlankEstiloEspecial, estilosDaFicha, TECNICAS_TABELA, TEXTO_EFEITO_ESPECIAL } from "./afty-estilo-sombras";
+import {
+  createBlankEstiloEspecial, estilosDaFicha, TECNICAS_TABELA, TEXTO_EFEITO_ESPECIAL,
+  mostraCardEstilo,
+} from "./afty-estilo-sombras";
 import { vocabularioDsl, vocabularioInvocacao, DSL_FUNCOES } from "./afty-dsl-vocabulario";
 import PrimitivasDeAddon from "./ui/PrimitivasDeAddon";
 import { usePrimitiva } from "./ui/usar-primitiva";
@@ -358,6 +361,17 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
     setDraft((d) => {
       const atual = Array.isArray(d.talentos) ? d.talentos : [];
       return { ...d, talentos: atual.includes(id) ? atual.filter((x) => x !== id) : [...atual, id] };
+    });
+
+  // Talento REPETÍVEL (`maxVezes` / `maxVezesExpr`). A lista guarda uma entrada
+  // por pega, igual às Habilidades Gerais e às Melhorias Superiores, então
+  // definir "vezes" é reescrever as entradas daquele id. Quem apara no teto é o
+  // resolver, e não este setter.
+  const setTalentoVezes = (id, vezes) =>
+    setDraft((d) => {
+      const atual = Array.isArray(d.talentos) ? d.talentos : [];
+      const outras = atual.filter((x) => x !== id);
+      return { ...d, talentos: [...outras, ...Array(Math.max(0, vezes)).fill(id)] };
     });
 
   // Escolha aninhada de uma habilidade (Estilo de Controle, Melhoria...).
@@ -966,7 +980,7 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
             />
           )}
           {tabAtiva === "habilidades" && <TabHabilidades draft={draft} derived={derived} patchCore={patchCore} toggleArmaDedicada={toggleArmaDedicada} addFeitico={addFeitico} removeFeitico={removeFeitico} patchFeitico={patchFeitico} duplicarFeitico={duplicarFeitico} setReducoesCustoFeitico={setReducoesCustoFeitico} toggleEstiloTabela={toggleEstiloTabela} addEstiloEspecial={addEstiloEspecial} removeEstilo={removeEstilo} patchEstilo={patchEstilo} addFuncionamento={addFuncionamento} removeFuncionamento={removeFuncionamento} patchFuncionamento={patchFuncionamento} setGeralVezes={setGeralVezes} addDominio={addDominio} removeDominio={removeDominio} patchDominio={patchDominio} setDominioAtivo={setDominioAtivo} />}
-          {tabAtiva === "especializacoes" && <TabEspecializacoes draft={draft} derived={derived} setEspecializacoes={setEspecializacoes} toggleHabilidade={toggleHabilidade} toggleEscolhaHabilidade={toggleEscolhaHabilidade} toggleTalento={toggleTalento} toggleEscolhaTalento={toggleEscolhaTalento} setMelhoriaVezes={setMelhoriaVezes} toggleLendaria={toggleLendaria} toggleEscolhaAltoNivel={toggleEscolhaAltoNivel} patchTecnicasCombate={patchTecnicasCombate} />}
+          {tabAtiva === "especializacoes" && <TabEspecializacoes draft={draft} derived={derived} setEspecializacoes={setEspecializacoes} toggleHabilidade={toggleHabilidade} toggleEscolhaHabilidade={toggleEscolhaHabilidade} toggleTalento={toggleTalento} setTalentoVezes={setTalentoVezes} toggleEscolhaTalento={toggleEscolhaTalento} setMelhoriaVezes={setMelhoriaVezes} toggleLendaria={toggleLendaria} toggleEscolhaAltoNivel={toggleEscolhaAltoNivel} patchTecnicasCombate={patchTecnicasCombate} />}
           {tabAtiva === "aptidoes" && <TabAptidoes draft={draft} derived={derived} setAptidaoNivel={setAptidaoNivel} toggleAptidao={toggleAptidao} setAptidaoOpcao={setAptidaoOpcao} setAptidaoVezes={setAptidaoVezes} setAptidaoOpcaoRepetida={setAptidaoOpcaoRepetida} />}
           {tabAtiva === "invocacoes" && <TabInvocacoes draft={draft} derived={derived} addInvocacao={addInvocacao} removeInvocacao={removeInvocacao} duplicarInvocacao={duplicarInvocacao} moverInvocacao={moverInvocacao} patchInvocacao={patchInvocacao} patchInvocacaoAttr={patchInvocacaoAttr} efeitosApi={efeitosApi} addHorda={addHorda} removeHorda={removeHorda} patchHorda={patchHorda} />}
           {tabAtiva === "equipamentos" && <TabEquipamentos draft={draft} derived={derived} addEquipamento={addEquipamento} removeEquipamento={removeEquipamento} patchEquipamento={patchEquipamento} toggleFerramenta={toggleFerramenta} patchFerramenta={patchFerramenta} toggleEncantamento={toggleEncantamento} addArmaCustom={addArmaCustom} patchArmaCustom={patchArmaCustom} removeArmaCustom={removeArmaCustom} />}
@@ -1796,6 +1810,47 @@ function EfeitoDominioLinha({ efeito, valor, podeFortalecer, onPatch, onRemove }
   );
 }
 
+/**
+ * TÉCNICAS DE BARREIRA: os números da PAREDE.
+ *
+ * ⚠ A aptidão existe desde a transcrição e NUNCA teve tela (autor, 2026-08-26:
+ * *"Precisamos de arrumar algum local para colocar a Vida, RD e Máximo de
+ * Paredes"*). O que a ficha mostrava de barreira era só o PV do DOMO, dentro do
+ * card de Expansão, e o domo é doze paredes: a parede em si, que é o que o
+ * jogador ergue com uma Ação Comum, não aparecia em lugar nenhum.
+ *
+ * Fica ao lado da Expansão porque os dois números são o mesmo material, e some
+ * junto com a aptidão: sem Técnicas de Barreira não há o que erguer.
+ */
+function BarreiraCard({ derived }) {
+  const b = derived.dominios?.barreira;
+  if (!b?.tem) return null;
+  /* ⚠ A CORTINA só entra para quem tem a aptidão dela. Ela vale 3 paredes
+     (autor, 2026-08-26) e o número não existia em lugar nenhum: o texto da
+     aptidão diz o custo e a área, e nunca a vida. */
+  const linhas = [
+    { k: "PV por Parede", v: b.pvParede, partes: b.partesPvParede },
+    { k: "RD por Parede", v: b.rdParede, partes: b.partesRdParede },
+    { k: "Máximo de Paredes", v: b.maxParedes, partes: b.partesMaxParedes },
+    ...(b.temCortina ? [{ k: "PV da Cortina", v: b.pvCortina, partes: b.partesPvCortina }] : []),
+  ];
+  return (
+    <Card title="Técnicas de Barreira">
+      <div className={`grid gap-2 ${linhas.length > 3 ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-3"}`}>
+        {linhas.map((l) => (
+          /* ⚠ O `group` fica em CADA célula, e não no grid. Com ele no pai, passar
+             o mouse numa célula acenderia os três painéis de uma vez. */
+          <div key={l.k} className="relative group rounded-lg border border-slate-800 bg-slate-900/60 p-2.5 text-center">
+            <div className="text-[10px] uppercase tracking-wider text-slate-500">{l.k}</div>
+            <div className="font-mono text-lg font-bold tabular-nums text-white cursor-help">{l.v}</div>
+            {l.partes?.length > 0 && <PainelDeFontes partes={l.partes} total={l.v} />}
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
 function DominioCard({ derived, addDominio, removeDominio, patchDominio, setDominioAtivo }) {
   const info = derived.dominios;
   const versoes = versoesDisponiveis(derived.aptidoesEscolhidas ?? []);
@@ -1805,8 +1860,14 @@ function DominioCard({ derived, addDominio, removeDominio, patchDominio, setDomi
     <Card
       title="Expansão de Domínio"
       headerRight={
-        <span className="text-[11px] font-mono tabular-nums text-slate-400">
-          DOM {info.domNivel} · {info.maxEfeitos} {info.maxEfeitos === 1 ? "efeito" : "efeitos"}
+        <span className="flex items-center gap-3 text-[11px] font-mono tabular-nums text-slate-400">
+          <span>DOM {info.domNivel} · {info.maxEfeitos} {info.maxEfeitos === 1 ? "efeito" : "efeitos"}</span>
+          {/* O CONFLITO é da CRIATURA e não de cada expansão, então mora no
+              cabeçalho. Ele existe desde que haja Nível de Aptidão em Domínio. */}
+          <span className="relative group cursor-help text-slate-300">
+            Conflito 1d{info.conflito.faces}+{info.conflito.bonus}
+            <PainelDeFontes partes={info.conflito.partes} total={info.conflito.bonus} />
+          </span>
         </span>
       }
     >
@@ -1980,6 +2041,7 @@ function TabHabilidades({ draft, derived, patchCore, toggleArmaDedicada, addFeit
       setDominioAtivo={setDominioAtivo}
     />
   );
+  const barreira = <BarreiraCard derived={derived} />;
   const origem = draft.core.origem?.id;
   const gerais = <HabilidadesGeraisCard derived={derived} setGeralVezes={setGeralVezes} />;
   // O Dano vale para toda origem: até quem não tem Feitiço ataca.
@@ -1988,19 +2050,38 @@ function TabHabilidades({ draft, derived, patchCore, toggleArmaDedicada, addFeit
   // Dano em toda origem: um Restringido cura com Ainda de Pé e um Combatente com
   // Revigorar, sem nada de energia amaldiçoada no meio.
   const cura = <CuraCard derived={derived} />;
+  /* O Estilo das Sombras.
+     ⚠ ELE NÃO É MAIS EXCLUSIVO DO RAMO DO SEM TÉCNICA (2026-08-21). Até então
+     este card só existia dentro do `if (origem === "sem_tecnica")`, e essa era
+     uma QUARTA trava, separada das três de regra: um Addon com
+     `libera: ["estiloSombras"]` abria o Estilo no motor e o card continuava sem
+     ser montado, porque o layout da aba ramifica por origem.
+
+     Quem aparece, e por quê:
+       • Sem Técnica: SEMPRE, inclusive trancado, porque a mensagem "destrava no
+         Nível 4" é o que diz a ele que o Estilo existe e está vindo;
+       • as outras origens: só com a liberação de Addon, senão seria um card
+         trancado na tela de quem nunca vai ter (o mesmo erro do card de
+         Concessão);
+       • qualquer uma que já tenha Técnica GRAVADA: senão desinstalar o addon
+         deixaria a linha morta presa na ficha, sem tela para removê-la. */
+  const estilo = mostraCardEstilo(origem, derived.estilo) ? (
+    <EstiloSombrasCard
+      draft={draft}
+      derived={derived}
+      toggleEstiloTabela={toggleEstiloTabela}
+      addEstiloEspecial={addEstiloEspecial}
+      removeEstilo={removeEstilo}
+      patchEstilo={patchEstilo}
+    />
+  ) : null;
   if (origem === "sem_tecnica") {
     return (
       <>
-        <EstiloSombrasCard
-          draft={draft}
-          derived={derived}
-          toggleEstiloTabela={toggleEstiloTabela}
-          addEstiloEspecial={addEstiloEspecial}
-          removeEstilo={removeEstilo}
-          patchEstilo={patchEstilo}
-        />
+        {estilo}
         {dano}
         {cura}
+        {barreira}
         {dominio}
         {gerais}
       </>
@@ -2010,8 +2091,10 @@ function TabHabilidades({ draft, derived, patchCore, toggleArmaDedicada, addFeit
     return (
       <>
         <SubsistemaPendente titulo="Habilidades Marciais" origem="Restringido" />
+        {estilo}
         {dano}
         {cura}
+        {barreira}
         {dominio}
         {gerais}
       </>
@@ -2028,8 +2111,12 @@ function TabHabilidades({ draft, derived, patchCore, toggleArmaDedicada, addFeit
         patchFuncionamento={patchFuncionamento}
       />
       <FeiticosCard draft={draft} derived={derived} addFeitico={addFeitico} removeFeitico={removeFeitico} patchFeitico={patchFeitico} duplicarFeitico={duplicarFeitico} setReducoesCustoFeitico={setReducoesCustoFeitico} />
+      {/* Depois dos Feitiços de propósito: quem chega aqui tem os dois, e o
+          Feitiço é o que ele já tinha. Os dois dividem o mesmo contador. */}
+      {estilo}
       {dano}
       {cura}
+      {barreira}
       {dominio}
       {gerais}
     </>
@@ -2040,7 +2127,8 @@ function TabHabilidades({ draft, derived, patchCore, toggleArmaDedicada, addFeit
    Aparece igual nos dois cards, para o gasto de um lado ser visível do outro. */
 function ContadorHabilidades({ derived }) {
   const {
-    gastosNoComum, comum, partesComum, exclusivasFeitico, exclusivasUsadas, excedeu,
+    gastosNoComum, comum, partesComum, exclusivasFeitico, exclusivasUsadas,
+    exclusivasEstilo, exclusivasEstiloUsadas, excedeu,
   } = derived.orcamentoHabilidades;
   return (
     <div className="flex items-center gap-2" title="Feitiços e Habilidades Gerais gastam o mesmo contador">
@@ -2061,6 +2149,17 @@ function ContadorHabilidades({ derived }) {
           title="Vagas exclusivas de Feitiço, que não servem para Habilidade Geral"
         >
           +{exclusivasUsadas} / {exclusivasFeitico}
+        </span>
+      )}
+      {/* A de Estilo é ainda mais estreita que a de Feitiço, então ela ganha
+          chip próprio pelo mesmo motivo: juntar as duas faria parecer que uma
+          serve onde a outra não serve. */}
+      {exclusivasEstilo > 0 && (
+        <span
+          className="font-mono text-[11px] font-bold text-cyan-300 tabular-nums"
+          title="Vagas exclusivas de Técnica de Estilo, que não servem para Feitiço nem para Habilidade Geral"
+        >
+          +{exclusivasEstiloUsadas} / {exclusivasEstilo}
         </span>
       )}
       <span className="text-[9px] uppercase tracking-wider text-slate-400">Habilidades</span>
@@ -6532,7 +6631,7 @@ function ProgressoSegmentos({ progresso, total }) {
 /* As 4 etapas (linha do tempo) + bônus de Completo de uma instância.
    `onSet(prog)` grava o novo progresso (bindado à linha/instância certa).
    `readOnly` = prévia só para consulta (sem ações, tudo em estado neutro). */
-function TreinoEtapas({ linha, progresso, attrEff, nd, onSet, readOnly = false }) {
+function TreinoEtapas({ linha, progresso, attrEff, nd, ctxReq, onSet, readOnly = false }) {
   const completa = !readOnly && progresso >= ETAPAS_POR_LINHA;
   return (
     <>
@@ -6541,7 +6640,7 @@ function TreinoEtapas({ linha, progresso, attrEff, nd, onSet, readOnly = false }
           const done = !readOnly && et.n <= progresso;
           const isNext = !readOnly && et.n === progresso + 1;
           const locked = !readOnly && et.n > progresso + 1;
-          const req = avaliarRequisito(et.requisito, { attrEff, nd });
+          const req = avaliarRequisito(et.requisito, { attrEff, nd, ...ctxReq });
           const blocked = isNext && !req.ok; // só requisito de atributo bloqueia
           const isTop = done && et.n === progresso; // última concluída (desfazível)
 
@@ -6658,7 +6757,7 @@ function opcoesDeAlvo(linha, instances, pericias = AFTY_PERICIAS, armas = []) {
 
 /* Uma Linha de Treinamento. Não repetível → uma trilha só. Repetível → várias
    instâncias, cada uma com um alvo distinto (atributo/perícia/arma). */
-function TreinoLinha({ linha, valor, attrEff, nd, onSetProgresso, onSetInstance, pericias, armas }) {
+function TreinoLinha({ linha, valor, attrEff, nd, ctxReq, onSetProgresso, onSetInstance, pericias, armas }) {
   const repetivel = !!linha.repetivel;
   const progresso = repetivel ? 0 : (Number(valor) || 0);
   const completa = !repetivel && progresso >= ETAPAS_POR_LINHA;
@@ -6763,6 +6862,7 @@ function TreinoLinha({ linha, valor, attrEff, nd, onSetProgresso, onSetInstance,
                       progresso={inst.progresso}
                       attrEff={attrEff}
                       nd={nd}
+                      ctxReq={ctxReq}
                       onSet={(p) => onSetInstance(linha.id, inst.alvo, p)}
                     />
                   </div>
@@ -6771,7 +6871,7 @@ function TreinoLinha({ linha, valor, attrEff, nd, onSetProgresso, onSetInstance,
 
               {/* sem treinos ainda: prévia consultável das etapas + Completo */}
               {instances.length === 0 && (
-                <TreinoEtapas linha={linha} progresso={0} attrEff={attrEff} nd={nd} readOnly />
+                <TreinoEtapas linha={linha} progresso={0} attrEff={attrEff} nd={nd} ctxReq={ctxReq} readOnly />
               )}
 
               {/* zona de adicionar novo alvo */}
@@ -6820,6 +6920,7 @@ function TreinoLinha({ linha, valor, attrEff, nd, onSetProgresso, onSetInstance,
               progresso={progresso}
               attrEff={attrEff}
               nd={nd}
+              ctxReq={ctxReq}
               onSet={(p) => onSetProgresso(linha.id, p)}
             />
           )}
@@ -7304,7 +7405,7 @@ function AptidaoCard({
    Como soma(niveis) === ND e a 2ª leva o resto (ver resolveEspecializacoes),
    os dois ± editam O MESMO ponto de divisão por lados opostos: subir uma
    baixa a outra. Com uma classe só não há o que dividir, e nenhum ± aparece. */
-function TabEspecializacoes({ draft, derived, setEspecializacoes, toggleHabilidade, toggleEscolhaHabilidade, toggleTalento, toggleEscolhaTalento, setMelhoriaVezes, toggleLendaria, toggleEscolhaAltoNivel, patchTecnicasCombate }) {
+function TabEspecializacoes({ draft, derived, setEspecializacoes, toggleHabilidade, toggleEscolhaHabilidade, toggleTalento, setTalentoVezes, toggleEscolhaTalento, setMelhoriaVezes, toggleLendaria, toggleEscolhaAltoNivel, patchTecnicasCombate }) {
   const { escolhidas, total, max, obrigatoria } = derived.especializacoes;
   // A origem copiada em Verdadeiras Origens ABRE o que for exclusivo dela: o
   // Físico Abençoado do Restringido diz que dá acesso à Especialização
@@ -7446,7 +7547,7 @@ function TabEspecializacoes({ draft, derived, setEspecializacoes, toggleHabilida
         (autor, 2026-07-17): a aba "Habilidades" do topo é de Ações &
         Características, não destas. Mesmo arranjo da aba de Aptidões, que
         tem o alocador em cima e a lista de leitura embaixo. */}
-    <HabilidadesEspecializacao draft={draft} derived={derived} toggleHabilidade={toggleHabilidade} toggleEscolhaHabilidade={toggleEscolhaHabilidade} toggleTalento={toggleTalento} toggleEscolhaTalento={toggleEscolhaTalento} patchTecnicasCombate={patchTecnicasCombate} />
+    <HabilidadesEspecializacao draft={draft} derived={derived} toggleHabilidade={toggleHabilidade} toggleEscolhaHabilidade={toggleEscolhaHabilidade} toggleTalento={toggleTalento} setTalentoVezes={setTalentoVezes} toggleEscolhaTalento={toggleEscolhaTalento} patchTecnicasCombate={patchTecnicasCombate} />
 
     {/* Empolgação: some inteira sem a habilidade Base do Lutador. */}
     <EmpolgacaoCard derived={derived} />
@@ -7642,7 +7743,20 @@ function TecnicasCombateEscolhas({ draft, escolhida, onPatch }) {
   );
 }
 
-function HabilidadeCard({ habilidade, escolhida, concedida = false, acesso, nivelEspec, escolhaEstado, onToggleOpcao, extra }) {
+/* Medidor de repetição do Talento. Só aparece no Talento que o texto manda
+   repetir E depois de escolhido: o 1º segmento duplicaria o botão de escolher,
+   que é a mesma regra do card das Habilidades Gerais.
+
+   ⚠ Não confundir com a repetição da ESCOLHA aninhada (Incremento de Atributo),
+   que já é mostrada dentro do card e continua onde estava. */
+function TalentoMedidor({ talento, vezes, max, onSetVezes }) {
+  if (max <= 1 || vezes <= 0) return null;
+  return max <= 6
+    ? <VezesGauge vezes={vezes} max={max} nome={talento.nome} onSet={(v) => onSetVezes(talento.id, v)} />
+    : <ContadorCompacto value={vezes} min={1} max={max} onChange={(v) => onSetVezes(talento.id, v)} />;
+}
+
+function HabilidadeCard({ habilidade, escolhida, concedida = false, acesso, nivelEspec, escolhaEstado, onToggleOpcao, extra, medidor }) {
   const [open, setOpen] = useState(false);
   // Já escolhida nunca trava: senão redividir a multiclasse prenderia a
   // habilidade na ficha, sem como remover (mesma regra do AptidaoCard).
@@ -7739,6 +7853,10 @@ function HabilidadeCard({ habilidade, escolhida, concedida = false, acesso, nive
           </span>
         </button>
 
+        {/* Medidor de repetição, no mesmo lugar em que ele fica no card das
+            Habilidades Gerais: cabeçalho, antes da seta. */}
+        {medidor}
+
         <ChevronDown
           className={`w-3.5 h-3.5 text-slate-600 flex-shrink-0 transition-transform ${open ? "" : "-rotate-90"}`}
           aria-hidden="true"
@@ -7783,7 +7901,7 @@ function HabilidadeCard({ habilidade, escolhida, concedida = false, acesso, nive
 
 const TALENTOS_TAB = "__talentos__";
 
-function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, toggleEscolhaHabilidade, toggleTalento, toggleEscolhaTalento, patchTecnicasCombate }) {
+function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, toggleEscolhaHabilidade, toggleTalento, setTalentoVezes, toggleEscolhaTalento, patchTecnicasCombate }) {
   const {
     escolhidas, selecionadas, concedidas, escolhas, gastosNoComum, comum, exclusivasTalento, exclusivasUsadas,
     excedeu, niveisPorEspec,
@@ -7841,6 +7959,9 @@ function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, toggleEsc
     // A origem copiada em Verdadeiras Origens qualifica junto com a própria.
     origensQualificadas: origensQualificadas(draft),
     talentos: talentosEscolhidos,
+    // Requisito de Aptidão (a Expansão de Estilo pede Domínio Simples). Sem
+    // isto o chip sairia como não verificável em vez de travar.
+    aptidoes: derived.aptidoesEscolhidas ?? [],
   };
 
   // Rótulo curto para a aba: "Base", "2°", "4°"... (o título longo não cabe).
@@ -7990,6 +8111,12 @@ function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, toggleEsc
                   acesso={{ ...avaliarAcessoTalento(h, ctxTalento), nivelOk: true, faltam: 0 }}
                   escolhaEstado={derived.talentos?.escolhas?.porTal?.[h.id]}
                   onToggleOpcao={(opcaoId) => toggleEscolhaTalento(h.id, opcaoId)}
+                  medidor={<TalentoMedidor
+                    talento={h}
+                    vezes={derived.talentos?.vezes?.[h.id] ?? 0}
+                    max={derived.talentos?.maxVezes?.[h.id] ?? 1}
+                    onSetVezes={setTalentoVezes}
+                  />}
                 />
               ) : (
                 <HabilidadeCard
@@ -10495,7 +10622,16 @@ function TabInterludios({ draft, derived, setTreinoProgresso, setTreinoInstance,
   // A origem esconde a linha que ela não alcança (a Maldição não tem Energia
   // Reversa), e o gasto acompanha: o Foco preso numa linha escondida volta.
   const origemId = draft.core.origem?.id;
-  const linhasTreino = treinamentosDaOrigem(origemId);
+  // As origens que a criatura conta como suas: a copiada em Verdadeiras Origens
+  // e a que um Addon libera. Elas abrem a linha exclusiva de origem.
+  const qualificadas = origensQualificadas(draft);
+  const linhasTreino = treinamentosDaOrigem(origemId, qualificadas);
+  // Contexto dos requisitos de etapa. Aptidão e trilha só bloqueiam quando o
+  // chamador os fornece, então esquecer isto aqui seria requisito sempre aberto.
+  const ctxReq = {
+    aptidoes: derived.aptidoesEscolhidas ?? [],
+    niveisAptidao: derived.aptidao?.efetivo ?? null,
+  };
   // As duas famílias de Interlúdio dividem o MESMO orçamento de Focos, então o
   // medidor do cabeçalho soma as duas: uma pega de Treino Especial e uma etapa
   // de Linha saem do mesmo caixa.
@@ -10503,7 +10639,7 @@ function TabInterludios({ draft, derived, setTreinoProgresso, setTreinoInstance,
   // O teto de cada Treino Especial é 1 + 1 a cada 5 ou 10 ND, então ele muda com
   // a ficha e não pode ser constante do catálogo.
   const tetosEspeciais = tetosDeTreinoEspecial(draft);
-  const gastos = focosGastos(treinos, origemId) + focosDeTreinosEspeciais(draft);
+  const gastos = focosGastos(treinos, origemId, qualificadas) + focosDeTreinosEspeciais(draft);
   const total = derived.focosTotais;                // = ND + bônus de poderes
   const overBudget = gastos > total;
 
@@ -10522,6 +10658,7 @@ function TabInterludios({ draft, derived, setTreinoProgresso, setTreinoInstance,
               valor={treinos[linha.id]}
               attrEff={derived.attrEff}
               nd={derived.nd}
+              ctxReq={ctxReq}
               pericias={derived.testes?.pericias}
               armas={armasDoInventario}
               onSetProgresso={setTreinoProgresso}
@@ -12370,6 +12507,21 @@ function AftyPreview({ draft, derived }) {
       accent: "text-purple-200",
     },
     { k: "Res. Parcial", v: derived.resParcial, p: "resParcial" },
+    /* Guarda Inabalável: só Calamidade e Beyond têm, e some para o resto. Ela
+       entra no Preview porque é AQUI que a criatura é dosada, e a Vida da Guarda
+       é uma parcela grande do PV efetivo de um chefe: um Beyond ND 30 leva 300
+       por rodada em cima dos PV dele.
+
+       ⚠ Os dois números são o TETO da rodada, e não o corrente. O corrente é
+       estado de mesa e mora na Ficha e no painel de Encontros, e por isso o
+       bônus também não está somado na Defesa acima: fora de combate não há
+       guarda erguida. */
+    ...(derived.guarda?.ativa
+      ? [
+        { k: "Guarda", v: `+${derived.guarda.bonusMax}`, p: "guardaBonus", accent: "text-sky-200" },
+        { k: "Vida da Guarda", v: derived.guarda.vidaMax, p: "guardaVida", accent: "text-sky-200" },
+      ]
+      : []),
     { k: "Iniciativa", v: `+${derived.iniciativa}`, p: "iniciativa" },
     // Atenção era calculada e não aparecia em lugar nenhum da ficha.
     { k: "Atenção", v: derived.atencao, p: "atencao" },

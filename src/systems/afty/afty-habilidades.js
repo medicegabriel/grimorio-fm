@@ -44,7 +44,7 @@
 
 import { evalNumber } from "./afty-dsl";
 // Registro de Addons. Módulo FOLHA (só importa o afty-dsl), então não há ciclo.
-import { registrarFamilia } from "./afty-addons";
+import { registrarFamilia, remendarLista } from "./afty-addons";
 import { getEspecializacao } from "./afty-especializacoes";
 import { getAptidao } from "./afty-aptidoes";
 import { ARMA_GRUPOS, ENCANTAMENTOS_ARMA } from "./afty-equipamentos";
@@ -6036,8 +6036,8 @@ const HABILIDADES_BASE = AFTY_HABILIDADES.slice();
  * ⚠ A ORDEM IMPORTA: o pool tem de ser refeito antes de ser pendurado na
  * habilidade dona, e o índice depois de tudo.
  */
-function aplicarExtrasHabilidades(extras = []) {
-  AFTY_HABILIDADES.splice(0, AFTY_HABILIDADES.length, ...HABILIDADES_BASE, ...extras);
+function aplicarExtrasHabilidades(extras = [], remendos = null) {
+  AFTY_HABILIDADES.splice(0, AFTY_HABILIDADES.length, ...remendarLista(HABILIDADES_BASE, remendos), ...extras);
 
   HABILIDADES_ROUBAVEIS.splice(0, HABILIDADES_ROUBAVEIS.length, ...montarRoubaveis());
   const dona = AFTY_HABILIDADES.find((h) => h.id === "res_roubo_de_habilidade");
@@ -6056,6 +6056,7 @@ registrarFamilia("habilidades", {
   // próprio pacote fica crua e vai procurar no raw, que é o caso comum.
   caminhosDeId: ["requisitos[].id", "concedeEscolha.habilidade"],
   aplicar: aplicarExtrasHabilidades,
+  basicos: () => HABILIDADES_BASE,
   validador: validarCatalogoHabilidades,
   // Para a LINHA MORTA: como achar pelo id, e onde a ficha guarda os ids.
   resolver: (id) => getHabilidade(id),
