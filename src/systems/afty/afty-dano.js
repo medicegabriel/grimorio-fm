@@ -15,6 +15,9 @@ export function gruposDaLinha(linha = {}) {
 export const grupoMultiplicavel = (grupo) =>
   grupo?.momento !== "apos" && grupo?.multiplica !== false;
 
+export const grupoNoRaioNegro = (grupo) =>
+  grupo?.momento !== "apos" && grupo?.entraRaioNegro !== false;
+
 const termoDoGrupo = (grupo, multiplicadorDados = 1, modo = "normal") => {
   const dados = inteiro(grupo?.dados) * multiplicadorDados;
   const faces = inteiro(modo === "critico" && grupo?.facesCritico ? grupo.facesCritico : grupo?.faces, 2);
@@ -27,14 +30,17 @@ const termoDoGrupo = (grupo, multiplicadorDados = 1, modo = "normal") => {
 
 export function formulaModoDano(grupos, modo = "normal") {
   const lista = (Array.isArray(grupos) ? grupos : [])
-    .filter((g) => modo === "critico" || !g.apenasCritico);
+    .filter((g) => ["critico", "raio_negro"].includes(modo) || !g.apenasCritico);
   if (modo === "critico") {
     return lista.map((g) => termoDoGrupo(g, grupoMultiplicavel(g) ? 2 : 1, modo)).join(" + ");
   }
   if (modo === "raio_negro") {
-    const dentro = lista.filter(grupoMultiplicavel).map((g) => termoDoGrupo(g)).join(" + ") || "0";
-    const fora = lista.filter((g) => !grupoMultiplicavel(g)).map((g) => termoDoGrupo(g)).join(" + ");
-    return `(${dentro}) ÷ 2 × 3${fora ? ` + ${fora}` : ""}`;
+    const dentro = lista
+      .filter(grupoNoRaioNegro)
+      .map((g) => termoDoGrupo(g, grupoMultiplicavel(g) ? 2 : 1, "critico"))
+      .join(" + ") || "0";
+    const fora = lista.filter((g) => !grupoNoRaioNegro(g)).map((g) => termoDoGrupo(g)).join(" + ");
+    return `(${dentro})/2*3${fora ? ` + ${fora}` : ""}`;
   }
   return lista.map((g) => termoDoGrupo(g)).join(" + ");
 }

@@ -20,7 +20,7 @@
  * ============================================================
  */
 
-import { formulaModoDano, grupoMultiplicavel } from "../afty-dano";
+import { formulaModoDano, grupoMultiplicavel, grupoNoRaioNegro } from "../afty-dano";
 
 let sequencia = 0;
 const novoId = () => `rol_${Date.now().toString(36)}_${(sequencia += 1)}`;
@@ -108,34 +108,30 @@ export function rolarDano(
     ? grupos
     : [{ dados, faces, fixo: fixoInt, momento: "durante", multiplica: true }];
   const lista = bruta
-    .filter((g) => modo === "critico" || !g.apenasCritico)
+    .filter((g) => ["critico", "raio_negro"].includes(modo) || !g.apenasCritico)
     .map((g, indice) => ({
       ...g,
       dados: Math.max(0, Math.trunc(Number(g.dados) || 0)) * multBlocos,
-      faces: Math.max(2, Math.trunc(Number(modo === "critico" && g.facesCritico ? g.facesCritico : g.faces) || 6)),
+      faces: Math.max(2, Math.trunc(Number(
+        ["critico", "raio_negro"].includes(modo) && g.facesCritico ? g.facesCritico : g.faces,
+      ) || 6)),
       fixo: Math.trunc(Number(g.fixo) || 0) + (Array.isArray(grupos) && indice === 0 ? fixoInt : 0),
     }));
 
   const rolados = [];
   let total = 0;
+  let subtotalRaioNegro = 0;
   for (const g of lista) {
-    const multDados = modo === "critico" && grupoMultiplicavel(g) ? 2 : 1;
+    const criticoAtivo = ["critico", "raio_negro"].includes(modo);
+    const multDados = criticoAtivo && grupoMultiplicavel(g) ? 2 : 1;
     const dadosGrupo = rolarDados(g.dados * multDados, g.faces, rng);
     rolados.push(...dadosGrupo);
     const subtotal = dadosGrupo.reduce((s, n) => s + n, 0) + g.fixo;
-    total += modo === "raio_negro" && grupoMultiplicavel(g)
-      ? 0
-      : subtotal;
+    if (modo === "raio_negro" && grupoNoRaioNegro(g)) subtotalRaioNegro += subtotal;
+    else total += subtotal;
   }
   if (modo === "raio_negro") {
-    let cursor = 0;
-    let subtotal = 0;
-    for (const g of lista) {
-      const resultados = rolados.slice(cursor, cursor + g.dados);
-      cursor += g.dados;
-      if (grupoMultiplicavel(g)) subtotal += resultados.reduce((s, n) => s + n, 0) + g.fixo;
-    }
-    total += Math.floor(subtotal / 2) * 3;
+    total += Math.floor(subtotalRaioNegro / 2) * 3;
   }
   const soma = rolados.reduce((s, n) => s + n, 0);
   const ajuste = total - soma;
@@ -154,7 +150,7 @@ export function rolarDano(
     faces: lista[0]?.faces ?? faces,
     fixo: ajuste,
     total,
-    critico: modo === "critico",
+    critico: ["critico", "raio_negro"].includes(modo),
     raioNegro: modo === "raio_negro",
   };
 }

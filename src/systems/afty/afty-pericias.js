@@ -397,15 +397,15 @@ export function resolveDano(creature, ctx = {}) {
     if (fatal > base.faces) base.facesCritico = fatal;
     else if (fatal) linha.gruposDano.push({
       nome: "Fatal", dados: 1, faces: fatal, fixo: 0,
-      momento: "durante", multiplica: false, apenasCritico: true,
+      momento: "durante", multiplica: false, apenasCritico: true, entraRaioNegro: true,
     });
     if (mortal) linha.gruposDano.push({
       nome: "Mortal", dados: 1, faces: mortal, fixo: 0,
-      momento: "durante", multiplica: false, apenasCritico: true,
+      momento: "durante", multiplica: false, apenasCritico: true, entraRaioNegro: true,
     });
     if (extras > 0) linha.gruposDano.push({
       nome: "Destruidora", dados: extras, faces: base.faces, fixo: 0,
-      momento: "durante", multiplica: false, apenasCritico: true,
+      momento: "durante", multiplica: false, apenasCritico: true, entraRaioNegro: true,
     });
     return linha;
   };
@@ -471,7 +471,7 @@ export function resolveDano(creature, ctx = {}) {
       ...(dadosAtroz ? [{
         nome: "Golpe Especial", dados: dadosAtroz,
         faces: Number(String(linha.dado).replace(/^d/i, "")), fixo: 0,
-        momento: "durante", multiplica: false, incluidoNoTexto: true,
+        momento: "durante", multiplica: false, entraRaioNegro: false, incluidoNoTexto: true,
       }] : []),
     ];
     return linha;
