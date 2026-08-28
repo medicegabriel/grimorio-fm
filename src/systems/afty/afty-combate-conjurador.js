@@ -177,7 +177,13 @@ function efeitosDeAuxiliarResolvido(sub, config, nome) {
     case "danoDurante":
     case "danoApos": return {
       efeitos: [],
-      dados: Array.isArray(sub.dado) ? [{ nome, dados: sub.dado[0], faces: sub.dado[1] }] : [],
+      dados: Array.isArray(sub.dado) ? [{
+        nome,
+        dados: sub.dado[0],
+        faces: sub.dado[1],
+        momento: sub.efeito === "danoApos" ? "apos" : "durante",
+        multiplica: sub.efeito !== "danoApos",
+      }] : [],
     };
     case "danoFixo": return { efeitos: efeitoNumerico("danoBonus", valor, nome), dados: [] };
     case "niveisDano": return { efeitos: efeitoNumerico("nivelDano", valor, nome), dados: [] };

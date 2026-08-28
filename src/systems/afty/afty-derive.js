@@ -95,6 +95,9 @@ import {
 import { resolveGerais, contadorHabilidades, GERAL_BY_ID } from "./afty-gerais";
 import { resolveCombate, degrausBrutalidade } from "./afty-combate";
 import {
+  aplicarAptidoesNoDano, aptidoesAuraDesabilitadas, estadosCombateAptidoes,
+} from "./afty-combate-aptidoes";
+import {
   resolveTecnicasCombate, estadosCombateConjurador, efeitosCombateAmaldicoado,
   resolveAuxiliaresAtivos, aplicarImbuicaoNoDano, dadosAuxiliaresNaLinha,
 } from "./afty-combate-conjurador";
@@ -527,7 +530,9 @@ export function deriveAfty(creature, opcoes = {}) {
       // Cortes, Concussão e Perfuração (Talentos) miram.
       tipoDano: e.def.dano?.tipo ?? null,
       alcance: alcanceDaArma(e.def),
+      alcanceBonusCorpo: e.def.props?.estendida ? 1.5 : 0,
       propriedades: propriedadesDaArma(e.def),
+      criticoExtraDados: e.fa?.encantamentos?.some((x) => x.id === "enc_arma_destruidora" && x.atende) ? 1 : 0,
       elegivelDedicada: podeSerArmaDedicada(e.def),
     }));
   const tecnicasCombate = resolveTecnicasCombate(
@@ -853,6 +858,11 @@ export function deriveAfty(creature, opcoes = {}) {
     armas: armasParaDano,
     feiticos: creature?.feiticos,
   });
+  const estadosAptidoes = estadosCombateAptidoes({
+    aptidoesIds,
+    au: aptidao.efetivo?.au ?? 0,
+    cl: aptidao.efetivo?.cl ?? 0,
+  });
   const combate = resolveCombate(creature, {
     dominios: resumoDominios.lista,
     brutalidadePE: degrausBrutalidade({ habilidades }),
@@ -884,14 +894,22 @@ export function deriveAfty(creature, opcoes = {}) {
     // instâncias: uma por Habilidade Única ativa, e uma por Técnica de Estilo
     // que precisa de gatilho (toda Modificação de Domínio Simples, mais a
     // Técnica Especial com linha ativa).
-    estadosExtras: [...equip.estadosUnica, ...estilo.estados, ...estadosConjurador],
+    estadosExtras: [...equip.estadosUnica, ...estilo.estados, ...estadosConjurador, ...estadosAptidoes],
   });
   const auxiliaresAtivos = resolveAuxiliaresAtivos(creature, combate, estadosConjurador, {
     nd,
     habilidades: habilidades.escolhidas,
   });
+  const aurasDesabilitadas = new Set(aptidoesAuraDesabilitadas(
+    {
+      ...creature,
+      aptidoes: { ...creature?.aptidoes, au: aptidao.efetivo?.au ?? 0 },
+      combate: { ...creature?.combate, concentrarAura: combate.concentrarAura },
+    },
+    aptidoesIds,
+  ));
   const efeitosAtivos = [
-    ...efeitosComDominio,
+    ...efeitosComDominio.filter((e) => !aurasDesabilitadas.has(e.origem)),
     ...efeitosCombateAmaldicoado(tecnicasCombate, combate, habilidades.escolhidas, bt),
     ...auxiliaresAtivos.efeitos,
   ];
@@ -1625,6 +1643,8 @@ export function deriveAfty(creature, opcoes = {}) {
     // Os Ataques já resolvidos, para cada linha fechar o Acerto dela: o ataque
     // da categoria mais o grau da arma daquela linha.
     ataques: testes.ataques,
+    alcanceCorpo: tamanho.espacoAlcance,
+    alcanceMult: combate.postura === "ceu" || combate.postura2 === "ceu" ? 2 : 1,
   });
   dano = {
     ...dano,
@@ -1639,6 +1659,13 @@ export function deriveAfty(creature, opcoes = {}) {
     habilidades.escolhidas,
     feiticos.lista,
   );
+  dano = aplicarAptidoesNoDano(dano, creature, combate, {
+    aptidoesIds,
+    au: aptidao.efetivo?.au ?? 0,
+    cl: aptidao.efetivo?.cl ?? 0,
+    modTecnica,
+    cd,
+  });
 
   // ---------- Cura (2026-08-03) ----------
   // Uma linha por FONTE, igual ao Dano, mas o número vem todo do Motor: cada

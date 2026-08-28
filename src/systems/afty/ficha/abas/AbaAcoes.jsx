@@ -29,10 +29,13 @@ import TextoRico from "../../ui/TextoRico";
  * ============================================================
  */
 
-function Secao({ titulo, children }) {
+function Secao({ titulo, controles = null, children }) {
   return (
     <section className="afty-card p-3">
-      <h2 className="afty-card-titulo mb-2">{titulo}</h2>
+      <div className="flex items-center gap-1.5 mb-2 flex-wrap">
+        <h2 className="afty-card-titulo">{titulo}</h2>
+        {controles}
+      </div>
       <div className="space-y-1">{children}</div>
     </section>
   );
@@ -50,34 +53,18 @@ function Secao({ titulo, children }) {
  * A marca é CONSUMIDA pelo Dano. Ela some depois de usada, senão o próximo golpe
  * herdaria um crítico que não é dele.
  */
-function LinhaDano({ e, rolar, critico, onCritico, destacado, onImbuir }) {
-  const faces = facesDe(e.dado);
+function LinhaDano({ e, rolar, critico, onCritico, destacado, onImbuir, modoDano }) {
   const raiz = useDestaque(destacado);
   const feiticoImbuido = e.imbuir?.escolhido ?? null;
   const condicoesImbuidas = feiticoImbuido?.propriedades?.find((p) => p.id === "condicoes")?.valor;
   const cdImbuida = feiticoImbuido?.propriedades?.find((p) => p.id === "cd")?.valor;
-  const rolarAdicionais = () => {
-    for (const extra of (e.danoAuxiliar ?? [])) {
-      rolar({
-        tipo: "dano",
-        rotulo: `${e.nome} · ${extra.nome}`,
-        dados: extra.dados,
-        faces: extra.faces,
-        fixo: 0,
-      });
-    }
-    for (const [indice, extra] of (feiticoImbuido?.rolagens ?? []).entries()) {
-      rolar({
-        tipo: "dano",
-        rotulo: `${e.nome} · ${feiticoImbuido.nome || "Feitiço Sem Nome"}`,
-        detalhe: extra.rotulo,
-        dados: extra.dados,
-        faces: extra.faces,
-        fixo: extra.fixo || 0,
-        explosiva: !!extra.explosiva,
-        feiticoDanoId: indice === 0 ? feiticoImbuido.id : null,
-      });
-    }
+  const modoVisual = modoDano !== "normal" ? modoDano : critico ? "critico" : "normal";
+  const danoExibido = modoVisual === "critico"
+    ? e.formulaCritico
+    : modoVisual === "raio_negro" ? e.formulaRaioNegro : e.texto;
+  const rolarModo = (modoDano) => {
+    rolar({ tipo: "dano", rotulo: e.nome, grupos: e.gruposDano, modoDano });
+    if (critico) onCritico(false);
   };
   return (
     <div
@@ -97,6 +84,7 @@ function LinhaDano({ e, rolar, critico, onCritico, destacado, onImbuir }) {
           Crít. {e.margemCritico}
         </span>
         {e.alcance && <span className="afty-rotulo text-[10px] whitespace-nowrap">{e.alcance.texto}</span>}
+        {e.tipoDanoLabel && <span className="afty-chip">{e.tipoDanoLabel}</span>}
         {critico && <span className="afty-chip" data-afty-tom="destaque">Crítico</span>}
         {e.acerto != null && (
           <span className="afty-rotulo text-[10px] whitespace-nowrap" title={e.acertoAtaque}>
@@ -115,25 +103,24 @@ function LinhaDano({ e, rolar, critico, onCritico, destacado, onImbuir }) {
           </span>
         )}
         <NumeroComFontes
-          valor={e.texto}
+          valor={danoExibido}
           partes={e.partes}
-          total={e.total}
+          total={modoVisual === "normal" ? e.total : danoExibido}
           formatar={false}
           className="afty-valor text-[13px] whitespace-nowrap"
           ancora="direita"
           onRolar={() => {
-            rolar({
-              tipo: "dano", rotulo: e.nome, dados: e.dados, faces, fixo: e.fixo, critico,
-            });
-            rolarAdicionais();
-            if (critico) onCritico(false);
+            rolarModo(modoVisual);
           }}
         />
-        {(e.danoAuxiliar ?? []).map((extra, indice) => (
-          <span key={`${extra.nome}:${indice}`} className="afty-chip" title={extra.nome}>
-            +{extra.dados}d{extra.faces}
-          </span>
-        ))}
+        {modoVisual === "normal" && (e.gruposDano ?? []).slice(1)
+          .filter((extra) => !extra.apenasCritico && !extra.incluidoNoTexto)
+          .map((extra, indice) => (
+            <span key={`${extra.nome}:${indice}`} className="afty-chip" title={extra.nome}>
+              {extra.dados ? `+${extra.dados}d${extra.faces}` : ""}
+              {extra.fixo ? `${extra.dados ? " " : "+"}${extra.fixo}` : ""}
+            </span>
+          ))}
         {feiticoImbuido && (
           <span
             className="afty-chip"
@@ -145,6 +132,9 @@ function LinhaDano({ e, rolar, critico, onCritico, destacado, onImbuir }) {
         )}
         {condicoesImbuidas && cdImbuida && (
           <span className="afty-chip" title={condicoesImbuidas}>TR CD {cdImbuida}</span>
+        )}
+        {e.golpeComAura && (
+          <span className="afty-chip" title={e.golpeComAura.nome}>TR CD {e.golpeComAura.cd}</span>
         )}
       </div>
       {e.imbuir && (
@@ -845,6 +835,9 @@ export default function AbaAcoes({
   const dominios = derived.dominios?.lista ?? [];
   const dominioAtivo = derived.dominios?.ativoId ?? null;
   const manobras = derived.testes?.manobras ?? [];
+  const temRaioNegro = (derived.aptidoesEscolhidas ?? []).includes("raio_negro");
+  const [modoDano, setModoDano] = useState("normal");
+  const modoDanoAtivo = modoDano === "raio_negro" && !temRaioNegro ? "normal" : modoDano;
   // Crítico pendente por linha de dano. Local e não persistido: é um estado de
   // meio segundo entre o Acerto e o Dano, e guardá-lo faria a ficha reabrir
   // amanhã com um crítico de hoje engatilhado.
@@ -872,7 +865,33 @@ export default function AbaAcoes({
       )}
 
       {dano.length > 0 && (
-        <Secao titulo="Dano">
+        <Secao
+          titulo="Dano"
+          controles={(
+            <>
+              <button
+                type="button"
+                className="afty-botao text-[10px]"
+                data-afty-tom={modoDanoAtivo === "critico" ? "destaque" : undefined}
+                aria-pressed={modoDanoAtivo === "critico"}
+                onClick={() => setModoDano(modoDanoAtivo === "critico" ? "normal" : "critico")}
+              >
+                Crítico
+              </button>
+              {temRaioNegro && (
+                <button
+                  type="button"
+                  className="afty-botao text-[10px]"
+                  data-afty-tom={modoDanoAtivo === "raio_negro" ? "destaque" : undefined}
+                  aria-pressed={modoDanoAtivo === "raio_negro"}
+                  onClick={() => setModoDano(modoDanoAtivo === "raio_negro" ? "normal" : "raio_negro")}
+                >
+                  Raio Negro
+                </button>
+              )}
+            </>
+          )}
+        >
           {dano.map((e) => (
             <LinhaDano
               key={e.id}
@@ -882,6 +901,7 @@ export default function AbaAcoes({
               onCritico={(v) => setCriticos((c) => ({ ...c, [e.id]: v }))}
               destacado={destaque === `dano:${e.id}`}
               onImbuir={onImbuir}
+              modoDano={modoDanoAtivo}
             />
           ))}
         </Secao>

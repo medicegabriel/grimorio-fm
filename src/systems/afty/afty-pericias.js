@@ -372,8 +372,50 @@ export function resolveDano(creature, ctx = {}) {
     return fineza && modDe("destreza") > modDe("forca") ? "destreza" : "forca";
   };
 
+  const alcanceDe = (alcance, bonusCorpo = 0) => {
+    const mult = Math.max(1, Number(ctx.alcanceMult) || 1);
+    if (alcance) {
+      const curto = alcance.curto * mult;
+      const longo = alcance.longo * mult;
+      return { curto, longo, texto: `${curto}m / ${longo}m` };
+    }
+    const metros = (Math.max(0, Number(ctx.alcanceCorpo) || 0) + Math.max(0, Number(bonusCorpo) || 0)) * mult;
+    return metros ? { curto: metros, longo: metros, texto: `${String(metros).replace(".", ",")}m` } : null;
+  };
+
+  const facesDaPropriedade = (propriedades, id) => {
+    const valor = propriedades.find((p) => p.id === id)?.valor;
+    const faces = Math.trunc(Number(String(valor ?? "").replace(/^d/i, "")));
+    return faces > 1 ? faces : 0;
+  };
+
+  const aplicaCriticoDaArma = (linha, propriedades, extras = 0) => {
+    const base = linha.gruposDano?.[0];
+    if (!base) return linha;
+    const fatal = facesDaPropriedade(propriedades, "fatal");
+    const mortal = facesDaPropriedade(propriedades, "mortal");
+    if (fatal > base.faces) base.facesCritico = fatal;
+    else if (fatal) linha.gruposDano.push({
+      nome: "Fatal", dados: 1, faces: fatal, fixo: 0,
+      momento: "durante", multiplica: false, apenasCritico: true,
+    });
+    if (mortal) linha.gruposDano.push({
+      nome: "Mortal", dados: 1, faces: mortal, fixo: 0,
+      momento: "durante", multiplica: false, apenasCritico: true,
+    });
+    if (extras > 0) linha.gruposDano.push({
+      nome: "Destruidora", dados: extras, faces: base.faces, fixo: 0,
+      momento: "durante", multiplica: false, apenasCritico: true,
+    });
+    return linha;
+  };
+
   const monta = (escopos, atributo, grauArma, margemBase) => {
     const dadosExtras = Math.max(0, Math.trunc(canal("dadosDano", escopos)));
+    const detalhesDados = ef ? detalhesDoCanalEscopos(ef, "dadosDano", escopos) : [];
+    const dadosAtroz = detalhesDados
+      .filter((d) => d.origem === "cmb_golpe_especial")
+      .reduce((s, d) => s + Math.max(0, Math.trunc(Number(d.valor) || 0)), 0);
     const linha = linhaDeDano({
       nd, patamar, atributo, modChave: modDe(atributo), cl, grauArma,
       niveisDano: Math.max(0, Math.trunc(canal("nivelDano", escopos))),
@@ -386,7 +428,7 @@ export function resolveDano(creature, ctx = {}) {
       fontes: fontesDe("danoBonus", escopos),
     });
     // Dado extra não é número, então entra no detalhamento como texto.
-    for (const d of ef ? detalhesDoCanalEscopos(ef, "dadosDano", escopos) : []) {
+    for (const d of detalhesDados) {
       linha.partes.push({ label: d.nome, texto: `+${d.valor}${linha.dado}` });
     }
 
@@ -420,6 +462,18 @@ export function resolveDano(creature, ctx = {}) {
         ...(d.suplantado ? { suplantado: true } : {}),
       });
     }
+    linha.gruposDano = [
+      {
+        nome: "Ataque", dados: Math.max(0, linha.dados - dadosAtroz),
+        faces: Number(String(linha.dado).replace(/^d/i, "")), fixo: linha.fixo,
+        momento: "durante", multiplica: true,
+      },
+      ...(dadosAtroz ? [{
+        nome: "Golpe Especial", dados: dadosAtroz,
+        faces: Number(String(linha.dado).replace(/^d/i, "")), fixo: 0,
+        momento: "durante", multiplica: false, incluidoNoTexto: true,
+      }] : []),
+    ];
     return linha;
   };
 
@@ -476,7 +530,7 @@ export function resolveDano(creature, ctx = {}) {
   ];
   const entradas = [
     // Desarmado não tem margem de crítico listada em lugar nenhum: é 20.
-    { id: "basico", nome: "Ataque Básico", fonte: "basico", alcance: null, propriedades: [],
+    { id: "basico", nome: "Ataque Básico", fonte: "basico", alcance: alcanceDe(null), propriedades: [],
       ...monta(escoposBasico, atributoDe({ fineza: finezaDesarmado }), ctx.grauBasico, 20),
       // Manoplas e Faixas são o Ataque Básico, então o grau delas entra aqui.
       // As `fontesAcertoBasico` são o que o encantamento somou por fora do grau:
@@ -498,9 +552,9 @@ export function resolveDano(creature, ctx = {}) {
     const escopos = escoposDaArma({ ...a, propriedades });
     const usaTecnicas = armasTecnicas.has(a.id);
     const atributo = usaTecnicas ? atributoTecnicas : atributoDe(a);
-    entradas.push({
+    const linhaArma = {
       id: a.id, nome: a.nome, fonte: "arma",
-      alcance: a.alcance ?? null, propriedades,
+      alcance: alcanceDe(a.alcance, a.alcanceBonusCorpo), propriedades,
       grupo: a.grupo ?? null, categoria: a.categoria ?? null, tipoDano: a.tipoDano ?? null,
       dedicada,
       elegivelDedicada: !!a.elegivelDedicada,
@@ -510,7 +564,8 @@ export function resolveDano(creature, ctx = {}) {
       ...acertoDe(a.ataqueId ?? (a.distancia ? "distancia" : "corpo"),
         Math.max(0, Math.trunc(Number(a.acertoGrau) || 0)), escopos, a.fontesAcerto ?? [],
         usaTecnicas ? atributoTecnicas : null),
-    });
+    };
+    entradas.push(aplicaCriticoDaArma(linhaArma, propriedades, a.criticoExtraDados));
   }
   return { entradas };
 }

@@ -147,6 +147,7 @@ export const AFTY_APTIDOES = [
       "essa habilidade, você escolhe um tipo de dano elemental. Sempre que você infligir dano " +
       "desse tipo específico, você causa dano adicional igual a 1 + o seu Nível de Aptidão em " +
       "Aura no total de dano.",
+    opcoes: { dinamicas: "tiposDano", valores: [] },
     requisitos: [],
   },
   {
@@ -272,6 +273,7 @@ export const AFTY_APTIDOES = [
       "em Aura 2, o dano adicional se torna 1d6; com nível de aptidão 3, se torna 1d8 e, com " +
       "nível de aptidão 5, se torna 1d10. Dentro de combate, como uma ação livre, você pode " +
       "desabilitar a aura elemental, retornando os seus ataques ao tipo de dano padrão.",
+    opcoes: { dinamicas: "tiposDano", valores: [] },
     requisitos: [{ tipo: "nd", valor: 6 }],
   },
   {

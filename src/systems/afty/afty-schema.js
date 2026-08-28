@@ -309,6 +309,11 @@ export function createBlankAfty() {
       machucado: false,         // abaixo da metade dos PV (Sobrevivente)
       abates: 0,                // inimigos caídos, para Eliminar e Continuar
       armasAbsolutas: null,     // "defesa" | "acerto"
+      auraElemental: true,
+      concentrarAura: [],
+      golpeComAura: null,
+      canalizarEmGolpe: false,
+      canalizacaoMaxima: false,
     },
 
     // Equipamentos (aba Equipamentos, ex-Inventário). Defesa vem da modificação

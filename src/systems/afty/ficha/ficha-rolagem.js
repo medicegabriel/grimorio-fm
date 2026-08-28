@@ -20,6 +20,8 @@
  * ============================================================
  */
 
+import { formulaModoDano, grupoMultiplicavel } from "../afty-dano";
+
 let sequencia = 0;
 const novoId = () => `rol_${Date.now().toString(36)}_${(sequencia += 1)}`;
 
@@ -89,33 +91,55 @@ export function rolarTeste({ rotulo, detalhe, bonus = 0, modo = "normal", margem
 export function rolarDano(
   {
     rotulo, detalhe, dados, faces, grupos, fixo = 0, blocos = 1,
-    critico = false, explosiva = false, tom = "dano",
+    critico = false, modoDano = null, explosiva = false, tom = "dano",
   },
   rng = Math.random,
 ) {
   const fixoInt = Math.trunc(Number(fixo) || 0);
-  const mult = Math.max(1, Math.trunc(blocos) || 1) * (critico ? 2 : 1);
+  const multBlocos = Math.max(1, Math.trunc(blocos) || 1);
+  const modo = modoDano ?? (critico ? "critico" : "normal");
 
   /* ⚠ `grupos` existe porque a escada de dano do Afty tem degraus de DOIS dados
      diferentes: `"2d12 + 1d6"`. Sem ele, quem quisesse rolar isso teria de
      chamar duas vezes e somar de cabeça, e o log mostraria duas rolagens onde a
      regra vê uma. O caminho de UM grupo (`dados`/`faces`) continua igual, porque
      é o de quase toda linha da Ficha. */
-  const lista = Array.isArray(grupos) && grupos.length
+  const bruta = Array.isArray(grupos) && grupos.length
     ? grupos
-    : [{ dados, faces }];
+    : [{ dados, faces, fixo: fixoInt, momento: "durante", multiplica: true }];
+  const lista = bruta
+    .filter((g) => modo === "critico" || !g.apenasCritico)
+    .map((g, indice) => ({
+      ...g,
+      dados: Math.max(0, Math.trunc(Number(g.dados) || 0)) * multBlocos,
+      faces: Math.max(2, Math.trunc(Number(modo === "critico" && g.facesCritico ? g.facesCritico : g.faces) || 6)),
+      fixo: Math.trunc(Number(g.fixo) || 0) + (Array.isArray(grupos) && indice === 0 ? fixoInt : 0),
+    }));
 
   const rolados = [];
-  const partes = [];
+  let total = 0;
   for (const g of lista) {
-    const quantos = Math.max(0, Math.trunc(g.dados) || 0) * mult;
-    const face = Math.max(2, Math.trunc(g.faces) || 6);
-    rolados.push(...rolarDados(quantos, face, rng));
-    if (quantos > 0) partes.push(`${quantos}d${face}${explosiva ? "!" : ""}`);
+    const multDados = modo === "critico" && grupoMultiplicavel(g) ? 2 : 1;
+    const dadosGrupo = rolarDados(g.dados * multDados, g.faces, rng);
+    rolados.push(...dadosGrupo);
+    const subtotal = dadosGrupo.reduce((s, n) => s + n, 0) + g.fixo;
+    total += modo === "raio_negro" && grupoMultiplicavel(g)
+      ? 0
+      : subtotal;
   }
-
+  if (modo === "raio_negro") {
+    let cursor = 0;
+    let subtotal = 0;
+    for (const g of lista) {
+      const resultados = rolados.slice(cursor, cursor + g.dados);
+      cursor += g.dados;
+      if (grupoMultiplicavel(g)) subtotal += resultados.reduce((s, n) => s + n, 0) + g.fixo;
+    }
+    total += Math.floor(subtotal / 2) * 3;
+  }
   const soma = rolados.reduce((s, n) => s + n, 0);
-  const sinal = fixoInt > 0 ? `+${fixoInt}` : `−${Math.abs(fixoInt)}`;
+  const ajuste = total - soma;
+  const formulaBase = formulaModoDano(lista, modo);
   return {
     id: novoId(),
     ts: Date.now(),
@@ -123,14 +147,15 @@ export function rolarDano(
     tom,
     rotulo,
     detalhe: detalhe ?? null,
-    formula: `${partes.join(" + ") || "0"}${fixoInt ? sinal : ""}`,
+    formula: explosiva ? formulaBase.replace(/d(\d+)/g, "d$1!") : formulaBase,
     dados: rolados,
     // O `faces` do registro é o do PRIMEIRO grupo. Ele só serve ao painel para
     // rotular a rolagem, e a fórmula acima é quem conta a história inteira.
     faces: lista[0]?.faces ?? faces,
-    fixo: fixoInt,
-    total: soma + fixoInt,
-    critico,
+    fixo: ajuste,
+    total,
+    critico: modo === "critico",
+    raioNegro: modo === "raio_negro",
   };
 }
 

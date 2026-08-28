@@ -585,7 +585,7 @@ export function mediaDadoEmpolgacao(nivel, aprimorada = false) {
  */
 const listaExtras = (params) => (Array.isArray(params?.estadosExtras) ? params.estadosExtras : [])
   .filter((e) => e?.id)
-  .map((e) => (["faixa", "opcao"].includes(e.tipo) ? e : { ...e, tipo: "bool" }));
+  .map((e) => (["faixa", "opcao", "multi"].includes(e.tipo) ? e : { ...e, tipo: "bool" }));
 
 export function resolveCombate(creature, params = {}) {
   const c = (creature?.combate && typeof creature.combate === "object") ? creature.combate : {};
@@ -621,7 +621,10 @@ export function resolveCombate(creature, params = {}) {
     ])),
     ...Object.fromEntries(extras.map((e) => [
       e.id,
-      e.tipo === "faixa" ? 0 : e.tipo === "opcao" ? null : false,
+      e.tipo === "faixa" ? 0
+        : e.tipo === "opcao" ? null
+          : e.tipo === "multi" ? []
+            : e.foraCombate ? true : false,
     ])),
   };
 
@@ -677,8 +680,13 @@ export function resolveCombate(creature, params = {}) {
       out[e.id] = (Array.isArray(e.opcoes) ? e.opcoes : []).some((o) => o.id === c[e.id])
         ? c[e.id]
         : null;
+    } else if (e.tipo === "multi") {
+      const validas = new Set((Array.isArray(e.opcoes) ? e.opcoes : []).map((o) => o.id));
+      out[e.id] = [...new Set(Array.isArray(c[e.id]) ? c[e.id] : [])]
+        .filter((id) => validas.has(id))
+        .slice(0, Math.max(0, Math.trunc(Number(e.maxSelecionados) || 0)));
     } else {
-      out[e.id] = !!c[e.id];
+      out[e.id] = c[e.id] == null ? !!e.padrao : !!c[e.id];
     }
   }
   const surto = !!c.surtoAdrenalina;
@@ -742,6 +750,12 @@ export function combateDslVars(combate = {}) {
       out[nome] = boolDe(combate[e.id]);
       for (const o of (Array.isArray(e.opcoes) ? e.opcoes : [])) {
         out[`${nome}_${varDoEstado(o.id)}`] = boolDe(combate[e.id] === o.id);
+      }
+    } else if (e.tipo === "multi") {
+      const escolhidas = new Set(Array.isArray(combate[e.id]) ? combate[e.id] : []);
+      out[nome] = escolhidas.size;
+      for (const o of (Array.isArray(e.opcoes) ? e.opcoes : [])) {
+        out[`${nome}_${varDoEstado(o.id)}`] = boolDe(escolhidas.has(o.id));
       }
     } else {
       out[nome] = boolDe(combate[e.id]);

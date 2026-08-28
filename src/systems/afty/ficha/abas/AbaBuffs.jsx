@@ -93,6 +93,29 @@ function LinhaEstado({ estado, valor, delta, opcoes, onValor, derived, bloqueado
         >
           {valor ? "Ativa" : bloqueado ? "Usada" : "Inativa"}
         </button>
+      ) : estado.tipo === "multi" ? (
+        <span className="flex items-center gap-1 flex-wrap justify-end">
+          {opcoes.map((o) => {
+            const atuais = Array.isArray(valor) ? valor : [];
+            const ativo = atuais.includes(o.id);
+            const cheio = atuais.length >= (estado.maxSelecionados ?? 0);
+            return (
+              <button
+                key={o.id}
+                type="button"
+                className="afty-botao"
+                data-afty-tom={ativo ? "destaque" : undefined}
+                aria-pressed={ativo}
+                onClick={() => onValor(
+                  estado,
+                  ativo ? atuais.filter((id) => id !== o.id) : cheio ? atuais : [...atuais, o.id],
+                )}
+              >
+                {o.label}
+              </button>
+            );
+          })}
+        </span>
       ) : ["opcao", "dominio"].includes(estado.tipo) ? (
         <span className="flex items-center gap-1 flex-wrap justify-end">
           {opcoes.map((o) => (

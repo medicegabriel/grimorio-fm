@@ -24,7 +24,7 @@ import { MODOS, textoDaRolagem } from "./ficha-rolagem";
  */
 
 function Rolagem({ r, destaque }) {
-  const marca = r.critico ? "critico" : r.pifia ? "pifia" : undefined;
+  const marca = r.raioNegro ? "critico" : r.critico ? "critico" : r.pifia ? "pifia" : undefined;
   return (
     <div className="afty-rolagem px-2.5 py-1.5" data-afty-marca={marca} data-afty-nova={destaque ? "sim" : undefined}>
       <div className="flex items-baseline gap-2">
@@ -36,6 +36,7 @@ function Rolagem({ r, destaque }) {
             {r.modo === "vantagem" ? "Van" : "Des"}
           </span>
         )}
+        {r.raioNegro && <span className="afty-chip" data-afty-tom="destaque">Raio Negro</span>}
         {r.critico && <span className="afty-chip" data-afty-tom="destaque">Crítico</span>}
         {r.sucesso === true && <span className="afty-chip" data-afty-tom="destaque">Sucesso</span>}
         {r.sucesso === false && <span className="afty-chip">Falha</span>}

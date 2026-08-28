@@ -7191,6 +7191,9 @@ function AptidaoCard({
   // Já escolhida nunca trava: senão um requisito que deixou de ser
   // atendido prenderia a aptidão na ficha, sem como remover.
   const bloqueada = faltando.length > 0 && !escolhida;
+  const valoresOpcao = aptidao.opcoes?.dinamicas === "tiposDano"
+    ? Object.entries(TIPOS_DANO).map(([id, label]) => ({ id, label }))
+    : aptidao.opcoes?.valores ?? [];
   // CONCEDIDA pela origem (o Domínio Simples do Sem Técnica): entra marcada, não
   // sai, não gasta orçamento e ignora o próprio pré-requisito. Mesma anatomia
   // verde do treino de perícia concedido na aba Perícias.
@@ -7288,7 +7291,7 @@ function AptidaoCard({
           decidir. */}
       {escolhida && aptidao.opcoes && (
         <div className="flex flex-wrap items-center gap-1 px-2.5 pb-2.5 pl-[38px]">
-          {aptidao.opcoes.valores.map((v) => {
+          {valoresOpcao.map((v) => {
             const on = opcaoAtual === v.id;
             return (
               <button
@@ -8417,6 +8420,25 @@ function SimulacaoCombateCard({ derived, patchCombate }) {
                 <BoolChip ativo={!!valor} onToggle={() => patchCombate({ [e.id]: !valor })}>
                   {valor ? "Ativa" : "Inativa"}
                 </BoolChip>
+              ) : e.tipo === "multi" ? (
+                <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                  {opcoesDe(e).map((o) => {
+                    const atuais = Array.isArray(valor) ? valor : [];
+                    const ativo = atuais.includes(o.id);
+                    const cheio = atuais.length >= (e.maxSelecionados ?? 0);
+                    return (
+                      <BoolChip
+                        key={o.id}
+                        ativo={ativo}
+                        onToggle={() => patchCombate({
+                          [e.id]: ativo ? atuais.filter((id) => id !== o.id) : cheio ? atuais : [...atuais, o.id],
+                        })}
+                      >
+                        {o.label}
+                      </BoolChip>
+                    );
+                  })}
+                </div>
               ) : ["opcao", "dominio"].includes(e.tipo) ? (
                 /* Exclusivas entre si: clicar na que já está ligada desliga. */
                 <div className="flex items-center gap-1.5 flex-wrap justify-end">
