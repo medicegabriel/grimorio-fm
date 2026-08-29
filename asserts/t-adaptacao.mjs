@@ -12,7 +12,7 @@ const { aplicarAddons, normalizarPacote, validarPacote } = await import(R + "aft
 const { sessaoEmBranco, proximaRodada } = await import(R + "ficha/ficha-sessao.js");
 const {
   girarAdaptacao, escolherAdaptacaoNarrativa, escolherAdaptacaoMecanica, habilidadesDeAcerto,
-  origensDiretasDasAdaptacoes,
+  origensDiretasDasAdaptacoes, resetarAdaptacao,
 } = await import(R + "afty-adaptacao.js");
 const { CICLO_ADAPTACAO_MAHORAGA } = await import(R + "addons/ciclo-adaptacao-mahoraga.js");
 
@@ -150,6 +150,30 @@ const concessaoComum = deriveAfty(direta, {
 t("concessao comum ainda exige ativacao", concessaoComum.efeitos.detalhes.some((e) => (
   e.origem === "lut_impacto_misto"
 )), false);
+
+/* Encerrar o combate limpa o ciclo e só as concessões produzidas por ele. */
+let sessaoReset = sessaoEmBranco();
+sessaoReset.concedido = [{
+  uid: "manual", familia: "talentos", id: "tal_adepto_de_briga", escolhas: [], em: 1,
+}];
+let dReset = deriveAfty(criatura, { concedido: sessaoReset.concedido, adaptacoes: {} });
+sessaoReset = girarAdaptacao(sessaoReset, dReset, chave);
+dReset = deriveAfty(criatura, {
+  concedido: sessaoReset.concedido, adaptacoes: sessaoReset.adaptacoes,
+});
+sessaoReset = girarAdaptacao(sessaoReset, dReset, chave);
+t("ganho guarda concessao exata", !!sessaoReset.adaptacoes[chave].ganhos[0].concessaoUid, true);
+t("reset parte de dois giros", sessaoReset.adaptacoes[chave].giros, 2);
+const resetada = resetarAdaptacao(sessaoReset, chave);
+t("reset zera estado do ciclo", resetada.adaptacoes[chave], undefined);
+t("reset tira concessoes da roda", resetada.concedido.some((c) => c.familia === "habilidades"), false);
+t("reset preserva concessao alheia", resetada.concedido.map((c) => c.uid), ["manual"]);
+t("reset sem ciclo nao altera sessao", resetarAdaptacao(resetada, chave), resetada);
+
+const legado = structuredClone(sessaoReset);
+for (const ganho of legado.adaptacoes[chave].ganhos) delete ganho.concessaoUid;
+const legadoResetado = resetarAdaptacao(legado, chave);
+t("reset reconhece giros antigos", legadoResetado.concedido.map((c) => c.uid), ["manual"]);
 
 if (bad.length) {
   console.error(`FALHOU t-adaptacao (${bad.length})`);

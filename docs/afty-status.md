@@ -283,7 +283,8 @@ da aba Ações da Ficha Final e do painel do combatente no Encontro.
 
 O primeiro giro é manual. A rodada dele fica gravada e cada rodada posterior produz mais um giro
 automático. Giros manuais extras continuam disponíveis. Todo quinto giro não concede Habilidade e
-abre uma escolha entre Narrativa e Mecânica.
+abre uma escolha entre Narrativa e Mecânica. O botão Resetar encerra o ciclo, limpa todo o estado
+da roda e desfaz somente as concessões feitas por seus giros.
 
 O giro comum concede gratuitamente a primeira Habilidade de Especialização ainda ausente que
 produza `bonusAcerto` positivo no Motor, do menor nível para o maior e, no empate, na ordem do
@@ -298,7 +299,7 @@ Feitiço Auxiliar no maior nível acessível. No Impossível entram Ação Compl
 e Ruptura Absoluta.
 
 Arquivos centrais: `afty-adaptacao.js`, `addons/ciclo-adaptacao-mahoraga.js` e
-`ficha/PainelDeAdaptacao.jsx`. A sessão guarda tudo em `sessao.adaptacoes`. Há 35 asserts próprios
+`ficha/PainelDeAdaptacao.jsx`. A sessão guarda tudo em `sessao.adaptacoes`. Há 42 asserts próprios
 em `t-adaptacao.mjs`.
 
 ---

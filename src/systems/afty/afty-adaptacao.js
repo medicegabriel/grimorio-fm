@@ -5,7 +5,7 @@
  * na sessão, porque giros, narrativas e a adaptação mecânica são fatos da luta.
  */
 
-import { comConcessao } from "./afty-concessao";
+import { comConcessao, normalizaConcedido } from "./afty-concessao";
 import { AFTY_HABILIDADES, getHabilidade } from "./afty-habilidades";
 import { HABILIDADE_EFEITOS, ESCOLHA_EFEITOS } from "./afty-efeitos-conteudo";
 import { calcularEfeitoAux, custoEfeitoMult } from "./afty-feiticos";
@@ -156,9 +156,11 @@ function girarUm(sessao, derived, config, { automatico = false, rodada = null } 
     const ganho = proximaHabilidade(derived, sessao);
     if (ganho) {
       concedido = comConcessao(concedido, "habilidades", ganho.habilidade.id, null, ganho.opcoes);
+      const concessaoUid = concedido.at(-1)?.uid ?? null;
       ganhos = [...ganhos, {
         id: uid(),
         giro,
+        concessaoUid,
         habilidadeId: ganho.habilidade.id,
         nome: ganho.habilidade.nome,
         alvoId: ganho.alvoId,
@@ -186,6 +188,56 @@ function girarUm(sessao, derived, config, { automatico = false, rodada = null } 
 export function girarAdaptacao(sessao, derived, chave) {
   const config = (derived?.adaptacoes ?? []).find((c) => c.chave === chave);
   return config ? girarUm(sessao, derived, config) : sessao;
+}
+
+const instanteDoGanho = (ganho) => {
+  const id = String(ganho?.id ?? "");
+  if (!/^a[0-9a-z]{14}$/.test(id)) return null;
+  const instante = Number.parseInt(id.slice(1, -5), 36);
+  return Number.isFinite(instante) ? instante : null;
+};
+
+const mesmasEscolhas = (concessao, ganho) => {
+  const a = [...new Set(concessao?.escolhas ?? [])].sort();
+  const b = [...new Set(ganho?.opcoes ?? [])].sort();
+  return a.length === b.length && a.every((id, indice) => id === b[indice]);
+};
+
+/** Encerra um ciclo e desfaz somente as concessões produzidas pelos giros dele. */
+export function resetarAdaptacao(sessao, chave) {
+  const adaptacoes = normalizaAdaptacoes(sessao?.adaptacoes);
+  const atual = adaptacoes[chave];
+  if (!atual) return sessao;
+
+  const concedido = normalizaConcedido(sessao?.concedido);
+  const remover = new Set();
+  for (const ganho of atual.ganhos) {
+    if (ganho.esgotado || !ganho.habilidadeId) continue;
+    if (ganho.concessaoUid && concedido.some((c) => c.uid === ganho.concessaoUid)) {
+      remover.add(ganho.concessaoUid);
+      continue;
+    }
+
+    const candidatos = concedido.filter((c) => (
+      !remover.has(c.uid)
+      && c.familia === "habilidades"
+      && c.id === ganho.habilidadeId
+      && mesmasEscolhas(c, ganho)
+    ));
+    const instante = instanteDoGanho(ganho);
+    const correspondente = instante == null
+      ? candidatos[0]
+      : candidatos.sort((a, b) => Math.abs(a.em - instante) - Math.abs(b.em - instante))[0];
+    if (correspondente) remover.add(correspondente.uid);
+  }
+
+  const proximasAdaptacoes = { ...adaptacoes };
+  delete proximasAdaptacoes[chave];
+  return {
+    ...sessao,
+    concedido: concedido.filter((c) => !remover.has(c.uid)),
+    adaptacoes: proximasAdaptacoes,
+  };
 }
 
 /** Um giro automático para cada ciclo iniciado quando a rodada avança. */

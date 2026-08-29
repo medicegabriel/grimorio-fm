@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { AlertTriangle, RotateCw } from "lucide-react";
+import { AlertTriangle, RotateCcw, RotateCw } from "lucide-react";
 
 import {
-  escolherAdaptacaoMecanica, escolherAdaptacaoNarrativa, girarAdaptacao,
+  escolherAdaptacaoMecanica, escolherAdaptacaoNarrativa, girarAdaptacao, resetarAdaptacao,
 } from "../afty-adaptacao";
 
 const sinal = (n) => (n > 0 ? `+${n}` : String(n));
@@ -41,6 +41,15 @@ function Ciclo({ ciclo, derived, onSessao }) {
         <span className="afty-chip">Giros {estado.giros}</span>
         <span className="afty-chip">Narrativas {estado.narrativas.length}</span>
         <span className="afty-chip">Próximo marco {faltam}</span>
+        <button
+          type="button"
+          className="afty-botao flex items-center gap-1"
+          disabled={estado.giros === 0}
+          onClick={() => onSessao((s) => resetarAdaptacao(s, ciclo.chave))}
+        >
+          <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
+          Resetar
+        </button>
         <button
           type="button"
           className="afty-botao flex items-center gap-1"

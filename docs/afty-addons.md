@@ -708,7 +708,9 @@ criatura que carrega a cópia do pacote enxerga o painel.
 O estado fica em `sessao.adaptacoes`, separado por `pacote:ciclo`. O primeiro giro é manual e
 grava a rodada. Depois disso, `proximaRodada` gira uma vez automaticamente a cada rodada. Giros
 manuais adicionais continuam permitidos. Todo quinto giro cria uma escolha pendente e não concede
-Habilidade.
+Habilidade. O botão Resetar encerra o ciclo, limpa giros, rodada inicial, pendências, Narrativas e
+Mecânica, e remove somente as concessões produzidas por aquela roda. Giros antigos sem o id direto
+da concessão são reconhecidos pelo conteúdo e pelo instante em que foram criados.
 
 Nos giros comuns, o motor varre `HABILIDADE_EFEITOS` e `ESCOLHA_EFEITOS` atrás de
 `bonusAcerto` positivo, ordena as Habilidades por nível e depois pela ordem do catálogo, ignora as
@@ -725,7 +727,7 @@ a maior Negação de RD que cabe no PE extra do requisito. Impossível aplica A�
 Amaldiçoada e Ruptura Absoluta.
 
 O painel único `ficha/PainelDeAdaptacao.jsx` aparece no topo de Ações nas duas telas. A lógica pura
-tem 35 asserts em `t-adaptacao.mjs`.
+tem 42 asserts em `t-adaptacao.mjs`.
 
 ### 8.4 Vínculo entre criaturas
 
