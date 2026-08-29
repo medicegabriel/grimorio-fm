@@ -288,7 +288,9 @@ abre uma escolha entre Narrativa e Mecânica.
 O giro comum concede gratuitamente a primeira Habilidade de Especialização ainda ausente que
 produza `bonusAcerto` positivo no Motor, do menor nível para o maior e, no empate, na ordem do
 catálogo. Pré-requisitos do tipo Habilidade são concedidos em giros anteriores. Opções aninhadas
-que dão Acerto viajam junto da concessão e entram no resolvedor normal.
+que dão Acerto viajam junto da concessão e entram no resolvedor normal. A Habilidade e as opções
+recebidas pela roda têm seus efeitos aplicados imediatamente, sem exigir ativação na bancada. Essa
+exceção vem do histórico de ganhos do ciclo e não muda Habilidades ou concessões comuns.
 
 Narrativas são texto livre e formam a progressão sem requisito, Fácil, Médio, Difícil e
 Impossível. A Mecânica substitui a anterior. Ela calcula Acerto e Ignorar RD pelas tabelas reais de
@@ -296,7 +298,7 @@ Feitiço Auxiliar no maior nível acessível. No Impossível entram Ação Compl
 e Ruptura Absoluta.
 
 Arquivos centrais: `afty-adaptacao.js`, `addons/ciclo-adaptacao-mahoraga.js` e
-`ficha/PainelDeAdaptacao.jsx`. A sessão guarda tudo em `sessao.adaptacoes`. Há 30 asserts próprios
+`ficha/PainelDeAdaptacao.jsx`. A sessão guarda tudo em `sessao.adaptacoes`. Há 35 asserts próprios
 em `t-adaptacao.mjs`.
 
 ---

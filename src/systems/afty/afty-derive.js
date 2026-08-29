@@ -84,7 +84,9 @@ import {
   problemasDeAddon, marcasDeclaradas, primitivasDaCriatura, liberacoesDaCriatura,
 } from "./afty-addons";
 import { agrupaConcedido, concessoesDaSessao, escolhasDoConcedido } from "./afty-concessao";
-import { efeitosDasAdaptacoes, resumoAdaptacoes } from "./afty-adaptacao";
+import {
+  efeitosDasAdaptacoes, origensDiretasDasAdaptacoes, resumoAdaptacoes,
+} from "./afty-adaptacao";
 import {
   buildCriaturaDslContext, marcasDeEntradas,
   coletarEfeitosCriatura, coletarEfeitosMontante, coletarEfeitosOrigem,
@@ -179,6 +181,13 @@ export function deriveAfty(creature, opcoes = {}) {
      dela pelo CANAL DE CONCESSÃO do resolvedor. Ver `afty-concessao.js`. */
   const concedido = agrupaConcedido(opcoes.concedido);
   const escolhasConcedidas = escolhasDoConcedido(opcoes.concedido);
+  const origensDiretasDaAdaptacao = new Set(origensDiretasDasAdaptacoes(creature, opcoes.adaptacoes));
+  const aplicarDiretoDaAdaptacao = (efeito) => {
+    if (!efeito?.quando || !origensDiretasDaAdaptacao.has(efeito.origem)) return efeito;
+    const direto = { ...efeito };
+    delete direto.quando;
+    return direto;
+  };
   /* O que os Addons DESTA criatura destravam. Leitura direta da ficha, sem
      passar pelo Motor: é pergunta estrutural ("esta criatura pode ter Estilo?")
      e precisa estar respondida antes de quase tudo. Ver `LIBERACOES`. */
@@ -587,7 +596,7 @@ export function deriveAfty(creature, opcoes = {}) {
         opcoes: { ...OPCAO_ESCOLHA_NOME, ...OPCAO_TALENTO_NOME },
         altoNivel: (id) => getMelhoriaSuperior(id) || getHabilidadeLendaria(id) || getHabilidadeApice(id),
       },
-    }),
+    }).map(aplicarDiretoDaAdaptacao),
     // Direcionados por uma escolha que mora FORA do card da habilidade (a
     // marcação na linha de dano). Mesmo padrão do efeitosDeTreino.
     ...efeitosArmasDedicadas(dedicadas),

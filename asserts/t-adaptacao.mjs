@@ -12,6 +12,7 @@ const { aplicarAddons, normalizarPacote, validarPacote } = await import(R + "aft
 const { sessaoEmBranco, proximaRodada } = await import(R + "ficha/ficha-sessao.js");
 const {
   girarAdaptacao, escolherAdaptacaoNarrativa, escolherAdaptacaoMecanica, habilidadesDeAcerto,
+  origensDiretasDasAdaptacoes,
 } = await import(R + "afty-adaptacao.js");
 const { CICLO_ADAPTACAO_MAHORAGA } = await import(R + "addons/ciclo-adaptacao-mahoraga.js");
 
@@ -120,6 +121,35 @@ dReq = deriveAfty(comAnteriores, { concedido: sessaoReq.concedido, adaptacoes: s
 t("segundo pre requisito vem depois", sessaoReq.concedido[1].id, "lut_um_com_a_arma");
 sessaoReq = girarAdaptacao(sessaoReq, dReq, chave);
 t("alvo vem no giro seguinte", sessaoReq.concedido.some((c) => c.id === "lut_armas_absolutas"), true);
+
+/* A roda aplica a Habilidade recebida sem exigir o interruptor normal dela. */
+const poolAcerto = habilidadesDeAcerto();
+const indiceImpacto = poolAcerto.findIndex((x) => x.habilidade.id === "lut_impacto_misto");
+const direta = createBlankAfty();
+direta.core.nd = 20;
+direta.addons = [pacote];
+direta.habilidades = poolAcerto.slice(0, indiceImpacto).map((x) => x.habilidade.id);
+let sessaoDireta = sessaoEmBranco();
+let dDireta = deriveAfty(direta, { concedido: [], adaptacoes: {} });
+sessaoDireta = girarAdaptacao(sessaoDireta, dDireta, chave);
+t("giro alcanca habilidade com gatilho", sessaoDireta.concedido[0].id, "lut_impacto_misto");
+t("origem do ganho fica direta", origensDiretasDasAdaptacoes(direta, sessaoDireta.adaptacoes),
+  ["lut_impacto_misto"]);
+dDireta = deriveAfty(direta, {
+  concedido: sessaoDireta.concedido, adaptacoes: sessaoDireta.adaptacoes,
+});
+t("acerto do giro entra sem ativar", dDireta.efeitos.detalhes.some((e) => (
+  e.origem === "lut_impacto_misto" && e.canal === "bonusAcerto" && e.valor === 2
+)), true);
+t("efeito irmao entra sem ativar", dDireta.efeitos.detalhes.some((e) => (
+  e.origem === "lut_impacto_misto" && e.canal === "danoBonus" && e.valor === 2
+)), true);
+const concessaoComum = deriveAfty(direta, {
+  concedido: [{ familia: "habilidades", id: "lut_impacto_misto" }], adaptacoes: {},
+});
+t("concessao comum ainda exige ativacao", concessaoComum.efeitos.detalhes.some((e) => (
+  e.origem === "lut_impacto_misto"
+)), false);
 
 if (bad.length) {
   console.error(`FALHOU t-adaptacao (${bad.length})`);

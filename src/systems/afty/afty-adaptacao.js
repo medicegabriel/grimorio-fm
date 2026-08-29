@@ -66,6 +66,21 @@ export function normalizaAdaptacoes(bruta) {
   return out;
 }
 
+/** Origens cujos efeitos uma roda instalada aplica sem esperar o gatilho normal. */
+export function origensDiretasDasAdaptacoes(creature, bruta) {
+  const configs = new Set(ciclosDaCriatura(creature).map((ciclo) => ciclo.chave));
+  const out = new Set();
+  for (const [chave, estado] of Object.entries(normalizaAdaptacoes(bruta))) {
+    if (!configs.has(chave)) continue;
+    for (const ganho of estado.ganhos) {
+      if (ganho.esgotado || !ganho.habilidadeId) continue;
+      out.add(ganho.habilidadeId);
+      for (const opcao of Array.isArray(ganho.opcoes) ? ganho.opcoes : []) out.add(opcao);
+    }
+  }
+  return [...out];
+}
+
 const vazio = () => ({
   giros: 0,
   primeiraRodada: null,

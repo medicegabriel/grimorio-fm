@@ -714,7 +714,9 @@ Nos giros comuns, o motor varre `HABILIDADE_EFEITOS` e `ESCOLHA_EFEITOS` atrás 
 `bonusAcerto` positivo, ordena as Habilidades por nível e depois pela ordem do catálogo, ignora as
 já possuídas e as já concedidas, e concede de graça. Um requisito do tipo Habilidade entra em um
 giro anterior. Escolhas aninhadas de Acerto viajam na própria concessão e chegam ao
-`resolveEscolhasHabilidade`.
+`resolveEscolhasHabilidade`. Os efeitos da Habilidade e das opções recebidas pela roda são aplicados
+diretamente durante o ciclo, sem depender do interruptor normal da Habilidade. Uma concessão comum
+continua respeitando o gatilho do catálogo.
 
 Nos marcos, Narrativa guarda texto livre e aumenta o requisito da próxima Mecânica. Mecânica
 substitui a anterior e usa as tabelas existentes de Feitiço Auxiliar no maior nível acessível. Os
@@ -723,7 +725,7 @@ a maior Negação de RD que cabe no PE extra do requisito. Impossível aplica A�
 Amaldiçoada e Ruptura Absoluta.
 
 O painel único `ficha/PainelDeAdaptacao.jsx` aparece no topo de Ações nas duas telas. A lógica pura
-tem 30 asserts em `t-adaptacao.mjs`.
+tem 35 asserts em `t-adaptacao.mjs`.
 
 ### 8.4 Vínculo entre criaturas
 
