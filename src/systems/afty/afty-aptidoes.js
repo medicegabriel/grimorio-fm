@@ -54,13 +54,14 @@
  */
 
 import { registrarFamilia, remendarLista } from "./afty-addons";
-import { getOrigem } from "./afty-origens";
+import { getOrigem, origemEstrutural } from "./afty-origens";
 // Só o VALIDADOR usa. afty-efeitos-conteudo.js não importa nada, então a seta
 // para lá é segura (afty-efeitos.js, esse sim, importaria de volta e faria ciclo).
 import { APTIDAO_EFEITOS } from "./afty-efeitos-conteudo";
 // Só o nome da perícia, para o rótulo do requisito. O catálogo não importa nada,
 // então a seta é segura.
 import { AFTY_PERICIAS } from "./afty-pericias-catalogo";
+import { validarCatalogoDominioSimples } from "./afty-dominio-simples";
 
 const PERICIA_LABEL = Object.fromEntries(AFTY_PERICIAS.map((p) => [p.id, p.nome]));
 
@@ -1063,6 +1064,14 @@ export const AFTY_APTIDOES = [
       { tipo: "trilha", trilha: "bar", valor: 1 },
       { tipo: "nd", valor: 5 },
     ],
+    /* Os números que a prosa acima escreve, em campo próprio, para o Motor
+       alcançá-los. Ver `afty-dominio-simples.js`.
+
+       ⚠ SEM SUSTENTAÇÃO, e é o livro (autor, 2026-08-28): o texto daqui usa
+       Concentração e Durabilidade, e quem troca isso por "pagar 2 PE para
+       sustentar" é o Addon, num remendo que substitui este campo inteiro. Quem
+       não instalou o pacote não paga custo por rodada nenhum. */
+    dominioSimples: { areaBase: 1.5, areaPorDom: 1.5, erguer: 5 },
   },
   {
     id: "reversao_de_tecnica",
@@ -1637,6 +1646,16 @@ export const trilhasDaOrigem = (origemId) => {
 };
 
 /**
+ * As trilhas que ESTA CRIATURA tem.
+ *
+ * ⚠ Irmã da de cima, e ela é a que o `deriveAfty` usa. A diferença é a origem
+ * ESTRUTURAL: um Gêmeo que copiou da Maldição em Verdadeiras Origens segue as
+ * regras dela e perde a Energia Reversa, embora a origem gravada na ficha
+ * continue sendo Gêmeos (autor, 2026-08-29). Ver `origemEstrutural`.
+ */
+export const trilhasDaCriatura = (creature) => trilhasDaOrigem(origemEstrutural(creature));
+
+/**
  * `trilhas` é a lista que a origem tem (ver trilhasDaOrigem). As de fora saem
  * ZERADAS, e não ausentes: meio sistema lê `aptidao.efetivo.er` direto, e uma
  * chave faltando viraria `undefined` num lugar que espera número.
@@ -1824,6 +1843,12 @@ export function validarCatalogoAptidoes() {
   for (const id of Object.keys(APTIDAO_EFEITOS)) {
     if (!vistos.has(id)) erros.push(`APTIDAO_EFEITOS: "${id}" não existe no catálogo`);
   }
+
+  /* A tabela `dominioSimples` de quem a declara. Roda sobre o catálogo JÁ
+     REMENDADO, então um Addon que erre o nome de um campo é recusado na
+     instalação em vez de cair calado no padrão. Ver `afty-dominio-simples.js`,
+     que é importável daqui justamente por não importar nada. */
+  erros.push(...validarCatalogoDominioSimples(AFTY_APTIDOES));
   return erros;
 }
 
@@ -1838,7 +1863,9 @@ export function validarCatalogoAptidoes() {
  * duas nunca aparecem juntas, e Gerais fica sempre no fim.
  */
 export function abasAptidao(creature) {
-  const ehMaldicao = creature?.core?.origem?.id === "maldicao";
+  /* ⚠ ORIGEM ESTRUTURAL, e não a gravada na ficha: o Gêmeo que copiou da
+     Maldição em Verdadeiras Origens também troca a aba (autor, 2026-08-29). */
+  const ehMaldicao = origemEstrutural(creature) === "maldicao";
   return APTIDAO_CATEGORIAS
     // Maldição nunca entra pela ordem natural: só pela troca abaixo.
     .filter((c) => c.id !== "maldicao")

@@ -26,6 +26,8 @@ import { getMelhoriaSuperior, getHabilidadeLendaria, getHabilidadeApice } from "
 import { getEspecializacao } from "../afty-especializacoes";
 import { caracteristicasEfetivas, getOrigem, getCla } from "../afty-origens";
 import { NIVEL_LABEL } from "../afty-feiticos";
+import { DOMINIO_SIMPLES_APTIDAO } from "../afty-dominio-simples";
+import { numeroBr } from "../ui/formato";
 
 /**
  * O rótulo de cada tipo de equipamento. Tipo que não estiver aqui vira uma
@@ -285,6 +287,26 @@ export function conteudoDaFicha(creature, derived) {
         getCategoriaAptidao(a.categoria)?.nome,
         concedidasOrigem.has(id) ? "Origem" : null,
         vezes > 1 ? { label: `${vezes}×`, tipo: "vezes" } : null,
+        /* O DOMÍNIO SIMPLES carrega os números dele na própria linha. Eles são
+           o que se paga na mesa, e até 2026-08-28 viviam dentro da prosa: quem
+           erguia o domínio tinha de reler o parágrafo e fazer a conta à mão.
+
+           ⚠ O sustento vem SOMADO (domínio mais Técnicas de Estilo), porque o
+           que o jogador paga no início da rodada é um número só. A repartição
+           com as fontes de cada metade está no card do criador, que tem hover.
+
+           ⚠ E ele só aparece com um Addon que dê sustentação ao Domínio
+           Simples: o livro cru usa Concentração e Durabilidade e não cobra
+           nada por rodada. */
+        ...(id === DOMINIO_SIMPLES_APTIDAO && derived?.dominioSimples?.tem
+          ? [
+            `${numeroBr(derived.dominioSimples.area)}m`,
+            `Erguer ${derived.dominioSimples.custoErguer} PE`,
+            derived.dominioSimples.sustenta
+              ? `Sustentar ${derived.dominioSimples.custoSustentarTotal} PE`
+              : null,
+          ]
+          : []),
       ].filter(Boolean),
       opcoes: [
         ...(escolhida ? [{ id: escolhida.id, nome: escolhida.nome ?? escolhida.label, descricao: null }] : []),

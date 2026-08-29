@@ -83,7 +83,7 @@
  */
 
 import { registrarFamilia, remendarLista } from "./afty-addons";
-import { origensQualificadas } from "./afty-origens";
+import { origensQualificadas, origemEstrutural } from "./afty-origens";
 import { getAptidao, APTIDAO_TRILHAS } from "./afty-aptidoes";
 import { AFTY_ATTRS } from "./afty-schema";
 import { AFTY_PERICIAS, catalogoPericiasDaFicha } from "./afty-pericias";
@@ -778,7 +778,12 @@ export const treinamentosDaOrigem = (origemId, qualificadas = null) =>
   AFTY_TREINAMENTOS.filter((l) => treinoDisponivel(l, origemId, qualificadas));
 
 export function efeitosDeTreino(creature) {
-  const origemId = creature?.core?.origem?.id;
+  /* ⚠ ORIGEM ESTRUTURAL no `foraDaOrigem`: um Gêmeo que copiou da Maldição
+     perde a Linha de Energia Reversa como uma Maldição de verdade, e o Foco
+     preso nela volta sozinho (autor, 2026-08-29). O `qualificadas` continua
+     saindo da origem gravada, porque ele responde outra pergunta: o que a
+     criatura ALCANÇA a mais, e não o que ela É. */
+  const origemId = origemEstrutural(creature);
   const qualificadas = origensQualificadas(creature);
   const pericias = catalogoPericiasDaFicha(creature);
   const armas = catalogoDoTipo("arma", creature);
@@ -828,7 +833,12 @@ export function efeitosDeTreino(creature) {
  * primeiro passo dele.
  */
 export function vagasEncantamentoDeTreino(creature) {
-  const origemId = creature?.core?.origem?.id;
+  /* ⚠ ORIGEM ESTRUTURAL no `foraDaOrigem`: um Gêmeo que copiou da Maldição
+     perde a Linha de Energia Reversa como uma Maldição de verdade, e o Foco
+     preso nela volta sozinho (autor, 2026-08-29). O `qualificadas` continua
+     saindo da origem gravada, porque ele responde outra pergunta: o que a
+     criatura ALCANÇA a mais, e não o que ela É. */
+  const origemId = origemEstrutural(creature);
   const qualificadas = origensQualificadas(creature);
   const prog = normalizeTreinamentos(creature?.treinamentos);
   const out = {};

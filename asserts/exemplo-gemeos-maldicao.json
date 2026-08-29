@@ -1,0 +1,11 @@
+{
+  "id": "gemeos-maldicao",
+  "nome": "Maldição para Gêmeos",
+  "versao": "1.0.0",
+  "autor": "Afty",
+  "descricao": "Deixa o Gêmeo copiar da Maldição em Verdadeiras Origens, que o texto proíbe. Copiar faz a criatura seguir as regras de estrutura da Maldição: ela perde a trilha e a aba de Energia Reversa, perde a Linha de Treinamento de Energia Reversa e ganha a aba de Aptidões de Maldição no lugar. Continua sendo uma escolha só.",
+  "paraRaw": "afty",
+  "libera": [
+    "gemeosMaldicao"
+  ]
+}

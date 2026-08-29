@@ -33,9 +33,9 @@ const t = (nome, real, esp) => {
 /* 1. O CAMPO `libera`                                           */
 /* ============================================================ */
 
-t("existem 3 liberacoes hoje", AD.LIBERACOES.length, 3);
+t("existem 4 liberacoes hoje", AD.LIBERACOES.length, 4);
 t("os ids", AD.LIBERACOES.map((l) => l.id),
-  ["estiloSombras", "gemeosSemTecnica", "qualificaSemTecnica"]);
+  ["estiloSombras", "gemeosSemTecnica", "qualificaSemTecnica", "gemeosMaldicao"]);
 t("SEM_LIBERACOES e vazio", AD.SEM_LIBERACOES, []);
 
 /* ⚠ id com 2+ caracteres: o ID_PACOTE_OK recusa um caractere so, e um id curto

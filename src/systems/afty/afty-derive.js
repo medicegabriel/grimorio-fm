@@ -46,7 +46,7 @@ import {
 } from "./afty-origens";
 import { efeitosDeTreino, vagasEncantamentoDeTreino } from "./afty-treinamentos";
 import { efeitosDeTreinoEspecial } from "./afty-treinos-especiais";
-import { resolveNiveisAptidao, trilhasDaOrigem, getAptidao, AFTY_APTIDOES } from "./afty-aptidoes";
+import { resolveNiveisAptidao, trilhasDaCriatura, getAptidao, AFTY_APTIDOES } from "./afty-aptidoes";
 import {
   efeitosDoDominio, efeitosDeAptidaoDoDominio, beneficiosRitualDoDominio,
   dominioEmUso,
@@ -77,6 +77,7 @@ import {
 } from "./afty-equipamentos";
 import { nivelMaxFeitico, resumoDeUmFeitico, resumoFeiticos, overridesShikigami } from "./afty-feiticos";
 import { resolveEstilos, efeitosDoEstilo } from "./afty-estilo-sombras";
+import { resolveDominioSimples, DOMINIO_SIMPLES_APTIDAO } from "./afty-dominio-simples";
 import { resolveTestes, resolveDano, catalogoPericiasDaFicha } from "./afty-pericias";
 import { resolveCura } from "./afty-cura";
 import {
@@ -209,7 +210,10 @@ export function deriveAfty(creature, opcoes = {}) {
   const nivelConjurador = especializacoes.escolhidas
     .find((e) => e.id === "conjurador")?.nivel ?? 0;
   const habilidadesConcedidas = habilidadesConcedidasPelasEspecializacoes(especializacoes.escolhidas);
-  const trilhasOrigem = trilhasDaOrigem(core?.origem?.id);
+  /* ⚠ ORIGEM ESTRUTURAL, e não a gravada. O Gêmeo que copiou da Maldição em
+     Verdadeiras Origens perde a trilha de Energia Reversa como uma Maldição de
+     verdade (autor, 2026-08-29). Ver `origemEstrutural` em afty-origens.js. */
+  const trilhasOrigem = trilhasDaCriatura(creature);
   // ---------- Aptidões Amaldiçoadas EFETIVAS ----------
   // As escolhidas na aba mais as CONCEDIDAS POR NOME pela origem ou pela
   // Especialização. Fecha aqui em cima porque quase tudo lê esta lista: o
@@ -753,6 +757,25 @@ export function deriveAfty(creature, opcoes = {}) {
   };
   const estilo = resolveEstilos(creature, estiloCtx);
   const efeitosEstilo = efeitosDoEstilo(creature, estiloCtx);
+
+  // ---------- Domínio Simples: área e custo em PE ----------
+  // ⚠ DEPOIS do `resolveEstilos`, e não antes, porque o custo cresce com as
+  // imbuições: o remendo do Addon cobra 1 PE a mais por Técnica imbuída para
+  // erguer, e 1 PE por rodada a cada duas para sustentar. `gastoVagas` é a
+  // combinação que está no ar AGORA, lida da bancada ou da sessão.
+  //
+  // A entrada do catálogo vai inteira, e não só o id: ela pode ter sido
+  // remendada por um Addon, e é o remendo que traz o modelo de sustentação.
+  const dominioSimples = resolveDominioSimples({
+    def: getAptidao(DOMINIO_SIMPLES_APTIDAO),
+    tem: aptidoesIds.includes(DOMINIO_SIMPLES_APTIDAO),
+    dom: aptidao.efetivo?.dom ?? 0,
+    imbuicoes: estilo.gastoVagas,
+    // Os dois leitores vêm de fora para o módulo não importar `afty-efeitos.js`
+    // e fechar um ciclo com o catálogo de Aptidões. Ver o cabeçalho de lá.
+    canal: (id) => valorCanal(efPosAptidao, id),
+    fontes: (id) => detalhesDoCanal(efPosAptidao, id).map((x) => ({ label: x.nome, valor: x.valor })),
+  });
   const efeitosComDominio = (efeitosDominio.length || efeitosEstilo.length)
     ? [...efeitosTodos, ...efeitosDominio, ...efeitosEstilo]
     : efeitosTodos;
@@ -2067,6 +2090,7 @@ export function deriveAfty(creature, opcoes = {}) {
     // combatente e por estado de combate. Quem monta a lista é a UI, num memo.
     contextoDsl: ctxTecnica,
     estilo,               // Novo Estilo da Sombra: { disponivel, conhecidas, gastos, vagas, gastoVagas, estados, avisos }
+    dominioSimples,       // { tem, sustenta, area, custoErguer, custoSustentar, custoSustentarEstilo, + as partes de cada hover }
     estiloEfeitos,        // Motor resolvido por Técnica de Estilo Especial, para o editor mostrar cada linha
     tecnicaEfeitos,       // Funcionamento Básico resolvido, para o editor mostrar o valor de cada linha
     funcionamentoEfeitos, // o mesmo, por Funcionamento Básico ADICIONAL, chaveado pelo id

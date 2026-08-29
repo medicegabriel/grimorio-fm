@@ -97,23 +97,17 @@ sozinha na lista do Gêmeo, sem ninguém decidir. É o mesmo envelhecimento cala
 está) ou "o Gêmeo pode copiar estas duas" (e aí a liberação tem de nomeá-las).
 **Anotado:** 2026-08-21, ao implementar a segunda liberação
 
-### Três etapas do Treino de Novo Estilo das Sombras vivem só no TEXTO
+### BUG: a categoria da Aptidão nunca aparece na Ficha Final
 
-**Onde:** `asserts/exemplo-estilo-liberado.json` (a Linha `novo_estilo_das_sombras`)
-**Situação:** das quatro etapas, só a 1ª e o Completo têm canal. As outras três mexem em coisas que
-o Afty não modela hoje:
-
-- **2ª:** *"A área do seu Domínio Simples aumenta em 3 metros."* A área do Domínio Simples é texto
-  (`1,5m + Nível de DOM x 1,5 metros`), e não número derivado.
-- **3ª:** *"O custo para erguer um Domínio Simples é reduzido..."* O custo em PE de uma Aptidão não
-  passa pelo canal `custoPE`, que é dos Feitiços.
-- **4ª:** *"Reduz o custo de sustentação do Novo Estilo das Sombras..."* Mesma coisa, e a sustentação
-  é por rodada, que também não existe como número.
-
-O benefício aparece escrito no card da etapa, como acontece com as outras linhas do livro que
-esbarram em sistema não construído (Domínios 2ª e 4ª, Luta Completo).
-**Precisa:** nada agora. Entra sozinho no dia em que o custo em PE de Aptidão virar número derivado.
-**Anotado:** 2026-08-22, ao construir a Linha
+**Onde:** `src/systems/afty/ficha/ficha-conteudo.js` (a tag do grupo `aptidao`)
+**Situação:** a linha monta a tag com `getCategoriaAptidao(a.categoria)?.nome`, e a categoria não tem
+campo `nome`: ela tem `label` ("Aptidões Especiais") e `tab` ("Especiais"). O `?.` devolve
+`undefined`, o `filter(Boolean)` o joga fora, e **as 85 Aptidões aparecem na Ficha sem a categoria
+delas**, sem erro nenhum no caminho. É a mesma família do efeito descartado calado.
+**Precisa:** trocar `.nome` por `.tab` (a tag é curta, e "Especiais" cabe melhor que "Aptidões
+Especiais") ou por `.label`. É uma palavra, mas MUDA A APARÊNCIA de toda a lista de Aptidões da
+Ficha, e por isso não foi feito junto: não foi pedido.
+**Anotado:** 2026-08-28, de passagem, ao pôr os números do Domínio Simples na mesma linha de tags
 
 ### Coleta de Talismãs concede shikigami e a aba de Invocações não sabe
 
@@ -151,6 +145,42 @@ linha mudou.
 **Precisa:** decidir onde a marca aparece. O candidato natural é o mesmo chip verde das fontes
 concedidas, na linha da entrada.
 **Anotado:** 2026-08-22, ao construir o remendo
+
+### Os números da Natureza Amaldiçoada estão escritos em DOIS lugares
+
+**Onde:** `src/systems/afty/afty-efeitos-conteudo.js` (`ORIGEM_EFEITOS.maldicao`) e
+`src/systems/afty/afty-origens.js` (`ORIGEM_ESCOLHA_EFEITOS.vo_maldicao_natureza_amaldicoada`)
+**Situação:** as duas linhas da Natureza Amaldiçoada (`vagasAptidao: 1 + (nd >= 10) + (nd >= 15)` e
+`pe: nd`) foram COPIADAS para o segundo lugar em 2026-08-29, para a característica copiada em
+Verdadeiras Origens trazer os números dela.
+
+A cópia é literal e existe por um motivo estrutural: `ORIGEM_EFEITOS` é chaveado pela ORIGEM inteira,
+e a Maldição tem três características. Não há como perguntar àquele mapa qual linha pertence à
+Natureza Amaldiçoada.
+
+**Onde isso quebra:** o dia em que a Maldição ganhar uma quarta característica COM NÚMERO, ou em que
+os números da Natureza Amaldiçoada mudarem no livro. A Maldição de verdade muda e o Gêmeo que copiou
+continua no valor velho, em silêncio. Há assert prendendo a igualdade dos dois lados, então o
+sintoma aparece ao rodar `npm run asserts`, mas só se alguém rodar.
+**Precisa:** se aparecer uma terceira característica com número, quebrar o `ORIGEM_EFEITOS` por
+característica de vez, em vez de copiar de novo.
+**Anotado:** 2026-08-29
+
+### Requisito de Aptidão do tipo `origem` não enxerga a origem COPIADA
+
+**Onde:** `src/systems/afty/afty-aptidoes.js` (`avaliarRequisitoAptidao`, `ctx.origemId ===
+requisito.id`) e `AftyCreatureBuilder.jsx`, que passa `draft.core?.origem?.id`
+**Situação:** o Talento já respeita `origensQualificadas` no requisito de origem desde 2026-08-07,
+porque o texto do Gêmeo diz *"considera a origem escolhida como sua para todos os fins de
+qualificação"*. A Aptidão continua comparando com a origem GRAVADA.
+
+Hoje só uma aptidão tem esse requisito, e ela pede o **Herdado**. Então um Gêmeo que copiasse uma
+característica de clã Herdado deveria alcançá-la e não alcança.
+**Onde isso vai doer mais:** se alguma Aptidão de Maldição ganhar `{ tipo: "origem", id: "maldicao" }`
+algum dia, o Gêmeo que copiou da Maldição veria a aba e não conseguiria pegar a aptidão.
+**Precisa:** o autor dizer se "todos os fins de qualificação" cobre Aptidão Amaldiçoada. Se cobrir, é
+trocar por `origensQualificadas().includes(...)`, do mesmo jeito que o Talento faz.
+**Anotado:** 2026-08-29, ao ligar a origem estrutural
 
 ### Conceder FEITIÇO no meio da luta ainda não dá
 

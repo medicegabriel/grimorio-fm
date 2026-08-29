@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 
 import ItemDeFicha from "./ItemDeFicha";
+import SubAbas from "./SubAbas";
 
 /**
  * As sub-abas de um grupo, na ordem em que os itens aparecem.
@@ -58,24 +59,12 @@ export default function GrupoComSubAbas({ grupo, lista, abertos, onAberto, favor
     <section className="afty-card p-3">
       <h2 className="afty-card-titulo mb-2">{grupo.label}</h2>
 
-      {subs.length > 0 && (
-        <div className="afty-subabas" role="tablist" aria-label={grupo.label}>
-          {subs.map((s) => (
-            <button
-              key={s.id}
-              type="button"
-              role="tab"
-              aria-selected={s.id === efetiva}
-              data-afty-subaba={s.id}
-              className="afty-subaba"
-              onClick={() => setAtiva({ id: s.id, destaqueVisto: destaque })}
-            >
-              {s.label}
-              <span className="afty-subaba-conta">{s.quantos}</span>
-            </button>
-          ))}
-        </div>
-      )}
+      <SubAbas
+        subs={subs}
+        ativa={efetiva}
+        rotulo={grupo.label}
+        onAtiva={(id) => setAtiva({ id, destaqueVisto: destaque })}
+      />
 
       <div className="space-y-1">
         {visiveis.map((i) => (

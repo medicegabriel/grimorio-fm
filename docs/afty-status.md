@@ -117,6 +117,142 @@ Estado atual do sistema Afty (atualizado 2026-08-18). Leia junto com:
 
 ---
 
+## SESSÃO DE 2026-08-28: O DOMÍNIO SIMPLES GANHOU NÚMERO, E TRÊS ETAPAS SAÍRAM DO TEXTO
+
+O autor mandou resolver as três etapas do Treino de Novo Estilo das Sombras que estavam anotadas em
+`a-fazer.md` como "vivem só no TEXTO". A entrada saiu da fila.
+
+### O achado: o Domínio Simples não tinha número NENHUM
+
+Ele era uma entrada de catálogo com `id`, `nome`, `categoria`, `descricao` e `requisitos`, e mais
+nada. A área e os 5 PE viviam **dentro da prosa**, e nenhuma das 85 Aptidões tem campo de custo. Era
+essa a razão real das três etapas travarem, e a entrada da fila a descrevia certo: não faltava
+canal, faltava o número existir.
+
+⚠ **E o modelo de custo inteiro estava escrito no ADDON, não no livro.** O remendo do
+`exemplo-estilo-liberado.json` diz *"Para cada rodada após a primeira, é necessário pagar 2 PE para*
+*sustentar o domínio simples"* e *"Para cada efeito de estilo escolhido, aumente em 1 PE o custo*
+*para erguer [...] 1 PE para cada Dois Estilos adicionados para sustentar os efeitos"*. Ou seja, as
+regras que as etapas reduzem já estavam prontas há seis dias, num texto que ninguém tinha lido como
+tabela.
+
+### As duas respostas do autor
+
+| Pergunta | Resposta |
+|---|---|
+| O custo mora no livro cru ou só com o Addon? | **Só com o Addon.** O cru fica com área e os 5 PE de erguer, que é o que o livro escreve |
+| A 4ª etapa pode zerar a sustentação do Estilo? | **Piso de 1 PE**, a mesma convenção do canal `custoPE` |
+
+⚠ **A segunda resposta tem uma metade que ela não diz, e ela mudou o código.** O piso de 1 PE vale
+para o que se **paga**, e não para o que não existe: quem não imbuiu Técnica nenhuma sustenta zero
+Estilos, e cobrar 1 PE por zero seria inventar custo. Por isso `custoComPartes` devolve zero quando a
+base é zero, e só aplica o piso a partir do 1. É exatamente o que o `afty-feiticos.js` já fazia.
+
+### Os números são DADO DE CATÁLOGO, e não constante do módulo
+
+`afty-dominio-simples.js` (novo) não guarda número nenhum: ele lê um campo `dominioSimples` da
+entrada da Aptidão, com seis chaves (`areaBase`, `areaPorDom`, `erguer`, `erguerPorEstilo`,
+`sustentar`, `sustentarPorEstilos`).
+
+⚠ **É o REMENDO que obriga isso.** `remendarLista` troca campo a campo, então com os números dentro
+do módulo o Addon mudaria o TEXTO e o custo continuaria o do livro, calado. É a mesma armadilha que o
+`coletarEfeitos` teve de resolver em 2026-08-22, quando o Noção e Preparação ia trocar de texto e
+manter o número. O cru declara três chaves e o pacote declara as seis.
+
+### Os quatro canais
+
+| Canal | O que escreve |
+|---|---|
+| `areaDominioSimples` | metros somados ao raio |
+| `custoErguerDominio` | redução do PE de erguer |
+| `custoSustentarDominio` | redução do PE por rodada do domínio |
+| `custoSustentarEstilo` | redução do PE por rodada das Técnicas imbuídas |
+
+Os três de custo **reduzem** (positivo abaixa a conta), igual ao `custoPE`. Nomeados na convenção
+"Família: Parte" dos canais de Cura e Regeneração, porque "Erguer" e "Sustentar" soltos não diriam de
+que coisa são. Os quatro rodam em **`CANAIS_POS_APTIDAO`**, pelo mesmo encaixe do `imbuicoesEstilo`:
+eles leem `dom`, que o pré-contexto não tem, e precisam estar prontos antes do resolvedor.
+
+⚠ **`custoSustentarDominio` nasce sem cliente, de propósito**, pelo mesmo motivo dos dois da Guarda:
+ele é a metade simétrica do que a 4ª etapa reduz, e falta de destino é o que deixou o Treino de
+Domínios sem automação por dois meses.
+
+### As três etapas, agora com canal
+
+| Etapa | Texto | Canal e expressão |
+|---|---|---|
+| 2ª | *"A área do seu Domínio Simples aumenta em 3 metros."* | `areaDominioSimples` = `3` |
+| 3ª | *"O custo para erguer [...] reduzido em um valor igual a seu Nível de Aptidão em Domínio, com mínimo de 1."* | `custoErguerDominio` = `dom` |
+| 4ª | *"Reduz o custo de sustentação do Novo Estilo das Sombras em um valor igual a Metade de Sua Maestria."* | `custoSustentarEstilo` = `piso(maestria / 2)` |
+
+As três entraram por **passagem direta** (`{ canal, expr }` na etapa), que é a saída que a Linha de
+Treinamento ganhou em 2026-08-22 justamente para o addon escrever canal fora do vocabulário fechado
+de `tipo`. O pacote foi para a versão **2.1.0**.
+
+⚠ **A 4ª etapa NÃO toca os 2 PE do domínio.** O texto dela diz "do Novo Estilo das Sombras", e na
+regra do autor são duas linhas separadas de sustento. Há assert medindo isso, porque a leitura
+preguiçosa (reduzir o sustento inteiro) daria um número diferente e igualmente plausível.
+
+### ⚠ O módulo novo não importa NADA, e isso é decisão
+
+`afty-efeitos.js` importa `afty-aptidoes.js`. Se `afty-dominio-simples.js` importasse
+`afty-efeitos.js` para ler os canais, ligar o validador dele no catálogo de Aptidões fecharia o ciclo
+`aptidoes → dominio-simples → efeitos → aptidoes`, e o repositório já tem um ciclo assim anotado. Os
+dois leitores de canal chegam como as funções `canal` e `fontes`, servidas pelo derive, que já
+importa as duas.
+
+O que isso compra: `validarCatalogoDominioSimples` roda de dentro do `validarCatalogoAptidoes`, sobre
+o catálogo **já remendado**, então um Addon que erre o nome de um campo é **recusado na instalação**
+em vez de cair calado no padrão.
+
+### ⚠ Dois bugs que os asserts acharam
+
+**O piso mentia no hover.** Com base 2 e redução 5, as parcelas mostravam "Base +2, Redução −5" e o
+Total dizia 1: a soma não fechava. O piso virou **parcela nomeada** ("Piso de 1 PE") quando ele
+morde, e some quando não morde. Número certo com detalhamento errado é bug, e há assert somando as
+parcelas contra o total nos cinco cenários.
+
+**`erguer: null` virava erguer de graça.** O saneador aceitava qualquer número finito não negativo, e
+`Number(null)` é **0**, que passa nos dois testes. Um Addon com o campo nulo não caía no padrão de 5
+PE, ele zerava o custo, calado. Agora `null`, `""` e booleano são recusados antes da coerção.
+
+### Onde os números aparecem
+
+- **Criador:** card `Domínio Simples` na aba Habilidades, irmão do `BarreiraCard` e pelo mesmo
+  motivo (números de uma aptidão, que somem junto com ela). De 2 a 4 células conforme a criatura,
+  cada uma com `PainelDeFontes` próprio.
+- **Ficha Final:** os números viajam como **tags da própria linha** do Domínio Simples, junto do
+  "Origem" que já estava lá. O sustento vem **somado**, porque o que se paga no início da rodada é um
+  número só, e a repartição fica no hover do criador.
+
+⚠ A quarta célula ("Sustentar o Estilo") só existe para quem tem o Estilo disponível. Um zero sem
+dono na tela de quem não imbui nada seria ruído.
+
+### Verificação
+
+- `npx eslint src/systems/afty/` passou.
+- `npx vite build` passou.
+- `npm run asserts`: **1214 asserts em 26 arquivos**. O novo é o `t-dominio-simples.mjs` (75): os
+  quatro canais no passe certo e dentro de um grupo, o livro cru sem sustentação, as três etapas uma
+  a uma, os dois pisos (o que morde e o que não inventa custo), a soma das parcelas contra o total em
+  cinco cenários, o aparo das imbuições pelas vagas e o validador em cinco formas de entrada suja.
+- `src/components/` sem alteração.
+
+### O que este trabalho NÃO fez
+
+**Dedicação em Arma já estava pronta.** O pedido "programar Armas Dedicadas para selecionar as armas"
+descreve o que existe desde 2026-07-28: marca na linha de Dano, teto de 3, filtro de Duas Mãos e
+Pesada, e o Motor entregando +1 Nível de Dano e a propriedade Marcial por `efeitosArmasDedicadas`. O
+autor confirmou que era dela que falava. Segue de fora, e sem entrada na fila, o **Um com a Arma**
+(Lutador 6°), que é a única da corrente sem automação nenhuma.
+
+**A categoria da Aptidão não aparece na Ficha**, achado de passagem: `ficha-conteudo.js` lê `.nome`
+numa categoria que tem `.label` e `.tab`, então as 85 Aptidões saem sem a tag de categoria, caladas.
+É uma palavra de conserto e MUDA A APARÊNCIA da lista inteira, então foi para `a-fazer.md` em vez de
+entrar junto.
+
+---
+
 ## SESSÃO DE 2026-08-26 (parte 4): A GUARDA INABALÁVEL, E A FILEIRA QUE ESTICAVA O RETRATO
 
 Dois pedidos do autor, e o segundo fechou um TODO que estava aberto desde julho.

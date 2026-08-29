@@ -1,7 +1,7 @@
 {
   "id": "estilo-liberado",
   "nome": "Estilo das Sombras Liberado",
-  "versao": "2.0.0",
+  "versao": "2.1.0",
   "autor": "Afty",
   "descricao": "Destrava o Novo Estilo da Sombra para a criatura que carrega este addon, mesmo que ela tenha Feitiços e não seja Sem Técnica, e faz ela contar como Sem Técnica para os Talentos de Origem e para o Treino. Traz o Domínio Simples com sustentação em PE, a Linha de Treinamento do Novo Estilo das Sombras e quatro Talentos de Origem, dois deles reescritos. O piso de Nível 4 do Estilo continua valendo.",
   "paraRaw": "afty",
@@ -39,7 +39,13 @@
             "n": 2,
             "focos": 1,
             "requisito": null,
-            "beneficio": "A área do seu Domínio Simples aumenta em 3 metros."
+            "beneficio": "A área do seu Domínio Simples aumenta em 3 metros.",
+            "efeitos": [
+              {
+                "canal": "areaDominioSimples",
+                "expr": "3"
+              }
+            ]
           },
           {
             "n": 3,
@@ -49,7 +55,13 @@
               "trilha": "dom",
               "valor": 3
             },
-            "beneficio": "O custo para erguer um Domínio Simples é reduzido em um valor igual a seu Nível de Aptidão em Domínio, com mínimo de 1."
+            "beneficio": "O custo para erguer um Domínio Simples é reduzido em um valor igual a seu Nível de Aptidão em Domínio, com mínimo de 1.",
+            "efeitos": [
+              {
+                "canal": "custoErguerDominio",
+                "expr": "dom"
+              }
+            ]
           },
           {
             "n": 4,
@@ -59,7 +71,13 @@
               "trilha": "dom",
               "valor": 5
             },
-            "beneficio": "Reduz o custo de sustentação do Novo Estilo das Sombras em um valor igual a Metade de Sua Maestria."
+            "beneficio": "Reduz o custo de sustentação do Novo Estilo das Sombras em um valor igual a Metade de Sua Maestria.",
+            "efeitos": [
+              {
+                "canal": "custoSustentarEstilo",
+                "expr": "piso(maestria / 2)"
+              }
+            ]
           }
         ],
         "completo": {
@@ -118,7 +136,15 @@
     "aptidoes": [
       {
         "id": "dominio_simples",
-        "descricao": "Conhecido originalmente como o “Domínio dos Fracos”, o Domínio Simples ergue uma barreira ao redor do usuário juntamente de seu domínio, neutralizando os efeitos e Acerto Garantido de uma expansão. Você pode, com uma Reação contra a expansão de um domínio ou como Ação Bônus no seu turno, gastar 5 PE e criar uma esfera de X metros de raio a sua volta (onde X é igual a: 1,5m + Nível de DOM x 1,5 metros). Você e toda criatura dentro do Domínio Simples não são afetados pelo Acerto Garantido e os efeitos de ambiente de um domínio. Para cada rodada após a primeira, é necessário pagar 2 PE para sustentar o domínio simples.\n\nNovo Estilo das Sombras\nCaso tenha acesso ao Novo Estilo das Sombras, como uma Ação Livre ao erguer um Domínio Simples, você pode selecionar uma quantidade de efeitos de estilo igual ao seu Nível de Aptidão de Domínio (esse valor pode ser aumentado por outras fontes). Para cada efeito de estilo escolhido, aumente em 1 PE o custo para erguer o Domínio Simples. Para cada rodada após a primeira, é necessário pagar 1 PE para cada Dois Estilos adicionados para sustentar os efeitos do Novo Estilo Das Sombras."
+        "descricao": "Conhecido originalmente como o “Domínio dos Fracos”, o Domínio Simples ergue uma barreira ao redor do usuário juntamente de seu domínio, neutralizando os efeitos e Acerto Garantido de uma expansão. Você pode, com uma Reação contra a expansão de um domínio ou como Ação Bônus no seu turno, gastar 5 PE e criar uma esfera de X metros de raio a sua volta (onde X é igual a: 1,5m + Nível de DOM x 1,5 metros). Você e toda criatura dentro do Domínio Simples não são afetados pelo Acerto Garantido e os efeitos de ambiente de um domínio. Para cada rodada após a primeira, é necessário pagar 2 PE para sustentar o domínio simples.\n\nNovo Estilo das Sombras\nCaso tenha acesso ao Novo Estilo das Sombras, como uma Ação Livre ao erguer um Domínio Simples, você pode selecionar uma quantidade de efeitos de estilo igual ao seu Nível de Aptidão de Domínio (esse valor pode ser aumentado por outras fontes). Para cada efeito de estilo escolhido, aumente em 1 PE o custo para erguer o Domínio Simples. Para cada rodada após a primeira, é necessário pagar 1 PE para cada Dois Estilos adicionados para sustentar os efeitos do Novo Estilo Das Sombras.",
+        "dominioSimples": {
+          "areaBase": 1.5,
+          "areaPorDom": 1.5,
+          "erguer": 5,
+          "erguerPorEstilo": 1,
+          "sustentar": 2,
+          "sustentarPorEstilos": 2
+        }
       }
     ],
     "talentos": [

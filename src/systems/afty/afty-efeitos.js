@@ -214,6 +214,26 @@ export const EFEITO_CANAIS = [
   { id: "efeitosDominio", label: "Efeitos da Expansão",  nota: "quantas vagas de efeito a Expansão comporta, por cima do que o Nível de Aptidão em Domínio dá" },
   { id: "conflitoDominio", label: "Conflito de Domínio", nota: "bônus na rolagem de confronto e contestação de expansões, que é 1d10 + Nível de Domínio + metade do ND + este canal" },
 
+  /* ---------- DOMÍNIO SIMPLES ----------
+     Os quatro nasceram em 2026-08-28, com as três etapas do Treino de Novo
+     Estilo das Sombras que mexiam neles. Até ali o Domínio Simples era uma
+     entrada de catálogo com `descricao` e mais nada, e por isso as etapas
+     ficaram dois meses valendo só como texto no card.
+
+     ⚠ Nomeados na convenção "Família: Parte", igual aos de Regeneração e Cura:
+     o prefixo agrupa e o sufixo diz QUAL pedaço do custo o canal escreve. Sem
+     isso, "Erguer" e "Sustentar" soltos não diriam de que coisa são.
+
+     ⚠ Os três de custo REDUZEM: valor positivo abaixa a conta, igual ao
+     `custoPE`, e o piso de 1 PE continua valendo. `custoSustentarDominio` nasce
+     sem cliente de propósito, pelo mesmo motivo dos dois da Guarda: é a metade
+     simétrica do que a 4ª etapa do Treino já reduz, e a falta de destino é
+     justamente o que deixa uma regra nova sem onde escrever. */
+  { id: "areaDominioSimples", label: "Domínio Simples: Área", nota: "em metros, somado ao raio do Domínio Simples depois do Nível de Aptidão em Domínio" },
+  { id: "custoErguerDominio", label: "Domínio Simples: Erguer", nota: "redução do custo em PE para erguer o Domínio Simples, o piso de 1 PE continua valendo" },
+  { id: "custoSustentarDominio", label: "Domínio Simples: Sustentar", nota: "redução do custo em PE por rodada do Domínio Simples. Só existe com um Addon que dê sustentação a ele" },
+  { id: "custoSustentarEstilo", label: "Estilo das Sombras: Sustentar", nota: "redução do custo em PE por rodada das Técnicas de Estilo imbuídas, que é 1 PE a cada duas" },
+
   // Orçamentos
   { id: "vagasPericia",   label: "Vagas de Treino" },
   { id: "vagasHabilidade", label: "Vagas de Habilidade" },
@@ -452,6 +472,7 @@ const GRUPOS_DE_CANAL = [
   // Defesa e Orçamentos esconderia que eles são um assunto só.
   ["Barreira e Domínio", [
     "pvParede", "rdParede", "maxParedes", "areaDominio", "efeitosDominio", "conflitoDominio",
+    "areaDominioSimples", "custoErguerDominio", "custoSustentarDominio", "custoSustentarEstilo",
   ]],
 ];
 
@@ -1331,6 +1352,10 @@ export const CANAIS_PRE_CONTEXTO = ["nivelAptidao", "limiteAptidao", "empolgacao
 export const CANAIS_POS_APTIDAO = [
   "imbuicoesEstilo",
   "pvParede", "rdParede", "maxParedes", "areaDominio", "efeitosDominio", "conflitoDominio",
+  /* Os quatro do Domínio Simples entram aqui pelo MESMO encaixe do
+     `imbuicoesEstilo`: a área sai do Nível de Aptidão em Domínio, e o custo sai
+     das imbuições, que o `resolveEstilos` só sabe depois do `dom` existir. */
+  "areaDominioSimples", "custoErguerDominio", "custoSustentarDominio", "custoSustentarEstilo",
 ];
 export const ehPreContexto = (e) =>
   CANAIS_PRE_CONTEXTO.includes(e?.canal) && !efeitoUsaDadosDanoFinal(e);

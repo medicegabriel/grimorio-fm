@@ -133,6 +133,36 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
   // é a bancada de balanceamento do criador, e misturar os dois faria cada
   // sessão de jogo destruir o cenário montado para dosar a mão. Ver
   // `ficha-sessao.js`.
+  /* ⚠ AS OPÇÕES DO DERIVE MORAM AQUI, e não dentro do memo do `derived`, porque
+     elas têm DOIS leitores: a ficha da tela e cada derive de comparação que o
+     `deltaDosEstados` roda para descobrir o que um estado ligado está fazendo.
+
+     Ter duas listas foi um bug real, e caro de enxergar (2026-08-28): o delta
+     derivava sem `guarda`, sem `concedido` e sem os três de Ritual, e então a
+     diferença entre as duas LISTAS DE OPÇÃO era creditada ao estado que estava
+     sendo medido. Numa criatura Calamidade toda linha ligada exibia "Defesa +5",
+     que é a Guarda Inabalável, e a Postura da Devastação, que não dá Defesa
+     nenhuma, aparecia dando +5. Uma lista só, e a diferença cancela sozinha. */
+  const opcoesDerive = useMemo(
+    () => ({
+      almaAtual: sessaoBruta.almaAtual,
+      ultimoFeiticoDanoId: sessaoBruta.ultimoFeiticoDanoId,
+      rituais: sessaoBruta.rituais,
+      usosRitualista: usosRitualista(sessaoBruta),
+      ritualAtual: ritualEmAndamento(sessaoBruta),
+      /* O que o mestre concedeu no meio da luta (Addons 8.3). Entra pelo
+         `opcoes`, e não pela criatura mesclada abaixo, porque não é escolha
+         de ficha: é ganho de combate, de graça, e morre com a sessão. */
+      concedido: sessaoBruta.concedido,
+      /* A Guarda Inabalável CORRENTE. Vai pelo `opcoes` como a concessão e
+         pelo mesmo motivo: é estado de mesa. O derive precisa dela porque o
+         bônus soma na Defesa e nos cinco TRs, e resolver a Guarda fora dele
+         obrigaria a derivar duas vezes. Ver `entradaDaGuarda`. */
+      guarda: entradaDaGuarda(sessaoBruta),
+    }),
+    [sessaoBruta],
+  );
+
   const derived = useMemo(
     () => {
       /* ⚠ OS ADDONS DA FICHA ENTRAM ANTES DA DERIVAÇÃO, e no MESMO memo. Sem
@@ -142,25 +172,10 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
       aplicarAddons(ficha?.addons ?? []);
       return deriveAfty(
         { ...ficha, combate: sessaoBruta.combate, buffsSessao: sessaoBruta.buffs },
-        {
-          almaAtual: sessaoBruta.almaAtual,
-          ultimoFeiticoDanoId: sessaoBruta.ultimoFeiticoDanoId,
-          rituais: sessaoBruta.rituais,
-          usosRitualista: usosRitualista(sessaoBruta),
-          ritualAtual: ritualEmAndamento(sessaoBruta),
-          /* O que o mestre concedeu no meio da luta (Addons 8.3). Entra pelo
-             `opcoes`, e não pela criatura mesclada acima, porque não é escolha
-             de ficha: é ganho de combate, de graça, e morre com a sessão. */
-          concedido: sessaoBruta.concedido,
-          /* A Guarda Inabalável CORRENTE. Vai pelo `opcoes` como a concessão e
-             pelo mesmo motivo: é estado de mesa. O derive precisa dela porque o
-             bônus soma na Defesa e nos cinco TRs, e resolver a Guarda fora dele
-             obrigaria a derivar duas vezes. Ver `entradaDaGuarda`. */
-          guarda: entradaDaGuarda(sessaoBruta),
-        },
+        opcoesDerive,
       );
     },
-    [ficha, sessaoBruta],
+    [ficha, sessaoBruta, opcoesDerive],
   );
 
   /* Os addons que ESTA ficha carrega, para a marca do cabeçalho. Sai da própria
@@ -326,10 +341,15 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
   const deltaPorEstado = useMemo(
     () => deltaDosEstados(
       ficha, sessao.combate,
-      { almaAtual: sessao.almaAtual, buffs: sessao.buffs },
+      /* ⚠ AS MESMAS OPÇÕES DA FICHA, inteiras, e não uma seleção escrita à mão:
+         cada derive de comparação tem de sair do mesmo estado de mesa que o
+         `derived` acima, senão a diferença entre as opções vira bônus fantasma
+         em toda linha ligada. O `buffs` viaja junto porque ele não é opção do
+         derive, e sim a lista que entra NA CRIATURA como `buffsSessao`. */
+      { ...opcoesDerive, buffs: sessao.buffs },
       derived,
     ),
-    [ficha, sessao.combate, sessao.almaAtual, sessao.buffs, derived],
+    [ficha, sessao.combate, sessao.buffs, opcoesDerive, derived],
   );
 
   const itensDoRapido = useMemo(

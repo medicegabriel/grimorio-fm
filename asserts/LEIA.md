@@ -68,6 +68,7 @@ vai para o ar.
 | `t-estilo-liberado` | o campo `libera`: o Estilo das Sombras fora do Sem Técnica, o Gêmeo copiando do Sem Técnica em Verdadeiras Origens, e a QUARTA trava (o card aparecer na aba) |
 | `t-remendo` | o campo `substitui`: trocar campo de entrada do livro, o id que não se mexe, o alvo que precisa existir, dois pacotes na mesma linha e a volta ao raw ao desinstalar |
 | `t-estilo-conteudo` | o conteúdo do addon do Estilo: Domínio Simples reescrito, a Linha de Treinamento com `soDaOrigem`, os quatro Talentos de Origem, a vaga exclusiva de Estilo e o Estudo Amaldiçoado repetível |
+| `t-gemeos-maldicao` | a liberacao `gemeosMaldicao` e a ORIGEM ESTRUTURAL: o Gemeo que copia da Maldicao perde a Energia Reversa e ganha a aba dela, medido pela igualdade com uma Maldicao de verdade |
 | `t-bases-automaticas` | as Bases que a Especialização concede sozinha (`automatica: true`): quem recebe, o orçamento intocado, e a escolha aninhada que sobrevive à concessão |
 | `t-pugilato` | Faixas, Manoplas e Soco Inglês alimentando o Ataque Básico: os cinco graus, o item que define o golpe, e o efeito de encantamento chegando na linha |
 | `t-tamanho-pingente` | Crescimento Corporal repetível, redução de categoria, distância por tamanho e o Pingente de Amaterasu sob o sol ou com os três tesouros |

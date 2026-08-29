@@ -63,7 +63,12 @@ export function Vital({
 
   return (
     <div className="afty-vital" data-afty-vital={tipo} data-afty-nivel={nivel}>
-      <div className="flex items-center gap-2">
+      {/* ⚠ `afty-base` no lugar do `items-center`: o número atual (1,375rem, fonte
+          dos números), o "/ máximo" (0,75rem) e o "+temp" ficam lado a lado e
+          têm de assentar na mesma base. Ver o bloco "NÚMERO AO LADO DE TEXTO"
+          no ficha.css, que explica também por que o ícone e o rótulo aparado
+          voltam para o centro em vez de acompanhar. */}
+      <div className="afty-base flex gap-2">
         <Icone className="afty-vital-icone" aria-hidden="true" />
         <span className="afty-vital-rotulo flex-1 min-w-0 truncate">{rotulo}</span>
         <input
@@ -90,7 +95,9 @@ export function Vital({
           )
           : <span className="afty-vital-max">/ {max}</span>}
         {temp > 0 && <span className="afty-vital-temp" title={rotuloTemp}>+{temp}</span>}
-        <span className="flex items-center gap-0.5 flex-shrink-0">
+        {/* Grupo de BOTÕES, e não de texto: sai da base pela porta da regra. Sem
+            isto ele penduraria pela base do "−", que não é a mesma dos números. */}
+        <span className="flex items-center gap-0.5 flex-shrink-0" data-afty-alinha="centro">
           <button type="button" className="afty-passo" onClick={() => onDelta(-1)} aria-label={`${rotulo} menos 1`}>−</button>
           <button type="button" className="afty-passo" onClick={() => onDelta(1)} aria-label={`${rotulo} mais 1`}>+</button>
         </span>

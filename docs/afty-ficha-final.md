@@ -1315,6 +1315,148 @@ nada aqui foi decidido por mim sem estar escrito.
 10. **O Ápice ganhou sub-aba própria** nos Níveis Lendários, em vez de entrar junto das
     Lendárias. Também é decisão minha.
 
+### Fechado em 2026-08-28: o chip do buff mentia em toda linha ligada
+
+11. **Bônus fantasma no delta dos estados de combate** (achado do autor, por captura de
+    tela: a Postura da Devastação exibindo "Defesa +5", e a Postura do Céu exibindo
+    "Defesa +5" além do "Atenção +2" que é dela). **Corrigido**, e não era erro de conta
+    nem de regra: era **erro de entrada**.
+
+    O `deltaDosEstados` descobre o que um estado ligado está fazendo derivando a ficha de
+    novo com ele desligado e subtraindo. Só que o `deriveAfty` da tela recebia sete
+    opções de sessão e o derive de comparação recebia **uma** (`almaAtual`). As seis que
+    faltavam — a Guarda Inabalável, a concessão do mestre e os três de Ritual — existiam
+    de um lado da subtração e não do outro, então **a diferença entre as duas listas de
+    opção era creditada ao estado medido**. Como o mesmo excedente entrava em toda
+    comparação, o número aparecia em **todas as linhas ligadas de uma vez**, e num
+    Calamidade com a Guarda erguida ele valia exatamente os +5 de Defesa dela.
+
+    O conserto é de forma, não de fórmula: as opções viraram **um objeto só**
+    (`opcoesDerive`, no `AftyFicha.jsx`), com dois leitores e nenhuma cópia escrita à mão.
+    Quem acrescentar uma oitava opção amanhã não tem como esquecer a segunda lista, porque
+    não há segunda lista. Travado pelo `asserts/t-delta-buffs.mjs`, que reproduz as duas
+    posturas da captura.
+
+    Dois vizinhos consertados no mesmo lugar, porque eram a mesma classe de erro:
+
+    - o tipo de estado **`multi`** (que chegou com o Concentrar Aura, no mesmo dia) não
+      era conhecido pelo `padraoDe`, e caía calado no ramo da faixa. Um assert agora
+      recusa qualquer tipo novo que o delta não saiba desligar;
+    - os **`estadosExtras`** (Habilidade Única, Técnica de Estilo, Conjurador e as Auras)
+      nunca ganhavam chip nenhum: a aba desenhava a linha e o delta só varria o catálogo
+      estático. Agora os dois entram na mesma varredura.
+
+    **Lição que vale para o resto da Ficha:** comparar duas derivações é exato só enquanto
+    as duas receberem a mesma entrada. Mesmo código com opções diferentes mente igual a
+    código diferente, e mente pior, porque **parece** certo.
+
+### Fechado em 2026-08-28: a aba Buffs reorganizada
+
+12. **A aba Buffs não escalava para ND alto** (queixa do autor: "está bem feia e difícil de
+    achar o que preciso"). Medida antes de mexer, com derive real de ND 40 Calamidade
+    (Lutador 20 + Combatente 20): **46 linhas visíveis, 40 caixas de primeiro nível, numa
+    seção só**, na ordem do arquivo de catálogo, com as três ou quatro LIGADAS espalhadas
+    no meio das apagadas.
+
+    O diagnóstico não era de estilo, era de **arquitetura de informação**: era a única aba
+    pesada da Ficha sem filtro local e sem subdivisão, sendo que Habilidades e Equipamentos
+    já tinham as duas coisas. E as duas dimensões que organizam a aba **já estavam escritas
+    nos dados**: o dono sai do mesmo `requer*` que decide se a linha aparece, e 33 dos 54
+    rótulos são `Família · Parte`, a mesma convenção dos canais de rolagem.
+
+    Três movimentos, feitos nesta ordem:
+
+    1. **Seção "Ligados Agora"**, no topo, plana e com o rótulo inteiro. Ela lê o
+       `estaLigado` EXPORTADO do `ficha-buffs.js`, e não um teste próprio: mostra exatamente
+       as linhas para as quais o delta calculou um chip. Um filho cujo pai está desligado
+       não sobe, porque o valor dele não é zerado quando o pai desliga.
+    2. **Filtro local, sub-abas por dono e cabeçalho de família**, em `ficha-estados.js`
+       (puro, sem React, testado pelo `t-estados-organiza.mjs`). O maior bloco na tela caiu
+       de **40 para 16**, e 16 dos 46 rótulos encurtaram. O filtro casa contra o rótulo do
+       CATÁLOGO, com a família na frente, senão procurar "manobra" deixaria de achar as
+       quatro Manobras depois que o cabeçalho tirou a palavra delas.
+    3. **Coluna de controle com piso de largura** (`.afty-estado-controle`), que é o que
+       tira o serrilhado da direita, e **lista de escolha longa nascendo fechada** acima de
+       três opções: a Postura mostra a escolha atual e abre as oito ao toque, em fileira
+       própria embaixo. É onde o ganho no celular está concentrado.
+
+    Dois efeitos colaterais bons: a tira de sub-abas saiu do `GrupoComSubAbas` para um
+    `SubAbas.jsx` compartilhado (as duas abas antigas passaram a usá-lo), e o rótulo do
+    estado ganhou o `title` que a seção Temporários já tinha, fechando o achado A7 da
+    auditoria.
+
+    **Continua aberto:** os estados seguem fora do `alvosDeBusca`, então o Ctrl+K ainda não
+    acha nenhum (A3), e os formulários de Buffs e Condições continuam sempre abertos (A8).
+
+13. **Segunda passada na aba Buffs**, no mesmo dia, com quatro capturas do autor:
+
+    - **O delta virou TEXTO em roxo**, no desenho dos pré-requisitos do criador, e deixou de
+      ser `afty-chip`. Borda, fundo e canto de 9999px repetidos por quarenta linhas viravam
+      quarenta cápsulas ao lado dos botões, que são o que de fato se clica. O delta é
+      leitura, não alvo.
+    - **Os controles da linha ganharam régua própria** (`.afty-estado-linha .afty-botao` e
+      `.afty-passo` na mesma altura de 1,375rem). O botão padrão da Ficha tem 0,8125rem de
+      corpo e o `afty-passo` é um quadrado de 1,25rem, e lado a lado eles liam como duas
+      famílias de peça. O toque não entra nessa conta: a regra de `pointer: coarse` continua
+      pondo tudo em 44px.
+    - **Temporários: uma linha por FONTE, e não por canal**, e o id cru saiu da tela. Uma
+      Postura que dá bônus em TR e PV Temporário ocupava duas fileiras de nome idêntico com
+      `cmb_postura_da_terra` ao lado, o que lia como efeito duplicado. Agora é uma linha com
+      os dois canais como texto, e o suplantado é riscado em vez de ganhar uma marca mais
+      larga que o número que ela desqualifica. **A seção ficou**, porque a pergunta que ela
+      responde ("qual desses números eu perco no fim da cena") não tem outro lugar na Ficha.
+    - **Condições: terreno preparado**, em `afty-condicoes.js`. A força virou uma escala
+      visível de quatro degraus (era a chave crua, "media", numa pílula), a lista ordena por
+      gravidade, o seletor agrupou por força com `optgroup`, e a linha ABRE num texto.
+      ⚠ O `CONDICAO_TEXTOS` **nasceu vazio de propósito**: inventar o que faz "Fragilizado"
+      seria número saído do nada. Quando o autor mandar os textos, eles entram naquele
+      objeto e nada mais muda. O `validarCatalogoCondicoes` recusa nome que não case com o
+      catálogo, que é a armadilha real: um texto escrito para "Enfeitiçado" e gravado como
+      "Enfeiticado" apareceria mudo e ninguém saberia. Travado por `t-condicoes.mjs`, que
+      inclui um assert de "nenhum texto foi inventado" para falhar no dia em que chegarem.
+
+### Fechado em 2026-08-28: o número torto ao lado do texto virou regra
+
+14. **O número não assenta na mesma base do texto** (autor: "isso é um problema geral de
+    todas as partes da ficha, que já tentei resolver algumas vezes"). Apontado na contagem
+    das sub-abas, "Combatente 10".
+
+    **O autor já tinha achado a causa sozinho**, dois dias antes, na tira da Guarda, e
+    escrito o diagnóstico certo no `t-guarda.mjs`: *"caixas de alturas diferentes centradas
+    não põem as bases no mesmo lugar, e número se lê pela base"*. O que faltou foi o
+    conserto virar **regra**: ele ficou preso à classe `.afty-guarda`, e o mesmo defeito
+    seguiu vivo em 14 outros containers.
+
+    **Por que acontece.** A Ficha escreve número em `--afty-fonte-num` e texto em
+    `--afty-fonte`, quase sempre em corpos diferentes. Sem `line-height` declarado, cada
+    caixa tem a altura natural da própria fonte, e dentro dela a base fica a uma distância
+    do topo que também depende da fonte. Com `align-items: center` o navegador iguala os
+    CENTROS, e as bases sobram fora de lugar. **Medido em navegador real**
+    (Chromium 148, Segoe UI contra Consolas): a base do número ficava **1px acima** da do
+    texto na sub-aba. Nenhum recuo conserta, porque a fonte dos números é um botão do
+    Painel de Aparência: a correção certa hoje estaria errada amanhã.
+
+    **A armadilha, que é provavelmente por que as tentativas anteriores foram desfeitas.**
+    Aplicar `baseline` na fileira inteira PIORA: um filho com `overflow` diferente de
+    `visible` (todo `truncate` do projeto) não entrega a base do texto, o navegador
+    sintetiza a base na **borda de baixo** da caixa, e o rótulo aparado sobe inteiro. Ícone,
+    imagem e botão só de ícone têm o mesmo problema.
+
+    **Por isso a regra tem duas metades**, no bloco `NÚMERO AO LADO DE TEXTO` do `ficha.css`:
+    o container alinha pela base, e quem não tem base de verdade volta ao centro por
+    `align-self`, com `data-afty-alinha="centro"` como porta de saída à mão.
+
+    Aplicada em `.afty-subaba`, `.afty-feitico-topo` e na fileira do vital (que ganhou a
+    classe `.afty-base`). Já estavam certos `.afty-guarda`, `.afty-feitico-propriedade` e o
+    `.afty-estado-delta`. Travado por `asserts/t-alinhamento.mjs`, que lê o CSS como texto e
+    **recusa qualquer container da lista em `center`**, mais o sumiço da metade de baixo.
+
+    **Continua em `center`, e de propósito:** as fileiras de lista (`.afty-linha` com rótulo
+    `truncate` à esquerda e `.afty-valor` à direita). Ali a base correta exigiria mover a
+    aparagem para dentro de um filho, em ~30 pontos do JSX, e o rótulo e o número estão em
+    pontas opostas da fileira, onde 1px não se lê. Fica anotado como escolha, e não como
+    esquecimento.
+
 ---
 
 ## 25. Fase 9: nenhuma rolagem nasce de string (2026-08-06)

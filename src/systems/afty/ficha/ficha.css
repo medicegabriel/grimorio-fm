@@ -80,6 +80,53 @@
   font-family: var(--afty-fonte);
 }
 
+/* ============================================================ */
+/* NÚMERO AO LADO DE TEXTO — alinhar pela LINHA DE BASE           */
+/* ============================================================ */
+/* ⚠ A REGRA, e não mais um conserto avulso. O autor já a tinha achado sozinho
+   em 2026-08-26, na tira da Guarda, e escrito lá o diagnóstico certo: "caixas de
+   alturas diferentes centradas não põem as bases no mesmo lugar, e número se lê
+   pela base". Ela voltou em 2026-08-28 na contagem das sub-abas ("Combatente 10"
+   com o 10 torto), porque o conserto tinha ficado preso a uma classe.
+
+   POR QUE ACONTECE. A Ficha escreve número numa fonte e texto em outra
+   (`--afty-fonte-num` contra `--afty-fonte`), quase sempre em corpos diferentes.
+   Duas coisas se somam:
+
+     1. sem `line-height` declarado, cada caixa tem a altura NATURAL da própria
+        fonte, e Consolas e Segoe UI não têm a mesma proporção;
+     2. dentro da caixa, a base fica a uma distância do topo que também depende
+        da fonte.
+
+   Com `align-items: center` o navegador iguala os CENTROS das duas caixas, e as
+   bases sobram ~1,5px fora de lugar. Nenhum recuo conserta isso: o erro muda com
+   a fonte, e a fonte dos números é um botão do Painel de Aparência, então a
+   correção certa hoje estaria errada amanhã. `align-items: baseline` acerta as
+   BASES, que é o que o olho lê, e não depende de fonte nenhuma.
+
+   ⚠ A ARMADILHA, que é por que aplicar `baseline` na lista inteira PIORA. Um
+   filho com `overflow` diferente de `visible` (todo `truncate` do projeto) não
+   entrega a base do texto dele: o navegador sintetiza a base na BORDA DE BAIXO
+   da caixa. Numa fileira com rótulo aparado, o rótulo subiria inteiro. Ícone,
+   imagem e botão só de ícone têm o mesmo problema, pelo mesmo motivo.
+
+   POR ISSO A REGRA TEM DUAS METADES: o container alinha pela base, e quem não
+   tem base de verdade volta para o centro com `align-self`. Marque um filho com
+   `data-afty-alinha="centro"` para tirá-lo da base à mão (é o caso do rótulo
+   aparado, que fica sozinho na ponta esquerda e lê melhor centrado).
+
+   ⚠ Travado pelo `asserts/t-alinhamento.mjs`, que lista os containers que
+   MISTURAM as duas fontes e recusa qualquer um deles em `center`. */
+.afty-base { align-items: baseline; }
+
+.afty-base > svg,
+.afty-base > img,
+.afty-base > button,
+.afty-base > .afty-chip,
+.afty-base > .afty-passo,
+.afty-base > .afty-botao,
+.afty-base > [data-afty-alinha="centro"] { align-self: center; }
+
 /* A imagem do usuário começa depois do cabeçalho. A camada de ambiente acompanha
    toda a altura da aba, inclusive quando o conteúdo passa de uma tela. */
 .afty-ficha-corpo {
@@ -328,6 +375,11 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
   text-transform: uppercase;
   letter-spacing: 0.09em;
   color: var(--afty-texto-suave);
+  /* ⚠ O rótulo é `truncate`, e `overflow: hidden` faz o navegador sintetizar a
+     base dele na BORDA DE BAIXO. Numa fileira alinhada pela base ele subiria
+     inteiro, então sai da base à mão. Sozinho na ponta esquerda, centrado é o
+     que lê melhor. Ver o bloco "NÚMERO AO LADO DE TEXTO". */
+  align-self: center;
 }
 
 /* O número é um `input` sem cara de input: só vira campo ao receber o foco. */
@@ -803,7 +855,9 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
 
 .afty-subaba {
   display: inline-flex;
-  align-items: center;
+  /* Mistura as duas fontes: o nome no corpo, a contagem nos números. Ver o
+     bloco "NÚMERO AO LADO DE TEXTO". */
+  align-items: baseline;
   gap: 0.3125rem;
   flex-shrink: 0;
   padding: 0.1875rem 0.5rem;
@@ -823,6 +877,13 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
   border-color: color-mix(in srgb, var(--afty-destaque) 55%, transparent);
   background: var(--afty-destaque-fundo);
 }
+
+/* A metade de baixo da regra da base, para estes dois containers: ícone e
+   pílula não têm base de texto, e sem isto o navegador os penduraria pela borda
+   de baixo. Ver o bloco "NÚMERO AO LADO DE TEXTO". */
+.afty-subaba > svg,
+.afty-feitico-topo > svg,
+.afty-feitico-topo > .afty-chip { align-self: center; }
 
 /* Quantos itens tem a divisão. Ele existe para o jogador saber o tamanho do que
    está escondido atrás da outra aba antes de clicar nela. */
@@ -873,6 +934,182 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
 .afty-linha[data-afty-destacada="sim"] {
   border-color: color-mix(in srgb, var(--afty-destaque) 55%, transparent);
   background: var(--afty-destaque-fundo);
+}
+
+/* ============================================================ */
+/* ABA BUFFS — a coluna de controle, a família e a escolha       */
+/* ============================================================ */
+
+/* ⚠ A COLUNA DE CONTROLE TEM PISO DE LARGURA (2026-08-28). Um estado `bool`
+   entrega um botão, uma `faixa` entrega três células e uma `opcao` entrega de
+   duas a oito, e o rótulo à esquerda é elástico: sem piso, a borda esquerda do
+   controle cai num x diferente em cada linha, e numa criatura de ND 40 são
+   quarenta linhas serrilhando a direita do cartão de cima a baixo.
+
+   É a mesma resposta que os chips numerados receberam em 2026-08-06, pelo mesmo
+   relato do autor: célula de tamanho igual. Ver o `data-afty-tag` acima. */
+.afty-estado-controle {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+  min-width: 5.25rem;
+  flex-shrink: 0;
+}
+
+/* No toque todo botão vai a 44px e a fileira de passo (− valor +) fica bem mais
+   larga, então o piso sobe junto. Sem isto, o alinhamento que o desktop ganha o
+   celular perde. */
+@media (pointer: coarse) {
+  .afty-estado-controle { min-width: 7.5rem; }
+}
+
+/* ⚠ OS CONTROLES DA LINHA SÃO MENORES QUE OS DA FICHA EM GERAL (autor,
+   2026-08-28, com captura: "as caixas que tem Ativa/Inativa são maiores e mais
+   grossas que outras"). O `afty-botao` padrão tem 0,8125rem de corpo e 0,375rem
+   de recuo vertical, e ao lado do `afty-passo`, que é um quadrado de 1,25rem,
+   ele lia como outra família de peça. Aqui os dois têm a MESMA altura, e a
+   linha inteira passa a ter uma régua só.
+
+   O toque não entra nesta conta: a regra de `pointer: coarse` lá embaixo põe
+   todo botão em 44px, e é ela que continua valendo no celular. */
+.afty-estado-linha .afty-botao {
+  height: 1.375rem;
+  padding: 0 0.5rem;
+  font-size: 0.6875rem;
+}
+
+.afty-estado-linha .afty-passo { width: 1.375rem; height: 1.375rem; }
+
+@media (pointer: coarse) {
+  .afty-estado-linha .afty-botao { height: auto; min-height: 44px; padding-inline: 1rem; }
+  .afty-estado-linha .afty-passo { width: 2rem; height: 2rem; }
+}
+
+/* O DELTA, que é o que ligar aquele estado está fazendo agora.
+
+   ⚠ TEXTO, E NÃO PÍLULA. Era `afty-chip` e o autor recusou em 2026-08-28: borda,
+   fundo e canto de 9999px repetidos por quarenta linhas viram quarenta cápsulas
+   ao lado dos botões, que são o que de fato se clica. Este é o desenho dos
+   pré-requisitos do criador, que resolvem o mesmo problema (marca de leitura
+   encostada em alvo de clique) do mesmo jeito. */
+.afty-estado-delta {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.afty-delta {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--afty-destaque-texto);
+}
+
+/* O ponto médio entre duas marcas, e não um `gap`: o separador precisa existir
+   como sinal, senão "Dano +6" e "Acerto +3" lidos juntos parecem uma frase. */
+.afty-delta + .afty-delta::before {
+  content: "·";
+  margin: 0 0.375rem;
+  color: var(--afty-texto-fraco);
+}
+
+/* Efeito temporário que PERDEU o pool exclusivo para uma fonte maior. Riscado e
+   apagado, e não uma marca "Suplantado" ao lado: a marca era mais larga que o
+   número que ela desqualificava. O risco diz a mesma coisa no próprio número. */
+.afty-delta[data-afty-suplantado="sim"] {
+  color: var(--afty-texto-fraco);
+  text-decoration: line-through;
+}
+
+/* ============================================================ */
+/* CONDIÇÕES — a força como degrau                               */
+/* ============================================================ */
+/* ⚠ A FORÇA É UMA ESCALA DE QUATRO, e a tela tem de mostrar isso (autor,
+   2026-08-28: "não consigo ver o nível da condição"). Ela era desenhada como a
+   CHAVE CRUA numa pílula: "media", em minúscula, sem dizer que é a segunda de
+   quatro. Quatro traços resolvem o degrau, e a palavra ao lado resolve o nome.
+
+   Os traços não carregam cor de severidade: o vermelho do Afty é do PV e o
+   âmbar é do aviso que pede ação, e uma condição não pede ação nenhuma, ela é o
+   estado da criatura. O que cresce é a QUANTIDADE de traço cheio. */
+.afty-forca {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex-shrink: 0;
+}
+
+.afty-forca-degraus {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.afty-forca-degraus > span {
+  width: 3px;
+  height: 0.625rem;
+  border-radius: 1px;
+  background: var(--afty-borda-forte);
+}
+
+.afty-forca-degraus > span[data-afty-cheio="sim"] { background: var(--afty-destaque); }
+
+.afty-forca-nome {
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--afty-texto-suave);
+  white-space: nowrap;
+}
+
+/* No celular fica só o degrau: a palavra e o nome da condição disputariam a
+   mesma largura, e o degrau é a metade que não tem como ser deduzida. */
+@media (max-width: 28rem) {
+  .afty-forca-nome { display: none; }
+}
+
+/* O cabeçalho de família. Ele é uma ETIQUETA de lista, e não um título de
+   seção: quem titula é o `afty-card-titulo` do cartão, e repetir aquele peso
+   aqui dentro criaria dois níveis de título disputando a mesma leitura. */
+.afty-estado-familia {
+  margin: 0.5rem 0 0.125rem;
+  padding-left: 0.25rem;
+  font-family: var(--afty-fonte-titulo);
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--afty-texto-fraco);
+}
+
+/* O primeiro cabeçalho não empurra: o filtro e as sub-abas já deram o respiro
+   acima dele. */
+.afty-estado-familia:first-child { margin-top: 0; }
+
+/* A escolha corrente de uma lista fechada, ao lado do nome. Peso normal contra
+   o rótulo em negrito, porque ela é o VALOR e não o nome da coisa. */
+.afty-estado-escolha {
+  margin-left: 0.4rem;
+  font-weight: 400;
+  color: var(--afty-destaque-texto);
+}
+
+/* As opções de uma lista longa, quando aberta: fileira própria, largura cheia,
+   separada do controle por um fio. Ao lado do rótulo elas empurrariam o
+   controle e desfariam o alinhamento que a regra do topo acabou de ganhar. */
+.afty-estado-opcoes {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  justify-content: flex-end;
+  margin-top: 0.375rem;
+  padding-top: 0.375rem;
+  border-top: 1px solid var(--afty-borda);
 }
 
 /* Estados FILHOS: os que declaram `requerEstado` moram na caixa do pai, e não
@@ -927,7 +1164,9 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
 .afty-feitico-topo {
   position: relative;
   display: flex;
-  align-items: center;
+  /* O nome do Feitiço no corpo, o `afty-feitico-meta` (nível e custo) nos
+     números. A seta e o triângulo de aviso voltam ao centro logo abaixo. */
+  align-items: baseline;
   justify-content: center;
   gap: 0.5rem;
   min-height: 2rem;

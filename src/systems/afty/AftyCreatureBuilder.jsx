@@ -17,13 +17,14 @@ import {
 // Primitivos compartilhados com a Ficha Final. Eram locais deste arquivo até
 // 2026-08-05, e saíram porque duas cópias divergiriam na primeira errata.
 import { PainelDeFontes, ValorComFontes } from "./ui/fontes";
-import { sinalDe } from "./ui/formato";
+import { sinalDe, numeroBr } from "./ui/formato";
 import { Card, BoolChip, VezesGauge } from "./ui/primitivos";
 import { estadoInicialComRascunho, useRascunhoAfty, formatarSalvoEm } from "./afty-rascunho";
 import {
   AFTY_ORIGENS, getOrigem, origemTemDesenvolvimento, origemPoolLimite,
   clasDaOrigem, getCla, caracteristicasEfetivas, totalDaAlocacao, usoDaAlocacao,
   origensQualificadas,
+  origemEstrutural,
 } from "./afty-origens";
 // A descrição de cada anatomia agora aparece na própria linha selecionável, em
 // vez de repetida numa lista embaixo: o `getAnatomia` deixou de ser preciso aqui.
@@ -1851,6 +1852,56 @@ function BarreiraCard({ derived }) {
   );
 }
 
+/* O DOMÍNIO SIMPLES, que nunca teve tela nenhuma até 2026-08-28. Ele era uma
+   entrada de catálogo com texto e mais nada: a área e os 5 PE viviam dentro da
+   prosa, e por isso três etapas do Treino de Novo Estilo das Sombras ficaram
+   dois meses valendo só como palavra no card.
+
+   Irmão do BarreiraCard, e pelo mesmo motivo dele: os números são de uma aptidão
+   e só existem para quem a tem, então o card some junto com ela.
+
+   ⚠ AS DUAS COLUNAS DE SUSTENTO SÓ EXISTEM COM UM ADDON. O livro cru usa
+   Concentração e Durabilidade e não cobra nada por rodada (autor, 2026-08-28),
+   então `sustenta` é falso e a fileira fica com duas células. */
+function DominioSimplesCard({ derived }) {
+  const ds = derived.dominioSimples;
+  if (!ds?.tem) return null;
+  const linhas = [
+    { k: "Área", v: `${numeroBr(ds.area)}m`, partes: ds.partesArea },
+    { k: "Erguer", v: `${ds.custoErguer} PE`, partes: ds.partesErguer },
+    ...(ds.sustenta
+      ? [{ k: "Sustentar", v: `${ds.custoSustentar} PE`, partes: ds.partesSustentar }]
+      : []),
+    /* A quarta só para quem tem o Estilo. Ela é a linha que a 4ª etapa do Treino
+       reduz, e mostrá-la a quem não imbui nada seria um zero sem dono. */
+    ...(ds.sustenta && derived.estilo?.disponivel
+      ? [{ k: "Sustentar o Estilo", v: `${ds.custoSustentarEstilo} PE`, partes: ds.partesSustentarEstilo }]
+      : []),
+  ];
+  /* ⚠ Classes LITERAIS, uma por contagem. O Tailwind lê o código-fonte e não
+     enxerga `grid-cols-${n}` montado em template, então a coluna sairia sem
+     regra nenhuma e as células empilhariam. Mesma pegadinha do `aparecer`
+     nomeado do PainelDeFontes. */
+  const colunas = linhas.length > 3
+    ? "grid-cols-2 sm:grid-cols-4"
+    : linhas.length === 3 ? "grid-cols-3" : "grid-cols-2";
+  return (
+    <Card title="Domínio Simples">
+      <div className={`grid gap-2 ${colunas}`}>
+        {linhas.map((l) => (
+          /* O `group` em CADA célula, e não no grid: com ele no pai, passar o
+             mouse numa acenderia os quatro painéis de uma vez. */
+          <div key={l.k} className="relative group rounded-lg border border-slate-800 bg-slate-900/60 p-2.5 text-center">
+            <div className="text-[10px] uppercase tracking-wider text-slate-500">{l.k}</div>
+            <div className="font-mono text-lg font-bold tabular-nums text-white cursor-help">{l.v}</div>
+            {l.partes?.length > 0 && <PainelDeFontes partes={l.partes} total={l.v} />}
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
 function DominioCard({ derived, addDominio, removeDominio, patchDominio, setDominioAtivo }) {
   const info = derived.dominios;
   const versoes = versoesDisponiveis(derived.aptidoesEscolhidas ?? []);
@@ -2042,6 +2093,7 @@ function TabHabilidades({ draft, derived, patchCore, toggleArmaDedicada, addFeit
     />
   );
   const barreira = <BarreiraCard derived={derived} />;
+  const dominioSimples = <DominioSimplesCard derived={derived} />;
   const origem = draft.core.origem?.id;
   const gerais = <HabilidadesGeraisCard derived={derived} setGeralVezes={setGeralVezes} />;
   // O Dano vale para toda origem: até quem não tem Feitiço ataca.
@@ -2081,6 +2133,7 @@ function TabHabilidades({ draft, derived, patchCore, toggleArmaDedicada, addFeit
         {estilo}
         {dano}
         {cura}
+        {dominioSimples}
         {barreira}
         {dominio}
         {gerais}
@@ -2094,6 +2147,7 @@ function TabHabilidades({ draft, derived, patchCore, toggleArmaDedicada, addFeit
         {estilo}
         {dano}
         {cura}
+        {dominioSimples}
         {barreira}
         {dominio}
         {gerais}
@@ -2116,6 +2170,7 @@ function TabHabilidades({ draft, derived, patchCore, toggleArmaDedicada, addFeit
       {estilo}
       {dano}
       {cura}
+      {dominioSimples}
       {barreira}
       {dominio}
       {gerais}
@@ -10643,9 +10698,11 @@ function TabInterludios({ draft, derived, setTreinoProgresso, setTreinoInstance,
     .map((e) => e.def);
   // A origem esconde a linha que ela não alcança (a Maldição não tem Energia
   // Reversa), e o gasto acompanha: o Foco preso numa linha escondida volta.
-  const origemId = draft.core.origem?.id;
-  // As origens que a criatura conta como suas: a copiada em Verdadeiras Origens
-  // e a que um Addon libera. Elas abrem a linha exclusiva de origem.
+  // ⚠ As duas perguntas são diferentes e as duas são feitas aqui. `origemId` é
+  // o que a criatura É (o Gêmeo que copiou da Maldição perde a Linha de Energia
+  // Reversa), e `qualificadas` é o que ela ALCANÇA a mais (a origem copiada e a
+  // que um Addon libera abrem a linha exclusiva de origem).
+  const origemId = origemEstrutural(draft);
   const qualificadas = origensQualificadas(draft);
   const linhasTreino = treinamentosDaOrigem(origemId, qualificadas);
   // Contexto dos requisitos de etapa. Aptidão e trilha só bloqueiam quando o

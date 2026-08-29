@@ -1004,16 +1004,27 @@ function opcaoVerdadeiraOrigem(origem, c, cla = null) {
  * uma, porém deixar as duas como opção"*). O `vagas: 1` da escolha não é
  * tocado, e as duas entram lado a lado com as das outras origens.
  *
- * O cache é POR CHAVE, e não um só, porque a lista agora depende da criatura.
+ * ⚠ A SEGUNDA LIBERAÇÃO ENTROU EM 2026-08-29: `gemeosMaldicao` tira a
+ * **Maldição** da mesma lista, e ela também rende duas opções (Existência
+ * Metafísica e Natureza Amaldiçoada, com o Bônus em Atributo saindo pelo filtro
+ * genérico). A diferença para a do Sem Técnica é o que vem DEPOIS de copiar:
+ * copiar da Maldição muda a ESTRUTURA da criatura, e não só o que ela tem. Ver
+ * `origemEstrutural`.
+ *
+ * O cache é POR CHAVE, e a chave é o conjunto de liberações que importam aqui.
+ * Um cache só não serve: a lista depende da criatura.
  */
-const cacheVO = { sim: null, nao: null };
+const LIBERACOES_VO = [
+  ["gemeosSemTecnica", "sem_tecnica"],
+  ["gemeosMaldicao", "maldicao"],
+];
+const cacheVO = new Map();
 
-function opcoesVerdadeirasOrigens(liberado = false) {
-  const chave = liberado ? "sim" : "nao";
-  if (cacheVO[chave]) return cacheVO[chave];
-  const proibidas = liberado
-    ? VERDADEIRAS_ORIGENS_PROIBIDAS.filter((id) => id !== "sem_tecnica")
-    : VERDADEIRAS_ORIGENS_PROIBIDAS;
+function opcoesVerdadeirasOrigens(liberacoes = []) {
+  const soltas = LIBERACOES_VO.filter(([lib]) => liberacoes.includes(lib)).map(([, id]) => id);
+  const chave = soltas.join("|");
+  if (cacheVO.has(chave)) return cacheVO.get(chave);
+  const proibidas = VERDADEIRAS_ORIGENS_PROIBIDAS.filter((id) => !soltas.includes(id));
   const out = [];
   for (const origem of AFTY_ORIGENS_CATALOG) {
     if (proibidas.includes(origem.id)) continue;
@@ -1032,7 +1043,7 @@ function opcoesVerdadeirasOrigens(liberado = false) {
       }
     }
   }
-  cacheVO[chave] = out;
+  cacheVO.set(chave, out);
   return out;
 }
 
@@ -1048,8 +1059,7 @@ export function verdadeiraOrigemEscolhida(creature) {
 
      A escolha some da ficha em silêncio, sem marca de "sem acesso" (autor,
      2026-08-21). É diferente do Estilo, que fica riscado, e é escolha dele. */
-  const liberado = liberacoesDaCriatura(creature).includes("gemeosSemTecnica");
-  const opcao = opcoesVerdadeirasOrigens(liberado).find((o) => o.id === id);
+  const opcao = opcoesVerdadeirasOrigens(liberacoesDaCriatura(creature)).find((o) => o.id === id);
   if (!opcao) return null;
   const origem = getOrigem(opcao.origemId);
   const cla = opcao.claId ? getCla(opcao.claId) : null;
@@ -1086,6 +1096,36 @@ export function verdadeiraOrigemEscolhida(creature) {
 export function fatorSlotsHabilidade(creature) {
   if (creature?.core?.origem?.id !== "gemeos") return 1;
   return creature?.core?.origem?.irmaoMorto ? 1.5 : 0.5;
+}
+
+/**
+ * A origem cujas REGRAS DE ESTRUTURA a criatura segue: quais trilhas de Aptidão
+ * existem para ela, qual aba ocupa o lugar da de Energia Reversa, e quais Linhas
+ * de Treinamento a origem não alcança.
+ *
+ * Quase sempre é a origem própria, e devolver isso é a resposta certa. O caso
+ * que abriu a função é o Gêmeo que COPIA da Maldição em Verdadeiras Origens
+ * (autor, 2026-08-29): *"que ele siga as regras de Maldição de não ter Energia
+ * Reversa, porém ter a aba de Aptidões de Maldição"*.
+ *
+ * ⚠ NÃO É O `origensQualificadas`, e não pode virar ele. Aquela lista está
+ * documentada como "só ABRE, nunca tranca", e esta pergunta FECHA: virar
+ * Maldição TIRA a Energia Reversa da criatura. Pendurar um fechamento numa
+ * lista que promete só abrir é a armadilha, não a economia.
+ *
+ * ⚠ Devolve UMA origem, e não uma lista, porque a pergunta que ela responde é
+ * excludente: a aba de Maldição OCUPA o lugar da de Energia Reversa, não se
+ * soma a ela. Duas origens estruturais ao mesmo tempo não têm resposta.
+ *
+ * ⚠ O ADDON NÃO É CONFERIDO AQUI, e é de propósito: quem confere é o
+ * `verdadeiraOrigemEscolhida`, que já devolve `null` quando a liberação saiu.
+ * Uma segunda trava aqui seria uma segunda verdade para manter em sincronia.
+ */
+export function origemEstrutural(creature) {
+  const propria = creature?.core?.origem?.id ?? null;
+  if (propria === "maldicao") return propria;
+  const copiada = verdadeiraOrigemEscolhida(creature)?.origem?.id ?? null;
+  return copiada === "maldicao" ? "maldicao" : propria;
 }
 
 /**
@@ -1148,8 +1188,7 @@ function aplicarExtrasOrigens(extras = [], remendos = null) {
      acesso: uma origem vinda de Addon nunca aparecia na lista do Gêmeo, calado.
      O bug entrou junto com a família `origens` dos Addons e não tinha sintoma
      porque ninguém tinha escrito uma origem de addon ainda. */
-  cacheVO.sim = null;
-  cacheVO.nao = null;
+  cacheVO.clear();
 }
 
 aplicarExtrasOrigens();
@@ -1233,10 +1272,10 @@ export function caracteristicasEfetivas(creature) {
  * entrada de Addon passar a ser clonada.
  */
 const comOpcoesDaCriatura = (creature) => {
-  const liberado = liberacoesDaCriatura(creature).includes("gemeosSemTecnica");
+  const opcoes = opcoesVerdadeirasOrigens(liberacoesDaCriatura(creature));
   return (c) => {
     if (c?.escolha?.id !== "verdadeiras_origens") return c;
-    return { ...c, escolha: { ...c.escolha, opcoes: opcoesVerdadeirasOrigens(liberado) } };
+    return { ...c, escolha: { ...c.escolha, opcoes } };
   };
 };
 
@@ -1617,6 +1656,27 @@ export const ORIGEM_ESCOLHA_EFEITOS = (() => {
   out.gem_base_lutador_superior = [
     { canal: "dadosDano", alvo: "basico", expr: "1" },
     { canal: "empolgacaoInicial", expr: "1" },
+  ];
+
+  /* ---------------- VERDADEIRAS ORIGENS · a copiada que tem número ----------
+     ⚠ ESTE É O CAMINHO QUE O COMENTÁRIO DO `caracteristicaCopiada` PROMETIA e
+     ninguém tinha usado ainda: *"quem precisar de canal declara em
+     ORIGEM_ESCOLHA_EFEITOS, pelo id `vo_*`"*. Até 2026-08-29 toda característica
+     copiada entrava só como TEXTO (mais a Aptidão concedida por nome, que anda
+     por outro caminho), e ninguém tinha reparado porque nenhuma das copiáveis
+     tinha número.
+
+     A Natureza Amaldiçoada tem. Os dois canais são COPIADOS de
+     `ORIGEM_EFEITOS.maldicao`, e a cópia é literal de propósito: é a mesma
+     regra, e a única razão de ela não ser lida dali é que aquele mapa é
+     chaveado pela ORIGEM inteira, e a Maldição tem três características.
+
+     ⚠ O DIA EM QUE A MALDIÇÃO GANHAR OUTRA CARACTERÍSTICA COM NÚMERO, as duas
+     linhas aqui deixam de bater com as de lá em silêncio. Anotado em
+     docs/a-fazer.md. */
+  out.vo_maldicao_natureza_amaldicoada = [
+    { canal: "vagasAptidao", expr: "1 + (nd >= 10) + (nd >= 15)" },
+    { canal: "pe", expr: "nd" },
   ];
 
   return out;

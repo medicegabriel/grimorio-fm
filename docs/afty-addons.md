@@ -123,6 +123,10 @@ Todas vieram por pergunta direta. Não re-decidir sem falar com ele.
 | 17 | Quem tem o addon alcança o Treino e os Talentos exclusivos do Sem Técnica? | **Sim, o Addon abre tudo.** Virou a liberação `qualificaSemTecnica`. |
 | 18 | "Uma Técnica de Estilo adicional" gasta qual contador? | **Vaga exclusiva de Estilo**, canal novo. Feitiço não pode gastá-la. |
 | 19 | O Completo do Treino ("o dobro do Nível de Domínio") soma ou substitui? | **Soma outro Nível de Domínio.** Outras fontes continuam contando por cima. |
+| 20 | O que faz a criatura seguir as regras de Maldição? | **Copiar da Maldição em Verdadeiras Origens**, e não ter o Addon. |
+| 21 | A Natureza Amaldiçoada copiada traz os números dela? | **Traz tudo**: as vagas de Aptidão e o +1 PE por nível. |
+| 22 | As duas características de Maldição disparam a regra? | **As duas.** Existência Metafísica também diz que a criatura É uma maldição. |
+| 23 | A Linha de Treinamento de Energia Reversa some junto? | **Some**, como na Maldição de verdade. O Foco preso nela volta. |
 
 ⚠ **O nome "Poderes da Tormenta" é contexto narrativo da mesa dele, e não um sistema.** O autor
 pediu nome generalista: neste doc o padrão se chama **família marcada por tag**.
@@ -943,3 +947,54 @@ origem. Juntá-las faria a primeira mudar duas coisas de uma vez.
 ⚠ Ela só ABRE, nunca tranca. `origensQualificadas` alimenta também `especializacoesDisponiveis`, e lá
 a origem extra só destrava especialização exclusiva. Nenhuma é exclusiva do Sem Técnica hoje, então
 o efeito colateral é zero, e continua sendo zero enquanto isso for verdade.
+
+
+---
+
+## 15. A ORIGEM ESTRUTURAL, 2026-08-29
+
+Pedido do autor: *"liberar Origem de Maldição para Gêmeos. Fazendo com que ele siga as regras de
+Maldição de não ter Energia Reversa, porém ter a aba de Aptidões de Maldição e etc."*
+
+A liberação `gemeosMaldicao` tira a Maldição de `VERDADEIRAS_ORIGENS_PROIBIDAS`, e isso é a metade
+fácil. A outra metade é o "e etc": **copiar da Maldição muda a ESTRUTURA da criatura**, e não só o
+que ela tem.
+
+### A pergunta nova, e por que ela não podia pegar carona
+
+Já existia `origensQualificadas`, e a tentação era pendurar isto nela. **Não dá.** Aquela lista está
+documentada como *"só ABRE, nunca tranca"*, e esta pergunta FECHA: virar Maldição TIRA a Energia
+Reversa. Pendurar um fechamento numa lista que promete só abrir é a armadilha, não a economia.
+
+Então nasceu `origemEstrutural(creature)`, que responde **uma** origem (não uma lista, porque a
+pergunta é excludente: a aba de Maldição OCUPA o lugar da de Energia Reversa, não se soma a ela).
+
+| Pergunta | Função | Devolve | Direção |
+|---|---|---|---|
+| O que a criatura ALCANÇA a mais? | `origensQualificadas` | lista | só abre |
+| O que a criatura É? | `origemEstrutural` | uma origem | abre e fecha |
+
+Três leitores mudaram, e são exatamente os três lugares que perguntavam `origem.id === "maldicao"`:
+
+- `trilhasDaCriatura` (nova, irmã da `trilhasDaOrigem`), lida pelo `deriveAfty`;
+- `abasAptidao`, que troca a aba de Energia Reversa pela de Maldição;
+- o `foraDaOrigem` das Linhas de Treinamento, nos três pontos que o consultam.
+
+⚠ **O Addon não é conferido dentro do `origemEstrutural`.** Quem confere é o
+`verdadeiraOrigemEscolhida`, que já devolve `null` quando a liberação saiu. Uma segunda trava seria
+uma segunda verdade para manter em sincronia.
+
+### A característica copiada passou a ter número
+
+⚠ **Até aqui, TODA característica copiada em Verdadeiras Origens entrava só como texto.**
+`ORIGEM_EFEITOS` é chaveado pela origem inteira e não desce à característica, e o comentário do
+`caracteristicaCopiada` já apontava a saída: *"quem precisar de canal declara em
+ORIGEM_ESCOLHA_EFEITOS, pelo id `vo_*`"*. Ninguém tinha usado, porque nenhuma das copiáveis tinha
+número.
+
+A Natureza Amaldiçoada tem: uma Aptidão à escolha, mais uma no 10° e no 15°, e +1 PE por nível. Os
+dois canais são **cópia literal** de `ORIGEM_EFEITOS.maldicao`, e a única razão de não serem lidos
+de lá é que aquele mapa não sabe a qual das três características da Maldição cada linha pertence.
+
+⚠ No dia em que a Maldição ganhar outra característica com número, as duas listas divergem em
+silêncio. Anotado em `docs/a-fazer.md`.

@@ -343,6 +343,11 @@ export const LIBERACOES = [
     rotulo: "Qualifica Como Sem Técnica",
     nota: "A criatura conta como Origem Sem Técnica para pré-requisito de Talento e de Linha de Treinamento",
   },
+  {
+    id: "gemeosMaldicao",
+    rotulo: "Maldição em Verdadeiras Origens",
+    nota: "O Gêmeo pode copiar da Maldição, e copiar passa a fazer a criatura seguir as regras de estrutura dela",
+  },
 ];
 
 const LIBERACAO_IDS = new Set(LIBERACOES.map((l) => l.id));
