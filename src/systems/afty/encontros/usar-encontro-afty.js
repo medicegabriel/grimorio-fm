@@ -49,6 +49,7 @@ const derivarCombatente = (c) => {
       {
         almaAtual: c.sessao.almaAtual,
         concedido: c.sessao.concedido,
+        adaptacoes: c.sessao.adaptacoes,
         // A Guarda Inabalável corrente, igual à Ficha: o bônus dela soma na
         // Defesa e nos cinco TRs desta mesma derivação.
         guarda: entradaDaGuarda(c.sessao),
@@ -98,6 +99,7 @@ const derivarComCache = (c, epoca) => {
     && anterior.buffs === c.sessao.buffs
     && anterior.alma === c.sessao.almaAtual
     && anterior.concedido === c.sessao.concedido
+    && anterior.adaptacoes === c.sessao.adaptacoes
     && anterior.epoca === epoca) {
     return anterior.derived;
   }
@@ -111,6 +113,7 @@ const derivarComCache = (c, epoca) => {
        aos outros três, a comparação é por IDENTIDADE, e os escritores da sessão
        sempre devolvem lista nova. */
     concedido: c.sessao.concedido,
+    adaptacoes: c.sessao.adaptacoes,
     epoca,
     derived,
   });

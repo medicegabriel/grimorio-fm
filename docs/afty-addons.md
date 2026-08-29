@@ -10,20 +10,21 @@ código. Leia junto com `afty-status.md` (estado do sistema), `automacao-dsl.md`
 
 ---
 
-## ONDE ESTAMOS (2026-08-20)
+## ONDE ESTAMOS (2026-08-28)
 
-**Fase 0 pela metade e fase 1 no ar.** As duas primitivas pequenas estão no motor, e o caminho
-inteiro do Addon funciona de ponta a ponta: colar o JSON, ligar na criatura, o número mudar na Ficha,
-desinstalar sem deixar resto. As duas primitivas que faltam travam em decisão do autor.
+**Fase 0 com três primitivas fechadas e fase 1 no ar.** O caminho inteiro do Addon funciona de
+ponta a ponta: colar o JSON, ligar na criatura, o número mudar na Ficha, desinstalar sem deixar
+resto. A primitiva de vínculo entre criaturas continua travada em decisão do autor.
 
 | Primitiva | Estado | Onde |
 |---|---|---|
 | 8.1 `contar()` por marca | **Feita** | `afty-dsl.js` (novo), `marcasDeEntradas` em `afty-efeitos.js` |
 | 8.2 Canal `hpAtributo` | **Feita** | `afty-efeitos.js` e o PV do `afty-derive.js` |
-| 8.3 Concessão vinda da sessão | **Travada** | 3 perguntas no `a-fazer.md`, ver a seção 8.3 |
+| 8.3 Concessão vinda da sessão | **Feita** | `afty-concessao.js`, Ficha Final e Encontro |
+| 8.3.1 Ciclo de Adaptação | **Feita** | `afty-adaptacao.js`, `ficha/PainelDeAdaptacao.jsx` |
 | 8.4 Vínculo entre criaturas | **Travada** | 4 perguntas no `a-fazer.md`, ver a seção 8.4 |
 
-**Fase 1 FECHADA**, enquanto as duas primitivas travadas esperam resposta. O caminho inteiro está
+**Fase 1 FECHADA**, enquanto a primitiva travada espera resposta. O caminho inteiro está
 de pé e testado, de colar o JSON até o número mudar na Ficha, em **12 famílias**.
 
 | Peça da fase 1 | Estado | Onde |
@@ -462,13 +463,14 @@ de teste.
 ### O campo `permite`, e por que ele existe
 
 **As primitivas da fase 0 vivem no motor sempre, e aparecem na TELA só de quem pediu.** É o que o
-campo declara. Os três valores de hoje:
+campo declara. Os quatro valores de hoje:
 
 | id | O que destrava |
 |---|---|
 | `concessao` | o card **Concedido pelo Mestre**, na Ficha Final e no painel do Encontro |
 | `contar` | o grupo **Marcas** no seletor de variáveis, e a função `contar()` na lista de funções |
 | `hpAtributo` | o canal **Atributo do PV** no seletor de canais |
+| `adaptacao` | o painel **Roda de Adaptação**, na aba Ações da Ficha Final e do Encontro |
 
 ⚠ **ISTO NASCEU DE UM ERRO, e vale escrito para não repetir.** Ao fechar a 8.3 eu construí o verbo
 no motor, marquei a primitiva como pronta e parei ali. O resultado foi o card "Concedido pelo
@@ -696,6 +698,32 @@ aparando, e há assert dos dois lados.
 **Linha morta:** a concessão que aponta para um addon que saiu do ar sobrevive na sessão, aparece
 riscada com o chip "Sem Addon" e o `title` mostra o id, para dar o que procurar. A ficha abre do
 mesmo jeito e o número volta ao de antes.
+
+### 8.3.1 Ciclo de Adaptação do Mahoraga
+
+Feito em 2026-08-28 como verbo genérico do motor mais um pacote declarativo incluído. O pacote é
+`addons/ciclo-adaptacao-mahoraga.js`, instalável pelo botão **Mahoraga** da aba Addons. Só a
+criatura que carrega a cópia do pacote enxerga o painel.
+
+O estado fica em `sessao.adaptacoes`, separado por `pacote:ciclo`. O primeiro giro é manual e
+grava a rodada. Depois disso, `proximaRodada` gira uma vez automaticamente a cada rodada. Giros
+manuais adicionais continuam permitidos. Todo quinto giro cria uma escolha pendente e não concede
+Habilidade.
+
+Nos giros comuns, o motor varre `HABILIDADE_EFEITOS` e `ESCOLHA_EFEITOS` atrás de
+`bonusAcerto` positivo, ordena as Habilidades por nível e depois pela ordem do catálogo, ignora as
+já possuídas e as já concedidas, e concede de graça. Um requisito do tipo Habilidade entra em um
+giro anterior. Escolhas aninhadas de Acerto viajam na própria concessão e chegam ao
+`resolveEscolhasHabilidade`.
+
+Nos marcos, Narrativa guarda texto livre e aumenta o requisito da próxima Mecânica. Mecânica
+substitui a anterior e usa as tabelas existentes de Feitiço Auxiliar no maior nível acessível. Os
+degraus são sem requisito, Fácil, Médio, Difícil e Impossível. Médio, Difícil e Impossível compram
+a maior Negação de RD que cabe no PE extra do requisito. Impossível aplica Ação Completa, Pressão
+Amaldiçoada e Ruptura Absoluta.
+
+O painel único `ficha/PainelDeAdaptacao.jsx` aparece no topo de Ações nas duas telas. A lógica pura
+tem 30 asserts em `t-adaptacao.mjs`.
 
 ### 8.4 Vínculo entre criaturas
 

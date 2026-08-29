@@ -83,7 +83,8 @@ import { resolveCura } from "./afty-cura";
 import {
   problemasDeAddon, marcasDeclaradas, primitivasDaCriatura, liberacoesDaCriatura,
 } from "./afty-addons";
-import { agrupaConcedido, concessoesDaSessao } from "./afty-concessao";
+import { agrupaConcedido, concessoesDaSessao, escolhasDoConcedido } from "./afty-concessao";
+import { efeitosDasAdaptacoes, resumoAdaptacoes } from "./afty-adaptacao";
 import {
   buildCriaturaDslContext, marcasDeEntradas,
   coletarEfeitosCriatura, coletarEfeitosMontante, coletarEfeitosOrigem,
@@ -177,6 +178,7 @@ export function deriveAfty(creature, opcoes = {}) {
      sessão acaba (decisões do autor, 2026-08-20). Cada família recebe a parte
      dela pelo CANAL DE CONCESSÃO do resolvedor. Ver `afty-concessao.js`. */
   const concedido = agrupaConcedido(opcoes.concedido);
+  const escolhasConcedidas = escolhasDoConcedido(opcoes.concedido);
   /* O que os Addons DESTA criatura destravam. Leitura direta da ficha, sem
      passar pelo Motor: é pergunta estrutural ("esta criatura pode ter Estilo?")
      e precisa estar respondida antes de quase tudo. Ver `LIBERACOES`. */
@@ -462,6 +464,7 @@ export function deriveAfty(creature, opcoes = {}) {
       nd,
       almaLivreEspecializacao: talentosPre.almaLivreEspecializacao,
       concedidasSessao: concedido.habilidades,
+      escolhasConcedidasSessao: escolhasConcedidas,
     },
   );
   // Alto Nível (21+). Além do ND, cada trilha exige a Habilidade Geral
@@ -599,6 +602,7 @@ export function deriveAfty(creature, opcoes = {}) {
     // Funcionamento Básico, e por isso entram na mesma linha. Só existem quando
     // a Ficha injeta `buffsSessao`: o criador nunca os vê.
     ...efeitosDaSessao(creature),
+    ...efeitosDasAdaptacoes(creature, opcoes.adaptacoes),
     // Habilidade Única da Ferramenta equipada, a primeira das cinco fontes do
     // pool exclusivo a chegar no Motor. Já vem com o valor resolvido no contexto
     // do item (a expressão dela lê `grau`) e com `exclusivo` carimbado.
@@ -2056,6 +2060,7 @@ export function deriveAfty(creature, opcoes = {}) {
        pacotes dela. Vazio é o caso normal, e é o que mantém a tela de quem só
        usa o raw exatamente como era. Ver `PRIMITIVAS` em afty-addons.js. */
     primitivas: primitivasDaCriatura(creature),
+    adaptacoes: resumoAdaptacoes(creature, opcoes.adaptacoes),
     /* O que os Addons desta criatura DESTRAVAM. Vazio é o caso normal. Ao
        contrário das `primitivas`, isto MUDA REGRA. Ver `LIBERACOES`. */
     liberacoes,

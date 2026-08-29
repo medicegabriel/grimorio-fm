@@ -132,9 +132,13 @@ const novoUid = () => `c${Date.now().toString(36)}${(contador += 1).toString(36)
  * Uma pega nova. O `alvo` só existe para o Treino Especial, que tem escolha
  * própria (qual perícia, qual atributo), e vai junto por ser parte da pega.
  */
-export function novaConcessao(familia, id, alvo = null) {
+export function novaConcessao(familia, id, alvo = null, escolhas = []) {
   if (!FAM_BY_ID[familia] || typeof id !== "string" || !id.trim()) return null;
-  return { uid: novoUid(), familia, id: id.trim(), alvo: alvo ? String(alvo) : null, em: Date.now() };
+  return {
+    uid: novoUid(), familia, id: id.trim(), alvo: alvo ? String(alvo) : null,
+    escolhas: Array.isArray(escolhas) ? [...new Set(escolhas.filter((x) => typeof x === "string"))] : [],
+    em: Date.now(),
+  };
 }
 
 /**
@@ -156,6 +160,9 @@ export function normalizaConcedido(bruta) {
       familia: b.familia,
       id,
       alvo: b.alvo ? String(b.alvo) : null,
+      escolhas: Array.isArray(b.escolhas)
+        ? [...new Set(b.escolhas.filter((x) => typeof x === "string"))]
+        : [],
       em: Number.isFinite(b.em) ? b.em : 0,
     });
   }
@@ -174,6 +181,16 @@ export function agrupaConcedido(bruta) {
   for (const f of FAMILIAS_CONCESSAO) out[f.id] = [];
   for (const c of lista) {
     out[c.familia].push(c.familia === "treinosEspeciais" ? { id: c.id, alvo: c.alvo } : c.id);
+  }
+  return out;
+}
+
+/** Escolhas aninhadas trazidas junto de uma Habilidade concedida. */
+export function escolhasDoConcedido(bruta) {
+  const out = {};
+  for (const c of normalizaConcedido(bruta)) {
+    if (c.familia !== "habilidades" || c.escolhas.length === 0) continue;
+    out[c.id] = [...new Set([...(out[c.id] ?? []), ...c.escolhas])];
   }
   return out;
 }
@@ -212,8 +229,8 @@ export function concessoesDaSessao(bruta) {
 }
 
 /** Acrescenta uma pega. Devolve lista NOVA, e a de entrada não é tocada. */
-export function comConcessao(bruta, familia, id, alvo = null) {
-  const nova = novaConcessao(familia, id, alvo);
+export function comConcessao(bruta, familia, id, alvo = null, escolhas = []) {
+  const nova = novaConcessao(familia, id, alvo, escolhas);
   if (!nova) return normalizaConcedido(bruta);
   return [...normalizaConcedido(bruta), nova];
 }

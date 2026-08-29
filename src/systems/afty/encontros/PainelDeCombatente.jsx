@@ -15,6 +15,7 @@ import { rolarTeste, rolarDano, textoDaRolagem } from "../ficha/ficha-rolagem";
 import { deltaDosEstados } from "../ficha/ficha-buffs";
 import { conteudoDaFicha, equipamentosDaFicha } from "../ficha/ficha-conteudo";
 import AbaAcoes from "../ficha/abas/AbaAcoes";
+import PainelDeAdaptacao from "../ficha/PainelDeAdaptacao";
 import AbaBuffs from "../ficha/abas/AbaBuffs";
 import AbaPericias from "../ficha/abas/AbaPericias";
 import AbaHabilidades from "../ficha/abas/AbaHabilidades";
@@ -344,6 +345,7 @@ export default function PainelDeCombatente({
       {aba === "acoes" && (
         <AbaAcoes
           derived={derived}
+          adaptacao={<PainelDeAdaptacao derived={derived} onSessao={onSessao} />}
           rolar={rolar}
           destaque={destaque}
           rapido={[]}

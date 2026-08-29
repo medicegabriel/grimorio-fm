@@ -117,6 +117,29 @@ Estado atual do sistema Afty (atualizado 2026-08-18). Leia junto com:
 
 ---
 
+## SESSÃO DE 2026-08-29: ATUALIZAÇÃO REMOTA INTEGRADA
+
+A `main` avançou por fast-forward de `ee6a4d4` para `7c13d0e`, trazendo o pacote de mudanças
+**Grimorio Afty #029 - Addon Novo, Reformulações e Outros**. As alterações locais do Ciclo de
+Adaptação foram reaplicadas por cima.
+
+Houve conflito real em dois arquivos. Em `AftyFicha.jsx`, o novo `opcoesDerive` remoto foi mantido
+como fonte única e passou a carregar também `sessao.adaptacoes`, preservando a correção dos deltas
+de Buffs. Neste arquivo de status, as duas sessões de 2026-08-28 foram mantidas integralmente.
+
+O site público `https://grimorio-fm.vercel.app` já serve o pacote remoto #029. O bundle implantado
+contém Domínio Simples e Gêmeos, mas ainda não contém **Ciclo de Adaptação do Mahoraga**, que segue
+como alteração local sem commit e sem push.
+
+Verificação depois da integração:
+
+- `npm run asserts`: **1406 asserts em 32 arquivos**, todos passaram.
+- `npx eslint src/systems/afty/`: passou.
+- `npx vite build`: passou, com o aviso já conhecido do Node 22.11.0.
+- `git diff --name-only -- src/components/`: vazio.
+
+---
+
 ## SESSÃO DE 2026-08-28: O DOMÍNIO SIMPLES GANHOU NÚMERO, E TRÊS ETAPAS SAÍRAM DO TEXTO
 
 O autor mandou resolver as três etapas do Treino de Novo Estilo das Sombras que estavam anotadas em
@@ -250,6 +273,31 @@ autor confirmou que era dela que falava. Segue de fora, e sem entrada na fila, o
 numa categoria que tem `.label` e `.tab`, então as 85 Aptidões saem sem a tag de categoria, caladas.
 É uma palavra de conserto e MUDA A APARÊNCIA da lista inteira, então foi para `a-fazer.md` em vez de
 entrar junto.
+---
+
+## SESSÃO DE 2026-08-28: CICLO DE ADAPTAÇÃO DO MAHORAGA
+
+Entrou a primitiva de Addon `adaptacao` e o pacote incluído **Ciclo de Adaptação do Mahoraga**.
+Ele é instalado pelo botão Mahoraga na aba Addons e, depois de ligado à criatura, aparece no topo
+da aba Ações da Ficha Final e do painel do combatente no Encontro.
+
+O primeiro giro é manual. A rodada dele fica gravada e cada rodada posterior produz mais um giro
+automático. Giros manuais extras continuam disponíveis. Todo quinto giro não concede Habilidade e
+abre uma escolha entre Narrativa e Mecânica.
+
+O giro comum concede gratuitamente a primeira Habilidade de Especialização ainda ausente que
+produza `bonusAcerto` positivo no Motor, do menor nível para o maior e, no empate, na ordem do
+catálogo. Pré-requisitos do tipo Habilidade são concedidos em giros anteriores. Opções aninhadas
+que dão Acerto viajam junto da concessão e entram no resolvedor normal.
+
+Narrativas são texto livre e formam a progressão sem requisito, Fácil, Médio, Difícil e
+Impossível. A Mecânica substitui a anterior. Ela calcula Acerto e Ignorar RD pelas tabelas reais de
+Feitiço Auxiliar no maior nível acessível. No Impossível entram Ação Completa, Pressão Amaldiçoada
+e Ruptura Absoluta.
+
+Arquivos centrais: `afty-adaptacao.js`, `addons/ciclo-adaptacao-mahoraga.js` e
+`ficha/PainelDeAdaptacao.jsx`. A sessão guarda tudo em `sessao.adaptacoes`. Há 30 asserts próprios
+em `t-adaptacao.mjs`.
 
 ---
 

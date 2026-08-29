@@ -6881,7 +6881,10 @@ export function resolveHabilidades(
   bt = 0,
   bonusVagas = 0,
   vagasTalento = 0,
-  { nd = 1, almaLivreEspecializacao = null, concedidasSessao = [] } = {},
+  {
+    nd = 1, almaLivreEspecializacao = null, concedidasSessao = [],
+    escolhasConcedidasSessao = {},
+  } = {},
 ) {
   const niveisPorEspec = niveisPorEspecializacao(escolhidasEspec);
   // ⚠ A CONCESSÃO DA SESSÃO ENTRA PELO MESMO CANAL das Bases que a
@@ -6921,11 +6924,15 @@ export function resolveHabilidades(
   const exclusivasTalento = Math.max(0, Math.trunc(Number(vagasTalento) || 0));
   // Escolhas aninhadas (Estilo de Controle no Apogeu, Melhorias...). O mapa
   // alimenta a verificação de requisito `escolha` e a passada de efeitos.
+  const escolhasMescladas = { ...(creature?.escolhasHabilidade ?? {}) };
+  for (const [id, lista] of Object.entries(escolhasConcedidasSessao ?? {})) {
+    escolhasMescladas[id] = [...new Set([...(escolhasMescladas[id] ?? []), ...(lista ?? [])])];
+  }
   const escolhas = resolveEscolhasHabilidade({
     escolhidasIds: escolhidas,
     niveisPorEspec,
     nivelPorHabilidade,
-    escolhasHabilidade: creature?.escolhasHabilidade,
+    escolhasHabilidade: escolhasMescladas,
     bt,
   });
   const ctx = { niveisPorEspec, escolhidas, escolhasHabilidade: escolhas.mapa, almaLivre };

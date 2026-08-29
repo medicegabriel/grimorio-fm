@@ -301,6 +301,11 @@ export const PRIMITIVAS = [
     rotulo: "Atributo do PV",
     nota: "O canal que TROCA a Constituição no cálculo do PV",
   },
+  {
+    id: "adaptacao",
+    rotulo: "Ciclo de Adaptação",
+    nota: "Progressão de sessão com giro manual, avanço por rodada e marcos configuráveis",
+  },
 ];
 
 const PRIMITIVA_IDS = new Set(PRIMITIVAS.map((p) => p.id));
@@ -415,6 +420,9 @@ export function normalizarPacote(cru) {
     libera: Array.isArray(p.libera)
       ? [...new Set(p.libera.filter((x) => typeof x === "string").map((x) => x.trim()))]
       : [],
+    adaptacoes: Array.isArray(p.adaptacoes)
+      ? p.adaptacoes.filter((x) => x && typeof x === "object").map(clonar)
+      : [],
     acrescenta: {},
     /* O que este pacote REESCREVE de entradas que já existem no livro. Ver
        `remendarLista`. */
@@ -467,6 +475,21 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
       );
     }
   }
+  const ciclosVistos = new Set();
+  if (p.adaptacoes.length > 0 && !p.permite.includes("adaptacao")) {
+    problemas.push('Pacote com "adaptacoes" precisa incluir "adaptacao" em "permite".');
+  }
+  for (const [i, ciclo] of p.adaptacoes.entries()) {
+    const onde = `Adaptação #${i + 1}`;
+    const id = String(ciclo.id ?? "").trim();
+    if (!id || !ID_ENTRADA_OK.test(id)) problemas.push(`${onde}: id inválido.`);
+    else if (ciclosVistos.has(id)) problemas.push(`${onde}: id repetido ("${id}").`);
+    ciclosVistos.add(id);
+    if (!String(ciclo.nome ?? "").trim()) problemas.push(`${onde}: falta o campo "nome".`);
+    if (ciclo.ganho !== "habilidades_bonus_acerto") problemas.push(`${onde}: ganho desconhecido.`);
+    if (ciclo.mecanica !== "auxiliar_acerto_progressivo") problemas.push(`${onde}: mecânica desconhecida.`);
+    if (Math.trunc(Number(ciclo.intervalo)) < 1) problemas.push(`${onde}: intervalo inválido.`);
+  }
 
   const familias = Object.keys(p.acrescenta);
   /* ⚠ ACRESCENTAR DEIXOU DE SER OBRIGATÓRIO em 2026-08-21. Um pacote que só
@@ -480,6 +503,7 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
     && familiasRemendadas.length === 0
     && p.permite.length === 0
     && p.libera.length === 0
+    && p.adaptacoes.length === 0
   ) {
     problemas.push("O pacote não acrescenta, não substitui, não libera e não permite nada.");
   }

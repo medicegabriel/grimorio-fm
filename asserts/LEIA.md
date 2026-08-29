@@ -64,6 +64,7 @@ vai para o ar.
 | `t-encontro-addons` | o encontro MISTO: a união põe dois mundos no ar ao mesmo tempo e o de ninguém some depois do laço |
 | `t-concessao` | a primitiva 8.3 no MOTOR: as 7 famílias, o "de graça" medido contra a ficha crua, e conceder algo que só existe por addon |
 | `t-concessao-sessao` | a 8.3 na SESSÃO: gravar e ler de volta, o aparo que não perde o campo, e a prova de que a ficha salva não é tocada |
+| `t-adaptacao` | o ciclo do Mahoraga: giros, rodada automática, marcos, Narrativa, Mecânica e escolha aninhada de Acerto |
 | `t-primitivas` | o campo `permite`: quem enxerga cada primitiva de Addon, e a prova de que criatura raw não vê nenhuma |
 | `t-estilo-liberado` | o campo `libera`: o Estilo das Sombras fora do Sem Técnica, o Gêmeo copiando do Sem Técnica em Verdadeiras Origens, e a QUARTA trava (o card aparecer na aba) |
 | `t-remendo` | o campo `substitui`: trocar campo de entrada do livro, o id que não se mexe, o alvo que precisa existir, dois pacotes na mesma linha e a volta ao raw ao desinstalar |

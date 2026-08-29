@@ -828,6 +828,7 @@ export default function AbaAcoes({
   onIniciarRitualEstendido, onIniciarRitualSemTeste, onConcluirPreparacaoRitual,
   onCancelarRitual, onFinalizarRitual, onEncerrarRitual,
   onImbuir,
+  adaptacao = null,
 }) {
   const dano = derived.dano?.entradas ?? [];
   const cura = derived.cura?.linhas ?? [];
@@ -845,6 +846,7 @@ export default function AbaAcoes({
 
   return (
     <div className="space-y-3">
+      {adaptacao}
       {/* ⚠ O RÁPIDO vem primeiro, antes até do Dano. Uma ficha de ND 40 tem 40
           habilidades e o jogador usa seis, e são essas seis que ele quer ver ao
           abrir a ficha. Some inteiro para quem não fixou nada. */}

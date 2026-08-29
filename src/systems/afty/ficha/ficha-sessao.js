@@ -25,6 +25,7 @@
  */
 
 import { normalizaConcedido, comConcessao, semConcessao } from "../afty-concessao";
+import { normalizaAdaptacoes, avancarAdaptacoesNaRodada } from "../afty-adaptacao";
 
 const CHAVE_BASE = "fm_ficha_sessao_afty_v1";
 const LOG_MAX = 50;
@@ -79,6 +80,7 @@ export function sessaoEmBranco(derived = null) {
     // nunca ficha, por decisão do autor (2026-08-20): vale para tudo, não gasta
     // vaga nenhuma e morre junto com a sessão. Ver `afty-concessao.js`.
     concedido: [],
+    adaptacoes: {},
     usos: {},
     ultimoFeiticoDanoId: null,
     rituais: {},
@@ -125,6 +127,7 @@ export function normalizaSessao(bruta, derived = null) {
     // quem descarta família desconhecida e devolve o uid a quem perdeu o dele.
     // Id órfão SOBREVIVE de propósito, e vira linha morta na tela.
     concedido: normalizaConcedido(bruta.concedido),
+    adaptacoes: normalizaAdaptacoes(bruta.adaptacoes),
     favoritos: lista(bruta.favoritos),
     log: lista(bruta.log).slice(0, LOG_MAX),
   };
@@ -588,7 +591,8 @@ export function proximaRodada(sessao, derived = null) {
     aplicaPeTemporario(comCena, derived?.peTemporario?.rodada ?? []),
     derived,
   );
-  return { sessao: comGuarda, expirou };
+  const comAdaptacao = avancarAdaptacoesNaRodada(comGuarda, derived, comGuarda.rodada);
+  return { sessao: comAdaptacao, expirou };
 }
 
 /**

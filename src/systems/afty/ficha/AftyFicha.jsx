@@ -35,6 +35,7 @@ import PainelDeRolagens from "./PainelDeRolagens";
 import BuscaGlobal from "./BuscaGlobal";
 import PainelDeAparencia from "./PainelDeAparencia";
 import AbaAcoes from "./abas/AbaAcoes";
+import PainelDeAdaptacao from "./PainelDeAdaptacao";
 import AbaPericias from "./abas/AbaPericias";
 import AbaHabilidades from "./abas/AbaHabilidades";
 import AbaBuffs from "./abas/AbaBuffs";
@@ -154,6 +155,9 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
          `opcoes`, e não pela criatura mesclada abaixo, porque não é escolha
          de ficha: é ganho de combate, de graça, e morre com a sessão. */
       concedido: sessaoBruta.concedido,
+      /* O Ciclo de Adaptação também é estado de mesa. Viaja na mesma lista
+         única para o derivado principal e para os deltas dos estados. */
+      adaptacoes: sessaoBruta.adaptacoes,
       /* A Guarda Inabalável CORRENTE. Vai pelo `opcoes` como a concessão e
          pelo mesmo motivo: é estado de mesa. O derive precisa dela porque o
          bônus soma na Defesa e nos cinco TRs, e resolver a Guarda fora dele
@@ -361,6 +365,7 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
     acoes: () => (
       <AbaAcoes
         derived={derived}
+        adaptacao={<PainelDeAdaptacao derived={derived} onSessao={atualiza} />}
         rolar={rolar}
         destaque={destaque}
         rapido={itensDoRapido}

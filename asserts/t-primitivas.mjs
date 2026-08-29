@@ -28,8 +28,8 @@ const t = (nome, real, esp) => {
 /* 1. A TABELA E O CAMPO `permite`                               */
 /* ============================================================ */
 
-t("sao 3 primitivas", AD.PRIMITIVAS.length, 3);
-t("ids esperados", AD.PRIMITIVAS.map((p) => p.id).sort(), ["concessao", "contar", "hpAtributo"]);
+t("sao 4 primitivas", AD.PRIMITIVAS.length, 4);
+t("ids esperados", AD.PRIMITIVAS.map((p) => p.id).sort(), ["adaptacao", "concessao", "contar", "hpAtributo"]);
 t("toda primitiva tem rotulo", AD.PRIMITIVAS.every((p) => !!p.rotulo), true);
 t("SEM_PRIMITIVAS e vazio", AD.SEM_PRIMITIVAS, []);
 
