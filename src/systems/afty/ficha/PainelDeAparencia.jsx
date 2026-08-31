@@ -48,7 +48,15 @@ function Secao({ titulo, children, direita }) {
   );
 }
 
-export default function PainelDeAparencia({ tema, onTema, onFechar, onGlobal }) {
+/**
+ * ⚠ `titulo` e `onGlobal` são OPCIONAIS desde 2026-08-31, quando cada Shikigami
+ * ganhou tema próprio. O painel é o MESMO nos dois casos, de propósito: um
+ * editor capado para a invocação seria um segundo lugar para manter em dia. O
+ * que muda é o nome no alto e a seção "Todas as Fichas", que some quando o alvo
+ * é um shikigami. "Quero todas as minhas fichas assim" não quer dizer nada
+ * quando o que está sendo temado é uma invocação de dentro de uma delas.
+ */
+export default function PainelDeAparencia({ tema, onTema, onFechar, onGlobal, titulo = "Aparência" }) {
   const [abaCss, setAbaCss] = useState("css");
   const [salvouGlobal, setSalvouGlobal] = useState(false);
   const [copiado, setCopiado] = useState(false);
@@ -87,7 +95,7 @@ export default function PainelDeAparencia({ tema, onTema, onFechar, onGlobal }) 
         onPointerDown={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-2 px-3 py-2.5 flex-shrink-0">
-          <h2 className="afty-card-titulo flex-1">Aparência</h2>
+          <h2 className="afty-card-titulo flex-1 truncate">{titulo}</h2>
           <button
             type="button"
             className="afty-botao"
@@ -349,17 +357,19 @@ export default function PainelDeAparencia({ tema, onTema, onFechar, onGlobal }) 
           </Secao>
 
           {/* ---------- global ---------- */}
-          <Secao titulo="Todas as Fichas">
-            <button
-              type="button"
-              className="afty-botao"
-              data-afty-tom={salvouGlobal ? "destaque" : undefined}
-              onClick={() => { onGlobal(); setSalvouGlobal(true); }}
-            >
-              {salvouGlobal ? <Check className="w-3.5 h-3.5" /> : null}
-              Usar este tema como padrão
-            </button>
-          </Secao>
+          {onGlobal && (
+            <Secao titulo="Todas as Fichas">
+              <button
+                type="button"
+                className="afty-botao"
+                data-afty-tom={salvouGlobal ? "destaque" : undefined}
+                onClick={() => { onGlobal(); setSalvouGlobal(true); }}
+              >
+                {salvouGlobal ? <Check className="w-3.5 h-3.5" /> : null}
+                Usar este tema como padrão
+              </button>
+            </Secao>
+          )}
         </div>
       </div>
     </div>

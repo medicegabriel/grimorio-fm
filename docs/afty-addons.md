@@ -25,7 +25,7 @@ resto. A primitiva de vínculo entre criaturas continua travada em decisão do a
 | 8.4 Vínculo entre criaturas | **Travada** | 4 perguntas no `a-fazer.md`, ver a seção 8.4 |
 
 **Fase 1 FECHADA**, enquanto a primitiva travada espera resposta. O caminho inteiro está
-de pé e testado, de colar o JSON até o número mudar na Ficha, em **12 famílias**.
+de pé e testado, de colar o JSON até o número mudar na Ficha, em **14 famílias**.
 
 | Peça da fase 1 | Estado | Onde |
 |---|---|---|
@@ -39,9 +39,9 @@ de pé e testado, de colar o JSON até o número mudar na Ficha, em **12 famíli
 | União para o Encontro misto | **Feita** | `unirAddons` |
 | Marca de "não raw" | **Feita** | chip no cabeçalho da Ficha |
 | Linha morta e marcada | **Feita** | `problemasDeAddon`, `derived.addonProblemas` |
-| **Famílias ligadas** | **12** | ver o quadro abaixo |
+| **Famílias ligadas** | **14** | ver o quadro abaixo |
 
-### As 12 famílias
+### As 14 famílias
 
 | Família | Módulo | Estruturas que o religador refaz |
 |---|---|---|
@@ -57,6 +57,22 @@ de pé e testado, de colar o JSON até o número mudar na Ficha, em **12 famíli
 | `apices` | `afty-alto-nivel.js` | array, índice |
 | `tiposDano` | `afty-equipamentos.js` | objeto, **`TIPO_DANO_OK`** |
 | `condicoes` | `afty-feiticos.js` | mapa de listas de nomes |
+| `clas` | `afty-origens.js` | array **no lugar**, `CLA_BY_ID`, **cache das Verdadeiras Origens** |
+| `marcadores` | `afty-habilidades.js` | array no lugar |
+
+⚠ **As duas últimas entraram em 2026-08-31, com a Estrela dos Zenin**, e as duas nasceram de um "não
+cabe": um clã do Herdado só entraria por `substitui` no campo `clas`, o que obrigaria o addon a
+carregar uma cópia congelada dos quatro clãs do livro; e "uma quantidade de Shikigamis igual a
+metade do seu Bônus de Treinamento" não tem canal, porque o que ela guarda é o QUAIS.
+
+⚠ **`clas` religa TRÊS estruturas**, e é a família com mais armadilha até hoje. O `splice` no array
+é obrigatório (a entrada `herdado` aponta para ele em `clas: CLAS_HERDADO`, e trocar a referência a
+deixaria com a lista velha), e o cache das Verdadeiras Origens tem de morrer junto pelo mesmo motivo
+que ele morre na família `origens`.
+
+⚠ **`marcadores` trouxe `requerId`.** Um marcador do raw pertence sempre a uma Habilidade de
+Controlador, e cobrar `habilidadeId` de um marcador de clã seria fingir uma habilidade que não
+existe. `requerId` é liberado por qualquer id que a ficha tenha: origem, clã, talento ou habilidade.
 
 Elas cobrem os **seis exemplos de homebrew que o autor deu**: Tipo de Dano, Condição,
 Especialização, Aptidão, Treino e mudar coisa existente (esta última só quando a fase 3 chegar).

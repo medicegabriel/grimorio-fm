@@ -987,11 +987,14 @@ export const AFTY_APTIDOES = [
 
   /* ---------- Aptidões Especiais (não seguem trilha) ---------- */
   {
-    // ⚠ EFEITO NÃO APLICADO (regra confirmada pelo autor em 2026-07-16):
-    // ter Raio Negro concede **+ND de PE** e **+1 DIRECIONADO na trilha au**
-    // (ver Compreensão Avançada). Isso SOMA com o +1 de orçamento do Qnt.PE
-    // Muito Grande, que é efeito separado e não dá nível de Aura.
-    // Espera a passada de efeitos (o motor ainda não lê aptidões escolhidas).
+    // ⚠ EFEITO LIGADO em 2026-08-30, em APTIDAO_EFEITOS: **+ND de PE** e
+    // **+1 Nível de Aptidão**. A regra é de 2026-07-16 e ficou dois meses
+    // esperando "a passada de efeitos", que chegou em 2026-07-30 sem ninguém
+    // voltar aqui.
+    // ⚠ E O +1 DE APTIDÃO MUDOU DE DONO: ele vinha da Quantidade de PE Muito
+    // Grande, e agora vem daqui (autor, 2026-08-30: "Quantidade de PE fica só
+    // para criaturas, e só mexe em PE"). Os dois +ND de PE somam, e o Nível de
+    // Aptidão não dobra.
     id: "raio_negro",
     nome: "Raio Negro",
     categoria: "especiais",

@@ -14,6 +14,7 @@ import PdfFab from "./components/PdfFab";
 import useCreatureStorage from "./components/useCreatureStorage";
 import useEncounterManager from "./useEncounterManager";
 import useEncontrosAfty from "./systems/afty/encontros/usar-encontros-afty";
+import { getSistema, SISTEMAS } from "./systems/afty/afty-sistema";
 import { COMPENDIUM, getCompendiumById, isBuiltInId } from "./fm-compendium";
 import { Analytics } from '@vercel/analytics/react';
 
@@ -37,13 +38,28 @@ export default function App() {
   // link em nenhum menu — mesma ideia do ?testar-erro. Ativa um espaço de
   // dados TOTALMENTE isolado (chaves fm_*_afty_v1) e marca as criaturas
   // criadas aqui com rulesVersion "afty" (o Grimório Homebrew).
-  const aftyMode =
-    typeof location !== "undefined" && /^\/afty\/?$/i.test(location.pathname);
+  //
+  // ⚠ SÃO DUAS ROTAS DESDE 2026-08-30: /Afty é a criatura do mestre e /Player é
+  // o personagem do jogador. As duas rodam o MESMO código (o Grimório Afty e a
+  // Ficha de Player são o mesmo livro lido por dois lados), e o que as separa é
+  // a chave de sistema. Ver src/systems/afty/afty-sistema.js.
+  //
+  // `sistemaDaRota` é null fora das duas, e é o que devolve a 2.5.2 intacta.
+  const sistemaDaRota =
+    typeof location === "undefined" ? null
+      : /^\/afty\/?$/i.test(location.pathname) ? "afty"
+      : /^\/player\/?$/i.test(location.pathname) ? "player"
+      : null;
+
+  // Tudo que valia para "está no ambiente privado" continua lendo esta booleana,
+  // e por isso as duas rotas dividem builder, ficha e encontros sem um `if` por
+  // tela. Quem precisa saber QUAL dos dois lê `sistemaDaRota`.
+  const aftyMode = sistemaDaRota !== null;
 
   const storage = useCreatureStorage(
-    aftyMode ? { namespace: "afty", defaultRulesVersion: "afty" } : undefined
+    aftyMode ? { namespace: sistemaDaRota, defaultRulesVersion: sistemaDaRota } : undefined
   );
-  const encounterManager = useEncounterManager(aftyMode ? "afty" : "");
+  const encounterManager = useEncounterManager(aftyMode ? sistemaDaRota : "");
   // ⚠ Gerenciador PRÓPRIO do Afty, e não o de cima com namespace: o combatente
   // do Afty guarda `ficha` e `sessao`, e o da 2.5.2 guarda `snapshot` e
   // `combatState`. Chave própria (`afty_encontros_v1`), shape próprio. O hook
@@ -224,6 +240,10 @@ export default function App() {
           // O tema da ficha é gravado na própria criatura, para viajar no
           // export. O update faz merge, então só o campo `aparencia` é tocado.
           onSalvarTema={(aparencia) => storage.update(activeCreature.id, { aparencia })}
+          /* ⚠ O tema de um Shikigami mora DENTRO da invocação, então salvar um
+             deles reescreve a LISTA inteira. O `update` faz merge de chave de
+             primeiro nível, e mandar meia lista apagaria as outras. */
+          onSalvarInvocacoes={(invocacoes) => storage.update(activeCreature.id, { invocacoes })}
         />
       );
     },
@@ -233,6 +253,9 @@ export default function App() {
           existingCreature={activeCreature}
           onSave={handleCreatureSave}
           onCancel={goToDashboard}
+          // Só vale para ficha NOVA. Editando, o sistema sai do `rulesVersion`
+          // da própria ficha, e não da rota. Ver afty-sistema.js.
+          sistema={sistemaDaRota}
         />
       ) : (
         <CreatureBuilder
@@ -330,7 +353,7 @@ export default function App() {
       <PdfFab />
       {aftyMode && (
         <div
-          title="Ambiente privado — Grimório Homebrew do Afty. Dados isolados do grimório público."
+          title={getSistema(sistemaDaRota).seloTitulo}
           style={{
             position: "fixed",
             top: 8,
@@ -341,15 +364,19 @@ export default function App() {
             fontSize: 12,
             fontWeight: 700,
             letterSpacing: 0.3,
-            color: "#f5e9ff",
-            background: "rgba(88, 28, 135, 0.92)",
-            border: "1px solid rgba(216, 180, 254, 0.5)",
+            color: sistemaDaRota === SISTEMAS.player.id ? "#e0f2fe" : "#f5e9ff",
+            background: sistemaDaRota === SISTEMAS.player.id
+              ? "rgba(12, 74, 110, 0.92)"
+              : "rgba(88, 28, 135, 0.92)",
+            border: sistemaDaRota === SISTEMAS.player.id
+              ? "1px solid rgba(125, 211, 252, 0.5)"
+              : "1px solid rgba(216, 180, 254, 0.5)",
             boxShadow: "0 2px 8px rgba(0,0,0,0.35)",
             pointerEvents: "none",
             userSelect: "none",
           }}
         >
-          ⚗️ Grimório Afty · privado
+          {getSistema(sistemaDaRota).selo}
         </div>
       )}
       <Analytics />

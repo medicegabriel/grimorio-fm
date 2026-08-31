@@ -36,6 +36,41 @@ arquivo md. Para outros colaboradores usarem ele também e ir anotando oq for pr
 
 Coisas paradas esperando decisão de regra. Nada aqui deve ser resolvido por suposição.
 
+### ASSUNÇÃO: a Conjuração Aprimorada concede Feitiço no 1° nível também?
+
+**Onde:** `src/systems/afty/afty-feiticos.js` (`totalFeiticosJogador`)
+**Situação:** o livro diz *"inicia com dois Feitiços"* e *"obtém novos Feitiços conforme sobe de
+nível, recebendo um novo Feitiço em todo nível par"*, e a Conjuração Aprimorada troca isso por
+*"todo nível, ao invés de apenas nos níveis pares"*.
+
+Foi implementado como **quem concede é o nível que se SOBE**: o 1° nível nunca concede (é onde os
+dois iniciais já estão), então a cadência padrão vale `piso(n / 2)` e a da Conjuração Aprimorada vale
+`n − 1`. A leitura alternativa é que "todo nível" inclua o 1°, e aí um Conjurador de 1° nível teria
+**três** Feitiços.
+
+A escolhida foi a primeira porque a outra contradiz "por padrão, inicia com dois Feitiços" na mesma
+página. As duas só divergem a partir do **3° nível**, e no 30° a distância é de 1 Feitiço (33 contra
+34).
+**Precisa:** o autor confirmar. É um `n - 1` contra um `n`, numa linha só.
+**Anotado:** 2026-08-31, ao ligar a progressão de Feitiços do jogador
+
+### Um arquivo do grimório 2.5.2 está modificado na árvore de trabalho
+
+**Onde:** `src/components/Dashboard.jsx`
+**Situação:** a regra número 1 diz que `src/components/` é somente-leitura, e
+`git diff --name-only | grep src/components/` **não volta vazio**. O arquivo ganhou, numa sessão
+anterior, a lógica que esconde Patamar, HP, PE e Defesa no card de uma ficha de jogador, com
+comentário justificando e comparação pela string crua (`creature.rulesVersion === "player"`) para não
+fazer a 2.5.2 depender do Afty.
+
+A justificativa tem pé: o `/Player` reusa o dashboard da 2.5.2 para listar as fichas, então não havia
+outro lugar. Mas a exceção não foi decidida por ninguém, e a regra segue escrita como absoluta em
+quatro documentos.
+**Precisa:** o autor decidir entre três saídas. Aceitar a exceção e anotá-la na regra (o card do
+dashboard é a fronteira, e ela é só de leitura de campo). Copiar o `CreatureCard` para
+`src/systems/afty/` como o resto do Afty faz. Ou dar ao `/Player` uma listagem própria.
+**Anotado:** 2026-08-31, ao conferir a regra ao fim da sessão
+
 ### O Ataque Básico pode rolar como Ataque Amaldiçoado?
 
 **Onde:** `src/systems/afty/afty-pericias.js` (`resolveDano`, a linha `basico`)
@@ -589,19 +624,39 @@ prontas. É mudança visível de número, e a decisão é sua.
 `espacosUsados` antes do `resolveCarga`, no `deriveAfty`.
 **Anotado:** 2026-08-16, ao dar tela ao tipo mecânico da Invocação
 
-### O PV da Invocação não entra na sessão, e agora dói mais
-**Onde:** `src/systems/afty/ficha/ficha-sessao.js`, `ficha/abas/AbaInvocacoes.jsx`
-**Situação:** o PV que a aba mostra é o MÁXIMO, e não um recurso gasto. A sessão guarda os
-recursos do dono e nada das invocações, então não há onde marcar o dano que um shikigami levou.
-Isso era só incômodo enquanto a aba vivia na Ficha. **Em 2026-08-16 a aba entrou no painel de
-Encontros**, que é exatamente onde o mestre precisa abater dano de uma invocação em campo, e aí a
-falta virou buraco de uso.
-Não é só somar um campo: o capítulo tem regra própria para invocação que chega a 0 (dissipada ou
-desativada, volta com metade do PV até um descanso) e para dano excedente (exorcizada ou destruída,
-sai da lista de vez), e o descanso precisaria saber restaurar essas barras.
-**Precisa:** decidir se a sessão passa a guardar `invocacoes: { [id]: { pvAtual, estado } }`, com
-`estado` em campo / dissipada / exorcizada, e o que o descanso faz com cada um.
-**Anotado:** 2026-08-16, ao ligar as Invocações no painel de Encontros
+### DECIDIR: a invocação exorcizada sai da ficha sozinha?
+**Onde:** `src/systems/afty/ficha/ficha-sessao.js` (`aplicaDanoInvocacao`), `ficha/abas/AbaInvocacoes.jsx`
+**Situação:** o livro é explícito: *"caso uma Invocação receba dano excedente superior ao seu máximo
+de vida, ela é exorcizada ou destruída [...] sendo removido da lista de invocações do controlador"*
+e *"não pode ser recuperada por métodos convencionais, sendo perdida permanentemente"*.
+Em 2026-08-31 o estado passou a ser DETECTADO e marcado (`exorcizada` na sessão, cartão riscado,
+botão de campo morto, chip âmbar na ficha), mas a invocação **continua na lista da criatura**.
+Foi decisão minha: a Ficha Final opera e não edita ficha, e um clique errado no botão de dano
+apagaria um shikigami inteiro, com todas as Ações e Características, sem desfazer.
+**Precisa:** o autor dizer se a Ficha deve mesmo remover da criatura. Se sim, precisa de confirmação
+antes e provavelmente de um desfazer, porque o gesto é o mesmo de "levei um golpe forte".
+**Anotado:** 2026-08-31, ao pôr os Shikigamis na sessão
+
+### Auxílio de Dano Adicional não vira número no dono
+**Onde:** `src/systems/afty/afty-invocacoes.js` (`AUXILIO_SUSTENTAVEL`)
+**Situação:** os auxílios de Defesa, Acerto e RD viraram interruptor na Ficha Final e mexem no
+número do dono e no dela (2026-08-31). O de **Dano Adicional** ficou de fora porque ele é um DADO
+("1d6 de Dano Adicional") e vale *"em um próximo ataque"*, e o canal `danoBonus` do Motor soma um
+número fixo, enquanto o `dadosDano` conta dados da PRÓPRIA arma. Hoje ele aparece na lista de
+Bônus com o dado escrito, para a mesa somar à mão.
+**Precisa:** um canal que aceite um dado de face própria na linha de dano, que é o mesmo bloqueio
+das Aptidões (ver a memória `afty-aptidoes-motor`). Quando ele existir, o Dano Adicional entra.
+**Anotado:** 2026-08-31
+
+### Prejuízo por Múltiplos Auxílios não é contado
+**Onde:** `src/systems/afty/afty-invocacoes.js`, `ficha/abas/AbaInvocacoes.jsx`
+**Situação:** o `resolveAcao` devolve o texto do prejuízo (`-1 por uso repetido na rodada`,
+`-2 níveis` no Dano Adicional) e a Ficha o mostra como chip. Com os auxílios virando interruptor,
+ligar o mesmo duas vezes na mesma rodada agora É possível na tela, e o número não desce.
+**Precisa:** decidir se a Ficha conta usos por rodada do auxílio (a sessão já tem `rodada` e `usos`)
+ou se isso continua sendo controle de mesa. O Shikigami de Técnica é imune, e isso já está no motor
+(`imunePrejuizoMultiplos`).
+**Anotado:** 2026-08-31
 
 ### Shikigami: a redução permanente de PE não sai do painel
 **Onde:** `src/systems/afty/afty-feiticos.js` (`calcularFeiticoShikigami`), `afty-derive.js`

@@ -53,6 +53,12 @@ const derivarCombatente = (c) => {
         // A Guarda Inabalável corrente, igual à Ficha: o bônus dela soma na
         // Defesa e nos cinco TRs desta mesma derivação.
         guarda: entradaDaGuarda(c.sessao),
+        /* ⚠ O ESTADO DAS INVOCAÇÕES tem de vir junto, e pelo mesmo motivo da
+           Guarda: um Shikigami em campo com um auxílio ligado dá Defesa, Acerto
+           ou RD ao dono, e isso é número DESTA derivação. Sem esta linha, o
+           mestre ligava o bônus no painel de Encontros e o número não mexia,
+           enquanto na Ficha Final mexia. Ver `efeitosDeInvocacao`. */
+        invocacoes: c.sessao.invocacoes,
       },
     );
   } catch {

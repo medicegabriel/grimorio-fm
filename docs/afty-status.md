@@ -7,6 +7,10 @@ Estado atual do sistema Afty (atualizado 2026-08-18). Leia junto com:
 > **`docs/a-fazer.md`**, que vale para o repositório inteiro (2.5.2 e Afty) e é onde os outros
 > colaboradores também anotam. Este doc é o LOG das sessões e o porquê das decisões.
 
+> 🎲 **PARA TRABALHAR NA FICHA DE PLAYER, leia `docs/afty-player.md` primeiro.** Ele reúne as três
+> alavancas do sistema (`regraDo`, a tabela `DIVERGENCIAS` e o sufixo de chave), o que falta em ordem
+> de utilidade e as armadilhas que já custaram bug silencioso.
+
 > ⚠ **Este documento começou em 2026-07-17 e o trabalho posterior está registrado por sessão.**
 > Ao retomar, leia primeiro a sessão mais recente e depois o Contexto rápido.
 >
@@ -114,6 +118,1647 @@ Estado atual do sistema Afty (atualizado 2026-08-18). Leia junto com:
 >
 > 👉 **Começando um chat novo? Vá direto para
 > [PENDÊNCIAS DE ESPECIALIZAÇÕES](#-pendências-de-especializações-lista-de-retomada).**
+
+---
+
+## SESSÃO DE 2026-08-31 (parte 4): O DANO DO JOGADOR É O DA ARMA
+
+Autor: *"Preciso que o Dano na ficha de jogador não seja o de Criatura. Eles seguem o DANO DA ARMA,
+assim como está em equipamentos + Modificador de Atributo fixo no final."* Mais a mecânica de
+**Níveis de Dano**, mandada verbatim.
+
+Divergência `danoPorArma`, escada em `src/systems/afty/afty-niveis-dano.js`, 93 asserts em
+`asserts/t-niveis-dano.mjs`.
+
+### 1. A entrada da tabela era pequena demais e mudou de nome
+
+Ela se chamava `danoAtaqueBasico` e a fonte dela vinha de um comentário de `creature-schema.js` que
+falava só do Ataque Básico. O que o autor pediu troca o modelo INTEIRO, arma por arma, então o nome
+virou `danoPorArma`. Uma entrada que prometesse menos do que faz é o mesmo defeito que a tabela
+existe para evitar.
+
+O que sai da conta do jogador, cada um por uma frase do autor:
+
+| Sai | Por quê |
+|---|---|
+| `coefND × ND` | "não seja o de Criatura" |
+| `escala × mod` | o modificador entra plano no fim |
+| Aptidão Controle e Leitura | "sai do Jogador" |
+| dano por Grau da Ferramenta | "Grau da Arma não fornece +Acerto ou +Dano" |
+| **Acerto** por Grau da Ferramenta | a mesma frase, e por isso a divergência mexe nos DOIS |
+
+⚠ **O ENCANTAMENTO CONTINUA VALENDO nos dois sistemas.** É o GRAU que deixa de dar número, e não a
+Ferramenta: *"Só fornece os Bônus de Encantamentos como Potente que aumenta em 1 Dado e etc"*.
+Potente segue somando dado, Poderosa segue somando 2, e Precisa segue dando +2 de Acerto.
+
+### 2. ⚠ A SÉTIMA LINHA DA TABELA DE NÍVEIS DE DANO ESTÁ ERRADA
+
+A tabela impressa tem sete linhas. Montei a escada canônica a partir das regras de extensão do texto
+e gerei as sete de volta: **as seis primeiras saem idênticas, célula por célula**, e o exemplo do
+livro (`6d6` com +1 vira `3d12 + 1d4`) fecha exato. A sétima não fecha:
+
+| | −2 | −1 | PADRÃO | +1 | +2 | +3 |
+|---|---|---|---|---|---|---|
+| Livro, linha 7 | 1d10 | 2d6 | 2d8 | 2d10 | 2d12 | 2d12+1d4 |
+| Pela escada | 1d10 | 1d12 | 2d8 | 1d12+1d6 | 1d12+1d8 | 1d12+1d10 |
+
+Ela anda de 4 em 4 de resultado máximo onde a escada anda de 2 em 2. **O autor confirmou que a linha
+está errada.** Há assert medindo que ela NÃO é seguida, para ninguém a "consertar" de volta. Afeta
+duas armas reais: Espada Colossal (2d8) e Rifle de Precisão (2d10).
+
+As células com "ou" (`1d8 ou 2d4`, `1d12 ou 2d6`) caem sozinhas pela regra do resultado máximo.
+
+### 3. ⚠ O DADO IMPRESSO É PRESERVADO ENQUANTO NADA O MOVE
+
+`moverNivel("2d8", 0)` devolve `2d8`, e não o `1d12 + 1d4` do degrau. A conversão pelo máximo existe
+no livro para PODER andar na escada, e não para reescrever a tabela de equipamentos: a aba de
+Equipamentos mostra o dado impresso, e a linha de dano tem de mostrar o mesmo enquanto nada o moveu.
+
+### 4. ⚠ O NÍVEL DE DANO É O MESMO CANAL COM DUAS RÉGUAS
+
+Na criatura `nivelDano` soma 1 no ND, só para dano. No jogador ele é um degrau da escada. **Mesmo
+canal, mesmos 22 emissores.** As magnitudes couberam sem revisão: nove valem 1, três valem 2, dois
+valem 3, e os maiores são o Corpo Treinado (5) e as Armas Escolhidas do Combatente (3).
+
+A `nota` do canal em `afty-efeitos.js` foi reescrita, porque ela dizia só a metade da criatura.
+
+### 5. ⚠ O DESARMADO NÃO PODIA SOMAR AS DUAS CONTAS
+
+Autor: *"Golpe Desarmado segue o cálculo de Lutador ou Arma Natural. Se não haver nenhum dos dois, é
+1d3 + Mod. Força ou Mod. Dex."*
+
+O problema é que **Corpo Treinado e Armas Naturais escrevem dados ABSOLUTOS** (*"o dano dos seus
+ataques desarmados se torna 1d8... 1d10, 1d12, 2d8 e 2d12"*) e no motor elas emitem `nivelDano`,
+porque na criatura não existe dado base para mover. As duas contas juntas dariam o mesmo ganho duas
+vezes: um Lutador de 1° nível sairia com 1d10 em vez de 1d8.
+
+E as escadas impressas **não são degraus uniformes**: o Corpo Treinado salta quatro degraus do `2d8`
+para o `2d12`, e as Armas Naturais saltam três do `1d12` para o `2d10`. Elas foram escritas à mão no
+livro, então entraram como DADO em `DESARMADO_FONTES` e as linhas de escada delas são **descontadas**
+no jogador, pela lista `ESCADAS_DESARMADO_NO_MOTOR`.
+
+⚠ **O desconto casa por `origem` MAIS `nome`**, porque as Armas Naturais Aprimoradas emitem duas
+linhas e só a da escada sai (a outra é o "+1 nível de dano nos níveis 8, 12, 16 e 20", que é ganho de
+verdade). As duas linhas que não tinham `nome` ganharam um, e **há assert medindo que os três nomes
+continuam existindo no catálogo**: renomear uma linha faria o desconto parar de casar e o desarmado
+do jogador engordaria sozinho, sem uma linha de aviso.
+
+⚠ **Vale o MAIOR entre as fontes, e não a soma**: as três descrevem o MESMO golpe, e as Aprimoradas
+dizem "o dano de suas armas naturais SE TORNA 1d10", que é substituição escrita no texto.
+
+⚠ **A escala do Corpo Treinado é o nível de LUTADOR**, e não o do personagem: é Base de classe, e a
+multiclasse tem nível próprio por classe. Um Combatente 16 com um nível de Lutador rola 1d8.
+
+### 6. O manejo virou escolha de ficha
+
+Autor: *"Escolhe o Manejo na Ficha."* Arma versátil (o `/` da tabela) ganhou chips **Uma Mão** e
+**Duas Mãos** na aba Equipamentos, na mesma faixa e com o mesmo vocabulário do seletor de Ataque que
+já estava ali. **Só aparece na ficha de jogador:** na criatura o dado da arma não entra na conta,
+então o controle mentiria. O campo `duasMaos` fica na entrada do inventário.
+
+### 7. Três bugs que a revisão pegou depois de pronto
+
+**O segundo dado do degrau aparecia duas vezes.** A aba Ações desenha um chip para cada grupo de dano
+além do primeiro (`gruposDano.slice(1)`), porque na criatura todo grupo extra é mesmo um extra:
+Fatal, Mortal, Destruidora, Golpe Especial. No jogador um degrau como `1d12 + 1d4` tem DOIS grupos, e
+o segundo é a segunda metade da rolagem. A Ficha mostrava `1d12 + 1d4 + 4` e um chip `+1d4` ao lado.
+Consertado com `incluidoNoTexto` nos grupos depois do primeiro, que é a marca que aquele filtro já
+respeitava.
+
+**O rodapé do hover mostrava uma média.** O painel de fontes fecha com uma linha "Total", e na
+criatura o número ali é a conta que as parcelas somam. No jogador as parcelas são `1d8` e `+4`, e um
+"Total 8" embaixo delas leria como se a soma desse 8. Entrou o campo `totalFontes`, que no jogador é
+a expressão da rolagem, e a criatura segue sem ele.
+
+O hover também estava mentindo na primeira linha: ela mostrava o dano JÁ movido no rótulo "Dano da
+Arma", então uma espada de 1d8 com três Níveis de Dano dizia "Dano da Arma 1d12 + 1d4". Agora a
+primeira linha é o dado IMPRESSO e o degrau carrega o resultado.
+
+**⚠ E A TABELA TEM TRÊS FORMAS DE DANO, não duas.** O **Chicote Espinhento** e a **Kusarigama** trazem
+`dano.dados` em ARRAY (dois dados de TIPOS diferentes, o "1d6/1d6" da tabela que não é versátil) e
+não têm `dano.dado` nenhum. Elas caíam no `1d3` do desarmado, **caladas**: a linha dizia `1d3 + 4`
+numa arma de 2d6. O achado veio de varrer o catálogo atrás de formas que o leitor novo não cobrisse,
+e não de um sintoma. Os TIPOS seguem só no texto especial da arma, como já seguiam.
+
+### O que o jogador rola hoje, medido
+
+Combatente 10, Força 18 (+4):
+
+| Fonte | Linha |
+|---|---|
+| Espada Longa (1d8), uma mão | `1d8 + 4` |
+| a mesma, duas mãos (1d10) | `1d10 + 4` |
+| Espada Colossal (2d8) | `2d8 + 4` |
+| Bazuca (3d12), Destreza 16 | `3d12 + 3` |
+| Espada Longa com Armas Escolhidas (+3 níveis) | `1d12 + 1d4 + 4` |
+| desarmado, sem Lutador nem Arma Natural | `1d3 + 4` |
+| Lutador 1 / 5 / 9 / 13 / 17 | `1d8` / `1d10` / `1d12` / `2d8` / `2d12`, mais o modificador |
+
+O Grau da Ferramenta não move nenhum desses números, e na criatura o Grau Especial continua somando
+20 de dano e 5 de Acerto.
+
+### Placar
+
+`37 arquivos, 1994 asserts` (eram 1898).
+
+---
+
+## SESSÃO DE 2026-08-31 (parte 3): O CONTADOR DO JOGADOR ERA O DA CRIATURA, E O PATAMAR NUNCA SAIU
+
+O autor perguntou o que decide a quantidade de Feitiços e de Técnicas de Estilo hoje. A análise achou
+duas coisas, e ele mandou consertar as duas na mesma mensagem.
+
+### 1. O que decidia, e por que estava errado no jogador
+
+Um contador só decide os dois, em `afty-derive.js`:
+
+```
+contadorComum = piso( contadorHabilidades(Maestria, Patamar) × fatorSlots )
+contadorTotal = contadorComum + vagasFeitico + vagasEstilo
+```
+
+Feitiço, Técnica de Estilo e Habilidade Geral gastam o MESMO caixa. Medido lado a lado, o
+`orcamentoHabilidades.comum` era **idêntico nos dois sistemas** em todos os 19 níveis testados:
+nenhuma das 19 divergências tocava o contador.
+
+⚠ **Só que dos três termos, DOIS estavam mortos na ficha de jogador.** O Patamar não existe lá, então
+o `+2 / +4 / triplo` nunca acontecia, e as Habilidades Gerais também não existem, então o caixa
+deixou de ser compartilhado. A fórmula tinha degenerado em `2 × Maestria` puro, para um caixa que
+ninguém mais dividia.
+
+E o contador único não era regra do livro: ele nasceu em 2026-07-26 **por causa** das Habilidades
+Gerais, e ao nascer substituiu a progressão por nível que o `totalFeiticos(nd)` implementava. Sem
+Gerais, o motivo dele desapareceu.
+
+### 2. A progressão do livro voltou, com orçamento PRÓPRIO
+
+Autor: *"Volta para a progressão do livro a de Feitiços e Estilos. Que são separadas."* Verbatim:
+
+> *"Todo usuário de energia amaldiçoada começa com uma certa quantidade de Feitiços: todo personagem
+> usuário de energia amaldiçoada, por padrão, inicia com dois Feitiços. Um personagem também obtém
+> novos Feitiços conforme sobe de nível, recebendo um novo Feitiço em todo nível par. Também se
+> recebe um Feitiço adicional no nível 10 e outra no nível 20."*
+
+Divergência `progressaoDeFeiticos`, e `totalFeiticosJogador` em `afty-feiticos.js`.
+
+⚠ **A CONJURAÇÃO APRIMORADA ENTROU NA FÓRMULA, e o texto dela já estava no repositório.** A segunda
+metade (*"você passa a receber novos Feitiços em todo nível, ao invés de apenas nos níveis pares"*)
+estava transcrita em `afty-habilidades.js` desde sempre e **não tinha onde cair**, porque o contador
+único tinha apagado os níveis pares. Ela é `automatica`, então todo Conjurador a tem desde o 1° nível
+e nunca cai na cadência padrão. É o Combatente que é o caso padrão, e não o Conjurador.
+
+| Nível | Combatente (pares) | Conjurador (todo nível) | O que valia antes |
+|---|---|---|---|
+| 1 | 2 | 2 | 4 |
+| 3 | 3 | 4 | 4 |
+| 10 | 8 | 12 | 8 |
+| 20 | 14 | 23 | 12 |
+| 30 | 19 | 33 | 16 |
+
+⚠ **QUEM CONCEDE É O NÍVEL QUE SE SOBE**, então o 1° nunca concede e as duas cadências empatam no 1 e
+no 2, separando-se só no 3°. A leitura alternativa ("todo nível" incluir o 1°) daria três Feitiços no
+1° nível e contradiz "inicia com dois" na mesma página. Anotado como assunção em `a-fazer.md`.
+
+⚠ **O PORTÃO ESTÁ NA PRIMEIRA FRASE**, e não foi invenção: *"Todo usuário de energia amaldiçoada"*. O
+Restringido não é um, e a mesma trava que zera as Aptidões dele zera isto. O **Sem Técnica NÃO entra
+nessa trava**: ele tem energia amaldiçoada, só não tem técnica, e quem ocupa o lugar dos Feitiços
+dele é o Estilo das Sombras, cuja regra o autor vai mandar.
+
+⚠ **O CAIXA PRÓPRIO NÃO TRANSBORDA PARA O COMUM**, e é o ponto da palavra "separadas". Deixar o
+excesso cair no comum daria ao Conjurador um **segundo orçamento escondido** de `2 × Maestria`, já
+que no jogador o comum não tem outro dono. O excesso virou aviso próprio (`excedeuFeitico`), com
+mensagem no card, e o `excedeu` do comum segue medindo só o comum.
+
+⚠ **AS VAGAS EXCLUSIVAS CONTINUAM VALENDO.** O canal `vagasFeitico` virou a SOBRA do orçamento
+próprio, em vez de morrer junto com o contador único, e com isso os sete concessores do livro seguem
+funcionando no jogador sem uma linha a mais: Afinidade com Técnica, Clã Gojo, Nova Habilidade,
+Dominância em Técnica, Inato, Reversão de Técnica e Extração de Potencial. A ordem de gasto agora vai
+da pilha mais estreita para a mais larga, em quatro degraus: `vagasEstilo`, orçamento próprio de
+Feitiço, `vagasFeitico`, contador comum.
+
+⚠ **O ESTILO NÃO ENTROU NESTA LEVA.** O autor confirmou que ele também volta ao livro e que os dois
+são separados, mas mandou o cálculo dele em mensagem própria. Até lá o Estilo segue no contador
+comum, e a divergência fala só de Feitiço de propósito: uma entrada que prometesse os dois estaria
+mentindo sobre metade.
+
+### 3. ⚠ O PATAMAR SÓ TINHA SUMIDO DA TELA
+
+Autor: *"Não existe PATAMAR para Jogadores, isso é algo exclusivo de criaturas que será removido de
+Jogador."* Divergência `patamarDoJogador`.
+
+O campo saiu do formulário em 2026-08-30, e o comentário do builder afirmava que *"no jogador nada
+mais os consulta"*. **Não era verdade.** Cinco pontos liam `core.patamar`, três foram guardados um a
+um (Guarda, Resistência Parcial, multiplicador de PV) e **dois foram esquecidos**:
+
+| Leitor esquecido | O que acontecia |
+|---|---|
+| `contadorHabilidades(bt, patamar)` | contador de 12 virava 18 num jogador de nível 20 |
+| `resolveDano(..., { patamar })` | o dado do dano subia de d8 para d12, e o coeficiente de 2/1 para 4/3 |
+
+E o caminho para uma ficha assim existe: importar um JSON **sem** `rulesVersion` dentro do `/Player`
+grava `rulesVersion: "player"` e preserva o `core.patamar` que veio junto
+(`c.rulesVersion ?? defaultRulesVersion`, em `useCreatureStorage.js`). Uma exportação da 2.5.2 tem
+Patamar.
+
+⚠ **O CONSERTO É NA DEFINIÇÃO, e não em cada leitor.** O `patamar` vira `"comum"` logo onde ele nasce
+no `deriveAfty`, então leitor novo nasce certo. Guardar leitor a leitor foi exatamente o que produziu
+o bug. `"comum"` e não `null` porque ele é o valor **neutro** das fórmulas, e um `null` quebraria
+quem indexa tabela por patamar. Quem o autor pediu para não aparecer "nem como zero" é a Guarda e a
+Resistência Parcial, e essas seguem devolvendo `null` pela divergência delas.
+
+### 4. E o assert do clone achou um hover mentiroso de brinde
+
+Ao neutralizar o Patamar, `partes.guardaBonus` e `partes.guardaVida` passaram a divergir. Investigado:
+as duas montavam a linha `"Patamar (...)"` para explicar um número que no jogador é `null`. O
+`guardaAtual` já se protegia com `guarda ? [...] : []` e esses dois não.
+
+⚠ **Passou despercebido porque o rótulo citava o MESMO patamar dos dois lados**, e o assert via dois
+hovers idênticos. Foi o Patamar neutralizado que separou os rótulos e fez o assert apontar. Os três
+agora ficam vazios no jogador, e há assert medindo isso.
+
+### Placar
+
+`36 arquivos, 1898 asserts` (eram 1818). O `t-sistema.mjs` foi de 263 para 343.
+
+O cabeçalho de `afty-sistema.js` também foi corrigido: ele dizia *"hoje NADA diverge, /Player é clone
+exato do /Afty"* com 16 divergências ligadas, que é o defeito que a tabela existe para evitar. No
+lugar do placar entrou a instrução de não escrever placar ali: quem conta é o assert.
+
+---
+
+## SESSÃO DE 2026-08-31 (parte 2): O TEMA DA FLINS, O RETRATO E DUAS CORREÇÕES DE REGRA
+
+Sessão de design pedida pelo autor, com duas correções de regra vindas no meio.
+
+### 1. Tema "Obsidiana" para a Flins, e um por Cão Divino
+
+Três blocos de CSS livre, colados pelo Painel de Aparência. Ficam em `design.local/`, que o git
+ignora pela regra `*.local`, e não entraram no repositório.
+
+⚠ **A PRIMEIRA VERSÃO ERROU A ÁREA.** A referência do autor era uma planilha azul-marinho, e eu
+pintei as SUPERFÍCIES de azul quando a planilha é quase preta e só os DÍGITOS são azuis. O autor:
+*"a paleta ficou bem mais puxada para o azul do que a referência"*. A régua que consertou foi 60/30/10
+declarada no alto do arquivo: 60% breu quase neutro, 30% grafite, e 10% de azul reservado para o que
+a mão aperta (rolável, aba ativa, Defesa e CD, foco, crítico, bônus ligado). Número que não é
+clicável e não é defesa sai em osso.
+
+Os dois Cães ficam DENTRO do escuro e se separam por VALOR: o Preto afunda abaixo da prancha com
+brasa violeta, o Branco sobe um degrau com prata fria. Nenhum vira tema claro.
+
+Técnica adotada do tema "Seis Olhos" que o autor mandou como exemplo: `:scope:not(#nao-existe)`
+(empresta peso de ID sem repetir o id da raiz, e por isso serve também dentro de um Shikigami, onde
+o id muda), cor LITERAL em toda superfície, e aninhamento com `&`. Conferido no navegador que o
+`@keyframes` registra dentro do `@scope` e que o tema da invocação vence o da ficha por proximidade
+de escopo, sem um `!important`.
+
+### 2. ⚠ O RETRATO DO SHIKIGAMI É ÍCONE, e não banner
+
+Ver a seção "Retrato próprio por Shikigami", reescrita. Resumo: faixa de largura inteira por 9rem, e
+miniatura de 11,5 × 4,5rem no cartão, recortavam uma tira do meio de uma imagem quadrada. Sumiram
+`.afty-inv-banner`, `.afty-inv-banner-veu` e `.afty-inv-retrato-banner`; entraram `.afty-inv-cabeca`,
+`.afty-inv-cabeca-texto`, `.afty-inv-retrato-icone` e `.afty-inv-cartao-topo`.
+
+### 3. O chip "Abatida" saiu da ficha
+
+Autor: *"o símbolo de Abatido da ficha não sai quando o shikigami é reinvocado ou curado, e não é
+necessário."*
+
+⚠ **NÃO SAIR ERA O CERTO**, e é o que trava a decisão de não mexer na regra: *"até que seja feito um
+descanso curto ou longo"*, e nem curar nem reinvocar são descanso. O problema é de UI e não de
+motor: marca de aviso acesa a luta inteira deixa de avisar e vira ruído. **A meia-vida na
+reinvocação continua valendo**, e quem carrega o aviso é o `title` do botão de invocar, que já dizia
+"com metade da vida" e aparece no instante do clique. A `exorcizada` manteve o chip, porque aquela é
+definitiva e o botão dela morre junto.
+
+### 4. ⚠ AS PERÍCIAS DO JOGADOR PEGAM O MAIOR ENTRE INT E SAB
+
+Autor: *"a quantidade de perícias é o maior modificador de atributo entre Inteligência ou Sabedoria
+e não só Inteligência."*
+
+**Isto reverte uma decisão de 2026-08-30** que tinha verbatim do livro atrás dela (*"Esta escolha não
+pode ser modificada nem revertida após a criação do personagem, sendo algo definitivo"*). O jogador
+escolhia INT ou SAB de forma permanente, e a criatura pegava o maior. Agora os dois pegam o maior.
+
+⚠ **E a escolha nunca existiu na prática.** O campo `periciaAtributo` foi criado no schema mas
+**nenhuma tela do criador jamais o ofereceu**, então o padrão `"inteligencia"` valia para TODA ficha
+de jogador e a Sabedoria não contava nunca. Foi o que o autor viu na ficha dele: Flins tem INT 10
+(+0) e SAB 16 (+3), e o orçamento contava o +0.
+
+| Ficha (Combatente 20) | Antes | Agora |
+|---|---|---|
+| INT 10 / SAB 16 | 5 (Pacote 5 + Inteligência 0) | **8** (Pacote 5 + Sabedoria 3) |
+| INT 16 / SAB 10 | 8 | 8, sem mudança |
+| INT 6 / SAB 8 | 5 | 5, o piso em zero continua |
+
+O campo ficou **parado**: continua no schema para não derrubar ficha antiga que o traz no JSON, o
+`deriveAfty` parou de passá-lo e nada o lê. Assert novo prende isso, medindo que pedir Sabedoria
+numa ficha de INT maior não muda mais o número.
+
+⚠ **A divergência `pacoteDaClasseInicial` encolheu**: o que ainda separa os dois sistemas nessa linha
+é só o PACOTE da Classe, que a criatura não tem. O atributo deixou de divergir.
+
+> **PERGUNTA EM ABERTO.** O verbatim da escolha permanente continua no livro? Se continuar, ele
+> precisa de TELA antes de voltar a decidir número, porque um campo sem controle é o que produziu
+> este bug. Se não continuar, o campo pode sair do schema.
+
+
+### 5. A ESTRELA DOS ZENIN, e as quatro peças de motor que ela pediu
+
+O autor mandou uma Origem nova para virar Addon. Ela **não cabia**, e o diagnóstico é o que importa:
+quase tudo que ela faz mexe em SHIKIGAMI, e o Addon não alcançava shikigami por lugar nenhum.
+
+Ele aprovou as três que eu recomendei, e uma quarta apareceu ao montar o pacote.
+
+#### 1. Família `clas`
+
+Um clã do Herdado mora em `herdado.clas`, e `clas` não era família. O caminho fácil (`substitui` no
+campo) funciona e é ruim: o addon passaria a carregar uma **cópia congelada dos quatro clãs do
+livro**, que envelheceria na primeira errata, calada.
+
+⚠ **É a família com mais estrutura derivada até hoje: três.** O array tem de ser mexido NO LUGAR
+(`splice`), porque a entrada `herdado` aponta para ele em `clas: CLAS_HERDADO` e trocar a referência
+a deixaria com a lista velha, inclusive depois de um remendo na origem (o `remendarLista` faz cópia
+rasa). Mais o `CLA_BY_ID`. Mais o **cache das Verdadeiras Origens**, que percorre `origem.clas`: sem
+limpá-lo, um clã de addon nunca apareceria na lista do Gêmeo. É literalmente o mesmo bug que a
+família `origens` teve em 2026-08-21, reaparecendo um nível abaixo.
+
+#### 2. `efeitosInvocacao`: Origem, Clã e Talento chegam no shikigami
+
+Até aqui `efeitosInvoc` saía só de `efeitosInvocacaoControlador(habilidades.escolhidas)`. Um clã que
+dissesse "seus shikigamis recebem +1 Ação" não tinha por onde entrar, nem por Addon nem no raw.
+
+⚠ **CAMPO PRÓPRIO, e não o `efeitos` de sempre.** Os dois espaços de canal repetem nomes (`pv`,
+`defesa`, `rd`) com sentidos diferentes: `pv` no `efeitos` é o do dono, `pv` no `efeitosInvocacao` é
+o do shikigami. Numa lista só, uma Origem que quisesse engordar a invocação engordaria o
+personagem, calada.
+
+⚠ **E um furo antigo apareceu junto.** O `coletarEfeitosOrigem` passava ao `coletarEfeitos` um
+objeto sintético `{ [id]: { nome } }` em vez da ENTRADA, e isso furava o fallback de `efeitos`
+inline: uma origem ou um clã de Addon declaram o efeito DENTRO da entrada, e `entrada?.efeitos` era
+sempre `undefined` porque a entrada nunca chegava. Nenhuma origem de addon com efeito tinha sido
+escrita ainda, então o bug estava lá sem sintoma.
+
+#### 3. Família `marcadores`, com `requerId`
+
+"Uma quantidade de Shikigamis igual a metade do seu Bônus de Treinamento" é exatamente o
+`MARCADORES_INVOCACAO`, e o Concentrar Poder do raw já usa `piso(bt / 2)`. O que o marcador guarda é
+o QUAIS, que nenhum canal expressa.
+
+⚠ **`requerId` é a porta de fora.** Marcador do raw pertence sempre a uma Habilidade de Controlador,
+e cobrar `habilidadeId` de um marcador de clã seria fingir uma habilidade que não existe. Quem
+declara `requerId` é liberado por qualquer id que a ficha tenha, e o `deriveAfty` monta esse conjunto
+(`temIds`) com origem, clã, talentos e habilidades.
+
+⚠ **O NOME DA VARIÁVEL PRECISOU SER SANEADO.** O tokenizador da DSL só aceita `[a-zA-Z0-9_À-ſ]`, e o
+id de um marcador de Addon carrega o namespace: `estrela-zenin:economia_de_sombras` viraria
+`marc_estrela-zenin:economia_de_sombras`, que não passa do parser. Todo caractere fora do conjunto
+vira `_`, então o `quando` se escreve `marc_estrela_zenin_economia_de_sombras`. Para os marcadores
+do raw nada muda, porque os ids deles já são `[a-z_]`.
+
+#### 4. Requisito `cla` no Talento
+
+Os três Talentos de Origem dela pertencem a UM CLÃ, e por `tipo: "origem"` um Gojo os pegaria, já
+que os dois são Herdado. A `origensQualificadas` de propósito não vale aqui, e é a lição de
+`origemEstrutural`: ela ABRE portas, e clã é o que a criatura É.
+
+#### ⚠ E o conserto que só apareceu ao montar o pacote
+
+**Referência entre FAMÍLIAS do mesmo addon não ganhava o namespace.** O `idsLocais` do
+`aplicarAddons` era montado por família, então o marcador que cita o clã dele por `requerId` ficava
+com a referência CRUA enquanto o clã ganhava o prefixo. O marcador apontava para um id inexistente e
+simplesmente nunca aparecia, sem uma linha de aviso. Agora o conjunto é do pacote inteiro: citar um
+irmão é citar um irmão, esteja ele na mesma família ou não. Referência que não acha irmão nenhum
+continua crua e vai procurar no raw, que segue sendo o caso comum.
+
+#### O que a Estrela dos Zenin faz hoje, medido
+
+`asserts/t-estrela-zenin.mjs`, 15 asserts. Numa ficha Controlador 20, Terceiro Grau:
+
+| Peça | Resultado |
+|---|---|
+| Treinamentos de Clã | `+2` nas vagas de perícia, nomeado no hover |
+| Maestria, o `+1` livre | orçamento da invocação vai a **5** |
+| Economia de Sombras | marcador com **limite 3** (`piso(bt / 2)`), e o custo cai de **4 para 2** |
+| E só na marcada | duas invocações, custos `[2, 4]` |
+| Talentos de Origem | abrem para o clã e **fecham para o Gojo** |
+| Desinstalar | os quatro clãs do livro voltam, sem resto |
+
+#### O que ficou de fora, e por quê
+
+**Sintonia de Batalha** ("pelo menos 2 shikigamis a até 3m") é condição posicional de tabuleiro. O
+`COMBATE_ESTADOS` é lista fixa em `afty-combate.js` e não é família de addon, então nem o interruptor
+manual dá para declarar. Entrou como texto. Abrir `estados` seria a quinta peça, e eu não a
+recomendei porque mesmo com ela o jogador ligaria o interruptor à mão.
+
+**O piso de 1 PE** da Economia de Sombras: o `custoReducao` tem piso em **zero**
+(`Math.max(0, custoBruto - efe.custoReducao)`), e um piso por FONTE não cabe no canal. Fica de mesa.
+
+**As duas ações complexas adicionais** do Fantoche Divino: a ficha não conta ações, que é a mesma
+razão pela qual o Inumaki não tem efeito. Fica de mesa.
+
+
+## SESSÃO DE 2026-08-31: OS SHIKIGAMIS DEIXARAM DE SER MAIS UMA HABILIDADE
+
+O autor, sobre as duas telas de Invocação:
+
+> *"Em ambos a criação e usabilidade de Invocações está bem ruim. No quesito aparência e UX/Design.
+> É difícil eu entender e me achar sobre o quê estou fazendo durante a criação. E na Ficha Final, a
+> aba de Shikigamis ficou horripilante de entender e usar tudo que eu tenho a dispor. A impressão
+> que dá é que você fez Shikigamis como se fossem só mais uma habilidade qualquer, quando eles são a
+> Peça CHAVE em um personagem Controlador. Eles que precisam de toda a atenção possível, já que são
+> vários e precisam ser fáceis de consultar, e mexer nas suas barras de HP, Integridade, saber
+> ativar e desativar seus bônus, isso tudo enquanto possuem uma Ficha entendível e bonita."*
+
+Mais duas entregas nomeadas: **imagem própria por Shikigami** na criação e na Ficha, e **CSS
+personalizado próprio** por Shikigami na Ficha Final.
+
+### O diagnóstico, medido na tela antes de mexer
+
+As duas telas eram a MESMA forma: uma pilha vertical de cartões recolhíveis, todos iguais, todos
+fechados, cada um com quatro números mortos. Nada era clicável a não ser a setinha. Com quatro
+invocações, a Ficha mostrava dezesseis números e zero ações, e o criador obrigava a rolar por cima
+das outras três abertas para chegar na terceira.
+
+⚠ **A frase do autor descreve o defeito com precisão técnica**: aquilo era o desenho de um item de
+CATÁLOGO (a mesma pilha das Habilidades e dos Talentos), e uma Invocação não é um item de catálogo,
+é uma CRIATURA. O desenho errado não era feio por acaso, ele estava na família errada.
+
+### As duas perguntas de regra, respondidas antes da primeira linha
+
+| Pergunta | Resposta |
+|---|---|
+| A Invocação tem Integridade da Alma? De onde sai o máximo? | **"Máximo igual ao PV dela"** |
+| Ligar um Auxílio mexe no número, ou é só marcador? | **"Mexe na ficha do DONO de verdade e na ficha da INVOCAÇÃO de verdade"** |
+
+Sobre a segunda, verbatim: *"Por exemplo, um shikigami pode escolher entre me BUFFAR ou se BUFFAR
+com +5 de Defesa usando suas ações."*
+
+⚠ **A Integridade da invocação segue a régua do JOGADOR, e não a da criatura.** Na criatura a Alma é
+uma porcentagem de 0 a 100 que MULTIPLICA o PV. Aqui ela acompanha o PV em pontos, que é o que o
+livro do jogador faz com o personagem. Uma invocação com escala de porcentagem teria dois números
+medindo a mesma casca.
+
+### 1. Os auxílios ligados viraram NÚMERO, pelo Motor
+
+`auxiliosLigadosDa` (em `afty-invocacoes.js`) resolve os auxílios que a mesa ligou e separa por
+alvo. O alvo `invocacao` entra nos números DELA dentro do `resolveInvocacao`, e o alvo `aliados`
+sai por `efeitosDeInvocacao`, que devolve **efeitos do Motor de Automação** para o dono.
+
+⚠ **ENTRAM PELO MOTOR, e não somados à mão no `deriveAfty`.** Três razões, e as três já custaram bug
+neste repositório: o hover de fontes mostra "Nue · Asas de Guarda +4" de graça, o delta da aba Buffs
+mede ligando e desligando o MESMO derive (um bônus somado por fora sairia creditado a outro estado,
+que foi exatamente o bug da Guarda em 2026-08-28), e `duracao: "temporaria"` já diz ao motor que
+isto não conta para pré-requisito.
+
+⚠ **E ENTRAM CEDO, junto do `efeitosTodos`.** A Defesa fecha na linha 1715 e a RD Geral na 1541,
+ambas ANTES de `derived.invocacoes`. Somar depois daria um número que a ficha mostra e o hover não
+explica. Não há laço: o valor de um auxílio de Defesa, Acerto ou RD sai da tabela do grau e da
+classe da ação, e não lê stat nenhum do dono.
+
+⚠ **SÓ TRÊS DOS CINCO SUB-TIPOS VIRAM INTERRUPTOR**, e o recorte é do livro, não da tela:
+
+| Sub-tipo | Interruptor | Por quê |
+|---|---|---|
+| Defesa, Acerto, RD | sim | número que fica de pé enquanto durar. É buff |
+| Cura | não | ela ROLA e devolve PV. "Ligar uma cura" não quer dizer nada |
+| Dano Adicional | não | *"em um próximo ataque"*, e é um DADO. Um disparo, não estado |
+
+Os dois de fora continuam na lista de Bônus com o que entregam, sem botão: esconder a existência
+deles seria pior que mostrá-los sem interruptor. O Dano Adicional ficou anotado em `a-fazer.md`,
+porque ele precisa de um canal que aceite dado de face própria, o mesmo bloqueio das Aptidões.
+
+⚠ **O `emCampo` MANDA EM TODOS.** Uma invocação dissipada não sustenta bônus nenhum, e sem essa
+porta o jogador que guardasse o shikigami ficaria com a Defesa dele para sempre, calado. Há assert
+medindo que ligar tudo com a invocação fora de campo dá exatamente o mesmo número de não ligar nada.
+
+⚠ **O Acerto que ela dá a si mesma exigiu um PRÉ-PASSE.** Ele entra nas jogadas de ataque DELA, e
+essas jogadas saem do `resolveAcao`, que é justamente quem calcula o valor do auxílio. Resolver a
+ação de auxílio duas vezes custa uma tabela e uma soma, e é mais barato que carregar o resultado por
+um segundo caminho.
+
+### 2. A Invocação entrou na SESSÃO, e o descanso aprendeu o que fazer com ela
+
+O comentário no topo da aba dizia o contrário desde que ela nasceu: *"o PV da Invocação NÃO entra na
+sessão. Ele é o MÁXIMO, e não um recurso gasto [...] dar barra própria a cada Invocação sem o
+descanso saber o que fazer com elas deixaria a ficha com números que ninguém zera."* Agora o
+descanso sabe, então a entrada de `a-fazer.md` que pedia isso desde 2026-08-16 saiu da fila.
+
+`sessao.invocacoes` é um **mapa por id**, e não uma lista paralela à da ficha: a ordem das
+invocações muda no criador, e uma lista por índice trocaria o PV de duas invocações de lugar sem
+ninguém ver.
+
+⚠ **`null` quer dizer CHEIO, e não zero.** A invocação nasce sem linha na sessão, e a primeira vez
+que a Ficha a desenha ela tem de aparecer com a vida inteira. Um zero ali a mataria só por ter sido
+olhada.
+
+⚠ **Entrada ÓRFÃ sobrevive**, a mesma escolha da concessão: a invocação some da ficha por um
+instante enquanto alguém edita o criador noutra aba, e apagar o PV dela por isso seria perder a luta.
+
+### 3. As regras de PV zero saíram do texto
+
+O capítulo tinha três regras que nenhum código lia. Verbatim:
+
+> *"Quando uma Invocação chega a 0 pontos de vida, ela é dissipada ou desativada"*
+>
+> *"quando uma Invocação que já tenha sido desativada é invocada novamente, ela retorna com metade
+> dos seus pontos de vida máximos, até que seja feito um descanso curto ou longo"*
+>
+> *"caso uma Invocação receba dano excedente superior ao seu máximo de vida, ela é exorcizada ou
+> destruída [...] sendo removido da lista de invocações do controlador"*
+
+As três entraram. Zerar o PV tira de campo e apaga os auxílios (e o bônus que ela dava ao dono some
+junto, com assert medindo). A marca `abatida` faz TODA reinvocação vir pela metade até o descanso, e
+não só a primeira. O descanso apaga a `abatida` e **não** apaga a `exorcizada`, porque *"não pode
+ser recuperada por métodos convencionais"* e descansar é o método mais convencional que existe.
+
+⚠ **A `abatida` NÃO TEM MAIS CHIP na ficha** desde a noite de 2026-08-31: *"o símbolo de Abatido da
+ficha não sai quando o shikigami é reinvocado ou curado, e não é necessário"*. Não sair é a regra
+(*"até que seja feito um descanso curto ou longo"*, e nem curar nem reinvocar são descanso), e uma
+marca de aviso acesa a luta inteira deixa de avisar e vira ruído. **A regra continua valendo**, e
+quem a carrega é o `title` do botão de invocar, que já dizia *"com metade da vida"*: ali ela aparece
+no instante do clique, em vez de ficar pendurada no alto da ficha. A `exorcizada` manteve o chip,
+porque aquela é definitiva e o botão dela morre junto.
+
+⚠ **"SUPERIOR ao seu máximo" é o excedente contra o MÁXIMO, e não contra o que restava.** Uma
+invocação de 58 PV cheia precisa levar 117 num golpe para ser exorcizada, e não 59.
+
+⚠ **A LISTA DA CRIATURA NÃO É MEXIDA, e é decisão minha, a confirmar.** A Ficha Final opera, não
+edita ficha. Um clique errado no botão de dano apagaria um shikigami inteiro, com Ações e
+Características, sem desfazer. O estado fica marcado (cartão riscado, botão morto, chip âmbar) e
+quem remove de vez é o criador. Está em `a-fazer.md`.
+
+### 4. As duas telas viraram MESTRE-DETALHE
+
+A mesma forma nas duas, e cada metade responde a uma frase do pedido:
+
+- **a fileira** (*"são vários e precisam ser fáceis de consultar"*): um cartão por Shikigami, com
+  retrato, barra de vida e o interruptor de campo. Dá para ver o estado de todos sem abrir nenhum.
+- **a ficha** (*"uma Ficha entendível e bonita"*): UM por vez, inteiro, sempre aberto.
+
+⚠ **Rolagem horizontal, e não quebra de linha.** Com sete shikigamis a quebra empurra o detalhe para
+fora da tela, e a fileira deixa de ser referência rápida para virar meia página.
+
+⚠ **Fora de campo o cartão APAGA**, e é a leitura mais rápida da fileira: dá para ver quem está na
+mesa sem ler uma palavra. Apagar, e não esconder, porque a invocação guardada continua consultável.
+Exorcizada apaga MAIS e risca o nome: os dois estados apagam o cartão e só um deles tem volta.
+
+⚠ **O cartão inteiro SELECIONA, e o interruptor de campo é o único ponto que não.** Selecionar é a
+ação de leitura e acontece o tempo todo, então merece o alvo grande. Invocar e dissipar são atos de
+mesa e ficam num alvo próprio.
+
+⚠ **Ligar um bônus de quem está fora de campo TRAZ a invocação ao campo.** É a única leitura
+possível do clique, e a alternativa era um interruptor desabilitado que não explica o que falta.
+
+⚠ **Nova invocação entra JÁ SELECIONADA no criador.** Sem isso, criar a quinta deixava o editor
+mostrando a primeira, e o clique seguinte era sempre o mesmo: procurar na fileira a que acabou de
+nascer. Por isso o `addInvocacao` passou a DEVOLVER a criada.
+
+⚠ **O estado guarda o ID e não o índice.** Remover a segunda de quatro reordenaria os índices, e o
+editor passaria a mostrar outra invocação sem ninguém pedir.
+
+⚠ **A busca global e o clique convivem sem efeito.** O clique grava qual busca ele já viu
+(`{ id, buscaVista }`), então uma busca NOVA vence o último clique e um clique vence a busca que ele
+já tinha visto. O `useEffect` com `setState` que eu tinha escrito primeiro é reprovado pelo eslint,
+e com razão: seria renderização em cascata para chegar num valor que dá para calcular de primeira.
+
+### 5. Retrato próprio por Shikigami
+
+Mesmo par de campos do retrato da criatura (`portraitUrl` + `portraitFocus`), e é de propósito: o
+`RetratoFocoPicker` da aba Identidade serve aos dois sem uma segunda cópia. Um segundo seletor de
+foco divergiria na primeira errata, que é a lição do `fontes.jsx` e do `vital.jsx`.
+
+Na Ficha o retrato é um ÍCONE QUADRADO ao lado do nome, tanto no cartão da fileira quanto na cabeça
+da ficha do shikigami.
+
+⚠ **ERA UM BANNER, e o autor cortou na mesma noite**: *"as imagens dos Shikigamis ficaram super
+esticadas ao invés de serem um Icon. Não queria um banner na Ficha Final"*. O diagnóstico é
+geométrico, e não de gosto: a faixa tinha largura inteira por 9rem de altura, o cartão tinha 11,5rem
+por 4,5rem, e `object-fit: cover` numa caixa de proporção 12:1 ou 2,5:1 mostra **uma tira do meio**
+de uma imagem quadrada. Retrato de shikigami é quadrado ou em pé quase sempre, então o corte era a
+regra e não a exceção.
+
+O ícone resolve três coisas de uma vez: mostra a imagem inteira, dispensa o véu (o nome nunca cai
+por cima dela) e devolve quase 6rem de altura por shikigami para o que interessa, que são os
+números. O `portraitFocus` continua valendo, agora dentro do quadrado.
+
+Sumiram com o banner: `.afty-inv-banner`, `.afty-inv-banner-veu`, `.afty-inv-retrato-banner` e o
+`data-afty-com-retrato` da faixa. No lugar entraram `.afty-inv-cabeca`, `.afty-inv-cabeca-texto`,
+`.afty-inv-retrato-icone` e `.afty-inv-cartao-topo`. A dessaturação de fora de campo saiu da faixa
+inteira e passou a cair **só no retrato**: antes ela apagava o nome junto.
+
+### 6. CSS personalizado por Shikigami
+
+`cssDasVars` e `cssDoUsuario` ganharam parâmetro de SELETOR, e `cssDaInvocacao(inv)` monta o bloco
+de uma invocação em `#afty-inv-<id>`. O tema mora em `inv.aparencia`, dentro da invocação, pela
+mesma razão de o tema da ficha morar na criatura: viaja no export e no import de graça.
+
+⚠ **Por ser mais específico que `#afty-ficha` e vir DEPOIS na folha, o tema da invocação ganha do
+tema do dono sem `!important` nenhum.** Quem não temar o shikigami herda a ficha, que é o
+comportamento esperado.
+
+⚠ **SEM TEMA PRÓPRIO, NENHUM BLOCO.** Emitir o preset padrão para quem não temou arrancaria o
+shikigami do tema do dono, que é o oposto do esperado.
+
+⚠ **O `<style>` mora na ABA, e não dentro de cada ficha.** Só o selecionado é montado: com a folha
+dentro dele, trocar de Shikigami removeria e recriaria o CSS a cada clique.
+
+O painel de Aparência é o MESMO da ficha (`titulo` e `onGlobal` viraram opcionais), e não uma cópia
+menor: um editor capado seria um segundo lugar para manter em dia. O que sai é a seção "Todas as
+Fichas", porque *"quero todas as minhas fichas assim"* não quer dizer nada quando o alvo é um
+shikigami. No criador há uma sub-aba **Aparência** com o campo de CSS e o interruptor, que é o que
+o criador precisa.
+
+⚠ **TUDO NA ABA PINTA POR TOKEN** (`--afty-*`). É isso que faz o CSS por Shikigami funcionar: o tema
+dele redefine os tokens dentro do `#afty-inv-<id>` e cada peça se repinta sozinha. Uma cor escrita à
+mão no CSS seria uma peça imune ao tema.
+
+### Verificação
+
+- `npx eslint src/systems/afty/ asserts/` passou.
+- `npx vite build` passou.
+- `npm run asserts`: **1801 asserts em 35 arquivos**, todos passando. O novo é o
+  `t-invocacoes-mesa.mjs`, com 85.
+- `src/components/` **sem alteração**.
+- **Conferido no navegador com Playwright**, nas duas rotas: a fileira e o editor do criador, a
+  fileira e a ficha do selecionado no `/Afty` e no `/Player`, o número do dono subindo ao ligar o
+  auxílio (Defesa 25 → 29 com "Asas de Guarda", que é Segundo Grau Complexa), a RD dela subindo a 6
+  sem tocar na do dono, o PV caindo pelos botões da barra, e três shikigamis com temas diferentes na
+  mesma ficha (a Nue ciano com o título em caixa alta, a Mahoraga sangue, e a que não tem tema
+  herdando o roxo do dono).
+
+### A PASSADA DE REVISÃO, e os três defeitos que ela achou
+
+Feita depois de tudo pronto, com o alarme das 3h. Os três eram invisíveis nos asserts e nos
+screenshots da primeira passada, e dois deles eram meus.
+
+#### 1. O tema de um Shikigami carimbava a paleta inteira
+
+⚠ **Era bug calado, e o pior tipo: em vez de um valor SUMIR, um valor APARECIA sem ninguém pedir.**
+
+A sub-aba Aparência do criador grava `{ css, ligado }` e mais nada. O `normalizaTema` preenchia o
+`presetId` com "padrao" na leitura, e o `cssDasVars` então emitia as 13 cores do preset padrão
+dentro do `#afty-inv-<id>`. Resultado: **uma linha de CSS livre num shikigami arrancava ele do tema
+do dono**. Uma ficha verde ganhava um shikigami roxo e ardósia no meio dela.
+
+A correção é `cssDasVarsDaInvocacao`, e a regra que ela escreve é a que faltava:
+
+| Quem | O que emite | Por quê |
+|---|---|---|
+| a ficha do DONO | o preset resolvido | ela É o tema inteiro, não tem em cima de quem cair |
+| uma INVOCAÇÃO | só o que escolheu | ela cai em cima da ficha. É um DELTA |
+
+⚠ **Escolher "Padrão" no painel não é escolher um preset.** O primeiro preset é o estado "sem preset
+meu", que é o mesmo que o botão de limpar devolve, e é exatamente o que o painel grava ao abrir.
+Só um preset NOMEADO carimba a paleta inteira, que aí sim é o pedido explícito de outra cara.
+
+#### 2. Cada tecla no CSS reescrevia a lista inteira de criaturas
+
+Medido: **29 gravações no `localStorage` para 28 teclas**. O tema da ficha debounce em 600ms desde
+2026-08-05 por essa exata razão, e eu não copiei a guarda ao fazer o da invocação.
+
+Entrou o rascunho `rascunhoInv` com o mesmo debounce, e caiu para **2 gravações**. Fechar o painel
+descarrega na hora, para quem fecha e sai da ficha no mesmo segundo não perder o que escreveu.
+
+⚠ **E É O RASCUNHO QUE A TELA PINTA**, não o que está gravado. Com a prévia saindo do disco, o CSS
+só apareceria 600ms depois de cada tecla, que é justamente a sensação que o debounce existe para
+evitar.
+
+#### 3. ⚠ A ABA QUEBRAVA NO PAINEL DE ENCONTROS
+
+O achado que justifica a passada inteira. `PainelDeCombatente.jsx` renderiza a MESMA
+`AbaInvocacoes`, e a chamada dele passava só `derived`, `rolar` e `destaque`. A aba nova chama
+`estadoDe(inv.id)` no render, então a aba Invocações do painel de Encontros estava **quebrada**, e
+nenhum assert pegou porque assert não renderiza.
+
+⚠ **E HAVIA UMA SEGUNDA METADE**: o `derivarCombatente` do encontro não recebia
+`invocacoes: c.sessao.invocacoes`. Sem ela, o mestre ligaria o bônus no painel e o número do dono
+não mexeria, enquanto na Ficha Final mexia. É literalmente o erro que o comentário do `opcoesDerive`
+descreve desde 2026-08-28, cometido de novo três dias depois, e ele teria saído como "o bônus só
+funciona na Ficha".
+
+⚠ **O botão de paleta SOME no painel de Encontros**, e não fica morto: o combatente guarda uma CÓPIA
+congelada da ficha, e o editor de aparência grava na criatura. Sem o gancho, um botão ali seria um
+clique que não faz nada.
+
+#### E um quarto, achado ao escrever o assert
+
+Escrever `0` no campo da barra de vida não dissipava, enquanto clicar no menos dissipava. As duas
+portas são o mesmo fato ("ela chegou a zero"), e só uma aplicava a regra: quem digitasse ficava com
+um shikigami morto em campo, ainda sustentando os bônus que dava ao dono.
+
+#### O que a revisão CONFIRMOU que está certo
+
+- **Persistência**: Defesa 29, Nue em campo com 44/64 e o bônus aceso sobrevivem ao F5.
+- **O painel de Encontros**, depois do conserto: a fileira com as 4, a Defesa do dono indo de 25 a
+  29 ao ligar o auxílio, e nenhum erro de página.
+- **O id da invocação é seletor CSS válido**: `novoId` gera `inv_<base36>_<base36>`, que sempre
+  começa por letra e não tem caractere especial.
+- **O aviso de navegador sem `@scope`** já aparece no painel, porque ele é o mesmo da ficha. Sem
+  escopo o CSS de um shikigami vaza para a página, e isso segue sendo o limite conhecido, com o
+  `?semcss=1` como saída.
+
+---
+
+### O que ficou de fora, e por quê
+
+1. **O Dano Adicional não vira número no dono.** Ele é um DADO e vale "em um próximo ataque", e o
+   canal `danoBonus` soma número fixo enquanto o `dadosDano` conta dados da própria arma. Anotado.
+2. **O Prejuízo por Múltiplos Auxílios não é contado.** Com os auxílios virando interruptor, ligar o
+   mesmo duas vezes na rodada agora é possível na tela e o número não desce. Anotado.
+3. **A invocação exorcizada continua na lista da criatura.** Ver acima. Anotado.
+4. **A Horda não ganhou barra de vida nem interruptor.** Ela é uma criatura só em combate e tem PV
+   próprio, mas o PV dela sai do somatório dos membros, e decidir o que "dano na horda" faz com o PV
+   de cada membro é regra que não foi perguntada.
+
+---
+
+## SESSÃO DE 2026-08-30 (parte 7): A LISTA DE PERÍCIAS ABRIU, E O OFÍCIO PASSOU A SE REPETIR
+
+Quatro pedidos do autor na aba de Perícias. Os três primeiros valem para os **dois sistemas**
+(pergunta feita e respondida: *"Os dois"*), e só o quarto é do jogador.
+
+### 1. O painel de Sugestões saiu, e as vinte do livro ficam à mostra
+
+Autor: *"remova a aba de Sugestões de Pericias. Deixando todas as pericias a mostra."*
+
+Até aqui a ficha nascia com as **17 padrão** e as três complementares (Direção, Sobrevivência,
+Teologia) ficavam escondidas num painel de Sugestões, de onde eram adicionadas uma a uma. Agora
+`periciasOrdem` diz só a **ORDEM**, e não quem entra: toda perícia do livro está sempre na lista.
+
+⚠ **A ficha salva antes de hoje não perde a ordem dela.** As três que faltam voltam **na posição de
+catálogo**, logo depois da vizinha mais próxima que já está na lista. Empilhá-las no fim jogaria as
+três para baixo de tudo em toda ficha existente, e quem tivesse reordenado à mão veria a lista
+estragada sem ter mexido em nada.
+
+### ⚠ E POR ISSO O X SÓ SOBROU NAS PERSONALIZADAS
+
+Sem o painel de Sugestões, remover uma perícia do livro não teria mais volta. Perguntado ao autor, e
+a resposta foi *"Só nas personalizadas"*: o botão Nova perícia refaz uma personalizada, então essa
+remoção continua reversível. As do livro deixaram de ter X.
+
+Isso apagou uma capacidade que o cabeçalho do catálogo descrevia (*"também é possível remover
+perícias padrão, ex.: Tecnologia numa campanha de época"*). É troca consciente: a mesa que não
+quiser Tecnologia simplesmente não a treina.
+
+### 2. Contagem ímpar ganha um Ofício a mais
+
+Autor: *"Caso fique um Número Impar de Pericia, adicione um 'Oficio' a mais."*
+
+A lista é mostrada em **duas colunas**, e número ímpar deixa uma delas mais curta. O desempate é um
+Ofício, e não uma linha vazia, porque Ofício é a única perícia que o personagem pode ter mais de uma
+vez. **Vinte é par**, então numa ficha nova ele não aparece: ele nasce quando a ficha cria uma
+perícia personalizada.
+
+⚠ **E ELE É UM OFÍCIO DE VERDADE** (perguntado, e a resposta foi *"Ofício de verdade"*): tem
+proficiência própria e Ofícios escolhidos próprios, então dá para ser **Treinado num e Mestre em
+outro**, e ele **gasta vaga** como qualquer perícia.
+
+⚠ **POR ISSO ELE NÃO SOME QUANDO A CONTA VOLTA A SER PAR.** Um extra que já carrega escolha fica na
+lista, par ou ímpar, e o desempate passa a ser o próximo (`oficio__3`). Sem essa regra, criar a
+segunda perícia personalizada apagaria da tela um Ofício treinado **e a vaga gasta nele iria junto,
+calada** — exatamente o desenho que `docs` já registra como efeito descartado sem sintoma.
+
+`periciaOficios` deixou de ser uma lista solta e virou **um objeto id → lista**. Os dois formatos
+antigos (a lista, e o `periciaOficio` de nome único antes dela) são lidos por `oficiosDaFicha` e
+convertidos na abertura, então nenhuma ficha salva perde o que escolheu.
+
+### 3. Arrastar e soltar no lugar das setas
+
+Autor: *"Remova as setinhas de mover para cima e para baixo, e adicione no lugar a opção de Segurar e
+Arrastar para a posição que queremos."*
+
+**Esta primeira versão usava o arrastar nativo do HTML e foi REFEITA no mesmo dia. Ver a seção 5.**
+O que sobreviveu dela: a pega é o ícone à direita, a **linha inteira é a área de soltar** (mirar num
+alvo de 20px seria cruel), e a perícia **entra na posição** da linha em que foi solta, e não troca de
+lugar com ela. Com troca, arrastar do fim para o começo deixaria a de cima lá embaixo.
+
+⚠ **O Ofício de desempate não arrasta e não recebe.** Ele não está em `periciasOrdem`, é calculado a
+partir do Ofício do livro, então não teria onde gravar a posição nova.
+
+### 4. O contador de vagas saiu do card de Testes de Resistência, no jogador
+
+Autor: *"Remova o contador de Pericias em Testes de Resistência na Ficha de Jogador."*
+
+Ele já era a mesma régua da divergência `trForaDoOrcamento`, fechada na parte 5: no jogador o livro
+tira os TR do Limite de Perícias, em caixa alta. O medidor no cabeçalho estava contando um caixa que
+não é o dele. Na criatura, onde os dois dividem as mesmas vagas, o contador continua nos dois cards,
+e o `title` do medidor passou a dizer a verdade em cada sistema.
+
+### 5. O arrastar nativo saiu, e entrou o @dnd-kit
+
+Autor, vendo a primeira versão: *"Ficou torta a parte de segurar e arrastar. E a sensação de clicar,
+segurar e arrastar está esquisita."*
+
+Eram **dois defeitos, e um deles era meu**:
+
+⚠ **A COLUNA SAÍA TORTA porque o valor fica ANTES das ações na linha.** Com o X só nas
+personalizadas e a pega ausente no Ofício de desempate, as linhas passaram a ter contagens
+diferentes de botões pela primeira vez, e cada botão a menos puxava o número daquela linha para a
+direita. Agora as duas casas existem sempre, cheias ou vazias, e o ícone é centrado por **flex** e
+não por `mx-auto`, que só resolve a horizontal e deixava o desenho pendurado na linha de base.
+Medido no navegador: as 20 pegas ocupam **dois** valores de x (um por coluna), e os 20 valores
+também.
+
+⚠ **E A SENSAÇÃO ERA A DO ARRASTAR NATIVO DO HTML**, que é ruim mesmo: ele entrega um recorte
+cinza do elemento e nada mais, as vizinhas não abrem espaço, e a linha só reage quando o ponteiro
+já está em cima dela. Trocado pelo **@dnd-kit**, que já era dependência do projeto (o Dashboard, a
+Biblioteca e os Encontros do 2.5.2 ordenam com ele). O que se ganha:
+
+- a linha arrastada vira uma **cópia que segue o cursor** (`DragOverlay`), com anel e sombra;
+- a original fica no lugar como um **buraco tracejado**, e não some;
+- as vizinhas **abrem espaço** sozinhas, animadas;
+- a pega acende no hover da linha, com `cursor-grab` e `grabbing`;
+- funciona no **dedo** (`TouchSensor` com atraso de 200ms) e no **teclado**;
+- `distance: 6` mantém o clique seco sendo clique.
+
+⚠ **Um só `SortableContext` para as duas colunas.** A lista é uma, e as colunas são duas fatias
+dela. Com um contexto por coluna, arrastar da esquerda para a direita não teria para onde ir. E a
+estratégia é a `rect`, não a vertical, que assume uma pilha só.
+
+⚠ **A linha arrastada ganhou `pointer-events-none`**, senão o painel de fontes da origem abre
+debaixo da cópia que segue o cursor.
+
+`LinhaPericiaOrdenavel` saiu de dentro do `map` porque `useSortable` é um **hook**, e o grupo de
+hover dela chama-se `linha`: o `group` sem nome já é do `ValorComFontes`, e um `group-hover` sem
+nome responde a qualquer ancestral com a classe.
+
+### 6. O Ofício extra mora debaixo do original
+
+Autor: *"Coloque o Oficio Novo para debaixo do Oficio Original quando ele for aparecer."*
+
+Ele entrava no fim da lista. Os dois são a mesma perícia, e separá-los fazia o segundo parecer outra
+coisa. Se o Ofício do livro tiver sido arrastado, os extras vão junto com ele.
+
+### 7. Ofício é Inteligência, e ponto
+
+Autor: *"Mude o Atributo de Oficio para Inteligência."*
+
+Ofício era a **única perícia com atributo variável**: usava Sabedoria quando o modificador dela fosse
+maior. O número da linha mudava sozinho ao mexer num atributo que não é o dela. Agora o atributo vem
+do catálogo, como o das outras dezenove.
+
+### ⚠ BUG ACHADO NO CAMINHO: FICHA NOVA NO /Player NASCIA COMO CRIATURA
+
+Encontrado ao conferir a tela no navegador, e **é defeito das partes 1 a 6**, não desta.
+
+`createBlankAfty` devolve sempre `rulesVersion: "afty"`, e o sistema só era gravado **ao salvar**.
+Até o primeiro salvamento, uma ficha nova no /Player tinha a TELA do jogador (as abas saem do
+`sistema` da rota) e os NÚMEROS da criatura (o `deriveAfty` lê `sistemaDaFicha(ficha)`). O sintoma
+era a divergência inteira aparecendo de uma vez: orçamento de perícias `3 + mod + Grau` em vez do
+pacote da Classe, escala por Tipo, TR gastando vaga, Resistência Parcial, chips de Tipo e Patamar.
+
+A ficha em branco agora **nasce com o `rulesVersion` do sistema**. Quem deriva lê a FICHA, então é a
+ficha que tem de dizer quem ela é.
+
+⚠ **E os chips de Tipo e Patamar do Preview somem no jogador.** Os campos já tinham sido escondidos
+do criador na parte 2, e o Preview tinha ficado para trás mostrando o valor morto.
+
+### 8. O card da ficha de jogador mostra só imagem, nome e Nível
+
+Autor: *"No Cardzinho das Fichas de Player. Deixar só imagem, nome e nível."*
+
+⚠ **ESTE CARD MORA NO GRIMÓRIO 2.5.2**, em `src/components/Dashboard.jsx`, e não dá para trocá-lo do
+lado do Afty: ele é um componente interno daquele arquivo, e a listagem inteira tem 1520 linhas com
+pastas, importar, exportar, seleção, filtros e arrastar. Perguntado ao autor, e a resposta foi
+**exceção cirúrgica** em vez de cópia.
+
+O que entrou lá são duas guardas aditivas, uma no card e outra no fantasma do arrasto:
+`creature.rulesVersion === "player"` esconde o chip de Patamar e a linha HP / PE / Def, e troca o
+rótulo do nível de "ND" para "Nível" (resposta do autor). **Nenhuma criatura 2.5.2 tem
+`rulesVersion` "player"**, então a 2.5.2 não muda em nada. É a mesma forma do precedente que já
+existia no arquivo, a entrada `beyond` de `PATAMAR_STYLES`, acrescentada pelo mesmo motivo.
+
+⚠ **A comparação é com a string crua de propósito.** Importar o `ehPlayer` de `afty-sistema.js` faria
+o grimório 2.5.2 depender do Afty, e a dependência só existe no sentido contrário.
+
+A altura mínima da seção cai na ficha de jogador: com uma linha só, ela deixaria um vão embaixo. Os
+cards seguem alinhados entre si porque a listagem do /Player só tem fichas de jogador.
+
+Conferido nas três rotas: /Player mostra "Flins · Nível 20", /Afty segue com "Comum · ND 20 · HP 126
+PE 80 Def 3", e a 2.5.2 segue com as criaturas base inteiras.
+
+### 9. O contador de perícias abre as fontes no hover
+
+Autor: *"quando eu passar o mouse por cima da Quantidade de Pericias, me mostre a Fonte dela."*
+
+Ele era o último número derivado do criador sem `PainelDeFontes`. Agora abre uma linha por fonte:
+
+| | Jogador | Criatura |
+|---|---|---|
+| 1 | `<Classe> (Pacote)` | `Base` (3) |
+| 2 | o atributo **escolhido** na criação | o **maior** entre Inteligência e Sabedoria |
+| 3 | | `Grau do Feiticeiro` |
+| 4 | uma linha por fonte do canal `vagasPericia` | idem |
+
+⚠ **O TOTAL PASSOU A SER A SOMA DAS PARCELAS**, e não uma conta paralela ao lado delas. Número certo
+com detalhamento errado é bug, e a única forma de isso não acontecer é o número sair das parcelas.
+As duas fórmulas originais (`totalPericias` e `totalPericiasDoJogador`) seguem no módulo e o assert
+compara as duas contas.
+
+⚠ **A parcela do canal só entra se fechar com o número.** Um canal com expressão negativa faria as
+duas contas divergirem, e aí vale mais uma linha honesta chamada "Outros" do que um detalhamento
+errado.
+
+### 10. O que a Classe já decidiu chega concedido
+
+Autor: *"faça com que eu receba de forma obrigatoria os TRs e Pericias já selecionados da
+Especialização / Origem."*
+
+⚠ **ESCOLHA QUE SÓ TEM UM CAMINHO NÃO É ESCOLHA.** O Restringido é o único caso hoje: o livro dá
+*"Testes de Resistência de Fortitude e Reflexos"* com "e", e *"Uma perícia de Ofício"*, que é uma
+lista de um item só. Os três chegam prontos, verdes, e não podem ser desmarcados. O que ainda é
+escolha de verdade (*"um Teste de Resistência entre Fortitude ou Reflexos"*) continua em aberto, e é
+a tela do pacote que segue pendente.
+
+A regra é `escolhe >= entre.length`, e não `entre.length === 1`, para valer também se uma Classe
+futura pedir duas de uma lista de duas.
+
+A concessão entra pela **mesma porta** do treino concedido pelo Motor: a faixa resolvida sobe, a
+escolhida não, então a linha fica verde e não gasta vaga.
+
+⚠ **E O TOTAL CAI NA MESMA MEDIDA.** O Restringido treina cinco perícias, e uma delas é Ofício, que
+ele recebe. Se Ofício continuasse contando no total e viesse de graça, a ficha treinaria **seis**.
+`vagasDoPacote` desconta as automáticas, e há assert ponta a ponta contando as perícias treinadas.
+
+Os TR não mexem em nada: no jogador eles já estavam fora do Limite de Perícias.
+
+### Verificação
+
+`asserts/t-pericias-lista.mjs`, 40 asserts novos: as vinte na ficha em branco, a ficha antiga
+recebendo as complementares de volta na posição certa, a ordem escolhida sobrevivendo, id repetido e
+id inventado sumindo, o desempate entrando e o ocupado não saindo, cada Ofício com o seu nome, a sua
+proficiência e a sua vaga, e os três formatos de `periciaOficios` (mais a migração da abertura).
+
+`asserts/t-pericias-pacote.mjs`, 37 asserts: a concessão do Restringido, o Lutador que não recebe
+nada porque escolhe de verdade, a criatura que não tem pacote, o total caindo na medida da
+concessão, a soma das parcelas fechando com o total nos quatro casos, o atributo escolhido trocando
+a parcela e o canal do Motor entrando com nome próprio.
+
+A suíte foi para **1716 asserts em 34 arquivos**, todos passando. `npx eslint src/systems/afty/
+asserts/` limpo, `npx vite build` limpo.
+
+⚠ **`src/components/` NÃO está intocado nesta sessão**, e foi a única vez: as duas guardas do card,
+com autorização explícita do autor. Ver a seção 8.
+
+E a tela foi conferida no navegador com Playwright: as vinte perícias na ordem do catálogo, os dois
+Ofícios lado a lado depois de criar uma personalizada, o alinhamento das pegas e dos valores, o
+cabeçalho dos TR sem contador, os chips sem Tipo e Patamar, e o arraste movendo Atletismo para cima
+de Acrobacia.
+
+### Ponta solta
+
+O aviso de orçamento estourado continua dizendo *"Remova um treino ou eleve Inteligência, Sabedoria
+ou o ND"*. No jogador isso está errado: o orçamento dele é o pacote da Classe inicial mais o
+atributo **escolhido** na criação, e o ND não o move. Não mexi porque não foi pedido, e porque o
+texto certo depende da tela do pacote, que ainda não existe.
+
+---
+
+## SESSÃO DE 2026-08-30 (parte 6): O TETO DE NÍVEL, O PACOTE DA CLASSE E A ARMA NA MÃO
+
+Fecha as Perícias e os TR do jogador, com quatro respostas do autor.
+
+### ⚠ O NÍVEL DO JOGADOR TRAVA EM 30, e isso resolveu o Bônus de Treinamento
+
+Autor: *"Vai até +8 no Nível 26. E os Leveis são TRAVADOS em 30. Player só vai até 30."*
+
+A escada da Maestria é a **mesma** nos dois sistemas até o 30 (+2, e +1 nos níveis 5, 9, 13, 17, 21
+e 26). Os dois degraus que só a criatura tem (+9 no ND 31 e +10 no ND 36) ficam **acima do teto**,
+então **não precisou de divergência de Maestria**: o teto de nível já resolve. Se alguém subir o teto
+um dia, o BT diverge sozinho e há assert avisando.
+
+⚠ **E o piso caiu para 1**, contra o 3 da criatura: o livro descreve o primeiro nível de cada Classe,
+então nível 1 tem de ser escolhível.
+
+⚠ **O teto entra no `deriveAfty`, e não só no campo da tela.** Uma ficha importada com 40 tem de
+derivar como 30, e não derivar 40 com a tela mostrando 30.
+
+### Só a Classe inicial dá pacote de perícias
+
+Autor escolheu **"Nada"** entre dar o pacote inteiro na multiclasse e dar só as livres. A segunda
+Classe entra apenas pelos níveis dela.
+
+⚠ **E o atributo é ESCOLHIDO, não o maior.** Verbatim: *"Esta escolha não pode ser modificada nem
+revertida após a criação do personagem, sendo algo definitivo."* A criatura usa
+`max(modInt, modSab)`, que é o contrário: ela sempre pega o melhor dos dois. Campo novo
+`periciaAtributo`, e um Lutador com INT +3 tem 7 perícias enquanto o mesmo Lutador com SAB +1 tem 5.
+
+> ⚠ **REVERTIDO EM 2026-08-31.** O autor: *"a quantidade de perícias é o maior modificador de
+> atributo entre Inteligência ou Sabedoria e não só Inteligência."* O jogador passou a usar
+> `max(modInt, modSab)`, igual à criatura, e o `periciaAtributo` ficou parado. Ver a seção do dia.
+
+| Ficha (nível 10, INT +3) | Orçamento |
+|---|---|
+| Lutador 10 | 1 dirigida + 3 livres + 3 = **7** |
+| Lutador 5 + Conjurador 5 | pacote do Lutador = **7** |
+| Suporte 5 + Lutador 5 | pacote do Suporte (2+3) = **8** |
+| Lutador 5 + Suporte 5 | pacote do Lutador (1+3) = **7** |
+
+As duas últimas têm as mesmas Classes e orçamentos diferentes, e é a régua de "primeira da lista"
+que o PV já usava.
+
+### ⚠ "ARMAS MARCIAIS" ERA A ARMADILHA DA SESSÃO
+
+As três palavras de treinamento falam de **eixos diferentes** do catálogo de equipamentos, e é isso
+que segurou esta ligação desde julho:
+
+| Palavra | O que é no catálogo |
+|---|---|
+| `simples` | a **classe** da arma (simples ou complexa) |
+| `marciais` | a **propriedade** `marcial`, e NÃO a classe complexa |
+| `distancia` | a **categoria**, e conta arremesso junto |
+| `todas` | qualquer arma |
+
+⚠ **A leitura errada tornaria Lutador e Combatente idênticos.** Se "marciais" fosse a classe
+complexa, "Simples + Marciais" cobriria as 52 armas, que é exatamente o que o livro dá ao Combatente
+("Todas as armas"). Duas Classes escritas diferente não podem recortar igual, e há assert medindo
+justamente isso.
+
+| Classe | Alcance |
+|---|---|
+| Lutador (simples + marciais) | 25 de 52 |
+| Conjurador (simples + distância) | 31 de 52 |
+| Suporte (simples) | 20 de 52 |
+| Combatente e Restringido (todas) | 52 de 52 |
+
+⚠ **"A Distância" inclui arremesso** (autor), então o recorte é "toda arma que não seja corpo a
+corpo".
+
+### A arma manejada decide o treino
+
+Na criatura a ficha tem uma marca por TIPO de ataque e ela decide sozinha. No jogador a marca some e
+quem decide é a arma contra o que a Classe treina.
+
+⚠ **Arma fora do treino continua utilizável** (autor): perde o Bônus de Treinamento e mais nada, sem
+penalidade e sem bloqueio de equipar. Há assert medindo que a diferença entre uma arma treinada e
+uma de fora é **exatamente o BT**, para ninguém "consertar" isso somando penalidade depois.
+
+⚠ **O Amaldiçoado não pode somar o BT duas vezes.** Ele é `sempreTreinado` no catálogo, porque o
+livro escreve "você é sempre treinado" na fórmula dele, então o `acertoDe` só devolve o BT à linha
+quando o tipo de ataque **não** o tem.
+
+Exemplo, Lutador 10 com BT +4: Clava (simples) acerta 15, Alabarda (complexa sem a propriedade
+Marcial) acerta 11, e a criatura com as mesmas duas armas continua nos 9 de sempre.
+
+### Verificação
+
+- `npx eslint src/systems/afty/` passou.
+- `npx vite build` passou.
+- `npm run asserts`: **1639 asserts em 32 arquivos**. O `t-sistema.mjs` foi de 220 para 263.
+- `src/components/` sem alteração.
+
+### O que falta
+
+1. **A TELA das perícias e dos TR do jogador.** O motor está pronto (orçamento, pacote, escalas,
+   proficiência por arma), mas a aba ainda é a da criatura: falta a escolha dirigida do pacote, a
+   escolha do TR, o campo de Inteligência ou Sabedoria e esconder a marca por tipo de ataque.
+2. **Mestre por atributo.** *"Ao invés de se tornar treinado [...] você pode escolher se tornar
+   mestre em uma perícia com a qual já seja treinado"*, e *"Caso algum efeito faça com que você se
+   torne treinado em uma perícia em que você já é treinado, você se torna mestre nela."* Na criatura
+   Mestre custa 2 vagas, e no jogador parece custar 1. Não confirmado.
+3. **A escala de Perícia da CRIATURA** segue com a fórmula do jogador (metade do ND), agora como a
+   única das três assim. O autor respondeu sobre o TR e não sobre ela.
+
+---
+
+## SESSÃO DE 2026-08-30 (parte 5): AS TRÊS ESCALAS VIRARAM UMA
+
+O autor mandou as seções de Perícias, Jogadas de Ataque, Testes de Resistência, Defesa e Bônus de
+Treinamento do livro do jogador.
+
+### O catálogo já estava certo, e há mais de um mês
+
+`afty-pericias-catalogo.js` reproduz a tabela do livro exatamente: as 20 perícias com o Atributo
+Chave certo, `requerTreinamento` em Feitiçaria, Medicina, Ofício e Prestidigitação, `complementar`
+em Direção, Sobrevivência e Teologia, e os três tipos de ataque com `atributoFineza` e
+`sempreTreinado` no Amaldiçoado. Foi transcrito em 2026-07-27 e nada precisou mudar.
+
+### ⚠ AS TRÊS ESCALAS VIRARAM UMA
+
+É a diferença mais fácil de errar do sistema, porque as três fórmulas se parecem e só o divisor
+muda. No livro do jogador as três dizem **"metade do nível do personagem"**.
+
+| Teste | Criatura | Jogador |
+|---|---|---|
+| Perícia | metade do ND | metade do nível |
+| Jogada de Ataque | `INT(ND ÷ 1,5)` | metade do nível |
+| Teste de Resistência | escala por **Tipo** (a da CD ou a da Defesa) | metade do nível |
+
+⚠ **A Perícia já estava com a fórmula do jogador**, e o comentário do `resolveTestes` dizia que isso
+era provisório desde julho: *"Perícias seguem em metade do ND, que é a fórmula do JOGADOR no livro.
+PENDENTE: as outras duas tinham fórmula própria da criatura, então esta provavelmente também tem.
+Perguntado, sem resposta ainda."* A resposta chegou pelo outro lado: agora é a **criatura** que está
+com a fórmula do jogador numa das três, e isso segue como pergunta aberta.
+
+⚠ **A Integridade cai junto.** Ela era o único TR de escala fixa (`ND ÷ 1,5` em todo Tipo), e no
+jogador entra na mesma régua das outras quatro, senão seria a única linha falando outra língua numa
+tela onde tudo é metade do nível.
+
+### O livro escreveu em CAIXA ALTA, e são três regras numa frase
+
+> *"TESTES DE RESISTÊNCIA NÃO PODEM SER ESCOLHIDOS DE FORMA LIVRE, SENDO RECEBIDO POR
+> ESPECIALIZAÇÃO, TALENTOS E OUTRAS FONTES. TESTES DE RESISTÊNCIAS NÃO SÃO PERICIAS E NÃO RECEBEM
+> BÔNUS QUE AFETAM PERICIAS. E não contam para o Limite de Pericias."*
+
+As três divergem da criatura, onde *"Perícias E Testes de Resistência gastam deste mesmo caixa"*
+(autor, 2026-07-27). A terceira entrou (`trForaDoOrcamento`), e as duas primeiras dependem do pacote
+de Classe, que ainda não foi ligado.
+
+⚠ **O gasto de TR continua CALCULADO no jogador, e só não entra na soma.** Zerar a variável
+esconderia um TR marcado à mão numa ficha onde marcar não devia ser possível.
+
+### Os pacotes de Classe viraram dado
+
+Cada Especialização ganhou `resistencias` e `pericias` dentro de `caracteristicas`, verbatim:
+
+| Classe | TR | Perícias dirigidas | Livres |
+|---|---|---|---|
+| Lutador | entre Fortitude ou Reflexos | 1 de Ofício, Atletismo, Acrobacia | 3 |
+| Combatente | entre Fortitude ou Reflexos | 2 de Ofício, Atletismo, Acrobacia | 3 |
+| Conjurador | entre Astúcia ou Vontade | 2 de Ofício, Feitiçaria, Ocultismo | 2 |
+| Controlador | entre Astúcia ou Vontade | 1 de Ofício, Percepção, Persuasão | 2 |
+| Suporte | entre Astúcia ou Vontade | 2 de Ofício, Medicina, Prestidigitação | 3 |
+| Restringido | **Fortitude E Reflexos, fixos** | 1 de Ofício | 4, **exceto Feitiçaria** |
+
+⚠ **O Restringido é o único que não ESCOLHE TR.** O texto dá os dois com "e", e não com
+"entre ... ou". O campo `fixas` guarda isso, e `escolhe: 2` sobre uma lista de dois daria o mesmo
+número **por acidente** e faria a tela pedir uma escolha que não existe.
+
+⚠ **E o único com VETO.** `vetadas: ["feiticaria"]` vale só para as livres, porque o pool dirigido
+dele já é só Ofício.
+
+### ⚠ Um rótulo falando a língua errada
+
+A Perícia do jogador mostrava **"Metade do ND"** no hover, numa ficha que não tem ND. Os TR e os
+Ataques dele já diziam "Metade do Nível", então a Perícia era a única linha em vocabulário de
+criatura na mesma tela. O número nunca esteve errado, e o assert que pegou isso compara os DOIS
+rótulos de propósito.
+
+### Verificação
+
+- `npx eslint src/systems/afty/` passou.
+- `npx vite build` passou.
+- `npm run asserts`: **1596 asserts em 32 arquivos**. O `t-sistema.mjs` foi de 163 para 220.
+- `src/components/` sem alteração.
+
+### O que NÃO foi ligado, e por quê
+
+**O orçamento de perícias do jogador.** Ele é o pacote de Classe mais o modificador de Inteligência
+ou Sabedoria escolhido na criação, e trava numa pergunta: com multiclasse, a segunda Classe dá o
+pacote inteiro de novo? Um Lutador 1 com Conjurador 1 teria 2 TR e 8 perícias, o que é bastante.
+
+**A proficiência de arma na Jogada de Ataque.** Hoje a ficha tem uma marca por TIPO de ataque
+(corpo, distância, amaldiçoado) e o livro dá proficiência por CATEGORIA de arma (Simples, Marciais,
+todas). Ligar uma na outra muda o modelo, e é decisão de desenho.
+
+---
+
+## SESSÃO DE 2026-08-30 (parte 4): O NÍVEL DE CLASSE PASSOU A PAGAR TUDO
+
+Seis regras do autor em sequência, e juntas elas desmontam a **Habilidade Geral** inteira do lado do
+jogador. Cada uma remove uma peça do Afty e devolve a regra do livro.
+
+| Regra | Divergência | O que muda |
+|---|---|---|
+| Bases recebidas ao chegar no nível | `basesAutomaticas` | as 37 concedidas, e não 9 |
+| 1 Habilidade por nível a partir do 2º **de cada Classe** | `vagasPorNivelDeClasse` | o orçamento volta a vir do nível |
+| Não existe aba Habilidades Gerais | `habilidadesGerais` | as cinco somem, com o que elas concediam |
+| 1 Aptidão Amaldiçoada por nível a partir do 2º | `vagasPorNivelDeClasse` | nível 20 dá 19, exceto Restringido |
+| Melhoria e Lendária liberam sozinhas no 21 e 22 | `altoNivelSemGeral` | sobra só o ND |
+| Focos de Interlúdio: número LIVRE | `focosLivres` | o mestre digita, nada calcula |
+
+⚠ **As quatro últimas são consequência da terceira.** Tirar as Gerais tirava junto a vaga de
+Especialização, a vaga de Aptidão, os Focos de Treinamento e o destravamento do Alto Nível. O autor
+mandou o substituto de cada uma, e nenhuma ficou órfã.
+
+### ⚠ O AFTY É QUE DIVERGIA DO LIVRO NAS BASES
+
+O cabeçalho de `afty-habilidades.js` dizia isso desde sempre: *"No livro as Bases são de graça; no
+Afty elas são escolhidas, igual às por Nível."* A marca `automatica: true` era o autor liberando a
+regra do livro **uma a uma**, desde 2026-08-10. Eram nove. Na ficha de jogador valem para as 37, e
+28 mudam de comportamento.
+
+O mecanismo já existia inteiro e não precisou de nada novo: `concedidas` nunca gastou orçamento, e
+já tratava o caso de uma ficha antiga ter gravado à mão uma Base que virou automática.
+
+### ⚠ DOIS DESCONTOS PARECIDOS QUE NÃO SÃO O MESMO
+
+| Coisa | Desconto | Lutador 2 + Conjurador 2 |
+|---|---|---|
+| Vaga de Habilidade | o 1º nível **de cada Classe** | **2** |
+| Aptidão Amaldiçoada | o 1º nível **do personagem** | **3** |
+
+O autor foi explícito nos dois: *"o primeiro Nível da Multiclasse eu não recebo inclusive"* para a
+Habilidade, e *"Independente de qual Especialização"* para a Aptidão. Confundir os dois daria 3 e 3,
+ou 2 e 2, e as duas leituras são igualmente plausíveis lendo depressa. Há assert nos dois.
+
+⚠ E nenhum dos dois é o desconto do **PV**, que é um terceiro: lá a classe INICIAL é privilegiada
+(paga a base maior) e as outras é que perdem.
+
+### ⚠ ESCONDER A ABA NÃO BASTAVA
+
+As Gerais **concedem**. Uma ficha que guardasse Gerais de antes da regra continuaria recebendo vaga
+de Especialização, vaga de Aptidão e Focos, com a aba invisível. Por isso o derive resolve uma ficha
+**vazia** de Gerais no jogador, e não só esconde o card. Há assert com uma ficha carregando três
+Gerais gravadas e recebendo zero por elas.
+
+### O Alto Nível não precisou de código
+
+`avaliarAcessoAltoNivel` já tratava `destravado` ausente como "as duas trilhas abertas", e o
+comentário dizia isso desde que a trava nasceu. O jogador simplesmente **não passa o objeto**.
+Passar `{ melhorias: true, lendarias: true }` diria a mesma coisa por um caminho a mais.
+
+### Focos: a única divergência com MENOS automação
+
+*"É o mestre que decide quando um Personagem de Jogador ganha Focos de Interlúdios, e não algo
+mecânico."* O total virou campo digitável no contador do cabeçalho, e o campo `focosLivres` nasceu
+no schema. O canal `focos` continua somando por cima, para uma habilidade ou Addon ainda poder
+conceder Foco. O gasto segue contado, porque estourar orçamento é erro nos dois sistemas.
+
+### O que o `semEnergia` virou
+
+Ele era `tipo === "restringido"`, e o jogador não tem Tipo. Passou a ler a **Especialização**
+Restringido no jogador. As duas leituras dão o mesmo resultado na criatura, porque a trava
+Origem ↔ Especialização é bidirecional desde 2026-08-03.
+
+### ⚠ Um susto que NÃO era bug
+
+O primeiro teste do exemplo do autor deu **4** vagas onde deviam ser 2. O campo lido era o errado:
+`habilidades.total` soma a pilha **exclusiva de Talento**, e ela cresceu de propósito, porque Bases
+que concedem vaga de Talento agora são concedidas sozinhas. Quem carrega a regra é
+`habilidades.comum`, e ele dava 2 desde o começo. O assert deixa isso escrito, porque a próxima
+pessoa vai ler `total` também.
+
+### Verificação
+
+- `npx eslint src/systems/afty/` passou.
+- `npx vite build` passou.
+- `npm run asserts`: **1539 asserts em 32 arquivos**. O `t-sistema.mjs` foi de 111 para 163.
+- `src/components/` sem alteração.
+
+### O que falta
+
+1. **A escala dos Testes de Resistência** (`escalaTR`), a última divergência conhecida desligada.
+2. **Os Treinamentos por Classe** (armas, escudos, escolha de TR e de perícias), que o livro
+   descreve em cada uma e que nenhum sistema lê.
+3. **Pontos de atributo por ciclo de 4 ND**, que ainda saem do Patamar (Comum dá 2).
+4. **O contador único de Feitiços**, que era `2 × Maestria` mais bônus de Patamar. Sem Patamar e sem
+   Gerais dividindo o caixa, ele hoje é `2 × Maestria` só para Feitiços, e o autor não confirmou.
+
+---
+
+## SESSÃO DE 2026-08-30 (parte 3): O TIPO SAIU, E A CLASSE ASSUMIU
+
+O autor mandou as **Características de Especialização** das seis Classes e os **Valores
+Adicionais**, verbatim do livro do jogador. Com eles, Tipo, Patamar e Quantidade de PE saíram da
+Ficha de Player e os números passaram a vir da Classe.
+
+⚠ **Só no Player.** O autor confirmou: a criatura do Afty mantém Tipo e Patamar, e nenhuma criatura
+já montada muda por causa disto.
+
+### A tabela, verbatim
+
+| Classe | PV 1º | Dado | PV/nível | PE/nível | Mod. Técnica | Multiclasse |
+|---|---|---|---|---|---|---|
+| Lutador | 12 | 1d10 | 6 | 4 | não | For ou Des 16 |
+| Combatente | 12 | 1d10 | 6 | 4 | não | For ou Des 16 |
+| Conjurador | 10 | 1d8 | 5 | 6 | sim | Int ou Sab 16 |
+| Controlador | 10 | 1d8 | 5 | 5 | sim | Pre ou Sab 16 |
+| Suporte | 10 | 1d8 | 5 | 5 | sim | Pre ou Sab 16 |
+| Restringido | 16 | 1d12 | 7 | 4 (Estamina) | não | **não pode, nos dois sentidos** |
+
+### ⚠ CINCO DAS SEIS REPRODUZEM A FÓRMULA DA CRIATURA
+
+Somando os níveis, `pvPrimeiro + pvPorNivel × (N − 1)` dá exatamente o que a planilha calcula por
+Tipo. O Mod. de Constituição também bate: o livro manda somá-lo em todo nível e chama de retroativo,
+o que dá `N × ModCon`, que é o `nd * modCon` que a criatura já usava.
+
+| Classe | Jogador nível 10 | Criatura ND 10 |
+|---|---|---|
+| Lutador e Combatente | 66 | 66 (Tipo Combatente) |
+| Conjurador, Controlador, Suporte | 55 | 55 (Tipo Misto e Conjurador) |
+| **Restringido** | **79** | **120** (Tipo Restringido) |
+
+O livro do jogador e a planilha de criatura só discordam no Restringido, e por 41 pontos no nível 10.
+Vale conferir qual dos dois envelheceu.
+
+### O erro que eu cometi, e que o repositório já tinha documentado
+
+Escrevi os números num `CLASSE_CARACTERISTICAS` indexado por id, fora das entradas. O
+`t-familias.mjs` derrubou na hora: um Addon pode **acrescentar** uma Especialização, e ela nunca
+teria linha num mapa escrito à mão. Movi tudo para dentro de cada entrada, que é onde
+`remendarLista` alcança.
+
+⚠ É literalmente a lição do Domínio Simples de 2026-08-28, e eu a repeti seis dias depois. O campo
+`caracteristicas` é **opcional** de propósito: Classe de Addon sem ele não rende PV nem PE, e o
+validador só confere a forma do que existe. Bloquear seria proibir homebrew de classe.
+
+### As duas regras que o livro escondeu numa frase
+
+⚠ **"Um personagem soma um modificador de atributo UMA ÚNICA VEZ ao seu total."** Um Conjurador 5 e
+Suporte 5 soma o Mod. de Técnica uma vez, e não duas. Por isso a decisão é da FICHA e não da classe,
+e mora em `peModTecnicaDaFicha`.
+
+⚠ **O Restringido recebe Estamina no lugar de PE**, e a tabela de PE simplesmente o omite. O valor
+não veio da tabela, veio do autor, e é confirmado por texto de livro que **já estava no motor**: a
+habilidade Restrito pelos Céus diz *"você inicia com 4 pontos de estamina, e recebe mais 4 a cada
+nível"*. `recursoAlternativo` guarda o nome e `pePorNivel` guarda o valor, porque a Estamina É o PE
+com outro rótulo.
+
+### A classe inicial é a PRIMEIRA DA LISTA
+
+Decisão do autor, entre marca explícita na ficha e maior nível. Só ela paga o `pvPrimeiro`.
+
+⚠ **Reordenar a lista muda o PV**, e é o preço declarado. Há assert medindo a consequência.
+
+⚠ **E a diferença não é `pvPrimeiro − pvPrimeiro`.** A intuição diz 2 (12 do Combatente contra 10 do
+Conjurador) e o número é **1**: a classe inicial troca um `pvPorNivel` pelo `pvPrimeiro`, então ela
+ganha `primeiro − porNivel`, que é 6 no Combatente e 5 no Conjurador. Classe de dado maior tem base
+maior E por-nível maior, e as duas quase se cancelam.
+
+### Os Valores Adicionais: cada um perde uma coisa diferente
+
+| Stat | Jogador | O que ele perde em relação à criatura |
+|---|---|---|
+| Defesa | `10 + ModDes + metade do nível` | a escala por Tipo **e a Maestria** |
+| CD | `10 + metade do nível + mod + BT` | a escala por Tipo, e **mantém** a Maestria |
+| Iniciativa | `ModDes` | o `metade da Maestria` |
+| Deslocamento | `9` | o `maior(ModFor, ModDes) × 1,5` |
+| Atenção | `10 + Percepção` | **nada.** É a única que não diverge |
+
+### A Alma, enfim
+
+`almaMax` do jogador é o PV. Verbatim: *"O valor de Integridade da Alma de um personagem é igual ao
+seu máximo de Pontos de Vida."* O `almaMult` vale 1 nele, porque a Alma não multiplica o PV, ela o
+acompanha. E o canal `almaMax` soma **em pontos**, no PV e na Alma juntos, conforme o autor:
+*"+10 e não +10%. O quê também altera a vida aumentando ela em +10 junto no processo."*
+
+⚠ O `almaMax` do jogador fecha **depois** do `hp`, e não junto do da criatura. Era esse detalhe de
+ordem que me fez adiar a Alma na parte 2: calculá-la antes seria calcular o PV duas vezes.
+
+### ⚠ TRÊS DETALHAMENTOS MENTIROSOS, todos achados pelo mesmo assert
+
+O `t-sistema.mjs` passou a exigir que **as parcelas do hover fechem com o total** em todo stat que
+diverge, nos dois sistemas. Achou três no mesmo dia, e os três davam número certo:
+
+1. **Quantidade de PE** aparecia no hover do jogador numa ficha sem o campo (parcelas 80, total 73).
+2. **Mod. da Técnica** aparecia no PE de um Lutador, que não o soma (parcelas 3, total 0).
+3. **Maestria** aparecia na Defesa do jogador, cuja fórmula não a tem.
+
+E o próprio assert tinha um erro que ele mesmo expôs: o PV da criatura tem parcelas
+**multiplicativas** (o Patamar em "×3"), que o hover mostra como `texto` e não como `valor`. Somar
+`valor` ali dava 103 contra 309. A regra passou a ser: linha com `texto` não é somável.
+
+Os rótulos também passaram a falar a língua do sistema. No jogador o hover do PV mostra **uma linha
+por Classe** com o nível dela e a marca `(inicial)`, em vez de "Base do Tipo (Restringido)" numa
+ficha que não tem Tipo.
+
+### Verificação
+
+- `npx eslint src/systems/afty/` passou.
+- `npx vite build` passou.
+- `npm run asserts`: **1487 asserts em 32 arquivos**. O `t-sistema.mjs` foi de 94 para 111.
+- `src/components/` sem alteração.
+
+### O que falta
+
+1. **A escala dos Testes de Resistência** (`escalaTR`), que segue desligada. O texto do jogador já
+   está em `afty-schema.js`: "mod + metade do nível + BT (se treinado)".
+2. **As diferenças do Comum** que sobraram do Patamar: pontos de atributo por ciclo de 4 ND e o
+   contador de Habilidades. O multiplicador de PV já morreu com a tabela por Classe.
+3. **Os Treinamentos por Classe** (armas, escudos, escolha de TR e de perícias), que o livro
+   descreve em cada uma e que nenhum sistema lê ainda.
+4. **Dados de Vida**, adiados pelo autor: a ficha usa só o valor fixo por ora, e eles entram junto
+   com descansos, que é quem os usa.
+
+---
+
+## SESSÃO DE 2026-08-30 (parte 2): AS MUDANÇAS ESTRUTURAIS DO JOGADOR, E O RAIO NEGRO QUE ESPEROU DOIS MESES
+
+O autor mandou as mudanças estruturais da Ficha de Player: ela **não tem Patamar, Tipo nem
+Quantidade de PE**, o **Máximo de Alma é calculado igual ao PV** (como na 2.5.2) e **Identidade e
+Informações viram uma aba só**.
+
+### O achado: a Aptidão Raio Negro nunca foi ligada, e a nota dela mentia
+
+A terceira mudança dependia de um efeito que não existia. A entrada do catálogo dizia:
+
+> ⚠ EFEITO NÃO APLICADO (regra confirmada pelo autor em 2026-07-16): ter Raio Negro concede **+ND de
+> PE** e **+1 DIRECIONADO na trilha au**. Espera a passada de efeitos (o motor ainda não lê aptidões
+> escolhidas).
+
+⚠ **O motor passou a ler aptidões escolhidas em 2026-07-30**, quando as primeiras 11 foram ligadas.
+A nota ficou dois meses dizendo que esperava uma coisa que já tinha chegado. É a doença do requisito
+`nota` outra vez, e desta vez ela custou o efeito inteiro.
+
+### O +1 Nível de Aptidão MUDOU DE DONO, e isso mexe na criatura
+
+Palavras do autor: *"Deixa a Aptidão fazer o ganho de +ND e um Nível de Aptidão adicional em ambos.
+Quantidade de PE fica só para criaturas, e só mexe em PE. Logo uma criatura com Raio Negro e PE
+Muito Grande ficaria com 2xND e um Nível de Aptidão."*
+
+| Criatura ND 10, Conjurador | PE | Níveis de Aptidão |
+|---|---|---|
+| nada | 60 | 6 |
+| só Qnt.PE Muito Grande | 70 | 6 |
+| só Aptidão Raio Negro | 70 | 7 |
+| os dois | 80 | 7 |
+
+⚠ **Uma criatura Muito Grande SEM a Aptidão perde um Nível de Aptidão** em relação a ontem, e é a
+intenção. Foi a primeira vez que a regra de manutenção do `/Player` teve caso concreto: a Aptidão é
+a mesma entrada de catálogo nos dois sistemas, então perguntei antes de ligar, e a resposta foi
+"em ambos".
+
+⚠ **ASSUNÇÃO A CONFIRMAR:** usei o canal `pontosAptidao` (orçamento livre) e não `nivelAptidao` com
+alvo `au`. O autor disse "um Nível de Aptidão adicional", sem nomear trilha, e é exatamente o lugar
+de onde o +1 da Quantidade de PE saiu. Mas o comentário de 2026-07-16 dizia "+1 DIRECIONADO na
+trilha au". Os dois textos são dele e discordam. Trocar é uma palavra.
+
+### O que entrou
+
+| Divergência | Tipo | Regra |
+|---|---|---|
+| `abasIdentidade` | tela | Identidade e Informações viram uma aba só no jogador |
+| `quantidadeDePE` | regra | O ajuste de −ND a +ND não existe no jogador |
+| `rdBase` | regra | RD Geral e Específica **começam em zero** no jogador |
+| `guardaEresistenciaParcial` | regra | As duas não existem, e não aparecem **nem como zero** |
+| `pvPePorEspecializacao` | regra | ⚠ **DESLIGADA**, esperando a tabela |
+
+Sobre a RD, palavras do autor: *"Começa em 0. E é recebida por Itens, Especializações, Aptidões e
+outras fontes."* Ou seja, a divergência mexe na BASE e não no total: equipamento e canais seguem
+somando, e o jogador não fica sem RD, fica sem RD de graça.
+
+⚠ **A Guarda virou `null` no jogador, e não um objeto com `ativa: false`.** Os dois esconderiam a
+característica da tela, porque todo leitor checa `guarda?.ativa`, mas o autor pediu que ela NÃO
+EXISTA, e um objeto de Guarda numa ficha sem Guarda é convite para alguém ler o `bonusMax` dele um
+dia. A Resistência Parcial virou `null` pelo mesmo motivo, e os três lugares que a desenham passaram
+a esconder `null` e a **mostrar zero**: uma criatura Comum tem a característica e só está zerada.
+
+### ⚠ O assert do clone virou outra coisa, e mais forte
+
+Ele não pergunta mais "os dois são iguais", porque desde hoje não são. Ele pergunta:
+**os dois derives diferem EXATAMENTE nos campos que as divergências ligadas tocam, e em nenhum
+outro.** Uma divergência que vaze para um campo vizinho (a Guarda somando na Defesa, a RD mexendo no
+PV) sai nomeada em vez de virar número plausível.
+
+E ele achou um bug no dia em que nasceu: **o hover do PE do jogador listava "Quantidade de PE +7"
+numa ficha que nem tem o campo**, com as parcelas somando 80 contra um total de 73. Número certo com
+detalhamento errado é bug, a mesma regra do `defesaAtributo`. Há assert somando as parcelas contra o
+total nos dois sistemas.
+
+### ⚠ Tipo e Patamar CONTINUAM na tela do jogador, de propósito
+
+O autor pediu os três campos fora e só a Quantidade de PE saiu. Tipo e Patamar ainda dirigem PV, PE,
+CD, Defesa, escala de TR, pontos de atributo por ciclo e o contador de Habilidades, e a tabela por
+Especialização que os substitui não chegou. Removê-los agora faria o jogador derivar **calado** como
+Combatente Comum, com todo número plausível e errado. Saem junto com a tabela.
+
+A Quantidade de PE pôde sair porque já não faz nada no jogador.
+
+### A Alma não foi implementada, e é decisão
+
+"Máximo de Alma igual ao PV" faz das duas uma conta só, e o PV está travado. Há também um detalhe de
+ordem: o `alma_atual` que o DSL enxerga é montado bem antes do PV existir no cálculo, então a Alma do
+jogador precisa nascer depois. Mexer nisso duas vezes é como se erra. Ela entra junto com o PV.
+
+Sobre o canal `almaMax` no jogador, resposta do autor: *"Soma Pontos direto da alma virando +10 e
+não +10%. O quê também altera a vida aumentando ela em +10 junto no processo."*
+
+### O que falta para destravar o PV e o PE
+
+1. **A tabela por Especialização.** O autor mandou parte: Conjurador base 10 e +5 por nível, Lutador
+   +6, Combatente +6. Faltam as bases de Lutador, Combatente, Suporte, Restringido e Controlador,
+   o valor por nível dos três últimos, e a tabela inteira do PE.
+2. **Qual é a classe inicial.** O próprio autor apontou: *"É um pouco mais difícil de programar, já
+   que precisamos decidir qual a classe inicial."* Só o Nível 1 pega a base, e com multiclasse
+   alguém tem de dizer quem foi primeiro.
+3. **Os valores base de CD, Defesa e Testes de Resistência.**
+4. **As diferenças em relação ao Comum**: multiplicador de PV, pontos de atributo por ciclo de 4 ND
+   e contador de Habilidades.
+
+### Verificação
+
+- `npx eslint src/systems/afty/` passou.
+- `npx vite build` passou.
+- `npm run asserts`: **1470 asserts em 32 arquivos**. O `t-sistema.mjs` foi de 56 para 94.
+- `src/components/` sem alteração.
+
+---
+
+## SESSÃO DE 2026-08-30: NASCEU O /Player, E ELE NÃO É UMA CÓPIA
+
+O autor pediu a rota `http://localhost:5173/Player`, "clonando o Grimório Afty", e avisou que ela
+tem mudanças estruturais a tratar. Ele decidiu as três perguntas de forma antes de qualquer linha.
+
+### As três decisões do autor
+
+| Pergunta | Resposta |
+|---|---|
+| Como clonar? | **Chave de sistema.** O mesmo código serve as duas rotas |
+| O que a primeira entrega abre? | **Criador e Ficha Final** |
+| Os dados são separados? | **Fichas isoladas, encontros JUNTOS** |
+
+### O achado: o repositório já previa esta rota, em quatro lugares
+
+Nenhuma das divergências abaixo foi inventada nesta sessão. As quatro já estavam escritas em
+comentário no código, algumas desde julho, esperando um sistema de jogador que não existia.
+
+| Onde | O que já estava escrito |
+|---|---|
+| `afty-schema.js`, `AFTY_RESISTENCIAS` | *"FÓRMULA DA CRIATURA, que DIVERGE da do jogador: o livro diz mod + metade do nível + BT (se treinado), mas a criatura usa a MESMA escala por Tipo"* |
+| `afty-equipamentos.js`, `UNIFORME_MODIFICACOES` | *"O campo fica aqui porque é o texto do livro e volta a valer na ficha de jogador"* |
+| `creature-schema.js`, Ações e Características | *"quase 100% compatíveis criatura↔jogador. Exceção: Ataque Básico tem dano simplificado na criatura"* |
+| `roadmap-versionamento-e-fichas.md` | Já define **Sistema** como módulo próprio, e chama o Afty de *"o piloto que tira o risco da Ficha de Jogador"* |
+
+⚠ **Isso é exatamente a doença do requisito `nota`**: a anotação de "quando o sistema X nascer,
+revisar aqui" nunca avisa ninguém no dia em que X nasce. Hoje X nasceu, e por isso as quatro
+saíram do comentário e viraram DADO, em `DIVERGENCIAS`.
+
+### Por que não copiar os arquivos
+
+`src/systems/afty/` tem **71 arquivos e 61.515 linhas**, mais 5.548 linhas de assert. Uma cópia
+dobra tudo isso e cobra todo conserto duas vezes, com o desvio acontecendo calado. O autor disse a
+razão contrária sozinho: *"a maioria das mudanças em um vai afetar a outra."* É o que o código
+compartilhado entrega de graça.
+
+O custo que sobra é o simétrico, e é a regra de trabalho que o autor pediu na mesma mensagem:
+**perguntar sempre se a manutenção vale para os dois.**
+
+### ⚠ A REGRA QUE SEGURA TUDO: O SISTEMA VEM DA FICHA, NÃO DA ROTA
+
+A rota decide só em que sistema uma ficha NOVA nasce. Daí em diante quem responde "que sistema é
+este" é o `rulesVersion` da própria ficha, por `sistemaDaFicha(ficha)`.
+
+Não é preciosismo, é consequência direta de **encontros compartilhados**. O combatente do Afty
+guarda a ficha inteira e não um id (ver `encontros/afty-encontro.js`), então a mesma tela renderiza
+fichas dos DOIS sistemas lado a lado. Uma variável global de sistema, ou um contexto de React preso
+à rota, daria a resposta errada para metade da lista, e daria **calada**: os números sairiam
+plausíveis e trocados.
+
+Por isso `deriveAfty(creature)` **não ganhou parâmetro de sistema**. Ele já recebe a criatura, e a
+criatura já sabe quem é. Dez chamadores ficaram intactos.
+
+E por isso o criador resolve o sistema assim: editando, sai do `rulesVersion` da ficha; só a ficha
+nova usa o da rota. Abrir uma criatura do Afty por um caminho que passe pelo `/Player` não pode
+transformá-la em personagem.
+
+### As três chaves de storage que colidiam
+
+| Chave | Situação | O que foi feito |
+|---|---|---|
+| `fm_creatures_afty_v1` e irmãs | namespace do `useCreatureStorage` | Nada. `namespace: "player"` já resolvia |
+| `fm_ficha_sessao_afty_v1:<id>` | por criatura | Nada. Id de criatura nunca é id de personagem |
+| `fm_builder_draft_afty_v1:new` | **colidia** | Sufixo de sistema |
+| `fm_ficha_tema_afty_v1:global` | **colidia** | Sufixo de sistema |
+| `fm_addons_afty_v1` | **compartilhada** | Deixada assim. É decisão de regra, não de chave |
+
+⚠ **A colisão do rascunho é a que morde.** Ficha existente tem id único e nunca colidiria, mas a
+ficha NOVA usa o alvo literal `"new"` nos dois sistemas: sem sufixo, começar uma criatura e depois
+começar um personagem jogaria um rascunho por cima do outro, calado e sem desfazer.
+
+⚠ **`sufixoDeChave("afty")` devolve `_afty`**, que é exatamente o pedaço que as chaves gravadas
+desde 2026-07-15 já usam. Nada migra, e o rascunho e o tema de quem já usa o app continuam onde
+estavam. O Player nasce seguindo o molde em vez de o molde mudar para os dois.
+
+### O assert que dá sentido à palavra "clone"
+
+`asserts/t-sistema.mjs` (56 asserts) monta a MESMA criatura duas vezes, mudando só o
+`rulesVersion`, e compara o objeto derivado **inteiro**, e não uma lista de campos escolhida a dedo
+(uma lista à mão deixa passar justamente o campo que ninguém lembrou de somar nela).
+
+⚠ **Ele é deliberadamente frágil.** No dia em que a primeira divergência ligar, ele FALHA e lista
+quais números se mexeram. Isso é a feature. Quem liga a divergência atualiza a expectativa de
+propósito, e assim uma mudança de regra do jogador nunca entra sem alguém ver o estrago no Afty.
+
+### Verificação
+
+- `npx eslint src/systems/afty/` passou.
+- `npx vite build` passou.
+- `npm run asserts`: **1432 asserts em 32 arquivos**, todos passando. O novo é o `t-sistema.mjs`.
+- Rota respondendo nas duas pontas no dev server, e `/playerx` e `/player/extra` continuam caindo
+  na 2.5.2, como têm de cair.
+- ⚠ O `vercel.json` já reescreve `/(.*)` para `/index.html`, então a rota vale em produção sem
+  mudança nenhuma no deploy.
+- `src/components/` sem alteração.
+
+### O que este trabalho NÃO fez
+
+**Nenhuma regra do jogador entrou.** O `/Player` é hoje clone exato do `/Afty`, de propósito e
+medido por assert, porque as mudanças estruturais ainda não foram enviadas. O que existe é o LUGAR
+de cada uma.
+
+### Perguntas abertas
+
+- **Quais são as mudanças estruturais?** O autor as anunciou ao pedir a rota e ainda não as
+  descreveu. As quatro que o repositório já conhece estão em `DIVERGENCIAS`, todas com
+  `ativa: false`, e nenhuma delas foi confirmada como certa por ele.
+- **A biblioteca de Addons é compartilhada?** Hoje sim, e por consequência: um Addon remenda o
+  CATÁLOGO, e o catálogo é o mesmo objeto nos dois sistemas. Separar a biblioteca não separaria o
+  efeito, porque o remendo não sabe de sistema. Se o autor quiser Addon que valha só de um lado, é
+  campo novo no pacote, e não chave nova de storage.
+- **O `/Player` precisa da tela de Encontros?** O escopo escolhido foi criador e Ficha Final. A
+  tela de encontros está ligada e funciona, porque é o mesmo componente lendo a mesma chave, mas
+  não foi exercitada com personagem e criatura na mesma iniciativa.
 
 ---
 

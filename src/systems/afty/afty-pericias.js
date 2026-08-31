@@ -44,6 +44,18 @@ import {
   valorCanal, detalhesDoCanal, valorCanalEscopos, detalhesDoCanalEscopos, escoposDaArma,
   resolverEfeitosDanoFinal,
 } from "./afty-efeitos";
+// Quem separa a régua da criatura da do jogador nos três testes.
+import { regraDo } from "./afty-sistema";
+/* A escada de dados da ficha de jogador. Na criatura nada disto roda: lá o dano
+   é fórmula fechada e o dado da tabela da arma não entra. */
+import {
+  moverNivel, maiorDadoDe, maximoDe, lerDado, ESCADAS_DESARMADO_NO_MOTOR,
+} from "./afty-niveis-dano";
+// O pacote de perícias e TR que a Classe inicial concede, na ficha de jogador.
+/* `vagasDoPacote` e não o `totalPericiasDoJogador`: o total do jogador agora sai
+   da SOMA das parcelas do hover, e o pacote é uma delas. As duas contas têm de
+   dar no mesmo número, e há assert comparando. */
+import { vagasDoPacote } from "./afty-especializacoes";
 
 /* AFTY_PERICIAS mora em ./afty-pericias-catalogo.js e é reexportado no topo. */
 
@@ -54,14 +66,19 @@ export const getPericia = (id) => BY_ID[id] || null;
 /* CATÁLOGO DA FICHA                                             */
 /* ============================================================ */
 /*
- * O catálogo do livro continua imutável em afty-pericias-catalogo.js. A
- * campanha escolhe quais linhas dele entram na ficha e pode acrescentar
- * perícias de homebrew. A ordem também pertence à ficha, porque duas mesas
- * podem organizar o mesmo catálogo de formas diferentes.
+ * O catálogo do livro continua imutável em afty-pericias-catalogo.js. A ficha
+ * pode acrescentar perícias de homebrew e escolher a ORDEM, porque duas mesas
+ * organizam o mesmo catálogo de formas diferentes.
  *
- * `periciasOrdem === null` significa ficha ainda não configurada: entram só
- * as perícias padrão. As complementares ficam disponíveis como sugestões.
- * Uma lista vazia é uma escolha válida e não pode ser confundida com o padrão.
+ * ⚠ AS PERÍCIAS DO LIVRO ESTÃO TODAS NA FICHA, SEMPRE (autor, 2026-08-30).
+ * `periciasOrdem` diz só a ORDEM, e não quem entra: a lista salva de uma ficha
+ * antiga recebe de volta as que faltam, cada uma na posição que ocupa no
+ * catálogo. Antes entravam só as padrão e as três complementares ficavam num
+ * painel de sugestões, que saiu junto com esta regra.
+ *
+ * ⚠ E POR ISSO NÃO EXISTE MAIS REMOVER PERÍCIA DO LIVRO: sem o painel de
+ * sugestões não haveria como trazê-la de volta. Só as personalizadas saem, e o
+ * botão Nova perícia as refaz.
  */
 
 const ATTR_KEYS = new Set(AFTY_ATTRS.map((a) => a.key));
@@ -96,15 +113,28 @@ export function idsPericiasAtivas(creature) {
     ...AFTY_PERICIAS.map((p) => p.id),
     ...personalizadas.map((p) => p.id),
   ]);
-  const ordemBruta = Array.isArray(creature?.periciasOrdem)
-    ? creature.periciasOrdem
-    : periciasPadrao().map((p) => p.id);
+  const ordemBruta = Array.isArray(creature?.periciasOrdem) ? creature.periciasOrdem : [];
   const vistos = new Set();
   const ordem = [];
   for (const id of ordemBruta) {
     if (!disponiveis.has(id) || vistos.has(id)) continue;
     vistos.add(id);
     ordem.push(id);
+  }
+  /* Toda perícia do livro que a ordem salva não citar entra aqui, LOGO DEPOIS
+     da vizinha de catálogo mais próxima que já está na lista. Empilhá-las no
+     fim jogaria Direção, Sobrevivência e Teologia para baixo de tudo em toda
+     ficha feita antes de 2026-08-30, que é quando elas passaram a entrar. */
+  for (let i = 0; i < AFTY_PERICIAS.length; i++) {
+    const id = AFTY_PERICIAS[i].id;
+    if (vistos.has(id)) continue;
+    vistos.add(id);
+    let pos = 0;
+    for (let j = i - 1; j >= 0; j--) {
+      const anterior = ordem.indexOf(AFTY_PERICIAS[j].id);
+      if (anterior >= 0) { pos = anterior + 1; break; }
+    }
+    ordem.splice(pos, 0, id);
   }
   // Uma perícia personalizada de uma ficha importada não pode desaparecer só
   // porque uma versão antiga ainda não gravava a ordem explicitamente.
@@ -114,19 +144,76 @@ export function idsPericiasAtivas(creature) {
   return ordem;
 }
 
+/* ============================================================ */
+/* OFÍCIO REPETIDO                                               */
+/* ============================================================ */
+/*
+ * ⚠ CONTAGEM ÍMPAR GANHA UM OFÍCIO A MAIS (autor, 2026-08-30). A tela mostra
+ * as perícias em duas colunas, e um número ímpar deixa uma delas mais curta.
+ * O desempate é um Ofício, e não uma linha vazia, porque Ofício é a única
+ * perícia que o personagem pode ter mais de uma vez: são vinte no livro (par),
+ * então o extra só aparece quando a ficha cria uma perícia personalizada.
+ *
+ * ⚠ E ELE É UM OFÍCIO DE VERDADE (autor, 2026-08-30): tem proficiência
+ * própria e Ofícios escolhidos próprios, então dá para ser Treinado num e
+ * Mestre em outro. Por isso ele NÃO some quando a contagem volta a ser par: uma
+ * linha treinada que evapora levaria a vaga gasta junto, calada.
+ */
+
+const OFICIO_ID = "oficio";
+const OFICIO_EXTRA = /^oficio__(\d+)$/;
+
+/** Este id é um Ofício (o do livro ou um dos repetidos)? */
+export const ehPericiaOficio = (id) => id === OFICIO_ID || OFICIO_EXTRA.test(String(id ?? ""));
+
+/**
+ * Os Ofícios escolhidos numa linha de Ofício.
+ *
+ * `periciaOficios` é um objeto id para lista de nomes. O formato ANTIGO era uma
+ * lista solta, que valia para o Ofício do livro, e antes dele um `periciaOficio`
+ * de nome único. Os três são lidos aqui para nenhuma ficha salva perder o que
+ * escolheu, e a normalização do schema converte na abertura.
+ */
+export function oficiosDaFicha(creature, id = OFICIO_ID) {
+  const bruto = creature?.periciaOficios;
+  let lista = [];
+  if (Array.isArray(bruto)) lista = id === OFICIO_ID ? bruto : [];
+  else if (bruto && typeof bruto === "object") lista = bruto[id] ?? [];
+  else if (id === OFICIO_ID && creature?.periciaOficio) lista = [creature.periciaOficio];
+  return [...new Set((Array.isArray(lista) ? lista : []).map((n) => textoSeguro(n)).filter(Boolean))];
+}
+
+/** O Ofício repetido guarda alguma coisa? É o que o mantém na ficha. */
+const oficioExtraOcupado = (creature, id) => {
+  const prof = creature?.pericias?.[id];
+  return prof === "treinado" || prof === "mestre" || oficiosDaFicha(creature, id).length > 0;
+};
+
 export function catalogoPericiasDaFicha(creature) {
   const personalizadas = normalizarPericiasPersonalizadas(creature);
   const porId = new Map([
     ...AFTY_PERICIAS.map((p) => [p.id, p]),
     ...personalizadas.map((p) => [p.id, p]),
   ]);
-  return idsPericiasAtivas(creature).map((id) => porId.get(id)).filter(Boolean);
-}
+  const lista = idsPericiasAtivas(creature).map((id) => porId.get(id)).filter(Boolean);
 
-/** Linhas do livro fora da ficha, prontas para o painel de sugestões. */
-export function sugestoesPericias(creature) {
-  const ativas = new Set(idsPericiasAtivas(creature));
-  return AFTY_PERICIAS.filter((p) => !ativas.has(p.id));
+  const base = porId.get(OFICIO_ID);
+  if (!base) return lista;
+  const oficioExtra = (n) => ({ ...base, id: `oficio__${n}`, oficioExtra: true });
+  // Os que já carregam escolha ficam, par ou ímpar.
+  const extras = [];
+  for (let n = 2; oficioExtraOcupado(creature, `oficio__${n}`); n++) extras.push(oficioExtra(n));
+  // E o desempate, que é sempre no máximo um: acrescentar uma linha já vira a
+  // contagem para par.
+  if ((lista.length + extras.length) % 2 === 1) extras.push(oficioExtra(extras.length + 2));
+  if (extras.length === 0) return lista;
+  /* ⚠ O EXTRA ENTRA LOGO ABAIXO DO OFÍCIO DO LIVRO (autor, 2026-08-30), e não no
+     fim da lista: os dois são a mesma perícia, e separá-los faria o segundo
+     parecer outra coisa. Se o Ofício do livro tiver sido arrastado, os extras
+     vão junto com ele. */
+  const at = lista.findIndex((x) => x.id === OFICIO_ID);
+  const corte = at >= 0 ? at + 1 : lista.length;
+  return [...lista.slice(0, corte), ...extras, ...lista.slice(corte)];
 }
 
 /* ============================================================ */
@@ -151,8 +238,8 @@ export const custoProficiencia = (prof) => (prof === "mestre" ? 2 : prof === "tr
 export const usoPericias = (periciasProf = {}) =>
   Object.values(periciasProf || {}).reduce((s, p) => s + custoProficiencia(p), 0);
 
-/** Perícias padrão (as que entram no jogo por default, sem as complementares). */
-export const periciasPadrao = () => AFTY_PERICIAS.filter((p) => !p.complementar);
+/* `periciasPadrao` saiu em 2026-08-30: as complementares deixaram de ficar de
+   fora da ficha, então "as que entram por default" virou o catálogo inteiro. */
 /** Perícias complementares (opcionais por campanha). */
 export const periciasComplementares = () => AFTY_PERICIAS.filter((p) => p.complementar);
 
@@ -311,6 +398,103 @@ function linhaDeDano({
 }
 
 /**
+ * Texto de uma linha, montado a partir dos grupos de dados mais o fixo.
+ * Serve às duas fórmulas: na criatura `dadosGrupos` tem um grupo só.
+ */
+const textoDaLinha = (grupos, fixo) => {
+  const partes = grupos.filter((g) => g.qtd > 0).map((g) => `${g.qtd}d${g.faces}`);
+  const corpo = partes.join(" + ");
+  if (!corpo) return String(fixo);
+  if (fixo > 0) return `${corpo} + ${fixo}`;
+  if (fixo < 0) return `${corpo} − ${Math.abs(fixo)}`;
+  return corpo;
+};
+
+/**
+ * Uma linha de dano da FICHA DE JOGADOR (autor, 2026-08-31): *"Eles seguem o
+ * DANO DA ARMA, assim como está em equipamentos + Modificador de Atributo fixo
+ * no final."*
+ *
+ * Nada da fórmula da criatura sobrevive aqui. Some o `coefND × ND`, some o
+ * `escala × mod`, some a Aptidão Controle e Leitura (autor: "sai do jogador"), e
+ * some o dano adicional por Grau da Ferramenta (autor: *"Grau da Arma não
+ * fornece +Acerto ou +Dano para Jogador. Só fornece os Bônus de Encantamentos
+ * como Potente"*). O que sobra é o dado impresso, movido pelos Níveis de Dano,
+ * mais o modificador e os bônus fixos.
+ *
+ * ⚠ O MODIFICADOR ENTRA UMA VEZ SÓ, e não uma por dado. Uma Espada Colossal
+ * (2d8) com Força +4 é `2d8 + 4`, e não `2d8 + 8`.
+ *
+ * ⚠ OS BÔNUS FIXOS SOMAM COM O MODIFICADOR (autor), então o canal `danoBonus` e
+ * os 45 emissores dele continuam valendo, no mesmo lugar da conta.
+ *
+ * ⚠ O DADO EXTRA USA O MAIOR DADO DO NÍVEL, verbatim do livro: "ao receber +1
+ * dado com uma arma que causa 1d12 + 1d6, você receberia 1d12 de dano
+ * adicional". Por isso ele entra no grupo do maior dado, e não num grupo novo.
+ */
+function linhaDeDanoJogador({
+  dadoBase, niveis, modChave, atributo, bonus, fonteDado,
+  dadosExtras = 0, margemBase = 20, reducaoMargem = 0, ignoraRD = 0,
+  removeResistencia = false, fontes = [],
+}) {
+  const movido = moverNivel(dadoBase, niveis) ?? moverNivel("1d3", 0);
+  const maiorDado = maiorDadoDe(movido) || 3;
+  const extras = Math.max(0, Math.trunc(dadosExtras));
+  // O extra cai no grupo do maior dado. Se por algum motivo não houver grupo
+  // nenhum (o degrau "1", que é dano fixo), ele abre um.
+  const grupos = movido.dados.map((d) => ({ ...d }));
+  const alvoExtra = grupos.find((g) => g.faces === maiorDado);
+  if (extras) {
+    if (alvoExtra) alvoExtra.qtd += extras;
+    else grupos.push({ qtd: extras, faces: maiorDado });
+  }
+  // O `fixo` do degrau só existe no pé da escada ("1 de dano"), e soma junto.
+  const fixo = modChave + bonus + (movido.fixo ?? 0);
+  const dadosTotais = grupos.reduce((s, g) => s + g.qtd, 0);
+  const rotuloAttr = (k) => AFTY_ATTRS.find((a) => a.key === k)?.label ?? k;
+  return {
+    atributo,
+    // `dado` e `dados` seguem existindo para quem já os lia (o chip de delta da
+    // aba Buffs, e o `dados_dano_final` do Motor). Valem o MAIOR dado do nível e
+    // a contagem total, que é o que aquelas duas leituras querem dizer.
+    dado: `d${maiorDado}`,
+    dados: dadosTotais,
+    dadosBase: dadosTotais - extras,
+    dadosExtras: extras,
+    dadosGrupos: grupos,
+    fixo,
+    /* O `total` do jogador é a MÉDIA esperada, e não um alvo: aqui não existe
+       número-alvo, o dado é a regra. Quem o lê é o chip de delta da aba Buffs,
+       que compara duas versões da mesma linha. Piso para baixo, regra da casa. */
+    total: Math.floor(grupos.reduce((s, g) => s + g.qtd * (g.faces + 1) / 2, 0) + fixo),
+    niveisDano: niveis,
+    grauArma: "desarmado",
+    maximo: maximoDe({ dados: grupos, fixo }),
+    margemCritico: Math.max(2, margemBase - reducaoMargem),
+    ignoraRD, removeResistencia,
+    texto: textoDaLinha(grupos, fixo),
+    /* ⚠ O RODAPÉ DO HOVER É A EXPRESSÃO, e não o `total`. O painel de fontes
+       fecha com uma linha "Total", e na criatura o número ali é a conta que as
+       parcelas somam. No jogador as parcelas são `1d8` e `+4`, e um "Total 8"
+       embaixo delas leria como se a soma desse 8. Quem soma parcela de dado é o
+       dado, então o rodapé mostra a rolagem. */
+    totalFontes: textoDaLinha(grupos, fixo),
+    /* ⚠ A PRIMEIRA LINHA É O DADO IMPRESSO, e não o resultado. As duas mostravam
+       o resultado, e aí o hover dizia "Dano da Arma 1d12 + 1d4" numa espada de
+       1d8: o número certo com a fonte errada, que é o bug do `defesaAtributo`.
+       O degrau só aparece quando existe, e é ele que carrega o resultado. */
+    partes: [
+      { label: fonteDado ?? "Dano da Arma", texto: textoDaLinha(lerDado(dadoBase)?.dados ?? [], 0) },
+      ...(niveis
+        ? [{ label: `Níveis de Dano (${niveis > 0 ? "+" : ""}${niveis})`, texto: movido.texto }]
+        : []),
+      { label: rotuloAttr(atributo), valor: modChave },
+      ...fontes,
+    ],
+  };
+}
+
+/**
  * Resolve UMA linha de dano por fonte (autor, 2026-07-27): o Ataque Básico
  * (que engloba Desarmado, Faixas, Manoplas e o Corpo Treinado) e mais uma para
  * cada arma equipada.
@@ -351,6 +535,13 @@ export function resolveDano(creature, ctx = {}) {
   const armasTecnicas = new Set(Array.isArray(tecnicas.armas) ? tecnicas.armas : []);
   const atributoTecnicas = tecnicas.atributo === "sabedoria" ? "sabedoria" : "inteligencia";
   const btTecnicas = Math.max(0, Math.trunc(Number(tecnicas.bt) || 0));
+  /* Na ficha de jogador a proficiência de ataque vem da ARMA, e não da marca
+     por tipo. Ver `proficienciaPorArma` em afty-sistema.js. */
+  const armaDecide = regraDo(ctx.sistema, "proficienciaPorArma") === "player";
+  /* ⚠ NA FICHA DE JOGADOR O DANO É O DA ARMA, e não a fórmula da criatura
+     (autor, 2026-08-31). Ver `danoPorArma` em afty-sistema.js e a escada em
+     afty-niveis-dano.js. */
+  const danoPorArma = regraDo(ctx.sistema, "danoPorArma") === "player";
 
   // `alvo` aqui é sempre a LISTA de escopos da fonte (ver escoposDaArma): uma
   // arma responde pelo id, por "arma", pela categoria, pelo grupo e por cada
@@ -410,15 +601,41 @@ export function resolveDano(creature, ctx = {}) {
     return linha;
   };
 
-  const monta = (escopos, atributo, grauArma, margemBase) => {
+  const monta = (escopos, atributo, grauArma, margemBase, dadoBase = null, fonteDado = null) => {
     const dadosExtras = Math.max(0, Math.trunc(canal("dadosDano", escopos)));
     const detalhesDados = ef ? detalhesDoCanalEscopos(ef, "dadosDano", escopos) : [];
     const dadosAtroz = detalhesDados
       .filter((d) => d.origem === "cmb_golpe_especial")
       .reduce((s, d) => s + Math.max(0, Math.trunc(Number(d.valor) || 0)), 0);
-    const linha = linhaDeDano({
+    /* ⚠ NO JOGADOR O NÍVEL DE DANO PODE SER NEGATIVO, e na criatura não. Lá ele
+       soma no ND e um valor negativo tiraria dano de uma fórmula que não o
+       prevê. Aqui ele é degrau de escada, e o livro descreve explicitamente a
+       descida ("habilidades, normalmente de inimigos, que podem diminuir o nível
+       de dano de uma arma"), com piso em 1 de dano. */
+    const niveisCrus = Math.trunc(canal("nivelDano", escopos));
+    /* ⚠ AS ESCADAS DO DESARMADO SÃO DESCONTADAS AQUI. Na criatura elas viram
+       degrau de ND porque não há dado base nenhum; no jogador o dado base sai do
+       texto da própria habilidade, então contá-las de novo somaria o mesmo ganho
+       duas vezes. Ver ESCADAS_DESARMADO_NO_MOTOR em afty-niveis-dano.js. */
+    const descontoEscada = !danoPorArma ? 0 : (ef ? detalhesDoCanalEscopos(ef, "nivelDano", escopos) : [])
+      .filter((d) => ESCADAS_DESARMADO_NO_MOTOR
+        .some((x) => x.origem === d.origem && x.nome === d.nome))
+      .reduce((s, d) => s + Math.trunc(Number(d.valor) || 0), 0);
+    const linha = danoPorArma ? linhaDeDanoJogador({
+      dadoBase: dadoBase ?? "1d3",
+      fonteDado,
+      atributo, modChave: modDe(atributo),
+      niveis: niveisCrus - descontoEscada,
+      bonus: canal("danoBonus", escopos),
+      dadosExtras,
+      margemBase,
+      reducaoMargem: Math.trunc(canal("margemCritico", escopos)),
+      ignoraRD: Math.max(0, Math.trunc(canal("ignoraRD", escopos))),
+      removeResistencia: canal("removeResistencia", escopos) > 0,
+      fontes: fontesDe("danoBonus", escopos),
+    }) : linhaDeDano({
       nd, patamar, atributo, modChave: modDe(atributo), cl, grauArma,
-      niveisDano: Math.max(0, Math.trunc(canal("nivelDano", escopos))),
+      niveisDano: Math.max(0, niveisCrus),
       bonus: canal("danoBonus", escopos),
       dadosExtras,
       margemBase,
@@ -447,7 +664,21 @@ export function resolveDano(creature, ctx = {}) {
     linha.dadosExtras += dadosTardios;
     linha.fixo += bonusTardio;
     linha.total += bonusTardio;
-    linha.texto = textoDeDano(linha.dados, linha.dado, linha.fixo);
+    if (danoPorArma) {
+      /* O dado tardio também vale o MAIOR dado do nível, então ele engorda o
+         grupo do maior dado em vez de abrir grupo novo. */
+      const maior = Number(String(linha.dado).replace(/^d/i, ""));
+      const alvo = linha.dadosGrupos.find((g) => g.faces === maior);
+      if (dadosTardios) {
+        if (alvo) alvo.qtd += dadosTardios;
+        else linha.dadosGrupos.push({ qtd: dadosTardios, faces: maior });
+      }
+      linha.total += Math.floor(dadosTardios * (maior + 1) / 2);
+      linha.texto = textoDaLinha(linha.dadosGrupos, linha.fixo);
+      linha.totalFontes = linha.texto;
+    } else {
+      linha.texto = textoDeDano(linha.dados, linha.dado, linha.fixo);
+    }
     for (const d of detalhesDoCanalEscopos(tardios, "dadosDano", escopos, true)) {
       linha.partes.push({
         label: d.nome,
@@ -462,18 +693,45 @@ export function resolveDano(creature, ctx = {}) {
         ...(d.suplantado ? { suplantado: true } : {}),
       });
     }
-    linha.gruposDano = [
-      {
-        nome: "Ataque", dados: Math.max(0, linha.dados - dadosAtroz),
-        faces: Number(String(linha.dado).replace(/^d/i, "")), fixo: linha.fixo,
-        momento: "durante", multiplica: true,
-      },
-      ...(dadosAtroz ? [{
-        nome: "Golpe Especial", dados: dadosAtroz,
-        faces: Number(String(linha.dado).replace(/^d/i, "")), fixo: 0,
-        momento: "durante", multiplica: false, entraRaioNegro: false, incluidoNoTexto: true,
-      }] : []),
-    ];
+    /* ⚠ UM GRUPO POR TAMANHO DE DADO na ficha de jogador, porque um degrau da
+       escada pode ter dois (`1d12 + 1d4`). Todos multiplicam no crítico, e o
+       fixo não, que é a regra do autor: "Só os Dados, o fixo não dobra". O fixo
+       viaja no primeiro grupo para não ser somado duas vezes. */
+    const facesDoDado = Number(String(linha.dado).replace(/^d/i, ""));
+    linha.gruposDano = danoPorArma
+      ? linha.dadosGrupos
+        .filter((g) => g.qtd > 0)
+        .map((g, i) => ({
+          nome: "Ataque",
+          dados: g.faces === facesDoDado ? Math.max(0, g.qtd - dadosAtroz) : g.qtd,
+          faces: g.faces,
+          fixo: i === 0 ? linha.fixo : 0,
+          momento: "durante", multiplica: true,
+          /* ⚠ `incluidoNoTexto` NOS GRUPOS DEPOIS DO PRIMEIRO, e não é detalhe.
+             A aba Ações desenha um chip para cada grupo além do primeiro
+             (`gruposDano.slice(1)`), porque na criatura todo grupo extra é
+             mesmo um extra: Fatal, Mortal, Destruidora, Golpe Especial. No
+             jogador o segundo grupo é a segunda METADE do degrau (o `1d4` de
+             `1d12 + 1d4`), que já está escrito no texto da linha. Sem esta
+             marca a Ficha mostrava `1d12 + 1d4 + 4` e um chip `+1d4` ao lado,
+             e o mesmo dado aparecia duas vezes. */
+          ...(i > 0 ? { incluidoNoTexto: true } : {}),
+        }))
+        .concat(dadosAtroz ? [{
+          nome: "Golpe Especial", dados: dadosAtroz, faces: facesDoDado, fixo: 0,
+          momento: "durante", multiplica: false, entraRaioNegro: false, incluidoNoTexto: true,
+        }] : [])
+      : [
+        {
+          nome: "Ataque", dados: Math.max(0, linha.dados - dadosAtroz),
+          faces: facesDoDado, fixo: linha.fixo,
+          momento: "durante", multiplica: true,
+        },
+        ...(dadosAtroz ? [{
+          nome: "Golpe Especial", dados: dadosAtroz, faces: facesDoDado, fixo: 0,
+          momento: "durante", multiplica: false, entraRaioNegro: false, incluidoNoTexto: true,
+        }] : []),
+      ];
     return linha;
   };
 
@@ -485,9 +743,17 @@ export function resolveDano(creature, ctx = {}) {
   // escolhida" (Treino de Manejo de Arma) vazaria para as outras armas da mesma
   // categoria se usasse aquele canal.
   const ataques = Array.isArray(ctx.ataques) ? ctx.ataques : [];
-  const acertoDe = (ataqueId, grauBonus, escopos, fontes = [], atributoForcado = null) => {
+  /* `treinadaNaArma` só chega no jogador, e é o que devolve o Bônus de
+     Treinamento à linha depois de o `resolveTestes` o ter tirado do tipo de
+     ataque. `null` = decide o tipo, como sempre foi na criatura. */
+  const acertoDe = (ataqueId, grauBonus, escopos, fontes = [], atributoForcado = null,
+    treinadaNaArma = null) => {
     const atq = ataques.find((a) => a.id === ataqueId);
     if (!atq) return null;
+    /* ⚠ NÃO SOMA EM CIMA DE UM ATAQUE QUE JÁ ESTÁ TREINADO. O Amaldiçoado é
+       sempre treinado e já traz o BT dentro do `atq.bonus`: somar de novo aqui
+       daria BT dobrado numa arma de técnica. */
+    const btDaArma = (treinadaNaArma && !atq.treinado) ? btTecnicas : 0;
     // As fontes de encantamento saem do total do grau para aparecerem com o
     // nome delas no hover: o resto é o rank, que é a Ferramenta em si.
     const doEncantamento = fontes.reduce((s, f) => s + (f.valor ?? 0), 0);
@@ -505,10 +771,11 @@ export function resolveDano(creature, ctx = {}) {
       ]
       : atq.partes;
     return {
-      acerto: bonusAtaque + grauBonus + doMotor,
+      acerto: bonusAtaque + grauBonus + doMotor + btDaArma,
       acertoAtaque: atq.nome,
       partesAcerto: [
         ...partesAtaque,
+        ...(btDaArma ? [{ label: "Maestria (Treinado na Arma)", valor: btDaArma }] : []),
         ...(doGrau ? [{ label: "Grau da Ferramenta", valor: doGrau }] : []),
         ...fontes,
         ...fontesDe("acertoArma", escopos),
@@ -531,12 +798,21 @@ export function resolveDano(creature, ctx = {}) {
   const entradas = [
     // Desarmado não tem margem de crítico listada em lugar nenhum: é 20.
     { id: "basico", nome: "Ataque Básico", fonte: "basico", alcance: alcanceDe(null), propriedades: [],
-      ...monta(escoposBasico, atributoDe({ fineza: finezaDesarmado }), ctx.grauBasico, 20),
+      /* ⚠ O DADO DO DESARMADO CHEGA PRONTO do deriveAfty (`ctx.dadoBasico`), e
+         não é decidido aqui: ele sai do Corpo Treinado, das Armas Naturais ou do
+         1d3 padrão, que são leituras da FICHA e não do canal. Ver
+         `dadoDesarmado` em afty-niveis-dano.js. Na criatura ele é ignorado. */
+      ...monta(escoposBasico, atributoDe({ fineza: finezaDesarmado }), ctx.grauBasico, 20,
+        ctx.dadoBasico ?? "1d3", ctx.fonteDadoBasico ?? "Golpe Desarmado"),
       // Manoplas e Faixas são o Ataque Básico, então o grau delas entra aqui.
       // As `fontesAcertoBasico` são o que o encantamento somou por fora do grau:
       // elas saem do total do grau e aparecem com o nome próprio no hover.
+      /* O Ataque Básico usa a Manopla ou Faixa equipada, e a proficiência dela é
+         a que vale. Sem item de pugilato, `treinadaBasico` é falso e o golpe
+         desarmado não soma BT no jogador. */
       ...acertoDe("corpo", Math.max(0, Math.trunc(Number(ctx.acertoGrauBasico) || 0)),
-        escoposBasico, ctx.fontesAcertoBasico ?? []) },
+        escoposBasico, ctx.fontesAcertoBasico ?? [], null,
+        armaDecide ? !!ctx.treinadaBasico : null) },
   ];
 
   for (const a of Array.isArray(ctx.armas) ? ctx.armas : []) {
@@ -558,12 +834,15 @@ export function resolveDano(creature, ctx = {}) {
       grupo: a.grupo ?? null, categoria: a.categoria ?? null, tipoDano: a.tipoDano ?? null,
       dedicada,
       elegivelDedicada: !!a.elegivelDedicada,
-      ...monta(escopos, atributo, a.grauArma, a.critico ?? 20),
+      /* O dado impresso da arma, já resolvido pelo manejo escolhido na ficha
+         (uma mão ou duas, nas versáteis). Só o jogador o usa. */
+      ...monta(escopos, atributo, a.grauArma, a.critico ?? 20, a.dadoArma ?? null, "Dano da Arma"),
       // A ficha escolhe entre o ataque físico da categoria e o Ataque
       // Amaldiçoado. O atributo do dano continua vindo da arma.
       ...acertoDe(a.ataqueId ?? (a.distancia ? "distancia" : "corpo"),
         Math.max(0, Math.trunc(Number(a.acertoGrau) || 0)), escopos, a.fontesAcerto ?? [],
-        usaTecnicas ? atributoTecnicas : null),
+        usaTecnicas ? atributoTecnicas : null,
+        armaDecide ? !!a.treinada : null),
     };
     entradas.push(aplicaCriticoDaArma(linhaArma, propriedades, a.criticoExtraDados));
   }
@@ -613,21 +892,30 @@ export function resolveTestes(creature, ctx = {}) {
   // Escalas de nível. `cd` e `defesa` vêm prontas do deriveAfty (são as mesmas
   // da CD e da Defesa, não recalculo aqui), e a `fixa` é INT(ND/1,5), usada
   // pela Integridade e por TODAS as Jogadas de Ataque.
-  const escalaFixa = Math.floor(nd / 1.5);
-  const ESCALA_TR = {
-    cd: Math.trunc(Number(ctx.escalaCD) || 0),
-    defesa: Math.trunc(Number(ctx.escalaDefesa) || 0),
-    fixa: escalaFixa,
-  };
+  /* ⚠ NO JOGADOR AS TRÊS ESCALAS VIRAM UMA: a metade do nível. O livro escreve
+     uma fórmula por tipo de teste e as três dizem "metade do nível do
+     personagem". Na criatura são três réguas diferentes, e é a planilha do autor
+     de 2026-07-27 que as separa. Ver `escalaDosTestes` em afty-sistema.js. */
+  const meiaEscala = regraDo(ctx.sistema, "escalaDosTestes") === "player";
+  const escalaFixa = meiaEscala ? meioNivel : Math.floor(nd / 1.5);
+  const ESCALA_TR = meiaEscala
+    ? { cd: meioNivel, defesa: meioNivel, fixa: meioNivel }
+    : {
+      cd: Math.trunc(Number(ctx.escalaCD) || 0),
+      defesa: Math.trunc(Number(ctx.escalaDefesa) || 0),
+      fixa: escalaFixa,
+    };
   // A fonte que a UI mostra é a DIVISÃO de verdade, não o nome da escala
   // (autor, 2026-07-27): os cinco TRs aparecem como "Nível ÷ N", e o N muda
   // com o Tipo nos quatro primeiros. Integridade é sempre ÷ 1,5.
   const divisorTexto = (d) => String(d).replace(".", ",");
-  const ESCALA_ROTULO = {
-    cd: `Nível ÷ ${divisorTexto(ctx.divisorCD ?? 1.5)}`,
-    defesa: `Nível ÷ ${divisorTexto(ctx.divisorDefesa ?? 1.5)}`,
-    fixa: "Nível ÷ 1,5",
-  };
+  const ESCALA_ROTULO = meiaEscala
+    ? { cd: "Metade do Nível", defesa: "Metade do Nível", fixa: "Metade do Nível" }
+    : {
+      cd: `Nível ÷ ${divisorTexto(ctx.divisorCD ?? 1.5)}`,
+      defesa: `Nível ÷ ${divisorTexto(ctx.divisorDefesa ?? 1.5)}`,
+      fixa: "Nível ÷ 1,5",
+    };
 
   const profBruta = creature?.pericias && typeof creature.pericias === "object" ? creature.pericias : {};
   const valida = (p) => (p === "treinado" || p === "mestre" ? p : null);
@@ -672,9 +960,24 @@ export function resolveTestes(creature, ctx = {}) {
   // Proficiência concedida NUNCA rebaixa a escolhida: fica a maior das duas.
   const FAIXA = { treinado: 1, mestre: 2 };
   const NOME_FAIXA = { 1: "treinado", 2: "mestre" };
-  const profComEfeito = (canal, id, escolhida) => {
+  /* ⚠ O PACOTE DA CLASSE CONCEDE, e não pede que o jogador marque (autor,
+     2026-08-30). Vale só para o que a Classe já decidiu: os dois TR fixos do
+     Restringido e a perícia dirigida cuja lista tem um caminho só. O que ainda é
+     escolha de verdade ("um TR entre Fortitude ou Reflexos") continua em aberto.
+
+     Entra pela MESMA porta do treino concedido pelo Motor: a faixa resolvida
+     sobe, a escolhida não, então a linha fica verde, não gasta vaga de novo e
+     não pode ser desmarcada ali. */
+  const automaticas = (lista) => new Set(Array.isArray(lista) ? lista : []);
+  const periciasDoPacote = automaticas(ctx.pacoteInicial?.periciasAutomaticas);
+  const trDoPacote = automaticas(ctx.pacoteInicial?.trAutomaticos);
+  const profComEfeito = (canal, id, escolhida, concedidaPeloPacote = false) => {
     const concedida = Math.trunc(bonusDeEfeito(canal, id));
-    const nivel = Math.max(FAIXA[escolhida] ?? 0, Math.min(2, Math.max(0, concedida)));
+    const nivel = Math.max(
+      FAIXA[escolhida] ?? 0,
+      Math.min(2, Math.max(0, concedida)),
+      concedidaPeloPacote ? 1 : 0,
+    );
     return NOME_FAIXA[nivel] ?? null;
   };
 
@@ -684,18 +987,21 @@ export function resolveTestes(creature, ctx = {}) {
   // a `nota` verbatim dentro da descrição.
   const catalogoPericias = catalogoPericiasDaFicha(creature);
   const pericias = catalogoPericias.map((p) => {
-    const oficiosBrutos = Array.isArray(creature?.periciaOficios)
-      ? creature.periciaOficios
-      : (creature?.periciaOficio ? [creature.periciaOficio] : []);
-    const oficios = [...new Set(oficiosBrutos.map((nome) => textoSeguro(nome)).filter(Boolean))];
-    const atributo = p.id === "oficio" && modDe("sabedoria") > modDe("inteligencia")
-      ? "sabedoria"
-      : p.atributo;
-    const nome = p.id === "oficio" && oficios.length > 0
+    /* Cada linha de Ofício tem os Ofícios DELA: o do livro guarda os seus e
+       cada repetido guarda os seus, senão as duas linhas mostrariam o mesmo
+       nome e a segunda não serviria para nada. */
+    const oficios = ehPericiaOficio(p.id) ? oficiosDaFicha(creature, p.id) : [];
+    /* ⚠ OFÍCIO É INTELIGÊNCIA, E PONTO (autor, 2026-08-30). Ele era a única
+       perícia com atributo variável: usava Sabedoria quando o modificador dela
+       fosse maior, o que fazia o número da linha mudar sozinho ao mexer num
+       atributo que não é o dela. O atributo agora vem do catálogo, como o das
+       outras dezenove. */
+    const atributo = p.atributo;
+    const nome = oficios.length > 0
       ? `${p.nome} (${oficios.join(", ")})`
       : p.nome;
     const escolhida = valida(profBruta[p.id]);
-    const prof = profComEfeito("proficienciaPericia", p.id, escolhida);
+    const prof = profComEfeito("proficienciaPericia", p.id, escolhida, periciasDoPacote.has(p.id));
     return {
       ...p,
       nome,
@@ -712,7 +1018,10 @@ export function resolveTestes(creature, ctx = {}) {
         + penalidadeDe(atributo),
       partes: [
         { label: rotuloAttr(atributo), valor: modDe(atributo) },
-        { label: "Metade do ND", valor: meioNivel },
+        /* "ND" é vocabulário de criatura, e a ficha de jogador tem Nível. O
+           número é o mesmo, e o rótulo passa a bater com o dos TR e dos Ataques,
+           que já dizem "Metade do Nível" no jogador. */
+        { label: meiaEscala ? "Metade do Nível" : "Metade do ND", valor: meioNivel },
         ...parteProficiencia(prof),
         ...partePenalidade(atributo),
         ...partesPorAtributo("bonusPericia", p.id, atributo),
@@ -728,7 +1037,7 @@ export function resolveTestes(creature, ctx = {}) {
     // Mestre e afins). Sem os dois campos a UI trataria todo TR treinado como
     // concessão externa, pintava de verde e não deixava desmarcar.
     const escolhida = valida(trBruta[r.value]);
-    const prof = profComEfeito("proficienciaTR", r.value, escolhida);
+    const prof = profComEfeito("proficienciaTR", r.value, escolhida, trDoPacote.has(r.value));
     return {
       ...r,
       prof,
@@ -757,8 +1066,13 @@ export function resolveTestes(creature, ctx = {}) {
   // Mestre: a fórmula do autor só testa "treinado", e é a Maestria cheia.
   const atqBruta = creature?.ataquesProf && typeof creature.ataquesProf === "object" ? creature.ataquesProf : {};
   const fineza = !!creature?.ataqueFineza;
+  /* ⚠ NO JOGADOR A MARCA POR TIPO NÃO DECIDE. Quem decide é a arma manejada,
+     na linha dela (ver `acertoDe` em resolveDano). O Amaldiçoado escapa porque o
+     livro escreve "você é sempre treinado" na fórmula dele, e é o `sempreTreinado`
+     que já estava no catálogo. */
+  const armaDecide = regraDo(ctx.sistema, "proficienciaPorArma") === "player";
   const ataques = AFTY_ATAQUES.map((a) => {
-    const treinado = a.sempreTreinado || !!atqBruta[a.id];
+    const treinado = a.sempreTreinado || (!armaDecide && !!atqBruta[a.id]);
     // Fineza libera o atributo alternativo do ataque. Vem da arma manejada
     // (a marcação da ficha) ou de uma habilidade que dá a mesma permissão
     // ("você pode escolher usar tanto Força quanto Destreza", Corpo Treinado).
@@ -775,7 +1089,7 @@ export function resolveTestes(creature, ctx = {}) {
       bonus: modDe(attr) + escalaFixa + (treinado ? bt : 0) + bonusDeEfeito("bonusAcerto", a.id),
       partes: [
         { label: rotuloAttr(attr), valor: modDe(attr) },
-        { label: "Nível ÷ 1,5", valor: escalaFixa },
+        { label: ESCALA_ROTULO.fixa, valor: escalaFixa },
         ...(treinado ? [{ label: "Maestria", valor: bt }] : []),
         ...partesDeEfeito("bonusAcerto", a.id),
       ],
@@ -819,18 +1133,78 @@ export function resolveTestes(creature, ctx = {}) {
     };
   });
 
-  const total = totalPericias({
-    modInt: modDe("inteligencia"),
-    modSab: modDe("sabedoria"),
-    grauRank: ctx.grauRank ?? 1,
-    bonus: ctx.bonusVagas ?? 0,
-  });
+  /* ⚠ O JOGADOR NÃO USA O MAIOR DOS DOIS, ele ESCOLHE um na criação: "você pode
+     escolher entre os atributos Inteligência ou Sabedoria [...] Esta escolha não
+     pode ser modificada nem revertida". A criatura pega `max(modInt, modSab)`,
+     que é o contrário. O orçamento dela também soma 3 fixo e o rank do Grau, e
+     o do jogador soma o pacote da Classe inicial. */
+  /* ⚠ O TOTAL É A SOMA DAS FONTES, e não uma conta paralela (autor, 2026-08-30:
+     "quando eu passar o mouse por cima da Quantidade de Perícias, me mostre a
+     Fonte dela"). Número certo com detalhamento errado é bug, e a única forma de
+     isso não acontecer é o número sair das parcelas. O assert compara a soma com
+     a fórmula original das duas fórmulas. */
+  const bonusOutros = Math.max(0, Math.trunc(Number(ctx.bonusVagas) || 0));
+  const partesBonus = partesDeEfeito("vagasPericia");
+  const somaBonus = partesBonus.reduce((acc, x) => acc + (Number(x.valor) || 0), 0);
+  const partesOrcamento = [];
+  if (ctx.pacoteInicial !== undefined) {
+    /* Jogador: o pacote da Classe inicial mais o MAIOR modificador entre INT e
+       SAB, que é a mesma régua da criatura.
+
+       ⚠ ERA ESCOLHA PERMANENTE até 2026-08-31, num campo `periciaAtributo` que
+       o jogador nunca conseguiu preencher: nenhuma tela do criador oferecia a
+       escolha, então o padrão `"inteligencia"` do schema valia para TODA ficha
+       de jogador e a Sabedoria não contava nunca. O autor corrigiu a regra:
+       *"a quantidade de perícias é o maior modificador de atributo entre
+       Inteligência ou Sabedoria e não só Inteligência"*.
+
+       O campo continua no schema e deixou de ser lido. Se a escolha permanente
+       voltar a valer, ela precisa de tela antes de voltar a decidir número. */
+    const melhor = modDe("sabedoria") > modDe("inteligencia") ? "sabedoria" : "inteligencia";
+    if (ctx.pacoteInicial) {
+      partesOrcamento.push({
+        label: `${ctx.pacoteInicial.classeNome} (Pacote)`,
+        valor: vagasDoPacote(ctx.pacoteInicial),
+      });
+    }
+    /* O piso em zero é do jogador e não da criatura, e fica como estava: o
+       autor corrigiu QUAL atributo entra, não o que um modificador negativo
+       faz com o orçamento. */
+    partesOrcamento.push({
+      label: rotuloAttr(melhor),
+      valor: Math.max(0, modDe(melhor)),
+    });
+  } else {
+    // Criatura: 3 + o MAIOR entre INT e SAB + o rank do Grau do Feiticeiro.
+    const melhor = modDe("sabedoria") > modDe("inteligencia") ? "sabedoria" : "inteligencia";
+    partesOrcamento.push({ label: "Base", valor: 3 });
+    partesOrcamento.push({ label: rotuloAttr(melhor), valor: modDe(melhor) });
+    partesOrcamento.push({ label: "Grau do Feiticeiro", valor: Math.max(0, Math.trunc(ctx.grauRank ?? 1)) });
+  }
+  /* As parcelas por fonte só entram se fecharem com o número que o `deriveAfty`
+     apurou. Um canal com expressão negativa faria as duas contas divergirem, e
+     aí vale mais uma linha honesta e sem nome do que um detalhamento errado. */
+  if (bonusOutros > 0) {
+    if (somaBonus === bonusOutros) partesOrcamento.push(...partesBonus);
+    else partesOrcamento.push({ label: "Outros", valor: bonusOutros });
+  }
+  const total = partesOrcamento.reduce((acc, x) => acc + (Number(x.valor) || 0), 0);
   // Perícias E Testes de Resistência dividem as mesmas vagas (autor,
   // 2026-07-27). Jogadas de Ataque ficam fora: elas não têm faixa de Mestre e
   // o treino delas é com a arma que a criatura maneja.
+  //
+  /* ⚠ NO JOGADOR O TR NÃO GASTA NADA, e o livro escreve isso em caixa alta:
+     "TESTES DE RESISTÊNCIA NÃO PODEM SER ESCOLHIDOS DE FORMA LIVRE, SENDO
+     RECEBIDO POR ESPECIALIZAÇÃO, TALENTOS E OUTRAS FONTES. [...] E não contam
+     para o Limite de Pericias."
+
+     O gasto continua CALCULADO no jogador, e só não entra na soma: ele é o que
+     a tela usa para saber que aquele TR foi marcado à mão numa ficha onde marcar
+     não devia ser possível. Zerar a variável esconderia o sintoma. */
+  const trForaDoCaixa = regraDo(ctx.sistema, "trForaDoOrcamento") === "player";
   const gastoPericias = pericias.reduce((s, p) => s + custoProficiencia(p.profEscolhida), 0);
   const gastoResistencias = resistencias.reduce((s, r) => s + custoProficiencia(r.profEscolhida), 0);
-  const gastos = gastoPericias + gastoResistencias;
+  const gastos = gastoPericias + (trForaDoCaixa ? 0 : gastoResistencias);
 
   return {
     pericias,
@@ -840,6 +1214,10 @@ export function resolveTestes(creature, ctx = {}) {
     orcamento: {
       total, gastos, pericias: gastoPericias, resistencias: gastoResistencias,
       restante: total - gastos, excedeu: gastos > total,
+      // Uma linha por fonte, para o hover do contador.
+      partes: partesOrcamento,
+      // A tela precisa saber se deve mostrar o TR dentro do medidor.
+      trNoOrcamento: !trForaDoCaixa,
     },
     // Atenção = 10 + o bônus de Percepção (Percepção passiva).
     atencao: 10 + (pericias.find((p) => p.id === "percepcao")?.bonus ?? 0),

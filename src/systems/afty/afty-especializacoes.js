@@ -48,6 +48,23 @@ export const AFTY_ESPECIALIZACOES = [
     descricao: "",
     treinamentos: { armas: ["simples", "marciais"], escudos: ["leve"] },
     exclusivaOrigemId: null,
+    /* "No primeiro nível seu máximo de vida é 12 + Modificador de Constituição."
+       "Em níveis subsequentes ao primeiro, seu máximo de vida aumenta em 1d10 +
+       Modificador de Constituição. Você também pode escolher aumentar em 6 +
+       Modificador de Constituição, ao invés de rolar."
+       "Pontos de Energia Amaldiçoada. 4 Pontos de Energia por nível."
+       "Um Lutador pode escolher entre Força ou Destreza como atributo-chave."
+       "Requisitos para Multiclasse. Força ou Destreza 16." */
+    caracteristicas: {
+      pvPrimeiro: 12, pvDado: "1d10", pvPorNivel: 6,
+      pePorNivel: 4, peModTecnica: false,
+      atributosChave: ["forca", "destreza"],
+      multiclasse: { attrs: ["forca", "destreza"], valor: 16 },
+      /* "Um Teste de Resistência entre Fortitude ou Reflexos. Uma perícia de
+         Ofício, Atletismo ou Acrobacia e outras três perícias quaisquer." */
+      resistencias: { escolhe: 1, entre: ["fortitude", "reflexos"] },
+      pericias: { escolhe: 1, entre: ["oficio", "atletismo", "acrobacia"], livres: 3 },
+    },
   },
   {
     id: "combatente",
@@ -56,6 +73,20 @@ export const AFTY_ESPECIALIZACOES = [
     descricao: "",
     treinamentos: { armas: ["todas"], escudos: ["todos"] },
     exclusivaOrigemId: null,
+    /* Igual ao Lutador em PV e PE. O atributo-chave é que ganha Sabedoria.
+       "Um Especialista em Combate pode escolher entre Força, Destreza ou
+       Sabedoria como atributos para calcular a CD das suas habilidades de
+       especialização." */
+    caracteristicas: {
+      pvPrimeiro: 12, pvDado: "1d10", pvPorNivel: 6,
+      pePorNivel: 4, peModTecnica: false,
+      atributosChave: ["forca", "destreza", "sabedoria"],
+      multiclasse: { attrs: ["forca", "destreza"], valor: 16 },
+      /* "Um Teste de Resistência entre Fortitude ou Reflexos. Duas perícias de
+         Ofício, Atletismo ou Acrobacia e três outras perícias quaisquer." */
+      resistencias: { escolhe: 1, entre: ["fortitude", "reflexos"] },
+      pericias: { escolhe: 2, entre: ["oficio", "atletismo", "acrobacia"], livres: 3 },
+    },
   },
   {
     id: "conjurador",
@@ -64,6 +95,22 @@ export const AFTY_ESPECIALIZACOES = [
     descricao: "",
     treinamentos: { armas: ["simples", "distancia"], escudos: [] },
     exclusivaOrigemId: null,
+    /* "No primeiro nível seu máximo de vida é 10 + Modificador de Constituição."
+       "aumenta em 1d8 + Modificador de Constituição [...] ou 5 + Modificador de
+       Constituição, ao invés de rolar."
+       "6 Pontos de Energia por nível. Um Especialista em Técnica soma seu
+       modificador de atributo de técnica no máximo de energia amaldiçoada."
+       "pode escolher entre Inteligência ou Sabedoria" */
+    caracteristicas: {
+      pvPrimeiro: 10, pvDado: "1d8", pvPorNivel: 5,
+      pePorNivel: 6, peModTecnica: true,
+      atributosChave: ["inteligencia", "sabedoria"],
+      multiclasse: { attrs: ["inteligencia", "sabedoria"], valor: 16 },
+      /* "Um Teste de Resistência entre Astúcia ou Vontade. Duas perícias de
+         Ofício, Feitiçaria, Ocultismo e duas outras perícias quaisquer." */
+      resistencias: { escolhe: 1, entre: ["astucia", "vontade"] },
+      pericias: { escolhe: 2, entre: ["oficio", "feiticaria", "ocultismo"], livres: 2 },
+    },
   },
   {
     id: "suporte",
@@ -72,6 +119,19 @@ export const AFTY_ESPECIALIZACOES = [
     descricao: "",
     treinamentos: { armas: ["simples"], escudos: ["todos"] },
     exclusivaOrigemId: null,
+    /* "5 pontos de energia por nível. Um Suporte soma seu modificador de
+       atributo de técnica no máximo de energia amaldiçoada."
+       "pode escolher entre Presença ou Sabedoria" */
+    caracteristicas: {
+      pvPrimeiro: 10, pvDado: "1d8", pvPorNivel: 5,
+      pePorNivel: 5, peModTecnica: true,
+      atributosChave: ["presenca", "sabedoria"],
+      multiclasse: { attrs: ["presenca", "sabedoria"], valor: 16 },
+      /* "Um Teste de Resistência entre Astúcia ou Vontade. Duas perícias de
+         Ofício, Medicina, Prestidigitação e outras três quaisquer." */
+      resistencias: { escolhe: 1, entre: ["astucia", "vontade"] },
+      pericias: { escolhe: 2, entre: ["oficio", "medicina", "prestidigitacao"], livres: 3 },
+    },
   },
   {
     id: "controlador",
@@ -80,6 +140,19 @@ export const AFTY_ESPECIALIZACOES = [
     descricao: "",
     treinamentos: { armas: ["simples", "distancia"], escudos: [] },
     exclusivaOrigemId: null,
+    /* "5 pontos de energia por nível. Um Controlador soma seu modificador de
+       atributo de técnica no máximo de energia amaldiçoada."
+       "pode escolher entre Presença ou Sabedoria" */
+    caracteristicas: {
+      pvPrimeiro: 10, pvDado: "1d8", pvPorNivel: 5,
+      pePorNivel: 5, peModTecnica: true,
+      atributosChave: ["presenca", "sabedoria"],
+      multiclasse: { attrs: ["presenca", "sabedoria"], valor: 16 },
+      /* "Um Teste de Resistência entre Astúcia ou Vontade. Uma perícia de
+         Ofício, Percepção, Persuasão e outras duas perícias quaisquer." */
+      resistencias: { escolhe: 1, entre: ["astucia", "vontade"] },
+      pericias: { escolhe: 1, entre: ["oficio", "percepcao", "persuasao"], livres: 2 },
+    },
   },
   {
     id: "restringido",
@@ -89,8 +162,358 @@ export const AFTY_ESPECIALIZACOES = [
     treinamentos: { armas: ["todas"], escudos: ["todos"] },
     // Só acessível com a Origem Restringido, e ela só dá acesso a esta.
     exclusivaOrigemId: "restringido",
+    /* "No primeiro nível seu máximo de vida é 16 + Modificador de Constituição."
+       "aumenta em 1d12 + Modificador de Constituição [...] ou 7 + Modificador de
+       Constituição, ao invés de rolar."
+       "Um Restringido pode escolher qualquer atributo para calcular a CD."
+       "Restringidos não podem realizar Multiclasse, e não é possível fazer
+       Multiclasse para Restringido."
+
+       ⚠ A trava de multiclasse é BIDIRECIONAL no texto, e é a mesma forma da
+       trava Tipo ↔ Origem fechada em 2026-08-03. `multiclasse: null` diz "não
+       entra e não sai", e não só "não sai".
+
+       ⚠ ELE NÃO TEM PONTOS DE ENERGIA, e a tabela de PE do livro simplesmente o
+       omite. O motivo veio depois, verbatim: "Os Restringidos não possuem Pontos
+       de Energia, recebendo os Pontos de Estamina no lugar, os quais abastecem
+       suas habilidades e técnicas marciais."
+
+       `pePorNivel: null` grava a AUSÊNCIA, e `recursoAlternativo` grava o nome do
+       que vem no lugar. Zero seria uma afirmação (ele teria PE, e seria zero) e
+       null é a falta dela, que é o que o livro diz.
+
+       ⚠ SÃO 4 POR NÍVEL, e o número não veio da tabela de PE (que omite o
+       Restringido): veio do autor em 2026-08-30 e é confirmado por texto de
+       livro que já estava no motor. A habilidade Restrito pelos Céus diz "você
+       inicia com 4 pontos de estamina, e recebe mais 4 a cada nível", que é
+       exatamente 4 × nível, o mesmo do Lutador e do Combatente.
+
+       `recursoAlternativo` guarda o NOME e `pePorNivel` guarda o VALOR: os dois
+       convivem porque a Estamina É o PE, mesma pilha e outro rótulo, que é como
+       o Grimório Afty já a trata (ver `semEnergia` em afty-derive.js). */
+    caracteristicas: {
+      pvPrimeiro: 16, pvDado: "1d12", pvPorNivel: 7,
+      pePorNivel: 4, peModTecnica: false,
+      recursoAlternativo: "Pontos de Estamina",
+      atributosChave: null,
+      multiclasse: null,
+      /* "Testes de Resistência de Fortitude e Reflexos. Uma perícia de Ofício e
+         outras quatro perícias quaisquer, exceto Feitiçaria."
+
+         ⚠ O ÚNICO QUE NÃO ESCOLHE TR: o texto dá os dois de graça, com "e" no
+         lugar do "entre ... ou" das outras cinco. `fixas` guarda isso, e é
+         diferente de `escolhe: 2` sobre um par de dois, que daria o mesmo
+         resultado por acidente e mentiria na tela ao pedir uma escolha que não
+         existe.
+
+         ⚠ E o único com VETO: "exceto Feitiçaria". `vetadas` é a lista, e ela
+         vale só para as livres, porque o pool dele já é só Ofício. */
+      resistencias: { fixas: ["fortitude", "reflexos"] },
+      pericias: { escolhe: 1, entre: ["oficio"], livres: 4, vetadas: ["feiticaria"] },
+    },
   },
 ];
+
+/* ============================================================ */
+/* CARACTERÍSTICAS DE ESPECIALIZAÇÃO (números da ficha de JOGADOR) */
+/* ============================================================ */
+/* Texto VERBATIM do livro, enviado pelo autor em 2026-08-30, quando o Tipo saiu
+   da Ficha de Player e os valores passaram a vir da Classe. Cada entrada carrega
+   os dela, em `caracteristicas`.
+
+   ⚠ ELES MORAM DENTRO DA ENTRADA, e não num objeto à parte indexado por id.
+   Tentei o objeto à parte primeiro e o assert de Addons derrubou na hora: um
+   pacote pode ACRESCENTAR uma Especialização, e ela nunca teria linha num mapa
+   escrito à mão aqui. É a mesma lição que o Domínio Simples deu em 2026-08-28,
+   pelo mesmo motivo: `remendarLista` troca campo a campo da ENTRADA, então
+   número fora dela é número que o remendo não alcança, e o Addon mudaria o texto
+   mantendo a conta velha, calado.
+
+   ⚠ CINCO DAS SEIS REPRODUZEM A FÓRMULA DA CRIATURA. Somando os níveis,
+   `pvPrimeiro + pvPorNivel × (N − 1)` dá exatamente o que a planilha calcula por
+   Tipo:
+
+     Lutador e Combatente                 12 + 6×(N−1)  = Tipo Combatente
+     Conjurador, Controlador e Suporte    10 + 5×(N−1)  = Tipo Misto e Conjurador
+     Restringido                          16 + 7×(N−1)  ≠ Tipo Restringido (12 × ND)
+
+   O Restringido é o único que DIVERGE, e feio: no nível 10 são 79 contra 120.
+   O livro do jogador e a planilha de criatura discordam só nele.
+
+     pvPrimeiro     PV no primeiro nível, antes do Mod. de Constituição
+     pvDado         o dado dos níveis seguintes, quando o jogador rola
+     pvPorNivel     o valor fixo dos níveis seguintes, "ao invés de rolar"
+     pePorNivel     Pontos de Energia por nível
+     peModTecnica   soma o modificador de atributo de técnica no máximo de PE
+     recursoAlternativo  o que a classe recebe no lugar do PE, quando não o tem
+     atributosChave os que podem calcular a CD das habilidades de especialização
+                    (null = qualquer um, que é o caso do Restringido)
+     multiclasse    { attrs, valor } do requisito, ou null para quem não pode
+     resistencias   { escolhe, entre } ou { fixas }: os TR que a Classe treina
+     pericias       { escolhe, entre, livres, vetadas }: o pacote de perícias
+
+   ⚠ OS DOIS SÃO PACOTE INICIAL, e não por nível. O livro os lista dentro de
+   "Treinamentos", junto das armas e escudos, que já moram em `treinamentos`
+   fora de `caracteristicas` desde antes.
+
+   ⚠ `escolhe` sobre `entre` é ESCOLHA DIRIGIDA (uma perícia daquela lista), e
+   `livres` é escolha aberta na lista inteira. São coisas diferentes e o livro as
+   escreve numa frase só: "Uma perícia de Ofício, Atletismo ou Acrobacia e outras
+   três perícias quaisquer".
+
+   ⚠ O Mod. de Constituição entra em TODO nível, o primeiro incluído, então o
+   total é `N × ModCon` e bate com o `nd * modCon` que a criatura já usa.
+
+   ⚠ O CAMPO É OPCIONAL. As seis do livro têm, e uma Especialização vinda de
+   Addon pode não ter: nesse caso ela não rende PV nem PE, e o validador só
+   confere a FORMA do que existe. Bloquear a instalação seria proibir homebrew
+   de classe, e o assert de famílias já instala uma sem características. */
+
+/** As características daquela classe, ou null quando a entrada não declara. */
+export const caracteristicasDaClasse = (id) => getEspecializacao(id)?.caracteristicas ?? null;
+
+/**
+ * O PV que N níveis daquela classe rendem, SEM o Modificador de Constituição.
+ *
+ * ⚠ `inicial` separa quem paga a base de quem não paga: só a classe inicial dá
+ * o `pvPrimeiro`, e as demais dão `pvPorNivel` em todo nível. É por isso que a
+ * ficha precisa saber qual classe veio primeiro, e foi o próprio autor quem
+ * apontou o problema ao mandar a tabela.
+ */
+export function pvDaClasse(id, niveis, { inicial = false } = {}) {
+  const c = caracteristicasDaClasse(id);
+  const n = Math.max(0, Math.trunc(Number(niveis) || 0));
+  if (!c || n <= 0) return 0;
+  return inicial ? c.pvPrimeiro + c.pvPorNivel * (n - 1) : c.pvPorNivel * n;
+}
+
+/**
+ * O PE que N níveis daquela classe rendem. SEM o Mod. de Técnica.
+ *
+ * ⚠ O modificador fica de fora de propósito, e não por descuido: o livro diz
+ * "Certas Especializações permitem que um personagem some um modificador de
+ * atributo UMA ÚNICA VEZ ao seu total". Ele é parcela da ficha e não da classe,
+ * então somá-lo aqui o dobraria num personagem Conjurador e Suporte, que são
+ * duas classes com `peModTecnica`. Quem soma é `peModTecnicaDaFicha`.
+ */
+export function peDaClasse(id, niveis) {
+  const c = caracteristicasDaClasse(id);
+  const n = Math.max(0, Math.trunc(Number(niveis) || 0));
+  if (!c || n <= 0 || c.pePorNivel == null) return 0;
+  return c.pePorNivel * n;
+}
+
+/**
+ * Quantas Habilidades de Especialização os níveis de Classe rendem na ficha de
+ * JOGADOR: **1 por nível a partir do SEGUNDO de cada Classe.**
+ *
+ * Verbatim do autor (2026-08-30): "Especialização você recebe 1 por Nível a
+ * partir do Segundo Nível da Classe. [...] Se eu fizer Multiclasse, o primeiro
+ * Nível da Multiclasse eu não recebo inclusive."
+ *
+ * ⚠ O DESCONTO É POR CLASSE, e não por personagem. Um Lutador 4 rende 3, e um
+ * Lutador 2 com Conjurador 2 rende 2, e não 3: cada classe perde o primeiro
+ * nível dela. Foi o exemplo que o autor deu, e é o que separa esta regra de um
+ * simples `nível − 1`.
+ *
+ * ⚠ Não é o mesmo que o `nível − 1` do PV. Lá a classe INICIAL é privilegiada
+ * (ela paga a base maior) e aqui todas são igualmente descontadas.
+ */
+export function vagasDeHabilidadePorClasse(escolhidas = []) {
+  return (Array.isArray(escolhidas) ? escolhidas : [])
+    .reduce((soma, e) => soma + Math.max(0, Math.trunc(Number(e?.nivel) || 0) - 1), 0);
+}
+
+/**
+ * O personagem soma o Mod. de Atributo de Técnica no PE máximo?
+ *
+ * ⚠ UMA ÚNICA VEZ, mesmo com duas classes que dão o benefício. Verbatim do
+ * livro: "Certas Especializações permitem que um personagem some um modificador
+ * de atributo uma única vez ao seu total." Por isso a resposta é booleana e não
+ * uma contagem, e por isso ela é da FICHA e não da classe.
+ *
+ * `classes` = lista de ids de Especialização com nível na ficha.
+ */
+export const peModTecnicaDaFicha = (classes = []) =>
+  classes.some((id) => caracteristicasDaClasse(id)?.peModTecnica === true);
+
+
+/**
+ * O pacote de perícias e Testes de Resistência que a ficha recebe na criação.
+ *
+ * ⚠ SÓ A CLASSE INICIAL DÁ PACOTE (autor, 2026-08-30). A segunda Classe da
+ * multiclasse entra apenas pelos níveis dela, sem treinamento inicial nenhum. O
+ * autor escolheu isso entre dar o pacote inteiro e dar só as perícias livres.
+ *
+ * ⚠ A Classe inicial é a PRIMEIRA DA LISTA, a mesma régua do PV. Duas
+ * definições de "classe inicial" na mesma ficha seriam duas coisas para o
+ * jogador manter em dia, e elas divergiriam no primeiro reordenamento.
+ *
+ * Devolve `null` quando não há Classe nenhuma: uma ficha sem Especialização não
+ * tem pacote, e isso é diferente de ter um pacote vazio.
+ */
+export function pacoteInicialDaFicha(escolhidas = []) {
+  const primeira = (Array.isArray(escolhidas) ? escolhidas : [])[0];
+  const c = caracteristicasDaClasse(primeira?.id);
+  if (!c) return null;
+  const pericias = c.pericias ?? {};
+  const resistencias = c.resistencias ?? {};
+  const periciasEscolhe = Math.max(0, Math.trunc(Number(pericias.escolhe) || 0));
+  const periciasEntre = Array.isArray(pericias.entre) ? pericias.entre : [];
+  const trEscolhe = Math.max(0, Math.trunc(Number(resistencias.escolhe) || 0));
+  const trEntre = Array.isArray(resistencias.entre) ? resistencias.entre : [];
+  const trFixos = Array.isArray(resistencias.fixas) ? resistencias.fixas : [];
+  /* ⚠ ESCOLHA QUE SÓ TEM UM CAMINHO NÃO É ESCOLHA (autor, 2026-08-30: "faça com
+     que eu receba de forma obrigatória os TRs e Perícias já selecionados"). O
+     Restringido recebe "uma perícia de Ofício", que é `escolhe: 1` sobre uma
+     lista de um: Ofício já está decidido, e a ficha o RECEBE em vez de pedir que
+     o jogador escolha entre uma opção só. A comparação é `escolhe >= entre` e
+     não `entre.length === 1`, para valer também se uma Classe futura pedir duas
+     de uma lista de duas. */
+  const dirigidasAutomaticas = (escolhe, entre) => (escolhe >= entre.length ? [...entre] : []);
+  return {
+    classeId: primeira.id,
+    classeNome: getEspecializacao(primeira.id)?.nome ?? primeira.id,
+    /* Perícias que a Classe treina numa lista fechada ("Uma perícia de Ofício,
+       Atletismo ou Acrobacia"). */
+    periciasEscolhe,
+    periciasEntre,
+    /* Perícias "quaisquer". */
+    periciasLivres: Math.max(0, Math.trunc(Number(pericias.livres) || 0)),
+    /* O veto do Restringido ("exceto Feitiçaria"), que vale só para as livres. */
+    periciasVetadas: Array.isArray(pericias.vetadas) ? pericias.vetadas : [],
+    /* TR escolhido numa lista ("entre Fortitude ou Reflexos"), ou os fixos do
+       Restringido, que o texto dá com "e" em vez de "entre ... ou". */
+    trEscolhe,
+    trEntre,
+    trFixos,
+    /* O que a ficha RECEBE sem escolher. As perícias daqui não gastam vaga: elas
+       saem do total, porque já vieram treinadas. Os TR nunca gastaram nada no
+       jogador (o livro os tira do Limite de Perícias). */
+    periciasAutomaticas: dirigidasAutomaticas(periciasEscolhe, periciasEntre),
+    trAutomaticos: [...trFixos, ...dirigidasAutomaticas(trEscolhe, trEntre)],
+  };
+}
+
+/**
+ * Quantas perícias a ficha de JOGADOR pode treinar.
+ *
+ * `pacote` vem de `pacoteInicialDaFicha` e `modAtributo` é o modificador do
+ * atributo que o jogador escolheu na criação.
+ *
+ * ⚠ O ATRIBUTO É ESCOLHIDO, E NÃO O MAIOR. Verbatim: "você pode escolher entre
+ * os atributos Inteligência ou Sabedoria para receber novas perícias. Esta
+ * escolha não pode ser modificada nem revertida após a criação do personagem,
+ * sendo algo definitivo." A criatura usa `Math.max(modInt, modSab)`, que é o
+ * contrário: ela sempre pega o melhor dos dois, sem escolher.
+ *
+ * ⚠ E O TR NÃO ENTRA NA CONTA. "TESTES DE RESISTÊNCIA [...] não contam para o
+ * Limite de Pericias", em caixa alta no livro. Na criatura eles contam.
+ */
+export function totalPericiasDoJogador(pacote, modAtributo = 0) {
+  return vagasDoPacote(pacote) + Math.max(0, Math.trunc(Number(modAtributo) || 0));
+}
+
+/**
+ * Quantas vagas o pacote da Classe rende, DESCONTADO o que ele já concede.
+ *
+ * ⚠ A PERÍCIA AUTOMÁTICA SAI DO TOTAL. O Restringido treina cinco perícias, e
+ * uma delas é Ofício, que ele recebe. Se Ofício continuasse contando no total e
+ * fosse concedido de graça, a ficha treinaria seis.
+ */
+export function vagasDoPacote(pacote) {
+  if (!pacote) return 0;
+  return Math.max(0, pacote.periciasEscolhe + pacote.periciasLivres - pacote.periciasAutomaticas.length);
+}
+
+/**
+ * Sanidade das características. Só confere a FORMA do que existe: entrada sem
+ * `caracteristicas` é válida, porque Addon pode acrescentar classe.
+ */
+export function validarCaracteristicasDeClasse() {
+  const erros = [];
+  for (const e of AFTY_ESPECIALIZACOES) {
+    const c = e.caracteristicas;
+    if (c == null) continue;
+    if (typeof c !== "object" || Array.isArray(c)) {
+      erros.push(`${e.nome}: caracteristicas tem de ser objeto`);
+      continue;
+    }
+    for (const campo of ["pvPrimeiro", "pvPorNivel"]) {
+      if (!Number.isFinite(c[campo]) || c[campo] <= 0) {
+        erros.push(`${e.nome}: ${campo} tem de ser número positivo`);
+      }
+    }
+    if (typeof c.pvDado !== "string" || !/^1d[0-9]+$/.test(c.pvDado)) {
+      erros.push(`${e.nome}: pvDado inválido`);
+    }
+    /* ⚠ `null` é resposta VÁLIDA e diferente de zero: o livro não dá linha de PE
+       ao Restringido. Zero seria uma afirmação, e null é a falta dela. */
+    if (c.pePorNivel !== null && (!Number.isFinite(c.pePorNivel) || c.pePorNivel <= 0)) {
+      erros.push(`${e.nome}: pePorNivel tem de ser positivo ou null`);
+    }
+    if (typeof c.peModTecnica !== "boolean") {
+      erros.push(`${e.nome}: peModTecnica tem de ser booleano`);
+    }
+    /* ⚠ `recursoAlternativo` é o NOME da pilha, e não uma segunda pilha. O
+       Restringido tem os dois campos preenchidos de propósito: ele recebe 4 por
+       nível como todo mundo e chama isso de Estamina. O que não pode existir é
+       classe sem valor E sem nome, que seria uma classe sem recurso nenhum e
+       sem dizer por quê. */
+    if (c.pePorNivel == null && !c.recursoAlternativo) {
+      erros.push(`${e.nome}: sem pePorNivel e sem recursoAlternativo`);
+    }
+    if (c.recursoAlternativo != null && typeof c.recursoAlternativo !== "string") {
+      erros.push(`${e.nome}: recursoAlternativo tem de ser texto`);
+    }
+    if (c.atributosChave !== null && (!Array.isArray(c.atributosChave) || !c.atributosChave.length)) {
+      erros.push(`${e.nome}: atributosChave tem de ser lista ou null`);
+    }
+    /* Os pacotes de perícia e TR. Opcionais como o resto de `caracteristicas`,
+       e conferidos só na FORMA: os ids são validados contra os catálogos de
+       Perícias e de Resistências pelo `t-sistema.mjs`, e não aqui, porque
+       importar os dois fecharia ciclo com este módulo. */
+    for (const [campo, tabela] of [["resistencias", c.resistencias], ["pericias", c.pericias]]) {
+      if (tabela == null) continue;
+      if (typeof tabela !== "object" || Array.isArray(tabela)) {
+        erros.push(`${e.nome}: ${campo} tem de ser objeto`);
+        continue;
+      }
+      const temEscolha = tabela.escolhe != null;
+      const temFixas = Array.isArray(tabela.fixas);
+      if (!temEscolha && !temFixas && !tabela.livres) {
+        erros.push(`${e.nome}: ${campo} não concede nada`);
+      }
+      if (temEscolha) {
+        if (!Number.isInteger(tabela.escolhe) || tabela.escolhe <= 0) {
+          erros.push(`${e.nome}: ${campo}.escolhe tem de ser inteiro positivo`);
+        }
+        if (!Array.isArray(tabela.entre) || tabela.entre.length < 1) {
+          erros.push(`${e.nome}: ${campo}.escolhe sem lista \`entre\``);
+        } else if (tabela.escolhe > tabela.entre.length) {
+          /* Pedir 3 de uma lista de 2 é pacote impossível, e sem esta linha ele
+             passaria calado e a tela travaria numa escolha que não fecha. */
+          erros.push(`${e.nome}: ${campo}.escolhe pede mais do que a lista tem`);
+        }
+      }
+      if (tabela.livres != null && (!Number.isInteger(tabela.livres) || tabela.livres < 0)) {
+        erros.push(`${e.nome}: ${campo}.livres tem de ser inteiro não negativo`);
+      }
+      if (tabela.vetadas != null && !Array.isArray(tabela.vetadas)) {
+        erros.push(`${e.nome}: ${campo}.vetadas tem de ser lista`);
+      }
+    }
+    if (c.multiclasse !== null) {
+      if (!Array.isArray(c.multiclasse?.attrs) || !c.multiclasse.attrs.length) {
+        erros.push(`${e.nome}: multiclasse sem atributos`);
+      }
+      if (!Number.isFinite(c.multiclasse?.valor)) {
+        erros.push(`${e.nome}: multiclasse sem valor`);
+      }
+    }
+  }
+  return erros;
+}
 
 /* ============================================================ */
 /* ADDONS                                                        */
@@ -363,5 +786,9 @@ export function validarCatalogoEspecializacoes() {
       problemas.push(`${e.nome}: exclusivaOrigemId aponta para origem inexistente (${e.exclusivaOrigemId})`);
     }
   }
+  /* As características de classe entram no MESMO validador, e não num à parte:
+     um bloco de números com validador que ninguém chama é o mesmo que não ter
+     validador. É o encaixe que o Domínio Simples usou em 2026-08-28. */
+  problemas.push(...validarCaracteristicasDeClasse());
   return problemas;
 }

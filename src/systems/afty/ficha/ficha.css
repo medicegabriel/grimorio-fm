@@ -1823,6 +1823,276 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
  * de regra que ninguém pediu. Quem quer o texto de uma Habilidade no papel abre
  * ela antes.
  */
+/* ============================================================ */
+/* SHIKIGAMIS                                                    */
+/* ============================================================ */
+/* ⚠ REFEITO EM 2026-08-31. O autor: *"a aba de Shikigamis ficou horripilante de
+   entender e usar tudo que eu tenho a dispor [...] eles são a Peça CHAVE em um
+   personagem Controlador"*. O desenho é MESTRE-DETALHE: uma fileira de cartões
+   em cima e a ficha inteira de um deles embaixo.
+
+   ⚠ TUDO AQUI PINTA POR TOKEN (`--afty-*`), como o resto da Ficha. É isso que
+   faz o CSS personalizado POR SHIKIGAMI funcionar: o tema dele redefine os
+   tokens dentro de `#afty-inv-<id>`, e cada peça abaixo se repinta sozinha. Uma
+   cor escrita à mão aqui seria uma peça imune ao tema do dono da ficha. */
+
+/* ---------- a fileira ---------- */
+/* Rolagem horizontal, e não quebra de linha: com sete shikigamis a quebra
+   empurra a ficha do selecionado para fora da tela, e a fileira deixa de ser
+   uma referência rápida para virar metade da página. */
+.afty-inv-fileira {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+  scrollbar-width: thin;
+}
+
+.afty-inv-cartao {
+  flex: 0 0 11.5rem;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--afty-borda);
+  border-radius: var(--afty-raio);
+  background: var(--afty-card);
+  overflow: hidden;
+  transition: border-color 140ms ease, box-shadow 140ms ease, opacity 140ms ease;
+}
+
+/* Fora de campo o cartão APAGA, e é a leitura mais rápida da fileira: dá para
+   ver quem está na mesa sem ler uma palavra. Apagar, e não esconder, porque a
+   invocação guardada continua sendo consultável. */
+.afty-inv-cartao[data-afty-campo="nao"] { opacity: 0.62; }
+
+/* ⚠ Exorcizada é MAIS apagada que fora de campo, e riscada: os dois estados
+   apagam o cartão e só um deles tem volta. Sem a distinção, um shikigami
+   perdido para sempre parecia um shikigami guardado. */
+.afty-inv-cartao[data-afty-fora="sim"] { opacity: 0.38; }
+.afty-inv-cartao[data-afty-fora="sim"] .afty-inv-cartao-nome { text-decoration: line-through; }
+.afty-inv-campo:disabled { cursor: not-allowed; color: var(--afty-texto-fraco); }
+
+.afty-inv-cartao[data-afty-alvo="sim"] {
+  border-color: var(--afty-destaque);
+  box-shadow: 0 0 0 1px var(--afty-destaque), var(--afty-sombra);
+}
+
+.afty-inv-cartao-corpo {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding: 0.5rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* ⚠ RETRATO É ÍCONE, e não tira (autor, 2026-08-31 à noite). O cartão tem
+   11,5rem de largura e o retrato ocupava a largura inteira com 4,5rem de
+   altura: `object-fit: cover` numa caixa de proporção 2,5:1 recorta uma faixa
+   do meio de uma imagem quadrada. Quadrado ao lado do nome mostra a imagem
+   inteira, e o nome ainda ganha espaço, porque deixa de dividir a linha com
+   o grau. */
+.afty-inv-cartao-topo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.afty-inv-cartao-texto {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.afty-inv-cartao-nome {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 700;
+  font-size: 0.8125rem;
+  color: var(--afty-texto);
+}
+
+.afty-inv-cartao-grau {
+  flex-shrink: 0;
+  font-size: 0.625rem;
+  color: var(--afty-texto-fraco);
+}
+
+.afty-inv-cartao-vida { display: block; }
+
+/* ⚠ O trilho da fileira é MAIS FINO que o do vital (0,625rem). Aqui ele é
+   referência de relance e não alvo de edição, e na altura cheia ele competia
+   com o retrato pela atenção do cartão. */
+.afty-inv-cartao-vida .afty-vital-trilho { height: 0.3125rem; }
+
+.afty-inv-cartao-pv {
+  display: block;
+  margin-top: 0.1875rem;
+  font-family: var(--afty-fonte-num);
+  font-size: 0.625rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--afty-texto-suave);
+}
+
+/* O interruptor de campo. Ele é a AÇÃO do cartão e por isso ocupa a largura
+   inteira embaixo: alvo grande no dedo, e impossível de confundir com o corpo
+   do cartão, que só seleciona. */
+.afty-inv-campo {
+  border: 0;
+  border-top: 1px solid var(--afty-borda);
+  padding: 0.3125rem;
+  background: var(--afty-poco);
+  color: var(--afty-texto-suave);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 140ms ease, color 140ms ease;
+}
+
+.afty-inv-campo:hover { color: var(--afty-texto); }
+
+.afty-inv-campo[data-afty-tom="destaque"] {
+  background: var(--afty-destaque-fundo);
+  color: var(--afty-destaque-texto);
+}
+
+/* ---------- retrato ---------- */
+/* ⚠ CADA SHIKIGAMI TEM O SEU (autor, 2026-08-31). Mesmo par de campos do
+   retrato da criatura, então o `object-position` carrega o ponto focal. */
+.afty-inv-retrato {
+  display: block;
+  width: 100%;
+  object-fit: cover;
+  background: var(--afty-poco);
+}
+
+.afty-inv-retrato-vazio {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--afty-texto-fraco);
+  opacity: 0.5;
+}
+
+.afty-inv-retrato-cartao {
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: none;
+  border-radius: var(--afty-raio-peq);
+  border: 1px solid var(--afty-borda);
+}
+
+.afty-inv-retrato-icone {
+  width: 3.25rem;
+  height: 3.25rem;
+  flex: none;
+  border-radius: var(--afty-raio-peq);
+  border: 1px solid var(--afty-borda);
+}
+
+/* ---------- a ficha do selecionado ---------- */
+.afty-inv-ficha {
+  overflow: hidden;
+  padding: 0;
+}
+
+/* Fora de campo o RETRATO perde a saturação, e não a ficha: os números
+   continuam todos lá, porque consultar um shikigami guardado é normal. Antes
+   o filtro caía na faixa inteira e apagava o nome junto. */
+.afty-inv-ficha[data-afty-campo="nao"] .afty-inv-retrato-icone {
+  filter: saturate(0.35);
+  opacity: 0.75;
+}
+
+/* ⚠ ERA UM BANNER de largura inteira e 9rem de altura até 2026-08-31, com o
+   retrato em `position: absolute; inset: 0` por baixo de um véu. O autor
+   cortou na mesma noite: *"as imagens dos Shikigamis ficaram super esticadas ao
+   invés de serem um Icon. Não queria um banner na Ficha Final"*.
+
+   O diagnóstico é geométrico e não de gosto: retrato de shikigami é quadrado ou
+   em pé, e `object-fit: cover` numa caixa de proporção 12:1 mostra uma tira do
+   meio da imagem. Ícone quadrado ao lado do nome mostra a imagem INTEIRA, não
+   precisa de véu (o nome nunca cai por cima dela) e devolve quase 6rem de
+   altura para o que interessa, que são os números. */
+.afty-inv-cabeca {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--afty-poco);
+  border-bottom: 1px solid var(--afty-borda);
+}
+
+.afty-inv-cabeca-texto {
+  flex: 1;
+  min-width: 0;
+}
+
+.afty-inv-titulo {
+  margin: 0;
+  font-family: var(--afty-fonte-titulo);
+  font-size: 1.125rem;
+  font-weight: 800;
+  line-height: 1.15;
+  color: var(--afty-texto);
+}
+
+.afty-inv-corpo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  padding: 0.75rem;
+}
+
+.afty-inv-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.375rem;
+}
+
+@media (min-width: 640px) {
+  .afty-inv-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+.afty-inv-bloco { min-width: 0; }
+
+/* ---------- os bônus ---------- */
+/* ⚠ ESTE É O *"saber ativar e desativar seus bônus"* do pedido, e o interruptor
+   mexe no número de verdade (ver `auxiliosLigadosDa`). A lâmpada é o sinal, e
+   ela é redundante de propósito: a linha ligada muda de cor E acende o ponto,
+   porque cor sozinha não serve a quem não a distingue. */
+.afty-inv-bonus { width: 100%; }
+
+.afty-inv-bonus-botao { cursor: pointer; }
+
+.afty-inv-bonus-botao:hover { border-color: var(--afty-borda-forte); }
+
+.afty-inv-lampada {
+  flex-shrink: 0;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+  border: 1px solid var(--afty-borda-forte);
+  background: transparent;
+  transition: background 140ms ease, box-shadow 140ms ease;
+}
+
+.afty-inv-bonus-botao[data-afty-ligado="sim"] {
+  border-color: var(--afty-destaque);
+  background: var(--afty-destaque-fundo);
+}
+
+.afty-inv-bonus-botao[data-afty-ligado="sim"] .afty-inv-lampada {
+  border-color: var(--afty-destaque);
+  background: var(--afty-destaque);
+  box-shadow: 0 0 6px var(--afty-destaque);
+}
+
 @media print {
   /* Fundo escuro em papel gasta a tinta toda e sai cinza. A impressão é preta no
      branco, independente do tema, e as variáveis são reescritas para o CSS do
@@ -1860,6 +2130,7 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
 
   /* Nada que só serve para clicar vai para o papel. */
   .afty-passo,
+  .afty-inv-campo,
   .afty-abas,
   .afty-log,
   .afty-busca-fundo,

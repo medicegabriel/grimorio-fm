@@ -1,0 +1,128 @@
+{
+  "id": "estrela-zenin",
+  "nome": "Estrela dos Zenin",
+  "versao": "1.0.0",
+  "autor": "Afty",
+  "descricao": "Acrescenta o clã Estrela dos Zenin ao Herdado, os três marcadores de invocação dele e os três Talentos de Origem. Para efeitos mecânicos conta como uma Origem de Herdado Zenin para quesitos mecânicos de Técnica Herdada, em específico para o ganho das Dez Sombras.",
+  "paraRaw": "afty",
+  "acrescenta": {
+    "clas": [
+      {
+        "id": "cla_estrela_zenin",
+        "nome": "Estrela dos Zenin",
+        "efeitos": [
+          { "canal": "vagasPericia", "expr": "2", "nome": "Treinamentos de Clã" }
+        ],
+        "caracteristicas": [
+          {
+            "id": "bonus_atributo",
+            "nome": "Bônus em Atributo",
+            "descricao": "Uma Estrela dos Zenin aumenta o valor do atributo de Sabedoria ou presença em 2 pontos e o de outro atributo em 1 ponto.",
+            "bonus": { "distribuir": 3, "maxPorAtributo": 2 }
+          },
+          {
+            "id": "treinamentos_cla",
+            "nome": "Treinamentos de Clã",
+            "descricao": "Você se torna treinado em 2 perícias quaisquer. Ao invés de receber treinamento em 2 perícias, você pode escolher se tornar especialista em uma."
+          },
+          {
+            "id": "maestria_em_invocacoes",
+            "nome": "Maestria em Invocações",
+            "descricao": "Sendo o portador da maior técnica do Clã Zenin, você focou totalmente seu treinamento para se especializar em usar suas invocações da melhor forma possível, tendo também o treinamento especializado do clã para você evoluir com essa técnica. Tendo o maior foco em seus shikigamis e utilizando-os para fazer toda e qualquer coisa, seus shikigamis recebem +1 Ação/Característica que não conta para os limites naturais dos mesmos, além disso uma quantidade de Shikigamis igual a metade do seu Bônus de Treinamento tem seu custo de invocação diminuído em 2 PE (Mínimo 1 PE).",
+            "efeitosInvocacao": [
+              { "canal": "orcamentoLivre", "expr": "1", "nome": "Maestria em Invocações" },
+              {
+                "canal": "custoReducao",
+                "expr": "2",
+                "quando": "marc_estrela_zenin_economia_de_sombras",
+                "nome": "Economia de Sombras"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "marcadores": [
+      {
+        "id": "economia_de_sombras",
+        "label": "Economia de Sombras",
+        "requerId": "cla_estrela_zenin",
+        "limiteExpr": "piso(bt / 2)"
+      },
+      {
+        "id": "manuscrito",
+        "label": "Manuscrito Zenin",
+        "requerId": "tal_manuscrito_zenin",
+        "limiteExpr": "1"
+      },
+      {
+        "id": "fantoche_divino",
+        "label": "Fantoche Divino",
+        "requerId": "tal_fantoche_divino",
+        "limiteExpr": "1"
+      }
+    ],
+    "talentos": [
+      {
+        "id": "tal_manuscrito_zenin",
+        "nome": "Manuscrito Zenin",
+        "grupo": "origem",
+        "descricao": "As Dez Sombras pela importância ao Clã Zenin sempre que um usuário nascia, todo seu conhecimento e técnicas eram registradas para a criação de um manuscrito que muitos diriam lendário, onde toda a experiência e capacidades dessa técnica já catalogadas pelo clã. Ao obter este talento, você pode criar uma Ação/Característica adicional para um de seus Shikigamis, esta ação não aumenta seu custo nem conta para o limite do shikigami.",
+        "requisitos": [
+          { "tipo": "cla", "id": "cla_estrela_zenin" },
+          { "tipo": "nd", "valor": 6 },
+          { "tipo": "nota", "texto": "Mestre em História ou Ocultismo." }
+        ],
+        "efeitosInvocacao": [
+          {
+            "canal": "orcamentoLivre",
+            "expr": "1",
+            "quando": "marc_estrela_zenin_manuscrito",
+            "nome": "Manuscrito Zenin"
+          }
+        ]
+      },
+      {
+        "id": "tal_sintonia_de_batalha",
+        "nome": "Sintonia de Batalha",
+        "grupo": "origem",
+        "descricao": "Apenas depender de suas sombras, onde deixar unicamente as invocações lutando, não faz seu estilo, ir juntamente delas como uma dança de batalha, esse sim é seu estilo. Quando estiver com pelo menos 2 shikigamis a até 3m de você recebe seu Bônus de Treinamento em Jogadas de Ataque e metade de seu Bônus de Treinamento em Defesa.",
+        "requisitos": [
+          { "tipo": "cla", "id": "cla_estrela_zenin" },
+          { "tipo": "nd", "valor": 9 }
+        ]
+      },
+      {
+        "id": "tal_fantoche_divino",
+        "nome": "Fantoche Divino",
+        "grupo": "origem",
+        "descricao": "Possuindo após tanto treinamento e aprendizado, toda a maestria possível com as suas sombras apenas possuir um \"Fantoche Supremo\" não é o suficiente, evoluindo suas sombras até um patamar perfeito. Você pode, quando utilizar a habilidade de Especialização Fantoche Supremo, escolher gastar 15 PE adicionais no uso da habilidade para amplificar ainda mais o seu shikigami. Um Fantoche Divino recebe os seguintes benefícios: pontos de vida da invocação aumentam em um valor igual a [(3 + Bônus de Treinamento) multiplicado por cinco]; a Defesa da invocação aumenta em um valor igual a 2.5x seu Bônus de Treinamento; o movimento da invocação aumenta em 9m e ela pode realizar duas ações complexas adicionais todo turno. Porém, quando a invocação for dissipada ela não pode nunca mais se tornar um Fantoche Divino, sendo apenas uma amplificação por invocação.",
+        "requisitos": [
+          { "tipo": "cla", "id": "cla_estrela_zenin" },
+          { "tipo": "habilidade", "id": "ctr_fantoche_supremo" },
+          { "tipo": "nd", "valor": 20 }
+        ],
+        "efeitosInvocacao": [
+          {
+            "canal": "pv",
+            "expr": "(3 + bt) * 5",
+            "quando": "marc_estrela_zenin_fantoche_divino",
+            "nome": "Fantoche Divino"
+          },
+          {
+            "canal": "defesa",
+            "expr": "piso(2.5 * bt)",
+            "quando": "marc_estrela_zenin_fantoche_divino",
+            "nome": "Fantoche Divino"
+          },
+          {
+            "canal": "deslocamento",
+            "expr": "9",
+            "quando": "marc_estrela_zenin_fantoche_divino",
+            "nome": "Fantoche Divino"
+          }
+        ]
+      }
+    ]
+  }
+}

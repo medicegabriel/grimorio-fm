@@ -105,7 +105,7 @@ function LinhaDano({ e, rolar, critico, onCritico, destacado, onImbuir, modoDano
         <NumeroComFontes
           valor={danoExibido}
           partes={e.partes}
-          total={modoVisual === "normal" ? e.total : danoExibido}
+          total={modoVisual === "normal" ? (e.totalFontes ?? e.total) : danoExibido}
           formatar={false}
           className="afty-valor text-[13px] whitespace-nowrap"
           ancora="direita"

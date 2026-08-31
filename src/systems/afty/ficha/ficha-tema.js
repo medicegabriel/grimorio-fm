@@ -23,9 +23,22 @@
  * ============================================================
  */
 
+import { sufixoDeChave, sistemaDaFicha } from "../afty-sistema";
+
 const CHAVE_BASE = "fm_ficha_tema_afty_v1";
-const CHAVE_GLOBAL = `${CHAVE_BASE}:global`;
 const chaveDe = (id) => `${CHAVE_BASE}:${id || "sem-id"}`;
+
+/**
+ * ⚠ O PADRÃO GLOBAL é POR SISTEMA desde 2026-08-30, quando nasceu o `/Player`.
+ * A chave por ficha não precisa disso, porque o id de uma criatura nunca é o de
+ * um personagem. A global precisa: ela é literalmente uma chave só, e "quero
+ * todas as minhas fichas assim" dito no Grimório Afty não pode repintar as
+ * fichas de jogador sem ninguém pedir.
+ *
+ * `sufixoDeChave("afty")` devolve `_afty`, que é o que a chave já gravada usa,
+ * então o padrão global de quem já temou o grimório continua valendo.
+ */
+const chaveGlobal = (sistema) => `fm_ficha_tema${sufixoDeChave(sistema)}_v1:global`;
 
 /** Teto do CSS livre. Acima disto o editor avisa, e não impede. */
 export const CSS_MAX = 64 * 1024;
@@ -315,7 +328,7 @@ export function carregarTema(creature, id) {
   try {
     const proprio = localStorage.getItem(chaveDe(id));
     if (proprio) return normalizaTema(JSON.parse(proprio));
-    const global = localStorage.getItem(CHAVE_GLOBAL);
+    const global = localStorage.getItem(chaveGlobal(sistemaDaFicha(creature)));
     if (global) return normalizaTema(JSON.parse(global));
   } catch { /* modo privado, cota, JSON corrompido: cai no padrão */ }
   return temaEmBranco();
@@ -328,10 +341,10 @@ export function salvarTema(id, tema) {
   } catch { return false; }
 }
 
-/** "Quero todas as minhas fichas assim." */
-export function salvarTemaGlobal(tema) {
+/** "Quero todas as minhas fichas assim." Assim daquele SISTEMA, e só dele. */
+export function salvarTemaGlobal(tema, sistema) {
   try {
-    localStorage.setItem(CHAVE_GLOBAL, JSON.stringify(tema));
+    localStorage.setItem(chaveGlobal(sistema), JSON.stringify(tema));
     return true;
   } catch { return false; }
 }
@@ -386,8 +399,29 @@ export function salvarDensidade(id) {
  */
 const urlSegura = (u) => String(u ?? "").trim().replace(/["'()\\;{}\s]/g, "");
 
+/**
+ * O seletor que a Ficha inteira usa. Sai daqui porque três coisas o repetiam (o
+ * bloco de variáveis, o `@scope` do CSS livre e o mapa da página do prompt), e a
+ * terceira cópia é sempre a que envelhece.
+ */
+export const ESCOPO_FICHA = "#afty-ficha";
+
+/**
+ * O seletor de UM Shikigami dentro da Ficha (2026-08-31).
+ *
+ * ⚠ CADA INVOCAÇÃO TEM TEMA PRÓPRIO, a pedido do autor: *"na Ficha Final, cada
+ * Shikigami terá um CSS Personalizado próprio em sua ficha."* O mecanismo é o
+ * MESMO da ficha do dono, só que ancorado noutro nó: o tema da invocação é um
+ * `creature.aparencia` de bolso, e o `@scope` o prende à subárvore dela.
+ *
+ * Por ser mais específico que `#afty-ficha` e vir DEPOIS na folha, o tema da
+ * invocação ganha do tema do dono sem `!important` nenhum, que é exatamente o
+ * comportamento esperado: quem não temar o shikigami herda a ficha.
+ */
+export const escopoDaInvocacao = (id) => `#afty-inv-${id}`;
+
 /** As variáveis do tema, como um bloco de CSS. Preset primeiro, formulário por cima. */
-export function cssDasVars(tema) {
+export function cssDasVars(tema, seletor = ESCOPO_FICHA) {
   const t = normalizaTema(tema);
   const linhas = [];
   const põe = (k, v) => { if (v) linhas.push(`  ${k}: ${v};`); };
@@ -409,7 +443,7 @@ export function cssDasVars(tema) {
   }
 
   if (!linhas.length) return "";
-  return `#afty-ficha {\n${linhas.join("\n")}\n}`;
+  return `${seletor} {\n${linhas.join("\n")}\n}`;
 }
 
 /**
@@ -439,12 +473,73 @@ export function saneiaCss(css) {
 }
 
 /** O bloco final, já escopado quando o navegador sabe escopar. */
-export function cssDoUsuario(tema) {
+export function cssDoUsuario(tema, seletor = ESCOPO_FICHA) {
   const t = normalizaTema(tema);
   if (!t.ligado) return "";
   const limpo = saneiaCss(t.css).trim();
   if (!limpo) return "";
-  return escopoSuportado() ? `@scope (#afty-ficha) {\n${limpo}\n}` : limpo;
+  return escopoSuportado() ? `@scope (${seletor}) {\n${limpo}\n}` : limpo;
+}
+
+/**
+ * O bloco inteiro (variáveis + CSS livre) de UMA invocação. Devolve string vazia
+ * para quem não tem tema próprio, que é o caso normal: sem tema, ela herda o da
+ * ficha do dono, e emitir um bloco com o preset padrão a arrancaria de lá.
+ */
+export function cssDaInvocacao(inv) {
+  if (!inv?.aparencia) return "";
+  const seletor = escopoDaInvocacao(inv.id);
+  return [cssDasVarsDaInvocacao(inv.aparencia, seletor), cssDoUsuario(inv.aparencia, seletor)]
+    .filter(Boolean)
+    .join("\n");
+}
+
+/**
+ * As variáveis de UMA INVOCAÇÃO. Parecida com a `cssDasVars`, e diferente numa
+ * coisa que muda tudo: ela emite só o que a invocação ESCOLHEU.
+ *
+ * ⚠ O TEMA DA INVOCAÇÃO É UM DELTA, e o da ficha é o tema inteiro. A ficha do
+ * dono não tem em cima de quem cair, então ela emite o preset resolvido. A
+ * invocação cai em cima da ficha, e emitir o preset resolvido ali significaria
+ * carimbar as 13 cores do padrão em quem só quis mudar uma.
+ *
+ * Achado na revisão de 2026-08-31, e era bug de verdade: a sub-aba Aparência do
+ * criador grava `{ css, ligado }` e mais nada, e o `normalizaTema` preenchia o
+ * `presetId` com "padrao" na leitura. Uma linha de CSS livre num shikigami
+ * arrancava ele do tema verde do dono e o devolvia roxo e ardósia, calado. É a
+ * mesma doença do efeito descartado calado, do outro lado: em vez de sumir, o
+ * valor APARECE sem ninguém ter pedido.
+ *
+ * ⚠ ESCOLHER "PADRÃO" NO PAINEL NÃO É ESCOLHER UM PRESET. O primeiro preset é o
+ * estado "sem preset meu", que é também o que o botão de limpar devolve. Só um
+ * preset NOMEADO e diferente dele carimba a paleta inteira, que é aí sim o
+ * pedido explícito de "quero este shikigami com outra cara".
+ */
+export function cssDasVarsDaInvocacao(bruto, seletor) {
+  const t = normalizaTema(bruto);
+  const linhas = [];
+  const põe = (k, v) => { if (v) linhas.push(`  ${k}: ${v};`); };
+
+  if (t.presetId !== PRESETS[0].id) {
+    for (const [k, v] of Object.entries(getPreset(t.presetId).vars)) põe(k, v);
+  }
+  for (const [k, v] of Object.entries(t.vars)) põe(k, v);
+  põe("--afty-fonte", t.fonte);
+  põe("--afty-raio", t.raio);
+
+  const url = urlSegura(t.imagem.url);
+  if (url) {
+    const opacidade = t.imagem.opacidade;
+    põe("--afty-imagem", `url("${url}")`);
+    põe("--afty-imagem-opacidade", String(opacidade));
+    põe("--afty-imagem-opacidade-ambiente", String(opacidade * 0.5));
+    põe("--afty-imagem-opacidade-banner", String(opacidade * 0.6));
+    põe("--afty-imagem-encaixe", t.imagem.encaixe === "auto" ? "auto" : t.imagem.encaixe);
+    põe("--afty-imagem-posicao", t.imagem.posicao || "center top");
+  }
+
+  if (!linhas.length) return "";
+  return `${seletor} {\n${linhas.join("\n")}\n}`;
 }
 
 /** O tema mexeu em alguma coisa? Decide se o bote salva-vidas aparece. */

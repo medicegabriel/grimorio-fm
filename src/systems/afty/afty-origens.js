@@ -261,7 +261,9 @@ export const CLAS_HERDADO = [
   },
 ];
 
-const CLA_BY_ID = Object.fromEntries(CLAS_HERDADO.map((c) => [c.id, c]));
+/* ⚠ `let`, e não `const`, porque a família `clas` dos Addons o RECONSTRÓI. Ver
+   `aplicarExtrasClas`, lá embaixo, junto do religador das origens. */
+let CLA_BY_ID = Object.fromEntries(CLAS_HERDADO.map((c) => [c.id, c]));
 export const getCla = (id) => CLA_BY_ID[id] ?? null;
 
 /* ============================================================ */
@@ -1203,6 +1205,78 @@ registrarFamilia("origens", {
   resolver: (id) => getOrigem(id),
   idsDaFicha: (c) => (c?.core?.origem?.id ? [c.core.origem.id] : []),
 });
+
+/* ============================================================ */
+/* FAMÍLIA `clas` DOS ADDONS                                     */
+/* ============================================================ */
+/**
+ * ⚠ CLÃ É FAMÍLIA PRÓPRIA, e não um remendo no campo `clas` do Herdado.
+ *
+ * O caminho fácil seria `substitui: { origens: [{ id: "herdado", campos: {
+ * clas: [...] } }] }`, e ele funciona: o `remendarLista` troca o campo inteiro.
+ * O preço é que o addon passaria a carregar uma CÓPIA CONGELADA dos quatro clãs
+ * do livro, e ela envelheceria na primeira errata do raw, calada. É a mesma
+ * doença do catálogo copiado que o projeto já pegou em outros lugares.
+ *
+ * Como família, o addon escreve só o clã DELE e os do livro seguem vivos.
+ *
+ * ⚠ O RELIGADOR MEXE NO ARRAY NO LUGAR (`splice`), e não o substitui. A entrada
+ * `herdado` do catálogo aponta para ESTE array em `clas: CLAS_HERDADO`, e
+ * trocar a referência deixaria a origem apontando para a lista velha. O mesmo
+ * vale depois de um remendo na origem: o `remendarLista` faz cópia RASA, então
+ * a cópia continua apontando para o mesmo array.
+ *
+ * ⚠ E O CACHE DE VERDADEIRAS ORIGENS MORRE AQUI TAMBÉM. O `opcoesVerdadeirasOrigens`
+ * percorre `origem.clas` para montar as opções do Gêmeo, e sem limpar o cache um
+ * clã de addon nunca apareceria lá. É o mesmo bug que a família `origens` teve
+ * em 2026-08-21, e ele reaparece por clã pela mesma razão.
+ */
+const CLAS_BASE = CLAS_HERDADO.slice();
+
+function aplicarExtrasClas(extras = [], remendos = null) {
+  CLAS_HERDADO.splice(0, CLAS_HERDADO.length, ...remendarLista(CLAS_BASE, remendos), ...extras);
+  CLA_BY_ID = Object.fromEntries(CLAS_HERDADO.map((c) => [c.id, c]));
+  cacheVO.clear();
+}
+
+/** Só as características dos clãs, para o validador reaproveitar a checagem. */
+export function validarCatalogoClas() {
+  const problemas = [];
+  const ids = new Set();
+  const attrValidos = new Set(AFTY_ATTRS.map((a) => a.key));
+  for (const cla of CLAS_HERDADO) {
+    if (ids.has(cla.id)) problemas.push(`clã duplicado: ${cla.id}`);
+    ids.add(cla.id);
+    if (!cla.nome?.trim()) problemas.push(`${cla.id}: sem nome`);
+    if (!Array.isArray(cla.caracteristicas) || !cla.caracteristicas.length) {
+      problemas.push(`${cla.id}: sem características`);
+    }
+    for (const c of cla.caracteristicas || []) {
+      if (!c.id) problemas.push(`${cla.id}: característica sem id`);
+      if (!c.nome?.trim()) problemas.push(`${cla.id}/${c.id}: sem nome`);
+      if (!c.descricao?.trim()) problemas.push(`${cla.id}/${c.id}: sem descrição`);
+      for (const k of c.bonus?.entre || []) {
+        if (!attrValidos.has(k)) problemas.push(`${cla.id}/${c.id}: atributo inválido no par (${k})`);
+      }
+    }
+  }
+  return problemas;
+}
+
+aplicarExtrasClas();
+
+registrarFamilia("clas", {
+  rotulo: "Clã do Herdado",
+  chave: "id",
+  obrigatorios: ["nome"],
+  aplicar: aplicarExtrasClas,
+  basicos: () => CLAS_BASE,
+  validador: validarCatalogoClas,
+  resolver: (id) => getCla(id),
+  /* O clã da ficha mora em `core.origem.cla`, ao lado do id da origem. */
+  idsDaFicha: (c) => (c?.core?.origem?.cla ? [c.core.origem.cla] : []),
+});
+
 
 export const getOrigem = (id) => BY_ID[id] ?? null;
 

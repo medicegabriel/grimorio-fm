@@ -10,6 +10,8 @@ import {
   aplicaDano, aplicaCura, descansar, registraRolagem,
   concedeNaSessao, removeConcessao, peTempTotal, gastaPe, pvTempTotal,
   sofreGolpeNaGuarda, desfazGolpeNaGuarda, encerraGuarda, defineCondicoes,
+  estadoDaInvocacao, poeInvocacaoEmCampo, alternaAuxilioInvocacao,
+  aplicaDanoInvocacao, aplicaCuraInvocacao, defineVitalInvocacao,
 } from "../ficha/ficha-sessao";
 import { rolarTeste, rolarDano, textoDaRolagem } from "../ficha/ficha-rolagem";
 import { deltaDosEstados } from "../ficha/ficha-buffs";
@@ -128,6 +130,23 @@ export default function PainelDeCombatente({
     return r;
   }, [onSessao]);
 
+  /* Os escritores de invocação, os mesmos seis da Ficha Final. ⚠ Passam pelo
+     `onSessao` como todo o resto do painel, então o mestre abate o PV de um
+     shikigami em campo sem sair do encontro. */
+  const acoesDeInvocacao = useMemo(() => {
+    const pvDe = (id) => derived?.invocacoes?.lista?.find((i) => i.id === id)?.pv ?? 0;
+    const almaDe = (id) => derived?.invocacoes?.lista?.find((i) => i.id === id)?.almaMax ?? 0;
+    return {
+      emCampo: (id, v) => onSessao((s) => poeInvocacaoEmCampo(s, id, v, pvDe(id))),
+      auxilio: (id, acaoId, on) => onSessao((s) => alternaAuxilioInvocacao(s, id, acaoId, on)),
+      dano: (id, n, max) => onSessao((s) => aplicaDanoInvocacao(s, id, n, max)),
+      cura: (id, n, max) => onSessao((s) => aplicaCuraInvocacao(s, id, n, max)),
+      vital: (id, qual, v) => onSessao((s) => defineVitalInvocacao(
+        s, id, qual, v, qual === "alma" ? almaDe(id) : pvDe(id),
+      )),
+    };
+  }, [onSessao, derived]);
+
   /* Os textos do livro e o inventário, montados como a Ficha monta. ⚠ Ficam
      ANTES do retorno antecipado lá embaixo, porque hook não pode ser
      condicional — daí os guardas de `null` aqui dentro. */
@@ -172,7 +191,8 @@ export default function PainelDeCombatente({
     ...(derived.rdAlma > 0 ? [{ k: "RD Alma", v: derived.rdAlma, p: "rdAlma" }] : []),
     { k: "Mov.", v: `${numeroBr(derived.movimento)}m`, p: "movimento" },
     { k: "Atenção", v: derived.atencao, p: "atencao" },
-    { k: "Res. Parcial", v: derived.resParcial, p: "resParcial" },
+    // `null` some, zero fica. Ver a nota em AftyCreatureBuilder.jsx.
+    ...(derived.resParcial != null ? [{ k: "Res. Parcial", v: derived.resParcial, p: "resParcial" }] : []),
   ];
 
   const ultima = sessao.log?.[0] ?? null;
@@ -380,7 +400,22 @@ export default function PainelDeCombatente({
         />
       )}
       {aba === "invocacoes" && (
-        <AbaInvocacoes derived={derived} rolar={rolar} destaque={destaque} />
+        /* ⚠ `estadoDe` e `acoes` são OBRIGATÓRIOS desde 2026-08-31: a aba deixou
+           de ser um mostrador e virou a mesa do Controlador, com barra de vida,
+           Integridade e os bônus ligáveis. Sem eles ela quebra ao renderizar, e
+           foi assim que esta chamada ficou por um instante.
+
+           ⚠ NÃO passa `aoTemar`: o combatente guarda uma CÓPIA congelada da
+           ficha, e o editor de aparência grava na criatura. Sem o gancho, o
+           botão de paleta some sozinho, em vez de virar um clique que não faz
+           nada. */
+        <AbaInvocacoes
+          derived={derived}
+          rolar={rolar}
+          destaque={destaque}
+          estadoDe={(id) => estadoDaInvocacao(sessao, id)}
+          acoes={acoesDeInvocacao}
+        />
       )}
       {aba === "buffs" && (
         <AbaBuffs

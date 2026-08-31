@@ -650,10 +650,25 @@ export function aplicarAddons(pacotes = []) {
   // Junta por família, já prefixado, e entrega tudo de uma vez a cada uma.
   const porFamilia = new Map([...FAMILIAS.keys()].map((f) => [f, []]));
   for (const p of limpos) {
+    /* ⚠ OS IDS LOCAIS SÃO DO PACOTE INTEIRO, e não da família (2026-08-31).
+       Eram por família até a Estrela dos Zenin, e ali o furo apareceu: o
+       marcador dela cita o CLÃ dela por `requerId`, os dois vêm no mesmo JSON, e
+       como a busca só olhava a própria lista a referência ficava CRUA enquanto o
+       clã ganhava o namespace. O marcador então apontava para um id que não
+       existia e simplesmente nunca aparecia, calado.
+
+       Um pacote é uma unidade: citar um irmão é citar um irmão, esteja ele na
+       mesma família ou não. Referência que não acha irmão nenhum continua crua e
+       vai procurar no raw, que segue sendo o caso comum. */
+    const idsLocais = new Set();
+    for (const [familia, lista] of Object.entries(p.acrescenta)) {
+      const def = FAMILIAS.get(familia);
+      if (!def) continue;
+      for (const e of lista) idsLocais.add(String(e[def.chave]));
+    }
     for (const [familia, lista] of Object.entries(p.acrescenta)) {
       const def = FAMILIAS.get(familia);
       if (!def || !lista.length) continue;
-      const idsLocais = new Set(lista.map((e) => String(e[def.chave])));
       for (const e of lista) {
         porFamilia.get(familia).push({
           ...prefixarEntrada(clonar(e), p.id, def.chave, def.caminhosDeId, idsLocais),

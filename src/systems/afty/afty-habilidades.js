@@ -49,6 +49,8 @@ import { getEspecializacao } from "./afty-especializacoes";
 import { getAptidao } from "./afty-aptidoes";
 import { ARMA_GRUPOS, ENCANTAMENTOS_ARMA } from "./afty-equipamentos";
 import { AFTY_RESISTENCIAS } from "./afty-schema";
+// Quem lê a divergência das Bases automáticas. Módulo folha, sem ciclo.
+import { regraDo } from "./afty-sistema";
 // Do módulo FOLHA: afty-pericias.js importa afty-efeitos.js, que volta até aqui.
 import { AFTY_PERICIAS } from "./afty-pericias-catalogo";
 
@@ -6068,14 +6070,25 @@ export const getHabilidade = (id) => BY_ID[id] || null;
 /**
  * Bases que a Especialização concede ao alcançar o nível, sem escolha e sem
  * gastar orçamento.
+ *
+ * ⚠ NA FICHA DE JOGADOR SÃO TODAS AS BASES, e não só as marcadas `automatica`
+ * (autor, 2026-08-30). Isso devolve a regra do livro, que a nota 2 do cabeçalho
+ * deste arquivo sempre descreveu: "No livro as Bases são de graça; no Afty elas
+ * são escolhidas, igual às por Nível." A marca `automatica` era o autor
+ * liberando essa regra uma a uma, e no jogador ela vale para as 37.
+ *
+ * O `sistema` chega de fora, e não de uma global, pela mesma razão de sempre: a
+ * tela de encontro resolve criatura e personagem lado a lado.
  */
-export function habilidadesConcedidasPelasEspecializacoes(escolhidasEspec = []) {
+export function habilidadesConcedidasPelasEspecializacoes(escolhidasEspec = [], sistema = undefined) {
   const niveis = Object.fromEntries(
     (Array.isArray(escolhidasEspec) ? escolhidasEspec : [])
       .map((e) => [e?.id, Math.max(0, Math.trunc(Number(e?.nivel) || 0))]),
   );
+  const todaBase = regraDo(sistema, "basesAutomaticas") === "player";
   return AFTY_HABILIDADES
-    .filter((h) => h.automatica && (niveis[h.especializacaoId] ?? 0) >= h.nivel)
+    .filter((h) => (h.automatica || (todaBase && h.tipo === "base"))
+      && (niveis[h.especializacaoId] ?? 0) >= h.nivel)
     .map((h) => h.id);
 }
 
@@ -6592,8 +6605,18 @@ export function validarMarcadoresInvocacao() {
   return erros;
 }
 
-/** Um marcador está DISPONÍVEL: a habilidade dona está escolhida (e a opção, quando tem). */
-function marcadorDisponivel(m, escolhidasIds, escolhasMapa) {
+/**
+ * Um marcador está DISPONÍVEL: a habilidade dona está escolhida (e a opção,
+ * quando tem).
+ *
+ * ⚠ `requerId` É A PORTA DE FORA (2026-08-31). Um marcador de raw pertence
+ * sempre a uma Habilidade de Controlador, mas um de Addon pode vir de um clã ou
+ * de um talento, e cobrar `habilidadeId` deles seria fingir uma habilidade que
+ * não existe. Quem declara `requerId` é liberado por QUALQUER id que a ficha
+ * tenha: origem, clã, talento ou habilidade. Ver `temIds` no `deriveAfty`.
+ */
+function marcadorDisponivel(m, escolhidasIds, escolhasMapa, temIds) {
+  if (m.requerId) return temIds.has(m.requerId);
   if (!escolhidasIds.includes(m.habilidadeId)) return false;
   if (!m.opcaoId) return true;
   return (escolhasMapa?.[m.habilidadeId] || []).includes(m.opcaoId);
@@ -6602,11 +6625,15 @@ function marcadorDisponivel(m, escolhidasIds, escolhasMapa) {
 /**
  * Marcadores disponíveis para esta ficha, com o limite já avaliado.
  * `ctxDono` = { nd, bt, nivel_controlador }.
+ * `temIds`  = tudo que a ficha possui e que um `requerId` pode citar.
  */
-export function resolveMarcadoresInvocacao({ escolhidasIds = [], escolhasMapa = {}, ctxDono = {} } = {}) {
+export function resolveMarcadoresInvocacao({
+  escolhidasIds = [], escolhasMapa = {}, ctxDono = {}, temIds = new Set(),
+} = {}) {
   const ids = Array.isArray(escolhidasIds) ? escolhidasIds : [];
+  const tem = temIds instanceof Set ? temIds : new Set(temIds || []);
   return MARCADORES_INVOCACAO
-    .filter((m) => marcadorDisponivel(m, ids, escolhasMapa))
+    .filter((m) => marcadorDisponivel(m, ids, escolhasMapa, tem))
     .map((m) => ({
       id: m.id,
       label: m.label,
@@ -6614,6 +6641,57 @@ export function resolveMarcadoresInvocacao({ escolhidasIds = [], escolhasMapa = 
       limite: Math.max(0, Math.floor(evalNumber(m.limiteExpr, ctxDono, 0))),
     }));
 }
+
+/* ============================================================ */
+/* FAMÍLIA `marcadores` DOS ADDONS                               */
+/* ============================================================ */
+/**
+ * ⚠ Sem esta família, toda regra do tipo "N dos seus shikigamis recebem X" era
+ * inalcançável por Addon, e ela é comum: o Concentrar Poder do raw já é
+ * `piso(bt / 2)`. O que o marcador guarda é o "quais", que nenhum canal sabe
+ * expressar sozinho.
+ *
+ * O religador não tem índice para refazer: `resolveMarcadoresInvocacao` percorre
+ * o array, e o `splice` mantém as referências de quem o importou.
+ */
+const MARCADORES_BASE = MARCADORES_INVOCACAO.slice();
+
+function aplicarExtrasMarcadores(extras = [], remendos = null) {
+  MARCADORES_INVOCACAO.splice(
+    0, MARCADORES_INVOCACAO.length, ...remendarLista(MARCADORES_BASE, remendos), ...extras,
+  );
+}
+
+export function validarCatalogoMarcadores() {
+  const problemas = [];
+  const ids = new Set();
+  for (const m of MARCADORES_INVOCACAO) {
+    if (ids.has(m.id)) problemas.push(`marcador duplicado: ${m.id}`);
+    ids.add(m.id);
+    if (!m.label?.trim()) problemas.push(`${m.id}: sem label`);
+    if (!m.limiteExpr) problemas.push(`${m.id}: sem limiteExpr`);
+    if (!m.habilidadeId && !m.requerId) {
+      problemas.push(`${m.id}: precisa de habilidadeId ou requerId`);
+    }
+  }
+  return problemas;
+}
+
+aplicarExtrasMarcadores();
+
+registrarFamilia("marcadores", {
+  rotulo: "Marcador de Invocação",
+  chave: "id",
+  obrigatorios: ["label", "limiteExpr"],
+  caminhosDeId: ["requerId", "habilidadeId"],
+  aplicar: aplicarExtrasMarcadores,
+  basicos: () => MARCADORES_BASE,
+  validador: validarCatalogoMarcadores,
+  resolver: (id) => MARCADORES_INVOCACAO.find((m) => m.id === id) ?? null,
+  /* Onde a ficha guarda: em cada invocação, no mapa `marcadores`. */
+  idsDaFicha: (c) => (Array.isArray(c?.invocacoes) ? c.invocacoes : [])
+    .flatMap((inv) => Object.keys(inv?.marcadores || {})),
+});
 
 /**
  * ============================================================
@@ -6883,7 +6961,7 @@ export function resolveHabilidades(
   vagasTalento = 0,
   {
     nd = 1, almaLivreEspecializacao = null, concedidasSessao = [],
-    escolhasConcedidasSessao = {},
+    escolhasConcedidasSessao = {}, sistema = undefined,
   } = {},
 ) {
   const niveisPorEspec = niveisPorEspecializacao(escolhidasEspec);
@@ -6892,7 +6970,7 @@ export function resolveHabilidades(
   // gasta vaga", que é exatamente o que `concedidas` sempre significou. A da
   // sessão vem do mestre no meio do combate (Addons 8.3) e some com a sessão.
   const concedidas = [...new Set([
-    ...habilidadesConcedidasPelasEspecializacoes(escolhidasEspec),
+    ...habilidadesConcedidasPelasEspecializacoes(escolhidasEspec, sistema),
     ...(Array.isArray(concedidasSessao) ? concedidasSessao.filter((id) => BY_ID[id]) : []),
   ])];
   const concedidasSet = new Set(concedidas);

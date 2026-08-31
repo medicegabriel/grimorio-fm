@@ -30,7 +30,7 @@
 
 import { evalNumber } from "./afty-dsl";
 import { AFTY_TAMANHOS, AFTY_RESISTENCIAS } from "./afty-schema";
-import { AFTY_PERICIAS, bonusProficiencia, usoPericias } from "./afty-pericias";
+import { AFTY_PERICIAS, bonusProficiencia, usoPericias, ehPericiaOficio } from "./afty-pericias";
 import { TIPOS_DANO } from "./afty-equipamentos";
 
 export const mod = (attr) => Math.floor(((attr ?? 10) - 10) / 2);
@@ -296,6 +296,17 @@ export function createBlankInvocacao(grau = "quarto", tipoMecanico = "shikigami"
     marcadorOpcoes: {},        // { [marcadorId]: opcaoValue } — marcador que pede escolha
     acoes: [],                 // Fatia 2
     caracteristicas: [],       // Fatia 2
+    /* RETRATO PRÓPRIO (2026-08-31). Mesmo par de campos do retrato da criatura
+       (`portraitUrl` + `portraitFocus`), e de propósito: o componente de foco do
+       criador é o mesmo, e uma invocação com o retrato guardado noutro formato
+       obrigaria a uma segunda cópia dele. Ver `RetratoCampo`. */
+    portraitUrl: "",
+    portraitFocus: { x: 50, y: 50 },
+    /* APARÊNCIA PRÓPRIA na Ficha Final: o mesmo objeto de tema de
+       `creature.aparencia`, com preset, tokens, imagem e CSS livre. Nasce nulo
+       porque tema ausente é o tema herdado da ficha do dono, e um objeto vazio
+       aqui já seria uma escolha (a de sobrescrever com o padrão). */
+    aparencia: null,
   };
 }
 
@@ -376,6 +387,101 @@ export function bonusTesteInvocacao(inv, dono = {}, { atributo = "forca", treina
   const modAttr = mod(inv?.atributos?.[atributo] ?? 8);
   const meioControlador = Math.floor((dono.nivelControlador ?? 0) / 2);
   return modAttr + (treinado ? (dono.bt ?? 0) : 0) + meioControlador + (dono.bonusTesteHabilidade ?? 0);
+}
+
+/* ============================================================ */
+/* AUXÍLIOS LIGADOS NA MESA (2026-08-31)                         */
+/* ============================================================ */
+/**
+ * "Quando criar uma ação de auxílio, você deve escolher se ela pode afetar a
+ * Invocação ou Aliados, limitando-se a um deles, por padrão."
+ *
+ * O alvo é escolha de CRIAÇÃO, e o que a mesa escolhe é QUAL ação usar. Ligar
+ * uma delas na Ficha Final passou a mexer no número de verdade (autor,
+ * 2026-08-31): *"Mexe na ficha do DONO de verdade e na ficha da INVOCAÇÃO de
+ * verdade. Por exemplo, um shikigami pode escolher entre me BUFFAR ou se BUFFAR
+ * com +5 de Defesa usando suas ações."*
+ *
+ * ⚠ SÓ TRÊS DOS CINCO SUB-TIPOS VIRAM INTERRUPTOR, e não é recorte de
+ * conveniência: os outros dois não são estado, são evento.
+ *
+ * | Sub-tipo | Por que |
+ * |---|---|
+ * | Defesa, Acerto, RD | número que fica de pé enquanto durar. É buff |
+ * | Cura | ela ROLA e devolve PV. Ligar uma cura não quer dizer nada |
+ * | Dano Adicional | "em um próximo ataque", e é um DADO. Um disparo, não estado |
+ *
+ * O Dano Adicional continua aparecendo na Ficha com o dado dele, para a mesa
+ * somar no golpe. Ele é o único auxílio de valor que não vira canal, e o motivo
+ * é o texto do livro, não o motor.
+ *
+ * ⚠ E O `emCampo` MANDA EM TODOS. Uma invocação dissipada não sustenta bônus
+ * nenhum, e sem essa porta o jogador que guardasse o shikigami ficaria com a
+ * Defesa dele para sempre, calado. É a mesma razão de a Guarda perder a casca
+ * junto do bônus: benefício que sobrevive à fonte é bug com cara de número.
+ */
+
+/** Os sub-tipos de auxílio que se sustentam, e por isso podem ser ligados. */
+export const AUXILIO_SUSTENTAVEL = ["defesa", "acerto", "rd"];
+
+/**
+ * Em que canal do Motor cada auxílio sustentável cai quando o alvo é ALIADOS.
+ * ⚠ Acerto é `bonusAcerto` e não `acerto`: o primeiro é o canal, o segundo é a
+ * variável de leitura do DSL. Trocar os dois emite um efeito que ninguém lê.
+ */
+export const AUXILIO_CANAL = { defesa: "defesa", acerto: "bonusAcerto", rd: "rdGeral" };
+
+/** Rótulo de mesa de cada sub-tipo. Sai daqui porque a Ficha e o criador usam o mesmo. */
+export const AUXILIO_ROTULO = {
+  cura: "Cura", defesa: "Defesa", acerto: "Acerto", danoAdicional: "Dano Adicional", rd: "RD",
+};
+
+export const ALVO_AUXILIO_ROTULO = { invocacao: "Nela Mesma", aliados: "Aliados" };
+
+/** O estado de mesa desta invocação, saneado. Sem sessão, ela está fora de campo. */
+export function sessaoDaInvocacao(dono, invId) {
+  const mapa = dono?.sessaoInvocacoes;
+  const e = (mapa && typeof mapa === "object") ? mapa[invId] : null;
+  return {
+    emCampo: !!e?.emCampo,
+    auxilios: (e?.auxilios && typeof e.auxilios === "object") ? e.auxilios : {},
+  };
+}
+
+/** Aquele auxílio está sustentando um bônus agora? */
+export const auxilioLigado = (sessao, acaoId) => !!sessao?.emCampo && !!sessao?.auxilios?.[acaoId];
+
+/** Uma ação crua é um auxílio que pode ser ligado? */
+export const ehAuxilioSustentavel = (acao) =>
+  acao?.familia === "auxilio" && AUXILIO_SUSTENTAVEL.includes(acao?.auxilioSub ?? "defesa");
+
+/**
+ * Os auxílios LIGADOS desta invocação, já resolvidos e separados por alvo.
+ *
+ * ⚠ É um PRÉ-PASSE, e ele existe por causa de um laço curto: o Acerto que a
+ * invocação dá a si mesma tem de entrar nas Jogadas de Ataque DELA, e essas
+ * jogadas saem do `resolveAcao`, que é justamente quem calcula o valor do
+ * auxílio. Resolver a ação de auxílio duas vezes custa uma tabela e uma soma, e
+ * é mais barato que carregar o resultado por um segundo caminho.
+ */
+export function auxiliosLigadosDa(inv, dono = {}) {
+  const sess = sessaoDaInvocacao(dono, inv?.id);
+  const proprio = { defesa: 0, bonusAcerto: 0, rdGeral: 0 };
+  const paraAliados = [];
+  if (!sess.emCampo) return { proprio, paraAliados, sessao: sess };
+  for (const a of Array.isArray(inv?.acoes) ? inv.acoes : []) {
+    if (!ehAuxilioSustentavel(a) || !auxilioLigado(sess, a.id)) continue;
+    const r = resolveAcao(a, inv, dono);
+    const canal = AUXILIO_CANAL[r.auxilioSub];
+    const valor = Math.trunc(Number(r.valor) || 0);
+    if (!canal || !valor) continue;
+    if (r.alvoAuxilio === "aliados") {
+      paraAliados.push({ id: a.id, nome: r.nome || "Auxílio", sub: r.auxilioSub, canal, valor });
+    } else {
+      proprio[canal] += valor;
+    }
+  }
+  return { proprio, paraAliados, sessao: sess };
 }
 
 // Bônus de proficiência num teste: treinado soma o BT, mestre soma 1,5x o BT
@@ -789,7 +895,11 @@ export function resolveAcao(acao, inv, dono = {}) {
 
     if (ataqueTipo === "jogada") {
       const treinado = (acao?.corpoACorpo ? "corpo" : "distancia") === inv?.ataqueTreinado;
-      out.bonusAtaque = bonusTesteInvocacao(inv, dono, { atributo: atributoChave, treinado });
+      /* Auxílio de Acerto que a invocação ligou EM SI MESMA. Ele sobe a jogada
+         de ataque dela, que é o único lugar onde "Acerto" quer dizer alguma
+         coisa. Chega pelo dono local, montado no pré-passe do `resolveInvocacao`. */
+      out.bonusAtaque = bonusTesteInvocacao(inv, dono, { atributo: atributoChave, treinado })
+        + (dono.auxilioAcertoProprio ?? 0);
     } else {
       out.cd = cdAtaqueInvocacao(inv, dono, atributoChave);
       out.trTipo = acao?.trTipo || "reflexos";
@@ -1023,14 +1133,25 @@ export function marcadorOpcao(inv, id) {
 // Variáveis `marc_*` do contexto: uma booleana por marcador ligado e, para os
 // que têm opção, uma por opção (`marc_<id>_<opcao>`). É assim que um efeito
 // como Precisão escolhe entre Acerto e CD sem precisar de canal condicional.
+/* ⚠ O NOME DA VARIÁVEL É SANEADO, e não é firula (2026-08-31). O tokenizador da
+   DSL só aceita `[a-zA-Z0-9_À-ſ]` num identificador, e o id de um marcador vindo
+   de Addon carrega o namespace do pacote: `estrela-zenin:economia` viraria
+   `marc_estrela-zenin:economia`, que não passa do parser. Todo caractere fora do
+   conjunto vira `_`, então o `quando` daquele marcador se escreve
+   `marc_estrela_zenin_economia`. Para os marcadores do raw isto não muda nada:
+   os ids deles já são `[a-z_]`. */
+export const varDeMarcador = (id) => `marc_${String(id ?? "").replace(/[^a-zA-Z0-9_]/g, "_")}`;
+
 function varsDeMarcador(inv, dono) {
   const out = {};
   for (const m of Array.isArray(dono?.marcadores) ? dono.marcadores : []) {
     if (!m?.id) continue;
     const on = marcadorLigado(inv, m.id) ? 1 : 0;
-    out[`marc_${m.id}`] = on;
+    const base = varDeMarcador(m.id);
+    out[base] = on;
     for (const o of Array.isArray(m.opcoes) ? m.opcoes : []) {
-      out[`marc_${m.id}_${o.value}`] = on && marcadorOpcao(inv, m.id) === o.value ? 1 : 0;
+      out[`${base}_${String(o.value).replace(/[^a-zA-Z0-9_]/g, "_")}`] =
+        on && marcadorOpcao(inv, m.id) === o.value ? 1 : 0;
     }
   }
   return out;
@@ -1283,7 +1404,7 @@ export function resolveTestesInvocacao(inv, dono = {}, caract = null) {
      plano prometeria um bônus que quase nunca vale. Sai em `comGatilho`, à
      parte, para a ficha mostrar como condicional. */
   const acertoDe = (tipo) => ({
-    bonus: best.m + (inv?.ataqueTreinado === tipo ? bt : 0) + base,
+    bonus: best.m + (inv?.ataqueTreinado === tipo ? bt : 0) + base + (dono.auxilioAcertoProprio ?? 0),
     attr: best.attr,
     treinado: inv?.ataqueTreinado === tipo,
     comGatilho: cTes.ataque || 0,
@@ -1417,6 +1538,12 @@ export function resolveInvocacao(inv, dono = {}) {
   // no custo. Ver `overridesShikigami` no fim deste arquivo.
   const ovr = dono.overridesPorInvocacao?.[inv?.id] || null;
 
+  /* AUXÍLIOS LIGADOS NA MESA. Pré-passe, porque o Acerto que ela dá a si mesma
+     entra nas jogadas de ataque dela, e essas jogadas saem do `resolveAcao` que
+     resolve os próprios auxílios. Ver `auxiliosLigadosDa`. */
+  const aux = auxiliosLigadosDa(inv, dono);
+  if (aux.proprio.bonusAcerto) donoLocal.auxilioAcertoProprio = aux.proprio.bonusAcerto;
+
   // As Características são passivas e resolvem ANTES dos stats, porque o PV, o
   // tamanho, a RD e os testes leem o que elas concedem.
   const caracteristicas = (inv?.caracteristicas || []).map((c) => resolveCaracteristica(c, inv, dono));
@@ -1424,16 +1551,17 @@ export function resolveInvocacao(inv, dono = {}) {
 
   const atributos = resumoAtributosInvocacao(inv, efe.atributoPontos);
   const pv = pvInvocacao(inv, dono) + efe.pv + caract.pv;
-  const defesa = defesaInvocacao(inv, dono) + efe.defesa;
+  const defesa = defesaInvocacao(inv, dono) + efe.defesa + aux.proprio.defesa;
   const deslocamento = deslocamentoInvocacao() + efe.deslocamento;
   // Tamanho: Médio até que uma Característica de Tamanho diga outro.
   const tamanho = caract.tamanho || inv?.tamanho || "medio";
   // RD: a Geral (Melhoria Resistência, "contra todos os tipos") cobre tudo, e
   // cada Característica soma no tipo dela. A linha por tipo mostra o total que
   // vale contra aquele tipo, que é o número que a mesa usa.
+  const rdGeralTotal = efe.rd + aux.proprio.rdGeral;
   const rd = {
-    geral: efe.rd,
-    porTipo: caract.rdPorTipo.map((l) => ({ ...l, total: l.valor + efe.rd })),
+    geral: rdGeralTotal,
+    porTipo: caract.rdPorTipo.map((l) => ({ ...l, total: l.valor + rdGeralTotal })),
   };
   // Ápice do Controle (efe.orcamentoLivre) dá slots que NÃO influenciam no custo.
   // Invocações Econômicas abate o custo, com piso em zero.
@@ -1466,6 +1594,26 @@ export function resolveInvocacao(inv, dono = {}) {
       danoAdicional: comGrupos(r.danoAdicional),
     };
   });
+  /* A lista de AUXÍLIOS que a mesa liga e desliga, com o estado de cada um. Sai
+     das ações já resolvidas para o número da linha ser o mesmo que a ação
+     mostra, e traz o não-sustentável junto (`sustentavel: false`) porque a Ficha
+     precisa saber que ele EXISTE para desenhá-lo sem interruptor. */
+  const auxilios = acoes
+    .filter((a) => a.familia === "auxilio")
+    .map((a) => ({
+      id: a.id,
+      nome: a.nome || "Auxílio",
+      sub: a.auxilioSub,
+      subLabel: AUXILIO_ROTULO[a.auxilioSub] ?? a.auxilioSub,
+      alvo: a.alvoAuxilio,
+      alvoLabel: ALVO_AUXILIO_ROTULO[a.alvoAuxilio] ?? a.alvoAuxilio,
+      valor: a.valor ?? null,
+      dado: a.danoAdicional?.dado ?? null,
+      custoPE: a.custoPE ?? 0,
+      sustentavel: AUXILIO_SUSTENTAVEL.includes(a.auxilioSub),
+      ligado: AUXILIO_SUSTENTAVEL.includes(a.auxilioSub) && auxilioLigado(aux.sessao, a.id),
+    }));
+
   const warnings = [...atributos.warnings, ...caract.warnings];
   // Grau ditado pelo Feitiço de Criação de Shikigamis: o nível do Feitiço manda,
   // e a invocação que não bate com ele é um erro de ficha.
@@ -1482,7 +1630,9 @@ export function resolveInvocacao(inv, dono = {}) {
   }
   // Perícias treinadas: uma Invocação não pode ser treinada em Ofício, e o total
   // segue o limite (1 + metade do melhor mod entre INT/SAB + ganho por grau).
-  if ("oficio" in perProf) {
+  // Qualquer linha de Ofício, e não só a do livro: a ficha pode ter Ofícios
+  // repetidos desde 2026-08-30, e o aviso vale para todos.
+  if (Object.keys(perProf).some(ehPericiaOficio)) {
     warnings.push("Invocação não pode ser treinada em Ofício.");
   }
   if (pericias.usadas > pericias.allowance) {
@@ -1524,6 +1674,24 @@ export function resolveInvocacao(inv, dono = {}) {
     intermediario: tipoInvocacaoMeta(inv?.tipoMecanico).intermediario,
     retirada: tipoInvocacaoMeta(inv?.tipoMecanico).retirada,
     pv, defesa, deslocamento, custo, tamanho, rd,
+    /* INTEGRIDADE DA ALMA da invocação = o máximo de PV dela (autor,
+       2026-08-31). É a régua do livro do JOGADOR, e não a da criatura: lá a
+       Alma é uma porcentagem de 0 a 100 que MULTIPLICA o PV, e aqui ela
+       acompanha o PV em pontos. Uma invocação com escala de porcentagem teria
+       dois números medindo a mesma casca. */
+    almaMax: pv,
+    /* Estado de mesa: em campo, os auxílios com o interruptor de cada um, e o
+       que ela está entregando ao DONO agora (que o `deriveAfty` transforma em
+       efeito de Motor, com o nome dela como fonte). */
+    emCampo: aux.sessao.emCampo,
+    auxilios,
+    auxiliosParaAliados: aux.paraAliados,
+    auxilioProprio: aux.proprio,
+    /* Retrato e tema próprios. Viajam resolvidos porque a Ficha e o criador leem
+       do mesmo lugar, e a invocação sem retrato cai no desenho de sempre. */
+    portraitUrl: typeof inv?.portraitUrl === "string" ? inv.portraitUrl : "",
+    portraitFocus: inv?.portraitFocus || { x: 50, y: 50 },
+    aparencia: inv?.aparencia || null,
     // O rótulo sai resolvido, como o `grauLabel`: quem tem o catálogo de
     // tamanhos é este lado.
     tamanhoLabel: AFTY_TAMANHOS.find((t) => t.value === tamanho)?.label ?? tamanho,
@@ -1578,6 +1746,48 @@ export function resolveInvocacoesList(lista, dono = {}) {
     marcadores,
     espacosIntermediarios: espacosDeIntermediario(arr),
   };
+}
+
+/**
+ * Os auxílios que as invocações LIGADAS estão entregando ao dono, como efeitos
+ * do Motor de Automação.
+ *
+ * ⚠ ELES ENTRAM PELO MOTOR, e não somados à mão no `deriveAfty`, por três
+ * razões que já custaram bug neste repositório:
+ *   1. o hover de fontes mostra "Nue · Escudo de Raios +3" de graça, porque todo
+ *      canal já carrega a fonte (ver `afty-fontes-visiveis-ui`);
+ *   2. o delta da aba Buffs mede um estado ligando e desligando o MESMO derive,
+ *      então um bônus somado por fora sairia como bônus de outra coisa;
+ *   3. `duracao: "temporaria"` já diz ao motor que isto não conta para
+ *      pré-requisito, que é exatamente a regra de um bônus de mesa.
+ *
+ * ⚠ O CONTEXTO É LEVE DE PROPÓSITO. O valor de um auxílio de Defesa, Acerto ou
+ * RD sai da tabela do grau e da classe da ação, e não lê stat nenhum do dono.
+ * Se lesse, isto seria um laço: o dono precisaria da Defesa dele para calcular
+ * o que sobe a Defesa dele.
+ */
+export function efeitosDeInvocacao(creature, ctx = {}) {
+  const lista = Array.isArray(creature?.invocacoes) ? creature.invocacoes : [];
+  if (!lista.length) return [];
+  const dono = {
+    nd: ctx.nd,
+    bt: ctx.bt,
+    nivelControlador: ctx.nivelControlador,
+    sessaoInvocacoes: ctx.sessaoInvocacoes,
+  };
+  const out = [];
+  for (const inv of lista) {
+    for (const a of auxiliosLigadosDa(inv, dono).paraAliados) {
+      out.push({
+        canal: a.canal,
+        expr: String(a.valor),
+        duracao: "temporaria",
+        origem: "invocacao",
+        nome: `${inv?.nome || "Invocação"} · ${a.nome}`,
+      });
+    }
+  }
+  return out;
 }
 
 /** Normaliza o array de invocações da ficha (tolera ausência). */

@@ -96,13 +96,68 @@ const nivelMaxFeiticoDoContexto = (ctx = {}) =>
   nivelMaxFeitico(ctx.nd, ctx.nivelConjurador);
 
 // ---------------------------------------------------------------
-// ORÇAMENTO: os Feitiços NÃO têm mais contador próprio.
+// ORÇAMENTO: na CRIATURA os Feitiços não têm contador próprio.
 // Autor, 2026-07-26: Feitiços e Habilidades Gerais gastam o MESMO
 // caixa, `contadorHabilidades(maestria, patamar)` em afty-gerais.js
 // (dobro da Maestria, +2 Desafio, +4 Calamidade, triplo no Beyond).
 // O antigo `totalFeiticos(nd)` (2 + ND/2 + marcos de 10 e 20) foi
 // substituído por ele. Variações de Liberação seguem sem contar.
+//
+// ⚠ NA FICHA DE JOGADOR A PROGRESSÃO DO LIVRO VOLTOU (autor, 2026-08-31),
+// em `totalFeiticosJogador` logo abaixo, e com ORÇAMENTO PRÓPRIO. Ver a
+// divergência `progressaoDeFeiticos` em afty-sistema.js.
 // ---------------------------------------------------------------
+
+/**
+ * ORÇAMENTO DE FEITIÇOS DA FICHA DE JOGADOR.
+ *
+ * Texto VERBATIM do livro (autor, 2026-08-31):
+ *
+ *   "Todo usuário de energia amaldiçoada começa com uma certa quantidade de
+ *    Feitiços: todo personagem usuário de energia amaldiçoada, por padrão,
+ *    inicia com dois Feitiços. Um personagem também obtém novos Feitiços
+ *    conforme sobe de nível, recebendo um novo Feitiço em todo nível par.
+ *    Também se recebe um Feitiço adicional no nível 10 e outra no nível 20."
+ *
+ * E a Habilidade de Especialização Conjuração Aprimorada (Conjurador, 1° nível),
+ * cuja segunda metade estava transcrita em afty-habilidades.js sem ter onde cair:
+ *
+ *   "Além disso, você passa a receber novos Feitiços em todo nível, ao invés de
+ *    apenas nos níveis pares."
+ *
+ * ⚠ QUEM CONCEDE É O NÍVEL QUE SE SOBE, e não o nível em que se está. O
+ * personagem "inicia com dois" no 1° nível e "obtém novos conforme SOBE de
+ * nível", então os níveis que concedem são o 2 em diante. Com a regra padrão são
+ * os pares dentro dessa faixa (`piso(n / 2)`), e com a Conjuração Aprimorada são
+ * todos eles (`n - 1`).
+ *
+ * ⚠ ASSUNÇÃO ANOTADA: a leitura alternativa é que "todo nível" inclua o 1°, e aí
+ * um Conjurador de 1° nível teria TRÊS Feitiços. Ela foi descartada porque
+ * contradiz "por padrão, inicia com dois Feitiços" na mesma página. As duas
+ * leituras só divergem a partir do 3° nível. Anotada em docs/a-fazer.md.
+ *
+ * ⚠ Os marcos do 10 e do 20 valem nas DUAS, porque a Conjuração Aprimorada troca
+ * só a cadência ("ao invés de apenas nos níveis pares") e não fala dos marcos.
+ *
+ * Devolve `{ total, partes }`. As `partes` são o hover de fontes, e existem pela
+ * regra de que todo número derivado mostra de onde veio.
+ */
+export function totalFeiticosJogador(nivel, { conjuracaoAprimorada = false } = {}) {
+  const n = Math.max(1, Math.trunc(Number(nivel) || 1));
+  const porNivel = conjuracaoAprimorada ? n - 1 : Math.floor(n / 2);
+  const partes = [
+    { label: "Inicial", valor: 2 },
+    ...(porNivel
+      ? [{ label: conjuracaoAprimorada ? "Por Nível (Conjuração Aprimorada)" : "Níveis Pares", valor: porNivel }]
+      : []),
+    ...(n >= 10 ? [{ label: "Nível 10", valor: 1 }] : []),
+    ...(n >= 20 ? [{ label: "Nível 20", valor: 1 }] : []),
+  ];
+  return { total: partes.reduce((s, p) => s + p.valor, 0), partes };
+}
+
+/** A Habilidade de Especialização que troca a cadência da progressão acima. */
+export const CONJURACAO_APRIMORADA_ID = "cnj_conjuracao_aprimorada";
 
 // Custo padrão por nível, com o piso de 1 (salvo nível 0).
 export function custoPadrao(nivel) {

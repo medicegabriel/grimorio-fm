@@ -30,7 +30,7 @@
 
 import { registrarFamilia, remendarLista } from "./afty-addons";
 import { evalNumber } from "./afty-dsl";
-import { getOrigem } from "./afty-origens";
+import { getOrigem, getCla } from "./afty-origens";
 import { AFTY_ATTRS, AFTY_RESISTENCIAS } from "./afty-schema";
 import { APTIDAO_TRILHAS, AFTY_APTIDOES } from "./afty-aptidoes";
 import { AFTY_ESPECIALIZACOES, treinamentosDasEspecializacoes } from "./afty-especializacoes";
@@ -958,6 +958,16 @@ export function avaliarRequisitoTalento(requisito, ctx = {}) {
     const tem = ctx.origensQualificadas ?? (ctx.origemId ? [ctx.origemId] : []);
     return { ok: tem.includes(requisito.id), verificavel: true, label: `Origem ${alvo.nome}` };
   }
+  /* ⚠ `cla` entrou em 2026-08-31, com a Estrela dos Zenin. Os Talentos de Origem
+     dela pertencem a UM CLÃ do Herdado, e não ao Herdado inteiro: por `origem`
+     um Gojo os pegaria. A `origensQualificadas` de propósito não vale aqui, que
+     é a lição de `origemEstrutural`: ela ABRE portas, e clã é o que a criatura
+     É. */
+  if (requisito?.tipo === "cla") {
+    const alvo = getCla(requisito.id);
+    if (!alvo) return { ok: true, verificavel: false, label: requisito.id };
+    return { ok: ctx.claId === requisito.id, verificavel: true, label: `Clã ${alvo.nome}` };
+  }
   /* ⚠ `aptidao` entrou em 2026-08-22, com a Expansão de Estilo, que pede o
      Domínio Simples. Antes disso todo Talento que citava aptidão o fazia por
      `nota`, que só exibe. Mesmo nome e mesmo shape de `avaliarRequisitoAptidao`
@@ -1189,6 +1199,9 @@ export function validarCatalogoTalentos() {
       }
       if (r?.tipo === "origem" && !getOrigem(r.id)) {
         problemas.push(`${t.nome}: requisito aponta para origem inexistente "${r.id}"`);
+      }
+      if (r?.tipo === "cla" && !getCla(r.id)) {
+        problemas.push(`${t.nome}: requisito aponta para clã inexistente "${r.id}"`);
       }
       if (r?.tipo === "talento" && !BY_ID[r.id]) {
         problemas.push(`${t.nome}: requisito aponta para talento inexistente "${r.id}"`);

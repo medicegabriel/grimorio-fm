@@ -134,9 +134,17 @@ export const getTamanho = (value) =>
 export function mesclaFichaAfty(existente) {
   const blank = createBlankAfty();
   if (!existente) return blank;
-  const oficios = Array.isArray(existente.periciaOficios)
-    ? existente.periciaOficios
+  /* `periciaOficios` virou um objeto id para lista em 2026-08-30, quando o
+     Ofício passou a poder se repetir na ficha. Os dois formatos antigos, a
+     lista solta e o `periciaOficio` de nome único, entram como o Ofício do
+     livro. Ver `oficiosDaFicha` em afty-pericias.js, que lê os três. */
+  const oficiosBrutos = existente.periciaOficios;
+  const listaLegado = Array.isArray(oficiosBrutos)
+    ? oficiosBrutos
     : (existente.periciaOficio ? [existente.periciaOficio] : []);
+  const oficios = oficiosBrutos && !Array.isArray(oficiosBrutos) && typeof oficiosBrutos === "object"
+    ? oficiosBrutos
+    : (listaLegado.length ? { oficio: listaLegado } : {});
   return {
     ...blank,
     ...existente,
@@ -260,12 +268,12 @@ export function createBlankAfty() {
     // Proficiência é { [id]: "treinado" | "mestre" }. Ataque só tem treinado
     // (o Amaldiçoado é sempre treinado, nem entra no mapa). Ver afty-pericias.js.
     pericias: {},              // { [periciaId]: "treinado" | "mestre" }
-    // `null` usa as perícias padrão do livro. Depois da primeira edição, a
-    // ordem explícita também diz quais complementares estão ativas.
+    // Só a ORDEM: as perícias do livro estão todas na ficha desde 2026-08-30.
+    // `null` usa a ordem do catálogo.
     periciasOrdem: null,       // [periciaId, ...]
     periciasPersonalizadas: [], // [{ id, nome, atributo }]
     periciaOficio: "",         // legado: migrado para periciaOficios ao abrir
-    periciaOficios: [],         // subcategorias de Ofício escolhidas na ficha
+    periciaOficios: {},        // { [periciaId]: [subcategoria de Ofício, ...] }
     periciasBonus: 0,          // vagas extras vindas de fora ("+ OUTROS" da fórmula)
     resistenciasProf: {},      // { [trValue]: "treinado" | "mestre" }
     ataquesProf: {},           // { corpo: true, distancia: true }
@@ -355,6 +363,27 @@ export function createBlankAfty() {
     // contador dos Feitiços (dobro da Maestria + patamar, ver afty-gerais.js).
     // Lista COM repetição, igual a melhoriasSuperiores: cada entrada é uma pega.
     habilidadesGerais: [],      // [ 'ger_...' ]
+
+    /* Focos de Interlúdio digitados. SÓ a ficha de jogador o usa: nela o total
+       não é fórmula, e sim o que o mestre concedeu (autor, 2026-08-30). Na
+       criatura o orçamento continua sendo o ND, e este campo fica parado. */
+    focosLivres: 0,
+
+    /* ⚠ CAMPO PARADO DESDE 2026-08-31, e mantido só para não derrubar ficha
+       antiga que o traz no JSON. NADA o lê.
+
+       Ele nasceu de um verbatim: "você pode escolher entre os atributos
+       Inteligência ou Sabedoria para receber novas perícias. Esta escolha não
+       pode ser modificada nem revertida após a criação do personagem, sendo
+       algo definitivo." A escolha, porém, nunca ganhou tela: sem controle no
+       criador, o padrão "inteligencia" valia para toda ficha de jogador e a
+       Sabedoria não contava nunca. O autor então fixou a régua: *"a quantidade
+       de perícias é o maior modificador de atributo entre Inteligência ou
+       Sabedoria e não só Inteligência"*, que é a mesma da criatura.
+
+       Se a escolha permanente voltar, ela precisa de TELA antes de voltar a
+       decidir número. Ver `resolveTestes` em afty-pericias.js. */
+    periciaAtributo: "inteligencia",
     habilidades: [],            // Habilidades de Especialização (ex-Dotes)
     // Escolhas aninhadas das Habilidades: { [habId]: [opcaoId, ...] }. Guarda
     // qual opção (Estilo de Controle no Apogeu, Melhoria de Controlador...) foi

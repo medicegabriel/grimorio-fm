@@ -144,7 +144,12 @@ export const HABILIDADE_EFEITOS = {
   // níveis, chegando a 5. Cada Nível de Dano soma 1 no ND, só para dano.
   lut_corpo_treinado: [
     { canal: "finezaAtaque", alvo: "corpo", expr: "1" },
-    { canal: "nivelDano", alvo: "basico",
+    /* ⚠ O `nome` É LIDO PELO MOTOR, e não só pelo hover. Na ficha de jogador esta
+       linha é DESCONTADA, porque lá o dado do desarmado sai do texto da
+       habilidade ("se torna 1d8... 1d10, 1d12, 2d8 e 2d12") em vez de ser
+       aproximado por degraus de ND. Ver ESCADAS_DESARMADO_NO_MOTOR em
+       afty-niveis-dano.js, e o assert que prende este nome. */
+    { canal: "nivelDano", alvo: "basico", nome: "Corpo Treinado (escada)",
       expr: "1 + (esc_lutador >= 5) + (esc_lutador >= 9) + (esc_lutador >= 13) + (esc_lutador >= 17)" },
   ],
 
@@ -2363,6 +2368,32 @@ export const ANATOMIA_EFEITOS = {
  * Aprimorada: assim as duas se compõem sem uma precisar saber da outra.
  */
 export const APTIDAO_EFEITOS = {
+  /* ---------- Especiais (sem trilha) ---------- */
+
+  /* "ter Raio Negro concede +ND de PE e +1 Nível de Aptidão" (autor,
+     confirmado em 2026-07-16 e reconfirmado em 2026-08-30).
+
+     ⚠ ESPEROU DOIS MESES POR ENGANO. A entrada do catálogo dizia "Espera a
+     passada de efeitos (o motor ainda não lê aptidões escolhidas)", e o motor
+     passou a ler em 2026-07-30, quando as primeiras 11 Aptidões foram ligadas.
+     A nota nunca foi revisitada, que é a doença do requisito `nota` de sempre.
+
+     ⚠ E ELE MUDOU A CRIATURA em 2026-08-30. Até aqui o +1 Nível de Aptidão vinha
+     da Quantidade de PE Muito Grande, e agora vem daqui. Palavras do autor:
+     "Quantidade de PE fica só para criaturas, e só mexe em PE. Logo uma criatura
+     com Raio Negro e PE Muito Grande ficaria com 2xND e um Nível de Aptidão."
+     Ou seja, os dois +ND de PE SOMAM, e o Nível de Aptidão não dobra.
+
+     ⚠ ASSUNÇÃO A CONFIRMAR: `pontosAptidao` (orçamento livre) e não
+     `nivelAptidao` com alvo `au`. O autor disse "um Nível de Aptidão adicional",
+     sem nomear trilha, e é o lugar exato de onde o +1 da Quantidade de PE saiu.
+     Mas o comentário de 2026-07-16 no catálogo dizia "+1 DIRECIONADO na trilha
+     au". Os dois textos são do autor e discordam. Trocar é uma palavra. */
+  raio_negro: [
+    { canal: "pe", expr: "nd" },
+    { canal: "pontosAptidao", expr: "1" },
+  ],
+
   /* ---------- Aura: passivas ---------- */
 
   // "Você soma metade do seu Nível de Aptidão em Aura em testes de Furtividade."
@@ -2551,7 +2582,10 @@ export const APTIDAO_EFEITOS = {
   // 1d8 → 1d10 no 5 → 1d12 no 9 → 2d10 no 13 → 2d12 no 17. Quatro subidas.
   mal_armas_naturais: [
     { canal: "finezaAtaque", alvo: "corpo", expr: "1" },
-    { canal: "nivelDano", alvo: "basico", expr: "(nd >= 5) + (nd >= 9) + (nd >= 13) + (nd >= 17)" },
+    /* ⚠ Mesmo caso do Corpo Treinado: o `nome` é o que faz esta linha ser
+       descontada na ficha de jogador. Ver ESCADAS_DESARMADO_NO_MOTOR. */
+    { canal: "nivelDano", alvo: "basico", nome: "Armas Naturais (escada)",
+      expr: "(nd >= 5) + (nd >= 9) + (nd >= 13) + (nd >= 17)" },
   ],
 
   // A escada desta é a mesma leitura, e SOMA com a de cima (as duas são tidas

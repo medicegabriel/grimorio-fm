@@ -38,6 +38,7 @@
  */
 
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { sufixoDeChave, SISTEMA_PADRAO } from "./afty-sistema";
 
 /**
  * Uma chave por ALVO: a ficha nova e cada ficha existente têm rascunho próprio,
@@ -46,9 +47,17 @@ import { useState, useEffect, useMemo, useCallback } from "react";
  * Sufixo `_afty_` pela convenção de isolamento do sistema (a mesma de
  * `fm_creatures_afty_v1`, em components/useCreatureStorage.js): as duas
  * versões de regra dividem o mesmo localStorage e não podem se ver.
+ *
+ * ⚠ E o SISTEMA entra na chave desde 2026-08-30, quando nasceu o `/Player`.
+ * Ficha existente tem id único e nunca colidiria, mas a ficha NOVA usa o alvo
+ * literal `"new"` nos dois sistemas: sem o sufixo, começar uma criatura e depois
+ * começar um personagem jogaria um rascunho por cima do outro, calado e sem
+ * desfazer. `sufixoDeChave("afty")` devolve exatamente o `_afty` que as chaves
+ * já gravadas usam, então o rascunho de quem já usa o app continua onde estava.
  */
-const CHAVE_PREFIXO = "fm_builder_draft_afty_v1:";
-export const chaveDoRascunho = (id) => CHAVE_PREFIXO + (id ?? "new");
+const chavePrefixo = (sistema) => `fm_builder_draft${sufixoDeChave(sistema)}_v1:`;
+export const chaveDoRascunho = (id, sistema = SISTEMA_PADRAO) =>
+  chavePrefixo(sistema) + (id ?? "new");
 
 /** Intervalo de silêncio antes de gravar. Digitar não deve escrever por tecla. */
 const DEBOUNCE_MS = 600;
@@ -60,9 +69,9 @@ const DEBOUNCE_MS = 600;
  * e um JSON corrompido não pode derrubar o criador de fichas inteiro. Rascunho
  * ilegível é tratado como rascunho ausente.
  */
-export function lerRascunho(id) {
+export function lerRascunho(id, sistema = SISTEMA_PADRAO) {
   try {
-    const raw = localStorage.getItem(chaveDoRascunho(id));
+    const raw = localStorage.getItem(chaveDoRascunho(id, sistema));
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     if (!parsed || typeof parsed.draft !== "object" || parsed.draft === null) return null;
@@ -73,10 +82,10 @@ export function lerRascunho(id) {
 }
 
 /** Grava o rascunho. Falha em silêncio (cota estourada, modo privado). */
-export function gravarRascunho(id, draft) {
+export function gravarRascunho(id, draft, sistema = SISTEMA_PADRAO) {
   try {
     localStorage.setItem(
-      chaveDoRascunho(id),
+      chaveDoRascunho(id, sistema),
       JSON.stringify({ salvoEm: Date.now(), draft }),
     );
     return true;
@@ -86,9 +95,9 @@ export function gravarRascunho(id, draft) {
 }
 
 /** Apaga o rascunho daquele alvo. Chamado pelo Salvar e pelo Descartar. */
-export function limparRascunho(id) {
+export function limparRascunho(id, sistema = SISTEMA_PADRAO) {
   try {
-    localStorage.removeItem(chaveDoRascunho(id));
+    localStorage.removeItem(chaveDoRascunho(id, sistema));
   } catch { /* localStorage indisponível */ }
 }
 
@@ -121,11 +130,11 @@ export function formatarSalvoEm(ts) {
  * à ficha gravada não é trabalho perdido, é lixo de uma sessão que terminou
  * limpa, e restaurá-lo acenderia o indicador de rascunho sem motivo.
  */
-export function estadoInicialComRascunho(id, base) {
-  const rascunho = lerRascunho(id);
+export function estadoInicialComRascunho(id, base, sistema = SISTEMA_PADRAO) {
+  const rascunho = lerRascunho(id, sistema);
   if (!rascunho) return { draft: base, restaurado: null };
   if (JSON.stringify(rascunho.draft) === JSON.stringify(base)) {
-    limparRascunho(id);
+    limparRascunho(id, sistema);
     return { draft: base, restaurado: null };
   }
   return { draft: rascunho.draft, restaurado: rascunho.salvoEm };
@@ -143,7 +152,7 @@ export function estadoInicialComRascunho(id, base) {
  *
  * Devolve `{ pendente, salvoEm, restaurado, descartar, aoSalvar }`.
  */
-export function useRascunhoAfty({ id, draft, base, restauradoEm, onDescartar }) {
+export function useRascunhoAfty({ id, draft, base, restauradoEm, onDescartar, sistema = SISTEMA_PADRAO }) {
   // A régua é o JSON da ficha gravada. Fica num estado (e não num `useMemo`)
   // porque o Salvar a MOVE: depois de gravar, o que está na tela passa a ser o
   // novo "sem alterações", e um memo derivado de `base` continuaria apontando
@@ -165,18 +174,18 @@ export function useRascunhoAfty({ id, draft, base, restauradoEm, onDescartar }) 
   useEffect(() => {
     if (!pendente) return;
     const t = setTimeout(() => {
-      if (gravarRascunho(id, draft)) setSalvoEm(Date.now());
+      if (gravarRascunho(id, draft, sistema)) setSalvoEm(Date.now());
     }, DEBOUNCE_MS);
     return () => clearTimeout(t);
-  }, [draftJson, pendente, draft, id]);
+  }, [draftJson, pendente, draft, id, sistema]);
 
   /** Volta para a ficha gravada e apaga o rascunho. Desfaz a restauração. */
   const descartar = useCallback(() => {
-    limparRascunho(id);
+    limparRascunho(id, sistema);
     setSalvoEm(null);
     setRestaurado(false);
     onDescartar?.();
-  }, [id, onDescartar]);
+  }, [id, sistema, onDescartar]);
 
   /**
    * Chamado DEPOIS do Salvar. Apaga o rascunho e move a régua para a ficha
@@ -184,11 +193,11 @@ export function useRascunhoAfty({ id, draft, base, restauradoEm, onDescartar }) 
    * pendente sobre uma ficha que acabou de entrar no compêndio.
    */
   const aoSalvar = useCallback((salva) => {
-    limparRascunho(id);
+    limparRascunho(id, sistema);
     setBaseJson(JSON.stringify(salva));
     setSalvoEm(null);
     setRestaurado(false);
-  }, [id]);
+  }, [id, sistema]);
 
   // Editar tira a marca de restaurado. Fica no corpo do hook, e não num efeito,
   // porque é derivação de estado durante a renderização: um `useEffect` daria

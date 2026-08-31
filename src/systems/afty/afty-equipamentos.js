@@ -616,6 +616,52 @@ export const ARMAS = [
     props: { arremessavel: [12, 24], mortal: "d8", leve: true } },
 ];
 
+/* ============================================================ */
+/* PROFICIÊNCIA DE ARMA                                          */
+/* ============================================================ */
+/*
+ * O que cada token de `treinamentos.armas` de uma Especialização recorta do
+ * catálogo de armas. As Classes declaram `["simples", "marciais"]` e afins, e é
+ * aqui que essas palavras viram um filtro de verdade.
+ *
+ * ⚠ AS TRÊS PALAVRAS FALAM DE EIXOS DIFERENTES DO CATÁLOGO, e foi isso que
+ * segurou a ligação até 2026-08-30:
+ *
+ *   simples    a CLASSE da arma (simples ou complexa)
+ *   marciais   a PROPRIEDADE `marcial`, e NÃO a classe complexa
+ *   distancia  a CATEGORIA, e conta arremesso junto
+ *   todas      qualquer arma
+ *
+ * ⚠ "Marciais" É A PROPRIEDADE (autor, 2026-08-30). São 10 armas, cinco simples
+ * e cinco complexas, e o Lutador alcança 25 das 52. A outra leitura, de que
+ * "marcial" fosse só outro nome para "complexa", daria 52 ao Lutador e o
+ * tornaria idêntico ao Combatente, que é justamente quem o livro descreve como
+ * "Todas as armas". Duas Classes escritas diferente não podem recortar igual.
+ *
+ * ⚠ "A Distância" INCLUI ARREMESSO (autor, 2026-08-30), então o recorte é "toda
+ * arma que não seja corpo a corpo". No catálogo são dois valores de categoria, e
+ * juntá-los aqui evita que cada leitor lembre de somar os dois, que é o mesmo
+ * desenho do campo `distancia` já montado no `armasParaDano`.
+ */
+export const TREINO_ARMA_FILTRO = {
+  todas: () => true,
+  simples: (a) => a?.classe === "simples",
+  marciais: (a) => !!a?.props?.marcial,
+  distancia: (a) => a?.categoria === "distancia" || a?.categoria === "arremesso",
+};
+
+/**
+ * A Especialização treina esta arma?
+ *
+ * `tokens` é o `armas` de `treinamentosDasEspecializacoes`. Token desconhecido
+ * (de um Addon que invente um recorte) devolve `false` em vez de quebrar, e é a
+ * mesma convenção do resto do sistema: uma palavra errada no catálogo tira o
+ * bônus, e não derruba o criador de fichas.
+ */
+export const armaTreinadaPor = (arma, tokens = []) =>
+  (Array.isArray(tokens) ? tokens : [])
+    .some((t) => TREINO_ARMA_FILTRO[t]?.(arma) === true);
+
 export const ARMA_CATEGORIAS = [
   { value: "corpo",     label: "Corpo a Corpo" },
   { value: "distancia", label: "A Distância" },

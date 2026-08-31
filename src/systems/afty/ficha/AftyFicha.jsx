@@ -23,13 +23,15 @@ import {
   iniciaRitualComum, iniciaRitualSemTeste, iniciaRitualEstendido,
   concluiPreparacaoRitual, cancelaRitual, finalizaRitual, encerraRitual, desativaRitual,
   concedeNaSessao, removeConcessao,
+  estadoDaInvocacao, poeInvocacaoEmCampo, alternaAuxilioInvocacao,
+  aplicaDanoInvocacao, aplicaCuraInvocacao, defineVitalInvocacao,
 } from "./ficha-sessao";
 import { rolarTeste, rolarDano } from "./ficha-rolagem";
 import PrimitivasDeAddon from "../ui/PrimitivasDeAddon";
 import { conteudoDaFicha, equipamentosDaFicha, alvosDeBusca } from "./ficha-conteudo";
 import {
   carregarTema, salvarTemaGlobal, cssDasVars, cssDoUsuario, temCssLivre,
-  carregarDensidade, salvarDensidade,
+  carregarDensidade, salvarDensidade, normalizaTema,
 } from "./ficha-tema";
 import PainelDeRolagens from "./PainelDeRolagens";
 import BuscaGlobal from "./BuscaGlobal";
@@ -42,6 +44,9 @@ import AbaBuffs from "./abas/AbaBuffs";
 import AbaEquipamentos from "./abas/AbaEquipamentos";
 import AbaInvocacoes from "./abas/AbaInvocacoes";
 import { deltaDosEstados } from "./ficha-buffs";
+// O padrão global de tema é POR SISTEMA: "quero todas as minhas fichas assim"
+// dito no Grimório Afty não pode repintar as fichas de jogador. Ver afty-sistema.js.
+import { sistemaDaFicha } from "../afty-sistema";
 
 /**
  * ============================================================
@@ -96,7 +101,7 @@ function Chip({ children, tom, title }) {
 const SEM_CSS = typeof location !== "undefined"
   && new URLSearchParams(location.search).has("semcss");
 
-export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }) {
+export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, onSalvarInvocacoes }) {
   const ficha = useMemo(() => mesclaFichaAfty(creature), [creature]);
   const alvoId = creature?.id ?? null;
 
@@ -119,6 +124,12 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
   const [destaque, setDestaque] = useState(null);
   const [tema, setTema] = useState(() => carregarTema(ficha, alvoId));
   const [aparenciaAberta, setAparenciaAberta] = useState(false);
+  /* Qual Shikigami está com o editor de aparência aberto. ⚠ É o ID e não o
+     objeto: a invocação é reconstruída a cada derive, e guardar o objeto
+     deixaria o painel editando uma cópia velha. */
+  const [temandoInvocacao, setTemandoInvocacao] = useState(null);
+  /* O tema em edição, `{ id, tema }`. Ver o bloco do debounce mais abaixo. */
+  const [rascunhoInv, setRascunhoInv] = useState(null);
   // ⚠ A densidade é gravada NA HORA, e não por debounce como o tema: ela muda por
   // clique num interruptor de duas posições, e não por arrastar um seletor de cor.
   const [densidade, setDensidade] = useState(carregarDensidade);
@@ -163,6 +174,12 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
          bônus soma na Defesa e nos cinco TRs, e resolver a Guarda fora dele
          obrigaria a derivar duas vezes. Ver `entradaDaGuarda`. */
       guarda: entradaDaGuarda(sessaoBruta),
+      /* O ESTADO DE MESA DAS INVOCAÇÕES (em campo, auxílios ligados). Está aqui
+         dentro, e não fora, porque um Shikigami em campo pode estar dando
+         Defesa, Acerto ou RD ao dono, e isso é número do derive. Entrar por
+         fora repetiria o erro do `guarda`: a lista de opção que falta é
+         creditada, calada, ao estado que estiver sendo medido. */
+      invocacoes: sessaoBruta.invocacoes,
     }),
     [sessaoBruta],
   );
@@ -252,6 +269,72 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
     atualiza((s) => ({ ...s, [chave]: Math.max(0, Math.trunc(valor) || 0) }));
   }, [atualiza]);
 
+  /* OS SHIKIGAMIS NA MESA (2026-08-31). Um objeto só de escritores, porque a aba
+     precisa dos seis e passá-los como seis props faria a assinatura dela crescer
+     a cada verbo novo. Todos passam pelo `atualiza`, que apara nos dois
+     sentidos, igual aos vitais do dono. */
+  const acoesDeInvocacao = useMemo(() => ({
+    /* ⚠ O `pvMax` viaja porque quem caiu a 0 VOLTA PELA METADE, e a sessão não
+       conhece o máximo de ninguém: ela guarda o corrente. Ver a regra em
+       `poeInvocacaoEmCampo`. */
+    emCampo: (id, valor) => atualiza((s) => poeInvocacaoEmCampo(
+      s, id, valor, derived.invocacoes?.lista?.find((i) => i.id === id)?.pv ?? 0,
+    )),
+    auxilio: (id, acaoId, ligado) => atualiza((s) => alternaAuxilioInvocacao(s, id, acaoId, ligado)),
+    dano: (id, quanto, pvMax) => atualiza((s) => aplicaDanoInvocacao(s, id, quanto, pvMax)),
+    cura: (id, quanto, pvMax) => atualiza((s) => aplicaCuraInvocacao(s, id, quanto, pvMax)),
+    vital: (id, qual, valor) => atualiza((s) => defineVitalInvocacao(
+      s, id, qual, valor,
+      qual === "alma"
+        ? (derived.invocacoes?.lista?.find((i) => i.id === id)?.almaMax ?? 0)
+        : (derived.invocacoes?.lista?.find((i) => i.id === id)?.pv ?? 0),
+    )),
+  }), [atualiza, derived.invocacoes]);
+
+  /* O tema de UM Shikigami. Ele mora DENTRO da invocação, em `inv.aparencia`,
+     pela mesma razão de o tema da ficha morar na criatura (autor, 2026-08-05:
+     *"quero mandar minha ficha bonitinha para os outros"*): assim ele viaja no
+     export e no import de graça.
+
+     ⚠ ESCREVE A LISTA INTEIRA, e não um campo solto, porque `storage.update`
+     faz merge de chave de PRIMEIRO nível: mandar `{ invocacoes }` pela metade
+     apagaria as outras invocações. */
+  const invocacaoTemada = temandoInvocacao
+    ? (ficha.invocacoes ?? []).find((i) => i.id === temandoInvocacao) ?? null
+    : null;
+
+  /* Grava o tema de um Shikigami DENTRO da invocação, reescrevendo a lista.
+     ⚠ A LISTA INTEIRA, e não um campo solto, porque `storage.update` faz merge
+     de chave de primeiro nível: mandar meia lista apagaria as outras. */
+  const gravarAparenciaDaInvocacao = useCallback((id, aparencia) => {
+    const lista = (ficha.invocacoes ?? []).map((i) => (i.id === id ? { ...i, aparencia } : i));
+    onSalvarInvocacoes?.(lista);
+  }, [ficha.invocacoes, onSalvarInvocacoes]);
+
+  /* ⚠ O RASCUNHO EXISTE POR CAUSA DA GRAVAÇÃO. Sem ele, cada tecla digitada no
+     CSS de um Shikigami reescrevia a lista INTEIRA de criaturas no
+     localStorage: medido em 29 gravações para 28 teclas, na revisão de
+     2026-08-31. É o mesmo desenho do tema da ficha, que debounce em 600ms desde
+     2026-08-05, e a mesma razão: escrever é caro e digitar é rápido.
+
+     ⚠ E É ELE QUE A TELA PINTA, não o que está gravado. Com a prévia saindo do
+     disco, o CSS do Shikigami só apareceria 600ms depois de cada tecla, que é
+     exatamente a sensação que o debounce existe para evitar. */
+  const temaDaInvocacaoAberta = temandoInvocacao === rascunhoInv?.id
+    ? rascunhoInv.tema
+    : normalizaTema(invocacaoTemada?.aparencia);
+
+  /* ⚠ O primeiro disparo NÃO grava: ele é a abertura do painel, e gravar ali
+     carimbaria um tema normalizado em quem nunca teve nenhum. Mesma guarda do
+     `primeiroTema` logo acima. */
+  const primeiroRascunho = useRef(true);
+  useEffect(() => {
+    if (!rascunhoInv) { primeiroRascunho.current = true; return undefined; }
+    if (primeiroRascunho.current) { primeiroRascunho.current = false; return undefined; }
+    const t = setTimeout(() => gravarAparenciaDaInvocacao(rascunhoInv.id, rascunhoInv.tema), 600);
+    return () => clearTimeout(t);
+  }, [rascunhoInv, gravarAparenciaDaInvocacao]);
+
   // Tudo que a criatura escolheu, dos seis catálogos, num formato só. É o que a
   // aba Habilidades exibe e o que a busca varre.
   const itens = useMemo(() => conteudoDaFicha(ficha, derived), [ficha, derived]);
@@ -333,7 +416,8 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
     { id: "movimento", k: "Movimento", v: `${numeroBr(derived.movimento)}m`, p: "movimento" },
     { id: "iniciativa", k: "Iniciativa", v: derived.iniciativa, p: "iniciativa", sinal: true },
     { id: "atencao", k: "Atenção", v: derived.atencao, p: "atencao" },
-    { id: "res-parcial", k: "Res. Parcial", v: derived.resParcial, p: "resParcial" },
+    // `null` some, zero fica. Ver a nota em AftyCreatureBuilder.jsx.
+    ...(derived.resParcial != null ? [{ id: "res-parcial", k: "Res. Parcial", v: derived.resParcial, p: "resParcial" }] : []),
     { id: "maestria", k: "Maestria", v: derived.maestria, sinal: true },
     ...(derived.pontosPreparo > 0 ? [{ id: "preparo", k: "Preparo", v: derived.pontosPreparo, p: "pontosPreparo" }] : []),
   ], [derived]);
@@ -412,7 +496,17 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
         destaque={destaque}
       />
     ),
-    invocacoes: () => <AbaInvocacoes derived={derived} rolar={rolar} destaque={destaque} />,
+    invocacoes: () => (
+      <AbaInvocacoes
+        derived={derived}
+        rolar={rolar}
+        destaque={destaque}
+        estadoDe={(id) => estadoDaInvocacao(sessao, id)}
+        acoes={acoesDeInvocacao}
+        aoTemar={setTemandoInvocacao}
+        temaEmEdicao={rascunhoInv}
+      />
+    ),
     buffs: () => (
       <AbaBuffs
         derived={derived}
@@ -728,7 +822,30 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema }
           tema={tema}
           onTema={setTema}
           onFechar={() => setAparenciaAberta(false)}
-          onGlobal={() => salvarTemaGlobal(tema)}
+          onGlobal={() => salvarTemaGlobal(tema, sistemaDaFicha(ficha))}
+        />
+      )}
+
+      {/* ⚠ O TEMA DE UM SHIKIGAMI usa o MESMO painel do tema da ficha, e não uma
+          cópia menor: o autor pediu "um CSS Personalizado próprio", e um editor
+          capado seria um segundo lugar para manter em dia. O que muda é só o
+          `onGlobal`, que sai: "quero todas as minhas fichas assim" não quer
+          dizer nada quando o alvo é um shikigami. */}
+      {temandoInvocacao && (
+        <PainelDeAparencia
+          titulo={`Aparência · ${invocacaoTemada?.nome || "Shikigami"}`}
+          tema={temaDaInvocacaoAberta}
+          onTema={(t) => setRascunhoInv({ id: temandoInvocacao, tema: t })}
+          /* ⚠ FECHAR DESCARREGA na hora, e não espera o debounce: quem fecha o
+             painel e sai da ficha no mesmo segundo não pode perder o que
+             escreveu. Gravar duas vezes o mesmo valor não custa nada. */
+          onFechar={() => {
+            if (rascunhoInv?.id === temandoInvocacao) {
+              gravarAparenciaDaInvocacao(rascunhoInv.id, rascunhoInv.tema);
+            }
+            setRascunhoInv(null);
+            setTemandoInvocacao(null);
+          }}
         />
       )}
     </div>

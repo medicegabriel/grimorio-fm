@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useRef, useCallback, useEffect, useLayoutEffect } from "react";
 import {
   Save, ChevronLeft, ChevronDown, Wand2, Sparkles, FlaskConical,
-  Dumbbell, GraduationCap, BookOpen, Check, ArrowRight, Lock, Plus, X, Zap,
+  Dumbbell, GraduationCap, BookOpen, Check, ArrowRight, Lock, Plus, X, Zap, GripVertical,
   Copy, ArrowUp, ArrowDown, Heart, Shield, Footprints, AlertTriangle, Star, Swords,
   Trash2, Image as ImageIcon, Eye, Crosshair, RotateCcw, Pencil, Table, Braces,
 } from "lucide-react";
@@ -17,9 +17,21 @@ import {
 // Primitivos compartilhados com a Ficha Final. Eram locais deste arquivo até
 // 2026-08-05, e saíram porque duas cópias divergiriam na primeira errata.
 import { PainelDeFontes, ValorComFontes } from "./ui/fontes";
+/* ⚠ O @dnd-kit JÁ ERA DEPENDÊNCIA do projeto: o Dashboard, a Biblioteca e o
+   painel de Encontros do grimório 2.5.2 ordenam com ele, e a aba de Perícias
+   passou a ordenar em 2026-08-30. Não é biblioteca nova. */
+import {
+  DndContext, DragOverlay, PointerSensor, TouchSensor, KeyboardSensor,
+  useSensor, useSensors, closestCenter,
+} from "@dnd-kit/core";
+import {
+  SortableContext, useSortable, rectSortingStrategy, sortableKeyboardCoordinates,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { sinalDe, numeroBr } from "./ui/formato";
 import { Card, BoolChip, VezesGauge } from "./ui/primitivos";
 import { estadoInicialComRascunho, useRascunhoAfty, formatarSalvoEm } from "./afty-rascunho";
+import { SISTEMA_PADRAO, sistemaDaFicha, normalizaSistema, regraDo } from "./afty-sistema";
 import {
   AFTY_ORIGENS, getOrigem, origemTemDesenvolvimento, origemPoolLimite,
   clasDaOrigem, getCla, caracteristicasEfetivas, totalDaAlocacao, usoDaAlocacao,
@@ -60,7 +72,7 @@ import {
 import { HABILIDADES_GERAIS } from "./afty-gerais";
 import {
   AFTY_PERICIAS, AFTY_ATAQUES, AFTY_MANOBRAS, EMPURRAO_BASE,
-  idsPericiasAtivas, novaPericiaPersonalizada, sugestoesPericias,
+  idsPericiasAtivas, novaPericiaPersonalizada, ehPericiaOficio, oficiosDaFicha,
 } from "./afty-pericias";
 import { FONTES_CURA, rotuloBloco } from "./afty-cura";
 // Os canais do Motor, já agrupados por assunto para o <optgroup> do editor
@@ -141,6 +153,11 @@ import TextoRico from "./ui/TextoRico";
  * ============================================================
  */
 
+/* ⚠ AS ABAS DIVERGEM ENTRE OS DOIS SISTEMAS desde 2026-08-30. Na Ficha de
+   Player, Identidade e Informações são UMA aba só (autor: "na ficha de jogador
+   junte a parte de Identidade com Informações em uma só"). É a primeira
+   divergência ligada, e ela é de TELA: não muda número nenhum, e por isso o
+   assert que compara os dois derives continua verde. Ver afty-sistema.js. */
 const TABS = [
   { id: "identidade",    label: "Identidade" },
   { id: "informacoes",   label: "Informações" },
@@ -154,6 +171,14 @@ const TABS = [
   { id: "addons",        label: "Addons" },
   { id: "calculos",      label: "Cálculos", afty: true },
 ];
+
+/* A aba "informacoes" some no Player, e o conteúdo dela sobe para a
+   "identidade". A lista é filtrada em vez de duplicada: uma segunda lista
+   divergiria na primeira aba nova que alguém somasse a só uma delas. */
+const tabsDoSistema = (sistema) =>
+  regraDo(sistema, "abasIdentidade") === "player"
+    ? TABS.filter((t) => t.id !== "informacoes")
+    : TABS;
 
 // A aba Habilidades agora é REAL (Feitiços / Estilo das Sombras / Habilidades
 // Marciais, conforme a origem). Nenhuma aba está em stub por ora.
@@ -208,16 +233,36 @@ function IndicadorRascunho({ rascunho }) {
    precisa exatamente do mesmo saneamento antes de derivar. */
 const fichaGravada = mesclaFichaAfty;
 
-export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel }) {
-  // A ficha gravada é capturada UMA vez, na montagem, igual ao draft: trocar de
-  // criatura passa pelo Dashboard, que desmonta este componente.
-  const [base] = useState(() => fichaGravada(existingCreature));
+export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel, sistema: sistemaDaRota = SISTEMA_PADRAO }) {
   const alvoId = existingCreature?.id ?? null;
+
+  /* ⚠ O SISTEMA VEM DA FICHA, e a rota só responde por ficha NOVA.
+     Editar uma criatura do Grimório Afty por um caminho que passe pelo /Player
+     não pode transformá-la em personagem: o `rulesVersion` dela é quem manda, e
+     a rota entra apenas quando não existe ficha ainda. Ver afty-sistema.js. */
+  const sistema = existingCreature
+    ? sistemaDaFicha(existingCreature)
+    : normalizaSistema(sistemaDaRota);
+
+  /* A ficha gravada é capturada UMA vez, na montagem, igual ao draft: trocar de
+     criatura passa pelo Dashboard, que desmonta este componente.
+
+     ⚠ E ELA NASCE COM O `rulesVersion` DO SISTEMA. A ficha em branco vem sempre
+     como "afty", e o `rulesVersion` só era gravado ao SALVAR: até o primeiro
+     salvamento, uma ficha nova no /Player era DERIVADA com as regras de
+     criatura. A tela já era a do jogador (as abas saem daqui), mas os números
+     não, e a divergência aparecia inteira, do orçamento de perícias ao chip de
+     Patamar. Quem deriva lê a FICHA, então é a ficha que tem de dizer. */
+  const [base] = useState(() => ({ ...fichaGravada(existingCreature), rulesVersion: sistema }));
   // ⚠ O rascunho é aplicado AQUI, no inicializador, e não num efeito depois de
   // montar: restaurar depois faria a tela piscar a ficha em branco antes de
   // trocar, e todo `useState` derivado do draft nasceria do valor errado.
-  const [rascunhoInicial] = useState(() => estadoInicialComRascunho(alvoId, base));
+  const [rascunhoInicial] = useState(() => estadoInicialComRascunho(alvoId, base, sistema));
   const [draft, setDraft] = useState(rascunhoInicial.draft);
+  /* ⚠ A aba de pouso, e o fallback do `tabAtiva` mais abaixo, apontavam os dois
+     para "informacoes". Ela NÃO EXISTE no Player, onde o conteúdo dela mora
+     dentro da "identidade", e apontar para uma aba que a barra não mostra daria
+     tela em branco. `abaBase` é a mesma coisa nos dois sistemas: a primeira. */
   const [tab, setTab] = useState("informacoes");
 
   const rascunho = useRascunhoAfty({
@@ -226,6 +271,7 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
     base,
     restauradoEm: rascunhoInicial.restaurado,
     onDescartar: () => setDraft(base),
+    sistema,
   });
 
   /* ⚠ OS ADDONS ENTRAM ANTES DA DERIVAÇÃO, e no MESMO memo.
@@ -249,10 +295,19 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
   // `tabAtiva` cobre quem já estava nela quando o Tipo mudou: em vez de deixar
   // a tela num limbo (aba escondida, conteúdo aberto), cai nas Informações.
   const semEnergia = draft.core.tipo === "restringido";
-  const tabAtiva = (tab === "aptidoes" && semEnergia) ? "informacoes" : tab;
+  const abasVisiveis = useMemo(() => tabsDoSistema(sistema), [sistema]);
+  const umaAbaSo = regraDo(sistema, "abasIdentidade") === "player";
+  const abaBase = umaAbaSo ? "identidade" : "informacoes";
+  // Quem estava numa aba que sumiu (a Aptidões do Restringido, ou a Informações
+  // ao abrir uma ficha de Player) cai na aba base em vez de ficar num limbo com
+  // a aba escondida e o conteúdo aberto.
+  const tabExiste = abasVisiveis.some((t) => t.id === tab);
+  const tabAtiva = (!tabExiste || (tab === "aptidoes" && semEnergia)) ? abaBase : tab;
 
   // ---------- patches imutáveis ----------
   const patch = (partial) => setDraft((d) => ({ ...d, ...partial }));
+  // Focos de Interlúdio digitados, só na ficha de jogador. Ver `focosLivres`.
+  const setFocosLivres = (v) => patch({ focosLivres: Math.max(0, Math.trunc(Number(v) || 0)) });
   const patchCore = (partial) => setDraft((d) => ({ ...d, core: { ...d.core, ...partial } }));
   // Os addons desta criatura, como CÓPIA congelada. Ver AftyTabAddons.jsx.
   const setAddons = (lista) => setDraft((d) => ({ ...d, addons: lista }));
@@ -513,27 +568,32 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
     });
     return nova.id;
   };
-  const adicionarPericiaDoCatalogo = (id) =>
-    setDraft((d) => {
-      const ordem = idsPericiasAtivas(d);
-      return ordem.includes(id) ? d : { ...d, periciasOrdem: [...ordem, id] };
-    });
   const editarPericiaPersonalizada = (id, partial) =>
     setDraft((d) => ({
       ...d,
       periciasPersonalizadas: (Array.isArray(d.periciasPersonalizadas) ? d.periciasPersonalizadas : [])
         .map((p) => (p.id === id ? { ...p, ...partial } : p)),
     }));
-  const moverPericia = (id, delta) =>
+  /* Arrastar e soltar (autor, 2026-08-30), no lugar das setas de uma posição.
+     A perícia sai de onde está e ENTRA na posição da linha em que foi solta, o
+     que não é o mesmo que trocar as duas de lugar: arrastar do fim para o começo
+     com troca deixaria a de cima lá embaixo. */
+  const reordenarPericia = (id, alvoId) =>
     setDraft((d) => {
+      if (!id || !alvoId || id === alvoId) return d;
       const ordem = idsPericiasAtivas(d);
       const de = ordem.indexOf(id);
-      const para = de + delta;
-      if (de < 0 || para < 0 || para >= ordem.length) return d;
+      if (de < 0) return d;
       const next = [...ordem];
-      [next[de], next[para]] = [next[para], next[de]];
+      next.splice(de, 1);
+      const para = next.indexOf(alvoId);
+      if (para < 0) return d;
+      next.splice(para + (de <= para ? 1 : 0), 0, id);
       return { ...d, periciasOrdem: next };
     });
+  /* Só perícia personalizada sai da ficha (autor, 2026-08-30): as do livro
+     estão todas à mostra e não há mais painel de sugestões para trazer de volta
+     o que fosse removido. O botão Nova perícia refaz uma personalizada. */
   const removerPericia = (id) =>
     setDraft((d) => {
       const pericias = { ...(d.pericias && typeof d.pericias === "object" ? d.pericias : {}) };
@@ -544,7 +604,6 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
         periciasOrdem: idsPericiasAtivas(d).filter((x) => x !== id),
         periciasPersonalizadas: (Array.isArray(d.periciasPersonalizadas) ? d.periciasPersonalizadas : [])
           .filter((p) => p.id !== id),
-        ...(id === "oficio" ? { periciaOficio: "", periciaOficios: [] } : {}),
       };
     });
   const toggleAtaqueProf = (id) =>
@@ -797,8 +856,16 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
       return { ...x, fa: { ...x.fa, encantamentos: enc } };
     })));
 
-  const addInvocacao = (grau) =>
-    setDraft((d) => ({ ...d, invocacoes: [...invocacoesArr(d), createBlankInvocacao(grau)] }));
+  /* ⚠ DEVOLVE a invocação criada, e não `undefined`. A aba precisa do id para
+     já selecionar a nova no editor: sem isso, criar a quinta deixava o editor
+     mostrando a primeira, e o clique seguinte era sempre procurar na fileira a
+     que acabou de nascer. Montar aqui fora e passar pronta ao `setDraft` é o
+     que torna isso possível sem ler o estado de dentro do atualizador. */
+  const addInvocacao = (grau) => {
+    const nova = createBlankInvocacao(grau);
+    setDraft((d) => ({ ...d, invocacoes: [...invocacoesArr(d), nova] }));
+    return nova;
+  };
   const removeInvocacao = (id) =>
     setDraft((d) => ({ ...d, invocacoes: invocacoesArr(d).filter((x) => x.id !== id) }));
   const duplicarInvocacao = (id) =>
@@ -863,8 +930,12 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
   const handleSave = () => {
     const creature = {
       ...draft,
+      // ⚠ `system` continua "afty" nos DOIS: é a família de regras, e o
+      // Grimório Afty e a Ficha de Player são o mesmo livro. Quem separa
+      // criatura de personagem é o `rulesVersion`, que é o que o Dashboard, o
+      // armazenamento e o `sistemaDaFicha` leem.
       system: "afty",
-      rulesVersion: "afty",
+      rulesVersion: sistema,
       // snapshot dos derivados para telas compartilhadas (dashboard/combate).
       // core.nd já é o campo do Afty — o Dashboard lê core.nd direto.
       stats: {
@@ -927,7 +998,7 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
         <div className="bg-slate-950/40 border-t border-slate-800/70">
           <div className="max-w-7xl mx-auto px-4">
             <div className="flex gap-1 overflow-x-auto py-2 no-scrollbar" role="tablist" aria-label="Seções">
-              {TABS.filter((t) => !(t.id === "aptidoes" && semEnergia)).map((t) => {
+              {abasVisiveis.filter((t) => !(t.id === "aptidoes" && semEnergia)).map((t) => {
                 const on = t.id === tabAtiva;
                 return (
                   <button
@@ -964,8 +1035,8 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
 
         {/* formulário (aba ativa) */}
         <div className="lg:col-span-2 space-y-4">
-          {tabAtiva === "identidade" && <TabIdentidade draft={draft} derived={derived} patch={patch} patchCore={patchCore} setOrigemBonus={setOrigemBonus} setOrigemId={setOrigemId} setOrigemCla={setOrigemCla} toggleEscolhaOrigem={toggleEscolhaOrigem} setOrigemPool={setOrigemPool} />}
-          {tabAtiva === "informacoes" && <TabInformacoes draft={draft} derived={derived} patch={patch} patchCore={patchCore} patchAttr={patchAttr} patchNivel={patchNivel} />}
+          {tabAtiva === "identidade" && <TabIdentidade draft={draft} derived={derived} patch={patch} patchCore={patchCore} setOrigemBonus={setOrigemBonus} setOrigemId={setOrigemId} setOrigemCla={setOrigemCla} toggleEscolhaOrigem={toggleEscolhaOrigem} setOrigemPool={setOrigemPool} juntaInformacoes={umaAbaSo} patchAttr={patchAttr} patchNivel={patchNivel} sistema={sistema} />}
+          {tabAtiva === "informacoes" && <TabInformacoes draft={draft} derived={derived} patch={patch} patchCore={patchCore} patchAttr={patchAttr} patchNivel={patchNivel} sistema={sistema} />}
           {tabAtiva === "pericias" && (
             <TabPericias
               draft={draft}
@@ -974,21 +1045,20 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
               setProficiencia={setProficiencia}
               toggleAtaqueProf={toggleAtaqueProf}
               adicionarPericiaPersonalizada={adicionarPericiaPersonalizada}
-              adicionarPericiaDoCatalogo={adicionarPericiaDoCatalogo}
               editarPericiaPersonalizada={editarPericiaPersonalizada}
-              moverPericia={moverPericia}
+              reordenarPericia={reordenarPericia}
               removerPericia={removerPericia}
             />
           )}
-          {tabAtiva === "habilidades" && <TabHabilidades draft={draft} derived={derived} patchCore={patchCore} toggleArmaDedicada={toggleArmaDedicada} addFeitico={addFeitico} removeFeitico={removeFeitico} patchFeitico={patchFeitico} duplicarFeitico={duplicarFeitico} setReducoesCustoFeitico={setReducoesCustoFeitico} toggleEstiloTabela={toggleEstiloTabela} addEstiloEspecial={addEstiloEspecial} removeEstilo={removeEstilo} patchEstilo={patchEstilo} addFuncionamento={addFuncionamento} removeFuncionamento={removeFuncionamento} patchFuncionamento={patchFuncionamento} setGeralVezes={setGeralVezes} addDominio={addDominio} removeDominio={removeDominio} patchDominio={patchDominio} setDominioAtivo={setDominioAtivo} />}
+          {tabAtiva === "habilidades" && <TabHabilidades draft={draft} derived={derived} patchCore={patchCore} toggleArmaDedicada={toggleArmaDedicada} addFeitico={addFeitico} removeFeitico={removeFeitico} patchFeitico={patchFeitico} duplicarFeitico={duplicarFeitico} setReducoesCustoFeitico={setReducoesCustoFeitico} toggleEstiloTabela={toggleEstiloTabela} addEstiloEspecial={addEstiloEspecial} removeEstilo={removeEstilo} patchEstilo={patchEstilo} addFuncionamento={addFuncionamento} removeFuncionamento={removeFuncionamento} patchFuncionamento={patchFuncionamento} setGeralVezes={setGeralVezes} addDominio={addDominio} removeDominio={removeDominio} patchDominio={patchDominio} setDominioAtivo={setDominioAtivo} sistema={sistema} />}
           {tabAtiva === "especializacoes" && <TabEspecializacoes draft={draft} derived={derived} setEspecializacoes={setEspecializacoes} toggleHabilidade={toggleHabilidade} toggleEscolhaHabilidade={toggleEscolhaHabilidade} toggleTalento={toggleTalento} setTalentoVezes={setTalentoVezes} toggleEscolhaTalento={toggleEscolhaTalento} setMelhoriaVezes={setMelhoriaVezes} toggleLendaria={toggleLendaria} toggleEscolhaAltoNivel={toggleEscolhaAltoNivel} patchTecnicasCombate={patchTecnicasCombate} />}
           {tabAtiva === "aptidoes" && <TabAptidoes draft={draft} derived={derived} setAptidaoNivel={setAptidaoNivel} toggleAptidao={toggleAptidao} setAptidaoOpcao={setAptidaoOpcao} setAptidaoVezes={setAptidaoVezes} setAptidaoOpcaoRepetida={setAptidaoOpcaoRepetida} />}
           {tabAtiva === "invocacoes" && <TabInvocacoes draft={draft} derived={derived} addInvocacao={addInvocacao} removeInvocacao={removeInvocacao} duplicarInvocacao={duplicarInvocacao} moverInvocacao={moverInvocacao} patchInvocacao={patchInvocacao} patchInvocacaoAttr={patchInvocacaoAttr} efeitosApi={efeitosApi} addHorda={addHorda} removeHorda={removeHorda} patchHorda={patchHorda} />}
           {tabAtiva === "equipamentos" && <TabEquipamentos draft={draft} derived={derived} addEquipamento={addEquipamento} removeEquipamento={removeEquipamento} patchEquipamento={patchEquipamento} toggleFerramenta={toggleFerramenta} patchFerramenta={patchFerramenta} toggleEncantamento={toggleEncantamento} addArmaCustom={addArmaCustom} patchArmaCustom={patchArmaCustom} removeArmaCustom={removeArmaCustom} />}
-          {tabAtiva === "interludios" && <TabInterludios draft={draft} derived={derived} setTreinoProgresso={setTreinoProgresso} setTreinoInstance={setTreinoInstance} setTreinoEspecialVezes={setTreinoEspecialVezes} />}
+          {tabAtiva === "interludios" && <TabInterludios draft={draft} derived={derived} setTreinoProgresso={setTreinoProgresso} setTreinoInstance={setTreinoInstance} setTreinoEspecialVezes={setTreinoEspecialVezes} sistema={sistema} setFocosLivres={setFocosLivres} />}
           {tabAtiva === "addons" && <TabAddons draft={draft} derived={derived} setAddons={setAddons} />}
           {tabAtiva === "calculos" && <TabCalculos derived={derived} setStatOverride={setStatOverride} patchCombate={patchCombate} />}
-          {STUBS[tabAtiva] && <StubCard title={TABS.find((t) => t.id === tabAtiva)?.label} text={STUBS[tabAtiva]} />}
+          {STUBS[tabAtiva] && <StubCard title={abasVisiveis.find((t) => t.id === tabAtiva)?.label} text={STUBS[tabAtiva]} />}
         </div>
       </div>
     </div>
@@ -1034,22 +1104,25 @@ const OFICIO_OPCOES = [...new Set(catalogoDoTipo("kit").map((item) => item.ofici
 
 function TabPericias({
   draft, derived, patch, setProficiencia, toggleAtaqueProf,
-  adicionarPericiaPersonalizada, adicionarPericiaDoCatalogo,
-  editarPericiaPersonalizada, moverPericia, removerPericia,
+  adicionarPericiaPersonalizada,
+  editarPericiaPersonalizada, reordenarPericia, removerPericia,
 }) {
   const { pericias, resistencias, ataques, manobras, orcamento } = derived.testes;
-  const [mostrarSugestoes, setMostrarSugestoes] = useState(false);
   const [periciaEditando, setPericiaEditando] = useState(null);
-  const [oficiosAbertos, setOficiosAbertos] = useState(false);
-  const sugestoes = sugestoesPericias(draft);
+  const [oficioAberto, setOficioAberto] = useState(null);
+  const [arrastando, setArrastando] = useState(null);
   const personalizadas = Array.isArray(draft.periciasPersonalizadas) ? draft.periciasPersonalizadas : [];
-  const oficios = [...new Set((Array.isArray(draft.periciaOficios)
-    ? draft.periciaOficios
-    : (draft.periciaOficio ? [draft.periciaOficio] : []))
-    .map((nome) => String(nome || "").trim()).filter(Boolean))];
-  const alternarOficio = (nome) => {
-    const next = oficios.includes(nome) ? oficios.filter((item) => item !== nome) : [...oficios, nome];
-    patch({ periciaOficios: next, periciaOficio: "" });
+
+  /* Cada linha de Ofício guarda os seus. O mapa é remontado a partir das linhas
+     que estão na tela, então gravar já converte a ficha antiga de lista solta
+     para objeto e não sobra escolha de uma linha que não existe mais. */
+  const mapaOficios = Object.fromEntries(
+    pericias.filter((p) => ehPericiaOficio(p.id)).map((p) => [p.id, oficiosDaFicha(draft, p.id)])
+  );
+  const alternarOficio = (id, nome) => {
+    const atuais = mapaOficios[id] ?? [];
+    const next = atuais.includes(nome) ? atuais.filter((item) => item !== nome) : [...atuais, nome];
+    patch({ periciaOficios: { ...mapaOficios, [id]: next }, periciaOficio: "" });
   };
   const finalizarEdicao = (p) => {
     const bruta = personalizadas.find((item) => item.id === p.id);
@@ -1058,6 +1131,25 @@ function TabPericias({
     }
     setPericiaEditando(null);
   };
+
+  /* Arrastar e soltar com @dnd-kit.
+     ⚠ O ARRASTAR NATIVO DO HTML SAIU (autor, 2026-08-30): ele só entrega um
+     recorte cinza do elemento sob o cursor e nada mais, as vizinhas não abrem
+     espaço, e a linha só reage quando o ponteiro já está em cima dela. O autor
+     chamou a sensação de esquisita, e é o defeito conhecido da API.
+
+     `distance: 6` deixa o clique seco continuar sendo clique: só vira arraste
+     depois de andar 6px, então a pega não rouba o toque de quem só encostou. */
+  const sensores = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+  /* O Ofício de desempate fica de fora: ele não está em `periciasOrdem`, é
+     calculado no fim da lista, então não teria onde gravar a posição nova. */
+  const podeArrastar = (p) => !p.oficioExtra;
+  const idsArrastaveis = pericias.filter(podeArrastar).map((p) => p.id);
+  const periciaArrastada = pericias.find((p) => p.id === arrastando) ?? null;
 
   const linhaTR = (r) => (
     <TesteLinha
@@ -1104,7 +1196,13 @@ function TabPericias({
           e Astúcia à direita, Integridade sozinha embaixo em largura cheia.
           Filtro pela `escala` e não por índice, porque o agrupamento que ele
           pediu É o das escalas: os dois da Defesa, os dois da CD, e a fixa. */}
-      <Card title="Testes de Resistência" headerRight={<ContadorVagas orcamento={orcamento} />}>
+      {/* ⚠ O CONTADOR SÓ APARECE ONDE O TR GASTA VAGA. Na ficha de jogador o
+          livro tira os Testes de Resistência do Limite de Perícias, então um
+          medidor no cabeçalho estaria contando um caixa que não é o dele. */}
+      <Card
+        title="Testes de Resistência"
+        headerRight={orcamento.trNoOrcamento ? <ContadorVagas orcamento={orcamento} /> : null}
+      >
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-2 gap-y-1">
           {["defesa", "cd"].map((esc) => (
             <div key={esc} className="space-y-1">
@@ -1123,6 +1221,8 @@ function TabPericias({
             Você treinou mais do que as vagas permitem. Remova um treino ou eleve Inteligência, Sabedoria ou o ND.
           </p>
         )}
+        {/* O painel de Sugestões saiu em 2026-08-30: as vinte do livro estão
+            todas na lista, então não sobrava nada para sugerir. */}
         <div className="flex flex-wrap items-center gap-2 mb-3">
           <button
             type="button"
@@ -1131,170 +1231,68 @@ function TabPericias({
           >
             <Plus className="w-3.5 h-3.5" /> Nova perícia
           </button>
-          {sugestoes.length > 0 && (
-            <button
-              type="button"
-              onClick={() => setMostrarSugestoes((v) => !v)}
-              aria-expanded={mostrarSugestoes}
-              className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1.5 rounded-lg border border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800 transition-colors"
-            >
-              <BookOpen className="w-3.5 h-3.5" /> Sugestões {sugestoes.length}
-            </button>
-          )}
         </div>
-
-        {mostrarSugestoes && sugestoes.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mb-3 rounded-lg border border-slate-800 bg-slate-950/40 p-2">
-            {sugestoes.map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                onClick={() => adicionarPericiaDoCatalogo(p.id)}
-                className="inline-flex items-center gap-1 px-2 py-1 rounded text-[11px] bg-slate-900 hover:bg-purple-900/40 border border-slate-800 hover:border-purple-700 text-slate-300 hover:text-white transition-colors"
-                title={p.nome}
-              >
-                <Plus className="w-3 h-3" /> {p.nome}
-                <span className="text-[9px] uppercase text-slate-500">{ABREV_ATTR[p.atributo]}</span>
-              </button>
-            ))}
-          </div>
-        )}
 
         {/* Duas colunas, não uma lista longa (autor, 2026-07-27). São DUAS
             listas independentes, e não um grid de duas colunas: numa grade, a
             linha que abre a descrição esticaria a célula vizinha junto. Assim,
             abrir uma perícia só empurra as de baixo na coluna dela. A ordem
-            alfabética segue lendo de cima para baixo em cada coluna. */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-2 gap-y-1">
-          {[pericias.slice(0, Math.ceil(pericias.length / 2)),
-            pericias.slice(Math.ceil(pericias.length / 2))].map((coluna, i) => (
-            <div key={i} className="space-y-1">
-              {coluna.map((p) => {
-                const bruta = p.personalizada
-                  ? (personalizadas.find((item) => item.id === p.id) ?? p)
-                  : null;
-                const editando = periciaEditando === p.id;
-                const editandoOficio = p.id === "oficio" && oficiosAbertos;
-                const concluir = () => {
-                  if (p.personalizada) finalizarEdicao(p);
-                  if (p.id === "oficio") setOficiosAbertos(false);
-                };
-                return (
-                  <React.Fragment key={p.id}>
-                    <TesteLinha
-                      item={p}
-                      onCicla={(prof) => setProficiencia("pericias", p.id, prof)}
-                      nomeConteudo={editando ? (
-                        <input
-                          value={bruta?.nome ?? ""}
-                          onChange={(e) => editarPericiaPersonalizada(p.id, { nome: e.target.value })}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") concluir();
-                            if (e.key === "Escape") setPericiaEditando(null);
-                          }}
-                          className="h-6 min-w-0 flex-1 rounded border border-purple-700 bg-slate-950 px-1.5 text-[12px] font-semibold text-slate-100 outline-none focus:border-purple-400"
-                          aria-label="Nome da perícia"
-                          autoFocus
-                        />
-                      ) : p.id === "oficio" ? (
-                        <button
-                          type="button"
-                          onClick={() => setOficiosAbertos((aberto) => !aberto)}
-                          className="min-w-0 truncate text-left text-[12px] font-semibold text-slate-100 hover:text-purple-200"
-                          title={p.nome}
-                        >
-                          {p.nome}
-                        </button>
-                      ) : null}
-                      atributoConteudo={editando ? (
-                        <select
-                          value={bruta?.atributo || "inteligencia"}
-                          onChange={(e) => editarPericiaPersonalizada(p.id, { atributo: e.target.value })}
-                          className="h-6 w-12 rounded border border-slate-700 bg-slate-950 px-1 text-[9px] font-semibold text-slate-300 outline-none focus:border-purple-500"
-                          aria-label={`Atributo de ${p.nome}`}
-                        >
-                          {AFTY_ATTRS.map((a) => <option key={a.key} value={a.key}>{a.abbr}</option>)}
-                        </select>
-                      ) : null}
-                      edicao={(p.personalizada || p.id === "oficio") ? (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (editando || editandoOficio) concluir();
-                            else if (p.personalizada) setPericiaEditando(p.id);
-                            else setOficiosAbertos(true);
-                          }}
-                          className="w-5 h-5 rounded flex-shrink-0 text-slate-500 hover:text-purple-300 hover:bg-slate-800"
-                          title={editando || editandoOficio ? "Salvar" : (p.id === "oficio" ? "Selecionar Ofícios" : "Editar perícia")}
-                          aria-label={editando || editandoOficio ? `Salvar ${p.nome}` : `Editar ${p.nome}`}
-                        >
-                          {editando || editandoOficio
-                            ? <Check className="w-3 h-3 mx-auto" />
-                            : <Pencil className="w-3 h-3 mx-auto" />}
-                        </button>
-                      ) : null}
-                      acoes={(
-                        <div className="flex items-center gap-px flex-shrink-0">
-                          <button
-                            type="button"
-                            onClick={() => moverPericia(p.id, -1)}
-                            disabled={pericias[0]?.id === p.id}
-                            className="w-5 h-5 rounded text-slate-600 hover:text-slate-300 hover:bg-slate-800 disabled:opacity-25"
-                            title="Mover para cima"
-                            aria-label={`Mover ${p.nome} para cima`}
-                          >
-                            <ArrowUp className="w-3 h-3 mx-auto" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => moverPericia(p.id, 1)}
-                            disabled={pericias[pericias.length - 1]?.id === p.id}
-                            className="w-5 h-5 rounded text-slate-600 hover:text-slate-300 hover:bg-slate-800 disabled:opacity-25"
-                            title="Mover para baixo"
-                            aria-label={`Mover ${p.nome} para baixo`}
-                          >
-                            <ArrowDown className="w-3 h-3 mx-auto" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => removerPericia(p.id)}
-                            className="w-5 h-5 rounded text-slate-600 hover:text-rose-400 hover:bg-rose-950/40"
-                            title="Remover da ficha"
-                            aria-label={`Remover ${p.nome}`}
-                          >
-                            <X className="w-3 h-3 mx-auto" />
-                          </button>
-                        </div>
-                      )}
+            alfabética segue lendo de cima para baixo em cada coluna.
+
+            ⚠ UM SÓ `SortableContext` PARA AS DUAS COLUNAS: a lista é uma, e as
+            colunas são duas fatias dela. Com um contexto por coluna, arrastar da
+            esquerda para a direita não teria para onde ir. */}
+        <DndContext
+          sensors={sensores}
+          collisionDetection={closestCenter}
+          onDragStart={({ active }) => setArrastando(String(active.id))}
+          onDragEnd={({ active, over }) => {
+            setArrastando(null);
+            if (over) reordenarPericia(String(active.id), String(over.id));
+          }}
+          onDragCancel={() => setArrastando(null)}
+        >
+          {/* `rectSortingStrategy` e não a vertical: as colunas são duas, e a
+              estratégia vertical assume uma pilha só. */}
+          <SortableContext items={idsArrastaveis} strategy={rectSortingStrategy}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-2 gap-y-1">
+              {[pericias.slice(0, Math.ceil(pericias.length / 2)),
+                pericias.slice(Math.ceil(pericias.length / 2))].map((coluna, i) => (
+                <div key={i} className="space-y-1">
+                  {coluna.map((p) => (
+                    <LinhaPericiaOrdenavel
+                      key={p.id}
+                      p={p}
+                      arrastavel={podeArrastar(p)}
+                      bruta={p.personalizada ? (personalizadas.find((item) => item.id === p.id) ?? p) : null}
+                      editando={periciaEditando === p.id}
+                      editandoOficio={oficioAberto === p.id}
+                      oficios={mapaOficios[p.id] ?? []}
+                      setProficiencia={setProficiencia}
+                      editarPericiaPersonalizada={editarPericiaPersonalizada}
+                      setPericiaEditando={setPericiaEditando}
+                      setOficioAberto={setOficioAberto}
+                      finalizarEdicao={finalizarEdicao}
+                      alternarOficio={alternarOficio}
+                      removerPericia={removerPericia}
                     />
-                    {editandoOficio && (
-                      <div className="flex flex-wrap gap-1 rounded-lg border border-slate-800 bg-slate-950/60 p-1.5">
-                        {OFICIO_OPCOES.map((nome) => {
-                          const ativo = oficios.includes(nome);
-                          return (
-                            <button
-                              key={nome}
-                              type="button"
-                              onClick={() => alternarOficio(nome)}
-                              aria-pressed={ativo}
-                              className={`rounded border px-2 py-1 text-[10px] font-semibold transition-colors ${
-                                ativo
-                                  ? "border-purple-600 bg-purple-950/60 text-purple-200"
-                                  : "border-slate-700 bg-slate-900 text-slate-400 hover:text-slate-200"
-                              }`}
-                            >
-                              {nome}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </React.Fragment>
-                );
-              })}
+                  ))}
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </SortableContext>
+
+          {/* A linha que segue o cursor. Ela é uma CÓPIA: a original fica no
+              lugar, apagada e tracejada, mostrando o buraco que vai ser
+              preenchido. É o que o arrastar nativo não fazia. */}
+          <DragOverlay dropAnimation={{ duration: 180, easing: "cubic-bezier(0.18, 0.67, 0.6, 1.22)" }}>
+            {periciaArrastada && (
+              <div className="rounded-lg ring-2 ring-purple-400/80 shadow-xl shadow-purple-950/60 cursor-grabbing pointer-events-none">
+                <TesteLinha item={periciaArrastada} onCicla={() => {}} />
+              </div>
+            )}
+          </DragOverlay>
+        </DndContext>
       </Card>
 
       {/* Manobras: Agarrar, Derrubar, Desarmar e Empurrar (autor, 2026-07-28).
@@ -1327,15 +1325,180 @@ function TabPericias({
   );
 }
 
+/* ============================================================ */
+/* Uma linha de perícia, arrastável                              */
+/* ============================================================ */
+/*
+ * ⚠ SAIU DE DENTRO DO `map` EM 2026-08-30 porque `useSortable` é um HOOK, e
+ * hook não pode ser chamado dentro de um laço de render. O conteúdo da linha é o
+ * mesmo de antes, e o que mudou é quem a segura.
+ *
+ * O grupo do hover chama-se `linha` de propósito. O `group` SEM NOME já é do
+ * `ValorComFontes`, e um `group-hover` sem nome responde a qualquer ancestral
+ * com a classe: a pega apareceria junto com o painel de fontes, e vice-versa.
+ */
+function LinhaPericiaOrdenavel({
+  p, arrastavel, bruta, editando, editandoOficio, oficios,
+  setProficiencia, editarPericiaPersonalizada, setPericiaEditando, setOficioAberto,
+  finalizarEdicao, alternarOficio, removerPericia,
+}) {
+  const {
+    attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging,
+  } = useSortable({ id: p.id, disabled: !arrastavel });
+  const concluir = () => {
+    if (p.personalizada) finalizarEdicao(p);
+    if (ehPericiaOficio(p.id)) setOficioAberto(null);
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      className="group/linha space-y-1"
+    >
+      <TesteLinha
+        item={p}
+        estadoArraste={isDragging ? "origem" : null}
+        onCicla={(prof) => setProficiencia("pericias", p.id, prof)}
+        nomeConteudo={editando ? (
+          <input
+            value={bruta?.nome ?? ""}
+            onChange={(e) => editarPericiaPersonalizada(p.id, { nome: e.target.value })}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") concluir();
+              if (e.key === "Escape") setPericiaEditando(null);
+            }}
+            className="h-6 min-w-0 flex-1 rounded border border-purple-700 bg-slate-950 px-1.5 text-[12px] font-semibold text-slate-100 outline-none focus:border-purple-400"
+            aria-label="Nome da perícia"
+            autoFocus
+          />
+        ) : ehPericiaOficio(p.id) ? (
+          <button
+            type="button"
+            onClick={() => setOficioAberto((aberto) => (aberto === p.id ? null : p.id))}
+            className="min-w-0 truncate text-left text-[12px] font-semibold text-slate-100 hover:text-purple-200"
+            title={p.nome}
+          >
+            {p.nome}
+          </button>
+        ) : null}
+        atributoConteudo={editando ? (
+          <select
+            value={bruta?.atributo || "inteligencia"}
+            onChange={(e) => editarPericiaPersonalizada(p.id, { atributo: e.target.value })}
+            className="h-6 w-12 rounded border border-slate-700 bg-slate-950 px-1 text-[9px] font-semibold text-slate-300 outline-none focus:border-purple-500"
+            aria-label={`Atributo de ${p.nome}`}
+          >
+            {AFTY_ATTRS.map((a) => <option key={a.key} value={a.key}>{a.abbr}</option>)}
+          </select>
+        ) : null}
+        edicao={(p.personalizada || ehPericiaOficio(p.id)) ? (
+          <button
+            type="button"
+            onClick={() => {
+              if (editando || editandoOficio) concluir();
+              else if (p.personalizada) setPericiaEditando(p.id);
+              else setOficioAberto(p.id);
+            }}
+            className="w-5 h-5 rounded flex-shrink-0 flex items-center justify-center text-slate-500 hover:text-purple-300 hover:bg-slate-800"
+            title={editando || editandoOficio ? "Salvar" : (ehPericiaOficio(p.id) ? "Selecionar Ofícios" : "Editar perícia")}
+            aria-label={editando || editandoOficio ? `Salvar ${p.nome}` : `Editar ${p.nome}`}
+          >
+            {editando || editandoOficio ? <Check className="w-3 h-3" /> : <Pencil className="w-3 h-3" />}
+          </button>
+        ) : null}
+        /* ⚠ AS DUAS CASAS EXISTEM SEMPRE, cheias ou vazias. O valor fica ANTES
+           delas na linha, então um botão a mais numa linha empurrava o número
+           dela para a esquerda e a coluna saía torta. E o ícone é centrado por
+           FLEX, e não por `mx-auto`: dentro da casa de 20px, o `auto` só resolve
+           a horizontal e deixa o desenho pendurado na linha de base. */
+        acoes={(
+          <div className="flex items-center gap-px flex-shrink-0">
+            <span className="w-5 h-5 flex items-center justify-center">
+              {p.personalizada && (
+                <button
+                  type="button"
+                  onClick={() => removerPericia(p.id)}
+                  className="w-5 h-5 rounded flex items-center justify-center text-slate-600 hover:text-rose-400 hover:bg-rose-950/40"
+                  title="Remover da ficha"
+                  aria-label={`Remover ${p.nome}`}
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              )}
+            </span>
+            <span className="w-5 h-5 flex items-center justify-center">
+              {arrastavel && (
+                <button
+                  type="button"
+                  ref={setActivatorNodeRef}
+                  {...attributes}
+                  {...listeners}
+                  /* `touch-none` é obrigatório: sem ele o navegador rola a
+                     página no dedo e o arraste nunca começa. */
+                  className={`w-5 h-5 rounded flex items-center justify-center touch-none transition-opacity ${
+                    isDragging
+                      ? "opacity-100 text-purple-300 cursor-grabbing"
+                      : "opacity-30 group-hover/linha:opacity-100 focus-visible:opacity-100 text-slate-500 hover:text-purple-300 hover:bg-slate-800 cursor-grab"
+                  }`}
+                  title="Arrastar para reordenar"
+                  aria-label={`Reordenar ${p.nome}`}
+                >
+                  <GripVertical className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </span>
+          </div>
+        )}
+      />
+      {editandoOficio && (
+        <div className="flex flex-wrap gap-1 rounded-lg border border-slate-800 bg-slate-950/60 p-1.5">
+          {OFICIO_OPCOES.map((nome) => {
+            const ativo = oficios.includes(nome);
+            return (
+              <button
+                key={nome}
+                type="button"
+                onClick={() => alternarOficio(p.id, nome)}
+                aria-pressed={ativo}
+                className={`rounded border px-2 py-1 text-[10px] font-semibold transition-colors ${
+                  ativo
+                    ? "border-purple-600 bg-purple-950/60 text-purple-200"
+                    : "border-slate-700 bg-slate-900 text-slate-400 hover:text-slate-200"
+                }`}
+              >
+                {nome}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* Vagas de treino gastas / disponíveis. Aparece igual nos dois cards que
-   gastam o mesmo caixa, Perícias e Testes de Resistência. */
+   gastam o mesmo caixa, Perícias e Testes de Resistência.
+
+   ⚠ O TOTAL ABRE AS FONTES NO HOVER (autor, 2026-08-30), como todo número
+   derivado da ficha. As parcelas vêm de `orcamento.partes`, e o total É a soma
+   delas: no jogador, o pacote da Classe inicial e o atributo escolhido na
+   criação; na criatura, a base 3, o maior entre Inteligência e Sabedoria e o
+   rank do Grau do Feiticeiro. */
 function ContadorVagas({ orcamento }) {
   return (
-    <span
-      className={`font-mono text-sm font-bold tabular-nums ${orcamento.excedeu ? "text-rose-400" : "text-slate-200"}`}
-      title="Vagas de treino gastas / disponíveis (Mestre custa 2, e Perícias e Testes de Resistência dividem as mesmas)"
-    >
-      {orcamento.gastos} / {orcamento.total}
+    <span className="relative group inline-flex items-baseline">
+      <span
+        className={`font-mono text-sm font-bold tabular-nums cursor-help ${orcamento.excedeu ? "text-rose-400" : "text-slate-200"}`}
+        title={orcamento.trNoOrcamento
+          ? "Vagas de treino gastas / disponíveis (Mestre custa 2, e Perícias e Testes de Resistência dividem as mesmas)"
+          : "Vagas de treino gastas / disponíveis (Mestre custa 2)"}
+      >
+        {orcamento.gastos} / {orcamento.total}
+      </span>
+      {orcamento.partes?.length > 0 && (
+        <PainelDeFontes partes={orcamento.partes} total={orcamento.total} ancora="direita" />
+      )}
     </span>
   );
 }
@@ -1352,17 +1515,28 @@ function ContadorVagas({ orcamento }) {
    converte a concessão no bônus numérico (+1 Treinado, +2 Mestre). */
 function TesteLinha({
   item, onCicla, maxProf = 2, travado, tag, edicao, acoes, nomeConteudo, atributoConteudo,
+  estadoArraste,
 }) {
   const escolhido = travado ? maxProf : (INDICE_POR_PROF[item.profEscolhida] ?? 0);
   const resolvido = travado ? maxProf : (INDICE_POR_PROF[item.prof] ?? 0);
   const soConcedido = resolvido > escolhido;
 
   return (
-    <div className={`rounded-lg border transition-colors ${
-      soConcedido ? "border-emerald-700 bg-emerald-950/30"
-        : resolvido > 0 ? "border-purple-700 bg-purple-950/30"
-        : "border-slate-800 bg-slate-950/40"
-    }`}>
+    /* ⚠ A LINHA ARRASTADA VIRA UM BURACO TRACEJADO, e não some: quem segue o
+       cursor é a cópia do `DragOverlay`, e sem a marca do lugar de origem o
+       arraste pareceria estar apagando a perícia. */
+    <div
+      className={`rounded-lg border transition-colors ${
+        estadoArraste === "origem"
+          /* `pointer-events-none` cala o hover do painel de fontes enquanto a
+             linha está sendo arrastada: sem ele, a explicação do número abre
+             debaixo da cópia que segue o cursor. */
+          ? "border-dashed border-purple-500/70 bg-purple-950/10 opacity-40 pointer-events-none"
+          : soConcedido ? "border-emerald-700 bg-emerald-950/30"
+            : resolvido > 0 ? "border-purple-700 bg-purple-950/30"
+              : "border-slate-800 bg-slate-950/40"
+      }`}
+    >
       <div className="flex items-center gap-2.5 px-2.5 h-8">
         <VezesGauge
           vezes={escolhido}
@@ -1529,7 +1703,7 @@ function DanoCard({ derived, toggleArmaDedicada }) {
               )}
               <span className="relative group/dano font-mono text-[13px] font-bold tabular-nums text-white whitespace-nowrap cursor-help">
                 {e.texto}
-                <PainelDeFontes partes={e.partes} total={e.total} aparecer="group-hover/dano:block" />
+                <PainelDeFontes partes={e.partes} total={e.totalFontes ?? e.total} aparecer="group-hover/dano:block" />
               </span>
             </div>
             {e.propriedades?.length > 0 && (
@@ -2082,7 +2256,7 @@ function DominioCard({ derived, addDominio, removeDominio, patchDominio, setDomi
   );
 }
 
-function TabHabilidades({ draft, derived, patchCore, toggleArmaDedicada, addFeitico, removeFeitico, patchFeitico, duplicarFeitico, setReducoesCustoFeitico, toggleEstiloTabela, addEstiloEspecial, removeEstilo, patchEstilo, addFuncionamento, removeFuncionamento, patchFuncionamento, setGeralVezes, addDominio, removeDominio, patchDominio, setDominioAtivo }) {
+function TabHabilidades({ draft, derived, patchCore, toggleArmaDedicada, addFeitico, removeFeitico, patchFeitico, duplicarFeitico, setReducoesCustoFeitico, toggleEstiloTabela, addEstiloEspecial, removeEstilo, patchEstilo, addFuncionamento, removeFuncionamento, patchFuncionamento, setGeralVezes, addDominio, removeDominio, patchDominio, setDominioAtivo, sistema }) {
   const dominio = (
     <DominioCard
       derived={derived}
@@ -2095,7 +2269,14 @@ function TabHabilidades({ draft, derived, patchCore, toggleArmaDedicada, addFeit
   const barreira = <BarreiraCard derived={derived} />;
   const dominioSimples = <DominioSimplesCard derived={derived} />;
   const origem = draft.core.origem?.id;
-  const gerais = <HabilidadesGeraisCard derived={derived} setGeralVezes={setGeralVezes} />;
+  /* ⚠ A ficha de jogador não tem Habilidades Gerais (autor, 2026-08-30). Some
+     AQUI, e não nos três lugares que compõem `{gerais}` por origem: uma variável
+     nula é o único ponto em que a regra cabe uma vez só. O derive já resolve as
+     Gerais como lista vazia no jogador, então esconder o card não deixa efeito
+     pendurado. */
+  const gerais = regraDo(sistema, "habilidadesGerais") === "player"
+    ? null
+    : <HabilidadesGeraisCard derived={derived} setGeralVezes={setGeralVezes} />;
   // O Dano vale para toda origem: até quem não tem Feitiço ataca.
   const dano = <DanoCard derived={derived} toggleArmaDedicada={toggleArmaDedicada} />;
   // A Cura some sozinha para quem não tem fonte nenhuma, então ela acompanha o
@@ -2179,22 +2360,41 @@ function TabHabilidades({ draft, derived, patchCore, toggleArmaDedicada, addFeit
 }
 
 /* Medidor do contador único da aba (Feitiços + Habilidades Gerais).
-   Aparece igual nos dois cards, para o gasto de um lado ser visível do outro. */
-function ContadorHabilidades({ derived }) {
+   Aparece igual nos dois cards, para o gasto de um lado ser visível do outro.
+
+   ⚠ NA FICHA DE JOGADOR O FEITIÇO TEM MEDIDOR PRÓPRIO (autor, 2026-08-31), com a
+   progressão do livro. O card passa `proprio` e o widget troca a pilha que
+   mostra, em vez de existirem dois componentes que envelheceriam separados.
+   Quem decide é o motor: `proprioFeitico` é zero na criatura. */
+function ContadorHabilidades({ derived, proprio = false }) {
   const {
     gastosNoComum, comum, partesComum, exclusivasFeitico, exclusivasUsadas,
     exclusivasEstilo, exclusivasEstiloUsadas, excedeu,
+    proprioFeitico, proprioFeiticoPartes, proprioFeiticoUsado, excedeuFeitico,
   } = derived.orcamentoHabilidades;
+  /* O contador comum não tem dono na ficha de jogador de quem tem caixa próprio:
+     lá não existe Habilidade Geral, e o Estilo é de outra origem. Mostrá-lo
+     seria um medidor de nada. */
+  const proprioAtivo = proprio && proprioFeitico > 0;
+  const usado = proprioAtivo ? proprioFeiticoUsado : gastosNoComum;
+  const teto = proprioAtivo ? proprioFeitico : comum;
+  const partes = proprioAtivo ? proprioFeiticoPartes : partesComum;
+  const estourou = proprioAtivo ? excedeuFeitico : excedeu;
   return (
-    <div className="flex items-center gap-2" title="Feitiços e Habilidades Gerais gastam o mesmo contador">
+    <div
+      className="flex items-center gap-2"
+      title={proprioAtivo
+        ? "Feitiços recebidos por nível"
+        : "Feitiços e Habilidades Gerais gastam o mesmo contador"}
+    >
       {/* O contador pode ser MULTIPLICADO pela origem (os Gêmeos ficam com
           metade, ou uma vez e meia depois da morte do irmão), então ele ganhou
           hover de fontes: sem isso o número reduzido não teria explicação. */}
       <span className="relative group">
-        <span className={`font-mono text-sm font-bold tabular-nums ${excedeu ? "text-rose-400" : "text-slate-200"}`}>
-          {gastosNoComum} / {comum}
+        <span className={`font-mono text-sm font-bold tabular-nums ${estourou ? "text-rose-400" : "text-slate-200"}`}>
+          {usado} / {teto}
         </span>
-        {partesComum?.length > 1 && <PainelDeFontes partes={partesComum} total={comum} />}
+        {partes?.length > 1 && <PainelDeFontes partes={partes} total={teto} />}
       </span>
       {/* Vagas exclusivas de Feitiço aparecem SEPARADAS: somá-las ao contador
           faria parecer que sobra espaço para Habilidade Geral, e não sobra. */}
@@ -2217,7 +2417,11 @@ function ContadorHabilidades({ derived }) {
           +{exclusivasEstiloUsadas} / {exclusivasEstilo}
         </span>
       )}
-      <span className="text-[9px] uppercase tracking-wider text-slate-400">Habilidades</span>
+      {/* O rótulo segue a pilha: no caixa próprio o que se conta são Feitiços, e
+          "Habilidades" ali mandaria procurar um contador que não existe. */}
+      <span className="text-[9px] uppercase tracking-wider text-slate-400">
+        {proprioAtivo ? "Feitiços" : "Habilidades"}
+      </span>
     </div>
   );
 }
@@ -3690,7 +3894,15 @@ function FeiticosCard({ draft, derived, addFeitico, removeFeitico, patchFeitico,
       };
     });
   return (
-    <Card title="Feitiços" headerRight={<ContadorHabilidades derived={derived} />}>
+    <Card title="Feitiços" headerRight={<ContadorHabilidades derived={derived} proprio />}>
+      {/* ⚠ O excesso do caixa próprio tem aviso PRÓPRIO, e não o do contador
+          comum: no jogador o Feitiço não transborda para lá, então o `excedeu`
+          fica falso e a pessoa passaria do orçamento sem nada na tela. */}
+      {derived.orcamentoHabilidades.excedeuFeitico && (
+        <p className="text-[11px] text-rose-400 mb-3">
+          Você tem mais Feitiços do que recebeu. Remova um ou suba de nível.
+        </p>
+      )}
       {(temDominancia || temManipulacao) && feiticosBase.length > 0 && (
         <div className="mb-3 space-y-2 border-b border-slate-800 pb-3">
           {temDominancia && (
@@ -5727,7 +5939,15 @@ function TamanhoDerivado({ derived }) {
   );
 }
 
-function TabIdentidade({ draft, derived, patch, patchCore, setOrigemBonus, setOrigemId, setOrigemCla, toggleEscolhaOrigem, setOrigemPool }) {
+/* `juntaInformacoes` é a Ficha de Player: lá esta aba carrega as DUAS metades,
+   porque Identidade e Informações viraram uma só (autor, 2026-08-30).
+
+   ⚠ A ORDEM não é a concatenação crua das duas abas. Os Valores Básicos sobem
+   para logo abaixo da Identidade, e a Origem desce: o Nível (ND) é o campo que
+   move todo o resto da ficha, e deixá-lo depois do card de Origem, que é alto,
+   obrigaria a rolar a tela para preencher a primeira coisa que se preenche. É
+   decisão de layout, e vira uma linha se o autor preferir a ordem crua. */
+function TabIdentidade({ draft, derived, patch, patchCore, setOrigemBonus, setOrigemId, setOrigemCla, toggleEscolhaOrigem, setOrigemPool, juntaInformacoes = false, patchAttr, patchNivel, sistema }) {
   return (
     <>
       <Card title="Identidade">
@@ -5749,6 +5969,10 @@ function TabIdentidade({ draft, derived, patch, patchCore, setOrigemBonus, setOr
         </div>
       </Card>
 
+      {juntaInformacoes && (
+        <ValoresBasicosCard draft={draft} derived={derived} patch={patch} patchCore={patchCore} sistema={sistema} />
+      )}
+
       {/* A Origem saiu de dentro da Identidade e virou card próprio: ela carrega
           bônus de atributo, clã, treinamentos, anatomias e a progressão do Sem
           Técnica, e nada disso cabia numa caixinha ao pé de um formulário. */}
@@ -5762,6 +5986,10 @@ function TabIdentidade({ draft, derived, patch, patchCore, setOrigemBonus, setOr
         toggleEscolhaOrigem={toggleEscolhaOrigem}
         setOrigemPool={setOrigemPool}
       />
+
+      {juntaInformacoes && (
+        <AttributesCard draft={draft} derived={derived} patch={patch} patchCore={patchCore} patchAttr={patchAttr} patchNivel={patchNivel} />
+      )}
     </>
   );
 }
@@ -6553,7 +6781,28 @@ function AttributesCard({ draft, derived, patch, patchCore, patchAttr, patchNive
   );
 }
 
-function TabInformacoes({ draft, derived, patch, patchCore, patchAttr, patchNivel }) {
+/* O card saiu de dentro da TabInformacoes em 2026-08-30, quando a Ficha de
+   Player passou a juntar Identidade e Informações numa aba só: as duas metades
+   precisavam ser compostas em ordens diferentes, e um componente por metade é o
+   que evita a segunda cópia do formulário. */
+function ValoresBasicosCard({ draft, derived, patch, patchCore, sistema }) {
+  /* Os três campos que a ficha de jogador não tem (autor, 2026-08-30). Eles
+     saíram em duas levas, e a ordem foi de propósito: um campo só sai da tela
+     depois que existe fórmula para o que ele alimentava, senão o jogador deriva
+     CALADO com o padrão (Combatente Comum de PE Normal) e todo número sai
+     plausível e errado.
+
+       Quantidade de PE   saiu primeiro, quando o ajuste virou divergência e o
+                          +1 Nível de Aptidão passou para a Aptidão Raio Negro
+       Tipo e Patamar     saíram com a tabela por Especialização, que é quem
+                          passou a dar PV, PE, Defesa, CD e o resto
+
+     ⚠ Continuam no OBJETO da ficha, e só somem da TELA. Arrancá-los do
+     `core` obrigaria a mexer no saneador, na migração e em todo leitor que os
+     lê com padrão, para nenhum ganho: no jogador nada mais os consulta. */
+  const semQuantidadeDePE = regraDo(sistema, "quantidadeDePE") === "player";
+  const semTipoNemPatamar = regraDo(sistema, "pvPePorEspecializacao") === "player";
+  const tetoDeNivel = regraDo(sistema, "tetoDeNivel") === "player";
   // A Origem Restringido força o Tipo (e a Especialização) em Restringido.
   // É o único ponto em que os dois eixos se tocam: fora dele, Tipo e
   // Especialização são independentes, apesar de compartilharem nomes.
@@ -6562,29 +6811,42 @@ function TabInformacoes({ draft, derived, patch, patchCore, patchAttr, patchNive
   const tipoTravado = tipoObrigatorio(draft.core.origem?.id);
   const tipos = tiposDisponiveis(draft.core.origem?.id);
   return (
-    <>
       <Card title="Valores Básicos">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <FieldLabel required>Nível (ND)</FieldLabel>
-            <NumberInput value={draft.core.nd} onChange={(v) => patchCore({ nd: v })} min={3} />
-          </div>
-          <div>
-            <FieldLabel required hint={tipoTravado ? "definido pela Origem Restringido" : undefined}>Tipo</FieldLabel>
-            <Select
-              value={draft.core.tipo}
-              onChange={(v) => patchCore({ tipo: v })}
-              options={tipos}
-              disabled={!!tipoTravado}
+            <FieldLabel required>{semTipoNemPatamar ? "Nível" : "Nível (ND)"}</FieldLabel>
+            {/* ⚠ O jogador vai de 1 a 30 e a criatura de 3 ao infinito. O piso
+                muda porque o livro descreve o primeiro nível de cada Classe, e o
+                teto porque o autor o fixou em 2026-08-30. O derive apara também,
+                para uma ficha importada acima do teto não derivar por cima
+                dele. */}
+            <NumberInput
+              value={draft.core.nd}
+              onChange={(v) => patchCore({ nd: v })}
+              min={tetoDeNivel ? 1 : 3}
+              {...(tetoDeNivel ? { max: 30 } : {})}
             />
           </div>
-          <div>
-            <FieldLabel required>Patamar</FieldLabel>
-            <Select value={draft.core.patamar} onChange={(v) => patchCore({ patamar: v })} options={AFTY_PATAMARES} />
-          </div>
+          {!semTipoNemPatamar && (
+            <div>
+              <FieldLabel required hint={tipoTravado ? "definido pela Origem Restringido" : undefined}>Tipo</FieldLabel>
+              <Select
+                value={draft.core.tipo}
+                onChange={(v) => patchCore({ tipo: v })}
+                options={tipos}
+                disabled={!!tipoTravado}
+              />
+            </div>
+          )}
+          {!semTipoNemPatamar && (
+            <div>
+              <FieldLabel required>Patamar</FieldLabel>
+              <Select value={draft.core.patamar} onChange={(v) => patchCore({ patamar: v })} options={AFTY_PATAMARES} />
+            </div>
+          )}
           {/* Restringido não tem energia amaldiçoada, então não há quantidade
-              dela para escolher. */}
-          {draft.core.tipo !== "restringido" && (
+              dela para escolher. E a ficha de jogador não tem o campo. */}
+          {draft.core.tipo !== "restringido" && !semQuantidadeDePE && (
             <div>
               <FieldLabel>Quantidade de PE</FieldLabel>
               <Select value={draft.qntPE} onChange={(v) => patch({ qntPE: v })} options={AFTY_QNT_PE} />
@@ -6594,7 +6856,7 @@ function TabInformacoes({ draft, derived, patch, patchCore, patchAttr, patchNive
               Máximo já diz tudo, e a ficha é montada com a alma íntegra. O valor
               corrente nasce cheio, no combatState, e só o jogo o mexe. */}
           <div>
-            <FieldLabel>Máximo da Alma</FieldLabel>
+            <FieldLabel>{semTipoNemPatamar ? "Integridade da Alma" : "Máximo da Alma"}</FieldLabel>
             <div className="h-9 bg-slate-950/60 border border-slate-800 rounded px-3 flex items-center text-sm font-mono text-purple-300">
               {derived.almaMax}
             </div>
@@ -6614,9 +6876,14 @@ function TabInformacoes({ draft, derived, patch, patchCore, patchAttr, patchNive
             duplicata do card da aba Aptidões, que é onde os níveis são alocados.
             Orçamento mora junto do que ele paga, não numa vitrine à parte. */}
       </Card>
+  );
+}
 
+function TabInformacoes({ draft, derived, patch, patchCore, patchAttr, patchNivel, sistema }) {
+  return (
+    <>
+      <ValoresBasicosCard draft={draft} derived={derived} patch={patch} patchCore={patchCore} sistema={sistema} />
       <AttributesCard draft={draft} derived={derived} patch={patch} patchCore={patchCore} patchAttr={patchAttr} patchNivel={patchNivel} />
-
     </>
   );
 }
@@ -6989,18 +7256,36 @@ function TreinoLinha({ linha, valor, attrEff, nd, ctxReq, onSetProgresso, onSetI
    aba, pelo mesmo motivo do ContadorHabilidades: Linha de Treinamento e Treino
    Especial gastam o mesmo caixa, então o gasto de um lado tem de ser visível do
    outro. */
-function ContadorFocos({ gastos, total, excedeu }) {
+/* ⚠ NA FICHA DE JOGADOR O TOTAL É DIGITADO. Autor, 2026-08-30: "É o mestre que
+   decide quando um Personagem de Jogador ganha Focos de Interlúdios, e não algo
+   mecânico." `onTotal` é o que troca o número derivado por um campo, e ele só
+   chega no jogador. O gasto continua contado, porque estourar o orçamento é erro
+   nos dois sistemas. */
+function ContadorFocos({ gastos, total, excedeu, onTotal = null }) {
   return (
     <div
       className="flex items-center gap-1.5 border border-slate-800 bg-slate-950/50 rounded-md px-2 py-1"
-      title="Focos gastos / totais (ND + bônus de poderes). Linhas de Treinamento e Treinos Especiais dividem o mesmo orçamento"
+      title={onTotal
+        ? "Focos gastos / totais. O total é definido pelo mestre. Linhas de Treinamento e Treinos Especiais dividem o mesmo orçamento"
+        : "Focos gastos / totais (ND + bônus de poderes). Linhas de Treinamento e Treinos Especiais dividem o mesmo orçamento"}
     >
       <Dumbbell className="w-3 h-3 text-purple-400 flex-shrink-0" />
       <span className="text-[9px] uppercase tracking-wider text-slate-400">Focos</span>
       <span className="font-mono text-xs font-bold tabular-nums whitespace-nowrap">
         <span className={excedeu ? "text-rose-400" : "text-white"}>{gastos}</span>
         <span className="text-slate-600"> / </span>
-        <span className="text-white">{total}</span>
+        {onTotal
+          ? (
+            <input
+              type="number"
+              min={0}
+              value={total}
+              onChange={(e) => onTotal(e.target.value)}
+              aria-label="Total de Focos de Interlúdio"
+              className="w-12 bg-slate-950 border border-slate-700 rounded px-1 text-xs font-mono font-bold text-white text-center focus:outline-none focus:border-purple-500"
+            />
+          )
+          : <span className="text-white">{total}</span>}
       </span>
     </div>
   );
@@ -9365,6 +9650,7 @@ function FerramentaEditor({
 function LinhaCarregada({
   entrada, onPatch, onRemove, onToggleFerramenta, onPatchFerramenta,
   onToggleEncantamento, pericias, fontesDano, dslContexto, dslExtras,
+  sistemaJogador = false,
 }) {
   const { def, tipo, uid, qtd, equipado, fa } = entrada;
   // Arma entrou em 2026-08-01: ela passou a render Acerto por grau, e a linha de
@@ -9379,6 +9665,10 @@ function LinhaCarregada({
   // rola sempre o Corpo a Corpo. O seletor aparecia e gravava o campo sem
   // mudar número nenhum, que é pior do que não ter seletor.
   const escolheAtaque = tipo === "arma" && def?.grupo !== "pugilato";
+  /* O manejo de uma arma versátil ("o `/` da tabela"). Só decide número onde o
+     dado da arma entra na conta, que é a ficha de jogador. */
+  const escolheManejo = tipo === "arma" && sistemaJogador
+    && !!def?.props?.versatil && !!def?.dano?.duasMaos;
   const ataqueOpcoes = ataqueFisico === "distancia"
     ? [{ value: "distancia", label: "A Distância" }, { value: "amaldicoado", label: "Amaldiçoado" }]
     : [{ value: "corpo", label: "Corpo a Corpo" }, { value: "amaldicoado", label: "Amaldiçoado" }];
@@ -9528,6 +9818,24 @@ function LinhaCarregada({
             value={entrada.ataqueId ?? ataqueFisico}
             options={ataqueOpcoes}
             onChange={(ataqueId) => onPatch(uid, { ataqueId })}
+          />
+        </div>
+      )}
+
+      {/* ⚠ SÓ NA FICHA DE JOGADOR, e só nas versáteis. Na criatura o dado da
+          tabela da arma não entra na conta, então escolher o manejo não mudaria
+          número nenhum e o controle mentiria. Mesma faixa e mesmo vocabulário do
+          seletor de Ataque logo acima: os dois são escolhas DAQUELA arma. */}
+      {escolheManejo && (
+        <div className="flex items-center gap-2 border-t border-slate-800/70 px-2.5 py-1.5">
+          <span className="text-[10px] uppercase tracking-wider text-slate-500 flex-shrink-0">Manejo</span>
+          <OptionChips
+            value={entrada.duasMaos ? "duas" : "uma"}
+            options={[
+              { value: "uma", label: `Uma Mão (${def.dano.dado})` },
+              { value: "duas", label: `Duas Mãos (${def.dano.duasMaos})` },
+            ]}
+            onChange={(v) => onPatch(uid, { duasMaos: v === "duas" })}
           />
         </div>
       )}
@@ -10074,6 +10382,9 @@ function FiltroPropriedades({ opcoes, ativas, onToggle, onLimpar }) {
 }
 
 function TabEquipamentos({ draft, derived, addEquipamento, removeEquipamento, patchEquipamento, toggleFerramenta, patchFerramenta, toggleEncantamento, addArmaCustom, patchArmaCustom, removeArmaCustom }) {
+  /* O manejo de arma versátil só aparece na ficha de jogador: é lá que o dado da
+     tabela da arma entra na conta. Ver `danoPorArma` em afty-sistema.js. */
+  const sistemaJogador = regraDo(sistemaDaFicha(draft), "danoPorArma") === "player";
   const { equip, carga, grauFeiticeiro: grau } = derived;
   const fontesDano = fontesDanoDaFicha(draft, derived);
   const [catTab, setCatTab] = useState("arma");
@@ -10316,6 +10627,7 @@ function TabEquipamentos({ draft, derived, addEquipamento, removeEquipamento, pa
                       fontesDano={fontesDano}
                       dslContexto={derived.contextoDsl}
                       dslExtras={derived.combate?.estadosExtras}
+                      sistemaJogador={sistemaJogador}
                     />
                   ))}
                 </div>
@@ -10688,7 +11000,7 @@ function EfeitoPill({ icon: Icon, label, valor, nota, titulo }) {
   );
 }
 
-function TabInterludios({ draft, derived, setTreinoProgresso, setTreinoInstance, setTreinoEspecialVezes }) {
+function TabInterludios({ draft, derived, setTreinoProgresso, setTreinoInstance, setTreinoEspecialVezes, sistema, setFocosLivres }) {
   const treinos = (draft.treinamentos && !Array.isArray(draft.treinamentos) && typeof draft.treinamentos === "object")
     ? draft.treinamentos : {};
   // Pool do Treino de Manejo de Arma: as armas do INVENTÁRIO, carregadas ou
@@ -10721,12 +11033,14 @@ function TabInterludios({ draft, derived, setTreinoProgresso, setTreinoInstance,
   const gastos = focosGastos(treinos, origemId, qualificadas) + focosDeTreinosEspeciais(draft);
   const total = derived.focosTotais;                // = ND + bônus de poderes
   const overBudget = gastos > total;
+  // No jogador o total vira campo. Ver a nota em ContadorFocos.
+  const onTotalFocos = regraDo(sistema, "focosLivres") === "player" ? setFocosLivres : null;
 
   return (
     <>
       <Card
         title="Interlúdios · Treinamento"
-        headerRight={<ContadorFocos gastos={gastos} total={total} excedeu={overBudget} />}
+        headerRight={<ContadorFocos gastos={gastos} total={total} excedeu={overBudget} onTotal={onTotalFocos} />}
       >
         {/* linhas de treinamento */}
         <div className="space-y-1.5">
@@ -10754,7 +11068,7 @@ function TabInterludios({ draft, derived, setTreinoProgresso, setTreinoInstance,
           catálogo assim que o texto de regra chegar verbatim. */}
       <Card
         title="Interlúdios · Treinos Especiais"
-        headerRight={<ContadorFocos gastos={gastos} total={total} excedeu={overBudget} />}
+        headerRight={<ContadorFocos gastos={gastos} total={total} excedeu={overBudget} onTotal={onTotalFocos} />}
       >
         <div className="space-y-1">
           {AFTY_TREINOS_ESPECIAIS.map((t) => (
@@ -11258,8 +11572,166 @@ function InvocacaoPericias({ inv, allowance, onPatch }) {
 
 /* Uma invocação: cabeçalho recolhível (nome + grau + PV/DEF/PE) e, aberta, o
    editor. Nova invocação (sem nome) abre por padrão. */
+/* ============================================================ */
+/* A FILEIRA DE INVOCAÇÕES (2026-08-31)                          */
+/* ============================================================ */
+/* ⚠ REFEITA. O autor: *"a criação e usabilidade de Invocações está bem ruim. No
+   quesito aparência e UX/Design. É difícil eu entender e me achar sobre o quê
+   estou fazendo durante a criação."*
+
+   O desenho antigo era uma PILHA de cartões recolhíveis, todos iguais e todos
+   fechados. Com quatro invocações, montar a terceira significava rolar por cima
+   das outras duas abertas, e nada na tela dizia em qual delas você estava.
+
+   O de agora é MESTRE-DETALHE, o mesmo da Ficha Final: a fileira em cima diz
+   QUEM existe e quem está selecionado, e o editor embaixo é de UM por vez, e
+   sempre aberto. Selecionar deixou de ser abrir e fechar acordeão. */
+
+/* Um cartão da fileira: retrato, nome, grau e os três números de relance. */
+function InvocacaoMiniatura({ inv, resolvida, selecionada, onSelecionar }) {
+  const [erroUrl, setErroUrl] = useState(null);
+  const r = resolvida || {};
+  const g = grauMeta(inv.grau);
+  const url = inv.portraitUrl && erroUrl !== inv.portraitUrl ? inv.portraitUrl : null;
+  const foco = inv.portraitFocus || {};
+  const avisos = r.warnings || [];
+  return (
+    <button
+      type="button"
+      onClick={onSelecionar}
+      aria-pressed={selecionada}
+      className={`relative flex-shrink-0 w-40 text-left rounded-lg border overflow-hidden transition-colors ${
+        selecionada
+          ? "border-purple-500 bg-purple-950/30 ring-1 ring-purple-500"
+          : "border-slate-700/80 bg-slate-950/40 hover:border-slate-600"
+      }`}
+    >
+      <span className="block h-20 bg-slate-900 relative">
+        {url ? (
+          <img
+            src={url}
+            alt=""
+            className="w-full h-full object-cover"
+            style={{ objectPosition: `${foco.x ?? 50}% ${foco.y ?? 50}%` }}
+            onError={() => setErroUrl(inv.portraitUrl)}
+            referrerPolicy="no-referrer"
+            draggable={false}
+          />
+        ) : (
+          <span className="w-full h-full flex items-center justify-center">
+            <ImageIcon className="w-6 h-6 text-slate-700" aria-hidden="true" />
+          </span>
+        )}
+        {avisos.length > 0 && (
+          <AlertTriangle
+            className="absolute top-1 right-1 w-3.5 h-3.5 text-amber-400"
+            aria-label={`${avisos.length} aviso(s)`}
+            title={avisos.join("\n")}
+          />
+        )}
+      </span>
+      <span className="block px-2 py-1.5">
+        <span className="flex items-baseline gap-1.5 min-w-0">
+          <span className="flex-1 min-w-0 truncate text-[12px] font-semibold text-white" title={inv.nome || "Sem nome"}>
+            {inv.nome || "Sem nome"}
+          </span>
+          <span className="flex-shrink-0 text-[9px] text-slate-500">{g.label}</span>
+        </span>
+        <span className="flex items-baseline gap-2 mt-0.5 font-mono text-[10px] tabular-nums text-slate-400">
+          <span title="Pontos de Vida">PV {r.pv ?? "-"}</span>
+          <span title="Defesa">DEF {r.defesa ?? "-"}</span>
+          <span title="Custo em PE" className="text-purple-300 ml-auto">{r.custo ?? "-"} PE</span>
+        </span>
+      </span>
+    </button>
+  );
+}
+
+/* O campo de Retrato de UMA invocação. ⚠ REUSA o `RetratoFocoPicker` da aba
+   Identidade, e não uma cópia: são os mesmos dois campos (`portraitUrl` e
+   `portraitFocus`), e um segundo seletor de foco divergiria na primeira
+   errata, que é a lição do `fontes.jsx` e do `vital.jsx`. */
+function InvocacaoRetrato({ inv, onPatch }) {
+  const [erroUrl, setErroUrl] = useState(null);
+  const src = inv.portraitUrl && erroUrl !== inv.portraitUrl ? inv.portraitUrl : null;
+  return (
+    <div className="flex gap-3">
+      <RetratoFocoPicker
+        src={src}
+        focus={inv.portraitFocus}
+        onFocusChange={(f) => onPatch({ portraitFocus: f })}
+        onError={() => setErroUrl(inv.portraitUrl)}
+      />
+      <div className="flex-1 min-w-0">
+        <FieldLabel>Retrato</FieldLabel>
+        <TextInput
+          value={inv.portraitUrl ?? ""}
+          onChange={(v) => onPatch({ portraitUrl: v })}
+          placeholder="https://..."
+        />
+        {inv.portraitUrl && erroUrl === inv.portraitUrl && (
+          <p className="text-[10px] text-amber-400 flex items-center gap-1 mt-1">
+            <AlertTriangle className="w-3 h-3 flex-shrink-0" aria-hidden="true" />
+            <span>Imagem não carregou.</span>
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================ */
+/* APARÊNCIA DA INVOCAÇÃO                                        */
+/* ============================================================ */
+/* ⚠ O CSS PERSONALIZADO DELA MORA AQUI, no criador, e não só na Ficha Final.
+   O autor pediu o CSS "na ficha final" e a imagem "na criação e na ficha
+   final", e o tema é dado da invocação como o retrato é: quem monta o
+   shikigami escolhe a cara dele. A Ficha Final aplica e também deixa editar,
+   pelo mesmo painel, porque mexer em aparência olhando o resultado é o único
+   jeito que funciona.
+
+   ⚠ O EDITOR COMPLETO NÃO ESTÁ AQUI, e é decisão. O painel de Aparência é uma
+   sobreposição da Ficha (presets, seletores de cor, imagem de fundo, prompt
+   para IA), e trazê-lo para dentro de uma aba do criador seria uma segunda
+   montagem dele. Aqui fica o que o criador precisa: ligar, desligar e escrever
+   o CSS. O resto é um clique no ícone de paleta da Ficha. */
+function InvocacaoAparencia({ inv, onPatch }) {
+  const tema = inv.aparencia || null;
+  const css = tema?.css ?? "";
+  const ligado = tema?.ligado !== false;
+  const trocaTema = (parcial) => onPatch({ aparencia: { ...(tema || {}), ...parcial } });
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2">
+        <FieldLabel>CSS da Ficha</FieldLabel>
+        <span className="flex-1" />
+        <BoolChip ativo={ligado} onToggle={() => trocaTema({ ligado: !ligado })}>Ligado</BoolChip>
+        {tema && (
+          <button
+            type="button"
+            onClick={() => onPatch({ aparencia: null })}
+            className="text-[11px] font-semibold px-2 py-1 rounded border border-slate-700 text-slate-400 hover:text-white hover:border-slate-600"
+            title="Voltar a herdar o tema da ficha do dono"
+          >
+            Limpar
+          </button>
+        )}
+      </div>
+      <textarea
+        value={css}
+        onChange={(e) => trocaTema({ css: e.target.value })}
+        spellCheck={false}
+        rows={10}
+        className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-[12px] font-mono text-slate-200 placeholder-slate-600 focus:outline-none focus:border-purple-600"
+        placeholder=".afty-inv-titulo { color: #38bdf8 }"
+      />
+    </div>
+  );
+}
+
+/* O editor da invocação SELECIONADA. Sempre aberto: quem chegou aqui já
+   escolheu qual quer editar, e um acordeão a mais só esconderia o trabalho. */
 function InvocacaoCard({ inv, resolvida, grausOk, marcadores, podeSubir, podeDescer, onPatch, onPatchAttr, onRemove, onDuplicar, onSubir, onDescer, acoesApi, caracApi }) {
-  const [open, setOpen] = useState(!inv.nome);
   const [subtab, setSubtab] = useState("atributos");
   const [confirmDel, setConfirmDel] = useState(false);
   const g = grauMeta(inv.grau);
@@ -11267,8 +11739,6 @@ function InvocacaoCard({ inv, resolvida, grausOk, marcadores, podeSubir, podeDes
   const tabAttr = INV_ATRIBUTOS_POR_GRAU[g.value] || {};
   const orcBadge = `${r.orcamento?.usados ?? 0} / ${r.orcamento?.total ?? 0}`;
   const orcOver = (r.orcamento?.usados ?? 0) > (r.orcamento?.total ?? 0);
-  const nAcoes = (inv.acoes || []).length;
-  const nCaract = (inv.caracteristicas || []).length;
   const avisos = r.warnings || [];
   /* Vocabulário do namespace DESTA invocação, para o seletor de variáveis dos
      campos de Modificador. Memoizado pela identidade do contexto, que só troca
@@ -11280,6 +11750,7 @@ function InvocacaoCard({ inv, resolvida, grausOk, marcadores, podeSubir, podeDes
     { id: "treino", label: "Treino" },
     { id: "acoes", label: "Ações", n: (inv.acoes || []).length },
     { id: "caracteristicas", label: "Caract.", n: (inv.caracteristicas || []).length },
+    { id: "aparencia", label: "Aparência" },
   ];
 
   /* ⚠ A trava por Nível de Controlador NÃO vale para um shikigami de Feitiço.
@@ -11297,44 +11768,25 @@ function InvocacaoCard({ inv, resolvida, grausOk, marcadores, podeSubir, podeDes
   }));
 
   return (
-    <div className="rounded-lg border border-slate-700/80 bg-slate-950/40">
-      {/* cabeçalho */}
-      <div className="flex items-center gap-2 px-3 py-2.5">
-        <button
-          type="button"
-          onClick={() => setOpen((o) => !o)}
-          aria-expanded={open}
-          className="flex items-center gap-2 flex-1 min-w-0 text-left"
-        >
-          <ChevronDown className={`w-4 h-4 text-slate-500 flex-shrink-0 transition-transform ${open ? "" : "-rotate-90"}`} />
-          <span className="text-sm font-semibold text-white truncate">{inv.nome || "Invocação sem nome"}</span>
-          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded border border-purple-800/60 bg-purple-950/40 text-purple-300 flex-shrink-0">
-            {g.label}
-          </span>
-          {/* Invocação amarrada a um Feitiço de Criação de Shikigamis: o nível
-              do Feitiço é que manda no grau, no orçamento e no custo dela. */}
-          {r.shikigami && (
-            <span
-              className="hidden sm:inline text-[10px] font-semibold px-1.5 py-0.5 rounded border border-sky-800/60 bg-sky-950/40 text-sky-300 flex-shrink-0 truncate max-w-[10rem]"
-              title={r.shikigami.fonte}
-            >
-              {r.shikigami.fonte}
-            </span>
-          )}
-          {avisos.length > 0 && (
-            <AlertTriangle
-              className="w-3.5 h-3.5 text-amber-400 flex-shrink-0"
-              aria-label={`${avisos.length} aviso(s)`}
-              title={avisos.join("\n")}
-            />
-          )}
-        </button>
-        <span className="hidden sm:flex items-center gap-2 flex-shrink-0 font-mono text-[11px] tabular-nums text-slate-400">
-          <span title="Pontos de Vida">PV {r.pv ?? "-"}</span>
-          <span title="Defesa">DEF {r.defesa ?? "-"}</span>
-          <span title="Ações · Características">{nAcoes}A·{nCaract}C</span>
-          <span title="Custo em PE para invocar" className="text-purple-300">{r.custo ?? "-"} PE</span>
+    <div className="rounded-lg border border-purple-800/50 bg-slate-950/40">
+      {/* cabeçalho: identidade e a barra de ferramentas da invocação */}
+      <div className="flex items-center gap-2 px-3 py-2.5 border-b border-slate-800">
+        <span className="text-sm font-semibold text-white truncate flex-1 min-w-0">
+          {inv.nome || "Invocação sem nome"}
         </span>
+        <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded border border-purple-800/60 bg-purple-950/40 text-purple-300 flex-shrink-0">
+          {g.label}
+        </span>
+        {/* Invocação amarrada a um Feitiço de Criação de Shikigamis: o nível
+            do Feitiço é que manda no grau, no orçamento e no custo dela. */}
+        {r.shikigami && (
+          <span
+            className="hidden sm:inline text-[10px] font-semibold px-1.5 py-0.5 rounded border border-sky-800/60 bg-sky-950/40 text-sky-300 flex-shrink-0 truncate max-w-[10rem]"
+            title={r.shikigami.fonte}
+          >
+            {r.shikigami.fonte}
+          </span>
+        )}
         {/* toolbar: mover, duplicar, remover (com confirmação) */}
         {confirmDel ? (
           <span className="flex items-center gap-1 flex-shrink-0">
@@ -11364,173 +11816,178 @@ function InvocacaoCard({ inv, resolvida, grausOk, marcadores, podeSubir, podeDes
         )}
       </div>
 
-      {open && (
-        <div className="px-3 pb-3 space-y-3 border-t border-slate-800 pt-3">
-          {/* identidade curta: Nome e Grau empilhados, cada um na largura inteira
-              (sem 2 colunas, que deixava vazio embaixo do Nome). */}
-          <div className="space-y-3">
+      <div className="px-3 pb-3 space-y-3 pt-3">
+        {/* IDENTIDADE: o retrato e o nome lado a lado, e o grau embaixo. O
+            retrato vem primeiro porque é ele que dá cara à coisa que está
+            sendo montada. */}
+        <div className="space-y-3">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            <InvocacaoRetrato inv={inv} onPatch={onPatch} />
             <div>
               <FieldLabel>Nome</FieldLabel>
               <TextInput value={inv.nome} onChange={(v) => onPatch({ nome: v })} placeholder="Nome da invocação" />
             </div>
+          </div>
+          <div>
+            <FieldLabel>Grau</FieldLabel>
+            <OptionChips value={inv.grau} options={grauOptions} onChange={(v) => onPatch({ grau: v })} disabledValues={grausBloqueados} />
+          </div>
+          {/* ⚠ O TIPO MECÂNICO nunca teve tela: `AFTY_INV_TIPOS` e
+              `AFTY_INV_SABORES` existiam no motor, o campo era guardado na
+              ficha e toda invocação ficava calada em "Shikigami". Ele decide o
+              Intermediário (Talismã ou Dispositivo) e a regra de retirada. */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <FieldLabel>Grau</FieldLabel>
-              <OptionChips value={inv.grau} options={grauOptions} onChange={(v) => onPatch({ grau: v })} disabledValues={grausBloqueados} />
+              <FieldLabel hint={`Intermediário: ${r.intermediario ?? ""}`}>Tipo</FieldLabel>
+              <OptionChips
+                value={inv.tipoMecanico || "shikigami"}
+                options={AFTY_INV_TIPOS.map((t) => ({ value: t.value, label: t.label }))}
+                onChange={(v) => onPatch({ tipoMecanico: v })}
+              />
             </div>
-            {/* ⚠ O TIPO MECÂNICO nunca teve tela: `AFTY_INV_TIPOS` e
-                `AFTY_INV_SABORES` existiam no motor, o campo era guardado na
-                ficha e toda invocação ficava calada em "Shikigami". Ele decide o
-                Intermediário (Talismã ou Dispositivo) e a regra de retirada. */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* Corpo Amaldiçoado e Marionete são o MESMO tipo mecânico, e a
+                escolha é só de rótulo (decisão do autor, 2026-07-17). */}
+            {inv.tipoMecanico === "dispositivo" && (
               <div>
-                <FieldLabel hint={`Intermediário: ${r.intermediario ?? ""}`}>Tipo</FieldLabel>
+                <FieldLabel>Sabor</FieldLabel>
                 <OptionChips
-                  value={inv.tipoMecanico || "shikigami"}
-                  options={AFTY_INV_TIPOS.map((t) => ({ value: t.value, label: t.label }))}
-                  onChange={(v) => onPatch({ tipoMecanico: v })}
+                  value={inv.saborNarrativo || "corpo_amaldicoado"}
+                  options={AFTY_INV_SABORES}
+                  onChange={(v) => onPatch({ saborNarrativo: v })}
                 />
               </div>
-              {/* Corpo Amaldiçoado e Marionete são o MESMO tipo mecânico, e a
-                  escolha é só de rótulo (decisão do autor, 2026-07-17). */}
-              {inv.tipoMecanico === "dispositivo" && (
-                <div>
-                  <FieldLabel>Sabor</FieldLabel>
-                  <OptionChips
-                    value={inv.saborNarrativo || "corpo_amaldicoado"}
-                    options={AFTY_INV_SABORES}
-                    onChange={(v) => onPatch({ saborNarrativo: v })}
-                  />
-                </div>
-              )}
-            </div>
-            <InvocacaoMarcadores inv={inv} marcadores={marcadores} onPatch={onPatch} />
-          </div>
-
-          {/* STAT BLOCK (sempre visível): stats + testes + efeitos + avisos */}
-          <div className="rounded-lg border border-slate-800 bg-slate-950/60 p-3 space-y-2.5">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              <StatMini icon={Heart} label="Vida" value={r.pv} />
-              <StatMini icon={Shield} label="Defesa" value={r.defesa} />
-              <StatMini icon={Footprints} label="Desloc." value={r.deslocamento != null ? `${r.deslocamento} m` : "-"} />
-              <StatMini icon={Zap} label="Custo (PE)" value={r.custo} accent />
-            </div>
-            <InvocacaoCorpo rd={r.rd} tamanho={r.tamanho} />
-            <InvocacaoTracos tracos={r.tracos} />
-            <InvocacaoOpcoesDeUso opcoes={r.opcoesDeUso} margemCritico={r.margemCritico} criticoBrutal={r.criticoBrutal} />
-            <InvocacaoTestes testes={r.testes} />
-            <EfeitosHabilidadeNota efe={r.efeitosHabilidade} />
-            {avisos.length > 0 && (
-              <ul className="space-y-1 border-t border-slate-800 pt-2">
-                {avisos.map((w, i) => (
-                  <li key={i} className="text-[11px] text-amber-400 flex items-start gap-1.5">
-                    <AlertTriangle className="w-3 h-3 flex-shrink-0 mt-0.5" aria-hidden="true" /> {w}
-                  </li>
-                ))}
-              </ul>
             )}
           </div>
+          <InvocacaoMarcadores inv={inv} marcadores={marcadores} onPatch={onPatch} />
+        </div>
 
-          {/* SUB-ABAS do editor */}
-          <div className="flex gap-1 overflow-x-auto no-scrollbar border-b border-slate-800 pb-2" role="tablist" aria-label="Seções da invocação">
-            {SUBABAS.map((t) => {
-              const on = subtab === t.id;
-              return (
-                <button
-                  key={t.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={on}
-                  onClick={() => setSubtab(t.id)}
-                  className={`grow justify-center whitespace-nowrap px-3 py-1.5 rounded-lg text-[13px] font-semibold transition-colors flex items-center gap-1.5 ${
-                    on ? "bg-purple-700 text-white" : "text-slate-400 hover:text-white hover:bg-slate-800/60"
-                  }`}
-                >
-                  {t.label}
-                  {t.n > 0 && (
-                    <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded font-mono ${on ? "bg-white/20 text-white" : "bg-purple-500/25 text-purple-300"}`}>
-                      {t.n}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
+        {/* STAT BLOCK (sempre visível): stats + testes + efeitos + avisos */}
+        <div className="rounded-lg border border-slate-800 bg-slate-950/60 p-3 space-y-2.5">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+            <StatMini icon={Heart} label="Vida" value={r.pv} />
+            <StatMini icon={Sparkles} label="Integridade" value={r.almaMax} />
+            <StatMini icon={Shield} label="Defesa" value={r.defesa} />
+            <StatMini icon={Footprints} label="Desloc." value={r.deslocamento != null ? `${r.deslocamento} m` : "-"} />
+            <StatMini icon={Zap} label="Custo (PE)" value={r.custo} accent />
           </div>
-
-          {subtab === "atributos" && (
-            <InvocacaoAtributos inv={inv} resumo={r.atributos} max={tabAttr.max} onPatchAttr={onPatchAttr} />
-          )}
-
-          {subtab === "treino" && (
-            <div className="space-y-3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <FieldLabel>Jogada de Ataque treinada</FieldLabel>
-                  <OptionChips
-                    value={inv.ataqueTreinado}
-                    options={[{ value: "corpo", label: "Corpo a Corpo" }, { value: "distancia", label: "A Distância" }]}
-                    onChange={(v) => onPatch({ ataqueTreinado: v })}
-                  />
-                </div>
-                <div>
-                  <FieldLabel hint="exceto Integridade">Teste de Resistência treinado</FieldLabel>
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 min-w-0"><Select value={inv.trTreinado} onChange={(v) => onPatch({ trTreinado: v })} options={TR_OPCOES} /></div>
-                    <BoolChip ativo={!!inv.trMestre} onToggle={() => onPatch({ trMestre: !inv.trMestre })}>Mestre</BoolChip>
-                  </div>
-                </div>
-              </div>
-              <InvocacaoPericias inv={inv} allowance={r.pericias?.allowance ?? 0} onPatch={onPatch} />
-            </div>
-          )}
-
-          {(subtab === "acoes" || subtab === "caracteristicas") && (
-            <div>
-              <div className="flex items-center justify-between mb-1.5 gap-2">
-                <span className="text-[10px] uppercase tracking-wider text-slate-500">Orçamento (Ações + Características)</span>
-                <span className="flex items-center gap-1.5 flex-shrink-0">
-                  {/* Vagas que SÓ Característica ocupa e que não entram no custo
-                      (Shikigami de Técnica). Ficam fora do contador comum, senão
-                      pareceriam aceitar Ação. */}
-                  {r.orcamento?.exclusivas > 0 && (
-                    <span
-                      className="font-mono text-[11px] tabular-nums px-2 py-0.5 rounded border border-sky-800/60 bg-sky-950/40 text-sky-300"
-                      title="Vagas exclusivas de Característica, que não aumentam o custo"
-                    >
-                      {r.orcamento.exclusivasUsadas} / {r.orcamento.exclusivas} Caract.
-                    </span>
-                  )}
-                  <span className={`font-mono text-[11px] tabular-nums px-2 py-0.5 rounded border ${
-                    orcOver ? "text-rose-300 border-rose-800 bg-rose-950/30" : "text-slate-300 border-slate-700 bg-slate-800/50"
-                  }`}>{orcBadge}</span>
-                </span>
-              </div>
-              {subtab === "acoes" ? (
-                <EfeitosSecao
-                  titulo="Ações"
-                  itens={inv.acoes || []}
-                  resolvidos={r.acoes || []}
-                  onAdd={acoesApi.add}
-                  addLabel="Nova ação"
-                  render={(item, res) => (
-                    <AcaoCard key={item.id} acao={item} res={res} grau={inv.grau} otimizacaoEnergia={r.otimizacaoEnergia} grupos={grupos} onPatch={(p) => acoesApi.patch(item.id, p)} onRemove={() => acoesApi.remove(item.id)} />
-                  )}
-                />
-              ) : (
-                <EfeitosSecao
-                  titulo="Características"
-                  itens={inv.caracteristicas || []}
-                  resolvidos={r.caracteristicas || []}
-                  onAdd={caracApi.add}
-                  addLabel="Nova característica"
-                  render={(item, res) => (
-                    <CaracteristicaCard key={item.id} carac={item} res={res} grau={inv.grau} grupos={grupos} onPatch={(p) => caracApi.patch(item.id, p)} onRemove={() => caracApi.remove(item.id)} />
-                  )}
-                />
-              )}
-            </div>
+          <InvocacaoCorpo rd={r.rd} tamanho={r.tamanho} />
+          <InvocacaoTracos tracos={r.tracos} />
+          <InvocacaoOpcoesDeUso opcoes={r.opcoesDeUso} margemCritico={r.margemCritico} criticoBrutal={r.criticoBrutal} />
+          <InvocacaoTestes testes={r.testes} />
+          <EfeitosHabilidadeNota efe={r.efeitosHabilidade} />
+          {avisos.length > 0 && (
+            <ul className="space-y-1 border-t border-slate-800 pt-2">
+              {avisos.map((w, i) => (
+                <li key={i} className="text-[11px] text-amber-400 flex items-start gap-1.5">
+                  <AlertTriangle className="w-3 h-3 flex-shrink-0 mt-0.5" aria-hidden="true" /> {w}
+                </li>
+              ))}
+            </ul>
           )}
         </div>
-      )}
+
+        {/* SUB-ABAS do editor */}
+        <div className="flex gap-1 overflow-x-auto no-scrollbar border-b border-slate-800 pb-2" role="tablist" aria-label="Seções da invocação">
+          {SUBABAS.map((t) => {
+            const on = subtab === t.id;
+            return (
+              <button
+                key={t.id}
+                type="button"
+                role="tab"
+                aria-selected={on}
+                onClick={() => setSubtab(t.id)}
+                className={`grow justify-center whitespace-nowrap px-3 py-1.5 rounded-lg text-[13px] font-semibold transition-colors flex items-center gap-1.5 ${
+                  on ? "bg-purple-700 text-white" : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+                }`}
+              >
+                {t.label}
+                {t.n > 0 && (
+                  <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded font-mono ${on ? "bg-white/20 text-white" : "bg-purple-500/25 text-purple-300"}`}>
+                    {t.n}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {subtab === "atributos" && (
+          <InvocacaoAtributos inv={inv} resumo={r.atributos} max={tabAttr.max} onPatchAttr={onPatchAttr} />
+        )}
+
+        {subtab === "treino" && (
+          <div className="space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <FieldLabel>Jogada de Ataque treinada</FieldLabel>
+                <OptionChips
+                  value={inv.ataqueTreinado}
+                  options={[{ value: "corpo", label: "Corpo a Corpo" }, { value: "distancia", label: "A Distância" }]}
+                  onChange={(v) => onPatch({ ataqueTreinado: v })}
+                />
+              </div>
+              <div>
+                <FieldLabel hint="exceto Integridade">Teste de Resistência treinado</FieldLabel>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 min-w-0"><Select value={inv.trTreinado} onChange={(v) => onPatch({ trTreinado: v })} options={TR_OPCOES} /></div>
+                  <BoolChip ativo={!!inv.trMestre} onToggle={() => onPatch({ trMestre: !inv.trMestre })}>Mestre</BoolChip>
+                </div>
+              </div>
+            </div>
+            <InvocacaoPericias inv={inv} allowance={r.pericias?.allowance ?? 0} onPatch={onPatch} />
+          </div>
+        )}
+
+        {subtab === "aparencia" && <InvocacaoAparencia inv={inv} onPatch={onPatch} />}
+
+        {(subtab === "acoes" || subtab === "caracteristicas") && (
+          <div>
+            <div className="flex items-center justify-between mb-1.5 gap-2">
+              <span className="text-[10px] uppercase tracking-wider text-slate-500">Orçamento (Ações + Características)</span>
+              <span className="flex items-center gap-1.5 flex-shrink-0">
+                {/* Vagas que SÓ Característica ocupa e que não entram no custo
+                    (Shikigami de Técnica). Ficam fora do contador comum, senão
+                    pareceriam aceitar Ação. */}
+                {r.orcamento?.exclusivas > 0 && (
+                  <span
+                    className="font-mono text-[11px] tabular-nums px-2 py-0.5 rounded border border-sky-800/60 bg-sky-950/40 text-sky-300"
+                    title="Vagas exclusivas de Característica, que não aumentam o custo"
+                  >
+                    {r.orcamento.exclusivasUsadas} / {r.orcamento.exclusivas} Caract.
+                  </span>
+                )}
+                <span className={`font-mono text-[11px] tabular-nums px-2 py-0.5 rounded border ${
+                  orcOver ? "text-rose-300 border-rose-800 bg-rose-950/30" : "text-slate-300 border-slate-700 bg-slate-800/50"
+                }`}>{orcBadge}</span>
+              </span>
+            </div>
+            {subtab === "acoes" ? (
+              <EfeitosSecao
+                titulo="Ações"
+                itens={inv.acoes || []}
+                resolvidos={r.acoes || []}
+                onAdd={acoesApi.add}
+                addLabel="Nova ação"
+                render={(item, res) => (
+                  <AcaoCard key={item.id} acao={item} res={res} grau={inv.grau} otimizacaoEnergia={r.otimizacaoEnergia} grupos={grupos} onPatch={(p) => acoesApi.patch(item.id, p)} onRemove={() => acoesApi.remove(item.id)} />
+                )}
+              />
+            ) : (
+              <EfeitosSecao
+                titulo="Características"
+                itens={inv.caracteristicas || []}
+                resolvidos={r.caracteristicas || []}
+                onAdd={caracApi.add}
+                addLabel="Nova característica"
+                render={(item, res) => (
+                  <CaracteristicaCard key={item.id} carac={item} res={res} grau={inv.grau} grupos={grupos} onPatch={(p) => caracApi.patch(item.id, p)} onRemove={() => caracApi.remove(item.id)} />
+                )}
+              />
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -12109,6 +12566,23 @@ function TabInvocacoes({ draft, derived, addInvocacao, removeInvocacao, duplicar
   const grausOk = grausDisponiveis(nivelControlador);
   const grauMaisAlto = grauMeta(grausOk[grausOk.length - 1]).label;
 
+  /* ⚠ MESTRE-DETALHE (2026-08-31). A fileira diz quem existe, o editor embaixo
+     mostra UM por vez. O `id` escolhido cai no primeiro quando a invocação
+     selecionada é removida ou duplicada, e é por isso que o estado guarda o id
+     e não o índice: remover a segunda de quatro reordenaria os índices e o
+     editor passaria a mostrar outra invocação sem ninguém pedir. */
+  const [escolhidaId, setEscolhidaId] = useState(null);
+  const escolhida = lista.find((i) => i.id === escolhidaId) ?? lista[0] ?? null;
+  const indice = escolhida ? lista.findIndex((i) => i.id === escolhida.id) : -1;
+
+  /* Nova invocação entra JÁ SELECIONADA. Sem isto, criar a quinta deixava o
+     editor mostrando a primeira, e o clique seguinte era sempre o mesmo:
+     procurar na fileira a que acabou de nascer. */
+  const novaInvocacao = () => {
+    const criada = addInvocacao(grausOk[0]);
+    if (criada?.id) setEscolhidaId(criada.id);
+  };
+
   return (
     <>
     <Card
@@ -12155,7 +12629,7 @@ function TabInvocacoes({ draft, derived, addInvocacao, removeInvocacao, duplicar
           <div className="mt-3">
             <button
               type="button"
-              onClick={() => addInvocacao(grausOk[0])}
+              onClick={novaInvocacao}
               className="inline-flex items-center gap-1.5 text-[12px] font-semibold px-3 py-1.5 rounded-lg border border-purple-700 bg-purple-800/40 text-purple-200 hover:bg-purple-700/50"
             >
               <Plus className="w-3.5 h-3.5" /> Nova invocação
@@ -12163,33 +12637,48 @@ function TabInvocacoes({ draft, derived, addInvocacao, removeInvocacao, duplicar
           </div>
         </div>
       ) : (
-        <div className="space-y-2.5">
-          {lista.map((inv, i) => (
+        <div className="space-y-3">
+          {/* A FILEIRA. Rolagem horizontal, e não quebra de linha: com sete
+              invocações a quebra empurra o editor para fora da tela, e a
+              fileira deixa de ser referência rápida para virar meia página. */}
+          <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+            {lista.map((inv) => (
+              <InvocacaoMiniatura
+                key={inv.id}
+                inv={inv}
+                resolvida={resolvidaDe(inv.id)}
+                selecionada={escolhida?.id === inv.id}
+                onSelecionar={() => setEscolhidaId(inv.id)}
+              />
+            ))}
+            <button
+              type="button"
+              onClick={novaInvocacao}
+              className="flex-shrink-0 w-40 min-h-[7.5rem] inline-flex flex-col items-center justify-center gap-1.5 text-[12px] font-semibold rounded-lg border border-dashed border-slate-700 text-slate-400 hover:text-white hover:border-slate-600"
+            >
+              <Plus className="w-4 h-4" /> Nova invocação
+            </button>
+          </div>
+
+          {escolhida && (
             <InvocacaoCard
-              key={inv.id}
-              inv={inv}
-              resolvida={resolvidaDe(inv.id)}
+              key={escolhida.id}
+              inv={escolhida}
+              resolvida={resolvidaDe(escolhida.id)}
               grausOk={grausOk}
               marcadores={derived.invocacoes.marcadores}
-              podeSubir={i > 0}
-              podeDescer={i < lista.length - 1}
-              onPatch={(partial) => patchInvocacao(inv.id, partial)}
-              onPatchAttr={(k, v) => patchInvocacaoAttr(inv.id, k, v)}
-              onRemove={() => removeInvocacao(inv.id)}
-              onDuplicar={() => duplicarInvocacao(inv.id)}
-              onSubir={() => moverInvocacao(inv.id, -1)}
-              onDescer={() => moverInvocacao(inv.id, 1)}
-              acoesApi={efeitosApi(inv.id, "acoes", createBlankAcao)}
-              caracApi={efeitosApi(inv.id, "caracteristicas", createBlankCaracteristica)}
+              podeSubir={indice > 0}
+              podeDescer={indice >= 0 && indice < lista.length - 1}
+              onPatch={(partial) => patchInvocacao(escolhida.id, partial)}
+              onPatchAttr={(k, v) => patchInvocacaoAttr(escolhida.id, k, v)}
+              onRemove={() => removeInvocacao(escolhida.id)}
+              onDuplicar={() => duplicarInvocacao(escolhida.id)}
+              onSubir={() => moverInvocacao(escolhida.id, -1)}
+              onDescer={() => moverInvocacao(escolhida.id, 1)}
+              acoesApi={efeitosApi(escolhida.id, "acoes", createBlankAcao)}
+              caracApi={efeitosApi(escolhida.id, "caracteristicas", createBlankCaracteristica)}
             />
-          ))}
-          <button
-            type="button"
-            onClick={() => addInvocacao(grausOk[0])}
-            className="w-full inline-flex items-center justify-center gap-1.5 text-[12px] font-semibold px-3 py-2 rounded-lg border border-dashed border-slate-700 text-slate-400 hover:text-white hover:border-slate-600"
-          >
-            <Plus className="w-3.5 h-3.5" /> Nova invocação
-          </button>
+          )}
         </div>
       )}
     </Card>
@@ -12543,6 +13032,10 @@ function RetratoBanner({ url, focus, nome, children }) {
 /* Preview lateral (prévia em tempo real)                       */
 /* ============================================================ */
 function AftyPreview({ draft, derived }) {
+  /* ⚠ TIPO E PATAMAR NÃO EXISTEM NA FICHA DE JOGADOR (autor, 2026-08-30), então
+     os dois chips somem lá. Os campos já tinham sido escondidos do criador na
+     mesma sessão, e o Preview tinha ficado para trás mostrando o valor morto. */
+  const semTipo = regraDo(sistemaDaFicha(draft), "abasIdentidade") === "player";
   const tipoLabel = AFTY_TIPOS.find((t) => t.value === draft.core.tipo)?.label ?? draft.core.tipo;
   const patamarLabel = AFTY_PATAMARES.find((p) => p.value === draft.core.patamar)?.label ?? draft.core.patamar;
   // `p` é a chave em derived.partes: quem tem, ganha o hover com as fontes.
@@ -12585,7 +13078,11 @@ function AftyPreview({ draft, derived }) {
       v: `${derived.tamanhoLabel} · ${String(derived.tamanhoEspacoAlcance).replace(".", ",")}m`,
       accent: "text-purple-200",
     },
-    { k: "Res. Parcial", v: derived.resParcial, p: "resParcial" },
+    /* ⚠ `null` some da lista, e zero NÃO some. A Resistência Parcial não
+       existe na ficha de jogador (autor, 2026-08-30: "sem aparecer nem como
+       zero"), e o `null` é como o derive diz isso. Uma criatura Comum, que tem
+       a característica e simplesmente está em zero, continua mostrando a linha. */
+    ...(derived.resParcial != null ? [{ k: "Res. Parcial", v: derived.resParcial, p: "resParcial" }] : []),
     /* Guarda Inabalável: só Calamidade e Beyond têm, e some para o resto. Ela
        entra no Preview porque é AQUI que a criatura é dosada, e a Vida da Guarda
        é uma parcela grande do PV efetivo de um chefe: um Beyond ND 30 leva 300
@@ -12630,12 +13127,16 @@ function AftyPreview({ draft, derived }) {
 
   const chips = (
     <div className="flex flex-wrap gap-1.5">
-      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-purple-950/60 text-purple-300 border border-purple-800">
-        {tipoLabel}
-      </span>
-      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700">
-        {patamarLabel}
-      </span>
+      {!semTipo && (
+        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-purple-950/60 text-purple-300 border border-purple-800">
+          {tipoLabel}
+        </span>
+      )}
+      {!semTipo && (
+        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700">
+          {patamarLabel}
+        </span>
+      )}
       <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700">
         ND {derived.nd}
       </span>

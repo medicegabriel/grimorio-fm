@@ -182,7 +182,12 @@ export const EFEITO_CANAIS = [
   { id: "resistirManobra", label: "Resistir a Manobra",  alvo: "manobra" },
   { id: "distanciaEmpurrao", label: "Empurrão",          nota: "em metros, por cima do 1,5 padrão" },
   { id: "danoBonus",     label: "Dano",                  alvo: "fonteDano", nota: "soma no Dano TOTAL da linha, e daí escorre para o dano fixo. Alvo `basico` ou o id da arma, e sem alvo vale para todas" },
-  { id: "nivelDano",     label: "Nível de Dano",         alvo: "fonteDano", nota: "cada nível soma 1 no ND, e SÓ no cálculo de dano (autor, 2026-07-27)" },
+  /* ⚠ O MESMO CANAL, DUAS RÉGUAS. Na criatura cada nível soma 1 no ND, e só no
+     cálculo de dano (autor, 2026-07-27). Na ficha de jogador ele é um DEGRAU da
+     escada de dados, 1d4 > 1d6 > 1d8 > 1d10 > 1d12 > 1d12 + 1d4 (autor,
+     2026-08-31). Ver `danoPorArma` em afty-sistema.js e a escada em
+     afty-niveis-dano.js. Os 22 emissores são os mesmos nos dois. */
+  { id: "nivelDano",     label: "Nível de Dano",         alvo: "fonteDano", nota: "na criatura soma 1 no ND só para dano, e no jogador sobe um degrau da escada de dados" },
   { id: "dadosDano",     label: "Dados de Dano",         alvo: "fonteDano", nota: "dado ADICIONAL, somado depois do dano fixo. Não confundir com nivelDano" },
   { id: "margemCritico", label: "Margem de Crítico",     alvo: "fonteDano", nota: "quanto a margem DIMINUI, com piso de 2" },
   { id: "ignoraRD",      label: "Ignora RD",             alvo: "fonteDano" },
@@ -1065,14 +1070,48 @@ export function coletarEfeitosOrigem(creature, escolhas = null) {
     : [];
   const mapa = escolhas?.mapa || resolveEscolhasOrigem(creature, creature?.core?.nd ?? 1).mapa;
   const opcoesEscolhidas = Object.values(mapa).flat();
-  const nomeOrigem = { [origemId]: { nome: getOrigem(origemId)?.nome } };
-  const nomeCla = claId ? { [claId]: { nome: getCla(claId)?.nome } } : {};
+  /* ⚠ O CATÁLOGO AQUI É A ENTRADA INTEIRA, e não `{ nome }`. Era um objeto
+     sintético só com o nome até 2026-08-31, e isso furava o fallback do
+     `coletarEfeitos`: uma origem ou um clã vindos de Addon declaram os efeitos
+     DENTRO da entrada, e `entrada?.efeitos` era sempre `undefined` porque a
+     entrada nunca chegava. O efeito sumia calado, que é o defeito que o
+     projeto já nomeou. O `nomeDe` continua funcionando: ele lê `.nome`, e a
+     entrada tem. */
   return [
-    ...coletarEfeitos([origemId], ORIGEM_EFEITOS, nomeOrigem),
-    ...coletarEfeitos(claId ? [claId] : [], CLA_EFEITOS, nomeCla),
+    ...coletarEfeitos([origemId], ORIGEM_EFEITOS, (id) => getOrigem(id)),
+    ...coletarEfeitos(claId ? [claId] : [], CLA_EFEITOS, (id) => getCla(id)),
     ...coletarEfeitos(anatomias, ANATOMIA_EFEITOS, (id) => getAnatomia(id)),
     ...coletarEfeitos(opcoesEscolhidas, ORIGEM_ESCOLHA_EFEITOS, (id) => ({ nome: OPCAO_ORIGEM_NOME[id] })),
   ];
+}
+
+/**
+ * Os efeitos que uma entrada de catálogo manda para as INVOCAÇÕES do dono.
+ *
+ * ⚠ CAMPO PRÓPRIO (`efeitosInvocacao`), e não o `efeitos` de sempre, porque os
+ * dois espaços de canal têm nomes iguais e sentidos diferentes: `pv` no
+ * `efeitos` é o PV do dono, e `pv` aqui é o PV do shikigami. Misturar os dois
+ * numa lista só faria uma Origem que quisesse engordar a invocação engordar o
+ * personagem, calada.
+ *
+ * ⚠ NASCEU EM 2026-08-31 para a Estrela dos Zenin. Até então os canais de
+ * invocação só aceitavam efeito de HABILIDADE (`efeitosInvocacaoControlador`),
+ * e por isso um clã ou um talento não tinham como tocar num shikigami, nem no
+ * raw nem por Addon.
+ *
+ * Recebe as ENTRADAS já resolvidas, e não ids, para não precisar importar mais
+ * um catálogo aqui: quem chama (o `deriveAfty`) já tem todos eles à mão.
+ */
+export function efeitosInvocacaoDeEntradas(entradas) {
+  const out = [];
+  for (const entrada of Array.isArray(entradas) ? entradas : []) {
+    const efs = entrada?.efeitosInvocacao;
+    if (!Array.isArray(efs)) continue;
+    for (const e of efs) {
+      out.push({ ...e, origem: entrada.id, nome: e.nome ?? (entrada.nome || entrada.id) });
+    }
+  }
+  return out;
 }
 
 /**

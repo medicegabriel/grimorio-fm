@@ -125,6 +125,15 @@ const CreatureCard = ({
   const [menuOpen, setMenuOpen] = useState(false);
   const [moveOpen, setMoveOpen] = useState(false);
   const patamarStyle = PATAMAR_STYLES[creature.core?.patamar] ?? PATAMAR_STYLES.comum;
+  /* ⚠ FICHA DE JOGADOR (/Player) MOSTRA SÓ IMAGEM, NOME E NÍVEL (autor,
+     2026-08-30). Ela não tem Patamar, e o HP, o PE e a Defesa dela vêm das
+     Classes. Mesma forma da entrada `beyond` acima: nenhuma criatura 2.5.2 tem
+     `rulesVersion` "player", então a 2.5.2 não muda.
+
+     A comparação é com a string crua de propósito. Importar o `ehPlayer` de
+     `systems/afty/afty-sistema.js` faria o grimório 2.5.2 depender do Afty, e a
+     dependência só existe no sentido contrário. */
+  const ehFichaDeJogador = creature.rulesVersion === "player";
   const isBuiltIn = !!creature.isBuiltIn;
   const isDraggable = !isBuiltIn && !!sortableListeners;
 
@@ -262,21 +271,30 @@ const CreatureCard = ({
           </div>
 
           {/* ── SEÇÃO INTERMEDIÁRIA: Patamar + ND + Stats (altura mínima fixa para simetria) ── */}
-          <div className="min-h-[44px] flex flex-col justify-between">
+          {/* A altura mínima cai na ficha de jogador: com uma linha só, ela
+              deixaria um vão embaixo. Os cards seguem alinhados entre si porque
+              a listagem do /Player só tem fichas de jogador. */}
+          <div className={`flex flex-col justify-between ${ehFichaDeJogador ? "" : "min-h-[44px]"}`}>
             {/* Patamar + ND */}
             <div className="flex items-center gap-1.5 flex-nowrap">
-              <span className={`text-[9px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded border shrink-0 ${patamarStyle.badge}`}>
-                {patamarStyle.label}
+              {!ehFichaDeJogador && (
+                <span className={`text-[9px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded border shrink-0 ${patamarStyle.badge}`}>
+                  {patamarStyle.label}
+                </span>
+              )}
+              <span className="text-[10px] text-slate-500 tabular-nums shrink-0">
+                {ehFichaDeJogador ? "Nível" : "ND"} {creature.core?.nd}
               </span>
-              <span className="text-[10px] text-slate-500 tabular-nums shrink-0">ND {creature.core?.nd}</span>
             </div>
 
             {/* Stats resumidas */}
-            <div className="flex items-center gap-3 text-[10px] text-slate-500 tabular-nums pt-2 border-t border-slate-800">
-              <span>HP {creature.stats?.hpMax ?? 0}</span>
-              <span>PE {creature.stats?.peMax ?? 0}</span>
-              <span>Def {creature.stats?.defesa ?? 0}</span>
-            </div>
+            {!ehFichaDeJogador && (
+              <div className="flex items-center gap-3 text-[10px] text-slate-500 tabular-nums pt-2 border-t border-slate-800">
+                <span>HP {creature.stats?.hpMax ?? 0}</span>
+                <span>PE {creature.stats?.peMax ?? 0}</span>
+                <span>Def {creature.stats?.defesa ?? 0}</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -338,20 +356,28 @@ const CardDragOverlay = ({ creature, count }) => {
 
   if (!creature) return null;
   const patamarStyle = PATAMAR_STYLES[creature.core?.patamar] ?? PATAMAR_STYLES.comum;
+  // O fantasma do arrasto segue o card: ficha de jogador mostra só nome e Nível.
+  const ehFichaDeJogador = creature.rulesVersion === "player";
   return (
     <div className={`w-64 bg-slate-900/98 border-l-4 ${patamarStyle.accent} border-r border-y border-purple-500/40 rounded-lg p-3 shadow-2xl ring-2 ring-purple-500/50 cursor-grabbing opacity-90`}>
       <h3 className="text-sm font-bold text-white truncate mb-1.5">{creature.name}</h3>
       <div className="flex items-center gap-1.5 mb-2">
-        <span className={`text-[9px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded border ${patamarStyle.badge}`}>
-          {patamarStyle.label}
+        {!ehFichaDeJogador && (
+          <span className={`text-[9px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded border ${patamarStyle.badge}`}>
+            {patamarStyle.label}
+          </span>
+        )}
+        <span className="text-[10px] text-slate-500 tabular-nums">
+          {ehFichaDeJogador ? "Nível" : "ND"} {creature.core?.nd}
         </span>
-        <span className="text-[10px] text-slate-500 tabular-nums">ND {creature.core?.nd}</span>
       </div>
-      <div className="flex items-center gap-3 text-[10px] text-slate-500 tabular-nums pt-2 border-t border-slate-800">
-        <span>HP {creature.stats?.hpMax ?? 0}</span>
-        <span>PE {creature.stats?.peMax ?? 0}</span>
-        <span>Def {creature.stats?.defesa ?? 0}</span>
-      </div>
+      {!ehFichaDeJogador && (
+        <div className="flex items-center gap-3 text-[10px] text-slate-500 tabular-nums pt-2 border-t border-slate-800">
+          <span>HP {creature.stats?.hpMax ?? 0}</span>
+          <span>PE {creature.stats?.peMax ?? 0}</span>
+          <span>Def {creature.stats?.defesa ?? 0}</span>
+        </div>
+      )}
     </div>
   );
 };

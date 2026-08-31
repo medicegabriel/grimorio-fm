@@ -76,6 +76,19 @@ export function sessaoEmBranco(derived = null) {
     combate: {},
     condicoes: [],
     buffs: [],
+    /* AS INVOCAÇÕES NA MESA (2026-08-31): `{ [invId]: { emCampo, pvAtual,
+       pvTempFontes, almaAtual, auxilios } }`.
+
+       ⚠ ELAS ENTRARAM NA SESSÃO, e até aqui não estavam. O comentário da aba
+       dizia o porquê: *"o PV da Invocação NÃO entra na sessão. Ele é o MÁXIMO, e
+       não um recurso gasto"*. O que faltava era o descanso saber o que fazer com
+       elas, e agora sabe (ver `descansar`). Sem isto o Controlador jogava a peça
+       central do personagem dele anotando PV num papel ao lado.
+
+       ⚠ MAPA POR ID, e não lista paralela à da ficha. A ordem das invocações
+       muda no criador (elas sobem e descem), e uma lista por índice trocaria o
+       PV de duas invocações de lugar sem ninguém ver. */
+    invocacoes: {},
     // O que o mestre CONCEDEU nesta sessão (Addons 8.3). Estado de sessão e
     // nunca ficha, por decisão do autor (2026-08-20): vale para tudo, não gasta
     // vaga nenhuma e morre junto com a sessão. Ver `afty-concessao.js`.
@@ -128,9 +141,199 @@ export function normalizaSessao(bruta, derived = null) {
     // Id órfão SOBREVIVE de propósito, e vira linha morta na tela.
     concedido: normalizaConcedido(bruta.concedido),
     adaptacoes: normalizaAdaptacoes(bruta.adaptacoes),
+    invocacoes: normalizaInvocacoesSessao(bruta.invocacoes),
     favoritos: lista(bruta.favoritos),
     log: lista(bruta.log).slice(0, LOG_MAX),
   };
+}
+
+/* ============================================================ */
+/* AS INVOCAÇÕES NA MESA                                         */
+/* ============================================================ */
+/**
+ * ⚠ ENTRADA ÓRFÃ SOBREVIVE, e é a mesma escolha da concessão logo acima: a
+ * invocação some da ficha por um instante enquanto alguém edita o criador com a
+ * Ficha aberta noutra aba, e apagar o PV dela por causa disso seria perder a
+ * luta. O que não existe simplesmente não é desenhado.
+ */
+function normalizaInvocacoesSessao(bruto) {
+  if (!bruto || typeof bruto !== "object") return {};
+  const out = {};
+  for (const [id, e] of Object.entries(bruto)) {
+    if (!id || !e || typeof e !== "object") continue;
+    out[id] = {
+      emCampo: !!e.emCampo,
+      /* ⚠ `null` quer dizer CHEIO, e não zero. A invocação nasce sem linha na
+         sessão, e a primeira vez que a Ficha a desenha ela tem de aparecer com
+         a vida inteira. Um zero aqui a mataria só por ter sido olhada. */
+      pvAtual: e.pvAtual == null ? null : Math.max(0, inteiro(e.pvAtual, 0)),
+      almaAtual: e.almaAtual == null ? null : Math.max(0, inteiro(e.almaAtual, 0)),
+      pvTempFontes: normalizaPvTemp(e.pvTempFontes, null),
+      auxilios: (e.auxilios && typeof e.auxilios === "object") ? { ...e.auxilios } : {},
+      /* Caiu a 0 PV por dano, então a volta dela é pela metade. Ver
+         `poeInvocacaoEmCampo`. */
+      abatida: !!e.abatida,
+      /* Recebeu dano excedente superior ao máximo de vida. Ver `aplicaDanoInvocacao`. */
+      exorcizada: !!e.exorcizada,
+    };
+  }
+  return out;
+}
+
+/** A linha daquela invocação, com o padrão de quem nunca foi tocada. */
+export function estadoDaInvocacao(sessao, invId) {
+  const e = sessao?.invocacoes?.[invId];
+  return {
+    emCampo: !!e?.emCampo,
+    pvAtual: e?.pvAtual ?? null,
+    almaAtual: e?.almaAtual ?? null,
+    pvTempFontes: e?.pvTempFontes ?? {},
+    auxilios: e?.auxilios ?? {},
+    abatida: !!e?.abatida,
+    exorcizada: !!e?.exorcizada,
+  };
+}
+
+/** Escreve na linha daquela invocação. Devolve sessão nova. */
+function comInvocacao(sessao, invId, partial) {
+  if (!invId) return sessao;
+  const atual = estadoDaInvocacao(sessao, invId);
+  return {
+    ...sessao,
+    invocacoes: { ...(sessao.invocacoes || {}), [invId]: { ...atual, ...partial } },
+  };
+}
+
+/**
+ * Traz ao campo ou dissipa.
+ *
+ * ⚠ DISSIPAR NÃO ZERA O PV, e a decisão é de regra: "Caso uma Invocação seja
+ * dissipada, ela pode ser reinvocada com os PVs que possuía", e só o Shikigami
+ * de Técnica volta cheio na primeira vez (ver `tracosDeTecnica`). Zerar aqui
+ * inventaria uma cura de graça em toda dissipação.
+ *
+ * O que a saída de campo faz é apagar os AUXÍLIOS: bônus que sobrevive à fonte
+ * é bug com cara de número. Ver `auxiliosLigadosDa`.
+ */
+export function poeInvocacaoEmCampo(sessao, invId, emCampo, pvMax = 0) {
+  const atual = estadoDaInvocacao(sessao, invId);
+  if (!emCampo) return comInvocacao(sessao, invId, { emCampo: false, auxilios: {}, pvTempFontes: {} });
+  /* ⚠ QUEM CAIU VOLTA PELA METADE, verbatim do livro: *"quando uma Invocação que
+     já tenha sido desativada é invocada novamente, ela retorna com metade dos
+     seus pontos de vida máximos, até que seja feito um descanso curto ou
+     longo."* A marca `abatida` fica de pé até o descanso, porque a regra vale
+     para toda reinvocação até lá, e não só para a primeira. */
+  const meio = Math.floor(Math.max(0, inteiro(pvMax, 0)) / 2);
+  return comInvocacao(sessao, invId, atual.abatida
+    ? { emCampo: true, pvAtual: meio }
+    : { emCampo: true });
+}
+
+/** Liga ou desliga UM auxílio daquela invocação. */
+export function alternaAuxilioInvocacao(sessao, invId, acaoId, ligado) {
+  if (!acaoId) return sessao;
+  const atual = estadoDaInvocacao(sessao, invId);
+  const auxilios = { ...atual.auxilios };
+  if (ligado) auxilios[acaoId] = true;
+  else delete auxilios[acaoId];
+  /* Ligar um auxílio de quem está fora de campo TRAZ a invocação ao campo. É a
+     única leitura possível do clique: ninguém liga o escudo de um shikigami
+     guardado, e a alternativa era um interruptor desabilitado que não explica
+     o que falta fazer. */
+  return comInvocacao(sessao, invId, { auxilios, emCampo: atual.emCampo || ligado });
+}
+
+/**
+ * Dano numa invocação. A casca dela come primeiro, igual à do dono.
+ *
+ * ⚠ CHEGAR A ZERO TIRA DE CAMPO, e é regra do livro: *"Quando uma Invocação
+ * chega a 0 pontos de vida, ela é dissipada ou desativada"*. Sem isso, um
+ * shikigami morto continuaria sustentando os bônus que ele dava.
+ *
+ * ⚠ E O DANO EXCEDENTE EXORCIZA: *"caso uma Invocação receba dano excedente
+ * superior ao seu máximo de vida, ela é exorcizada ou destruída [...] sendo
+ * removido da lista de invocações do controlador"*.
+ *
+ * ⚠ MAS A LISTA NÃO É MEXIDA AQUI, e é decisão minha, a confirmar (anotada em
+ * `docs/a-fazer.md`). Apagar a invocação da CRIATURA é edição de ficha, e a
+ * Ficha Final não edita ficha: ela opera. Um clique errado no botão de dano
+ * apagaria um shikigami inteiro sem desfazer. O estado fica marcado, a mesa vê,
+ * e quem remove de vez é o criador.
+ */
+export function aplicaDanoInvocacao(sessao, invId, bruto, pvMax) {
+  const dano = Math.max(0, inteiro(bruto, 0));
+  if (!dano) return sessao;
+  const max = Math.max(0, inteiro(pvMax, 0));
+  const atual = estadoDaInvocacao(sessao, invId);
+  const pv = atual.pvAtual ?? max;
+  const { fontes, sobrou } = drenaPvTemp(atual.pvTempFontes, dano);
+  const restante = pv - sobrou;
+  if (restante > 0) return comInvocacao(sessao, invId, { pvTempFontes: fontes, pvAtual: restante });
+  /* "dano excedente SUPERIOR ao seu máximo de vida": o excedente é o que passou
+     de zero, e ele tem de passar do MÁXIMO, não do que restava. */
+  const excedente = -restante;
+  return comInvocacao(sessao, invId, {
+    pvTempFontes: fontes,
+    pvAtual: 0,
+    emCampo: false,
+    auxilios: {},
+    abatida: true,
+    exorcizada: atual.exorcizada || excedente > max,
+  });
+}
+
+/** Cura numa invocação. Nunca passa do máximo. */
+export function aplicaCuraInvocacao(sessao, invId, bruto, pvMax) {
+  const cura = Math.max(0, inteiro(bruto, 0));
+  if (!cura) return sessao;
+  const max = Math.max(0, inteiro(pvMax, 0));
+  const atual = estadoDaInvocacao(sessao, invId);
+  return comInvocacao(sessao, invId, { pvAtual: entre((atual.pvAtual ?? max) + cura, 0, max) });
+}
+
+/**
+ * Escreve o PV ou a Integridade da invocação direto, pelo campo da barra.
+ *
+ * ⚠ ESCREVER ZERO NO PV DISSIPA IGUAL, e isso não é zelo: o campo da barra e os
+ * botões de passo são duas portas para o mesmo fato ("ela chegou a zero"), e só
+ * uma delas aplicava a regra. Quem digitasse `0` em vez de clicar no menos
+ * ficava com um shikigami morto em campo, ainda sustentando os bônus que dava
+ * ao dono. É a mesma família do efeito descartado calado.
+ *
+ * O que NÃO acontece por aqui é a exorcização: ela depende do EXCEDENTE, e um
+ * valor absoluto não tem excedente nenhum. Ver `aplicaDanoInvocacao`.
+ */
+export function defineVitalInvocacao(sessao, invId, qual, valor, max) {
+  const teto = Math.max(0, inteiro(max, 0));
+  if (qual === "alma") {
+    return comInvocacao(sessao, invId, { almaAtual: entre(inteiro(valor, 0), 0, teto) });
+  }
+  const pv = entre(inteiro(valor, 0), 0, teto);
+  return comInvocacao(sessao, invId, pv > 0
+    ? { pvAtual: pv }
+    : { pvAtual: 0, emCampo: false, auxilios: {}, abatida: true });
+}
+
+/**
+ * O descanso enche as invocações junto do dono.
+ *
+ * ⚠ PV temporário some e os auxílios caem, mas quem estava em campo CONTINUA em
+ * campo: descansar não dissipa shikigami, e obrigar o jogador a reinvocar tudo
+ * depois de cada descanso seria trabalho sem regra por trás.
+ */
+function descansaInvocacoes(invocacoes) {
+  const out = {};
+  for (const [id, e] of Object.entries(invocacoes || {})) {
+    /* ⚠ A marca `abatida` cai aqui, e é o que o texto manda: a volta pela
+       metade vale *"até que seja feito um descanso curto ou longo"*.
+       A `exorcizada` NÃO cai: *"não pode ser recuperada por métodos
+       convencionais, sendo perdida permanentemente"*, e descansar é o método
+       mais convencional que existe. */
+    out[id] = {
+      ...e, pvAtual: null, almaAtual: null, pvTempFontes: {}, auxilios: {}, abatida: false,
+    };
+  }
+  return out;
 }
 
 export function carregarSessao(id, derived = null) {
@@ -329,10 +532,32 @@ export function aparaSessao(sessao, derived) {
   const hpAtual = entre(sessao.hpAtual, 0, hpMax);
   const peAtual = entre(sessao.peAtual, 0, peMax);
   const almaAtual = entre(sessao.almaAtual, 0, almaMax);
-  if (hpAtual === sessao.hpAtual && peAtual === sessao.peAtual && almaAtual === sessao.almaAtual) {
+  /* As invocações apararam pelo mesmo caminho. Sem isto, tirar uma Característica
+     de Vida do shikigami deixava o PV corrente ACIMA do máximo e a barra passava
+     de 100%. É o mesmo motivo de o dono ser aparado aqui. */
+  const invocacoes = aparaInvocacoes(sessao.invocacoes, derived?.invocacoes?.lista);
+  if (hpAtual === sessao.hpAtual && peAtual === sessao.peAtual && almaAtual === sessao.almaAtual
+    && invocacoes === sessao.invocacoes) {
     return sessao;
   }
-  return { ...sessao, hpAtual, peAtual, almaAtual };
+  return { ...sessao, hpAtual, peAtual, almaAtual, invocacoes };
+}
+
+/** Apara PV e Integridade de cada invocação contra o máximo resolvido dela. */
+function aparaInvocacoes(mapa, lista) {
+  if (!mapa || !Array.isArray(lista) || !lista.length) return mapa;
+  let mudou = false;
+  const out = {};
+  for (const [id, e] of Object.entries(mapa)) {
+    const r = lista.find((x) => x.id === id);
+    // Invocação que sumiu da ficha fica intacta: ver `normalizaInvocacoesSessao`.
+    if (!r) { out[id] = e; continue; }
+    const pv = e.pvAtual == null ? null : entre(e.pvAtual, 0, Math.max(0, r.pv ?? 0));
+    const alma = e.almaAtual == null ? null : entre(e.almaAtual, 0, Math.max(0, r.almaMax ?? 0));
+    if (pv !== e.pvAtual || alma !== e.almaAtual) mudou = true;
+    out[id] = { ...e, pvAtual: pv, almaAtual: alma };
+  }
+  return mudou ? out : mapa;
 }
 
 /* ============================================================ */
@@ -637,6 +862,9 @@ export function descansar(sessao, derived) {
     guardaGolpes: 0,
     guardaEncerrada: false,
     usos: {},
+    // As invocações enchem junto. Era a pendência que segurava o PV delas fora
+    // da sessão: sem descanso, ninguém zerava aqueles números.
+    invocacoes: descansaInvocacoes(sessao.invocacoes),
     buffs: sessao.buffs.filter((b) => b.rodadas == null),
     condicoes: sessao.condicoes
       .filter((c) => c.rodadas == null)
