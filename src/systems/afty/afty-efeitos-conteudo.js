@@ -400,14 +400,14 @@ export const HABILIDADE_EFEITOS = {
   //     resultado tratado como 10 acima do resultado original."
   //   • Quebra Crânio: "Seu próximo ataque causa 2d10 de dano adicional. O alvo
   //     desta manobra deve realizar um teste de resistência de Fortitude com CD
-  //     aumentada em 5." 2d10 pela média, que é 11 exato.
+  //     aumentada em 5." Dado NOMEADO: canal `dadosNomeados`, alvo d10.
   lut_manobras_finalizadoras: [
     { canal: "danoBonus", quando: "manobra_finalizadora_circular && empolgacao >= 5",
       expr: "5", duracao: "temporaria" },
     { canal: "bonusAcerto", quando: "manobra_finalizadora_certeiro && empolgacao >= 5",
       expr: "10", duracao: "temporaria" },
-    { canal: "danoBonus", quando: "manobra_finalizadora_cranio && empolgacao >= 5",
-      expr: "11", duracao: "temporaria" },
+    { canal: "dadosNomeados", alvo: "d10", quando: "manobra_finalizadora_cranio && empolgacao >= 5",
+      expr: "2", duracao: "temporaria" },
     { canal: "cd", quando: "manobra_finalizadora_cranio && empolgacao >= 5",
       expr: "5", duracao: "temporaria" },
   ],
@@ -518,12 +518,15 @@ export const HABILIDADE_EFEITOS = {
   // Silenciosa e Golpe Descendente viram número, e entram pela bancada.
   cmb_artes_do_combate: [
     { canal: "pontosPreparo", expr: "esc_combatente + mod_sabedoria" },
-    // "adicionando 1d6 de dano. A cada +2 no Modificador de Sabedoria, o dano
-    // aumenta em +1d6." O 1d6 base já vale com Sabedoria 0.
-    // O dado é NOMEADO (d6), então entra pela média (3), e não como dado da
-    // linha, que muda de tamanho com o Patamar. Ver a regra no topo.
-    { canal: "danoBonus", quando: "arte_execucao_silenciosa",
-      expr: "3 * (1 + piso(mod_sabedoria / 2))", duracao: "temporaria" },
+    /* "adicionando 1d6 de dano. A cada +2 no Modificador de Sabedoria, o dano
+       aumenta em +1d6." O 1d6 base já vale com Sabedoria 0.
+
+       ⚠ ERA A MÉDIA (`danoBonus` valendo 3 por dado) até 2026-08-31, quando o
+       autor pegou: *"Execução Silenciosa está aparecendo como +6 ao invés de
+       1d6."* O dado é NOMEADO, e o canal dele é o `dadosNomeados`: o alvo é o
+       tamanho (`d6`) e o valor é QUANTOS. */
+    { canal: "dadosNomeados", alvo: "d6", quando: "arte_execucao_silenciosa",
+      expr: "1 + piso(mod_sabedoria / 2)", duracao: "temporaria" },
     // "sua Defesa aumenta em um valor igual a metade do seu Modificador de
     // Sabedoria até o começo do seu próximo turno."
     { canal: "defesa", quando: "arte_golpe_descendente",
@@ -750,13 +753,14 @@ export const HABILIDADE_EFEITOS = {
 
   // "você pode adicionar 1d8 ao dano dele [...] No nível 3, o dano se torna
   // 2d8, no 6 3d8, no 9 4d8, no 12 5d8, no 15 6d8."
-  // ⚠ O dado é NOMEADO (d8), e não "um dado de dano", então entra pela média
-  // arredondada para baixo (1d8 = 4) e não pelo dado da linha, que muda com o
-  // Patamar. Arremetida Encoberta soma o dela por cima.
+  // ⚠ O dado é NOMEADO (d8), e não "um dado de dano": ele entra pelo canal
+  // `dadosNomeados`, com alvo `d8`, e o valor é QUANTOS. Pelo dado da LINHA ele
+  // mudaria de tamanho com o Patamar, que é o outro canal (`dadosDano`).
+  // Arremetida Encoberta soma o dela por cima.
   res_ataque_furtivo: [
-    { canal: "danoBonus", quando: "ataque_furtivo",
-      expr: "4 * (1 + (esc_restringido >= 3) + (esc_restringido >= 6) + (esc_restringido >= 9) "
-          + "+ (esc_restringido >= 12) + (esc_restringido >= 15))",
+    { canal: "dadosNomeados", alvo: "d8", quando: "ataque_furtivo",
+      expr: "1 + (esc_restringido >= 3) + (esc_restringido >= 6) + (esc_restringido >= 9) "
+          + "+ (esc_restringido >= 12) + (esc_restringido >= 15)",
       duracao: "temporaria" },
   ],
 
@@ -825,10 +829,10 @@ export const HABILIDADE_EFEITOS = {
   ],
 
   // "Caso tenha sucesso em empurrar, ele recebe Xd6 de dano adicional, onde X é
-  // igual a metade do seu modificador de Força." 1d6 = 3 de média.
+  // igual a metade do seu modificador de Força." Dado NOMEADO (d6).
   res_golpe_impactante: [
-    { canal: "danoBonus", quando: "golpe_impactante",
-      expr: "3 * piso(mod_forca / 2)", duracao: "temporaria" },
+    { canal: "dadosNomeados", alvo: "d6", quando: "golpe_impactante",
+      expr: "piso(mod_forca / 2)", duracao: "temporaria" },
   ],
 
   // "O dano de toda arma que você manejar conta como um nível acima e suas
@@ -884,21 +888,34 @@ export const HABILIDADE_EFEITOS = {
   // e causa 1d6 de dano a mais, que aumenta para 1d8 no nível 6, 1d10 no 12 e
   // 1d12 no 16, além de receber +5 em testes de Percepção para procurar o
   // inimigo e em sua Atenção contra ele."
-  // Os dados são nomeados, então entram pela média: 3, 4, 5, 6. Cada degrau
-  // SUBSTITUI o anterior, daí a soma de +1 por degrau.
+  /* Os dados são NOMEADOS e cada degrau SUBSTITUI o anterior, então são quatro
+     linhas mutuamente exclusivas, uma por tamanho, e não uma linha que cresce.
+     É o preço de o canal ter o TAMANHO no alvo, e ele se paga: com a média
+     antiga ("3 + degraus") o d12 do nível 16 valia 6 e não aparecia em lugar
+     nenhum como d12. */
   res_foco_no_inimigo: [
     { canal: "bonusAcerto", quando: "foco_inimigo", expr: "2", duracao: "temporaria" },
-    { canal: "danoBonus", quando: "foco_inimigo",
-      expr: "3 + (esc_restringido >= 6) + (esc_restringido >= 12) + (esc_restringido >= 16)",
-      duracao: "temporaria" },
+    { canal: "dadosNomeados", alvo: "d6", quando: "foco_inimigo && esc_restringido < 6",
+      expr: "1", duracao: "temporaria" },
+    { canal: "dadosNomeados", alvo: "d8", quando: "foco_inimigo && esc_restringido >= 6 && esc_restringido < 12",
+      expr: "1", duracao: "temporaria" },
+    { canal: "dadosNomeados", alvo: "d10", quando: "foco_inimigo && esc_restringido >= 12 && esc_restringido < 16",
+      expr: "1", duracao: "temporaria" },
+    { canal: "dadosNomeados", alvo: "d12", quando: "foco_inimigo && esc_restringido >= 16",
+      expr: "1", duracao: "temporaria" },
     { canal: "bonusPericia", alvo: "percepcao", quando: "foco_inimigo", expr: "5", duracao: "temporaria" },
     { canal: "atencao", quando: "foco_inimigo", expr: "5", duracao: "temporaria" },
   ],
 
-  // "você pode pagar 1 ponto de estamina para adicionar 2d3 ao resultado."
-  // 2d3 = 4 de média. Vale em qualquer TR, e só durante o Surto.
+  /* "você pode pagar 1 ponto de estamina para adicionar 2d3 ao resultado."
+     Vale em qualquer TR, e só durante o Surto.
+
+     ⚠ ERA A MÉDIA (`bonusTR` valendo 4) até 2026-09-01. O canal `dadosTR` é o
+     irmão do `dadosNomeados` do lado do Teste de Resistência: o alvo é o dado e
+     o valor é quantos, e é por isso que ele vale em TODO TR — o alvo já está
+     ocupado pelo dado. */
   res_resiliencia_pela_adrenalina: [
-    { canal: "bonusTR", quando: "surto_adrenalina", expr: "4", duracao: "temporaria" },
+    { canal: "dadosTR", alvo: "d3", quando: "surto_adrenalina", expr: "2", duracao: "temporaria" },
   ],
 
   /* ---- 6° nível ---- */

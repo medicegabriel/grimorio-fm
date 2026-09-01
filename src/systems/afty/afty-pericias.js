@@ -335,6 +335,16 @@ export const COEF_DANO_PATAMAR = {
  * 2026-07-27): arma comum, sem Ferramenta, não ganha nada aqui.
  * O Grau Especial é 20, não 40, depois que o Grau Zero saiu do sistema.
  */
+/* O rank de cada grau de Ferramenta, e o rótulo dele. Repetidos aqui em vez de
+   importados de afty-equipamentos.js porque este arquivo é lido pelo resolvedor
+   de dano e aquele importa deste: a seta aponta para cá. O assert compara as
+   duas listas, então uma divergir falha. */
+export const RANK_DO_GRAU = { quarto: 1, terceiro: 2, segundo: 3, primeiro: 4, especial: 5 };
+const GRAU_LABEL = { 1: "Quarto Grau", 2: "Terceiro Grau", 3: "Segundo Grau", 4: "Primeiro Grau", 5: "Grau Especial" };
+
+/** Os tamanhos de dado que uma regra pode nomear ("1d6 de dano", "2d10"). */
+export const FACES_NOMEADAS = [12, 10, 8, 6, 4, 3];
+
 export const DANO_ADICIONAL_ARMA = [
   { value: "desarmado", label: "Desarmado",     valor: 0 },
   { value: "quarto",    label: "Quarto Grau",   valor: 4 },
@@ -439,7 +449,7 @@ const textoDaLinha = (grupos, fixo) => {
  * adicional". Por isso ele entra no grupo do maior dado, e não num grupo novo.
  */
 function linhaDeDanoJogador({
-  dadoBase, niveis, modChave, atributo, bonus, fonteDado,
+  dadoBase, niveis, modChave, atributo, bonus, fonteDado, grauRank = 0,
   dadosExtras = 0, margemBase = 20, reducaoMargem = 0, ignoraRD = 0,
   removeResistencia = false, fontes = [],
 }) {
@@ -454,8 +464,14 @@ function linhaDeDanoJogador({
     if (alvoExtra) alvoExtra.qtd += extras;
     else grupos.push({ qtd: extras, faces: maiorDado });
   }
-  // O `fixo` do degrau só existe no pé da escada ("1 de dano"), e soma junto.
-  const fixo = modChave + bonus + (movido.fixo ?? 0);
+  /* O `fixo` do degrau só existe no pé da escada ("1 de dano"), e soma junto.
+
+     ⚠ O GRAU DA FERRAMENTA SOMA AQUI, e é escada própria (autor, 2026-09-01):
+     *"Arma de Jogador recebe +1 de Dano Fixo por Grau. Grau Especial = +5 Dano
+     Fixo. Quarto Grau = +1 Dano Fixo."* É o RANK, e não a tabela da criatura
+     (4, 8, 12, 16, 20). Ver a divergência `danoFixoPorGrau`. */
+  const grau = Math.max(0, Math.trunc(grauRank));
+  const fixo = modChave + bonus + grau + (movido.fixo ?? 0);
   const dadosTotais = grupos.reduce((s, g) => s + g.qtd, 0);
   const rotuloAttr = (k) => AFTY_ATTRS.find((a) => a.key === k)?.label ?? k;
   return {
@@ -495,6 +511,7 @@ function linhaDeDanoJogador({
         ? [{ label: `Níveis de Dano (${niveis > 0 ? "+" : ""}${niveis})`, texto: movido.texto }]
         : []),
       { label: rotuloAttr(atributo), valor: modChave },
+      ...(grau ? [{ label: `${GRAU_LABEL[grau] ?? "Grau"} da Ferramenta`, valor: grau }] : []),
       ...fontes,
     ],
   };
@@ -553,6 +570,12 @@ export function resolveDano(creature, ctx = {}) {
   // arma responde pelo id, por "arma", pela categoria, pelo grupo e por cada
   // propriedade. O Ataque Básico responde só por "basico".
   const canal = (c, escopos) => (ef ? valorCanalEscopos(ef, c, escopos) : 0);
+  /* Canal com alvo próprio dentro do resolvedor de dano. O `canal` acima é
+     escopado por FONTE de dano; estes dois miram um alvo nomeado, que hoje é o
+     tamanho do dado (`d6`) do canal `dadosNomeados`. */
+  const bonusDeEfeitoDano = (c, alvo) => (ef ? valorCanal(ef, c, alvo) : 0);
+  const fontesDeDano = (c, alvo) =>
+    (ef ? detalhesDoCanal(ef, c, alvo) : []).map((d) => ({ label: d.nome, valor: d.valor }));
   // `true` no fim pede os SUPLANTADOS junto: são os perdedores do pool
   // exclusivo, que o hover mostra riscados. Só o hover os quer, e é por isso que
   // o `canal` logo acima segue sem eles: quem soma não pode contá-los.
@@ -630,6 +653,7 @@ export function resolveDano(creature, ctx = {}) {
     const linha = danoPorArma ? linhaDeDanoJogador({
       dadoBase: dadoBase ?? "1d3",
       fonteDado,
+      grauRank: RANK_DO_GRAU[grauArma] ?? 0,
       atributo, modChave: modDe(atributo),
       niveis: niveisCrus - descontoEscada,
       bonus: canal("danoBonus", escopos),
@@ -699,6 +723,27 @@ export function resolveDano(creature, ctx = {}) {
         ...(d.suplantado ? { suplantado: true } : {}),
       });
     }
+    /* DADOS COM TAMANHO PRÓPRIO (canal `dadosNomeados`): "1d6 de dano", "2d10".
+       Eles entram como GRUPO, e não como média no dano fixo, porque o tamanho é
+       do texto da regra e nunca muda. Um grupo por tamanho, na ordem do maior
+       para o menor, e cada um nomeado pela fonte quando ela é única — é o que
+       faz a linha ler "1d8 + 1d6 + 4" em vez de "1d8 + 7".
+
+       ⚠ ELES MULTIPLICAM NO CRÍTICO. A regra do autor é "só os dados, o fixo não
+       dobra", e um d6 é dado. Enquanto eles eram média no `danoBonus`, viravam
+       fixo e não dobravam: trocar o canal conserta a rolagem E o crítico. */
+    const gruposNomeados = FACES_NOMEADAS
+      .map((faces) => ({ faces, qtd: Math.trunc(bonusDeEfeitoDano("dadosNomeados", `d${faces}`)) }))
+      .filter((g) => g.qtd > 0)
+      .map((g) => {
+        const fontes = fontesDeDano("dadosNomeados", `d${g.faces}`);
+        return {
+          nome: fontes.length === 1 ? fontes[0].label : "Dano Adicional",
+          dados: g.qtd, faces: g.faces, fixo: 0,
+          momento: "durante", multiplica: true,
+        };
+      });
+
     /* ⚠ UM GRUPO POR TAMANHO DE DADO na ficha de jogador, porque um degrau da
        escada pode ter dois (`1d12 + 1d4`). Todos multiplicam no crítico, e o
        fixo não, que é a regra do autor: "Só os Dados, o fixo não dobra". O fixo
@@ -727,6 +772,7 @@ export function resolveDano(creature, ctx = {}) {
           nome: "Golpe Especial", dados: dadosAtroz, faces: facesDoDado, fixo: 0,
           momento: "durante", multiplica: false, entraRaioNegro: false, incluidoNoTexto: true,
         }] : [])
+        .concat(gruposNomeados)
       : [
         {
           nome: "Ataque", dados: Math.max(0, linha.dados - dadosAtroz),
@@ -737,7 +783,25 @@ export function resolveDano(creature, ctx = {}) {
           nome: "Golpe Especial", dados: dadosAtroz, faces: facesDoDado, fixo: 0,
           momento: "durante", multiplica: false, entraRaioNegro: false, incluidoNoTexto: true,
         }] : []),
+        ...gruposNomeados,
       ];
+    /* O TEXTO da linha passa a mostrar os dados nomeados, nos dois sistemas. Sem
+       isso o grupo existiria na rolagem e não apareceria na linha, que é o mesmo
+       silêncio de antes por outro caminho. */
+    if (gruposNomeados.length) {
+      const extra = gruposNomeados.map((g) => `${g.dados}d${g.faces}`).join(" + ");
+      linha.texto = `${linha.texto} + ${extra}`;
+      if (linha.totalFontes) linha.totalFontes = `${linha.totalFontes} + ${extra}`;
+      linha.partes = [
+        ...linha.partes,
+        ...gruposNomeados.map((g) => ({ label: g.nome, texto: `${g.dados}d${g.faces}` })),
+      ];
+      // A média entra no `total`, que é o número que o chip de delta da aba
+      // Buffs compara. Piso para baixo, regra da casa.
+      linha.total = Math.floor(
+        linha.total + gruposNomeados.reduce((acc, g) => acc + g.dados * (g.faces + 1) / 2, 0),
+      );
+    }
     return linha;
   };
 
@@ -1040,6 +1104,19 @@ export function resolveTestes(creature, ctx = {}) {
 
   const trBruta = creature?.resistenciasProf && typeof creature.resistenciasProf === "object"
     ? creature.resistenciasProf : {};
+  /* DADOS SOMADOS AO TR (canal `dadosTR`), quando a regra escreve um dado em vez
+     de um número ("adicionar 2d3 ao resultado"). O alvo do canal é o DADO, então
+     eles valem em todo TR e a lista é montada uma vez só, fora do map. */
+  const dadosNoTR = FACES_NOMEADAS
+    .map((faces) => ({ faces, qtd: Math.trunc(bonusDeEfeito("dadosTR", `d${faces}`)) }))
+    .filter((g) => g.qtd > 0);
+  const textoDosDadosTR = dadosNoTR.map((g) => `${g.qtd}d${g.faces}`).join(" + ");
+  const partesDosDadosTR = FACES_NOMEADAS.flatMap((faces) =>
+    partesDeEfeito("dadosTR", `d${faces}`).map((x) => ({ label: x.label, texto: `${x.valor}d${faces}` })));
+
+  const bonusDoTR = (r, prof) => modDe(r.atributo) + (ESCALA_TR[r.escala] ?? 0)
+    + bonusProficiencia(bt, prof) + bonusPorAtributo("bonusTR", r.value, r.atributo);
+
   const resistencias = AFTY_RESISTENCIAS.map((r) => {
     // Mesma anatomia das perícias: a faixa ESCOLHIDA é a que gasta vaga, e a
     // resolvida ainda soma o que foi concedido de fora (Teste de Resistência
@@ -1053,8 +1130,7 @@ export function resolveTestes(creature, ctx = {}) {
       profEscolhida: escolhida,
       concedida: !!prof && prof !== escolhida,
       // Escala por Tipo no lugar da metade do nível, ver o cabeçalho da função.
-      bonus: modDe(r.atributo) + (ESCALA_TR[r.escala] ?? 0) + bonusProficiencia(bt, prof)
-        + bonusPorAtributo("bonusTR", r.value, r.atributo),
+      bonus: bonusDoTR(r, prof),
       // Só quem é mestre num TR consegue sucesso crítico nele (superar a CD
       // por 10 ou mais ignora dano e condições).
       critico: prof === "mestre",
@@ -1062,11 +1138,19 @@ export function resolveTestes(creature, ctx = {}) {
       // Melhoria de Resistência e os Treinamentos Completos de Agilidade e
       // Resistência. Piso de 2, igual à margem do ataque.
       margemCritico: Math.max(2, 20 - Math.trunc(bonusDeEfeito("margemCriticoTR", r.value))),
+      /* Os dados extras viajam ao lado do bônus, e não dentro dele: o bônus é o
+         que soma sempre, e o dado é uma rolagem a mais. Quem mostra junta os
+         dois num texto ("+7 + 2d3") e quem rola soma as duas coisas. */
+      dadosExtras: dadosNoTR,
+      textoBonus: textoDosDadosTR
+        ? `${bonusDoTR(r, prof) >= 0 ? "+" : "−"}${Math.abs(bonusDoTR(r, prof))} + ${textoDosDadosTR}`
+        : null,
       partes: [
         { label: rotuloAttr(r.atributo), valor: modDe(r.atributo) },
         { label: ESCALA_ROTULO[r.escala] ?? "Escala de Nível", valor: ESCALA_TR[r.escala] ?? 0 },
         ...parteProficiencia(prof),
         ...partesPorAtributo("bonusTR", r.value, r.atributo),
+        ...partesDosDadosTR,
       ],
     };
   });

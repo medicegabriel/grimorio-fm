@@ -1577,7 +1577,7 @@ function TesteLinha({
         </span>
 
         {edicao}
-        <ValorComFontes valor={item.bonus} partes={item.partes} />
+        <ValorComFontes valor={item.bonus} partes={item.partes} texto={item.textoBonus} />
         {acoes}
       </div>
     </div>
@@ -9562,7 +9562,7 @@ function FerramentaEditor({
   const beneficio =
     tipo === "arma" ? `Acerto +${fa.bonusArma}` :
     tipo === "escudo" ? `${rotuloRd} +${(def.rdEscudo ?? 0) + fa.rdGrau}` :
-    tipo === "uniforme" ? `Defesa +${defesaDaArmadura(def, fa.defesaGrau)}` : null;
+    tipo === "uniforme" ? `Defesa +${defesaDaArmadura(def, fa.defesaGrau, sistema)}` : null;
   const nomesEscolhidos = fa.escolhidos.map((id) => getEncantamento(id)?.nome ?? id);
   const resumoEnc = nomesEscolhidos.length ? nomesEscolhidos.join(", ") : "Nenhum";
 
@@ -9965,7 +9965,7 @@ function LinhaCarregada({
 /* Linha do catálogo. RECOLHIDA por padrão, mesmo padrão das Aptidões:
    são 52 armas e 48 itens especiais, abertas de uma vez viram um
    paredão. A linha fechada mostra o que serve para ESCOLHER. */
-function CatalogoLinha({ tipo, def, onAdd, jaTem }) {
+function CatalogoLinha({ tipo, def, onAdd, jaTem, sistema }) {
   const [open, setOpen] = useState(false);
   const espacos = espacosDoEquipamento(tipo, def);
   const custo = custoDoEquipamento(tipo, def);
@@ -10023,10 +10023,12 @@ function CatalogoLinha({ tipo, def, onAdd, jaTem }) {
               {def.critico}+
             </span>
           )}
-          {/* A Defesa da armadura é o custo dela, MENOS Sob Medida, que é a
-              exceção declarada. Por causa dela o número volta a valer a pena. */}
-          {tipo === "uniforme" && defesaDaArmadura(def) > 0 && (
-            <span className="text-[10px] text-emerald-400 font-mono flex-shrink-0">+{defesaDaArmadura(def)} Def</span>
+          {/* ⚠ O NÚMERO DEPENDE DO SISTEMA. Na criatura a Defesa da armadura é o
+              CUSTO dela (menos Sob Medida, a exceção declarada); no jogador é a
+              coluna Bônus na Defesa do livro, que é outro número no Revestimento
+              Leve, no Médio e no Robusto. Ver a divergência `defesaUniforme`. */}
+          {tipo === "uniforme" && defesaDaArmadura(def, 0, sistema) > 0 && (
+            <span className="text-[10px] text-emerald-400 font-mono flex-shrink-0">+{defesaDaArmadura(def, 0, sistema)} Def</span>
           )}
           {tipo === "escudo" && (
             <span className="text-[10px] text-emerald-400 font-mono flex-shrink-0">{def.rdEscudo} RD</span>
@@ -10724,6 +10726,7 @@ function TabEquipamentos({ draft, derived, addEquipamento, removeEquipamento, pa
                 def={def}
                 jaTem={contagem[def.id] ?? 0}
                 onAdd={addEquipamento}
+                sistema={sistemaDaFicha(draft)}
               />
             ))}
           </div>
@@ -10844,6 +10847,7 @@ function TabEquipamentos({ draft, derived, addEquipamento, removeEquipamento, pa
               def={def}
               jaTem={contagem[def.id] ?? 0}
               onAdd={addEquipamento}
+              sistema={sistemaDaFicha(draft)}
             />
           ))}
         </div>

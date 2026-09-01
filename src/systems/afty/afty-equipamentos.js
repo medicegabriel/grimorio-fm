@@ -127,8 +127,23 @@ export const grauDoRank = (rank) => AFTY_GRAUS.find((g) => g.rank === rank) ?? n
  * `defesaCriatura` no catálogo é a exceção declarada: hoje só Sob Medida a tem,
  * porque ela custa 2 e dá 1 (o benefício dela é em Perícia).
  */
-export const defesaDaArmadura = (def, grauDefesa = 0) =>
-  (def?.defesaCriatura ?? def?.custo ?? 0) + Math.max(0, grauDefesa);
+export const defesaDaArmadura = (def, grauDefesa = 0, sistema = undefined) => {
+  /* ⚠ NO JOGADOR VALE A COLUNA DO LIVRO, e o grau NÃO soma (autor, 2026-08-31:
+     *"você não modificou os Uniformes. Ainda está fornecendo +3 de Defesa o
+     Robusto"*). São duas coisas numa:
+
+       1. o Bônus na Defesa é o da tabela (Leve +2, Médio +4, Robusto +6, Sob
+          Medida +1), e não o custo da modificação;
+       2. o GRAU da Ferramenta não acrescenta Defesa nenhuma. A tabela de grau do
+          livro para UNIFORMES tem uma coluna só, "Recebe um Encantamento" — ela
+          não tem coluna numérica, ao contrário da de escudos ("RD FÍSICO") e da
+          de armas ("Bônus de Arma"). O "+1 por grau" é a régua da CRIATURA,
+          escrita pelo autor em 2026-08-01.
+
+     Ver a divergência `defesaUniforme`. */
+  if (regraDo(sistema, "defesaUniforme") === "player") return def?.defesa ?? 0;
+  return (def?.defesaCriatura ?? def?.custo ?? 0) + Math.max(0, grauDefesa);
+};
 
 /* ============================================================ */
 /* ORÇAMENTO (INDICATIVO)                                       */
@@ -942,10 +957,10 @@ export function armasCustomDaFicha(creature) {
    completa da sua forma e base. Os espaços vêm da seção de carregamento,
    não da tabela de modificações.
 
-   ⚠ Na ficha de CRIATURA (autor, 2026-08-01), o campo `defesa` desta tabela
-   NÃO é aplicado: a armadura dá o CUSTO dela de Defesa, mais o grau da
-   Ferramenta (ver defesaDaArmadura). O campo fica aqui porque é o texto do
-   livro e volta a valer na ficha de jogador.
+   ⚠ O campo `defesa` é o do LIVRO e vale no JOGADOR (2026-08-31). Na ficha de
+   CRIATURA ele não é aplicado: lá a armadura dá o CUSTO dela de Defesa, mais o
+   grau da Ferramenta (autor, 2026-08-01). Ver `defesaDaArmadura` e a divergência
+   `defesaUniforme`.
 
    A `penalidade` VOLTOU a valer (autor, 2026-08-01, segunda passada) e é
    aplicada em testes de perícia que usam Destreza, cumulativa com a do
@@ -1349,6 +1364,22 @@ export const ENCANTAMENTOS_POR_TIPO = {
  */
 export const canalRdEscudo = (sistema) =>
   (regraDo(sistema, "rdEscudoFisico") === "player" ? "rdFisico" : "rdGeral");
+
+/**
+ * Este sistema cobra o grau por encantamento escolhido?
+ *
+ * Na criatura sim, e é preço deliberado. No jogador não: a própria tabela de
+ * grau do livro dele CONCEDE encantamentos, e cobrar o grau por usar o que o
+ * grau deu se morderia. Ver a divergência `reducaoDeGrau`.
+ */
+export const reduzGrauPorEncantamento = (sistema) =>
+  regraDo(sistema, "reducaoDeGrau") !== "player";
+
+/* ⚠ Chave de CONTEXTO, com `#` de propósito: o tokenizer do DSL nunca aceita
+   `#` num identificador, então nenhuma expressão a lê como variável e o
+   vocabulário a ignora pelo mesmo sinal. Mesmo truque do `#marcas`. Ela viaja
+   assim porque o `resolveFerramenta` só recebe o contexto. */
+const CHAVE_REDUZ_GRAU = "#reduzGrau";
 
 /**
  * Os encantamentos que ESTE sistema oferece.
@@ -1807,10 +1838,21 @@ export function resolveFerramenta(entrada, def, bt = 2, ctxBase = null, vagasLiv
   const livres = Math.max(0, Math.trunc(Number(vagasLivres) || 0));
   const permitidos = faEncantamentosPermitidos(tipo, grauValue) + livres;
 
-  // Grau PARA CÁLCULO: cada encantamento escolhido desce um degrau (ver
-  // grauRankCalculo), fora os que ocupam vaga livre. O `permitidos` acima segue
-  // no grau REAL, de propósito.
-  const rankCalculo = grauRankCalculo(grauValue, Math.max(0, escolhidos.length - livres));
+  /* Grau PARA CÁLCULO: cada encantamento escolhido desce um degrau (ver
+     grauRankCalculo), fora os que ocupam vaga livre. O `permitidos` acima segue
+     no grau REAL, de propósito.
+
+     ⚠ A REDUÇÃO NÃO EXISTE NO JOGADOR (autor, 2026-09-01: *"a Redução de Grau
+     por Encantamento não funciona igual para Player. Jogador não perde Bônus
+     Numérico ou qualquer bônus por pegar Encantamentos"*). Faz sentido pelo
+     próprio livro dele: a tabela de grau CONCEDE encantamentos ("Terceiro:
+     Recebe um Encantamento"), e cobrar o grau por usar o que o grau deu se
+     morderia. Na criatura a regra fica, porque lá ela nasceu como preço
+     ("encantamento não é recomendado para criatura"). Ver `reducaoDeGrau`. */
+  const reduz = ctxBase?.[CHAVE_REDUZ_GRAU] !== false;
+  const rankCalculo = reduz
+    ? grauRankCalculo(grauValue, Math.max(0, escolhidos.length - livres))
+    : (AFTY_GRAUS.find((g) => g.value === grauValue)?.rank ?? 0);
   const grauCalculo = grauDoRank(rankCalculo);
 
   // Os três benefícios de grau são o próprio rank: +1 por degrau. Bate com as
@@ -2009,7 +2051,11 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
      como variável e o vocabulário o ignora pelo mesmo sinal. Mesmo truque do
      `#marcas`. Ele existe porque o pseudo-canal `rdEscudo` do Reforçado é
      resolvido lá dentro do `resolveFerramenta`, que só recebe o contexto. */
-  const ctxBase = { ...dslEquipCtxBase(creature, bt), "#canalEscudo": canalEscudo };
+  const ctxBase = {
+    ...dslEquipCtxBase(creature, bt),
+    "#canalEscudo": canalEscudo,
+    [CHAVE_REDUZ_GRAU]: reduzGrauPorEncantamento(opcoes.sistema),
+  };
 
   // Relíquias de coleção são contadas pelo que a criatura CARREGA, não pelo que
   // está equipado. Assim, quando os outros dois Tesouros Sagrados do Japão
@@ -2057,7 +2103,7 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
         uniformesEquipados += 1;
         // A armadura dá o CUSTO dela de Defesa, mais 1 por grau da Ferramenta
         // (autor, 2026-08-01). A tabela de Defesa por modificação não entra.
-        uniformeDefesa += defesaDaArmadura(def, fa?.defesaGrau ?? 0);
+        uniformeDefesa += defesaDaArmadura(def, fa?.defesaGrau ?? 0, opcoes.sistema);
         // Com Ferramenta, a penalidade é a já reduzida pelo Ajustado.
         penalidadeDestreza += fa ? fa.penalidade : (def.penalidade ?? 0);
       } else if (e.tipo === "escudo") {

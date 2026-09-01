@@ -157,7 +157,7 @@ npx vite build
 npm run asserts
 ```
 
-Hoje: **41 arquivos, 2149 asserts.** Um arquivo de assert roda em processo próprio e imprime
+Hoje: **41 arquivos, 2212 asserts.** Um arquivo de assert roda em processo próprio e imprime
 `TODOS OS N ASSERTS PASSARAM`.
 
 Para rodar o `deriveAfty` num script solto, o hook de resolução está no topo de qualquer

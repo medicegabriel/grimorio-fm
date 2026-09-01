@@ -26,7 +26,7 @@ import { useDestaque } from "../usar-destaque";
 
 const ABREV = Object.fromEntries(AFTY_ATTRS.map((a) => [a.key, a.abbr]));
 
-function LinhaTeste({ nome, atributo, bonus, partes, prof, tag, margem, rolar, chave, destacado }) {
+function LinhaTeste({ nome, atributo, bonus, textoBonus, dados, partes, prof, tag, margem, rolar, chave, destacado }) {
   const raiz = useDestaque(destacado);
   return (
     <div
@@ -47,13 +47,16 @@ function LinhaTeste({ nome, atributo, bonus, partes, prof, tag, margem, rolar, c
         <span className="afty-rotulo text-[9px] uppercase tracking-wider flex-shrink-0">{ABREV[atributo] || ""}</span>
       )}
       {tag && <span className="afty-chip flex-shrink-0">{tag}</span>}
+      {/* ⚠ COM DADO A LINHA MOSTRA A ROLAGEM, e não só o fixo. A Resiliência
+          pela Adrenalina soma "2d3 ao resultado", e um "+7" sozinho leria como
+          se fosse tudo. A caixa alarga porque "+7 + 2d3" não cabe em 10. */}
       <NumeroComFontes
-        valor={bonus}
+        valor={textoBonus ?? bonus}
         partes={partes}
-        total={sinalDe(bonus)}
-        className="afty-valor text-[13px] w-10 text-right"
+        total={textoBonus ?? sinalDe(bonus)}
+        className={`afty-valor text-[13px] text-right ${textoBonus ? "w-20" : "w-10"}`}
         ancora="direita"
-        onRolar={() => rolar({ tipo: "teste", rotulo: nome, bonus, margem })}
+        onRolar={() => rolar({ tipo: "teste", rotulo: nome, bonus, dados, margem })}
       />
     </div>
   );
@@ -149,6 +152,8 @@ export default function AbaPericias({ derived, rolar, destaque }) {
               nome={r.label}
               atributo={r.atributo}
               bonus={r.bonus}
+              textoBonus={r.textoBonus}
+              dados={r.dadosExtras}
               partes={r.partes}
               prof={r.prof}
               tag={r.prof === "mestre" ? "Mestre" : null}

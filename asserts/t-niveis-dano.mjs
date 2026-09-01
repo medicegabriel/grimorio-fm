@@ -167,13 +167,25 @@ t("Espada Longa numa mao e 1d8", texto(deriveAfty(ficha("player", 10)), "arm_esp
 t("e nas duas maos e 1d10",
   texto(deriveAfty(ficha("player", 10, { duasMaos: true })), "arm_espada_longa"), "1d10 + 4");
 
-/* ⚠ O GRAU DA FERRAMENTA NÃO DÁ DANO NEM ACERTO NO JOGADOR (autor). O
-   encantamento continua valendo, e é por isso que a divergência mexe no grau e
-   não na Ferramenta. */
+/* ⚠ O GRAU DÁ DANO FIXO NO JOGADOR, E NÃO DÁ ACERTO. São duas metades com
+   histórias diferentes.
+
+   Em 2026-08-31 o autor disse *"Grau da Arma não fornece +Acerto ou +Dano para
+   Jogador"*, e o Acerto ficou em zero. Em 2026-09-01 ele fechou a outra metade:
+   *"Arma de Jogador recebe +1 de Dano Fixo por Grau. Grau Especial = +5 Dano
+   Fixo. Quarto Grau = +1 Dano Fixo."* É o RANK do grau, e não a tabela da
+   criatura (4, 8, 12, 16, 20). Ver a divergência `danoFixoPorGrau`. */
 const semGrau = deriveAfty(ficha("player", 10));
 const comGrau = deriveAfty(ficha("player", 10, { grau: "especial" }));
-t("o Grau Especial nao muda o dano do jogador",
-  texto(comGrau, "arm_espada_longa"), texto(semGrau, "arm_espada_longa"));
+t("o Grau Especial soma 5 de dano fixo no jogador",
+  linha(comGrau, "arm_espada_longa").fixo - linha(semGrau, "arm_espada_longa").fixo, 5);
+t("e o rank sobe de um em um",
+  ["quarto", "terceiro", "segundo", "primeiro", "especial"].map((g) =>
+    linha(deriveAfty(ficha("player", 10, { grau: g })), "arm_espada_longa").fixo
+    - linha(semGrau, "arm_espada_longa").fixo),
+  [1, 2, 3, 4, 5]);
+t("mas NAO muda o dado",
+  linha(comGrau, "arm_espada_longa").dado, linha(semGrau, "arm_espada_longa").dado);
 t("nem o acerto dele",
   linha(comGrau, "arm_espada_longa").acerto, linha(semGrau, "arm_espada_longa").acerto);
 

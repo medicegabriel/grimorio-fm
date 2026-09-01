@@ -52,7 +52,7 @@ Os dois de uniforme estão assim desde julho; o de escudo voltou em 2026-08-31 e
 situação, de propósito. **A peça que falta é a mesma para os três.**
 
 ⚠ **Ligar um sozinho é pior do que os três parados**, porque o jogador passaria a acreditar que os
-outros dois também funcionam. Há assert em `asserts/t-escudo-rd.mjs` prendendo os três juntos: ligar
+outros dois também funcionam. Há assert em `asserts/t-uniforme-escudo.mjs` prendendo os três juntos: ligar
 um faz falhar, para a decisão ser consciente.
 
 A peça também não é só motor: **não existe onde MOSTRAR** uma RD por tipo. A ficha tem uma linha para

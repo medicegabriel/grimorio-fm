@@ -166,6 +166,11 @@ export const EFEITO_CANAIS = [
   { id: "bonusPericia",  label: "Perícia",               alvo: "pericia", nota: "aceita `atr:destreza` para atingir toda perícia daquele atributo (Dádivas do Céu)" },
   { id: "proficienciaPericia", label: "Treino em Perícia", alvo: "pericia", nota: "1 = Treinado, 2 = Mestre. Concede a faixa, não soma número, e nunca REBAIXA o que a ficha já escolheu" },
   { id: "bonusTR",       label: "Teste de Resistência",  alvo: "tr", nota: "aceita `atr:constituicao` para atingir todo TR daquele atributo" },
+  /* O irmão do `bonusTR` para o que a regra escreve como DADO ("adicionar 2d3 ao
+     resultado"). Mesma razão do `dadosNomeados` no dano: a média dá um número
+     certo e uma rolagem errada. O alvo é o DADO, então ele vale em todo Teste de
+     Resistência — que é o que o único caso de hoje diz, "vale em qualquer TR". */
+  { id: "dadosTR",       label: "Dados em Resistência",  alvo: "dadoNomeado", nota: "dado somado ao resultado do TR. O alvo é o dado e o valor é quantos. Vale em todo TR, porque o alvo já é o dado" },
   { id: "margemCriticoTR", label: "Crítico em Resistência", alvo: "tr", nota: "quanto a margem DIMINUI, com piso de 2. Irmão do margemCritico do ataque" },
   { id: "proficienciaTR", label: "Treino em Resistência", alvo: "tr", nota: "irmão de proficienciaPericia, mesmas regras (1 Treinado, 2 Mestre, nunca rebaixa)" },
   { id: "bonusAcerto",   label: "Acerto",                alvo: "ataque" },
@@ -189,6 +194,24 @@ export const EFEITO_CANAIS = [
      afty-niveis-dano.js. Os 22 emissores são os mesmos nos dois. */
   { id: "nivelDano",     label: "Nível de Dano",         alvo: "fonteDano", nota: "na criatura soma 1 no ND só para dano, e no jogador sobe um degrau da escada de dados" },
   { id: "dadosDano",     label: "Dados de Dano",         alvo: "fonteDano", nota: "dado ADICIONAL, somado depois do dano fixo. Não confundir com nivelDano" },
+  /* ⚠ O IRMÃO DO `dadosDano` PARA DADO COM TAMANHO PRÓPRIO (2026-08-31). Autor:
+     *"Execução Silenciosa está aparecendo como +6 ao invés de 1d6."*
+
+     Os dois se dividem pelo que o TEXTO da regra diz:
+       • "1 dado de dano adicional", "+1d"  → `dadosDano`. É um dado da LINHA, e
+         o tamanho acompanha o dado dela.
+       • "1d6 de dano", "2d10"              → `dadosNomeados`. O tamanho é do
+         texto e não muda nunca, então ele não pode ser dado da linha.
+
+     Até hoje o segundo caso virava a MÉDIA do dado no canal `danoBonus` (1d6 =
+     3), o que dava um número certo na conta e uma rolagem errada na tela. O
+     `alvo` é o próprio dado (`d4` a `d12`) e o valor é QUANTOS, então duas
+     fontes de tamanhos diferentes somam cada uma no seu grupo em vez de
+     colidirem.
+
+     ⚠ Ele NÃO aceita escopo de fonte de dano, porque o `alvo` já é o dado. As
+     regras que o usam dizem "ao realizar um ataque", sem recorte de arma. */
+  { id: "dadosNomeados", label: "Dados de Dano (tamanho próprio)", alvo: "dadoNomeado", nota: "dado ADICIONAL com o tamanho escrito na regra (1d6, 2d10). O alvo é o dado e o valor é quantos. Para dado que acompanha o da linha, use Dados de Dano" },
   { id: "margemCritico", label: "Margem de Crítico",     alvo: "fonteDano", nota: "quanto a margem DIMINUI, com piso de 2" },
   { id: "ignoraRD",      label: "Ignora RD",             alvo: "fonteDano" },
   { id: "removeResistencia", label: "Remove Resistência", alvo: "fonteDano", nota: "sinalizador para golpes ou Feitiços que retiram a resistência do alvo" },
@@ -449,7 +472,7 @@ const GRUPOS_DE_CANAL = [
     "guardaBonus", "guardaVida",
   ]],
   ["Ataque e Dano", [
-    "cd", "bonusAcerto", "acertoArma", "danoBonus", "nivelDano", "dadosDano",
+    "cd", "bonusAcerto", "acertoArma", "danoBonus", "nivelDano", "dadosDano", "dadosNomeados",
     "margemCritico", "ignoraRD", "removeResistencia", "propMarcial", "finezaAtaque",
   ]],
   // Atributo, limite e nível de trilha: o que a criatura É, em número próprio.
@@ -458,7 +481,7 @@ const GRUPOS_DE_CANAL = [
   // outro canal e está em Orçamentos.
   ["Atributos e Aptidões", ["atributo", "limiteAtributo", "defesaAtributo", "hpAtributo", "nivelAptidao", "limiteAptidao", "imbuicoesEstilo"]],
   ["Perícias e Resistências", [
-    "bonusPericia", "proficienciaPericia", "bonusTR", "proficienciaTR", "margemCriticoTR",
+    "bonusPericia", "proficienciaPericia", "bonusTR", "dadosTR", "proficienciaTR", "margemCriticoTR",
   ]],
   ["Manobras", ["bonusManobra", "resistirManobra", "distanciaEmpurrao"]],
   ["Movimento e Percepção", ["movimento", "movimentoMult", "iniciativa", "atencao", "tamanho"]],

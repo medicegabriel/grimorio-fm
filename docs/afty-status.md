@@ -121,7 +121,186 @@ Estado atual do sistema Afty (atualizado 2026-08-18). Leia junto com:
 
 ---
 
-## SESSÃO DE 2026-08-31 (parte 7): A RD DO ESCUDO SE PARTIU EM DUAS
+## SESSÃO DE 2026-09-01: O GRAU NO JOGADOR TEM ESCADA PRÓPRIA, E DADO NOMEADO VIROU DADO EM TODA PARTE
+
+Três respostas do autor à auditoria da parte 8, e as três viraram código.
+
+### 1. O grau da arma dá Dano Fixo no jogador
+
+> *"Arma de Jogador recebe +1 de Dano Fixo por Grau. Grau Especial = +5 Dano Fixo. Quarto Grau = +1
+> Dano Fixo."*
+
+É o **rank**, e não a tabela da criatura (4, 8, 12, 16, 20). Divergência `danoFixoPorGrau`.
+
+⚠ **O ACERTO segue em zero**, e essa metade não mudou. Em 2026-08-31 o autor disse *"Grau da Arma não
+fornece +Acerto ou +Dano"*, e agora fechou só a segunda parte. A frase antiga cobria as duas, então o
+assert que a prendia estava certo no dia em que foi escrito e ficou meio errado hoje — foi reescrito
+para medir as duas metades separadas.
+
+Medido, Espada Longa no jogador: sem Ferramenta `1d8+2`, Quarto `1d8+3`, Terceiro `1d8+4`, Segundo
+`1d8+5`, Primeiro `1d8+6`, Especial `1d8+7`. O **dado** não muda.
+
+### 2. A redução de grau por encantamento não existe no jogador
+
+> *"A Redução de Grau por Encantamento não funciona igual para Player. Jogador não perde Bônus
+> Numérico ou qualquer bônus por pegar Encantamentos."*
+
+Divergência `reducaoDeGrau`. Ela **se mordia** no jogador, e é isso que a torna divergência e não
+gosto: a tabela de grau do livro dele **concede** encantamentos ("Terceiro: Recebe um Encantamento"),
+e cobrar o grau por usar o que o grau deu tirava com uma mão o que a outra entregou.
+
+Escudo Pesado de Primeiro Grau, medido:
+
+| Encantamentos | criatura | jogador |
+|---|---|---|
+| 0 | +10 | +10 |
+| 1 | +9 | **+10** |
+| 2 | +8 | **+10** |
+| 3 | +7 | **+10** |
+
+Na criatura a regra fica, porque lá ela nasceu como **preço**, com a justificativa escrita de que
+*"encantamento não é recomendado para criatura"*.
+
+⚠ **Só o escudo sentia.** Na arma o grau agora dá Dano Fixo, então ela passou a sentir também.
+
+### 3. As cinco de dado nomeado viraram dado
+
+> *"pode trocá-las junto. E deixar como Dado."*
+
+O canal `dadosNomeados` nasceu na parte 8 com a Execução Silenciosa. Agora todas:
+
+| Habilidade | Antes | Agora |
+|---|---|---|
+| Ataque Furtivo | `danoBonus` 4 por dado | `dadosNomeados` d8, 1 a 6 conforme o nível |
+| Quebra Crânio | `danoBonus` 11 | `dadosNomeados` d10, 2 |
+| Golpe Impactante | `danoBonus` 3 por dado | `dadosNomeados` d6, metade do mod. de Força |
+| Foco no Inimigo | `danoBonus` 3/4/5/6 | `dadosNomeados` d6, d8, d10 ou d12 |
+| Resiliência pela Adrenalina | `bonusTR` 4 | `dadosTR` d3, 2 |
+
+⚠ **O Foco no Inimigo virou QUATRO linhas mutuamente exclusivas**, uma por tamanho, e não uma linha
+que cresce. Cada degrau SUBSTITUI o anterior, e o canal tem o tamanho no `alvo`. É o preço do
+desenho, e ele se paga: com a média antiga ("3 + degraus"), o d12 do nível 16 valia 6 e não aparecia
+como d12 em lugar nenhum. Há assert medindo que nunca acendem dois de uma vez.
+
+⚠ **A quinta precisou de um TR capaz de carregar rolagem.** Ela soma *"2d3 ao resultado"* de um Teste
+de Resistência, e TR era um número. Três peças:
+
+- canal `dadosTR`, irmão do `dadosNomeados` do lado do TR. O `alvo` é o dado, então ele vale em
+  **todo** TR — que é o que o texto diz, *"vale em qualquer TR"*.
+- a linha do TR ganhou `dadosExtras` e `textoBonus`, e o bônus fixo **não** mudou: o dado viaja ao
+  lado, não dentro.
+- `rolarTeste` ganhou `dados`. **Mostrar o dado e não rolá-lo seria o mesmo silêncio de antes por
+  outro caminho.**
+
+A linha mostra `+13 + 2d3` e a rolagem sai `d20+13 + 2d3`. Os dados extras **não** mexem em crítico
+nem em pifia, que são do d20 e só dele.
+
+⚠ **Trocar o canal mudou o crítico junto, nas quatro de dano**, e é ganho: enquanto era média, o valor
+entrava como dano **fixo**, e a regra do autor é *"Só os Dados, o fixo não dobra"*. Esse lado não
+teria sintoma sozinho — ninguém desconfia de um crítico que soma certo.
+
+### Verificação
+
+`npx eslint src/systems/afty/ asserts/` limpo · `npx vite build` ok · **41 arquivos, 2212 asserts**.
+As seções 7, 8 e 9 de `asserts/t-uniforme-escudo.mjs` prendem as três.
+
+---
+
+## SESSÃO DE 2026-08-31 (parte 8): O QUE O GRAU ENTREGA, MEDIDO NOS DOIS SISTEMAS
+
+Autor: *"subir de Grau em Armas, Escudos e Armaduras não funcionam igual Criatura. Verifique o quê
+ainda está igual em criatura e me faça um comparativo."*
+
+A auditoria foi feita por script, medindo o `deriveAfty` dos dois lados com o mesmo item, e não lendo
+o código.
+
+### O comparativo
+
+Espada Longa (1d8), Escudo Pesado (RD 6) e Revestimento Robusto, num Combatente 10, Tipo Misto,
+Patamar Comum:
+
+| Grau | Arma, criatura | Arma, jogador | Escudo, criatura | Escudo, jogador | Uniforme, criatura | Uniforme, jogador |
+|---|---|---|---|---|---|---|
+| sem Ferramenta | 3d8+9, acerto 8 | 1d8+2, acerto 11 | Geral +6 | Física +6 | Defesa +3 | Defesa +6 |
+| Quarto | 3d8+13, acerto 9 | **igual** | Geral +7 | Física +7 | Defesa +4 | **igual** |
+| Terceiro | 3d8+17, acerto 10 | **igual** | Geral +8 | Física +8 | Defesa +5 | **igual** |
+| Segundo | 3d8+21, acerto 11 | **igual** | Geral +9 | Física +9 | Defesa +6 | **igual** |
+| Primeiro | 3d8+25, acerto 12 | **igual** | Geral +10 | Física +10 | Defesa +7 | **igual** |
+| Especial | 3d8+29, acerto 13 | **igual** | Geral +11 | Física +11 | Defesa +8 | **igual** |
+
+Três leituras:
+
+- **ARMA**: no jogador o grau **não entrega nada** de Acerto nem de Dano, e é o que o autor pediu em
+  2026-08-31 (*"Grau da Arma não fornece +Acerto ou +Dano para Jogador"*). Já estava certo.
+- **ESCUDO**: a escada 1→5 é **igual nos dois**, e está certo: a tabela do livro do jogador dá
+  exatamente esses números. O que diverge é o **tipo** de RD, não o valor.
+- **UNIFORME**: o jogador não ganha Defesa por grau (a tabela de grau do livro para uniformes não tem
+  coluna numérica), e a criatura ganha o rank.
+
+### O que ainda estava igual, e é da criatura
+
+**A REDUÇÃO DE GRAU POR ENCANTAMENTO.** Um Escudo Pesado de Primeiro Grau, medido:
+
+| Encantamentos escolhidos | criatura | jogador |
+|---|---|---|
+| 0 | +10 | +10 |
+| 1 | +9 | +9 |
+| 2 | +8 | +8 |
+| 3 | +7 | +7 |
+
+⚠ **No livro do jogador o Primeiro Grau dá RD 4 E TRÊS encantamentos acumulados**, e usar os três
+derruba a RD para 1. A regra *"cada encantamento desce um grau"* nasceu como preço para a CRIATURA,
+com a justificativa escrita de que *"encantamento não é recomendado para criatura"* — e o próprio
+título da seção no doc diz "(ficha de criatura)".
+
+**Não mexi**, porque é regra e não bug. Anotado em `docs/a-fazer.md` com os números.
+
+Na arma isso não tem sintoma no jogador (o grau já não dá nada), e no uniforme também não (idem).
+**Só o escudo sente**, porque é o único cuja escada de grau sobreviveu no jogador.
+
+### Dado nomeado voltou a ser dado
+
+Autor: *"Artes de Combate, Execução Silenciosa está aparecendo como +6 ao invés de 1d6."*
+
+O texto é *"adicionando 1d6 de dano. A cada +2 no Modificador de Sabedoria, o dano aumenta em +1d6"*,
+e a ficha mostrava **+6**. A causa é uma convenção de julho, escrita no topo do `afty-efeitos-conteudo.js`:
+
+> *"1d6 de dano", "2d10", "Xd8" → canal `danoBonus` com a MÉDIA arredondada para baixo.*
+
+Ela existe por um motivo real: usar o canal `dadosDano` ali daria um dado da LINHA, que muda de
+tamanho com o Patamar, e um "1d6" viraria d12 na Calamidade. **Mas a alternativa não precisava ser a
+média** — faltava um canal que carregasse o dado com o tamanho próprio.
+
+Agora existe: **`dadosNomeados`**, com `alvo` = o dado (`d4` a `d12`) e valor = quantos. Duas fontes
+de tamanhos diferentes somam cada uma no seu grupo, em vez de colidirem num número só.
+
+⚠ **NÃO É DIVERGÊNCIA.** Um d6 é um d6 em qualquer Patamar, então a correção vale igual nos dois
+sistemas. Medido:
+
+```
+afty    SAB 10 → 3d8+9 + 1d6     SAB 14 → 3d8+9 + 2d6     SAB 18 → 3d8+9 + 3d6
+player  SAB 10 → 1d8 + 2 + 1d6   SAB 14 → 1d8 + 2 + 2d6   SAB 18 → 1d8 + 2 + 3d6
+```
+
+⚠ **E ELE PASSOU A DOBRAR NO CRÍTICO.** Enquanto era média, o valor entrava como dano **fixo**, e a
+regra do autor é *"Só os Dados, o fixo não dobra"*. Trocar o canal conserta a rolagem **e** o crítico,
+e o segundo não teria sintoma nenhum sozinho: ninguém desconfia de um crítico que soma certo.
+
+⚠ **O grupo sai NOMEADO pela fonte** ("Artes do Combate"), e não como uma linha anônima, porque a
+linha de dano já sabe fazer isso (Fatal, Mortal, Golpe Especial usam o mesmo encaixe).
+
+**Liguei só a Execução Silenciosa**, que foi a que o autor citou. Outras **cinco** entradas usam a
+mesma convenção da média e mudariam de número se eu as trocasse junto — vão para `a-fazer.md` em vez
+de virarem rebalanceamento silencioso.
+
+### Verificação
+
+`npx eslint src/systems/afty/ asserts/` limpo · `npx vite build` ok · **41 arquivos, 2186 asserts**.
+As seções 7 e 8 de `asserts/t-uniforme-escudo.mjs` prendem a auditoria do grau e o dado nomeado.
+
+---
+
+## SESSÃO DE 2026-08-31 (parte 7): A RD DO ESCUDO SE PARTIU EM DUAS, E O UNIFORME JUNTO
 
 O autor mandou as duas seções do livro (Uniformes e Escudos) na íntegra, para conferência, e a
 conferência virou trabalho.
@@ -197,10 +376,41 @@ Não existe canal de RD **por tipo de dano** no motor. Os dois irmãos dele no u
 Ligar um sozinho seria pior do que os três parados, porque o jogador passaria a acreditar que os
 outros dois também funcionam. Há assert prendendo os três juntos: ligar um faz falhar.
 
+### E o uniforme, no mesmo movimento
+
+Autor: *"você não modificou os Uniformes. Ainda está fornecendo +3 de Defesa o Robusto."*
+
+A divergência `defesaUniforme` estava na tabela desde julho, **desligada**: o jogador usava a régua da
+criatura, que é o CUSTO da modificação mais 1 por grau. Ligá-la é meia solução, e a outra metade não
+está escrita em lugar nenhum do texto — **lê-se pela ausência**.
+
+⚠ **A tabela de grau do livro para UNIFORMES tem uma coluna só**, *"Recebe um Encantamento"*. A de
+escudos tem "RD FÍSICO" e a de armas tem "Bônus de Arma". O uniforme **não ganha Defesa por grau**: o
+"+1 por grau" nasceu com a régua da criatura, em 2026-08-01. Ligar só a coluna daria um Robusto de
+Segundo Grau com 6 + 3 = **9**, e o livro dá **6**.
+
+Os dois lados, medidos:
+
+| Modificação | Jogador | Criatura | Jogador, Grau Segundo | Criatura, Grau Segundo |
+|---|---|---|---|---|
+| Comum | 0 | 0 | 0 | +3 |
+| Revestimento Leve | +2 | +1 | +2 | +4 |
+| Revestimento Médio | +4 | +2 | +4 | +5 |
+| Revestimento Robusto | +6 | +3 | +6 | +6 |
+| Sob Medida | +1 | +1 | +1 | +4 |
+
+⚠ **Sob Medida bate por acidente.** Ele dá 1 nos dois, mas por caminhos diferentes: no jogador é a
+coluna do livro, e na criatura é a exceção declarada do `defesaCriatura` (custa 2 e dá 1, *"já que ela
+já dá benefícios em Perícia"*). Mexer num não mexe no outro.
+
+⚠ **Três telas mostravam o número, e as três precisaram do sistema**: o benefício da Ferramenta no
+editor do item, o chip "+N Def" da linha do catálogo (nos dois lugares que a renderizam) e o card de
+referência. Número certo no motor e errado na etiqueta é o mesmo bug de sempre.
+
 ### Verificação
 
-`npx eslint src/systems/afty/ asserts/` limpo · `npx vite build` ok · **41 arquivos, 2149 asserts**.
-Novo: `asserts/t-escudo-rd.mjs` (31).
+`npx eslint src/systems/afty/ asserts/` limpo · `npx vite build` ok · **41 arquivos, 2169 asserts**.
+Novo: `asserts/t-uniforme-escudo.mjs` (52).
 
 ---
 

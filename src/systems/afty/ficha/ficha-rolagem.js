@@ -46,8 +46,20 @@ export function rolarDados(quantidade, faces, rng = Math.random) {
  * `margem` é a margem de crítico DAQUELA linha (o motor já a calcula, com o piso
  * de 2 aplicado). Sem ela, crítico é só no 20 natural.
  */
-export function rolarTeste({ rotulo, detalhe, bonus = 0, modo = "normal", margem = 20, cd = null }, rng = Math.random) {
+export function rolarTeste(
+  { rotulo, detalhe, bonus = 0, dados = [], modo = "normal", margem = 20, cd = null },
+  rng = Math.random,
+) {
   const bonusInt = Math.trunc(Number(bonus) || 0);
+  /* DADOS SOMADOS AO RESULTADO, quando a regra escreve um dado em vez de um
+     número ("adicionar 2d3 ao resultado", Resiliência pela Adrenalina). Eles não
+     são o d20: entram por cima dele, como o bônus, e por isso não mexem em
+     crítico nem em pifia, que são do d20 e só dele. */
+  const extras = (Array.isArray(dados) ? dados : [])
+    .filter((d) => d && d.qtd > 0 && d.faces > 0)
+    .map((d) => ({ qtd: Math.trunc(d.qtd), faces: Math.trunc(d.faces), valores: rolarDados(Math.trunc(d.qtd), Math.trunc(d.faces), rng) }));
+  const somaExtras = extras.reduce((s, d) => s + d.valores.reduce((a, b) => a + b, 0), 0);
+  const textoExtras = extras.map((d) => `${d.qtd}d${d.faces}`).join(" + ");
   const dupla = modo === "vantagem" || modo === "desvantagem";
   const d20 = rolarDados(dupla ? 2 : 1, 20, rng);
   const escolhido = !dupla ? d20[0]
@@ -56,7 +68,7 @@ export function rolarTeste({ rotulo, detalhe, bonus = 0, modo = "normal", margem
   // Qual dos dois foi descartado, para o painel poder riscá-lo. Com os dois
   // iguais não há descarte visível, e o índice 1 serve igual.
   const descartado = dupla ? (d20[0] === escolhido ? 1 : 0) : null;
-  const total = escolhido + bonusInt;
+  const total = escolhido + bonusInt + somaExtras;
   const cdFinal = cd == null ? null : Math.trunc(Number(cd));
   return {
     id: novoId(),
@@ -64,11 +76,15 @@ export function rolarTeste({ rotulo, detalhe, bonus = 0, modo = "normal", margem
     tipo: "teste",
     rotulo,
     detalhe: detalhe ?? null,
-    formula: `d20${bonusInt >= 0 ? "+" : "−"}${Math.abs(bonusInt)}`,
+    formula: `d20${bonusInt >= 0 ? "+" : "−"}${Math.abs(bonusInt)}${textoExtras ? ` + ${textoExtras}` : ""}`,
     d20,
     descartado,
     natural: escolhido,
     bonus: bonusInt,
+    // O que os dados extras somaram, e o detalhe de cada um, para o log poder
+    // mostrar a rolagem em vez de um número que apareceu do nada.
+    extras,
+    somaExtras,
     total,
     cd: Number.isFinite(cdFinal) ? cdFinal : null,
     sucesso: Number.isFinite(cdFinal) ? total >= cdFinal : null,

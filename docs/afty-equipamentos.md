@@ -127,8 +127,16 @@ que é modelagem e não texto.
 | Revestimento Robusto | +6 | -4 | 3 | 4 |
 | Sob Medida | +1 | 0 | 2 | 0 |
 
-⚠ **A coluna de Defesa NÃO vale na ficha de criatura** (autor, 2026-08-01). A tabela fica aqui porque
-é o texto do livro e volta a valer na ficha de jogador. Na criatura:
+⚠ **Esta coluna É o que vale no JOGADOR** (autor, 2026-08-31: *"você não modificou os Uniformes.
+Ainda está fornecendo +3 de Defesa o Robusto"*). Divergência `defesaUniforme`, ligada.
+
+⚠ **E o GRAU da Ferramenta não soma Defesa nenhuma no jogador.** Isso não está escrito em lugar
+nenhum do texto: lê-se pela **ausência**. A tabela de grau do livro para UNIFORMES tem uma coluna só,
+*"Recebe um Encantamento"*, enquanto a de escudos tem "RD FÍSICO" e a de armas tem "Bônus de Arma". O
+"+1 por grau" nasceu com a régua da criatura. Ligar só a coluna e esquecer isso daria um Robusto de
+Segundo Grau com 6 + 3 = **9**, e o livro dá **6**.
+
+Na criatura a coluna **não** vale (autor, 2026-08-01), e a régua é outra:
 
 **Defesa da armadura = o CUSTO dela, mais 1 por grau** da Ferramenta Amaldiçoada. Um Revestimento
 Robusto (custo 3) de Segundo Grau dá 3 + 3 = 6. Helper: `defesaDaArmadura(def, grauDefesa)`.
@@ -150,8 +158,19 @@ usam Destreza, cumulativa com a do escudo. Ver a seção "O que o motor aplica".
 **Ajustado** (uniforme) e **Polido** (escudo) reduzem a penalidade do item, e a redução nunca
 inverte o sinal: um Escudo Leve de -1 com Polido fica em 0, não em +1.
 
-A tabela e as descrições foram **reconferidas com o texto do livro em 2026-08-01** e batem com o
-catálogo.
+A tabela e as descrições foram **reconferidas com o texto do livro em 2026-08-01** e de novo em
+**2026-08-31**, desta vez por script: as quatro descrições e os quatro conjuntos de números batem
+palavra por palavra e valor por valor com o catálogo.
+
+Os dois lados, medidos:
+
+| Modificação | Jogador (livro) | Criatura (custo) | Jogador, Grau Segundo | Criatura, Grau Segundo |
+|---|---|---|---|---|
+| Comum | 0 | 0 | 0 | +3 |
+| Revestimento Leve | +2 | +1 | +2 | +4 |
+| Revestimento Médio | +4 | +2 | +4 | +5 |
+| Revestimento Robusto | +6 | +3 | +6 | +6 |
+| Sob Medida | +1 | +1 | +1 | +4 |
 
 ✅ A exceção do Sob Medida resolveu de quebra o problema de dominância que a regra do custo tinha
 criado: ele e o Revestimento Médio custavam 2 e davam a mesma Defesa, mas só o Médio tinha
@@ -229,7 +248,7 @@ vem de `encantamentosDe(tipo, sistema)`, nunca do `ENCANTAMENTOS_POR_TIPO` cru.
 ⚠ **Ele está sem `efeitos`, e isso é consistente e não esquecimento.** Não existe canal de RD **por
 tipo de dano** no motor. Os dois irmãos dele no uniforme (**Isolante** e **Resiliente**) estão na
 mesma situação desde julho, e os três precisam da mesma peça. Há assert prendendo os três juntos, em
-`asserts/t-escudo-rd.mjs`, para que ligar um sozinho falhe.
+`asserts/t-uniforme-escudo.mjs`, para que ligar um sozinho falhe.
 
 ---
 

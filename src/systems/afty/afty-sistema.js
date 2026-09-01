@@ -199,6 +199,39 @@ export const DIVERGENCIAS = [
        BASE dela. Os canais `rdGeral`, `rdEspecifico` e o bônus de equipamento
        continuam somando normalmente, e é por isso que esta divergência mexe só
        na base e não no total. */
+    /* ⚠ ELA SE MORDERIA NO JOGADOR, e é o que a torna divergência e não gosto.
+       A tabela de grau do livro dele CONCEDE encantamentos ("Terceiro: Recebe um
+       Encantamento"), então cobrar o grau por usar o que o grau deu tira com uma
+       mão o que a outra entregou: um Escudo Pesado de Primeiro Grau, que o livro
+       diz dar RD 4 e três encantamentos, ficava com RD 1 ao usar os três.
+
+       Na criatura a regra fica, porque lá ela nasceu como PREÇO, com a
+       justificativa escrita de que "encantamento não é recomendado para
+       criatura". */
+    id: "reducaoDeGrau",
+    tipo: "regra",
+    onde: "afty-equipamentos.js, resolveFerramenta, o rankCalculo",
+    fonte: "A Redução de Grau por Encantamento não funciona igual para Player. Jogador não perde Bônus Numérico ou qualquer bônus por pegar Encantamentos. (autor, 2026-09-01)",
+    afty: "cada encantamento comprado desce um degrau do grau de cálculo",
+    player: "o grau de cálculo é o grau real, e encantamento não cobra nada",
+    ativa: true,
+  },
+  {
+    /* ⚠ O JOGADOR GANHA DANO FIXO PELO GRAU, e é escada própria: o rank, de 1 a
+       5. A da criatura é outra (4, 8, 12, 16, 20, em DANO_ADICIONAL_ARMA), e o
+       jogador não usava nenhuma das duas até 2026-09-01.
+
+       O ACERTO segue em zero no jogador, e essa metade não mudou: o autor
+       nomeou só o Dano Fixo. Ver `danoPorArma`, que é onde o Acerto cai. */
+    id: "danoFixoPorGrau",
+    tipo: "regra",
+    onde: "afty-pericias.js, linhaDeDanoJogador",
+    fonte: "Arma de Jogador recebe +1 de Dano Fixo por Grau. Grau Especial = +5 Dano Fixo. Quarto Grau = +1 Dano Fixo. (autor, 2026-09-01)",
+    afty: "a tabela DANO_ADICIONAL_ARMA: 4, 8, 12, 16 e 20",
+    player: "o rank do grau: 1, 2, 3, 4 e 5",
+    ativa: true,
+  },
+  {
     id: "rdEscudoFisico",
     tipo: "regra",
     onde: "afty-equipamentos.js, o ramo de escudo do resolveEquipamentos, e o pseudo-canal rdEscudo",
@@ -539,13 +572,21 @@ export const DIVERGENCIAS = [
     ativa: true,
   },
   {
+    /* ⚠ O GRAU NÃO SOMA DEFESA NO JOGADOR, e essa é a metade que não estava
+       escrita em lugar nenhum. A tabela de grau do livro para UNIFORMES tem uma
+       coluna só, "Recebe um Encantamento": ela não tem coluna numérica, ao
+       contrário da de escudos ("RD FÍSICO") e da de armas ("Bônus de Arma"). O
+       "+1 por grau" nasceu com a régua da criatura, em 2026-08-01, e fica lá.
+
+       Ligar só a coluna e esquecer o grau daria um Robusto de Segundo Grau com
+       6 + 3 = 9 de Defesa, e o livro dá 6. */
     id: "defesaUniforme",
     tipo: "regra",
-    onde: "afty-equipamentos.js, UNIFORME_MODIFICACOES",
-    fonte: "Na ficha de CRIATURA (autor, 2026-08-01), o campo `defesa` desta tabela NÃO é aplicado: a armadura dá o CUSTO dela de Defesa, mais o grau da Ferramenta. O campo fica aqui porque é o texto do livro e volta a valer na ficha de jogador.",
+    onde: "afty-equipamentos.js, defesaDaArmadura",
+    fonte: "Você não modificou os Uniformes. Ainda está fornecendo +3 de Defesa o Robusto. (autor, 2026-08-31) MODIFICAÇÃO DE UNIFORME / BÔNUS NA DEFESA: Revestimento Leve +2, Revestimento Médio +4, Revestimento Robusto +6, Sob Medida +1. (livro do jogador)",
     afty: "custo da modificação, mais 1 por grau da Ferramenta",
-    player: "a coluna Defesa da tabela do livro",
-    ativa: false,
+    player: "a coluna Bônus na Defesa da tabela do livro, e o grau não soma nada",
+    ativa: true,
   },
   {
     id: "inventarioSimplificado",

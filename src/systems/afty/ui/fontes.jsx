@@ -69,14 +69,19 @@ export function PainelDeFontes({ partes, total, ancora = "direita", aparecer = "
   );
 }
 
-export function ValorComFontes({ valor, partes }) {
+export function ValorComFontes({ valor, partes, texto = null }) {
   const lista = (partes || []).filter(Boolean);
+  /* ⚠ `texto` SUBSTITUI O NÚMERO quando a linha tem uma ROLAGEM, e não só um
+     bônus fixo. O primeiro caso é o Teste de Resistência que ganha dado ("+7 +
+     2d3", Resiliência pela Adrenalina): mostrar só o "+7" leria como se fosse
+     tudo. A caixa alarga porque a expressão não cabe na largura do número. */
+  const mostrado = texto ?? sinalDe(valor);
   return (
     <span className="relative group flex-shrink-0">
-      <span className="font-mono text-sm font-bold tabular-nums text-white w-9 block cursor-help text-right">
-        {sinalDe(valor)}
+      <span className={`font-mono text-sm font-bold tabular-nums text-white block cursor-help text-right ${texto ? "w-20" : "w-9"}`}>
+        {mostrado}
       </span>
-      {lista.length > 0 && <PainelDeFontes partes={lista} total={sinalDe(valor)} />}
+      {lista.length > 0 && <PainelDeFontes partes={lista} total={mostrado} />}
     </span>
   );
 }
