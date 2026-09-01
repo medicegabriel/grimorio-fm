@@ -508,7 +508,11 @@ export const AFTY_TREINAMENTOS = [
       { n: 1, focos: 1, requisito: null,
         beneficio: "Escolha uma perícia: você se torna treinado nela. Caso já seja, adicione +1 em testes de perícia usando-a.",
         efeitos: [
-          { tipo: "profPericia", valor: 1 },
+          /* ⚠ `semCredito`: esta concessão NÃO abate o custo da faixa. É a única
+             família em que marcar por cima do verde COMPRA alguma coisa (o +1 do
+             "Caso já seja"), e creditar devolveria a vaga que fez o +1 existir.
+             Toda outra concessão de perícia credita. Ver afty-pericias.js. */
+          { tipo: "profPericia", valor: 1, semCredito: true },
           { tipo: "pericia", valor: 1, quandoProf: 1 },
         ] },
       { n: 2, focos: 1, requisito: null,
@@ -516,7 +520,7 @@ export const AFTY_TREINAMENTOS = [
       { n: 3, focos: 1, requisito: null,
         beneficio: "Você se torna mestre na perícia escolhida. Caso já seja, adicione +2 em testes de perícia usando-a.",
         efeitos: [
-          { tipo: "profPericia", valor: 2 },
+          { tipo: "profPericia", valor: 2, semCredito: true },
           { tipo: "pericia", valor: 2, quandoProf: 2 },
         ] },
       { n: 4, focos: 2, requisito: null,
@@ -725,7 +729,12 @@ function paraCanal(ef, alvoInstancia, alvos = {}) {
       return { canal: "nivelDano", alvo: "basico", expr };
     // Concede a faixa de treino numa perícia: 1 = Treinado, 2 = Mestre.
     case "profPericia":
-      return alvoInstancia ? { canal: "proficienciaPericia", alvo: alvoInstancia, expr } : null;
+      return alvoInstancia
+        ? {
+          canal: "proficienciaPericia", alvo: alvoInstancia, expr,
+          ...(ef.semCredito ? { semCredito: true } : {}),
+        }
+        : null;
     default:
       return null;
   }

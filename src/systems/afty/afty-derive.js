@@ -1459,6 +1459,10 @@ export function deriveAfty(creature, opcoes = {}) {
         // se o efeito é passivo ou de bancada (Habilidade Única, Técnica de
         // Estilo Especial). Quem não usa nunca o grava, e ele fica ausente.
         ...(e?.modo ? { modo: e.modo } : {}),
+        /* ⚠ E o `semCredito` pelo mesmo motivo do `modo`: o editor LÊ este
+           objeto e grava ele de volta em `core.tecnicaEfeitos`, então campo que
+           não for copiado aqui se perde na primeira edição, calado. */
+        ...(e?.semCredito ? { semCredito: true } : {}),
         // `alvoTipo` diz à UI qual vocabulário oferecer (atributo, perícia, tr...).
         alvoTipo: def?.alvo ?? null,
         nota: def?.nota ?? null,

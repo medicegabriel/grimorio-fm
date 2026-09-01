@@ -1054,6 +1054,37 @@ export function resolveTestes(creature, ctx = {}) {
     return NOME_FAIXA[nivel] ?? null;
   };
 
+  /* ⚠ A FAIXA QUE ABATE O CUSTO (autor, 2026-09-01: *"quando recebo Perícias de
+     maneira garantida [...] e eu tento me tornar Mestre logo após, ele consta
+     como 2 Perícias gastas ao invés de 1"*).
+
+     Uma concessão de faixa PAGA o degrau que ela dá: subir de um Treinado
+     concedido para Mestre custa a diferença, e não o preço cheio. Antes o gasto
+     saía inteiro da faixa escolhida, e a concessão virava pó no instante em que
+     alguém subia por cima dela.
+
+     ⚠ NEM TODA CONCESSÃO CREDITA, e é a única exceção do sistema: as entradas de
+     "Caso já seja" (Treino de Perícia, Extração de Potencial, Força Imparável)
+     EXIGEM que a ficha pague a faixa para o benefício existir, porque a condição
+     delas lê `prof_*`, que é a faixa ESCOLHIDA. Creditar ali devolveria a vaga
+     que fez o bônus nascer. Elas se declaram com `semCredito`, e o validador de
+     efeitos recusa quem lê `prof_` sem dizer de que lado está.
+
+     O pacote da Classe não entra aqui porque ele já não cobrava nada: ele sobe a
+     faixa resolvida sem tocar na escolhida. */
+  const faixaCreditada = (canal, id) => {
+    const soma = (ef ? detalhesDoCanal(ef, canal, id) : [])
+      .filter((d) => !d.semCredito)
+      .reduce((t, d) => t + (Number(d.valor) || 0), 0);
+    return Math.min(2, Math.max(0, Math.trunc(soma)));
+  };
+  /* O que a ficha paga por aquela linha: o preço da faixa escolhida menos o do
+     que foi concedido de graça, com piso em zero. */
+  const custoLiquido = (canal, id, escolhida) => Math.max(
+    0,
+    custoProficiencia(escolhida) - custoProficiencia(NOME_FAIXA[faixaCreditada(canal, id)] ?? null),
+  );
+
   // `requerTreinamento` e `complementar` seguem no catálogo (são a tabela do
   // livro e o filtro das Invocações depende deles), mas NÃO viram marcação na
   // tela: o autor tirou as duas da UI em 2026-07-27. Quem precisa da regra lê
@@ -1324,8 +1355,12 @@ export function resolveTestes(creature, ctx = {}) {
      a tela usa para saber que aquele TR foi marcado à mão numa ficha onde marcar
      não devia ser possível. Zerar a variável esconderia o sintoma. */
   const trForaDoCaixa = regraDo(ctx.sistema, "trForaDoOrcamento") === "player";
-  const gastoPericias = pericias.reduce((s, p) => s + custoProficiencia(p.profEscolhida), 0);
-  const gastoResistencias = resistencias.reduce((s, r) => s + custoProficiencia(r.profEscolhida), 0);
+  const gastoPericias = pericias.reduce(
+    (s, p) => s + custoLiquido("proficienciaPericia", p.id, p.profEscolhida), 0,
+  );
+  const gastoResistencias = resistencias.reduce(
+    (s, r) => s + custoLiquido("proficienciaTR", r.value, r.profEscolhida), 0,
+  );
   const gastos = gastoPericias + (trForaDoCaixa ? 0 : gastoResistencias);
 
   return {

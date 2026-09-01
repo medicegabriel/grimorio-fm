@@ -121,6 +121,97 @@ Estado atual do sistema Afty (atualizado 2026-09-01). Leia junto com:
 
 ---
 
+## SESSÃO DE 2026-09-01 (parte 4): A CONCESSÃO DE FAIXA PASSOU A PAGAR O DEGRAU QUE ELA DÁ
+
+> *"quando recebo Perícias de maneira garantida como por exemplo Clã Akutame que me fornece Atletismo
+> e Feitiçaria, e eu tento me tornar Mestre em Feitiçaria logo após, ele consta como 2 Perícias
+> gastas ao invés de 1."*
+
+O diagnóstico do autor estava certo, inclusive na causa.
+
+### O que era
+
+O gasto saía inteiro da faixa **escolhida na ficha**, e a concedida não creditava nada:
+
+```js
+const gastoPericias = pericias.reduce((s, p) => s + custoProficiencia(p.profEscolhida), 0);
+```
+
+Medido com o Clã Akutame, que concede Feitiçaria treinada: escolher Mestre custava **2**, igual a
+quem não tem o clã. A Feitiçaria do clã virava pó no instante em que alguém subia por cima dela.
+
+⚠ **E o mesmo bug estava no TR**, na ficha de CRIATURA, pela mesma linha. Talento Alma Inquebrável
+concede Integridade treinada, e escolher Mestre cobrava 2. No jogador não morde, porque lá o TR está
+fora do orçamento (`trForaDoOrcamento`).
+
+### Por que estava certo em três lugares, e essa é a parte que impede o conserto óbvio
+
+O `prof_*` do DSL lê **só a faixa que a ficha marcou**, de propósito e com o motivo escrito desde que
+nasceu (*"senão a condição enxergaria a si mesma"*). Três entradas dependem disso:
+
+| Entrada | Como |
+|---|---|
+| Treino de Perícia, etapas 1 e 3 | `quandoProf` → o *"Caso já seja, adicione +1"* só entra se o jogador pagou |
+| Extração de Potencial | a própria concessão é `1 + (prof_feiticaria >= 1)` |
+| Força Imparável | `1 + (prof_tr_X >= 1)`, em dois pontos |
+
+⚠ **Creditar a concessão sem mais nada libera as três de graça.** Na Extração, escolher Treinado
+(custo 1) faz a concessão virar 2, e um crédito de 2 daria Mestre por zero. É exatamente por isso que
+o código estava como estava, e é o que descartou a saída automática.
+
+### O que ficou
+
+Concessão de faixa passa a **creditar por padrão**, e as três exceções se declaram:
+
+```js
+custo = max(0, custo(escolhida) − custo(faixa concedida que credita))
+```
+
+Nasceu a marca **`semCredito`**, do EFEITO e não do canal, no molde exato do `furaTeto`. Medido:
+
+| | antes | agora |
+|---|---|---|
+| Akutame concede Treinado, escolhe Mestre | 2 | **1** |
+| Akutame concede Treinado, escolhe Treinado | 1 | **0** |
+| Concessão de Mestre, escolhe Mestre | 2 | **0** |
+| Treino de Perícia etapa 1 + escolhe Treinado | 1 | 1 (inalterado) |
+| Treino de Perícia etapa 3 + escolhe Mestre | 2 | 2 (inalterado) |
+
+Piso em zero: concessão maior que a escolha nunca DEVOLVE vaga.
+
+### O portão, porque esquecer a marca não teria sintoma
+
+O validador de efeitos passou a **recusar** uma concessão de faixa cuja expressão leia `prof_` ou
+`prof_tr_` sem declarar de que lado está. Sem ele, um Addon que escrevesse o próximo "Caso já seja"
+daria Mestre de graça e o único sinal seria uma vaga a mais no contador. O catálogo do livro passa
+limpo, e as três entradas de hoje estão marcadas.
+
+### ⚠ A MARCA PRECISOU ATRAVESSAR CINCO RECONSTRUÇÕES
+
+Esta é a lição da sessão, e ela é da família do **efeito descartado calado**. O objeto de efeito é
+reconstruído campo a campo em cinco lugares, e cada um que não copiasse a marca a apagava sem
+sintoma nenhum:
+
+| # | Onde | O que é |
+|---|---|---|
+| 1 | `aplicarEfeitos`, ramo comum | o `detalhes.push` |
+| 2 | `aplicarEfeitos`, ramo do pool exclusivo | o `exclusivos.push` |
+| 3 | `resolverExclusivos` | o `detalhes.push` do vencedor e dos suplantados |
+| 4 | `efeitosDaTecnica` | o Funcionamento Básico escrito à mão |
+| 5 | `resolverEfeitosEditaveis` (afty-derive.js) | ⚠ o pior: o editor LÊ este objeto e GRAVA ele de volta em `core.tecnicaEfeitos`, então o campo se perderia na primeira edição |
+
+O assert só ficou verde depois dos cinco. Os três primeiros foram descobertos um a um, cada um
+escondendo o seguinte, e é por isso que ficam anotados aqui: quem acrescentar o próximo campo de
+efeito tem de percorrer a mesma lista.
+
+### Verificação
+
+`npx eslint src/systems/afty/ asserts/` limpo · `npx vite build` ok · **42 arquivos, 2262 asserts**
+(eram 2248, mais 14 em `t-pericias-pacote.mjs`, medindo os DOIS lados: o que passou a creditar e o
+que continua cobrando cheio). `git diff --name-only | grep src/components/` vazio.
+
+---
+
 ## SESSÃO DE 2026-09-01 (parte 3): O FLUGEL SAIU DO BUNDLE, E O GATILHO CHEGOU NAS TRÊS TELAS
 
 Duas queixas do autor sobre o pacote que o GoliasK entregou de manhã, e as duas procedem.

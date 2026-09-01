@@ -178,7 +178,7 @@ export const EFEITO_CANAIS = [
      ⚠ Desempate igual ao do `defesaAtributo`: vale o MAIOR, porque a regra é
      sempre *"você PODE usar"*. Quem oferece uma troca opcional nunca piora. */
   { id: "periciaFixa",   label: "Perícia com Valor Fixo", alvo: "pericia", nota: "TROCA o bônus inteiro da perícia por este número, e não soma nada. Com mais de um vale o maior, porque a regra é sempre \"você pode usar\"" },
-  { id: "proficienciaPericia", label: "Treino em Perícia", alvo: "pericia", nota: "1 = Treinado, 2 = Mestre. Concede a faixa, não soma número, e nunca REBAIXA o que a ficha já escolheu" },
+  { id: "proficienciaPericia", label: "Treino em Perícia", alvo: "pericia", aceitaSemCredito: true, nota: "1 = Treinado, 2 = Mestre. Concede a faixa, não soma número, e nunca REBAIXA o que a ficha já escolheu. CREDITA no orçamento: subir de uma faixa concedida custa só a diferença. Ver `semCredito`" },
   { id: "bonusTR",       label: "Teste de Resistência",  alvo: "tr", nota: "aceita `atr:constituicao` para atingir todo TR daquele atributo" },
   /* O irmão do `bonusTR` para o que a regra escreve como DADO ("adicionar 2d3 ao
      resultado"). Mesma razão do `dadosNomeados` no dano: a média dá um número
@@ -186,7 +186,7 @@ export const EFEITO_CANAIS = [
      Resistência — que é o que o único caso de hoje diz, "vale em qualquer TR". */
   { id: "dadosTR",       label: "Dados em Resistência",  alvo: "dadoNomeado", nota: "dado somado ao resultado do TR. O alvo é o dado e o valor é quantos. Vale em todo TR, porque o alvo já é o dado" },
   { id: "margemCriticoTR", label: "Crítico em Resistência", alvo: "tr", nota: "quanto a margem DIMINUI, com piso de 2. Irmão do margemCritico do ataque" },
-  { id: "proficienciaTR", label: "Treino em Resistência", alvo: "tr", nota: "irmão de proficienciaPericia, mesmas regras (1 Treinado, 2 Mestre, nunca rebaixa)" },
+  { id: "proficienciaTR", label: "Treino em Resistência", alvo: "tr", aceitaSemCredito: true, nota: "irmão de proficienciaPericia, mesmas regras (1 Treinado, 2 Mestre, nunca rebaixa, e credita no orçamento)" },
   { id: "bonusAcerto",   label: "Acerto",                alvo: "ataque" },
   // Irmão do `bonusAcerto` para quando o bônus é de UMA arma, e não da jogada
   // de ataque inteira ("+1 em jogadas de ataque com a arma escolhida", Treino
@@ -846,6 +846,11 @@ export function efeitosDaTecnica(creature) {
       if (alvo) ef.alvo = alvo;
       if (e.quando) ef.quando = String(e.quando).trim();
       if (e.duracao === "temporaria") ef.duracao = "temporaria";
+      /* ⚠ A marca TEM de atravessar: este objeto é RECONSTRUÍDO campo a campo,
+         e o que não for copiado aqui some sem sintoma. Uma concessão de faixa
+         que perdesse o `semCredito` no caminho voltaria a creditar, e o único
+         sinal seria uma vaga de perícia a mais no contador. */
+      if (e.semCredito) ef.semCredito = true;
       out.push(ef);
     }
   }
@@ -1250,6 +1255,7 @@ export function aplicarEfeitos(efeitos, ctx = {}) {
         canal: e.canal, alvo, valor, exclusivo: e.exclusivo,
         origem: e.origem || null, nome: e.nome || e.origem || "Efeito",
         duracao: e.duracao || "permanente",
+        semCredito: !!e.semCredito && !!canal.aceitaSemCredito,
       });
       continue;
     }
@@ -1264,10 +1270,17 @@ export function aplicarEfeitos(efeitos, ctx = {}) {
     // ("podendo superar o máximo de 30", Aperfeiçoamento de Atributo) passam.
     const furaTeto = !!e.furaTeto && !!canal.aceitaFuraTeto;
     if (furaTeto) furaTetoPor[alvo || "todos"] = true;
+    /* ⚠ `semCredito` é do EFEITO, e não do canal, exatamente como o `furaTeto`
+       logo acima. Ele diz que aquela concessão NÃO abate o custo da faixa no
+       orçamento, e só as pouquíssimas entradas de "Caso já seja" a usam: nelas
+       a ficha PRECISA pagar a faixa para o benefício existir, então creditar
+       tiraria com uma mão o que a regra cobra com a outra. O padrão é creditar.
+       Ver `faixaCreditada` em afty-pericias.js. */
+    const semCredito = !!e.semCredito && !!canal.aceitaSemCredito;
     detalhes.push({
       canal: e.canal, alvo, valor,
       origem: e.origem || null, nome: e.nome || e.origem || "Efeito",
-      furaTeto,
+      furaTeto, semCredito,
       // A duração viaja junto porque a aba Buffs LISTA os temporários: sem ela
       // o efeito com duração some dentro da soma e o jogador não tem como saber
       // que aquele +4 não é dele para sempre.
@@ -1344,6 +1357,9 @@ export function resolverExclusivos(res, jaAplicado = {}) {
         canal: e.canal, alvo: e.alvo, valor: e.valor,
         origem: e.origem, nome: e.nome, furaTeto: false,
         exclusivo: e.exclusivo, duracao: e.duracao || "permanente",
+        // ⚠ Terceiro lugar que reconstrói o detalhe campo a campo, e o terceiro
+        // que precisaria copiar a marca. Ver a nota no push do `aplicarEfeitos`.
+        semCredito: !!e.semCredito,
         // Perdeu para um irmão, ou empatou com o que um estágio anterior já
         // tinha aplicado. Nos dois casos o número não entrou nesta conta.
         suplantado: e !== vencedor || !entra,
@@ -1641,6 +1657,20 @@ export function validarMapaEfeitos(mapa, nomeDoMapa = "efeitos") {
       }
       if (e.furaTeto && !FURA_TETO_PERMITIDO.includes(id)) {
         problemas.push(`${nomeDoMapa}: ${id} marca furaTeto, e só ${FURA_TETO_PERMITIDO.join(", ")} pode passar de 30`);
+      }
+      if (e.semCredito && !canal.aceitaSemCredito) {
+        problemas.push(`${nomeDoMapa}: ${id} marca semCredito num canal que não aceita (${e.canal})`);
+      }
+      /* ⚠ O PORTÃO DO UPGRADE GRÁTIS. Uma concessão de faixa cuja expressão lê a
+         faixa da PRÓPRIA ficha (`prof_x`, `prof_tr_x`) é a família do "Caso já
+         seja": ela só cresce porque o jogador pagou, e creditá-la devolveria a
+         vaga que a fez crescer. Quem escreve uma dessas TEM de dizer se credita,
+         porque esquecer dá mestre de graça e sem sintoma nenhum na tela. */
+      if (canal.aceitaSemCredito && !e.semCredito && /(^|[^a-z_])prof_(tr_)?[a-z]/.test(e.expr || "")) {
+        problemas.push(
+          `${nomeDoMapa}: ${id} concede faixa lendo a faixa da própria ficha e não diz se credita. `
+          + `Ponha semCredito: true (é o caso do "Caso já seja") ou tire o prof_ da expressão`,
+        );
       }
       if (e.duracao && e.duracao !== "permanente" && e.duracao !== "temporaria") {
         problemas.push(`${nomeDoMapa}: ${id} tem duracao inválida "${e.duracao}"`);

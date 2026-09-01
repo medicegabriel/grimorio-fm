@@ -1647,7 +1647,7 @@ export const ESCOLHA_EFEITOS = {
      e o card não sabe qual é qual: a opção decide sozinha olhando a ficha, e
      concede Mestre onde já havia treino e Treinado onde não havia. */
   ...Object.fromEntries(["reflexos", "fortitude", "vontade", "astucia", "integridade"].map((r) => [
-    `res_imparavel_${r}`, [{ canal: "proficienciaTR", alvo: r, expr: `1 + (prof_tr_${r} >= 1)` }],
+    `res_imparavel_${r}`, [{ canal: "proficienciaTR", alvo: r, expr: `1 + (prof_tr_${r} >= 1)`, semCredito: true }],
   ])),
 
   /* ============================================================ */
@@ -1684,7 +1684,7 @@ export const ESCOLHA_EFEITOS = {
      fica de fora do pool por texto. ---- */
   ...Object.fromEntries(RESISTENCIAS_COM_ATRIBUTO.map(([r, atr]) => [
     `tal_resiliencia_${r}`, [
-      { canal: "proficienciaTR", alvo: r, expr: `1 + (prof_tr_${r} >= 1)` },
+      { canal: "proficienciaTR", alvo: r, expr: `1 + (prof_tr_${r} >= 1)`, semCredito: true },
       { canal: "atributo", alvo: atr, expr: "1" },
     ],
   ])),
@@ -2688,7 +2688,7 @@ export const APTIDAO_EFEITOS = {
   // "Habilidade de técnica" É Feitiço, e a vaga é a EXCLUSIVA (não serve para
   // Habilidade Geral).
   mal_extracao_de_potencial: [
-    { canal: "proficienciaPericia", alvo: "feiticaria", expr: "1 + (prof_feiticaria >= 1)" },
+    { canal: "proficienciaPericia", alvo: "feiticaria", expr: "1 + (prof_feiticaria >= 1)", semCredito: true },
     { canal: "vagasFeitico", expr: "1 + (nd >= 10)" },
   ],
 

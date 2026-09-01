@@ -199,6 +199,68 @@ t("as parcelas seguem somando o total", soma(comCanal.partes), comCanal.total);
 t("e a fonte nova tem nome proprio", comCanal.partes.length, lut.orcamento.partes.length + 1);
 t("e nao e uma linha generica", comCanal.partes[comCanal.partes.length - 1].label !== "Outros", true);
 
+/* ============================================================ */
+/* A CONCESSÃO PAGA O DEGRAU QUE ELA DÁ — 2026-09-01             */
+/* ============================================================ */
+
+/* Autor: *"quando recebo Perícias de maneira garantida como por exemplo Clã
+   Akutame que me fornece Atletismo e Feitiçaria, e eu tento me tornar Mestre em
+   Feitiçaria logo após, ele consta como 2 Perícias gastas ao invés de 1."*
+
+   O gasto saía inteiro da faixa ESCOLHIDA, então a concessão virava pó no
+   instante em que alguém subia por cima dela. Agora custa a diferença.
+
+   ⚠ A EXCEÇÃO É A FAMÍLIA DO "Caso já seja", que continua cobrando cheio: nela a
+   ficha PRECISA pagar a faixa para o benefício existir, porque a condição lê
+   `prof_*`, que é a faixa escolhida. Ver `semCredito` em afty-efeitos.js. Os
+   dois lados estão medidos aqui de propósito: ligar um sem o outro é o bug de
+   volta, num sentido ou no outro. */
+
+const gastoCom = (canal, alvo, expr, escolha, extra = {}) => ficha("afty", "combatente", {
+  core: { nd: 10, tipo: "misto", patamar: "comum", tecnicaEfeitos: [{ canal, alvo, expr, ...extra }] },
+  ...(canal === "proficienciaTR" ? { resistenciasProf: escolha } : { pericias: escolha }),
+}).testes.orcamento.gastos;
+
+const PER = "proficienciaPericia";
+const TR = "proficienciaTR";
+
+/* ---------- Perícia: a concessão comum CREDITA ---------- */
+t("sem concessão, Mestre custa 2", gastoCom(PER, "feiticaria", "0", { feiticaria: "mestre" }), 2);
+t("com Treinado concedido, Mestre custa 1", gastoCom(PER, "feiticaria", "1", { feiticaria: "mestre" }), 1);
+/* Comprar o que já foi dado não custa nada, e não é brecha: a faixa resolvida
+   continua a mesma, então marcar não comprou nada. */
+t("e comprar a faixa já concedida custa 0", gastoCom(PER, "feiticaria", "1", { feiticaria: "treinado" }), 0);
+t("com Mestre concedido, escolher Mestre custa 0", gastoCom(PER, "feiticaria", "2", { feiticaria: "mestre" }), 0);
+/* Piso em zero: concessão maior que a escolha nunca DEVOLVE vaga. */
+t("concessão maior que a escolha não devolve vaga", gastoCom(PER, "feiticaria", "2", { feiticaria: "treinado" }), 0);
+
+/* ---------- "Caso já seja": NÃO credita ---------- */
+t("a concessão com semCredito segue cobrando cheio",
+  gastoCom(PER, "feiticaria", "1", { feiticaria: "mestre" }, { semCredito: true }), 2);
+t("e nela comprar a faixa concedida continua custando 1",
+  gastoCom(PER, "feiticaria", "1", { feiticaria: "treinado" }, { semCredito: true }), 1);
+
+/* ---------- TR: mesma linha, mesmo conserto ---------- */
+/* ⚠ Medido na CRIATURA, porque no jogador o TR está fora do orçamento inteiro
+   (divergência `trForaDoOrcamento`) e lá o número não se move. */
+t("no TR, sem concessão Mestre custa 2", gastoCom(TR, "integridade", "0", { integridade: "mestre" }), 2);
+t("no TR, com Treinado concedido Mestre custa 1", gastoCom(TR, "integridade", "1", { integridade: "mestre" }), 1);
+t("e a Força Imparável, que lê prof_tr_, segue cobrando cheio",
+  gastoCom(TR, "integridade", "1", { integridade: "mestre" }, { semCredito: true }), 2);
+
+/* ---------- O portão do upgrade grátis ---------- */
+/* Uma concessão que lê a faixa da própria ficha e não declara de que lado está
+   daria Mestre de graça, e sem sintoma nenhum na tela. O validador recusa, para
+   a decisão ser consciente em vez de esquecida. */
+const { validarMapaEfeitos } = await import(R + "afty-efeitos.js");
+const cond = (extra = {}) => ({ x: [{ canal: PER, alvo: "feiticaria", expr: "1 + (prof_feiticaria >= 1)", ...extra }] });
+t("concessão que lê prof_ sem declarar é recusada", validarMapaEfeitos(cond(), "t").length, 1);
+t("e com a marca ela passa", validarMapaEfeitos(cond({ semCredito: true }), "t"), []);
+t("concessão comum não é incomodada",
+  validarMapaEfeitos({ x: [{ canal: PER, alvo: "atletismo", expr: "1" }] }, "t"), []);
+t("e a marca num canal que não a aceita é recusada",
+  validarMapaEfeitos({ x: [{ canal: "defesa", expr: "2", semCredito: true }] }, "t").length, 1);
+
 console.log(bad.length ? `FALHAS (${bad.length}):\n` + bad.join("\n") : `TODOS OS ${ok} ASSERTS PASSARAM`);
 
 /* sai diferente de zero quando falha, para o lancador e o CI enxergarem */

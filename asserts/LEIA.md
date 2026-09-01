@@ -1,6 +1,6 @@
 # Asserts do Afty
 
-Os asserts de lógica do lado do Afty. São **2248, em 42 arquivos**, e cobrem o avaliador do DSL, as
+Os asserts de lógica do lado do Afty. São **2262, em 42 arquivos**, e cobrem o avaliador do DSL, as
 primitivas novas do motor, o sistema de Addons de ponta a ponta e regras do catálogo que
 são fáceis de quebrar sem sintoma.
 
@@ -59,6 +59,7 @@ vai para o ar.
 | `t-familias` | as seis famílias de catálogo, num pacote que mexe em todas de uma vez |
 | `t-familias2` | Origem e as três de alto nível |
 | `t-tabelas` | Tipo de Dano e Condição, que são tabela e não catálogo |
+| `t-pericias-pacote` | o pacote de perícias da Classe, o hover do contador e ⚠ a CONCESSÃO QUE CREDITA: subir de uma faixa concedida custa a diferença, e as três entradas de "Caso já seja" (`semCredito`) seguem cobrando cheio. Os dois lados medidos juntos de propósito, porque ligar um sem o outro é o bug de volta |
 | `t-exemplo` | **o pacote de exemplo do `docs/afty-addons.md`**, executado de verdade |
 | `t-marcas-declaradas` | marca que o addon declara mas a criatura ainda não usa aparece no seletor com zero |
 | `t-encontro-addons` | o encontro MISTO: a união põe dois mundos no ar ao mesmo tempo e o de ninguém some depois do laço |
