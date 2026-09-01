@@ -146,7 +146,13 @@ Conferido no build: a string `Akutame` aparece **0 vezes** em `dist/assets/index
 
 O `t-flugel.mjs` passou a ler esse MESMO arquivo, então o assert mede exatamente o que a pessoa cola.
 
-⚠ **O botão Mahoraga ficou.** Ele é o pacote de demonstração do verbo da 8.3 e o autor não pediu.
+**O Mahoraga foi junto**, na mesma sessão (*"resolva do o Mahoraga também"*). Ele era o precedente
+que o Flugel tinha seguido, e agora é `addons/ciclo-adaptacao-mahoraga.json`, com o `t-adaptacao.mjs`
+lendo o arquivo do mesmo jeito.
+
+⚠ **`src/systems/afty/addons/` DEIXOU DE EXISTIR.** Os dois pacotes que moravam ali eram os únicos, e
+a pasta foi embora inteira. Addon novo nasce em `addons/*.json`, nunca dentro de `src/`: com a pasta
+fora, a próxima tentação de embutir um pacote precisa recriá-la, e aí a decisão é consciente.
 
 ### 2. O gatilho de sessão só existia numa das três telas
 
@@ -2607,7 +2613,8 @@ Impossível. A Mecânica substitui a anterior. Ela calcula Acerto e Ignorar RD p
 Feitiço Auxiliar no maior nível acessível. No Impossível entram Ação Completa, Pressão Amaldiçoada
 e Ruptura Absoluta.
 
-Arquivos centrais: `afty-adaptacao.js`, `addons/ciclo-adaptacao-mahoraga.js` e
+Arquivos centrais: `afty-adaptacao.js`, `addons/ciclo-adaptacao-mahoraga.json` (era um módulo do
+app, virou JSON em 2026-09-01) e
 `ficha/PainelDeAdaptacao.jsx`. A sessão guarda tudo em `sessao.adaptacoes`. Há 42 asserts próprios
 em `t-adaptacao.mjs`.
 

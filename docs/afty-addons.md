@@ -717,9 +717,17 @@ mesmo jeito e o número volta ao de antes.
 
 ### 8.3.1 Ciclo de Adaptação do Mahoraga
 
-Feito em 2026-08-28 como verbo genérico do motor mais um pacote declarativo incluído. O pacote é
-`addons/ciclo-adaptacao-mahoraga.js`, instalável pelo botão **Mahoraga** da aba Addons. Só a
-criatura que carrega a cópia do pacote enxerga o painel.
+Feito em 2026-08-28 como verbo genérico do motor mais um pacote declarativo. O pacote é
+**`addons/ciclo-adaptacao-mahoraga.json`**, na raiz do repositório, e entra pelo campo **Instalar**
+da aba Addons. Só a criatura que carrega a cópia do pacote enxerga o painel.
+
+⚠ **ELE TINHA BOTÃO PRÓPRIO E PERDEU** (autor, 2026-09-01: *"resolva do o Mahoraga também"*). Era o
+precedente que o Flugel seguiu, e caiu junto com ele: um botão fixo no cabeçalho da Biblioteca põe o
+pacote no bundle de todo usuário, e a fase 1 é explicitamente *"acrescentar por JSON colado"*.
+
+⚠ **Não existe mais `src/systems/afty/addons/`.** Os dois pacotes que moravam ali viraram JSON, e a
+pasta foi embora inteira. Um addon novo nasce em `addons/*.json` e nunca dentro de `src/`: se
+aparecer a tentação de embutir mais um, é esta linha que diz não.
 
 O estado fica em `sessao.adaptacoes`, separado por `pacote:ciclo`. O primeiro giro é manual e
 grava a rodada. Depois disso, `proximaRodada` gira uma vez automaticamente a cada rodada. Giros
@@ -1074,8 +1082,8 @@ O JSON fica **fora de `src/` e fora de `public/`** de propósito: assim ele não
 servido pelo site, e continua sendo um arquivo que o autor manda para quem joga na mesa dele. O
 `t-flugel.mjs` lê esse MESMO arquivo, então o que o assert mede é exatamente o que a pessoa cola.
 
-⚠ **O botão Mahoraga continua onde estava.** Ele é o pacote de demonstração do verbo genérico da 8.3
-e o autor não pediu para tirá-lo. Se um dia pedir, o caminho é este mesmo.
+⚠ **O Mahoraga foi pelo mesmo caminho na mesma sessão** (*"resolva do o Mahoraga também"*). Ver a
+8.3.1. Com os dois fora, `src/systems/afty/addons/` deixou de existir.
 
 ### Efeito na opção de Origem
 

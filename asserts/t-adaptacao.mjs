@@ -1,4 +1,5 @@
 /* Ciclo de Adaptação do Mahoraga. */
+import { readFileSync } from "node:fs";
 import { register } from "node:module";
 register(
   "data:text/javascript,export async function resolve(s,c,n){try{return await n(s,c)}catch(e){if(s.startsWith(\".\")&&!s.endsWith(\".js\"))return n(s+\".js\",c);throw e}}",
@@ -14,7 +15,14 @@ const {
   girarAdaptacao, escolherAdaptacaoNarrativa, escolherAdaptacaoMecanica, habilidadesDeAcerto,
   origensDiretasDasAdaptacoes, resetarAdaptacao,
 } = await import(R + "afty-adaptacao.js");
-const { CICLO_ADAPTACAO_MAHORAGA } = await import(R + "addons/ciclo-adaptacao-mahoraga.js");
+/* ⚠ O PACOTE VEM DO JSON, e não de um módulo do app (2026-09-01). Ele e o
+   Flugel saíram do bundle no mesmo dia: addon é conteúdo de MESA, e conteúdo de
+   mesa não viaja dentro do aplicativo de todo mundo. O arquivo em `addons/` é o
+   mesmo texto que se cola no campo Instalar, então este assert mede exatamente
+   o que o usuário instala. */
+const CICLO_ADAPTACAO_MAHORAGA = JSON.parse(
+  readFileSync(new URL("../addons/ciclo-adaptacao-mahoraga.json", import.meta.url), "utf8"),
+);
 
 let ok = 0;
 const bad = [];
