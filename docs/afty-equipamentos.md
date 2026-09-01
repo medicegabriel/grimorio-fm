@@ -92,8 +92,32 @@ Amaldiçoadas.
 
 ## Uniformes
 
+O uniforme é o **equivalente da armadura** no sistema, porque *"tal tipo de vestimenta não se mostra
+tão presente nos tempos modernos, onde Jujutsu Kaisen se passa"*. Quem quiser armadura de verdade na
+mesa usa a regra opcional **Armaduras**, no Capítulo 15 — que não está transcrita aqui.
+
+*"Um uniforme padrão confere certa defesa a quem estiver o vestindo, mas eles também podem ser
+customizados e modificados para conferir diferentes bônus e propriedades adicionais."*
+
+*"Todo personagem inicia com um uniforme comum, o qual define a Defesa de quem estiver o utilizando
+como o valor padrão do sistema (p.283). O uniforme pode receber modificações para aumentar isso, de
+acordo com a tabela de modificações."*
+
+A modificação tem três características, e o livro as nomeia:
+
+- **Bônus na Defesa.** *"O bônus na Defesa que a modificação concede ao uniforme."*
+- **Penalidade.** *"Certas modificações são mais pesadas, colocando uma penalidade em testes de
+  perícia que utilizem o atributo Destreza enquanto estivar usando um uniforme com ela."*
+- **Custo.** *"Classificando as modificações de acordo com seus benefícios e complexidade, definido o
+  custo dela."*
+
 Um uniforme só pode possuir **uma** modificação, sendo ela uma alteração completa da sua forma e base.
-Os espaços vêm da tabela de carregamento, não desta.
+
+⚠ **A tabela do livro tem QUATRO linhas**, e o Uniforme Comum não é uma delas: ele é o estado inicial,
+descrito na prosa acima. No catálogo ele existe como uma quinta entrada de custo 0 e `inicial: true`,
+que é modelagem e não texto.
+
+⚠ **Espaços não saem desta tabela.** A do livro não tem a coluna: eles vêm da regra de carregamento.
 
 | Modificação | Defesa | Penalidade | Custo | Espaços |
 |---|---|---|---|---|
@@ -147,15 +171,35 @@ sessão.
 
 ## Escudos
 
-Cada escudo fornece **Redução de Dano enquanto empunhado**, assim como um valor de penalidade em
-testes de perícia que utilizam Destreza. Penalidades de escudos e uniformes são **cumulativas**.
-Atacar com o escudo o faz deixar de fornecer RD até o início do próximo turno (estado de combate,
-não modelado). O dano do escudo é de **impacto** (o livro não diz, o autor confirmou).
+*"Cada escudo fornece um valor de Redução de Dano enquanto estiver sendo empunhado, assim como um
+valor de penalidade em testes de perícia que utilizam Destreza. Penalidades de escudos e uniformes
+são cumulativas."*
 
-⚠ **A RD do escudo é RD GERAL** (autor, 2026-08-01), e não RD Física como valia desde 2026-07-22.
-As palavras dele foram "RD Geral, exceto Alma", que é a definição EXATA da RD Geral no Afty (foi por
-isso que o Dano na Alma ganhou canal próprio em 2026-07-29), então não precisou de canal novo. O
-campo do catálogo se chama `rdEscudo`, e não `rdFisico`, justamente para não sugerir tipo.
+*"Escudos podem ser usados em ataques, com o seu dano especificado entre parênteses, após o nome do
+escudo. Caso ataque utilizando um escudo, ele deixa de fornecer RD até o início do seu próximo
+turno."* A segunda frase é **estado de combate e não está modelada**.
+
+⚠ **O DADO do escudo vem do livro** (está entre parênteses na tabela). O que o livro não diz é o
+**tipo**: impacto foi confirmação do autor.
+
+⚠ **A RD do escudo é RD GERAL na CRIATURA e RD FÍSICA no JOGADOR** (autor, 2026-08-01 e 2026-08-31).
+
+Na criatura as palavras dele foram *"RD Geral, exceto Alma"*, que é a definição EXATA da RD Geral no
+Afty (foi por isso que o Dano na Alma ganhou canal próprio em 2026-07-29). No jogador vale o que o
+livro escreve: **RD Físico**, na tabela de grau e no Reforçado. Divergência `rdEscudoFisico`.
+
+**As TRÊS parcelas andam juntas**: a RD base do escudo (2/2/4/6), a do grau da Ferramenta e o
+encantamento Reforçado. Quem escolhe a pilha é `canalRdEscudo(sistema)`, e o Reforçado declara o
+pseudo-canal `rdEscudo` em vez de um canal do motor, justamente para não decidir sozinho uma coisa
+que é do sistema.
+
+⚠ **O que prova que a RD BASE entra junto é o Isolante.** O autor citou nominalmente a tabela de grau
+e o Reforçado, e não a coluna 2/2/4/6 — mas pediu o Isolante de volta no jogador, e ele *"passa
+também a ser aplicado a um tipo de dano elemental"*. Se a RD base fosse Geral, não haveria o que
+estender e o pedido não faria sentido. Foi por isso mesmo que ele foi removido da criatura.
+
+O campo do catálogo segue se chamando `rdEscudo`, e não `rdFisico`, justamente para não sugerir tipo:
+agora com mais razão, porque o tipo depende do sistema.
 
 | Escudo | Dano | RD Geral | Penalidade | Custo | Espaços |
 |---|---|---|---|---|---|
@@ -172,11 +216,20 @@ de penalidade**.
 
 O Escudo Pequeno **não ocupa uma das mãos**. ⚠ O livro escreve "escudo leve" nessa frase, e o autor
 já confirmou ser erro do texto, então o catálogo diz "pequeno". O texto reenviado em 2026-08-01
-repete o "leve", o que é só a mesma fonte, e não uma retratação. **Confirmar se ainda vale.**
+repete o "leve", e o de 2026-08-31 repete de novo — três vezes a mesma fonte, o que não é retratação.
+**É a ÚNICA divergência de texto entre o livro e o catálogo nas duas seções**, e é deliberada.
 
-O encantamento **Reforçado** seguiu o escudo e também é **RD Geral** (autor, 2026-08-01), mesmo o
-texto dele dizendo "contra dano físico". O encantamento **Isolante de escudo foi removido** na mesma
-decisão: ver a seção de Ferramentas Amaldiçoadas.
+O encantamento **Reforçado** segue o escudo: RD Geral na criatura (autor, 2026-08-01, mesmo o texto
+dizendo "contra dano físico") e RD Física no jogador.
+
+O encantamento **Isolante de escudo** foi removido na mesma decisão de 2026-08-01 e **voltou no
+jogador** em 2026-08-31. Entrada do catálogo com `sistema: "player"`, e a lista que a tela oferece
+vem de `encantamentosDe(tipo, sistema)`, nunca do `ENCANTAMENTOS_POR_TIPO` cru.
+
+⚠ **Ele está sem `efeitos`, e isso é consistente e não esquecimento.** Não existe canal de RD **por
+tipo de dano** no motor. Os dois irmãos dele no uniforme (**Isolante** e **Resiliente**) estão na
+mesma situação desde julho, e os três precisam da mesma peça. Há assert prendendo os três juntos, em
+`asserts/t-escudo-rd.mjs`, para que ligar um sozinho falhe.
 
 ---
 
@@ -198,6 +251,9 @@ ferramenta mesmo tendo `contaComoArma: false`. Itens especiais e kits NÃO viram
 Os mesmos 5 nomes do Grau do Feiticeiro (`AFTY_GRAUS`), mas é **outra coisa**: cada ferramenta tem o
 seu grau, escolhido pelo jogador, independente do ND. Benefícios por grau (`FA_BONUS_ARMA`,
 `FA_RD_ESCUDO`, `FA_ENCANT_GANHO`):
+
+⚠ **A tabela do livro escreve "RD FÍSICO" na coluna do escudo.** No **jogador** é isso mesmo; na
+**criatura** o Afty aplica RD Geral, pelo override do autor de 2026-08-01. Ver a seção Escudos.
 
 | Grau | Bônus de Arma | RD do Escudo | Enc. Arma | Enc. Escudo | Enc. Uniforme |
 |---|---|---|---|---|---|

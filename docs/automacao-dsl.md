@@ -135,6 +135,23 @@ insere o nome no ponto do cursor.
 centenas de entradas e apenas uma dúzia costuma valer algo. A busca alcança todas, e o
 cabeçalho do grupo mostra quantas estão visíveis do total.
 
+### `sempre` e `nunca`, as duas constantes (2026-08-31, só no Afty)
+
+Não são valor de ficha nenhum, são **vocabulário**: `sempre` vale 1 e `nunca` vale 0.
+
+Elas existem por um engano real. O campo **enquanto** do Motor de Automação tem `sempre` como
+placeholder, e escrever a palavra que a própria tela mostra caía no fallback `0` — que numa condição
+é justamente o valor que **desliga** o efeito. A condição óbvia era a única forma de apagar a linha.
+
+> Autor: *"O Motor de Automação enquanto: 'sempre' não funciona, só funciona se estiver vazio. Logo
+> se eu deixo vazio fica ativado sempre, se eu escrevo sempre para de funcionar."*
+
+⚠ **O editor confere os NOMES, e não só a sintaxe.** `validateExpression(expr, knownVars)` sempre
+aceitou um segundo argumento, e o editor do Motor não o passava. Nome inexistente é sintaxe
+perfeita: a caixa ficava **verde**, o `evalNumber` estourava e o efeito morria calado. Hoje o
+vocabulário do seletor `{ }` é o conjunto de nomes conhecidos, e um nome errado fica vermelho na
+hora, com o motivo escrito embaixo.
+
 ## Notas
 - Identificadores são normalizados (minúsculas, sem acento): `Constituição` e `constituicao` são a mesma variável.
 - As expressões leem os valores **base** (sem os próprios buffs) + os recursos atuais — então um efeito que modifica Defesa não lê a Defesa já modificada (evita laço).

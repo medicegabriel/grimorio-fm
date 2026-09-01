@@ -7,6 +7,7 @@ register(
 const R = new URL("../src/", import.meta.url).href;
 const A = await import(R + "systems/afty/afty-dsl.js");
 const F = await import(R + "components/fm-dsl.js");
+const VOC = await import(R + "systems/afty/afty-dsl-vocabulario.js");
 
 let ok = 0;
 const bad = [];
@@ -61,6 +62,33 @@ t("aspas sem fechar reprova", A.validateExpression('contar("abc').ok, false);
 t("texto em conta cai no fallback", A.evalNumber('2 + "abc"', ctx, -1), -1);
 t("texto em funcao pura cai no fallback", A.evalNumber('metade("abc")', ctx, -1), -1);
 t("mapa de marcas nao e legivel como variavel", A.evalNumber("marcas", marcas, -1), -1);
+
+/* ---- 3b. AS DUAS CONSTANTES, `sempre` e `nunca` ---- */
+/* Elas nao sao valor de ficha, sao vocabulario, e nasceram de um engano real:
+   o campo de condicao do Motor tem "sempre" como PLACEHOLDER, o autor escreveu
+   a palavra que a tela mostra, e a expressao caiu no fallback 0, que num
+   `quando` e justamente o valor que DESLIGA o efeito. Escrever a condicao obvia
+   era a unica forma de apaga-la. */
+const EF = await import(R + "systems/afty/afty-efeitos.js");
+const ctxReal = EF.buildCriaturaDslContext({ nd: 10, bt: 4 });
+t("sempre vale 1", A.evalNumber("sempre", ctxReal, -1), 1);
+t("nunca vale 0", A.evalNumber("nunca", ctxReal, -1), 0);
+t("sempre LIGA a condicao", A.evalNumber("sempre", ctxReal, 0) !== 0, true);
+t("condicao vazia e `sempre` dao no mesmo",
+  [!"" || true, A.evalNumber("sempre", ctxReal, 0) !== 0], [true, true]);
+t("nunca DESLIGA", A.evalNumber("nunca", ctxReal, 0) !== 0, false);
+t("as duas entram no vocabulario do seletor",
+  ["sempre", "nunca"].filter((n) =>
+    !VOC.vocabularioDsl(ctxReal).some((g) => g.itens.some((i) => i.nome === n))), []);
+/* ⚠ E O VALIDADOR AGORA AS RECONHECE. Enquanto `sempre` nao existia, ele
+   aprovava a palavra: nome inexistente e sintaxe perfeita, e so `knownVars`
+   separa os dois. O editor passou a passar o vocabulario por causa disso. */
+const CONHECIDAS = new Set(
+  VOC.vocabularioDsl(ctxReal).flatMap((g) => g.itens.map((i) => i.nome)).filter((n) => !n.includes("(")),
+);
+t("o validador aprova sempre", A.validateExpression("sempre", CONHECIDAS).ok, true);
+t("e reprova um nome que nao existe", A.validateExpression("semrpe", CONHECIDAS).ok, false);
+t("sem vocabulario ele so olha a sintaxe", A.validateExpression("semrpe").ok, true);
 
 /* ---- 4. o fm-dsl NAO entende nada disso (prova de que a copia era necessaria) ---- */
 t("2.5.2 nao tem contar", F.validateExpression('contar("x")').ok, false);

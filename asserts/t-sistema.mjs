@@ -120,7 +120,7 @@ t("as divergencias de REGRA ligadas",
    "danoPorArma",
    "guardaEresistenciaParcial", "habilidadesGerais", "pacoteDaClasseInicial", "patamarDoJogador",
    "proficienciaPorArma", "progressaoDeFeiticos",
-   "pvPePorEspecializacao", "quantidadeDePE", "rdBase", "tetoDeNivel",
+   "pvPePorEspecializacao", "quantidadeDePE", "rdBase", "rdEscudoFisico", "tetoDeNivel",
    "trForaDoOrcamento", "vagasPorNivelDeClasse", "valoresAdicionais"].sort());
 t("e a de TELA ligada e a das abas",
   S.DIVERGENCIAS.filter((d) => d.ativa && d.tipo === "tela").map((d) => d.id), ["abasIdentidade"]);
@@ -349,7 +349,7 @@ t("as divergencias conhecidas estao na lista",
    "defesaUniforme", "escalaDosTestes", "focosLivres", "guardaEresistenciaParcial",
    "habilidadesGerais", "inventarioSimplificado", "pacoteDaClasseInicial",
    "patamarDoJogador", "proficienciaPorArma", "progressaoDeFeiticos",
-   "pvPePorEspecializacao", "quantidadeDePE", "rdBase",
+   "pvPePorEspecializacao", "quantidadeDePE", "rdBase", "rdEscudoFisico",
    "tetoDeNivel", "trForaDoOrcamento", "vagasPorNivelDeClasse",
    "valoresAdicionais"].sort());
 
@@ -625,17 +625,50 @@ t("o Restringido veta Feiticaria", restrC.pericias.vetadas, ["feiticaria"]);
 t("e e o unico com veto",
   E.AFTY_ESPECIALIZACOES.filter((e) => e.caracteristicas?.pericias?.vetadas?.length).length, 1);
 
-/* O pacote de cada Classe, um a um, contra o texto do livro. */
-for (const [id, escolhe, entre, livres] of [
-  ["lutador", 1, ["oficio", "atletismo", "acrobacia"], 3],
-  ["combatente", 2, ["oficio", "atletismo", "acrobacia"], 3],
-  ["conjurador", 2, ["oficio", "feiticaria", "ocultismo"], 2],
-  ["suporte", 2, ["oficio", "medicina", "prestidigitacao"], 3],
-  ["controlador", 1, ["oficio", "percepcao", "persuasao"], 2],
-  ["restringido", 1, ["oficio"], 4],
+/* O pacote de cada Classe, um a um, contra o texto do livro.
+
+   ⚠ A FRASE TEM TRÊS PARTES, e até 2026-08-31 ela era lida como UMA lista. Autor:
+   *"Especialista em Combate (Combatente) fornece 2 Ofícios, Atletismo ou
+   Acrobacia e 3 a Escolha. Totalizando 6 Perícias. Porém, o site só está me
+   fornecendo 5 no lugar."*
+
+   O que separa a segunda parte da terceira é a PONTUAÇÃO, e é a mesma distinção
+   que os TR do Restringido já faziam: **"ou" é escolha, VÍRGULA é as duas**. Por
+   isso o Combatente escolhe uma entre Atletismo ou Acrobacia (`escolhe`/`entre`)
+   e o Conjurador recebe Feitiçaria E Ocultismo (`fixas`).
+
+   As colunas são: Ofícios, fixas, escolhe, entre, livres, e o TOTAL do livro. */
+for (const [id, oficios, fixas, escolhe, entre, livres, total] of [
+  ["lutador",     1, [],                                 1, ["atletismo", "acrobacia"], 3, 5],
+  ["combatente",  2, [],                                 1, ["atletismo", "acrobacia"], 3, 6],
+  ["conjurador",  2, ["feiticaria", "ocultismo"],        0, [],                         2, 6],
+  ["suporte",     2, ["medicina", "prestidigitacao"],    0, [],                         3, 7],
+  ["controlador", 1, ["percepcao", "persuasao"],         0, [],                         2, 5],
+  ["restringido", 1, [],                                 0, [],                         4, 5],
 ]) {
   const c = E.caracteristicasDaClasse(id).pericias;
-  t(`${id}: o pacote de pericias bate com o livro`, [c.escolhe, c.entre, c.livres], [escolhe, entre, livres]);
+  t(`${id}: o pacote de pericias bate com o livro`,
+    [c.oficios ?? 0, c.fixas ?? [], c.escolhe ?? 0, c.entre ?? [], c.livres],
+    [oficios, fixas, escolhe, entre, livres]);
+  /* ⚠ E O TOTAL FECHA. É o número que aparece na tela, e é o que estava errado:
+     sem a soma das quatro partes, mudar o dado de uma Classe e esquecer o total
+     não teria sintoma nenhum. */
+  t(`${id}: e o total do pacote e a soma das quatro partes`,
+    E.vagasDoPacote(E.pacoteInicialDaFicha([{ id, nivel: 10 }])), total);
+}
+
+/* Nenhuma Classe declara a MESMA perícia nas duas metades: `fixas` é concessão e
+   `entre` é escolha, e a mesma perícia nas duas cobraria a vaga duas vezes. */
+for (const e of E.AFTY_ESPECIALIZACOES) {
+  const c = e.caracteristicas?.pericias;
+  if (!c) continue;
+  t(`${e.nome}: fixas e entre nao se cruzam`,
+    (c.fixas ?? []).filter((x) => (c.entre ?? []).includes(x)), []);
+  /* ⚠ E OFÍCIO SAIU DAS LISTAS. Ele é `oficios: N` agora, e deixá-lo também em
+     `entre` faria o jogador poder gastar uma segunda vaga numa linha que já é
+     dele. */
+  t(`${e.nome}: Oficio nao aparece mais nas listas`,
+    [...(c.fixas ?? []), ...(c.entre ?? [])].filter((x) => x === "oficio"), []);
 }
 
 
@@ -672,25 +705,26 @@ const orcDe = (esp, attr) => {
   f.attributes = { forca: 14, destreza: 14, constituicao: 14, inteligencia: 16, sabedoria: 12, presenca: 12 };
   return deriveAfty(f).testes.orcamento.total;
 };
-/* Lutador: 1 dirigida + 3 livres = 4, mais o MAIOR mod entre INT e SAB. */
-t("o pacote do Lutador mais INT +3", orcDe([{ id: "lutador", nivel: 10 }], "inteligencia"), 7);
+/* Lutador: 1 Ofício + 1 entre Atletismo ou Acrobacia + 3 livres = 5, mais o
+   MAIOR mod entre INT e SAB. */
+t("o pacote do Lutador mais INT +3", orcDe([{ id: "lutador", nivel: 10 }], "inteligencia"), 8);
 /* ⚠ O ATRIBUTO É O MAIOR DOS DOIS desde 2026-08-31, igual à criatura. O campo
    `periciaAtributo` ficou parado, então pedir Sabedoria não muda mais nada:
    esta ficha tem INT 16 e SAB 12, e o orçamento segue a Inteligência. */
-t("pedir SAB nao derruba mais o orcamento", orcDe([{ id: "lutador", nivel: 10 }], "sabedoria"), 7);
+t("pedir SAB nao derruba mais o orcamento", orcDe([{ id: "lutador", nivel: 10 }], "sabedoria"), 8);
 
 /* ⚠ SÓ A CLASSE INICIAL DÁ PACOTE. As duas fichas abaixo têm as mesmas Classes e
    orçamentos diferentes conforme a ORDEM, e é a régua que o autor escolheu. */
-t("Lutador primeiro da o pacote do Lutador (1+3)",
-  orcDe([{ id: "lutador", nivel: 5 }, { id: "conjurador", nivel: 5 }], "inteligencia"), 7);
-t("Conjurador primeiro da o pacote do Conjurador (2+2)",
-  orcDe([{ id: "conjurador", nivel: 5 }, { id: "lutador", nivel: 5 }], "inteligencia"), 7);
-/* Com o Suporte (2+3=5) a ordem muda o número, e é o que prova que a segunda
+t("Lutador primeiro da o pacote do Lutador (1+1+3)",
+  orcDe([{ id: "lutador", nivel: 5 }, { id: "conjurador", nivel: 5 }], "inteligencia"), 8);
+t("Conjurador primeiro da o pacote do Conjurador (2+2+2)",
+  orcDe([{ id: "conjurador", nivel: 5 }, { id: "lutador", nivel: 5 }], "inteligencia"), 9);
+/* Com o Suporte (2+2+3=7) a ordem muda o número, e é o que prova que a segunda
    Classe não soma nada. */
-t("Suporte primeiro da 5 mais o modificador",
-  orcDe([{ id: "suporte", nivel: 5 }, { id: "lutador", nivel: 5 }], "inteligencia"), 8);
-t("Lutador primeiro da 4, mesmo com o Suporte junto",
-  orcDe([{ id: "lutador", nivel: 5 }, { id: "suporte", nivel: 5 }], "inteligencia"), 7);
+t("Suporte primeiro da 7 mais o modificador",
+  orcDe([{ id: "suporte", nivel: 5 }, { id: "lutador", nivel: 5 }], "inteligencia"), 10);
+t("Lutador primeiro da 5, mesmo com o Suporte junto",
+  orcDe([{ id: "lutador", nivel: 5 }, { id: "suporte", nivel: 5 }], "inteligencia"), 8);
 /* Ficha sem Classe nenhuma tem só o modificador, e não quebra. */
 t("sem Classe sobra so o modificador", orcDe([], "inteligencia"), 3);
 

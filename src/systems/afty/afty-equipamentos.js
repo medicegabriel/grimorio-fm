@@ -27,6 +27,7 @@
 import { registrarFamilia } from "./afty-addons";
 import { evalNumber, validateExpression } from "./afty-dsl";
 import { normalizarAlvoEfeito } from "./afty-efeitos";
+import { regraDo } from "./afty-sistema";
 
 /* ============================================================ */
 /* GRAU DE EQUIPAMENTO                                          */
@@ -217,13 +218,100 @@ export const ARMA_GRUPOS = [
 
 export const grupoLabel = (v) => ARMA_GRUPOS.find((g) => g.value === v)?.label ?? "Sem grupo";
 
-/** Tipos de dano usados pelas armas. */
+/* ============================================================ */
+/* TIPOS DE DANO                                                 */
+/* ============================================================ */
+/*
+ * OS QUINZE DO LIVRO, e não mais os quatro das armas (autor, 2026-08-31).
+ *
+ * Verbatim: *"Existem, no sistema, quinze tipos de dano diferentes — divididos
+ * em categorias entre físicos, elementais, etéreos e biológicos — que são
+ * responsáveis por caracterizar o resultado que ataques e habilidades têm nos
+ * seus alvos."*
+ *
+ * ⚠ ATÉ HOJE ESTA TABELA TINHA QUATRO ENTRADAS e o comentário dela dizia "tipos
+ * de dano usados pelas armas", que era honesto sobre a origem e virou mentira
+ * assim que outra coisa passou a lê-la. Quem lê hoje: o tipo de dano da arma, o
+ * escopo `tipo:` do Motor, o dano da Invocação, a Aura Elemental e a Afinidade
+ * Ampliada. As duas últimas pedem um tipo ELEMENTAL e recebiam Cortante,
+ * Impacto, Perfurante e Queimante, ou seja, três tipos físicos e um elemento só.
+ *
+ * ⚠ AS QUATRO CHAVES ANTIGAS FICARAM COMO ESTAVAM (`ct`, `im`, `pf`,
+ * `queimante`). Elas estão gravadas em toda arma do catálogo e em toda ficha
+ * salva, e renomeá-las por simetria trocaria o tipo de dano de armas existentes
+ * por nada.
+ *
+ * ⚠ DANO NA ALMA ENTRA AQUI porque o livro o lista entre os quinze, e não
+ * porque a mecânica dele caiba numa arma. Ele tem canal próprio de RD (`rdAlma`)
+ * e um subtipo de Feitiço só dele, e nada disso muda por ele existir na tabela.
+ *
+ * PERDA DE VIDA não entra: o livro a separa dos tipos de propósito, *"alguns
+ * efeitos especiais não causam dano, mas perda de vida"*, e ela não é afetada
+ * por redução de dano nem por resistências.
+ */
 export const TIPOS_DANO = {
+  // Físicos
   ct: "Cortante",
   im: "Impacto",
   pf: "Perfurante",
+  // Elementais
+  acido: "Ácido",
+  congelante: "Congelante",
+  chocante: "Chocante",
   queimante: "Queimante",
+  sonico: "Sônico",
+  // Etéreos
+  alma: "Dano na Alma",
+  energia_reversa: "Energia Reversa",
+  energetico: "Energético",
+  psiquico: "Psíquico",
+  radiante: "Radiante",
+  // Biológicos
+  necrotico: "Necrótico",
+  venenoso: "Venenoso",
 };
+
+/**
+ * As quatro categorias, com os tipos de cada uma na ordem do livro.
+ *
+ * Existem porque REGRA CITA CATEGORIA, e não a lista: a Aura Elemental diz
+ * *"escolher um tipo de dano da categoria Elementais"* e a Afinidade Ampliada
+ * diz *"você escolhe um tipo de dano elemental"*. Sem a categoria no dado, cada
+ * regra dessas teria de repetir os cinco nomes à mão, e a lista envelheceria
+ * numa delas no dia em que um Addon acrescentasse um elemento.
+ */
+export const CATEGORIAS_DANO = [
+  { id: "fisico",    nome: "Físicos",    tipos: ["ct", "im", "pf"] },
+  { id: "elemental", nome: "Elementais", tipos: ["acido", "congelante", "chocante", "queimante", "sonico"] },
+  { id: "etereo",    nome: "Etéreos",    tipos: ["alma", "energia_reversa", "energetico", "psiquico", "radiante"] },
+  { id: "biologico", nome: "Biológicos", tipos: ["necrotico", "venenoso"] },
+];
+
+/* Tipo de dano que um Addon trouxe e declarou numa categoria. Fica fora do
+   `CATEGORIAS_DANO`, que é o dado do livro, e o `tiposDeDanoDaCategoria` junta os
+   dois na leitura. */
+const CATEGORIA_EXTRA = {};
+
+/**
+ * Os tipos de uma categoria, como `[{ id, label }]`, já com o rótulo VIVO.
+ *
+ * Lê o `TIPOS_DANO` na hora em vez de guardar os rótulos: um Addon pode trocar
+ * o rótulo de um tipo existente (acrescentar com o mesmo `value`), e uma cópia
+ * congelada mostraria o nome antigo.
+ */
+export function tiposDeDanoDaCategoria(categoriaId) {
+  const doLivro = CATEGORIAS_DANO.find((c) => c.id === categoriaId)?.tipos ?? [];
+  const deAddon = Object.entries(CATEGORIA_EXTRA)
+    .filter(([, cat]) => cat === categoriaId)
+    .map(([id]) => id);
+  return [...doLivro, ...deAddon]
+    .filter((id) => TIPOS_DANO[id] != null)
+    .map((id) => ({ id, label: TIPOS_DANO[id] }));
+}
+
+/** A categoria de um tipo, ou `null` para o que um Addon trouxe sem declarar. */
+export const categoriaDoTipoDano = (tipoId) =>
+  CATEGORIAS_DANO.find((c) => c.tipos.includes(tipoId))?.id ?? CATEGORIA_EXTRA[tipoId] ?? null;
 
 /* ============================================================ */
 /* ADDONS: Tipo de Dano                                          */
@@ -246,7 +334,21 @@ const TIPOS_DANO_BASE = { ...TIPOS_DANO };
 function aplicarExtrasTiposDano(extras = []) {
   for (const k of Object.keys(TIPOS_DANO)) delete TIPOS_DANO[k];
   Object.assign(TIPOS_DANO, TIPOS_DANO_BASE);
-  for (const e of extras) TIPOS_DANO[e.value] = e.label;
+  /* ⚠ TERCEIRA estrutura para religar, e ela nasceu junto das categorias: o
+     mapa de categoria de Addon. Sem limpá-lo, um tipo de dano que saiu com o
+     Addon continuaria aparecendo na lista da categoria dele, apontando para um
+     rótulo que não existe mais. */
+  for (const k of Object.keys(CATEGORIA_EXTRA)) delete CATEGORIA_EXTRA[k];
+  for (const e of extras) {
+    TIPOS_DANO[e.value] = e.label;
+    /* `categoria` é OPCIONAL: um tipo de dano novo não precisa caber nas quatro
+       do livro, e quem não declara simplesmente não aparece em regra nenhuma
+       que peça categoria (a Aura Elemental, por exemplo). Um id que não é
+       categoria conhecida é ignorado em vez de criar uma quinta calada. */
+    if (e.categoria && CATEGORIAS_DANO.some((c) => c.id === e.categoria)) {
+      CATEGORIA_EXTRA[e.value] = e.categoria;
+    }
+  }
   TIPO_DANO_OK = new Set(Object.keys(TIPOS_DANO));
 }
 
@@ -262,6 +364,11 @@ registrarFamilia("tiposDano", {
   /* Sem `resolver` nem `idsDaFicha`: tipo de dano não é escolhido em lista na
      ficha, ele é um campo de arma. Um tipo órfão numa arma custom já é aparado
      pelo saneamento do próprio módulo, que é onde essa checagem mora. */
+  /* `categoria` é campo OPCIONAL da entrada ("fisico", "elemental", "etereo" ou
+     "biologico") e por isso não entra em `obrigatorios`. Ele também fica fora de
+     `caminhosDeId`: o valor aponta para uma categoria DO LIVRO, e prefixá-lo com
+     o id do pacote faria o tipo novo cair fora de toda categoria, calado.
+     Ver `aplicarExtrasTiposDano`. */
 });
 
 /* ============================================================ */
@@ -1143,20 +1250,33 @@ export const ENCANTAMENTOS_ESCUDO = [
     descricao: "Como uma ação bônus, o escudo se fragmenta em uma versão maior dele feito de pura energia. Escolha uma segunda criatura dentro de 1,5 metros para receber os benefícios do escudo." },
   { id: "enc_esc_intangivel", nome: "Intangível",
     descricao: "O escudo se manifesta como uma mera sombra, uma torrente de água sempre em movimento ou qualquer outro meio que permita ao portador mover sua mão com liberdade. Utilizar um escudo com esta propriedade não ocupa a mão do portador para propósitos de habilidades, mas ainda não o permite empunhar ou carregar outros objetos." },
-  // ⚠ "Isolante" do ESCUDO foi REMOVIDO em 2026-08-01, a pedido do autor. Ele
-  // dizia "a redução de dano do escudo passa também a ser aplicada a um tipo de
-  // dano elemental à sua escolha", e virou letra morta quando a RD do escudo
-  // passou a ser RD Geral, que já cobre todo tipo menos alma. O Isolante de
-  // UNIFORME é outro encantamento, com outro texto, e continua existindo.
+  /* ⚠ SÓ NO JOGADOR (autor, 2026-08-31: *"Volte o encantamento Isolante,
+     somente para Jogador"*). Ele foi REMOVIDO em 2026-08-01 porque virou letra
+     morta: a RD do escudo passou a ser RD Geral na criatura, que já cobre todo
+     tipo menos alma, e não sobrou o que estender. No jogador a RD do escudo é
+     FÍSICA, então o encantamento volta a ter função. Ver a divergência
+     `rdEscudoFisico`.
+
+     ⚠ Sem `efeitos`, e é o estado consistente e não um esquecimento: não existe
+     canal de RD POR TIPO DE DANO no motor. Os dois irmãos dele no uniforme
+     (Isolante e Resiliente) estão na mesma situação desde julho, e os três
+     precisam da mesma peça. Ver docs/a-fazer.md. */
+  { id: "enc_esc_isolante", nome: "Isolante", sistema: "player",
+    descricao: "A redução de dano do escudo passa também a ser aplicado a um tipo de dano elemental à sua escolha. Esta propriedade pode ser pega diversas vezes para tipos de dano diferentes." },
   { id: "enc_esc_polido", nome: "Polido",
     descricao: "O escudo foi polido, removendo pesos desnecessários e o dando uma forma e composição mais leve. A penalidade do escudo é reduzida em 2.",
     efeitos: [{ canal: "penalidadeEquip", expr: "2" }] },
   { id: "enc_esc_reforcado", nome: "Reforçado",
     descricao: "Recebe 2 de RD adicional contra dano físico.",
-    // ⚠ RD GERAL, e não RD Física, a pedido do autor (2026-08-01), mesmo o
-    // texto dizendo "contra dano físico": a RD do escudo inteira virou Geral, e
-    // o adicional dela acompanha.
-    efeitos: [{ canal: "rdGeral", expr: "2" }] },
+    /* ⚠ `rdEscudo` é PSEUDO-CANAL, e não um canal do motor: ele quer dizer "some
+       na RD do escudo", e quem decide ONDE essa RD mora é o sistema. Na criatura
+       ela é Geral (autor, 2026-08-01, mesmo o texto dizendo "contra dano
+       físico"); no jogador ela é Física, como o livro escreve. Ver
+       `canalRdEscudo` e a divergência `rdEscudoFisico`.
+
+       Escrever `rdGeral` aqui fazia o encantamento decidir uma coisa que é do
+       sistema, e o texto do livro ficava contradizendo o catálogo em silêncio. */
+    efeitos: [{ canal: "rdEscudo", expr: "2" }] },
 ];
 
 export const ENCANTAMENTOS_UNIFORME = [
@@ -1218,6 +1338,31 @@ export const ENCANTAMENTOS_POR_TIPO = {
   escudo: ENCANTAMENTOS_ESCUDO,
   uniforme: ENCANTAMENTOS_UNIFORME,
 };
+
+/**
+ * Onde a RD do escudo mora, neste sistema.
+ *
+ * Na criatura é RD Geral (autor, 2026-08-01: *"RD Geral, exceto Alma"*), no
+ * jogador é RD Física, como o livro escreve na tabela de grau e no Reforçado.
+ * Vale para as três parcelas juntas: a RD base do escudo, a do grau da
+ * Ferramenta e o encantamento Reforçado. Ver a divergência `rdEscudoFisico`.
+ */
+export const canalRdEscudo = (sistema) =>
+  (regraDo(sistema, "rdEscudoFisico") === "player" ? "rdFisico" : "rdGeral");
+
+/**
+ * Os encantamentos que ESTE sistema oferece.
+ *
+ * ⚠ Encantamento com `sistema` declarado só aparece lá. Hoje o único é o
+ * Isolante de escudo, que é letra morta na criatura porque a RD do escudo dela é
+ * Geral e já cobre todo tipo menos alma.
+ *
+ * Sem `sistema` na entrada, ela vale para os dois, que é o caso de 39 dos 40.
+ */
+export function encantamentosDe(tipo, sistema) {
+  const lista = ENCANTAMENTOS_POR_TIPO[tipo] ?? [];
+  return lista.filter((e) => !e.sistema || regraDo(sistema, "rdEscudoFisico") === e.sistema);
+}
 
 const ENCANT_BY_ID = Object.fromEntries(
   [...ENCANTAMENTOS_ARMA, ...ENCANTAMENTOS_ESCUDO, ...ENCANTAMENTOS_UNIFORME].map((e) => [e.id, e]),
@@ -1733,8 +1878,11 @@ export function resolveFerramenta(entrada, def, bt = 2, ctxBase = null, vagasLiv
         reducaoPenalidade += valor;
         continue;
       }
+      /* `rdEscudo` é pseudo-canal, igual aos dois de cima: ele diz "some na RD do
+         escudo" e o sistema decide onde essa RD mora. Hoje só o Reforçado usa. */
+      const canal = ef.canal === "rdEscudo" ? (ctx?.["#canalEscudo"] ?? "rdGeral") : ef.canal;
       efeitos.push({
-        canal: ef.canal,
+        canal,
         ...(ef.alvoItem ? { alvo: def?.id } : ef.alvo ? { alvo: ef.alvo } : {}),
         valor,
         origem: x.enc.nome,
@@ -1816,6 +1964,9 @@ export function resolveFerramenta(entrada, def, bt = 2, ctxBase = null, vagasLiv
  *                       custo de grau.
  */
 export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
+  /* Onde a RD do escudo mora neste sistema: `rdGeral` na criatura, `rdFisico` no
+     jogador. Uma variável só, lida nos três pontos que somam RD de escudo. */
+  const canalEscudo = canalRdEscudo(opcoes.sistema);
   const vagasEncantamento = opcoes.vagasEncantamento ?? {};
   const encantamentosExtras = Array.isArray(opcoes.encantamentosExtras) ? opcoes.encantamentosExtras : [];
   const entradas = [];
@@ -1826,7 +1977,12 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
   let espacosUsados = 0;
   let uniformeDefesa = 0;
   let rdEscudoBase = 0;
+  /* Duas pilhas, e o escudo cai numa ou na outra conforme o sistema. Elas são
+     separadas porque o destino DELAS é diferente lá no `deriveAfty`: uma soma na
+     RD Geral e a outra na RD Física, que são canais distintos e aparecem em
+     linhas distintas da ficha. */
   let rdGeralBonus = 0;
+  let rdFisicoBonus = 0;
   let penalidadeDestreza = 0;
   let hpMaxBonus = 0;
   let cdBonus = 0;
@@ -1848,7 +2004,12 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
   const globaisConcedidos = new Set();
 
   // Contexto da DSL dos efeitos de Ferramenta (Motor de Automação).
-  const ctxBase = dslEquipCtxBase(creature, bt);
+  /* ⚠ `#canalEscudo` viaja com o contexto, e o `#` é de propósito: o tokenizer do
+     DSL nunca aceita `#` num identificador, então nenhuma expressão consegue lê-lo
+     como variável e o vocabulário o ignora pelo mesmo sinal. Mesmo truque do
+     `#marcas`. Ele existe porque o pseudo-canal `rdEscudo` do Reforçado é
+     resolvido lá dentro do `resolveFerramenta`, que só recebe o contexto. */
+  const ctxBase = { ...dslEquipCtxBase(creature, bt), "#canalEscudo": canalEscudo };
 
   // Relíquias de coleção são contadas pelo que a criatura CARREGA, não pelo que
   // está equipado. Assim, quando os outros dois Tesouros Sagrados do Japão
@@ -1900,15 +2061,21 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
         // Com Ferramenta, a penalidade é a já reduzida pelo Ajustado.
         penalidadeDestreza += fa ? fa.penalidade : (def.penalidade ?? 0);
       } else if (e.tipo === "escudo") {
-        // ⚠ A RD do escudo é RD GERAL, e não RD Física (autor, 2026-08-01).
-        // "RD Geral" no Afty já significa todo tipo de dano MENOS alma, que é
-        // exatamente o que o autor pediu, então não precisa de canal novo.
-        rdGeralBonus += def.rdEscudo ?? 0;
+        /* ⚠ O DESTINO DEPENDE DO SISTEMA. Na criatura a RD do escudo é RD Geral
+           (autor, 2026-08-01: "RD Geral, exceto Alma", que é a definição exata da
+           RD Geral no Afty). No jogador ela é RD FÍSICA, como a tabela de grau do
+           livro escreve. Ver `canalRdEscudo` e a divergência `rdEscudoFisico`. */
+        const soma = (v) => {
+          if (canalEscudo === "rdFisico") rdFisicoBonus += v;
+          else rdGeralBonus += v;
+        };
+        soma(def.rdEscudo ?? 0);
         // O "aumento BASE em RD do escudo", separado do que a Ferramenta soma.
-        // O Especialista em Escudo (Combatente 4°) lê justamente essa parcela.
+        // O Especialista em Escudo (Combatente 4°) lê justamente essa parcela, e
+        // ela é a mesma nos dois sistemas: o que muda é onde ela DESEMBOCA.
         rdEscudoBase += def.rdEscudo ?? 0;
         // RD por grau da Ferramenta: SOMA com a do escudo comum (autor).
-        if (fa) rdGeralBonus += fa.rdGrau;
+        if (fa) soma(fa.rdGrau);
         // Com Ferramenta, a penalidade é a já reduzida pelo Polido.
         penalidadeDestreza += fa ? fa.penalidade : (def.penalidade ?? 0);
       }
@@ -2059,7 +2226,8 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
     espacosUsados,
     uniformeDefesa,
     rdEscudoBase,        // só a parcela do escudo, sem a Ferramenta Amaldiçoada
-    rdGeralBonus,        // escudo + grau da Ferramenta
+    rdGeralBonus,        // escudo + grau da Ferramenta, quando a RD dele é Geral
+    rdFisicoBonus,       // as mesmas duas parcelas, quando a RD dele é Física
     penalidadeDestreza,  // uniforme + escudos, cumulativos, já com Polido/Ajustado
     hpMaxBonus,
     cdBonus,

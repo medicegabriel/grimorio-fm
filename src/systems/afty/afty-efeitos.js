@@ -587,6 +587,18 @@ export function buildCriaturaDslContext(base = {}) {
   const nivelEspec = base.nivelEspec || {};          // { [espId]: { real, escalonamento } }
 
   const ctx = {
+    /* As duas CONSTANTES da linguagem, e elas existem por um engano real do
+       autor (2026-08-31): *"O Motor de Automação enquanto: 'sempre' não funciona,
+       só funciona se estiver vazio."* Ele escreveu a palavra que a própria UI usa
+       para descrever a condição vazia, e a expressão caiu no fallback 0, que é
+       exatamente o valor que DESLIGA o efeito. Escrever a condição óbvia era a
+       única forma de apagá-la.
+
+       Elas não são valor de ficha nenhum, são vocabulário: `sempre` liga e
+       `nunca` desliga, e as duas aparecem no seletor { } como qualquer variável,
+       porque o vocabulário classifica o contexto real. */
+    sempre: 1,
+    nunca: 0,
     // Núcleo
     nd: base.nd ?? 1,
     bt: base.bt ?? 0,
@@ -948,7 +960,11 @@ export function coletarEfeitosCriatura({ habilidades, talentos, altoNivel, catal
   const apiceId = altoNivel?.apiceId ? [altoNivel.apiceId] : [];
   const roubadas = ESCOLHAS_DE_HABILIDADE.flatMap((id) => habilidades?.escolhas?.mapa?.[id] || []);
   return [
-    ...coletarEfeitos(habilidades?.escolhidas, HABILIDADE_EFEITOS, catalogos?.habilidades),
+    /* `habilidades.vezes` multiplica a Habilidade de Especialização pega mais de
+       uma vez (o Elevar Aptidão do Conjurador é a primeira). Sem isso a 2ª pega
+       aparecia na conta de vagas e não rendia efeito nenhum, que é o mesmo
+       buraco que o Talento repetível teve até agosto. */
+    ...coletarEfeitos(habilidades?.escolhidas, HABILIDADE_EFEITOS, catalogos?.habilidades, habilidades?.vezes),
     ...coletarEfeitos(roubadas, HABILIDADE_EFEITOS, catalogos?.habilidades),
     ...coletarEfeitosDeEscolha(habilidades?.escolhas?.mapa, catalogos?.opcoes, catalogos?.habilidades),
     // `talentos.vezes` multiplica o Talento pego mais de uma vez (o Estudo

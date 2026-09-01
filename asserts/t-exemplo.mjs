@@ -58,7 +58,13 @@ t("requisito aponta para o irmao prefixado",
   H.getHabilidade(ID("eco_do_impacto")).requisitos[0].id, ID("eco_persistente"));
 
 /* 5. tabela: tipo de dano e condicao. */
-t("o tipo de dano entrou", EQ.TIPOS_DANO[ID("sonico")], "Sônico");
+t("o tipo de dano entrou", EQ.TIPOS_DANO[ID("ressonante")], "Ressonante");
+/* ⚠ ERA "Sônico" ATÉ 2026-08-31, e virou letra morta no dia em que a tabela
+   passou a ter os quinze tipos do livro: Sônico é um deles. O exemplo ensinava
+   a acrescentar um tipo que já existia. `categoria` é o campo novo, e o que ele
+   prova é que o tipo do addon aparece na lista de uma categoria DO LIVRO. */
+t("e entrou na categoria que declarou",
+  EQ.tiposDeDanoDaCategoria("elemental").some((x) => x.id === ID("ressonante")), true);
 t("a condicao entrou com nome LIMPO",
   FE.CONDICOES_CATALOGO.media.includes("Ensurdecido pelo Eco"), true);
 

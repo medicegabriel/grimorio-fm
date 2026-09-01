@@ -49,7 +49,7 @@
       }
     ],
     "tiposDano": [
-      { "value": "sonico", "label": "Sônico" }
+      { "value": "ressonante", "label": "Ressonante", "categoria": "elemental" }
     ],
     "condicoes": [
       { "id": "cnd_ensurdecido_pelo_eco", "nome": "Ensurdecido pelo Eco", "forca": "media" }

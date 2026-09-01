@@ -199,6 +199,30 @@ export const DIVERGENCIAS = [
        BASE dela. Os canais `rdGeral`, `rdEspecifico` e o bônus de equipamento
        continuam somando normalmente, e é por isso que esta divergência mexe só
        na base e não no total. */
+    id: "rdEscudoFisico",
+    tipo: "regra",
+    onde: "afty-equipamentos.js, o ramo de escudo do resolveEquipamentos, e o pseudo-canal rdEscudo",
+    fonte: "1 e 2 no Livro de Jogador é RD Físico. 3. Volte o encantamento Isolante, somente para Jogador. (autor, 2026-08-31)",
+    afty: "a RD do escudo, a do grau da Ferramenta e o Reforçado somam na RD Geral",
+    player: "as três somam na RD Física, e o encantamento Isolante volta a existir",
+    ativa: true,
+  },
+  {
+    /* ⚠ AS TRÊS PARTES SÃO UMA COISA SÓ, e quem prova isso é o Isolante. O texto
+       dele diz que "a redução de dano do escudo passa TAMBÉM a ser aplicado a um
+       tipo de dano elemental à sua escolha", e foi exatamente por isso que ele
+       foi REMOVIDO em 2026-08-01: com a RD do escudo virando Geral, que já cobre
+       todo tipo menos alma, ele não tinha o que estender e virou letra morta.
+
+       Pedir o Isolante de volta é, portanto, dizer que a RD do escudo no jogador
+       NÃO é Geral. O autor citou nominalmente a tabela de grau e o Reforçado, e a
+       RD base do escudo (a coluna 2/2/4/6) vem junto pelo mesmo raciocínio: se
+       ela fosse Geral, o Isolante continuaria sem função no jogador e o pedido
+       dele não faria sentido.
+
+       Do lado da CRIATURA nada muda: a decisão de 2026-08-01 ("RD Geral, exceto
+       Alma") segue valendo lá, e é por isso que isto é divergência e não
+       correção. */
     id: "rdBase",
     tipo: "regra",
     onde: "afty-derive.js, blocos RD Geral e RD Específico",

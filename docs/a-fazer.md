@@ -36,6 +36,57 @@ arquivo md. Para outros colaboradores usarem ele também e ir anotando oq for pr
 
 Coisas paradas esperando decisão de regra. Nada aqui deve ser resolvido por suposição.
 
+### Falta um canal de RD por TIPO DE DANO, e três encantamentos esperam por ele
+**Onde:** `src/systems/afty/afty-efeitos.js` (canais de RD), `afty-equipamentos.js` (os três)
+**Situação:** o motor tem `rdGeral`, `rdEspecifico`, `rdFisico` e `rdAlma`, e nenhum deles aceita
+**alvo**. Três encantamentos precisam de "RD contra UM tipo de dano" e por isso estão no catálogo sem
+`efeitos` nenhum:
+
+| Encantamento | Texto | O que precisa |
+|---|---|---|
+| **Isolante** (escudo, só jogador) | *"a redução de dano do escudo passa também a ser aplicado a um tipo de dano elemental à sua escolha"* | escolha de tipo elemental, repetível, e o valor é a RD do escudo |
+| **Isolante** (uniforme) | *"5 de RD contra dano Queimante e Congelante"* | dois tipos fixos |
+| **Resiliente** (uniforme) | *"redução de dano igual a 5 contra um tipo de dano (exceto os danos físicos, alma e energética). A RD aumenta para 10 se for uma ferramenta de Grau Especial"* | escolha de tipo, com veto |
+
+Os dois de uniforme estão assim desde julho; o de escudo voltou em 2026-08-31 e nasceu na mesma
+situação, de propósito. **A peça que falta é a mesma para os três.**
+
+⚠ **Ligar um sozinho é pior do que os três parados**, porque o jogador passaria a acreditar que os
+outros dois também funcionam. Há assert em `asserts/t-escudo-rd.mjs` prendendo os três juntos: ligar
+um faz falhar, para a decisão ser consciente.
+
+A peça também não é só motor: **não existe onde MOSTRAR** uma RD por tipo. A ficha tem uma linha para
+RD Geral, uma para Física, uma para Específica e uma para a Alma, e "RD 6 contra Queimante" não cabe
+em nenhuma. As categorias de dano já existem desde 2026-08-31 (`CATEGORIAS_DANO`,
+`tiposDeDanoDaCategoria`), então a metade do catálogo está pronta.
+
+**Precisa:** decidir com o autor se vale um canal `rdTipo` com alvo de tipo de dano, e onde a ficha o
+mostraria. Depois ligar os três de uma vez.
+**Anotado:** 2026-08-31, ao devolver o Isolante de escudo para o jogador
+
+### Confirmar o total de perícias das quatro Classes que o autor não citou
+**Onde:** `src/systems/afty/afty-especializacoes.js`, `caracteristicas.pericias`
+**Situação:** em 2026-08-31 o autor desmontou a frase do pacote de Classe: *"Especialista em Combate
+(Combatente) fornece 2 Ofícios, Atletismo ou Acrobacia e 3 a Escolha. Totalizando 6 Perícias."* A
+frase tem três partes, e o que separa a segunda da terceira é a pontuação: **"ou" é escolha, vírgula
+é as duas**.
+
+O parse foi aplicado às seis, e **duas estão confirmadas pelo autor** (Combatente 6 e Conjurador 6,
+este da mensagem anterior). As outras quatro saem do mesmo parse e ninguém confirmou:
+
+| Classe | Como ficou | Total |
+|---|---|---|
+| Lutador | 1 Ofício + 1 entre Atletismo ou Acrobacia + 3 quaisquer | 5 |
+| Suporte | 2 Ofícios + Medicina + Prestidigitação + 3 quaisquer | **7** |
+| Controlador | 1 Ofício + Percepção + Persuasão + 2 quaisquer | 5 |
+| Restringido | 1 Ofício + 4 quaisquer, exceto Feitiçaria | 5 |
+
+O que chama atenção é o **Suporte com 7**, o maior de todos, e é consequência de a lista dele ser por
+vírgula ("Medicina, Prestidigitação") em vez de "ou".
+**Precisa:** o autor conferir os quatro números. Se algum estiver errado, o que muda é só a linha
+`pericias:` daquela Classe.
+**Anotado:** 2026-08-31, ao aplicar o parse que o autor deu para o Combatente
+
 ### ASSUNÇÃO: a Conjuração Aprimorada concede Feitiço no 1° nível também?
 
 **Onde:** `src/systems/afty/afty-feiticos.js` (`totalFeiticosJogador`)
@@ -57,9 +108,8 @@ página. As duas só divergem a partir do **3° nível**, e no 30° a distância
 ### Um arquivo do grimório 2.5.2 está modificado na árvore de trabalho
 
 **Onde:** `src/components/Dashboard.jsx`
-**Situação:** a regra número 1 diz que `src/components/` é somente-leitura, e
-`git diff --name-only | grep src/components/` **não volta vazio**. O arquivo ganhou, numa sessão
-anterior, a lógica que esconde Patamar, HP, PE e Defesa no card de uma ficha de jogador, com
+**Situação:** a regra número 1 diz que `src/components/` é somente-leitura. O arquivo ganhou, numa
+sessão anterior, a lógica que esconde Patamar, HP, PE e Defesa no card de uma ficha de jogador, com
 comentário justificando e comparação pela string crua (`creature.rulesVersion === "player"`) para não
 fazer a 2.5.2 depender do Afty.
 
@@ -70,6 +120,9 @@ quatro documentos.
 dashboard é a fronteira, e ela é só de leitura de campo). Copiar o `CreatureCard` para
 `src/systems/afty/` como o resto do Afty faz. Ou dar ao `/Player` uma listagem própria.
 **Anotado:** 2026-08-31, ao conferir a regra ao fim da sessão
+**Nota:** a mudança foi COMMITADA em `ae3a08f` (Ficha Player #001), então a árvore de trabalho está
+limpa e o `git diff` não acusa mais nada. A exceção continua de pé, só que agora no histórico: a
+verificação de fim de sessão deixou de conseguir enxergá-la. (2026-08-31)
 
 ### O Ataque Básico pode rolar como Ataque Amaldiçoado?
 

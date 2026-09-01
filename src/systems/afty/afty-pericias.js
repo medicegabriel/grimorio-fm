@@ -55,7 +55,7 @@ import {
 /* `vagasDoPacote` e não o `totalPericiasDoJogador`: o total do jogador agora sai
    da SOMA das parcelas do hover, e o pacote é uma delas. As duas contas têm de
    dar no mesmo número, e há assert comparando. */
-import { vagasDoPacote } from "./afty-especializacoes";
+import { vagasDoPacote, pacoteInicialDaFicha } from "./afty-especializacoes";
 
 /* AFTY_PERICIAS mora em ./afty-pericias-catalogo.js e é reexportado no topo. */
 
@@ -200,9 +200,15 @@ export function catalogoPericiasDaFicha(creature) {
   const base = porId.get(OFICIO_ID);
   if (!base) return lista;
   const oficioExtra = (n) => ({ ...base, id: `oficio__${n}`, oficioExtra: true });
+  /* ⚠ A CLASSE PODE EXIGIR MAIS DE UMA LINHA DE OFÍCIO (2026-08-31). O
+     Combatente e o Conjurador treinam DOIS Ofícios, e a linha repetida só
+     nascia depois de alguém escrever algo nela: a segunda concessão da Classe
+     não teria onde pousar, e a ficha mostraria uma perícia concedida a menos
+     sem dizer nada. O mínimo vem do próprio pacote, que é onde o número mora. */
+  const minimo = pacoteInicialDaFicha(creature?.especializacoes)?.periciasOficios ?? 0;
   // Os que já carregam escolha ficam, par ou ímpar.
   const extras = [];
-  for (let n = 2; oficioExtraOcupado(creature, `oficio__${n}`); n++) extras.push(oficioExtra(n));
+  for (let n = 2; n <= minimo || oficioExtraOcupado(creature, `oficio__${n}`); n++) extras.push(oficioExtra(n));
   // E o desempate, que é sempre no máximo um: acrescentar uma linha já vira a
   // contagem para par.
   if ((lista.length + extras.length) % 2 === 1) extras.push(oficioExtra(extras.length + 2));
@@ -960,16 +966,19 @@ export function resolveTestes(creature, ctx = {}) {
   // Proficiência concedida NUNCA rebaixa a escolhida: fica a maior das duas.
   const FAIXA = { treinado: 1, mestre: 2 };
   const NOME_FAIXA = { 1: "treinado", 2: "mestre" };
-  /* ⚠ O PACOTE DA CLASSE CONCEDE, e não pede que o jogador marque (autor,
-     2026-08-30). Vale só para o que a Classe já decidiu: os dois TR fixos do
-     Restringido e a perícia dirigida cuja lista tem um caminho só. O que ainda é
-     escolha de verdade ("um TR entre Fortitude ou Reflexos") continua em aberto.
+  /* ⚠ O PACOTE DA CLASSE CONCEDE **TR**, e não perícia (autor, 2026-08-30 para o
+     TR, 2026-08-31 para tirar a perícia: *"Não era para FORÇAR as perícias já
+     que tem escolhas e coisa do gênero"*).
+
+     O TR é concedido porque o livro escreve em caixa alta que eles "NÃO PODEM
+     SER ESCOLHIDOS DE FORMA LIVRE". A perícia é o contrário: o pacote decide
+     QUANTAS e o jogador decide QUAIS, e mesmo a parte que o livro nomeia tem
+     escolha dentro (qual Ofício, qual faixa).
 
      Entra pela MESMA porta do treino concedido pelo Motor: a faixa resolvida
      sobe, a escolhida não, então a linha fica verde, não gasta vaga de novo e
      não pode ser desmarcada ali. */
   const automaticas = (lista) => new Set(Array.isArray(lista) ? lista : []);
-  const periciasDoPacote = automaticas(ctx.pacoteInicial?.periciasAutomaticas);
   const trDoPacote = automaticas(ctx.pacoteInicial?.trAutomaticos);
   const profComEfeito = (canal, id, escolhida, concedidaPeloPacote = false) => {
     const concedida = Math.trunc(bonusDeEfeito(canal, id));
@@ -1001,7 +1010,7 @@ export function resolveTestes(creature, ctx = {}) {
       ? `${p.nome} (${oficios.join(", ")})`
       : p.nome;
     const escolhida = valida(profBruta[p.id]);
-    const prof = profComEfeito("proficienciaPericia", p.id, escolhida, periciasDoPacote.has(p.id));
+    const prof = profComEfeito("proficienciaPericia", p.id, escolhida);
     return {
       ...p,
       nome,

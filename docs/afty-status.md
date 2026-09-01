@@ -121,6 +121,322 @@ Estado atual do sistema Afty (atualizado 2026-08-18). Leia junto com:
 
 ---
 
+## SESSÃO DE 2026-08-31 (parte 7): A RD DO ESCUDO SE PARTIU EM DUAS
+
+O autor mandou as duas seções do livro (Uniformes e Escudos) na íntegra, para conferência, e a
+conferência virou trabalho.
+
+### A conferência: 33 de 34 batem palavra por palavra
+
+Comparado por script, e não de olho. As duas tabelas batem número a número (as quatro modificações e
+os quatro escudos), e as duas tabelas de grau também, incluindo o detalhe de o escudo **não** ganhar
+Encantamento no Quarto Grau enquanto o uniforme ganha.
+
+A única divergência de texto é a que já estava anotada:
+
+```
+livro     ...O escudo leve não ocupa uma das suas mãos.
+catálogo  ...O escudo pequeno não ocupa uma das suas mãos.
+```
+
+Terceira vez que a mesma fonte manda "leve". Segue como correção deliberada, agora registrada como
+**a única** diferença nas duas seções.
+
+⚠ **Uma anotação minha estava pela metade.** O doc dizia *"o dano do escudo o livro não diz"*, e o
+livro diz: *"Escudos podem ser usados em ataques, com o seu dano especificado entre parênteses, após
+o nome do escudo."* O **dado** vem do livro; o que não vem é o **tipo**, que foi confirmação do autor.
+
+A prosa introdutória das duas seções, que faltava, entrou em `docs/afty-equipamentos.md`.
+
+### O pedido: três coisas que são uma só
+
+> *"1 e 2 no Livro de Jogador é RD Físico. 3. Volte o encantamento Isolante, somente para Jogador."*
+
+O 1 era a tabela de grau (que escreve "RD FÍSICO") e o 2 era o Reforçado (que diz "contra dano
+físico"). Os dois estavam como RD Geral desde 2026-08-01.
+
+⚠ **O PEDIDO 3 É O QUE DEFINE O ALCANCE DO 1 E DO 2**, e sem ele a implementação sairia pela metade.
+O autor não citou a **RD base** do escudo (a coluna 2/2/4/6), mas o Isolante diz que *"a redução de
+dano do escudo passa também a ser aplicado a um tipo de dano elemental à sua escolha"* — e foi
+exatamente por isso que ele foi **removido** em 2026-08-01: com a RD do escudo virando Geral, que já
+cobre todo tipo menos alma, ele não tinha o que estender.
+
+Pedir o Isolante de volta é, portanto, dizer que a RD do escudo no jogador **não é Geral**. As três
+parcelas andam juntas.
+
+### Como ficou
+
+Divergência nova, `rdEscudoFisico`. Um Escudo Pesado de Grau Especial com Reforçado, medido:
+
+| | RD Geral | RD Física |
+|---|---|---|
+| criatura | +12 | 0 |
+| jogador | 0 | +12 |
+
+(12 e não 13 porque encantamento comprado desce um grau de cálculo. Regra de sempre do item, igual
+nos dois sistemas.)
+
+⚠ **`rdEscudo` virou PSEUDO-CANAL**, ao lado de `acertoArma` e `penalidadeEquip`. O Reforçado
+declarava `rdGeral` direto, o que fazia o **encantamento** decidir uma coisa que é do **sistema**, e
+deixava o texto do livro contradizendo o catálogo em silêncio. Agora ele declara "some na RD do
+escudo" e quem resolve onde isso mora é `canalRdEscudo(sistema)`.
+
+⚠ **O rótulo da tela seguiu junto.** O editor de Ferramenta mostrava "RD Geral +N" como benefício do
+escudo; dizer "Geral" no jogador seria mentir num dos dois.
+
+⚠ **Encantamento passou a poder ser de um sistema só.** Campo `sistema` na entrada, e a tela lê
+`encantamentosDe(tipo, sistema)` em vez do `ENCANTAMENTOS_POR_TIPO` cru — nos **dois** lugares que
+listam encantamento, o editor do item e o card de referência. Um encantamento listado na referência e
+ausente do editor seria pior do que não listá-lo.
+
+### O Isolante voltou SEM efeito, e é o estado consistente
+
+Não existe canal de RD **por tipo de dano** no motor. Os dois irmãos dele no uniforme, **Isolante** e
+**Resiliente**, estão na mesma situação desde julho — os três precisam da mesma peça.
+
+Ligar um sozinho seria pior do que os três parados, porque o jogador passaria a acreditar que os
+outros dois também funcionam. Há assert prendendo os três juntos: ligar um faz falhar.
+
+### Verificação
+
+`npx eslint src/systems/afty/ asserts/` limpo · `npx vite build` ok · **41 arquivos, 2149 asserts**.
+Novo: `asserts/t-escudo-rd.mjs` (31).
+
+---
+
+## SESSÃO DE 2026-08-31 (parte 6): A FRASE DO PACOTE TEM TRÊS PARTES, E O CÓDIGO LIA UMA
+
+Autor: *"Especialista em Combate (Combatente) fornece 2 Ofícios, Atletismo ou Acrobacia e 3 a
+Escolha. Totalizando 6 Perícias. Porém, o site só está me fornecendo 5 no lugar."*
+
+Isto fecha a pergunta que ficou aberta na parte 5, e a resposta serve para as seis Classes.
+
+### O que estava errado
+
+O livro escreve *"Duas perícias de Ofício, Atletismo ou Acrobacia e três outras perícias
+quaisquer"*, e o código lia **"duas de uma lista de três"**: `escolhe: 2, entre: [oficio, atletismo,
+acrobacia], livres: 3` = 5.
+
+A frase tem **três** partes:
+
+| Parte | Combatente | Vale |
+|---|---|---|
+| Ofícios | *"Duas perícias de Ofício"* | 2 |
+| Dirigida | *"Atletismo **ou** Acrobacia"* | 1 |
+| Livres | *"três outras perícias quaisquer"* | 3 |
+
+⚠ **O que separa a segunda parte da terceira é a PONTUAÇÃO**, e é exatamente a mesma distinção que
+os TR do Restringido já faziam desde 08-30: **"ou" é escolha, vírgula é as duas**. Por isso o
+Combatente escolhe uma entre Atletismo ou Acrobacia e o Conjurador recebe Feitiçaria **e** Ocultismo.
+
+O dado passou a ter as quatro colunas, e os totais saem da soma:
+
+| Classe | Ofícios | Fixas | Escolhe | Livres | Total |
+|---|---|---|---|---|---|
+| Lutador | 1 | — | 1 entre Atletismo ou Acrobacia | 3 | **5** |
+| Combatente | 2 | — | 1 entre Atletismo ou Acrobacia | 3 | **6** |
+| Conjurador | 2 | Feitiçaria, Ocultismo | — | 2 | **6** |
+| Suporte | 2 | Medicina, Prestidigitação | — | 3 | **7** |
+| Controlador | 1 | Percepção, Persuasão | — | 2 | **5** |
+| Restringido | 1 | — | — | 4 (exceto Feitiçaria) | **5** |
+
+⚠ **A tabela de pacotes da sessão de 2026-08-30 (parte 7) está velha.** Ela registra a leitura
+antiga, de uma lista só. Esta é a que vale.
+
+⚠ **Os dois números que o autor confirmou são Combatente 6 e Conjurador 6**, e só esta leitura dá os
+dois. Lutador 5, Suporte 7, Controlador 5 e Restringido 5 saem do mesmo parse e **não foram
+confirmados** — anotados em `docs/a-fazer.md`.
+
+### O pacote decide QUANTAS, e o jogador decide QUAIS
+
+Esta é a metade que não é óbvia, e ela deu meia-volta dentro da própria sessão.
+
+Desde 30/08 *"o que a Classe já decidiu chega concedido"*, e o `vagasDoPacote` **descontava** a
+concedida do total, com esta justificativa escrita:
+
+> *"O Restringido treina cinco perícias, e uma delas é Ofício, que ele recebe. Se Ofício continuasse
+> contando no total e fosse concedido de graça, a ficha treinaria seis."*
+
+Com o desconto, o Combatente mostraria **4** (os 2 Ofícios saindo de 6) e o Conjurador **2**. A
+primeira tentativa foi manter a concessão e fazê-la **ocupar** a vaga em vez de sair do total: a
+linha chegava treinada e já cobrada, e o número fechava.
+
+O autor viu o resultado na tela e cortou a ideia pela raiz:
+
+> *"Não era para FORÇAR as perícias já que tem escolhas e coisa do gênero. Só colocar no contador
+> como estava antes, porém com o número correto."*
+
+Ele está certo, e o motivo é o que o próprio parse desta sessão revelou: **mesmo a parte que o livro
+nomeia tem escolha dentro**. "Duas perícias de Ofício" não diz *qual* Ofício, e uma linha verde que
+não desmarca tira do jogador uma decisão que é dele. O mesmo vale para a faixa: Treinado ou Mestre é
+escolha, e a concessão travava em Treinado.
+
+Então **a concessão de perícia saiu inteira**. O pacote agora só responde *quantas*, e o contador
+volta a funcionar como antes, com o número certo. `periciasAutomaticas` deixou de existir em vez de
+virar uma lista sempre vazia: um campo que ninguém preenche envelhece calado.
+
+⚠ **O TR continua concedido**, e não é inconsistência. O livro escreve em caixa alta que os Testes de
+Resistência *"NÃO PODEM SER ESCOLHIDOS DE FORMA LIVRE, SENDO RECEBIDO POR ESPECIALIZAÇÃO"*, e eles
+não contam para o Limite de Perícias. Perícia é o oposto dos dois lados.
+
+### A linha de Ofício repetida precisou nascer antes de alguém escrever nela
+
+`oficio__2` só existia depois que alguém preenchesse algo nela, e nada preenche uma linha que não
+está na tela. Com o Combatente e o Conjurador treinando **dois** Ofícios, o segundo não tinha onde
+ser marcado. O `catalogoPericiasDaFicha` passou a ler o mínimo do próprio pacote, que é onde o número
+mora.
+
+⚠ Isso **não é concessão**: a linha nasce em branco e desmarcada. Ela só existe para poder ser
+escolhida.
+
+### O assert de clone mediu a meia-volta
+
+Com a concessão de perícia ligada, `periciaProf` passou a divergir entre os dois sistemas, e entrou
+na lista de diferenças esperadas. Ao tirar a concessão, ele parou de divergir e saiu de novo.
+
+⚠ **Isso é o assert fazendo o trabalho dele**: a única coisa que o jogador ganhava e a criatura não
+era a perícia forçada, e o campo apareceu e sumiu exatamente junto com ela. Se tivesse sobrado
+alguma concessão escondida, ele continuaria na lista.
+
+### Verificação
+
+`npx eslint src/systems/afty/ asserts/` limpo · `npx vite build` ok · **40 arquivos, 2114 asserts**.
+
+---
+
+## SESSÃO DE 2026-08-31 (parte 5): QUATRO BUGS DE UMA VEZ, E TRÊS ERAM SILÊNCIO
+
+O autor mandou cinco relatos numa mensagem só. Quatro estão consertados e o quinto é pergunta de
+regra, aberta em `docs/a-fazer.md`. Os quatro consertados não se parecem, mas **três compartilham a
+mesma anatomia**: o código tinha a informação certa em algum lugar e a jogava fora sem sintoma.
+
+### 1. "Falta os tipos de dano na aura elemental"
+
+`TIPOS_DANO` tinha **quatro entradas**, e o comentário em cima dela dizia *"tipos de dano usados
+pelas armas"*. Isso era honesto sobre a origem e virou mentira assim que outra coisa passou a lê-la.
+
+O livro tem **quinze**, em quatro categorias:
+
+| Categoria | Tipos |
+|---|---|
+| Físicos | Cortante, Perfurante, Impacto |
+| Elementais | Ácido, Congelante, Chocante, Queimante, Sônico |
+| Etéreos | Dano na Alma, Energia Reversa, Energético, Psíquico, Radiante |
+| Biológicos | Necrótico, Venenoso |
+
+A Aura Elemental diz *"escolher um tipo de dano da categoria Elementais"* e a Afinidade Ampliada diz
+*"você escolhe um tipo de dano elemental"*. As duas ofereciam a tabela inteira, que naquele dia era
+**três tipos físicos e um elemento só**.
+
+⚠ **As quatro chaves antigas ficaram como estavam** (`ct`, `im`, `pf`, `queimante`). Elas estão
+gravadas em toda arma do catálogo e em toda ficha salva, e renomeá-las por simetria trocaria o tipo
+de dano de armas existentes por nada.
+
+⚠ **Categoria virou DADO, e não lista repetida na regra.** `CATEGORIAS_DANO` mora ao lado da tabela e
+`tiposDeDanoDaCategoria(id)` lê o rótulo VIVO na hora. A alternativa era cada regra que cita
+"elemental" repetir os cinco nomes à mão, e a lista envelheceria numa delas no dia em que um Addon
+acrescentasse um elemento. Por isso o Addon também ganhou o campo opcional `categoria`.
+
+⚠ **Dano na Alma entrou** porque o livro o lista entre os quinze, e não porque a mecânica dele caiba
+numa arma. Ele continua com canal próprio de RD (`rdAlma`) e com o subtipo de Feitiço só dele.
+**Perda de Vida NÃO entrou**: o livro a separa dos tipos de propósito.
+
+⚠ **O pacote de exemplo dos Addons ensinava a acrescentar "Sônico"**, que virou um dos quinze. Foi
+trocado por "Ressonante", e o assert `chave crua NAO existe` voltou a medir o namespace em vez do
+livro — ele passou a falhar corretamente no minuto em que Sônico entrou.
+
+### 2. "Elevar Aptidão não tá podendo ser pega múltiplas vezes"
+
+Verdade, e o comentário do catálogo registrava isso como pendência desde julho: *"REPETÍVEL (até BT
+vezes) [...] `creature.habilidades` é lista de ids ÚNICOS."*
+
+A solução já existia inteira **do lado do Talento** (`maxVezes` / `maxVezesExpr`, o mapa `vezes`, o
+`pegasExtras` no gasto e o `coletarEfeitos` multiplicando). Foi portada para as Habilidades de
+Especialização com o mesmo contrato, incluindo o medidor do card.
+
+⚠ **`escolhidas` continua SEM repetição.** Ela responde *"a criatura tem esta habilidade?"* e meio
+motor a lê com `includes(id)`. `vezes` responde *"quantas"*. Juntar as duas quebraria todo
+pré-requisito e toda tela.
+
+⚠ **`maxVezes: "livre"` é o terceiro caminho, e tem um dono só.** A Nova Habilidade do Conjurador diz
+*"repetidas vezes"*, sem número. Um número grande no lugar seria um teto inventado, e o medidor de
+bolinhas não serve para infinito: ali o card vira contador.
+
+⚠ **O aparo no teto é de LEITURA.** Um Conjurador 20 que baixa para 8 tem Maestria 3, e as pegas 4, 5
+e 6 somem da conta e **continuam na ficha**. Voltar ao 20 as traz de volta.
+
+⚠ **As duas repetições não convivem**, e o validador de catálogo agora recusa quem declarar as duas.
+`maxVezes` é "pegue de novo e ganhe a mesma coisa"; `escolha.repetivel` é "pegue de novo, para outro
+alvo". Juntas, a ficha cobraria duas vagas pela mesma pega.
+
+### 3. O limite de atributo subia e o valor não
+
+Autor: *"Feitiço que aumenta Limite de Atributo está aumentando o limite, porém, quando você tenta
+subir o atributo ele é travado em 20 ainda."*
+
+**A causa é de ORDEM, e não de fórmula.** Os atributos são resolvidos em dois momentos. No estágio 0
+a ficha soma base, pontos de nível, Desenvolvimento e bônus de Origem, e apara isso no único limite
+que existe ali (20, mais Origem e Desenvolvimento). Só **depois** os catálogos são resolvidos e o
+canal `limiteAtributo` do Motor aparece. O estágio 1 apenas SOMA o canal `atributo` por cima do que
+já foi cortado, então o ponto que o 20 comeu **nunca voltava**.
+
+O sintoma era o próprio código se contradizendo na tela:
+
+```
+Efetivo 20    Limite 26    ⚠ "2 pontos de bônus perdidos no limite 26"
+```
+
+Aparando por um número diferente do que exibia.
+
+O conserto guarda a soma CRUA do estágio 0 e **refaz a conta** contra o limite final. Não é um
+segundo aparo: é o mesmo, agora com o limite certo na mão. A perda é **reescrita** em vez de somada,
+senão o ponto cortado no estágio 0 seria contado duas vezes.
+
+⚠ **`attrBase` NÃO foi corrigido, e é de propósito.** Ele é o atributo que o contexto do Motor e os
+pré-requisitos enxergam, e existe ANTES do canal por construção. Corrigi-lo exigiria resolver os
+catálogos de novo com o valor novo, e uma habilidade cujo requisito é o atributo que ela mesma libera
+fecharia o laço.
+
+⚠ **O hover do LIMITE ganhou a linha de fechamento que o do valor já tinha.** Três fontes de +5 num
+atributo comum somam 35, o número grande diz 30 e o hover ficava com 5 sem dono. Mesmo defeito do
+lado do valor, só que no teto do SISTEMA em vez do limite do atributo.
+
+### 4. O Motor desligava quem escrevesse a condição óbvia
+
+Autor: *"O Motor de Automação enquanto: 'sempre' não funciona, só funciona se estiver vazio."*
+
+**O campo de condição tem `sempre` como PLACEHOLDER.** O autor escreveu a palavra que a própria tela
+mostra, `sempre` não era variável nenhuma, o `evalNumber` estourou e caiu no fallback `0` — que num
+`quando` é justamente o valor que **desliga** o efeito. Escrever a condição óbvia era a única forma
+de apagá-la.
+
+Duas metades:
+
+1. **`sempre` e `nunca` viraram constantes do contexto.** Não são valor de ficha, são vocabulário, e
+   aparecem no seletor `{ }` como qualquer variável porque o vocabulário classifica o contexto real.
+2. **O editor passou a conferir os NOMES**, e não só a sintaxe. `validateExpression` sempre aceitou
+   um `knownVars`, e o editor do Motor nunca o passava: nome inexistente é sintaxe perfeita, então a
+   caixa ficava **verde** e o efeito morria calado. É o mesmo engano do Modificador da Invocação, em
+   agosto.
+
+### O que ficou de fora
+
+**Ofícios e o Limite de Perícias** (relato 3 do autor). É pergunta de REGRA, não bug localizado: o
+pacote transcrito do Conjurador é *"Duas perícias de Ofício, Feitiçaria, Ocultismo e duas outras
+perícias quaisquer"* = **4**, e o autor diz que a Classe *"ganha 6 contando o ofício"*. Os dois
+números não se encontram por nenhum caminho no código. Anotado em `docs/a-fazer.md` com a conta
+inteira aberta.
+
+### Verificação
+
+`npx eslint src/systems/afty/ asserts/` limpo · `npx vite build` ok ·
+**40 arquivos, 2107 asserts** (eram 38 e 2036).
+
+Dois arquivos novos: `asserts/t-repeticao-habilidade.mjs` (22) e `asserts/t-limite-atributo.mjs`
+(21). `t-dsl.mjs` e `t-tabelas.mjs` cresceram para cobrir as constantes e as categorias de dano.
+
+---
+
 ## SESSÃO DE 2026-08-31 (parte 4): O DANO DO JOGADOR É O DA ARMA
 
 Autor: *"Preciso que o Dano na ficha de jogador não seja o de Criatura. Eles seguem o DANO DA ARMA,

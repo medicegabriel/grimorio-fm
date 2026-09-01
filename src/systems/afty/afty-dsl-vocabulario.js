@@ -40,6 +40,8 @@ const POR_NOME = [
     id: "nucleo",
     label: "Núcleo",
     nomes: [
+      ["sempre", "Vale 1: a condição que nunca desliga"],
+      ["nunca", "Vale 0: a condição que nunca liga"],
       ["nd", "Nível de Desafio"],
       ["bt", "Bônus de Treinamento"],
       ["maestria", "Maestria, o mesmo valor do Bônus de Treinamento"],

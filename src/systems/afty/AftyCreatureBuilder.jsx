@@ -99,7 +99,7 @@ import {
 } from "./afty-invocacoes";
 import { periciasParaInvocacao, DANO_ADICIONAL_ARMA } from "./afty-pericias";
 import {
-  EQUIP_TIPOS, CUSTOS, ARMA_CATEGORIAS, ARMA_GRUPOS, TIPOS_DANO,
+  EQUIP_TIPOS, CUSTOS, ARMA_CATEGORIAS, ARMA_GRUPOS, TIPOS_DANO, tiposDeDanoDaCategoria,
   ITEM_CATEGORIAS, catalogoDoTipo, novaEntradaEquip,
   orcamentoDoGrau, espacosDoEquipamento, custoDoEquipamento,
   getPropriedade, getEspecial, grupoLabel,
@@ -108,7 +108,7 @@ import {
   CRIA_LABEL, REFEICOES_COZINHEIRO,
   AFTY_GRAUS, FA_TIPOS_EQUIP, FA_CRIACAO, defesaDaArmadura,
   FA_ENCANT_GANHO, FA_IDENTIFICACAO_CD, FA_GRAU_ESPECIAL_EXEMPLO,
-  ENCANTAMENTOS_POR_TIPO, getEncantamento,
+  getEncantamento, encantamentosDe, canalRdEscudo,
   avaliarRequisitoEncantamento,
 } from "./afty-equipamentos";
 import { evalNumber as evalNumberDsl, validateExpression } from "./afty-dsl";
@@ -409,6 +409,18 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
         ...d,
         habilidades: atual.includes(id) ? atual.filter((x) => x !== id) : [...atual, id],
       };
+    });
+
+  /* Habilidade de Especialização REPETÍVEL (`maxVezes` / `maxVezesExpr`). A
+     lista guarda uma entrada por pega, igual ao Talento e às Habilidades
+     Gerais, então definir "vezes" é reescrever as entradas daquele id. Quem
+     apara no teto é o resolver, e não este setter: baixar o ND devolve a pega
+     excedente em vez de apagá-la da ficha. */
+  const setHabilidadeVezes = (id, vezes) =>
+    setDraft((d) => {
+      const atual = Array.isArray(d.habilidades) ? d.habilidades : [];
+      const outras = atual.filter((x) => x !== id);
+      return { ...d, habilidades: [...outras, ...Array(Math.max(0, vezes)).fill(id)] };
     });
 
   // Talentos: mesmo orçamento das Habilidades de Especialização (são pegos no
@@ -1051,7 +1063,7 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
             />
           )}
           {tabAtiva === "habilidades" && <TabHabilidades draft={draft} derived={derived} patchCore={patchCore} toggleArmaDedicada={toggleArmaDedicada} addFeitico={addFeitico} removeFeitico={removeFeitico} patchFeitico={patchFeitico} duplicarFeitico={duplicarFeitico} setReducoesCustoFeitico={setReducoesCustoFeitico} toggleEstiloTabela={toggleEstiloTabela} addEstiloEspecial={addEstiloEspecial} removeEstilo={removeEstilo} patchEstilo={patchEstilo} addFuncionamento={addFuncionamento} removeFuncionamento={removeFuncionamento} patchFuncionamento={patchFuncionamento} setGeralVezes={setGeralVezes} addDominio={addDominio} removeDominio={removeDominio} patchDominio={patchDominio} setDominioAtivo={setDominioAtivo} sistema={sistema} />}
-          {tabAtiva === "especializacoes" && <TabEspecializacoes draft={draft} derived={derived} setEspecializacoes={setEspecializacoes} toggleHabilidade={toggleHabilidade} toggleEscolhaHabilidade={toggleEscolhaHabilidade} toggleTalento={toggleTalento} setTalentoVezes={setTalentoVezes} toggleEscolhaTalento={toggleEscolhaTalento} setMelhoriaVezes={setMelhoriaVezes} toggleLendaria={toggleLendaria} toggleEscolhaAltoNivel={toggleEscolhaAltoNivel} patchTecnicasCombate={patchTecnicasCombate} />}
+          {tabAtiva === "especializacoes" && <TabEspecializacoes draft={draft} derived={derived} setEspecializacoes={setEspecializacoes} toggleHabilidade={toggleHabilidade} setHabilidadeVezes={setHabilidadeVezes} toggleEscolhaHabilidade={toggleEscolhaHabilidade} toggleTalento={toggleTalento} setTalentoVezes={setTalentoVezes} toggleEscolhaTalento={toggleEscolhaTalento} setMelhoriaVezes={setMelhoriaVezes} toggleLendaria={toggleLendaria} toggleEscolhaAltoNivel={toggleEscolhaAltoNivel} patchTecnicasCombate={patchTecnicasCombate} />}
           {tabAtiva === "aptidoes" && <TabAptidoes draft={draft} derived={derived} setAptidaoNivel={setAptidaoNivel} toggleAptidao={toggleAptidao} setAptidaoOpcao={setAptidaoOpcao} setAptidaoVezes={setAptidaoVezes} setAptidaoOpcaoRepetida={setAptidaoOpcaoRepetida} />}
           {tabAtiva === "invocacoes" && <TabInvocacoes draft={draft} derived={derived} addInvocacao={addInvocacao} removeInvocacao={removeInvocacao} duplicarInvocacao={duplicarInvocacao} moverInvocacao={moverInvocacao} patchInvocacao={patchInvocacao} patchInvocacaoAttr={patchInvocacaoAttr} efeitosApi={efeitosApi} addHorda={addHorda} removeHorda={removeHorda} patchHorda={patchHorda} />}
           {tabAtiva === "equipamentos" && <TabEquipamentos draft={draft} derived={derived} addEquipamento={addEquipamento} removeEquipamento={removeEquipamento} patchEquipamento={patchEquipamento} toggleFerramenta={toggleFerramenta} patchFerramenta={patchFerramenta} toggleEncantamento={toggleEncantamento} addArmaCustom={addArmaCustom} patchArmaCustom={patchArmaCustom} removeArmaCustom={removeArmaCustom} />}
@@ -3226,6 +3238,24 @@ function TecnicaMotorEditor({
 
   const ativos = lista.filter((e) => e.ativo && e.expr).length;
 
+  /* O CONJUNTO DE VARIÁVEIS QUE O EDITOR RECONHECE, tirado do mesmo vocabulário
+     que alimenta o seletor { }. Sem ele o `validateExpression` só conferia a
+     SINTAXE, e um nome inexistente é sintaxe perfeita: a expressão ficava verde,
+     o `evalNumber` estourava na hora de avaliar e caía no fallback 0, que num
+     `quando` é justamente o valor que DESLIGA o efeito. Foi assim que "sempre"
+     apagou linhas inteiras caladas (autor, 2026-08-31), e é o mesmo engano que o
+     Modificador da Invocação cometeu em agosto.
+
+     As entradas de Marca (`contar("eco")`) saem fora: elas são CHAMADA, e não
+     nome de variável, e o validador já conhece a função. Sem vocabulário na mão
+     (um chamador que não passa `dslGrupos`) a conferência de nomes não roda, em
+     vez de reprovar tudo. */
+  const conhecidas = useMemo(() => {
+    if (!dslGrupos.length) return null;
+    const nomes = dslGrupos.flatMap((g) => g.itens.map((i) => i.nome));
+    return new Set(nomes.filter((n) => !n.includes("(")));
+  }, [dslGrupos]);
+
   return (
     <div className="mt-3 pt-3 border-t border-slate-800">
       <div className="flex items-center gap-2 mb-2">
@@ -3240,9 +3270,9 @@ function TecnicaMotorEditor({
 
       <div className="space-y-2">
         {lista.map((ef, i) => {
-          const chk = validateExpression(ef.expr || "");
+          const chk = validateExpression(ef.expr || "", conhecidas);
           const exprRuim = ef.expr && !chk.ok;
-          const chkQuando = ef.quando ? validateExpression(ef.quando) : { ok: true };
+          const chkQuando = ef.quando ? validateExpression(ef.quando, conhecidas) : { ok: true };
           const quandoRuim = ef.quando && !chkQuando.ok;
           const alvos = ef.alvoTipo ? alvoOpcoes(ef.alvoTipo, pericias, fontesDano) : null;
           const tamanhoSimples = simplificarTamanho && ef.canal === "tamanho";
@@ -7531,8 +7561,15 @@ function AptidaoCard({
   // Já escolhida nunca trava: senão um requisito que deixou de ser
   // atendido prenderia a aptidão na ficha, sem como remover.
   const bloqueada = faltando.length > 0 && !escolhida;
+  /* `categoria` recorta a lista dinâmica. As duas aptidões de Aura que escolhem
+     tipo de dano pedem um ELEMENTAL, e recebiam a tabela inteira: antes de os
+     quinze tipos do livro existirem, isso queria dizer três tipos físicos e um
+     elemento só (autor, 2026-08-31). Sem `categoria`, a lista continua sendo a
+     tabela toda. */
   const valoresOpcao = aptidao.opcoes?.dinamicas === "tiposDano"
-    ? Object.entries(TIPOS_DANO).map(([id, label]) => ({ id, label }))
+    ? (aptidao.opcoes.categoria
+      ? tiposDeDanoDaCategoria(aptidao.opcoes.categoria)
+      : Object.entries(TIPOS_DANO).map(([id, label]) => ({ id, label })))
     : aptidao.opcoes?.valores ?? [];
   // CONCEDIDA pela origem (o Domínio Simples do Sem Técnica): entra marcada, não
   // sai, não gasta orçamento e ignora o próprio pré-requisito. Mesma anatomia
@@ -7748,7 +7785,7 @@ function AptidaoCard({
    Como soma(niveis) === ND e a 2ª leva o resto (ver resolveEspecializacoes),
    os dois ± editam O MESMO ponto de divisão por lados opostos: subir uma
    baixa a outra. Com uma classe só não há o que dividir, e nenhum ± aparece. */
-function TabEspecializacoes({ draft, derived, setEspecializacoes, toggleHabilidade, toggleEscolhaHabilidade, toggleTalento, setTalentoVezes, toggleEscolhaTalento, setMelhoriaVezes, toggleLendaria, toggleEscolhaAltoNivel, patchTecnicasCombate }) {
+function TabEspecializacoes({ draft, derived, setEspecializacoes, toggleHabilidade, setHabilidadeVezes, toggleEscolhaHabilidade, toggleTalento, setTalentoVezes, toggleEscolhaTalento, setMelhoriaVezes, toggleLendaria, toggleEscolhaAltoNivel, patchTecnicasCombate }) {
   const { escolhidas, total, max, obrigatoria } = derived.especializacoes;
   // A origem copiada em Verdadeiras Origens ABRE o que for exclusivo dela: o
   // Físico Abençoado do Restringido diz que dá acesso à Especialização
@@ -7890,7 +7927,7 @@ function TabEspecializacoes({ draft, derived, setEspecializacoes, toggleHabilida
         (autor, 2026-07-17): a aba "Habilidades" do topo é de Ações &
         Características, não destas. Mesmo arranjo da aba de Aptidões, que
         tem o alocador em cima e a lista de leitura embaixo. */}
-    <HabilidadesEspecializacao draft={draft} derived={derived} toggleHabilidade={toggleHabilidade} toggleEscolhaHabilidade={toggleEscolhaHabilidade} toggleTalento={toggleTalento} setTalentoVezes={setTalentoVezes} toggleEscolhaTalento={toggleEscolhaTalento} patchTecnicasCombate={patchTecnicasCombate} />
+    <HabilidadesEspecializacao draft={draft} derived={derived} toggleHabilidade={toggleHabilidade} setHabilidadeVezes={setHabilidadeVezes} toggleEscolhaHabilidade={toggleEscolhaHabilidade} toggleTalento={toggleTalento} setTalentoVezes={setTalentoVezes} toggleEscolhaTalento={toggleEscolhaTalento} patchTecnicasCombate={patchTecnicasCombate} />
 
     {/* Empolgação: some inteira sem a habilidade Base do Lutador. */}
     <EmpolgacaoCard derived={derived} />
@@ -8099,6 +8136,25 @@ function TalentoMedidor({ talento, vezes, max, onSetVezes }) {
     : <ContadorCompacto value={vezes} min={1} max={max} onChange={(v) => onSetVezes(talento.id, v)} />;
 }
 
+/* Irmão do TalentoMedidor, para as Habilidades de Especialização repetíveis.
+   Separado dele por um detalhe que só existe aqui: a Nova Habilidade não tem
+   teto ("repetidas vezes"), então `max` chega Infinity e o medidor de bolinhas
+   não serve. `ContadorCompacto` sem `max` é justamente o contador sem teto. */
+function HabilidadeMedidor({ habilidade, vezes, max, onSetVezes }) {
+  if (max <= 1 || vezes <= 0) return null;
+  if (max <= 6) {
+    return <VezesGauge vezes={vezes} max={max} nome={habilidade.nome} onSet={(v) => onSetVezes(habilidade.id, v)} />;
+  }
+  return (
+    <ContadorCompacto
+      value={vezes}
+      min={1}
+      max={Number.isFinite(max) ? max : undefined}
+      onChange={(v) => onSetVezes(habilidade.id, v)}
+    />
+  );
+}
+
 function HabilidadeCard({ habilidade, escolhida, concedida = false, acesso, nivelEspec, escolhaEstado, onToggleOpcao, extra, medidor }) {
   const [open, setOpen] = useState(false);
   // Já escolhida nunca trava: senão redividir a multiclasse prenderia a
@@ -8244,7 +8300,7 @@ function HabilidadeCard({ habilidade, escolhida, concedida = false, acesso, nive
 
 const TALENTOS_TAB = "__talentos__";
 
-function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, toggleEscolhaHabilidade, toggleTalento, setTalentoVezes, toggleEscolhaTalento, patchTecnicasCombate }) {
+function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, setHabilidadeVezes, toggleEscolhaHabilidade, toggleTalento, setTalentoVezes, toggleEscolhaTalento, patchTecnicasCombate }) {
   const {
     escolhidas, selecionadas, concedidas, escolhas, gastosNoComum, comum, exclusivasTalento, exclusivasUsadas,
     excedeu, niveisPorEspec,
@@ -8471,6 +8527,12 @@ function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, toggleEsc
                   nivelEspec={ativa.nivel}
                   escolhaEstado={escolhas?.porHab?.[h.id]}
                   onToggleOpcao={(opcaoId) => toggleEscolhaHabilidade(h.id, opcaoId)}
+                  medidor={<HabilidadeMedidor
+                    habilidade={h}
+                    vezes={derived.habilidades?.vezes?.[h.id] ?? 0}
+                    max={derived.habilidades?.maxVezes?.[h.id] ?? 1}
+                    onSetVezes={setHabilidadeVezes}
+                  />}
                   extra={h.id === "cnj_tecnicas_de_combate" ? (
                     <TecnicasCombateEscolhas
                       draft={draft}
@@ -9487,13 +9549,19 @@ function MotorEfeitosEditor({
    `fa` aqui é o resumo JÁ resolvido pelo motor (entrada.fa). */
 function FerramentaEditor({
   entrada, onPatch, onToggleEnc, onRemove, pericias,
-  fontesDano, dslContexto, dslExtras,
+  fontesDano, dslContexto, dslExtras, sistema,
 }) {
   const { tipo, def, fa } = entrada;
-  const lista = ENCANTAMENTOS_POR_TIPO[tipo] ?? [];
+  /* ⚠ A LISTA DEPENDE DO SISTEMA. O Isolante de escudo existe só no jogador,
+     porque lá a RD do escudo é Física e há o que ele estender: na criatura ela é
+     Geral e já cobre todo tipo menos alma. Ver a divergência `rdEscudoFisico`. */
+  const lista = encantamentosDe(tipo, sistema);
+  // E o RÓTULO do benefício também: o mesmo escudo dá RD Geral na criatura e RD
+  // Física no jogador, e dizer "Geral" nos dois seria mentir num deles.
+  const rotuloRd = canalRdEscudo(sistema) === "rdFisico" ? "RD Física" : "RD Geral";
   const beneficio =
     tipo === "arma" ? `Acerto +${fa.bonusArma}` :
-    tipo === "escudo" ? `RD Geral +${(def.rdEscudo ?? 0) + fa.rdGrau}` :
+    tipo === "escudo" ? `${rotuloRd} +${(def.rdEscudo ?? 0) + fa.rdGrau}` :
     tipo === "uniforme" ? `Defesa +${defesaDaArmadura(def, fa.defesaGrau)}` : null;
   const nomesEscolhidos = fa.escolhidos.map((id) => getEncantamento(id)?.nome ?? id);
   const resumoEnc = nomesEscolhidos.length ? nomesEscolhidos.join(", ") : "Nenhum";
@@ -9650,7 +9718,7 @@ function FerramentaEditor({
 function LinhaCarregada({
   entrada, onPatch, onRemove, onToggleFerramenta, onPatchFerramenta,
   onToggleEncantamento, pericias, fontesDano, dslContexto, dslExtras,
-  sistemaJogador = false,
+  sistemaJogador = false, sistema,
 }) {
   const { def, tipo, uid, qtd, equipado, fa } = entrada;
   // Arma entrou em 2026-08-01: ela passou a render Acerto por grau, e a linha de
@@ -9887,6 +9955,7 @@ function LinhaCarregada({
           fontesDano={fontesDano}
           dslContexto={dslContexto}
           dslExtras={dslExtras}
+          sistema={sistema}
         />
       )}
     </div>
@@ -10628,6 +10697,7 @@ function TabEquipamentos({ draft, derived, addEquipamento, removeEquipamento, pa
                       dslContexto={derived.contextoDsl}
                       dslExtras={derived.combate?.estadosExtras}
                       sistemaJogador={sistemaJogador}
+                      sistema={sistemaDaFicha(draft)}
                     />
                   ))}
                 </div>
@@ -10779,7 +10849,7 @@ function TabEquipamentos({ draft, derived, addEquipamento, removeEquipamento, pa
         </div>
       </Card>
 
-      <FerramentasReferencia />
+      <FerramentasReferencia sistema={sistemaDaFicha(draft)} />
     </>
   );
 }
@@ -10787,7 +10857,7 @@ function TabEquipamentos({ draft, derived, addEquipamento, removeEquipamento, pa
 /* Card de referência das Ferramentas Amaldiçoadas: as tabelas de benefício por
    grau, o processo de criação, a identificação, o catálogo de encantamentos e o
    exemplo de Grau Especial. Tudo texto de leitura, recolhido por padrão. */
-function FerramentasReferencia() {
+function FerramentasReferencia({ sistema }) {
   const [aberto, setAberto] = useState(false);
   const [encTipo, setEncTipo] = useState("arma");
   const linhasBeneficio = AFTY_GRAUS.map((g) => ({
@@ -10799,7 +10869,10 @@ function FerramentasReferencia() {
     ganho: FA_ENCANT_GANHO,
     value: g.value,
   }));
-  const encLista = ENCANTAMENTOS_POR_TIPO[encTipo] ?? [];
+  /* A referência mostra o que ESTA ficha pode pegar, e não o catálogo inteiro:
+     um encantamento listado aqui e ausente do editor seria pior do que não
+     listá-lo. Hoje a diferença é o Isolante de escudo, que só existe no jogador. */
+  const encLista = encantamentosDe(encTipo, sistema);
   const encAbas = [
     { value: "arma", label: "Armas" },
     { value: "escudo", label: "Escudos" },

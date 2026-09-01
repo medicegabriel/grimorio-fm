@@ -42,7 +42,7 @@
  * estilo do autor vale para texto que o CÓDIGO escreve, não para a transcrição.
  */
 
-import { evalNumber } from "./afty-dsl";
+import { evalNumber, validateExpression } from "./afty-dsl";
 // Registro de Addons. Módulo FOLHA (só importa o afty-dsl), então não há ciclo.
 import { registrarFamilia, remendarLista } from "./afty-addons";
 import { getEspecializacao } from "./afty-especializacoes";
@@ -2862,8 +2862,11 @@ export const AFTY_HABILIDADES = [
       "Uma nova ideia surge em sua mente, a qual você transforma em uma habilidade inédita. Ao " +
       "obter esta habilidade, você pode imediatamente criar dois novos Feitiços ou três variações " +
       "de liberação. Você pode pegar essa habilidade repetidas vezes.",
-    // ⚠ REPETÍVEL sem limite ("repetidas vezes"), e o alvo (Feitiços) é um
-    // sistema que não existe. creature.habilidades é lista de ids ÚNICOS.
+    // REPETÍVEL SEM TETO: "repetidas vezes", sem número. É o único `maxVezes:
+    // "livre"` do catálogo, e o medidor do card vira contador por causa dele.
+    // ⚠ O comentário antigo daqui dizia que "o alvo (Feitiços) é um sistema que
+    // não existe". Existe desde julho, e a habilidade emite `vagasFeitico: 2`.
+    maxVezes: "livre",
     requisitos: [],
   },
   {
@@ -3247,9 +3250,10 @@ export const AFTY_HABILIDADES = [
       "Como um mestre em técnicas jujutsu no geral, você eleva seu nível em uma das aptidões. Ao " +
       "obter esta habilidade, você aumenta um dos seus Níveis de Aptidão em 1. Você pode pegar " +
       "esta habilidade uma quantidade de vezes igual ao seu bônus de treinamento.",
-    // ⚠ REPETÍVEL (até BT vezes) e CONCEDE nível de trilha "à sua escolha",
-    // logo é ORÇAMENTO, não concessão direcionada. Mesmo par de problemas de
-    // Aptidões de Combate/Luta, com um limite que depende do BT.
+    // REPETÍVEL, e a metade que faltava até 2026-08-31 era a repetição: a
+    // concessão "à sua escolha" já era ORÇAMENTO (canal `pontosAptidao`) desde
+    // agosto, mas a ficha guardava ids únicos e a 2ª pega não existia.
+    maxVezesExpr: "maestria",
     requisitos: [],
   },
   {
@@ -6952,6 +6956,42 @@ export function encantamentosDeManejoEspecial(creature) {
  * O excesso é medido no COMUM: uma vaga exclusiva de Talento sobrando não
  * libera Habilidade de Especialização nenhuma.
  */
+/**
+ * Quantas vezes a Habilidade de Especialização pode ser pega.
+ *
+ * ⚠ NASCEU EM 2026-08-31, por um relato do autor: *"Elevar Aptidão não está
+ * podendo ser pega múltiplas vezes."* O texto dela diz *"Você pode pegar esta
+ * habilidade uma quantidade de vezes igual ao seu bônus de treinamento"*, e a
+ * ficha guardava ids ÚNICOS: pegar de novo era simplesmente impossível, e o
+ * comentário do catálogo registrava isso como pendência desde julho.
+ *
+ * ⚠ NÃO CONFUNDIR COM `escolha.repetivel`, que é a OUTRA repetição e continua
+ * valendo. Ela é "pegue de novo, para outro alvo" (Aptidões de Combate, uma vez
+ * por aptidão), e a ficha a representa repetindo a ESCOLHA. Esta aqui é "pegue
+ * de novo, e ganhe a mesma coisa outra vez", e a ficha a representa repetindo o
+ * ID. Uma habilidade usa uma ou outra, nunca as duas, e o validador de catálogo
+ * recusa quem declarar as duas.
+ *
+ * Mesmo contrato do `maxVezesTalento`: número (`maxVezes`) ou expressão do DSL
+ * (`maxVezesExpr`), avaliada com `{ nd, maestria, bt }`. A expressão existe
+ * porque o primeiro caso é "igual ao seu bônus de treinamento".
+ *
+ * `maxVezes: "livre"` é o terceiro caminho, e ele tem exatamente um dono: a Nova
+ * Habilidade do Conjurador diz *"repetidas vezes"*, sem teto nenhum. Um número
+ * grande no lugar dele seria um teto inventado.
+ */
+export function maxVezesHabilidade(id, ctx = {}) {
+  const def = BY_ID[id];
+  if (!def) return 0;
+  if (def.maxVezes === "livre") return Infinity;
+  if (def.maxVezesExpr) {
+    const nd = Math.max(1, Math.trunc(Number(ctx.nd) || 1));
+    const maestria = Math.max(0, Math.trunc(Number(ctx.maestria) || 0));
+    return Math.max(1, Math.trunc(evalNumber(def.maxVezesExpr, { nd, maestria, bt: maestria }, 1)));
+  }
+  return Math.max(1, Math.trunc(Number(def.maxVezes) || 1));
+}
+
 export function resolveHabilidades(
   creature,
   escolhidasEspec,
@@ -6976,13 +7016,30 @@ export function resolveHabilidades(
   const concedidasSet = new Set(concedidas);
   const vistos = new Set();
   const selecionadas = [];
+  /* ⚠ A LISTA DA FICHA ACEITA REPETIÇÃO desde 2026-08-31, e `selecionadas`
+     continua SEM ela, do mesmo jeito que o `resolveTalentos` faz. Os dois
+     respondem perguntas diferentes: `escolhidas` responde "a criatura tem esta
+     habilidade?" (pré-requisito, efeito, tela) e `vezes` responde "quantas".
+     Juntar os dois quebraria todo `includes(id)` que já existe.
+
+     O aparo no teto é de LEITURA: baixar o ND devolve a pega excedente em vez
+     de apagá-la da ficha. */
+  const vezes = {};
+  const ctxVezes = { nd, maestria: bt };
   for (const id of Array.isArray(creature?.habilidades) ? creature.habilidades : []) {
     // Uma ficha antiga pode ter gravado manualmente uma Base que agora é
     // automática. Ela continua efetiva, mas deixa de gastar vaga.
-    if (!BY_ID[id] || vistos.has(id) || concedidasSet.has(id)) continue;
+    if (!BY_ID[id] || concedidasSet.has(id)) continue;
+    if (vistos.has(id)) {
+      if ((vezes[id] ?? 1) >= maxVezesHabilidade(id, ctxVezes)) continue;
+      vezes[id] = (vezes[id] ?? 1) + 1;
+      continue;
+    }
     vistos.add(id);
+    vezes[id] = 1;
     selecionadas.push(id);
   }
+  const pegasExtras = Object.values(vezes).reduce((soma, n) => soma + (n - 1), 0);
   const escolhidas = [...selecionadas, ...concedidas];
   const habilidadesAlmaLivre = almaLivreEspecializacao
     ? selecionadas.filter((id) => BY_ID[id]?.especializacaoId === almaLivreEspecializacao)
@@ -7022,7 +7079,10 @@ export function resolveHabilidades(
   // extra. Talentos entram no MESMO orçamento ("obtidos no lugar de
   // habilidades de especialização", autor 2026-07-22), por isso vêm de fora.
   const talentos = Math.max(0, talentosGastos);
-  const gastosHabilidade = selecionadas.length + escolhas.vagasExtras;
+  // A pega extra da repetível custa uma vaga, igual à do Talento: "você pode
+  // pegar esta habilidade uma quantidade de vezes igual ao seu bônus de
+  // treinamento" são N escolhas de habilidade, e não uma escolha que rende N.
+  const gastosHabilidade = selecionadas.length + escolhas.vagasExtras + pegasExtras;
   // Talento gasta a exclusiva primeiro, e o resto cai no comum.
   const talentosNoExclusivo = Math.min(talentos, exclusivasTalento);
   const gastosNoComum = gastosHabilidade + (talentos - talentosNoExclusivo);
@@ -7034,6 +7094,11 @@ export function resolveHabilidades(
     escolhidas,
     selecionadas,
     concedidas,
+    // Quantas pegas de cada id. Alimenta o `coletarEfeitos`, que multiplica o
+    // efeito, e o medidor do card. Concedida entra com 1, porque ela nunca
+    // repete.
+    vezes: { ...vezes, ...Object.fromEntries(concedidas.map((id) => [id, 1])) },
+    maxVezes: Object.fromEntries(escolhidas.map((id) => [id, maxVezesHabilidade(id, ctxVezes)])),
     escolhas,               // { porHab, mapa, vagasExtras }
     talentosGastos,
     total,
@@ -7095,6 +7160,21 @@ export function validarCatalogoHabilidades() {
       } else if (!dona.escolha.opcoes.some((o) => o.id === r.opcaoId)) {
         problemas.push(`${h.nome}: requisito escolha aponta para opção inexistente (${r.opcaoId})`);
       }
+    }
+
+    /* As DUAS repetições não convivem. `maxVezes` é "pegue de novo e ganhe a
+       mesma coisa" e `escolha.repetivel` é "pegue de novo, para outro alvo":
+       declarar as duas na mesma entrada faria a ficha cobrar duas vagas pela
+       mesma pega, uma pelo id repetido e outra pela escolha extra. */
+    if ((h.maxVezes || h.maxVezesExpr) && h.escolha?.repetivel) {
+      problemas.push(`${h.nome}: tem maxVezes E escolha.repetivel, que são as duas repetições`);
+    }
+    if (h.maxVezes != null && h.maxVezes !== "livre"
+      && (!Number.isInteger(h.maxVezes) || h.maxVezes < 2)) {
+      problemas.push(`${h.nome}: maxVezes inválido (${h.maxVezes})`);
+    }
+    if (h.maxVezesExpr && !validateExpression(h.maxVezesExpr, new Set(["nd", "maestria", "bt"])).ok) {
+      problemas.push(`${h.nome}: maxVezesExpr não avalia (${h.maxVezesExpr})`);
     }
 
     // Escolha aninhada (ex.: Estilos de Combate do Repertório).

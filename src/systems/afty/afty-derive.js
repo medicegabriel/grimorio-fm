@@ -349,6 +349,9 @@ export function deriveAfty(creature, opcoes = {}) {
   const equip = resolveEquipamentos(creature, bt, {
     vagasEncantamento: vagasEncantamentoDeTreino(creature),
     encantamentosExtras: encantamentosDeManejoEspecial(creature),
+    /* O sistema decide onde a RD do escudo desemboca: RD Geral na criatura, RD
+       Física no jogador. Ver `canalRdEscudo` e a divergência `rdEscudoFisico`. */
+    sistema,
   });
 
   // Limite EFETIVO por atributo = limite base (20 / poderes) + Desenvolvimento, teto 30.
@@ -398,8 +401,16 @@ export function deriveAfty(creature, opcoes = {}) {
   // A do estágio 1 (Motor) não é: Pináculo Físico num Restringido de Força 30 não
   // tem para onde ir. O builder avisa em vez de esconder.
   const perdaNoLimite = {};
+  /* A soma CRUA de estágio 0, guardada antes de qualquer aparo.
+
+     Ela existe porque o limite deste estágio ainda não é o limite final: o canal
+     `limiteAtributo` do Motor só aparece depois que os catálogos são resolvidos,
+     e o que for cortado aqui precisa poder VOLTAR quando ele chegar. Ver
+     `attrBaseFinal`, logo depois do `attrLimiteEfetivo`. */
+  const somaCrua = {};
   const eff = (key) => {
     const somado = (a[key] ?? 10) + (nivelAlloc[key] || 0) + (desenv[key] || 0) + (attrBonus[key] || 0);
+    somaCrua[key] = somado;
     const dentroDoLimite = Math.min(somado, limiteBaseOf(key));
     perdaNoLimite[key] = somado - dentroDoLimite;
     const comEquip = Math.min(dentroDoLimite + (equip.attrBonus[key] || 0), ATTR_LIMITE_MAX);
@@ -801,6 +812,38 @@ export function deriveAfty(creature, opcoes = {}) {
     ATTR_KEYS.map((k) => [k, Math.min(limiteBaseOf(k) + limiteMotorDe(k), tetoSistemaDe(k))]),
   );
 
+  /* ---------- O QUE O LIMITE DE ESTÁGIO 0 CORTOU, DEVOLVIDO ---------- */
+  /* ⚠ O LIMITE SUBIA E O VALOR NÃO (autor, 2026-08-31): *"Feitiço que aumenta
+     Limite de Atributo está aumentando o limite, porém, quando você tenta subir
+     o atributo ele é travado em 20 ainda."*
+
+     O `eff()` roda no estágio 0, onde o único limite conhecido é o
+     `limiteBaseOf` (20, mais Origem, Desenvolvimento e pool de Maldição). Tudo o
+     que ele apara vira `perdaNoLimite` e nunca mais volta, porque o estágio 1 só
+     SOMA o canal `atributo` por cima do resultado já cortado. Uma ficha com o
+     limite em 26 pelo Motor mostrava Limite 26, Efetivo 20 e o aviso "2 pontos
+     de bônus perdidos no limite 26", que é o próprio código dizendo que estava
+     aparando por um número diferente do que exibia.
+
+     Aqui a conta de estágio 0 é REFEITA contra o limite final. Não é um segundo
+     aparo: é o mesmo, agora com o limite certo na mão. A perda é reescrita em
+     vez de somada, senão o ponto cortado no estágio 0 seria contado duas vezes.
+
+     ⚠ O `attrBase` NÃO é corrigido, e é de propósito. Ele é o atributo que o
+     contexto do Motor e os pré-requisitos enxergam, e ele existe ANTES do canal
+     `limiteAtributo` por construção: corrigi-lo aqui exigiria resolver os
+     catálogos de novo com o valor novo, e uma habilidade cujo requisito é o
+     atributo que ela mesma libera fecharia o laço. O valor final da ficha sai do
+     `attrPermanente` logo abaixo, e é esse que a tela e os stats leem. */
+  const attrBaseFinal = {};
+  for (const k of ATTR_KEYS) {
+    const dentro = Math.min(somaCrua[k] ?? 0, attrLimiteEfetivo[k]);
+    perdaNoLimite[k] = (somaCrua[k] ?? 0) - dentro;
+    const comEquip = Math.min(dentro + (equip.attrBonus[k] || 0), tetoSistemaDe(k));
+    folgaEquip[k] = comEquip - dentro;
+    attrBaseFinal[k] = comEquip;
+  }
+
   // Níveis de aptidão por trilha: alocado (pago) + concedido (grátis,
   // direcionado). A concessão vem de dois lados, Treinamento e Habilidade.
   const mapasComDominio = mapasAptidao(efPreContexto);
@@ -1157,7 +1200,9 @@ export function deriveAfty(creature, opcoes = {}) {
     aplicarEfeitos(efeitosAtivos.filter(ehAtributoPermanente), montarCtx(attrBase, modBase)),
   ));
   // Este é o atributo que os PRÉ-REQUISITOS enxergam.
-  const attrPermanente = somarAtributo(attrBase, efAttrPerm);
+  /* Parte do `attrBaseFinal`, e não do `attrBase`: o segundo ainda está aparado
+     pelo limite de estágio 0. Ver a nota do `attrBaseFinal`. */
+  const attrPermanente = somarAtributo(attrBaseFinal, efAttrPerm);
   const modPermanente = Object.fromEntries(Object.entries(attrPermanente).map(([k, v]) => [k, mod(v)]));
 
   // Talentos de novo, agora com o atributo permanente: só o `inacessiveis` muda.
@@ -1822,11 +1867,15 @@ export function deriveAfty(creature, opcoes = {}) {
   };
 
   // ---------- RD Física ----------
-  // Canal separado de RD Geral e RD Específico. ⚠ O ESCUDO saiu daqui em
-  // 2026-08-01: a RD dele virou RD Geral (ver rdGeral acima). Sobrou o que é
-  // explicitamente físico, como o encantamento Reforçado ("contra dano
-  // físico") e a Aura Reforçada.
-  const rdFisico = canal("rdFisico");
+  /* Canal separado de RD Geral e RD Específico.
+
+     ⚠ O ESCUDO SAIU DAQUI em 2026-08-01 e VOLTOU no jogador em 2026-08-31. Na
+     criatura a RD dele é Geral (ver `rdGeral` acima); no jogador é Física, como
+     a tabela de grau do livro escreve. As três parcelas do escudo andam juntas:
+     a RD base, a do grau da Ferramenta e o encantamento Reforçado. Quem escolhe
+     a pilha é o `resolveEquipamentos`, e aqui só se soma a que ele encheu.
+     Ver a divergência `rdEscudoFisico`. */
+  const rdFisico = equip.rdFisicoBonus + canal("rdFisico");
 
   // ---------- Defesa / CA (+ uniforme, - sobrecarga; Treino de Luta ADIADO) ----------
   const divisorDefesa =
@@ -2358,7 +2407,10 @@ export function deriveAfty(creature, opcoes = {}) {
       ...doMotor("rdEspecifico"),
     ],
     rdAlma: doMotor("rdAlma"),
-    rdFisico: doMotor("rdFisico"),
+    rdFisico: [
+      ...(equip.rdFisicoBonus ? [{ label: "Equipamento", valor: equip.rdFisicoBonus }] : []),
+      ...doMotor("rdFisico"),
+    ],
     movimento: [
       { label: "Base", valor: 9 },
       ...(valoresDoJogador ? [] : [{ label: "Maior de Força e Destreza × 1,5", valor: maxForDex * 1.5 }]),
@@ -2437,13 +2489,23 @@ export function deriveAfty(creature, opcoes = {}) {
       ...(perdido ? [{ label: `Perdido no limite ${attrLimiteEfetivo[k]}`, texto: `−${perdido}` }] : []),
     ];
     const daOrigem = Math.max(limBase[k] ?? ATTR_LIMITE_PADRAO, limOrigem[k] ?? 0) - ATTR_LIMITE_PADRAO;
-    partesLimite[k] = [
+    const partesDoLimite = [
       { label: "Limite padrão", valor: ATTR_LIMITE_PADRAO },
       ...(daOrigem ? [{ label: tipo === "restringido" ? "Ápice Corporal Humano" : "Origem", valor: daOrigem }] : []),
       ...(desenv[k] ? [{ label: "Desenvolvimento Inesperado", valor: desenv[k] }] : []),
       ...(limPool[k] ? [{ label: "Bônus em Atributo", valor: limPool[k] }] : []),
       ...doMotor("limiteAtributo", k),
     ];
+    /* O LIMITE TEM O PRÓPRIO TETO, e o hover dele precisava da mesma linha de
+       fechamento que o valor já tinha. Duas fontes de +5 num atributo comum
+       somam 30 e a soma bate; três somam 35, o número grande diz 30 e o hover
+       ficava com 5 sem dono. É o mesmo defeito do lado do valor, só que no
+       teto do SISTEMA em vez do limite do atributo. */
+    const somaDoLimite = partesDoLimite.reduce((soma, x) => soma + (Number(x.valor) || 0), 0);
+    const acimaDoTeto = somaDoLimite - attrLimiteEfetivo[k];
+    partesLimite[k] = acimaDoTeto > 0
+      ? [...partesDoLimite, { label: `Teto do sistema ${attrLimiteEfetivo[k]}`, texto: `−${acimaDoTeto}` }]
+      : partesDoLimite;
   }
 
   // ---------- overrides de valor final (aba Cálculos) ----------
@@ -2570,7 +2632,7 @@ export function deriveAfty(creature, opcoes = {}) {
     grauFeiticeiro: grau,  // { value, label, ordem, rank, ndMin } derivado do ND
     equip: equipFinal,     // parcelas do equipamento (entradas, custoGasto, avisos...)
     carga,                 // { espacosUsados, cargaLimite, cargaMaxima, sobrecarregado... }
-    rdFisico,              // RD Física. O escudo NÃO entra mais aqui (é RD Geral).
+    rdFisico,              // RD Física. O escudo entra aqui no JOGADOR, e na RD Geral na criatura.
     penalidadeDestreza: equip.penalidadeDestreza, // uniforme + escudos, cumulativos
     /* Guarda Inabalável: { ativa, bonusMax, vidaMax, passoPorGolpe }. O corrente
        (quantos golpes já levou, se ainda está de pé) é SESSÃO, e quem resolve é

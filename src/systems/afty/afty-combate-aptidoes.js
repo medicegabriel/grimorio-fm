@@ -1,5 +1,5 @@
 import { AFTY_APTIDOES, getAptidao } from "./afty-aptidoes";
-import { TIPOS_DANO } from "./afty-equipamentos";
+import { TIPOS_DANO, tiposDeDanoDaCategoria } from "./afty-equipamentos";
 import { comFormulasDeDano, gruposDaLinha } from "./afty-dano";
 
 const tem = (ids, id) => Array.isArray(ids) && ids.includes(id);
@@ -79,9 +79,22 @@ export function estadosCombateAptidoes({ aptidoesIds = [], au = 0, cl = 0 } = {}
   return estados;
 }
 
+/* O tipo escolhido na aptidão, saneado contra o que ela PODE oferecer.
+   As duas donas (Aura Elemental e Afinidade Ampliada) pedem um tipo ELEMENTAL,
+   e até 2026-08-31 o saneamento olhava a tabela inteira. Isso bastava enquanto
+   a tabela tinha quatro entradas e o card oferecia as quatro, mas uma ficha
+   antiga pode ter Cortante gravado aí, e o card não oferece mais. Sanear pela
+   categoria da própria aptidão faz as duas telas dizerem a mesma coisa.
+
+   Sem `categoria` declarada, a tabela inteira segue valendo. */
 const escolhaDano = (creature, id) => {
   const escolha = creature?.aptidaoOpcoes?.[id];
-  return escolha && Object.prototype.hasOwnProperty.call(TIPOS_DANO, escolha) ? escolha : null;
+  if (!escolha) return null;
+  const categoria = getAptidao(id)?.opcoes?.categoria;
+  const valido = categoria
+    ? tiposDeDanoDaCategoria(categoria).some((x) => x.id === escolha)
+    : Object.prototype.hasOwnProperty.call(TIPOS_DANO, escolha);
+  return valido ? escolha : null;
 };
 
 export function aplicarAptidoesNoDano(dano, creature, combate, ctx = {}) {

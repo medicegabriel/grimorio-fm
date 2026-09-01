@@ -58,9 +58,17 @@ for (const tr of ["fortitude", "reflexos"]) {
   const r = linha(restr.resistencias, tr, "value");
   t(`o Restringido recebe ${tr} sem marcar`, [r.prof, r.profEscolhida, r.concedida], ["treinado", null, true]);
 }
+/* ⚠ MAS A PERÍCIA NÃO CHEGA MARCADA (autor, 2026-08-31): *"Não era para FORÇAR
+   as perícias já que tem escolhas e coisa do gênero. Só colocar no contador como
+   estava antes, porém com o número correto."*
+
+   O pacote decide QUANTAS e o jogador decide QUAIS. Mesmo a parte que o livro
+   nomeia tem escolha dentro: qual Ofício (Ferreiro, Farmacêutico) e qual faixa.
+   O TR é o contrário, e por isso ele segue concedido: o livro escreve em caixa
+   alta que ele "NÃO PODE SER ESCOLHIDO DE FORMA LIVRE". */
 const oficio = linha(restr.pericias, "oficio");
-t("e recebe Ofício sem marcar", [oficio.prof, oficio.profEscolhida, oficio.concedida], ["treinado", null, true]);
-t("com o bônus de Treinado dentro", oficio.partes.some((p) => p.label === "Maestria"), true);
+t("mas o Ofício NAO chega marcado", [oficio.prof, oficio.profEscolhida, oficio.concedida], [null, null, false]);
+t("e nenhuma pericia chega marcada", restr.pericias.every((p) => p.prof === null), true);
 
 /* Os outros TR não vêm de graça. */
 t("Vontade, Astúcia e Integridade seguem em branco",
@@ -86,28 +94,43 @@ t("nem o Ofício", linha(restrAfty.pericias, "oficio").prof, null);
 /* 2. O TOTAL CAI NA MESMA MEDIDA                                */
 /* ============================================================ */
 
-/* ⚠ A PERÍCIA CONCEDIDA SAI DO TOTAL. O Restringido treina cinco perícias, e uma
-   delas é Ofício, que ele recebe. Sem descontar, a ficha treinaria seis: quatro
-   livres, mais a vaga do Ofício sobrando, mais o Ofício de graça. */
+/* ⚠ O TOTAL É O QUE A CLASSE TREINA, e nada sai dele (revisto em 2026-08-31).
+   Ele descontava a perícia concedida até então, e o Combatente mostrava 5 onde o
+   livro dá 6. Com a concessão de perícia fora, não há mais o que descontar: o
+   pacote só diz o NÚMERO. */
 const pacoteRestr = E.pacoteInicialDaFicha([{ id: "restringido", nivel: 10 }]);
-t("o pacote do Restringido tem uma pericia automatica", pacoteRestr.periciasAutomaticas, ["oficio"]);
-t("e os dois TR automaticos", pacoteRestr.trAutomaticos, ["fortitude", "reflexos"]);
-t("as vagas dele descontam a automatica", E.vagasDoPacote(pacoteRestr), 4);
-t("o total soma o atributo escolhido", restr.orcamento.total, 4 + 3);
+t("o pacote de pericia nao concede nada", pacoteRestr.periciasAutomaticas, undefined);
+t("e os dois TR automaticos seguem", pacoteRestr.trAutomaticos, ["fortitude", "reflexos"]);
+t("as vagas do Restringido sao as cinco do livro", E.vagasDoPacote(pacoteRestr), 5);
+t("o total soma o atributo escolhido", restr.orcamento.total, 5 + 3);
 
 const pacoteLut = E.pacoteInicialDaFicha([{ id: "lutador", nivel: 10 }]);
-t("o Lutador nao tem automatica nenhuma",
-  [pacoteLut.periciasAutomaticas, pacoteLut.trAutomaticos], [[], []]);
-t("e as vagas dele seguem inteiras", E.vagasDoPacote(pacoteLut), 4);
+t("o Lutador nao concede TR nenhum", pacoteLut.trAutomaticos, []);
+t("e as vagas dele sao as cinco do livro", E.vagasDoPacote(pacoteLut), 5);
 
-/* Ponta a ponta: o Restringido treina CINCO perícias, e não seis. */
+/* Ponta a ponta: o Restringido treina CINCO perícias, e as cinco são dele para
+   marcar. Uma delas tem de ser Ofício pela regra do livro, e a ficha não força
+   isso: ela conta. */
 const restrCheio = ficha("player", "restringido", {
-  pericias: { atletismo: "treinado", furtividade: "treinado", intuicao: "treinado", percepcao: "treinado" },
+  pericias: {
+    oficio: "treinado", atletismo: "treinado", furtividade: "treinado",
+    intuicao: "treinado", percepcao: "treinado",
+  },
 }).testes;
-t("as quatro vagas fecham o orcamento",
-  [restrCheio.orcamento.gastos, restrCheio.orcamento.total, restrCheio.orcamento.excedeu], [4, 7, false]);
-t("mas ele esta treinado em cinco pericias",
+t("as cinco vagas fecham o orcamento",
+  [restrCheio.orcamento.gastos, restrCheio.orcamento.total, restrCheio.orcamento.excedeu], [5, 8, false]);
+t("e ele esta treinado em cinco pericias",
   restrCheio.pericias.filter((p) => p.prof).length, 5);
+/* E a sexta estoura, que é o que impede a Classe de dar mais do que promete. */
+const restrSeis = ficha("player", "restringido", {
+  pericias: {
+    oficio: "treinado", atletismo: "treinado", furtividade: "treinado",
+    intuicao: "treinado", percepcao: "treinado", acrobacia: "treinado",
+  },
+  attributes: { forca: 12, destreza: 12, constituicao: 12, inteligencia: 10, sabedoria: 10, presenca: 10 },
+}).testes;
+t("a sexta estoura num Restringido sem modificador",
+  [restrSeis.orcamento.gastos, restrSeis.orcamento.total, restrSeis.orcamento.excedeu], [6, 5, true]);
 
 /* ⚠ E O TR CONCEDIDO NÃO GASTA NADA, no jogador nem no papel: o livro tira os
    Testes de Resistência do Limite de Perícias. */

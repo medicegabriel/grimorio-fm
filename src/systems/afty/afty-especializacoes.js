@@ -63,7 +63,8 @@ export const AFTY_ESPECIALIZACOES = [
       /* "Um Teste de Resistência entre Fortitude ou Reflexos. Uma perícia de
          Ofício, Atletismo ou Acrobacia e outras três perícias quaisquer." */
       resistencias: { escolhe: 1, entre: ["fortitude", "reflexos"] },
-      pericias: { escolhe: 1, entre: ["oficio", "atletismo", "acrobacia"], livres: 3 },
+      // 1 Ofício + 1 entre Atletismo ou Acrobacia + 3 quaisquer = 5.
+      pericias: { oficios: 1, escolhe: 1, entre: ["atletismo", "acrobacia"], livres: 3 },
     },
   },
   {
@@ -85,7 +86,10 @@ export const AFTY_ESPECIALIZACOES = [
       /* "Um Teste de Resistência entre Fortitude ou Reflexos. Duas perícias de
          Ofício, Atletismo ou Acrobacia e três outras perícias quaisquer." */
       resistencias: { escolhe: 1, entre: ["fortitude", "reflexos"] },
-      pericias: { escolhe: 2, entre: ["oficio", "atletismo", "acrobacia"], livres: 3 },
+      /* ⚠ 2 Ofícios + 1 entre Atletismo ou Acrobacia + 3 quaisquer = 6. É a
+         frase que o autor desmontou em 2026-08-31: *"fornece 2 Ofícios,
+         Atletismo ou Acrobacia e 3 a Escolha. Totalizando 6 Perícias."* */
+      pericias: { oficios: 2, escolhe: 1, entre: ["atletismo", "acrobacia"], livres: 3 },
     },
   },
   {
@@ -109,7 +113,9 @@ export const AFTY_ESPECIALIZACOES = [
       /* "Um Teste de Resistência entre Astúcia ou Vontade. Duas perícias de
          Ofício, Feitiçaria, Ocultismo e duas outras perícias quaisquer." */
       resistencias: { escolhe: 1, entre: ["astucia", "vontade"] },
-      pericias: { escolhe: 2, entre: ["oficio", "feiticaria", "ocultismo"], livres: 2 },
+      // 2 Ofícios + Feitiçaria + Ocultismo + 2 quaisquer = 6. A lista aqui é
+      // por VÍRGULA, e não "ou": as duas entram, sem escolha.
+      pericias: { oficios: 2, fixas: ["feiticaria", "ocultismo"], livres: 2 },
     },
   },
   {
@@ -130,7 +136,8 @@ export const AFTY_ESPECIALIZACOES = [
       /* "Um Teste de Resistência entre Astúcia ou Vontade. Duas perícias de
          Ofício, Medicina, Prestidigitação e outras três quaisquer." */
       resistencias: { escolhe: 1, entre: ["astucia", "vontade"] },
-      pericias: { escolhe: 2, entre: ["oficio", "medicina", "prestidigitacao"], livres: 3 },
+      // 2 Ofícios + Medicina + Prestidigitação + 3 quaisquer = 7.
+      pericias: { oficios: 2, fixas: ["medicina", "prestidigitacao"], livres: 3 },
     },
   },
   {
@@ -151,7 +158,8 @@ export const AFTY_ESPECIALIZACOES = [
       /* "Um Teste de Resistência entre Astúcia ou Vontade. Uma perícia de
          Ofício, Percepção, Persuasão e outras duas perícias quaisquer." */
       resistencias: { escolhe: 1, entre: ["astucia", "vontade"] },
-      pericias: { escolhe: 1, entre: ["oficio", "percepcao", "persuasao"], livres: 2 },
+      // 1 Ofício + Percepção + Persuasão + 2 quaisquer = 5.
+      pericias: { oficios: 1, fixas: ["percepcao", "persuasao"], livres: 2 },
     },
   },
   {
@@ -209,7 +217,8 @@ export const AFTY_ESPECIALIZACOES = [
          ⚠ E o único com VETO: "exceto Feitiçaria". `vetadas` é a lista, e ela
          vale só para as livres, porque o pool dele já é só Ofício. */
       resistencias: { fixas: ["fortitude", "reflexos"] },
-      pericias: { escolhe: 1, entre: ["oficio"], livres: 4, vetadas: ["feiticaria"] },
+      // 1 Ofício + 4 quaisquer, exceto Feitiçaria = 5.
+      pericias: { oficios: 1, livres: 4, vetadas: ["feiticaria"] },
     },
   },
 ];
@@ -360,6 +369,19 @@ export function pacoteInicialDaFicha(escolhidas = []) {
   const resistencias = c.resistencias ?? {};
   const periciasEscolhe = Math.max(0, Math.trunc(Number(pericias.escolhe) || 0));
   const periciasEntre = Array.isArray(pericias.entre) ? pericias.entre : [];
+  /* ⚠ A FRASE DO LIVRO TEM TRÊS PARTES, E ATÉ 2026-08-31 ELA ERA LIDA COMO UMA.
+     *"Duas perícias de Ofício, Atletismo ou Acrobacia e três outras perícias
+     quaisquer"* não é "duas de uma lista de três": é **duas de Ofício**, mais
+     **uma entre Atletismo ou Acrobacia**, mais três quaisquer. Seis, e o site
+     dava cinco (autor, 2026-08-31).
+
+     A pontuação é que separa as duas últimas partes, e é a mesma distinção que
+     os TR do Restringido já faziam: **"ou" é escolha, VÍRGULA é as duas**. Por
+     isso o Conjurador recebe Feitiçaria E Ocultismo (`fixas`) e o Combatente
+     escolhe UMA entre Atletismo ou Acrobacia (`escolhe`/`entre`). */
+  const periciasOficios = Math.max(0, Math.trunc(Number(pericias.oficios) || 0));
+  const periciasFixas = Array.isArray(pericias.fixas) ? pericias.fixas : [];
+
   const trEscolhe = Math.max(0, Math.trunc(Number(resistencias.escolhe) || 0));
   const trEntre = Array.isArray(resistencias.entre) ? resistencias.entre : [];
   const trFixos = Array.isArray(resistencias.fixas) ? resistencias.fixas : [];
@@ -374,8 +396,17 @@ export function pacoteInicialDaFicha(escolhidas = []) {
   return {
     classeId: primeira.id,
     classeNome: getEspecializacao(primeira.id)?.nome ?? primeira.id,
-    /* Perícias que a Classe treina numa lista fechada ("Uma perícia de Ofício,
-       Atletismo ou Acrobacia"). */
+    /* Quantas linhas de Ofício a Classe treina. Elas contam no total, e o
+       jogador marca quais: o Ofício de cada linha é escolha dele (Ferreiro,
+       Farmacêutico). Quem garante que as linhas EXISTEM na ficha é o
+       `catalogoPericiasDaFicha`, que lê este mesmo número. */
+    periciasOficios,
+    /* Perícias que a Classe dá SEM escolha, porque o texto as separa por
+       vírgula em vez de "ou" ("Feitiçaria, Ocultismo"). Elas contam no total e
+       o jogador as marca: ver a nota do `periciasAutomaticas` abaixo. */
+    periciasFixas,
+    /* Perícias que a Classe treina numa escolha de verdade ("Atletismo ou
+       Acrobacia"). */
     periciasEscolhe,
     periciasEntre,
     /* Perícias "quaisquer". */
@@ -387,10 +418,20 @@ export function pacoteInicialDaFicha(escolhidas = []) {
     trEscolhe,
     trEntre,
     trFixos,
-    /* O que a ficha RECEBE sem escolher. As perícias daqui não gastam vaga: elas
-       saem do total, porque já vieram treinadas. Os TR nunca gastaram nada no
-       jogador (o livro os tira do Limite de Perícias). */
-    periciasAutomaticas: dirigidasAutomaticas(periciasEscolhe, periciasEntre),
+    /* ⚠ PERÍCIA NÃO CHEGA MARCADA (autor, 2026-08-31): *"Não era para FORÇAR as
+       perícias já que tem escolhas e coisa do gênero. Só colocar no contador
+       como estava antes, porém com o número correto."*
+
+       O pacote decide QUANTAS, e o jogador decide QUAIS. Mesmo a parte que o
+       livro já nomeia tem escolha dentro (qual Ofício, qual faixa), e uma linha
+       verde que não desmarca tira do jogador uma decisão que é dele.
+
+       Não existe mais `periciasAutomaticas`, e o campo saiu em vez de virar uma
+       lista sempre vazia: um campo que ninguém preenche envelhece calado.
+
+       ⚠ O TR É OUTRA HISTÓRIA, e segue concedido. O livro escreve em caixa alta
+       que eles "NÃO PODEM SER ESCOLHIDOS DE FORMA LIVRE, SENDO RECEBIDO POR
+       ESPECIALIZAÇÃO", e eles não contam para o Limite de Perícias. */
     trAutomaticos: [...trFixos, ...dirigidasAutomaticas(trEscolhe, trEntre)],
   };
 }
@@ -415,15 +456,18 @@ export function totalPericiasDoJogador(pacote, modAtributo = 0) {
 }
 
 /**
- * Quantas vagas o pacote da Classe rende, DESCONTADO o que ele já concede.
+ * Quantas perícias o pacote da Classe treina, somando as quatro partes da frase
+ * do livro: as linhas de Ofício, as fixas, a escolha dirigida e as livres.
  *
- * ⚠ A PERÍCIA AUTOMÁTICA SAI DO TOTAL. O Restringido treina cinco perícias, e
- * uma delas é Ofício, que ele recebe. Se Ofício continuasse contando no total e
- * fosse concedido de graça, a ficha treinaria seis.
+ * ⚠ ELE NÃO DESCONTA MAIS AS AUTOMÁTICAS (2026-08-31). Descontava até então, e o
+ * total do Combatente saía 5 onde o livro dá 6. A concessão passou a OCUPAR a
+ * vaga em vez de sair do total: a linha chega treinada e já cobrada, então a
+ * ficha continua treinando exatamente o que a Classe promete.
  */
 export function vagasDoPacote(pacote) {
   if (!pacote) return 0;
-  return Math.max(0, pacote.periciasEscolhe + pacote.periciasLivres - pacote.periciasAutomaticas.length);
+  return Math.max(0, pacote.periciasOficios + pacote.periciasFixas.length
+    + pacote.periciasEscolhe + pacote.periciasLivres);
 }
 
 /**
