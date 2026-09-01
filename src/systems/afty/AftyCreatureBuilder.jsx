@@ -33,7 +33,7 @@ import { Card, BoolChip, VezesGauge } from "./ui/primitivos";
 import { estadoInicialComRascunho, useRascunhoAfty, formatarSalvoEm } from "./afty-rascunho";
 import { SISTEMA_PADRAO, sistemaDaFicha, normalizaSistema, regraDo } from "./afty-sistema";
 import {
-  AFTY_ORIGENS, getOrigem, origemTemDesenvolvimento, origemPoolLimite,
+  origensDoSistema, getOrigem, origemTemDesenvolvimento, origemPoolLimite,
   clasDaOrigem, getCla, caracteristicasEfetivas, totalDaAlocacao, usoDaAlocacao,
   origensQualificadas,
   origemEstrutural,
@@ -6147,7 +6147,7 @@ function OrigemCard({ draft, derived, patchCore, setOrigemId, setOrigemBonus, se
   };
   const seletor = (
     <div className="w-56">
-      <Select value={id} onChange={(v) => setOrigemId(v)} options={AFTY_ORIGENS} />
+      <Select value={id} onChange={(v) => setOrigemId(v)} options={origensDoSistema(draft)} />
     </div>
   );
 
@@ -8440,8 +8440,8 @@ function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, setHabili
   // Os dois catálogos viram a MESMA forma ({ id, titulo, habilidades }) para
   // reusar a barra de grupos e o HabilidadeCard sem ramificar a árvore.
   const grupos = emTalentos
-    ? gruposDeTalento().map((g) => ({ id: g.id, titulo: g.titulo, habilidades: g.talentos }))
-    : gruposDeHabilidade(ativa.id);
+    ? gruposDeTalento(draft).map((g) => ({ id: g.id, titulo: g.titulo, habilidades: g.talentos }))
+    : gruposDeHabilidade(ativa.id, draft);
   const grupoAtivo = grupos.find((g) => g.id === grupoTab) ?? grupos[0];
   // attrEff alimenta os requisitos de atributo (ex.: Sobrevivente, Constituição
   // 16) e aptidoes os de aptidão (ex.: Revestimento Constante pede Cobrir-se).
@@ -11217,7 +11217,7 @@ function TabInterludios({
   // que um Addon libera abrem a linha exclusiva de origem).
   const origemId = origemEstrutural(draft);
   const qualificadas = origensQualificadas(draft);
-  const linhasTreino = treinamentosDaOrigem(origemId, qualificadas);
+  const linhasTreino = treinamentosDaOrigem(origemId, qualificadas, draft);
   // Contexto dos requisitos de etapa. Aptidão e trilha só bloqueiam quando o
   // chamador os fornece, então esquecer isto aqui seria requisito sempre aberto.
   const ctxReq = {

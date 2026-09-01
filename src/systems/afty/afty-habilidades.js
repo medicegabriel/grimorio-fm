@@ -44,7 +44,7 @@
 
 import { evalNumber, validateExpression } from "./afty-dsl";
 // Registro de Addons. Módulo FOLHA (só importa o afty-dsl), então não há ciclo.
-import { registrarFamilia, remendarLista } from "./afty-addons";
+import { registrarFamilia, remendarLista, filtraForaDoJogador } from "./afty-addons";
 import { getEspecializacao } from "./afty-especializacoes";
 import { getAptidao } from "./afty-aptidoes";
 import { ARMA_GRUPOS, ENCANTAMENTOS_ARMA } from "./afty-equipamentos";
@@ -3178,6 +3178,10 @@ export const AFTY_HABILIDADES = [
     // A posição na lista segue o nome REAL, então ela abre o bloco do 6°.
     id: "cnj_agilidade_no_campo_de_batalha",
     nome: "[2.0] Agilidade no Campo de Batalha",
+    // ⚠ FORA DA FICHA DE JOGADOR (autor, 2026-09-01). Continua inteira na ficha
+    // de criatura, e uma mesa a devolve ao jogador com um Addon que declare a
+    // liberação dela. Ver a divergência `conteudoSoPorAddon`.
+    foraDoJogador: true,
     especializacaoId: "conjurador",
     tipo: "nivel",
     nivel: 6,
@@ -6232,8 +6236,23 @@ export function resolveEscolhasHabilidade({
  * primeiro, depois as por Nível separadas por patamar ("Habilidades de 2°
  * Nível", "de 4° Nível"...), que é como o livro as apresenta.
  */
-export function gruposDeHabilidade(espId) {
-  const lista = habilidadesDaEspecializacao(espId);
+/**
+ * ⚠ `creature` entrou em 2026-09-01 e é OPCIONAL: sem ela a lista é a do livro
+ * inteiro. Quem monta o SELETOR passa a ficha, e aí a `[2.0] Agilidade no Campo
+ * de Batalha` some no jogador. Ver a divergência `conteudoSoPorAddon`.
+ *
+ * A habilidade JÁ ESCOLHIDA entra pela terceira porta do filtro, então uma ficha
+ * que a tem continua vendo o card dela em vez de perder a escolha na próxima
+ * edição.
+ */
+export function gruposDeHabilidade(espId, creature = null) {
+  const lista = creature
+    ? filtraForaDoJogador(
+      habilidadesDaEspecializacao(espId),
+      creature,
+      Array.isArray(creature?.habilidades) ? creature.habilidades : null,
+    )
+    : habilidadesDaEspecializacao(espId);
   const grupos = [];
   const bases = lista.filter((h) => h.tipo === "base");
   if (bases.length) grupos.push({ id: "base", titulo: "Habilidades Base", habilidades: bases });

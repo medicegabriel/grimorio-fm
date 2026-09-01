@@ -589,6 +589,32 @@ export const DIVERGENCIAS = [
     ativa: true,
   },
   {
+    /* ⚠ CONTEÚDO QUE O LIVRO DO JOGADOR NÃO TEM, e que uma mesa devolve com um
+       Addon. O autor pediu quatro entradas em sequência em 2026-09-01, e é por
+       isso que esta é UMA divergência e não quatro: a regra é a mesma, e o que
+       muda de uma para outra é só QUAL entrada. A granularidade mora no
+       catálogo (`foraDoJogador: true` na entrada) e na liberação por id.
+
+       ⚠ NENHUMA DELAS VIROU ADDON DE VERDADE, e a razão é medida no Gêmeos: ele
+       tem NOVE ganchos no motor presos ao id CRU `"gemeos"` (o painel de Irmão
+       Morto, o alcance do Restringido, as Verdadeiras Origens, o limite de pool,
+       três variáveis do DSL). Um id de addon nasce com o namespace do pacote,
+       viraria `pacote:gemeos` e os nove quebrariam CALADOS. Tirar da LISTA
+       resolve o pedido sem tocar em id nenhum.
+
+       ⚠ FICHA QUE JÁ TEM A ENTRADA CONTINUA INTEIRA (decisão do autor). Só o
+       SELETOR deixa de oferecer. Sem isso a lista abriria sem a opção gravada e
+       a próxima edição trocaria a escolha do personagem por acidente: tirar da
+       lista é fechar a PORTA, e não confiscar o que já passou por ela. */
+    id: "conteudoSoPorAddon",
+    tipo: "regra",
+    onde: "afty-addons.js, filtraForaDoJogador, e as quatro listas que o chamam",
+    fonte: "Remova a origem Gêmeos da Ficha de Jogador, e deixe ela acessível somente por Addon. / Remova também o \"Treino de Atributo\" da Ficha de Player, deixando ele somente por Addon. / Remova também [2.0] Agilidade no Campo de Batalha da ficha de Player e deixe somente por Addon. / Remova também o Talento \"Alma Livre\" da Ficha de Player e deixe somente por Addon. (autor, 2026-09-01)",
+    afty: "as entradas marcadas aparecem nas listas, como qualquer outra",
+    player: "fora das listas, e só um Addon que as libere pelo id as reabre",
+    ativa: true,
+  },
+  {
     id: "inventarioSimplificado",
     tipo: "regra",
     onde: "docs/afty-status.md, sessão de 2026-08-01",

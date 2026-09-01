@@ -40,7 +40,7 @@ fallback: um id errado não pode derrubar o criador de fichas no meio da mesa.
 
 ### 2. A tabela `DIVERGENCIAS`
 
-Vinte e uma entradas em `afty-sistema.js`, dezenove ligadas. **Isto é DADO, e não comentário**, porque
+Vinte e cinco entradas em `afty-sistema.js`, vinte e quatro ligadas. **Isto é DADO, e não comentário**, porque
 comentário envelhece calado: cada entrada carrega a citação verbatim de onde a divergência está escrita, o que vale de
 cada lado, e se o código JÁ desvia.
 
@@ -76,13 +76,10 @@ regra do autor.
 
 O catálogo está inteiro em `afty-equipamentos.js`. É a maior das três e a que mais muda a tela.
 
-### 2. `defesaUniforme` — a coluna Defesa da tabela do livro
+### 2. ~~`defesaUniforme`~~ ✅ LIGADA em 2026-08-31
 
-> *"Na ficha de CRIATURA o campo `defesa` desta tabela NÃO é aplicado: a armadura dá o CUSTO dela de
-> Defesa, mais o grau da Ferramenta. O campo fica aqui porque é o texto do livro e volta a valer na
-> ficha de jogador."*
-
-`UNIFORME_MODIFICACOES` já tem a coluna. Ligar é um `regraDo` no ponto que soma a Defesa.
+Ela saiu desta lista. O jogador usa a coluna Bônus na Defesa da tabela do livro, e o grau não soma
+nada. Ver a sessão de 2026-08-31 (parte 7).
 
 ### 3. `estiloDasSombras` — a progressão de Técnica de Estilo do livro
 
@@ -161,7 +158,7 @@ npx vite build
 npm run asserts
 ```
 
-Hoje: **42 arquivos, 2262 asserts.** Um arquivo de assert roda em processo próprio e imprime
+Hoje: **42 arquivos, 2293 asserts.** Um arquivo de assert roda em processo próprio e imprime
 `TODOS OS N ASSERTS PASSARAM`.
 
 Para rodar o `deriveAfty` num script solto, o hook de resolução está no topo de qualquer

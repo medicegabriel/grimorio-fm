@@ -118,7 +118,8 @@ t("as divergencias de REGRA ligadas",
   S.DIVERGENCIAS.filter((d) => d.ativa && d.tipo === "regra").map((d) => d.id).sort(),
   ["altoNivelSemGeral", "basesAutomaticas", "escalaDosTestes", "focosLivres",
    "danoPorArma", "defesaUniforme", "danoFixoPorGrau", "reducaoDeGrau",
-   "guardaEresistenciaParcial", "habilidadesGerais", "pacoteDaClasseInicial", "patamarDoJogador",
+   "conteudoSoPorAddon", "guardaEresistenciaParcial", "habilidadesGerais",
+   "pacoteDaClasseInicial", "patamarDoJogador",
    "proficienciaPorArma", "progressaoDeFeiticos",
    "pvPePorEspecializacao", "quantidadeDePE", "rdBase", "rdEscudoFisico", "tetoDeNivel",
    "trForaDoOrcamento", "vagasPorNivelDeClasse", "valoresAdicionais"].sort());
@@ -347,7 +348,7 @@ t("as divergencias conhecidas estao na lista",
   S.DIVERGENCIAS.map((d) => d.id).sort(),
   ["abasIdentidade", "altoNivelSemGeral", "basesAutomaticas", "danoPorArma",
    "defesaUniforme", "escalaDosTestes", "focosLivres", "guardaEresistenciaParcial",
-   "habilidadesGerais", "inventarioSimplificado", "pacoteDaClasseInicial",
+   "conteudoSoPorAddon", "habilidadesGerais", "inventarioSimplificado", "pacoteDaClasseInicial",
    "patamarDoJogador", "proficienciaPorArma", "progressaoDeFeiticos",
    "pvPePorEspecializacao", "quantidadeDePE", "rdBase", "rdEscudoFisico",
    "reducaoDeGrau", "danoFixoPorGrau",
@@ -952,6 +953,113 @@ t("na criatura o Beyond ainda triplica a Maestria", comPatamar("afty", "beyond")
 t("e ainda sobe o dado do dano", comPatamar("afty", "beyond").dado !== comPatamar("afty", "comum").dado, true);
 
 /* ============================================================ */
+
+/* ============================================================ */
+/* 12. CONTEÚDO QUE SAIU DA FICHA DE JOGADOR — 2026-09-01        */
+/* ============================================================ */
+
+/* Quatro pedidos do autor em sequência, todos com a mesma forma: *"Remova [X] da
+   Ficha de Player e deixe somente por Addon."*
+
+   ⚠ NENHUM VIROU ADDON DE VERDADE, e a decisão é medida e não gosto: o Gêmeos
+   tem NOVE ganchos no motor presos ao id CRU `"gemeos"`, e id de addon nasce com
+   o namespace do pacote. Virar `pacote:gemeos` quebraria os nove CALADOS. Por
+   isso o que muda é a LISTA, e o id fica em paz.
+
+   ⚠ E É UM MECANISMO SÓ para os quatro (`foraDoJogador` no catálogo, mais a
+   divergência `conteudoSoPorAddon`), porque a regra é a mesma: o que muda de uma
+   entrada para outra é só QUAL entrada. */
+
+const O = await import(R + "afty-origens.js");
+const TRE = await import(R + "afty-treinamentos.js");
+const HAB = await import(R + "afty-habilidades.js");
+const TAL = await import(R + "afty-talentos.js");
+const ADD = await import(R + "afty-addons.js");
+
+const fichaDe = (sistema, patch = {}) => {
+  const f = createBlankAfty();
+  f.rulesVersion = sistema;
+  f.core = { ...f.core, nd: 10, tipo: "misto", patamar: "comum" };
+  f.especializacoes = [{ id: "conjurador", nivel: 10 }];
+  return { ...f, ...patch };
+};
+const liberaSo = (id) => ({
+  id: "casa", nome: "Casa", versao: "1.0.0", acrescenta: {},
+  libera: [ADD.liberacaoSoPorAddon(id)],
+});
+const OUTRA = { id: "outra", nome: "Outra", versao: "1.0.0", acrescenta: {}, libera: ["estiloSombras"] };
+
+/* Cada linha: como se pergunta se a entrada aparece, o id da liberação, e como
+   uma ficha registra que JÁ a escolheu. */
+const REMOVIDAS = [
+  ["origem Gêmeos", "gemeos",
+    (f) => O.origensDoSistema(f).some((o) => o.value === "gemeos"),
+    (f) => { f.core.origem = { id: "gemeos" }; }],
+  ["Treino de Atributo", "atributo",
+    (f) => TRE.treinamentosDaOrigem("inato", null, f).some((l) => l.id === "atributo"),
+    (f) => { f.treinamentos = { atributo: [{ alvo: "forca", progresso: 2 }] }; }],
+  ["[2.0] Agilidade no Campo de Batalha", "cnj_agilidade_no_campo_de_batalha",
+    (f) => HAB.gruposDeHabilidade("conjurador", f)
+      .some((g) => g.habilidades.some((h) => h.id === "cnj_agilidade_no_campo_de_batalha")),
+    (f) => { f.habilidades = ["cnj_agilidade_no_campo_de_batalha"]; }],
+  ["Talento Alma Livre", "tal_alma_livre",
+    (f) => TAL.gruposDeTalento(f).some((g) => g.talentos.some((t) => t.id === "tal_alma_livre")),
+    (f) => { f.talentos = ["tal_alma_livre"]; }],
+];
+
+for (const [nome, libId, aparece, marcaFicha] of REMOVIDAS) {
+  t(`na criatura, ${nome} continua na lista`, aparece(fichaDe("afty")), true);
+  t(`e no jogador ${nome} sai`, aparece(fichaDe("player")), false);
+  t(`um Addon que libera ${nome} a traz de volta`,
+    aparece(fichaDe("player", { addons: [liberaSo(libId)] })), true);
+  /* Liberação é NOMEADA: um addon que abre outra coisa não abre esta. */
+  t(`e um Addon que libera outra coisa não abre ${nome}`,
+    aparece(fichaDe("player", { addons: [OUTRA] })), false);
+  /* ⚠ A PORTA QUE PROTEGE FICHA SALVA (decisão do autor). Sem ela a lista abriria
+     sem a opção gravada, e a próxima edição trocaria a escolha do personagem. */
+  const salvo = fichaDe("player");
+  marcaFicha(salvo);
+  t(`a ficha que JÁ tem ${nome} continua vendo a opção`, aparece(salvo), true);
+}
+
+/* Liberar UMA não pode abrir as outras três de brinde: é o motivo de o id da
+   liberação carregar o id da entrada em vez de ser uma chave geral. */
+const soOGemeos = fichaDe("player", { addons: [liberaSo("gemeos")] });
+t("liberar o Gêmeos não devolve o Alma Livre", REMOVIDAS[3][2](soOGemeos), false);
+t("e devolve o Gêmeos", REMOVIDAS[0][2](soOGemeos), true);
+
+/* ⚠ DECLARADO vs REGISTRADO. A marca no catálogo e a liberação são dois lados, e
+   se um deles faltar o sintoma é mudo: entrada marcada sem liberação é entrada
+   que NINGUÉM consegue devolver, e liberação sem entrada é letra morta. */
+const marcadas = [...O.AFTY_ORIGENS_CATALOG, ...TRE.AFTY_TREINAMENTOS,
+  ...HAB.AFTY_HABILIDADES, ...TAL.AFTY_TALENTOS]
+  .filter((e) => e?.foraDoJogador).map((e) => e.id).sort();
+const registradas = ADD.LIBERACOES.map((l) => l.id)
+  .filter((id) => id.startsWith("soPorAddon:"))
+  .map((id) => id.slice("soPorAddon:".length)).sort();
+t("toda entrada marcada tem liberação, e vice-versa", marcadas, registradas);
+t("e são as quatro que o autor nomeou", marcadas,
+  ["atributo", "cnj_agilidade_no_campo_de_batalha", "gemeos", "tal_alma_livre"]);
+
+/* A lista some UMA entrada por vez, e não leva vizinho junto. */
+t("o filtro tira exatamente uma origem",
+  O.origensDoSistema(fichaDe("afty")).length - O.origensDoSistema(fichaDe("player")).length, 1);
+
+/* ⚠ E O MOTOR NÃO SENTE NADA: o filtro é de LISTA, então uma ficha que tem a
+   entrada deriva igual nos dois sistemas. É o que separa este mecanismo de uma
+   divergência de número. */
+const comGemeos = (sistema) => {
+  const f = fichaDe(sistema);
+  f.core.origem = { id: "gemeos", iniciativaIrmao: "7" };
+  return deriveAfty(f).iniciativa;
+};
+const semGemeos = (sistema) => {
+  const f = fichaDe(sistema);
+  f.core.origem = { id: "inato" };
+  return deriveAfty(f).iniciativa;
+};
+t("a Dupla Empenhada soma o irmão na criatura", comGemeos("afty") - semGemeos("afty"), 7);
+t("e soma igual no jogador, porque o filtro é de lista", comGemeos("player") - semGemeos("player"), 7);
 
 console.log(bad.length ? `FALHAS (${bad.length}):\n` + bad.join("\n") : `TODOS OS ${ok} ASSERTS PASSARAM`);
 process.exitCode = bad.length ? 1 : 0;

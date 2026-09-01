@@ -56,6 +56,8 @@
  */
 
 import { normalizarMarca } from "./afty-dsl";
+// Sem risco de ciclo: `afty-sistema.js` não importa nada.
+import { sistemaDaFicha, regraDo } from "./afty-sistema";
 
 /* ============================================================ */
 /* O REGISTRO DE FAMÍLIAS                                        */
@@ -353,6 +355,30 @@ export const LIBERACOES = [
     rotulo: "Maldição em Verdadeiras Origens",
     nota: "O Gêmeo pode copiar da Maldição, e copiar passa a fazer a criatura seguir as regras de estrutura dela",
   },
+  /* As quatro entradas que saíram da Ficha de Jogador em 2026-09-01. O id segue
+     o molde do `liberacaoSoPorAddon`, e cada uma é NOMEADA: quem quer só o
+     Gêmeos de volta não reabre as outras três de brinde. Na ficha de criatura
+     nenhuma delas saiu, então a liberação não faz nada lá. */
+  {
+    id: "soPorAddon:gemeos",
+    rotulo: "Origem Gêmeos no Jogador",
+    nota: "Devolve a origem Gêmeos à lista de origens da Ficha de Jogador",
+  },
+  {
+    id: "soPorAddon:atributo",
+    rotulo: "Treino de Atributo no Jogador",
+    nota: "Devolve a Linha de Treinamento Treino de Atributo à lista de Interlúdios da Ficha de Jogador",
+  },
+  {
+    id: "soPorAddon:cnj_agilidade_no_campo_de_batalha",
+    rotulo: "Agilidade no Campo de Batalha no Jogador",
+    nota: "Devolve a Habilidade [2.0] Agilidade no Campo de Batalha à lista do Conjurador na Ficha de Jogador",
+  },
+  {
+    id: "soPorAddon:tal_alma_livre",
+    rotulo: "Talento Alma Livre no Jogador",
+    nota: "Devolve o Talento Alma Livre à lista de Talentos da Ficha de Jogador",
+  },
 ];
 
 const LIBERACAO_IDS = new Set(LIBERACOES.map((l) => l.id));
@@ -376,6 +402,56 @@ export function liberacoesDaCriatura(creature) {
     }
   }
   return out.size ? [...out] : SEM_LIBERACOES;
+}
+
+/* ============================================================ */
+/* CONTEÚDO SÓ POR ADDON                                         */
+/* ============================================================ */
+/**
+ * Entradas do livro que NÃO existem na Ficha de Jogador, e que uma mesa devolve
+ * instalando um Addon. O autor pediu quatro em sequência em 2026-09-01.
+ *
+ * A entrada do catálogo se marca com `foraDoJogador: true`, e a divergência
+ * `conteudoSoPorAddon` decide se a marca vale. É UM mecanismo para as quatro
+ * porque a regra é a mesma: o que muda de uma para outra é só qual entrada.
+ *
+ * ⚠ NENHUMA VIROU ADDON DE VERDADE, e a razão é medida no Gêmeos: ele tem NOVE
+ * ganchos no motor presos ao id CRU `"gemeos"`. Id de addon nasce com o
+ * namespace do pacote, então viraria `pacote:gemeos` e os nove quebrariam
+ * calados. Tirar da LISTA resolve o pedido sem tocar em id nenhum.
+ *
+ * ⚠ A LIBERAÇÃO É POR ID, e não uma chave geral. Uma mesa que queira só o Gêmeos
+ * de volta não deve reabrir as outras três de brinde.
+ */
+export const liberacaoSoPorAddon = (id) => `soPorAddon:${id}`;
+
+/**
+ * Uma lista de catálogo, sem o que este sistema não tem.
+ *
+ * Três portas deixam a entrada marcada passar, e a terceira é a que protege
+ * ficha salva:
+ *
+ *   1. o sistema é criatura, onde ela nunca saiu.
+ *   2. um Addon desta criatura declara a liberação daquele id.
+ *   3. ⚠ A FICHA JÁ TEM A ENTRADA (decisão do autor). Sem esta porta a lista
+ *      abriria sem a opção gravada, e a próxima edição trocaria a escolha do
+ *      personagem por acidente. Tirar da lista é fechar a PORTA, e não confiscar
+ *      o que já passou por ela.
+ *
+ * `jaNaFicha` é o conjunto de ids que a ficha já escolheu naquela família. Quem
+ * chama sabe onde eles moram, e por isso ele vem de fora.
+ */
+export function filtraForaDoJogador(lista, creature, jaNaFicha = null, chave = "id") {
+  if (!Array.isArray(lista) || !lista.length) return lista;
+  // Sai cedo quando não há nada marcado: é o caso de quase toda lista, e assim o
+  // filtro não custa nem uma leitura de divergência.
+  if (!lista.some((e) => e?.foraDoJogador)) return lista;
+  if (regraDo(sistemaDaFicha(creature), "conteudoSoPorAddon") !== "player") return lista;
+  const liberadas = liberacoesDaCriatura(creature);
+  const tem = jaNaFicha instanceof Set ? jaNaFicha : new Set(jaNaFicha || []);
+  return lista.filter((e) => !e?.foraDoJogador
+    || liberadas.includes(liberacaoSoPorAddon(e?.[chave]))
+    || tem.has(e?.[chave]));
 }
 
 /** Nenhuma primitiva. Congelado, para virar valor padrão sem alocar. */

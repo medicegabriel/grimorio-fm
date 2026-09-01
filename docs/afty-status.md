@@ -121,6 +121,83 @@ Estado atual do sistema Afty (atualizado 2026-09-01). Leia junto com:
 
 ---
 
+## SESSÃO DE 2026-09-01 (parte 5): QUATRO ENTRADAS SAÍRAM DA FICHA DE JOGADOR
+
+Quatro pedidos do autor em sequência, todos com a mesma forma: *"Remova [X] da Ficha de Player e
+deixe somente por Addon."*
+
+| Entrada | Família |
+|---|---|
+| Origem **Gêmeos** | origens |
+| **Treino de Atributo** | Linha de Treinamento |
+| **[2.0] Agilidade no Campo de Batalha** | Habilidade de Conjurador |
+| Talento **Alma Livre** | talentos |
+
+### ⚠ NENHUMA VIROU ADDON DE VERDADE, e a razão foi medida
+
+O caminho óbvio era o do Flugel: tirar do raw e entregar um JSON. Ele foi **descartado por medição**,
+e quem provou foi o Gêmeos: ele tem **nove ganchos no motor presos ao id CRU `"gemeos"`**.
+
+| Onde | O que trava |
+|---|---|
+| `AftyCreatureBuilder.jsx` | `id === "gemeos"` liga o painel Irmão Morto e Iniciativa do Irmão |
+| `afty-especializacoes.js` | `ORIGENS_QUE_ALCANCAM_RESTRINGIDO` |
+| `afty-origens.js` | Verdadeiras Origens proibidas, limite de pool, as duas liberações |
+| `afty-dsl-vocabulario.js`, `afty-schema.js` | `irmao_morto`, `iniciativa_irmao`, `pontosPosMorte` |
+
+Todo id de addon nasce com o namespace do pacote. Virar `pacote:gemeos` quebraria os nove **calados**:
+o painel do Irmão sumiria, o alcance do Restringido sumiria, e nada avisaria.
+
+**Então o que muda é a LISTA, e o id fica em paz.** A entrada continua no catálogo, some do seletor
+do jogador, e um Addon a devolve.
+
+### Um mecanismo, e não quatro
+
+A marca é `foraDoJogador: true` na entrada do catálogo, e quem decide se ela vale é a divergência
+**`conteudoSoPorAddon`**. É UMA divergência para as quatro porque a regra é a mesma: o que muda de
+uma para outra é só qual entrada. A granularidade mora em dois outros lugares, e não na tabela.
+
+O filtro é o `filtraForaDoJogador`, em `afty-addons.js`, e ele tem **três portas**:
+
+1. o sistema é criatura, onde nada saiu.
+2. um Addon desta criatura declara a liberação **daquele id** (`soPorAddon:<id>`).
+3. ⚠ **a ficha JÁ tem a entrada.**
+
+⚠ **A terceira porta é decisão do autor**, e é a que protege ficha salva: quem escolheu continua
+inteiro. Sem ela a lista abriria sem a opção gravada e a próxima edição trocaria a escolha do
+personagem por acidente. **Tirar da lista é fechar a porta, e não confiscar o que já passou por ela.**
+
+⚠ **A liberação carrega o id da entrada** em vez de ser uma chave geral. Uma mesa que queira só o
+Gêmeos de volta não pode reabrir as outras três de brinde. Medido: com `soPorAddon:gemeos`, o Gêmeos
+volta e o Alma Livre continua fora.
+
+### Medido, as quatro na mesma tabela
+
+| | criatura | jogador | + o Addon dela | ficha que já tem | + outro Addon |
+|---|---|---|---|---|---|
+| Origem Gêmeos | aparece | **some** | aparece | aparece | some |
+| Treino de Atributo | aparece | **some** | aparece | aparece | some |
+| [2.0] Agilidade | aparece | **some** | aparece | aparece | some |
+| Talento Alma Livre | aparece | **some** | aparece | aparece | some |
+
+⚠ **O MOTOR NÃO SENTE NADA.** O filtro é de LISTA, então uma ficha que tem a entrada deriva igual nos
+dois sistemas: a Dupla Empenhada soma os mesmos 7 de iniciativa do irmão no jogador e na criatura. É
+o que separa este mecanismo de uma divergência de número, e há assert medindo.
+
+### O assert que impede o próximo esquecimento
+
+A marca no catálogo e a liberação no registro são **dois lados**, e faltar um é mudo: entrada marcada
+sem liberação é entrada que ninguém consegue devolver, e liberação sem entrada é letra morta. Há
+assert comparando os dois conjuntos, no molde do DECLARADO contra EMITIDO. Acrescentar uma quinta
+entrada é marcar o catálogo, registrar a liberação e acrescentar a linha à fonte da divergência.
+
+### Verificação
+
+`npx eslint src/systems/afty/ asserts/` limpo · `npx vite build` ok · **42 arquivos, 2293 asserts**
+(eram 2262). `git diff --name-only | grep src/components/` vazio.
+
+---
+
 ## SESSÃO DE 2026-09-01 (parte 4): A CONCESSÃO DE FAIXA PASSOU A PAGAR O DEGRAU QUE ELA DÁ
 
 > *"quando recebo Perícias de maneira garantida como por exemplo Clã Akutame que me fornece Atletismo

@@ -33,9 +33,16 @@ const t = (nome, real, esp) => {
 /* 1. O CAMPO `libera`                                           */
 /* ============================================================ */
 
-t("existem 4 liberacoes hoje", AD.LIBERACOES.length, 4);
+/* ⚠ ERAM 4 ATE 2026-09-01, quando o autor mandou tirar quatro entradas da Ficha
+   de Jogador (*"Remova [X] da Ficha de Player e deixe somente por Addon"*).
+   Cada uma ganhou a liberação que a devolve, com o id da entrada dentro, para
+   quem quiser só uma de volta não reabrir as outras três. Ver a divergência
+   `conteudoSoPorAddon` e o bloco 12 de `t-sistema.mjs`, que mede as quatro. */
+t("existem 8 liberacoes hoje", AD.LIBERACOES.length, 8);
 t("os ids", AD.LIBERACOES.map((l) => l.id),
-  ["estiloSombras", "gemeosSemTecnica", "qualificaSemTecnica", "gemeosMaldicao"]);
+  ["estiloSombras", "gemeosSemTecnica", "qualificaSemTecnica", "gemeosMaldicao",
+   "soPorAddon:gemeos", "soPorAddon:atributo",
+   "soPorAddon:cnj_agilidade_no_campo_de_batalha", "soPorAddon:tal_alma_livre"]);
 t("SEM_LIBERACOES e vazio", AD.SEM_LIBERACOES, []);
 
 /* ⚠ id com 2+ caracteres: o ID_PACOTE_OK recusa um caractere so, e um id curto

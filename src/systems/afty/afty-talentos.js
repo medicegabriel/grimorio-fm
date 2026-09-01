@@ -28,7 +28,7 @@
  * ⚠ Texto VERBATIM do livro, com os erros dele preservados.
  */
 
-import { registrarFamilia, remendarLista } from "./afty-addons";
+import { registrarFamilia, remendarLista, filtraForaDoJogador } from "./afty-addons";
 import { evalNumber } from "./afty-dsl";
 import { getOrigem, getCla } from "./afty-origens";
 import { AFTY_ATTRS, AFTY_RESISTENCIAS } from "./afty-schema";
@@ -474,6 +474,10 @@ export const AFTY_TALENTOS = [
   {
     id: ALMA_LIVRE_TALENTO_ID,
     nome: "Alma Livre",
+    // ⚠ FORA DA FICHA DE JOGADOR (autor, 2026-09-01). Continua inteira na ficha
+    // de criatura, e uma mesa a devolve ao jogador com um Addon que declare a
+    // liberação dela. Ver a divergência `conteudoSoPorAddon`.
+    foraDoJogador: true,
     grupo: "geral",
     descricao:
       "Sua recusa em se prender a uma única doutrina ou estilo de combate permite que seu potencial se manifeste de formas totalmente heterodoxas.\n" +
@@ -903,10 +907,28 @@ export const getTalento = (id) => BY_ID[id] || null;
 /** Talentos de um grupo, na ordem do catálogo. */
 export const talentosDoGrupo = (grupoId) => AFTY_TALENTOS.filter((t) => t.grupo === grupoId);
 
-/** Grupos de exibição (Gerais, de Origem), pulando os vazios. */
-export function gruposDeTalento() {
+/**
+ * Grupos de exibição (Gerais, de Origem), pulando os vazios.
+ *
+ * ⚠ `creature` entrou em 2026-09-01 e é OPCIONAL: sem ela a lista é a do livro
+ * inteiro. Quem monta o SELETOR passa a ficha, e aí o Talento `Alma Livre` some
+ * no jogador. Ver a divergência `conteudoSoPorAddon`.
+ *
+ * O Talento JÁ ESCOLHIDO entra pela terceira porta do filtro, e um grupo que
+ * fique vazio some junto, como já acontecia.
+ */
+export function gruposDeTalento(creature = null) {
   return TALENTO_GRUPOS
-    .map((g) => ({ ...g, talentos: talentosDoGrupo(g.id) }))
+    .map((g) => ({
+      ...g,
+      talentos: creature
+        ? filtraForaDoJogador(
+          talentosDoGrupo(g.id),
+          creature,
+          Array.isArray(creature?.talentos) ? creature.talentos : null,
+        )
+        : talentosDoGrupo(g.id),
+    }))
     .filter((g) => g.talentos.length > 0);
 }
 

@@ -29,7 +29,9 @@
  * ============================================================
  */
 
-import { registrarFamilia, remendarLista, liberacoesDaCriatura } from "./afty-addons";
+import {
+  registrarFamilia, remendarLista, liberacoesDaCriatura, filtraForaDoJogador,
+} from "./afty-addons";
 import { AFTY_ATTRS, AFTY_RESISTENCIAS } from "./afty-schema";
 // Do módulo FOLHA, não de ./afty-pericias.js: os geradores de opção abaixo
 // rodam na INICIALIZAÇÃO deste arquivo, e afty-pericias.js puxa afty-efeitos.js,
@@ -686,6 +688,10 @@ export const AFTY_ORIGENS_CATALOG = [
   {
     id: "gemeos",
     nome: "Gêmeos",
+    // ⚠ FORA DA FICHA DE JOGADOR (autor, 2026-09-01). Continua inteira na ficha
+    // de criatura, e uma mesa a devolve ao jogador com um Addon que declare a
+    // liberação dela. Ver a divergência `conteudoSoPorAddon`.
+    foraDoJogador: true,
     // ⚠ ORIGEM DE DUPLA. O texto do livro é explícito: *"ela DEVE ser feita em
     // dupla, seja com outro jogador ou com algum NPC"*, e recomenda que ao menos
     // um dos dois seja Restringido. Isso tem duas consequências no código:
@@ -1194,6 +1200,23 @@ function aplicarExtrasOrigens(extras = [], remendos = null) {
 }
 
 aplicarExtrasOrigens();
+
+/**
+ * As origens que ESTA ficha pode escolher, já na forma `{ value, label }` do
+ * seletor.
+ *
+ * O filtro é o genérico `filtraForaDoJogador`, e não uma lista à parte: catálogo
+ * copiado envelhece calado, e uma origem nova entraria só de um lado. Ver a
+ * divergência `conteudoSoPorAddon`.
+ *
+ * ⚠ A origem GRAVADA na ficha entra pela terceira porta do filtro, então quem já
+ * escolheu o Gêmeos continua vendo a opção e continua com todos os números dela.
+ */
+export function origensDoSistema(creature) {
+  const gravada = creature?.core?.origem?.id;
+  return filtraForaDoJogador(AFTY_ORIGENS_CATALOG, creature, gravada ? [gravada] : null)
+    .map((o) => ({ value: o.id, label: o.nome }));
+}
 
 registrarFamilia("origens", {
   rotulo: "Origem",

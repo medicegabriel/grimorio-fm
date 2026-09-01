@@ -82,7 +82,7 @@
  * ============================================================
  */
 
-import { registrarFamilia, remendarLista } from "./afty-addons";
+import { registrarFamilia, remendarLista, filtraForaDoJogador } from "./afty-addons";
 import { origensQualificadas, origemEstrutural } from "./afty-origens";
 import { getAptidao, APTIDAO_TRILHAS } from "./afty-aptidoes";
 import { AFTY_ATTRS } from "./afty-schema";
@@ -463,6 +463,10 @@ export const AFTY_TREINAMENTOS = [
   {
     id: "atributo",
     nome: "Treino de Atributo",
+    // ⚠ FORA DA FICHA DE JOGADOR (autor, 2026-09-01). Continua inteira na ficha
+    // de criatura, e uma mesa a devolve ao jogador com um Addon que declare a
+    // liberação dela. Ver a divergência `conteudoSoPorAddon`.
+    foraDoJogador: true,
     // Repetível: uma vez POR ATRIBUTO. Cada etapa dá +1 no atributo ESCOLHIDO, e
     // o Completo eleva o LIMITE dele em 2 (até 30).
     //
@@ -804,8 +808,23 @@ export const treinoDisponivel = (linha, origemId, qualificadas = null) => {
  * amaldiçoada (Barreiras, Compreensão, Controle de Energia, Domínios e
  * Energia Reversa).
  */
-export const treinamentosDaOrigem = (origemId, qualificadas = null) =>
-  AFTY_TREINAMENTOS.filter((l) => treinoDisponivel(l, origemId, qualificadas));
+/**
+ * ⚠ `creature` entrou em 2026-09-01 e é OPCIONAL de propósito: sem ela a lista é
+ * a do livro inteiro, que é o que as chamadas de leitura querem. Quem monta o
+ * SELETOR passa a ficha, e aí o Treino de Atributo some no jogador. Ver a
+ * divergência `conteudoSoPorAddon`.
+ *
+ * A linha com progresso gravado entra pela terceira porta do filtro: quem já
+ * treinou continua vendo a linha, com as etapas e os Focos que gastou.
+ */
+export const treinamentosDaOrigem = (origemId, qualificadas = null, creature = null) => {
+  const daOrigem = AFTY_TREINAMENTOS.filter((l) => treinoDisponivel(l, origemId, qualificadas));
+  if (!creature) return daOrigem;
+  const comProgresso = Object.entries(normalizeTreinamentos(creature?.treinamentos) || {})
+    .filter(([, v]) => (Array.isArray(v) ? v.length > 0 : Number(v) > 0))
+    .map(([id]) => id);
+  return filtraForaDoJogador(daOrigem, creature, comProgresso);
+};
 
 export function efeitosDeTreino(creature, gatilhosAtivos = null) {
   /* ⚠ ORIGEM ESTRUTURAL no `foraDaOrigem`: um Gêmeo que copiou da Maldição
