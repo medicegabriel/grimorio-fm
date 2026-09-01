@@ -1,4 +1,5 @@
 /* Pacote Flugel: Futen, Akutame, treinos, talentos e estado de Cônjuge. */
+import { readFileSync } from "node:fs";
 import { register } from "node:module";
 register(
   "data:text/javascript,export async function resolve(s,c,n){try{return await n(s,c)}catch(e){if(s.startsWith(\".\")&&!s.endsWith(\".js\"))return n(s+\".js\",c);throw e}}",
@@ -15,7 +16,14 @@ const TR = await import(R + "afty-treinamentos.js");
 const { AFTY_HABILIDADES, resolveHabilidades } = await import(R + "afty-habilidades.js");
 const { valorCanal } = await import(R + "afty-efeitos.js");
 const { sessaoEmBranco, alteraTreinoAtivo } = await import(R + "ficha/ficha-sessao.js");
-const { FLUGEL } = await import(R + "addons/flugel.js");
+/* ⚠ O PACOTE VEM DO JSON, e não de um módulo do app. Ele saiu do bundle em
+   2026-09-01 a pedido do autor: um addon é conteúdo de MESA, e conteúdo de mesa
+   não viaja dentro do aplicativo de todo mundo. O arquivo em `addons/` é o
+   mesmo texto que se cola no campo Instalar da aba Addons, então este assert
+   mede exatamente o que o usuário instala. */
+const FLUGEL = JSON.parse(
+  readFileSync(new URL("../addons/flugel.json", import.meta.url), "utf8"),
+);
 
 let ok = 0;
 const falhas = [];
@@ -103,6 +111,46 @@ t("Pt. 2 exige o primeiro treino", TR.avaliarRequisito({ tipo: "treinamento", id
 
 const sessao = alteraTreinoAtivo(sessaoEmBranco(), "conjuge", true);
 t("interruptor de sessão é isolado", sessao.treinosAtivos, { conjuge: true });
+
+/* ---------- Dupla Empenhada (autor, 2026-09-01) ----------
+   *"Dupla Empenhada pode usar Metade do BT do usuario."* O texto do livro pede
+   o BT do PARCEIRO, que mora em outra ficha; o autor trocou pelo do próprio
+   dono, e com isso o Completo virou número em vez de procedimento de mesa.
+   ⚠ A outra metade da regra ("a MAIOR iniciativa entre a dupla" é quem recebe)
+   continua de mesa: quem decide é o interruptor, que só se liga quando vale. */
+for (const [nd, esperado] of [[4, 1], [10, 2], [20, 3], [30, 4]]) {
+  const dupla = createBlankAfty();
+  dupla.core.nd = nd;
+  dupla.treinamentos = { [CONJUGE]: 4 };
+  t(`Dupla Empenhada dá metade do BT na Iniciativa no ND ${nd}`,
+    deriveAfty(dupla, { treinosAtivos: { conjuge: true } }).iniciativa - deriveAfty(dupla).iniciativa,
+    esperado);
+}
+
+/* ---------- Bônus do Cônjuge na 1ª etapa (autor, 2026-09-01) ----------
+   *"faça com que eu posso colocar o Valor da Pericia do Conjuge."* O número é
+   DIGITADO, como a Iniciativa do Irmão nos Gêmeos, e SUBSTITUI a linha inteira
+   em vez de somar nela: ver o canal `periciaFixa` em afty-efeitos.js. */
+const comValor = createBlankAfty();
+comValor.core.nd = 10;
+comValor.treinamentos = { [CONJUGE]: 1 };
+comValor.treinamentoAlvos = { [CONJUGE]: { pericia: "medicina", bonusConjuge: "17" } };
+const medDe = (d) => d.testes.pericias.find((p) => p.id === "medicina");
+t("desligado, a perícia é a do próprio dono", medDe(deriveAfty(comValor)).bonus, 5);
+t("ligado, ela vira o valor digitado", medDe(deriveAfty(comValor, { treinosAtivos: { conjuge: true } })).bonus, 17);
+/* ⚠ SUBSTITUIR NÃO É SOMAR: o hover tem de mostrar UMA fonte, e não as parcelas
+   do dono ao lado de um total que não sai delas. */
+t("e o hover mostra só a fonte que substituiu",
+  medDe(deriveAfty(comValor, { treinosAtivos: { conjuge: true } })).partes,
+  [{ label: "Treino Cônjuge", valor: 17 }]);
+/* Campo vazio não é campo com zero: sem número digitado a linha fica intacta. */
+const semValor = { ...comValor, treinamentoAlvos: { [CONJUGE]: { pericia: "medicina" } } };
+t("sem número digitado nada muda",
+  medDe(deriveAfty(semValor, { treinosAtivos: { conjuge: true } })).bonus, 5);
+/* A outra perícia da ficha não pode ser tocada: o alvo é UMA linha. */
+t("a substituição não vaza para outra perícia",
+  deriveAfty(comValor, { treinosAtivos: { conjuge: true } }).testes.pericias.find((p) => p.id === "percepcao").bonus,
+  deriveAfty(comValor).testes.pericias.find((p) => p.id === "percepcao").bonus);
 
 const habilidadeLutador = AFTY_HABILIDADES.find((h) => h.especializacaoId === "lutador");
 const almaLivre = resolveHabilidades(

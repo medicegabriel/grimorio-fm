@@ -643,6 +643,23 @@ function paraCanal(ef, alvoInstancia, alvos = {}) {
     const alvo = ef.alvo === "instancia" ? alvoInstancia : (alvoEscolhido || ef.alvo);
     if (ef.alvo === "instancia" && !alvoInstancia) return null;
     if (typeof ef.alvo === "string" && ef.alvo.startsWith("escolha:") && !alvoEscolhido) return null;
+    /* ⚠ O `expr` TAMBÉM lê um alvo, e é a metade simétrica da de cima. Um alvo
+       de tipo `numero` é um valor DIGITADO na ficha (o Bônus do Cônjuge, no
+       Flugel), e o único jeito de ele virar número era existir como variável do
+       DSL. Resolver aqui evita inventar vocabulário novo por addon: o alvo já
+       está em mãos, e o que sai daqui é uma constante como qualquer outra.
+
+       Vazio devolve null em vez de zero, pela mesma razão que o alvo faz: um
+       efeito de valor não preenchido não é um efeito de valor zero, e emitir
+       zero encheria a tela de linha morta. */
+    const exprDeAlvo = typeof ef.expr === "string" && ef.expr.startsWith("escolha:")
+      ? alvos[ef.expr.slice("escolha:".length)]
+      : null;
+    if (typeof ef.expr === "string" && ef.expr.startsWith("escolha:")) {
+      const n = Number(exprDeAlvo);
+      if (!Number.isFinite(n) || n === 0) return null;
+      return { canal: ef.canal, expr: String(Math.trunc(n)), ...(alvo ? { alvo } : {}) };
+    }
     return { canal: ef.canal, expr: String(ef.expr ?? "0"), ...(alvo ? { alvo } : {}) };
   }
   const valor = Number(ef?.valor) || 0;

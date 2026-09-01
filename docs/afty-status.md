@@ -121,6 +121,96 @@ Estado atual do sistema Afty (atualizado 2026-09-01). Leia junto com:
 
 ---
 
+## SESSÃO DE 2026-09-01 (parte 3): O FLUGEL SAIU DO BUNDLE, E O GATILHO CHEGOU NAS TRÊS TELAS
+
+Duas queixas do autor sobre o pacote que o GoliasK entregou de manhã, e as duas procedem.
+
+### 1. O addon aparecia para todo mundo, e era o BOTÃO
+
+> *"o Addon aparece para TODO MUNDO, o que não era o caso, era para ser ativado só ao colocar um
+> JSON."*
+
+O pacote morava em `src/systems/afty/addons/flugel.js` e tinha botão próprio no cabeçalho da
+Biblioteca de Addons, no molde do Mahoraga. Isso o punha no bundle de todo usuário, com a lore
+pessoal do Treino Cônjuge Pt. 2 junto (*"Esse daqui é exclusivo do meu Casamento"*), e contra o
+desenho declarado da fase 1, que é *"acrescentar por JSON colado"*.
+
+⚠ **O CONTEÚDO NUNCA VAZOU, e isso foi medido antes de mexer.** O mundo é reconstruído de
+`creature.addons`, então com o pacote desligado `getOrigem("flugel:orig_caminho_futen")` devolvia
+`false` e o Akutame não estava na lista de clãs do Herdado. O que aparecia para todo mundo era o
+botão, e não a regra. Vale registrar para a história não ser contada errada depois.
+
+Agora ele é **`addons/flugel.json`**, na raiz do repositório: fora de `src/` e fora de `public/`,
+então nem entra no bundle nem é servido pelo site. Entra pelo campo Instalar que já existia.
+Conferido no build: a string `Akutame` aparece **0 vezes** em `dist/assets/index-*.js`.
+
+O `t-flugel.mjs` passou a ler esse MESMO arquivo, então o assert mede exatamente o que a pessoa cola.
+
+⚠ **O botão Mahoraga ficou.** Ele é o pacote de demonstração do verbo da 8.3 e o autor não pediu.
+
+### 2. O gatilho de sessão só existia numa das três telas
+
+O `Cônjuge` funcionava na Ficha Final e em lugar nenhum além. Medido, mesma ficha:
+
+| | criador | Ficha com o gatilho ligado |
+|---|---|---|
+| Defesa | 22 | **24** |
+| Acerto | 8 | **10** |
+| Percepção | 6 | **8** |
+| Intuição | 6 | **8** |
+
+Ou seja: 8 Focos gastos nas duas Linhas e **nenhum número se movia** no criador. E no painel de
+Encontros faltavam as DUAS metades, o controle e o `treinosAtivos` no `deriveAfty` — que é
+literalmente o sintoma que o comentário daquele arquivo já descrevia para as invocações.
+
+Os três agora ligados. ⚠ **O do criador é `useState` local e não grava na criatura**, porque gatilho
+é estado de mesa. E fica **fora do que "Em Combate" apaga**: o Cônjuge na cena mexe em Perícia e
+Iniciativa, que valem antes da briga.
+
+### 3. Duas regras que o autor fechou
+
+> *"Dupla Empenhada pode usar Metade do BT do usuario."*
+
+O texto pedia o BT do PARCEIRO, que mora em outra ficha, e por isso o Completo do Treino Cônjuge era
+procedimento de mesa. Virou número: `iniciativa` = `metade(bt)`, sob o gatilho. Medido, +1 no ND 4,
++2 no 10, +3 no 20 e +4 no 30. A outra metade (só a MAIOR iniciativa da dupla recebe) segue de mesa,
+e quem a resolve é o interruptor, que só se liga quando vale.
+
+> *"Conjuge Etapa 1, faça com que eu posso colocar o Valor da Pericia do Conjuge."*
+
+Três peças novas, todas genéricas (verbo no motor, substantivo no addon):
+
+- **alvo de `tipo: "numero"`**, um campo digitado em vez de seletor. É o molde da Iniciativa do Irmão
+  dos Gêmeos, e existe pela mesma razão: o número mora em outra ficha.
+- **`expr: "escolha:<id>"`**, simétrico ao que o `alvo` já fazia. Sem isso, um valor digitado só
+  viraria número inventando vocabulário de DSL por addon.
+- **canal `periciaFixa`**, que **SUBSTITUI o bônus inteiro da perícia** em vez de somar nele. Irmão
+  do `defesaAtributo`, e pelo mesmo motivo: um delta daria o número certo com o detalhamento errado,
+  e o hover passaria a mentir sobre de onde a linha veio.
+
+Medido, Medicina com 17 digitado: desligado dá 5 pelas parcelas do próprio dono, ligado dá **17** com
+o painel de fontes mostrando **uma** linha, "Treino Cônjuge". Sem número digitado nada muda, porque
+campo vazio não é campo com zero.
+
+⚠ **Com mais de uma fonte de valor fixo vale a MAIOR, e não a soma.** A regra é sempre *"você PODE
+usar"*, e quem oferece troca opcional nunca piora.
+
+⚠ **Alvo de `numero` não tranca a 1ª etapa**, e os estruturais trancam. Perícia e atributo a etapa
+precisa para existir; um valor que vem de fora pode não se saber na hora de treinar.
+
+### O placar do pacote
+
+21 de 26 benefícios automatizados. Os 5 de fora estão tabelados em `docs/afty-addons.md` §16, com o
+bloqueio nomeado de cada um. O maior recuperável é a **Postura do Matador de Yokai**, que é
+condicional ao alvo e caberia num estado da bancada.
+
+### Verificação
+
+`npx eslint src/systems/afty/ asserts/` limpo · `npx vite build` ok · **42 arquivos, 2248 asserts**
+(eram 2239). `git diff --name-only | grep src/components/` vazio.
+
+---
+
 ## SESSÃO DE 2026-09-01: ADDON FLUGEL, FUTEN, AKUTAME E TREINAMENTOS COM ESTADO DE SESSÃO
 
 O pacote instalável `Flugel` entrou em `src/systems/afty/addons/flugel.js`, com botão próprio na aba

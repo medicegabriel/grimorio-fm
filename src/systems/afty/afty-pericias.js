@@ -1077,6 +1077,33 @@ export function resolveTestes(creature, ctx = {}) {
       : p.nome;
     const escolhida = valida(profBruta[p.id]);
     const prof = profComEfeito("proficienciaPericia", p.id, escolhida);
+    /* ⚠ `periciaFixa` SUBSTITUI a linha inteira, e não soma nela. Ver a nota do
+       canal em afty-efeitos.js: o número vem de outra ficha (o bônus do
+       cônjuge, no Flugel) e trocar é o que a regra escreve.
+
+       O `partes` vira UMA linha só, com o nome da fonte. Manter as parcelas
+       antigas ao lado de um total que não sai delas seria número certo com
+       detalhamento errado, que é a mesma armadilha do `defesaAtributo`. */
+    /* ⚠ O MAIOR, e não a soma, então ele NÃO passa pelo `valorCanal`. Duas
+       fontes de valor fixo na mesma perícia são duas ofertas ("você pode usar"),
+       e somá-las inventaria um número que nenhuma das duas dá. Só a vencedora
+       fica no `partes`: uma parcela perdedora ao lado do total confundiria mais
+       do que explicaria. */
+    const ofertasFixas = partesDeEfeito("periciaFixa", p.id);
+    const fixo = ofertasFixas.reduce((m, o) => Math.max(m, Number(o.valor) || 0), 0);
+    const partesFixo = ofertasFixas.filter((o) => (Number(o.valor) || 0) === fixo).slice(0, 1);
+    if (fixo > 0) {
+      return {
+        ...p,
+        nome,
+        atributo,
+        prof,
+        profEscolhida: escolhida,
+        concedida: !!prof && prof !== escolhida,
+        bonus: fixo,
+        partes: partesFixo,
+      };
+    }
     return {
       ...p,
       nome,

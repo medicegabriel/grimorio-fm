@@ -12,6 +12,7 @@ import {
   sofreGolpeNaGuarda, desfazGolpeNaGuarda, encerraGuarda, defineCondicoes,
   estadoDaInvocacao, poeInvocacaoEmCampo, alternaAuxilioInvocacao,
   aplicaDanoInvocacao, aplicaCuraInvocacao, defineVitalInvocacao,
+  alteraTreinoAtivo,
 } from "../ficha/ficha-sessao";
 import { rolarTeste, rolarDano, textoDaRolagem } from "../ficha/ficha-rolagem";
 import { deltaDosEstados } from "../ficha/ficha-buffs";
@@ -366,6 +367,8 @@ export default function PainelDeCombatente({
         <AbaAcoes
           derived={derived}
           adaptacao={<PainelDeAdaptacao derived={derived} onSessao={onSessao} />}
+          gatilhosTreino={derived.gatilhosTreino}
+          onGatilhoTreino={(id, v) => onSessao((s) => alteraTreinoAtivo(s, id, v))}
           rolar={rolar}
           destaque={destaque}
           rapido={[]}

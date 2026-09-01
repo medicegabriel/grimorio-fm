@@ -1051,10 +1051,31 @@ silêncio. Anotado em `docs/a-fazer.md`.
 
 ## 16. FLUGEL E AS ESCOLHAS ESTRUTURAIS DE TREINAMENTO, 2026-09-01
 
-O primeiro pacote embutido que combina Origem, clã, Talento remendado e Linhas de Treinamento é
-`src/systems/afty/addons/flugel.js`. Ele é instalado pelo botão **Flugel** da aba Addons e continua
-seguindo o ciclo normal: instalar na biblioteca, ligar na ficha e carregar a cópia congelada com a
-ficha exportada.
+O primeiro pacote que combina Origem, clã, Talento remendado e Linhas de Treinamento é
+**`addons/flugel.json`**, na raiz do repositório. Ele entra pelo campo **Instalar** da aba Addons,
+como qualquer addon de mesa, e segue o ciclo normal dali em diante: instalar na biblioteca, ligar na
+ficha e carregar a cópia congelada com a ficha exportada.
+
+⚠ **ELE NASCEU DENTRO DO BUNDLE E SAIU DE LÁ NO MESMO DIA** (autor, 2026-09-01: *"o Addon aparece
+para TODO MUNDO, o que não era o caso, era para ser ativado só ao colocar um JSON"*). A primeira
+versão morava em `src/systems/afty/addons/flugel.js` e tinha botão próprio no cabeçalho da
+Biblioteca, no molde do Mahoraga. Duas coisas saíam disso, e as duas contra o desenho da fase 1:
+
+- **o botão aparecia para todo usuário**, e a fase 1 é explicitamente *"acrescentar por JSON
+  colado"*. Um pacote de UMA mesa não é conteúdo do aplicativo.
+- **as 214 linhas viajavam no bundle de todo mundo**, inclusive a lore pessoal do Treino Cônjuge
+  Pt. 2 (*"Esse daqui é exclusivo do meu Casamento"*).
+
+⚠ **O conteúdo nunca vazou**, e vale registrar para não se contar a história errada depois: o mundo
+é reconstruído de `creature.addons`, então uma ficha sem o pacote nunca enxergou o Futen nem o
+Akutame. O que aparecia para todo mundo era o botão, não a regra. Medido antes de mexer.
+
+O JSON fica **fora de `src/` e fora de `public/`** de propósito: assim ele não entra no bundle nem é
+servido pelo site, e continua sendo um arquivo que o autor manda para quem joga na mesa dele. O
+`t-flugel.mjs` lê esse MESMO arquivo, então o que o assert mede é exatamente o que a pessoa cola.
+
+⚠ **O botão Mahoraga continua onde estava.** Ele é o pacote de demonstração do verbo genérico da 8.3
+e o autor não pediu para tirá-lo. Se um dia pedir, o caminho é este mesmo.
 
 ### Efeito na opção de Origem
 
@@ -1160,6 +1181,54 @@ então duas Linhas com `conjuge` produzem um único interruptor na aba Ações. 
 preencher Feitiço ou Talento. O interruptor governa os bônus numéricos que dependem da presença do
 Cônjuge na sessão.
 
+**O interruptor mora nas TRÊS telas** (2026-09-01). Ele nasceu só na Ficha Final, e as outras duas
+ficaram mudas por dois motivos diferentes:
+
+| Tela | O que faltava | Onde ficou |
+|---|---|---|
+| Ficha Final | nada | aba Ações |
+| Criador | o controle. O derivado já trazia `gatilhosTreino` pronto | bancada de Simulação de Combate |
+| Encontros | o controle E o `treinosAtivos` no `deriveAfty` | aba Ações do painel do combatente |
+
+⚠ **O do criador NÃO grava na criatura.** Ele é `useState` local, e por isso some ao fechar a ficha:
+gatilho é estado de MESA, e a regra da casa é que sessão nunca mora na criatura. O `combate` da mesma
+bancada mora no `draft` porque lá o estado é entrada de balanceamento, e são coisas diferentes.
+
+⚠ **E ele fica FORA do que "Em Combate" apaga.** O Cônjuge estar na cena mexe em Perícia e em
+Iniciativa, que valem antes de a briga começar.
+
+### Alvo de VALOR, e um canal que substitui
+
+Um `alvo` de `tipo: "numero"` abre um campo digitado em vez de um seletor:
+
+```json
+{ "id": "bonusConjuge", "tipo": "numero", "label": "Bônus do Cônjuge" }
+```
+
+É o molde da **Iniciativa do Irmão** dos Gêmeos, e existe pela mesma razão: o número mora em OUTRA
+ficha, e ler a criatura dela do armazenamento criaria dependência entre fichas por um bônus só.
+
+O efeito lê o valor pondo `escolha:` no **`expr`**, simétrico ao que o `alvo` já fazia:
+
+```json
+{ "canal": "periciaFixa", "alvo": "escolha:pericia", "expr": "escolha:bonusConjuge",
+  "gatilhoSessao": "conjuge" }
+```
+
+⚠ **`periciaFixa` SUBSTITUI o bônus inteiro da perícia, e não soma nele.** É o irmão do
+`defesaAtributo` do lado da Perícia, e nasceu porque a 1ª etapa do Treino Cônjuge diz *"pode usar o
+bônus do seu cônjuge pra fazer um teste de perícia"*. Um delta daria o número certo com o
+detalhamento errado, e o hover passaria a mentir sobre de onde a linha veio: com a substituição, o
+painel de fontes mostra **uma** linha, "Treino Cônjuge".
+
+Com mais de uma fonte na mesma perícia vale a MAIOR, e não a soma, pela mesma razão do
+`defesaAtributo`: a regra é sempre *"você PODE usar"*, e quem oferece uma troca opcional nunca piora.
+
+⚠ **Alvo de `numero` não tranca a 1ª etapa**, e os outros trancam. Os outros são escolha estrutural
+(qual perícia, qual atributo) e a etapa não tem o que fazer sem eles. Um número é um valor, pode não
+se saber na hora de treinar, e o efeito que o lê já devolve nada quando ele falta. Campo vazio não é
+campo com zero.
+
 ### Requisitos novos de etapa
 
 - `todosAtributos` verifica o menor dos seis atributos contra `valor`.
@@ -1181,3 +1250,21 @@ Cônjuge na sessão.
 ```
 
 Os três mapas pertencem à ficha. Só `treinosAtivos` pertence à sessão.
+
+### O que do Flugel continua de mesa
+
+O pacote automatiza 21 dos 26 benefícios que os textos dele escrevem. Os cinco de fora têm bloqueio
+nomeado, e a lista existe para nenhum deles envelhecer calado:
+
+| Benefício | O que falta |
+|---|---|
+| Postura do Matador de Yokai | condicional ao ALVO (*"Defesa maior que a sua"*). Cabe num estado da bancada, e o mecanismo existe |
+| Passos Flutuantes, 2ª e 3ª metades | terreno difícil e usos por Descanso Longo, que o Afty não modela |
+| Cônjuge 1ª etapa, o limite de usos | *"metade do seu BT por descanso longo"*. O VALOR já entra pelo `periciaFixa`, o contador não |
+| Cônjuge e Pt. 2, 4ª etapa | copiar Feitiço Passivo de outra ficha. A metade automatizável (a vaga) está feita |
+| Cônjuge Pt. 2, 1ª etapa | reescreve uma distância (120m, 210m) que nunca foi modelada |
+
+⚠ **A Dupla Empenhada saiu desta lista em 2026-09-01.** O texto pede *"Metade do BT de seu
+parceiro"*, que mora em outra ficha, e o autor trocou pelo BT do próprio dono: *"Dupla Empenhada pode
+usar Metade do BT do usuario."* A outra metade da regra, que só a MAIOR iniciativa da dupla recebe o
+bônus, continua de mesa, e quem a resolve é o interruptor: ele só se liga quando vale.

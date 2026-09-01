@@ -37,7 +37,6 @@ import {
 } from "./afty-addons-biblioteca";
 import { familiasDeAddon } from "./afty-addons";
 import { CICLO_ADAPTACAO_MAHORAGA } from "./addons/ciclo-adaptacao-mahoraga";
-import { FLUGEL } from "./addons/flugel";
 
 /* Quantas entradas o pacote acrescenta, por família, para o chip da linha. */
 function resumoDoPacote(p) {
@@ -96,12 +95,6 @@ export default function TabAddons({ draft, derived, setAddons }) {
 
   const instalarMahoraga = () => {
     const r = instalarPacote(CICLO_ADAPTACAO_MAHORAGA, { substituir: true });
-    setProblemas(r.problemas);
-    if (r.ok) setBiblioteca(r.biblioteca);
-  };
-
-  const instalarFlugel = () => {
-    const r = instalarPacote(FLUGEL, { substituir: true });
     setProblemas(r.problemas);
     if (r.ok) setBiblioteca(r.biblioteca);
   };
@@ -165,15 +158,6 @@ export default function TabAddons({ draft, derived, setAddons }) {
         title="Biblioteca de Addons"
         headerRight={
           <div className="flex items-center gap-1">
-            <button
-              type="button"
-              onClick={instalarFlugel}
-              className="text-[11px] px-2 py-1 rounded border border-slate-700 bg-slate-950 text-slate-300 hover:border-purple-600 flex items-center gap-1"
-              title="Instalar o addon Flugel"
-            >
-              <Package className="w-3 h-3" aria-hidden="true" />
-              Flugel
-            </button>
             <button
               type="button"
               onClick={instalarMahoraga}

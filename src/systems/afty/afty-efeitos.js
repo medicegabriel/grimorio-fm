@@ -165,6 +165,19 @@ export const EFEITO_CANAIS = [
   // desempate é a MESMA da Defesa, e pelo mesmo motivo.
   { id: "hpAtributo",     label: "Atributo do PV",       alvo: "atributo", nota: "TROCA a Constituição no cálculo do PV, e não soma nada. Com mais de um concedido vale o de maior modificador, porque a regra é sempre \"você pode optar\"" },
   { id: "bonusPericia",  label: "Perícia",               alvo: "pericia", nota: "aceita `atr:destreza` para atingir toda perícia daquele atributo (Dádivas do Céu)" },
+  /* Irmão do `defesaAtributo` do lado da Perícia: ele SUBSTITUI o bônus inteiro
+     da linha por um número, em vez de somar nele. Nasceu com o Treino Cônjuge
+     do Flugel, cuja 1ª etapa diz *"pode usar o bônus do seu cônjuge pra fazer um
+     teste de perícia"*: o número vem de OUTRA ficha e é digitado, do mesmo jeito
+     que a Iniciativa do irmão nos Gêmeos.
+
+     ⚠ SUBSTITUIR NÃO É SOMAR, e por isso ele é canal próprio e não um delta.
+     Um delta daria o número certo com o detalhamento errado, e o hover de
+     fontes passaria a mentir sobre de onde a perícia veio.
+
+     ⚠ Desempate igual ao do `defesaAtributo`: vale o MAIOR, porque a regra é
+     sempre *"você PODE usar"*. Quem oferece uma troca opcional nunca piora. */
+  { id: "periciaFixa",   label: "Perícia com Valor Fixo", alvo: "pericia", nota: "TROCA o bônus inteiro da perícia por este número, e não soma nada. Com mais de um vale o maior, porque a regra é sempre \"você pode usar\"" },
   { id: "proficienciaPericia", label: "Treino em Perícia", alvo: "pericia", nota: "1 = Treinado, 2 = Mestre. Concede a faixa, não soma número, e nunca REBAIXA o que a ficha já escolheu" },
   { id: "bonusTR",       label: "Teste de Resistência",  alvo: "tr", nota: "aceita `atr:constituicao` para atingir todo TR daquele atributo" },
   /* O irmão do `bonusTR` para o que a regra escreve como DADO ("adicionar 2d3 ao
@@ -482,7 +495,7 @@ const GRUPOS_DE_CANAL = [
   // outro canal e está em Orçamentos.
   ["Atributos e Aptidões", ["atributo", "limiteAtributo", "defesaAtributo", "hpAtributo", "nivelAptidao", "limiteAptidao", "imbuicoesEstilo"]],
   ["Perícias e Resistências", [
-    "bonusPericia", "proficienciaPericia", "bonusTR", "dadosTR", "proficienciaTR", "margemCriticoTR",
+    "bonusPericia", "periciaFixa", "proficienciaPericia", "bonusTR", "dadosTR", "proficienciaTR", "margemCriticoTR",
   ]],
   ["Manobras", ["bonusManobra", "resistirManobra", "distanciaEmpurrao"]],
   ["Movimento e Percepção", ["movimento", "movimentoMult", "iniciativa", "atencao", "tamanho"]],

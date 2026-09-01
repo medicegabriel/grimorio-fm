@@ -283,10 +283,17 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
      edição, então o par sempre roda junto e na ordem. É a armadilha da época
      nomeada na seção 3 do docs/afty-addons.md, resolvida aqui pela ordem em vez
      do contador (que existe para quem memoriza catálogo FORA deste par). */
+  /* Interruptores de Treinamento na bancada. ⚠ ESTADO LOCAL, e NÃO `draft`: um
+     gatilho de sessão é estado de MESA (a presença do Cônjuge na cena), e a
+     regra da casa é que sessão nunca mora na criatura. O `combate` da bancada
+     mora no draft porque lá o estado é ENTRADA de balanceamento; aqui ele é
+     prévia, então some ao fechar a ficha e é isso mesmo que tem de acontecer. */
+  const [treinosAtivos, setTreinosAtivos] = useState({});
+
   const derived = useMemo(() => {
     aplicarAddons(draft.addons ?? []);
-    return deriveAfty(draft);
-  }, [draft]);
+    return deriveAfty(draft, { treinosAtivos });
+  }, [draft, treinosAtivos]);
   const isEditing = !!existingCreature?.id;
 
   // O Restringido não tem energia amaldiçoada (autor, 2026-07-29): sem Nível de
@@ -1092,7 +1099,7 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
           {tabAtiva === "equipamentos" && <TabEquipamentos draft={draft} derived={derived} addEquipamento={addEquipamento} removeEquipamento={removeEquipamento} patchEquipamento={patchEquipamento} toggleFerramenta={toggleFerramenta} patchFerramenta={patchFerramenta} toggleEncantamento={toggleEncantamento} addArmaCustom={addArmaCustom} patchArmaCustom={patchArmaCustom} removeArmaCustom={removeArmaCustom} />}
           {tabAtiva === "interludios" && <TabInterludios draft={draft} derived={derived} setTreinoProgresso={setTreinoProgresso} setTreinoInstance={setTreinoInstance} setTreinoAlvo={setTreinoAlvo} setTreinoEscolha={setTreinoEscolha} setTreinoEspecialVezes={setTreinoEspecialVezes} sistema={sistema} setFocosLivres={setFocosLivres} />}
           {tabAtiva === "addons" && <TabAddons draft={draft} derived={derived} setAddons={setAddons} />}
-          {tabAtiva === "calculos" && <TabCalculos derived={derived} setStatOverride={setStatOverride} patchCombate={patchCombate} />}
+          {tabAtiva === "calculos" && <TabCalculos derived={derived} setStatOverride={setStatOverride} patchCombate={patchCombate} gatilhosTreino={derived.gatilhosTreino} onGatilhoTreino={(id, v) => setTreinosAtivos((m) => ({ ...m, [id]: v }))} />}
           {STUBS[tabAtiva] && <StubCard title={abasVisiveis.find((t) => t.id === tabAtiva)?.label} text={STUBS[tabAtiva]} />}
         </div>
       </div>
@@ -7141,7 +7148,14 @@ function TreinoLinha({
   const completa = !repetivel && progresso >= ETAPAS_POR_LINHA;
   const instances = repetivel && Array.isArray(valor) ? valor : [];
   const ativo = repetivel ? instances.length > 0 : progresso > 0;
-  const alvosPendentes = (linha.alvos || []).filter((alvo) => !alvosEscolhidos[alvo.id]);
+  /* ⚠ ALVO DE TIPO `numero` NÃO BLOCKEIA a 1ª etapa, e os outros sim. Os outros
+     são escolha ESTRUTURAL (qual perícia, qual atributo), e a etapa não tem o
+     que fazer sem eles. Um número é um VALOR, ele vem de fora da ficha (o bônus
+     do cônjuge mora na ficha dele) e pode não se saber na hora de treinar. O
+     efeito que o lê já devolve nada quando ele falta, então esperar por ele só
+     trancaria a linha sem ganhar nada. */
+  const alvosPendentes = (linha.alvos || [])
+    .filter((alvo) => alvo.tipo !== "numero" && !alvosEscolhidos[alvo.id]);
   const bloqueioAlvos = alvosPendentes.length > 0
     ? `Escolha ${alvosPendentes.map((alvo) => alvo.label).join(" e ")}`
     : null;
@@ -7212,6 +7226,28 @@ function TreinoLinha({
           {!repetivel && (linha.alvos || []).length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2.5 pl-6">
               {linha.alvos.map((alvo) => {
+                /* Alvo de VALOR, digitado. Mesmo campo e mesma sanitização da
+                   Iniciativa do Irmão, nos Gêmeos, e pelo mesmo motivo: o
+                   número mora em outra ficha, e ler a criatura dela do
+                   armazenamento criaria dependência entre fichas por um bônus. */
+                if (alvo.tipo === "numero") {
+                  return (
+                    <div key={alvo.id}>
+                      <FieldLabel>{alvo.label}</FieldLabel>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        value={alvosEscolhidos[alvo.id] ?? ""}
+                        onChange={(e) => onSetAlvo(
+                          linha.id, alvo.id, e.target.value.replace(/[^0-9+-]/g, ""),
+                        )}
+                        placeholder="0"
+                        aria-label={alvo.label}
+                        className="w-full bg-slate-950 border border-slate-800 rounded px-2 py-1 text-right font-mono text-sm font-bold text-white outline-none focus:border-purple-500"
+                      />
+                    </div>
+                  );
+                }
                 const options = alvo.tipo === "atributo"
                   ? AFTY_ATTRS.map((attr) => ({ value: attr.key, label: attr.label }))
                   : (pericias || []).filter((pericia) => !pericia.complementar)
@@ -8822,7 +8858,7 @@ function AltoNivelCard({ item, escolhida, acesso, escolhaEstado, vezes, onToggle
    Liga os estados e os números do Preview se mexem, sem precisar rodar a mesa.
    Cada linha só aparece se a criatura tiver a habilidade que a produz, então o
    card fica vazio (e some) para quem não tem nenhuma. */
-function SimulacaoCombateCard({ derived, patchCombate }) {
+function SimulacaoCombateCard({ derived, patchCombate, gatilhosTreino = [], onGatilhoTreino }) {
   const combate = derived.combate;
   const escolhidas = derived.habilidades?.escolhidas ?? [];
   // As opções aninhadas escolhidas (Manobra de Empolgação, Estilo de Combate),
@@ -8861,7 +8897,7 @@ function SimulacaoCombateCard({ derived, patchCombate }) {
     // não declara nada continua caindo em `bool`.
     ...(combate.estadosExtras ?? []).map((e) => ({ tipo: "bool", ...e })),
   ];
-  if (!linhas.length) return null;
+  if (!linhas.length && !gatilhosTreino.length) return null;
 
   const visivel = (e) => !e.requerEstado || combate[e.requerEstado];
   return (
@@ -8873,6 +8909,24 @@ function SimulacaoCombateCard({ derived, patchCombate }) {
         </BoolChip>
       }
     >
+      {/* ⚠ FORA do bloco que "Em Combate" apaga, de propósito. Um gatilho de
+          Treinamento não é estado de luta: o Cônjuge estar na cena mexe em
+          Perícia e em Iniciativa, que valem antes de a briga começar. */}
+      {gatilhosTreino.length > 0 && (
+        <div className="space-y-1 mb-1">
+          {gatilhosTreino.map((g) => (
+            <div
+              key={g.id}
+              className="rounded-lg border border-slate-800 bg-slate-950/40 flex items-center gap-2.5 px-2.5 min-h-10 py-1"
+            >
+              <span className="flex-1 min-w-0 text-[12px] font-semibold text-slate-100 truncate">{g.label}</span>
+              <BoolChip ativo={g.ativo} onToggle={() => onGatilhoTreino?.(g.id, !g.ativo)}>
+                {g.ativo ? "Ativa" : "Inativa"}
+              </BoolChip>
+            </div>
+          ))}
+        </div>
+      )}
       <div className={`space-y-1 ${combate.ativo ? "" : "opacity-40 pointer-events-none"}`}>
         {linhas.filter(visivel).map((e) => {
           const teto = typeof e.max === "function" ? e.max(derived) : e.max;
@@ -11261,7 +11315,7 @@ const CALC_ROWS = [
   { key: "iniciativa",   label: "Iniciativa" },
 ];
 
-function TabCalculos({ derived, setStatOverride, patchCombate }) {
+function TabCalculos({ derived, setStatOverride, patchCombate, gatilhosTreino, onGatilhoTreino }) {
   return (
     <>
     <Card title="Cálculos">
@@ -11306,7 +11360,7 @@ function TabCalculos({ derived, setStatOverride, patchCombate }) {
     {/* Bancada de balanceamento, embaixo dos números que ela mexe: liga um
         estado e a grade acima se move. Some para quem não tem estado nenhum.
         ⚠ Arranjo PROVISÓRIO (autor, 2026-07-30). */}
-    <SimulacaoCombateCard derived={derived} patchCombate={patchCombate} />
+    <SimulacaoCombateCard derived={derived} patchCombate={patchCombate} gatilhosTreino={gatilhosTreino} onGatilhoTreino={onGatilhoTreino} />
     </>
   );
 }

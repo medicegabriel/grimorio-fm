@@ -59,6 +59,11 @@ const derivarCombatente = (c) => {
            mestre ligava o bônus no painel de Encontros e o número não mexia,
            enquanto na Ficha Final mexia. Ver `efeitosDeInvocacao`. */
         invocacoes: c.sessao.invocacoes,
+        /* ⚠ E os interruptores de Treinamento, pelo MESMO motivo das duas
+           linhas acima. Sem isto o Cônjuge do Flugel dava +2 de Defesa, +2 de
+           Acerto e a Iniciativa da Dupla Empenhada na Ficha Final e nada aqui,
+           que é exatamente o sintoma descrito para as invocações. */
+        treinosAtivos: c.sessao.treinosAtivos,
       },
     );
   } catch {
