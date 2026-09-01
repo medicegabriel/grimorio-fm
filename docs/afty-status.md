@@ -1,6 +1,6 @@
 # Status do Grimório Afty (handoff para chat novo)
 
-Estado atual do sistema Afty (atualizado 2026-08-18). Leia junto com:
+Estado atual do sistema Afty (atualizado 2026-09-01). Leia junto com:
 `docs/roadmap-versionamento-e-fichas.md` (arquitetura) e `docs/afty-formulas-base.md` (fórmulas).
 
 > 📋 **A FILA DE TRABALHO NÃO É ESTE ARQUIVO.** Desde 2026-08-09 toda pendência mora em
@@ -118,6 +118,54 @@ Estado atual do sistema Afty (atualizado 2026-08-18). Leia junto com:
 >
 > 👉 **Começando um chat novo? Vá direto para
 > [PENDÊNCIAS DE ESPECIALIZAÇÕES](#-pendências-de-especializações-lista-de-retomada).**
+
+---
+
+## SESSÃO DE 2026-09-01: ADDON FLUGEL, FUTEN, AKUTAME E TREINAMENTOS COM ESTADO DE SESSÃO
+
+O pacote instalável `Flugel` entrou em `src/systems/afty/addons/flugel.js`, com botão próprio na aba
+Addons. Ele acrescenta uma Origem, um clã do Herdado, dois Talentos de Origem e três Linhas de
+Treinamento, além de remendar o Talento Alma Livre. O Talento Akutame ficou como característica do
+clã, e não como entrada selecionável separada.
+
+### Conteúdo do pacote
+
+- **Caminho do Futen (風天)**, com bônus de atributo, escolha de perícia, troca permanente do
+  atributo-chave da perícia escolhida e Deslocamento calculado.
+- **Clã Akutame**, com bônus livre de atributo, Atletismo e Feitiçaria concedidos, escolha de Mestre
+  no nível 10 e metade do Bônus de Treinamento em Acerto e Defesa.
+- **Herança Sugawara** e **Postura do Matador de Yokai** como Talentos de Origem do Akutame.
+- **Alma Livre** remendado pelo pacote. O nível usado pela habilidade escolhida passou a ler
+  `nivelAlmaLivreAjuste: -4` do próprio Talento, sem regra do Flugel escondida no resolvedor.
+- **Treino de Atributo - Não Congênito**, **Treino Cônjuge** e **Treino Cônjuge Pt. 2**.
+
+### Quatro mecanismos genéricos que nasceram
+
+1. **Opção de Origem com efeito inline.** A opção escolhida pode declarar `efeitos`, sem precisar
+   entrar no mapa estático do raw. É o que concede a perícia do Futen e a faixa Mestre do Akutame.
+2. **Troca de atributo-chave de perícia.** Origem e Linha de Treinamento podem declarar
+   `trocaAtributoPericia`. O `resolveTestes` continua sendo o único lugar que calcula a perícia e
+   recebe apenas o mapa final de substituições.
+3. **Alvos e escolhas em Linha não repetível.** `treinamentoAlvos` guarda atributo e perícia. Um
+   efeito usa o alvo com `alvo: "escolha:<id>"`. `treinamentoEscolhas` guarda opções abertas por
+   etapa, e a opção pode emitir efeitos como uma vaga exclusiva de Feitiço ou Talento.
+4. **Gatilho manual de sessão.** A linha declara `gatilhoSessao`, o efeito condicionado declara o
+   mesmo id, e `sessao.treinosAtivos` guarda o interruptor. A Ficha mostra `Cônjuge` na aba Ações.
+   Nada disso entra na criatura salva.
+
+Os dois Treinos Cônjuge não ligam fichas. Cada 4ª etapa permite escolher **Feitiço** ou **Talento**
+e abre uma vaga do tipo escolhido. Os bônus numéricos condicionais só entram quando o interruptor
+`Cônjuge` está ligado. Valores que dependem de outra ficha permanecem como procedimento de mesa.
+
+### Validação
+
+- `t-flugel.mjs`: **27 asserts** específicos.
+- `npm run asserts`: **2239 asserts em 42 arquivos**, todos passando.
+- `npx eslint src/systems/afty/ asserts/`: passou.
+- `npx vite build`: passou. O ambiente ainda avisa que está em Node 22.11.0 e recomenda 22.12+.
+- `git diff --name-only | grep src/components/`: vazio.
+- O navegador embutido não alcançou o Vite em `127.0.0.1`, então a validação visual automática não
+  foi executada. JSX, imports e empacotamento foram cobertos por ESLint e build.
 
 ---
 

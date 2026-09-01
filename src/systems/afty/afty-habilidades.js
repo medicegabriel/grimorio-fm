@@ -7000,7 +7000,7 @@ export function resolveHabilidades(
   bonusVagas = 0,
   vagasTalento = 0,
   {
-    nd = 1, almaLivreEspecializacao = null, concedidasSessao = [],
+    nd = 1, almaLivreEspecializacao = null, almaLivreNivelAjuste = 0, concedidasSessao = [],
     escolhasConcedidasSessao = {}, sistema = undefined,
   } = {},
 ) {
@@ -7048,7 +7048,7 @@ export function resolveHabilidades(
   const almaLivre = almaLivreEspecializacao ? {
     especializacaoId: almaLivreEspecializacao,
     habilidadeId: habilidadeAlmaLivreId,
-    nivel: Math.max(1, Math.trunc(Number(nd) || 1)),
+    nivel: Math.max(1, Math.trunc(Number(nd) || 1) + Math.trunc(Number(almaLivreNivelAjuste) || 0)),
     excedeu: habilidadesAlmaLivre.length > 1,
   } : null;
   const nivelPorHabilidade = {};

@@ -94,6 +94,8 @@ export function sessaoEmBranco(derived = null) {
     // vaga nenhuma e morre junto com a sessão. Ver `afty-concessao.js`.
     concedido: [],
     adaptacoes: {},
+    // Interruptores manuais de efeitos condicionais abertos por Treinamentos.
+    treinosAtivos: {},
     usos: {},
     ultimoFeiticoDanoId: null,
     rituais: {},
@@ -141,6 +143,9 @@ export function normalizaSessao(bruta, derived = null) {
     // Id órfão SOBREVIVE de propósito, e vira linha morta na tela.
     concedido: normalizaConcedido(bruta.concedido),
     adaptacoes: normalizaAdaptacoes(bruta.adaptacoes),
+    treinosAtivos: bruta.treinosAtivos && typeof bruta.treinosAtivos === "object"
+      ? Object.fromEntries(Object.entries(bruta.treinosAtivos).map(([id, ativo]) => [id, !!ativo]))
+      : {},
     invocacoes: normalizaInvocacoesSessao(bruta.invocacoes),
     favoritos: lista(bruta.favoritos),
     log: lista(bruta.log).slice(0, LOG_MAX),
@@ -874,6 +879,15 @@ export function descansar(sessao, derived) {
 }
 
 const chaveUsoEstado = (id) => `estado:${id}:rodada`;
+
+/** Liga ou desliga um efeito condicional de Treinamento nesta sessão. */
+export function alteraTreinoAtivo(sessao, id, valor) {
+  if (!id) return sessao;
+  return {
+    ...sessao,
+    treinosAtivos: { ...(sessao.treinosAtivos || {}), [id]: !!valor },
+  };
+}
 
 /** Um estado limitado já foi ativado na rodada atual? */
 export function estadoUsadoNestaRodada(sessao, id) {

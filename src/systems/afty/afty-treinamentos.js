@@ -628,7 +628,7 @@ function progressosDe(linha, val) {
  * `alvoInstancia` é o alvo da instância nas linhas repetíveis: no Treino de
  * Atributo é o atributo escolhido, e é o que faz o `+1` cair no lugar certo.
  */
-function paraCanal(ef, alvoInstancia) {
+function paraCanal(ef, alvoInstancia, alvos = {}) {
   /* ⚠ PASSAGEM DIRETA (2026-08-22). Uma etapa pode declarar `{ canal, expr }`
      em vez de `{ tipo, valor }`, e aí ela vai crua para o Motor. Existe pelo
      Addon: o vocabulário de `tipo` abaixo é uma lista fechada, escrita para as
@@ -637,8 +637,12 @@ function paraCanal(ef, alvoInstancia) {
      constante ("o dobro do seu Nível de Domínio" é `dom`, e não um número).
      O `valor` continua sendo o caminho das 12 linhas do raw. */
   if (ef?.canal) {
-    const alvo = ef.alvo === "instancia" ? alvoInstancia : ef.alvo;
+    const alvoEscolhido = typeof ef.alvo === "string" && ef.alvo.startsWith("escolha:")
+      ? alvos[ef.alvo.slice("escolha:".length)]
+      : null;
+    const alvo = ef.alvo === "instancia" ? alvoInstancia : (alvoEscolhido || ef.alvo);
     if (ef.alvo === "instancia" && !alvoInstancia) return null;
+    if (typeof ef.alvo === "string" && ef.alvo.startsWith("escolha:") && !alvoEscolhido) return null;
     return { canal: ef.canal, expr: String(ef.expr ?? "0"), ...(alvo ? { alvo } : {}) };
   }
   const valor = Number(ef?.valor) || 0;
@@ -777,7 +781,7 @@ export const treinoDisponivel = (linha, origemId, qualificadas = null) => {
 export const treinamentosDaOrigem = (origemId, qualificadas = null) =>
   AFTY_TREINAMENTOS.filter((l) => treinoDisponivel(l, origemId, qualificadas));
 
-export function efeitosDeTreino(creature) {
+export function efeitosDeTreino(creature, gatilhosAtivos = null) {
   /* ⚠ ORIGEM ESTRUTURAL no `foraDaOrigem`: um Gêmeo que copiou da Maldição
      perde a Linha de Energia Reversa como uma Maldição de verdade, e o Foco
      preso nela volta sozinho (autor, 2026-08-29). O `qualificadas` continua
@@ -789,14 +793,15 @@ export function efeitosDeTreino(creature) {
   const armas = catalogoDoTipo("arma", creature);
   const prog = normalizeTreinamentos(creature?.treinamentos);
   const out = [];
-  const add = (efeitos, linha, alvo) => {
+  const add = (efeitos, linha, alvo, alvos = {}, nome = null) => {
     for (const ef of efeitos || []) {
-      const conv = paraCanal(ef, alvo);
+      if (ef.gatilhoSessao && !gatilhosAtivos?.[ef.gatilhoSessao]) continue;
+      const conv = paraCanal(ef, alvo, alvos);
       if (!conv) continue;
       out.push({
         ...conv,
         origem: linha.id,
-        nome: alvo && linha.repetivel ? `${linha.nome} (${rotuloAlvo(linha, alvo, pericias, armas)})` : linha.nome,
+        nome: nome || (alvo && linha.repetivel ? `${linha.nome} (${rotuloAlvo(linha, alvo, pericias, armas)})` : linha.nome),
       });
     }
   };
@@ -810,9 +815,44 @@ export function efeitosDeTreino(creature) {
       : [{ alvo: null, progresso: Number(val) || 0 }];
     for (const inst of instancias) {
       const p = clampProg(inst.progresso);
-      for (const et of linha.etapas) if (et.n <= p) add(et.efeitos, linha, inst.alvo);
-      if (p >= ETAPAS_POR_LINHA) add(linha.completo?.efeitos, linha, inst.alvo);
+      const alvos = creature?.treinamentoAlvos?.[linha.id] || {};
+      for (const et of linha.etapas) if (et.n <= p) add(et.efeitos, linha, inst.alvo, alvos);
+      if (p >= ETAPAS_POR_LINHA) add(linha.completo?.efeitos, linha, inst.alvo, alvos);
+      for (const escolha of linha.escolhas || []) {
+        if (p < (escolha.etapa ?? 1)) continue;
+        const opcaoId = creature?.treinamentoEscolhas?.[linha.id]?.[escolha.id];
+        const opcao = escolha.opcoes?.find((item) => item.id === opcaoId);
+        if (opcao) add(opcao.efeitos, linha, inst.alvo, alvos, `${linha.nome} (${opcao.nome})`);
+      }
     }
+  }
+  return out;
+}
+
+/** Interruptores de sessão abertos pelas linhas de treinamento escolhidas. */
+export function gatilhosDeTreino(creature) {
+  const prog = normalizeTreinamentos(creature?.treinamentos);
+  const unicos = new Map();
+  for (const [id, val] of Object.entries(prog)) {
+    const linha = BY_ID[id];
+    const ativo = linha?.repetivel ? Array.isArray(val) && val.length > 0 : Number(val) > 0;
+    if (ativo && linha.gatilhoSessao?.id) unicos.set(linha.gatilhoSessao.id, linha.gatilhoSessao);
+  }
+  return [...unicos.values()];
+}
+
+/** Trocas de atributo-chave abertas por uma Linha de Treinamento. */
+export function atributosDePericiaDeTreino(creature) {
+  const prog = normalizeTreinamentos(creature?.treinamentos);
+  const out = {};
+  for (const [id, val] of Object.entries(prog)) {
+    const linha = BY_ID[id];
+    const troca = linha?.trocaAtributoPericia;
+    if (!troca || Number(val) < (troca.etapa ?? 1)) continue;
+    const alvos = creature?.treinamentoAlvos?.[id] || {};
+    const pericia = alvos[troca.periciaAlvo];
+    const atributo = alvos[troca.atributoAlvo];
+    if (pericia && ATTR_LABEL[atributo]) out[pericia] = atributo;
   }
   return out;
 }
@@ -902,6 +942,16 @@ export function avaliarRequisito(requisito, ctx = {}) {
   }
   if (requisito.tipo === "nd") {
     return { ok: nd >= requisito.valor, verificavel: true, label: `Nível de Personagem ${requisito.valor}` };
+  }
+  if (requisito.tipo === "todosAtributos") {
+    const menor = Math.min(...Object.keys(ATTR_LABEL).map((attr) => attrEff[attr] ?? 0));
+    return { ok: menor >= requisito.valor, verificavel: true, label: `Todos os atributos ${requisito.valor}` };
+  }
+  if (requisito.tipo === "treinamento") {
+    const atual = Number(ctx.treinamentos?.[requisito.id]) || 0;
+    const alvo = getTreinamento(requisito.id);
+    const etapa = requisito.etapa ?? 1;
+    return { ok: atual >= etapa, verificavel: true, label: `${alvo?.nome ?? requisito.id} ${etapa}ª Etapa` };
   }
   /* ⚠ `aptidao` e `trilha` entraram em 2026-08-22, com o Treino de Novo Estilo
      das Sombras ("Domínio Simples" na 1ª, "Nível de Aptidão em Domínio 3" na 3ª

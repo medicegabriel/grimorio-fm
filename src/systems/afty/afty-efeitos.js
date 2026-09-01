@@ -86,6 +86,7 @@ import { combateDslVars, COMBATE_VARS } from "./afty-combate";
 // é este arquivo que junta os efeitos de origem, não aquele. Ver coletarEfeitosOrigem.
 import {
   getOrigem, getCla, resolveEscolhasOrigem, ORIGEM_ESCOLHA_EFEITOS, OPCAO_ORIGEM_NOME,
+  opcoesEscolhidasDaOrigem,
 } from "./afty-origens";
 import { getAnatomia } from "./afty-anatomias";
 // afty-aptidoes só importa afty-origens, que já é dependência daqui: sem ciclo.
@@ -1109,6 +1110,7 @@ export function coletarEfeitosOrigem(creature, escolhas = null) {
     : [];
   const mapa = escolhas?.mapa || resolveEscolhasOrigem(creature, creature?.core?.nd ?? 1).mapa;
   const opcoesEscolhidas = Object.values(mapa).flat();
+  const opcoesInteiras = opcoesEscolhidasDaOrigem(creature, { mapa });
   /* ⚠ O CATÁLOGO AQUI É A ENTRADA INTEIRA, e não `{ nome }`. Era um objeto
      sintético só com o nome até 2026-08-31, e isso furava o fallback do
      `coletarEfeitos`: uma origem ou um clã vindos de Addon declaram os efeitos
@@ -1121,6 +1123,11 @@ export function coletarEfeitosOrigem(creature, escolhas = null) {
     ...coletarEfeitos(claId ? [claId] : [], CLA_EFEITOS, (id) => getCla(id)),
     ...coletarEfeitos(anatomias, ANATOMIA_EFEITOS, (id) => getAnatomia(id)),
     ...coletarEfeitos(opcoesEscolhidas, ORIGEM_ESCOLHA_EFEITOS, (id) => ({ nome: OPCAO_ORIGEM_NOME[id] })),
+    ...opcoesInteiras.flatMap((opcao) => (opcao.efeitos || []).map((efeito) => ({
+      ...efeito,
+      origem: opcao.id,
+      nome: opcao.nome ?? opcao.id,
+    }))),
   ];
 }
 

@@ -10,7 +10,7 @@ código. Leia junto com `afty-status.md` (estado do sistema), `automacao-dsl.md`
 
 ---
 
-## ONDE ESTAMOS (2026-08-28)
+## ONDE ESTAMOS (2026-09-01)
 
 **Fase 0 com três primitivas fechadas e fase 1 no ar.** O caminho inteiro do Addon funciona de
 ponta a ponta: colar o JSON, ligar na criatura, o número mudar na Ficha, desinstalar sem deixar
@@ -1046,3 +1046,138 @@ de lá é que aquele mapa não sabe a qual das três características da Maldiç
 
 ⚠ No dia em que a Maldição ganhar outra característica com número, as duas listas divergem em
 silêncio. Anotado em `docs/a-fazer.md`.
+
+---
+
+## 16. FLUGEL E AS ESCOLHAS ESTRUTURAIS DE TREINAMENTO, 2026-09-01
+
+O primeiro pacote embutido que combina Origem, clã, Talento remendado e Linhas de Treinamento é
+`src/systems/afty/addons/flugel.js`. Ele é instalado pelo botão **Flugel** da aba Addons e continua
+seguindo o ciclo normal: instalar na biblioteca, ligar na ficha e carregar a cópia congelada com a
+ficha exportada.
+
+### Efeito na opção de Origem
+
+Uma opção de `escolha` ou `escolhas` pode declarar `efeitos` diretamente:
+
+```json
+{
+  "id": "pericia_atletismo",
+  "nome": "Atletismo",
+  "periciaId": "atletismo",
+  "efeitos": [{ "canal": "proficienciaPericia", "alvo": "atletismo", "expr": "1" }]
+}
+```
+
+`coletarEfeitosOrigem` resolve a opção inteira do catálogo já religado. O mapa estático
+`ORIGEM_ESCOLHA_EFEITOS` continua valendo para o raw, e o efeito inline é a porta de Addon.
+
+### Troca de atributo-chave de perícia
+
+A característica de Origem aponta para duas escolhas:
+
+```json
+{
+  "trocaAtributoPericia": {
+    "escolhaPericia": "futen_pericia",
+    "escolhaAtributo": "futen_atributo"
+  }
+}
+```
+
+As opções carregam `periciaId` e `atributoId`. `atributosDePericiaDaOrigem` transforma as duas
+escolhas no mapa `{ periciaId: atributoId }`, e `resolveTestes` usa esse mapa no lugar do atributo
+do catálogo. Bônus, penalidade e hover passam a ler o atributo substituto pelo mesmo caminho.
+
+Uma Linha de Treinamento declara a mesma operação pelos alvos dela:
+
+```json
+{
+  "trocaAtributoPericia": {
+    "etapa": 1,
+    "periciaAlvo": "pericia",
+    "atributoAlvo": "atributo"
+  }
+}
+```
+
+### Alvos de Linha não repetível
+
+`alvos` abre seletores antes da 1ª etapa:
+
+```json
+{
+  "alvos": [
+    { "id": "atributo", "tipo": "atributo", "label": "Atributo" },
+    { "id": "pericia", "tipo": "pericia", "label": "Perícia" }
+  ]
+}
+```
+
+A ficha guarda as respostas separadas do progresso em `treinamentoAlvos`. Um efeito da etapa usa a
+resposta com `alvo: "escolha:atributo"` ou `alvo: "escolha:pericia"`. Remover todo o progresso da
+linha remove também os alvos e escolhas dela.
+
+### Escolha aberta por etapa
+
+`escolhas` abre um seletor quando o progresso alcança `etapa`:
+
+```json
+{
+  "id": "heranca_conjuge",
+  "label": "Herança",
+  "etapa": 4,
+  "opcoes": [
+    { "id": "feitico", "nome": "Feitiço", "efeitos": [{ "canal": "vagasFeitico", "expr": "1" }] },
+    { "id": "talento", "nome": "Talento", "efeitos": [{ "canal": "vagasTalento", "expr": "1" }] }
+  ]
+}
+```
+
+O estado mora em `treinamentoEscolhas`. O efeito da opção só existe depois da etapa indicada e
+entra no Motor com o nome da Linha e da opção.
+
+### Interruptor manual de sessão
+
+A Linha declara o controle uma vez:
+
+```json
+{
+  "gatilhoSessao": { "id": "conjuge", "label": "Cônjuge" }
+}
+```
+
+Cada efeito condicionado aponta para ele:
+
+```json
+{ "canal": "defesa", "expr": "2", "gatilhoSessao": "conjuge" }
+```
+
+O estado fica em `sessao.treinosAtivos`, nunca na criatura. `gatilhosDeTreino` elimina duplicatas,
+então duas Linhas com `conjuge` produzem um único interruptor na aba Ações. Desligado é o padrão.
+
+⚠ A escolha da 4ª etapa não usa o gatilho: ela precisa abrir a vaga no criador para o usuário
+preencher Feitiço ou Talento. O interruptor governa os bônus numéricos que dependem da presença do
+Cônjuge na sessão.
+
+### Requisitos novos de etapa
+
+- `todosAtributos` verifica o menor dos seis atributos contra `valor`.
+- `treinamento` verifica se outra Linha chegou a `etapa`. O Flugel usa isso para manter as etapas do
+  Treino Cônjuge Pt. 2 presas às etapas correspondentes do primeiro treino.
+
+### Estado gravado na criatura
+
+```json
+{
+  "treinamentos": { "flugel:treino_exemplo": 4 },
+  "treinamentoAlvos": {
+    "flugel:treino_exemplo": { "atributo": "sabedoria", "pericia": "atletismo" }
+  },
+  "treinamentoEscolhas": {
+    "flugel:treino_exemplo": { "heranca_conjuge": "talento" }
+  }
+}
+```
+
+Os três mapas pertencem à ficha. Só `treinosAtivos` pertence à sessão.

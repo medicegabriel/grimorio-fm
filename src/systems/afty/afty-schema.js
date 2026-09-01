@@ -423,6 +423,12 @@ export function createBlankAfty() {
     // Interlúdios · Treinamentos: mapa { [linhaId]: progresso 0..4 }.
     // Etapas sequenciais; 4 → concede o bônus de Completo. Ver afty-treinamentos.js.
     treinamentos: {},
+    // Alvos escolhidos por Linhas de Treinamento não repetíveis vindas de
+    // Addon. Ex.: `{ [linhaId]: { atributo, pericia } }`.
+    treinamentoAlvos: {},
+    // Escolhas abertas por uma etapa de treinamento. A vaga criada pela opção
+    // escolhida passa pelo mesmo Motor das demais fontes.
+    treinamentoEscolhas: {},
     // Interlúdios · Treinos Especiais (Interlúdios Adicionais, Livro do
     // Narrador p. 22): lista COM repetição, uma entrada por pega, no mesmo
     // espírito de habilidadesGerais. Cada pega custa 1 Foco do MESMO orçamento

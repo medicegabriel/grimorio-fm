@@ -1069,7 +1069,9 @@ export function resolveTestes(creature, ctx = {}) {
        fosse maior, o que fazia o número da linha mudar sozinho ao mexer num
        atributo que não é o dela. O atributo agora vem do catálogo, como o das
        outras dezenove. */
-    const atributo = p.atributo;
+    const atributo = AFTY_ATTRS.some((a) => a.key === ctx.atributosPericia?.[p.id])
+      ? ctx.atributosPericia[p.id]
+      : p.atributo;
     const nome = oficios.length > 0
       ? `${p.nome} (${oficios.join(", ")})`
       : p.nome;

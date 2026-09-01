@@ -747,8 +747,31 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
       const next = { ...treinosObj(d) };
       if (prog > 0) next[lineId] = prog;
       else delete next[lineId];
-      return { ...d, treinamentos: next };
+      if (prog > 0) return { ...d, treinamentos: next };
+      const alvos = { ...(d.treinamentoAlvos || {}) };
+      const escolhas = { ...(d.treinamentoEscolhas || {}) };
+      delete alvos[lineId];
+      delete escolhas[lineId];
+      return { ...d, treinamentos: next, treinamentoAlvos: alvos, treinamentoEscolhas: escolhas };
     });
+
+  const setTreinoAlvo = (lineId, alvoId, valor) =>
+    setDraft((d) => ({
+      ...d,
+      treinamentoAlvos: {
+        ...(d.treinamentoAlvos || {}),
+        [lineId]: { ...(d.treinamentoAlvos?.[lineId] || {}), [alvoId]: valor || null },
+      },
+    }));
+
+  const setTreinoEscolha = (lineId, escolhaId, valor) =>
+    setDraft((d) => ({
+      ...d,
+      treinamentoEscolhas: {
+        ...(d.treinamentoEscolhas || {}),
+        [lineId]: { ...(d.treinamentoEscolhas?.[lineId] || {}), [escolhaId]: valor || null },
+      },
+    }));
 
   // Linha REPETÍVEL: upsert/remove de uma instância (alvo distinto → progresso).
   const setTreinoInstance = (lineId, alvo, prog) =>
@@ -1067,7 +1090,7 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
           {tabAtiva === "aptidoes" && <TabAptidoes draft={draft} derived={derived} setAptidaoNivel={setAptidaoNivel} toggleAptidao={toggleAptidao} setAptidaoOpcao={setAptidaoOpcao} setAptidaoVezes={setAptidaoVezes} setAptidaoOpcaoRepetida={setAptidaoOpcaoRepetida} />}
           {tabAtiva === "invocacoes" && <TabInvocacoes draft={draft} derived={derived} addInvocacao={addInvocacao} removeInvocacao={removeInvocacao} duplicarInvocacao={duplicarInvocacao} moverInvocacao={moverInvocacao} patchInvocacao={patchInvocacao} patchInvocacaoAttr={patchInvocacaoAttr} efeitosApi={efeitosApi} addHorda={addHorda} removeHorda={removeHorda} patchHorda={patchHorda} />}
           {tabAtiva === "equipamentos" && <TabEquipamentos draft={draft} derived={derived} addEquipamento={addEquipamento} removeEquipamento={removeEquipamento} patchEquipamento={patchEquipamento} toggleFerramenta={toggleFerramenta} patchFerramenta={patchFerramenta} toggleEncantamento={toggleEncantamento} addArmaCustom={addArmaCustom} patchArmaCustom={patchArmaCustom} removeArmaCustom={removeArmaCustom} />}
-          {tabAtiva === "interludios" && <TabInterludios draft={draft} derived={derived} setTreinoProgresso={setTreinoProgresso} setTreinoInstance={setTreinoInstance} setTreinoEspecialVezes={setTreinoEspecialVezes} sistema={sistema} setFocosLivres={setFocosLivres} />}
+          {tabAtiva === "interludios" && <TabInterludios draft={draft} derived={derived} setTreinoProgresso={setTreinoProgresso} setTreinoInstance={setTreinoInstance} setTreinoAlvo={setTreinoAlvo} setTreinoEscolha={setTreinoEscolha} setTreinoEspecialVezes={setTreinoEspecialVezes} sistema={sistema} setFocosLivres={setFocosLivres} />}
           {tabAtiva === "addons" && <TabAddons draft={draft} derived={derived} setAddons={setAddons} />}
           {tabAtiva === "calculos" && <TabCalculos derived={derived} setStatOverride={setStatOverride} patchCombate={patchCombate} />}
           {STUBS[tabAtiva] && <StubCard title={abasVisiveis.find((t) => t.id === tabAtiva)?.label} text={STUBS[tabAtiva]} />}
@@ -6983,7 +7006,7 @@ function ProgressoSegmentos({ progresso, total }) {
 /* As 4 etapas (linha do tempo) + bônus de Completo de uma instância.
    `onSet(prog)` grava o novo progresso (bindado à linha/instância certa).
    `readOnly` = prévia só para consulta (sem ações, tudo em estado neutro). */
-function TreinoEtapas({ linha, progresso, attrEff, nd, ctxReq, onSet, readOnly = false }) {
+function TreinoEtapas({ linha, progresso, attrEff, nd, ctxReq, onSet, readOnly = false, bloqueioExterno = null }) {
   const completa = !readOnly && progresso >= ETAPAS_POR_LINHA;
   return (
     <>
@@ -6993,7 +7016,7 @@ function TreinoEtapas({ linha, progresso, attrEff, nd, ctxReq, onSet, readOnly =
           const isNext = !readOnly && et.n === progresso + 1;
           const locked = !readOnly && et.n > progresso + 1;
           const req = avaliarRequisito(et.requisito, { attrEff, nd, ...ctxReq });
-          const blocked = isNext && !req.ok; // só requisito de atributo bloqueia
+          const blocked = isNext && (!req.ok || (et.n === 1 && !!bloqueioExterno));
           const isTop = done && et.n === progresso; // última concluída (desfazível)
 
           return (
@@ -7034,7 +7057,7 @@ function TreinoEtapas({ linha, progresso, attrEff, nd, ctxReq, onSet, readOnly =
                         ? "border-slate-800 text-slate-600 cursor-not-allowed"
                         : "border-purple-700 bg-purple-800/40 text-purple-200 hover:bg-purple-700/50"
                     }`}
-                    title={blocked ? `Requisito não atendido: ${req.label}` : "Concluir esta etapa"}
+                    title={blocked ? (bloqueioExterno || `Requisito não atendido: ${req.label}`) : "Concluir esta etapa"}
                   >
                     Treinar <ArrowRight className="w-3 h-3" />
                   </button>
@@ -7109,12 +7132,19 @@ function opcoesDeAlvo(linha, instances, pericias = AFTY_PERICIAS, armas = []) {
 
 /* Uma Linha de Treinamento. Não repetível → uma trilha só. Repetível → várias
    instâncias, cada uma com um alvo distinto (atributo/perícia/arma). */
-function TreinoLinha({ linha, valor, attrEff, nd, ctxReq, onSetProgresso, onSetInstance, pericias, armas }) {
+function TreinoLinha({
+  linha, valor, attrEff, nd, ctxReq, onSetProgresso, onSetInstance,
+  pericias, armas, alvosEscolhidos = {}, escolhas = {}, onSetAlvo, onSetEscolha,
+}) {
   const repetivel = !!linha.repetivel;
   const progresso = repetivel ? 0 : (Number(valor) || 0);
   const completa = !repetivel && progresso >= ETAPAS_POR_LINHA;
   const instances = repetivel && Array.isArray(valor) ? valor : [];
   const ativo = repetivel ? instances.length > 0 : progresso > 0;
+  const alvosPendentes = (linha.alvos || []).filter((alvo) => !alvosEscolhidos[alvo.id]);
+  const bloqueioAlvos = alvosPendentes.length > 0
+    ? `Escolha ${alvosPendentes.map((alvo) => alvo.label).join(" e ")}`
+    : null;
 
   const [open, setOpen] = useState(repetivel ? instances.length > 0 : (progresso > 0 && !completa));
   const [novoTexto, setNovoTexto] = useState("");
@@ -7175,7 +7205,43 @@ function TreinoLinha({ linha, valor, attrEff, nd, ctxReq, onSetProgresso, onSetI
       {/* corpo */}
       {open && (
         <div className="px-3 pb-3 -mt-0.5">
-          <p className="text-[11px] text-slate-400 leading-relaxed mb-2.5 pl-6">{linha.resumo}</p>
+          {linha.resumo && (
+            <p className="text-[11px] text-slate-400 leading-relaxed mb-2.5 pl-6">{linha.resumo}</p>
+          )}
+
+          {!repetivel && (linha.alvos || []).length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2.5 pl-6">
+              {linha.alvos.map((alvo) => {
+                const options = alvo.tipo === "atributo"
+                  ? AFTY_ATTRS.map((attr) => ({ value: attr.key, label: attr.label }))
+                  : (pericias || []).filter((pericia) => !pericia.complementar)
+                    .map((pericia) => ({ value: pericia.id, label: pericia.nome }));
+                return (
+                  <div key={alvo.id}>
+                    <FieldLabel>{alvo.label}</FieldLabel>
+                    <Select
+                      value={alvosEscolhidos[alvo.id] || ""}
+                      onChange={(v) => onSetAlvo(linha.id, alvo.id, v)}
+                      options={options}
+                      placeholder="Selecione"
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {!repetivel && (linha.escolhas || []).filter((escolha) => progresso >= (escolha.etapa ?? 1)).map((escolha) => (
+            <div key={escolha.id} className="mb-2.5 pl-6 max-w-xs">
+              <FieldLabel>{escolha.label}</FieldLabel>
+              <Select
+                value={escolhas[escolha.id] || ""}
+                onChange={(v) => onSetEscolha(linha.id, escolha.id, v)}
+                options={(escolha.opcoes || []).map((opcao) => ({ value: opcao.id, label: opcao.nome }))}
+                placeholder="Selecione"
+              />
+            </div>
+          ))}
 
           {repetivel ? (
             <div className="space-y-2.5">
@@ -7274,6 +7340,7 @@ function TreinoLinha({ linha, valor, attrEff, nd, ctxReq, onSetProgresso, onSetI
               nd={nd}
               ctxReq={ctxReq}
               onSet={(p) => onSetProgresso(linha.id, p)}
+              bloqueioExterno={bloqueioAlvos}
             />
           )}
         </div>
@@ -11077,7 +11144,10 @@ function EfeitoPill({ icon: Icon, label, valor, nota, titulo }) {
   );
 }
 
-function TabInterludios({ draft, derived, setTreinoProgresso, setTreinoInstance, setTreinoEspecialVezes, sistema, setFocosLivres }) {
+function TabInterludios({
+  draft, derived, setTreinoProgresso, setTreinoInstance, setTreinoAlvo,
+  setTreinoEscolha, setTreinoEspecialVezes, sistema, setFocosLivres,
+}) {
   const treinos = (draft.treinamentos && !Array.isArray(draft.treinamentos) && typeof draft.treinamentos === "object")
     ? draft.treinamentos : {};
   // Pool do Treino de Manejo de Arma: as armas do INVENTÁRIO, carregadas ou
@@ -11099,6 +11169,7 @@ function TabInterludios({ draft, derived, setTreinoProgresso, setTreinoInstance,
   const ctxReq = {
     aptidoes: derived.aptidoesEscolhidas ?? [],
     niveisAptidao: derived.aptidao?.efetivo ?? null,
+    treinamentos: treinos,
   };
   // As duas famílias de Interlúdio dividem o MESMO orçamento de Focos, então o
   // medidor do cabeçalho soma as duas: uma pega de Treino Especial e uma etapa
@@ -11133,6 +11204,10 @@ function TabInterludios({ draft, derived, setTreinoProgresso, setTreinoInstance,
               armas={armasDoInventario}
               onSetProgresso={setTreinoProgresso}
               onSetInstance={setTreinoInstance}
+              alvosEscolhidos={draft.treinamentoAlvos?.[linha.id] || {}}
+              escolhas={draft.treinamentoEscolhas?.[linha.id] || {}}
+              onSetAlvo={setTreinoAlvo}
+              onSetEscolha={setTreinoEscolha}
             />
           ))}
         </div>

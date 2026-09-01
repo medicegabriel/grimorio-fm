@@ -829,6 +829,7 @@ export default function AbaAcoes({
   onCancelarRitual, onFinalizarRitual, onEncerrarRitual,
   onImbuir,
   adaptacao = null,
+  gatilhosTreino = [], onGatilhoTreino = null,
 }) {
   const dano = derived.dano?.entradas ?? [];
   const cura = derived.cura?.linhas ?? [];
@@ -847,6 +848,23 @@ export default function AbaAcoes({
   return (
     <div className="space-y-3">
       {adaptacao}
+      {gatilhosTreino.length > 0 && (
+        <div className="afty-card flex items-center gap-2 p-2">
+          {gatilhosTreino.map((gatilho) => (
+            <button
+              key={gatilho.id}
+              type="button"
+              className="afty-botao text-[10px]"
+              data-afty-tom={gatilho.ativo ? "destaque" : undefined}
+              aria-pressed={gatilho.ativo}
+              onClick={() => onGatilhoTreino?.(gatilho.id, !gatilho.ativo)}
+              title={`Aplicar efeitos condicionais de ${gatilho.label}`}
+            >
+              {gatilho.label}
+            </button>
+          ))}
+        </div>
+      )}
       {/* ⚠ O RÁPIDO vem primeiro, antes até do Dano. Uma ficha de ND 40 tem 40
           habilidades e o jogador usa seis, e são essas seis que ele quer ver ao
           abrir a ficha. Some inteiro para quem não fixou nada. */}

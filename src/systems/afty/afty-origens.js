@@ -1636,6 +1636,33 @@ export function resolveEscolhasOrigem(creature, nd = 1) {
   return { porEscolha, mapa };
 }
 
+/** Opções inteiras selecionadas nas escolhas da origem e do clã. */
+export function opcoesEscolhidasDaOrigem(creature, escolhas = null) {
+  const mapa = escolhas?.mapa || resolveEscolhasOrigem(creature, creature?.core?.nd ?? 1).mapa;
+  const porId = new Map();
+  for (const esc of escolhasDaOrigem(creature)) {
+    for (const opcao of esc.opcoes || []) porId.set(opcao.id, opcao);
+  }
+  return Object.values(mapa).flat().map((id) => porId.get(id)).filter(Boolean);
+}
+
+/** Trocas de atributo-chave declaradas por características de origem ou clã. */
+export function atributosDePericiaDaOrigem(creature, escolhas = null) {
+  const resolvidas = escolhas || resolveEscolhasOrigem(creature, creature?.core?.nd ?? 1);
+  const porEscolha = new Map(escolhasDaOrigem(creature).map((esc) => [esc.id, esc]));
+  const out = {};
+  for (const caracteristica of caracteristicasEfetivas(creature)) {
+    const troca = caracteristica.trocaAtributoPericia;
+    if (!troca) continue;
+    const periciaId = porEscolha.get(troca.escolhaPericia)?.opcoes
+      ?.find((opcao) => resolvidas.mapa[troca.escolhaPericia]?.includes(opcao.id))?.periciaId;
+    const atributoId = porEscolha.get(troca.escolhaAtributo)?.opcoes
+      ?.find((opcao) => resolvidas.mapa[troca.escolhaAtributo]?.includes(opcao.id))?.atributoId;
+    if (periciaId && ATTR_LABEL[atributoId]) out[periciaId] = atributoId;
+  }
+  return out;
+}
+
 /**
  * Nome de cada OPÇÃO de escolha de origem, por id. Irmão do OPCAO_TALENTO_NOME,
  * e serve ao mesmo fim: rotular a fonte de um número no hover da UI, já que o

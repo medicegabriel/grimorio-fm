@@ -18,6 +18,7 @@ import {
   peTempTotal, gastaPe, pvTempTotal,
   entradaDaGuarda, sofreGolpeNaGuarda, desfazGolpeNaGuarda, encerraGuarda, defineCondicoes,
   alteraEstadoCombate, consomeEstadoCombate, registraFeiticoDano,
+  alteraTreinoAtivo,
   configuraRitual, usosRitualista,
   ritualEmAndamento,
   iniciaRitualComum, iniciaRitualSemTeste, iniciaRitualEstendido,
@@ -169,6 +170,7 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
       /* O Ciclo de Adaptação também é estado de mesa. Viaja na mesma lista
          única para o derivado principal e para os deltas dos estados. */
       adaptacoes: sessaoBruta.adaptacoes,
+      treinosAtivos: sessaoBruta.treinosAtivos,
       /* A Guarda Inabalável CORRENTE. Vai pelo `opcoes` como a concessão e
          pelo mesmo motivo: é estado de mesa. O derive precisa dela porque o
          bônus soma na Defesa e nos cinco TRs, e resolver a Guarda fora dele
@@ -471,6 +473,8 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
         onFinalizarRitual={(feiticoId) => atualiza((s) => finalizaRitual(s, feiticoId))}
         onEncerrarRitual={(feiticoId) => atualiza((s) => encerraRitual(s, feiticoId))}
         onImbuir={(estadoId, feiticoId) => alteraEstado({ id: estadoId }, feiticoId)}
+        gatilhosTreino={derived.gatilhosTreino}
+        onGatilhoTreino={(id, valor) => atualiza((s) => alteraTreinoAtivo(s, id, valor))}
       />
     ),
     habilidades: () => (

@@ -145,6 +145,10 @@ a tela mostrando 30. Todo limite entra no motor.
 Estado de mesa (invocação em campo, bônus ligado, PV atual) vive na chave de sessão. O autosave do
 criador reescreve a criatura inteira e apagaria tudo.
 
+O mesmo vale para efeitos condicionais de Linha de Treinamento. `sessao.treinosAtivos` guarda os
+interruptores manuais, como `Cônjuge`, e o `deriveAfty` recebe esse mapa por `opcoes.treinosAtivos`.
+O progresso e as escolhas do treino ficam na criatura. O estado ligado na mesa não fica.
+
 ---
 
 ## COMO VERIFICAR
@@ -157,7 +161,7 @@ npx vite build
 npm run asserts
 ```
 
-Hoje: **41 arquivos, 2212 asserts.** Um arquivo de assert roda em processo próprio e imprime
+Hoje: **42 arquivos, 2239 asserts.** Um arquivo de assert roda em processo próprio e imprime
 `TODOS OS N ASSERTS PASSARAM`.
 
 Para rodar o `deriveAfty` num script solto, o hook de resolução está no topo de qualquer

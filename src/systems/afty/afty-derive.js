@@ -43,8 +43,11 @@ import {
   resolveOrigemAttrBonus, resolveDesenvolvimento, resolveEscolhasOrigem,
   limiteAtributoDaOrigem, resolveLimitePoolOrigem, origensQualificadas,
   fatorSlotsHabilidade, aptidoesConcedidasPelaOrigem, caracteristicasEfetivas,
+  atributosDePericiaDaOrigem,
 } from "./afty-origens";
-import { efeitosDeTreino, vagasEncantamentoDeTreino } from "./afty-treinamentos";
+import {
+  efeitosDeTreino, vagasEncantamentoDeTreino, atributosDePericiaDeTreino, gatilhosDeTreino,
+} from "./afty-treinamentos";
 import { efeitosDeTreinoEspecial } from "./afty-treinos-especiais";
 import { resolveNiveisAptidao, trilhasDaCriatura, getAptidao, AFTY_APTIDOES } from "./afty-aptidoes";
 import {
@@ -475,7 +478,7 @@ export function deriveAfty(creature, opcoes = {}) {
      estágio 0, e no estágio 0c lá embaixo, que precisa dos mesmos efeitos com o
      Nível de Aptidão já no contexto. Ver `CANAIS_POS_APTIDAO`. */
   const efeitosMontante = [
-      ...efeitosDeTreino(creature),
+      ...efeitosDeTreino(creature, opcoes.treinosAtivos),
       // Treino Especial entra ao lado da Linha de Treinamento porque é a mesma
       // família (Interlúdio) e emite a mesma classe de coisa: VAGA de orçamento,
       // lida antes de os stats existirem. Hoje só `vagasFeitico`.
@@ -548,6 +551,7 @@ export function deriveAfty(creature, opcoes = {}) {
     {
       nd,
       almaLivreEspecializacao: talentosPre.almaLivreEspecializacao,
+      almaLivreNivelAjuste: getTalento("tal_alma_livre")?.nivelAlmaLivreAjuste ?? 0,
       concedidasSessao: concedido.habilidades,
       escolhasConcedidasSessao: escolhasConcedidas,
       sistema,
@@ -1935,6 +1939,10 @@ export function deriveAfty(creature, opcoes = {}) {
     divisorCD, divisorDefesa,
     bonusVagas: canal("vagasPericia"),
     efeitos: ef,   // bonusPericia / bonusTR / bonusAcerto / proficienciaPericia
+    atributosPericia: {
+      ...atributosDePericiaDaOrigem(creature, escolhasOrigem),
+      ...atributosDePericiaDeTreino(creature),
+    },
     // Penalidade de armadura e escudo, cumulativa, em testes de perícia que
     // usam Destreza. Voltou a valer em 2026-08-01.
     penalidadeDestreza: equip.penalidadeDestreza,
@@ -2529,6 +2537,10 @@ export function deriveAfty(creature, opcoes = {}) {
        usa o raw exatamente como era. Ver `PRIMITIVAS` em afty-addons.js. */
     primitivas: primitivasDaCriatura(creature),
     adaptacoes: resumoAdaptacoes(creature, opcoes.adaptacoes),
+    gatilhosTreino: gatilhosDeTreino(creature).map((gatilho) => ({
+      ...gatilho,
+      ativo: !!opcoes.treinosAtivos?.[gatilho.id],
+    })),
     /* O que os Addons desta criatura DESTRAVAM. Vazio é o caso normal. Ao
        contrário das `primitivas`, isto MUDA REGRA. Ver `LIBERACOES`. */
     liberacoes,
