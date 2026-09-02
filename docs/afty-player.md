@@ -158,7 +158,7 @@ npx vite build
 npm run asserts
 ```
 
-Hoje: **43 arquivos, 2316 asserts.** Um arquivo de assert roda em processo próprio e imprime
+Hoje: **43 arquivos, 2332 asserts.** Um arquivo de assert roda em processo próprio e imprime
 `TODOS OS N ASSERTS PASSARAM`.
 
 Para rodar o `deriveAfty` num script solto, o hook de resolução está no topo de qualquer
@@ -205,7 +205,7 @@ Valem em todo chat, e são as que mais se quebram.
 | `afty-origens.js` | origens, clãs do Herdado, características |
 | `afty-invocacoes.js` | shikigamis: graus, ações, características, marcadores |
 | `afty-equipamentos.js` | itens, uniformes, encantamentos |
-| `afty-addons.js` | a camada de conteúdo da mesa, 14 famílias |
+| `afty-addons.js` | a camada de conteúdo da mesa, 15 famílias |
 | `ficha/` | a Ficha Final: abas, tema, sessão, rolagens |
 | `encontros/` | o painel do mestre, que reusa as abas da Ficha |
 | `docs/afty-ficha-final.md` | a tela de jogo, e a seção 24 com as dúvidas vivas |

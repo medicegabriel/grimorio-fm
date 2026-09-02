@@ -7,8 +7,11 @@ register(
 const R = new URL("../src/systems/afty/", import.meta.url).href;
 const { deriveAfty } = await import(R + "afty-derive.js");
 const { createBlankAfty, funcionamentosDaFicha } = await import(R + "afty-schema.js");
-const { normalizarPacote, validarPacote, feiticosDeAddon } = await import(R + "afty-addons.js");
+const {
+  aplicarAddons, limparAddons, normalizarPacote, validarPacote, feiticosDeAddon, estadosCombateDeAddon,
+} = await import(R + "afty-addons.js");
 const { nivelMaxFeitico, calcularFeiticoPersonalizado } = await import(R + "afty-feiticos.js");
+const { getEquipamento, novaEntradaEquip } = await import(R + "afty-equipamentos.js");
 
 let ok = 0;
 const bad = [];
@@ -46,12 +49,45 @@ const PACOTE = {
       efeitosPassivo: [{ canal: "pe", expr: "-8" }],
     },
   ],
+  estadosCombate: [
+    { id: "tecnica_ativa", label: "Técnica", tipo: "bool" },
+    {
+      id: "sentidos",
+      label: "Técnica · Sentidos",
+      tipo: "multi",
+      requerEstado: "tecnica_ativa",
+      opcoes: [
+        { id: "olfato", label: "Olfato · Parcial", labelPorNivel: { 3: "Olfato · Total" } },
+        { id: "audicao", label: "Audição", nivelMin: 3 },
+        { id: "visao", label: "Visão", nivelMin: 5 },
+      ],
+    },
+  ],
+  acrescenta: {
+    armas: [{
+      id: "lamina",
+      nome: "Lâmina",
+      classe: "complexa",
+      categoria: "corpo",
+      dano: { dado: "1d6", tipo: "ct" },
+      critico: 19,
+      espacos: 1,
+      custo: 1,
+      grupo: "espada",
+      props: { fineza: true },
+      unico: true,
+      equipadoPadrao: true,
+      requerEstado: "tecnica_ativa",
+      efeito: { aplicado: true, motor: [{ canal: "cd", expr: "2" }] },
+    }],
+  },
 };
 
 t("pacote só com Funcionamento Básico é válido", validarPacote(PACOTE), []);
 const pacote = normalizarPacote(PACOTE);
 t("normalização preserva o Funcionamento", pacote.funcionamentos.length, 1);
 t("normalização preserva os modelos de Feitiço", pacote.feiticos.length, 2);
+t("normalização preserva os Estados de Combate", pacote.estadosCombate.length, 2);
 
 const sem = createBlankAfty();
 const com = createBlankAfty();
@@ -70,6 +106,39 @@ t("efeito do Funcionamento passa pelo deriveAfty", rdCom - rdSem, 3);
 
 const outra = createBlankAfty();
 t("efeito não vaza para outra criatura", deriveAfty(outra).rdGeral, rdSem);
+
+const estadosNivel2 = estadosCombateDeAddon(com, 2);
+const estadosNivel3 = estadosCombateDeAddon(com, 3);
+const estadosNivel5 = estadosCombateDeAddon(com, 5);
+t("Estado de Combate recebe namespace", estadosNivel3[0].id, "minha-tecnica:tecnica_ativa");
+t("filho aponta para o pai prefixado", estadosNivel3[1].requerEstado, "minha-tecnica:tecnica_ativa");
+t("Nível 2 só mostra Olfato", estadosNivel2[1].opcoes.map((o) => o.id), ["olfato"]);
+t("rótulo acompanha o Nível de Técnica", estadosNivel3[1].opcoes[0].label, "Olfato · Total");
+t("Nível 3 libera Audição", estadosNivel3[1].opcoes.map((o) => o.id), ["olfato", "audicao"]);
+t("Nível 5 libera Visão", estadosNivel5[1].opcoes.map((o) => o.id), ["olfato", "audicao", "visao"]);
+t("multi limita pelas opções disponíveis", estadosNivel3[1].maxSelecionados, 2);
+t("deriveAfty recebe o Estado de Combate do addon",
+  deriveAfty(com).combate.estadosExtras.some((e) => e.id === "minha-tecnica:tecnica_ativa"), true);
+
+const instalacao = aplicarAddons([pacote]);
+t("arma do addon instala sem problema", instalacao.problemas, []);
+const lamina = getEquipamento("arma", "minha-tecnica:lamina", com);
+t("arma do addon recebe namespace", lamina.id, "minha-tecnica:lamina");
+t("estado exigido pela arma recebe namespace", lamina.requerEstado, "minha-tecnica:tecnica_ativa");
+const entradaLamina = novaEntradaEquip("arma", lamina.id, lamina);
+t("arma pronta nasce equipada", entradaLamina.equipado, true);
+const comLamina = {
+  ...com,
+  equipamentos: { itens: [entradaLamina] },
+  combate: { ...com.combate, ativo: true, "minha-tecnica:tecnica_ativa": false },
+};
+const cdSemInvocar = deriveAfty(comLamina).cd;
+const cdInvocada = deriveAfty({
+  ...comLamina,
+  combate: { ...comLamina.combate, "minha-tecnica:tecnica_ativa": true },
+}).cd;
+t("arma não concede efeito sem invocação", cdSemInvocar, deriveAfty({ ...com, combate: { ...com.combate, ativo: true } }).cd);
+t("arma concede efeito depois da invocação", cdInvocada - cdSemInvocar, 2);
 
 const modelosNivel3 = feiticosDeAddon(com, 3);
 const modelosNivel4 = feiticosDeAddon(com, 4);
@@ -103,6 +172,12 @@ t("rolagem inválida é recusada", validarPacote({
   ...PACOTE,
   feiticos: [{ id: "x", nome: "X", nivel: 1, tipo: "personalizado", descricao: "X", rolagens: [{ dados: 0, faces: 8 }] }],
 }).length > 0, true);
+t("Estado com pai inexistente é recusado", validarPacote({
+  ...PACOTE,
+  estadosCombate: [{ id: "filho", label: "Filho", requerEstado: "ausente" }],
+}).length > 0, true);
+
+limparAddons();
 
 console.log(bad.length ? `FALHAS (${bad.length}):\n` + bad.join("\n") : `TODOS OS ${ok} ASSERTS PASSARAM`);
 process.exitCode = bad.length ? 1 : 0;

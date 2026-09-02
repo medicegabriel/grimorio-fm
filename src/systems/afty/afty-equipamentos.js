@@ -24,8 +24,8 @@
  * ============================================================
  */
 
-import { registrarFamilia } from "./afty-addons";
-import { evalNumber, validateExpression } from "./afty-dsl";
+import { registrarFamilia, remendarLista } from "./afty-addons";
+import { evalNumber, normalizarVariavel, validateExpression } from "./afty-dsl";
 import { normalizarAlvoEfeito } from "./afty-efeitos";
 import { regraDo } from "./afty-sistema";
 
@@ -737,6 +737,31 @@ export const ARMAS = [
     dano: { dado: "1d4", tipo: "ct" }, critico: 18, espacos: 1, custo: 1, grupo: "dardo",
     props: { arremessavel: [12, 24], mortal: "d8", leve: true } },
 ];
+
+/* Armas próprias de addon entram no mesmo catálogo das armas do livro. O
+   pacote só fornece a definição. Adicionar, equipar, calcular dano e aplicar
+   os efeitos continua sendo trabalho dos mecanismos normais de equipamento. */
+const ARMAS_BASE = ARMAS.slice();
+
+function aplicarExtrasArmas(extras = [], remendos = null) {
+  ARMAS.splice(0, ARMAS.length, ...remendarLista(ARMAS_BASE, remendos), ...extras);
+}
+
+aplicarExtrasArmas();
+
+registrarFamilia("armas", {
+  rotulo: "Arma",
+  chave: "id",
+  obrigatorios: ["nome", "classe", "categoria", "espacos", "custo"],
+  caminhosDeId: ["requerEstado"],
+  aplicar: aplicarExtrasArmas,
+  basicos: () => ARMAS_BASE,
+  validador: validarCatalogoEquipamentos,
+  resolver: (id) => getEquipamento("arma", id),
+  idsDaFicha: (c) => (Array.isArray(c?.equipamentos?.itens) ? c.equipamentos.itens : [])
+    .filter((e) => e?.tipo === "arma")
+    .map((e) => e.refId),
+});
 
 /* ============================================================ */
 /* PROFICIÊNCIA DE ARMA                                          */
@@ -1791,14 +1816,15 @@ export function custoDoEquipamento(tipo, def) {
    equipar continua ocupando espaço, como o livro manda. */
 
 let uidSeq = 0;
-export function novaEntradaEquip(tipo, refId) {
+export function novaEntradaEquip(tipo, refId, def = null) {
   uidSeq += 1;
   return {
     uid: `eq_${Date.now().toString(36)}_${uidSeq}`,
     tipo,
     refId,
     qtd: 1,
-    equipado: false,
+    equipado: !!def?.equipadoPadrao,
+    ...(def?.faPadrao ? { fa: JSON.parse(JSON.stringify(def.faPadrao)) } : {}),
   };
 }
 
@@ -2091,6 +2117,7 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
     // Ferramenta Amaldiçoada da entrada (se houver e o tipo permitir). As vagas
     // livres são por ARMA do catálogo, a mesma chave que a Arma Dedicada usa.
     const fa = resolveFerramenta(e, def, bt, ctxBase, vagasEncantamento[def.id] ?? 0);
+    const quandoDoItem = def?.requerEstado ? normalizarVariavel(def.requerEstado) : null;
 
     const equipado = !!e?.equipado;
     const temCondicaoSolar = def.efeito?.condicao === "sol";
@@ -2159,6 +2186,7 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
             canal: ex.canal,
             ...(ex.alvo ? { alvo: ex.alvo } : {}),
             expr: String(valor),
+            ...(quandoDoItem ? { quando: quandoDoItem } : {}),
             origem: e.uid, nome: def.nome, fonte: "item",
           });
         }
@@ -2194,6 +2222,7 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
           canal: ex.canal,
           ...(ex.alvo ? { alvo: ex.alvo } : {}),
           expr: String(ex.valor),
+          ...(quandoDoItem ? { quando: quandoDoItem } : {}),
           origem: e.uid,
           nome: `${def.nome} (${ex.origem})`,
         });

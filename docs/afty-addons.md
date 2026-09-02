@@ -1317,6 +1317,78 @@ campo com zero.
 
 Os três mapas pertencem à ficha. Só `treinosAtivos` pertence à sessão.
 
+### Estados de combate do addon
+
+`estadosCombate` oferece controles próprios do pacote na Simulação de Combate e na Ficha Final.
+O estado recebe namespace automaticamente. `requerEstado` aponta para o id local de outro estado
+do mesmo pacote.
+
+```json
+{
+  "estadosCombate": [
+    { "id": "tecnica_ativa", "label": "Técnica", "tipo": "bool" },
+    {
+      "id": "modo",
+      "label": "Técnica · Modo",
+      "tipo": "opcao",
+      "requerEstado": "tecnica_ativa",
+      "opcoes": [
+        { "id": "comum", "label": "Comum" },
+        { "id": "completo", "label": "Completo", "nivelMin": 3 }
+      ]
+    }
+  ]
+}
+```
+
+Os tipos aceitos são `bool`, `opcao`, `multi` e `faixa`. Estado e opção podem declarar
+`nivelMin`, `nivelMax`, `title` e `labelPorNivel`. O maior degrau de `labelPorNivel` que não passa
+do Nível de Feitiço acessível vira o rótulo atual. Opções fora da faixa de nível não aparecem.
+
+O `multi` aceita `maxSelecionados`. Sem esse campo, o limite é a quantidade de opções disponíveis
+naquele nível.
+
+### Arma pronta do addon
+
+A família `armas` põe uma arma privada no catálogo normal. Ela usa o mesmo formato de `ARMAS` e
+recebe namespace como qualquer outra família.
+
+Uma definição pode trazer `faPadrao` para a entrada já nascer como Ferramenta Amaldiçoada,
+`faFixa: true` para impedir que a configuração pronta seja desmontada e `equipadoPadrao: true`
+para ligar a arma assim que ela for adicionada. `etiquetas` mostra apenas os nomes das propriedades.
+O texto completo de cada uma fica no `title` da etiqueta.
+
+`requerEstado` aponta para um Estado de Combate do mesmo pacote. A arma continua disponível no
+catálogo desde o primeiro nível, mas seus efeitos numéricos só entram enquanto aquele estado estiver
+ligado.
+
+```json
+{
+  "acrescenta": {
+    "armas": [{
+      "id": "lamina_da_mesa",
+      "nome": "Lâmina da Mesa",
+      "classe": "complexa",
+      "categoria": "corpo",
+      "dano": { "dado": "1d6", "tipo": "ct" },
+      "critico": 19,
+      "espacos": 1,
+      "custo": 1,
+      "grupo": "espada",
+      "props": { "fineza": true },
+      "faFixa": true,
+      "equipadoPadrao": true,
+      "requerEstado": "tecnica_ativa",
+      "faPadrao": {
+        "grau": "primeiro",
+        "encantamentos": ["enc_arma_potente"],
+        "habilidadeUnica": ""
+      }
+    }]
+  }
+}
+```
+
 ### O que do Flugel continua de mesa
 
 O pacote automatiza 21 dos 26 benefícios que os textos dele escrevem. Os cinco de fora têm bloqueio

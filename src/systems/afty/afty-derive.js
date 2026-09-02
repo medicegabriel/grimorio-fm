@@ -91,6 +91,7 @@ import { resolveTestes, resolveDano, catalogoPericiasDaFicha } from "./afty-peri
 import { resolveCura } from "./afty-cura";
 import {
   problemasDeAddon, marcasDeclaradas, primitivasDaCriatura, liberacoesDaCriatura,
+  estadosCombateDeAddon,
 } from "./afty-addons";
 import { agrupaConcedido, concessoesDaSessao, escolhasDoConcedido } from "./afty-concessao";
 import {
@@ -1056,6 +1057,7 @@ export function deriveAfty(creature, opcoes = {}) {
     au: aptidao.efetivo?.au ?? 0,
     cl: aptidao.efetivo?.cl ?? 0,
   });
+  const estadosAddon = estadosCombateDeAddon(creature, nivelMaxFeitico(nd, nivelConjurador));
   const combate = resolveCombate(creature, {
     dominios: resumoDominios.lista,
     brutalidadePE: degrausBrutalidade({ habilidades }),
@@ -1087,7 +1089,13 @@ export function deriveAfty(creature, opcoes = {}) {
     // instâncias: uma por Habilidade Única ativa, e uma por Técnica de Estilo
     // que precisa de gatilho (toda Modificação de Domínio Simples, mais a
     // Técnica Especial com linha ativa).
-    estadosExtras: [...equip.estadosUnica, ...estilo.estados, ...estadosConjurador, ...estadosAptidoes],
+    estadosExtras: [
+      ...equip.estadosUnica,
+      ...estilo.estados,
+      ...estadosConjurador,
+      ...estadosAptidoes,
+      ...estadosAddon,
+    ],
   });
   const auxiliaresAtivos = resolveAuxiliaresAtivos(creature, combate, estadosConjurador, {
     nd,

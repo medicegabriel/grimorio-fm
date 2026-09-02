@@ -26,6 +26,7 @@
  */
 
 import { EMPOLGACAO_DADOS, EMPOLGACAO_NIVEL_MAX, POSTURAS_DE_COMBATE } from "./afty-habilidades";
+import { normalizarVariavel } from "./afty-dsl";
 
 /**
  * As Posturas viram opções da bancada com id curto (`sol`, `lua`...), porque o
@@ -540,7 +541,7 @@ const boolDe = (v) => (v ? 1 : 0);
 const intDe = (v, min, max) => Math.min(max, Math.max(min, Math.trunc(Number(v) || 0)));
 
 /** `brutalidadePE` → `brutalidade_pe`, que é o vocabulário do DSL. */
-export const varDoEstado = (id) => id.replace(/([a-z0-9])([A-Z])/g, "$1_$2").toLowerCase();
+export const varDoEstado = (id) => normalizarVariavel(id);
 
 /**
  * Média do Dado de Empolgação do nível atual, ARREDONDADA PARA BAIXO.

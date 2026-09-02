@@ -27,7 +27,7 @@ const registradas = AD.familiasDeAddon().map((f) => f.id).sort();
 /* ⚠ Assert por CONTÉM, e não por igualdade: família nova é o caminho normal
    deste sistema, e um assert de lista exata transformaria cada uma numa falha
    de teste a corrigir à mão. O que importa é que estas continuem ligadas. */
-const ESPERADAS = ["aptidoes", "condicoes", "especializacoes", "habilidades", "talentos",
+const ESPERADAS = ["aptidoes", "armas", "condicoes", "especializacoes", "habilidades", "talentos",
   "tiposDano", "treinamentos", "treinosEspeciais"];
 t("as familias esperadas continuam ligadas",
   ESPERADAS.filter((f) => !registradas.includes(f)), []);

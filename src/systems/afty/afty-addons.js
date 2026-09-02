@@ -511,6 +511,12 @@ export function normalizarPacote(cru) {
     feiticos: Array.isArray(p.feiticos)
       ? p.feiticos.filter((x) => x && typeof x === "object").map(clonar)
       : [],
+    /* Controles próprios da mesa na Simulação de Combate e na Ficha Final.
+       São dados, não código: o pacote declara estados que o motor já sabe
+       operar (`bool`, `opcao`, `multi` e `faixa`). */
+    estadosCombate: Array.isArray(p.estadosCombate)
+      ? p.estadosCombate.filter((x) => x && typeof x === "object").map(clonar)
+      : [],
     acrescenta: {},
     /* O que este pacote REESCREVE de entradas que já existem no livro. Ver
        `remendarLista`. */
@@ -565,6 +571,95 @@ export function feiticosDeAddon(creature, nivelMax = 5) {
     }
   }
   return modelos;
+}
+
+/** Texto de uma linha no maior degrau declarado que não passe do nível atual. */
+function textoNoNivel(entrada, nivel, campo = "label") {
+  let texto = String(entrada?.[campo] ?? "").trim();
+  const porNivel = entrada?.[`${campo}PorNivel`];
+  if (!porNivel || typeof porNivel !== "object" || Array.isArray(porNivel)) return texto;
+  let melhor = -1;
+  for (const [chave, valor] of Object.entries(porNivel)) {
+    const degrau = Math.trunc(Number(chave));
+    if (degrau >= 0 && degrau <= nivel && degrau >= melhor && String(valor ?? "").trim()) {
+      melhor = degrau;
+      texto = String(valor).trim();
+    }
+  }
+  return texto;
+}
+
+/**
+ * Estados de combate declarados pelos addons desta criatura.
+ *
+ * O namespace pertence ao ESTADO, não às opções. Uma opção só existe dentro
+ * do estado dela, enquanto o estado entra no mesmo mapa global de todos os
+ * outros controles da ficha. `requerEstado` é escrito com o id local e sai
+ * apontando para o id prefixado do mesmo pacote.
+ */
+export function estadosCombateDeAddon(creature, nivelMax = 5) {
+  const nivel = nivelMax === "max"
+    ? 5
+    : Math.max(0, Math.min(5, Math.trunc(Number(nivelMax) || 0)));
+  const estados = [];
+  const vistos = new Set();
+
+  for (const pacote of Array.isArray(creature?.addons) ? creature.addons : []) {
+    const pacoteId = String(pacote?.id ?? "").trim();
+    if (!pacoteId) continue;
+    const brutos = Array.isArray(pacote?.estadosCombate) ? pacote.estadosCombate : [];
+    const idsLocais = new Set(brutos.map((e) => String(e?.id ?? "").trim()).filter(Boolean));
+
+    for (const bruto of brutos) {
+      const idLocal = String(bruto?.id ?? "").trim();
+      const tipo = ["bool", "opcao", "multi", "faixa"].includes(bruto?.tipo) ? bruto.tipo : "bool";
+      const nivelMin = Math.max(0, Math.trunc(Number(bruto?.nivelMin) || 0));
+      const nivelTeto = bruto?.nivelMax == null ? 5 : Math.trunc(Number(bruto.nivelMax));
+      if (!idLocal || nivel < nivelMin || nivel > nivelTeto) continue;
+      const id = comPrefixo(pacoteId, idLocal);
+      if (vistos.has(id)) continue;
+
+      const opcoes = (Array.isArray(bruto?.opcoes) ? bruto.opcoes : [])
+        .filter((o) => {
+          const min = Math.max(0, Math.trunc(Number(o?.nivelMin) || 0));
+          const max = o?.nivelMax == null ? 5 : Math.trunc(Number(o.nivelMax));
+          return nivel >= min && nivel <= max;
+        })
+        .map((o) => ({
+          id: String(o.id ?? "").trim(),
+          label: textoNoNivel(o, nivel),
+          ...(String(o.title ?? "").trim() ? { title: String(o.title).trim() } : {}),
+        }))
+        .filter((o) => o.id && o.label);
+
+      vistos.add(id);
+      estados.push({
+        id,
+        label: textoNoNivel(bruto, nivel),
+        tipo,
+        ...(String(bruto?.title ?? "").trim() ? { title: String(bruto.title).trim() } : {}),
+        ...(bruto?.requerEstado && idsLocais.has(String(bruto.requerEstado))
+          ? { requerEstado: comPrefixo(pacoteId, bruto.requerEstado) }
+          : {}),
+        ...(tipo === "opcao" || tipo === "multi" ? { opcoes } : {}),
+        ...(tipo === "multi" ? {
+          maxSelecionados: Math.min(
+            opcoes.length,
+            Math.max(1, Math.trunc(Number(bruto.maxSelecionados) || opcoes.length)),
+          ),
+        } : {}),
+        ...(tipo === "faixa" ? {
+          min: Math.trunc(Number(bruto.min) || 0),
+          max: Math.max(Math.trunc(Number(bruto.min) || 0), Math.trunc(Number(bruto.max) || 0)),
+          passo: Math.max(1, Math.trunc(Number(bruto.passo) || 1)),
+        } : {}),
+        ...(tipo === "bool" && bruto.padrao != null ? { padrao: !!bruto.padrao } : {}),
+        ...(bruto.foraCombate ? { foraCombate: true } : {}),
+        dono: { id: `addon:${pacoteId}`, label: String(pacote?.nome ?? pacoteId) },
+      });
+    }
+  }
+  return estados;
 }
 
 /**
@@ -670,6 +765,37 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
     }
   }
 
+  const estadosVistos = new Set();
+  const tiposEstado = new Set(["bool", "opcao", "multi", "faixa"]);
+  for (const [i, estado] of p.estadosCombate.entries()) {
+    const onde = `Estado de Combate #${i + 1}`;
+    const id = String(estado.id ?? "").trim();
+    const tipo = estado.tipo ?? "bool";
+    if (!id || !ID_ENTRADA_OK.test(id)) problemas.push(`${onde}: id inválido.`);
+    else if (estadosVistos.has(id)) problemas.push(`${onde}: id repetido ("${id}").`);
+    estadosVistos.add(id);
+    if (!String(estado.label ?? "").trim()) problemas.push(`${onde}: falta o campo "label".`);
+    if (!tiposEstado.has(tipo)) problemas.push(`${onde}: tipo inválido.`);
+    if (estado.requerEstado && !p.estadosCombate.some((e) => e.id === estado.requerEstado)) {
+      problemas.push(`${onde}: "requerEstado" aponta para um estado que não existe no pacote.`);
+    }
+    if (["opcao", "multi"].includes(tipo) && !Array.isArray(estado.opcoes)) {
+      problemas.push(`${onde}: "opcoes" precisa ser uma lista.`);
+    }
+    const opcoesVistas = new Set();
+    for (const [j, opcao] of (Array.isArray(estado.opcoes) ? estado.opcoes : []).entries()) {
+      const ondeOpcao = `${onde}, opção #${j + 1}`;
+      const opcaoId = String(opcao?.id ?? "").trim();
+      if (!opcaoId || !ID_ENTRADA_OK.test(opcaoId)) problemas.push(`${ondeOpcao}: id inválido.`);
+      else if (opcoesVistas.has(opcaoId)) problemas.push(`${ondeOpcao}: id repetido ("${opcaoId}").`);
+      opcoesVistas.add(opcaoId);
+      if (!String(opcao?.label ?? "").trim()) problemas.push(`${ondeOpcao}: falta o campo "label".`);
+    }
+    if (tipo === "faixa" && Math.trunc(Number(estado.max)) < Math.trunc(Number(estado.min) || 0)) {
+      problemas.push(`${onde}: faixa inválida.`);
+    }
+  }
+
   const familias = Object.keys(p.acrescenta);
   /* ⚠ ACRESCENTAR DEIXOU DE SER OBRIGATÓRIO em 2026-08-21. Um pacote que só
      DESTRAVA (`libera`) ou só MOSTRA (`permite`) é legítimo e não traz conteúdo
@@ -685,8 +811,9 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
     && p.adaptacoes.length === 0
     && p.funcionamentos.length === 0
     && p.feiticos.length === 0
+    && p.estadosCombate.length === 0
   ) {
-    problemas.push("O pacote não acrescenta, não substitui, não libera, não permite e não traz Funcionamento Básico ou Feitiço.");
+    problemas.push("O pacote não acrescenta, não substitui, não libera, não permite e não traz Funcionamento Básico, Feitiço ou Estado de Combate.");
   }
 
   const vistos = new Set();
@@ -842,6 +969,10 @@ export function aplicarAddons(pacotes = []) {
        mesma família ou não. Referência que não acha irmão nenhum continua crua e
        vai procurar no raw, que segue sendo o caso comum. */
     const idsLocais = new Set();
+    for (const estado of p.estadosCombate) {
+      const id = String(estado?.id ?? "").trim();
+      if (id) idsLocais.add(id);
+    }
     for (const [familia, lista] of Object.entries(p.acrescenta)) {
       const def = FAMILIAS.get(familia);
       if (!def) continue;

@@ -35,14 +35,14 @@ export function Card({ title, children, headerRight }) {
 }
 
 /* Chip booleano (liga/desliga). */
-export function BoolChip({ ativo, onToggle, bloqueado, lockTitle, children }) {
+export function BoolChip({ ativo, onToggle, bloqueado, lockTitle, title, children }) {
   return (
     <button
       type="button"
       onClick={() => !bloqueado && onToggle()}
       disabled={bloqueado}
       aria-pressed={ativo}
-      title={bloqueado ? lockTitle : undefined}
+      title={bloqueado ? lockTitle : title}
       className={`inline-flex items-center gap-1 text-[12px] font-semibold px-2.5 py-1 rounded-lg border transition-colors ${
         ativo
           ? "bg-purple-700 border-purple-600 text-white"

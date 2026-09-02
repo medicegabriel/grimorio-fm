@@ -67,6 +67,14 @@ const normalizeWord = (w) =>
  */
 export const normalizarMarca = (m) => normalizeWord(String(m ?? "").trim());
 
+/** Um id de estado como identificador válido do DSL. Addons usam `:` no
+    namespace, enquanto o tokenizer aceita somente letras, números e `_`. */
+export const normalizarVariavel = (id) => normalizeWord(
+  String(id ?? "").replace(/([a-z0-9])([A-Z])/g, "$1_$2"),
+)
+  .replace(/[^a-z0-9_]+/g, "_")
+  .replace(/^_+|_+$/g, "");
+
 export const CHAVE_MARCAS = "#marcas";
 
 const FUNCS_CTX = {

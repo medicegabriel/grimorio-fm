@@ -1,6 +1,6 @@
 # Status do Grimório Afty (handoff para chat novo)
 
-Estado atual do sistema Afty (atualizado 2026-09-01). Leia junto com:
+Estado atual do sistema Afty (atualizado 2026-09-02). Leia junto com:
 `docs/roadmap-versionamento-e-fichas.md` (arquitetura) e `docs/afty-formulas-base.md` (fórmulas).
 
 > 📋 **A FILA DE TRABALHO NÃO É ESTE ARQUIVO.** Desde 2026-08-09 toda pendência mora em
@@ -118,6 +118,51 @@ Estado atual do sistema Afty (atualizado 2026-09-01). Leia junto com:
 >
 > 👉 **Começando um chat novo? Vá direto para
 > [PENDÊNCIAS DE ESPECIALIZAÇÕES](#-pendências-de-especializações-lista-de-retomada).**
+
+---
+
+## SESSÃO DE 2026-09-02: ESTADOS E ARMAS PRONTAS VINDAS DE ADDON
+
+O addon agora pode entregar uma arma já configurada e os Estados de Combate que controlam seus
+efeitos. O conteúdo específico do personagem continua fora do repositório. O bundle público recebe
+somente o mecanismo genérico.
+
+### Estados de combate do pacote
+
+`estadosCombate` aceita controles `bool`, `opcao`, `multi` e `faixa`. Estado e opção podem declarar
+`nivelMin`, `nivelMax`, `title` e `labelPorNivel`. O derive filtra tudo pelo maior Nível de Feitiço
+disponível e converte o id com namespace em uma variável válida para o motor de efeitos.
+
+`requerEstado` permite que outro conteúdo do mesmo pacote dependa de um desses controles. O id é
+local no JSON e recebe o namespace durante a aplicação do addon.
+
+### Família `armas`
+
+`armas` é a 15ª família de addon. A definição usa o formato de `ARMAS` e pode acrescentar:
+
+- `faPadrao`, para criar a entrada com a Ferramenta Amaldiçoada pronta
+- `faFixa`, para impedir a edição dessa configuração
+- `equipadoPadrao`, para a entrada nascer equipada
+- `etiquetas`, com texto completo em `title`
+- `requerEstado`, para condicionar os efeitos numéricos ao estado do pacote
+
+A arma pode ficar disponível no catálogo desde o nível 1 e já nascer equipada sem conceder seus
+efeitos antes da invocação. O estado controla tanto os efeitos próprios do item quanto os efeitos
+dos encantamentos configurados em `faPadrao`.
+
+### Atualização da cópia instalada
+
+O instalador continua aceitando a substituição de um pacote com o mesmo id. Depois da instalação,
+uma criatura que já possuía uma cópia do conteúdo precisa usar a atualização da cópia vinculada.
+O arquivo privado do personagem não é rastreado pelo Git.
+
+### Verificação
+
+- `npx eslint src/systems/afty/`: passou
+- `npm run asserts`: **43 arquivos, 2332 asserts**, todos passaram
+- `npx vite build`: passou, com os avisos já conhecidos de versão do Node e tamanho de chunk
+- teste direto do `deriveAfty`: arma sem efeito antes da invocação e deltas esperados após ativá-la
+- `git diff --name-only -- src/components/`: vazio
 
 ---
 

@@ -90,7 +90,7 @@ function LinhaEstado({ estado, valor, delta, opcoes, onValor, derived, bloqueado
   const rotulo = estado.rotulo ?? estado.label;
   return (
     <div className="afty-estado-linha px-2.5 py-1.5 flex items-center gap-2 flex-wrap">
-      <span className="flex-1 min-w-0 text-[12px] font-semibold truncate" title={estado.label}>
+      <span className="flex-1 min-w-0 text-[12px] font-semibold truncate" title={estado.title || estado.label}>
         {rotulo}
         {/* A escolha corrente ao lado do nome, e não dentro do controle: com a
             lista fechada, ela é o que a linha está fazendo. */}
@@ -148,6 +148,7 @@ function LinhaEstado({ estado, valor, delta, opcoes, onValor, derived, bloqueado
                   className="afty-botao"
                   data-afty-tom={ativo ? "destaque" : undefined}
                   aria-pressed={ativo}
+                  title={o.title}
                   onClick={() => onValor(
                     estado,
                     ativo ? atuais.filter((id) => id !== o.id) : cheio ? atuais : [...atuais, o.id],
@@ -177,6 +178,7 @@ function LinhaEstado({ estado, valor, delta, opcoes, onValor, derived, bloqueado
                 className="afty-botao"
                 data-afty-tom={valor === o.id ? "destaque" : undefined}
                 aria-pressed={valor === o.id}
+                title={o.title}
                 onClick={() => onValor(estado, valor === o.id ? null : o.id)}
               >
                 {o.label}
@@ -216,6 +218,7 @@ function LinhaEstado({ estado, valor, delta, opcoes, onValor, derived, bloqueado
               className="afty-botao"
               data-afty-tom={valor === o.id ? "destaque" : undefined}
               aria-pressed={valor === o.id}
+              title={o.title}
               onClick={() => {
                 onValor(estado, valor === o.id ? null : o.id);
                 setOpcoesAbertas(false);

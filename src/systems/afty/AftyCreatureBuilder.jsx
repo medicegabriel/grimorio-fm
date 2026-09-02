@@ -101,6 +101,7 @@ import { periciasParaInvocacao, DANO_ADICIONAL_ARMA } from "./afty-pericias";
 import {
   EQUIP_TIPOS, CUSTOS, ARMA_CATEGORIAS, ARMA_GRUPOS, TIPOS_DANO, tiposDeDanoDaCategoria,
   ITEM_CATEGORIAS, catalogoDoTipo, novaEntradaEquip,
+  getEquipamento,
   orcamentoDoGrau, espacosDoEquipamento, custoDoEquipamento,
   getPropriedade, getEspecial, grupoLabel,
   ARMA_PROPRIEDADES, ARMA_DADOS, ARMA_CRITICOS, novaArmaCustom, rotuloPropriedade,
@@ -839,7 +840,10 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
   const setEquipArr = (d, itens) => ({ ...d, equipamentos: { ...(d.equipamentos || {}), itens } });
 
   const addEquipamento = (tipo, refId) =>
-    setDraft((d) => setEquipArr(d, [...equipArr(d), novaEntradaEquip(tipo, refId)]));
+    setDraft((d) => {
+      const def = getEquipamento(tipo, refId, d);
+      return setEquipArr(d, [...equipArr(d), novaEntradaEquip(tipo, refId, def)]);
+    });
   const removeEquipamento = (uid) =>
     setDraft((d) => setEquipArr(d, equipArr(d).filter((x) => x.uid !== uid)));
   const patchEquipamento = (uid, partial) =>
@@ -8991,9 +8995,14 @@ function SimulacaoCombateCard({ derived, patchCombate, gatilhosTreino = [], onGa
               key={e.id}
               className="rounded-lg border border-slate-800 bg-slate-950/40 flex items-center gap-2.5 px-2.5 min-h-10 py-1"
             >
-              <span className="flex-1 min-w-0 text-[12px] font-semibold text-slate-100 truncate">{e.label}</span>
+              <span
+                className="flex-1 min-w-0 text-[12px] font-semibold text-slate-100 truncate"
+                title={e.title || e.label}
+              >
+                {e.label}
+              </span>
               {e.tipo === "bool" ? (
-                <BoolChip ativo={!!valor} onToggle={() => patchCombate({ [e.id]: !valor })}>
+                <BoolChip ativo={!!valor} title={e.title} onToggle={() => patchCombate({ [e.id]: !valor })}>
                   {valor ? "Ativa" : "Inativa"}
                 </BoolChip>
               ) : e.tipo === "multi" ? (
@@ -9006,6 +9015,7 @@ function SimulacaoCombateCard({ derived, patchCombate, gatilhosTreino = [], onGa
                       <BoolChip
                         key={o.id}
                         ativo={ativo}
+                        title={o.title}
                         onToggle={() => patchCombate({
                           [e.id]: ativo ? atuais.filter((id) => id !== o.id) : cheio ? atuais : [...atuais, o.id],
                         })}
@@ -9022,6 +9032,7 @@ function SimulacaoCombateCard({ derived, patchCombate, gatilhosTreino = [], onGa
                     <BoolChip
                       key={o.id}
                       ativo={valor === o.id}
+                      title={o.title}
                       onToggle={() => patchCombate({ [e.id]: valor === o.id ? null : o.id })}
                     >
                       {o.label}
@@ -9898,7 +9909,7 @@ function LinhaCarregada({
   // Arma entrou em 2026-08-01: ela passou a render Acerto por grau, e a linha de
   // dano dela só sai com a arma equipada.
   const equipavel = tipo === "arma" || tipo === "uniforme" || tipo === "escudo" || def?.efeito;
-  const podeSerFerramenta = FA_TIPOS_EQUIP.includes(tipo);
+  const podeSerFerramenta = FA_TIPOS_EQUIP.includes(tipo) && !def?.faFixa;
   const ataqueFisico = def?.categoria === "distancia" || def?.categoria === "arremesso"
     ? "distancia"
     : "corpo";
@@ -9953,7 +9964,7 @@ function LinhaCarregada({
           <span className="w-5 flex-shrink-0" />
         )}
 
-        <span className="text-[12px] font-semibold text-slate-100 truncate flex-1 min-w-0" title={def?.nome}>
+        <span className="text-[12px] font-semibold text-slate-100 truncate flex-1 min-w-0" title={def?.title || def?.nome}>
           {def?.nome}
           {def?.evento && (
             <span className="ml-1.5 text-[9px] font-medium text-amber-300 align-middle">
@@ -10166,7 +10177,7 @@ function CatalogoLinha({ tipo, def, onAdd, jaTem, sistema }) {
           aria-expanded={open}
           className="flex-1 min-w-0 flex items-center gap-x-2 text-left overflow-hidden"
         >
-          <span className="text-[12px] font-semibold text-slate-100 truncate" title={def.nome}>{def.nome}</span>
+          <span className="text-[12px] font-semibold text-slate-100 truncate" title={def.title || def.nome}>{def.nome}</span>
           {/* Arma criada pelo jogador. Ela fica no meio das do livro de
               propósito, porque é uma arma como as outras, mas precisa se
               anunciar: sem a marca não há como saber qual foi feita à mão.
@@ -10238,6 +10249,15 @@ function CatalogoLinha({ tipo, def, onAdd, jaTem, sistema }) {
               </span>
               {fmtProps(def.props).map((p) => (
                 <span key={p} className="text-[9px] px-1.5 py-0.5 rounded bg-slate-800/70 text-slate-300">{p}</span>
+              ))}
+              {(def.etiquetas ?? []).map((e) => (
+                <span
+                  key={e.label}
+                  title={e.title}
+                  className="text-[9px] px-1.5 py-0.5 rounded bg-purple-950/50 text-purple-200"
+                >
+                  {e.label}
+                </span>
               ))}
             </div>
           )}
@@ -10669,14 +10689,17 @@ function TabEquipamentos({ draft, derived, addEquipamento, removeEquipamento, pa
   // muda a cada tecla em qualquer aba, e o catálogo só depende das armas
   // criadas. Por isso a chamada recebe um objeto com esse campo só.
   const listaDoTipo = useMemo(() => {
-    let l = catalogoDoTipo(catTab, { armasCustom: draft.armasCustom });
+    /* `addons` entra no objeto mesmo sem ser lido por `catalogoDoTipo`: a lista
+       global de armas é reconstruída quando o pacote muda, e esta dependência
+       força a releitura dela no mesmo render. */
+    let l = catalogoDoTipo(catTab, { armasCustom: draft.armasCustom, addons: draft.addons });
     // Relíquias pessoais não entram no catálogo base. A da Yamata ganha um
     // card próprio nesta mesma aba, sem contaminar as opções de outras fichas.
     if (catTab === "item") l = l.filter((d) => !d.evento);
     if (catTab === "arma") l = l.filter((d) => d.classe === classeArma);
     if (subFiltro !== "todos") l = l.filter((d) => d.categoria === subFiltro);
     return l;
-  }, [catTab, classeArma, subFiltro, draft.armasCustom]);
+  }, [catTab, classeArma, subFiltro, draft.armasCustom, draft.addons]);
 
   const reliquiasDaYamata = useMemo(
     () => ehFichaDaYamata
