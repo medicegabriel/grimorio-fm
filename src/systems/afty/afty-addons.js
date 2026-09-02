@@ -505,6 +505,12 @@ export function normalizarPacote(cru) {
     funcionamentos: Array.isArray(p.funcionamentos)
       ? p.funcionamentos.filter((x) => x && typeof x === "object").map(clonar)
       : [],
+    /* Modelos de Feitiço próprios do pacote. Diferente de conteúdo de catálogo,
+       eles não entram automaticamente na ficha nem gastam vaga enquanto forem
+       só modelos. A pessoa escolhe um modelo já liberado e recebe uma cópia. */
+    feiticos: Array.isArray(p.feiticos)
+      ? p.feiticos.filter((x) => x && typeof x === "object").map(clonar)
+      : [],
     acrescenta: {},
     /* O que este pacote REESCREVE de entradas que já existem no livro. Ver
        `remendarLista`. */
@@ -521,6 +527,44 @@ export function normalizarPacote(cru) {
       : [];
   }
   return out;
+}
+
+/**
+ * Modelos de Feitiço liberados para esta criatura.
+ *
+ * O addon é uma biblioteca privada, não uma concessão de vagas. Por isso a
+ * lista respeita o maior Nível de Feitiço acessível e devolve cópias para o
+ * criador. Só depois de escolher um modelo ele entra em `creature.feiticos` e
+ * passa a contar no orçamento normal da ficha.
+ */
+export function feiticosDeAddon(creature, nivelMax = 5) {
+  const teto = nivelMax === "max" ? 6 : Math.max(0, Math.trunc(Number(nivelMax) || 0));
+  const modelos = [];
+  const vistos = new Set();
+  for (const pacote of Array.isArray(creature?.addons) ? creature.addons : []) {
+    const pacoteId = String(pacote?.id ?? "").trim();
+    if (!pacoteId) continue;
+    for (const feitico of Array.isArray(pacote?.feiticos) ? pacote.feiticos : []) {
+      const idLocal = String(feitico?.id ?? "").trim();
+      const nome = String(feitico?.nome ?? "").trim();
+      const nivel = feitico?.nivel === "max" ? 6 : Math.trunc(Number(feitico?.nivel));
+      if (!idLocal || !nome || !Number.isFinite(nivel) || nivel > teto) continue;
+      const id = `${pacoteId}${SEPARADOR}${idLocal}`;
+      if (vistos.has(id)) continue;
+      vistos.add(id);
+      modelos.push({
+        ...clonar(feitico),
+        id,
+        nome,
+        deAddon: true,
+        addonId: pacoteId,
+        addonNome: String(pacote?.nome ?? pacoteId),
+        addonModeloId: idLocal,
+        addonVersao: String(pacote?.versao ?? ""),
+      });
+    }
+  }
+  return modelos;
 }
 
 /**
@@ -599,6 +643,33 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
     }
   }
 
+  const feiticosVistos = new Set();
+  const tiposFeitico = new Set(["dano", "auxiliar", "curativo", "especial", "passivo", "personalizado"]);
+  for (const [i, feitico] of p.feiticos.entries()) {
+    const onde = `Feitiço #${i + 1}`;
+    const id = String(feitico.id ?? "").trim();
+    const nivel = feitico.nivel;
+    if (!id || !ID_ENTRADA_OK.test(id)) problemas.push(`${onde}: id inválido.`);
+    else if (feiticosVistos.has(id)) problemas.push(`${onde}: id repetido ("${id}").`);
+    feiticosVistos.add(id);
+    if (!String(feitico.nome ?? "").trim()) problemas.push(`${onde}: falta o campo "nome".`);
+    if (![0, 1, 2, 3, 4, 5, "max"].includes(nivel)) problemas.push(`${onde}: nível inválido.`);
+    if (!tiposFeitico.has(feitico.tipo)) problemas.push(`${onde}: tipo inválido.`);
+    if (!String(feitico.descricao ?? "").trim()) problemas.push(`${onde}: falta o campo "descricao".`);
+    if (feitico.rolagens !== undefined && !Array.isArray(feitico.rolagens)) {
+      problemas.push(`${onde}: "rolagens" precisa ser uma lista.`);
+    }
+    for (const [j, rolagem] of (Array.isArray(feitico.rolagens) ? feitico.rolagens : []).entries()) {
+      if (!rolagem || typeof rolagem !== "object") {
+        problemas.push(`${onde}, rolagem #${j + 1}: precisa ser um objeto.`);
+        continue;
+      }
+      if (Math.trunc(Number(rolagem.dados)) < 1 || Math.trunc(Number(rolagem.faces)) < 2) {
+        problemas.push(`${onde}, rolagem #${j + 1}: dados inválidos.`);
+      }
+    }
+  }
+
   const familias = Object.keys(p.acrescenta);
   /* ⚠ ACRESCENTAR DEIXOU DE SER OBRIGATÓRIO em 2026-08-21. Um pacote que só
      DESTRAVA (`libera`) ou só MOSTRA (`permite`) é legítimo e não traz conteúdo
@@ -613,8 +684,9 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
     && p.libera.length === 0
     && p.adaptacoes.length === 0
     && p.funcionamentos.length === 0
+    && p.feiticos.length === 0
   ) {
-    problemas.push("O pacote não acrescenta, não substitui, não libera, não permite e não traz Funcionamento Básico.");
+    problemas.push("O pacote não acrescenta, não substitui, não libera, não permite e não traz Funcionamento Básico ou Feitiço.");
   }
 
   const vistos = new Set();

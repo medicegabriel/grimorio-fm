@@ -8,7 +8,7 @@ import {
 
 import { FieldLabel, TextInput, TextArea, Select, NumberInput, StatField, ExpandableText } from "../../components/builder-controls";
 import TabAddons from "./AftyTabAddons";
-import { aplicarAddons } from "./afty-addons";
+import { aplicarAddons, feiticosDeAddon } from "./afty-addons";
 import {
   mesclaFichaAfty, AFTY_ATTRS, AFTY_TIPOS, AFTY_PATAMARES, AFTY_QNT_PE,
   AFTY_TECNICA_ATTRS, AFTY_TAMANHOS, AFTY_RESISTENCIAS, getTamanho,
@@ -125,6 +125,7 @@ import {
   createBlankAuxEffect, efeitosDisponiveisMult, primeiroEfeitoLivre,
   resultaEspecialAux, ofereceUmGolpe, aplicaUmGolpe, podeEventoUnico,
   formatAuxValor, aplicaReducoesCustoFeitico, tituloCustoFeitico,
+  calcularFeiticoPersonalizado,
 } from "./afty-feiticos";
 import {
   createBlankEstiloEspecial, estilosDaFicha, TECNICAS_TABELA, TEXTO_EFEITO_ESPECIAL,
@@ -472,8 +473,22 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
 
   // Feitiços: entradas CRIADAS pelo jogador. add/remove/patch simples.
   // O motor (afty-feiticos.js) computa dano/alcance/custo/CD por entrada.
-  const addFeitico = () =>
-    setDraft((d) => ({ ...d, feiticos: [...(Array.isArray(d.feiticos) ? d.feiticos : []), createBlankFeitico()] }));
+  const addFeitico = (modelo = null) =>
+    setDraft((d) => {
+      const atuais = Array.isArray(d.feiticos) ? d.feiticos : [];
+      if (!modelo) return { ...d, feiticos: [...atuais, createBlankFeitico()] };
+      if (atuais.some((feitico) => feitico.id === modelo.id)) return d;
+      const vazio = createBlankFeitico();
+      const copia = JSON.parse(JSON.stringify(modelo));
+      return {
+        ...d,
+        feiticos: [...atuais, {
+          ...vazio,
+          ...copia,
+          trocas: { ...vazio.trocas, ...(copia.trocas || {}) },
+        }],
+      };
+    });
   const removeFeitico = (id) =>
     setDraft((d) => {
       const reducoes = d.reducoesCustoFeitico && typeof d.reducoesCustoFeitico === "object"
@@ -1633,6 +1648,7 @@ const TIPO_FEITICO = [
   { value: "curativo", label: "Curativo" },
   { value: "especial", label: "Especial" },
   { value: "passivo",  label: "Passivo / Característica" },
+  { value: "personalizado", label: "Personalizado" },
 ];
 const TIPO_FEITICO_LABEL = Object.fromEntries(TIPO_FEITICO.map((t) => [t.value, t.label]));
 
@@ -3896,6 +3912,7 @@ function FeiticosCard({ draft, derived, addFeitico, removeFeitico, patchFeitico,
     ? draft.reducoesCustoFeitico
     : { dominancia: null, manipulacao: [] };
   const idsBase = new Set(feiticosBase.map((feitico) => feitico.id));
+  const modelosAddon = feiticosDeAddon(draft, nivelMax).filter((modelo) => !idsBase.has(modelo.id));
   const dominancia = idsBase.has(reducoes.dominancia) ? reducoes.dominancia : null;
   const manipulacao = Array.isArray(reducoes.manipulacao)
     ? [...new Set(reducoes.manipulacao)].filter((id) => idsBase.has(id)).slice(0, limiteManipulacao)
@@ -3979,6 +3996,25 @@ function FeiticosCard({ draft, derived, addFeitico, removeFeitico, patchFeitico,
           Você tem mais Feitiços do que recebeu. Remova um ou suba de nível.
         </p>
       )}
+      {modelosAddon.length > 0 && (
+        <div className="mb-3 space-y-1.5 border-b border-slate-800 pb-3">
+          <FieldLabel>Modelos do Addon</FieldLabel>
+          <div className="flex flex-wrap gap-1.5">
+            {modelosAddon.map((modelo) => (
+              <button
+                key={modelo.id}
+                type="button"
+                onClick={() => addFeitico(modelo)}
+                title={`${modelo.addonNome} · ${NIVEL_LABEL[modelo.nivel]}`}
+                className="inline-flex items-center gap-1 rounded border border-purple-800/60 bg-purple-950/30 px-2 py-1 text-[11px] text-purple-200 hover:border-purple-600"
+              >
+                <Plus className="w-3 h-3" aria-hidden="true" />
+                {modelo.nome}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
       {(temDominancia || temManipulacao) && feiticosBase.length > 0 && (
         <div className="mb-3 space-y-2 border-b border-slate-800 pb-3">
           {temDominancia && (
@@ -4047,7 +4083,7 @@ function FeiticosCard({ draft, derived, addFeitico, removeFeitico, patchFeitico,
 
       <button
         type="button"
-        onClick={addFeitico}
+        onClick={() => addFeitico()}
         className="mt-3 w-full inline-flex items-center justify-center gap-1.5 text-[12px] font-semibold px-3 py-2 rounded-lg border border-dashed border-slate-700 text-slate-400 hover:text-white hover:border-slate-600 transition-colors focus:outline-none focus:ring-1 focus:ring-purple-500"
       >
         <Plus className="w-4 h-4" /> Criar Feitiço
@@ -4065,6 +4101,7 @@ function FeiticoCard({ feitico, ctx, nivelMax, efeitosPassivo, fontesDano, dslGr
     : feitico.tipo === "auxiliar" ? calcularFeiticoAuxiliar(feitico, ctx)
     : feitico.tipo === "curativo" ? calcularFeiticoCurativo(feitico, ctx)
     : feitico.tipo === "especial" ? calcularFeiticoEspecial(feitico, ctx)
+    : feitico.tipo === "personalizado" ? calcularFeiticoPersonalizado(feitico, ctx)
     : null;
   const calc = aplicaReducoesCustoFeitico(feitico, calculoBase, ctx);
   // Agrega avisos do Feitiço e dos sub-efeitos (Múltiplos Efeitos), para o ícone
@@ -4155,7 +4192,7 @@ function FeiticoCard({ feitico, ctx, nivelMax, efeitosPassivo, fontesDano, dslGr
               titulo="Efeitos da Passiva"
               simplificarTamanho
             />
-          ) : (
+          ) : feitico.tipo === "personalizado" ? null : (
             <div className="text-center py-5 border border-dashed border-slate-700 rounded-lg text-sm text-slate-400">
               Feitiços {TIPO_FEITICO_LABEL[feitico.tipo]} entram num próximo incremento.
               <div className="mt-2 inline-block text-[10px] font-bold uppercase tracking-wide text-amber-400 border border-amber-800/60 rounded px-2 py-0.5">

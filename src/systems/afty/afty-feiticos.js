@@ -166,6 +166,31 @@ export function custoPadrao(nivel) {
   return c == null ? null : Math.max(1, c);
 }
 
+/**
+ * Feitiço de mesa com regra escrita verbatim.
+ *
+ * O motor ainda resolve o custo normal e as reduções de Conjurador, mas não
+ * tenta converter a regra particular em uma combinação aproximada das tabelas
+ * de Dano ou Auxiliar. Os campos estruturados alimentam a Ficha, e a descrição
+ * continua sendo a fonte de verdade para a resolução própria da mesa.
+ */
+export function calcularFeiticoPersonalizado(feitico, ctx = {}) {
+  const f = feitico || {};
+  const custoPE = custoPadrao(f.nivel);
+  return {
+    custoPE,
+    custoPEBase: custoPE,
+    reducoesCustoPE: [],
+    avisos: [],
+    acao: f.acaoPersonalizada || null,
+    alcanceTexto: String(f.alcanceTexto ?? "").trim() || null,
+    alvoTexto: String(f.alvoTexto ?? "").trim() || null,
+    duracao: String(f.duracaoTexto ?? "").trim() || null,
+    resolucaoTexto: String(f.resolucaoTexto ?? "").trim() || null,
+    cd: f.comCd === false ? null : (ctx.cdBase ?? null),
+  };
+}
+
 const DOMINANCIA_EM_FEITICO_ID = "cnj_dominancia_em_feitico";
 const MANIPULACAO_PERFEITA_ID = "cnj_manipulacao_perfeita";
 
@@ -3003,6 +3028,14 @@ export function createBlankFeitico() {
     efeitosMult: [],           // [createBlankAuxEffect()]
     // --- campos de Passivo / Característica ---
     efeitosPassivo: [],        // mesmo formato do Motor do Funcionamento Básico
+    // --- campos de Feitiço Personalizado ---
+    acaoPersonalizada: "",
+    alcanceTexto: "",
+    alvoTexto: "",
+    duracaoTexto: "",
+    resolucaoTexto: "",
+    comCd: true,
+    rolagens: [],
   };
 }
 
@@ -3081,6 +3114,7 @@ function calculadorDe(tipo) {
   if (tipo === "auxiliar") return calcularFeiticoAuxiliar;
   if (tipo === "curativo") return calcularFeiticoCurativo;
   if (tipo === "especial") return calcularFeiticoEspecial;
+  if (tipo === "personalizado") return calcularFeiticoPersonalizado;
   // "passivo" está no schema desde sempre e nunca foi desenvolvido.
   return null;
 }
@@ -3102,6 +3136,19 @@ function calculadorDe(tipo) {
  */
 export function rolagensDoFeitico(f, calc) {
   if (!calc || !f) return [];
+
+  if (f.tipo === "personalizado") {
+    return (Array.isArray(f.rolagens) ? f.rolagens : [])
+      .map((rolagem) => ({
+        rotulo: String(rolagem?.rotulo ?? "Rolagem").trim() || "Rolagem",
+        dados: Math.trunc(Number(rolagem?.dados) || 0),
+        faces: Math.trunc(Number(rolagem?.faces) || 0),
+        fixo: Math.trunc(Number(rolagem?.fixo) || 0),
+        tom: rolagem?.tom === "cura" ? "cura" : "dano",
+        vezes: Math.max(1, Math.trunc(Number(rolagem?.vezes) || 1)),
+      }))
+      .filter((rolagem) => rolagem.dados > 0 && rolagem.faces > 1);
+  }
 
   // O Auxiliar guarda os dados em `dado` ([qtd, faces]) e não em `dados`,
   // porque lá o dano é um efeito entre muitos e não o valor do Feitiço.
@@ -3255,6 +3302,7 @@ function duracaoResumoFeitico(f, calc) {
 }
 
 function alvoResumoFeitico(f, calc) {
+  if (f.tipo === "personalizado") return calc?.alvoTexto ?? null;
   if (["dano", "curativo"].includes(f.tipo)) {
     const emArea = f.alvo === "area" || ["destrutivo", "cataclismico"].includes(f.subtipo);
     return emArea ? "Múltiplos" : "Único";
@@ -3343,7 +3391,9 @@ function propriedadesResumoFeitico(f, calc, valor, valorLabel) {
     // Ficha imprimia "Jogada de Ataque" para um Ritual Estendido de TR.
     { id: "resolucao", nome: "Resolução", valor: (calc?.resolucao ?? f.resolucao) === "ataque"
       ? "Jogada de Ataque"
-      : f.tipo === "dano" ? "Teste de Resistência" : null },
+      : f.tipo === "dano" ? "Teste de Resistência"
+      : f.tipo === "personalizado" ? calc?.resolucaoTexto
+      : null },
     { id: "cd", nome: "CD", valor: calc?.cd != null ? String(calc.cd) : null },
     { id: "acerto", nome: "Acerto", valor: acerto ? `${acerto > 0 ? "+" : ""}${acerto}` : null },
     { id: "ignoraRD", nome: "Ignora RD", valor: calc?.ignoraRD > 0 ? String(calc.ignoraRD) : null },

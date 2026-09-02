@@ -49,7 +49,10 @@ function resumoDoPacote(p) {
   const funcionamentos = Array.isArray(p.funcionamentos) && p.funcionamentos.length
     ? [`${p.funcionamentos.length} ${p.funcionamentos.length === 1 ? "funcionamento" : "funcionamentos"}`]
     : [];
-  return [...conteudo, ...ciclos, ...funcionamentos];
+  const feiticos = Array.isArray(p.feiticos) && p.feiticos.length
+    ? [`${p.feiticos.length} ${p.feiticos.length === 1 ? "Feitiço" : "Feitiços"}`]
+    : [];
+  return [...conteudo, ...ciclos, ...funcionamentos, ...feiticos];
 }
 
 function Aviso({ children }) {

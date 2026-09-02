@@ -385,6 +385,38 @@ somente nas criaturas que carregam aquela cópia. Ele participa do mesmo Motor d
 escritos na ficha. No criador, o conteúdo aparece sem controles de edição ou remoção, porque a fonte
 de verdade é o arquivo do addon.
 
+### Modelos de Feitiço próprios do pacote
+
+O campo `feiticos` mantém modelos prontos dentro da cópia congelada do addon. Modelo não é Feitiço
+conhecido e não gasta vaga. O criador oferece somente os modelos cujo `nivel` já está acessível para a
+criatura. Ao escolher um, copia a entrada para `creature.feiticos`, aplica o namespace do pacote e passa
+a usar o orçamento normal da ficha.
+
+```json
+{
+  "feiticos": [
+    {
+      "id": "regra_particular",
+      "nome": "Regra Particular",
+      "tipo": "personalizado",
+      "nivel": 3,
+      "conjuracaoTexto": "Conjuração: Ação Comum",
+      "descricao": "Texto verbatim da regra.",
+      "acaoPersonalizada": "comum",
+      "alcanceTexto": "24 Metros",
+      "alvoTexto": "1 criatura",
+      "duracaoTexto": "Imediata",
+      "resolucaoTexto": "TR de Vontade",
+      "rolagens": [{ "rotulo": "Dano", "dados": 12, "faces": 8 }]
+    }
+  ]
+}
+```
+
+`personalizado` usa o custo padrão do Nível de Feitiço e aceita as reduções normais da ficha, mas não
+converte a regra particular nas tabelas de Dano ou Auxiliar. `rolagens` oferece os dados exatos na Ficha.
+Passivas continuam usando `tipo: "passivo"` e podem trazer `efeitosPassivo` pelo Motor.
+
 ### O campo `libera`, e por que ele NÃO é o `permite`
 
 **O que ter o addon DESTRAVA para a criatura que o carrega.** A liberação de hoje:
