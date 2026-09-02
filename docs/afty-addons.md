@@ -359,6 +359,32 @@ muda para elas, e a mudança vale para todas as famílias de uma vez.
 ponta a ponta: o `efeitos` do addon era validado e nunca aplicado, e as habilidades entravam na
 ficha sem somar número nenhum. É o argumento para todo exemplo de doc ser coberto por assert.
 
+### Funcionamento Básico próprio do pacote
+
+Um pacote pode trazer Funcionamentos Básicos sem publicar o conteúdo no catálogo raw:
+
+```json
+{
+  "id": "minha-tecnica",
+  "nome": "Minha Técnica",
+  "versao": "1.0.0",
+  "paraRaw": "afty",
+  "funcionamentos": [
+    {
+      "id": "nucleo",
+      "nome": "Núcleo Particular",
+      "descricao": "Texto do Funcionamento Básico.",
+      "efeitos": [{ "canal": "rdGeral", "expr": "3" }]
+    }
+  ]
+}
+```
+
+O Funcionamento sai da cópia congelada em `creature.addons`, recebe o namespace do pacote e aparece
+somente nas criaturas que carregam aquela cópia. Ele participa do mesmo Motor dos Funcionamentos
+escritos na ficha. No criador, o conteúdo aparece sem controles de edição ou remoção, porque a fonte
+de verdade é o arquivo do addon.
+
 ### O campo `libera`, e por que ele NÃO é o `permite`
 
 **O que ter o addon DESTRAVA para a criatura que o carrega.** A liberação de hoje:

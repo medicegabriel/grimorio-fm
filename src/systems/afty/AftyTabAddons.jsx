@@ -46,7 +46,10 @@ function resumoDoPacote(p) {
   const ciclos = Array.isArray(p.adaptacoes) && p.adaptacoes.length
     ? [`${p.adaptacoes.length} ${p.adaptacoes.length === 1 ? "ciclo" : "ciclos"}`]
     : [];
-  return [...conteudo, ...ciclos];
+  const funcionamentos = Array.isArray(p.funcionamentos) && p.funcionamentos.length
+    ? [`${p.funcionamentos.length} ${p.funcionamentos.length === 1 ? "funcionamento" : "funcionamentos"}`]
+    : [];
+  return [...conteudo, ...ciclos, ...funcionamentos];
 }
 
 function Aviso({ children }) {

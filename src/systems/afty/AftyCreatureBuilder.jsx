@@ -3795,6 +3795,18 @@ function FuncionamentoAdicionalCard({ linha, efeitosMotor, pericias, fontesDano,
   );
 }
 
+/* Conteúdo congelado do addon. Ele aparece no criador porque já faz parte do
+   resultado desta ficha, mas não recebe controles de edição ou remoção: mudar
+   o pacote é a única fonte de verdade para texto e efeitos próprios dele. */
+function FuncionamentoAddonCard({ linha }) {
+  return (
+    <div className="mt-4 pt-4 border-t border-slate-700" title={`Addon ${linha.addonId}`}>
+      <FieldLabel>{linha.nome}</FieldLabel>
+      {String(linha.descricao ?? "").trim() && <TextoRico texto={linha.descricao} className="mt-2" />}
+    </div>
+  );
+}
+
 function PerfilAmaldicoadoCard({
   draft, derived, patchCore, addFuncionamento, removeFuncionamento, patchFuncionamento,
 }) {
@@ -3841,16 +3853,20 @@ function PerfilAmaldicoadoCard({
           border-t`, e o redesenho de 2026-08-12 quer os irmãos na MESMA largura
           do principal. O `fontesDano` veio do commit do colaborador. */}
       {adicionais.map((f) => (
-        <FuncionamentoAdicionalCard
-          key={f.id}
-          linha={f}
-          efeitosMotor={derived.funcionamentoEfeitos?.[f.id] ?? []}
-          pericias={derived.testes?.pericias}
-          fontesDano={fontesDano}
-          dslGrupos={dslGrupos}
-          onPatch={(partial) => patchFuncionamento(f.id, partial)}
-          onRemove={() => removeFuncionamento(f.id)}
-        />
+        f.deAddon
+          ? <FuncionamentoAddonCard key={f.id} linha={f} />
+          : (
+            <FuncionamentoAdicionalCard
+              key={f.id}
+              linha={f}
+              efeitosMotor={derived.funcionamentoEfeitos?.[f.id] ?? []}
+              pericias={derived.testes?.pericias}
+              fontesDano={fontesDano}
+              dslGrupos={dslGrupos}
+              onPatch={(partial) => patchFuncionamento(f.id, partial)}
+              onRemove={() => removeFuncionamento(f.id)}
+            />
+          )
       ))}
 
       <div className="flex flex-wrap gap-2 mt-4">

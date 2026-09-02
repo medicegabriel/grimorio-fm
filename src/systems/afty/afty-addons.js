@@ -499,6 +499,12 @@ export function normalizarPacote(cru) {
     adaptacoes: Array.isArray(p.adaptacoes)
       ? p.adaptacoes.filter((x) => x && typeof x === "object").map(clonar)
       : [],
+    /* Funcionamentos Básicos próprios do pacote. Eles não entram no catálogo
+       global: saem direto da cópia congelada em `creature.addons`, para uma
+       criatura nunca herdar o Funcionamento de outra no mesmo encontro. */
+    funcionamentos: Array.isArray(p.funcionamentos)
+      ? p.funcionamentos.filter((x) => x && typeof x === "object").map(clonar)
+      : [],
     acrescenta: {},
     /* O que este pacote REESCREVE de entradas que já existem no livro. Ver
        `remendarLista`. */
@@ -567,6 +573,32 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
     if (Math.trunc(Number(ciclo.intervalo)) < 1) problemas.push(`${onde}: intervalo inválido.`);
   }
 
+  const funcionamentosVistos = new Set();
+  for (const [i, funcionamento] of p.funcionamentos.entries()) {
+    const onde = `Funcionamento Básico #${i + 1}`;
+    const id = String(funcionamento.id ?? "").trim();
+    const efeitos = funcionamento.efeitos;
+    if (!id || !ID_ENTRADA_OK.test(id)) problemas.push(`${onde}: id inválido.`);
+    else if (funcionamentosVistos.has(id)) problemas.push(`${onde}: id repetido ("${id}").`);
+    funcionamentosVistos.add(id);
+    if (!String(funcionamento.nome ?? "").trim()) problemas.push(`${onde}: falta o campo "nome".`);
+    if (efeitos !== undefined && !Array.isArray(efeitos)) {
+      problemas.push(`${onde}: "efeitos" precisa ser uma lista.`);
+      continue;
+    }
+    if (!String(funcionamento.descricao ?? "").trim() && !(efeitos?.length > 0)) {
+      problemas.push(`${onde}: precisa ter "descricao" ou "efeitos".`);
+    }
+    for (const [j, efeito] of (efeitos ?? []).entries()) {
+      if (!efeito || typeof efeito !== "object") {
+        problemas.push(`${onde}, efeito #${j + 1}: precisa ser um objeto.`);
+        continue;
+      }
+      if (!String(efeito.canal ?? "").trim()) problemas.push(`${onde}, efeito #${j + 1}: falta o campo "canal".`);
+      if (!String(efeito.expr ?? "").trim()) problemas.push(`${onde}, efeito #${j + 1}: falta o campo "expr".`);
+    }
+  }
+
   const familias = Object.keys(p.acrescenta);
   /* ⚠ ACRESCENTAR DEIXOU DE SER OBRIGATÓRIO em 2026-08-21. Um pacote que só
      DESTRAVA (`libera`) ou só MOSTRA (`permite`) é legítimo e não traz conteúdo
@@ -580,8 +612,9 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
     && p.permite.length === 0
     && p.libera.length === 0
     && p.adaptacoes.length === 0
+    && p.funcionamentos.length === 0
   ) {
-    problemas.push("O pacote não acrescenta, não substitui, não libera e não permite nada.");
+    problemas.push("O pacote não acrescenta, não substitui, não libera, não permite e não traz Funcionamento Básico.");
   }
 
   const vistos = new Set();

@@ -512,6 +512,34 @@ export const FUNCIONAMENTO_NOME_PADRAO = "Funcionamento Básico";
 export function funcionamentosDaFicha(creature) {
   const core = creature?.core ?? {};
   const extras = Array.isArray(core.funcionamentosAdicionais) ? core.funcionamentosAdicionais : [];
+  /* Funcionamentos de addon saem DA CRIATURA, nunca do mundo global aplicado.
+     Assim, dois combatentes no mesmo encontro podem carregar pacotes diferentes
+     sem um receber o texto ou os efeitos do outro. O id ganha o mesmo namespace
+     `pacote:entrada` dos catálogos, mas a entrada continua sendo dado congelado
+     dentro da ficha e não algo editável pelo criador. */
+  const extrasDeAddon = [];
+  const idsDeAddon = new Set();
+  for (const pacote of Array.isArray(creature?.addons) ? creature.addons : []) {
+    const pacoteId = String(pacote?.id ?? "").trim();
+    if (!pacoteId) continue;
+    for (const f of Array.isArray(pacote?.funcionamentos) ? pacote.funcionamentos : []) {
+      const idLocal = String(f?.id ?? "").trim();
+      const nome = String(f?.nome ?? "").trim();
+      if (!idLocal || !nome) continue;
+      const id = `${pacoteId}:${idLocal}`;
+      if (idsDeAddon.has(id)) continue;
+      idsDeAddon.add(id);
+      extrasDeAddon.push({
+        id,
+        principal: false,
+        deAddon: true,
+        addonId: pacoteId,
+        nome,
+        descricao: String(f?.descricao ?? ""),
+        efeitos: Array.isArray(f?.efeitos) ? f.efeitos : [],
+      });
+    }
+  }
   return [
     {
       id: FUNCIONAMENTO_PRINCIPAL_ID,
@@ -537,6 +565,7 @@ export function funcionamentosDaFicha(creature) {
       descricao: String(f.descricao ?? ""),
       efeitos: Array.isArray(f.efeitos) ? f.efeitos : [],
     })),
+    ...extrasDeAddon,
   ];
 }
 

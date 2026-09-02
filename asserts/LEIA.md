@@ -1,6 +1,6 @@
 # Asserts do Afty
 
-Os asserts de lógica do lado do Afty. São **2293, em 42 arquivos**, e cobrem o avaliador do DSL, as
+Os asserts de lógica do lado do Afty. São **2305, em 43 arquivos**, e cobrem o avaliador do DSL, as
 primitivas novas do motor, o sistema de Addons de ponta a ponta e regras do catálogo que
 são fáceis de quebrar sem sintoma.
 
@@ -76,6 +76,7 @@ vai para o ar.
 | `t-tamanho-pingente` | Crescimento Corporal repetível, redução de categoria, distância por tamanho e o Pingente de Amaterasu sob o sol ou com os três tesouros |
 | `t-interludios` | a varredura das 12 Linhas de Treinamento: os 13 requisitos que deixaram de ser `nota`, a trava do Potencial Físico no Restringido, e ⚠ o assert estrutural que compara efeito DECLARADO contra efeito EMITIDO, para nenhum voltar a ser descartado calado |
 | `t-flugel` | o pacote Flugel de ponta a ponta, lido do JSON em `addons/flugel.json` (ele saiu do bundle em 2026-09-01): instalação, Futen, Akutame, Alma Livre no nível menos 4, troca de atributo-chave, Treino não congênito, vagas conjugais, o interruptor de sessão `Cônjuge`, a Dupla Empenhada em metade do BT e ⚠ o Bônus do Cônjuge, que SUBSTITUI a perícia em vez de somar nela |
+| `t-funcionamento-addon` | o Funcionamento Básico trazido pela cópia congelada do addon na criatura: validação, namespace, texto, efeito pelo `deriveAfty` e isolamento entre combatentes |
 | `t-dominio-barreira` | a Expansão de Domínio lendo o Motor: os seis canais e o passe pós-aptidão em que rodam, as 4 etapas do Treino de Domínios medidas uma a uma, o Conflito de Domínio, a fórmula das duas aptidões de barreira verbatim, a Cortina valendo 3 paredes e o domo 12, o ciclo inteiro da casca de PE (da cena ao descanso), e ⚠ o assert de ARQUIVO que amarra o `Vital` compartilhado, porque assert de lógica não pega componente duplicado |
 
 ⚠ O `t-exemplo` é o mais importante de manter: ele garante que o JSON que está escrito no doc
