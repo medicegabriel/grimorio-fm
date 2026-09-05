@@ -215,6 +215,39 @@ ou encolher o `<select>` de `w-40` para `w-28` no telefone. A primeira preserva 
 segunda preserva a linha única.
 **Anotado:** 2026-09-05, ao verificar o merge com o trabalho do GoliasK
 
+### PERGUNTA AO AUTOR: uma ficha sem nome derruba o PACOTE de import inteiro
+**Onde:** `src/components/io-utils.js` (`parseImportText`, a linha do `throw`)
+**Situação:** o `parseImportText` reprova criatura com `name` vazio e **LANÇA em vez de pular**:
+
+```js
+if (!c || !c.name || typeof c.name !== "string") {
+  throw new Error(`Criatura inválida: ${JSON.stringify(c)}`);
+}
+```
+
+Uma ficha sem nome no meio de um arquivo derruba a importação inteira, levando junto todas as outras
+que vieram no mesmo pacote. Quem exporta cinco fichas e tem uma sem nome perde as cinco, e a mensagem
+de erro é o JSON cru daquela ficha, que não diz qual das cinco é nem o que fazer.
+
+⚠ **A ORIGEM já está consertada** (2026-09-05): o criador do Afty passou a gravar "Sem nome" quando o
+campo está vazio, então ficha NOVA não cai mais nisso. O que sobra é (a) as fichas antigas que já
+foram exportadas com `name: ""`, e (b) a fragilidade de um pacote inteiro morrer por causa de uma
+entrada.
+
+⚠ **O arquivo é da 2.5.2, e a regra número 1 diz que `src/components/` é somente-leitura.** Por isso
+isto é pergunta e não conserto. O import não tem nenhum ponto de entrada do lado do Afty: o `throw`
+acontece dentro do `parseImportText`, antes de qualquer código que o Afty controle.
+
+**Precisa:** o autor escolher uma das três.
+1. Deixar o importador dar um nome de reserva em vez de lançar (é a mesma regra do
+   `nomeParaGravar` do Afty). Uma linha, e conserta as fichas antigas também. Exige tocar em
+   `src/components/`.
+2. Deixar o importador PULAR a entrada inválida e avisar quantas pulou, em vez de derrubar o pacote.
+   Mais robusto e mais invasivo, e também em `src/components/`.
+3. Não mexer. Ficha antiga sem nome continua exigindo edição do JSON à mão antes de importar.
+
+**Anotado:** 2026-09-05, ao investigar o "Criatura inválida" que o autor recebeu
+
 ### PERGUNTA AO AUTOR: a RD Específica pode ser aposentada?
 **Onde:** `src/systems/afty/afty-derive.js` (`rdEspecifico`), `AftyTabDefesas.jsx`, o Preview e a
 Ficha Final

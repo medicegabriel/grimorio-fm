@@ -183,6 +183,24 @@ export function mesclaFichaAfty(existente) {
   };
 }
 
+/**
+ * O nome com que uma ficha PODE ser gravada.
+ *
+ * ⚠ ISTO NÃO É COSMÉTICO. O importador da 2.5.2 (`parseImportText`, em
+ * `src/components/io-utils.js`) reprova qualquer criatura com `name` vazio, e
+ * ele LANÇA em vez de pular: uma ficha sem nome derruba o arquivo de import
+ * inteiro, levando junto todas as outras que vieram no mesmo pacote. Uma ficha
+ * gravada sem nome sai do app e não volta.
+ *
+ * ⚠ MORA AQUI, E NÃO DENTRO DO `handleSave`, para o assert poder medir a mesma
+ * função que o criador usa. A regra escrita em dois lugares é a regra que
+ * diverge no primeiro conserto.
+ *
+ * "Sem nome" é a palavra que o app já usa no lugar do nome (o Preview e a lista
+ * de Invocações), e não um rótulo novo.
+ */
+export const nomeParaGravar = (nome) => String(nome ?? "").trim() || "Sem nome";
+
 /** Ficha Afty em branco — só ESCOLHAS, os stats são derivados. */
 export function createBlankAfty() {
   return {

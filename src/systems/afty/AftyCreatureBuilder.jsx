@@ -12,7 +12,7 @@ import { aplicarAddons, feiticosDeAddon } from "./afty-addons";
 import {
   mesclaFichaAfty, AFTY_ATTRS, AFTY_TIPOS, AFTY_PATAMARES, AFTY_QNT_PE,
   AFTY_TECNICA_ATTRS, AFTY_TAMANHOS, AFTY_RESISTENCIAS, getTamanho,
-  createBlankFuncionamento, funcionamentosDaFicha,
+  createBlankFuncionamento, funcionamentosDaFicha, nomeParaGravar,
 } from "./afty-schema";
 // Primitivos compartilhados com a Ficha Final. Eram locais deste arquivo até
 // 2026-08-05, e saíram porque duas cópias divergiriam na primeira errata.
@@ -1058,8 +1058,29 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
     });
 
   const handleSave = () => {
+    /* ⚠ FICHA SEM NOME NÃO PODE SER GRAVADA, e o motivo não é estético: ela sai
+       do app e não volta. O importador da 2.5.2 (`io-utils.js`,
+       `parseImportText`) reprova qualquer criatura cujo `name` seja vazio, e ele
+       LANÇA em vez de pular, então UMA ficha sem nome derruba o arquivo inteiro,
+       levando junto as outras que vieram no mesmo pacote.
+
+       O criador nascia com `name: ""` (o `createBlankAfty`) e nada obrigava a
+       preencher, então dava para montar a ficha toda, salvar, exportar, e só
+       descobrir o problema do outro lado, na hora de importar. Foi assim que o
+       autor topou com isso em 2026-09-05.
+
+       ⚠ O padrão é "Sem nome" porque é a palavra que o app JÁ usa: é o que o
+       Preview escreve no lugar do nome, e o que a lista de Invocações usa. Um
+       nome inventado aqui criaria um segundo vocabulário para a mesma ideia.
+
+       Vale para os dois sistemas: quem exporta e importa é o mesmo Dashboard.
+
+       A regra em si mora no `afty-schema.js`, junto do `createBlankAfty` que
+       cria o campo vazio, para o assert poder medir a MESMA função. */
+    const nome = nomeParaGravar(draft.name);
     const creature = {
       ...draft,
+      name: nome,
       // ⚠ `system` continua "afty" nos DOIS: é a família de regras, e o
       // Grimório Afty e a Ficha de Player são o mesmo livro. Quem separa
       // criatura de personagem é o `rulesVersion`, que é o que o Dashboard, o
