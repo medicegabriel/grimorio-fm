@@ -97,6 +97,15 @@ const POR_NOME = [
     ],
   },
   {
+    id: "manejo",
+    label: "Manejo",
+    nomes: [
+      ["desarmado", "Nenhuma arma equipada, e item de pugilato conta como desarmado"],
+      ["arma_marcial", "Está empunhando uma arma Marcial, incluindo a Arma Dedicada"],
+      ["arma_pugilato", "Está com um equipamento do grupo Pugilato, o que NÃO é o contrário de desarmado"],
+    ],
+  },
+  {
     id: "gemeos",
     label: "Gêmeos Feiticeiros",
     nomes: [
@@ -281,9 +290,17 @@ const INV_POR_NOME = [
     id: "tipo",
     label: "Tipo Mecânico",
     nomes: [
-      ["tipo_shikigami", "É um Shikigami de Talismã"],
-      ["tipo_tecnica", "É um Shikigami de Técnica"],
-      ["tipo_dispositivo", "É um Dispositivo (Corpo Amaldiçoado ou Marionete)"],
+      ["tipo_shikigami", "É uma Invocação de Talismã"],
+      ["tipo_tecnica", "É uma Invocação de Técnica"],
+    ],
+  },
+  {
+    id: "apogeu",
+    label: "Estilo do Apogeu (dono)",
+    nomes: [
+      ["apogeu_concentrado", "O dono escolheu Controle Concentrado"],
+      ["apogeu_disperso", "O dono escolheu Controle Disperso"],
+      ["apogeu_sintonizado", "O dono escolheu Controle Sintonizado"],
     ],
   },
   {
@@ -304,7 +321,7 @@ const INV_POR_NOME = [
     nomes: [
       ["nd", "Nível de Desafio do dono"],
       ["bt", "Bônus de Treinamento do dono"],
-      ["nivel_controlador", "Nível de Controlador, já com o escalonamento"],
+      ["nivel_controlador", "Nível de Controlador, que é o ND"],
     ],
   },
 ];

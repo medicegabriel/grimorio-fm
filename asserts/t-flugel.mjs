@@ -19,7 +19,7 @@ const { sessaoEmBranco, alteraTreinoAtivo } = await import(R + "ficha/ficha-sess
 /* ⚠ O PACOTE VEM DO JSON, e não de um módulo do app. Ele saiu do bundle em
    2026-09-01 a pedido do autor: um addon é conteúdo de MESA, e conteúdo de mesa
    não viaja dentro do aplicativo de todo mundo. O arquivo em `addons/` é o
-   mesmo texto que se cola no campo Instalar da aba Addons, então este assert
+   mesmo texto que se cola no campo Instalar dos Addons, então este assert
    mede exatamente o que o usuário instala. */
 const FLUGEL = JSON.parse(
   readFileSync(new URL("../addons/flugel.json", import.meta.url), "utf8"),

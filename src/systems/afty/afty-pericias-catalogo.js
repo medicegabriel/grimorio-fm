@@ -236,3 +236,150 @@ export const AFTY_ATAQUES = [
       "e seu foco no uso do jujutsu. Você é sempre treinado.",
   },
 ];
+
+/* ============================================================ */
+/* REQUISITO DE TREINO (perícia e Teste de Resistência)          */
+/* ============================================================ */
+/**
+ * ⚠ UM AVALIADOR SÓ PARA OS TRÊS CATÁLOGOS. Habilidades, Talentos e Aptidões
+ * têm cada um o seu `avaliarRequisito*`, e os três repetem `atributo`, `origem`
+ * e `aptidao` por conta própria. Aqui isso pararia de escalar: são SEIS formas
+ * de pedir treino, e três cópias delas envelheceriam em ritmos diferentes.
+ * Quem chama faz `const r = avaliarRequisitoDeTreino(req, ctx); if (r) return r;`
+ * e segue para os tipos próprios dele.
+ *
+ * ⚠ O CAMINHO INVERSO JÁ EXISTIA, e é o motivo desta função. As Aptidões
+ * converteram os `nota` delas em requisito real em 2026-07-30, com o `pericia`
+ * escrito à mão dentro do `afty-aptidoes.js`, e as Habilidades e os Talentos
+ * ficaram para trás por dois meses. Em 2026-09-01 o autor mandou fechar os
+ * outros dois (*"fazer os Requisitos serem REALMENTE necessários"*), e a segunda
+ * cópia teria virado a terceira.
+ *
+ * Lê a proficiência **resolvida** (`ctx.periciaProf`, `ctx.resistenciaProf`), e
+ * não a escolhida na ficha: o Motor concede faixa, e quem ganhou Mestre em
+ * Furtividade de uma habilidade atende ao requisito sem ter gasto vaga.
+ *
+ * ⚠ FALTA DE CONTEXTO NÃO É FALTA DE TREINO. Sem o mapa correspondente o
+ * requisito cai para NÃO VERIFICÁVEL (exibe e não bloqueia), pela mesma razão do
+ * `aptidao` dos Talentos: uma tela que esqueceu de passar o contexto não pode
+ * trancar a ficha do jogador.
+ */
+const RANK_PROF = { treinado: 1, mestre: 2 };
+/** Nomes dos atributos, para o rótulo do `periciaAtributo`. */
+const ATRIBUTO_NOME = {
+  forca: "Força", destreza: "Destreza", constituicao: "Constituição",
+  inteligencia: "Inteligência", sabedoria: "Sabedoria", presenca: "Presença",
+};
+/* O Ofício do livro e os repetidos (`oficio__2`, `oficio__3`...).
+   ⚠ MORA AQUI, e não no afty-pericias.js, porque este arquivo é FOLHA e o
+   requisito de treino precisa dele: Habilidades, Talentos e Aptidões leem daqui,
+   e importar o afty-pericias.js em qualquer um dos três seria ciclo. O
+   afty-pericias.js reexporta, então nenhum import existente mudou. */
+const OFICIO_ID_CAT = "oficio";
+const OFICIO_EXTRA_CAT = /^oficio__(\d+)$/;
+/** Este id é um Ofício (o do livro ou um dos repetidos)? */
+export const ehPericiaOficio = (id) =>
+  id === OFICIO_ID_CAT || OFICIO_EXTRA_CAT.test(String(id ?? ""));
+const rankDe = (prof) => RANK_PROF[prof] ?? 0;
+const rotuloFaixa = (nivel) => (nivel === "mestre" ? "Mestre" : "Treinado");
+
+export const PERICIA_NOME = Object.fromEntries(AFTY_PERICIAS.map((p) => [p.id, p.nome]));
+
+/** Os TRs, repetidos aqui como texto porque este arquivo é folha e não importa nada.
+    O catálogo mora em `AFTY_RESISTENCIAS`, no afty-schema.js, e há assert conferindo
+    que as duas listas batem. */
+export const RESISTENCIA_NOME = {
+  reflexos: "Reflexos", fortitude: "Fortitude", vontade: "Vontade",
+  astucia: "Astúcia", integridade: "Integridade",
+};
+
+/** Ids de Ofício da ficha, incluindo os extras (`oficio__2`, `oficio__3`...). */
+const idsDeOficio = (mapa) => Object.keys(mapa ?? {}).filter((id) => ehPericiaOficio(id));
+
+/** Normaliza um nome de Ofício para comparar: sem acento, sem caixa, sem sobra. */
+const chaveDeOficio = (s) => String(s ?? "")
+  .normalize("NFD").replace(/[̀-ͯ]/g, "").trim().toLowerCase();
+
+export function avaliarRequisitoDeTreino(requisito, ctx = {}) {
+  const nivel = requisito?.nivel === "mestre" ? "mestre" : "treinado";
+  const alvo = rankDe(nivel);
+  const prof = ctx.periciaProf;
+  const semMapa = (label) => ({ ok: true, verificavel: false, label });
+
+  if (requisito?.tipo === "pericia") {
+    const nome = PERICIA_NOME[requisito.pericia] || requisito.pericia;
+    const label = `${rotuloFaixa(nivel)} em ${nome}`;
+    if (!prof) return semMapa(label);
+    return { ok: rankDe(prof[requisito.pericia]) >= alvo, verificavel: true, label };
+  }
+
+  /* "Treinamento em História ou Ocultismo" (Manual de Técnica). Basta UMA. */
+  if (requisito?.tipo === "periciaOr") {
+    const ids = Array.isArray(requisito.pericias) ? requisito.pericias : [];
+    const label = `${rotuloFaixa(nivel)} em ${ids.map((p) => PERICIA_NOME[p] || p).join(" ou ")}`;
+    if (!prof) return semMapa(label);
+    return { ok: ids.some((p) => rankDe(prof[p]) >= alvo), verificavel: true, label };
+  }
+
+  /* "Treinado em alguma perícia de Presença" (Discurso Motivador). O pool sai do
+     próprio catálogo pelo atributo, e não de uma lista escrita à mão. */
+  if (requisito?.tipo === "periciaAtributo") {
+    const nomeAttr = ATRIBUTO_NOME[requisito.attr] || requisito.attr;
+    const label = `${rotuloFaixa(nivel)} em alguma perícia de ${nomeAttr}`;
+    if (!prof) return semMapa(label);
+    const pool = AFTY_PERICIAS.filter((p) => p.atributo === requisito.attr).map((p) => p.id);
+    return { ok: pool.some((p) => rankDe(prof[p]) >= alvo), verificavel: true, label };
+  }
+
+  /* "Treinado em dois Ofícios" (Mestre da Criação). Conta as VAGAS de Ofício
+     treinadas, e não os nomes: a ficha pode ter várias vagas, e é a faixa de
+     cada uma que responde. */
+  if (requisito?.tipo === "oficios") {
+    const quantos = Math.max(1, Math.trunc(Number(requisito.quantidade) || 1));
+    const label = `${rotuloFaixa(nivel)} em ${quantos} ${quantos === 1 ? "Ofício" : "Ofícios"}`;
+    if (!prof) return semMapa(label);
+    const treinados = idsDeOficio(prof).filter((id) => rankDe(prof[id]) >= alvo).length;
+    return { ok: treinados >= quantos, verificavel: true, label };
+  }
+
+  /* "Treinado em Ferramentas de Médico" (Criar Medicina). Um Ofício NOMEADO, e o
+     nome é texto livre que o jogador digita, então a comparação é normalizada.
+     ⚠ Renomear o Ofício na ficha derruba o requisito, e é o comportamento certo:
+     o livro pede aquele ofício, e o card diz qual. */
+  if (requisito?.tipo === "oficio") {
+    const label = `${rotuloFaixa(nivel)} em ${requisito.nome}`;
+    if (!prof || !ctx.periciaOficios) return semMapa(label);
+    const procurado = chaveDeOficio(requisito.nome);
+    const ok = idsDeOficio(prof).some((id) => rankDe(prof[id]) >= alvo
+      && (ctx.periciaOficios[id] ?? []).some((n) => chaveDeOficio(n) === procurado));
+    return { ok, verificavel: true, label };
+  }
+
+  if (requisito?.tipo === "resistencia") {
+    const nome = RESISTENCIA_NOME[requisito.resistencia] || requisito.resistencia;
+    const label = `${rotuloFaixa(nivel)} em ${nome}`;
+    if (!ctx.resistenciaProf) return semMapa(label);
+    return { ok: rankDe(ctx.resistenciaProf[requisito.resistencia]) >= alvo, verificavel: true, label };
+  }
+
+  return null;
+}
+
+/**
+ * Conferência de um requisito de treino: o id existe no catálogo?
+ * Devolve string de erro ou `null`. Os três validadores de catálogo chamam.
+ */
+export function conferirRequisitoDeTreino(r) {
+  if (r?.tipo === "pericia" && !PERICIA_NOME[r.pericia]) return `perícia inexistente "${r.pericia}"`;
+  if (r?.tipo === "periciaOr") {
+    const ruim = (r.pericias ?? []).find((p) => !PERICIA_NOME[p]);
+    if (ruim) return `perícia inexistente "${ruim}"`;
+    if ((r.pericias ?? []).length < 2) return "periciaOr precisa de duas perícias ou mais";
+  }
+  if (r?.tipo === "periciaAtributo" && !ATRIBUTO_NOME[r.attr]) return `atributo inexistente "${r.attr}"`;
+  if (r?.tipo === "resistencia" && !RESISTENCIA_NOME[r.resistencia]) {
+    return `Teste de Resistência inexistente "${r.resistencia}"`;
+  }
+  if (r?.tipo === "oficio" && !String(r.nome ?? "").trim()) return "requisito de Ofício sem nome";
+  return null;
+}

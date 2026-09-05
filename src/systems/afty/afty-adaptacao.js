@@ -19,8 +19,19 @@ const inteiro = (v, padrao = 0) => {
 const uid = () => `a${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`;
 const chaveDe = (pacoteId, cicloId) => `${pacoteId}:${cicloId}`;
 
+/* ⚠ SÃO DOIS CANAIS, e não um. O Acerto se escreve de duas formas conforme o
+   recorte da regra: `bonusAcerto` mira a jogada de ataque inteira e `acertoArma`
+   mira UMA fonte de dano ("desarmado", "arma marcial", "com a arma escolhida").
+   Para a roda de Adaptação os dois valem igual, porque a pergunta dela é "esta
+   habilidade dá Acerto?", e não onde.
+
+   ⚠ Isto quase virou bug calado em 2026-09-01: o Caminho da Mão Vazia, o Impacto
+   Misto e o Gosto pela Luta trocaram de canal ao ganharem o recorte certo, e com
+   a lista olhando só o `bonusAcerto` eles teriam sumido do pool do Mahoraga sem
+   uma linha de aviso. Quem pegou foi o assert de t-adaptacao.mjs. */
+const CANAIS_DE_ACERTO = ["bonusAcerto", "acertoArma"];
 const efeitoAcertoPositivo = (efeito) => (
-  efeito?.canal === "bonusAcerto"
+  CANAIS_DE_ACERTO.includes(efeito?.canal)
   && !String(efeito.expr ?? "").trim().startsWith("-")
 );
 

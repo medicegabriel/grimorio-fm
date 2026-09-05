@@ -1,6 +1,8 @@
 /* ORGANIZAÇÃO DOS ESTADOS DA ABA BUFFS, 2026-08-28.
 
    A aba desenhava os 54 estados de combate numa lista só, na ordem do catálogo.
+   (57 desde 2026-09-02. O total ficou preso no texto por uma sessão, porque
+   só a CONTA DE FAMÍLIA tinha assert. Agora as duas têm.)
    Numa criatura de ND 40 medida isso dá 46 linhas e 40 caixas de primeiro
    nível, com as três ou quatro LIGADAS espalhadas no meio das apagadas, sem
    filtro, sem divisão e sem grupo.
@@ -55,8 +57,9 @@ t("vazio não quebra", familiaEParte(undefined), { familia: null, parte: "" });
 
 /* A convenção existe mesmo, e em quantidade: se um dia ela sumir do catálogo,
    este número cai e o cabeçalho de família deixa de valer a pena. */
-t("a convenção cobre 33 dos 54",
-  COMBATE_ESTADOS.filter((e) => familiaEParte(e.label).familia).length, 33);
+t("a convenção cobre 34 dos 57",
+  COMBATE_ESTADOS.filter((e) => familiaEParte(e.label).familia).length, 34);
+t("e o catálogo tem 57 estados",  COMBATE_ESTADOS.length, 57);
 
 /* ============================================================ */
 /* 2. O DONO DE CADA ESTADO                                      */

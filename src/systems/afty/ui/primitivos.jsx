@@ -22,8 +22,28 @@ export function Card({ title, children, headerRight }) {
       <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-800">
         {/* Ícone DENTRO do h2 (mesmo padrão do builder 2.5.2): como irmão do
             título ele se alinhava contra a altura da barra inteira, e não
-            contra a linha do texto, o que deixava ele visivelmente alto. */}
-        <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+            contra a linha do texto, o que deixava ele visivelmente alto.
+
+            ⚠ AS EXCLAMAÇÕES NÃO SÃO FIRULA, E SÃO OBRIGATÓRIAS. O
+            `src/index.css` é global, fica FORA de `@layer`, e regra sem camada
+            vence utilidade em camada por mais específica que a segunda seja. Ele
+            dá a todo h2 do app:
+
+              font-size: 24px   line-height: 118%   letter-spacing: -0.24px
+              margin: 0 0 8px   font-weight: 500    color: #f3f4f6
+              font-family: var(--heading)
+
+            ⚠ SÓ A MARGEM TINHA SIDO CONSERTADA, e o resto ficou letra morta por
+            dois meses: medido em 2026-09-05, o `text-sm` escrito aqui rendia
+            24px de verdade em TODO Card do criador, nos dois sistemas. O título
+            saía com o dobro do tamanho pretendido, o que estourava a altura da
+            barra do card e desalinhava a régua vertical de toda aba. Achado ao
+            revisar a aba de Defesas a pedido do autor.
+
+            O index.css é compartilhado com a 2.5.2 e não se mexe, então o reset
+            mora aqui. `text-white!` entra junto porque a cor do index.css
+            (#f3f4f6) também vencia. */}
+        <h2 className="m-0! text-sm! font-semibold! text-white! leading-5! tracking-normal! flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-purple-400 flex-shrink-0" />
           {title}
         </h2>
@@ -43,7 +63,7 @@ export function BoolChip({ ativo, onToggle, bloqueado, lockTitle, title, childre
       disabled={bloqueado}
       aria-pressed={ativo}
       title={bloqueado ? lockTitle : title}
-      className={`inline-flex items-center gap-1 text-[12px] font-semibold px-2.5 py-1 rounded-lg border transition-colors ${
+      className={`inline-flex items-center gap-1 text-[12px] font-semibold px-2.5 py-1 rounded-lg border transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-500 ${
         ativo
           ? "bg-purple-700 border-purple-600 text-white"
           : bloqueado

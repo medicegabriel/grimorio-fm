@@ -61,7 +61,19 @@ function LinhasDeFonte({ partes, total }) {
    vence é a ordem em que o Tailwind as gerou, não a ordem do atributo class. */
 export function PainelDeFontes({ partes, total, ancora = "direita", aparecer = "group-hover:block", aberto = false }) {
   return (
-    <span className={`afty-fontes ${aberto ? "block" : `hidden ${aparecer}`} absolute top-full mt-1 z-30 w-max max-w-[min(16rem,calc(100vw-2rem))] p-2 text-left ${
+    /* ⚠ `pointer-events-none` NÃO É DETALHE, É O CONSERTO DE 2026-09-02.
+
+       O painel é FILHO do gatilho, e `:hover` sobe para os ancestrais: encostar
+       nele mantinha o gatilho em hover, então ele ficava aberto. Como ele é bem
+       maior que o gatilho (80 a 165px de altura contra 30), ele cobria as filas
+       de baixo e as ROUBAVA: no bloco de detalhe da Invocação, abrir o painel de
+       Corpo tapava a fila de Acerto, e a tentativa de passar o mouse em Acerto
+       caía dentro do painel de Corpo, que não fechava. Da tela, isso é
+       exatamente "o hover está bugado".
+
+       Sem receber ponteiro, o painel deixa de ser alvo: o mouse atravessa ele e
+       chega em quem está embaixo. Ninguém precisa clicar num painel de leitura. */
+    <span className={`afty-fontes pointer-events-none ${aberto ? "block" : `hidden ${aparecer}`} absolute top-full mt-1 z-30 w-max max-w-[min(16rem,calc(100vw-2rem))] p-2 text-left ${
       ancora === "esquerda" ? "left-0" : "right-0"
     }`}>
       <LinhasDeFonte partes={partes} total={total} />

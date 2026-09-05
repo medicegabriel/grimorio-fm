@@ -219,12 +219,39 @@ for (const [nivel, dado] of [[1, "1d8"], [5, "1d10"], [9, "1d12"], [13, "2d8"], 
   t(`e o Nivel de Dano liquido dele e zero`, l.niveisDano, 0);
 }
 
-/* A escala do Corpo Treinado é o nível de LUTADOR, e não o do personagem: um
-   Combatente 17 com um nível de Lutador rola o 1d8 do 1° nível. */
+/* A escala do Corpo Treinado é o nível de LUTADOR de ESCALONAMENTO (real mais
+   metade da outra classe), e não o do personagem (autor, 2026-09-01: *"um
+   Lutador 10 com Combatente 20 contaria como um Lutador Nível 20 para o cálculo
+   de Corpo Treinado"*).
+
+   ⚠ AS TRÊS RÉGUAS DÃO NÚMEROS DIFERENTES AQUI, e é por isso que o teste usa uma
+   multiclasse torta: um Combatente 16 com 1 nível de Lutador tem nível de
+   personagem 17 (2d12), nível real de Lutador 1 (1d8) e escalonamento 9 (1d12).
+   Quem vale é o do meio da escada.
+
+   ⚠ E o motor tem de ler o MESMO nível: a linha de escada de
+   afty-efeitos-conteudo.js usa `esc_lutador`, e é a mesma regra escrita para a
+   criatura. Ler níveis diferentes fazia os dois sistemas divergirem calados. */
 const multi = ficha("player", 17, { arma: null });
 multi.especializacoes = [{ id: "combatente", nivel: 16 }, { id: "lutador", nivel: 1 }];
-t("o Corpo Treinado escala pelo nivel de LUTADOR, e nao pelo do personagem",
-  linha(deriveAfty(multi), "basico").partes[0].texto, "1d8");
+t("o Corpo Treinado escala pelo nivel de ESCALONAMENTO do Lutador",
+  linha(deriveAfty(multi), "basico").partes[0].texto, "1d12");
+
+/* O exemplo do autor, letra por letra: Lutador 10 com Combatente 20 escalona em
+   20, então rola o 2d12 do 17° nível. */
+const exemploAutor = ficha("player", 30, { arma: null });
+exemploAutor.especializacoes = [{ id: "lutador", nivel: 10 }, { id: "combatente", nivel: 20 }];
+t("Lutador 10 com Combatente 20 conta como Lutador 20",
+  linha(deriveAfty(exemploAutor), "basico").partes[0].texto, "2d12");
+
+/* E o nível REAL segue mandando no PRÉ-REQUISITO: quem decide se a habilidade
+   chega é ele, e o escalonamento só decide o quanto ela entrega. Um Combatente
+   20 sem nível nenhum de Lutador não recebe o Corpo Treinado, mesmo com o
+   escalonamento de qualquer outra classe alto. */
+const semLutador = ficha("player", 20, { arma: null });
+semLutador.especializacoes = [{ id: "combatente", nivel: 20 }];
+t("sem nivel real de Lutador o Corpo Treinado nao chega",
+  linha(deriveAfty(semLutador), "basico").partes[0].texto, "1d3");
 
 /* Armas Naturais: mesma ideia, e a escala é o nível do personagem. */
 for (const [nivel, dado] of [[1, "1d8"], [5, "1d10"], [9, "1d12"], [13, "2d10"], [17, "2d12"]]) {

@@ -56,7 +56,9 @@ function Secao({ titulo, children, direita }) {
  * é um shikigami. "Quero todas as minhas fichas assim" não quer dizer nada
  * quando o que está sendo temado é uma invocação de dentro de uma delas.
  */
-export default function PainelDeAparencia({ tema, onTema, onFechar, onGlobal, titulo = "Aparência" }) {
+/* ⚠ `escopo` E `nome` SÓ CHEGAM NO TEMA DE UMA INVOCAÇÃO. Sem eles o prompt
+   descreve a ficha inteira, que é o caso normal. Ver `promptParaIA`. */
+export default function PainelDeAparencia({ tema, onTema, onFechar, onGlobal, titulo = "Aparência", escopo, nome }) {
   const [abaCss, setAbaCss] = useState("css");
   const [salvouGlobal, setSalvouGlobal] = useState(false);
   const [copiado, setCopiado] = useState(false);
@@ -64,7 +66,7 @@ export default function PainelDeAparencia({ tema, onTema, onFechar, onGlobal, ti
   const cssLimpo = saneiaCss(tema.css);
   const grande = cssLimpo.length > CSS_MAX;
   const semEscopo = !escopoSuportado();
-  const prompt = useMemo(() => promptParaIA(tema), [tema]);
+  const prompt = useMemo(() => promptParaIA(tema, { escopo, nome }), [tema, escopo, nome]);
 
   /* ⚠ Duas rotas, porque a área de transferência é bloqueada em contexto não
      seguro e em alguns navegadores de celular. Quando a API falha, o caminho

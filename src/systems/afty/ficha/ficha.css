@@ -690,7 +690,12 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
   justify-content: center;
   gap: 0.125rem;
   min-height: 3rem;
-  padding: 0.25rem 0.375rem;
+  /* ⚠ RESPIRO DE BAIXO MENOR QUE O DE CIMA, de propósito. Todo valor desta
+     célula é dígito, maiúscula ou palavra sem perna ("58", "13.5m", "Médio"),
+     e a caixa de linha do número reserva a descida que nenhum deles usa: com
+     recuo igual dos dois lados a TINTA fica 2px alta, mesmo com as caixas
+     centradas. Os 2,25px de diferença devolvem o par ao meio óptico. */
+  padding: 0.3125rem 0.375rem 0.1875rem;
   border: 1px solid var(--afty-borda);
   border-radius: var(--afty-raio-peq);
   background: var(--afty-poco);
@@ -701,9 +706,19 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
   border-color: var(--afty-borda-forte);
 }
 
+/* ⚠ ENTRELINHA PRÓPRIA, e é o conserto de 2026-09-03. O rótulo herdava a
+   entrelinha do cartão, que é 1,45 de um corpo de 18px: 26px de caixa para uma
+   fonte de 10px. Os 14px de espaço morto ficavam TODOS acima e abaixo das
+   maiúsculas, e como a caixa do número quase não tem folga, o par rótulo mais
+   número nascia centrado como CAIXA e baixo como TINTA (medido: 14px de vazio
+   acima da primeira letra contra 8,5px abaixo do último dígito). O autor viu
+   como *"a fonte está muito alinhada para baixo ao invés de estar no centro"*,
+   e o "Tamanho / Médio" quase encostando na borda. Vale para toda a Ficha:
+   a tira do cabeçalho tinha exatamente a mesma medida. */
 .afty-stat-rotulo {
   display: block;
   max-width: 100%;
+  line-height: 1.25;
   font-size: 0.5625rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -1987,9 +2002,16 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
   border: 1px solid var(--afty-borda);
 }
 
+/* ⚠ 4,5rem DESDE 2026-09-03, e a mudança que importa não é o tamanho: é o que
+   saiu de perto dele. O autor viu *"a Imagem da Invocação mesmo ficou
+   completamente ofuscada"* com o retrato em 3,25rem ao lado de OITO pastilhas
+   roxas de marcador. O retrato perdia em área e em cor para um bloco de texto
+   que ninguém lê duas vezes. Os marcadores desceram para um bloco próprio (ver
+   `FichaDoShikigami`) e o retrato ficou com a altura das duas linhas de
+   identidade que sobraram, que é o que faz dele a âncora da faixa. */
 .afty-inv-retrato-icone {
-  width: 3.25rem;
-  height: 3.25rem;
+  width: 4.5rem;
+  height: 4.5rem;
   flex: none;
   border-radius: var(--afty-raio-peq);
   border: 1px solid var(--afty-borda);
@@ -2022,15 +2044,27 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
 .afty-inv-cabeca {
   display: flex;
   align-items: center;
-  gap: 0.625rem;
-  padding: 0.5rem 0.75rem;
+  gap: 0.75rem;
+  padding: 0.625rem 0.75rem;
   background: var(--afty-poco);
   border-bottom: 1px solid var(--afty-borda);
 }
 
 .afty-inv-cabeca-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
   flex: 1;
   min-width: 0;
+}
+
+/* A segunda linha da identidade: grau, tipo e custo. Nada mais entra aqui.
+   O que a invocação GANHOU de habilidade tem bloco próprio no corpo. */
+.afty-inv-cabeca-marcas {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-wrap: wrap;
 }
 
 .afty-inv-titulo {
@@ -2049,17 +2083,92 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
   padding: 0.75rem;
 }
 
+/* ⚠ `auto-fit`, e não quatro colunas fixas (2026-09-03). Ver `StatDaInvocacao`:
+   com `repeat(4, 1fr)` num monitor de 1440 cada célula ganhava 300px para
+   mostrar dois dígitos, e a tira parecia quatro cartazes vazios. Mesma régua do
+   `.afty-stats` do cabeçalho da Ficha, que nunca teve esse problema. */
 .afty-inv-stats {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* `auto-fill`, e não `auto-fit`: com seis células numa tela de 1440, o
+     `auto-fit` colapsa as trilhas vazias e devolve 230px para cada "63".
+     `auto-fill` mantém as trilhas, e a célula fica do tamanho de uma célula. */
+  grid-template-columns: repeat(auto-fill, minmax(6rem, 1fr));
   gap: 0.375rem;
 }
 
-@media (min-width: 640px) {
-  .afty-inv-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.afty-inv-bloco { min-width: 0; }
+
+/* ---------- as duas colunas do corpo ---------- */
+/* ⚠ O CORPO ERA UMA COLUNA SÓ até 2026-09-03, e o autor apontou o resultado:
+   *"no geral ficou bem esquisito e pouco intuitivo o uso"*. O defeito é de
+   medida, e não de gosto: numa seção de 1250px o rótulo "Reflexos" fica a
+   1200px do "+45" que ele nomeia, e o olho tem de atravessar a tela inteira
+   para parear os dois. Duas colunas cortam a linha pela metade e cortam a
+   altura da ficha junto.
+
+   ⚠ `align-items: start` NÃO É DETALHE: sem ele as duas colunas esticam para a
+   altura da mais alta, e os blocos da mais curta ficam com um vão no fim que
+   parece falta de conteúdo. */
+/* ⚠ QUEM DECIDE É A LARGURA DO CARTÃO, e não a da janela. Esta aba tem DOIS
+   consumidores: a Ficha Final, onde o cartão é a página inteira, e o painel do
+   combatente no Encontro, onde ele é uma coluna de 3/4 de 1280px. Uma
+   `@media (min-width: 1024px)` acende as duas colunas nos dois casos, e no
+   painel elas nasceriam com 340px cada. `@container` pergunta ao cartão.
+
+   ⚠ `container-type: inline-size` traz contenção de layout junto, e isso faria
+   do cartão o bloco de contenção de qualquer descendente `fixed`. O painel de
+   fontes é `fixed`, e escapa porque ele é enviado por PORTAL para o
+   `.afty-ficha`, que é ANCESTRAL do cartão: ele nunca é descendente daqui. Ver
+   `MolduraFlutuante`. Mexer no destino do portal quebra isto. */
+.afty-inv-ficha { container-type: inline-size; container-name: invocacao; }
+
+.afty-inv-colunas {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: 0.625rem;
 }
 
-.afty-inv-bloco { min-width: 0; }
+/* ⚠ EM PIXEL, e não em `rem`. O `rem` de uma consulta de container resolve
+   contra a raiz do documento, e a raiz daqui tem 18px: um `60rem` escrito à
+   mão viraria 1080px sem aviso, e o painel do Encontro (1047px de cartão)
+   ficava numa coluna só por 33px de diferença. */
+@container invocacao (min-width: 860px) {
+  /* Meio a meio. Era 1,15 para a esquerda quando ela levava as Ações; com os
+     testes de um lado e as Ações do outro, os dois lados querem a mesma largura:
+     a esquerda para caber o `afty-inv-duplo`, a direita para as pastilhas e o
+     número da Ação na mesma linha. */
+  .afty-inv-colunas { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.875rem; }
+}
+
+/* ⚠ A COLUNA TAMBÉM É CONTAINER, e é o que fecha o vão do cartão. Ver o
+   comentário do `FichaDoShikigami`: com lado fixo, a coluna mais curta termina
+   antes e o cartão fica com um vazio no fim. A altura do cartão é a da coluna
+   mais alta e isso não muda; o que muda é a diferença entre as duas. */
+.afty-inv-coluna {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  min-width: 0;
+  container-type: inline-size;
+  container-name: invcoluna;
+}
+
+/* Lista de teste: uma coluna quando não cabe, duas quando cabe. O limiar sai do
+   caso mais largo de uma metade: o nome mais comprido ("Sobrevivência"), o
+   "Não Treinado" e o número, que somam uns 220px com os recuos. 460px cobre o
+   par com folga, e é o número que faz a coluna do painel de Encontro (505px)
+   dobrar junto com a da Ficha. Em pixel, e não em `rem`, pelo mesmo motivo do
+   container de cima. */
+.afty-inv-duplo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.25rem;
+}
+
+@container invcoluna (min-width: 460px) {
+  .afty-inv-duplo { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 
 /* ---------- os bônus ---------- */
 /* ⚠ ESTE É O *"saber ativar e desativar seus bônus"* do pedido, e o interruptor

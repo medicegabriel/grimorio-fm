@@ -60,7 +60,7 @@ import { getOrigem, origemEstrutural } from "./afty-origens";
 import { APTIDAO_EFEITOS } from "./afty-efeitos-conteudo";
 // Só o nome da perícia, para o rótulo do requisito. O catálogo não importa nada,
 // então a seta é segura.
-import { AFTY_PERICIAS } from "./afty-pericias-catalogo";
+import { AFTY_PERICIAS, avaliarRequisitoDeTreino, conferirRequisitoDeTreino } from "./afty-pericias-catalogo";
 import { validarCatalogoDominioSimples } from "./afty-dominio-simples";
 
 const PERICIA_LABEL = Object.fromEntries(AFTY_PERICIAS.map((p) => [p.id, p.nome]));
@@ -1766,25 +1766,16 @@ export function avaliarRequisitoAptidao(requisito, ctx = {}) {
       label: `Origem: ${alvo?.nome || requisito.id}`,
     };
   }
-  if (requisito.tipo === "pericia") {
-    // ⚠ Estes eram `nota` (exibia, não bloqueava) até 2026-07-30, de quando as
-    // Perícias ainda não existiam no Afty. Elas existem, então o requisito
-    // passou a ser real, a pedido do autor: "Aptidões que requerem Treinamento e
-    // Mestre em Perícias não estão cobrando o pré-requisito."
-    //
-    // Lê a proficiência RESOLVIDA (`ctx.periciaProf`), e não a escolhida na
-    // ficha, porque o Motor concede faixa: quem ganhou Mestre em Furtividade de
-    // uma habilidade atende ao requisito sem ter gasto vaga.
-    const atual = ctx.periciaProf?.[requisito.pericia] ?? null;
-    const nivel = requisito.nivel === "mestre" ? 2 : 1;
-    const tem = atual === "mestre" ? 2 : atual === "treinado" ? 1 : 0;
-    const nome = PERICIA_LABEL[requisito.pericia] || requisito.pericia;
-    return {
-      ok: tem >= nivel,
-      verificavel: true,
-      label: `${requisito.nivel === "mestre" ? "Mestre" : "Treinado"} em ${nome}`,
-    };
-  }
+  /* ⚠ O `pericia` SAIU DAQUI em 2026-09-01, e a lógica é a mesma. Estes eram
+     `nota` até 2026-07-30, de quando as Perícias ainda não existiam no Afty, e o
+     autor mandou fechá-los: "Aptidões que requerem Treinamento e Mestre em
+     Perícias não estão cobrando o pré-requisito." No mesmo dia de 2026-09-01 as
+     Habilidades e os Talentos passaram pela mesma conversão, e a segunda cópia
+     desta leitura teria virado a terceira: ela mudou de casa para
+     afty-pericias-catalogo.js, que é folha, e ganhou as formas mais largas que os
+     Talentos pediam. O comportamento das Aptidões não mudou. */
+  const treino = avaliarRequisitoDeTreino(requisito, ctx);
+  if (treino) return treino;
   // nota (sistema não construído): exibe, não bloqueia.
   return { ok: true, verificavel: false, label: requisito.label };
 }
@@ -1831,11 +1822,11 @@ export function validarCatalogoAptidoes() {
       if (r.tipo === "origem" && !getOrigem(r.id)) {
         erros.push(`${a.id}: requisito aponta para origem inexistente "${r.id}"`);
       }
-      if (r.tipo === "pericia") {
-        if (!PERICIA_LABEL[r.pericia]) erros.push(`${a.id}: requisito aponta para perícia inexistente "${r.pericia}"`);
-        if (r.nivel !== "treinado" && r.nivel !== "mestre") {
-          erros.push(`${a.id}: requisito de perícia com nível inválido "${r.nivel}"`);
-        }
+      // Perícia, Ofício e Teste de Resistência: o id existe no catálogo?
+      const erroTreino = conferirRequisitoDeTreino(r);
+      if (erroTreino) erros.push(`${a.id}: ${erroTreino}`);
+      if (r.tipo === "pericia" && r.nivel !== "treinado" && r.nivel !== "mestre") {
+        erros.push(`${a.id}: requisito de perícia com nível inválido "${r.nivel}"`);
       }
     }
   }

@@ -945,6 +945,33 @@ A tabela acima apresenta o mínimo e máximo de tamanho que um Shikigami pode te
 característica, recebendo acesso a todos os tamanhos entre o mínimo e máximo para receber na
 característica.
 
+**Proficiência em Teste de Resistência** (enviado pelo autor em 2026-09-03)
+
+> *"Invocações de Segundo Grau podem fazer uma Caracteristica pra se tornar Treinado em um TR.
+> Invocações de Grau Especial podem fazer uma Caracteristica para se tornar Mestre em um TR."*
+
+| Grau da Invocação | Proficiência que a Característica concede |
+|---|---|
+| Quarto Grau | nenhuma |
+| Terceiro Grau | nenhuma |
+| Segundo Grau | Treinado |
+| Primeiro Grau | Treinado |
+| Grau Especial | Mestre |
+
+⚠ A tabela acima NÃO é texto do livro: ela é a frase do autor mais três decisões que ele tomou
+quando perguntei, na mesma conversa, porque nenhuma delas sai do texto.
+
+1. **"de Segundo Grau" vale do Segundo para cima**, então o Primeiro Grau também treina. A leitura
+   literal deixaria o Primeiro sem uma opção que o grau abaixo dele tem.
+2. **No Grau Especial ela SÓ dá Mestre.** Não existe gastar a Característica de um Especial para
+   apenas treinar um Teste de Resistência novo.
+3. **O Mestre não cobra Treinado antes.** A Característica aponta para um Teste de Resistência
+   qualquer e ele passa a Mestre de uma vez.
+
+Vale a regra geral das Características: duas no MESMO Teste de Resistência são o mesmo efeito e não
+acumulam (vale a maior faixa), e em Testes diferentes as duas valem, como duas RDs de tipos
+diferentes. A faixa concedida não gasta a vaga de treino de Teste de Resistência da ficha.
+
 ---
 
 ## SHIKIGAMI DE TÉCNICA (enviado pelo autor em 2026-08-16)

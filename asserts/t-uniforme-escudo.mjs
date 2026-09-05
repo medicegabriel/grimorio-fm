@@ -395,5 +395,76 @@ t("e escreve a formula inteira", rolagem.formula, `d20+${trDe(true).bonus} + 2d3
 t("sem dados a formula fica limpa",
   rolarTeste({ rotulo: "TR", bonus: 5 }, () => 0.5).formula, "d20+5");
 
+/* ============================================================ */
+/* AS FONTES DE RD, UMA A UMA (2026-09-05)                       */
+/* ============================================================ */
+/* Pedido do autor: *"programe as fontes de RD do Livro direitinho e coloque
+   la"*, na aba de Defesas.
+
+   ATENCAO: O QUE ESTAVA ERRADO NAO ERA O TOTAL. As parcelas do escudo chegavam
+   ao `deriveAfty` somadas num escalar e viravam UMA linha de fonte chamada
+   "Equipamento". O numero batia e o detalhamento mentia: o livro lista a coluna
+   de RD do escudo e a tabela de grau da Ferramenta como fontes SEPARADAS, com
+   regras separadas, e a base e justamente a que o Especialista em Escudo le.
+
+   Este bloco mede as duas coisas ao mesmo tempo: que o total nao mudou, e que
+   agora cada parcela tem nome. Um assert de total sozinho passaria com o bug de
+   volta. */
+
+const comEscudo = (sistema, grau = "segundo", encantamentos = []) => {
+  const f = createBlankAfty();
+  f.rulesVersion = sistema;
+  f.core = { ...f.core, nd: 12, tipo: "combatente", patamar: "comum" };
+  f.especializacoes = [{ id: "combatente", nivel: 12 }];
+  f.equipamentos = { itens: [{
+    uid: "s1", refId: "esc_pesado", tipo: "escudo", qtd: 1, equipado: true,
+    fa: { grau, encantamentos },
+  }] };
+  return deriveAfty(f);
+};
+/* So as linhas do EQUIPAMENTO, sem a base do Tipo, que e outra historia. */
+const fontesEquip = (d, canal) =>
+  (d.partes[canal] ?? []).filter((x) => !String(x.label).startsWith("Base do Tipo"))
+    .map((x) => [x.label, x.valor]);
+
+/* Escudo Pesado (RD 6) de Segundo Grau (rank 3), sem encantamento. */
+const jog = comEscudo("player");
+t("jogador: as duas parcelas do escudo tem nome",
+  fontesEquip(jog, "rdFisico"), [["Escudo Pesado", 6], ["Segundo Grau", 3]]);
+t("jogador: e elas somam o total de sempre", jog.rdFisico, 9);
+t("jogador: nada disso cai na RD Geral", fontesEquip(jog, "rdGeral"), []);
+
+/* A MESMA PARCELA, O OUTRO CANAL. Na criatura a RD do escudo e Geral
+   (divergencia `rdEscudoFisico`), entao as linhas trocam de pilha sem trocar de
+   nome nem de valor. */
+const cri = comEscudo("afty");
+t("criatura: as mesmas duas parcelas, na RD Geral",
+  fontesEquip(cri, "rdGeral"), [["Escudo Pesado", 6], ["Segundo Grau", 3]]);
+t("criatura: e a RD Fisica fica vazia", fontesEquip(cri, "rdFisico"), []);
+
+/* O encantamento Reforcado entra por fora, pelo Motor, e ja vinha nomeado. O
+   que este assert prende e que ele NAO se mistura com as duas de cima. */
+const reforcado = comEscudo("player", "segundo", ["enc_esc_reforcado"]);
+t("o Reforcado e uma terceira linha, e nao some dentro das outras",
+  fontesEquip(reforcado, "rdFisico").length, 3);
+t("e o total sobe junto", reforcado.rdFisico > jog.rdFisico, true);
+
+/* O ROTULO DO GRAU E O DE CALCULO, E NAO O REAL. Na criatura cada encantamento
+   desce um degrau, entao um Grau Especial com um encantamento calcula como
+   Primeiro. Escrever "Grau Especial" ao lado do numero do Primeiro faria a linha
+   de fonte contradizer o proprio total. */
+const rebaixado = comEscudo("afty", "especial", ["enc_esc_reforcado"]);
+t("criatura: a linha do grau usa o grau REBAIXADO",
+  fontesEquip(rebaixado, "rdGeral").some(([l]) => l === "Primeiro Grau"), true);
+t("e nunca o grau comprado",
+  fontesEquip(rebaixado, "rdGeral").some(([l]) => l === "Grau Especial"), false);
+
+/* Sem escudo nao nasce linha nenhuma: parcela zero nao vira fonte. O
+   `semEscudo` la de cima e reusado de proposito: helper repetido e a mesma
+   ficha escrita duas vezes, que e como duas verdades divergem. */
+t("sem escudo nao ha parcela de equipamento",
+  [fontesEquip(semEscudo("player"), "rdFisico"), fontesEquip(semEscudo("afty"), "rdGeral")],
+  [[], []]);
+
 console.log(bad.length ? `FALHAS (${bad.length}):\n` + bad.join("\n") : `TODOS OS ${ok} ASSERTS PASSARAM`);
 process.exitCode = bad.length ? 1 : 0;

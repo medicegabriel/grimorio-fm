@@ -36,33 +36,227 @@ arquivo md. Para outros colaboradores usarem ele também e ir anotando oq for pr
 
 Coisas paradas esperando decisão de regra. Nada aqui deve ser resolvido por suposição.
 
-### Falta um canal de RD por TIPO DE DANO, e três encantamentos esperam por ele
-**Onde:** `src/systems/afty/afty-efeitos.js` (canais de RD), `afty-equipamentos.js` (os três)
-**Situação:** o motor tem `rdGeral`, `rdEspecifico`, `rdFisico` e `rdAlma`, e nenhum deles aceita
-**alvo**. Três encantamentos precisam de "RD contra UM tipo de dano" e por isso estão no catálogo sem
-`efeitos` nenhum:
+### Controlador: as reações que rolam dado não têm onde aparecer
 
-| Encantamento | Texto | O que precisa |
+**Onde:** `src/systems/afty/afty-invocacoes.js` (`opcoesDeUso`)
+
+**Situação:** duas habilidades fecham um número que a mesa precisa no meio da luta e não têm
+onde aparecer.
+
+- **Proteger Invocação (2°)** *"reduzir o dano que ela receberá em um valor igual a Xd6 + seu
+  modificador de Presença ou Sabedoria. X é igual ao seu bônus de treinamento."*
+- **Proteção Avançada de Invocação (6°)** *"a reação para reduzir dano normal tem seu valor
+  aumentado para Xd8"*, e *"você receberá apenas metade do dano total"*.
+
+Isso é exatamente o formato de **Autonomia** e **Resistência Sobrecarregada**, que já viram
+pílula na linha "Uso" do card da invocação com o número pronto (`2 * grau PE`, `N PE, +N0 PV`).
+As duas de cima ficaram de fora, e a mesa reabre o livro para saber quanto rola.
+
+**Precisa:** o autor confirmar duas coisas antes de eu ligar.
+1. O modificador é **escolha do jogador** entre Presença e Sabedoria, ou é sempre o maior?
+2. Com Proteção Avançada, o `Xd8` **substitui** o `Xd6` (é o que "aumentado para" sugere), certo?
+
+**Anotado:** 2026-09-02, na revisão de todos os poderes de Controlador
+
+---
+
+### Controlador: seis poderes dão bônus que dependem de POSICIONAMENTO
+
+**Onde:** o Motor não tem canal para isto em nenhum sistema
+
+**Situação:** seis habilidades dão número, e o número depende de quantas invocações estão perto
+de alguém. A ficha não sabe posição, então nenhuma delas está ligada:
+
+| habilidade | o que dá | de quem depende |
 |---|---|---|
-| **Isolante** (escudo, só jogador) | *"a redução de dano do escudo passa também a ser aplicado a um tipo de dano elemental à sua escolha"* | escolha de tipo elemental, repetível, e o valor é a RD do escudo |
-| **Isolante** (uniforme) | *"5 de RD contra dano Queimante e Congelante"* | dois tipos fixos |
+| Guarda Viva (2°) | +1 de Defesa **ao dono** por invocação a 3 m | quantas estão a 3 m |
+| Rede de Detecção (2°) | +2 em Percepção e +2 de Atenção **ao dono**, por invocação a 3 m | idem |
+| Camuflagem Aprimorada (2°) | 10% de erro por invocação adjacente | adjacência |
+| Combate em Alcateia (6°) | +1 Nível de Dano **ao dono** por invocação no alcance do alvo | posição do alvo |
+| Táticas de Alcateia (6°) | −metade do BT na Defesa e nos TRs **do inimigo** flanqueado | flanqueamento |
+| Flanco Avançado (10°) | idem, ampliado | idem |
+
+Elas caem em duas famílias diferentes: as quatro primeiras mexem no DONO, as duas últimas no
+INIMIGO. A do inimigo não tem ficha onde escrever, e provavelmente é de mesa para sempre.
+
+As do dono têm uma saída pronta e usada no projeto: a **bancada de combate**
+(`COMBATE_ESTADOS`), onde um estado vira variável de DSL e o `quando` liga o efeito. Bastaria um
+estado numérico do tipo "invocações a 3 metros" para as três primeiras passarem a somar.
+
+**Precisa:** o autor dizer se quer esse estado na bancada. Ele é um contador (0 a N), e a
+bancada hoje tem interruptores e faixas, não contadores livres.
+
+**Anotado:** 2026-09-02, na revisão de todos os poderes de Controlador
+
+---
+
+### Controlador: Frenesi da Invocação e Companheiro Avançado
+
+**Onde:** `src/systems/afty/afty-invocacoes.js`
+
+**Situação:** dois casos que não cabem em nenhuma das listas acima.
+
+**Frenesi da Invocação (2°)** dá à invocação, por uma rodada, **−5 de Defesa e −5 em testes de
+resistência**, em troca de atacar duas vezes. É estado temporário, e a invocação **não tem
+bancada de combate** (a bancada é da criatura). Ligar isso é criar uma bancada para a invocação,
+que é sistema novo, não um canal.
+
+**Companheiro Avançado (4°)** faz o companheiro *"se tornar também um aliado de um tipo a sua
+escolha... começa como iniciante, no nível 6 veterano e no 12 mestre"*. Depende do sistema de
+**Aliados**, que o Afty ainda não tem como catálogo próprio.
+
+**Precisa:** o autor dizer a prioridade das duas. Nenhuma é conserto, as duas são sistema novo.
+
+**Anotado:** 2026-09-02, na revisão de todos os poderes de Controlador
+
+---
+
+### Onde mora o selo "Grimório Afty · privado", e os 64px de margem morta do cabeçalho
+
+**Onde:** `src/App.jsx` (o selo, linha ~354) e `src/systems/afty/AftyCreatureBuilder.jsx` (o `<h1>`)
+
+**Situação:** o `src/index.css` é global, fica FORA de qualquer `@layer` e traz
+`h1 { font-size: 56px; margin: 32px 0 }`. No Tailwind 4 as utilidades vivem dentro de
+`@layer utilities`, e regra sem camada vence regra em camada por mais específica que a
+segunda seja. Resultado: o `text-lg sm:text-xl` escrito no `<h1>` do cabeçalho do criador
+**nunca valeu**, e a barra carrega 64px de margem morta acima de 1024px (40px abaixo).
+Medido em 2026-09-02: o cabeçalho tem 230px em 1440 e 259px em 390, e cairia para 166px e
+219px com a margem zerada.
+
+Isso custa altura em TODA aba do criador, e mais ainda agora que a aba de Invocações tem
+uma barra de resultado grudada logo abaixo do cabeçalho.
+
+O conserto é uma classe (`my-0!`, com a exclamação, que sobe a declaração acima da camada).
+Ele foi escrito, testado e **desfeito**, por causa do efeito colateral: o selo fixo
+`"⚗️ Grimório Afty · privado"` fica em `position: fixed; top: 8; left: 8` e passa a cobrir o
+botão **Voltar** em 9px no desktop e 29px no telefone. A colisão **já existe hoje** em 390px,
+com 8px, e zerar a margem a triplica.
+
+**Precisa:** o autor decidir uma das três.
+1. Mover o selo para o canto inferior esquerdo (o inferior direito já é do PdfFab). Resolve
+   para `/Afty` e `/Player` de uma vez e libera o `my-0!`.
+2. Manter o selo onde está e reservar 44px de topo no cabeçalho do criador. Economiza 32px
+   em vez de 64px, e é um acoplamento do cabeçalho a um selo que mora noutro arquivo.
+3. Deixar como está. A margem morta continua, e a colisão de 8px em 390px também.
+
+**Nota:** a mesma armadilha de camada vale para `h2`, e ela era MAIOR do que esta linha dizia.
+O `m-0!` do `Card` em `ui/primitivos.jsx` tinha neutralizado só a MARGEM. O `font-size: 24px`, o
+`font-weight: 500`, a cor e o `letter-spacing` continuavam vencendo, e o `text-sm` escrito no `h2`
+valia zero: medido em 2026-09-05, todo título de card do criador saía com o dobro do tamanho
+pretendido. Consertado na mesma data com `text-sm! font-semibold! text-white! leading-5!
+tracking-normal!`.
+
+⚠ A lição, para o `h1` desta entrada e para `p` e `code`: **neutralizar uma propriedade não
+neutraliza a regra.** O index.css declara sete coisas de uma vez, e conferir só a que incomodava
+naquele dia deixa as outras seis de pé. Vale varrer se aparecer qualquer coisa que "não obedece".
+
+**Anotado:** 2026-09-02, na reestruturação da aba de Invocações
+
+### As 7 propriedades restantes do Golpe Especial, e a única que dá para ligar
+
+**Onde:** `src/systems/afty/afty-efeitos-conteudo.js` (`cmb_golpe_especial`)
+**Situação:** o Golpe Especial (Combatente, Base 4°) monta o ataque com 11 propriedades, e **4 estão
+ligadas** (Atroz, Letal, Penetrante, Desfocado), cada uma no seu interruptor da bancada. As outras 7
+pedem coisas diferentes, e só uma delas está a um canal de distância:
+
+| Propriedade | Texto | O que falta |
+|---|---|---|
+| **Longo** | *"Aumenta o alcance da arma em 1,5 metros para corpo-a-corpo ou 9 metros para ataques a distância"* | ⚠ **um canal `alcanceArma`**, que não existe. O `alcanceDe` do resolveDano já soma `alcanceBonusCorpo` e multiplica por `alcanceMult`, então o lugar de encaixe está pronto |
+| **Amplo** | *"O ataque atinge uma criatura a mais"* | contagem de alvos, que a ficha não tem |
+| **Impactante** | *"Empurra o alvo em 1,5 metros para cada 15 pontos de dano causados"* | empurrão POR DANO CAUSADO. O `distanciaEmpurrao` que existe é da manobra Empurrar, e é outra coisa |
+| **Preciso** | *"Recebe vantagem no ataque"* | canal de vantagem |
+| **Sanguinário** | *"sofre sangramento leve (CD de Especialização)"* | condição aplicada no alvo, e o `CONDICAO_TEXTOS` segue vazio |
+| **Lento** | *"deve ser usado como ação completa"* | economia de ação |
+| **Sacrifício** | *"Recebe 15 de dano ao efetuar o ataque"* | dano em si mesmo, que é procedimento de mesa |
+
+⚠ **O custo em PE de cada propriedade não é somado em lugar nenhum.** Montar o custo total do ataque
+especial (com o *"deve custar no mínimo 1 PE"* e o Preciso que dobra depois do primeiro uso na rodada)
+seria uma calculadora à parte, e ninguém pediu uma.
+
+**Precisa:** o autor dizer se vale abrir o canal `alcanceArma` só pelo Longo, e se as outras seis
+ficam de mesa de vez. Se ficarem, a lista acima vira comentário no catálogo e esta entrada sai.
+**Anotado:** 2026-09-01, ao varrer as Habilidades Base de Lutador e Combatente
+
+### PERGUNTA AO AUTOR: o desempate entre Imunidade e Vulnerabilidade
+**Onde:** `src/systems/afty/afty-defesas-dano.js`, `asserts/t-defesas-dano.mjs`
+**Situação:** a aba de Resistências (então chamada Defesas) nasceu em 2026-09-02 e resolve as quatro
+coisas por tipo de dano. O
+que ela NÃO faz é escolher um vencedor quando o mesmo tipo recebe dois estados (a ficha diz
+vulnerável e uma habilidade concede imunidade, por exemplo): ela mostra os dois e levanta um AVISO.
+
+Isso é deliberado, e não um estado provisório por preguiça: a regra de desempate é do LIVRO. Escolher
+aqui um "imunidade sempre ganha", ou o "resistência e vulnerabilidade se cancelam" que é convenção de
+outros sistemas e não deste, esconderia a pergunta dentro de um número que parece certo.
+
+Conflito é raro por construção: a Composição Elemental, a única aptidão que dá os dois, dá imunidade
+a um tipo e vulnerabilidade ao tipo OPOSTO, que são tipos diferentes.
+
+**Precisa:** o autor dizer o que acontece quando dois estados caem no mesmo tipo. Se houver regra, o
+`resolveDefesasDano` passa a aplicá-la e o assert do conflito em `t-defesas-dano.mjs` é o primeiro
+que tem de mudar.
+**Anotado:** 2026-09-02, ao criar a aba de Defesas
+
+### O Atributo da Técnica estoura a largura em 390px
+**Onde:** `src/systems/afty/AftyCreatureBuilder.jsx`, o cabeçalho do `PerfilAmaldicoadoCard`
+**Situação:** a aba Habilidades é a ÚNICA do criador com rolagem horizontal em 390px, nos dois
+sistemas. O culpado é o controle "Atributo da Técnica" no cabeçalho do card: um bloco
+`ml-auto flex-shrink-0` de 269px (rótulo mais um `<select>` de `w-40`) numa tela de 390px, que
+estoura em 28px.
+
+⚠ **Não veio do merge de 2026-09-05.** Conferido: o bloco é byte a byte idêntico em `40ad1fc` e
+depois da junção com o trabalho do GoliasK. Ele é anterior aos dois, do redesenho de 2026-08-03.
+
+Achado ao varrer as cinco abas nas duas rotas e nas duas larguras, depois de puxar o trabalho do
+colaborador.
+
+**Precisa:** decidir o desenho em telefone. As saídas óbvias são deixar o controle QUEBRAR para a
+linha de baixo abaixo de um limiar (tirando o `flex-shrink-0` e deixando o `ml-auto` só no desktop),
+ou encolher o `<select>` de `w-40` para `w-28` no telefone. A primeira preserva o rótulo inteiro, a
+segunda preserva a linha única.
+**Anotado:** 2026-09-05, ao verificar o merge com o trabalho do GoliasK
+
+### PERGUNTA AO AUTOR: a RD Específica pode ser aposentada?
+**Onde:** `src/systems/afty/afty-derive.js` (`rdEspecifico`), `AftyTabDefesas.jsx`, o Preview e a
+Ficha Final
+**Situação:** em 2026-07-30 o autor decidiu que a RD Específica *"vai VIRAR RD POR TIPO DE DANO"*.
+Ela era o jeito dele de tratar RD contra um tipo único quando eram poucos casos. O bloqueio de então
+era a lista de tipos, que tinha só quatro, e **esse bloqueio caiu em 2026-09-02**: `TIPOS_DANO` tem
+os quinze do livro e o canal `rdTipo` existe.
+
+Hoje ela é uma quarta pilha que ninguém alimenta: nasce da fórmula por Tipo na criatura (Conjurador
+e Misto), aceita override, aparece no Preview e na Ficha, e **não tem nenhum tipo de dano associado**,
+que é justamente o que a substituição resolveria.
+
+Na aba de Resistências ela já entra escondida quando vale zero (2026-09-05), para não dar destaque a uma
+pilha de saída. Isso é paliativo, e não decisão.
+
+**Precisa:** o autor dizer se a substituição vale agora. Se valer, o trabalho é migrar a fórmula por
+Tipo para linhas de `rdTipo` e tirar `rdEspecifico` do `OVERRIDABLE`, do Preview e da Ficha, com
+migração para as fichas que tenham override gravado nela.
+**Anotado:** 2026-09-05, ao pôr as fontes de RD na aba de Defesas
+
+### Os três encantamentos de RD por tipo esperam agora só a ESCOLHA DE TIPO
+**Onde:** `src/systems/afty/afty-equipamentos.js` (os três), `AftyTabEquipamentos`
+**Situação:** ⚠ **METADE DESTA PENDÊNCIA MORREU EM 2026-09-02.** Ela tinha dois bloqueios, e a aba de
+Defesas resolveu os dois que eram do sistema: o canal `rdTipo` (com o tipo no alvo) existe, e a ficha
+tem onde mostrar "RD 6 contra Queimante".
+
+O que resta é só o terceiro bloqueio, e ele é de UI: dois dos três encantamentos pedem uma ESCOLHA DE
+TIPO por encantamento, e encantamento não tem mecanismo de escolha nenhum.
+
+| Encantamento | Texto | O que falta |
+|---|---|---|
+| **Isolante** (uniforme) | *"5 de RD contra dano Queimante e Congelante"* | **NADA. É ligável hoje** |
+| **Isolante** (escudo, só jogador) | *"a redução de dano do escudo passa também a ser aplicado a um tipo de dano elemental à sua escolha"* | escolha de tipo elemental, repetível, valor = RD do escudo |
 | **Resiliente** (uniforme) | *"redução de dano igual a 5 contra um tipo de dano (exceto os danos físicos, alma e energética). A RD aumenta para 10 se for uma ferramenta de Grau Especial"* | escolha de tipo, com veto |
 
-Os dois de uniforme estão assim desde julho; o de escudo voltou em 2026-08-31 e nasceu na mesma
-situação, de propósito. **A peça que falta é a mesma para os três.**
+⚠ **Ligar só o de uniforme é pior do que os três parados**, porque o jogador passaria a acreditar que
+os outros dois também funcionam. Há assert em `asserts/t-uniforme-escudo.mjs` prendendo os três
+juntos: ligar um faz falhar, para a decisão ser consciente.
 
-⚠ **Ligar um sozinho é pior do que os três parados**, porque o jogador passaria a acreditar que os
-outros dois também funcionam. Há assert em `asserts/t-uniforme-escudo.mjs` prendendo os três juntos: ligar
-um faz falhar, para a decisão ser consciente.
-
-A peça também não é só motor: **não existe onde MOSTRAR** uma RD por tipo. A ficha tem uma linha para
-RD Geral, uma para Física, uma para Específica e uma para a Alma, e "RD 6 contra Queimante" não cabe
-em nenhuma. As categorias de dano já existem desde 2026-08-31 (`CATEGORIAS_DANO`,
-`tiposDeDanoDaCategoria`), então a metade do catálogo está pronta.
-
-**Precisa:** decidir com o autor se vale um canal `rdTipo` com alvo de tipo de dano, e onde a ficha o
-mostraria. Depois ligar os três de uma vez.
-**Anotado:** 2026-08-31, ao devolver o Isolante de escudo para o jogador
+**Precisa:** dar aos encantamentos um mecanismo de escolha (o de habilidade não serve: o dono aqui é
+uma instância de item, e o do escudo é repetível). Depois ligar os três de uma vez.
+**Anotado:** 2026-08-31, e reduzido à metade em 2026-09-02 com a aba de Defesas
 
 ### Confirmar o total de perícias das quatro Classes que o autor não citou
 **Onde:** `src/systems/afty/afty-especializacoes.js`, `caracteristicas.pericias`

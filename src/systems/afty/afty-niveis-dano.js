@@ -248,7 +248,10 @@ export const DESARMADO_FONTES = [
     /* "O dano dos seus ataques desarmados se torna 1d8. Nos níveis 5, 9, 13 e 17
        seu dano desarmado aumenta para 1d10, 1d12, 2d8 e 2d12, respectivamente."
        ⚠ O nível é o de LUTADOR, e não o do personagem: é uma Base de classe, e a
-       multiclasse tem nível próprio por classe. */
+       multiclasse tem nível próprio por classe. E é o de ESCALONAMENTO (autor,
+       2026-09-01), o mesmo `esc_lutador` da linha de escada do Motor: quem
+       preenche o `nivelLutador` é o deriveAfty, e o nome do campo é a CLASSE, e
+       não a escala. */
     escala: "lutador",
     degraus: [
       { nivel: 1, dado: "1d8" },

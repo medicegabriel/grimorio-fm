@@ -146,8 +146,13 @@ t("origem do ganho fica direta", origensDiretasDasAdaptacoes(direta, sessaoDiret
 dDireta = deriveAfty(direta, {
   concedido: sessaoDireta.concedido, adaptacoes: sessaoDireta.adaptacoes,
 });
+/* ⚠ O CANAL DO ACERTO AQUI É `acertoArma`, e não `bonusAcerto` (2026-09-01). O
+   Impacto Misto diz "jogadas de ataque desarmados", e passou a mirar a linha
+   `basico` em vez do tipo de ataque `corpo`, que pegava toda arma de corpo a
+   corpo. O que este assert mede não é o canal, é que o efeito entra SEM o
+   interruptor da bancada, e isso não mudou. */
 t("acerto do giro entra sem ativar", dDireta.efeitos.detalhes.some((e) => (
-  e.origem === "lut_impacto_misto" && e.canal === "bonusAcerto" && e.valor === 2
+  e.origem === "lut_impacto_misto" && e.canal === "acertoArma" && e.valor === 2
 )), true);
 t("efeito irmao entra sem ativar", dDireta.efeitos.detalhes.some((e) => (
   e.origem === "lut_impacto_misto" && e.canal === "danoBonus" && e.valor === 2

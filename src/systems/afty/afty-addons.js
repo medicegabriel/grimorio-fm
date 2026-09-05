@@ -308,6 +308,15 @@ export const PRIMITIVAS = [
     rotulo: "Ciclo de Adaptação",
     nota: "Progressão de sessão com giro manual, avanço por rodada e marcos configuráveis",
   },
+  /* ⚠ NASCEU EM 2026-09-04, com a Loja de Catarse. Ela é primitiva e não
+     família de catálogo porque o que ela acrescenta não é uma ENTRADA nova: é
+     uma moeda na ficha e uma forma de gastá-la, e as duas coisas são verbo. O
+     que o pacote traz de dado é a tabela de PREÇOS. */
+  {
+    id: "catarse",
+    rotulo: "Loja de Catarse",
+    nota: "Moeda de mesa que compra vaga de Talento, Habilidade, Melhoria, Lendária e Aptidão, mais anotação com Motor que ACUMULA",
+  },
 ];
 
 const PRIMITIVA_IDS = new Set(PRIMITIVAS.map((p) => p.id));
@@ -458,6 +467,36 @@ export function filtraForaDoJogador(lista, creature, jaNaFicha = null, chave = "
 export const SEM_PRIMITIVAS = Object.freeze([]);
 
 /**
+ * A tabela de PREÇOS da Loja de Catarse, unida de todos os addons da criatura.
+ *
+ * ⚠ É DADO DE PACOTE, e por isso mora aqui e não no `afty-catarse.js`. Mudar o
+ * preço de um Talento não pode pedir código, que é a tese inteira dos Addons.
+ * O módulo da Loja é o verbo, e esta função entrega o substantivo.
+ *
+ * ⚠ E ela NÃO decide o custo de uma compra JÁ FEITA. O custo fica gravado na
+ * linha da compra, para uma mudança de tabela não reescrever o passado do
+ * personagem: quem comprou a 3 continua tendo comprado a 3. Isto aqui é só o
+ * que a tela sugere ao criar linha nova.
+ *
+ * Com dois addons declarando preço para a mesma família, vence o MENOR: a
+ * alternativa seria a ordem de instalação decidir, que é resposta por acidente.
+ */
+export function precosDeCatarse(creature) {
+  const lista = Array.isArray(creature?.addons) ? creature.addons : [];
+  const out = {};
+  for (const pacote of lista) {
+    const tabela = pacote?.catarse?.precos;
+    if (!tabela || typeof tabela !== "object") continue;
+    for (const [familia, bruto] of Object.entries(tabela)) {
+      const n = Math.trunc(Number(bruto));
+      if (!Number.isFinite(n) || n < 0) continue;
+      out[familia] = familia in out ? Math.min(out[familia], n) : n;
+    }
+  }
+  return out;
+}
+
+/**
  * As primitivas que os addons DESTA criatura pedem.
  *
  * ⚠ Sai da criatura, e não do mundo aplicado: num Encontro misto o mundo é a
@@ -517,6 +556,10 @@ export function normalizarPacote(cru) {
     estadosCombate: Array.isArray(p.estadosCombate)
       ? p.estadosCombate.filter((x) => x && typeof x === "object").map(clonar)
       : [],
+    /* A tabela de preços da Loja de Catarse. Fica num campo PRÓPRIO, e não
+       dentro de `acrescenta`, porque ela não é uma entrada de catálogo: é
+       configuração do pacote, como `permite` e `libera`. Ver `precosDeCatarse`. */
+    catarse: (p.catarse && typeof p.catarse === "object") ? clonar(p.catarse) : null,
     acrescenta: {},
     /* O que este pacote REESCREVE de entradas que já existem no livro. Ver
        `remendarLista`. */
@@ -1132,7 +1175,7 @@ export function problemasDeAddon(creature) {
         // O que resolve, para o aviso não terminar num beco.
         saida: naFicha.has(pacoteId)
           ? "Volte à versão antiga do addon, ou tire esta entrada da criatura."
-          : "Ligue esse addon na aba Addons, ou tire esta entrada da criatura.",
+          : "Ligue esse addon na aba Cálculos, ou tire esta entrada da criatura.",
       });
     }
   }

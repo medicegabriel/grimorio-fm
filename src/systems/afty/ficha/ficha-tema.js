@@ -407,6 +407,21 @@ const urlSegura = (u) => String(u ?? "").trim().replace(/["'()\\;{}\s]/g, "");
 export const ESCOPO_FICHA = "#afty-ficha";
 
 /**
+ * ⚠ A ÚLTIMA SAÍDA, e ela mora AQUI desde 2026-09-03. CSS livre permite
+ * escrever `* { display: none }` e se trancar para fora, e `?semcss=1` na URL
+ * desliga o tema antes de ele existir, sem depender de nenhum botão continuar
+ * clicável.
+ *
+ * Era um `const` local da `AftyFicha`, e por isso ela cobria só o CSS DA FICHA:
+ * o de cada invocação é montado na `AbaInvocacoes`, que nunca soube do
+ * parâmetro. Um shikigami com o CSS quebrado não tinha escape nenhum, e a aba
+ * ainda é usada pelo painel do Encontro, onde a `AftyFicha` nem entra. Uma
+ * constante de módulo serve os dois lados sem prop atravessando a árvore.
+ */
+export const SEM_CSS = typeof location !== "undefined"
+  && new URLSearchParams(location.search).has("semcss");
+
+/**
  * O seletor de UM Shikigami dentro da Ficha (2026-08-31).
  *
  * ⚠ CADA INVOCAÇÃO TEM TEMA PRÓPRIO, a pedido do autor: *"na Ficha Final, cada
@@ -558,8 +573,16 @@ export const temCssLivre = (tema) => !!saneiaCss(tema?.css).trim();
  * (`TOKENS_DOC` e `CONTRATO_DE_CLASSES`), então ele nunca descreve uma variável
  * que deixou de existir.
  */
-export function promptParaIA(tema) {
+/**
+ * ⚠ `escopo` EXISTE PORQUE O MESMO PAINEL PINTA DUAS COISAS. O tema de um
+ * shikigami usa este painel inteiro (ver `AftyFicha`), e o CSS dele é injetado
+ * em `@scope (#afty-inv-<id>)`. Até 2026-09-03 o prompt dizia a raiz errada
+ * (`:scope#afty-ficha`, que ali dentro não casa com nada) e não citava uma
+ * classe sequer do cartão que a pessoa estava pintando.
+ */
+export function promptParaIA(tema, { escopo = ESCOPO_FICHA, nome = null } = {}) {
   const t = normalizaTema(tema);
+  const naFicha = escopo === ESCOPO_FICHA;
   const atual = saneiaCss(t.css).trim();
   const tokens = TOKENS_DOC.map((x) => `  ${x.id}: ${x.valor};   /* ${x.oque} */`).join("\n");
   const porGrupo = CONTRATO_DE_CLASSES.reduce((acc, c) => {
@@ -570,15 +593,26 @@ export function promptParaIA(tema) {
     .map(([grupo, linhas]) => `### ${grupo}\n${linhas.join("\n")}`).join("\n\n");
   const atributos = ATRIBUTOS_DOC.map((a) => `- \`${a.seletor}\` ${a.oque}`).join("\n");
 
+  const alvo = naFicha
+    ? `É a ficha de personagem do "Grimório do Afty", um sistema de RPG próprio. A página já existe e está
+pronta: você NÃO escreve HTML nem JavaScript, só o CSS que muda a aparência dela.
+
+O CSS que você escrever é injetado dentro de \`@scope (${ESCOPO_FICHA}) { ... }\`, então ele afeta só a
+ficha e nada mais do site. Escreva os seletores normalmente, SEM repetir \`${ESCOPO_FICHA}\` na frente.`
+    : `É a ficha de personagem do "Grimório do Afty", um sistema de RPG próprio, e o alvo aqui é o cartão
+de UMA invocação${nome ? ` (${nome})` : ""} dentro dela. A página já existe e está pronta: você NÃO escreve HTML nem
+JavaScript, só o CSS que muda a aparência desse cartão.
+
+O CSS que você escrever é injetado dentro de \`@scope (${escopo}) { ... }\`, então ele afeta SÓ o cartão
+desta invocação. A ficha do dono, a fileira de cartões de cima e o painel de rolagens continuam com o
+tema que já têm, e um tema claro aqui convive com uma ficha escura em volta. Escreva os seletores
+normalmente, SEM repetir \`${escopo}\` na frente.`;
+
   return `Você vai escrever CSS para personalizar uma ficha de RPG.
 
 ## O contexto
 
-É a ficha de personagem do "Grimório do Afty", um sistema de RPG próprio. A página já existe e está
-pronta: você NÃO escreve HTML nem JavaScript, só o CSS que muda a aparência dela.
-
-O CSS que você escrever é injetado dentro de \`@scope (#afty-ficha) { ... }\`, então ele afeta só a
-ficha e nada mais do site. Escreva os seletores normalmente, SEM repetir \`#afty-ficha\` na frente.
+${alvo}
 
 ## O mapa da página
 
@@ -595,17 +629,29 @@ cabeçalho fica pela metade e é o erro mais comum. Estilize também \`.afty-car
 Quase tudo na ficha é pintado por VARIÁVEL CSS. Trocar a variável repinta de uma vez tudo que a usa,
 no cabeçalho E no corpo. Comece SEMPRE por aqui, e só depois vá para classe específica.
 
-**IMPORTANTE: copie o seletor abaixo exatamente como está, com as duas linhas.** Dentro de \`@scope\` um
-\`#afty-ficha\` sozinho NÃO acerta a raiz (o escopo o transforma em "um #afty-ficha dentro do
-#afty-ficha", que não existe), e \`:scope\` sozinho perde para o painel de Aparência. \`:scope#afty-ficha\`
+${naFicha
+    ? `**IMPORTANTE: copie o seletor abaixo exatamente como está, com as duas linhas.** Dentro de \`@scope\` um
+\`${ESCOPO_FICHA}\` sozinho NÃO acerta a raiz (o escopo o transforma em "um ${ESCOPO_FICHA} dentro do
+${ESCOPO_FICHA}", que não existe), e \`:scope\` sozinho perde para o painel de Aparência. \`:scope${ESCOPO_FICHA}\`
 acerta e vence; a segunda linha é para o navegador que ainda não tem \`@scope\`.
 
 \`\`\`css
-:scope#afty-ficha,
-#afty-ficha#afty-ficha {
+:scope${ESCOPO_FICHA},
+${ESCOPO_FICHA}${ESCOPO_FICHA} {
 ${tokens}
 }
-\`\`\`
+\`\`\``
+    : `**IMPORTANTE: a raiz do cartão é \`:scope\`, e o \`color\` vai JUNTO das variáveis.** A cor de texto
+padrão é resolvida lá na raiz da ficha, e o que se herda daqui para baixo é a cor já CALCULADA e não a
+variável: trocar \`--afty-texto\` sem escrever \`color\` deixa todo nome de linha na cor antiga, e num
+tema claro eles somem no fundo.
+
+\`\`\`css
+:scope {
+  color: var(--afty-texto);
+${tokens}
+}
+\`\`\``}
 
 **Nesse bloco vão SÓ as variáveis desta lista.** Ele é forte de propósito, e uma variável de componente
 escrita ali (como \`--afty-vital-cor\`) atropelaria a cor que cada recurso define por conta própria.
@@ -721,6 +767,28 @@ export const CONTRATO_DE_CLASSES = [
   { grupo: "Corpo", seletor: ".afty-opcao", oque: "a opção escolhida dentro de uma habilidade" },
   { grupo: "Corpo", seletor: ".afty-estrela", oque: "o botão de fixar no Rápido" },
   { grupo: "Corpo", seletor: ".afty-vazio", oque: "o texto de lista vazia" },
+
+  /* ---------- a invocação ----------
+     ⚠ ENTROU EM 2026-09-03, e a falta delas era um buraco de verdade: o painel
+     de Aparência de um SHIKIGAMI é o mesmo painel da ficha, então quem pedia um
+     tema para uma invocação recebia um contrato que não citava uma classe sequer
+     do cartão que ele estava pintando. */
+  { grupo: "Invocação", seletor: ".afty-inv-ficha", oque: "o cartão da invocação selecionada. É a raiz do CSS de um shikigami" },
+  { grupo: "Invocação", seletor: ".afty-inv-cabeca", oque: "a faixa de identidade: retrato, nome, grau, tipo e custo" },
+  { grupo: "Invocação", seletor: ".afty-inv-titulo", oque: "o nome da invocação" },
+  { grupo: "Invocação", seletor: ".afty-inv-cabeca-marcas", oque: "a fileira de grau, tipo e custo, embaixo do nome" },
+  { grupo: "Invocação", seletor: ".afty-inv-retrato-icone", oque: "o retrato quadrado ao lado do nome" },
+  { grupo: "Invocação", seletor: ".afty-inv-corpo", oque: "tudo abaixo da faixa" },
+  { grupo: "Invocação", seletor: ".afty-inv-stats", oque: "a tira de Defesa, Desloc., CD, RD e Tamanho" },
+  { grupo: "Invocação", seletor: ".afty-inv-colunas", oque: "a grade de duas colunas do corpo" },
+  { grupo: "Invocação", seletor: ".afty-inv-coluna", oque: "cada uma das duas colunas" },
+  { grupo: "Invocação", seletor: ".afty-inv-bloco", oque: "cada seção dentro de uma coluna" },
+  { grupo: "Invocação", seletor: ".afty-inv-duplo", oque: "a lista que vira duas colunas quando cabe (testes e características)" },
+  { grupo: "Invocação", seletor: ".afty-inv-bonus", oque: "a linha de um auxílio" },
+  { grupo: "Invocação", seletor: ".afty-inv-bonus-botao", oque: "o auxílio que liga e desliga (o ligado tem data-afty-ligado=\"sim\")" },
+  { grupo: "Invocação", seletor: ".afty-inv-lampada", oque: "o ponto que acende no auxílio ligado" },
+  { grupo: "Invocação", seletor: ".afty-inv-fileira", oque: "a fileira de cartões de cima. FICA FORA do escopo de um shikigami" },
+  { grupo: "Invocação", seletor: ".afty-inv-cartao", oque: "cada cartão da fileira. Também fora do escopo de um shikigami" },
 
   /* ---------- controles ---------- */
   { grupo: "Controles", seletor: ".afty-botao", oque: "todo botão de texto" },

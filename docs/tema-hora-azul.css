@@ -1,0 +1,403 @@
+/* ============================================================
+   HORA AZUL
+   O céu depois que o sol já se pôs
+   ============================================================
+   Pedido do autor: *"algo quase como um POR DO SOL. Quando o sol já
+   desapareceu e fica aquele tom de azul bem bonito com um tom quase de roxo de
+   fundo."*
+
+   É a hora azul, e ela tem uma estrutura de cor bem definida que este tema
+   segue à risca:
+
+     • o alto do céu é VIOLETA quase preto, e é o fundo da página
+     • o meio do céu é o AZUL PERIWINKLE, e é a cor de marca: aba ativa, foco,
+       tudo que a ficha quer que o olho ache primeiro
+     • rente ao horizonte a luz clareia para um AZUL mais vivo, e é o clarão
+       logo abaixo do fio do cabeçalho
+
+   ⚠ NADA DE QUENTE, EM LUGAR NENHUM. A primeira versão tinha uma brasa
+   alaranjada no horizonte, e o autor cortou: *"a paleta era para ficar do azul
+   pro roxo, sem puxar para o laranja"*. A profundidade deste tema é feita por
+   MATIZ (azul contra roxo) e por claridade, e nunca por temperatura.
+
+   ------------------------------------------------------------
+   AS TRÊS REGRAS QUE ESTE ARQUIVO SEGUE
+   ------------------------------------------------------------
+   1. PINTAR POR TOKEN. Quase nada aqui mira uma classe. Trocar a variável
+      repinta o cabeçalho, o corpo, os painéis flutuantes e as fichas dos
+      shikigamis de uma vez, e é o que faz a ficha continuar inteira quando o
+      app ganhar tela nova.
+   2. O QUE NÃO É COR, O CSS DO USUÁRIO NÃO MEXE. Nenhum `position`, nenhum
+      `overflow`, nenhum `z-index`, nenhum tamanho de fonte da grade. O
+      alinhamento por linha de base, a altura das células e o painel de fontes
+      que abre de dentro dos cartões continuam exatamente como o app os
+      desenhou.
+   3. ⚠ O PAPEL CONTINUA BRANCO. O `@media print` do app zera os tokens para
+      imprimir em preto no branco, e ele perde para este arquivo por
+      especificidade (`.afty-ficha` contra `:scope#afty-ficha`). Sem o bloco de
+      impressão lá no fim, imprimir esta ficha sairia violeta escuro e comeria
+      a tinta toda.
+   ============================================================ */
+
+/* ============================================================ */
+/* 1. OS TOKENS                                                  */
+/* ============================================================ */
+/* ⚠ O SELETOR TEM DE SER ESTE, com as duas linhas. Dentro de `@scope` um
+   `#afty-ficha` sozinho não acerta a raiz (o escopo o lê como "um #afty-ficha
+   dentro do #afty-ficha", que não existe), e `:scope` sozinho perde para o
+   Painel de Aparência. A segunda linha atende o navegador sem `@scope`. */
+:scope#afty-ficha,
+#afty-ficha#afty-ficha {
+  /* ---------- as superfícies ----------
+     ⚠ AS DUAS TROCAM DE MATIZ, e não só de claridade. O fundo é violeta (250°)
+     e o cartão é azul-índigo (233°): a diferença de temperatura faz o cartão
+     flutuar sobre a página sem precisar de sombra pesada nem de borda clara.
+     Só claridade separando superfície é o que deixa tema escuro com cara de
+     cinza pintado. */
+  --afty-fundo: #0b0720;
+  --afty-card: #191f4a;
+  --afty-poco: #0d1030;
+  --afty-borda: #2c3470;
+  --afty-borda-forte: #4a55a8;
+
+  /* ⚠ O CÉU VAI DO AZUL AO ROXO, e não tem uma gota de quente em lugar nenhum
+     (autor, 2026-09-05: *"a paleta era para ficar do azul pro roxo, sem puxar
+     para o laranja"*). A primeira versão punha uma brasa alaranjada logo abaixo
+     do fio do cabeçalho, e ela foi cortada inteira.
+
+     A profundidade agora é feita por MATIZ, e não por temperatura: o azul acende
+     logo abaixo do horizonte, que é onde o olho começa a ler a ficha, e o roxo
+     sobe do pé da tela. `background-attachment: fixed` já vem do app, então
+     esse céu fica parado enquanto a ficha rola, e é isso que o faz parecer céu
+     em vez de mais um cartão. */
+  --afty-fundo-brilho:
+    radial-gradient(120% 30% at 50% 33%, #3f52c44d, transparent 72%),
+    radial-gradient(130% 62% at 50% 106%, #3b1f8f66, transparent 76%);
+
+  /* ---------- o texto ----------
+     Branco levemente azulado, e não branco puro: sobre violeta o branco puro
+     vibra e cansa em ficha longa. Os três degraus estão medidos contra o poço,
+     que é a superfície mais escura em que texto cai. */
+  --afty-texto: #e9ecff;
+  --afty-texto-suave: #a8b0e4;
+  --afty-texto-fraco: #838bc2;
+
+  /* ---------- o azul da hora azul ----------
+     O periwinkle é a cor do meio do céu, e é a cor de marca. Ele fica a 34° do
+     ciano da Energia e a 46° do orquídea da Alma, que é distância suficiente
+     para ninguém confundir uma aba ativa com uma barra de recurso. */
+  --afty-destaque: #8fa6ff;
+  --afty-destaque-texto: #c6d1ff;
+  --afty-destaque-fundo: #2c3c9466;
+
+  /* ---------- os recursos ----------
+     Seis matizes bem espalhados, porque aqui cor É informação: Vida, Energia e
+     Alma têm de se distinguir de relance, e nenhuma delas pode ser confundida
+     com o destaque. */
+  --afty-pv: #ff6b8a;
+  --afty-pe: #38c8f5;
+  --afty-pvtemp: #f2ce76;
+  --afty-alma: #cd8bff;
+  --afty-cura: #4ddba0;
+  /* ⚠ O AVISO É O ÚNICO QUENTE QUE SOBRA, e ele fica. Aviso precisa gritar, e
+     num campo azul e roxo o único matiz que grita é o do outro lado da roda.
+     Pintar aviso de roxo seria bonito e não serviria para nada, porque ele
+     sumiria no meio de tudo. O que dá para fazer, e está feito, é ele ser OURO e
+     não LARANJA: saiu de 35° (âmbar alaranjado, que é o do tema padrão) para 43°,
+     que o olho lê como amarelo. É a mesma cor do PV Temporário, e as duas andam
+     juntas de propósito. */
+  --afty-aviso: #f2ce76;
+
+  /* O véu das camadas de cima puxa para o violeta do fundo, e não para o preto
+     neutro: preto sobre violeta empasta e apaga o tema atrás. */
+  --afty-veu: rgb(8 5 26 / 0.62);
+
+  /* ⚠ A SOMBRA TEM DUAS METADES. A de fora é a queda, e é violeta em vez de
+     preta. A de dentro é o fio de luz de 1px na aresta de cima, e é ela que faz
+     o cartão parecer iluminado pelo céu que está atrás dele. Sombra escura
+     sozinha quase não rende em fundo escuro. */
+  --afty-sombra:
+    0 4px 18px rgb(4 2 16 / 0.55),
+    inset 0 1px 0 rgb(180 198 255 / 0.07);
+
+  /* O nome da criatura e os títulos em serifada, o resto da ficha em sans.
+     ⚠ `--afty-fonte` fica de FORA deste bloco de propósito: ele é o botão de
+     fonte do Painel de Aparência, e escrever aqui deixaria o botão sem efeito. */
+  --afty-fonte-titulo: Georgia, "Times New Roman", serif;
+}
+
+/* ⚠ VARIÁVEIS MINHAS, e por isso fora do bloco de cima. Aquele bloco é forte
+   demais para receber nome que algum componente possa definir por conta
+   própria. Os três nomes abaixo levam prefixo `--sol-` e não existem em lugar
+   nenhum do app, então não têm com o que colidir. */
+:scope#afty-ficha,
+#afty-ficha#afty-ficha {
+  /* O azul vivo do horizonte, que é o ponto mais claro do céu. */
+  --sol-azul: #4a63d8;
+  /* O roxo do alto, para o degradê do cabeçalho. */
+  --sol-alto: #2a2270;
+  /* ⚠ O CONTORNO DE QUEM É BOTÃO. A regra 1.4.11 da WCAG pede 3:1 para a borda
+     que identifica um controle, e a borda comum não chega lá: ela vale 2,4:1
+     sobre o cartão, e subir a borda comum até 3:1 acenderia os quarenta chips
+     de rótulo da ficha junto. Este contorno vale 3,7:1 e vai SÓ em quem clica. */
+  --sol-contorno: #6771c6;
+}
+
+/* ============================================================ */
+/* 2. O CÉU: o cabeçalho e o horizonte                           */
+/* ============================================================ */
+
+/* O cabeçalho é o pedaço grande de tela que fica sempre à vista, então é nele
+   que o céu se lê. Roxo em cima, clareando para o azul até o fio do horizonte,
+   que é onde o céu está mais aceso.
+   ⚠ Nada de `position` nem de `backdrop-filter` aqui: os dois são do app, o
+   cabeçalho gruda no topo e encolhe ao rolar, e isso continua igual. */
+.afty-cabecalho {
+  /* ⚠ O CABEÇALHO FICA OPACO, e isto conserta um defeito que o tema PADRÃO
+     também tem. O app deixa o cabeçalho em 88% e desfoca o que passa por trás,
+     mas o desfoque não alcança esse texto: com a página rolada dá para LER
+     "Agarrar" atrás de "Ações", nítido. Medi nos dois temas, e sai igual nos
+     dois, então não é coisa daqui.
+
+     Tentei primeiro subir o `backdrop-filter` para 26px, e não muda nada: o
+     texto continua nítido, o que diz que ele não está sendo desfocado de
+     verdade. A alavanca que funciona é a opacidade. Em 99% o fantasma some, e
+     no alto da página, com nada por baixo, o cabeçalho fica IDENTICO ao de 88%
+     (comparei os dois recortes), então não se perde nada.
+
+     ⚠ O `backdrop-filter` do app fica onde está. Ele cria bloco de contenção, e
+     o painel que explica os números das defesas abre a partir daqui de dentro:
+     tirar o filtro mudaria onde esse painel aparece. */
+  background-color: color-mix(in srgb, var(--afty-fundo) 99%, transparent);
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--sol-alto) 55%, transparent) 0%,
+    color-mix(in srgb, var(--afty-destaque) 5%, transparent) 55%,
+    color-mix(in srgb, var(--sol-azul) 14%, transparent) 100%
+  );
+}
+
+/* ⚠ ESTE FIO JÁ EXISTIA, e é a única linha decorativa da Ficha. O app o desenha
+   com o destaque de ponta a ponta, e aqui ele vira o HORIZONTE: apagado nas
+   pontas, aceso no meio, com um clarão baixo espalhado logo abaixo dele. Era
+   alaranjado no meio até o autor cortar o quente, e agora é o mesmo azul do
+   céu. */
+.afty-cabecalho::after {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--afty-destaque) 40%, transparent) 20%,
+    var(--afty-destaque) 50%,
+    color-mix(in srgb, var(--afty-destaque) 40%, transparent) 80%,
+    transparent 100%
+  );
+  opacity: 0.75;
+  box-shadow: 0 1px 14px color-mix(in srgb, var(--sol-azul) 26%, transparent);
+}
+
+/* A moldura do retrato ganha a mesma luz de cima que os cartões. */
+.afty-retrato-painel {
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--afty-destaque) 22%, transparent),
+    0 4px 16px rgb(4 2 16 / 0.5);
+}
+
+/* ============================================================ */
+/* 3. O CORPO: cartões, linhas e listas                          */
+/* ============================================================ */
+
+/* ⚠ O CARTÃO É TRANSLÚCIDO, e é ISTO que faz o céu existir na ficha inteira.
+   Com o cartão opaco o fundo aparecia só nos vãos entre um cartão e outro, e
+   numa ficha de ND 24 isso é quase nada: a página virava um bloco azul e o
+   violeta que o autor pediu ficava escondido atrás de 90% da tela. Com 86% o
+   céu atravessa cada cartão, e como ele é FIXO na janela, o cartão que está no
+   alto pega o azul do horizonte e o que está embaixo pega o roxo. Rolar a ficha
+   muda a cor do que passa, que é o que o céu de verdade faz.
+
+   ⚠ E NADA DE `backdrop-filter` AQUI. Ele criaria bloco de contenção, e o
+   painel que explica os números abre de DENTRO do cartão: ele passaria a abrir
+   no lugar errado. Translucidez pura não cria contexto nenhum.
+
+   O degradê por cima é a luz do céu batendo na aresta de cima. São 5% que
+   ninguém aponta olhando, e que somem na hora se forem tirados. */
+.afty-card {
+  background-color: color-mix(in srgb, var(--afty-card) 86%, transparent);
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--afty-destaque) 5%, transparent) 0%,
+    transparent 40%
+  );
+}
+
+/* O título do bloco em serifada, com a maiúscula um pouco mais espaçada. Em
+   corpo pequeno a serifada precisa de mais ar entre as letras para não fechar. */
+.afty-card-titulo {
+  letter-spacing: 0.12em;
+  color: var(--afty-texto-suave);
+}
+
+/* A linha da lista responde ao mouse com luz, e não só com borda. */
+.afty-linha:hover {
+  background-color: color-mix(in srgb, var(--afty-destaque) 7%, var(--afty-poco));
+}
+
+/* ============================================================ */
+/* 4. AS ABAS                                                    */
+/* ============================================================ */
+
+/* ⚠ A PRIMEIRA VERSÃO DESTA SEÇÃO ESTAVA ERRADA, e o autor viu na hora: *"essa
+   barra lateral separando ficou meio feia"*. Eu tinha posto `box-shadow` na aba
+   ativa para ela acender, e a aba NÃO TEM FUNDO: box-shadow desenha o borrão em
+   volta da CAIXA INTEIRA, então ele escapava pelos lados e virava uma barra
+   vertical clara entre "Ações" e "Habilidades". Lia como divisor de tabela, e
+   não como brilho.
+
+   A resposta não foi consertar o brilho, foi trocar a ideia. O autor escolheu a
+   BARRA DE MENU (2026-09-05, entre quatro opções desenhadas): a fileira ganha
+   superfície própria e a aba ativa vira uma aba de verdade, com fundo e canto
+   arredondado só em cima, presa no conteúdo que ela abre. É o desenho de aba
+   mais antigo que existe, e ele diz onde você está sem depender de ninguém
+   reparar em 2px de sublinhado. */
+/* ⚠ A SUPERFÍCIE DA FILEIRA MORRE EM DEGRADÊ, E NÃO EM CORTE, e isto é a mesma
+   lição da barra lateral acima, aparecendo de novo noutro lugar. A primeira
+   tentativa foi uma faixa reta de cima para baixo, e ela deixava uma ARESTA
+   VERTICAL visível: o cabeçalho vai até a borda da janela, e a fileira de abas
+   para na largura da coluna de conteúdo, então o retângulo terminava no meio do
+   cabeçalho e parecia inacabado. Só apareceu no recorte a 3x, e é justamente o
+   tipo de coisa que se vê depois de reparar uma vez.
+
+   A cura é a luz vir de um radial ancorado embaixo e à esquerda, onde as abas
+   estão. Ele apaga sozinho antes de chegar em qualquer borda, e por isso não
+   tem onde cortar.
+
+   A REGRA, para a próxima vez: superfície que NÃO vai até a borda da tela pede
+   degradê nas pontas. Fundo chapado só funciona em caixa que tenha borda ou que
+   vá de ponta a ponta. */
+.afty-abas {
+  background: radial-gradient(
+    58% 120% at 22% 132%,
+    color-mix(in srgb, var(--afty-destaque) 14%, transparent),
+    transparent 70%
+  );
+}
+
+/* ⚠ A ABA PARADA FICA QUIETA. Com as seis na mesma cor, a fileira virava uma
+   frase de seis palavras e a ativa se distinguia só pelo sublinhado. Aqui ela
+   cai um degrau (5,2:1, ainda acima do mínimo de leitura), e o `:hover` do app
+   continua acendendo sozinho porque `.afty-aba:hover` é mais específico que
+   esta linha. */
+.afty-aba { color: var(--afty-texto-fraco); }
+
+.afty-aba[aria-selected="true"] {
+  background: var(--afty-destaque-fundo);
+  border-radius: var(--afty-raio-peq) var(--afty-raio-peq) 0 0;
+  color: #e4eaff;
+}
+
+/* ============================================================ */
+/* 5. OS NÚMEROS QUE ROLAM                                       */
+/* ============================================================ */
+
+/* Alvo de clique mais óbvio. O pontilhado embaixo do número já segue o token e
+   virou azul sozinho, e o que falta é o hover: um contorno de 1px que diz "isto
+   aqui é botão" sem escrever nada na tela. */
+.afty-rolavel:hover {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--afty-destaque) 45%, transparent);
+}
+
+/* ⚠ NO CELULAR O HORIZONTE DESCE. O cabeçalho empilhado come 60% da tela de
+   390px, e o clarão a 33% ficaria escondido atrás dele. Ele vai para 70%, que é
+   logo abaixo do fio, do mesmo jeito que no monitor. */
+@media (max-width: 640px) {
+  :scope#afty-ficha,
+  #afty-ficha#afty-ficha {
+    --afty-fundo-brilho:
+      radial-gradient(150% 22% at 50% 70%, #3f52c44d, transparent 72%),
+      radial-gradient(150% 45% at 50% 112%, #3b1f8f66, transparent 76%);
+  }
+}
+
+/* ============================================================ */
+/* 6. QUEM CLICA TEM CONTORNO                                    */
+/* ============================================================ */
+/* Os botões de menos e mais, os botões de texto e o seletor de cor. São os
+   controles cuja borda é a ÚNICA coisa que diz que eles existem, e por isso são
+   eles que recebem o contorno de 3:1. O chip de rótulo, que é texto e não
+   controle, continua com a borda calma.
+   ⚠ O hover não é tocado: `.afty-passo:hover` e `.afty-botao:hover` são mais
+   específicos que estas duas linhas e seguem acendendo na cor do recurso e no
+   destaque, como o app desenhou. */
+.afty-passo,
+.afty-botao,
+.afty-cor {
+  border-color: var(--sol-contorno);
+}
+
+/* ============================================================ */
+/* 7. O PAPEL                                                    */
+/* ============================================================ */
+/* ⚠ SEM ISTO A IMPRESSÃO SAI ESCURA. O app já tem um `@media print` que zera os
+   tokens, e ele perde para este arquivo: `.afty-ficha` é (0,1,0) e
+   `:scope#afty-ficha` é (1,1,0), e media query não muda especificidade. Então o
+   reset é repetido aqui.
+
+   São três blocos: as linhas do app copiadas, os três tokens de destaque que o
+   app deixa passar (com o roxo claro deste tema eles sairiam lavados no papel,
+   então viram tinta escura), e as decorações que só existem aqui.
+
+   ⚠ O fio do horizonte NÃO precisa entrar: o app já o esconde no papel com
+   `display: none`, e eu não declaro `display` nele, então aquela linha continua
+   valendo. Conferido com o navegador em modo de impressão, e não em teoria. */
+@media print {
+  :scope#afty-ficha,
+  #afty-ficha#afty-ficha {
+    --afty-fundo: #ffffff;
+    --afty-fundo-brilho: none;
+    --afty-card: #ffffff;
+    --afty-poco: #ffffff;
+    --afty-borda: #cbd5e1;
+    --afty-borda-forte: #94a3b8;
+    --afty-texto: #0f172a;
+    --afty-texto-suave: #334155;
+    --afty-texto-fraco: #64748b;
+    --afty-destaque: #4338ca;
+    --afty-destaque-texto: #312e81;
+    --afty-destaque-fundo: transparent;
+    --afty-sombra: none;
+    --afty-imagem: none;
+    background: #ffffff;
+  }
+
+  .afty-cabecalho { background-image: none; }
+  .afty-card { background-image: none; }
+  .afty-abas,
+  .afty-aba[aria-selected="true"] { background: none; }
+  .afty-retrato-painel { box-shadow: none; }
+}
+
+/* ============================================================
+   OS TRÊS BOTÕES DESTE TEMA
+   ============================================================
+   Se um dia o tema estiver quase certo e faltando um empurrão, é um destes
+   três, e nenhum deles pede mexer em mais de duas linhas.
+
+   MAIS ROXO, MENOS AZUL
+     `--afty-card` é o azul-índigo, e é 90% do que se vê. Puxe o vermelho dele
+     para cima e o verde para baixo (`#191f4a` vira `#1e1a48`) e a ficha inteira
+     vira violeta. Puxe `--afty-poco` junto, ou o poço fica azul dentro de um
+     cartão roxo.
+
+   MAIS CÉU, MENOS CÉU
+     O `4d` do primeiro `--afty-fundo-brilho` é a força do azul do horizonte, e
+     o `66` do segundo é a do roxo do chão. Subir os dois juntos deixa o céu
+     óbvio, baixar os dois deixa a ficha quase lisa. ⚠ Mexer em UM só desequilibra
+     a paleta inteira para o lado dele.
+
+   MAIS CONTRASTE
+     `--afty-texto-fraco` é o degrau mais apagado, e ele pinta DUAS coisas: a
+     perícia não treinada e a aba parada do menu. Está em 4,8:1 sobre o cartão e
+     5,3:1 no cabeçalho, os dois acima do mínimo de 4,5:1 da WCAG. Clarear para
+     `#949bcc` leva a 5,8:1 sem mudar o clima. ⚠ Clarear demais apaga a
+     hierarquia do menu, que é justamente o que este valor foi escolhido para
+     criar: a aba parada TEM de ser mais quieta que a ativa.
+   ============================================================ */

@@ -37,7 +37,7 @@
 
 // As duas listas cruas vêm de um módulo FOLHA para não fechar ciclo com
 // afty-origens.js, que as lê durante a própria inicialização. Ver o cabeçalho de lá.
-import { AFTY_PERICIAS, AFTY_ATAQUES } from "./afty-pericias-catalogo";
+import { AFTY_PERICIAS, AFTY_ATAQUES, ehPericiaOficio } from "./afty-pericias-catalogo";
 export { AFTY_PERICIAS, AFTY_ATAQUES };
 import { AFTY_ATTRS, AFTY_RESISTENCIAS } from "./afty-schema";
 import {
@@ -97,6 +97,36 @@ export function normalizarPericiasPersonalizadas(creature) {
     if (!id.startsWith(CUSTOM_PREFIX) || ids.has(id)) continue;
     ids.add(id);
     out.push({ id, nome, atributo, personalizada: true });
+  }
+  return out;
+}
+
+/**
+ * A troca MANUAL de atributo de perícia, saneada: `{ [periciaId]: chave }`.
+ *
+ * Pedido do autor em 2026-09-05: *"coloque a opção de mudar os Atributos da
+ * Perícia de forma manual, muita gente precisa disso por N fontes diferentes
+ * como Treinos Próprios e etc, que o sistema não comporta sem Addon e eu não vou
+ * fazer addon pra todo mundo"*.
+ *
+ * ⚠ ELA É O ESCAPE HATCH, e não mais um caminho de catálogo. As outras três
+ * trocas (livro, origem, Treinamento) descrevem regras que o Afty conhece. Esta
+ * existe justamente para a regra que ele NÃO conhece, e por isso não pede nem
+ * pré-requisito nem justificativa: quem responde por ela é a mesa.
+ *
+ * ⚠ O SANEAMENTO É POR ATRIBUTO, e não por perícia. Uma chave de atributo que
+ * não existe é descartada, e a linha volta ao padrão do livro. Já um ID DE
+ * PERÍCIA desconhecido passa de propósito: perícia personalizada tem id gerado,
+ * e um Addon pode trazer perícia nova. Guardar a escolha de uma linha que hoje
+ * não está na ficha é o mesmo que o `periciaOficios` faz, e é o que faz
+ * desligar e religar um Addon não apagar a escolha de ninguém.
+ */
+export function atributosDePericiaManuais(creature) {
+  const bruto = creature?.periciaAtributoManual;
+  if (!bruto || typeof bruto !== "object" || Array.isArray(bruto)) return {};
+  const out = {};
+  for (const [id, chave] of Object.entries(bruto)) {
+    if (typeof id === "string" && id && ATTR_KEYS.has(chave)) out[id] = chave;
   }
   return out;
 }
@@ -161,10 +191,13 @@ export function idsPericiasAtivas(creature) {
  */
 
 const OFICIO_ID = "oficio";
-const OFICIO_EXTRA = /^oficio__(\d+)$/;
 
-/** Este id é um Ofício (o do livro ou um dos repetidos)? */
-export const ehPericiaOficio = (id) => id === OFICIO_ID || OFICIO_EXTRA.test(String(id ?? ""));
+/* ⚠ O `ehPericiaOficio` MUDOU DE CASA em 2026-09-01, e quem importava daqui
+   continua importando daqui. Ele desceu para o afty-pericias-catalogo.js, que é
+   FOLHA, porque o requisito de treino (`avaliarRequisitoDeTreino`) precisa dele e
+   é lido por Habilidades, Talentos e Aptidões: importar ESTE arquivo em qualquer
+   um dos três fecharia o ciclo que a separação do catálogo existe para evitar. */
+export { ehPericiaOficio };
 
 /**
  * Os Ofícios escolhidos numa linha de Ofício.
@@ -556,7 +589,11 @@ export function resolveDano(creature, ctx = {}) {
   const rotuloAttr = (k) => AFTY_ATTRS.find((a) => a.key === k)?.label ?? k;
   const tecnicas = ctx.tecnicasCombate ?? {};
   const armasTecnicas = new Set(Array.isArray(tecnicas.armas) ? tecnicas.armas : []);
-  const atributoTecnicas = tecnicas.atributo === "sabedoria" ? "sabedoria" : "inteligencia";
+  /* ⚠ O ATRIBUTO VEM PRONTO do `resolveTecnicasCombate`, e esta linha NÃO o
+     renormaliza. Ela fazia `=== "sabedoria" ? "sabedoria" : "inteligencia"`, o
+     que apagava Presença para "inteligencia" e teria sabotado a habilidade do
+     Controlador mesmo depois de ligá-la (2026-09-02). */
+  const atributoTecnicas = tecnicas.atributo || "inteligencia";
   const btTecnicas = Math.max(0, Math.trunc(Number(tecnicas.bt) || 0));
   /* Na ficha de jogador a proficiência de ataque vem da ARMA, e não da marca
      por tipo. Ver `proficienciaPorArma` em afty-sistema.js. */
@@ -829,6 +866,21 @@ export function resolveDano(creature, ctx = {}) {
     const doEncantamento = fontes.reduce((s, f) => s + (f.valor ?? 0), 0);
     const doGrau = grauBonus - doEncantamento;
     const doMotor = Math.trunc(canal("acertoArma", escopos));
+    /* Fineza CONCEDIDA por habilidade (Corpo Treinado: "você pode escolher usar
+       tanto Força quanto Destreza nos seus ataques desarmados e ataques com
+       armas marciais"). Ela chega pelo ESCOPO DA LINHA, e não pelo tipo de
+       ataque, porque a permissão vale para o desarmado e para a arma Marcial, e
+       não para todo corpo a corpo. Sendo escolha livre e sem custo, vale o maior
+       dos dois, igual à Fineza da própria arma.
+
+       ⚠ Não vale junto do `atributoForcado`: as Técnicas de Combate já trocam o
+       atributo por conta própria, e a troca da Fineza por cima daria dois donos
+       para a mesma parcela. */
+    const finezaConcedida = !atributoForcado
+      && !!atq.atributoFineza
+      && canal("finezaAtaque", escopos) > 0
+      && modDe(atq.atributoFineza) > modDe(atq.atributo);
+    const trocaFineza = finezaConcedida ? modDe(atq.atributoFineza) - modDe(atq.atributo) : 0;
     const bonusAtaque = atributoForcado
       ? atq.bonus - modDe(atq.atributo) - (atq.treinado ? btTecnicas : 0)
         + modDe(atributoForcado) + btTecnicas
@@ -840,11 +892,16 @@ export function resolveDano(creature, ctx = {}) {
         ...(btTecnicas ? [{ label: "Maestria", valor: btTecnicas }] : []),
       ]
       : atq.partes;
+    // A primeira parte do ataque é sempre a do atributo (ver resolveTestes), e é
+    // ela que a Fineza concedida troca.
+    const partesComFineza = finezaConcedida
+      ? [{ label: rotuloAttr(atq.atributoFineza), valor: modDe(atq.atributoFineza) }, ...partesAtaque.slice(1)]
+      : partesAtaque;
     return {
-      acerto: bonusAtaque + grauBonus + doMotor + btDaArma,
+      acerto: bonusAtaque + trocaFineza + grauBonus + doMotor + btDaArma,
       acertoAtaque: atq.nome,
       partesAcerto: [
-        ...partesAtaque,
+        ...partesComFineza,
         ...(btDaArma ? [{ label: "Maestria (Treinado na Arma)", valor: btDaArma }] : []),
         ...(doGrau ? [{ label: "Grau da Ferramenta", valor: doGrau }] : []),
         ...fontes,
@@ -853,10 +910,6 @@ export function resolveDano(creature, ctx = {}) {
     };
   };
 
-  // Fineza no golpe básico vem de duas portas: o canal (Corpo Treinado, "você
-  // pode escolher usar tanto Força quanto Destreza") e a propriedade do item de
-  // pugilato que define o golpe (Soco Inglês).
-  const finezaDesarmado = valorCanal(ef, "finezaAtaque", "corpo") > 0 || !!ctx.finezaBasico;
   // ⚠ O Ataque Básico responde por "basico" MAIS o id do item de pugilato
   // equipado, quando existe um. É por esse id que o encantamento com `alvoItem`
   // (Potente, Poderosa, Penetrante) chega no golpe: sem ele o efeito era gravado
@@ -865,6 +918,12 @@ export function resolveDano(creature, ctx = {}) {
     ...escoposDaArma(null),
     ...(Array.isArray(ctx.escoposBasicoExtra) ? ctx.escoposBasicoExtra : []),
   ];
+  // Fineza no golpe básico vem de duas portas: o canal (Corpo Treinado, "você
+  // pode escolher usar tanto Força quanto Destreza") e a propriedade do item de
+  // pugilato que define o golpe (Soco Inglês).
+  // ⚠ O canal é lido pelo ESCOPO da linha desde 2026-09-01, e não mais pelo tipo
+  // de ataque `corpo`: a mesma leitura serve o desarmado e cada arma.
+  const finezaDesarmado = canal("finezaAtaque", escoposBasico) > 0 || !!ctx.finezaBasico;
   const entradas = [
     // Desarmado não tem margem de crítico listada em lugar nenhum: é 20.
     { id: "basico", nome: "Ataque Básico", fonte: "basico", alcance: alcanceDe(null), propriedades: [],
@@ -897,7 +956,14 @@ export function resolveDano(creature, ctx = {}) {
     }
     const escopos = escoposDaArma({ ...a, propriedades });
     const usaTecnicas = armasTecnicas.has(a.id);
-    const atributo = usaTecnicas ? atributoTecnicas : atributoDe(a);
+    /* A Fineza da arma e a CONCEDIDA por habilidade valem a mesma coisa aqui:
+       liberar o atributo alternativo no dano desta linha. A concedida chega pelo
+       escopo (o Corpo Treinado mira `prop:marcial`), então a Marcial sem a
+       propriedade Fineza (Bastão, Nunchaku Pesado) para de ficar com Destreza no
+       acerto e Força no dano. */
+    const atributo = usaTecnicas
+      ? atributoTecnicas
+      : atributoDe({ ...a, fineza: a.fineza || canal("finezaAtaque", escopos) > 0 });
     const linhaArma = {
       id: a.id, nome: a.nome, fonte: "arma",
       alcance: alcanceDe(a.alcance, a.alcanceBonusCorpo), propriedades,
@@ -1100,9 +1166,17 @@ export function resolveTestes(creature, ctx = {}) {
        fosse maior, o que fazia o número da linha mudar sozinho ao mexer num
        atributo que não é o dela. O atributo agora vem do catálogo, como o das
        outras dezenove. */
+    /* ⚠ `atributo` É O QUE VALE, `atributoPadrao` É O QUE O LIVRO DIZ, e a linha
+       precisa dos dois. Sem o segundo, a aba não teria como marcar qual perícia
+       fugiu do padrão, nem como saber que escolher o padrão de volta deve APAGAR
+       a troca em vez de gravá-la (ver `setPericiaAtributo` no criador).
+
+       Numa perícia personalizada o padrão é o atributo gravado na definição
+       dela, que é o `p.atributo` daqui: ela não tem linha no livro. */
+    const atributoPadrao = p.atributo;
     const atributo = AFTY_ATTRS.some((a) => a.key === ctx.atributosPericia?.[p.id])
       ? ctx.atributosPericia[p.id]
-      : p.atributo;
+      : atributoPadrao;
     const nome = oficios.length > 0
       ? `${p.nome} (${oficios.join(", ")})`
       : p.nome;
@@ -1127,7 +1201,12 @@ export function resolveTestes(creature, ctx = {}) {
       return {
         ...p,
         nome,
+        // Os Ofícios DESTA linha, crus. O `nome` já os traz entre parênteses,
+        // mas ele é texto de tela: o requisito "Treinado em Ferramentas de
+        // Médico" precisa da lista para comparar sem desmontar string.
+        oficios,
         atributo,
+        atributoPadrao,
         prof,
         profEscolhida: escolhida,
         concedida: !!prof && prof !== escolhida,
@@ -1138,7 +1217,9 @@ export function resolveTestes(creature, ctx = {}) {
     return {
       ...p,
       nome,
+      oficios,
       atributo,
+      atributoPadrao,
       prof,
       // A faixa que a FICHA escolheu, separada da resolvida: é ela que gasta
       // vaga. O treino concedido de fora já foi pago (com Focos, no caso do
@@ -1226,12 +1307,16 @@ export function resolveTestes(creature, ctx = {}) {
   const armaDecide = regraDo(ctx.sistema, "proficienciaPorArma") === "player";
   const ataques = AFTY_ATAQUES.map((a) => {
     const treinado = a.sempreTreinado || (!armaDecide && !!atqBruta[a.id]);
-    // Fineza libera o atributo alternativo do ataque. Vem da arma manejada
-    // (a marcação da ficha) ou de uma habilidade que dá a mesma permissão
-    // ("você pode escolher usar tanto Força quanto Destreza", Corpo Treinado).
-    // Sendo escolha livre e sem custo, vale o MAIOR dos dois modificadores.
-    const liberado = a.atributoFineza
-      && (fineza || bonusDeEfeito("finezaAtaque", a.id) > 0);
+    /* Fineza libera o atributo alternativo do ataque, e aqui ela vem SÓ da
+       marcação da ficha ("estou manejando uma arma com Fineza"). Sendo escolha
+       livre e sem custo, vale o MAIOR dos dois modificadores.
+
+       ⚠ O CANAL `finezaAtaque` NÃO ENTRA NESTA LINHA desde 2026-09-01. Ele mira
+       a FONTE de dano (`basico`, `prop:marcial`), porque quem concede fineza
+       concede para armas nomeadas, e não para o tipo de ataque inteiro: o Corpo
+       Treinado dava Destreza na Espada Grande enquanto esta linha existia. Quem
+       o lê agora é o `acertoDe` do resolveDano, uma linha por arma. */
+    const liberado = a.atributoFineza && fineza;
     const attr = a.id === "amaldicoado"
       ? (ctx.tecnicaAttr || "inteligencia")
       : (liberado && modDe(a.atributoFineza) > modDe(a.atributo) ? a.atributoFineza : a.atributo);

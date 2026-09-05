@@ -749,7 +749,14 @@ export function resolveAltoNivel(creature, ctx = {}) {
   // vagasND = o que o ND sozinho concede. Separado do total para a UI saber
   // distinguir "o ND ainda não abriu nada" de "falta a Habilidade Geral".
   const melVagasND = totalMelhoriasSuperiores(nd);
-  const melTotal = destravado.melhorias ? melVagasND : 0;
+  /* ⚠ VAGA VINDA DE CANAL, e ela NÃO destrava nada (canal `vagasMelhoria`,
+     2026-09-04, nascido com a Loja de Catarse). O portão continua sendo o
+     `destravado`, que é a Habilidade Geral mais o ND: sem ele o total é zero e
+     a vaga comprada não vira Melhoria nenhuma. Vaga é QUANTIDADE, e destravar é
+     outra pergunta. Somar a vaga por fora do portão faria uma compra de loja
+     valer mais do que a Habilidade Geral que o livro exige. */
+  const melVagasCanal = Math.max(0, Math.trunc(Number(ctx.vagasMelhoria) || 0));
+  const melTotal = destravado.melhorias ? melVagasND + melVagasCanal : 0;
 
   /* ---- Habilidades Lendárias (uma vez cada) ---- */
   const vistos = new Set();
@@ -769,7 +776,9 @@ export function resolveAltoNivel(creature, ctx = {}) {
   }
   const lenGastos = lendariasEscolhidas.length - lenConcedidas.length;
   const lenVagasND = totalHabilidadesLendarias(nd);
-  const lenTotal = destravado.lendarias ? lenVagasND : 0;
+  // Mesma regra da Melhoria acima: soma na quantidade, e não no portão.
+  const lenVagasCanal = Math.max(0, Math.trunc(Number(ctx.vagasLendaria) || 0));
+  const lenTotal = destravado.lendarias ? lenVagasND + lenVagasCanal : 0;
 
   const ctxReq = { nd, niveisPorEspec: ctx.niveisPorEspec, habilidades: ctx.habilidades };
   const inacessiveis = lendariasEscolhidas.filter(
@@ -807,6 +816,9 @@ export function resolveAltoNivel(creature, ctx = {}) {
       excedeu: melGastos > melTotal,
       destravado: destravado.melhorias,
       vagasND: melVagasND,
+      // Separado do `vagasND` para o hover dizer o que veio do nível e o que
+      // veio de fora dele (Loja de Catarse, Addon, Habilidade).
+      vagasCanal: melVagasCanal,
       concedidas: Object.fromEntries(melConcedidas),
     },
     lendarias: {
@@ -818,6 +830,7 @@ export function resolveAltoNivel(creature, ctx = {}) {
       inacessiveis,
       destravado: destravado.lendarias,
       vagasND: lenVagasND,
+      vagasCanal: lenVagasCanal,
       concedidas: lenConcedidas,
     },
     escolhas,                            // { porItem, mapa }

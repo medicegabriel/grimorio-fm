@@ -1,0 +1,248 @@
+/* ============================================================
+   YAMATA NO OROCHI
+   Paleta da planilha: lavanda clara, caixas brancas, faixas roxas
+   ============================================================
+   Este bloco vale SÓ para o cartão desta invocação. A ficha do dono, a
+   fileira de cima e o painel de rolagens seguem com o tema escuro.
+
+   A lógica do desenho é a da planilha: o cartão é a folha, cada bloco tem
+   uma FAIXA roxa com o nome dele, e todo dado mora numa caixa branca de
+   borda fina. Nada é redondo, porque a planilha não tem nada redondo.
+   ============================================================ */
+
+/* ---------- 1. os tokens ----------
+   Pintar por token é o que faz o resto da ficha continuar funcionando:
+   barra, aviso, cura e destaque leem daqui. */
+:scope {
+  --afty-card: #ded6f8;          /* a folha */
+  --afty-poco: #f7f5fe;          /* toda caixa de dado */
+  --afty-borda: #b4a3e2;
+  --afty-borda-forte: #7b62c4;
+
+  --afty-texto: #1d1240;         /* 14,9:1 sobre o poço */
+  --afty-texto-suave: #4a3a86;   /* 7,9:1 */
+  --afty-texto-fraco: #6a5aa6;   /* 5,2:1, ainda acima do mínimo de leitura */
+
+  --afty-destaque: #452a86;      /* o roxo das faixas */
+  --afty-destaque-texto: #ffffff;
+  --afty-destaque-fundo: #452a86;
+
+  --afty-pv: #ad1f5c;
+  --afty-alma: #5b3aa6;
+  --afty-pe: #2d5fb8;
+  --afty-cura: #0d7a63;
+  --afty-aviso: #96430a;
+
+  --afty-raio: 6px;
+  --afty-raio-peq: 4px;
+  --afty-sombra: 0 1px 3px rgb(29 18 64 / 0.18);
+  --afty-fonte-titulo: var(--afty-fonte);
+}
+
+/* A folha, com a borda grossa que a planilha usa em volta de tudo.
+
+   ⚠ O `color` AQUI NÃO É ENFEITE. A cor de texto padrão é resolvida lá em
+   cima, na raiz da ficha, e o que se herda é a cor JÁ CALCULADA e não a
+   variável: sem esta linha, todo nome de linha continuaria branco e sumiria
+   no fundo claro. Trocar um token de cor de texto dentro de um escopo pede
+   sempre o `color` junto. */
+:scope {
+  color: var(--afty-texto);
+  border: 2px solid var(--afty-destaque);
+  box-shadow: 0 4px 18px rgb(29 18 64 / 0.35);
+}
+
+/* ---------- 2. o cabeçalho ----------
+   A faixa do nome, que na planilha é a linha mais escura da folha. */
+.afty-inv-cabeca {
+  background: var(--afty-destaque);
+  border-bottom: 2px solid #2c1a5c;
+  gap: 0.875rem;
+}
+
+.afty-inv-titulo {
+  color: #ffffff;
+  letter-spacing: 0.01em;
+}
+
+.afty-inv-retrato-icone,
+.afty-inv-retrato-vazio {
+  border: 2px solid #ffffff;
+  background: #f7f5fe;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.3);
+}
+
+/* As marcas de identidade viram etiqueta clara sobre a faixa. */
+.afty-inv-cabeca .afty-chip {
+  background: rgb(255 255 255 / 0.14);
+  border-color: rgb(255 255 255 / 0.45);
+  color: #ffffff;
+}
+
+.afty-inv-cabeca .afty-chip[data-afty-tom="destaque"] {
+  background: #ffffff;
+  border-color: #ffffff;
+  color: var(--afty-destaque);
+}
+
+.afty-inv-cabeca .afty-valor {
+  color: #e5dcff;
+}
+
+/* ⚠ O `background` TEM DE VIR JUNTO. A regra geral de `.afty-passo` mais
+   abaixo pinta o botão de branco, e ela não é sobrescrita por esta só porque
+   esta é mais específica: especificidade decide por PROPRIEDADE, e o que não
+   se declara aqui continua vindo de lá. Sem esta linha o botão de aparência
+   fica branco com o ícone branco em cima da faixa roxa. */
+.afty-inv-cabeca .afty-passo {
+  background: rgb(255 255 255 / 0.14);
+  border-color: rgb(255 255 255 / 0.45);
+  color: #ffffff;
+}
+
+.afty-inv-cabeca .afty-passo:hover {
+  background: #ffffff;
+  border-color: #ffffff;
+  color: var(--afty-destaque);
+}
+
+/* ---------- 3. as faixas de seção ----------
+   A peça mais característica da planilha. O título deixa de ser um rótulo
+   pequeno e vira a barra roxa que atravessa o bloco. */
+.afty-card-titulo {
+  display: block;
+  margin-bottom: 0.375rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--afty-raio-peq);
+  background: var(--afty-destaque);
+  color: #ffffff;
+  text-align: center;
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+}
+
+/* ---------- 4. as caixas de dado ----------
+   Linha de lista e célula de stat são a mesma coisa na planilha: fundo
+   branco, borda fina, canto reto. */
+.afty-linha {
+  background: var(--afty-poco);
+  border: 1px solid var(--afty-borda);
+  border-radius: var(--afty-raio-peq);
+}
+
+.afty-linha:hover {
+  border-color: var(--afty-borda-forte);
+  background: #ffffff;
+}
+
+/* A célula de stat ganha a faixa de rótulo em cima, como o cabeçalho de
+   coluna de uma tabela. Por isso o recuo sai da célula e vai para dentro. */
+.afty-stat {
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
+  justify-content: flex-start;
+  align-items: stretch;
+  background: var(--afty-poco);
+  border-color: var(--afty-borda);
+}
+
+.afty-stat-rotulo {
+  max-width: none;
+  padding: 0.25rem 0.25rem 0.1875rem;
+  background: var(--afty-destaque);
+  color: #ffffff;
+  text-align: center;
+}
+
+.afty-stat-valor {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: 0.3125rem 0.25rem 0.25rem;
+  color: var(--afty-texto);
+}
+
+/* O modificador do atributo, embaixo do valor. */
+.afty-stat .afty-fontes-raiz {
+  justify-content: center;
+  padding-bottom: 0.1875rem;
+}
+
+/* ---------- 5. pastilhas e números ----------
+   Nada de cápsula: a planilha é toda de retângulo. */
+.afty-chip {
+  border-radius: var(--afty-raio-peq);
+  background: #ffffff;
+  border-color: var(--afty-borda-forte);
+  color: var(--afty-texto-suave);
+}
+
+.afty-chip[data-afty-tom="destaque"] {
+  background: var(--afty-destaque);
+  border-color: var(--afty-destaque);
+  color: #ffffff;
+}
+
+.afty-valor { color: var(--afty-texto); }
+
+.afty-valor[data-afty-tom="custo"] { color: var(--afty-pv); }
+
+.afty-valor[data-afty-tom="destaque"] { color: var(--afty-destaque); }
+
+.afty-rotulo { color: var(--afty-texto-fraco); }
+
+/* Número que rola: alvo visível, e o realce é o roxo da folha. */
+.afty-rolavel:hover {
+  background: #ded6f8;
+  border-radius: var(--afty-raio-peq);
+  color: var(--afty-destaque);
+}
+
+/* ---------- 6. as barras de vida e integridade ---------- */
+.afty-vital {
+  background: var(--afty-poco);
+  border: 1px solid var(--afty-borda);
+}
+
+.afty-vital-rotulo { color: var(--afty-texto-suave); }
+
+.afty-vital-trilho {
+  background: #cdc1f0;
+  border: 1px solid var(--afty-borda);
+}
+
+.afty-vital-max { color: var(--afty-texto-fraco); }
+
+.afty-passo {
+  background: #ffffff;
+  border-color: var(--afty-borda-forte);
+  color: var(--afty-texto-suave);
+}
+
+.afty-passo:hover {
+  background: var(--afty-destaque);
+  border-color: var(--afty-destaque);
+  color: #ffffff;
+}
+
+/* ---------- 7. os bônus que ligam e desligam ---------- */
+.afty-inv-bonus-botao[data-afty-ligado="sim"] {
+  background: #cdc1f0;
+  border-color: var(--afty-destaque);
+}
+
+.afty-inv-lampada { border-color: var(--afty-borda-forte); }
+
+.afty-inv-bonus-botao[data-afty-ligado="sim"] .afty-inv-lampada {
+  background: var(--afty-destaque);
+  border-color: var(--afty-destaque);
+  box-shadow: 0 0 6px rgb(69 42 134 / 0.6);
+}
+
+/* ---------- 8. as duas colunas ----------
+   Um filete roxo entre elas, do jeito que a planilha separa os quadros. */
+@media (min-width: 1024px) {
+  .afty-inv-colunas { column-gap: 1.25rem; }
+}

@@ -77,6 +77,37 @@ export const normalizarVariavel = (id) => normalizeWord(
 
 export const CHAVE_MARCAS = "#marcas";
 
+/**
+ * ============================================================
+ * FONTES: LER OUTRAS FICHAS DA MESMA LISTA
+ * ============================================================
+ * A chave `#fontes` guarda, por marcador, os CONTEXTOS já montados das outras
+ * invocações que esta declarou como fonte. Ilegível pelo tokenizer, igual ao
+ * `#marcas`.
+ *
+ * ⚠ NASCEU EM 2026-09-02, para a Herança das Sombras. Ela diz "+1/3 dos Pontos
+ * de Vida da sombra de herança", e até aqui NENHUMA expressão conseguia ler o PV
+ * de outra ficha. A primeira versão aproximava pelo PV da própria sombra, e o
+ * autor recusou com a razão certa: *"não controlo em que Grau uma invocação
+ * minha vai ser exorcizada"*, então herança ENTRE GRAUS é o caso comum, e é
+ * justamente onde a aproximação erra mais.
+ *
+ * ⚠ A EXPRESSÃO É AVALIADA UMA VEZ POR FONTE, no contexto DAQUELA fonte. Por
+ * isso `piso(pv_max / 3)` arredonda por sombra, e não na soma: com graus
+ * misturados as duas contas divergem, e o livro fala de uma sombra por vez.
+ */
+export const CHAVE_FONTES = "#fontes";
+
+const listaDeFontes = (ctx, marcador) =>
+  ctx?.[CHAVE_FONTES]?.[normalizarMarca(marcador)] ?? [];
+
+/* Avaliação por fonte. O `evalNumber` daqui embaixo é o mesmo do módulo, então
+   a expressão da fonte enxerga tudo que uma expressão normal enxerga: a fonte
+   pode ter as fontes DELA, e a recursão para porque o motor monta os contextos
+   em passes, e um contexto de passe 1 não tem `#fontes`. */
+const valoresDasFontes = (ctx, marcador, expr) =>
+  listaDeFontes(ctx, marcador).map((c) => evalNumber(expr, c, 0));
+
 const FUNCS_CTX = {
   /** Quantas entradas da ficha carregam a marca. Sem a marca, zero. */
   contar: (ctx, marca) => {
@@ -84,10 +115,51 @@ const FUNCS_CTX = {
     if (!mapa) return 0;
     return mapa[normalizarMarca(marca)] ?? 0;
   },
+
+  /* ⚠ NOME EM MINÚSCULAS, e não é estilo: o tokenizador BAIXA A CAIXA do nome
+     da função, então `nFontes()` chega aqui como `nfontes` e não acha nada. As
+     funções antigas são todas minúsculas e por isso ninguém tinha esbarrado.
+     Se um dia alguém acrescentar `minhaFuncao`, ela falha calada na avaliação e
+     alto no validador ("Função desconhecida"). */
+  /** Quantas fontes este marcador tem nesta ficha. */
+  fontes_qtd: (ctx, marcador) => listaDeFontes(ctx, marcador).length,
+
+  /**
+   * Agrega uma expressão sobre as fontes. `modo` é "soma", "maior" ou "menor".
+   * Sem fonte nenhuma devolve 0, inclusive em "maior" e "menor": um máximo de
+   * lista vazia não é −Infinito, é a ausência do bônus.
+   */
+  fontes: (ctx, marcador, modo, expr) => {
+    const vs = valoresDasFontes(ctx, marcador, expr);
+    if (!vs.length) return 0;
+    switch (String(modo)) {
+      case "soma":  return vs.reduce((a, b) => a + b, 0);
+      case "maior": return Math.max(...vs);
+      case "menor": return Math.min(...vs);
+      default:      return 0;
+    }
+  },
+
+  /**
+   * A soma das `n` MAIORES. A Quimera pede exatamente isto: *"a Vida Máxima de
+   * uma Quimera é igual a soma dos 2 maiores Pontos de Vida dentre as sombras
+   * fundidas"*.
+   */
+  fontes_topo: (ctx, marcador, n, expr) => {
+    const quantos = Math.max(0, Math.trunc(Number(n) || 0));
+    if (!quantos) return 0;
+    return valoresDasFontes(ctx, marcador, expr)
+      .sort((a, b) => b - a).slice(0, quantos).reduce((a, b) => a + b, 0);
+  },
 };
 
 /** Quais funções aceitam texto, e em qual posição. O validador usa isto. */
-const ARGS_DE_TEXTO = { contar: [0] };
+const ARGS_DE_TEXTO = {
+  contar: [0],
+  fontes_qtd: [0],
+  fontes: [0, 1, 2],
+  fontes_topo: [0, 2],
+};
 
 /* ============================================================ */
 /* TOKENIZER                                                     */
@@ -327,7 +399,9 @@ export function validateExpression(src, knownVars = null) {
   for (const f of funcs) {
     if (!(f in FUNCS) && !(f in FUNCS_CTX)) return { ok: false, error: `Função desconhecida: ${f}()` };
   }
-  if (textoForaDeLugar) return { ok: false, error: "Texto entre aspas só vale como argumento de contar()" };
+  if (textoForaDeLugar) {
+    return { ok: false, error: `Texto entre aspas só vale como argumento de ${Object.keys(ARGS_DE_TEXTO).join("(), ")}()` };
+  }
   if (knownVars) for (const v of vars) if (!knownVars.has(v)) return { ok: false, error: `Variável desconhecida: ${v}` };
   return { ok: true };
 }

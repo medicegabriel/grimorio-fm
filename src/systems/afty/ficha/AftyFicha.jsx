@@ -32,7 +32,7 @@ import PrimitivasDeAddon from "../ui/PrimitivasDeAddon";
 import { conteudoDaFicha, equipamentosDaFicha, alvosDeBusca } from "./ficha-conteudo";
 import {
   carregarTema, salvarTemaGlobal, cssDasVars, cssDoUsuario, temCssLivre,
-  carregarDensidade, salvarDensidade, normalizaTema,
+  carregarDensidade, salvarDensidade, normalizaTema, escopoDaInvocacao, SEM_CSS,
 } from "./ficha-tema";
 import PainelDeRolagens from "./PainelDeRolagens";
 import BuscaGlobal from "./BuscaGlobal";
@@ -94,13 +94,6 @@ function Chip({ children, tom, title }) {
 
 
 /* ============================================================ */
-
-/* ⚠ A ÚLTIMA SAÍDA. CSS livre permite escrever `.afty-ficha * { display: none }`
-   e se trancar para fora da própria ficha. `?semcss=1` na URL desliga o tema
-   inteiro antes de ele existir, e não depende de nenhum botão continuar
-   clicável. Lido uma vez, fora do componente. */
-const SEM_CSS = typeof location !== "undefined"
-  && new URLSearchParams(location.search).has("semcss");
 
 export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, onSalvarInvocacoes }) {
   const ficha = useMemo(() => mesclaFichaAfty(creature), [creature]);
@@ -838,6 +831,10 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
       {temandoInvocacao && (
         <PainelDeAparencia
           titulo={`Aparência · ${invocacaoTemada?.nome || "Shikigami"}`}
+          /* O prompt para a IA precisa saber que o alvo é o cartão de UMA
+             invocação, e não a ficha: o escopo é outro e a raiz também. */
+          escopo={escopoDaInvocacao(temandoInvocacao)}
+          nome={invocacaoTemada?.nome || null}
           tema={temaDaInvocacaoAberta}
           onTema={(t) => setRascunhoInv({ id: temandoInvocacao, tema: t })}
           /* ⚠ FECHAR DESCARREGA na hora, e não espera o debounce: quem fecha o

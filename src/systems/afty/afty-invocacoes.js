@@ -12,8 +12,10 @@
  *     Defesa usa maestria(ND) (o Bônus de Treinamento).
  *   - O Bônus de Teste usa Metade do Nível de Controlador (o lado da multiclasse).
  *   - O acesso a graus é travado pelo Nível de Controlador, não pelo ND.
- *   - Corpo Amaldiçoado e Marionete são o MESMO tipo mecânico ("dispositivo"),
- *     a diferença é só narrativa (saborNarrativo).
+ *   - São DOIS tipos mecânicos, Invocação e Invocação de Técnica (2026-09-02).
+ *     Houve um terceiro, "dispositivo", com dois sabores narrativos (Corpo
+ *     Amaldiçoado e Marionete): o autor tirou, e `tipoMecanicoDaInvocacao`
+ *     é quem segura ficha antiga que ainda traz o valor.
  *
  * DSL: esta camada monta um contexto de variáveis próprio (buildInvocacaoDslContext)
  * e delega ao evalNumber/evalBoolean de fm-dsl.js, que são agnósticos de variável.
@@ -28,12 +30,43 @@
  * ============================================================
  */
 
-import { evalNumber } from "./afty-dsl";
-import { AFTY_TAMANHOS, AFTY_RESISTENCIAS } from "./afty-schema";
+import { evalNumber, CHAVE_FONTES, normalizarMarca } from "./afty-dsl";
+import { AFTY_ATTRS, AFTY_TAMANHOS, AFTY_RESISTENCIAS } from "./afty-schema";
 import { AFTY_PERICIAS, bonusProficiencia, usoPericias, ehPericiaOficio } from "./afty-pericias";
 import { TIPOS_DANO } from "./afty-equipamentos";
 
 export const mod = (attr) => Math.floor(((attr ?? 10) - 10) / 2);
+
+/**
+ * ============================================================
+ * PARCELAS DE UM NÚMERO — o que o hover da Ficha mostra
+ * ============================================================
+ * ⚠ ESCRITAS AQUI, e não na aba. Todo número derivado do Afty mostra as fontes
+ * dele no hover (ver `afty-fontes-visiveis-ui`), e os da Invocação eram os
+ * únicos que não: a aba passava `valor` e `total` ao `NumeroComFontes` e nunca
+ * um `partes`, então a lista saía vazia e o painel não abria. Da tela, isso é
+ * exatamente *"quando eu passo o mouse em cima, não aparece os valores"*.
+ *
+ * Ficam no resolvedor porque a conta é daqui: montar as parcelas na aba seria a
+ * mesma fórmula escrita duas vezes, e a segunda cópia envelhece na primeira
+ * errata. O formato é o do painel: `{ label, valor }`, ou `{ label, texto }`
+ * quando a parcela não é um número que soma.
+ */
+const rotuloAttrInv = (k) => AFTY_ATTRS.find((a) => a.key === k)?.label ?? k;
+
+/** As parcelas nomeadas de um ou mais canais de efeito, na ordem em que entraram. */
+const parcelasDoCanal = (detalhes, ...canais) =>
+  (detalhes || [])
+    .filter((d) => canais.includes(d.canal))
+    .map((d) => ({ label: d.nome, valor: d.valor }));
+
+/** A parcela de proficiência de um teste. Sem faixa, não existe parcela.
+    `fonte` nomeia quem concedeu a faixa, quando não foi a própria ficha. */
+const parcelaProficiencia = (bt, prof, fonte = null) => {
+  if (!prof) return [];
+  const faixa = prof === "mestre" ? "Maestria (Mestre)" : "Maestria";
+  return [{ label: fonte ? `${faixa} · ${fonte}` : faixa, valor: bonusProficiencia(bt, prof) }];
+};
 
 /**
  * Tipos de dano que uma RD de Invocação pode cobrir. Os quatro primeiros são o
@@ -68,9 +101,9 @@ export const resistenciasTreinaveis = () => AFTY_RESISTENCIAS.filter((r) => r.va
 export const INV_ATTR_KEYS = ["forca", "destreza", "constituicao", "inteligencia", "sabedoria", "presenca"];
 
 /**
- * Tipos mecânicos. Corpo Amaldiçoado e Marionete colapsam em "dispositivo".
+ * Os dois tipos mecânicos.
  *
- * ⚠ SHIKIGAMI DE TÉCNICA é um tipo à parte, e não um sabor: ele muda números
+ * ⚠ INVOCAÇÃO DE TÉCNICA é um tipo à parte, e não um rótulo: ele muda números
  * (base de atributo, PV, bônus, orçamento) e a economia de ação. O capítulo já o
  * tratava como categoria, na limitação de Características sobre imunidade a tipo
  * de dano, e a seção de Intermediários diz que "certas técnicas inatas permitem
@@ -79,35 +112,44 @@ export const INV_ATTR_KEYS = ["forca", "destreza", "constituicao", "inteligencia
  * inventário.
  */
 export const AFTY_INV_TIPOS = [
-  { value: "shikigami",   label: "Shikigami",             intermediario: "Talismã",     retirada: "dissipar / exorcizar" },
-  { value: "tecnica",     label: "Shikigami de Técnica",  intermediario: null,          retirada: "dissipar / exorcizar" },
-  { value: "dispositivo", label: "Dispositivo",           intermediario: "Dispositivo", retirada: "desativar / destruir" },
+  /* ⚠ RÓTULO ≠ `value`. O autor renomeou os dois primeiros para "Invocação" e
+     "Invocação de Técnica" em 2026-09-02, e os `value` seguem `shikigami` e
+     `tecnica`: eles estão gravados em toda ficha salva, viram variável de DSL
+     (`tipo_shikigami`, `tipo_tecnica`) e são citados por `quando` de habilidade.
+     Trocar o value seria migração de dado, e o pedido foi de nome na tela. */
+  { value: "shikigami",   label: "Invocação",             intermediario: "Talismã",     retirada: "dissipar / exorcizar" },
+  { value: "tecnica",     label: "Invocação de Técnica",  intermediario: null,          retirada: "dissipar / exorcizar" },
 ];
+
+/**
+ * ⚠ O TIPO GRAVADO NA FICHA PODE NÃO EXISTIR MAIS. "dispositivo" foi um terceiro
+ * tipo até 2026-09-02, quando o autor tirou ("não existe Dispositivo, não muda
+ * nada saber qual tipo da invocação"). Ficha salva antes disso ainda traz o
+ * valor, e sem este normalizador os chips de Tipo apareceriam TODOS apagados,
+ * sem nenhum selecionado e sem nada dizendo por quê.
+ *
+ * Ele cai em "shikigami", que é o tipo com Intermediário, que é o que o
+ * Dispositivo era. Ninguém migra a ficha: ela conserta sozinha no primeiro
+ * salvamento, e continua legível até lá.
+ */
+export const tipoMecanicoDaInvocacao = (inv) =>
+  (TIPO_BY_VALUE[inv?.tipoMecanico] ? inv.tipoMecanico : "shikigami");
 
 /** Este é um Shikigami de Técnica? É a chave de quase toda regra própria dele. */
 export const ehShikigamiDeTecnica = (inv) => inv?.tipoMecanico === "tecnica";
 
-/** Sabores narrativos do tipo "dispositivo" (só rótulo, sem efeito mecânico). */
-export const AFTY_INV_SABORES = [
-  { value: "corpo_amaldicoado", label: "Corpo Amaldiçoado" },
-  { value: "marionete",         label: "Marionete" },
-];
-
+/* ⚠ `AFTY_INV_SABORES` (Corpo Amaldiçoado e Marionete) SAIU JUNTO. Ele só
+   existia para dar dois rótulos ao Dispositivo, e sem o Dispositivo não sobra
+   nada para ele rotular. O campo `saborNarrativo` de fichas antigas fica onde
+   está, morto e inofensivo: apagá-lo pediria migração de dado. */
 const TIPO_BY_VALUE = Object.fromEntries(AFTY_INV_TIPOS.map((t) => [t.value, t]));
-const SABOR_BY_VALUE = Object.fromEntries(AFTY_INV_SABORES.map((s) => [s.label, s]));
 
 /** Metadados do tipo mecânico (rótulo, Intermediário, regra de retirada). */
 export const tipoInvocacaoMeta = (tipo) => TIPO_BY_VALUE[tipo] || AFTY_INV_TIPOS[0];
 
-/**
- * O nome que a ficha mostra para o tipo: o sabor narrativo quando é dispositivo
- * (Corpo Amaldiçoado ou Marionete são a MESMA coisa mecânica, e o autor decidiu
- * que a diferença é só de rótulo), e o próprio tipo quando é shikigami.
- */
+/** O nome que a ficha mostra para o tipo. */
 export function tipoInvocacaoLabel(inv) {
-  const t = tipoInvocacaoMeta(inv?.tipoMecanico);
-  if (t.value !== "dispositivo") return t.label;
-  return AFTY_INV_SABORES.find((s) => s.value === inv?.saborNarrativo)?.label ?? t.label;
+  return tipoInvocacaoMeta(tipoMecanicoDaInvocacao(inv)).label;
 }
 
 /**
@@ -255,7 +297,7 @@ export function createBlankCaracteristica() {
     id: novoId("carac"),
     nome: "",
     descricao: "",
-    subtipo: "vida",          // "vida" | "teste" | "rd" | "tamanho" | "livre"
+    subtipo: "vida",          // "vida" | "teste" | "resistencia" | "rd" | "tamanho" | "livre"
     alvoTeste: "pericia",     // "pericia" | "ataque" | "tr"
     periciaId: "",            // qual perícia, quando alvoTeste === "pericia"
     trTipo: "",               // qual TR, quando alvoTeste === "tr"
@@ -284,16 +326,23 @@ export function createBlankInvocacao(grau = "quarto", tipoMecanico = "shikigami"
     id: novoId(),
     nome: "",
     tipoMecanico,
-    saborNarrativo: "corpo_amaldicoado", // usado só quando tipoMecanico === "dispositivo"
     grau,
     atributos: { forca: b, destreza: b, constituicao: b, inteligencia: b, sabedoria: b, presenca: b },
     ataqueTreinado: "corpo",   // "corpo" | "distancia"
-    trTreinado: "reflexos",    // save treinado (nomeado, exceto Integridade)
-    trMestre: false,           // mestre no save treinado (1,5x BT)
+    /* MAPA de Testes de Resistência: { [id]: "treinado" | "mestre" }, igual ao
+       `periciasProf`. Era UM save só (`trTreinado` + `trMestre`) até 2026-09-02,
+       e o autor mandou virar mapa para a Herança das Sombras poder herdar vários
+       ("se torna treinado nas mesmas perícias e TRs da sombra de herança").
+       ⚠ Ficha antiga continua valendo: `trProfDaInvocacao` lê os dois formatos. */
+    trProf: { reflexos: "treinado" },
     periciasProf: {},          // { [periciaId]: "treinado" | "mestre" }
     tamanho: "medio",          // só muda por Característica de Tamanho
     marcadores: {},            // { [marcadorId]: true } — ver MARCADORES_INVOCACAO
     marcadorOpcoes: {},        // { [marcadorId]: opcaoValue } — marcador que pede escolha
+    /* { [marcadorId]: [invocacaoId] } — as outras invocações que esta declara
+       como FONTE. Só marcador com `fontes` no registro usa. Ver `marcadorFontes`
+       e as funções `fontes()` / `fontesTopo()` do DSL. */
+    marcadorFontes: {},
     acoes: [],                 // Fatia 2
     caracteristicas: [],       // Fatia 2
     /* RETRATO PRÓPRIO (2026-08-31). Mesmo par de campos do retrato da criatura
@@ -355,24 +404,48 @@ export function resumoAtributosInvocacao(inv, bonusPontos = 0) {
 // ------------------------------------------------------------
 // dono = { nd, bt, nivelControlador }. "Nível do Usuário" = dono.nd (decisão do
 // autor). "Metade do Valor de Constituição" usa o VALOR do atributo, não o mod.
-export function pvInvocacao(inv, dono = {}) {
+/**
+ * As três parcelas do PV base, NOMEADAS. A tabela do grau soma sempre os mesmos
+ * três termos, e quem os separa é esta função: o `pvInvocacao` é a soma dela, e
+ * o hover da Ficha é a lista dela. Uma fórmula só, dois consumidores.
+ */
+export function partesPvInvocacao(inv, dono = {}) {
   const con = inv?.atributos?.constituicao ?? 8;
   const nd = Math.max(1, dono.nd ?? 1);
-  switch (grauMeta(inv?.grau).value) {
-    case "terceiro": return 25 + Math.floor(con / 2) + nd;
-    case "segundo":  return 40 + con + nd;
+  const g = grauMeta(inv?.grau);
+  const linha = (base, deCon, deNd) => [
+    { label: `${g.label} (Base)`, valor: base },
+    { label: "Constituição", valor: deCon },
+    { label: "Nível de Desafio", valor: deNd },
+  ];
+  switch (g.value) {
+    case "terceiro": return linha(25, Math.floor(con / 2), nd);
+    case "segundo":  return linha(40, con, nd);
     // 1.5x Nível do Usuário, arredondado para baixo (regra do autor, 2026-07-18).
-    case "primeiro": return 60 + con + Math.floor(1.5 * nd);
-    case "especial": return 80 + con + 2 * nd;
+    case "primeiro": return linha(60, con, Math.floor(1.5 * nd));
+    case "especial": return linha(80, con, 2 * nd);
     case "quarto":
-    default:         return 10 + Math.floor(con / 2) + nd;
+    default:         return linha(10, Math.floor(con / 2), nd);
   }
 }
 
-export function defesaInvocacao(inv, dono = {}) {
+export function pvInvocacao(inv, dono = {}) {
+  return partesPvInvocacao(inv, dono).reduce((t, x) => t + x.valor, 0);
+}
+
+/** As parcelas da Defesa base, nomeadas. Ver `partesPvInvocacao`. */
+export function partesDefesaInvocacao(inv, dono = {}) {
   const base = { quarto: 10, terceiro: 12, segundo: 16, primeiro: 20, especial: 24 };
-  const g = grauMeta(inv?.grau).value;
-  return (base[g] ?? 10) + mod(inv?.atributos?.destreza ?? 8) + (dono.bt ?? 0);
+  const g = grauMeta(inv?.grau);
+  return [
+    { label: `${g.label} (Base)`, valor: base[g.value] ?? 10 },
+    { label: "Destreza", valor: mod(inv?.atributos?.destreza ?? 8) },
+    ...(dono.bt ? [{ label: "Maestria", valor: dono.bt }] : []),
+  ];
+}
+
+export function defesaInvocacao(inv, dono = {}) {
+  return partesDefesaInvocacao(inv, dono).reduce((t, x) => t + x.valor, 0);
 }
 
 export function deslocamentoInvocacao() {
@@ -466,7 +539,11 @@ export const ehAuxilioSustentavel = (acao) =>
  */
 export function auxiliosLigadosDa(inv, dono = {}) {
   const sess = sessaoDaInvocacao(dono, inv?.id);
-  const proprio = { defesa: 0, bonusAcerto: 0, rdGeral: 0 };
+  /* ⚠ `fontes` ANDA JUNTO DOS NÚMEROS desde 2026-09-03. Os três canais eram só
+     totais, e o hover da Ficha mostrava a Defesa somada sem dizer que 5 dela
+     vinham de um auxílio LIGADO agora: o jogador desligava a Guarda de Escamas e
+     via o número cair sem nada explicando. Uma linha por auxílio ligado. */
+  const proprio = { defesa: 0, bonusAcerto: 0, rdGeral: 0, fontes: [] };
   const paraAliados = [];
   if (!sess.emCampo) return { proprio, paraAliados, sessao: sess };
   for (const a of Array.isArray(inv?.acoes) ? inv.acoes : []) {
@@ -479,6 +556,7 @@ export function auxiliosLigadosDa(inv, dono = {}) {
       paraAliados.push({ id: a.id, nome: r.nome || "Auxílio", sub: r.auxilioSub, canal, valor });
     } else {
       proprio[canal] += valor;
+      proprio.fontes.push({ canal, label: r.nome || "Auxílio", valor });
     }
   }
   return { proprio, paraAliados, sessao: sess };
@@ -499,6 +577,35 @@ export function periciasAllowanceInvocacao(inv) {
   const base = 1 + Math.floor(melhor / 2);
   const adic = INV_PERICIAS_ADICIONAIS[grauMeta(inv?.grau).value] ?? 0;
   return Math.max(0, base + adic);
+}
+
+/**
+ * As parcelas da conta acima, no formato do painel de fontes.
+ *
+ * ⚠ MORA COLADO NA FÓRMULA de propósito. A tela montava a explicação dela
+ * própria a partir dos canais, e por isso mostrava só o que as Habilidades
+ * deram: a base ficava invisível e o "Total" do painel não era nenhum número da
+ * tela. Repetir a fórmula na aba seria a mesma conta escrita duas vezes, que é
+ * a razão de `partesPvInvocacao` e `partesDefesaInvocacao` existirem aqui.
+ *
+ * ⚠ O `Math.max(0, ...)` da allowance é reproduzido como PARCELA, e não
+ * ignorado. Com Inteligência e Sabedoria bem baixas a soma crua fica negativa e
+ * a função corta em zero: sem esta linha o painel somaria menos do que o número
+ * mostrado, e o assert de fechamento pegaria uma diferença que não é erro.
+ */
+export function partesPericiasInvocacao(inv) {
+  const at = inv?.atributos || {};
+  const melhor = Math.max(mod(at.inteligencia ?? 8), mod(at.sabedoria ?? 8));
+  const g = grauMeta(inv?.grau);
+  const deAtributo = Math.floor(melhor / 2);
+  const adic = INV_PERICIAS_ADICIONAIS[g.value] ?? 0;
+  const cru = 1 + deAtributo + adic;
+  return [
+    { label: "Base", valor: 1 },
+    ...(deAtributo ? [{ label: "Inteligência ou Sabedoria", valor: deAtributo }] : []),
+    ...(adic ? [{ label: g.label, valor: adic }] : []),
+    ...(cru < 0 ? [{ label: "Piso em zero", valor: -cru }] : []),
+  ];
 }
 
 // ------------------------------------------------------------
@@ -587,6 +694,32 @@ export const INV_RD_ACAO = { quarto: 2, terceiro: 4, segundo: 6, primeiro: 8, es
 export const INV_CARACT_VIDA = { quarto: 5, terceiro: 10, segundo: 15, primeiro: 20, especial: 30 };
 export const INV_CARACT_TESTE = { quarto: 2, terceiro: 4, segundo: 6, primeiro: 8, especial: 10 };    // Perícia: cheio. Ataque/TR: metade
 export const INV_CARACT_RD = { quarto: 2, terceiro: 4, segundo: 6, primeiro: 8, especial: 12 };       // note: Especial 12 (difere do RD de Ação)
+
+/**
+ * ============================================================
+ * CARACTERÍSTICA DE PROFICIÊNCIA EM TESTE DE RESISTÊNCIA
+ * ============================================================
+ * Autor, 2026-09-03: *"Invocações de Segundo Grau podem fazer uma Característica
+ * pra se tornar Treinado em um TR. Invocações de Grau Especial podem fazer uma
+ * Característica para se tornar Mestre em um TR."*
+ *
+ * Três decisões dele, na mesma conversa, e nenhuma é derivável do texto:
+ *
+ *   1. **"de Segundo Grau" é "de Segundo Grau OU SUPERIOR"**, então o Primeiro
+ *      também treina. O Quarto e o Terceiro não têm acesso.
+ *   2. **No Especial ela SÓ dá Mestre.** Não existe a opção de gastar a
+ *      Característica de um Especial para apenas treinar um TR novo.
+ *   3. **O Mestre não cobra Treinado antes.** Ela aponta para um TR qualquer e
+ *      ele passa a Mestre de uma vez.
+ *
+ * ⚠ E ELA NÃO GASTA A VAGA BASE DE TR (`TR_VAGAS_BASE`). A vaga é a escolha da
+ * ficha, e esta faixa vem de fora dela, do mesmo jeito que a fusão da Herança
+ * das Sombras vem. Quem conta a vaga é o editor, que lê `inv.trProf`; quem
+ * concede é o agregado das Características, que entra depois.
+ */
+export const INV_CARACT_TR_PROF = {
+  quarto: null, terceiro: null, segundo: "treinado", primeiro: "treinado", especial: "mestre",
+};
 export const INV_CARACT_TAMANHO = {
   quarto:   ["medio", "grande"],
   terceiro: ["medio", "grande"],
@@ -875,7 +1008,12 @@ export function resolveAcao(acao, inv, dono = {}) {
     const alvo = acao?.alvo === "multiplos" || acao?.alvo === "area" ? acao.alvo : "unico";
     const ataqueTipo = acao?.ataqueTipo === "tr" ? "tr" : "jogada";
     out.alvo = alvo; out.ataqueTipo = ataqueTipo;
+    /* ⚠ DOIS CAMPOS, o id e o rótulo. O `tipoDano` virou id do `TIPOS_DANO`
+       em 2026-09-02 (era texto livre), e quem MOSTRA não pode ficar traduzindo
+       id à mão em cada tela. O fallback devolve o próprio valor, e é o que
+       segura ficha antiga com "corte, impacto" escrito à mão. */
     out.tipoDano = acao?.tipoDano || "";
+    out.tipoDanoLabel = TIPOS_DANO[out.tipoDano] ?? out.tipoDano;
 
     // Tabela de dano por (ataqueTipo, alvo).
     const tabela =
@@ -1053,7 +1191,7 @@ export function resolveAcao(acao, inv, dono = {}) {
 /** Resolve uma Característica passiva pelas tabelas do grau. */
 export function resolveCaracteristica(carac, inv, dono = {}) {
   const grau = grauMeta(inv?.grau).value;
-  const sub = ["vida", "teste", "rd", "tamanho", "livre"].includes(carac?.subtipo) ? carac.subtipo : "livre";
+  const sub = ["vida", "teste", "resistencia", "rd", "tamanho", "livre"].includes(carac?.subtipo) ? carac.subtipo : "livre";
   // ⚠ A `descricao` viaja resolvida: é o texto que a pessoa escreveu para dizer
   // o que a Característica faz, e sem ela a Ficha mostrava só o nome, deixando
   // toda Característica "livre" (a que não tem número) sem conteúdo nenhum.
@@ -1080,6 +1218,22 @@ export function resolveCaracteristica(carac, inv, dono = {}) {
       if (!out.trTipo) warnings.push("Escolha o Teste de Resistência deste bônus.");
     } else {
       out.requerGatilho = true;
+    }
+  } else if (sub === "resistencia") {
+    /* ⚠ A FAIXA VEM DO GRAU, e não é escolha: Segundo e Primeiro treinam,
+       Especial domina, e os dois graus de baixo não têm a Característica. Ver
+       `INV_CARACT_TR_PROF`. O TR alvo reusa o campo `trTipo`, que é o mesmo
+       "qual Teste de Resistência" que o subtipo `teste` já perguntava. */
+    out.prof = INV_CARACT_TR_PROF[grau] || null;
+    out.profLabel = out.prof === "mestre" ? "Mestre" : out.prof === "treinado" ? "Treinado" : "";
+    out.trTipo = carac?.trTipo || "";
+    out.trTipoLabel = AFTY_RESISTENCIAS.find((r) => r.value === out.trTipo)?.label ?? "";
+    if (!out.prof) {
+      warnings.push(`${grauMeta(inv?.grau).label} não pode treinar Teste de Resistência por Característica.`);
+    }
+    if (!out.trTipo) warnings.push("Escolha o Teste de Resistência desta Característica.");
+    else if (!resistenciasTreinaveis().some((r) => r.value === out.trTipo)) {
+      warnings.push(`${out.trTipoLabel || out.trTipo} não pode ser treinado por uma Invocação.`);
     }
   } else if (sub === "rd") {
     const tiposExtras = Math.max(0, carac?.rdTiposExtras ?? 0);
@@ -1124,10 +1278,56 @@ export function marcadorLigado(inv, id) {
   return false;
 }
 
+/**
+ * O mapa de Testes de Resistência treinados, aceitando os DOIS formatos.
+ *
+ * ⚠ A ficha antiga guardava `trTreinado` (um id) e `trMestre` (booleana). Ela
+ * continua valendo sem migração de escrita, do mesmo jeito que o `marcadorLigado`
+ * ainda entende o `marcada` do tempo do Concentrar Poder. Quem salva de novo
+ * grava no formato novo, e quem nunca reabrir a ficha não perde nada.
+ */
+export function trProfDaInvocacao(inv) {
+  const m = inv?.trProf;
+  if (m && typeof m === "object") return m;
+  const antigo = inv?.trTreinado;
+  if (!antigo) return {};
+  return { [antigo]: inv?.trMestre ? "mestre" : "treinado" };
+}
+
+/** Quantas vagas de TR o mapa gasta. Mestre custa 2, igual às perícias. */
+export const usoTR = (prof = {}) =>
+  Object.values(prof).reduce((s, v) => s + (v === "mestre" ? 2 : v ? 1 : 0), 0);
+
+/* ⚠ O TETO É 1, que é EXATAMENTE o que o modelo antigo permitia (um save, com
+   ou sem mestre). Virar mapa sem teto seria dar TR de graça a toda invocação já
+   existente, calado. O que a Herança e a Quimera concedem entra por FUSÃO, que
+   não passa por aqui e por isso não é aparado. */
+export const TR_VAGAS_BASE = 1;
+
+/* A escada das faixas de proficiência de uma Invocação. Serve para comparar
+   duas concessões e ficar com a maior, e é lida em três lugares: a fusão da
+   Herança das Sombras, a Quimera e a Característica de Teste de Resistência. */
+const RANK_PROF_INV = { treinado: 1, mestre: 2 };
+
 /** A opção escolhida de um marcador que tem `opcoes` (ex.: Precisão: acerto ou CD). */
 export function marcadorOpcao(inv, id) {
   const p = inv?.marcadorOpcoes;
   return (p && typeof p === "object" ? p[id] : null) || null;
+}
+
+/**
+ * As FONTES de um marcador: os ids de outras invocações da mesma ficha que esta
+ * declarou como origem (as sombras mortas de quem ela herdou, as sombras
+ * fundidas numa Quimera).
+ *
+ * ⚠ Só existe para marcador que pede (`fontes` no registro). Um marcador comum
+ * devolve lista vazia, e as funções `fontes()` do DSL viram zero, que é o certo:
+ * ausência de fonte é ausência do bônus, e não erro.
+ */
+export function marcadorFontes(inv, id) {
+  const f = inv?.marcadorFontes;
+  const lista = (f && typeof f === "object") ? f[id] : null;
+  return Array.isArray(lista) ? lista.filter((x) => typeof x === "string" && x) : [];
 }
 
 // Variáveis `marc_*` do contexto: uma booleana por marcador ligado e, para os
@@ -1177,6 +1377,11 @@ export function buildInvocacaoDslContext(inv, dono = {}, resolved = {}) {
   const tipo = tipoInvocacaoMeta(inv?.tipoMecanico).value;
   const tam = resolved.tamanho ?? tamanhoBrutoDaInvocacao(inv);
   return {
+    /* ⚠ AS FONTES ENTRAM PRIMEIRO e sob chave ilegível (`#fontes`), montadas
+       pelo passe 1 do `resolveInvocacoesList`. Sem elas o objeto é o de sempre e
+       as funções `fontes()` devolvem zero, que é o comportamento correto de uma
+       invocação que não declarou origem nenhuma. */
+    ...(dono?.[CHAVE_FONTES] ? { [CHAVE_FONTES]: dono[CHAVE_FONTES] } : {}),
     ...varsDeMarcador(inv, dono),
     // Invocação (nomes diretos)
     forca: at.forca ?? 8, destreza: at.destreza ?? 8, constituicao: at.constituicao ?? 8,
@@ -1192,18 +1397,29 @@ export function buildInvocacaoDslContext(inv, dono = {}, resolved = {}) {
        em código (`efeitosDoTipo`) por falta de `quando: "tipo_tecnica"`. */
     tipo_shikigami: tipo === "shikigami" ? 1 : 0,
     tipo_tecnica: tipo === "tecnica" ? 1 : 0,
-    tipo_dispositivo: tipo === "dispositivo" ? 1 : 0,
     /* Tamanho como DEGRAU (Miúdo 1 ... Colossal N), porque é assim que ele se
        move: a Característica de Tamanho sobe degraus, não centímetros. */
     tamanho: Math.max(0, TAMANHO_ORDEM.indexOf(tam)) + 1,
     // Quantas Ações e Características ela tem, para efeito que escala com isso.
     acoes: (inv?.acoes || []).length,
     caracteristicas: (inv?.caracteristicas || []).length,
+    /* O custo em PE para invocar, ANTES de redução. Entrou em 2026-09-02 junto
+       das fontes: a Quimera diz *"o Custo em PE é a soma de todas as invocações
+       fundidas"*, e sem isto a soma não tinha o que somar. */
+    custo: custoInvocacao(inv),
     // Alias herdado do tempo em que Concentrar Poder era o único marcador.
     // Prefira `marc_concentrar_poder`, que é o nome do registro.
     marcada: marcadorLigado(inv, "concentrar_poder") ? 1 : 0,
     // Dono
     nd: dono.nd ?? 0, bt: dono.bt ?? 0, nivel_controlador: dono.nivelControlador ?? 0,
+    /* O estilo do Apogeu como booleana. O Ápice do Controle precisa saber se a
+       invocação JÁ podia ser trazida como Ação Livre, e quem dá isso é o
+       Controle Concentrado. Os outros dois entram junto porque estão no mesmo
+       campo e custam uma linha cada: sem eles, a próxima regra que citar estilo
+       vira outro desvio em código. */
+    apogeu_concentrado: dono.apogeuEstilo === "ctr_controle_concentrado" ? 1 : 0,
+    apogeu_disperso: dono.apogeuEstilo === "ctr_controle_disperso" ? 1 : 0,
+    apogeu_sintonizado: dono.apogeuEstilo === "ctr_controle_sintonizado" ? 1 : 0,
   };
 }
 
@@ -1276,8 +1492,15 @@ export const TECNICA_EFEITOS = [
   { canal: "caracteristicasLivres", expr: "grau", quando: "tipo_tecnica" },
 ];
 
-/** Os efeitos do TIPO da invocação, que se somam aos das Habilidades do dono. */
-const EFEITOS_DE_TIPO = TECNICA_EFEITOS.map((e) => ({ ...e, origem: "tecnica", nome: "Shikigami de Técnica" }));
+/** Os efeitos do TIPO da invocação, que se somam aos das Habilidades do dono.
+
+    ⚠ O `nome` SAI DA TABELA DE TIPOS, e não é escrito à mão: ele aparece no
+    hover de fontes de PV, Defesa e Orçamento, e escrito à mão divergiria do
+    rótulo do chip na primeira renomeação. Foi o que quase aconteceu em
+    2026-09-02, quando o autor trocou "Shikigami de Técnica" por
+    "Invocação de Técnica". */
+const NOME_TIPO_TECNICA = AFTY_INV_TIPOS.find((t) => t.value === "tecnica")?.label ?? "Técnica";
+const EFEITOS_DE_TIPO = TECNICA_EFEITOS.map((e) => ({ ...e, origem: "tecnica", nome: NOME_TIPO_TECNICA }));
 
 function efeitosHabilidade(inv, dono) {
   const acc = Object.fromEntries(EFEITO_CANAIS.map((c) => [c, 0]));
@@ -1326,8 +1549,12 @@ export function agregarCaracteristicas(resolvidas = []) {
   const out = {
     pv: 0,
     tamanho: null,
-    rdPorTipo: [],                                   // [{ chave, label, valor }]
+    rdPorTipo: [],                                   // [{ chave, label, nome, valor }]
     testes: { pericias: {}, resistencias: {}, ataque: 0 },
+    /* Profíciência de TR concedida por Característica: { [trId]: { prof, nome } }.
+       Fica FORA de `testes` porque não é um bônus numérico, é uma faixa, e quem
+       a aplica é o `resolveTestesInvocacao` ao montar o mapa de proficiência. */
+    trProf: {},
     warnings: [],
   };
   const rdIndex = new Map();
@@ -1350,9 +1577,24 @@ export function agregarCaracteristicas(resolvidas = []) {
         atual.valor = Math.max(atual.valor, c.valor ?? 0);
         continue;
       }
-      const linha = { chave: c.rdChave, label: c.rdTipoLabel, valor: c.valor ?? 0 };
+      // `nome` é o da Característica, e não o do tipo de dano: é ele que o hover
+      // da Ficha mostra como fonte da parcela.
+      const linha = { chave: c.rdChave, label: c.rdTipoLabel, nome: c.nome || "Característica", valor: c.valor ?? 0 };
       rdIndex.set(c.rdChave, linha);
       out.rdPorTipo.push(linha);
+    } else if (c.subtipo === "resistencia") {
+      // Sem faixa (grau baixo) ou sem alvo, ela não concede nada: o aviso já
+      // saiu do `resolveCaracteristica` e repeti-lo aqui duplicaria a linha.
+      if (!c.prof || !c.trTipo) continue;
+      /* Duas Características no MESMO TR são o mesmo efeito, e o livro proíbe
+         acumular: vale a maior faixa, com aviso. TRs diferentes convivem, do
+         mesmo jeito que duas RDs de tipos diferentes. */
+      const antes = out.trProf[c.trTipo];
+      if (antes) {
+        out.warnings.push(`Duas Características treinam ${c.trTipoLabel || c.trTipo}: elas não acumulam.`);
+        if (RANK_PROF_INV[c.prof] <= RANK_PROF_INV[antes.prof]) continue;
+      }
+      out.trProf[c.trTipo] = { prof: c.prof, nome: c.nome || "Característica" };
     } else if (c.subtipo === "teste") {
       // Mesmo teste duas vezes é o mesmo efeito, e o livro proíbe: vale a maior.
       // ⚠ `ataque` já nasce 0 no acumulador, então quem decide se é repetição é
@@ -1393,32 +1635,96 @@ export function resolveTestesInvocacao(inv, dono = {}, caract = null) {
   const baseTR = base + (dono.bonusTRHabilidade ?? 0); // TRs recebem um bônus extra (Concentrar Poder)
   // Bônus fixos vindos de Característica de Teste (passivas, sempre em efeito).
   const cTes = caract?.testes || { pericias: {}, resistencias: {}, ataque: 0 };
+  /* ⚠ O BÔNUS DE FUSÃO TEM CAMINHO PRÓPRIO, e não entra pelo `cTes`. Os dois
+     somam no mesmo lugar hoje (o `comGatilho` morreu em 2026-09-04), mas a
+     PARCELA de cada um leva um nome diferente no hover: a da fusão leva o nome
+     do marcador que a gerou, e a da passiva diz "Característica". Misturá-los
+     daria um painel em que o jogador não sabe qual das duas mexeu. */
+  const fus = inv?.bonusDeFusao || { pericias: {}, resistencias: {} };
+
+  /* AS PARCELAS DO HOVER. `detalhesEfeito` é o `efe.detalhes` do
+     `resolveInvocacao`, uma linha por efeito de Habilidade aplicado, e a soma
+     das do canal `bonusTeste` é exatamente o `hab` acima. Ver `parcelasDoCanal`. */
+  const detalhes = Array.isArray(dono.detalhesEfeito) ? dono.detalhesEfeito : [];
+  const auxFontes = Array.isArray(dono.auxilioFontes) ? dono.auxilioFontes : [];
+  const parteNivel = meio ? [{ label: "Nível de Controlador", valor: meio }] : [];
+  const parcelasComuns = [...parteNivel, ...parcelasDoCanal(detalhes, "bonusTeste")];
+  const parcelasTR = [...parcelasComuns, ...parcelasDoCanal(detalhes, "bonusTR")];
+  /* ⚠ O CANAL `acerto` FALTAVA AQUI, e a Melhoria Precisão era a única emissora
+     dele: escolher "Jogadas de Ataque" não mexia no Acerto do stat block, e
+     escolher "CD das Ações" mexia na CD, porque o `cd` já era lido logo abaixo.
+     Metade de uma habilidade de escolha funcionava e a outra não.
+
+     ⚠ E O ASSERT DA SOMA PASSAVA. `soma(partes) == bonus` fecha igual quando a
+     parcela falta nos DOIS lados: o invariante prova que o painel explica o
+     número, e não que o número está certo. Ver `t-controlador.mjs`. */
+  const parcelasAcerto = [...parcelasComuns, ...parcelasDoCanal(detalhes, "acerto")];
 
   // Acerto: jogada usa Força OU Destreza (o melhor), com BT no tipo treinado.
   const modFor = mod(at.forca ?? 8);
   const modDes = mod(at.destreza ?? 8);
   const best = modFor >= modDes ? { m: modFor, attr: "forca" } : { m: modDes, attr: "destreza" };
-  /* ⚠ O bônus de Característica de Teste em Ataque ou TR NÃO entra no número
-     do teste. O livro cobra "um gatilho específico" nos dois casos (só a
-     Perícia recebe o bônus por completo, e sem gatilho), então somá-lo ao valor
-     plano prometeria um bônus que quase nunca vale. Sai em `comGatilho`, à
-     parte, para a ficha mostrar como condicional. */
+  /* ⚠ A CARACTERÍSTICA DE TESTE ENTRA NO NÚMERO desde 2026-09-04, e o `comGatilho`
+     morreu junto. Autor: *"o Corpo a Corpo com Gatilho, vc pode remover a parte
+     do Gatilho. Somando o +5 da Caracteristica"*, e ele estendeu ao TR na mesma
+     conversa.
+
+     O que valia antes: o livro diz *"Caso seja em Jogadas de Ataque ou Testes de
+     Resistência, o bônus é reduzido pela metade, assim como é necessário um
+     gatilho específico"*, e o valor saía à parte, num campo próprio, para a
+     ficha desenhá-lo como condicional. A METADE CONTINUA VALENDO (é o
+     `Math.floor(cheio / 2)` do `resolveCaracteristica`), e o que saiu foi só a
+     separação na tela: o gatilho virou combinado de mesa, como o resto das
+     condições que a ficha não sabe conferir.
+
+     ⚠ AS DUAS FILAS MUDAM JUNTAS, porque a frase do livro é uma só. Somar no
+     Ataque e deixar o TR de fora seria uma assimetria sem fonte. */
   const acertoDe = (tipo) => ({
-    bonus: best.m + (inv?.ataqueTreinado === tipo ? bt : 0) + base + (dono.auxilioAcertoProprio ?? 0),
+    bonus: best.m + (inv?.ataqueTreinado === tipo ? bt : 0) + base
+      + (dono.acertoHabilidade ?? 0) + (dono.auxilioAcertoProprio ?? 0) + (cTes.ataque || 0),
     attr: best.attr,
     treinado: inv?.ataqueTreinado === tipo,
-    comGatilho: cTes.ataque || 0,
+    partes: [
+      { label: rotuloAttrInv(best.attr), valor: best.m },
+      ...(inv?.ataqueTreinado === tipo ? [{ label: "Maestria", valor: bt }] : []),
+      ...parcelasAcerto,
+      ...auxFontes.filter((f) => f.canal === "bonusAcerto").map((f) => ({ label: f.label, valor: f.valor })),
+      ...(cTes.ataque ? [{ label: "Característica", valor: cTes.ataque }] : []),
+    ],
   });
 
   // Testes de Resistência: os 5 saves. Treinado soma BT, Mestre soma 1,5x BT.
-  const trMestre = !!inv?.trMestre;
+  // ⚠ MAPA desde 2026-09-02 (era um save só). Ver `trProfDaInvocacao`.
+  /* ⚠ E A CARACTERÍSTICA ENTRA POR CIMA desde 2026-09-03, sem gastar a vaga
+     base: `TR_VAGAS_BASE` conta o que a FICHA escolheu, e esta faixa vem de
+     fora dela. Vale sempre a MAIOR das duas, para a Característica nunca
+     rebaixar um TR que a ficha já dominava. Ver `INV_CARACT_TR_PROF`. */
+  const trDaFicha = trProfDaInvocacao(inv);
+  const trConcedido = caract?.trProf || {};
+  const trProf = { ...trDaFicha };
+  for (const [id, dado] of Object.entries(trConcedido)) {
+    if ((RANK_PROF_INV[dado.prof] ?? 0) > (RANK_PROF_INV[trProf[id]] ?? 0)) trProf[id] = dado.prof;
+  }
   const resistencias = AFTY_RESISTENCIAS.map((r) => {
-    const treinado = inv?.trTreinado === r.value;
-    const p = treinado ? (trMestre ? "mestre" : "treinado") : null;
+    const p = trProf[r.value] || null;
     return {
-      value: r.value, label: r.label, treinado, mestre: treinado && trMestre,
-      bonus: mod(at[r.atributo] ?? 8) + bonusProficiencia(bt, p) + baseTR,
-      comGatilho: cTes.resistencias[r.value] || 0,
+      value: r.value, label: r.label, treinado: !!p, mestre: p === "mestre",
+      bonus: mod(at[r.atributo] ?? 8) + bonusProficiencia(bt, p) + baseTR
+        + (fus.resistencias?.[r.value] || 0) + (cTes.resistencias[r.value] || 0),
+      /* Quando a faixa veio de Característica, a parcela leva o NOME dela: sem
+         isso o jogador vê a Maestria num TR que ele não treinou na ficha e não
+         tem como descobrir de onde ela saiu. */
+      partes: [
+        { label: rotuloAttrInv(r.atributo), valor: mod(at[r.atributo] ?? 8) },
+        ...parcelaProficiencia(bt, p, trConcedido[r.value] && trProf[r.value] === trConcedido[r.value].prof
+          && (RANK_PROF_INV[trConcedido[r.value].prof] ?? 0) > (RANK_PROF_INV[trDaFicha[r.value]] ?? 0)
+          ? trConcedido[r.value].nome : null),
+        ...parcelasTR,
+        ...(fus.resistencias?.[r.value]
+          ? [{ label: fus.fonte || "Fusão", valor: fus.resistencias[r.value] }] : []),
+        ...(cTes.resistencias[r.value]
+          ? [{ label: "Característica", valor: cTes.resistencias[r.value] }] : []),
+      ],
     };
   });
 
@@ -1427,18 +1733,36 @@ export function resolveTestesInvocacao(inv, dono = {}, caract = null) {
   // nesse caso a linha existe mesmo assim (o bônus vale, o BT é que não soma).
   const prof = (inv?.periciasProf && typeof inv.periciasProf === "object") ? inv.periciasProf : {};
   const pericias = AFTY_PERICIAS
-    .filter((p) => prof[p.id] || cTes.pericias[p.id])
+    .filter((p) => prof[p.id] || cTes.pericias[p.id] || fus.pericias?.[p.id])
     .map((p) => ({
       id: p.id, nome: p.nome, mestre: prof[p.id] === "mestre", treinado: !!prof[p.id],
-      bonus: mod(at[p.atributo] ?? 8) + bonusProficiencia(bt, prof[p.id] || null) + base + (cTes.pericias[p.id] || 0),
+      atributo: p.atributo,
+      bonus: mod(at[p.atributo] ?? 8) + bonusProficiencia(bt, prof[p.id] || null) + base
+        + (cTes.pericias[p.id] || 0) + (fus.pericias?.[p.id] || 0),
+      partes: [
+        { label: rotuloAttrInv(p.atributo), valor: mod(at[p.atributo] ?? 8) },
+        ...parcelaProficiencia(bt, prof[p.id] || null),
+        ...parcelasComuns,
+        ...(cTes.pericias[p.id] ? [{ label: "Característica", valor: cTes.pericias[p.id] }] : []),
+        ...(fus.pericias?.[p.id] ? [{ label: fus.fonte || "Fusão", valor: fus.pericias[p.id] }] : []),
+      ],
     }));
 
   // CD representativa de um ataque por TR (usa o melhor atributo; cada Ação por
   // TR mostra a sua CD exata pelo atributo chave dela). Não soma bônus de teste.
   const nd = Math.max(1, dono.nd ?? 1);
   const cd = 10 + Math.max(1, Math.floor(nd / 2)) + best.m + (dono.cdHabilidade ?? 0);
+  const cdPartes = [
+    { label: "Base", valor: 10 },
+    { label: "Metade do Nível", valor: Math.max(1, Math.floor(nd / 2)) },
+    { label: rotuloAttrInv(best.attr), valor: best.m },
+    ...parcelasDoCanal(detalhes, "cd"),
+  ];
 
-  return { acerto: { corpo: acertoDe("corpo"), distancia: acertoDe("distancia") }, cd, resistencias, pericias };
+  return {
+    acerto: { corpo: acertoDe("corpo"), distancia: acertoDe("distancia") },
+    cd, cdPartes, resistencias, pericias,
+  };
 }
 
 // ------------------------------------------------------------
@@ -1543,6 +1867,10 @@ export function resolveInvocacao(inv, dono = {}) {
      resolve os próprios auxílios. Ver `auxiliosLigadosDa`. */
   const aux = auxiliosLigadosDa(inv, dono);
   if (aux.proprio.bonusAcerto) donoLocal.auxilioAcertoProprio = aux.proprio.bonusAcerto;
+  /* As duas listas que o `resolveTestesInvocacao` transforma em parcelas de
+     hover: os efeitos de Habilidade aplicados e os auxílios ligados na mesa. */
+  donoLocal.detalhesEfeito = efe.detalhes;
+  donoLocal.auxilioFontes = aux.proprio.fontes;
 
   // As Características são passivas e resolvem ANTES dos stats, porque o PV, o
   // tamanho, a RD e os testes leem o que elas concedem.
@@ -1574,6 +1902,67 @@ export function resolveInvocacao(inv, dono = {}) {
     efe.orcamentoLivre + efe.orcamentoPago + (ovr?.ajusteAcoes ?? 0),
     efe.caracteristicasLivres,
   );
+  /* ============================================================
+     AS FONTES DE CADA NÚMERO DO STAT BLOCK
+     ============================================================
+     Uma lista por número, no formato do painel de fontes (`{ label, valor }`),
+     e a soma de cada uma bate com o número que a Ficha mostra. Montadas aqui
+     porque a conta é daqui: repetir as parcelas na aba seria a mesma fórmula
+     escrita duas vezes. Ver `parcelasDoCanal`. */
+  const auxDoCanal = (canal) => aux.proprio.fontes
+    .filter((f) => f.canal === canal)
+    .map((f) => ({ label: f.label, valor: f.valor }));
+  const partesRdGeral = [...parcelasDoCanal(efe.detalhes, "rd"), ...auxDoCanal("rdGeral")];
+  const fontes = {
+    pv: [
+      ...partesPvInvocacao(inv, dono),
+      ...parcelasDoCanal(efe.detalhes, "pv"),
+      /* Duas Características de Vida não acumulam: vale a MAIOR, e a parcela
+         leva o nome de quem venceu. Ver `agregarCaracteristicas`. */
+      ...(caract.pv
+        ? [{
+          label: caracteristicas.find((c) => c.subtipo === "vida" && (c.valor ?? 0) === caract.pv)?.nome
+            || "Característica",
+          valor: caract.pv,
+        }]
+        : []),
+    ],
+    defesa: [
+      ...partesDefesaInvocacao(inv, dono),
+      ...parcelasDoCanal(efe.detalhes, "defesa"),
+      ...auxDoCanal("defesa"),
+    ],
+    deslocamento: [
+      { label: "Base", valor: deslocamentoInvocacao() },
+      ...parcelasDoCanal(efe.detalhes, "deslocamento"),
+    ],
+    rdGeral: partesRdGeral,
+    /* A RD por tipo é a da Característica MAIS a Geral: o número que vale contra
+       aquele tipo. As duas parcelas aparecem, senão o jogador soma de cabeça. */
+    rdPorTipo: Object.fromEntries(caract.rdPorTipo.map((l) => [
+      l.chave,
+      [{ label: l.nome || "Característica", valor: l.valor }, ...partesRdGeral],
+    ])),
+    custo: [
+      { label: `${g.label} (Base)`, valor: custoBruto },
+      ...parcelasDoCanal(efe.detalhes, "custoReducao").map((x) => ({ label: x.label, valor: -x.valor })),
+    ],
+    /* ⚠ `caracteristicasLivres` NÃO ENTRA AQUI, e a ausência é a regra. Ele é o
+       pool EXCLUSIVO de Característica (`orcamento.exclusivas`), que corre por
+       fora do `total`: somá-lo faria o painel fechar num número maior que o
+       mostrado. Quem o exibe é a contagem de exclusivas da própria fila. */
+    orcamento: [
+      { label: `${g.label} (Base)`, valor: orcamento.base },
+      { label: "Adicionais do Grau", valor: orcamento.maxAdicionais },
+      ...parcelasDoCanal(efe.detalhes, "orcamentoLivre", "orcamentoPago"),
+      ...(ovr?.ajusteAcoes ? [{ label: "Feitiço de Criação", valor: ovr.ajusteAcoes }] : []),
+    ],
+    vagasPericia: [
+      ...partesPericiasInvocacao(inv),
+      ...parcelasDoCanal(efe.detalhes, "pericias"),
+    ],
+  };
+
   const perProf = (inv?.periciasProf && typeof inv.periciasProf === "object") ? inv.periciasProf : {};
   const pericias = {
     allowance: periciasAllowanceInvocacao(inv) + efe.pericias,
@@ -1695,7 +2084,7 @@ export function resolveInvocacao(inv, dono = {}) {
     // O rótulo sai resolvido, como o `grauLabel`: quem tem o catálogo de
     // tamanhos é este lado.
     tamanhoLabel: AFTY_TAMANHOS.find((t) => t.value === tamanho)?.label ?? tamanho,
-    atributos, orcamento, pericias,
+    atributos, orcamento, pericias, fontes,
     bonusTesteHabilidade: efe.bonusTeste,
     efeitosHabilidade: efe,
     caract,
@@ -1726,9 +2115,199 @@ export function resolveInvocacao(inv, dono = {}) {
  * os `efeitos` das Habilidades, os `marcadores` disponíveis (com o limite já
  * avaliado) e os `overridesPorInvocacao` dos Feitiços de Shikigami.
  */
+/**
+ * ============================================================
+ * FUSÃO ESTRUTURAL: o que NÃO cabe num canal
+ * ============================================================
+ * Canal carrega NÚMERO. "A Quimera recebe todos os Treinamentos de Perícia das
+ * sombras fundidas" e "recebe o maior atributo entre as sombras fundidas"
+ * carregam LISTA e MAPA, e por isso nunca teriam como sair de um `efeitosInvocacao`.
+ *
+ * ⚠ A POLÍTICA É DADO DO ADDON, e a execução é do motor. O marcador declara
+ * `herdaDaFonte: { pericias: "uniao", atributos: "maior" }`, e é este arquivo que
+ * sabe o que "união" e "maior" querem dizer. É a mesma divisão de sempre: o
+ * verbo no motor, o substantivo no addon.
+ *
+ * As políticas, e de onde cada uma saiu:
+ *
+ *   pericias: "uniao"       — Quimera: "recebe todos os Treinamentos de Perícia
+ *                             das sombras fundidas". Vale a MAIOR faixa.
+ *   pericias: "escalonado"  — sobe um degrau a partir do que já tem, e o que
+ *                             passa do mestre vira bônus. NENHUM PACOTE PEDE ESTA
+ *                             POLÍTICA HOJE, e ver o aviso logo abaixo.
+ *   atributos: "maior"      — Quimera: "recebe o maior atributo entre as sombras
+ *                             fundidas [...] sempre do maior valor".
+ *   ataque: "uniao"         — Quimera: "recebe todos os Treinamentos de [...]
+ *                             Acerto". Quem já tem um treino mantém o dele.
+ *   tr: "uniao"/"escalonado" — os mesmos dois modos das perícias, agora que o TR
+ *                             é MAPA (2026-09-02, a pedido do autor).
+ *
+ * ------------------------------------------------------------
+ * ⚠ O `escalonado` ESTÁ SEM DONO DESDE 2026-09-04, E DE PROPÓSITO
+ * ------------------------------------------------------------
+ * Ele nasceu para a Herança das Sombras, que dizia *"se torna treinado nas
+ * mesmas perícias e TRs da sombra de herança. Caso já seja treinado, se torna
+ * mestre. Caso já seja mestre, recebe um bônus de +3 para cada sombra com a
+ * mesma perícia, e +2 em TR para cada sombra com os mesmos TRs"*. O autor trocou
+ * a frase inteira por *"+1 em TRs, Perícias e Acerto para cada Sombra Herdada"*,
+ * que é o canal `bonusTeste` e não fusão de faixa, e o marcador da Herança
+ * perdeu o `herdaDaFonte`.
+ *
+ * A política ficou porque ela é VERBO: este arquivo sabe o que "escalonado"
+ * quer dizer, e um addon futuro a alcança escrevendo uma linha de JSON. Apagá-la
+ * seria jogar fora capacidade para não deixar código sem chamador hoje.
+ *
+ * ⚠ Só o `uniao`, o `maior` e o `ataque` têm dono agora, os três na Quimera. Um
+ * conserto no `escalonado` daqui em diante não tem assert de ponta a ponta
+ * cobrindo, porque nenhum pacote o exercita.
+ *
+ * O EXCEDENTE, que só o `escalonado` usa: mestre é o teto da escada, então a
+ * partir dele cada fonte a mais não tem degrau para subir. `usados` é quantas
+ * fontes a escada consome até o mestre, e o que sobra paga bônus.
+ */
+const BONUS_EXCEDENTE = { pericias: 3, tr: 2 };
+const PROF_POR_RANK = { 0: null, 1: "treinado", 2: "mestre" };
+
+export function aplicarFusaoDeFontes(inv, marcadores = [], porId = new Map()) {
+  const comPolitica = marcadores.filter((m) => m?.herdaDaFonte && marcadorLigado(inv, m.id));
+  if (!comPolitica.length) return inv;
+
+  const periciasProf = { ...(inv?.periciasProf || {}) };
+  const trProf = { ...trProfDaInvocacao(inv) };
+  const atributos = { ...(inv?.atributos || {}) };
+  let ataqueTreinado = inv?.ataqueTreinado ?? null;
+  const bonus = { pericias: {}, resistencias: {} };
+  let mexeu = false;
+
+  /* Um passo, servindo perícia e TR: os dois são mapa `id -> faixa` e a regra
+     escrita para eles é a mesma frase. */
+  const fundirFaixas = (destino, mapasDaFonte, modo, tipo, sacola, rotulo) => {
+    // Quantas fontes têm CADA id, que é o "para cada sombra com a mesma perícia".
+    const quantas = {};
+    for (const mapa of mapasDaFonte) {
+      for (const [id, nivel] of Object.entries(mapa || {})) {
+        if (RANK_PROF_INV[nivel]) quantas[id] = (quantas[id] || 0) + 1;
+      }
+    }
+    for (const [id, n] of Object.entries(quantas)) {
+      const atual = RANK_PROF_INV[destino[id]] ?? 0;
+      if (modo === "uniao") {
+        // Vale a MAIOR faixa vista, sem promover e sem excedente.
+        const melhor = Math.max(atual, ...mapasDaFonte.map((mp) => RANK_PROF_INV[mp?.[id]] ?? 0));
+        if (melhor !== atual) { destino[id] = PROF_POR_RANK[melhor]; mexeu = true; }
+        continue;
+      }
+      // Escalonado: sobe a escada e o que passar do mestre vira bônus.
+      const usados = Math.max(0, 2 - atual);
+      const novo = Math.min(2, atual + n);
+      if (novo !== atual) { destino[id] = PROF_POR_RANK[novo]; mexeu = true; }
+      const excedente = Math.max(0, n - usados);
+      if (excedente) {
+        sacola[id] = (sacola[id] || 0) + excedente * BONUS_EXCEDENTE[tipo];
+        // Quem gerou o excedente dá o nome à parcela no hover da Ficha. Sem
+        // isso o jogador via um "+2" avulso no TR sem saber de qual marcador.
+        bonus.fonte = bonus.fonte || rotulo;
+        mexeu = true;
+      }
+    }
+  };
+
+  for (const m of comPolitica) {
+    const fontes = marcadorFontes(inv, m.id)
+      .filter((fid) => fid !== inv?.id)
+      .map((fid) => porId.get(fid))
+      .filter(Boolean);
+    if (!fontes.length) continue;
+    const pol = m.herdaDaFonte;
+
+    if (pol.pericias === "uniao" || pol.pericias === "escalonado") {
+      fundirFaixas(periciasProf, fontes.map((f) => f?.periciasProf), pol.pericias, "pericias", bonus.pericias, m.label);
+    }
+    if (pol.tr === "uniao" || pol.tr === "escalonado") {
+      fundirFaixas(trProf, fontes.map(trProfDaInvocacao), pol.tr, "tr", bonus.resistencias, m.label);
+    }
+
+    if (pol.atributos === "maior") {
+      for (const f of fontes) {
+        for (const [k, v] of Object.entries(f?.atributos || {})) {
+          const n = Number(v);
+          if (Number.isFinite(n) && n > (Number(atributos[k]) || 0)) { atributos[k] = n; mexeu = true; }
+        }
+      }
+    }
+
+    if (pol.ataque === "uniao" && !ataqueTreinado) {
+      const daFonte = fontes.find((f) => f?.ataqueTreinado)?.ataqueTreinado;
+      if (daFonte) { ataqueTreinado = daFonte; mexeu = true; }
+    }
+  }
+
+  /* ⚠ `bonusDeFusao` é CALCULADO e nunca salvo: ele vive só nesta cópia, que o
+     `resolveInvocacao` consome logo em seguida. Guardá-lo na ficha faria o bônus
+     dobrar no dia em que a fusão rodasse de novo. */
+  return mexeu ? { ...inv, periciasProf, trProf, atributos, ataqueTreinado, bonusDeFusao: bonus } : inv;
+}
+
+/**
+ * ============================================================
+ * OS DOIS PASSES, E POR QUE ELES EXISTEM
+ * ============================================================
+ * ⚠ Uma invocação pode LER OUTRA da mesma ficha desde 2026-09-02 (a Herança das
+ * Sombras herda o PV da sombra morta, a Quimera soma o das fundidas). Isso é uma
+ * relação, e relação não cabe num `map` de uma passada só.
+ *
+ * PASSE 1 resolve todas sem vínculo nenhum, e guarda o CONTEXTO de cada uma.
+ * PASSE 2 refaz só as que declararam fonte, agora com os contextos do passe 1
+ * pendurados em `#fontes`.
+ *
+ * ⚠ O CICLO MORRE SOZINHO, e é o motivo de o passe 1 existir mesmo para quem tem
+ * fonte: se A declara B e B declara A, os dois leem o contexto de passe 1 do
+ * outro, que não tem `#fontes`. O resultado é definido, não recorre e não
+ * depende da ordem da lista. Uma passada só, resolvendo sob demanda, entraria em
+ * laço infinito nesse caso.
+ */
 export function resolveInvocacoesList(lista, dono = {}) {
   const arr = Array.isArray(lista) ? lista : [];
-  const resolvidas = arr.map((inv) => resolveInvocacao(inv, dono));
+  const marcadoresComFonte = (Array.isArray(dono.marcadores) ? dono.marcadores : [])
+    .filter((m) => m?.fontes);
+
+  /* PASSE 1: sem vínculo, e RESOLVIDO. O contexto de cada invocação é montado
+     em cima do resultado dela, e não do cru.
+
+     ⚠ A DIFERENÇA IMPORTA. `buildInvocacaoDslContext` sem `resolved` devolve
+     `pv_max` e `defesa` BASE, sem as Características. A Herança diz "+1/3 dos
+     Pontos de Vida da sombra de herança", e os Pontos de Vida dela incluem a
+     Característica de Vida que ela tem: herdar do número base pagaria menos do
+     que o livro manda. */
+  const ctxPasse1 = new Map();
+  for (const inv of arr) {
+    if (!inv?.id) continue;
+    const r = resolveInvocacao(inv, dono);
+    ctxPasse1.set(inv.id, buildInvocacaoDslContext(inv, dono, {
+      pv: r.pv, defesa: r.defesa, deslocamento: r.deslocamento, tamanho: r.tamanho,
+    }));
+  }
+
+  /* PASSE 2: quem declarou fonte ganha `#fontes` no contexto. A chave é o id do
+     marcador SANEADO, igual ao nome da variável, para o addon escrever
+     `fontes("dez_sombras_heranca", ...)` do mesmo jeito que escreve
+     `marc_dez_sombras_heranca`. */
+  const donoDe = (inv) => {
+    if (!marcadoresComFonte.length) return dono;
+    const mapa = {};
+    for (const m of marcadoresComFonte) {
+      if (!marcadorLigado(inv, m.id)) continue;
+      const ctxs = marcadorFontes(inv, m.id)
+        .filter((fid) => fid !== inv?.id)          // ninguém é fonte de si mesmo
+        .map((fid) => ctxPasse1.get(fid))
+        .filter(Boolean);
+      if (ctxs.length) mapa[normalizarMarca(varDeMarcador(m.id).replace(/^marc_/, ""))] = ctxs;
+    }
+    return Object.keys(mapa).length ? { ...dono, [CHAVE_FONTES]: mapa } : dono;
+  };
+  const porId = new Map(arr.filter((i) => i?.id).map((i) => [i.id, i]));
+  const resolvidas = arr.map((inv) =>
+    resolveInvocacao(aplicarFusaoDeFontes(inv, marcadoresComFonte, porId), donoDe(inv)));
   // Contagem por marcador: quantas invocações estão marcadas contra o limite
   // daquele marcador. É o que a aba mostra e o que dispara o aviso de excesso.
   const marcadores = (Array.isArray(dono.marcadores) ? dono.marcadores : []).map((m) => {
@@ -1990,6 +2569,16 @@ export function validarCatalogoInvocacoes() {
   cobre("INV_CARACT_TESTE", INV_CARACT_TESTE, cinco);
   cobre("INV_CARACT_RD", INV_CARACT_RD, cinco);
   cobre("INV_CARACT_TAMANHO", INV_CARACT_TAMANHO, cinco);
+  /* ⚠ Esta tem os cinco graus COM valor nulo nos dois de baixo, e não quatro
+     chaves. O `null` é a resposta "este grau não tem a Característica", e uma
+     chave ausente viraria `undefined` com o mesmo efeito por acidente: quem lê
+     um grau novo saberia que ele foi esquecido. */
+  cobre("INV_CARACT_TR_PROF", INV_CARACT_TR_PROF, cinco);
+  for (const [g, v] of Object.entries(INV_CARACT_TR_PROF)) {
+    if (v !== null && v !== "treinado" && v !== "mestre") {
+      erros.push(`INV_CARACT_TR_PROF: faixa inválida "${v}" no grau "${g}"`);
+    }
+  }
 
   /* Alvos de modificador: rótulo e aplicador. Um alvo sem `aplica` entraria no
      seletor do editor e não faria nada, que é o bug que o alvo veio consertar. */

@@ -32,6 +32,8 @@ import { registrarFamilia, remendarLista, filtraForaDoJogador } from "./afty-add
 import { evalNumber } from "./afty-dsl";
 import { getOrigem, getCla } from "./afty-origens";
 import { AFTY_ATTRS, AFTY_RESISTENCIAS } from "./afty-schema";
+// Requisito de treino em perícia ou TR. Módulo FOLHA, então não há ciclo.
+import { avaliarRequisitoDeTreino, conferirRequisitoDeTreino } from "./afty-pericias-catalogo";
 import { APTIDAO_TRILHAS, AFTY_APTIDOES } from "./afty-aptidoes";
 import { AFTY_ESPECIALIZACOES, treinamentosDasEspecializacoes } from "./afty-especializacoes";
 // O Adepto de Combate empresta o pool de Estilos do Combatente. Sem ciclo:
@@ -397,7 +399,7 @@ export const AFTY_TALENTOS = [
       "efeito da habilidade Suporte em Combate, de Suporte (p.102), com o valor da cura sendo " +
       "baseado em seu nível de personagem, mas a quantidade de usos é reduzida pela metade.",
     requisitos: [
-      { tipo: "nota", texto: "Mestre em Medicina" },
+      { tipo: "pericia", pericia: "medicina", nivel: "mestre" },
       { tipo: "maxComNome", prefixo: "Adepto", max: 2 },
     ],
   },
@@ -413,7 +415,7 @@ export const AFTY_TALENTOS = [
       "Derrubar ou Empurrar o alvo como uma Ação Livre, recebendo um bônus igual a metade do seu " +
       "Bônus de Treinamento no teste.",
     requisitos: [
-      { tipo: "nota", texto: "Mestre em Atletismo" },
+      { tipo: "pericia", pericia: "atletismo", nivel: "mestre" },
       { tipo: "maxComNome", prefixo: "Adepto", max: 2 },
     ],
   },
@@ -438,7 +440,7 @@ export const AFTY_TALENTOS = [
       opcoes: ESTILOS_DE_COMBATE,
     },
     requisitos: [
-      { tipo: "nota", texto: "Mestre em Intuição" },
+      { tipo: "pericia", pericia: "intuicao", nivel: "mestre" },
       { tipo: "maxComNome", prefixo: "Adepto", max: 2 },
     ],
   },
@@ -456,7 +458,7 @@ export const AFTY_TALENTOS = [
     // livro escreve "Técnica Rápida", mas a opção do pool se chama "Feitiço
     // Rápido" (mesma troca Técnica/Feitiço de Mira Aperfeiçoada).
     requisitos: [
-      { tipo: "nota", texto: "Mestre em Feitiçaria" },
+      { tipo: "pericia", pericia: "feiticaria", nivel: "mestre" },
       { tipo: "nota", texto: "Possuir Feitiços" },
       { tipo: "maxComNome", prefixo: "Adepto", max: 2 },
     ],
@@ -503,7 +505,7 @@ export const AFTY_TALENTOS = [
       "completamente anulado caso seja especial ou não se encaixe em nenhum dos outros parâmetros. " +
       "Caso o Feitiço seja anulado, o alvo recupera a ação e não gasta o PE, mas não pode realizar " +
       "o Feitiço anulado.",
-    requisitos: [{ tipo: "nota", texto: "Treinado em Astúcia" }, { tipo: "nd", valor: 8 }],
+    requisitos: [{ tipo: "resistencia", resistencia: "astucia", nivel: "treinado" }, { tipo: "nd", valor: 8 }],
   },
   {
     id: "tal_aptidao_desenvolvida",
@@ -533,7 +535,7 @@ export const AFTY_TALENTOS = [
       "do segundo, possui vantagem.",
     // ⚠ O livro repete "Pré-Requisito:" duas vezes neste. Erro de digitação.
     requisitos: [
-      { tipo: "nota", texto: "Treinado em Vontade" },
+      { tipo: "resistencia", resistencia: "vontade", nivel: "treinado" },
       { tipo: "atributo", attr: "constituicao", valor: 16 },
     ],
   },
@@ -547,7 +549,7 @@ export const AFTY_TALENTOS = [
       "ouvir, recebem HP temporário igual ao dobro do seu nível + seu modificador de Presença " +
       "multiplicado pela metade do seu bônus de treinamento, arredondado para cima. Uma criatura " +
       "só pode receber esse bônus uma vez por descanso curto ou longo.",
-    requisitos: [{ tipo: "nota", texto: "Treinado em alguma perícia de Presença" }],
+    requisitos: [{ tipo: "periciaAtributo", attr: "presenca", nivel: "treinado" }],
   },
   {
     id: "tal_especialista_em_concussao",
@@ -610,7 +612,7 @@ export const AFTY_TALENTOS = [
       "criar 2 itens adicionais. Caso escolha o foco Criação de Itens mais de uma vez no mesmo " +
       "interlúdio, você recebe as oportunidades adicionais para cada foco. Além disso, você recebe " +
       "um bônus de +2 em duas perícias de ofício a sua escolha.",
-    requisitos: [{ tipo: "nota", texto: "Treinado em dois Ofícios" }, { tipo: "nd", valor: 4 }],
+    requisitos: [{ tipo: "oficios", quantidade: 2, nivel: "treinado" }, { tipo: "nd", valor: 4 }],
   },
   {
     id: "tal_mestre_do_arremesso",
@@ -647,7 +649,7 @@ export const AFTY_TALENTOS = [
       "uma técnica, caso isso aconteça, você pode se levantar como uma ação livre, sem gastar sua " +
       "ação de movimento e se mover 3m sem ativar golpes de oportunidade. Ao fazer isso, você " +
       "também recebe um bônus de metade do seu modificador de destreza na Defesa por 1 rodada.",
-    requisitos: [{ tipo: "nota", texto: "Treinado em Acrobacia" }],
+    requisitos: [{ tipo: "pericia", pericia: "acrobacia", nivel: "treinado" }],
   },
   {
     id: "tal_robustez_aprimorada",
@@ -688,7 +690,7 @@ export const AFTY_TALENTOS = [
       "Você recebe um bônus adicional em testes de Furtividade igual ao seu Bônus de Treinamento " +
       "e, quando deixar uma criatura Desprevenida através de um ataque surpresa, o prejuízo é " +
       "aplicado em todos os Testes de Resistência ao invés de apenas Reflexos.",
-    requisitos: [{ tipo: "nota", texto: "Treinado em Furtividade" }],
+    requisitos: [{ tipo: "pericia", pericia: "furtividade", nivel: "treinado" }],
   },
   {
     id: "tal_tecnicas_do_sentinela",
@@ -760,7 +762,7 @@ export const AFTY_TALENTOS = [
       "Nível 5, o tempo de recarga da sua Técnica Máxima é reduzido em 1 rodada.",
     requisitos: [
       { tipo: "origem", id: "herdado" },
-      { tipo: "nota", texto: "Treinamento em História ou Ocultismo" },
+      { tipo: "periciaOr", pericias: ["historia", "ocultismo"], nivel: "treinado" },
       { tipo: "nd", valor: 5 },
     ],
   },
@@ -952,6 +954,15 @@ const ATTR_LABEL = {
  */
 export function avaliarRequisitoTalento(requisito, ctx = {}) {
   const nd = Math.max(1, Math.trunc(Number(ctx.nd) || 1));
+
+  /* ⚠ TREINO EM PERÍCIA OU TR VEM DO AVALIADOR COMPARTILHADO (2026-09-01), pela
+     mesma razão das Habilidades: eram `nota` e o autor mandou fechá-los. Os
+     Talentos trazem as três formas mais largas, e é por causa deles que o
+     avaliador tem mais que o `pericia` simples: "alguma perícia de Presença"
+     (Discurso Motivador), "dois Ofícios" (Mestre da Criação) e "História ou
+     Ocultismo" (Manual de Técnica). */
+  const treino = avaliarRequisitoDeTreino(requisito, ctx);
+  if (treino) return treino;
 
   if (requisito?.tipo === "nd") {
     return { ok: nd >= requisito.valor, verificavel: true, label: `Nível ${requisito.valor}` };
@@ -1211,6 +1222,9 @@ export function validarCatalogoTalentos() {
     if (!t.descricao?.trim()) problemas.push(`${t.nome}: sem descrição`);
 
     for (const r of t.requisitos || []) {
+      // Perícia, Ofício e Teste de Resistência: o id existe no catálogo?
+      const erroTreino = conferirRequisitoDeTreino(r);
+      if (erroTreino) problemas.push(`${t.nome}: ${erroTreino}`);
       if (r?.tipo === "atributo" && !ATTR_LABEL[r.attr]) {
         problemas.push(`${t.nome}: requisito aponta para atributo inexistente "${r.attr}"`);
       }

@@ -1562,7 +1562,16 @@ export const ITENS_ESPECIAIS = [
   /* ---------- CUSTO 2 ---------- */
   { id: "it_amuleto_do_vislumbre", nome: "Amuleto do Vislumbre", categoria: "acessorio", custo: 2,
     descricao: "Um amuleto amaldiçoado que fornece ao portador capacidade de vislumbrar tudo ao seu redor com perfeição. O usuário deste item recebe visão no escuro com alcance de 9 metros, além de um bônus de +2 em rolagens de Percepção. Uma vez ao dia, você pode, como uma ação bônus, se tornar capaz de enxergar com os olhos fechados em 9 metros de diâmetro por 1 minuto.",
-    efeito: { pericia: { percepcao: 2 }, aplicado: false } },
+    /* ⚠ ESTES +2 FICARAM PARADOS DE 2026-07-22 A 2026-09-05, e o log dizia o
+       contrário. A sessão de 2026-08-01 declarou que o Amuleto e o Sob Medida
+       tinham entrado juntos pelo canal `bonusPericia`, e só o Sob Medida
+       entrou: este ficou com `aplicado: false` e o consumidor lá embaixo
+       (`if (ef?.aplicado ...)`) jogava a linha fora sem sintoma nenhum.
+
+       As duas Pulseiras, que estão logo abaixo, seguem inertes com razão: elas
+       concedem TREINO numa perícia à escolha, e escolha de item não tem tela.
+       Este aqui nomeia a perícia, então nunca teve bloqueio. */
+    efeito: { pericia: { percepcao: 2 }, aplicado: true } },
   { id: "it_antidoto_intermediario", nome: "Antídoto Intermediário", categoria: "farmaco", custo: 2,
     descricao: "Um simples antídoto, capaz de neutralizar venenos mais leves. O antídoto pode ser consumido como uma ação bônus, curando da condição envenenado e/ou qualquer veneno de custo 2 ou que venha de uma maldição de terceiro grau ou inferior." },
   { id: "it_apanhador_de_saude", nome: "Apanhador de Saúde", categoria: "acessorio", custo: 2,
@@ -2051,6 +2060,16 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
      linhas distintas da ficha. */
   let rdGeralBonus = 0;
   let rdFisicoBonus = 0;
+  /* ⚠ AS MESMAS SOMAS, MAS COM NOME. As duas pilhas acima são escalares e
+     chegavam ao `deriveAfty` como uma linha só, "Equipamento: 9", que é a soma
+     de coisas que o LIVRO lista separadas: a coluna de RD do escudo e a tabela
+     de grau da Ferramenta são fontes diferentes, com regras diferentes, e uma
+     delas (a base) é justamente a que o Especialista em Escudo lê.
+
+     Um número certo com detalhamento errado é bug, e a aba de Resistências é a tela
+     feita para consultar de ONDE a RD vem. Por isso a parcela viaja nomeada, e
+     o escalar continua existindo para quem só quer o total. */
+  const rdPartes = [];
   let penalidadeDestreza = 0;
   let hpMaxBonus = 0;
   let cdBonus = 0;
@@ -2138,17 +2157,23 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
            (autor, 2026-08-01: "RD Geral, exceto Alma", que é a definição exata da
            RD Geral no Afty). No jogador ela é RD FÍSICA, como a tabela de grau do
            livro escreve. Ver `canalRdEscudo` e a divergência `rdEscudoFisico`. */
-        const soma = (v) => {
+        const soma = (v, label) => {
           if (canalEscudo === "rdFisico") rdFisicoBonus += v;
           else rdGeralBonus += v;
+          if (v) rdPartes.push({ label, valor: v, canal: canalEscudo });
         };
-        soma(def.rdEscudo ?? 0);
+        soma(def.rdEscudo ?? 0, def.nome);
         // O "aumento BASE em RD do escudo", separado do que a Ferramenta soma.
         // O Especialista em Escudo (Combatente 4°) lê justamente essa parcela, e
         // ela é a mesma nos dois sistemas: o que muda é onde ela DESEMBOCA.
         rdEscudoBase += def.rdEscudo ?? 0;
         // RD por grau da Ferramenta: SOMA com a do escudo comum (autor).
-        if (fa) soma(fa.rdGrau);
+        /* ⚠ O rótulo usa o grau de CÁLCULO, e não o real: na criatura cada
+           encantamento desce um degrau (divergência `reducaoDeGrau`), e mostrar
+           "Grau Especial: 3" ao lado de um 3 que veio do Segundo faria a linha
+           de fonte contradizer o próprio número. No jogador os dois são iguais,
+           porque lá o grau não é cobrado. */
+        if (fa) soma(fa.rdGrau, fa.grauCalculoLabel);
         // Com Ferramenta, a penalidade é a já reduzida pelo Polido.
         penalidadeDestreza += fa ? fa.penalidade : (def.penalidade ?? 0);
       }
@@ -2303,6 +2328,7 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
     rdEscudoBase,        // só a parcela do escudo, sem a Ferramenta Amaldiçoada
     rdGeralBonus,        // escudo + grau da Ferramenta, quando a RD dele é Geral
     rdFisicoBonus,       // as mesmas duas parcelas, quando a RD dele é Física
+    rdPartes,            // as mesmas somas com nome, para o hover de fontes
     penalidadeDestreza,  // uniforme + escudos, cumulativos, já com Polido/Ajustado
     hpMaxBonus,
     cdBonus,

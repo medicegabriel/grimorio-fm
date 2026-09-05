@@ -1,0 +1,146 @@
+{
+  "id": "dez-sombras",
+  "nome": "Dez Sombras: Herança e Quimera",
+  "versao": "7.0.0",
+  "autor": "Afty",
+  "descricao": "As duas Mecanicas Unicas das Dez Sombras, como TALENTOS que pagam a propria vaga: cada um concede uma Vaga de Talento ao ser pego, entao os dois saem de graca sem virarem uma origem propria. Heranca das Sombras (uma sombra herda das que morreram) e Quimera (fusao de ate 4 Invocacoes). Em cada invocacao voce liga o marcador e escolhe QUAIS outras invocacoes sao a origem, na propria aba de Invocacoes.",
+  "paraRaw": "afty",
+  "acrescenta": {
+    "talentos": [
+      {
+        "id": "tal_heranca_das_sombras",
+        "nome": "Herança das Sombras",
+        "grupo": "origem",
+        "descricao": "Pela natureza das capacidades da técnica das Dez Sombras, cada shikigami presente nessa técnica possui uma característica especial intrínseca com as propriedades da técnica, sendo essa chamada Herança das Sombras ou também Totalidade.\n\nA Herança das Sombras funciona de uma maneira simples, relacionada à característica de dissipação permanente das sombras em sua morte. Para contrapor essa questão, as Dez Sombras possuem a capacidade de herdar das sombras mortas as habilidades e afins para adquirir uma forma superior, misturando os conceitos e poderes de uma sombra para outra, sendo uma transmissão quase que automática, como um legado passado e compartilhado.\n\nDeve ser escolhida a sombra que irá herdar aspectos de outra sombra morta. O limite de heranças é definido pela quantia de sombras mortas, porém caso mais sombras morram você pode passar a herança para uma sombra que já tem mais heranças ou para outra que não possui nenhuma.\n\nAs heranças concedem os seguintes aspectos para a sombra que irá receber a herança: Pontos de Vida, Atributos, Características passivas, Ações, Perícias, Vulnerabilidades, Resistências e Imunidades, e Dados de Dano e Cura.\n\nComo a Herança das Sombras permite um enorme acúmulo de poder em um Shikigami só, algumas métricas de balanceamento são aplicadas adicionalmente.\n\n**Ganho de Pontos de Vida.** Recebe +1/3 dos Pontos de Vida da sombra de herança.\n\n**Ganho de Atributos.** Recebe +2 Pontos de Atributo do maior ou segundo maior atributo da sombra de herança, para alocar na sombra com herança, ignorando o Limite de Atributo do grau atual da invocação mas respeitando o Limite 30.\n\n**Defesa.** Recebe um aumento na Defesa igual ao maior Modificador de Destreza ou Constituição presente dentre as sombras de herança.\n\n**Movimento.** Recebe +1,5 metros de Movimento para cada herança.\n\n**Ações e Características.** Recebe 1 Ação ou Característica adicional para cada Sombra Herdada.\n\n**Perícias e Testes de Resistência.** Recebe +1 em TRs, Perícias e Acerto para cada Sombra Herdada.\n\n**Dados de Dano e Cura.** Recebe +2 Níveis de Dano e/ou Cura para cada Sombra de herança.",
+        "efeitos": [
+          {
+            "canal": "vagasTalento",
+            "expr": "1",
+            "nome": "Dez Sombras · Vaga de Talento"
+          }
+        ],
+        "efeitosInvocacao": [
+          {
+            "canal": "pv",
+            "expr": "fontes(\"dez_sombras_heranca\", \"soma\", \"piso(pv_max / 3)\")",
+            "quando": "fontes_qtd(\"dez_sombras_heranca\") > 0",
+            "nome": "Herança das Sombras · Pontos de Vida"
+          },
+          {
+            "canal": "defesa",
+            "expr": "fontes(\"dez_sombras_heranca\", \"maior\", \"max(mod_destreza, mod_constituicao)\")",
+            "quando": "fontes_qtd(\"dez_sombras_heranca\") > 0",
+            "nome": "Herança das Sombras · Defesa"
+          },
+          {
+            "canal": "deslocamento",
+            "expr": "1.5 * fontes_qtd(\"dez_sombras_heranca\")",
+            "nome": "Herança das Sombras · Movimento"
+          },
+          {
+            "canal": "danoNivel",
+            "expr": "2 * fontes_qtd(\"dez_sombras_heranca\")",
+            "nome": "Herança das Sombras · Níveis de Dano"
+          },
+          {
+            "canal": "curaNivel",
+            "expr": "2 * fontes_qtd(\"dez_sombras_heranca\")",
+            "nome": "Herança das Sombras · Níveis de Cura"
+          },
+          {
+            "canal": "atributoPontos",
+            "expr": "2 * fontes_qtd(\"dez_sombras_heranca\")",
+            "quando": "fontes_qtd(\"dez_sombras_quimera\") == 0",
+            "nome": "Herança das Sombras · Pontos de Atributo"
+          },
+          {
+            "canal": "orcamentoLivre",
+            "expr": "fontes_qtd(\"dez_sombras_heranca\")",
+            "quando": "fontes_qtd(\"dez_sombras_quimera\") == 0",
+            "nome": "Herança das Sombras · Ações e Características"
+          },
+          {
+            "canal": "bonusTeste",
+            "expr": "fontes_qtd(\"dez_sombras_heranca\")",
+            "nome": "Herança das Sombras · Acerto, TR e Perícia"
+          }
+        ]
+      },
+      {
+        "id": "tal_quimera",
+        "nome": "Quimera",
+        "grupo": "origem",
+        "descricao": "Quimeras são fusões realizadas entre Invocações, permitindo maior versatilidade ao Controlador. Entretanto, essa prática também torna as Invocações mais frágeis durante o combate.\n\nUma Quimera pode ser formada pela fusão de até 4 Invocações. Um exemplo é o Agito, invocado por Sukuna, resultado da fusão entre Cervo Circular, Tigre Fúnebre, Grande Serpente e Nue.\n\nVocê pode escolher dentre suas sombras possuídas para invocar uma Quimera. Para isso deve subir em um Passo a Ação de Invocar Shikigami (Ação Bônus para Ação Comum, e assim por diante). O Custo em PE é a soma de todas as invocações fundidas.\n\nAlém disso, ao fundir Invocações herdadas em quimeras, o bônus de movimento, defesa e níveis de dano da herança também é aplicado, mas não os bônus de vida, atributo e ações ou características, pois a Mecânica de Quimera já possui seu próprio cálculo para tal.\n\nCaso possua o Bônus de Treinamento +3, pode fundir até 2 Invocações. Caso possua o Bônus de Treinamento +4, pode fundir até 3 Invocações. Caso possua o Bônus de Treinamento +6, pode fundir até 4 Invocações.\n\nAo gerar uma quimera, você pode a definir de 2 formas. Utilizando como base de grau da quimera o maior grau das invocações da quimera, com todas as ações e características sendo atualizadas para o grau. Alternativamente, caso possa ser capaz de invocar a Quimera com um grau maior que o grau das sombras, você pode o invocar, gastando +2 PE para cada grau acima, aumentando +4 PE no grau especial ao invés de +2. Ao criar uma quimera desta forma, além de atualizar as ações e características para o grau, também se deve atualizar os valores base de Vida das duas invocações com mais vida na quimera, e o valor de Defesa deve ser recalculado considerando o grau atual.\n\nApós a escolha de qual forma irá definir a Quimera, ela deverá seguir as seguintes métricas para a criação da mesma.\n\n**Vida.** A Vida Máxima de uma Quimera é igual a soma dos 2 maiores Pontos de Vida dentre as sombras fundidas, porém a cada sombra adicional a vida aumenta em um valor igual ao valor de Atributo do Cálculo de Vida da sombra.\n\n**Treinamentos.** A Quimera recebe todos os Treinamentos de Perícia, Acerto e TR das sombras fundidas.\n\n**Atributos.** A Quimera recebe o maior atributo entre as sombras fundidas, pegando Força, Destreza, Constituição e etc, sempre do maior valor dentre as sombras.\n\n**Recálculo.** Movimento, Defesa e Valores da Quimera devem ser calculados novamente com base nas mudanças acima, seguindo os padrões do sistema normalmente.\n\n**Bônus de Fusão.** Recebe +1 em Acerto, CD, Defesa, Nível de Dano, TRs e Perícia para cada sombra fundida além da primeira.\n\n**Ações e Características.** Uma Quimera possui uma quantidade de Ações e Características iguais à Sombra Principal usada para a fusão, mais 1 para cada outra sombra colocada na Fusão. Elas podem ser escolhidas entre quaisquer Ações ou Características das sombras fundidas, além de ser possível criar Ações e Características únicas para a Quimera.\n\n**Limite.** Você só pode invocar uma Quimera por cena. Caso ela venha a ser Dissipada, as sombras usadas para criá-la não podem ser invocadas novamente durante a cena.",
+        "efeitos": [
+          {
+            "canal": "vagasTalento",
+            "expr": "1",
+            "nome": "Dez Sombras · Vaga de Talento"
+          }
+        ],
+        "efeitosInvocacao": [
+          {
+            "canal": "pv",
+            "expr": "fontes_topo(\"dez_sombras_quimera\", 2, \"pv_max\") + constituicao * max(0, fontes_qtd(\"dez_sombras_quimera\") - 2)",
+            "quando": "fontes_qtd(\"dez_sombras_quimera\") > 0",
+            "nome": "Quimera · Pontos de Vida"
+          },
+          {
+            "canal": "custoReducao",
+            "expr": "custo - fontes(\"dez_sombras_quimera\", \"soma\", \"custo\")",
+            "quando": "fontes_qtd(\"dez_sombras_quimera\") > 0",
+            "nome": "Quimera · Custo em PE"
+          },
+          {
+            "canal": "bonusTeste",
+            "expr": "max(0, fontes_qtd(\"dez_sombras_quimera\") - 1)",
+            "nome": "Quimera · Acerto, TR e Perícia"
+          },
+          {
+            "canal": "cd",
+            "expr": "max(0, fontes_qtd(\"dez_sombras_quimera\") - 1)",
+            "nome": "Quimera · CD"
+          },
+          {
+            "canal": "defesa",
+            "expr": "max(0, fontes_qtd(\"dez_sombras_quimera\") - 1)",
+            "nome": "Quimera · Defesa"
+          },
+          {
+            "canal": "danoNivel",
+            "expr": "max(0, fontes_qtd(\"dez_sombras_quimera\") - 1)",
+            "nome": "Quimera · Nível de Dano"
+          },
+          {
+            "canal": "orcamentoLivre",
+            "expr": "max(0, fontes_qtd(\"dez_sombras_quimera\") - 1)",
+            "nome": "Quimera · Ações e Características"
+          }
+        ]
+      }
+    ],
+    "marcadores": [
+      {
+        "id": "heranca",
+        "label": "Herança das Sombras",
+        "requerId": "tal_heranca_das_sombras",
+        "limiteExpr": "10",
+        "fontes": true
+      },
+      {
+        "id": "quimera",
+        "label": "Quimera",
+        "requerId": "tal_quimera",
+        "limiteExpr": "1",
+        "fontes": true,
+        "herdaDaFonte": {
+          "pericias": "uniao",
+          "tr": "uniao",
+          "ataque": "uniao",
+          "atributos": "maior"
+        },
+        "fontesMaxExpr": "(bt >= 3) * 2 + (bt >= 4) + (bt >= 6)"
+      }
+    ]
+  }
+}

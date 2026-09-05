@@ -52,7 +52,7 @@ import { AFTY_RESISTENCIAS } from "./afty-schema";
 // Quem lê a divergência das Bases automáticas. Módulo folha, sem ciclo.
 import { regraDo } from "./afty-sistema";
 // Do módulo FOLHA: afty-pericias.js importa afty-efeitos.js, que volta até aqui.
-import { AFTY_PERICIAS } from "./afty-pericias-catalogo";
+import { AFTY_PERICIAS, avaliarRequisitoDeTreino, conferirRequisitoDeTreino } from "./afty-pericias-catalogo";
 
 /**
  * Opções de escolha aninhada geradas a partir de catálogos que já existem, para
@@ -830,7 +830,7 @@ export const AFTY_HABILIDADES = [
       "suceda, a criatura recebe uma penalidade igual ao seu bônus de treinamento em todos os " +
       "testes que ela realizar até o começo do seu próximo turno.",
     // "Treinado em Intimidação" espera o lado da CRIATURA em Perícias (não existe).
-    requisitos: [{ tipo: "nota", texto: "Treinado em Intimidação" }],
+    requisitos: [{ tipo: "pericia", pericia: "intimidacao", nivel: "treinado" }],
   },
   {
     id: "lut_dedicacao_em_arma",
@@ -1465,7 +1465,7 @@ export const AFTY_HABILIDADES = [
       "Sua alma é imperturbável durante uma boa luta. Você recebe vantagem para resistir às " +
       "seguintes condições: Condenado, Enfeitiçado e Fragilizado.",
     // TR treinado: o lado da CRIATURA em Testes de Resistência não existe.
-    requisitos: [{ tipo: "nota", texto: "Treinado em Vontade" }],
+    requisitos: [{ tipo: "resistencia", resistencia: "vontade", nivel: "treinado" }],
   },
   {
     id: "lut_corpo_sincronizado",
@@ -1476,7 +1476,7 @@ export const AFTY_HABILIDADES = [
     descricao:
       "Seu corpo está sempre em sincronia. Você recebe vantagem para resistir às seguintes " +
       "condições: Caído e Exposto.",
-    requisitos: [{ tipo: "nota", texto: "Treinado em Fortitude" }],
+    requisitos: [{ tipo: "resistencia", resistencia: "fortitude", nivel: "treinado" }],
   },
   {
     id: "lut_empolgar_se",
@@ -1529,7 +1529,7 @@ export const AFTY_HABILIDADES = [
     descricao:
       "Sua mente continua em paz mesmo durante o combate. Você recebe vantagem para resistir às " +
       "seguintes condições Amedrontado, Atordoado e Confuso.",
-    requisitos: [{ tipo: "nota", texto: "Treinado em Astúcia" }],
+    requisitos: [{ tipo: "resistencia", resistencia: "astucia", nivel: "treinado" }],
   },
 
   /* ---------------- LUTADOR · POR NÍVEL (12° nível) ---------------- */
@@ -1614,7 +1614,7 @@ export const AFTY_HABILIDADES = [
       "Quando estiver nas portas da morte, você pode escolher receber uma falha garantida para " +
       "fazer um teste de Vontade contra a CD X, sendo X igual a 15 + 1 para cada 3 pontos de vida " +
       "negativos. Se passar, você levanta com 1 de vida e recebe 1 ponto de exaustão.",
-    requisitos: [{ tipo: "nota", texto: "Treinado em Vontade" }],
+    requisitos: [{ tipo: "resistencia", resistencia: "vontade", nivel: "treinado" }],
   },
 
   /* ---------------- COMBATENTE · BASE ----------------
@@ -2247,7 +2247,7 @@ export const AFTY_HABILIDADES = [
       "rodada, quando utilizar um Feitiço de dano, você pode gastar 2PE para realizar um ataque " +
       "contra uma criatura que tenha sido afetada por ela, como Ação Livre.",
     // "Treinado em Feitiçaria" espera o sistema de Perícias (não existe).
-    requisitos: [{ tipo: "nota", texto: "Treinado em Feitiçaria" }],
+    requisitos: [{ tipo: "pericia", pericia: "feiticaria", nivel: "treinado" }],
   },
   {
     id: "cmb_fluxo_perfeito",
@@ -2334,7 +2334,7 @@ export const AFTY_HABILIDADES = [
       "caso acerte, o alvo recebe a consequência do membro de acordo com a tabela de Ferimentos " +
       "Complexos durante uma rodada.",
     // "Treinado em Percepção" espera o sistema de Perícias (não existe).
-    requisitos: [{ tipo: "nota", texto: "Treinado em Percepção" }],
+    requisitos: [{ tipo: "pericia", pericia: "percepcao", nivel: "treinado" }],
   },
   {
     id: "cmb_preparacao_rapida",
@@ -2466,7 +2466,7 @@ export const AFTY_HABILIDADES = [
       "procurando, você pode utilizar sua Reação para realizar outro teste de Furtividade e, caso " +
       "o resultado do novo teste supere a Percepção do inimigo o procurando, você continua " +
       "escondido.",
-    requisitos: [{ tipo: "nota", texto: "Treinado em Furtividade" }],
+    requisitos: [{ tipo: "pericia", pericia: "furtividade", nivel: "treinado" }],
   },
   {
     id: "cmb_surto_de_acao",
@@ -2517,7 +2517,7 @@ export const AFTY_HABILIDADES = [
       "inimigo desprevenido com um bote poderoso. Durante a primeira rodada de um combate, ao " +
       "atacar uma criatura desprevenida a partir da furtividade ou surpresa, seu primeiro ataque " +
       "é um crítico garantido.",
-    requisitos: [{ tipo: "nota", texto: "Mestre em Furtividade" }],
+    requisitos: [{ tipo: "pericia", pericia: "furtividade", nivel: "mestre" }],
   },
   {
     id: "cmb_ataque_concentrado",
@@ -3107,7 +3107,7 @@ export const AFTY_HABILIDADES = [
       "Realizar rituais se torna algo mais natural para sua mente, permitindo-o colocar o " +
       "raciocínio acima da agilidade. Você pode utilizar Inteligência no lugar de Destreza em " +
       "testes de Prestidigitação para realizar rituais.",
-    requisitos: [{ tipo: "nota", texto: "Treinado em Prestidigitação" }],
+    requisitos: [{ tipo: "pericia", pericia: "prestidigitacao", nivel: "treinado" }],
   },
   {
     id: "cnj_preparacao_de_tecnicas",
@@ -3203,7 +3203,7 @@ export const AFTY_HABILIDADES = [
     descricao:
       "Com uma mente convicta e resistente, você transforma seu interior em um bastião. Você " +
       "recebe vantagem para resistir às condições amedrontado, desorientado e enfeitiçado.",
-    requisitos: [{ tipo: "nota", texto: "Treinado em Vontade" }],
+    requisitos: [{ tipo: "resistencia", resistencia: "vontade", nivel: "treinado" }],
   },
   {
     id: "cnj_combate_amaldicoado",
@@ -3423,7 +3423,7 @@ export const AFTY_HABILIDADES = [
     descricao:
       "Quando um combate se inicia, você é o primeiro a disparar. Durante a rolagem da iniciativa, " +
       "você pode usar uma habilidade cujo custo de tempo seja Ação Bônus ou Ação Livre.",
-    requisitos: [{ tipo: "nota", texto: "Treinado em Reflexos" }],
+    requisitos: [{ tipo: "resistencia", resistencia: "reflexos", nivel: "treinado" }],
   },
   {
     id: "cnj_revestimento_constante",
@@ -3501,7 +3501,7 @@ export const AFTY_HABILIDADES = [
       "adiciona o mesmo bônus a rolagens de Percepção. Além disso, você pode gastar 2 pontos de " +
       "energia para, ao estar no ar, se manter estável nele, de pé, usando dos seus sentidos para " +
       "perceber o ar como uma plataforma.",
-    requisitos: [{ tipo: "nota", texto: "Mestre em Percepção" }],
+    requisitos: [{ tipo: "pericia", pericia: "percepcao", nivel: "mestre" }],
   },
 
   /* ---------------- CONJURADOR · POR NÍVEL (12° nível) ---------------- */
@@ -3987,7 +3987,7 @@ export const AFTY_HABILIDADES = [
       "Você inconscientemente analisa o território a sua volta, sendo assim você não pode ser " +
       "surpreendido e seu valor de atenção recebe um bônus de +5. Você pode escolher um aliado " +
       "para não ser surpreendido.",
-    requisitos: [{ tipo: "nota", texto: "Treinado em Percepção" }],
+    requisitos: [{ tipo: "pericia", pericia: "percepcao", nivel: "treinado" }],
   },
   {
     id: "sup_recompensa_pelo_sucesso",
@@ -4157,7 +4157,7 @@ export const AFTY_HABILIDADES = [
       "de treinamento; em um descanso longo, a quantidade é igual ao seu bônus de treinamento e " +
       "você recupera 4 pontos de energia a menos. Um remédio cura em um valor igual a sua cura da " +
       "habilidade Suporte em Combate, dura 1 dia e consome uma ação comum para ser usado.",
-    requisitos: [{ tipo: "nota", texto: "Treinado em Ferramentas de Médico" }],
+    requisitos: [{ tipo: "oficio", nome: "Ferramentas de Médico", nivel: "treinado" }],
   },
   {
     id: "sup_cura_aperfeicoada",
@@ -4197,7 +4197,7 @@ export const AFTY_HABILIDADES = [
     // ⚠ TROCA o atributo do HP (Presença/Sabedoria no lugar de Constituição),
     // com teto +4. É substituição na fórmula, não soma. Mesmo tipo de canal
     // que Músculos Desenvolvidos (Lutador) pede para a Defesa.
-    requisitos: [{ tipo: "nota", texto: "Treinado em Fortitude" }],
+    requisitos: [{ tipo: "resistencia", resistencia: "fortitude", nivel: "treinado" }],
   },
   {
     id: "sup_motivacao_pelo_triunfo",
@@ -4226,7 +4226,7 @@ export const AFTY_HABILIDADES = [
       "Ao entrar nas portas da morte, você não fica inconsciente. Ao invés de não agir, você pode " +
       "tentar se estabilizar sozinho com CD aumentada em +10, porém ao fazer isso, você recebe uma " +
       "falha nos testes de morte.",
-    requisitos: [{ tipo: "nota", texto: "Mestre em Medicina" }],
+    requisitos: [{ tipo: "pericia", pericia: "medicina", nivel: "mestre" }],
   },
   {
     id: "sup_sustentacao_avancada",
@@ -4271,7 +4271,7 @@ export const AFTY_HABILIDADES = [
       "é o suporte necessário. Quatro vezes por cena, se você estiver com menos da metade da sua " +
       "vida máxima, você recebe um valor de pontos de vida temporários igual ao seu bônus da " +
       "perícia Medicina + seu modificador de Presença ou Sabedoria, no começo do seu turno.",
-    requisitos: [{ tipo: "nota", texto: "Treinado em Vontade" }],
+    requisitos: [{ tipo: "resistencia", resistencia: "vontade", nivel: "treinado" }],
   },
   {
     id: "sup_olhar_agucado",
@@ -4285,7 +4285,7 @@ export const AFTY_HABILIDADES = [
       "onde é melhor o acertar, fazendo com que o primeiro ataque de todo aliado cause dano " +
       "adicional igual ao seu bônus de treinamento multiplicado por 5. Você só pode usar essa " +
       "habilidade duas vezes por criatura.",
-    requisitos: [{ tipo: "nota", texto: "Treinado em Percepção" }],
+    requisitos: [{ tipo: "pericia", pericia: "percepcao", nivel: "treinado" }],
   },
   {
     id: "sup_taticas_defensivas",
@@ -4314,7 +4314,7 @@ export const AFTY_HABILIDADES = [
       "possuam e atendam aos requisitos. Durante um Descanso Longo, essa quantidade se torna o " +
       "dobro do seu Bônus de Treinamento. O efeito dos Encantamentos fica ativo até o próximo " +
       "descanso.",
-    requisitos: [{ tipo: "nota", texto: "Treinado em Ferramentas de Ferreiro" }],
+    requisitos: [{ tipo: "oficio", nome: "Ferramentas de Ferreiro", nivel: "treinado" }],
   },
   {
     id: "sup_interferencia",
@@ -6319,6 +6319,14 @@ export function abasDeOpcoes(opcoes = [], eixo) {
  * Espelha avaliarRequisitoAptidao.
  */
 export function avaliarRequisitoHabilidade(requisito, ctx = {}) {
+  /* ⚠ TREINO EM PERÍCIA OU TR VEM DO AVALIADOR COMPARTILHADO (2026-09-01). Estes
+     eram `nota` (exibia, não bloqueava) desde que o catálogo nasceu, de quando
+     Perícias não existia no Afty, e o autor mandou fechá-los: *"fazer os
+     Requisitos serem REALMENTE necessários"*. As Aptidões já tinham feito a mesma
+     conversão em 2026-07-30, e a lógica mora em afty-pericias-catalogo.js para
+     não existirem três cópias dela. */
+  const treino = avaliarRequisitoDeTreino(requisito, ctx);
+  if (treino) return treino;
   // Atributo mínimo (ex.: Sobrevivente pede Constituição 16). Usa o valor
   // EFETIVO, igual ao requisito homônimo das Aptidões.
   if (requisito?.tipo === "atributo") {
@@ -6433,8 +6441,20 @@ export const CONTROLADOR_EFEITOS_INVOCACAO = {
   ctr_controle_aprimorado: [{ canal: "bonusTeste", expr: "1 + grau" }],
   // Potencial Superior (4°): +2 pontos de atributo por grau da invocação.
   ctr_potencial_superior: [{ canal: "atributoPontos", expr: "2 * grau" }],
-  // Ápice do Controle (base 20): +2 ações/características que NÃO custam PE.
-  ctr_apice_do_controle: [{ canal: "orcamentoLivre", expr: "2" }],
+  /* Ápice do Controle (base 20): +2 ações/características que NÃO custam PE.
+
+     ⚠ A SEGUNDA METADE DA FRASE FICOU DE FORA ATÉ 2026-09-02. O texto diz
+     *"você passa a poder invocar ou ativar suas invocações como uma ação livre
+     (caso ela já pudesse ser invocada como Ação Livre, ela tem seu custo
+     reduzido em 2 PE)"*. A primeira metade sempre esteve no roster
+     (`invocarAcaoLivre`), e a cláusula entre parênteses não estava em lugar
+     nenhum: quem já tinha o Controle Concentrado do Apogeu (que é justamente
+     quem invoca como Ação Livre) pegava o Ápice no nível 20 e não ganhava nada
+     por essa linha. O canal `custoReducao` já existia e já era lido. */
+  ctr_apice_do_controle: [
+    { canal: "orcamentoLivre", expr: "2" },
+    { canal: "custoReducao", quando: "apogeu_concentrado", expr: "2" },
+  ],
   // Concentrar Poder (6°): benefícios em invocação MARCADA (quando: "marcada"),
   // por faixa de nível de Controlador (Inicial / 6 / 12 / 18). Escrito como
   // somas de degraus (cada comparação vale 1/0): Inicial é o termo base.
@@ -6657,11 +6677,28 @@ export function resolveMarcadoresInvocacao({
   const tem = temIds instanceof Set ? temIds : new Set(temIds || []);
   return MARCADORES_INVOCACAO
     .filter((m) => marcadorDisponivel(m, ids, escolhasMapa, tem))
+    /* ⚠ CAMPO NOVO NO REGISTRO PRECISA SER REPASSADO AQUI. Este `.map` é o que
+       o `dono` recebe, e ele monta um objeto NOVO: um campo que o catálogo
+       declara e este map não copia some sem sintoma nenhum. Foi o que aconteceu
+       com `fontes` em 2026-09-02, e o addon ficou minutos parecendo quebrado com
+       o dado certo do outro lado. */
     .map((m) => ({
       id: m.id,
       label: m.label,
       opcoes: m.opcoes || null,
       limite: Math.max(0, Math.floor(evalNumber(m.limiteExpr, ctxDono, 0))),
+      // Aceita FONTES: outras invocações da mesma ficha como origem deste
+      // marcador. Ver `marcadorFontes` e as funções `fontes()` do DSL.
+      ...(m.fontes ? { fontes: m.fontes } : {}),
+      /* Teto de QUANTAS fontes cada invocação pode declarar, quando a regra tem
+         um. A Quimera tem ("Bônus de Treinamento +3 permite fundir até 2"), a
+         Herança não ("o limite é a quantia de sombras mortas", que é fato de
+         mesa). Sem `fontesMaxExpr` o seletor só conta, e não cobra. */
+      ...(m.fontesMaxExpr
+        ? { fontesMax: Math.max(0, Math.floor(evalNumber(m.fontesMaxExpr, ctxDono, 0))) }
+        : {}),
+      // Política de fusão estrutural (perícias, TR, ataque, atributos).
+      ...(m.herdaDaFonte ? { herdaDaFonte: m.herdaDaFonte } : {}),
     }));
 }
 
@@ -6759,6 +6796,9 @@ export function resolveControleInvocacoes({ escolhidasIds = [], escolhasMapa = {
   return {
     ativo: treinamento || !!estilo || apice,
     estilo,
+    /* ⚠ Era CALCULADO E JOGADO FORA: `apice` só entrava no `ativo`, e a
+       cláusula de custo do Ápice do Controle não tinha como se escrever. */
+    apice,
     iniciais,
     limiteCampo,
     invocarPorAcao,
@@ -6876,6 +6916,9 @@ export function resolveEmpolgacao(escolhidasIds = [], { maxima = 0, bonusInicial
    mesma convenção do aparo de níveis em resolveNiveisAptidao. */
 
 export const ARMA_DEDICADA_HABILIDADE = "lut_dedicacao_em_arma";
+/* Um com a Arma (6°) age SOBRE as armas dedicadas, então o efeito dela nasce
+   junto do delas, com o id da arma no alvo. */
+export const UM_COM_A_ARMA_HABILIDADE = "lut_um_com_a_arma";
 export const ARMA_DEDICADA_MAX = 3;
 
 /**
@@ -6909,13 +6952,29 @@ export function resolveArmasDedicadas(creature, armasCarregadas = [], escolhidas
  * Efeitos das Armas Dedicadas, no vocabulário do Motor. Um par por arma: o
  * nível de dano e a concessão da propriedade Marcial, que é o que engata nos
  * outros poderes do Lutador que dizem "desarmado ou com arma marcial".
+ *
+ * ⚠ AQUI, e não no catálogo de efeitos, porque a arma é ESCOLHA DA FICHA: o
+ * alvo de cada linha é o id da arma que o jogador dedicou, e o
+ * `HABILIDADE_EFEITOS` só sabe escrever alvo fixo. Um com a Arma (6°) entra
+ * pela mesma porta, pelo mesmo motivo.
  */
-export function efeitosArmasDedicadas(dedicadas) {
+export function efeitosArmasDedicadas(dedicadas, temUmComAArma = false) {
   const out = [];
   const nome = BY_ID[ARMA_DEDICADA_HABILIDADE]?.nome || "Dedicação em Arma";
+  const nomeUm = BY_ID[UM_COM_A_ARMA_HABILIDADE]?.nome || "Um com a Arma";
   for (const id of dedicadas?.escolhidas || []) {
     out.push({ canal: "nivelDano", alvo: id, expr: "1", origem: ARMA_DEDICADA_HABILIDADE, nome });
     out.push({ canal: "propMarcial", alvo: id, expr: "1", origem: ARMA_DEDICADA_HABILIDADE, nome });
+    // "suas armas dedicadas conseguem superar resistência ao tipo de dano delas
+    // em um ataque." A contagem de usos ("metade do seu nível de Lutador, por
+    // descanso curto") fica na mesa (autor, 2026-09-02), então o gatilho é só o
+    // liga-desliga da bancada.
+    if (temUmComAArma) {
+      out.push({
+        canal: "removeResistencia", alvo: id, expr: "1", quando: "um_com_arma",
+        duracao: "temporaria", origem: UM_COM_A_ARMA_HABILIDADE, nome: nomeUm,
+      });
+    }
   }
   return out;
 }
@@ -7169,6 +7228,9 @@ export function validarCatalogoHabilidades() {
 
     // Requisitos `escolha` devem apontar para uma habilidade e uma opção reais.
     for (const r of h.requisitos || []) {
+      // Perícia, Ofício e Teste de Resistência: o id existe no catálogo?
+      const erroTreino = conferirRequisitoDeTreino(r);
+      if (erroTreino) problemas.push(`${h.nome}: ${erroTreino}`);
       if (r?.tipo === "atributo" && !ATTR_LABEL[r.attr]) {
         problemas.push(`${h.nome}: requisito aponta para atributo inexistente "${r.attr}"`);
       }

@@ -40,7 +40,7 @@ t("nomeia o pacote", orfa.addonProblemas[0].pacoteId, "minha-mesa");
 t("nomeia a entrada", orfa.addonProblemas[0].idCru, "ciclo_de_adaptacao");
 t("diz a familia", orfa.addonProblemas[0].rotulo, "Habilidade de Especialização");
 t("tem motivo legivel", orfa.addonProblemas[0].motivo.includes("não está ligado"), true);
-t("tem saida", orfa.addonProblemas[0].saida.includes("aba Addons"), true);
+t("tem saida", orfa.addonProblemas[0].saida.includes("aba Cálculos"), true);
 t("A FICHA ABRE MESMO ASSIM", typeof orfa.hp, "number");
 
 /* 3. O addon está na ficha mas a entrada sumiu da versão nova. */

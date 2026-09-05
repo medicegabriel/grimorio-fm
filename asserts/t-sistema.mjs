@@ -174,6 +174,11 @@ const DIFERENCAS_ESPERADAS = {
   movimento: "valoresAdicionais",
   rdGeral: "rdBase",
   rdEspecifico: "rdBase",
+  /* ⚠ CONSEQUÊNCIA, e não regra própria: a aba de Defesas mostra a RD EFETIVA
+     contra cada tipo, e a RD Geral entra nela. Divergindo a Geral, divergem as
+     quinze linhas. Se um dia a Imunidade ou a Vulnerabilidade divergirem POR
+     REGRA, é aqui que a nota tem de mudar. */
+  defesasDano: "consequência da rdBase",
   resParcial: "guardaEresistenciaParcial",
   guarda: "guardaEresistenciaParcial",
   // A CD move a CD dos Feitiços, que é a CD de Feitiçaria da ficha.

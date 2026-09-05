@@ -173,6 +173,13 @@ export function mesclaFichaAfty(existente) {
     },
     formulaOverrides: { ...(existente.formulaOverrides || {}) },
     periciaOficios: oficios,
+    /* ⚠ Objeto SEMPRE, mesmo vindo lixo da ficha. Uma lista ou uma string aqui
+       viraria `Object.entries` de outra coisa lá no derive, e o sintoma seria
+       uma perícia com atributo indefinido em vez de um erro. */
+    periciaAtributoManual: (existente.periciaAtributoManual && typeof existente.periciaAtributoManual === "object"
+      && !Array.isArray(existente.periciaAtributoManual))
+      ? existente.periciaAtributoManual
+      : {},
   };
 }
 
@@ -274,6 +281,22 @@ export function createBlankAfty() {
     periciasPersonalizadas: [], // [{ id, nome, atributo }]
     periciaOficio: "",         // legado: migrado para periciaOficios ao abrir
     periciaOficios: {},        // { [periciaId]: [subcategoria de Ofício, ...] }
+    /* O ATRIBUTO DE UMA PERÍCIA, TROCADO À MÃO: `{ [periciaId]: chave }`.
+       Pedido do autor em 2026-09-05: *"muita gente precisa disso por N fontes
+       diferentes como Treinos Próprios e etc, que o sistema não comporta sem
+       Addon e eu não vou fazer addon pra todo mundo"*.
+
+       ⚠ NÃO CONFUNDIR COM `periciaAtributo`, no singular, que está lá embaixo e
+       é outra coisa inteiramente (a escolha entre INT e SAB para o ORÇAMENTO de
+       perícias, hoje parada). Um decide de quantas perícias você dispõe, o outro
+       decide com que atributo você rola uma delas. Os nomes se parecem por
+       acidente, e por isso este leva `Manual` no fim.
+
+       Ele é o QUARTO caminho pelo qual uma perícia troca de atributo, e o único
+       que a pessoa aciona: os outros três são o catálogo do livro, uma
+       característica de origem e um Treinamento. Ver `atributosPericia` no
+       deriveAfty, onde os quatro se compõem em ordem. */
+    periciaAtributoManual: {},
     periciasBonus: 0,          // vagas extras vindas de fora ("+ OUTROS" da fórmula)
     resistenciasProf: {},      // { [trValue]: "treinado" | "mestre" }
     ataquesProf: {},           // { corpo: true, distancia: true }
@@ -282,6 +305,23 @@ export function createBlankAfty() {
     // Armas Dedicadas (Lutador 2°). Ids do catálogo de armas, até 3. A escolha
     // é marcada na linha de dano da arma, não num pool dentro da habilidade.
     armasDedicadas: [],
+
+    // ---------- DEFESAS POR TIPO DE DANO ----------
+    // Imunidade, Resistência, RD e Vulnerabilidade, um por tipo (autor,
+    // 2026-09-02). Forma: { [tipo]: { estado: "imune"|"resistente"|
+    // "vulneravel"|null, rd: number } }. É o que a criatura tem POR NATUREZA,
+    // e o Motor soma o que as habilidades e os encantamentos concedem.
+    // Ver ./afty-defesas-dano.js.
+    defesasDano: {},
+
+    // ---------- LOJA DE CATARSE ----------
+    // Moeda de mesa (Pontos de Inspiração) e o que ela comprou. É FICHA e não
+    // sessão (autor, 2026-09-04): a compra é permanente, ao contrário da
+    // Concessão do Mestre, que morre com o combate.
+    // Forma: { saldo: number, compras: [{ id, familia, nome, custo, texto,
+    // efeitos }] }. O painel só aparece com o Addon que a permite.
+    // Ver ./afty-catarse.js.
+    catarse: { saldo: 0, compras: [] },
 
     // Técnicas de Combate (Conjurador 2°). As armas são ids do catálogo e o
     // atributo é uma escolha única, compartilhada pelas duas. O estado de
@@ -397,7 +437,7 @@ export function createBlankAfty() {
     // o mesmo orçamento. Acessíveis a qualquer classe e usam o ND, não o nível
     // de especialização. Ver afty-talentos.js.
     talentos: [],
-    // Invocações do Controlador (shikigamis / dispositivos). Cada uma é uma
+    // Invocações do Controlador. Cada uma é uma
     // ficha própria que lê valores do dono. Ver afty-invocacoes.js.
     invocacoes: [],             // [ fichaInvocacao ]
     // Hordas: cada uma referencia um líder + membros por id (das invocacoes).

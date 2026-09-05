@@ -1,12 +1,18 @@
 /**
  * ============================================================
- * ABA ADDONS — biblioteca e o que esta criatura usa
+ * ADDONS — biblioteca e o que esta criatura usa
+ * ============================================================
+ * ⚠ NÃO É MAIS UMA ABA. Desde 2026-09-05 este painel é renderizado no FIM da
+ * aba Cálculos, nos dois sistemas (autor: *"passe a parte dos Addons para
+ * Cálculos em ambos os lados"*). O componente não mudou, e o nome do arquivo e
+ * o do export ficaram como estavam: renomear os dois só trocaria o lugar em que
+ * a palavra "aba" mente.
  * ============================================================
  * A fase 1 dos Addons (`docs/afty-addons.md`): **acrescentar por JSON colado**,
  * sem tela de autoria. A Oficina, que é a tela para quem NÃO escreve JSON, é a
  * fase 2 e está condicionada a aparecer alguém que precise dela.
  *
- * ⚠ ARQUIVO PRÓPRIO, e não mais uma seção do AftyCreatureBuilder.jsx. Aquele
+ * ⚠ ARQUIVO PRÓPRIO, e não uma seção do AftyCreatureBuilder.jsx. Aquele
  * arquivo tem 12 mil linhas e o Babel já avisa que passou dos 500KB ao
  * processá-lo. As outras abas nasceram lá dentro, e esta não segue o exemplo de
  * propósito.

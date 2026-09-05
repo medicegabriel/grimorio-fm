@@ -28,8 +28,11 @@ const t = (nome, real, esp) => {
 /* 1. A TABELA E O CAMPO `permite`                               */
 /* ============================================================ */
 
-t("sao 4 primitivas", AD.PRIMITIVAS.length, 4);
-t("ids esperados", AD.PRIMITIVAS.map((p) => p.id).sort(), ["adaptacao", "concessao", "contar", "hpAtributo"]);
+/* ⚠ A LISTA É FECHADA de propósito: primitiva nova cai aqui e obriga quem a
+   acrescentou a dizer que enxerga o quê. A `catarse` entrou em 2026-09-04, com
+   a Loja de Catarse. */
+t("sao 5 primitivas", AD.PRIMITIVAS.length, 5);
+t("ids esperados", AD.PRIMITIVAS.map((p) => p.id).sort(), ["adaptacao", "catarse", "concessao", "contar", "hpAtributo"]);
 t("toda primitiva tem rotulo", AD.PRIMITIVAS.every((p) => !!p.rotulo), true);
 t("SEM_PRIMITIVAS e vazio", AD.SEM_PRIMITIVAS, []);
 

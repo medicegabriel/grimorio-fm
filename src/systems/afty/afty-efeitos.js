@@ -133,6 +133,14 @@ export const EFEITO_CANAIS = [
   { id: "rdEspecifico",  label: "RD Específica" },
   { id: "rdFisico",      label: "RD Física" },
   { id: "rdAlma",        label: "RD a Alma",             nota: "a RD Geral vale para todo tipo EXCETO alma, então o Dano na Alma tem canal próprio. Entra antes do teste de Integridade (autor, 2026-07-29)" },
+  /* Os quatro POR TIPO DE DANO (2026-09-02). O alvo é o id do tipo (`ct`,
+     `queimante`, `alma`...), da tabela TIPOS_DANO. Nasceram com a aba de
+     Defesas, e destravam os três encantamentos que estavam sem `efeitos`
+     desde julho por falta desta peça. */
+  { id: "rdTipo",        label: "RD por Tipo",           alvo: "tipoDano", nota: "RD contra UM tipo de dano. Soma com a RD Geral, que já cobre todo tipo menos alma" },
+  { id: "imunidadeDano", label: "Imunidade a Dano",      alvo: "tipoDano", nota: "sinalizador. O desempate contra Vulnerabilidade não existe ainda: a ficha avisa em vez de escolher" },
+  { id: "resistenciaDano", label: "Resistência a Dano",  alvo: "tipoDano", nota: "sinalizador" },
+  { id: "vulnerabilidadeDano", label: "Vulnerabilidade a Dano", alvo: "tipoDano", nota: "sinalizador" },
   { id: "movimento",     label: "Movimento",             nota: "em metros, aceita 1,5" },
   { id: "movimentoMult", label: "Multiplicador de Movimento", nota: "multiplica o movimento final. A Expansão de Domínio usa 2" },
   { id: "atencao",       label: "Atenção" },
@@ -230,7 +238,7 @@ export const EFEITO_CANAIS = [
   { id: "ignoraRD",      label: "Ignora RD",             alvo: "fonteDano" },
   { id: "removeResistencia", label: "Remove Resistência", alvo: "fonteDano", nota: "sinalizador para golpes ou Feitiços que retiram a resistência do alvo" },
   { id: "propMarcial",   label: "Marcial",               alvo: "fonteDano", nota: "concede a propriedade Marcial à arma, que é o gatilho de vários poderes de Lutador" },
-  { id: "finezaAtaque",  label: "Fineza",                alvo: "ataque", nota: "libera o atributo alternativo do ataque (Destreza no Corpo a Corpo). Vale o maior dos dois" },
+  { id: "finezaAtaque",  label: "Fineza",                alvo: "fonteDano", nota: "libera o atributo alternativo do ataque (Destreza no Corpo a Corpo). Vale o maior dos dois, no acerto E no dano daquela linha. Alvo `basico` ou o id da arma, e aceita os escopos (`prop:marcial`, `grupo:espada`)" },
   { id: "nivelAptidao",  label: "Nível de Aptidão",      alvo: "trilha", nota: "com alvo é concessão direcionada e grátis. Apara no teto da trilha (5 por padrão). Quem sobe o teto é o canal Limite de Aptidão" },
   { id: "limiteAptidao", label: "Limite de Aptidão",     alvo: "trilha", nota: "sobe o teto daquela trilha por cima do 5 padrão. Não concede nível: quem concede é o canal Nível de Aptidão, e as regras que quebram o teto emitem os dois juntos" },
   // ⚠ NÃO É `nivelAptidao`. Este canal dá VAGA DE IMBUIÇÃO no Domínio Simples e
@@ -290,6 +298,19 @@ export const EFEITO_CANAIS = [
   // "Vagas de" no rótulo para o canal cair junto dos irmãos numa busca por
   // "vaga". O que ele dá é QUANTAS Aptidões Amaldiçoadas a criatura pode ter.
   { id: "vagasAptidao",   label: "Vagas de Aptidão",     nota: "quantas Aptidões Amaldiçoadas a criatura pode ter. Sem fonte nenhuma o orçamento é ZERO: o ND não concede" },
+  /* ⚠ OS DOIS DE ALTO NÍVEL NASCERAM EM 2026-09-04, com a Loja de Catarse. O
+     orçamento de Melhoria Superior e de Habilidade Lendária vinha SÓ do ND
+     (`totalMelhoriasSuperiores` e `totalHabilidadesLendarias`), sem canal
+     nenhum somando por cima: era a única dupla de orçamento do sistema fechada
+     para o Motor, e por isso nem Addon nem Habilidade conseguiam dar uma vaga
+     delas.
+
+     ⚠ Eles NÃO destravam o Alto Nível. O portão continua sendo a Habilidade
+     Geral mais o ND 21 e 22 (`destravado` em afty-alto-nivel.js): sem ele o
+     total é zero e a vaga comprada não vira nada. Vaga é quantidade, e o portão
+     é outra pergunta. */
+  { id: "vagasMelhoria",  label: "Vagas de Melhoria Superior", nota: "por cima do que o ND concede. Só rende com o Alto Nível já destravado" },
+  { id: "vagasLendaria",  label: "Vagas de Habilidade Lendária", nota: "por cima do que o ND concede. Só rende com o Alto Nível já destravado" },
   // ⚠ O nome "Pontos de Aptidão" foi TROCADO em 2026-07-29: o autor perguntou o
   // que era, e a pergunta em si já era a resposta. "Ponto de Aptidão" não existe
   // no sistema (o que existe é NÍVEL de aptidão), e o rótulo velho parecia um
@@ -483,6 +504,7 @@ const GRUPOS_DE_CANAL = [
   ]],
   ["Defesa", [
     "defesa", "rdGeral", "rdEspecifico", "rdFisico", "rdAlma", "resParcial",
+    "rdTipo", "imunidadeDano", "resistenciaDano", "vulnerabilidadeDano",
     "guardaBonus", "guardaVida",
   ]],
   ["Ataque e Dano", [
@@ -506,6 +528,7 @@ const GRUPOS_DE_CANAL = [
   // motivo, ele é orçamento de nível de aptidão.
   ["Orçamentos", [
     "vagasPericia", "vagasHabilidade", "vagasFeitico", "vagasEstilo", "vagasTalento", "vagasAptidao",
+    "vagasMelhoria", "vagasLendaria",
     "pontosAptidao", "focos", "espacosCarga",
   ]],
   ["Empolgação", ["empolgacaoMaxima", "empolgacaoInicial"]],
@@ -655,6 +678,33 @@ export function buildCriaturaDslContext(base = {}) {
     // Uma fonte vem de qualquer Especialização treinada em escudo, e cada
     // Talento de escudo escolhido soma outra. O Mestre Defensivo lê a segunda.
     fontes_treino_escudo: base.fontesTreinoEscudo ?? 0,
+    /* O QUE A CRIATURA ESTÁ MANEJANDO AGORA, em duas booleanas.
+       Nasceram em 2026-09-01 para a frase *"Enquanto estiver desarmado ou
+       empunhando uma arma marcial"*, que abre a Complementação Marcial e a Defesa
+       Marcial do Lutador e valia SEMPRE até aqui.
+
+       ⚠ NÃO DAVA PARA RESOLVER POR ESCOPO DE ARMA, que é como o recorte de
+       "marcial" foi resolvido nas linhas de dano no mesmo dia. Lá o efeito cai
+       numa LINHA, e a linha sabe qual arma é. Estes dois mordem a **Defesa** e as
+       **Manobras**, que são números da criatura: não existe "a arma desta
+       Defesa", então a pergunta tem de virar CONDIÇÃO, e condição mora no
+       vocabulário.
+
+       ⚠ ITEM DE PUGILATO CONTA COMO DESARMADO. Faixas e Manoplas não viram linha
+       de arma, elas SÃO o Ataque Básico (ver `armasParaDano` no deriveAfty), e
+       quem luta com elas está desarmado para toda regra do livro.
+
+       ⚠ E `arma_marcial` INCLUI A ARMA DEDICADA, porque a Dedicação em Arma diz
+       "passam a ser contadas como marciais". Ela vem da ficha e não do canal
+       `propMarcial`, que só existe depois da passada de efeitos, e este contexto
+       é montado antes dela. */
+    desarmado: base.desarmado ? 1 : 0,
+    arma_marcial: base.armaMarcial ? 1 : 0,
+    /* ⚠ NÃO É O CONTRÁRIO DE `desarmado`. Manopla e Faixa deixam a criatura
+       desarmada E com equipamento de Pugilato ao mesmo tempo, e o Adepto de
+       Briga separa justamente esses dois casos: *"enquanto não estiver com
+       nenhum equipamento do grupo Pugilato"*. */
+    arma_pugilato: base.armaPugilato ? 1 : 0,
     /* ⚠ Só os GÊMEOS. A morte do irmão é o segundo estágio da Restrição
        Celestial e inverte quase tudo dela, então ela precisa ser LEGÍVEL numa
        expressão: quase todo efeito da origem é escrito como

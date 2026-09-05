@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import {
-  AlertTriangle, Heart, Image as ImageIcon, Palette, Shield, Sparkles, Wind,
+  AlertTriangle, Heart, Image as ImageIcon, Palette, Sparkles,
 } from "lucide-react";
 
 import { AFTY_ATTRS } from "../../afty-schema";
 import { NumeroComFontes } from "../../ui/fontes";
 import { sinalDe } from "../../ui/formato";
 import { Vital } from "../../ui/vital";
-import { cssDaInvocacao, escopoDaInvocacao } from "../ficha-tema";
+import { cssDaInvocacao, escopoDaInvocacao, SEM_CSS } from "../ficha-tema";
 import { useDestaque } from "../usar-destaque";
 
 /**
@@ -62,6 +62,10 @@ function resumoCaracteristica(c) {
     case "vida": return `+${c.valor} PV`;
     case "rd": return `${c.valor} RD ${c.rdTipoLabel || ""}`.trim();
     case "teste": return `${c.valor >= 0 ? "+" : ""}${c.valor}`;
+    /* A faixa vem do grau, então a linha mostra o que a Característica
+       ENTREGA, e não um número: "Mestre em Reflexos". */
+    case "resistencia":
+      return c.profLabel ? `${c.profLabel}${c.trTipoLabel ? ` em ${c.trTipoLabel}` : ""}` : "";
     case "tamanho": return c.tamanhoLabel || "";
     default: return "";
   }
@@ -249,22 +253,21 @@ function Bonus({ inv, aoAlternar }) {
  * Uma linha de teste rolável (Teste de Resistência ou Perícia). As duas têm a
  * mesma anatomia: nome, o que é condicional, a proficiência e o número que rola.
  */
-function LinhaDeTeste({ nome, bonus, comGatilho = 0, mestre = false, treinado = true, rotulo, rolar }) {
+/* ⚠ A LINHA PERDEU O "+N com gatilho" em 2026-09-04. O bônus de Característica
+   de Teste em Ataque e em TR passou a entrar no número que a linha rola, por
+   decisão do autor, e o painel de fontes o mostra como parcela "Característica".
+   A metade que o livro cobra continua valendo, e quem some é só a separação:
+   o gatilho virou combinado de mesa. Ver `resolveTestesInvocacao`. */
+function LinhaDeTeste({ nome, bonus, partes, mestre = false, treinado = true, rotulo, rolar }) {
   return (
     <div className="afty-linha px-2.5 py-1 flex items-center gap-2">
       <span className="flex-1 min-w-0 text-[12px] truncate">{nome}</span>
-      {/* Bônus de Característica em Ataque ou TR exige gatilho, então não entra
-          no número que a linha rola. Em Perícia ele já está somado. */}
-      {comGatilho > 0 && (
-        <span className="afty-chip" title="Bônus de Característica, só quando o gatilho ocorre">
-          +{comGatilho} com gatilho
-        </span>
-      )}
       {mestre
         ? <span className="afty-chip">Mestre</span>
         : !treinado && <span className="afty-rotulo text-[10px]">Não Treinado</span>}
       <NumeroComFontes
         valor={bonus}
+        partes={partes}
         total={sinalDe(bonus)}
         className="afty-valor text-[13px] w-10 text-right"
         ancora="direita"
@@ -346,14 +349,20 @@ function Acao({ a, nomeDono, margemCritico = 20, rolar }) {
         )}
       </div>
 
-      {/* Linha 2: os números da mesa. Tudo que rola é clicável. */}
+      {/* Linha 2: as condições à esquerda, os números à direita.
+          ⚠ OS DOIS GRUPOS SÃO SEPARADOS desde 2026-09-03. Eram uma fila só, e
+          num cartão largo o dano parava no meio da linha, num ponto diferente
+          em cada ação, porque a posição dele dependia de quantas pastilhas
+          vinham antes. Com o `ml-auto` no grupo dos números, tudo que rola tem
+          a mesma borda direita em todas as ações, que é onde o dedo procura. */}
       <div className="flex items-center gap-2 flex-wrap">
+        <span className="inline-flex items-center gap-1.5 flex-wrap min-w-0">
         {a.alcance && <span className={chip}>{a.alcance}</span>}
         {a.area && <span className={chip}>Área {a.area}</span>}
         {a.familia === "auxilio" && a.alvoAuxilio && (
           <span className={chip}>{ALVO_AUXILIO_ROTULO[a.alvoAuxilio] ?? a.alvoAuxilio}</span>
         )}
-        {a.tipoDano && <span className={chip}>{a.tipoDano}</span>}
+        {a.tipoDano && <span className={chip}>{a.tipoDanoLabel || a.tipoDano}</span>}
         {(a.condicoes ?? []).map((c, i) => (
           <span key={i} className="afty-chip" data-afty-tom="destaque">
             {CONDICAO_ROTULO[c] ?? c}
@@ -362,7 +371,9 @@ function Acao({ a, nomeDono, margemCritico = 20, rolar }) {
         {a.prejuizoMultiplos && (
           <span className={chip} title={a.prejuizoMultiplos}>Prejuízo por Repetição</span>
         )}
+        </span>
 
+        <span className="inline-flex items-center gap-2 flex-wrap ml-auto">
         {/* Ataque por Jogada: o acerto rola. */}
         {a.familia === "ataque" && a.bonusAtaque != null && (
           <span className={chip}>
@@ -430,8 +441,43 @@ function Acao({ a, nomeDono, margemCritico = 20, rolar }) {
             {a.auxilioSub === "rd" ? `${a.valor} RD` : sinalDe(a.valor)}
           </span>
         )}
+        </span>
       </div>
     </div>
+  );
+}
+
+/* ============================================================ */
+/* A TIRA DE STATS                                               */
+/* ============================================================ */
+/**
+ * ⚠ UMA CÉLULA POR NÚMERO, e a grade se ajusta sozinha. Eram QUATRO colunas
+ * fixas (`repeat(4, 1fr)`) até 2026-09-03, e num monitor de 1440 cada célula
+ * ficava com 300px para exibir um "63": o autor apontou como *"bem esquisito e
+ * pouco intuitivo"*, e o diagnóstico é geométrico. Com `auto-fit` a célula tem
+ * a largura do conteúdo dela, e a tira absorveu a fileira de pastilhas que
+ * vinha logo abaixo (RD por tipo, Tamanho, Crítico): eram os mesmos números,
+ * num formato diferente, ocupando uma segunda linha.
+ *
+ * ⚠ E TODO NÚMERO ABRE AS FONTES no hover. Ver `fontes` no `resolveInvocacao`.
+ */
+/* ⚠ SEM ÍCONE NO RÓTULO desde 2026-09-03. Defesa e Desloc. tinham um, e ele
+   custava duas coisas: a tira do cabeçalho da Ficha usa o mesmo `.afty-stat` com
+   rótulo de texto puro (duas linguagens para a mesma peça), e um `inline-block`
+   de 13,5px numa caixa de 12,7px empurrava só aquelas duas células 0,7px para
+   baixo em relação às vizinhas. Rótulo que já diz "Defesa" não precisa de escudo. */
+function StatDaInvocacao({ id, rotulo, valor, partes, titulo }) {
+  return (
+    <span className="afty-stat" data-afty-stat={id} title={titulo}>
+      <span className="afty-stat-rotulo">{rotulo}</span>
+      <NumeroComFontes
+        valor={valor}
+        partes={partes}
+        formatar={false}
+        className="afty-stat-valor"
+        ancora="esquerda"
+      />
+    </span>
   );
 }
 
@@ -441,10 +487,58 @@ function Acao({ a, nomeDono, margemCritico = 20, rolar }) {
 /**
  * ⚠ ELA TEM `id` PRÓPRIO (`afty-inv-<id>`), e não é decoração: é a âncora do
  * CSS personalizado daquele Shikigami. Ver `escopoDaInvocacao`.
+ *
+ * ⚠ REDESENHADA EM 2026-09-03, e o pedido do autor tem quatro frases. Três
+ * delas são a mesma doença em lugares diferentes:
+ *
+ *   *"A primeira imagem ficou muito sobrecarregada de efeitos e a Imagem da
+ *    Invocação mesmo ficou completamente ofuscada."*
+ *
+ * O cabeçalho carregava a identidade (grau, tipo, custo) E os marcadores, todos
+ * como pastilha roxa do mesmo tamanho. Num Controlador de nível alto são oito
+ * marcadores, então a faixa quebrava em duas linhas de pastilha idêntica e o
+ * retrato de 3,25rem virava um selo perdido no canto. Salência máxima para o
+ * conteúdo menos usado. Agora o cabeçalho tem SÓ a identidade, o retrato subiu
+ * para 4,5rem, e os marcadores viraram um bloco próprio com título.
+ *
+ *   *"[Turno Próprio, Retorno Completo, Desvantagem Alheia, Imune a Prejuízo
+ *    por Repetição] não é necessário"*
+ *
+ * Os quatro traços do Shikigami de Técnica saíram (o criador já os tinha
+ * cortado em 2026-09-02). `tracosDeTecnica` continua no resolvedor porque as
+ * regras existem e nenhuma delas tem canal, mas quem lê o tipo já sabe delas.
+ *
+ *   *"no geral ficou bem esquisito e pouco intuitivo o uso"*
+ *
+ * O corpo era UMA coluna de seções empilhadas, todas com o mesmo peso e todas
+ * na largura inteira: num monitor de 1440 o rótulo "Reflexos" ficava a 1200px
+ * do "+45" que ele nomeia, e a ficha tinha 2199px de altura. Agora o corpo é
+ * duas colunas, e a divisão é semântica: à esquerda o que a invocação ROLA
+ * (atributos, ataque, testes, perícias), à direita o que ela FAZ (ações,
+ * bônus, características, marcadores).
+ *
+ * ⚠ A ORDEM DAS DUAS É PEDIDO DO AUTOR (2026-09-03), e não gosto meu: *"acredito
+ * que Atributos, Ataque, Testes de Resistência e Perícias deveriam estar a
+ * esquerda. E as Ações e Características a direita."* Eu tinha posto o contrário
+ * (a esquerda se lê primeiro, e a ação é o que mais se usa), e ele decidiu o
+ * outro lado. A leitura de stat block manda: o que a criatura É vem antes do que
+ * ela faz.
+ *
+ * ⚠ E O LADO ESQUERDO SE DOBRA SOZINHO. Autor, na mesma mensagem: *"as vezes
+ * fica esse vão enorme quando a Invocação possui poucas Ações e
+ * Características"*. Com atribuição fixa de lado, a coluna mais curta termina
+ * antes e o resto do cartão fica vazio, e isso não tem conserto por CSS: a
+ * altura do cartão é a da coluna mais alta. O que TEM conserto é a diferença.
+ * As três listas de teste (Ataque, TR, Perícias) usam `afty-inv-duplo`, que
+ * vira duas colunas quando a COLUNA que as segura passa de 560px: são 6 linhas
+ * a menos de altura, e o lado dos testes deixa de ser sempre o mais alto dos
+ * dois. É o mesmo `sm:grid-cols-2` que estas listas tinham quando ocupavam a
+ * largura inteira, agora medido contra a coluna e não contra a janela.
  */
 function FichaDoShikigami({ inv, estado, rolar, acoes, aoTemar }) {
   const nome = inv.nome || "Invocação";
   const testes = inv.testes ?? {};
+  const fontes = inv.fontes ?? {};
   const pvAtual = estado.pvAtual ?? inv.pv;
   const almaAtual = estado.almaAtual ?? inv.almaMax;
   const pvTemp = Object.values(estado.pvTempFontes || {}).reduce((s, v) => s + (v || 0), 0);
@@ -455,7 +549,7 @@ function FichaDoShikigami({ inv, estado, rolar, acoes, aoTemar }) {
       id={escopoDaInvocacao(inv.id).slice(1)}
       data-afty-campo={inv.emCampo ? "sim" : "nao"}
     >
-      {/* ---------- a cabeça ----------
+      {/* ---------- a cabeça: identidade, e só ----------
           ⚠ ERA UM BANNER de largura inteira até 2026-08-31, e o autor cortou:
           *"as imagens dos Shikigamis ficaram super esticadas ao invés de serem
           um Icon"*. Retrato de shikigami é quase sempre quadrado ou em pé, e a
@@ -464,34 +558,22 @@ function FichaDoShikigami({ inv, estado, rolar, acoes, aoTemar }) {
       <header className="afty-inv-cabeca">
         <Retrato inv={inv} className="afty-inv-retrato-icone" />
         <div className="afty-inv-cabeca-texto">
-          <div className="flex items-center gap-2 flex-wrap">
-            <h2 className="afty-inv-titulo flex-1 min-w-0 truncate">{nome}</h2>
-            {/* ⚠ SEM GANCHO, SEM BOTÃO. No painel de Encontros o combatente
-                guarda uma CÓPIA congelada da ficha, e o editor de aparência
-                grava na criatura: um botão ali seria um clique que não faz
-                nada. */}
-            {aoTemar && (
-              <button
-                type="button"
-                className="afty-passo"
-                onClick={aoTemar}
-                title={`Aparência de ${nome}`}
-                aria-label={`Aparência de ${nome}`}
-              >
-                <Palette className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-          <div className="flex items-center gap-1 flex-wrap mt-1">
+          <h2 className="afty-inv-titulo">{nome}</h2>
+          <div className="afty-inv-cabeca-marcas">
             <span className="afty-chip" data-afty-tom="destaque">{inv.grauLabel}</span>
             {inv.tipoLabel && (
               <span className="afty-chip" title={`Intermediário: ${inv.intermediario}. Retirada: ${inv.retirada}`}>
                 {inv.tipoLabel}
               </span>
             )}
-            <span className="afty-valor text-[11px]" data-afty-tom="custo" title="Custo em PE para invocar">
-              {inv.custo} PE
-            </span>
+            <NumeroComFontes
+              valor={`${inv.custo} PE`}
+              partes={fontes.custo}
+              formatar={false}
+              className="afty-valor text-[11px]"
+              ancora="esquerda"
+              titulo="Custo em PE para invocar"
+            />
             {/* ⚠ SÓ A EXORCIZADA VIRA MARCA. A "Abatida" existia ao lado dela
                 e o autor cortou em 2026-08-31: *"o símbolo de Abatido da ficha
                 não sai quando o shikigami é reinvocado ou curado, e não é
@@ -510,26 +592,29 @@ function FichaDoShikigami({ inv, estado, rolar, acoes, aoTemar }) {
                 {inv.retirada === "destruída" ? "Destruída" : "Exorcizada"}
               </span>
             )}
-            {/* Por que ESTE shikigami é diferente dos outros: o Feitiço que o
-                criou e os marcadores ligados nele. */}
+            {/* O Feitiço que a criou fica na identidade porque ele É a origem
+                dela, e não um bônus que alguém ligou. */}
             {inv.shikigami && (
               <span className="afty-chip" title="Feitiço de Criação de Shikigamis que a criou">
                 {inv.shikigami.fonte}
               </span>
             )}
-            {(inv.marcadores ?? []).map((m) => (
-              <span
-                key={m.id}
-                className="afty-chip"
-                data-afty-tom={m.faltaOpcao ? "aviso" : "destaque"}
-                title={m.faltaOpcao ? "Falta escolher a opção deste marcador" : undefined}
-              >
-                {m.faltaOpcao && <AlertTriangle className="w-3 h-3 flex-shrink-0" aria-hidden="true" />}
-                {m.label}{m.opcao ? ` · ${m.opcao}` : ""}
-              </span>
-            ))}
           </div>
         </div>
+        {/* ⚠ SEM GANCHO, SEM BOTÃO. No painel de Encontros o combatente guarda
+            uma CÓPIA congelada da ficha, e o editor de aparência grava na
+            criatura: um botão ali seria um clique que não faz nada. */}
+        {aoTemar && (
+          <button
+            type="button"
+            className="afty-passo flex-shrink-0"
+            onClick={aoTemar}
+            title={`Aparência de ${nome}`}
+            aria-label={`Aparência de ${nome}`}
+          >
+            <Palette className="w-3.5 h-3.5" />
+          </button>
+        )}
       </header>
 
       <div className="afty-inv-corpo">
@@ -561,53 +646,36 @@ function FichaDoShikigami({ inv, estado, rolar, acoes, aoTemar }) {
           />
         </div>
 
-        {/* ---------- stats ---------- */}
+        {/* ---------- a tira de stats ---------- */}
         <div className="afty-inv-stats">
-          <span className="afty-stat" title="Defesa">
-            <span className="afty-stat-rotulo">
-              <Shield className="w-3 h-3 inline-block align-[-2px]" aria-hidden="true" /> Defesa
-            </span>
-            <span className="afty-stat-valor">{inv.defesa}</span>
-          </span>
-          <span className="afty-stat" title="Deslocamento">
-            <span className="afty-stat-rotulo">
-              <Wind className="w-3 h-3 inline-block align-[-2px]" aria-hidden="true" /> Desloc.
-            </span>
-            <span className="afty-stat-valor">{inv.deslocamento}m</span>
-          </span>
-          <span className="afty-stat" title="CD das habilidades dela">
-            <span className="afty-stat-rotulo">CD</span>
-            <span className="afty-stat-valor">{testes.cd}</span>
-          </span>
-          <span className="afty-stat" title="Redução de Dano contra todos os tipos">
-            <span className="afty-stat-rotulo">RD</span>
-            <span className="afty-stat-valor">{inv.rd?.geral ?? 0}</span>
-          </span>
-        </div>
-
-        {/* Corpo: as RDs por tipo, o tamanho, as habilidades de uso e os traços. */}
-        <div className="flex flex-wrap gap-1">
+          <StatDaInvocacao id="defesa" rotulo="Defesa" valor={inv.defesa} partes={fontes.defesa} />
+          <StatDaInvocacao id="deslocamento" rotulo="Desloc." valor={`${inv.deslocamento}m`} partes={fontes.deslocamento} />
+          <StatDaInvocacao id="cd" rotulo="CD" valor={testes.cd} partes={testes.cdPartes} titulo="O alvo rola contra esta CD" />
+          <StatDaInvocacao id="rd" rotulo="RD" valor={inv.rd?.geral ?? 0} partes={fontes.rdGeral} titulo="Redução de Dano contra todos os tipos" />
           {(inv.rd?.porTipo ?? []).map((l) => (
-            <span key={l.chave} className="afty-chip" title="Redução de Dano contra este tipo">
-              RD {l.label} {l.total}
-            </span>
+            <StatDaInvocacao
+              key={l.chave}
+              id={`rd-${l.chave}`}
+              rotulo={`RD ${l.label}`}
+              valor={l.total}
+              partes={fontes.rdPorTipo?.[l.chave]}
+              titulo={`Redução de Dano contra dano ${l.label}`}
+            />
           ))}
-          {inv.tamanhoLabel && <span className="afty-chip" title="Tamanho">{inv.tamanhoLabel}</span>}
-          {(inv.opcoesDeUso ?? []).map((o) => (
-            <span key={o.id} className="afty-chip" title={o.nome}>{o.nome} {o.valor}</span>
-          ))}
-          {inv.margemCritico < 20 && (
-            <span className="afty-chip" title="Margem de acerto crítico das jogadas dela">
-              Crítico {inv.margemCritico}+
-            </span>
+          {inv.tamanhoLabel && (
+            <StatDaInvocacao id="tamanho" rotulo="Tamanho" valor={inv.tamanhoLabel} />
           )}
-          {inv.criticoBrutal && <span className="afty-chip" title="Crítico Brutal">Crítico +1 dado</span>}
-          {/* Regras do Shikigami de Técnica que não têm canal: turno próprio,
-              retorno com vida cheia na primeira dissipação, desvantagem alheia e
-              imunidade ao Prejuízo por Repetição. O texto vai no `title`. */}
-          {(inv.tracos ?? []).map((t) => (
-            <span key={t.id} className="afty-chip" data-afty-tom="destaque" title={t.regra}>{t.nome}</span>
-          ))}
+          {inv.margemCritico < 20 && (
+            <StatDaInvocacao
+              id="critico"
+              rotulo="Crítico"
+              valor={`${inv.margemCritico}+`}
+              titulo="Margem de acerto crítico das jogadas dela"
+            />
+          )}
+          {inv.criticoBrutal && (
+            <StatDaInvocacao id="critico-brutal" rotulo="Crítico Brutal" valor="+1 Dado" />
+          )}
         </div>
 
         {inv.warnings?.length > 0 && (
@@ -620,114 +688,173 @@ function FichaDoShikigami({ inv, estado, rolar, acoes, aoTemar }) {
           </ul>
         )}
 
-        <Bonus inv={inv} aoAlternar={(acaoId, ligado) => acoes.auxilio(inv.id, acaoId, ligado)} />
+        {/* ---------- as duas colunas ---------- */}
+        <div className="afty-inv-colunas">
+          {/* O que ela ROLA */}
+          <div className="afty-inv-coluna">
+            <section className="afty-inv-bloco">
+              <h3 className="afty-card-titulo mb-1.5">Atributos</h3>
+              <Atributos atributos={inv.atributos} nomeDono={nome} rolar={rolar} />
+            </section>
 
-        <section className="afty-inv-bloco">
-          <h3 className="afty-card-titulo mb-1.5">Atributos</h3>
-          <Atributos atributos={inv.atributos} nomeDono={nome} rolar={rolar} />
-        </section>
-
-        {/* Jogada de Ataque da criatura, fora de qualquer Ação. É o número de um
-            ataque improvisado, e é o único lugar onde o bônus de Característica
-            em Ataque (que exige gatilho) aparece. */}
-        {testes.acerto && (
-          <section className="afty-inv-bloco">
-            <h3 className="afty-card-titulo mb-1.5">Ataque</h3>
-            <div className="grid gap-1 sm:grid-cols-2">
-              {[["corpo", "Corpo a Corpo"], ["distancia", "À Distância"]].map(([k, label]) => {
-                const t = testes.acerto[k];
-                return t ? (
-                  <LinhaDeTeste
-                    key={k}
-                    nome={label}
-                    bonus={t.bonus}
-                    comGatilho={t.comGatilho}
-                    treinado={t.treinado}
-                    rotulo={`${nome} · ${label}`}
-                    rolar={rolar}
-                  />
-                ) : null;
-              })}
-            </div>
-          </section>
-        )}
-
-        {(testes.resistencias ?? []).length > 0 && (
-          <section className="afty-inv-bloco">
-            <h3 className="afty-card-titulo mb-1.5">Testes de Resistência</h3>
-            <div className="grid gap-1 sm:grid-cols-2">
-              {testes.resistencias.map((r) => (
-                <LinhaDeTeste
-                  key={r.value}
-                  nome={r.label}
-                  bonus={r.bonus}
-                  comGatilho={r.comGatilho}
-                  mestre={r.mestre}
-                  treinado={r.treinado}
-                  rotulo={`${nome} · ${r.label}`}
-                  rolar={rolar}
-                />
-              ))}
-            </div>
-          </section>
-        )}
-
-        {(testes.pericias ?? []).length > 0 && (
-          <section className="afty-inv-bloco">
-            <h3 className="afty-card-titulo mb-1.5">Perícias</h3>
-            <div className="grid gap-1 sm:grid-cols-2">
-              {testes.pericias.map((p) => (
-                <LinhaDeTeste
-                  key={p.id}
-                  nome={p.nome}
-                  bonus={p.bonus}
-                  mestre={p.mestre}
-                  treinado={p.treinado}
-                  rotulo={`${nome} · ${p.nome}`}
-                  rolar={rolar}
-                />
-              ))}
-            </div>
-          </section>
-        )}
-
-        {(inv.acoes ?? []).length > 0 && (
-          <section className="afty-inv-bloco">
-            <h3 className="afty-card-titulo mb-1.5">Ações</h3>
-            <div className="space-y-1">
-              {inv.acoes.map((a, i) => (
-                <Acao
-                  key={a.id || `${a.nome}-${i}`}
-                  a={a}
-                  nomeDono={nome}
-                  margemCritico={inv.margemCritico ?? 20}
-                  rolar={rolar}
-                />
-              ))}
-            </div>
-          </section>
-        )}
-
-        {(inv.caracteristicas ?? []).length > 0 && (
-          <section className="afty-inv-bloco">
-            <h3 className="afty-card-titulo mb-1.5">Características</h3>
-            <div className="space-y-1">
-              {inv.caracteristicas.map((c, i) => (
-                <div key={`${c.nome}-${i}`} className="afty-linha px-2.5 py-1 flex items-center gap-2 flex-wrap">
-                  <span className="flex-1 min-w-0 text-[12px] truncate" title={c.descricao || undefined}>
-                    {c.nome || "Característica"}
-                  </span>
-                  {c.requerGatilho && (
-                    <span className="afty-rotulo text-[10px]" title="Exige um gatilho específico">Gatilho</span>
-                  )}
-                  {resumoCaracteristica(c) && (
-                    <span className="afty-valor text-[12px] whitespace-nowrap">{resumoCaracteristica(c)}</span>
-                  )}
+            {/* Jogada de Ataque da criatura, fora de qualquer Ação. É o número de
+                um ataque improvisado, e é o único lugar onde o bônus de
+                Característica em Ataque (que exige gatilho) aparece. */}
+            {testes.acerto && (
+              <section className="afty-inv-bloco">
+                <h3 className="afty-card-titulo mb-1.5">Ataque</h3>
+                <div className="afty-inv-duplo">
+                  {[["corpo", "Corpo a Corpo"], ["distancia", "À Distância"]].map(([k, label]) => {
+                    const t = testes.acerto[k];
+                    return t ? (
+                      <LinhaDeTeste
+                        key={k}
+                        nome={label}
+                        bonus={t.bonus}
+                        partes={t.partes}
+                        treinado={t.treinado}
+                        rotulo={`${nome} · ${label}`}
+                        rolar={rolar}
+                      />
+                    ) : null;
+                  })}
                 </div>
-              ))}
-            </div>
-          </section>
-        )}
+              </section>
+            )}
+
+            {(testes.resistencias ?? []).length > 0 && (
+              <section className="afty-inv-bloco">
+                <h3 className="afty-card-titulo mb-1.5">Testes de Resistência</h3>
+                <div className="afty-inv-duplo">
+                  {testes.resistencias.map((r) => (
+                    <LinhaDeTeste
+                      key={r.value}
+                      nome={r.label}
+                      bonus={r.bonus}
+                      partes={r.partes}
+                      mestre={r.mestre}
+                      treinado={r.treinado}
+                      rotulo={`${nome} · ${r.label}`}
+                      rolar={rolar}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {(testes.pericias ?? []).length > 0 && (
+              <section className="afty-inv-bloco">
+                <h3 className="afty-card-titulo mb-1.5">Perícias</h3>
+                <div className="afty-inv-duplo">
+                  {testes.pericias.map((p) => (
+                    <LinhaDeTeste
+                      key={p.id}
+                      nome={p.nome}
+                      bonus={p.bonus}
+                      partes={p.partes}
+                      mestre={p.mestre}
+                      treinado={p.treinado}
+                      rotulo={`${nome} · ${p.nome}`}
+                      rolar={rolar}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+          </div>
+
+          {/* O que ela FAZ */}
+          <div className="afty-inv-coluna">
+            {(inv.acoes ?? []).length > 0 && (
+              <section className="afty-inv-bloco">
+                <h3 className="afty-card-titulo mb-1.5">Ações</h3>
+                <div className="space-y-1">
+                  {inv.acoes.map((a, i) => (
+                    <Acao
+                      key={a.id || `${a.nome}-${i}`}
+                      a={a}
+                      nomeDono={nome}
+                      margemCritico={inv.margemCritico ?? 20}
+                      rolar={rolar}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            <Bonus inv={inv} aoAlternar={(acaoId, ligado) => acoes.auxilio(inv.id, acaoId, ligado)} />
+
+            {/* ⚠ A LISTA LONGA SE DOBRA, e a curta não. Característica é linha de
+                uma só altura, igual às de teste, então ela cabe na mesma grade
+                de duas colunas. O que muda é que a quantidade varia MUITO (uma
+                invocação de Quarto Grau tem duas, um Grau Especial tem doze), e
+                dobrar uma lista de duas deixaria uma coluna com uma linha e a
+                outra vazia. Acima de quatro a dobra vale a altura que devolve.
+                É o outro lado do vão que o autor apontou: quando as Ações e as
+                Características são MUITAS, quem sobra vazio é o lado dos testes. */}
+            {(inv.caracteristicas ?? []).length > 0 && (
+              <section className="afty-inv-bloco">
+                <h3 className="afty-card-titulo mb-1.5">Características</h3>
+                <div className={inv.caracteristicas.length > 4 ? "afty-inv-duplo" : "space-y-1"}>
+                  {inv.caracteristicas.map((c, i) => (
+                    <div key={`${c.nome}-${i}`} className="afty-linha px-2.5 py-1 flex items-center gap-2 flex-wrap">
+                      <span className="flex-1 min-w-0 text-[12px] truncate" title={c.descricao || undefined}>
+                        {c.nome || "Característica"}
+                      </span>
+                      {c.requerGatilho && (
+                        <span className="afty-rotulo text-[10px]" title="Exige um gatilho específico">Gatilho</span>
+                      )}
+                      {resumoCaracteristica(c) && (
+                        <span className="afty-valor text-[12px] whitespace-nowrap">{resumoCaracteristica(c)}</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Habilidades de USO: elas não mudam a ficha dela (dependem de uma
+                decisão na hora), mas têm preço calculável, e sem isto a mesa
+                reabre o livro para saber quanto custa um turno próprio. */}
+            {(inv.opcoesDeUso ?? []).length > 0 && (
+              <section className="afty-inv-bloco">
+                <h3 className="afty-card-titulo mb-1.5">Opções de Uso</h3>
+                <div className="space-y-1">
+                  {(inv.opcoesDeUso ?? []).map((o) => (
+                    <div key={o.id} className="afty-linha px-2.5 py-1 flex items-center gap-2">
+                      <span className="flex-1 min-w-0 text-[12px] truncate">{o.nome}</span>
+                      <span className="afty-valor text-[11px] whitespace-nowrap" data-afty-tom="custo">{o.valor}</span>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* ⚠ OS MARCADORES SAÍRAM DO CABEÇALHO em 2026-09-03. Eles dizem por
+                que ESTA invocação é diferente das outras, e isso é consulta, não
+                identidade: num Controlador alto são oito, e oito pastilhas roxas
+                ao lado do nome afogavam o retrato e o próprio nome. Aqui eles
+                seguem visíveis, com título, e sem disputar a leitura do topo. */}
+            {(inv.marcadores ?? []).length > 0 && (
+              <section className="afty-inv-bloco">
+                <h3 className="afty-card-titulo mb-1.5">Marcadores</h3>
+                <div className="flex flex-wrap gap-1">
+                  {inv.marcadores.map((m) => (
+                    <span
+                      key={m.id}
+                      className="afty-chip"
+                      data-afty-tom={m.faltaOpcao ? "aviso" : undefined}
+                      title={m.faltaOpcao ? "Falta escolher a opção deste marcador" : undefined}
+                    >
+                      {m.faltaOpcao && <AlertTriangle className="w-3 h-3 flex-shrink-0" aria-hidden="true" />}
+                      {m.label}{m.opcao ? ` · ${m.opcao}` : ""}
+                    </span>
+                  ))}
+                </div>
+              </section>
+            )}
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -870,7 +997,10 @@ export default function AbaInvocacoes({ derived, rolar, destaque, estadoDe, acoe
      A gravação tem debounce de 600ms (ver `rascunhoInv` na AftyFicha), e sem
      esta linha o CSS só apareceria 600ms depois de cada tecla, que é justamente
      a sensação que o debounce existe para evitar. */
-  const cssDosShikigamis = invocacoes
+  /* ⚠ `SEM_CSS` VALE AQUI TAMBÉM (2026-09-03). O `?semcss=1` desligava só o CSS
+     da ficha do dono, e o de cada invocação é montado NESTA aba: quem escrevia
+     um CSS que escondia o próprio shikigami ficava sem saída de emergência. */
+  const cssDosShikigamis = SEM_CSS ? "" : invocacoes
     .map((inv) => (temaEmEdicao?.id === inv.id
       ? cssDaInvocacao({ ...inv, aparencia: temaEmEdicao.tema })
       : cssDaInvocacao(inv)))

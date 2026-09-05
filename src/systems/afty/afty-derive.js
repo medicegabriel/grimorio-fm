@@ -78,6 +78,7 @@ import {
   resolveEquipamentos, resolveCarga, grauFeiticeiro, alcanceDaArma, propriedadesDaArma,
   armaTreinadaPor,
   podeSerArmaDedicada, grauDoRank, efeitosEspeciaisDeArma, catalogoDoTipo,
+  TIPOS_DANO, CATEGORIAS_DANO, tiposDeDanoDaCategoria,
 } from "./afty-equipamentos";
 import {
   nivelMaxFeitico, resumoDeUmFeitico, resumoFeiticos, overridesShikigami,
@@ -87,10 +88,12 @@ import {
 import { dadoDesarmado } from "./afty-niveis-dano";
 import { resolveEstilos, efeitosDoEstilo } from "./afty-estilo-sombras";
 import { resolveDominioSimples, DOMINIO_SIMPLES_APTIDAO } from "./afty-dominio-simples";
-import { resolveTestes, resolveDano, catalogoPericiasDaFicha } from "./afty-pericias";
+import { resolveTestes, resolveDano, catalogoPericiasDaFicha, ehPericiaOficio, atributosDePericiaManuais } from "./afty-pericias";
+import { resolveDefesasDano, sanearDefesasDano } from "./afty-defesas-dano";
+import { resolveCatarse } from "./afty-catarse";
 import { resolveCura } from "./afty-cura";
 import {
-  problemasDeAddon, marcasDeclaradas, primitivasDaCriatura, liberacoesDaCriatura,
+  problemasDeAddon, marcasDeclaradas, primitivasDaCriatura, liberacoesDaCriatura, precosDeCatarse,
   estadosCombateDeAddon,
 } from "./afty-addons";
 import { agrupaConcedido, concessoesDaSessao, escolhasDoConcedido } from "./afty-concessao";
@@ -99,7 +102,8 @@ import {
 } from "./afty-adaptacao";
 import {
   buildCriaturaDslContext, marcasDeEntradas,
-  coletarEfeitosCriatura, coletarEfeitosMontante, coletarEfeitosOrigem,
+  coletarEfeitos, coletarEfeitosCriatura, coletarEfeitosMontante, coletarEfeitosOrigem,
+  TALENTO_EFEITOS,
   efeitosInvocacaoDeEntradas,
   coletarEfeitosAptidao,
   aplicarEfeitos, resolverExclusivos, valorCanal, furaTetoEm, efeitosDaTecnica, efeitosDosPassivos,
@@ -478,6 +482,10 @@ export function deriveAfty(creature, opcoes = {}) {
   /* A lista do montante fica NOMEADA porque ela é lida duas vezes: aqui, no
      estágio 0, e no estágio 0c lá embaixo, que precisa dos mesmos efeitos com o
      Nível de Aptidão já no contexto. Ver `CANAIS_POS_APTIDAO`. */
+  /* LOJA DE CATARSE (Addon, 2026-09-04). Resolvida ANTES do estágio 0 porque o
+     que ela emite é vaga de orçamento, e vaga é lida antes de os stats
+     existirem. Ver `resolveCatarse`. */
+  const catarse = resolveCatarse(creature, { precos: precosDeCatarse(creature) });
   const efeitosMontante = [
       ...efeitosDeTreino(creature, opcoes.treinosAtivos),
       // Treino Especial entra ao lado da Linha de Treinamento porque é a mesma
@@ -486,6 +494,19 @@ export function deriveAfty(creature, opcoes = {}) {
       ...efeitosDeTreinoEspecial(creature, concedido.treinosEspeciais),
       ...coletarEfeitosOrigem(creature, escolhasOrigem),
       ...coletarEfeitosMontante(creature, gerais, GERAL_BY_ID),
+      /* ⚠ A LOJA DE CATARSE ENTRA NO MONTANTE, e não no estágio 2, porque o que
+         ela emite é VAGA de orçamento: `vagasTalento`, `vagasHabilidade`,
+         `vagasMelhoria` e companhia são lidas antes de os stats existirem, e um
+         canal lido depois chegaria com o orçamento já fechado.
+
+         ⚠ O TEXTO LIVRE VEM JUNTO, e ele pode emitir QUALQUER canal (é o Motor
+         inteiro na mão do jogador). O `efMontante` é mesclado no agregado final,
+         então um `danoBonus` escrito ali chega no lugar certo do mesmo jeito que
+         os canais comuns da origem chegam. Ver a nota do `coletarEfeitosOrigem`.
+
+         ⚠ E NENHUMA LINHA LEVA `exclusivo`: acumular com Técnica é a regra que
+         o autor pediu. Ver o cabeçalho de afty-catarse.js. */
+      ...catarse.efeitos,
   ];
   const efMontante = resolverExclusivos(aplicarEfeitos(efeitosMontante, ctxMontante));
   // Os canais que precisam ser lidos ANTES do contexto principal: dois
@@ -542,13 +563,40 @@ export function deriveAfty(creature, opcoes = {}) {
     especializacoes: especializacoes.escolhidas, aptidoes: aptidoesIds,
     concedidos: concedido.talentos,
   });
+  /* ============================================================ */
+  /* UM TALENTO QUE CONCEDE VAGA DE TALENTO                        */
+  /* ============================================================ */
+  /* ⚠ ISSO NÃO PASSA PELO MONTANTE, e o efeito era emitido e jogado fora.
+     O `efMontante` cobre Habilidade Geral e efeito manual da ficha, e um
+     Talento não cabe lá: ele é escolhido depois, e o número de vagas já estava
+     fechado quando o efeito dele aparecia no agregado final. Resultado: um
+     Talento com `{ canal: "vagasTalento" }` aparecia certinho no hover de
+     fontes e não mudava o orçamento em nada.
+
+     O lugar certo é AQUI, entre o `talentosPre` (que diz quais Talentos a ficha
+     tem) e o `resolveHabilidades` (que fecha o orçamento). Não há ciclo: o
+     `resolveTalentos` não precisa do número de vagas para listar o que foi
+     escolhido, e quem cobra o excedente é o `resolveHabilidades`.
+
+     O primeiro caso é o Addon das Dez Sombras: as duas Mecânicas Únicas são
+     Talentos que pagam a própria vaga, para saírem de graça sem virarem uma
+     origem própria (autor, 2026-09-02). */
+  const vagasTalentoDeTalento = valorCanal(
+    resolverExclusivos(aplicarEfeitos(
+      coletarEfeitos(talentosPre.escolhidas, TALENTO_EFEITOS, getTalento, talentosPre.vezes),
+      ctxMontante,
+    )),
+    "vagasTalento",
+  );
+  const vagasTalentoTotal = vagasTalento + vagasTalentoDeTalento;
+
   const treinamentosEquipamento = treinamentosDasEspecializacoes(especializacoes.escolhidas);
   const treinoEscudo = resolveTreinoEscudo(especializacoes.escolhidas, talentosPre.escolhidas);
   // bt entra por causa do Roubo de Habilidade, cujo limite de repetições é o
   // Bônus de Treinamento. O último parâmetro são as vagas extras da Habilidade
   // Geral Especialização.
   const habilidades = resolveHabilidades(
-    creature, especializacoes.escolhidas, talentosPre.gastos, bt, vagasHabilidade, vagasTalento,
+    creature, especializacoes.escolhidas, talentosPre.gastos, bt, vagasHabilidade, vagasTalentoTotal,
     {
       nd,
       almaLivreEspecializacao: talentosPre.almaLivreEspecializacao,
@@ -572,6 +620,13 @@ export function deriveAfty(creature, opcoes = {}) {
       melhoriasSuperiores: concedido.melhoriasSuperiores,
       lendarias: concedido.lendarias,
     },
+    /* Vagas de Alto Nível vindas do Motor (Loja de Catarse, Addon, Habilidade).
+       Leem o estágio MONTANTE pelo mesmo motivo que `vagasHabilidade` e
+       `vagasTalento`: o orçamento fecha aqui, antes de as escolhas serem
+       resolvidas, então um canal lido depois chegaria tarde. Foi exatamente o
+       defeito do `vagasTalento` de Talento, consertado em 2026-09-02. */
+    vagasMelhoria: valorCanal(efMontante, "vagasMelhoria"),
+    vagasLendaria: valorCanal(efMontante, "vagasLendaria"),
   });
 
   // Nível por especialização para o DSL: real (trava pré-requisito) e de
@@ -712,7 +767,7 @@ export function deriveAfty(creature, opcoes = {}) {
     }).map(aplicarDiretoDaAdaptacao),
     // Direcionados por uma escolha que mora FORA do card da habilidade (a
     // marcação na linha de dano). Mesmo padrão do efeitosDeTreino.
-    ...efeitosArmasDedicadas(dedicadas),
+    ...efeitosArmasDedicadas(dedicadas, habilidades.escolhidas.includes("lut_um_com_a_arma")),
     // Funcionamento Básico da técnica: os únicos efeitos ESCRITOS pelo jogador,
     // porque a técnica é única no mundo e nenhum catálogo a cobre. Entram no
     // mesmo bolo, e os filtros de estágio abaixo roteiam pelo canal.
@@ -751,7 +806,8 @@ export function deriveAfty(creature, opcoes = {}) {
        depende de stat nenhum do dono, então não há laço. */
     ...efeitosDeInvocacao(creature, {
       nd, bt,
-      nivelControlador: nivelEspec.controlador?.escalonamento ?? 0,
+      // ⚠ É O ND. Ver a nota em `derived.invocacoes`, mais abaixo.
+      nivelControlador: nd,
       sessaoInvocacoes: opcoes.invocacoes,
     }),
   ];
@@ -1160,6 +1216,23 @@ export function deriveAfty(creature, opcoes = {}) {
     aptidaoOpcoes: semEnergia ? {} : creature?.aptidaoOpcoes,
     rdEscudoBase: equip.rdEscudoBase,
     fontesTreinoEscudo: treinoEscudo.fontes,
+    /* O manejo atual, para o "enquanto estiver desarmado ou empunhando uma arma
+       marcial" virar condição de verdade. `armasParaDano` já exclui o pugilato,
+       que é o Ataque Básico e não uma arma na mão, então lista vazia É estar
+       desarmado. A Arma Dedicada entra pela lista da ficha, e não pelo canal
+       `propMarcial`, que só existe depois dos efeitos. */
+    desarmado: armasParaDano.length === 0,
+    /* ⚠ PUGILATO NÃO É O MESMO QUE ARMADO. Manopla e Faixa ficam fora de
+       `armasParaDano` (elas SÃO o Ataque Básico), então quem as veste continua
+       `desarmado: true`, que é o certo para "enquanto estiver desarmado". Mas o
+       Adepto de Briga pede o oposto, *"enquanto não estiver com nenhum
+       equipamento do grupo Pugilato"*, e essa pergunta a lista de armas não
+       responde: ela precisa do item que o `pugilato` já resolveu acima. */
+    armaPugilato: !!pugilato,
+    armaMarcial: armasParaDano.some((a) => (
+      (a.propriedades ?? []).some((p) => p.id === "marcial")
+      || (dedicadas.escolhidas ?? []).includes(a.id)
+    )),
     // `tem_*` inclui Talentos e Aptidões escolhidos, não só as Habilidades.
     // ⚠ A lista de aptidões respeita o `semEnergia`: um Restringido não tem
     // Aptidões, e `tem_*` não pode dizer que tem.
@@ -1893,6 +1966,24 @@ export function deriveAfty(creature, opcoes = {}) {
      Ver a divergência `rdEscudoFisico`. */
   const rdFisico = equip.rdFisicoBonus + canal("rdFisico");
 
+  /* ---------- Defesas por tipo de dano ----------
+     Imunidade, Resistência, RD e Vulnerabilidade, um por tipo. Fica AQUI, e não
+     mais acima, porque a RD efetiva contra um tipo junta as três RDs já
+     calculadas: a Geral alcança tudo menos alma, a Física soma nos três físicos
+     e a da Alma só existe para o dano na alma. Ver ./afty-defesas-dano.js. */
+  const defesasDano = resolveDefesasDano({
+    manual: sanearDefesasDano(creature?.defesasDano, TIPOS_DANO),
+    canalTipo: (c, t) => canal(c, t),
+    fontesTipo: (c, t) => detalhesDoCanal(ef, c, t).map((d) => ({ label: d.nome, valor: d.valor })),
+    rdGeral, rdFisico, rdAlma,
+    /* ⚠ O catálogo VIAJA POR PARÂMETRO, e não por import lá dentro: o
+       afty-defesas-dano é módulo FOLHA de propósito. A nota no topo dele conta
+       qual ciclo isso evita. Aqui é seguro, porque o afty-derive já importa o
+       afty-equipamentos e já está depois do afty-habilidades no grafo. */
+    categorias: CATEGORIAS_DANO,
+    tiposDaCategoria: tiposDeDanoDaCategoria,
+  });
+
   // ---------- Defesa / CA (+ uniforme, - sobrecarga; Treino de Luta ADIADO) ----------
   const divisorDefesa =
     tipo === "conjurador" ? 1.75 :
@@ -1951,9 +2042,29 @@ export function deriveAfty(creature, opcoes = {}) {
     divisorCD, divisorDefesa,
     bonusVagas: canal("vagasPericia"),
     efeitos: ef,   // bonusPericia / bonusTR / bonusAcerto / proficienciaPericia
+    /* ⚠ QUATRO CAMINHOS TROCAM O ATRIBUTO DE UMA PERÍCIA, E A ORDEM AQUI É A
+       PRECEDÊNCIA. Espalhar objeto sobrescreve, então quem vem por último
+       vence, e isso é decisão e não acaso:
+
+         1. o catálogo do livro          (`p.atributo`, o padrão, lá no resolve)
+         2. característica de ORIGEM     (uma regra que a ficha ganhou)
+         3. TREINAMENTO                  (idem, e mais específica que a origem)
+         4. a troca MANUAL da aba        (o ato explícito da pessoa)
+
+       O manual vence os três porque ele é o único que alguém digitou. Se um
+       Treinamento concede "Feitiçaria com Força" e a pessoa põe Inteligência
+       por cima, ela quis Inteligência: o contrário faria o controle não
+       responder em algumas linhas, sem dizer por quê.
+
+       ⚠ E ele é o ESCAPE HATCH declarado (autor, 2026-09-05): *"muita gente
+       precisa disso por N fontes diferentes como Treinos Próprios e etc, que o
+       sistema não comporta sem Addon e eu não vou fazer addon pra todo
+       mundo"*. Uma fonte de mesa que o catálogo não conhece não tem como entrar
+       pelos caminhos 2 e 3. */
     atributosPericia: {
       ...atributosDePericiaDaOrigem(creature, escolhasOrigem),
       ...atributosDePericiaDeTreino(creature),
+      ...atributosDePericiaManuais(creature),
     },
     // Penalidade de armadura e escudo, cumulativa, em testes de perícia que
     // usam Destreza. Voltou a valer em 2026-08-01.
@@ -2055,12 +2166,19 @@ export function deriveAfty(creature, opcoes = {}) {
        nenhuma dessas progressões é uniforme na escada (o Corpo Treinado salta
        quatro degraus do 2d8 para o 2d12). Ver `dadoDesarmado`.
 
-       ⚠ O nível do Corpo Treinado é o de LUTADOR, e não o do personagem: é Base
-       de classe, e a multiclasse tem nível próprio por classe. */
+       ⚠ O nível do Corpo Treinado é o de LUTADOR, e não o do personagem, e é o
+       de ESCALONAMENTO (real mais metade da outra classe), e não o real (autor,
+       2026-09-01): *"um Lutador 10 com Combatente 20 contaria como um Lutador
+       Nível 20 para o cálculo de Corpo Treinado."* É o mesmo `esc_lutador` que a
+       linha de escada do Motor usa em afty-efeitos-conteudo.js, e as duas TÊM de
+       ler o mesmo nível: elas são a mesma regra escrita para os dois sistemas, e
+       ler níveis diferentes fazia a criatura e o jogador divergirem calados numa
+       multiclasse. O nível REAL segue valendo para o pré-requisito, que é quem
+       decide se a habilidade chega. */
     ...(() => {
       const d = dadoDesarmado({
         nivel: nd,
-        nivelLutador: especializacoes.escolhidas.find((e) => e.id === "lutador")?.nivel ?? 0,
+        nivelLutador: nivelEspec.lutador?.escalonamento ?? 0,
         tem: (id) => habilidades.escolhidas.includes(id) || aptidoesIds.includes(id),
       });
       return { dadoBasico: d.dado, fonteDadoBasico: d.fonte ?? "Golpe Desarmado" };
@@ -2251,10 +2369,26 @@ export function deriveAfty(creature, opcoes = {}) {
   // Invocações: a invocação lê valores do DONO (ND, BT = maestria(ND) e o Nível
   // de Controlador, o lado da multiclasse). Resolvidas aqui só para a UI e a
   // validação lerem de um lugar só. NÃO alimentam nenhum stat do dono.
-  // Invocações usam o nível de ESCALONAMENTO de Controlador (real + metade da
-  // outra classe): acesso a graus, metade do nível no bônus de teste, e os
-  // limiares 6/12/18 de Invocações Móveis. Pré-requisitos de habilidade usam o real.
-  const nivelControlador = nivelEspec.controlador?.escalonamento ?? 0;
+  /* ⚠ "NÍVEL DO CONTROLADOR" É O ND, e não o nível da Especialização (autor,
+     2026-09-04: *"Nível do Controlador é o ND e não o Nível da Especialização
+     Controlador"*).
+
+     Até aqui era o nível de ESCALONAMENTO da Especialização (o real, mais metade
+     da outra classe na multiclasse). Num Controlador puro os dois batem, e por
+     isso a diferença só aparece em duas fichas:
+
+       Controlador 6 / Lutador 14 no ND 20   valia 13, agora vale 20
+       Lutador 20, com zero Controlador       valia  0, agora vale 20
+
+     O segundo caso é o que muda mais, e o autor confirmou que vale: um
+     shikigami de Feitiço ou de clã, num dono que nunca pegou a Especialização,
+     passa a receber metade do ND em todo teste.
+
+     ⚠ Isto NÃO é o nível de pré-requisito. Quem decide se a ficha PODE pegar
+     uma Habilidade de Controlador continua sendo o nível REAL da
+     Especialização, em `avaliarAcessoHabilidade`. O ND diz o quanto ela escala,
+     e não se ela existe. */
+  const nivelControlador = nd;
   // Efeitos estáticos das Habilidades de Controlador escolhidas, aplicados a
   // TODAS as invocações do dono (via Motor de Automação, ver afty-habilidades.js).
   const escolhasMapa = habilidades.escolhas?.mapa ?? {};
@@ -2313,6 +2447,12 @@ export function deriveAfty(creature, opcoes = {}) {
     resistenciaSobrecarregada: controle.resistenciaSobrecarregada,
     margemCritico: controle.margemCritico,
     criticoBrutal: controle.criticoBrutal,
+    /* O estilo escolhido no Apogeu (Concentrado / Disperso / Sintonizado). Ele
+       vira variável de DSL no contexto da invocação, e sem ele não dava para
+       escrever a cláusula do Ápice do Controle, que depende de a invocação JÁ
+       poder ser trazida como Ação Livre. */
+    apogeuEstilo: controle.estilo ?? null,
+    apice: controle.apice ?? false,
     /* O estado de MESA de cada invocação (em campo, auxílios ligados). Vem por
        `opcoes` e nunca pela criatura, pela mesma razão da concessão: é sessão,
        e o rascunho automático do criador não pode gravá-lo na ficha. */
@@ -2347,6 +2487,10 @@ export function deriveAfty(creature, opcoes = {}) {
       label: d.nome, valor: d.valor,
       ...(d.suplantado ? { suplantado: true } : {}),
     }));
+  /* As parcelas de RD do equipamento que caem NESTE canal, já nomeadas pelo
+     `resolveEquipamentos`. Vazia quando não há escudo equipado. */
+  const rdPartesDe = (canal) =>
+    (equip.rdPartes ?? []).filter((p) => p.canal === canal).map((p) => ({ label: p.label, valor: p.valor }));
   const TIPO_LABEL = { combatente: "Combatente", misto: "Misto", conjurador: "Conjurador", restringido: "Restringido" };
   const PATAMAR_LABEL = { comum: "Comum", desafio: "Desafio", calamidade: "Calamidade", beyond: "Beyond" };
   const divTexto = (d) => String(d).replace(".", ",");
@@ -2417,9 +2561,15 @@ export function deriveAfty(creature, opcoes = {}) {
       ...(equip.cdBonus ? [{ label: "Equipamento", valor: equip.cdBonus }] : []),
       ...doMotor("cd"),
     ],
+    /* ⚠ O EQUIPAMENTO ENTRA PARCELA A PARCELA, e não mais como uma linha
+       "Equipamento" que somava tudo. O livro lista a coluna de RD do escudo e a
+       tabela de grau da Ferramenta como fontes separadas, e a aba de Resistências é
+       onde se consulta de onde a RD veio. O `rdPartesDe` filtra pelo canal
+       porque a MESMA parcela cai na RD Geral na criatura e na Física no jogador
+       (divergência `rdEscudoFisico`). */
     rdGeral: [
       ...(rdSemBase ? [] : [{ label: `Base do Tipo (${TIPO_LABEL[tipo] ?? tipo})`, valor: rdGeralBase }]),
-      ...(equip.rdGeralBonus ? [{ label: "Equipamento", valor: equip.rdGeralBonus }] : []),
+      ...rdPartesDe("rdGeral"),
       ...doMotor("rdGeral"),
     ],
     rdEspecifico: [
@@ -2428,7 +2578,7 @@ export function deriveAfty(creature, opcoes = {}) {
     ],
     rdAlma: doMotor("rdAlma"),
     rdFisico: [
-      ...(equip.rdFisicoBonus ? [{ label: "Equipamento", valor: equip.rdFisicoBonus }] : []),
+      ...rdPartesDe("rdFisico"),
       ...doMotor("rdFisico"),
     ],
     movimento: [
@@ -2548,6 +2698,9 @@ export function deriveAfty(creature, opcoes = {}) {
        pacotes dela. Vazio é o caso normal, e é o que mantém a tela de quem só
        usa o raw exatamente como era. Ver `PRIMITIVAS` em afty-addons.js. */
     primitivas: primitivasDaCriatura(creature),
+    // O extrato da Loja de Catarse: saldo, gasto, compras e as vagas que elas
+    // abriram. A tela lê daqui, e os efeitos já entraram no Motor lá em cima.
+    catarse,
     adaptacoes: resumoAdaptacoes(creature, opcoes.adaptacoes),
     gatilhosTreino: gatilhosDeTreino(creature).map((gatilho) => ({
       ...gatilho,
@@ -2580,9 +2733,21 @@ export function deriveAfty(creature, opcoes = {}) {
     aptidoesConcedidasOrigem,
     aptidoesConcedidasEspecializacao,
     dominios: resumoDominios,
-    // Proficiência RESOLVIDA por perícia (a escolhida mais a concedida pelo
-    // Motor). É o que os requisitos de perícia das Aptidões conferem.
+    /* Proficiência RESOLVIDA (a escolhida na ficha mais a concedida pelo Motor).
+       É o que os requisitos de treino conferem, e desde 2026-09-01 eles valem
+       para Habilidades e Talentos também, e não só para as Aptidões.
+
+       ⚠ SÃO TRÊS MAPAS, e não um. `periciaProf` e `resistenciaProf` respondem a
+       faixa, e `periciaOficios` responde o NOME de cada vaga de Ofício, que é o
+       que separa "Treinado em Ferramentas de Médico" de "Treinado em dois
+       Ofícios": o primeiro pergunta qual ofício, o segundo pergunta quantos. */
     periciaProf: Object.fromEntries((testes.pericias ?? []).map((p) => [p.id, p.prof ?? null])),
+    resistenciaProf: Object.fromEntries(
+      (testes.resistencias ?? []).map((r) => [r.id ?? r.value, r.prof ?? null]),
+    ),
+    periciaOficios: Object.fromEntries(
+      (testes.pericias ?? []).filter((p) => ehPericiaOficio(p.id)).map((p) => [p.id, p.oficios ?? []]),
+    ),
     feiticos,             // { nivelMax, gastos, cdBase } — o orçamento é o de baixo
     // ⚠ O contexto CRU do DSL, exposto para o seletor de variáveis do Motor
     // (`vocabularioDsl` em afty-dsl-vocabulario.js). Sai cru de propósito: o
@@ -2657,6 +2822,10 @@ export function deriveAfty(creature, opcoes = {}) {
     equip: equipFinal,     // parcelas do equipamento (entradas, custoGasto, avisos...)
     carga,                 // { espacosUsados, cargaLimite, cargaMaxima, sobrecarregado... }
     rdFisico,              // RD Física. O escudo entra aqui no JOGADOR, e na RD Geral na criatura.
+    /* Defesas por tipo de dano: { linhas, porTipo, ativas, conflitos, avisos }.
+       A `rd` de cada linha já é a EFETIVA contra aquele tipo (Geral + Física ou
+       Alma + a do tipo), que é o número que se usa na mesa. */
+    defesasDano,
     penalidadeDestreza: equip.penalidadeDestreza, // uniforme + escudos, cumulativos
     /* Guarda Inabalável: { ativa, bonusMax, vidaMax, passoPorGolpe }. O corrente
        (quantos golpes já levou, se ainda está de pé) é SESSÃO, e quem resolve é

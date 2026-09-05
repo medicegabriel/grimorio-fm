@@ -1,6 +1,6 @@
 # Status do Grimório Afty (handoff para chat novo)
 
-Estado atual do sistema Afty (atualizado 2026-09-02). Leia junto com:
+Estado atual do sistema Afty (atualizado 2026-09-05). Leia junto com:
 `docs/roadmap-versionamento-e-fichas.md` (arquitetura) e `docs/afty-formulas-base.md` (fórmulas).
 
 > 📋 **A FILA DE TRABALHO NÃO É ESTE ARQUIVO.** Desde 2026-08-09 toda pendência mora em
@@ -15,7 +15,7 @@ Estado atual do sistema Afty (atualizado 2026-09-02). Leia junto com:
 > Ao retomar, leia primeiro a sessão mais recente e depois o Contexto rápido.
 >
 > **AS 6 ESPECIALIZAÇÕES ESTÃO FECHADAS** (2026-07-22): Combatente 70, Lutador 69, Conjurador 64,
-> Suporte 57, Restringido 53, Controlador 47 = **360 habilidades**. Mais **Talentos** (51), em
+> Suporte 57, Restringido 53, Controlador 47 = **360 habilidades**. Mais **Talentos** (52), em
 > sistema próprio (`afty-talentos.js`).
 >
 > ⚠ Eram 367. O autor mandou **remover "Teste de Resistência Mestre"** (2026-07-27), que existia
@@ -121,6 +121,590 @@ Estado atual do sistema Afty (atualizado 2026-09-02). Leia junto com:
 
 ---
 
+## SESSÃO DE 2026-09-05 (parte 4): TRÊS DESALINHAMENTOS NA ABA DE DEFESAS
+
+Pedido do autor, em duas frases: *"suba a lista de Etéreos para cima, alinhando a parte de baixo dela
+com a parte de baixo de Biológicos"*, e *"alinhe RD com o valor de RD e alinhe o Número do Total com
+o Texto Total"*.
+
+**Os três foram MEDIDOS antes e depois**, com `Range.getBoundingClientRect()` em cima do texto, e não
+da caixa do elemento: a caixa de um `<span>` com padding não diz onde o glifo está.
+
+### 1. Etéreos sobe: a grade virou duas pilhas
+
+O card estava numa grade de duas colunas, e **numa grade toda fileira tem a altura do card mais alto
+dela**. Físicos tem 3 tipos e Elementais tem 5, então Físicos deixava 124px de buraco embaixo de si e
+Etéreos só começava depois de Elementais terminar.
+
+Agora são duas PILHAS, cada uma correndo sozinha. Etéreos subiu de `y=840` para `y=736`, colado nos
+18px de respiro abaixo de Físicos.
+
+⚠ **A DIVISÃO É POR PARIDADE, e não pela metade.** Os pares vão para a esquerda e os ímpares para a
+direita, que é exatamente onde cada card já estava. Dividir pela metade mandaria Elementais para
+baixo de Físicos e Etéreos para o topo da direita: isso não é subir, é atravessar.
+
+⚠ **OS FUNDOS NÃO FECHAM EXATAMENTE, e é aritmética.** Com 3, 5, 5 e 2 tipos, a melhor divisão
+possível deixa a esquerda com 8 linhas e a direita com 7. Sobra a altura de UMA linha, **52px
+medidos** (Etéreos termina em 1119 e Biológicos em 1067). Emparelhar de outro jeito só troca qual
+coluna sobra. Era 158px antes.
+
+⚠ **O PREÇO É A ORDEM NO TELEFONE.** Abaixo de `lg` as duas pilhas viram uma só, e a leitura passa a
+ser Físicos, Etéreos, Elementais, Biológicos, em vez da ordem do livro. Não há como evitar em CSS
+puro sem duplicar os cards no DOM: masonry de grade não existe, e a ordem de leitura de uma pilha é a
+ordem dela.
+
+### 2. RD e Total: três tentativas até acertar, e as duas primeiras erraram o EIXO
+
+⚠ **ESTA SEÇÃO FOI REESCRITA DEPOIS DE ERRAR DUAS VEZES.** Vale inteira como registro do que me fez
+errar, porque nenhuma das duas foi falta de medida: foi medida errada e alvo errado.
+
+**Tentativa 1, alinhar pela DIREITA.** O valor é digitado dentro de um `input` com 6,75px de padding
+e 1px de borda, então o número para antes da borda direita da coluna e o rótulo "RD" parava NA borda.
+Dei ao rótulo a caixa do campo (`px border border-transparent`) e declarei alinhado.
+
+**Tentativa 2, o que a medida não via.** O autor voltou com um recorte mostrando que continuava
+torto, e estava certo. Um `input[type=number]` com `appearance: auto` **reserva ~15px à direita para
+os botões de subir e descer**, e o Chrome só os PINTA no hover: o espaço fica sempre lá. O número era
+empurrado para longe da borda por essa faixa invisível.
+
+⚠ **O QUE ME ENGANOU FOI O MÉTODO.** Eu CALCULEI a posição do número pela geometria da caixa
+(`borda direita − borda − padding`) em vez de olhar o glifo, e o `getComputedStyle` confirmava
+`text-align: right`. As duas evidências concordavam entre si e estavam erradas juntas, porque nenhuma
+das duas sabe da faixa reservada. A conta dava 385,05 e o glifo estava em 369,3.
+
+A régua que resolveu foi **ler os PIXELS do que foi desenhado**: recortar a faixa do rótulo e a do
+campo na mesma janela de x, jogar as duas num `canvas` e varrer coluna por coluna procurando pixel
+claro, com limiar por faixa. Ela não depende de suposição nenhuma sobre modelo de caixa.
+
+**Tentativa 3, e era o EIXO que estava errado desde o começo.** Com a direita finalmente batendo, o
+autor respondeu: *"era para alinhar o RD e o número para o centro, e não o número para a lateral"*.
+As duas primeiras tentativas resolveram com precisão um problema que não era o dele.
+
+⚠ **E O CONSERTO DAS SETINHAS CONTINUA NECESSÁRIO NO CENTRO.** Com elas, o `text-center` centraria o
+número no espaço que SOBRA depois da faixa reservada, e ele cairia ~7,5px à esquerda do centro real.
+O trabalho da tentativa 2 não foi jogado fora, só deixou de ser suficiente sozinho.
+
+**Como ficou, medido no pixel:**
+
+| | centro do rótulo | centro do valor | fora por |
+|---|---|---|---|
+| RD, valor digitado | 365,92 | 365,67 | **0,25px** |
+| RD, placeholder | 365,92 | 365,67 | **0,25px** |
+| Total | 421,92 | 421,92 | **0,00px** |
+
+O que sobra é rasterização de glifo em subpixel. As cinco colunas da linha passaram a ser centradas,
+iguais a IMU, RES e VUL, que já eram sobre os chips.
+
+⚠ **O placeholder foi medido SEPARADO do valor digitado**, e não por excesso de zelo: a tela padrão
+mostra linhas zeradas, e o que aparece nelas é o placeholder, que é outro elemento de renderização.
+Medir só a linha preenchida teria deixado de fora justamente o que o autor via.
+
+⚠ **O defeito das setinhas estava nos QUATRO campos numéricos do Afty.** Varridos e consertados
+juntos com as mesmas três utilidades que o `builder-controls.jsx` da 2.5.2 já usava: a RD das
+Defesas, o "Ganhas" e o "Custo" da Loja de Catarse, e o total de Focos de Interlúdio. Nenhum sobrou.
+
+### 3. Por que o Total já tinha ido para o centro antes
+
+O Total foi centrado uma rodada antes da RD, e por outro motivo: as bordas direitas do rótulo e do
+número já batiam em `444,5`, e mesmo assim ele parecia torto, porque **"Total" tem 28,8px e o número
+tem 7,4px**. O valor caía embaixo do FIM da palavra, com os centros 10,7px fora.
+
+⚠ **Alinhar pela borda é a convenção de coluna numérica, e ela falha quando o rótulo é várias vezes
+mais largo que o valor.** Aquilo era a mesma resposta que a RD acabaria pedindo, achada por um
+caminho diferente. Se eu tivesse lido o Total como pista, teria chegado ao centro na primeira vez.
+
+### 4. A aba mudou de nome: "Defesas" virou "Resistências"
+
+Pedido do autor no fim da sessão. **É só o rótulo.**
+
+⚠ **O ID, OS ARQUIVOS E O CAMPO CONTINUAM DIZENDO `defesas`**, e isso é decisão. O id da aba amarra
+`AftyTabDefesas.jsx`, `afty-defesas-dano.js` e, principalmente, o campo `creature.defesasDano`, que
+está GRAVADO em ficha. Renomear o campo pediria migração de ficha salva para não perder a Imunidade,
+a Resistência, a Vulnerabilidade e a RD de quem já preencheu, e um rótulo novo não vale esse risco.
+
+⚠ **Comentário que fala da "aba de Defesas" num evento PASSADO fica como está** (o ciclo de imports
+que quebrou o app em 2026-09-02, por exemplo). Os dois que falavam dela no PRESENTE, em
+`afty-derive.js` e `afty-equipamentos.js`, foram atualizados, e o cabeçalho do `AftyTabDefesas.jsx`
+ganhou o mapa entre o nome novo e os nomes internos. É a mesma varredura que a mudança dos Addons
+pediu: o que envelhece calado numa troca de nome não é a tela, é o texto que aponta para ela.
+
+⚠ **Não confundir com os TESTES DE RESISTÊNCIA da aba Perícias**, que são outra coisa (Reflexos,
+Fortitude, Vontade, Astúcia, Integridade). Esta aba é Imunidade, Resistência, Vulnerabilidade e RD
+por tipo de dano. As duas convivem na mesma fileira, e o nome novo as aproxima.
+
+### Verificação
+
+`eslint` limpo, `vite build` ok, **55 arquivos e 2887 asserts**, sem mudança de número: as quatro são
+de tela pura. `src/components/` intocado.
+
+**Navegador**: `/Player` e `/Afty`, em 1440px e 390px. Zero erro de console e zero rolagem
+horizontal. Os alinhamentos conferidos por PIXEL, no dev e no build de produção servido por
+`vite preview`, porque o Tailwind precisa gerar regra nova para a variante arbitrária das setinhas e
+eu queria a prova de que ela sai no bundle: sai (`::-webkit-inner-spin-button{appearance:none}` está
+no CSS compilado).
+
+⚠ **Um falso alarme que vale registrar.** Semeei uma ficha de teste com `defesasDano.cortante` e o
+chip não acendia. Não é bug: **os três tipos físicos têm id `ct`, `im` e `pf`**, e não o nome por
+extenso. A chave desconhecida sobreviveu ao saneamento, como está documentado que sobreviva, e
+simplesmente não casou com linha nenhuma.
+
+---
+
+## SESSÃO DE 2026-09-05 (parte 3): O TRABALHO DO GOLIASK ENTROU
+
+Pedido do autor: *"veja se o outro colaborador fez algo, puxe o quê ele fez para ca de maneira que
+não dê conflitos"*.
+
+Três commits novos no `origin/main`, todos de 2026-09-02, todos sobre **conteúdo privado por addon**:
+funcionamento básico, modelos de Feitiço, e armas mais estados de combate. Dezessete arquivos, 845
+linhas.
+
+### A situação, e por que ela pedia cuidado
+
+A árvore local tinha **59 arquivos tocados e nenhum commit**: tudo de 2026-09-02 a 09-05 estava por
+commitar. Dez desses arquivos eram os mesmos que ele tinha mexido.
+
+⚠ **A ORDEM FOI MEDIR, DEPOIS MEXER.** `git stash create` devolve um commit do estado sujo **sem
+tocar na árvore nem na lista de stash**, e `git merge-tree` simula a junção contra ele. A simulação
+disse, antes de qualquer mudança: seis arquivos entram limpos, **quatro conflitam**. Nenhuma surpresa
+depois disso, e nenhum passo dado às cegas.
+
+O caminho foi `stash push` → `merge --ff-only` → `stash pop`. **O fast-forward não cria commit**: ele
+move o ponteiro para commits que o colaborador já fez, que é o que "puxar" quer dizer aqui.
+
+### As quatro colisões, e por que nenhuma era disputa
+
+Todas eram **adição vizinha de adição**, e nas quatro ficaram os dois lados:
+
+| Arquivo | O que ele acrescentou | O que estava aqui |
+|---|---|---|
+| `ui/primitivos.jsx` | o prop `title` no `BoolChip` | o anel de foco no mesmo `className` |
+| `afty-addons.js` | `funcionamentos`, `feiticos`, `estadosCombate` no `normalizarPacote` | o campo `catarse`, no mesmo objeto |
+| `afty-derive.js` | o import de `estadosCombateDeAddon` | o import de `precosDeCatarse`, do mesmo módulo |
+| `docs/afty-status.md` | a sessão dele de 09-02 | as sessões de 09-05 daqui |
+
+⚠ **O `title` do `BoolChip` era metade de uma feature.** A outra metade é o `title={e.title}` que ele
+passa no `SimulacaoCombateCard`, e essa metade veio no auto-merge. Resolver o conflito escolhendo o
+lado errado teria deixado a feature dele pela metade, com os `title` chegando num prop que o
+componente ignora, e **sem erro nenhum**.
+
+⚠ **No log, a sessão dele entrou por DATA e sem ser reescrita.** É entrada de outra pessoa, e a regra
+do `a-fazer.md` vale para o `afty-status.md` também: acrescenta-se, não se reescreve. Ela ficou entre
+a de 09-02 daqui e a de 09-01.
+
+### O que a verificação pegou, e o que ela inocentou
+
+`eslint` limpo, `vite build` ok, **55 arquivos e 2887 asserts** (eram 54 e 2848 aqui, e 43 e 2332 lá).
+`src/components/` intocado. Zero marcador de conflito em `src/`, `asserts/` e `docs/`.
+
+**Navegador**, nas cinco abas do criador (Perícias, Habilidades, Equipamentos, Defesas, Cálculos),
+nas duas rotas e em 1440px e 390px, mais a Ficha Final e o painel de Encontros: **22 telas, zero erro
+de console**.
+
+⚠ **UMA COISA APARECEU, E NÃO É DO MERGE.** A aba Habilidades é a única com rolagem horizontal em
+390px, nos dois sistemas: o controle "Atributo da Técnica" no cabeçalho do `PerfilAmaldicoadoCard`
+tem 269px numa tela de 390 e estoura em 28. **Conferido que o bloco é byte a byte idêntico em
+`40ad1fc` e depois da junção**, então ele é anterior aos dois. Anotado em `a-fazer.md`, não
+consertado: não era o pedido.
+
+⚠ **O `stash@{0}` ficou para trás de propósito.** O `pop` com conflito não apaga a entrada, e ela
+guarda o estado exato de antes da junção. Ela é redundante agora que tudo passou, e é o autor quem
+decide dropar.
+
+---
+
+## SESSÃO DE 2026-09-05 (parte 2): O ATRIBUTO DA PERÍCIA VIROU ESCOLHA DA FICHA
+
+Pedido do autor: *"coloque a opção de mudar os Atributos da Perícia de forma manual, muita gente
+precisa disso por N fontes diferentes como Treinos Próprios e etc, que o sistema não comporta sem
+Addon e eu não vou fazer addon pra todo mundo"*, e *"deixa por exemplo Feitiçaria como INT com a
+opção de mudar para qual a pessoa quiser"*.
+
+### A frase dele descrevia o código exatamente
+
+O gancho `atributosPericia` já existia no `deriveAfty`, e o `resolveTestes` já o lia. O que não
+existia era **produtor no sistema cru**: as duas fontes que alimentavam aquele gancho
+(`trocaAtributoPericia` numa característica de origem e num Treinamento) **só têm entrada no pacote
+Flugel**. A máquina estava de pé e sem ninguém dentro, e por isso a única forma de trocar o atributo
+de uma perícia era escrever um addon, que é literalmente o que o autor disse não querer fazer.
+
+A troca manual é o terceiro produtor, e o primeiro que não pede addon.
+
+### A ordem das quatro fontes
+
+    1. o catálogo do livro     (`p.atributo`)
+    2. característica de ORIGEM
+    3. TREINAMENTO
+    4. a troca MANUAL da aba
+
+Elas se compõem por espalhamento de objeto no `deriveAfty`, então **a ordem em que estão escritas é
+a precedência**. O manual vence os três porque é o único que alguém digitou: se um Treinamento
+concede "Feitiçaria com Força" e a pessoa põe Inteligência por cima, ela quis Inteligência. O
+contrário faria o controle não responder em algumas linhas, sem dizer por quê.
+
+⚠ **Há assert prendendo essa ordem contra o Flugel de verdade**, e não contra um duble. Inverter as
+duas linhas do espalhamento deixa `t-pericia-atributo.mjs` vermelho em dois asserts. Conferido
+invertendo.
+
+### Onde a escolha mora, e o que ela apaga
+
+Campo novo: **`creature.periciaAtributoManual`**, `{ [periciaId]: chave }`.
+
+⚠ **Não confundir com `periciaAtributo`, no singular**, que já existia e é outra coisa inteiramente:
+a escolha entre INT e SAB para o **orçamento** de perícias, hoje parada e com pergunta aberta no
+`a-fazer.md`. Um decide de quantas perícias você dispõe, o outro decide com que atributo você rola
+uma delas. Os nomes se pareciam por acidente, e o `Manual` no fim existe para eles não se
+confundirem no grep.
+
+⚠ **Escolher o PADRÃO do livro APAGA a entrada em vez de gravá-la.** Isso não é economia de bytes:
+uma ficha que grava `feiticaria: "inteligencia"` fica presa ao Inteligência para sempre, e no dia em
+que uma errata mudar aquela perícia no livro, ou em que um Treinamento passar a trocá-la, a entrada
+continuaria vencendo os dois em silêncio. Sem entrada, a linha volta a seguir quem manda.
+
+⚠ **Id de perícia desconhecido SOBREVIVE ao saneamento, e o atributo não.** Um atributo que não
+existe é descartado e a linha volta ao padrão. Já o id passa, porque perícia personalizada tem id
+gerado e um Addon pode trazer perícia nova: guardar a escolha de uma linha que hoje não está na
+ficha é o que faz desligar e religar um Addon não apagar a escolha de ninguém. Mesma decisão do
+`periciaOficios`.
+
+### O que a troca arrasta junto, de graça
+
+O atributo de uma perícia não decide só o modificador. Ele decide também o **escopo `atr:`** dos
+canais do Motor e a **penalidade de armadura**, que vale só em perícia de Destreza. As duas seguem a
+troca sozinhas, porque leem a mesma variável.
+
+⚠ **Tirar uma perícia da Destreza tira a penalidade do escudo dela**, e isso é o que a regra escreve
+(*"testes de perícia que utilizam Destreza"*), não efeito colateral. Ficou **medido em assert** para
+que a decisão seja consciente se algum dia alguém quiser o contrário.
+
+### A tela: o controle que não ocupa espaço nenhum
+
+O autor pediu duas coisas de CSS: *"garanta que o css não fique desalinhado em relação ao número, e
+não ocupe muito espaço"*.
+
+**Medi antes, e a coluna do número já estava alinhada** (todas as linhas de perícia no mesmo x). Ela
+continua: as posições da coluna são **idênticas antes e depois da troca**, medido no navegador.
+
+⚠ **O QUE GARANTE ISSO É ONDE O CONTROLE MORA.** Ele vive dentro do `flex-1 min-w-0` do nome, que é
+quem absorve toda a folga da linha: o valor e os dois botões de ação vêm depois, com largura fixa.
+O desenho óbvio, uma coluna própria para o atributo, teria empurrado a coluna do valor em toda linha.
+
+⚠ **E EM REPOUSO ELE É EXATAMENTE O QUE JÁ ESTAVA ALI:** as mesmas três letras (`INT`), no mesmo
+tamanho e na mesma cor. A forma de gastar zero espaço é não acrescentar elemento nenhum, e sim dar
+função ao que já existia. Só o `hover` e o `focus` revelam que é botão. Clicar abre um painel de
+seis chips embaixo da linha, no mesmo desenho do painel de Ofícios que já morava naquele componente.
+
+**Trocado fica ROXO**, e é a única diferença visível: a pessoa vê de relance quais linhas fugiram do
+livro. É resultado, e não explicação. O chip do padrão do livro leva um ponto de 4px em vez da
+palavra "padrão", pelo mesmo motivo.
+
+⚠ **O `<select>` do modo de edição SAIU.** Ele era um controle de 48px que só aparecia com a perícia
+personalizada em edição, e o botão novo faz a mesma coisa em toda linha. Duas maneiras de escolher a
+mesma coisa é como duas verdades divergem. Para a personalizada, o `atributoPadrao` é o atributo
+gravado na definição dela, que é o que ela tem no lugar de uma linha no livro.
+
+### Verificação
+
+`eslint` limpo, `vite build` ok, **54 arquivos e 2848 asserts** (eram 53 e 2816), com
+`t-pericia-atributo.mjs` novo (32). `src/components/` intocado.
+
+**Navegador**, no dev server: `/Player` e `/Afty` em 1440px e 390px, a Ficha Final e o painel de
+Encontros. Zero erro de console e zero rolagem horizontal. Medidos de verdade: a troca gravando, a
+volta ao padrão apagando a entrada, a perícia personalizada usando o mesmo caminho, e a coluna do
+número parada nos mesmos pixels. A Ficha Final mostra **Feitiçaria FOR +10** sem nenhuma mudança
+nela, porque lê o mesmo derivado.
+
+---
+
+## SESSÃO DE 2026-09-05: O AMULETO QUE NÃO SOMAVA, OS ADDONS DENTRO DE CÁLCULOS E AS FONTES DE RD
+
+Três pedidos do autor, na ordem em que ele os mandou.
+
+### 1. O Amuleto do Vislumbre estava inerte, e o log dizia o contrário
+
+O **Amuleto do Vislumbre** dá *"além de um bônus de +2 em rolagens de Percepção"* e estava gravado
+com `efeito: { pericia: { percepcao: 2 }, aplicado: false }`. O consumidor, no `resolveEquipamentos`,
+é um `if (ef?.aplicado && condicaoAtiva)`: **a linha era jogada fora, sem erro e sem sintoma**.
+
+⚠ **O que torna este caso pior que o bug é o registro.** A sessão de 2026-08-01 declarou, com todas
+as letras, que o Amuleto e o Sob Medida tinham entrado juntos quando as Perícias ganharam canal. Só
+o Sob Medida entrou. Um dado inerte e um dado ligado se parecem no grep, e a diferença só aparece
+medindo o número no derivado.
+
+**Conserto:** `aplicado: true`, e vale nos dois sistemas (autor: *"pode consertar nos 2"*).
+
+Nasceu **`asserts/t-item-efeito.mjs`** (13), que prende a família e não o caso:
+
+- **todo item com `efeito.pericia` tem de estar ligado.** Quem nomeia a perícia nunca teve bloqueio,
+  porque o canal `bonusPericia` existe desde 2026-07-29.
+- **e o número tem de CHEGAR no derivado.** Ler só o `aplicado: true` mediria a intenção. O teste
+  equipa o item e compara a perícia com e sem ele, que é a distância onde o bug morava.
+- ⚠ **as duas Pulseiras seguem inertes, e o assert prende isso também.** Elas concedem treino numa
+  perícia *à escolha*, e escolha de item não tem tela em lugar nenhum. Por isso a regra mira o campo
+  `pericia` e não a palavra "perícia": elas usam `periciaTreinada` e `periciaMestre`.
+
+### 2. Os Addons saíram da fileira de abas e foram para dentro de Cálculos
+
+Pedido: *"passe a parte dos Addons para Cálculos em ambos os lados"*. A fileira tinha treze abas e
+já rolava na horizontal em 1440px.
+
+O `TabAddons` **não mudou**, e o arquivo e o export continuam com o nome que tinham: renomear os
+dois só trocaria o lugar em que a palavra "aba" mente. Ele é renderizado no fim do ramo `calculos`,
+**embaixo da bancada de combate**. A ordem é a leitura da aba: primeiro os números, depois a bancada
+que os move, e por fim de onde o conteúdo veio. Instalar pacote muda o que a ficha inteira tem, mas
+é configuração e não resultado, então não pode empurrar a grade de stats para fora da dobra.
+
+⚠ **O aviso de addon órfão apontava para uma aba que deixou de existir.** O `saida` do
+`addonProblemas` dizia *"Ligue esse addon na aba Addons"* e virou *"na aba Cálculos"*, com o assert
+de `t-linha-morta.mjs` acompanhando. É o tipo de string que sobrevive a uma mudança de tela em
+silêncio, e ela só foi achada porque havia assert lendo o texto.
+
+### 3. A aba de Defesas: o desalinhamento era outro, e o maior nem era dela
+
+O autor: *"revise a parte de DEFESAS, está a maioria das coisas DESALINHADAS e preciso que você
+programe as fontes de RD do Livro direitinho e coloque lá"*.
+
+**Medi antes de mexer, e a grade estava certa.** Cabeçalho e linhas caíam no mesmo x, coluna por
+coluna (`[46, 643, 699, 755, 811, 872]` nos dois). O que estava errado eram três outras coisas.
+
+#### a) O `text-sm` do título de todo Card do criador nunca valeu
+
+⚠ **Este é o achado grande, e ele vale para o criador INTEIRO, não só para Defesas.** O
+`src/index.css` é global, fica fora de `@layer` e dá a todo `h2` do app `font-size: 24px`,
+`font-weight: 500`, `color: #f3f4f6`, `line-height: 118%` e `letter-spacing: -0.24px`. Regra sem
+camada vence utilidade em camada.
+
+O `Card` de `ui/primitivos.jsx` escreve `text-sm font-semibold text-white` no `h2` desde sempre, e
+**medido no navegador ele saía com 24px**: o dobro do pretendido, em todo card de toda aba, nos dois
+sistemas. A margem já tinha sido consertada com `m-0!` numa sessão anterior, e **só a margem**: o
+resto ficou letra morta e ninguém voltou. É a mesma armadilha já anotada em `a-fazer.md` para o
+`<h1>` do cabeçalho, aparecendo no irmão dela.
+
+O conserto são as exclamações que faltavam: `text-sm! font-semibold! text-white! leading-5!
+tracking-normal!`. O título passou a 15,75px, que é o `text-sm` com a raiz em 18px.
+
+⚠ **O `Card` é usado em quatro arquivos, todos do criador** (`AftyCreatureBuilder`, `AftyTabAddons`,
+`AftyTabCatarse`, `AftyTabDefesas`). A Ficha Final e o painel de Encontros têm primitivas próprias e
+não sentem nada.
+
+#### b) A grade tinha 590px de vão morto no meio da linha
+
+Em coluna única a grade tem 889px de largura e precisa de 250. O nome do tipo ficava colado na borda
+esquerda e os controles na direita, com o vão entre os dois, e o olho perdia a linha de um lado ao
+outro. **Os quatro cards de categoria foram para duas colunas** (`lg:grid-cols-2`), cada grade com
+~430px. A altura da aba caiu de ~1780px para ~1300px.
+
+⚠ `items-start` é obrigatório ali: sem ele Biológicos (2 tipos) estica até a altura de Elementais
+(5), com metade do card vazia.
+
+⚠ E o template de colunas virou a constante **`COLUNAS`**. Ele estava escrito duas vezes, no
+cabeçalho e na linha, e duas grades independentes com colunas `auto` só continuam alinhadas enquanto
+ninguém mexe numa das duas.
+
+#### c) As fontes de RD, que é a metade que o autor pediu
+
+A grade mostrava a RD EFETIVA de cada tipo e não dizia de onde ela vinha. Nasceu o card **"Redução
+de Dano"**, no topo da aba, com as pilhas que alimentam as quinze linhas: **RD Geral, RD Física e RD
+a Alma**, cada uma com o hover das fontes dela.
+
+⚠ **A ordem é a do ALCANCE, e não a alfabética:** a Geral pega catorze dos quinze tipos, a Física
+pega três, a da Alma pega um. Quem lê de cima para baixo lê a régua.
+
+⚠ **A RD Específica só aparece quando é maior que zero**, e é a única das quatro que some. O autor
+decidiu em 2026-07-30 que ela *"vai VIRAR RD POR TIPO DE DANO"*, e o bloqueio de então (a lista de
+tipos) caiu em 2026-09-02 com a aba de Defesas. Ela está de saída, então um zero dela em toda ficha
+daria destaque a uma pilha que o sistema está aposentando. **Pergunta aberta em `a-fazer.md`:
+aposentar de vez?**
+
+#### E a parcela do equipamento passou a ter NOME
+
+⚠ **O que estava errado não era o total.** As parcelas do escudo chegavam ao `deriveAfty` somadas
+num escalar (`equip.rdGeralBonus` e `rdFisicoBonus`) e viravam **uma linha de fonte chamada
+"Equipamento"**. O número batia e o detalhamento mentia: o livro lista a coluna de RD do escudo e a
+tabela de grau da Ferramenta como fontes **separadas**, com regras separadas, e a base é justamente
+a que o Especialista em Escudo lê.
+
+`resolveEquipamentos` passou a devolver **`rdPartes`**, com `{ label, valor, canal }` por parcela, e
+o `deriveAfty` as usa no lugar da linha genérica. Medido, Escudo Pesado de Segundo Grau com
+Reforçado:
+
+| antes | agora |
+|---|---|
+| Equipamento **11** | Escudo Pesado **+6** · Segundo Grau **+3** · Escudo Pesado (Reforçado) **+2** |
+
+⚠ **O rótulo do grau é o de CÁLCULO, e não o real.** Na criatura cada encantamento desce um degrau
+(divergência `reducaoDeGrau`), então um Grau Especial com um encantamento calcula como Primeiro.
+Escrever "Grau Especial" ao lado do número do Primeiro faria a linha de fonte contradizer o próprio
+total. No jogador os dois são iguais, porque lá o grau não é cobrado.
+
+⚠ **A MESMA parcela troca de pilha entre os sistemas e não troca de nome nem de valor**, porque a RD
+do escudo é Geral na criatura e Física no jogador (`rdEscudoFisico`). Os asserts medem os dois lados.
+
+### Verificação
+
+`eslint` limpo, `vite build` ok, **53 arquivos e 2816 asserts** (eram 52 e 2793). `src/components/`
+intocado. Dois arquivos de assert nasceram ou cresceram: `t-item-efeito.mjs` (13, novo) e
+`t-uniforme-escudo.mjs` (85 para 95).
+
+**E o navegador foi conferido de verdade**, com Playwright no dev server: `/Player` e `/Afty`, nas
+abas Defesas, Cálculos e Equipamentos, em **1440px e 390px**, mais o painel de **Encontros**. Zero
+erro de console e zero rolagem horizontal nas treze telas. O hover das fontes de RD foi aberto e
+fotografado nas duas rotas.
+
+---
+
+## SESSÃO DE 2026-09-02: A ABA DE DEFESAS POR TIPO DE DANO, O 6°-16° DO LUTADOR E OS 52 TALENTOS
+
+Três frentes, na ordem em que o autor pediu.
+
+### 1. Os 33 poderes de 6°, 8°, 10°, 12° e 16° do Lutador
+
+Com isto **o Lutador fica varrido por inteiro** (69 habilidades: 7 Bases, 15 de 2°, 14 de 4° e estas
+33). **15 têm efeito no Motor e 18 não têm, e as 18 estão certas assim**: economia de ação (Ataque
+Extra, Oportunista, Golpear Brecha), vantagem em condição nomeada (Alma Quieta, Corpo Sincronizado,
+Mente em Paz), debuff no inimigo (Tempestade Sufocante) ou procedimento de mesa.
+
+**Os 33 pré-requisitos estão declarados e nenhum é `nota`.** 13 apontam para outra habilidade e 4
+pedem TR treinado (os convertidos na parte 8 de ontem). As cadeias fecham: Armas Absolutas exige Um
+com a Arma, que exige Dedicação em Arma.
+
+**Três defeitos, todos medidos antes de consertar:**
+
+| Defeito | Sintoma medido | Conserto |
+|---|---|---|
+| **Brutalidade Sanguinária** sem alvo | com 3 pilhas o **Arco Curto subia de d6 a d12** | `basico` mais `cat:corpo` |
+| **Ataque Circular** sem alvo | os +5 caíam no Arco Curto | as mesmas duas linhas |
+| **Armas Absolutas** sem condição | +3 de Defesa **sem nenhuma arma dedicada na ficha** | ver a pendência abaixo |
+
+⚠ **O comentário da Brutalidade Sanguinária dizia que não havia como mirar só o corpo a corpo, e
+isso tinha envelhecido calado.** O `cat:` nasceu com o Combatente, depois que aquele comentário foi
+escrito. É o mesmo padrão de [[afty-requisito-pericia]]: a nota que descreve uma limitação não sabe
+o dia em que a limitação deixa de existir.
+
+**As três respostas do autor** (2026-09-02):
+
+1. **Corpo Calejado tem piso de 1 na Defesa.** *"Mínimo 1"*, mesma decisão das Artes do Combate de
+   ontem. Sem ele, Constituição 8 fazia uma habilidade DEFENSIVA tirar 1 de Defesa.
+2. **Ataque Circular é +5 POR INIMIGO.** *"+5 por Inimigo, logo 3 inimigos dão +15"*. Virou a faixa
+   `circularAlvos` na bancada, irmã do `abates`.
+3. **Um com a Arma: a conta de usos fica na mesa.** Então só o gatilho entra, e ele acende o
+   `removeResistencia` nas armas dedicadas.
+
+⚠ **O `removeResistencia` existia desde sempre e NINGUÉM o usava.** O leitor dele já estava na linha
+de dano, esperando. Um canal sem consumidor e um canal sem produtor se parecem no grep.
+
+⚠ **A armadilha das duas maiúsculas.** O estado nasceu como `umComAArma` e o `quando` casava com
+nada, em silêncio: o `varDoEstado` corta antes de maiúscula PRECEDIDA de minúscula, então o "AA" do
+artigo não abre separador e a variável virava `um_com_aarma`. O id passou a ser `umComArma`, e há
+assert prendendo isso.
+
+### 2. A aba de Defesas por tipo de dano
+
+Pedido do autor: *"faça uma aba para colocar Imunidades, Resistências, RDs e Vulnerabilidade aos
+tipos de dano do sistema"*. Fecha a metade que faltava da pendência aberta em 2026-08-31, que tinha
+**dois** bloqueios: o motor não sabia mirar um tipo, e **não existia onde MOSTRAR** "RD 6 contra
+Queimante".
+
+Nasceram `afty-defesas-dano.js`, `AftyTabDefesas.jsx` e **quatro canais** com o tipo no alvo:
+`rdTipo`, `imunidadeDano`, `resistenciaDano` e `vulnerabilidadeDano`. O campo da ficha é
+`defesasDano`, e ele aceita a forma curta e a longa na leitura.
+
+⚠ **A RD efetiva junta QUATRO parcelas, e não só o canal novo.** A RD Geral alcança todo tipo menos
+alma, a Física soma nos três físicos e a da Alma só existe para o dano na alma. Mostrar só o
+`rdTipo` daria um número menor que o verdadeiro, justo na tela feita para consultá-lo.
+
+⚠ **O CONFLITO NÃO É RESOLVIDO, E ISSO É DE PROPÓSITO.** Imunidade de um lado e Vulnerabilidade de
+outro no mesmo tipo levantam AVISO e os dois sobrevivem na lista. A regra de desempate é do livro e o
+autor não a escreveu. Inventar aqui um "imunidade ganha", ou o "resistência e vulnerabilidade se
+cancelam" que é convenção de OUTROS sistemas, esconderia a pergunta dentro de um número plausível.
+**Pergunta aberta para o autor**, anotada em `a-fazer.md`.
+
+⚠ **OS TRÊS ENCANTAMENTOS CONTINUAM PARADOS, e de propósito.** Só o Isolante de uniforme ("5 de RD
+contra Queimante e Congelante") é ligável hoje, porque os outros dois pedem ESCOLHA DE TIPO por
+encantamento, e encantamento não tem mecanismo de escolha. O `t-uniforme-escudo.mjs` prende os três
+juntos exatamente para que ligar um sozinho falhe: *"ligar um sozinho é pior do que os três
+parados, porque o jogador passaria a acreditar que os outros dois também funcionam"*. A metade que
+faltava agora existe, e o que resta é a escolha por encantamento.
+
+### 3. Os 52 Talentos
+
+**29 estão ligados** (19 por `TALENTO_EFEITOS`, 9 só pela escolha aninhada, e **Alma Livre por uma
+porta própria no `deriveAfty`**). Os 23 restantes são mesa, e o assert nomeia os dois que mais
+parecem lacuna sem serem: **Reposição Sanguínea e Expansão de Reserva modificam características
+(Vigor Maldito e Energia Antinatural) que a própria origem marca `mesa: true`**. Um filho não pode
+chegar ao Motor por uma porta que o pai não tem.
+
+**Dois defeitos, e são o MESMO defeito de ontem:**
+
+⚠ **Adepto de Briga** dizia *"+3 em jogadas de ataque desarmado"* e morava em `bonusAcerto` alvo
+`corpo`, que é o tipo de ataque e alcança toda arma de corpo a corpo: **um Bastão na mão levava os
++3 do desarmado.** E a condição *"enquanto não estiver com nenhum equipamento do grupo Pugilato"*
+não era cobrada.
+
+⚠ **E a condição do Pugilato NÃO é `desarmado`.** Manopla e Faixa deixam a criatura desarmada E com
+equipamento de Pugilato ao mesmo tempo, que é exatamente o caso que o Talento exclui. Daí a terceira
+variável de manejo, `arma_pugilato`, que não é o contrário de `desarmado`.
+
+⚠ **Técnicas de Arremesso e Mestre do Arremesso** tinham as **duas metades da mesma frase
+discordando**: o acerto em `bonusAcerto` alvo `distancia` e o dano em `danoBonus` alvo
+`cat:arremesso`. Arremesso e distância são categorias DIFERENTES, então o acerto caía no Arco Curto
+e não na Azagaia. Os dois agora usam `acertoArma` alvo `cat:arremesso`.
+
+**Duas sobre-aplicações que ficam, e são falta de sistema e não descuido:**
+
+- **Noção e Preparação** dá *"+2 para testes de resistências contra efeitos de aptidões
+  amaldiçoadas"* e está como `bonusTR` sem alvo, valendo para todo TR. O Afty não sabe a ORIGEM de
+  um efeito que chega, que é a mesma lacuna do Casulo de Energia (*"provindo de fontes mundanas"*).
+- **Técnicas Ofensivas de Escudo** modela o dano da pancada de escudo como `danoBonus` em todas as
+  linhas, gatilhado pela bancada. É um ataque separado, e não um bônus no ataque com arma.
+
+### 4. O ciclo de imports que deixou o app em tela branca
+
+⚠ **A aba de Defesas quebrou o app inteiro**, e nenhum dos 2547 asserts pegou:
+
+    Uncaught ReferenceError: Cannot access 'ARMA_GRUPOS' before initialization
+
+**O ciclo é antigo e não era meu:**
+
+    afty-equipamentos -> afty-efeitos -> afty-combate -> afty-habilidades
+                      -> afty-equipamentos   (ARMA_GRUPOS, linha 50)
+
+Ele nunca estourou porque **`afty-habilidades` SEMPRE entrava primeiro**, e aí o `afty-equipamentos`
+terminava de avaliar antes do corpo dele rodar. O `AftyCreatureBuilder.jsx` importa a aba nova lá no
+topo, e a aba importava o `afty-equipamentos`: ordem invertida, e o corpo do `afty-habilidades`
+passou a rodar com o `afty-equipamentos` no meio da avaliação.
+
+⚠ **Deixar a leitura preguiçosa do outro lado NÃO resolve**: o `OPCAO_ESCOLHA_NOME` é um IIFE de
+escopo de módulo que varre todas as opções de escolha, então um getter dispararia na mesma hora.
+
+**O conserto foi tornar `afty-defesas-dano.js` um módulo FOLHA**, com zero imports, mesma disciplina
+do `afty-pericias-catalogo.js` e do `afty-schema.js`. O catálogo de tipos chega por parâmetro, vindo
+do `afty-derive`, que já o tem em mãos. E a **aba agrupa pelo `categoriaId` que cada linha já traz**,
+em vez de importar `CATEGORIAS_DANO`, o que de quebra faz um tipo trazido por Addon aparecer sozinho.
+
+⚠ **Por que os asserts não pegaram, e o que passou a pegar.** O arnês importa `afty-derive.js` na
+primeira linha, e o afty-derive puxa o `afty-habilidades` antes do `afty-equipamentos`: os asserts
+sempre entravam pela ordem que funciona. Nasceu `asserts/t-ordem-modulos.mjs`, que carrega **cada
+módulo folha num processo LIMPO**, que é a única forma de reproduzir a entrada do navegador. Ele
+também prende a lista de folhas: um import novo em qualquer uma delas fica vermelho.
+
+⚠ **A dívida continua lá, e está anotada no assert.** Entrar pelo `afty-equipamentos` ainda quebra. O
+conserto foi tirar a aba desse caminho, e não desfazer o ciclo. A expectativa do assert é frouxa de
+propósito (*ou carrega, ou quebra pelo motivo já conhecido*), para não ficar vermelha no dia em que
+alguém consertar o ciclo de verdade.
+
+### Verificação
+
+`eslint` limpo, `vite build` ok, **48 arquivos e 2558 asserts** (eram 2480). `src/components/`
+intocado. Quatro arquivos de assert nasceram ou cresceram: `t-defesas-dano.mjs` (31, novo),
+`t-talentos.mjs` (21, novo), `t-ordem-modulos.mjs` (11, novo) e `t-lutador-nivel.mjs` (65 para 79).
+
+**E o navegador foi conferido de verdade**, com Playwright no dev server: `/Player` carrega sem erro
+de console, a aba Defesas desenha as quatro categorias, e **não há rolagem horizontal em 1440px, 768px
+nem 390px**. Em 390px os cinco controles encolhem (`w-9 sm:w-11`), porque com eles em 44px sobravam
+58px para o rótulo e "Congelante" virava "Congela...". Agora "Energia Reversa", o nome mais longo,
+cabe inteiro.
+
 ## SESSÃO DE 2026-09-02: ESTADOS E ARMAS PRONTAS VINDAS DE ADDON
 
 O addon agora pode entregar uma arma já configurada e os Estados de Combate que controlam seus
@@ -163,6 +747,314 @@ O arquivo privado do personagem não é rastreado pelo Git.
 - `npx vite build`: passou, com os avisos já conhecidos de versão do Node e tamanho de chunk
 - teste direto do `deriveAfty`: arma sem efeito antes da invocação e deltas esperados após ativá-la
 - `git diff --name-only -- src/components/`: vazio
+
+---
+
+## SESSÃO DE 2026-09-01 (parte 8): O MANEJO VIROU CONDIÇÃO, E 31 REQUISITOS DEIXARAM DE SER ENFEITE
+
+As duas perguntas da parte 7, respondidas pelo autor e implementadas.
+
+### 1. *"Enquanto estiver desarmado ou empunhando uma arma marcial"*
+
+> *"Resolva isso, fazendo com que necessite uma Arma Marcial ou Desarmada esteja equipada."*
+
+A frase abre a **Complementação Marcial** (2°) e a **Defesa Marcial** (4°), verbatim e igual nas duas,
+e não era cobrada por ninguém: um Lutador com Espada Colossal recebia os +4 de Defesa e os +2 nas três
+manobras inteiros.
+
+⚠ **NÃO DAVA PARA RESOLVER POR ESCOPO DE ARMA**, que é como o recorte de "marcial" foi resolvido nas
+linhas de dano na parte 6. Lá o efeito cai numa LINHA, e a linha sabe qual arma é. Aqui os alvos são a
+**Defesa** e as **Manobras**, que são números da criatura: não existe "a arma desta Defesa". A
+pergunta teve de virar CONDIÇÃO, e condição mora no vocabulário do DSL.
+
+Nasceram **duas variáveis**, e o `quando` das duas habilidades é `desarmado || arma_marcial`:
+
+| Variável | O que responde |
+|---|---|
+| `desarmado` | nenhuma arma equipada |
+| `arma_marcial` | está empunhando uma arma com a propriedade Marcial |
+
+⚠ **ITEM DE PUGILATO CONTA COMO DESARMADO.** Faixas e Manoplas não viram linha de arma, elas SÃO o
+Ataque Básico (é o que o `armasParaDano` já filtrava), e quem luta com elas está desarmado para toda
+regra do livro. Então `armasParaDano` vazio É estar desarmado, e a variável saiu de graça.
+
+⚠ **E A ARMA DEDICADA CONTA**, porque a Dedicação em Arma diz *"passam a ser contadas como
+marciais"*. Ela vem da lista da FICHA e não do canal `propMarcial`, que só existe depois da passada de
+efeitos: o contexto do DSL é montado antes dela.
+
+Medido nas nove combinações: desarmado, Manoplas, Faixas, Bastão e Adaga ligam; Espada Colossal,
+Lança e Arco desligam; Espada Colossal mais Bastão liga, porque a frase é sobre o que você empunha.
+
+### 2. Os requisitos `nota` viraram requisito de verdade
+
+> *"É exatamente isso que quero resolver, fazer os Requisitos serem REALMENTE necessários. Pode fazer
+> a varredura."*
+
+**31 requisitos** de Habilidade e de Talento pediam treino em perícia ou em Teste de Resistência e
+eram `nota`, que só EXIBE. O `nota` existe para pré-requisito de sistema que ainda não foi construído,
+e Perícias e TRs existem desde julho.
+
+⚠ **AS APTIDÕES JÁ TINHAM FEITO ESTA CONVERSÃO** em 2026-07-30, pelo mesmo motivo e a pedido do mesmo
+autor. O `pericia` estava escrito à mão dentro do `afty-aptidoes.js`, e fechar as outras duas famílias
+teria virado **três cópias** da mesma leitura. A leitura desceu para o `afty-pericias-catalogo.js`,
+que é FOLHA, e os três avaliadores a chamam com uma linha:
+
+```js
+const treino = avaliarRequisitoDeTreino(requisito, ctx);
+if (treino) return treino;
+```
+
+**Seis formas**, e as três mais largas vieram dos Talentos, que é por isso que o avaliador não parou
+no `pericia` simples:
+
+| Tipo | Quem pediu |
+|---|---|
+| `pericia` | "Treinado em Furtividade", "Mestre em Medicina" |
+| `resistencia` | "Treinado em Vontade", "Treinado em Reflexos" |
+| `periciaOr` | "Treinamento em História **ou** Ocultismo" (Manual de Técnica) |
+| `periciaAtributo` | "Treinado em **alguma perícia de Presença**" (Discurso Motivador) |
+| `oficios` | "Treinado em **dois Ofícios**" (Mestre da Criação) |
+| `oficio` | "Treinado em **Ferramentas de Médico**" (Criar Medicina) |
+
+⚠ **O `oficio` compara TEXTO LIVRE**, e é a única decisão de risco da leva. O nome do Ofício é
+digitado pelo jogador, então a comparação é normalizada (sem acento, sem caixa, sem sobra). Renomear
+o Ofício na ficha derruba o requisito, e isso é o comportamento certo: o livro pede aquele ofício, e o
+chip diz qual.
+
+**Cinco notas ficaram**, e nenhuma pede treino: "Possuir Feitiços", "Capacidade de Conjurar Feitiços
+Nível 4" e as três dos Ápices, que citam habilidade pelo NOME em vez do id (e "Agilidade no Campo de
+Batalha" já está em `a-fazer.md`). ⚠ **Há assert prendendo essa lista**: nota nova que fale de treino
+falha alto, em vez de virar decoração calada como estas foram por dois meses.
+
+### O que MUDOU de comportamento, e o que não mudou
+
+⚠ **A UI passa a BLOQUEAR de verdade.** O `HabilidadeCard` já fazia
+`bloqueada = !acesso.ok && !escolhida && !concedida`, então o botão fica desabilitado. **Ficha salva
+não perde nada**: já escolhida nunca trava, que é regra da casa desde sempre.
+
+⚠ **O `inacessiveis` do motor NÃO enxerga isto**, e é de propósito. Ele é montado dentro do
+`resolveHabilidades`, que roda ANTES do `resolveTestes`: a proficiência resolvida ainda não existe
+naquele ponto. O `avaliarRequisitoDeTreino` cai para NÃO VERIFICÁVEL sem o mapa, então nada muda de
+número. É a mesma lacuna que o `inacessiveis` já tinha para `aptidao` e `atributo`, e o portão de
+verdade é a tela.
+
+⚠ **FALTA DE CONTEXTO NÃO É FALTA DE TREINO.** Uma tela que esqueça de passar o mapa não pode trancar
+a ficha do jogador: o requisito exibe e deixa passar. Mesma política do `aptidao` dos Talentos.
+
+**Três mapas novos no derivado**, e são três porque as perguntas são diferentes: `periciaProf`
+(faixa), `resistenciaProf` (faixa de TR) e `periciaOficios` (o NOME de cada vaga de Ofício, que é o
+que separa "Ferramentas de Médico" de "dois Ofícios").
+
+### Dois consertos de tabela que vieram junto
+
+- **`ehPericiaOficio` mudou de casa** para o `afty-pericias-catalogo.js`. O `afty-pericias.js`
+  reexporta, então nenhum import existente mudou: ele desceu porque o requisito de treino precisa
+  dele e é lido pelos três catálogos, e importar o `afty-pericias.js` em qualquer um deles fecharia o
+  ciclo que a separação do catálogo existe para evitar.
+- **A linha de perícia passou a expor `oficios` crus**. O `nome` já os trazia entre parênteses, mas
+  ele é texto de tela, e o requisito não pode desmontar string para comparar.
+
+### Verificação
+
+`npx eslint src/systems/afty/ asserts/` limpo · `npx vite build` ok · **45 arquivos, 2480 asserts**
+(eram 2430, mais 37 no novo `t-requisitos-treino.mjs` e 13 no `t-lutador-nivel.mjs`).
+`git diff --name-only | grep src/components/` vazio.
+
+---
+
+## SESSÃO DE 2026-09-01 (parte 7): OS 29 PODERES DE 2° E 4° DO LUTADOR
+
+Continuação da varredura da parte 6, agora nos poderes por nível: **15 no 2°** e **14 no 4°**. Mesmo
+método, o `deriveAfty` de verdade contra o texto verbatim.
+
+### Os pré-requisitos estão todos certos
+
+Quatro dos 29 têm requisito, e os quatro reprovam de verdade: Atacar e Recuar pede Esquiva Rápida,
+Defesa Marcial pede Complementação Marcial, Devolver Projéteis pede Aparar Projéteis, e Sobrevivente
+pede Constituição 16 (valor **efetivo**, igual ao das Aptidões). Todos com o nome da habilidade no
+rótulo, e não o id.
+
+### 1. O escopo de "desarmado" era o mesmo furo da parte 6
+
+Duas habilidades dizem **desarmado** e miravam o tipo de ataque `corpo`, que é toda arma de corpo a
+corpo. Como o autor já tinha decidido o caso na parte 6, elas seguiram a mesma regra e passaram a
+mirar `basico`, que É a linha desarmada.
+
+| Habilidade | Texto | Antes | Agora |
+|---|---|---|---|
+| **Caminho da Mão Vazia** (2°) | *"Todo ataque desarmado [...] dano adicional igual ao seu bônus de treinamento e você soma metade do seu bônus de treinamento em jogadas de ataque desarmados"* | acerto em toda arma de corpo a corpo, e o dano **sem alvo nenhum**, caindo até no Arco Curto | só no desarmado |
+| **Impacto Misto** (2°) | *"+2 em jogadas de ataque e dano desarmados"* | o dano já mirava `basico`, o acerto vazava | os dois em `basico` |
+
+⚠ **O Caminho da Mão Vazia era o pior dos dois:** a Maestria inteira (+6 no ND 20) somava no dano de
+QUALQUER linha, arma a distância incluída, numa habilidade cujo texto é sobre "se ater as mãos
+vazias". O comentário do Impacto Misto até explicava o desvio (*"o mais perto de desarmado que a
+ficha tem"*), e isso deixou de ser verdade quando o `acertoArma` com alvo `basico` passou a existir.
+
+⚠ **E a CONTRAPROVA virou assert.** "Corpo a corpo" continua sendo o tipo `corpo`, e tem de alcançar
+toda arma de corpo a corpo: a Brutalidade diz *"+2 em jogadas de ataque corpo a corpo"* e está certa
+como está. Quem trocar o canal dela achando que é o mesmo caso vai ver o assert falhar.
+
+### 2. ⚠ A TROCA DE CANAL QUEBROU O MAHORAGA, e quem pegou foi um assert de outro sistema
+
+Esta é a lição da sessão. O Ciclo de Adaptação escolhe o pool de habilidades que ele concede
+perguntando **"esta habilidade dá Acerto?"**, e a pergunta estava escrita como
+`efeito.canal === "bonusAcerto"`, canal único. Mover o Caminho da Mão Vazia, o Impacto Misto e o Gosto
+pela Luta para o `acertoArma` os tirou do pool, **calados**.
+
+O `efeitoAcertoPositivo` passou a conhecer os **dois** canais, porque a diferença entre eles é o
+recorte e não a natureza: `bonusAcerto` mira a jogada de ataque inteira e `acertoArma` mira uma fonte
+de dano. Para quem pergunta "dá Acerto?", os dois valem igual.
+
+⚠ **A parte 6 já tinha essa regressão dentro dela** (o Gosto pela Luta), e a suíte passou verde
+porque ele não era o pivô do assert. Só o Impacto Misto, na parte 7, fez a coisa aparecer. **Canal é
+vocabulário compartilhado:** quem troca o canal de uma entrada tem de procurar quem LÊ aquele canal
+por nome, e não só quem escreve nele.
+
+### 3. Os demais estão certos, e sete foram medidos degrau por degrau
+
+Brutalidade (o teto de PE extra sobe em 8, 12, 16 e 20, e cada PE vale +1), Sobrevivente (1d6 + mod
+Constituição, mais 1d6 em 8, 12, 16 e 20), Defesa Marcial, Complementação Marcial (os três testes
+**e** o resistir a eles, com Agarrar de fora, que é o que o texto diz), Fúria da Vingança (os quatro
+números), Resistir (2 por PE, até 2), Fluxo, Imprudência Motivadora e Puxar um Ar (espelha o Ataque
+Básico, com usos iguais à Maestria).
+
+**Músculos Desenvolvidos** merece nota: o texto diz *"você pode OPTAR por somar seu Modificador de
+Força ao invés de Destreza"*, e o canal `defesaAtributo` substitui pelo **maior**, e não cegamente.
+Com Força 10 e Destreza 18 a Defesa não piora. É o comportamento certo para uma opção.
+
+**Dedicação em Arma** também está inteira, e ela é o exemplo do oitavo caminho de ligação (caminho
+próprio, sem entrada no `HABILIDADE_EFEITOS`): três vagas, a restrição *"não podem possuir as
+propriedades Duas Mãos ou Pesada, exceto caso já possuam a propriedade Marcial"*, a concessão da
+propriedade Marcial e o +1 nível de dano. E a concessão de Marcial ainda devolve a Maestria da arma,
+porque o Lutador treina marciais, o que é consequência correta e não acidente.
+
+### 4. Duas coisas ficaram esperando você
+
+As duas foram para `a-fazer.md`, em PERGUNTAS AO AUTOR:
+
+- **"Enquanto estiver desarmado ou empunhando uma arma marcial"** não é cobrado em Complementação
+  Marcial nem em Defesa Marcial. Um Lutador com Espada Colossal recebe os dois. ⚠ **Não é o mesmo
+  caso do escopo de arma**: ali o efeito cai numa linha de dano, que sabe qual arma é, e aqui os
+  alvos são a Defesa e as Manobras, que são números da criatura.
+- **Os 9 requisitos `nota`** de Lutador e Combatente pedem faixa de Perícia ou de TR, e os dois
+  sistemas existem desde julho. Ligar isso passa a travar ficha que já existe, então é decisão do
+  autor.
+
+### Verificação
+
+`npx eslint src/systems/afty/ asserts/` limpo · `npx vite build` ok · **44 arquivos, 2430 asserts**
+(eram 2378, mais 52 no novo `t-lutador-nivel.mjs`). `git diff --name-only | grep src/components/`
+vazio. Um assert do `t-adaptacao.mjs` mudou de canal esperado, junto do conserto do pool.
+
+---
+
+## SESSÃO DE 2026-09-01 (parte 6): AS 13 BASES DE LUTADOR E COMBATENTE, CONFERIDAS UMA A UMA
+
+Varredura pedida pelo autor: *"verifique a programação de cada Habilidade Base das classes Lutador e
+Combatente, se estão devidamente programadas e se seus Pré-Requisitos estão sendo cumpridos."*
+
+São **13**: Lutador 7 (níveis 1, 1, 2, 4, 5, 11, 20) e Combatente 6 (1, 1, 4, 4, 6, 20). O método foi
+rodar o `deriveAfty` de verdade num nível de cada lado de cada degrau escrito no livro, e comparar com
+o texto verbatim.
+
+### Os pré-requisitos estavam limpos, e o motivo importa
+
+Nenhuma das 13 tem requisito além do nível da Classe, e nenhum texto verbatim cita um. O portão é o
+nível **real** daquela Classe nos dois sistemas, e foi medido numa multiclasse torta (Lutador 4 com
+Combatente 16): chegam as quatro Bases até o 4°, e Gosto pela Luta (5°) fica de fora mesmo com o
+escalonamento do Lutador valendo 12.
+
+⚠ **Isso não é sorte, e virou assert.** A concessão automática do jogador
+(`habilidadesConcedidasPelasEspecializacoes`) olha SÓ o nível: ela **não** chama o
+`avaliarAcessoHabilidade`. Uma Base que ganhasse `requisitos` amanhã passaria por cima dele calada. O
+assert que mede "nenhuma Base tem requisito extra" existe para o dia em que isso mudar.
+
+### 1. O Corpo Treinado lia DOIS níveis diferentes
+
+O bug de maior alcance, e era silencioso. A mesma regra estava escrita duas vezes, e cada metade lia
+um nível:
+
+| Onde | Nível que lia |
+|---|---|
+| `afty-derive.js`, o dado do desarmado do jogador | o **real** de Lutador |
+| `afty-efeitos-conteudo.js`, a escada `nivelDano` da criatura | `esc_lutador`, o de **escalonamento** |
+
+Medido num Lutador 4 com Combatente 16: o jogador rolava **1d8** (o degrau do 1° nível) e a criatura
+contava **3 Níveis de Dano** (o degrau de um Lutador 12). Divergência que ninguém declarou.
+
+O autor decidiu pelo **escalonamento**: *"um Lutador 10 com Combatente 20 contaria como um Lutador
+Nível 20, para o cálculo de Corpo Treinado."* O `dadoDesarmado` passou a receber
+`nivelEspec.lutador.escalonamento`. O nível **real** segue mandando no pré-requisito, que é quem
+decide se a habilidade chega.
+
+### 2. "Arma marcial" estava programada como "corpo a corpo", e errava nos DOIS sentidos
+
+Corpo Treinado (*"usar tanto Força quanto Destreza nos seus ataques desarmados e ataques com armas
+marciais"*) e Gosto pela Luta (*"+2 em jogadas de ataque desarmadas ou com armas marciais"*) miravam
+o **tipo de ataque** `corpo`. O tipo é um só para todo corpo a corpo, então:
+
+| Arma | Antes | Agora |
+|---|---|---|
+| Espada Grande (**não** Marcial) | Destreza no acerto, e ainda os +6 do Gosto pela Luta | nada, igual a quem não é Lutador |
+| Bastão e Nunchaku Pesado (Marciais **sem** Fineza) | Destreza no acerto e **Força no dano** | Destreza nos dois |
+| Adaga (Marcial com Fineza) | funcionava pela propriedade dela | igual |
+
+⚠ **"Marcial" é a PROPRIEDADE da arma**, e não a classe complexa (já estava escrito em
+`TREINO_ARMA_FILTRO`). O escopo dela é `prop:marcial`, e ele já existia. As duas habilidades passaram
+a emitir **duas linhas**, `basico` e `prop:marcial`.
+
+Isso mudou o canal do Gosto pela Luta de `bonusAcerto` para **`acertoArma`**: o primeiro mira a jogada
+de ataque inteira e o segundo mira a LINHA, que é o que "com armas marciais" pede. O dano e a
+Fortitude ficaram sem recorte, porque a restrição da frase prende só as jogadas de ataque.
+
+⚠ **E o `finezaAtaque` mudou de eixo**: era `alvo: "ataque"` (corpo, distancia, amaldicoado) e virou
+`alvo: "fonteDano"`. Com isso ele saiu do `resolveTestes`, onde decidia a linha genérica "Corpo a
+Corpo" da aba de Perícias, e passou a ser lido no `acertoDe` e no atributo do dano, uma linha por
+arma. **A linha genérica agora só tem fineza pela marcação da ficha** (`ataqueFineza`), que é o
+interruptor manual que sempre existiu.
+
+### 3. As três linhas das Artes do Combate viravam penalidade com Sabedoria baixa
+
+Sabedoria 8 é o **mínimo do point-buy**, então modificador −1 é ficha comum, e não caso de borda:
+
+| Linha | Com Sabedoria 8 | Agora |
+|---|---|---|
+| Execução Silenciosa | `1 + piso(-1 / 2)` = **zero dado** | 1d6 |
+| Golpe Descendente | **−1 de Defesa** | +1 |
+| Pontos de Preparo | 0, e negativo com Sabedoria 6 | 1 |
+
+O comentário acima da Execução Silenciosa já dizia *"O 1d6 base já vale com Sabedoria 0"*, então era
+escorregão e não leitura. O autor fechou: *"Sempre é no Mínimo 1"*, e as três ganharam `max(1, ...)`.
+
+⚠ A ficha escondia os Pontos de Preparo negativos (`derived.pontosPreparo > 0`), o que fazia o
+Combatente perder o recurso da Classe **sem uma linha de aviso**.
+
+### 4. O Estilo Duplo entrou, pela metade que cabe
+
+O autor pediu (*"Golpe Especial Duplo precisamos programar inclusive"*). Ele tem duas metades:
+
+- *"um bônus de +1 em rolagens de dano, o qual aumenta em +1 nos níveis 4, 8, 12 e 16"* → **entrou**,
+  no `danoBonus`, sob o estado `lutandoComDuasArmas`, irmão do `duelando` do Estilo do Duelista.
+- *"adicionar o seu bônus de atributo no dano do ataque com a segunda arma"* → **continua de mesa**. A
+  ficha tem uma linha por **arma** e não por **mão**, então ela não sabe qual das duas é a segunda, e
+  somar o modificador em todas daria o bônus a mais na primeira.
+
+### O que NÃO era problema
+
+**Renovação pelo Sangue** (Combatente 6°) não tem efeito, e o autor confirmou que está certo: recuperar
+1 PE ao crítico ou ao abate é gatilho de mesa. As outras ausências têm o motivo escrito ao lado no
+catálogo de efeitos: 7 das 11 propriedades do Golpe Especial, os Estilos do Interceptador e do
+Protetor, e a Manobra Comando (que age no aliado).
+
+### Verificação
+
+`npx eslint src/systems/afty/ asserts/` limpo · `npx vite build` ok · **43 arquivos, 2378 asserts**
+(eram 2293, mais 83 no novo `t-bases-lut-cmb.mjs` e 2 no `t-niveis-dano.mjs`).
+`git diff --name-only | grep src/components/` vazio.
+
+⚠ **O assert de nível do Corpo Treinado MUDOU DE VALOR ESPERADO**, e a mudança é proposital: ele dizia
+"Combatente 16 com 1 de Lutador rola 1d8" e passou a dizer 1d12, com as três réguas (personagem 17,
+real 1, escalonamento 9) escritas lado a lado para o próximo leitor não confundir de novo.
 
 ---
 
@@ -9018,3 +9910,639 @@ vez de fingir que um pacote JSON já consegue criá-la.
 PV sem duplicação, distância de Enorme, o Pingente sem sol, sob o sol, guardado, com marcador manual
 e com os três ids da coleção carregados, além do aparo de quantidade e das marcas do catálogo. Com
 ela, a suíte passa a **649 asserts em 19 arquivos**.
+
+---
+
+## ABA DE INVOCAÇÕES: REESTRUTURAÇÃO (2026-09-02)
+
+Pedido do autor depois de instalar a skill `frontend-design` do repositório da Anthropic
+como teste: *"vamos fazer uma analise profunda inicialmente na aba de Invocações e
+reestruturar ela seguindo as dicas e o quê achamos de bom no documento"*.
+
+A skill é escrita para PÁGINA DE PRODUTO, e a parte dela que serve a uma ferramenta de dados
+é pequena: **"structure is information"**, **"spend your boldness in one place"**, o piso de
+qualidade (foco visível, alvo de toque, responsivo) e a seção **"More on writing in design"**,
+que é quase palavra por palavra a regra de UI que o autor já tinha. Nada de hero, tipografia
+de display ou risco estético entrou: o criador precisa parecer com a aba do lado, não ser
+inconfundível.
+
+### O diagnóstico
+
+O card intercalava EDITOR e RESULTADO: campo, número, campo, número. O bloco de stats ficava
+ENTRE os campos de identidade e as sub-abas, e bastava abrir "Ações" e rolar para editar às
+cegas. Somando o parágrafo de acesso, a faixa de Controle, a faixa de Marcadores, o retrato,
+o nome, o grau, o tipo e os marcadores, eram ~1100px antes do primeiro controle da sub-aba.
+
+### A ordem nova, que é a regra
+
+```
+1. IDENTIDADE   Nome (editável no cabeçalho) e Grau. Só o que se mexe sempre.
+2. RESULTADO    barra GRUDADA com Vida, Integridade, Defesa, Desloc., Custo, Orçamento.
+3. EDITOR       as sub-abas.
+4. DETALHE      RD, Tamanho, Traços, Opções de Uso, Testes, Efeitos e avisos.
+```
+
+O detalhe fica EMBAIXO do editor de propósito: mexer em Atributos muda Acerto e CD, mexer em
+Treino muda Perícias e Resistências, e nos dois casos o número nasce do controle que se
+acabou de tocar.
+
+### O `--afty-topo`
+
+A barra grudada não podia usar constante. O cabeçalho da página é grudado e muda de altura
+com a largura: **230px em 1440 e 259px em 390**, medidos. O shell agora publica a altura num
+ResizeObserver como variável CSS `--afty-topo`, e quem gruda embaixo dele a lê.
+
+Isso também consertou o Preview, que usava `lg:top-[104px]` de quando o cabeçalho tinha uma
+linha só, e por isso pinava 126px atrás dele durante a janela em que a coluna tem folga.
+
+### O que virou sub-aba "Perfil"
+
+Tipo, Sabor, Marcadores, Retrato e CSS. Todos são decisão de UMA vez, e juntos custavam
+quatro faixas de altura antes de qualquer número aparecer. O preço de recolher os Marcadores
+é uma escolha em falta passar batida, e por isso a sub-aba acende o triângulo quando isso
+acontece (verificado no navegador com `mel_precisao` ligado e sem opção).
+
+### As três faixas viraram uma
+
+O parágrafo *"Nível de Controlador N: acesso até X"* virou a pílula **Acesso**, que é o que
+ele sempre foi (um número derivado do nível). O texto do caso SEM nível saiu inteiro, junto
+com o parágrafo que explicava o que é uma Horda: os dois eram o "texto explicativo" que a
+regra de UI proíbe. `ControleInvocacoesResumo` e `MarcadoresResumo` viraram `LimitesResumo`.
+
+### Números
+
+|  | antes | depois |
+|---|---|---|
+| altura da aba em 1440 | 1901px | 1602px |
+| altura da aba em 390 | 3449px | 2893px |
+| até o primeiro controle da sub-aba (1440) | ~1370px | ~830px |
+
+### O que ficou de fora, e por quê
+
+A margem morta do `<h1>` do cabeçalho. O `src/index.css` é global, fica FORA de `@layer` e
+traz `h1 { font-size: 56px; margin: 32px 0 }`, e no Tailwind 4 regra sem camada vence regra
+em camada: o `text-lg sm:text-xl` escrito ali nunca valeu, e a barra carrega 64px de margem
+morta acima de 1024px. O conserto (`my-0!`) foi escrito, testado e desfeito porque o selo
+fixo *"Grimório Afty · privado"* passa a cobrir o botão Voltar. Está em `docs/a-fazer.md`,
+em PERGUNTAS AO AUTOR, com as três saídas.
+
+### Segunda passada, no mesmo dia: alinhamento, fontes no hover e o nome do Tipo
+
+**1. A barra desalinhada.** O rótulo era um `inline-flex items-center` com o ícone DENTRO. A
+base de uma caixa flex é a base do primeiro item dela, e o primeiro item era um SVG, que não
+tem base de texto: o navegador sintetiza a base na borda de baixo do ícone, e a caixa inteira
+do rótulo descia contra o número. Agora ícone, rótulo e número são os três filhos do
+`items-baseline`, com `self-center` só no ícone, que é o que TIRA um item do alinhamento por
+base. Medido depois: desvio 0px nas seis pílulas em 1440, e 1px uniforme em 390.
+
+**2. O Orçamento menor que os irmãos.** Ele era um `<span>` escrito à mão, sem ícone e com
+alinhamento próprio. Virou o mesmo `ValorBarra`, com ícone. As seis pílulas têm 37px agora.
+
+**3. A lista de Efeitos de Habilidade virou hover.** Autor: *"ficou MUITO grande... Faça com
+que eu passe o mouse em cima dos valores e mostra a fonte."* Num Controlador de nível alto ela
+chegava a 22 linhas. Cada efeito agora ancora NO NÚMERO que ele mexeu, com o `PainelDeFontes`:
+
+| canal | âncora |
+|---|---|
+| `pv`, `defesa`, `deslocamento`, `custoReducao` | as pílulas da barra |
+| `orcamentoLivre`, `orcamentoPago`, `caracteristicasLivres` | a pílula Orçamento |
+| `rd` | a pílula de RD |
+| `acerto`, `cd`, `bonusTeste` | o rótulo da fila Acerto |
+| `bonusTR`, `bonusTeste` | o rótulo da fila Resist. |
+| `atributoPontos` | o contador de pontos, na sub-aba Atributos |
+| `pericias` | o contador de vagas, na sub-aba Treino |
+
+⚠ O que NÃO tem âncora (Dano, Cura, Dado Extra) cai numa faixa de pílulas de sobra, agrupada
+por canal. É de propósito: canal novo que ninguém ancorou aparece feio em vez de sumir calado,
+que é a lição de `afty-efeito-descartado-calado`.
+
+⚠ Dois detalhes que custaram tempo. O `group` de cada gatilho é **nomeado**, senão os seis
+painéis da barra acendiam juntos. E o painel se ancora na **fila**, não na pílula: ancorado na
+pílula, o de Vida (a primeira, colada na borda) abria com `right-0` e saía 25px para fora da
+tela, medido.
+
+**4. Os rótulos do Tipo.** "Shikigami" virou **Invocação** e "Shikigami de Técnica" virou
+**Invocação de Técnica**, a pedido do autor. Os `value` seguem `shikigami` e `tecnica`: estão
+gravados em toda ficha salva, viram variável de DSL (`tipo_shikigami`, `tipo_tecnica`) e são
+citados por `quando` de habilidade. O nome da FONTE em `EFEITOS_DE_TIPO` passou a sair da
+tabela de tipos em vez de ser escrito à mão, senão o hover diria um nome que a tela não usa
+mais. **"Dispositivo" ficou como está**, esperando o autor dizer se ele também muda.
+
+### Terceira passada: o hover que "bugava", o fim do Dispositivo e o bloco de detalhe
+
+**1. O hover bugado, e a causa.** O painel é FILHO do gatilho, e `:hover` sobe para os
+ancestrais: encostar no painel mantinha o gatilho em hover, e ele não fechava. Como ele é bem
+maior que o gatilho (80 a 165px de altura contra 30), cobria as filas de baixo e as roubava.
+Abrir o painel de Corpo tapava a fila de Acerto, e a tentativa de passar o mouse em Acerto
+caía dentro do painel de Corpo.
+
+Conserto: `pointer-events-none` no `PainelDeFontes`. O mouse atravessa o painel e chega em quem
+está embaixo, e ninguém precisa clicar num painel de leitura. Medido depois com
+`elementFromPoint`: os nove painéis abrem, e o elemento sob o painel aberto é sempre a fila de
+baixo, não o painel.
+
+⚠ A mudança é em `ui/fontes.jsx` e vale para todo `PainelDeFontes` do criador. A Ficha Final
+NÃO usa esse componente (ela usa o `NumeroComFontes`, que é flutuante e por portal), então ela
+não muda.
+
+**2. O Dispositivo saiu.** Autor: *"Não existe Dispositivo, não muda nada saber qual tipo da
+invocação."* Sobraram dois tipos, Invocação e Invocação de Técnica. Saíram junto o campo Sabor,
+o `AFTY_INV_SABORES` e a variável de DSL `tipo_dispositivo`.
+
+⚠ Ficha salva antes disso ainda traz `tipoMecanico: "dispositivo"`, e sem tratamento os chips
+de Tipo nasceriam TODOS apagados, sem nenhum selecionado e sem nada dizendo por quê. O
+`tipoMecanicoDaInvocacao` normaliza para "shikigami", que é o tipo com Intermediário, que é o
+que o Dispositivo era. Ninguém migra a ficha: ela conserta sozinha no primeiro salvamento.
+Verificado no navegador com uma ficha gravada no formato antigo.
+
+**3. O bloco de detalhe ganhou coluna de rótulo.** Metade das filas não tinha: Corpo, Crítico e
+os bônus de Dano começavam colados na borda esquerda enquanto Acerto, Resist. e Perícias
+começavam 64px adentro. Agora toda fila passa pela `LinhaDetalhe`, que dá o rótulo, alinha a
+coluna e é o gatilho do painel de fontes da fila. As três pílulas copiadas viraram uma
+constante (`PILL_DETALHE`). "Crítico +1 dado" virou "Crítico Brutal +1 dado", que é o nome da
+regra: eram duas pílulas chamadas "Crítico" lado a lado.
+
+**4. Os Traços saíram do criador.** Turno Próprio, Retorno Completo, Desvantagem Alheia e Imune
+a Prejuízo por Repetição são as quatro regras fixas da Invocação de Técnica, iguais em toda
+invocação desse tipo. `tracosDeTecnica` continua no resolvedor e a FICHA continua listando.
+
+**5. "CD ataque" virou "CD".**
+
+**6. A fila "Dano e Cura" saiu, e as fontes desceram para a Ação.** Autor: *"Pode deixar só
+como o Hover no Dano ou Cura."* Uma Ação de Ataque abre as fontes de dano no resumo da rolagem,
+uma de Cura abre as de cura.
+
+⚠ O preço fica registrado: invocação SEM nenhuma Ação não mostra esses bônus em lugar nenhum.
+Eles continuam somando quando uma Ação nascer, e sem rolagem não há número onde pendurá-los.
+
+⚠ E o dado extra entra no painel com `texto` e valor ZERO. Ele trafega o MÁXIMO do dado, então
+somar 12 no total seria dizer que 1d12 vale 12: o total do painel é a parte fixa, e o dado
+aparece na linha dele.
+
+### Quarta passada: o lado em que o painel abre, e o checkup da Ação
+
+**1. "O hover aparece saindo de VIDA."** Era a ancoragem na FILA, feita na passada anterior
+para o painel não sair da tela. Com `left-0` da fila, TODO painel abria embaixo da primeira
+pílula, e o autor viu isso na hora.
+
+O painel voltou para a própria pílula, e o lado agora é **medido**: pílula na metade esquerda
+da fila abre para a direita, pílula na metade direita abre para a esquerda. Assim ele sempre
+cresce para dentro e nunca sai da tela.
+
+⚠ Escolher pelo ÍNDICE não serviria: em 1440 as seis ficam numa fila só e em 390 elas quebram
+em duas de três, então a quarta pílula muda de lado. A medida roda num `useLayoutEffect` mais
+um ResizeObserver, e o `data-valor` de cada pílula é o que liga a medida ao componente.
+Verificado nos dois tamanhos: cada painel encosta na própria pílula e fica dentro da tela.
+
+**2. Checkup da Ação.** Autor: *"muito larga, com muita informação e pouco intuitiva... Era
+para ser algo simples e intuitivo de ser usado."* O cartão aberto tinha nove blocos e o
+resultado era o sétimo, embaixo da caixa de Custo. Ficou em 486px contra os ~640px de antes.
+
+| o que era | o que ficou |
+|---|---|
+| resultado como sétimo bloco | resultado em pílulas, PRIMEIRO |
+| Nome sozinho numa fila, esticando 690px | Nome (com teto) e Família na mesma fila |
+| Classe sempre visível, com "Simples" cadeado e aviso | Classe só quando há escolha, senão vira pílula no resumo |
+| `BoolChip` "Corpo a corpo (+3 níveis)" solto | par de chips com rótulo **Alcance** |
+| Custo numa caixa própria de altura inteira | campo comum, ao lado do Tipo de Dano |
+| Modificador e Descrição sempre abertos | recolhidos em **Avançado** |
+
+⚠ O `BoolChip` solto era também o bug de alinhamento do print: numa fila `items-end`, um chip
+SEM rótulo desce para a base do vizinho, e aí o rótulo ATRIBUTO nasce recuado e parece torto.
+Com rótulo próprio a fila fica reta.
+
+⚠ E havia DUAS leituras do mesmo dano na tela: o resumo do cabeçalho somava o dado extra da
+Agressividade ("4d12 + 1d12 + 14") e a pílula de prévia não ("4d12 + 14"). Com a prévia subindo
+para o topo, as duas ficaram lado a lado. A pílula passou a somar o dado extra, e o resumo do
+cabeçalho some quando o cartão abre, porque as pílulas dizem o mesmo 40px abaixo.
+
+### Quinta passada: Tipo de Dano fechado, e a Ação em filas que embrulham
+
+**1. Tipo de Dano deixou de ser texto livre.** Autor: *"Já temos a aba Tipos de Dano, não
+precisa deixar mais em aberto."* O campo passa a ler o `TIPOS_DANO`, sem Dano na Alma e Energia
+Reversa, que a própria regra da Ação exclui.
+
+⚠ O VALOR ANTIGO ENTRA COMO OPÇÃO quando não é do catálogo. Ficha salva traz coisas como
+"corte, impacto", e sem isso o seletor abriria vazio: a escolha da pessoa sumiria da tela sem
+nada dizendo, mesmo continuando gravada.
+
+⚠ E o resolvedor passou a emitir `tipoDanoLabel` junto do id. Quem MOSTRA não pode ficar
+traduzindo id à mão em cada tela, e a Ficha (`ficha/abas/AbaInvocacoes.jsx`) imprimia o campo
+cru: sem o rótulo, ela passaria a escrever "ct" no lugar de "Cortante". O fallback devolve o
+próprio valor, que é o que segura a ficha antiga.
+
+**2. O layout da Ação, de novo.** Autor: *"continua com alguns vãos, com partes que mudam de
+lugar... O uso do espaço ficou bem ruim."* Duas causas, e as duas medidas.
+
+**A grade de duas colunas.** Ela obrigava cada campo a ocupar METADE da largura, então "Quem
+Recebe" (dois chips, 153px) e "Custo" (um passo a passo, 108px) comiam uma fila inteira cada,
+com três quartos vazios. Virou uma fila só, `flex-wrap items-end`, com cada campo do tamanho do
+conteúdo. Um Auxílio de Dano Adicional passou de três filas para UMA.
+
+**As dicas eram mais largas que os controles.** `FieldLabel hint` desenha o texto ao lado do
+rótulo, e ele definia a largura do bloco: "Múltiplos e Área a partir do Terceiro Grau" fazia um
+campo de três chips ocupar 300px, e "Força ou Destreza" quebrava o rótulo em duas linhas e
+deixava a fila desigual. Todas foram para o `title` do bloco, que é onde a regra de UI do autor
+manda explicação de item morar. Cada chip bloqueado já tinha `lockTitle` próprio.
+
+| cartão | antes | depois |
+|---|---|---|
+| Ataque | 486px | 406px |
+| Auxílio (Dano Adicional) | ~400px | 325px |
+| Auxílio (Cura) | 412px | 325px |
+
+Todas as filas passaram a ter a mesma altura (71px), porque nenhum rótulo quebra mais em duas
+linhas.
+
+⚠ E o aviso "Sem valor resolvido" aparecia ao LADO de um valor. Ele era uma condição escrita à
+mão que esquecia o `danoAdicional`. Agora as pílulas são montadas numa lista e o aviso olha
+para ela: se a lista tem alguma coisa, ele não existe.
+
+---
+
+## CONTROLADOR: REVISÃO DOS 47 PODERES (2026-09-02)
+
+Pedido do autor: *"Revise a programação de todos os poderes de Controlador, verificando se tem
+alguma pendência, se falta pré-requisitos ou se houve algum erro na construção deles devido a
+serem antigos."*
+
+### O placar
+
+**24 ligadas** (mudam número na ficha) e **23 de mesa** (economia de ação, condição posicional,
+número do inimigo). As duas listas estão CRAVADAS em `asserts/t-controlador.mjs`, e habilidade
+nova que não entre em nenhuma das duas derruba o teste.
+
+⚠ Contar por `HABILIDADE_EFEITOS` dá 2 de 47 e é enganoso: o Controlador liga por SEIS vias
+diferentes (`CONTROLADOR_EFEITOS_INVOCACAO`, `MELHORIA_EFEITOS_INVOCACAO`, marcador,
+`resolveControleInvocacoes`, `opcoesDeUso`, e o campo `tecnicasCombate` da ficha).
+
+### O bug: Técnicas de Combate do Controlador não fazia NADA
+
+`ctr_tecnicas_de_combate` está no catálogo desde que ele nasceu, e era letra morta.
+
+- `resolveTecnicasCombate` conhecia só `cnj_tecnicas_de_combate`, o id do **Conjurador**.
+- O `extra` do card na tela comparava com esse mesmo id, então o seletor de armas **nem aparecia**.
+- Medido antes do conserto: `{ ativa: false, armas: [] }`, ou seja, idêntico a não ter a habilidade.
+- E junto morria **Combate em Alcateia** (6°), que a exige: um galho inteiro inalcançável.
+
+⚠ **E o atributo não é o mesmo nas duas.** O texto de cada uma manda um par diferente, e o
+modelo só conhecia um:
+
+| | texto | antes | agora |
+|---|---|---|---|
+| Conjurador | *"Inteligência ou Sabedoria"* | Inteligência, Sabedoria | Inteligência, Sabedoria |
+| Controlador | *"Presença ou Sabedoria"* | **nada** | Presença, Sabedoria |
+| multiclasse | os dois | — | Inteligência, Sabedoria, Presença |
+
+O par agora sai calculado das habilidades que a ficha tem, e a tela lê a lista do derivado em
+vez de montar a própria. Atributo gravado fora do par cai no primeiro do texto, que é o caso de
+quem trocou de especialização com o campo já preenchido.
+
+Conferido no navegador: um Controlador com a habilidade abre "Arma 1", "Arma 2" e "Atributo",
+com os chips **Presença** e **Sabedoria**, e a linha de dano da Adaga passa a usar Presença.
+
+### O segundo achado: a cláusula entre parênteses do Ápice do Controle
+
+*"você passa a poder invocar ou ativar suas invocações como uma ação livre (caso ela já pudesse
+ser invocada como Ação Livre, ela tem seu custo reduzido em 2 PE)"*.
+
+A primeira metade sempre esteve no roster. A cláusula entre parênteses não estava em lugar
+nenhum: quem tinha o **Controle Concentrado** do Apogeu (que é justamente quem já invoca como
+Ação Livre) chegava ao nível 20, pegava o Ápice e não ganhava nada por essa linha.
+
+O canal `custoReducao` já existia e já era lido. Faltavam duas peças: o `apice` do
+`resolveControleInvocacoes` era **calculado e jogado fora** (só entrava no `ativo`), e o
+contexto da invocação não tinha variável para o estilo do Apogeu. Agora tem
+`apogeu_concentrado`, `apogeu_disperso` e `apogeu_sintonizado`, registradas no vocabulário do
+Motor. Medido: Grau Especial 12 PE → **10 PE** só na combinação certa.
+
+### As fórmulas conferidas contra o texto
+
+Todas batem. Invocações Resistentes (`bt * 5`), Móveis (`1,5 × degraus`), Treinadas
+(`piso(bt/2)`), Visionário (`orcamentoPago piso(bt/2)`, e o custo sobe mesmo), Potencial
+Superior (`2 * grau`, dando 2 no Quarto e 10 no Especial), Controle Aprimorado (`1 + grau`,
+dando +2 no Quarto e +6 no Especial), Concentrar Poder (as quatro faixas, sete canais),
+Fantoche Supremo, Invocações Econômicas (`2 + degraus`), Ápice.
+
+⚠ Um caso que PARECE errado e não é: Concentrar Poder diz *"enquanto estiver com apenas uma
+invocação marcada ativa em campo"*, e a ficha aplica em toda invocação marcada. "Quantas estão
+em campo" é estado de mesa, e o limite de marcação (`piso(bt/2)`) é o que a ficha consegue
+cobrar.
+
+### Os pré-requisitos
+
+Os dez existentes estão certos e **bloqueiam de verdade** (medido pelo `avaliarAcessoHabilidade`,
+não só pela presença da linha no catálogo). Nenhum faltando: varri os textos atrás de frases
+que citam outra habilidade, e todas as citações que são condição já têm requisito. "Atacar e
+Invocar" cita Acompanhamento Amaldiçoado como EXEMPLO (*"como Acompanhamento Amaldiçoado"*) e
+corretamente não o exige.
+
+### O que ficou de fora, e está em docs/a-fazer.md
+
+Três entradas: as reações que rolam dado sem opção de uso (Proteger Invocação e Proteção
+Avançada), os seis poderes que dependem de posicionamento, e os dois que pedem sistema novo
+(Frenesi da Invocação e Companheiro Avançado). Nenhum é conserto.
+
+### O assert
+
+`asserts/t-controlador.mjs`, 49 asserts. Ele existe porque **nenhum dos 2596 anteriores pegou
+um poder morto**: eles mediam fórmulas de habilidades que já se sabia estarem ligadas, e nunca a
+pergunta "esta habilidade muda alguma coisa?".
+
+---
+
+## DEZ SOMBRAS: DE CLÃ PARA TALENTO, E O QUE FALTAVA PARA FUNCIONAR (2026-09-02)
+
+Autor: *"resolva os Addons Herança das Sombras e Quimera para fazer eles ficarem funcionais.
+Eles não estavam de fato funcionando na prática. Além disso, coloque eles como Talentos e dê
+Dois Slots de Talento. Pq do jeito que vc colocou, eles viraram uma Origem Propria, coisa que
+não é para acontecer."*
+
+### O que estava errado, e não era o motor
+
+O motor de fontes ficou pronto na sessão anterior e passava 38 asserts: dois passes no
+resolvedor, `fontes()` no DSL, políticas de fusão. **E não dava para usar.** `marcadorFontes` só
+era preenchível editando o JSON da ficha à mão: na tela não havia como dizer QUAIS sombras uma
+Herança herdou. Um motor certo atrás de uma porta que não existe.
+
+### 1. Viraram Talentos que pagam a própria vaga
+
+O `clas` saiu do pacote. No lugar, dois Talentos do grupo **origem**, cada um com
+`{ canal: "vagasTalento", expr: "1" }`. Taking os dois: 2 vagas gastas, 2 vagas concedidas,
+**saldo zero**.
+
+Isso resolve os dois lados do pedido de uma vez: são Talentos de verdade (aparecem na lista,
+respeitam requisito, contam no orçamento) e saem de graça, sem sequestrar a origem da ficha.
+
+⚠ **E o `vagasTalento` de um Talento era emitido e jogado fora.** O canal só era lido do
+estágio MONTANTE do `deriveAfty` (Habilidade Geral e efeito manual da ficha), e um Talento é
+escolhido depois disso: o número de vagas já estava fechado quando o efeito dele aparecia no
+agregado final. Ele saía certinho no hover de fontes e não mudava o orçamento em nada.
+
+O conserto lê o canal entre o `talentosPre` (que diz quais Talentos a ficha tem) e o
+`resolveHabilidades` (que fecha o orçamento). Não há ciclo: o `resolveTalentos` não precisa do
+número de vagas para listar o que foi escolhido.
+
+| ficha | vagas | usadas | sobram |
+|---|---|---|---|
+| sem os Talentos | 2 | 0 | 2 |
+| com Herança | 3 | 1 | **2** |
+| com os dois | 4 | 2 | **2** |
+
+### 2. O seletor de fontes, que era o que faltava
+
+Na aba Invocações, sub-aba **Perfil**, o marcador ligado abre uma fila **Origem** com as outras
+invocações da ficha, cada uma com o grau ao lado. Clicar liga e desliga.
+
+⚠ A lista **exclui a própria invocação**. Declarar-se como fonte é o ciclo que o passe 1 do
+resolvedor já corta, e oferecer a opção seria convidar para ele.
+
+Medido no navegador, no fluxo real: uma Nue de Grau Especial com o marcador de Herança ligado
+e nenhuma fonte tem **128 PV**; clicando Grande Serpente e Tigre Fúnebre no seletor ela vai para
+**182 PV**, e o rascunho grava
+`marcadorFontes: { "dez-sombras:heranca": ["inv1", "inv2"] }`.
+
+### 3. O teto de fontes da Quimera
+
+Campo novo e OPCIONAL no registro de marcador: `fontesMaxExpr`, avaliado no contexto do dono.
+A Quimera declara `(bt >= 3) * 2 + (bt >= 4) + (bt >= 6)`, que é a frase do livro:
+
+| Bônus de Treinamento | +2 | +3 | +4 | +5 | +6 |
+|---|---|---|---|---|---|
+| funde até | 0 | 2 | 3 | 3 | 4 |
+
+A **Herança não declara teto**: *"o limite de heranças é definido pela quantia de sombras
+mortas"* é fato de mesa, não número de ficha. Sem `fontesMaxExpr` o seletor só conta, e não
+cobra. O teto AVISA em vermelho em vez de bloquear, que é o padrão do projeto.
+
+### Verificação
+
+`asserts/t-dez-sombras.mjs` foi de 38 para **48 asserts**, e o pacote está na versão 6.0.0.
+
+### A fileira de Invocações não rolava com mouse (2026-09-02)
+
+Autor: *"Fiz 5 invocações, e não consigo mexer a tela para o lado, para fazer da sexta para
+frente."*
+
+Duas causas somadas, e a segunda é a que travava de vez.
+
+**1. Roda vertical não rola container horizontal.** A fileira usa `no-scrollbar`, então não há
+barra para arrastar, e um mouse comum só manda `deltaY`: o navegador rolava a PÁGINA e a fileira
+ficava parada no zero. Medido: com cinco invocações a fileira tem 1125px de conteúdo em 889px de
+caixa, e a roda movia `window.scrollY` em 300 e o `scrollLeft` em NADA. Quem usa trackpad nunca
+viu o problema, porque o gesto lateral manda `deltaX`.
+
+**2. O botão de Nova Invocação era o ÚLTIMO ITEM DA FILEIRA.** Com cinco invocações ele nascia
+fora da área visível. Quem não conseguia rolar de lado também não conseguia criar a sexta, que é
+exatamente o relato.
+
+O conserto tem três partes: a roda vira rolagem lateral, duas setas clicáveis aparecem nas bordas
+(só o lado que tem para onde ir), e o botão de Nova saiu do rolador para uma coluna fixa na
+direita. Medido nos dois tamanhos: roda 0 → 110 → 0 em 1440 e 0 → 200 → 0 em 390, setas movendo
+nos dois sentidos, e o botão de Nova dentro da tela em TODOS os estados de rolagem.
+
+⚠ A roda foi verificada por `WheelEvent` despachado no elemento. O `mouse.wheel` do Playwright
+neste ambiente rola a página sem despachar evento de DOM (um listener nativo posto na mão também
+conta zero), então o caminho do mouse de verdade não deu para exercer ponta a ponta aqui.
+
+### A Ficha Final da Invocação, redesenhada (2026-09-03)
+
+Autor, com duas capturas de tela:
+
+1. *"A primeira imagem ficou muito sobrecarregada de efeitos e a Imagem da Invocação mesmo ficou
+   completamente ofuscada."*
+2. *"Não é necessário: Turno Próprio, Retorno Completo, Desvantagem Alheia, Imune a Prejuízo por
+   Repetição."*
+3. *"E no geral ficou bem esquisito e pouco intuitivo o uso."*
+4. *"Além disso, quando eu passo o mouse em cima, não aparece os valores."*
+
+#### 4 é o de baixo, e é bug de dado, não de tela
+
+`AbaInvocacoes.jsx` montava todo `NumeroComFontes` com `valor` e `total` e **nunca** com
+`partes`. Sem lista, o componente não abre painel nenhum (`if (lista.length && temHover())`), e
+os números da Invocação eram os únicos números derivados do Afty sem hover de fontes.
+
+O conserto mora no RESOLVEDOR, e não na aba: `resolveInvocacao` passou a devolver `fontes`
+(`pv`, `defesa`, `deslocamento`, `rdGeral`, `rdPorTipo`, `custo`) e `resolveTestesInvocacao`
+passou a devolver `partes` em cada linha de Acerto, TR e Perícia, mais `cdPartes`. Montar as
+parcelas na aba seria a mesma fórmula escrita duas vezes.
+
+Três peças novas dão nome às parcelas que antes eram números anônimos:
+
+- `partesPvInvocacao` e `partesDefesaInvocacao` quebram a tabela do grau em três e duas linhas.
+  `pvInvocacao` e `defesaInvocacao` agora são a SOMA delas, então a fórmula é uma só.
+- `auxiliosLigadosDa` passou a devolver `proprio.fontes`, uma linha por auxílio ligado AGORA.
+  Sem isso a Defesa caía 5 pontos ao desligar a Guarda de Escamas sem nada explicando.
+- `agregarCaracteristicas` guarda o `nome` da Característica na linha de RD por tipo.
+
+`asserts/t-invocacoes-fontes.mjs` (49 asserts) compara **soma das parcelas contra o número que a
+tela mostra**, em toda linha, com dono e sem dono. O bug que ele existe para pegar não é o hover
+que não abre, é o painel que soma menos que o número acima dele.
+
+#### 1: oito marcadores afogando o retrato
+
+O cabeçalho carregava identidade (grau, tipo, custo) E marcadores, todos como pastilha roxa do
+mesmo tamanho. Num Controlador de nível alto são oito, então a faixa quebrava em duas linhas e o
+retrato de 3,25rem virava um selo no canto: salência máxima para o conteúdo menos usado.
+
+Agora o cabeçalho tem só a identidade, o retrato foi para 4,5rem, e os marcadores viraram um
+bloco próprio com título, em pastilha neutra.
+
+#### 2: os traços saíram
+
+Os quatro do Shikigami de Técnica sumiram da Ficha (o criador já os tinha cortado em 2026-09-02).
+`tracosDeTecnica` continua no resolvedor: as regras existem e nenhuma delas tem canal.
+
+#### 3: o corpo era uma coluna só
+
+Numa seção de 1250px o rótulo "Reflexos" fica a 1200px do "+45" que ele nomeia. O corpo virou
+duas colunas com divisão semântica: à esquerda o que a invocação **faz** (Ações, Bônus,
+Características, Opções de Uso, Marcadores), à direita o que ela **rola** (Atributos, Ataque,
+Testes de Resistência, Perícias). A fileira de pastilhas que vinha solta (RD por tipo, Tamanho,
+Crítico) foi absorvida pela tira de stats, que trocou `repeat(4, 1fr)` por
+`repeat(auto-fill, minmax(6rem, 1fr))`: com quatro colunas fixas cada célula ganhava 300px para
+mostrar dois dígitos.
+
+⚠ **A quebra é `@container`, e não `@media`.** Esta aba tem dois consumidores, a Ficha Final e o
+painel do combatente no Encontro, e o cartão do segundo tem 1049px numa janela de 1440: uma
+media query acenderia as duas colunas com 340px cada lá dentro. E o limiar está em **pixel**,
+porque `rem` numa consulta de container resolve contra a raiz do documento, que aqui tem 18px:
+um `60rem` escrito à mão viraria 1080px sem aviso e deixaria o painel do Encontro numa coluna só
+por 33px de diferença.
+
+#### Medido
+
+| largura | cartão | colunas | altura do cartão |
+|---|---|---|---|
+| 1440 (Ficha) | 1404 | 727 + 632 | 1139 |
+| 1280 (Ficha) | 1244 | 641 + 558 | 1139 |
+| 1024 (Ficha) | 992 | 509 + 443 | 1018 |
+| 820 (Ficha) | 788 | uma coluna | 1543 |
+| 390 (Ficha) | 366 | uma coluna | 1864 |
+| 1440 (Encontro) | 1049 | 537 + 467 | — |
+| 1100 (Encontro) | 794 | uma coluna | — |
+
+Sem rolagem horizontal em nenhuma. A página inteira da aba foi de 2199px para 1953px em 1440.
+Hover conferido em Defesa, RD por tipo, CD, custo, Ataque, TR e Perícia: painel abre nos sete e
+o total fecha com o número. `/Player` e o painel de Encontros renderizam sem erro de console.
+
+### Segunda rodada na Ficha da Invocação (2026-09-03)
+
+Quatro apontamentos do autor sobre o desenho entregue de manhã.
+
+#### 1. As colunas trocaram de lado, e o vão fechou
+
+*"Acredito que Atributos, Ataque, Testes de Resistência e Perícias deveriam estar a esquerda. E as
+Ações e Características a direita."* Eu tinha posto o contrário (a esquerda se lê primeiro, e a
+ação é o que mais se usa) e ele decidiu o outro lado: a leitura de stat block manda, o que a
+criatura É vem antes do que ela faz.
+
+Junto veio *"as vezes fica esse vão enorme quando a Invocação possui poucas Ações e
+Características"*. Com atribuição fixa de lado isso não tem conserto por CSS: a altura do cartão é
+a da coluna mais alta, e a mais curta termina antes. O que tem conserto é a DIFERENÇA. As três
+listas de teste (Ataque, TR, Perícias) voltaram a ser duas colunas internas quando cabem, medindo
+a COLUNA e não a janela (`@container invcoluna (min-width: 460px)`). São seis linhas a menos de
+altura, e o lado dos testes deixou de ser sempre o mais alto.
+
+| | antes | depois |
+|---|---|---|
+| altura do cartão em 1440 | 1139px | 904px |
+| vão entre as colunas | 345px | 35px |
+| altura do cartão em 1024 | 1000px | 839px |
+| vão em 1024 | 162px | 62px |
+
+#### 2. O número da tira estava baixo, e a culpa era da entrelinha do rótulo
+
+*"A fonte que mostra está muito alinhada para baixo ao invés de estar no centro. O Tamanho Médio
+está quase encostando na borda de baixo."*
+
+Medido: as CAIXAS estavam centradas (5,5px em cima e 5,5px embaixo), e a TINTA não. O
+`.afty-stat-rotulo` herdava a entrelinha do cartão, que é 1,45 de um corpo de 18px: **26px de
+caixa de linha para uma fonte de 10px**. Os 14px de espaço morto ficavam metade acima e metade
+abaixo das maiúsculas, e como a caixa do número quase não tem folga, o par nascia com 14px de
+vazio acima da primeira letra contra 8,5px abaixo do último dígito.
+
+Três consertos, e os dois primeiros valem para a Ficha inteira, porque a tira do cabeçalho tinha a
+mesma medida:
+
+1. `line-height: 1.25` no rótulo. A célula caiu de 60,4px para os 54px do `min-height`.
+2. Recuo de baixo menor que o de cima (`0.3125rem` contra `0.1875rem`). Todo valor desta célula é
+   dígito, maiúscula ou palavra sem perna, e a caixa de linha do número reserva uma descida que
+   nenhum deles usa: sem a diferença, a tinta fica 2px alta mesmo com as caixas centradas.
+   Conferido em captura de 6x: 68px acima contra 70px abaixo.
+3. Os ícones de Defesa e Desloc. saíram do rótulo. A tira do cabeçalho da Ficha usa o mesmo
+   `.afty-stat` com rótulo de texto puro, e um `inline-block` de 13,5px numa caixa de 12,7px
+   empurrava só aquelas duas células 0,7px para baixo em relação às vizinhas.
+
+#### 3. O "com gatilho" perdeu a cápsula
+
+*"O +5 com Gatilho está feio circulado desse jeito. Já citei que odeio esses circulos mais de uma
+vez."* O `afty-chip` é uma cápsula de raio total: ela cabe num rótulo curto como "Mestre", e num
+texto de quatro palavras vira uma lasca comprida no meio da linha. A linha já tem uma linguagem
+para condição em texto puro, que é o "Não Treinado" ao lado, e é essa que ele passa a falar.
+
+#### 4. Característica que concede proficiência em Teste de Resistência
+
+Regra nova do autor, com as três decisões dele registradas em `docs/afty-invocacoes.md`. Resumo:
+Segundo e Primeiro Grau concedem Treinado, Grau Especial concede Mestre (e só Mestre), o Mestre não
+cobra Treinado antes, e a faixa concedida não gasta a vaga de treino da ficha.
+
+Peças: `INV_CARACT_TR_PROF` (os cinco graus, com `null` EXPLÍCITO nos dois de baixo, para um grau
+esquecido não virar `undefined` por acidente), o subtipo `resistencia` no `resolveCaracteristica`,
+o acumulador `caract.trProf` e o merge por MAIOR FAIXA no `resolveTestesInvocacao`. A parcela do
+hover leva o nome da Característica ("Maestria (Mestre) · Vontade de Ferro"), senão o jogador vê a
+Maestria num TR que ele não treinou e não tem como achar a origem.
+
+`asserts/t-invocacoes-fontes.mjs` foi de 49 para **69 asserts**, com um por decisão de regra.
+
+### Tema da Invocação, e três buracos que ele revelou (2026-09-03)
+
+Pedido do autor: um CSS personalizado para o Yamata no Orochi, na paleta das planilhas dele
+(lavanda clara, caixas brancas, faixas roxas). Escrever o tema achou três coisas quebradas no
+caminho, e as três valem para qualquer tema de invocação, não só para este.
+
+#### 1. Trocar `--afty-texto` num escopo não muda a cor do texto
+
+O `color` padrão é resolvido lá na raiz da ficha, e o que se herda para baixo é a cor **já
+calculada**, não a variável. Redefinir `--afty-texto` dentro de `@scope (#afty-inv-<id>)` repinta
+tudo que lê a variável explicitamente (número, rótulo, chip) e deixa na cor antiga tudo que só
+herda, que é justamente o NOME de cada linha. Num tema claro os nomes somem no fundo, e o sintoma
+é uma ficha que parece meio pintada.
+
+O conserto é uma linha, `:scope { color: var(--afty-texto) }`, e ela entrou no prompt para a IA.
+
+#### 2. O prompt para a IA descrevia a ficha errada
+
+O painel de Aparência de um shikigami é o MESMO painel da ficha (decisão de 2026-08-31, e boa),
+mas o `promptParaIA` era escrito para `#afty-ficha` sempre: mandava a IA usar `:scope#afty-ficha`
+como raiz, que dentro de `@scope (#afty-inv-<id>)` não casa com nada, e não citava uma classe
+sequer do cartão que a pessoa estava pintando.
+
+Agora ele recebe `{ escopo, nome }`. Na invocação o texto diz que o alvo é o cartão, que a raiz é
+`:scope`, que o `color` vai junto, e que um tema claro ali convive com a ficha escura em volta.
+As 16 classes `.afty-inv-*` entraram no `CONTRATO_DE_CLASSES`, num grupo próprio.
+
+#### 3. `?semcss=1` não desligava o CSS de invocação
+
+A saída de emergência era um `const` local da `AftyFicha`, e o CSS de cada invocação é montado na
+`AbaInvocacoes`: quem escrevesse `* { display: none }` no shikigami ficava sem escape nenhum. A
+constante subiu para `ficha-tema.js` e agora serve os dois lados, inclusive o painel do Encontro,
+onde a `AftyFicha` nem entra. Medido: com `?semcss=1` o cartão volta ao fundo `rgb(15,23,42)`.
+
+#### O tema
+
+Escrito só com `:scope` e classes do contrato, sem nenhum id cravado, então ele serve qualquer
+invocação. Paleta: folha `#ded6f8`, caixa `#f7f5fe`, faixa `#452a86`, tinta `#1d1240`. Os três
+níveis de texto passam de 5:1 sobre a caixa. Vida `#ad1f5c` e Integridade `#5b3aa6` continuam
+distinguíveis entre si, coisa que a planilha não faz (lá as duas barras são roxas) e que a ficha
+não pode perder. Nada de raio total, porque a planilha não tem nada redondo.
+
+O painel de fontes segue escuro: ele é enviado por portal para o `.afty-ficha` e por definição
+está FORA do escopo da invocação. Sobre a folha clara ele lê como sobreposição, e funciona.
+
+#### Um ajuste de layout junto
+
+A lista de Características passou a dobrar em duas colunas acima de quatro itens. É o outro lado
+do vão que o autor apontou de manhã: quando as Ações e as Características são MUITAS, quem sobra
+vazio é o lado dos testes. Nesta ficha o vão caiu de 358px para 192px e o cartão de 1332px para
+1166px.

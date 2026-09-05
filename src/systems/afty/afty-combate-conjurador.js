@@ -2,7 +2,36 @@ import {
   calcularFeiticoAuxiliar, defaultAcaoMult, resolverAcaoAux,
 } from "./afty-feiticos";
 
+/**
+ * ============================================================
+ * TÉCNICAS DE COMBATE: SÃO DUAS HABILIDADES, NÃO UMA
+ * ============================================================
+ * ⚠ CORRIGIDO EM 2026-09-02, e a falha era total: a habilidade do CONTROLADOR
+ * existia no catálogo desde sempre e NÃO FAZIA NADA. O resolvedor conhecia só o
+ * id do Conjurador, então pegar `ctr_tecnicas_de_combate` num Controlador dava
+ * exatamente o mesmo resultado de não pegar nada (medido: `ativa: false`,
+ * `armas: []`). O seletor de armas nem aparecia na tela, porque o `extra` do
+ * card comparava com o id do Conjurador. E junto morria a `ctr_combate_em_alcateia`
+ * (6°), que exige esta como pré-requisito: um galho inteiro inalcançável.
+ *
+ * ⚠ E O ATRIBUTO NÃO É O MESMO. O texto de cada uma manda um par diferente:
+ *
+ *   Conjurador  "utilizar Inteligência ou Sabedoria nas jogadas de ataque e dano"
+ *   Controlador "utilizar Presença ou Sabedoria nas jogadas de ataque e dano"
+ *
+ * Quem tem as duas (multiclasse) soma os pares, e é por isso que a lista sai
+ * calculada em vez de constante: cravar três atributos daria Inteligência a um
+ * Controlador puro, e cravar dois daria Presença a um Conjurador puro.
+ */
 export const TECNICAS_COMBATE_ID = "cnj_tecnicas_de_combate";
+export const TECNICAS_COMBATE_ID_CTR = "ctr_tecnicas_de_combate";
+export const TECNICAS_COMBATE_IDS = [TECNICAS_COMBATE_ID, TECNICAS_COMBATE_ID_CTR];
+
+/* O par de atributos que CADA habilidade libera, na ordem do texto. */
+const TECNICAS_ATRIBUTOS = {
+  [TECNICAS_COMBATE_ID]: ["inteligencia", "sabedoria"],
+  [TECNICAS_COMBATE_ID_CTR]: ["presenca", "sabedoria"],
+};
 export const COMBATE_AMALDICOADO_ID = "cnj_combate_amaldicoado";
 export const IMBUIR_TECNICA_ID = "cnj_imbuir_com_tecnica";
 export const ESGRIMISTA_JUJUTSU_ID = "cnj_esgrimista_jujutsu";
@@ -17,7 +46,8 @@ const lista = (v) => (Array.isArray(v) ? v : []);
 const tem = (habilidades, id) => lista(habilidades).includes(id);
 
 export function resolveTecnicasCombate(creature, armasCatalogo = [], habilidades = []) {
-  const ativa = tem(habilidades, TECNICAS_COMBATE_ID);
+  const fontes = TECNICAS_COMBATE_IDS.filter((id) => tem(habilidades, id));
+  const ativa = fontes.length > 0;
   const validas = new Set(lista(armasCatalogo).map((a) => a?.id).filter(Boolean));
   const brutas = lista(creature?.tecnicasCombate?.armas);
   const armas = [];
@@ -26,12 +56,24 @@ export function resolveTecnicasCombate(creature, armasCatalogo = [], habilidades
     armas.push(id);
     if (armas.length === 2) break;
   }
+  /* Ordem estável e sem repetição: a do texto de cada habilidade, na ordem em
+     que as habilidades aparecem em TECNICAS_COMBATE_IDS. */
+  const permitidos = [];
+  for (const id of fontes) for (const attr of TECNICAS_ATRIBUTOS[id]) {
+    if (!permitidos.includes(attr)) permitidos.push(attr);
+  }
+  const escolhido = creature?.tecnicasCombate?.atributo;
   return {
     ativa,
+    fontes,
     armas: ativa ? armas : [],
-    atributo: creature?.tecnicasCombate?.atributo === "sabedoria"
-      ? "sabedoria"
-      : "inteligencia",
+    /* ⚠ A LISTA SAI DAQUI, e a tela NÃO a monta de novo. Ela depende de quais
+       habilidades a ficha tem, e um segundo lugar montando o mesmo par
+       divergiria na primeira errata, que é a lição do `fontes.jsx`. */
+    atributosOk: permitidos,
+    /* Guardado fora da lista permitida cai no primeiro do texto: é o caso de
+       quem tinha a do Conjurador com Inteligência e trocou de especialização. */
+    atributo: permitidos.includes(escolhido) ? escolhido : (permitidos[0] ?? "inteligencia"),
     max: 2,
   };
 }

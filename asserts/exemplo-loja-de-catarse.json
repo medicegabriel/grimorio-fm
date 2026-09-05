@@ -1,0 +1,21 @@
+{
+  "id": "loja-de-catarse",
+  "nome": "Loja de Catarse",
+  "versao": "1.0.0",
+  "autor": "Afty",
+  "descricao": "A Loja de Inspiração da mesa. Você ganha Catarses e gasta para comprar vaga de Talento, Habilidade de Especialização, Melhoria Superior, Habilidade Lendária, Aptidão, Treino e Feitiço, além de anotar coisas como texto com efeito no Motor. A anotação ACUMULA com Técnica, Feitiço e Shikigami, ao contrário do Funcionamento Básico. Os preços abaixo são o ponto de partida: mude o número e a Loja muda junto, sem tocar em código.",
+  "paraRaw": "afty",
+  "permite": ["catarse"],
+  "catarse": {
+    "precos": {
+      "talentos": 3,
+      "habilidades": 3,
+      "melhoriasSuperiores": 6,
+      "lendarias": 8,
+      "aptidoes": 4,
+      "pericias": 1,
+      "feiticos": 2,
+      "texto": 5
+    }
+  }
+}

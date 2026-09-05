@@ -89,6 +89,20 @@ const GRUPOS_ARMA = [
  */
 const NIVEL_ESTILO = "max(esc_combatente, nd * tem_tal_adepto_de_combate)";
 
+/**
+ * *"Enquanto estiver desarmado ou empunhando uma arma marcial"*, a frase que
+ * abre a Complementação Marcial (Lutador 2°) e a Defesa Marcial (Lutador 4°).
+ *
+ * Escrita uma vez só porque é a MESMA condição verbatim nas duas, e o Lutador vai
+ * repeti-la: se ela mudar de leitura, muda num lugar. Ver `desarmado` e
+ * `arma_marcial` em buildCriaturaDslContext.
+ *
+ * ⚠ NÃO CONFUNDIR COM O ESCOPO DE ARMA. `prop:marcial` recorta uma LINHA de dano
+ * e serve para "seus ataques com armas marciais". Esta condição serve para o que
+ * não tem linha: a Defesa e as Manobras são números da criatura.
+ */
+const MANEJO_MARCIAL = "desarmado || arma_marcial";
+
 /** As 5 trilhas de aptidão, como texto (este arquivo é dado puro). */
 const TRILHAS = ["dom", "au", "cl", "bar", "er"];
 
@@ -143,7 +157,18 @@ export const HABILIDADE_EFEITOS = {
   // (2026-07-27): a habilidade dá 1 NÍVEL DE DANO, e mais 1 em cada um desses
   // níveis, chegando a 5. Cada Nível de Dano soma 1 no ND, só para dano.
   lut_corpo_treinado: [
-    { canal: "finezaAtaque", alvo: "corpo", expr: "1" },
+    /* "Você pode escolher usar tanto Força quanto Destreza nos seus ataques
+       desarmados e ataques com armas marciais."
+
+       ⚠ SÃO DOIS ESCOPOS DE FONTE, e não o tipo de ataque `corpo` (autor,
+       2026-09-01). O tipo é um só para todo corpo a corpo, então mirar nele dava
+       Destreza também na Espada Grande, que não é Marcial, e ao mesmo tempo
+       deixava o Bastão e o Nunchaku Pesado (Marciais SEM a propriedade Fineza)
+       com Destreza no acerto e Força no dano. "Marcial" é a PROPRIEDADE da arma
+       (ver TREINO_ARMA_FILTRO em afty-equipamentos.js), e o escopo dela é
+       `prop:marcial`. */
+    { canal: "finezaAtaque", alvo: "basico", expr: "1" },
+    { canal: "finezaAtaque", alvo: "prop:marcial", expr: "1" },
     /* ⚠ O `nome` É LIDO PELO MOTOR, e não só pelo hover. Na ficha de jogador esta
        linha é DESCONTADA, porque lá o dado do desarmado sai do texto da
        habilidade ("se torna 1d8... 1d10, 1d12, 2d8 e 2d12") em vez de ser
@@ -170,7 +195,15 @@ export const HABILIDADE_EFEITOS = {
   // ataque aumenta em +1, enquanto nos níveis 9, 13 e 17 o bônus em Fortitude
   // e dano aumenta em +1."
   lut_gosto_pela_luta: [
-    { canal: "bonusAcerto", alvo: "corpo",
+    /* ⚠ O ACERTO É ESCOPADO POR FONTE, pela mesma razão do Corpo Treinado
+       (autor, 2026-09-01): "jogadas de ataque desarmadas ou com armas marciais"
+       não é o tipo de ataque `corpo`, que pega toda arma de corpo a corpo. O
+       canal muda junto, porque `bonusAcerto` mira a jogada inteira e
+       `acertoArma` mira a linha. O dano e a Fortitude continuam sem recorte: a
+       restrição da frase prende só as jogadas de ataque. */
+    { canal: "acertoArma", alvo: "basico",
+      expr: "2 + (esc_lutador >= 8) + (esc_lutador >= 12) + (esc_lutador >= 16) + (esc_lutador >= 20)" },
+    { canal: "acertoArma", alvo: "prop:marcial",
       expr: "2 + (esc_lutador >= 8) + (esc_lutador >= 12) + (esc_lutador >= 16) + (esc_lutador >= 20)" },
     { canal: "bonusTR", alvo: "fortitude",
       expr: "1 + (esc_lutador >= 9) + (esc_lutador >= 13) + (esc_lutador >= 17)" },
@@ -180,12 +213,18 @@ export const HABILIDADE_EFEITOS = {
 
   /* ---- 2° nível ---- */
 
-  // "Todo ataque desarmado que você realizar causa dano adicional igual ao seu
-  // bônus de treinamento e você soma metade do seu bônus de treinamento em
-  // jogadas de ataque desarmados."
+  /* "Todo ataque desarmado que você realizar causa dano adicional igual ao seu
+     bônus de treinamento e você soma metade do seu bônus de treinamento em
+     jogadas de ataque desarmados."
+
+     ⚠ AS DUAS LINHAS MIRAM `basico`, e nenhuma delas vale para arma (autor,
+     2026-09-01). O dano estava SEM alvo, então a Maestria inteira caía na Espada
+     Grande e até no Arco Curto, e o acerto estava no tipo `corpo`, que é toda
+     arma de corpo a corpo. A habilidade é justamente a de quem "decide se ater
+     as mãos vazias". */
   lut_caminho_da_mao_vazia: [
-    { canal: "bonusAcerto", alvo: "corpo", expr: "piso(maestria / 2)" },
-    { canal: "danoBonus", expr: "maestria" },
+    { canal: "acertoArma", alvo: "basico", expr: "piso(maestria / 2)" },
+    { canal: "danoBonus", alvo: "basico", expr: "maestria" },
   ],
 
   // "Uma vez por rodada, ao realizar um ataque, você pode escolher receber
@@ -199,24 +238,30 @@ export const HABILIDADE_EFEITOS = {
   // bônus de +2 em testes para Desarmar, Derrubar ou Empurrar, assim como para
   // resistir a esses efeitos."
   // ⚠ Agarrar NÃO está na lista, e é de propósito: o texto nomeia três.
+  /* ⚠ A CONDIÇÃO É DE VERDADE desde 2026-09-01 (autor: *"faça com que necessite
+     uma Arma Marcial ou Desarmada esteja equipada"*). Antes o bônus valia sempre,
+     e um Lutador com Espada Colossal o recebia inteiro. Ver `desarmado` e
+     `arma_marcial` em buildCriaturaDslContext, e a mesma condição na Defesa
+     Marcial (4°), que abre com a frase idêntica. */
   lut_complementacao_marcial: [
-    { canal: "bonusManobra", alvo: "desarmar", expr: "2" },
-    { canal: "bonusManobra", alvo: "derrubar", expr: "2" },
-    { canal: "bonusManobra", alvo: "empurrar", expr: "2" },
-    { canal: "resistirManobra", alvo: "desarmar", expr: "2" },
-    { canal: "resistirManobra", alvo: "derrubar", expr: "2" },
-    { canal: "resistirManobra", alvo: "empurrar", expr: "2" },
+    { canal: "bonusManobra", alvo: "desarmar", expr: "2", quando: MANEJO_MARCIAL },
+    { canal: "bonusManobra", alvo: "derrubar", expr: "2", quando: MANEJO_MARCIAL },
+    { canal: "bonusManobra", alvo: "empurrar", expr: "2", quando: MANEJO_MARCIAL },
+    { canal: "resistirManobra", alvo: "desarmar", expr: "2", quando: MANEJO_MARCIAL },
+    { canal: "resistirManobra", alvo: "derrubar", expr: "2", quando: MANEJO_MARCIAL },
+    { canal: "resistirManobra", alvo: "empurrar", expr: "2", quando: MANEJO_MARCIAL },
   ],
 
   // "Quando acertar uma criatura com um ataque com arma marcial, você recebe
   // +2 em jogadas de ataque e dano desarmados até o começo do seu próximo
   // turno. Nos níveis 5, 10, 15 e 20, o bônus em dano aumenta em +1, enquanto
   // nos níveis 6, 12 e 18 o bônus em jogadas de ataque aumenta em +1."
-  // ⚠ O acerto vai no Corpo a Corpo, que é o mais perto de "desarmado" que a
-  // ficha tem: não existe jogada de ataque só para desarmado. O DANO mira
-  // `basico`, e essa sim É a linha desarmada.
+  /* ⚠ O ACERTO MIRAVA O TIPO `corpo`, e por isso vazava para toda arma de corpo
+     a corpo. O comentário antigo dizia que era "o mais perto de desarmado que a
+     ficha tem", e isso deixou de ser verdade em 2026-09-01: o `acertoArma` com
+     alvo `basico` É a linha desarmada, a mesma que o dano já mirava. */
   lut_impacto_misto: [
-    { canal: "bonusAcerto", alvo: "corpo", quando: "impacto_misto",
+    { canal: "acertoArma", alvo: "basico", quando: "impacto_misto",
       expr: "2 + (esc_lutador >= 6) + (esc_lutador >= 12) + (esc_lutador >= 18)", duracao: "temporaria" },
     { canal: "danoBonus", alvo: "basico", quando: "impacto_misto",
       expr: "2 + (esc_lutador >= 5) + (esc_lutador >= 10) + (esc_lutador >= 15) + (esc_lutador >= 20)",
@@ -235,7 +280,7 @@ export const HABILIDADE_EFEITOS = {
   // "Enquanto estiver desarmado ou empunhando uma arma marcial, você soma
   // 1 + metade do seu Bônus de Treinamento à sua Defesa."
   lut_defesa_marcial: [
-    { canal: "defesa", expr: "1 + piso(maestria / 2)" },
+    { canal: "defesa", expr: "1 + piso(maestria / 2)", quando: MANEJO_MARCIAL },
   ],
 
   // "você recebe +2 em jogadas de ataque corpo a corpo e dano [...] Nos níveis
@@ -333,19 +378,27 @@ export const HABILIDADE_EFEITOS = {
 
   // "adiciona metade do seu Modificador de Constituição na sua Defesa e recebe
   // pontos de vida adicionais igual ao seu nível de Lutador."
+  /* ⚠ A DEFESA TEM PISO DE 1 (autor, 2026-09-02), mesma decisão das Artes do
+     Combate. Sem ele um Modificador de Constituição negativo virava penalidade:
+     com Constituição 8, que é o mínimo do point-buy, uma habilidade DEFENSIVA
+     TIRAVA 1 de Defesa. O PV não precisa de piso, porque ele lê o nível. */
   lut_corpo_calejado: [
-    { canal: "defesa", expr: "piso(mod_constituicao / 2)" },
+    { canal: "defesa", expr: "max(1, piso(mod_constituicao / 2))" },
     { canal: "hp", expr: "esc_lutador" },
   ],
 
   // "Enquanto no estado de Brutalidade [...] você aumenta o nível de dano dos
   // seus ataques corpo a corpo em 1, acumulando até um limite igual ao seu
   // bônus de treinamento."
-  // ⚠ Sem alvo, então vale para TODAS as linhas de dano. O texto diz "corpo a
-  // corpo", e não há como mirar só as linhas corpo a corpo hoje: um Lutador com
-  // arma a distância receberia o aumento nela também.
+  /* ⚠ DUAS LINHAS, e é o recorte de "corpo a corpo": o desarmado (`basico`) e
+     toda arma da categoria corpo (`cat:corpo`). Ficou SEM ALVO de julho até
+     2026-09-02, quando a varredura do 6° mediu o Arco Curto subindo de d6 para
+     d12 com 3 pilhas. O comentário de então dizia que não havia como mirar só o
+     corpo a corpo, e isso envelheceu calado: o `cat:` nasceu com o Combatente. */
   lut_brutalidade_sanguinaria: [
-    { canal: "nivelDano", quando: "brutalidade",
+    { canal: "nivelDano", alvo: "basico", quando: "brutalidade",
+      expr: "brutalidade_pilha", duracao: "temporaria" },
+    { canal: "nivelDano", alvo: "cat:corpo", quando: "brutalidade",
       expr: "brutalidade_pilha", duracao: "temporaria" },
   ],
 
@@ -394,16 +447,24 @@ export const HABILIDADE_EFEITOS = {
   // nível de empolgação 5"), daí o `&&` no `quando`.
   //
   //   • Ataque Circular: "Para cada inimigo que seja um alvo, esta manobra
-  //     causa 5 de dano adicional." O aumento de 3 metros no alcance corpo a
-  //     corpo não tem canal: alcance de ataque vem da arma.
+  //     causa 5 de dano adicional." São 5 POR INIMIGO (autor, 2026-09-02: *"+5
+  //     por Inimigo, logo 3 inimigos dão +15"*), então a bancada conta os alvos
+  //     numa faixa, igual ao `abates`. E o recorte é corpo a corpo, porque o
+  //     golpe é um giro dentro do alcance corpo a corpo: `basico` mais
+  //     `cat:corpo`, as mesmas duas linhas da Brutalidade Sanguinária. O
+  //     aumento de 3 metros no alcance não tem canal: alcance vem da arma.
   //   • Golpe Certeiro: "Sua próxima jogada de ataque automaticamente tem o seu
   //     resultado tratado como 10 acima do resultado original."
   //   • Quebra Crânio: "Seu próximo ataque causa 2d10 de dano adicional. O alvo
   //     desta manobra deve realizar um teste de resistência de Fortitude com CD
   //     aumentada em 5." Dado NOMEADO: canal `dadosNomeados`, alvo d10.
   lut_manobras_finalizadoras: [
-    { canal: "danoBonus", quando: "manobra_finalizadora_circular && empolgacao >= 5",
-      expr: "5", duracao: "temporaria" },
+    { canal: "danoBonus", alvo: "basico",
+      quando: "manobra_finalizadora_circular && empolgacao >= 5",
+      expr: "5 * max(1, circular_alvos)", duracao: "temporaria" },
+    { canal: "danoBonus", alvo: "cat:corpo",
+      quando: "manobra_finalizadora_circular && empolgacao >= 5",
+      expr: "5 * max(1, circular_alvos)", duracao: "temporaria" },
     { canal: "bonusAcerto", quando: "manobra_finalizadora_certeiro && empolgacao >= 5",
       expr: "10", duracao: "temporaria" },
     { canal: "dadosNomeados", alvo: "d10", quando: "manobra_finalizadora_cranio && empolgacao >= 5",
@@ -516,8 +577,13 @@ export const HABILIDADE_EFEITOS = {
   // Especialista em Combate + Modificador de Sabedoria."
   // As 5 artes que a habilidade ensina são gasto de ponto: só Execução
   // Silenciosa e Golpe Descendente viram número, e entram pela bancada.
+  /* ⚠ AS TRÊS LINHAS TÊM PISO DE 1 (autor, 2026-09-01: *"Sempre é no Mínimo
+     1"*). Sem ele um Modificador de Sabedoria negativo virava penalidade: com
+     Sabedoria 8, que é o mínimo do point-buy, a Execução Silenciosa não somava
+     dado NENHUM (`1 + piso(-1 / 2)` = 0) e o Golpe Descendente TIRAVA 1 de
+     Defesa. Os Pontos de Preparo iam a zero, e a negativo com Sabedoria 6. */
   cmb_artes_do_combate: [
-    { canal: "pontosPreparo", expr: "esc_combatente + mod_sabedoria" },
+    { canal: "pontosPreparo", expr: "max(1, esc_combatente + mod_sabedoria)" },
     /* "adicionando 1d6 de dano. A cada +2 no Modificador de Sabedoria, o dano
        aumenta em +1d6." O 1d6 base já vale com Sabedoria 0.
 
@@ -526,11 +592,11 @@ export const HABILIDADE_EFEITOS = {
        1d6."* O dado é NOMEADO, e o canal dele é o `dadosNomeados`: o alvo é o
        tamanho (`d6`) e o valor é QUANTOS. */
     { canal: "dadosNomeados", alvo: "d6", quando: "arte_execucao_silenciosa",
-      expr: "1 + piso(mod_sabedoria / 2)", duracao: "temporaria" },
+      expr: "max(1, 1 + piso(mod_sabedoria / 2))", duracao: "temporaria" },
     // "sua Defesa aumenta em um valor igual a metade do seu Modificador de
     // Sabedoria até o começo do seu próximo turno."
     { canal: "defesa", quando: "arte_golpe_descendente",
-      expr: "piso(mod_sabedoria / 2)", duracao: "temporaria" },
+      expr: "max(1, piso(mod_sabedoria / 2))", duracao: "temporaria" },
   ],
 
   // Golpe Especial: só as propriedades que viram número. Amplo (alvo a mais),
@@ -1383,9 +1449,24 @@ export const ESCOLHA_EFEITOS = {
       expr: `1 + (${NIVEL_ESTILO} >= 4) + (${NIVEL_ESTILO} >= 8) + (${NIVEL_ESTILO} >= 12) + (${NIVEL_ESTILO} >= 16)` },
   ],
 
-  // Estilo Duplo e os dois de reação (Interceptador, Protetor) ficam de fora:
-  // o primeiro fala do ataque da SEGUNDA arma, e a ficha tem uma linha por
-  // arma e não por mão; os outros dois agem no ataque de outra criatura.
+  /* "Enquanto estiver lutando com duas armas, você pode adicionar o seu bônus de
+     atributo no dano do ataque com a segunda arma, além de receber um bônus de
+     +1 em rolagens de dano, o qual aumenta em +1 nos níveis 4, 8, 12 e 16."
+
+     ⚠ SÓ A SEGUNDA METADE ENTRA (autor, 2026-09-01, que pediu o Duplo
+     programado). O bônus de dano é igual ao dos outros Estilos e cabe no
+     `danoBonus`, sob o mesmo tipo de interruptor do Duelista. O "bônus de
+     atributo no dano do ataque com a segunda arma" continua de mesa: a ficha tem
+     uma linha por ARMA e não por MÃO, então ela não sabe qual das duas é a
+     segunda, e somar o modificador em todas daria o bônus a mais na primeira. */
+  cmb_estilo_duplo: [
+    { canal: "danoBonus", quando: "lutando_com_duas_armas",
+      expr: `1 + (${NIVEL_ESTILO} >= 4) + (${NIVEL_ESTILO} >= 8) + (${NIVEL_ESTILO} >= 12) + (${NIVEL_ESTILO} >= 16)`,
+      duracao: "temporaria" },
+  ],
+
+  // Os dois de reação (Interceptador, Protetor) ficam de fora: eles agem no
+  // ataque de OUTRA criatura, e a ficha só conhece a si.
 
   /* ---- Posturas de Combate (Assumir Postura, 2°) ----
      `em_postura_<id>` é 1 com a postura em QUALQUER slot, porque Mestre da
@@ -1731,8 +1812,14 @@ export const TALENTO_EFEITOS = {
   // para acertar e +3 no dano."
   // ⚠ O acerto vai na jogada A Distância, que é a mais perto: não existe linha
   // de ataque só de arremesso. O dano mira `cat:arremesso`, essa sim exata.
+  /* ⚠ O ACERTO MIRA A CATEGORIA, e não o tipo de ataque (corrigido em
+     2026-09-02). Ele morava em `bonusAcerto` alvo `distancia`, e arremesso e
+     distância são categorias DIFERENTES no catálogo de armas: o bônus caía no
+     Arco Curto, que o Talento não menciona, e o dano ao lado já mirava
+     `cat:arremesso`, então as duas metades da MESMA frase discordavam.
+     A frase é *"Sempre que atacar com uma arma de arremesso"*. */
   tal_tecnicas_de_arremesso: [
-    { canal: "bonusAcerto", alvo: "distancia", expr: "2" },
+    { canal: "acertoArma", alvo: "cat:arremesso", expr: "2" },
     { canal: "danoBonus", alvo: "cat:arremesso", expr: "3" },
   ],
 
@@ -1769,9 +1856,20 @@ export const TALENTO_EFEITOS = {
   // ⚠ A condição "sem Pugilato" NÃO é checada: Manoplas e Faixas são o que dá
   // grau ao Ataque Básico, e a ficha não expõe isso ao DSL. Quem carrega as
   // duas coisas vê os dois bônus.
+  /* ⚠ DUAS CORREÇÕES em 2026-09-02, as duas medidas na varredura dos Talentos.
+     O acerto morava em `bonusAcerto` alvo `corpo`, que é o TIPO DE ATAQUE e
+     alcança toda arma de corpo a corpo: um Bastão na mão levava os +3 do
+     DESARMADO. É a mesma troca que o Impacto Misto e o Caminho da Mão Vazia
+     sofreram em 2026-09-01, e a régua continua sendo a frase do livro, que aqui
+     diz "jogadas de ataque desarmado".
+
+     E a condição *"Enquanto não estiver com nenhum equipamento do grupo
+     Pugilato"* não era cobrada. Ela NÃO é `desarmado`: quem veste Manopla está
+     desarmado e com pugilato ao mesmo tempo, que é exatamente o caso que o
+     Talento exclui. Daí a variável `arma_pugilato`. */
   tal_adepto_de_briga: [
-    { canal: "bonusAcerto", alvo: "corpo", expr: "3" },
-    { canal: "nivelDano", alvo: "basico", expr: "2" },
+    { canal: "acertoArma", alvo: "basico", expr: "3", quando: "!arma_pugilato" },
+    { canal: "nivelDano", alvo: "basico", expr: "2", quando: "!arma_pugilato" },
   ],
 
   /* ---- Com pré-requisito ---- */
@@ -1806,8 +1904,11 @@ export const TALENTO_EFEITOS = {
   // SUBSTITUI os +2/+3 das Técnicas de Arremesso, que é pré-requisito: aqui
   // entra só o degrau (+2 acerto, +3 dano). "um dado" sem tamanho é dado da
   // LINHA. O alcance +6m não tem canal.
+  /* Mesmo conserto do acerto que o Técnicas de Arremesso, que é o pré-requisito
+     dele. As três linhas são DELTA por cima daquele: "o seu bônus [...] se torna
+     +4 para acertar e +6 no dano", e 2 + 2 = 4 e 3 + 3 = 6. */
   tal_mestre_do_arremesso: [
-    { canal: "bonusAcerto", alvo: "distancia", expr: "2" },
+    { canal: "acertoArma", alvo: "cat:arremesso", expr: "2" },
     { canal: "danoBonus", alvo: "cat:arremesso", expr: "3" },
     { canal: "dadosDano", alvo: "cat:arremesso", expr: "1" },
   ],

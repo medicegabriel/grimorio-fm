@@ -1,9 +1,9 @@
 import React, { useState, useMemo, useRef, useCallback, useEffect, useLayoutEffect } from "react";
 import {
-  Save, ChevronLeft, ChevronDown, Wand2, Sparkles, FlaskConical,
+  Save, ChevronLeft, ChevronRight, ChevronDown, Wand2, Sparkles, FlaskConical,
   Dumbbell, GraduationCap, BookOpen, Check, ArrowRight, Lock, Plus, X, Zap, GripVertical,
   Copy, ArrowUp, ArrowDown, Heart, Shield, Footprints, AlertTriangle, Star, Swords,
-  Trash2, Image as ImageIcon, Eye, Crosshair, RotateCcw, Pencil, Table, Braces,
+  Trash2, Image as ImageIcon, Eye, Crosshair, RotateCcw, Pencil, Table, Braces, ListChecks,
 } from "lucide-react";
 
 import { FieldLabel, TextInput, TextArea, Select, NumberInput, StatField, ExpandableText } from "../../components/builder-controls";
@@ -17,6 +17,8 @@ import {
 // Primitivos compartilhados com a Ficha Final. Eram locais deste arquivo até
 // 2026-08-05, e saíram porque duas cópias divergiriam na primeira errata.
 import { PainelDeFontes, ValorComFontes } from "./ui/fontes";
+import TabDefesas from "./AftyTabDefesas";
+import TabCatarse from "./AftyTabCatarse";
 /* ⚠ O @dnd-kit JÁ ERA DEPENDÊNCIA do projeto: o Dashboard, a Biblioteca e o
    painel de Encontros do grimório 2.5.2 ordenam com ele, e a aba de Perícias
    passou a ordenar em 2026-08-30. Não é biblioteca nova. */
@@ -93,8 +95,9 @@ import {
   grausDisponiveis, grauMeta, INV_ATRIBUTOS_POR_GRAU, INV_ATTR_MIN, mod as invMod,
   custoMaxAcao, tamanhosNaFaixa, lideresElegiveis, membrosElegiveis,
   alvosDanoDisponiveis, curaMultiplosDisponivel, marcadorLigado, marcadorOpcao, dadoDoMaximo,
-  AFTY_INV_TIPOS, AFTY_INV_SABORES,
+  AFTY_INV_TIPOS, tipoMecanicoDaInvocacao,
   INV_CUSTO_BENEFICIOS, INV_CUSTO_CONDICAO, INV_RD_TIPOS, resistenciasTreinaveis, usoPericias,
+  trProfDaInvocacao, usoTR, TR_VAGAS_BASE,
   alvosDeModificador, alvosDeModificadorCaract,
 } from "./afty-invocacoes";
 import { periciasParaInvocacao, DANO_ADICIONAL_ARMA } from "./afty-pericias";
@@ -133,6 +136,7 @@ import {
   mostraCardEstilo,
 } from "./afty-estilo-sombras";
 import { vocabularioDsl, vocabularioInvocacao, DSL_FUNCOES } from "./afty-dsl-vocabulario";
+import { TECNICAS_COMBATE_IDS } from "./afty-combate-conjurador";
 import PrimitivasDeAddon from "./ui/PrimitivasDeAddon";
 import { usePrimitiva } from "./ui/usar-primitiva";
 import {
@@ -169,18 +173,46 @@ const TABS = [
   { id: "aptidoes",      label: "Aptidões" },
   { id: "invocacoes",    label: "Invocações" },
   { id: "equipamentos",  label: "Equipamentos" },
+  /* ⚠ O ID CONTINUA `defesas`, e o rótulo virou "Resistências" (autor,
+     2026-09-05). O id é interno e amarra três coisas que NÃO foram renomeadas
+     junto: `AftyTabDefesas.jsx`, `afty-defesas-dano.js` e, principalmente, o
+     campo `creature.defesasDano`, que está gravado em ficha. Renomear o campo
+     pediria migração de ficha salva para não perder Imunidade, Resistência,
+     Vulnerabilidade e RD de quem já preencheu, e isso não é o que se pede
+     quando se pede um nome novo na aba.
+
+     ⚠ Não confundir com os TESTES DE RESISTÊNCIA da aba Perícias, que são outra
+     coisa (Reflexos, Fortitude, Vontade, Astúcia, Integridade). Esta aba é
+     Imunidade, Resistência, Vulnerabilidade e RD por tipo de dano. */
+  { id: "defesas",       label: "Resistências" },
   { id: "interludios",   label: "Interlúdios" },
-  { id: "addons",        label: "Addons" },
+  /* ⚠ A LOJA DE CATARSE SÓ APARECE COM O ADDON QUE A PEDE. Ela é primitiva
+     (`permite: ["catarse"]`), e o filtro está logo abaixo, em `tabsDoSistema`.
+     Sem esse portão ela vazaria para a tela de quem nunca instalou nada, que é
+     exatamente o que aconteceu com a Concessão do Mestre em 2026-08-20. */
+  { id: "catarse",       label: "Catarse", primitiva: "catarse" },
+  /* ⚠ ADDONS NÃO É ABA, e desde 2026-09-05 mora DENTRO de Cálculos, nos dois
+     sistemas (autor: *"passe a parte dos Addons para Cálculos em ambos os
+     lados"*). A fileira tinha treze abas e rolava na horizontal já em 1440px.
+
+     Quem procurar o id "addons" no `tabAtiva` não acha mais nada: a mudança é
+     de LUGAR, e não de conteúdo. O `TabAddons` continua no arquivo próprio dele
+     e é renderizado no ramo `calculos`, embaixo da bancada. */
   { id: "calculos",      label: "Cálculos", afty: true },
 ];
 
 /* A aba "informacoes" some no Player, e o conteúdo dela sobe para a
    "identidade". A lista é filtrada em vez de duplicada: uma segunda lista
    divergiria na primeira aba nova que alguém somasse a só uma delas. */
-const tabsDoSistema = (sistema) =>
-  regraDo(sistema, "abasIdentidade") === "player"
+/* `primitivas` é o `derived.primitivas`, a lista que os addons desta criatura
+   pedem. Uma aba sem `primitiva` declarada aparece sempre, que é o caso de
+   todas menos a Catarse. */
+const tabsDoSistema = (sistema, primitivas = []) => {
+  const base = regraDo(sistema, "abasIdentidade") === "player"
     ? TABS.filter((t) => t.id !== "informacoes")
     : TABS;
+  return base.filter((t) => !t.primitiva || primitivas.includes(t.primitiva));
+};
 
 // A aba Habilidades agora é REAL (Feitiços / Estilo das Sombras / Habilidades
 // Marciais, conforme a origem). Nenhuma aba está em stub por ora.
@@ -304,7 +336,7 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
   // `tabAtiva` cobre quem já estava nela quando o Tipo mudou: em vez de deixar
   // a tela num limbo (aba escondida, conteúdo aberto), cai nas Informações.
   const semEnergia = draft.core.tipo === "restringido";
-  const abasVisiveis = useMemo(() => tabsDoSistema(sistema), [sistema]);
+  const abasVisiveis = useMemo(() => tabsDoSistema(sistema, derived.primitivas), [sistema, derived.primitivas]);
   const umaAbaSo = regraDo(sistema, "abasIdentidade") === "player";
   const abaBase = umaAbaSo ? "identidade" : "informacoes";
   // Quem estava numa aba que sumiu (a Aptidões do Restringido, ou a Informações
@@ -659,6 +691,43 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
         ...d,
         armasDedicadas: lista.includes(id) ? lista.filter((x) => x !== id) : [...lista, id],
       };
+    });
+
+  /* ---------- Defesas por tipo de dano ----------
+     Guarda a forma longa (`{ estado, rd }`) sempre, e apaga a entrada que ficou
+     vazia: uma ficha exportada não deve carregar 15 tipos zerados. O saneamento
+     de leitura mora no `sanearDefesasDano`, que aceita as duas formas. */
+  const patchDefesaDano = (tipo, partial) =>
+    setDraft((d) => {
+      const atual = (d.defesasDano && typeof d.defesasDano === "object") ? d.defesasDano : {};
+      const antes = typeof atual[tipo] === "object" ? atual[tipo] : { estado: atual[tipo] ?? null, rd: 0 };
+      const depois = { estado: antes.estado ?? null, rd: antes.rd ?? 0, ...partial };
+      const proximo = { ...atual };
+      if (!depois.estado && !depois.rd) delete proximo[tipo];
+      else proximo[tipo] = depois;
+      return { ...d, defesasDano: proximo };
+    });
+
+  const setDefesaEstado = (tipo, estado) => patchDefesaDano(tipo, { estado });
+  const setDefesaRd = (tipo, valor) =>
+    patchDefesaDano(tipo, { rd: Math.max(0, Math.trunc(Number(valor) || 0)) });
+
+  /* LOJA DE CATARSE (Addon, 2026-09-04).
+
+     ⚠ ELE NÃO SANEIA NADA, e a ausência é o conserto. A primeira versão cortava
+     `saldo` e `custo` para inteiro não-negativo A CADA TECLA, e isso come o
+     estado intermediário que digitar É: apagar o campo para trocar o número
+     passa por string vazia, `Number("") || 0` dá 0, e o campo voltava sozinho
+     para zero antes da segunda tecla.
+
+     É o mesmo defeito que tirou o Motor da aba do ar no mesmo dia, e a regra
+     que sai dos dois é uma só: **quem sanea é o resolvedor, e não o caminho de
+     edição**. O `resolveCatarse` já trata NaN, negativo e lixo, e é o único
+     lugar em que o número vira decisão. Ver a nota do `TabCatarse`. */
+  const patchCatarse = (partial) =>
+    setDraft((d) => {
+      const atual = d.catarse ?? { saldo: 0, compras: [] };
+      return { ...d, catarse: { ...atual, ...partial } };
     });
 
   const patchTecnicasCombate = (partial) =>
@@ -1019,6 +1088,30 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
     onSave(creature);
   };
 
+  /* ============================================================ */
+  /* A ALTURA DO CABEÇALHO, PUBLICADA COMO VARIÁVEL CSS            */
+  /* ============================================================ */
+  /* ⚠ ELA MUDA COM A LARGURA, e por isso não pode ser constante. Medido em
+     2026-09-02: 166px em 1440, 128px em 1024 e 219px em 390, porque o título
+     quebra de linha no telefone e a barra de abas rola.
+
+     Quem precisa disso é todo mundo que gruda alguma coisa abaixo do
+     cabeçalho. O `lg:top-[104px]` do Preview era de quando o cabeçalho tinha
+     uma linha só, e estava 60px curto: o topo do Preview ficava escondido
+     atrás da barra de abas ao rolar. */
+  const headerRef = useRef(null);
+  useLayoutEffect(() => {
+    const el = headerRef.current;
+    if (!el) return undefined;
+    const publicar = () =>
+      document.documentElement.style.setProperty("--afty-topo", `${Math.round(el.getBoundingClientRect().height)}px`);
+    publicar();
+    if (typeof ResizeObserver === "undefined") return undefined;
+    const ro = new ResizeObserver(publicar);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   return (
     /* As primitivas de Addon que ESTA criatura enxerga. Elas descem por contexto
        porque os dois consumidores (`CanalPicker` e `VariavelPicker`) são folhas
@@ -1026,7 +1119,7 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
     <PrimitivasDeAddon primitivas={derived.primitivas}>
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-purple-950/30 text-white">
       {/* ===== HEADER ===== */}
-      <header className="sticky top-0 z-30 bg-slate-950/95 backdrop-blur border-b border-purple-900/50">
+      <header ref={headerRef} className="sticky top-0 z-30 bg-slate-950/95 backdrop-blur border-b border-purple-900/50">
         <div className="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center gap-x-3 gap-y-2">
           <button
             onClick={onCancel}
@@ -1041,6 +1134,25 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
               altura. */}
           <div className="flex items-center gap-2 min-w-0 order-last basis-full sm:order-none sm:basis-0 sm:flex-1">
             <Wand2 className="w-5 h-5 text-purple-400 flex-shrink-0" />
+            {/* ⚠ ESTE `text-lg sm:text-xl` É LETRA MORTA, e fica documentado
+                porque descobrir isso de novo custa meia hora.
+
+                O `src/index.css` é global e traz `h1 { font-size: 56px;
+                margin: 32px 0 }` FORA de qualquer `@layer`. No Tailwind 4 as
+                utilidades vivem dentro de `@layer utilities`, e regra SEM
+                camada vence regra EM camada por mais específica que a segunda
+                seja. Então o título sai em 56px, não em 20px, e carrega 64px de
+                margem morta acima de 1024px (40px abaixo). Medido em 2026-09-02.
+
+                ⚠ O CONSERTO (`my-0!`) FOI TESTADO E DESFEITO. Ele funciona, e a
+                barra cai de 230px para 166px em 1440. O problema é o que vem
+                junto: o selo fixo "Grimório Afty · privado" (App.jsx, `top: 8`)
+                passa a cobrir o botão Voltar em 9px no desktop e 29px no
+                telefone. A colisão já existe hoje em 390px, com 8px, e mexer
+                aqui a triplica.
+
+                Fechar isso pede decidir onde o selo mora, que é do autor.
+                Anotado em docs/a-fazer.md. */}
             <h1 className="text-lg sm:text-xl font-bold truncate min-w-0">
               {isEditing ? "Editar Criatura" : "Nova Criatura"} · Afty
             </h1>
@@ -1089,7 +1201,7 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
       <div className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* preview: no topo no mobile, à direita no desktop */}
         <aside className="order-first lg:order-last lg:col-span-1">
-          <div className="lg:sticky lg:top-[104px]">
+          <div className="lg:sticky" style={{ top: "var(--afty-topo, 104px)" }}>
             <AftyPreview draft={draft} derived={derived} />
           </div>
         </aside>
@@ -1117,8 +1229,9 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
           {tabAtiva === "invocacoes" && <TabInvocacoes draft={draft} derived={derived} addInvocacao={addInvocacao} removeInvocacao={removeInvocacao} duplicarInvocacao={duplicarInvocacao} moverInvocacao={moverInvocacao} patchInvocacao={patchInvocacao} patchInvocacaoAttr={patchInvocacaoAttr} efeitosApi={efeitosApi} addHorda={addHorda} removeHorda={removeHorda} patchHorda={patchHorda} />}
           {tabAtiva === "equipamentos" && <TabEquipamentos draft={draft} derived={derived} addEquipamento={addEquipamento} removeEquipamento={removeEquipamento} patchEquipamento={patchEquipamento} toggleFerramenta={toggleFerramenta} patchFerramenta={patchFerramenta} toggleEncantamento={toggleEncantamento} addArmaCustom={addArmaCustom} patchArmaCustom={patchArmaCustom} removeArmaCustom={removeArmaCustom} />}
           {tabAtiva === "interludios" && <TabInterludios draft={draft} derived={derived} setTreinoProgresso={setTreinoProgresso} setTreinoInstance={setTreinoInstance} setTreinoAlvo={setTreinoAlvo} setTreinoEscolha={setTreinoEscolha} setTreinoEspecialVezes={setTreinoEspecialVezes} sistema={sistema} setFocosLivres={setFocosLivres} />}
-          {tabAtiva === "addons" && <TabAddons draft={draft} derived={derived} setAddons={setAddons} />}
-          {tabAtiva === "calculos" && <TabCalculos derived={derived} setStatOverride={setStatOverride} patchCombate={patchCombate} gatilhosTreino={derived.gatilhosTreino} onGatilhoTreino={(id, v) => setTreinosAtivos((m) => ({ ...m, [id]: v }))} />}
+          {tabAtiva === "defesas" && <TabDefesas derived={derived} setDefesaEstado={setDefesaEstado} setDefesaRd={setDefesaRd} />}
+          {tabAtiva === "catarse" && <TabCatarse draft={draft} derived={derived} patchCatarse={patchCatarse} />}
+          {tabAtiva === "calculos" && <TabCalculos draft={draft} derived={derived} setStatOverride={setStatOverride} patchCombate={patchCombate} setAddons={setAddons} gatilhosTreino={derived.gatilhosTreino} onGatilhoTreino={(id, v) => setTreinosAtivos((m) => ({ ...m, [id]: v }))} />}
           {STUBS[tabAtiva] && <StubCard title={abasVisiveis.find((t) => t.id === tabAtiva)?.label} text={STUBS[tabAtiva]} />}
         </div>
       </div>
@@ -1158,6 +1271,81 @@ function StubCard({ title, text }) {
    (não têm faixa de Mestre e o treino é com a arma). */
 
 const ABREV_ATTR = Object.fromEntries(AFTY_ATTRS.map((a) => [a.key, a.abbr]));
+const LABEL_ATTR = Object.fromEntries(AFTY_ATTRS.map((a) => [a.key, a.label]));
+
+/* ============================================================ */
+/* O ATRIBUTO DA PERÍCIA, TROCÁVEL À MÃO (2026-09-05)            */
+/* ============================================================ */
+/* Pedido do autor: *"deixa por exemplo Feitiçaria como INT com a opção de mudar
+   para qual a pessoa quiser"*, porque *"muita gente precisa disso por N fontes
+   diferentes como Treinos Próprios e etc"*.
+
+   ⚠ EM REPOUSO ELE É EXATAMENTE O QUE JÁ ESTAVA ALI: as mesmas três letras, no
+   mesmo tamanho, na mesma cor. O autor pediu que não ocupasse muito espaço, e a
+   forma de gastar zero espaço é não acrescentar elemento nenhum, e sim dar
+   função ao que já existia. Só o `hover` e o `focus` revelam que é botão.
+
+   ⚠ E ELE NÃO PODE MOVER O NÚMERO. Ele vive dentro do `flex-1 min-w-0` do nome,
+   que é quem absorve toda a folga da linha: o valor e os dois botões de ação
+   vêm depois, com largura fixa. Foi por isso que ele NÃO virou uma coluna
+   própria, que era o desenho óbvio e teria empurrado a coluna do valor.
+
+   TROCADO fica ROXO, e é a única diferença visível. É resultado, e não
+   explicação: a pessoa vê de relance quais linhas fugiram do livro. */
+function AtributoDaPericia({ atributo, padrao, nome, aberto, onAbrir }) {
+  const trocado = atributo !== padrao;
+  return (
+    <button
+      type="button"
+      onClick={onAbrir}
+      aria-expanded={aberto}
+      title={trocado
+        ? `${LABEL_ATTR[atributo] ?? atributo}, no lugar de ${LABEL_ATTR[padrao] ?? padrao}`
+        : LABEL_ATTR[atributo] ?? atributo}
+      aria-label={`Atributo de ${nome}`}
+      className={`flex-shrink-0 rounded px-1 -mx-1 text-[9px] uppercase tracking-wider transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-500 ${
+        aberto ? "bg-purple-900/60 text-purple-200"
+          : trocado ? "text-purple-300 hover:bg-slate-800"
+            : "text-slate-500 hover:text-purple-300 hover:bg-slate-800"
+      }`}
+    >
+      {ABREV_ATTR[atributo] || ""}
+    </button>
+  );
+}
+
+/* O painel de escolha, embaixo da linha. Mesmo desenho do painel de Ofícios,
+   que já morava aqui: seis chips, um por atributo.
+   ⚠ O chip do PADRÃO do livro leva um ponto, e não a palavra "padrão": é a
+   informação sem virar texto explicativo, e cabe em 6px. */
+function PainelAtributoPericia({ atributo, padrao, onEscolher }) {
+  return (
+    <div className="flex flex-wrap gap-1 rounded-lg border border-slate-800 bg-slate-950/60 p-1.5">
+      {AFTY_ATTRS.map((a) => {
+        const ativo = a.key === atributo;
+        return (
+          <button
+            key={a.key}
+            type="button"
+            onClick={() => onEscolher(a.key)}
+            aria-pressed={ativo}
+            title={a.key === padrao ? `${a.label}, o padrão do livro` : a.label}
+            className={`inline-flex items-center gap-1 rounded border px-2 py-1 text-[10px] font-semibold transition-colors ${
+              ativo
+                ? "border-purple-600 bg-purple-950/60 text-purple-200"
+                : "border-slate-700 bg-slate-900 text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            {a.abbr}
+            {a.key === padrao && (
+              <span className="w-1 h-1 rounded-full bg-current opacity-60" aria-hidden="true" />
+            )}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 const PROF_ROTULOS = ["Treinado", "Mestre"];
 const PROF_POR_INDICE = [null, "treinado", "mestre"];
 const INDICE_POR_PROF = { treinado: 1, mestre: 2 };
@@ -1171,6 +1359,7 @@ function TabPericias({
   const { pericias, resistencias, ataques, manobras, orcamento } = derived.testes;
   const [periciaEditando, setPericiaEditando] = useState(null);
   const [oficioAberto, setOficioAberto] = useState(null);
+  const [atributoAberto, setAtributoAberto] = useState(null);
   const [arrastando, setArrastando] = useState(null);
   const personalizadas = Array.isArray(draft.periciasPersonalizadas) ? draft.periciasPersonalizadas : [];
 
@@ -1184,6 +1373,20 @@ function TabPericias({
     const atuais = mapaOficios[id] ?? [];
     const next = atuais.includes(nome) ? atuais.filter((item) => item !== nome) : [...atuais, nome];
     patch({ periciaOficios: { ...mapaOficios, [id]: next }, periciaOficio: "" });
+  };
+  /* A troca manual de atributo. Escolher o PADRÃO do livro apaga a entrada em
+     vez de gravá-la, e isso não é economia de bytes: uma ficha que grava
+     `feiticaria: "inteligencia"` fica presa ao Inteligência para sempre, e no
+     dia em que uma errata mudar o atributo daquela perícia no livro, ou em que
+     um Treinamento passar a trocá-lo, esta linha continuaria vencendo os dois
+     em silêncio. Sem entrada, a linha volta a seguir quem manda. */
+  const setPericiaAtributo = (id, chave) => {
+    const p = pericias.find((item) => item.id === id);
+    const padrao = p?.atributoPadrao ?? p?.atributo;
+    const mapa = { ...(draft.periciaAtributoManual ?? {}) };
+    if (chave === padrao) delete mapa[id];
+    else mapa[id] = chave;
+    patch({ periciaAtributoManual: mapa });
   };
   const finalizarEdicao = (p) => {
     const bruta = personalizadas.find((item) => item.id === p.id);
@@ -1328,11 +1531,14 @@ function TabPericias({
                       bruta={p.personalizada ? (personalizadas.find((item) => item.id === p.id) ?? p) : null}
                       editando={periciaEditando === p.id}
                       editandoOficio={oficioAberto === p.id}
+                      editandoAtributo={atributoAberto === p.id}
                       oficios={mapaOficios[p.id] ?? []}
                       setProficiencia={setProficiencia}
                       editarPericiaPersonalizada={editarPericiaPersonalizada}
                       setPericiaEditando={setPericiaEditando}
                       setOficioAberto={setOficioAberto}
+                      setAtributoAberto={setAtributoAberto}
+                      setPericiaAtributo={setPericiaAtributo}
                       finalizarEdicao={finalizarEdicao}
                       alternarOficio={alternarOficio}
                       removerPericia={removerPericia}
@@ -1399,8 +1605,9 @@ function TabPericias({
  * com a classe: a pega apareceria junto com o painel de fontes, e vice-versa.
  */
 function LinhaPericiaOrdenavel({
-  p, arrastavel, bruta, editando, editandoOficio, oficios,
+  p, arrastavel, bruta, editando, editandoOficio, editandoAtributo, oficios,
   setProficiencia, editarPericiaPersonalizada, setPericiaEditando, setOficioAberto,
+  setAtributoAberto, setPericiaAtributo,
   finalizarEdicao, alternarOficio, removerPericia,
 }) {
   const {
@@ -1443,16 +1650,23 @@ function LinhaPericiaOrdenavel({
             {p.nome}
           </button>
         ) : null}
-        atributoConteudo={editando ? (
-          <select
-            value={bruta?.atributo || "inteligencia"}
-            onChange={(e) => editarPericiaPersonalizada(p.id, { atributo: e.target.value })}
-            className="h-6 w-12 rounded border border-slate-700 bg-slate-950 px-1 text-[9px] font-semibold text-slate-300 outline-none focus:border-purple-500"
-            aria-label={`Atributo de ${p.nome}`}
-          >
-            {AFTY_ATTRS.map((a) => <option key={a.key} value={a.key}>{a.abbr}</option>)}
-          </select>
-        ) : null}
+        /* ⚠ O SELETOR DE EDIÇÃO SAIU DAQUI. Ele era um `<select>` de 48px que só
+           aparecia com a perícia personalizada em modo de edição, e o botão de
+           agora faz a mesma coisa em toda linha e sem ocupar espaço. Duas
+           maneiras de escolher a mesma coisa é como duas verdades divergem.
+
+           O `padrao` de uma perícia personalizada é o `atributo` gravado na
+           definição dela, e o de uma perícia do livro é o do catálogo. Nos dois
+           casos ele vem de `p.atributoPadrao`, que o resolve calcula. */
+        atributoConteudo={(
+          <AtributoDaPericia
+            atributo={p.atributo}
+            padrao={p.atributoPadrao ?? p.atributo}
+            nome={p.nome}
+            aberto={editandoAtributo}
+            onAbrir={() => setAtributoAberto((a) => (a === p.id ? null : p.id))}
+          />
+        )}
         edicao={(p.personalizada || ehPericiaOficio(p.id)) ? (
           <button
             type="button"
@@ -1512,6 +1726,16 @@ function LinhaPericiaOrdenavel({
           </div>
         )}
       />
+      {editandoAtributo && (
+        <PainelAtributoPericia
+          atributo={p.atributo}
+          padrao={p.atributoPadrao ?? p.atributo}
+          onEscolher={(chave) => {
+            setPericiaAtributo(p.id, chave);
+            setAtributoAberto(null);
+          }}
+        />
+      )}
       {editandoOficio && (
         <div className="flex flex-wrap gap-1 rounded-lg border border-slate-800 bg-slate-950/60 p-1.5">
           {OFICIO_OPCOES.map((nome) => {
@@ -7472,7 +7696,7 @@ function ContadorFocos({ gastos, total, excedeu, onTotal = null }) {
               value={total}
               onChange={(e) => onTotal(e.target.value)}
               aria-label="Total de Focos de Interlúdio"
-              className="w-12 bg-slate-950 border border-slate-700 rounded px-1 text-xs font-mono font-bold text-white text-center focus:outline-none focus:border-purple-500"
+              className="w-12 bg-slate-950 border border-slate-700 rounded px-1 text-xs font-mono font-bold text-white text-center focus:outline-none focus:border-purple-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
           )
           : <span className="text-white">{total}</span>}
@@ -8238,9 +8462,12 @@ function motivoBloqueio(habilidade, acesso) {
   return "Pré-requisito não atendido";
 }
 
-function TecnicasCombateEscolhas({ draft, escolhida, onPatch }) {
+function TecnicasCombateEscolhas({ draft, derived, escolhida, onPatch }) {
   const config = draft?.tecnicasCombate ?? {};
   const armas = Array.isArray(config.armas) ? config.armas.slice(0, 2) : [];
+  const tec = derived?.tecnicasCombate ?? {};
+  const atributosOk = tec.atributosOk?.length ? tec.atributosOk : ["inteligencia", "sabedoria"];
+  const atributo = tec.atributo ?? atributosOk[0];
   const opcoes = catalogoDoTipo("arma", draft).map((a) => ({ value: a.id, label: a.nome }));
   const defineArma = (indice, id) => {
     const proxima = [...armas];
@@ -8269,14 +8496,20 @@ function TecnicasCombateEscolhas({ draft, escolhida, onPatch }) {
       </div>
       <div>
         <FieldLabel>Atributo</FieldLabel>
+        {/* ⚠ AS OPÇÕES VÊM DO DERIVADO, e não de uma lista escrita aqui. O par
+            depende de QUAL Técnicas de Combate a ficha tem (o Conjurador libera
+            Inteligência ou Sabedoria, o Controlador Presença ou Sabedoria), e a
+            lista cravada em duas opções aqui era a segunda metade do bug de
+            2026-09-02: mesmo com a habilidade do Controlador ligada, não havia
+            como escolher Presença. */}
         <OptionChips
-          value={config.atributo === "sabedoria" ? "sabedoria" : "inteligencia"}
-          onChange={(atributo) => onPatch({ atributo })}
-          options={[
-            { value: "inteligencia", label: "Inteligência" },
-            { value: "sabedoria", label: "Sabedoria" },
-          ]}
-          disabledValues={!escolhida ? ["inteligencia", "sabedoria"] : undefined}
+          value={atributo}
+          onChange={(v) => onPatch({ atributo: v })}
+          options={atributosOk.map((k) => ({
+            value: k,
+            label: AFTY_ATTRS.find((a) => a.key === k)?.label ?? k,
+          }))}
+          disabledValues={!escolhida ? atributosOk : undefined}
         />
       </div>
     </div>
@@ -8509,6 +8742,13 @@ function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, setHabili
     attrEff: derived.attrEff,
     aptidoes: derived.aptidoesEscolhidas ?? [],
     almaLivre: derived.habilidades.almaLivre,
+    /* Proficiência RESOLVIDA (escolhida mais a concedida pelo Motor), para os
+       requisitos "Treinado em X" e "Mestre em X" travarem de verdade. ⚠ Os TRÊS
+       mapas, porque as três formas do requisito perguntam coisas diferentes:
+       faixa de perícia, faixa de TR e o NOME de cada vaga de Ofício. */
+    periciaProf: derived.periciaProf,
+    resistenciaProf: derived.resistenciaProf,
+    periciaOficios: derived.periciaOficios,
   };
   // Talento lê o ND e a origem, nunca o nível de classe.
   const ctxTalento = {
@@ -8521,6 +8761,13 @@ function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, setHabili
     // Requisito de Aptidão (a Expansão de Estilo pede Domínio Simples). Sem
     // isto o chip sairia como não verificável em vez de travar.
     aptidoes: derived.aptidoesEscolhidas ?? [],
+    /* Proficiência RESOLVIDA (escolhida mais a concedida pelo Motor), para os
+       requisitos "Treinado em X" e "Mestre em X" travarem de verdade. ⚠ Os TRÊS
+       mapas, porque as três formas do requisito perguntam coisas diferentes:
+       faixa de perícia, faixa de TR e o NOME de cada vaga de Ofício. */
+    periciaProf: derived.periciaProf,
+    resistenciaProf: derived.resistenciaProf,
+    periciaOficios: derived.periciaOficios,
   };
 
   // Rótulo curto para a aba: "Base", "2°", "4°"... (o título longo não cabe).
@@ -8693,9 +8940,10 @@ function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, setHabili
                     max={derived.habilidades?.maxVezes?.[h.id] ?? 1}
                     onSetVezes={setHabilidadeVezes}
                   />}
-                  extra={h.id === "cnj_tecnicas_de_combate" ? (
+                  extra={TECNICAS_COMBATE_IDS.includes(h.id) ? (
                     <TecnicasCombateEscolhas
                       draft={draft}
+                      derived={derived}
                       escolhida={escolhidas.includes(h.id)}
                       onPatch={patchTecnicasCombate}
                     />
@@ -9264,9 +9512,13 @@ function TabAptidoes({
     escolhidas,
     origemId: draft.core?.origem?.id,
     origensQualificadas: origensQualificadas(draft),
-    // Proficiência resolvida (escolhida + concedida pelo Motor), para os
-    // requisitos de "Treinado em X" e "Mestre em X" travarem de verdade.
+    /* Proficiência RESOLVIDA (escolhida mais a concedida pelo Motor), para os
+       requisitos "Treinado em X" e "Mestre em X" travarem de verdade. ⚠ Os TRÊS
+       mapas, porque as três formas do requisito perguntam coisas diferentes:
+       faixa de perícia, faixa de TR e o NOME de cada vaga de Ofício. */
     periciaProf: derived.periciaProf,
+    resistenciaProf: derived.resistenciaProf,
+    periciaOficios: derived.periciaOficios,
   };
 
   const [catTab, setCatTab] = useState("aura");
@@ -11391,7 +11643,7 @@ const CALC_ROWS = [
   { key: "iniciativa",   label: "Iniciativa" },
 ];
 
-function TabCalculos({ derived, setStatOverride, patchCombate, gatilhosTreino, onGatilhoTreino }) {
+function TabCalculos({ draft, derived, setStatOverride, patchCombate, setAddons, gatilhosTreino, onGatilhoTreino }) {
   return (
     <>
     <Card title="Cálculos">
@@ -11437,6 +11689,13 @@ function TabCalculos({ derived, setStatOverride, patchCombate, gatilhosTreino, o
         estado e a grade acima se move. Some para quem não tem estado nenhum.
         ⚠ Arranjo PROVISÓRIO (autor, 2026-07-30). */}
     <SimulacaoCombateCard derived={derived} patchCombate={patchCombate} gatilhosTreino={gatilhosTreino} onGatilhoTreino={onGatilhoTreino} />
+
+    {/* ⚠ OS ADDONS VÊM POR ÚLTIMO, e a ordem é a leitura da aba: primeiro os
+        números, depois a bancada que os move, e por fim de onde o conteúdo veio.
+        Instalar um pacote muda o que a ficha inteira tem, mas é configuração e
+        não é resultado, então ele não pode empurrar a grade de stats para baixo
+        da dobra, que é o que aconteceria se subisse. */}
+    <TabAddons draft={draft} derived={derived} setAddons={setAddons} />
     </>
   );
 }
@@ -11465,7 +11724,7 @@ function OptionChips({ value, options, onChange, disabledValues }) {
             disabled={bloqueado}
             aria-pressed={on}
             title={bloqueado ? o.lockTitle : undefined}
-            className={`inline-flex items-center gap-1 text-[12px] font-semibold px-2.5 py-1 rounded-lg border transition-colors ${
+            className={`inline-flex items-center gap-1 text-[12px] font-semibold px-2.5 py-1 rounded-lg border transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-500 ${
               on
                 ? "bg-purple-700 border-purple-600 text-white"
                 : bloqueado
@@ -11519,94 +11778,151 @@ const EFEITO_CANAL_LABEL = {
   caracteristicasLivres: "Características Grátis",
 };
 
-/* Efeitos das Habilidades de Controlador aplicados nesta invocação (já embutidos
-   nos números acima), listados por FONTE. Discreto: sem o realce roxo. */
-function EfeitosHabilidadeNota({ efe }) {
-  const detalhes = efe?.detalhes || [];
-  if (!detalhes.length) return null;
-  return (
-    <div className="border-t border-slate-800 pt-2">
-      <div className="text-[9px] uppercase tracking-wider text-slate-500 mb-1">Efeitos de Habilidade (Controlador)</div>
-      <ul className="space-y-0.5">
-        {detalhes.map((d, i) => (
-          <li key={i} className="flex items-baseline justify-between gap-3 text-[11px]">
-            <span className="text-slate-400 truncate">{d.nome}</span>
-            <span className="font-mono text-slate-300 flex-shrink-0 whitespace-nowrap">
-              {/* O canal do dado extra trafega o MÁXIMO do dado, então mostrar
-                  "+8" ali seria mentira: o que a invocação ganha é 1d8. */}
-              {d.canal === "ataqueDanoAdicional"
-                ? dadoDoMaximo(d.valor)
-                : `+${d.valor}`}{" "}
-              {EFEITO_CANAL_LABEL[d.canal] || d.canal}
-            </span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
+/* ============================================================ */
+/* AS FONTES DE UM NÚMERO DA INVOCAÇÃO                           */
+/* ============================================================ */
+/* ⚠ ERA UMA LISTA, e virou hover em 2026-09-02 a pedido do autor: *"Efeitos de
+   Habilidade Controlador ficou MUITO grande... Faça com que eu passe o mouse em
+   cima dos valores e mostra a fonte, ao invés de deixar do jeito que está
+   ocupando espaço."* Num Controlador de nível alto ela chegava a 22 linhas, e
+   ficava embaixo do editor, empurrando tudo.
+
+   Cada efeito agora é ancorado NO NÚMERO que ele mexeu, pelo `PainelDeFontes`,
+   que é o idioma do projeto para isso desde sempre.
+
+   ⚠ ESTE HELPER DEIXOU DE SER O PAINEL DAS FILAS DO CARD em 2026-09-04, e o
+   motivo é uma pergunta do autor: *"pq passar o Mouse em Cima não mostra o
+   calculo base? E só coisas extras?"*
+
+   Ele monta a lista a partir dos CANAIS, então mostrava só o que as Habilidades
+   acrescentaram. O comentário que ficava aqui defendia isso dizendo que o total
+   "lê como contribuição", e media mal o estrago em dois pontos:
+
+     1. Nas filas de teste o painel ficava pendurado no RÓTULO, e a fila tem
+        vários números. O "Total +20" do Acerto não era nenhum dos três valores
+        ao lado (+41, +35 e CD 25), e o de Resist. (+11) não era nenhum dos
+        cinco. Um total que não é total de nada.
+     2. O motor JÁ ENTREGAVA a conta inteira em `inv.fontes` e em
+        `testes.*.partes`, e a tela a ignorava para remontar uma lista pior.
+
+   Agora toda fila do card lê `inv.fontes.*` e todo teste lê o `partes` da sua
+   própria linha, com o painel ancorado em CADA número. A soma fecha com o
+   valor mostrado, e há assert prendendo isso (`t-invocacoes-fontes.mjs`).
+
+   O helper continua vivo para os dois lugares em que a leitura de CONTRIBUIÇÃO
+   é a certa, porque ali não existe um número derivado embaixo: os pontos de
+   atributo concedidos e as fontes de dano e cura de uma Ação. */
+function fontesDoCanal(efe, ...canais) {
+  const alvo = new Set(canais);
+  const varios = canais.length > 1;
+  return (efe?.detalhes || [])
+    .filter((d) => alvo.has(d.canal))
+    .map((d) => ({
+      // Com mais de um canal na mesma âncora (o Orçamento junta três), o nome da
+      // habilidade sozinho não diz o que ela deu.
+      label: varios ? `${d.nome} · ${EFEITO_CANAL_LABEL[d.canal] || d.canal}` : d.nome,
+      /* ⚠ O CANAL DO DADO EXTRA TRAFEGA O MÁXIMO DO DADO, e por isso ele entra
+         com  (a notação) e valor ZERO. Mostrar "+8" seria mentira, e
+         somar 8 no total do painel seria pior: 1d8 não vale 8. O total do painel
+         fica sendo a parte FIXA, e o dado aparece na linha dele. */
+      valor: d.canal === "ataqueDanoAdicional" ? 0 : d.valor,
+      ...(d.canal === "ataqueDanoAdicional" ? { texto: dadoDoMaximo(d.valor) } : {}),
+    }));
 }
+
+const somaDasFontes = (partes) => (partes || []).reduce((t, p) => t + (Number(p.valor) || 0), 0);
+
+/* ⚠ NÃO EXISTE MAIS UMA FILA DE SOBRA. Os canais de dano e cura tinham uma
+   ("Dano e Cura", com cinco pílulas), e o autor tirou em 2026-09-02: *"Essa
+   parte não precisa... Pode deixar só como o Hover no Dano ou Cura."*
+
+   Eles agora ancoram na AÇÃO, que é onde a rolagem que eles modificam existe:
+   uma Ação de Ataque abre as fontes de dano, uma de Cura abre as de cura.
+
+   ⚠ O PREÇO É REAL e fica registrado: invocação SEM nenhuma Ação não mostra
+   esses bônus em lugar nenhum. Eles continuam somando quando uma Ação nascer,
+   e sem rolagem não há número em que pendurá-los. */
+const CANAIS_DE_DANO = ["danoNivel", "danoBonus", "ataqueDanoAdicional"];
+const CANAIS_DE_CURA = ["curaNivel", "curaBonus"];
 
 /* Bloco de verificação: Acerto (Corpo a Corpo / A Distância, melhor atributo),
    CD de ataque por TR, os 5 Testes de Resistência (treinado destacado com *) e
    as Perícias treinadas, com os bônus já calculados. */
 /* Pílula de um valor de teste (nome + bônus). `on` destaca treinado (roxo),
    `mestre` destaca mestre (âmbar, com "M"). */
-function TestePill({ nome, bonus, on, mestre, title }) {
-  const sinal = bonus >= 0 ? `+${bonus}` : `${bonus}`;
+/* ⚠ O HOVER AQUI É DE ESTADO, e não `group-hover` do Tailwind. As filas de TR e
+   de Perícia têm um número VARIÁVEL de pílulas, e um `group` nomeado precisa de
+   nome literal nos dois lados (o Tailwind lê o código-fonte e não enxerga
+   classe montada em template). Com `onMouseEnter` cada pílula abre só o painel
+   dela, em qualquer quantidade, e o `aparecer=""` garante que nenhum `group`
+   ancestral a acenda por tabela. */
+function TestePill({ nome, bonus, on, mestre, title, partes, valorTexto }) {
+  const [aberto, setAberto] = useState(false);
+  const lista = (partes || []).filter(Boolean);
+  const sinal = valorTexto ?? (bonus >= 0 ? `+${bonus}` : `${bonus}`);
   const cls = mestre
     ? "border-amber-500/60 bg-amber-950/30 text-amber-100"
     : on
       ? "border-purple-700/60 bg-purple-950/40 text-purple-200"
       : "border-slate-800 bg-slate-900/70 text-slate-300";
   return (
-    <span title={title} className={`inline-flex items-baseline gap-1 px-1.5 py-0.5 rounded font-mono text-[11px] border ${cls}`}>
+    <span
+      title={title}
+      className={`relative inline-flex items-baseline gap-1 px-1.5 py-0.5 rounded font-mono text-[11px] border ${cls} ${lista.length ? "cursor-help" : ""}`}
+      onMouseEnter={() => setAberto(true)}
+      onMouseLeave={() => setAberto(false)}
+    >
       <span className="text-[10px] opacity-80">{nome}</span>
       <b className={mestre ? "text-amber-100" : on ? "text-purple-100" : "text-white"}>{sinal}</b>
       {mestre && <span className="text-[9px] font-extrabold text-amber-300">M</span>}
+      {lista.length > 0 && aberto && (
+        <PainelDeFontes partes={lista} total={somaDasFontes(lista)} aparecer="" aberto ancora="esquerda" />
+      )}
     </span>
   );
 }
 
+/* ⚠ A FONTE ANCORA EM CADA PÍLULA desde 2026-09-04, e não mais no rótulo da
+   fila. O rótulo era a âncora porque `bonusTeste` alimenta Acerto, Resistências
+   e Perícias ao mesmo tempo, e repetir essa parcela por pílula parecia ruído.
+   O preço disso é que a fila tem VÁRIOS números e o painel só cabia UM total,
+   então ele mostrava a soma dos extras e mais nada: "+20" embaixo de uma fila
+   que exibe +41, +35 e CD 25.
+
+   Agora cada número abre a conta dele por inteiro, do atributo até o último
+   canal, exatamente como a Ficha Final já fazia. As parcelas vêm prontas do
+   motor (`resolveTestesInvocacao`), então a tela não recalcula nada. */
 function InvocacaoTestes({ testes }) {
   if (!testes) return null;
-  const { acerto, cd, resistencias, pericias } = testes;
-  const rotulo = "text-[9px] uppercase tracking-wider text-slate-500 w-16 flex-shrink-0 pt-1";
+  const { acerto, cd, cdPartes, resistencias, pericias } = testes;
   return (
-    <div className="space-y-1.5 pt-0.5">
-      <div className="flex flex-wrap items-start gap-x-2 gap-y-1">
-        <span className={rotulo}>Acerto</span>
+    <>
+      <LinhaDetalhe rotulo="Acerto">
         <div className="flex flex-wrap gap-1.5">
-          <TestePill nome="Corpo a Corpo" bonus={acerto.corpo.bonus} on={acerto.corpo.treinado} title={acerto.corpo.treinado ? "Treinado" : undefined} />
-          <TestePill nome="A Distância" bonus={acerto.distancia.bonus} on={acerto.distancia.treinado} title={acerto.distancia.treinado ? "Treinado" : undefined} />
-          {/* Característica de Teste em Ataque: metade do valor e só com o
-              gatilho, então não entra no número plano acima. */}
-          {acerto.corpo.comGatilho > 0 && (
-            <TestePill nome="Com Gatilho" bonus={acerto.corpo.comGatilho} title="Bônus de Característica, só quando o gatilho ocorre" />
-          )}
-          <span className="inline-flex items-baseline gap-1 px-1.5 py-0.5 rounded font-mono text-[11px] border border-slate-800 bg-slate-900/70 text-slate-500" title="CD com o melhor atributo. Cada Ação por TR mostra a sua CD exata.">
-            <span className="text-[10px]">CD ataque</span><b>{cd}</b>
-          </span>
+          <TestePill nome="Corpo a Corpo" bonus={acerto.corpo.bonus} on={acerto.corpo.treinado} partes={acerto.corpo.partes} title={acerto.corpo.treinado ? "Treinado" : undefined} />
+          <TestePill nome="A Distância" bonus={acerto.distancia.bonus} on={acerto.distancia.treinado} partes={acerto.distancia.partes} title={acerto.distancia.treinado ? "Treinado" : undefined} />
+          {/* A CD não recebe bônus de teste, e por isso tem parcelas próprias. */}
+          <TestePill nome="CD" valorTexto={String(cd)} partes={cdPartes} title="CD com o melhor atributo. Cada Ação por TR mostra a sua CD exata." />
         </div>
-      </div>
-      <div className="flex flex-wrap items-start gap-x-2 gap-y-1">
-        <span className={rotulo}>Resist.</span>
+      </LinhaDetalhe>
+      <LinhaDetalhe rotulo="Resist.">
         <div className="flex flex-wrap gap-1.5">
           {resistencias.map((r) => (
             <TestePill
               key={r.value}
-              nome={r.comGatilho > 0 ? `${r.label} (+${r.comGatilho} com gatilho)` : r.label}
+              nome={r.label}
               bonus={r.bonus}
               on={r.treinado}
               mestre={r.mestre}
+              partes={r.partes}
               title={r.mestre ? "Mestre (1,5x BT)" : r.treinado ? "Treinado (BT)" : undefined}
             />
           ))}
         </div>
-      </div>
-      <div className="flex flex-wrap items-start gap-x-2 gap-y-1">
-        <span className={rotulo}>Perícias</span>
+      </LinhaDetalhe>
+      <LinhaDetalhe rotulo="Perícias">
         {pericias.length === 0 ? (
-          <span className="text-[11px] text-slate-600 italic pt-1">nenhuma treinada</span>
+          <span className="text-[11px] text-slate-600">Nenhuma Treinada</span>
         ) : (
           <div className="flex flex-wrap gap-1.5">
             {/* Uma Característica de Teste dá bônus em perícia NÃO treinada, e
@@ -11619,20 +11935,90 @@ function InvocacaoTestes({ testes }) {
                 bonus={p.bonus}
                 on={p.treinado}
                 mestre={p.mestre}
+                partes={p.partes}
                 title={p.mestre ? "Mestre (1,5x BT)" : p.treinado ? "Treinado (BT)" : "Não treinada (sem BT)"}
               />
             ))}
           </div>
         )}
-      </div>
-    </div>
+      </LinhaDetalhe>
+    </>
   );
 }
 
 /* Marcadores da invocação: uma Habilidade de Controlador que vale só para
    ALGUMAS invocações vira um toggle aqui. O marcador que pede escolha (Precisão)
    abre as opções na mesma linha, porque é onde o efeito dele aparece. */
-function InvocacaoMarcadores({ inv, marcadores, onPatch }) {
+/* ============================================================ */
+/* QUAIS OUTRAS INVOCAÇÕES SÃO A ORIGEM DESTA                    */
+/* ============================================================ */
+/* ⚠ ESTE SELETOR ERA O QUE FALTAVA para as Dez Sombras funcionarem na prática.
+   O motor de fontes ficou pronto em 2026-09-02 (dois passes, `fontes()` no DSL,
+   políticas de fusão) e passava 38 asserts, mas `marcadorFontes` só era
+   preenchível editando o JSON da ficha à mão: na tela não havia como dizer QUAIS
+   sombras uma Herança herdou. O autor: *"Eles não estavam de fato funcionando
+   na prática."*
+
+   ⚠ A LISTA EXCLUI A PRÓPRIA INVOCAÇÃO. Declarar-se como fonte é o ciclo que o
+   passe 1 do resolvedor já corta (ela leria o próprio PV pela metade do
+   cálculo), e oferecer a opção seria convidar para ele.
+
+   O teto vem do registro (`fontesMax`) e AVISA em vez de bloquear, que é o
+   padrão do projeto: a Quimera do Bônus +3 funde 2, e escolher 3 fica vermelho
+   sem impedir o teste da mesa. */
+function FontesDoMarcador({ inv, marcador, outras, onPatch }) {
+  const atuais = Array.isArray(inv?.marcadorFontes?.[marcador.id])
+    ? inv.marcadorFontes[marcador.id]
+    : [];
+  const alternar = (id) => {
+    const proxima = atuais.includes(id) ? atuais.filter((x) => x !== id) : [...atuais, id];
+    onPatch({ marcadorFontes: { ...(inv.marcadorFontes || {}), [marcador.id]: proxima } });
+  };
+  const teto = marcador.fontesMax;
+  const excedeu = teto != null && atuais.length > teto;
+  if (!outras.length) {
+    return (
+      <p className="text-[11px] text-slate-500 flex items-center gap-1.5 pl-1">
+        <AlertTriangle className="w-3 h-3 flex-shrink-0 text-amber-400" aria-hidden="true" />
+        Nenhuma outra invocação na ficha para servir de origem.
+      </p>
+    );
+  }
+  return (
+    <div className="pl-1 space-y-1.5">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-[9px] uppercase tracking-wider text-slate-500">Origem</span>
+        <span className={`font-mono text-[10px] tabular-nums ${excedeu ? "text-rose-300" : "text-slate-500"}`}>
+          {atuais.length}{teto != null ? ` / ${teto}` : ""}
+        </span>
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        {outras.map((o) => {
+          const on = atuais.includes(o.id);
+          return (
+            <button
+              key={o.id}
+              type="button"
+              onClick={() => alternar(o.id)}
+              aria-pressed={on}
+              title={o.grauLabel}
+              className={`inline-flex items-center gap-1 text-[12px] font-semibold px-2.5 py-1 rounded-lg border transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-500 ${
+                on
+                  ? "bg-purple-700 border-purple-600 text-white"
+                  : "border-slate-700 text-slate-300 hover:text-white hover:border-slate-600"
+              }`}
+            >
+              {o.nome}
+              <span className={`text-[9px] ${on ? "opacity-70" : "text-slate-500"}`}>{o.grauCurto}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function InvocacaoMarcadores({ inv, marcadores, outrasInvocacoes = [], onPatch }) {
   if (!marcadores?.length) return null;
   const alternar = (id) =>
     onPatch({ marcadores: { ...(inv.marcadores || {}), [id]: !marcadorLigado(inv, id) } });
@@ -11646,7 +12032,8 @@ function InvocacaoMarcadores({ inv, marcadores, onPatch }) {
         {marcadores.map((m) => {
           const on = marcadorLigado(inv, m.id);
           return (
-            <div key={m.id} className="flex flex-wrap items-center gap-2">
+            <div key={m.id} className="space-y-1.5">
+            <div className="flex flex-wrap items-center gap-2">
               <BoolChip ativo={on} onToggle={() => alternar(m.id)}>
                 <Star className="w-3 h-3" aria-hidden="true" /> {m.label}
               </BoolChip>
@@ -11667,9 +12054,38 @@ function InvocacaoMarcadores({ inv, marcadores, onPatch }) {
                 <AlertTriangle className="w-3.5 h-3.5 text-amber-400" aria-label="Escolha em falta" />
               )}
             </div>
+            {on && m.fontes && (
+              <FontesDoMarcador inv={inv} marcador={m} outras={outrasInvocacoes} onPatch={onPatch} />
+            )}
+            </div>
           );
         })}
       </div>
+    </div>
+  );
+}
+
+/* ============================================================ */
+/* UMA FILA DO BLOCO DE DETALHE                                  */
+/* ============================================================ */
+/* ⚠ TODA FILA TEM RÓTULO, e é isso que endireita o bloco. Metade delas não
+   tinha: Corpo, Crítico e os bônus de Dano começavam colados na borda esquerda
+   enquanto Acerto, Resist. e Perícias começavam 64px adentro. A coluna ficava
+   serrilhada, e a fila sem nome não dizia de que assunto era.
+
+   ⚠ O RÓTULO DEIXOU DE SER GATILHO DE HOVER em 2026-09-04. Ele abria o painel
+   de fontes da FILA, e uma fila tem vários números: o painel cabia um total só,
+   e aquele total não era nenhum deles. Agora quem abre é cada pílula, pela
+   `TestePill`. O componente ficou sem `partes`, `grupo` e `aparecer`. */
+const PILL_DETALHE = "inline-flex items-baseline gap-1 px-1.5 py-0.5 rounded font-mono text-[11px] border border-slate-800 bg-slate-900/70 text-slate-300";
+
+function LinhaDetalhe({ rotulo, children }) {
+  return (
+    <div className="flex flex-wrap items-start gap-x-2 gap-y-1">
+      <span className="text-[9px] uppercase tracking-wider text-slate-500 w-14 sm:w-16 flex-shrink-0 pt-1">
+        {rotulo}
+      </span>
+      <div className="flex flex-wrap items-center gap-1.5 min-w-0">{children}</div>
     </div>
   );
 }
@@ -11681,78 +12097,56 @@ function InvocacaoMarcadores({ inv, marcadores, onPatch }) {
 function InvocacaoOpcoesDeUso({ opcoes, margemCritico, criticoBrutal }) {
   const nada = !opcoes?.length && margemCritico >= 20 && !criticoBrutal;
   if (nada) return null;
-  const pill = "inline-flex items-baseline gap-1 px-1.5 py-0.5 rounded font-mono text-[11px] border border-slate-800 bg-slate-900/70 text-slate-300";
   return (
-    <div className="flex flex-wrap items-center gap-1.5">
+    <LinhaDetalhe rotulo="Uso">
       {(opcoes ?? []).map((o) => (
-        <span key={o.id} className={pill}>
+        <span key={o.id} className={PILL_DETALHE}>
           <span className="text-[10px] opacity-80">{o.nome}</span><b className="text-white">{o.valor}</b>
         </span>
       ))}
       {margemCritico < 20 && (
-        <span className={pill} title="Margem de acerto crítico das jogadas dela">
+        <span className={PILL_DETALHE} title="Margem de acerto crítico das jogadas dela">
           <span className="text-[10px] opacity-80">Crítico</span><b className="text-white">{margemCritico}+</b>
         </span>
       )}
+      {/* ⚠ "Crítico Brutal" pelo nome da regra, e não "Crítico" de novo: eram
+          duas pílulas com o MESMO rótulo lado a lado, e lidas de relance
+          pareciam a mesma coisa contada duas vezes. */}
       {criticoBrutal && (
-        <span className={pill} title="Crítico Brutal">
-          <span className="text-[10px] opacity-80">Crítico</span><b className="text-white">+1 dado</b>
+        <span className={PILL_DETALHE} title="Crítico Brutal">
+          <span className="text-[10px] opacity-80">Crítico Brutal</span><b className="text-white">+1 dado</b>
         </span>
       )}
-    </div>
-  );
-}
-
-/* As regras do Shikigami de Técnica que NÃO têm canal: turno próprio na
-   Iniciativa, retorno com vida cheia na primeira dissipação, desvantagem alheia
-   e imunidade ao Prejuízo por Repetição. Vêm como marca, com o texto da regra no
-   `title`, que é onde explicação de item mora. */
-function InvocacaoTracos({ tracos }) {
-  if (!tracos?.length) return null;
-  return (
-    <div className="flex flex-wrap items-center gap-1.5">
-      {tracos.map((t) => (
-        <span
-          key={t.id}
-          title={t.regra}
-          className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] border border-sky-800/60 bg-sky-950/40 text-sky-300"
-        >
-          <Star className="w-3 h-3 flex-shrink-0" aria-hidden="true" /> {t.nome}
-        </span>
-      ))}
-    </div>
+    </LinhaDetalhe>
   );
 }
 
 /* Linha do corpo da invocação: RD (a Geral e a de cada tipo) e Tamanho. Ambos
    são DERIVADOS das Características e das Habilidades, então vivem no stat
    block e não têm campo. */
-function InvocacaoCorpo({ rd, tamanho }) {
-  const pill = "inline-flex items-baseline gap-1 px-1.5 py-0.5 rounded font-mono text-[11px] border border-slate-800 bg-slate-900/70 text-slate-300";
+function InvocacaoCorpo({ rd, tamanho, fontes }) {
   const tamLabel = AFTY_TAMANHOS.find((t) => t.value === tamanho)?.label ?? tamanho;
   const temRd = (rd?.geral ?? 0) > 0 || (rd?.porTipo?.length ?? 0) > 0;
   return (
-    <div className="flex flex-wrap items-center gap-1.5">
+    <LinhaDetalhe rotulo="Corpo">
       {temRd ? (
         <>
           {(rd.geral ?? 0) > 0 && (
-            <span className={pill} title="Redução de Dano contra todos os tipos">
-              <span className="text-[10px] opacity-80">RD</span><b className="text-white">{rd.geral}</b>
-            </span>
+            <TestePill nome="RD" valorTexto={String(rd.geral)} partes={fontes?.rdGeral} title="Redução de Dano contra todos os tipos" />
           )}
+          {/* ⚠ A RD por tipo já vem somada com a Geral no motor, e as parcelas
+              trazem as duas: sem isso o jogador soma de cabeça para conferir. */}
           {(rd.porTipo || []).map((l) => (
-            <span key={l.chave} className={pill} title="Redução de Dano contra este tipo">
-              <span className="text-[10px] opacity-80">RD {l.label}</span><b className="text-white">{l.total}</b>
-            </span>
+            <TestePill key={l.chave} nome={`RD ${l.label}`} valorTexto={String(l.total)} partes={fontes?.rdPorTipo?.[l.chave]} title="Redução de Dano contra este tipo" />
           ))}
         </>
       ) : (
-        <span className={pill}><span className="text-[10px] opacity-80">RD</span><b className="text-white">0</b></span>
+        <span className={PILL_DETALHE}><span className="text-[10px] opacity-80">RD</span><b className="text-white">0</b></span>
       )}
-      <span className={pill} title="Tamanho">
+      <span className={PILL_DETALHE} title="Tamanho">
         <span className="text-[10px] opacity-80">Tamanho</span><b className="text-white">{tamLabel}</b>
       </span>
-    </div>
+    </LinhaDetalhe>
   );
 }
 
@@ -11763,18 +12157,22 @@ function InvocacaoCorpo({ rd, tamanho }) {
    começa em 10 e reduz só até 8, enquanto o resto começa em 8 e reduz até 6.
    Com o piso fixo em 6 o campo deixava baixar um Shikigami de Técnica abaixo do
    que a regra dele permite. */
-function InvocacaoAtributos({ inv, resumo, max, onPatchAttr }) {
+function InvocacaoAtributos({ inv, resumo, max, efe, onPatchAttr }) {
   const over = resumo && resumo.usados > resumo.total;
   const base = resumo?.base ?? INV_ATTR_MIN + 2;
   const min = resumo?.min ?? INV_ATTR_MIN;
+  const fontesPts = fontesDoCanal(efe, "atributoPontos");
   return (
     <div>
       <div className="flex items-center justify-between mb-1.5">
         <span className="text-[10px] uppercase tracking-wider text-slate-400">Atributos</span>
-        <span className={`text-[11px] font-mono tabular-nums px-2 py-0.5 rounded border ${
+        <span className={`relative group/apt text-[11px] font-mono tabular-nums px-2 py-0.5 rounded border ${
           over ? "text-rose-300 border-rose-800 bg-rose-950/30" : "text-slate-300 border-slate-700 bg-slate-800/50"
-        }`}>
+        } ${fontesPts.length ? "cursor-help" : ""}`}>
           {resumo?.usados ?? 0} / {resumo?.total ?? 0} pts
+          {fontesPts.length > 0 && (
+            <PainelDeFontes partes={fontesPts} total={sinalDe(somaDasFontes(fontesPts))} aparecer="group-hover/apt:block" />
+          )}
         </span>
       </div>
       {/* Empilhado (rótulo + mod em cima, campo largo embaixo): dá espaço ao
@@ -11801,7 +12199,77 @@ function InvocacaoAtributos({ inv, resumo, max, onPatchAttr }) {
 /* Seletor de perícias treinadas da invocação: as comuns (padrão) exceto Ofício,
    limitadas pela allowance (1 + metade do melhor mod INT/SAB + ganho por grau).
    Estourar fica vermelho, não bloqueia (padrão do projeto). */
-function InvocacaoPericias({ inv, allowance, onPatch }) {
+/**
+ * Os Testes de Resistência da invocação, como MAPA.
+ *
+ * ⚠ Era um `<Select>` de um save só mais um chip de Mestre, até 2026-09-02. O
+ * autor mandou virar mapa para a Herança das Sombras poder herdar vários. O
+ * clique cicla igual ao das Perícias, porque é o mesmo gesto para o mesmo dado.
+ *
+ * ⚠ O TETO É 1 e ele CONTA, e não é firula: o modelo antigo permitia exatamente
+ * um save, e um mapa sem teto daria TR de graça a toda invocação que já existe.
+ * O que a Herança e a Quimera concedem entra por FUSÃO e não passa por aqui.
+ */
+function InvocacaoResistencias({ inv, onPatch }) {
+  const prof = trProfDaInvocacao(inv);
+  const usadas = usoTR(prof);
+  const over = usadas > TR_VAGAS_BASE;
+  const cycle = (id) => {
+    const cur = prof[id];
+    const next = { ...prof };
+    if (!cur) next[id] = "treinado";
+    else if (cur === "treinado") next[id] = "mestre";
+    else delete next[id];
+    // Grava SÓ no formato novo, e apaga os campos velhos junto: deixar os dois
+    // conviveria com o leitor defensivo preferindo o mapa, e a ficha carregaria
+    // um dado morto que ninguém mais lê.
+    onPatch({ trProf: next, trTreinado: undefined, trMestre: undefined });
+  };
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-1.5">
+        <span className="text-[10px] uppercase tracking-wider text-slate-400" title="Clique cicla treinado, mestre">
+          Testes de Resistência
+        </span>
+        <span className={`text-[11px] font-mono tabular-nums px-2 py-0.5 rounded border ${
+          over ? "text-rose-300 border-rose-800 bg-rose-950/30" : "text-slate-300 border-slate-700 bg-slate-800/50"
+        }`}>
+          {usadas} / {TR_VAGAS_BASE}
+        </span>
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        {TR_OPCOES.map((r) => {
+          const st = prof[r.value];
+          return (
+            <button
+              key={r.value}
+              type="button"
+              onClick={() => cycle(r.value)}
+              aria-pressed={!!st}
+              title={st === "mestre" ? "Mestre (1,5x BT)" : st === "treinado" ? "Treinado (BT)" : "Não treinado"}
+              className={`inline-flex items-center gap-1 text-[12px] font-semibold px-2.5 py-1 rounded-lg border transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-500 ${
+                st === "mestre"
+                  ? "bg-purple-700 border-amber-400/70 text-white"
+                  : st === "treinado"
+                    ? "bg-purple-700 border-purple-600 text-white"
+                    : "border-slate-700 text-slate-300 hover:text-white hover:border-slate-600"
+              }`}
+            >
+              {r.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function InvocacaoPericias({ inv, allowance, fontes, onPatch }) {
+  /* ⚠ A CONTA INTEIRA, e não só o canal. Antes daqui saía `fontesDoCanal(efe,
+     "pericias")`, então uma invocação sem nenhuma Habilidade que desse vaga não
+     tinha hover NENHUM, e com uma tinha um painel que ignorava a base (1, mais
+     metade do maior mod entre Inteligência e Sabedoria, mais o grau). */
+  const fontesVagas = fontes?.vagasPericia ?? [];
   const prof = (inv.periciasProf && typeof inv.periciasProf === "object") ? inv.periciasProf : {};
   const usadas = usoPericias(prof); // Mestre gasta 2, Treinado gasta 1
   const over = usadas > allowance;
@@ -11817,11 +12285,14 @@ function InvocacaoPericias({ inv, allowance, onPatch }) {
   return (
     <div>
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-[10px] uppercase tracking-wider text-slate-400">Perícias <span className="normal-case tracking-normal text-slate-500">(clique cicla treinado, mestre)</span></span>
-        <span className={`text-[11px] font-mono tabular-nums px-2 py-0.5 rounded border ${
+        <span className="text-[10px] uppercase tracking-wider text-slate-400" title="Clique cicla treinado, mestre">Perícias</span>
+        <span className={`relative group/vag text-[11px] font-mono tabular-nums px-2 py-0.5 rounded border ${
           over ? "text-rose-300 border-rose-800 bg-rose-950/30" : "text-slate-300 border-slate-700 bg-slate-800/50"
-        }`}>
+        } ${fontesVagas.length ? "cursor-help" : ""}`}>
           {usadas} / {allowance}
+          {fontesVagas.length > 0 && (
+            <PainelDeFontes partes={fontesVagas} total={sinalDe(somaDasFontes(fontesVagas))} aparecer="group-hover/vag:block" />
+          )}
         </span>
       </div>
       <div className="flex flex-wrap gap-1.5">
@@ -11834,7 +12305,7 @@ function InvocacaoPericias({ inv, allowance, onPatch }) {
               onClick={() => cycle(p.id)}
               aria-pressed={!!st}
               title={st === "mestre" ? "Mestre (1,5x BT)" : st === "treinado" ? "Treinado (BT)" : "Não treinada"}
-              className={`inline-flex items-center gap-1 text-[12px] font-semibold px-2.5 py-1 rounded-lg border transition-colors ${
+              className={`inline-flex items-center gap-1 text-[12px] font-semibold px-2.5 py-1 rounded-lg border transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-500 ${
                 st === "mestre"
                   ? "bg-purple-700 border-amber-400/70 text-white"
                   : st === "treinado"
@@ -11882,7 +12353,7 @@ function InvocacaoMiniatura({ inv, resolvida, selecionada, onSelecionar }) {
       type="button"
       onClick={onSelecionar}
       aria-pressed={selecionada}
-      className={`relative flex-shrink-0 w-40 text-left rounded-lg border overflow-hidden transition-colors ${
+      className={`relative flex-shrink-0 w-40 text-left rounded-lg border overflow-hidden transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-500 ${
         selecionada
           ? "border-purple-500 bg-purple-950/30 ring-1 ring-purple-500"
           : "border-slate-700/80 bg-slate-950/40 hover:border-slate-600"
@@ -11999,11 +12470,13 @@ function InvocacaoAparencia({ inv, onPatch }) {
           </button>
         )}
       </div>
+      {/* `rows={6}`: com 10 o campo de CSS sozinho era mais alto que o resto
+          do Perfil inteiro, e ele é o item menos usado da aba. */}
       <textarea
         value={css}
         onChange={(e) => trocaTema({ css: e.target.value })}
         spellCheck={false}
-        rows={10}
+        rows={6}
         className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-[12px] font-mono text-slate-200 placeholder-slate-600 focus:outline-none focus:border-purple-600"
         placeholder=".afty-inv-titulo { color: #38bdf8 }"
       />
@@ -12011,28 +12484,294 @@ function InvocacaoAparencia({ inv, onPatch }) {
   );
 }
 
+/* ============================================================ */
+/* A BARRA DE RESULTADO, GRUDADA NO TOPO                         */
+/* ============================================================ */
+/* ⚠ ELA EXISTE PORQUE O NÚMERO SUMIA DA TELA. Até 2026-09-02 o bloco de stats
+   ficava ENTRE os campos de identidade e as sub-abas, e bastava abrir "Ações"
+   e rolar para editar às cegas: o valor que se está tentando acertar saía por
+   cima junto com a fileira.
+
+   ⚠ O `top` VEM DE VARIÁVEL, e não de constante. O cabeçalho da página é
+   grudado e muda de altura com a largura (166px em 1440, 128px em 1024, 219px
+   em 390, medidos), então quem gruda embaixo dele lê `--afty-topo`, publicada
+   por um ResizeObserver lá no shell. Foi assim que o Preview ficou 60px
+   escondido atrás do cabeçalho com o `top-[104px]` cravado.
+
+   Só entram os números que se persegue enquanto edita. O resto do stat block
+   (RD, Traços, Testes, Efeitos) desceu para baixo do editor, que é para onde
+   se olha depois de mexer num controle. */
+/* ⚠ O ÍCONE É IRMÃO DO RÓTULO, E NÃO FILHO DELE, e isso é o alinhamento.
+
+   Antes o rótulo era um `inline-flex items-center` com o ícone dentro. A base
+   de uma caixa flex é a base do PRIMEIRO item dela, e o primeiro item era um
+   SVG, que não tem base de texto: o navegador sintetiza a base na borda de
+   baixo do ícone. Resultado, a caixa inteira do rótulo descia contra o número,
+   e era o desalinhamento que o autor viu.
+
+   Agora ícone, rótulo e número são os três filhos do `items-baseline`, e o
+   ícone leva `self-center`: item com `align-self` próprio SAI do alinhamento
+   por base, então ele centraliza sem arrastar ninguém. Ver a nota de
+   `afty-numero-base`: base é o certo, e base com um item sem metade de baixo
+   é o que piora. */
+/* ⚠ O ÍCONE É IRMÃO DO RÓTULO, E NÃO FILHO DELE, e isso é o alinhamento.
+
+   Antes o rótulo era um `inline-flex items-center` com o ícone dentro. A base
+   de uma caixa flex é a base do PRIMEIRO item dela, e o primeiro item era um
+   SVG, que não tem base de texto: o navegador sintetiza a base na borda de
+   baixo do ícone. Resultado, a caixa inteira do rótulo descia contra o número,
+   e era o desalinhamento que o autor viu.
+
+   Agora ícone, rótulo e número são os três filhos do `items-baseline`, e o
+   ícone leva `self-center`: item com `align-self` próprio SAI do alinhamento
+   por base, então ele centraliza sem arrastar ninguém. Ver a nota de
+   `afty-numero-base`: base é o certo, e base com um item sem metade de baixo
+   é o que piora. */
+function ValorBarra({ dataId, label, curto, valor, accent, alerta, icon: Icon, title, partes, grupo, aparecer, ancora }) {
+  const lista = (partes || []).filter(Boolean);
+  const temFontes = lista.length > 0;
+  return (
+    <span
+      data-valor={dataId}
+      title={title}
+      className={`relative ${grupo ?? ""} inline-flex items-baseline gap-1 sm:gap-1.5 px-1.5 sm:px-2 py-1 rounded-md border ${
+        alerta ? "border-rose-800 bg-rose-950/40" : "border-slate-800 bg-slate-950/70"
+      } ${temFontes ? "cursor-help" : ""}`}
+    >
+      {/* ⚠ O ÍCONE SOME NO TELEFONE. Com valores largos ("13.5 m", "1 / 14")
+          os seis ícones custavam ~96px e empurravam a barra grudada para uma
+          TERCEIRA fila em 390px. O rótulo já diz o que é, e a barra grudada
+          paga cada fila para sempre. */}
+      {Icon && <Icon className="hidden sm:block w-3 h-3 flex-shrink-0 self-center text-slate-500" aria-hidden="true" />}
+      {/* ⚠ Dois rótulos, e não um truncado. Em 390px "Integridade" e
+          "Orçamento" por extenso empurravam a barra para TRÊS filas, e ela é
+          grudada: cada fila a mais come 34px de área útil para sempre. */}
+      <span className="text-[9px] uppercase tracking-wider text-slate-500">
+        {curto ? (
+          <>
+            <span className="sm:hidden">{curto}</span>
+            <span className="hidden sm:inline">{label}</span>
+          </>
+        ) : label}
+      </span>
+      <b className={`font-mono text-[13px] font-bold tabular-nums ${
+        alerta ? "text-rose-300" : accent ? "text-purple-300" : "text-white"
+      }`}>
+        {valor ?? "-"}
+      </b>
+      {/* ⚠ O TOTAL VAI SEM SINAL desde 2026-09-04. Ele era `sinalDe(...)` porque
+          a lista trazia só a contribuição das Habilidades e "+65" lia como
+          acréscimo. Agora ela é a derivação inteira e fecha com o número ao
+          lado, então "+198" embaixo de um PV de 198 leria como bônus. */}
+      {temFontes && (
+        <PainelDeFontes partes={lista} total={somaDasFontes(lista)} aparecer={aparecer} ancora={ancora} />
+      )}
+    </span>
+  );
+}
+
+/* ⚠ CADA VALOR TEM `group` PRÓPRIO, NOMEADO. O `group-hover` sem nome responde
+   a QUALQUER ancestral com a classe `group`, e a barra tem seis gatilhos na
+   mesma linha: sem nome, passar o mouse num acendia os seis painéis de uma vez.
+   Os nomes vão literais nos dois lados porque o Tailwind lê o código-fonte e
+   não enxerga classe montada em template.
+
+   ============================================================
+   DE QUE LADO O PAINEL ABRE, E POR QUE ISSO É MEDIDO
+   ============================================================
+   ⚠ Houve uma tentativa de ancorar o painel na FILA, e ela estava errada: com
+   `left-0` da fila, TODO painel abria embaixo da primeira pílula. O autor:
+   *"Se eu passo o Hover por cima de Movimento ou qualquer outro valor, ele
+   aparece saindo de VIDA ao invés do local certo."*
+
+   O painel volta a nascer na própria pílula, e o lado é ESCOLHIDO POR MEDIDA:
+   pílula na metade esquerda da fila abre para a direita, pílula na metade
+   direita abre para a esquerda. Assim ele sempre cresce para dentro da fila e
+   nunca sai da tela, que era o motivo de ter ido para a fila em primeiro lugar
+   (o painel de Vida, colada na borda, saía 25px para fora com `right-0`).
+
+   Escolher pelo ÍNDICE da pílula não serviria: em 1440 as seis ficam numa fila
+   só, em 390 elas quebram em duas de três, e a quarta pílula muda de lado. */
+function BarraResultado({ r, orcamento, orcOver, avisos }) {
+  /* ⚠ AS PARCELAS VÊM DO MOTOR, e não dos canais. Ver o bloco do
+     `fontesDoCanal`: cada uma destas listas fecha com o número mostrado ao
+     lado, e não só com o que as Habilidades acrescentaram. */
+  const fontes = r.fontes ?? {};
+  const filaRef = useRef(null);
+  const [ancoras, setAncoras] = useState({});
+
+  const medir = useCallback(() => {
+    const fila = filaRef.current;
+    if (!fila) return;
+    const caixa = fila.getBoundingClientRect();
+    const meio = caixa.left + caixa.width / 2;
+    const novo = {};
+    for (const el of fila.children) {
+      const id = el.dataset?.valor;
+      if (!id) continue;
+      const c = el.getBoundingClientRect();
+      novo[id] = c.left + c.width / 2 > meio ? "direita" : "esquerda";
+    }
+    setAncoras((antes) => (JSON.stringify(antes) === JSON.stringify(novo) ? antes : novo));
+  }, []);
+
+  /* Dois efeitos, e não um: o primeiro roda a cada render, porque o conteúdo
+     das pílulas muda de largura sem o container mudar de tamanho, e o
+     ResizeObserver não acorda nesse caso. O segundo monta o observador uma vez,
+     para a mudança de largura da janela. */
+  useLayoutEffect(medir);
+  useLayoutEffect(() => {
+    const fila = filaRef.current;
+    if (!fila || typeof ResizeObserver === "undefined") return undefined;
+    const ro = new ResizeObserver(medir);
+    ro.observe(fila);
+    return () => ro.disconnect();
+  }, [medir]);
+
+  return (
+    <div
+      className="sticky z-10 -mx-3 px-3 py-2 bg-slate-950/95 backdrop-blur border-b border-slate-800"
+      style={{ top: "var(--afty-topo, 0px)" }}
+    >
+      <div ref={filaRef} className="flex flex-wrap items-center gap-1.5">
+        <ValorBarra dataId="pv" icon={Heart} label="Vida" valor={r.pv} ancora={ancoras.pv}
+          partes={fontes.pv} grupo="group/pv" aparecer="group-hover/pv:block" />
+        <ValorBarra dataId="alma" icon={Sparkles} label="Integridade" curto="Integ." valor={r.almaMax} />
+        <ValorBarra dataId="def" icon={Shield} label="Defesa" valor={r.defesa} ancora={ancoras.def}
+          partes={fontes.defesa} grupo="group/def" aparecer="group-hover/def:block" />
+        <ValorBarra dataId="desl" icon={Footprints} label="Desloc." valor={r.deslocamento != null ? `${r.deslocamento} m` : "-"} ancora={ancoras.desl}
+          partes={fontes.deslocamento} grupo="group/desl" aparecer="group-hover/desl:block" />
+        <ValorBarra dataId="pe" icon={Zap} label="Custo" valor={r.custo != null ? `${r.custo} PE` : "-"} accent ancora={ancoras.pe}
+          partes={fontes.custo} grupo="group/pe" aparecer="group-hover/pe:block" />
+        {/* ⚠ O Orçamento era um `<span>` à mão, e por isso nascia mais baixo e
+            mais estreito que os irmãos: sem ícone, e com o alinhamento próprio.
+            Agora é o mesmo componente, com ícone como todos os outros. */}
+        <ValorBarra dataId="orc" icon={ListChecks} label="Orçamento" curto="Orç." valor={orcamento} alerta={orcOver} ancora={ancoras.orc}
+          title="Ações e Características usadas contra o orçamento do grau"
+          partes={fontes.orcamento} grupo="group/orc" aparecer="group-hover/orc:block" />
+        {avisos.length > 0 && (
+          <span
+            title={avisos.join("\n")}
+            className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-amber-800/70 bg-amber-950/40 text-amber-300"
+          >
+            <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
+            <b className="font-mono text-[13px] font-bold tabular-nums">{avisos.length}</b>
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================ */
+/* PERFIL: o que a invocação É, e a cara dela                    */
+/* ============================================================ */
+/* ⚠ TIPO, SABOR, MARCADORES, RETRATO E CSS VIERAM PARA CÁ, de onde estavam
+   (sempre abertos, no topo do card). Todos são decisão de UMA vez, e juntos
+   custavam quatro faixas de altura antes de qualquer número aparecer.
+
+   O que ficou aberto lá em cima é o que se mexe sempre: o Nome e o Grau. O
+   preço de recolher os Marcadores é uma escolha em falta passar batida, e é
+   por isso que a sub-aba acende o triângulo quando isso acontece. */
+function PerfilInvocacao({ inv, intermediario, marcadores, outrasInvocacoes, onPatch }) {
+  return (
+    <div className="space-y-3">
+      <div>
+        <FieldLabel hint={`Intermediário: ${intermediario ?? ""}`}>Tipo</FieldLabel>
+        {/* ⚠ O VALOR PASSA PELO NORMALIZADOR. Ficha salva antes de 2026-09-02
+            pode trazer "dispositivo", que deixou de existir, e o chip nasceria
+            sem nenhuma opção acesa. O campo Sabor saiu junto: ele só rotulava o
+            Dispositivo. */}
+        <OptionChips
+          value={tipoMecanicoDaInvocacao(inv)}
+          options={AFTY_INV_TIPOS.map((t) => ({ value: t.value, label: t.label }))}
+          onChange={(v) => onPatch({ tipoMecanico: v })}
+        />
+      </div>
+      <InvocacaoMarcadores inv={inv} marcadores={marcadores} outrasInvocacoes={outrasInvocacoes} onPatch={onPatch} />
+      <InvocacaoRetrato inv={inv} onPatch={onPatch} />
+      <InvocacaoAparencia inv={inv} onPatch={onPatch} />
+    </div>
+  );
+}
+
+/* O detalhe do resultado, ABAIXO do editor: RD, Tamanho, Traços, Opções de Uso,
+   Testes, os efeitos das Habilidades do dono e os avisos por extenso.
+
+   ⚠ ELE FICA EMBAIXO DE PROPÓSITO. Mexer em Atributos muda Acerto e CD, e mexer
+   em Treino muda Perícias e Resistências: nos dois casos o número nasce do
+   controle que se acabou de tocar, e olhar para BAIXO dele é o gesto certo. Os
+   seis valores que se persegue de longe estão na barra grudada, lá em cima. */
+/* ⚠ OS TRAÇOS SAÍRAM DAQUI em 2026-09-02, a pedido do autor: *"[Turno Próprio,
+   Retorno Completo, Desvantagem Alheia, Imune a Prejuízo por Repetição] não
+   precisa anotar isso."* São as quatro regras fixas da Invocação de Técnica,
+   iguais em toda invocação desse tipo, e ocupavam uma fila inteira dizendo o que
+   o Tipo já diz. `tracosDeTecnica` continua no resolvedor, e a FICHA continua
+   listando (ficha/abas/AbaInvocacoes.jsx): lá elas são consulta de mesa, aqui
+   eram repetição. */
+function DetalheResultado({ r, avisos }) {
+  return (
+    <div className="mt-3 pt-3 border-t border-slate-800 space-y-1.5">
+      <InvocacaoCorpo rd={r.rd} tamanho={r.tamanho} fontes={r.fontes} />
+      <InvocacaoOpcoesDeUso opcoes={r.opcoesDeUso} margemCritico={r.margemCritico} criticoBrutal={r.criticoBrutal} />
+      <InvocacaoTestes testes={r.testes} />
+      {avisos.length > 0 && (
+        <ul className="space-y-1 border-t border-slate-800 pt-2">
+          {avisos.map((w, i) => (
+            <li key={i} className="text-[11px] text-amber-400 flex items-start gap-1.5">
+              <AlertTriangle className="w-3 h-3 flex-shrink-0 mt-0.5" aria-hidden="true" /> {w}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 /* O editor da invocação SELECIONADA. Sempre aberto: quem chegou aqui já
-   escolheu qual quer editar, e um acordeão a mais só esconderia o trabalho. */
-function InvocacaoCard({ inv, resolvida, grausOk, marcadores, podeSubir, podeDescer, onPatch, onPatchAttr, onRemove, onDuplicar, onSubir, onDescer, acoesApi, caracApi }) {
+   escolheu qual quer editar, e um acordeão a mais só esconderia o trabalho.
+
+   ============================================================
+   A ORDEM DAS FAIXAS, QUE É A REESTRUTURAÇÃO DE 2026-09-02
+   ============================================================
+   1. IDENTIDADE   Nome e Grau, os dois que se mexe sempre.
+   2. RESULTADO    a barra grudada, seis números.
+   3. EDITOR       as sub-abas e o que elas abrem.
+   4. DETALHE      o resto do resultado, embaixo do que o produziu.
+
+   O desenho antigo intercalava as quatro: campo, número, campo, número. Assim
+   não havia como saber, de relance, se o que se está olhando é coisa que se
+   edita ou coisa que o motor devolveu. */
+function InvocacaoCard({ inv, resolvida, grausOk, marcadores, outrasInvocacoes, podeSubir, podeDescer, onPatch, onPatchAttr, onRemove, onDuplicar, onSubir, onDescer, acoesApi, caracApi }) {
   const [subtab, setSubtab] = useState("atributos");
   const [confirmDel, setConfirmDel] = useState(false);
   const g = grauMeta(inv.grau);
   const r = resolvida || {};
   const tabAttr = INV_ATRIBUTOS_POR_GRAU[g.value] || {};
-  const orcBadge = `${r.orcamento?.usados ?? 0} / ${r.orcamento?.total ?? 0}`;
-  const orcOver = (r.orcamento?.usados ?? 0) > (r.orcamento?.total ?? 0);
+  const orcUsados = r.orcamento?.usados ?? 0;
+  const orcTotal = r.orcamento?.total ?? 0;
+  const orcOver = orcUsados > orcTotal;
   const avisos = r.warnings || [];
   /* Vocabulário do namespace DESTA invocação, para o seletor de variáveis dos
      campos de Modificador. Memoizado pela identidade do contexto, que só troca
      quando o `deriveAfty` roda: montá-lo por card de Ação seria varrer a mesma
      resposta uma vez por cartão. */
   const grupos = useMemo(() => vocabularioInvocacao(r.contextoDsl), [r.contextoDsl]);
+
+  /* ⚠ O PREÇO DE RECOLHER OS MARCADORES. Um marcador ligado que pede escolha
+     (Precisão) e não tem nenhuma feita ficava com o triângulo à vista, e agora
+     mora uma aba adentro. O triângulo sobe para a aba, senão a mudança troca
+     altura por um aviso que ninguém mais vê. */
+  const perfilAviso = (marcadores || []).some(
+    (m) => marcadorLigado(inv, m.id) && m.opcoes && !marcadorOpcao(inv, m.id),
+  );
+
   const SUBABAS = [
     { id: "atributos", label: "Atributos" },
     { id: "treino", label: "Treino" },
     { id: "acoes", label: "Ações", n: (inv.acoes || []).length },
     { id: "caracteristicas", label: "Caract.", n: (inv.caracteristicas || []).length },
-    { id: "aparencia", label: "Aparência" },
+    { id: "perfil", label: "Perfil", aviso: perfilAviso },
   ];
 
   /* ⚠ A trava por Nível de Controlador NÃO vale para um shikigami de Feitiço.
@@ -12049,127 +12788,83 @@ function InvocacaoCard({ inv, resolvida, grausOk, marcadores, podeSubir, podeDes
     lockTitle: "Nível de Controlador insuficiente para este grau",
   }));
 
+  /* Botão da barra de ferramentas. `p-1.5` e não `p-1`: o alvo de toque saiu de
+     22px para 30px, e os quatro ficam lado a lado no telefone. */
+  const btnFerramenta = "p-1.5 rounded focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-500";
+
   return (
-    <div className="rounded-lg border border-purple-800/50 bg-slate-950/40">
-      {/* cabeçalho: identidade e a barra de ferramentas da invocação */}
-      <div className="flex items-center gap-2 px-3 py-2.5 border-b border-slate-800">
-        <span className="text-sm font-semibold text-white truncate flex-1 min-w-0">
-          {inv.nome || "Invocação sem nome"}
-        </span>
-        <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded border border-purple-800/60 bg-purple-950/40 text-purple-300 flex-shrink-0">
-          {g.label}
-        </span>
-        {/* Invocação amarrada a um Feitiço de Criação de Shikigamis: o nível
-            do Feitiço é que manda no grau, no orçamento e no custo dela. */}
-        {r.shikigami && (
-          <span
-            className="hidden sm:inline text-[10px] font-semibold px-1.5 py-0.5 rounded border border-sky-800/60 bg-sky-950/40 text-sky-300 flex-shrink-0 truncate max-w-[10rem]"
-            title={r.shikigami.fonte}
-          >
-            {r.shikigami.fonte}
-          </span>
-        )}
-        {/* toolbar: mover, duplicar, remover (com confirmação) */}
-        {confirmDel ? (
-          <span className="flex items-center gap-1 flex-shrink-0">
-            <span className="text-[10px] text-rose-300">Remover?</span>
-            <button type="button" onClick={onRemove} className="text-rose-400 hover:text-rose-300 p-1 rounded" title="Confirmar" aria-label="Confirmar remoção">
-              <Check className="w-4 h-4" />
-            </button>
-            <button type="button" onClick={() => setConfirmDel(false)} className="text-slate-500 hover:text-white p-1 rounded" title="Cancelar" aria-label="Cancelar">
-              <X className="w-4 h-4" />
-            </button>
-          </span>
-        ) : (
-          <span className="flex items-center flex-shrink-0 text-slate-600">
-            <button type="button" onClick={onSubir} disabled={!podeSubir} className="p-1 rounded enabled:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed" title="Mover para cima" aria-label="Mover para cima">
-              <ArrowUp className="w-3.5 h-3.5" />
-            </button>
-            <button type="button" onClick={onDescer} disabled={!podeDescer} className="p-1 rounded enabled:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed" title="Mover para baixo" aria-label="Mover para baixo">
-              <ArrowDown className="w-3.5 h-3.5" />
-            </button>
-            <button type="button" onClick={onDuplicar} className="p-1 rounded hover:text-white" title="Duplicar" aria-label="Duplicar invocação">
-              <Copy className="w-3.5 h-3.5" />
-            </button>
-            <button type="button" onClick={() => setConfirmDel(true)} className="p-1 rounded hover:text-rose-300" title="Remover invocação" aria-label={`Remover ${inv.nome || "invocação"}`}>
-              <X className="w-4 h-4" />
-            </button>
-          </span>
-        )}
-      </div>
-
-      <div className="px-3 pb-3 space-y-3 pt-3">
-        {/* IDENTIDADE: o retrato e o nome lado a lado, e o grau embaixo. O
-            retrato vem primeiro porque é ele que dá cara à coisa que está
-            sendo montada. */}
-        <div className="space-y-3">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-            <InvocacaoRetrato inv={inv} onPatch={onPatch} />
-            <div>
-              <FieldLabel>Nome</FieldLabel>
-              <TextInput value={inv.nome} onChange={(v) => onPatch({ nome: v })} placeholder="Nome da invocação" />
-            </div>
+    <div className="rounded-lg border border-slate-800 bg-slate-950/40">
+      {/* ============================================================ */}
+      {/* 1. IDENTIDADE: o Nome e o Grau, que são o que se mexe sempre  */}
+      {/* ============================================================ */}
+      {/* ⚠ O NOME É EDITÁVEL AQUI. Antes o cabeçalho mostrava o nome de leitura
+          e o campo que o edita ficava 200px abaixo, junto do Retrato, com um
+          chip de Grau só de leitura no meio repetindo o que os chips de Grau
+          logo abaixo já diziam. Três lugares para dois dados. */}
+      <div className="px-3 py-2.5 border-b border-slate-800 space-y-2">
+        <div className="flex items-center gap-2">
+          <div className="flex-1 min-w-0">
+            <TextInput
+              value={inv.nome}
+              onChange={(v) => onPatch({ nome: v })}
+              placeholder="Nome da invocação"
+              aria-label="Nome da invocação"
+            />
           </div>
-          <div>
-            <FieldLabel>Grau</FieldLabel>
-            <OptionChips value={inv.grau} options={grauOptions} onChange={(v) => onPatch({ grau: v })} disabledValues={grausBloqueados} />
-          </div>
-          {/* ⚠ O TIPO MECÂNICO nunca teve tela: `AFTY_INV_TIPOS` e
-              `AFTY_INV_SABORES` existiam no motor, o campo era guardado na
-              ficha e toda invocação ficava calada em "Shikigami". Ele decide o
-              Intermediário (Talismã ou Dispositivo) e a regra de retirada. */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <FieldLabel hint={`Intermediário: ${r.intermediario ?? ""}`}>Tipo</FieldLabel>
-              <OptionChips
-                value={inv.tipoMecanico || "shikigami"}
-                options={AFTY_INV_TIPOS.map((t) => ({ value: t.value, label: t.label }))}
-                onChange={(v) => onPatch({ tipoMecanico: v })}
-              />
-            </div>
-            {/* Corpo Amaldiçoado e Marionete são o MESMO tipo mecânico, e a
-                escolha é só de rótulo (decisão do autor, 2026-07-17). */}
-            {inv.tipoMecanico === "dispositivo" && (
-              <div>
-                <FieldLabel>Sabor</FieldLabel>
-                <OptionChips
-                  value={inv.saborNarrativo || "corpo_amaldicoado"}
-                  options={AFTY_INV_SABORES}
-                  onChange={(v) => onPatch({ saborNarrativo: v })}
-                />
-              </div>
-            )}
-          </div>
-          <InvocacaoMarcadores inv={inv} marcadores={marcadores} onPatch={onPatch} />
-        </div>
-
-        {/* STAT BLOCK (sempre visível): stats + testes + efeitos + avisos */}
-        <div className="rounded-lg border border-slate-800 bg-slate-950/60 p-3 space-y-2.5">
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-            <StatMini icon={Heart} label="Vida" value={r.pv} />
-            <StatMini icon={Sparkles} label="Integridade" value={r.almaMax} />
-            <StatMini icon={Shield} label="Defesa" value={r.defesa} />
-            <StatMini icon={Footprints} label="Desloc." value={r.deslocamento != null ? `${r.deslocamento} m` : "-"} />
-            <StatMini icon={Zap} label="Custo (PE)" value={r.custo} accent />
-          </div>
-          <InvocacaoCorpo rd={r.rd} tamanho={r.tamanho} />
-          <InvocacaoTracos tracos={r.tracos} />
-          <InvocacaoOpcoesDeUso opcoes={r.opcoesDeUso} margemCritico={r.margemCritico} criticoBrutal={r.criticoBrutal} />
-          <InvocacaoTestes testes={r.testes} />
-          <EfeitosHabilidadeNota efe={r.efeitosHabilidade} />
-          {avisos.length > 0 && (
-            <ul className="space-y-1 border-t border-slate-800 pt-2">
-              {avisos.map((w, i) => (
-                <li key={i} className="text-[11px] text-amber-400 flex items-start gap-1.5">
-                  <AlertTriangle className="w-3 h-3 flex-shrink-0 mt-0.5" aria-hidden="true" /> {w}
-                </li>
-              ))}
-            </ul>
+          {/* Invocação amarrada a um Feitiço de Criação de Shikigamis: o nível
+              do Feitiço é que manda no grau, no orçamento e no custo dela. */}
+          {r.shikigami && (
+            <span
+              className="hidden sm:inline text-[10px] font-semibold px-1.5 py-0.5 rounded border border-sky-800/60 bg-sky-950/40 text-sky-300 flex-shrink-0 truncate max-w-[10rem]"
+              title={r.shikigami.fonte}
+            >
+              {r.shikigami.fonte}
+            </span>
+          )}
+          {/* toolbar: mover, duplicar, remover (com confirmação) */}
+          {confirmDel ? (
+            <span className="flex items-center gap-1 flex-shrink-0">
+              <span className="text-[10px] text-rose-300">Remover?</span>
+              <button type="button" onClick={onRemove} className={`${btnFerramenta} text-rose-400 hover:text-rose-300`} title="Confirmar" aria-label="Confirmar remoção">
+                <Check className="w-4 h-4" />
+              </button>
+              <button type="button" onClick={() => setConfirmDel(false)} className={`${btnFerramenta} text-slate-500 hover:text-white`} title="Cancelar" aria-label="Cancelar">
+                <X className="w-4 h-4" />
+              </button>
+            </span>
+          ) : (
+            <span className="flex items-center flex-shrink-0 text-slate-600">
+              <button type="button" onClick={onSubir} disabled={!podeSubir} className={`${btnFerramenta} enabled:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed`} title="Mover para cima" aria-label="Mover para cima">
+                <ArrowUp className="w-4 h-4" />
+              </button>
+              <button type="button" onClick={onDescer} disabled={!podeDescer} className={`${btnFerramenta} enabled:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed`} title="Mover para baixo" aria-label="Mover para baixo">
+                <ArrowDown className="w-4 h-4" />
+              </button>
+              <button type="button" onClick={onDuplicar} className={`${btnFerramenta} hover:text-white`} title="Duplicar" aria-label="Duplicar invocação">
+                <Copy className="w-4 h-4" />
+              </button>
+              <button type="button" onClick={() => setConfirmDel(true)} className={`${btnFerramenta} hover:text-rose-300`} title="Remover invocação" aria-label={`Remover ${inv.nome || "invocação"}`}>
+                <X className="w-4 h-4" />
+              </button>
+            </span>
           )}
         </div>
+        {/* Os chips já dizem "Quarto Grau", então não levam rótulo em cima. */}
+        <OptionChips value={inv.grau} options={grauOptions} onChange={(v) => onPatch({ grau: v })} disabledValues={grausBloqueados} />
+      </div>
 
-        {/* SUB-ABAS do editor */}
-        <div className="flex gap-1 overflow-x-auto no-scrollbar border-b border-slate-800 pb-2" role="tablist" aria-label="Seções da invocação">
+      <div className="px-3 pb-3">
+        {/* ===== 2. RESULTADO, grudado ===== */}
+        <BarraResultado r={r} orcamento={`${orcUsados} / ${orcTotal}`} orcOver={orcOver} avisos={avisos} />
+
+        {/* ===== 3. EDITOR ===== */}
+        {/* ⚠ `shrink-0` E SEM `grow`, que é o desenho da tira de abas do
+            cabeçalho da página. Com `grow` os cinco botões esticavam para
+            ocupar a largura toda, e a 1440px cada rótulo ficava a 170px do
+            vizinho: cinco palavras soltas numa linha, sem nada dizendo que
+            eram um grupo. Largura natural e alinhadas à esquerda voltam a ler
+            como tira, e param de brigar com a própria rolagem no telefone. */}
+        <div className="flex gap-1 overflow-x-auto no-scrollbar border-b border-slate-800 py-2" role="tablist" aria-label="Seções da invocação">
           {SUBABAS.map((t) => {
             const on = subtab === t.id;
             return (
@@ -12179,7 +12874,7 @@ function InvocacaoCard({ inv, resolvida, grausOk, marcadores, podeSubir, podeDes
                 role="tab"
                 aria-selected={on}
                 onClick={() => setSubtab(t.id)}
-                className={`grow justify-center whitespace-nowrap px-3 py-1.5 rounded-lg text-[13px] font-semibold transition-colors flex items-center gap-1.5 ${
+                className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg text-[13px] font-semibold transition-colors flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-500 ${
                   on ? "bg-purple-700 text-white" : "text-slate-400 hover:text-white hover:bg-slate-800/60"
                 }`}
               >
@@ -12189,86 +12884,88 @@ function InvocacaoCard({ inv, resolvida, grausOk, marcadores, podeSubir, podeDes
                     {t.n}
                   </span>
                 )}
+                {t.aviso && <AlertTriangle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" aria-label="Escolha em falta" />}
               </button>
             );
           })}
         </div>
 
-        {subtab === "atributos" && (
-          <InvocacaoAtributos inv={inv} resumo={r.atributos} max={tabAttr.max} onPatchAttr={onPatchAttr} />
-        )}
+        <div className="pt-3">
+          {subtab === "atributos" && (
+            <InvocacaoAtributos inv={inv} resumo={r.atributos} max={tabAttr.max} efe={r.efeitosHabilidade} onPatchAttr={onPatchAttr} />
+          )}
 
-        {subtab === "treino" && (
-          <div className="space-y-3">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <FieldLabel>Jogada de Ataque treinada</FieldLabel>
-                <OptionChips
-                  value={inv.ataqueTreinado}
-                  options={[{ value: "corpo", label: "Corpo a Corpo" }, { value: "distancia", label: "A Distância" }]}
-                  onChange={(v) => onPatch({ ataqueTreinado: v })}
-                />
-              </div>
-              <div>
-                <FieldLabel hint="exceto Integridade">Teste de Resistência treinado</FieldLabel>
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 min-w-0"><Select value={inv.trTreinado} onChange={(v) => onPatch({ trTreinado: v })} options={TR_OPCOES} /></div>
-                  <BoolChip ativo={!!inv.trMestre} onToggle={() => onPatch({ trMestre: !inv.trMestre })}>Mestre</BoolChip>
+          {subtab === "treino" && (
+            <div className="space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <FieldLabel>Jogada de Ataque Treinada</FieldLabel>
+                  <OptionChips
+                    value={inv.ataqueTreinado}
+                    options={[{ value: "corpo", label: "Corpo a Corpo" }, { value: "distancia", label: "A Distância" }]}
+                    onChange={(v) => onPatch({ ataqueTreinado: v })}
+                  />
                 </div>
               </div>
+              <InvocacaoResistencias inv={inv} onPatch={onPatch} />
+              <InvocacaoPericias inv={inv} allowance={r.pericias?.allowance ?? 0} fontes={r.fontes} onPatch={onPatch} />
             </div>
-            <InvocacaoPericias inv={inv} allowance={r.pericias?.allowance ?? 0} onPatch={onPatch} />
-          </div>
-        )}
+          )}
 
-        {subtab === "aparencia" && <InvocacaoAparencia inv={inv} onPatch={onPatch} />}
+          {subtab === "perfil" && (
+            <PerfilInvocacao inv={inv} intermediario={r.intermediario} marcadores={marcadores} outrasInvocacoes={outrasInvocacoes} onPatch={onPatch} />
+          )}
 
-        {(subtab === "acoes" || subtab === "caracteristicas") && (
-          <div>
-            <div className="flex items-center justify-between mb-1.5 gap-2">
-              <span className="text-[10px] uppercase tracking-wider text-slate-500">Orçamento (Ações + Características)</span>
-              <span className="flex items-center gap-1.5 flex-shrink-0">
-                {/* Vagas que SÓ Característica ocupa e que não entram no custo
-                    (Shikigami de Técnica). Ficam fora do contador comum, senão
-                    pareceriam aceitar Ação. */}
-                {r.orcamento?.exclusivas > 0 && (
-                  <span
-                    className="font-mono text-[11px] tabular-nums px-2 py-0.5 rounded border border-sky-800/60 bg-sky-950/40 text-sky-300"
-                    title="Vagas exclusivas de Característica, que não aumentam o custo"
-                  >
-                    {r.orcamento.exclusivasUsadas} / {r.orcamento.exclusivas} Caract.
-                  </span>
-                )}
-                <span className={`font-mono text-[11px] tabular-nums px-2 py-0.5 rounded border ${
-                  orcOver ? "text-rose-300 border-rose-800 bg-rose-950/30" : "text-slate-300 border-slate-700 bg-slate-800/50"
-                }`}>{orcBadge}</span>
-              </span>
+          {(subtab === "acoes" || subtab === "caracteristicas") && (
+            <div>
+              <div className="flex items-center justify-between mb-1.5 gap-2">
+                <span className="text-[10px] uppercase tracking-wider text-slate-500">Orçamento (Ações + Características)</span>
+                <span className="flex items-center gap-1.5 flex-shrink-0">
+                  {/* Vagas que SÓ Característica ocupa e que não entram no custo
+                      (Shikigami de Técnica). Ficam fora do contador comum, senão
+                      pareceriam aceitar Ação. */}
+                  {r.orcamento?.exclusivas > 0 && (
+                    <span
+                      className="font-mono text-[11px] tabular-nums px-2 py-0.5 rounded border border-sky-800/60 bg-sky-950/40 text-sky-300"
+                      title="Vagas exclusivas de Característica, que não aumentam o custo"
+                    >
+                      {r.orcamento.exclusivasUsadas} / {r.orcamento.exclusivas} Caract.
+                    </span>
+                  )}
+                  <span className={`font-mono text-[11px] tabular-nums px-2 py-0.5 rounded border ${
+                    orcOver ? "text-rose-300 border-rose-800 bg-rose-950/30" : "text-slate-300 border-slate-700 bg-slate-800/50"
+                  }`}>{orcUsados} / {orcTotal}</span>
+                </span>
+              </div>
+              {subtab === "acoes" ? (
+                <EfeitosSecao
+                  titulo="Ações"
+                  itens={inv.acoes || []}
+                  resolvidos={r.acoes || []}
+                  onAdd={acoesApi.add}
+                  addLabel="Nova ação"
+                  render={(item, res) => (
+                    <AcaoCard key={item.id} acao={item} res={res} grau={inv.grau} otimizacaoEnergia={r.otimizacaoEnergia} grupos={grupos} efe={r.efeitosHabilidade} onPatch={(p) => acoesApi.patch(item.id, p)} onRemove={() => acoesApi.remove(item.id)} />
+                  )}
+                />
+              ) : (
+                <EfeitosSecao
+                  titulo="Características"
+                  itens={inv.caracteristicas || []}
+                  resolvidos={r.caracteristicas || []}
+                  onAdd={caracApi.add}
+                  addLabel="Nova característica"
+                  render={(item, res) => (
+                    <CaracteristicaCard key={item.id} carac={item} res={res} grau={inv.grau} grupos={grupos} onPatch={(p) => caracApi.patch(item.id, p)} onRemove={() => caracApi.remove(item.id)} />
+                  )}
+                />
+              )}
             </div>
-            {subtab === "acoes" ? (
-              <EfeitosSecao
-                titulo="Ações"
-                itens={inv.acoes || []}
-                resolvidos={r.acoes || []}
-                onAdd={acoesApi.add}
-                addLabel="Nova ação"
-                render={(item, res) => (
-                  <AcaoCard key={item.id} acao={item} res={res} grau={inv.grau} otimizacaoEnergia={r.otimizacaoEnergia} grupos={grupos} onPatch={(p) => acoesApi.patch(item.id, p)} onRemove={() => acoesApi.remove(item.id)} />
-                )}
-              />
-            ) : (
-              <EfeitosSecao
-                titulo="Características"
-                itens={inv.caracteristicas || []}
-                resolvidos={r.caracteristicas || []}
-                onAdd={caracApi.add}
-                addLabel="Nova característica"
-                render={(item, res) => (
-                  <CaracteristicaCard key={item.id} carac={item} res={res} grau={inv.grau} grupos={grupos} onPatch={(p) => caracApi.patch(item.id, p)} onRemove={() => caracApi.remove(item.id)} />
-                )}
-              />
-            )}
-          </div>
-        )}
+          )}
+        </div>
+
+        {/* ===== 4. DETALHE do resultado ===== */}
+        <DetalheResultado r={r} avisos={avisos} />
       </div>
     </div>
   );
@@ -12436,10 +13133,29 @@ function resumoAcaoTexto(res) {
 
 /* Uma Ação: cabeçalho recolhível + editor. Ataque é sempre Complexa, e Cura
    também, então a classe fica travada nesses casos. */
-function AcaoCard({ acao, res, grau, otimizacaoEnergia, grupos, onPatch, onRemove }) {
+function AcaoCard({ acao, res, grau, otimizacaoEnergia, grupos, efe, onPatch, onRemove }) {
   const [open, setOpen] = useState(!acao.nome);
   const isAtaque = acao.familia === "ataque";
   const isCura = acao.familia === "auxilio" && acao.auxilioSub === "cura";
+  /* As fontes que mexem NA ROLAGEM desta ação. Ataque abre as de dano, Cura as
+     de cura, e uma Ação de outro auxílio não abre nenhuma, porque nenhum desses
+     canais toca nela. */
+  const fontesDaRolagem = fontesDoCanal(efe, ...(isAtaque ? CANAIS_DE_DANO : isCura ? CANAIS_DE_CURA : []));
+  /* Os tipos de dano que uma Ação pode ter: o catálogo do livro menos os dois
+     que a regra dela exclui.
+
+     ⚠ O VALOR ANTIGO ENTRA COMO OPÇÃO quando não é do catálogo. O campo era
+     texto livre até 2026-09-02, e ficha salva traz coisas como "corte, impacto".
+     Sem esta linha, o seletor abriria vazio e a escolha da pessoa sumiria da
+     tela sem nada dizendo, mesmo continuando gravada. */
+  const tiposDanoOpcoes = useMemo(() => {
+    const base = Object.entries(TIPOS_DANO)
+      .filter(([id]) => id !== "alma" && id !== "energia_reversa")
+      .map(([value, label]) => ({ value, label }));
+    return acao.tipoDano && !TIPOS_DANO[acao.tipoDano]
+      ? [...base, { value: acao.tipoDano, label: acao.tipoDano }]
+      : base;
+  }, [acao.tipoDano]);
   const classeForcada = isAtaque || isCura;
   const custoMax = custoMaxAcao(grau);
   // Alvos Múltiplos/Área (e cura Múltiplos) só existem do Terceiro Grau para cima.
@@ -12460,8 +13176,18 @@ function AcaoCard({ acao, res, grau, otimizacaoEnergia, grupos, onPatch, onRemov
             {isAtaque ? "Ataque" : "Auxílio"}
           </span>
         </button>
-        {resumoAcaoTexto(res) && (
-          <span className="hidden sm:inline font-mono text-[11px] text-purple-300 tabular-nums flex-shrink-0">{resumoAcaoTexto(res)}</span>
+        {/* ⚠ SÓ COM O CARTÃO FECHADO. Aberto, as pílulas do topo do editor
+            dizem a mesma coisa 40px abaixo, e ter o número duas vezes na mesma
+            tela só cria a dúvida de qual dos dois é o certo. */}
+        {!open && resumoAcaoTexto(res) && (
+          <span className={`relative group/rol hidden sm:inline font-mono text-[11px] text-purple-300 tabular-nums flex-shrink-0 ${
+            fontesDaRolagem.length ? "cursor-help" : ""
+          }`}>
+            {resumoAcaoTexto(res)}
+            {fontesDaRolagem.length > 0 && (
+              <PainelDeFontes partes={fontesDaRolagem} total={sinalDe(somaDasFontes(fontesDaRolagem))} aparecer="group-hover/rol:block" />
+            )}
+          </span>
         )}
         {(acao.custoPE ?? 0) > 0 && (
           <span className="font-mono text-[10px] text-amber-300 flex-shrink-0">{acao.custoPE} PE</span>
@@ -12472,37 +13198,82 @@ function AcaoCard({ acao, res, grau, otimizacaoEnergia, grupos, onPatch, onRemov
       </div>
 
       {open && (
-        <div className="px-2.5 pb-2.5 pt-1 space-y-3 border-t border-slate-800">
-          <div>
-            <FieldLabel>Nome</FieldLabel>
-            <TextInput value={acao.nome} onChange={(v) => onPatch({ nome: v })} placeholder="Nome da ação" />
-          </div>
+        <div className="px-2.5 pb-2.5 pt-2 space-y-3 border-t border-slate-800">
+          {/* ============================================================ */}
+          {/* 1. O RESULTADO, PRIMEIRO                                     */}
+          {/* ============================================================ */}
+          {/* ⚠ ELE ERA O SÉTIMO BLOCO, embaixo da caixa de Custo. Editava-se
+              Alvo, Atributo e Tipo de Dano com o número que se persegue fora
+              de vista, e o do cabeçalho é `hidden sm:inline`, ou seja, no
+              telefone não existia nenhum. Mesma regra da barra da invocação:
+              resultado em cima, editor embaixo. */}
+          <ResumoDaAcao res={res} classe={acao.classe} partes={fontesDaRolagem} />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {/* ============================================================ */}
+          {/* 2. IDENTIDADE                                                */}
+          {/* ============================================================ */}
+          <div className="flex flex-wrap items-end gap-x-4 gap-y-3">
+            <div className="flex-1 min-w-[10rem] max-w-md">
+              <FieldLabel>Nome</FieldLabel>
+              <TextInput value={acao.nome} onChange={(v) => onPatch({ nome: v })} placeholder="Nome da ação" />
+            </div>
             <div>
               <FieldLabel>Família</FieldLabel>
               <OptionChips value={acao.familia} options={[{ value: "ataque", label: "Ataque" }, { value: "auxilio", label: "Auxílio" }]} onChange={setFamilia} />
             </div>
-            <div>
-              <FieldLabel hint={classeForcada ? "Complexa obrigatória aqui" : undefined}>Classe</FieldLabel>
-              <OptionChips
-                value={acao.classe}
-                options={[{ value: "simples", label: "Simples" }, { value: "complexa", label: "Complexa" }]}
-                onChange={(v) => onPatch({ classe: v })}
-                disabledValues={classeForcada ? ["simples"] : undefined}
-              />
-            </div>
+            {/* ⚠ CLASSE SÓ QUANDO HÁ ESCOLHA. Ataque e Cura são Complexa
+                obrigatória, e o controle aparecia mesmo assim, com "Simples"
+                cadeado e um aviso explicando por quê: três elementos para dizer
+                que não há decisão. Quando é forçada, ela vira pílula no resumo,
+                que é onde fato sem escolha mora. */}
+            {!classeForcada && (
+              <div>
+                <FieldLabel>Classe</FieldLabel>
+                <OptionChips
+                  value={acao.classe}
+                  options={[{ value: "simples", label: "Simples" }, { value: "complexa", label: "Complexa" }]}
+                  onChange={(v) => onPatch({ classe: v })}
+                />
+              </div>
+            )}
           </div>
 
-          {isAtaque ? (
-            <div className="space-y-3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {/* ============================================================ */}
+          {/* 3. A MECÂNICA, NUMA FILA SÓ QUE EMBRULHA                     */}
+          {/* ============================================================ */}
+          {/* ⚠ ERAM GRIDS DE DUAS COLUNAS, e o autor: *"continua com alguns
+              vãos, com partes que mudam de lugar... O uso do espaço ficou bem
+              ruim."* A grade obrigava cada campo a ocupar METADE da largura,
+              então "Quem Recebe" (dois chips, 190px) e "Custo" (um passo a
+              passo, 100px) comiam uma fila inteira cada, com três quartos vazios.
+
+              Aqui os campos têm a largura do CONTEÚDO e embrulham sozinhos. Um
+              Auxílio de Dano Adicional passou de três filas para uma: Efeito,
+              Quem Recebe e Custo cabem juntos em 1440.
+
+              ⚠ `items-end` alinha os controles pela base, e é o que segura a
+              fila reta quando um rótulo tem dica e o vizinho não. Todo campo
+              PRECISA de rótulo aqui: um controle solto desce até a base do
+              vizinho e desalinha a fila inteira, que foi o bug do chip "Corpo
+              a corpo". */}
+          <div className="flex flex-wrap items-end gap-x-4 gap-y-3">
+            {isAtaque ? (
+              <>
                 <div>
-                  <FieldLabel>Tipo de ataque</FieldLabel>
+                  <FieldLabel>Tipo de Ataque</FieldLabel>
                   <OptionChips value={acao.ataqueTipo} options={[{ value: "jogada", label: "Jogada de Ataque" }, { value: "tr", label: "Teste de Resistência" }]} onChange={(v) => onPatch({ ataqueTipo: v })} />
                 </div>
-                <div>
-                  <FieldLabel hint={alvosBloqueados.length ? "Múltiplos e Área a partir do Terceiro Grau" : undefined}>Alvo</FieldLabel>
+                {/* ⚠ AS DICAS VIRARAM `title` NESTA FILA INTEIRA, e são duas
+                    coisas ao mesmo tempo. A primeira é a regra de UI do autor
+                    ("sem hint, explicação de item vai no title"). A segunda é
+                    geometria: a dica é MAIS LARGA que o controle e definia a
+                    largura do bloco, então "Múltiplos e Área a partir do
+                    Terceiro Grau" fazia um campo de três chips ocupar 300px, e
+                    "Força ou Destreza" quebrava o rótulo em duas linhas e
+                    deixava a fila desigual. Cada chip bloqueado já tem
+                    `lockTitle` próprio. */}
+                <div title={alvosBloqueados.length ? "Múltiplos e Área a partir do Terceiro Grau" : undefined}>
+                  <FieldLabel>Alvo</FieldLabel>
                   <OptionChips
                     value={acao.alvo}
                     options={[
@@ -12514,141 +13285,211 @@ function AcaoCard({ acao, res, grau, otimizacaoEnergia, grupos, onPatch, onRemov
                     disabledValues={alvosBloqueados}
                   />
                 </div>
-              </div>
-              <div className="flex flex-wrap items-end gap-3">
-                <BoolChip ativo={acao.corpoACorpo} onToggle={() => onPatch({ corpoACorpo: !acao.corpoACorpo })}>Corpo a corpo (+3 níveis)</BoolChip>
-                <div className="min-w-[120px]">
-                  <FieldLabel hint="Força ou Destreza, salvo característica">Atributo</FieldLabel>
+                <div title="Corpo a Corpo dá +3 Níveis de Dano">
+                  <FieldLabel>Alcance</FieldLabel>
+                  <OptionChips
+                    value={acao.corpoACorpo ? "corpo" : "distancia"}
+                    options={[{ value: "corpo", label: "Corpo a Corpo" }, { value: "distancia", label: "A Distância" }]}
+                    onChange={(v) => onPatch({ corpoACorpo: v === "corpo" })}
+                  />
+                </div>
+                <div className="w-[8.5rem]" title="Força ou Destreza, salvo característica">
+                  <FieldLabel>Atributo</FieldLabel>
                   <Select value={acao.atributoChave} onChange={(v) => onPatch({ atributoChave: v })} options={ATTR_OPCOES} />
                 </div>
                 {acao.ataqueTipo === "tr" && (
-                  <div className="min-w-[120px]">
-                    <FieldLabel hint="exceto Integridade">TR do alvo</FieldLabel>
+                  <div className="w-[9.5rem]" title="Exceto Integridade">
+                    <FieldLabel>TR do Alvo</FieldLabel>
                     <Select value={acao.trTipo} onChange={(v) => onPatch({ trTipo: v })} options={TR_OPCOES} />
                   </div>
                 )}
                 {acao.alvo === "area" && (
-                  <div className="min-w-[120px]">
-                    <FieldLabel>Forma da área</FieldLabel>
+                  <div className="w-[9.5rem]">
+                    <FieldLabel>Forma da Área</FieldLabel>
                     <Select value={acao.formaArea} onChange={(v) => onPatch({ formaArea: v })} options={FORMA_AREA_OPCOES} placeholder="escolher..." />
                   </div>
                 )}
-              </div>
-              <div className="sm:max-w-xs">
-                <FieldLabel hint="exceto Energia Reversa e Dano na Alma">Tipo de dano</FieldLabel>
-                <TextInput value={acao.tipoDano} onChange={(v) => onPatch({ tipoDano: v })} placeholder="ex.: corte, impacto, fogo" />
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              <div>
-                <FieldLabel>Efeito</FieldLabel>
-                <OptionChips
-                  value={acao.auxilioSub}
-                  options={[
-                    { value: "cura", label: "Cura" }, { value: "defesa", label: "Defesa" },
-                    { value: "acerto", label: "Acerto" }, { value: "danoAdicional", label: "Dano Adicional" }, { value: "rd", label: "RD" },
-                  ]}
-                  onChange={setSub}
-                />
-              </div>
-              {acao.auxilioSub === "cura" ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <FieldLabel hint={curaMultOk ? undefined : "Múltiplos a partir do Terceiro Grau"}>Alvos</FieldLabel>
-                    <OptionChips
-                      value={acao.alvo === "multiplos" ? "multiplos" : "unico"}
-                      options={[
-                        { value: "unico", label: "Único" },
-                        { value: "multiplos", label: "Múltiplos", lockTitle: "Cura de alvos múltiplos a partir do Terceiro Grau" },
-                      ]}
-                      onChange={(v) => onPatch({ alvo: v })}
-                      disabledValues={curaMultOk ? [] : ["multiplos"]}
-                    />
-                  </div>
-                  <div>
-                    <FieldLabel hint="somado à cura">Atributo</FieldLabel>
-                    <OptionChips value={acao.curaAttr} options={[{ value: "sabedoria", label: "Sabedoria" }, { value: "presenca", label: "Presença" }]} onChange={(v) => onPatch({ curaAttr: v })} />
-                  </div>
+                {/* ⚠ ERA CAMPO DE TEXTO LIVRE. O autor: *"Já temos a aba Tipos
+                    de Dano, não precisa deixar mais em aberto."* Passa a ler o
+                    `TIPOS_DANO`, sem Dano na Alma e Energia Reversa, que a
+                    própria regra da Ação exclui. */}
+                <div className="w-[11rem]">
+                  <FieldLabel>Tipo de Dano</FieldLabel>
+                  <Select value={acao.tipoDano} onChange={(v) => onPatch({ tipoDano: v })} options={tiposDanoOpcoes} placeholder="escolher..." />
                 </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <FieldLabel>Quem recebe</FieldLabel>
-                    <OptionChips value={acao.alvoAuxilio} options={[{ value: "invocacao", label: "Invocação" }, { value: "aliados", label: "Aliados" }]} onChange={(v) => onPatch({ alvoAuxilio: v })} />
-                  </div>
-                  {acao.auxilioSub === "rd" && (
-                    <div>
-                      <FieldLabel hint="cada tipo extra reduz 2">Tipos de dano extras</FieldLabel>
-                      <div className="w-24"><NumberInput value={acao.rdTiposExtras} onChange={(v) => onPatch({ rdTiposExtras: v })} min={0} max={9} aria-label="Tipos de dano extras" /></div>
+              </>
+            ) : (
+              <>
+                <div>
+                  <FieldLabel>Efeito</FieldLabel>
+                  <OptionChips
+                    value={acao.auxilioSub}
+                    options={[
+                      { value: "cura", label: "Cura" }, { value: "defesa", label: "Defesa" },
+                      { value: "acerto", label: "Acerto" }, { value: "danoAdicional", label: "Dano Adicional" }, { value: "rd", label: "RD" },
+                    ]}
+                    onChange={setSub}
+                  />
+                </div>
+                {acao.auxilioSub === "cura" ? (
+                  <>
+                    <div title={curaMultOk ? undefined : "Múltiplos a partir do Terceiro Grau"}>
+                      <FieldLabel>Alvos</FieldLabel>
+                      <OptionChips
+                        value={acao.alvo === "multiplos" ? "multiplos" : "unico"}
+                        options={[
+                          { value: "unico", label: "Único" },
+                          { value: "multiplos", label: "Múltiplos", lockTitle: "Cura de alvos múltiplos a partir do Terceiro Grau" },
+                        ]}
+                        onChange={(v) => onPatch({ alvo: v })}
+                        disabledValues={curaMultOk ? [] : ["multiplos"]}
+                      />
                     </div>
+                    <div title="Somado à cura">
+                      <FieldLabel>Atributo</FieldLabel>
+                      <OptionChips value={acao.curaAttr} options={[{ value: "sabedoria", label: "Sabedoria" }, { value: "presenca", label: "Presença" }]} onChange={(v) => onPatch({ curaAttr: v })} />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div>
+                      <FieldLabel>Quem Recebe</FieldLabel>
+                      <OptionChips value={acao.alvoAuxilio} options={[{ value: "invocacao", label: "Invocação" }, { value: "aliados", label: "Aliados" }]} onChange={(v) => onPatch({ alvoAuxilio: v })} />
+                    </div>
+                    {acao.auxilioSub === "rd" && (
+                      <div title="Cada tipo extra reduz 2">
+                        <FieldLabel>Tipos Extras</FieldLabel>
+                        <div className="w-24"><NumberInput value={acao.rdTiposExtras} onChange={(v) => onPatch({ rdTiposExtras: v })} min={0} max={9} aria-label="Tipos de dano extras" /></div>
+                      </div>
+                    )}
+                  </>
+                )}
+              </>
+            )}
+
+            {/* O passo a passo já trava no máximo do grau, então o teto vive
+                no `title` e não come 30px de largura do bloco. */}
+            <div title={`0 a ${custoMax} PE neste grau`}>
+              <FieldLabel>Custo (PE)</FieldLabel>
+              <div className="w-24"><NumberInput value={acao.custoPE} onChange={(v) => onPatch({ custoPE: v })} min={0} max={custoMax} aria-label="Custo em PE da ação" /></div>
+            </div>
+          </div>
+
+          {res?.prejuizoMultiplos && (
+            <p className="text-[10px] text-slate-500">Prejuízo por múltiplos auxílios: {res.prejuizoMultiplos}.</p>
+          )}
+
+          {/* ⚠ A CAIXA VOLTA SÓ QUANDO O CUSTO EXISTE, para agrupar o que ELE
+              destrava. Com custo zero ela era uma moldura de altura inteira em
+              volta de um número que não faz nada. */}
+          {(acao.custoPE ?? 0) > 0 && (
+            <div className="rounded-md border border-slate-800 bg-slate-950/40 px-2.5 py-2">
+              <BeneficiosCustoEditor acao={acao} res={res} onPatch={onPatch} />
+              {/* Otimização de Energia (Controlador 2°): uma Ação com Custo por
+                  invocação sai 1 PE mais barata. Só aparece quando a ficha tem a
+                  habilidade e a ação tem custo. */}
+              {otimizacaoEnergia && (
+                <div className="mt-2 flex items-center gap-2">
+                  <BoolChip ativo={!!acao.custoOtimizado} onToggle={() => onPatch({ custoOtimizado: !acao.custoOtimizado })}>
+                    Otimização de Energia
+                  </BoolChip>
+                  {res?.custoOtimizado && (
+                    <span className="font-mono text-[11px] text-emerald-400 tabular-nums">
+                      {res.custoAntesDaOtimizacao} PE para {res.custoPE} PE
+                    </span>
                   )}
                 </div>
               )}
-              {res?.prejuizoMultiplos && (
-                <p className="text-[10px] text-slate-500">Prejuízo por múltiplos auxílios: {res.prejuizoMultiplos}.</p>
-              )}
             </div>
           )}
 
-          {/* Ação com Custo */}
-          <div className="rounded-md border border-slate-800 bg-slate-950/40 px-2.5 py-2">
-            <div className="flex items-center gap-3">
-              <FieldLabel hint={`0 a ${custoMax} PE neste grau`}>Ação com Custo (PE)</FieldLabel>
-              <div className="w-24 ml-auto"><NumberInput value={acao.custoPE} onChange={(v) => onPatch({ custoPE: v })} min={0} max={custoMax} aria-label="Custo em PE da ação" /></div>
-            </div>
-            {(acao.custoPE ?? 0) > 0 && (
-              <BeneficiosCustoEditor acao={acao} res={res} onPatch={onPatch} />
-            )}
-            {/* Otimização de Energia (Controlador 2°): uma Ação com Custo por
-                invocação sai 1 PE mais barata. Só aparece quando a ficha tem a
-                habilidade e a ação tem custo. */}
-            {otimizacaoEnergia && (acao.custoPE ?? 0) > 0 && (
-              <div className="mt-2 flex items-center gap-2">
-                <BoolChip ativo={!!acao.custoOtimizado} onToggle={() => onPatch({ custoOtimizado: !acao.custoOtimizado })}>
-                  Otimização de Energia
-                </BoolChip>
-                {res?.custoOtimizado && (
-                  <span className="font-mono text-[11px] text-emerald-400 tabular-nums">
-                    {res.custoAntesDaOtimizacao} PE para {res.custoPE} PE
-                  </span>
-                )}
+          {/* ============================================================ */}
+          {/* 4. O QUE QUASE NUNCA SE USA                                  */}
+          {/* ============================================================ */}
+          {/* ⚠ MODIFICADOR E DESCRIÇÃO ficavam abertos, com o mesmo peso do
+              Nome. O primeiro é o escape hatch da DSL, que a maioria das Ações
+              nunca toca, e o segundo é texto opcional. Juntos custavam duas
+              filas inteiras no caso comum. O resumo do recolhido diz quando há
+              algo escrito lá dentro, senão fechar esconderia trabalho feito. */}
+          <SecaoRecolhivel
+            titulo="Avançado"
+            resumo={[acao.modificadorExpr ? "Modificador" : null, acao.descricao ? "Descrição" : null].filter(Boolean).join(" · ")}
+            defaultOpen={!!(acao.modificadorExpr || acao.descricao)}
+          >
+            <div className="space-y-3 pt-2">
+              <ExprField
+                value={acao.modificadorExpr}
+                alvo={acao.modificadorAlvo}
+                alvos={alvosDeModificador(acao)}
+                onChange={(v) => onPatch({ modificadorExpr: v })}
+                onAlvo={(v) => onPatch({ modificadorAlvo: v })}
+                resultado={res?.modificador}
+                resultadoLabel={res?.modificadorLabel}
+                grupos={grupos}
+              />
+              <div>
+                <FieldLabel>Descrição</FieldLabel>
+                <TextInput value={acao.descricao} onChange={(v) => onPatch({ descricao: v })} placeholder="texto da ação (opcional)" />
               </div>
-            )}
-          </div>
-
-          {/* prévia dos valores resolvidos */}
-          {res && (
-            <div className="flex flex-wrap gap-2 text-[11px] font-mono text-slate-300">
-              {res.dano?.dado && <span className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700">Dano: {res.dano.dado}{bonusSuf(res.dano.bonus)}</span>}
-              {res.cura?.dado && <span className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700">Cura: {res.cura.dado}{bonusSuf(res.cura.bonus)}</span>}
-              {res.danoAdicional?.dado && <span className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700">Adicional: {res.danoAdicional.dado}</span>}
-              {res.valor != null && <span className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700">Valor: {res.valor}{res.auxilioSub === "rd" ? " RD" : ""}</span>}
-              {res.bonusAtaque != null && <span className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700">Ataque: {res.bonusAtaque >= 0 ? "+" : ""}{res.bonusAtaque}</span>}
-              {res.cd != null && <span className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700">CD: {res.cd}</span>}
-              {res.alcance && <span className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700">Alcance: {res.alcance}</span>}
-              {res.area && <span className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700">Área: {res.area}</span>}
-              {res.condicoes?.length > 0 && <span className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700">Condição: {res.condicoes.join(", ")}</span>}
             </div>
-          )}
-
-          <ExprField
-            value={acao.modificadorExpr}
-            alvo={acao.modificadorAlvo}
-            alvos={alvosDeModificador(acao)}
-            onChange={(v) => onPatch({ modificadorExpr: v })}
-            onAlvo={(v) => onPatch({ modificadorAlvo: v })}
-            resultado={res?.modificador}
-            resultadoLabel={res?.modificadorLabel}
-            grupos={grupos}
-          />
-
-          <div>
-            <FieldLabel>Descrição</FieldLabel>
-            <TextInput value={acao.descricao} onChange={(v) => onPatch({ descricao: v })} placeholder="texto da ação (opcional)" />
-          </div>
+          </SecaoRecolhivel>
         </div>
       )}
+    </div>
+  );
+}
+
+/* O resultado resolvido da Ação, em pílulas, no TOPO do editor dela.
+
+   ⚠ A CLASSE entra aqui quando é obrigatória (Ataque e Cura são sempre
+   Complexa). O controle dela some nesse caso, e o fato não pode sumir junto:
+   quanto de ação a coisa custa é o que decide o turno na mesa. */
+function ResumoDaAcao({ res, classe, partes }) {
+  if (!res) return null;
+  const lista = (partes || []).filter(Boolean);
+  const pill = "px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700";
+  const comFontes = `relative ${pill} ${lista.length ? "cursor-help" : ""}`;
+
+  /* ⚠ A LISTA É MONTADA ANTES DE RENDERIZAR, e o aviso de "sem valor" olha para
+     ELA. Escrito como uma condição à mão, o aviso esquecia o `danoAdicional` e
+     aparecia junto de "Adicional: 2d12 + 1d8", dizendo que não havia valor ao
+     lado do valor. */
+  const pilulas = [];
+  if (res.dano?.dado) {
+    /* ⚠ O DADO EXTRA ENTRA AQUI. Ele cai na MESMA rolagem (é a Melhoria
+       Agressividade), e o resumo do cabeçalho já o somava: sem ele, as duas
+       leituras do dano da mesma Ação divergiam na tela. */
+    pilulas.push(
+      <span key="dano" className={`${comFontes} group/rolA`}>
+        Dano: {res.dano.dado}{res.danoExtraAtaque?.dado ? ` + ${res.danoExtraAtaque.dado}` : ""}{bonusSuf(res.dano.bonus)}
+        {lista.length > 0 && (
+          <PainelDeFontes partes={lista} total={sinalDe(somaDasFontes(lista))} aparecer="group-hover/rolA:block" ancora="esquerda" />
+        )}
+      </span>,
+    );
+  }
+  if (res.cura?.dado) {
+    pilulas.push(
+      <span key="cura" className={`${comFontes} group/rolB`}>
+        Cura: {res.cura.dado}{bonusSuf(res.cura.bonus)}
+        {lista.length > 0 && (
+          <PainelDeFontes partes={lista} total={sinalDe(somaDasFontes(lista))} aparecer="group-hover/rolB:block" ancora="esquerda" />
+        )}
+      </span>,
+    );
+  }
+  if (res.danoAdicional?.dado) pilulas.push(<span key="adic" className={pill}>Adicional: {res.danoAdicional.dado}</span>);
+  if (res.valor != null) pilulas.push(<span key="valor" className={pill}>Valor: {res.valor}{res.auxilioSub === "rd" ? " RD" : ""}</span>);
+  if (res.bonusAtaque != null) pilulas.push(<span key="atq" className={pill}>Ataque: {res.bonusAtaque >= 0 ? "+" : ""}{res.bonusAtaque}</span>);
+  if (res.cd != null) pilulas.push(<span key="cd" className={pill}>CD: {res.cd}</span>);
+  if (res.alcance) pilulas.push(<span key="alc" className={pill}>Alcance: {res.alcance}</span>);
+  if (res.area) pilulas.push(<span key="area" className={pill}>Área: {res.area}</span>);
+  if (res.condicoes?.length > 0) pilulas.push(<span key="cond" className={pill}>Condição: {res.condicoes.join(", ")}</span>);
+  if (classe) pilulas.push(<span key="classe" className={`${pill} text-slate-400`}>{classe === "simples" ? "Simples" : "Complexa"}</span>);
+
+  return (
+    <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-mono text-slate-300">
+      {pilulas.length > 0 ? pilulas : <span className="text-slate-600">Sem valor resolvido</span>}
     </div>
   );
 }
@@ -12659,6 +13500,10 @@ function resumoCaracTexto(res) {
   switch (res.subtipo) {
     case "vida": return `+${res.valor} PV`;
     case "teste": return `+${res.valor}${res.requerGatilho ? " (gatilho)" : ""}`;
+    case "resistencia":
+      return res.profLabel
+        ? `${res.profLabel}${res.trTipoLabel ? ` em ${res.trTipoLabel}` : ""}`
+        : "fora do grau";
     case "rd": return res.rdTipoLabel ? `${res.valor} RD ${res.rdTipoLabel}` : `${res.valor} RD`;
     case "tamanho": return res.tamanho ? (AFTY_TAMANHOS.find((t) => t.value === res.tamanho)?.label ?? res.tamanho) : "tamanho";
     default: return "passiva";
@@ -12698,6 +13543,7 @@ function CaracteristicaCard({ carac, res, grau, grupos, onPatch, onRemove }) {
               value={carac.subtipo}
               options={[
                 { value: "vida", label: "Vida" }, { value: "teste", label: "Teste" },
+                { value: "resistencia", label: "Resistência" },
                 { value: "rd", label: "RD" }, { value: "tamanho", label: "Tamanho" }, { value: "livre", label: "Livre" },
               ]}
               onChange={(v) => onPatch({ subtipo: v })}
@@ -12729,6 +13575,17 @@ function CaracteristicaCard({ carac, res, grau, grupos, onPatch, onRemove }) {
                   <Select value={carac.trTipo} onChange={(v) => onPatch({ trTipo: v })} options={TR_OPCOES} placeholder="escolher..." />
                 </div>
               )}
+            </div>
+          )}
+          {/* ⚠ SÓ O TR, e nenhum campo de faixa: quem decide Treinado ou Mestre
+              é o GRAU (Segundo e Primeiro treinam, Especial domina, e os dois
+              graus de baixo não têm a Característica). Um seletor de faixa aqui
+              seria uma escolha que o livro não dá. O resultado sai na pastilha
+              do resumo, e o grau que não alcança sai como aviso. */}
+          {carac.subtipo === "resistencia" && (
+            <div className="sm:max-w-xs">
+              <FieldLabel hint="exceto Integridade">Teste de Resistência</FieldLabel>
+              <Select value={carac.trTipo} onChange={(v) => onPatch({ trTipo: v })} options={TR_OPCOES} placeholder="escolher..." />
             </div>
           )}
           {carac.subtipo === "rd" && (
@@ -12783,42 +13640,55 @@ function CaracteristicaCard({ carac, res, grau, grupos, onPatch, onRemove }) {
   );
 }
 
-/* Roster do Controlador: os quatro números que Treinamento em Controle e o
-   Apogeu movem. São de REFERÊNCIA (mostra, não valida), porque invocação também
-   nasce de Interlúdio e de Feitiço de Shikigami. */
-function ControleInvocacoesResumo({ controle }) {
-  if (!controle?.ativo) return null;
-  const linhas = [
-    { label: "Recebidas", valor: controle.iniciais },
-    { label: "Em campo", valor: controle.limiteCampo },
-    { label: "Por Invocar", valor: controle.invocarPorAcao },
-    { label: "Comandos", valor: controle.comandos },
-    ...(controle.criarHorda ? [{ label: "Hordas", valor: controle.limiteHordas }] : []),
-  ];
+/* ============================================================ */
+/* A FAIXA DE LIMITES DA ABA                                     */
+/* ============================================================ */
+/* ⚠ ERAM TRÊS BLOCOS EMPILHADOS até 2026-09-02: um parágrafo dizendo até que
+   grau o nível dá acesso, a faixa do Controle e a faixa dos Marcadores. Mesmo
+   peso visual, nenhum rótulo dizendo de que assunto era cada um, e quinze
+   pílulas de altura antes da primeira invocação aparecer.
+
+   Agora é UMA faixa, porque tudo ali é a mesma coisa: um teto que o Controlador
+   impõe. O parágrafo virou pílula, que é o que ele sempre foi (um número
+   derivado do nível). O texto do caso SEM nível saiu inteiro: os chips de Grau
+   já aparecem todos destravados, e dizer isso por escrito era o "texto
+   explicativo" que a regra de UI do autor proíbe. */
+function LimiteChip({ label, valor }) {
   return (
-    <div className="flex flex-wrap items-center gap-1.5 mb-3">
-      {linhas.map((l) => (
-        <span key={l.label} className="inline-flex items-baseline gap-1 px-2 py-1 rounded border border-slate-800 bg-slate-950/50 font-mono text-[11px] text-slate-300">
-          <span className="text-[9px] uppercase tracking-wider text-slate-500">{l.label}</span>
-          <b className="text-white tabular-nums">{l.valor}</b>
-        </span>
-      ))}
-      {controle.invocarAcaoLivre && (
-        <span className="inline-flex items-center gap-1 px-2 py-1 rounded border border-purple-800/60 bg-purple-950/40 text-[11px] text-purple-300">
-          Invocar como Ação Livre
-        </span>
-      )}
-    </div>
+    <span className="inline-flex items-baseline gap-1 px-2 py-1 rounded border border-slate-800 bg-slate-950/50 font-mono text-[11px] text-slate-300">
+      <span className="text-[9px] uppercase tracking-wider text-slate-500">{label}</span>
+      <b className="text-white tabular-nums">{valor}</b>
+    </span>
   );
 }
 
-/* Contador por marcador: quantas invocações estão marcadas contra o limite
-   daquele marcador. Vermelho quando passa. */
-function MarcadoresResumo({ marcadores }) {
-  if (!marcadores?.length) return null;
+function LimitesResumo({ acesso, controle, marcadores }) {
+  const limites = [];
+  if (acesso) limites.push({ label: "Acesso", valor: acesso });
+  if (controle?.ativo) {
+    limites.push(
+      { label: "Recebidas", valor: controle.iniciais },
+      { label: "Em Campo", valor: controle.limiteCampo },
+      { label: "Por Invocar", valor: controle.invocarPorAcao },
+      { label: "Comandos", valor: controle.comandos },
+    );
+    if (controle.criarHorda) limites.push({ label: "Hordas", valor: controle.limiteHordas });
+  }
+  const marcas = marcadores ?? [];
+  if (!limites.length && !marcas.length && !controle?.invocarAcaoLivre) return null;
   return (
     <div className="flex flex-wrap items-center gap-1.5 mb-3">
-      {marcadores.map((m) => (
+      {limites.map((l) => (
+        <LimiteChip key={l.label} label={l.label} valor={l.valor} />
+      ))}
+      {controle?.invocarAcaoLivre && (
+        <span className="inline-flex items-center gap-1 px-2 py-1 rounded border border-purple-800/60 bg-purple-950/40 text-[11px] text-purple-300">
+          Invocar Como Ação Livre
+        </span>
+      )}
+      {/* Contador por marcador, com a estrela para separar do teto do
+          Controlador. Vermelho quando passa. */}
+      {marcas.map((m) => (
         <span
           key={m.id}
           title="Invocações marcadas contra o limite"
@@ -12838,13 +13708,116 @@ function MarcadoresResumo({ marcadores }) {
   );
 }
 
+/* ============================================================ */
+/* A FILEIRA, E A BORDA QUE DIZ QUE HÁ MAIS                      */
+/* ============================================================ */
+/* ⚠ `overflow-x-auto no-scrollbar` esconde a barra de rolagem, e com cinco
+   invocações a última nascia CORTADA na borda direita sem nada dizendo que
+   havia mais para o lado. A máscara é essa afirmação, e ela apaga sozinha ao
+   chegar no fim, senão viraria decoração permanente. */
+function FileiraInvocacoes({ children, onNova }) {
+  const ref = useRef(null);
+  const [pode, setPode] = useState({ esq: false, dir: false });
+  const medir = useCallback(() => {
+    const el = ref.current;
+    if (!el) return;
+    const esq = el.scrollLeft > 4;
+    const dir = el.scrollWidth - el.clientWidth - el.scrollLeft > 4;
+    setPode((antes) => (antes.esq === esq && antes.dir === dir ? antes : { esq, dir }));
+  }, []);
+  /* DOIS efeitos, e não um. O primeiro roda a cada render porque acrescentar
+     uma invocação muda o `scrollWidth` sem mudar o tamanho do container, e o
+     ResizeObserver não acorda nesse caso. O segundo monta o observador uma vez
+     só, para a mudança de largura da janela. */
+  useLayoutEffect(medir);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el || typeof ResizeObserver === "undefined") return undefined;
+    const ro = new ResizeObserver(medir);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [medir]);
+
+  /* ⚠ A RODA VERTICAL NÃO ROLA UM CONTAINER HORIZONTAL. Esta é a causa do
+     relato do autor em 2026-09-02: *"Fiz 5 invocações, e não consigo mexer a
+     tela para o lado, para fazer da sexta para frente."*
+
+     A fileira usa `no-scrollbar`, então não há barra para arrastar, e um mouse
+     comum só manda `deltaY`: o navegador rolava a PÁGINA e a fileira ficava
+     parada no zero. Medido: com cinco invocações a fileira tem 1125px de
+     conteúdo em 889px de caixa, e a roda movia `window.scrollY` em 300 e o
+     `scrollLeft` em NADA. Quem usa trackpad nunca viu o problema, porque o
+     gesto lateral manda `deltaX`.
+
+     Duas saídas, e as duas entraram: a roda vira rolagem lateral aqui, e as
+     setas dão um alvo clicável para quem não pensa em rolar de lado. */
+  const rolar = (dir) => {
+    const el = ref.current;
+    if (el) el.scrollBy({ left: dir * Math.max(160, el.clientWidth * 0.8), behavior: "smooth" });
+  };
+  const naRoda = (ev) => {
+    const el = ref.current;
+    if (!el || Math.abs(ev.deltaY) <= Math.abs(ev.deltaX)) return;
+    if (el.scrollWidth <= el.clientWidth) return;
+    el.scrollLeft += ev.deltaY;
+  };
+
+  const seta = "absolute top-1/2 -translate-y-1/2 z-10 w-7 h-7 flex items-center justify-center rounded-full border border-slate-700 bg-slate-950/90 text-slate-300 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-500";
+  return (
+    <div className="flex items-stretch gap-2">
+      <div className="relative flex-1 min-w-0">
+        <div ref={ref} onScroll={medir} onWheel={naRoda} className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+          {children}
+        </div>
+        {pode.esq && (
+          <>
+            <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-slate-900 to-transparent" />
+            <button type="button" onClick={() => rolar(-1)} className={`${seta} left-1`} aria-label="Ver invocações anteriores">
+              <ChevronLeft className="w-4 h-4" aria-hidden="true" />
+            </button>
+          </>
+        )}
+        {pode.dir && (
+          <>
+            <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-slate-900 to-transparent" />
+            <button type="button" onClick={() => rolar(1)} className={`${seta} right-1`} aria-label="Ver próximas invocações">
+              <ChevronRight className="w-4 h-4" aria-hidden="true" />
+            </button>
+          </>
+        )}
+      </div>
+      {/* ⚠ O BOTÃO DE NOVA FICA FORA DO ROLADOR, e é a outra metade do conserto.
+          Ele era o último item DENTRO da fileira, então com cinco invocações
+          nascia fora da área visível: quem não conseguia rolar de lado também
+          não conseguia criar a sexta. Fixo na borda direita, ele não depende
+          mais de rolagem nenhuma. */}
+      <button
+        type="button"
+        onClick={onNova}
+        className="flex-shrink-0 w-12 inline-flex flex-col items-center justify-center gap-1 text-[12px] font-semibold rounded-lg border border-dashed border-slate-700 text-slate-400 hover:text-white hover:border-slate-600 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-500"
+        title="Nova invocação"
+        aria-label="Nova invocação"
+      >
+        <Plus className="w-4 h-4" aria-hidden="true" />
+      </button>
+    </div>
+  );
+}
+
 function TabInvocacoes({ draft, derived, addInvocacao, removeInvocacao, duplicarInvocacao, moverInvocacao, patchInvocacao, patchInvocacaoAttr, efeitosApi, addHorda, removeHorda, patchHorda }) {
   const lista = Array.isArray(draft.invocacoes) ? draft.invocacoes : [];
   const resolvidas = derived.invocacoes.lista;
   const resolvidaDe = (id) => resolvidas.find((r) => r.id === id);
-  // Acesso a graus usa o nível de ESCALONAMENTO de Controlador (real + metade da
-  // outra classe numa multiclasse). Pré-requisitos de habilidade usam o real.
-  const nivelControlador = derived.especializacoes.escolhidas.find((e) => e.id === "controlador")?.nivelEscalonamento ?? 0;
+  /* ⚠ ACESSO A GRAUS TAMBÉM SAI DO ND (autor, 2026-09-04: *"Nível do Controlador
+     é o ND e não o Nível da Especialização Controlador"*). Era o nível de
+     escalonamento da Especialização, e a tela lia um número diferente do que o
+     `deriveAfty` usava para escalar a mesma invocação.
+
+     De quebra isto alinha os graus de invocação com o Grau do Feiticeiro, que
+     já sai do ND pelas mesmas faixas (1-4, 5-8, 9-12, 13-16, 17+).
+
+     ⚠ Pré-requisito de Habilidade continua no nível REAL da Especialização. */
+  const nivelControlador = derived.nd ?? 0;
   const grausOk = grausDisponiveis(nivelControlador);
   const grauMaisAlto = grauMeta(grausOk[grausOk.length - 1]).label;
 
@@ -12896,14 +13869,11 @@ function TabInvocacoes({ draft, derived, addInvocacao, removeInvocacao, duplicar
         </div>
       }
     >
-      <p className="text-[11px] text-slate-400 leading-relaxed mb-3">
-        {nivelControlador > 0
-          ? `Nível de Controlador ${nivelControlador}: acesso até ${grauMaisAlto}.`
-          : "Sem nível de Controlador: os graus são definidos no Interlúdio, então aqui ficam todos disponíveis."}
-      </p>
-
-      <ControleInvocacoesResumo controle={derived.invocacoes.controle} />
-      <MarcadoresResumo marcadores={derived.invocacoes.marcadores} />
+      <LimitesResumo
+        acesso={nivelControlador > 0 ? grauMaisAlto : null}
+        controle={derived.invocacoes.controle}
+        marcadores={derived.invocacoes.marcadores}
+      />
 
       {lista.length === 0 ? (
         <div className="text-center py-8 border border-dashed border-slate-700 rounded-lg text-sm text-slate-400">
@@ -12923,7 +13893,7 @@ function TabInvocacoes({ draft, derived, addInvocacao, removeInvocacao, duplicar
           {/* A FILEIRA. Rolagem horizontal, e não quebra de linha: com sete
               invocações a quebra empurra o editor para fora da tela, e a
               fileira deixa de ser referência rápida para virar meia página. */}
-          <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+          <FileiraInvocacoes onNova={novaInvocacao}>
             {lista.map((inv) => (
               <InvocacaoMiniatura
                 key={inv.id}
@@ -12933,14 +13903,7 @@ function TabInvocacoes({ draft, derived, addInvocacao, removeInvocacao, duplicar
                 onSelecionar={() => setEscolhidaId(inv.id)}
               />
             ))}
-            <button
-              type="button"
-              onClick={novaInvocacao}
-              className="flex-shrink-0 w-40 min-h-[7.5rem] inline-flex flex-col items-center justify-center gap-1.5 text-[12px] font-semibold rounded-lg border border-dashed border-slate-700 text-slate-400 hover:text-white hover:border-slate-600"
-            >
-              <Plus className="w-4 h-4" /> Nova invocação
-            </button>
-          </div>
+          </FileiraInvocacoes>
 
           {escolhida && (
             <InvocacaoCard
@@ -12949,6 +13912,14 @@ function TabInvocacoes({ draft, derived, addInvocacao, removeInvocacao, duplicar
               resolvida={resolvidaDe(escolhida.id)}
               grausOk={grausOk}
               marcadores={derived.invocacoes.marcadores}
+              outrasInvocacoes={lista
+                .filter((i) => i.id !== escolhida.id)
+                .map((i) => ({
+                  id: i.id,
+                  nome: i.nome || "Sem nome",
+                  grauLabel: grauMeta(i.grau).label,
+                  grauCurto: grauMeta(i.grau).num === 0 ? "Esp." : `${grauMeta(i.grau).num}°`,
+                }))}
               podeSubir={indice > 0}
               podeDescer={indice >= 0 && indice < lista.length - 1}
               onPatch={(partial) => patchInvocacao(escolhida.id, partial)}
@@ -13124,10 +14095,6 @@ function HordasCard({ fichas, resolvidas, custoTotal, addHorda, removeHorda, pat
         ) : null
       }
     >
-      <p className="text-[11px] text-slate-400 leading-relaxed mb-3">
-        Uma Horda agrupa invocações suas: um líder (Primeiro Grau ou inferior) e membros de grau inferior. Os membros somam custo e PV, e escalam as ações do líder.
-      </p>
-
       {!temLider ? (
         <div className="text-center py-6 border border-dashed border-slate-700 rounded-lg text-sm text-slate-500">
           Crie ao menos uma invocação de Primeiro Grau ou inferior para formar hordas.

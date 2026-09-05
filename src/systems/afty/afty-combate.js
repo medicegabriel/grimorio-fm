@@ -110,6 +110,32 @@ export const COMBATE_ESTADOS = [
     ],
     requerHabilidade: "lut_manobras_finalizadoras",
   },
+  {
+    id: "circularAlvos",
+    label: "Ataque Circular · Alvos",
+    tipo: "faixa",
+    min: 1,
+    // "Para cada inimigo que seja um alvo, esta manobra causa 5 de dano
+    // adicional." O texto não dá teto, porque quem o dá é o alcance corpo a
+    // corpo. 8 é limite DA BANCADA, como o 5 do `abates`.
+    max: () => 8,
+    requerHabilidade: "lut_manobras_finalizadoras",
+    requerEstado: "manobraFinalizadora",
+  },
+  {
+    /* ⚠ `umComArma`, e NÃO `umComAArma`: o `varDoEstado` corta antes de cada
+       maiúscula PRECEDIDA de minúscula, então duas maiúsculas coladas ("AA")
+       não abrem separador e o id do artigo viraria a variável `um_com_aarma`.
+       O `quando` do efeito casaria com nada, calado. */
+    id: "umComArma",
+    label: "Um com a Arma",
+    tipo: "bool",
+    // "suas armas dedicadas conseguem superar resistência ao tipo de dano delas
+    // em um ataque." A CONTA DE USOS ("metade do seu nível de Lutador, por
+    // descanso curto") fica na mesa, por decisão do autor em 2026-09-02, então
+    // a bancada só tem o liga-desliga do ataque.
+    requerHabilidade: "lut_um_com_a_arma",
+  },
   /* ---- Brutalidade ---- */
   {
     id: "brutalidade",
@@ -336,6 +362,16 @@ export const COMBATE_ESTADOS = [
     label: "Duelando · Uma Arma, Mão Livre",
     tipo: "bool",
     requerEscolha: "cmb_estilo_do_duelista",
+  },
+  /* "Enquanto estiver lutando com duas armas": irmão do `duelando`, e a condição
+     do Estilo Duplo. Só o bônus de dano dele passa por aqui, porque a outra
+     metade fala do ataque da SEGUNDA arma, e a ficha tem uma linha por arma e
+     não por mão. */
+  {
+    id: "lutandoComDuasArmas",
+    label: "Lutando com Duas Armas",
+    tipo: "bool",
+    requerEscolha: "cmb_estilo_duplo",
   },
 
   /* ============================================================ */
@@ -647,6 +683,7 @@ export function resolveCombate(creature, params = {}) {
     brutalidadePilha: params.brutalidadePilha ?? 0,
     resistirPE: 2,
     abates: 5,
+    circularAlvos: 8,
     golpeDesfocado: 3,
     devastacaoPilha: params.devastacaoPilha ?? 0,
     precisaoPE: params.precisaoPE ?? 0,
