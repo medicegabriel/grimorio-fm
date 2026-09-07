@@ -1316,11 +1316,48 @@ export function deriveAfty(creature, opcoes = {}) {
   // limite subindo, a parcela cabe pelo caminho normal, e a carona que a versão
   // anterior evitava virou o comportamento certo: quem levanta o limite levanta
   // para toda fonte, igual ao Incremento de Atributo e à Quebra de Limites.
+  /* ⚠ O LIMITE QUE A LINHA ATIVA LEVANTA (2026-09-07). O `limiteMotorDe` lá em
+     cima lê só os estágios MONTANTE e PRÉ-CONTEXTO, que rodam antes de a
+     Simulação de Combate existir, então um canal `limiteAtributo` vindo de um
+     Feitiço Auxiliar ativo nunca chegava nele: o +12 de Força somava e parava
+     no limite de 20, calado.
+
+     A saída é a MESMA do acessório de atributo, descrita no bloco acima: em vez
+     de reabrir o limite de estágio 0, a parcela levanta o TETO DESTE ESTÁGIO
+     pelo tanto que ela mesma declara. O `tetoSistemaDe` continua sendo a última
+     palavra, então "supera o seu limite, até o máximo de 30" cai exatamente no
+     30 sem ninguém escrever 30 em lugar nenhum.
+
+     ⚠ Sai do `efeitosAtivos`, que é a lista da bancada e da sessão. Uma ficha
+     em repouso não tem nada aqui, e o limite volta ao 20 quando o Feitiço cai. */
+  /* ⚠ PASSA PELO `resolverExclusivos`, e não pelo `aplicarEfeitos` cru. A linha
+     do Feitiço Auxiliar é do POOL EXCLUSIVO, e efeito exclusivo sai da soma e
+     espera a disputa: ler `porAlvo` antes de resolver devolve objeto vazio, que
+     foi exatamente o primeiro jeito que eu escrevi isto e que não levantava
+     limite nenhum, calado.
+
+     De brinde, a disputa por `(canal, alvo)` já é a regra do autor: dois
+     Feitiços no MESMO atributo ficam com o maior, e em atributos diferentes
+     valem os dois. */
+  const limiteAtivoPor = resolverExclusivos(aplicarEfeitos(
+    efeitosAtivos.filter((e) => e?.canal === "limiteAtributo"),
+    montarCtx(attrBase, modBase),
+  )).porAlvo.limiteAtributo || {};
+
+  /* O teto que cada atributo REALMENTE usou, para o hover não mentir. Sem ele o
+     rótulo "Perdido no limite 20" apareceria numa Força que chegou a 30, que é
+     o defeito de "número certo com detalhamento errado" já nomeado na Defesa
+     por atributo. */
+  const tetoAplicado = {};
   const somarAtributo = (partida, res) => {
     const out = {};
     for (const k of Object.keys(partida)) {
       const total = valorCanal(res, "atributo", k);
-      const teto = Math.min(attrLimiteEfetivo[k] + (folgaEquip[k] || 0), tetoSistemaDe(k));
+      const teto = Math.min(
+        attrLimiteEfetivo[k] + (folgaEquip[k] || 0) + (limiteAtivoPor[k] || 0),
+        tetoSistemaDe(k),
+      );
+      tetoAplicado[k] = teto;
       out[k] = Math.min(partida[k] + total, Math.max(teto, partida[k]));
       perdaNoLimite[k] = (perdaNoLimite[k] || 0) + (partida[k] + total - out[k]);
     }
@@ -2713,7 +2750,7 @@ export function deriveAfty(creature, opcoes = {}) {
       ...(desenv[k] ? [{ label: "Desenvolvimento Inesperado", valor: desenv[k] }] : []),
       ...(equip.attrBonus[k] ? [{ label: "Equipamento", valor: equip.attrBonus[k] }] : []),
       ...doMotor("atributo", k),
-      ...(perdido ? [{ label: `Perdido no limite ${attrLimiteEfetivo[k]}`, texto: `−${perdido}` }] : []),
+      ...(perdido ? [{ label: `Perdido no limite ${tetoAplicado[k] ?? attrLimiteEfetivo[k]}`, texto: `−${perdido}` }] : []),
     ];
     const daOrigem = Math.max(limBase[k] ?? ATTR_LIMITE_PADRAO, limOrigem[k] ?? 0) - ATTR_LIMITE_PADRAO;
     const partesDoLimite = [
@@ -2861,6 +2898,10 @@ export function deriveAfty(creature, opcoes = {}) {
     attrEff,              // valor EFETIVO por atributo (base + efeitos, aparado no limite)
     attrPermanente,       // o que os PRÉ-REQUISITOS enxergam (sem os efeitos temporários)
     attrLimiteEfetivo,    // limite por atributo (padrão + Origem + Desenvolvimento + Motor, teto 30)
+    /* O teto que cada atributo usou de fato, com a folga do acessório e o que a
+       linha ATIVA levantou. Difere do de cima só enquanto um Feitiço Auxiliar
+       de Atributo está no ar. */
+    attrTetoAplicado: tetoAplicado,
     attrDesenv: desenv,   // pontos de Desenvolvimento Inesperado por atributo
     attrBonus,            // bônus de atributo da origem (efetivo)
     attrEquip: equip.attrBonus, // acessórios de atributo (passam o limite, param em 30)

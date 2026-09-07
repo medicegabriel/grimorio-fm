@@ -184,12 +184,13 @@ function idsAuxiliaresAtivos(combate, estados, feiticos) {
   return ids;
 }
 
-function efeitoNumerico(canal, valor, nome, alvo = null) {
+function efeitoNumerico(canal, valor, nome, alvo = null, extra = null) {
   if (!Number.isFinite(Number(valor)) || Number(valor) === 0) return [];
   return [{
     canal,
     expr: String(Number(valor)),
     ...(alvo ? { alvo } : {}),
+    ...(extra || {}),
     origem: `feiticoAuxiliar:${nome}`,
     nome,
     exclusivo: "feiticoAuxiliarPassivo",
@@ -197,15 +198,44 @@ function efeitoNumerico(canal, valor, nome, alvo = null) {
   }];
 }
 
+/**
+ * O Aumento de Atributo, uma linha por atributo da divisão.
+ *
+ * ⚠ DUAS METADES POR ATRIBUTO, e não uma (autor, 2026-09-07): *"Feitiços de
+ * Atributo ativos TRANSPASSAM o limite de 20, podendo chegar até o de 30. Logo
+ * se eu tenho 18 de Força e faço um Feitiço que me fornece +12 de Força, eu fico
+ * com 30 de Força."*
+ *
+ * O canal `atributo` sozinho APARA no limite de 20, que é a regra desde o
+ * conserto de 2026-07-29, e o `18 + 12` parava em 20. Quem sobe o teto é o
+ * `limiteAtributo`, e as duas andam juntas em toda regra que diz "o valor e o
+ * limite" (é o mesmo par do Incremento de Atributo e da Quebra de Limites).
+ *
+ * ⚠ SEM `furaTeto`. Ele levaria a 32, e o texto do autor para no 30, que é
+ * exatamente onde o `limiteAtributo` sozinho já para.
+ *
+ * ⚠ UMA LINHA POR ATRIBUTO, porque o pool exclusivo disputa por `(canal, alvo)`.
+ * Somar tudo num alvo só faria a divisão sumir, e dois Feitiços em atributos
+ * diferentes brigarem entre si por engano.
+ */
+function efeitosDeAtributo(sub, config, nome) {
+  const partes = Array.isArray(sub?.atributos) && sub.atributos.length
+    ? sub.atributos
+    : [{ attr: config?.alvoAuxAtributo || "forca", pontos: Number(sub?.valor) || 0 }];
+  return partes.flatMap((p) => [
+    ...efeitoNumerico("atributo", p.pontos, nome, p.attr),
+    ...efeitoNumerico("limiteAtributo", p.pontos, nome, p.attr),
+  ]);
+}
+
 function efeitosDeAuxiliarResolvido(sub, config, nome) {
   if (!sub?.disponivel || sub.especial) return { efeitos: [], dados: [] };
   const valor = Number(sub.valor) || 0;
-  const atributo = config?.alvoAuxAtributo || "forca";
   const resistencia = config?.alvoAuxTR || "reflexos";
   switch (sub.efeito) {
     case "defesa": return { efeitos: efeitoNumerico("defesa", valor, nome), dados: [] };
     case "rd": return { efeitos: efeitoNumerico("rdGeral", valor, nome), dados: [] };
-    case "atributo": return { efeitos: efeitoNumerico("atributo", valor, nome, atributo), dados: [] };
+    case "atributo": return { efeitos: efeitosDeAtributo(sub, config, nome), dados: [] };
     case "tr": return { efeitos: efeitoNumerico("bonusTR", valor, nome, resistencia), dados: [] };
     case "rolagem": return {
       efeitos: [

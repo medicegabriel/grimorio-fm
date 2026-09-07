@@ -34,6 +34,9 @@
 // grauMeta: fonte da verdade dos graus de Invocação (Shikigami usa o motor de
 // Invocações). afty-invocacoes não importa daqui, então não há ciclo.
 import { registrarFamilia } from "./afty-addons";
+// Só o RÓTULO do atributo, para o aviso da divisão não sair em snake_case.
+// afty-atributos.js importa só o schema, que não importa nada: seta segura.
+import { ATTR_LABEL } from "./afty-atributos";
 import { grauMeta } from "./afty-invocacoes";
 import {
   detalhesDoCanalEscopos, resolverEfeitosDanoFinal, valorCanalEscopos,
@@ -2104,7 +2107,11 @@ export function calcularFeiticoEspecial(feitico, ctx = {}) {
 //                O nível que manda nas rodadas é o do FEITIÇO, mesmo em
 //                Múltiplos Efeitos, onde os efeitos são de nível menor.
 //  - Sustentada: até uma cena, com upkeep por rodada (1 PE nv0-2,
-//                2 PE nv3-5). Só um sustentado ativo por vez.
+//                2 PE nv3-5). Quantos cabem no ar ao mesmo tempo é 1, 2 com
+//                Sustentação Avançada ou 3 com Sustentação Mestre, e quem conta
+//                as vagas é `estadosCombateConjurador` em afty-combate-conjurador.js.
+//                ⚠ O comentário aqui dizia "só um sustentado ativo por vez" e
+//                estava desatualizado desde que as duas habilidades entraram.
 //
 // ⚠ Tabelas VERBATIM do livro. "–" (indisponível) = null.
 //   Células especiais (Esquiva Garantida, Garantido, Cena, Global,
@@ -2422,13 +2429,32 @@ export function faixaRodadasDuradoura(nivel) {
   return { min: meia + 1, max: n + 1 };
 }
 
-// Valor final da Duradoura: VALOR DA TABELA ÷ (rodadas − ⌈nível/2⌉), piso.
-export function valorDuradoura(valorTabela, nivel, rodadas) {
+/**
+ * Valor final da Duradoura: VALOR DA TABELA ÷ (rodadas − ⌈nível/2⌉), piso.
+ *
+ * ⚠ O PISO É NA GRADE DO EFEITO, e não sempre no inteiro (conserto de
+ * 2026-09-07). Movimento e os dois Alcances andam de 1,5 em 1,5 metros, e o
+ * `Math.floor` cru quebrava a grade em 29 células da tabela. Os piores casos
+ * eram os de divisor 1, onde NADA deveria mudar e mesmo assim meio metro sumia:
+ * Alcance Corpo a Corpo nível 0 entregava 1m no lugar de 1,5m, e Movimento nível
+ * 1 entregava 4m no lugar de 4,5m, o que o deixava PIOR que a coluna Sustentada
+ * do mesmo nível (4,5m). Era o único par do sistema em que a duração mais curta
+ * valia menos.
+ *
+ * `passo` é a granularidade daquele efeito: 1 para bônus numérico (o padrão, e
+ * o que todo chamador antigo recebe sem mudar nada) e 1,5 para metros. O
+ * arredondamento continua sendo para BAIXO, que é a regra do Afty.
+ */
+export function valorDuradoura(valorTabela, nivel, rodadas, passo = 1) {
   const n = nivel === "max" ? 6 : nivel;
   const meia = Math.ceil(n / 2);
   const denom = rodadas - meia;
   if (denom < 1) return null;              // fora da faixa (÷ <= 0)
-  return Math.floor(valorTabela / denom);
+  const bruto = valorTabela / denom;
+  const p = Number(passo) > 0 ? Number(passo) : 1;
+  // O `toFixed` mata o resíduo binário: 7.5 / 1.5 dá 4.999999999999999 em ponto
+  // flutuante, e o piso cru devolveria 4 em vez de 5.
+  return Math.floor(Number((bruto / p).toFixed(6))) * p;
 }
 
 // ---------------------------------------------------------------
@@ -2552,6 +2578,13 @@ export function efeitosDisponiveisMult(entries, efeitoAtual, umGolpe, ctx = {}) 
   const lista = Array.isArray(entries) ? entries : [];
   const usados = new Set(lista.map((en) => en.efeito));
   usados.delete(efeitoAtual);
+  /* ⚠ O AUMENTO DE ATRIBUTO É A EXCEÇÃO À TRAVA DE NÃO REPETIR (autor,
+     2026-09-07): *"não está dando duas vezes o mesmo efeito, está fornecendo
+     Atributo para Atributos DIFERENTES"*. A trava geral existe porque dois
+     Aumentos de Defesa são a mesma coisa duas vezes; dois Aumentos de Atributo
+     em atributos distintos são duas coisas. O que sobra da regra é a trava por
+     ATRIBUTO, que `atributosRepetidos` mede sobre o Feitiço inteiro. */
+  usados.delete("atributo");
   let livres = AUX_EFEITOS.filter((m) => !usados.has(m.value));
   if (umGolpe) {
     // Feitiço de evento único: só efeitos com evento, e do mesmo lado dos irmãos.
@@ -2618,13 +2651,120 @@ export function orcamentoMultiplos(feitico) {
   const nivel = f.nivel ?? 1;
   const n = nivel === "max" ? 5 : nivel;
   const req = f.requisito ? REQUISITO_DIFICULDADE.find((r) => r.value === f.requisito) : null;
-  const base = custoPadrao(n);
+  // ⚠ `nivel` no custo e `n` no resto, pelo mesmo motivo do efeito único: o `n`
+  // existe para ler tabela que para no 5, e a Técnica Máxima custa 25.
+  const base = custoPadrao(nivel);
   const peReq = req ? req.pe : 0;
   const pePropria = f.alcancePropria ? n : 0;
   const emCompleta = acaoAplicadaMult(f, f.duracaoMult || "imediata") === "completa";
   const peCompleta = (emCompleta && !usaCompletaTabelaMult(f)) ? 2 * n : 0;
   const peConcentracao = usoConcentracaoAux(f) === "efeito" ? custoEfeitoMult(nivel) : 0;
   return { base, peReq, pePropria, peCompleta, peConcentracao, total: base + peReq + pePropria + peCompleta + peConcentracao };
+}
+
+/* ============================================================ */
+/* AUMENTO DE ATRIBUTO: a divisão entre atributos                */
+/* ============================================================ */
+/**
+ * O Aumento de Atributo é o ÚNICO efeito auxiliar que entrega um POOL DE PONTOS
+ * em vez de um bônus fechado (autor, 2026-09-07). O valor da tabela pode ser
+ * repartido entre atributos: *"você pode pegar um Feitiço de Atributo que
+ * fornece +12 Pontos de Atributo e dividir ele em 6 em um atributo e 6 em
+ * outro"*.
+ *
+ * ⚠ A REGRA QUE ATRAVESSA TUDO É "ATRIBUTOS DIFERENTES" (autor, 2026-09-07):
+ * *"Se você colocar um Feitiço de Atributo em FORÇA, o outro efeito de Múltiplos
+ * Efeitos ou Divisão entre os atributos NÃO PODE SER FORÇA. Pq Força com Força
+ * NÃO SOMA, só fica o MAIOR."* Ela vale nos três lugares onde dois Aumentos de
+ * Atributo podem se encontrar, e é a mesma razão nos três: o pool exclusivo de
+ * afty-efeitos.js disputa por `(canal, alvo)` e ficaria com o maior, então dois
+ * no mesmo atributo é PE gasto que não vira número.
+ *
+ * ⚠ A FICHA GUARDA PONTOS, E NÃO PORCENTAGEM. Guardar fração faria a divisão
+ * mudar sozinha ao trocar a duração, e "guarde escolhas, nunca resultados" não
+ * quer dizer guardar menos do que a escolha: a escolha É "6 aqui e 6 ali". O
+ * que o resolvedor faz quando o pool encolhe é APARAR e AVISAR, nunca
+ * redistribuir por conta própria.
+ *
+ * Forma na ficha (`atributosAux`), e as duas de trás:
+ *   [{ attr: "forca", pontos: 6 }, { attr: "constituicao", pontos: 6 }]
+ *   ausente          -> tudo em `alvoAuxAtributo` (o campo antigo, de um só)
+ *   um item sem      -> aquele atributo leva o pool inteiro
+ *   `pontos`
+ */
+export function dividirAtributos(config, valor) {
+  const pool = Math.max(0, Math.trunc(Number(valor) || 0));
+  const bruta = Array.isArray(config?.atributosAux) ? config.atributosAux : null;
+  const lista = (bruta?.length ? bruta : [{ attr: config?.alvoAuxAtributo || "forca" }])
+    .map((e) => ({ attr: String(e?.attr ?? e?.alvo ?? "").trim(), pontos: e?.pontos }))
+    .filter((e) => e.attr);
+  if (!lista.length) return { partes: [], sobra: pool, repetidos: [], avisos: [] };
+
+  const avisos = [];
+  const repetidos = [];
+  const vistos = new Set();
+  const unicos = [];
+  for (const e of lista) {
+    if (vistos.has(e.attr)) { repetidos.push(e.attr); continue; }
+    vistos.add(e.attr);
+    unicos.push(e);
+  }
+
+  /* Um atributo só, sem pontos declarados: leva tudo. É o caso de toda ficha
+     anterior a 2026-09-07 e o caso comum de hoje, e por isso ele não obriga
+     ninguém a digitar um número que só tem uma resposta. */
+  if (unicos.length === 1 && unicos[0].pontos == null) {
+    return { partes: [{ attr: unicos[0].attr, pontos: pool }], sobra: 0, repetidos, avisos };
+  }
+
+  const partes = [];
+  let resta = pool;
+  for (const e of unicos) {
+    // `pontos` ausente num split de vários é lido como "o que sobrar".
+    const pedido = e.pontos == null ? resta : Math.max(0, Math.trunc(Number(e.pontos) || 0));
+    const dado = Math.min(pedido, resta);
+    resta -= dado;
+    partes.push({ attr: e.attr, pontos: dado, pedido });
+  }
+  const pedidoTotal = partes.reduce((t, p) => t + p.pedido, 0);
+  if (pedidoTotal > pool) {
+    avisos.push(`A divisão pede ${pedidoTotal} ponto(s) e o Feitiço entrega ${pool}.`);
+  }
+  return { partes: partes.filter((p) => p.pontos > 0), sobra: resta, repetidos, avisos };
+}
+
+/**
+ * Os atributos que um Feitiço inteiro toca, para a regra dos "diferentes"
+ * atravessar os efeitos de um Múltiplos Efeitos.
+ *
+ * ⚠ Ela é do FEITIÇO, e não do efeito: dois Aumentos de Atributo no mesmo
+ * Feitiço podem conviver desde que mirem atributos distintos, e é por isso que
+ * o `atributo` é a única exceção à trava de não repetir efeito.
+ */
+export function atributosDoAuxiliar(feitico) {
+  const f = feitico || {};
+  const fontes = f.multiplosAtivo
+    ? (Array.isArray(f.efeitosMult) ? f.efeitosMult : []).filter((e) => e?.efeito === "atributo")
+    : (f.efeitoAux === "atributo" ? [f] : []);
+  const out = [];
+  for (const fonte of fontes) {
+    const bruta = Array.isArray(fonte.atributosAux) ? fonte.atributosAux : null;
+    const attrs = bruta?.length
+      ? bruta.map((e) => String(e?.attr ?? "").trim()).filter(Boolean)
+      : [String(fonte.alvoAuxAtributo || "forca")];
+    out.push(...attrs);
+  }
+  return out;
+}
+
+/** Atributos que aparecem mais de uma vez no Feitiço inteiro. */
+export function atributosRepetidos(feitico) {
+  const vistos = new Set();
+  const repetidos = new Set();
+  for (const a of atributosDoAuxiliar(feitico)) {
+    if (vistos.has(a)) repetidos.add(a); else vistos.add(a);
+  }
+  return [...repetidos];
 }
 
 // ---- núcleo: computa UM efeito auxiliar ----
@@ -2766,7 +2906,7 @@ export function calcularEfeitoAux(e, ctx = {}) {
     // reescrita aqui, idêntica, e a função exportada era código MORTO (única
     // ocorrência dela em todo o `src/` era a própria declaração). Duas cópias
     // da mesma regra, e mexer na função canônica não mudaria nada.
-    const vd = valorDuradoura(bruto, divN.nDur, divN.rodadas);
+    const vd = valorDuradoura(bruto, divN.nDur, divN.rodadas, meta.tipoValor === "metros" ? 1.5 : 1);
     valor = vd == null ? valor : vd;
     out.rodadas = divN.rodadas;
     notas.push(`Duradoura: ${bruto} ÷ (${divN.rodadas} − ⌈${divN.nDur}/2⌉) = ${valor} por ${divN.rodadas} rodada(s).`);
@@ -2829,6 +2969,21 @@ export function calcularEfeitoAux(e, ctx = {}) {
   out.alvos = alvosBase;
   out.valor = valor;
   aplicarConcentracao(e, out, notas, nNum);
+  /* A divisão do pool de pontos, no fim: ela precisa do valor JÁ dividido entre
+     alvos e já somado da Liberação Máxima, que é o número que cada alvo recebe.
+     Ver `dividirAtributos`. */
+  if (efeitoKey === "atributo") {
+    const div = dividirAtributos(e, out.valor);
+    out.atributos = div.partes;
+    out.atributosSobra = div.sobra;
+    for (const a of div.avisos) avisos.push(a);
+    for (const attr of div.repetidos) {
+      avisos.push(`${ATTR_LABEL[attr] || attr} aparece duas vezes na divisão: dois aumentos no mesmo atributo não somam, vale o maior.`);
+    }
+    if (div.sobra > 0 && div.partes.length) {
+      avisos.push(`${div.sobra} ponto(s) de atributo sem destino.`);
+    }
+  }
   return out;
 }
 
@@ -2862,10 +3017,18 @@ export function calcularFeiticoAuxiliar(feitico, ctx = {}) {
       alvos: f.alvosAux, propria: !!f.alcancePropria,
       concentracao: f.concentracaoAux, concUso: "alvos", rodadas: f.rodadasDur,
       liberacao: lib,
+      // A divisão de pontos do Aumento de Atributo mora no próprio Feitiço
+      // quando ele tem um efeito só. Ver `dividirAtributos`.
+      atributosAux: f.atributosAux, alvoAuxAtributo: f.alvoAuxAtributo,
     };
     const r = somarRodadas(calcularEfeitoAux(e, ctx));
     r.multiplos = false;
-    r.custoPE = custoPadrao(nBase);
+    /* ⚠ `nivel`, e NÃO `nBase` (conserto de 2026-09-07). O `nBase` colapsa a
+       Técnica Máxima em 5 para ler as tabelas que param no nível 5, e usá-lo no
+       custo cobrava 20 PE por uma Técnica Máxima que a tabela `FEITICO_CUSTO_PE`
+       precifica em 25. Dano e Curativo já cobravam os 25 certos, então o
+       Auxiliar era o único fora da linha. */
+    r.custoPE = custoPadrao(nivel);
     r.upkeepPE = e.duracao === "sustentada" ? upkeepSustentar(nivel) : 0;
     // ---- Liberação Máxima ----
     r.liberacao = lib;
@@ -2907,9 +3070,15 @@ export function calcularFeiticoAuxiliar(feitico, ctx = {}) {
   const acaoPiso = floorAcaoMult(entries, duracaoSpell);
   const acaoDefault = defaultAcaoMult(entries, duracaoSpell);
 
-  // Múltiplos Efeitos NÃO aceita efeito repetido (autor): dois Aumentos de
-  // Defesa no mesmo Feitiço não existem. Não é aviso, é impossibilidade, então
-  // quem barra é a UI (o seletor não oferece efeito já usado no Feitiço).
+  /* Múltiplos Efeitos NÃO aceita efeito repetido (autor, 2026-08-09): dois
+     Aumentos de Defesa no mesmo Feitiço não existem. Não é aviso, é
+     impossibilidade, então quem barra é a UI (o seletor não oferece efeito já
+     usado no Feitiço).
+
+     ⚠ COM UMA EXCEÇÃO, aberta em 2026-09-07: o Aumento de Atributo. Ele repete
+     porque o que ele entrega não é o mesmo efeito duas vezes, e sim atributos
+     diferentes. A trava dele é por ATRIBUTO, medida sobre o Feitiço inteiro
+     logo abaixo, e não por efeito. */
   const efeitos = entries.map((en) => {
     const { col, semRounds } = resolverColunaAux(en.efeito, en.nivel, duracaoSpell);
     const e = {
@@ -2917,6 +3086,8 @@ export function calcularFeiticoAuxiliar(feitico, ctx = {}) {
       acao: acaoAplicada, umGolpe: eventoUnico, tiposDanoExtra: en.tiposDanoExtra,
       alvos: alvosSpell, propria, rodadas: f.rodadasMult, nivelDuracao: nivel,
       duracaoSpell, liberacao: lib,
+      // A divisão de pontos é POR EFEITO, e viaja junto para o `calcularEfeitoAux`.
+      atributosAux: en.atributosAux, alvoAuxAtributo: en.alvoAuxAtributo,
     };
     const r = somarRodadas(calcularEfeitoAux(e, ctx));
     r.id = en.id;
@@ -2927,6 +3098,14 @@ export function calcularFeiticoAuxiliar(feitico, ctx = {}) {
     }
     return r;
   });
+  /* ⚠ A TRAVA DOS ATRIBUTOS DIFERENTES, atravessando os efeitos. Ela é do
+     Feitiço e não do efeito: Força num Aumento de Atributo e Força de novo na
+     divisão de outro é PE gasto que não vira número, porque o pool exclusivo
+     disputa por `(canal, alvo)` e fica com o maior. É AVISO e não trava dura,
+     que é o padrão do projeto para conjunto inválido montado à mão. */
+  for (const attr of atributosRepetidos(f)) {
+    avisos.push(`${ATTR_LABEL[attr] || attr} recebe Aumento de Atributo mais de uma vez neste Feitiço: eles não somam, vale o maior.`);
+  }
   const gasto = efeitos.reduce((s, r) => s + (r.custoMult || 0), 0);
   const restante = orc.total - gasto;
   const excedeu = gasto > orc.total;

@@ -653,11 +653,17 @@ function LinhaFeitico({
             )}
           </dl>
         )}
+        {/* ⚠ `TextoRico`, e não texto puro (2026-09-07). O campo virou o mesmo
+            editor com marcação do Funcionamento Básico, e deixar a leitura em
+            `<p>` faria `**negrito**` e as tabelas aparecerem como caracteres na
+            tela de jogo. O rótulo "Efeito:" fica FORA do bloco rico: ele é do
+            leitor, não do texto, e enfiá-lo dentro do primeiro parágrafo do
+            `TextoRico` obrigaria a concatenar marcação na string do jogador. */}
         {f.descricao && (
-          <p className="afty-feitico-efeito">
+          <div className="afty-feitico-efeito">
             {!descricaoTemRotulo && <strong>Efeito: </strong>}
-            {f.descricao}
-          </p>
+            <TextoRico texto={f.descricao} />
+          </div>
         )}
         {/* LIBERAÇÃO MÁXIMA. Só aparece em Feitiço que a alcança (Nível 3 ao 5,
             Dano, Auxiliar ou Curativo, do ND 9 em diante).
@@ -896,6 +902,16 @@ export default function AbaAcoes({
   onCancelarRitual, onFinalizarRitual, onEncerrarRitual,
   onImbuir,
   adaptacao = null,
+  /* ⚠ NÓ PRONTO, e não os dados da arma. Mesma forma do `adaptacao` logo acima,
+     e pelo mesmo motivo: o painel mexe na SESSÃO, e a sessão é de quem monta a
+     aba (a Ficha e o painel de Encontros têm `onSessao` diferentes). Assim a
+     aba não precisa saber que sessão existe.
+
+     ⚠ ELE MUDOU DE LUGAR EM 2026-09-07, a pedido do autor: *"o local aonde está
+     o controle da Azamaru é meio ruim. Deixe em Ações"*. Morava no cabeçalho,
+     encostado nos vitais e na Guarda, e ali disputava espaço com PV e PE sendo
+     que o que ele faz é AÇÃO de combate. */
+  armasTransformaveis = null,
   gatilhosTreino = [], onGatilhoTreino = null,
 }) {
   const dano = derived.dano?.entradas ?? [];
@@ -915,6 +931,9 @@ export default function AbaAcoes({
   return (
     <div className="space-y-3">
       {adaptacao}
+      {/* Antes do Rápido e do Dano: reunir ou dividir é a primeira decisão da
+          rodada, e ela muda a linha de dano que aparece logo abaixo. */}
+      {armasTransformaveis}
       {gatilhosTreino.length > 0 && (
         <div className="afty-card flex items-center gap-2 p-2">
           {gatilhosTreino.map((gatilho) => (

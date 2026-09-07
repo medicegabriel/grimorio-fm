@@ -30,11 +30,11 @@ const t = (nome, real, esp) => {
 
 /* ⚠ A LISTA É FECHADA de propósito: primitiva nova cai aqui e obriga quem a
    acrescentou a dizer que enxerga o quê. A `catarse` entrou em 2026-09-04, com
-   a Loja de Catarse, e a `requisitoAptidao` em 2026-09-07, com o Especialista
-   em Estilo. */
-t("sao 6 primitivas", AD.PRIMITIVAS.length, 6);
+   a Loja de Catarse, e em 2026-09-07 entraram duas: a `requisitoAptidao` com o
+   Especialista em Estilo e a `armaTransformavel` com o Azamaru. */
+t("sao 7 primitivas", AD.PRIMITIVAS.length, 7);
 t("ids esperados", AD.PRIMITIVAS.map((p) => p.id).sort(),
-  ["adaptacao", "catarse", "concessao", "contar", "hpAtributo", "requisitoAptidao"]);
+  ["adaptacao", "armaTransformavel", "catarse", "concessao", "contar", "hpAtributo", "requisitoAptidao"]);
 t("toda primitiva tem rotulo", AD.PRIMITIVAS.every((p) => !!p.rotulo), true);
 t("SEM_PRIMITIVAS e vazio", AD.SEM_PRIMITIVAS, []);
 

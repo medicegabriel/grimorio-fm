@@ -3,7 +3,8 @@
   "nome": "Azamaru",
   "versao": "1.0.0",
   "paraRaw": "afty",
-  "descricao": "O Fim de Todas as Coisas",
+  "descricao": "A arma de duas formas. Dividida são duas lâminas de Fineza; reunida vira uma espada colossal que ignora RD, imunidade e resistência, e cria clones ilusórios iguais ao Bônus de Maestria. O painel de combate da Ficha e do Encontro controla as duas formas, os clones e a reserva.",
+  "permite": ["armaTransformavel"],
   "acrescenta": {
     "armas": [{
       "id": "azamaru",

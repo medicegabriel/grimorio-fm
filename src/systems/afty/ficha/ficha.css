@@ -657,6 +657,171 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
 }
 
 /* ============================================================ */
+/* ARMA TRANSFORMÁVEL — a tira das duas formas                   */
+/* ============================================================ */
+/* ⚠ MORA NA ABA AÇÕES desde 2026-09-07, e não mais no cabeçalho (autor: *"o
+   local aonde está o controle da Azamaru é meio ruim. Deixe em Ações"*). Por
+   isso ela é um CARTÃO da aba, e não uma tira encostada nos vitais: mesmo fundo,
+   mesmo raio e mesma sombra do `afty-card`, para ler como irmã do Dano e do
+   Rápido logo abaixo dela.
+
+   ⚠ A BORDA ESQUERDA É O ESTADO, e isso ela herdou da Guarda. Reunida acende no
+   destaque, dividida fica na borda comum e esmaece. O jogador vê de longe em que
+   forma a arma está sem ler palavra nenhuma. */
+.afty-forma {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--afty-borda);
+  border-left: 3px solid var(--afty-borda-forte);
+  border-radius: var(--afty-raio);
+  background: var(--afty-card);
+  box-shadow: var(--afty-sombra);
+  opacity: 0.72;
+}
+
+.afty-forma[data-afty-forma="reunida"] {
+  border-left-color: var(--afty-destaque);
+  opacity: 1;
+}
+
+/* ---------- 1. identidade ---------- */
+.afty-forma-topo {
+  display: flex;
+  /* Linha de base, como a Guarda: o nome e o estado têm corpos diferentes, e
+     centrar deixaria cada um apoiado num lugar. O ícone e os botões voltam para
+     o centro logo abaixo, porque eles não têm base. */
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.afty-forma-icone {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  align-self: center;
+  color: var(--afty-texto-fraco);
+}
+
+.afty-forma[data-afty-forma="reunida"] .afty-forma-icone { color: var(--afty-destaque); }
+
+.afty-forma-nome {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--afty-texto);
+}
+
+.afty-forma-estado {
+  font-size: 0.5625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--afty-texto-fraco);
+}
+
+.afty-forma-controles {
+  display: flex;
+  align-items: center;
+  align-self: center;
+  gap: 0.25rem;
+  margin-left: auto;
+}
+
+/* ---------- 2. o que ela dá agora ---------- */
+/* ⚠ FAIXA PRÓPRIA, e não misturada com os botões. Era tudo um `flex-wrap` só, e
+   "Clones: 4" ficava perdido no meio de sete controles. Número e campo não se
+   intercalam, que é a mesma regra das quatro faixas da Invocação. */
+.afty-forma-numeros {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.375rem;
+}
+
+.afty-forma-numero {
+  font-size: 0.5625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--afty-texto-fraco);
+  white-space: nowrap;
+}
+
+.afty-forma-numero b {
+  font-family: var(--afty-fonte-num);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--afty-texto);
+  margin-right: 0.1875rem;
+}
+
+/* ---------- 3. controles ---------- */
+.afty-forma-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-top: 0.375rem;
+}
+
+/* Mesmo botão discreto da Guarda: o peso é a BORDA, e ela só acende no hover.
+   São seis controles numa aba que já tem muito botão, e com preenchimento eles
+   virariam a coisa mais pesada da tela. */
+.afty-forma-botao {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  height: 1.25rem;
+  padding-inline: 0.375rem;
+  border: 1px solid var(--afty-borda);
+  border-radius: var(--afty-raio-peq);
+  color: var(--afty-texto-fraco);
+  font-size: 0.6875rem;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 140ms, border-color 140ms;
+}
+
+.afty-forma-botao:hover:not(:disabled) {
+  color: var(--afty-texto);
+  border-color: var(--afty-destaque);
+}
+
+.afty-forma-botao:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ---------- 4. detalhe ---------- */
+.afty-forma-detalhe {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.375rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--afty-texto-fraco);
+  font-size: 0.6875rem;
+  cursor: pointer;
+  transition: color 140ms;
+}
+
+.afty-forma-detalhe:hover { color: var(--afty-texto); }
+
+.afty-forma-detalhe-icone {
+  width: 0.75rem;
+  height: 0.75rem;
+  flex-shrink: 0;
+}
+
+.afty-forma-texto { margin-top: 0.25rem; }
+
+/* Alvo de toque, igual ao `afty-guarda-botao`: 20px de altura não se acerta com
+   o dedo. */
+@media (pointer: coarse) {
+  .afty-forma-botao { height: 2rem; padding-inline: 0.625rem; font-size: 0.75rem; }
+}
+
+.afty-ficha[data-afty-densidade="compacta"] .afty-forma { padding-block: 0.1875rem; }
+
+/* ============================================================ */
 /* STATS — cada número derivado                                  */
 /* ============================================================ */
 

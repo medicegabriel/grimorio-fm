@@ -121,6 +121,162 @@ Estado atual do sistema Afty (atualizado 2026-09-07). Leia junto com:
 
 ---
 
+## SESSÃO DE 2026-09-07 (parte 4): O AZAMARU VIROU ADDON DE VERDADE
+
+O trabalho do GoliasK entrou por fast-forward (commit `6238ec6`). O autor pediu para consertar tudo
+que eu tinha apontado e para arrumar o painel: *"Ficou muito ruim de usar ela na Ficha Final, e ela
+deveria ter sido feita como Addon esse tempo todo"*.
+
+### Três arquivos no lugar errado
+
+O conteúdo JÁ era um pacote de Addon (`acrescenta.armas`), mas os três arquivos moravam dentro da
+árvore de código. Foram para as pastas que o projeto usa, sem mudar uma linha de conteúdo:
+`src/systems/afty/azamaru.json` → `addons/`, `AZAMARU.md` → `docs/afty-azamaru.md`, e
+`src/systems/afty/asserts/t-azamaru.mjs` → `asserts/`.
+
+⚠ **O assert não rodava, e nem podia.** O lançador só lê `asserts/` na raiz, então ele estava fora
+do portão de qualidade. E mesmo movido ele seria marcado como FALHOU: o lançador exige a frase
+`TODOS OS <n> ASSERTS PASSARAM` e o arquivo imprimia uma própria. Ele usa `node:assert`, que lança
+na falha, então bastou um contador fino para produzir a linha, sem trocar a mecânica.
+
+### A lição do `hpAtributo`, repetida letra por letra
+
+O verbo (arma com duas formas e reserva de clones) foi para o motor, os dois canais que ele abriu
+(`ignoraTodaRD` e `ignoraImunidade`) apareceram no seletor de canal de **todo mundo** com zero
+addons instalados, e faltava dizer quem enxerga. Virou a primitiva `armaTransformavel`, que o
+pacote declara em `permite`. A lição estava escrita no topo de `PRIMITIVAS` desde 2026-08-20.
+
+### Robustez
+
+O módulo roda dentro do `deriveAfty`, e lia três campos de ficha sem guarda. O `equipamentos.itens`
+com `?? []` derrubava a derivação inteira quando o campo não era lista, e o assert
+`"ficha suja nao derruba o derive"` de `t-pugilato.mjs` pegou na hora. Os outros dois (`addons` e o
+catálogo) tinham o mesmo furo sem teste cobrindo, e agora todos passam por `lista()`.
+
+### O painel: seis botões para três ações
+
+É o que explicava a reclamação. Medido no motor: `golpe` e `livre` disparavam o mesmo caminho, e
+`todos` tinha **dois botões**. Numa fileira de sete controles que embrulhava na largura da Ficha, o
+jogador tinha de descobrir sozinho quais pares eram sinônimos.
+
+| Antes | Agora |
+|---|---|
+| Errou contra mim, Dissipar 1 | **Dissipar Um** |
+| Fui atingido, Área · Dissipar | **Dissipar Todos** |
+| Acertei · Consumir | **Consumir Acumulados** |
+
+As situações de mesa viraram `title` de cada botão. E os três números que a arma entrega (+2 Defesa
+e +2 Reflexos por clone, 1 dado a cada 2 acumulados) **eram calculados e jogados fora**: a tira
+mostrava só "Clones: 4". Agora são a segunda faixa, saindo do `bonusDaForma`, que passou a ser o
+dono único da fórmula. O texto da arma saiu do `title` (sete linhas de regra num tooltip) e virou
+faixa que abre.
+
+O arranjo segue as quatro faixas do card de Invocação, e a borda esquerda como estado veio da
+Guarda.
+
+### Depois do deploy: dois retornos do autor
+
+**O Reunir travava fora de combate.** *"Quando eu clico em Reunir, e depois clico em Dividir. Eu
+não consigo Reunir novamente."* A Ficha abre na rodada 0 ("nenhuma cena em andamento") e o contador
+só sobe à mão. `dividir` gravava `dividida: rodada` e `reunir` recusa quando `dividida === rodada`,
+então fora de combate era `0 === 0` para sempre. Fora de uma cena não existe "mesma rodada": o
+bloqueio só é gravado com rodada maior que zero, e a regra do livro continua inteira dentro dela.
+
+**O painel foi para a aba Ações.** *"O local aonde está o controle da Azamaru é meio ruim. Deixe em
+Ações."* Ele nascera encostado nos vitais e na Guarda, disputando o cabeçalho com PV e PE, sendo que
+o que ele faz é ação de combate e muda a linha de dano logo abaixo. Entra pelo caminho que o Ciclo
+de Adaptação já usava: nó pronto numa prop da `AbaAcoes`, porque a sessão é de quem monta a aba.
+Uma mudança serve à Ficha e ao painel de Encontros. Com a mudança de casa ele deixou de ser tira de
+cabeçalho e virou cartão da aba, com o mesmo fundo, raio e sombra dos irmãos.
+
+---
+
+## SESSÃO DE 2026-09-07 (parte 3): AUDITORIA DOS AUXILIARES, E O AUMENTO DE ATRIBUTO VIROU POOL
+
+O autor pediu a conferência dos valores de cada Feitiço Auxiliar *"e suas exceções e
+vulnerabilidades"*, e depois mandou quatro regras novas do Aumento de Atributo.
+
+### As tabelas estão limpas, e isso é resultado
+
+Varri as 17 × 7 × 3 (357 células) em quatro propriedades: buraco no meio de coluna, valor caindo ao
+subir de nível, coluna mais longa valendo mais que uma mais curta, e salto fora da curva. **Zero
+achados.** A transcrição verbatim é confiável, e o bloco 8 de `asserts/t-auxiliar-atributo.mjs`
+tranca as quatro para sempre.
+
+⚠ **O que NÃO existe é a prosa.** As regras no código foram reconstruídas de decisões do autor em
+conversa, não de texto de livro. Pedido e anotado no `a-fazer.md`: sem ela dá para auditar número,
+não exceção.
+
+### Três defeitos numéricos, esses reais
+
+1. **O piso quebrava a grade de 1,5m em 29 células.** `valorDuradoura` fazia `Math.floor` cru, e
+   Movimento e os dois Alcances andam de 1,5 em 1,5. Os piores casos eram os de **divisor 1**, onde
+   nada deveria mudar: Alcance Corpo a Corpo nível 0 entregava 1m no lugar de 1,5m, e Movimento
+   nível 1 entregava 4m contra os 4,5m da coluna Sustentada, o que fazia dele o ÚNICO par do
+   sistema em que a duração mais curta valia menos. Agora o piso é na grade do efeito (`passo`).
+2. **A Técnica Máxima do Auxiliar custava 20 PE em vez de 25.** O `nBase` colapsa `"max"` em 5 para
+   ler tabela que para no nível 5, e o custo usava o mesmo 5. Dano e Curativo já cobravam 25.
+3. **Um comentário mentindo.** O cabeçalho dizia "só um sustentado ativo por vez", e a regra está
+   implementada como VAGAS desde as duas habilidades de Sustentação: 1, 2 com Sustentação Avançada
+   e 3 com Sustentação Mestre.
+
+### Uma observação de balanceamento, sem conserto
+
+A Duradoura no mínimo de rodadas bate a Sustentada em **62 de 68 pares**, pelo mesmo custo e sem
+upkeep. E esticar a duração perde valor mais que proporcionalmente. Não é bug, é o que a fórmula do
+livro faz, mas deixa o seletor de rodadas sendo uma descida. Está no `a-fazer.md`.
+
+### Duas coisas que eu tinha afirmado errado
+
+Corrigidas na mesma conversa, porque mudavam o que precisava ser construído:
+
+- **O Auxiliar CHEGA no Motor.** Eu disse que ele produzia "um número na tela e mais nada". Ele
+  emite canal por `afty-combate-conjurador.js` quando está ativo na bancada ou na sessão, e o
+  `alvoAuxAtributo` já existia desde sempre.
+- **"Um sustentado por vez" ESTÁ implementado**, como vagas de estado de combate. Eu tinha lido o
+  comentário desatualizado como se fosse a ausência da regra.
+
+### O Aumento de Atributo virou POOL DE PONTOS
+
+É o único efeito auxiliar que entrega pontos para repartir em vez de um bônus fechado. As quatro
+regras do autor viraram uma peça só, com uma frase atravessando todas: **atributos diferentes**.
+
+| Regra | Onde |
+|---|---|
+| Divide o pool entre atributos | `dividirAtributos`, e o controle `AtributosDoAuxiliar` na tela |
+| Repete no Múltiplos Efeitos | exceção no `efeitosDisponiveisMult` |
+| Nunca no mesmo atributo | `atributosRepetidos`, medido sobre o FEITIÇO inteiro |
+| Transpassa o 20 até o 30 | duas linhas por atributo no motor de combate |
+
+⚠ **A trava é por ATRIBUTO, e não por efeito.** A exceção só existe porque dois Aumentos de
+Atributo em atributos distintos são duas coisas, e não a mesma duas vezes. Força e Força de novo
+continua sendo PE gasto que não vira número, porque o pool exclusivo disputa por `(canal, alvo)` e
+fica com o maior. O motor avisa em vez de travar.
+
+⚠ **DUAS METADES POR ATRIBUTO no motor.** O canal `atributo` sozinho apara no limite de 20, e o
+`18 + 12` parava em 20. Quem levanta o teto é o `limiteAtributo`, e as duas andam juntas em toda
+regra que diz "o valor e o limite". Sem `furaTeto`, porque ele levaria a 32 e o texto para no 30.
+
+⚠ **E O `limiteMotorDe` NÃO ALCANÇAVA.** Ele lê só os estágios MONTANTE e PRÉ-CONTEXTO, que rodam
+antes de a Simulação de Combate existir, então um `limiteAtributo` vindo de Feitiço ativo nunca
+chegava nele. A saída foi a MESMA do acessório de atributo, que o próprio código já documentava: em
+vez de reabrir o limite de estágio 0, a parcela levanta o teto DAQUELE estágio, e o `tetoSistemaDe`
+continua sendo a última palavra. Assim "até o máximo de 30" cai no 30 sem ninguém escrever 30.
+
+⚠ **Uma armadilha no caminho:** efeito do pool exclusivo sai da soma e espera a disputa, então ler
+`porAlvo` sem passar pelo `resolverExclusivos` devolve objeto vazio. Foi o primeiro jeito que eu
+escrevi, e ele não levantava limite nenhum, calado.
+
+### A Descrição do Feitiço virou a caixa do Funcionamento Básico
+
+Pedido do autor. Era um `TextArea` de duas linhas fixas, e o Feitiço é o outro lugar do sistema onde
+se escreve parágrafo. Virou `TextoLongo` com `formatacao`, que cresce sozinho, abre e tem prévia.
+
+⚠ **Ligar a marcação obriga a OUTRA ponta.** A Ficha Final renderizava a descrição em `<p>` cru, e
+sem o `TextoRico` lá o `**negrito**` apareceria literal na tela de jogo.
+
+---
+
 ## SESSÃO DE 2026-09-07 (parte 2): O ESPECIALISTA EM ESTILO, E A HERANÇA DE ESPECIALIZAÇÃO
 
 O autor mandou o texto de uma variação do Especialista em Técnicas para o Sem Técnica, em imagem, e

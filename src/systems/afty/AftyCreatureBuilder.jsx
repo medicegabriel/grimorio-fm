@@ -129,6 +129,7 @@ import {
   CONDICAO_FORCAS, CONDICOES_CATALOGO, CONDICAO_FORCAS_POR_NIVEL,
   SANGRAMENTO, notacaoDano,
   calcularFeiticoAuxiliar, AUX_EFEITOS, AUX_TABELAS, AUX_DURACOES, faixaRodadasDuradoura,
+  atributosDoAuxiliar,
   createBlankAuxEffect, efeitosDisponiveisMult, primeiroEfeitoLivre,
   resultaEspecialAux, ofereceUmGolpe, aplicaUmGolpe, podeEventoUnico,
   formatAuxValor, aplicaReducoesCustoFeitico, tituloCustoFeitico,
@@ -3133,6 +3134,9 @@ function CanalPicker({ value, onChange }) {
   const veHpAtributo = usePrimitiva("hpAtributo") || value === "hpAtributo";
   // Mesma regra do de cima, para o canal que abaixa o pré-requisito de Aptidão.
   const veReqAptidao = usePrimitiva("requisitoAptidao") || value === "reduzNivelAptidao";
+  // E para os dois da Arma Transformável, que o Azamaru abriu.
+  const CANAIS_ARMA_TRANSF = ["ignoraTodaRD", "ignoraImunidade"];
+  const veArmaTransf = usePrimitiva("armaTransformavel") || CANAIS_ARMA_TRANSF.includes(value);
 
   const termo = semAcento(busca.trim());
   const grupos = EFEITO_CANAL_GRUPOS
@@ -3141,6 +3145,7 @@ function CanalPicker({ value, onChange }) {
       itens: g.itens.filter((c) =>
         (veHpAtributo || c.id !== "hpAtributo")
         && (veReqAptidao || c.id !== "reduzNivelAptidao")
+        && (veArmaTransf || !CANAIS_ARMA_TRANSF.includes(c.id))
         && (!termo
         || semAcento(c.label).includes(termo)
         || semAcento(g.label).includes(termo)
@@ -4940,10 +4945,27 @@ function FeiticoCard({ feitico, ctx, nivelMax, efeitosPassivo, fontesDano, dslGr
 
           {/* ===== 4. DETALHE ===== */}
           {/* A Descrição fecha o cartão em todo tipo: ela é o que o Feitiço faz
-              na ficção, e não entra em aba nenhuma porque não pertence a uma. */}
+              na ficção, e não entra em aba nenhuma porque não pertence a uma.
+
+              ⚠ VIROU `TextoLongo` EM 2026-09-07, a pedido do autor: *"deixando
+              mais próximo a caixa do Funcionamento Básico"*. Era um `TextArea`
+              de DUAS linhas fixas, e o Feitiço é o outro lugar do sistema onde
+              se escreve parágrafo, então ele cresce sozinho, abre e tem prévia,
+              igual ao Funcionamento Básico logo ao lado.
+
+              ⚠ E COM `formatacao`, o que obriga a OUTRA ponta: a Ficha Final
+              passou a renderizar esta descrição com o `TextoRico`. Ligar a
+              marcação só do lado do editor deixaria `**negrito**` literal na
+              tela de jogo. Ver `AbaAcoes.jsx`. */}
           <div className="border-t border-slate-800 pt-3">
             <FieldLabel>Descrição</FieldLabel>
-            <TextArea value={feitico.descricao} onChange={(v) => onPatch({ descricao: v })} rows={2} placeholder="O que o Feitiço faz na ficção." />
+            <TextoLongo
+              value={feitico.descricao}
+              onChange={(v) => onPatch({ descricao: v })}
+              placeholder="O que o Feitiço faz na ficção."
+              minRows={3}
+              formatacao
+            />
           </div>
         </div>
       </div>
@@ -6384,6 +6406,96 @@ function ContadorCompacto({ value, min = 0, max, onChange }) {
   );
 }
 
+/* ============================================================ */
+/* AUMENTO DE ATRIBUTO: a divisão de pontos                      */
+/* ============================================================ */
+/* O único efeito auxiliar que entrega POOL em vez de bônus fechado, e por isso
+   o único com controle próprio (autor, 2026-09-07). Serve aos dois editores, o
+   de efeito único e o de Múltiplos Efeitos.
+
+   ⚠ COM UM ATRIBUTO SÓ NÃO HÁ NÚMERO PARA DIGITAR: ele leva o pool inteiro, e a
+   tela continua sendo o mesmo `Select` de sempre. O campo de pontos só nasce a
+   partir do segundo, que é quando a divisão passa a ter uma resposta que não é
+   óbvia. A ficha antiga (`alvoAuxAtributo`, um só) entra por aqui sem migração.
+
+   ⚠ O ATRIBUTO JÁ ESCOLHIDO SAI DAS OUTRAS LISTAS. É a regra de "atributos
+   diferentes": dois aumentos no mesmo atributo não somam, fica o maior. O
+   `usados` cobre o FEITIÇO INTEIRO, e não só esta linha, senão um Múltiplos
+   Efeitos com dois Aumentos de Atributo deixaria escolher Força nos dois. */
+function AtributosDoAuxiliar({ config, feitico, total, onPatch }) {
+  const lista = Array.isArray(config?.atributosAux) && config.atributosAux.length
+    ? config.atributosAux
+    : [{ attr: config?.alvoAuxAtributo || "forca" }];
+  const gravar = (nova) => onPatch({
+    atributosAux: nova,
+    // O campo de um só continua gravado e em dia: a Ficha Final e o motor de
+    // combate leem os dois, e deixá-lo velho faria a ficha antiga discordar.
+    alvoAuxAtributo: nova[0]?.attr || "forca",
+  });
+
+  // Atributos que o Feitiço INTEIRO já toca, menos os desta linha.
+  const daLinha = new Set(lista.map((e) => e.attr));
+  const doFeitico = atributosDoAuxiliar(feitico).filter((a) => !daLinha.has(a));
+  const opcoesPara = (attr) => AFTY_ATTRS
+    .filter((a) => a.key === attr || (!daLinha.has(a.key) && !doFeitico.includes(a.key)))
+    .map((a) => ({ value: a.key, label: a.label }));
+  const sobra = AFTY_ATTRS.some((a) => !daLinha.has(a.key) && !doFeitico.includes(a.key));
+
+  const poolTotal = Number.isFinite(Number(total)) ? Math.max(0, Math.trunc(Number(total))) : null;
+  const gastos = lista.reduce((t, e, i) => t + (i === lista.length - 1 && e.pontos == null ? 0 : Math.max(0, e.pontos | 0)), 0);
+
+  return (
+    <div className="space-y-1.5">
+      {lista.map((e, i) => (
+        <div key={`${e.attr}_${i}`} className="flex items-center gap-1.5">
+          <div className="flex-1 min-w-0">
+            <Select
+              value={e.attr}
+              onChange={(v) => gravar(lista.map((x, j) => (j === i ? { ...x, attr: v } : x)))}
+              options={opcoesPara(e.attr)}
+            />
+          </div>
+          {lista.length > 1 && (
+            <>
+              <ContadorCompacto
+                value={Math.max(0, e.pontos ?? Math.max(0, (poolTotal ?? 0) - gastos))}
+                min={0}
+                max={poolTotal ?? undefined}
+                onChange={(v) => gravar(lista.map((x, j) => (j === i ? { ...x, pontos: v } : x)))}
+              />
+              <button
+                type="button"
+                onClick={() => gravar(lista.filter((_, j) => j !== i))}
+                className="w-7 h-8 flex items-center justify-center rounded border border-slate-700 text-slate-400 hover:text-white hover:bg-slate-700 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                aria-label={`Remover ${AFTY_ATTRS.find((a) => a.key === e.attr)?.label || e.attr}`}
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            </>
+          )}
+        </div>
+      ))}
+      {sobra && (
+        <button
+          type="button"
+          onClick={() => {
+            const livre = AFTY_ATTRS.find((a) => !daLinha.has(a.key) && !doFeitico.includes(a.key));
+            if (!livre) return;
+            const resto = Math.max(0, (poolTotal ?? 0) - gastos);
+            gravar([
+              ...lista.map((x) => ({ ...x, pontos: x.pontos ?? Math.max(0, resto) })),
+              { attr: livre.key, pontos: 0 },
+            ]);
+          }}
+          className="inline-flex items-center gap-1 px-2 h-7 rounded border border-slate-700 text-[11px] font-semibold text-slate-300 hover:text-white hover:bg-slate-700 focus:outline-none focus:ring-1 focus:ring-purple-500"
+        >
+          <Plus className="w-3 h-3" /> Dividir em Outro Atributo
+        </button>
+      )}
+    </div>
+  );
+}
+
 function FeiticoAuxiliarEditor({ feitico, calc, onPatch }) {
   const f = feitico;
   if (f.multiplosAtivo) return <FeiticoAuxMultiplos feitico={f} calc={calc} onPatch={onPatch} />;
@@ -6467,10 +6579,11 @@ function FeiticoAuxiliarEditor({ feitico, calc, onPatch }) {
           {efeito === "atributo" && (
             <div>
               <FieldLabel>Atributo</FieldLabel>
-              <Select
-                value={f.alvoAuxAtributo || "forca"}
-                onChange={(v) => onPatch({ alvoAuxAtributo: v })}
-                options={AFTY_ATTRS.map((a) => ({ value: a.key, label: a.label }))}
+              <AtributosDoAuxiliar
+                config={f}
+                feitico={f}
+                total={calc?.valor}
+                onPatch={onPatch}
               />
             </div>
           )}
@@ -6592,6 +6705,9 @@ function FeiticoAuxMultiplos({ feitico, calc, onPatch }) {
               key={en.id}
               entry={en}
               sub={calc?.efeitos?.find((x) => x.id === en.id)}
+              // O Feitiço inteiro, para a trava de "atributos diferentes"
+              // enxergar os outros Aumentos de Atributo do mesmo Feitiço.
+              feitico={f}
               nivelFeitico={f.nivel}
               opcoesEfeito={efeitosDisponiveisMult(entries, en.efeito, eventoUnico, { nivel: en.nivel, duracao: duracaoMult })}
               onChange={(partial) => setEfeito(en.id, partial)}
@@ -6684,8 +6800,10 @@ function SubControleEfeito({ rotulo, children }) {
    Evento Único são do Feitiço, então cada efeito guarda só o próprio: linha 1 é
    nome + valor em COLUNAS FIXAS (o valor não empurra o resto), linha 2 são os
    controles do efeito. Sem recolher, o valor sempre visível. */
-function EfeitoMultLinha({ entry, sub, nivelFeitico, opcoesEfeito, onChange, onRemove }) {
+function EfeitoMultLinha({ entry, sub, feitico, nivelFeitico, opcoesEfeito, onChange, onRemove }) {
   const meta = AUX_EFEITOS.find((m) => m.value === (entry.efeito || "defesa"));
+  // O pool que esta linha reparte, para o contador não deixar dividir a mais.
+  const valorDoEfeito = sub?.valor;
   const indisponivel = sub && sub.disponivel === false;
   return (
     <div className="rounded-lg border border-slate-800 bg-slate-950/40 p-2 space-y-2.5">
@@ -6721,10 +6839,11 @@ function EfeitoMultLinha({ entry, sub, nivelFeitico, opcoesEfeito, onChange, onR
         )}
         {entry.efeito === "atributo" && (
           <SubControleEfeito rotulo="Atributo">
-            <Select
-              value={entry.alvoAuxAtributo || "forca"}
-              onChange={(v) => onChange({ alvoAuxAtributo: v })}
-              options={AFTY_ATTRS.map((a) => ({ value: a.key, label: a.label }))}
+            <AtributosDoAuxiliar
+              config={entry}
+              feitico={feitico}
+              total={valorDoEfeito}
+              onPatch={onChange}
             />
           </SubControleEfeito>
         )}

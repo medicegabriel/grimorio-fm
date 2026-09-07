@@ -453,6 +453,7 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
       <AbaAcoes
         derived={derived}
         adaptacao={<PainelDeAdaptacao derived={derived} onSessao={atualiza} />}
+        armasTransformaveis={<ArmasTransformaveis derived={derived} sessao={sessao} onSessao={atualiza} />}
         rolar={rolar}
         destaque={destaque}
         rapido={itensDoRapido}
@@ -707,7 +708,6 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
             onDesfazGolpe={() => atualiza(desfazGolpeNaGuarda)}
             onRaioNegro={() => atualiza(encerraGuarda)}
           />
-          <ArmasTransformaveis derived={derived} sessao={sessao} onSessao={atualiza} />
 
           {/* ---------- defesas ----------
               ⚠ GRADE de células iguais, e não `flex-wrap`. Com o wrap cada

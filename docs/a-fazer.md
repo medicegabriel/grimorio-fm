@@ -606,6 +606,37 @@ continuam em 20.
 **Precisa:** o autor confirmar, ou dizer que vale para toda rolagem dela.
 **Anotado:** 2026-08-16, ao ligar a habilidade
 
+### FALTA o texto em prosa dos Feitiços Auxiliares
+**Onde:** `src/systems/afty/afty-feiticos.js` (bloco FEITIÇOS AUXILIARES)
+**Situação:** o sistema tem as TABELAS dos 17 efeitos, transcritas verbatim (17 × 7 níveis × 3
+durações), e uma auditoria em 2026-09-07 varreu as 357 células sem achar erro de transcrição:
+nenhum buraco no meio de coluna, nenhum valor caindo ao subir de nível, nenhuma coluna mais longa
+valendo mais que uma mais curta, e todo metro na grade de 1,5m. O bloco 8 de
+`asserts/t-auxiliar-atributo.mjs` tranca as quatro propriedades.
+
+O que NÃO existe é a PROSA. As regras que hoje estão no código foram reconstruídas de decisões do
+autor em conversa, e não de texto de livro: o que cada duração significa, o "um único ataque", os
+tipos de dano extras do RD, a Concentração, o Múltiplos Efeitos e o Aumento de Atributo. Sem elas
+não dá para auditar exceção nenhuma, só número.
+
+**Precisa:** o autor mandar o texto em prosa dos Auxiliares. Aí a auditoria de exceções sai.
+**Anotado:** 2026-09-07, na auditoria numérica dos Auxiliares
+
+### A Duradoura no mínimo de rodadas domina a Sustentada em 62 de 68 pares
+**Onde:** `src/systems/afty/afty-feiticos.js` (`valorDuradoura`, `faixaRodadasDuradoura`)
+**Situação:** pelo mesmo custo em PE e sem pagar upkeep, a Duradoura no MÍNIMO de rodadas entrega
+mais que a Sustentada do mesmo nível em 62 dos 68 pares em que as duas colunas existem. E esticar a
+duração perde valor mais que proporcionalmente: Defesa nível 5 dá 9 por 4 rodadas (36
+pontos-rodada), 4 por 5 rodadas (20) ou 3 por 6 rodadas (18).
+
+Não é bug: é o que a fórmula `valor ÷ (rodadas − ⌈nível/2⌉)` do livro faz, e ela está implementada
+certo. O efeito colateral é que o seletor de rodadas, em valor total, é uma descida: existe uma
+escolha boa (o mínimo) e várias piores.
+
+**Precisa:** o autor dizer se é intencional. Se a ideia era oferecer troca de altura por duração, a
+fórmula precisa de outro divisor.
+**Anotado:** 2026-09-07, na auditoria numérica dos Auxiliares
+
 ### A Transformação aceita o MESMO efeito em vários slots
 **Onde:** `src/systems/afty/afty-feiticos.js` (`calcularFeiticoTransformacao`) e o
 `TransformacaoEditor` em `AftyCreatureBuilder.jsx`
@@ -614,6 +645,12 @@ e o `Select` de cada slot oferece o catálogo inteiro. Já o **Múltiplos Efeito
 PROÍBE repetir (*"dois Aumentos de Defesa no mesmo Feitiço não existem"*, autor), e lá o seletor
 nem mostra o efeito já usado (`efeitosDisponiveisMult`). As duas telas concedem conjuntos de
 efeitos auxiliares, então a divergência parece descuido.
+
+**Nota (2026-09-07):** o **Aumento de Atributo** virou EXCEÇÃO à trava de não repetir, por decisão
+do autor: *"não está dando duas vezes o mesmo efeito, está fornecendo Atributo para Atributos
+DIFERENTES"*. A trava dele passou a ser por ATRIBUTO, medida sobre o Feitiço inteiro
+(`atributosRepetidos`). Se a Transformação seguir a regra do Múltiplos Efeitos, ela herda a exceção
+junto.
 **Precisa:** o autor dizer se a Transformação segue a mesma regra. Se seguir, é filtrar o `Select`
 pelo mesmo caminho que o Múltiplos Efeitos já usa.
 **Anotado:** 2026-08-09, revisão de Transformação e Auxiliares

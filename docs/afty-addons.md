@@ -30,6 +30,12 @@ mais um caso de "o addon bate no muro e o muro vira fila de trabalho". A variaç
 repetiria 65 habilidades do livro dentro do JSON, e cada errata passaria a ter dois donos. O verbo
 é `herdaDe`, e ele serve a qualquer mesa. Ver `afty-especialista-estilo.md`.
 
+⚠ **A ARMA TRANSFORMÁVEL entrou no mesmo dia, com o Azamaru** (`addons/azamaru.json`, doc em
+`afty-azamaru.md`). Ela é a sexta primitiva, e nasceu repetindo a lição do `hpAtributo` letra por
+letra: o verbo foi para o motor, os dois canais dele (`ignoraTodaRD` e `ignoraImunidade`)
+apareceram no seletor de TODO MUNDO, e só depois veio o `permite`. Vale registrar que a lição já
+estava escrita aqui e mesmo assim foi repetida.
+
 ⚠ **Ela destravou DOIS bugs calados que valiam para toda Especialização de Addon**, ligada desde
 2026-08-20 e nunca escrita até ali: o `esc_<id>` de uma classe de addon era um nome que o tokenizer
 do DSL não aceita (namespace tem `-` e `:`), e o `VOCABULARIO_DSL` era uma fotografia do raw tirada

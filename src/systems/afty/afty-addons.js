@@ -337,6 +337,16 @@ export const PRIMITIVAS = [
     rotulo: "Requisito de Aptidão",
     nota: "O canal que ABAIXA o pré-requisito de NÍVEL das Aptidões Amaldiçoadas. Não encosta no requisito de trilha",
   },
+  /* ⚠ NASCEU EM 2026-09-07, junto com o Azamaru. A arma com formas alternáveis
+     e reserva de ilusões é VERBO e mora no motor, mas os dois canais que ela
+     abriu (`ignoraTodaRD` e `ignoraImunidade`) apareciam no seletor de TODO
+     mundo, com zero addons instalados. É a mesma lição do `hpAtributo`, escrita
+     no topo desta lista: acrescentar o verbo ao motor não é a tarefa inteira. */
+  {
+    id: "armaTransformavel",
+    rotulo: "Arma Transformável",
+    nota: "Arma com duas formas, reserva de clones ilusórios e os canais que ignoram toda RD e imunidade",
+  },
   {
     id: "catarse",
     rotulo: "Loja de Catarse",

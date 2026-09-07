@@ -306,7 +306,6 @@ export default function PainelDeCombatente({
           onDesfazGolpe={() => onSessao(desfazGolpeNaGuarda)}
           onRaioNegro={() => onSessao(encerraGuarda)}
         />
-        <ArmasTransformaveis derived={derived} sessao={sessao} onSessao={onSessao} />
 
         {/* Mesma célula de tamanho fixo da Ficha (`afty-stat`), e não uma
             fileira `flex-wrap`: com caixas do tamanho do próprio texto, "CD"
@@ -369,6 +368,7 @@ export default function PainelDeCombatente({
         <AbaAcoes
           derived={derived}
           adaptacao={<PainelDeAdaptacao derived={derived} onSessao={onSessao} />}
+          armasTransformaveis={<ArmasTransformaveis derived={derived} sessao={sessao} onSessao={onSessao} />}
           gatilhosTreino={derived.gatilhosTreino}
           onGatilhoTreino={(id, v) => onSessao((s) => alteraTreinoAtivo(s, id, v))}
           rolar={rolar}
