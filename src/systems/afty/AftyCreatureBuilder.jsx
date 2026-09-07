@@ -1886,6 +1886,14 @@ function TesteLinha({
           {tag && (
             <span className="text-[10px] font-medium text-purple-300 whitespace-nowrap flex-shrink-0">{tag}</span>
           )}
+          {item.margemCritico != null && (
+            <span
+              className="text-[10px] font-mono tabular-nums text-slate-500 whitespace-nowrap flex-shrink-0"
+              title="Margem de crítico"
+            >
+              ({item.margemCritico})
+            </span>
+          )}
         </span>
 
         {edicao}

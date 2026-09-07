@@ -47,6 +47,11 @@ function LinhaTeste({ nome, atributo, bonus, textoBonus, dados, partes, prof, ta
         <span className="afty-rotulo text-[9px] uppercase tracking-wider flex-shrink-0">{ABREV[atributo] || ""}</span>
       )}
       {tag && <span className="afty-chip flex-shrink-0">{tag}</span>}
+      {margem != null && (
+        <span className="afty-rotulo font-mono tabular-nums flex-shrink-0" title="Margem de crítico">
+          ({margem})
+        </span>
+      )}
       {/* ⚠ COM DADO A LINHA MOSTRA A ROLAGEM, e não só o fixo. A Resiliência
           pela Adrenalina soma "2d3 ao resultado", e um "+7" sozinho leria como
           se fosse tudo. A caixa alarga porque "+7 + 2d3" não cabe em 10. */}
@@ -157,9 +162,9 @@ export default function AbaPericias({ derived, rolar, destaque }) {
               partes={r.partes}
               prof={r.prof}
               tag={r.prof === "mestre" ? "Mestre" : null}
-              /* Só quem é mestre num TR consegue sucesso crítico nele, e a
-                 margem já desce com as Melhorias e os Treinamentos Completos. */
-              margem={r.critico ? r.margemCritico : 20}
+              /* A margem é própria do TR. O treinamento Mestre continua
+                 identificado na linha, mas não bloqueia o crítico reduzido. */
+              margem={r.margemCritico}
               rolar={rolar}
               chave={`tr:${r.value}`}
               destacado={destaque === `tr:${r.value}`}

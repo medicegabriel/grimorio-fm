@@ -1272,8 +1272,8 @@ export function resolveTestes(creature, ctx = {}) {
       concedida: !!prof && prof !== escolhida,
       // Escala por Tipo no lugar da metade do nível, ver o cabeçalho da função.
       bonus: bonusDoTR(r, prof),
-      // Só quem é mestre num TR consegue sucesso crítico nele (superar a CD
-      // por 10 ou mais ignora dano e condições).
+      // `critico` preserva a marca de Mestre usada na linha. A margem do d20
+      // fica disponível para o TR inteiro, inclusive quando um efeito a reduz.
       critico: prof === "mestre",
       // Margem necessária para o sucesso crítico. Parte de 20 e desce com a
       // Melhoria de Resistência e os Treinamentos Completos de Agilidade e
