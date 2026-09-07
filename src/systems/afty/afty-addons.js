@@ -696,6 +696,22 @@ function textoNoNivel(entrada, nivel, campo = "label") {
  * outros controles da ficha. `requerEstado` é escrito com o id local e sai
  * apontando para o id prefixado do mesmo pacote.
  */
+/**
+ * As três portas de dono de um estado de addon, já com o namespace resolvido.
+ * `idsDoPacote` são todos os ids que o pacote declara, em qualquer família: um
+ * estado que exige o Talento do próprio pacote cita o id local.
+ */
+function comDono(bruto, pacoteId, idsDoPacote) {
+  const out = {};
+  for (const porta of ["requerTalento", "requerHabilidade", "requerAptidao"]) {
+    const cru = bruto?.[porta];
+    if (!cru) continue;
+    const resolve = (id) => (idsDoPacote.has(String(id)) ? comPrefixo(pacoteId, id) : String(id));
+    out[porta] = Array.isArray(cru) ? cru.map(resolve) : resolve(cru);
+  }
+  return out;
+}
+
 export function estadosCombateDeAddon(creature, nivelMax = 5) {
   const nivel = nivelMax === "max"
     ? 5
@@ -708,6 +724,16 @@ export function estadosCombateDeAddon(creature, nivelMax = 5) {
     if (!pacoteId) continue;
     const brutos = Array.isArray(pacote?.estadosCombate) ? pacote.estadosCombate : [];
     const idsLocais = new Set(brutos.map((e) => String(e?.id ?? "").trim()).filter(Boolean));
+    /* Os ids que o pacote acrescenta em QUALQUER família, para o `requerTalento`
+       achar o Talento do próprio pacote. É a mesma regra do `prefixarEntrada`:
+       citar um irmão é citar um irmão, esteja ele na mesma família ou não. */
+    const idsDoPacote = new Set();
+    for (const lista of Object.values(pacote?.acrescenta ?? {})) {
+      for (const e of Array.isArray(lista) ? lista : []) {
+        const id = String(e?.id ?? e?.value ?? "").trim();
+        if (id) idsDoPacote.add(id);
+      }
+    }
 
     for (const bruto of brutos) {
       const idLocal = String(bruto?.id ?? "").trim();
@@ -740,6 +766,22 @@ export function estadosCombateDeAddon(creature, nivelMax = 5) {
         ...(bruto?.requerEstado && idsLocais.has(String(bruto.requerEstado))
           ? { requerEstado: comPrefixo(pacoteId, bruto.requerEstado) }
           : {}),
+        /* ⚠ AS TRÊS PORTAS DE DONO, abertas em 2026-09-07 com o Dançarino das
+           Lâminas. Um estado de addon existia pelo simples fato de o PACOTE
+           estar instalado, e o Ritmo dele aparecia no painel de quem tinha o
+           addon e não tinha pego o Talento: um contador morto, que mexe e não
+           muda número nenhum.
+
+           O catálogo do raw já tinha `requerHabilidade`, `requerTalento` e
+           `requerAptidao` (ver COMBATE_ESTADOS em afty-combate.js), e o extra de
+           addon simplesmente não os carregava. Os outros extras (Habilidade
+           Única de item, imbuição de Estilo) não precisam deles porque a
+           existência do interruptor já depende do item equipado ou da Técnica
+           conhecida, e é essa a diferença: o addon não tem esse portão natural.
+
+           O id local ganha o namespace, porque o caso normal é o pacote citar o
+           PRÓPRIO Talento. Quem cita entrada do livro fica cru. */
+        ...comDono(bruto, pacoteId, idsDoPacote),
         ...(tipo === "opcao" || tipo === "multi" ? { opcoes } : {}),
         ...(tipo === "multi" ? {
           maxSelecionados: Math.min(

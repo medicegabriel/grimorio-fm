@@ -158,7 +158,10 @@ t("as opcoes seguem com o id do livro",
    sumiriam caladas. */
 const honrado = clones.find((h) => h.herdadaDe === "cnj_o_honrado");
 t("o efeito do raw acompanha o clone", honrado.efeitos?.[0]?.canal, "cd");
-t("quantos clones trazem efeito", clones.filter((h) => h.efeitos).length, 16);
+/* ⚠ 17 desde 2026-09-07, quando o Conhecimento Aplicado ganhou efeito no Motor.
+   Este número subindo é a PROVA de que ligar uma habilidade do Conjurador chega
+   sozinha à herdeira: ninguém tocou no addon para isso acontecer. */
+t("quantos clones trazem efeito", clones.filter((h) => h.efeitos).length, 17);
 
 /* O remendo por clone: troca campo de UMA herdada, sem encostar na do livro. */
 const aprimorada = clones.find((h) => h.herdadaDe === "cnj_conjuracao_aprimorada");
@@ -167,6 +170,21 @@ t("e o texto fala de Estilo", aprimorada.descricao.includes("Técnica de Estilo"
 t("a do livro NAO foi tocada",
   HAB.getHabilidade("cnj_conjuracao_aprimorada").descricao.includes("Feitiços em todo nível"), true);
 t("e ela continua sem efeito no motor", HAB.getHabilidade("cnj_conjuracao_aprimorada").efeitos, undefined);
+
+/* ⚠ A HABILIDADE LIGADA NO LIVRO CHEGA À HERDEIRA, e o Conhecimento Aplicado é
+   o primeiro caso vivo disso (2026-09-07). Ele ganhou efeito e estado de combate
+   no catálogo do Conjurador, e o Especialista em Estilo passou a ter os dois sem
+   ninguém tocar no addon. Isto mede as DUAS pontas. */
+const conhecimento = clones.find((h) => h.herdadaDe === "cnj_conhecimento_aplicado");
+t("o clone do Conhecimento Aplicado existe", !!conhecimento, true);
+t("e o efeito do livro veio junto",
+  conhecimento.efeitos, [{ canal: "bonusTR", expr: "2 * conhecimento_aplicado", duracao: "temporaria" }]);
+/* A outra ponta: o estado de combate cita o id do LIVRO, e quem tem o clone
+   precisa passar pelo portão. É o que `expandeHerdadas` resolve. */
+t("expandeHerdadas devolve o id do livro",
+  HAB.expandeHerdadas([conhecimento.id]), [conhecimento.id, "cnj_conhecimento_aplicado"]);
+t("e nao inventa nada para quem nao herdou",
+  HAB.expandeHerdadas(["cnj_conhecimento_aplicado"]), ["cnj_conhecimento_aplicado"]);
 
 t("catalogo de Habilidade sao com o addon", HAB.validarCatalogoHabilidades(), []);
 

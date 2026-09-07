@@ -1191,6 +1191,9 @@ export function deriveAfty(creature, opcoes = {}) {
     // ser gastos passa a ser igual ao seu bônus de treinamento por rodada", que
     // a Regeneração Ampliada dobra. Irmão do fluxoPER, com PE no lugar de PER.
     regeneracaoPE: aptidoesIds.includes("mal_regeneracao_ampliada") ? 2 * bt : bt,
+    // "gastar pontos de energia amaldiçoada igual a metade do seu bônus de
+    // treinamento". O teto do contador é quanto ele pode gastar de uma vez.
+    conhecimentoAplicado: Math.floor(bt / 2),
     // Interruptores que vêm da FICHA, e não do catálogo de estados, porque são
     // instâncias: uma por Habilidade Única ativa, e uma por Técnica de Estilo
     // que precisa de gatilho (toda Modificação de Domínio Simples, mais a

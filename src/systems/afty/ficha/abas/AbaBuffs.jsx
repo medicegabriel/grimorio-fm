@@ -4,6 +4,7 @@ import { Plus, X, AlertTriangle, Search, ChevronDown, ChevronRight } from "lucid
 import { COMBATE_ESTADOS } from "../../afty-combate";
 import { condicoesPorForca, fichaDaCondicao } from "../../afty-condicoes";
 import { getCanal } from "../../afty-efeitos";
+import { expandeHerdadas } from "../../afty-habilidades";
 import { sinalDe } from "../../ui/formato";
 import CanalPicker from "../CanalPicker";
 import PainelDeConcessao from "../PainelDeConcessao";
@@ -416,12 +417,18 @@ export default function AbaBuffs({
      array novo a cada render, e como dependência ele invalidaria o memo sempre.
      Depender do `derived` inteiro é o certo, porque é ele que muda de verdade. */
   const linhas = useMemo(() => {
-    const escolhidas = derived.habilidades?.efetivas ?? derived.habilidades?.escolhidas ?? [];
+    /* ⚠ COM AS HERDADAS. O conteúdo do livro cita o id do LIVRO
+       (`requerHabilidade: "cnj_conhecimento_aplicado"`), e quem pegou a
+       habilidade por uma Especialização que HERDA do Conjurador a tem sob o id
+       clonado. Sem expandir, a herdeira recebe o texto e nunca o controle. */
+    const escolhidas = expandeHerdadas(
+      derived.habilidades?.efetivas ?? derived.habilidades?.escolhidas ?? [],
+    );
     const talentos = derived.talentos?.escolhidas ?? [];
     const aptidoes = derived.aptidoesEscolhidas ?? [];
     const opcoesEscolhidas = Object.values(derived.habilidades?.escolhas?.mapa ?? {}).flat();
-    const temHabilidade = (req) =>
-      (Array.isArray(req) ? req : [req]).some((id) => escolhidas.includes(id));
+    const comLista = (req) => (Array.isArray(req) ? req : [req]);
+    const temHabilidade = (req) => comLista(req).some((id) => escolhidas.includes(id));
     const opcoesDe = (e) => {
       if (e.tipo === "dominio") {
         return (derived.dominios?.lista ?? []).map((d) => ({
@@ -440,9 +447,25 @@ export default function AbaBuffs({
           : temHabilidade(e.requerHabilidade);
         return temDono && (!["opcao", "dominio"].includes(e.tipo) || opcoesDe(e).length > 0);
       }),
-      // ⚠ O `tipo` vem antes do espalhamento: a imbuição de Técnica de Estilo é
-      // `faixa`, e o extra que não declara nada continua caindo em `bool`.
-      ...(derived.combate?.estadosExtras ?? []).map((e) => ({ tipo: "bool", ...e })),
+      /* Estados que vêm da FICHA, e não do catálogo: as Habilidades Únicas de
+         item marcadas como ativas, a IMBUIÇÃO das Técnicas de Estilo e os
+         estados de ADDON. Os dois primeiros não declaram `requer*` porque a
+         existência do interruptor já depende do item estar equipado ou da
+         Técnica estar conhecida.
+
+         ⚠ O DE ADDON NÃO TEM ESSE PORTÃO NATURAL (2026-09-07). Ele existe pelo
+         simples fato de o pacote estar instalado, e o Ritmo do Dançarino das
+         Lâminas aparecia para quem não tinha pego o Talento: um contador morto.
+         Por isso o filtro aqui é o INVERSO do de cima: no catálogo, quem não
+         declara dono não aparece; no extra, quem não declara dono aparece.
+
+         ⚠ O `tipo` vem antes do espalhamento: a imbuição é `faixa`, e o extra
+         que não declara nada continua caindo em `bool`. */
+      ...(derived.combate?.estadosExtras ?? [])
+        .filter((e) => (!e.requerTalento || comLista(e.requerTalento).some((id) => talentos.includes(id)))
+          && (!e.requerAptidao || comLista(e.requerAptidao).some((id) => aptidoes.includes(id)))
+          && (!e.requerHabilidade || temHabilidade(e.requerHabilidade)))
+        .map((e) => ({ tipo: "bool", ...e })),
     ].map((e) => ({ ...e, opcoesVisiveis: opcoesDe(e) }));
   }, [derived]);
 

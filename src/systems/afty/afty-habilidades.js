@@ -6069,6 +6069,32 @@ let HERANCA_ORIGEM = {};
 export const habilidadeHerdadaDe = (id) => HERANCA_ORIGEM[id] ?? null;
 
 /**
+ * Uma lista de habilidades escolhidas MAIS o id de livro de cada clone herdado.
+ *
+ * ⚠ EXISTE PORQUE O CONTEÚDO DO LIVRO CITA O ID DO LIVRO. Um estado de combate
+ * diz `requerHabilidade: "cnj_conhecimento_aplicado"`, e quem pegou a habilidade
+ * pelo Especialista em Estilo a tem sob o id clonado
+ * (`<esp>__cnj_conhecimento_aplicado`). Sem esta expansão a herdeira ganha o
+ * texto da habilidade e nunca o controle dela, o que é pior que não ter: a
+ * expressão do efeito lê o estado, o estado nunca aparece, e o bônus fica zero
+ * para sempre, calado.
+ *
+ * ⚠ NÃO SUBSTITUI `escolhidas`. As duas respondem perguntas diferentes: a
+ * original é "quais linhas a ficha tem" (orçamento, efeito, tela) e esta é
+ * "quais habilidades a criatura CONHECE, sob qualquer nome". Trocar uma pela
+ * outra faria o clone e o original contarem como duas pegas.
+ */
+export function expandeHerdadas(ids) {
+  const lista = Array.isArray(ids) ? ids : [];
+  const out = [...lista];
+  for (const id of lista) {
+    const mae = HERANCA_ORIGEM[id];
+    if (mae && !out.includes(mae)) out.push(mae);
+  }
+  return out;
+}
+
+/**
  * Clona a lista de habilidades de uma Especialização para a que a herda.
  *
  * ⚠ ISTO EXISTE PARA UM ADDON NÃO CARREGAR CÓPIA CONGELADA DO LIVRO. É o mesmo

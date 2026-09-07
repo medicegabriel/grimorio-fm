@@ -50,27 +50,50 @@ export function armasTransformaveis(creature, catalogo, bt) {
         ...estadoForma(creature.combate, def.id) }];
     }).filter((e, i, a) => a.findIndex((x) => x.id === e.id) === i);
 }
+/* A régua da forma reunida, revisada pelo autor em 2026-09-07:
+   *"Reduza os Bônus da Azamaru para 8 de Defesa e remova o Reflexos. Os Dados de
+   Dano continuam igual, para cada 2 de Defesa se recebe 1 Dado de Dano.
+   Finalizando com 4 Dados de Dano."*
+
+   ⚠ O TETO DE 8 SÓ SIGNIFICA ALGUMA COISA ACIMA DA MAESTRIA 4. Com Maestria 4 a
+   conta antiga (2 × clones) já dava exatamente 8, então "reduza para 8" só
+   reduz de fato quem tem Maestria 5 ou mais, que antes chegava a 10 e 12. Por
+   isso o 8 entrou como TETO e não como valor fixo: fixo AUMENTARIA o bônus de
+   quem tem Maestria 2 ou 3, e o verbo do pedido é reduzir.
+
+   ⚠ A DEFESA VIROU A MOEDA DOS DADOS. Antes o dado saía dos clones ("1 dado
+   para cada 2 clones dissipados", o texto do livro), e agora sai da Defesa que
+   se perdeu: cada clone carrega 2 de Defesa, e cada 2 de Defesa dissipada vale
+   1 dado. Com o teto de 8 isso fecha nos 4 dados que o autor nomeou. */
+const DEFESA_POR_CLONE = 2;
+const DEFESA_MAX = 8;
+const DEFESA_POR_DADO = 2;
+
 /**
- * O que a forma reunida está entregando AGORA: `{ defesa, reflexos, dados }`.
+ * O que a forma reunida está entregando AGORA: `{ defesa, dados }`.
  *
  * ⚠ UM DONO SÓ PARA A FÓRMULA. Ela alimenta os efeitos logo abaixo E o painel
- * de combate, que passou a mostrar os números em vez de só a contagem de clones
- * (2026-09-07). Repetir o `2 × clones` na tela deixaria o painel mentir no dia
- * em que a regra mudasse de um lado só.
+ * de combate, que mostra os números em vez de só a contagem de clones. Repetir
+ * o cálculo na tela deixaria o painel mentir no dia em que a regra mudasse de um
+ * lado só, e ela acabou de mudar.
+ *
+ * ⚠ O REFLEXOS SAIU em 2026-09-07. Quem ler um `bonus.reflexos` daqui recebe
+ * `undefined`, e não zero: o campo não existe mais.
  */
 export function bonusDaForma(arma) {
-  const clones = inteiro(arma?.clones);
+  const defesa = Math.min(DEFESA_POR_CLONE * inteiro(arma?.clones), DEFESA_MAX);
+  // A Defesa que já foi dissipada, que é o que vira dado. Ela topa no mesmo teto:
+  // clone que nunca chegou a dar Defesa também não dá dado.
+  const defesaDissipada = Math.min(DEFESA_POR_CLONE * inteiro(arma?.reserva), DEFESA_MAX);
   return {
-    defesa: 2 * clones,
-    reflexos: 2 * clones,
-    dados: Math.floor(inteiro(arma?.reserva) / 2),
+    defesa,
+    dados: Math.floor(defesaDissipada / DEFESA_POR_DADO),
   };
 }
 
 export function efeitosArmasTransformaveis(armas) {
   return armas.flatMap((a) => !a.reunida ? [] : [
     { canal: "defesa", expr: String(bonusDaForma(a).defesa) },
-    { canal: "bonusTR", alvo: "reflexos", expr: String(bonusDaForma(a).reflexos) },
     { canal: "dadosDano", alvo: a.id, expr: String(bonusDaForma(a).dados) },
     { canal: "ignoraTodaRD", alvo: a.id, expr: "1" },
     { canal: "ignoraImunidade", alvo: a.id, expr: "1" },

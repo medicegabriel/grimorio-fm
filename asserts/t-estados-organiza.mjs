@@ -30,7 +30,7 @@ globalThis.localStorage ??= { getItem: () => null, setItem: () => {}, removeItem
 
 const R = new URL("../src/systems/afty/", import.meta.url).href;
 await import(R + "afty-derive.js");
-const { COMBATE_ESTADOS } = await import(R + "afty-combate.js");
+const { COMBATE_ESTADOS, resolveCombate } = await import(R + "afty-combate.js");
 const { organizaEstados, donoDoEstado, familiaEParte } = await import(R + "ficha/ficha-estados.js");
 const { estaLigado } = await import(R + "ficha/ficha-buffs.js");
 
@@ -57,9 +57,51 @@ t("vazio não quebra", familiaEParte(undefined), { familia: null, parte: "" });
 
 /* A convenção existe mesmo, e em quantidade: se um dia ela sumir do catálogo,
    este número cai e o cabeçalho de família deixa de valer a pena. */
-t("a convenção cobre 34 dos 57",
-  COMBATE_ESTADOS.filter((e) => familiaEParte(e.label).familia).length, 34);
-t("e o catálogo tem 57 estados",  COMBATE_ESTADOS.length, 57);
+/* ⚠ 58 desde 2026-09-07, com o "Conhecimento Aplicado · PE Gasto" do Conjurador,
+   que entra na convenção pelo separador. */
+t("a convenção cobre 35 dos 58",
+  COMBATE_ESTADOS.filter((e) => familiaEParte(e.label).familia).length, 35);
+t("e o catálogo tem 58 estados",  COMBATE_ESTADOS.length, 58);
+
+/* ============================================================ */
+/* TODA FAIXA PRECISA DE TETO NO `resolveCombate`                */
+/* ============================================================ */
+/* ⚠ ESTA É A ARMADILHA MAIS SILENCIOSA DO MÓDULO, e o cabeçalho do `tetoFaixa`
+   já a descrevia em prosa: o clamp usa `tetoFaixa[e.id] ?? 0`, então uma faixa
+   que não esteja no mapa é aparada em ZERO e o contador nunca sai do lugar. O
+   `max` do catálogo é só da UI e não chega lá.
+
+   Ela pegou de verdade em 2026-09-07, ao ligar o Conhecimento Aplicado: o
+   catálogo tinha o `max`, o mapa não tinha a linha, e o efeito lia uma variável
+   que era sempre 0. Nenhum erro, nenhum aviso, bônus nenhum.
+
+   O teste roda o `resolveCombate` com um valor ALTO em cada faixa e cobra que
+   alguma coisa saia diferente de zero. Faixa nova sem teto cai aqui. */
+const faixas = COMBATE_ESTADOS.filter((e) => e.tipo === "faixa");
+t("existem faixas para medir", faixas.length > 0, true);
+
+/* Params generosos: todo teto que o deriveAfty passa, no talo. As chaves saem
+   do próprio módulo, então uma faixa nova não precisa ser acrescentada aqui. */
+const paramsCheios = Object.fromEntries(faixas.map((e) => [e.id, 99]));
+const semTeto = [];
+for (const e of faixas) {
+  /* ⚠ O ESTADO-DONO PRECISA ESTAR LIGADO. Brutalidade · PE, Brutalidade ·
+     Pilhas e Surto · Atletismo são zeradas de propósito quando o `requerEstado`
+     delas está desligado (ver o fim do `resolveCombate`), e sem esta linha o
+     teste as acusaria de estarem sem teto. Foi o que aconteceu ao escrevê-lo. */
+  const alto = { ativo: true, [e.id]: 99, ...(e.requerEstado ? { [e.requerEstado]: true } : {}) };
+  const res = resolveCombate({ combate: alto }, { ...paramsCheios, maestria: 20 });
+  if (!(res[e.id] > (e.min ?? 0))) semTeto.push(e.id);
+}
+t("nenhuma faixa fica presa em zero", semTeto, []);
+
+/* E a prova do contrário: uma faixa cujo teto ninguém declarou sai zerada. É o
+   defeito que o bloco inteiro existe para pegar. */
+const inventada = resolveCombate(
+  { combate: { ativo: true, faixaSemTeto: 99 } },
+  { estadosExtras: [{ id: "faixaSemTeto", tipo: "faixa", min: 0, max: 0 }] },
+);
+t("faixa sem teto sai zerada, e e por isso que o teste existe", inventada.faixaSemTeto, 0);
 
 /* ============================================================ */
 /* 2. O DONO DE CADA ESTADO                                      */

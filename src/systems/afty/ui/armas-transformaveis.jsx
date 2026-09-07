@@ -21,10 +21,10 @@ import TextoRico from "./TextoRico";
  *     também. O jogador tinha de descobrir sozinho quais pares eram sinônimos.
  *     Agora são três botões, e as situações de mesa moram no `title` de cada um.
  *   • O NÚMERO NÃO APARECIA. A tira mostrava "Clones: 4" e escondia o que aquilo
- *     valia. Os clones dão +2 de Defesa e +2 em Reflexos CADA, e a reserva vira
- *     dado de dano a cada dois. Esses três números já eram calculados e jogados
- *     fora. Agora eles são a segunda faixa, e saem do `bonusDaForma`, que é o
- *     mesmo dono da fórmula dos efeitos.
+ *     valia. Os números já eram calculados e jogados fora. Agora eles são a
+ *     segunda faixa, e saem do `bonusDaForma`, que é o mesmo dono da fórmula dos
+ *     efeitos. ⚠ Eram TRÊS até o autor revisar a régua em 2026-09-07: o Reflexos
+ *     saiu, e a Defesa e os dados ganharam teto.
  *   • O TEXTO DA ARMA MORAVA NUM `title`. Um parágrafo de sete linhas dentro de
  *     um tooltip não se lê. Virou uma faixa que abre.
  *   • DOIS TÍTULOS. Um `h2` com o nome e um `h3` com o subtítulo, os dois com o
@@ -116,24 +116,21 @@ function LinhaDeForma({ arma, sessao, onSessao }) {
       </div>
 
       {/* ---------- 2. O QUE ELA DÁ AGORA ----------
-          Só na forma reunida, porque dividida ela não dá nada disto. Os três
-          números JÁ ESTÃO somados na Defesa, nos Reflexos e na linha de dano do
-          cabeçalho: isto é o painel de controle deles, e não uma segunda conta
-          para o jogador somar de cabeça. Mesma regra da Guarda. */}
+          Só na forma reunida, porque dividida ela não dá nada disto. Os números
+          JÁ ESTÃO somados na Defesa e na linha de dano do cabeçalho: isto é o
+          painel de controle deles, e não uma segunda conta para o jogador somar
+          de cabeça. Mesma regra da Guarda. */}
       {s.reunida && (
         <div className="afty-forma-numeros">
           <span className="afty-forma-numero" title="Clones ilusórios no ar">
             <b>{s.clones}</b> Clones
           </span>
-          <span className="afty-forma-numero" title="Já somado na Defesa do cabeçalho">
+          <span className="afty-forma-numero" title="Já somado na Defesa do cabeçalho. Máximo de 8">
             <b>+{bonus.defesa}</b> Defesa
-          </span>
-          <span className="afty-forma-numero" title="Já somado no Teste de Resistência de Reflexos">
-            <b>+{bonus.reflexos}</b> Reflexos
           </span>
           <span
             className="afty-forma-numero"
-            title={`${s.reserva} clone(s) dissipado(s) acumulado(s), que valem 1 dado a cada 2`}
+            title={`${s.reserva} clone(s) dissipado(s), que valem 1 dado a cada 2 de Defesa perdida. Máximo de 4`}
           >
             <b>+{bonus.dados}</b> Dados
           </span>

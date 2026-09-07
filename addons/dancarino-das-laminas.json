@@ -1,0 +1,46 @@
+{
+  "id": "dancarino-das-laminas",
+  "nome": "Dançarino das Lâminas",
+  "versao": "1.0.0",
+  "autor": "Afty",
+  "paraRaw": "afty",
+  "descricao": "Talento Geral que acumula Ritmo a cada ataque acertado. Cada acúmulo dá +1 em Testes de Acerto e em Reflexos, até 6, e errar um ataque tira um. O contador de Ritmo aparece na Simulação de Combate do criador e no painel de combate da Ficha e do Encontro.",
+  "estadosCombate": [
+    {
+      "id": "ritmo",
+      "label": "Ritmo",
+      "tipo": "faixa",
+      "min": 0,
+      "max": 6,
+      "passo": 1,
+      "requerTalento": "tal_dancarino_das_laminas",
+      "title": "Um acúmulo por ataque acertado, até 6. Errar um ataque tira um. Cada acúmulo dá +1 em Testes de Acerto e em Reflexos"
+    }
+  ],
+  "acrescenta": {
+    "talentos": [
+      {
+        "id": "tal_dancarino_das_laminas",
+        "nome": "Dançarino das Lâminas",
+        "grupo": "geral",
+        "descricao": "Seu estilo se consiste em movimentos rápidos e agéis em campo de batalha, se movimentando, circulando e atacando seu oponente em uma velocidade sobre-humana, como se estivesse dançando em meio ao campo de batalha. Para cada ataque acertado você recebe um acúmulo de ritmo que fornece +1 em Testes de Acerto e Reflexos, até um limite máximo de 6 acúmulos. Com o máximo de acúmulos, você pode gastar sua reação para trocar um Teste de Resistência qualquer por um TR de Reflexos, ou utilizar sua reação para anular completamente a Reação Defensiva de um inimigo. Contudo, errar um ataque quebra o seu fluxo de movimento, fazendo com que você perca um acúmulo de ritmo por desacelerar.",
+        "requisitos": [],
+        "efeitos": [
+          {
+            "canal": "bonusAcerto",
+            "expr": "dancarino_das_laminas_ritmo",
+            "nome": "Ritmo",
+            "duracao": "temporaria"
+          },
+          {
+            "canal": "bonusTR",
+            "alvo": "reflexos",
+            "expr": "dancarino_das_laminas_ritmo",
+            "nome": "Ritmo",
+            "duracao": "temporaria"
+          }
+        ]
+      }
+    ]
+  }
+}

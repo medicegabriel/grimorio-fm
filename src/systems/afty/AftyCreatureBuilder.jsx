@@ -69,6 +69,7 @@ import {
 } from "./afty-especializacoes";
 import {
   gruposDeHabilidade, avaliarAcessoHabilidade, escolhasConcedidas, abasDeOpcoes,
+  expandeHerdadas,
 } from "./afty-habilidades";
 import { ALMA_LIVRE_TALENTO_ID, gruposDeTalento, avaliarAcessoTalento } from "./afty-talentos";
 import {
@@ -9875,7 +9876,13 @@ function AltoNivelCard({ item, escolhida, acesso, escolhaEstado, vezes, onToggle
    card fica vazio (e some) para quem não tem nenhuma. */
 function SimulacaoCombateCard({ derived, patchCombate, gatilhosTreino = [], onGatilhoTreino }) {
   const combate = derived.combate;
-  const escolhidas = derived.habilidades?.efetivas ?? derived.habilidades?.escolhidas ?? [];
+  /* ⚠ COM AS HERDADAS. O conteúdo do livro cita o id do LIVRO
+     (`requerHabilidade: "cnj_conhecimento_aplicado"`), e quem pegou a
+     habilidade por uma Especialização que HERDA do Conjurador a tem sob o id
+     clonado. Sem expandir, a herdeira recebe o texto e nunca o controle. */
+  const escolhidas = expandeHerdadas(
+    derived.habilidades?.efetivas ?? derived.habilidades?.escolhidas ?? [],
+  );
   // As opções aninhadas escolhidas (Manobra de Empolgação, Estilo de Combate),
   // achatadas: é o que `requerEscolha` consulta.
   const opcoes = Object.values(derived.habilidades?.escolhas?.mapa ?? {}).flat();
@@ -9892,8 +9899,8 @@ function SimulacaoCombateCard({ derived, patchCombate, gatilhosTreino = [], onGa
   };
   // `requerHabilidade` aceita lista: Ataque Inconsequente existe no Lutador e no
   // Restringido com o mesmo texto, e ter qualquer uma das duas mostra a linha.
-  const temHabilidade = (req) =>
-    (Array.isArray(req) ? req : [req]).some((id) => escolhidas.includes(id));
+  const comLista = (req) => (Array.isArray(req) ? req : [req]);
+  const temHabilidade = (req) => comLista(req).some((id) => escolhidas.includes(id));
   const talentos = derived.talentos?.escolhidas ?? [];
   const aptidoes = derived.aptidoesEscolhidas ?? [];
   const linhas = [
@@ -9904,13 +9911,25 @@ function SimulacaoCombateCard({ derived, patchCombate, gatilhosTreino = [], onGa
         : temHabilidade(e.requerHabilidade);
       return temDono && (!["opcao", "dominio"].includes(e.tipo) || opcoesDe(e).length > 0);
     }),
-    // Estados que vêm da FICHA, e não do catálogo: as Habilidades Únicas de item
-    // marcadas como ativas e a IMBUIÇÃO das Técnicas de Estilo. Não têm `requer*`
-    // porque a própria existência do interruptor já depende do item estar
-    // equipado, ou da Técnica estar conhecida.
-    // ⚠ O `tipo` vem antes do espalhamento: a imbuição é `faixa` e o extra que
-    // não declara nada continua caindo em `bool`.
-    ...(combate.estadosExtras ?? []).map((e) => ({ tipo: "bool", ...e })),
+      /* Estados que vêm da FICHA, e não do catálogo: as Habilidades Únicas de
+         item marcadas como ativas, a IMBUIÇÃO das Técnicas de Estilo e os
+         estados de ADDON. Os dois primeiros não declaram `requer*` porque a
+         existência do interruptor já depende do item estar equipado ou da
+         Técnica estar conhecida.
+
+         ⚠ O DE ADDON NÃO TEM ESSE PORTÃO NATURAL (2026-09-07). Ele existe pelo
+         simples fato de o pacote estar instalado, e o Ritmo do Dançarino das
+         Lâminas aparecia para quem não tinha pego o Talento: um contador morto.
+         Por isso o filtro aqui é o INVERSO do de cima: no catálogo, quem não
+         declara dono não aparece; no extra, quem não declara dono aparece.
+
+         ⚠ O `tipo` vem antes do espalhamento: a imbuição é `faixa`, e o extra
+         que não declara nada continua caindo em `bool`. */
+      ...(combate.estadosExtras ?? [])
+        .filter((e) => (!e.requerTalento || comLista(e.requerTalento).some((id) => talentos.includes(id)))
+          && (!e.requerAptidao || comLista(e.requerAptidao).some((id) => aptidoes.includes(id)))
+          && (!e.requerHabilidade || temHabilidade(e.requerHabilidade)))
+        .map((e) => ({ tipo: "bool", ...e })),
   ];
   if (!linhas.length && !gatilhosTreino.length) return null;
 

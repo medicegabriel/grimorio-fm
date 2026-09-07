@@ -121,6 +121,95 @@ Estado atual do sistema Afty (atualizado 2026-09-07). Leia junto com:
 
 ---
 
+## SESSÃO DE 2026-09-07 (parte 6): CONHECIMENTO APLICADO, E A RÉGUA DO AZAMARU
+
+### O Azamaru pesava demais acima da Maestria 4
+
+Autor: *"Reduza os Bônus da Azamaru para 8 de Defesa e remova o Reflexos. Os Dados de Dano continuam
+igual, para cada 2 de Defesa se recebe 1 Dado de Dano. Finalizando com 4 Dados de Dano."*
+
+O 8 entrou como TETO e não como valor fixo, e a razão está no verbo: com Maestria 4 a conta antiga
+já dava exatamente 8, então "reduza" só reduz de fato acima disso (antes chegava a 10 e 12). Fixo
+AUMENTARIA quem tem Maestria 2 ou 3.
+
+⚠ **Os dados DOBRARAM, apesar do "continuam igual".** Antes eram 1 a cada 2 clones dissipados (o
+texto do livro), e agora 1 a cada 2 de Defesa dissipada. Como cada clone carrega 2 de Defesa, com
+Maestria 4 são 4 dados no talo em vez de 2. É a única leitura em que o "finalizando com 4 Dados de
+Dano" fecha, e o texto da arma no pacote foi ajustado junto para a mesa não ler uma regra e o motor
+calcular outra. Detalhe em `afty-azamaru.md`.
+
+### Conhecimento Aplicado, e a primeira prova viva da herança
+
+Habilidade de nível 2 do Conjurador: gastar até ⌊Maestria ÷ 2⌋ PE num TR contra Feitiço, +2 por
+ponto. Virou uma faixa de combate (`conhecimentoAplicado`) mais um efeito de `bonusTR`.
+
+⚠ **SEM ALVO, e portanto nos cinco TRs.** O gatilho do livro ("contra o efeito de um Feitiço") é
+condição de mesa que a ficha não sabe ler: ela mostra os cinco e não sabe qual está sendo rolado.
+Quem declara é o jogador mexendo no contador, e é isso que o estado significa.
+
+⚠ **ELA CHEGOU SOZINHA AO ESPECIALISTA EM ESTILO**, e esse é o primeiro caso vivo da herança de
+Especialização: ninguém tocou no addon, e o clone recebeu o efeito junto. O contador exigiu um
+conserto: o estado cita `requerHabilidade: "cnj_conhecimento_aplicado"` e a herdeira tem a
+habilidade sob o id clonado, então as duas telas passaram a expandir a lista de escolhidas com
+`expandeHerdadas`. Sem isso a herdeira ganharia o texto e nunca o controle, e o efeito leria um
+estado que nunca sai de zero.
+
+### A armadilha que o próprio arquivo avisava, e que me pegou mesmo assim
+
+O cabeçalho do `tetoFaixa` em `afty-combate.js` diz, em prosa: *"TODA faixa precisa estar aqui. O
+clamp abaixo usa `tetoFaixa[e.id] ?? 0`, então uma faixa ausente é aparada em ZERO e o estado nunca
+sai do lugar, sem erro nenhum. O `max` do catálogo é só da UI, e não chega aqui."*
+
+Declarei o `max` no catálogo, esqueci a linha do mapa, e o contador ficou preso em zero: o efeito
+lia a variável, a variável era 0, e o bônus simplesmente não existia. Nenhum erro, nenhum aviso.
+
+O `t-estados-organiza.mjs` passou a cobrar que **toda faixa saia diferente de zero** com o teto
+cheio, mais o caso negativo que prova o teste. ⚠ Escrever o teste também custou um erro meu: as três
+faixas com `requerEstado` (as duas de Brutalidade e o Surto · Atletismo) são zeradas de propósito
+quando o estado-dono está desligado, e o teste as acusava de estarem sem teto até ligar o dono.
+
+---
+
+## SESSÃO DE 2026-09-07 (parte 5): DANÇARINO DAS LÂMINAS, UM ADDON QUE NÃO PEDIU VERBO NENHUM
+
+Talento Geral pedido pelo autor, em `addons/dancarino-das-laminas.json` com 30 asserts em
+`asserts/t-dancarino.mjs`. Acumula **Ritmo** a cada ataque acertado, cada acúmulo dá +1 em Acerto e
+em Reflexos, até 6, e errar um ataque tira um.
+
+### Ele saiu quase inteiro de dado
+
+O pacote não pediu primitiva, não pediu liberação e não pediu canal novo. Tudo que ele usa já
+existia: a família `talentos`, o `estadosCombate` com `tipo: "faixa"` (que o Addon aceita desde a
+imbuição das Técnicas de Estilo), e os canais `bonusAcerto` e `bonusTR`. Vale registrar porque é o
+primeiro pacote em que a resposta para "o que falta no motor" foi **nada**.
+
+⚠ **O ponto onde um addon assim morre calado é o NOME DA VARIÁVEL.** As expressões do Talento citam
+o contador pelo nome, e o id do estado ganha o namespace do pacote (`-` e `:`), que o tokenizer do
+DSL não aceita. Quem resolve é o `varDoEstado`, e o JSON tem de escrever exatamente o que ele
+devolve (`dancarino_das_laminas_ritmo`). Errar ali não dá erro, dá zero. O bloco 2 do assert compara
+os dois lados justamente por isso.
+
+### O único verbo: `requerTalento` no estado de addon
+
+O contador aparecia para quem tinha o PACOTE instalado e não tinha pego o Talento, e mexer nele não
+mudava número nenhum. O catálogo do raw já tinha as três portas de dono (`requerTalento`,
+`requerHabilidade`, `requerAptidao`), e o extra de addon simplesmente não as carregava.
+
+⚠ **O filtro dos extras é o INVERSO do filtro do catálogo**, e as duas telas precisavam saber
+disso: no catálogo, estado que não declara dono NÃO aparece; no extra, estado que não declara dono
+aparece. Os outros extras (Habilidade Única de item, imbuição de Estilo) vivem sem porta porque a
+existência do interruptor já depende do item equipado ou da Técnica conhecida. O addon não tem esse
+portão natural, e por isso precisava de um explícito.
+
+### O que ficou de mesa
+
+As duas reações do máximo de acúmulos, e nenhuma por falta de trabalho. Trocar um TR qualquer por um
+de Reflexos é decisão tomada no momento da rolagem, contra um teste que o mestre pediu, e a ficha
+não sabe qual está sendo rolado. Anular a Reação Defensiva de um inimigo mexe em OUTRA criatura, que
+é a mesma parede da segunda imbuição do Aumento de Defesa do Estilo.
+
+---
+
 ## SESSÃO DE 2026-09-07 (parte 4): O AZAMARU VIROU ADDON DE VERDADE
 
 O trabalho do GoliasK entrou por fast-forward (commit `6238ec6`). O autor pediu para consertar tudo

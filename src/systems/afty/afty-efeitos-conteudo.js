@@ -1089,6 +1089,22 @@ export const HABILIDADE_EFEITOS = {
     { canal: "cd", expr: "2 + (esc_conjurador >= 10) + (esc_conjurador >= 20)" },
   ],
 
+  // "Sempre que for realizar um teste de resistência contra o efeito de um
+  // Feitiço, você pode gastar pontos de energia amaldiçoada igual a metade do
+  // seu bônus de treinamento [...] para cada ponto gasto, você adiciona +2 no
+  // teste de resistência."
+  //
+  // ⚠ O TETO MORA NO ESTADO, e não aqui: `conhecimentoAplicado` é uma faixa de
+  // 0 a ⌊Maestria ÷ 2⌋ em afty-combate.js. Repetir o teto na expressão daria
+  // dois donos para o mesmo número.
+  //
+  // ⚠ `temporaria`, porque é gasto declarado numa rolagem e não bônus de ficha.
+  // Sem isso ele contaria para pré-requisito, e apareceria no Preview em
+  // repouso de quem só encostou no contador.
+  cnj_conhecimento_aplicado: [
+    { canal: "bonusTR", expr: "2 * conhecimento_aplicado", duracao: "temporaria" },
+  ],
+
   // "Você passa a adicionar seu modificador de Inteligência ou Sabedoria no seu
   // bônus de iniciativa."
   cnj_reacao_rapida: [

@@ -102,6 +102,40 @@ da `AbaAcoes`, porque a sessão é de quem monta a aba: a Ficha e o painel de En
 `onSessao` diferentes, e assim a aba não precisa saber que sessão existe. Uma mudança serve às duas
 telas.
 
+### A régua dos bônus, revisada em 2026-09-07
+
+Pedido do autor: *"Reduza os Bônus da Azamaru para 8 de Defesa e remova o Reflexos. Os Dados de Dano
+continuam igual, para cada 2 de Defesa se recebe 1 Dado de Dano. Finalizando com 4 Dados de Dano."*
+
+| | Antes | Agora |
+|---|---|---|
+| Defesa | 2 × clones, sem teto | 2 × clones, **teto 8** |
+| Reflexos | 2 × clones | **removido** |
+| Dados de Dano | 1 a cada 2 clones dissipados | 1 a cada **2 de Defesa** dissipada, **teto 4** |
+
+⚠ **O TETO DE 8 SÓ MORDE ACIMA DA MAESTRIA 4.** Com Maestria 4 a conta antiga já dava exatamente 8,
+então "reduza para 8" só reduz de fato quem tem Maestria 5 ou mais, que antes chegava a 10 e 12. Por
+isso o 8 entrou como TETO e não como valor fixo: fixo AUMENTARIA o bônus de quem tem Maestria 2 ou
+3, e o verbo do pedido é reduzir. Os dois números que o autor nomeou (8 e 4) caem exatos na
+Maestria 4.
+
+⚠ **A DEFESA VIROU A MOEDA DOS DADOS.** Antes o dado saía dos clones, que é o que o texto do livro
+dizia ("1 dado de dano adicional para cada 2 clones dissipados"), e agora sai da Defesa perdida.
+Como cada clone carrega 2 de Defesa, isso **dobra** os dados: com Maestria 4, 4 clones dissipados
+davam 2 dados e agora dão 4. É o que fecha nos "4 Dados de Dano" do pedido, e é a única leitura em
+que o número final bate.
+
+O texto da arma em `addons/azamaru.json` foi ajustado nas duas frases, para o que a mesa lê não
+divergir do que o motor calcula.
+
+| Maestria | Defesa | Dados no talo |
+|---:|---:|---:|
+| 2 | 4 | 2 |
+| 3 | 6 | 3 |
+| 4 | **8** | **4** |
+| 5 | 8 | 4 |
+| 6 | 8 | 4 |
+
 ### O Reunir travado fora de combate
 
 ⚠ **Consertado em 2026-09-07.** O autor: *"Quando eu clico em Reunir, e depois clico em Dividir. Eu

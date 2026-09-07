@@ -45,17 +45,24 @@ sessao = alteraArmaTransformavel(sessao, arma, "reunir");
 assert.equal(sessao.peAtual, 50);
 assert.equal(estadoForma(sessao.combate, id).clones, 5);
 const reunida = derivar();
-assert.equal(reunida.defesa - base.defesa, 10);
+/* ⚠ A RÉGUA MUDOU EM 2026-09-07 (autor): *"Reduza os Bônus da Azamaru para 8 de
+   Defesa e remova o Reflexos."* Esta ficha tem Maestria 5, então a conta antiga
+   (2 × clones) daria 10, e é exatamente esse caso que o teto de 8 corta. */
+assert.equal(reunida.defesa - base.defesa, 8);
 const reflexos = (d) => d.testes.resistencias.find((r) => r.value === "reflexos").bonus;
-assert.equal(reflexos(reunida) - reflexos(base), 10);
+assert.equal(reflexos(reunida) - reflexos(base), 0);
 const dano = (d) => d.dano.entradas.find((e) => e.id === id);
 assert.equal(dano(reunida).ignoraTodaRD, true);
 assert.equal(dano(reunida).ignoraImunidade, true);
 assert.equal(dano(reunida).removeResistencia, true);
 assert.equal(dano(base).ignoraTodaRD, false);
 assert.equal(getEquipamento("arma", id, { ...ficha, combate: sessao.combate }).props.pesada, undefined);
+/* Um clone a menos com Maestria 5 continua no teto: 4 clones ainda dão 8. */
 sessao = alteraArmaTransformavel(sessao, arma, "golpe");
 assert.equal(derivar().defesa - base.defesa, 8);
+/* O segundo já sai do teto: 3 clones dão 6. */
+sessao = alteraArmaTransformavel(sessao, arma, "golpe");
+assert.equal(derivar().defesa - base.defesa, 6);
 sessao = alteraArmaTransformavel(sessao, arma, "todos");
 assert.equal(estadoForma(sessao.combate, id).reserva, 5);
 assert.equal(derivar().defesa, base.defesa);
@@ -150,13 +157,22 @@ assert.deepEqual(primitivasDaCriatura({ addons: [pacote] }), ["armaTransformavel
 /* ⚠ Quem NÃO tem o pacote não enxerga nada. */
 assert.deepEqual(primitivasDaCriatura({ addons: [] }), []);
 
-/* O BÔNUS TEM UM DONO SÓ. O painel mostra estes três números e os efeitos os
-   emitem, e antes a fórmula estava escrita só dentro dos efeitos. */
-assert.deepEqual(bonusDaForma({ clones: 4, reserva: 5 }), { defesa: 8, reflexos: 8, dados: 2 });
-assert.deepEqual(bonusDaForma({ clones: 0, reserva: 1 }), { defesa: 0, reflexos: 0, dados: 0 });
+/* O BÔNUS TEM UM DONO SÓ. O painel mostra estes números e os efeitos os emitem,
+   e antes a fórmula estava escrita só dentro dos efeitos.
+
+   ⚠ A RÉGUA DE 2026-09-07: 2 de Defesa por clone com TETO 8, o Reflexos fora, e
+   1 dado a cada 2 de Defesa dissipada, terminando em 4. Os dois números que o
+   autor nomeou (8 e 4) caem exatos na Maestria 4. */
+assert.deepEqual(bonusDaForma({ clones: 4, reserva: 0 }), { defesa: 8, dados: 0 });
+assert.deepEqual(bonusDaForma({ clones: 0, reserva: 4 }), { defesa: 0, dados: 4 });
+assert.deepEqual(bonusDaForma({ clones: 2, reserva: 2 }), { defesa: 4, dados: 2 });
+/* ⚠ O TETO SEGURA ACIMA DA MAESTRIA 4, que é onde "reduza para 8" reduz algo. */
+assert.deepEqual(bonusDaForma({ clones: 6, reserva: 6 }), { defesa: 8, dados: 4 });
+/* ⚠ E O REFLEXOS NÃO EXISTE MAIS: o campo saiu, e não virou zero. */
+assert.equal("reflexos" in bonusDaForma({ clones: 4, reserva: 4 }), false);
 /* Lixo não derruba: o painel chama isto a cada render. */
-assert.deepEqual(bonusDaForma(null), { defesa: 0, reflexos: 0, dados: 0 });
-assert.deepEqual(bonusDaForma({ clones: "x", reserva: -3 }), { defesa: 0, reflexos: 0, dados: 0 });
+assert.deepEqual(bonusDaForma(null), { defesa: 0, dados: 0 });
+assert.deepEqual(bonusDaForma({ clones: "x", reserva: -3 }), { defesa: 0, dados: 0 });
 
 /* FICHA SUJA NÃO DERRUBA O DERIVE. Este módulo roda dentro do `deriveAfty`, e o
    contrato do projeto é que ficha salva sempre abre. Os três campos que ele lê

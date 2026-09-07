@@ -450,6 +450,36 @@ export const COMBATE_ESTADOS = [
     requerHabilidade: "res_golpe_impactante",
   },
   /* ============================================================ */
+  /* CONJURADOR                                                    */
+  /* ============================================================ */
+
+  /* "Sempre que for realizar um teste de resistência contra o efeito de um
+     Feitiço, você pode gastar pontos de energia amaldiçoada igual a metade do
+     seu bônus de treinamento para receber um bônus: para cada ponto gasto, você
+     adiciona +2 no teste de resistência."
+
+     ⚠ O ESTADO É QUANTOS PE FORAM GASTOS, e não um liga-desliga: o valor É a
+     escolha, e o bônus sai de `2 × valor`. Mesmo desenho da Brutalidade · PE
+     Extra e do Corpo de Aço · Cura.
+
+     ⚠ SEM ALVO, e portanto vale nos cinco TRs. O gatilho do livro ("contra o
+     efeito de um Feitiço") é uma condição de MESA que a ficha não sabe ler: ela
+     mostra os cinco e não sabe qual está sendo rolado. Quem declara é o
+     jogador, mexendo no contador na hora, e é isso que o estado significa.
+
+     ⚠ CHEGA À HERDEIRA. O Especialista em Estilo (addon) herda esta habilidade
+     do Conjurador com um id clonado, e o `requerHabilidade` resolve a herança
+     por `habilidadeHerdadaDe`. Ver `expandeHerdadas` em afty-habilidades.js. */
+  {
+    id: "conhecimentoAplicado",
+    label: "Conhecimento Aplicado · PE Gasto",
+    tipo: "faixa",
+    min: 0,
+    max: (d) => Math.floor(Math.max(0, d?.maestria ?? 0) / 2),
+    requerHabilidade: "cnj_conhecimento_aplicado",
+  },
+
+  /* ============================================================ */
   /* TALENTOS                                                      */
   /* ============================================================ */
 
@@ -695,7 +725,13 @@ export function resolveCombate(creature, params = {}) {
     estimuloTeste: params.estimuloTeste ?? 0,
     fluxoPER: params.fluxoPER ?? 0,
     regeneracaoPE: params.regeneracaoPE ?? 0,
+    conhecimentoAplicado: params.conhecimentoAplicado ?? 0,
   };
+  /* ⚠ O AVISO ACIMA NÃO ERA TEÓRICO. Ao ligar o Conhecimento Aplicado em
+     2026-09-07 eu declarei o `max` no catálogo, esqueci a linha aqui, e o
+     contador ficou preso em zero sem erro nenhum: o efeito lia a variável, a
+     variável era 0, e o bônus simplesmente não existia. O assert
+     `t-estados-organiza.mjs` passou a cobrar que toda faixa tenha teto. */
   const out = { ...zerado, ativo: true, empolgacaoMax, estadosExtras: extras };
   for (const e of COMBATE_ESTADOS) {
     if (e.tipo === "bool") out[e.id] = !!c[e.id];
