@@ -78,6 +78,15 @@ import { sistemaDaFicha, regraDo } from "./afty-sistema";
  *                   acrescentar e reprovar o que quebrou.
  *   • `caminhosDeId` onde, dentro da entrada, existem referências a outros ids
  *                   que precisam ganhar o mesmo prefixo. Ver `prefixarEntrada`.
+ *   • `ordem`       quem religa primeiro. Menor vai antes, e o padrão é 50.
+ *
+ * ⚠ A `ordem` NASCEU EM 2026-09-07, com a herança de Especialização. Até ali a
+ * ordem de religação era a de INSERÇÃO no Map, que é a ordem de import dos
+ * módulos: um acidente do grafo de dependências, e portanto uma coisa que
+ * ninguém pode ler no código nem confiar. Passou a importar porque a família
+ * `habilidades` agora LÊ o catálogo de `especializacoes` para expandir o
+ * `herdaDe`, e ler uma família que ainda não religou daria a lista velha,
+ * calada. Quem depende de outra declara a ordem e diz por quê.
  *
  * ⚠ Começa com UMA família ligada de propósito (2026-08-20). O caminho inteiro
  * (pacote, namespace, validação, religação, época) fica provado numa família
@@ -97,6 +106,8 @@ export function registrarFamilia(id, def) {
     chave: def.chave ?? "id",
     obrigatorios: def.obrigatorios ?? ["nome"],
     caminhosDeId: def.caminhosDeId ?? [],
+    // Quem religa antes. Ver a nota da `ordem` no cabeçalho do registro.
+    ordem: Number.isFinite(def.ordem) ? def.ordem : 50,
     aplicar: def.aplicar,
     validador: def.validador ?? null,
     // As duas de baixo servem à LINHA MORTA (ver `problemasDeAddon`): uma diz
@@ -164,15 +175,20 @@ function prefixarEntrada(entrada, pacoteId, chave, caminhosDeId, idsLocais) {
   const local = (v) => (idsLocais.has(String(v)) ? comPrefixo(pacoteId, v) : v);
 
   for (const caminho of caminhosDeId) {
-    // "requisitos[].id" e "concedeEscolha.habilidade" são as duas formas.
+    /* Três formas: "requisitos[].id" (lista de objetos), "incompativeisIds[]"
+       (lista de ids crus) e "concedeEscolha.habilidade" (objeto aninhado).
+       ⚠ A do meio entrou em 2026-09-07 com o `incompativeisIds`: até ali um
+       caminho sem sufixo depois do `[]` casava o `if` e não fazia NADA, porque
+       o `sub` vazio derrubava a condição. Lista de string ficava crua, calada. */
     const [cabeca, ...resto] = caminho.split(".");
     if (cabeca.endsWith("[]")) {
       const campo = cabeca.slice(0, -2);
       if (!Array.isArray(out[campo])) continue;
       const sub = resto.join(".");
-      out[campo] = out[campo].map((item) =>
-        item && sub && item[sub] !== undefined ? { ...item, [sub]: local(item[sub]) } : item,
-      );
+      out[campo] = out[campo].map((item) => {
+        if (!sub) return local(item);
+        return item && item[sub] !== undefined ? { ...item, [sub]: local(item[sub]) } : item;
+      });
     } else if (resto.length === 0) {
       if (out[cabeca] !== undefined) out[cabeca] = local(out[cabeca]);
     } else if (out[cabeca] && typeof out[cabeca] === "object") {
@@ -312,6 +328,15 @@ export const PRIMITIVAS = [
      família de catálogo porque o que ela acrescenta não é uma ENTRADA nova: é
      uma moeda na ficha e uma forma de gastá-la, e as duas coisas são verbo. O
      que o pacote traz de dado é a tabela de PREÇOS. */
+  /* ⚠ NASCEU EM 2026-09-07, com o Especialista em Estilo. O canal existe no
+     motor sempre, e só aparece no seletor de quem pediu, pela mesma lição do
+     `hpAtributo`: sem o `permite`, todo mundo passaria a ver um canal que mexe
+     em pré-requisito de Aptidão e que nenhuma entrada do livro emite. */
+  {
+    id: "requisitoAptidao",
+    rotulo: "Requisito de Aptidão",
+    nota: "O canal que ABAIXA o pré-requisito de NÍVEL das Aptidões Amaldiçoadas. Não encosta no requisito de trilha",
+  },
   {
     id: "catarse",
     rotulo: "Loja de Catarse",
@@ -1077,8 +1102,14 @@ export function aplicarAddons(pacotes = []) {
     }
   }
 
-  for (const [familia, extras] of porFamilia) {
-    FAMILIAS.get(familia).aplicar(extras, remendosPorFamilia.get(familia));
+  /* ⚠ POR `ordem`, e não pela ordem do Map. A família `habilidades` lê o
+     catálogo de `especializacoes` já religado para expandir o `herdaDe`, e a
+     ordem de inserção do Map é a ordem de import dos módulos, que ninguém
+     controla. Ver a nota da `ordem` no `registrarFamilia`. */
+  const porOrdem = [...porFamilia.keys()]
+    .sort((a, b) => FAMILIAS.get(a).ordem - FAMILIAS.get(b).ordem);
+  for (const familia of porOrdem) {
+    FAMILIAS.get(familia).aplicar(porFamilia.get(familia), remendosPorFamilia.get(familia));
   }
 
   pacotesAtivos = limpos;

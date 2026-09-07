@@ -1,0 +1,38 @@
+{
+  "id": "especialista-em-estilo",
+  "nome": "Especialista em Estilo",
+  "versao": "1.0.0",
+  "autor": "Afty",
+  "paraRaw": "afty",
+  "descricao": "A variação do Especialista em Técnicas para quem não tem técnica nenhuma. O Sem Técnica não pode ter a Especialização Conjurador, e este pacote abre no lugar dela o Especialista em Estilo, que É o Conjurador com as mesmas 65 habilidades, lidas sobre Aptidões Amaldiçoadas e Técnicas de Estilo em vez de Feitiços. Só o Sem Técnica enxerga, e ela não convive com o Conjurador na mesma ficha.",
+  "permite": ["requisitoAptidao"],
+  "acrescenta": {
+    "especializacoes": [
+      {
+        "id": "esp_estilo",
+        "nome": "Especialista em Estilo",
+        "herdaDe": "conjurador",
+        "restritaOrigemIds": ["sem_tecnica"],
+        "incompativeisIds": ["conjurador"],
+        "resumo": "O Especialista em Técnicas do Sem Técnica: as mesmas habilidades, lidas sobre Aptidão e Estilo.",
+        "descricao": "Você recebe as Habilidades de Especialização do Especialista em Técnicas, e todas continuam valendo. O que muda é sobre o que elas falam.\n\nHabilidades de dano: Habilidades que aumentam o dano de técnicas amaldiçoadas continuam aumentando o dano na mesma medida, porém só é possível receber esse aumento de dano caso a aptidão amaldiçoada ou estilo da sombra já desse dano em si. Você não pode fazer com que sua aura macabra ou seu estímulo muscular cause dano no inimigo.\n\nHabilidades de buff ou feitiço rápido: habilidades que aumentam alcance, alvos ou qualquer tipo de buff afetam suas aptidões, desde que faça sentido logicamente. Você não conseguiria usar Feitiço Distante em sua aura lacerante, mas ainda seria possível utilizar Feitiço Expansivo. Ao utilizar o Feitiço Rápido segue a mesma redução de ação.\n\nConjuração em ritual: Ao ritualizar uma aptidão de buff ou dano você segue as mesmas regras do ritualizar e seus efeitos. Caso você ritualize um estilo da sombra, para cada efeito de ritual que você receber dele você conta como se tivesse +1 nível de domínio extra. Esses efeitos valem para qualquer efeito de ritual, como a habilidade Feitiço Favorito.\n\nCálculos que utilizam o nível do Feitiço: Coisas que envolvam esse cálculo continuam normalmente, substituindo o nível do Feitiço pelo seu Nível de Aptidão em Controle e Leitura.",
+        "remendaHabilidades": {
+          "cnj_conjuracao_aprimorada": {
+            "nome": "Conjuração Aprimorada",
+            "descricao": "Todos podem utilizar a energia amaldiçoada, mas você consegue a aprimorar e extrair um maior potencial. Sempre que utilizar uma Aptidão Amaldiçoada ou Técnica de Estilo que cause dano, você soma um bônus ao total de dano causado baseado no seu Nível de Aptidão em Controle e Leitura, de acordo com a tabela abaixo. O bônus só vale se a aptidão ou o estilo já causasse dano por si.\n\nAlém disso, o Sem Técnica é mais focado em qualidade do que em quantidade: você recebe uma nova Técnica de Estilo a cada nível par, além dos níveis em que o próprio Sem Técnica as recebe naturalmente.\n\nNível em Controle e Leitura · Bônus de Dano\n• Nível 1: Modificador de Atributo\n• Nível 2: Modificador de Atributo\n• Nível 3: Dobro do Modificador de Atributo\n• Nível 4: 2x Mod. de Atributo + Nível de Personagem\n• Nível 5: 2x Mod. de Atributo + 2x Nível de Personagem\n• Técnica Máxima: 3x Mod. de Atributo + 3x Nível de Personagem",
+            "efeitos": [
+              { "canal": "vagasEstilo", "expr": "piso(esc_conjurador / 2)" }
+            ]
+          },
+          "cnj_adiantar_a_evolucao": {
+            "nome": "Adiantar a Evolução",
+            "descricao": "Focado no seu treino, você consegue adiantar a evolução das suas habilidades. Você reduz em 2 os pré-requisitos de nível das Aptidões Amaldiçoadas. Os pré-requisitos de Nível de Aptidão em uma trilha continuam valendo como estão.",
+            "efeitos": [
+              { "canal": "reduzNivelAptidao", "expr": "2" }
+            ]
+          }
+        }
+      }
+    ]
+  }
+}

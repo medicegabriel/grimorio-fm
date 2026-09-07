@@ -1,0 +1,9 @@
+{
+  "id": "alma-livre",
+  "nome": "Alma Livre",
+  "versao": "1.0.0",
+  "autor": "Afty",
+  "paraRaw": "afty",
+  "descricao": "Devolve o Talento Alma Livre à lista de Talentos da Ficha de Player. O Talento saiu da lista do jogador em 2026-09-01 e continua inteiro na ficha de criatura: este pacote não muda uma linha do texto nem do efeito dele, só reabre a porta. Instale junto de um pacote que remende o Talento (o Flugel faz isso) para o jogador receber a versão remendada.",
+  "libera": ["soPorAddon:tal_alma_livre"]
+}

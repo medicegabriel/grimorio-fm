@@ -41,7 +41,9 @@
  * e `aptidao`, que só existem aqui):
  *   { tipo:"atributo", attr:"presenca", valor:18 }        → bloqueia
  *   { tipo:"atributoOr", attrs:["forca","constituicao"], valor:16 }
- *   { tipo:"nd", valor:6 }        ("Nível 6" no livro)    → bloqueia
+ *   { tipo:"nd", valor:6 }        ("Nível 6" no livro)    → bloqueia,
+ *       e o canal `reduzNivelAptidao` (ctx.reduzNivelAptidao) ABAIXA o corte,
+ *       com piso 1. Só este requisito, nunca o de trilha.
  *   { tipo:"trilha", trilha:"au", valor:2 }               → bloqueia
  *   { tipo:"aptidao", id:"aura_do_comandante" }           → bloqueia,
  *       MAS não bloqueia se o id ainda não foi transcrito (senão a
@@ -1732,7 +1734,25 @@ export function avaliarRequisitoAptidao(requisito, ctx = {}) {
     };
   }
   if (requisito.tipo === "nd") {
-    return { ok: (ctx.nd ?? 0) >= requisito.valor, verificavel: true, label: `Nível ${requisito.valor}` };
+    /* ⚠ O CANAL `reduzNivelAptidao` ABAIXA ESTE PORTÃO (2026-09-07), e só ele:
+       o requisito de `trilha` logo acima não é tocado, porque o texto que criou
+       o canal fala em "pré-requisitos de nível". Piso em 1, que é o menor ND que
+       existe.
+
+       ⚠ O RÓTULO MOSTRA O NÚMERO EFETIVO, e não o do livro. Um chip dizendo
+       "Nível 10" numa criatura de ND 8 que PODE pegar a aptidão seria um número
+       certo com leitura errada, que é o defeito que o projeto já nomeou na
+       Defesa por atributo. Quem quer saber de onde veio a diferença lê o
+       `titulo`. */
+    const corte = Math.max(1, requisito.valor - Math.max(0, ctx.reduzNivelAptidao ?? 0));
+    return {
+      ok: (ctx.nd ?? 0) >= corte,
+      verificavel: true,
+      label: `Nível ${corte}`,
+      ...(corte !== requisito.valor
+        ? { titulo: `Nível ${requisito.valor} no livro, reduzido para ${corte}` }
+        : {}),
+    };
   }
   if (requisito.tipo === "atributo") {
     const atual = ctx.attrEff?.[requisito.attr] ?? 0;

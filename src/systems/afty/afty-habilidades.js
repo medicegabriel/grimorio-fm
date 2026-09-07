@@ -45,7 +45,11 @@
 import { evalNumber, validateExpression } from "./afty-dsl";
 // Registro de Addons. Módulo FOLHA (só importa o afty-dsl), então não há ciclo.
 import { registrarFamilia, remendarLista, filtraForaDoJogador } from "./afty-addons";
-import { getEspecializacao } from "./afty-especializacoes";
+import { AFTY_ESPECIALIZACOES, getEspecializacao } from "./afty-especializacoes";
+/* Só a HERANÇA usa, para levar o efeito do raw junto do clone. afty-efeitos-conteudo.js
+   não importa nada (conferido), então a seta para lá não fecha ciclo. Mesma
+   justificativa que afty-aptidoes.js já escreveu para o APTIDAO_EFEITOS. */
+import { HABILIDADE_EFEITOS } from "./afty-efeitos-conteudo";
 import { getAptidao } from "./afty-aptidoes";
 import { ARMA_GRUPOS, ENCANTAMENTOS_ARMA } from "./afty-equipamentos";
 import { AFTY_RESISTENCIAS } from "./afty-schema";
@@ -6047,8 +6051,115 @@ const HABILIDADES_BASE = AFTY_HABILIDADES.slice();
  * ⚠ A ORDEM IMPORTA: o pool tem de ser refeito antes de ser pendurado na
  * habilidade dona, e o índice depois de tudo.
  */
+/* ============================================================ */
+/* HERANÇA DE ESPECIALIZAÇÃO                                     */
+/* ============================================================ */
+/**
+ * O separador entre a Especialização herdeira e a habilidade que ela clonou.
+ * `especialista-em-estilo:esp_estilo__cnj_o_honrado` continua partindo certo no
+ * `partirId` (o namespace é até o primeiro `:`), então a linha morta e o
+ * `pacoteDoId` seguem sabendo de que pacote a entrada veio.
+ */
+const HERANCA_SEP = "__";
+
+/** Clone de habilidade herdada -> id da habilidade do livro que ele copiou. */
+let HERANCA_ORIGEM = {};
+
+/** De que habilidade do livro este clone veio, ou null. */
+export const habilidadeHerdadaDe = (id) => HERANCA_ORIGEM[id] ?? null;
+
+/**
+ * Clona a lista de habilidades de uma Especialização para a que a herda.
+ *
+ * ⚠ ISTO EXISTE PARA UM ADDON NÃO CARREGAR CÓPIA CONGELADA DO LIVRO. É o mesmo
+ * "não cabe" que criou a família `clas` em 2026-08-31: uma variação de classe
+ * repetiria 65 habilidades no JSON, e cada errata do livro passaria a ter dois
+ * donos que ninguém sincroniza.
+ *
+ * O que o clone muda, e SÓ isto:
+ *
+ *   • o `id`, que ganha `<idDaHerdeira>__<idOriginal>`.
+ *   • o `especializacaoId`, que passa a ser o da herdeira.
+ *   • os `requisitos` do tipo `habilidade` que apontam para uma IRMÃ clonada,
+ *     que passam a apontar para o clone dela. Requisito que aponta para fora da
+ *     lista herdada fica como está.
+ *   • os `efeitos`, copiados do `HABILIDADE_EFEITOS` para DENTRO da entrada.
+ *     O mapa é chaveado pelo id, e o clone tem id novo: sem esta cópia as 21
+ *     linhas ligadas do Conjurador sumiriam, caladas. O caminho de entrada com
+ *     `efeitos` inline já existe desde a fase 1 (ver `coletarEfeitos`).
+ *
+ * ⚠ O QUE NÃO MUDA, de propósito:
+ *
+ *   • `escolha.id` e os ids das OPÇÕES. Elas são as mesmas opções do livro, com
+ *     os mesmos efeitos em `ESCOLHA_EFEITOS`, que também é chaveado por id.
+ *     Renomear as opções mataria o efeito de cada Mudança de Fundamento. A
+ *     escolha gravada na ficha é compartilhada com a classe-mãe, e isso é
+ *     inofensivo porque as duas não podem conviver (`incompativeisIds`).
+ *   • as EXPRESSÕES. Elas citam `esc_conjurador`, e quem resolve isso é o outro
+ *     lado da herança: `deriveAfty` publica o nível da herdeira TAMBÉM sob o
+ *     nome da mãe. Reescrever texto de DSL por busca e troca seria mexer em 21
+ *     expressões no escuro para chegar no mesmo lugar.
+ *
+ * `remendaHabilidades` na entrada da Especialização troca campos de um clone,
+ * pelo id ORIGINAL da habilidade, e é rasa igual ao `remendarLista`. É por onde
+ * o Especialista em Estilo reescreve Conjuração Aprimorada e Adiantar a
+ * Evolução sem encostar nas do Conjurador de verdade.
+ */
+function clonesDaHeranca(lista) {
+  const herdeiras = AFTY_ESPECIALIZACOES.filter((e) => e?.herdaDe);
+  if (!herdeiras.length) { HERANCA_ORIGEM = {}; return []; }
+
+  const origem = {};
+  const out = [];
+  for (const esp of herdeiras) {
+    const fonte = lista.filter((h) => h.especializacaoId === esp.herdaDe);
+    if (!fonte.length) continue;
+    const novoId = (id) => `${esp.id}${HERANCA_SEP}${id}`;
+    const clonadas = new Set(fonte.map((h) => h.id));
+    const remendos = esp.remendaHabilidades && typeof esp.remendaHabilidades === "object"
+      ? esp.remendaHabilidades
+      : {};
+
+    for (const h of fonte) {
+      const clone = {
+        ...h,
+        id: novoId(h.id),
+        especializacaoId: esp.id,
+        /* As DUAS formas de citar uma irmã: `habilidade` cita por `id` e
+           `escolha` cita por `habId`. O Conjurador só usa a primeira, e a
+           segunda entra porque o Controlador usa: herdar dele com só metade
+           remapeada apontaria para a habilidade da classe-mãe, calado. */
+        requisitos: (h.requisitos ?? []).map((r) => {
+          if (r?.tipo === "habilidade" && clonadas.has(r.id)) return { ...r, id: novoId(r.id) };
+          if (r?.tipo === "escolha" && clonadas.has(r.habId)) return { ...r, habId: novoId(r.habId) };
+          return r;
+        }),
+        // O efeito do raw mora fora do catálogo. Ver a nota grande acima.
+        ...(HABILIDADE_EFEITOS[h.id] ? { efeitos: HABILIDADE_EFEITOS[h.id] } : {}),
+        // De quem esta linha veio, para a tela e para os asserts.
+        herdadaDe: h.id,
+        herdadaPor: esp.id,
+      };
+      const patch = remendos[h.id];
+      /* ⚠ O REMENDO VENCE O `HABILIDADE_EFEITOS`, e é a mesma lição do
+         `coletarEfeitos` em 2026-08-22: um remendo que troca o texto da regra e
+         deixa o número antigo é pior que não remendar, porque mente em silêncio.
+         Aqui a ordem do spread já resolve, e a nota fica para quem mexer. */
+      out.push(patch ? { ...clone, ...patch, id: clone.id, especializacaoId: esp.id } : clone);
+      origem[clone.id] = h.id;
+    }
+  }
+  HERANCA_ORIGEM = origem;
+  return out;
+}
+
 function aplicarExtrasHabilidades(extras = [], remendos = null) {
-  AFTY_HABILIDADES.splice(0, AFTY_HABILIDADES.length, ...remendarLista(HABILIDADES_BASE, remendos), ...extras);
+  const comExtras = [...remendarLista(HABILIDADES_BASE, remendos), ...extras];
+  /* ⚠ A HERANÇA ENTRA DEPOIS DOS EXTRAS, e lê a lista já montada: uma variação
+     pode herdar de uma classe que o próprio addon acrescentou. E ela lê
+     `AFTY_ESPECIALIZACOES`, que é a família de `ordem` 10 e por isso já religou
+     quando esta roda. Ver a nota da `ordem` em afty-addons.js. */
+  AFTY_HABILIDADES.splice(0, AFTY_HABILIDADES.length, ...comExtras, ...clonesDaHeranca(comExtras));
 
   HABILIDADES_ROUBAVEIS.splice(0, HABILIDADES_ROUBAVEIS.length, ...montarRoubaveis());
   const dona = AFTY_HABILIDADES.find((h) => h.id === "res_roubo_de_habilidade");
@@ -6063,9 +6174,19 @@ registrarFamilia("habilidades", {
   rotulo: "Habilidade de Especialização",
   chave: "id",
   obrigatorios: ["nome", "descricao", "especializacaoId", "tipo", "nivel"],
-  // Onde uma entrada cita OUTRO id. Referência que não achar irmão dentro do
-  // próprio pacote fica crua e vai procurar no raw, que é o caso comum.
-  caminhosDeId: ["requisitos[].id", "concedeEscolha.habilidade"],
+  /* Onde uma entrada cita OUTRO id. Referência que não achar irmão dentro do
+     próprio pacote fica crua e vai procurar no raw, que é o caso comum.
+
+     ⚠ O `especializacaoId` ENTROU EM 2026-09-07. Ele faltava, e o buraco só
+     aparecia num pacote que trouxesse a Especialização E as habilidades dela:
+     a habilidade apontava para o id SEM namespace, o validador reprovava com
+     "especializacaoId inexistente" e o pacote inteiro caía. Quem aponta para
+     uma classe do livro (o caso do exemplo em docs/afty-addons.md, com
+     `"especializacaoId": "lutador"`) continua cru, como sempre. */
+  caminhosDeId: ["requisitos[].id", "concedeEscolha.habilidade", "especializacaoId"],
+  /* ⚠ DEPOIS de `especializacoes` (ordem 10): a herança lê aquele catálogo já
+     religado. Ver a nota da `ordem` em afty-addons.js. */
+  ordem: 20,
   aplicar: aplicarExtrasHabilidades,
   basicos: () => HABILIDADES_BASE,
   validador: validarCatalogoHabilidades,

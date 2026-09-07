@@ -31,6 +31,39 @@
  *
  * ⚠ CONTEÚDO PENDENTE: `resumo` e `descricao` estão vazios até o autor
  * mandar o texto do livro. O texto vem VERBATIM, sem parafrasear.
+ *
+ * ------------------------------------------------------------
+ * OS TRÊS CAMPOS DE 2026-09-07 (herança, restrição e briga)
+ * ------------------------------------------------------------
+ * Nasceram para o Addon Especialista em Estilo, e NENHUM É USADO PELO RAW.
+ * Entram aqui porque são VERBO (mecanismo genérico), e verbo é do motor: uma
+ * mesa que crie a variação de outra classe usa os mesmos três.
+ *
+ *   herdaDe: "conjurador"
+ *     Esta Especialização É aquela, com mudanças. Herda `treinamentos`,
+ *     `caracteristicas` e — em afty-habilidades.js — a LISTA DE HABILIDADES
+ *     inteira, clonada com o id desta. O que a entrada declara vence o herdado,
+ *     campo a campo. Existe para uma variação de classe não obrigar o addon a
+ *     carregar uma cópia congelada de 65 habilidades do livro, que é o mesmo
+ *     "não cabe" que criou a família `clas` em 2026-08-31.
+ *
+ *   restritaOrigemIds: ["sem_tecnica"]
+ *     Só estas origens ENXERGAM. ⚠ NÃO CONFUNDIR COM `exclusivaOrigemId`, e a
+ *     diferença é a razão de existirem dois campos: o `exclusivaOrigemId`
+ *     TRANCA (a Origem Restringido vê SÓ Restringido, e é obrigada a ela), e o
+ *     `restritaOrigemIds` apenas ABRE para uns e fecha para os outros. Um Sem
+ *     Técnica continua vendo Lutador, Combatente, Suporte e Controlador.
+ *
+ *   incompativeisIds: ["conjurador"]
+ *     Não pode dividir a ficha com estas, em multiclasse. Vale nos DOIS
+ *     sentidos, e o campo só precisa estar de um lado: quem pergunta é
+ *     `especializacaoIncompativel`, que olha a ida e a volta. Uma variação e a
+ *     classe que ela varia são a mesma classe lida de dois jeitos, então tê-las
+ *     juntas daria duas cópias da mesma lista de habilidades na mesma ficha.
+ *
+ * O outro lado da moeda mora na ORIGEM: `especializacoesVetadas` em
+ * ./afty-origens.js diz o que aquela origem NÃO pode ter. Os dois se somam, e
+ * o veto é da origem PRÓPRIA (origem extra de Verdadeiras Origens só abre).
  */
 
 import { registrarFamilia, remendarLista } from "./afty-addons";
@@ -575,8 +608,41 @@ let BY_ID = {};
 
 const ESPECIALIZACOES_BASE = AFTY_ESPECIALIZACOES.slice();
 
+/**
+ * Materializa o `herdaDe` de UMA entrada: o que ela não declara vem da mãe.
+ *
+ * ⚠ Só os campos de REGRA descem (`treinamentos`, `caracteristicas`), e cada um
+ * inteiro. Herdar `caracteristicas` campo a campo pareceria mais gentil e seria
+ * mentira: quem declara o bloco está declarando uma classe com outros números,
+ * e misturar metade do PV da mãe com metade do PE da filha não é nada que
+ * alguém tenha escrito. Mesma regra rasa do `remendarLista`.
+ *
+ * ⚠ `nome`, `resumo` e `descricao` NÃO descem. A variação existe justamente
+ * para ter identidade própria na ficha, e herdar o nome da mãe faria a tela
+ * mostrar duas classes com o mesmo rótulo.
+ *
+ * A lista de HABILIDADES não desce aqui: ela mora no outro catálogo, e quem a
+ * clona é o religador de afty-habilidades.js, que roda depois deste por `ordem`.
+ */
+function comHeranca(entrada, porId) {
+  const mae = entrada?.herdaDe ? porId[entrada.herdaDe] : null;
+  if (!mae) return entrada;
+  return {
+    ...entrada,
+    treinamentos: entrada.treinamentos ?? mae.treinamentos,
+    caracteristicas: entrada.caracteristicas ?? mae.caracteristicas,
+  };
+}
+
 function aplicarExtrasEspecializacoes(extras = [], remendos = null) {
-  AFTY_ESPECIALIZACOES.splice(0, AFTY_ESPECIALIZACOES.length, ...remendarLista(ESPECIALIZACOES_BASE, remendos), ...extras);
+  const base = remendarLista(ESPECIALIZACOES_BASE, remendos);
+  /* A mãe pode ser do livro OU de outro addon do mesmo mundo, então o índice de
+     busca é o mundo inteiro já montado, e não só o raw. Herança de herança não
+     é resolvida em cadeia de propósito: o validador reprova, e resolver cadeia
+     abriria a porta para ciclo. */
+  const porId = Object.fromEntries([...base, ...extras].map((e) => [e.id, e]));
+  const extrasComHeranca = extras.map((e) => comHeranca(e, porId));
+  AFTY_ESPECIALIZACOES.splice(0, AFTY_ESPECIALIZACOES.length, ...base, ...extrasComHeranca);
   BY_ID = Object.fromEntries(AFTY_ESPECIALIZACOES.map((e) => [e.id, e]));
 }
 
@@ -586,6 +652,14 @@ registrarFamilia("especializacoes", {
   rotulo: "Especialização",
   chave: "id",
   obrigatorios: ["nome"],
+  /* ⚠ ANTES DA FAMÍLIA `habilidades` (ordem 20), que lê este catálogo já
+     religado para clonar as habilidades do `herdaDe`. Ver `registrarFamilia`. */
+  ordem: 10,
+  /* `herdaDe` e `incompativeisIds` citam OUTRA Especialização, e um addon que
+     traga a variação e a classe variada no mesmo JSON precisa que a referência
+     ache o irmão. Quem aponta para o livro (o caso do Especialista em Estilo,
+     que herda do Conjurador) continua cru. */
+  caminhosDeId: ["herdaDe", "incompativeisIds[]", "restritaOrigemIds[]"],
   aplicar: aplicarExtrasEspecializacoes,
   basicos: () => ESPECIALIZACOES_BASE,
   validador: validarCatalogoEspecializacoes,
@@ -632,9 +706,40 @@ export function especializacoesDisponiveis(origemId, extras = []) {
   const exclusiva = AFTY_ESPECIALIZACOES.find((e) => e.exclusivaOrigemId === origemId);
   if (exclusiva) return [exclusiva];
   const abertas = extras.filter((x) => x && x !== origemId);
-  return AFTY_ESPECIALIZACOES.filter(
-    (e) => e.exclusivaOrigemId == null || abertas.includes(e.exclusivaOrigemId),
-  );
+  /* As origens que a criatura CONTA como suas, para o `restritaOrigemIds`. A
+     extra entra aqui porque ela só ABRE, que é a mesma regra do
+     `exclusivaOrigemId` logo acima. */
+  const alcanca = [origemId, ...abertas];
+  /* ⚠ O VETO SAI DA ORIGEM PRÓPRIA, e não das extras. É a metade que TRANCA, e
+     a regra escrita três parágrafos acima diz que a própria tranca e a extra só
+     abre. Um Gêmeo que copiou do Sem Técnica não herda a proibição dele. */
+  const vetadas = new Set(getOrigem(origemId)?.especializacoesVetadas ?? []);
+  return AFTY_ESPECIALIZACOES.filter((e) =>
+    (e.exclusivaOrigemId == null || abertas.includes(e.exclusivaOrigemId))
+    && (!Array.isArray(e.restritaOrigemIds) || e.restritaOrigemIds.some((id) => alcanca.includes(id)))
+    && !vetadas.has(e.id));
+}
+
+/**
+ * Esta Especialização briga com alguma que a ficha já tem?
+ *
+ * ⚠ OLHA OS DOIS SENTIDOS de propósito. O campo `incompativeisIds` fica em UM
+ * lado só (a variação cita a classe que ela varia, e não o contrário, porque o
+ * raw não pode saber quais addons existem), e mesmo assim a briga tem de valer
+ * na ida e na volta. Perguntar só num sentido deixaria a ordem de clique
+ * decidir a regra, que é exatamente o tipo de estado ilegal que este módulo
+ * evita por construção.
+ *
+ * Devolve o id da que briga, ou null.
+ */
+export function especializacaoIncompativel(id, jaEscolhidasIds = []) {
+  const minhas = new Set(getEspecializacao(id)?.incompativeisIds ?? []);
+  for (const outroId of jaEscolhidasIds) {
+    if (outroId === id) continue;
+    if (minhas.has(outroId)) return outroId;
+    if ((getEspecializacao(outroId)?.incompativeisIds ?? []).includes(id)) return outroId;
+  }
+  return null;
 }
 
 /** Quantas Especializações a origem permite. Restringido não multiclassa. */
@@ -728,9 +833,51 @@ export function normalizeEspecializacoes(lista, origemId, extras = []) {
   for (const item of arr) {
     const id = item?.id;
     if (!BY_ID[id] || vistos.has(id) || !disponiveis.has(id)) continue;
+    /* ⚠ A INCOMPATÍVEL CAI AQUI, e não só na tela. A ficha viaja por JSON, e
+       uma importada com o par proibido entraria com as duas listas de
+       habilidade ao mesmo tempo. Quem chega primeiro fica, que é a mesma regra
+       de desempate do `vistos` logo acima. */
+    if (especializacaoIncompativel(id, out.map((e) => e.id))) continue;
     vistos.add(id);
     out.push({ id, nivel: Math.max(1, Math.trunc(Number(item?.nivel) || 0) || 1) });
     if (out.length >= maxEspecializacoes(origemId, extras)) break;
+  }
+  return out;
+}
+
+/**
+ * As Especializações que a ficha GUARDA mas que a origem de hoje não permite.
+ *
+ * ⚠ Existe porque `normalizeEspecializacoes` as descarta CALADO, e descartar
+ * calado é perda de escolha do jogador. O caso real: a proibição do Conjurador
+ * para o Sem Técnica era só um chip de texto até 2026-09-07, então existe ficha
+ * gravada com o par que o livro proíbe. Ela continua abrindo, a Especialização
+ * some da conta, e a aba DIZ que sumiu e por quê.
+ *
+ * Devolve `[{ id, nome, motivo }]`, vazio no caso normal.
+ */
+export function especializacoesRecusadas(creature) {
+  const arr = Array.isArray(creature?.especializacoes) ? creature.especializacoes : [];
+  if (!arr.length) return [];
+  const origemId = creature?.core?.origem?.id;
+  const disponiveis = new Set(
+    especializacoesDisponiveis(origemId, origensQualificadas(creature)).map((e) => e.id),
+  );
+  const origem = getOrigem(origemId);
+  const out = [];
+  const vistos = new Set();
+  for (const item of arr) {
+    const id = item?.id;
+    const def = BY_ID[id];
+    if (!def || vistos.has(id) || disponiveis.has(id)) continue;
+    vistos.add(id);
+    out.push({
+      id,
+      nome: def.nome,
+      motivo: (origem?.especializacoesVetadas ?? []).includes(id)
+        ? `A origem ${origem?.nome ?? origemId} não pode ter esta Especialização.`
+        : `Esta Especialização não é acessível à origem ${origem?.nome ?? origemId}.`,
+    });
   }
   return out;
 }
@@ -828,6 +975,27 @@ export function validarCatalogoEspecializacoes() {
 
     if (e.exclusivaOrigemId != null && !getOrigem(e.exclusivaOrigemId)) {
       problemas.push(`${e.nome}: exclusivaOrigemId aponta para origem inexistente (${e.exclusivaOrigemId})`);
+    }
+    for (const id of e.restritaOrigemIds ?? []) {
+      if (!getOrigem(id)) problemas.push(`${e.nome}: restritaOrigemIds cita origem inexistente (${id})`);
+    }
+    for (const id of e.incompativeisIds ?? []) {
+      if (!BY_ID[id]) problemas.push(`${e.nome}: incompativeisIds cita Especialização inexistente (${id})`);
+      if (id === e.id) problemas.push(`${e.nome}: incompativeisIds cita a si mesma`);
+    }
+    if (e.herdaDe != null) {
+      const mae = BY_ID[e.herdaDe];
+      if (!mae) {
+        problemas.push(`${e.nome}: herdaDe aponta para Especialização inexistente (${e.herdaDe})`);
+      } else if (mae.herdaDe != null) {
+        /* ⚠ UM DEGRAU SÓ. Cadeia abriria a porta para ciclo (A herda de B que
+           herda de A), e a defesa contra ciclo custaria mais do que o caso de
+           uso: ninguém pediu variação de variação. Se pedirem, isto vira uma
+           travessia com marcação de visitados, e não um `while`. */
+        problemas.push(`${e.nome}: herdaDe aponta para uma Especialização que já herda (${e.herdaDe}). A herança é de um degrau só.`);
+      } else if (!e.caracteristicas) {
+        problemas.push(`${e.nome}: herdaDe não materializou as características. Religou fora de ordem?`);
+      }
     }
   }
   /* As características de classe entram no MESMO validador, e não num à parte:

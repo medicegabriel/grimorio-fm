@@ -664,6 +664,60 @@ de energia amaldiçoada.
 **Precisa:** o autor confirmar, ou dizer quais origens ficam de fora.
 **Anotado:** 2026-08-18, ao criar os Treinos Especiais
 
+### Especialista em Estilo: "manter dois Estilos da sombra durante uma rodada"
+**Onde:** `addons/especialista-em-estilo.json` (regra de buff da Especialização)
+**Situação:** a frase está no texto que o autor mandou em 2026-09-07, no fim do parágrafo de
+*Habilidades de buff ou feitiço rápido*, verbatim: *"Ao utilizar do feitiço rápido segue a mesma
+redução de ação, também é possível manter dois Estilos da sombra durante uma rodada quando essa
+habilidade é utilizada em uma técnica de estilo."* Perguntado, o autor respondeu *"Não achei onde
+está escrito isso"*, então ela **ficou de fora do pacote**: o texto da Especialização vai só até a
+redução de ação.
+
+Ela é a única parte mecânica daquele parágrafo, e tem duas leituras que dão sistemas diferentes.
+Hoje o Estilo tem UM interruptor por ficha (`ESTADO_ESTILO_ATIVO` em `afty-estilo-sombras.js`), e
+quem está no ar é o Domínio Simples.
+
+1. **Dois Domínios Simples no ar ao mesmo tempo.** Pede um segundo interruptor e uma segunda conta
+   de sustentação em PE.
+2. **Duas Técnicas de Estilo imbuídas de graça naquela rodada.** Cabe no canal `imbuicoesEstilo`,
+   que já existe, e é uma linha.
+
+**Precisa:** o autor dizer se a frase vale e qual das duas ela é. Se valer a segunda, é um efeito
+no remendo de `cnj_conjuracao_aprimorada`.
+**Anotado:** 2026-09-07, ao montar o Especialista em Estilo
+
+### Ritualizar Técnica de Estilo é procedimento de mesa
+**Onde:** `src/systems/afty/afty-rituais.js`, `addons/especialista-em-estilo.json`
+**Situação:** a regra de *Conjuração em ritual* do Especialista em Estilo diz que, ao ritualizar um
+Estilo da Sombra, *"para cada efeito de ritual que você receber dele, você conta como se tivesse +1
+nível de domínio extra"*. O autor decidiu em 2026-09-07: **procedimento de mesa por ora.** O texto
+está no `descricao` da Especialização e nada do motor o calcula.
+
+O que falta não é canal: `nivelAptidao` com alvo `dom` já existe e já apara no teto. Falta o
+GATILHO. O `afty-rituais.js` inteiro só conhece Feitiço (as 12 melhorias dele falam em "nível do
+Feitiço"), e a Técnica de Estilo não tem estado de ritual em lugar nenhum. Ritualizar Estilo é
+sistema novo, e não uma linha.
+
+**Precisa:** quando o autor quiser, abrir ritual para o Estilo. Aí o +1 por efeito vira
+`nivelAptidao` com alvo `dom` lido do estado de ritual daquela conjuração.
+**Anotado:** 2026-09-07, decisão 4 do autor
+
+### Ápice e Lendária que citam habilidade de Conjurador não alcançam a herdeira
+**Onde:** `src/systems/afty/afty-alto-nivel.js`, `src/systems/afty/afty-habilidades.js`
+**Situação:** o `nivelEspec` do Alto Nível e os requisitos `{ tipo: "habilidade", id: "cnj_..." }`
+apontam para ids do livro. Uma Especialização que HERDA do Conjurador tem clones com id próprio
+(`<esp>__cnj_...`), então um Especialista em Estilo de ND 21+ não consegue pegar o Ápice que pede
+*20 Níveis de Conjurador* mais `cnj_manipulacao_perfeita` e `cnj_dominancia_em_feitico`.
+
+Aliasar só o `nivelEspec` não resolveria: os dois requisitos de habilidade continuariam presos ao
+id cru. O conserto é fazer o avaliador resolver a herança nos DOIS eixos, provavelmente expondo do
+`resolveHabilidades` uma lista de ids escolhidos já expandida com o original de cada clone
+(`habilidadeHerdadaDe` já existe e responde isso).
+
+**Precisa:** decidir se a herdeira herda também os pré-requisitos da mãe. Vale a pena só quando
+alguém jogar um Especialista em Estilo acima do ND 20.
+**Anotado:** 2026-09-07, ao montar a herança de Especialização
+
 ---
 
 ## AFTY — Feitiços

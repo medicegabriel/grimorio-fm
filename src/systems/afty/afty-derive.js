@@ -94,7 +94,7 @@ import { resolveCatarse } from "./afty-catarse";
 import { resolveCura } from "./afty-cura";
 import {
   problemasDeAddon, marcasDeclaradas, primitivasDaCriatura, liberacoesDaCriatura, precosDeCatarse,
-  estadosCombateDeAddon,
+  estadosCombateDeAddon, epocaAddons,
 } from "./afty-addons";
 import { agrupaConcedido, concessoesDaSessao, escolhasDoConcedido } from "./afty-concessao";
 import {
@@ -166,24 +166,49 @@ const INT = (x) => Math.floor(x); // INT() da planilha (ND > 0 → floor)
  * Habilidade (Restringido 2°), que importa habilidade de outra classe, nunca
  * funcionaria. Montado uma vez, dos catálogos, e passado ao contexto.
  */
-const VOCABULARIO_DSL = {
-  pericias: [],
-  resistencias: AFTY_RESISTENCIAS.map((r) => r.value),
-  // `tem_*` cobre Habilidade, Talento E Aptidão: os Estilos de Combate leem
-  // `tem_tal_adepto_de_combate` para saber se vieram pelo Talento, e o
-  // Revestimento Evoluído (Maldição) lê `tem_mal_revestimento` para saber sobre
-  // o que ele está melhorando. Os prefixos de id não colidem entre os três.
-  habilidades: [
-    ...AFTY_HABILIDADES.map((h) => h.id),
-    ...AFTY_TALENTOS.map((t) => t.id),
-    ...AFTY_APTIDOES.map((a) => a.id),
-  ],
-  especializacoes: AFTY_ESPECIALIZACOES.map((e) => e.id),
-  // Toda booleana de escolha de Aptidão que pode existir, para nenhuma
-  // expressão que a cite cair no fallback por ela não estar declarada.
-  opcoesAptidao: AFTY_APTIDOES.flatMap((a) =>
-    (a.opcoes?.valores ?? []).map((v) => `opt_${a.id}_${v.id}`)),
-};
+/* ⚠ MONTADO POR ÉPOCA DE ADDON, e não uma vez no import (2026-09-07).
+
+   Ele era um `const` de módulo, avaliado quando este arquivo carrega. Os
+   religadores de Addon dão `splice` nos catálogos DEPOIS disso, então o
+   vocabulário ficava sendo uma fotografia do raw puro: nenhuma entrada de Addon
+   entrava, e por isso `esc_<especialização de addon>` e `tem_<habilidade de
+   addon>` não eram declarados a zero.
+
+   O efeito disso é exatamente o que o comentário acima avisa: expressão que cita
+   identificador não declarado cai no fallback INTEIRA e calada. Uma
+   Especialização de Addon (família ligada desde 2026-08-20) não conseguia
+   escalar com o próprio nível, e ninguém via erro nenhum.
+
+   O cache pela `epocaAddons()` existe porque a lista tem ~700 ids e o
+   `deriveAfty` roda a cada tecla do criador. A época só troca quando o conjunto
+   de addons troca, que é a mesma dependência que o `useMemo` do builder usa. */
+let vocCache = null;
+let vocEpoca = -1;
+
+function vocabularioDoMundo() {
+  const agora = epocaAddons();
+  if (vocCache && vocEpoca === agora) return vocCache;
+  vocEpoca = agora;
+  vocCache = {
+    pericias: [],
+    resistencias: AFTY_RESISTENCIAS.map((r) => r.value),
+    // `tem_*` cobre Habilidade, Talento E Aptidão: os Estilos de Combate leem
+    // `tem_tal_adepto_de_combate` para saber se vieram pelo Talento, e o
+    // Revestimento Evoluído (Maldição) lê `tem_mal_revestimento` para saber sobre
+    // o que ele está melhorando. Os prefixos de id não colidem entre os três.
+    habilidades: [
+      ...AFTY_HABILIDADES.map((h) => h.id),
+      ...AFTY_TALENTOS.map((t) => t.id),
+      ...AFTY_APTIDOES.map((a) => a.id),
+    ],
+    especializacoes: AFTY_ESPECIALIZACOES.map((e) => e.id),
+    // Toda booleana de escolha de Aptidão que pode existir, para nenhuma
+    // expressão que a cite cair no fallback por ela não estar declarada.
+    opcoesAptidao: AFTY_APTIDOES.flatMap((a) =>
+      (a.opcoes?.valores ?? []).map((v) => `opt_${a.id}_${v.id}`)),
+  };
+  return vocCache;
+}
 
 /**
  * @param creature ficha (só escolhas)
@@ -228,7 +253,7 @@ export function deriveAfty(creature, opcoes = {}) {
   const a = creature?.attributes ?? {};
   const ov = creature?.statOverrides ?? {};
   const vocabularioDsl = {
-    ...VOCABULARIO_DSL,
+    ...vocabularioDoMundo(),
     pericias: catalogoPericiasDaFicha(creature).map((p) => p.id),
   };
 
@@ -644,7 +669,19 @@ export function deriveAfty(creature, opcoes = {}) {
   // escalonamento (real + metade da outra classe, o que os efeitos escalam).
   const nivelEspec = {};
   for (const e of especializacoes.escolhidas) {
-    nivelEspec[e.id] = { real: e.nivel ?? 0, escalonamento: e.nivelEscalonamento ?? e.nivel ?? 0 };
+    const valor = { real: e.nivel ?? 0, escalonamento: e.nivelEscalonamento ?? e.nivel ?? 0 };
+    nivelEspec[e.id] = valor;
+    /* ⚠ A HERDEIRA RESPONDE TAMBÉM PELO NOME DA MÃE (2026-09-07). É a outra
+       metade da herança de Especialização: as habilidades clonadas trazem as
+       expressões do livro intactas, e elas citam `esc_conjurador`. Publicar o
+       nível sob os dois nomes resolve as 21 expressões de uma vez, sem busca e
+       troca em texto de DSL.
+
+       Não colide com a mãe de verdade porque as duas não podem conviver na
+       mesma ficha (`incompativeisIds`), e o `??=` deixa a própria mãe vencer
+       caso um dia possam. */
+    const mae = getEspecializacao(e.id)?.herdaDe;
+    if (mae && !nivelEspec[mae]) nivelEspec[mae] = valor;
   }
   if (habilidades.almaLivre?.habilidadeId) {
     nivelEspec[habilidades.almaLivre.especializacaoId] = {
@@ -2373,6 +2410,12 @@ export function deriveAfty(creature, opcoes = {}) {
     (ehJogador("vagasPorNivelDeClasse") ? Math.max(0, nd - 1) : 0)
     + canal("vagasAptidao"));
 
+  /* Quanto o pré-requisito de NÍVEL de toda Aptidão desce. Quem lê é o
+     `avaliarRequisitoAptidao`, na aba, e não este arquivo: o requisito é
+     pergunta de tela, e não um stat. Segue o `semEnergia` como todo o resto da
+     Aptidão, senão um Restringido carregaria um número que não usa. */
+  const reduzNivelAptidao = semEnergia ? 0 : Math.max(0, canal("reduzNivelAptidao"));
+
   // ⚠ Especializações, Talentos, Habilidades, Alto Nível, Aptidão e o MOTOR DE
   // AUTOMAÇÃO subiram para o topo desta função (logo depois dos atributos
   // base), porque os efeitos precisam alcançar os stats. Ver o bloco
@@ -2734,6 +2777,7 @@ export function deriveAfty(creature, opcoes = {}) {
     tecnicaAttr,
     totalAptidao,               // orçamento de NÍVEIS de aptidão (1 a cada 2 ND depois do 20)
     totalAptidoesAmaldicoadas,  // quantas pode ter (só da Habilidade Geral Aptidão, 0 sem ela)
+    reduzNivelAptidao,          // quanto o pré-requisito de NÍVEL de cada Aptidão desce (0 no normal)
     aptidao,              // níveis por trilha: { alocado, concedido, efetivo, gastos, limite }
     // As Aptidões Amaldiçoadas EFETIVAS (escolhidas + concedidas por nome pela
     // origem), para o `requerAptidao` da bancada saber quais linhas mostrar.

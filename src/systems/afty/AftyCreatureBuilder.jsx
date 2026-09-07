@@ -64,6 +64,7 @@ import {
 } from "./afty-aptidoes";
 import {
   especializacoesDisponiveis, getEspecializacao, normalizeEspecializacoes, tipoObrigatorio,
+  especializacaoIncompativel, especializacoesRecusadas,
   tiposDisponiveis, tipoDaOrigem,
 } from "./afty-especializacoes";
 import {
@@ -131,8 +132,9 @@ import {
   createBlankAuxEffect, efeitosDisponiveisMult, primeiroEfeitoLivre,
   resultaEspecialAux, ofereceUmGolpe, aplicaUmGolpe, podeEventoUnico,
   formatAuxValor, aplicaReducoesCustoFeitico, tituloCustoFeitico,
-  calcularFeiticoPersonalizado,
+  calcularFeiticoPersonalizado, TIPOS_FEITICO, TIPO_FEITICO_LABEL, TIPO_FEITICO_CURTO,
 } from "./afty-feiticos";
+import { IconeDeTipo } from "./ui/feitico-tipo";
 import {
   createBlankEstiloEspecial, estilosDaFicha, TECNICAS_TABELA, TEXTO_EFEITO_ESPECIAL,
   mostraCardEstilo,
@@ -508,22 +510,37 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
 
   // Feitiços: entradas CRIADAS pelo jogador. add/remove/patch simples.
   // O motor (afty-feiticos.js) computa dano/alcance/custo/CD por entrada.
-  const addFeitico = (modelo = null) =>
+  /* ⚠ DEVOLVE O QUE CRIOU, desde 2026-09-07. A aba passou a ser mestre-detalhe
+     (fileira em cima, UM editor embaixo), e sem o id de volta o Feitiço recém
+     criado nascia fora da tela: o editor seguia mostrando o anterior e o clique
+     seguinte era sempre o mesmo, caçar na fileira o que acabou de nascer. É a
+     mesma razão do `return nova` do `addInvocacao`.
+
+     ⚠ E o `null` do modelo repetido também é resposta: um modelo de Addon já na
+     ficha não cria nada, então não há id para selecionar, e quem chama não pode
+     tratar isso como sucesso. */
+  const addFeitico = (modelo = null) => {
+    const vazio = createBlankFeitico();
+    /* ⚠ O OBJETO NASCE FORA DO `setDraft`, e não dentro. O updater tem de ser
+       PURO (o React o chama duas vezes em modo estrito), então gravar o
+       resultado numa variável de fora dali daria um id diferente a cada
+       chamada. Mesma forma do `addInvocacao`. */
+    const criado = modelo
+      ? (() => {
+        const copia = JSON.parse(JSON.stringify(modelo));
+        return { ...vazio, ...copia, trocas: { ...vazio.trocas, ...(copia.trocas || {}) } };
+      })()
+      : vazio;
     setDraft((d) => {
       const atuais = Array.isArray(d.feiticos) ? d.feiticos : [];
-      if (!modelo) return { ...d, feiticos: [...atuais, createBlankFeitico()] };
-      if (atuais.some((feitico) => feitico.id === modelo.id)) return d;
-      const vazio = createBlankFeitico();
-      const copia = JSON.parse(JSON.stringify(modelo));
-      return {
-        ...d,
-        feiticos: [...atuais, {
-          ...vazio,
-          ...copia,
-          trocas: { ...vazio.trocas, ...(copia.trocas || {}) },
-        }],
-      };
+      if (modelo && atuais.some((feitico) => feitico.id === criado.id)) return d;
+      return { ...d, feiticos: [...atuais, criado] };
     });
+    /* Modelo de Addon já na ficha não cria nada, e devolvê-lo mesmo assim é de
+       propósito: o id é o mesmo, então quem chama SELECIONA o que já existe em
+       vez de não fazer nada visível. */
+    return criado;
+  };
   const updateFeitico = (modelo) =>
     setDraft((d) => {
       const atuais = Array.isArray(d.feiticos) ? d.feiticos : [];
@@ -619,17 +636,22 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
       estilosSombra: estilosArr(d).map((e) => (e.id === id ? { ...e, ...partial } : e)),
     }));
 
-  const duplicarFeitico = (id) =>
+  /* Devolve o id da cópia, pela mesma razão do `addFeitico`: a fileira precisa
+     selecionar o que nasceu. O id sai de fora do updater para ele seguir puro. */
+  const duplicarFeitico = (id) => {
+    const novoId = createBlankFeitico().id;
     setDraft((d) => {
       const lista = Array.isArray(d.feiticos) ? d.feiticos : [];
-      const orig = lista.find((f) => f.id === id);
-      if (!orig) return d;
-      const copia = { ...orig, id: createBlankFeitico().id, nome: orig.nome ? `${orig.nome} (cópia)` : "" };
       const i = lista.findIndex((f) => f.id === id);
+      if (i < 0) return d;
+      const orig = lista[i];
+      const copia = { ...orig, id: novoId, nome: orig.nome ? `${orig.nome} (cópia)` : "" };
       const next = [...lista];
       next.splice(i + 1, 0, copia);
       return { ...d, feiticos: next };
     });
+    return novoId;
+  };
 
   // Perícias / Testes de Resistência: mapa de proficiência { [id]: "treinado" |
   // "mestre" }. Destreinado é a AUSÊNCIA da chave, não um null gravado, para a
@@ -1917,15 +1939,10 @@ function TesteLinha({
    origem as vê, e elas gastam o MESMO contador do subsistema. Por isso o
    contador aparece igual nos dois cards, e é o da aba inteira. */
 
-const TIPO_FEITICO = [
-  { value: "dano",     label: "Dano" },
-  { value: "auxiliar", label: "Auxiliar" },
-  { value: "curativo", label: "Curativo" },
-  { value: "especial", label: "Especial" },
-  { value: "passivo",  label: "Passivo / Característica" },
-  { value: "personalizado", label: "Personalizado" },
-];
-const TIPO_FEITICO_LABEL = Object.fromEntries(TIPO_FEITICO.map((t) => [t.value, t.label]));
+/* ⚠ A LISTA DE TIPOS SAIU DAQUI em 2026-09-07 e virou dado em `afty-feiticos.js`
+   (`TIPOS_FEITICO`). Ela era JSX, e por isso a Ficha Final não a enxergava: o
+   cartão de um Feitiço na mesa não sabia dizer se mostrava um Dano ou uma Cura,
+   porque o rótulo do tipo só existia no criador. Ver `ui/feitico-tipo.jsx`. */
 
 /* Dano · uma linha por FONTE (autor, 2026-07-27): o Ataque Básico, que engloba
    Desarmado, Faixas, Manoplas e o Corpo Treinado, e mais uma para cada arma
@@ -3114,6 +3131,8 @@ function CanalPicker({ value, onChange }) {
      deixaria o campo mostrando vazio com um efeito ativo por trás, que é pior
      que mostrar uma linha a mais. */
   const veHpAtributo = usePrimitiva("hpAtributo") || value === "hpAtributo";
+  // Mesma regra do de cima, para o canal que abaixa o pré-requisito de Aptidão.
+  const veReqAptidao = usePrimitiva("requisitoAptidao") || value === "reduzNivelAptidao";
 
   const termo = semAcento(busca.trim());
   const grupos = EFEITO_CANAL_GRUPOS
@@ -3121,6 +3140,7 @@ function CanalPicker({ value, onChange }) {
       label: g.label,
       itens: g.itens.filter((c) =>
         (veHpAtributo || c.id !== "hpAtributo")
+        && (veReqAptidao || c.id !== "reduzNivelAptidao")
         && (!termo
         || semAcento(c.label).includes(termo)
         || semAcento(g.label).includes(termo)
@@ -4173,7 +4193,108 @@ function PerfilAmaldicoadoCard({
   );
 }
 
-/* Card dos Feitiços: orçamento no cabeçalho + lista de entradas criadas. */
+/* ============================================================ */
+/* OS FEITIÇOS: A FILEIRA, E UM EDITOR DE CADA VEZ               */
+/* ============================================================ */
+/**
+ * ⚠ REESTRUTURADO EM 2026-09-07, a pedido do autor: *"recebi reclamações sobre a
+ * aparência e sobre que não é intuitivo para CRIAR um Feitiço, com as pessoas
+ * levando muito tempo para se acharem no criador"*. Ele mandou olhar a revisão
+ * da aba de Invocações (2026-09-02) e melhorar o que foi feito lá.
+ *
+ * O DIAGNÓSTICO, MEDIDO no navegador antes de mexer, numa ficha com treze
+ * Feitiços:
+ *
+ *   card inteiro, tudo fechado                     1924px
+ *   UM Feitiço de Dano aberto                      1515px
+ *   do topo do card até o PRIMEIRO número          1218px
+ *
+ * Os 1218px são a doença. O painel de resultado era o último bloco do editor,
+ * depois de nove seções todas abertas, então em qualquer janela normal o número
+ * ficava FORA DA TELA o tempo inteiro em que se edita. Mexer numa troca e não
+ * ver o dano mudar é editar às cegas, que é exatamente o que a Invocação tinha
+ * antes de ganhar a barra grudada.
+ *
+ * A segunda doença era a LISTA. Treze Feitiços eram treze linhas de acordeão, e
+ * abrir uma empurrava as outras 1500px para baixo. Comparar dois era impossível.
+ *
+ * AS QUATRO FAIXAS, que são as mesmas da Invocação:
+ *
+ *   0. FILEIRA     as miniaturas, e o editor mostra UMA por vez.
+ *   1. IDENTIDADE  Nome, Tipo e Nível. Os três que se mexe sempre.
+ *   2. RESULTADO   barra GRUDADA: o valor, o custo, a CD, o alcance, a área.
+ *   3. EDITOR      as sub-abas.
+ *   4. DETALHE     as notas de regra e a Descrição.
+ *
+ * O QUE ISTO MELHORA SOBRE A INVOCAÇÃO, que é o que o autor pediu:
+ *
+ * 1. A MINIATURA CARREGA O RESULTADO. A da Invocação mostra retrato, PV, Defesa
+ *    e custo. Feitiço não tem retrato, e o que a mesa procura é outro: o ícone
+ *    do TIPO, o nível, o valor ("14d8+10") e o custo. A fileira passa a
+ *    responder "qual eu lanço" sem abrir nada.
+ * 2. AS SUB-ABAS SÃO AS MESMAS EM TODO TIPO. A Invocação tem cinco abas fixas
+ *    porque só existe um tipo de invocação. Feitiço tem seis tipos com editores
+ *    bem diferentes, e a saída é o contrário de uma aba por editor: três nomes
+ *    que valem para todos (Base, Trocas, Condições), e a aba sem conteúdo
+ *    simplesmente não nasce. Quem aprendeu um tipo sabe onde procurar nos seis.
+ * 3. O TIPO GANHOU ÍCONE, e é o mesmo do criador à Ficha Final. Ver
+ *    `ui/feitico-tipo.jsx`.
+ */
+
+/* Uma miniatura da fileira. Sem retrato, ao contrário da Invocação: o que
+   identifica um Feitiço de relance é o TIPO, o nível e o número que ele faz.
+
+   ⚠ O RESUMO VEM DO MOTOR, e não de um cálculo aqui. `derived.feiticos.lista`
+   já traz nome, nível, valor, custo e avisos de cada Feitiço, montados uma vez
+   pelo `resumoFeiticos`. Recalcular por miniatura seria rodar treze vezes o
+   mesmo motor a cada tecla digitada no nome. */
+function FeiticoMiniatura({ feitico, resumo, selecionado, onSelecionar }) {
+  const r = resumo || {};
+  const avisos = r.avisos || [];
+  const nome = feitico.nome || "Sem nome";
+  const ref = useVisivelNaFileira(selecionado);
+  return (
+    <button
+      ref={ref}
+      type="button"
+      onClick={onSelecionar}
+      aria-pressed={selecionado}
+      title={nome}
+      className={`relative flex-shrink-0 w-44 text-left rounded-lg border px-2.5 py-2 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-500 ${
+        selecionado
+          ? "border-purple-500 bg-purple-950/30 ring-1 ring-purple-500"
+          : "border-slate-700/80 bg-slate-950/40 hover:border-slate-600"
+      }`}
+    >
+      <span className="flex items-center gap-1.5 min-w-0">
+        <span className={selecionado ? "text-purple-300" : "text-slate-500"}>
+          <IconeDeTipo tipo={feitico.tipo} className="w-3.5 h-3.5 flex-shrink-0" />
+        </span>
+        <span className={`flex-1 min-w-0 truncate text-[12px] font-semibold ${feitico.nome ? "text-white" : "text-slate-500"}`}>
+          {nome}
+        </span>
+        {avisos.length > 0 && (
+          <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 text-amber-400" aria-label={`${avisos.length} aviso`} />
+        )}
+      </span>
+      {/* ⚠ O NÍVEL VAI NESTA LINHA e não na de cima, ao lado do nome: nome longo
+          come a largura toda e o nível seria a primeira coisa a sumir no
+          `truncate`, justamente numa fileira em que ele é metade da identidade. */}
+      <span className="flex items-baseline gap-2 mt-1 font-mono text-[10px] tabular-nums text-slate-400">
+        <span className="flex-shrink-0">{TIPO_FEITICO_CURTO[feitico.tipo] ?? ""}</span>
+        <span className="flex-shrink-0 text-slate-500">{r.nivelLabel ?? NIVEL_LABEL[feitico.nivel]}</span>
+        {r.custoPE != null && <span className="ml-auto flex-shrink-0 text-purple-300">{r.custoPE} PE</span>}
+      </span>
+      {r.valor && (
+        <span className="block mt-0.5 font-mono text-[11px] font-bold tabular-nums text-white truncate" title={`${r.valorLabel}: ${r.valor}`}>
+          {r.valor}
+        </span>
+      )}
+    </button>
+  );
+}
+
+/* Card dos Feitiços: orçamento no cabeçalho, fileira de miniaturas e UM editor. */
 function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico, patchFeitico, duplicarFeitico, setReducoesCustoFeitico }) {
   const lista = Array.isArray(draft.feiticos) ? draft.feiticos : [];
   const feiticosBase = lista.filter((feitico) => !feitico.variacaoDe);
@@ -4261,6 +4382,26 @@ function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico
         ativo: !efeito.quando || evalNumberDsl(String(efeito.quando), contexto, 0) !== 0,
       };
     });
+
+  /* ⚠ MESTRE-DETALHE, e o estado guarda o ID e não o índice. Remover o segundo
+     de treze reordenaria os índices e o editor passaria a mostrar outro Feitiço
+     sem ninguém pedir. É a mesma escolha da aba de Invocações. */
+  const [escolhidoId, setEscolhidoId] = useState(null);
+  const escolhido = lista.find((f) => f.id === escolhidoId) ?? lista[0] ?? null;
+  const resumoDe = (id) => (derived.feiticos.lista ?? []).find((r) => r.id === id);
+
+  /* Feitiço novo entra JÁ SELECIONADO. Sem isto, criar o décimo quarto deixava o
+     editor no primeiro, e o clique seguinte era sempre o mesmo: procurar na
+     fileira o que acabou de nascer. */
+  const novoFeitico = (modelo = null) => {
+    const criado = addFeitico(modelo);
+    if (criado?.id) setEscolhidoId(criado.id);
+  };
+  const duplicar = (id) => {
+    const novoId = duplicarFeitico(id);
+    if (novoId) setEscolhidoId(novoId);
+  };
+
   return (
     <Card title="Feitiços" headerRight={<ContadorHabilidades derived={derived} proprio />}>
       {/* ⚠ O excesso do caixa próprio tem aviso PRÓPRIO, e não o do contador
@@ -4281,7 +4422,7 @@ function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico
                 type="button"
                 onClick={() => (modelo.situacaoModelo === "desatualizado"
                   ? updateFeitico(modelo)
-                  : addFeitico(modelo))}
+                  : novoFeitico(modelo))}
                 title={modelo.situacaoModelo === "desatualizado"
                   ? `Atualizar para ${modelo.addonVersao}`
                   : `${modelo.addonNome} · ${NIVEL_LABEL[modelo.nivel]}`}
@@ -4339,131 +4480,443 @@ function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico
           )}
         </div>
       )}
-      {lista.length === 0 && (
-        <div className="text-center py-6 border border-dashed border-slate-700 rounded-lg text-sm text-slate-400">
-          Nenhum Feitiço criado ainda.
+
+      {lista.length === 0 ? (
+        <div className="text-center py-8 border border-dashed border-slate-700 rounded-lg">
+          <p className="text-sm text-slate-400">Nenhum Feitiço criado ainda.</p>
+          <button
+            type="button"
+            onClick={() => novoFeitico()}
+            className="mt-3 inline-flex items-center justify-center gap-1.5 text-[12px] font-semibold px-3 py-2 rounded-lg border border-slate-700 text-slate-300 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-500"
+          >
+            <Plus className="w-4 h-4" /> Criar Feitiço
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {/* ===== 0. A FILEIRA ===== */}
+          <FileiraDeCartoes
+            onNova={() => novoFeitico()}
+            rotuloNovo="Novo Feitiço"
+            rotuloAnterior="Ver Feitiços Anteriores"
+            rotuloProximo="Ver Próximos Feitiços"
+          >
+            {lista.map((f) => (
+              <FeiticoMiniatura
+                key={f.id}
+                feitico={f}
+                resumo={resumoDe(f.id)}
+                selecionado={escolhido?.id === f.id}
+                onSelecionar={() => setEscolhidoId(f.id)}
+              />
+            ))}
+          </FileiraDeCartoes>
+
+          {escolhido && (
+            <FeiticoCard
+              key={escolhido.id}
+              feitico={escolhido}
+              ctx={ctx}
+              nivelMax={nivelMax}
+              efeitosPassivo={efeitosPassivoComPreview(escolhido)}
+              fontesDano={fontesDano}
+              dslGrupos={dslGrupos}
+              onPatch={(partial) => patchFeitico(escolhido.id, partial)}
+              onRemove={() => removeFeitico(escolhido.id)}
+              onDuplicate={() => duplicar(escolhido.id)}
+            />
+          )}
         </div>
       )}
-
-      <div className="space-y-2">
-        {lista.map((f) => (
-          <FeiticoCard
-            key={f.id}
-            feitico={f}
-            ctx={ctx}
-            nivelMax={nivelMax}
-            efeitosPassivo={efeitosPassivoComPreview(f)}
-            fontesDano={fontesDano}
-            dslGrupos={dslGrupos}
-            onPatch={(partial) => patchFeitico(f.id, partial)}
-            onRemove={() => removeFeitico(f.id)}
-            onDuplicate={() => duplicarFeitico(f.id)}
-          />
-        ))}
-      </div>
-
-      <button
-        type="button"
-        onClick={() => addFeitico()}
-        className="mt-3 w-full inline-flex items-center justify-center gap-1.5 text-[12px] font-semibold px-3 py-2 rounded-lg border border-dashed border-slate-700 text-slate-400 hover:text-white hover:border-slate-600 transition-colors focus:outline-none focus:ring-1 focus:ring-purple-500"
-      >
-        <Plus className="w-4 h-4" /> Criar Feitiço
-      </button>
     </Card>
   );
 }
 
-/* Uma entrada de Feitiço: cabeçalho recolhível + editor por tipo.
-   Mesmo chrome do InvocacaoCard (o editor complexo já aprovado). */
-function FeiticoCard({ feitico, ctx, nivelMax, efeitosPassivo, fontesDano, dslGrupos, onPatch, onRemove, onDuplicate }) {
-  const [open, setOpen] = useState(!feitico.nome);
-  const [confirmDel, setConfirmDel] = useState(false);
-  const calculoBase = feitico.tipo === "dano" ? calcularFeiticoDano(feitico, ctx)
-    : feitico.tipo === "auxiliar" ? calcularFeiticoAuxiliar(feitico, ctx)
-    : feitico.tipo === "curativo" ? calcularFeiticoCurativo(feitico, ctx)
-    : feitico.tipo === "especial" ? calcularFeiticoEspecial(feitico, ctx)
-    : feitico.tipo === "personalizado" ? calcularFeiticoPersonalizado(feitico, ctx)
-    : null;
-  const calc = aplicaReducoesCustoFeitico(feitico, calculoBase, ctx);
-  // Agrega avisos do Feitiço e dos sub-efeitos (Múltiplos Efeitos), para o ícone
-  // e o tooltip do cabeçalho não mentirem o número/mensagem.
-  const avisosTodos = calc
-    ? [...(calc.avisos || []), ...((calc.efeitos || []).flatMap((e) => e.avisos || []))]
-    : [];
-  const temAviso = avisosTodos.length > 0;
-  const resumo = feitico.tipo === "dano" ? calc?.dano
-    : feitico.tipo === "auxiliar" ? formatAuxValor(calc)
-    : feitico.tipo === "curativo" ? calc?.cura
-    : feitico.tipo === "especial" ? (calc?.dano ?? calc?.resumo)
-    : null;
-
+/* ============================================================ */
+/* A BARRA GRUDADA DO FEITIÇO                                    */
+/* ============================================================ */
+/**
+ * O resultado, ACIMA do editor e colado no cabeçalho da página. Medido antes de
+ * existir: o primeiro número do editor de Dano ficava a 1218px do topo do card.
+ *
+ * ⚠ Ela usa o mesmo `ValorBarra` da Invocação, e não uma cópia. As duas barras
+ * são a mesma ideia na mesma tela, e duas aparências fariam parecer que são
+ * coisas de natureza diferente. O que a de Feitiço NÃO tem é a medida do lado em
+ * que o painel de fontes abre, porque número de Feitiço ainda não tem hover de
+ * fontes: quando tiver, a medida vem junto com ele.
+ *
+ * ⚠ `--afty-topo` E NÃO UMA CONSTANTE. A altura do cabeçalho do criador muda com
+ * a largura (230px em 1440 e 259px em 390), e todo `top-[Npx]` cravado envelhece
+ * calado. Ver a variável em `AftyCreatureBuilder` e a lição do Preview.
+ */
+function BarraDoFeitico({ tiles, avisos }) {
+  /* ⚠ SEM NÚMERO E SEM AVISO, A BARRA NÃO NASCE. Um Feitiço Passivo não computa
+     nada (ele só escreve efeitos no Motor), e a barra saía como uma faixa
+     grudada vazia de 37px, com borda e fundo, no topo do editor. Faixa vazia
+     grudada é pior que faixa nenhuma: ela come área útil para sempre e afirma
+     que existe um resultado ali. */
+  if (tiles.length === 0 && avisos.length === 0) return null;
   return (
-    <div className="rounded-lg border border-slate-700/80 bg-slate-950/40">
-      <div className="flex items-center gap-2 px-3 py-2.5">
-        <button
-          type="button"
-          onClick={() => setOpen((o) => !o)}
-          aria-expanded={open}
-          className="flex items-center gap-2 flex-1 min-w-0 text-left"
-        >
-          <ChevronDown className={`w-4 h-4 text-slate-500 flex-shrink-0 transition-transform ${open ? "" : "-rotate-90"}`} aria-hidden="true" />
-          <span className={`text-sm font-semibold truncate ${feitico.nome ? "text-white" : "text-slate-500"}`}>
-            {feitico.nome || "Feitiço Sem Nome"}
-          </span>
-          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded border border-purple-800/60 bg-purple-950/40 text-purple-300 flex-shrink-0 whitespace-nowrap">
-            {TIPO_FEITICO_LABEL[feitico.tipo]} · {NIVEL_LABEL[feitico.nivel]}
-          </span>
-          {temAviso && <AlertTriangle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" aria-label={`${avisosTodos.length} aviso(s)`} title={avisosTodos.join("\n")} />}
-        </button>
-        {calc && (
-          <span className="hidden sm:flex items-center gap-2 flex-shrink-0 font-mono text-[11px] tabular-nums text-slate-400">
-            <span title={feitico.tipo === "dano" ? "Dano"
-              : feitico.tipo === "especial" ? (["golpeador", "danoAlma"].includes(feitico.especialSubtipo) ? "Dano" : "Efeito")
-              : feitico.tipo === "curativo" ? (calc?.ehTemporario ? "PV Temporário" : "Cura")
-              : "Efeito"}>{resumo}</span>
-            <span title={tituloCustoFeitico(calc)} className="text-purple-300">{calc.custoPE} PE</span>
-          </span>
-        )}
-        {confirmDel ? (
-          <span className="flex items-center gap-1 flex-shrink-0">
-            <span className="text-[10px] text-rose-300">Remover?</span>
-            <button type="button" onClick={onRemove} className="text-rose-400 hover:text-rose-300 p-1 rounded" title="Confirmar" aria-label="Confirmar remoção"><Check className="w-4 h-4" /></button>
-            <button type="button" onClick={() => setConfirmDel(false)} className="text-slate-500 hover:text-white p-1 rounded" title="Cancelar" aria-label="Cancelar"><X className="w-4 h-4" /></button>
-          </span>
-        ) : (
-          <span className="flex items-center flex-shrink-0 text-slate-600">
-            <button type="button" onClick={onDuplicate} className="p-1 rounded hover:text-white" title="Duplicar" aria-label="Duplicar Feitiço"><Copy className="w-3.5 h-3.5" /></button>
-            <button type="button" onClick={() => setConfirmDel(true)} className="p-1 rounded hover:text-rose-300" title="Remover Feitiço" aria-label={`Remover ${feitico.nome || "Feitiço"}`}><X className="w-4 h-4" /></button>
+    <div
+      className="sticky z-10 -mx-3 px-3 py-2 bg-slate-950/95 backdrop-blur border-b border-slate-800"
+      style={{ top: "var(--afty-topo, 0px)" }}
+    >
+      <div className="flex flex-wrap items-center gap-1.5">
+        {tiles.map((t) => (
+          <ValorBarra
+            key={t.id}
+            dataId={t.id}
+            label={t.label}
+            curto={t.curto}
+            valor={t.valor}
+            accent={t.accent}
+            icon={t.icon}
+            title={t.title}
+          />
+        ))}
+        {avisos.length > 0 && (
+          <span
+            title={avisos.join("\n")}
+            className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-amber-800/70 bg-amber-950/40 text-amber-300"
+          >
+            <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
+            <b className="font-mono text-[13px] font-bold tabular-nums">{avisos.length}</b>
           </span>
         )}
       </div>
+    </div>
+  );
+}
 
-      {open && (
-        <div className="px-3 pb-3 space-y-3 border-t border-slate-800 pt-3">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <FieldLabel>Nome</FieldLabel>
-              <TextInput value={feitico.nome} onChange={(v) => onPatch({ nome: v })} placeholder="Nome do Feitiço" />
-            </div>
-            <div>
-              <FieldLabel>Tipo</FieldLabel>
-              <OptionChips value={feitico.tipo} options={TIPO_FEITICO} onChange={(v) => onPatch({ tipo: v, ...(v === "curativo" && feitico.nivel === 0 ? { nivel: 1 } : {}) })} />
-            </div>
+/**
+ * O que a barra mostra, por tipo de Feitiço.
+ *
+ * ⚠ É UMA FUNÇÃO PURA E FORA DO COMPONENTE, de propósito. Ela é a única regra de
+ * "qual número importa neste tipo", e escrevê-la dentro do JSX espalharia seis
+ * condicionais pela árvore, que é como o painel de resultado antigo acabou com
+ * uma lista de tiles montada à mão dentro de cada um dos cinco `Resultado*`.
+ *
+ * ⚠ TILE SEM VALOR NÃO ENTRA. Um "CD -" ao lado de um "Alcance 24 m" ocupa o
+ * mesmo espaço e não diz nada, e a barra é grudada: cada fila a mais come área
+ * útil para sempre. Quem não tem CD simplesmente não mostra CD.
+ */
+function tilesDoFeitico(f, calc) {
+  if (!calc) return [];
+  const tiles = [];
+  /* ⚠ O ZERO TAMBÉM NÃO ENTRA, e não é descuido de guarda. Os campos que chegam
+     aqui são "quanto isto ACRESCENTA", e um "Exaustão 0" ou "Acerto 0" ocupa a
+     mesma pílula de um número que existe sem dizer nada. É a mesma régua da
+     quarta célula do Domínio Simples e da Guarda do jogador: o que vale zero não
+     aparece nem como zero.
+
+     ⚠ A EXCEÇÃO É O QUE JÁ CHEGA FORMATADO. "0 Efeitos" e "0 PE" são strings, e
+     um Feitiço Auxiliar sem efeito nenhum PRECISA mostrar o zero, senão o card
+     mais vazio da tela é justamente o que não dá sinal de estar vazio. */
+  const push = (id, label, valor, extra = {}) => {
+    if (valor == null || valor === "" || valor === "-" || valor === 0) return;
+    tiles.push({ id, label, valor, ...extra });
+  };
+
+  /* O VALOR é o primeiro e é o único acentuado: é o número pelo qual o Feitiço
+     existe. O rótulo muda com o tipo, e sai do mesmo lugar de onde a Ficha Final
+     tira o dela (`fichaDoFeitico`), para as duas telas nomearem igual. */
+  const especial = f.especialSubtipo;
+  const valor = f.tipo === "dano" ? calc.dano
+    : f.tipo === "auxiliar" ? formatAuxValor(calc)
+      : f.tipo === "curativo" ? calc.cura
+        : f.tipo === "especial" ? (calc.dano ?? calc.resumo)
+          : null;
+  const valorLabel = f.tipo === "dano" ? "Dano"
+    : f.tipo === "curativo" ? (calc.ehTemporario ? "PV Temp." : "Cura")
+      : f.tipo === "especial" && especial === "golpeador" ? "Dano Adicional"
+        : f.tipo === "especial" && especial === "danoAlma" ? "Dano"
+          : f.tipo === "auxiliar" && !calc.multiplos ? (calc.efeitoLabel || "Efeito")
+            : "Efeito";
+  push("valor", valorLabel, valor, { accent: true, curto: "Valor", icon: Zap });
+
+  /* A média é a régua de balanceamento, e ela mora em campos diferentes: o Dano,
+     a Cura e as variantes de Especial têm `media`, e no Auxiliar de dados o valor
+     médio é o `valor` enquanto a `notacao` é o que aparece acima. */
+  push("media", "Média", f.tipo === "auxiliar"
+    ? (calc.dado && !calc.multiplos ? calc.valor : null)
+    : (calc.media != null ? calc.media : null));
+
+  push("custo", "Custo", calc.custoPE != null ? `${calc.custoPE} PE` : null, {
+    icon: Sparkles,
+    title: tituloCustoFeitico(calc),
+  });
+  push("cd", "CD", calc.cd ?? null, { icon: Shield });
+  push("alcance", "Alcance", calc.alcanceTexto ?? (calc.alcance != null ? `${calc.alcance} m` : null), {
+    icon: Footprints,
+  });
+  push("area", "Área", calc.detalhes?.areaMapa
+    ? "Mapa"
+    : (calc.area != null ? `${calc.area} m ${calc.forma || ""}`.trim() : null));
+  push("acerto", "Acerto", calc.acertoDelta ? `${calc.acertoDelta > 0 ? "+" : ""}${calc.acertoDelta}` : null);
+  push("empurrao", "Empurrão", calc.empurraoMetros ? `${calc.empurraoMetros} m` : null);
+
+  /* Upkeep, sustentação em PE e sustentação em vida são TRÊS campos do motor
+     para a mesma ideia (o que se paga por rodada), e um Feitiço tem no máximo
+     um dos três. */
+  push("porRodada", "Por Rodada", calc.upkeepPE > 0 ? `${calc.upkeepPE} PE`
+    : calc.sustentacaoPE > 0 ? `${calc.sustentacaoPE} PE`
+      : calc.sustentacaoVida > 0 ? `${calc.sustentacaoVida} PV`
+        : null, { curto: "Rodada" });
+
+  /* ⚠ DAQUI PARA BAIXO É O QUE OS PAINÉIS REMOVIDOS MOSTRAVAM e a barra não
+     tinha. Cada linha destas corresponde a um `StatMini` que existia num dos
+     oito `Resultado*`, e sem elas a reestruturação teria APAGADO número da tela
+     em vez de mudá-lo de lugar. */
+  if (f.tipo === "curativo") {
+    // O saldo era uma linha solta no painel, e é justamente o que se olha
+    // enquanto se mexe nos passos de troca.
+    push("saldo", "Saldo", calc.saldoTrocas ? `${calc.saldoTrocas > 0 ? "+" : ""}${calc.saldoTrocas}` : null,
+      { alerta: calc.saldoTrocas < 0 });
+  }
+
+  if (f.tipo === "auxiliar") {
+    const duracao = calc.multiplos ? calc.duracao : (f.duracaoAux || "imediata");
+    push("duracao", "Duração", AUX_DURACOES.find((d) => d.value === duracao)?.label ?? null);
+    const rodadas = calc.multiplos ? f.rodadasMult : calc.rodadas;
+    if (duracao === "duradoura") push("rodadas", "Rodadas", rodadas ?? null);
+    push("alvos", "Alvos", calc.alvos > 1 ? calc.alvos : null);
+  }
+
+  if (f.tipo === "especial" && especial === "itens") {
+    push("grauItem", "Grau", calc.grauBonus > 0 ? `+${calc.grauBonus} em 1 item` : null, { curto: "Grau" });
+    push("conjuracao", "Conjuração", "Bônus", { curto: "Conj." });
+  }
+
+  if (f.tipo === "especial" && especial === "shikigami") {
+    push("grauExigido", "Grau Exigido", calc.grauLabel ?? null, { curto: "Grau", icon: Shield });
+    push("reducaoPE", "Redução de PE", calc.reducaoPE != null ? `${calc.reducaoPE} PE` : null, { curto: "Redução" });
+    push("ajusteAcoes", "Ações/Caract.", calc.ajusteAcoes
+      ? `${calc.ajusteAcoes > 0 ? "+" : ""}${calc.ajusteAcoes}`
+      : null, { curto: "Ações" });
+    push("conjuracao", "Conjuração", "Comum", { curto: "Conj." });
+  }
+
+  if (f.tipo === "especial" && especial === "invisibilidade") {
+    push("conjuracao", "Conjuração", "Sustentado", { curto: "Conj." });
+    push("foco", "Foco", "Concentração");
+  }
+
+  if (f.tipo === "especial" && especial === "transformacao") {
+    push("duracao", "Duração", calc.duracaoRodadas ? `${calc.duracaoRodadas} rodadas` : null);
+    push("exaustao", "Exaustão", calc.exaustaoFim ?? null);
+  }
+
+  return tiles;
+}
+
+/* ============================================================ */
+/* AS SUB-ABAS, QUE SÃO AS MESMAS NOS SEIS TIPOS                 */
+/* ============================================================ */
+/**
+ * ⚠ TRÊS NOMES PARA SEIS EDITORES, e esta é a melhoria sobre a Invocação. Lá são
+ * cinco abas fixas porque só existe um tipo de invocação. Aqui os editores são
+ * bem diferentes entre si, e a tentação era uma aba por editor: seis vocabulários
+ * para aprender, que é a causa do *"levando muito tempo para se acharem"*.
+ *
+ *   Base       o que o Feitiço é e como se conjura
+ *   Trocas     tudo que troca um eixo por outro, incluindo o Requisito
+ *   Condições  o que ele aplica (ou, no Curativo, o que ele remove)
+ *
+ * Aba sem conteúdo naquele tipo NÃO NASCE, então um Passivo mostra uma só e um
+ * Dano mostra as três. Quem aprendeu onde ficam as Trocas num Feitiço de Dano
+ * sabe onde elas ficam no Golpeador.
+ *
+ * ⚠ O CONTADOR da aba Condições conta o que está ANEXADO (condições mais o
+ * sangramento), pela mesma razão do `n` das sub-abas de Invocação: recolher só é
+ * barato quando a aba fechada continua dizendo que tem coisa dentro.
+ */
+const SUBABA_BASE = { id: "base", label: "Base" };
+
+function subAbasDoFeitico(f) {
+  const nCondicoes = (Array.isArray(f.condicoes) ? f.condicoes.length : 0) + (f.sangramento ? 1 : 0);
+  const especial = f.especialSubtipo;
+  switch (f.tipo) {
+    case "dano":
+      return [SUBABA_BASE, { id: "trocas", label: "Trocas" }, { id: "condicoes", label: "Condições", n: nCondicoes }];
+    case "curativo":
+      return [SUBABA_BASE, { id: "trocas", label: "Trocas" }, { id: "condicoes", label: "Remoção" }];
+    case "auxiliar":
+      /* O Auxiliar não tem trocas nem condições: ele tem UM efeito (ou uma lista
+         deles) e os parâmetros de conjuração, que o próprio editor já separa. */
+      return [SUBABA_BASE];
+    case "especial":
+      // Só os dois que causam dano têm trocas e condições. Ver `saldoUnicoVariante`.
+      return ["golpeador", "danoAlma"].includes(especial)
+        ? [SUBABA_BASE, { id: "trocas", label: "Trocas" }, { id: "condicoes", label: "Condições", n: nCondicoes }]
+        : [SUBABA_BASE];
+    default:
+      return [SUBABA_BASE];
+  }
+}
+
+/* ============================================================ */
+/* O EDITOR DE UM FEITIÇO                                        */
+/* ============================================================ */
+/**
+ * As quatro faixas, na ordem que a reestruturação de 2026-09-07 fixou:
+ *
+ *   1. IDENTIDADE  Nome, Tipo e Nível, mais as ferramentas.
+ *   2. RESULTADO   a barra grudada.
+ *   3. EDITOR      as sub-abas.
+ *   4. DETALHE     as notas de regra do tipo e a Descrição.
+ *
+ * ⚠ SEMPRE ABERTO, sem acordeão. Quem chegou aqui já escolheu na fileira qual
+ * Feitiço quer editar, e um `<details>` a mais só esconderia o trabalho. Era
+ * assim antes, e com treze Feitiços a lista virava treze cabeçalhos e um muro.
+ *
+ * ⚠ O NOME É EDITÁVEL NA IDENTIDADE. Antes o cabeçalho mostrava o nome de
+ * leitura e o campo que o edita ficava logo abaixo, dentro do corpo aberto: dois
+ * lugares para o mesmo dado. Mesma correção que a Invocação levou.
+ */
+function FeiticoCard({ feitico, ctx, nivelMax, efeitosPassivo, fontesDano, dslGrupos, onPatch, onRemove, onDuplicate }) {
+  const [confirmDel, setConfirmDel] = useState(false);
+  const [subtab, setSubtab] = useState("base");
+  const calculoBase = feitico.tipo === "dano" ? calcularFeiticoDano(feitico, ctx)
+    : feitico.tipo === "auxiliar" ? calcularFeiticoAuxiliar(feitico, ctx)
+      : feitico.tipo === "curativo" ? calcularFeiticoCurativo(feitico, ctx)
+        : feitico.tipo === "especial" ? calcularFeiticoEspecial(feitico, ctx)
+          : feitico.tipo === "personalizado" ? calcularFeiticoPersonalizado(feitico, ctx)
+            : null;
+  const calc = aplicaReducoesCustoFeitico(feitico, calculoBase, ctx);
+  // Agrega avisos do Feitiço e dos sub-efeitos (Múltiplos Efeitos), para a barra
+  // não mentir o número.
+  const avisosTodos = calc
+    ? [...(calc.avisos || []), ...((calc.efeitos || []).flatMap((e) => e.avisos || []))]
+    : [];
+
+  const subabas = subAbasDoFeitico(feitico);
+  /* ⚠ A ABA ATIVA VOLTA PARA A BASE quando o tipo muda e a aba aberta deixa de
+     existir. Sem isto, editar um Dano na aba Trocas e trocar o tipo para Passivo
+     deixava o editor VAZIO, com a fileira e a barra funcionando e nada no meio. */
+  const abaAtiva = subabas.some((t) => t.id === subtab) ? subtab : "base";
+
+  /* Botão da barra de ferramentas. `p-1.5` e não `p-1`: alvo de toque de 30px,
+     que é o mesmo da Invocação. */
+  const btnFerramenta = "p-1.5 rounded focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-500";
+
+  const propsEditor = { feitico, calc, onPatch, aba: abaAtiva };
+
+  return (
+    <div className="rounded-lg border border-slate-800 bg-slate-950/40">
+      {/* ===== 1. IDENTIDADE ===== */}
+      <div className="px-3 py-2.5 border-b border-slate-800 space-y-2">
+        <div className="flex items-center gap-2">
+          <div className="flex-1 min-w-0">
+            <TextInput
+              value={feitico.nome}
+              onChange={(v) => onPatch({ nome: v })}
+              placeholder="Nome do Feitiço"
+              aria-label="Nome do Feitiço"
+            />
           </div>
+          {confirmDel ? (
+            <span className="flex items-center gap-1 flex-shrink-0">
+              <span className="text-[10px] text-rose-300">Remover?</span>
+              <button type="button" onClick={onRemove} className={`${btnFerramenta} text-rose-400 hover:text-rose-300`} title="Confirmar" aria-label="Confirmar remoção">
+                <Check className="w-4 h-4" />
+              </button>
+              <button type="button" onClick={() => setConfirmDel(false)} className={`${btnFerramenta} text-slate-500 hover:text-white`} title="Cancelar" aria-label="Cancelar">
+                <X className="w-4 h-4" />
+              </button>
+            </span>
+          ) : (
+            <span className="flex items-center flex-shrink-0 text-slate-600">
+              <button type="button" onClick={onDuplicate} className={`${btnFerramenta} hover:text-white`} title="Duplicar" aria-label="Duplicar Feitiço">
+                <Copy className="w-4 h-4" />
+              </button>
+              <button type="button" onClick={() => setConfirmDel(true)} className={`${btnFerramenta} hover:text-rose-300`} title="Remover Feitiço" aria-label={`Remover ${feitico.nome || "Feitiço"}`}>
+                <X className="w-4 h-4" />
+              </button>
+            </span>
+          )}
+        </div>
 
-          <div>
-            <FieldLabel>Nível do Feitiço</FieldLabel>
-            <NivelFeiticoPicker value={feitico.nivel} onChange={(n) => onPatch(patchNivelFeitico(feitico, n))} nivelMax={nivelMax} nivelMin={feitico.tipo === "curativo" ? 1 : 0} />
+        {/* ⚠ O TIPO SOBE PARA A IDENTIDADE, e ganha ícone. Ele era seis chips de
+            texto no meio do corpo, misturado com Resolução, Alvo e Subtipo, e é
+            a decisão que TROCA O EDITOR INTEIRO: a primeira que se toma e a
+            última que se percebe. O ícone é o mesmo que a miniatura e a Ficha
+            usam, então o tipo passa a ser reconhecível sem ler. */}
+        <div className="flex flex-wrap gap-1.5" role="group" aria-label="Tipo do Feitiço">
+          {TIPOS_FEITICO.map((t) => {
+            const on = t.value === feitico.tipo;
+            return (
+              <button
+                key={t.value}
+                type="button"
+                onClick={() => onPatch({ tipo: t.value, ...(t.value === "curativo" && feitico.nivel === 0 ? { nivel: 1 } : {}) })}
+                aria-pressed={on}
+                className={`inline-flex items-center gap-1.5 text-[12px] font-semibold px-2.5 py-1 rounded-lg border transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-500 ${
+                  on
+                    ? "bg-purple-700 border-purple-600 text-white"
+                    : "border-slate-700 text-slate-300 hover:text-white hover:border-slate-600"
+                }`}
+              >
+                <IconeDeTipo tipo={t.value} className="w-3.5 h-3.5 flex-shrink-0" />
+                {t.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Os botões já são os números do nível, então não levam rótulo em cima:
+            é a mesma escolha dos chips de Grau da Invocação. */}
+        <NivelFeiticoPicker
+          value={feitico.nivel}
+          onChange={(n) => onPatch(patchNivelFeitico(feitico, n))}
+          nivelMax={nivelMax}
+          nivelMin={feitico.tipo === "curativo" ? 1 : 0}
+        />
+      </div>
+
+      <div className="px-3 pb-3">
+        {/* ===== 2. RESULTADO, grudado ===== */}
+        <BarraDoFeitico tiles={tilesDoFeitico(feitico, calc)} avisos={avisosTodos} />
+
+        {/* ===== 3. EDITOR ===== */}
+        {/* ⚠ `shrink-0` E SEM `grow`, igual à tira da Invocação: com `grow` os
+            botões esticam e os rótulos ficam a 170px um do outro, três palavras
+            soltas numa linha em vez de um grupo. */}
+        {subabas.length > 1 && (
+          <div className="flex gap-1 overflow-x-auto no-scrollbar border-b border-slate-800 py-2" role="tablist" aria-label="Seções do Feitiço">
+            {subabas.map((t) => {
+              const on = abaAtiva === t.id;
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={on}
+                  onClick={() => setSubtab(t.id)}
+                  className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg text-[13px] font-semibold transition-colors flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-500 ${
+                    on ? "bg-purple-700 text-white" : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+                  }`}
+                >
+                  {t.label}
+                  {t.n > 0 && (
+                    <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded font-mono ${on ? "bg-white/20 text-white" : "bg-purple-500/25 text-purple-300"}`}>
+                      {t.n}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </div>
+        )}
 
+        <div className="pt-3 space-y-3">
           {feitico.tipo === "dano" ? (
-            <FeiticoDanoEditor feitico={feitico} calc={calc} onPatch={onPatch} />
+            <FeiticoDanoEditor {...propsEditor} />
           ) : feitico.tipo === "auxiliar" ? (
-            <FeiticoAuxiliarEditor feitico={feitico} calc={calc} onPatch={onPatch} />
+            <FeiticoAuxiliarEditor {...propsEditor} />
           ) : feitico.tipo === "curativo" ? (
-            <FeiticoCurativoEditor feitico={feitico} calc={calc} onPatch={onPatch} />
+            <FeiticoCurativoEditor {...propsEditor} />
           ) : feitico.tipo === "especial" ? (
-            <FeiticoEspecialEditor feitico={feitico} calc={calc} ctx={ctx} onPatch={onPatch} />
+            <FeiticoEspecialEditor {...propsEditor} ctx={ctx} />
           ) : feitico.tipo === "passivo" ? (
             <TecnicaMotorEditor
               efeitos={efeitosPassivo}
@@ -4478,9 +4931,6 @@ function FeiticoCard({ feitico, ctx, nivelMax, efeitosPassivo, fontesDano, dslGr
           ) : (
             <div className="text-center py-5 border border-dashed border-slate-700 rounded-lg text-sm text-slate-400">
               Feitiços {TIPO_FEITICO_LABEL[feitico.tipo]} entram num próximo incremento.
-              <div className="mt-2 inline-block text-[10px] font-bold uppercase tracking-wide text-amber-400 border border-amber-800/60 rounded px-2 py-0.5">
-                próximo incremento
-              </div>
             </div>
           )}
 
@@ -4488,12 +4938,15 @@ function FeiticoCard({ feitico, ctx, nivelMax, efeitosPassivo, fontesDano, dslGr
             <CustoVidaAtivacaoEditor feitico={feitico} onPatch={onPatch} />
           )}
 
-          <div>
+          {/* ===== 4. DETALHE ===== */}
+          {/* A Descrição fecha o cartão em todo tipo: ela é o que o Feitiço faz
+              na ficção, e não entra em aba nenhuma porque não pertence a uma. */}
+          <div className="border-t border-slate-800 pt-3">
             <FieldLabel>Descrição</FieldLabel>
             <TextArea value={feitico.descricao} onChange={(v) => onPatch({ descricao: v })} rows={2} placeholder="O que o Feitiço faz na ficção." />
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
@@ -4703,8 +5156,34 @@ function DeltaStepper({ value, step, min, max, unit = "", onChange }) {
   );
 }
 
-/* Editor completo de um Feitiço de Dano, com cálculo ao vivo. */
-function FeiticoDanoEditor({ feitico, calc, onPatch }) {
+/**
+ * ⚠ A PROPORÇÃO DAS TROCAS SAIU DO RÓTULO em 2026-09-07 e virou `title`. Ela era
+ * o cabeçalho da seção, escrito por extenso:
+ *
+ *   "Trocas · 1 dado = 2 acerto = 1 CD = 12m = 3m² = 6m + 1,5m²"
+ *
+ * Isso é fórmula escrita na tela, que a regra de UI do autor proíbe, e além de
+ * proibida ela não funcionava: 58 caracteres de sinal de igual num rótulo de
+ * seção não se leem, e a informação que importa (quanto eu ganho ao gastar) já
+ * está nos passos do próprio controle. O `title` é onde a regra manda a
+ * explicação de item morar.
+ */
+function tituloDasTrocas(emArea) {
+  return emArea
+    ? "1 dado vale 2 de acerto, 1 de CD, 12 metros de alcance, 3 metros de área, ou o par 6 metros mais 1,5 metro de área"
+    : "1 dado vale 2 de acerto, 6 metros de alcance ou 1 de CD";
+}
+
+/* Editor completo de um Feitiço de Dano, com cálculo ao vivo.
+
+   ⚠ ELE RENDERIZA UMA SUB-ABA POR VEZ desde 2026-09-07. As nove seções eram
+   todas abertas de uma vez, e o resultado ficava embaixo delas, a 1218px do topo
+   do card: medido, e é a razão da reestruturação inteira. Ver `subAbasDoFeitico`.
+
+   ⚠ O REQUISITO MUDOU DE SEÇÃO e agora vive em Trocas. Ele é uma troca como
+   qualquer outra (uma dificuldade aceita na ficção rende dados), e como seção
+   própria ele era uma fila de cinco chips sozinha no fim do editor. */
+function FeiticoDanoEditor({ feitico, calc, onPatch, aba }) {
   const f = feitico;
   const nNum = f.nivel === "max" ? 6 : f.nivel;
   const multiplos = f.subtipo === "multiplos";
@@ -4729,105 +5208,10 @@ function FeiticoDanoEditor({ feitico, calc, onPatch }) {
   const baseAlcance = ALCANCE_POR_NIVEL[f.nivel] ?? 0;
   // O modificador de área entra na BASE (crua): o piso de redução é a base.
   const baseArea = AREA_POR_NIVEL[f.nivel] ?? 0;
-  // Cabeçalho da seção de Trocas: a proporção muda entre alvo único e área.
-  const trocasTitulo = emArea
-    ? "Trocas · 1 dado = 2 acerto = 1 CD = 12m = 3m² = 6m + 1,5m²"
-    : "Trocas · 1 dado = 2 acerto = 6m = 1 CD";
 
-  return (
-    <div className="rounded-lg border border-slate-800 bg-slate-950/30 p-3 space-y-3">
-      {/* Perfil */}
-      <div className="space-y-3">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
-          <div>
-            <FieldLabel>Resolução</FieldLabel>
-            <OptionChips
-              value={multiplos ? "ataque" : (emArea ? "tr" : f.resolucao)}
-              onChange={(v) => onPatch({ resolucao: v })}
-              options={[
-                { value: "tr", label: "Resistência" },
-                { value: "ataque", label: "Ataque" },
-              ]}
-              disabledValues={multiplos ? ["tr"] : (emArea ? ["ataque"] : [])}
-            />
-          </div>
-          <div>
-            <FieldLabel>Alvo</FieldLabel>
-            <OptionChips
-              value={emArea ? "area" : f.alvo}
-              onChange={(v) => onPatch({ alvo: v, ...(v === "area" && !multiplos ? { resolucao: "tr" } : {}) })}
-              options={[
-                { value: "unico", label: "Alvo único", lockTitle: "Destrutivo e Cataclísmico são sempre em área" },
-                { value: "area", label: "Área", lockTitle: "Múltiplos Disparos não podem ser em área" },
-              ]}
-              disabledValues={[...(areaObrigatoria ? ["unico"] : []), ...(multiplos ? ["area"] : [])]}
-            />
-          </div>
-        </div>
-
-        <div>
-          <FieldLabel>Conjuração (Ação)</FieldLabel>
-          <OptionChips
-            value={areaObrigatoria ? "ritual" : f.acao}
-            onChange={(v) => !areaObrigatoria && onPatch({ acao: v })}
-            options={FEITICO_ACOES}
-            disabledValues={areaObrigatoria ? FEITICO_ACOES.filter((a) => a.value !== "ritual").map((a) => a.value) : []}
-          />
-        </div>
-
-        <div>
-          <FieldLabel>Subtipo</FieldLabel>
-          <OptionChips
-            value={f.subtipo}
-            onChange={(v) => onPatch(
-              v === "cataclismico"
-                ? { subtipo: v, alvo: "area", acao: "ritual", resolucao: "tr", formaArea: "esfera" }
-                : v === "destrutivo"
-                  ? { subtipo: v, alvo: "area", acao: "ritual", resolucao: "tr" }
-                  : v === "multiplos"
-                    ? { subtipo: v, alvo: "unico", resolucao: "ataque" }
-                    : { subtipo: v })}
-            options={DANO_SUBTIPOS}
-          />
-        </div>
-
-        {emArea && !cataclismico && (
-          <div>
-            <FieldLabel>Forma da área</FieldLabel>
-            <OptionChips value={f.formaArea} onChange={(v) => onPatch({ formaArea: v })} options={FORMAS_AREA} />
-          </div>
-        )}
-
-        {/* Campos condicionais de subtipo */}
-        {multiplos && (
-          <div>
-            <FieldLabel>Disparos</FieldLabel>
-            <NivelSegmentos value={f.disparos} min={1} max={nNum + 1} onChange={(v) => onPatch({ disparos: v })} />
-          </div>
-        )}
-        {f.subtipo === "continuo" && (
-          <div>
-            <FieldLabel>Modo do dano contínuo</FieldLabel>
-            <OptionChips
-              value={f.continuoModo}
-              onChange={(v) => onPatch({ continuoModo: v })}
-              options={[
-                { value: "sustentado", label: `Sustentado (${nNum} PE/rodada)` },
-                { value: "concentrado", label: "Concentrado" },
-              ]}
-            />
-          </div>
-        )}
-        {f.subtipo === "destrutivo" && (
-          <div className="flex flex-wrap gap-1.5">
-            <BoolChip ativo={f.ignorarResistencias} onToggle={() => onPatch({ ignorarResistencias: !f.ignorarResistencias })}>Ignorar Resistências (−4d)</BoolChip>
-            <BoolChip ativo={f.morteDireta} onToggle={() => onPatch({ morteDireta: !f.morteDireta })}>Morte Direta (−2d)</BoolChip>
-          </div>
-        )}
-      </div>
-
-      {/* Trocas */}
-      <SecaoFeitico titulo={trocasTitulo}>
+  if (aba === "trocas") {
+    return (
+      <div className="space-y-3" title={tituloDasTrocas(emArea)}>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
           {f.resolucao === "ataque" && !multiplos && (
             <TrocaLinha rotulo="Acerto"><DeltaStepper value={f.trocas.acerto} step={2} min={-limAcerto} max={limAcerto} onChange={(v) => setTroca("acerto", v)} /></TrocaLinha>
@@ -4842,26 +5226,107 @@ function FeiticoDanoEditor({ feitico, calc, onPatch }) {
           {emArea && !cataclismico && (
             <TrocaLinha rotulo="Área"><DeltaStepper value={f.trocas.area} step={1.5} min={-baseArea} max={capArea} unit="m" onChange={(v) => setTroca("area", v)} /></TrocaLinha>
           )}
-          <TrocaLinha rotulo="Empurrão (Gasta Dados)"><DeltaStepper value={f.trocas.empurraoDados} step={1} min={0} onChange={(v) => setTroca("empurraoDados", v)} /></TrocaLinha>
+          <TrocaLinha rotulo="Empurrão"><DeltaStepper value={f.trocas.empurraoDados} step={1} min={0} onChange={(v) => setTroca("empurraoDados", v)} /></TrocaLinha>
         </div>
-      </SecaoFeitico>
+        <RequisitoSecao feitico={f} onPatch={onPatch} />
+      </div>
+    );
+  }
 
-      {/* Condições e sangramento */}
-      <SecaoFeitico titulo="Condições">
-        <CondicaoEditor feitico={f} onPatch={onPatch} />
-      </SecaoFeitico>
+  if (aba === "condicoes") {
+    return <CondicaoEditor feitico={f} onPatch={onPatch} />;
+  }
 
-      {/* Requisito */}
-      <SecaoFeitico titulo="Requisito">
+  return (
+    <div className="space-y-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
+        <div>
+          <FieldLabel>Resolução</FieldLabel>
+          <OptionChips
+            value={multiplos ? "ataque" : (emArea ? "tr" : f.resolucao)}
+            onChange={(v) => onPatch({ resolucao: v })}
+            options={[
+              { value: "tr", label: "Resistência" },
+              { value: "ataque", label: "Ataque" },
+            ]}
+            disabledValues={multiplos ? ["tr"] : (emArea ? ["ataque"] : [])}
+          />
+        </div>
+        <div>
+          <FieldLabel>Alvo</FieldLabel>
+          <OptionChips
+            value={emArea ? "area" : f.alvo}
+            onChange={(v) => onPatch({ alvo: v, ...(v === "area" && !multiplos ? { resolucao: "tr" } : {}) })}
+            options={[
+              { value: "unico", label: "Alvo Único", lockTitle: "Destrutivo e Cataclísmico são sempre em área" },
+              { value: "area", label: "Área", lockTitle: "Múltiplos Disparos não podem ser em área" },
+            ]}
+            disabledValues={[...(areaObrigatoria ? ["unico"] : []), ...(multiplos ? ["area"] : [])]}
+          />
+        </div>
+      </div>
+
+      <div>
+        <FieldLabel>Conjuração</FieldLabel>
         <OptionChips
-          value={f.requisito || "nenhum"}
-          onChange={(v) => onPatch({ requisito: v === "nenhum" ? null : v })}
-          options={[{ value: "nenhum", label: "Nenhum" }, ...REQUISITO_DIFICULDADE.map((r) => ({ value: r.value, label: `${r.label} (+${r.dados}d)` }))]}
+          value={areaObrigatoria ? "ritual" : f.acao}
+          onChange={(v) => !areaObrigatoria && onPatch({ acao: v })}
+          options={FEITICO_ACOES}
+          disabledValues={areaObrigatoria ? FEITICO_ACOES.filter((a) => a.value !== "ritual").map((a) => a.value) : []}
         />
-      </SecaoFeitico>
+      </div>
 
-      {/* Resultado ao vivo */}
-      {calc && <ResultadoFeitico calc={calc} feitico={f} />}
+      <div>
+        <FieldLabel>Subtipo</FieldLabel>
+        <OptionChips
+          value={f.subtipo}
+          onChange={(v) => onPatch(
+            v === "cataclismico"
+              ? { subtipo: v, alvo: "area", acao: "ritual", resolucao: "tr", formaArea: "esfera" }
+              : v === "destrutivo"
+                ? { subtipo: v, alvo: "area", acao: "ritual", resolucao: "tr" }
+                : v === "multiplos"
+                  ? { subtipo: v, alvo: "unico", resolucao: "ataque" }
+                  : { subtipo: v })}
+          options={DANO_SUBTIPOS}
+        />
+      </div>
+
+      {emArea && !cataclismico && (
+        <div>
+          <FieldLabel>Forma da Área</FieldLabel>
+          <OptionChips value={f.formaArea} onChange={(v) => onPatch({ formaArea: v })} options={FORMAS_AREA} />
+        </div>
+      )}
+
+      {/* Campos condicionais de subtipo */}
+      {multiplos && (
+        <div>
+          <FieldLabel>Disparos</FieldLabel>
+          <NivelSegmentos value={f.disparos} min={1} max={nNum + 1} onChange={(v) => onPatch({ disparos: v })} />
+        </div>
+      )}
+      {f.subtipo === "continuo" && (
+        <div>
+          <FieldLabel>Modo do Dano Contínuo</FieldLabel>
+          <OptionChips
+            value={f.continuoModo}
+            onChange={(v) => onPatch({ continuoModo: v })}
+            options={[
+              { value: "sustentado", label: `Sustentado (${nNum} PE por rodada)` },
+              { value: "concentrado", label: "Concentrado" },
+            ]}
+          />
+        </div>
+      )}
+      {f.subtipo === "destrutivo" && (
+        <div className="flex flex-wrap gap-1.5">
+          <BoolChip ativo={f.ignorarResistencias} onToggle={() => onPatch({ ignorarResistencias: !f.ignorarResistencias })}>Ignorar Resistências (−4d)</BoolChip>
+          <BoolChip ativo={f.morteDireta} onToggle={() => onPatch({ morteDireta: !f.morteDireta })}>Morte Direta (−2d)</BoolChip>
+        </div>
+      )}
+
+      {calc && <NotasDoDano calc={calc} feitico={f} />}
     </div>
   );
 }
@@ -4927,11 +5392,30 @@ function CondicaoEditor({ feitico, onPatch, showFoco = true }) {
 
   const redLabel = { fraca: "−1d", media: "−3d", forte: "−5d", extrema: "−8d" };
   const maxCond = f.nivel === "max" ? 6 : f.nivel;
+  /* O sangramento conta como uma condição anexada, e é a mesma contagem que a
+     sub-aba Condições mostra no chip: dois números diferentes para a mesma
+     pergunta seria pior que nenhum. */
+  const usadas = (f.condicoes || []).length + (f.sangramento ? 1 : 0);
 
   return (
     <div className="space-y-3">
+      {/* ⚠ "MÁXIMO 3 NO NÍVEL 3" ERA FRASE, e virou contador em 2026-09-07. O
+          teto de condições é um orçamento como qualquer outro do criador, e o
+          vocabulário do app para orçamento é `usadas / total`, não uma frase que
+          o leitor tem de comparar de cabeça com a lista logo abaixo. Ele fica
+          vermelho ao estourar, igual ao de Ações e Características da Invocação,
+          e é o mesmo número que o contador da sub-aba Condições mostra. */}
       <div className="flex items-center justify-between gap-2 flex-wrap">
-        <span className="text-[11px] text-slate-500">Máximo {maxCond} no {NIVEL_LABEL[f.nivel]}</span>
+        <span
+          className={`font-mono text-[11px] tabular-nums px-2 py-0.5 rounded border ${
+            usadas > maxCond
+              ? "text-rose-300 border-rose-800 bg-rose-950/30"
+              : "text-slate-300 border-slate-700 bg-slate-800/50"
+          }`}
+          title={`Condições anexadas contra o máximo do ${NIVEL_LABEL[f.nivel]}`}
+        >
+          {usadas} / {maxCond}
+        </span>
         {showFoco && (
           <BoolChip ativo={f.focoCondicao} onToggle={() => onPatch({ focoCondicao: !f.focoCondicao })}>Somente Condição</BoolChip>
         )}
@@ -4993,51 +5477,37 @@ function SmallButtonLocal({ children, onClick }) {
   );
 }
 
-/* Painel de resultado computado do Feitiço. Mesmo bloco de stats da Invocação
-   (StatMini em grid + notas embaixo). */
-function ResultadoFeitico({ calc, feitico }) {
-  const ehArea = feitico.subtipo === "destrutivo" || feitico.subtipo === "cataclismico" || feitico.alvo === "area";
-  const tiles = [
-    { label: "Dano", value: calc.dano, icon: Zap, accent: true },
-    { label: "Média", value: calc.media != null ? calc.media : "-" },
-    { label: "Custo", value: calc.custoPE != null ? `${calc.custoPE} PE` : "-" },
-    { label: "CD", value: calc.cd ?? "-", icon: Shield },
-    { label: "Alcance", value: calc.alcance != null ? `${calc.alcance} m` : "-", icon: Footprints },
-  ];
-  if (ehArea) {
-    tiles.push({ label: "Área", value: calc.detalhes?.areaMapa ? "Mapa" : (calc.area != null ? `${calc.area} m ${calc.forma || ""}`.trim() : "-") });
-  }
-  if (feitico.resolucao === "ataque" && !ehArea && calc.acertoDelta) tiles.push({ label: "Acerto", value: `${calc.acertoDelta > 0 ? "+" : ""}${calc.acertoDelta}` });
-  if (calc.empurraoMetros) tiles.push({ label: "Empurrão", value: `${calc.empurraoMetros} m` });
-
+/* ============================================================ */
+/* AS NOTAS DE UM FEITIÇO                                        */
+/* ============================================================ */
+/**
+ * ⚠ ISTO ERA O PAINEL DE RESULTADO, e ele perdeu os números em 2026-09-07.
+ *
+ * Havia OITO desses painéis (um por tipo e subtipo), cada um com a própria grade
+ * de `StatMini` no topo. Com a barra grudada mostrando os mesmos números 40px
+ * acima, manter a grade daria DUAS leituras do mesmo dado na mesma tela, que é
+ * exatamente o defeito que a revisão da Invocação teve de consertar no cartão de
+ * Ação ("o resumo do cabeçalho somava o dado extra e a pílula de prévia não").
+ *
+ * O que sobra aqui é o que a barra NÃO sabe dizer: as notas de regra do subtipo,
+ * a decomposição de golpes e disparos, e a lista de avisos por extenso. A barra
+ * mostra a CONTAGEM de avisos, e esta lista mostra quais são.
+ *
+ * ⚠ A LISTA DE AVISOS ERA COPIADA OITO VEZES, palavra por palavra. Agora ela é
+ * este componente, e é por isso que ele existe em vez de cada painel abrir a sua
+ * `<ul>`: oito cópias divergem no primeiro conserto.
+ */
+function NotasDeFeitico({ children, avisos = [] }) {
+  const notas = React.Children.toArray(children).filter(Boolean);
+  if (notas.length === 0 && avisos.length === 0) return null;
   return (
-    <div className="rounded-lg border border-slate-800 bg-slate-950/60 p-3 space-y-2.5">
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-        {tiles.map((t) => (
-          <StatMini key={t.label} label={t.label} value={t.value} accent={t.accent} icon={t.icon} />
-        ))}
-      </div>
-
-      {calc.contInicial && (
-        <div className="text-[11px] text-slate-300 font-mono border-t border-slate-800 pt-2">
-          Golpe {calc.contInicial}, depois {calc.contPorRodada} por rodada
-          {calc.detalhes.continuo?.custoSustentacao ? ` (sustentação ${calc.detalhes.continuo.custoSustentacao} PE/rodada)` : ""}
-        </div>
-      )}
-      {calc.disparos && (
-        <div className="text-[11px] text-slate-300 font-mono border-t border-slate-800 pt-2">
-          {calc.disparos.disparos} disparos de {calc.disparos.porDisparoTexto}, ou {calc.disparos.concentradoTexto} concentrado num alvo
-        </div>
-      )}
-      {feitico.subtipo === "cataclismico" && (
-        <div className="text-[11px] text-amber-300/80 border-t border-slate-800 pt-2">Área vira o mapa inteiro, ignora Resistências e RD, 1/3 do dano vira perda de vida no usuário. Não pode ser modificado.</div>
-      )}
-
-      {calc.avisos.length > 0 && (
-        <ul className="space-y-0.5 border-t border-slate-800 pt-2">
-          {calc.avisos.map((a, i) => (
+    <div className="rounded-lg border border-slate-800 bg-slate-950/60 p-3 space-y-2">
+      {notas}
+      {avisos.length > 0 && (
+        <ul className={`space-y-0.5 ${notas.length > 0 ? "border-t border-slate-800 pt-2" : ""}`}>
+          {avisos.map((a, i) => (
             <li key={i} className="text-[11px] text-amber-400 flex items-start gap-1">
-              <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" /> {a}
+              <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" aria-hidden="true" /> {a}
             </li>
           ))}
         </ul>
@@ -5046,11 +5516,45 @@ function ResultadoFeitico({ calc, feitico }) {
   );
 }
 
+/* Uma nota. `tom="regra"` é o texto do livro sobre aquele subtipo, `tom="conta"`
+   é a decomposição de um número que a barra mostra somado. */
+function NotaDeFeitico({ tom = "conta", children }) {
+  if (!children) return null;
+  return (
+    <p className={`text-[11px] ${tom === "regra" ? "text-amber-300/80" : "text-slate-300 font-mono"}`}>
+      {children}
+    </p>
+  );
+}
+
+function NotasDoDano({ calc, feitico }) {
+  return (
+    <NotasDeFeitico avisos={calc.avisos}>
+      {calc.contInicial && (
+        <NotaDeFeitico>
+          Golpe {calc.contInicial}, depois {calc.contPorRodada} por rodada
+          {calc.detalhes.continuo?.custoSustentacao ? ` (sustentação ${calc.detalhes.continuo.custoSustentacao} PE por rodada)` : ""}
+        </NotaDeFeitico>
+      )}
+      {calc.disparos && (
+        <NotaDeFeitico>
+          {calc.disparos.disparos} disparos de {calc.disparos.porDisparoTexto}, ou {calc.disparos.concentradoTexto} concentrado num alvo
+        </NotaDeFeitico>
+      )}
+      {feitico.subtipo === "cataclismico" && (
+        <NotaDeFeitico tom="regra">
+          Área vira o mapa inteiro, ignora Resistências e RD, 1/3 do dano vira perda de vida no usuário. Não pode ser modificado.
+        </NotaDeFeitico>
+      )}
+    </NotasDeFeitico>
+  );
+}
+
 /* ---------------------------------------------------------------
    FEITIÇO CURATIVO. Variante do de Dano: recupera PV (ou PV Temporário
    sem Energia Reversa). Mesmo vocabulário visual, sem resolução nem CD.
    --------------------------------------------------------------- */
-function FeiticoCurativoEditor({ feitico, calc, onPatch }) {
+function FeiticoCurativoEditor({ feitico, calc, onPatch, aba }) {
   const f = feitico;
   const nNum = f.nivel === "max" ? 6 : f.nivel;
   const emArea = f.alvo === "area";
@@ -5061,11 +5565,33 @@ function FeiticoCurativoEditor({ feitico, calc, onPatch }) {
   const capArea = (1 + nNum) * taxas.area;
   const baseAlcance = ALCANCE_POR_NIVEL[f.nivel] ?? 0;
   const baseArea = AREA_POR_NIVEL[f.nivel] ?? 0;
-  const trocasTitulo = emArea ? "Trocas · 1 dado = 12m = 3m²" : "Trocas · 1 dado = 6m";
+
+  if (aba === "trocas") {
+    return (
+      <div
+        className="space-y-3"
+        title={emArea
+          ? "1 dado de cura vale 12 metros de alcance ou 3 metros de área"
+          : "1 dado de cura vale 6 metros de alcance"}
+      >
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
+          <TrocaLinha rotulo="Dados de Cura"><DeltaStepper value={f.trocas.dados} step={1} min={-limDados} max={limDados} onChange={(v) => setTroca("dados", v)} /></TrocaLinha>
+          <TrocaLinha rotulo="Alcance"><DeltaStepper value={f.trocas.alcance} step={6} min={-baseAlcance} max={capAlcance} unit="m" onChange={(v) => setTroca("alcance", v)} /></TrocaLinha>
+          {emArea && (
+            <TrocaLinha rotulo="Área"><DeltaStepper value={f.trocas.area} step={1.5} min={-baseArea} max={capArea} unit="m" onChange={(v) => setTroca("area", v)} /></TrocaLinha>
+          )}
+        </div>
+        <RequisitoSecao feitico={f} onPatch={onPatch} />
+      </div>
+    );
+  }
+
+  if (aba === "condicoes") {
+    return <CuraRemocaoEditor feitico={f} onPatch={onPatch} />;
+  }
 
   return (
-    <div className="rounded-lg border border-slate-800 bg-slate-950/30 p-3 space-y-3">
-      {/* Perfil */}
+    <div className="space-y-3">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
         <div>
           <FieldLabel>Alvo</FieldLabel>
@@ -5079,7 +5605,7 @@ function FeiticoCurativoEditor({ feitico, calc, onPatch }) {
           />
         </div>
         <div>
-          <FieldLabel>Conjuração (Ação)</FieldLabel>
+          <FieldLabel>Conjuração</FieldLabel>
           <OptionChips value={f.acao} onChange={(v) => onPatch({ acao: v })} options={CURA_ACOES} />
         </div>
       </div>
@@ -5091,32 +5617,7 @@ function FeiticoCurativoEditor({ feitico, calc, onPatch }) {
         </div>
       )}
 
-      {/* Trocas */}
-      <SecaoFeitico titulo={trocasTitulo}>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
-          <TrocaLinha rotulo="Dados de Cura"><DeltaStepper value={f.trocas.dados} step={1} min={-limDados} max={limDados} onChange={(v) => setTroca("dados", v)} /></TrocaLinha>
-          <TrocaLinha rotulo="Alcance"><DeltaStepper value={f.trocas.alcance} step={6} min={-baseAlcance} max={capAlcance} unit="m" onChange={(v) => setTroca("alcance", v)} /></TrocaLinha>
-          {emArea && (
-            <TrocaLinha rotulo="Área"><DeltaStepper value={f.trocas.area} step={1.5} min={-baseArea} max={capArea} unit="m" onChange={(v) => setTroca("area", v)} /></TrocaLinha>
-          )}
-        </div>
-      </SecaoFeitico>
-
-      {/* Remoção de Condições / Ferimentos Complexos */}
-      <SecaoFeitico titulo="Remoção">
-        <CuraRemocaoEditor feitico={f} onPatch={onPatch} />
-      </SecaoFeitico>
-
-      {/* Requisito */}
-      <SecaoFeitico titulo="Requisito">
-        <OptionChips
-          value={f.requisito || "nenhum"}
-          onChange={(v) => onPatch({ requisito: v === "nenhum" ? null : v })}
-          options={[{ value: "nenhum", label: "Nenhum" }, ...REQUISITO_DIFICULDADE.map((r) => ({ value: r.value, label: `${r.label} (+${r.dados}d)` }))]}
-        />
-      </SecaoFeitico>
-
-      {calc && <ResultadoCurativo calc={calc} feitico={f} />}
+      {calc && <NotasDaCura calc={calc} />}
     </div>
   );
 }
@@ -5197,79 +5698,62 @@ function CondicaoRemocaoLista({ feitico, onPatch }) {
 }
 
 /* Resultado computado do Feitiço Curativo. */
-function ResultadoCurativo({ calc, feitico }) {
-  const ehArea = feitico.alvo === "area";
-  const curaLabel = calc.ehTemporario ? "PV Temporário" : "Cura";
-  const tiles = [
-    { label: curaLabel, value: calc.cura, icon: Heart, accent: true },
-    { label: "Média", value: calc.media != null ? calc.media : "-" },
-    { label: "Custo", value: calc.custoPE != null ? `${calc.custoPE} PE` : "-" },
-    { label: "Alcance", value: calc.alcance != null ? `${calc.alcance} m` : "-", icon: Footprints },
-  ];
-  if (ehArea) tiles.push({ label: "Área", value: calc.area != null ? `${calc.area} m ${calc.forma || ""}`.trim() : "-" });
-
+/* ⚠ O SALDO DE TROCAS VIROU PÍLULA DA BARRA. Ele era uma linha solta no meio
+   deste painel, e é justamente o número que se olha ENQUANTO se mexe nos passos
+   de troca: ficava fora da tela pelo mesmo motivo que o resto do resultado. */
+function NotasDaCura({ calc }) {
+  const removidas = calc.detalhes?.removeCondicoes ?? [];
   return (
-    <div className="rounded-lg border border-slate-800 bg-slate-950/60 p-3 space-y-2.5">
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-        {tiles.map((t) => (
-          <StatMini key={t.label} label={t.label} value={t.value} accent={t.accent} icon={t.icon} />
-        ))}
-      </div>
-
-      <div className={`text-[11px] font-mono ${calc.saldoTrocas < 0 ? "text-rose-400" : "text-purple-300"}`}>
-        Saldo de Trocas: {calc.saldoTrocas > 0 ? "+" : ""}{calc.saldoTrocas}
-      </div>
-
+    <NotasDeFeitico avisos={calc.avisos}>
       {calc.ehTemporario && (
-        <div className="text-[11px] text-amber-300/80 border-t border-slate-800 pt-2">
+        <NotaDeFeitico tom="regra">
           Sem a aptidão Energia Reversa a cura vira Pontos de Vida Temporários.
-        </div>
+        </NotaDeFeitico>
       )}
       {calc.detalhes?.curaTudo?.condicoes && (
-        <div className="text-[11px] text-slate-300 border-t border-slate-800 pt-2">Remove todas as Condições e cura 1 Ferimento Complexo.</div>
+        <NotaDeFeitico>Remove todas as Condições e cura 1 Ferimento Complexo.</NotaDeFeitico>
       )}
       {calc.detalhes?.curaTudo?.ferimentosComplexos && (
-        <div className="text-[11px] text-slate-300 border-t border-slate-800 pt-2">Cura todos os Ferimentos Complexos.</div>
+        <NotaDeFeitico>Cura todos os Ferimentos Complexos.</NotaDeFeitico>
       )}
-      {calc.detalhes?.removeCondicoes?.length > 0 && (
-        <div className="text-[11px] text-slate-300 border-t border-slate-800 pt-2">Remove: {calc.detalhes.removeCondicoes.join(", ")}.</div>
+      {removidas.length > 0 && (
+        <NotaDeFeitico>Remove: {removidas.join(", ")}.</NotaDeFeitico>
       )}
-
-      {calc.avisos.length > 0 && (
-        <ul className="space-y-0.5 border-t border-slate-800 pt-2">
-          {calc.avisos.map((a, i) => (
-            <li key={i} className="text-[11px] text-amber-400 flex items-start gap-1">
-              <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" /> {a}
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+    </NotasDeFeitico>
   );
 }
 
 /* ---------------------------------------------------------------
-   FEITIÇO ESPECIAL. O tipo reúne subtipos bem diferentes. Por ora só
-   Golpeador e Dano na Alma (variantes de dano de alvo único). Os outros
-   quatro (Itens, Shikigami, Transformação, Invisibilidade) vêm depois.
+   FEITIÇO ESPECIAL. O tipo reúne seis subtipos bem diferentes, e por isso o
+   SUBTIPO fica sempre visível no topo, fora das sub-abas: ele é para o Especial
+   o que o Tipo é para o Feitiço, a escolha que troca o editor inteiro.
+
+   ⚠ Só Golpeador e Dano na Alma têm Trocas e Condições (os dois são variantes de
+   dano de alvo único). Nos outros quatro `subAbasDoFeitico` devolve uma aba só,
+   e a tira de abas nem chega a nascer.
    --------------------------------------------------------------- */
-function FeiticoEspecialEditor({ feitico, calc, ctx, onPatch }) {
+function FeiticoEspecialEditor({ feitico, calc, ctx, onPatch, aba }) {
   const f = feitico;
   const sub = f.especialSubtipo || "golpeador";
+  const props = { feitico: f, calc, onPatch, aba };
   return (
-    <div className="rounded-lg border border-slate-800 bg-slate-950/30 p-3 space-y-3">
-      <div>
-        <FieldLabel>Tipo de Especial</FieldLabel>
-        <OptionChips
-          value={sub}
-          onChange={(v) => onPatch({ especialSubtipo: v })}
-          options={ESPECIAL_SUBTIPOS.map((s) => ({ value: s.value, label: s.label }))}
-        />
-      </div>
+    <div className="space-y-3">
+      {/* O subtipo só aparece na Base: repeti-lo nas outras abas gastaria uma
+          fila de chips por aba sem nunca ser o que se veio mexer ali. */}
+      {aba === "base" && (
+        <div>
+          <FieldLabel>Tipo de Especial</FieldLabel>
+          <OptionChips
+            value={sub}
+            onChange={(v) => onPatch({ especialSubtipo: v })}
+            options={ESPECIAL_SUBTIPOS.map((s) => ({ value: s.value, label: s.label }))}
+          />
+        </div>
+      )}
       {sub === "golpeador" ? (
-        <GolpeadorEditor feitico={f} calc={calc} onPatch={onPatch} />
+        <GolpeadorEditor {...props} />
       ) : sub === "danoAlma" ? (
-        <DanoAlmaEditor feitico={f} calc={calc} onPatch={onPatch} />
+        <DanoAlmaEditor {...props} />
       ) : sub === "invisibilidade" ? (
         <InvisibilidadeEditor feitico={f} calc={calc} onPatch={onPatch} />
       ) : sub === "itens" ? (
@@ -5281,30 +5765,33 @@ function FeiticoEspecialEditor({ feitico, calc, ctx, onPatch }) {
       ) : (
         <div className="text-center py-5 border border-dashed border-slate-700 rounded-lg text-sm text-slate-400">
           {ESPECIAL_SUBTIPOS.find((s) => s.value === sub)?.label} entra num próximo incremento.
-          <div className="mt-2 inline-block text-[10px] font-bold uppercase tracking-wide text-amber-400 border border-amber-800/60 rounded px-2 py-0.5">
-            próximo incremento
-          </div>
         </div>
       )}
     </div>
   );
 }
 
-/* Requisito: chips reusados pelos editores de dano/variantes. */
+/* Requisito: chips reusados pelos editores de dano e variantes.
+
+   ⚠ ELE PERDEU O CABEÇALHO DE SEÇÃO e ganhou rótulo de campo. Como seção ele era
+   uma fila de cinco chips sozinha no fim do editor, com um título em caixa alta
+   por cima. Agora vive dentro da aba Trocas, que é o que ele é: uma troca de
+   dificuldade na ficção por dados. */
 function RequisitoSecao({ feitico, onPatch }) {
   return (
-    <SecaoFeitico titulo="Requisito">
+    <div title="Aceitar uma exigência na conjuração rende dados a mais">
+      <FieldLabel>Requisito</FieldLabel>
       <OptionChips
         value={feitico.requisito || "nenhum"}
         onChange={(v) => onPatch({ requisito: v === "nenhum" ? null : v })}
         options={[{ value: "nenhum", label: "Nenhum" }, ...REQUISITO_DIFICULDADE.map((r) => ({ value: r.value, label: `${r.label} (+${r.dados}d)` }))]}
       />
-    </SecaoFeitico>
+    </div>
   );
 }
 
 /* Feitiço Golpeador: dano adicional num ataque, alcance por movimento. */
-function GolpeadorEditor({ feitico, calc, onPatch }) {
+function GolpeadorEditor({ feitico, calc, onPatch, aba }) {
   const f = feitico;
   const nNum = f.nivel === "max" ? 6 : f.nivel;
   const setTroca = (chave, v) => onPatch({ trocas: { ...f.trocas, [chave]: v } });
@@ -5313,11 +5800,31 @@ function GolpeadorEditor({ feitico, calc, onPatch }) {
   const temCondicao = (Array.isArray(f.condicoes) && f.condicoes.length > 0) || !!f.sangramento;
   const maxGolpes = maxGolpesGolpeador(f.nivel);
   const golpes = Math.min(Math.max(1, f.golpesGolpeador || 1), maxGolpes);
+
+  if (aba === "trocas") {
+    return (
+      <div className="space-y-3" title="1 dado vale 2 de acerto ou 1 de CD">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
+          <TrocaLinha rotulo="Acerto"><DeltaStepper value={f.trocas.acerto} step={2} min={-limAcerto} max={limAcerto} onChange={(v) => setTroca("acerto", v)} /></TrocaLinha>
+          {temCondicao && (
+            <TrocaLinha rotulo="CD"><DeltaStepper value={f.trocas.cd} step={1} min={0} max={limCd} onChange={(v) => setTroca("cd", v)} /></TrocaLinha>
+          )}
+          <TrocaLinha rotulo="Empurrão"><DeltaStepper value={f.trocas.empurraoDados} step={1} min={0} onChange={(v) => setTroca("empurraoDados", v)} /></TrocaLinha>
+        </div>
+        <RequisitoSecao feitico={f} onPatch={onPatch} />
+      </div>
+    );
+  }
+
+  if (aba === "condicoes") {
+    return <CondicaoEditor feitico={f} onPatch={onPatch} showFoco={false} />;
+  }
+
   return (
     <div className="space-y-3">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
         <div>
-          <FieldLabel>Conjuração (Ação)</FieldLabel>
+          <FieldLabel>Conjuração</FieldLabel>
           <OptionChips
             value={f.acao === "completa" ? "completa" : "comum"}
             onChange={(v) => onPatch({ acao: v })}
@@ -5325,36 +5832,19 @@ function GolpeadorEditor({ feitico, calc, onPatch }) {
           />
         </div>
         {maxGolpes > 1 && (
-          <div>
-            <FieldLabel hint="divide o dano adicional, −3 de acerto por golpe extra">Golpes</FieldLabel>
+          <div title="Cada golpe extra divide o dano adicional e tira 3 do acerto">
+            <FieldLabel>Golpes</FieldLabel>
             <NivelSegmentos value={golpes} min={1} max={maxGolpes} onChange={(v) => onPatch({ golpesGolpeador: v })} />
           </div>
         )}
       </div>
-
-      <SecaoFeitico titulo="Trocas · 1 dado = 2 acerto = 1 CD">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
-          <TrocaLinha rotulo="Acerto"><DeltaStepper value={f.trocas.acerto} step={2} min={-limAcerto} max={limAcerto} onChange={(v) => setTroca("acerto", v)} /></TrocaLinha>
-          {temCondicao && (
-            <TrocaLinha rotulo="CD"><DeltaStepper value={f.trocas.cd} step={1} min={0} max={limCd} onChange={(v) => setTroca("cd", v)} /></TrocaLinha>
-          )}
-          <TrocaLinha rotulo="Empurrão (Gasta Dados)"><DeltaStepper value={f.trocas.empurraoDados} step={1} min={0} onChange={(v) => setTroca("empurraoDados", v)} /></TrocaLinha>
-        </div>
-      </SecaoFeitico>
-
-      <SecaoFeitico titulo="Condições">
-        <CondicaoEditor feitico={f} onPatch={onPatch} showFoco={false} />
-      </SecaoFeitico>
-
-      <RequisitoSecao feitico={f} onPatch={onPatch} />
-
-      {calc && <ResultadoEspecial calc={calc} feitico={f} kind="golpeador" />}
+      {calc && <NotasDoEspecial calc={calc} kind="golpeador" />}
     </div>
   );
 }
 
 /* Feitiço de Dano na Alma: alvo único, fura tudo, alcance base pela metade. */
-function DanoAlmaEditor({ feitico, calc, onPatch }) {
+function DanoAlmaEditor({ feitico, calc, onPatch, aba }) {
   const f = feitico;
   const nNum = f.nivel === "max" ? 6 : f.nivel;
   const setTroca = (chave, v) => onPatch({ trocas: { ...f.trocas, [chave]: v } });
@@ -5366,6 +5856,29 @@ function DanoAlmaEditor({ feitico, calc, onPatch }) {
   const cdMin = ehAtaque ? 0 : -limCd;
   const baseAlcance = Math.floor((ALCANCE_POR_NIVEL[f.nivel] ?? 0) / 2);
   const capAlcance = (1 + nNum) * 6;
+
+  if (aba === "trocas") {
+    return (
+      <div className="space-y-3" title="1 dado vale 2 de acerto, 1 de CD ou 6 metros de alcance">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
+          {ehAtaque && (
+            <TrocaLinha rotulo="Acerto"><DeltaStepper value={f.trocas.acerto} step={2} min={-limAcerto} max={limAcerto} onChange={(v) => setTroca("acerto", v)} /></TrocaLinha>
+          )}
+          {temCD && (
+            <TrocaLinha rotulo="CD"><DeltaStepper value={f.trocas.cd} step={1} min={cdMin} max={limCd} onChange={(v) => setTroca("cd", v)} /></TrocaLinha>
+          )}
+          <TrocaLinha rotulo="Alcance"><DeltaStepper value={f.trocas.alcance} step={6} min={-baseAlcance} max={capAlcance} unit="m" onChange={(v) => setTroca("alcance", v)} /></TrocaLinha>
+          <TrocaLinha rotulo="Empurrão"><DeltaStepper value={f.trocas.empurraoDados} step={1} min={0} onChange={(v) => setTroca("empurraoDados", v)} /></TrocaLinha>
+        </div>
+        <RequisitoSecao feitico={f} onPatch={onPatch} />
+      </div>
+    );
+  }
+
+  if (aba === "condicoes") {
+    return <CondicaoEditor feitico={f} onPatch={onPatch} showFoco={false} />;
+  }
+
   return (
     <div className="space-y-3">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
@@ -5378,86 +5891,35 @@ function DanoAlmaEditor({ feitico, calc, onPatch }) {
           />
         </div>
         <div>
-          <FieldLabel>Conjuração (Ação)</FieldLabel>
+          <FieldLabel>Conjuração</FieldLabel>
           <OptionChips value={f.acao} onChange={(v) => onPatch({ acao: v })} options={FEITICO_ACOES.filter((a) => a.value !== "ritual")} />
         </div>
       </div>
-
-      <SecaoFeitico titulo="Trocas · 1 dado = 2 acerto = 1 CD = 6m">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
-          {ehAtaque && (
-            <TrocaLinha rotulo="Acerto"><DeltaStepper value={f.trocas.acerto} step={2} min={-limAcerto} max={limAcerto} onChange={(v) => setTroca("acerto", v)} /></TrocaLinha>
-          )}
-          {temCD && (
-            <TrocaLinha rotulo="CD"><DeltaStepper value={f.trocas.cd} step={1} min={cdMin} max={limCd} onChange={(v) => setTroca("cd", v)} /></TrocaLinha>
-          )}
-          <TrocaLinha rotulo="Alcance"><DeltaStepper value={f.trocas.alcance} step={6} min={-baseAlcance} max={capAlcance} unit="m" onChange={(v) => setTroca("alcance", v)} /></TrocaLinha>
-          <TrocaLinha rotulo="Empurrão (Gasta Dados)"><DeltaStepper value={f.trocas.empurraoDados} step={1} min={0} onChange={(v) => setTroca("empurraoDados", v)} /></TrocaLinha>
-        </div>
-      </SecaoFeitico>
-
-      <SecaoFeitico titulo="Condições">
-        <CondicaoEditor feitico={f} onPatch={onPatch} showFoco={false} />
-      </SecaoFeitico>
-
-      <RequisitoSecao feitico={f} onPatch={onPatch} />
-
-      {calc && <ResultadoEspecial calc={calc} feitico={f} kind="danoAlma" />}
+      {calc && <NotasDoEspecial calc={calc} kind="danoAlma" />}
     </div>
   );
 }
 
-/* Resultado dos Feitiços Especiais de dano (Golpeador e Dano na Alma). */
-function ResultadoEspecial({ calc, feitico, kind }) {
-  const tiles = [
-    { label: kind === "golpeador" ? "Dano Adicional" : "Dano", value: calc.dano, icon: Zap, accent: true },
-    { label: "Média", value: calc.media != null ? calc.media : "-" },
-    { label: "Custo", value: calc.custoPE != null ? `${calc.custoPE} PE` : "-" },
-  ];
-  if (calc.cd != null) tiles.push({ label: "CD", value: calc.cd, icon: Shield });
-  if (kind === "danoAlma") tiles.push({ label: "Alcance", value: calc.alcance != null ? `${calc.alcance} m` : "-", icon: Footprints });
-  if (feitico.resolucao === "ataque" && calc.acertoDelta) tiles.push({ label: "Acerto", value: `${calc.acertoDelta > 0 ? "+" : ""}${calc.acertoDelta}` });
-  if (calc.empurraoMetros) tiles.push({ label: "Empurrão", value: `${calc.empurraoMetros} m` });
-
+/* Notas dos Feitiços Especiais de dano (Golpeador e Dano na Alma). */
+function NotasDoEspecial({ calc, kind }) {
   return (
-    <div className="rounded-lg border border-slate-800 bg-slate-950/60 p-3 space-y-2.5">
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-        {tiles.map((t) => (
-          <StatMini key={t.label} label={t.label} value={t.value} accent={t.accent} icon={t.icon} />
-        ))}
-      </div>
-
-      {kind === "golpeador" && (
-        <div className="text-[11px] text-slate-300 font-mono border-t border-slate-800 pt-2">
-          Alcance: {calc.alcanceTexto}
-        </div>
-      )}
+    <NotasDeFeitico avisos={calc.avisos}>
       {calc.golpes && (
-        <div className="text-[11px] text-slate-300 font-mono border-t border-slate-800 pt-2">
+        <NotaDeFeitico>
           {calc.golpes.golpes} golpes de {notacaoDano(calc.golpes.porGolpe, calc.tipoDado)}, ou {notacaoDano(calc.golpes.concentradoTotal, calc.tipoDado)} concentrado. Prejuízo de −{calc.golpes.penalidadePorGolpe} no acerto por golpe após o primeiro (cumulativo).
-        </div>
+        </NotaDeFeitico>
       )}
       {kind === "golpeador" && (
-        <div className="text-[11px] text-amber-300/80 border-t border-slate-800 pt-2">
+        <NotaDeFeitico tom="regra">
           Dano Após Ataque, não multiplica em crítico. Aplica os efeitos de um golpe desarmado ou de arma.
-        </div>
+        </NotaDeFeitico>
       )}
       {kind === "danoAlma" && (
-        <div className="text-[11px] text-amber-300/80 border-t border-slate-800 pt-2">
+        <NotaDeFeitico tom="regra">
           Passa por Vida Temporária, RD e demais efeitos, ferindo a integridade da alma. Aumentos que não venham da criação são cortados pela metade.
-        </div>
+        </NotaDeFeitico>
       )}
-
-      {calc.avisos.length > 0 && (
-        <ul className="space-y-0.5 border-t border-slate-800 pt-2">
-          {calc.avisos.map((a, i) => (
-            <li key={i} className="text-[11px] text-amber-400 flex items-start gap-1">
-              <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" /> {a}
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+    </NotasDeFeitico>
   );
 }
 
@@ -5480,32 +5942,18 @@ function InvisibilidadeEditor({ feitico, calc, onPatch }) {
           placeholder="Como o Feitiço pode ser desfeito. Ex.: caso a sombra que o esconde seja desfeita por luz, o Feitiço se encerra."
         />
       </div>
-      {calc && <ResultadoInvisibilidade calc={calc} />}
+      {calc && <NotasDaInvisibilidade calc={calc} />}
     </div>
   );
 }
 
-function ResultadoInvisibilidade({ calc }) {
+function NotasDaInvisibilidade({ calc }) {
   return (
-    <div className="rounded-lg border border-slate-800 bg-slate-950/60 p-3 space-y-2.5">
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-        <StatMini label="Custo" value={calc.custoPE != null ? `${calc.custoPE} PE` : "-"} accent icon={Sparkles} />
-        <StatMini label="Conjuração" value="Sustentado" />
-        <StatMini label="Foco" value="Concentração" />
-      </div>
-      <div className="text-[11px] text-amber-300/80 border-t border-slate-800 pt-2">
+    <NotasDeFeitico avisos={calc.avisos}>
+      <NotaDeFeitico tom="regra">
         Sempre Sustentado e usa Concentração. Não pode ser Imediato nem Duradouro.
-      </div>
-      {calc.avisos.length > 0 && (
-        <ul className="space-y-0.5 border-t border-slate-800 pt-2">
-          {calc.avisos.map((a, i) => (
-            <li key={i} className="text-[11px] text-amber-400 flex items-start gap-1">
-              <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" /> {a}
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+      </NotaDeFeitico>
+    </NotasDeFeitico>
   );
 }
 
@@ -5560,36 +6008,17 @@ function ItensEditor({ feitico, calc, onPatch }) {
         />
       </div>
 
-      {calc && <ResultadoItens calc={calc} />}
+      {calc && <NotasDosItens calc={calc} />}
     </div>
   );
 }
 
-function ResultadoItens({ calc }) {
+function NotasDosItens({ calc }) {
   return (
-    <div className="rounded-lg border border-slate-800 bg-slate-950/60 p-3 space-y-2.5">
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-        <StatMini label="Itens" value={calc.quantidade > 0 ? `${calc.quantidade}× Custo ${calc.custo}` : "-"} accent icon={FlaskConical} />
-        {calc.grauBonus > 0 && <StatMini label="Grau" value={`+${calc.grauBonus} em 1 item`} />}
-        <StatMini label="Custo" value={calc.custoPE != null ? `${calc.custoPE} PE` : "-"} />
-        <StatMini label="Conjuração" value="Bônus" />
-      </div>
-
-      <div className="text-[11px] text-slate-300 border-t border-slate-800 pt-2">
-        {calc.detalhes?.restricao}
-      </div>
-      <div className="text-[11px] text-slate-400">{calc.detalhes?.duracao}</div>
-
-      {calc.avisos.length > 0 && (
-        <ul className="space-y-0.5 border-t border-slate-800 pt-2">
-          {calc.avisos.map((a, i) => (
-            <li key={i} className="text-[11px] text-amber-400 flex items-start gap-1">
-              <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" /> {a}
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+    <NotasDeFeitico avisos={calc.avisos}>
+      <NotaDeFeitico>{calc.detalhes?.restricao}</NotaDeFeitico>
+      <NotaDeFeitico>{calc.detalhes?.duracao}</NotaDeFeitico>
+    </NotasDeFeitico>
   );
 }
 
@@ -5658,39 +6087,30 @@ function ShikigamiEditor({ feitico, calc, ctx, onPatch }) {
           </div>
         )}
       </div>
-      {calc && <ResultadoShikigami calc={calc} ctx={ctx} />}
+      {calc && <NotasDoShikigami calc={calc} ctx={ctx} />}
     </div>
   );
 }
 
-function ResultadoShikigami({ calc, ctx }) {
-  const tiles = [
-    { label: "Grau Exigido", value: calc.grauLabel, icon: Shield, accent: true },
-    // ⚠ Os dois são PE, e um deles saía sem unidade.
-    { label: "Redução de PE", value: calc.reducaoPE != null ? `${calc.reducaoPE} PE` : "-", icon: Zap },
-    { label: "Custo de Invocação", value: calc.custoPE != null ? `${calc.custoPE} PE` : "-", icon: Sparkles },
-    { label: "Conjuração", value: "Comum" },
-  ];
-  if (calc.ajusteAcoes) tiles.push({ label: "Ações/Caract.", value: `${calc.ajusteAcoes > 0 ? "+" : ""}${calc.ajusteAcoes}` });
-
-  /* A criatura que este Feitiço conjura, já resolvida. Ela vive na aba
-     Invocações e o Feitiço é dono do grau e do custo dela, então mostrar aqui os
-     números que saíram evita a ida e volta entre as duas abas para conferir se o
-     shikigami ficou do tamanho que se queria. */
+/**
+ * ⚠ O STAT BLOCK DA INVOCAÇÃO CONTINUA AQUI, e não subiu para a barra.
+ *
+ * Ele é o único bloco destes painéis que NÃO é o resultado deste Feitiço: são os
+ * números de OUTRA criatura, montada na aba Invocações, que este Feitiço conjura.
+ * Pôr Vida e Defesa dela na barra do Feitiço faria a barra dizer duas coisas ao
+ * mesmo tempo, e a pessoa leria o PV do shikigami como se fosse do Feitiço.
+ *
+ * O que ele resolve segue valendo: evita a ida e volta entre as duas abas só
+ * para conferir se o shikigami ficou do tamanho que se queria.
+ */
+function NotasDoShikigami({ calc, ctx }) {
   const resolvida = calc.invocacaoId
     ? (ctx?.invocacoesResolvidas ?? []).find((x) => x.id === calc.invocacaoId)
     : null;
-
   return (
-    <div className="rounded-lg border border-slate-800 bg-slate-950/60 p-3 space-y-2.5">
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-        {tiles.map((t) => (
-          <StatMini key={t.label} label={t.label} value={t.value} accent={t.accent} icon={t.icon} />
-        ))}
-      </div>
-
+    <NotasDeFeitico avisos={calc.avisos}>
       {resolvida && (
-        <div className="border-t border-slate-800 pt-2 space-y-1.5">
+        <div className="space-y-1.5">
           <div className={`text-[11px] font-mono flex items-center gap-1.5 ${calc.grauConfere ? "text-slate-300" : "text-amber-300/80"}`}>
             {calc.grauConfere ? <Check className="w-3 h-3 flex-shrink-0" /> : <AlertTriangle className="w-3 h-3 flex-shrink-0" />}
             {resolvida.nome || "Sem Nome"} · {resolvida.grauLabel}
@@ -5703,9 +6123,8 @@ function ResultadoShikigami({ calc, ctx }) {
           </div>
         </div>
       )}
-
       {calc.notas?.length > 0 && (
-        <ul className="space-y-1 border-t border-slate-800 pt-2">
+        <ul className="space-y-1">
           {calc.notas.map((n, i) => (
             <li key={i} className="text-[11px] text-slate-400 flex items-start gap-1.5">
               <span className="text-slate-600 mt-px flex-shrink-0">•</span> {n}
@@ -5713,17 +6132,7 @@ function ResultadoShikigami({ calc, ctx }) {
           ))}
         </ul>
       )}
-
-      {calc.avisos.length > 0 && (
-        <ul className="space-y-0.5 border-t border-slate-800 pt-2">
-          {calc.avisos.map((a, i) => (
-            <li key={i} className="text-[11px] text-amber-400 flex items-start gap-1">
-              <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" /> {a}
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+    </NotasDeFeitico>
   );
 }
 
@@ -5776,46 +6185,21 @@ function TransformacaoEditor({ feitico, calc, onPatch }) {
         </div>
       </SecaoFeitico>
 
-      {calc && <ResultadoTransformacao calc={calc} />}
+      {calc && <NotasDaTransformacao calc={calc} />}
     </div>
   );
 }
 
-function ResultadoTransformacao({ calc }) {
-  const tiles = [
-    { label: "Efeitos", value: calc.efeitos.length, icon: Sparkles, accent: true },
-    { label: "Custo", value: calc.custoPE != null ? `${calc.custoPE} PE` : "-" },
-  ];
-  if (calc.sustentacaoPE) tiles.push({ label: "Sustentação", value: `${calc.sustentacaoPE} PE/rod` });
-  if (calc.sustentacaoVida) tiles.push({ label: "Sustentação", value: `${calc.sustentacaoVida} PV/rod` });
-  if (calc.duracaoRodadas) tiles.push({ label: "Duração", value: `${calc.duracaoRodadas} rodadas` });
-  if (calc.exaustaoFim) tiles.push({ label: "Exaustão", value: calc.exaustaoFim });
-
+function NotasDaTransformacao({ calc }) {
   return (
-    <div className="rounded-lg border border-slate-800 bg-slate-950/60 p-3 space-y-2.5">
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-        {tiles.map((t) => (
-          <StatMini key={t.label} label={t.label} value={t.value} accent={t.accent} icon={t.icon} />
-        ))}
-      </div>
-
+    <NotasDeFeitico avisos={calc.avisos}>
       {calc.efeitos.length > 0 && (
-        <div className="text-[11px] text-slate-300 font-mono border-t border-slate-800 pt-2">
+        <NotaDeFeitico>
           {calc.efeitos.map((e) => `${e.label} ${e.texto}`).join("  ·  ")}
-        </div>
+        </NotaDeFeitico>
       )}
-      <div className="text-[11px] text-amber-300/80 border-t border-slate-800 pt-2">{calc.notaExaustao}</div>
-
-      {calc.avisos.length > 0 && (
-        <ul className="space-y-0.5 border-t border-slate-800 pt-2">
-          {calc.avisos.map((a, i) => (
-            <li key={i} className="text-[11px] text-amber-400 flex items-start gap-1">
-              <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" /> {a}
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+      {calc.notaExaustao && <NotaDeFeitico tom="regra">{calc.notaExaustao}</NotaDeFeitico>}
+    </NotasDeFeitico>
   );
 }
 
@@ -6060,12 +6444,15 @@ function FeiticoAuxiliarEditor({ feitico, calc, onPatch }) {
     concLock: "Alcance Próprio não atinge outros alvos",
   };
 
+  /* ⚠ A MOLDURA EXTRA E O TÍTULO "FEITIÇO" SAÍRAM em 2026-09-07. O editor já
+     mora dentro do cartão do Feitiço, então a borda era uma segunda caixa em
+     volta da mesma coisa, e um cabeçalho de seção escrito "Feitiço" dentro de um
+     Feitiço não separa nada de nada. */
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-950/30 p-3 space-y-3">
+    <div className="space-y-3">
       <ModoAuxToggle f={f} onPatch={onPatch} />
 
-      <SecaoFeitico titulo="Feitiço">
-        <AuxParametros p={p}>
+      <AuxParametros p={p}>
           <div>
             <FieldLabel>Efeito Auxiliar</FieldLabel>
             <Select
@@ -6097,10 +6484,9 @@ function FeiticoAuxiliarEditor({ feitico, calc, onPatch }) {
               />
             </div>
           )}
-        </AuxParametros>
-      </SecaoFeitico>
+      </AuxParametros>
 
-      {calc && <ResultadoAuxiliar calc={calc} feitico={f} />}
+      {calc && <NotasDoAuxiliar calc={calc} />}
     </div>
   );
 }
@@ -6184,11 +6570,10 @@ function FeiticoAuxMultiplos({ feitico, calc, onPatch }) {
   };
 
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-950/30 p-3 space-y-3">
+    <div className="space-y-3">
       <ModoAuxToggle f={f} onPatch={onPatch} />
 
-      <SecaoFeitico titulo="Feitiço">
-        <AuxParametros p={p}>
+      <AuxParametros p={p}>
           <div>
             <FieldLabel>Requisito</FieldLabel>
             <Select
@@ -6197,8 +6582,7 @@ function FeiticoAuxMultiplos({ feitico, calc, onPatch }) {
               options={[{ value: "nenhum", label: "Nenhum" }, ...REQUISITO_DIFICULDADE.map((r) => ({ value: r.value, label: `${r.label} (+${r.pe} PE)` }))]}
             />
           </div>
-        </AuxParametros>
-      </SecaoFeitico>
+      </AuxParametros>
 
       <SecaoFeitico titulo="Efeitos">
         {calc?.orcamento && <OrcamentoBar calc={calc} />}
@@ -6225,7 +6609,7 @@ function FeiticoAuxMultiplos({ feitico, calc, onPatch }) {
         </button>
       </SecaoFeitico>
 
-      {calc && <ResultadoAuxiliar calc={calc} feitico={f} />}
+      {calc && <NotasDoAuxiliar calc={calc} />}
     </div>
   );
 }
@@ -6358,72 +6742,26 @@ function EfeitoMultLinha({ entry, sub, nivelFeitico, opcoesEfeito, onChange, onR
   );
 }
 
-/* Pill secundário do resultado (rótulo pequeno + valor mono). */
-function AuxPill({ rotulo, valor }) {
-  return (
-    <span className="inline-flex items-baseline gap-1.5 rounded-md border border-slate-700/70 bg-slate-900/70 px-2 py-1">
-      <span className="text-[9px] uppercase tracking-wider text-slate-500">{rotulo}</span>
-      <span className="font-mono font-semibold text-[12px] tabular-nums text-slate-200">{valor}</span>
-    </span>
-  );
-}
-
-/* Resultado do Auxiliar, o mesmo hero nos dois modos: o que o Feitiço entrega em
-   destaque, selo de duração, pills de custo e os avisos agregados. No efeito
-   único o destaque é o valor; no múltiplo é a lista de efeitos com seus valores. */
-function ResultadoAuxiliar({ calc, feitico }) {
-  const multiplo = !!calc.multiplos;
-  const duracao = multiplo ? calc.duracao : (feitico.duracaoAux || "imediata");
-  const durLabel = AUX_DURACOES.find((d) => d.value === duracao)?.label;
-  const rodadas = multiplo ? feitico.rodadasMult : calc.rodadas;
-
-  const pills = [];
-  if (calc.custoPE != null) pills.push({ k: "Custo", v: `${calc.custoPE} PE` });
-  if (duracao === "sustentada" && calc.upkeepPE) pills.push({ k: "Sustentar", v: `${calc.upkeepPE} PE/rd` });
-  if (duracao === "duradoura" && rodadas != null) pills.push({ k: "Rodadas", v: rodadas });
-  if (calc.alvos > 1) pills.push({ k: "Alvos", v: calc.alvos });
-  if (!multiplo && calc.dado) pills.push({ k: "Média", v: calc.valor ?? "-" });
-
-  // Avisos do Feitiço e dos sub-efeitos juntos: um lugar só para olhar.
+/**
+ * ⚠ O CARTÃO DE DESTAQUE DO AUXILIAR SAIU, e ele era o melhor painel de
+ * resultado dos seis: número grande, gradiente roxo, pílula de duração no canto.
+ *
+ * Ele saiu justamente por ser bom. Com a barra grudada mostrando o mesmo valor
+ * 40px acima, os dois brigavam pela mesma leitura, e a barra ganha por estar
+ * sempre visível enquanto se rola o editor. É a mesma correção que o cartão de
+ * Ação da Invocação levou em 2026-09-02, quando o resumo do cabeçalho e a pílula
+ * de prévia mostravam dois danos diferentes lado a lado.
+ *
+ * O que sobra aqui é o que a barra não cabe: a decomposição por efeito no modo
+ * Múltiplos Efeitos, que é uma lista, e não um número.
+ */
+function NotasDoAuxiliar({ calc }) {
   const avisos = [...(calc.avisos || []), ...((calc.efeitos || []).flatMap((e) => e.avisos || []))];
-
-  // Destaque do efeito único: número grande + unidade; especial é texto.
-  const indisponivel = !multiplo && !calc.disponivel;
-  let bigMain, bigUnit = null, bigClass;
-  if (multiplo) { bigMain = null; }
-  else if (indisponivel) { bigMain = "—"; bigClass = "text-2xl text-slate-600"; }
-  else if (calc.especial) { bigMain = calc.especial; bigClass = "text-xl text-purple-100"; }
-  else if (calc.dado) { bigMain = calc.notacao; bigClass = "text-3xl text-white"; }
-  else {
-    const v = calc.valor;
-    bigMain = `${v > 0 ? "+" : ""}${String(v).replace(".", ",")}`;
-    bigUnit = calc.unidade || null;
-    bigClass = "text-3xl text-white";
-  }
-
-  const titulo = multiplo
-    ? `${calc.efeitos.length} Efeito${calc.efeitos.length === 1 ? "" : "s"}`
-    : calc.efeitoLabel;
-
+  const multiplo = !!calc.multiplos;
   return (
-    <div className="rounded-xl border border-purple-900/40 bg-gradient-to-br from-purple-950/40 via-slate-950/50 to-slate-950/70 p-4">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="text-[10px] font-semibold uppercase tracking-wider text-purple-300/80 truncate">{titulo}</div>
-          {!multiplo && (
-            <div className="mt-0.5 flex items-baseline gap-1.5 leading-tight">
-              <span className={`font-mono font-bold tabular-nums ${bigClass}`}>{bigMain}</span>
-              {bigUnit && <span className="text-sm font-semibold text-purple-300/80">{bigUnit}</span>}
-            </div>
-          )}
-        </div>
-        {durLabel && (
-          <span className="flex-shrink-0 text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full border border-purple-700/50 bg-purple-950/60 text-purple-200">{durLabel}</span>
-        )}
-      </div>
-
+    <NotasDeFeitico avisos={avisos}>
       {multiplo && calc.efeitos.length > 0 && (
-        <div className="mt-2 flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-1.5">
           {calc.efeitos.map((e) => (
             <span key={e.id} className="inline-flex items-baseline gap-1.5 rounded-md border border-purple-900/50 bg-purple-950/30 px-2 py-1">
               <span className="text-[10px] text-purple-200/70 truncate max-w-[11rem]">{e.efeitoLabel}</span>
@@ -6432,23 +6770,7 @@ function ResultadoAuxiliar({ calc, feitico }) {
           ))}
         </div>
       )}
-
-      {!indisponivel && pills.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-1.5">
-          {pills.map((p) => <AuxPill key={p.k} rotulo={p.k} valor={p.v} />)}
-        </div>
-      )}
-
-      {avisos.length > 0 && (
-        <ul className="mt-3 space-y-0.5 border-t border-slate-800/70 pt-2.5">
-          {avisos.map((a, i) => (
-            <li key={i} className="text-[11px] text-amber-400 flex items-start gap-1">
-              <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" /> {a}
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+    </NotasDeFeitico>
   );
 }
 
@@ -8382,6 +8704,10 @@ function TabEspecializacoes({ draft, derived, setEspecializacoes, toggleHabilida
   // Restringido, e sem passar isso aqui a lista da tela negaria o que o
   // resolveEspecializacoes já aceita.
   const disponiveis = especializacoesDisponiveis(draft.core.origem?.id, origensQualificadas(draft));
+  /* O que a ficha GUARDA e a origem de hoje não permite. Some da conta e é DITO,
+     em vez de sumir calado: existe ficha gravada de Sem Técnica com Conjurador,
+     de quando a proibição do livro era só um chip de texto (2026-09-07). */
+  const recusadas = especializacoesRecusadas(draft);
 
   // Multiclasse pede 2 slots E nível para dividir (cada uma tem mínimo 1),
   // então o ND 1 não comporta.
@@ -8400,6 +8726,9 @@ function TabEspecializacoes({ draft, derived, setEspecializacoes, toggleHabilida
       return;
     }
     if (atuais.length === 0) { gravar([{ id, nivel: total }]); return; }
+    // Uma variação e a classe que ela varia não dividem ficha. O chip já vem
+    // desabilitado, e isto é o cinto: `toggle` também é chamado pelo teclado.
+    if (especializacaoIncompativel(id, atuais.map((e) => e.id))) return;
     // Entrando na multiclasse: divide o ND ao meio como ponto de partida.
     if (podeMulticlasse && atuais.length === 1) {
       gravar([{ id: atuais[0].id, nivel: Math.ceil(total / 2) }, { id, nivel: 1 }]);
@@ -8424,6 +8753,19 @@ function TabEspecializacoes({ draft, derived, setEspecializacoes, toggleHabilida
   return (
     <>
     <Card title="Especializações">
+      {/* O que a ficha trazia e a origem não permite. Fica ANTES da fileira: a
+          pessoa precisa entender por que o chip que ela lembra não está lá. */}
+      {recusadas.length > 0 && (
+        <ul className="mb-2 space-y-1">
+          {recusadas.map((r) => (
+            <li key={r.id} className="text-[11px] text-amber-400 flex items-start gap-1.5">
+              <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" aria-hidden="true" />
+              <span><b>{r.nome}</b> saiu da ficha. {r.motivo}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+
       {/* As 6 à mostra, numa fileira. Mesma pílula roxa das abas de
           categoria de Aptidões, com semântica de toggle (aria-pressed). */}
       <div className="flex gap-1 flex-wrap" role="group" aria-label="Especializações">
@@ -8432,11 +8774,14 @@ function TabEspecializacoes({ draft, derived, setEspecializacoes, toggleHabilida
           const ativa = slot >= 0;
           const cheio = !ativa && escolhidas.length >= max;
           const semNd = !ativa && escolhidas.length === 1 && !podeMulticlasse;
-          const off = cheio || semNd;
+          const brigaCom = ativa ? null : especializacaoIncompativel(esp.id, escolhidas.map((e) => e.id));
+          const off = cheio || semNd || !!brigaCom;
           const nivel = ativa ? escolhidas[slot].nivel : 0;
-          const titulo = semNd
-            ? `ND ${total} não comporta multiclasse (cada Especialização tem nível mínimo 1)`
-            : cheio ? `Máximo de ${max} Especializações` : undefined;
+          const titulo = brigaCom
+            ? `Não convive com ${getEspecializacao(brigaCom)?.nome ?? brigaCom}`
+            : semNd
+              ? `ND ${total} não comporta multiclasse (cada Especialização tem nível mínimo 1)`
+              : cheio ? `Máximo de ${max} Especializações` : undefined;
 
           /* Com ±, o chip vira uma CAIXA com botões dentro (o nome e os ±
              são alvos separados). <button> dentro de <button> é HTML
@@ -8511,6 +8856,27 @@ function TabEspecializacoes({ draft, derived, setEspecializacoes, toggleHabilida
           A Origem Restringido define a Especialização e o Tipo, e não permite multiclasse.
         </p>
       )}
+
+      {/* O texto da CLASSE ESCOLHIDA.
+
+          ⚠ Nasceu em 2026-09-07 e é INERTE no raw: as seis Especializações do
+          livro têm `descricao` vazia até o autor mandar o texto. Existe porque
+          uma Especialização de Addon não tinha onde dizer o que ela é, e as
+          regras de leitura do Especialista em Estilo (que aptidão recebe qual
+          bônus, o que vira mesa) não cabem em habilidade nenhuma: elas são da
+          classe. Quando o texto do livro chegar, as seis herdam o lugar. */}
+      {escolhidas.map(({ id }) => {
+        const def = getEspecializacao(id);
+        if (!def?.descricao) return null;
+        return (
+          <div key={id} className="mt-3">
+            <div className="text-[11px] font-semibold text-slate-300">{def.nome}</div>
+            <p className="text-[11px] text-slate-400 leading-relaxed whitespace-pre-line mt-0.5">
+              {def.descricao}
+            </p>
+          </div>
+        );
+      })}
     </Card>
 
     {/* As Habilidades de Especialização moram AQUI, embaixo dos chips
@@ -9744,6 +10110,9 @@ function TabAptidoes({
     periciaProf: derived.periciaProf,
     resistenciaProf: derived.resistenciaProf,
     periciaOficios: derived.periciaOficios,
+    // Quanto o pré-requisito de NÍVEL desce (canal `reduzNivelAptidao`). Zero
+    // em toda ficha sem um Addon que o emita.
+    reduzNivelAptidao: derived.reduzNivelAptidao,
   };
 
   const [catTab, setCatTab] = useState("aura");
@@ -12567,6 +12936,7 @@ function InvocacaoPericias({ inv, allowance, fontes, onPatch }) {
 
 /* Um cartão da fileira: retrato, nome, grau e os três números de relance. */
 function InvocacaoMiniatura({ inv, resolvida, selecionada, onSelecionar }) {
+  const ref = useVisivelNaFileira(selecionada);
   const [erroUrl, setErroUrl] = useState(null);
   const r = resolvida || {};
   const g = grauMeta(inv.grau);
@@ -12575,6 +12945,7 @@ function InvocacaoMiniatura({ inv, resolvida, selecionada, onSelecionar }) {
   const avisos = r.warnings || [];
   return (
     <button
+      ref={ref}
       type="button"
       onClick={onSelecionar}
       aria-pressed={selecionada}
@@ -13939,8 +14310,42 @@ function LimitesResumo({ acesso, controle, marcadores }) {
 /* ⚠ `overflow-x-auto no-scrollbar` esconde a barra de rolagem, e com cinco
    invocações a última nascia CORTADA na borda direita sem nada dizendo que
    havia mais para o lado. A máscara é essa afirmação, e ela apaga sozinha ao
-   chegar no fim, senão viraria decoração permanente. */
-function FileiraInvocacoes({ children, onNova }) {
+   chegar no fim, senão viraria decoração permanente.
+
+   ⚠ ELA ERA `FileiraInvocacoes` E VIROU GENÉRICA em 2026-09-07, quando os
+   Feitiços ganharam a mesma fileira. O que mora aqui é comportamento medido e
+   caro: a roda vertical rolando de lado, as setas para quem não pensa em rolar,
+   a máscara das bordas e o botão de novo FORA do rolador. Uma segunda cópia
+   divergiria no primeiro conserto, e este componente já levou dois. */
+/**
+ * Puxa o cartão selecionado para dentro da vista da fileira.
+ *
+ * ⚠ ISTO É CONSERTO DE UM DEFEITO REAL, e ele existe na aba de Invocações desde
+ * que ela virou mestre-detalhe: com quatro cartões visíveis e catorze na ficha,
+ * criar o décimo quarto o seleciona e o editor passa a mostrá-lo, mas a fileira
+ * continua parada nos quatro primeiros, sem nenhum deles aceso. A tela fica
+ * dizendo "nenhum selecionado" enquanto se edita um.
+ *
+ * ⚠ A ROLAGEM É CALCULADA À MÃO, e não por `scrollIntoView`. O `scrollIntoView`
+ * rola TODO ancestral rolável até o elemento aparecer, então ele mexeria também
+ * na rolagem vertical da página: clicar numa miniatura saltaria a página inteira.
+ * Aqui só o `scrollLeft` do container é tocado.
+ */
+function useVisivelNaFileira(selecionado) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const el = ref.current;
+    const fila = el?.parentElement;
+    if (!selecionado || !el || !fila) return;
+    const c = el.getBoundingClientRect();
+    const f = fila.getBoundingClientRect();
+    if (c.left < f.left) fila.scrollLeft -= f.left - c.left + 8;
+    else if (c.right > f.right) fila.scrollLeft += c.right - f.right + 8;
+  }, [selecionado]);
+  return ref;
+}
+
+function FileiraDeCartoes({ children, onNova, rotuloNovo, rotuloAnterior, rotuloProximo }) {
   const ref = useRef(null);
   const [pode, setPode] = useState({ esq: false, dir: false });
   const medir = useCallback(() => {
@@ -13997,7 +14402,7 @@ function FileiraInvocacoes({ children, onNova }) {
         {pode.esq && (
           <>
             <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-slate-900 to-transparent" />
-            <button type="button" onClick={() => rolar(-1)} className={`${seta} left-1`} aria-label="Ver invocações anteriores">
+            <button type="button" onClick={() => rolar(-1)} className={`${seta} left-1`} aria-label={rotuloAnterior}>
               <ChevronLeft className="w-4 h-4" aria-hidden="true" />
             </button>
           </>
@@ -14005,7 +14410,7 @@ function FileiraInvocacoes({ children, onNova }) {
         {pode.dir && (
           <>
             <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-slate-900 to-transparent" />
-            <button type="button" onClick={() => rolar(1)} className={`${seta} right-1`} aria-label="Ver próximas invocações">
+            <button type="button" onClick={() => rolar(1)} className={`${seta} right-1`} aria-label={rotuloProximo}>
               <ChevronRight className="w-4 h-4" aria-hidden="true" />
             </button>
           </>
@@ -14020,8 +14425,8 @@ function FileiraInvocacoes({ children, onNova }) {
         type="button"
         onClick={onNova}
         className="flex-shrink-0 w-12 inline-flex flex-col items-center justify-center gap-1 text-[12px] font-semibold rounded-lg border border-dashed border-slate-700 text-slate-400 hover:text-white hover:border-slate-600 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-500"
-        title="Nova invocação"
-        aria-label="Nova invocação"
+        title={rotuloNovo}
+        aria-label={rotuloNovo}
       >
         <Plus className="w-4 h-4" aria-hidden="true" />
       </button>
@@ -14118,7 +14523,12 @@ function TabInvocacoes({ draft, derived, addInvocacao, removeInvocacao, duplicar
           {/* A FILEIRA. Rolagem horizontal, e não quebra de linha: com sete
               invocações a quebra empurra o editor para fora da tela, e a
               fileira deixa de ser referência rápida para virar meia página. */}
-          <FileiraInvocacoes onNova={novaInvocacao}>
+          <FileiraDeCartoes
+            onNova={novaInvocacao}
+            rotuloNovo="Nova Invocação"
+            rotuloAnterior="Ver Invocações Anteriores"
+            rotuloProximo="Ver Próximas Invocações"
+          >
             {lista.map((inv) => (
               <InvocacaoMiniatura
                 key={inv.id}
@@ -14128,7 +14538,7 @@ function TabInvocacoes({ draft, derived, addInvocacao, removeInvocacao, duplicar
                 onSelecionar={() => setEscolhidaId(inv.id)}
               />
             ))}
-          </FileiraInvocacoes>
+          </FileiraDeCartoes>
 
           {escolhida && (
             <InvocacaoCard

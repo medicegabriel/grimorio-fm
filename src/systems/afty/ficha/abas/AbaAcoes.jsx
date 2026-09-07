@@ -4,7 +4,8 @@ import { AlertTriangle, ChevronDown, ChevronRight } from "lucide-react";
 import { DicaDeTexto, NumeroComFontes } from "../../ui/fontes";
 import { sinalDe } from "../../ui/formato";
 import { curaNoGasto, rotuloBloco } from "../../afty-cura";
-import { tituloCustoFeitico } from "../../afty-feiticos";
+import { tituloCustoFeitico, TIPO_FEITICO_LABEL } from "../../afty-feiticos";
+import { IconeDeTipo } from "../../ui/feitico-tipo";
 import { RITUAL_MELHORIAS } from "../../afty-rituais";
 import { facesDe } from "../ficha-rolagem";
 import { useDestaque } from "../usar-destaque";
@@ -528,63 +529,84 @@ function LinhaFeitico({
       className="afty-linha afty-feitico"
       data-afty-alvo={destacado ? "sim" : undefined}
     >
+      {/* ⚠ A LINHA FECHADA PASSOU A INFORMAR, em 2026-09-07. Ela mostrava SÓ o
+          nome, centralizado, numa faixa de 1373px: o nível, o custo e o
+          triângulo de aviso ficavam escondidos por
+          `.afty-feitico:not([open]) .afty-feitico-meta { display: none }` e
+          apareciam só depois de abrir.
+
+          Isso é o avesso do que a mesa precisa. Doze Feitiços fechados eram doze
+          nomes soltos, e descobrir qual causa 22d10 exigia abrir os doze, um por
+          um. O relato do autor sobre a Ficha ("dificuldades de obter as
+          informações") é esta linha.
+
+          Agora a linha fechada carrega, da esquerda para a direita: o ícone do
+          TIPO, o nome, o nível, o VALOR e o custo. O que muda ao abrir é o
+          detalhe, e não a identidade. */}
       <summary className="afty-feitico-topo" title={titulo}>
         <ChevronRight className="afty-feitico-seta" aria-hidden="true" />
+        <span className="afty-feitico-tipo" title={TIPO_FEITICO_LABEL[f.tipo] ?? ""}>
+          <IconeDeTipo tipo={f.tipo} className="w-3.5 h-3.5" />
+        </span>
         <span className="afty-feitico-nome">
           {f.nome || "Feitiço Sem Nome"}
         </span>
-        <span className="afty-feitico-meta">- {f.nivelLabel}</span>
-        {f.custoPE != null && (
-          <span className="afty-feitico-custo afty-feitico-meta" title={tituloCustoFeitico(f)}>({f.custoPE} PE)</span>
-        )}
+        <span className="afty-feitico-nivel">{f.nivelLabel}</span>
         {f.variacao && (
-          <span className="afty-chip afty-feitico-meta" title="Variação de liberação">Var.</span>
+          <span className="afty-chip afty-feitico-var" title="Variação de liberação">Var.</span>
         )}
         {f.avisos.length > 0 && (
           <AlertTriangle
-            className="afty-feitico-meta w-3.5 h-3.5 flex-shrink-0"
+            className="afty-feitico-alerta w-3.5 h-3.5 flex-shrink-0"
             style={{ color: "var(--afty-aviso)" }}
             aria-hidden="true"
             title={f.avisos.join("\n")}
           />
         )}
+        {/* ⚠ O VALOR E O CUSTO VÃO PARA A DIREITA, e não colados no nome. São os
+            dois números que se comparam ENTRE Feitiços, e comparar coluna exige
+            que eles comecem no mesmo x em toda linha. Presos ao nome, cada um
+            começava onde o nome do vizinho terminava. */}
+        <span className="afty-feitico-numeros">
+          {f.valor && (
+            <span className="afty-feitico-valor" title={`${f.valorLabel}: ${f.valor}`}>{f.valor}</span>
+          )}
+          {f.custoPE != null && (
+            <span className="afty-feitico-custo" title={tituloCustoFeitico(f)}>{f.custoPE} PE</span>
+          )}
+        </span>
       </summary>
       <div className="afty-feitico-corpo">
-        {(propriedadesFixas.length > 0 || propriedadeValor || rolagens.length > 0 || f.custoVidaAtivacao) && (
-          <dl className="afty-feitico-propriedades">
-            {propriedadesFixas.map((propriedade) => (
-              <div key={propriedade.id} className="afty-feitico-propriedade" data-afty-propriedade={propriedade.id}>
-                <dt>{propriedade.nome}:</dt>
-                <dd>{propriedade.valor}</dd>
-              </div>
-            ))}
+        {/* ---------- 1. O QUE ELE ROLA ----------
+            ⚠ A ROLAGEM ERA A ÚLTIMA LINHA de uma `<dl>` plana, com o mesmo peso
+            de "Duração: Instantânea". Ela é a única coisa CLICÁVEL do cartão e é
+            a razão de abrir o Feitiço no meio da luta, então sobe para o topo e
+            ganha caixa própria, no mesmo espírito da tira de stats da Invocação.
+
+            ⚠ Quando não há dado a rolar (um Auxiliar de Defesa, uma
+            Invisibilidade), o VALOR ocupa o mesmo lugar com o mesmo peso: a
+            pergunta "o que este Feitiço entrega" tem de ter uma resposta no
+            mesmo lugar em todo tipo. */}
+        {(rolagens.length > 0 || propriedadeValor) && (
+          <div className="afty-feitico-saida">
             {rolagens.length === 0 && propriedadeValor && (
-              <div className="afty-feitico-propriedade" data-afty-propriedade="valor">
-                <dt>{propriedadeValor.nome}:</dt>
-                <dd className="afty-valor">{propriedadeValor.valor}</dd>
-              </div>
-            )}
-            {f.custoVidaAtivacao && (
-              <div className="afty-feitico-propriedade" data-afty-propriedade="custoVida">
-                <dt>Custo de Vida:</dt>
-                <dd className="flex items-center gap-1.5">
-                  <span className="afty-valor">{f.custoVidaAtual} PV</span>
-                  {!f.custoVidaDisponivel && (
-                    <AlertTriangle className="w-3.5 h-3.5" aria-label="Vida insuficiente" title="Vida insuficiente" />
-                  )}
-                </dd>
+              <div className="afty-feitico-saida-item">
+                <span className="afty-feitico-saida-rotulo">{propriedadeValor.nome}</span>
+                <span className="afty-valor afty-feitico-saida-num">{propriedadeValor.valor}</span>
               </div>
             )}
             {rolagens.map((r, indice) => (
-              <div key={`${r.rotulo}:${indice}`} className="afty-feitico-propriedade" data-afty-propriedade="rolagem">
-                <dt>{rolagens.length > 1 ? r.rotulo : (propriedadeValor?.nome || f.valorLabel)}:</dt>
-                <dd className="flex items-center gap-1.5">
+              <div key={`${r.rotulo}:${indice}`} className="afty-feitico-saida-item">
+                <span className="afty-feitico-saida-rotulo">
+                  {rolagens.length > 1 ? r.rotulo : (propriedadeValor?.nome || f.valorLabel)}
+                </span>
+                <span className="flex items-center gap-1.5">
                   <NumeroComFontes
                     valor={`${r.dados}d${r.faces}${r.explosiva ? "!" : ""}${r.fixo ? `${r.fixo > 0 ? "+" : ""}${r.fixo}` : ""}`}
                     partes={r.partes}
                     total={`${r.dados}d${r.faces}${r.explosiva ? "!" : ""}${r.fixo ? `${r.fixo > 0 ? "+" : ""}${r.fixo}` : ""}`}
                     formatar={false}
-                    className="afty-valor text-[13px] whitespace-nowrap"
+                    className="afty-valor afty-feitico-saida-num whitespace-nowrap"
                     titulo={r.rotulo}
                     onRolar={(f.ritual?.ativo && !f.ritual?.podeRolarFeitico)
                       || (indice === 0 && f.custoVidaAtivacao && !f.custoVidaDisponivel)
@@ -594,9 +616,39 @@ function LinhaFeitico({
                   {r.vezes > 1 && (
                     <span className="afty-chip" title={`${r.vezes} ${r.rotulo}s`}>×{r.vezes}</span>
                   )}
-                </dd>
+                </span>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* ---------- 2. O QUE SE CONSULTA ----------
+            ⚠ ERA UMA PROPRIEDADE POR LINHA, numa coluna de 1373px: seis linhas
+            empilhadas usando 200px de largura e deixando 85% do cartão vazio.
+            Agora é uma grade `auto-fill`, que é a mesma escolha da tira de stats
+            da Invocação, e pelo mesmo motivo: nunca colunas fixas, porque o
+            cartão tem dois donos (a Ficha e o painel de Encontros) com larguras
+            bem diferentes. Seis propriedades viram duas filas em 1440px e seguem
+            empilhando no telefone. */}
+        {(propriedadesFixas.length > 0 || f.custoVidaAtivacao) && (
+          <dl className="afty-feitico-propriedades">
+            {propriedadesFixas.map((propriedade) => (
+              <div key={propriedade.id} className="afty-feitico-propriedade" data-afty-propriedade={propriedade.id}>
+                <dt>{propriedade.nome}</dt>
+                <dd>{propriedade.valor}</dd>
+              </div>
+            ))}
+            {f.custoVidaAtivacao && (
+              <div className="afty-feitico-propriedade" data-afty-propriedade="custoVida">
+                <dt>Custo de Vida</dt>
+                <dd className="flex items-center gap-1.5">
+                  <span className="afty-valor">{f.custoVidaAtual} PV</span>
+                  {!f.custoVidaDisponivel && (
+                    <AlertTriangle className="w-3.5 h-3.5" aria-label="Vida insuficiente" title="Vida insuficiente" />
+                  )}
+                </dd>
+              </div>
+            )}
           </dl>
         )}
         {f.descricao && (

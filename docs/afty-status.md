@@ -1,6 +1,6 @@
 # Status do Grimório Afty (handoff para chat novo)
 
-Estado atual do sistema Afty (atualizado 2026-09-06). Leia junto com:
+Estado atual do sistema Afty (atualizado 2026-09-07). Leia junto com:
 `docs/roadmap-versionamento-e-fichas.md` (arquitetura) e `docs/afty-formulas-base.md` (fórmulas).
 
 > 📋 **A FILA DE TRABALHO NÃO É ESTE ARQUIVO.** Desde 2026-08-09 toda pendência mora em
@@ -118,6 +118,313 @@ Estado atual do sistema Afty (atualizado 2026-09-06). Leia junto com:
 >
 > 👉 **Começando um chat novo? Vá direto para
 > [PENDÊNCIAS DE ESPECIALIZAÇÕES](#-pendências-de-especializações-lista-de-retomada).**
+
+---
+
+## SESSÃO DE 2026-09-07 (parte 2): O ESPECIALISTA EM ESTILO, E A HERANÇA DE ESPECIALIZAÇÃO
+
+O autor mandou o texto de uma variação do Especialista em Técnicas para o Sem Técnica, em imagem, e
+pediu análise antes de código. Fechou em **`docs/afty-especialista-estilo.md`**, com o pacote em
+`addons/especialista-em-estilo.json` e 88 asserts em `asserts/t-especialista-estilo.mjs`.
+
+### O que o texto era
+
+Seis **regras de leitura** sobre as 65 habilidades de Conjurador que já estavam transcritas, e não
+uma classe nova. Medido antes de decidir: 29 delas citam "Feitiço" e precisam de releitura, e **27
+não citam Feitiço, Ritual nem Aptidão** e valem exatamente como estão. O caminho de copiar as 65
+para dentro do JSON foi recusado pelo mesmo "não cabe" que criou a família `clas`: cópia congelada
+do livro dentro de addon dá dois donos a cada errata.
+
+O verbo que entrou no motor foi **`herdaDe`**. O addon declara duas habilidades, e as outras 63
+chegam pela herança. A outra metade dela é que o `deriveAfty` publica o nível da herdeira **também
+sob o nome da mãe**, o que faz as 16 expressões clonadas continuarem valendo sem uma busca e troca
+em texto de DSL.
+
+### A trava do livro era só um chip vermelho
+
+*"Não pode ter a especialização Especialista em Técnicas"* estava no `restricoes` do Sem Técnica
+desde sempre, e `especializacoesDisponiveis` filtrava por `exclusivaOrigemId` e mais nada. **O
+criador deixava um Sem Técnica marcar Conjurador.** Passou a vetar de verdade
+(`especializacoesVetadas`), e a ficha gravada com o par proibido continua abrindo: o que sai da
+conta é DITO pela aba, por `especializacoesRecusadas`, em vez de sumir calado.
+
+### Dois bugs calados que valiam para TODA Especialização de Addon
+
+A família está ligada desde 2026-08-20 e ninguém tinha escrito uma até aqui. Os dois só apareceram
+porque esta precisava escalar com o próprio nível.
+
+1. **O `esc_` de uma classe de addon era um nome impossível.** `afty-efeitos.js` montava
+   `esc_${id}` cru, e id de addon traz o namespace: `esc_meu-pacote:esp_x`. O tokenizer do DSL para
+   no `-` e no `:`, então a chave existia no contexto e nenhuma expressão conseguia escrevê-la.
+   Passou pelo `normalizarVariavel`, que já existia e que os estados de combate já usavam. ⚠ Nos
+   ids do livro ele é a IDENTIDADE, e o assert varre os três catálogos medindo isso.
+2. **O `VOCABULARIO_DSL` era uma fotografia do raw**, tirada no import. Os religadores dão `splice`
+   depois, então nada de addon era declarado a zero, e o próprio comentário em cima da constante
+   explica o estrago: expressão com identificador não declarado cai no fallback INTEIRA e calada.
+   Virou `vocabularioDoMundo()`, com cache pela `epocaAddons()`.
+
+### Mais três achados de infraestrutura
+
+- **A ordem de religação das famílias era acidente.** Era a de inserção no `Map`, que é a ordem de
+  import dos módulos. Passou a ser declarada (`ordem` no `registrarFamilia`), porque `habilidades`
+  agora lê o catálogo de `especializacoes` já religado.
+- **`caminhosDeId` ignorava lista de string.** O caminho `incompativeisIds[]` casava o `if`, o
+  `sub` vazio derrubava a condição, e a lista ficava crua.
+- **A família `habilidades` não declarava `especializacaoId`.** Um pacote com a Especialização E as
+  habilidades dela era reprovado inteiro. Nunca tinha aparecido porque o único exemplo escrito
+  pendura as habilidades numa classe do LIVRO.
+
+### O que ficou de fora, por decisão
+
+Ritualizar Estilo é procedimento de mesa por ora, e a frase *"manter dois Estilos da sombra durante
+uma rodada"* ficou fora do pacote porque o autor não a reconheceu. As duas, mais o Ápice que cita
+habilidade de Conjurador por id cru, estão em `docs/a-fazer.md`.
+
+---
+
+## SESSÃO DE 2026-09-07: OS FEITIÇOS GANHARAM AS QUATRO FAIXAS, E A LINHA FECHADA PASSOU A INFORMAR
+
+Pedido do autor, em duas metades: *"precisamos atacar a aparência do Criador de Feitiços na aba de
+Criar Criatura, e a aparência dos Feitiços na Ficha Final"*, porque *"recebi reclamações sobre a
+aparência e sobre que não é intuitivo para CRIAR um Feitiço, com as pessoas levando muito tempo para
+se acharem no criador, e com dificuldades de obter as informações na ficha final"*. E a régua:
+*"Eu já fiz uma revisão parecida na Aba de Invocações, verifique lá para pegar ideias e aprimore o
+que foi feito lá"*.
+
+### O diagnóstico, MEDIDO no navegador antes de mexer
+
+Ficha de teste: jogador de nível 20 (Conjurador 12 + Suporte 8), com um Feitiço de cada tipo e cada
+subtipo Especial, treze ao todo.
+
+| | antes |
+|---|---|
+| card Feitiços, tudo fechado | **1924px** |
+| UM Feitiço de Dano aberto | **1515px** |
+| do topo do card até o PRIMEIRO número | **1218px** |
+| seção FEITIÇOS na Ficha, 12 fechados | 621px, linha de 41px por 1373px de largura |
+| o que uma linha fechada dizia | **o nome, e só** |
+
+Os 1218px são a doença do criador. O painel de resultado era o ÚLTIMO bloco do editor, depois de nove
+seções todas abertas ao mesmo tempo, então em qualquer janela normal o número ficava fora da tela o
+tempo inteiro em que se edita. Mexer numa troca e não ver o dano mudar é editar às cegas, que é
+exatamente o que a Invocação tinha antes da barra grudada.
+
+A segunda doença era a LISTA: treze Feitiços eram treze linhas de acordeão, e abrir uma empurrava as
+outras 1500px para baixo. Comparar dois era impossível.
+
+Na Ficha o defeito era um só e estava no CSS: `.afty-feitico:not([open]) .afty-feitico-meta {
+display: none }` escondia nível, custo e o triângulo de aviso **no estado fechado**, que é o estado em
+que a linha é lida. Doze Feitiços eram doze nomes centralizados numa faixa de 1373px, e descobrir qual
+causa 22d10 exigia abrir os doze, um por um.
+
+### O criador: as quatro faixas da Invocação, mais uma
+
+```
+0. FILEIRA     as miniaturas, e o editor mostra UMA por vez.
+1. IDENTIDADE  Nome, Tipo e Nível. Os três que se mexe sempre.
+2. RESULTADO   barra GRUDADA: valor, custo, CD, alcance, área.
+3. EDITOR      as sub-abas.
+4. DETALHE     as notas de regra e a Descrição.
+```
+
+| | antes | depois |
+|---|---|---|
+| card Feitiços (13 Feitiços) | 1924px | **876px** |
+| um Feitiço de Dano aberto | 1515px | **661px** |
+| do topo do editor ao primeiro resultado | 1218px | **167px** |
+
+### O que MELHORA sobre a Invocação, que é o que o autor pediu
+
+**1. A miniatura carrega o RESULTADO.** A da Invocação mostra retrato, PV, Defesa e custo. Feitiço não
+tem retrato, e o que a mesa procura é outro: o ícone do TIPO, o nível, o valor (`14d8+10`) e o custo.
+A fileira passa a responder "qual eu lanço" sem abrir nada.
+
+⚠ **O resumo vem do MOTOR**, e não de um cálculo na miniatura: `derived.feiticos.lista` já traz tudo,
+montado uma vez pelo `resumoFeiticos`. Recalcular por miniatura seria rodar treze vezes o mesmo motor
+a cada tecla digitada no nome.
+
+**2. As sub-abas são as MESMAS nos seis tipos.** A Invocação tem cinco abas fixas porque só existe um
+tipo de invocação. Feitiço tem seis tipos com editores bem diferentes, e a tentação era uma aba por
+editor: seis vocabulários para aprender, que é a causa do *"levando muito tempo para se acharem"*.
+
+```
+Base       o que o Feitiço é e como se conjura
+Trocas     tudo que troca um eixo por outro, incluindo o Requisito
+Condições  o que ele aplica (ou, no Curativo, o que ele Remove)
+```
+
+Aba sem conteúdo naquele tipo **não nasce**, então um Passivo mostra uma só e um Dano mostra as três,
+e a tira de abas nem é montada quando há uma aba só. Quem aprendeu onde ficam as Trocas num Feitiço
+de Dano sabe onde elas ficam no Golpeador.
+
+⚠ **A aba ativa volta para a Base quando o tipo muda** e a aba aberta deixa de existir. Sem isso,
+editar um Dano na aba Trocas e trocar o tipo para Passivo deixava o editor VAZIO, com a fileira e a
+barra funcionando e nada no meio.
+
+**3. O TIPO ganhou ícone, e ele é o mesmo nas três telas.** O tipo é a decisão que troca o editor
+inteiro, e era seis chips de texto idênticos no meio do cartão, abaixo do Nome. Subiu para a
+Identidade e ganhou marca visual em `ui/feitico-tipo.jsx`, usada pelo criador, pela miniatura e pela
+Ficha Final.
+
+⚠ **Ícone não é texto explicativo.** A regra da casa proíbe hint, nota e lore, e não proíbe
+vocabulário visual: o que o ícone faz é deixar reconhecer um Feitiço de Dano de relance, sem ler.
+
+⚠ **Nenhum dos seis é o `Zap`.** O raio já é a ENERGIA em toda a Ficha (o vital de PE, o custo em PE
+de cada linha), e usá-lo para o Dano faria a mesma forma querer dizer duas coisas na mesma tela.
+
+**4. A fileira puxa o selecionado para dentro da vista.** Defeito que existe na aba de Invocações
+desde que ela virou mestre-detalhe: com quatro cartões visíveis e catorze na ficha, criar o décimo
+quarto o selecionava e o editor passava a mostrá-lo, mas a fileira continuava parada nos quatro
+primeiros, sem nenhum aceso. **Consertado nas DUAS abas**, pelo `useVisivelNaFileira`.
+
+⚠ **A rolagem é calculada à mão, e não por `scrollIntoView`.** O `scrollIntoView` rola TODO ancestral
+rolável, então mexeria na rolagem vertical da página: clicar numa miniatura saltaria a página inteira.
+Medido depois: `scrollY` fica em 0 e o cartão novo aparece.
+
+### `FileiraInvocacoes` virou `FileiraDeCartoes`
+
+O componente da fileira carrega comportamento medido e caro: a roda vertical rolando de lado (o
+relato de *"Fiz 5 invocações, e não consigo mexer a tela para o lado"*), as setas para quem não pensa
+em rolar, a máscara das bordas e o botão de novo FORA do rolador. Uma segunda cópia divergiria no
+primeiro conserto, e este componente já levou dois.
+
+### Os oito painéis de resultado viraram painéis de NOTA
+
+Havia OITO `Resultado*` (um por tipo e subtipo), cada um com a própria grade de `StatMini` no topo,
+as notas de regra no meio e uma lista de avisos copiada palavra por palavra no fim.
+
+Com a barra grudada mostrando os mesmos números 40px acima, manter as grades daria **duas leituras do
+mesmo dado na mesma tela**, que é exatamente o defeito que a revisão da Invocação teve de consertar no
+cartão de Ação. Os oito viraram `NotasDo*`, e a `<ul>` de avisos virou UM componente
+(`NotasDeFeitico`).
+
+⚠ **A BARRA TEVE DE APRENDER TUDO QUE OS PAINÉIS SABIAM**, senão a reestruturação teria APAGADO
+número da tela em vez de mudá-lo de lugar. O `tilesDoFeitico` ganhou o Saldo de Trocas do Curativo, o
+Grau Exigido / Redução de PE / Ações-Caract. do Shikigami, o Grau do item, a Duração e a Exaustão da
+Transformação, e a Duração / Rodadas / Alvos do Auxiliar. Conferido tipo a tipo no navegador.
+
+⚠ **O CARTÃO DE DESTAQUE DO AUXILIAR SAIU, e ele era o melhor dos oito** (número grande, gradiente
+roxo, selo de duração). Saiu justamente por ser bom: ele brigava com a barra pela mesma leitura, e a
+barra ganha por estar sempre visível enquanto se rola.
+
+⚠ **O stat block da invocação FICOU no painel do Shikigami.** Ele é o único bloco que não é o
+resultado daquele Feitiço: são os números de OUTRA criatura. Pôr Vida e Defesa dela na barra faria a
+barra dizer duas coisas ao mesmo tempo.
+
+### As fórmulas escritas na tela saíram
+
+O cabeçalho da seção de Trocas era, literalmente:
+
+> `Trocas · 1 dado = 2 acerto = 1 CD = 12m = 3m² = 6m + 1,5m²`
+
+Fórmula escrita na tela, que a regra de UI proíbe, e além de proibida não funcionava: 58 caracteres de
+sinal de igual num rótulo de seção não se leem. Foi para o `title`, que é onde a regra manda a
+explicação de item morar. Mesma varredura em: a proporção do Curativo, do Golpeador e do Dano na
+Alma, o `quantidade = 3 − Custo + 1` dos Itens, o `−1 efeito por +1 nível` da Transformação, a dica
+dos Golpes do Golpeador e o `divide o dano adicional` dela.
+
+⚠ **"Máximo 3 no Nível 3" virou contador `0 / 3`.** O teto de condições é um orçamento como qualquer
+outro do criador, e o vocabulário do app para orçamento é `usadas / total`, não uma frase que o leitor
+tem de comparar de cabeça com a lista logo abaixo. Ele fica vermelho ao estourar, e é o mesmo número
+que o contador da sub-aba Condições mostra.
+
+### Dois defeitos achados na varredura dos treze tipos
+
+**1. `EXAUSTÃO 0` aparecia na barra da Transformação.** A guarda do `push` pulava `null` e `"-"` e
+deixava o zero passar. Os campos que chegam ali são "quanto isto ACRESCENTA", e um zero ocupa a mesma
+pílula sem dizer nada. O zero passou a ser pulado, com uma exceção: o que já chega FORMATADO como
+string (`"0 Efeitos"`), porque um Auxiliar sem efeito nenhum precisa mostrar o zero.
+
+**2. O Passivo desenhava uma barra grudada VAZIA.** Ele não computa nada (só escreve efeitos no
+Motor), e a barra saía como uma faixa de 37px com borda e fundo. Faixa vazia grudada é pior que faixa
+nenhuma: ela come área útil para sempre e afirma que existe um resultado ali. Sem número e sem aviso,
+a barra não nasce.
+
+### A Ficha Final: a linha fechada informa, e o corpo se divide
+
+**A linha fechada** carrega agora, da esquerda para a direita: o ícone do TIPO, o nome (alinhado à
+esquerda), o nível, o VALOR e o custo, mais o triângulo de aviso. O que muda ao abrir é o detalhe, e
+não a identidade.
+
+⚠ **O cabeçalho deixou de ser centralizado.** Uma lista se lê pela margem ESQUERDA: com
+`justify-content: center` e nomes de tamanhos diferentes, doze Feitiços davam doze pontos de partida
+diferentes e o olho tinha de reancorar em cada linha.
+
+⚠ **O valor e o custo são um GRUPO ancorado à direita**, e não dois itens soltos. `margin-left: auto`
+num só empurraria o outro junto, mas o espaço ENTRE eles passaria a depender do tamanho do valor.
+
+**O corpo** passou a ter duas partes, no espírito do ROLA/FAZ da Invocação:
+
+1. **O que ele entrega**, em células próprias e primeiro. A rolagem era a última linha de uma `<dl>`
+   plana, com o mesmo peso de "Duração: Instantânea", e é a única coisa CLICÁVEL do cartão. Onde não
+   há dado a rolar (um Auxiliar de Defesa, uma Invisibilidade), o VALOR ocupa o mesmo lugar com o
+   mesmo peso.
+2. **O que se consulta**, em `flex-wrap`. Era uma propriedade por linha, numa coluna de 1373px: seis
+   linhas usando 200px de largura e deixando 85% do cartão vazio.
+
+⚠ **`flex-wrap` E NÃO GRADE, e a primeira tentativa foi grade.** `auto-fill minmax(13rem, 1fr)`
+conserta o empilhamento e cria o problema oposto: num cartão de 1373px saem cinco colunas de 270px, e
+"Resolução: Jogada de Ataque" vai parar a 1120px do nome que descreve. Estes pares têm tamanhos bem
+diferentes, e coluna fixa desperdiça o vão de todos pelo maior. Medido: as propriedades passaram a
+terminar em 816px em vez de 1373px.
+
+⚠ **A FILA DO CABEÇALHO EMBRULHA, e é por isso que não há consulta de largura nenhuma.** Em 390px a
+linha tem de carregar ícone, nome, nível, valor e custo, e um valor longo ("Shikigami Segundo Grau")
+não cabe junto do nome: ou o nome vira "C...", ou o custo sai da tela (as duas foram medidas, nessa
+ordem). Embrulhando, o grupo de números desce sozinho para a segunda linha. Isto vale mais que um
+breakpoint porque o cartão tem **dois donos** com larguras diferentes (a Ficha com 1373px e o painel
+de Encontros com 1020px, medidos), e o flex mede o espaço real em vez de perguntar o tamanho da
+janela.
+
+⚠ **O nome tem PISO e quem cede é o valor.** Numa disputa por largura, quem encolhe é a consulta, e
+não a identidade.
+
+### A lista de tipos virou DADO
+
+`TIPO_FEITICO` vivia dentro do `AftyCreatureBuilder.jsx`, e por isso a Ficha Final não a enxergava: o
+cartão de um Feitiço na mesa não sabia dizer se mostrava um Dano ou uma Cura, porque o rótulo do tipo
+só existia no criador. Virou `TIPOS_FEITICO` em `afty-feiticos.js`, com `TIPO_FEITICO_LABEL` e um
+`TIPO_FEITICO_CURTO` para onde o nome inteiro não cabe.
+
+⚠ **O `nivel0` do comentário do `createBlankFeitico` NUNCA EXISTIU como valor.** Nenhum código o
+escreve e a lista de chips nunca o ofereceu. Saiu do comentário junto, para o schema parar de
+prometer um sétimo tipo que não existe.
+
+⚠ **`ui/feitico-tipo.jsx` exporta SÓ COMPONENTE.** Os rótulos ficaram em `afty-feiticos.js`, que é
+onde eles são dado: re-exportá-los do módulo de UI criaria uma segunda porta para a mesma tabela e
+quebraria o fast refresh de um arquivo de componentes (o eslint reprova). E o módulo é FOLHA, então
+nenhuma ordem de avaliação o alcança.
+
+### O que NÃO foi feito, e por quê
+
+**O editor do Feitiço Personalizado continua não existindo.** Ele é o buraco achado na sessão
+anterior (oito campos no schema, motor pronto, Ficha pronta, zero controle no criador), mas construí-lo
+é FUNÇÃO e não aparência, e a pergunta que decide se ele deve existir à mão ainda está sem resposta.
+A reestruturação não o piorou: o cartão dele abre com Nome, Tipo, Nível e Descrição, sem barra vazia.
+
+**A rolagem horizontal de 28px em 390px na aba Habilidades continua.** Ela é o controle "Atributo da
+Técnica" do card Perfil Amaldiçoado, um card acima, e já está em `a-fazer.md` desde 2026-09-05
+esperando o autor escolher entre quebrar a linha e encolher o `<select>`. **Medido depois da
+reestruturação: o card de Feitiços não acrescenta nem um pixel de estouro**, nem em 1440 nem em 390.
+
+### Verificação
+
+`eslint` limpo, `vite build` ok, **56 arquivos e 2903 asserts**, sem mudança de número: a
+reestruturação é de tela pura e nenhuma fórmula foi tocada. `src/components/` intocado.
+
+**Navegador**, em 1440px e 390px:
+
+| onde | o que foi conferido |
+|---|---|
+| `/Player`, criador | os treze tipos e subtipos, um a um, com a barra conferida em cada |
+| `/Player`, criador | as três sub-abas do Dano, e a volta para a Base ao trocar de tipo |
+| `/Player`, criador | criar o décimo quarto Feitiço: nasce selecionado, a fileira o alcança, `scrollY` fica em 0 |
+| `/Player`, criador | a barra grudada continua visível depois de rolar 900px (`--afty-topo` = 230px) |
+| `/Player`, Ficha Final | linha fechada, linha aberta, e a quebra em duas linhas no telefone |
+| painel de Encontros | o mesmo cartão a 1020px, com o combatente em combate |
+| `/Afty` | o mesmo card, com o contador da criatura (12/12 e a vaga exclusiva) |
+
+Zero erro de console em todas as passagens.
 
 ---
 

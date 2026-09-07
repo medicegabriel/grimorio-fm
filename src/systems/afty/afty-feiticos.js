@@ -50,6 +50,43 @@ import {
   rupturaRd, sobrecargaDados, vigorCura,
 } from "./afty-liberacoes";
 
+/* ---------------------------------------------------------------
+   TIPOS de Feitiço.
+
+   ⚠ ESTA LISTA VIVIA DENTRO DO `AftyCreatureBuilder.jsx` e a Ficha Final não a
+   enxergava: o cartão de um Feitiço na mesa não sabia dizer se estava mostrando
+   um Dano ou uma Cura, porque o rótulo do tipo só existia no criador. Duas telas
+   mostram a mesma coisa, então o vocabulário é dado e não JSX.
+
+   ⚠ O `nivel0` que o comentário do `createBlankFeitico` listava NUNCA EXISTIU
+   como valor: nenhum código o escreve e a lista de chips nunca o ofereceu. Saiu
+   do comentário junto com esta mudança, para o schema parar de prometer um sétimo
+   tipo que não existe.
+   --------------------------------------------------------------- */
+export const TIPOS_FEITICO = [
+  { value: "dano", label: "Dano" },
+  { value: "auxiliar", label: "Auxiliar" },
+  { value: "curativo", label: "Curativo" },
+  { value: "especial", label: "Especial" },
+  { value: "passivo", label: "Passivo / Característica" },
+  { value: "personalizado", label: "Personalizado" },
+];
+
+export const TIPO_FEITICO_LABEL = Object.fromEntries(TIPOS_FEITICO.map((t) => [t.value, t.label]));
+
+/* Rótulo CURTO, para onde o nome inteiro não cabe (a miniatura da fileira e a
+   linha da Ficha). "Passivo / Característica" tem 23 caracteres e é o único que
+   precisa encolher, mas o mapa cobre todos para quem lê não precisar saber
+   qual é a exceção. */
+export const TIPO_FEITICO_CURTO = {
+  dano: "Dano",
+  auxiliar: "Auxiliar",
+  curativo: "Curativo",
+  especial: "Especial",
+  passivo: "Passivo",
+  personalizado: "Próprio",
+};
+
 // ---------------------------------------------------------------
 // NÍVEIS. Feitiços vão do nível 0 ao 5. Técnica Máxima ("max") é um
 // degrau acima, presente nas tabelas mas destravado por Aptidão
@@ -3010,7 +3047,7 @@ export function createBlankFeitico() {
   return {
     id: `feit_${Date.now().toString(36)}_${_feiticoSeq}`,
     nome: "",
-    tipo: "dano",              // dano | nivel0 | auxiliar | curativo | especial | passivo
+    tipo: "dano",              // ver TIPOS_FEITICO, no topo deste arquivo
     nivel: 1,
     conjuracaoTexto: "",       // texto livre da conjuração (a seção geral virá depois)
     descricao: "",             // narrativa do Feitiço

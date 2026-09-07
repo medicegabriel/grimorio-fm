@@ -1176,16 +1176,31 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
    para dentro. A densidade compacta segue a mesma mudança logo abaixo. */
 .afty-estado-caixa { padding-block: 0; }
 
+/* ⚠ O CABEÇALHO DEIXOU DE SER CENTRALIZADO em 2026-09-07, e o motivo é a
+   varredura. Uma lista se lê pela margem ESQUERDA: com `justify-content: center`
+   e nomes de tamanhos diferentes, doze Feitiços davam doze pontos de partida
+   diferentes, e o olho tinha de reancorar em cada linha. O nome agora começa
+   sempre no mesmo x, e os números terminam sempre no mesmo x. */
 .afty-feitico-topo {
   position: relative;
   display: flex;
-  /* O nome do Feitiço no corpo, o `afty-feitico-meta` (nível e custo) nos
-     números. A seta e o triângulo de aviso voltam ao centro logo abaixo. */
+  /* ⚠ A FILA EMBRULHA, e é por isso que não há consulta de largura nenhuma aqui.
+     Em 390px a linha tem de carregar ícone, nome, nível, valor e custo, e um
+     valor longo ("Shikigami Segundo Grau") não cabe junto do nome de jeito
+     nenhum: ou o nome vira "C...", ou o custo sai da tela. Embrulhando, o grupo
+     de números desce para a segunda linha SOZINHO e continua ancorado à direita
+     pelo `margin-left: auto`.
+
+     Isto vale mais que um breakpoint porque o cartão tem dois donos com larguras
+     diferentes (a Ficha e o painel de Encontros), e o flex mede o espaço real em
+     vez de perguntar o tamanho da janela. */
+  flex-wrap: wrap;
+  /* O nome do Feitiço no corpo, os números na fonte de número. A seta, o ícone
+     de tipo e o triângulo de aviso voltam ao centro logo abaixo. */
   align-items: baseline;
-  justify-content: center;
   gap: 0.5rem;
   min-height: 2rem;
-  padding: 0.375rem 0.75rem;
+  padding: 0.375rem 0.75rem 0.375rem 1.75rem;
   border-bottom: 1px solid color-mix(in srgb, var(--afty-destaque) 45%, var(--afty-borda));
   border-radius: calc(var(--afty-raio-peq) - 1px) calc(var(--afty-raio-peq) - 1px) 0 0;
   background: var(--afty-destaque-fundo);
@@ -1206,9 +1221,41 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
 
 .afty-feitico[open] .afty-feitico-seta { transform: rotate(90deg); }
 
-.afty-feitico:not([open]) .afty-feitico-meta { display: none; }
+/* ⚠ AQUI MORAVA `.afty-feitico:not([open]) .afty-feitico-meta { display: none }`,
+   e ele era o defeito central da lista de Feitiços: escondia nível, custo e o
+   triângulo de aviso justamente no estado em que a linha é lida, o fechado. Um
+   aviso que só aparece depois de abrir não é aviso. */
 
-.afty-feitico-meta {
+/* ⚠ O NOME TEM PISO, e quem cede é o valor. Sem isto, um valor longo ("Shikigami
+   Segundo Grau") esmagava o nome até "C..." em 390px, e a linha ficava sem a
+   única coisa que identifica aquele Feitiço. O nome é a identidade, o valor é
+   consulta: numa disputa por largura, quem encolhe é a consulta. */
+.afty-feitico-nome {
+  min-width: 5rem;
+  flex: 1 1 auto;
+  font-family: var(--afty-fonte-titulo);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--afty-texto);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* O ícone do tipo. `align-self: center` porque um SVG não tem base de texto: numa
+   fila `align-items: baseline` o navegador sintetiza a base na borda de baixo do
+   ícone e a linha inteira desce. Mesma correção que a barra da Invocação levou. */
+.afty-feitico-tipo {
+  display: inline-flex;
+  align-self: center;
+  flex-shrink: 0;
+  color: var(--afty-texto-suave);
+}
+
+.afty-feitico-nivel,
+.afty-feitico-valor,
+.afty-feitico-custo,
+.afty-feitico-var {
   flex-shrink: 0;
   font-family: var(--afty-fonte-num);
   font-size: 0.6875rem;
@@ -1216,13 +1263,31 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
   color: var(--afty-texto-suave);
 }
 
-.afty-feitico-nome {
+.afty-feitico-alerta { flex-shrink: 0; align-self: center; }
+
+/* ⚠ OS NÚMEROS SÃO UM GRUPO, e não dois itens soltos da fila. `margin-left: auto`
+   num só deles empurraria o outro junto, mas o espaço ENTRE eles passaria a
+   depender do tamanho do valor. Agrupados, o valor e o custo mantêm o mesmo
+   respiro em toda linha e o bloco inteiro encosta na direita. */
+.afty-feitico-numeros {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-left: auto;
   min-width: 0;
-  font-family: var(--afty-fonte-titulo);
-  font-size: 0.75rem;
-  font-weight: 700;
+}
+
+/* O nível e o custo são curtos e não encolhem. O valor é o único do grupo que
+   pode ser texto longo, então é ele quem apara. */
+.afty-feitico-nivel,
+.afty-feitico-custo { flex-shrink: 0; }
+
+.afty-feitico-valor {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   color: var(--afty-texto);
-  text-align: center;
 }
 
 .afty-feitico-custo {
@@ -1233,9 +1298,61 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
   padding: 0.625rem 0.75rem 0.75rem;
 }
 
-.afty-feitico-propriedades {
+/* ---------- O QUE O FEITIÇO ENTREGA ----------
+   ⚠ A ROLAGEM SUBIU PARA CÁ em 2026-09-07. Ela era a última linha de uma lista
+   plana, com o mesmo peso de "Duração: Instantânea", e é a única coisa clicável
+   do cartão. Célula própria, número na fonte de número e tamanho maior. */
+.afty-feitico-saida {
   display: grid;
-  gap: 0.125rem;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  gap: 0.375rem;
+  margin-bottom: 0.625rem;
+}
+
+.afty-feitico-saida-item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-width: 0;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--afty-borda);
+  border-radius: var(--afty-raio-peq);
+  background: var(--afty-poco);
+}
+
+.afty-feitico-saida-rotulo {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--afty-texto-suave);
+}
+
+.afty-feitico-saida-num {
+  flex-shrink: 0;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+/* ---------- O QUE SE CONSULTA ----------
+   ⚠ ERA UMA COLUNA de `display: grid` sem `grid-template-columns`, ou seja, uma
+   propriedade por linha. Num cartão de 1373px isso deixava 85% da largura vazia
+   e empilhava seis linhas de 200px. `auto-fill` e nunca coluna fixa: este cartão
+   tem dois donos (a Ficha e o painel de Encontros), com larguras bem diferentes. */
+/* ⚠ FLEX-WRAP, E NÃO GRADE. A primeira tentativa foi `auto-fill minmax(13rem,
+   1fr)`, e ela conserta o empilhamento mas cria o problema oposto: num cartão de
+   1373px saem cinco colunas de 270px, e "Resolução: Jogada de Ataque" vai parar
+   a 1120px do nome que ele descreve. Estes pares são de tamanhos bem diferentes
+   ("Alvo: Único" contra "Conjuração: Ação Comum"), e coluna de largura fixa
+   desperdiça o vão de todos pelo maior. O flex embrulha na largura de cada um. */
+.afty-feitico-propriedades {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.125rem 1.25rem;
 }
 
 .afty-feitico-propriedade {
@@ -1248,14 +1365,21 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
   color: var(--afty-texto-suave);
 }
 
+/* ⚠ OS DOIS-PONTOS SAÍRAM DO JSX e viraram `::after`. Eles estavam escritos
+   dentro do texto do rótulo ("Conjuração:"), e numa grade isso impede alinhar a
+   coluna: o separador tem de pertencer ao rótulo sem entrar no conteúdo. */
 .afty-feitico-propriedade dt {
   flex-shrink: 0;
   font-weight: 700;
   color: var(--afty-texto);
 }
 
+.afty-feitico-propriedade dt::after { content: ":"; }
+
 .afty-feitico-propriedade dd {
   min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .afty-feitico-efeito {

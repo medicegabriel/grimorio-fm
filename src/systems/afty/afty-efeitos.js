@@ -80,7 +80,7 @@
  * ============================================================
  */
 
-import { evalNumber, CHAVE_MARCAS, normalizarMarca } from "./afty-dsl";
+import { evalNumber, CHAVE_MARCAS, normalizarMarca, normalizarVariavel } from "./afty-dsl";
 import { combateDslVars, COMBATE_VARS } from "./afty-combate";
 // afty-origens.js só importa folhas de propósito, então a seta aponta para cá:
 // é este arquivo que junta os efeitos de origem, não aquele. Ver coletarEfeitosOrigem.
@@ -298,6 +298,19 @@ export const EFEITO_CANAIS = [
   // "Vagas de" no rótulo para o canal cair junto dos irmãos numa busca por
   // "vaga". O que ele dá é QUANTAS Aptidões Amaldiçoadas a criatura pode ter.
   { id: "vagasAptidao",   label: "Vagas de Aptidão",     nota: "quantas Aptidões Amaldiçoadas a criatura pode ter. Sem fonte nenhuma o orçamento é ZERO: o ND não concede" },
+  /* ⚠ ESTE NÃO DÁ VAGA, ele ABAIXA O PORTÃO. Nasceu em 2026-09-07 para a
+     Adiantar a Evolução do Especialista em Estilo (*"você reduz em 2 os
+     pré-requisitos de nível das aptidões amaldiçoadas"*), e por isso mora ao
+     lado do `vagasAptidao` e não junto dele: um diz QUANTAS a criatura pode ter,
+     o outro diz A PARTIR DE QUE NÍVEL cada uma abre.
+
+     ⚠ SÓ O REQUISITO DE NÍVEL, e nunca o de trilha (autor, 2026-09-07). O texto
+     diz "pré-requisitos de nível", e uma Aptidão que pede AU 3 continua pedindo
+     AU 3. O piso é Nível 1: nada abre antes de a criatura existir.
+
+     ⚠ Aparece no seletor só de quem instalou um addon com `permite:
+     ["requisitoAptidao"]`, pela lição do `hpAtributo`. */
+  { id: "reduzNivelAptidao", label: "Requisito de Nível de Aptidão", nota: "quanto o pré-requisito de NÍVEL de toda Aptidão Amaldiçoada DIMINUI, com piso de Nível 1. Não encosta no requisito de trilha" },
   /* ⚠ OS DOIS DE ALTO NÍVEL NASCERAM EM 2026-09-04, com a Loja de Catarse. O
      orçamento de Melhoria Superior e de Habilidade Lendária vinha SÓ do ND
      (`totalMelhoriasSuperiores` e `totalHabilidadesLendarias`), sem canal
@@ -528,6 +541,7 @@ const GRUPOS_DE_CANAL = [
   // motivo, ele é orçamento de nível de aptidão.
   ["Orçamentos", [
     "vagasPericia", "vagasHabilidade", "vagasFeitico", "vagasEstilo", "vagasTalento", "vagasAptidao",
+    "reduzNivelAptidao",
     "vagasMelhoria", "vagasLendaria",
     "pontosAptidao", "focos", "espacosCarga",
   ]],
@@ -758,13 +772,22 @@ export function buildCriaturaDslContext(base = {}) {
      criatura sem Combatente não daria 2, daria 0. `base.vocabulario` traz as
      listas completas dos catálogos (o deriveAfty é quem as tem) e elas entram
      antes dos valores de verdade, que sobrescrevem por cima. */
+  /* ⚠ O NOME DA VARIÁVEL PASSA PELO `normalizarVariavel` desde 2026-09-07, e
+     isso vale para os DOIS lados (a declaração aqui e o valor lá embaixo).
+     Motivo: id de Addon nasce com o namespace do pacote, e o tokenizer do DSL
+     para no `-` e no `:`. Sem isto, `esc_meu-pacote:esp_x` era uma chave que
+     NENHUMA expressão conseguia escrever, e a Especialização de Addon (família
+     ligada desde 2026-08-20) não tinha como escalar com o próprio nível.
+
+     Nos ids do raw a função é a IDENTIDADE, porque todos eles já são
+     `[a-z0-9_]`: nada muda para quem não tem addon, e o assert mede isso. */
   const voc = base.vocabulario || {};
   for (const id of voc.pericias || []) ctx[`prof_${id}`] = 0;
   for (const id of voc.resistencias || []) ctx[`prof_tr_${id}`] = 0;
-  for (const id of voc.habilidades || []) ctx[`tem_${id}`] = 0;
+  for (const id of voc.habilidades || []) ctx[`tem_${normalizarVariavel(id)}`] = 0;
   for (const id of voc.especializacoes || []) {
-    ctx[`nivel_${id}`] = 0;
-    ctx[`esc_${id}`] = 0;
+    ctx[`nivel_${normalizarVariavel(id)}`] = 0;
+    ctx[`esc_${normalizarVariavel(id)}`] = 0;
   }
 
   // Proficiência ESCOLHIDA NA FICHA por perícia: `prof_furtividade` = 0, 1
@@ -799,7 +822,7 @@ export function buildCriaturaDslContext(base = {}) {
   // Armas Escolhidas (4°) e Armas Perfeitas (10°) miram o mesmo grupo de arma,
   // então os dois efeitos moram na opção e o da segunda se protege com isto.
   // ⚠ É a habilidade ESCOLHIDA, não a acessível: quem não pegou não recebe.
-  for (const id of base.habilidadesEscolhidas || []) ctx[`tem_${id}`] = 1;
+  for (const id of base.habilidadesEscolhidas || []) ctx[`tem_${normalizarVariavel(id)}`] = 1;
 
   // Patamar e Tipo como booleanos nomeados: `patamar_calamidade`, `tipo_conjurador`.
   for (const p of ["comum", "desafio", "calamidade", "beyond"]) ctx[`patamar_${p}`] = base.patamar === p ? 1 : 0;
@@ -809,8 +832,8 @@ export function buildCriaturaDslContext(base = {}) {
   // pré-requisito) e `esc_lutador` é o de ESCALONAMENTO (real + metade da
   // outra classe), que é o que os efeitos que escalam devem usar.
   for (const [espId, n] of Object.entries(nivelEspec)) {
-    ctx[`nivel_${espId}`] = n?.real ?? 0;
-    ctx[`esc_${espId}`] = n?.escalonamento ?? n?.real ?? 0;
+    ctx[`nivel_${normalizarVariavel(espId)}`] = n?.real ?? 0;
+    ctx[`esc_${normalizarVariavel(espId)}`] = n?.escalonamento ?? n?.real ?? 0;
   }
 
   return ctx;

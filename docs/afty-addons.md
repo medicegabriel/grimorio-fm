@@ -22,7 +22,19 @@ resto. A primitiva de vínculo entre criaturas continua travada em decisão do a
 | 8.2 Canal `hpAtributo` | **Feita** | `afty-efeitos.js` e o PV do `afty-derive.js` |
 | 8.3 Concessão vinda da sessão | **Feita** | `afty-concessao.js`, Ficha Final e Encontro |
 | 8.3.1 Ciclo de Adaptação | **Feita** | `afty-adaptacao.js`, `ficha/PainelDeAdaptacao.jsx` |
+| Herança de Especialização | **Feita** | `herdaDe` em `afty-especializacoes.js` e `afty-habilidades.js` |
 | 8.4 Vínculo entre criaturas | **Travada** | 4 perguntas no `a-fazer.md`, ver a seção 8.4 |
+
+⚠ **A herança nasceu em 2026-09-07, com o Especialista em Estilo**, e ela NÃO estava na fase 0: é
+mais um caso de "o addon bate no muro e o muro vira fila de trabalho". A variação de uma classe
+repetiria 65 habilidades do livro dentro do JSON, e cada errata passaria a ter dois donos. O verbo
+é `herdaDe`, e ele serve a qualquer mesa. Ver `afty-especialista-estilo.md`.
+
+⚠ **Ela destravou DOIS bugs calados que valiam para toda Especialização de Addon**, ligada desde
+2026-08-20 e nunca escrita até ali: o `esc_<id>` de uma classe de addon era um nome que o tokenizer
+do DSL não aceita (namespace tem `-` e `:`), e o `VOCABULARIO_DSL` era uma fotografia do raw tirada
+no import, então nenhuma entrada de addon era declarada a zero. Os dois juntos faziam qualquer
+expressão que citasse conteúdo de addon cair no fallback, calada.
 
 **Fase 1 FECHADA**, enquanto a primitiva travada espera resposta. O caminho inteiro está
 de pé e testado, de colar o JSON até o número mudar na Ficha, em **14 famílias**.
@@ -59,6 +71,20 @@ de pé e testado, de colar o JSON até o número mudar na Ficha, em **14 famíli
 | `condicoes` | `afty-feiticos.js` | mapa de listas de nomes |
 | `clas` | `afty-origens.js` | array **no lugar**, `CLA_BY_ID`, **cache das Verdadeiras Origens** |
 | `marcadores` | `afty-habilidades.js` | array no lugar |
+
+⚠ **A ORDEM DE RELIGAÇÃO PASSOU A SER DECLARADA em 2026-09-07** (`ordem` no `registrarFamilia`,
+padrão 50). Ela não importava enquanto nenhuma família lia outra, e a herança de Especialização
+quebrou isso: `habilidades` (ordem 20) lê o catálogo de `especializacoes` (ordem 10) já religado.
+Até ali a ordem era a de inserção no `Map`, que é a ordem de **import dos módulos**: um acidente do
+grafo de dependências. Quem depender de outra família declara a ordem e diz por quê.
+
+⚠ **Dois buracos do `caminhosDeId` apareceram no mesmo dia**, e os dois falhavam calados. O
+`prefixarEntrada` não sabia tratar **lista de string** (`incompativeisIds[]`): o caminho casava o
+`if`, o `sub` vazio derrubava a condição e a lista ficava crua. E a família `habilidades` não
+declarava `especializacaoId`, então um pacote que trouxesse a Especialização **e** as habilidades
+dela era reprovado inteiro, com "especializacaoId inexistente". O segundo nunca tinha aparecido
+porque o exemplo escrito aqui embaixo pendura as habilidades numa classe do LIVRO, e referência ao
+livro fica crua de propósito.
 
 ⚠ **As duas últimas entraram em 2026-08-31, com a Estrela dos Zenin**, e as duas nasceram de um "não
 cabe": um clã do Herdado só entraria por `substitui` no campo `clas`, o que obrigaria o addon a

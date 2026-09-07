@@ -504,6 +504,15 @@ export const AFTY_ORIGENS_CATALOG = [
     id: "sem_tecnica",
     nome: "Sem Técnica",
     restricoes: ["Sem técnica e sem acesso a Feitiços.", "Não pode ter a especialização Especialista em Técnicas."],
+    /* ⚠ A SEGUNDA RESTRIÇÃO PASSOU A VALER EM 2026-09-07, e até ali ela era só
+       o chip vermelho ao lado. `especializacoesDisponiveis` filtrava por
+       `exclusivaOrigemId` e mais nada, então o criador deixava um Sem Técnica
+       marcar Conjurador desde sempre, contra o próprio livro.
+
+       ⚠ EXISTE FICHA GRAVADA COM O PAR PROIBIDO, e ela continua abrindo. O que
+       o `normalizeEspecializacoes` descarta, a aba Especializações DIZ que
+       descartou, por `especializacoesRecusadas`. */
+    especializacoesVetadas: ["conjurador"],
     bonusAtributos: {},
     caracteristicas: [
       {
