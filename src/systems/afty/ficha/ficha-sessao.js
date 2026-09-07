@@ -889,6 +889,21 @@ export function alteraTreinoAtivo(sessao, id, valor) {
   };
 }
 
+/**
+ * Paga um custo direto em Vida. Custo não é dano e por isso não consome PV
+ * temporário. Devolve o valor realmente pago para a ativação nunca somar Vida
+ * que a criatura já não possuía.
+ */
+export function pagaCustoVida(sessao, bruto) {
+  const atual = Math.max(0, inteiro(sessao?.hpAtual, 0));
+  const pedido = Math.max(0, inteiro(bruto, 0));
+  const pago = Math.min(atual, pedido);
+  return {
+    sessao: pago > 0 ? { ...sessao, hpAtual: atual - pago } : sessao,
+    pago,
+  };
+}
+
 /** Um estado limitado já foi ativado na rodada atual? */
 export function estadoUsadoNestaRodada(sessao, id) {
   return sessao?.usos?.[chaveUsoEstado(id)] === sessao?.rodada;

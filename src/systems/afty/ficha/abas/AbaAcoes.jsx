@@ -514,6 +514,7 @@ function LinhaFeitico({
     detalhe: rolagens.length > 1 || r.vezes > 1 ? r.rotulo : f.nivelLabel,
     dados: r.dados, faces: r.faces, fixo: r.fixo || 0,
     explosiva: !!r.explosiva,
+    custoVidaAtivacao: indice === 0 ? f.custoVidaAtivacao : null,
     consomeEstado: indice === 0 ? f.consomeEstado : null,
     feiticoDanoId: indice === 0 && f.tipo === "dano" ? f.id : null,
     finalizaRitualId: indice === 0 && f.ritual?.ativo && f.ritual?.podeResolver
@@ -549,7 +550,7 @@ function LinhaFeitico({
         )}
       </summary>
       <div className="afty-feitico-corpo">
-        {(propriedadesFixas.length > 0 || propriedadeValor || rolagens.length > 0) && (
+        {(propriedadesFixas.length > 0 || propriedadeValor || rolagens.length > 0 || f.custoVidaAtivacao) && (
           <dl className="afty-feitico-propriedades">
             {propriedadesFixas.map((propriedade) => (
               <div key={propriedade.id} className="afty-feitico-propriedade" data-afty-propriedade={propriedade.id}>
@@ -563,6 +564,17 @@ function LinhaFeitico({
                 <dd className="afty-valor">{propriedadeValor.valor}</dd>
               </div>
             )}
+            {f.custoVidaAtivacao && (
+              <div className="afty-feitico-propriedade" data-afty-propriedade="custoVida">
+                <dt>Custo de Vida:</dt>
+                <dd className="flex items-center gap-1.5">
+                  <span className="afty-valor">{f.custoVidaAtual} PV</span>
+                  {!f.custoVidaDisponivel && (
+                    <AlertTriangle className="w-3.5 h-3.5" aria-label="Vida insuficiente" title="Vida insuficiente" />
+                  )}
+                </dd>
+              </div>
+            )}
             {rolagens.map((r, indice) => (
               <div key={`${r.rotulo}:${indice}`} className="afty-feitico-propriedade" data-afty-propriedade="rolagem">
                 <dt>{rolagens.length > 1 ? r.rotulo : (propriedadeValor?.nome || f.valorLabel)}:</dt>
@@ -574,7 +586,8 @@ function LinhaFeitico({
                     formatar={false}
                     className="afty-valor text-[13px] whitespace-nowrap"
                     titulo={r.rotulo}
-                    onRolar={f.ritual?.ativo && !f.ritual?.podeRolarFeitico
+                    onRolar={(f.ritual?.ativo && !f.ritual?.podeRolarFeitico)
+                      || (indice === 0 && f.custoVidaAtivacao && !f.custoVidaDisponivel)
                       ? undefined
                       : () => rolarFeitico(r, indice)}
                   />

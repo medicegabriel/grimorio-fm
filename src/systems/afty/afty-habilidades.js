@@ -5384,7 +5384,8 @@ export const AFTY_HABILIDADES = [
       "com o teste de percepção, o qual é feito com vantagem. Caso o que for copiado gaste energia " +
       "amaldiçoada, você paga o custo em pontos de estamina.",
     // ⚠ Cópia em TEMPO DE MESA (ver alguém usar, reação, teste de Percepção).
-    // Não é escolha de ficha, ao contrário do Roubo de Habilidade. Fica texto.
+    // Não é escolha de ficha, ao contrário do Roubo de Habilidade. O painel
+    // da aba Buffs guarda as cópias em sessao.combate.imitacao.
     requisitos: [],
   },
   {
@@ -7149,6 +7150,10 @@ export function resolveHabilidades(
     bt,
   });
   const ctx = { niveisPorEspec, escolhidas, escolhasHabilidade: escolhas.mapa, almaLivre };
+  // Roubar concede a habilidade, mas a vaga já foi paga pela escolha do Roubo.
+  // Consumidores de combate consultam efetivas, o orçamento mantém escolhidas.
+  const roubadas = escolhas.mapa.res_roubo_de_habilidade ?? [];
+  const efetivas = [...new Set([...escolhidas, ...roubadas])];
   // Habilidades escolhidas que a criatura deixou de alcançar (ex.: a
   // multiclasse foi redividida depois da escolha). Reportado, não removido.
   const inacessiveis = escolhidas.filter((id) => !avaliarAcessoHabilidade(BY_ID[id], ctx).ok);
@@ -7171,6 +7176,8 @@ export function resolveHabilidades(
   return {
     escolhidas,
     selecionadas,
+    efetivas,
+    roubadas,
     concedidas,
     // Quantas pegas de cada id. Alimenta o `coletarEfeitos`, que multiplica o
     // efeito, e o medidor do card. Concedida entra com 1, porque ela nunca

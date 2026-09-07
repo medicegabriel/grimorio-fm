@@ -71,10 +71,10 @@ export const NIVEL_LABEL = {
 // CUSTO EM ENERGIA AMALDIÇOADA por nível do Feitiço (tabela verbatim).
 // Todo Feitiço tem custo mínimo de 1 PE, salvo os de nível 0. O piso
 // só morde quando uma habilidade externa REDUZ o custo (a criação em
-// si não mexe no custo). Técnica Máxima não tem linha própria na
-// tabela de custo do Livro Básico.
+// si não mexe no custo). Técnica Máxima recebe a linha da Aptidão
+// homônima, que fixa o custo em 25 PE.
 // ---------------------------------------------------------------
-export const FEITICO_CUSTO_PE = { 0: 0, 1: 2, 2: 5, 3: 8, 4: 12, 5: 20 };
+export const FEITICO_CUSTO_PE = { 0: 0, 1: 2, 2: 5, 3: 8, 4: 12, 5: 20, max: 25 };
 
 // ---------------------------------------------------------------
 // ACESSO DE FEITIÇOS por faixa de Nível de Personagem (== ND).
@@ -188,6 +188,48 @@ export function calcularFeiticoPersonalizado(feitico, ctx = {}) {
     duracao: String(f.duracaoTexto ?? "").trim() || null,
     resolucaoTexto: String(f.resolucaoTexto ?? "").trim() || null,
     cd: f.comCd === false ? null : (ctx.cdBase ?? null),
+  };
+}
+
+/** Configuração declarativa do custo de Vida pago ao ativar um Feitiço. */
+export function normalizaCustoVidaAtivacao(bruto) {
+  if (!bruto || typeof bruto !== "object" || bruto.modo !== "percentualAtual") return null;
+  return {
+    modo: "percentualAtual",
+    percentual: Math.max(1, Math.min(100, Math.trunc(Number(bruto.percentual) || 0))),
+    minimo: Math.max(0, Math.trunc(Number(bruto.minimo) || 0)),
+    somaAoDano: bruto.somaAoDano === true,
+  };
+}
+
+/** Resolve somente a Vida paga NESTA ativação, nunca a Vida perdida antes. */
+export function custoVidaDaAtivacao(bruto, vidaAtual) {
+  const config = normalizaCustoVidaAtivacao(bruto);
+  const atual = Math.max(0, Math.trunc(Number(vidaAtual) || 0));
+  if (!config || atual === 0) return { config, pago: 0, bonusDano: 0, disponivel: !config };
+  const percentual = Math.floor(atual * config.percentual / 100);
+  const pago = Math.min(atual, Math.max(config.minimo, percentual));
+  return {
+    config,
+    pago,
+    bonusDano: config.somaAoDano ? pago : 0,
+    disponivel: pago > 0,
+  };
+}
+
+/** Acrescenta à rolagem somente a Vida paga pela ativação que vai acontecer. */
+export function preparaAtivacaoComCustoVida(desc, vidaAtual) {
+  const custo = custoVidaDaAtivacao(desc?.custoVidaAtivacao, vidaAtual);
+  if (!custo.config) return { desc, custo };
+  const bonusVida = desc?.tom === "cura" ? 0 : custo.bonusDano;
+  const detalheVida = custo.pago > 0 ? `${custo.pago} PV pagos` : null;
+  return {
+    custo,
+    desc: {
+      ...desc,
+      fixo: (Number(desc?.fixo) || 0) + bonusVida,
+      detalhe: [desc?.detalhe, detalheVida].filter(Boolean).join(" · "),
+    },
   };
 }
 
@@ -997,7 +1039,7 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
 
   // Custo em PE (a criação não altera o custo; requisito de dano dá dados, não muda PE).
   // A sustentação do dano contínuo vai em detalhes.continuo.custoSustentacao.
-  const custoPE = custoPadrao(nivel === "max" ? 5 : nivel);
+  const custoPE = custoPadrao(nivel);
   const melhoriasDisponiveis = [
     ...(alvo === "area" ? ["ajusteAlvos"] : []),
     ...(alcanceBase != null ? ["aumentoAlcance"] : []),
@@ -1314,7 +1356,7 @@ export function calcularFeiticoCurativo(feitico, ctx = {}) {
   const alcanceFinal = alcanceBase != null
     ? (alcanceBase + alcanceDelta) * multAlcance(lib, nNum) + bonusDoRitual.alcance
     : null;
-  const custoPE = custoPadrao(nivel === "max" ? 5 : nivel);
+  const custoPE = custoPadrao(nivel);
   // Vigor Absoluto é PARCELA FIXA no total curado, e não dado a mais: "aumente
   // o valor total curado/concedido em 6 por Nível do Feitiço".
   const bonusCura = vigorCura(lib, nNum);
@@ -1514,7 +1556,7 @@ export function calcularFeiticoGolpeador(feitico, ctx = {}) {
     danoTexto = notacaoDano(dados, tipoDado);
   }
 
-  const custoPE = custoPadrao(nivel === "max" ? 5 : nivel);
+  const custoPE = custoPadrao(nivel);
   const alcanceTexto = `Movimento Restante + ${String(1.5 * nNum).replace(".", ",")}m`;
   return {
     nivel,
@@ -1563,7 +1605,7 @@ export function calcularFeiticoDanoAlma(feitico, ctx = {}) {
     nivel, nNum, poolBase, resolucao, alcanceBase, permiteAlcance: true, avisos,
   });
 
-  const custoPE = custoPadrao(nivel === "max" ? 5 : nivel);
+  const custoPE = custoPadrao(nivel);
   return {
     nivel,
     dados: r.dados,
@@ -1606,7 +1648,7 @@ export function calcularFeiticoInvisibilidade(feitico, ctx = {}) {
   if (exigeFraqueza && !temFraqueza) {
     avisos.push("Feitiços de Nível 1 e 2 precisam de uma forma de serem anulados.");
   }
-  const custoPE = custoPadrao(nivel === "max" ? 5 : nivel);
+  const custoPE = custoPadrao(nivel);
   return {
     nivel,
     resumo: "Invisível",
@@ -1655,7 +1697,7 @@ export function calcularFeiticoShikigami(feitico, ctx = {}) {
   const reducaoPE = 2 * nivelNum;
 
   // Custo de invocação = custo do Feitiço (sobrepõe o custo próprio da invocação).
-  const custoPE = custoPadrao(nivel === "max" ? 5 : nivel);
+  const custoPE = custoPadrao(nivel);
 
   // Invocação referenciada (montada na aba Invocações). Lista de opções para o
   // seletor, com o grau exigido destacado.
@@ -1927,7 +1969,7 @@ export function calcularFeiticoTransformacao(feitico, ctx = {}) {
     notaExaustao = "1 de exaustão a cada 2 rodadas consecutivas sustentando (fora a rodada de ativação).";
   }
 
-  const custoPE = custoPadrao(nivel === "max" ? 5 : nivel);
+  const custoPE = custoPadrao(nivel);
   const resumo = `${efeitos.length} Efeito${efeitos.length === 1 ? "" : "s"}`;
   return {
     nivel,
@@ -3036,6 +3078,8 @@ export function createBlankFeitico() {
     resolucaoTexto: "",
     comCd: true,
     rolagens: [],
+    // --- custo especial pago ao ativar ---
+    custoVidaAtivacao: null,
   };
 }
 
@@ -3553,6 +3597,7 @@ function linhaDoFeitico(f, ctx, creature) {
       : f.tipo === "especial" && ["golpeador", "danoAlma"].includes(f.especialSubtipo) ? "Dano"
       : "Efeito";
     const rolagens = rolagensDoFeitico(f, calc);
+    const custoVida = custoVidaDaAtivacao(f.custoVidaAtivacao, ctx.vidaAtual);
     const etapaRitual = ritualAtual?.etapa ?? null;
     const ritualPronto = etapaRitual === "pronto";
     const ritualResolvido = etapaRitual === "resolvido";
@@ -3607,6 +3652,9 @@ function linhaDoFeitico(f, ctx, creature) {
       // O que a Ficha rola. Vazio quando não há dado nenhum a rolar, e é o que a
       // linha consulta para decidir se o número é clicável.
       rolagens,
+      custoVidaAtivacao: custoVida.config,
+      custoVidaAtual: custoVida.pago,
+      custoVidaDisponivel: custoVida.disponivel,
       avisos,
     };
   }

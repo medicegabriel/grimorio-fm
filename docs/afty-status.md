@@ -1,6 +1,6 @@
 # Status do Grimório Afty (handoff para chat novo)
 
-Estado atual do sistema Afty (atualizado 2026-09-05). Leia junto com:
+Estado atual do sistema Afty (atualizado 2026-09-06). Leia junto com:
 `docs/roadmap-versionamento-e-fichas.md` (arquitetura) e `docs/afty-formulas-base.md` (fórmulas).
 
 > 📋 **A FILA DE TRABALHO NÃO É ESTE ARQUIVO.** Desde 2026-08-09 toda pendência mora em
@@ -76,7 +76,7 @@ Estado atual do sistema Afty (atualizado 2026-09-05). Leia junto com:
 > Feitiços ainda têm efeitos pendentes (39), mas os Feitiços de Dano passaram a ler os canais
 > `dadosDano` e `danoBonus` em 2026-08-07. ~~Canal de CURA não existe (20)~~ ✅ **RESOLVIDO em 2026-08-03**
 > (ver a sessão), invocação precisa de marcador por-invocação para as Melhorias e de stat de **RD**
-> e **dados de dano** (36), subsistemas nunca enviados (Apoio, Imitação, Votos, técnicas marciais),
+> e **dados de dano** (36), subsistemas nunca enviados (Apoio, Votos, técnicas marciais),
 > e canais que faltam (troca de atributo na fórmula, vantagem por condição, vaga de pool,
 > proficiência de arma, PE de Aptidão).
 >
@@ -118,6 +118,44 @@ Estado atual do sistema Afty (atualizado 2026-09-05). Leia junto com:
 >
 > 👉 **Começando um chat novo? Vá direto para
 > [PENDÊNCIAS DE ESPECIALIZAÇÕES](#-pendências-de-especializações-lista-de-retomada).**
+
+---
+
+## SESSÃO DE 2026-09-06: FILTRO POR EFEITO E IMITAÇÃO NA FICHA
+
+### Filtro por efeito nas habilidades
+
+O catálogo de habilidades ganhou um filtro compartilhado por efeito, com as opções **Todos**,
+**Acerto**, **Dano**, **Defesa**, **Furtividade** e **Atenção**, além da busca textual sem acento.
+O contador mostra quantas entradas permanecem no recorte atual.
+
+O mesmo componente aparece em quatro lugares:
+
+- Habilidades de Especialização e Talentos no criador
+- opções do Roubo de Habilidade
+- opções de Imitação na Ficha Final
+- habilidades já adquiridas na aba Habilidades da Ficha Final
+
+O filtro consulta as descrições verbatim e os canais cadastrados no Motor de Automação. Por isso
+encontra também uma habilidade condicional ou um efeito que ainda resolve na mesa. Filtrar é só uma
+consulta: não altera escolhas, orçamento, especializações ou o resultado do `deriveAfty`. A busca
+combinada por efeito e texto também abre automaticamente o grupo de nível que contém o resultado.
+
+### Imitação e Imitação Perfeita
+
+O painel de Buffs agora separa Posturas, Habilidades ativas, Habilidades passivas e Estilos. As duas
+últimas categorias aparecem quando a criatura possui Imitação Perfeita. A cópia ativa continua sendo
+uma por vez, e as habilidades aprendidas ficam guardadas na sessão para alternância posterior.
+Aprender uma cópia não compra uma habilidade nem consome vaga de Especialização. O efeito copiado usa
+o nível do personagem nas expressões que escalam por nível.
+
+O botão **Em Combate** fica no próprio painel de Imitação, inclusive quando a ficha não tem outro
+Estado de Combate catalogado. Assim uma cópia pode ser iniciada sem depender de outra habilidade.
+
+### Verificação
+
+- `git diff --name-only -- src/components/`: vazio
+- não houve commit nem push
 
 ---
 
@@ -775,6 +813,64 @@ de console, a aba Defesas desenha as quatro categorias, e **não há rolagem hor
 nem 390px**. Em 390px os cinco controles encolhem (`w-9 sm:w-11`), porque com eles em 44px sobravam
 58px para o rótulo e "Congelante" virava "Congela...". Agora "Energia Reversa", o nome mais longo,
 cabe inteiro.
+
+## SESSÃO DE 2026-09-03: EDITOR DE PERSONALIZADO E TÉCNICA MÁXIMA DE ADDON
+
+O tipo `personalizado` já possuía campos estruturados e rolagens no motor, mas o ramo correspondente
+do criador renderizava `null`. O editor agora permite configurar Conjuração, Alcance, Alvo, Duração,
+Resolução, CD e múltiplas rolagens independentes de Dano ou Cura. Cada rolagem edita nome, dados,
+faces, valor fixo e repetições.
+
+Modelos de Addon com `nivel: "max"` passam a aparecer quando a progressão da criatura alcança o teto
+de Nível 5. O modelo conserva `max`, e o seletor mostra o degrau Máx. somente numa Técnica Máxima já
+entregue por fonte externa. A criação comum continua limitada a 0..5.
+
+O custo de Técnica Máxima passou a usar os **25 PE** escritos verbatim na Aptidão homônima. Antes, os
+calculadores de Dano, Cura e Especial a tratavam como Nível 5 por 20 PE, enquanto o Personalizado
+ficava sem custo.
+
+O pacote privado da Oda permanece ignorado pelo Git. Somente `Dairokuten Maō` e `Incêndio de Honnō-ji`
+foram marcados como Técnicas Máximas. Os outros doze modelos continuam no Nível 5.
+
+### Incêndio de Honnō-ji: custo de Vida na ativação
+
+O Honnō-ji deixou de ser uma entrada `personalizado` sem rolagem e passou a usar o construtor normal
+de Dano: Técnica Máxima, Teste de Resistência, área em Cone e Ação Completa. Assim dados, CD, alcance,
+área e bônus saem das tabelas e fórmulas que o Afty já usa.
+
+O campo declarativo `custoVidaAtivacao` paga 50% da Vida atual na primeira rolagem, com piso de 1 PV.
+O cálculo arredonda para baixo, mas uma criatura com 1 PV ainda paga 1 e pode chegar a zero. O custo
+ignora PV temporário e a quantia realmente paga entra como valor fixo no dano daquela mesma ativação.
+A ficha mostra o custo corrente, bloqueia a rolagem com Vida zero e registra a quantia paga no histórico.
+
+### Verificação
+
+- `npx eslint src/systems/afty/`: passou
+- `npm run asserts`: **45 arquivos, 2365 asserts**, todos passaram
+- `npx vite build`: passou, com os avisos já conhecidos de versão do Node e tamanho de chunk
+- instalação direta do pacote: 14 modelos, duas Técnicas Máximas e custo 25 PE
+- `git diff --name-only -- src/components/`: vazio
+
+---
+
+## SESSÃO DE 2026-09-03: ALCANCE DE ARMA POR TREINO
+
+A família `armas` dos addons ganhou o campo opcional `alcancePorTreino`. A tabela escolhe o maior
+degrau que não ultrapasse o Bônus de Treinamento atual. Antes do primeiro degrau, vale o alcance
+base da arma. Acima do último, o alcance permanece no último valor declarado.
+
+O conteúdo que motivou o mecanismo continua privado e fora do Git. O repositório recebeu apenas o
+resolvedor genérico, a validação da tabela, a exibição de alcance com uma faixa e 11 asserts.
+
+### Verificação
+
+- `npx eslint src/systems/afty/`: passou
+- `npm run asserts`: **44 arquivos, 2343 asserts**, todos passaram
+- `npx vite build`: passou, com os avisos já conhecidos de versão do Node e tamanho de chunk
+- teste direto do `deriveAfty`: ND 24 conserva o último degrau declarado
+- `git diff --name-only -- src/components/`: vazio
+
+---
 
 ## SESSÃO DE 2026-09-02: ESTADOS E ARMAS PRONTAS VINDAS DE ADDON
 

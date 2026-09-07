@@ -7,6 +7,7 @@ import { getCanal } from "../../afty-efeitos";
 import { sinalDe } from "../../ui/formato";
 import CanalPicker from "../CanalPicker";
 import PainelDeConcessao from "../PainelDeConcessao";
+import PainelDeImitacao from "../PainelDeImitacao";
 import SubAbas from "../SubAbas";
 import { usePrimitiva } from "../../ui/usar-primitiva";
 import { estadoUsadoNestaRodada } from "../ficha-sessao";
@@ -302,10 +303,9 @@ function LinhaCondicao({ condicao, aberta, onAbrir, onRemover }) {
   );
 }
 
-/* O interruptor de entrar em combate. Ele mora no canto do PRIMEIRO cartão de
-   estados que aparecer, e por isso virou componente: com os Ligados Agora na
-   tela, o cartão de cima é aquele, e sem eles é o "Estados". Dois botões iguais
-   em dois cartões seria duas verdades para o mesmo bit. */
+/* O interruptor mora no primeiro cartão de combate: Imitação, Ligados Agora
+   ou Estados. Imitação pode existir sem qualquer outro estado catalogado e
+   precisa do botão mesmo nesse caso, pois copiar só funciona em combate. */
 function BotaoEmCombate({ combate, onPatchCombate }) {
   return (
     <button
@@ -416,7 +416,7 @@ export default function AbaBuffs({
      array novo a cada render, e como dependência ele invalidaria o memo sempre.
      Depender do `derived` inteiro é o certo, porque é ele que muda de verdade. */
   const linhas = useMemo(() => {
-    const escolhidas = derived.habilidades?.escolhidas ?? [];
+    const escolhidas = derived.habilidades?.efetivas ?? derived.habilidades?.escolhidas ?? [];
     const talentos = derived.talentos?.escolhidas ?? [];
     const aptidoes = derived.aptidoesEscolhidas ?? [];
     const opcoesEscolhidas = Object.values(derived.habilidades?.escolhas?.mapa ?? {}).flat();
@@ -564,6 +564,8 @@ export default function AbaBuffs({
 
   return (
     <div className="space-y-3">
+      <PainelDeImitacao derived={derived} sessao={sessao} onPatchCombate={onPatchCombate}
+        controleCombate={<BotaoEmCombate combate={combate} onPatchCombate={onPatchCombate} />} />
       {/* ---------- concedido pelo mestre (Addons 8.3) ----------
           Primeiro da aba quando aparece, e de propósito: é o único bloco daqui
           em que a criatura na mesa passa a ser diferente da criatura no papel.
@@ -582,7 +584,7 @@ export default function AbaBuffs({
           turno. Antes dela, as três ou quatro linhas ligadas ficavam espalhadas
           entre quarenta apagadas, na ordem do arquivo de catálogo. */}
       {ligados.length > 0 && (
-        <Secao titulo="Ligados Agora" direita={<BotaoEmCombate combate={combate} onPatchCombate={onPatchCombate} />}>
+        <Secao titulo="Ligados Agora" direita={!derived.imitacao?.disponivel && <BotaoEmCombate combate={combate} onPatchCombate={onPatchCombate} />}>
           <div className="space-y-1" data-afty-estados="ligados">
             {ligados.map((e) => (
               <div key={e.id} className="afty-linha afty-estado-caixa" data-afty-estado={e.id}>
@@ -605,7 +607,7 @@ export default function AbaBuffs({
       {linhas.length > 0 && (
         <Secao
           titulo="Estados"
-          direita={ligados.length > 0 ? null : <BotaoEmCombate combate={combate} onPatchCombate={onPatchCombate} />}
+          direita={ligados.length > 0 || derived.imitacao?.disponivel ? null : <BotaoEmCombate combate={combate} onPatchCombate={onPatchCombate} />}
         >
           {/* O filtro local, gêmeo do das Habilidades: casa contra o rótulo do
               catálogo, com a família na frente, então procurar "manobra" acha as

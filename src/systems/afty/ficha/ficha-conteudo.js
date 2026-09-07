@@ -146,7 +146,7 @@ export function conteudoDaFicha(creature, derived) {
   /* ---------- Habilidades de Especialização ---------- */
   const mapaHab = derived?.habilidades?.escolhas?.mapa ?? {};
   const inacessiveisHab = new Set(derived?.habilidades?.inacessiveis ?? []);
-  for (const id of derived?.habilidades?.escolhidas ?? []) {
+  for (const id of derived?.habilidades?.efetivas ?? derived?.habilidades?.escolhidas ?? []) {
     const h = getHabilidade(id);
     if (!h) continue;
     const espec = getEspecializacao(h.especializacaoId);

@@ -482,11 +482,35 @@ export function podeSerArmaDedicada(def) {
  * Alcance da arma, em metros. Vem da propriedade `alcance` (armas a distância)
  * ou de `arremessavel`. Arma corpo a corpo sem nenhuma das duas devolve null:
  * o alcance dela depende do tamanho de quem maneja, e não é da arma.
+ *
+ * Uma arma de addon pode declarar `alcancePorTreino`, no formato
+ * `{ "2": [30, 60], "3": [60, 120] }`. Vale o maior degrau que não passe do
+ * Bônus de Treinamento, e acima do último a arma conserva o último alcance.
+ * O catálogo cru continua declarando só `props.alcance`.
  */
-export function alcanceDaArma(def) {
-  const a = def?.props?.alcance ?? def?.props?.arremessavel;
+export function alcanceDaArma(def, bonusTreinamento = 0) {
+  let a = def?.props?.alcance ?? def?.props?.arremessavel;
+  const porTreino = def?.alcancePorTreino;
+  if (porTreino && typeof porTreino === "object" && !Array.isArray(porTreino)) {
+    const treino = Math.max(0, Math.trunc(Number(bonusTreinamento) || 0));
+    let melhor = -1;
+    for (const [chave, alcance] of Object.entries(porTreino)) {
+      const degrau = Math.trunc(Number(chave));
+      if (degrau >= 0 && degrau <= treino && degrau >= melhor && Array.isArray(alcance)) {
+        melhor = degrau;
+        a = alcance;
+      }
+    }
+  }
   if (!Array.isArray(a)) return null;
-  return { curto: a[0], longo: a[1] ?? a[0], texto: `${a[0]}m / ${a[1] ?? a[0]}m` };
+  const curto = Number(a[0]);
+  const longo = Number(a[1] ?? a[0]);
+  if (!Number.isFinite(curto) || !Number.isFinite(longo) || curto < 0 || longo < curto) return null;
+  return {
+    curto,
+    longo,
+    texto: a.length > 1 ? `${curto}m / ${longo}m` : `${curto}m`,
+  };
 }
 
 /* ============================================================ */
@@ -2430,6 +2454,23 @@ export function validarCatalogoEquipamentos() {
     }
     for (const p of Object.keys(a.props ?? {})) {
       if (!PROP_BY_ID[p]) erros.push(`ARMAS: "${a.id}" tem propriedade desconhecida "${p}".`);
+    }
+    if (a.alcancePorTreino !== undefined) {
+      if (!a.alcancePorTreino || typeof a.alcancePorTreino !== "object" || Array.isArray(a.alcancePorTreino)) {
+        erros.push(`ARMAS: "${a.id}" tem alcancePorTreino inválido.`);
+      } else {
+        for (const [chave, alcance] of Object.entries(a.alcancePorTreino)) {
+          const degrau = Number(chave);
+          const curto = Number(alcance?.[0]);
+          const longo = Number(alcance?.[1] ?? alcance?.[0]);
+          if (!Number.isInteger(degrau) || degrau < 0 || !Array.isArray(alcance)
+            || alcance.length < 1 || alcance.length > 2
+            || !Number.isFinite(curto) || !Number.isFinite(longo)
+            || curto < 0 || longo < curto) {
+            erros.push(`ARMAS: "${a.id}" tem alcance inválido no Treino ${chave}.`);
+          }
+        }
+      }
     }
     if (a.props?.especial && !a.especial) {
       erros.push(`ARMAS: "${a.id}" tem a propriedade Especial mas não aponta para um texto especial.`);

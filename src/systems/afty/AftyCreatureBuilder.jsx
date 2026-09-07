@@ -3,12 +3,12 @@ import {
   Save, ChevronLeft, ChevronRight, ChevronDown, Wand2, Sparkles, FlaskConical,
   Dumbbell, GraduationCap, BookOpen, Check, ArrowRight, Lock, Plus, X, Zap, GripVertical,
   Copy, ArrowUp, ArrowDown, Heart, Shield, Footprints, AlertTriangle, Star, Swords,
-  Trash2, Image as ImageIcon, Eye, Crosshair, RotateCcw, Pencil, Table, Braces, ListChecks,
+  Trash2, Image as ImageIcon, Eye, Crosshair, RotateCcw, RefreshCw, Pencil, Table, Braces, ListChecks,
 } from "lucide-react";
 
 import { FieldLabel, TextInput, TextArea, Select, NumberInput, StatField, ExpandableText } from "../../components/builder-controls";
 import TabAddons from "./AftyTabAddons";
-import { aplicarAddons, feiticosDeAddon } from "./afty-addons";
+import { aplicarAddons, modelosPendentesDeAddon } from "./afty-addons";
 import {
   mesclaFichaAfty, AFTY_ATTRS, AFTY_TIPOS, AFTY_PATAMARES, AFTY_QNT_PE,
   AFTY_TECNICA_ATTRS, AFTY_TAMANHOS, AFTY_RESISTENCIAS, getTamanho,
@@ -32,6 +32,8 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { sinalDe, numeroBr } from "./ui/formato";
 import { Card, BoolChip, VezesGauge } from "./ui/primitivos";
+import FiltroDeHabilidades from "./ui/FiltroDeHabilidades";
+import { filtraHabilidades, filtraGruposDeHabilidade } from "./afty-filtro-habilidades";
 import { estadoInicialComRascunho, useRascunhoAfty, formatarSalvoEm } from "./afty-rascunho";
 import { SISTEMA_PADRAO, sistemaDaFicha, normalizaSistema, regraDo } from "./afty-sistema";
 import {
@@ -520,6 +522,22 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
           ...copia,
           trocas: { ...vazio.trocas, ...(copia.trocas || {}) },
         }],
+      };
+    });
+  const updateFeitico = (modelo) =>
+    setDraft((d) => {
+      const atuais = Array.isArray(d.feiticos) ? d.feiticos : [];
+      if (!atuais.some((feitico) => feitico.id === modelo.id)) return d;
+      const vazio = createBlankFeitico();
+      const copia = JSON.parse(JSON.stringify(modelo));
+      const atualizado = {
+        ...vazio,
+        ...copia,
+        trocas: { ...vazio.trocas, ...(copia.trocas || {}) },
+      };
+      return {
+        ...d,
+        feiticos: atuais.map((feitico) => (feitico.id === modelo.id ? atualizado : feitico)),
       };
     });
   const removeFeitico = (id) =>
@@ -1244,7 +1262,7 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
               removerPericia={removerPericia}
             />
           )}
-          {tabAtiva === "habilidades" && <TabHabilidades draft={draft} derived={derived} patchCore={patchCore} toggleArmaDedicada={toggleArmaDedicada} addFeitico={addFeitico} removeFeitico={removeFeitico} patchFeitico={patchFeitico} duplicarFeitico={duplicarFeitico} setReducoesCustoFeitico={setReducoesCustoFeitico} toggleEstiloTabela={toggleEstiloTabela} addEstiloEspecial={addEstiloEspecial} removeEstilo={removeEstilo} patchEstilo={patchEstilo} addFuncionamento={addFuncionamento} removeFuncionamento={removeFuncionamento} patchFuncionamento={patchFuncionamento} setGeralVezes={setGeralVezes} addDominio={addDominio} removeDominio={removeDominio} patchDominio={patchDominio} setDominioAtivo={setDominioAtivo} sistema={sistema} />}
+{tabAtiva === "habilidades" && <TabHabilidades draft={draft} derived={derived} patchCore={patchCore} toggleArmaDedicada={toggleArmaDedicada} addFeitico={addFeitico} updateFeitico={updateFeitico} removeFeitico={removeFeitico} patchFeitico={patchFeitico} duplicarFeitico={duplicarFeitico} setReducoesCustoFeitico={setReducoesCustoFeitico} toggleEstiloTabela={toggleEstiloTabela} addEstiloEspecial={addEstiloEspecial} removeEstilo={removeEstilo} patchEstilo={patchEstilo} addFuncionamento={addFuncionamento} removeFuncionamento={removeFuncionamento} patchFuncionamento={patchFuncionamento} setGeralVezes={setGeralVezes} addDominio={addDominio} removeDominio={removeDominio} patchDominio={patchDominio} setDominioAtivo={setDominioAtivo} sistema={sistema} />}
           {tabAtiva === "especializacoes" && <TabEspecializacoes draft={draft} derived={derived} setEspecializacoes={setEspecializacoes} toggleHabilidade={toggleHabilidade} setHabilidadeVezes={setHabilidadeVezes} toggleEscolhaHabilidade={toggleEscolhaHabilidade} toggleTalento={toggleTalento} setTalentoVezes={setTalentoVezes} toggleEscolhaTalento={toggleEscolhaTalento} setMelhoriaVezes={setMelhoriaVezes} toggleLendaria={toggleLendaria} toggleEscolhaAltoNivel={toggleEscolhaAltoNivel} patchTecnicasCombate={patchTecnicasCombate} />}
           {tabAtiva === "aptidoes" && <TabAptidoes draft={draft} derived={derived} setAptidaoNivel={setAptidaoNivel} toggleAptidao={toggleAptidao} setAptidaoOpcao={setAptidaoOpcao} setAptidaoVezes={setAptidaoVezes} setAptidaoOpcaoRepetida={setAptidaoOpcaoRepetida} />}
           {tabAtiva === "invocacoes" && <TabInvocacoes draft={draft} derived={derived} addInvocacao={addInvocacao} removeInvocacao={removeInvocacao} duplicarInvocacao={duplicarInvocacao} moverInvocacao={moverInvocacao} patchInvocacao={patchInvocacao} patchInvocacaoAttr={patchInvocacaoAttr} efeitosApi={efeitosApi} addHorda={addHorda} removeHorda={removeHorda} patchHorda={patchHorda} />}
@@ -2563,7 +2581,7 @@ function DominioCard({ derived, addDominio, removeDominio, patchDominio, setDomi
   );
 }
 
-function TabHabilidades({ draft, derived, patchCore, toggleArmaDedicada, addFeitico, removeFeitico, patchFeitico, duplicarFeitico, setReducoesCustoFeitico, toggleEstiloTabela, addEstiloEspecial, removeEstilo, patchEstilo, addFuncionamento, removeFuncionamento, patchFuncionamento, setGeralVezes, addDominio, removeDominio, patchDominio, setDominioAtivo, sistema }) {
+function TabHabilidades({ draft, derived, patchCore, toggleArmaDedicada, addFeitico, updateFeitico, removeFeitico, patchFeitico, duplicarFeitico, setReducoesCustoFeitico, toggleEstiloTabela, addEstiloEspecial, removeEstilo, patchEstilo, addFuncionamento, removeFuncionamento, patchFuncionamento, setGeralVezes, addDominio, removeDominio, patchDominio, setDominioAtivo, sistema }) {
   const dominio = (
     <DominioCard
       derived={derived}
@@ -2652,7 +2670,7 @@ function TabHabilidades({ draft, derived, patchCore, toggleArmaDedicada, addFeit
         removeFuncionamento={removeFuncionamento}
         patchFuncionamento={patchFuncionamento}
       />
-      <FeiticosCard draft={draft} derived={derived} addFeitico={addFeitico} removeFeitico={removeFeitico} patchFeitico={patchFeitico} duplicarFeitico={duplicarFeitico} setReducoesCustoFeitico={setReducoesCustoFeitico} />
+      <FeiticosCard draft={draft} derived={derived} addFeitico={addFeitico} updateFeitico={updateFeitico} removeFeitico={removeFeitico} patchFeitico={patchFeitico} duplicarFeitico={duplicarFeitico} setReducoesCustoFeitico={setReducoesCustoFeitico} />
       {/* Depois dos Feitiços de propósito: quem chega aqui tem os dois, e o
           Feitiço é o que ele já tinha. Os dois dividem o mesmo contador. */}
       {estilo}
@@ -4148,7 +4166,7 @@ function PerfilAmaldicoadoCard({
 }
 
 /* Card dos Feitiços: orçamento no cabeçalho + lista de entradas criadas. */
-function FeiticosCard({ draft, derived, addFeitico, removeFeitico, patchFeitico, duplicarFeitico, setReducoesCustoFeitico }) {
+function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico, patchFeitico, duplicarFeitico, setReducoesCustoFeitico }) {
   const lista = Array.isArray(draft.feiticos) ? draft.feiticos : [];
   const feiticosBase = lista.filter((feitico) => !feitico.variacaoDe);
   const dslGrupos = useDslGrupos(derived);
@@ -4161,7 +4179,7 @@ function FeiticosCard({ draft, derived, addFeitico, removeFeitico, patchFeitico,
     ? draft.reducoesCustoFeitico
     : { dominancia: null, manipulacao: [] };
   const idsBase = new Set(feiticosBase.map((feitico) => feitico.id));
-  const modelosAddon = feiticosDeAddon(draft, nivelMax).filter((modelo) => !idsBase.has(modelo.id));
+  const modelosAddon = modelosPendentesDeAddon(draft, nivelMax, feiticosBase);
   const dominancia = idsBase.has(reducoes.dominancia) ? reducoes.dominancia : null;
   const manipulacao = Array.isArray(reducoes.manipulacao)
     ? [...new Set(reducoes.manipulacao)].filter((id) => idsBase.has(id)).slice(0, limiteManipulacao)
@@ -4253,11 +4271,17 @@ function FeiticosCard({ draft, derived, addFeitico, removeFeitico, patchFeitico,
               <button
                 key={modelo.id}
                 type="button"
-                onClick={() => addFeitico(modelo)}
-                title={`${modelo.addonNome} · ${NIVEL_LABEL[modelo.nivel]}`}
+                onClick={() => (modelo.situacaoModelo === "desatualizado"
+                  ? updateFeitico(modelo)
+                  : addFeitico(modelo))}
+                title={modelo.situacaoModelo === "desatualizado"
+                  ? `Atualizar para ${modelo.addonVersao}`
+                  : `${modelo.addonNome} · ${NIVEL_LABEL[modelo.nivel]}`}
                 className="inline-flex items-center gap-1 rounded border border-purple-800/60 bg-purple-950/30 px-2 py-1 text-[11px] text-purple-200 hover:border-purple-600"
               >
-                <Plus className="w-3 h-3" aria-hidden="true" />
+                {modelo.situacaoModelo === "desatualizado"
+                  ? <RefreshCw className="w-3 h-3" aria-hidden="true" />
+                  : <Plus className="w-3 h-3" aria-hidden="true" />}
                 {modelo.nome}
               </button>
             ))}
@@ -4441,13 +4465,19 @@ function FeiticoCard({ feitico, ctx, nivelMax, efeitosPassivo, fontesDano, dslGr
               titulo="Efeitos da Passiva"
               simplificarTamanho
             />
-          ) : feitico.tipo === "personalizado" ? null : (
+          ) : feitico.tipo === "personalizado" ? (
+            <FeiticoPersonalizadoEditor feitico={feitico} onPatch={onPatch} />
+          ) : (
             <div className="text-center py-5 border border-dashed border-slate-700 rounded-lg text-sm text-slate-400">
               Feitiços {TIPO_FEITICO_LABEL[feitico.tipo]} entram num próximo incremento.
               <div className="mt-2 inline-block text-[10px] font-bold uppercase tracking-wide text-amber-400 border border-amber-800/60 rounded px-2 py-0.5">
                 próximo incremento
               </div>
             </div>
+          )}
+
+          {feitico.custoVidaAtivacao && (
+            <CustoVidaAtivacaoEditor feitico={feitico} onPatch={onPatch} />
           )}
 
           <div>
@@ -4472,11 +4502,15 @@ function SecaoFeitico({ titulo, children }) {
 
 /* Picker segmentado 0..5 do nível do Feitiço (medidor, não campo numérico). */
 function NivelFeiticoPicker({ value, onChange, nivelMax, nivelMin = 0 }) {
+  // A Técnica Máxima não nasce na criação comum. Quando uma fonte externa,
+  // como um Addon, entrega uma pronta, o degrau precisa continuar editável sem
+  // abrir a criação irrestrita de novas Técnicas Máximas.
+  const niveis = value === "max" ? [0, 1, 2, 3, 4, 5, "max"] : [0, 1, 2, 3, 4, 5];
   return (
     <div className="flex gap-1.5" role="group" aria-label="Nível do Feitiço">
-      {[0, 1, 2, 3, 4, 5].map((n) => {
+      {niveis.map((n) => {
         const on = n === value;
-        const off = (n > nivelMax || n < nivelMin) && !on;
+        const off = n !== "max" && (n > nivelMax || n < nivelMin) && !on;
         return (
           <button
             key={n}
@@ -4493,11 +4527,154 @@ function NivelFeiticoPicker({ value, onChange, nivelMax, nivelMin = 0 }) {
                   : "border-slate-700 text-slate-300 hover:text-white hover:border-slate-600"
             }`}
           >
-            {n}
+            {n === "max" ? "Máx." : n}
           </button>
         );
       })}
     </div>
+  );
+}
+
+/* Feitiço de mesa. Os campos já fazem parte do schema e do resumo da Ficha,
+   mas o criador não os renderizava. As rolagens são independentes porque uma
+   mesma habilidade pode ter dano inicial, dano recorrente ou outro ramo. */
+function FeiticoPersonalizadoEditor({ feitico, onPatch }) {
+  const f = feitico;
+  const rolagens = Array.isArray(f.rolagens) ? f.rolagens : [];
+  const patchRolagem = (indice, parcial) => onPatch({
+    rolagens: rolagens.map((rolagem, i) => (i === indice ? { ...rolagem, ...parcial } : rolagem)),
+  });
+  const adicionarRolagem = () => onPatch({
+    rolagens: [...rolagens, {
+      rotulo: "Dano",
+      dados: 1,
+      faces: 6,
+      fixo: 0,
+      vezes: 1,
+      tom: "dano",
+    }],
+  });
+  const removerRolagem = (indice) => onPatch({
+    rolagens: rolagens.filter((_, i) => i !== indice),
+  });
+
+  return (
+    <div className="rounded-lg border border-slate-800 bg-slate-950/30 p-3 space-y-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <FieldLabel>Conjuração</FieldLabel>
+          <TextInput value={f.acaoPersonalizada || ""} onChange={(v) => onPatch({ acaoPersonalizada: v })} placeholder="Ação" />
+        </div>
+        <div>
+          <FieldLabel>Alcance</FieldLabel>
+          <TextInput value={f.alcanceTexto || ""} onChange={(v) => onPatch({ alcanceTexto: v })} placeholder="Alcance" />
+        </div>
+        <div>
+          <FieldLabel>Alvo</FieldLabel>
+          <TextInput value={f.alvoTexto || ""} onChange={(v) => onPatch({ alvoTexto: v })} placeholder="Alvo" />
+        </div>
+        <div>
+          <FieldLabel>Duração</FieldLabel>
+          <TextInput value={f.duracaoTexto || ""} onChange={(v) => onPatch({ duracaoTexto: v })} placeholder="Duração" />
+        </div>
+      </div>
+
+      <div>
+        <FieldLabel>Resolução</FieldLabel>
+        <TextInput value={f.resolucaoTexto || ""} onChange={(v) => onPatch({ resolucaoTexto: v })} placeholder="Resolução" />
+      </div>
+
+      <BoolChip ativo={f.comCd !== false} onToggle={() => onPatch({ comCd: f.comCd === false })}>CD</BoolChip>
+
+      <SecaoFeitico titulo="Rolagens">
+        <div className="space-y-2">
+          {rolagens.map((rolagem, indice) => (
+            <div key={indice} className="rounded-lg border border-slate-800 bg-slate-950/50 p-2.5 space-y-2">
+              <div className="flex items-end gap-2">
+                <div className="flex-1 min-w-0">
+                  <FieldLabel>Nome</FieldLabel>
+                  <TextInput value={rolagem.rotulo || ""} onChange={(v) => patchRolagem(indice, { rotulo: v })} placeholder="Rolagem" />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => removerRolagem(indice)}
+                  className="h-9 w-9 inline-flex items-center justify-center rounded-lg border border-slate-700 text-slate-500 hover:text-rose-300 hover:border-rose-900"
+                  title="Remover rolagem"
+                  aria-label="Remover rolagem"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div>
+                  <FieldLabel>Dados</FieldLabel>
+                  <NumberInput value={rolagem.dados ?? 1} min={1} onChange={(v) => patchRolagem(indice, { dados: v })} />
+                </div>
+                <div>
+                  <FieldLabel>Faces</FieldLabel>
+                  <NumberInput value={rolagem.faces ?? 6} min={2} onChange={(v) => patchRolagem(indice, { faces: v })} />
+                </div>
+                <div>
+                  <FieldLabel>Fixo</FieldLabel>
+                  <NumberInput value={rolagem.fixo ?? 0} onChange={(v) => patchRolagem(indice, { fixo: v })} />
+                </div>
+                <div>
+                  <FieldLabel>Vezes</FieldLabel>
+                  <NumberInput value={rolagem.vezes ?? 1} min={1} onChange={(v) => patchRolagem(indice, { vezes: v })} />
+                </div>
+              </div>
+              <OptionChips
+                value={rolagem.tom === "cura" ? "cura" : "dano"}
+                onChange={(v) => patchRolagem(indice, { tom: v })}
+                options={[{ value: "dano", label: "Dano" }, { value: "cura", label: "Cura" }]}
+              />
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={adicionarRolagem}
+            className="w-full inline-flex items-center justify-center gap-1.5 text-[12px] font-semibold px-3 py-2 rounded-lg border border-dashed border-slate-700 text-slate-400 hover:text-white hover:border-slate-600"
+          >
+            <Plus className="w-4 h-4" /> Adicionar Rolagem
+          </button>
+        </div>
+      </SecaoFeitico>
+    </div>
+  );
+}
+
+function CustoVidaAtivacaoEditor({ feitico, onPatch }) {
+  const custo = feitico.custoVidaAtivacao || {};
+  const patchCusto = (parcial) => onPatch({
+    custoVidaAtivacao: {
+      modo: "percentualAtual",
+      percentual: 50,
+      minimo: 1,
+      somaAoDano: false,
+      ...custo,
+      ...parcial,
+    },
+  });
+  return (
+    <SecaoFeitico titulo="Custo de Vida">
+      <div className="flex items-end gap-3 flex-wrap">
+        <div className="w-36">
+          <FieldLabel>PV Atuais (%)</FieldLabel>
+          <NumberInput
+            value={custo.percentual ?? 50}
+            min={1}
+            max={100}
+            onChange={(v) => patchCusto({ percentual: v })}
+          />
+        </div>
+        <BoolChip
+          ativo={custo.somaAoDano === true}
+          onToggle={() => patchCusto({ somaAoDano: custo.somaAoDano !== true })}
+        >
+          Somar ao Dano
+        </BoolChip>
+      </div>
+    </SecaoFeitico>
   );
 }
 
@@ -8374,10 +8551,13 @@ function OpcoesDeEscolha({ escolha, opcoesEscolhidas, escolhida, onToggleOpcao }
   const eixos = escolha.abas || [];
   // Aba ativa por eixo. Vazio = a primeira de cada barra.
   const [abaPorEixo, setAbaPorEixo] = useState([]);
+  const [efeitoFiltro, setEfeitoFiltro] = useState("todos");
+  const [termoFiltro, setTermoFiltro] = useState("");
+  const opcoesFiltradas = eixos.length ? filtraHabilidades(escolha.opcoes, efeitoFiltro, termoFiltro) : escolha.opcoes;
 
   // Desce os eixos filtrando: cada barra só oferece o que sobrou da de cima.
   const barras = [];
-  let lista = escolha.opcoes;
+  let lista = opcoesFiltradas;
   for (let i = 0; i < eixos.length; i++) {
     const abas = abasDeOpcoes(lista, eixos[i]);
     const ativa = abas.find((a) => a.id === abaPorEixo[i]) ?? abas[0];
@@ -8392,6 +8572,10 @@ function OpcoesDeEscolha({ escolha, opcoesEscolhidas, escolhida, onToggleOpcao }
 
   return (
     <>
+      {eixos.length > 0 && <FiltroDeHabilidades variante="criador" rotulo={`Filtrar ${escolha.label}`}
+        efeito={efeitoFiltro} onEfeito={(v) => { setEfeitoFiltro(v); setAbaPorEixo([]); }}
+        termo={termoFiltro} onTermo={(v) => { setTermoFiltro(v); setAbaPorEixo([]); }}
+        visiveis={opcoesFiltradas.length} total={escolha.opcoes.length} />}
       {barras.map((barra, i) => (
         <div
           key={eixos[i]}
@@ -8426,6 +8610,7 @@ function OpcoesDeEscolha({ escolha, opcoesEscolhidas, escolhida, onToggleOpcao }
       ))}
 
       <div className="space-y-1.5">
+        {lista.length === 0 && <p className="text-xs text-slate-500 py-2" role="status">Nenhuma habilidade encontrada</p>}
         {lista.map((o) => {
           const sel = opcoesEscolhidas.includes(o.id);
           // Sem a habilidade, a escolha não vale: leitura apenas.
@@ -8744,15 +8929,18 @@ function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, setHabili
   // paredão vertical. O grupoTab guarda a escolha; se ela não existe na aba
   // ativa (troca de aba), cai no primeiro grupo.
   const [grupoTab, setGrupoTab] = useState(null);
+  const [efeitoFiltro, setEfeitoFiltro] = useState("todos");
+  const [termoFiltro, setTermoFiltro] = useState("");
 
   // Sem especialização, nada a mostrar: os chips logo acima já pedem uma.
   if (especs.length === 0) return null;
 
   // Os dois catálogos viram a MESMA forma ({ id, titulo, habilidades }) para
   // reusar a barra de grupos e o HabilidadeCard sem ramificar a árvore.
-  const grupos = emTalentos
+  const gruposCatalogo = emTalentos
     ? gruposDeTalento(draft).map((g) => ({ id: g.id, titulo: g.titulo, habilidades: g.talentos }))
     : gruposDeHabilidade(ativa.id, draft);
+  const grupos = filtraGruposDeHabilidade(gruposCatalogo, efeitoFiltro, termoFiltro);
   const grupoAtivo = grupos.find((g) => g.id === grupoTab) ?? grupos[0];
   // attrEff alimenta os requisitos de atributo (ex.: Sobrevivente, Constituição
   // 16) e aptidoes os de aptidão (ex.: Revestimento Constante pede Cobrir-se).
@@ -8877,6 +9065,12 @@ function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, setHabili
         </button>
       </div>
 
+      <FiltroDeHabilidades variante="criador" rotulo="Filtrar habilidades de especialização e talentos"
+        efeito={efeitoFiltro} onEfeito={(v) => { setEfeitoFiltro(v); setGrupoTab(null); }}
+        termo={termoFiltro} onTermo={(v) => { setTermoFiltro(v); setGrupoTab(null); }}
+        visiveis={grupos.reduce((n, g) => n + g.habilidades.length, 0)}
+        total={gruposCatalogo.reduce((n, g) => n + g.habilidades.length, 0)} />
+
       {excedeu && (
         <p className="text-[11px] text-rose-400 mb-3">
           Você escolheu mais habilidades do que o orçamento permite. Remova uma ou pegue a Habilidade Geral Especialização.
@@ -8886,11 +9080,13 @@ function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, setHabili
       {/* Catálogo ainda não transcrito: DIZER isso. Renderizar vazio faz a
           aba parecer quebrada (foi o que aconteceu numa ficha Lutador +
           Combatente, que abria no Lutador e mostrava um nada). */}
-      {grupos.length === 0 ? (
+      {gruposCatalogo.length === 0 ? (
         <p className="text-[11px] text-slate-500">
           As Habilidades de {getEspecializacao(ativa.id)?.nome} ainda não foram transcritas do
           livro.
         </p>
+      ) : grupos.length === 0 ? (
+        <p className="text-xs text-slate-500 py-2" role="status">Nenhuma habilidade encontrada</p>
       ) : (
         <>
           {/* Abas de nível (Base, 2°, 4°...). Contador de escolhas pagas por aba:
@@ -9186,7 +9382,7 @@ function AltoNivelCard({ item, escolhida, acesso, escolhaEstado, vezes, onToggle
    card fica vazio (e some) para quem não tem nenhuma. */
 function SimulacaoCombateCard({ derived, patchCombate, gatilhosTreino = [], onGatilhoTreino }) {
   const combate = derived.combate;
-  const escolhidas = derived.habilidades?.escolhidas ?? [];
+  const escolhidas = derived.habilidades?.efetivas ?? derived.habilidades?.escolhidas ?? [];
   // As opções aninhadas escolhidas (Manobra de Empolgação, Estilo de Combate),
   // achatadas: é o que `requerEscolha` consulta.
   const opcoes = Object.values(derived.habilidades?.escolhas?.mapa ?? {}).flat();
@@ -9775,7 +9971,7 @@ function fmtProps(props) {
     const nome = p?.nome ?? id;
     if (val === true) return nome;
     switch (p?.param) {
-      case "alcance": return `${nome} [${val[0]}/${val[1]}m]`;
+      case "alcance": return val.length > 1 ? `${nome} [${val[0]}/${val[1]}m]` : `${nome} [${val[0]}m]`;
       case "numero":  return `${nome} [${val}]`;
       case "dado":    return `${nome} ${val}`;
       case "tipo":    return `${nome} ${abrevDano(val)}`;

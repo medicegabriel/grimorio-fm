@@ -596,7 +596,11 @@ export function feiticosDeAddon(creature, nivelMax = 5) {
     for (const feitico of Array.isArray(pacote?.feiticos) ? pacote.feiticos : []) {
       const idLocal = String(feitico?.id ?? "").trim();
       const nome = String(feitico?.nome ?? "").trim();
-      const nivel = feitico?.nivel === "max" ? 6 : Math.trunc(Number(feitico?.nivel));
+      /* Um modelo de Técnica Máxima vindo do Addon é oferecido no mesmo teto
+         em que a progressão comum alcança o Nível 5. O modelo conserva "max"
+         para usar as tabelas próprias. Contá-lo como 6 aqui o tornava
+         impossível, porque `nivelMaxFeitico` para em 5. */
+      const nivel = feitico?.nivel === "max" ? 5 : Math.trunc(Number(feitico?.nivel));
       if (!idLocal || !nome || !Number.isFinite(nivel) || nivel > teto) continue;
       const id = `${pacoteId}${SEPARADOR}${idLocal}`;
       if (vistos.has(id)) continue;
@@ -614,6 +618,23 @@ export function feiticosDeAddon(creature, nivelMax = 5) {
     }
   }
   return modelos;
+}
+
+/** Modelos ainda não copiados e cópias cuja versão ficou para trás. */
+export function modelosPendentesDeAddon(creature, nivelMax = 5, feiticosAtuais = []) {
+  const atuais = new Map(
+    (Array.isArray(feiticosAtuais) ? feiticosAtuais : [])
+      .filter((feitico) => feitico && !feitico.variacaoDe)
+      .map((feitico) => [feitico.id, feitico]),
+  );
+  return feiticosDeAddon(creature, nivelMax).flatMap((modelo) => {
+    const atual = atuais.get(modelo.id);
+    if (!atual) return [{ ...modelo, situacaoModelo: "novo" }];
+    if (String(atual.addonVersao ?? "") !== String(modelo.addonVersao ?? "")) {
+      return [{ ...modelo, situacaoModelo: "desatualizado" }];
+    }
+    return [];
+  });
 }
 
 /** Texto de uma linha no maior degrau declarado que não passe do nível atual. */

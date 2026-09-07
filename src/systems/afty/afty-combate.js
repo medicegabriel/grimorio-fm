@@ -354,7 +354,7 @@ export const COMBATE_ESTADOS = [
     tipo: "faixa",
     min: 0,
     // 2 no Iniciado, até 6 no Avançado ("1 dado adicional para cada outros 2").
-    max: (d) => ((d?.habilidades?.escolhidas ?? []).includes("cmb_pistoleiro_avancado") ? 6 : 2),
+    max: (d) => ((d?.habilidades?.efetivas ?? d?.habilidades?.escolhidas ?? []).includes("cmb_pistoleiro_avancado") ? 6 : 2),
     requerHabilidade: "cmb_pistoleiro_iniciado",
   },
   {
@@ -410,7 +410,7 @@ export const COMBATE_ESTADOS = [
     min: 0,
     // "distribuir um bônus de +4 entre Atletismo e Acrobacia", +8 com a
     // Restrição Definitiva. O que sobra vai para Acrobacia.
-    max: (d) => ((d?.habilidades?.escolhidas ?? []).includes("res_restricao_definitiva") ? 8 : 4),
+    max: (d) => ((d?.habilidades?.efetivas ?? d?.habilidades?.escolhidas ?? []).includes("res_restricao_definitiva") ? 8 : 4),
     requerHabilidade: "res_adrenalina_intensificadora",
     requerEstado: "surtoAdrenalina",
   },

@@ -112,6 +112,7 @@ import {
   mesclarEfeitos, detalhesDoCanal, normalizarAlvoEfeito,
 } from "./afty-efeitos";
 import { resolveGerais, contadorHabilidades, GERAL_BY_ID } from "./afty-gerais";
+import { resolveImitacao, concessaoImitada, efeitoDaImitacao } from "./afty-imitacao";
 // Quem é esta ficha, criatura ou personagem. Lê o `rulesVersion` dela.
 import { sistemaDaFicha, regraDo } from "./afty-sistema";
 // Os números da ficha de JOGADOR vêm da Classe, e não do Tipo.
@@ -201,8 +202,18 @@ export function deriveAfty(creature, opcoes = {}) {
      do combate, ela vale para tudo, não gasta vaga nenhuma e morre quando a
      sessão acaba (decisões do autor, 2026-08-20). Cada família recebe a parte
      dela pelo CANAL DE CONCESSÃO do resolvedor. Ver `afty-concessao.js`. */
+  const imitacao = resolveImitacao(creature, [
+    ...(creature?.habilidades ?? []),
+    ...agrupaConcedido(opcoes.concedido).habilidades,
+  ]);
+  const concessoesComImitacao = [...(opcoes.concedido ?? []), ...concessaoImitada(imitacao)];
   const concedido = agrupaConcedido(opcoes.concedido);
-  const escolhasConcedidas = escolhasDoConcedido(opcoes.concedido);
+  for (const c of concessaoImitada(imitacao)) {
+    if (!(creature?.habilidades ?? []).includes(c.id) && !concedido.habilidades.includes(c.id)) {
+      concedido.habilidades.push(c.id);
+    }
+  }
+  const escolhasConcedidas = escolhasDoConcedido(concessoesComImitacao);
   const origensDiretasDaAdaptacao = new Set(origensDiretasDasAdaptacoes(creature, opcoes.adaptacoes));
   const aplicarDiretoDaAdaptacao = (efeito) => {
     if (!efeito?.quando || !origensDiretasDaAdaptacao.has(efeito.origem)) return efeito;
@@ -610,7 +621,7 @@ export function deriveAfty(creature, opcoes = {}) {
   // correspondente, que só DESTRAVA (não dá vaga).
   const altoNivel = resolveAltoNivel(creature, {
     niveisPorEspec: habilidades.niveisPorEspec,
-    habilidades: habilidades.escolhidas,
+    habilidades: habilidades.efetivas,
     /* ⚠ `undefined` no jogador, e não um objeto com os dois em `true`. O
        `avaliarAcessoAltoNivel` já lê a AUSÊNCIA como "os dois abertos", e passar
        um objeto seria dizer a mesma coisa por um caminho a mais. As duas trilhas
@@ -712,7 +723,7 @@ export function deriveAfty(creature, opcoes = {}) {
       // Tipo de dano da arma (ct, im, pf), que é como os Especialistas em
       // Cortes, Concussão e Perfuração (Talentos) miram.
       tipoDano: e.def.dano?.tipo ?? null,
-      alcance: alcanceDaArma(e.def),
+      alcance: alcanceDaArma(e.def, bt),
       alcanceBonusCorpo: e.def.props?.estendida ? 1.5 : 0,
       propriedades: propriedadesDaArma(e.def),
       criticoExtraDados: e.fa?.encantamentos?.some((x) => x.id === "enc_arma_destruidora" && x.atende) ? 1 : 0,
@@ -721,7 +732,7 @@ export function deriveAfty(creature, opcoes = {}) {
   const tecnicasCombate = resolveTecnicasCombate(
     creature,
     catalogoDoTipo("arma", creature),
-    habilidades.escolhidas,
+    habilidades.efetivas,
   );
   // O Ataque Básico só sobe de grau com Manoplas ou Faixas (autor, 2026-07-27).
   // Sem elas é Desarmado, que não soma nada. Com as duas vale o grau mais alto,
@@ -752,7 +763,7 @@ export function deriveAfty(creature, opcoes = {}) {
   // Fineza do item que define o golpe (Soco Inglês). A propriedade estava na
   // tabela e não chegava em lugar nenhum: o básico só olhava o canal.
   const finezaBasico = !!pugilato?.def?.props?.fineza;
-  const dedicadas = resolveArmasDedicadas(creature, armasParaDano, habilidades.escolhidas);
+  const dedicadas = resolveArmasDedicadas(creature, armasParaDano, habilidades.efetivas);
 
   const efeitosTodos = [
     ...coletarEfeitosCriatura({
@@ -764,10 +775,10 @@ export function deriveAfty(creature, opcoes = {}) {
         opcoes: { ...OPCAO_ESCOLHA_NOME, ...OPCAO_TALENTO_NOME },
         altoNivel: (id) => getMelhoriaSuperior(id) || getHabilidadeLendaria(id) || getHabilidadeApice(id),
       },
-    }).map(aplicarDiretoDaAdaptacao),
+    }).map(aplicarDiretoDaAdaptacao).map((e) => efeitoDaImitacao(e, imitacao, nd)),
     // Direcionados por uma escolha que mora FORA do card da habilidade (a
     // marcação na linha de dano). Mesmo padrão do efeitosDeTreino.
-    ...efeitosArmasDedicadas(dedicadas, habilidades.escolhidas.includes("lut_um_com_a_arma")),
+    ...efeitosArmasDedicadas(dedicadas, habilidades.efetivas.includes("lut_um_com_a_arma")),
     // Funcionamento Básico da técnica: os únicos efeitos ESCRITOS pelo jogador,
     // porque a técnica é única no mundo e nenhum catálogo a cobre. Entram no
     // mesmo bolo, e os filtros de estágio abaixo roteiam pelo canal.
@@ -1103,7 +1114,7 @@ export function deriveAfty(creature, opcoes = {}) {
   })();
 
   const estadosConjurador = estadosCombateConjurador({
-    habilidades: habilidades.escolhidas,
+    habilidades: habilidades.efetivas,
     tecnicas: tecnicasCombate,
     armas: armasParaDano,
     feiticos: creature?.feiticos,
@@ -1121,8 +1132,8 @@ export function deriveAfty(creature, opcoes = {}) {
     empolgacaoMaxima: valorCanal(efPreContexto, "empolgacaoMaxima") > 0,
     devastacaoPilha: bt,
     precisaoPE: 1 + Math.floor(nivelCmb / 4),
-    pistoleiroEmperrar: habilidades.escolhidas.includes("cmb_pistoleiro_avancado") ? 6 : 2,
-    adrenalinaAtletismo: habilidades.escolhidas.includes("res_restricao_definitiva") ? 8 : 4,
+    pistoleiroEmperrar: habilidades.efetivas.includes("cmb_pistoleiro_avancado") ? 6 : 2,
+    adrenalinaAtletismo: habilidades.efetivas.includes("res_restricao_definitiva") ? 8 : 4,
     cacadorFeiticeiros: 1 + Math.floor(nivelRes / 5),
     corpoDeAco: 1 + (nivelRes >= 10 ? 1 : 0) + (nivelRes >= 15 ? 1 : 0),
     // Tetos das faixas das Aptidões: os dois dependem do Nível de Aptidão em
@@ -1155,7 +1166,7 @@ export function deriveAfty(creature, opcoes = {}) {
   });
   const auxiliaresAtivos = resolveAuxiliaresAtivos(creature, combate, estadosConjurador, {
     nd,
-    habilidades: habilidades.escolhidas,
+    habilidades: habilidades.efetivas,
   });
   const aurasDesabilitadas = new Set(aptidoesAuraDesabilitadas(
     {
@@ -1167,7 +1178,7 @@ export function deriveAfty(creature, opcoes = {}) {
   ));
   const efeitosAtivos = [
     ...efeitosComDominio.filter((e) => !aurasDesabilitadas.has(e.origem)),
-    ...efeitosCombateAmaldicoado(tecnicasCombate, combate, habilidades.escolhidas, bt),
+    ...efeitosCombateAmaldicoado(tecnicasCombate, combate, habilidades.efetivas, bt),
     ...auxiliaresAtivos.efeitos,
   ];
   // Expressões que leem `dados_dano_final` só podem ser avaliadas quando cada
@@ -1191,7 +1202,7 @@ export function deriveAfty(creature, opcoes = {}) {
   const marcasFicha = Object.assign(
     Object.fromEntries(marcasDeclaradas().map((m) => [m.marca, 0])),
     marcasDeEntradas([
-    ...habilidades.escolhidas.map((id) => {
+    ...habilidades.efetivas.map((id) => {
       const h = getHabilidade(id);
       return h && { tags: h.tags, familia: "habilidade", especializacaoId: h.especializacaoId };
     }),
@@ -1237,7 +1248,7 @@ export function deriveAfty(creature, opcoes = {}) {
     // ⚠ A lista de aptidões respeita o `semEnergia`: um Restringido não tem
     // Aptidões, e `tem_*` não pode dizer que tem.
     habilidadesEscolhidas: [
-      ...habilidades.escolhidas,
+      ...habilidades.efetivas,
       ...(talentosPre.escolhidas ?? []),
       ...aptidoesIds,
     ],
@@ -1856,7 +1867,7 @@ export function deriveAfty(creature, opcoes = {}) {
   const feiticoTemCaixaProprio = ehJogador("progressaoDeFeiticos") && !semEnergia;
   const orcamentoFeitico = feiticoTemCaixaProprio
     ? totalFeiticosJogador(nd, {
-      conjuracaoAprimorada: habilidades.escolhidas.includes(CONJURACAO_APRIMORADA_ID),
+      conjuracaoAprimorada: habilidades.efetivas.includes(CONJURACAO_APRIMORADA_ID),
     })
     : { total: 0, partes: [] };
   const feiticosNoProprio = Math.min(feiticosGastos, orcamentoFeitico.total);
@@ -1931,8 +1942,8 @@ export function deriveAfty(creature, opcoes = {}) {
     contextoDsl: ctxTecnica,
     bonusTreinamento: bt,
     combate,
-    habilidades: habilidades.escolhidas,
-    reducaoSustentacao: habilidades.escolhidas.includes("cnj_sustentacao_mestre") ? 1 : 0,
+    habilidades: habilidades.efetivas,
+    reducaoSustentacao: habilidades.efetivas.includes("cnj_sustentacao_mestre") ? 1 : 0,
     ultimoFeiticoDanoId: opcoes.ultimoFeiticoDanoId ?? null,
     rituais: opcoes.rituais ?? {},
     usosRitualista: Math.max(0, Math.trunc(Number(opcoes.usosRitualista) || 0)),
@@ -1942,6 +1953,7 @@ export function deriveAfty(creature, opcoes = {}) {
     beneficiosRitualDominio,
     temEnergiaReversa: aptidoesIds.includes("energia_reversa"),
     invocacoes: Array.isArray(creature?.invocacoes) ? creature.invocacoes : [],
+    vidaAtual: opcoes.vidaAtual ?? null,
   };
   let feiticos = {
     nivelMax: nivelMaxFeitico(nd, nivelConjurador),
@@ -2076,8 +2088,8 @@ export function deriveAfty(creature, opcoes = {}) {
   // na configuração daquele Feitiço em vez de trocar Destreza por Inteligência
   // silenciosamente. Ritualista soma +2 em qualquer uma das duas versões.
   const prestidigitacao = (testes.pericias ?? []).find((p) => p.id === "prestidigitacao") ?? null;
-  const temNaturalidadeRitual = habilidades.escolhidas.includes("cnj_naturalidade_com_rituais");
-  const temRitualista = habilidades.escolhidas.includes("cnj_ritualista");
+  const temNaturalidadeRitual = habilidades.efetivas.includes("cnj_naturalidade_com_rituais");
+  const temRitualista = habilidades.efetivas.includes("cnj_ritualista");
   const partesPrestidigitacao = prestidigitacao?.partes ?? [];
   const parteAtributoPrest = partesPrestidigitacao[0] ?? { label: "Destreza", valor: modDes };
   const partePenalidadePrest = partesPrestidigitacao.find((p) => p.label === "Armadura e Escudo") ?? null;
@@ -2179,7 +2191,7 @@ export function deriveAfty(creature, opcoes = {}) {
       const d = dadoDesarmado({
         nivel: nd,
         nivelLutador: nivelEspec.lutador?.escalonamento ?? 0,
-        tem: (id) => habilidades.escolhidas.includes(id) || aptidoesIds.includes(id),
+        tem: (id) => habilidades.efetivas.includes(id) || aptidoesIds.includes(id),
       });
       return { dadoBasico: d.dado, fonteDadoBasico: d.fonte ?? "Golpe Desarmado" };
     })(),
@@ -2201,7 +2213,7 @@ export function deriveAfty(creature, opcoes = {}) {
     dano,
     creature,
     combate,
-    habilidades.escolhidas,
+    habilidades.efetivas,
     feiticos.lista,
   );
   dano = aplicarAptidoesNoDano(dano, creature, combate, {
@@ -2225,7 +2237,7 @@ export function deriveAfty(creature, opcoes = {}) {
     // O `semEnergia` já zera as aptidões, então o Restringido não ganha linha de
     // Energia Reversa por engano.
     aptidoes: aptidoesIds,
-    habilidades: habilidades.escolhidas,
+    habilidades: habilidades.efetivas,
     itens: equip.entradas,
     hp,
     danoBasico: dano.entradas.find((e) => e.id === "basico") ?? null,
@@ -2234,7 +2246,7 @@ export function deriveAfty(creature, opcoes = {}) {
   // ---------- Empolgação (Lutador) ----------
   // Só a parte DERIVADA: a tabela de dados e o nível em que o combate começa.
   // O nível atual é estado de combate e a ficha não o guarda (autor, 2026-07-28).
-  const empolgacao = resolveEmpolgacao(habilidades.escolhidas, {
+  const empolgacao = resolveEmpolgacao(habilidades.efetivas, {
     maxima: canal("empolgacaoMaxima"),
     bonusInicial: canal("empolgacaoInicial"),
   });
@@ -2400,7 +2412,7 @@ export function deriveAfty(creature, opcoes = {}) {
      espaços de canal repetem nomes (`pv`, `defesa`, `rd`) com sentidos
      diferentes. Ver `efeitosInvocacaoDeEntradas`. */
   const efeitosInvoc = [
-    ...efeitosInvocacaoControlador(habilidades.escolhidas, escolhasMapa),
+    ...efeitosInvocacaoControlador(habilidades.efetivas, escolhasMapa),
     ...efeitosInvocacaoDeEntradas([
       ...caracteristicasEfetivas(creature),
       ...talentos.escolhidas.map((id) => getTalento(id)),
@@ -2414,18 +2426,18 @@ export function deriveAfty(creature, opcoes = {}) {
      marcador de Addon costuma vir de um clã ou de um talento, e não de uma
      Habilidade de Controlador. Ver `marcadorDisponivel`. */
   const temIds = new Set([
-    ...habilidades.escolhidas,
+    ...habilidades.efetivas,
     ...talentos.escolhidas,
     ...(origemId ? [origemId] : []),
     ...(creature?.core?.origem?.cla ? [creature.core.origem.cla] : []),
   ]);
   const marcadores = resolveMarcadoresInvocacao({
-    escolhidasIds: habilidades.escolhidas, escolhasMapa, ctxDono, temIds,
+    escolhidasIds: habilidades.efetivas, escolhasMapa, ctxDono, temIds,
   });
   // Roster do Controlador: invocações iniciais, limite em campo, comandos e
   // hordas. É de REFERÊNCIA (mostra, não valida).
   const controle = resolveControleInvocacoes({
-    escolhidasIds: habilidades.escolhidas, escolhasMapa, nivelControlador,
+    escolhidasIds: habilidades.efetivas, escolhasMapa, nivelControlador,
   });
   // Feitiço de Criação de Shikigamis: o nível do Feitiço manda no grau, no
   // orçamento e no custo da invocação que ele referencia.
@@ -2785,6 +2797,7 @@ export function deriveAfty(creature, opcoes = {}) {
     habilidades,          // { escolhidas, total, gastos, restante, excedeu, inacessiveis, niveisPorEspec }
     talentos,             // { escolhidas, gastos, inacessiveis } — gasto já somado em habilidades.gastos
     altoNivel,            // { ativo, melhorias, lendarias, escolhas, apiceId } — orçamentos próprios
+    imitacao,
     invocacoes,           // { lista, total, custoTotal, temWarnings }
     hordas,               // { lista, total, custoTotal } (líder + membros escalados)
     focosTotais,          // orçamento de Focos de interlúdio = ND + bônus de poderes

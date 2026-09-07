@@ -1057,7 +1057,7 @@ export function coletarEfeitosCriatura({ habilidades, talentos, altoNivel, catal
        aparecia na conta de vagas e não rendia efeito nenhum, que é o mesmo
        buraco que o Talento repetível teve até agosto. */
     ...coletarEfeitos(habilidades?.escolhidas, HABILIDADE_EFEITOS, catalogos?.habilidades, habilidades?.vezes),
-    ...coletarEfeitos(roubadas, HABILIDADE_EFEITOS, catalogos?.habilidades),
+    ...coletarEfeitos(roubadas.filter((id) => !habilidades?.escolhidas?.includes(id)), HABILIDADE_EFEITOS, catalogos?.habilidades),
     ...coletarEfeitosDeEscolha(habilidades?.escolhas?.mapa, catalogos?.opcoes, catalogos?.habilidades),
     // `talentos.vezes` multiplica o Talento pego mais de uma vez (o Estudo
     // Amaldiçoado remendado por Addon é o primeiro). Sem isso a 2ª pega

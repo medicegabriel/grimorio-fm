@@ -928,7 +928,7 @@ export const HABILIDADE_EFEITOS = {
   // Ao obter a Restrição Definitiva, o bônus de +4 se torna +8."
   // A faixa da bancada é quanto foi para Atletismo, e o resto vai para Acrobacia.
   res_adrenalina_intensificadora: [
-    { canal: "bonusPericia", alvo: "atletismo", quando: "adrenalina_atletismo",
+    { canal: "bonusPericia", alvo: "atletismo", quando: "surto_adrenalina && adrenalina_atletismo",
       expr: "adrenalina_atletismo", duracao: "temporaria" },
     { canal: "bonusPericia", alvo: "acrobacia", quando: "surto_adrenalina",
       expr: "4 + 4 * tem_res_restricao_definitiva - adrenalina_atletismo", duracao: "temporaria" },
@@ -938,7 +938,7 @@ export const HABILIDADE_EFEITOS = {
   // resistência e ataques, além de causar +1d6 de dano contra todos os
   // feiticeiros presentes na cena. A cada 5 níveis você pode gastar mais 2
   // pontos para aumentar os bônus."
-  // A faixa conta PARES de ponto, e cada par rende a leva inteira. 1d6 = 3.
+  // A faixa conta PARES de ponto, e cada par rende a leva inteira, incluindo 1d6.
   res_cacador_de_feiticeiros: [
     { canal: "rdGeral", quando: "cacador_feiticeiros",
       expr: "2 * cacador_feiticeiros", duracao: "temporaria" },
@@ -946,8 +946,8 @@ export const HABILIDADE_EFEITOS = {
       expr: "cacador_feiticeiros", duracao: "temporaria" },
     { canal: "bonusAcerto", quando: "cacador_feiticeiros",
       expr: "cacador_feiticeiros", duracao: "temporaria" },
-    { canal: "danoBonus", quando: "cacador_feiticeiros",
-      expr: "3 * cacador_feiticeiros", duracao: "temporaria" },
+    { canal: "dadosNomeados", alvo: "d6", quando: "cacador_feiticeiros",
+      expr: "cacador_feiticeiros", duracao: "temporaria" },
   ],
 
   // "Ao atacar o inimigo que é seu foco você recebe um bônus de +2 para acertar

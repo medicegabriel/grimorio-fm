@@ -7,6 +7,7 @@ import {
 import "./ficha.css";
 import { mesclaFichaAfty, AFTY_TIPOS, AFTY_PATAMARES, funcionamentosDaFicha } from "../afty-schema";
 import { deriveAfty } from "../afty-derive";
+import { preparaAtivacaoComCustoVida } from "../afty-feiticos";
 import { aplicarAddons, addonsDaCriatura } from "../afty-addons";
 import { NumeroComFontes } from "../ui/fontes";
 import { numeroBr } from "../ui/formato";
@@ -14,7 +15,7 @@ import { Vital } from "../ui/vital";
 import { Guarda } from "../ui/guarda";
 import {
   carregarSessao, salvarSessao, aparaSessao,
-  aplicaDano, aplicaCura, proximaRodada, descansar, registraRolagem,
+  aplicaDano, aplicaCura, pagaCustoVida, proximaRodada, descansar, registraRolagem,
   peTempTotal, gastaPe, pvTempTotal,
   entradaDaGuarda, sofreGolpeNaGuarda, desfazGolpeNaGuarda, encerraGuarda, defineCondicoes,
   alteraEstadoCombate, consomeEstadoCombate, registraFeiticoDano,
@@ -151,6 +152,7 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
      nenhuma, aparecia dando +5. Uma lista só, e a diferença cancela sozinha. */
   const opcoesDerive = useMemo(
     () => ({
+      vidaAtual: sessaoBruta.hpAtual,
       almaAtual: sessaoBruta.almaAtual,
       ultimoFeiticoDanoId: sessaoBruta.ultimoFeiticoDanoId,
       rituais: sessaoBruta.rituais,
@@ -371,11 +373,16 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
      resultado: a linha de dano usa o crítico do Acerto para dobrar os dados do
      Dano seguinte. O modo (vantagem, desvantagem) vale só para o d20. */
   const rolar = useCallback((desc) => {
-    const r = desc.tipo === "dano"
-      ? rolarDano(desc)
-      : rolarTeste({ ...desc, modo });
+    const ativacao = preparaAtivacaoComCustoVida(desc, sessao.hpAtual);
+    const custoVida = ativacao.custo;
+    if (custoVida.config && !custoVida.disponivel) return null;
+    const descResolvida = ativacao.desc;
+    const r = descResolvida.tipo === "dano"
+      ? rolarDano(descResolvida)
+      : rolarTeste({ ...descResolvida, modo });
     atualiza((s) => {
       let proxima = registraRolagem(s, r);
+      if (custoVida.pago > 0) proxima = pagaCustoVida(proxima, custoVida.pago).sessao;
       if (desc.consomeEstado) proxima = consomeEstadoCombate(proxima, desc.consomeEstado);
       if (desc.feiticoDanoId) proxima = registraFeiticoDano(proxima, desc.feiticoDanoId);
       if (desc.testaRitualId) {
@@ -392,7 +399,7 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
       return proxima;
     });
     return r;
-  }, [atualiza, modo]);
+  }, [atualiza, modo, sessao.hpAtual]);
 
   const alteraEstado = useCallback((estado, valor) => {
     atualiza((s) => alteraEstadoCombate(s, estado, valor));

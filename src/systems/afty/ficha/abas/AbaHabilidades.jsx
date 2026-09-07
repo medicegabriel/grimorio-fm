@@ -1,10 +1,11 @@
 import React, { useMemo, useState } from "react";
-import { Search, X, ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 
 import GrupoComSubAbas from "../GrupoComSubAbas";
-import { GRUPOS, filtraConteudo } from "../ficha-conteudo";
-import { textoPuro } from "../../afty-texto-rico";
+import { GRUPOS } from "../ficha-conteudo";
 import TextoRico from "../../ui/TextoRico";
+import FiltroDeHabilidades from "../../ui/FiltroDeHabilidades";
+import { filtraHabilidades, correspondeFiltroHabilidade } from "../../afty-filtro-habilidades";
 
 /**
  * ============================================================
@@ -36,15 +37,11 @@ import TextoRico from "../../ui/TextoRico";
  * o texto que descreve a criatura. Fechar continua possível, e a escolha dura a
  * sessão.
  */
-function CartaoTecnica({ titulo, texto, termo }) {
+function CartaoTecnica({ titulo, texto }) {
   const [aberto, setAberto] = useState(true);
   const corpo = String(texto ?? "").trim();
-  // O filtro local vale aqui também: procurar "corvo" e o cartão continuar na
-  // tela sem conter "corvo" seria ruído. Casa contra o texto SEM a marcação,
-  // senão um `**` no meio da palavra esconderia o acerto.
-  const alvo = useMemo(() => textoPuro(corpo).toLowerCase(), [corpo]);
+  // O pai já filtrou pelo mesmo índice usado nas habilidades do catálogo.
   if (!corpo) return null;
-  if (termo.trim() && !alvo.includes(termo.trim().toLowerCase())) return null;
 
   return (
     <section className="afty-card p-3 afty-tecnica">
@@ -70,7 +67,9 @@ function CartaoTecnica({ titulo, texto, termo }) {
 
 export default function AbaHabilidades({ funcionamentos = [], itens, abertos, onAberto, favoritos, onFavorito, destaque }) {
   const [termo, setTermo] = useState("");
-  const filtrados = useMemo(() => filtraConteudo(itens, termo), [itens, termo]);
+  const [efeitoFiltro, setEfeitoFiltro] = useState("todos");
+  const filtrados = useMemo(() => filtraHabilidades(itens, efeitoFiltro, termo), [itens, efeitoFiltro, termo]);
+  const tecnicasFiltradas = funcionamentos.filter((f) => correspondeFiltroHabilidade(f, efeitoFiltro, termo));
 
   const porGrupo = useMemo(() => {
     const mapa = new Map(GRUPOS.map((g) => [g.id, []]));
@@ -80,34 +79,20 @@ export default function AbaHabilidades({ funcionamentos = [], itens, abertos, on
 
   return (
     <div className="space-y-3">
-      <div className="afty-card p-2 flex items-center gap-2">
-        <Search className="w-4 h-4 flex-shrink-0" style={{ color: "var(--afty-texto-fraco)" }} aria-hidden="true" />
-        <input
-          type="text"
-          value={termo}
-          onChange={(e) => setTermo(e.target.value)}
-          onKeyDown={(e) => { if (e.key === "Escape") setTermo(""); }}
-          placeholder="Filtrar"
-          aria-label="Filtrar as habilidades"
-          className="afty-campo flex-1 min-w-0 bg-transparent outline-none"
-        />
-        {termo && (
-          <button type="button" className="afty-passo" onClick={() => setTermo("")} aria-label="Limpar o filtro">
-            <X className="w-3 h-3" />
-          </button>
-        )}
-        <span className="afty-rotulo text-[11px] flex-shrink-0 tabular-nums">
-          {filtrados.length} / {itens.length}
-        </span>
+      <div className="afty-card p-2">
+        <FiltroDeHabilidades rotulo="Filtrar as habilidades" efeito={efeitoFiltro} onEfeito={setEfeitoFiltro}
+          termo={termo} onTermo={setTermo} visiveis={filtrados.length} total={itens.length} />
       </div>
 
       {/* Um cartão por Funcionamento Básico, o principal primeiro. O adicional
           leva o nome que o jogador deu, e o principal leva o rótulo do sistema:
           ele é a técnica, e não tem nome próprio. Cartão sem texto não aparece,
           então uma ficha sem nada escrito continua idêntica ao que era. */}
-      {funcionamentos.map((f) => (
-        <CartaoTecnica key={f.id} titulo={f.nome} texto={f.descricao} termo={termo} />
+      {tecnicasFiltradas.map((f) => (
+        <CartaoTecnica key={f.id} titulo={f.nome} texto={f.descricao} />
       ))}
+
+      {filtrados.length === 0 && tecnicasFiltradas.length === 0 && <p className="afty-vazio py-2" role="status">Nenhuma habilidade encontrada</p>}
 
       {GRUPOS.map((g) => (
         <GrupoComSubAbas
