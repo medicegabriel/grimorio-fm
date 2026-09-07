@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo, useState } from "react";
+import { ArmasTransformaveis } from "../ui/armas-transformaveis";
 import { Heart, Zap, Sparkles, Skull, EyeOff, Moon, Swords, Shield, BookOpen, Backpack, Wand2, AlertTriangle } from "lucide-react";
 
 import { funcionamentosDaFicha } from "../afty-schema";
@@ -305,6 +306,7 @@ export default function PainelDeCombatente({
           onDesfazGolpe={() => onSessao(desfazGolpeNaGuarda)}
           onRaioNegro={() => onSessao(encerraGuarda)}
         />
+        <ArmasTransformaveis derived={derived} sessao={sessao} onSessao={onSessao} />
 
         {/* Mesma célula de tamanho fixo da Ficha (`afty-stat`), e não uma
             fileira `flex-wrap`: com caixas do tamanho do próprio texto, "CD"

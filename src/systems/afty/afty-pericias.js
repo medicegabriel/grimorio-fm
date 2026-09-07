@@ -711,6 +711,8 @@ export function resolveDano(creature, ctx = {}) {
       removeResistencia: canal("removeResistencia", escopos) > 0,
       fontes: fontesDe("danoBonus", escopos),
     });
+    linha.ignoraTodaRD = canal("ignoraTodaRD", escopos) > 0;
+    linha.ignoraImunidade = canal("ignoraImunidade", escopos) > 0;
     // Dado extra não é número, então entra no detalhamento como texto.
     for (const d of detalhesDados) {
       linha.partes.push({ label: d.nome, texto: `+${d.valor}${linha.dado}` });

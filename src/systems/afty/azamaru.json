@@ -1,0 +1,47 @@
+{
+  "id": "azamaru",
+  "nome": "Azamaru",
+  "versao": "1.0.0",
+  "paraRaw": "afty",
+  "descricao": "O Fim de Todas as Coisas",
+  "acrescenta": {
+    "armas": [{
+      "id": "azamaru",
+      "nome": "Azamaru",
+      "titulo": "O Fim de Todas as Coisas",
+      "classe": "complexa",
+      "categoria": "corpo",
+      "grupo": "espada",
+      "custo": 4,
+      "espacos": 2,
+      "critico": 18,
+      "dano": { "dado": "1d12 + 1d4", "tipo": "ct" },
+      "props": { "fineza": true, "marcial": true, "dupla": true, "apunhaladora": true, "energica": true, "mortal": "d12", "oscilante": true },
+      "unico": true,
+      "equipadoPadrao": true,
+      "faFixa": true,
+      "faPadrao": { "grau": "especial", "encantamentos": [], "habilidadeUnica": "" },
+      "ilusoes": true,
+      "descricao": "O Fim de Todas as Coisas\nSua habilidade especial é Azamaru:\nTécnica Base: –\nCom uma ação bônus, você junta ambas as lâminas, as transformando em uma única espada colossal, a qual não possui as propriedades Pesada nem Especial. Enquanto transformada, a lâmina é imbuída com uma maldição capaz de romper conceitos enquanto abastecida pela sua fúria, fazendo com que seus ataques feitos com ela ignorem imunidade, resistência e RD, além disso, no momento da ativação, você cria clones ilusórios igual ao seu bônus de maestria, recebendo +2 em CA e testes de Reflexos para cada um. A cada ataque que errar contra você, um dos clones é dissipado, e caso você seja atingido por um ataque, todos eles são dissipados; efeitos em área que afetem os clones fazem com que eles sejam dissipados automaticamente, mas caso ele afete o usuário, todos só serão dissipados caso ele falhe no TR. A cada clone dissipar, a energia dele é canalizada na lâmina, fazendo com que seu próximo ataque que acertar cause 1 dado de dano adicional para cada 2 clones dissipados; você também pode dissipar clones voluntariamente com uma ação livre. Dividir a espada custa uma ação bônus, e ela não pode ser reunida na mesma rodada em que foi dividida, exigindo um gasto de PE igual ao seu bônus de maestria em todo o uso após o primeiro.",
+      "formas": {
+        "reunida": {
+          "props": { "fineza": true, "marcial": true, "ampla": true, "duas_maos": true, "energica": true, "mortal": "d12", "oscilante": true }
+        }
+      },
+      "criacao": {
+        "classificacao": "tatica",
+        "deTecnica": true,
+        "pcBase": 12,
+        "pcCusto": 8,
+        "pcEspaco": 1,
+        "pcTotal": 21,
+        "pcDano": 6,
+        "pcCritico": 6,
+        "pcPropriedades": 9,
+        "limiteDano": 8,
+        "limitePropriedades": 10,
+        "habilidadeForaDoOrcamento": true
+      }
+    }]
+  }
+}

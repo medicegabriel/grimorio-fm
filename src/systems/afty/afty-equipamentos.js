@@ -25,6 +25,7 @@
  */
 
 import { registrarFamilia, remendarLista } from "./afty-addons";
+import { formaDaArma } from "./afty-armas-transformaveis";
 import { evalNumber, normalizarVariavel, validateExpression } from "./afty-dsl";
 import { normalizarAlvoEfeito } from "./afty-efeitos";
 import { regraDo } from "./afty-sistema";
@@ -1822,7 +1823,8 @@ export const catalogoDoTipo = (tipo, creature = null) => {
 
 /** Busca uma entrada do catálogo pelo tipo + id. */
 export function getEquipamento(tipo, id, creature = null) {
-  return catalogoDoTipo(tipo, creature).find((e) => e.id === id) ?? null;
+  const def = catalogoDoTipo(tipo, creature).find((e) => e.id === id) ?? null;
+  return tipo === "arma" ? formaDaArma(def, creature) : def;
 }
 
 /** Espaços que UMA unidade do equipamento ocupa. */

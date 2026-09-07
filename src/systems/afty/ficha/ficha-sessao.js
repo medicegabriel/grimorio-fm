@@ -26,6 +26,7 @@
 
 import { normalizaConcedido, comConcessao, semConcessao } from "../afty-concessao";
 import { normalizaAdaptacoes, avancarAdaptacoesNaRodada } from "../afty-adaptacao";
+import { avancaArmasTransformaveis } from "../afty-armas-transformaveis";
 
 const CHAVE_BASE = "fm_ficha_sessao_afty_v1";
 const LOG_MAX = 50;
@@ -822,7 +823,7 @@ export function proximaRodada(sessao, derived = null) {
     derived,
   );
   const comAdaptacao = avancarAdaptacoesNaRodada(comGuarda, derived, comGuarda.rodada);
-  return { sessao: comAdaptacao, expirou };
+  return { sessao: avancaArmasTransformaveis(comAdaptacao, sessao.rodada === 0), expirou };
 }
 
 /**
@@ -831,6 +832,7 @@ export function proximaRodada(sessao, derived = null) {
  * do Treino de Controle de Energia só valeria a partir da segunda.
  */
 export function iniciaCombate(sessao, derived = null) {
+  sessao = avancaArmasTransformaveis(sessao, true);
   if (!derived) return sessao;
   const comCena = aplicaPeTemporario(sessao, derived.peTemporario?.combate ?? []);
   // A Guarda entra junto: a primeira rodada já é rodada, e sem isto o mestre

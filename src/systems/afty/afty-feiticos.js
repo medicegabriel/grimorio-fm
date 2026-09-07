@@ -1144,6 +1144,8 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
     acertoDelta,
     ignoraRD,
     removeResistencia,
+    ignoraTodaRD: valorCanalEscopos(ctx.efeitos, "ignoraTodaRD", escoposDano) > 0,
+    ignoraImunidade: valorCanalEscopos(ctx.efeitos, "ignoraImunidade", escoposDano) > 0,
     empurraoMetros,
     faltamDados,
     reducaoCondicoes: reducaoCond,
@@ -3479,6 +3481,8 @@ function propriedadesResumoFeitico(f, calc, valor, valorLabel) {
     { id: "acerto", nome: "Acerto", valor: acerto ? `${acerto > 0 ? "+" : ""}${acerto}` : null },
     { id: "ignoraRD", nome: "Ignora RD", valor: calc?.ignoraRD > 0 ? String(calc.ignoraRD) : null },
     { id: "removeResistencia", nome: "Resistência", valor: calc?.removeResistencia ? "Removida" : null },
+    { id: "ignoraTodaRD", nome: "RD", valor: calc?.ignoraTodaRD ? "Ignorada" : null },
+    { id: "ignoraImunidade", nome: "Imunidade", valor: calc?.ignoraImunidade ? "Ignorada" : null },
     { id: "valor", nome: valorLabel, valor: valor },
     // ⚠ No CURATIVO a lista de condições é o que ele REMOVE, e não o que ele
     // aplica (autor, 2026-08-09). Só o rótulo muda, mas "Condições: Atordoado"

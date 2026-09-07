@@ -74,6 +74,7 @@ import {
   resolveAltoNivel, getMelhoriaSuperior, getHabilidadeLendaria, getHabilidadeApice,
 } from "./afty-alto-nivel";
 import { resolveInvocacoesList, resolveHordasList, efeitosDeInvocacao } from "./afty-invocacoes";
+import { armasTransformaveis, efeitosArmasTransformaveis } from "./afty-armas-transformaveis";
 import {
   resolveEquipamentos, resolveCarga, grauFeiticeiro, alcanceDaArma, propriedadesDaArma,
   armaTreinadaPor,
@@ -820,6 +821,7 @@ export function deriveAfty(creature, opcoes = {}) {
     // porque a técnica é única no mundo e nenhum catálogo a cobre. Entram no
     // mesmo bolo, e os filtros de estágio abaixo roteiam pelo canal.
     ...efeitosDaTecnica(creature),
+    ...efeitosArmasTransformaveis(armasTransformaveis(creature, catalogoDoTipo("arma", creature), bt)),
     // Passivos / Características criados pelo jogador usam o mesmo Motor, mas
     // entram na família exclusiva própria dos Feitiços Passivos.
     ...efeitosDosPassivos(creature),
@@ -2745,6 +2747,7 @@ export function deriveAfty(creature, opcoes = {}) {
        normal. Quem mostra é a Ficha e o criador, e ela nunca impede nada de
        abrir (decisão 4 do autor). Ver afty-addons.js. */
     addonProblemas: problemasDeAddon(creature),
+    armasTransformaveis: armasTransformaveis(creature, catalogoDoTipo("arma", creature), bt),
     /* O que o mestre concedeu NESTA SESSÃO, já com nome resolvido e com `morta`
        marcada quando o catálogo não conhece mais o id. Vazio é o caso normal, e
        é a lista que as duas telas de jogo mostram. Ver afty-concessao.js. */

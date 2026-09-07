@@ -236,6 +236,8 @@ export const EFEITO_CANAIS = [
   { id: "dadosNomeados", label: "Dados de Dano (tamanho próprio)", alvo: "dadoNomeado", nota: "dado ADICIONAL com o tamanho escrito na regra (1d6, 2d10). O alvo é o dado e o valor é quantos. Para dado que acompanha o da linha, use Dados de Dano" },
   { id: "margemCritico", label: "Margem de Crítico",     alvo: "fonteDano", nota: "quanto a margem DIMINUI, com piso de 2" },
   { id: "ignoraRD",      label: "Ignora RD",             alvo: "fonteDano" },
+  { id: "ignoraTodaRD", label: "Ignora Toda RD", alvo: "fonteDano" },
+  { id: "ignoraImunidade", label: "Ignora Imunidade", alvo: "fonteDano" },
   { id: "removeResistencia", label: "Remove Resistência", alvo: "fonteDano", nota: "sinalizador para golpes ou Feitiços que retiram a resistência do alvo" },
   { id: "propMarcial",   label: "Marcial",               alvo: "fonteDano", nota: "concede a propriedade Marcial à arma, que é o gatilho de vários poderes de Lutador" },
   { id: "finezaAtaque",  label: "Fineza",                alvo: "fonteDano", nota: "libera o atributo alternativo do ataque (Destreza no Corpo a Corpo). Vale o maior dos dois, no acerto E no dano daquela linha. Alvo `basico` ou o id da arma, e aceita os escopos (`prop:marcial`, `grupo:espada`)" },
@@ -522,7 +524,7 @@ const GRUPOS_DE_CANAL = [
   ]],
   ["Ataque e Dano", [
     "cd", "bonusAcerto", "acertoArma", "danoBonus", "nivelDano", "dadosDano", "dadosNomeados",
-    "margemCritico", "ignoraRD", "removeResistencia", "propMarcial", "finezaAtaque",
+    "margemCritico", "ignoraRD", "ignoraTodaRD", "ignoraImunidade", "removeResistencia", "propMarcial", "finezaAtaque",
   ]],
   // Atributo, limite e nível de trilha: o que a criatura É, em número próprio.
   // `nivelAptidao` entra aqui, e não num grupo de Aptidões, porque ele é

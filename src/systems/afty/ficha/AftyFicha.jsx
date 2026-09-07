@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ArmasTransformaveis } from "../ui/armas-transformaveis";
 import {
   ChevronLeft, Pencil, AlertTriangle, Moon, ChevronRight, Search, Heart, Zap, Sparkles, Palette,
   Rows2, Rows3,
@@ -706,6 +707,7 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
             onDesfazGolpe={() => atualiza(desfazGolpeNaGuarda)}
             onRaioNegro={() => atualiza(encerraGuarda)}
           />
+          <ArmasTransformaveis derived={derived} sessao={sessao} onSessao={atualiza} />
 
           {/* ---------- defesas ----------
               ⚠ GRADE de células iguais, e não `flex-wrap`. Com o wrap cada
