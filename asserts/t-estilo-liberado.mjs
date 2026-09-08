@@ -42,10 +42,16 @@ const t = (nome, real, esp) => {
    Marcial. Ela e a primeira que ABRE E ESTREITA ao mesmo tempo (monta a aba de
    Feiticos para quem nao conjura e corta quatro dos seis tipos), e quem a mede
    e o `t-estilo-marcial.mjs`. Aqui ela conta so no censo. */
-t("existem 9 liberacoes hoje", AD.LIBERACOES.length, 9);
+/* ⚠ E 11 DESDE 2026-09-08, quando entraram as DUAS da Carteira da Guilda. Elas
+   sao a metade REGRA de um addon cuja outra metade e a primitiva `carteira` (a
+   aba), e a divisao entre elas e a divisao entre os dois campos: `permite` nao
+   move numero, `libera` move. Sao duas e nao uma porque uma mesa pode querer o
+   livro-caixa alimentando so os Focos, ou so o Nivel, ou nenhum dos dois. Quem
+   as mede e o `t-carteira.mjs`. Aqui elas contam so no censo. */
+t("existem 11 liberacoes hoje", AD.LIBERACOES.length, 11);
 t("os ids", AD.LIBERACOES.map((l) => l.id),
   ["estiloSombras", "gemeosSemTecnica", "qualificaSemTecnica", "gemeosMaldicao",
-   "feiticosRestritos",
+   "feiticosRestritos", "carteiraFocos", "carteiraNivel",
    "soPorAddon:gemeos", "soPorAddon:atributo",
    "soPorAddon:cnj_agilidade_no_campo_de_batalha", "soPorAddon:tal_alma_livre"]);
 t("SEM_LIBERACOES e vazio", AD.SEM_LIBERACOES, []);

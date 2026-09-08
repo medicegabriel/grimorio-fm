@@ -362,6 +362,21 @@ export const PRIMITIVAS = [
     rotulo: "Cofre de Texto",
     nota: "Tranca o texto dos Feitiços e dos Funcionamentos Básicos com senha. O texto SAI da ficha e vira blob cifrado, então o arquivo exportado não o contém",
   },
+  /* ⚠ NASCEU EM 2026-09-08, com a Carteira da Guilda. É primitiva e não família
+     de catálogo pela mesma razão da Loja de Catarse: o que ela acrescenta não é
+     ENTRADA nova, é um livro-caixa na ficha, e livro-caixa é verbo. O dado que
+     o pacote traz é nenhum, porque as linhas quem escreve é o jogador.
+
+     ⚠ ELA ANDA COM A LIBERAÇÃO `carteiraFocos`, e as duas são separadas de
+     propósito. Esta abre a ABA (tela, e não muda número). A outra faz os
+     Interlúdios anotados virarem o orçamento de Focos (regra, e muda número).
+     Um pacote pode pedir só a primeira e ter a Carteira como caderno puro. Ver
+     `afty-carteira.js` e docs/afty-carteira.md. */
+  {
+    id: "carteira",
+    rotulo: "Carteira",
+    nota: "Livro-caixa das sessões: XP, dinheiro e Interlúdios que entraram, o que saiu, e os totais",
+  },
 ];
 
 const PRIMITIVA_IDS = new Set(PRIMITIVAS.map((p) => p.id));
@@ -417,6 +432,32 @@ export const LIBERACOES = [
     id: "feiticosRestritos",
     rotulo: "Feitiços Passivos e Personalizados",
     nota: "Abre a aba de Feitiços para a origem que não conjura, limitada a Passivo / Característica e Personalizado",
+  },
+  /* ⚠ ESTA É A OUTRA METADE DA CARTEIRA, e a divisão entre ela e a primitiva
+     `carteira` é a divisão inteira entre os dois campos. A aba é tela e não
+     muda nada; SUBSTITUIR o orçamento de Focos pelos Interlúdios anotados muda
+     número, e por isso mora aqui.
+
+     ⚠ E ela SUBSTITUI, não soma. O total de Focos deixa de ser o ND (na
+     criatura) ou o campo digitado (no jogador) e passa a ser o que a Carteira
+     conta, porque somar os dois cobraria o mesmo Interlúdio duas vezes. O canal
+     `focos` continua entrando por cima nos três casos, que é como uma
+     habilidade ou outro addon ainda concede Foco. Ver `focosTotais`. */
+  {
+    id: "carteiraFocos",
+    rotulo: "Interlúdios da Carteira",
+    nota: "O total de Interlúdios anotado na Carteira VIRA o orçamento de Focos, no lugar do ND ou do campo digitado",
+  },
+  /* ⚠ A SEGUNDA DA CARTEIRA, e ela é a que mexe em mais coisa no sistema
+     inteiro: o Nível é a entrada de quase toda fórmula do Afty, então o XP
+     anotado passa a decidir Maestria, Grau, PV, PE, orçamentos e limites de
+     atributo. Por isso ela é liberação SEPARADA da `carteiraFocos`, e não um
+     pacote só: uma mesa pode querer o livro-caixa e continuar subindo de nível
+     à mão. A tabela mora em `afty-carteira.js`. */
+  {
+    id: "carteiraNivel",
+    rotulo: "Nível pelo XP da Carteira",
+    nota: "O XP anotado na Carteira VIRA o Nível, pela tabela de progressão. Zero de XP é o Nível 3, e o campo de Nível deixa de ser digitável",
   },
   /* As quatro entradas que saíram da Ficha de Jogador em 2026-09-01. O id segue
      o molde do `liberacaoSoPorAddon`, e cada uma é NOMEADA: quem quer só o

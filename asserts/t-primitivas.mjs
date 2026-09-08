@@ -32,10 +32,16 @@ const t = (nome, real, esp) => {
    acrescentou a dizer que enxerga o quê. A `catarse` entrou em 2026-09-04, com
    a Loja de Catarse, e em 2026-09-07 entraram duas: a `requisitoAptidao` com o
    Especialista em Estilo e a `armaTransformavel` com o Azamaru. Em 2026-09-08
-   entrou o `cofre`, com o Cofre de Feitiços. */
-t("sao 8 primitivas", AD.PRIMITIVAS.length, 8);
+   entraram duas: o `cofre`, com o Cofre de Feitiços, e a `carteira`, com a
+   Carteira da Guilda.
+
+   ⚠ A `carteira` anda com a liberacao `carteiraFocos`, e as duas sao
+   separadas: a primitiva abre a ABA (tela) e a liberacao faz os Interludios
+   anotados virarem o orcamento de Focos (regra). Quem mede as duas juntas e o
+   `t-carteira.mjs`, e aqui ela conta so no censo. */
+t("sao 9 primitivas", AD.PRIMITIVAS.length, 9);
 t("ids esperados", AD.PRIMITIVAS.map((p) => p.id).sort(),
-  ["adaptacao", "armaTransformavel", "catarse", "cofre", "concessao", "contar", "hpAtributo", "requisitoAptidao"]);
+  ["adaptacao", "armaTransformavel", "carteira", "catarse", "cofre", "concessao", "contar", "hpAtributo", "requisitoAptidao"]);
 t("toda primitiva tem rotulo", AD.PRIMITIVAS.every((p) => !!p.rotulo), true);
 t("SEM_PRIMITIVAS e vazio", AD.SEM_PRIMITIVAS, []);
 

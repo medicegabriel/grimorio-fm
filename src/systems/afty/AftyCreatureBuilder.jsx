@@ -19,6 +19,7 @@ import {
 import { PainelDeFontes, ValorComFontes } from "./ui/fontes";
 import TabDefesas from "./AftyTabDefesas";
 import TabCatarse from "./AftyTabCatarse";
+import TabCarteira from "./AftyTabCarteira";
 /* ⚠ O @dnd-kit JÁ ERA DEPENDÊNCIA do projeto: o Dashboard, a Biblioteca e o
    painel de Encontros do grimório 2.5.2 ordenam com ele, e a aba de Perícias
    passou a ordenar em 2026-08-30. Não é biblioteca nova. */
@@ -193,6 +194,12 @@ const TABS = [
      Imunidade, Resistência, Vulnerabilidade e RD por tipo de dano. */
   { id: "defesas",       label: "Resistências" },
   { id: "interludios",   label: "Interlúdios" },
+  /* ⚠ A CARTEIRA TAMBÉM SÓ APARECE COM O ADDON QUE A PEDE (`permite:
+     ["carteira"]`), pelo mesmo portão da Catarse logo abaixo. Ela fica COLADA
+     na aba de Interlúdios de propósito: quando o addon também traz a liberação
+     `carteiraFocos`, o número de Interlúdios que ela soma é o orçamento de
+     Focos daquela aba, e as duas passam a ser lidas juntas. */
+  { id: "carteira",      label: "Carteira", primitiva: "carteira" },
   /* ⚠ A LOJA DE CATARSE SÓ APARECE COM O ADDON QUE A PEDE. Ela é primitiva
      (`permite: ["catarse"]`), e o filtro está logo abaixo, em `tabsDoSistema`.
      Sem esse portão ela vazaria para a tela de quem nunca instalou nada, que é
@@ -773,6 +780,20 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
       return { ...d, catarse: { ...atual, ...partial } };
     });
 
+  /* CARTEIRA (Addon, 2026-09-08).
+
+     ⚠ ELE NÃO SANEIA NADA, e a ausência é o conserto, pela mesma razão escrita
+     no `patchCatarse` logo acima: cortar o número a cada tecla come o estado
+     intermediário que digitar é. Aqui isso é ainda mais visível, porque os
+     campos de XP e dinheiro aceitam vírgula e passam por "10," antes de virar
+     "10,5". Quem sanea é o `resolveCarteira`, e ele é o único lugar em que o
+     número vira decisão. */
+  const patchCarteira = (partial) =>
+    setDraft((d) => {
+      const atual = d.carteira ?? { entradas: [], gastos: [] };
+      return { ...d, carteira: { ...atual, ...partial } };
+    });
+
   const patchTecnicasCombate = (partial) =>
     setDraft((d) => ({
       ...d,
@@ -1294,6 +1315,7 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
           {tabAtiva === "equipamentos" && <TabEquipamentos draft={draft} derived={derived} addEquipamento={addEquipamento} removeEquipamento={removeEquipamento} patchEquipamento={patchEquipamento} toggleFerramenta={toggleFerramenta} patchFerramenta={patchFerramenta} toggleEncantamento={toggleEncantamento} addArmaCustom={addArmaCustom} patchArmaCustom={patchArmaCustom} removeArmaCustom={removeArmaCustom} />}
           {tabAtiva === "interludios" && <TabInterludios draft={draft} derived={derived} setTreinoProgresso={setTreinoProgresso} setTreinoInstance={setTreinoInstance} setTreinoAlvo={setTreinoAlvo} setTreinoEscolha={setTreinoEscolha} setTreinoEspecialVezes={setTreinoEspecialVezes} sistema={sistema} setFocosLivres={setFocosLivres} />}
           {tabAtiva === "defesas" && <TabDefesas derived={derived} setDefesaEstado={setDefesaEstado} setDefesaRd={setDefesaRd} />}
+          {tabAtiva === "carteira" && <TabCarteira draft={draft} derived={derived} patchCarteira={patchCarteira} />}
           {tabAtiva === "catarse" && <TabCatarse draft={draft} derived={derived} patchCatarse={patchCatarse} />}
           {tabAtiva === "calculos" && <TabCalculos draft={draft} derived={derived} setStatOverride={setStatOverride} patchCombate={patchCombate} setAddons={setAddons} trocarFicha={setDraft} gatilhosTreino={derived.gatilhosTreino} onGatilhoTreino={(id, v) => setTreinosAtivos((m) => ({ ...m, [id]: v }))} />}
           {STUBS[tabAtiva] && <StubCard title={abasVisiveis.find((t) => t.id === tabAtiva)?.label} text={STUBS[tabAtiva]} />}
@@ -7837,6 +7859,9 @@ function ValoresBasicosCard({ draft, derived, patch, patchCore, sistema }) {
   const semQuantidadeDePE = regraDo(sistema, "quantidadeDePE") === "player";
   const semTipoNemPatamar = regraDo(sistema, "pvPePorEspecializacao") === "player";
   const tetoDeNivel = regraDo(sistema, "tetoDeNivel") === "player";
+  // Com a liberação `carteiraNivel`, o Nível sai do XP anotado na Carteira e o
+  // campo aqui vira mostrador. Ver o campo, logo abaixo.
+  const nivelDaCarteira = !!derived.carteira?.alimentaNivel;
   // A Origem Restringido força o Tipo (e a Especialização) em Restringido.
   // É o único ponto em que os dois eixos se tocam: fora dele, Tipo e
   // Especialização são independentes, apesar de compartilharem nomes.
@@ -7848,18 +7873,40 @@ function ValoresBasicosCard({ draft, derived, patch, patchCore, sistema }) {
       <Card title="Valores Básicos">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <FieldLabel required>{semTipoNemPatamar ? "Nível" : "Nível (ND)"}</FieldLabel>
+            <FieldLabel required hint={nivelDaCarteira ? "vem do XP da Carteira" : undefined}>
+              {semTipoNemPatamar ? "Nível" : "Nível (ND)"}
+            </FieldLabel>
             {/* ⚠ O jogador vai de 1 a 30 e a criatura de 3 ao infinito. O piso
                 muda porque o livro descreve o primeiro nível de cada Classe, e o
                 teto porque o autor o fixou em 2026-08-30. O derive apara também,
                 para uma ficha importada acima do teto não derivar por cima
                 dele. */}
-            <NumberInput
-              value={draft.core.nd}
-              onChange={(v) => patchCore({ nd: v })}
-              min={tetoDeNivel ? 1 : 3}
-              {...(tetoDeNivel ? { max: 30 } : {})}
-            />
+            {/* ⚠ COM A CARTEIRA, O CAMPO VIRA MOSTRADOR. O nível passa a sair da
+                tabela de progressão pelo XP anotado, então um campo digitável
+                aqui aceitaria um número que a próxima derivação joga fora, que é
+                a pior forma de mentir na tela. Mesma decisão do contador de
+                Focos da aba Interlúdios.
+
+                ⚠ E NÃO DÁ PARA SÓ PASSAR `disabled` AO `NumberInput`: ele mora
+                em `src/components/`, que é somente-leitura, e o `...rest` dele
+                chega só ao `<input>`. Os botões de mais e menos continuariam
+                vivos. O mostrador copia as classes do campo de lá, para as duas
+                formas terem a mesma altura e a mesma cara. */}
+            {nivelDaCarteira ? (
+              <div
+                className="h-9 flex items-center justify-center rounded bg-slate-950 border border-slate-700 text-sm text-white font-mono"
+                title="O Nível sai do XP anotado na aba Carteira, pela tabela de progressão"
+              >
+                {derived.nd}
+              </div>
+            ) : (
+              <NumberInput
+                value={draft.core.nd}
+                onChange={(v) => patchCore({ nd: v })}
+                min={tetoDeNivel ? 1 : 3}
+                {...(tetoDeNivel ? { max: 30 } : {})}
+              />
+            )}
           </div>
           {!semTipoNemPatamar && (
             <div>
@@ -8368,13 +8415,16 @@ function TreinoLinha({
    mecânico." `onTotal` é o que troca o número derivado por um campo, e ele só
    chega no jogador. O gasto continua contado, porque estourar o orçamento é erro
    nos dois sistemas. */
-function ContadorFocos({ gastos, total, excedeu, onTotal = null }) {
+/* `dica` troca o texto do `title` inteiro, e existe para a Carteira: com a
+   liberação `carteiraFocos` o total deixa de ser o ND e deixa de ser campo
+   digitável, então nenhum dos dois textos de baixo continuaria verdadeiro. */
+function ContadorFocos({ gastos, total, excedeu, onTotal = null, dica = null }) {
   return (
     <div
       className="flex items-center gap-1.5 border border-slate-800 bg-slate-950/50 rounded-md px-2 py-1"
-      title={onTotal
+      title={dica ?? (onTotal
         ? "Focos gastos / totais. O total é definido pelo mestre. Linhas de Treinamento e Treinos Especiais dividem o mesmo orçamento"
-        : "Focos gastos / totais (ND + bônus de poderes). Linhas de Treinamento e Treinos Especiais dividem o mesmo orçamento"}
+        : "Focos gastos / totais (ND + bônus de poderes). Linhas de Treinamento e Treinos Especiais dividem o mesmo orçamento")}
     >
       <Dumbbell className="w-3 h-3 text-purple-400 flex-shrink-0" />
       <span className="text-[9px] uppercase tracking-wider text-slate-400">Focos</span>
@@ -12340,14 +12390,25 @@ function TabInterludios({
   const gastos = focosGastos(treinos, origemId, qualificadas) + focosDeTreinosEspeciais(draft);
   const total = derived.focosTotais;                // = ND + bônus de poderes
   const overBudget = gastos > total;
-  // No jogador o total vira campo. Ver a nota em ContadorFocos.
-  const onTotalFocos = regraDo(sistema, "focosLivres") === "player" ? setFocosLivres : null;
+  /* No jogador o total vira campo. Ver a nota em ContadorFocos.
+
+     ⚠ E A CARTEIRA VENCE OS DOIS. Com a liberação `carteiraFocos` o orçamento é
+     a soma dos Interlúdios anotados lá, então o campo digitável do jogador SAI:
+     deixá-lo aceso mostraria um número que a próxima derivação joga fora, que é
+     a pior forma de mentir na tela. Ver `focosTotais` no afty-derive.js. */
+  const focosDaCarteira = !!derived.carteira?.alimentaFocos;
+  const onTotalFocos = (!focosDaCarteira && regraDo(sistema, "focosLivres") === "player")
+    ? setFocosLivres
+    : null;
+  const dicaFocos = focosDaCarteira
+    ? "Focos gastos / totais. O total é a soma dos Interlúdios anotados na aba Carteira. Linhas de Treinamento e Treinos Especiais dividem o mesmo orçamento"
+    : null;
 
   return (
     <>
       <Card
         title="Interlúdios · Treinamento"
-        headerRight={<ContadorFocos gastos={gastos} total={total} excedeu={overBudget} onTotal={onTotalFocos} />}
+        headerRight={<ContadorFocos gastos={gastos} total={total} excedeu={overBudget} onTotal={onTotalFocos} dica={dicaFocos} />}
       >
         {/* linhas de treinamento */}
         <div className="space-y-1.5">
@@ -12379,7 +12440,7 @@ function TabInterludios({
           catálogo assim que o texto de regra chegar verbatim. */}
       <Card
         title="Interlúdios · Treinos Especiais"
-        headerRight={<ContadorFocos gastos={gastos} total={total} excedeu={overBudget} onTotal={onTotalFocos} />}
+        headerRight={<ContadorFocos gastos={gastos} total={total} excedeu={overBudget} onTotal={onTotalFocos} dica={dicaFocos} />}
       >
         <div className="space-y-1">
           {AFTY_TREINOS_ESPECIAIS.map((t) => (

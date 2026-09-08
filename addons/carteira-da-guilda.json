@@ -1,0 +1,10 @@
+{
+  "id": "carteira-da-guilda",
+  "nome": "Carteira da Guilda",
+  "versao": "1.0.0",
+  "autor": "Afty",
+  "paraRaw": "afty",
+  "descricao": "Abre a aba Carteira, o livro-caixa das sessões da Guilda. Uma lista para o que entra (Nome, XP, Dinheiro, Interlúdios e o Tipo da sessão, entre Jogada, Mestrado, Domingo, Transferência, Staff e Outros) e outra para o que sai (Nome, Fonte, Tipo e Valor). As duas filtram por tipo e por texto, e as linhas se reordenam arrastando pela pega. No topo ficam os cinco totais, grudados enquanto você rola: XP Total, Interlúdios, Recebido, Retirado e Atual. O XP anotado vira o Nível, pela tabela de progressão da Guilda: zero de XP é o Nível 3, 10 de XP é o 4, e a escada segue até o Nível 30 com 600. Os Interlúdios anotados viram o orçamento de Focos da aba Interlúdios, no lugar do ND ou do campo digitado, e o que uma habilidade ou outro addon conceder continua somando por cima. As duas coisas são liberações separadas (carteiraNivel e carteiraFocos): tire uma e a outra continua valendo, tire as duas e a Carteira vira caderno puro, sem mexer em número nenhum da ficha.",
+  "permite": ["carteira"],
+  "libera": ["carteiraFocos", "carteiraNivel"]
+}

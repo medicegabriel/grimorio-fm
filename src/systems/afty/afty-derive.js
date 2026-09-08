@@ -93,6 +93,7 @@ import { resolveDominioSimples, DOMINIO_SIMPLES_APTIDAO } from "./afty-dominio-s
 import { resolveTestes, resolveDano, catalogoPericiasDaFicha, ehPericiaOficio, atributosDePericiaManuais } from "./afty-pericias";
 import { resolveDefesasDano, sanearDefesasDano } from "./afty-defesas-dano";
 import { resolveCatarse } from "./afty-catarse";
+import { resolveCarteira } from "./afty-carteira";
 import { resolveCura } from "./afty-cura";
 import {
   problemasDeAddon, marcasDeclaradas, primitivasDaCriatura, liberacoesDaCriatura, precosDeCatarse,
@@ -252,6 +253,26 @@ export function deriveAfty(creature, opcoes = {}) {
      passar pelo Motor: é pergunta estrutural ("esta criatura pode ter Estilo?")
      e precisa estar respondida antes de quase tudo. Ver `LIBERACOES`. */
   const liberacoes = liberacoesDaCriatura(creature);
+  /* A CARTEIRA (Addon, 2026-09-08). O extrato é livro-caixa puro e não emite
+     efeito nenhum: ele só soma o que a pessoa anotou. Quem muda regra são as
+     duas liberações, uma para o orçamento de Focos e outra para o Nível.
+
+     ⚠ ELE SOBE PARA CÁ, ANTES DE TUDO, por causa do Nível. O Nível é a primeira
+     coisa que a derivação calcula e a entrada de quase toda fórmula do sistema,
+     então o extrato precisa estar pronto antes dele. Ficava lá embaixo, junto
+     do orçamento de Focos, enquanto os Focos eram a única regra que ele movia.
+
+     ⚠ E ELE É CALCULADO MESMO SEM O ADDON, de propósito. O que o `permite`
+     controla é quem ENXERGA a aba, e não se a ficha guarda o extrato: uma ficha
+     que perdeu o addon não pode devolver zero e deixar a pessoa achar que as
+     linhas dela sumiram. É a mesma razão de a concessão continuar valendo sem a
+     primitiva permitida (ver `asserts/t-primitivas.mjs`). */
+  const carteiraAlimentaFocos = liberacoes.includes("carteiraFocos");
+  const carteiraAlimentaNivel = liberacoes.includes("carteiraNivel");
+  const carteira = resolveCarteira(creature, {
+    alimentaFocos: carteiraAlimentaFocos,
+    alimentaNivel: carteiraAlimentaNivel,
+  });
   const a = creature?.attributes ?? {};
   const ov = creature?.statOverrides ?? {};
   const vocabularioDsl = {
@@ -309,7 +330,14 @@ export function deriveAfty(creature, opcoes = {}) {
 
      Como a Maestria só passa de 8 no ND 31, o teto de nível é o que faz o Bônus
      de Treinamento do jogador parar em +8 sem precisar de escada própria. */
-  const ndBruto = Math.max(1, core.nd ?? 1);
+  /* ⚠ COM A LIBERAÇÃO, O NÍVEL VEM DO XP E O CAMPO DA FICHA É IGNORADO. É
+     substituição e não soma, pela mesma razão do orçamento de Focos: somar o
+     campo com a tabela cobraria a mesma experiência duas vezes. O `core.nd`
+     continua gravado e intacto, para desinstalar o addon devolver o nível que a
+     pessoa tinha digitado. Ver `CARTEIRA_XP_POR_NIVEL`. */
+  const ndBruto = carteiraAlimentaNivel
+    ? carteira.nivel
+    : Math.max(1, core.nd ?? 1);
   const nd = ehJogador("tetoDeNivel") ? Math.min(30, ndBruto) : ndBruto;
   // Especializações precisam existir antes das Aptidões e dos Feitiços: as
   // Bases automáticas dependem do nível da classe, duas Bases do Suporte
@@ -2582,7 +2610,14 @@ export function deriveAfty(creature, opcoes = {}) {
      mecânico." O canal continua somando por cima, para uma habilidade ou Addon
      ainda poder conceder Foco. */
   const focosLivres = Math.max(0, Math.trunc(Number(creature?.focosLivres) || 0));
-  const focosTotais = (ehJogador("focosLivres") ? focosLivres : nd) + canal("focos");
+  /* ⚠ A CARTEIRA SUBSTITUI A BASE, e não soma nela: somar cobraria o mesmo
+     Interlúdio duas vezes, uma pelo ND e outra pela anotação. O canal `focos`
+     segue por cima nos três casos, que é como uma habilidade ou outro addon
+     ainda concede Foco. Ver a nota de `carteiraFocos` em `LIBERACOES`. */
+  const baseFocos = carteiraAlimentaFocos
+    ? carteira.interludios
+    : (ehJogador("focosLivres") ? focosLivres : nd);
+  const focosTotais = baseFocos + canal("focos");
 
   // (Pontos de atributo agora vêm do método + pool de nível — ver afty-atributos.js.)
 
@@ -2814,6 +2849,10 @@ export function deriveAfty(creature, opcoes = {}) {
     // O extrato da Loja de Catarse: saldo, gasto, compras e as vagas que elas
     // abriram. A tela lê daqui, e os efeitos já entraram no Motor lá em cima.
     catarse,
+    // O extrato da Carteira: XP, dinheiro e Interlúdios anotados, o que saiu e
+    // os totais. A aba lê daqui, e o `alimentaFocos` diz se os Interlúdios dela
+    // são o orçamento de Focos da aba Interlúdios.
+    carteira,
     adaptacoes: resumoAdaptacoes(creature, opcoes.adaptacoes),
     gatilhosTreino: gatilhosDeTreino(creature).map((gatilho) => ({
       ...gatilho,

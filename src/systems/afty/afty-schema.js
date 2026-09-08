@@ -341,6 +341,18 @@ export function createBlankAfty() {
     // Ver ./afty-catarse.js.
     catarse: { saldo: 0, compras: [] },
 
+    // ---------- CARTEIRA ----------
+    // Livro-caixa das sessões da Guilda (autor, 2026-09-08): o que ENTROU (XP,
+    // dinheiro e Interlúdios, por sessão) e o que SAIU (compras e transações).
+    // É FICHA, como a Catarse, e pelo mesmo motivo: o extrato do personagem não
+    // morre com o combate.
+    // Forma: { entradas: [{ id, nome, xp, dinheiro, interludios, tipo }],
+    //          gastos:   [{ id, nome, fonte, tipo, valor }] }.
+    // A aba só aparece com o Addon que a permite, e os Interlúdios só viram
+    // orçamento de Focos com a liberação `carteiraFocos`.
+    // Ver ./afty-carteira.js.
+    carteira: { entradas: [], gastos: [] },
+
     // Técnicas de Combate (Conjurador 2°). As armas são ids do catálogo e o
     // atributo é uma escolha única, compartilhada pelas duas. O estado de
     // Combate Amaldiçoado não mora aqui: ele pertence à sessão de jogo.

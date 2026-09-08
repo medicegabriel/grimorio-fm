@@ -43,8 +43,9 @@ t("ele e SO-liberacao", Object.keys(PACOTE).includes("acrescenta"), false);
 t("e a liberacao e uma so", PACOTE.libera, ["feiticosRestritos"]);
 
 /* ⚠ A LIBERACAO PRECISA ESTAR REGISTRADA, senao o pacote instala e nao faz
-   nada. Sao 9 desde 2026-09-07, e a nova e a ultima da lista. */
-t("existem 9 liberacoes hoje", AD.LIBERACOES.length, 9);
+   nada. Sao 11 desde 2026-09-08, quando as duas da Carteira da Guilda
+   (`carteiraFocos` e `carteiraNivel`) entraram depois desta. */
+t("existem 11 liberacoes hoje", AD.LIBERACOES.length, 11);
 t("feiticosRestritos esta registrada",
   AD.LIBERACOES.some((l) => l.id === "feiticosRestritos"), true);
 t("id inventado parecido e REPROVADO",
