@@ -135,6 +135,7 @@ import {
   resultaEspecialAux, ofereceUmGolpe, aplicaUmGolpe, podeEventoUnico,
   formatAuxValor, aplicaReducoesCustoFeitico, tituloCustoFeitico,
   calcularFeiticoPersonalizado, TIPOS_FEITICO, TIPO_FEITICO_LABEL, TIPO_FEITICO_CURTO,
+  TODOS_TIPOS_FEITICO, tiposFeiticoDaLinha,
 } from "./afty-feiticos";
 import { IconeDeTipo } from "./ui/feitico-tipo";
 import {
@@ -1294,7 +1295,7 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
           {tabAtiva === "interludios" && <TabInterludios draft={draft} derived={derived} setTreinoProgresso={setTreinoProgresso} setTreinoInstance={setTreinoInstance} setTreinoAlvo={setTreinoAlvo} setTreinoEscolha={setTreinoEscolha} setTreinoEspecialVezes={setTreinoEspecialVezes} sistema={sistema} setFocosLivres={setFocosLivres} />}
           {tabAtiva === "defesas" && <TabDefesas derived={derived} setDefesaEstado={setDefesaEstado} setDefesaRd={setDefesaRd} />}
           {tabAtiva === "catarse" && <TabCatarse draft={draft} derived={derived} patchCatarse={patchCatarse} />}
-          {tabAtiva === "calculos" && <TabCalculos draft={draft} derived={derived} setStatOverride={setStatOverride} patchCombate={patchCombate} setAddons={setAddons} gatilhosTreino={derived.gatilhosTreino} onGatilhoTreino={(id, v) => setTreinosAtivos((m) => ({ ...m, [id]: v }))} />}
+          {tabAtiva === "calculos" && <TabCalculos draft={draft} derived={derived} setStatOverride={setStatOverride} patchCombate={patchCombate} setAddons={setAddons} trocarFicha={setDraft} gatilhosTreino={derived.gatilhosTreino} onGatilhoTreino={(id, v) => setTreinosAtivos((m) => ({ ...m, [id]: v }))} />}
           {STUBS[tabAtiva] && <StubCard title={abasVisiveis.find((t) => t.id === tabAtiva)?.label} text={STUBS[tabAtiva]} />}
         </div>
       </div>
@@ -2660,10 +2661,29 @@ function TabHabilidades({ draft, derived, patchCore, toggleArmaDedicada, addFeit
       patchEstilo={patchEstilo}
     />
   ) : null;
+  /* Os Feitiços, pela MESMA razão e com a mesma forma do Estilo acima: quem
+     monta o card é o motor, e não o ramo da origem. Um Addon com
+     `libera: ["feiticosRestritos"]` abre a aba para o Restringido e para o Sem
+     Técnica, limitada a Passivo e Personalizado, e o card também aparece para
+     quem tem Feitiço GRAVADO, senão a linha morta ficaria presa na ficha
+     gastando contador e sem tela para removê-la. */
+  const feiticosCard = derived.feiticos?.mostraCard ? (
+    <FeiticosCard
+      draft={draft}
+      derived={derived}
+      addFeitico={addFeitico}
+      updateFeitico={updateFeitico}
+      removeFeitico={removeFeitico}
+      patchFeitico={patchFeitico}
+      duplicarFeitico={duplicarFeitico}
+      setReducoesCustoFeitico={setReducoesCustoFeitico}
+    />
+  ) : null;
   if (origem === "sem_tecnica") {
     return (
       <>
         {estilo}
+        {feiticosCard}
         {dano}
         {cura}
         {dominioSimples}
@@ -2677,6 +2697,7 @@ function TabHabilidades({ draft, derived, patchCore, toggleArmaDedicada, addFeit
     return (
       <>
         <SubsistemaPendente titulo="Habilidades Marciais" origem="Restringido" />
+        {feiticosCard}
         {estilo}
         {dano}
         {cura}
@@ -2697,7 +2718,7 @@ function TabHabilidades({ draft, derived, patchCore, toggleArmaDedicada, addFeit
         removeFuncionamento={removeFuncionamento}
         patchFuncionamento={patchFuncionamento}
       />
-      <FeiticosCard draft={draft} derived={derived} addFeitico={addFeitico} updateFeitico={updateFeitico} removeFeitico={removeFeitico} patchFeitico={patchFeitico} duplicarFeitico={duplicarFeitico} setReducoesCustoFeitico={setReducoesCustoFeitico} />
+      {feiticosCard}
       {/* Depois dos Feitiços de propósito: quem chega aqui tem os dois, e o
           Feitiço é o que ele já tinha. Os dois dividem o mesmo contador. */}
       {estilo}
@@ -4304,6 +4325,17 @@ function FeiticoMiniatura({ feitico, resumo, selecionado, onSelecionar }) {
 function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico, patchFeitico, duplicarFeitico, setReducoesCustoFeitico }) {
   const lista = Array.isArray(draft.feiticos) ? draft.feiticos : [];
   const feiticosBase = lista.filter((feitico) => !feitico.variacaoDe);
+  /* Os tipos que esta criatura pode criar. Vem do MOTOR, e não de uma pergunta
+     de origem aqui dentro: com o Addon de liberação o Restringido tem só dois
+     deles. Ver `tiposFeiticoPermitidos`.
+
+     ⚠ LISTA VAZIA É RESPOSTA, e não falta de dado. Ela chega aqui pela terceira
+     porta do `mostraCardFeiticos`: a ficha que tem Feitiço GRAVADO e nenhum
+     acesso (trocou de origem, ou desinstalou o addon). Aí o card existe para
+     LER E REMOVER, e não para criar, senão o buraco que ele tapa viraria um
+     atalho para Feitiço de graça. */
+  const tiposPermitidos = derived.feiticos?.tiposPermitidos ?? TODOS_TIPOS_FEITICO;
+  const podeCriar = tiposPermitidos.length > 0;
   const dslGrupos = useDslGrupos(derived);
   const { nivelMax } = derived.feiticos;
   const habilidades = derived.habilidades?.escolhidas ?? [];
@@ -4398,9 +4430,15 @@ function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico
 
   /* Feitiço novo entra JÁ SELECIONADO. Sem isto, criar o décimo quarto deixava o
      editor no primeiro, e o clique seguinte era sempre o mesmo: procurar na
-     fileira o que acabou de nascer. */
+     fileira o que acabou de nascer.
+
+     ⚠ E ele nasce num tipo PERMITIDO. O `createBlankFeitico` nasce Dano, que é
+     o certo para quem conjura e o único tipo que a criatura liberada por Addon
+     não pode ter: sem isto, criar um Feitiço no Restringido entregava um Dano
+     com o chip dele aceso e nenhum caminho de volta que não fosse adivinhar. */
   const novoFeitico = (modelo = null) => {
-    const criado = addFeitico(modelo);
+    if (!podeCriar) return;
+    const criado = addFeitico(modelo ?? (tiposPermitidos.includes("dano") ? null : { tipo: tiposPermitidos[0] }));
     if (criado?.id) setEscolhidoId(criado.id);
   };
   const duplicar = (id) => {
@@ -4502,7 +4540,7 @@ function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico
         <div className="space-y-3">
           {/* ===== 0. A FILEIRA ===== */}
           <FileiraDeCartoes
-            onNova={() => novoFeitico()}
+            onNova={podeCriar ? () => novoFeitico() : null}
             rotuloNovo="Novo Feitiço"
             rotuloAnterior="Ver Feitiços Anteriores"
             rotuloProximo="Ver Próximos Feitiços"
@@ -4524,6 +4562,7 @@ function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico
               feitico={escolhido}
               ctx={ctx}
               nivelMax={nivelMax}
+              tiposPermitidos={tiposPermitidos}
               efeitosPassivo={efeitosPassivoComPreview(escolhido)}
               fontesDano={fontesDano}
               dslGrupos={dslGrupos}
@@ -4779,7 +4818,7 @@ function subAbasDoFeitico(f) {
  * leitura e o campo que o edita ficava logo abaixo, dentro do corpo aberto: dois
  * lugares para o mesmo dado. Mesma correção que a Invocação levou.
  */
-function FeiticoCard({ feitico, ctx, nivelMax, efeitosPassivo, fontesDano, dslGrupos, onPatch, onRemove, onDuplicate }) {
+function FeiticoCard({ feitico, ctx, nivelMax, tiposPermitidos, efeitosPassivo, fontesDano, dslGrupos, onPatch, onRemove, onDuplicate }) {
   const [confirmDel, setConfirmDel] = useState(false);
   const [subtab, setSubtab] = useState("base");
   const calculoBase = feitico.tipo === "dano" ? calcularFeiticoDano(feitico, ctx)
@@ -4794,6 +4833,12 @@ function FeiticoCard({ feitico, ctx, nivelMax, efeitosPassivo, fontesDano, dslGr
   const avisosTodos = calc
     ? [...(calc.avisos || []), ...((calc.efeitos || []).flatMap((e) => e.avisos || []))]
     : [];
+
+  /* Os chips de tipo. Com a liberação por Addon são só dois, e o tipo que a
+     linha JÁ TEM entra na lista mesmo quando não é permitido: sem ele o chip
+     aceso sumiria e o editor mostraria um Dano sem nada dizendo que ele é um. */
+  const valoresDeTipo = tiposFeiticoDaLinha(tiposPermitidos, feitico.tipo);
+  const tiposDaLinha = TIPOS_FEITICO.filter((t) => valoresDeTipo.includes(t.value));
 
   const subabas = subAbasDoFeitico(feitico);
   /* ⚠ A ABA ATIVA VOLTA PARA A BASE quando o tipo muda e a aba aberta deixa de
@@ -4848,7 +4893,7 @@ function FeiticoCard({ feitico, ctx, nivelMax, efeitosPassivo, fontesDano, dslGr
             última que se percebe. O ícone é o mesmo que a miniatura e a Ficha
             usam, então o tipo passa a ser reconhecível sem ler. */}
         <div className="flex flex-wrap gap-1.5" role="group" aria-label="Tipo do Feitiço">
-          {TIPOS_FEITICO.map((t) => {
+          {tiposDaLinha.map((t) => {
             const on = t.value === feitico.tipo;
             return (
               <button
@@ -12375,7 +12420,7 @@ const CALC_ROWS = [
   { key: "iniciativa",   label: "Iniciativa" },
 ];
 
-function TabCalculos({ draft, derived, setStatOverride, patchCombate, setAddons, gatilhosTreino, onGatilhoTreino }) {
+function TabCalculos({ draft, derived, setStatOverride, patchCombate, setAddons, trocarFicha, gatilhosTreino, onGatilhoTreino }) {
   return (
     <>
     <Card title="Cálculos">
@@ -12427,7 +12472,7 @@ function TabCalculos({ draft, derived, setStatOverride, patchCombate, setAddons,
         Instalar um pacote muda o que a ficha inteira tem, mas é configuração e
         não é resultado, então ele não pode empurrar a grade de stats para baixo
         da dobra, que é o que aconteceria se subisse. */}
-    <TabAddons draft={draft} derived={derived} setAddons={setAddons} />
+    <TabAddons draft={draft} derived={derived} setAddons={setAddons} trocarFicha={trocarFicha} />
     </>
   );
 }
@@ -14558,16 +14603,23 @@ function FileiraDeCartoes({ children, onNova, rotuloNovo, rotuloAnterior, rotulo
           Ele era o último item DENTRO da fileira, então com cinco invocações
           nascia fora da área visível: quem não conseguia rolar de lado também
           não conseguia criar a sexta. Fixo na borda direita, ele não depende
-          mais de rolagem nenhuma. */}
-      <button
-        type="button"
-        onClick={onNova}
-        className="flex-shrink-0 w-12 inline-flex flex-col items-center justify-center gap-1 text-[12px] font-semibold rounded-lg border border-dashed border-slate-700 text-slate-400 hover:text-white hover:border-slate-600 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-500"
-        title={rotuloNovo}
-        aria-label={rotuloNovo}
-      >
-        <Plus className="w-4 h-4" aria-hidden="true" />
-      </button>
+          mais de rolagem nenhuma.
+
+          ⚠ `onNova` NULO some com o botão, e é a fileira SÓ DE LEITURA. Ela
+          existe para a ficha que tem Feitiço gravado e perdeu o acesso: dá para
+          ver e remover o que já está lá, e não para criar mais. Quem sempre
+          pode criar (a Invocação) passa a função e nunca vê diferença. */}
+      {onNova && (
+        <button
+          type="button"
+          onClick={onNova}
+          className="flex-shrink-0 w-12 inline-flex flex-col items-center justify-center gap-1 text-[12px] font-semibold rounded-lg border border-dashed border-slate-700 text-slate-400 hover:text-white hover:border-slate-600 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-500"
+          title={rotuloNovo}
+          aria-label={rotuloNovo}
+        >
+          <Plus className="w-4 h-4" aria-hidden="true" />
+        </button>
+      )}
     </div>
   );
 }

@@ -90,6 +90,79 @@ export const TIPO_FEITICO_CURTO = {
   personalizado: "Próprio",
 };
 
+/* ============================================================ */
+/* QUEM CRIA FEITIÇO, E DE QUE TIPO                              */
+/* ============================================================ */
+/* ⚠ A DECISÃO SAIU DO JSX em 2026-09-07, e é a mesma lição do `mostraCardEstilo`.
+   A aba Habilidades do criador ramifica o layout inteiro por ORIGEM, e o card de
+   Feitiços só era montado no ramo "todas as outras". Enquanto isso era regra
+   fixa dava para viver com ela dentro do JSX; no dia em que um Addon passou a
+   poder abrir a aba, a trava de tela viraria a quarta trava do Estilo de novo:
+   invisível, intestável e fora de sincronia com o motor.
+
+   São DUAS perguntas, e por isso duas funções: QUEM cria Feitiço, e QUAIS TIPOS
+   ele pode criar. A liberação por Addon responde as duas de uma vez, e responde
+   diferente: ela abre a porta e ao mesmo tempo estreita o corredor. */
+
+/** Origem que não cria Feitiço: outra coisa ocupa o lugar deles na aba. */
+export const ORIGENS_SEM_FEITICO = Object.freeze(["restringido", "sem_tecnica"]);
+
+/** Todos os tipos, na ordem do vocabulário. */
+export const TODOS_TIPOS_FEITICO = Object.freeze(TIPOS_FEITICO.map((t) => t.value));
+
+/** Nenhum tipo. Congelado, para virar valor padrão sem alocar. */
+const SEM_TIPOS_FEITICO = Object.freeze([]);
+
+/**
+ * Os tipos que a liberação por Addon abre.
+ *
+ * ⚠ São os DOIS que não dependem de conjuração amaldiçoada para existir: o
+ * Passivo é característica (não gasta PE nem tem alcance) e o Personalizado é
+ * regra escrita à mão pela mesa. Dano, Auxiliar, Curativo e Especial ficam de
+ * fora porque cada um deles É uma tabela de técnica amaldiçoada.
+ */
+export const TIPOS_FEITICO_LIBERADOS = Object.freeze(["passivo", "personalizado"]);
+
+/** A origem cria Feitiço por conta própria? */
+export const origemConjura = (origemId) => !ORIGENS_SEM_FEITICO.includes(origemId);
+
+/**
+ * Os tipos de Feitiço que esta criatura pode criar.
+ *
+ * Vazio quer dizer "não cria nenhum", e é o caso normal do Restringido e do Sem
+ * Técnica. `liberado` é o Addon com `libera: ["feiticosRestritos"]`.
+ */
+export function tiposFeiticoPermitidos(origemId, liberado = false) {
+  if (origemConjura(origemId)) return TODOS_TIPOS_FEITICO;
+  return liberado ? TIPOS_FEITICO_LIBERADOS : SEM_TIPOS_FEITICO;
+}
+
+/**
+ * O card de Feitiços aparece?
+ *
+ * Três portas, e a terceira é a que protege ficha salva, igual à do
+ * `filtraForaDoJogador`: uma ficha que JÁ TEM Feitiço gravado vê o card mesmo
+ * sem acesso nenhum. Sem essa porta, trocar de origem (ou desinstalar o addon)
+ * deixaria a linha morta presa na ficha, gastando o contador de habilidades e
+ * sem tela para removê-la. É o mesmo que o `mostraCardEstilo` faz.
+ */
+export function mostraCardFeiticos(origemId, { liberado = false, temFeiticos = false } = {}) {
+  return origemConjura(origemId) || !!liberado || !!temFeiticos;
+}
+
+/**
+ * Os tipos que os CHIPS oferecem para um Feitiço concreto.
+ *
+ * O tipo que a linha JÁ TEM entra na lista mesmo quando não é permitido, pela
+ * mesma razão da terceira porta acima: sem ele o chip aceso sumiria da tela e o
+ * editor mostraria um Feitiço de Dano sem nada dizendo que ele é um.
+ */
+export function tiposFeiticoDaLinha(permitidos, tipoAtual) {
+  const base = Array.isArray(permitidos) ? permitidos : TODOS_TIPOS_FEITICO;
+  const lista = base.includes(tipoAtual) ? base : [...base, tipoAtual];
+  return TODOS_TIPOS_FEITICO.filter((t) => lista.includes(t));
+}
+
 // ---------------------------------------------------------------
 // NÍVEIS. Feitiços vão do nível 0 ao 5. Técnica Máxima ("max") é um
 // degrau acima, presente nas tabelas mas destravado por Aptidão

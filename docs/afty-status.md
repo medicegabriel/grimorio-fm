@@ -121,6 +121,79 @@ Estado atual do sistema Afty (atualizado 2026-09-07). Leia junto com:
 
 ---
 
+## SESSÃO DE 2026-09-07 (parte 7): ESTILO MARCIAL, A LIBERAÇÃO QUE ABRE E ESTREITA
+
+Autor: *"Faça um Addon para liberar a aba de Feitiços para Restringido, porém somente Passivas e
+Personalizado. Nomeie como Estilo Marcial."*
+
+O pacote é `addons/estilo-marcial.json`, e ele é **só-liberação**: uma linha de `libera` e nada
+mais. Todo o resto é verbo novo no motor.
+
+### A liberação nº 9 é a primeira que faz duas coisas
+
+As quatro liberações de regra anteriores só **abriam** (`estiloSombras`, `gemeosSemTecnica`,
+`qualificaSemTecnica`, `gemeosMaldicao`). A `feiticosRestritos` monta um card que a origem não tinha
+**e**, no mesmo movimento, corta quatro dos seis tipos de Feitiço. Por isso ela virou **duas**
+funções em `afty-feiticos.js`, e não uma:
+
+| Função | Pergunta |
+|---|---|
+| `mostraCardFeiticos` | quem ENXERGA a aba |
+| `tiposFeiticoPermitidos` | o que ele pode CRIAR ali dentro |
+| `tiposFeiticoDaLinha` | quais chips uma linha CONCRETA oferece |
+
+**Os dois tipos não são recorte arbitrário.** São os únicos que não dependem de conjuração
+amaldiçoada: o Passivo é característica (não gasta PE, não tem alcance, escreve direto no Motor) e o
+Personalizado é regra escrita à mão pela mesa. Dano, Auxiliar, Curativo e Especial ficam de fora
+porque cada um **É** uma tabela de técnica amaldiçoada, e o Restringido não tem técnica.
+
+### A trava de tela saiu do JSX ANTES de mudar, e desta vez de propósito
+
+A aba Habilidades do criador ramifica o layout inteiro por origem, e o card de Feitiços só era
+montado no ramo "todas as outras". Enquanto "quem conjura" era regra fixa, dava para viver com a
+decisão dentro do JSX. No momento em que um Addon passou a poder mudá-la, ela seria **a quarta trava
+do Estilo das Sombras de novo**: invisível, intestável e livre para sair de sincronia com o motor.
+
+`derived.feiticos` passou a carregar `mostraCard` e `tiposPermitidos`, e o JSX só lê. O
+`FeiticosCard` virou uma variável montada uma vez, ao lado do `estilo`, e os três ramos da aba a
+consomem. **É a terceira vez que o `afty-addons.md` registra esta lição, e a primeira em que ela foi
+aplicada antes do print do autor.**
+
+### Dois achados que vieram de graça
+
+⚠ **A terceira porta tapou um buraco anterior ao addon.** O card também aparece para quem tem
+Feitiço **gravado**, mesmo sem addon e mesmo na origem errada. Sem ela, desinstalar o pacote ou
+trocar de origem deixaria a linha morta presa na ficha **gastando o contador de habilidades** e sem
+tela para removê-la. Isso já era verdade antes: uma ficha que trocasse de origem para Restringido já
+era cobrada por Feitiços que a tela não mostrava mais. Há assert medindo o `gastos` nesse caso.
+
+⚠ **E essa porta pedia um card SÓ DE LEITURA.** A lista de tipos permitidos volta VAZIA nesse caso,
+e o caminho fácil (cair no "todos os seis" quando a lista está vazia) transformaria o conserto num
+atalho para Feitiço de graça: bastava trocar de origem. O `FileiraDeCartoes` passou a esconder o
+botão de criar quando `onNova` é nulo, os chips mostram só o tipo já gravado, e o card serve para
+ver e remover. A Invocação, que sempre pode criar, não vê diferença nenhuma.
+
+⚠ **O Feitiço novo precisou nascer num tipo permitido.** O `createBlankFeitico` nasce Dano, que é o
+único tipo que a criatura liberada NÃO pode ter: sem o conserto, clicar em "Criar Feitiço" no
+Restringido entregava um Dano com o chip dele aceso e nenhum caminho de volta que não fosse
+adivinhar. O chip do tipo já gravado continua na lista mesmo proibido, pela mesma razão.
+
+### O que ela NÃO dá
+
+Vaga. O Feitiço do Restringido gasta o mesmo contador único da aba (2×Maestria + patamar), dividido
+com as Habilidades Gerais. Os asserts medem PV, Defesa, PE e o contador dos dois lados: **enquanto a
+criatura não criar Feitiço, instalar o addon não move número nenhum.** E a liberação abre porta
+fechada sem estreitar porta aberta, ou seja, um Herdado com o pacote instalado continua com os seis
+tipos, o que também é medido.
+
+### Verificação
+
+`asserts/t-estilo-marcial.mjs`, **50 asserts**. A suíte inteira passa (62 arquivos, 3264 asserts), o
+`vite build` fecha e o eslint não reclama. O censo de liberações do `t-estilo-liberado.mjs` subiu de
+8 para 9.
+
+---
+
 ## SESSÃO DE 2026-09-07 (parte 6): CONHECIMENTO APLICADO, E A RÉGUA DO AZAMARU
 
 ### O Azamaru pesava demais acima da Maestria 4

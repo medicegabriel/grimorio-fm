@@ -1,0 +1,275 @@
+{
+  "id": "nascido-dos-sonhos",
+  "nome": "Nascido dos “Sonhos”",
+  "versao": "0.1.0",
+  "autor": "Afty",
+  "paraRaw": "afty",
+  "descricao": "Ficha de Player: a origem Nascido dos “Sonhos”, os seis Talentos de Origem dela, o Cajado do Grande Mago e os quatro Funcionamentos Básicos da técnica de Merlim (base, Clarividência, Avatar de Avalon e O Mago das Flores).",
+  "acrescenta": {
+    "origens": [
+      {
+        "id": "orig_nascido_dos_sonhos",
+        "nome": "Nascido dos “Sonhos”",
+        "lore": "Você nasceu da união entre uma poderosa maldição oriunda dos sonhos da humanidade e uma mulher humana, tornando-se um Feto Amaldiçoado Híbrido de natureza única. Devido ao hibridismo da maldição, sua forma foi moldada, pelo embrião e nutrida por falsos sonhos, ilusões e desespero humano, permitindo que compreendesse a Energia Amaldiçoada de forma instintiva. Embora possua um corpo de carne e osso, sua essência permanece parcialmente amaldiçoada, fazendo com que sua anatomia e sua interação com a Energia sejam únicas, enquanto sua própria existência floresce como um elo entre a humanidade e as maldições.",
+        "bonusAtributos": {
+          "presenca": 2
+        },
+        "caracteristicas": [
+          {
+            "id": "sonhos_bonus_atributo",
+            "nome": "Bônus em Atributo",
+            "descricao": "Você recebe 2 pontos em presença e 1 ponto para ser distribuído em outro atributo à sua escolha.",
+            "bonus": {
+              "distribuir": 1,
+              "maxPorAtributo": 1,
+              "entre": [
+                "forca",
+                "destreza",
+                "constituicao",
+                "inteligencia",
+                "sabedoria"
+              ]
+            }
+          },
+          {
+            "id": "sonhos_natureza_onirica",
+            "nome": "Natureza Onírica",
+            "descricao": "Devido à sua origem, parte de seu corpo carrega uma herança amaldiçoada, toda cura que você receber provinda de energia reversa é reduzida pela metade. Caso obtenha uma habilidade de energia reversa de cura, você pode a utilizar tratando a energia reversa como energia amaldiçoada, curando-se o valor completo. Ao invés de 1 ponto de energia reversa, você gasta diretamente 2 pontos de energia amaldiçoada.",
+            "mesa": true
+          },
+          {
+            "id": "sonhos_bencao_amaldicoada",
+            "nome": "Benção Amaldiçoada",
+            "descricao": "Seu corpo desde o nascimento foi agraciado com uma reserva de energia amaldiçoada maior que o comum, devido á sua origem superior à de humanos comuns, lhe dando uma afinidade desde seu nascimento com o jujutsu, lhe concedendo 1 PE adicional a cada nível par, além de receber 1 feitiço adicional, recebendo +1 feitiço a cada 5 Níveis até o 20."
+          },
+          {
+            "id": "sonhos_sonhos_humanos",
+            "nome": "Sonhos Humanos",
+            "descricao": "Devido ao seu nascimento amaldiçoado, parte de seu corpo tem uma capacidade única: enxergar e interagir com os sonhos dos outros (não é capaz de afetar a pessoa diretamente, apenas em questões narrativas). Por isso, tanto devido á sua constituição ‘biológica’, e questões de personalidade, você decidiu seguir e até mesmo ajudar a criar os humanos que possuem grandes sonhos como objetivos de sua vida. Durante um Interlúdio, escolha um Aliado jogador, esta pessoa se tornará sua Sonhadora, enquanto você estiver na mesma cena do Sonhador, assim como esteja a pelo menos 18m de distância e consiga perceber o sonhador, por quaisquer sentidos que seja, você pode, uma quantidade de vezes, igual ½ BT fazer o sonhador refazer novamente uma rolagem, podendo ser antes ou depois de saber o resultado, o orientando a como seguir seu caminho, dando mais um passo em direção ao seu sonho.",
+            "mesa": true
+          }
+        ],
+        "efeitos": [
+          {
+            "canal": "pe",
+            "expr": "piso(nd / 2)"
+          },
+          {
+            "canal": "vagasFeitico",
+            "expr": "1 + (nd >= 5) + (nd >= 10) + (nd >= 15) + (nd >= 20)"
+          }
+        ],
+        "especializacaoExclusivaId": null
+      }
+    ],
+    "talentos": [
+      {
+        "id": "tal_cultivador_de_sonhos",
+        "nome": "Cultivador de Sonhos",
+        "grupo": "origem",
+        "descricao": "Desde o seu nascimento, você aprendeu a observar os sonhos daqueles ao seu redor. Com o passar do tempo, esse simples hábito tornou-se uma paixão, acompanhando as pessoas comuns florescerem e se tornarem protagonistas de suas próprias histórias. Ao compreender melhor os desejos humanos, você é capaz de guiá-los com ainda mais precisão nos momentos decisivos. Você recebe +1 Uso da Habilidade Sonhos Humanos, recebendo +1 uso no nível 17. Além de permitir o alvo a arrolar o teste, o teste refeito é realizado com vantagem. Caso o alvo já possua vantagem, você o concede metade de seu BT como bônus adicional na rolagem.",
+        "requisitos": [
+          {
+            "tipo": "origem",
+            "id": "orig_nascido_dos_sonhos"
+          },
+          {
+            "tipo": "nd",
+            "valor": 12
+          }
+        ]
+      },
+      {
+        "id": "tal_sabedoria_inata",
+        "nome": "Sabedoria Inata",
+        "grupo": "origem",
+        "descricao": "Sua natureza híbrida faz com que a Energia Amaldiçoada lhe seja tão natural quanto a respiração. Você não apenas manipula o jujutsu, você o compreende intuitivamente, reconhecendo seus fluxos, padrões e fraquezas antes mesmo de estudá-los. Você recebe +2 em Rolagens para resistir á efeitos de aptidão amaldiçoada, aumentando o bônus em +1 nos níveis 9, 13 e 17.",
+        "requisitos": [
+          {
+            "tipo": "origem",
+            "id": "orig_nascido_dos_sonhos"
+          },
+          {
+            "tipo": "pericia",
+            "pericia": "feiticaria",
+            "nivel": "mestre"
+          },
+          {
+            "tipo": "nd",
+            "valor": 4
+          }
+        ],
+        "efeitos": [
+          {
+            "canal": "bonusTR",
+            "expr": "2 + (nd >= 9) + (nd >= 13) + (nd >= 17)"
+          }
+        ]
+      },
+      {
+        "id": "tal_transformacao_feerica",
+        "nome": "Transformação Féerica",
+        "grupo": "origem",
+        "descricao": "Herdando a natureza mutável da maldição que lhe deu origem, seu corpo é capaz de assumir espontaneamente formas menores sem perder sua consciência ou identidade. Embora limitadas, essas transformações refletem sua essência féerica e permitem que você caminhe despercebido entre os humanos. Com uma ação bônus e 3 PE, você pode se transformar em um gato ou cachorro, ou outro animal de porte semelhante, tendo certas características semelhantes á sua forma humana, como pelo de cores semelhantes á de seu cabelo, mesmos olhos, além claro, da capacidade de falar. Você tem seu tamanho diminuído para pequeno, recebendo +5 em Testes de Enganação únicamente para fingir ser o animal transmutado. Enquanto estiver transformado, suas capacidades de utilizar sua energia amaldiçoada são enfraquecidas devido á sua forma não convencional, não podendo utilizar feitiços do mais alto nível conhecido, assim como liberações máximas, rituais estendidos e técnicas máximas. Para se destransformar é necessário uma ação de movimento.",
+        "requisitos": [
+          {
+            "tipo": "origem",
+            "id": "orig_nascido_dos_sonhos"
+          },
+          {
+            "tipo": "aptidao",
+            "id": "aura_controlada"
+          },
+          {
+            "tipo": "nd",
+            "valor": 6
+          }
+        ]
+      },
+      {
+        "id": "tal_prodigio_inato",
+        "nome": "Prodígio Inato",
+        "grupo": "origem",
+        "descricao": "Suas capacidades com o Jujutsu são acimas do comum, possuindo um talento inato para a energia amaldiçoada, recebendo +1 Nível de Aptidão em dois tipos de aptidões á sua escolha.",
+        "escolha": {
+          "id": "prodigio_aptidao",
+          "label": "Aptidão",
+          "niveis": [
+            1,
+            1
+          ],
+          "opcoes": [
+            {
+              "id": "tal_estudo_au",
+              "nome": "Aura",
+              "descricao": "Seu Nível de Aptidão em Aura aumenta em 1."
+            },
+            {
+              "id": "tal_estudo_cl",
+              "nome": "Controle e Leitura",
+              "descricao": "Seu Nível de Aptidão em Controle e Leitura aumenta em 1."
+            },
+            {
+              "id": "tal_estudo_bar",
+              "nome": "Barreira",
+              "descricao": "Seu Nível de Aptidão em Barreira aumenta em 1."
+            },
+            {
+              "id": "tal_estudo_dom",
+              "nome": "Domínio",
+              "descricao": "Seu Nível de Aptidão em Domínio aumenta em 1."
+            },
+            {
+              "id": "tal_estudo_er",
+              "nome": "Energia Reversa",
+              "descricao": "Seu Nível de Aptidão em Energia Reversa aumenta em 1."
+            }
+          ]
+        },
+        "requisitos": [
+          {
+            "tipo": "origem",
+            "id": "orig_nascido_dos_sonhos"
+          },
+          {
+            "tipo": "nota",
+            "texto": "Ter ao menos 1 nível de aptidão nas duas aptidões escolhidas"
+          },
+          {
+            "tipo": "nd",
+            "valor": 9
+          }
+        ]
+      },
+      {
+        "id": "tal_corpo_feerico",
+        "nome": "Corpo Féerico",
+        "grupo": "origem",
+        "descricao": "Sua natureza amaldiçoada torna seu corpo mais leve e menos preso às limitações humanas. Você recebe +3m de Movimento, além de ignorar terreno difícil.",
+        "requisitos": [
+          {
+            "tipo": "origem",
+            "id": "orig_nascido_dos_sonhos"
+          }
+        ],
+        "efeitos": [
+          {
+            "canal": "movimento",
+            "expr": "3"
+          }
+        ]
+      },
+      {
+        "id": "tal_imaginacao_lucida",
+        "nome": "Imaginação Lúcida",
+        "grupo": "origem",
+        "descricao": "Seu controle sob sua energia é a mesma sensação de ter um sonho lúcido, tudo que você quer, você consegue com facilidade. Você adiciona seu Metade de seu BT em sua CD.",
+        "requisitos": [
+          {
+            "tipo": "origem",
+            "id": "orig_nascido_dos_sonhos"
+          }
+        ],
+        "efeitos": [
+          {
+            "canal": "cd",
+            "expr": "piso(bt / 2)"
+          }
+        ]
+      }
+    ],
+    "armas": [
+      {
+        "id": "cajado_grande_mago",
+        "nome": "Cajado do Grande Mago",
+        "classe": "complexa",
+        "categoria": "corpo",
+        "grupo": "haste",
+        "dano": {
+          "dado": "1d6",
+          "duasMaos": "1d8",
+          "tipo": "im"
+        },
+        "critico": 20,
+        "espacos": 1,
+        "custo": 2,
+        "props": {
+          "fineza": true,
+          "versatil": true,
+          "estendida": true,
+          "modular": "ct"
+        },
+        "unico": true,
+        "equipadoPadrao": true,
+        "faPadrao": {
+          "grau": "quarto",
+          "encantamentos": [],
+          "habilidadeUnica": ""
+        },
+        "descricao": "Equipamento de técnica do Funcionamento Básico. Ele evolui com você e precisa estar em suas mãos para utilizar os feitiços da sua técnica.\n\n# Especial\nNa ponta do cajado, existe uma lâmina em sua ponta, que permite que o usuário ataque com a ponta de seu cajado, utilizando a lâmina para ataques mais letais, Permitindo tanto trocar o dano de seu ataque de Impacto para cortante, como também, ao realizar um acerto crítico, pode escolher, caso venha a aplicar o efeito crítico da arma, utilizar o efeito de Espadas ao Invés de Haste, precisando escolher entre um ou outro.\n\n# Evolução\n| Bônus de Maestria | Grau do Equipamento | Encantamentos |\n| --- | --- | --- |\n| +2 | Quarto Grau | Nenhum |\n| +3 | Terceiro Grau | Amplificadora |\n| +4 | Segundo Grau | Canalizadora |\n| +5 | Primeiro Grau | Longa, Armazenadora |\n| +6 | Grau Especial | Catalisador Perfeito |\n\n**Catalisador Perfeito** (Habilidade Única do Grau Especial). Sempre que for realizar um feitiço que cause dano, você pode optar por substituir o dano por outro tipo de dano do mesmo grupo (Físico, Elemental, Etéreo, Biológico). Assim como, ao forçar uma TR contra um alvo, pode substituir a TR para a outra de mesmo grupo (Físico: Reflexos e Fortitude, Mental: Vontade e Astúcia). Além disso, todos os seus feitiços custam -1 PE (Mínimo 1 PE)."
+      }
+    ]
+  },
+  "funcionamentos": [
+    {
+      "id": "fb_merlim",
+      "nome": "Merlim, o Criador de Reis",
+      "descricao": "A Técnica Amaldiçoada é baseada no conto antigo do Merlim, o Mago das flores, lhe concedendo capacidades que buscam mimetizar o Merlim, lhe fazendo um reflexo do próprio antigo mago, lhe fazendo trilhar os mesmos passos do merlim, um lendário mago, conhecido como o criador de reis, um dos grandes magos dos contos de ficção, Recebendo Naturalmente o Cajado do Grande Mago, um equipamento de técnica que naturalmente evoluirá com você, sendo um item intrínseco para sua técnica, precisando estar com ela em suas mãos para utilizar dos feitiços de sua técnica. Além de obter acesso á 3 mecânicas de sua técnica.\n\n# O Cajado do Grande Mago\n| Dano | Crítico | Grupo | Peso | Custo |\n| --- | --- | --- | --- | --- |\n| 1d6 / 1d8 Imp | 20 | Haste | 1 | 2 |\n\n**Propriedades.** Fineza, Versátil, Estendida, Modular CT, Especial.\n\n**Especial.** Na ponta do cajado, existe uma lâmina em sua ponta, que permite que o usuário ataque com a ponta de seu cajado, utilizando a lâmina para ataques mais letais, Permitindo tanto trocar o dano de seu ataque de Impacto para cortante, como também, ao realizar um acerto crítico, pode escolher, caso venha a aplicar o efeito crítico da arma, utilizar o efeito de Espadas ao Invés de Haste, precisando escolher entre um ou outro.\n\n## Evolução do Cajado\n| Bônus de Maestria | Grau do Equipamento | Encantamentos |\n| --- | --- | --- |\n| +2 | Quarto Grau | Nenhum |\n| +3 | Terceiro Grau | Amplificadora |\n| +4 | Segundo Grau | Canalizadora |\n| +5 | Primeiro Grau | Longa, Armazenadora |\n| +6 | Grau Especial | Catalisador Perfeito |\n\n**Catalisador Perfeito.** Sempre que for realizar um feitiço que cause dano, você pode optar por substituir o dano por outro tipo de dano do mesmo grupo (Físico, Elemental, Etéreo, Biológico). Assim como, ao forçar uma TR contra um alvo, pode substituir a TR para a outra de mesmo grupo (Físico: Reflexos e Fortitude, Mental: Vontade e Astúcia). Além disso, todos os seus feitiços custam -1 PE (Mínimo 1 PE)."
+    },
+    {
+      "id": "fb_clarividencia",
+      "nome": "Mecânica Única: Clarividência",
+      "descricao": "A Clarividência do mago merlim não permite que o usuário veja o futuro ou o passado, mas permite que ele enxergue o mundo, enxergando onde olhos humanos não conseguiriam ver normalmente, enxergando não apenas regiões á longas distâncias, mas também enxergando coisas que normalmente não deveriam ser possíveis se enxergar.\n\nDurante sua jornada, você pode marcar um espaço com A Marca da Íris, realizando um Ritual para criar a marca, fazendo da região marcada um alvo qualificado para o uso de sua Clarividência. Não existe um limite de quantas Íris podem existir simultâneamente, assim como não existe uma maneira de efetivamente desfazer a íris, mas existem diversas maneiras de se “Defender” da Clarividência. A marca pode ser realizada de 2 Formas, Durante Missões, e Interlúdios.\n\n# Criando a Marca da Íris\n**Durante Missões.** Criar uma Marca da Íris durante uma missão exige todo o seu turno (Ação Comum, Ação Bônus e Movimento). Após iniciar o ritual, realize um teste de Prestidigitação com DT 15, aumentando em +3 para 12m adicionais de raio além do tamanho base (12m). Caso falhe no teste, você pode optar por permanecer em concentração. Enquanto permanecer concentrado, poderá gastar sua Ação Comum nas rodadas seguintes para tentar novamente, recebendo +2 cumulativo na rolagem a cada tentativa.\n\n**Interlúdios.** Não precisando se apressar, você não precisa realizar testes para criar a marca, demorando um tempo consideravelmente maior para a marca, demorando horas, dias, até mesmo semanas. Permitindo criar Marcas Proporcionalmente maiores, permitindo perceber regiões imensas. Para isso, você deve gastar pontos de foco para criar estas áreas, além de seguir também o custo de PE.\n\n## Marca da Íris\n| BT Mínimo | Custo de PE | Custo de Focos | Tamanho (Missões) | Tamanho (Interlúdios) |\n| --- | --- | --- | --- | --- |\n| +2 | 2 PE | 1 | 12m | Bairro |\n| +3 | 5 PE | 2 | 24m | Distrito |\n| +4 | 8 PE | 3 | 36m | Cidade |\n| +5 | 12 PE | 5 | 48m | Estado |\n| +6 | 20 PE | 8 | 60m | Região |\n| +7 | 35 PE | 12 | Cena | País |\n| +8 | 50 PE | 20 | Nenhum | Continente |\n\nPara o cálculo de DT do teste de Prestidigitação para o alcance cena, considere DT 50.\n\n# Usando a Clarividência\nNas regiões marcadas pela Íris, você pode utilizar sua clarividência. Com uma ação bônus, e entrando em concentração, você consegue utilizar sua clarividência nas regiões marcadas pela Íris, recebendo os seguintes efeitos:\n\nRecebe um bônus igual seu BT em rolagens de percepção para essas regiões, e o mesmo valor em sua Atenção.\n\nRecebe Percepção às Cegas no espaço das Íris.\n\nVocê ignora efeitos de camuflagem e invisibilidade de seres dentro das Íris.\n\nSeu campo de visão se torna a região inteira da íris, fazendo ser impossível se esconder fora do seu campo de visão, não podendo sofrer de efeitos de furtividade contra alvos legíveis da clarividência.\n\n# Limitações da Clarividência\nSendo a Clarividência, á princípio, uma habilidade incrivelmente poderosa, ela não é onipotente, assim como possui certas restrições, que não consegue superar, como:\n\nSempre que criar marca íris, o custo de PE gasto para criá-lo não pode ser recuperado de nenhuma forma, enquanto a marca existir, tendo parte de sua energia separada unicamente para manter as marcas íris existindo.\n\nCaso, dentro da área da Íris haja um domínio, seja uma expansão de domínio ou domínio inato, não é possível enxergar dentro dele caso esteja fora, mas o contrário é possível.\n\nA Clarividência não consegue perceber seres que possuem a Restrição Definitiva.\n\nA Clarividência não consegue enxergar dentro de barreiras ou cortinas, a menos que a mesma possua alguma regra que permita que pessoas entrem nela sem quaisquer resistências, permitindo também a percepção da Clarividência.\n\nA Clarividência não consegue enxergar seres com efeitos de Nulificação de Técnicas em si, como Revestimento de Domínio, ou a Técnica da Anjo, caso de alguma forma, ela consiga aplicar a técnica ao redor de seu corpo.\n\nMesmo que a Clarividência não consiga perceber certos indivíduos, você ainda recebe o bônus em percepção e atenção para os perceber, visto que a clarividência permite ver os arredores dos alvos “Invisíveis” para a Íris."
+    },
+    {
+      "id": "fb_avatar_de_avalon",
+      "nome": "Mecânica Única: Avatar de Avalon",
+      "descricao": "Avalon nos contos de ficção do Merlim era descrita como um paraíso eterno, onde o tempo não flui, abundante de magia, flores infinitas e uma atmosfera pura, e também, a região onde o verdadeiro corpo do merlim estava selado. Durante o tempo que esteve selado, por mais que conseguisse ver o mundo pela sua clarividência, ele não o podia sentir nem interagir. E para isso, ele criou um feitiço especial, uma Projeção de si mesmo para ir mundo á fora, um “avatar”, por assim dizer. E você também conseguiu criar um feitiço semelhante para mimetizar essa capacidade, lhe permitindo projetar uma “cópia” de você.\n\nDurante um interlúdio, você pode tentar criar um “Avatar” para você, seguindo as regras de Criação de Shikigami, com a CD aumentada em +5, considerando o seu grau para o grau da tabela.\n\nAo conseguir criar um avatar, após um descanso longo ou em um interlúdio, pode Optar por jogar com seu Avatar ao invés do seu personagem, criando uma conexão entre sua alma e o Avatar. O Avatar possui certas propriedades:\n\n# Propriedades do Avatar\nÉ necessário ser treinado em integridade, além de ser capaz de perceber o traçado da alma tanto para poder criar e utilizar o avatar. Seres que são capazes de perceber o traçado da alma sabem que o corpo é um avatar, e não o corpo original.\n\nTodos os valores de sua ficha são exatamente os mesmos, com habilidades de cargas, e outros valores sendo compartilhados, como energia amaldiçoada, com exceção da Vida, no qual é reduzida pela metade, devido á ser uma cópia de seu corpo original, assim como a perca de vida do avatar não ocasiona em perda de vida do corpo original. Para questão de Itens, deve decidir quais ficam com o corpo original, e quais são levados com o avatar.\n\nEnquanto estiver jogando com o Avatar seu corpo original é considerado Indefeso, além de também contar como se estivesse utilizando concentração, mas sem precisar rolar o teste caso venha a sofrer dano, apenas ocupando o espaço de sua concentração para manter o avatar ativo constantemente.\n\nVocê não pode se dissociar do Avatar á qualquer momento, precisando de um descanso curto ou longo para se desfazer do Avatar, voltando sua consciência ao seu corpo original.\n\nCaso o avatar venha a ser morto, você não morrerá, apenas com sua consciência voltando para o corpo original. Porém, devido á parte de sua alma estar diretamente conectada com o avatar, você perderá integridade permanente igual o seu Nível de personagem, considerando o seu valor original em proporção, para as penalidades de integridade.\n\nPorém, caso o avatar venha á sofrer dano de alma, o dano afeta diretamente o corpo original e, devido à frágil conexão de sua alma com o avatar, você é vulnerável à dano de alma."
+    },
+    {
+      "id": "fb_mago_das_flores",
+      "nome": "Mecânica Única: O Mago das Flores",
+      "descricao": "Sempre que for conjurar um feitiço ofensivo que necessite de um acerto amaldiçoado ou force o alvo á uma TR, você pode escolher, criar pétalas como parte do feitiço, redirecionando parte da canalização do feitiço para a criação dessa flora.\n\n# Criando Pétalas\nVocê pode criar uma quantidade de pétalas igual ao dobro do nível do feitiço (mínimo 2), as pétalas criadas duram até o fim da cena, sendo dissipadas ao fim da mesma.\n\nAo criar pétalas, o feitiço é enfraquecido, para cada valor reduzido, recebendo 1 pétala a cada -1 de Acerto amaldiçoado ou 2 pétalas a cada -1 em sua CD.\n\n# Consumindo Pétalas\nAs pétalas criadas na cena podem ser consumidas para servir de etapas de ritualização de seus feitiços, podendo consumir 4 pétalas para receber uma melhoria de ritual em seu próximo feitiço.\n\nVocê também pode consumir uma quantidade de pétalas igual o custo do feitiço (sem considerar reduções) para reduzir a ação de conjuração do feitiço em 1 passo. Não se pode utilizar em feitiços de ação bônus, reação ou ritual estendido.\n\nTambém se pode consumir uma quantidade de pétalas para cobrir o custo de sustentação de feitiços, consumindo 2 pétalas por rodada para cada 1 PE de sustentação.\n\nPode consumir pétalas para aumentar a duração de condições, consumindo 3 pétalas para cada grau da condição escolhida, aumentando a duração da condição em +1 rodada. Não se pode aumentar duração de condições extremas."
+    }
+  ]
+}

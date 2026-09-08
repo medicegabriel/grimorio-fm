@@ -1100,6 +1100,26 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
   color: var(--afty-texto-suave);
 }
 
+/* ⚠ TÍTULO QUE DIVIDE A LINHA COM UM CONTROLE NÃO LEVA MARGEM, e isto não é
+   ajuste fino: é o conserto de um desalinhamento de 4px em toda linha dessas.
+
+   O `index.css` declara `h2 { margin: 0 0 8px }` FORA de camada, e as
+   utilidades do Tailwind vivem em `@layer`. Consequência medida no navegador:
+   `mb-2`, `mb-1.5` e até `mb-4` escritos no JSX de um `h2` valem TODOS 8px, e
+   nenhum deles chega. Num título que é item de um flex com `align-items:
+   center`, esses 8px de margem embaixo sobem o TEXTO 4px em relação ao ícone
+   irmão, porque o flex centra a caixa de MARGEM e não o glifo.
+
+   Medido no Funcionamento Básico: o centro do texto ficava 4,30px acima do
+   centro da seta, igual com tema e sem tema.
+
+   ⚠ É a terceira vez que o `index.css` morde este arquivo pelo mesmo motivo, e
+   a lição é sempre a mesma: ele declara VÁRIAS propriedades de uma vez, e
+   sobrescrever `font-size` não sobrescreve `margin`. Ver a nota do topo. */
+.afty-card-titulo[data-afty-linha] {
+  margin: 0;
+}
+
 /* ⚠ O canto arredondado do card NÃO usa `overflow: hidden`: ele cortaria o
    painel de fontes das últimas linhas. Quem arredonda é o filho com fundo. */
 .afty-linha {
@@ -1846,6 +1866,35 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
 /* ============================================================ */
 /* BUSCA GLOBAL                                                  */
 /* ============================================================ */
+
+/* ============================================================ */
+/* COFRE — o véu que pede a senha na tela de jogo                */
+/* ============================================================ */
+/* Mesma anatomia da busca, e no mesmo andar de z-index: ele é uma camada que
+   cobre a ficha e pede uma coisa só. Não reusa `.afty-busca-fundo` porque a
+   busca tem regras de altura e de lista que não valem aqui, e herdar metade de
+   um componente para desligar a outra metade sai mais caro que dez linhas. */
+
+.afty-cofre-veu {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  justify-content: center;
+  padding: 12vh 1rem 1rem;
+  background: var(--afty-veu);
+  backdrop-filter: blur(2px);
+}
+
+.afty-cofre-caixa {
+  width: min(32rem, 100%);
+  align-self: flex-start;
+  padding: 0.875rem;
+  border: 1px solid var(--afty-borda-forte);
+  border-radius: var(--afty-raio);
+  background: var(--afty-card);
+  box-shadow: var(--afty-sombra);
+}
 
 .afty-busca-fundo {
   position: fixed;

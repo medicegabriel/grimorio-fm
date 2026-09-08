@@ -451,12 +451,19 @@ Passivas continuam usando `tipo: "passivo"` e podem trazer `efeitosPassivo` pelo
 
 ### O campo `libera`, e por que ele NÃO é o `permite`
 
-**O que ter o addon DESTRAVA para a criatura que o carrega.** A liberação de hoje:
+**O que ter o addon DESTRAVA para a criatura que o carrega.** As nove de hoje:
 
 | id | O que destrava |
 |---|---|
 | `estiloSombras` | o Novo Estilo da Sombra fora do Sem Técnica, inclusive para quem tem Feitiços |
 | `gemeosSemTecnica` | o Gêmeo pode copiar **Estudos Dedicados** ou **Empenho Implacável** em Verdadeiras Origens |
+| `qualificaSemTecnica` | a criatura conta como Origem Sem Técnica para pré-requisito de Talento e de Linha de Treinamento |
+| `gemeosMaldicao` | o Gêmeo pode copiar da Maldição, e copiar passa a fazer a criatura seguir a estrutura dela |
+| `feiticosRestritos` | a aba de **Feitiços** para a origem que não conjura, limitada a Passivo e Personalizado |
+| `soPorAddon:gemeos` | devolve a origem Gêmeos à Ficha de Jogador |
+| `soPorAddon:atributo` | devolve a Linha de Treinamento Treino de Atributo à Ficha de Jogador |
+| `soPorAddon:cnj_agilidade_no_campo_de_batalha` | devolve a Habilidade [2.0] homônima à lista do Conjurador |
+| `soPorAddon:tal_alma_livre` | devolve o Talento Alma Livre à Ficha de Jogador |
 
 ⚠ **São dois campos e não um, e a diferença é a razão de existirem os dois:**
 
@@ -557,6 +564,52 @@ pré-requisitos, porque a característica copiada é mecanicamente viva (`caract
 alimenta o `aptidoesConcedidasPelaOrigem`). Isso **não** dá vaga de imbuição sozinho: a vaga é o
 NÍVEL DE APTIDÃO em Domínio, comprado à parte, e o Sem Técnica raw está na mesma situação. Há assert
 medindo a igualdade entre os dois.
+
+#### `feiticosRestritos`, a liberação que ABRE E ESTREITA (2026-09-07)
+
+Pedido do autor: *"Addon para liberar a aba de Feitiços para Restringido, porém somente Passivas e
+Personalizado"*. O pacote é `addons/estilo-marcial.json`, e ele é **só-liberação**: uma linha de
+`libera` e nada mais.
+
+⚠ **É a primeira liberação que faz as DUAS coisas no mesmo movimento.** As quatro anteriores só
+abriam. Esta monta um card que a origem não tinha **e**, ao mesmo tempo, corta quatro dos seis tipos
+de Feitiço. Por isso ela virou duas funções em `afty-feiticos.js`, e não uma:
+
+| Função | Pergunta que ela responde |
+|---|---|
+| `mostraCardFeiticos` | quem ENXERGA a aba |
+| `tiposFeiticoPermitidos` | o que ele pode CRIAR ali dentro |
+
+**Os dois tipos não são um recorte arbitrário.** São os únicos que não dependem de conjuração
+amaldiçoada para existir: o Passivo é característica (não gasta PE, não tem alcance, escreve direto
+no Motor) e o Personalizado é regra que a mesa escreve à mão. Dano, Auxiliar, Curativo e Especial
+ficam de fora porque cada um deles **É** uma tabela de técnica amaldiçoada, e o Restringido não tem
+técnica. O assert nomeia os quatro de fora um a um, e não "o resto": um tipo novo no vocabulário
+passa a obrigar uma decisão em vez de entrar de carona.
+
+⚠ **A DECISÃO SAIU DO JSX ANTES DE MUDAR, e desta vez de propósito.** A aba Habilidades do criador
+ramifica o layout inteiro por origem, e o card de Feitiços só era montado no ramo "todas as
+outras". Enquanto "quem conjura" era regra fixa, dava para viver com a trava dentro do JSX. No
+momento em que um Addon passou a poder mudá-la, ela seria a quarta trava do Estilo das Sombras de
+novo: invisível, intestável e livre para sair de sincronia com o motor. O `derived.feiticos` passou
+a carregar `mostraCard` e `tiposPermitidos`, e o JSX só lê. **É a terceira vez que este arquivo
+registra a mesma lição, e a primeira em que ela foi aplicada antes do print do autor.**
+
+**A terceira porta, de novo.** O card também aparece para quem tem Feitiço **gravado**, mesmo sem
+addon e mesmo na origem errada. Sem ela, desinstalar o pacote (ou trocar de origem) deixaria a linha
+morta presa na ficha **gastando o contador de habilidades** e sem tela nenhuma para removê-la. É a
+mesma porta do `filtraForaDoJogador` e do `mostraCardEstilo`, e aqui ela tapa um buraco que já
+existia antes do addon: uma ficha que trocasse de origem para Restringido já era cobrada por
+Feitiços que a tela não mostrava mais.
+
+⚠ **A liberação abre porta fechada, e nunca estreita porta aberta.** Um Herdado com o pacote
+instalado continua com os seis tipos. Há assert medindo, porque o caminho fácil (trocar a lista pela
+dos dois) faria o addon punir quem já conjurava.
+
+**O que ela NÃO dá:** vaga. O Feitiço do Restringido gasta o mesmo contador único da aba (2×Maestria
++ patamar), dividido com as Habilidades Gerais, e o pacote não encosta nele. Os asserts medem PV,
+Defesa, PE e o contador dos dois lados: enquanto a criatura não criar Feitiço, instalar o addon não
+move número nenhum.
 
 #### Bug anterior consertado junto: o cache da lista
 

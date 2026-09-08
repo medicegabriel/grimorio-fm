@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { ArmasTransformaveis } from "../ui/armas-transformaveis";
 import {
   ChevronLeft, Pencil, AlertTriangle, Moon, ChevronRight, Search, Heart, Zap, Sparkles, Palette,
-  Rows2, Rows3,
+  Rows2, Rows3, Lock,
 } from "lucide-react";
 
 import "./ficha.css";
@@ -49,7 +49,10 @@ import AbaInvocacoes from "./abas/AbaInvocacoes";
 import { deltaDosEstados } from "./ficha-buffs";
 // O padrão global de tema é POR SISTEMA: "quero todas as minhas fichas assim"
 // dito no Grimório Afty não pode repintar as fichas de jogador. Ver afty-sistema.js.
-import { sistemaDaFicha } from "../afty-sistema";
+import { sistemaDaFicha, ehPlayer } from "../afty-sistema";
+import { getEspecializacao } from "../afty-especializacoes";
+import { cofreTrancado, comTextoAberto, lerAberto } from "../afty-cofre";
+import PainelDoCofre from "../ui/PainelDoCofre";
 
 /**
  * ============================================================
@@ -98,8 +101,22 @@ function Chip({ children, tom, title }) {
 /* ============================================================ */
 
 export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, onSalvarInvocacoes }) {
-  const ficha = useMemo(() => mesclaFichaAfty(creature), [creature]);
   const alvoId = creature?.id ?? null;
+
+  /* ⚠ O TEXTO DESTRANCADO ENTRA AQUI, NA MONTAGEM DA FICHA DE TELA, e em lugar
+     nenhum mais. `cofreAberto` sai da memória de módulo do `afty-cofre.js`, que
+     morre ao recarregar a página: nada disso encosta em `creature`, no
+     `localStorage` nem em qualquer coisa que seja gravada. A ficha continua
+     trancada, e o que muda é só o que esta aba desenha.
+
+     ⚠ Por isso ele entra ANTES do `mesclaFichaAfty` e não depois: tudo abaixo
+     lê `ficha`, do derive às abas, e um segundo caminho para o texto seria um
+     segundo lugar para alguém esquecer de aplicar. */
+  const [cofreAberto, setCofreAberto] = useState(() => lerAberto(creature?.id));
+  const ficha = useMemo(
+    () => mesclaFichaAfty(cofreAberto ? comTextoAberto(creature, cofreAberto) : creature),
+    [creature, cofreAberto],
+  );
 
   // ⚠ A sessão nasce com os recursos CHEIOS, e para isso precisa dos máximos,
   // que só existem depois de derivar. O derive da montagem roda sem
@@ -120,6 +137,7 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
   const [destaque, setDestaque] = useState(null);
   const [tema, setTema] = useState(() => carregarTema(ficha, alvoId));
   const [aparenciaAberta, setAparenciaAberta] = useState(false);
+  const [cofrePainel, setCofrePainel] = useState(false);
   /* Qual Shikigami está com o editor de aparência aberto. ⚠ É o ID e não o
      objeto: a invocação é reconstruída a cada derive, e guardar o objeto
      deixaria o painel editando uma cópia velha. */
@@ -201,6 +219,23 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
      criatura (a cópia congelada), e não da biblioteca da máquina: a marca tem de
      valer também para quem recebeu a ficha de fora e não instalou nada. */
   const addonsDaFicha = useMemo(() => addonsDaCriatura(ficha), [ficha]);
+
+  /* A Classe INICIAL e a lista inteira, para o chip do cabeçalho no jogador.
+     `escolhidas[0]` é a inicial em todo o resto do sistema (o `classeNome` de
+     afty-especializacoes.js e as linhas de PV por classe usam o mesmo índice),
+     então ela é lida do mesmo jeito aqui em vez de por uma regra nova.
+
+     ⚠ O nome sai do CATÁLOGO, e não de um mapa escrito aqui: uma Classe vinda
+     de Addon tem nome, e um mapa à mão mostraria o id cru dela. */
+  const [classeInicial, classesComNivel] = useMemo(() => {
+    const lista = derived?.especializacoes?.escolhidas ?? [];
+    if (lista.length === 0) return [null, null];
+    const nomeDe = (e) => getEspecializacao(e.id)?.nome ?? e.id;
+    return [
+      nomeDe(lista[0]),
+      lista.map((e) => `${nomeDe(e)} ${e.nivel}`).join(" · "),
+    ];
+  }, [derived]);
 
   // ⚠ O clamp é de LEITURA, e não um efeito que reescreve o estado. O teto muda
   // por fora (editar a ficha no criador sobe ou desce o PV máximo, e a Alma o
@@ -570,7 +605,27 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
                 {ficha.name || "Sem nome"}
               </div>
               <div className="flex flex-wrap items-center gap-1 mt-0.5">
-                <Chip tom="destaque">{rotuloDe(AFTY_TIPOS, ficha.core.tipo)}</Chip>
+                {/* ⚠ O JOGADOR MOSTRA A CLASSE, A CRIATURA MOSTRA O TIPO, e a
+                    diferença não é gosto: `afty-derive.js` diz em voz alta que
+                    "NO JOGADOR NÃO HÁ TIPO", e o campo saiu do formulário do
+                    jogador junto com o `pvPePorEspecializacao` em 2026-08-30.
+                    Este chip ficou para trás e seguia imprimindo o padrão do
+                    schema, então um Conjurador de nível 3 aparecia como
+                    "Combatente" na tela de jogo (autor, 2026-09-08).
+
+                    ⚠ A confusão era pior do que parece: "Combatente" é NOME DE
+                    TIPO e NOME DE CLASSE ao mesmo tempo, então o chip errado
+                    era indistinguível do certo.
+
+                    A classe é a INICIAL (`escolhidas[0]`), que é a mesma
+                    convenção do `classeNome` em afty-especializacoes.js e das
+                    linhas de PV por classe. Num multiclasse o `title` abre a
+                    lista inteira com os níveis. */}
+                {ehPlayer(ficha.rulesVersion)
+                  ? classeInicial && (
+                    <Chip tom="destaque" title={classesComNivel}>{classeInicial}</Chip>
+                  )
+                  : <Chip tom="destaque">{rotuloDe(AFTY_TIPOS, ficha.core.tipo)}</Chip>}
                 <Chip>{rotuloDe(AFTY_PATAMARES, ficha.core.patamar)}</Chip>
                 <Chip>ND {derived.nd}</Chip>
                 <Chip title="Grau do Feiticeiro, que vem do ND">{derived.grauFeiticeiro.label}</Chip>
@@ -626,6 +681,22 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
               >
                 <Palette className="w-4 h-4" />
               </button>
+              {/* ⚠ O CADEADO SÓ APARECE EM FICHA TRANCADA, e não para quem
+                  instalou o addon: quem lê esta ficha pode não ter addon nenhum
+                  e ainda assim precisa da porta para digitar a senha. O portão
+                  aqui é o ESTADO da ficha, e não o `permite`. */}
+              {cofreTrancado(ficha) && (
+                <button
+                  type="button"
+                  className="afty-botao"
+                  data-afty-tom={cofreAberto ? undefined : "aviso"}
+                  onClick={() => setCofrePainel(true)}
+                  title={cofreAberto ? "Cofre aberto nesta aba" : "Texto protegido por senha"}
+                  aria-label="Cofre de texto"
+                >
+                  <Lock className="w-4 h-4" />
+                </button>
+              )}
               <button
                 type="button"
                 className="afty-botao"
@@ -830,6 +901,28 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
           onFechar={() => setAparenciaAberta(false)}
           onGlobal={() => salvarTemaGlobal(tema, sistemaDaFicha(ficha))}
         />
+      )}
+
+      {/* O Cofre na tela de JOGO abre só para LER, e a leitura dura o que a aba
+          durar. Quem quiser voltar a editar o texto faz isso no criador, que é
+          onde `destrancarDeVez` mora. */}
+      {cofrePainel && (
+        <div className="afty-cofre-veu" role="dialog" aria-label="Cofre de texto">
+          <div className="afty-cofre-caixa">
+            <div className="flex items-center gap-2 mb-2">
+              <Lock className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
+              <h2 className="afty-card-titulo flex-1" data-afty-linha>Cofre de Texto</h2>
+              <button type="button" className="afty-botao px-2 py-1" onClick={() => setCofrePainel(false)}>
+                Fechar
+              </button>
+            </div>
+            <PainelDoCofre
+              creature={creature}
+              modo="ficha"
+              onAberto={(nova) => setCofreAberto(nova ? lerAberto(creature?.id) : null)}
+            />
+          </div>
+        </div>
       )}
 
       {/* ⚠ O TEMA DE UM SHIKIGAMI usa o MESMO painel do tema da ficha, e não uma

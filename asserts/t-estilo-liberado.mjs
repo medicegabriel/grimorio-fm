@@ -38,9 +38,14 @@ const t = (nome, real, esp) => {
    Cada uma ganhou a liberação que a devolve, com o id da entrada dentro, para
    quem quiser só uma de volta não reabrir as outras três. Ver a divergência
    `conteudoSoPorAddon` e o bloco 12 de `t-sistema.mjs`, que mede as quatro. */
-t("existem 8 liberacoes hoje", AD.LIBERACOES.length, 8);
+/* ⚠ E 9 DESDE 2026-09-07, quando entrou a `feiticosRestritos` do Estilo
+   Marcial. Ela e a primeira que ABRE E ESTREITA ao mesmo tempo (monta a aba de
+   Feiticos para quem nao conjura e corta quatro dos seis tipos), e quem a mede
+   e o `t-estilo-marcial.mjs`. Aqui ela conta so no censo. */
+t("existem 9 liberacoes hoje", AD.LIBERACOES.length, 9);
 t("os ids", AD.LIBERACOES.map((l) => l.id),
   ["estiloSombras", "gemeosSemTecnica", "qualificaSemTecnica", "gemeosMaldicao",
+   "feiticosRestritos",
    "soPorAddon:gemeos", "soPorAddon:atributo",
    "soPorAddon:cnj_agilidade_no_campo_de_batalha", "soPorAddon:tal_alma_livre"]);
 t("SEM_LIBERACOES e vazio", AD.SEM_LIBERACOES, []);

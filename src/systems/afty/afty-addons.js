@@ -352,6 +352,16 @@ export const PRIMITIVAS = [
     rotulo: "Loja de Catarse",
     nota: "Moeda de mesa que compra vaga de Talento, Habilidade, Melhoria, Lendária e Aptidão, mais anotação com Motor que ACUMULA",
   },
+  /* ⚠ NASCEU EM 2026-09-08, para mandar uma ficha para avaliação pública sem
+     mandar junto o conteúdo pago que ela usa. É primitiva e não família de
+     catálogo porque o que ela acrescenta não é ENTRADA nova: é uma
+     transformação da própria ficha, que tira o texto e põe um blob cifrado.
+     Ver `afty-cofre.js` e `docs/afty-cofre.md`. */
+  {
+    id: "cofre",
+    rotulo: "Cofre de Texto",
+    nota: "Tranca o texto dos Feitiços e dos Funcionamentos Básicos com senha. O texto SAI da ficha e vira blob cifrado, então o arquivo exportado não o contém",
+  },
 ];
 
 const PRIMITIVA_IDS = new Set(PRIMITIVAS.map((p) => p.id));
@@ -398,6 +408,15 @@ export const LIBERACOES = [
     id: "gemeosMaldicao",
     rotulo: "Maldição em Verdadeiras Origens",
     nota: "O Gêmeo pode copiar da Maldição, e copiar passa a fazer a criatura seguir as regras de estrutura dela",
+  },
+  /* ⚠ ABRE E ESTREITA NA MESMA LIBERAÇÃO, e é a primeira que faz as duas coisas.
+     A origem que não conjura (Restringido e Sem Técnica) não monta o card de
+     Feitiços; esta entrada monta, e ao mesmo tempo limita os chips de tipo a
+     Passivo / Característica e Personalizado. Ver `tiposFeiticoPermitidos`. */
+  {
+    id: "feiticosRestritos",
+    rotulo: "Feitiços Passivos e Personalizados",
+    nota: "Abre a aba de Feitiços para a origem que não conjura, limitada a Passivo / Característica e Personalizado",
   },
   /* As quatro entradas que saíram da Ficha de Jogador em 2026-09-01. O id segue
      o molde do `liberacaoSoPorAddon`, e cada uma é NOMEADA: quem quer só o

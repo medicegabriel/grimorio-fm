@@ -1,0 +1,9 @@
+{
+  "id": "estilo-marcial",
+  "nome": "Estilo Marcial",
+  "versao": "1.0.0",
+  "autor": "Afty",
+  "paraRaw": "afty",
+  "descricao": "Abre a aba de Feitiços para quem não conjura. O Restringido passa a criar Feitiços, mas só de dois tipos: Passivo / Característica, para as capacidades que ele carrega o tempo todo, e Personalizado, para a regra que a mesa escreve à mão. Dano, Auxiliar, Curativo e Especial continuam fora, porque cada um deles é uma tabela de técnica amaldiçoada. O nível de acesso, o custo em Estamina e o contador de habilidades seguem os mesmos do resto do sistema.",
+  "libera": ["feiticosRestritos"]
+}

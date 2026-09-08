@@ -36,8 +36,10 @@
  */
 
 import { useState } from "react";
-import { AlertTriangle, Trash2, Plus, RefreshCw, Package, Download, Copy, Check } from "lucide-react";
+import { AlertTriangle, Trash2, Plus, RefreshCw, Package, Download, Copy, Check, Lock } from "lucide-react";
 import { Card } from "./ui/primitivos";
+import PainelDoCofre from "./ui/PainelDoCofre";
+import { cofreTrancado, destrancarDeVez } from "./afty-cofre";
 import {
   lerBiblioteca, instalarDeTexto, instalarPacote, removerPacote, compararComBiblioteca,
 } from "./afty-addons-biblioteca";
@@ -58,7 +60,26 @@ function resumoDoPacote(p) {
   const feiticos = Array.isArray(p.feiticos) && p.feiticos.length
     ? [`${p.feiticos.length} ${p.feiticos.length === 1 ? "Feitiço" : "Feitiços"}`]
     : [];
-  return [...conteudo, ...ciclos, ...funcionamentos, ...feiticos];
+  const estados = Array.isArray(p.estadosCombate) && p.estadosCombate.length
+    ? [`${p.estadosCombate.length} ${p.estadosCombate.length === 1 ? "estado" : "estados"}`]
+    : [];
+  /* ⚠ REMENDO, LIBERAÇÃO E PRIMITIVA TAMBÉM VIRAM CHIP (2026-09-07). O resumo só
+     contava o que o pacote ACRESCENTA, e por isso um pacote que só remenda, só
+     destrava ou só mostra aparecia na lista com o nome, a versão e mais nada:
+     três formas de pacote que o validador aceita e a linha não descrevia. O
+     caso que achou isto foi o Estilo Marcial, que é uma linha de `libera` e
+     nada mais. */
+  const remendos = Object.values(p.substitui || {})
+    .reduce((n, lista) => n + (Array.isArray(lista) ? lista.length : 0), 0);
+  const remendados = remendos ? [`${remendos} ${remendos === 1 ? "remendo" : "remendos"}`] : [];
+  const libera = Array.isArray(p.libera) && p.libera.length
+    ? [`${p.libera.length} ${p.libera.length === 1 ? "liberação" : "liberações"}`]
+    : [];
+  const permite = Array.isArray(p.permite) && p.permite.length
+    ? [`${p.permite.length} ${p.permite.length === 1 ? "primitiva" : "primitivas"}`]
+    : [];
+  return [...conteudo, ...ciclos, ...funcionamentos, ...feiticos, ...estados,
+    ...remendados, ...libera, ...permite];
 }
 
 function Aviso({ children }) {
@@ -81,7 +102,7 @@ function Chip({ children, tom = "slate" }) {
   );
 }
 
-export default function TabAddons({ draft, derived, setAddons }) {
+export default function TabAddons({ draft, derived, setAddons, trocarFicha }) {
   const [biblioteca, setBiblioteca] = useState(() => lerBiblioteca());
   const [texto, setTexto] = useState("");
   const [problemas, setProblemas] = useState([]);
@@ -89,6 +110,11 @@ export default function TabAddons({ draft, derived, setAddons }) {
   // Qual pacote acabou de ser copiado, para o ícone virar um certo por um
   // instante. Sem isso, clicar em copiar não dá retorno nenhum.
   const [copiado, setCopiado] = useState(null);
+  /* Qual pacote está esperando a senha para ser desligado, e o que foi digitado.
+     Ver `pedirSenhaParaDesligar`, mais abaixo. */
+  const [saindo, setSaindo] = useState(null);
+  const [senhaSaida, setSenhaSaida] = useState("");
+  const [erroSaida, setErroSaida] = useState(null);
 
   const naFicha = Array.isArray(draft.addons) ? draft.addons : [];
   const idsNaFicha = new Set(naFicha.map((p) => p.id));
@@ -113,6 +139,35 @@ export default function TabAddons({ draft, derived, setAddons }) {
   // cópia, e não a biblioteca.
   const ligar = (p) => setAddons([...naFicha.filter((x) => x.id !== p.id), p]);
   const desligar = (id) => setAddons(naFicha.filter((x) => x.id !== id));
+
+  /* ⚠ DESLIGAR O ADDON DO COFRE PEDE A SENHA (autor, 2026-09-08: *"você precisa
+     colocar a senha para poder desativar esse ADDON"*). Sem isto qualquer um
+     tira o addon e a proteção some junto.
+
+     ⚠ E desligar DESTRANCA no mesmo ato, de propósito. O addon É a proteção:
+     deixar o cofre trancado sem o painel que o abre deixaria o texto preso sem
+     porta, e o dono teria de reinstalar o addon para recuperar a própria ficha.
+     Quem sabe a senha pode desfazer tudo, e quem não sabe não desfaz nada. */
+  const protegido = (p) => (p?.permite ?? []).includes("cofre") && cofreTrancado(draft);
+
+  const pedirSenhaParaDesligar = (p) => {
+    if (!protegido(p)) { desligar(p.id); return; }
+    setSaindo(p.id);
+    setSenhaSaida("");
+    setErroSaida(null);
+  };
+
+  const confirmarSaida = async () => {
+    try {
+      const aberta = await destrancarDeVez(draft, senhaSaida);
+      trocarFicha?.({ ...aberta, addons: (aberta.addons ?? []).filter((x) => x.id !== saindo) });
+      setSaindo(null);
+      setSenhaSaida("");
+      setErroSaida(null);
+    } catch (e) {
+      setErroSaida(e?.message || "Não deu certo.");
+    }
+  };
   const atualizar = (id) => {
     const daBiblioteca = biblioteca.find((p) => p.id === id);
     if (daBiblioteca) ligar(daBiblioteca);
@@ -144,8 +199,64 @@ export default function TabAddons({ draft, derived, setAddons }) {
   // Aparece PRIMEIRO, porque é a única coisa aqui que exige ação.
   const mortas = derived?.addonProblemas ?? [];
 
+  /* O Cofre aparece para quem instalou um addon que o PEDIU, e some para todo o
+     resto. Mesmo portão das outras primitivas, e pela mesma lição escrita no
+     topo de `PRIMITIVAS`: acrescentar o verbo ao motor não é a tarefa inteira,
+     falta dizer quem enxerga. Aqui a fonte é lida da própria criatura em vez do
+     contexto de React, porque esta aba já tem a criatura na mão. */
+  const temCofre = naFicha.some((p) => (p?.permite ?? []).includes("cofre"));
+
   return (
     <div className="space-y-4">
+      {temCofre && (
+        <Card title="Cofre de Texto">
+          <PainelDoCofre creature={draft} modo="criador" onFicha={trocarFicha} />
+        </Card>
+      )}
+
+      {saindo && (
+        <Card title="Senha para desligar">
+          <div className="space-y-2">
+            <p className="text-[11px] text-slate-400">
+              Este addon está trancando o texto desta ficha. Desligar devolve o texto e tira o
+              Cofre, então precisa da senha.
+            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <input
+                type="password"
+                className="afty-campo afty-linha px-2 py-1.5 flex-1 min-w-[12rem]"
+                placeholder="Senha do Cofre"
+                value={senhaSaida}
+                autoComplete="current-password"
+                onChange={(e) => setSenhaSaida(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key !== "Enter" || senhaSaida.length < 1) return;
+                  e.preventDefault();
+                  confirmarSaida();
+                }}
+              />
+              <button
+                type="button"
+                className="afty-botao px-2.5 py-1.5 inline-flex items-center gap-1.5"
+                onClick={confirmarSaida}
+                disabled={senhaSaida.length < 1}
+              >
+                <Lock className="w-3.5 h-3.5" aria-hidden="true" />
+                Desligar
+              </button>
+              <button
+                type="button"
+                className="afty-botao px-2.5 py-1.5"
+                onClick={() => { setSaindo(null); setSenhaSaida(""); setErroSaida(null); }}
+              >
+                Cancelar
+              </button>
+            </div>
+            {erroSaida && <p className="text-[11px] text-rose-300">{erroSaida}</p>}
+          </div>
+        </Card>
+      )}
+
       {mortas.length > 0 && (
         <Card title="Problemas">
           <div className="space-y-2">
@@ -310,8 +421,8 @@ export default function TabAddons({ draft, derived, setAddons }) {
                       )}
                       <button
                         type="button"
-                        onClick={() => desligar(p.id)}
-                        title="Tirar desta criatura"
+                        onClick={() => pedirSenhaParaDesligar(p)}
+                        title={protegido(p) ? "Tirar desta criatura (pede a senha do Cofre)" : "Tirar desta criatura"}
                         className="p-1 rounded text-slate-500 hover:text-rose-400"
                       >
                         <Trash2 className="w-3 h-3" aria-hidden="true" />

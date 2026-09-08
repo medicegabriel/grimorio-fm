@@ -1,6 +1,6 @@
 # Asserts do Afty
 
-Os asserts de lógica do lado do Afty. São **2316, em 43 arquivos**, e cobrem o avaliador do DSL, as
+Os asserts de lógica do lado do Afty. São **3265, em 62 arquivos**, e cobrem o avaliador do DSL, as
 primitivas novas do motor, o sistema de Addons de ponta a ponta e regras do catálogo que
 são fáceis de quebrar sem sintoma.
 
@@ -68,6 +68,7 @@ vai para o ar.
 | `t-adaptacao` | o ciclo do Mahoraga: giros, rodada automática, marcos, Narrativa, Mecânica e escolha aninhada de Acerto |
 | `t-primitivas` | o campo `permite`: quem enxerga cada primitiva de Addon, e a prova de que criatura raw não vê nenhuma |
 | `t-estilo-liberado` | o campo `libera`: o Estilo das Sombras fora do Sem Técnica, o Gêmeo copiando do Sem Técnica em Verdadeiras Origens, e a QUARTA trava (o card aparecer na aba) |
+| `t-estilo-marcial` | a liberacao `feiticosRestritos`: a aba de Feiticos aberta para quem nao conjura e ao mesmo tempo estreitada a Passivo e Personalizado, a terceira porta (ficha com Feitico gravado ve o card sem addon nenhum), a prova de que ela nao tira tipo de quem ja conjurava, o ponta a ponta dos dois tipos (o Passivo somando RD e o Personalizado cobrando o custo do nivel), e a lista de tipos VAZIA, que e resposta e nao falta de dado |
 | `t-remendo` | o campo `substitui`: trocar campo de entrada do livro, o id que não se mexe, o alvo que precisa existir, dois pacotes na mesma linha e a volta ao raw ao desinstalar |
 | `t-estilo-conteudo` | o conteúdo do addon do Estilo: Domínio Simples reescrito, a Linha de Treinamento com `soDaOrigem`, os quatro Talentos de Origem, a vaga exclusiva de Estilo e o Estudo Amaldiçoado repetível |
 | `t-gemeos-maldicao` | a liberacao `gemeosMaldicao` e a ORIGEM ESTRUTURAL: o Gemeo que copia da Maldicao perde a Energia Reversa e ganha a aba dela, medido pela igualdade com uma Maldicao de verdade |

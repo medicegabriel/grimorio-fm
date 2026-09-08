@@ -136,10 +136,17 @@ export function conteudoDaFicha(creature, derived) {
       grupo: "origem",
       tags: [origem?.nome, cla?.nome].filter(Boolean),
       opcoes: opcoesEscolhidas(c, mapaOrigem),
-      // ⚠ `mesa` e `parcial` são do catálogo e dizem que o Motor NÃO cobre
-      // aquilo. Some na Ficha seria esconder do jogador justo o que ele
-      // precisa resolver na mão.
-      aviso: c.mesa ? "Resolve na mesa" : (c.parcial ?? null),
+      /* ⚠ `mesa` NÃO VIRA MAIS AVISO NA FICHA (autor, 2026-09-08: *"Remova os
+         'Resolve na mesa'. Isso é bem feio. Pode tirar de forma geral"*). O
+         campo continua no catálogo e continua verdadeiro, e o chip "Mesa" do
+         CRIADOR continua lá: o que saiu é a etiqueta amarela na tela de jogo,
+         que aparecia em toda característica sem canal e enchia o cabeçalho de
+         alerta para uma coisa que não é problema nenhum.
+
+         `parcial` ficou, e ela é outra coisa: é uma frase escrita à mão que
+         diz QUAL pedaço o Motor não cobre, e some sozinha quando o pedaço
+         entra. */
+      aviso: c.parcial ?? null,
     }));
   }
 

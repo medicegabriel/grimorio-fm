@@ -34,7 +34,7 @@ function Secao({ titulo, controles = null, children }) {
   return (
     <section className="afty-card p-3">
       <div className="flex items-center gap-1.5 mb-2 flex-wrap">
-        <h2 className="afty-card-titulo">{titulo}</h2>
+        <h2 className="afty-card-titulo" data-afty-linha>{titulo}</h2>
         {controles}
       </div>
       <div className="space-y-1">{children}</div>

@@ -1,0 +1,9 @@
+{
+  "id": "cofre-de-feiticos",
+  "nome": "Cofre de Feitiços",
+  "versao": "1.0.0",
+  "autor": "Afty",
+  "paraRaw": "afty",
+  "descricao": "Tranca com senha o texto dos Feitiços e dos Funcionamentos Básicos desta ficha. O texto SAI do arquivo e vira um blob cifrado (AES-GCM, chave derivada da senha por PBKDF2), então a ficha exportada não contém o conteúdo. Os números continuam todos à vista, para quem for avaliar. Trancar, destrancar e desinstalar este addon pedem a senha. Ele protege o TEXTO e não a ficha: quem tiver o arquivo pode tentar quebrar a senha offline, então use uma frase longa.",
+  "permite": ["cofre"]
+}

@@ -1,0 +1,589 @@
+/* ============================================================
+   SEIMEI KIKYO  ·  v2  ·  2026-09-08
+   ------------------------------------------------------------
+   COMO SABER SE ESTE É O CSS QUE ESTÁ VALENDO: procure "v2" na
+   primeira linha do campo de CSS da aba Aparência. Se a primeira
+   linha não disser v2, o que está na ficha é a versão anterior,
+   que capava o texto do Funcionamento Básico em 96ch e desenhava
+   uma segunda borda dentro do campo de busca.
+   ------------------------------------------------------------
+   tema da ficha de Abe no Seimei
+   ------------------------------------------------------------
+   Paleta lida da arte do personagem:
+     jōe branco de papel, cordões e borlas índigo, forro carmim,
+     hakama azul-noite, ouro velho do cinto, ciano do ofuda e o
+     fundo lavanda pálido.
+   Contraste conferido: todo texto passa de 4.5:1 no cartão e no
+   poço, e o mais apagado (--afty-texto-fraco) fica em 5.29:1.
+   ============================================================ */
+
+:scope#afty-ficha,
+#afty-ficha#afty-ficha {
+  --afty-fundo: #e6eaf5;
+  /* O halo índigo mais a treliça de kikkō do hakama. O token aceita gradiente, e
+     `repeating-linear-gradient` é um: a ficha fica sobre o tecido, e o padrão só
+     aparece nas frestas entre os cartões, que são opacos. */
+  --afty-fundo-brilho:
+    radial-gradient(120% 65% at 50% -12%, #3b4ba61f, transparent 72%),
+    repeating-linear-gradient(60deg, #3b4ba60f 0 1px, transparent 1px 26px),
+    repeating-linear-gradient(-60deg, #3b4ba60f 0 1px, transparent 1px 26px);
+  --afty-card: #fbfaf7;
+  --afty-poco: #edeff6;
+  --afty-borda: #cfd6e8;
+  --afty-borda-forte: #a6b0cd;
+  --afty-texto: #171b2b;
+  --afty-texto-suave: #47506d;
+  --afty-texto-fraco: #5f6885;
+  --afty-destaque: #3b4ba6;
+  --afty-destaque-texto: #2c3880;
+  --afty-destaque-fundo: #3b4ba61f;
+  --afty-pv: #9e2138;
+  --afty-pe: #1c6f95;
+  --afty-pvtemp: #a87c14;
+  --afty-alma: #6a54a4;
+  --afty-cura: #3a7248;
+  --afty-aviso: #866210;
+  --afty-veu: rgb(23 27 43 / 0.42);
+  --afty-raio: 8px;
+  --afty-raio-peq: 5px;
+  --afty-sombra: 0 1px 2px rgb(23 27 43 / 0.06), 0 6px 18px rgb(23 27 43 / 0.07);
+  --afty-fonte: "Segoe UI", ui-sans-serif, system-ui, Roboto, sans-serif;
+  --afty-fonte-titulo: Georgia, "Times New Roman", serif;
+  --afty-fonte-num: ui-monospace, "Cascadia Mono", Consolas, monospace;
+
+  /* Cores próprias do tema. Ficam fora da lista de tokens de propósito: o
+     bloco acima é forte e só aceita as variáveis que a Ficha declara. */
+  --sk-ouro: #b8912f;
+  --sk-ouro-fio: #b8912f40;
+  --sk-carmim: #9e2138;
+  --sk-tinta: #171b2b;
+  --sk-papel: #faf8f3;
+}
+
+/* ============================================================
+   CABEÇALHO
+   A faixa de cima é a gola: carmim nas pontas, ouro no meio.
+   O fundo é o papel do jōe, com a treliça de kikkō do hakama.
+   ============================================================ */
+
+.afty-cabecalho {
+  background-color: color-mix(in srgb, var(--sk-papel) 99%, transparent);
+  background-image:
+    linear-gradient(90deg, var(--sk-carmim), var(--sk-ouro) 50%, var(--sk-carmim)),
+    repeating-linear-gradient(60deg, #3b4ba614 0 1px, transparent 1px 26px),
+    repeating-linear-gradient(-60deg, #3b4ba614 0 1px, transparent 1px 26px),
+    repeating-linear-gradient(0deg, #3b4ba60d 0 1px, transparent 1px 45px);
+  background-repeat: no-repeat, repeat, repeat, repeat;
+  background-size: 100% 2px, auto, auto, auto;
+  background-position: top left, 0 0, 0 0, 0 0;
+  border-bottom-color: var(--afty-borda-forte);
+}
+
+/* O fio de luz da base vira fio de ouro. */
+.afty-cabecalho::after {
+  background: linear-gradient(90deg, transparent, var(--sk-ouro), transparent);
+  opacity: 0.8;
+}
+
+.afty-nome {
+  font-family: var(--afty-fonte-titulo);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--sk-tinta);
+}
+
+/* ============================================================
+   CHIPS  ·  etiqueta de papel, não pastilha de aplicativo
+   ============================================================ */
+
+.afty-chip {
+  background: color-mix(in srgb, var(--afty-card) 80%, transparent);
+  border-color: var(--afty-borda-forte);
+  font-weight: 600;
+  letter-spacing: 0.015em;
+}
+
+.afty-chip[data-afty-tom="destaque"] {
+  border-color: color-mix(in srgb, var(--afty-destaque) 45%, transparent);
+  background: var(--afty-destaque-fundo);
+}
+
+/* ============================================================
+   RECURSOS  ·  Vida, Energia e Alma
+   ============================================================ */
+
+.afty-vital {
+  background: var(--afty-card);
+  border-color: color-mix(in srgb, var(--afty-vital-cor) 32%, var(--afty-borda));
+  box-shadow: var(--afty-sombra);
+}
+
+.afty-vital-rotulo {
+  letter-spacing: 0.14em;
+}
+
+/* O sulco base traz um `inset` preto de 0.5, desenhado para tema escuro. Em
+   papel ele vira mancha cinza, então aqui ele é suave e ganha o tom do recurso. */
+.afty-vital-trilho {
+  background: color-mix(in srgb, var(--afty-vital-cor) 12%, var(--afty-poco));
+  box-shadow: inset 0 1px 2px rgb(23 27 43 / 0.14);
+}
+
+/* A barra é um gradiente montado da cor do recurso. Aqui só o halo, que em
+   fundo claro precisa ser bem mais discreto. */
+.afty-vital-barra {
+  box-shadow: 0 0 6px color-mix(in srgb, var(--afty-vital-cor) 28%, transparent);
+}
+
+.afty-vital-numero {
+  font-weight: 700;
+}
+
+/* ============================================================
+   DEFESAS  ·  a fileira de números do cabeçalho
+   ============================================================ */
+
+.afty-stat {
+  background: var(--afty-card);
+  border-color: var(--afty-borda);
+  box-shadow: var(--afty-sombra);
+}
+
+.afty-stat-rotulo {
+  letter-spacing: 0.13em;
+  color: var(--afty-texto-fraco);
+}
+
+.afty-stat-valor {
+  color: var(--sk-tinta);
+  font-weight: 700;
+}
+
+/* A CD é o número da vida de um conjurador. Ela é a única que fica em índigo. */
+.afty-stat[data-afty-stat="cd"] .afty-stat-valor {
+  color: var(--afty-destaque-texto);
+}
+
+/* ============================================================
+   RETRATO  ·  moldura de kakemono, com fio de ouro por dentro
+   ============================================================ */
+
+.afty-retrato-painel {
+  border: 1px solid var(--afty-borda-forte);
+  border-radius: var(--afty-raio);
+  box-shadow: var(--afty-sombra), inset 0 0 0 1px var(--sk-ouro-fio);
+  background: var(--afty-card);
+}
+
+/* ============================================================
+   ABAS
+   ============================================================ */
+
+.afty-aba {
+  letter-spacing: 0.02em;
+}
+
+.afty-aba[aria-selected="true"] {
+  color: var(--afty-destaque-texto);
+  border-bottom-color: var(--afty-destaque);
+}
+
+/* ============================================================
+   CARTÕES  ·  folha de washi
+   ============================================================ */
+
+/* ⚠ TRANSLÚCIDO DE PROPÓSITO. Numa ficha cheia os cartões cobrem quase a tela
+   toda, e a treliça do fundo (que é `background-attachment: fixed`) só apareceria
+   nos vãos. A 93% ela atravessa a ficha inteira e o contraste do texto quase não
+   se move. SEM `backdrop-filter`: ele criaria bloco de contenção e o painel de
+   fontes passaria a abrir no lugar errado. */
+.afty-card {
+  background-color: color-mix(in srgb, var(--afty-card) 93%, transparent);
+  border: 1px solid var(--afty-borda);
+  border-radius: var(--afty-raio);
+  box-shadow: var(--afty-sombra);
+}
+
+.afty-card-titulo {
+  font-family: var(--afty-fonte-titulo);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--afty-destaque-texto);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* O selo de Seimei, o gobōsei de cinco pontas. Desenhado por `clip-path` para
+   não gastar imagem nem data URI. */
+.afty-card-titulo::before {
+  content: "";
+  width: 9px;
+  height: 9px;
+  flex: none;
+  background: var(--sk-carmim);
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%,
+                     50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+
+/* ⚠ O FILETE DEPOIS DO TÍTULO TEM LARGURA FIXA, e não `flex: 1`. O título nem
+   sempre é o único filho da linha dele (o cartão Dano tem o botão Crítico ao
+   lado), então um filete elástico ficava longo num cartão e virava um tracinho
+   de 1rem no outro. Largura fixa sai igual em todos. */
+.afty-card-titulo::after {
+  content: "";
+  width: 2rem;
+  height: 1px;
+  flex: none;
+  background: linear-gradient(90deg, var(--sk-ouro-fio), transparent);
+}
+
+/* ============================================================
+   LINHAS E VALORES
+   ============================================================ */
+
+.afty-linha {
+  background: var(--afty-poco);
+  border: 1px solid transparent;
+  border-radius: var(--afty-raio-peq);
+}
+
+.afty-linha:hover {
+  border-color: color-mix(in srgb, var(--afty-destaque) 30%, transparent);
+}
+
+.afty-linha[data-afty-destacada="sim"] {
+  background: var(--afty-destaque-fundo);
+  border-color: color-mix(in srgb, var(--afty-destaque) 35%, transparent);
+}
+
+.afty-linha[data-afty-alvo="sim"] {
+  border-color: var(--sk-ouro);
+  background: color-mix(in srgb, var(--sk-ouro) 10%, var(--afty-poco));
+}
+
+.afty-rotulo {
+  color: var(--afty-texto-suave);
+}
+
+.afty-valor {
+  font-family: var(--afty-fonte-num);
+  color: var(--afty-destaque-texto);
+  font-weight: 700;
+}
+
+.afty-rolavel:hover {
+  color: var(--sk-carmim);
+}
+
+.afty-texto {
+  color: var(--afty-texto-suave);
+}
+
+.afty-vazio {
+  color: var(--afty-texto-fraco);
+  font-style: italic;
+}
+
+.afty-opcao {
+  color: var(--afty-destaque-texto);
+}
+
+.afty-estrela:hover {
+  color: var(--sk-ouro);
+}
+
+/* ============================================================
+   ATRIBUTOS
+   ============================================================ */
+
+.afty-atributo {
+  background: var(--afty-poco);
+  border: 1px solid var(--afty-borda);
+  border-radius: var(--afty-raio-peq);
+}
+
+.afty-atributo-rotulo {
+  letter-spacing: 0.16em;
+  color: var(--afty-texto-fraco);
+}
+
+.afty-atributo-valor {
+  font-family: var(--afty-fonte-titulo);
+  color: var(--sk-tinta);
+}
+
+.afty-atributo-mod {
+  background: var(--afty-destaque-fundo);
+  color: var(--afty-destaque-texto);
+  border: 1px solid color-mix(in srgb, var(--afty-destaque) 30%, transparent);
+}
+
+/* ============================================================
+   SUB-ABAS
+   ============================================================ */
+
+.afty-subaba[aria-selected="true"] {
+  background: var(--afty-destaque-fundo);
+  color: var(--afty-destaque-texto);
+  border-color: color-mix(in srgb, var(--afty-destaque) 40%, transparent);
+}
+
+.afty-subaba-conta {
+  color: var(--afty-texto-fraco);
+}
+
+/* ============================================================
+   CONTROLES
+   Inclui o `select` nativo, que a folha do app não alcança e que
+   sem isto aparece com a cor do sistema no meio de tudo branco.
+   ============================================================ */
+
+.afty-botao,
+.afty-passo,
+select {
+  background: var(--afty-card);
+  border: 1px solid var(--afty-borda-forte);
+  color: var(--afty-texto-suave);
+  border-radius: var(--afty-raio-peq);
+}
+
+.afty-botao:hover,
+.afty-passo:hover,
+select:hover {
+  border-color: var(--afty-destaque);
+  color: var(--afty-destaque-texto);
+}
+
+/* ⚠ `.afty-campo` NÃO GANHA BORDA NEM FUNDO. Ele é sempre um `input` com
+   `bg-transparent outline-none` e `padding: 0` DENTRO de uma caixa que já tem a
+   borda (a `.afty-linha` da busca, o painel do seletor de canal). Pintar o
+   input desenhava uma segunda caixa por dentro da primeira, e como o padding é
+   zero o texto encostava nela (autor, 2026-09-08: *"o 'buscar' está grudado na
+   lateral"*). Quem mostra o foco é o CONTINENTE, logo abaixo. */
+.afty-linha:focus-within {
+  border-color: var(--afty-destaque);
+}
+
+select:focus {
+  border-color: var(--afty-destaque);
+  outline: 2px solid var(--afty-destaque-fundo);
+  outline-offset: 0;
+}
+
+/* Foco de teclado. Em tema escuro o anel padrão do navegador aparece sozinho, e
+   em papel branco ele some: aqui ele é escrito. */
+.afty-aba:focus-visible,
+.afty-subaba:focus-visible,
+.afty-botao:focus-visible,
+.afty-passo:focus-visible,
+.afty-rolavel:focus-visible,
+.afty-estrela:focus-visible {
+  outline: 2px solid var(--afty-destaque);
+  outline-offset: 2px;
+  border-radius: var(--afty-raio-peq);
+}
+
+/* ============================================================
+   TEXTO RICO  ·  o Funcionamento Básico e a descrição de item
+   ⚠ Cor, borda e fundo destes blocos são escritos NO ELEMENTO
+   pelo TextoRico.jsx, e estilo em linha vence CSS. O que dá para
+   mexer daqui é o que ele não escreve: fonte, espaçamento,
+   arredondamento e o zebrado das linhas.
+   ============================================================ */
+
+.afty-tr-h1 {
+  font-family: var(--afty-fonte-titulo);
+  letter-spacing: 0.05em;
+}
+
+.afty-tr-h2 {
+  font-family: var(--afty-fonte-titulo);
+  letter-spacing: 0.04em;
+}
+
+/* ⚠ SEM `max-width` AQUI, e a tentativa está registrada porque ela era sedutora.
+   Capar o bloco em 96ch dá a medida de leitura ideal, mas o CARTÃO continua indo
+   até o fim da tela: o resultado é um texto que para na metade de uma folha
+   branca inteira, e isso lê como defeito, não como composição (autor,
+   2026-09-08: *"fica cortada ao meio... dando esse aspecto feio"*). Ou o cartão
+   encolhe junto, ou não se capa nada. O que dá para melhorar sem mexer na
+   largura é a entrelinha. */
+.afty-tr-p {
+  line-height: 1.6;
+}
+
+.afty-tr-tabela-caixa {
+  border-radius: var(--afty-raio-peq);
+}
+
+.afty-tr-tabela th {
+  letter-spacing: 0.05em;
+}
+
+/* O fundo do cabeçalho da tabela é escrito NO ELEMENTO e fica quase igual ao do
+   corpo. A separação entra por `box-shadow`, que o estilo em linha não escreve. */
+.afty-tr-tabela th {
+  box-shadow: inset 0 -2px 0 var(--sk-ouro-fio);
+}
+
+.afty-tr-h1 {
+  box-shadow: inset 0 -1px 0 var(--sk-ouro-fio);
+}
+
+.afty-tr-tabela tbody tr:nth-child(even) td {
+  background: color-mix(in srgb, var(--afty-poco) 55%, transparent);
+}
+
+/* ============================================================
+   CAMADAS FLUTUANTES
+   ============================================================ */
+
+.afty-fontes {
+  background: var(--afty-card);
+  border: 1px solid var(--afty-borda-forte);
+  border-radius: var(--afty-raio);
+  box-shadow: 0 10px 30px rgb(23 27 43 / 0.18);
+}
+
+.afty-fonte-rotulo {
+  color: var(--afty-texto-suave);
+}
+
+.afty-fonte-total {
+  border-top: 1px solid var(--sk-ouro-fio);
+  color: var(--afty-destaque-texto);
+}
+
+.afty-log,
+.afty-busca {
+  background: var(--afty-card);
+  border: 1px solid var(--afty-borda-forte);
+  box-shadow: 0 12px 34px rgb(23 27 43 / 0.2);
+}
+
+.afty-log-topo {
+  border-bottom: 1px solid var(--afty-borda);
+}
+
+.afty-rolagem {
+  border-bottom: 1px solid var(--afty-borda);
+}
+
+.afty-rolagem-total {
+  font-family: var(--afty-fonte-num);
+  color: var(--afty-destaque-texto);
+}
+
+.afty-rolagem[data-afty-marca="critico"] .afty-rolagem-total {
+  color: var(--sk-ouro);
+}
+
+.afty-rolagem[data-afty-marca="pifia"] .afty-rolagem-total {
+  color: var(--sk-carmim);
+}
+
+.afty-dado {
+  background: var(--afty-poco);
+  border: 1px solid var(--afty-borda);
+  border-radius: var(--afty-raio-peq);
+}
+
+.afty-busca-item:hover {
+  background: var(--afty-destaque-fundo);
+}
+
+/* ============================================================
+   CANAIS  ·  aba Buffs
+   ============================================================ */
+
+.afty-canal-painel {
+  background: var(--afty-card);
+  border: 1px solid var(--afty-borda-forte);
+  box-shadow: 0 10px 30px rgb(23 27 43 / 0.18);
+}
+
+.afty-canal-grupo {
+  color: var(--afty-destaque-texto);
+  letter-spacing: 0.1em;
+}
+
+.afty-canal-item:hover {
+  background: var(--afty-destaque-fundo);
+}
+
+/* ============================================================
+   INVOCAÇÃO  ·  o Avatar de Avalon, quando ele existir
+   ============================================================ */
+
+.afty-inv-cartao,
+.afty-inv-ficha {
+  background: var(--afty-card);
+  border: 1px solid var(--afty-borda);
+  border-radius: var(--afty-raio);
+  box-shadow: var(--afty-sombra);
+}
+
+.afty-inv-cabeca {
+  border-bottom: 1px solid var(--sk-ouro-fio);
+}
+
+.afty-inv-titulo {
+  font-family: var(--afty-fonte-titulo);
+  color: var(--sk-tinta);
+}
+
+.afty-inv-bloco {
+  background: var(--afty-poco);
+  border-radius: var(--afty-raio-peq);
+}
+
+
+/* ============================================================
+   IMPRESSÃO
+   ⚠ O CSS DO TEMA VENCE O `@media print` DO APP. O reset dele mora em
+   `.afty-ficha` (0,1,0) e este tema mora em `:scope#afty-ficha` (1,1,0), e
+   media query não muda especificidade: sem este bloco a ficha sai do
+   impressora com o fundo lavanda, a treliça e a faixa carmim, gastando
+   tinta em tudo que é margem. Aqui o papel volta a ser papel.
+   ============================================================ */
+
+@media print {
+  :scope#afty-ficha,
+  #afty-ficha#afty-ficha {
+    --afty-fundo: #ffffff;
+    --afty-fundo-brilho: none;
+    --afty-card: #ffffff;
+    --afty-poco: #ffffff;
+    --afty-borda: #cbd5e1;
+    --afty-borda-forte: #94a3b8;
+    --afty-texto: #0f172a;
+    --afty-texto-suave: #334155;
+    --afty-texto-fraco: #64748b;
+    --afty-sombra: none;
+    --afty-imagem: none;
+    --sk-ouro-fio: #cbd5e1;
+    background: #ffffff;
+  }
+
+  .afty-card,
+  .afty-vital,
+  .afty-stat,
+  .afty-linha,
+  .afty-atributo,
+  .afty-retrato-painel {
+    background-color: #ffffff;
+    box-shadow: none;
+  }
+
+  /* A gola carmim, a treliça e o fio de ouro são enfeite de tela. */
+  .afty-cabecalho {
+    background-color: #ffffff;
+    background-image: none;
+  }
+
+  .afty-card-titulo::before,
+  .afty-card-titulo::after {
+    display: none;
+  }
+}

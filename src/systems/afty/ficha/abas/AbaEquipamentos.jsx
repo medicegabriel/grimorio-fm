@@ -40,7 +40,7 @@ function Carga({ carga }) {
   return (
     <section className="afty-card p-3" data-afty-carga={nivel}>
       <div className="flex items-center gap-2 mb-2">
-        <h2 className="afty-card-titulo flex-1">Carga</h2>
+        <h2 className="afty-card-titulo flex-1" data-afty-linha>Carga</h2>
         {carga.sobrecarregado && (
           <span className="afty-chip" data-afty-tom="aviso">
             <AlertTriangle className="w-3 h-3 flex-shrink-0" aria-hidden="true" />

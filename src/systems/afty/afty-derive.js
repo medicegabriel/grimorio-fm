@@ -84,6 +84,7 @@ import {
 import {
   nivelMaxFeitico, resumoDeUmFeitico, resumoFeiticos, overridesShikigami,
   totalFeiticosJogador, CONJURACAO_APRIMORADA_ID,
+  tiposFeiticoPermitidos, mostraCardFeiticos,
 } from "./afty-feiticos";
 // O dado do golpe desarmado da ficha de jogador. Na criatura nada disto roda.
 import { dadoDesarmado } from "./afty-niveis-dano";
@@ -2034,11 +2035,25 @@ export function deriveAfty(creature, opcoes = {}) {
     invocacoes: Array.isArray(creature?.invocacoes) ? creature.invocacoes : [],
     vidaAtual: opcoes.vidaAtual ?? null,
   };
+  /* ⚠ A ABA DE FEITIÇOS É DECISÃO DE MOTOR, e não de JSX (2026-09-07). O criador
+     ramifica o layout inteiro por origem, e enquanto "quem conjura" era regra
+     fixa a trava podia morar lá dentro. Com o `libera: ["feiticosRestritos"]` de
+     Addon ela passou a mudar, e uma trava de tela que muda e ninguém mede é
+     exatamente a quarta trava do Estilo das Sombras. Ver `mostraCardFeiticos`. */
+  const feiticosLiberados = liberacoes.includes("feiticosRestritos");
   let feiticos = {
     nivelMax: nivelMaxFeitico(nd, nivelConjurador),
     nivelConjurador,
     gastos: feiticosGastos,
     cdBase: cd,
+    /* Os tipos que esta criatura pode criar, e se o card aparece. Vazio quer
+       dizer "não cria nenhum": é o Restringido e o Sem Técnica sem o Addon. */
+    tiposPermitidos: tiposFeiticoPermitidos(core?.origem?.id ?? null, feiticosLiberados),
+    liberado: feiticosLiberados,
+    mostraCard: mostraCardFeiticos(core?.origem?.id ?? null, {
+      liberado: feiticosLiberados,
+      temFeiticos: feiticosLista.length > 0,
+    }),
     // Resumo pronto de cada Feitiço, para o Preview só exibir (mesma convenção
     // do `resumoDominios`: a UI não recalcula nada). O card da aba Habilidades
     // segue chamando os `calcularFeitico*` por conta própria, porque ele precisa

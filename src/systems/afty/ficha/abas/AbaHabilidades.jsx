@@ -32,13 +32,16 @@ import { filtraHabilidades, correspondeFiltroHabilidade } from "../../afty-filtr
  * corrido, e este campo aceita título, subtítulo e tabela desde 2026-08-07.
  * Passar por ali achataria a formatação justamente onde ela foi pedida.
  *
- * Aberto por padrão, ao contrário dos itens do livro: uma ficha tem 40 itens e
- * abrir todos é uma parede, mas Funcionamento Básico são um ou dois, e eles são
- * o texto que descreve a criatura. Fechar continua possível, e a escolha dura a
- * sessão.
+ * ⚠ FECHADO POR PADRÃO desde 2026-09-08 (autor: *"Faça com que os
+ * Funcionamentos Básicos sempre comece FECHADO ao invés de aberto"*). Antes era
+ * aberto, com o argumento de que são um ou dois cartões e que eles descrevem a
+ * criatura. O argumento não sobreviveu ao conteúdo real: um Funcionamento com
+ * tabela e subtítulos ocupa várias telas, e com quatro deles a aba Habilidades
+ * abria com o livro inteiro escancarado antes da primeira habilidade. Agora
+ * segue a mesma regra do `ItemDeFicha`, e abrir é um clique.
  */
 function CartaoTecnica({ titulo, texto }) {
-  const [aberto, setAberto] = useState(true);
+  const [aberto, setAberto] = useState(false);
   const corpo = String(texto ?? "").trim();
   // O pai já filtrou pelo mesmo índice usado nas habilidades do catálogo.
   if (!corpo) return null;
@@ -54,7 +57,7 @@ function CartaoTecnica({ titulo, texto }) {
         {aberto
           ? <ChevronDown className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
           : <ChevronRight className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />}
-        <h2 className="afty-card-titulo flex-1">{titulo}</h2>
+        <h2 className="afty-card-titulo flex-1" data-afty-linha>{titulo}</h2>
       </button>
       {/* ⚠ SEM a classe `afty-texto` aqui. Ela carrega `max-width: 78ch`, que é
           a medida de leitura de um parágrafo — e no container ela estrangulava
