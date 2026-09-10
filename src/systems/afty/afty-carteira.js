@@ -300,6 +300,15 @@ export function nivelPorXp(xp) {
   return nivel;
 }
 
+/**
+ * O nível que o XP anotado NESTA ficha compra.
+ *
+ * ⚠ ELA NÃO PERGUNTA SE A LIBERAÇÃO ESTÁ LIGADA, e não pode: este módulo é
+ * FOLHA e não importa o `afty-addons`. Quem junta as duas perguntas é o
+ * `nivelDaFicha`, lá. Aqui a resposta é sempre "que nível este XP compraria".
+ */
+export const nivelDaCarteira = (creature) => nivelPorXp(resolveCarteira(creature).xpTotal);
+
 /** A próxima linha da tabela, ou `null` no fim dela. Serve o `title` da tela. */
 export function proximoNivelCarteira(xp) {
   const total = numero(xp);

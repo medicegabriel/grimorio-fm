@@ -41,6 +41,7 @@ import BuscaGlobal from "./BuscaGlobal";
 import PainelDeAparencia from "./PainelDeAparencia";
 import AbaAcoes from "./abas/AbaAcoes";
 import PainelDeAdaptacao from "./PainelDeAdaptacao";
+import PainelDoVislumbre from "./PainelDoVislumbre";
 import AbaPericias from "./abas/AbaPericias";
 import AbaHabilidades from "./abas/AbaHabilidades";
 import AbaBuffs from "./abas/AbaBuffs";
@@ -488,6 +489,7 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
       <AbaAcoes
         derived={derived}
         adaptacao={<PainelDeAdaptacao derived={derived} onSessao={atualiza} />}
+        vislumbre={<PainelDoVislumbre derived={derived} sessao={sessao} onSessao={atualiza} />}
         armasTransformaveis={<ArmasTransformaveis derived={derived} sessao={sessao} onSessao={atualiza} />}
         rolar={rolar}
         destaque={destaque}
@@ -560,6 +562,9 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
            condições derrubam a Guarda Inabalável, e escrever direto deixaria o
            chefe com a Guarda de pé debaixo de um Atordoado. */
         onCondicoes={(condicoes) => atualiza((s) => defineCondicoes(s, condicoes))}
+        /* O Nível de Exaustão é da SESSÃO e de todo mundo: seis Lendárias e a
+           Expansão de Domínio dão exaustão em texto e não tinham onde marcar. */
+        onExaustao={(exaustao) => atualiza((s) => ({ ...s, exaustao: Math.max(0, Math.trunc(exaustao) || 0) }))}
         onConceder={(familia, id) => atualiza((s) => concedeNaSessao(s, familia, id))}
         onRemoverConcessao={(uid) => atualiza((s) => removeConcessao(s, uid))}
       />

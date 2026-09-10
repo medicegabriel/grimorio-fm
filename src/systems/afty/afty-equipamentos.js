@@ -24,8 +24,10 @@
  * ============================================================
  */
 
-import { registrarFamilia, remendarLista } from "./afty-addons";
+import { registrarFamilia, remendarLista, nivelDaFicha } from "./afty-addons";
 import { formaDaArma } from "./afty-armas-transformaveis";
+import { saneiaCriacaoDeArma } from "./afty-criacao-armas";
+import { ESCADA_DANO, nivelDoDado } from "./afty-niveis-dano";
 import { evalNumber, normalizarVariavel, validateExpression } from "./afty-dsl";
 import { normalizarAlvoEfeito } from "./afty-efeitos";
 import { regraDo } from "./afty-sistema";
@@ -416,6 +418,18 @@ export const ARMA_PROPRIEDADES = [
     descricao: "A arma acumula impulso para ficar mais poderosa. Quando realizar mais de um ataque com ela no mesmo turno, o segundo ataque recebe um bônus de dano igual à quantidade de dados de dano da arma. A cada outro ataque subsequente o bônus de dano aumenta em +1." },
   { id: "especial", nome: "Especial", param: null,
     descricao: "A arma possui um traço único dela." },
+  /* ⚠ A ESTABILIDADE NÃO ESTÁ NA LISTA DE PROPRIEDADES DO LIVRO. Ela chegou com
+     o padrão de criação de armas do autor, em 2026-09-09, e está aqui pela mesma
+     razão da Alcance no fim desta lista: existe, é usada, e não ter entrada a
+     tornaria immarcável. O padrão só escreve a conta de Ponto de Criação dela, e
+     o efeito em jogo veio da resposta do autor no mesmo dia: *"Estabilidade é a
+     mesma coisa que Pesada, só que para Destreza"*. O texto abaixo é o da Pesada
+     com o atributo trocado, e nada além disso.
+
+     ⚠ ELA NÃO AUMENTA O ESPAÇO DA ARMA, e essa é a única diferença entre as duas
+     na hora de render PC. Ver `afty-criacao-armas.js`. */
+  { id: "estabilidade", nome: "Estabilidade", param: "numero",
+    descricao: "A arma requer uma Destreza maior para usar. Quando manejando uma arma com estabilidade, caso você não tenha um valor de Destreza igual ou superior ao especificado [X], você recebe desvantagem em rolagens de ataque com ela." },
   { id: "estendida", nome: "Estendida", param: null,
     descricao: "A arma tem um alcance maior. O alcance de seus ataques corpo a corpo com a arma aumenta em 1,5 metros." },
   { id: "fatal", nome: "Fatal", param: "dado",
@@ -892,13 +906,51 @@ export function efeitosEspeciaisDeArma(equipadas = []) {
    de orçamento e o de dano em silêncio, então tudo passa por aqui antes de ser
    arma. O preço é uma passada por leitura, e a ficha não tem muitas. */
 
-/** Os tamanhos de dado que uma arma pode ter. */
-export const ARMA_DADOS = ["1d4", "1d6", "1d8", "1d10", "1d12", "2d6"];
+/**
+ * Os dados que uma arma pode ter, que são os degraus da escada de NÍVEIS DE DANO
+ * (autor, 2026-09-09): *"Segue o Nível de Dano (1d12 > 1d12 + 1d4 > 1d12 + 1d6 >
+ * 1d12 + 1d8 > 1d12 + 1d10 > 2d12 > 2d12 + 1d4 e por ai vai)"*.
+ *
+ * ⚠ ATÉ AQUI ERAM SEIS DADOS À MÃO, e a lista acabava no `2d6`. Ela não dava
+ * conta nem do próprio livro: a Espada Colossal é `2d8`, o Rifle de Precisão é
+ * `2d10` e a Bazuca é `3d12`, e nenhuma das três podia ser recriada como arma
+ * própria. O buraco apareceu pela criação de armas, quando a opção de limite de
+ * Dano não tinha o que comprar numa arma Tática.
+ *
+ * ⚠ E ELA TINHA SEIS ENTRADAS PARA CINCO NÍVEIS: `1d12` e `2d6` são o MESMO
+ * degrau (resultado máximo 12), e a tabela do livro escreve a célula como *"1d12
+ * ou 2d6"*.
+ *
+ * O teto é o `3d12` da Bazuca, que é o maior dado impresso na tabela de armas.
+ * A escada continua acima dele, e quem precisar de mais sobe o teto aqui.
+ */
+const DADO_TETO = "3d12";
+
+export const ARMA_DADOS = ESCADA_DANO
+  .slice(nivelDoDado("1d4"), nivelDoDado(DADO_TETO) + 1)
+  .map((d) => d.texto);
+
+/**
+ * Os dados IMPRESSOS na tabela do livro que a escada escreve de outra forma.
+ *
+ * Eles não são OFERECIDOS (a lista de cima é a escada, e um nível com dois nomes
+ * na mesma lista é escolha falsa), mas continuam ACEITOS: são o dado de armas do
+ * catálogo e de toda arma própria salva antes de 2026-09-09. Recusá-los aqui
+ * apagaria o dano dessas armas na próxima leitura da ficha.
+ */
+export const ARMA_DADOS_IMPRESSOS = ["2d4", "2d6", "2d8", "2d10"];
+
+/**
+ * O "tamanho de dado" da Fatal e da Mortal: *"Junto do traço, é especificado um
+ * tamanho de dado"*. É UM dado, e não um degrau da escada, então esta lista não
+ * cresceu junto com a de dano.
+ */
+export const ARMA_DADOS_PROP = ["1d4", "1d6", "1d8", "1d10", "1d12"];
 
 /** Faixa de crítico. 20 é "só no 20 natural", 18 é a mais larga do livro. */
 export const ARMA_CRITICOS = [20, 19, 18];
 
-const DADO_OK = new Set(ARMA_DADOS);
+const DADO_OK = new Set([...ARMA_DADOS, ...ARMA_DADOS_IMPRESSOS]);
 let TIPO_DANO_OK = new Set(Object.keys(TIPOS_DANO));
 const CATEGORIA_OK = new Set(ARMA_CATEGORIAS.map((c) => c.value));
 const GRUPO_OK = new Set(ARMA_GRUPOS.map((g) => g.value));
@@ -960,6 +1012,7 @@ export function saneiaArmaCustom(bruta) {
     const val = saneiaValorProp(k, v);
     if (val != null) props[k] = val;
   }
+  const criacao = saneiaCriacaoDeArma(bruta.criacao);
   const dado = DADO_OK.has(bruta.dano?.dado) ? bruta.dano.dado : "1d6";
   const duasMaos = DADO_OK.has(bruta.dano?.duasMaos) ? bruta.dano.duasMaos : null;
   return {
@@ -981,6 +1034,12 @@ export function saneiaArmaCustom(bruta) {
     custo: naFaixa(bruta.custo, 1, 4, 1),
     grupo: GRUPO_OK.has(bruta.grupo) ? bruta.grupo : "espada",
     props,
+    /* A bancada de Pontos de Criação, quando a arma passou por ela. Ela é dado
+       da ARMA e não do addon, então continua gravada depois de desinstalar o
+       pacote, pela mesma razão da Carteira: uma ficha que perdeu o addon não
+       pode devolver zero e deixar a pessoa achar que o trabalho dela sumiu.
+       Ver `afty-criacao-armas.js`. */
+    ...(criacao ? { criacao } : {}),
     // A marca que a UI usa para dar botão de editar e apagar, e para o chip.
     custom: true,
   };
@@ -1187,7 +1246,7 @@ export const estadoDaUnica = (uid) => `unica_${uid}`;
     equipamento é resolvido), o que basta para os efeitos constantes. */
 function dslEquipCtxBase(creature, bt) {
   const a = creature?.attributes ?? {};
-  const nd = Math.max(1, creature?.core?.nd ?? 1);
+  const nd = nivelDaFicha(creature);
   const m = (v) => Math.floor(((v ?? 10) - 10) / 2);
   return {
     bt, nd,

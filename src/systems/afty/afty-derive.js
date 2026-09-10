@@ -61,6 +61,7 @@ import {
 import { resolveEspecializacoes, AFTY_ESPECIALIZACOES, treinamentosDasEspecializacoes, getEspecializacao } from "./afty-especializacoes";
 import {
   resolveHabilidades, efeitosInvocacaoControlador, getHabilidade, OPCAO_ESCOLHA_NOME,
+  avaliarAcessoHabilidade,
   resolveMarcadoresInvocacao, resolveControleInvocacoes,
   AFTY_HABILIDADES,
   resolveArmasDedicadas, efeitosArmasDedicadas, resolveEmpolgacao,
@@ -69,6 +70,7 @@ import {
 } from "./afty-habilidades";
 import {
   resolveTalentos, resolveTreinoEscudo, getTalento, OPCAO_TALENTO_NOME, AFTY_TALENTOS,
+  avaliarAcessoTalento,
 } from "./afty-talentos";
 import {
   resolveAltoNivel, getMelhoriaSuperior, getHabilidadeLendaria, getHabilidadeApice,
@@ -84,12 +86,16 @@ import {
 import {
   nivelMaxFeitico, resumoDeUmFeitico, resumoFeiticos, overridesShikigami,
   totalFeiticosJogador, CONJURACAO_APRIMORADA_ID,
-  tiposFeiticoPermitidos, mostraCardFeiticos,
+  tiposFeiticoPermitidos, mostraCardFeiticos, peMaximoDasPassivas,
 } from "./afty-feiticos";
 // O dado do golpe desarmado da ficha de jogador. Na criatura nada disto roda.
 import { dadoDesarmado } from "./afty-niveis-dano";
 import { resolveEstilos, efeitosDoEstilo } from "./afty-estilo-sombras";
 import { resolveDominioSimples, DOMINIO_SIMPLES_APTIDAO } from "./afty-dominio-simples";
+import {
+  estadosDoVislumbre, efeitosDoVislumbre, resolveVislumbre, olhosDescobertos, fadigaAtual,
+  ESTADO_DESCOBERTO, ESTADO_FADIGA,
+} from "./afty-vislumbre-celeste";
 import { resolveTestes, resolveDano, catalogoPericiasDaFicha, ehPericiaOficio, atributosDePericiaManuais } from "./afty-pericias";
 import { resolveDefesasDano, sanearDefesasDano } from "./afty-defesas-dano";
 import { resolveCatarse } from "./afty-catarse";
@@ -97,6 +103,7 @@ import { resolveCarteira } from "./afty-carteira";
 import { resolveCura } from "./afty-cura";
 import {
   problemasDeAddon, marcasDeclaradas, primitivasDaCriatura, liberacoesDaCriatura, precosDeCatarse,
+  nivelDaFicha,
   estadosCombateDeAddon, epocaAddons,
 } from "./afty-addons";
 import { agrupaConcedido, concessoesDaSessao, escolhasDoConcedido } from "./afty-concessao";
@@ -112,7 +119,7 @@ import {
   aplicarEfeitos, resolverExclusivos, valorCanal, furaTetoEm, efeitosDaTecnica, efeitosDosPassivos,
   efeitosDaSessao, EFEITO_CANAIS,
   ehAtributoPermanente, ehAtributoTemporario, ehEstagio2, ehPreContexto, ehPosAptidao, efeitoUsaDadosDanoFinal,
-  mesclarEfeitos, detalhesDoCanal, normalizarAlvoEfeito,
+  mesclarEfeitos, detalhesDoCanal, detalhesDoCanalEscopos, custoEmPe, normalizarAlvoEfeito,
 } from "./afty-efeitos";
 import { resolveGerais, contadorHabilidades, GERAL_BY_ID } from "./afty-gerais";
 import { resolveImitacao, concessaoImitada, efeitoDaImitacao } from "./afty-imitacao";
@@ -334,10 +341,14 @@ export function deriveAfty(creature, opcoes = {}) {
      substituição e não soma, pela mesma razão do orçamento de Focos: somar o
      campo com a tabela cobraria a mesma experiência duas vezes. O `core.nd`
      continua gravado e intacto, para desinstalar o addon devolver o nível que a
-     pessoa tinha digitado. Ver `CARTEIRA_XP_POR_NIVEL`. */
-  const ndBruto = carteiraAlimentaNivel
-    ? carteira.nivel
-    : Math.max(1, core.nd ?? 1);
+     pessoa tinha digitado. Ver `CARTEIRA_XP_POR_NIVEL`.
+
+     ⚠ E A PERGUNTA É FEITA PELO `nivelDaFicha`, e não escrita aqui, mesmo com o
+     extrato já na mão duas linhas acima. Escrever a mesma decisão em dois
+     lugares foi exatamente o defeito de 2026-09-08: a regra morava só aqui, e
+     os catálogos, que leem a ficha direto, continuavam no campo cru. Um leitor
+     só para a regra, e o derive é mais um cliente dele. */
+  const ndBruto = nivelDaFicha(creature);
   const nd = ehJogador("tetoDeNivel") ? Math.min(30, ndBruto) : ndBruto;
   // Especializações precisam existir antes das Aptidões e dos Feitiços: as
   // Bases automáticas dependem do nível da classe, duas Bases do Suporte
@@ -552,6 +563,21 @@ export function deriveAfty(creature, opcoes = {}) {
      que ela emite é vaga de orçamento, e vaga é lida antes de os stats
      existirem. Ver `resolveCatarse`. */
   const catarse = resolveCatarse(creature, { precos: precosDeCatarse(creature) });
+  /* ⚠ O VISLUMBRE CELESTE É DE GRAÇA e não tem entrada de catálogo: quem tem o
+     pacote tem os olhos. Por isso o portão é a primitiva, e ele é lido aqui em
+     cima, antes do montante: a Compreensão do Jujutsu emite `pontosAptidao`, que
+     é orçamento e é lido antes de os stats existirem. */
+  const temVislumbre = primitivasDaCriatura(creature).includes("vislumbreCeleste");
+  /* ⚠ O ESTADO SAI DA CRIATURA CRUA, e não do `combate` resolvido, porque este
+     bloco roda ANTES dele: os efeitos daqui são lidos no montante e no passe
+     pós-aptidão, e a bancada de combate só nasce umas 600 linhas abaixo. É a
+     mesma fonte, com o mesmo portão do `ativo`. Ver `olhosDescobertos`. */
+  const vislumbreDescoberto = olhosDescobertos(creature);
+  const efeitosVislumbre = efeitosDoVislumbre({
+    tem: temVislumbre,
+    descoberto: vislumbreDescoberto,
+  });
+
   const efeitosMontante = [
       ...efeitosDeTreino(creature, opcoes.treinosAtivos),
       // Treino Especial entra ao lado da Linha de Treinamento porque é a mesma
@@ -573,6 +599,10 @@ export function deriveAfty(creature, opcoes = {}) {
          ⚠ E NENHUMA LINHA LEVA `exclusivo`: acumular com Técnica é a regra que
          o autor pediu. Ver o cabeçalho de afty-catarse.js. */
       ...catarse.efeitos,
+      /* Só a Compreensão do Jujutsu, que é VAGA e por isso é montante. Os dois
+         blocos de benefício leem `cl` e um estado de combate, e nenhum dos dois
+         existe ainda aqui: eles entram no bolo comum, mais abaixo. */
+      ...efeitosVislumbre.filter((e) => e.canal === "pontosAptidao"),
   ];
   const efMontante = resolverExclusivos(aplicarEfeitos(efeitosMontante, ctxMontante));
   // Os canais que precisam ser lidos ANTES do contexto principal: dois
@@ -833,6 +863,9 @@ export function deriveAfty(creature, opcoes = {}) {
   const dedicadas = resolveArmasDedicadas(creature, armasParaDano, habilidades.efetivas);
 
   const efeitosTodos = [
+    // Os dois blocos do Vislumbre Celeste. O `quando` de cada um lê o estado
+    // "Olhos Descobertos", então os dois convivem e só um vale por vez.
+    ...efeitosVislumbre.filter((e) => e.canal !== "pontosAptidao"),
     ...coletarEfeitosCriatura({
       habilidades, talentos: talentosPre, altoNivel,
       catalogos: {
@@ -1080,7 +1113,8 @@ export function deriveAfty(creature, opcoes = {}) {
     // Os dois leitores vêm de fora para o módulo não importar `afty-efeitos.js`
     // e fechar um ciclo com o catálogo de Aptidões. Ver o cabeçalho de lá.
     canal: (id) => valorCanal(efPosAptidao, id),
-    fontes: (id) => detalhesDoCanal(efPosAptidao, id).map((x) => ({ label: x.nome, valor: x.valor })),
+    fontes: (id, alvo = null) => detalhesDoCanal(efPosAptidao, id, alvo)
+      .map((x) => ({ label: x.nome, valor: x.valor })),
   });
   const efeitosComDominio = (efeitosDominio.length || efeitosEstilo.length)
     ? [...efeitosTodos, ...efeitosDominio, ...efeitosEstilo]
@@ -1193,6 +1227,7 @@ export function deriveAfty(creature, opcoes = {}) {
     cl: aptidao.efetivo?.cl ?? 0,
   });
   const estadosAddon = estadosCombateDeAddon(creature, nivelMaxFeitico(nd, nivelConjurador));
+  const estadosVislumbre = estadosDoVislumbre({ tem: temVislumbre });
   const combate = resolveCombate(creature, {
     dominios: resumoDominios.lista,
     brutalidadePE: degrausBrutalidade({ habilidades }),
@@ -1233,6 +1268,7 @@ export function deriveAfty(creature, opcoes = {}) {
       ...estadosConjurador,
       ...estadosAptidoes,
       ...estadosAddon,
+      ...estadosVislumbre,
     ],
   });
   const auxiliaresAtivos = resolveAuxiliaresAtivos(creature, combate, estadosConjurador, {
@@ -1604,6 +1640,42 @@ export function deriveAfty(creature, opcoes = {}) {
     : efSemGuarda;
   const canal = (id, alvo = null) => valorCanal(ef, id, alvo);
 
+  /* ⚠ O CUSTO EM PE DOS ESTADOS É REDUZIDO SÓ NA EXIBIÇÃO, e por isso esta é uma
+     CÓPIA. O `combate` original é montado lá em cima, antes de o Motor rodar,
+     porque os estados alimentam o contexto do DSL: a redução depende dos
+     efeitos, e os efeitos dependem dos estados. Reduzir na origem morderia o
+     próprio rabo.
+
+     O número do custo não entra em conta nenhuma do motor, ele é o que a pessoa
+     LÊ antes de gastar. Então a ordem certa é montar o estado, rodar o Motor, e
+     só então dizer quanto aquele estado custa hoje. Ver o canal `custoPE`. */
+  /* O resumo do Vislumbre Celeste para o card, já resolvido: a UI não recalcula
+     nada. O estado sai do `combate`, e não da criatura crua, porque é a bancada
+     (ou a sessão da Ficha) que diz se os olhos estão descobertos AGORA. */
+  /* ⚠ OS DOIS ESTADOS SAEM DA MESMA FONTE QUE OS EFEITOS, e não do `combate`
+     resolvido. O `resolveCombate` zera tudo com a bancada desligada, e uma
+     Condição Corporal não liga e desliga com a iniciativa: o card mostraria o
+     bloco coberto enquanto o Motor aplica o descoberto. Ver `olhosDescobertos`. */
+  const vislumbre = resolveVislumbre({
+    tem: temVislumbre,
+    cl: aptidao.efetivo?.cl ?? 0,
+    descoberto: vislumbreDescoberto,
+    fadiga: fadigaAtual(creature),
+    grauOrdem: grauFeiticeiro(nd).ordem,
+    nd,
+  });
+
+  const combateExibicao = {
+    ...combate,
+    estadosExtras: (combate.estadosExtras ?? []).map((e) => {
+      if (e?.custoPE == null) return e;
+      const custo = custoEmPe(e.custoPE, ef, "aptidao");
+      return custo.valor === e.custoPE
+        ? e
+        : { ...e, custoPE: custo.valor, custoPEBase: e.custoPE, reducoesCustoPE: custo.partes };
+    }),
+  };
+
   // Funcionamento Básico da técnica, RESOLVIDO linha a linha, só para o editor
   // mostrar quanto cada expressão vale enquanto o jogador digita. É reavaliação,
   // não segunda aplicação: quem entra na conta é o `efeitosTodos` acima. Roda com
@@ -1828,7 +1900,20 @@ export function deriveAfty(creature, opcoes = {}) {
   const modTecnicaNoPE = pvPorClasse
     ? (peModTecnicaDaFicha(classesDaFicha.map((e) => e.id)) ? modTecnica : 0)
     : modTecnica;
-  const pe = peBase + peQntEfetivo + modTecnicaNoPE + canal("pe");
+  /* ⚠ A PASSIVA ENCOLHE O POOL, e é a única parcela do PE que sai da lista de
+     Feitiços. Ela entra AQUI, e não pelo canal `pe`, por duas razões. A primeira
+     é que o canal é do Motor e esta não é regra de habilidade nenhuma, é regra
+     do tipo de Feitiço. A segunda é ordem: `feiticosLista` só nasce umas linhas
+     abaixo e `derived.feiticos` bem mais adiante, e o custo POR USO de um
+     Feitiço já depende do PE. Ler o cru resolve sem inverter nada, porque o
+     dobro do nível não precisa do Feitiço calculado.
+
+     Só na Ficha de Jogador. Ver a divergência `passivaCustaPeMaximo`. */
+  const passivasNoPe = peMaximoDasPassivas(creature?.feiticos, sistema);
+  /* ⚠ SEM PISO, de propósito (autor, 2026-09-09). Passivas caras podem levar o
+     PE Máximo abaixo de zero e o criador mostra o número como ele é. Quem apara
+     é a pilha CORRENTE da sessão, que é outra coisa e já tinha piso zero. */
+  const pe = peBase + peQntEfetivo + modTecnicaNoPE + canal("pe") - passivasNoPe.total;
 
   // ---------- Resistência Parcial ----------
   // Calamidade ganha +1 em ND 10, 20 e 30 (0 a 3).
@@ -2062,6 +2147,10 @@ export function deriveAfty(creature, opcoes = {}) {
     temEnergiaReversa: aptidoesIds.includes("energia_reversa"),
     invocacoes: Array.isArray(creature?.invocacoes) ? creature.invocacoes : [],
     vidaAtual: opcoes.vidaAtual ?? null,
+    /* ⚠ ENTROU EM 2026-09-09, pela Passiva. É o único campo daqui que não é
+       número nem lista da ficha, e existe porque o custo em PE Máximo da
+       Passiva é divergência: sem ele a linha diria que a criatura paga. */
+    sistema,
   };
   /* ⚠ A ABA DE FEITIÇOS É DECISÃO DE MOTOR, e não de JSX (2026-09-07). O criador
      ramifica o layout inteiro por origem, e enquanto "quem conjura" era regra
@@ -2581,6 +2670,10 @@ export function deriveAfty(creature, opcoes = {}) {
     efeitos: efeitosInvoc,
     marcadores,
     overridesPorInvocacao,
+    /* A redução ampla de PE, já com o alvo da Invocação resolvida. Vai PRONTA
+       porque o `afty-invocacoes.js` não importa o `afty-efeitos.js`. */
+    reducaoCustoPe: detalhesDoCanalEscopos(ef, "custoPE", ["invocacao"])
+      .map((d) => ({ label: d.nome, valor: d.valor })),
     membroQuartoGrauGratis: controle.membroQuartoGrauGratis,
     otimizacaoEnergia: controle.otimizacaoEnergia,
     autonomia: controle.autonomia,
@@ -2678,6 +2771,10 @@ export function deriveAfty(creature, opcoes = {}) {
          fechavam com o total. Mesmo bug da Quantidade de PE, mesma regra. */
       ...(modTecnicaNoPE ? [{ label: `Mod. da Técnica (${rotulo[tecnicaAttr] ?? tecnicaAttr})`, valor: modTecnicaNoPE }] : []),
       ...doMotor("pe"),
+      /* ⚠ UMA LINHA POR PASSIVA, com o nome dela. Um "Passivas -12" só diria
+         quanto sumiu e não de onde, e a ficha que tem quatro delas é justamente
+         a que precisa saber qual sai caro. Mesma regra da `Fonte com nome`. */
+      ...passivasNoPe.linhas.map((l) => ({ label: `${l.nome} (Passiva)`, valor: -l.custo })),
     ],
     defesa: [
       { label: "Base", valor: 10 },
@@ -2825,6 +2922,68 @@ export function deriveAfty(creature, opcoes = {}) {
       : partesDoLimite;
   }
 
+  /* ============================================================ */
+  /* REQUISITOS REAVALIADOS COM A FICHA INTEIRA                    */
+  /* ============================================================ */
+  /* ⚠ O `inacessiveis` NASCIA CEGO, e a Ficha Final acusava pré-requisito não
+     atendido em coisa que estava atendida. Achado em 2026-09-09 pelo autor, no
+     Revestimento Constante (Conjurador 8°, pede a Aptidão Cobrir-se) com a
+     Cobrir-se na ficha.
+
+     A causa: o `resolveHabilidades` monta o ctx dele com quatro campos
+     (`niveisPorEspec`, `escolhidas`, `escolhasHabilidade`, `almaLivre`), e o
+     avaliador pergunta por outros cinco que não estão lá. Um requisito de
+     Aptidão faz `(ctx.aptidoes || []).includes(...)` contra uma lista que é
+     `undefined`, e a resposta é SEMPRE falsa. O mesmo vale para atributo,
+     perícia, TR e Ofício. O criador nunca teve o problema porque ele monta o
+     ctx com o `derived` PRONTO, que é exatamente o que falta aqui.
+
+     ⚠ NÃO DÁ PARA SÓ ENCHER O CTX LÁ EM CIMA, e é por isso que a reavaliação
+     mora aqui embaixo. `attrEff` e as perícias nascem DEPOIS das habilidades, e
+     têm de nascer: habilidade concede perícia. Perguntar por elas antes seria
+     inverter uma dependência real. A saída é a do criador, feita uma vez só e
+     no motor: com a ficha fechada, reavaliar o que ficou de fora.
+
+     ⚠ É REPORTE, e não remoção. Nada é tirado da ficha por causa desta lista,
+     e por isso recalculá-la no fim é seguro: ninguém a leu antes daqui. Os
+     outros dois `inacessiveis` do derivado NÃO precisam disto e ficaram como
+     estavam: as Gerais só perguntam ND, e as Lendárias só ND e nível de classe.
+     Medido, não suposto. */
+  const periciaProfMapa = Object.fromEntries((testes.pericias ?? []).map((p) => [p.id, p.prof ?? null]));
+  const resistenciaProfMapa = Object.fromEntries(
+    (testes.resistencias ?? []).map((r) => [r.id ?? r.value, r.prof ?? null]),
+  );
+  const periciaOficiosMapa = Object.fromEntries(
+    (testes.pericias ?? []).filter((p) => ehPericiaOficio(p.id)).map((p) => [p.id, p.oficios ?? []]),
+  );
+  /* O MESMO ctx que o criador monta. Se os dois divergirem, a Ficha volta a
+     discordar da tela onde a escolha foi feita, que é o bug de origem. */
+  const ctxRequisitos = {
+    niveisPorEspec: habilidades.niveisPorEspec,
+    escolhidas: habilidades.escolhidas,
+    escolhasHabilidade: habilidades.escolhas?.mapa,
+    almaLivre: habilidades.almaLivre,
+    attrEff,
+    aptidoes: aptidoesIds,
+    periciaProf: periciaProfMapa,
+    resistenciaProf: resistenciaProfMapa,
+    periciaOficios: periciaOficiosMapa,
+  };
+  const habilidadesFinal = {
+    ...habilidades,
+    inacessiveis: (habilidades.escolhidas ?? [])
+      .filter((id) => !avaliarAcessoHabilidade(getHabilidade(id), ctxRequisitos).ok),
+  };
+  /* O Talento já recebia `attrEff` e `aptidoes` na chamada, e ficava cego só
+     para os três de treino. Reavaliar os dois pelo mesmo ctx evita a pergunta
+     "qual dos dois estava certo" na próxima vez. */
+  const talentosFinal = {
+    ...talentos,
+    inacessiveis: (talentos.escolhidas ?? [])
+      .filter((id) => !avaliarAcessoTalento(getTalento(id), { ...ctxRequisitos, talentos: talentos.escolhidas })
+        .ok),
+  };
+
   // ---------- overrides de valor final (aba Cálculos) ----------
   const calc = { hp, pe, defesa, cd, rdGeral, rdEspecifico, rdAlma, movimento, resParcial, atencao, iniciativa };
   const stats = {};
@@ -2894,13 +3053,9 @@ export function deriveAfty(creature, opcoes = {}) {
        faixa, e `periciaOficios` responde o NOME de cada vaga de Ofício, que é o
        que separa "Treinado em Ferramentas de Médico" de "Treinado em dois
        Ofícios": o primeiro pergunta qual ofício, o segundo pergunta quantos. */
-    periciaProf: Object.fromEntries((testes.pericias ?? []).map((p) => [p.id, p.prof ?? null])),
-    resistenciaProf: Object.fromEntries(
-      (testes.resistencias ?? []).map((r) => [r.id ?? r.value, r.prof ?? null]),
-    ),
-    periciaOficios: Object.fromEntries(
-      (testes.pericias ?? []).filter((p) => ehPericiaOficio(p.id)).map((p) => [p.id, p.oficios ?? []]),
-    ),
+    periciaProf: periciaProfMapa,
+    resistenciaProf: resistenciaProfMapa,
+    periciaOficios: periciaOficiosMapa,
     feiticos,             // { nivelMax, gastos, cdBase } — o orçamento é o de baixo
     // ⚠ O contexto CRU do DSL, exposto para o seletor de variáveis do Motor
     // (`vocabularioDsl` em afty-dsl-vocabulario.js). Sai cru de propósito: o
@@ -2923,7 +3078,8 @@ export function deriveAfty(creature, opcoes = {}) {
     cura,                 // { linhas: [{ id, nome, grupo, alcance, texto, fixo, usos, unidade, partes }] }
     dedicadas,            // Armas Dedicadas: { ativa, escolhidas, elegiveis, max, restante }
     empolgacao,           // Lutador: { ativa, aprimorada, inicial, max, tabela }
-    combate,              // simulação: estado já aparado nos tetos da ficha
+    combate: combateExibicao, // simulação: estado já aparado nos tetos da ficha, e com o custo em PE reduzido
+    vislumbre,            // Vislumbre Celeste: { tem, cl, descoberto, visao, reducaoPe, fadiga, ... }
     pvTemporario,         // casca de PV vinda da simulação (Fluxo, Brutalidade Aprimorada)
     peTemporario,         // casca de PE POR FONTE: { combate:[], rodada:[], tem } — a sessão aplica
     regeneracao,          // cura no início do turno: { dados, dado, fixo }
@@ -2935,8 +3091,11 @@ export function deriveAfty(creature, opcoes = {}) {
     especializacoes,      // { escolhidas, total, max, obrigatoria, completa, erro }
     treinamentosEquipamento,
     treinoEscudo,
-    habilidades,          // { escolhidas, total, gastos, restante, excedeu, inacessiveis, niveisPorEspec }
-    talentos,             // { escolhidas, gastos, inacessiveis } — gasto já somado em habilidades.gastos
+    /* ⚠ OS DOIS SAEM DA VERSÃO REAVALIADA, e não da que o resolver devolveu. A
+       única diferença entre elas é o `inacessiveis`, que lá em cima nasce cego
+       para cinco tipos de requisito. Ver o bloco "REQUISITOS REAVALIADOS". */
+    habilidades: habilidadesFinal,  // { escolhidas, total, gastos, restante, excedeu, inacessiveis, niveisPorEspec }
+    talentos: talentosFinal,        // { escolhidas, gastos, inacessiveis } — gasto já somado em habilidades.gastos
     altoNivel,            // { ativo, melhorias, lendarias, escolhas, apiceId } — orçamentos próprios
     imitacao,
     invocacoes,           // { lista, total, custoTotal, temWarnings }

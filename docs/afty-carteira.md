@@ -6,7 +6,7 @@ o que já saiu, e os totais. Escrito em 2026-09-08, no dia em que o pedido chego
 > **Addon**: `addons/carteira-da-guilda.json`
 > **Módulo**: `src/systems/afty/afty-carteira.js` (folha, sem imports)
 > **Tela**: `src/systems/afty/AftyTabCarteira.jsx`
-> **Provas**: `asserts/t-carteira.mjs` (113 asserts)
+> **Provas**: `asserts/t-carteira.mjs` (136 asserts)
 
 ---
 
@@ -96,15 +96,64 @@ Três regras de leitura, todas com assert:
 
 Acima de 600 o nível para em 30, que é onde a tabela acaba e onde a Ficha de Jogador já tinha teto.
 
-⚠ **O `core.nd` da ficha continua gravado e intacto.** A liberação faz o derive IGNORAR o campo, não
-apagá-lo, e é isso que faz desinstalar o addon devolver o nível que a pessoa tinha digitado. Na tela,
-o campo de Nível vira mostrador enquanto a liberação estiver ligada: deixá-lo digitável aceitaria um
-número que a próxima derivação joga fora.
+Na tela, o campo de Nível vira mostrador enquanto a liberação estiver ligada: deixá-lo digitável
+aceitaria um número que a próxima derivação joga fora.
+
+⚠ **E AO SALVAR, O `core.nd` GRAVADO É O EFETIVO.** Isto mudou no fim de 2026-09-08, e a razão é a
+Tela Inicial: o card do Dashboard escreve `creature.core?.nd` direto, e o Dashboard é da 2.5.2, que é
+**somente-leitura**. Ele não importa nada do Afty e não tem como aprender a perguntar ao
+`nivelDaFicha`. Como o campo é a única coisa que ele lê, é o campo que precisa estar certo na hora de
+gravar. É o mesmo padrão do `stats` que o `handleSave` já escrevia: tela compartilhada lê fotografia
+gravada, e não derivado que ela não sabe calcular.
+
+Quem grava é o próprio `nivelDaFicha(draft)`, e não um `if` escrito no `handleSave`: sem a liberação
+ele devolve o próprio `core.nd`, então a ficha que não usa a Carteira não é tocada.
+
+⚠ **O preço, deliberado:** o campo deixa de guardar o número digitado antes de instalar o addon.
+Desinstalar passa a devolver o **último nível que o XP pagou**, e não o valor fóssil de antes. É o
+mais útil dos dois: enquanto o addon está ligado o campo é um mostrador que ninguém consegue editar,
+então o que estava lá não era uma escolha guardada, era uma sobra.
+
+⚠ **Ficha já salva mostra o nível velho até ser salva de novo**, exatamente como o `hpMax` do
+`stats`. Abrir e salvar resolve.
 
 ⚠ **Esta liberação mexe em mais coisa que qualquer outra do projeto.** O Nível é a entrada de quase
 toda fórmula do Afty, então o XP anotado passa a decidir Maestria, Grau, PV, PE, orçamentos e limites
 de atributo. É a razão de o `resolveCarteira` ter subido para o topo do `deriveAfty`: ele precisa
 estar pronto antes da primeira linha que lê o nível.
+
+### ⚠ O defeito de meia funcionalidade, e o `nivelDaFicha`
+
+A primeira versão desta liberação foi escrita **só dentro do `deriveAfty`**, e o autor achou o
+buraco no mesmo dia, em duas frases:
+
+> *"eu não consigo colocar Nível de Especialização, mesmo com meu XP me deixando Nível 8"*
+> *"Meus pontos de atributo também não aumentaram"*
+
+Os dois eram o mesmo defeito. **Onze lugares do sistema liam `creature.core.nd` cru**, sem passar
+pelo derive: `resolveEspecializacoes`, `resumoAtributos`, o Alto Nível, os Treinos Especiais, o grau
+do equipamento, as escolhas de origem e três leituras da própria tela. Pior, a UI chama vários deles
+com o **rascunho**, que nunca vê o derive. O nível novo chegava ao PV e à Maestria, que saem do
+derive, e não chegava a orçamento nenhum, que sai dos catálogos.
+
+O conserto é um leitor só: **`nivelDaFicha(creature)`**, em `afty-addons.js`. Ele junta as duas
+metades da pergunta ("qual o campo" e "esta ficha usa a tabela?"), aceita o rascunho, e hoje é o
+único lugar do sistema que lê `core.nd`. O `deriveAfty` é mais um cliente dele.
+
+Três asserts prendem isso, e o terceiro é o que impede a volta:
+
+1. **Equivalência**: uma ficha com a Carteira ligada deriva **igual** a uma ficha digitada naquele
+   nível, em `nd`, Maestria, Grau, PV, PE, Defesa, CD, movimento, iniciativa, orçamento de perícias,
+   Especialização e pontos de atributo. Um assert de valor solto passaria com metade do sistema
+   ainda lendo o campo antigo.
+2. **Contraprova**: no Nível 3 os mesmos orçamentos são menores, senão dois zeros iguais passariam.
+3. **Varredura**: nenhum `.js` do Afty pode conter `core.nd` fora de comentário, com uma exceção
+   nomeada, o próprio `nivelDaFicha`.
+
+⚠ **A lição, que vale para a próxima**: trocar a FONTE de um número não é a tarefa inteira. Falta
+procurar quem mais lê aquele número, e o `grep` custa dez segundos. É a mesma forma do erro que
+abriu o campo `permite` em 2026-08-20, escrito em `docs/afty-addons.md`: acrescentar o verbo ao
+motor não era a tarefa inteira.
 
 ---
 

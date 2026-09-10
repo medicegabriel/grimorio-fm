@@ -88,7 +88,11 @@ import {
   getOrigem, getCla, resolveEscolhasOrigem, ORIGEM_ESCOLHA_EFEITOS, OPCAO_ORIGEM_NOME,
   opcoesEscolhidasDaOrigem,
 } from "./afty-origens";
+/* O Nível efetivo, que pode vir do XP da Carteira. O afty-addons só importa
+   folhas (afty-dsl, afty-sistema e afty-carteira), entao a seta e segura. */
+import { nivelDaFicha } from "./afty-addons";
 import { getAnatomia } from "./afty-anatomias";
+import { CUSTO_PE_MINIMO } from "./afty-dominio-simples";
 // afty-aptidoes só importa afty-origens, que já é dependência daqui: sem ciclo.
 import { getAptidao } from "./afty-aptidoes";
 // Módulo folha (não importa nada), então a seta é segura.
@@ -351,7 +355,16 @@ export const EFEITO_CANAIS = [
   { id: "guardaVida",     label: "Guarda: Vida Temporária", nota: "os 5 × ND (Calamidade) ou 10 × ND (Beyond) de PV Temporário que a Guarda entrega no início de cada rodada" },
 
   // Feitiços
-  { id: "custoPE",        label: "Custo em PE",          nota: "redução de custo, o piso de 1 PE continua valendo" },
+  /* ⚠ ELE GANHOU ALVO EM 2026-09-09, e antes disso era lido num lugar só: o
+     custo do Feitiço. "Sempre que gastar PE" (Vislumbre Celeste) é o gasto
+     INTEIRO, então o canal passou a ser lido em todo custo que a ficha calcula,
+     e o alvo é quem separa uma redução ampla de uma dirigida.
+
+     ⚠ SEM ALVO ELE VALE PARA TODOS OS GASTOS. Foi por isso que a Expansão de
+     Domínio precisou nomear o dela: o texto dela é *"O custo dos seus FEITIÇOS
+     dentro da expansão"*, e sem o alvo ela passaria a baratear Domínio Simples,
+     Estilo e Invocação de lambuja. Ver `efeitosDoDominio`. */
+  { id: "custoPE",        label: "Custo em PE",          alvo: "custo", nota: "redução de custo em PE, e o piso de 1 PE continua valendo em CADA gasto. Sem alvo vale para todo gasto que a ficha calcula. Com alvo, só naquele" },
 
   /* ---------- REGENERAÇÃO: cura automática no INÍCIO DO TURNO ----------
      Os três escrevem uma parte diferente da MESMA rolagem (`3d8+5`), e é por
@@ -1201,7 +1214,7 @@ export function coletarEfeitosOrigem(creature, escolhas = null) {
   const anatomias = getOrigem(origemId)?.caracteristicas?.some((c) => c.poolAnatomia)
     ? (creature?.core?.origem?.anatomias || [])
     : [];
-  const mapa = escolhas?.mapa || resolveEscolhasOrigem(creature, creature?.core?.nd ?? 1).mapa;
+  const mapa = escolhas?.mapa || resolveEscolhasOrigem(creature, nivelDaFicha(creature)).mapa;
   const opcoesEscolhidas = Object.values(mapa).flat();
   const opcoesInteiras = opcoesEscolhidasDaOrigem(creature, { mapa });
   /* ⚠ O CATÁLOGO AQUI É A ENTRADA INTEIRA, e não `{ nome }`. Era um objeto
@@ -1545,6 +1558,13 @@ export const CANAIS_POS_APTIDAO = [
      `imbuicoesEstilo`: a área sai do Nível de Aptidão em Domínio, e o custo sai
      das imbuições, que o `resolveEstilos` só sabe depois do `dom` existir. */
   "areaDominioSimples", "custoErguerDominio", "custoSustentarDominio", "custoSustentarEstilo",
+  /* ⚠ O `custoPE` ENTROU EM 2026-09-09, quando ganhou alcance. Ele já era lido
+     no Feitiço, que roda no fim e enxerga o agregado inteiro, e passou a ser
+     lido também pelo Domínio Simples, que roda NESTE passe. Sem esta linha a
+     redução ampla chegava no Feitiço e não chegava no Domínio, calada: o canal
+     existia, a expressão era avaliada, e o passe do Domínio simplesmente não a
+     continha. */
+  "custoPE",
 ];
 export const ehPreContexto = (e) =>
   CANAIS_PRE_CONTEXTO.includes(e?.canal) && !efeitoUsaDadosDanoFinal(e);
@@ -1689,6 +1709,58 @@ export function valorCanalEscopos(res, canal, escopos = []) {
 const contaNoTotal = (d, incluirSuplantados) => incluirSuplantados || !d.suplantado;
 
 /** Irmão do `detalhesDoCanal` para vários alvos, sem repetir o mesmo efeito. */
+/* ============================================================ */
+/* O CUSTO EM PE DE UM GASTO                                     */
+/* ============================================================ */
+/**
+ * Os cinco gastos em PE que a ficha calcula, e que o canal `custoPE` sabe
+ * mirar. Uma redução SEM alvo vale para os cinco.
+ *
+ * ⚠ Lista fechada de propósito: gasto novo entra aqui e obriga quem o criou a
+ * dizer se a redução ampla o alcança. O contrário (aceitar qualquer palavra)
+ * deixaria um alvo escrito errado virar redução que nunca acontece, calada.
+ */
+export const CUSTOS_PE = [
+  { value: "feitico",   label: "Feitiço" },
+  { value: "dominio",   label: "Domínio" },
+  { value: "estilo",    label: "Estilo das Sombras" },
+  { value: "invocacao", label: "Invocação" },
+  { value: "aptidao",   label: "Aptidão" },
+];
+
+const CUSTO_PE_OK = new Set(CUSTOS_PE.map((c) => c.value));
+
+/** O alvo de custo é conhecido? O validador de conteúdo usa. */
+export const custoPeValido = (alvo) => alvo == null || CUSTO_PE_OK.has(alvo);
+
+/**
+ * O custo em PE de UM gasto, já com as reduções do canal `custoPE`.
+ *
+ * `escopo` diz QUAL gasto é este, e uma redução sem alvo vale para todos.
+ * Devolve o valor final, a base e as parcelas, no formato que o hover de fontes
+ * come.
+ *
+ * ⚠ O PISO DE 1 PE VALE POR GASTO, e não no fim de uma soma. Dois gastos de 1 PE
+ * com redução 5 custam 1 cada, e não zero. É o que a nota do canal promete e o
+ * que o Feitiço já fazia antes de o canal ter alcance.
+ *
+ * ⚠ BASE ZERO CONTINUA ZERO. O que não custa PE não passa a custar 1 por causa
+ * do piso: quem não gasta não gasta.
+ */
+export function custoEmPe(base, efeitos, escopo = null) {
+  const bruto = Math.max(0, Math.trunc(Number(base) || 0));
+  const partes = detalhesDoCanalEscopos(efeitos, "custoPE", escopo ? [escopo] : [])
+    .map((d) => ({ label: d.nome, valor: Math.max(0, Math.trunc(Number(d.valor) || 0)) }))
+    .filter((p) => p.valor > 0);
+  const reducao = partes.reduce((soma, p) => soma + p.valor, 0);
+  return {
+    base: bruto,
+    reducao,
+    partes,
+    valor: bruto > 0 ? Math.max(CUSTO_PE_MINIMO, bruto - reducao) : 0,
+  };
+}
+
 export function detalhesDoCanalEscopos(res, canal, escopos = [], incluirSuplantados = false) {
   const alvo = new Set(escopos);
   return (res?.detalhes || []).filter(

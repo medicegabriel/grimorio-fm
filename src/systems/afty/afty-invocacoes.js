@@ -1169,6 +1169,11 @@ export function resolveAcao(acao, inv, dono = {}) {
      ficam de fora. Está anotado em docs/a-fazer.md como assunção.
 
      O piso é 1 PE, que é o mínimo que uma Ação com Custo pode gastar. */
+  /* ⚠ A REDUÇÃO AMPLA DE PE (canal `custoPE`, alvo `invocacao`) chega PRONTA do
+     derive, no formato `[{ label, valor }]`, pela mesma razão do Domínio
+     Simples: este módulo não importa `afty-efeitos.js`, e um import daqui para
+     lá fecharia ciclo. Quem lê o canal é quem já tem o agregado na mão. */
+  out.reducoesCustoPE = [];
   out.custoOtimizado = false;
   if (dono.otimizacaoEnergia && acao?.custoOtimizado) {
     if (acaoComCusto) {
@@ -1178,6 +1183,16 @@ export function resolveAcao(acao, inv, dono = {}) {
     } else {
       warnings.push("Otimização de Energia só vale para uma Ação com Custo.");
     }
+  }
+
+  /* A redução ampla entra DEPOIS da Otimização, e o piso de 1 PE vale no fim:
+     as duas reduzem o mesmo gasto, e o piso é do gasto, não de cada parcela. */
+  const reducaoAmpla = (Array.isArray(dono.reducaoCustoPe) ? dono.reducaoCustoPe : [])
+    .filter((r) => (Number(r?.valor) || 0) > 0);
+  if (reducaoAmpla.length && out.custoPE > 0) {
+    const total = reducaoAmpla.reduce((soma, r) => soma + Math.trunc(Number(r.valor) || 0), 0);
+    out.reducoesCustoPE = reducaoAmpla.map((r) => ({ label: r.label, valor: r.valor }));
+    out.custoPE = Math.max(1, out.custoPE - total);
   }
 
   // Escape hatch DSL: um modificador numérico livre no contexto da invocação,

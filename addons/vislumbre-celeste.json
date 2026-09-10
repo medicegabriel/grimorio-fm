@@ -1,0 +1,9 @@
+{
+  "id": "vislumbre-celeste",
+  "nome": "Vislumbre Celeste",
+  "versao": "1.0.0",
+  "autor": "Afty",
+  "paraRaw": "afty",
+  "descricao": "A Condição Corporal dos Seis Olhos, com outro nome. Ela é ganha de graça: não gasta vaga de Origem, Talento, Aptidão nem o contador da aba Habilidades, e o card dela fica na aba Habilidades, entre o Funcionamento Básico e os Feitiços. Com os olhos cobertos você reduz todo gasto em PE pela metade do seu Nível de Aptidão em Controle e Leitura, recebe percepção às cegas de 9m mais 4,5m por nível e +1 em Percepção e Feitiçaria por nível. Descobrir os olhos é uma Ação Livre que troca esses benefícios pelos plenos: a redução passa a ser o nível inteiro, a visão vai a 18m mais 9m por nível e o bônus de perícia dobra, ao preço de 1 Ponto de Fadiga no fim de cada turno. Quatro pontos viram um Nível de Exaustão. Por cima dos dois blocos, a Compreensão do Jujutsu dá quatro Níveis de Aptidão ao longo da vida do personagem, um já na criação e mais um nos Níveis 5, 15 e 25. Como Condição Corporal, tudo isso SOMA com Feitiços e com o resto da ficha, em vez de disputar o maior valor.",
+  "permite": ["vislumbreCeleste"]
+}

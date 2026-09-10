@@ -173,15 +173,32 @@ export function conteudoDaFicha(creature, derived) {
   }
 
   /* ---------- Passivos e Características ---------- */
+  /* ⚠ O CUSTO EM PE MÁXIMO SAI DO RESOLVIDO, e não de uma conta aqui. A Passiva
+     tira o dobro do nível dela do PE Máximo na Ficha de Jogador (autor,
+     2026-09-09), e quem decide se cobra é a divergência `passivaCustaPeMaximo`.
+     Refazer a conta nesta linha faria a tela responder por uma regra de sistema,
+     que é exatamente o erro que a tabela de divergências existe para evitar.
+
+     A lista crua continua sendo a de cima, porque é ela que tem `descricao` e a
+     ordem que a pessoa montou. Daqui sai só o número. */
+  const custoPassivaPorId = new Map(
+    (derived?.feiticos?.lista ?? []).map((l) => [l.id, l.custoPeMaximo]),
+  );
   for (const f of Array.isArray(creature?.feiticos) ? creature.feiticos : []) {
     if (f?.tipo !== "passivo") continue;
+    const custoPe = custoPassivaPorId.get(f.id) ?? null;
     itens.push(item({
       id: f.id,
       chave: `passivo:${f.id}`,
       nome: f.nome || "Passivo Sem Nome",
       texto: f.descricao ?? "",
       grupo: "passivo",
-      tags: [NIVEL_LABEL[f.nivel] ?? String(f.nivel)],
+      tags: [
+        NIVEL_LABEL[f.nivel] ?? String(f.nivel),
+        /* Sinal na frente porque é o que ela TIRA, e não o que ela gasta por
+           uso. Some na criatura e na Passiva de Nível 0, que custa zero. */
+        custoPe ? { label: `-${custoPe} PE`, tipo: "nivel" } : null,
+      ],
     }));
   }
 

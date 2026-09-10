@@ -35,6 +35,8 @@
  */
 
 import { AFTY_ATTRS } from "./afty-schema";
+/* O Nível efetivo, que pode vir do XP da Carteira. Ver `nivelDaFicha`. */
+import { nivelDaFicha } from "./afty-addons";
 
 export const ATTR_KEYS = ["forca", "destreza", "constituicao", "inteligencia", "sabedoria", "presenca"];
 
@@ -119,7 +121,9 @@ export function resumoAtributos(creature, limitesEfetivos = null, perdas = null)
   const metodo = creature?.attrMethod || "pontos";
   const attrs = creature?.attributes || {};
   const nivel = creature?.attrNivel || {};
-  const nd = creature?.core?.nd ?? 1;
+  // ⚠ NÍVEL EFETIVO, e não `core.nd` cru. Era o que fazia o pool de pontos de
+  // atributo por nível não subir com a Carteira ligada (autor, 2026-09-08).
+  const nd = nivelDaFicha(creature);
   const patamar = creature?.core?.patamar || "comum";
   const limiteDe = (k) => limitesEfetivos?.[k] ?? ATTR_LIMITE_PADRAO;
 

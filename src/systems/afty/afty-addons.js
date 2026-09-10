@@ -58,6 +58,9 @@
 import { normalizarMarca } from "./afty-dsl";
 // Sem risco de ciclo: `afty-sistema.js` não importa nada.
 import { sistemaDaFicha, regraDo } from "./afty-sistema";
+/* A tabela de progressão da Carteira. O `afty-carteira.js` é FOLHA, então este
+   import é de mão única e não pode fechar ciclo. Ver `nivelDaFicha`. */
+import { nivelDaCarteira } from "./afty-carteira";
 
 /* ============================================================ */
 /* O REGISTRO DE FAMÍLIAS                                        */
@@ -377,6 +380,30 @@ export const PRIMITIVAS = [
     rotulo: "Carteira",
     nota: "Livro-caixa das sessões: XP, dinheiro e Interlúdios que entraram, o que saiu, e os totais",
   },
+  /* ⚠ NASCEU EM 2026-09-09, com o padrão de criação de armas do autor. É
+     primitiva e não família de catálogo porque o que ela acrescenta não é
+     ENTRADA nova: é uma RÉGUA para a arma que a pessoa já podia criar. O
+     catálogo de armas continua o mesmo, e a arma criada continua a mesma arma.
+
+     ⚠ ELA NÃO MOVE NÚMERO NENHUM, e há assert medindo isso. A bancada lê a arma
+     gravada, conta os Pontos de Criação e AVISA quando um limite estoura. Quem
+     escreve dano, margem e propriedade continua sendo a pessoa. Ver
+     `afty-criacao-armas.js` e docs/afty-criacao-armas.md. */
+  /* ⚠ NASCEU EM 2026-09-09, com o Vislumbre Celeste. É primitiva e não família
+     de catálogo pela mesma razão da Carteira: o autor decidiu que a condição é
+     GANHA DE GRAÇA, sem Origem, Talento nem Aptidão, então não há entrada para
+     gastar vaga nenhuma e ter o pacote É ter os olhos. Ver
+     `afty-vislumbre-celeste.js` e docs/afty-vislumbre-celeste.md. */
+  {
+    id: "vislumbreCeleste",
+    rotulo: "Vislumbre Celeste",
+    nota: "A Condição Corporal dos Seis Olhos: os dois blocos de benefício (cobertos e descobertos), a redução ampla de PE, a Fadiga Mental e o card na aba Habilidades",
+  },
+  {
+    id: "criacaoArmas",
+    rotulo: "Criação de Armas",
+    nota: "A bancada de Pontos de Criação no editor de arma própria: orçamento por classificação, custo, técnica e espaços, com o preço de cada propriedade e os limites de gasto",
+  },
 ];
 
 const PRIMITIVA_IDS = new Set(PRIMITIVAS.map((p) => p.id));
@@ -556,6 +583,45 @@ export function filtraForaDoJogador(lista, creature, jaNaFicha = null, chave = "
   return lista.filter((e) => !e?.foraDoJogador
     || liberadas.includes(liberacaoSoPorAddon(e?.[chave]))
     || tem.has(e?.[chave]));
+}
+
+/* ============================================================ */
+/* O NÍVEL DA FICHA                                              */
+/* ============================================================ */
+/**
+ * O Nível EFETIVO desta ficha: o campo `core.nd`, ou o que o XP da Carteira
+ * compra quando a liberação `carteiraNivel` está ligada.
+ *
+ * ⚠ ELA EXISTE PORQUE O NÍVEL PASSOU A TER DUAS FONTES, e onze lugares liam
+ * uma só. O `carteiraNivel` nasceu em 2026-09-08 mexendo só no `deriveAfty`, e
+ * o autor achou o buraco no mesmo dia: *"eu não consigo colocar Nível de
+ * Especialização, mesmo com meu XP me deixando Nível 8"*, e logo depois *"Meus
+ * pontos de atributo também não aumentaram"*.
+ *
+ * Os dois eram o mesmo defeito. O `resolveEspecializacoes` e o
+ * `resumoAtributos` leem `creature.core.nd` CRU, e a UI os chama com o
+ * RASCUNHO, que nunca passa pelo derive. O nível novo chegava ao PV e à
+ * Maestria (que saem do derive) e não chegava a nenhum orçamento (que sai dos
+ * catálogos). Meia funcionalidade, e calada.
+ *
+ * ⚠ A LIÇÃO, e ela já estava escrita em docs/afty-addons.md com outro nome:
+ * acrescentar o verbo ao motor não é a tarefa inteira. Aqui a versão é
+ * **trocar a fonte de um número não é a tarefa inteira**: falta procurar quem
+ * mais lê aquele número, e o `grep` por `core.nd` é de graça.
+ *
+ * ⚠ MORA AQUI, e não no `afty-carteira.js`, porque a pergunta tem duas metades:
+ * "que nível o XP compra" (a tabela, lá) e "esta ficha usa a tabela?" (a
+ * liberação, aqui). O módulo da Carteira é FOLHA e não pode importar este.
+ *
+ * ⚠ E ELA ACEITA O RASCUNHO, de propósito: é a mesma resposta para a ficha
+ * salva e para a que está sendo editada, que é o que faz a tela e o derive
+ * concordarem.
+ */
+export function nivelDaFicha(creature) {
+  const bruto = Math.max(1, Math.trunc(Number(creature?.core?.nd) || 1));
+  return liberacoesDaCriatura(creature).includes("carteiraNivel")
+    ? nivelDaCarteira(creature)
+    : bruto;
 }
 
 /** Nenhuma primitiva. Congelado, para virar valor padrão sem alocar. */

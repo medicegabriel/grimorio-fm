@@ -752,6 +752,17 @@ export default function Dashboard({
   onCreateNew,
   onGoToEncounters,
   onGoToTemplates,
+  /* ⚠ AS DUAS DE BAIXO SÃO DO AMBIENTE PRIVADO (/Afty e /Player), e o
+     PADRÃO DELAS É O COMPORTAMENTO DE SEMPRE: quem não as passa vê o
+     mesmo Grimório 2.5.2 de antes. Elas existem porque o título e a seção
+     de Criaturas Base são do INVENTÁRIO DA ROTA, e não de uma ficha, então
+     não dá para decidi-las por `rulesVersion` como o card ali em cima faz.
+     Quem escolhe o valor é o `src/App.jsx`, que já é quem lê a rota.
+
+     Autor, 2026-09-09: *"Na aba de Player, na tela inicial remova 'Grimorio'
+     e escreva 'Jogador', e remova 'Criaturas Base' da Ficha de Player"*. */
+  titulo = "Grimório",
+  showSystemView = true,
 }) {
   const [view, setView] = useState({ type: "all", folderId: null });
   const [search, setSearch] = useState("");
@@ -1068,6 +1079,7 @@ export default function Dashboard({
     onCreateFolder: manager.createFolder,
     onRenameFolder: manager.renameFolder,
     onRemoveFolder: manager.removeFolder,
+    showSystemView,
   };
 
   return (
@@ -1093,7 +1105,7 @@ export default function Dashboard({
                 <Menu className="w-4 h-4" />
               </button>
 
-              <h1 className="text-xl sm:text-2xl font-bold text-white truncate">Grimório</h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-white truncate">{titulo}</h1>
 
               <div className="flex-1" />
 

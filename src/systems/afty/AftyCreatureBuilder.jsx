@@ -8,7 +8,7 @@ import {
 
 import { FieldLabel, TextInput, TextArea, Select, NumberInput, StatField, ExpandableText } from "../../components/builder-controls";
 import TabAddons from "./AftyTabAddons";
-import { aplicarAddons, modelosPendentesDeAddon } from "./afty-addons";
+import { aplicarAddons, modelosPendentesDeAddon, nivelDaFicha } from "./afty-addons";
 import {
   mesclaFichaAfty, AFTY_ATTRS, AFTY_TIPOS, AFTY_PATAMARES, AFTY_QNT_PE,
   AFTY_TECNICA_ATTRS, AFTY_TAMANHOS, AFTY_RESISTENCIAS, getTamanho,
@@ -112,7 +112,7 @@ import {
   getEquipamento,
   orcamentoDoGrau, espacosDoEquipamento, custoDoEquipamento,
   getPropriedade, getEspecial, grupoLabel,
-  ARMA_PROPRIEDADES, ARMA_DADOS, ARMA_CRITICOS, novaArmaCustom, rotuloPropriedade,
+  ARMA_PROPRIEDADES, ARMA_DADOS, ARMA_DADOS_PROP, ARMA_CRITICOS, novaArmaCustom, rotuloPropriedade,
   armasCustomDaFicha,
   CRIA_LABEL, REFEICOES_COZINHEIRO,
   AFTY_GRAUS, FA_TIPOS_EQUIP, FA_CRIACAO, defesaDaArmadura,
@@ -136,7 +136,7 @@ import {
   resultaEspecialAux, ofereceUmGolpe, aplicaUmGolpe, podeEventoUnico,
   formatAuxValor, aplicaReducoesCustoFeitico, tituloCustoFeitico,
   calcularFeiticoPersonalizado, TIPOS_FEITICO, TIPO_FEITICO_LABEL, TIPO_FEITICO_CURTO,
-  TODOS_TIPOS_FEITICO, tiposFeiticoDaLinha,
+  TODOS_TIPOS_FEITICO, tiposFeiticoDaLinha, peMaximoDasPassivas,
 } from "./afty-feiticos";
 import { IconeDeTipo } from "./ui/feitico-tipo";
 import {
@@ -145,6 +145,12 @@ import {
 } from "./afty-estilo-sombras";
 import { vocabularioDsl, vocabularioInvocacao, DSL_FUNCOES } from "./afty-dsl-vocabulario";
 import { TECNICAS_COMBATE_IDS } from "./afty-combate-conjurador";
+import BancadaDeArma from "./ui/BancadaDeArma";
+import VislumbreCard from "./ui/VislumbreCard";
+import {
+  orcamentoDaArma, createBlankCriacao, saneiaCriacaoDeArma, custoDeTecnica,
+  CLASSIFICACOES_ARMA, PC_PROPRIEDADE,
+} from "./afty-criacao-armas";
 import PrimitivasDeAddon from "./ui/PrimitivasDeAddon";
 import { usePrimitiva } from "./ui/usar-primitiva";
 import {
@@ -1142,9 +1148,41 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
        A regra em si mora no `afty-schema.js`, junto do `createBlankAfty` que
        cria o campo vazio, para o assert poder medir a MESMA função. */
     const nome = nomeParaGravar(draft.name);
+    /* ⚠ O NÍVEL GRAVADO É O EFETIVO QUANDO A CARTEIRA MANDA NELE, e isto é o
+       conserto de 2026-09-08: *"O Addon de Carteira ainda está mostrando o
+       Nível como 3 na Tela Inicial"*.
+
+       O card do Dashboard escreve `creature.core?.nd` direto, e o Dashboard é
+       da 2.5.2, que é SOMENTE-LEITURA: ele não importa nada do Afty e não pode
+       aprender a perguntar ao `nivelDaFicha`. Como o campo é a única coisa que
+       ele lê, é o campo que tem de estar certo na hora de gravar. O comentário
+       do `stats` logo abaixo já dizia a premissa que a liberação quebrou:
+       "core.nd já é o campo do Afty, o Dashboard lê core.nd direto".
+
+       É o mesmo padrão do `stats` daqui: tela compartilhada lê fotografia
+       gravada, e não derivado que ela não sabe calcular.
+
+       ⚠ O PREÇO, E ELE É DELIBERADO: o campo deixa de guardar o número que a
+       pessoa digitou antes de instalar o addon. Desinstalar passa a devolver o
+       último nível que o XP pagou, e não o valor fóssil de antes. É o mais útil
+       dos dois: enquanto o addon está ligado o campo é um mostrador que ninguém
+       consegue editar, então o que estava lá não é uma escolha guardada, é uma
+       sobra. Quem desinstala quer voltar a digitar A PARTIR DO NÍVEL QUE TEM.
+
+       ⚠ E QUEM RESPONDE É O `nivelDaFicha`, e não um `if` escrito aqui. Ele é o
+       leitor único do Nível desde o conserto de mais cedo neste mesmo dia, e sem
+       a liberação ele devolve o próprio `core.nd`, então esta linha não mexe em
+       nada na ficha que não usa a Carteira. Repetir a decisão aqui seria a mesma
+       regra escrita duas vezes que criou o defeito da manhã.
+
+       ⚠ Ele mora num MÓDULO, e não dentro deste `handleSave`, pela razão que o
+       `nomeParaGravar` já documenta logo acima: o assert precisa medir a MESMA
+       função que o criador usa. */
+    const nivelGravado = nivelDaFicha(draft);
     const creature = {
       ...draft,
       name: nome,
+      core: { ...draft.core, nd: nivelGravado },
       // ⚠ `system` continua "afty" nos DOIS: é a família de regras, e o
       // Grimório Afty e a Ficha de Player são o mesmo livro. Quem separa
       // criatura de personagem é o `rulesVersion`, que é o que o Dashboard, o
@@ -1152,7 +1190,10 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
       system: "afty",
       rulesVersion: sistema,
       // snapshot dos derivados para telas compartilhadas (dashboard/combate).
-      // core.nd já é o campo do Afty — o Dashboard lê core.nd direto.
+      // ⚠ O NÍVEL É O ÚNICO QUE NÃO MORA AQUI: o Dashboard o lê de `core.nd`, e
+      // não de `stats`, então quem o grava é o `nivelGravado` lá em cima. A
+      // premissa antiga desta linha ("core.nd já é o campo do Afty") deixou de
+      // valer sozinha quando a Carteira passou a poder mandar no nível.
       stats: {
         hpMax: derived.hp,
         peMax: derived.pe,
@@ -1229,14 +1270,15 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
                 seja. Então o título sai em 56px, não em 20px, e carrega 64px de
                 margem morta acima de 1024px (40px abaixo). Medido em 2026-09-02.
 
-                ⚠ O CONSERTO (`my-0!`) FOI TESTADO E DESFEITO. Ele funciona, e a
-                barra cai de 230px para 166px em 1440. O problema é o que vem
-                junto: o selo fixo "Grimório Afty · privado" (App.jsx, `top: 8`)
-                passa a cobrir o botão Voltar em 9px no desktop e 29px no
-                telefone. A colisão já existe hoje em 390px, com 8px, e mexer
-                aqui a triplica.
+                ⚠ O CONSERTO (`my-0!`) FOI TESTADO E DESFEITO EM 2026-09-02, e o
+                motivo MORREU EM 2026-09-09. Ele funciona, e a barra cai de 230px
+                para 166px em 1440. O que impedia era o que vinha junto: o selo
+                fixo "Grimório Afty · privado" (App.jsx, `top: 8`) passava a
+                cobrir o botão Voltar em 9px no desktop e 29px no telefone.
 
-                Fechar isso pede decidir onde o selo mora, que é do autor.
+                O autor mandou remover o selo (*"Remova isso. É meio feio."*), e
+                sem ele não há colisão nenhuma. O `my-0!` está LIVRE e continua
+                não aplicado, porque ninguém pediu os 64px de volta ainda.
                 Anotado em docs/a-fazer.md. */}
             <h1 className="text-lg sm:text-xl font-bold truncate min-w-0">
               {isEditing ? "Editar Criatura" : "Nova Criatura"} · Afty
@@ -2689,6 +2731,16 @@ function TabHabilidades({ draft, derived, patchCore, toggleArmaDedicada, addFeit
      Técnica, limitada a Passivo e Personalizado, e o card também aparece para
      quem tem Feitiço GRAVADO, senão a linha morta ficaria presa na ficha
      gastando contador e sem tela para removê-la. */
+  /* O Vislumbre Celeste, montado UMA vez e consumido pelos TRÊS ramos. A aba
+     ramifica o layout inteiro por origem, e uma Condição Corporal não é de
+     origem nenhuma: quem decide se ele aparece é o `derived`, e nunca o JSX. É a
+     lição que o Estilo Marcial pagou em 2026-09-07.
+
+     Lugar pedido pelo autor: abaixo do Funcionamento Básico e acima dos
+     Feitiços. Nos dois ramos que não têm Funcionamento Básico ele abre a aba. */
+  const vislumbre = derived.vislumbre?.tem
+    ? <VislumbreCard vislumbre={derived.vislumbre} />
+    : null;
   const feiticosCard = derived.feiticos?.mostraCard ? (
     <FeiticosCard
       draft={draft}
@@ -2704,6 +2756,7 @@ function TabHabilidades({ draft, derived, patchCore, toggleArmaDedicada, addFeit
   if (origem === "sem_tecnica") {
     return (
       <>
+        {vislumbre}
         {estilo}
         {feiticosCard}
         {dano}
@@ -2719,6 +2772,7 @@ function TabHabilidades({ draft, derived, patchCore, toggleArmaDedicada, addFeit
     return (
       <>
         <SubsistemaPendente titulo="Habilidades Marciais" origem="Restringido" />
+        {vislumbre}
         {feiticosCard}
         {estilo}
         {dano}
@@ -2740,6 +2794,7 @@ function TabHabilidades({ draft, derived, patchCore, toggleArmaDedicada, addFeit
         removeFuncionamento={removeFuncionamento}
         patchFuncionamento={patchFuncionamento}
       />
+      {vislumbre}
       {feiticosCard}
       {/* Depois dos Feitiços de propósito: quem chega aqui tem os dois, e o
           Feitiço é o que ele já tinha. Os dois dividem o mesmo contador. */}
@@ -4403,6 +4458,10 @@ function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico
     beneficiosRitualDominio: derived.dominios?.beneficiosRitualAtivos ?? {},
     reducoesCustoFeitico: reducoes,
     feiticos: lista,
+    /* ⚠ O SISTEMA ENTRA AQUI desde 2026-09-09, pela Passiva: o custo em PE
+       Máximo dela é divergência, e sem isto o card diria que a criatura paga.
+       Sai da FICHA e não da rota, como tudo que decide regra. */
+    sistema: sistemaDaFicha(draft),
     temEnergiaReversa: Array.isArray(draft.aptidoesAmaldicoadas) && draft.aptidoesAmaldicoadas.includes("energia_reversa"),
     invocacoes: Array.isArray(draft.invocacoes) ? draft.invocacoes : [],
     /* ⚠ O CÁLCULO do Shikigami usa a lista CRUA acima (só precisa de id, nome e
@@ -4667,7 +4726,20 @@ function BarraDoFeitico({ tiles, avisos }) {
  * mesmo espaço e não diz nada, e a barra é grudada: cada fila a mais come área
  * útil para sempre. Quem não tem CD simplesmente não mostra CD.
  */
-function tilesDoFeitico(f, calc) {
+function tilesDoFeitico(f, calc, ctx = {}) {
+  /* ⚠ A PASSIVA NÃO TEM `calc` E MESMO ASSIM TEM UM NÚMERO. O tipo "passivo"
+     nunca ganhou calculador (`calculadorDe` devolve null para ele), e por isso
+     o card dele era o único da aba sem barra nenhuma. Desde 2026-09-09 ele tem
+     exatamente um número na Ficha de Jogador: o que ele tira do PE Máximo.
+
+     Fica antes do `if (!calc)` porque é justamente o caso em que não há cálculo.
+     Nível 0 continua sem barra, porque custa zero e o zero não vira tile. */
+  if (f.tipo === "passivo") {
+    const custo = peMaximoDasPassivas([f], ctx.sistema).total;
+    return custo
+      ? [{ id: "peMaximo", label: "PE Máximo", valor: `-${custo} PE`, curto: "PE Máx.", icon: Sparkles }]
+      : [];
+  }
   if (!calc) return [];
   const tiles = [];
   /* ⚠ O ZERO TAMBÉM NÃO ENTRA, e não é descuido de guarda. Os campos que chegam
@@ -4948,7 +5020,7 @@ function FeiticoCard({ feitico, ctx, nivelMax, tiposPermitidos, efeitosPassivo, 
 
       <div className="px-3 pb-3">
         {/* ===== 2. RESULTADO, grudado ===== */}
-        <BarraDoFeitico tiles={tilesDoFeitico(feitico, calc)} avisos={avisosTodos} />
+        <BarraDoFeitico tiles={tilesDoFeitico(feitico, calc, ctx)} avisos={avisosTodos} />
 
         {/* ===== 3. EDITOR ===== */}
         {/* ⚠ `shrink-0` E SEM `grow`, igual à tira da Invocação: com `grow` os
@@ -7114,7 +7186,9 @@ function CaracteristicaPainel({ nome, estado, estadoAlerta, mesa, verdadeiraOrig
 function OrigemCard({ draft, derived, patchCore, setOrigemId, setOrigemBonus, setOrigemCla, toggleEscolhaOrigem, setOrigemPool }) {
   const id = draft.core.origem?.id;
   const origem = getOrigem(id);
-  const nd = draft.core.nd ?? 1;
+  // ⚠ O NÍVEL SAI DO DERIVADO, e não do rascunho: com a Carteira ligada ele
+  //   vem do XP anotado, e o campo da ficha fica para trás. Ver `nivelDaFicha`.
+  const nd = derived?.nd ?? 1;
   const clas = clasDaOrigem(id);
   const claId = draft.core.origem?.cla;
   const cla = getCla(claId);
@@ -7555,7 +7629,7 @@ function AttributesCard({ draft, derived, patch, patchCore, patchAttr, patchNive
   // Desenvolvimento Inesperado (Derivado): pool que dá +1 valor e +1 limite.
   const temDesenv = origemTemDesenvolvimento(draft.core.origem?.id);
   const desenv = draft.core.origem?.desenvolvimento || {};
-  const desenvTotal = desenvolvimentoTotal(draft.core.nd ?? 1);
+  const desenvTotal = desenvolvimentoTotal(derived?.nd ?? 1);
   const desenvUsado = desenvolvimentoUsado(desenv);
   const desenvRestante = desenvTotal - desenvUsado;
   const setDesenv = (key, val) => {
@@ -7568,7 +7642,7 @@ function AttributesCard({ draft, derived, patch, patchCore, patchAttr, patchNive
   // ESCOLHAS, e cada uma vale o degrau declarado na origem.
   const poolLim = origemPoolLimite(draft.core.origem?.id);
   const limites = draft.core.origem?.limites || {};
-  const limTotal = poolLim ? limitePoolTotal(draft.core.nd ?? 1, poolLim.porNivel) : 0;
+  const limTotal = poolLim ? limitePoolTotal(derived?.nd ?? 1, poolLim.porNivel) : 0;
   const limUsado = limitePoolUsado(limites);
   const limRestante = limTotal - limUsado;
   const setLimite = (key, val) => {
@@ -11394,7 +11468,15 @@ function CatalogoLinha({ tipo, def, onAdd, jaTem, sistema }) {
    "Fatal" sem o dado não muda crítico, e "Arremessável" sem alcance não diz a
    que distância. Ligar a propriedade já grava o valor padrão dela, senão o
    jogador sairia da tela com meia regra. */
-function PropriedadeCustom({ prop, valor, onChange }) {
+/* As opções de dado mais o valor GRAVADO, quando ele não está na lista.
+   Uma arma salva antes da escada de Níveis de Dano (ou copiada do livro) tem
+   `2d8`, que a lista não oferece mais: sem isto o select abriria em branco e a
+   primeira edição trocaria o dado da arma por acidente. É a mesma regra do chip
+   de tipo de Feitiço, que continua na fileira mesmo quando não é oferecido. */
+const opcoesDeDado = (lista, valor) =>
+  (valor && !lista.includes(valor) ? [valor, ...lista] : lista).map((d) => ({ value: d, label: d }));
+
+function PropriedadeCustom({ prop, valor, onChange, pc = null }) {
   const ligada = valor != null && valor !== false;
   const padrao = {
     dado: "1d6", tipo: "ct", numero: 1, alcance: [6, 18],
@@ -11412,11 +11494,21 @@ function PropriedadeCustom({ prop, valor, onChange }) {
         >
           {prop.nome}
         </button>
+        {/* O preço em PC só existe com a bancada de criação ligada, e ele é
+            RESULTADO e não explicação: com a propriedade marcada é o que ela
+            está custando nesta arma, e sem ela é o que ela custaria. */}
+        {pc != null && (
+          <span className={`ml-auto font-mono text-[10px] tabular-nums ${pc < 0 ? "text-emerald-300" : "text-slate-500"}`}>
+            {pc > 0 ? `+${pc}` : pc}
+          </span>
+        )}
       </div>
 
       {ligada && prop.param === "dado" && (
         <div className="mt-1.5">
-          <Select value={valor} onChange={onChange} options={ARMA_DADOS.map((d) => ({ value: d, label: d }))} />
+          {/* Tamanho de dado, e não degrau da escada: a Fatal e a Mortal dizem
+              "é especificado um tamanho de dado". Ver ARMA_DADOS_PROP. */}
+          <Select value={valor} onChange={onChange} options={opcoesDeDado(ARMA_DADOS_PROP, valor)} />
         </div>
       )}
       {ligada && prop.param === "tipo" && (
@@ -11445,12 +11537,34 @@ function PropriedadeCustom({ prop, valor, onChange }) {
 
 /* Editor de UMA arma custom. Dobrado por padrão: a fileira de propriedades é
    longa, e o que interessa depois de criada é a linha de resumo. */
-function ArmaCustomEditor({ arma, onPatch, onRemove }) {
+function ArmaCustomEditor({ arma, onPatch, onRemove, grauOrdem = 1, tiposFisicos }) {
   const [aberto, setAberto] = useState(!arma.nome);
   // Confirmação igual à da linha do inventário, e aqui ela pesa MAIS: apagar a
   // arma custom leva junto TODA entrada do inventário que aponta para ela (ver
   // `removeArmaCustom`), com a Ferramenta Amaldiçoada de cada uma.
   const [confirmDel, setConfirmDel] = useState(false);
+  /* A bancada de Pontos de Criação só existe para quem instalou o addon que a
+     pede. Ver `afty-criacao-armas.js` e docs/afty-criacao-armas.md. */
+  const bancada = usePrimitiva("criacaoArmas");
+  const criacao = saneiaCriacaoDeArma(arma.criacao) ?? createBlankCriacao();
+  const orc = useMemo(
+    () => (bancada ? orcamentoDaArma(arma, { grauOrdem, tiposFisicos }) : null),
+    [bancada, arma, grauOrdem, tiposFisicos],
+  );
+  const patchCriacao = (partial) => onPatch({ criacao: { ...criacao, ...partial } });
+
+  /* ⚠ O CUSTO DA ARMA DE TÉCNICA É ESCRITO, e não calculado na leitura. O autor
+     decidiu em 2026-09-09 que ele sai do grau do usuário e que o campo vira
+     mostrador. Calcular só dentro da bancada deixaria a ficha com dois números
+     chamados Custo: o gravado, que conta no orçamento de equipamento do grau, e
+     o da bancada. A escrita converge numa passada e depois dela não faz mais
+     nada, e ela só acontece na arma que a pessoa marcou como de técnica. */
+  useEffect(() => {
+    if (!bancada || !criacao.tecnica) return;
+    const alvo = custoDeTecnica(grauOrdem);
+    if (arma.custo !== alvo) onPatch({ custo: alvo });
+  }, [bancada, criacao.tecnica, grauOrdem, arma.custo, onPatch]);
+
   const props = arma.props || {};
   const setProp = (id, v) => {
     const novo = { ...props };
@@ -11478,6 +11592,15 @@ function ArmaCustomEditor({ arma, onPatch, onRemove }) {
           <span className="font-mono text-[10px] text-slate-500 whitespace-nowrap">
             {arma.dano?.dado} {TIPOS_DANO[arma.dano?.tipo] ?? ""}
           </span>
+          {orc && (
+            <span
+              className={`font-mono text-[10px] tabular-nums whitespace-nowrap ${
+                orc.sobra < 0 || orc.avisos.length > 0 ? "text-amber-400" : "text-slate-500"
+              }`}
+            >
+              {orc.gastos.total}/{orc.pool.total} PC
+            </span>
+          )}
         </button>
         {confirmDel ? (
           <span className="flex items-center gap-1 flex-shrink-0">
@@ -11523,6 +11646,16 @@ function ArmaCustomEditor({ arma, onPatch, onRemove }) {
 
       {aberto && (
         <div className="px-3 py-2.5 space-y-2.5">
+          {/* Resultado antes do editor, e nunca um campo no meio dos números. */}
+          {orc && (
+            <BancadaDeArma
+              orc={orc}
+              criacao={criacao}
+              temEspecial={!!props.especial}
+              onPatch={patchCriacao}
+            />
+          )}
+
           <div>
             <FieldLabel>Nome</FieldLabel>
             <TextInput value={arma.nome ?? ""} onChange={(v) => onPatch({ nome: v })} placeholder="Nome da arma" />
@@ -11531,10 +11664,15 @@ function ArmaCustomEditor({ arma, onPatch, onRemove }) {
           <div className="grid grid-cols-2 gap-2">
             <div>
               <FieldLabel>Classe</FieldLabel>
+              {/* ⚠ COM A BANCADA O RÓTULO É O DA MÉTRICA, e o valor gravado é o
+                  mesmo: o autor confirmou em 2026-09-09 que a arma Tática é a
+                  Complexa do livro. Ver `CLASSIFICACOES_ARMA`. */}
               <Select
                 value={arma.classe}
                 onChange={(v) => onPatch({ classe: v })}
-                options={[{ value: "simples", label: "Simples" }, { value: "complexa", label: "Complexa" }]}
+                options={bancada
+                  ? CLASSIFICACOES_ARMA.map((c) => ({ value: c.value, label: c.label }))
+                  : [{ value: "simples", label: "Simples" }, { value: "complexa", label: "Complexa" }]}
               />
             </div>
             <div>
@@ -11549,7 +11687,7 @@ function ArmaCustomEditor({ arma, onPatch, onRemove }) {
               <Select
                 value={arma.dano?.dado}
                 onChange={(v) => onPatch({ dano: { ...arma.dano, dado: v } })}
-                options={ARMA_DADOS.map((d) => ({ value: d, label: d }))}
+                options={opcoesDeDado(ARMA_DADOS, arma.dano?.dado)}
               />
             </div>
             <div>
@@ -11579,7 +11717,7 @@ function ArmaCustomEditor({ arma, onPatch, onRemove }) {
               <Select
                 value={arma.dano?.duasMaos ?? arma.dano?.dado}
                 onChange={(v) => onPatch({ dano: { ...arma.dano, duasMaos: v } })}
-                options={ARMA_DADOS.map((d) => ({ value: d, label: d }))}
+                options={opcoesDeDado(ARMA_DADOS, arma.dano?.duasMaos ?? arma.dano?.dado)}
               />
             </div>
           )}
@@ -11591,11 +11729,23 @@ function ArmaCustomEditor({ arma, onPatch, onRemove }) {
             </div>
             <div>
               <FieldLabel>Custo</FieldLabel>
-              <Select
-                value={String(arma.custo)}
-                onChange={(v) => onPatch({ custo: Number(v) })}
-                options={CUSTOS.map((c) => ({ value: String(c), label: `C${c}` }))}
-              />
+              {/* Na arma de técnica o custo vem do grau do usuário, então o
+                  campo mostra em vez de aceitar: um número digitado que a regra
+                  ignora é a pior forma de mentir na tela. */}
+              {bancada && criacao.tecnica ? (
+                <div
+                  className="w-full h-9 bg-slate-900/60 border border-slate-800 rounded px-2 flex items-center text-sm text-slate-300"
+                  title="O custo da arma de técnica vem do grau do usuário"
+                >
+                  C{arma.custo}
+                </div>
+              ) : (
+                <Select
+                  value={String(arma.custo)}
+                  onChange={(v) => onPatch({ custo: Number(v) })}
+                  options={CUSTOS.map((c) => ({ value: String(c), label: `C${c}` }))}
+                />
+              )}
             </div>
             <div>
               <FieldLabel>Espaços</FieldLabel>
@@ -11606,8 +11756,19 @@ function ArmaCustomEditor({ arma, onPatch, onRemove }) {
           <div>
             <FieldLabel>Propriedades</FieldLabel>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
-              {ARMA_PROPRIEDADES.filter((p) => p.id !== "especial").map((p) => (
-                <PropriedadeCustom key={p.id} prop={p} valor={props[p.id]} onChange={(v) => setProp(p.id, v)} />
+              {/* ⚠ A ESPECIAL SÓ APARECE COM A BANCADA. Sem ela não há onde
+                  guardar nem o preço nem o texto do traço, e uma propriedade
+                  marcável que não mostra nada seria uma caixa morta. Com a
+                  bancada os dois campos existem, e é a métrica que os pede:
+                  "deverá sempre ser avaliada por um avaliador de Item". */}
+              {ARMA_PROPRIEDADES.filter((p) => bancada || p.id !== "especial").map((p) => (
+                <PropriedadeCustom
+                  key={p.id}
+                  prop={p}
+                  valor={props[p.id]}
+                  onChange={(v) => setProp(p.id, v)}
+                  pc={orc ? (orc.linhas.find((l) => l.id === p.id)?.pc ?? PC_PROPRIEDADE[p.id] ?? null) : null}
+                />
               ))}
             </div>
           </div>
@@ -11620,7 +11781,7 @@ function ArmaCustomEditor({ arma, onPatch, onRemove }) {
 /* Card das armas criadas pelo jogador. Fica ACIMA do catálogo porque uma arma
    criada aqui aparece lá embaixo na lista, e a ordem inversa esconderia o
    resultado da ação que o jogador acabou de fazer. */
-function ArmasCustomCard({ armas, onAdd, onPatch, onRemove }) {
+function ArmasCustomCard({ armas, onAdd, onPatch, onRemove, grauOrdem, tiposFisicos }) {
   return (
     <Card
       title="Armas Criadas"
@@ -11644,6 +11805,8 @@ function ArmasCustomCard({ armas, onAdd, onPatch, onRemove }) {
               arma={a}
               onPatch={(partial) => onPatch(a.id, partial)}
               onRemove={() => onRemove(a.id)}
+              grauOrdem={grauOrdem}
+              tiposFisicos={tiposFisicos}
             />
           ))}
         </div>
@@ -11731,6 +11894,15 @@ function TabEquipamentos({ draft, derived, addEquipamento, removeEquipamento, pa
   const sistemaJogador = regraDo(sistemaDaFicha(draft), "danoPorArma") === "player";
   const { equip, carga, grauFeiticeiro: grau } = derived;
   const fontesDano = fontesDanoDaFicha(draft, derived);
+  /* Os tipos de dano FÍSICOS vivos, que a bancada de criação usa para conferir a
+     Modular. Saem daqui e não da constante do módulo porque um Addon pode
+     acrescentar um tipo físico, e o espelho do `afty-criacao-armas.js` conhece
+     só os três do livro. */
+  const tiposFisicosDaFicha = useMemo(
+    () => tiposDeDanoDaCategoria("fisico").map((t) => t.id),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [draft.addons],
+  );
   const [catTab, setCatTab] = useState("arma");
   const [busca, setBusca] = useState("");
   const [subFiltro, setSubFiltro] = useState("todos");
@@ -11990,6 +12162,8 @@ function TabEquipamentos({ draft, derived, addEquipamento, removeEquipamento, pa
         onAdd={addArmaCustom}
         onPatch={patchArmaCustom}
         onRemove={removeArmaCustom}
+        grauOrdem={grau?.ordem ?? 1}
+        tiposFisicos={tiposFisicosDaFicha}
       />
 
       {reliquiasDaYamata.length > 0 && (
@@ -14592,12 +14766,34 @@ function useVisivelNaFileira(selecionado) {
 function FileiraDeCartoes({ children, onNova, rotuloNovo, rotuloAnterior, rotuloProximo }) {
   const ref = useRef(null);
   const [pode, setPode] = useState({ esq: false, dir: false });
+  /* ⚠ A ÚLTIMA MEDIDA MORA NUM REF, e o `setPode` só é chamado quando ela MUDA.
+     Isto é o conserto do relato do autor em 2026-09-09: criar o quinto Feitiço
+     derrubava a aba inteira com o erro 185 do React (*Maximum update depth
+     exceeded*), e o mesmo valia para a quinta Invocação. É o ponto exato em que
+     a fileira passa a ter conteúdo maior que a caixa.
+
+     A CAUSA são DUAS medidas de PRIORIDADE DIFERENTE na mesma passada. O quinto
+     cartão nasce selecionado, o `useVisivelNaFileira` rola a fileira até ele, e
+     essa rolagem chega aqui pelo `onScroll`, que o React trata como evento
+     CONTÍNUO. A medida do efeito de leiaute é SÍNCRONA. Com as duas na fila, a
+     renderização síncrona PULA a contínua em vez de aplicá-la, deixa o
+     componente marcado como tendo trabalho pendente, e a partir daí nenhuma
+     chamada de `setPode` consegue mais sair barata: cada render dispara outra,
+     e as antigas voltam a ser aplicadas em cima de uma base velha, fazendo o
+     valor oscilar entre "dá para rolar" e "não dá" até estourar o limite.
+
+     Guardar a medida num ref corta o laço na raiz: medida igual não vira
+     chamada nenhuma. E o valor vai CRU, e não por função: se o React reaplicar
+     a fila, a última medida vence e nada oscila. */
+  const medido = useRef({ esq: false, dir: false });
   const medir = useCallback(() => {
     const el = ref.current;
     if (!el) return;
     const esq = el.scrollLeft > 4;
     const dir = el.scrollWidth - el.clientWidth - el.scrollLeft > 4;
-    setPode((antes) => (antes.esq === esq && antes.dir === dir ? antes : { esq, dir }));
+    if (medido.current.esq === esq && medido.current.dir === dir) return;
+    medido.current = { esq, dir };
+    setPode(medido.current);
   }, []);
   /* DOIS efeitos, e não um. O primeiro roda a cada render porque acrescentar
      uma invocação muda o `scrollWidth` sem mudar o tamanho do container, e o

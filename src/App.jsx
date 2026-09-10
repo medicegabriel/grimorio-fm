@@ -14,7 +14,6 @@ import PdfFab from "./components/PdfFab";
 import useCreatureStorage from "./components/useCreatureStorage";
 import useEncounterManager from "./useEncounterManager";
 import useEncontrosAfty from "./systems/afty/encontros/usar-encontros-afty";
-import { getSistema, SISTEMAS } from "./systems/afty/afty-sistema";
 import { COMPENDIUM, getCompendiumById, isBuiltInId } from "./fm-compendium";
 import { Analytics } from '@vercel/analytics/react';
 
@@ -206,6 +205,16 @@ export default function App() {
       <Dashboard
         manager={storage}
         compendium={COMPENDIUM}
+        /* ⚠ O TÍTULO E A SEÇÃO DE CRIATURAS BASE SÃO DA ROTA, e é por isso
+           que eles são decididos aqui e não lá dentro: o Dashboard lista o
+           INVENTÁRIO de um ambiente, e não uma ficha, então não existe
+           `rulesVersion` para consultar. Fora das duas rotas nenhuma das duas
+           props é passada, e o Grimório 2.5.2 fica igual ao que sempre foi.
+
+           Autor, 2026-09-09: no /Player o cabeçalho diz "Jogador" e as
+           Criaturas Base saem, porque elas são o compêndio da 2.5.2. */
+        titulo={sistemaDaRota === "player" ? "Jogador" : undefined}
+        showSystemView={sistemaDaRota !== "player"}
         encounters={aftyMode ? encontrosAfty.encontros : encounterManager.encounters}
         onOpenCreature={aftyMode ? goToAftyFicha : goToTracker}
         onEditCreature={goToBuilder}
@@ -351,34 +360,17 @@ export default function App() {
         />
       )}
       <PdfFab />
-      {aftyMode && (
-        <div
-          title={getSistema(sistemaDaRota).seloTitulo}
-          style={{
-            position: "fixed",
-            top: 8,
-            left: 8,
-            zIndex: 9999,
-            padding: "4px 10px",
-            borderRadius: 9999,
-            fontSize: 12,
-            fontWeight: 700,
-            letterSpacing: 0.3,
-            color: sistemaDaRota === SISTEMAS.player.id ? "#e0f2fe" : "#f5e9ff",
-            background: sistemaDaRota === SISTEMAS.player.id
-              ? "rgba(12, 74, 110, 0.92)"
-              : "rgba(88, 28, 135, 0.92)",
-            border: sistemaDaRota === SISTEMAS.player.id
-              ? "1px solid rgba(125, 211, 252, 0.5)"
-              : "1px solid rgba(216, 180, 254, 0.5)",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.35)",
-            pointerEvents: "none",
-            userSelect: "none",
-          }}
-        >
-          {getSistema(sistemaDaRota).selo}
-        </div>
-      )}
+      {/* ⚠ O SELO FIXO DO AMBIENTE PRIVADO SAIU em 2026-09-09, a pedido do autor
+         (*"Remova isso. É meio feio."*). Era uma cápsula `position: fixed` no
+         canto superior esquerdo, roxa no /Afty e azul no /Player, escrita a
+         partir dos campos `selo` e `seloTitulo` do SISTEMAS, que saíram junto
+         por terem ficado sem leitor.
+
+         ⚠ ISSO DESTRAVA O `my-0!` DO CABEÇALHO DO CRIADOR. O selo era o único
+         motivo de o conserto ter sido testado e desfeito em 2026-09-02: com
+         `top: 8` ele passava a cobrir o botão Voltar quando a margem morta do
+         `<h1>` sumia. Sem selo não há colisão. Ver docs/a-fazer.md e o
+         comentário no cabeçalho de AftyCreatureBuilder.jsx. */}
       <Analytics />
     </>
   );

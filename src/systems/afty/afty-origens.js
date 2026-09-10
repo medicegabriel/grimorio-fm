@@ -30,7 +30,7 @@
  */
 
 import {
-  registrarFamilia, remendarLista, liberacoesDaCriatura, filtraForaDoJogador,
+  registrarFamilia, remendarLista, liberacoesDaCriatura, filtraForaDoJogador, nivelDaFicha,
 } from "./afty-addons";
 import { AFTY_ATTRS, AFTY_RESISTENCIAS } from "./afty-schema";
 // Do módulo FOLHA, não de ./afty-pericias.js: os geradores de opção abaixo
@@ -1670,7 +1670,7 @@ export function resolveEscolhasOrigem(creature, nd = 1) {
 
 /** Opções inteiras selecionadas nas escolhas da origem e do clã. */
 export function opcoesEscolhidasDaOrigem(creature, escolhas = null) {
-  const mapa = escolhas?.mapa || resolveEscolhasOrigem(creature, creature?.core?.nd ?? 1).mapa;
+  const mapa = escolhas?.mapa || resolveEscolhasOrigem(creature, nivelDaFicha(creature)).mapa;
   const porId = new Map();
   for (const esc of escolhasDaOrigem(creature)) {
     for (const opcao of esc.opcoes || []) porId.set(opcao.id, opcao);
@@ -1680,7 +1680,7 @@ export function opcoesEscolhidasDaOrigem(creature, escolhas = null) {
 
 /** Trocas de atributo-chave declaradas por características de origem ou clã. */
 export function atributosDePericiaDaOrigem(creature, escolhas = null) {
-  const resolvidas = escolhas || resolveEscolhasOrigem(creature, creature?.core?.nd ?? 1);
+  const resolvidas = escolhas || resolveEscolhasOrigem(creature, nivelDaFicha(creature));
   const porEscolha = new Map(escolhasDaOrigem(creature).map((esc) => [esc.id, esc]));
   const out = {};
   for (const caracteristica of caracteristicasEfetivas(creature)) {

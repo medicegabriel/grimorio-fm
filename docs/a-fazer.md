@@ -36,6 +36,26 @@ arquivo md. Para outros colaboradores usarem ele também e ir anotando oq for pr
 
 Coisas paradas esperando decisão de regra. Nada aqui deve ser resolvido por suposição.
 
+### O tipo "passivo" só tem UMA regra, e o resto dele segue em branco
+
+**Onde:** `src/systems/afty/afty-feiticos.js` (`calculadorDe` devolve `null` para "passivo")
+
+**Situação:** em 2026-09-09 a Passiva ganhou o primeiro número da vida dela, o custo em PE Máximo
+(`2 × nível`, só na Ficha de Jogador, divergência `passivaCustaPeMaximo`). Fora isso ela continua
+sendo o que era desde que entrou no schema: nome, nível, descrição, os efeitos do Motor de Automação
+e nada mais.
+
+Não há calculador, então ela não tem alcance, duração, condição, CD nem valor. Nas outras cinco
+famílias cada um desses campos sai de uma tabela do livro, e para a Passiva nenhuma foi enviada. O
+autor adiou isso por escrito em 2026-08-09: *"Os Especiais e Passivos deixamos para depois. Com
+calma."*, e a frase continua valendo para tudo menos o custo.
+
+**Precisa:** o autor dizer se a Passiva ganha mais alguma mecânica, e qual. Enquanto não ganhar, o
+tipo funciona (ela custa, aparece na Ficha e roda o Motor), e quem criar uma vai achar o card mais
+vazio da aba.
+**Anotado:** 2026-09-09, ao ligar o custo em PE Máximo
+
+
 ### Controlador: as reações que rolam dado não têm onde aparecer
 
 **Onde:** `src/systems/afty/afty-invocacoes.js` (`opcoesDeUso`)
@@ -111,9 +131,9 @@ escolha... começa como iniciante, no nível 6 veterano e no 12 mestre"*. Depend
 
 ---
 
-### Onde mora o selo "Grimório Afty · privado", e os 64px de margem morta do cabeçalho
+### Os 64px de margem morta do cabeçalho do criador, agora sem bloqueio
 
-**Onde:** `src/App.jsx` (o selo, linha ~354) e `src/systems/afty/AftyCreatureBuilder.jsx` (o `<h1>`)
+**Onde:** `src/systems/afty/AftyCreatureBuilder.jsx` (o `<h1>` do cabeçalho)
 
 **Situação:** o `src/index.css` é global, fica FORA de qualquer `@layer` e traz
 `h1 { font-size: 56px; margin: 32px 0 }`. No Tailwind 4 as utilidades vivem dentro de
@@ -127,17 +147,18 @@ Isso custa altura em TODA aba do criador, e mais ainda agora que a aba de Invoca
 uma barra de resultado grudada logo abaixo do cabeçalho.
 
 O conserto é uma classe (`my-0!`, com a exclamação, que sobe a declaração acima da camada).
-Ele foi escrito, testado e **desfeito**, por causa do efeito colateral: o selo fixo
-`"⚗️ Grimório Afty · privado"` fica em `position: fixed; top: 8; left: 8` e passa a cobrir o
-botão **Voltar** em 9px no desktop e 29px no telefone. A colisão **já existe hoje** em 390px,
-com 8px, e zerar a margem a triplica.
+Ele foi escrito, testado e desfeito em 2026-09-02, e **o motivo de ter sido desfeito morreu em
+2026-09-09**: o selo fixo do ambiente privado, que ficava em `position: fixed; top: 8; left: 8` e
+passava a cobrir o botão **Voltar**, foi removido a pedido do autor. Medido depois da remoção, o
+Voltar sai inteiro nas duas rotas, em `x=16, y=14` a 390px e `x=18, y=67` a 1440px.
 
-**Precisa:** o autor decidir uma das três.
-1. Mover o selo para o canto inferior esquerdo (o inferior direito já é do PdfFab). Resolve
-   para `/Afty` e `/Player` de uma vez e libera o `my-0!`.
-2. Manter o selo onde está e reservar 44px de topo no cabeçalho do criador. Economiza 32px
-   em vez de 64px, e é um acoplamento do cabeçalho a um selo que mora noutro arquivo.
-3. Deixar como está. A margem morta continua, e a colisão de 8px em 390px também.
+⚠ **Esta entrada era uma pergunta com três opções, e virou uma tarefa.** Não há mais nada a decidir:
+é aplicar o `my-0!` e conferir as duas larguras. Ficou aqui porque ninguém pediu os 64px de volta, e
+mudança de altura em toda aba do criador é visível o bastante para ser escolha do autor e não efeito
+colateral de outra tarefa.
+
+**Precisa:** aplicar `my-0!` no `<h1>` do cabeçalho do criador e medir `/Afty` e `/Player` em 1440px
+e 390px. Varrer junto as outras seis declarações do `index.css` para esse `h1` (ver a lição abaixo).
 
 **Nota:** a mesma armadilha de camada vale para `h2`, e ela era MAIOR do que esta linha dizia.
 O `m-0!` do `Card` em `ui/primitivos.jsx` tinha neutralizado só a MARGEM. O `font-size: 24px`, o
@@ -151,6 +172,7 @@ neutraliza a regra.** O index.css declara sete coisas de uma vez, e conferir só
 naquele dia deixa as outras seis de pé. Vale varrer se aparecer qualquer coisa que "não obedece".
 
 **Anotado:** 2026-09-02, na reestruturação da aba de Invocações
+**Nota:** reescrita em 2026-09-09, quando o selo saiu e a pergunta das três opções deixou de existir.
 
 ### As 7 propriedades restantes do Golpe Especial, e a única que dá para ligar
 
@@ -350,6 +372,18 @@ dashboard é a fronteira, e ela é só de leitura de campo). Copiar o `CreatureC
 **Nota:** a mudança foi COMMITADA em `ae3a08f` (Ficha Player #001), então a árvore de trabalho está
 limpa e o `git diff` não acusa mais nada. A exceção continua de pé, só que agora no histórico: a
 verificação de fim de sessão deixou de conseguir enxergá-la. (2026-08-31)
+
+**Nota:** e agora são DUAS. Em 2026-09-09 o autor pediu que o `/Player` dissesse "Jogador" no lugar
+de "Grimório" e perdesse a seção "Criaturas Base", e as duas moram nesse arquivo. Ele foi consultado
+antes, escolheu **duas props opcionais** (`titulo` e `showSystemView`, com o padrão igual ao de hoje)
+e recusou forkar o `Dashboard` e o `FolderSidebar` para o Afty, por 1876 linhas duplicadas para
+mudar uma string e um booleano.
+
+Isso não resolve a entrada, ele decidiu um CASO e não a regra. O que mudou é que a segunda exceção
+tem forma diferente da primeira e é mais fácil de defender: a primeira lê `creature.rulesVersion`
+dentro do componente, e a segunda só acrescenta parâmetro com padrão, deixando quem decide no
+`src/App.jsx`. Se a saída escolhida um dia for "aceitar a exceção e anotá-la na regra", é essa
+segunda forma que vale a pena virar a fronteira escrita. (2026-09-09)
 
 ### O Ataque Básico pode rolar como Ataque Amaldiçoado?
 
@@ -755,6 +789,89 @@ id cru. O conserto é fazer o avaliador resolver a herança nos DOIS eixos, prov
 alguém jogar um Especialista em Estilo acima do ND 20.
 **Anotado:** 2026-09-07, ao montar a herança de Especialização
 
+### PERGUNTA AO AUTOR: o que um Nível de Exaustão FAZ
+**Onde:** `src/systems/afty/ficha/ficha-sessao.js` (`exaustao`), `afty-condicoes.js`
+**Situação:** o contador de Nível de Exaustão nasceu em 2026-09-09, com o Vislumbre Celeste, e é da
+sessão de todo mundo: seis Habilidades Lendárias e a Expansão de Domínio dizem *"você recebe um ponto
+de exaustão"* desde sempre e não tinham onde marcar. O que falta é o EFEITO: "Exausto" existe como
+nome de condição na lista da 2.5.2, e o `CONDICAO_TEXTOS` do Afty está vazio esperando o autor. Hoje
+o contador conta e mostra, e a penalidade é de mesa.
+**Precisa:** o texto do que cada nível impõe, e se há teto. Com ele, o contador vira canal.
+**Anotado:** 2026-09-09, ao fazer o addon Vislumbre Celeste
+
+---
+
+### PERGUNTA AO AUTOR: o texto de "Ler Energia" e "Ler Intenções"
+**Onde:** `src/systems/afty/afty-vislumbre-celeste.js` (`VISLUMBRE_TEXTOS`)
+**Situação:** o texto do Vislumbre cita três ações de leitura e define UMA, a Ler Técnica (teste de
+Feitiçaria ou Percepção, CD 20 + 5 por grau acima do Quarto). As outras duas não existem em lugar
+nenhum do sistema: o que existe são as Aptidões Leitura de Aura e Leitura Rápida de Energia, que são
+parecidas e têm texto próprio. Hoje o benefício muda só a AÇÃO delas (Movimento coberto, Livre uma
+vez por rodada descoberto), e o efeito é de mesa.
+**Precisa:** o texto das duas, ou a confirmação de que elas são as Aptidões que já existem.
+**Anotado:** 2026-09-09, ao fazer o addon Vislumbre Celeste
+
+---
+
+### O ponto de Fadiga do Vislumbre não entra sozinho no fim do turno
+**Onde:** `src/systems/afty/ficha/PainelDoVislumbre.jsx`
+**Situação:** *"No final de cada um dos seus turnos em que seus olhos estiverem descobertos, você
+recebe 1 Ponto de Fadiga"*. A conversão em Exaustão ao chegar em 4 já é automática
+(`acumulaFadiga`), e o que continua manual é o ponto POR TURNO: o painel tem o botão, a um clique.
+A Ficha tem rodada, mas não tem um gancho de FIM DE TURNO onde um addon possa pendurar efeito.
+**Precisa:** decidir se vale abrir esse gancho. Ele serviria a mais coisa que este addon: toda
+sustentação por rodada hoje é lembrada pela pessoa.
+**Anotado:** 2026-09-09, ao fazer o painel do Vislumbre na Ficha Final
+
+---
+
+### A Capacidade Impossível do Vislumbre não tem trava
+**Onde:** `src/systems/afty/afty-vislumbre-celeste.js`, `afty-feiticos.js`
+**Situação:** *"os Seis Olhos permitem ao usuário fazer um Feitiço c/ Pré-Requisito Impossível que só
+pode ser utilizado enquanto os olhos estiverem descobertos"*. Um Feitiço com requisito Impossível já
+é criável por qualquer um (é escolha do Feitiço, que troca dificuldade por dados e PE), então o que
+falta é a TRAVA: marcar UM Feitiço como preso ao estado, e ele avisar na Ficha Final enquanto os
+olhos estiverem cobertos.
+**Precisa:** o autor dizer se a marca é escolha do jogador (um Feitiço qualquer) e se ela é uma só.
+O desenho é o mesmo dos marcadores de Invocação.
+**Anotado:** 2026-09-09, ao fazer o addon Vislumbre Celeste
+
+---
+
+### Energia Reversa não é recurso com pontos próprios
+**Onde:** `src/systems/afty/afty-aptidoes.js`, `ficha/ficha-sessao.js`
+**Situação:** a Mitigação do Vislumbre diz *"gastando 1 Ponto de energia reversa para cada ponto de
+fadiga"*, e Energia Reversa hoje é uma trilha de Aptidão e um tipo de dano, e não um recurso contado.
+Outras entradas do livro falam a mesma língua ("2 pontos de energia reversa gastos", no Treinamento
+da 2.5.2).
+**Precisa:** o autor dizer se Ponto de Energia Reversa é PE com outro nome (como a Estamina do
+Restringido é) ou um recurso próprio, com teto próprio.
+**Anotado:** 2026-09-09, ao fazer o addon Vislumbre Celeste
+
+---
+
+### ASSUNÇÃO: o alcance de 3 PC da propriedade Alcance é 36/72
+**Onde:** `src/systems/afty/afty-criacao-armas.js` (`pcDeAlcance`)
+**Situação:** o padrão diz *"para cada ponto desta propriedade a arma ganha 12 de alcance em seu
+acerto e o dobro disso em seu alcance máximo. Ou seja, 1 PC dá alcance [12/24] enquanto 3 PCs dão
+alcance [36/76]"*. O dobro de 36 é 72, e o 76 escrito parece erro de digitação. O código segue a
+REGRA (12 por ponto, o dobro no máximo) e não o exemplo.
+**Precisa:** confirmar que é 72. Se for 76 mesmo, a conta deixa de ser "o dobro" e vira tabela.
+**Anotado:** 2026-09-09, ao fazer o addon de Criação de Armas
+
+---
+
+### ASSUNÇÃO: o dado de duas mãos da Versátil não gasta PC
+**Onde:** `src/systems/afty/afty-criacao-armas.js` (`orcamentoDaArma`)
+**Situação:** a Versátil custa 1 PC e a arma passa a ter dois dados, o de uma mão e o de duas. O
+padrão precifica o dado de dano uma vez só, e não diz nada sobre o segundo. Nas armas do livro ele é
+sempre um degrau acima do primeiro (Bastão 1d6/1d8, Clava 1d8/1d10). A bancada cobra só o dado base,
+e o segundo sai de graça.
+**Precisa:** o autor dizer se o segundo dado custa PC, e se ele é livre ou preso a um degrau acima.
+**Anotado:** 2026-09-09, ao fazer o addon de Criação de Armas
+
+---
+
 ---
 
 ## AFTY — Feitiços
@@ -1041,6 +1158,36 @@ shikigami existe desde que o Feitiço é criado, o que faria a redução ser sem
 com quantos Feitiços de Shikigami a ficha tiver. Se for isso, é um canal de `pe` a menos no
 derive.
 **Anotado:** 2026-08-15
+**Nota:** a fórmula GÊMEA foi ligada em 2026-09-09. As Passivas passaram a tirar `2 × nível` do PE
+Máximo na Ficha de Jogador (Técnica Máxima = 12), que é exatamente a conta desta `reducaoPE`, e o
+caminho de desconto já existe agora. Perguntado ao autor na mesma conversa se as duas são a mesma
+regra, ele respondeu que **só as Passivas por enquanto**, então esta entrada continua aberta de
+propósito. Quando ela for ligada, o encaixe é o mesmo: a parcela entra na conta do PE em
+`afty-derive.js` e sai como linha nomeada no hover. (2026-09-09)
+
+### A arma criada só guarda UMA opção de Modular
+**Onde:** `src/systems/afty/afty-equipamentos.js` (`saneiaValorProp`, `param: "tipo"`)
+**Situação:** o padrão de criação diz *"Modular: 1 PC | Cada 1 PC adiciona uma opção de dano FÍSICO
+à arma"*, e o modelo de arma guarda **um** tipo só (`props.modular: "ct"`). A bancada cobra 1 PC e o
+campo aceita um tipo, então a segunda opção não tem onde existir.
+**Precisa:** decidir se o `modular` passa a aceitar lista. Mexe em quatro leitores
+(`saneiaValorProp`, `rotuloPropriedade`, `propriedadesDaArma` e o campo do editor), e o catálogo do
+livro continuaria com um tipo só em toda arma.
+**Anotado:** 2026-09-09, ao fazer o addon de Criação de Armas
+
+---
+
+### O traço Especial da arma criada não aparece fora da bancada
+**Onde:** `src/systems/afty/afty-equipamentos.js` (`getEspecial`), `ficha/`
+**Situação:** com o addon de Criação de Armas a arma própria pode marcar a propriedade Especial e
+guardar o preço em PC mais o texto do traço (`criacao.especialTexto`). O texto é mostrado na bancada
+e em mais lugar nenhum: a linha do inventário e a Ficha Final leem o texto especial do CATÁLOGO,
+pelo campo `especial` da arma, que é um id de `ARMA_ESPECIAIS` e arma custom não tem.
+**Precisa:** fazer os dois leitores caírem no texto da arma quando ela for custom. É a mesma forma do
+`alcancePorTreino`: o catálogo continua respondendo pelo id, e a arma própria responde por si.
+**Anotado:** 2026-09-09, ao fazer o addon de Criação de Armas
+
+---
 
 ### Clã Zenin ficou com bônus de atributo livre
 **Onde:** `src/systems/afty/afty-origens.js`

@@ -39,7 +39,7 @@
  * o teto duro de 30 de `deriveAfty` quando esse canal existir.
  */
 
-import { registrarFamilia, remendarLista } from "./afty-addons";
+import { registrarFamilia, remendarLista, nivelDaFicha } from "./afty-addons";
 import {
   AFTY_ATTRS, AFTY_RESISTENCIAS, MELHORIA_NIVEL_INICIAL, LENDARIA_NIVEL_INICIAL,
 } from "./afty-schema";
@@ -714,7 +714,7 @@ function resolveEscolhas(itens, escolhasBrutas, opcoesPorItem = {}) {
  * (o resolver segue chamável fora do builder).
  */
 export function resolveAltoNivel(creature, ctx = {}) {
-  const nd = Math.max(1, Math.trunc(Number(creature?.core?.nd) || 1));
+  const nd = nivelDaFicha(creature);
   const ativo = altoNivelAtivo(nd);
   const destravado = {
     melhorias: ctx.destravado ? !!ctx.destravado.melhorias : true,

@@ -845,7 +845,12 @@ export const AFTY_APTIDOES = [
       "você recebe o efeito do Acerto Garantido instantaneamente.",
     requisitos: [
       // O livro diz "Ser de uma época onde ela era utilizada ou Mestre em
-      // História". O autor encurtou para só a parte conferível (2026-07-16).
+      // História". O autor encurtou para só a parte conferível (2026-07-16),
+      // porque a época é da MESA e não da ficha, e não há campo onde ela caiba.
+      // ⚠ A OUTRA METADE DO "OU" É UM ADDON, desde 2026-09-08:
+      // `addons/era-da-cesta-oca.json` remenda estes requisitos e tira o de
+      // perícia, para a mesa que joga naquela era. Quem mexer nesta linha mexe
+      // no que aquele pacote espera encontrar. Ver `asserts/t-cesta-oca.mjs`.
       { tipo: "pericia", pericia: "historia", nivel: "mestre" },
       { tipo: "trilha", trilha: "bar", valor: 1 },
       { tipo: "nd", valor: 5 },

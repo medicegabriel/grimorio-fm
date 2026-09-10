@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { Plus, X, AlertTriangle, Search, ChevronDown, ChevronRight } from "lucide-react";
+import { Plus, Minus, X, AlertTriangle, Search, ChevronDown, ChevronRight } from "lucide-react";
 
 import { COMBATE_ESTADOS } from "../../afty-combate";
 import { condicoesPorForca, fichaDaCondicao } from "../../afty-condicoes";
@@ -49,6 +49,46 @@ import { organizaEstados } from "../ficha-estados";
    que a fileira ainda cabe ao lado do rótulo numa tela de celular: a Manobra
    Finalizadora tem três e continua aberta, a Postura tem oito e fecha. */
 const MAX_OPCOES_ABERTAS = 3;
+
+/* NÍVEL DE EXAUSTÃO. Contador da sessão, e de todo mundo: seis Habilidades
+   Lendárias e a Expansão de Domínio dizem "você recebe um ponto de exaustão"
+   desde sempre, e a ficha não tinha onde marcar. Ele nasceu com a Fadiga Mental
+   do Vislumbre Celeste (autor, 2026-09-09: "a ficha conta as duas"), e não fica
+   atrás de primitiva nenhuma porque não é do addon.
+
+   ⚠ O QUE UM NÍVEL FAZ ainda não tem fonte no Afty, então ele CONTA e MOSTRA, e
+   a penalidade é de mesa. É a mesma honestidade das Condições logo ao lado, que
+   são marcadores e não inventam número. */
+function ContadorDeExaustao({ valor, onValor }) {
+  const n = Math.max(0, Math.trunc(Number(valor) || 0));
+  return (
+    <span className="flex items-center gap-1.5" role="group" aria-label={`Nível de Exaustão: ${n}`}>
+      <button
+        type="button"
+        className="afty-botao"
+        onClick={() => onValor(Math.max(0, n - 1))}
+        disabled={n === 0}
+        aria-label="Menos um Nível de Exaustão"
+      >
+        <Minus className="w-3 h-3" />
+      </button>
+      <span
+        className="afty-valor text-[12px] tabular-nums"
+        data-afty-tom={n > 0 ? "custo" : undefined}
+      >
+        {n}
+      </span>
+      <button
+        type="button"
+        className="afty-botao"
+        onClick={() => onValor(n + 1)}
+        aria-label="Mais um Nível de Exaustão"
+      >
+        <Plus className="w-3 h-3" />
+      </button>
+    </span>
+  );
+}
 
 function Secao({ titulo, children, direita }) {
   return (
@@ -396,7 +436,7 @@ function NovoBuff({ onCriar }) {
 
 export default function AbaBuffs({
   derived, sessao, onPatchCombate, onEstado, onBuffs, onCondicoes, deltaPorEstado,
-  onConceder, onRemoverConcessao,
+  onConceder, onRemoverConcessao, onExaustao,
 }) {
   const combate = derived.combate ?? {};
   const [novaCondicao, setNovaCondicao] = useState("");
@@ -749,7 +789,19 @@ export default function AbaBuffs({
       )}
 
       {/* ---------- condições ---------- */}
-      <Secao titulo="Condições">
+      {/* ⚠ A EXAUSTÃO VIAJA NO CABEÇALHO DAS CONDIÇÕES, e não numa seção própria:
+          ela é um número só, e um card inteiro para um número empurraria as
+          Condições para baixo da dobra no celular. Ao lado delas ela também lê
+          certo, porque é a mesma família de coisa. */}
+      <Secao
+        titulo="Condições"
+        direita={
+          <span className="flex items-center gap-2">
+            <span className="afty-rotulo text-[10px] uppercase tracking-wider">Exaustão</span>
+            <ContadorDeExaustao valor={sessao?.exaustao} onValor={onExaustao} />
+          </span>
+        }
+      >
         {condicoesNaCriatura.map((c) => (
           <LinhaCondicao
             key={c.id}

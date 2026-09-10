@@ -44,6 +44,8 @@
  */
 
 import { MELHORIA_NIVEL_INICIAL, LENDARIA_NIVEL_INICIAL } from "./afty-schema";
+/* O Nível efetivo, que pode vir do XP da Carteira. Ver `nivelDaFicha`. */
+import { nivelDaFicha } from "./afty-addons";
 
 /** Metade da Maestria, para baixo. É o TETO DE REPETIÇÃO das duas, e o valor por
     pega só da Especialização: o da Aptidão virou o Grau em 2026-08-12. */
@@ -153,7 +155,8 @@ export function acessoGeral(id, ctx = {}) {
  * ctx = { nd, maestria }.
  */
 export function resolveGerais(creature, ctx = {}) {
-  const nd = Math.max(1, Math.trunc(Number(ctx.nd ?? creature?.core?.nd) || 1));
+  // O `ctx.nd` vem do derive e já é o efetivo. Sem ele, pergunta à ficha.
+  const nd = ctx.nd != null ? Math.max(1, Math.trunc(Number(ctx.nd) || 1)) : nivelDaFicha(creature);
   const maestria = Math.max(0, Math.trunc(Number(ctx.maestria) || 0));
   const tetoCtx = { nd, maestria };
 

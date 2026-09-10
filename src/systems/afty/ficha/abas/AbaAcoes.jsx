@@ -912,6 +912,11 @@ export default function AbaAcoes({
      encostado nos vitais e na Guarda, e ali disputava espaço com PV e PE sendo
      que o que ele faz é AÇÃO de combate. */
   armasTransformaveis = null,
+  /* ⚠ NÓ PRONTO, pela mesma razão dos dois de cima. O Vislumbre Celeste veio
+     parar aqui a pedido do autor (2026-09-09): *"para eu não precisar ir para
+     Buffs o tempo inteiro"*. Descobrir os olhos é Ação Livre, e a Fadiga corre
+     por turno: as duas coisas se fazem no meio da rodada. */
+  vislumbre = null,
   gatilhosTreino = [], onGatilhoTreino = null,
 }) {
   const dano = derived.dano?.entradas ?? [];
@@ -931,6 +936,8 @@ export default function AbaAcoes({
   return (
     <div className="space-y-3">
       {adaptacao}
+      {/* Antes do Rápido: os olhos mudam o custo em PE de tudo que vem abaixo. */}
+      {vislumbre}
       {/* Antes do Rápido e do Dano: reunir ou dividir é a primeira decisão da
           rodada, e ela muda a linha de dano que aparece logo abaixo. */}
       {armasTransformaveis}

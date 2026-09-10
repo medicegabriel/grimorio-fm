@@ -34,6 +34,9 @@
 // grauMeta: fonte da verdade dos graus de Invocação (Shikigami usa o motor de
 // Invocações). afty-invocacoes não importa daqui, então não há ciclo.
 import { registrarFamilia } from "./afty-addons";
+// Só o `regraDo`, para a Passiva saber se cobra PE Máximo. O afty-sistema é
+// módulo FOLHA (t-ordem-modulos.mjs prende isso), então a seta é de mão única.
+import { regraDo } from "./afty-sistema";
 // Só o RÓTULO do atributo, para o aviso da divisão não sair em snake_case.
 // afty-atributos.js importa só o schema, que não importa nada: seta segura.
 import { ATTR_LABEL } from "./afty-atributos";
@@ -117,9 +120,15 @@ const SEM_TIPOS_FEITICO = Object.freeze([]);
  * Os tipos que a liberação por Addon abre.
  *
  * ⚠ São os DOIS que não dependem de conjuração amaldiçoada para existir: o
- * Passivo é característica (não gasta PE nem tem alcance) e o Personalizado é
- * regra escrita à mão pela mesa. Dano, Auxiliar, Curativo e Especial ficam de
+ * Passivo é característica (não tem alcance nem custo POR USO) e o Personalizado
+ * é regra escrita à mão pela mesa. Dano, Auxiliar, Curativo e Especial ficam de
  * fora porque cada um deles É uma tabela de técnica amaldiçoada.
+ *
+ * ⚠ "NÃO GASTA PE" DEIXOU DE SER VERDADE EM 2026-09-09, e por isso a frase acima
+ * mudou. Na Ficha de Jogador a Passiva cobra o dobro do nível dela do PE MÁXIMO,
+ * de uma vez (ver `peMaximoDasPassivas`). O que ela continua não tendo é custo
+ * por uso, que é o que interessa para esta lista: o Addon abre os dois tipos que
+ * não precisam de uma tabela de conjuração atrás deles.
  */
 export const TIPOS_FEITICO_LIBERADOS = Object.freeze(["passivo", "personalizado"]);
 
@@ -188,6 +197,68 @@ export const NIVEL_LABEL = {
 // homônima, que fixa o custo em 25 PE.
 // ---------------------------------------------------------------
 export const FEITICO_CUSTO_PE = { 0: 0, 1: 2, 2: 5, 3: 8, 4: 12, 5: 20, max: 25 };
+
+/* ---------------------------------------------------------------
+   O QUE UMA PASSIVA COBRA DO PE MÁXIMO (só na Ficha de Jogador)
+
+   Autor, 2026-09-09: *"Passivas precisam gastar PE Máximo igual ao Dobro do
+   Nível delas. Nível 0 = 0, Nível 1 = 2, Nível 2 = 4, Nível 5 = 10. Para cada
+   passiva, se gasta PE Máximo."*
+
+   ⚠ ISTO NÃO É A `FEITICO_CUSTO_PE` DE CIMA, e confundir as duas seria caro. A
+   tabela acima é o que um Feitiço cobra POR USO, ela sobe 0, 2, 5, 8, 12, 20 e
+   não é o dobro de nada a partir do nível 2. Esta aqui sai do MÁXIMO, uma vez
+   só, e vale enquanto a Passiva estiver na ficha. As duas empatam no nível 1
+   por coincidência.
+
+   ⚠ TÉCNICA MÁXIMA VALE 12 (autor, na mesma conversa), tratando "max" como
+   Nível 6. É a mesma leitura que o `nivelNumericoParaReducao` já fazia e que a
+   Criação de Shikigamis já usava na `reducaoPE` dela.
+
+   ⚠ E É DIVERGÊNCIA, não regra dos dois lados: na criatura do /Afty a Passiva
+   continua de graça. Ver `passivaCustaPeMaximo` em afty-sistema.js.
+   --------------------------------------------------------------- */
+
+/** O dobro do nível de UMA Passiva, com Técnica Máxima valendo 6. */
+export const custoPeMaximoDaPassiva = (nivel) =>
+  2 * (nivel === "max" ? 6 : Math.max(0, Math.trunc(Number(nivel) || 0)));
+
+/**
+ * O que as Passivas desta ficha tiram do PE Máximo.
+ *
+ * Devolve `{ total, linhas }`, com uma linha POR PASSIVA e o nome dela dentro,
+ * porque é assim que o valor chega ao hover de fontes do PE. Somar tudo num
+ * número só daria o total certo com o detalhamento errado, que é o bug que o
+ * `defesaAtributo` e a `Quantidade de PE` já custaram.
+ *
+ * ⚠ LÊ A LISTA CRUA da ficha, e é de propósito: o custo depende só de `tipo` e
+ * `nivel`, dois campos digitados, e nada aqui precisa do Feitiço resolvido. É o
+ * que permite descontar o PE ANTES de os Feitiços serem calculados, sem inverter
+ * a ordem do derive nem criar dependência circular (o custo POR USO de um
+ * Feitiço depende do PE, o PE Máximo não pode depender dele de volta).
+ *
+ * ⚠ VARIAÇÃO DE LIBERAÇÃO NÃO CONTA. Ela é o mesmo Feitiço declarado de outro
+ * jeito (`variacaoDe` aponta o original) e já não gasta vaga no orçamento. Se
+ * contasse aqui, declarar uma variação cobraria o PE Máximo duas vezes.
+ */
+export function peMaximoDasPassivas(feiticos, sistema = undefined) {
+  const vazio = { total: 0, linhas: [] };
+  if (regraDo(sistema, "passivaCustaPeMaximo") !== "player") return vazio;
+  const lista = Array.isArray(feiticos) ? feiticos : [];
+  const linhas = [];
+  for (const f of lista) {
+    if (!f || f.tipo !== "passivo" || f.variacaoDe) continue;
+    const custo = custoPeMaximoDaPassiva(f.nivel);
+    if (!custo) continue;   // Nível 0 custa 0, e linha de valor zero é ruído.
+    linhas.push({
+      id: f.id ?? null,
+      nome: String(f.nome ?? "").trim() || "Passiva sem nome",
+      nivel: f.nivel,
+      custo,
+    });
+  }
+  return { total: linhas.reduce((soma, l) => soma + l.custo, 0), linhas };
+}
 
 // ---------------------------------------------------------------
 // ACESSO DE FEITIÇOS por faixa de Nível de Personagem (== ND).
@@ -393,7 +464,10 @@ export function aplicaReducoesCustoFeitico(feitico, calculo, ctx = {}) {
     if (valor > 0) reducoes.push({ fonte: "Manipulação Perfeita", valor });
   }
 
-  for (const fonte of detalhesDoCanalEscopos(ctx.efeitos, "custoPE")) {
+  /* ⚠ O ESCOPO É OBRIGATÓRIO desde 2026-09-09: sem ele, este leitor veria só as
+     reduções SEM alvo e perderia a da Expansão de Domínio, que agora nomeia o
+     alvo `feitico`. Ver o canal `custoPE` em afty-efeitos.js. */
+  for (const fonte of detalhesDoCanalEscopos(ctx.efeitos, "custoPE", ["feitico"])) {
     const valor = Math.max(0, Math.trunc(Number(fonte.valor) || 0));
     if (valor > 0) reducoes.push({ fonte: fonte.nome, valor });
   }
@@ -3948,6 +4022,14 @@ function linhaDoFeitico(f, ctx, creature) {
       custoVidaAtivacao: custoVida.config,
       custoVidaAtual: custoVida.pago,
       custoVidaDisponivel: custoVida.disponivel,
+      /* O que ESTA Passiva tira do PE Máximo, ou `null` para todo o resto e para
+         a Passiva de Nível 0. Sai calculado daqui pela mesma convenção do resto
+         da linha: a tela exibe e não recalcula, senão o criador e a Ficha
+         divergem na primeira errata. Zero na criatura, porque a regra é do
+         jogador (ver `passivaCustaPeMaximo`). */
+      custoPeMaximo: f.tipo === "passivo" && !f.variacaoDe
+        ? (peMaximoDasPassivas([f], ctx.sistema).total || null)
+        : null,
       avisos,
     };
   }

@@ -1,0 +1,19 @@
+{
+  "id": "era-da-cesta-oca",
+  "nome": "Era da Cesta Oca de Vime",
+  "versao": "1.0.0",
+  "autor": "Afty",
+  "paraRaw": "afty",
+  "descricao": "Tira o pré-requisito de Mestre em História da aptidão Cesta Oca de Vime, para mesas que jogam na época em que a técnica ainda era usada. O livro pede uma coisa OU a outra (\"Ser de uma época onde ela era utilizada ou Mestre em História\"), e o Grimório transcreveu só a metade que dá para conferir numa ficha, porque a época é da mesa e não do personagem. Este pacote é a outra metade. Os outros dois requisitos continuam de pé: Nível 1 na trilha de Barreiras e ND 5.",
+  "substitui": {
+    "aptidoes": [
+      {
+        "id": "cesta_oca_de_vime",
+        "requisitos": [
+          { "tipo": "trilha", "trilha": "bar", "valor": 1 },
+          { "tipo": "nd", "valor": 5 }
+        ]
+      }
+    ]
+  }
+}

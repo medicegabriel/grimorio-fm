@@ -40,6 +40,11 @@ const C = await import(R + "afty-carteira.js");
    os compara com as duas colunas que o autor mandou junto da tabela de XP. */
 const { maestria } = await import(R + "afty-derive.js");
 const { grauFeiticeiro } = await import(R + "afty-equipamentos.js");
+/* Os dois orçamentos que o defeito de 2026-09-08 deixou para trás, e o leitor
+   único do Nível. Ver o bloco 7.3. */
+const { nivelDaFicha } = await import(R + "afty-addons.js");
+const { resolveEspecializacoes } = await import(R + "afty-especializacoes.js");
+const { resumoAtributos } = await import(R + "afty-atributos.js");
 
 let ok = 0;
 const bad = [];
@@ -381,6 +386,98 @@ t("e o PV muda junto", dTudo.hp !== dCrua.hp, true);
 t("Carteira vazia com a liberação dá Nível 3", deriveAfty(vazia).nd, 3);
 
 /* ============================================================ */
+/* 7.3. O NÍVEL CHEGA NOS ORÇAMENTOS, E NÃO SÓ NO DERIVE         */
+/* ============================================================ */
+/* ⚠ ESTE BLOCO NASCEU DE UM DEFEITO DE VERDADE, no mesmo dia da liberação. O
+   autor instalou o addon e voltou com duas frases: *"eu não consigo colocar
+   Nível de Especialização, mesmo com meu XP me deixando Nível 8"* e *"Meus
+   pontos de atributo também não aumentaram"*.
+
+   Os dois eram o MESMO defeito. A liberação foi escrita só dentro do
+   `deriveAfty`, e onze lugares do sistema leem `creature.core.nd` CRU, sem
+   passar por ele: o `resolveEspecializacoes`, o `resumoAtributos`, o Alto
+   Nível, os Treinos Especiais, o grau do equipamento e as escolhas de origem.
+   Pior, a UI chama vários deles com o RASCUNHO, que nunca vê o derive. O nível
+   novo chegava ao PV e à Maestria e não chegava a nenhum orçamento.
+
+   A PROVA É POR EQUIVALÊNCIA, e é a forma mais forte disponível: uma ficha com
+   a Carteira ligada tem de derivar IGUAL a uma ficha digitada naquele nível. Um
+   assert de valor solto (`total === 8`) passaria com metade do sistema ainda
+   lendo o campo cru. */
+const noNivel = (n) => {
+  const f = createBlankAfty();
+  f.core.nd = n;
+  f.core.tipo = "combatente";
+  f.especializacoes = [{ id: "lutador", nivel: n }];
+  return f;
+};
+/* A mesma ficha, mas com o nível vindo do XP: `core.nd` fica no piso 3 e o XP
+   anotado paga o 8 (40 de XP na tabela). */
+const pelaCarteira = (() => {
+  const f = noNivel(8);
+  f.core.nd = 3;
+  f.addons = [pacote];
+  f.carteira = { entradas: [{ id: "x", nome: "acumulado", xp: 40, dinheiro: 0, interludios: 0 }], gastos: [] };
+  return f;
+})();
+
+t("o nivelDaFicha responde o campo quando não há addon", nivelDaFicha(noNivel(8)), 8);
+t("e responde a tabela quando há", nivelDaFicha(pelaCarteira), 8);
+/* ⚠ ELE ACEITA O RASCUNHO. A UI chama os catálogos com o `draft`, que nunca
+   passou pelo derive: se a resposta dependesse de derivar antes, a tela
+   continuaria mostrando o orçamento velho. */
+t("o rascunho cru dá a mesma resposta", nivelDaFicha({ ...pelaCarteira }), 8);
+t("ficha nula não quebra", nivelDaFicha(null), 1);
+
+/* Os dois que o autor viu quebrados. */
+t("o orçamento de Especialização é o do nível da tabela",
+  resolveEspecializacoes(pelaCarteira).total, resolveEspecializacoes(noNivel(8)).total);
+t("e a classe no nível 8 é aceita",
+  resolveEspecializacoes(pelaCarteira).escolhidas, resolveEspecializacoes(noNivel(8)).escolhidas);
+t("os pontos de atributo por nível também",
+  resumoAtributos(pelaCarteira).nivelTotal, resumoAtributos(noNivel(8)).nivelTotal);
+/* Contraprova: no piso, os dois orçamentos são MENORES. Sem ela, dois zeros
+   iguais passariam pelos asserts de cima sem provar nada. */
+t("e no Nível 3 os dois são menores",
+  [resolveEspecializacoes(noNivel(3)).total < resolveEspecializacoes(noNivel(8)).total,
+    resumoAtributos(noNivel(3)).nivelTotal < resumoAtributos(noNivel(8)).nivelTotal],
+  [true, true]);
+
+/* A equivalência inteira, e não só os dois que o autor achou. */
+const dPelaCarteira = deriveAfty(pelaCarteira);
+const dDigitado = deriveAfty(noNivel(8));
+/* ⚠ O `focosTotais` FICA DE FORA desta lista, e não por descuido: o pacote traz
+   as DUAS liberações, então nesta ficha o Foco vem da coluna de Interlúdios
+   (que está zerada) e não do nível. As duas regras são independentes, e é o
+   bloco 7 que mede aquela. */
+for (const k of ["nd", "maestria", "hp", "pe", "defesa", "cd", "movimento", "iniciativa"]) {
+  t(`derivar pela Carteira é igual a digitar o nível: ${k}`, dPelaCarteira[k], dDigitado[k]);
+}
+t("inclusive o Grau", dPelaCarteira.grauFeiticeiro.value, dDigitado.grauFeiticeiro.value);
+t("e o orçamento de perícias", dPelaCarteira.testes.orcamento.total, dDigitado.testes.orcamento.total);
+
+/* ⚠ E NINGUÉM MAIS PODE LER `core.nd` CRU. Este é o assert que impede a volta:
+   o defeito não foi escrever a regra errada, foi escrevê-la num lugar só
+   enquanto onze outros liam a fonte antiga. O único leitor autorizado é o
+   `nivelDaFicha`, e é ele que junta o campo com a liberação.
+
+   Os `.jsx` ficam de fora porque o campo de Nível da aba Identidade LIGA no
+   `draft.core.nd` de propósito: ele é o campo editável da ficha, e só aparece
+   quando a liberação está desligada. */
+const semComentarios = (texto) => texto
+  .replace(/\/\*[\s\S]*?\*\//g, "")
+  .replace(/^\s*\/\/.*$/gm, "");
+const { readdirSync } = await import("node:fs");
+const dirModulos = fileURLToPath(new URL("../src/systems/afty/", import.meta.url));
+const lendoCru = [];
+for (const arquivo of readdirSync(dirModulos).filter((n) => n.endsWith(".js"))) {
+  if (arquivo === "afty-addons.js") continue;      // o leitor único
+  const texto = semComentarios(readFileSync(dirModulos + arquivo, "utf8"));
+  if (/core\??\.nd\b/.test(texto)) lendoCru.push(arquivo);
+}
+t("nenhum módulo lê core.nd cru fora do nivelDaFicha", lendoCru, []);
+
+/* ============================================================ */
 /* 8. NO JOGADOR, A CARTEIRA VENCE O CAMPO DIGITADO              */
 /* ============================================================ */
 /* Na Ficha de Jogador o total de Focos é digitado pelo mestre. Com a Carteira
@@ -449,6 +546,32 @@ t("e as duas montam o contexto de arraste", (aba.match(/<DndContext/g) ?? []).le
    alinhamento ao centro que o autor pediu se perde. */
 t("as duas grades abrem com a coluna da pega",
   (aba.match(/grid-cols-\[1\.25rem_/g) ?? []).length, 2);
+
+/* ============================================================ */
+/* 11. O NÍVEL GRAVADO, PARA A TELA INICIAL                      */
+/* ============================================================ */
+/* ⚠ OUTRO DEFEITO DE VERDADE, no mesmo dia: *"O Addon de Carteira ainda está
+   mostrando o Nível como 3 na Tela Inicial"*.
+
+   O card do Dashboard escreve `creature.core?.nd` direto, e o Dashboard é da
+   2.5.2, que é SOMENTE-LEITURA: ele não importa nada do Afty e não pode
+   aprender a perguntar ao `nivelDaFicha`. Como o campo é a única coisa que ele
+   lê, é o campo que tem de estar certo ao gravar.
+
+   ⚠ O QUE SE MEDE AQUI É O VALOR, e não o texto do `handleSave`: ele grava o
+   que o `nivelDaFicha` responde, então o comportamento inteiro é o desta
+   função, que os blocos de cima já cobrem. O que falta provar é que a resposta
+   serve para gravar nos DOIS casos. */
+t("a ficha com a Carteira grava o nível da tabela", nivelDaFicha(pelaCarteira), 8);
+/* ⚠ E A FICHA SEM O ADDON NÃO É TOCADA. Sem esta linha, "gravar o nível
+   efetivo" poderia estar reescrevendo o campo de toda ficha do compêndio. */
+t("e a ficha sem addon grava o próprio campo",
+  [nivelDaFicha(noNivel(8)), nivelDaFicha(noNivel(20))], [8, 20]);
+
+t("o handleSave grava pelo leitor único, e não por um if próprio",
+  /const nivelGravado = nivelDaFicha\(draft\);/.test(builder), true);
+t("e ele entra no core da ficha gravada",
+  /core: \{ \.\.\.draft\.core, nd: nivelGravado \},/.test(builder), true);
 
 console.log(bad.length ? `FALHAS (${bad.length}):\n` + bad.join("\n") : `TODOS OS ${ok} ASSERTS PASSARAM`);
 process.exitCode = bad.length ? 1 : 0;

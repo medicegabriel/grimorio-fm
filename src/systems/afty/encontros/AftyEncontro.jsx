@@ -9,6 +9,9 @@ import "../ficha/ficha.css";
 import "./encontros.css";
 import { deriveAfty } from "../afty-derive";
 import { AFTY_PATAMARES } from "../afty-schema";
+/* O Nível efetivo da ficha. Com a Carteira ligada, o `core.nd` gravado nao e o
+   nivel da criatura: quem responde e o `nivelDaFicha`. */
+import { nivelDaFicha } from "../afty-addons";
 import PainelDeCombatente from "./PainelDeCombatente";
 import useEncontroAfty from "./usar-encontro-afty";
 import { ENCONTRO_STATUS, LADO, LADO_ROTULO, LOG_TIPOS } from "./afty-encontro";
@@ -126,7 +129,7 @@ function EscolherCriatura({ criaturas, pastas = [], onAdicionar, compacto = fals
             <li key={c.id} className="afty-linha px-2 py-1.5 flex items-center gap-2">
               <span className="afty-chip flex-shrink-0">{rotuloPatamar(c.core?.patamar)}</span>
               <span className="flex-1 min-w-0 text-[12px] font-semibold truncate">{c.name}</span>
-              <span className="afty-rotulo text-[10px] tabular-nums flex-shrink-0">ND {c.core?.nd ?? "?"}</span>
+              <span className="afty-rotulo text-[10px] tabular-nums flex-shrink-0">ND {nivelDaFicha(c)}</span>
               <button
                 type="button"
                 className="afty-botao flex-shrink-0"

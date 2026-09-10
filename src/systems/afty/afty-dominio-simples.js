@@ -148,7 +148,10 @@ function custoComPartes(base, partesBase, fontesReducao) {
  * `imbuicoes`  quantas Técnicas de Estilo estão imbuídas AGORA. Sai do
  *              `gastoVagas` do resolveEstilos, que lê a bancada e a sessão.
  * `canal`      lê o total de um canal. Vem do derive, ver a nota de ciclo acima.
- * `fontes`     lê as parcelas de um canal, já no formato `{ label, valor }`.
+ * `fontes`     lê as parcelas de um canal, já no formato `{ label, valor }`. O
+ *              segundo argumento é o ALVO, que o `custoPE` usa desde 2026-09-09:
+ *              `fontes("custoPE", "dominio")` traz as reduções amplas MAIS as
+ *              dirigidas ao Domínio, e deixa de fora as que miram outro gasto.
  *
  * ⚠ Os quatro canais moram em `CANAIS_POS_APTIDAO` e não no estágio principal,
  * pelo mesmo encaixe do `imbuicoesEstilo`: eles leem `dom`, que o pré-contexto
@@ -185,14 +188,17 @@ export function resolveDominioSimples({
       { label: "Base", valor: t.erguer },
       ...(erguerPorEstilo > 0 ? [{ label: rotuloEstilos, valor: erguerPorEstilo }] : []),
     ],
-    fontes("custoErguerDominio"),
+    /* ⚠ AS DUAS LISTAS ENTRAM JUNTAS: o canal específico do Domínio e a redução
+       AMPLA de PE, que desde 2026-09-09 alcança todo gasto que a ficha calcula.
+       Ver o canal `custoPE` em afty-efeitos.js. */
+    [...fontes("custoErguerDominio"), ...fontes("custoPE", "dominio")],
   );
 
   /* ---------- SUSTENTAR: o domínio ---------- */
   const { valor: custoSustentar, partes: partesSustentar } = custoComPartes(
     t.sustentar,
     [{ label: "Base", valor: t.sustentar }],
-    fontes("custoSustentarDominio"),
+    [...fontes("custoSustentarDominio"), ...fontes("custoPE", "dominio")],
   );
 
   /* ---------- SUSTENTAR: as Técnicas de Estilo ----------
@@ -204,7 +210,9 @@ export function resolveDominioSimples({
   const { valor: custoSustentarEstilo, partes: partesSustentarEstilo } = custoComPartes(
     porEstilos,
     [{ label: rotuloEstilos, valor: porEstilos }],
-    fontes("custoSustentarEstilo"),
+    /* Este é gasto de ESTILO, e não de Domínio: quem sustenta aqui são as
+       Técnicas imbuídas. O alvo separa os dois. */
+    [...fontes("custoSustentarEstilo"), ...fontes("custoPE", "estilo")],
   );
 
   return {

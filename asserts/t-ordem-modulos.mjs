@@ -56,6 +56,18 @@ const t = (nome, real, esp) => {
 const FOLHAS = [
   ["afty-defesas-dano.js", "a aba de Defesas entra cedo no AftyCreatureBuilder"],
   ["afty-catarse.js", "o painel da Loja de Catarse entra cedo no AftyCreatureBuilder"],
+  /* ⚠ ELE TEM DOIS MOTIVOS, e o segundo nasceu em 2026-09-08. O primeiro é o de
+     sempre: a aba da Carteira entra cedo no builder. O segundo é que o
+     `afty-addons.js` passou a IMPORTÁ-LO, para o `nivelDaFicha` saber a tabela
+     de progressão, e o afty-addons é importado por meio sistema. Um import novo
+     aqui dentro deixaria de ser uma seta de mão única e viraria ciclo. */
+  ["afty-carteira.js", "a aba entra cedo no builder E o afty-addons o importa"],
+  /* ⚠ ENTROU EM 2026-09-09, quando a criação de armas passou a ler a escada de
+     Níveis de Dano em vez de espelhá-la. Ele já era folha e agora é folha
+     CARREGADA: o `afty-criacao-armas` depende dele e o `afty-equipamentos`
+     depende do afty-criacao-armas, então um import novo aqui dentro viraria o
+     ciclo do topo deste arquivo. */
+  ["afty-niveis-dano.js", "a escada de dano e lida de dentro da criacao de armas"],
   ["afty-pericias-catalogo.js", "os três catálogos de requisito o chamam"],
   ["afty-schema.js", "todo mundo cria ficha em branco"],
   ["afty-dsl.js", "o avaliador não pode depender de conteúdo"],
@@ -92,6 +104,27 @@ for (const [arquivo] of FOLHAS) {
   }
   t(`${arquivo} carrega sozinho, sem mais nada importado`, saida, "ok");
 }
+
+/* 2.1 QUEM NÃO É FOLHA MAS PRECISA CARREGAR SOZINHO.
+
+      O `afty-criacao-armas.js` era folha e deixou de ser em 2026-09-09: ele
+      importa a escada de `afty-niveis-dano.js`, que é folha. A regra que sobra é
+      mais fraca que a das FOLHAS e é a que importa aqui: ele entra pelo editor
+      de arma do builder E pelo `afty-equipamentos.js`, então tem de carregar num
+      processo limpo. Se alguém lhe der um import que chegue ao equipamentos, o
+      ciclo do topo deste arquivo volta, e é este assert que acende. */
+const codigoCriacao = `import { register } from "node:module";`
+  + `register("${shim}", import.meta.url);`
+  + `const m = await import(${JSON.stringify(R + "afty-criacao-armas.js")});`
+  + `console.log(m.pcDoDado("1d12") === 5 ? "ok" : "escada errada");`;
+let saidaCriacao;
+try {
+  saidaCriacao = execFileSync(process.execPath, ["--input-type=module", "-e", codigoCriacao],
+    { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();
+} catch (e) {
+  saidaCriacao = `QUEBROU: ${String(e.stderr ?? e.message).split("\n").find((l) => /Error/.test(l))?.trim() ?? "?"}`;
+}
+t("afty-criacao-armas.js carrega sozinho, e com a escada de pe", saidaCriacao, "ok");
 
 /* 3. A CONTRAPROVA: o ciclo REALMENTE existe, e a folha é o que protege dele.
       Entrar pelo `afty-equipamentos` primeiro é a ordem ruim, e ela tem de

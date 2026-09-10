@@ -1,6 +1,6 @@
 # Status do Grimório Afty (handoff para chat novo)
 
-Estado atual do sistema Afty (atualizado 2026-09-07). Leia junto com:
+Estado atual do sistema Afty (atualizado 2026-09-09). Leia junto com:
 `docs/roadmap-versionamento-e-fichas.md` (arquitetura) e `docs/afty-formulas-base.md` (fórmulas).
 
 > 📋 **A FILA DE TRABALHO NÃO É ESTE ARQUIVO.** Desde 2026-08-09 toda pendência mora em
@@ -118,6 +118,512 @@ Estado atual do sistema Afty (atualizado 2026-09-07). Leia junto com:
 >
 > 👉 **Começando um chat novo? Vá direto para
 > [PENDÊNCIAS DE ESPECIALIZAÇÕES](#-pendências-de-especializações-lista-de-retomada).**
+
+---
+
+## SESSÃO DE 2026-09-10: O `inacessiveis` NASCIA CEGO, E A FICHA ACUSAVA QUEM ESTAVA EM DIA
+
+Autor, com uma captura da linha: *"A Ficha deu 'Pre-Requisito não atendido' sendo que possuo
+Cobrir-se e Revestimento Constante"*. Ele estava certo, e o bug era maior do que a linha dele.
+
+### A causa: um contexto com quatro campos para um avaliador que pergunta nove
+
+O `resolveHabilidades` monta o ctx de requisito com **quatro** campos (`niveisPorEspec`,
+`escolhidas`, `escolhasHabilidade`, `almaLivre`). O `avaliarRequisitoHabilidade` pergunta por outros
+**cinco**: `aptidoes`, `attrEff`, `periciaProf`, `resistenciaProf` e `periciaOficios`.
+
+Um requisito de Aptidão faz `(ctx.aptidoes || []).includes(...)` contra uma lista `undefined`. A
+resposta é sempre falsa, para toda ficha, desde sempre.
+
+⚠ **O criador nunca teve o problema**, e é isso que explica o bug ter durado. Ele monta o ctx com o
+`derived` PRONTO (`aptidoes: derived.aptidoesEscolhidas`, `attrEff`, os três mapas de proficiência),
+e por isso a escolha na tela de criação sempre funcionou. Quem lia o campo cego era **só a Ficha
+Final**, que é a tela de JOGO: o erro aparecia na mesa, e não na criação.
+
+### ⚠ O BUG TINHA DUAS CARAS OPOSTAS, e a segunda ninguém tinha visto
+
+Esta é a parte que o pedido não continha, e ela muda o que o conserto entrega.
+
+| Requisito | Com o ctx cego | Efeito na Ficha |
+|---|---|---|
+| **aptidão**, **atributo** | sempre falso | **acusava quem estava em dia** (o caso do autor) |
+| **perícia**, **TR**, **Ofício** | sempre verdadeiro | **nunca acusava**, nem quem realmente não cumpria |
+
+O avaliador de treino é permissivo quando não tem o mapa, e o de aptidão é restritivo quando não tem
+a lista. Então metade do catálogo gritava sem motivo e a outra metade ficava calada quando devia
+gritar.
+
+⚠ **Consequência prática:** o conserto não só apaga avisos errados, ele **acrescenta avisos que nunca
+apareceram**. Uma ficha com Sentidos Aguçados sem Percepção Mestre passa a avisar, e o aviso está
+certo.
+
+### O tamanho: 38 entradas do catálogo
+
+26 Habilidades e 12 Talentos têm pelo menos um requisito dos cinco tipos cegos. O Talento estava
+menos quebrado: ele já recebia `attrEff` e `aptidoes` na chamada, e ficava cego só para os três de
+treino.
+
+### ⚠ NÃO DAVA PARA SÓ ENCHER O CTX LÁ EM CIMA
+
+Foi a primeira ideia, e ela morre na ordem do `deriveAfty`:
+
+    aptidoesIds     linha  390   antes das habilidades   ✅ dava
+    resolveHabilidades  692
+    attrEff         linha 1467   depois                  ❌
+    testes          linha 2247   depois                  ❌
+
+E **tem de ser depois**: habilidade concede perícia. Perguntar pelas perícias antes de resolver as
+habilidades seria inverter uma dependência real.
+
+A saída é a que o criador já provava funcionar, feita uma vez só e dentro do motor: com a ficha
+fechada, **reavaliar**. O bloco novo monta o MESMO ctx que o criador monta e recalcula os dois
+`inacessiveis`, e o `derived` passa a expor a versão reavaliada.
+
+⚠ **É seguro porque a lista é REPORTE, e não remoção.** Nada sai da ficha por causa dela, e ninguém a
+lê antes do fim do derive: os únicos leitores estão em `ficha-conteudo.js`.
+
+### Os outros dois `inacessiveis` ficaram como estavam, e isso foi MEDIDO
+
+O derivado tem quatro listas dessas. As Gerais só perguntam ND, e as Lendárias, Melhorias e Ápices
+só ND, nível de classe e habilidade, tudo dentro do ctx que os resolvers delas já montam.
+
+⚠ **Isso não ficou como comentário.** Há assert varrendo os quatro catálogos, e ele fica vermelho no
+dia em que entrar ali um requisito de aptidão, atributo, perícia, TR ou Ofício, que é exatamente o
+descuido que criou este bug.
+
+### Verificação
+
+`asserts/t-requisitos-ficha.mjs`, **33 asserts**, com os cinco tipos medidos **nos dois sentidos**
+(atendido e não atendido), porque um conserto que só silenciasse o aviso seria pior que o bug.
+Conferido **desfazendo o conserto**: voltam 9 falhas, e elas se dividem exatamente nas duas caras da
+tabela acima.
+
+A suíte inteira passa (**70 arquivos, 3797 asserts**), o eslint fecha e o `vite build` fecha. Nenhum
+assert existente quebrou.
+
+No navegador, com a ficha injetada no `localStorage` para não depender de vinte cliques: com
+Cobrir-se e Reflexos treinado a Ficha sai **sem aviso nenhum**, e tirando os dois da mesma ficha
+voltam **três avisos**, um por habilidade. Em 390px o rótulo some e fica o triângulo com o texto no
+`title`, que é o desenho de sempre do `ItemDeFicha`.
+
+---
+
+## SESSÃO DE 2026-09-09 (parte 4): A PASSIVA COMEÇOU A CUSTAR PE MÁXIMO
+
+Autor: *"Passivas precisam gastar PE Máximo igual ao Dobro do Nível delas. Nível 0 = 0, Nível 1 = 2,
+Nível 2 = 4, Nível 5 = 10. Para cada passiva, se gasta PE Máximo."*, e *"Faça perguntas se precisar"*.
+
+É o **primeiro pedaço do tipo "passivo"**, que estava no schema desde sempre sem calculador nenhum
+(o `calculadorDe` devolve `null` para ele) e que o próprio autor tinha adiado por escrito em
+2026-08-09: *"Os Especiais e Passivos deixamos para depois. Com calma."*.
+
+### As quatro perguntas antes do código, e uma delas era uma coincidência
+
+| Pergunta | Resposta |
+|---|---|
+| Vale nos dois sistemas? | **Só na Ficha de Jogador**, e virou divergência |
+| Quanto custa uma Passiva de Técnica Máxima? | **12**, tratando TM como Nível 6 |
+| A `reducaoPE` do Shikigami é a mesma regra? | **Não**, só as Passivas agora |
+| E se o PE Máximo estourar? | **Pode ficar negativo** |
+
+⚠ **A terceira valia perguntar.** A Criação de Shikigamis calcula, desde sempre, uma
+`reducaoPE = 2 × nível` (com TM valendo 12), e ela **nunca foi descontada do PE do dono**: é uma
+entrada aberta no `a-fazer.md` desde 2026-08-15. Fórmula idêntica, e o autor decidiu que são duas
+coisas. A entrada ficou aberta, com nota dizendo que a gêmea dela já está ligada.
+
+### ⚠ NÃO É A `FEITICO_CUSTO_PE`, e as duas empatam onde o engano é mais fácil
+
+A tabela de custo por uso já existia e sobe `0, 2, 5, 8, 12, 20, 25`. A da Passiva é o dobro do
+nível, `0, 2, 4, 6, 8, 10, 12`. **Elas empatam no Nível 1**, que é justamente o ponto em que alguém
+olharia as duas e concluiria que são a mesma. Há assert comparando as duas linha a linha, para o dia
+em que aparecer a ideia de unificá-las.
+
+E a diferença não é só de número: a de cima cobra **por uso** e o pool volta no descanso, a nova
+**encolhe o pool** enquanto a Passiva estiver na ficha.
+
+### Onde a parcela entra, e por que não é canal do Motor
+
+Ela entra direto na conta do PE em `afty-derive.js`, e não pelo canal `pe`, por duas razões. O canal
+é do Motor e esta não é regra de habilidade nenhuma, é regra do TIPO de Feitiço. E a ordem não
+permitiria: `derived.feiticos` nasce centenas de linhas depois do PE, e o custo POR USO de um Feitiço
+já depende do PE. Ler a lista CRUA resolve sem inverter nada, porque o dobro do nível precisa só de
+`tipo` e `nivel`, dois campos digitados.
+
+⚠ **Variação de Liberação não cobra.** Ela é o mesmo Feitiço declarado de outro jeito e já não gasta
+vaga no orçamento. Cobrasse, declarar uma variação pagaria a mesma característica duas vezes.
+
+### O hover ganhou uma linha POR PASSIVA
+
+Um "Passivas -24" diria quanto sumiu e não de onde, e a ficha com quatro delas é justamente a que
+precisa saber qual sai caro. Cada uma sai com o nome (`Olho Bom (Passiva) -2`), e há assert cobrando
+que as parcelas fechem com o total. É a terceira vez que essa regra é medida neste hover, depois da
+`Quantidade de PE` e do `Mod. da Técnica`.
+
+### ⚠ O MÁXIMO PODE FICAR NEGATIVO, E A PILHA CORRENTE NÃO
+
+Decisão do autor, perguntada porque nada no app esperava um PE abaixo de zero. O criador mostra o
+número como ele é (uma ficha de Nível 1 com três Passivas caras dá **-26**), e a pilha corrente da
+sessão continua com piso zero, porque ela é o que se gasta na mesa. Na Ficha Final isso aparece como
+`ENERGIA 0 / -12`.
+
+⚠ **Um dos três caminhos de sessão não aparava.** O `aparaSessao` e o `descansar` já tinham piso
+zero, e o `sessaoEmBranco` não, e a diferença não tinha como aparecer antes desta regra porque nada
+podia derivar negativo. O `afty-encontro.js` monta a sessão de um combatente novo por ali e não chama
+`aparaSessao` na criação, então um combatente nasceria com o PE corrente negativo. Consertado na
+mesma edição, e é mudança que não alcança nenhuma ficha existente.
+
+### ⚠ EU ESCREVI O NÚMERO NA TELA ERRADA, E FOI O NAVEGADOR QUE PEGOU
+
+Vale registrar porque é a lição de sempre com prova nova. A linha de Feitiço da Ficha Final mostra
+valor e custo, e foi lá que o custo da Passiva entrou primeiro. Era **código morto**: o `AbaAcoes`
+filtra `f.tipo !== "passivo"` desde sempre, e a Passiva tem seção PRÓPRIA ("Passivos e
+Características") na aba Habilidades, montada em `ficha-conteudo.js`.
+
+Os asserts estavam todos verdes com o número em lugar nenhum. Quem viu foi a captura de tela. O lugar
+certo agora tem assert próprio, com a contraprova da criatura.
+
+### As três telas
+
+| Onde | O que mostra |
+|---|---|
+| Card do criador | tile `PE MÁXIMO -10 PE` na barra grudada, o primeiro número que o tipo "passivo" já teve |
+| Hover do PE | uma linha por Passiva, com o nome, mais o TOTAL |
+| Ficha Final | a marca `-10 PE` ao lado do `Nível 5`, na seção Passivos e Características |
+
+Na criatura do /Afty as três somem, e o `custoPeMaximo` da linha sai `null`.
+
+### Verificação
+
+`asserts/t-feiticos-passivos.mjs`, **44 asserts**, conferidos **quebrando a regra de propósito**: com
+o multiplicador em 3 saem 16 falhas, e sem a guarda de sistema saem 4, as quatro nomeando a criatura.
+A suíte inteira passa (**69 arquivos, 3764 asserts**), o eslint fecha e o `vite build` fecha.
+
+O `t-sistema.mjs` mudou de propósito, nas duas listas de divergência, e é o que o handoff chama de
+assert do clone: ligar uma divergência FAZ ele falhar, e atualizar a expectativa é o passo com nome.
+
+Conferido no navegador em 1440px e 390px, no criador e na Ficha Final: o PE responde ao vivo
+(0, -2, -6, -10 conforme o nível do chip), o hover abre com as duas linhas nomeadas e o TOTAL, e a
+criatura do /Afty com as mesmas Passivas segue com o PE intacto.
+
+---
+
+## SESSÃO DE 2026-09-09 (parte 3): O /Player DEIXOU DE SE CHAMAR GRIMÓRIO, E O SELO SAIU
+
+Autor: *"Na aba de Player, na tela inicial remova 'Grimorio' e escreva 'Jogador', e remova
+'Criaturas Base' da Ficha de Player"*.
+
+Duas mudanças de tela na LISTAGEM do `/Player`, que é o `Dashboard` da 2.5.2 reusado desde
+2026-08-30. O cabeçalho dizia **Grimório** nas três rotas, e a barra lateral oferecia **Criaturas
+Base**, que é o compêndio de 165 criaturas da 2.5.2 e não tem o que fazer numa ficha de jogador.
+
+### ⚠ ESTA É A SEGUNDA EXCEÇÃO NO `src/components/Dashboard.jsx`
+
+A regra número 1 diz que `src/components/` é somente-leitura, e não havia caminho: o título é uma
+string fixa no `<h1>` e o `showSystemView` do `FolderSidebar` já existia, mas o `Dashboard` não o
+repassava, então não dava para chegar nele de fora.
+
+O autor escolheu, entre as duas saídas oferecidas, **as duas props opcionais**, e recusou forkar o
+`Dashboard` (1546 linhas) e o `FolderSidebar` (330) para mudar uma string e um booleano. O custo do
+fork seria pagar todo conserto de listagem duas vezes, que é exatamente o que a decisão de
+2026-08-30 evitou ao não duplicar o sistema.
+
+O diff em `src/components/` é de **13 linhas**, e **o padrão das duas é o comportamento de hoje**:
+
+```
+titulo = "Grimório"
+showSystemView = true
+```
+
+Quem não passa nada vê o Grimório 2.5.2 de sempre. Medido nas três rotas.
+
+### ⚠ QUEM DECIDE É O `App.jsx`, e não o `rulesVersion`
+
+Aqui a régua de sempre não serve, e vale dizer por quê para ninguém "consertar" isso depois. A
+tabela de `DIVERGENCIAS` responde por REGRA de ficha, e a `sistemaDaFicha(creature)` existe porque
+uma ficha de jogador aberta dentro de um Encontro do mestre continua sendo ficha de jogador.
+
+O cabeçalho e a barra lateral não são disso: eles descrevem o **inventário de um ambiente**, e não
+uma ficha. Não existe criatura a consultar (a lista pode estar vazia, e na captura estava). Quem
+sabe em que ambiente está é o `App.jsx`, que já lê a rota para escolher o namespace do storage desde
+que o `/Afty` nasceu. Nenhuma entrada nova na tabela de divergências, porque não há regra nova.
+
+### Medido no navegador
+
+| rota | `<h1>` | "Criaturas Base" |
+|---|---|---|
+| `/Player` | **Jogador** | **fora**, no desktop e na gaveta do telefone |
+| `/Afty` | Grimório | dentro, 165 |
+| `/` (2.5.2) | Grimório | dentro, 165 |
+
+Em 1440px e em 390px, mais o painel de Encontros nas duas rotas, que não muda: ele monta o
+`FolderSidebar` por conta própria e já passava `showSystemView: false` desde sempre. Zero erro de
+console nas quatro aberturas.
+
+⚠ **Esconder a seção fecha o acesso inteiro, e isso foi conferido.** A vista `builtins` só é
+alcançada pelo botão da barra lateral: o filtro `all` já exclui `isBuiltIn`, o estado inicial é
+`{type: "all"}` e o filtro de `origin` é a origem da criatura, e não a procedência dela.
+
+### O SELO DO AMBIENTE PRIVADO SAIU, E COM ELE UM BLOQUEIO DE DOIS MESES
+
+Autor, na mesma conversa: *"Remova isso. É meio feio."*, com a captura da cápsula azul.
+
+Era um `<div>` `position: fixed` no canto superior esquerdo do `src/App.jsx`, roxo no `/Afty` e azul
+no `/Player`, escrito a partir de `selo` e `seloTitulo` do `SISTEMAS`. Perguntei o alcance antes,
+porque o bloco era um só e servia as duas rotas, e ele mandou tirar **das duas**.
+
+Os dois campos saíram do `SISTEMAS` junto, e o `validarSistemas` deixou de cobrá-los na mesma
+edição. Dado de catálogo que ninguém lê é a definição da nota que envelhece calada: guardá-los "por
+via das dúvidas" só adiaria a pergunta.
+
+⚠ **ISSO DESTRAVOU O `my-0!` DO CABEÇALHO DO CRIADOR.** É a parte que vale registrar, porque o
+ganho não estava no pedido. O `src/index.css` traz `h1 { font-size: 56px; margin: 32px 0 }` fora de
+qualquer `@layer`, e por isso o `text-lg sm:text-xl` escrito no `<h1>` do criador **nunca valeu** e a
+barra carrega 64px de margem morta acima de 1024px (40px abaixo), em TODA aba das duas rotas.
+
+O conserto é uma classe. Ele foi escrito, medido (230px caem para 166px em 1440) e **desfeito** em
+2026-09-02, por um motivo só: sem a margem, o selo de `top: 8` passava a cobrir o botão Voltar em 9px
+no desktop e 29px no telefone. A colisão já existia em 390px, com 8px, e zerar a margem a triplicava.
+
+Sem selo não há colisão. Medido depois da remoção, o Voltar sai em `x=16, y=14` a 390px e
+`x=18, y=67` a 1440px, inteiro, nas duas rotas. **O `my-0!` continua NÃO aplicado**, porque ninguém
+pediu os 64px de volta ainda, e a entrada do `a-fazer.md` foi reescrita para ser só essa metade.
+
+⚠ **O comentário no cabeçalho do `AftyCreatureBuilder.jsx` foi atualizado junto.** Ele descrevia o
+selo como o bloqueio, e é exatamente o tipo de comentário que descreve uma limitação sem saber quando
+ela acaba.
+
+### Verificação
+
+`npx eslint` limpo, `npx vite build` fecha, **68 arquivos, 3716 asserts**. Nenhum assert mudou por
+causa desta sessão, porque nenhum número mudou: as três mudanças são tela. O `t-sistema.mjs` seguiu
+com os mesmos 390, e a subida no total é de outra sessão trabalhando no repositório em paralelo.
+
+Conferido no navegador em 1440px e 390px, nas três rotas mais o criador das duas: zero ocorrência de
+"privado" na tela, zero erro de console em dez aberturas.
+
+---
+
+## SESSÃO DE 2026-09-09 (parte 2): O VISLUMBRE CELESTE, E O CUSTO EM PE GANHOU ALCANCE
+
+Autor: *"faça um Addon dos Vislumbre Celeste (É os Seis Olhos com outro nome). É uma Condição
+Corporal, logo se soma os efeitos com Feitiços e etc. Faça um Planejamento antes de fazer"*. Plano,
+decisões e o que ficou de fora em `docs/afty-vislumbre-celeste.md`.
+
+### A frase do pedido é decisão de MOTOR
+
+*"É uma Condição Corporal"* quer dizer que ele não é técnica, e a consequência não é de texto: os
+bônus entram pelos canais que ACUMULAM e ele fica FORA do pool exclusivo das cinco fontes que
+disputam o maior valor. Um Feitiço que dê +2 em Percepção soma com ele.
+
+Sorte boa: tudo escala com o `cl`, o Nível de Aptidão em Controle e Leitura, que já era variável do
+DSL.
+
+### As quatro decisões do autor, por pergunta antes do código
+
+| Pergunta | Resposta |
+|---|---|
+| Que entrada a ficha ganha? | **De graça**, sem Origem, Talento nem Aptidão. Card na aba Habilidades, entre Funcionamento Básico e Feitiços |
+| A redução de PE alcança o quê? | **Todo gasto que a ficha calcula** |
+| A Fadiga vira Exaustão na ficha? | **A ficha conta as duas** |
+| Quantos níveis a Compreensão dá? | **Quatro**: um na criação, mais um no ND 5, 15 e 25 |
+
+### ⚠ O `custoPE` era lido em UM lugar, e virou verbo
+
+Ele existia desde sempre e só o custo do Feitiço o lia. Agora ele tem ALVO (`CUSTOS_PE`, cinco
+gastos: Feitiço, Domínio, Estilo, Invocação e Aptidão), um leitor único (`custoEmPe`), e sem alvo
+vale para os cinco.
+
+⚠ **A Expansão de Domínio precisou nomear o alvo dela.** O texto é *"O custo dos seus FEITIÇOS dentro
+da expansão"*, e ela era a única emissora do canal no livro: sem `alvo: "feitico"` ela passaria a
+baratear Domínio Simples, Estilo e Invocação de lambuja. É o tipo de regressão que ninguém veria, e
+tem assert de arquivo medindo.
+
+⚠ **E o canal precisou entrar nos `CANAIS_POS_APTIDAO`.** O Domínio Simples resolve num passe próprio
+e não enxergava o agregado final: a redução chegava no Feitiço e não chegava nele, calada.
+
+⚠ **O custo dos ESTADOS é reduzido só numa cópia de exibição.** O estado é montado antes de o Motor
+rodar, porque ele alimenta o contexto do DSL: reduzir na origem morderia o próprio rabo.
+
+### ⚠ Um bloco por vez, e não os dois com `quando`
+
+A primeira versão do Vislumbre emitia os dois blocos (cobertos e descobertos) e deixava um `quando`
+decidir qual valia. Não funciona, e o motivo é o mesmo passe: o `custoPE` é lido ANTES de a bancada
+de combate existir, e lá a variável do estado ainda não nasceu. Os dois blocos caíam calados.
+
+Hoje quem decide é a ficha, e só o bloco de pé é emitido. Há assert cobrando que os dois nomes nunca
+saiam na mesma lista, porque no dia em que saírem todo bônus dobra.
+
+### O Nível de Exaustão nasceu, e é de todo mundo
+
+Contador na sessão da Ficha Final, no cabeçalho das Condições. Ele NÃO fica atrás da primitiva: seis
+Habilidades Lendárias e a Expansão de Domínio dizem *"você recebe um ponto de exaustão"* desde
+sempre, e a ficha não tinha onde marcar.
+
+⚠ **O que um Nível de Exaustão FAZ ainda não tem fonte no Afty.** O contador conta e mostra, e a
+penalidade é de mesa, como as Condições ao lado. Está em `a-fazer.md`.
+
+### O que ficou de fora, e por quê
+
+O transbordo automático da Fadiga (4 pontos viram 1 Exaustão e zeram), o ponto por fim de turno, a
+mitigação por Energia Reversa, a trava da Capacidade Impossível e o texto de Ler Energia e Ler
+Intenções. Os dois primeiros pedem um painel do Vislumbre na Ficha Final, e os três últimos esperam
+o autor.
+
+### A segunda rodada: o painel na Ficha Final
+
+Autor, no mesmo dia: *"faça o Vislumbre Celeste aparecer na Ficha Final. E ter um tracker de Fadiga
+lá. Além do Botão Olhos Descobertos funcionar em cima do menu do Vislumbre Celeste assim como a
+Fadiga. Para eu não precisar ir para Buffs o tempo inteiro"*.
+
+O painel foi para a aba **Ações**, e não para Buffs, pela mesma decisão que a Azamaru recebeu em
+2026-09-07: o que se FAZ no turno mora onde se age. Três coisas mudaram junto:
+
+⚠ **A conversão da Fadiga virou AUTOMÁTICA.** O quarto ponto nunca aparece na tela: ele já sai como
+Exaustão e a contagem recomeça no zero, que é o que *"imediatamente"* manda. Saiu da lista de
+pendências.
+
+⚠ **OS DOIS ESTADOS DEIXARAM DE OBEDECER AO `ativo` DA BANCADA**, e foi o painel que expôs isso. Todo
+outro estado é zerado fora de combate porque todo outro estado É de combate, e uma Condição Corporal
+não liga e desliga com a iniciativa. Sem a mudança o painel teria DUAS VERDADES: o botão aceso pelo
+valor gravado e os números mostrando o bloco coberto. Hoje o card, o painel e o Motor leem a mesma
+fonte.
+
+⚠ **O nome da fonte encurtou** (pedido do autor, olhando o hover). Era `Vislumbre Celeste: Olhos
+Descobertos · Visão Absoluta`, e virou só **Olhos Descobertos**: a fonte diz quem deu o bônus, e quem
+deu é o estado dos olhos.
+
+### Verificação
+
+`asserts/t-vislumbre-celeste.mjs` (**69 asserts**) e `asserts/t-custo-pe.mjs` (**21**). A suíte
+inteira passa (**68 arquivos, 3712 asserts**), o `vite build` fecha e o eslint não reclama. O card foi
+conferido no navegador nos dois estados, e o painel da Ficha num roteiro de 8 passos que descobre os
+olhos, vê os números virarem e leva a Fadiga até a conversão em Exaustão.
+
+---
+
+## SESSÃO DE 2026-09-09: A CRIAÇÃO DE ARMAS GANHOU MÉTRICA, E ELA SÓ CONTA
+
+Autor: *"Faça um Addon para Criação de Armas com base no padrão apresentado abaixo"*, com o padrão
+inteiro escrito por ele. Detalhe em `docs/afty-criacao-armas.md`.
+
+O criador já deixava criar arma própria desde sempre, com dado, margem, custo, espaços e
+propriedades livres. O que faltava era a CONTA, e é ela que chegou: uma bancada de Pontos de Criação
+dentro do card Armas Criadas, que lê a arma gravada e diz quanto ela custou.
+
+### ⚠ A bancada CONTA, e nunca CORRIGE
+
+É a decisão que segura o resto, e é o que faz este pacote ser `permite` PURO: sem `libera`, sem
+catálogo e sem remendo. Estourar um limite deixa o número onde estava, com aviso. O assert mede isso
+com a arma EQUIPADA, comparando PV, PE, Defesa, CD, RD, movimento, iniciativa, ND, o inventário
+resolvido e a carga.
+
+### As cinco decisões do autor, quatro delas por pergunta antes do código
+
+| Pergunta | Resposta |
+|---|---|
+| "Tática" é a classe Complexa do livro? | **Sim**, mesmo campo e outro rótulo |
+| O custo da arma de técnica sai do grau? | **Sim**, e o campo vira mostrador |
+| A margem desce abaixo de 18? | **Não**, 18 é o piso |
+| Qual o efeito da Estabilidade? | **A mesma coisa que a Pesada, para Destreza** |
+| Que dados uma arma criada pode ter? | **Os degraus do Nível de Dano**, sem parar no 2d6 |
+
+⚠ **A primeira evitou um campo novo.** O padrão nomeia Simples e Tática, o catálogo tem simples e
+complexa, e o próprio texto do autor escreve as duas palavras como sinônimas (a Fatal e a Mortal
+dizem *"Só pode ser colocado em armas complexas"*). Um campo próprio faria a arma ser Complexa para a
+proficiência do Lutador e Tática para a criação, e as duas leituras divergiriam na primeira edição.
+
+⚠ **A segunda é a ÚNICA escrita do sistema.** O custo da arma de técnica sai do grau do usuário
+(Quarto dá 1, Primeiro dá 4, e do Semi-Grau Especial para cima fica em 4), e o campo vira mostrador.
+Ele é ESCRITO na arma em vez de calculado na leitura porque o `custo` conta no orçamento de
+equipamento do grau: calcular só dentro da bancada deixaria a ficha com dois números chamados Custo.
+
+### O módulo é FOLHA, e o preço são quatro espelhos
+
+`afty-criacao-armas.js` não importa nada, porque o `afty-equipamentos.js` o chama no saneamento da
+arma. O preço é a escada de dados, a faixa de crítico, o teto de custo e os tipos físicos aparecerem
+lá como cópia, e **cada uma é comparada com a original no assert**, pela mesma razão da tabela de XP
+da Carteira. A lista de físicos ainda entra por opção, porque um Addon pode acrescentar um tipo
+físico que o espelho não conhece.
+
+### A Estabilidade entrou, e como entrada de CATÁLOGO
+
+Perguntada no mesmo dia, porque o padrão escreve a conta de PC dela e não o efeito em jogo. O autor
+respondeu primeiro *"deixa de fora no momento"* e, logo depois, mandou o texto: *"Estabilidade é a
+mesma coisa que Pesada, só que para Destreza"*.
+
+⚠ **Ela é entrada de `ARMA_PROPRIEDADES`, e não do pacote.** É uma propriedade de arma com efeito em
+jogo, e não uma conta de criação: quem não instala o addon continua podendo marcá-la, como marca a
+Pesada, e o escopo `prop:estabilidade` do Motor nasceu de graça, porque o `escoposDaArma` sai da
+lista de propriedades. Guardá-la no pacote faria uma arma com Estabilidade gravada **perder a
+propriedade calada** ao desinstalar, porque o saneamento descarta o que não está no catálogo. Há
+precedente uma linha abaixo dela no mesmo arquivo: a Alcance também não está na lista do livro.
+
+⚠ **A conta das duas é uma função só** (`creditoDeAtributoExigido`), e a única coisa que as separa é
+uma tabela de uma linha: `CREDITO_COBRA_ESPACO`. Só a Pesada aumenta o espaço da arma por PC
+rendido. Duas contas iguais em dois lugares divergem no primeiro conserto, que é a lição já escrita
+em "Regra escrita duas vezes".
+
+O texto do efeito é o da Pesada com o atributo trocado, e há assert comparando as duas descrições:
+mexer numa e esquecer a outra fica vermelho.
+
+### Três achados de tela
+
+⚠ **A Especial não tinha como ser marcada.** O editor filtrava `p.id !== "especial"` desde sempre,
+porque o texto dela vem do catálogo do livro pelo id da arma, e arma custom não tem. Com a bancada
+existe onde guardar preço e texto, então ela entra na lista só com o addon ligado.
+
+⚠ **O extrato saía na ordem em que a pessoa clicou.** `Object.entries(props)` devolve ordem de
+inserção, e as fichas de PC mudariam de lugar a cada edição. Agora a ordem é a da tabela de preços.
+
+⚠ **Propriedade sem preço não pode ser calada.** Emperrar e Recarga são de arma de fogo e o padrão
+as deixou de fora por escrito. Elas avisam, e a mesma varredura pega qualquer propriedade que um
+Addon invente.
+
+### ⚠ A ESCADA DE DADOS ESTAVA TRUNCADA, e o autor achou pela porta certa
+
+> *"Para que serve a Opção Dano? Sendo que o Dano fica limitado a 2d6 independente"*
+
+A opção de limite do custo 2 e do custo 4 vai para Propriedades ou para Dano, e ir para Dano não
+comprava nada numa arma Tática. A causa não era a opção, era a escada: a bancada cobrava o índice de
+`ARMA_DADOS`, uma lista de **seis dados escrita à mão** que parava no `2d6`.
+
+O padrão diz *"o dado de dano da arma subirá em 1 nível"*, e **Nível de Dano é mecânica transcrita**,
+em `afty-niveis-dano.js`, onde o degrau é o RESULTADO MÁXIMO. Duas consequências, as duas caladas:
+`2d6` custava 6 e `1d12` custava 5 sendo o **mesmo nível** (a tabela do livro escreve a célula como
+*"1d12 ou 2d6"*), e nada acima de máximo 12 podia existir.
+
+⚠ **A prova de que os limites do padrão foram escritos NESSA escada:** o limite de Dano da Tática é
+6, e 6 PC é exatamente `2d8`, que é a Espada Colossal, a maior arma corpo a corpo do livro. Com a
+lista velha ela era grande demais para a própria classificação dela.
+
+A lista de seis também não dava conta do livro: Espada Colossal (`2d8`), Rifle de Precisão (`2d10`) e
+Bazuca (`3d12`) não podiam ser recriados como arma própria. O autor decidiu a escada inteira:
+*"Segue o Nível de Dano (1d12 > 1d12 + 1d4 > 1d12 + 1d6 > ... > 2d12 > 2d12 + 1d4 e por ai vai)"*.
+Hoje `ARMA_DADOS` é **gerada da escada**, do `1d4` ao `3d12`.
+
+⚠ **O dado impresso continua ACEITO e deixou de ser oferecido.** `2d4`, `2d6`, `2d8` e `2d10` são o
+mesmo nível escrito de outra forma: a lista mostra um nome por nível, o saneamento aceita os dois
+(senão toda arma do catálogo e toda arma própria salva perderia o dano), e o select acrescenta o dado
+GRAVADO quando ele não está na lista, pela mesma regra do chip de tipo de Feitiço.
+
+⚠ **A Fatal e a Mortal não cresceram junto**: elas pedem *"um tamanho de dado"*, e ficaram com
+`ARMA_DADOS_PROP`, de `1d4` a `1d12`.
+
+⚠ **E era "Regra escrita duas vezes" de novo:** a métrica tinha uma `nivelDoDado` e o
+`afty-niveis-dano.js` tinha OUTRA com o mesmo nome dizendo coisa diferente. A da criação virou
+`pcDoDado` e passou a ler a do livro. O módulo deixou de ser folha por isso, e o `t-ordem-modulos`
+ganhou um assert próprio para ele carregar sozinho.
+
+### Verificação
+
+`asserts/t-criacao-armas.mjs`, **135 asserts**. A suíte inteira passa (**66 arquivos, 3622 asserts**),
+o `vite build` fecha e o eslint não reclama. O censo de primitivas do `t-primitivas.mjs` subiu de 9
+para 10 e o de módulos folha do `t-ordem-modulos.mjs` ganhou o arquivo novo.
+
+E a tela foi conferida no navegador, com Playwright, em 1440px e 390px: três armas de teste (uma
+certa, uma que estoura sete limites de propósito e uma de técnica), mais um roteiro de INTERAÇÃO de
+17 passos que mexe nos controles e confere os números que saem, incluindo o custo escrito no
+rascunho. Sem addon, o editor volta a ser exatamente o de antes, o que também está no roteiro.
 
 ---
 

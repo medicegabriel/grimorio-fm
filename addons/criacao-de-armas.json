@@ -1,0 +1,9 @@
+{
+  "id": "criacao-de-armas",
+  "nome": "Criação de Armas",
+  "versao": "1.0.0",
+  "autor": "O Espectro",
+  "paraRaw": "afty",
+  "descricao": "Abre a bancada de Pontos de Criação no card Armas Criadas da aba Equipamentos. Uma arma Simples nasce com 8 PC e uma Tática com 12, mais o custo dela, mais 1 PC por espaço acima do primeiro, e a Pesada rende PC por Força exigida. Os PC compram o dado de dano (1 por nível), a margem de crítico (3 por redução) e as propriedades pelo preço de cada uma, com Duas Mãos devolvendo 1. A arma de técnica tem o custo definido pelo grau do usuário, do Quarto ao Primeiro, e recebe o dobro de PC e de limites vindos dele. A bancada só conta e avisa: ela não corrige a arma e não muda número nenhum da ficha, então instalar e desinstalar o pacote deixa a criatura exatamente onde estava.",
+  "permite": ["criacaoArmas"]
+}

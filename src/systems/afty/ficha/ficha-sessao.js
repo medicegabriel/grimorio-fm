@@ -46,8 +46,17 @@ const entre = (v, min, max) => Math.min(max, Math.max(min, v));
  */
 export function sessaoEmBranco(derived = null) {
   return {
-    hpAtual: derived?.hp ?? 0,
-    peAtual: derived?.pe ?? 0,
+    /* ⚠ PISO ZERO, como no `aparaSessao` e no `descansar`. Esta era a única das
+       três que não aparava, e a diferença não tinha como aparecer até
+       2026-09-09: nada podia derivar negativo. A Passiva da Ficha de Jogador
+       pode (ela tira o dobro do nível dela do PE Máximo, sem piso, por decisão
+       do autor), e sem isto um combatente novo num Encontro nascia com o PE
+       corrente negativo e só se corrigia no primeiro `aparaSessao`.
+
+       O MÁXIMO continua podendo ser negativo. Quem apara é a pilha CORRENTE,
+       que é o que se gasta na mesa. */
+    hpAtual: Math.max(0, derived?.hp ?? 0),
+    peAtual: Math.max(0, derived?.pe ?? 0),
     /* PV temporário POR FONTE, igual ao de PE logo abaixo. Era um número só até
        2026-08-26, quando a Guarda Inabalável passou a entregar PV temporário e
        a regra dela exigiu saber QUAL parte do pote é a da Guarda: "a perda dos
@@ -74,6 +83,17 @@ export function sessaoEmBranco(derived = null) {
        está no `pvTempFontes`, com a chave da Guarda. Ver `resolveGuarda`. */
     guardaGolpes: 0,
     guardaEncerrada: false,
+    /* NÍVEL DE EXAUSTÃO (2026-09-09). Nasceu com o Vislumbre Celeste, cuja
+       Fadiga Mental vira Exaustão ao encher, mas NÃO é dele: seis Habilidades
+       Lendárias e a Expansão de Domínio dizem "você recebe um ponto de
+       exaustão" desde sempre, e a ficha não tinha onde marcar. Por isso ele fica
+       aqui, na sessão de todo mundo, e não atrás de primitiva nenhuma.
+
+       ⚠ O QUE UM NÍVEL FAZ AINDA NÃO TEM FONTE NO AFTY. "Exausto" existe como
+       nome de condição na lista da 2.5.2 e o `CONDICAO_TEXTOS` daqui está vazio,
+       esperando o autor. Até lá o contador CONTA e MOSTRA, e a penalidade é de
+       mesa. Está em docs/a-fazer.md. */
+    exaustao: 0,
     combate: {},
     condicoes: [],
     buffs: [],
@@ -125,6 +145,8 @@ export function normalizaSessao(bruta, derived = null) {
        número. Ele vira uma fonte com nome, e não é descartado: quem estava no
        meio de uma luta com casca de PV não a perde ao recarregar a página. */
     pvTempFontes: normalizaPvTemp(bruta.pvTempFontes, bruta.pvTempAtual),
+    // Sessão gravada antes de 2026-09-09 não tem o campo, e zero é o certo.
+    exaustao: Math.max(0, Math.trunc(Number(bruta.exaustao) || 0)),
     peTempFontes: normalizaPeTemp(bruta.peTempFontes),
     almaAtual: Math.max(0, inteiro(bruta.almaAtual, base.almaAtual)),
     rodada: Math.max(0, inteiro(bruta.rodada, 0)),

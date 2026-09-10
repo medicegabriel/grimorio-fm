@@ -66,7 +66,7 @@
  * o veto é da origem PRÓPRIA (origem extra de Verdadeiras Origens só abre).
  */
 
-import { registrarFamilia, remendarLista } from "./afty-addons";
+import { registrarFamilia, remendarLista, nivelDaFicha } from "./afty-addons";
 import { getOrigem, origensQualificadas } from "./afty-origens";
 import { AFTY_TIPOS } from "./afty-schema";
 
@@ -913,7 +913,10 @@ export function resolveEspecializacoes(creature) {
   // As origens que a criatura conta como suas além da própria (Verdadeiras
   // Origens). Só ABREM especialização exclusiva, nunca trancam.
   const extras = origensQualificadas(creature);
-  const total = Math.max(1, Math.trunc(Number(creature?.core?.nd) || 1));
+  // ⚠ NÍVEL EFETIVO, e não `core.nd` cru: com a Carteira ligada o nível sai do
+  // XP anotado. Ler o campo aqui era o que travava o Nível de Especialização
+  // no valor digitado (autor, 2026-09-08). Ver `nivelDaFicha`.
+  const total = nivelDaFicha(creature);
   const lista = normalizeEspecializacoes(creature?.especializacoes, origemId, extras);
   const max = maxEspecializacoes(origemId, extras);
   const obrigatoria = especializacaoObrigatoria(origemId);

@@ -54,7 +54,7 @@
  * ============================================================
  */
 
-import { registrarFamilia, remendarLista, partirId } from "./afty-addons";
+import { registrarFamilia, remendarLista, partirId, nivelDaFicha } from "./afty-addons";
 
 /** Uma pega de Treino Especial custa isto em Focos, salvo a entrada dizer outro. */
 export const FOCOS_POR_TREINO_ESPECIAL = 1;
@@ -144,7 +144,7 @@ export const focosDoTreinoEspecial = (def) =>
   Math.max(0, Math.trunc(Number(def?.focos ?? FOCOS_POR_TREINO_ESPECIAL) || 0));
 
 /** O ND da ficha, lido igual ao `deriveAfty` (piso 1). */
-const ndDaFicha = (creature) => Math.max(1, Math.trunc(Number(creature?.core?.nd) || 1));
+const ndDaFicha = (creature) => nivelDaFicha(creature);
 
 /**
  * Teto de repetição, por ND. `vezesACada: N` no catálogo vira `1 + piso(ND/N)`,

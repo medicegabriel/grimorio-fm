@@ -57,6 +57,13 @@
  * `artigo` e `substantivo` existem porque a mesma tela fala de "criatura" num
  * lado e de "personagem" no outro, e frase montada com `if` espalhado pela UI
  * envelhece torta.
+ *
+ * ⚠ `selo` E `seloTitulo` SAÍRAM EM 2026-09-09 (autor: *"Remova isso. É meio
+ * feio."*). Eram o texto da cápsula fixa que marcava o ambiente privado no
+ * canto superior esquerdo, e o único leitor deles era o `src/App.jsx`. Dado de
+ * catálogo sem leitor é o que o projeto chama de nota que envelhece calada, e
+ * por isso eles não ficaram aqui "por via das dúvidas": o `validarSistemas`
+ * abaixo deixou de cobrá-los na mesma edição.
  */
 export const SISTEMAS = {
   afty: {
@@ -66,8 +73,6 @@ export const SISTEMAS = {
     substantivoPlural: "criaturas",
     artigo: "a",
     rota: "/Afty",
-    selo: "⚗️ Grimório Afty · privado",
-    seloTitulo: "Ambiente privado. Grimório Homebrew do Afty, com dados isolados do grimório público.",
   },
   player: {
     id: "player",
@@ -76,8 +81,6 @@ export const SISTEMAS = {
     substantivoPlural: "personagens",
     artigo: "o",
     rota: "/Player",
-    selo: "🎲 Ficha de Player · privado",
-    seloTitulo: "Ambiente privado. Ficha de Player do Grimório do Afty, com dados isolados do grimório público.",
   },
 };
 
@@ -615,6 +618,31 @@ export const DIVERGENCIAS = [
     ativa: true,
   },
   {
+    /* ⚠ A PASSIVA NÃO CUSTAVA NADA ATÉ AQUI, nos dois sistemas. O tipo
+       "passivo" está no schema desde sempre, não tem calculador
+       (`calculadorDe` devolve null para ele) e o autor tinha adiado o
+       desenvolvimento por escrito em 2026-08-09: *"Os Especiais e Passivos
+       deixamos para depois. Com calma."*. Este é o primeiro pedaço dele.
+
+       ⚠ SAI DO MÁXIMO, E NÃO DO GASTO. É a diferença que faz esta entrada não
+       ser a `FEITICO_CUSTO_PE`: o Feitiço comum cobra por uso e o pool volta no
+       descanso, e a Passiva encolhe o pool enquanto estiver na ficha. Por isso
+       ela entra pela conta do PE Máximo em afty-derive.js, e não pelo `custoPE`
+       que o Vislumbre Celeste passou a reduzir em 2026-09-09.
+
+       ⚠ E O PE PODE FICAR NEGATIVO (autor, na mesma conversa). O criador mostra
+       o número como ele é. A pilha CORRENTE da Ficha Final continua com piso
+       zero, porque ela é o que se gasta na mesa e já era aparada assim antes
+       desta regra existir. */
+    id: "passivaCustaPeMaximo",
+    tipo: "regra",
+    onde: "afty-feiticos.js, peMaximoDasPassivas, e o PE de afty-derive.js",
+    fonte: "Passivas precisam gastar PE Máximo igual ao Dobro do Nível delas. Nível 0 = 0, Nível 1 = 2, Nível 2 = 4, Nível 5 = 10. Para cada passiva, se gasta PE Máximo. (autor, 2026-09-09)",
+    afty: "a Passiva não cobra nada, e o PE Máximo ignora o tipo dela",
+    player: "cada Passiva tira o dobro do nível dela do PE Máximo, com Técnica Máxima valendo 12",
+    ativa: true,
+  },
+  {
     id: "inventarioSimplificado",
     tipo: "regra",
     onde: "docs/afty-status.md, sessão de 2026-08-01",
@@ -714,7 +742,7 @@ export function validarSistemas() {
   for (const id of SISTEMA_IDS) {
     const s = SISTEMAS[id];
     if (s.id !== id) erros.push(`Sistema ${id} com id interno diferente da chave.`);
-    for (const campo of ["label", "substantivo", "substantivoPlural", "rota", "selo", "seloTitulo"]) {
+    for (const campo of ["label", "substantivo", "substantivoPlural", "rota"]) {
       if (typeof s[campo] !== "string" || !s[campo].trim()) erros.push(`Sistema ${id} sem ${campo}.`);
     }
   }

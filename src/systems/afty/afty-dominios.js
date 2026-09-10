@@ -782,7 +782,11 @@ export function efeitosDoDominio(creature, { dom = 0, aptidoesEscolhidas = [] } 
 
   const nomeBase = `${ativo.nome || "Expansão de Domínio"}: Efeito básico`;
   out.push(marca("movimentoMult", "2", nomeBase));
-  out.push(marca("custoPE", "dom", nomeBase));
+  /* ⚠ O ALVO É OBRIGATÓRIO AQUI desde 2026-09-09, quando o `custoPE` ganhou
+     alcance. O texto desta linha é *"O custo dos seus Feitiços dentro da
+     expansão é reduzido em um valor igual ao seu Nível de DOM"*, e sem o alvo
+     ela passaria a baratear Domínio Simples, Estilo e Invocação junto. */
+  out.push({ ...marca("custoPE", "dom", nomeBase), alvo: "feitico" });
 
   for (const efeito of ativo.efeitos) {
     const r = resolvido(efeito, dom, versao);
