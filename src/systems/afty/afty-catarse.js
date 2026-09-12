@@ -86,16 +86,6 @@ export const CATARSE_FAMILIAS = [
     id: "habilidades",
     label: "Habilidade de Especialização",
     canal: "vagasHabilidade",
-    /* ⚠ ESTE CANAL TEM BUG ABERTO, e ele é anterior à Loja. O `contadorComum`
-       que o criador mostra NÃO soma `vagasHabilidade` (ver a entrada "BUG:
-       `vagasHabilidade` não chega no orçamento que a tela mostra" em
-       docs/a-fazer.md, de 2026-08-20). Enquanto ele estiver assim, comprar esta
-       família promete uma vaga que a tela não mostra.
-
-       A entrada fica aqui, e não escondida, porque o defeito é do canal e não
-       da Loja: consertar lá conserta aqui de graça. O `resolveCatarse` marca a
-       linha com `canalComPendencia` para a tela poder avisar. */
-    canalComPendencia: "o contador da aba Habilidades ainda não soma este canal",
   },
   {
     id: "melhoriasSuperiores",
@@ -274,13 +264,6 @@ export function resolveCatarse(creature, opcoes = {}) {
   }
   if (mortas.length) {
     avisos.push(`${mortas.length} compra(s) sem família conhecida, e o gasto delas continua contando.`);
-  }
-  for (const c of compras) {
-    const f = getCatarseFamilia(c.familia);
-    if (f?.canalComPendencia) {
-      avisos.push(`${f.label}: ${f.canalComPendencia}.`);
-      break; // uma vez, e não uma por compra
-    }
   }
 
   return {
