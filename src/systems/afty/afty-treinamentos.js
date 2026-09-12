@@ -63,8 +63,17 @@
  *   { tipo:"nd", valor }              → Nível de Personagem.
  *   { tipo:"aptidao", id }            → possuir a Aptidão Amaldiçoada.
  *   { tipo:"trilha", trilha, valor }  → Nível de Aptidão naquela trilha.
+ *   { tipo:"cla", id, label? }        → ser do clã (id com namespace, quando
+ *       de Addon). `label` troca o texto do chip, e o nome do clã vai no title.
  *   { tipo:"nota", label }            → referencia sistema ainda
  *       não construído (aptidões/features): exibido, não bloqueia.
+ *   [ ...vários ]                     → uma LISTA, e todos têm de passar. Ver
+ *       `requisitosDaEtapa`. Entrou em 2026-09-11 com a Benção da Adaptação,
+ *       que pede Técnica Máxima E o Santo da Espada na mesma etapa.
+ *
+ * Alvo reservado de efeito (e da troca de atributo de perícia):
+ *   "atributoDaTecnica" → o Atributo da Técnica da ficha (`core.tecnicaAttr`).
+ *       Segue a ficha: trocar o atributo da técnica leva o bônus junto.
  *
  * ⚠ Desde 2026-08-26 NENHUMA das 12 linhas do livro usa `nota`. Os 13 que
  * restavam viraram `aptidao` e `trilha` de verdade, e agora bloqueiam. Eles
@@ -83,7 +92,7 @@
  */
 
 import { registrarFamilia, remendarLista, filtraForaDoJogador } from "./afty-addons";
-import { origensQualificadas, origemEstrutural } from "./afty-origens";
+import { origensQualificadas, origemEstrutural, getCla } from "./afty-origens";
 import { getAptidao, APTIDAO_TRILHAS } from "./afty-aptidoes";
 import { AFTY_ATTRS } from "./afty-schema";
 import { AFTY_PERICIAS, catalogoPericiasDaFicha } from "./afty-pericias";
@@ -636,7 +645,7 @@ function progressosDe(linha, val) {
  * `alvoInstancia` é o alvo da instância nas linhas repetíveis: no Treino de
  * Atributo é o atributo escolhido, e é o que faz o `+1` cair no lugar certo.
  */
-function paraCanal(ef, alvoInstancia, alvos = {}) {
+function paraCanal(ef, alvoInstancia, alvos = {}, ficha = {}) {
   /* ⚠ PASSAGEM DIRETA (2026-08-22). Uma etapa pode declarar `{ canal, expr }`
      em vez de `{ tipo, valor }`, e aí ela vai crua para o Motor. Existe pelo
      Addon: o vocabulário de `tipo` abaixo é uma lista fechada, escrita para as
@@ -648,7 +657,11 @@ function paraCanal(ef, alvoInstancia, alvos = {}) {
     const alvoEscolhido = typeof ef.alvo === "string" && ef.alvo.startsWith("escolha:")
       ? alvos[ef.alvo.slice("escolha:".length)]
       : null;
-    const alvo = ef.alvo === "instancia" ? alvoInstancia : (alvoEscolhido || ef.alvo);
+    /* O Atributo da Técnica é da FICHA, e não da Linha: ele não é escolhido no
+       treino, e trocar a técnica de atributo leva o bônus junto. */
+    const alvo = ef.alvo === "instancia" ? alvoInstancia
+      : ef.alvo === ALVO_ATRIBUTO_TECNICA ? (ficha.tecnicaAttr || "inteligencia")
+      : (alvoEscolhido || ef.alvo);
     if (ef.alvo === "instancia" && !alvoInstancia) return null;
     if (typeof ef.alvo === "string" && ef.alvo.startsWith("escolha:") && !alvoEscolhido) return null;
     /* ⚠ O `expr` TAMBÉM lê um alvo, e é a metade simétrica da de cima. Um alvo
@@ -841,7 +854,7 @@ export function efeitosDeTreino(creature, gatilhosAtivos = null) {
   const add = (efeitos, linha, alvo, alvos = {}, nome = null) => {
     for (const ef of efeitos || []) {
       if (ef.gatilhoSessao && !gatilhosAtivos?.[ef.gatilhoSessao]) continue;
-      const conv = paraCanal(ef, alvo, alvos);
+      const conv = paraCanal(ef, alvo, alvos, { tecnicaAttr: atributoDaTecnica(creature) });
       if (!conv) continue;
       out.push({
         ...conv,
@@ -896,7 +909,9 @@ export function atributosDePericiaDeTreino(creature) {
     if (!troca || Number(val) < (troca.etapa ?? 1)) continue;
     const alvos = creature?.treinamentoAlvos?.[id] || {};
     const pericia = alvos[troca.periciaAlvo];
-    const atributo = alvos[troca.atributoAlvo];
+    const atributo = troca.atributoAlvo === ALVO_ATRIBUTO_TECNICA
+      ? atributoDaTecnica(creature)
+      : alvos[troca.atributoAlvo];
     if (pericia && ATTR_LABEL[atributo]) out[pericia] = atributo;
   }
   return out;
@@ -1019,8 +1034,41 @@ export function avaliarRequisito(requisito, ctx = {}) {
     if (!ctx.niveisAptidao) return { ok: true, verificavel: false, label: nome };
     return { ok: (ctx.niveisAptidao[requisito.trilha] ?? 0) >= requisito.valor, verificavel: true, label: nome };
   }
+  /* ⚠ `cla` entrou em 2026-09-11, com a Benção da Adaptação: o livro pede
+     "Técnica Herdada: Santo da Espada", que o Afty não tem como conferir, e o
+     autor decidiu que quem responde é o Clã Akutame. O `label` guarda o texto
+     do livro no chip, e o title diz o que foi conferido de fato.
+
+     Mesma porta do `aptidao`: `claId` AUSENTE do contexto (o chamador não o
+     passou) cai para não verificável, e `null` é "não tem clã", que reprova. */
+  if (requisito.tipo === "cla") {
+    const nomeCla = getCla(requisito.id)?.nome ?? requisito.id;
+    const label = requisito.label || nomeCla;
+    const titulo = requisito.label ? nomeCla : undefined;
+    if (ctx.claId === undefined) return { ok: true, verificavel: false, label, titulo };
+    return { ok: ctx.claId === requisito.id, verificavel: true, label, titulo };
+  }
   // nota (aptidão/feature de sistema não construído): exibe, não bloqueia.
   return { ok: true, verificavel: false, label: requisito.label };
+}
+
+/**
+ * Os requisitos de UMA etapa, sempre como lista. O campo aceita um objeto (as
+ * 12 linhas do livro e os addons de antes) ou uma lista, e quem mostra e quem
+ * trava lê daqui: todos têm de passar.
+ */
+export function requisitosDaEtapa(requisito) {
+  if (!requisito) return [];
+  return (Array.isArray(requisito) ? requisito : [requisito]).filter((r) => r && typeof r === "object");
+}
+
+/** O alvo reservado que aponta para o Atributo da Técnica da ficha. */
+export const ALVO_ATRIBUTO_TECNICA = "atributoDaTecnica";
+
+/** O Atributo da Técnica da ficha, com o mesmo padrão do derive (Inteligência). */
+export function atributoDaTecnica(creature) {
+  const attr = creature?.core?.tecnicaAttr;
+  return ATTR_LABEL[attr] ? attr : "inteligencia";
 }
 
 const ATTR_LABEL = {

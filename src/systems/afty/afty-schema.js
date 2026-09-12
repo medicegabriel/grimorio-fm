@@ -404,6 +404,10 @@ export function createBlankAfty() {
     // linha do catálogo, inventário, Ferramenta Amaldiçoada e Arma Dedicada.
     // O id nasce com o prefixo `armc_`, que nenhuma arma do livro usa.
     armasCustom: [],            // [ armaCustom ] — ver novaArmaCustom()
+    // Interlúdios de FORJA (2026-09-11). Caderno puro: quantos Focos a forja
+    // gastou e o que saiu dela. Os Focos entram no mesmo orçamento das Linhas
+    // de Treinamento e dos Treinos Especiais. Ver afty-forja.js.
+    forjas: [],                 // [{ id, focos, itens }] — ver novaForja()
 
     // Especializações (classes). Até 2, e soma(niveis) === core.nd — o
     // nível de Especialização É o ND. Não mudam cálculo: só destravam

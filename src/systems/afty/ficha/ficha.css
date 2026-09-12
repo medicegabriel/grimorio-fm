@@ -1581,6 +1581,132 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
 }
 
 /* ============================================================ */
+/* EXPANSÃO DE DOMÍNIO — a linha e o corpo                       */
+/* ============================================================ */
+/* ⚠ REDESENHADA EM 2026-09-11, a pedido do autor (*"Ficou muito feio a Expansão
+   de Domínio na Ficha Final"*). O corpo era UM parágrafo em `.afty-texto`, preso
+   em 78ch num cartão de 1400px, com a área, a duração e o PV repetidos em prosa
+   e o que é desta expansão no fim, depois de cinco efeitos iguais em toda
+   expansão. Mesma lição da linha de Feitiço: a linha FECHADA informa, e o corpo
+   só acrescenta o que a linha não tem.
+
+   Tudo aqui pinta por TOKEN, para o CSS personalizado de cada ficha alcançar a
+   seção sem regra própria. */
+.afty-dominio-cabeca {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem 0.625rem;
+  padding: 0.5rem 0.625rem;
+}
+
+/* ⚠ O NOME TEM PISO, e quem cede é o grupo de números: ele embrulha para a linha
+   de baixo em vez de o nome virar "Parede ...". Medido em 390px antes disto. */
+.afty-dominio-nome {
+  flex: 1 1 8rem;
+  min-width: 8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--afty-texto);
+}
+
+.afty-dominio-numeros {
+  margin-left: auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: baseline;
+  gap: 0.125rem 0.875rem;
+}
+
+.afty-dominio-numero {
+  white-space: nowrap;
+  font-size: 0.6875rem;
+  color: var(--afty-texto-suave);
+}
+
+.afty-dominio-numero .afty-valor { font-size: 0.6875rem; }
+
+.afty-dominio-corpo {
+  padding: 0 0.75rem 0.75rem 2rem;
+}
+
+.afty-dominio-efeitos {
+  list-style: none;
+  margin: 0.625rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.625rem;
+}
+
+.afty-dominio-efeito-cabeca {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.125rem 0.5rem;
+}
+
+.afty-dominio-efeito-titulo {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--afty-texto);
+}
+
+.afty-dominio-efeito-categoria {
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--afty-texto-fraco);
+}
+
+/* ⚠ O RESTO VEM DO `.afty-texto`, que o texto de regra da seção também leva. O
+   contrato de classes promete essa classe como "o texto de regra do livro", e o
+   tema personalizado de cada ficha mira nela: sem ela, o corpo do domínio sairia
+   pintado diferente do resto do texto de regra da mesma ficha. */
+.afty-dominio-efeito-texto {
+  margin: 0.125rem 0 0;
+}
+
+.afty-dominio-secao {
+  margin: 0.875rem 0 0.375rem;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--afty-texto-fraco);
+}
+
+/* ⚠ `auto-fill` com piso em PIXEL, e não consulta de container nem `rem`. O
+   cartão tem dois donos (a Ficha e o painel de Encontros) e a raiz do projeto
+   tem 18px, então `16rem` viraria 288px sem ninguém ver. Duas colunas no
+   desktop, uma no telefone, medido pela largura real do cartão. */
+.afty-dominio-base {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 0.5rem 1.5rem;
+}
+
+.afty-dominio-base-item {
+  min-width: 0;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--afty-texto-suave);
+}
+
+.afty-dominio-base-item dt {
+  font-weight: 700;
+  color: var(--afty-texto);
+}
+
+.afty-dominio-base-item dd { margin: 0; }
+
+/* ============================================================ */
 /* LIBERAÇÃO MÁXIMA e a DICA de regra                           */
 /* ============================================================ */
 
@@ -1643,6 +1769,9 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
 .afty-valor[data-afty-tom="dano"]  { color: var(--afty-texto); }
 .afty-valor[data-afty-tom="cura"]  { color: var(--afty-cura); }
 .afty-valor[data-afty-tom="custo"] { color: var(--afty-pe); }
+/* A MESMA cor, para quem não pode receber o atributo: o `NumeroComFontes` não
+   repassa `data-afty-*`, e o custo da Expansão de Domínio tem hover. */
+.afty-valor-pe { color: var(--afty-pe); }
 
 .afty-vazio {
   color: var(--afty-texto-fraco);

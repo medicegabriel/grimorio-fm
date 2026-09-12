@@ -48,10 +48,13 @@ const t = (nome, real, esp) => {
    move numero, `libera` move. Sao duas e nao uma porque uma mesa pode querer o
    livro-caixa alimentando so os Focos, ou so o Nivel, ou nenhum dos dois. Quem
    as mede e o `t-carteira.mjs`. Aqui elas contam so no censo. */
-t("existem 11 liberacoes hoje", AD.LIBERACOES.length, 11);
+/* E as duas da Bencao do Grao Mestre da Forja (2026-09-11), medidas no
+   `t-bencao-forja.mjs`. */
+t("existem 13 liberacoes hoje", AD.LIBERACOES.length, 13);
 t("os ids", AD.LIBERACOES.map((l) => l.id),
   ["estiloSombras", "gemeosSemTecnica", "qualificaSemTecnica", "gemeosMaldicao",
    "feiticosRestritos", "carteiraFocos", "carteiraNivel",
+   "segundaHabilidadeUnica", "acessoriosUnicos",
    "soPorAddon:gemeos", "soPorAddon:atributo",
    "soPorAddon:cnj_agilidade_no_campo_de_batalha", "soPorAddon:tal_alma_livre"]);
 t("SEM_LIBERACOES e vazio", AD.SEM_LIBERACOES, []);

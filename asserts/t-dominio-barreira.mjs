@@ -114,8 +114,14 @@ t("o dado e 1d10", [base.conflito.dados, base.conflito.faces], [1, 10]);
 /* 2ª: +3 metros de área. ⚠ Metros, e não vezes o Bônus de Treinamento. */
 t("sem treino a area da Completa e 9 metros", base.lista[0].area, "9 metros");
 t("a 2a etapa poe 3 metros", d2.lista[0].area, "12 metros");
-t("e o TEXTO do dominio diz o mesmo numero",
-  d2.lista[0].texto.includes("área esférica de 12 metros"), true);
+/* ⚠ ERA "o TEXTO do domínio diz o mesmo número" até 2026-09-11, quando a
+   prosa saiu das telas. A área agora só existe no campo `area`, que é o que a
+   linha desenha, e o corpo não carrega número: a classe de bug que este
+   assert pegava (a prosa dizendo uma área e a linha outra) acabou por
+   construção. O que se mede agora é que ela não volta. */
+t("o corpo nao repete a area em prosa",
+  JSON.stringify(d2.lista[0].corpo).includes("12 metros"), false);
+t("e o campo texto nao existe mais", "texto" in d2.lista[0], false);
 
 /* 4ª: +1 efeito. */
 t("DOM 5 comporta 3 efeitos", base.maxEfeitos, 3);

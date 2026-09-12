@@ -55,8 +55,9 @@ import {
   dominioEmUso,
   listaDominios, resolveVersao as resolveVersaoDominio,
   duracaoDominio, areaDominio, custoDominio, pvBarreira, maxEfeitos, vagasUsadas,
-  textoDoDominio, pvDaParede, pvCortina, rdDaParede, maxParedes, conflitoDeDominio,
-  PAREDES_BASE, PAREDES_NA_CORTINA,
+  corpoDoDominio, pvDaParede, pvCortina, rdDaParede, maxParedes, conflitoDeDominio,
+  PAREDES_BASE, PAREDES_NA_CORTINA, PAREDES_NO_DOMO,
+  DOMINIO_CUSTO_BASE, CUSTO_ACERTO_GARANTIDO, rotuloVersao,
 } from "./afty-dominios";
 import { resolveEspecializacoes, AFTY_ESPECIALIZACOES, treinamentosDasEspecializacoes, getEspecializacao } from "./afty-especializacoes";
 import {
@@ -116,7 +117,7 @@ import {
   TALENTO_EFEITOS,
   efeitosInvocacaoDeEntradas,
   coletarEfeitosAptidao,
-  aplicarEfeitos, resolverExclusivos, valorCanal, furaTetoEm, efeitosDaTecnica, efeitosDosPassivos,
+  aplicarEfeitos, resolverExclusivos, carimbarGrupoExclusivo, valorCanal, furaTetoEm, efeitosDaTecnica, efeitosDosPassivos,
   efeitosDaSessao, EFEITO_CANAIS,
   ehAtributoPermanente, ehAtributoTemporario, ehEstagio2, ehPreContexto, ehPosAptidao, efeitoUsaDadosDanoFinal,
   mesclarEfeitos, detalhesDoCanal, detalhesDoCanalEscopos, custoEmPe, normalizarAlvoEfeito,
@@ -292,6 +293,10 @@ export function deriveAfty(creature, opcoes = {}) {
      resposta errada para metade da lista, calada. Ver afty-sistema.js. */
   const sistema = sistemaDaFicha(creature);
   const ehJogador = (id) => regraDo(sistema, id) === "player";
+  /* O pool exclusivo se parte em GRUPOS no jogador (divergência `poolExclusivo`).
+     O grupo é carimbado no efeito, nas duas listas que chegam à disputa: o
+     `efeitosTodos` e o `efeitosAtivos`. Ver `carimbarGrupoExclusivo`. */
+  const poolEmGrupos = ehJogador("poolExclusivo");
 
   const tipo = core.tipo || "combatente";
   // ⚠ O RESTRINGIDO NÃO TEM ENERGIA AMALDIÇOADA (autor, 2026-07-29). É a
@@ -437,6 +442,10 @@ export function deriveAfty(creature, opcoes = {}) {
     /* O sistema decide onde a RD do escudo desemboca: RD Geral na criatura, RD
        Física no jogador. Ver `canalRdEscudo` e a divergência `rdEscudoFisico`. */
     sistema,
+    /* A segunda Habilidade Única e os Acessórios Únicos só valem com o Addon
+       Benção do Grão Mestre da Forja. Sem a liberação, o que está gravado na
+       ficha continua lá e deixa de contar. */
+    liberacoes,
   });
 
   // Limite EFETIVO por atributo = limite base (20 / poderes) + Desenvolvimento, teto 30.
@@ -862,7 +871,7 @@ export function deriveAfty(creature, opcoes = {}) {
   const finezaBasico = !!pugilato?.def?.props?.fineza;
   const dedicadas = resolveArmasDedicadas(creature, armasParaDano, habilidades.efetivas);
 
-  const efeitosTodos = [
+  const efeitosTodos = carimbarGrupoExclusivo([
     // Os dois blocos do Vislumbre Celeste. O `quando` de cada um lê o estado
     // "Olhos Descobertos", então os dois convivem e só um vale por vez.
     ...efeitosVislumbre.filter((e) => e.canal !== "pontosAptidao"),
@@ -922,7 +931,7 @@ export function deriveAfty(creature, opcoes = {}) {
       nivelControlador: nd,
       sessaoInvocacoes: opcoes.invocacoes,
     }),
-  ];
+  ], poolEmGrupos);
 
   // Estágio 0b: os canais que ALIMENTAM o contexto principal. Só nível de
   // aptidão por ora, porque `dom/au/cl/bar/er` são variáveis do DSL e uma
@@ -1145,10 +1154,17 @@ export function deriveAfty(creature, opcoes = {}) {
         area: areaDominio(versao, bt, false, bonusArea),
         pvBarreira: pvBarreira(barNivel, nd, paredesResistentes, bonusPvParede),
         vagasUsadas: vagasUsadas(d.efeitos),
-        texto: textoDoDominio(d, {
-          dom: domNivel, nd, bt, bar: barNivel, versao, paredesResistentes,
-          bonusArea, bonusPvParede,
-        }),
+        /* ⚠ ERA `texto`, um parágrafo pronto, até 2026-09-11. As duas telas
+           passaram a desenhar estrutura, e o parágrafo repetia em prosa a
+           área, a duração e o PV dos campos logo acima. O corpo não carrega
+           número nenhum: quem desenha número lê os campos. */
+        corpo: corpoDoDominio(d, { dom: domNivel, versao }),
+        /* O custo tem duas parcelas quando o Acerto Garantido está ligado, e
+           o hover precisa dizer qual é qual. */
+        partesCusto: [
+          { label: `Expansão ${rotuloVersao(versao)}`, valor: DOMINIO_CUSTO_BASE[versao] ?? 0 },
+          ...(comAG ? [{ label: "Acerto Garantido", valor: CUSTO_ACERTO_GARANTIDO }] : []),
+        ],
       };
     });
     /* A BARREIRA da aptidão Técnicas de Barreira, que é irmã do domo e nunca teve
@@ -1181,6 +1197,13 @@ export function deriveAfty(creature, opcoes = {}) {
       partesPvCortina: [
         ...partesPvParede,
         { label: `× ${PAREDES_NA_CORTINA} paredes`, texto: `× ${PAREDES_NA_CORTINA}` },
+      ],
+      /* O domo (e o Totem, que usa a mesma conta) é doze paredes: o hover dele
+         é o da parede com a multiplicação no fim, igual ao da Cortina. Ele
+         mora aqui e não em cada expansão porque não depende de nenhuma. */
+      partesPvDomo: [
+        ...partesPvParede,
+        { label: `× ${PAREDES_NO_DOMO} paredes`, texto: `× ${PAREDES_NO_DOMO}` },
       ],
       partesRdParede: detalhesDoCanal(efPosAptidao, "rdParede").map((x) => ({ label: x.nome, valor: x.valor })),
       partesMaxParedes: [
@@ -1220,6 +1243,8 @@ export function deriveAfty(creature, opcoes = {}) {
     tecnicas: tecnicasCombate,
     armas: armasParaDano,
     feiticos: creature?.feiticos,
+    // Para esconder o Feitiço cujo efeito não existe no nível dele.
+    nd,
   });
   const estadosAptidoes = estadosCombateAptidoes({
     aptidoesIds,
@@ -1283,11 +1308,14 @@ export function deriveAfty(creature, opcoes = {}) {
     },
     aptidoesIds,
   ));
-  const efeitosAtivos = [
+  /* ⚠ CARIMBADO DE NOVO, e não por engano: o Estilo, a Expansão de Domínio e os
+     Auxiliares ligados chegam aqui sem ter passado pelo `efeitosTodos`. O que já
+     tinha carimbo recebe o mesmo grupo outra vez. */
+  const efeitosAtivos = carimbarGrupoExclusivo([
     ...efeitosComDominio.filter((e) => !aurasDesabilitadas.has(e.origem)),
     ...efeitosCombateAmaldicoado(tecnicasCombate, combate, habilidades.efetivas, bt),
     ...auxiliaresAtivos.efeitos,
-  ];
+  ], poolEmGrupos);
   // Expressões que leem `dados_dano_final` só podem ser avaliadas quando cada
   // linha de dano já sabe quantos dados vai rolar. Elas não entram no agregado
   // geral e viajam cruas até o calculador de Feitiços.
@@ -1686,37 +1714,34 @@ export function deriveAfty(creature, opcoes = {}) {
   // expressao permanece viva e e reavaliada aqui com o contexto FINAL. As
   // variaveis proprias do item, como `grau`, continuam sobrescrevendo as da
   // criatura somente para aquela expressao.
+  const reavaliarUnica = (efeito) => ({
+    ...efeito,
+    valor: efeitoUsaDadosDanoFinal(efeito)
+      ? null
+      : evalNumberDsl(efeito.expr, { ...ctxTecnica, ...(efeito.contextoDsl || {}) }, 0),
+  });
   const equipFinal = {
     ...equip,
-    efeitosUnica: equip.efeitosUnica.map((efeito) => ({
-      ...efeito,
-      valor: efeitoUsaDadosDanoFinal(efeito)
-        ? null
-        : evalNumberDsl(
-          efeito.expr,
-          { ...ctxTecnica, ...(efeito.contextoDsl || {}) },
-          0,
-        ),
-    })),
+    efeitosUnica: equip.efeitosUnica.map(reavaliarUnica),
     entradas: equip.entradas.map((entrada) => {
       if (!entrada.fa) return entrada;
       return {
         ...entrada,
         fa: {
           ...entrada.fa,
-          habilidadeEfeitos: entrada.fa.habilidadeEfeitos.map((efeito) => ({
-            ...efeito,
-            valor: efeitoUsaDadosDanoFinal(efeito)
-              ? null
-              : evalNumberDsl(
-                efeito.expr,
-                { ...ctxTecnica, ...(efeito.contextoDsl || {}) },
-                0,
-              ),
-          })),
+          habilidadeEfeitos: entrada.fa.habilidadeEfeitos.map(reavaliarUnica),
+          segundaHabilidadeEfeitos: entrada.fa.segundaHabilidadeEfeitos.map(reavaliarUnica),
         },
       };
     }),
+    // Os Acessórios Únicos são editados no card deles, e não na linha do
+    // inventário: a Habilidade Única é do ACESSÓRIO, e ele pode nem estar
+    // carregado. O editor lê daqui o mesmo valor que o Motor usa.
+    acessoriosUnicos: equip.acessoriosUnicos.map((a) => ({
+      ...a,
+      habilidadeEfeitos: a.habilidadeEfeitos.map(reavaliarUnica),
+      segundaHabilidadeEfeitos: a.segundaHabilidadeEfeitos.map(reavaliarUnica),
+    })),
   };
   const resolverEfeitosEditaveis = (lista) => (Array.isArray(lista) ? lista : [])
     .map((e) => {
@@ -2246,6 +2271,35 @@ export function deriveAfty(creature, opcoes = {}) {
   //
   // Orçamento de perícias treinadas = 3 + maior mod entre INT e SAB + rank do
   // Grau do Feiticeiro (autor, 2026-07-27).
+  /* PENALIDADE DE ARMADURA (canal do Motor, 2026-09-11). O autor pediu o canal
+     para habilidades que aumentem ou diminuam a penalidade do uniforme e do
+     escudo, e fechou as regras por pergunta:
+
+       • positivo ALIVIA e negativo aumenta, como todo bônus do Motor;
+       • o total PARA EM ZERO, e nunca vira bônus (a regra do Polido e do Ajustado);
+       • um aumento vale SEMPRE, mesmo sem nada equipado;
+       • vale nos dois sistemas.
+
+     As quatro cabem numa conta só: itens mais canal, aparado em zero.
+
+     ⚠ AS PARCELAS SÃO DUAS LISTAS. A da Ficha diz item por item (o hover do
+     número na aba Equipamentos, que até aqui abria vazio porque ninguém montava
+     a lista). A das perícias junta os itens em "Armadura e Escudo", como sempre
+     foi, e cada efeito do Motor entra com o nome dele. Aparada em zero, a
+     penalidade não aparece em lugar nenhum, e as listas saem vazias. */
+  const penalidadeMotor = detalhesDoCanal(ef, "penalidadeArmadura")
+    .map((d) => ({ label: d.nome, valor: d.valor }));
+  const penalidadeArmadura = Math.min(0, equip.penalidadeDestreza + valorCanal(ef, "penalidadeArmadura"));
+  const partesPenalidade = penalidadeArmadura === 0 ? [] : [...equip.penalidadePartes, ...penalidadeMotor];
+  /* ⚠ MARCADAS com `penalidade: true`: o teste de Ritual tira a penalidade
+     inteira da Prestidigitação quando troca para Inteligência, e ele achava a
+     parcela pelo RÓTULO. Com o Motor, uma parcela entra com o nome da
+     habilidade, e o rótulo deixou de dizer o que ela é. */
+  const partesPenalidadePericia = penalidadeArmadura === 0 ? [] : [
+    ...(equip.penalidadeDestreza ? [{ label: "Armadura e Escudo", valor: equip.penalidadeDestreza }] : []),
+    ...penalidadeMotor,
+  ].map((p) => ({ ...p, penalidade: true }));
+
   const testes = resolveTestes(creature, {
     nd, bt, mods: modByAttr, tecnicaAttr, grauRank: grau.rank,
     sistema,
@@ -2290,8 +2344,10 @@ export function deriveAfty(creature, opcoes = {}) {
       ...atributosDePericiaManuais(creature),
     },
     // Penalidade de armadura e escudo, cumulativa, em testes de perícia que
-    // usam Destreza. Voltou a valer em 2026-08-01.
-    penalidadeDestreza: equip.penalidadeDestreza,
+    // usam Destreza. Voltou a valer em 2026-08-01, e desde 2026-09-11 soma o
+    // canal `penalidadeArmadura` do Motor. Ver o bloco logo acima.
+    penalidadeDestreza: penalidadeArmadura,
+    penalidadePartes: partesPenalidadePericia,
   });
 
   // O teste de Conjuração em Ritual parte de Prestidigitação. Naturalidade com
@@ -2303,7 +2359,12 @@ export function deriveAfty(creature, opcoes = {}) {
   const temRitualista = habilidades.efetivas.includes("cnj_ritualista");
   const partesPrestidigitacao = prestidigitacao?.partes ?? [];
   const parteAtributoPrest = partesPrestidigitacao[0] ?? { label: "Destreza", valor: modDes };
-  const partePenalidadePrest = partesPrestidigitacao.find((p) => p.label === "Armadura e Escudo") ?? null;
+  /* Toda parcela da Penalidade de Armadura, dos itens e do Motor, pela marca
+     `penalidade`. Ela só existe quando a Prestidigitação usa Destreza, e sai
+     INTEIRA quando o Ritual troca para Inteligência. */
+  const penalidadePrest = partesPrestidigitacao
+    .filter((p) => p.penalidade)
+    .reduce((s, p) => s + (p.valor || 0), 0);
   const bonusRitualista = temRitualista ? 2 : 0;
   /* O teste de Conjuração em Ritual entra DEPOIS do `resumoFeiticos`, porque
      depende da perícia de Prestidigitação, que só fecha aqui embaixo.
@@ -2320,12 +2381,12 @@ export function deriveAfty(creature, opcoes = {}) {
       const usaInteligencia = temNaturalidadeRitual && config.atributoRitual === "inteligencia";
       const bonusPrestBase = prestidigitacao?.bonus ?? 0;
       const bonusAtributo = usaInteligencia
-        ? bonusPrestBase - (parteAtributoPrest.valor || 0) - (partePenalidadePrest?.valor || 0) + modInt
+        ? bonusPrestBase - (parteAtributoPrest.valor || 0) - penalidadePrest + modInt
         : bonusPrestBase;
       const partesAtributo = usaInteligencia
         ? [
           { label: "Inteligência", valor: modInt },
-          ...partesPrestidigitacao.slice(1).filter((p) => p.label !== "Armadura e Escudo"),
+          ...partesPrestidigitacao.slice(1).filter((p) => !p.penalidade),
         ]
         : partesPrestidigitacao;
       return {
@@ -2736,6 +2797,8 @@ export function deriveAfty(creature, opcoes = {}) {
   const divTexto = (d) => String(d).replace(".", ",");
 
   const partes = {
+    // A Penalidade de Armadura item por item, mais o Motor. Ver o bloco dela.
+    penalidadeDestreza: partesPenalidade,
     hp: [
       ...(pvPorClasse
         ? linhasBaseDeClasse((e, i) => pvDaClasse(e.id, e.nivel, { inicial: i === 0 }))
@@ -3143,7 +3206,7 @@ export function deriveAfty(creature, opcoes = {}) {
        A `rd` de cada linha já é a EFETIVA contra aquele tipo (Geral + Física ou
        Alma + a do tipo), que é o número que se usa na mesa. */
     defesasDano,
-    penalidadeDestreza: equip.penalidadeDestreza, // uniforme + escudos, cumulativos
+    penalidadeDestreza: penalidadeArmadura, // uniforme + escudos + canal penalidadeArmadura, aparado em zero
     /* Guarda Inabalável: { ativa, bonusMax, vidaMax, passoPorGolpe }. O corrente
        (quantos golpes já levou, se ainda está de pé) é SESSÃO, e quem resolve é
        o `resolveGuarda` em ficha-sessao.js. */

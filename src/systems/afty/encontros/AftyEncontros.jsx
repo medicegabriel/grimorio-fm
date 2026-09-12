@@ -7,6 +7,7 @@ import {
 import "../ficha/ficha.css";
 import "./encontros.css";
 import { ENCONTRO_STATUS, STATUS_ORDEM, LADO_ROTULO } from "./afty-encontro";
+import { palavrasDoSistema } from "../afty-sistema";
 
 /**
  * ============================================================
@@ -135,7 +136,9 @@ function Cartao({ encontro, pastas, onAbrir, onDuplicar, onApagar, onMover }) {
   );
 }
 
-function ConfirmarApagar({ encontro, onConfirmar, onCancelar }) {
+/* `sistema` é o da ROTA: o grimório de que o aviso fala é o que está aberto. */
+function ConfirmarApagar({ encontro, onConfirmar, onCancelar, sistema }) {
+  const pal = palavrasDoSistema(sistema);
   if (!encontro) return null;
   return (
     <div
@@ -153,7 +156,7 @@ function ConfirmarApagar({ encontro, onConfirmar, onCancelar }) {
         </h3>
         <p className="afty-texto mb-4">
           <strong>{encontro.nome}</strong> e os {encontro.combatentes.length} combatente(s) dele somem.
-          As criaturas do grimório não são tocadas.
+          {pal.g("Os", "As")} {pal.plural} do grimório não são {pal.g("tocados", "tocadas")}.
         </p>
         <div className="flex justify-end gap-2">
           <button type="button" className="afty-botao" onClick={onCancelar}>Cancelar</button>
@@ -166,7 +169,7 @@ function ConfirmarApagar({ encontro, onConfirmar, onCancelar }) {
   );
 }
 
-export default function AftyEncontros({ gerenciador, pastas = [], onAbrir, onVoltar }) {
+export default function AftyEncontros({ gerenciador, pastas = [], onAbrir, onVoltar, sistema }) {
   const [busca, setBusca] = useState("");
   const [pasta, setPasta] = useState("__todas__");
   const [status, setStatus] = useState("__todos__");
@@ -328,6 +331,7 @@ export default function AftyEncontros({ gerenciador, pastas = [], onAbrir, onVol
 
       <ConfirmarApagar
         encontro={aApagar}
+        sistema={sistema}
         onConfirmar={() => { gerenciador.remover(aApagar.id); setAApagar(null); }}
         onCancelar={() => setAApagar(null)}
       />

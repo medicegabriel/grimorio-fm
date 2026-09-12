@@ -1238,9 +1238,15 @@ no `.afty-chip` genérico.
 
 A **Expansão de Domínio** entrou na aba **Ações**, e não em aba própria: ela É uma ação
 de combate, com custo em PE e duração em rodadas, e o jogador procura por ela onde
-procura o resto do turno dele. Cada linha traz área, duração, PV da barreira e custo, e
-abre com o texto inteiro. O texto **já vem montado** pelo `textoDoDominio`, o mesmo que
-o criador usa: a Ficha não remonta nada.
+procura o resto do turno dele. Cada linha traz área, duração, PV do domo e custo, com
+rótulo e hover de fontes, e continua visível quando abre.
+
+⚠ **O corpo aberto não é mais um parágrafo** (2026-09-11). Até então a Ficha mostrava o
+texto pronto do `textoDoDominio`, que repetia em prosa os números da linha e deixava os
+efeitos DESTA expansão depois dos cinco efeitos iguais em toda expansão. Hoje o motor
+entrega o `corpoDoDominio`, só texto e em estrutura, e a ordem é: a execução, os efeitos
+desta expansão, a aparência, e por último "Toda Expansão" numa grade que se ajusta à
+largura do cartão. A Ficha continua sem remontar nada: ela desenha a estrutura que vem.
 
 ### Invocações
 

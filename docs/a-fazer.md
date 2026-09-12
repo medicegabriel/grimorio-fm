@@ -131,6 +131,76 @@ escolha... começa como iniciante, no nível 6 veterano e no 12 mestre"*. Depend
 
 ---
 
+### Invocação: o bônus de Característica em Jogadas de Ataque não chega às Ações
+
+**Onde:** `src/systems/afty/afty-invocacoes.js` (`acertoDe` em `resolveTestesInvocacao`, e
+`resolveAcao`)
+
+**Situação:** a Característica de Teste com alvo **Ataque** soma só na Jogada de Ataque da própria
+criatura, a linha do golpe improvisado. O `bonusAtaque` de cada Ação não a lê: ele soma atributo,
+treino, metade do Nível de Controlador e o canal `acerto`, e para aí. Já o canal `acerto` do Motor
+alcança as duas.
+
+Achado ao ligar o Motor na Característica Livre. A regra "duas Características com o mesmo efeito não
+acumulam" pedia que o `acerto` de uma Livre disputasse com a Característica de Ataque, e as duas não
+mexem no mesmo número. Por isso hoje elas **não** disputam, e isso está escrito no
+`agregarCaracteristicas`.
+
+**Precisa:** o autor dizer se "bônus em Jogadas de Ataque" vale para as Ações da invocação. Se valer,
+a Característica passa a somar no `bonusAtaque` das Ações, e aí ela e o `acerto` da Livre viram o
+mesmo efeito e passam a disputar.
+**Anotado:** 2026-09-10, ao ligar o Motor na Característica Livre
+
+### O "enquanto" da Característica Livre não enxerga estado de mesa
+
+**Onde:** `src/systems/afty/afty-invocacoes.js` (`buildInvocacaoDslContext`)
+
+**Situação:** o Motor da Livre avalia no namespace da invocação: grau, atributos, tipo, marcadores, o
+`nd` e o `bt` do dono, mais `sempre` e `nunca`. Nada de sessão: em campo, auxílio ligado, PV atual ou
+os estados da bancada do dono. Uma Característica que valha "enquanto estiver em campo" não tem
+variável, e o nome que não existe fica vermelho no editor.
+
+**Precisa:** o autor dizer se o contexto da invocação ganha o estado da sessão dela. O
+`sessao.invocacoes` já chega ao `resolveInvocacao` para os auxílios, então o cano existe. É o mesmo
+caminho que a Frenesi da Invocação pediria.
+**Anotado:** 2026-09-10, ao ligar o Motor na Característica Livre
+
+### ASSUNÇÃO: no pool do jogador, cada família de Invocação disputa só consigo mesma
+
+**Onde:** `src/systems/afty/afty-efeitos.js` (`FAMILIAS_EXCLUSIVAS`, campo `grupoJogador`)
+
+**Situação:** a divergência `poolExclusivo` (2026-09-11) partiu o pool do jogador em grupos. O autor
+listou *"SE ACUMULAM COM OS ACIMAS E ENTRE SI (Ações Invocações, Caracteristicas Invocações;
+Habilidades Únicas de Itens)"*, e na mesma conversa explicou que a Habilidade Única de um item **não**
+soma com a de outro item. Por isso o "entre si" foi lido como "entre as categorias", e não "dentro da
+mesma família".
+
+As duas famílias de Invocação (`shikigamiAcao` e `shikigamiCaracteristica`) ficaram com a mesma
+leitura: cada uma no próprio grupo, somando com todo o resto e disputando só consigo mesma. Hoje isso
+não move número nenhum, porque **nenhuma das duas emite efeito** (não existe cano da invocação para o
+pool do dono). Os auxílios de Invocação ligados na mesa somam sem `exclusivo`.
+
+**Precisa:** o autor confirmar. Duas Ações de Shikigami dando +2 de Defesa ao dono somam (+4) ou vale
+a maior (+2)? E uma Ação com uma Característica? Se somarem, o `grupoJogador` delas deixa de existir e
+o assert `t-bencao-forja.mjs` muda na tabela dos grupos.
+**Anotado:** 2026-09-11, ao ligar o pool em grupos do jogador
+
+### Ficha de Player: o teste do Interlúdio não é rastreado
+
+**Onde:** `src/systems/afty/AftyCreatureBuilder.jsx` (`TreinoEspecialCard`), `afty-treinos-especiais.js`
+
+**Situação:** na criatura, Interlúdio que pede teste é sucesso automático, e por isso escolher o
+Treino Especial já concede. O autor decidiu em 2026-09-10 que **o jogador rola o teste**. A ficha
+não tem teste nenhum modelado: no /Player escolher continua concedendo, e o `title` só deixou de
+afirmar a regra da criatura (divergência de tela `interludioComTeste`). O mesmo vale para as etapas
+das Linhas de Treinamento que pedem teste.
+
+**Precisa:** o autor dizer se a ficha deve acompanhar o teste (sucessos por etapa, CD, o que
+acontece na falha) ou se o jogador marca o Treino só depois de passar na mesa, que é como funciona
+hoje. Se for o primeiro, é sistema novo, e o Estudos e o Treinamento para Habilidade, que ainda
+esperam o texto verbatim, são os primeiros clientes.
+**Anotado:** 2026-09-10, na varredura dos restos de "criatura" no /Player
+
 ### Os 64px de margem morta do cabeçalho do criador, agora sem bloqueio
 
 **Onde:** `src/systems/afty/AftyCreatureBuilder.jsx` (o `<h1>` do cabeçalho)
@@ -236,6 +306,42 @@ linha de baixo abaixo de um limiar (tirando o `flex-shrink-0` e deixando o `ml-a
 ou encolher o `<select>` de `w-40` para `w-28` no telefone. A primeira preserva o rótulo inteiro, a
 segunda preserva a linha única.
 **Anotado:** 2026-09-05, ao verificar o merge com o trabalho do GoliasK
+
+### PERGUNTA AO AUTOR: a porta do ambiente PRIVADO ficou aberta (o caminho espelho)
+**Onde:** `src/App.jsx`, bloco "A FRONTEIRA ENTRE OS DOIS LIVROS" (o `useMemo` do `storage`)
+**Situação:** em 2026-09-12 um usuário do Grimório público mandou este erro:
+
+```
+TypeError: (e ?? []) is not iterable
+  em collectAutomationEntities <- CombatantPanel <- CombatTracker
+```
+
+Era uma ficha do Grimório Afty morando no inventário da 2.5.2, aberta no painel de combate da 2.5.2.
+O campo `treinamentos` é LISTA num livro e MAPA no outro, e o `?? []` do coletor só cobre nulo.
+Consertado no mesmo dia com duas portas, e as duas no `App.jsx`: o importador do Grimório público
+recusa ficha de outro livro e avisa, e o clique e o lápis passaram a escolher a tela pelo
+`rulesVersion` da ficha em vez de pela rota. Os encontros e a biblioteca de modelos da 2.5.2
+passaram a receber a lista filtrada.
+
+⚠ **O QUE FICOU ABERTO É O CAMINHO INVERSO.** Importar uma ficha da **2.5.2 dentro do `/Afty` ou do
+`/Player`** continua entrando. Ela não estoura, e é justamente isso que a torna pior: o `rulesVersion`
+"2.5.2" não é um id conhecido, então o `sistemaDaFicha` cai no padrão e o `deriveAfty` roda régua do
+Afty sobre uma ficha da 2.5.2, com números plausíveis e trocados. O autor escolheu em 2026-09-12
+fechar só a porta do Grimório público, que era a do erro relatado, e esta entrada existe para o
+espelho não envelhecer calado.
+
+**Ligada a ela:** a porta entre `/Afty` e `/Player`. Hoje uma ficha de personagem entra no inventário
+do mestre e vice-versa. As fichas são isoladas por storage, então isso só acontece por
+export e import, e pode muito bem ser o jeito que o autor usa para mover uma ficha de lado.
+
+**Precisa:** o autor escolher.
+1. Fechar a porta do privado também, com a mesma regra (`sistemaGravado(ficha) === sistemaDaRota`).
+   É trocar o `aftyMode ? storageDaRota : {...}` por um envoltório sem ternário. Fecha o espelho e
+   fecha `/Afty` contra `/Player` junto.
+2. Fechar só contra a 2.5.2, e deixar `/Afty` e `/Player` trocarem ficha por import. Exige separar as
+   duas comparações.
+3. Não mexer. O privado é rota escondida, e quem importa lá sabe o que está fazendo.
+**Anotado:** 2026-09-12, ao consertar o erro de produção
 
 ### PERGUNTA AO AUTOR: uma ficha sem nome derruba o PACOTE de import inteiro
 **Onde:** `src/components/io-utils.js` (`parseImportText`, a linha do `throw`)
@@ -384,6 +490,12 @@ tem forma diferente da primeira e é mais fácil de defender: a primeira lê `cr
 dentro do componente, e a segunda só acrescenta parâmetro com padrão, deixando quem decide no
 `src/App.jsx`. Se a saída escolhida um dia for "aceitar a exceção e anotá-la na regra", é essa
 segunda forma que vale a pena virar a fronteira escrita. (2026-09-09)
+
+**Nota:** e agora são TRÊS. Em 2026-09-10 o autor achou "Editar Criatura" no /Player, pediu a
+varredura dos restos de criatura, e escolheu **"Uma prop opcional"** para a lista de fichas: o
+`Dashboard` ganhou `vocab`, com `VOCAB_PADRAO` igual ao texto de sempre, e o `src/App.jsx` passa o
+vocabulário do jogador (`vocabularioDoDashboard`, em `afty-sistema.js`) só no /Player. É a mesma
+forma da segunda exceção: parâmetro com padrão, e quem decide é o `App.jsx`. (2026-09-10)
 
 ### O Ataque Básico pode rolar como Ataque Amaldiçoado?
 
@@ -876,6 +988,30 @@ e o segundo sai de graça.
 
 ## AFTY — Feitiços
 
+### O Alcance do Auxiliar liga e não soma nada
+**Onde:** `src/systems/afty/afty-combate-conjurador.js` (`efeitosDeAuxiliarResolvido`)
+**Situação:** os efeitos **Alcance Corpo a Corpo** e **Alcance a Distância** calculam o valor
+(4,5 m e 9 m no Nível 3, por exemplo), aparecem para ligar na aba Buffs e entram como ativos, mas o
+tradutor de efeito não tem caso para eles: o número é descartado sem aviso. Achado na varredura de
+2026-09-10, que também provou que isto é assim desde que a ativação nasceu (18/08).
+**Precisa:** um canal de alcance da criatura. O `alcanceDe` do `resolveDano` já soma
+`alcanceBonusCorpo` e multiplica por `alcanceMult`, e o Longo do Golpe Especial pede a mesma peça
+(ver a entrada dele nas perguntas). Com o canal decidido, é um `case` cada.
+**Anotado:** 2026-09-10, ao dar interruptor aos Feitiços Auxiliares
+
+### A Transformação não escolhe o alvo de Atributo e de TR
+**Onde:** `src/systems/afty/afty-combate-conjurador.js` (`TRANSF_SEM_ALVO`) e o
+`TransformacaoEditor` em `AftyCreatureBuilder.jsx`
+**Situação:** o Auxiliar escolhe qual atributo (`alvoAuxAtributo`) e qual TR (`alvoAuxTR`), e o
+editor da Transformação escolhe só o EFEITO de cada espaço. Desde 2026-09-10 a Transformação liga na
+aba Buffs, e um espaço de Atributo ou de TR ficaria sem alvo: o tradutor cairia sozinho em Força e
+Reflexos. Por isso esses dois espaços ficam **fora do número**, e uma Transformação que só tenha
+eles não é oferecida.
+**Precisa:** o autor dizer se cada espaço de Atributo e de TR ganha a sua escolha de alvo (e aí o
+editor ganha o seletor e a lista sai do `TRANSF_SEM_ALVO`), ou se esses efeitos não cabem numa
+Transformação.
+**Anotado:** 2026-09-10, ao dar interruptor à Transformação
+
 ### LARGURA DE LINHA não existe no modelo de área
 **Onde:** `src/systems/afty/afty-feiticos.js`
 **Situação:** a área de um Feitiço é UM número. Linha e Cone são esse número × 1,5 (o
@@ -1084,6 +1220,18 @@ transcrever uma habilidade que fale de Guarda saber que o cano já está lá.
 ---
 
 ## AFTY — outros
+
+### Dois campos de expressão aprovam nome de variável que não existe
+**Onde:** `src/systems/afty/AftyCreatureBuilder.jsx` (`MotorEfeitosEditor`, o da Habilidade Única, e
+`ExprField`, o Modificador de Ação e Característica de Invocação)
+**Situação:** os dois chamam `validateExpression(expr)` sem o segundo argumento, então só a SINTAXE
+é conferida. Nome errado é sintaxe perfeita: a caixa fica verde, o `evalNumber` estoura e o valor cai
+no fallback 0. É o engano que o `TecnicaMotorEditor` consertou em 2026-08-31 (ver
+`docs/automacao-dsl.md`), e estes dois ficaram para trás.
+**Precisa:** passar o conjunto de nomes do vocabulário, como o `TecnicaMotorEditor` monta o
+`conhecidas`. No `ExprField` o vocabulário já chega pronto (`grupos`), e no `MotorEfeitosEditor` ele
+é montado ali dentro (`dslGrupos`). Conserto sem pergunta de regra, e vale para os dois sistemas.
+**Anotado:** 2026-09-10, na varredura de onde o Motor aparece para o jogador
 
 ### O filtro de patamar do Dashboard não lista Beyond
 **Onde:** `src/components/Dashboard.jsx` (o `<select>` de patamar, dentro do painel de filtros)

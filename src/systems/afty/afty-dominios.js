@@ -680,80 +680,90 @@ export function beneficiosRitualDoDominio(creature, aptidoesEscolhidas = []) {
 }
 
 /* ------------------------------------------------------------ */
-/* TEXTO FINAL                                                   */
+/* CORPO EM ESTRUTURA                                            */
 /* ------------------------------------------------------------ */
-function linhaDoEfeito(efeito, dom, versao) {
-  const cat = DOMINIO_EFEITOS[efeito?.categoria];
-  if (!cat) return "";
-  const nome = efeito.nome?.trim();
-  if (cat.livre) {
-    return `● ${cat.label}: ${nome || "Efeito Especial"}. ${efeito.descricao?.trim() || "(efeito a descrever)"}`;
-  }
-  const t = cat.tipos?.[efeito.tipo];
-  if (!t) return "";
-  const r = resolvido(efeito, dom, versao);
-  return `● ${cat.label}: ${nome || t.label}. ${efeito.descricao?.trim() || r.frase}`;
-}
+/* ⚠ AS DUAS TELAS LEEM ISTO, e não uma string. Até 2026-09-11 a Ficha e o
+   criador recebiam um parágrafo pronto (`textoDoDominio`), herança da 2.5.2, e o
+   criador o desmontava de volta com uma regex sobre o marcador "●". Duas
+   consequências, as duas caras: a área, a duração e o PV saíam DUAS vezes na
+   tela (na linha e na prosa), e o que é DESTA expansão ficava no fim, depois de
+   cinco efeitos que são iguais em toda expansão.
 
-function linhaAcertoGarantido(ag) {
+   Aqui só mora TEXTO. Os números (área, duração, PV e custo) já estão em campos
+   próprios do resumo e a tela os desenha de lá, então o descompasso entre o
+   número da linha e o número da prosa deixa de existir por construção. */
+
+/** A execução da Expansão de Domínio, igual em toda versão. */
+export const DOMINIO_EXECUCAO = "Duas Ações Comuns";
+
+/* ⚠ Verbatim do texto que a 2.5.2 escrevia no parágrafo do domo. Ele virou item
+   da lista "Toda Expansão" em vez de sumir junto com a prosa, porque é REGRA e
+   não número: a resistência do interior não aparece em lugar nenhum da linha. */
+const DOMO_INTERIOR =
+  "Caso a expansão seja atacada pelo seu interior, ela é resistente a todos os tipos de dano. " +
+  "A resistência do interior de domínios não pode ser ignorada.";
+
+function textoAcertoGarantido(ag) {
   const escopo = ag.escopo?.trim();
   const alvo = escopo
     ? `Enquanto dentro do seu domínio, ${escopo} se torna garantido`
     : "Enquanto dentro do seu domínio, você escolhe antecipadamente um efeito (uma técnica, ataque ou condição) para se tornar garantido";
   return (
-    `● ${escopo ? `Acerto Garantido: ${escopo}` : "Acerto Garantido"}. ${alvo}: ele é aplicado no ` +
-    "início de cada turno contra todos os alvos legíveis dentro do alcance, uma vez por rodada para " +
-    "cada um. Jogadas de ataque sempre acertam e Testes de Resistência sempre falham, e qualquer " +
-    "condição causada por ele dura 1 rodada."
+    `${alvo}: ele é aplicado no início de cada turno contra todos os alvos legíveis dentro do ` +
+    "alcance, uma vez por rodada para cada um. Jogadas de ataque sempre acertam e Testes de " +
+    "Resistência sempre falham, e qualquer condição causada por ele dura 1 rodada."
   );
 }
 
+/** Um efeito escolhido, como item: título, categoria e o texto dele. */
+function itemDoEfeito(efeito, dom, versao) {
+  const cat = DOMINIO_EFEITOS[efeito?.categoria];
+  if (!cat) return null;
+  const nome = efeito.nome?.trim();
+  if (cat.livre) {
+    /* Sem texto fica sem texto. O "(efeito a descrever)" da prosa era enchimento,
+       e na lista o título sozinho já diz que o efeito existe. */
+    return { id: efeito.id, titulo: nome || cat.label, categoria: cat.label, texto: efeito.descricao?.trim() || "" };
+  }
+  const t = cat.tipos?.[efeito.tipo];
+  if (!t) return null;
+  const r = resolvido(efeito, dom, versao);
+  return {
+    id: efeito.id,
+    titulo: nome || t.label,
+    categoria: cat.label,
+    texto: efeito.descricao?.trim() || r?.frase || "",
+  };
+}
+
 /**
- * O texto pronto da expansão, em parágrafos. É o que o jogador lê na mesa, e o
- * formato veio da 2.5.2 sem mudança.
+ * O corpo da expansão: `{ execucao, proprios, base, aparencia }`.
+ *
+ * `proprios` são os efeitos DESTA expansão, na ordem da ficha, mais o Acerto
+ * Garantido quando ligado. `base` são os cinco efeitos de toda expansão aberta,
+ * mais a regra do domo nas versões que TÊM domo (a Sem Barreiras tem Totem, e o
+ * PV dele já está na linha).
+ *
+ * ⚠ Os efeitos base continuam saindo prontos, e isso é decisão do autor
+ * (2026-07-30): na 2.5.2 eles ficavam só no formulário.
  */
-export function textoDoDominio(dominio, {
-  dom = 0, nd = 0, bt = 2, bar = 0, versao, paredesResistentes = false,
-  /* ⚠ Os dois entram como ARGUMENTO e não são lidos daqui de dentro (2026-08-26).
-     Este arquivo não conhece o Motor, e nem pode: quem resolve efeito é o
-     deriveAfty, que chama esta função depois. Sem eles o texto do domínio diria
-     uma área e uma vida DIFERENTES das que os chips ao lado mostram, que é a
-     classe de bug do detalhamento errado. */
-  bonusArea = 0, bonusPvParede = 0,
-} = {}) {
+export function corpoDoDominio(dominio, { dom = 0, versao } = {}) {
   const d = normalizeDominio(dominio);
   const v = versao || d.versao;
-  if (!v) return "";
-  const paras = [
-    `Sua expansão cria um espaço próprio que ocupa uma área esférica de ${areaDominio(v, bt, false, bonusArea)}, ` +
-      `a qual dura uma quantidade de rodadas igual a ${duracaoDominio(dom, v)}.`,
-  ];
-
-  const hp = pvBarreira(bar, nd, paredesResistentes, bonusPvParede);
-  if (v === "sem_barreiras") {
-    paras.push(`O Totem no centro da expansão possui ${hp} pontos de vida.`);
-  } else {
-    paras.push(
-      `A barreira (domo) do domínio possui ${hp} pontos de vida. Caso a expansão seja atacada pelo ` +
-        "seu interior, ela é resistente a todos os tipos de dano. A resistência do interior de " +
-        "domínios não pode ser ignorada.",
-    );
+  const vazio = { execucao: DOMINIO_EXECUCAO, proprios: [], base: [], aparencia: "" };
+  if (!v) return vazio;
+  const proprios = d.efeitos.map((e) => itemDoEfeito(e, dom, v)).filter(Boolean);
+  if (d.acertoGarantido?.ativo) {
+    proprios.push({
+      id: "acerto_garantido",
+      titulo: "Acerto Garantido",
+      categoria: d.acertoGarantido.escopo?.trim() || "",
+      texto: textoAcertoGarantido(d.acertoGarantido),
+    });
   }
-
-  // ⚠ DIFERENÇA DELIBERADA PARA A 2.5.2 (autor, 2026-07-30): lá os efeitos base
-  // ficavam só num `<details>` do formulário e NÃO entravam no texto final. O
-  // autor pediu que o retorno já venha com eles prontos, então eles entram aqui,
-  // na frente dos escolhidos, como qualquer outro bullet.
-  paras.push("Toda expansão aberta aplica os seguintes efeitos:");
-  paras.push(...DOMINIO_EFEITOS_BASE.map((b) => `● ${b.titulo}. ${b.texto}`));
-
-  const linhas = d.efeitos.map((e) => linhaDoEfeito(e, dom, v)).filter(Boolean);
-  if (d.acertoGarantido?.ativo) linhas.push(linhaAcertoGarantido(d.acertoGarantido));
-  if (linhas.length) {
-    paras.push("Além deles, esta expansão possui:");
-    paras.push(...linhas);
-  }
-  return paras.join("\n\n");
+  const base = DOMINIO_EFEITOS_BASE.map((b) => ({ titulo: b.titulo, texto: b.texto }));
+  if (v !== "sem_barreiras") base.push({ titulo: "Domo", texto: DOMO_INTERIOR });
+  return { ...vazio, proprios, base, aparencia: d.aparencia?.trim() ?? "" };
 }
 
 /* ------------------------------------------------------------ */

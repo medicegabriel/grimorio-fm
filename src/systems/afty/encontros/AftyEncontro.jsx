@@ -12,6 +12,9 @@ import { AFTY_PATAMARES } from "../afty-schema";
 /* O Nível efetivo da ficha. Com a Carteira ligada, o `core.nd` gravado nao e o
    nivel da criatura: quem responde e o `nivelDaFicha`. */
 import { nivelDaFicha } from "../afty-addons";
+/* Patamar e rótulo do nível saem da FICHA de cada linha: a lista mistura
+   criaturas e personagens, e a rota aqui é sempre a do mestre. */
+import { sistemaDaFicha, regraDo, rotuloDoNivel, palavrasDoSistema } from "../afty-sistema";
 import PainelDeCombatente from "./PainelDeCombatente";
 import useEncontroAfty from "./usar-encontro-afty";
 import { ENCONTRO_STATUS, LADO, LADO_ROTULO, LOG_TIPOS } from "./afty-encontro";
@@ -76,7 +79,10 @@ function Retrato({ url, foco, nome }) {
 }
 
 /* Seletor de criatura do grimório, com filtro de pasta e busca. */
-function EscolherCriatura({ criaturas, pastas = [], onAdicionar, compacto = false, rotuloBotao = "Adicionar" }) {
+/* `sistema` é o da ROTA, e não o de uma ficha: a lista pode estar vazia, e
+   quem diz se ela é de criaturas ou de personagens é o grimório aberto. */
+function EscolherCriatura({ criaturas, pastas = [], onAdicionar, compacto = false, rotuloBotao = "Adicionar", sistema }) {
+  const pal = palavrasDoSistema(sistema);
   const [busca, setBusca] = useState("");
   const [pasta, setPasta] = useState("__todas__");
 
@@ -114,22 +120,28 @@ function EscolherCriatura({ criaturas, pastas = [], onAdicionar, compacto = fals
           value={busca}
           onChange={(e) => setBusca(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Escape") setBusca(""); }}
-          placeholder="Buscar criatura"
-          aria-label="Buscar criatura"
+          placeholder={`Buscar ${pal.nome}`}
+          aria-label={`Buscar ${pal.nome}`}
           className="afty-campo flex-1 min-w-0 bg-transparent outline-none"
         />
       </div>
       {lista.length === 0 ? (
         <div className="afty-rotulo text-[11px] text-center py-4">
-          {criaturas.length === 0 ? "Nenhuma criatura no grimório ainda." : "Nenhum resultado."}
+          {criaturas.length === 0
+            ? `${pal.g("Nenhum", "Nenhuma")} ${pal.nome} no grimório ainda.`
+            : "Nenhum resultado."}
         </div>
       ) : (
         <ul className={`space-y-1 overflow-y-auto pr-1 ${compacto ? "max-h-48" : "max-h-80"}`}>
           {lista.map((c) => (
             <li key={c.id} className="afty-linha px-2 py-1.5 flex items-center gap-2">
-              <span className="afty-chip flex-shrink-0">{rotuloPatamar(c.core?.patamar)}</span>
+              {regraDo(sistemaDaFicha(c), "patamarDoJogador") !== "player" && (
+                <span className="afty-chip flex-shrink-0">{rotuloPatamar(c.core?.patamar)}</span>
+              )}
               <span className="flex-1 min-w-0 text-[12px] font-semibold truncate">{c.name}</span>
-              <span className="afty-rotulo text-[10px] tabular-nums flex-shrink-0">ND {nivelDaFicha(c)}</span>
+              <span className="afty-rotulo text-[10px] tabular-nums flex-shrink-0">
+                {rotuloDoNivel(sistemaDaFicha(c))} {nivelDaFicha(c)}
+              </span>
               <button
                 type="button"
                 className="afty-botao flex-shrink-0"
@@ -309,7 +321,7 @@ function LinhaDePlanejamento({ combatente, onRolar, onIniciativa, onMod, onLado,
   );
 }
 
-function Planejando({ encontro, derivado, acoes, criaturas, pastas, onVoltar }) {
+function Planejando({ encontro, derivado, acoes, criaturas, pastas, onVoltar, sistema }) {
   const [editandoNome, setEditandoNome] = useState(false);
   const [nome, setNome] = useState(encontro.nome);
 
@@ -386,6 +398,7 @@ function Planejando({ encontro, derivado, acoes, criaturas, pastas, onVoltar }) 
               <EscolherCriatura
                 criaturas={criaturas}
                 pastas={pastas}
+                sistema={sistema}
                 onAdicionar={(c) => acoes.adicionar(c)}
               />
             </Secao>
@@ -565,7 +578,7 @@ function ConfirmarRemocao({ combatente, onConfirmar, onCancelar }) {
   );
 }
 
-function Ativo({ encontro, derivado, acoes, criaturas, pastas, onVoltar }) {
+function Ativo({ encontro, derivado, acoes, criaturas, pastas, onVoltar, sistema }) {
   const [focoId, setFocoId] = useState(null);
   const [filaAberta, setFilaAberta] = useState(false);
   const [reforcos, setReforcos] = useState(false);
@@ -666,7 +679,7 @@ function Ativo({ encontro, derivado, acoes, criaturas, pastas, onVoltar }) {
             {reforcos && (
               <Secao titulo="Reforços" icone={UserPlus}>
                 <EscolherCriatura
-                  criaturas={criaturas} pastas={pastas} compacto
+                  criaturas={criaturas} pastas={pastas} compacto sistema={sistema}
                   rotuloBotao="Add"
                   onAdicionar={adicionarReforco}
                 />
@@ -810,7 +823,7 @@ const POR_STATUS = {
   [ENCONTRO_STATUS.FINALIZADO]: Finalizado,
 };
 
-export default function AftyEncontro({ encontroId, gerenciador, criaturas = [], pastas = [], onVoltar, onDuplicar }) {
+export default function AftyEncontro({ encontroId, gerenciador, criaturas = [], pastas = [], onVoltar, onDuplicar, sistema }) {
   const { encontro, derivado, acoes } = useEncontroAfty(encontroId, gerenciador);
 
   if (!encontro) {
@@ -833,6 +846,7 @@ export default function AftyEncontro({ encontroId, gerenciador, criaturas = [], 
         acoes={acoes}
         criaturas={criaturas}
         pastas={pastas}
+        sistema={sistema}
         onVoltar={onVoltar}
         onDuplicar={() => onDuplicar?.(encontro.id)}
       />

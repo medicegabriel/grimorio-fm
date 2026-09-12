@@ -1,7 +1,7 @@
 {
   "id": "flugel",
   "nome": "Flugel",
-  "versao": "1.0.0",
+  "versao": "1.1.0",
   "autor": "Afty",
   "paraRaw": "afty",
   "acrescenta": {
@@ -709,6 +709,83 @@
         ],
         "completo": {
           "beneficio": "Paixão Mútua\nEnquanto no Alcance de seu Cônjuge, você pode usar a ação Apoiar a distância, e uma vez por rodada, você pode Apoiar seu Cônjuge como Ação Livre"
+        }
+      },
+      {
+        "id": "treino_bencao_adaptacao",
+        "nome": "Treinamento de Benção da Adaptação",
+        "lore": "Flugel virou os céus e a terra de ponta cabeça, quebrando e moldando as leis do mundo ao seu próprio egoísmo e arrogância. Porém, mesmo que tenha perdido sua Espada e suas Atuais Bênçãos, ele ainda possui sua técnica e um desejo constante de evolução. Esse treino busca a introduzir e adaptar Flugel ao seu novo contexto, não mais como o Santo da Espada, mas sim como o abençoado que ele sempre foi.",
+        "alvos": [
+          {
+            "id": "pericia",
+            "tipo": "pericia",
+            "label": "Perícia"
+          }
+        ],
+        "trocaAtributoPericia": {
+          "etapa": 1,
+          "periciaAlvo": "pericia",
+          "atributoAlvo": "atributoDaTecnica"
+        },
+        "etapas": [
+          {
+            "n": 1,
+            "focos": 1,
+            "requisito": [
+              {
+                "tipo": "aptidao",
+                "id": "tecnica_maxima"
+              },
+              {
+                "tipo": "cla",
+                "id": "flugel:cla_akutame",
+                "label": "Técnica Herdada: Santo da Espada"
+              }
+            ],
+            "beneficio": "Escolha uma Pericia, ela passa a usar o Atributo de Técnica como seu novo Atributo para o calculo. [Não é possível escolher Acerto ou TRs]"
+          },
+          {
+            "n": 2,
+            "focos": 1,
+            "requisito": null,
+            "beneficio": "Você recebe +2 de Acerto.",
+            "efeitos": [
+              {
+                "canal": "bonusAcerto",
+                "expr": "2"
+              }
+            ]
+          },
+          {
+            "n": 3,
+            "focos": 1,
+            "requisito": null,
+            "beneficio": "Você recebe +1 de Limite no Atributo de Técnica.",
+            "efeitos": [
+              {
+                "canal": "limiteAtributo",
+                "alvo": "atributoDaTecnica",
+                "expr": "1"
+              }
+            ]
+          },
+          {
+            "n": 4,
+            "focos": 2,
+            "requisito": null,
+            "beneficio": "Você recebe +2 Pontos no seu Atributo de Técnica.",
+            "efeitos": [
+              {
+                "canal": "atributo",
+                "alvo": "atributoDaTecnica",
+                "expr": "2"
+              }
+            ]
+          }
+        ],
+        "completo": {
+          "beneficio": "Benção da Adaptação\nVocê recebe acesso a Benção da Adaptação, que se torna sua nova Técnica Máxima após a perda permanente da anterior.",
+          "detalhe": "Desvendando a verdadeira essência da sua técnica, você compreende sua própria existência como uma benção viva, capaz de feitos inacreditáveis, conseguindo manifestar novas capacidades de acordo com a situação para triunfar vitorioso.\n\nUma vez por cena, você pode forçar a ativação completa da sua técnica para receber Uma Nova Benção, a qual irá se adequar a situação e lhe tornar capaz de superar seu maior obstáculo e triunfar independentemente da situação.\n\nAo utilizar essa habilidade, você recebe uma nova habilidade passiva a depender da sua necessidade no momento, a qual dura até o final da cena. Ativar a habilidade é uma ação livre.\n\nAo final da cena, você pode escolher manter a Bênção ou devolvê-la aos céus, caso escolha mantê-la, ela se torna uma nova habilidade passiva. Sendo adaptada e enviada para Avaliação.\n\nOs efeitos da benção devem ser decididos pelo mestre e levam em conta a situação mais prejudicial ao usuário a qual ele precisa se adaptar, funcionando de forma a ajudá-lo a lidar especificamente com o maior problema."
         }
       }
     ]

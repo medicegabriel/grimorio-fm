@@ -1292,6 +1292,52 @@ e um seletor mostrando o PV final enquanto a expressão lê o PV base seria um s
 - **Marcador sem a opção escolhida** aparecia igual aos outros e não entregava efeito nenhum (o
   `quando` testa `marc_<id>_<opcao>` e nenhuma bate). Virou aviso.
 
+### ✅ QUINTA LEVA (2026-09-10): o Motor de Automação na Característica Livre
+
+Detalhe na sessão de 2026-09-10 (parte 2) em `afty-status.md`. Vale para a criatura E para o
+personagem (autor), sem divergência.
+
+Até aqui a invocação não tinha Motor próprio: tinha uma expressão por Ação e Característica (o
+Modificador) e recebia os efeitos das Habilidades de Controlador e dos Addons. Autor, escolhendo
+como ela ganha um: *"Faça igual Feitiços Passivas para Caracteristica."* A Passiva é o Feitiço cujo
+corpo é o Motor, e a **Livre virou a Característica cujo corpo é o Motor**.
+
+- **Custa como Característica.** Ocupa uma vaga do orçamento e soma 1 PE no custo, sem regra nova.
+- **Mesmo efeito não acumula, vale a maior** (autor). Entre Características, uma delas pelo Motor,
+  com o critério do pool das Passivas: disputa por canal, alvo e sinal, bônus fica com o maior e
+  penalidade com a pior. Onde o efeito tem par num subtipo, a disputa atravessa os dois: PV contra
+  Vida, RD de um tipo contra RD, bônus numa perícia ou num TR contra Teste. As linhas do mesmo canal
+  DENTRO de uma Livre somam primeiro. **A Habilidade de Controlador soma por cima**, como sempre.
+- **Canais com alvo** (autor: os 19 e mais os de alvo). O catálogo virou dado,
+  `INV_EFEITO_CANAIS`, com rótulo, grupo e alvo:
+
+  | Canal | Alvo | Sem alvo |
+  |---|---|---|
+  | `atributo` (novo) | um dos seis | obrigatório, vira aviso |
+  | `bonusPericia` (novo) | uma perícia | obrigatório, vira aviso |
+  | `bonusTR` | um TR (menos Integridade) | todos os TRs, como antes |
+  | `rd` | um tipo de `TIPOS_DANO` | RD contra todos, como antes |
+
+  O alvo vale também para as Habilidades e para o `efeitosInvocacao` dos Addons, que usam o mesmo
+  acumulador.
+- **O atributo para no máximo do grau** (autor). O que passa vira aviso e parcela negativa no
+  hover. A invocação com os atributos somados (`invEf`) é a que PV, Defesa, perícias, testes e Ações
+  leem. O contexto de DSL e o orçamento de pontos seguem no valor BASE.
+
+⚠ **As Características passaram a resolver ANTES do `donoLocal`.** O Motor da Livre escreve nos
+canais que chegam às Ações pelo dono local (Acerto, CD, Níveis de Dano). Resolvidas depois dele, as
+linhas apareceriam no card e a Ação sairia igual, que é o "calculado e jogado fora" de agosto.
+
+⚠ **`sempre` e `nunca` entraram no contexto da invocação.** Existiam só no da criatura, e o campo
+"enquanto" do editor mostra "sempre" como exemplo: escrita numa Livre, a palavra desligava a linha.
+
+Na tela, a Livre usa o MESMO editor do Funcionamento Básico e da Passiva, com o seletor de canal
+trocado pelo catálogo da invocação, o alvo dela e sem o "e dura" (Característica é passiva). O
+Modificador some da Livre quando está vazio, porque nela ele nunca teve onde cair. A linha da Ficha
+diz o que a Livre concede ("+3 Defesa · +2 Força").
+
+Assert: `asserts/t-invocacoes-motor.mjs`.
+
 ### ⚠ GAPS DO MOTOR (adicionar depois, não dá com o motor atual)
 
 O motor (fm-dsl) só produz UM NÚMERO para um stat. O que sobra precisa de mecanismos novos:

@@ -32,7 +32,9 @@
 
 import { evalNumber, CHAVE_FONTES, normalizarMarca } from "./afty-dsl";
 import { AFTY_ATTRS, AFTY_TAMANHOS, AFTY_RESISTENCIAS } from "./afty-schema";
-import { AFTY_PERICIAS, bonusProficiencia, usoPericias, ehPericiaOficio } from "./afty-pericias";
+import {
+  AFTY_PERICIAS, bonusProficiencia, usoPericias, ehPericiaOficio, periciasParaInvocacao,
+} from "./afty-pericias";
 import { TIPOS_DANO } from "./afty-equipamentos";
 
 export const mod = (attr) => Math.floor(((attr ?? 10) - 10) / 2);
@@ -54,10 +56,20 @@ export const mod = (attr) => Math.floor(((attr ?? 10) - 10) / 2);
  */
 const rotuloAttrInv = (k) => AFTY_ATTRS.find((a) => a.key === k)?.label ?? k;
 
-/** As parcelas nomeadas de um ou mais canais de efeito, na ordem em que entraram. */
+/** As parcelas nomeadas de um ou mais canais de efeito, na ordem em que entraram.
+
+    ⚠ SÓ AS SEM ALVO. Um efeito com alvo (+2 em Fortitude, RD contra Queimante)
+    vale para UM destino, e a parcela dele não pode aparecer no hover dos outros:
+    quem as lê é `parcelasDoAlvo`. */
 const parcelasDoCanal = (detalhes, ...canais) =>
   (detalhes || [])
-    .filter((d) => canais.includes(d.canal))
+    .filter((d) => canais.includes(d.canal) && !d.alvo)
+    .map((d) => ({ label: d.nome, valor: d.valor }));
+
+/** As parcelas de um canal com alvo, só as daquele destino. */
+const parcelasDoAlvo = (detalhes, canal, alvo) =>
+  (detalhes || [])
+    .filter((d) => d.canal === canal && d.alvo === alvo)
     .map((d) => ({ label: d.nome, valor: d.valor }));
 
 /** A parcela de proficiência de um teste. Sem faixa, não existe parcela.
@@ -307,6 +319,10 @@ export function createBlankCaracteristica() {
     tamanho: "",
     modificadorExpr: "",
     modificadorAlvo: "",
+    /* O Motor de Automação da Característica LIVRE (2026-09-10): linhas
+       `{ canal, alvo?, expr, quando? }` nos canais da invocação. Os outros
+       subtipos ignoram o campo. Ver `resolverMotorDaCaracteristica`. */
+    efeitos: [],
   };
 }
 
@@ -966,7 +982,7 @@ function aplicaModificador(out, item, inv, dono, warnings, alvos) {
  * de dano/cura sai como base (a distância), com `niveisPendentes` quando um
  * "+N níveis" (corpo a corpo etc.) se aplica e a escada ainda não existe.
  */
-export function resolveAcao(acao, inv, dono = {}) {
+export function resolveAcao(acao, inv, dono = {}, invCtx = inv) {
   const grau = grauMeta(inv?.grau).value;
   const classe = acao?.classe === "complexa" ? "complexa" : "simples";
   const familia = acao?.familia === "auxilio" ? "auxilio" : "ataque";
@@ -1197,7 +1213,11 @@ export function resolveAcao(acao, inv, dono = {}) {
 
   // Escape hatch DSL: um modificador numérico livre no contexto da invocação,
   // somado no alvo escolhido (Dano, Níveis de Dano, Acerto/CD, Cura ou Valor).
-  aplicaModificador(out, acao, inv, dono, warnings, alvosDeModificador(acao));
+  //
+  // ⚠ O contexto é o de `invCtx`, a invocação CRUA. O `inv` que chega aqui pode
+  // trazer os atributos somados pelo canal `atributo`, e a expressão tem de ler
+  // o mesmo valor base que o seletor de variáveis mostra (ver `atributosEfetivos`).
+  aplicaModificador(out, acao, invCtx, dono, warnings, alvosDeModificador(acao));
 
   out.warnings = warnings;
   return out;
@@ -1268,6 +1288,22 @@ export function resolveCaracteristica(carac, inv, dono = {}) {
     if (out.tamanho && !out.faixa.includes(out.tamanho)) {
       warnings.push(`Tamanho "${out.tamanho}" fora da faixa do grau.`);
     }
+  } else if (sub === "livre") {
+    /* ⚠ A LIVRE GANHOU O MOTOR em 2026-09-10. Autor: *"Faça igual Feitiços
+       Passivas para Característica"*. A Passiva é o Feitiço cujo corpo é o
+       Motor, e a Livre é a Característica cujo corpo é o Motor: ela continua
+       ocupando uma vaga e somando 1 no custo, como toda Característica.
+
+       As linhas saem TODAS, na ordem, até as vazias e as quebradas: o editor
+       devolve a lista inteira a partir desta, e uma linha que sumisse aqui
+       sumiria da ficha no próximo toque. Quem decide o que entra no número é o
+       `ativo`, e a disputa com as outras Características é do
+       `agregarCaracteristicas`. */
+    out.efeitos = resolverMotorDaCaracteristica(carac?.efeitos, inv, dono, warnings);
+    out.resumoMotor = out.efeitos
+      .filter((e) => e.ativo && e.valor)
+      .map((e) => resumoEfeitoInv(e.canal, e.alvo, e.valor))
+      .join(" · ");
   }
 
   aplicaModificador(out, carac, inv, dono, warnings, alvosDeModificadorCaract(carac));
@@ -1397,6 +1433,12 @@ export function buildInvocacaoDslContext(inv, dono = {}, resolved = {}) {
        as funções `fontes()` devolvem zero, que é o comportamento correto de uma
        invocação que não declarou origem nenhuma. */
     ...(dono?.[CHAVE_FONTES] ? { [CHAVE_FONTES]: dono[CHAVE_FONTES] } : {}),
+    /* `sempre` e `nunca`, as duas constantes do Motor. Existiam só no contexto
+       da CRIATURA (afty-efeitos.js), e o editor mostra "sempre" como exemplo no
+       campo "enquanto": escrita numa Característica Livre, a palavra caía no
+       zero e DESLIGAVA a linha, que é o engano de 2026-08-31 de novo. */
+    sempre: 1,
+    nunca: 0,
     ...varsDeMarcador(inv, dono),
     // Invocação (nomes diretos)
     forca: at.forca ?? 8, destreza: at.destreza ?? 8, constituicao: at.constituicao ?? 8,
@@ -1451,28 +1493,206 @@ export function buildInvocacaoDslContext(inv, dono = {}, resolved = {}) {
 // "toda rolagem de dano ou cura" e emite os quatro; Agressividade diz só dano e
 // emite os dois de dano. Enquanto era um par só, Agressividade engordava a cura
 // de graça.
-export const EFEITO_CANAIS = [
-  "pv",              // Pontos de Vida máximos
-  "defesa",          // Defesa
-  "rd",              // Redução de Dano contra TODOS os tipos (a RD por tipo vem de Característica)
-  "deslocamento",    // metros de Deslocamento
-  "pericias",        // vagas de perícia treinada
-  "orcamentoLivre",  // Ações/Características que NÃO entram no custo
-  "orcamentoPago",   // Ações/Características que entram no custo normalmente
-  "atributoPontos",  // pontos de atributo para distribuir
-  "custoReducao",    // abate do custo em PE para invocar
-  "bonusTeste",      // todos os testes da invocação
-  "bonusTR",         // só os Testes de Resistência
-  "acerto",          // só as Jogadas de Ataque das Ações
-  "cd",              // só a CD das Ações por Teste de Resistência
-  "danoNivel",       // +N níveis na rolagem de DANO
-  "danoBonus",       // +N ao total da rolagem de DANO
-  "curaNivel",       // +N níveis na rolagem de CURA
-  "curaBonus",       // +N ao total da rolagem de CURA
-  "ataqueDanoAdicional", // MÁXIMO do dado extra que todo ataque da invocação carrega (ver dadoDoMaximo)
-  "caracteristicasLivres", // vagas que SÓ uma Característica ocupa, e que não entram no custo
+/**
+ * ============================================================
+ * O CATÁLOGO DOS CANAIS DA INVOCAÇÃO
+ * ============================================================
+ * ⚠ ERA UMA LISTA DE IDS, com o sentido de cada um num comentário e o rótulo
+ * que a tela mostrava morando no criador (`EFEITO_CANAL_LABEL`). Virou dado em
+ * 2026-09-10, quando a Característica Livre ganhou o Motor: o seletor de canal
+ * precisa do rótulo e do grupo, e a Ficha precisa do rótulo para resumir a
+ * Característica. Duas listas envelheceriam separadas.
+ *
+ * `alvo` diz que o canal nomeia um destino, e qual é o vocabulário dele. Com
+ * `alvoOpcional`, ficar sem alvo é o comportamento de sempre (RD contra todos
+ * os tipos, bônus em todos os TRs). Sem ele o alvo é OBRIGATÓRIO: um bônus de
+ * atributo sem atributo não tem onde cair, e vira aviso em vez de sumir.
+ *
+ * ⚠ `label` e `nota` aparecem na tela (a nota no `title` do seletor), e seguem
+ * a regra dela: sem travessão e sem ponto-e-vírgula. O validador confere.
+ */
+export const INV_EFEITO_CANAIS = [
+  { id: "pv",           label: "PV",           grupo: "Vida e Defesa", nota: "Pontos de Vida máximos" },
+  { id: "defesa",       label: "Defesa",       grupo: "Vida e Defesa" },
+  { id: "rd",           label: "RD",           grupo: "Vida e Defesa", alvo: "rdTipo", alvoOpcional: true, nota: "Sem alvo vale contra todos os tipos. Com alvo, só contra aquele tipo de dano" },
+  { id: "deslocamento", label: "Deslocamento", grupo: "Vida e Defesa", nota: "Em metros" },
+  { id: "bonusTeste",   label: "Em Testes",    grupo: "Testes", nota: "Todos os testes da invocação" },
+  { id: "bonusTR",      label: "Em TRs",       grupo: "Testes", alvo: "tr", alvoOpcional: true, nota: "Sem alvo vale em todos os Testes de Resistência" },
+  { id: "bonusPericia", label: "Em Perícia",   grupo: "Testes", alvo: "pericia", nota: "Uma perícia, treinada ou não" },
+  { id: "acerto",       label: "Em Acerto",    grupo: "Testes", nota: "Jogadas de Ataque das Ações" },
+  { id: "cd",           label: "Em CD",        grupo: "Testes", nota: "CD das Ações por Teste de Resistência" },
+  { id: "atributo",       label: "Atributo",           grupo: "Atributos e Perícias", alvo: "atributo", nota: "Soma no valor do atributo, até o máximo do grau" },
+  { id: "atributoPontos", label: "Pontos de Atributo", grupo: "Atributos e Perícias", nota: "Pontos para distribuir" },
+  { id: "pericias",       label: "Perícias",           grupo: "Atributos e Perícias", nota: "Vagas de perícia treinada" },
+  // ⚠ DANO e CURA são canais separados (ver o comentário de cima).
+  { id: "danoNivel",  label: "Dano (níveis)", grupo: "Dano e Cura", nota: "Níveis na rolagem de dano" },
+  { id: "danoBonus",  label: "Dano (total)",  grupo: "Dano e Cura", nota: "Soma no total da rolagem de dano" },
+  { id: "curaNivel",  label: "Cura (níveis)", grupo: "Dano e Cura", nota: "Níveis na rolagem de cura" },
+  { id: "curaBonus",  label: "Cura (total)",  grupo: "Dano e Cura", nota: "Soma no total da rolagem de cura" },
+  // Trafega o MÁXIMO do dado, e não o dado (ver `dadoDoMaximo`).
+  { id: "ataqueDanoAdicional", label: "Dado Extra no Ataque", grupo: "Dano e Cura", nota: "O máximo do dado: 6 é 1d6, 8 é 1d8" },
+  { id: "orcamentoLivre",        label: "Ações/Caract. Grátis",   grupo: "Orçamento e Custo", nota: "Vagas que não entram no custo" },
+  { id: "orcamentoPago",         label: "Ações/Caract.",          grupo: "Orçamento e Custo", nota: "Vagas que entram no custo" },
+  { id: "caracteristicasLivres", label: "Características Grátis", grupo: "Orçamento e Custo", nota: "Vagas só de Característica, fora do custo" },
+  { id: "custoReducao",          label: "Custo (abate)",          grupo: "Orçamento e Custo", nota: "Abate do custo em PE para invocar" },
 ];
+
+/** Os ids, na forma que o resto do arquivo sempre leu. */
+export const EFEITO_CANAIS = INV_EFEITO_CANAIS.map((c) => c.id);
 const CANAL_VALIDO = new Set(EFEITO_CANAIS);
+const CANAL_INV_BY_ID = Object.fromEntries(INV_EFEITO_CANAIS.map((c) => [c.id, c]));
+
+/** O rótulo de cada canal, para o hover do criador e o resumo da Característica. */
+export const INV_EFEITO_CANAL_LABEL = Object.fromEntries(INV_EFEITO_CANAIS.map((c) => [c.id, c.label]));
+
+/** Os canais agrupados, no formato do seletor de canal do Motor. */
+export const INV_EFEITO_CANAL_GRUPOS = (() => {
+  const grupos = [];
+  for (const c of INV_EFEITO_CANAIS) {
+    let g = grupos.find((x) => x.label === c.grupo);
+    if (!g) { g = { label: c.grupo, itens: [] }; grupos.push(g); }
+    g.itens.push(c);
+  }
+  return grupos;
+})();
+
+/** O vocabulário de alvo de um canal da invocação, no formato `{ value, label }`. */
+export function alvoOpcoesInvocacao(tipo) {
+  if (tipo === "atributo") return INV_ATTR_KEYS.map((k) => ({ value: k, label: rotuloAttrInv(k) }));
+  // Os mesmos da Característica de Teste: todos menos Integridade.
+  if (tipo === "tr") return resistenciasTreinaveis().map((r) => ({ value: r.value, label: r.label }));
+  if (tipo === "pericia") return periciasParaInvocacao().map((p) => ({ value: p.id, label: p.nome }));
+  // Sem o "Outro" livre da Característica de RD: um alvo de Motor tem de ser id.
+  if (tipo === "rdTipo") return Object.entries(TIPOS_DANO).map(([value, label]) => ({ value, label }));
+  return null;
+}
+
+/**
+ * O alvo de um efeito, conferido contra o canal. Devolve `null` quando o canal
+ * não tem alvo ou quando o alvo é opcional e ficou vazio, o id quando ele vale,
+ * e `false` quando falta um alvo obrigatório ou ele não existe no vocabulário.
+ */
+function alvoDoEfeitoInv(canal, alvo) {
+  const def = CANAL_INV_BY_ID[canal];
+  if (!def?.alvo) return null;
+  const id = String(alvo ?? "").trim();
+  if (!id) return def.alvoOpcional ? null : false;
+  return (alvoOpcoesInvocacao(def.alvo) || []).some((o) => o.value === id) ? id : false;
+}
+
+/** Soma um valor no acumulador de canais, no canal ou no alvo, e anota a parcela. */
+function somaNoAcumulador(acc, canal, alvo, valor, nome) {
+  if (alvo) {
+    if (!acc.porAlvo[canal]) acc.porAlvo[canal] = {};
+    acc.porAlvo[canal][alvo] = (acc.porAlvo[canal][alvo] || 0) + valor;
+  } else {
+    acc[canal] += valor;
+  }
+  if (valor) acc.detalhes.push({ nome, canal, ...(alvo ? { alvo } : {}), valor });
+}
+
+/** O nome curto do que um efeito mexe: "Defesa", "Força", "Acrobacia", "RD Queimante". */
+function nomeDoEfeitoInv(canal, alvo) {
+  const def = CANAL_INV_BY_ID[canal];
+  if (!def) return String(canal ?? "");
+  if (alvo) {
+    const rotulo = (alvoOpcoesInvocacao(def.alvo) || []).find((o) => o.value === alvo)?.label ?? alvo;
+    return canal === "rd" ? `RD ${rotulo}` : rotulo;
+  }
+  return def.label.replace(/^Em /, "");
+}
+
+/** Uma linha do Motor em texto curto, no formato que a Característica tipada já usa. */
+function resumoEfeitoInv(canal, alvo, valor) {
+  const nome = nomeDoEfeitoInv(canal, alvo);
+  if (canal === "ataqueDanoAdicional") return `${dadoDoMaximo(valor) || valor} ${nome}`;
+  if (canal === "rd") return `${valor} ${nome}`;
+  return `${valor >= 0 ? "+" : "−"}${Math.abs(valor)} ${nome}`;
+}
+
+const AVISO_SEM_ALVO = {
+  atributo: "Escolha o atributo deste efeito.",
+  pericia: "Escolha a perícia deste efeito.",
+  tr: "Escolha o Teste de Resistência deste efeito.",
+  rdTipo: "Escolha o tipo de dano deste efeito.",
+};
+
+/**
+ * As linhas do Motor de uma Característica Livre, RESOLVIDAS: cada uma volta
+ * com `valor`, `ativo` e o vocabulário de alvo, que é o que o editor do criador
+ * lê (o mesmo formato do Funcionamento Básico).
+ *
+ * O contexto é o da invocação CRUA, o mesmo dos efeitos de Habilidade e do
+ * Modificador: é o que o seletor de variáveis mostra.
+ */
+function resolverMotorDaCaracteristica(lista, inv, dono, warnings) {
+  const linhas = Array.isArray(lista) ? lista : [];
+  if (!linhas.length) return [];
+  const ctx = buildInvocacaoDslContext(inv, dono);
+  return linhas.map((e) => {
+    const def = CANAL_INV_BY_ID[e?.canal];
+    const expr = String(e?.expr ?? "").trim();
+    const quando = String(e?.quando ?? "").trim();
+    const linha = {
+      canal: e?.canal,
+      expr: e?.expr ?? "",
+      ...(e?.alvo ? { alvo: e.alvo } : {}),
+      ...(e?.quando ? { quando: e.quando } : {}),
+      alvoTipo: def?.alvo ?? null,
+      alvoObrigatorio: !!def?.alvo && !def.alvoOpcional,
+      valor: null,
+      ativo: false,
+    };
+    // Linha vazia não avisa: é a que o botão acabou de criar.
+    if (!def) {
+      if (expr) warnings.push(`Canal de efeito desconhecido "${e?.canal}".`);
+      return linha;
+    }
+    if (alvoDoEfeitoInv(e.canal, e.alvo) === false) {
+      if (expr) warnings.push(AVISO_SEM_ALVO[def.alvo] ?? "Escolha o alvo deste efeito.");
+      return linha;
+    }
+    if (!expr) return linha;
+    linha.valor = evalNumber(expr, ctx, 0);
+    linha.ativo = !quando || evalNumber(quando, ctx, 0) !== 0;
+    return linha;
+  });
+}
+
+/**
+ * Os atributos da invocação com o canal `atributo` somado.
+ *
+ * ⚠ PARA NO MÁXIMO DO GRAU (autor, 2026-09-10), como o canal da criatura para
+ * no limite de 20. O que passa do máximo vai para `perdas`, que vira aviso e
+ * parcela negativa no hover: bônus perdido calado é o bug de julho dos
+ * atributos da criatura. Um valor que JÁ passava do máximo (ficha fora da
+ * regra) não é rebaixado aqui, porque o aviso dele é outro.
+ *
+ * ⚠ Só entram as chaves com bônus. Sem nenhum, a invocação volta a MESMA, e
+ * nada muda para quem não usa o canal.
+ */
+function atributosEfetivos(inv, efe) {
+  const bonus = efe.porAlvo?.atributo || {};
+  const chaves = Object.keys(bonus).filter((k) => bonus[k]);
+  if (!chaves.length) return { invEf: inv, aplicado: {}, perdas: [] };
+  const tab = INV_ATRIBUTOS_POR_GRAU[grauMeta(inv?.grau).value] || INV_ATRIBUTOS_POR_GRAU.quarto;
+  const base = atributoBaseInvocacao(inv);
+  const at = { ...(inv?.atributos || {}) };
+  const aplicado = {};
+  const perdas = [];
+  for (const k of chaves) {
+    const bruto = at[k] ?? base;
+    let v = bruto + bonus[k];
+    const teto = Math.max(bruto, tab.max);
+    if (bonus[k] > 0 && v > teto) {
+      perdas.push({ k, perdido: v - teto, max: tab.max });
+      v = teto;
+    }
+    at[k] = v;
+    aplicado[k] = v - bruto;
+  }
+  return { invEf: { ...inv, atributos: at }, aplicado, perdas };
+}
 
 /**
  * ============================================================
@@ -1525,6 +1745,13 @@ function efeitosHabilidade(inv, dono) {
   // nome de canal viraria uma habilidade que simplesmente não faz nada. Vira
   // aviso na ficha (resolveInvocacao) em vez de silêncio.
   acc.canaisDesconhecidos = [];
+  /* Os canais com ALVO somam por destino, fora do número do canal: um +2 em
+     Fortitude não pode entrar nos outros quatro TRs. */
+  acc.porAlvo = {};
+  /* Efeito de canal com alvo obrigatório que chegou sem ele (ou com um que não
+     existe). Mesma família do canal desconhecido: sem aviso, a habilidade
+     simplesmente não faria nada. */
+  acc.semAlvo = [];
   // Os efeitos do TIPO entram junto dos das Habilidades, no mesmo acumulador,
   // para o hover mostrar as duas origens lado a lado.
   const efeitos = [...EFEITOS_DE_TIPO, ...(Array.isArray(dono?.efeitos) ? dono.efeitos : [])];
@@ -1532,17 +1759,21 @@ function efeitosHabilidade(inv, dono) {
   const ctx = buildInvocacaoDslContext(inv, dono);
   for (const e of efeitos) {
     if (!e) continue;
+    const nome = e.nome || e.origem || "Habilidade";
     // Contra a lista, não contra as chaves do acumulador: `detalhes` e
     // `canaisDesconhecidos` também são chaves dele e não são canais.
     if (!CANAL_VALIDO.has(e.canal)) {
-      acc.canaisDesconhecidos.push({ nome: e.nome || e.origem || "Habilidade", canal: e.canal });
+      acc.canaisDesconhecidos.push({ nome, canal: e.canal });
+      continue;
+    }
+    const alvo = alvoDoEfeitoInv(e.canal, e.alvo);
+    if (alvo === false) {
+      acc.semAlvo.push({ nome, canal: e.canal });
       continue;
     }
     // Condição do efeito: sem `quando`, sempre aplica; com, só se != 0.
     if (e.quando && evalNumber(e.quando, ctx, 0) === 0) continue;
-    const valor = evalNumber(e.expr, ctx, 0);
-    acc[e.canal] += valor;
-    if (valor) acc.detalhes.push({ nome: e.nome || e.origem || "Habilidade", canal: e.canal, valor });
+    somaNoAcumulador(acc, e.canal, alvo, evalNumber(e.expr, ctx, 0), nome);
   }
   return acc;
 }
@@ -1578,7 +1809,8 @@ export function agregarCaracteristicas(resolvidas = []) {
     if (c.subtipo === "vida") {
       // Duas Características de Vida não acumulam (o livro proíbe efeitos
       // iguais): vale a maior. O aviso de duplicata sai no resolveInvocacao.
-      out.pv = Math.max(out.pv, c.valor ?? 0);
+      // O nome de quem venceu vai junto, para a parcela do hover.
+      if ((c.valor ?? 0) > out.pv) { out.pv = c.valor; out.pvFonte = c.nome || "Característica"; }
     } else if (c.subtipo === "tamanho") {
       // Mesma regra: a primeira manda, e a duplicata vira aviso.
       if (c.tamanho && !out.tamanho) out.tamanho = c.tamanho;
@@ -1632,6 +1864,78 @@ export function agregarCaracteristicas(resolvidas = []) {
       }
     }
   }
+
+  /* ============================================================
+     O MOTOR DAS CARACTERÍSTICAS LIVRES (2026-09-10)
+     ============================================================
+     Duas Características com o mesmo efeito, uma delas pelo Motor, NÃO
+     acumulam: vale a maior (autor). É a regra do livro para Características, e
+     o critério é o do pool das Passivas (`resolverExclusivos`): a disputa é por
+     canal, alvo e sinal, o bônus fica com o MAIOR e a penalidade com a PIOR.
+
+     Dentro de UMA Característica as linhas do mesmo canal somam primeiro,
+     porque juntas elas são o efeito dela, e é esse total que disputa.
+
+     Onde o efeito tem par num subtipo (PV com Vida, RD de um tipo com RD, bônus
+     numa perícia ou num TR com Teste), a disputa atravessa os dois e o vencedor
+     cai no mesmo lugar em que a Característica tipada cairia. O resto sai em
+     `motor`, e o `resolveInvocacao` o soma no acumulador dos canais, onde as
+     Habilidades de Controlador seguem somando por cima.
+
+     ⚠ O bônus de Teste em ATAQUE não disputa com o canal `acerto`, e não é
+     descuido: a Característica sobe só a jogada da criatura, e o canal sobe as
+     Ações também. Os dois não mexem no mesmo número. */
+  out.motor = [];
+  out.testesNomes = { pericias: {}, resistencias: {} };
+  const disputa = new Map();
+  for (const c of resolvidas) {
+    if (c.subtipo !== "livre" || !Array.isArray(c.efeitos)) continue;
+    const proprio = new Map();
+    for (const ef of c.efeitos) {
+      if (!ef.ativo || !Number.isFinite(ef.valor) || !ef.valor) continue;
+      const k = `${ef.canal}|${ef.alvo || ""}`;
+      const atual = proprio.get(k);
+      if (atual) atual.valor += ef.valor;
+      else proprio.set(k, { canal: ef.canal, alvo: ef.alvo || null, valor: ef.valor, nome: c.nome || "Característica" });
+    }
+    for (const cand of proprio.values()) {
+      if (!cand.valor) continue;
+      const k = `${cand.canal}|${cand.alvo || ""}|${cand.valor < 0 ? "-" : "+"}`;
+      const atual = disputa.get(k);
+      if (!atual) { disputa.set(k, { ...cand, n: 1 }); continue; }
+      atual.n += 1;
+      if (cand.valor < 0 ? cand.valor < atual.valor : cand.valor > atual.valor) Object.assign(atual, cand);
+    }
+  }
+  for (const v of disputa.values()) {
+    let n = v.n;
+    if (v.valor > 0 && v.canal === "pv") {
+      if (out.pv) n += 1;
+      if (v.valor > out.pv) { out.pv = v.valor; out.pvFonte = v.nome; }
+    } else if (v.valor > 0 && v.canal === "rd" && v.alvo) {
+      const linha = rdIndex.get(v.alvo);
+      if (linha) {
+        n += 1;
+        if (v.valor > linha.valor) { linha.valor = v.valor; linha.nome = v.nome; }
+      } else {
+        const nova = { chave: v.alvo, label: TIPOS_DANO[v.alvo] ?? v.alvo, nome: v.nome, valor: v.valor };
+        rdIndex.set(v.alvo, nova);
+        out.rdPorTipo.push(nova);
+      }
+    } else if (v.valor > 0 && (v.canal === "bonusPericia" || (v.canal === "bonusTR" && v.alvo))) {
+      const pericia = v.canal === "bonusPericia";
+      const mapa = pericia ? out.testes.pericias : out.testes.resistencias;
+      const nomes = pericia ? out.testesNomes.pericias : out.testesNomes.resistencias;
+      const marca = `${pericia ? "per" : "tr"}:${v.alvo}`;
+      const tinha = vistosTeste.has(marca);
+      if (tinha) n += 1;
+      if (!tinha || v.valor > (mapa[v.alvo] ?? 0)) { mapa[v.alvo] = v.valor; nomes[v.alvo] = v.nome; }
+      vistosTeste.add(marca);
+    } else {
+      out.motor.push({ canal: v.canal, alvo: v.alvo, valor: v.valor, nome: v.nome });
+    }
+    if (n > 1) out.warnings.push(`Duas Características dão ${nomeDoEfeitoInv(v.canal, v.alvo)}: elas não acumulam.`);
+  }
   return out;
 }
 
@@ -1650,6 +1954,12 @@ export function resolveTestesInvocacao(inv, dono = {}, caract = null) {
   const baseTR = base + (dono.bonusTRHabilidade ?? 0); // TRs recebem um bônus extra (Concentrar Poder)
   // Bônus fixos vindos de Característica de Teste (passivas, sempre em efeito).
   const cTes = caract?.testes || { pericias: {}, resistencias: {}, ataque: 0 };
+  /* Quem venceu cada bônus de Teste, quando o vencedor foi o Motor de uma
+     Característica Livre. A tipada segue saindo como "Característica". */
+  const nomesCTes = caract?.testesNomes || { pericias: {}, resistencias: {} };
+  // Bônus de Habilidade num TR ou numa perícia SÓ (canais com alvo).
+  const trPorAlvo = dono.bonusTRPorAlvo || {};
+  const periciaPorAlvo = dono.bonusPericiaPorAlvo || {};
   /* ⚠ O BÔNUS DE FUSÃO TEM CAMINHO PRÓPRIO, e não entra pelo `cTes`. Os dois
      somam no mesmo lugar hoje (o `comGatilho` morreu em 2026-09-04), mas a
      PARCELA de cada um leva um nome diferente no hover: a da fusão leva o nome
@@ -1725,7 +2035,8 @@ export function resolveTestesInvocacao(inv, dono = {}, caract = null) {
     return {
       value: r.value, label: r.label, treinado: !!p, mestre: p === "mestre",
       bonus: mod(at[r.atributo] ?? 8) + bonusProficiencia(bt, p) + baseTR
-        + (fus.resistencias?.[r.value] || 0) + (cTes.resistencias[r.value] || 0),
+        + (fus.resistencias?.[r.value] || 0) + (cTes.resistencias[r.value] || 0)
+        + (trPorAlvo[r.value] || 0),
       /* Quando a faixa veio de Característica, a parcela leva o NOME dela: sem
          isso o jogador vê a Maestria num TR que ele não treinou na ficha e não
          tem como descobrir de onde ela saiu. */
@@ -1735,10 +2046,11 @@ export function resolveTestesInvocacao(inv, dono = {}, caract = null) {
           && (RANK_PROF_INV[trConcedido[r.value].prof] ?? 0) > (RANK_PROF_INV[trDaFicha[r.value]] ?? 0)
           ? trConcedido[r.value].nome : null),
         ...parcelasTR,
+        ...parcelasDoAlvo(detalhes, "bonusTR", r.value),
         ...(fus.resistencias?.[r.value]
           ? [{ label: fus.fonte || "Fusão", valor: fus.resistencias[r.value] }] : []),
         ...(cTes.resistencias[r.value]
-          ? [{ label: "Característica", valor: cTes.resistencias[r.value] }] : []),
+          ? [{ label: nomesCTes.resistencias[r.value] || "Característica", valor: cTes.resistencias[r.value] }] : []),
       ],
     };
   });
@@ -1748,17 +2060,19 @@ export function resolveTestesInvocacao(inv, dono = {}, caract = null) {
   // nesse caso a linha existe mesmo assim (o bônus vale, o BT é que não soma).
   const prof = (inv?.periciasProf && typeof inv.periciasProf === "object") ? inv.periciasProf : {};
   const pericias = AFTY_PERICIAS
-    .filter((p) => prof[p.id] || cTes.pericias[p.id] || fus.pericias?.[p.id])
+    .filter((p) => prof[p.id] || cTes.pericias[p.id] || fus.pericias?.[p.id] || periciaPorAlvo[p.id])
     .map((p) => ({
       id: p.id, nome: p.nome, mestre: prof[p.id] === "mestre", treinado: !!prof[p.id],
       atributo: p.atributo,
       bonus: mod(at[p.atributo] ?? 8) + bonusProficiencia(bt, prof[p.id] || null) + base
-        + (cTes.pericias[p.id] || 0) + (fus.pericias?.[p.id] || 0),
+        + (cTes.pericias[p.id] || 0) + (fus.pericias?.[p.id] || 0) + (periciaPorAlvo[p.id] || 0),
       partes: [
         { label: rotuloAttrInv(p.atributo), valor: mod(at[p.atributo] ?? 8) },
         ...parcelaProficiencia(bt, prof[p.id] || null),
         ...parcelasComuns,
-        ...(cTes.pericias[p.id] ? [{ label: "Característica", valor: cTes.pericias[p.id] }] : []),
+        ...parcelasDoAlvo(detalhes, "bonusPericia", p.id),
+        ...(cTes.pericias[p.id]
+          ? [{ label: nomesCTes.pericias[p.id] || "Característica", valor: cTes.pericias[p.id] }] : []),
         ...(fus.pericias?.[p.id] ? [{ label: fus.fonte || "Fusão", valor: fus.pericias[p.id] }] : []),
       ],
     }));
@@ -1858,6 +2172,19 @@ function marcadoresDaInvocacao(inv, dono) {
 export function resolveInvocacao(inv, dono = {}) {
   const g = grauMeta(inv?.grau);
   const efe = efeitosHabilidade(inv, dono);
+
+  /* As Características são passivas e resolvem ANTES dos stats, porque o PV, o
+     tamanho, a RD e os testes leem o que elas concedem.
+
+     ⚠ E ANTES DO DONO LOCAL desde 2026-09-10. O Motor da Característica Livre
+     escreve nos mesmos canais das Habilidades (Acerto, CD, Níveis de Dano...), e
+     esses canais chegam às Ações e aos testes pelo `donoLocal`. Resolvidas
+     depois dele, as linhas do Motor apareceriam no card e não mexeriam em nada,
+     que é o "calculado e jogado fora" de agosto outra vez. */
+  const caracteristicas = (inv?.caracteristicas || []).map((c) => resolveCaracteristica(c, inv, dono));
+  const caract = agregarCaracteristicas(caracteristicas);
+  for (const m of caract.motor) somaNoAcumulador(efe, m.canal, m.alvo, m.valor, m.nome);
+
   // Efeitos per-invocação que as Ações/Testes precisam ler vão num dono local:
   // bonusTeste (Controle Aprimorado, todos os testes), bonusTR (Concentrar
   // Poder, só TRs) e o escalonamento de dano/cura (Concentrar Poder).
@@ -1871,6 +2198,8 @@ export function resolveInvocacao(inv, dono = {}) {
   if (efe.curaNivel) donoLocal.curaNivelHabilidade = efe.curaNivel;
   if (efe.curaBonus) donoLocal.curaBonusHabilidade = efe.curaBonus;
   if (efe.ataqueDanoAdicional) donoLocal.ataqueDanoAdicionalHabilidade = efe.ataqueDanoAdicional;
+  if (efe.porAlvo.bonusTR) donoLocal.bonusTRPorAlvo = efe.porAlvo.bonusTR;
+  if (efe.porAlvo.bonusPericia) donoLocal.bonusPericiaPorAlvo = efe.porAlvo.bonusPericia;
 
   // Override de Feitiço de Criação de Shikigamis: quando esta invocação É o
   // shikigami de um Feitiço, o NÍVEL do Feitiço manda no grau, no orçamento e
@@ -1887,24 +2216,56 @@ export function resolveInvocacao(inv, dono = {}) {
   donoLocal.detalhesEfeito = efe.detalhes;
   donoLocal.auxilioFontes = aux.proprio.fontes;
 
-  // As Características são passivas e resolvem ANTES dos stats, porque o PV, o
-  // tamanho, a RD e os testes leem o que elas concedem.
-  const caracteristicas = (inv?.caracteristicas || []).map((c) => resolveCaracteristica(c, inv, dono));
-  const caract = agregarCaracteristicas(caracteristicas);
-
-  const atributos = resumoAtributosInvocacao(inv, efe.atributoPontos);
-  const pv = pvInvocacao(inv, dono) + efe.pv + caract.pv;
-  const defesa = defesaInvocacao(inv, dono) + efe.defesa + aux.proprio.defesa;
+  /* O ATRIBUTO DO MOTOR (canal `atributo`). `invEf` é a invocação com os
+     atributos SOMADOS, e é ela que PV, Defesa, perícias, testes e Ações leem.
+     O orçamento de pontos continua no cru, porque bônus não é ponto gasto, e o
+     contexto de DSL também, porque é o valor que o seletor de variáveis mostra
+     e uma expressão que lesse o bônus que ela mesma dá seria um laço. */
+  const attrEf = atributosEfetivos(inv, efe);
+  const invEf = attrEf.invEf;
+  const resumoAttr = resumoAtributosInvocacao(inv, efe.atributoPontos);
+  const chavesAttr = Object.keys(attrEf.aplicado);
+  const atributos = chavesAttr.length
+    ? {
+      ...resumoAttr,
+      valores: { ...resumoAttr.valores, ...Object.fromEntries(chavesAttr.map((k) => [k, invEf.atributos[k]])) },
+      mods: { ...resumoAttr.mods, ...Object.fromEntries(chavesAttr.map((k) => [k, mod(invEf.atributos[k])])) },
+      bonus: attrEf.aplicado,
+      // A soma de cada lista fecha com o valor: base, bônus e o que passou do máximo.
+      partes: Object.fromEntries(chavesAttr.map((k) => {
+        const perda = attrEf.perdas.find((p) => p.k === k);
+        return [k, [
+          { label: "Base", valor: resumoAttr.valores[k] },
+          ...parcelasDoAlvo(efe.detalhes, "atributo", k),
+          ...(perda ? [{ label: "Acima do Máximo do Grau", valor: -perda.perdido }] : []),
+        ]];
+      })),
+    }
+    : resumoAttr;
+  const pv = pvInvocacao(invEf, dono) + efe.pv + caract.pv;
+  const defesa = defesaInvocacao(invEf, dono) + efe.defesa + aux.proprio.defesa;
   const deslocamento = deslocamentoInvocacao() + efe.deslocamento;
   // Tamanho: Médio até que uma Característica de Tamanho diga outro.
   const tamanho = caract.tamanho || inv?.tamanho || "medio";
   // RD: a Geral (Melhoria Resistência, "contra todos os tipos") cobre tudo, e
   // cada Característica soma no tipo dela. A linha por tipo mostra o total que
   // vale contra aquele tipo, que é o número que a mesa usa.
+  //
+  // ⚠ A RD DE UM TIPO tem duas fontes desde 2026-09-10: a Característica (que
+  // disputa com as outras, e já chega decidida) e o canal `rd` com alvo das
+  // Habilidades, que soma por cima. Um tipo que só a Habilidade cobre ganha
+  // linha própria, senão o número existiria sem célula na tela.
   const rdGeralTotal = efe.rd + aux.proprio.rdGeral;
+  const rdAlvo = efe.porAlvo.rd || {};
+  const linhasRd = [...caract.rdPorTipo];
+  for (const tipo of Object.keys(rdAlvo)) {
+    if (!linhasRd.some((l) => l.chave === tipo)) {
+      linhasRd.push({ chave: tipo, label: TIPOS_DANO[tipo] ?? tipo, nome: null, valor: 0 });
+    }
+  }
   const rd = {
     geral: rdGeralTotal,
-    porTipo: caract.rdPorTipo.map((l) => ({ ...l, total: l.valor + rdGeralTotal })),
+    porTipo: linhasRd.map((l) => ({ ...l, total: l.valor + (rdAlvo[l.chave] || 0) + rdGeralTotal })),
   };
   // Ápice do Controle (efe.orcamentoLivre) dá slots que NÃO influenciam no custo.
   // Invocações Econômicas abate o custo, com piso em zero.
@@ -1930,20 +2291,15 @@ export function resolveInvocacao(inv, dono = {}) {
   const partesRdGeral = [...parcelasDoCanal(efe.detalhes, "rd"), ...auxDoCanal("rdGeral")];
   const fontes = {
     pv: [
-      ...partesPvInvocacao(inv, dono),
+      ...partesPvInvocacao(invEf, dono),
       ...parcelasDoCanal(efe.detalhes, "pv"),
       /* Duas Características de Vida não acumulam: vale a MAIOR, e a parcela
-         leva o nome de quem venceu. Ver `agregarCaracteristicas`. */
-      ...(caract.pv
-        ? [{
-          label: caracteristicas.find((c) => c.subtipo === "vida" && (c.valor ?? 0) === caract.pv)?.nome
-            || "Característica",
-          valor: caract.pv,
-        }]
-        : []),
+         leva o nome de quem venceu, que pode ser o Motor de uma Livre. Ver
+         `agregarCaracteristicas`. */
+      ...(caract.pv ? [{ label: caract.pvFonte || "Característica", valor: caract.pv }] : []),
     ],
     defesa: [
-      ...partesDefesaInvocacao(inv, dono),
+      ...partesDefesaInvocacao(invEf, dono),
       ...parcelasDoCanal(efe.detalhes, "defesa"),
       ...auxDoCanal("defesa"),
     ],
@@ -1954,9 +2310,14 @@ export function resolveInvocacao(inv, dono = {}) {
     rdGeral: partesRdGeral,
     /* A RD por tipo é a da Característica MAIS a Geral: o número que vale contra
        aquele tipo. As duas parcelas aparecem, senão o jogador soma de cabeça. */
-    rdPorTipo: Object.fromEntries(caract.rdPorTipo.map((l) => [
+    rdPorTipo: Object.fromEntries(linhasRd.map((l) => [
       l.chave,
-      [{ label: l.nome || "Característica", valor: l.valor }, ...partesRdGeral],
+      [
+        // A linha que só a Habilidade abriu não tem Característica atrás.
+        ...(l.nome ? [{ label: l.nome, valor: l.valor }] : []),
+        ...parcelasDoAlvo(efe.detalhes, "rd", l.chave),
+        ...partesRdGeral,
+      ],
     ])),
     custo: [
       { label: `${g.label} (Base)`, valor: custoBruto },
@@ -1973,14 +2334,14 @@ export function resolveInvocacao(inv, dono = {}) {
       ...(ovr?.ajusteAcoes ? [{ label: "Feitiço de Criação", valor: ovr.ajusteAcoes }] : []),
     ],
     vagasPericia: [
-      ...partesPericiasInvocacao(inv),
+      ...partesPericiasInvocacao(invEf),
       ...parcelasDoCanal(efe.detalhes, "pericias"),
     ],
   };
 
   const perProf = (inv?.periciasProf && typeof inv.periciasProf === "object") ? inv.periciasProf : {};
   const pericias = {
-    allowance: periciasAllowanceInvocacao(inv) + efe.pericias,
+    allowance: periciasAllowanceInvocacao(invEf) + efe.pericias,
     usadas: usoPericias(perProf), // Mestre gasta 2, Treinado gasta 1
   };
   /* ⚠ A notação sai daqui JÁ ESTRUTURADA, num lugar só. O `resolveAcao` remonta
@@ -1990,7 +2351,7 @@ export function resolveInvocacao(inv, dono = {}) {
   const comGrupos = (bloco) =>
     (bloco?.dado ? { ...bloco, grupos: dadosDaNotacao(bloco.dado) } : bloco);
   const acoes = (inv?.acoes || []).map((a) => {
-    const r = resolveAcao(a, inv, donoLocal);
+    const r = resolveAcao(a, invEf, donoLocal, inv);
     return {
       ...r,
       dano: comGrupos(r.dano),
@@ -2067,6 +2428,12 @@ export function resolveInvocacao(inv, dono = {}) {
   for (const d of efe.canaisDesconhecidos || []) {
     warnings.push(`${d.nome}: canal de efeito desconhecido "${d.canal}".`);
   }
+  for (const d of efe.semAlvo || []) {
+    warnings.push(`${d.nome}: ${INV_EFEITO_CANAL_LABEL[d.canal] ?? d.canal} sem alvo.`);
+  }
+  for (const p of attrEf.perdas) {
+    warnings.push(`${rotuloAttrInv(p.k)}: ${p.perdido} de bônus acima do máximo ${p.max} do grau.`);
+  }
 
   return {
     id: inv?.id,
@@ -2114,7 +2481,7 @@ export function resolveInvocacao(inv, dono = {}) {
     margemCritico: dono.margemCritico ?? 20,
     criticoBrutal: !!dono.criticoBrutal,
     shikigami: ovr || null,
-    testes: resolveTestesInvocacao(inv, donoLocal, caract),
+    testes: resolveTestesInvocacao(invEf, donoLocal, caract),
     acoes, caracteristicas,
     /* O contexto que o `modificadorExpr` enxerga, para o seletor de variáveis do
        editor. Sai SEM os valores resolvidos de propósito: é exatamente o que o
@@ -2629,6 +2996,22 @@ export function validarCatalogoInvocacoes() {
     if (!CANAL_VALIDO.has(e.canal)) erros.push(`TECNICA_EFEITOS: canal desconhecido "${e.canal}"`);
     if (e.quando && !(e.quando in ctxAmostra)) {
       erros.push(`TECNICA_EFEITOS: "quando" usa variável inexistente "${e.quando}"`);
+    }
+  }
+
+  /* O catálogo de canais (2026-09-10): rótulo e grupo em todos, alvo com
+     vocabulário, e a regra da tela nos dois textos que o seletor mostra. */
+  const vistosCanal = new Set();
+  for (const c of INV_EFEITO_CANAIS) {
+    if (vistosCanal.has(c.id)) erros.push(`INV_EFEITO_CANAIS: canal repetido "${c.id}"`);
+    vistosCanal.add(c.id);
+    if (!c.label) erros.push(`INV_EFEITO_CANAIS: "${c.id}" sem rótulo`);
+    if (!c.grupo) erros.push(`INV_EFEITO_CANAIS: "${c.id}" sem grupo`);
+    if (c.alvo && !(alvoOpcoesInvocacao(c.alvo) || []).length) {
+      erros.push(`INV_EFEITO_CANAIS: "${c.id}" pede alvo "${c.alvo}" sem vocabulário`);
+    }
+    if (/[—;]/.test(`${c.label} ${c.nota ?? ""}`)) {
+      erros.push(`INV_EFEITO_CANAIS: "${c.id}" tem travessão ou ponto-e-vírgula no texto de tela`);
     }
   }
 

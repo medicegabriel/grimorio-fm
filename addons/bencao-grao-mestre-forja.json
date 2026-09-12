@@ -1,0 +1,9 @@
+{
+  "id": "bencao-grao-mestre-forja",
+  "nome": "Benção do Grão Mestre da Forja",
+  "versao": "1.0.0",
+  "autor": "Afty",
+  "paraRaw": "afty",
+  "descricao": "Ficha de Player: todo item de Grau Especial ganha uma segunda Habilidade Única, que não acumula com Feitiços nem com o Novo Estilo das Sombras. Abre também o card Acessórios Únicos, com acessórios que contam como Grau Especial, pesam 1, não têm custo nem Encantamentos e recebem duas Habilidades Únicas, a segunda com a mesma regra.",
+  "libera": ["segundaHabilidadeUnica", "acessoriosUnicos"]
+}

@@ -119,12 +119,25 @@ t("as divergencias de REGRA ligadas",
   ["altoNivelSemGeral", "basesAutomaticas", "escalaDosTestes", "focosLivres",
    "danoPorArma", "defesaUniforme", "danoFixoPorGrau", "reducaoDeGrau",
    "conteudoSoPorAddon", "guardaEresistenciaParcial", "habilidadesGerais",
-   "pacoteDaClasseInicial", "passivaCustaPeMaximo", "patamarDoJogador",
+   "pacoteDaClasseInicial", "passivaCustaPeMaximo", "patamarDoJogador", "poolExclusivo",
    "proficienciaPorArma", "progressaoDeFeiticos",
    "pvPePorEspecializacao", "quantidadeDePE", "rdBase", "rdEscudoFisico", "tetoDeNivel",
    "trForaDoOrcamento", "vagasPorNivelDeClasse", "valoresAdicionais"].sort());
 t("e a de TELA ligada e a das abas",
-  S.DIVERGENCIAS.filter((d) => d.ativa && d.tipo === "tela").map((d) => d.id), ["abasIdentidade"]);
+  S.DIVERGENCIAS.filter((d) => d.ativa && d.tipo === "tela").map((d) => d.id),
+  ["abasIdentidade", "rotuloDoNivel", "marcaDoSistema", "interludioComTeste"]);
+/* O vocabulário da ficha (2026-09-10), com a concordância: "personagem" é
+   masculino, e trocar só o substantivo deixaria "Esta personagem". */
+t("a palavra da criatura", S.palavrasDoSistema("afty").nome, "criatura");
+t("a palavra do jogador, com maiúscula", S.palavrasDoSistema("player").Nome, "Personagem");
+t("a concordância segue o sistema",
+  [S.palavrasDoSistema("afty").g("Novo", "Nova"), S.palavrasDoSistema("player").g("Novo", "Nova")], ["Nova", "Novo"]);
+t("o plural", S.palavrasDoSistema("player").plural, "personagens");
+/* A de rótulo (2026-09-10): "ND" na criatura, "Nível" no jogador. Ela não toca
+   número nenhum, então o clone dos derives abaixo não sente. */
+t("o rótulo do nível da criatura", S.rotuloDoNivel("afty"), "ND");
+t("o rótulo do nível do jogador", S.rotuloDoNivel("player"), "Nível");
+t("sistema sujo cai no rótulo da criatura", S.rotuloDoNivel(undefined), "ND");
 
 /* Divergência desligada devolve o ramo do Afty para os DOIS lados, e é o que faz
    o PV e a Alma do jogador ainda saírem iguais aos da criatura. A ligada devolve
@@ -355,9 +368,9 @@ t("as divergencias conhecidas estao na lista",
    "defesaUniforme", "escalaDosTestes", "focosLivres", "guardaEresistenciaParcial",
    "conteudoSoPorAddon", "habilidadesGerais", "inventarioSimplificado", "pacoteDaClasseInicial",
    "passivaCustaPeMaximo",
-   "patamarDoJogador", "proficienciaPorArma", "progressaoDeFeiticos",
+   "patamarDoJogador", "poolExclusivo", "proficienciaPorArma", "progressaoDeFeiticos",
    "pvPePorEspecializacao", "quantidadeDePE", "rdBase", "rdEscudoFisico",
-   "reducaoDeGrau", "danoFixoPorGrau",
+   "reducaoDeGrau", "danoFixoPorGrau", "rotuloDoNivel", "marcaDoSistema", "interludioComTeste",
    "tetoDeNivel", "trForaDoOrcamento", "vagasPorNivelDeClasse",
    "valoresAdicionais"].sort());
 

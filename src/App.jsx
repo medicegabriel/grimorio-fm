@@ -1,4 +1,5 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
+import { AlertTriangle } from "lucide-react";
 import Dashboard from "./components/Dashboard";
 import CombatTracker from "./components/CombatTracker";
 import CreatureBuilder from "./components/CreatureBuilder";
@@ -14,6 +15,7 @@ import PdfFab from "./components/PdfFab";
 import useCreatureStorage from "./components/useCreatureStorage";
 import useEncounterManager from "./useEncounterManager";
 import useEncontrosAfty from "./systems/afty/encontros/usar-encontros-afty";
+import { vocabularioDoDashboard, sistemaGravado, getSistema } from "./systems/afty/afty-sistema";
 import { COMPENDIUM, getCompendiumById, isBuiltInId } from "./fm-compendium";
 import { Analytics } from '@vercel/analytics/react';
 
@@ -55,7 +57,7 @@ export default function App() {
   // tela. Quem precisa saber QUAL dos dois lê `sistemaDaRota`.
   const aftyMode = sistemaDaRota !== null;
 
-  const storage = useCreatureStorage(
+  const storageDaRota = useCreatureStorage(
     aftyMode ? { namespace: sistemaDaRota, defaultRulesVersion: sistemaDaRota } : undefined
   );
   const encounterManager = useEncounterManager(aftyMode ? sistemaDaRota : "");
@@ -68,6 +70,99 @@ export default function App() {
 
   const [view, setView] = useState({ name: "dashboard", creatureId: null, encounterId: null });
   const [encounterSyncState, setEncounterSyncState] = useState(null);
+  const [importeRecusado, setImporteRecusado] = useState(null);
+
+  /* ============================================================ */
+  /* A FRONTEIRA ENTRE OS DOIS LIVROS                              */
+  /* ============================================================ */
+  /* ⚠ ISTO EXISTE POR CAUSA DE UM ERRO EM PRODUÇÃO (2026-09-12). Uma ficha do
+     Grimório Afty foi importada no Grimório público, e o clique no card dela
+     abria o painel de combate da 2.5.2, que é motor de OUTRO livro. O painel
+     lê `treinamentos` como LISTA e no Afty ele é MAPA, então estourava em
+     `collectAutomationEntities` com "(arr ?? []) is not iterable".
+
+     O `rulesVersion` de entrada era preservado pelo importador, mas NADA o
+     lia na hora de abrir: o `App.jsx` decidia a tela pela ROTA. A lei do
+     projeto é a oposta, e está em caixa alta no cabeçalho de afty-sistema.js:
+     O SISTEMA VEM DA FICHA, NÃO DA ROTA.
+
+     São duas portas, e as duas fecham aqui porque as duas são de roteamento:
+     a de ENTRADA (o importador do Grimório público recusa ficha de outro
+     livro) e a de USO (quem já entrou abre na tela do livro dela). A segunda
+     também é o que tira a ficha estrangeira da lista dos encontros da 2.5.2,
+     que estouravam no mesmo coletor pelo `useEncounter.js`.
+
+     ⚠ NADA DE `src/components/` MUDOU, e é de propósito: o envoltório troca só
+     o `importMany` do objeto devolvido pelo hook, e a lista filtrada é prop. */
+
+  /* A ficha pertence ao inventário DESTA rota? Fora do Afty a rota é a 2.5.2,
+     e `sistemaGravado` devolve null justamente para as fichas dela. */
+  const ehDestaRota = useCallback(
+    (ficha) => sistemaGravado(ficha) === sistemaDaRota,
+    [sistemaDaRota],
+  );
+
+  /* O importador do Grimório público, com a porta. Recusa as estrangeiras,
+     importa o resto e AVISA o que ficou de fora. Recusa calada seria pior que
+     o erro que isto conserta: a ficha sumiria sem explicação. */
+  const importarSoDoLivro = useCallback((payload, opts) => {
+    const lista = Array.isArray(payload) ? payload : (payload?.creatures ?? []);
+    const recusadas = lista.filter((c) => !ehDestaRota(c));
+    if (recusadas.length === 0) return storageDaRota.importMany(payload, opts);
+
+    const aceitas = lista.filter(ehDestaRota);
+    /* ⚠ O RÓTULO SAI DO `sistemaGravado`, E NÃO DO `getSistema` DIRETO. O
+       `getSistema` cai no padrão "afty" para quem não conhece, e no dia em que
+       esta porta for ligada também no ambiente privado uma ficha da 2.5.2
+       recusada apareceria no aviso como "Grimório Afty", errado e calado. */
+    const livroDe = (c) => {
+      const id = sistemaGravado(c);
+      return id ? getSistema(id).label : "Grimório 2.5.2";
+    };
+    setImporteRecusado({
+      recusadas: recusadas.map((c) => ({ nome: c?.name || "Sem nome", livro: livroDe(c) })),
+      aceitas: aceitas.length,
+    });
+    /* Pacote inteiro estrangeiro não entra NEM as pastas dele: pasta vazia de
+       um livro que não é este é lixo no inventário. */
+    if (aceitas.length === 0) {
+      return { imported: 0, skipped: recusadas.length, foldersImported: 0 };
+    }
+    const limpo = Array.isArray(payload) ? aceitas : { ...payload, creatures: aceitas };
+    const r = storageDaRota.importMany(limpo, opts);
+    return { ...r, skipped: (r?.skipped ?? 0) + recusadas.length };
+  }, [storageDaRota, ehDestaRota]);
+
+  /* O envoltório. No ambiente privado o hook passa inteiro: a porta que o autor
+     pediu é a do Grimório público. O caminho inverso (ficha da 2.5.2 importada
+     dentro do /Afty) está anotado em docs/a-fazer.md como pergunta.
+
+     ⚠ O `useMemo` AQUI NÃO SEGURA IDENTIDADE, e está escrito para não enganar
+     quem ler: o `useCreatureStorage` devolve um literal novo a cada render, e
+     por isso `storageDaRota` muda sempre e o memo sempre recalcula. Ele existe
+     porque sem ele o ternário faz o `react-hooks/exhaustive-deps` apontar cinco
+     `useCallback` abaixo. Nada piora em relação ao que já era. */
+  const storage = useMemo(
+    () => (aftyMode ? storageDaRota : { ...storageDaRota, importMany: importarSoDoLivro }),
+    [aftyMode, storageDaRota, importarSoDoLivro],
+  );
+
+  /* A lista que as telas da 2.5.2 podem tocar. O Dashboard segue recebendo a
+     lista INTEIRA, porque a ficha estrangeira precisa aparecer para ser aberta,
+     exportada ou apagada. Quem recebe esta é quem roda motor da 2.5.2 em cima
+     da ficha: os encontros e a biblioteca de modelos. */
+  const criaturasDoLivro = useMemo(
+    () => (aftyMode ? storageDaRota.creatures : storageDaRota.creatures.filter(ehDestaRota)),
+    [aftyMode, storageDaRota.creatures, ehDestaRota],
+  );
+
+  // Esc fecha o aviso, como nos outros modais da casa.
+  useEffect(() => {
+    if (!importeRecusado) return undefined;
+    const aoTeclar = (e) => { if (e.key === "Escape") setImporteRecusado(null); };
+    document.addEventListener("keydown", aoTeclar);
+    return () => document.removeEventListener("keydown", aoTeclar);
+  }, [importeRecusado]);
 
   // Navegação
   const goToDashboard = useCallback(() => {
@@ -80,6 +175,14 @@ export default function App() {
       if (!builtIn) return;
       const clone = storage.cloneFromBuiltIn(builtIn, { folderId: null });
       setView({ name: "tracker", creatureId: clone.id });
+      return;
+    }
+    /* ⚠ A FICHA DECIDE A TELA. Uma ficha do Afty que entrou aqui por importação
+       antiga abre na Ficha dela, e não no painel da 2.5.2: o painel roda motor
+       de outro livro e estourava. Ver o bloco da fronteira lá em cima. */
+    const ficha = storage.creatures.find((c) => c.id === id);
+    if (sistemaGravado(ficha)) {
+      setView({ name: "aftyFicha", creatureId: id });
       return;
     }
     setView({ name: "tracker", creatureId: id });
@@ -200,6 +303,12 @@ export default function App() {
     ? findCreatureAnywhere(view.creatureId, storage.creatures, COMPENDIUM)
     : null;
 
+  /* Qual criador abre. Editando, quem responde é a FICHA, porque o criador da
+     2.5.2 e o do Afty leem shapes diferentes. A rota entra só na ficha NOVA,
+     que ainda não tem `rulesVersion` de onde ler. É a mesma escolha que o
+     próprio AftyCreatureBuilder já fazia por dentro com a prop `sistema`. */
+  const criadorDoAfty = activeCreature ? !!sistemaGravado(activeCreature) : aftyMode;
+
   const views = {
     dashboard: () => (
       <Dashboard
@@ -215,6 +324,9 @@ export default function App() {
            Criaturas Base saem, porque elas são o compêndio da 2.5.2. */
         titulo={sistemaDaRota === "player" ? "Jogador" : undefined}
         showSystemView={sistemaDaRota !== "player"}
+        // A lista do /Player é de PERSONAGENS (autor, 2026-09-10: "Uma prop
+        // opcional"). Sem a prop, o Dashboard fala de criatura como sempre.
+        vocab={sistemaDaRota === "player" ? vocabularioDoDashboard("player") : undefined}
         encounters={aftyMode ? encontrosAfty.encontros : encounterManager.encounters}
         onOpenCreature={aftyMode ? goToAftyFicha : goToTracker}
         onEditCreature={goToBuilder}
@@ -257,7 +369,7 @@ export default function App() {
       );
     },
     builder: () => (
-      aftyMode ? (
+      criadorDoAfty ? (
         <AftyCreatureBuilder
           existingCreature={activeCreature}
           onSave={handleCreatureSave}
@@ -284,8 +396,11 @@ export default function App() {
           <AftyEncontro
             encontroId={view.encounterId}
             gerenciador={encontrosAfty}
-            criaturas={storage.creatures}
+            criaturas={criaturasDoLivro}
             pastas={storage.folders}
+            // A lista do Encontro fala a língua do grimório ABERTO (criatura ou
+            // personagem), e ela pode estar vazia: não há ficha de onde ler.
+            sistema={sistemaDaRota}
             onVoltar={goToEncounters}
             onDuplicar={handleDuplicateEncounter}
           />
@@ -295,7 +410,10 @@ export default function App() {
         <EncounterTracker
           encounterId={view.encounterId}
           manager={encounterManager}
-          creatures={storage.creatures}
+          /* ⚠ A LISTA FILTRADA, e não `storage.creatures`. Pôr uma ficha do
+             Afty num encontro da 2.5.2 estoura no avanço de rodada, que chama
+             o mesmo `collectAutomationEntities` do painel. Ver a fronteira. */
+          creatures={criaturasDoLivro}
           folders={storage.folders}
           onBack={goToEncounters}
           onDuplicate={handleDuplicateEncounter}
@@ -314,6 +432,7 @@ export default function App() {
         <AftyEncontros
           gerenciador={encontrosAfty}
           pastas={storage.folders}
+          sistema={sistemaDaRota}
           onAbrir={goToEncounter}
           onVoltar={goToDashboard}
         />
@@ -321,7 +440,7 @@ export default function App() {
       <EncountersDashboard
         manager={encounterManager}
         folders={storage.folders}
-        creatures={storage.creatures}
+        creatures={criaturasDoLivro}
         onCreateFolder={storage.createFolder}
         onRenameFolder={storage.renameFolder}
         onRemoveFolder={storage.removeFolder}
@@ -333,7 +452,8 @@ export default function App() {
     templates: () => (
       <TemplateLibrary
         onBack={goToDashboard}
-        creatures={storage.creatures}
+        // Modelo da 2.5.2 aplicado numa ficha do Afty a destroçaria calada.
+        creatures={criaturasDoLivro}
         creatureFolders={storage.folders}
         onUpdateCreature={storage.update}
       />
@@ -350,6 +470,64 @@ export default function App() {
           {views[view.name] ? views[view.name]() : views.dashboard()}
         </div>
       </div>
+      {/* ⚠ A RECUSA DO IMPORTADOR PRECISA APARECER. Ficha que some sem dizer
+          por que é o defeito que o projeto chama de calado, e seria pior que o
+          erro que a porta conserta. O aviso é inline aqui, e não em
+          `src/components/`, porque a fronteira é assunto do roteador. */}
+      {importeRecusado && (
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Fichas de Outro Grimório"
+          onClick={() => setImporteRecusado(null)}
+        >
+          <div
+            className="w-full max-w-md rounded-lg border border-amber-500/40 bg-slate-900 p-5 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" aria-hidden="true" />
+              <div className="min-w-0">
+                <h2 className="text-base font-bold text-white">Fichas de Outro Grimório</h2>
+                <p className="mt-1 text-sm text-slate-300">
+                  {importeRecusado.recusadas.length === 1
+                    ? "Uma ficha não entrou, porque pertence a outro livro:"
+                    : `${importeRecusado.recusadas.length} fichas não entraram, porque pertencem a outro livro:`}
+                </p>
+              </div>
+            </div>
+            <ul className="mt-3 max-h-48 overflow-y-auto rounded border border-slate-800 divide-y divide-slate-800">
+              {importeRecusado.recusadas.map((f, i) => (
+                <li key={`${f.nome}-${i}`} className="flex items-baseline justify-between gap-3 px-3 py-2">
+                  <span className="text-sm text-white truncate">{f.nome}</span>
+                  <span className="text-[11px] text-amber-400/90 shrink-0">{f.livro}</span>
+                </li>
+              ))}
+            </ul>
+            {importeRecusado.aceitas > 0 && (
+              <p className="mt-3 text-xs text-slate-400">
+                {importeRecusado.aceitas === 1
+                  ? "A outra ficha do arquivo entrou normalmente."
+                  : `As outras ${importeRecusado.aceitas} fichas do arquivo entraram normalmente.`}
+              </p>
+            )}
+            <p className="mt-3 text-xs text-slate-400">
+              Importe cada uma no grimório em que foi criada.
+            </p>
+            <div className="mt-4 flex justify-end">
+              <button
+                type="button"
+                autoFocus
+                onClick={() => setImporteRecusado(null)}
+                className="px-4 py-2 rounded bg-slate-800 hover:bg-slate-700 text-sm font-bold text-white focus:outline-none focus:ring-2 focus:ring-purple-500/60"
+              >
+                Entendi
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {encounterSyncState && (
         <EncounterSyncModal
           creature={encounterSyncState.creature}

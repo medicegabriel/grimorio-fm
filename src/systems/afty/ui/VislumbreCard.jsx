@@ -116,7 +116,7 @@ export default function VislumbreCard({ vislumbre }) {
           <Ladrilho
             rotulo="Ler Técnica"
             valor={`CD ${v.cdLerTecnica}`}
-            dica="Teste de Feitiçaria ou Percepção, com a CD do grau da criatura"
+            dica="Teste de Feitiçaria ou Percepção, com a CD do grau da ficha"
           />
         </div>
 

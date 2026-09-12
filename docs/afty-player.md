@@ -40,7 +40,7 @@ fallback: um id errado não pode derrubar o criador de fichas no meio da mesa.
 
 ### 2. A tabela `DIVERGENCIAS`
 
-Vinte e cinco entradas em `afty-sistema.js`, vinte e quatro ligadas. **Isto é DADO, e não comentário**, porque
+Trinta entradas em `afty-sistema.js`, vinte e nove ligadas (contadas em 2026-09-11). **Isto é DADO, e não comentário**, porque
 comentário envelhece calado: cada entrada carrega a citação verbatim de onde a divergência está escrita, o que vale de
 cada lado, e se o código JÁ desvia.
 
@@ -126,6 +126,12 @@ Mudança em código compartilhado vale para Afty e Player ao mesmo tempo. **Perg
 comportamento que só um dos dois pediu. Se for para valer só de um lado, o lugar é uma divergência
 nova na tabela, e não um `if` solto.
 
+### "Ficha de Player" é o sistema inteiro, e não uma tela
+
+É o `label` do sistema em `SISTEMAS`. Um pedido que diz "na Ficha de Player" vale para toda tela que
+mostra ficha de jogador: o criador, a Ficha Final e a lista do Encontro. Em 2026-09-10 o "ND" virou
+"Nível" em QUATRO lugares (`rotuloDoNivel`), e só um deles era o da captura que o autor mandou.
+
 ### Campo sem tela é bug esperando
 
 `periciaAtributo` nasceu no schema com verbatim atrás dele e **nenhum controle no criador**. O padrão
@@ -136,6 +142,14 @@ número.
 
 Uma ficha importada com nível 40 tem de **derivar como 30** (o teto do jogador), e não derivar 40 com
 a tela mostrando 30. Todo limite entra no motor.
+
+### O pool exclusivo não é o mesmo nos dois lados
+
+Desde 2026-09-11 (divergência `poolExclusivo`), o jogador disputa em GRUPOS: Feitiços, Estilo,
+Funcionamento Básico e a Segunda Habilidade Única num grupo, e a primeira Habilidade Única noutro,
+que soma com o primeiro. A criatura segue no pool único. Família nova do pool nasce com
+`grupoJogador` em `FAMILIAS_EXCLUSIVAS`, e há assert exigindo. Sem ele, ela disputaria só consigo
+mesma no jogador e somaria por cima de tudo, calada.
 
 ### O que é sessão nunca mora na criatura
 
@@ -158,7 +172,7 @@ npx vite build
 npm run asserts
 ```
 
-Hoje: **55 arquivos, 2887 asserts.** Um arquivo de assert roda em processo próprio e imprime
+Em 2026-09-11: **74 arquivos, 4058 asserts.** Um arquivo de assert roda em processo próprio e imprime
 `TODOS OS N ASSERTS PASSARAM`.
 
 Para rodar o `deriveAfty` num script solto, o hook de resolução está no topo de qualquer

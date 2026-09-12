@@ -80,7 +80,7 @@ export const TOKENS_DOC = [
   { id: "--afty-raio-peq", valor: "8px", oque: "arredondamento das linhas e botões" },
   { id: "--afty-sombra", valor: "0 2px 10px rgb(0 0 0 / 0.45)", oque: "sombra dos cartões" },
   { id: "--afty-fonte", valor: "ui-sans-serif, system-ui, \"Segoe UI\", Roboto, sans-serif", oque: "fonte de tudo" },
-  { id: "--afty-fonte-titulo", valor: "var(--afty-fonte)", oque: "fonte do nome da criatura e dos títulos" },
+  { id: "--afty-fonte-titulo", valor: "var(--afty-fonte)", oque: "fonte do nome da ficha e dos títulos" },
   { id: "--afty-fonte-num", valor: "ui-monospace, Consolas, monospace", oque: "fonte dos números" },
   { id: "--afty-imagem", valor: "none", oque: "imagem de fundo, como url(\"...\")" },
   { id: "--afty-imagem-opacidade", valor: "0.25", oque: "opacidade da imagem de fundo, de 0 a 1" },
@@ -721,7 +721,7 @@ export const CONTRATO_DE_CLASSES = [
   { grupo: "Estrutura", seletor: ".afty-aba", oque: "cada aba (a ativa tem aria-selected=\"true\")" },
 
   /* ---------- cabeçalho ---------- */
-  { grupo: "Cabeçalho", seletor: ".afty-nome", oque: "o nome da criatura" },
+  { grupo: "Cabeçalho", seletor: ".afty-nome", oque: "o nome da ficha" },
   { grupo: "Cabeçalho", seletor: ".afty-cabecalho-conteudo", oque: "a grade do cabeçalho: o conteúdo à esquerda e o retrato à direita" },
   { grupo: "Cabeçalho", seletor: ".afty-cabecalho-principal", oque: "a coluna do conteúdo, sem o retrato" },
   { grupo: "Cabeçalho", seletor: ".afty-retrato-painel", oque: "a moldura vertical do retrato, só em tablet e desktop" },
@@ -767,6 +767,17 @@ export const CONTRATO_DE_CLASSES = [
   { grupo: "Corpo", seletor: ".afty-opcao", oque: "a opção escolhida dentro de uma habilidade" },
   { grupo: "Corpo", seletor: ".afty-estrela", oque: "o botão de fixar no Rápido" },
   { grupo: "Corpo", seletor: ".afty-vazio", oque: "o texto de lista vazia" },
+
+  /* ---------- a expansão de domínio ----------
+     ⚠ ENTROU EM 2026-09-11, quando a seção deixou de ser um parágrafo só. O
+     texto de regra dela continua levando `.afty-texto`, e estas são as peças do
+     desenho novo. */
+  { grupo: "Expansão de Domínio", seletor: ".afty-dominio-cabeca", oque: "a linha de uma expansão, e também a da Parede de Barreira" },
+  { grupo: "Expansão de Domínio", seletor: ".afty-dominio-numeros", oque: "o grupo de números à direita da linha" },
+  { grupo: "Expansão de Domínio", seletor: ".afty-dominio-corpo", oque: "o que abre embaixo da linha" },
+  { grupo: "Expansão de Domínio", seletor: ".afty-dominio-efeito-titulo", oque: "o nome de cada efeito da expansão" },
+  { grupo: "Expansão de Domínio", seletor: ".afty-dominio-secao", oque: "os títulos pequenos Aparência e Toda Expansão" },
+  { grupo: "Expansão de Domínio", seletor: ".afty-dominio-base", oque: "a grade dos efeitos de toda expansão" },
 
   /* ---------- a invocação ----------
      ⚠ ENTROU EM 2026-09-03, e a falta delas era um buraco de verdade: o painel
@@ -830,8 +841,8 @@ export const ATRIBUTOS_DOC = [
   { seletor: "[data-afty-marca=\"critico\"]", oque: "uma rolagem crítica no histórico. Também `pifia`" },
   { seletor: "[data-afty-compacto=\"sim\"]", oque: "o cabeçalho depois de rolar a página" },
   { seletor: "[data-afty-atributo=\"forca\"]", oque: "um atributo: forca, destreza, constituicao, inteligencia, sabedoria, presenca (as chaves não têm acento)" },
-  { seletor: "[data-afty-carga=\"baixo\"]", oque: "o cartão de Carga com a criatura sobrecarregada. Também `critico` acima do máximo" },
-  { seletor: "[data-afty-com-retrato=\"sim\"]", oque: "o cabeçalho de uma criatura QUE TEM retrato" },
+  { seletor: "[data-afty-carga=\"baixo\"]", oque: "o cartão de Carga com a ficha sobrecarregada. Também `critico` acima do máximo" },
+  { seletor: "[data-afty-com-retrato=\"sim\"]", oque: "o cabeçalho de uma ficha QUE TEM retrato" },
   { seletor: "[data-afty-subaba]", oque: "uma divisão de bloco pelo id dela: a Especialização, ou melhoria, lendaria e apice" },
   { seletor: "[data-afty-densidade=\"compacta\"]", oque: "a raiz quando o jogador pediu menos respiro. Também `confortavel`" },
 ];

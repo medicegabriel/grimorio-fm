@@ -152,6 +152,53 @@ t("a substituição não vaza para outra perícia",
   deriveAfty(comValor, { treinosAtivos: { conjuge: true } }).testes.pericias.find((p) => p.id === "percepcao").bonus,
   deriveAfty(comValor).testes.pericias.find((p) => p.id === "percepcao").bonus);
 
+/* ---------- Treinamento de Benção da Adaptação (autor, 2026-09-11) ----------
+   Decisões do autor, por pergunta: mora neste pacote (1.1.0), o "Santo da
+   Espada" é conferido pelo Clã Akutame, a 1ª etapa SÓ troca o atributo (não
+   treina a perícia, ao contrário do Não Congênito) e o Completo é só texto. */
+const BENCAO = "flugel:treino_bencao_adaptacao";
+const linhaBencao = TR.getTreinamento(BENCAO);
+t("o pacote subiu para 1.1.0", pacote.versao, "1.1.0");
+t("Benção da Adaptação instalada", linhaBencao?.nome, "Treinamento de Benção da Adaptação");
+
+const reqsBencao = TR.requisitosDaEtapa(linhaBencao.etapas[0].requisito);
+t("a 1ª etapa pede dois requisitos", reqsBencao.map((r) => r.tipo), ["aptidao", "cla"]);
+const passam = (aptidoes, claId) => reqsBencao.map((r) => TR.avaliarRequisito(r, { aptidoes, claId }).ok);
+t("com Técnica Máxima e Clã Akutame, os dois passam", passam(["tecnica_maxima"], AKUTAME), [true, true]);
+t("sem clã, o segundo reprova", passam(["tecnica_maxima"], null), [true, false]);
+t("de outro clã, o segundo reprova", passam(["tecnica_maxima"], "gojo"), [true, false]);
+t("sem Técnica Máxima, o primeiro reprova", passam([], AKUTAME), [false, true]);
+t("sem o clã no contexto, não verifica", TR.avaliarRequisito(reqsBencao[1], {}).verificavel, false);
+t("o chip mostra o texto do livro", TR.avaliarRequisito(reqsBencao[1], { claId: AKUTAME }).label, "Técnica Herdada: Santo da Espada");
+t("e o title diz o que foi conferido", TR.avaliarRequisito(reqsBencao[1], { claId: AKUTAME }).titulo, "Clã Akutame");
+t("requisito solto vira lista de um", TR.requisitosDaEtapa({ tipo: "nd", valor: 4 }).length, 1);
+t("sem requisito é lista vazia", TR.requisitosDaEtapa(null), []);
+
+const bencao = (progresso, tecnicaAttr = "sabedoria") => {
+  const f = createBlankAfty();
+  f.core.nd = 17;
+  f.core.tecnicaAttr = tecnicaAttr ?? "";
+  for (const attr of Object.keys(f.attributes)) f.attributes[attr] = 14;
+  f.treinamentos = progresso ? { [BENCAO]: progresso } : {};
+  f.treinamentoAlvos = { [BENCAO]: { pericia: "atletismo" } };
+  return deriveAfty(f);
+};
+const [b0, b1, b2, b3, b4] = [0, 1, 2, 3, 4].map((p) => bencao(p));
+const atl = (d) => d.testes.pericias.find((p) => p.id === "atletismo");
+t("sem etapa, Atletismo não usa o Atributo de Técnica", atl(b0).atributo !== "sabedoria", true);
+t("1ª etapa: Atletismo passa a usar o Atributo de Técnica", atl(b1).atributo, "sabedoria");
+t("1ª etapa: só troca, o grau de treino não muda", atl(b1).prof, atl(b0).prof);
+t("2ª etapa: +2 de Acerto", b2.testes.ataques[0].bonus - b1.testes.ataques[0].bonus, 2);
+t("3ª etapa: +1 de Limite no Atributo de Técnica",
+  valorCanal(b3.efeitos, "limiteAtributo", "sabedoria") - valorCanal(b2.efeitos, "limiteAtributo", "sabedoria"), 1);
+t("3ª etapa: o limite dos outros não muda", valorCanal(b3.efeitos, "limiteAtributo", "forca"), 0);
+t("4ª etapa: +2 no Atributo de Técnica", b4.attrEff.sabedoria - b3.attrEff.sabedoria, 2);
+t("4ª etapa: os outros não mudam", b4.attrEff.forca, b3.attrEff.forca);
+t("o Atributo de Técnica segue a ficha", bencao(4, "presenca").attrEff.presenca - bencao(3, "presenca").attrEff.presenca, 2);
+t("sem Atributo de Técnica gravado vale Inteligência", atl(bencao(1, null)).atributo, "inteligencia");
+t("o Completo guarda a Benção inteira no detalhe", linhaBencao.completo.detalhe.split("\n\n").length, 5);
+t("e o nome dela abre o Completo", linhaBencao.completo.beneficio.startsWith("Benção da Adaptação\n"), true);
+
 const habilidadeLutador = AFTY_HABILIDADES.find((h) => h.especializacaoId === "lutador");
 const almaLivre = resolveHabilidades(
   { habilidades: [habilidadeLutador.id] },

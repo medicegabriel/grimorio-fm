@@ -448,6 +448,22 @@ Expressões com `dados_dano_final` são resolvidas depois que cada linha de dano
 comum de dados. No canal Dados de Dano, esse valor é acrescentado uma vez ao Ataque Básico, às armas
 e aos Feitiços atingidos pelo alvo da Habilidade Única.
 
+**Segunda Habilidade Única e Acessórios Únicos (Addon, 2026-09-11).** Com o Addon Benção do Grão
+Mestre da Forja, todo item de Grau Especial ganha uma segunda Habilidade Única
+(`fa.segundaHabilidadeUnica` e `fa.segundaHabilidadeEfeitos`), e a ficha ganha Acessórios Únicos
+(`creature.acessoriosUnicos`), que entram nos Itens Especiais pela `catalogoDoTipo`. O acessório conta
+sempre como Grau Especial (`grau` = 5 na expressão), não tem custo nem Encantamentos, pesa 1, e as
+duas Habilidades dele só valem equipado. As quatro Habilidades passam pelo mesmo resolvedor
+(`resolverLinhasUnica`) e pela mesma emissão (`emitirUnica`). A primeira de cada uma é da família
+`habilidadeUnica`, e a segunda da `segundaHabilidadeUnica`, que no jogador não acumula com Feitiço.
+Ver `docs/afty-addons.md`.
+
+**Penalidade de Armadura no Motor (2026-09-11).** O canal `penalidadeArmadura` soma na penalidade do
+uniforme e do escudo: positivo alivia, negativo aumenta, o total para em zero, e um aumento vale
+mesmo sem nada equipado. É o mesmo número que só pesa nas perícias de Destreza. O pseudo-canal
+`penalidadeEquip` dos encantamentos continua sendo outra coisa: ele reduz a penalidade de UM item,
+dentro dele.
+
 ### O que o motor NÃO aplica
 
 - **Bônus de Arma** (dano de arma não é stat da ficha, igual às armas comuns): só exibido no item.

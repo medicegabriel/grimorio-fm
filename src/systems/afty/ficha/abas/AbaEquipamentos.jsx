@@ -127,7 +127,7 @@ export default function AbaEquipamentos({
             total={penalidade}
             className="afty-valor text-[12px] flex-shrink-0"
             ancora="direita"
-            titulo="Penalidade de Destreza do uniforme e do escudo"
+            titulo="Penalidade de Armadura nas perícias de Destreza"
           />
         )}
         <span className="afty-rotulo text-[11px] flex-shrink-0 tabular-nums">

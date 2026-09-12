@@ -121,6 +121,701 @@ Estado atual do sistema Afty (atualizado 2026-09-09). Leia junto com:
 
 ---
 
+## SESSÃO DE 2026-09-12: A FRONTEIRA ENTRE OS DOIS LIVROS (erro de produção)
+
+Autor, trazendo um erro que um usuário mandou do site: *"Ficha de Player / Grimorio Afty deu esse
+problema com algum usuario, investigue e resolva."*
+
+```
+TypeError: (e ?? []) is not iterable
+  at collectAutomationEntities <- CombatantPanel <- CombatTracker
+URL: https://grimorio-fm.vercel.app/     Android, Chrome
+```
+
+**O que era.** O bundle de produção foi baixado e a coluna do stack lida direto: o frame que estoura
+é a chamada `cat(snapshot.treinamentos, "treinamento", ...)` em
+`src/components/fm-automation-entities.js`. O campo `treinamentos` existe nos DOIS livros e tem forma
+DIFERENTE em cada um: na 2.5.2 é LISTA de instâncias, e no Afty é MAPA `{ [linhaId]: progresso }`
+(`afty-schema.js`). O `?? []` do coletor só cobre nulo, então o mapa passa e o `for...of` estoura.
+
+Reproduzido em bancada com `collectAutomationEntities(createBlankAfty())`, que devolve a mesma
+mensagem antes da minificação: `(arr ?? []) is not iterable`.
+
+**Como a ficha chegou lá.** Uma ficha do Afty importada no Grimório público. O importador preserva o
+`rulesVersion` de entrada e grava na chave da 2.5.2, e o `App.jsx` decidia a tela pela ROTA
+(`aftyMode ? goToAftyFicha : goToTracker`). Ou seja, o erro não é do coletor, é de ROTEAMENTO, e
+contra a lei que está em caixa alta no cabeçalho de `afty-sistema.js`: **o sistema vem da ficha, não
+da rota.**
+
+⚠ **NÃO FOI CONSERTADO NO COLETOR, E ISSO É O PONTO.** Fazer o `for...of` tolerar o mapa trocaria um
+erro barulhento por uma ficha do Afty derivando com régua da 2.5.2, com números plausíveis e
+trocados. O autor escolheu **"As duas portas"**, e as duas fecham no `App.jsx`:
+
+1. **A porta de ENTRADA.** Um envoltório troca o `importMany` do objeto devolvido pelo
+   `useCreatureStorage` no Grimório público. Ficha de outro livro não entra, e um aviso nomeia cada
+   recusada com o livro dela. Pacote inteiro estrangeiro não leva nem as pastas.
+2. **A porta de USO.** O clique no card e o lápis passaram a ler a FICHA. Ficha do Afty que já estava
+   dentro abre na Ficha do Afty e edita no criador do Afty. Os encontros e a biblioteca de modelos da
+   2.5.2 passaram a receber a lista FILTRADA, que é o que fecha o caminho irmão: pôr a ficha num
+   encontro da 2.5.2 estourava no mesmo coletor, pelo `useEncounter.js`.
+
+**A peça nova é `sistemaGravado(ficha)`** em `afty-sistema.js`. Ela devolve `"afty"`, `"player"` ou
+`null`, e é o CONTRÁRIO do `sistemaDaFicha`: este cai no padrão "afty" para o que não conhece, porque
+quem o chama já sabe que a ficha é daqui. Numa pergunta de fronteira o padrão é a resposta errada, e
+errada calada.
+
+⚠ **NADA DE `src/components/` MUDOU.** O envoltório troca um método do objeto que o hook devolve, e a
+lista filtrada é prop. A regra número 1 continua de pé.
+
+**Assert novo:** `asserts/t-ficha-estrangeira.mjs` (23). Ele assert que a ficha do Afty QUEBRA o
+coletor da 2.5.2, de propósito: o dia em que alguém unificar as duas formas de `treinamentos` ou
+"consertar" o coletor é um dia em que este arquivo falha e alguém lê o porquê.
+
+**Verificado no navegador** (Playwright, contra o build de produção, em 1280px e em 400px): a ficha
+do Afty plantada no inventário da 2.5.2 abre a Ficha dela sem estourar, e o pacote com três fichas
+importa só a da 2.5.2 e nomeia as duas recusadas.
+
+⚠ **FICOU ABERTO O CAMINHO ESPELHO**, anotado como pergunta em `docs/a-fazer.md`: importar uma ficha
+da 2.5.2 DENTRO do `/Afty` ou do `/Player` continua entrando, e ela não estoura, que é o que a torna
+pior. O autor fechou só a porta do Grimório público, que era a do erro relatado.
+
+---
+
+## SESSÃO DE 2026-09-11 (parte 6): O CADERNO DE FORJA NA ABA INTERLÚDIOS
+
+Autor, com a captura do card de Treinos Especiais: *"Coloque aqui uma aba para anotar interludios de
+forja, pq estou precisando"*.
+
+### As quatro decisões, por pergunta antes do código
+
+| Pergunta | Resposta |
+|---|---|
+| Onde mora | **card na aba Interlúdios**, abaixo de Treinos Especiais |
+| O que a linha guarda | *"Quantidade de Focos Gastas, e um lugar para anotar os Itens que foram feitos. Só anotação, nada mecanico"* |
+| Gasta Foco | **sim**, do mesmo orçamento das Linhas e dos Treinos Especiais |
+| Quem enxerga | **todo mundo, nos dois sistemas**, sem Addon |
+
+⚠ **O campo de Focos nasce em 1 e é editável.** As duas respostas dele apontavam para lados
+diferentes ("gasta 1 por forja" na pergunta do Foco, "quantidade de Focos gastas" na dos campos), e o
+campo com padrão 1 atende às duas. Anotado para ele desfazer se quiser o fixo.
+
+### O que NÃO entrou, e por quê
+
+O catálogo já tem kit por Ofício, o que cada kit cria, o limite por interlúdio (o Alfaiate faz 1
+acessório até o nível 9 e 2 do 10 em diante), a CD por grau da Ferramenta Amaldiçoada (20 a 45) e o
+BT necessário. **Nada disso entra.** Ele pediu caderno, e um campo que conferisse viraria regra que
+ninguém decidiu. As peças ficam onde estão, prontas, para o dia em que ele quiser.
+
+### Onde mora
+
+`src/systems/afty/afty-forja.js`, **módulo FOLHA sem nenhum import**, pela mesma razão do
+`afty-carteira.js` e do `afty-catarse.js`: a aba Interlúdios entra cedo no builder, e foi esse
+caminho que deixou o app em tela branca em 2026-09-02. A ficha ganhou `forjas: [{ id, focos, itens }]`
+no schema, saneado na leitura (id do molde `forj_`, Foco inteiro e nunca negativo, **texto CRU**, sem
+`trim`, senão o campo não aceitaria espaço).
+
+O total de Focos gastos da aba passou a somar TRÊS famílias: Linha de Treinamento, Treino Especial e
+Forja.
+
+### Verificação
+
+`asserts/t-forja.mjs`, **24 asserts**, com o que carrega o pedido: a ficha derivada **não muda em
+nada** por causa de uma forja, nos dois sistemas (oito campos comparados). Mais o módulo folha, o
+saneamento e a soma. A suíte inteira passa (**76 arquivos, 4144 asserts**), o eslint fecha e o `vite
+build` fecha.
+
+No navegador, `/Player` e `/Afty` em 1440px e 390px: o card com as duas anotações, o campo de Focos,
+o "Nova Forja" criando linha e o medidor do cabeçalho já contando os 3 Focos da forja. Zero erro de
+console e nenhuma rolagem horizontal. ⚠ O texto de uma anotação NÃO aparece no `innerText` da página
+(ele é `value` de campo), então medir por texto dá falso negativo: o que vale é a foto.
+
+---
+
+## SESSÃO DE 2026-09-11 (parte 5): A PENALIDADE DE ARMADURA VIROU CANAL DO MOTOR
+
+Autor: *"coloque no Motor de Automação a Penalidade de Armadura fornecida por Escudos e Uniformes.
+Para eu fazer habilidades que aumentem ou diminuam ela"*.
+
+### As quatro regras, por pergunta antes do código
+
+| Pergunta | Resposta |
+|---|---|
+| O que um valor positivo faz | **alivia**, e negativo aumenta, como todo bônus do Motor |
+| A redução pode virar bônus | **não**, o total para em zero (a regra do Polido e do Ajustado) |
+| Um aumento vale sem armadura | **sempre**, mesmo sem nada equipado |
+| Sistemas | **os dois** |
+
+As quatro cabem numa conta só, no derive: itens mais canal `penalidadeArmadura`, aparado em zero. O
+número que as perícias de Destreza, a Ficha Final e o Encontro leem é esse total.
+
+### ⚠ O HOVER DA FICHA ABRIA VAZIO, e não era deste pedido
+
+A aba Equipamentos da Ficha mostra a penalidade com hover de fontes e lia
+`derived.partes.penalidadeDestreza`, que ninguém montava. Com o canal a penalidade ganhou fontes de
+fora do equipamento, e o hover passou a precisar delas. Agora ele lista item por item, o encantamento
+que reduz como parcela própria (o Polido, pelo nome) e cada efeito do Motor com o nome dele.
+
+### ⚠ O TESTE DE RITUAL ACHAVA A PENALIDADE PELO RÓTULO
+
+Com a Naturalidade com Rituais, o teste troca Destreza por Inteligência e tira a penalidade da
+Prestidigitação, e ele procurava a parcela "Armadura e Escudo". Com o Motor, parte da penalidade
+entra com o nome da habilidade, e o Ritual passaria a tirar só a parte dos itens. As parcelas de
+penalidade da perícia agora levam a marca `penalidade: true`, e o Ritual soma e tira pela marca. ⚠
+Conferido pela marca (as marcadas somam a penalidade toda, e só elas são marcadas), e não num ritual
+montado: nenhum assert do projeto monta uma Conjuração em Ritual com a Naturalidade.
+
+A parcela dos itens nas perícias continua se chamando "Armadura e Escudo", e dois asserts de
+`t-pericia-atributo.mjs` a procuram por esse nome.
+
+### Verificação
+
+`asserts/t-penalidade-armadura.mjs`, **38 asserts**: o canal e o grupo dele, as quatro regras nos dois
+sistemas, só Destreza sente, as parcelas fechando nas duas listas, o Polido como parcela, e as marcas
+da Prestidigitação. A suíte inteira passa (**75 arquivos, 4120 asserts**), o eslint fecha e o `vite
+build` fecha. No navegador, `/Player` e `/Afty` em 1440px e 390px: a Ficha Final mostra −8 (uniforme
+−4, escudo −4, Polido +2, Técnica −2) com o hover das quatro parcelas, e a busca do seletor de canal
+acha "Penalidade de Armadura". Zero erro de console.
+
+---
+
+## SESSÃO DE 2026-09-11 (parte 4): O TREINAMENTO DE BENÇÃO DA ADAPTAÇÃO, NO PACOTE DO FLUGEL
+
+Autor: *"faça um Addon para esse Treinamento"*, com o texto inteiro da Linha e da Benção da
+Adaptação. O Flugel já tinha uma Linha quase igual, o Treino de Atributo - Não Congênito (troca de
+perícia, atributo, limite, atributo), e a diferença é que aqui o atributo é o **Atributo de Técnica**
+da ficha, e não um escolhido.
+
+### As quatro decisões do autor, por pergunta antes do código
+
+| Pergunta | Resposta |
+|---|---|
+| Onde mora | dentro do `addons/flugel.json`, que subiu para **1.1.0** |
+| "Técnica Herdada: Santo da Espada", que o Afty não tem | conferido pelo **Clã Akutame** |
+| A 1ª etapa treina a perícia, como o Não Congênito? | **não**, só troca o atributo |
+| Como o Completo entrega a Benção | **só o texto**, sem virar Feitiço |
+
+### Três peças no motor, e o addon é dado
+
+- **Alvo `atributoDaTecnica`**, em efeito de etapa e na troca de atributo de perícia. É o
+  `core.tecnicaAttr`, com o mesmo padrão do derive (Inteligência). Segue a ficha: trocar o atributo
+  da técnica leva os bônus junto.
+- **Requisito `cla`**, com `label` opcional. O chip mostra o texto do livro e o `title` diz o clã
+  conferido. Sem `claId` no contexto ele cai para não verificável, como o `aptidao`, e por isso o
+  `ctxReq` das Linhas no criador passou a carregar o clã.
+- **Requisito em lista.** `requisito` aceita um objeto ou uma lista, e `requisitosDaEtapa` devolve
+  sempre a lista. A etapa desenha um chip por requisito, soltos na fileira que já quebra: o
+  `RequisitoLista` não quebra, e dois requisitos longos estourariam em 390px.
+
+O Completo leva o nome e a frase de acesso no `beneficio`, e os cinco parágrafos da Benção no
+`detalhe`, que o `ExpandableText` mostra com parágrafos e "Ler mais". O `beneficio` é um `<p>`
+simples e engoliria as quebras. A lore do Flugel entrou no `lore`, como nas outras Linhas do pacote.
+
+"Uma Nova Benção" é de mesa: o efeito é decidido pelo mestre, e a aba Buffs já aceita buff escrito na
+hora.
+
+### Verificação
+
+`t-flugel.mjs` foi de 32 para **60 asserts**: os dois requisitos juntos e cada um reprovando sozinho,
+o clã fora do contexto, a troca de perícia sem mexer no treino, as quatro etapas, o Atributo de
+Técnica seguindo a ficha e o padrão Inteligência. A suíte inteira passa (**74 arquivos, 4082
+asserts**), o eslint fecha e o `vite build` fecha. No navegador, `/Player` e `/Afty` em 1440px e 390px:
+a Linha com os dois chips, o seletor de perícia e o Completo com "Ler mais", nada saindo do card e
+zero erro de console.
+
+---
+
+## SESSÃO DE 2026-09-11 (parte 3): A BENÇÃO DO GRÃO MESTRE DA FORJA, E O POOL DO JOGADOR EM GRUPOS
+
+Autor: *"preciso fazer um ADDON para Itens um pouquinho estranho. O nome vai ser "Benção do Grão
+Mestre da Forja"."* Duas peças: uma segunda *"Habilidade Única (criada com o Narrador)"* em todo item
+de Grau Especial, e Acessórios Únicos com duas delas. Nos dois casos, *"a segunda não acumula com
+FEITIÇOS, Estilos das Sombras e Habilidades Marciais"*.
+
+### A pergunta virou divergência
+
+Perguntado como a segunda disputa, o autor respondeu com uma regra MAIOR que o addon: *"Na ficha de
+Player o Pool é diferente"*. O pool plano de 2026-07-30 continua sendo a regra da criatura. No jogador
+ele se parte em grupos, e só dentro do grupo há disputa:
+
+| Grupo no jogador | Famílias |
+|---|---|
+| `feiticos` | Feitiço Passivo, Feitiço Auxiliar (Passivo e Ativo), Novo Estilo das Sombras, Funcionamento Básico e a Segunda Habilidade Única |
+| `habilidadeUnica` | a primeira de cada item, que só disputa com a de outro item |
+| `shikigamiAcao`, `shikigamiCaracteristica` | cada uma no seu. ASSUNÇÃO, anotada em `a-fazer.md`: nenhuma emite ainda |
+
+Virou a divergência `poolExclusivo` (regra, ligada). ⚠ **Ela mexe em ficha de jogador JÁ SALVA, com
+ou sem o addon:** a Habilidade Única passou a somar com Feitiço Passivo e Auxiliar.
+
+### As respostas do autor, por pergunta antes do código
+
+| Pergunta | Resposta |
+|---|---|
+| A primeira e o Feitiço | acumulam |
+| A segunda e o Feitiço | não acumulam |
+| A primeira de dois itens | não acumulam: *"Primeiro Efeito não se acumula com outros itens"* |
+| A primeira e a segunda | acumulam: *"Primeiro Efeito = +6 de Acerto e Segundo Efeito = +6 de Acerto. Fica +12"* |
+| A segunda de dois itens | não acumulam |
+| Funcionamento Básico no jogador | não acumula, e fica com os Feitiços |
+| A segunda na criatura | entra no pool único, e disputa até com a primeira |
+| Acessório Único | sempre Grau Especial, sem Encantamentos, sem custo, pesa 1, e só os criados pelo Addon |
+| Quais itens ganham a segunda | todos de Grau Especial |
+| Habilidade Marcial | ignorar: não existe no sistema e não vai ser usada com este addon |
+| Sistema | vale para os dois, e o autor usa só no Player |
+| Texto do livro | não existe. A descrição do pacote é a proposta que ele aprovou |
+
+⚠ **Duas respostas se contradiziam, e valeu a mais específica.** A regra do pool dizia *"SE ACUMULAM
+COM OS ACIMAS E ENTRE SI (... Habilidades Únicas de Itens)"*, e a explicação seguinte dizia que a
+primeira de um item não soma com a de outro. O "entre si" foi lido como "entre as categorias". Quem
+ficou pendurado nessa leitura são as duas famílias de Invocação.
+
+### O grupo é CARIMBO no efeito, e não parâmetro da disputa
+
+`FAMILIAS_EXCLUSIVAS` ganhou `grupoJogador`, e o derive carimba `grupoExclusivo` no efeito
+(`carimbarGrupoExclusivo`) nas duas listas que chegam à disputa: `efeitosTodos` e `efeitosAtivos`. A
+segunda existe porque o Estilo, a Expansão de Domínio e os Auxiliares ligados entram sem passar pela
+primeira. Carimbo, e não parâmetro, porque a lista da linha de dano viaja crua até o calculador de
+Feitiços, que não conhece a ficha: o grupo vai junto no efeito e chega certo.
+
+O `afty-efeitos.js` continua sem saber de sistema. Quem lê a divergência é o derive, e passa um
+booleano.
+
+⚠ **A chave da criatura não mudou de formato.** O grupo só entra na frente da chave quando não é o
+pool único, então o `aplicado` que um estágio passa ao outro seguiu idêntico. O clone do
+`t-sistema.mjs` não mexeu em nenhum campo além dos da divergência nova.
+
+### O addon é só `libera`
+
+Duas liberações, separadas pela mesma razão das duas da Carteira: uma mexe em todo item que a ficha
+JÁ tem, e a outra abre um tipo de item que não existia.
+
+- **`segundaHabilidadeUnica`:** `fa.segundaHabilidadeUnica` e `fa.segundaHabilidadeEfeitos`, no
+  formato da primeira. As quatro Habilidades (duas da Ferramenta, duas do Acessório) passam por um
+  resolvedor só (`resolverLinhasUnica`) e por uma emissão só (`emitirUnica`), e o que muda entre elas
+  é a família e o interruptor. A segunda ativa tem o dela: `unica2_<uid>`.
+- **`acessoriosUnicos`:** `creature.acessoriosUnicos`, saneado na leitura e injetado no
+  `catalogoDoTipo("item")`, no molde das armas criadas. A expressão lê `grau` = 5, o custo é 0 e o
+  espaço é 1, com a trava `unico` das relíquias. Só vale equipado e com a liberação. A descrição do
+  item é o texto das duas Habilidades, e é o que a Ficha Final mostra.
+- **Sem o addon**, o texto e as linhas ficam gravados e deixam de contar. O card aparece para quem
+  tem acessório gravado (é a porta para apagá-lo), e "Novo Acessório" só aparece com a liberação.
+
+### A tela
+
+- O editor da Ferramenta ganhou `BlocoHabilidadeUnica`, um bloco para as quatro Habilidades. A
+  primeira ficou visualmente idêntica.
+- O card Acessórios Únicos mora abaixo de Armas Criadas. Os campos leem o valor CRU da ficha, e não o
+  saneado, pela lição do nome cru.
+- O filtro de custo do catálogo esconde o zero, porque um chip "C0" afirmaria um custo que o
+  acessório não tem.
+
+### Ficou aberto
+
+- As famílias de Invocação no pool do jogador (`a-fazer.md`).
+- A Ficha Final não mostra o texto de Habilidade Única de Ferramenta nenhuma, nem da primeira. O do
+  Acessório Único aparece porque ele é a descrição do item.
+
+### Verificação
+
+`asserts/t-bencao-forja.mjs`, **72 asserts**: os grupos um a um, a chave da criatura intacta, os
+números do autor no `deriveAfty` inteiro, a criatura no pool único, o addon desligado, o Acessório
+Único e o interruptor próprio da segunda. `t-sistema.mjs`, `t-estilo-liberado.mjs` e
+`t-estilo-marcial.mjs` foram atualizados de propósito (a divergência nova e as duas liberações). A
+suíte inteira passa (**74 arquivos, 4058 asserts**), o eslint fecha e o `vite build` fecha.
+
+Conferido **quebrando de propósito**: com a segunda Habilidade Única posta no grupo da primeira,
+saem 6 falhas, e a primeira delas é o +12 do autor caindo para 6.
+
+No navegador, `/Player` e `/Afty` em 1440px e 390px, com uma ficha semeada de cada sistema (arma de
+Grau Especial com as duas Habilidades e um Acessório Único equipado): o criador mostra a segunda na
+Ferramenta e as duas no card do acessório, a Ficha Final lista o acessório no inventário e o
+interruptor da segunda ativa na aba Buffs, e o **painel de Encontros** repete as duas coisas. Zero
+erro de console e nenhuma rolagem horizontal. Dois tropeços do script de medição, e não da tela: o
+inventário da Ficha abre no filtro Armas, e o botão de remover da linha do inventário também cita o
+nome do acessório.
+
+### Dois consertos pedidos depois, pela tela
+
+**O seletor de canal era cortado no Acessório Único.** O `AcessorioUnicoEditor` nasceu copiado do
+editor de arma criada, com o `overflow-hidden` que lá só servia para o fundo do cabeçalho respeitar
+o canto. O painel do `CanalPicker` é `absolute`, abre para baixo e tem uns 590px, e a segunda
+Habilidade é o último filho do acessório. Medido antes, por um detector que sobe pelos ancestrais do
+painel aberto: um único ancestral cortava, o do acessório, que terminava em 554 com o painel indo até
+1063. Depois do conserto, nenhum ancestral corta, nas duas rotas e nas duas larguras. Quem arredonda
+agora é o cabeçalho. ⚠ **É a armadilha da tabela de Atributos de 2026-07-30, repetida por cópia.**
+
+**O anel de Atributo "não computava", e o motor computava.** Medido nos dois sistemas, com acessório e
+com Ferramenta: a linha soma. O que não aparecia eram os três portões da emissão, que param o
+acessório CALADO enquanto o editor mostra "= 8" em verde: sem o Addon, fora do inventário (criar no
+card não põe no inventário) ou desequipado (o item entra desequipado). O cabeçalho do acessório
+ganhou um aviso âmbar para cada um, com a explicação no `title`, e o "Grau Especial" sai em 390px
+para dar lugar a ele.
+
+⚠ E a linha da captura não era o texto do anel. *"+8 em seu Limite de Constituição"* é o canal
+**Limite de Atributo** com alvo Constituição. A linha estava em **Atributo** com alvo "todos", que
+soma 8 no VALOR dos seis e apara em 20.
+
+---
+
+## SESSÃO DE 2026-09-11 (parte 2): A EXPANSÃO DE DOMÍNIO DEIXOU DE SER UM PARÁGRAFO
+
+Autor, com uma captura da Ficha: *"Ficou muito feio a Expansão de Domínio na Ficha Final. E no
+Criador de Fichas. Analise o problema e melhore para mim pf"*.
+
+### O diagnóstico
+
+As duas telas liam o MESMO parágrafo pronto, o `textoDoDominio`, herança da 2.5.2, e o Criador o
+desmontava de volta com uma regex sobre o marcador "●".
+
+| Onde | Defeito |
+|---|---|
+| Ficha, linha fechada | números sem rótulo: `6` eram rodadas, `até 6` eram paredes. Em 390px o nome virava "Parede ..." |
+| Ficha, corpo aberto | um `<p>` preso em `78ch` num cartão de 1400px, a prosa repetindo os números da linha, e o que é DESTA expansão no fim, depois de cinco efeitos iguais em toda expansão |
+| Criador | tudo aparecia DUAS vezes: o bloco de texto do fim repetia os números, a aparência, os efeitos e os efeitos base, que já estavam num `<details>` ensinando a regra |
+| Criador, 390px | `text-justify` abria buracos entre as palavras, e o efeito recolhido cortava o nome para mostrar o valor |
+
+### As três decisões do autor, por pergunta antes do código
+
+| Pergunta | Resposta |
+|---|---|
+| Vale para os dois sistemas? | **Os dois**, é só apresentação |
+| Como fica o corpo na Ficha? | **Efeitos base no fim**, em lista compacta |
+| E o bloco de texto do Criador? | **Sai**, com o `<details>` junto |
+
+### ⚠ O TEXTO VIROU ESTRUTURA, e o descompasso sumiu por construção
+
+`textoDoDominio` saiu. `corpoDoDominio` devolve `{ execucao, proprios, base, aparencia }`, e ele é
+**só texto**: área, duração, PV do domo e custo moram nos campos da linha, e a tela desenha número
+de lá. O assert de 2026-08-26 que conferia a área DENTRO da prosa ("o TEXTO do domínio diz o mesmo
+número") virou o contrário: o corpo não pode conter a área. A classe de bug que ele pegava não tem
+mais onde acontecer.
+
+Quem mais lia `texto`? Ninguém. A `AbaBuffs` usa só `id` e `nome` da lista, e nenhum PDF ou
+exportação o consumia. Por isso o campo saiu em vez de ficar como dado sem leitor.
+
+⚠ **A regra do domo não se perdeu com a prosa.** A frase *"Caso a expansão seja atacada pelo seu
+interior, ela é resistente a todos os tipos de dano..."* é regra e não número, e virou o sexto item
+de "Toda Expansão", verbatim. Só nas versões com domo: a Sem Barreiras tem Totem.
+
+### ⚠ UM DESVIO DO PREVIEW QUE EU MOSTREI, e por quê
+
+O preview aprovado tinha células de número no corpo aberto da Ficha. A linha continua visível
+quando a expansão abre, então as células seriam **o mesmo número duas vezes na tela**, que era o
+defeito da prosa. Os números ficaram só na linha, com rótulo e hover de fontes, e o corpo começa pelo
+que a linha não tem. No Criador as células entraram como no preview, porque lá elas são o único
+lugar dos números.
+
+### Os dois hovers novos
+
+- **PV do domo:** o da parede com `× 12 paredes` no fim, igual ao da Cortina (`barreira.partesPvDomo`).
+- **Custo:** uma parcela por versão, e uma segunda quando o Acerto Garantido está ligado (`partesCusto`).
+
+### ⚠ O TEMA PERSONALIZADO QUASE FICOU DE FORA
+
+O contrato de classes promete `.afty-texto` como "o texto de regra do livro", e o autor usa tema
+próprio. A primeira versão do corpo trocou a classe por uma nova, e um tema que pinta `.afty-texto`
+deixaria de alcançar o texto do domínio, calado. O texto de regra voltou a levar `.afty-texto`, e o
+contrato ganhou o grupo **Expansão de Domínio** com seis seletores novos.
+
+⚠ **E o custo em PE precisou de classe própria** (`.afty-valor-pe`): a cor vinha de
+`data-afty-tom="custo"`, e o `NumeroComFontes`, que o custo passou a usar pelo hover, não repassa
+atributo `data-*`.
+
+### O nome tem piso, nas duas telas
+
+A lição da linha de Feitiço, aplicada de novo. Na Ficha o nome da linha tem `min-width` e o grupo de
+números desce inteiro para a linha de baixo em 390px. No Criador o efeito recolhido deixou de cortar
+o nome: abaixo de `sm` o valor some da linha fechada (o corpo aberto o mostra), e acima dele encolhe
+antes do nome.
+
+### Verificação
+
+`asserts/t-dominio-corpo.mjs`, **28 asserts**, conferido quebrando de propósito (dar o item do domo ao
+Totem faz 1 falhar). O `t-dominio-barreira.mjs` teve o assert da prosa reescrito. A suíte inteira passa
+(**73 arquivos, 3982 asserts**), o eslint fecha e o `vite build` fecha.
+
+No navegador, antes e depois: a Ficha fechada e aberta em 1440px e 390px, o Criador nas duas larguras,
+o hover do domo fechando em (5 + 35) × 12 = 480, e o **painel de Encontros**, onde a linha tem 1020px e
+a grade de "Toda Expansão" cai sozinha para três colunas. Zero erro de console. Em 390px os painéis
+fixos do app (dados e o botão do livro) cobrem a seção na captura, e foram escondidos só para a foto.
+
+---
+
+## SESSÃO DE 2026-09-11: RESERVA ILIMITADA, O SÉTIMO TALENTO DO NASCIDO DOS "SONHOS"
+
+Autor: *"Preciso adicionar um TALENTO ao Addon Nascido dos "Sonhos"."*, com o texto inteiro. O
+pacote é `addons/nascido-dos-sonhos.json`, e esta é a primeira sessão que o registra neste log.
+
+### O Talento
+
+Descrição verbatim, requisito só a origem (sem ND mínimo), e um efeito no canal `pe`:
+
+    3 + piso((nd + 1) / 2)
+
+### ⚠ "A CADA NÍVEL ÍMPAR" CONTA DO 1, E RETROATIVO
+
+A frase é *"recebendo +3 PE máximos, recebendo +1 PE adicional a cada nível ímpar"*. A leitura
+adotada conta os ímpares de 1 até o nível atual, e ela não foi escolhida no escuro: é o espelho da
+Benção Amaldiçoada do MESMO pacote, que diz *"1 PE adicional a cada nível par"* e já estava ligada
+como `piso(nd / 2)`.
+
+A prova de que as duas se encaixam é aritmética, e virou assert: Benção mais Reserva dão **3 + nível**
+em todo nível. Se a Reserva pulasse o nível 1 (ou a Benção o contasse), a soma sairia com buraco ou
+sobra.
+
+| Nível | 1 | 2 | 3 | 5 | 10 | 20 | 30 |
+|---|---|---|---|---|---|---|---|
+| Reserva sozinha | 4 | 4 | 5 | 6 | 8 | 13 | 18 |
+
+### ⚠ O PACOTE SUBIU PARA 0.2.0, E ISSO NÃO É ENFEITE
+
+A biblioteca de addons compara `versao` para dizer se a cópia congelada numa ficha está `igual` ou
+`desatualizado` (`compararComBiblioteca`). Sem subir o número, quem reinstalasse o JSON por cima
+continuaria vendo "igual" em toda ficha salva com a 0.1.0, e o Talento novo **nunca chegaria nelas**,
+calado. Com a 0.2.0 a aba Addons avisa, e atualizar continua sendo um botão, nunca automático.
+
+A `descricao` do pacote dizia *"os seis Talentos de Origem dela"* e passou a dizer sete.
+
+### O Cofre não precisou de nada
+
+O percorredor do Cofre censura por NOME DE CHAVE, e a `descricao` do Talento novo entra sozinha,
+com o nome à vista como os outros seis.
+
+### Verificação
+
+`asserts/t-nascido-dos-sonhos.mjs` foi de 62 para **88 asserts**: o Talento instalado e de Origem, a
+descrição verbatim, o delta de PE em dez níveis, o encaixe com a Benção, a linha nomeada no hover do
+PE fechando com o total, o requisito de origem sem ND mínimo, a remoção ao desinstalar, e a mesma
+conta numa ficha de **jogador**, porque o resto do arquivo roda em ficha de criatura e o pacote é de
+Ficha de Player.
+
+Conferido **quebrando a conta de propósito** com a leitura dos pares (`3 + piso(nd / 2)`): saem 9
+falhas, a primeira no nível 1. A suíte inteira passa (**72 arquivos, 3953 asserts**), o eslint fecha e
+o `vite build` fecha.
+
+Não abri o navegador: nenhum código de tela mudou, e o Talento chega às abas pelos mesmos caminhos
+genéricos que os outros seis do pacote já percorrem.
+
+---
+
+## SESSÃO DE 2026-09-10 (parte 4): O FEITIÇO AUXILIAR GANHOU INTERRUPTOR NA ABA BUFFS
+
+Autor: *"Alguma das atualizações fez com que as Habilidades Auxiliares parecem de poder ser
+ativadas. Investigue o quê aconteceu"*. Na aba Buffs da Ficha, nas duas rotas, e com o retorno dos
+jogadores: *"não está aparecendo. E Transformação nunca apareceu"*.
+
+### ⚠ NÃO ERA REGRESSÃO, e isso foi medido antes de afirmar
+
+O motor de três versões (`39f0ee4` de 05/09, `61928a9` de 08/09 e a de hoje, extraídas com
+`git archive` para fora da árvore) deu o MESMO resultado nas 85 combinações de efeito e nível. O
+`git log -S` mostra que a regra de quem aparece nasceu no commit que criou a ativação (`47968b8`,
+18/08) e nunca mudou:
+
+| Estado da aba Buffs | Quem ele aceitava |
+|---|---|
+| Sustentação 1 a 3 | só o Auxiliar **Sustentado** |
+| Esgrimista Jujutsu | só o de **ação bônus**, com a habilidade e o Combate Amaldiçoado ligado |
+
+O Imediato e o Duradouro, que são os buffs comuns, e a Transformação nunca tiveram onde ligar. E
+os estados de Sustentação, sem dono, caíam na sub-aba "Outras": quem tinha estado de habilidade
+abria a aba em outra sub-aba e não os via.
+
+### A decisão do autor: interruptor por Feitiço
+
+- Cada Auxiliar **Imediato ou Duradouro**, e cada Transformação **Duradoura ou de Cena**, virou um
+  estado de liga e desliga (`feiticoLigado_<id>`). Como é estado extra, ele ganha sozinho a linha
+  na aba Buffs, a variável do DSL, o chip de diferença e o lugar na bancada do criador.
+- O **Sustentado** continua nas vagas de Sustentação, e a **Transformação Sustentada** passou a
+  disputá-las junto.
+- Todos os estados de Feitiço têm dono **"Feitiços"**, a sub-aba própria.
+- O número sai pelo MESMO tradutor de efeito dos Sustentados, e cai no pool das cinco fontes: dois
+  Auxiliares ligados valem o maior, e não a soma. Uma Transformação com quatro espaços de Defesa
+  entrega o maior deles.
+
+⚠ **Os espaços de Atributo e TR da Transformação ficam fora do número.** O Auxiliar escolhe o alvo,
+e o editor da Transformação não: o tradutor cairia sozinho em Força e Reflexos, que seria inventar
+regra. Anotado em `a-fazer.md`.
+
+### "Esconder e anotar" (autor)
+
+O Feitiço cujo efeito não existe no nível dele (Defesa Sustentada no Nível 1, Margem de Crítico no
+Nível 2) aparecia para escolher, entrava como ativo e não mudava número nenhum. Agora ele some da
+Sustentação, do Esgrimista e dos interruptores. O **Alcance Corpo a Corpo e a Distância**, que
+calculam o valor e o tradutor descarta, foram para `a-fazer.md`: a criatura não tem canal de
+alcance.
+
+### Verificação
+
+`asserts/t-auxiliar-ligado.mjs` com **26 asserts** (o 27º ramo, o do Duradouro inválido, não roda
+porque a tabela tem Defesa Duradoura em todo nível). A suíte inteira passa (**72 arquivos, 3927
+asserts**), eslint limpo, `vite build` ok. No navegador, `/Player` e `/Afty` em 1440px e 390px: a
+sub-aba "Feitiços" traz o Duradouro, o Imediato, a Sustentação e a Transformação, e ligar o
+Duradouro sobe a Defesa (22 para 26 no jogador, 34 para 38 na criatura), com "Ligados Agora". Zero
+erro de console, zero rolagem horizontal.
+
+---
+
+## SESSÃO DE 2026-09-10 (parte 3): OS RESTOS DE "CRIATURA" NA FICHA DE PLAYER
+
+Autor, com a captura do título do criador: *"Na ficha de Player está como "Editar Criatura".
+Procure por outros resquicios de Criatura que restou na ficha de Player"*.
+
+### A varredura
+
+208 linhas com "criatura" em 42 arquivos `.jsx`. A maioria é comentário, ou texto do livro em que
+"criatura" quer dizer qualquer ser ("forçar a criatura a...", "3 criaturas" como alvo de Feitiço),
+e isso **fica**. O que falava DA FICHA:
+
+| Tela | Antes | No /Player |
+|---|---|---|
+| Título do criador | Editar/Nova Criatura · Afty | Editar Personagem / Novo Personagem |
+| Selo das abas | Cálculos AFTY | sem selo |
+| Nome | Nome da criatura | Nome do personagem |
+| Addons | Nesta Criatura, Tirar desta criatura, Esta criatura usa só o raw | Neste Personagem... |
+| Avisos de Addon do motor | não está ligado nesta criatura | neste personagem |
+| Encontro | Buscar criatura, Nenhuma criatura no grimório, As criaturas do grimório não são tocadas | na palavra do jogador |
+| Painel do combatente | Esta criatura não pôde ser calculada | Este personagem... |
+| Lista de fichas (2.5.2) | Todas as Criaturas, Nova Criatura, N criatura(s), Importar Criaturas e mais dez | Todos os Personagens... |
+| Treino Especial (title) | sucesso automático para criaturas | só "Escolher" |
+
+### O vocabulário mora num lugar só
+
+`palavrasDoSistema(sistema)`, em `afty-sistema.js`, devolve `nome`, `Nome`, `plural` e
+`g(masculino, feminino)`, com o gênero tirado do `artigo` do registro `SISTEMAS`. ⚠ "Personagem"
+é MASCULINO: trocar só o substantivo deixaria "Esta personagem" e "Nova Personagem".
+
+⚠ **Duas fontes de sistema, e confundir as duas é o erro.** A tela de UMA ficha lê
+`sistemaDaFicha` (o painel do combatente, a aba de Addons, o criador). A tela da LISTA de uma rota
+(a busca do Encontro, a lista vazia, o aviso de apagar) recebe o sistema do `App.jsx`, porque lista
+vazia não tem ficha de onde ler.
+
+### As quatro decisões do autor, por pergunta
+
+1. **Tirar a marca Afty no jogador.** Divergência de tela `marcaDoSistema`: título sem o "· Afty" e
+   abas sem o selo. No /Afty nada muda.
+2. **A lista de fichas ganhou uma prop opcional** (`vocab`) no `Dashboard.jsx` da 2.5.2, com o texto
+   de sempre como padrão (`VOCAB_PADRAO`). É a terceira exceção em `src/components/`, no molde do
+   `titulo` e do `showSystemView`. O texto do jogador mora em `vocabularioDoDashboard`, e quem o
+   passa é o `App.jsx`, só no /Player.
+3. **O jogador rola o teste do Interlúdio.** Divergência de tela `interludioComTeste`: o title do
+   Treino Especial deixa de afirmar o sucesso automático. A ficha não rastreia teste nenhum, e a
+   pergunta de se deveria está em `a-fazer.md`.
+4. **As ajudas de catálogo dizem "a ficha" nos DOIS sistemas**: notas de canal, o seletor { }, a
+   referência de CSS, as notas das primitivas e o "Ler Técnica" do Vislumbre. A nota do Nível de
+   Dano, que compara criatura e jogador de propósito, ficou.
+
+### ⚠ O React Compiler e a verificação que não olha o Dashboard
+
+O `const v = {...}` do vocabulário foi escrito primeiro no topo do `Dashboard`, antes dos
+`useState`, e o eslint acusou **sete** `useCallback` recusados (react-hooks/preserve-manual-
+memoization) apontando os setters de estado como dependência. A verificação da casa roda
+`src/systems/afty/` e `asserts/`, e não teria visto. Conferido contra a versão do índice do git: sem
+a mudança, zero erros. Com a declaração movida para depois dos hooks, zero de novo. **Ao mexer no
+`Dashboard.jsx`, rodar o eslint nele também.**
+
+### Verificação
+
+`eslint` limpo em `src/systems/afty/`, `asserts/`, `src/App.jsx` e `src/components/Dashboard.jsx`,
+`vite build` ok, **71 arquivos e 3901 asserts** (o `t-sistema.mjs` ganhou as duas divergências e o
+vocabulário). No navegador, com Playwright: `/Player` e `/Afty` em 1440px e 390px, na lista de
+fichas, no modal de importar, no criador (título, abas, nome, Addons, Interlúdios) e no Encontro
+(busca e aviso de apagar). O /Afty saiu idêntico ao de antes. Zero erro de console, zero rolagem
+horizontal.
+
+---
+
+## SESSÃO DE 2026-09-10 (parte 2): O MOTOR CHEGOU À INVOCAÇÃO PELA CARACTERÍSTICA LIVRE
+
+Autor: *"Estou indo verificar agora aonde está sendo usado o Motor de Automação para Jogadores, como
+em Feitiços, Invocações e etc. E trabalhar neles, pois algumas partes estão bem crus"*.
+
+### O mapa, levantado antes de mexer
+
+| Onde | Como o Motor aparece |
+|---|---|
+| Funcionamento Básico, Técnica de Estilo Especial, Feitiço Passivo | `TecnicaMotorEditor`, o editor completo |
+| Habilidade Única do equipamento | `MotorEfeitosEditor`, um segundo editor, sem `quando` e sem duração |
+| Ação e Característica de Invocação | `ExprField`, UMA expressão com um alvo (o Modificador) |
+| Feitiço de Dano, Invocação | só LEEM o que o Motor calculou |
+
+O que estava cru: dois campos que aprovam nome de variável inexistente (anotado em `a-fazer.md`), o
+Auxiliar que só chega ao dono por dois estados da bancada, Transformação/Itens/Invisibilidade que
+calculam e param ali, a Invocação sem Motor próprio, e nenhuma divergência de Motor entre os lados.
+**O autor escolheu a Invocação, valendo para os dois sistemas.**
+
+### As decisões do autor, todas por pergunta antes do código
+
+1. O Motor vale para a invocação INTEIRA, e o Modificador de cada item fica como está.
+2. *"Faça igual Feitiços Passivas para Caracteristica."* A leitura, confirmada na pergunta seguinte:
+   **a Livre ganha o Motor**, como a Passiva é o Feitiço cujo corpo é o Motor. Custa como qualquer
+   Característica (vaga e 1 PE).
+3. Os 19 canais e mais os de ALVO: atributo, TR, perícia e RD por tipo.
+4. Duas Características com o mesmo efeito, uma delas pelo Motor, **não acumulam: vale a maior**.
+5. O atributo pelo Motor **respeita o máximo do grau**.
+
+### O motor
+
+- O catálogo de canais virou DADO (`INV_EFEITO_CANAIS`, com rótulo, grupo, alvo e nota). O rótulo que
+  o criador guardava (`EFEITO_CANAL_LABEL`) passou a vir de lá.
+- Efeito com alvo soma em `efe.porAlvo`, e `parcelasDoCanal` passou a ignorar detalhe com alvo, com
+  `parcelasDoAlvo` ao lado. O alvo vale também para Habilidade e para o `efeitosInvocacao` de Addon.
+- `agregarCaracteristicas` disputa o Motor das Livres por canal, alvo e sinal (o critério do pool
+  das Passivas), atravessando os subtipos onde há par: PV com Vida, RD de tipo com RD, perícia e TR
+  com Teste. O resto vai para o acumulador dos canais, onde a Habilidade soma por cima.
+- `atributosEfetivos` soma o canal `atributo` e apara no máximo do grau, com aviso e parcela
+  negativa. PV, Defesa, perícias, testes e Ações leem a invocação somada. O contexto de DSL e o
+  orçamento de pontos seguem no cru, e o `resolveAcao` recebe o cru no quarto parâmetro para o
+  Modificador ler o mesmo valor que o seletor mostra.
+
+### ⚠ Duas armadilhas que teriam custado caladas
+
+**As Características resolviam DEPOIS do `donoLocal`.** O Motor da Livre escreve em Acerto, CD e
+Níveis de Dano, que chegam às Ações pelo dono local. Deixadas onde estavam, as linhas apareceriam no
+card com o número certo e a Ação sairia igual: o "calculado e jogado fora" de agosto outra vez. Elas
+passaram para antes, e o assert prova que o dado da Ação muda igual ao de uma Habilidade.
+
+**`sempre` e `nunca` só existiam no contexto da CRIATURA.** O campo "enquanto" do editor mostra
+"sempre" como exemplo. Escrita numa Livre, a palavra caía no zero e desligava a linha, que é o engano
+de 2026-08-31. Entraram no contexto e no vocabulário da invocação.
+
+### A tela
+
+A Livre usa o MESMO `TecnicaMotorEditor`, que ganhou três props opcionais (`canalGrupos`,
+`alvoOpcoesDe`, `comDuracao`): o seletor de canal mostra o catálogo da invocação, o alvo obrigatório
+abre em "escolher..." em vez de "todos", e o "e dura" some porque Característica é passiva. O
+Modificador some da Livre quando está vazio. O card e a linha da Ficha dizem o que ela concede ("+3
+Defesa · +2 Força · 5 RD Queimante"), e o atributo mostra o bônus ao lado da sigla, com as fontes
+no `title`.
+
+⚠ **O seletor de canal passava 35px da tela em 390px** quando aberto dentro do card da Invocação,
+porque nascia na borda esquerda do botão. O deslocamento agora é medido no clique que abre. Vale
+para todo uso do seletor, nos dois sistemas.
+
+### O cabeçalho do jogador, pedido no meio da sessão
+
+Autor: *"tire a tag "Comum" na ficha de Jogador"*, *"mude ND para "Nível" na Ficha de Player"* e
+*"Deixe o "6 addons" como "6 Addons""*.
+
+- O chip do Patamar saiu do cabeçalho da Ficha Final e da lista do Encontro pela divergência que já
+  existia, `patamarDoJogador`. É o "esconder o campo não esconde o valor" de novo: o Preview tinha
+  perdido o chip em agosto, e estes dois ficaram.
+- "ND" virou "Nível" pela divergência de TELA nova, `rotuloDoNivel`, lida pelo ajudante
+  `rotuloDoNivel(sistema)` em quatro telas: cabeçalho da Ficha, lista do Encontro, Preview e aviso de
+  multiclasse do criador. "Ficha de Player" é o nome do SISTEMA, e não de uma tela.
+- "Addons" com maiúscula nos dois lados (regra de Title Case).
+
+### Verificação
+
+`eslint` limpo, `vite build` ok, **71 arquivos e 3889 asserts** (eram 70 e 3797):
+`t-invocacoes-motor.mjs` nasceu com 85, e o `t-sistema.mjs` ganhou 7 com a divergência nova.
+`src/components/` intocado.
+
+No navegador, com Playwright no dev server e as fichas injetadas no `localStorage`: `/Player` e
+`/Afty` em 1440px e 390px, no cabeçalho da Ficha, na aba Invocações da Ficha, no criador (a Livre
+aberta e o seletor de canal) e no Encontro (lista de fichas e aba Invocações do painel do
+combatente). Zero erro de console, e zero rolagem horizontal depois do conserto do seletor.
+
+---
+
 ## SESSÃO DE 2026-09-10: O `inacessiveis` NASCIA CEGO, E A FICHA ACUSAVA QUEM ESTAVA EM DIA
 
 Autor, com uma captura da linha: *"A Ficha deu 'Pre-Requisito não atendido' sendo que possuo

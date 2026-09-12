@@ -67,7 +67,8 @@ function resumoCaracteristica(c) {
     case "resistencia":
       return c.profLabel ? `${c.profLabel}${c.trTipoLabel ? ` em ${c.trTipoLabel}` : ""}` : "";
     case "tamanho": return c.tamanhoLabel || "";
-    default: return "";
+    // A Livre com Motor (2026-09-10) diz o que concede: "+2 Defesa · +1 Acerto".
+    default: return c.resumoMotor || "";
   }
 }
 
@@ -289,8 +290,14 @@ function Atributos({ atributos, nomeDono, rolar }) {
     <div className="grid grid-cols-3 sm:grid-cols-6 gap-1">
       {AFTY_ATTRS.map((a) => {
         const m = atributos.mods?.[a.key] ?? 0;
+        /* Com o canal `atributo` o valor mostrado já é o EFETIVO, e o title
+           conta de onde ele veio: "Força: Base 14, Pele de Pedra +2". */
+        const partes = atributos.partes?.[a.key];
+        const titulo = partes
+          ? `${a.label}: ${partes.map((p, i) => `${p.label} ${i === 0 ? p.valor : sinalDe(p.valor)}`).join(", ")}`
+          : a.label;
         return (
-          <span key={a.key} className="afty-stat" title={a.label}>
+          <span key={a.key} className="afty-stat" title={titulo}>
             <span className="afty-stat-rotulo">{a.abbr}</span>
             <span className="afty-stat-valor">{valores[a.key]}</span>
             <NumeroComFontes

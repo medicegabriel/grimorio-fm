@@ -619,6 +619,28 @@ calado. O bug entrou junto com a família `origens` e não tinha sintoma porque 
 uma origem de addon ainda. O `aplicarExtrasOrigens` agora limpa o cache, e há assert com uma origem
 de teste.
 
+#### `segundaHabilidadeUnica` e `acessoriosUnicos`, a Benção do Grão Mestre da Forja (2026-09-11)
+
+O pacote é `addons/bencao-grao-mestre-forja.json`, e ele é só-liberação, com duas linhas de `libera`.
+Separadas pela mesma razão das duas da Carteira: a primeira mexe em todo item de Grau Especial que a
+ficha já tem, e a segunda abre um tipo de item que não existia.
+
+| Liberação | O que abre |
+|---|---|
+| `segundaHabilidadeUnica` | uma segunda Habilidade Única em todo item de Grau Especial |
+| `acessoriosUnicos` | o card Acessórios Únicos: sempre Grau Especial, sem Encantamentos, sem custo, pesa 1, duas Habilidades Únicas |
+
+⚠ **A regra de disputa da segunda é uma família do pool, e não o addon.** Ela é a oitava,
+`segundaHabilidadeUnica`, e mora em `FAMILIAS_EXCLUSIVAS`. No jogador ela cai no grupo dos Feitiços,
+e na criatura no pool único. O addon só decide se ela EXISTE. A divergência que partiu o pool do
+jogador em grupos nasceu da mesma conversa, e vale sem o addon. Ver `poolExclusivo` e a sessão de
+2026-09-11 (parte 3) em `afty-status.md`.
+
+⚠ **Desinstalar não apaga nada.** O texto e as linhas das duas Habilidades ficam gravados e deixam de
+contar. O card de Acessórios Únicos continua aparecendo para quem tem acessório gravado, e é a porta
+para apagá-lo. Criar um novo pede a liberação. É a terceira porta do `feiticosRestritos`, aplicada ao
+item.
+
 ### O campo `permite`, e por que ele existe
 
 **As primitivas da fase 0 vivem no motor sempre, e aparecem na TELA só de quem pediu.** É o que o
@@ -1385,6 +1407,26 @@ campo com zero.
 - `todosAtributos` verifica o menor dos seis atributos contra `valor`.
 - `treinamento` verifica se outra Linha chegou a `etapa`. O Flugel usa isso para manter as etapas do
   Treino Cônjuge Pt. 2 presas às etapas correspondentes do primeiro treino.
+- `cla` (2026-09-11) verifica o clã da ficha pelo id com namespace. `label` troca o texto do chip, e o
+  nome do clã vai para o `title`. A Benção da Adaptação o usa para o "Santo da Espada".
+- **Lista** (2026-09-11): `requisito` aceita uma lista, e todos têm de passar.
+
+```json
+{ "n": 1, "focos": 1, "requisito": [
+  { "tipo": "aptidao", "id": "tecnica_maxima" },
+  { "tipo": "cla", "id": "flugel:cla_akutame", "label": "Técnica Herdada: Santo da Espada" }
+] }
+```
+
+### O Atributo de Técnica como alvo (2026-09-11)
+
+O alvo reservado `atributoDaTecnica` aponta para o `core.tecnicaAttr` da ficha, e vale em efeito de
+etapa e na troca de atributo de perícia (`"atributoAlvo": "atributoDaTecnica"`). Ele não é escolhido
+no treino: trocar o atributo da técnica leva o bônus junto.
+
+```json
+{ "canal": "atributo", "alvo": "atributoDaTecnica", "expr": "2" }
+```
 
 ### Estado gravado na criatura
 

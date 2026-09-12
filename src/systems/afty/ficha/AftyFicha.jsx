@@ -50,7 +50,7 @@ import AbaInvocacoes from "./abas/AbaInvocacoes";
 import { deltaDosEstados } from "./ficha-buffs";
 // O padrão global de tema é POR SISTEMA: "quero todas as minhas fichas assim"
 // dito no Grimório Afty não pode repintar as fichas de jogador. Ver afty-sistema.js.
-import { sistemaDaFicha, ehPlayer } from "../afty-sistema";
+import { sistemaDaFicha, ehPlayer, regraDo, rotuloDoNivel } from "../afty-sistema";
 import { getEspecializacao } from "../afty-especializacoes";
 import { cofreTrancado, comTextoAberto, lerAberto } from "../afty-cofre";
 import PainelDoCofre from "../ui/PainelDoCofre";
@@ -631,9 +631,18 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
                     <Chip tom="destaque" title={classesComNivel}>{classeInicial}</Chip>
                   )
                   : <Chip tom="destaque">{rotuloDe(AFTY_TIPOS, ficha.core.tipo)}</Chip>}
-                <Chip>{rotuloDe(AFTY_PATAMARES, ficha.core.patamar)}</Chip>
-                <Chip>ND {derived.nd}</Chip>
-                <Chip title="Grau do Feiticeiro, que vem do ND">{derived.grauFeiticeiro.label}</Chip>
+                {/* ⚠ O PATAMAR NÃO EXISTE NO JOGADOR (divergência
+                    `patamarDoJogador`), e este chip seguia imprimindo o "Comum"
+                    do schema. Autor, 2026-09-10: *"tire a tag Comum na ficha de
+                    Jogador"*. É o "esconder o campo não esconde o valor" outra
+                    vez: o Preview perdeu o chip em agosto e este ficou. */}
+                {regraDo(sistemaDaFicha(ficha), "patamarDoJogador") !== "player" && (
+                  <Chip>{rotuloDe(AFTY_PATAMARES, ficha.core.patamar)}</Chip>
+                )}
+                <Chip>{rotuloDoNivel(sistemaDaFicha(ficha))} {derived.nd}</Chip>
+                <Chip title={`Grau do Feiticeiro, que vem do ${rotuloDoNivel(sistemaDaFicha(ficha))}`}>
+                  {derived.grauFeiticeiro.label}
+                </Chip>
                 {/* Só quando saiu de Médio: um chip "Médio" em toda ficha é
                     ruído, porque é o padrão de quase todas. */}
                 {derived.tamanhoDegraus !== 0 && (
@@ -659,7 +668,7 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
                   >
                     {addonsDaFicha.length === 1
                       ? addonsDaFicha[0].nome
-                      : `${addonsDaFicha.length} addons`}
+                      : `${addonsDaFicha.length} Addons`}
                   </Chip>
                 )}
               </div>

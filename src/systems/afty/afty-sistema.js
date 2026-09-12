@@ -103,6 +103,26 @@ export const normalizaSistema = (valor) =>
  */
 export const sistemaDaFicha = (ficha) => normalizaSistema(ficha?.rulesVersion);
 
+/**
+ * De QUAL livro a ficha é, sem chutar: devolve "afty" ou "player" quando o
+ * `rulesVersion` gravado é um dos daqui, e `null` quando não é (a ficha do
+ * Grimório 2.5.2, que grava "2.5.2", e a que nem tem o campo).
+ *
+ * ⚠ É O CONTRÁRIO DO `sistemaDaFicha` ACIMA, E OS DOIS PRECISAM EXISTIR.
+ * O `sistemaDaFicha` responde "com que régua eu derivo esta ficha", e por isso
+ * cai no padrão em vez de quebrar: quem pergunta já sabe que a ficha é daqui.
+ * Este responde "esta ficha é daqui?", que é pergunta de FRONTEIRA, e nela o
+ * padrão seria a resposta errada: uma ficha da 2.5.2 voltaria "afty" e entraria
+ * no motor errado calada.
+ *
+ * Nasceu em 2026-09-12, de um erro em produção. Uma ficha do Afty importada no
+ * Grimório público abria no painel de combate da 2.5.2, que lê `treinamentos`
+ * como LISTA enquanto aqui ele é MAPA, e estourava em
+ * `collectAutomationEntities`. Ver docs/a-fazer.md.
+ */
+export const sistemaGravado = (ficha) =>
+  SISTEMA_IDS.includes(ficha?.rulesVersion) ? ficha.rulesVersion : null;
+
 /** O registro completo, e não só o id. */
 export const getSistema = (valor) => SISTEMAS[normalizaSistema(valor)];
 
@@ -116,6 +136,66 @@ export const ehPlayer = (valor) => normalizaSistema(valor) === "player";
  * Player nasce seguindo o mesmo molde em vez de o molde mudar para os dois.
  */
 export const sufixoDeChave = (valor) => `_${normalizaSistema(valor)}`;
+
+/**
+ * As palavras com que a tela fala da ficha, com a concordância certa.
+ *
+ * ⚠ "Personagem" é MASCULINO e "criatura" é feminino, então trocar só o
+ * substantivo deixa a frase torta ("Esta personagem", "Nova Personagem"). Quem
+ * escreve a frase passa as duas formas a `g(masculino, feminino)`, e o gênero
+ * sai do `artigo` do registro acima, e não de um `if` por tela.
+ *
+ * Nasceu em 2026-09-10, quando o autor achou "Editar Criatura" no /Player e
+ * pediu a varredura dos restos de criatura na Ficha de Player.
+ */
+export function palavrasDoSistema(valor) {
+  const s = getSistema(valor);
+  const feminino = s.artigo === "a";
+  const maiuscula = (t) => t.charAt(0).toUpperCase() + t.slice(1);
+  return {
+    nome: s.substantivo,
+    Nome: maiuscula(s.substantivo),
+    plural: s.substantivoPlural,
+    Plural: maiuscula(s.substantivoPlural),
+    g: (masculino, femininoForma) => (feminino ? femininoForma : masculino),
+  };
+}
+
+/**
+ * Os textos da lista de fichas (o Dashboard da 2.5.2) na língua de um sistema.
+ *
+ * ⚠ O DASHBOARD É DA 2.5.2 e fica em `src/components/`. Ele ganhou uma prop
+ * opcional `vocab` com o texto de sempre como padrão (autor, 2026-09-10: "Uma
+ * prop opcional"), no molde do `titulo` e do `showSystemView` de 2026-09-09. O
+ * texto do jogador mora AQUI, e não lá, para a 2.5.2 não saber que existe
+ * "personagem": quem escolhe passá-lo é o `src/App.jsx`, que lê a rota.
+ *
+ * A contagem usa singular e plural de verdade ("1 personagem", "3
+ * personagens"), porque "personagem(ns)" é o que o "(s)" viraria, e o molde da
+ * 2.5.2 não tem por que ser copiado junto com a palavra.
+ */
+export function vocabularioDoDashboard(valor) {
+  const p = palavrasDoSistema(valor);
+  const quantos = (n) => `${n} ${n === 1 ? p.nome : p.plural}`;
+  return {
+    todas: `${p.g("Todos os", "Todas as")} ${p.Plural}`,
+    contagem: quantos,
+    itens: p.plural,
+    nova: `${p.g("Novo", "Nova")} ${p.Nome}`,
+    criarNova: `Criar ${p.g("novo", "nova")} ${p.nome}`,
+    criar: `Criar ${p.nome}`,
+    exportarVista: `Exportar ${p.plural} da visualização atual`,
+    exportarTitulo: `Exportar ${p.Plural}`,
+    importarTitulo: `Importar ${p.Plural}`,
+    arquivo: `${p.plural}_${p.g("exportados", "exportadas")}`,
+    selecionadas: (sel, total) => `${sel} de ${total} ${p.g("selecionado(s)", "selecionada(s)")}`,
+    importadas: (n) => `${quantos(n)} ${n === 1 ? p.g("importado", "importada") : p.g("importados", "importadas")} com sucesso.`,
+    buscar: `Buscar ${p.plural}`,
+    nenhumaBusca: `${p.g("Nenhum", "Nenhuma")} ${p.nome} combina com sua busca.`,
+    removida: `será ${p.g("removido", "removida")} permanentemente.`,
+    removidas: (n) => `${quantos(n)} ${n === 1 ? "será" : "serão"} ${n === 1 ? p.g("removido", "removida") : p.g("removidos", "removidas")} permanentemente.`,
+  };
+}
 
 /* ============================================================ */
 /* DIVERGÊNCIAS CONHECIDAS                                       */
@@ -664,6 +744,51 @@ export const DIVERGENCIAS = [
     ativa: true,
   },
   {
+    /* ⚠ SÓ RÓTULO, e por isso é de TELA: o número é o mesmo `derived.nd` nos
+       dois lados. O que muda é como quatro telas o chamam: o cabeçalho da
+       Ficha Final, a linha do combatente no Encontro, o Preview do criador e o
+       aviso de multiclasse. Todas leem `rotuloDoNivel`, e não um `if` cada.
+
+       ⚠ O Encontro mistura fichas dos dois sistemas na mesma lista, e é por
+       isso que o rótulo sai da FICHA de cada linha, e não da rota. */
+    id: "rotuloDoNivel",
+    tipo: "tela",
+    onde: "ficha/AftyFicha.jsx (cabeçalho), encontros/AftyEncontro.jsx (lista de fichas), AftyCreatureBuilder.jsx (Preview e aviso de multiclasse)",
+    fonte: "E mude ND para \"Nível\" na Ficha de Player. (autor, 2026-09-10)",
+    afty: "ND, o Nível de Desafio da criatura",
+    player: "Nível",
+    ativa: true,
+  },
+  {
+    /* ⚠ A MARCA DO SISTEMA, só de TELA. O criador do /Player dizia "Editar
+       Criatura · Afty" e a aba Cálculos carregava o selo "Afty". O SUBSTANTIVO
+       (Criatura, Personagem) não passa por aqui: ele sai de `palavrasDoSistema`,
+       que é vocabulário do registro. O que esta entrada decide é se a MARCA
+       aparece, e no jogador ela some. */
+    id: "marcaDoSistema",
+    tipo: "tela",
+    onde: "AftyCreatureBuilder.jsx (título do criador e selo das abas)",
+    fonte: "Tirar a marca (resposta do autor, 2026-09-10, sobre o \"Editar Criatura · Afty\" do /Player: título sem o \"· Afty\" e abas sem o selo)",
+    afty: "título com \"· Afty\" e o selo Afty nas abas próprias do sistema",
+    player: "sem a marca: \"Editar Personagem\", e as abas sem selo",
+    ativa: true,
+  },
+  {
+    /* ⚠ É REGRA na mesa, e TELA no código. Na criatura, Interlúdio que pede
+       teste é sucesso automático, e o title do Treino Especial diz isso. No
+       jogador o teste é rolado, e a ficha NÃO rastreia teste nenhum: escolher o
+       Treino segue concedendo, e quem marca é o jogador depois de passar. O
+       que o código muda é só o title deixar de afirmar a regra da criatura. A
+       mecânica do teste está anotada em docs/a-fazer.md. */
+    id: "interludioComTeste",
+    tipo: "tela",
+    onde: "AftyCreatureBuilder.jsx, TreinoEspecialCard (o title do botão de escolher)",
+    fonte: "O jogador rola o teste (resposta do autor, 2026-09-10, sobre o sucesso automático do Interlúdio que pede teste)",
+    afty: "Interlúdio que pede teste é sucesso automático, e o title diz isso",
+    player: "o teste é rolado na mesa, e o title não afirma a regra",
+    ativa: true,
+  },
+  {
     /* ⚠ ESTA ENTRADA SE CHAMAVA `danoAtaqueBasico` E ERA PEQUENA DEMAIS. A fonte
        velha vinha de um comentário de creature-schema.js que falava só do Ataque
        Básico ("dano simplificado na criatura"), e o que o autor pediu em
@@ -699,6 +824,33 @@ export const DIVERGENCIAS = [
     player: "o dado impresso da arma, movido pelos Níveis de Dano, mais o modificador do atributo",
     ativa: true,
   },
+  {
+    /* ⚠ O POOL DEIXA DE SER UM SÓ NO JOGADOR. Na criatura as sete famílias
+       disputam num pool plano (autor, 2026-07-30), e isso segue valendo lá. No
+       jogador elas se partem em GRUPOS, e a disputa acontece só dentro do grupo:
+
+         feiticos          Feitiço Passivo, Feitiço Auxiliar, Novo Estilo das
+                           Sombras, Funcionamento Básico e a Segunda Habilidade
+                           Única (Addon). Técnica Marcial entra aqui quando nascer
+         habilidadeUnica   a primeira Habilidade Única de cada item. Não soma com
+                           a de outro item, e soma com todo o resto
+         shikigami*        cada família de Invocação no próprio grupo. ASSUNÇÃO,
+                           anotada em docs/a-fazer.md: nenhuma emite ainda
+
+       O Funcionamento Básico não estava nas listas do autor. Ele respondeu por
+       pergunta no mesmo dia: não acumula, e fica com os Feitiços.
+
+       ⚠ QUEM DECIDE O GRUPO É A FAMÍLIA, e não a fonte: o `grupoJogador` de
+       cada uma mora em `FAMILIAS_EXCLUSIVAS` (afty-efeitos.js), e o derive
+       carimba o efeito antes da disputa. Ver `carimbarGrupoExclusivo`. */
+    id: "poolExclusivo",
+    tipo: "regra",
+    onde: "afty-efeitos.js, FAMILIAS_EXCLUSIVAS e resolverExclusivos",
+    fonte: "Na ficha de Player o Pool é diferente: Feitiços não se acumulam Auxiliares com Passivos. Porém se acumulam com Itens e Invocações e etc. Então: NÃO SE ACUMULAM (Feitiços Passivos; Feitiços Auxiliares; Novo Estilo das Sombras; Técnicas Marciais) SE ACUMULAM COM OS ACIMAS E ENTRE SI (Ações Invocações, Caracteristicas Invocações; Habilidades Únicas de Itens). Primeiro Efeito não se acumula com outros itens. Mas se acumula com Segundo Efeito. (autor, 2026-09-11)",
+    afty: "um pool só: Habilidade Única, Feitiços, Estilo, Funcionamento Básico e Invocação disputam entre si, e vale o maior",
+    player: "grupos separados: Feitiços, Estilo e Funcionamento Básico disputam entre si, a Habilidade Única disputa só com a de outro item, e os grupos somam",
+    ativa: true,
+  },
 ];
 
 const POR_ID = new Map(DIVERGENCIAS.map((d) => [d.id, d]));
@@ -718,6 +870,13 @@ export const regraDo = (sistema, idDivergencia) => {
   if (!d || !d.ativa) return "afty";
   return normalizaSistema(sistema);
 };
+
+/**
+ * Como a tela chama o nível de uma ficha: "ND" na criatura, "Nível" no jogador.
+ * É a divergência `rotuloDoNivel` escrita num lugar só, porque são quatro telas
+ * e um `if` em cada uma envelheceria em quatro ritmos.
+ */
+export const rotuloDoNivel = (sistema) => (regraDo(sistema, "rotuloDoNivel") === "player" ? "Nível" : "ND");
 
 /** Sanidade do catálogo acima. */
 export function validarSistemas() {

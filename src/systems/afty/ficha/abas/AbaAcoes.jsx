@@ -740,17 +740,6 @@ function LinhaFeitico({
 
 
 /**
- * UM DOMÍNIO.
- *
- * A Expansão de Domínio é uma AÇÃO de combate, com custo em PE e duração em
- * rodadas, e por isso ela mora aqui e não numa aba própria: o jogador procura
- * por ela no mesmo lugar onde procura o resto do que faz no turno.
- *
- * O TEXTO já vem montado pelo `textoDoDominio`, com a área, a duração, o PV da
- * barreira e os efeitos escolhidos resolvidos. A Ficha não remonta nada: ela
- * abre e mostra, como faz com o texto do livro.
- */
-/**
  * TÉCNICAS DE BARREIRA e CONFLITO DE DOMÍNIO, a linha de cima da seção.
  *
  * ⚠ Os dois são da CRIATURA, e não de uma expansão: a parede se ergue sem
@@ -758,6 +747,9 @@ function LinhaFeitico({
  * laço das expansões, e aparecem mesmo para quem ainda não escreveu uma.
  *
  * O Conflito é a única coisa aqui que ROLA, e a rolagem é 1d10 mais o bônus.
+ *
+ * ⚠ TODO NÚMERO LEVA RÓTULO desde 2026-09-11. O máximo de paredes saía como
+ * "até 6", e na mesma linha o "6" podia ser qualquer coisa.
  */
 function LinhaBarreiraConflito({ info, rolar }) {
   const b = info?.barreira;
@@ -766,45 +758,58 @@ function LinhaBarreiraConflito({ info, rolar }) {
   const mostraConflito = (info?.domNivel ?? 0) > 0;
   if (!mostraParede && !mostraConflito) return null;
   return (
-    <div className="afty-linha px-2.5 py-2 flex items-center gap-2 flex-wrap">
-      {mostraParede && (
-        <>
-          <span className="flex-1 min-w-0 text-[12px] font-semibold truncate">Parede de Barreira</span>
-          <span className="afty-valor text-[11px]" title="Pontos de vida de cada parede">{b.pvParede} PV</span>
-          {b.rdParede > 0 && (
-            <span className="afty-valor text-[11px]" title="Redução de dano de cada parede">{b.rdParede} RD</span>
-          )}
-          <span className="afty-rotulo text-[10px] whitespace-nowrap" title="Máximo de paredes erguidas de uma vez">
-            até {b.maxParedes}
-          </span>
-          {/* A Cortina vale 3 paredes, e só aparece para quem tem a aptidão. */}
-          {b.temCortina && (
-            <span className="afty-rotulo text-[10px] whitespace-nowrap">
-              Cortina{" "}
+    <div className="afty-linha afty-dominio-cabeca">
+      <span className="afty-dominio-nome">
+        <span className="truncate">{mostraParede ? "Parede de Barreira" : "Conflito de Domínio"}</span>
+      </span>
+      <span className="afty-dominio-numeros">
+        {mostraParede && (
+          <>
+            <span className="afty-dominio-numero">
               <NumeroComFontes
-                valor={`${b.pvCortina} PV`}
-                partes={b.partesPvCortina}
-                total={b.pvCortina}
+                valor={`${b.pvParede} PV`}
+                partes={b.partesPvParede}
+                total={b.pvParede}
                 formatar={false}
-                className="afty-valor text-[11px]"
+                className="afty-valor"
                 ancora="direita"
-                titulo="Pontos de vida da cortina"
+                titulo="Pontos de vida de cada parede"
               />
             </span>
-          )}
-        </>
-      )}
-      {mostraConflito && (
-        <>
-          {!mostraParede && <span className="flex-1 min-w-0 text-[12px] font-semibold truncate">Conflito de Domínio</span>}
-          <span className="afty-rotulo text-[10px] whitespace-nowrap">
+            {b.rdParede > 0 && (
+              <span className="afty-dominio-numero">
+                <span className="afty-valor">{b.rdParede}</span> RD
+              </span>
+            )}
+            <span className="afty-dominio-numero">
+              <span className="afty-valor">{b.maxParedes}</span> {b.maxParedes === 1 ? "Parede" : "Paredes"}
+            </span>
+            {/* A Cortina vale 3 paredes, e só aparece para quem tem a aptidão. */}
+            {b.temCortina && (
+              <span className="afty-dominio-numero">
+                Cortina{" "}
+                <NumeroComFontes
+                  valor={`${b.pvCortina} PV`}
+                  partes={b.partesPvCortina}
+                  total={b.pvCortina}
+                  formatar={false}
+                  className="afty-valor"
+                  ancora="direita"
+                  titulo="Pontos de vida da cortina"
+                />
+              </span>
+            )}
+          </>
+        )}
+        {mostraConflito && (
+          <span className="afty-dominio-numero">
             {mostraParede ? "Conflito " : ""}
             <NumeroComFontes
               valor={`1d${c.faces}+${c.bonus}`}
               partes={c.partes}
               total={c.bonus}
               formatar={false}
-              className="afty-valor text-[11px]"
+              className="afty-valor"
               ancora="direita"
               onRolar={() => rolar({
                 tipo: "dano", rotulo: "Conflito de Domínio",
@@ -812,15 +817,31 @@ function LinhaBarreiraConflito({ info, rolar }) {
               })}
             />
           </span>
-        </>
-      )}
+        )}
+      </span>
     </div>
   );
 }
 
-function LinhaDominio({ d, ativo, destacado }) {
+/**
+ * UM DOMÍNIO.
+ *
+ * A Expansão de Domínio é uma AÇÃO de combate, com custo em PE e duração em
+ * rodadas, e por isso ela mora aqui e não numa aba própria: o jogador procura
+ * por ela no mesmo lugar onde procura o resto do que faz no turno.
+ *
+ * ⚠ A LINHA INFORMA, e o corpo só acrescenta (2026-09-11). Área, duração, PV do
+ * domo e custo ficam na linha, com rótulo, e continuam visíveis com ela aberta:
+ * repeti-los no corpo era o defeito da prosa antiga. O corpo vem do
+ * `corpoDoDominio`, em estrutura, na ordem do que interessa na mesa: a
+ * execução, os efeitos DESTA expansão, a aparência, e por último os efeitos de
+ * toda expansão.
+ */
+function LinhaDominio({ d, ativo, destacado, partesPvDomo }) {
   const [aberto, setAberto] = useState(false);
   const raiz = useDestaque(destacado);
+  const estrutura = d.versao === "sem_barreiras" ? "Totem" : "Domo";
+  const corpo = d.corpo ?? { execucao: "", proprios: [], base: [], aparencia: "" };
   return (
     <div
       ref={raiz}
@@ -829,29 +850,99 @@ function LinhaDominio({ d, ativo, destacado }) {
       data-afty-destacada={ativo ? "sim" : "nao"}
       data-afty-alvo={destacado ? "sim" : undefined}
     >
-      <div className="flex items-center gap-2 px-2.5 py-2 flex-wrap">
+      <div className="afty-dominio-cabeca">
         <button
           type="button"
-          className="flex-1 min-w-0 flex items-center gap-2 text-left"
+          className="afty-dominio-nome"
           onClick={() => setAberto((x) => !x)}
           aria-expanded={aberto}
         >
           {aberto
             ? <ChevronDown className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
             : <ChevronRight className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />}
-          <span className="text-[12px] font-semibold truncate">{d.nome || "Domínio Sem Nome"}</span>
+          <span className="truncate">{d.nome || "Domínio Sem Nome"}</span>
         </button>
         {ativo && <span className="afty-chip" data-afty-tom="destaque">Ativo</span>}
-        <span className="afty-rotulo text-[10px] whitespace-nowrap">{d.area}</span>
-        <span className="afty-rotulo text-[10px] whitespace-nowrap">{d.duracao}</span>
-        <span className="afty-valor text-[11px]" title="Pontos de vida da barreira">{d.pvBarreira} PV</span>
-        {d.custo != null && (
-          <span className="afty-valor text-[11px]" data-afty-tom="custo">{d.custo} PE</span>
-        )}
+        <span className="afty-dominio-numeros">
+          <span className="afty-dominio-numero">
+            Área <span className="afty-valor">{d.area}</span>
+          </span>
+          <span className="afty-dominio-numero">
+            <span className="afty-valor">{d.duracao}</span> {d.duracao === 1 ? "Rodada" : "Rodadas"}
+          </span>
+          <span className="afty-dominio-numero">
+            {estrutura}{" "}
+            <NumeroComFontes
+              valor={`${d.pvBarreira} PV`}
+              partes={partesPvDomo}
+              total={d.pvBarreira}
+              formatar={false}
+              className="afty-valor"
+              ancora="direita"
+              titulo={`Pontos de vida do ${estrutura.toLowerCase()}`}
+            />
+          </span>
+          {d.custo != null && (
+            <span className="afty-dominio-numero">
+              <NumeroComFontes
+                valor={`${d.custo} PE`}
+                partes={d.partesCusto}
+                total={d.custo}
+                formatar={false}
+                className="afty-valor afty-valor-pe"
+                ancora="direita"
+                titulo="Custo da expansão"
+              />
+            </span>
+          )}
+        </span>
       </div>
-      {aberto && d.texto && (
-        <div className="px-2.5 pb-2 pl-8">
-          <p className="afty-texto">{d.texto}</p>
+      {aberto && (
+        <div className="afty-dominio-corpo">
+          {corpo.execucao && (
+            <dl className="afty-feitico-propriedades">
+              <div className="afty-feitico-propriedade">
+                <dt>Execução</dt>
+                <dd>{corpo.execucao}</dd>
+              </div>
+            </dl>
+          )}
+          {corpo.proprios.length > 0 && (
+            <ul className="afty-dominio-efeitos">
+              {corpo.proprios.map((e) => (
+                <li key={e.id}>
+                  <div className="afty-dominio-efeito-cabeca">
+                    <span className="afty-dominio-efeito-titulo">{e.titulo}</span>
+                    {/* Sem nome próprio o título JÁ é a categoria, e repeti-la
+                        ao lado seria "Efeito Especial Efeito Especial". */}
+                    {e.categoria && e.categoria !== e.titulo && (
+                      <span className="afty-dominio-efeito-categoria">{e.categoria}</span>
+                    )}
+                  </div>
+                  {e.texto && <p className="afty-texto afty-dominio-efeito-texto">{e.texto}</p>}
+                </li>
+              ))}
+            </ul>
+          )}
+          {corpo.aparencia && (
+            <>
+              <div className="afty-dominio-secao">Aparência</div>
+              <p className="afty-texto afty-dominio-efeito-texto">{corpo.aparencia}</p>
+            </>
+          )}
+          {corpo.base.length > 0 && (
+            <>
+              <div className="afty-dominio-secao">Toda Expansão</div>
+              <dl className="afty-dominio-base">
+                {corpo.base.map((b) => (
+                  <div key={b.titulo} className="afty-dominio-base-item">
+                    <dt>{b.titulo}</dt>
+                    <dd className="afty-texto">{b.texto}</dd>
+                  </div>
+                ))}
+              </dl>
+            </>
+          )}
         </div>
       )}
     </div>
@@ -1058,6 +1149,7 @@ export default function AbaAcoes({
               key={d.id}
               d={d}
               ativo={d.id === dominioAtivo}
+              partesPvDomo={derived.dominios?.barreira?.partesPvDomo}
               destacado={destaque === `dominio:${d.id}`}
             />
           ))}

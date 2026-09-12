@@ -1234,12 +1234,36 @@ const dslItemVars = (def, grauRank) => ({
 const CANAL_UNICA_LEGADO = { pvMax: "hp", peMax: "pe" };
 
 /**
+ * As linhas do Motor de uma Habilidade Única, resolvidas no contexto do item.
+ * Serve às duas Habilidades da Ferramenta e às duas do Acessório Único: o
+ * formato é um só, e o que as separa é a família do pool, carimbada por quem
+ * emite. `contextoDsl` viaja em cada linha porque o editor mostra as variáveis
+ * do item (`grau`) com o valor que a expressão recebe.
+ */
+function resolverLinhasUnica(lista, ctx, contextoDsl) {
+  return (Array.isArray(lista) ? lista : []).map((ef) => ({
+    canal: CANAL_UNICA_LEGADO[ef?.canal] ?? ef?.canal ?? "defesa",
+    alvo: normalizarAlvoEfeito(ef?.alvo) ?? "",
+    expr: ef?.expr ?? "",
+    // Ativa fica na bancada de Simulação de Combate, passiva vale sempre. Quem
+    // decide é o item, não a família (autor, 2026-07-30).
+    modo: ef?.modo === "ativa" ? "ativa" : "passiva",
+    valor: evalNumber(ef?.expr ?? "", ctx),
+    ok: validateExpression(ef?.expr ?? "").ok,
+    contextoDsl,
+  }));
+}
+
+/**
  * O estado da bancada de uma Habilidade Única ATIVA. Um por entrada de
  * equipamento, porque a ativação é do item: duas armas com habilidade ativa são
  * dois interruptores. O `uid` da entrada já é minúsculo com underscore, que é o
  * vocabulário do DSL, então ele entra inteiro.
  */
 export const estadoDaUnica = (uid) => `unica_${uid}`;
+
+/** O mesmo, para a segunda Habilidade Única do Addon. Um interruptor por Habilidade. */
+export const estadoDaSegundaUnica = (uid) => `unica2_${uid}`;
 
 /** Contexto base da DSL para os efeitos de equipamento (sem o grau, que é por item).
     Usa os atributos BASE da ficha (o efetivo ainda não fechou quando o
@@ -1489,6 +1513,10 @@ export const reduzGrauPorEncantamento = (sistema) =>
    vocabulário a ignora pelo mesmo sinal. Mesmo truque do `#marcas`. Ela viaja
    assim porque o `resolveFerramenta` só recebe o contexto. */
 const CHAVE_REDUZ_GRAU = "#reduzGrau";
+
+/* A mesma forma, para a liberação `segundaHabilidadeUnica`: o `resolveFerramenta`
+   só recebe o contexto, e é por ele que fica sabendo se a segunda existe. */
+const CHAVE_SEGUNDA_UNICA = "#segundaUnica";
 
 /**
  * Os encantamentos que ESTE sistema oferece.
@@ -1875,10 +1903,99 @@ const CATALOGO_POR_TIPO = {
  */
 export const catalogoDoTipo = (tipo, creature = null) => {
   const base = CATALOGO_POR_TIPO[tipo] ?? [];
-  if (tipo !== "arma" || !creature) return base;
-  const custom = armasCustomDaFicha(creature);
+  if (!creature) return base;
+  // Os Acessórios Únicos entram nos Itens Especiais pelo mesmo motivo das armas
+  // criadas: é aqui que um item vira item para o inventário e o resolvedor.
+  const custom = tipo === "arma" ? armasCustomDaFicha(creature)
+    : tipo === "item" ? acessoriosUnicosDaFicha(creature)
+    : [];
   return custom.length ? [...base, ...custom] : base;
 };
+
+/* ============================================================ */
+/* ACESSÓRIOS ÚNICOS (Addon Benção do Grão Mestre da Forja)      */
+/* ============================================================ */
+/* Regras do autor (2026-09-11): conta sempre como Grau Especial e não recebe
+   Encantamentos, só os efeitos de Habilidade Única. Não tem custo e pesa sempre
+   1. Nenhum acessório do livro recebe isso, só os criados pelo Addon.
+
+   Mora na ficha (`creature.acessoriosUnicos`) e entra no catálogo de Itens
+   Especiais pela `catalogoDoTipo`, no molde das armas criadas. Saneado na
+   LEITURA pela mesma razão delas: a ficha pode vir editada à mão. */
+
+const PREFIXO_ACESSORIO_UNICO = "acsu_";
+
+/** O `grau` que a expressão de um Acessório Único lê: o do Grau Especial. */
+const RANK_GRAU_ESPECIAL = AFTY_GRAUS.find((g) => g.value === "especial")?.rank ?? 5;
+
+let acessorioUnicoSeq = 0;
+
+/** Um Acessório Único novo, sem nome e sem efeitos. */
+export function novoAcessorioUnico(patch = {}) {
+  acessorioUnicoSeq += 1;
+  return {
+    id: `${PREFIXO_ACESSORIO_UNICO}${Date.now().toString(36)}_${acessorioUnicoSeq}`,
+    nome: "",
+    habilidadeUnica: "",
+    habilidadeEfeitos: [],
+    segundaHabilidadeUnica: "",
+    segundaHabilidadeEfeitos: [],
+    ...patch,
+  };
+}
+
+/** As linhas gravadas de uma Habilidade Única, só com os campos que o editor escreve. */
+const linhasGravadasDeUnica = (lista) => (Array.isArray(lista) ? lista : [])
+  .filter((ef) => ef && typeof ef === "object")
+  .map((ef) => ({
+    canal: String(ef.canal ?? ""),
+    ...(ef.alvo ? { alvo: String(ef.alvo) } : {}),
+    expr: String(ef.expr ?? ""),
+    ...(ef.modo === "ativa" ? { modo: "ativa" } : {}),
+  }));
+
+/** Um Acessório Único saneado, no formato de um item do catálogo, ou `null`. */
+export function saneiaAcessorioUnico(bruto) {
+  if (!bruto || typeof bruto !== "object") return null;
+  const id = typeof bruto.id === "string" && bruto.id.startsWith(PREFIXO_ACESSORIO_UNICO) ? bruto.id : null;
+  if (!id) return null;
+  const habilidadeUnica = String(bruto.habilidadeUnica ?? "");
+  const segundaHabilidadeUnica = String(bruto.segundaHabilidadeUnica ?? "");
+  return {
+    id,
+    // Sem nome, a linha do catálogo ficaria em branco, como na arma criada.
+    nome: String(bruto.nome ?? "").trim() || "Acessório sem Nome",
+    categoria: "acessorio",
+    custo: 0,
+    espacos: 1,
+    // Um por ficha: a trava de quantidade das relíquias serve igual.
+    unico: true,
+    // O texto do item é o das duas Habilidades, porque elas SÃO o acessório.
+    // É o que a Ficha Final e a linha do catálogo mostram.
+    descricao: [habilidadeUnica.trim(), segundaHabilidadeUnica.trim()].filter(Boolean).join("\n\n"),
+    habilidadeUnica,
+    habilidadeEfeitos: linhasGravadasDeUnica(bruto.habilidadeEfeitos),
+    segundaHabilidadeUnica,
+    segundaHabilidadeEfeitos: linhasGravadasDeUnica(bruto.segundaHabilidadeEfeitos),
+    acessorioUnico: true,
+    // A marca que a UI usa para o chip e para não oferecer Ferramenta.
+    custom: true,
+  };
+}
+
+/** Os Acessórios Únicos da ficha, saneados e sem id repetido. */
+export function acessoriosUnicosDaFicha(creature) {
+  const brutos = Array.isArray(creature?.acessoriosUnicos) ? creature.acessoriosUnicos : [];
+  const vistos = new Set();
+  const out = [];
+  for (const b of brutos) {
+    const a = saneiaAcessorioUnico(b);
+    if (!a || vistos.has(a.id)) continue;
+    vistos.add(a.id);
+    out.push(a);
+  }
+  return out;
+}
 
 /** Busca uma entrada do catálogo pelo tipo + id. */
 export function getEquipamento(tipo, id, creature = null) {
@@ -2023,6 +2140,8 @@ export function resolveFerramenta(entrada, def, bt = 2, ctxBase = null, vagasLiv
   const efeitos = [];        // o que vai virar efeito de MOTOR
   let acertoEncantamento = 0;  // pseudo-canal acertoArma
   let reducaoPenalidade = 0;   // pseudo-canal penalidadeEquip
+  // Quem reduziu, pelo nome, para a parcela do hover da Penalidade de Armadura.
+  const fontesReducaoPenalidade = [];
   const fontesAcerto = [];
   for (const x of encantamentos) {
     if (!x.atende) continue;
@@ -2038,6 +2157,7 @@ export function resolveFerramenta(entrada, def, bt = 2, ctxBase = null, vagasLiv
       }
       if (ef.canal === "penalidadeEquip") {
         reducaoPenalidade += valor;
+        if (!fontesReducaoPenalidade.includes(x.enc.nome)) fontesReducaoPenalidade.push(x.enc.nome);
         continue;
       }
       /* `rdEscudo` é pseudo-canal, igual aos dois de cima: ele diz "some na RD do
@@ -2058,18 +2178,14 @@ export function resolveFerramenta(entrada, def, bt = 2, ctxBase = null, vagasLiv
   // junto dos encantamentos, a deixaria de fora da regra. O que sai deste
   // resolver é a lista RESOLVIDA, e quem a transforma em efeito de Motor é o
   // `resolveEquipamentos`.
-  const habilidadeEfeitosRaw = Array.isArray(fa.habilidadeEfeitos) ? fa.habilidadeEfeitos : [];
-  const habilidadeEfeitos = habilidadeEfeitosRaw.map((ef) => ({
-    canal: CANAL_UNICA_LEGADO[ef.canal] ?? ef.canal ?? "defesa",
-    alvo: normalizarAlvoEfeito(ef.alvo) ?? "",
-    expr: ef.expr ?? "",
-    // Ativa fica na bancada de Simulação de Combate, passiva vale sempre. Quem
-    // decide é o item, não a família (autor, 2026-07-30).
-    modo: ef.modo === "ativa" ? "ativa" : "passiva",
-    valor: evalNumber(ef.expr ?? "", ctx),
-    ok: validateExpression(ef.expr ?? "").ok,
-    contextoDsl,
-  }));
+  const habilidadeEfeitos = resolverLinhasUnica(fa.habilidadeEfeitos, ctx, contextoDsl);
+  /* A SEGUNDA (Addon Benção do Grão Mestre da Forja, 2026-09-11). Mesmo formato
+     e mesmo contexto da primeira, e a diferença entre as duas é só a família do
+     pool, que o `resolveEquipamentos` carimba. Sem a liberação as linhas
+     gravadas continuam resolvidas (a ficha não perde o que foi escrito), e só
+     deixam de ser emitidas. */
+  const temSegundaUnica = temHabUnica && ctxBase?.[CHAVE_SEGUNDA_UNICA] === true;
+  const segundaHabilidadeEfeitos = resolverLinhasUnica(fa.segundaHabilidadeEfeitos, ctx, contextoDsl);
   // Penalidade DESTE item já com o Polido / Ajustado descontados. A redução
   // nunca inverte o sinal: reduzir -1 em 2 dá 0, e não +1.
   const penalidadeBase = def?.penalidade ?? 0;
@@ -2089,6 +2205,7 @@ export function resolveFerramenta(entrada, def, bt = 2, ctxBase = null, vagasLiv
     defesaGrau,
     penalidade,
     reducaoPenalidade,
+    fontesReducaoPenalidade,
     permitidos,
     vagasLivres: livres,
     escolhidos,
@@ -2099,6 +2216,9 @@ export function resolveFerramenta(entrada, def, bt = 2, ctxBase = null, vagasLiv
     temHabUnica,
     habilidadeUnica: fa.habilidadeUnica ?? "",
     habilidadeEfeitos,   // resolvidos, com expr para a edição
+    temSegundaUnica,
+    segundaHabilidadeUnica: fa.segundaHabilidadeUnica ?? "",
+    segundaHabilidadeEfeitos,
     efeitos,             // efeitos de encantamento, prontos para o Motor
     avisos,
   };
@@ -2131,6 +2251,10 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
   const canalEscudo = canalRdEscudo(opcoes.sistema);
   const vagasEncantamento = opcoes.vagasEncantamento ?? {};
   const encantamentosExtras = Array.isArray(opcoes.encantamentosExtras) ? opcoes.encantamentosExtras : [];
+  // As liberações dos Addons desta ficha. Só as duas da Benção do Grão Mestre
+  // da Forja são lidas aqui.
+  const liberacoes = Array.isArray(opcoes.liberacoes) ? opcoes.liberacoes : [];
+  const acessoriosLiberados = liberacoes.includes("acessoriosUnicos");
   const entradas = [];
   const custoGasto = { 1: 0, 2: 0, 3: 0, 4: 0 };
   const attrBonus = { forca: 0, destreza: 0, constituicao: 0, inteligencia: 0, sabedoria: 0, presenca: 0 };
@@ -2156,6 +2280,23 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
      o escalar continua existindo para quem só quer o total. */
   const rdPartes = [];
   let penalidadeDestreza = 0;
+  /* A mesma soma com nome, para o hover da Penalidade de Armadura: o item com a
+     penalidade da tabela, e o encantamento que a reduz como parcela própria
+     (Polido, Ajustado). As parcelas fecham com o total, porque a redução já
+     vem aparada no item (ela nunca inverte o sinal). */
+  const penalidadePartes = [];
+  const somaPenalidade = (def, fa) => {
+    const base = def?.penalidade ?? 0;
+    const final = fa ? fa.penalidade : base;
+    penalidadeDestreza += final;
+    if (base) penalidadePartes.push({ label: def.nome, valor: base });
+    if (final !== base) {
+      penalidadePartes.push({
+        label: (fa?.fontesReducaoPenalidade ?? []).join(" e ") || "Encantamento",
+        valor: final - base,
+      });
+    }
+  };
   let hpMaxBonus = 0;
   let cdBonus = 0;
   let uniformesEquipados = 0;
@@ -2185,6 +2326,52 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
     ...dslEquipCtxBase(creature, bt),
     "#canalEscudo": canalEscudo,
     [CHAVE_REDUZ_GRAU]: reduzGrauPorEncantamento(opcoes.sistema),
+    [CHAVE_SEGUNDA_UNICA]: liberacoes.includes("segundaHabilidadeUnica"),
+  };
+
+  /* Os Acessórios Únicos da ficha, com as linhas resolvidas. Saem SEMPRE, com ou
+     sem a liberação, porque o card do criador os edita a partir daqui: tirar o
+     Addon não pode esconder o que foi escrito. Quem decide se valem é a emissão,
+     lá no laço. O grau é sempre o Especial (autor, 2026-09-11). */
+  const acessoriosUnicos = acessoriosUnicosDaFicha(creature).map((a) => {
+    const contextoDsl = dslItemVars(a, RANK_GRAU_ESPECIAL);
+    const ctx = { ...ctxBase, ...contextoDsl };
+    return {
+      ...a,
+      habilidadeEfeitos: resolverLinhasUnica(a.habilidadeEfeitos, ctx, contextoDsl),
+      segundaHabilidadeEfeitos: resolverLinhasUnica(a.segundaHabilidadeEfeitos, ctx, contextoDsl),
+    };
+  });
+  const acessorioResolvido = new Map(acessoriosUnicos.map((a) => [a.id, a]));
+
+  /* Uma Habilidade Única vira efeito do MOTOR com a marca da família dela, e a
+     ativa ganha um interruptor na bancada. Um lugar só para as quatro (duas da
+     Ferramenta, duas do Acessório Único), porque a regra de emissão é a mesma e
+     só a família e o interruptor mudam. */
+  const UNICA_POR_FAMILIA = {
+    habilidadeUnica:        { estado: estadoDaUnica,        rotulo: "Habilidade Única" },
+    segundaHabilidadeUnica: { estado: estadoDaSegundaUnica, rotulo: "Segunda Habilidade Única" },
+  };
+  const emitirUnica = (linhas, uid, nomeItem, familia) => {
+    const { estado, rotulo } = UNICA_POR_FAMILIA[familia];
+    const nome = `${nomeItem} (${rotulo})`;
+    let temAtiva = false;
+    for (const ex of linhas ?? []) {
+      if (!ex.ok || !ex.canal || !String(ex.expr ?? "").trim()) continue;
+      if (ex.modo === "ativa") temAtiva = true;
+      efeitosUnica.push({
+        canal: ex.canal,
+        ...(ex.alvo ? { alvo: ex.alvo } : {}),
+        expr: ex.expr,
+        contextoDsl: ex.contextoDsl,
+        // A ativa só entra com o interruptor dela ligado na bancada.
+        ...(ex.modo === "ativa" ? { quando: estado(uid) } : {}),
+        exclusivo: familia,
+        origem: uid,
+        nome,
+      });
+    }
+    if (temAtiva) estadosUnica.push({ id: estado(uid), label: nome });
   };
 
   // Relíquias de coleção são contadas pelo que a criatura CARREGA, não pelo que
@@ -2236,7 +2423,7 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
         // (autor, 2026-08-01). A tabela de Defesa por modificação não entra.
         uniformeDefesa += defesaDaArmadura(def, fa?.defesaGrau ?? 0, opcoes.sistema);
         // Com Ferramenta, a penalidade é a já reduzida pelo Ajustado.
-        penalidadeDestreza += fa ? fa.penalidade : (def.penalidade ?? 0);
+        somaPenalidade(def, fa);
       } else if (e.tipo === "escudo") {
         /* ⚠ O DESTINO DEPENDE DO SISTEMA. Na criatura a RD do escudo é RD Geral
            (autor, 2026-08-01: "RD Geral, exceto Alma", que é a definição exata da
@@ -2260,7 +2447,7 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
            porque lá o grau não é cobrado. */
         if (fa) soma(fa.rdGrau, fa.grauCalculoLabel);
         // Com Ferramenta, a penalidade é a já reduzida pelo Polido.
-        penalidadeDestreza += fa ? fa.penalidade : (def.penalidade ?? 0);
+        somaPenalidade(def, fa);
       }
       // Efeitos de item, só os que o motor sabe aplicar.
       const ef = def.efeito;
@@ -2305,23 +2492,17 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
       // O valor já sai resolvido aqui e viaja como literal porque a expressão
       // dela lê `grau`, que é do item e não existe no contexto da criatura.
       if (fa?.temHabUnica) {
-        let temAtiva = false;
-        for (const ex of fa.habilidadeEfeitos) {
-          if (!ex.ok || !ex.canal || !String(ex.expr ?? "").trim()) continue;
-          if (ex.modo === "ativa") temAtiva = true;
-          efeitosUnica.push({
-            canal: ex.canal,
-            ...(ex.alvo ? { alvo: ex.alvo } : {}),
-            expr: ex.expr,
-            contextoDsl: ex.contextoDsl,
-            // A ativa só entra com o interruptor dela ligado na bancada.
-            ...(ex.modo === "ativa" ? { quando: estadoDaUnica(e.uid) } : {}),
-            exclusivo: "habilidadeUnica",
-            origem: e.uid,
-            nome: `${def.nome} (Habilidade Única)`,
-          });
-        }
-        if (temAtiva) estadosUnica.push({ id: estadoDaUnica(e.uid), label: `${def.nome} (Habilidade Única)` });
+        emitirUnica(fa.habilidadeEfeitos, e.uid, def.nome, "habilidadeUnica");
+        // A segunda só existe com a liberação (Addon Benção do Grão Mestre da
+        // Forja), e disputa noutra família: não soma com Feitiço.
+        if (fa.temSegundaUnica) emitirUnica(fa.segundaHabilidadeEfeitos, e.uid, def.nome, "segundaHabilidadeUnica");
+      }
+      // Acessório Único: as duas Habilidades dele, na mesma regra da Ferramenta.
+      // Sem a liberação ele continua no inventário, ocupando espaço, e não dá nada.
+      const acessorio = def.acessorioUnico && acessoriosLiberados ? acessorioResolvido.get(def.id) : null;
+      if (acessorio) {
+        emitirUnica(acessorio.habilidadeEfeitos, e.uid, def.nome, "habilidadeUnica");
+        emitirUnica(acessorio.segundaHabilidadeEfeitos, e.uid, def.nome, "segundaHabilidadeUnica");
       }
       // Encantamentos (Motor de Automação): só enquanto a Ferramenta está
       // equipada. Viajam com o valor já resolvido, como literal, porque a
@@ -2415,6 +2596,7 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
     rdFisicoBonus,       // as mesmas duas parcelas, quando a RD dele é Física
     rdPartes,            // as mesmas somas com nome, para o hover de fontes
     penalidadeDestreza,  // uniforme + escudos, cumulativos, já com Polido/Ajustado
+    penalidadePartes,    // as mesmas parcelas, com nome, para o hover
     hpMaxBonus,
     cdBonus,
     attrBonus,
@@ -2422,6 +2604,7 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
     efeitosUnica,        // para o Motor, já marcados como pool exclusivo
     efeitosEncantamento, // para o Motor, sem marca de pool (somam normal)
     estadosUnica,        // interruptores das ativas, para a bancada
+    acessoriosUnicos,    // os da ficha, com as linhas resolvidas para o editor
     avisos,
   };
 }

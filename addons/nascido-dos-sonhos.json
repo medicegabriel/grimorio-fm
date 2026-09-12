@@ -1,10 +1,10 @@
 {
   "id": "nascido-dos-sonhos",
   "nome": "Nascido dos “Sonhos”",
-  "versao": "0.1.0",
+  "versao": "0.2.0",
   "autor": "Afty",
   "paraRaw": "afty",
-  "descricao": "Ficha de Player: a origem Nascido dos “Sonhos”, os seis Talentos de Origem dela, o Cajado do Grande Mago e os quatro Funcionamentos Básicos da técnica de Merlim (base, Clarividência, Avatar de Avalon e O Mago das Flores).",
+  "descricao": "Ficha de Player: a origem Nascido dos “Sonhos”, os sete Talentos de Origem dela, o Cajado do Grande Mago e os quatro Funcionamentos Básicos da técnica de Merlim (base, Clarividência, Avatar de Avalon e O Mago das Flores).",
   "acrescenta": {
     "origens": [
       {
@@ -214,6 +214,24 @@
           {
             "canal": "cd",
             "expr": "piso(bt / 2)"
+          }
+        ]
+      },
+      {
+        "id": "tal_reserva_ilimitada",
+        "nome": "Reserva Ilimitada",
+        "grupo": "origem",
+        "descricao": "Assim como um sonho nunca parece alcançar seu fim, suas reservas parecem inesgotáveis aos olhos daqueles que o observam, fazendo até mesmo maldições de alto grau confundirem sua presença com a de um ser muito acima da humanidade, recebendo +3 PE máximos, recebendo +1 PE adicional a cada nível ímpar",
+        "requisitos": [
+          {
+            "tipo": "origem",
+            "id": "orig_nascido_dos_sonhos"
+          }
+        ],
+        "efeitos": [
+          {
+            "canal": "pe",
+            "expr": "3 + piso((nd + 1) / 2)"
           }
         ]
       }

@@ -3,6 +3,7 @@ import { ArmasTransformaveis } from "../ui/armas-transformaveis";
 import { Heart, Zap, Sparkles, Skull, EyeOff, Moon, Swords, Shield, BookOpen, Backpack, Wand2, AlertTriangle } from "lucide-react";
 
 import { funcionamentosDaFicha } from "../afty-schema";
+import { sistemaDaFicha, palavrasDoSistema } from "../afty-sistema";
 import { NumeroComFontes } from "../ui/fontes";
 import { numeroBr } from "../ui/formato";
 import { Vital } from "../ui/vital";
@@ -174,11 +175,13 @@ export default function PainelDeCombatente({
 
   // Jogador: nada de ficha, nada de painel. A ficha dele está na mão dele.
   if (!combatente.ficha || !sessao || !derived) {
+    // O Encontro mistura os dois sistemas: a palavra sai da FICHA do combatente.
+    const pal = palavrasDoSistema(sistemaDaFicha(combatente.ficha));
     return (
       <section className="afty-card p-8 text-center">
         <div className="afty-rotulo text-[12px]">
           {combatente.ficha
-            ? "Esta criatura não pôde ser calculada. A ficha dela pode ser de uma versão anterior."
+            ? `${pal.g("Este", "Esta")} ${pal.nome} não pôde ser ${pal.g("calculado", "calculada")}. A ficha ${pal.g("dele", "dela")} pode ser de uma versão anterior.`
             : "Combatente de jogador. A ficha dele está com o jogador, e aqui só entram nome e iniciativa."}
         </div>
       </section>

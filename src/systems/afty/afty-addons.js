@@ -57,7 +57,7 @@
 
 import { normalizarMarca } from "./afty-dsl";
 // Sem risco de ciclo: `afty-sistema.js` não importa nada.
-import { sistemaDaFicha, regraDo } from "./afty-sistema";
+import { sistemaDaFicha, regraDo, palavrasDoSistema } from "./afty-sistema";
 /* A tabela de progressão da Carteira. O `afty-carteira.js` é FOLHA, então este
    import é de mão única e não pode fechar ciclo. Ver `nivelDaFicha`. */
 import { nivelDaCarteira } from "./afty-carteira";
@@ -310,7 +310,7 @@ export const PRIMITIVAS = [
   {
     id: "concessao",
     rotulo: "Concessão do Mestre",
-    nota: "O mestre acrescenta Habilidade, Talento, Treino e afins na criatura no meio da luta",
+    nota: "O mestre acrescenta Habilidade, Talento, Treino e afins na ficha no meio da luta",
   },
   {
     id: "contar",
@@ -444,12 +444,12 @@ export const LIBERACOES = [
   {
     id: "qualificaSemTecnica",
     rotulo: "Qualifica Como Sem Técnica",
-    nota: "A criatura conta como Origem Sem Técnica para pré-requisito de Talento e de Linha de Treinamento",
+    nota: "A ficha conta como Origem Sem Técnica para pré-requisito de Talento e de Linha de Treinamento",
   },
   {
     id: "gemeosMaldicao",
     rotulo: "Maldição em Verdadeiras Origens",
-    nota: "O Gêmeo pode copiar da Maldição, e copiar passa a fazer a criatura seguir as regras de estrutura dela",
+    nota: "O Gêmeo pode copiar da Maldição, e copiar passa a fazer a ficha seguir as regras de estrutura dela",
   },
   /* ⚠ ABRE E ESTREITA NA MESMA LIBERAÇÃO, e é a primeira que faz as duas coisas.
      A origem que não conjura (Restringido e Sem Técnica) não monta o card de
@@ -485,6 +485,20 @@ export const LIBERACOES = [
     id: "carteiraNivel",
     rotulo: "Nível pelo XP da Carteira",
     nota: "O XP anotado na Carteira VIRA o Nível, pela tabela de progressão. Zero de XP é o Nível 3, e o campo de Nível deixa de ser digitável",
+  },
+  /* ⚠ AS DUAS DA BENÇÃO DO GRÃO MESTRE DA FORJA (2026-09-11), separadas pela
+     mesma razão das duas da Carteira: uma mexe em todo item de Grau Especial
+     que a ficha JÁ tem, e a outra abre um tipo de item que não existia. A regra
+     de disputa das duas é a família `segundaHabilidadeUnica` (afty-efeitos.js). */
+  {
+    id: "segundaHabilidadeUnica",
+    rotulo: "Segunda Habilidade Única",
+    nota: "Todo item de Grau Especial recebe uma segunda Habilidade Única, que não acumula com Feitiços",
+  },
+  {
+    id: "acessoriosUnicos",
+    rotulo: "Acessórios Únicos",
+    nota: "Abre a criação de Acessórios Únicos, que contam como Grau Especial, pesam 1, não têm custo nem Encantamentos e recebem duas Habilidades Únicas",
   },
   /* As quatro entradas que saíram da Ficha de Jogador em 2026-09-01. O id segue
      o molde do `liberacaoSoPorAddon`, e cada uma é NOMEADA: quem quer só o
@@ -1381,6 +1395,8 @@ export function problemasDeAddon(creature) {
   const naFicha = new Set(addonsDaCriatura(creature).map((p) => p.id));
   const ativos = new Set(pacotesAtivos.map((p) => p.id));
   const out = [];
+  // O aviso chega à tela, e fala da ficha na palavra do sistema dela.
+  const pal = palavrasDoSistema(sistemaDaFicha(creature));
 
   for (const def of FAMILIAS.values()) {
     if (!def.idsDaFicha || !def.resolver) continue;
@@ -1390,7 +1406,7 @@ export function problemasDeAddon(creature) {
       if (def.resolver(id)) continue;   // resolveu, está tudo certo
 
       const motivo = !naFicha.has(pacoteId)
-        ? `A ficha usa "${idCru}", do addon "${pacoteId}", que não está ligado nesta criatura.`
+        ? `A ficha usa "${idCru}", do addon "${pacoteId}", que não está ligado ${pal.g("neste", "nesta")} ${pal.nome}.`
         : !ativos.has(pacoteId)
           ? `O addon "${pacoteId}" está na ficha mas não pôde ser carregado.`
           : `O addon "${pacoteId}" não declara mais "${idCru}". Ele pode ter sido renomeado ou removido numa versão nova.`;
@@ -1404,8 +1420,8 @@ export function problemasDeAddon(creature) {
         motivo,
         // O que resolve, para o aviso não terminar num beco.
         saida: naFicha.has(pacoteId)
-          ? "Volte à versão antiga do addon, ou tire esta entrada da criatura."
-          : "Ligue esse addon na aba Cálculos, ou tire esta entrada da criatura.",
+          ? `Volte à versão antiga do addon, ou tire esta entrada ${pal.g("do", "da")} ${pal.nome}.`
+          : `Ligue esse addon na aba Cálculos, ou tire esta entrada ${pal.g("do", "da")} ${pal.nome}.`,
       });
     }
   }

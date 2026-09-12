@@ -36,7 +36,9 @@ import { Card, BoolChip, VezesGauge } from "./ui/primitivos";
 import FiltroDeHabilidades from "./ui/FiltroDeHabilidades";
 import { filtraHabilidades, filtraGruposDeHabilidade } from "./afty-filtro-habilidades";
 import { estadoInicialComRascunho, useRascunhoAfty, formatarSalvoEm } from "./afty-rascunho";
-import { SISTEMA_PADRAO, sistemaDaFicha, normalizaSistema, regraDo } from "./afty-sistema";
+import {
+  SISTEMA_PADRAO, sistemaDaFicha, normalizaSistema, regraDo, rotuloDoNivel, palavrasDoSistema,
+} from "./afty-sistema";
 import {
   origensDoSistema, getOrigem, origemTemDesenvolvimento, origemPoolLimite,
   clasDaOrigem, getCla, caracteristicasEfetivas, totalDaAlocacao, usoDaAlocacao,
@@ -53,8 +55,9 @@ import {
   ATTR_LIMITE_PADRAO,
 } from "./afty-atributos";
 import {
-  ETAPAS_POR_LINHA, focosGastos, avaliarRequisito, rotuloAlvo, treinamentosDaOrigem,
+  ETAPAS_POR_LINHA, focosGastos, avaliarRequisito, requisitosDaEtapa, rotuloAlvo, treinamentosDaOrigem,
 } from "./afty-treinamentos";
+import { novaForja, forjasDaFicha, focosDeForja } from "./afty-forja";
 import {
   AFTY_TREINOS_ESPECIAIS, focosDeTreinosEspeciais, focosDoTreinoEspecial,
   tetosDeTreinoEspecial, vezesPorTreinoEspecial,
@@ -91,7 +94,7 @@ import {
 import {
   DOMINIO_CATEGORIAS, tiposDaCategoria, categoriaLivre, valorDoEfeito,
   novoEfeitoDominio, novoDominio, versoesDisponiveis, ATRIBUTOS_FISICOS,
-  DOMINIO_EFEITOS_BASE, DOMINIO_RITUAL_CATEGORIAS, rotuloDoEfeito, rotuloVersao,
+  DOMINIO_RITUAL_CATEGORIAS, rotuloDoEfeito,
 } from "./afty-dominios";
 import { RITUAL_MELHORIAS } from "./afty-rituais";
 import { COMBATE_ESTADOS } from "./afty-combate";
@@ -104,6 +107,9 @@ import {
   INV_CUSTO_BENEFICIOS, INV_CUSTO_CONDICAO, INV_RD_TIPOS, resistenciasTreinaveis, usoPericias,
   trProfDaInvocacao, usoTR, TR_VAGAS_BASE,
   alvosDeModificador, alvosDeModificadorCaract,
+  // O rótulo dos canais da invocação mora no motor desde 2026-09-10: a Ficha
+  // também precisa dele, e uma cópia aqui envelheceria separada.
+  INV_EFEITO_CANAL_GRUPOS, INV_EFEITO_CANAL_LABEL as EFEITO_CANAL_LABEL, alvoOpcoesInvocacao,
 } from "./afty-invocacoes";
 import { periciasParaInvocacao, DANO_ADICIONAL_ARMA } from "./afty-pericias";
 import {
@@ -113,7 +119,7 @@ import {
   orcamentoDoGrau, espacosDoEquipamento, custoDoEquipamento,
   getPropriedade, getEspecial, grupoLabel,
   ARMA_PROPRIEDADES, ARMA_DADOS, ARMA_DADOS_PROP, ARMA_CRITICOS, novaArmaCustom, rotuloPropriedade,
-  armasCustomDaFicha,
+  armasCustomDaFicha, novoAcessorioUnico,
   CRIA_LABEL, REFEICOES_COZINHEIRO,
   AFTY_GRAUS, FA_TIPOS_EQUIP, FA_CRIACAO, defesaDaArmadura,
   FA_ENCANT_GANHO, FA_IDENTIFICACAO_CD, FA_GRAU_ESPECIAL_EXEMPLO,
@@ -968,6 +974,19 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
       return { ...d, treinosEspeciais: [...outros, ...minhas] };
     });
 
+  /* Interlúdios de Forja: caderno puro na ficha (`creature.forjas`). Os Focos de
+     cada linha entram no mesmo orçamento das Linhas e dos Treinos Especiais. */
+  const forjasArr = (d) => (Array.isArray(d.forjas) ? d.forjas : []);
+  const addForja = () => {
+    const nova = novaForja();
+    setDraft((d) => ({ ...d, forjas: [...forjasArr(d), nova] }));
+    return nova.id;
+  };
+  const patchForja = (id, partial) =>
+    setDraft((d) => ({ ...d, forjas: forjasArr(d).map((x) => (x.id === id ? { ...x, ...partial } : x)) }));
+  const removeForja = (id) =>
+    setDraft((d) => ({ ...d, forjas: forjasArr(d).filter((x) => x.id !== id) }));
+
   // Invocações: cada uma é uma ficha própria em creature.invocacoes. O motor
   // (deriveAfty) resolve os stats lendo o dono. Aqui só editamos as escolhas.
   const invocacoesArr = (d) => (Array.isArray(d.invocacoes) ? d.invocacoes : []);
@@ -1018,6 +1037,26 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
     setDraft((d) => setEquipArr(
       { ...d, armasCustom: armasArr(d).filter((x) => x.id !== id) },
       equipArr(d).filter((e) => !(e.tipo === "arma" && e.refId === id)),
+    ));
+
+  // Acessórios Únicos (Addon Benção do Grão Mestre da Forja). Mesmo molde das
+  // armas criadas: guardados na ficha e injetados nos Itens Especiais pela
+  // `catalogoDoTipo`, e apagar tira do inventário junto, pelo mesmo motivo.
+  const acessoriosArr = (d) => (Array.isArray(d.acessoriosUnicos) ? d.acessoriosUnicos : []);
+  const addAcessorioUnico = () => {
+    const novo = novoAcessorioUnico();
+    setDraft((d) => ({ ...d, acessoriosUnicos: [...acessoriosArr(d), novo] }));
+    return novo.id;
+  };
+  const patchAcessorioUnico = (id, partial) =>
+    setDraft((d) => ({
+      ...d,
+      acessoriosUnicos: acessoriosArr(d).map((x) => (x.id === id ? { ...x, ...partial } : x)),
+    }));
+  const removeAcessorioUnico = (id) =>
+    setDraft((d) => setEquipArr(
+      { ...d, acessoriosUnicos: acessoriosArr(d).filter((x) => x.id !== id) },
+      equipArr(d).filter((e) => !(e.tipo === "item" && e.refId === id)),
     ));
 
   // Expansões de Domínio. Uma criatura pode ter várias escritas, e só uma no ar:
@@ -1281,7 +1320,16 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
                 não aplicado, porque ninguém pediu os 64px de volta ainda.
                 Anotado em docs/a-fazer.md. */}
             <h1 className="text-lg sm:text-xl font-bold truncate min-w-0">
-              {isEditing ? "Editar Criatura" : "Nova Criatura"} · Afty
+              {(() => {
+                /* O substantivo sai do registro de sistemas (Criatura,
+                   Personagem), e a marca "· Afty" só aparece onde a divergência
+                   `marcaDoSistema` deixa. Autor, 2026-09-10, sobre o /Player
+                   dizendo "Editar Criatura · Afty": tirar a marca. */
+                const sis = sistemaDaFicha(draft);
+                const pal = palavrasDoSistema(sis);
+                const titulo = isEditing ? `Editar ${pal.Nome}` : `${pal.g("Novo", "Nova")} ${pal.Nome}`;
+                return regraDo(sis, "marcaDoSistema") === "player" ? titulo : `${titulo} · Afty`;
+              })()}
             </h1>
           </div>
           <IndicadorRascunho rascunho={rascunho} />
@@ -1311,7 +1359,9 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
                     }`}
                   >
                     {t.label}
-                    {t.afty && (
+                    {/* O selo marca a aba própria do sistema, e é a marca Afty:
+                        no jogador ela some (divergência `marcaDoSistema`). */}
+                    {t.afty && regraDo(sistemaDaFicha(draft), "marcaDoSistema") !== "player" && (
                       <span className={`text-[9px] font-extrabold uppercase tracking-wide px-1.5 py-0.5 rounded ${
                         on ? "bg-white/20 text-white" : "bg-purple-500/25 text-purple-300"
                       }`}>Afty</span>
@@ -1354,8 +1404,8 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
           {tabAtiva === "especializacoes" && <TabEspecializacoes draft={draft} derived={derived} setEspecializacoes={setEspecializacoes} toggleHabilidade={toggleHabilidade} setHabilidadeVezes={setHabilidadeVezes} toggleEscolhaHabilidade={toggleEscolhaHabilidade} toggleTalento={toggleTalento} setTalentoVezes={setTalentoVezes} toggleEscolhaTalento={toggleEscolhaTalento} setMelhoriaVezes={setMelhoriaVezes} toggleLendaria={toggleLendaria} toggleEscolhaAltoNivel={toggleEscolhaAltoNivel} patchTecnicasCombate={patchTecnicasCombate} />}
           {tabAtiva === "aptidoes" && <TabAptidoes draft={draft} derived={derived} setAptidaoNivel={setAptidaoNivel} toggleAptidao={toggleAptidao} setAptidaoOpcao={setAptidaoOpcao} setAptidaoVezes={setAptidaoVezes} setAptidaoOpcaoRepetida={setAptidaoOpcaoRepetida} />}
           {tabAtiva === "invocacoes" && <TabInvocacoes draft={draft} derived={derived} addInvocacao={addInvocacao} removeInvocacao={removeInvocacao} duplicarInvocacao={duplicarInvocacao} moverInvocacao={moverInvocacao} patchInvocacao={patchInvocacao} patchInvocacaoAttr={patchInvocacaoAttr} efeitosApi={efeitosApi} addHorda={addHorda} removeHorda={removeHorda} patchHorda={patchHorda} />}
-          {tabAtiva === "equipamentos" && <TabEquipamentos draft={draft} derived={derived} addEquipamento={addEquipamento} removeEquipamento={removeEquipamento} patchEquipamento={patchEquipamento} toggleFerramenta={toggleFerramenta} patchFerramenta={patchFerramenta} toggleEncantamento={toggleEncantamento} addArmaCustom={addArmaCustom} patchArmaCustom={patchArmaCustom} removeArmaCustom={removeArmaCustom} />}
-          {tabAtiva === "interludios" && <TabInterludios draft={draft} derived={derived} setTreinoProgresso={setTreinoProgresso} setTreinoInstance={setTreinoInstance} setTreinoAlvo={setTreinoAlvo} setTreinoEscolha={setTreinoEscolha} setTreinoEspecialVezes={setTreinoEspecialVezes} sistema={sistema} setFocosLivres={setFocosLivres} />}
+          {tabAtiva === "equipamentos" && <TabEquipamentos draft={draft} derived={derived} addEquipamento={addEquipamento} removeEquipamento={removeEquipamento} patchEquipamento={patchEquipamento} toggleFerramenta={toggleFerramenta} patchFerramenta={patchFerramenta} toggleEncantamento={toggleEncantamento} addArmaCustom={addArmaCustom} patchArmaCustom={patchArmaCustom} removeArmaCustom={removeArmaCustom} addAcessorioUnico={addAcessorioUnico} patchAcessorioUnico={patchAcessorioUnico} removeAcessorioUnico={removeAcessorioUnico} />}
+          {tabAtiva === "interludios" && <TabInterludios draft={draft} derived={derived} setTreinoProgresso={setTreinoProgresso} setTreinoInstance={setTreinoInstance} setTreinoAlvo={setTreinoAlvo} setTreinoEscolha={setTreinoEscolha} setTreinoEspecialVezes={setTreinoEspecialVezes} sistema={sistema} setFocosLivres={setFocosLivres} addForja={addForja} patchForja={patchForja} removeForja={removeForja} />}
           {tabAtiva === "defesas" && <TabDefesas derived={derived} setDefesaEstado={setDefesaEstado} setDefesaRd={setDefesaRd} />}
           {tabAtiva === "carteira" && <TabCarteira draft={draft} derived={derived} patchCarteira={patchCarteira} />}
           {tabAtiva === "catarse" && <TabCatarse draft={draft} derived={derived} patchCatarse={patchCatarse} />}
@@ -2226,70 +2276,14 @@ function CuraCard({ derived }) {
 
    O que a criatura ganha em número sai pelo Motor, e não daqui: este card é o
    editor, e a bancada de Simulação de Combate é quem liga a expansão. Por isso o
-   card mostra o resultado (custo, duração, área, PV do domo) e o texto pronto,
-   sem explicar de onde cada número veio. */
-/* Renderiza o texto da expansão como BLOCO DE REGRA, igual à 2.5.2
-   (sections/actions/DomainText.jsx): título entre filetes, aparência, faixa com
-   "Nome [Expansão X]" e o corpo com bullets de título destacado.
+   card mostra o resultado (área, duração, PV do domo e custo) em células, com a
+   origem de cada número no hover.
 
-   O marcador fica em coluna própria (flex), e não como recuo, para a linha
-   quebrada alinhar embaixo do texto e não embaixo da bolinha. */
-const DOM_TITULO_RE = /^●\s*(.*?\.)\s+([\s\S]*)$/;
-
-function DominioBullet({ titulo, corpo }) {
-  return (
-    <div className="text-[11px] leading-relaxed text-slate-300 flex gap-1.5">
-      <span className="text-purple-300 flex-shrink-0 select-none">●</span>
-      <p className="min-w-0 text-justify">
-        <span className="font-bold text-purple-200">{titulo}</span>
-        {corpo ? <> {corpo}</> : null}
-      </p>
-    </div>
-  );
-}
-
-function DominioTexto({ texto, nome, versaoLabel, aparencia }) {
-  if (!texto?.trim() && !aparencia?.trim()) return null;
-  const paras = (texto || "").split("\n\n").map((p) => p.trim()).filter(Boolean);
-  return (
-    <div className="flex flex-col gap-3 rounded border border-slate-800 bg-slate-950/60 p-3">
-      <div className="border-y-2 border-purple-900/60 py-1">
-        <h3 className="text-center text-sm font-bold text-purple-100">
-          Expansão de Domínio{nome?.trim() ? `: ${nome.trim()}` : ""}
-        </h3>
-      </div>
-
-      {aparencia?.trim() && (
-        <p className="text-[11px] leading-relaxed text-slate-300 text-justify whitespace-pre-wrap">{aparencia.trim()}</p>
-      )}
-
-      {versaoLabel && (
-        <div className="bg-purple-950/50 border border-purple-900/60 rounded-sm px-2 py-1">
-          <p className="text-center text-xs font-bold text-purple-200 underline">
-            {nome?.trim() || "Expansão"} [Expansão {versaoLabel}]
-          </p>
-        </div>
-      )}
-
-      {paras.map((para, i) => {
-        if (!para.startsWith("●")) {
-          return (
-            <p key={i} className="text-[11px] leading-relaxed text-slate-300 text-justify whitespace-pre-wrap">{para}</p>
-          );
-        }
-        const m = para.match(DOM_TITULO_RE);
-        return (
-          <DominioBullet
-            key={i}
-            titulo={m ? m[1] : para.replace(/^●\s*/, "")}
-            corpo={m ? m[2] : ""}
-          />
-        );
-      })}
-    </div>
-  );
-}
-
+   ⚠ O BLOCO DE TEXTO PRONTO SAIU EM 2026-09-11 (autor: *"Ficou muito feio a
+   Expansão de Domínio [...] E no Criador de Fichas"*). Ele repetia, em prosa,
+   tudo o que o editor logo acima já mostrava: os números, a aparência, os
+   efeitos, e os cinco efeitos base, que ainda apareciam uma segunda vez num
+   <details> ensinando a regra. Quem lê o corpo pronto é a Ficha Final. */
 /* Um efeito de expansão, RECOLHÍVEL como na 2.5.2. Recolhido, a linha mostra só
    o resumo (nome ou rótulo, o selo ×1,5 e a grandeza), que é o que serve para
    varrer com o olho. O formulário abre sob demanda. */
@@ -2315,9 +2309,13 @@ function EfeitoDominioLinha({ efeito, valor, podeFortalecer, onPatch, onRemove }
           className="flex-1 flex items-center gap-1.5 text-left min-w-0 text-slate-300 hover:text-white"
         >
           <ChevronDown className={`w-3.5 h-3.5 flex-shrink-0 transition-transform ${aberto ? "" : "-rotate-90"}`} />
-          <span className="text-xs font-semibold truncate">{resumo}</span>
+          <span className="text-xs font-semibold truncate shrink-0 max-w-full">{resumo}</span>
           {efeito.fortalecido && <span className="text-[9px] text-purple-300 font-bold flex-shrink-0">×1,5</span>}
-          {!aberto && valor && <span className="text-[10px] text-slate-500 font-mono truncate">· {valor}</span>}
+          {/* ⚠ O NOME TEM PISO, e quem cede é o valor (2026-09-11). Os dois tinham
+              o mesmo `truncate`, e em 390px saía "Amplificação de T..." para caber
+              um valor que o corpo aberto mostra de novo. Abaixo de `sm` o valor
+              some da linha fechada, e acima dele encolhe antes do nome. */}
+          {!aberto && valor && <span className="hidden sm:block min-w-0 text-[10px] text-slate-500 font-mono truncate">· {valor}</span>}
         </button>
         <button
           type="button"
@@ -2541,39 +2539,27 @@ function DominioCard({ derived, addDominio, removeDominio, patchDominio, setDomi
                 </button>
               </div>
 
-              {/* Bloco de números, no formato da 2.5.2: uma linha em fonte
-                  monoespaçada com tudo que a expansão custa e entrega. */}
-              <div className="bg-slate-900/60 border border-slate-800 rounded p-3 space-y-2">
-                <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] font-mono">
-                  <span className="text-slate-500">Execução: <span className="text-slate-300">Duas Ações Comuns</span></span>
-                  <span className="text-slate-500">
-                    Custo: <span className="text-purple-300">{d.custo} PE</span>
-                    {d.acertoGarantido?.ativo && <span className="text-slate-600"> (+5 Acerto Garantido)</span>}
-                  </span>
-                  <span className="text-slate-500">Duração: <span className="text-slate-300">{d.duracao} {d.duracao === 1 ? "rodada" : "rodadas"}</span></span>
-                  <span className="text-slate-500">Distância: <span className="text-slate-300">{d.area}</span></span>
-                  <span className="text-slate-500">
-                    {d.versao === "sem_barreiras" ? "Totem" : "Barreira"}: <span className="text-slate-300">{d.pvBarreira} PV</span>
-                  </span>
-                </div>
-                <div className="text-[11px] text-slate-400">
-                  Efeitos de Expansão: <span className={`font-mono ${excedeu ? "text-rose-300" : "text-white"}`}>{d.vagasUsadas}/{info.maxEfeitos}</span>
-                  {d.versao === "incompleta" && (
-                    <span className="text-amber-400/90 ml-2">Incompleta: efeitos limitados ao nível de aptidão 3.</span>
-                  )}
-                </div>
-                <details className="text-[11px] text-slate-400">
-                  <summary className="cursor-pointer text-slate-500 hover:text-slate-300 select-none">
-                    Efeitos base da abertura (sempre aplicados)
-                  </summary>
-                  <ul className="mt-1.5 space-y-1 list-disc list-inside marker:text-purple-500/70">
-                    {DOMINIO_EFEITOS_BASE.map((b) => (
-                      <li key={b.titulo} className="leading-snug pl-1">
-                        <span className="font-semibold text-slate-300">{b.titulo}.</span> {b.texto}
-                      </li>
-                    ))}
-                  </ul>
-                </details>
+              {/* ⚠ CÉLULAS, E NÃO UMA LINHA MONO (2026-09-11). Mesmo desenho do
+                  Domínio Simples logo acima, com o `group` em cada célula para
+                  os hovers não acenderem juntos. A execução saiu daqui: ela é a
+                  mesma em toda expansão e a Ficha a mostra no corpo. */}
+              <div className="grid gap-2 grid-cols-2 sm:grid-cols-4">
+                {[
+                  { k: "Área", v: d.area },
+                  { k: "Duração", v: `${d.duracao} ${d.duracao === 1 ? "Rodada" : "Rodadas"}` },
+                  {
+                    k: d.versao === "sem_barreiras" ? "Totem" : "Domo",
+                    v: `${d.pvBarreira} PV`,
+                    partes: info.barreira?.partesPvDomo,
+                  },
+                  { k: "Custo", v: `${d.custo} PE`, partes: d.partesCusto },
+                ].map((l) => (
+                  <div key={l.k} className="relative group rounded-lg border border-slate-800 bg-slate-900/60 p-2.5 text-center">
+                    <div className="text-[10px] uppercase tracking-wider text-slate-500">{l.k}</div>
+                    <div className={`font-mono text-lg font-bold tabular-nums text-white ${l.partes?.length ? "cursor-help" : ""}`}>{l.v}</div>
+                    {l.partes?.length > 0 && <PainelDeFontes partes={l.partes} total={l.v} />}
+                  </div>
+                ))}
               </div>
 
               <div>
@@ -2601,7 +2587,10 @@ function DominioCard({ derived, addDominio, removeDominio, patchDominio, setDomi
 
               <div className="bg-slate-900/60 border border-slate-800 rounded p-3 space-y-2.5">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Efeitos de Expansão</span>
+                  <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                    Efeitos de Expansão{" "}
+                    <span className={`font-mono ${excedeu ? "text-rose-300" : "text-slate-300"}`}>{d.vagasUsadas}/{info.maxEfeitos}</span>
+                  </span>
                   <button
                     type="button"
                     disabled={d.vagasUsadas >= info.maxEfeitos}
@@ -2616,6 +2605,12 @@ function DominioCard({ derived, addDominio, removeDominio, patchDominio, setDomi
                     <Plus className="w-3 h-3" /> Adicionar Efeito
                   </button>
                 </div>
+                {d.versao === "incompleta" && (
+                  <div className="flex items-center gap-1.5 text-[11px] text-amber-400/90">
+                    <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
+                    Incompleta: efeitos limitados ao nível de aptidão 3.
+                  </div>
+                )}
                 {d.efeitos.length === 0 && (
                   <p className="text-xs text-slate-600 italic">Nenhum efeito de expansão adicionado.</p>
                 )}
@@ -2650,13 +2645,6 @@ function DominioCard({ derived, addDominio, removeDominio, patchDominio, setDomi
                   )}
                 </div>
               )}
-
-              <DominioTexto
-                texto={d.texto}
-                nome={d.nome}
-                versaoLabel={rotuloVersao(d.versao)}
-                aparencia={d.aparencia}
-              />
             </div>
           );
         })}
@@ -3217,11 +3205,29 @@ const MotorChevron = () => (
 // de Crítico", e ninguém digita acento numa caixa de busca.
 const semAcento = (s) => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
-function CanalPicker({ value, onChange }) {
+/* `grupos` troca o CATÁLOGO inteiro. O padrão são os canais da criatura, e a
+   Característica Livre da Invocação passa os dela (2026-09-10): os dois espaços
+   repetem nomes com sentidos diferentes (`pv` aqui é o PV do dono, lá o do
+   shikigami), e um seletor único misturaria os dois. */
+function CanalPicker({ value, onChange, grupos: catalogo = EFEITO_CANAL_GRUPOS }) {
   const [aberto, setAberto] = useState(false);
   const [busca, setBusca] = useState("");
   const [cursor, setCursor] = useState(0);
-  const atual = EFEITO_CANAL_GRUPOS.flatMap((g) => g.itens).find((c) => c.id === value);
+  /* ⚠ O PAINEL NÃO PODE PASSAR DA TELA. Ele tem 620px (no máximo 92% da
+     largura) e nasce na borda esquerda do botão. Num editor aninhado, como o da
+     Característica Livre dentro do card da Invocação, o botão fica longe da
+     borda, e em 390px o painel passava 35px da tela e abria rolagem horizontal
+     na página inteira (medido em 2026-09-10). O deslocamento é medido NO CLIQUE
+     que abre, e não num efeito de leiaute: ver o erro 185 da fileira. */
+  const ancora = useRef(null);
+  const [deslocamento, setDeslocamento] = useState(0);
+  const abrir = () => {
+    const r = ancora.current?.getBoundingClientRect();
+    const largura = Math.min(620, window.innerWidth * 0.92);
+    setDeslocamento(r ? Math.min(0, window.innerWidth - 8 - r.left - largura) : 0);
+    setAberto(true);
+  };
+  const atual = catalogo.flatMap((g) => g.itens).find((c) => c.id === value);
 
   /* ⚠ O `hpAtributo` NASCEU PARA UM CASO DE ADDON (trocar o atributo do cálculo
      de PV), e quem não usa addon não tem por que vê-lo entre os 61 canais. Ele
@@ -3238,7 +3244,7 @@ function CanalPicker({ value, onChange }) {
   const veArmaTransf = usePrimitiva("armaTransformavel") || CANAIS_ARMA_TRANSF.includes(value);
 
   const termo = semAcento(busca.trim());
-  const grupos = EFEITO_CANAL_GRUPOS
+  const grupos = catalogo
     .map((g) => ({
       label: g.label,
       itens: g.itens.filter((c) =>
@@ -3270,10 +3276,10 @@ function CanalPicker({ value, onChange }) {
   };
 
   return (
-    <div className="relative flex-shrink-0 min-w-[170px]">
+    <div ref={ancora} className="relative flex-shrink-0 min-w-[170px]">
       <button
         type="button"
-        onClick={() => (aberto ? fechar() : setAberto(true))}
+        onClick={() => (aberto ? fechar() : abrir())}
         className={`${MOTOR_SELECT_CLS} text-left truncate`}
         aria-label="Canal"
         aria-expanded={aberto}
@@ -3292,7 +3298,10 @@ function CanalPicker({ value, onChange }) {
             aria-hidden="true"
             tabIndex={-1}
           />
-          <div className="absolute z-30 mt-1 w-[620px] max-w-[92vw] rounded-lg border border-slate-700 bg-slate-950 shadow-xl shadow-black/50 overflow-hidden">
+          <div
+            className="absolute z-30 mt-1 w-[620px] max-w-[92vw] rounded-lg border border-slate-700 bg-slate-950 shadow-xl shadow-black/50 overflow-hidden"
+            style={{ left: deslocamento }}
+          >
             <div className="p-1.5 border-b border-slate-800">
               <input
                 type="text"
@@ -3648,9 +3657,15 @@ function fontesDanoDaFicha(draft, derived) {
    Os conectores não são texto explicativo: eles são o que IDENTIFICA cada campo,
    e um rótulo empilhado em cima de cada controle dobraria a altura da linha, que
    é exatamente o erro que a nota de canal cometeu ("Você PIOROU"). */
+/* `canalGrupos` e `alvoOpcoesDe` trocam o catálogo de canais e o vocabulário
+   de alvo, e `comDuracao` esconde o "e dura". Os três existem para a
+   Característica Livre da Invocação (2026-09-10), que escreve nos canais DA
+   INVOCAÇÃO e é passiva: permanente ou temporária não quer dizer nada nela, e
+   um controle que não decide nada é ruído. Quem não passa segue igual. */
 function TecnicaMotorEditor({
   efeitos, onChange, pericias, fontesDano = [], comModo = false, dslGrupos = [],
   titulo = "Motor de Automação", simplificarTamanho = false,
+  canalGrupos, alvoOpcoesDe = null, comDuracao = true,
 }) {
   const lista = Array.isArray(efeitos) ? efeitos : [];
   // Devolve só os campos de DADO, nunca os resolvidos: `valor` e `ativo` são
@@ -3719,7 +3734,9 @@ function TecnicaMotorEditor({
           const exprRuim = ef.expr && !chk.ok;
           const chkQuando = ef.quando ? validateExpression(ef.quando, conhecidas) : { ok: true };
           const quandoRuim = ef.quando && !chkQuando.ok;
-          const alvos = ef.alvoTipo ? alvoOpcoes(ef.alvoTipo, pericias, fontesDano) : null;
+          const alvos = !ef.alvoTipo
+            ? null
+            : alvoOpcoesDe ? alvoOpcoesDe(ef.alvoTipo) : alvoOpcoes(ef.alvoTipo, pericias, fontesDano);
           const tamanhoSimples = simplificarTamanho && ef.canal === "tamanho";
           const tamanhoValor = Math.trunc(Number(ef.expr) || 1);
           const tamanhoDirecao = tamanhoValor < 0 ? -1 : 1;
@@ -3728,19 +3745,23 @@ function TecnicaMotorEditor({
             <div key={i} className="rounded border border-slate-800 bg-slate-950/50 p-2 space-y-2">
               {/* ---- O QUE o efeito é, e quanto ele VALE ---- */}
               <div className="flex flex-wrap items-center gap-2">
-                <CanalPicker value={ef.canal} onChange={(v) => patch(i, { canal: v })} />
+                <CanalPicker value={ef.canal} onChange={(v) => patch(i, { canal: v })} grupos={canalGrupos} />
 
                 {alvos && (
                   <>
                     <Conector>em</Conector>
                     <div className="relative flex-shrink-0 min-w-[130px]">
                       <select
-                        value={ef.alvo}
+                        value={ef.alvo ?? ""}
                         onChange={(e) => patch(i, { alvo: e.target.value })}
                         className={MOTOR_SELECT_CLS}
                         aria-label="Alvo"
                       >
-                        <option value="">todos</option>
+                        {/* Alvo obrigatório não oferece "todos": um bônus de
+                            atributo sem atributo não cai em lugar nenhum. */}
+                        {ef.alvoObrigatorio
+                          ? <option value="" disabled>escolher...</option>
+                          : <option value="">todos</option>}
                         {alvos.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                       </select>
                       <MotorChevron />
@@ -3843,20 +3864,25 @@ function TecnicaMotorEditor({
                 <span className="w-10 flex-shrink-0" aria-hidden="true" />
               </div>
 
+              {(comDuracao || comModo) && (
               <div className="flex flex-wrap items-center gap-2">
-                <Conector>e dura</Conector>
-                <div className="relative flex-shrink-0 min-w-[150px]">
-                  <select
-                    value={ef.duracao}
-                    onChange={(e) => patch(i, { duracao: e.target.value })}
-                    className={MOTOR_SELECT_CLS}
-                    aria-label="Duração"
-                  >
-                    <option value="permanente">Permanente</option>
-                    <option value="temporaria">Temporária</option>
-                  </select>
-                  <MotorChevron />
-                </div>
+                {comDuracao && (
+                  <>
+                    <Conector>e dura</Conector>
+                    <div className="relative flex-shrink-0 min-w-[150px]">
+                      <select
+                        value={ef.duracao}
+                        onChange={(e) => patch(i, { duracao: e.target.value })}
+                        className={MOTOR_SELECT_CLS}
+                        aria-label="Duração"
+                      >
+                        <option value="permanente">Permanente</option>
+                        <option value="temporaria">Temporária</option>
+                      </select>
+                      <MotorChevron />
+                    </div>
+                  </>
+                )}
                 {comModo && (
                   <>
                     <Conector>e é</Conector>
@@ -3875,6 +3901,7 @@ function TecnicaMotorEditor({
                   </>
                 )}
               </div>
+              )}
                 </>
               )}
 
@@ -7081,7 +7108,14 @@ function TabIdentidade({ draft, derived, patch, patchCore, setOrigemBonus, setOr
       <Card title="Identidade">
         <div>
           <FieldLabel required>Nome</FieldLabel>
-          <TextInput value={draft.name} onChange={(v) => patch({ name: v })} placeholder="Nome da criatura" />
+          <TextInput
+            value={draft.name}
+            onChange={(v) => patch({ name: v })}
+            placeholder={(() => {
+              const pal = palavrasDoSistema(sistemaDaFicha(draft));
+              return `Nome ${pal.g("do", "da")} ${pal.nome}`;
+            })()}
+          />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
           <div>
@@ -8117,8 +8151,12 @@ function TreinoEtapas({ linha, progresso, attrEff, nd, ctxReq, onSet, readOnly =
           const done = !readOnly && et.n <= progresso;
           const isNext = !readOnly && et.n === progresso + 1;
           const locked = !readOnly && et.n > progresso + 1;
-          const req = avaliarRequisito(et.requisito, { attrEff, nd, ...ctxReq });
-          const blocked = isNext && (!req.ok || (et.n === 1 && !!bloqueioExterno));
+          /* Uma etapa pode pedir mais de um requisito (a Benção da Adaptação pede
+             Técnica Máxima e o Santo da Espada), e todos têm de passar. */
+          const reqs = requisitosDaEtapa(et.requisito)
+            .map((r) => avaliarRequisito(r, { attrEff, nd, ...ctxReq }));
+          const faltando = reqs.filter((r) => !r.ok);
+          const blocked = isNext && (faltando.length > 0 || (et.n === 1 && !!bloqueioExterno));
           const isTop = done && et.n === progresso; // última concluída (desfazível)
 
           return (
@@ -8140,7 +8178,10 @@ function TreinoEtapas({ linha, progresso, attrEff, nd, ctxReq, onSet, readOnly =
                     {et.n}ª Etapa
                   </span>
                   <span className="text-[10px] text-slate-500">{et.focos} Foco{et.focos > 1 ? "s" : ""}</span>
-                  {!done && <RequisitoChip req={req} />}
+                  {/* Um chip por requisito, soltos na fileira que já quebra: a
+                      RequisitoLista não quebra, e dois requisitos longos
+                      estourariam a etapa no telefone. */}
+                  {!done && reqs.map((r, i) => <RequisitoChip key={i} req={r} />)}
                 </div>
                 <p className={`text-[11px] leading-snug mt-1 ${locked ? "text-slate-500" : "text-slate-400"}`}>
                   {et.beneficio}
@@ -8159,7 +8200,9 @@ function TreinoEtapas({ linha, progresso, attrEff, nd, ctxReq, onSet, readOnly =
                         ? "border-slate-800 text-slate-600 cursor-not-allowed"
                         : "border-purple-700 bg-purple-800/40 text-purple-200 hover:bg-purple-700/50"
                     }`}
-                    title={blocked ? (bloqueioExterno || `Requisito não atendido: ${req.label}`) : "Concluir esta etapa"}
+                    title={blocked
+                      ? (bloqueioExterno || `Requisito não atendido: ${faltando.map((r) => r.label).join(" e ")}`)
+                      : "Concluir esta etapa"}
                   >
                     Treinar <ArrowRight className="w-3 h-3" />
                   </button>
@@ -8559,7 +8602,10 @@ function ChipConcede({ texto, aceso }) {
 
    `max` vem de fora porque o teto depende do ND (1 + 1 a cada 5 ou 10 níveis),
    e quem tem o ND é a aba. */
-function TreinoEspecialCard({ item, vezes, max, onSetVezes }) {
+/* ⚠ `sistema` decide só o title: no jogador o teste é rolado na mesa (autor,
+   2026-09-10), e o title não pode afirmar a regra da criatura. Ver a
+   divergência `interludioComTeste`. */
+function TreinoEspecialCard({ item, vezes, max, onSetVezes, sistema }) {
   const [open, setOpen] = useState(false);
   const escolhido = vezes > 0;
   const repetivel = max == null || max > 1;
@@ -8580,7 +8626,9 @@ function TreinoEspecialCard({ item, vezes, max, onSetVezes }) {
           aria-label={`${escolhido ? "Remover" : "Escolher"} ${item.nome}`}
           title={escolhido
             ? "Remover"
-            : "Escolher. Interlúdio que pede teste é sucesso automático para criaturas"}
+            : regraDo(sistema, "interludioComTeste") === "player"
+              ? "Escolher"
+              : "Escolher. Interlúdio que pede teste é sucesso automático para criaturas"}
           className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 border transition-colors ${
             escolhido
               ? "bg-purple-700 border-purple-600 text-white"
@@ -8644,6 +8692,97 @@ function TreinoEspecialCard({ item, vezes, max, onSetVezes }) {
 /* O Treino Especial cujo texto de regra ainda não chegou. Mesmo esqueleto do
    TreinoEspecialCard, com o ícone ocupando o lugar do quadrado que liga: assim
    as colunas do card batem e a lista lê como uma só. */
+/* Uma linha do caderno de Forja: quantos Focos ela gastou e o que saiu dela.
+
+   ⚠ SÓ ANOTAÇÃO (autor, 2026-09-11). O catálogo tem kit, Ofício, CD por grau e
+   limite por interlúdio, e nada disso entra aqui: ele pediu o caderno, e um
+   campo que conferisse viraria regra que ninguém decidiu. */
+function ForjaLinha({ forja, onPatch, onRemove }) {
+  const [confirmDel, setConfirmDel] = useState(false);
+  return (
+    <div className="rounded-lg border border-slate-800 bg-slate-950/40 px-3 py-2.5 space-y-2">
+      <div className="flex items-center gap-2">
+        <span className="text-[10px] uppercase tracking-wider text-slate-500 flex-shrink-0">Focos</span>
+        <div className="w-20 flex-shrink-0">
+          <NumberInput value={forja.focos} onChange={(v) => onPatch({ focos: v })} min={0} max={99} />
+        </div>
+        {confirmDel ? (
+          <span className="ml-auto flex items-center gap-1 flex-shrink-0">
+            <span className="text-[10px] text-rose-300 whitespace-nowrap">Apagar?</span>
+            <button
+              type="button"
+              onClick={onRemove}
+              className="w-5 h-5 rounded flex items-center justify-center text-rose-400 hover:text-rose-300 hover:bg-rose-950/40"
+              title="Confirmar"
+              aria-label="Confirmar exclusão da forja"
+            >
+              <Check className="w-3.5 h-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setConfirmDel(false)}
+              className="w-5 h-5 rounded flex items-center justify-center text-slate-500 hover:text-white hover:bg-slate-800"
+              title="Cancelar"
+              aria-label="Cancelar"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </span>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setConfirmDel(true)}
+            title="Apagar esta forja"
+            className="ml-auto text-[10px] px-2 py-0.5 rounded text-slate-500 hover:text-rose-300 hover:bg-rose-950/40 transition-colors flex-shrink-0"
+          >
+            Apagar
+          </button>
+        )}
+      </div>
+      <TextArea
+        value={forja.itens}
+        onChange={(v) => onPatch({ itens: v })}
+        rows={2}
+        placeholder="Itens feitos"
+      />
+    </div>
+  );
+}
+
+/* O caderno de Forja. Fica na aba Interlúdios porque os Focos dele saem do
+   mesmo caixa, e o medidor dos outros dois cards já conta esta lista. */
+function ForjaCard({ forjas, onAdd, onPatch, onRemove }) {
+  return (
+    <Card
+      title="Interlúdios · Forja"
+      headerRight={
+        <button
+          type="button"
+          onClick={onAdd}
+          className="text-[11px] font-semibold px-2.5 py-1 rounded-md bg-purple-700/70 text-white hover:bg-purple-700 transition-colors"
+        >
+          Nova Forja
+        </button>
+      }
+    >
+      {forjas.length === 0 ? (
+        <p className="text-[11px] text-slate-600">Nenhuma forja anotada.</p>
+      ) : (
+        <div className="space-y-1.5">
+          {forjas.map((f) => (
+            <ForjaLinha
+              key={f.id}
+              forja={f}
+              onPatch={(partial) => onPatch(f.id, partial)}
+              onRemove={() => onRemove(f.id)}
+            />
+          ))}
+        </div>
+      )}
+    </Card>
+  );
+}
+
 function InterludioInfo({ icon: Icon, titulo, children }) {
   const [open, setOpen] = useState(false);
   return (
@@ -9069,7 +9208,7 @@ function TabEspecializacoes({ draft, derived, setEspecializacoes, toggleHabilida
           const titulo = brigaCom
             ? `Não convive com ${getEspecializacao(brigaCom)?.nome ?? brigaCom}`
             : semNd
-              ? `ND ${total} não comporta multiclasse (cada Especialização tem nível mínimo 1)`
+              ? `${rotuloDoNivel(sistemaDaFicha(draft))} ${total} não comporta multiclasse (cada Especialização tem nível mínimo 1)`
               : cheio ? `Máximo de ${max} Especializações` : undefined;
 
           /* Com ±, o chip vira uma CAIXA com botões dentro (o nome e os ±
@@ -10781,6 +10920,7 @@ function SecaoRecolhivel({ titulo, resumo, defaultOpen = false, children }) {
    Depende do item, então é escolha por efeito, e não da fonte inteira. */
 function MotorEfeitosEditor({
   efeitos, onChange, pericias, fontesDano, dslContexto, dslExtras,
+  rotulo = "Motor de Automação (efeitos enquanto equipada)",
 }) {
   // A Habilidade Única lê o contexto normal da criatura mais as variáveis do
   // próprio item. `grau`, por exemplo, é o grau REAL da Ferramenta, não o grau
@@ -10808,7 +10948,7 @@ function MotorEfeitosEditor({
   }));
   return (
     <div className="space-y-1.5">
-      <FieldLabel>Motor de Automação (efeitos enquanto equipada)</FieldLabel>
+      <FieldLabel>{rotulo}</FieldLabel>
       {efeitos.map((ef, i) => {
         const chk = validateExpression(ef.expr || "");
         const alvos = alvoOpcoes(getCanal(ef.canal)?.alvo, pericias, fontesDano);
@@ -11027,27 +11167,66 @@ function FerramentaEditor({
 
       {/* Habilidade Única (Grau Especial): texto + Motor de Automação */}
       {fa.temHabUnica && (
-        <div className="rounded-lg border border-purple-900/40 bg-purple-950/20 px-2.5 py-2.5 space-y-2">
-          <span className="block text-[10px] uppercase tracking-wider text-purple-200">
-            Habilidade Única (criada com o Narrador)
-          </span>
-          <textarea
-            value={fa.habilidadeUnica}
-            onChange={(ev) => onPatch({ habilidadeUnica: ev.target.value })}
-            rows={3}
-            placeholder="Descreva a habilidade única desta ferramenta de Grau Especial."
-            className="w-full text-[12px] rounded-lg border border-slate-700 bg-slate-950/60 px-2.5 py-2 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-purple-600 resize-y"
-          />
-          <MotorEfeitosEditor
-            efeitos={fa.habilidadeEfeitos}
-            onChange={(arr) => onPatch({ habilidadeEfeitos: arr })}
-            pericias={pericias}
-            fontesDano={fontesDano}
-            dslContexto={dslContexto}
-            dslExtras={dslExtras}
-          />
-        </div>
+        <BlocoHabilidadeUnica
+          titulo="Habilidade Única (criada com o Narrador)"
+          texto={fa.habilidadeUnica}
+          onTexto={(v) => onPatch({ habilidadeUnica: v })}
+          placeholder="Descreva a habilidade única desta ferramenta de Grau Especial."
+          efeitos={fa.habilidadeEfeitos}
+          onEfeitos={(arr) => onPatch({ habilidadeEfeitos: arr })}
+          pericias={pericias}
+          fontesDano={fontesDano}
+          dslContexto={dslContexto}
+          dslExtras={dslExtras}
+        />
       )}
+      {/* A segunda existe com o Addon Benção do Grão Mestre da Forja. */}
+      {fa.temSegundaUnica && (
+        <BlocoHabilidadeUnica
+          titulo="Segunda Habilidade Única (criada com o Narrador)"
+          texto={fa.segundaHabilidadeUnica}
+          onTexto={(v) => onPatch({ segundaHabilidadeUnica: v })}
+          efeitos={fa.segundaHabilidadeEfeitos}
+          onEfeitos={(arr) => onPatch({ segundaHabilidadeEfeitos: arr })}
+          pericias={pericias}
+          fontesDano={fontesDano}
+          dslContexto={dslContexto}
+          dslExtras={dslExtras}
+        />
+      )}
+    </div>
+  );
+}
+
+/* Uma Habilidade Única: o texto e o Motor de Automação dela. Um bloco só para as
+   quatro que existem (duas da Ferramenta, duas do Acessório Único), porque as
+   quatro gravam o mesmo formato e só o destino muda. */
+function BlocoHabilidadeUnica({
+  titulo, texto, onTexto, placeholder, efeitos, onEfeitos, rotuloMotor,
+  pericias, fontesDano, dslContexto, dslExtras,
+}) {
+  return (
+    <div className="rounded-lg border border-purple-900/40 bg-purple-950/20 px-2.5 py-2.5 space-y-2">
+      <span className="block text-[10px] uppercase tracking-wider text-purple-200">
+        {titulo}
+      </span>
+      <textarea
+        value={texto ?? ""}
+        onChange={(ev) => onTexto(ev.target.value)}
+        rows={3}
+        placeholder={placeholder}
+        aria-label={titulo}
+        className="w-full text-[12px] rounded-lg border border-slate-700 bg-slate-950/60 px-2.5 py-2 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-purple-600 resize-y"
+      />
+      <MotorEfeitosEditor
+        efeitos={efeitos}
+        onChange={onEfeitos}
+        rotulo={rotuloMotor}
+        pericias={pericias}
+        fontesDano={fontesDano}
+        dslContexto={dslContexto}
+        dslExtras={dslExtras}
+      />
     </div>
   );
 }
@@ -11061,7 +11240,9 @@ function LinhaCarregada({
   const { def, tipo, uid, qtd, equipado, fa } = entrada;
   // Arma entrou em 2026-08-01: ela passou a render Acerto por grau, e a linha de
   // dano dela só sai com a arma equipada.
-  const equipavel = tipo === "arma" || tipo === "uniforme" || tipo === "escudo" || def?.efeito;
+  // O Acessório Único não tem `efeito` de catálogo: o que ele dá mora nas
+  // Habilidades Únicas, e elas só valem equipado, como as da Ferramenta.
+  const equipavel = tipo === "arma" || tipo === "uniforme" || tipo === "escudo" || def?.efeito || def?.acessorioUnico;
   const podeSerFerramenta = FA_TIPOS_EQUIP.includes(tipo) && !def?.faFixa;
   const ataqueFisico = def?.categoria === "distancia" || def?.categoria === "arremesso"
     ? "distancia"
@@ -11318,7 +11499,9 @@ function CatalogoLinha({ tipo, def, onAdd, jaTem, sistema }) {
           onClick={() => onAdd(tipo, def.id)}
           disabled={unicoJaAdicionado}
           aria-label={`Adicionar ${def.nome}`}
-          title={unicoJaAdicionado ? "Relíquia única já adicionada" : "Adicionar ao inventário"}
+          title={unicoJaAdicionado
+            ? (def.acessorioUnico ? "Já está no inventário" : "Relíquia única já adicionada")
+            : "Adicionar ao inventário"}
           className="w-5 h-5 rounded flex items-center justify-center flex-shrink-0 border border-slate-600 text-slate-500 transition-colors hover:border-purple-600 hover:text-purple-300 disabled:opacity-35 disabled:hover:border-slate-600 disabled:hover:text-slate-500"
         >
           <Plus className="w-3 h-3" />
@@ -11815,6 +11998,177 @@ function ArmasCustomCard({ armas, onAdd, onPatch, onRemove, grauOrdem, tiposFisi
   );
 }
 
+/* Editor de UM Acessório Único. Dobrado por padrão depois de ter nome, no molde
+   da arma criada.
+
+   ⚠ OS CAMPOS LEEM O VALOR CRU (`bruto`), e não o saneado: o saneamento apara o
+   nome e troca o vazio por "Acessório sem Nome", e um campo que lesse isso não
+   aceitaria espaço nem ficaria vazio. O saneado (`resolvido`) só entra onde há
+   número, que é o Motor. */
+function AcessorioUnicoEditor({ bruto, resolvido, estado, onPatch, onRemove, motor }) {
+  const [aberto, setAberto] = useState(!bruto.nome);
+  // Apagar leva junto a entrada do inventário (ver `removeAcessorioUnico`).
+  const [confirmDel, setConfirmDel] = useState(false);
+  const nome = String(bruto.nome ?? "").trim() || "Acessório sem Nome";
+  /* ⚠ O AVISO DE QUANDO ELE NÃO VALE (2026-09-11). O autor montou um anel de
+     Atributo e o número não chegou à ficha: criar o acessório aqui não o põe no
+     inventário, e o item entra desequipado. O Motor mostra "= 8" em verde do
+     mesmo jeito, então nada na tela dizia que ele estava parado. Os três casos
+     são os três portões da emissão em `resolveEquipamentos`, na mesma ordem. */
+  const aviso = !estado?.liberado
+    ? { label: "Sem o Addon", title: "As Habilidades deste acessório só valem com o Addon Benção do Grão Mestre da Forja" }
+    : !estado?.carregado
+      ? { label: "Fora do Inventário", title: "Adicione pelo catálogo, em Itens Especiais. As Habilidades só valem com o acessório equipado" }
+      : !estado?.equipado
+        ? { label: "Desequipado", title: "As Habilidades só valem com o acessório equipado" }
+        : null;
+  const rotuloMotor = "Motor de Automação (efeitos enquanto equipado)";
+
+  /* ⚠ SEM `overflow-hidden` no contêiner (2026-09-11). Ele veio copiado do editor
+     de arma criada, onde só servia para o fundo do cabeçalho respeitar o canto,
+     e aqui ele cortava o seletor de canal do Motor: o painel é `absolute`, abre
+     para baixo e tem uns 590px, e a segunda Habilidade é o último filho do
+     acessório. Medido antes do conserto, o acessório terminava em 554 e o painel
+     ia até 1063. Quem arredonda agora é o cabeçalho, o único filho com fundo: os
+     quatro cantos fechado (ele é o acessório inteiro) e só os de cima aberto. Ver
+     a tabela de Atributos, que caiu na mesma armadilha em 2026-07-30. */
+  return (
+    <div className="rounded-lg border border-slate-800 bg-slate-950/40">
+      <div className={`flex items-center gap-2 px-3 py-2 bg-slate-900/60 ${aberto ? "rounded-t-lg" : "rounded-lg"}`}>
+        <button
+          type="button"
+          onClick={() => setAberto((o) => !o)}
+          aria-expanded={aberto}
+          className="flex items-center gap-1.5 grow text-left group min-w-0"
+        >
+          <ChevronDown
+            className={`w-3.5 h-3.5 text-slate-600 flex-shrink-0 transition-transform ${aberto ? "" : "-rotate-90"}`}
+            aria-hidden="true"
+          />
+          <span className="text-[12px] font-bold text-slate-100 truncate">{nome}</span>
+          <span className={`font-mono text-[10px] text-slate-500 whitespace-nowrap ${aviso ? "hidden sm:inline" : ""}`}>Grau Especial</span>
+          {aviso && (
+            <span
+              className="flex items-center gap-1 text-[10px] font-medium text-amber-400 whitespace-nowrap flex-shrink-0"
+              title={aviso.title}
+            >
+              <AlertTriangle className="w-3 h-3 flex-shrink-0" aria-hidden="true" />
+              {aviso.label}
+            </span>
+          )}
+        </button>
+        {confirmDel ? (
+          <span className="flex items-center gap-1 flex-shrink-0">
+            <span className="text-[10px] text-rose-300 whitespace-nowrap">Apagar?</span>
+            <button
+              type="button"
+              onClick={onRemove}
+              className="w-5 h-5 rounded flex items-center justify-center text-rose-400 hover:text-rose-300 hover:bg-rose-950/40"
+              title="Confirmar"
+              aria-label={`Confirmar exclusão de ${nome}`}
+            >
+              <Check className="w-3.5 h-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setConfirmDel(false)}
+              className="w-5 h-5 rounded flex items-center justify-center text-slate-500 hover:text-white hover:bg-slate-800"
+              title="Cancelar"
+              aria-label="Cancelar"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </span>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setConfirmDel(true)}
+            title="Apagar o acessório e tirá-lo do inventário"
+            className="text-[10px] px-2 py-0.5 rounded text-slate-500 hover:text-rose-300 hover:bg-rose-950/40 transition-colors flex-shrink-0"
+          >
+            Apagar
+          </button>
+        )}
+      </div>
+
+      {aberto && (
+        <div className="px-3 py-2.5 space-y-2.5">
+          <div>
+            <FieldLabel>Nome</FieldLabel>
+            <TextInput value={bruto.nome ?? ""} onChange={(v) => onPatch({ nome: v })} placeholder="Nome do acessório" />
+          </div>
+          <BlocoHabilidadeUnica
+            titulo="Habilidade Única (criada com o Narrador)"
+            texto={bruto.habilidadeUnica}
+            onTexto={(v) => onPatch({ habilidadeUnica: v })}
+            efeitos={resolvido?.habilidadeEfeitos ?? []}
+            onEfeitos={(arr) => onPatch({ habilidadeEfeitos: arr })}
+            rotuloMotor={rotuloMotor}
+            {...motor}
+          />
+          <BlocoHabilidadeUnica
+            titulo="Segunda Habilidade Única (criada com o Narrador)"
+            texto={bruto.segundaHabilidadeUnica}
+            onTexto={(v) => onPatch({ segundaHabilidadeUnica: v })}
+            efeitos={resolvido?.segundaHabilidadeEfeitos ?? []}
+            onEfeitos={(arr) => onPatch({ segundaHabilidadeEfeitos: arr })}
+            rotuloMotor={rotuloMotor}
+            {...motor}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* Card dos Acessórios Únicos (Addon Benção do Grão Mestre da Forja).
+
+   ⚠ TRÊS PORTAS, como o card de Feitiços do `feiticosRestritos`: aparece com a
+   liberação, e aparece também para quem tem acessório GRAVADO sem ela. Sem a
+   segunda porta, desinstalar o Addon deixaria o acessório preso na ficha, no
+   inventário e sem tela para apagá-lo. Criar um novo continua sendo só com o
+   Addon. */
+function AcessoriosUnicosCard({ brutos, resolvidos, entradas, podeCriar, onAdd, onPatch, onRemove, motor }) {
+  const porId = new Map((resolvidos ?? []).map((a) => [a.id, a]));
+  // Se cada acessório vale agora: a liberação, e a entrada dele no inventário.
+  const estadoDe = (id) => {
+    const dele = (entradas ?? []).filter((e) => e.tipo === "item" && e.refId === id);
+    return { liberado: podeCriar, carregado: dele.length > 0, equipado: dele.some((e) => e.equipado) };
+  };
+  return (
+    <Card
+      title="Acessórios Únicos"
+      headerRight={podeCriar ? (
+        <button
+          type="button"
+          onClick={onAdd}
+          className="text-[11px] font-semibold px-2.5 py-1 rounded-md bg-purple-700/70 text-white hover:bg-purple-700 transition-colors"
+        >
+          Novo Acessório
+        </button>
+      ) : null}
+    >
+      {brutos.length === 0 ? (
+        <p className="text-[11px] text-slate-600">Nenhum acessório criado.</p>
+      ) : (
+        <div className="space-y-1.5">
+          {brutos.map((a) => (
+            <AcessorioUnicoEditor
+              key={a.id}
+              bruto={a}
+              resolvido={porId.get(a.id)}
+              estado={estadoDe(a.id)}
+              onPatch={(partial) => onPatch(a.id, partial)}
+              onRemove={() => onRemove(a.id)}
+              motor={motor}
+            />
+          ))}
+        </div>
+      )}
+    </Card>
+  );
+}
+
 /* Filtro por propriedade da arma. Dobrado por padrão, e a linha fechada carrega
    as marcadas: quem já escolheu não precisa reabrir para lembrar do que filtrou.
 
@@ -11888,12 +12242,16 @@ function FiltroPropriedades({ opcoes, ativas, onToggle, onLimpar }) {
   );
 }
 
-function TabEquipamentos({ draft, derived, addEquipamento, removeEquipamento, patchEquipamento, toggleFerramenta, patchFerramenta, toggleEncantamento, addArmaCustom, patchArmaCustom, removeArmaCustom }) {
+function TabEquipamentos({ draft, derived, addEquipamento, removeEquipamento, patchEquipamento, toggleFerramenta, patchFerramenta, toggleEncantamento, addArmaCustom, patchArmaCustom, removeArmaCustom, addAcessorioUnico, patchAcessorioUnico, removeAcessorioUnico }) {
   /* O manejo de arma versátil só aparece na ficha de jogador: é lá que o dado da
      tabela da arma entra na conta. Ver `danoPorArma` em afty-sistema.js. */
   const sistemaJogador = regraDo(sistemaDaFicha(draft), "danoPorArma") === "player";
   const { equip, carga, grauFeiticeiro: grau } = derived;
   const fontesDano = fontesDanoDaFicha(draft, derived);
+  // Acessórios Únicos: a lista CRUA da ficha (os campos de texto leem dela) e a
+  // liberação que deixa criar. Ver `AcessoriosUnicosCard`.
+  const acessoriosBrutos = Array.isArray(draft.acessoriosUnicos) ? draft.acessoriosUnicos : [];
+  const podeCriarAcessorio = (derived.liberacoes ?? []).includes("acessoriosUnicos");
   /* Os tipos de dano FÍSICOS vivos, que a bancada de criação usa para conferir a
      Modular. Saem daqui e não da constante do módulo porque um Addon pode
      acrescentar um tipo físico, e o espelho do `afty-criacao-armas.js` conhece
@@ -11943,14 +12301,18 @@ function TabEquipamentos({ draft, derived, addEquipamento, removeEquipamento, pa
     /* `addons` entra no objeto mesmo sem ser lido por `catalogoDoTipo`: a lista
        global de armas é reconstruída quando o pacote muda, e esta dependência
        força a releitura dela no mesmo render. */
-    let l = catalogoDoTipo(catTab, { armasCustom: draft.armasCustom, addons: draft.addons });
+    let l = catalogoDoTipo(catTab, {
+      armasCustom: draft.armasCustom,
+      acessoriosUnicos: draft.acessoriosUnicos,
+      addons: draft.addons,
+    });
     // Relíquias pessoais não entram no catálogo base. A da Yamata ganha um
     // card próprio nesta mesma aba, sem contaminar as opções de outras fichas.
     if (catTab === "item") l = l.filter((d) => !d.evento);
     if (catTab === "arma") l = l.filter((d) => d.classe === classeArma);
     if (subFiltro !== "todos") l = l.filter((d) => d.categoria === subFiltro);
     return l;
-  }, [catTab, classeArma, subFiltro, draft.armasCustom, draft.addons]);
+  }, [catTab, classeArma, subFiltro, draft.armasCustom, draft.acessoriosUnicos, draft.addons]);
 
   const reliquiasDaYamata = useMemo(
     () => ehFichaDaYamata
@@ -11984,7 +12346,9 @@ function TabEquipamentos({ draft, derived, addEquipamento, removeEquipamento, pa
   // 1, não oferece quatro botões dos quais três não acham nada.
   const custosOferecidos = useMemo(() => {
     const vistos = new Set(listaDoTipo.map((d) => custoDoEquipamento(catTab, d)));
-    return [...vistos].sort((a, b) => a - b);
+    // ⚠ O zero sai: é o Acessório Único, que não tem custo, e um chip "C0"
+    // afirmaria um custo que ele não tem. Ele continua aparecendo em "Todos".
+    return [...vistos].filter((c) => c > 0).sort((a, b) => a - b);
   }, [listaDoTipo, catTab]);
 
   // O custo que VALE agora. O escolhido fica guardado, mas se a aba nova não
@@ -12165,6 +12529,24 @@ function TabEquipamentos({ draft, derived, addEquipamento, removeEquipamento, pa
         grauOrdem={grau?.ordem ?? 1}
         tiposFisicos={tiposFisicosDaFicha}
       />
+
+      {(podeCriarAcessorio || acessoriosBrutos.length > 0) && (
+        <AcessoriosUnicosCard
+          brutos={acessoriosBrutos}
+          resolvidos={equip.acessoriosUnicos}
+          entradas={equip.entradas}
+          podeCriar={podeCriarAcessorio}
+          onAdd={addAcessorioUnico}
+          onPatch={patchAcessorioUnico}
+          onRemove={removeAcessorioUnico}
+          motor={{
+            pericias: derived.testes?.pericias,
+            fontesDano,
+            dslContexto: derived.contextoDsl,
+            dslExtras: derived.combate?.estadosExtras,
+          }}
+        />
+      )}
 
       {reliquiasDaYamata.length > 0 && (
         <Card title="Relíquias de Evento · Yamata">
@@ -12530,6 +12912,7 @@ function EfeitoPill({ icon: Icon, label, valor, nota, titulo }) {
 function TabInterludios({
   draft, derived, setTreinoProgresso, setTreinoInstance, setTreinoAlvo,
   setTreinoEscolha, setTreinoEspecialVezes, sistema, setFocosLivres,
+  addForja, patchForja, removeForja,
 }) {
   const treinos = (draft.treinamentos && !Array.isArray(draft.treinamentos) && typeof draft.treinamentos === "object")
     ? draft.treinamentos : {};
@@ -12553,6 +12936,9 @@ function TabInterludios({
     aptidoes: derived.aptidoesEscolhidas ?? [],
     niveisAptidao: derived.aptidao?.efetivo ?? null,
     treinamentos: treinos,
+    // O clã, para o requisito `cla`. `null` é "sem clã" e reprova; esquecer o
+    // campo o faria cair para não verificável, que é requisito sempre aberto.
+    claId: draft.core?.origem?.cla ?? null,
   };
   // As duas famílias de Interlúdio dividem o MESMO orçamento de Focos, então o
   // medidor do cabeçalho soma as duas: uma pega de Treino Especial e uma etapa
@@ -12561,7 +12947,9 @@ function TabInterludios({
   // O teto de cada Treino Especial é 1 + 1 a cada 5 ou 10 ND, então ele muda com
   // a ficha e não pode ser constante do catálogo.
   const tetosEspeciais = tetosDeTreinoEspecial(draft);
-  const gastos = focosGastos(treinos, origemId, qualificadas) + focosDeTreinosEspeciais(draft);
+  // As TRÊS famílias de Interlúdio dividem o mesmo caixa: Linha, Treino
+  // Especial e Forja.
+  const gastos = focosGastos(treinos, origemId, qualificadas) + focosDeTreinosEspeciais(draft) + focosDeForja(draft);
   const total = derived.focosTotais;                // = ND + bônus de poderes
   const overBudget = gastos > total;
   /* No jogador o total vira campo. Ver a nota em ContadorFocos.
@@ -12624,6 +13012,7 @@ function TabInterludios({
               vezes={vezesEspeciais[t.id] ?? 0}
               max={tetosEspeciais[t.id]}
               onSetVezes={(n) => setTreinoEspecialVezes(t.id, n)}
+              sistema={sistemaDaFicha(draft)}
             />
           ))}
           <InterludioInfo icon={BookOpen} titulo="Estudos">
@@ -12633,6 +13022,14 @@ function TabInterludios({
           </InterludioInfo>
         </div>
       </Card>
+
+      {/* O caderno de Forja (autor, 2026-09-11). Ver `afty-forja.js`. */}
+      <ForjaCard
+        forjas={forjasDaFicha(draft)}
+        onAdd={addForja}
+        onPatch={patchForja}
+        onRemove={removeForja}
+      />
     </>
   );
 }
@@ -12767,28 +13164,6 @@ function StatMini({ label, value, accent, icon: Icon }) {
     </div>
   );
 }
-
-const EFEITO_CANAL_LABEL = {
-  pv: "PV",
-  defesa: "Defesa",
-  rd: "RD",
-  deslocamento: "Deslocamento",
-  pericias: "Perícias",
-  orcamentoLivre: "Ações/Caract. Grátis",
-  orcamentoPago: "Ações/Caract.",
-  atributoPontos: "Pontos de Atributo",
-  custoReducao: "Custo (abate)",
-  bonusTeste: "Em Testes",
-  bonusTR: "Em TRs",
-  acerto: "Em Acerto",
-  cd: "Em CD",
-  danoNivel: "Dano (níveis)",
-  danoBonus: "Dano (total)",
-  curaNivel: "Cura (níveis)",
-  curaBonus: "Cura (total)",
-  ataqueDanoAdicional: "Dado Extra no Ataque",
-  caracteristicasLivres: "Características Grátis",
-};
 
 /* ============================================================ */
 /* AS FONTES DE UM NÚMERO DA INVOCAÇÃO                           */
@@ -13192,11 +13567,26 @@ function InvocacaoAtributos({ inv, resumo, max, efe, onPatchAttr }) {
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
         {AFTY_ATTRS.map((a) => {
           const v = inv.atributos?.[a.key] ?? base;
-          const m = invMod(v);
+          /* O campo edita o valor CRU (é ele que gasta ponto), e o modificador
+             mostra o EFETIVO, com o bônus do canal `atributo` somado: é o que
+             rola. O bônus aparece ao lado da sigla, com as fontes no title. */
+          const bonus = resumo?.bonus?.[a.key] || 0;
+          const m = bonus ? resumo.mods[a.key] : invMod(v);
+          const partes = resumo?.partes?.[a.key] || [];
           return (
             <div key={a.key} className="bg-slate-950/50 border border-slate-800 rounded px-2 py-1.5">
               <div className="flex items-baseline justify-between mb-1">
-                <span className="text-[11px] font-bold text-slate-300" title={a.label}>{a.abbr}</span>
+                <span className="flex items-baseline gap-1">
+                  <span className="text-[11px] font-bold text-slate-300" title={a.label}>{a.abbr}</span>
+                  {bonus !== 0 && (
+                    <span
+                      className="font-mono text-[10px] text-emerald-400 tabular-nums"
+                      title={partes.map((p, i) => `${p.label} ${i === 0 ? p.valor : sinalDe(p.valor)}`).join(", ")}
+                    >
+                      {sinalDe(bonus)}
+                    </span>
+                  )}
+                </span>
                 <span className="font-mono text-[10px] text-purple-300">{m >= 0 ? `+${m}` : m}</span>
               </div>
               <NumberInput value={v} onChange={(val) => onPatchAttr(a.key, val)} min={min} max={max} aria-label={`${a.label} da invocação`} />
@@ -14520,7 +14910,8 @@ function resumoCaracTexto(res) {
         : "fora do grau";
     case "rd": return res.rdTipoLabel ? `${res.valor} RD ${res.rdTipoLabel}` : `${res.valor} RD`;
     case "tamanho": return res.tamanho ? (AFTY_TAMANHOS.find((t) => t.value === res.tamanho)?.label ?? res.tamanho) : "tamanho";
-    default: return "passiva";
+    // A Livre com Motor diz o que concede, no texto que o motor já monta.
+    default: return res.resumoMotor || "passiva";
   }
 }
 
@@ -14627,22 +15018,46 @@ function CaracteristicaCard({ carac, res, grau, grupos, onPatch, onRemove }) {
             </div>
           )}
 
+          {/* ⚠ A LIVRE GANHOU O MOTOR em 2026-09-10 (autor: "Faça igual
+              Feitiços Passivas para Característica"). É o mesmo editor do
+              Funcionamento Básico e da Passiva, com os canais DA INVOCAÇÃO e o
+              vocabulário dela no seletor { }. Os números saem na barra de cima
+              e no hover, e duas Características do mesmo efeito disputam: vale
+              a maior. */}
+          {carac.subtipo === "livre" && (
+            <TecnicaMotorEditor
+              efeitos={res?.efeitos ?? carac.efeitos ?? []}
+              onChange={(v) => onPatch({ efeitos: v })}
+              dslGrupos={grupos}
+              canalGrupos={INV_EFEITO_CANAL_GRUPOS}
+              alvoOpcoesDe={alvoOpcoesInvocacao}
+              comDuracao={false}
+              titulo="Efeitos da Característica"
+            />
+          )}
+
           {res && res.subtipo !== "livre" && (
             <div className="flex flex-wrap gap-2 text-[11px] font-mono text-slate-300">
               <span className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700">{resumoCaracTexto(res)}</span>
             </div>
           )}
 
-          <ExprField
-            value={carac.modificadorExpr}
-            alvo={carac.modificadorAlvo}
-            alvos={alvosDeModificadorCaract(carac)}
-            onChange={(v) => onPatch({ modificadorExpr: v })}
-            onAlvo={(v) => onPatch({ modificadorAlvo: v })}
-            resultado={res?.modificador}
-            resultadoLabel={res?.modificadorLabel}
-            grupos={grupos}
-          />
+          {/* O Modificador só aparece onde tem onde cair. Na Livre ele nunca
+              teve (o motor avisa), e agora o Motor faz o papel dele. Um valor
+              antigo gravado segue visível, senão o aviso ficaria sem o campo
+              que o apaga. */}
+          {(alvosDeModificadorCaract(carac).length > 0 || carac.modificadorExpr) && (
+            <ExprField
+              value={carac.modificadorExpr}
+              alvo={carac.modificadorAlvo}
+              alvos={alvosDeModificadorCaract(carac)}
+              onChange={(v) => onPatch({ modificadorExpr: v })}
+              onAlvo={(v) => onPatch({ modificadorAlvo: v })}
+              resultado={res?.modificador}
+              resultadoLabel={res?.modificadorLabel}
+              grupos={grupos}
+            />
+          )}
 
           <div>
             <FieldLabel>Descrição</FieldLabel>
@@ -15469,11 +15884,11 @@ function AftyPreview({ draft, derived }) {
         </span>
       )}
       <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700">
-        ND {derived.nd}
+        {rotuloDoNivel(sistemaDaFicha(draft))} {derived.nd}
       </span>
       <span
         className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700"
-        title="Grau do Feiticeiro, que vem do ND"
+        title={`Grau do Feiticeiro, que vem do ${rotuloDoNivel(sistemaDaFicha(draft))}`}
       >
         {derived.grauFeiticeiro.label}
       </span>

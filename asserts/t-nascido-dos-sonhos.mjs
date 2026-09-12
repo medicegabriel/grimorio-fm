@@ -1,5 +1,6 @@
-/* Pacote Nascido dos "Sonhos": origem, Talentos de Origem, Cajado e os quatro
-   Funcionamentos Básicos da técnica de Merlim. */
+/* Pacote Nascido dos "Sonhos": origem, os sete Talentos de Origem, Cajado e os
+   quatro Funcionamentos Básicos da técnica de Merlim. A Reserva Ilimitada entrou
+   em 2026-09-11, com o pacote subindo para 0.2.0. */
 import { readFileSync } from "node:fs";
 import { register } from "node:module";
 register(
@@ -42,6 +43,7 @@ const TRANSFORMACAO = NS + "tal_transformacao_feerica";
 const PRODIGIO = NS + "tal_prodigio_inato";
 const CORPO = NS + "tal_corpo_feerico";
 const IMAGINACAO = NS + "tal_imaginacao_lucida";
+const RESERVA = NS + "tal_reserva_ilimitada";
 const CAJADO = NS + "cajado_grande_mago";
 
 /* ---------- Catálogo ---------- */
@@ -56,6 +58,7 @@ for (const [id, nome] of [
   [PRODIGIO, "Prodígio Inato"],
   [CORPO, "Corpo Féerico"],
   [IMAGINACAO, "Imaginação Lúcida"],
+  [RESERVA, "Reserva Ilimitada"],
 ]) {
   t(`talento ${nome} instalado`, T.getTalento(id)?.nome, nome);
   t(`talento ${nome} é de Origem`, T.getTalento(id)?.grupo, "origem");
@@ -131,6 +134,57 @@ for (const nd of [1, 5, 10, 20]) {
     deriveAfty(c).cd - deriveAfty(ficha(nd)).cd, Math.floor(maestria(nd) / 2));
 }
 
+/* ---------- Reserva Ilimitada ---------- */
+/* Autor, 2026-09-11: *"recebendo +3 PE máximos, recebendo +1 PE adicional a
+   cada nível ímpar"*. Os ímpares contam de 1 até o nível atual, retroativos, que
+   é a mesma leitura que a Benção Amaldiçoada deste pacote já faz para "a cada
+   nível par" (`piso(nd / 2)`). O DELTA é medido contra a mesma ficha, com a
+   origem e sem o Talento, e não contra um número escrito à mão. */
+t("a descrição é a do autor, verbatim", T.getTalento(RESERVA)?.descricao,
+  "Assim como um sonho nunca parece alcançar seu fim, suas reservas parecem inesgotáveis aos olhos daqueles que o observam, fazendo até mesmo maldições de alto grau confundirem sua presença com a de um ser muito acima da humanidade, recebendo +3 PE máximos, recebendo +1 PE adicional a cada nível ímpar");
+for (const [nd, esperado] of [[1, 4], [2, 4], [3, 5], [4, 5], [5, 6], [10, 8], [19, 13], [20, 13], [25, 16], [30, 18]]) {
+  const c = ficha(nd);
+  c.talentos = [RESERVA];
+  t(`Reserva Ilimitada no ND ${nd}`, deriveAfty(c).pe - deriveAfty(ficha(nd)).pe, esperado);
+}
+
+/* ⚠ A PROVA DE QUE AS DUAS METADES SE ENCAIXAM. A Benção dá +1 nos pares e a
+   Reserva +1 nos ímpares, então juntas elas dão +1 em TODO nível, mais os 3
+   fixos. Se uma das duas contar o nível errado (a Reserva pular o nível 1, ou
+   a Benção contar o 1), a soma sai com um buraco ou uma sobra e isto fica
+   vermelho. */
+for (const nd of [1, 2, 7, 12, 30]) {
+  const c = ficha(nd);
+  c.talentos = [RESERVA];
+  t(`Benção mais Reserva dão 3 + nível no ND ${nd}`,
+    deriveAfty(c).pe - deriveAfty(semOrigem(nd)).pe, 3 + nd);
+}
+
+/* A parcela sai com o nome do Talento no hover do PE, e não somada por baixo de
+   outra linha. */
+const reserva10 = ficha(10);
+reserva10.talentos = [RESERVA];
+const dReserva10 = deriveAfty(reserva10);
+t("a Reserva Ilimitada aparece no hover do PE",
+  dReserva10.partes.pe.filter((p) => /Reserva Ilimitada/.test(p.label)).map((p) => p.valor), [8]);
+t("e as parcelas do hover fecham com o PE",
+  dReserva10.partes.pe.reduce((soma, p) => soma + (p.valor ?? 0), 0), dReserva10.pe);
+
+/* ⚠ O PACOTE É DE FICHA DE PLAYER, e o assert acima roda em ficha de criatura
+   (o `createBlankAfty` nasce `afty`). O canal `pe` é o mesmo nos dois sistemas,
+   mas isso é afirmação, e aqui ela vira medida. */
+const jogador = (nd, talentos) => {
+  const c = ficha(nd);
+  c.rulesVersion = "player";
+  c.especializacoes = [{ id: "conjurador", nivel: nd }];
+  c.talentos = talentos;
+  return deriveAfty(c);
+};
+for (const nd of [1, 6, 15]) {
+  t(`no jogador de nível ${nd} a Reserva também soma`,
+    jogador(nd, [RESERVA]).pe - jogador(nd, []).pe, 3 + Math.ceil(nd / 2));
+}
+
 /* ---------- Prodígio Inato ---------- */
 /* As opções reusam os ids `tal_estudo_<trilha>` do raw de propósito: o
    `coletarEfeitosDeEscolha` só lê o ESCOLHA_EFEITOS, então um id novo nasceria
@@ -158,6 +212,10 @@ t("Transformação Féerica exige Aura Controlada",
   T.avaliarAcessoTalento(T.getTalento(TRANSFORMACAO), ctx({ aptidoes: [] })).ok, false);
 t("Transformação Féerica passa com Aura Controlada",
   T.avaliarAcessoTalento(T.getTalento(TRANSFORMACAO), ctx({ aptidoes: ["aura_controlada"] })).ok, true);
+t("Reserva Ilimitada exige a origem",
+  T.avaliarAcessoTalento(T.getTalento(RESERVA), { nd: 20, origemId: "inato", origensQualificadas: ["inato"] }).ok, false);
+t("Reserva Ilimitada não tem ND mínimo",
+  T.avaliarAcessoTalento(T.getTalento(RESERVA), ctx({ nd: 1 })).ok, true);
 t("Cultivador de Sonhos exige ND 12",
   T.avaliarAcessoTalento(T.getTalento(CULTIVADOR), ctx({ nd: 11 })).ok, false);
 t("Prodígio Inato traz a nota de mesa",
@@ -179,6 +237,7 @@ t("a Clarividência traz a tabela da Íris",
 A.aplicarAddons([]);
 t("origem some ao desinstalar", O.getOrigem(ORIGEM), null);
 t("talento some ao desinstalar", T.getTalento(CORPO), null);
+t("a Reserva Ilimitada some junto", T.getTalento(RESERVA), null);
 t("arma some ao desinstalar", E.getEquipamento("arma", CAJADO), null);
 
 if (falhas.length) {

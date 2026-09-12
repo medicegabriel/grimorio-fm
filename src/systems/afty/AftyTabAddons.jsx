@@ -44,6 +44,7 @@ import {
   lerBiblioteca, instalarDeTexto, instalarPacote, removerPacote, compararComBiblioteca,
 } from "./afty-addons-biblioteca";
 import { familiasDeAddon } from "./afty-addons";
+import { sistemaDaFicha, palavrasDoSistema } from "./afty-sistema";
 
 /* Quantas entradas o pacote acrescenta, por família, para o chip da linha. */
 function resumoDoPacote(p) {
@@ -117,6 +118,8 @@ export default function TabAddons({ draft, derived, setAddons, trocarFicha }) {
   const [erroSaida, setErroSaida] = useState(null);
 
   const naFicha = Array.isArray(draft.addons) ? draft.addons : [];
+  // "Nesta Criatura" num lado e "Neste Personagem" no outro: a palavra sai da ficha.
+  const pal = palavrasDoSistema(sistemaDaFicha(draft));
   const idsNaFicha = new Set(naFicha.map((p) => p.id));
   const comparacao = compararComBiblioteca(naFicha, biblioteca);
   const estadoDe = Object.fromEntries(comparacao.map((c) => [c.id, c]));
@@ -335,7 +338,9 @@ export default function TabAddons({ draft, derived, setAddons, trocarFicha }) {
                     type="button"
                     onClick={() => (ligado ? desligar(p.id) : ligar(p))}
                     aria-pressed={ligado}
-                    title={ligado ? "Tirar desta criatura" : "Usar nesta criatura"}
+                    title={ligado
+                      ? `Tirar ${pal.g("deste", "desta")} ${pal.nome}`
+                      : `Usar ${pal.g("neste", "nesta")} ${pal.nome}`}
                     className={`w-4 h-4 rounded border flex-shrink-0 ${
                       ligado ? "bg-purple-600 border-purple-500" : "border-slate-600 hover:border-purple-600"
                     }`}
@@ -371,7 +376,7 @@ export default function TabAddons({ draft, derived, setAddons, trocarFicha }) {
       </Card>
 
       <Card
-        title="Nesta Criatura"
+        title={`${pal.g("Neste", "Nesta")} ${pal.Nome}`}
         headerRight={
           naFicha.length > 0 && (
             <span className="text-[10px] font-mono text-slate-500 tabular-nums">
@@ -381,7 +386,7 @@ export default function TabAddons({ draft, derived, setAddons, trocarFicha }) {
         }
       >
         {naFicha.length === 0 ? (
-          <p className="text-xs text-slate-500">Esta criatura usa só o raw.</p>
+          <p className="text-xs text-slate-500">{pal.g("Este", "Esta")} {pal.nome} usa só o raw.</p>
         ) : (
           <div className="space-y-1">
             {naFicha.map((p) => {
@@ -422,7 +427,7 @@ export default function TabAddons({ draft, derived, setAddons, trocarFicha }) {
                       <button
                         type="button"
                         onClick={() => pedirSenhaParaDesligar(p)}
-                        title={protegido(p) ? "Tirar desta criatura (pede a senha do Cofre)" : "Tirar desta criatura"}
+                        title={`Tirar ${pal.g("deste", "desta")} ${pal.nome}${protegido(p) ? " (pede a senha do Cofre)" : ""}`}
                         className="p-1 rounded text-slate-500 hover:text-rose-400"
                       >
                         <Trash2 className="w-3 h-3" aria-hidden="true" />

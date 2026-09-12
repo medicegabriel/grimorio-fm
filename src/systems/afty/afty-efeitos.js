@@ -190,6 +190,11 @@ export const EFEITO_CANAIS = [
      ⚠ Desempate igual ao do `defesaAtributo`: vale o MAIOR, porque a regra é
      sempre *"você PODE usar"*. Quem oferece uma troca opcional nunca piora. */
   { id: "periciaFixa",   label: "Perícia com Valor Fixo", alvo: "pericia", nota: "TROCA o bônus inteiro da perícia por este número, e não soma nada. Com mais de um vale o maior, porque a regra é sempre \"você pode usar\"" },
+  /* ⚠ O TOTAL PARA EM ZERO (autor, 2026-09-11). Soma na penalidade do uniforme e
+     do escudo, que só pesa nas perícias de Destreza: positivo alivia, negativo
+     aumenta, e um aumento vale mesmo sem nada equipado. Quem apara é o derive,
+     no bloco da Penalidade de Armadura. */
+  { id: "penalidadeArmadura", label: "Penalidade de Armadura", nota: "soma na penalidade de armadura das perícias de Destreza. Positivo alivia, negativo aumenta, e o total nunca passa de zero. Vale mesmo sem uniforme ou escudo" },
   { id: "proficienciaPericia", label: "Treino em Perícia", alvo: "pericia", aceitaSemCredito: true, nota: "1 = Treinado, 2 = Mestre. Concede a faixa, não soma número, e nunca REBAIXA o que a ficha já escolheu. CREDITA no orçamento: subir de uma faixa concedida custa só a diferença. Ver `semCredito`" },
   { id: "bonusTR",       label: "Teste de Resistência",  alvo: "tr", nota: "aceita `atr:constituicao` para atingir todo TR daquele atributo" },
   /* O irmão do `bonusTR` para o que a regra escreve como DADO ("adicionar 2d3 ao
@@ -303,7 +308,7 @@ export const EFEITO_CANAIS = [
   { id: "vagasEstilo",    label: "Vagas de Estilo",      nota: "vaga EXCLUSIVA de Técnica de Estilo. Não serve para Feitiço nem para Habilidade Geral" },
   // "Vagas de" no rótulo para o canal cair junto dos irmãos numa busca por
   // "vaga". O que ele dá é QUANTAS Aptidões Amaldiçoadas a criatura pode ter.
-  { id: "vagasAptidao",   label: "Vagas de Aptidão",     nota: "quantas Aptidões Amaldiçoadas a criatura pode ter. Sem fonte nenhuma o orçamento é ZERO: o ND não concede" },
+  { id: "vagasAptidao",   label: "Vagas de Aptidão",     nota: "quantas Aptidões Amaldiçoadas a ficha pode ter. Sem fonte nenhuma o orçamento é ZERO: o ND não concede" },
   /* ⚠ ESTE NÃO DÁ VAGA, ele ABAIXA O PORTÃO. Nasceu em 2026-09-07 para a
      Adiantar a Evolução do Especialista em Estilo (*"você reduz em 2 os
      pré-requisitos de nível das aptidões amaldiçoadas"*), e por isso mora ao
@@ -385,7 +390,7 @@ export const EFEITO_CANAIS = [
      que é o que "em toda cura que realizar" pede. */
   { id: "curaDados",       label: "Cura: Dados",          alvo: "fonteCura", nota: "QUANTOS dados naquela linha de cura. Nas fontes por ponto gasto (Energia Reversa, Regeneração Corporal) é o que UM ponto compra" },
   { id: "curaFaces",       label: "Cura: Faces do Dado",  alvo: "fonteCura", nota: "as FACES do dado de cura. Vale o MAIOR entre as fontes daquela linha, e não a soma" },
-  { id: "curaFixa",        label: "Cura: Valor Fixo",     alvo: "fonteCura", nota: "soma no TOTAL da cura, uma vez, mesmo quando os dados escalam por ponto gasto. Sem alvo vale para toda cura que a criatura realizar" },
+  { id: "curaFixa",        label: "Cura: Valor Fixo",     alvo: "fonteCura", nota: "soma no TOTAL da cura, uma vez, mesmo quando os dados escalam por ponto gasto. Sem alvo vale para toda cura que a ficha realizar" },
   { id: "curaPorDado",     label: "Cura: Bônus por Dado", alvo: "fonteCura", nota: "soma este valor uma vez POR DADO rolado. O teto do que ele acrescenta é o canal Cura: Teto do Bônus por Dado" },
   { id: "curaPorDadoTeto", label: "Cura: Teto do Bônus por Dado", alvo: "fonteCura", nota: "quanto o Bônus por Dado pode acrescentar no máximo. Sem ele o bônus não tem teto" },
   { id: "curaUsos",        label: "Cura: Usos por Descanso", alvo: "fonteCura", nota: "quantas vezes aquela cura pode ser usada por descanso. A linha sem usos é a que só depende de pagar o custo" },
@@ -460,19 +465,29 @@ export function normalizarAlvoEfeito(alvo) {
  * `modo` diz onde a fonte fica ligada (autor, 2026-07-30): passiva entra na ficha
  * em repouso, ativa só na bancada de Simulação de Combate. A Habilidade Única é
  * "ambos" porque depende do item, então quem decide é o efeito, não a família.
+ *
+ * ⚠ NA FICHA DE JOGADOR O POOL SE PARTE EM GRUPOS (autor, 2026-09-11, divergência
+ * `poolExclusivo`). `grupoJogador` diz em qual cada família disputa, e a disputa
+ * só acontece DENTRO do grupo: dois grupos diferentes somam. O pool plano acima
+ * continua sendo a regra da criatura, onde toda família cai no mesmo grupo.
+ *
+ *   feiticos         Feitiços, Estilo, Funcionamento Básico e a Segunda
+ *                    Habilidade Única do Addon
+ *   habilidadeUnica  a primeira de cada item, que só disputa com a de outro item
+ *   shikigami*       ASSUNÇÃO: cada família no seu. Nenhuma emite ainda
  */
 export const FAMILIAS_EXCLUSIVAS = [
-  { id: "habilidadeUnica",         label: "Habilidade Única",            modo: "ambos" },
-  { id: "feiticoAuxiliarPassivo",  label: "Feitiço Auxiliar Passivo",    modo: "passiva" },
-  { id: "shikigamiCaracteristica", label: "Característica de Shikigami", modo: "passiva" },
-  { id: "feiticoAuxiliarAtivo",    label: "Feitiço Auxiliar Ativo",      modo: "ativa" },
-  { id: "shikigamiAcao",           label: "Ação Ativa de Shikigami",     modo: "ativa" },
+  { id: "habilidadeUnica",         label: "Habilidade Única",            modo: "ambos",   grupoJogador: "habilidadeUnica" },
+  { id: "feiticoAuxiliarPassivo",  label: "Feitiço Auxiliar Passivo",    modo: "passiva", grupoJogador: "feiticos" },
+  { id: "shikigamiCaracteristica", label: "Característica de Shikigami", modo: "passiva", grupoJogador: "shikigamiCaracteristica" },
+  { id: "feiticoAuxiliarAtivo",    label: "Feitiço Auxiliar Ativo",      modo: "ativa",   grupoJogador: "feiticos" },
+  { id: "shikigamiAcao",           label: "Ação Ativa de Shikigami",     modo: "ativa",   grupoJogador: "shikigamiAcao" },
   // ⚠ A SEXTA (autor, 2026-08-07). O Novo Estilo da Sombra é o Feitiço Auxiliar
   // do Sem Técnica: sem entrar no pool, ele seria a única origem cujo bônus
   // escrito à mão soma por cima de tudo. "ambos" porque o modo é declarado por
   // linha, como na Habilidade Única, e a Modificação de Domínio Simples é
   // sempre ativa (só vale com o Domínio no ar).
-  { id: "estiloSombra",            label: "Estilo da Sombra",            modo: "ambos" },
+  { id: "estiloSombra",            label: "Estilo da Sombra",            modo: "ambos",   grupoJogador: "feiticos" },
   // ⚠ A SÉTIMA (autor, 2026-08-12): *"Funcionamento Básico não acumula com
   // Feitiços Ativos, Feitiços Passivos, Ações Shikigamis, Caracteristica
   // Shikigamis, Técnicas Marciais, Novo Estilo das Sombras e etc"*. Ela cobre o
@@ -487,11 +502,51 @@ export const FAMILIAS_EXCLUSIVAS = [
   // ⚠ Técnica Marcial ainda NÃO é uma família: o subsistema nunca foi enviado.
   // Quando ele nascer, entra aqui, e o Funcionamento Básico já para de acumular
   // com ele sem precisar de mais nada.
-  { id: "funcionamentoBasico",     label: "Funcionamento Básico",        modo: "ambos" },
+  //
+  // ⚠ No jogador ele fica com os Feitiços (autor, 2026-09-11, por pergunta: ele
+  // não estava em nenhuma das duas listas do pool do jogador).
+  { id: "funcionamentoBasico",     label: "Funcionamento Básico",        modo: "ambos",   grupoJogador: "feiticos" },
+  // ⚠ A OITAVA (Addon Benção do Grão Mestre da Forja, 2026-09-11). É a segunda
+  // Habilidade Única de um item de Grau Especial ou de um Acessório Único, e a
+  // regra dela é a do autor: *"A primeira Habilidade Única se acumula com
+  // Feitiços e etc. A segunda Habilidade Única não se acumula com Feitiços e
+  // etc."*. No jogador isso é o grupo dos Feitiços. Na criatura o pool é um só,
+  // e ela disputa com tudo, inclusive com a primeira (autor, mesma data).
+  { id: "segundaHabilidadeUnica",  label: "Segunda Habilidade Única",    modo: "ambos",   grupoJogador: "feiticos" },
 ];
 
 const FAMILIA_EXCLUSIVA_BY_ID = Object.fromEntries(FAMILIAS_EXCLUSIVAS.map((f) => [f.id, f]));
 export const getFamiliaExclusiva = (id) => FAMILIA_EXCLUSIVA_BY_ID[id] ?? null;
+
+/** O grupo do pool plano, que é o único na ficha de criatura. */
+export const GRUPO_POOL_UNICO = "pool";
+
+/**
+ * Em que grupo de disputa uma família cai. `emGrupos` é a resposta da divergência
+ * `poolExclusivo` para ESTA ficha, e quem a lê é o derive: este módulo não sabe
+ * de sistema, e não deve passar a saber por causa de uma pergunta.
+ *
+ * ⚠ Família sem `grupoJogador` disputa só consigo mesma no jogador. O assert
+ * `t-bencao-forja.mjs` exige o campo em todas, para uma família nova não nascer
+ * somando por cima de tudo sem ninguém decidir.
+ */
+export const grupoExclusivo = (familia, emGrupos = false) =>
+  (emGrupos ? (FAMILIA_EXCLUSIVA_BY_ID[familia]?.grupoJogador ?? familia) : GRUPO_POOL_UNICO);
+
+/**
+ * Carimba o grupo de disputa em cada efeito do pool, antes do `aplicarEfeitos`.
+ *
+ * ⚠ É CARIMBO NO EFEITO, e não parâmetro da disputa, porque o efeito viaja: a
+ * lista da linha de dano sai do derive crua e é resolvida lá no calculador de
+ * Feitiços, que não conhece a ficha. O grupo vai junto e chega certo.
+ *
+ * Na criatura não carimba nada: sem carimbo o efeito cai no `GRUPO_POOL_UNICO`,
+ * que é o comportamento de antes, byte a byte.
+ */
+export function carimbarGrupoExclusivo(efeitos, emGrupos = false) {
+  if (!emGrupos || !Array.isArray(efeitos)) return efeitos;
+  return efeitos.map((e) => (e?.exclusivo ? { ...e, grupoExclusivo: grupoExclusivo(e.exclusivo, true) } : e));
+}
 
 /**
  * A chave da disputa. Um canal sem alvo usa `*`, e não briga com os alvos dele.
@@ -502,9 +557,15 @@ export const getFamiliaExclusiva = (id) => FAMILIA_EXCLUSIVA_BY_ID[id] ?? null;
  * fica com o MENOR, e os dois vencedores somam. Um canal com +8 e -14 resulta
  * em -6: o melhor bônus e a pior penalidade valem ao mesmo tempo, e é só entre
  * iguais que a disputa acontece.
+ *
+ * O GRUPO entra na frente só quando não é o pool único, e é isso que deixa a
+ * chave da criatura igual à de antes de o jogador ganhar grupos. Dois grupos com
+ * o mesmo canal viram duas chaves, e as duas somam.
  */
-export const chaveExclusiva = (canal, alvo, valor = 1) =>
-  `${canal}|${alvo ?? "*"}|${valor < 0 ? "-" : "+"}`;
+export const chaveExclusiva = (canal, alvo, valor = 1, grupo = GRUPO_POOL_UNICO) => {
+  const base = `${canal}|${alvo ?? "*"}|${valor < 0 ? "-" : "+"}`;
+  return !grupo || grupo === GRUPO_POOL_UNICO ? base : `${grupo}#${base}`;
+};
 
 /**
  * Os canais agrupados por assunto, para o `<optgroup>` do editor de efeitos.
@@ -545,7 +606,7 @@ const GRUPOS_DE_CANAL = [
   // outro canal e está em Orçamentos.
   ["Atributos e Aptidões", ["atributo", "limiteAtributo", "defesaAtributo", "hpAtributo", "nivelAptidao", "limiteAptidao", "imbuicoesEstilo"]],
   ["Perícias e Resistências", [
-    "bonusPericia", "periciaFixa", "proficienciaPericia", "bonusTR", "dadosTR", "proficienciaTR", "margemCriticoTR",
+    "bonusPericia", "periciaFixa", "proficienciaPericia", "penalidadeArmadura", "bonusTR", "dadosTR", "proficienciaTR", "margemCriticoTR",
   ]],
   ["Manobras", ["bonusManobra", "resistirManobra", "distanciaEmpurrao"]],
   ["Movimento e Percepção", ["movimento", "movimentoMult", "iniciativa", "atencao", "tamanho"]],
@@ -1341,6 +1402,8 @@ export function aplicarEfeitos(efeitos, ctx = {}) {
       }
       exclusivos.push({
         canal: e.canal, alvo, valor, exclusivo: e.exclusivo,
+        // Sem carimbo é o pool único. Ver `carimbarGrupoExclusivo`.
+        grupo: e.grupoExclusivo || GRUPO_POOL_UNICO,
         origem: e.origem || null, nome: e.nome || e.origem || "Efeito",
         duracao: e.duracao || "permanente",
         semCredito: !!e.semCredito && !!canal.aceitaSemCredito,
@@ -1411,12 +1474,13 @@ export function resolverExclusivos(res, jaAplicado = {}) {
   const lista = res?.exclusivos ?? [];
   if (!lista.length) return { ...out, aplicado };
 
-  // Um grupo por (canal, alvo, sinal): a disputa é por STAT, então cada canal
-  // escolhe o seu vencedor sem olhar o que os outros canais fizeram, e o bônus
-  // não briga com a penalidade.
+  // Um grupo por (grupo de família, canal, alvo, sinal): a disputa é por STAT,
+  // então cada canal escolhe o seu vencedor sem olhar o que os outros canais
+  // fizeram, e o bônus não briga com a penalidade. No jogador o grupo de família
+  // parte a disputa (`poolExclusivo`), e na criatura ele é sempre o mesmo.
   const grupos = new Map();
   for (const e of lista) {
-    const k = chaveExclusiva(e.canal, e.alvo, e.valor);
+    const k = chaveExclusiva(e.canal, e.alvo, e.valor, e.grupo);
     if (!grupos.has(k)) grupos.set(k, []);
     grupos.get(k).push(e);
   }

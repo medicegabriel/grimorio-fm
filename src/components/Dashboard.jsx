@@ -81,6 +81,28 @@ const VIEW_TITLE = {
   folder: (folder) => folder?.name ?? "Pasta",
 };
 
+/* O texto da lista que fala do ITEM (criatura). É o padrão da prop `vocab`, e é
+   exatamente o texto de sempre: quem não passa a prop vê a 2.5.2 igual. Ver o
+   comentário da prop, no `Dashboard` lá embaixo. */
+const VOCAB_PADRAO = {
+  todas: "Todas as Criaturas",
+  contagem: (n) => `${n} criatura(s)`,
+  itens: "criatura(s)",
+  nova: "Nova Criatura",
+  criarNova: "Criar nova criatura",
+  criar: "Criar criatura",
+  exportarVista: "Exportar criaturas da visualização atual",
+  exportarTitulo: "Exportar Criaturas",
+  importarTitulo: "Importar Criaturas",
+  arquivo: "criaturas_exportadas",
+  selecionadas: (sel, total) => `${sel} de ${total} selecionada(s)`,
+  importadas: (n) => `${n} criatura(s) importada(s) com sucesso.`,
+  buscar: "Buscar criaturas",
+  nenhumaBusca: "Nenhuma criatura combina com sua busca.",
+  removida: "será removida permanentemente.",
+  removidas: (n) => `${n} criatura(s) serão removidas permanentemente.`,
+};
+
 const VIEW_FILTERS = {
   all:      (c) => !c.isBuiltIn,
   unfiled:  (c) => !c.isBuiltIn && (c.folderId == null),
@@ -449,11 +471,11 @@ const BulkActionBar = ({ count, folders, onExport, onDelete, onMove, onClear, st
 // ============================================================
 // MODAL DE EXPORTAÇÃO
 // ============================================================
-const ExportModal = ({ creatures, onConfirm, onCancel }) => {
+const ExportModal = ({ creatures, onConfirm, onCancel, v = VOCAB_PADRAO }) => {
   const [sel, setSel] = useState(() => new Set(creatures.map((c) => c.id)));
   const defaultName = creatures.length === 1
     ? creatures[0].name.replace(/[^a-z0-9]/gi, "_").toLowerCase()
-    : "criaturas_exportadas";
+    : v.arquivo;
   const [filename, setFilename] = useState(defaultName);
   const [copied, setCopied] = useState(false);
   const taRef = useRef(null);
@@ -507,8 +529,8 @@ const ExportModal = ({ creatures, onConfirm, onCancel }) => {
             <Download className="w-5 h-5 text-purple-400" />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-lg font-bold text-white">Exportar Criaturas</h3>
-            <p className="text-sm text-slate-400">{sel.size} de {creatures.length} selecionada(s)</p>
+            <h3 className="text-lg font-bold text-white">{v.exportarTitulo}</h3>
+            <p className="text-sm text-slate-400">{v.selecionadas(sel.size, creatures.length)}</p>
           </div>
           <button
             type="button"
@@ -612,7 +634,7 @@ const ExportModal = ({ creatures, onConfirm, onCancel }) => {
 // ============================================================
 // IMPORT MODAL — colar JSON ou escolher arquivo
 // ============================================================
-const ImportModal = ({ onImport, onCancel }) => {
+const ImportModal = ({ onImport, onCancel, v = VOCAB_PADRAO }) => {
   const [text, setText] = useState("");
   const [status, setStatus] = useState(null); // { type: "success" | "error", message }
   const fileRef = useRef(null);
@@ -621,7 +643,7 @@ const ImportModal = ({ onImport, onCancel }) => {
     onImport(result);
     setStatus({
       type: "success",
-      message: `${result.creatures.length} criatura(s) importada(s) com sucesso.`,
+      message: v.importadas(result.creatures.length),
     });
     setText("");
   };
@@ -662,7 +684,7 @@ const ImportModal = ({ onImport, onCancel }) => {
             <Upload className="w-5 h-5 text-purple-400" />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-lg font-bold text-white">Importar Criaturas</h3>
+            <h3 className="text-lg font-bold text-white">{v.importarTitulo}</h3>
             <p className="text-sm text-slate-400">Cole o JSON ou escolha um arquivo</p>
           </div>
           <button
@@ -763,6 +785,13 @@ export default function Dashboard({
      e escreva 'Jogador', e remova 'Criaturas Base' da Ficha de Player"*. */
   titulo = "Grimório",
   showSystemView = true,
+  /* ⚠ A TERCEIRA DO AMBIENTE PRIVADO, no mesmo molde: o padrão é o texto de
+     sempre (`VOCAB_PADRAO`), e só o /Player passa outro. O /Player é uma lista
+     de PERSONAGENS, e a lista seguia dizendo "Nova Criatura" e "Todas as
+     Criaturas". Autor, 2026-09-10, escolhendo como resolver: "Uma prop
+     opcional". O texto do jogador mora em src/systems/afty/afty-sistema.js
+     (`vocabularioDoDashboard`), para esta tela não saber que ele existe. */
+  vocab = {},
 }) {
   const [view, setView] = useState({ type: "all", folderId: null });
   const [search, setSearch] = useState("");
@@ -1050,9 +1079,14 @@ export default function Dashboard({
     manager.importMany(result, { mergeStrategy: "append" });
   }, [manager]);
 
+  /* O vocabulário mesclado mora DEPOIS de todos os hooks, e não no topo. No
+     topo, antes dos `useState`, o React Compiler deixava de reconhecer os
+     setters como estáveis e recusava os sete `useCallback` logo acima
+     (react-hooks/preserve-manual-memoization, medido em 2026-09-10). */
+  const v = { ...VOCAB_PADRAO, ...vocab };
   const viewTitle = view.type === "folder"
     ? VIEW_TITLE.folder(activeFolder)
-    : (VIEW_TITLE[view.type] ?? VIEW_TITLE.all)();
+    : view.type === "all" || !VIEW_TITLE[view.type] ? v.todas : VIEW_TITLE[view.type]();
 
   const canCreate = view.type !== "builtins";
   const isSortableView = view.type !== "builtins";
@@ -1080,6 +1114,7 @@ export default function Dashboard({
     onRenameFolder: manager.renameFolder,
     onRemoveFolder: manager.removeFolder,
     showSystemView,
+    itemLabel: v.itens,
   };
 
   return (
@@ -1141,7 +1176,7 @@ export default function Dashboard({
                 onClick={handleExportCurrentView}
                 disabled={filtered.filter((c) => !c.isBuiltIn).length === 0}
                 className="inline-flex items-center justify-center gap-1.5 h-9 w-9 lg:w-auto lg:px-3 shrink-0 rounded bg-slate-800 hover:bg-slate-700 text-sm font-semibold text-slate-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-purple-500/60"
-                title="Exportar criaturas da visualização atual"
+                title={v.exportarVista}
               >
                 <Download className="w-4 h-4 shrink-0" />
                 <span className="hidden lg:inline">Exportar</span>
@@ -1151,10 +1186,10 @@ export default function Dashboard({
                 onClick={onCreateNew}
                 disabled={!canCreate}
                 className="inline-flex items-center justify-center gap-1.5 h-9 w-9 lg:w-auto lg:px-4 shrink-0 rounded bg-purple-800 hover:bg-purple-700 text-sm font-bold text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-purple-500"
-                title={canCreate ? "Criar nova criatura" : "Não é possível criar na pasta Sistema"}
+                title={canCreate ? v.criarNova : "Não é possível criar na pasta Sistema"}
               >
                 <Plus className="w-4 h-4 shrink-0" />
-                <span className="hidden lg:inline">Nova Criatura</span>
+                <span className="hidden lg:inline">{v.nova}</span>
               </button>
             </div>
 
@@ -1217,7 +1252,7 @@ export default function Dashboard({
               <div className="flex flex-col shrink-0">
                 <h2 className="text-xl font-bold text-white">{viewTitle}</h2>
                 <span className="text-xs text-slate-500 uppercase tracking-wider mt-0.5">
-                  {filtered.length} criatura(s)
+                  {v.contagem(filtered.length)}
                   {view.type === "builtins" && " · Somente leitura — edite para clonar"}
                   {isSortableView && filtered.length > 0 && (
                     <span className="ml-2 text-slate-600">· Arraste para reordenar</span>
@@ -1259,7 +1294,7 @@ export default function Dashboard({
                       onChange={(e) => setSearch(e.target.value)}
                       placeholder="Buscar..."
                       className="w-full h-9 bg-slate-900/60 border border-slate-800 rounded pl-9 pr-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-purple-500"
-                      aria-label="Buscar criaturas"
+                      aria-label={v.buscar}
                     />
                   </div>
 
@@ -1423,7 +1458,7 @@ export default function Dashboard({
                 <Users className="w-10 h-10 text-slate-700 mx-auto mb-3" />
                 <p className="text-sm text-slate-500 mb-4">
                   {search
-                    ? "Nenhuma criatura combina com sua busca."
+                    ? v.nenhumaBusca
                     : view.type === "builtins"
                       ? "Nenhuma criatura base carregada."
                       : "Esta pasta está vazia."}
@@ -1434,7 +1469,7 @@ export default function Dashboard({
                     onClick={onCreateNew}
                     className="inline-flex items-center gap-1.5 px-4 py-2 rounded bg-purple-800 hover:bg-purple-700 text-sm font-bold text-white"
                   >
-                    <Plus className="w-4 h-4" /> Criar criatura
+                    <Plus className="w-4 h-4" /> {v.criar}
                   </button>
                 )}
               </div>
@@ -1478,6 +1513,7 @@ export default function Dashboard({
         {exportModal && (
           <ExportModal
             creatures={exportModal}
+            v={v}
             onConfirm={handleConfirmExport}
             onCancel={() => setExportModal(null)}
           />
@@ -1487,6 +1523,7 @@ export default function Dashboard({
         {showImportModal && (
           <ImportModal
             onImport={handleImportResult}
+            v={v}
             onCancel={() => setShowImportModal(false)}
           />
         )}
@@ -1511,8 +1548,8 @@ export default function Dashboard({
                   <h3 className="text-lg font-bold text-white mb-1">Excluir?</h3>
                   <p className="text-sm text-slate-400">
                     {confirmDelete.type === "one"
-                      ? <><span className="text-slate-200 font-semibold">"{confirmDelete.payload.name}"</span> será removida permanentemente.</>
-                      : <>{confirmDelete.payload.length} criatura(s) serão removidas permanentemente.</>
+                      ? <><span className="text-slate-200 font-semibold">"{confirmDelete.payload.name}"</span> {v.removida}</>
+                      : <>{v.removidas(confirmDelete.payload.length)}</>
                     }
                   </p>
                 </div>

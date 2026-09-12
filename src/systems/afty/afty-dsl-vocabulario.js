@@ -45,7 +45,7 @@ const POR_NOME = [
       ["nd", "Nível de Desafio"],
       ["bt", "Bônus de Treinamento"],
       ["maestria", "Maestria, o mesmo valor do Bônus de Treinamento"],
-      ["grau", "Grau da criatura, Quarto 1 até Semi-Grau Especial 5"],
+      ["grau", "Grau da ficha, Quarto 1 até Semi-Grau Especial 5"],
       ["vez", "Qual repetição está sendo avaliada"],
       ["alma_atual", "Integridade da Alma"],
       ["rd_escudo", "RD base do escudo equipado"],
@@ -272,6 +272,17 @@ const porNome = (a, b) => a.nome.localeCompare(b.nome);
  * `buildInvocacaoDslContext` aparece aqui sozinha, no pior caso em "Outras".
  */
 const INV_POR_NOME = [
+  /* As duas constantes do Motor. Entraram no contexto da invocação em
+     2026-09-10, com o Motor da Característica Livre: o campo "enquanto" mostra
+     "sempre" como exemplo, e o editor confere o nome contra ESTA lista. */
+  {
+    id: "constantes",
+    label: "Constantes",
+    nomes: [
+      ["sempre", "Vale 1: a condição que nunca desliga"],
+      ["nunca", "Vale 0: a condição que nunca liga"],
+    ],
+  },
   {
     id: "invocacao",
     label: "Invocação",

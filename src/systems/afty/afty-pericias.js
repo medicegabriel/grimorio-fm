@@ -1087,8 +1087,14 @@ export function resolveTestes(creature, ctx = {}) {
      negativo. */
   const penalidadeEquip = Math.min(0, Math.trunc(Number(ctx.penalidadeDestreza) || 0));
   const penalidadeDe = (atributo) => (atributo === "destreza" ? penalidadeEquip : 0);
-  const partePenalidade = (atributo) =>
-    (penalidadeDe(atributo) ? [{ label: "Armadura e Escudo", valor: penalidadeEquip }] : []);
+  /* As parcelas vêm prontas do derive desde 2026-09-11: os itens juntos em
+     "Armadura e Escudo" e cada efeito do canal `penalidadeArmadura` com o nome
+     dele. Sem elas (chamador antigo), a linha única de sempre. */
+  const partePenalidade = (atributo) => {
+    if (!penalidadeDe(atributo)) return [];
+    const prontas = Array.isArray(ctx.penalidadePartes) && ctx.penalidadePartes.length ? ctx.penalidadePartes : null;
+    return prontas ?? [{ label: "Armadura e Escudo", valor: penalidadeEquip, penalidade: true }];
+  };
 
   const parteProficiencia = (prof) => {
     const v = bonusProficiencia(bt, prof);
