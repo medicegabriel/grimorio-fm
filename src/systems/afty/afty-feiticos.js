@@ -3365,6 +3365,165 @@ function ajusteAcaoAux(efeitoKey, valor, { acao, nivel, duracao, umGolpe, notas 
   }
 }
 
+// ===============================================================
+// FEITIÇOS PASSIVOS / CARACTERÍSTICAS
+// ===============================================================
+// O tipo "passivo" estava no schema desde sempre sem calculador nenhum
+// (autor, 2026-08-09: *"Os Especiais e Passivos deixamos para depois. Com
+// calma."*). O primeiro pedaço, o custo em PE Máximo, chegou em 2026-09-09
+// (`peMaximoDasPassivas`, acima). Esta é a segunda metade: quanto CADA
+// categoria de benefício vale, por Nível de Passivo — a "calculadora", no
+// mesmo espírito de `calcularFeiticoDano` e `calcularFeiticoAuxiliar`.
+//
+// ⚠ NÃO EXISTE TÉCNICA MÁXIMA PASSIVA (livro, capítulo de Feitiços Passivos).
+// As tabelas param no Nível 5.
+//
+// Duas fontes de número, e elas NÃO se misturam:
+//   1. "Metade de uma Sustentada" — a régua GERAL do livro pra qualquer
+//      benefício sem tabela própria (Defesa, RD, Atributo, TR, Perícia,
+//      Movimento...). Reaproveita `AUX_TABELAS`: uma errata na coluna
+//      Sustentada corrige os dois lados de graça, e nunca diverge por
+//      acidente.
+//   2. Tabelas VERBATIM, exclusivas de Passivo — Dano Adicional (3 formas) e
+//      Nível de Dano. O livro é explícito sobre isto: "você encontrará
+//      tabelas exclusivas para Feitiços Passivos, visto que algumas métricas
+//      de Feitiços Auxiliares não funcionariam." Os valores de dano usam a
+//      MÉDIA (a ficha soma número fixo, do mesmo jeito que o Funcionamento
+//      Básico e o Motor de Automação já fazem em todo canal de dano).
+// ---------------------------------------------------------------
+
+/** "Metade de uma Sustentada" (arredondado). `null` quando a tabela não tem
+ *  Sustentada naquele nível (ex.: Defesa e TR não têm nos níveis 0-1). */
+function metadeSustentada(efeitoAux, nivel) {
+  const nNum = nivel === "max" ? 5 : Math.max(0, Math.min(5, Math.trunc(Number(nivel) || 0)));
+  const bruto = AUX_TABELAS[efeitoAux]?.[nNum]?.sustentada;
+  return typeof bruto === "number" ? Math.round(bruto / 2) : null;
+}
+
+// Tabelas próprias de Passivo, verbatim do livro. Dano em MÉDIA.
+export const PASSIVO_DANO_MEDIA = {
+  durante: { 0: 1.5, 1: 2.5, 2: 4.5, 3: 6.5, 4: 9,  5: 13 },
+  apos:    { 0: 2.5, 1: 3.5, 2: 6.5, 3: 9,   4: 13, 5: 16.5 },
+  fixo:    { 0: 2,   1: 4,   2: 7,   3: 10,  4: 14, 5: 17 },
+};
+export const PASSIVO_NIVEL_DANO = { 0: 0, 1: 0, 2: 1, 3: 2, 4: 3, 5: 4 };
+
+// Regeneração por Rodada: SEM canal (o motor não cura fora de rolagem de
+// mesa), então não gera efeito — só o número e a nota, pra escrever à mão.
+export const PASSIVO_REGEN_MEDIA   = { 0: 0, 1: 3, 2: 7, 3: 9, 4: 16, 5: 27 };
+export const PASSIVO_REGEN_NOTACAO = { 1: "1d6", 2: "2d6", 3: "2d8", 4: "3d10", 5: "5d10" };
+
+// As categorias que um Passivo pode conceder. `canal`/`pedeAlvo` são o que a
+// calculadora escreve em `efeitosPassivo`. `extrapolado` marca as DUAS que o
+// livro não tabela pra Passivo nenhum (Iniciativa, Atenção): usam a régua da
+// Defesa por analogia de porte, e a calculadora avisa que é extrapolação
+// nossa, não regra transcrita.
+export const PASSIVO_EFEITOS = [
+  { value: "defesa",      label: "Aumento de Defesa",                              unidade: "DEF",    canal: "defesa" },
+  { value: "rd",          label: "Redução de Dano",                                unidade: "RD",     canal: "rdGeral", multiTipo: true },
+  { value: "atributo",    label: "Aumento de Atributo (permanente)",               unidade: "pontos", canal: "atributo",    pedeAlvo: "atributo" },
+  { value: "tr",          label: "Bônus em Teste de Resistência",                  unidade: "",       canal: "bonusTR",     pedeAlvo: "tr" },
+  { value: "pericia",     label: "Bônus em Perícia",                               unidade: "",       canal: "bonusPericia", pedeAlvo: "pericia", auxTabela: "rolagem" },
+  { value: "movimento",   label: "Aumento de Movimento",                           unidade: "m",      canal: "movimento" },
+  { value: "danoDurante", label: "Dano Adicional (Durante Ataque)",                unidade: "",       canal: "danoBonus", grupoDano: true },
+  { value: "danoApos",    label: "Dano Adicional (Após Ataque)",                   unidade: "",       canal: "danoBonus", grupoDano: true },
+  { value: "danoFixo",    label: "Dano Adicional (Fixo)",                          unidade: "",       canal: "danoBonus", grupoDano: true },
+  { value: "nivelDano",   label: "Nível de Dano Adicional",                        unidade: "níveis", canal: "nivelDano" },
+  { value: "iniciativa",  label: "Aumento de Iniciativa (sem tabela no livro)",    unidade: "",       canal: "iniciativa", extrapolado: true, auxTabela: "defesa" },
+  { value: "atencao",     label: "Aumento de Atenção (sem tabela no livro)",       unidade: "",       canal: "atencao",    extrapolado: true, auxTabela: "defesa" },
+  { value: "regeneracao", label: "Regeneração por Rodada (referência — sem canal)", unidade: "PV/rodada", canal: null },
+];
+const PASSIVO_EFEITO_BY_ID = Object.fromEntries(PASSIVO_EFEITOS.map((e) => [e.value, e]));
+export const getPassivoEfeito = (id) => PASSIVO_EFEITO_BY_ID[id] ?? PASSIVO_EFEITOS[0];
+
+/**
+ * Feitiço Passivo / Característica: benefício permanente, sem ação nem
+ * duração. Devolve quanto a categoria escolhida vale no Nível do Feitiço, e
+ * já entrega pronto o `efeitosGerados` pra escrever em `efeitosPassivo` — a
+ * mesma régua que uma Aptidão ou uma Linha de Treinamento usam pra virar
+ * `{ canal, expr }` sem o jogador escrever a expressão à mão.
+ *
+ * ⚠ ISTO NÃO ESCREVE NA FICHA SOZINHO. `efeitosDosPassivos` (afty-efeitos.js)
+ * só lê `feitico.efeitosPassivo`, então esta função é consultiva: quem chama
+ * decide se copia `efeitosGerados` pra dentro do Feitiço (é o que o botão
+ * "Usar este valor" da Ficha faz) ou deixa como está, se a pessoa preferir
+ * escrever a expressão à mão no Motor de Automação de qualquer jeito.
+ *
+ * ⚠ REGENERAÇÃO NÃO GERA EFEITO. Não existe canal de cura periódica no motor
+ * — nenhum Feitiço, Aptidão ou Treinamento cura por rodada fora de uma
+ * rolagem de mesa —, então ela devolve só o número e o aviso: a mesma linha
+ * morta e marcada que o resto do projeto usa pra "a regra existe e o motor
+ * não alcança" (ver Regeneração por Rodada em `docs/afty-formulas-base.md`).
+ */
+export function calcularFeiticoPassivo(feitico, ctx = {}) {
+  const f = feitico || {};
+  const nivel = f.nivel ?? 0;
+  const nNum = nivel === "max" ? 5 : Math.max(0, Math.min(5, Math.trunc(Number(nivel) || 0)));
+  const def = getPassivoEfeito(f.efeitoPassivo);
+  const avisos = [];
+
+  if (nivel === "max") avisos.push("Não existe Feitiço Passivo de Técnica Máxima — o Nível fica preso em 5.");
+
+  let valor = null;
+  let notacao = null;
+
+  if (def.value === "danoDurante") valor = PASSIVO_DANO_MEDIA.durante[nNum] ?? null;
+  else if (def.value === "danoApos") valor = PASSIVO_DANO_MEDIA.apos[nNum] ?? null;
+  else if (def.value === "danoFixo") valor = PASSIVO_DANO_MEDIA.fixo[nNum] ?? null;
+  else if (def.value === "nivelDano") valor = PASSIVO_NIVEL_DANO[nNum] ?? null;
+  else if (def.value === "regeneracao") {
+    valor = PASSIVO_REGEN_MEDIA[nNum] ?? null;
+    notacao = PASSIVO_REGEN_NOTACAO[nNum] ?? null;
+    if (valor) {
+      avisos.push("Sem canal de cura periódica no motor: some os PV na mesa, a cada rodada. Vira PV Temporário sem Energia Reversa ou justificativa equivalente, e não funciona fora de combate.");
+    }
+  } else {
+    valor = metadeSustentada(def.auxTabela || def.value, nNum);
+    if (valor != null && def.extrapolado) {
+      avisos.push(`${def.label.replace(/ \(sem tabela no livro\)$/, "")} não tem tabela de Passivo no livro (só Feitiço Auxiliar tem). Usei a régua da Defesa por analogia de porte — confirme com a mesa antes de valer.`);
+    }
+  }
+
+  // "Cada tipo de dano extra reduz a RD/Negação em 2" (regra do Auxiliar,
+  // e o livro não diz o contrário pra Passivo).
+  const tiposExtra = Math.max(0, Math.trunc(Number(f.tiposDanoExtraPassivo) || 0));
+  if (def.multiTipo && valor != null && tiposExtra > 0) valor = Math.max(0, valor - 2 * tiposExtra);
+
+  const disponivel = valor != null && valor !== 0;
+  if (!disponivel && def.canal) {
+    avisos.push(`${def.label} não tem valor no ${nivel === "max" ? "Técnica Máxima" : `Nível ${nNum}`} de Passivo.`);
+  }
+
+  const alvo = def.pedeAlvo === "atributo" ? (f.alvoPassivoAtributo || null)
+    : def.pedeAlvo === "tr" ? (f.alvoPassivoTR || null)
+      : def.pedeAlvo === "pericia" ? (f.alvoPassivoPericia || null)
+        : null;
+  if (def.pedeAlvo && disponivel && !alvo) {
+    const rotuloAlvo = def.pedeAlvo === "atributo" ? "o atributo" : def.pedeAlvo === "tr" ? "o Teste de Resistência" : "a perícia";
+    avisos.push(`Escolha ${rotuloAlvo} que este Passivo afeta.`);
+  }
+
+  const efeitosGerados = (disponivel && def.canal && (!def.pedeAlvo || alvo))
+    ? [{ canal: def.canal, expr: String(valor), ...(alvo ? { alvo } : {}) }]
+    : [];
+
+  return {
+    disponivel,
+    efeito: def.value,
+    efeitoLabel: def.label.replace(/ \(sem tabela no livro\)$| \(referência — sem canal\)$/, ""),
+    unidade: def.unidade,
+    valor,
+    notacao,
+    texto: disponivel ? `${valor > 0 ? "+" : ""}${String(valor).replace(".", ",")}${def.unidade ? ` ${def.unidade}` : ""}` : "-",
+    tiposDanoExtra: tiposExtra,
+    alvo,
+    custoPeMaximo: custoPeMaximoDaPassiva(nivel) || null,
+    custoPeMaximoAtivo: regraDo(ctx.sistema, "passivaCustaPeMaximo") === "player",
+    efeitosGerados,
+    avisos,
+  };
+}
+
 // ---------------------------------------------------------------
 // Fábrica de um Feitiço em branco (entrada nova na ficha). Nasce como
 // Feitiço de Dano de Nível 1, alvo único por teste de resistência.
@@ -3434,6 +3593,11 @@ export function createBlankFeitico() {
     alvosMult: 1,              // alvos ÚNICOS do Feitiço (todos os efeitos seguem)
     efeitosMult: [],           // [createBlankAuxEffect()]
     // --- campos de Passivo / Característica ---
+    efeitoPassivo: "defesa",    // ver PASSIVO_EFEITOS — o que a calculadora usa
+    alvoPassivoAtributo: "forca",
+    alvoPassivoTR: "reflexos",
+    alvoPassivoPericia: "percepcao",
+    tiposDanoExtraPassivo: 0,
     efeitosPassivo: [],        // mesmo formato do Motor do Funcionamento Básico
     // --- campos de Feitiço Personalizado ---
     acaoPersonalizada: "",
@@ -3524,7 +3688,8 @@ function calculadorDe(tipo) {
   if (tipo === "curativo") return calcularFeiticoCurativo;
   if (tipo === "especial") return calcularFeiticoEspecial;
   if (tipo === "personalizado") return calcularFeiticoPersonalizado;
-  // "passivo" está no schema desde sempre e nunca foi desenvolvido.
+  // "passivo" ganhou calculador em 2026-09-12 — ver calcularFeiticoPassivo.
+  if (tipo === "passivo") return calcularFeiticoPassivo;
   return null;
 }
 

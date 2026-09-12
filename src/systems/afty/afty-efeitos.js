@@ -95,8 +95,11 @@ import { getAnatomia } from "./afty-anatomias";
 import { CUSTO_PE_MINIMO } from "./afty-dominio-simples";
 // afty-aptidoes só importa afty-origens, que já é dependência daqui: sem ciclo.
 import { getAptidao } from "./afty-aptidoes";
-// Módulo folha (não importa nada), então a seta é segura.
-import { funcionamentosDaFicha } from "./afty-schema";
+// `funcionamentosComNativos` já inclui os 3 Funcionamentos embutidos (Aliados,
+// Alma, Comidas — afty-extras-nativos.js) por cima da leitura crua da ficha;
+// ver o aviso no topo daquele arquivo sobre por que afty-schema.js continua
+// sem importar nada.
+import { funcionamentosComNativos } from "./afty-extras-nativos";
 import {
   HABILIDADE_EFEITOS, ESCOLHA_EFEITOS, TALENTO_EFEITOS,
   MELHORIA_EFEITOS, MELHORIA_EFEITOS_ALVO, LENDARIA_EFEITOS, LENDARIA_EFEITOS_ALVO,
@@ -977,7 +980,7 @@ export function efeitosManuaisDaFicha(creature) {
  */
 export function efeitosDaTecnica(creature) {
   const out = [];
-  for (const fb of funcionamentosDaFicha(creature)) {
+  for (const fb of funcionamentosComNativos(creature)) {
     for (const e of fb.efeitos) {
       // Canal renomeado numa ficha antiga vira o novo aqui, na leitura.
       const canal = CANAL_LEGADO[e?.canal] ?? e?.canal;

@@ -6,7 +6,8 @@ import {
 } from "lucide-react";
 
 import "./ficha.css";
-import { mesclaFichaAfty, AFTY_TIPOS, AFTY_PATAMARES, funcionamentosDaFicha } from "../afty-schema";
+import { mesclaFichaAfty, AFTY_TIPOS, AFTY_PATAMARES } from "../afty-schema";
+import { funcionamentosComNativos } from "../afty-extras-nativos";
 import { deriveAfty } from "../afty-derive";
 import { preparaAtivacaoComCustoVida } from "../afty-feiticos";
 import { aplicarAddons, addonsDaCriatura } from "../afty-addons";
@@ -518,7 +519,7 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
     ),
     habilidades: () => (
       <AbaHabilidades
-        funcionamentos={funcionamentosDaFicha(ficha)}
+        funcionamentos={funcionamentosComNativos(ficha)}
         itens={itens}
         abertos={abertos}
         onAberto={alternaItem}

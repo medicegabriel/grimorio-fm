@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useState } from "react";
 import { ArmasTransformaveis } from "../ui/armas-transformaveis";
 import { Heart, Zap, Sparkles, Skull, EyeOff, Moon, Swords, Shield, BookOpen, Backpack, Wand2, AlertTriangle } from "lucide-react";
 
-import { funcionamentosDaFicha } from "../afty-schema";
+import { funcionamentosComNativos } from "../afty-extras-nativos";
 import { sistemaDaFicha, palavrasDoSistema } from "../afty-sistema";
 import { NumeroComFontes } from "../ui/fontes";
 import { numeroBr } from "../ui/formato";
@@ -384,7 +384,7 @@ export default function PainelDeCombatente({
       )}
       {aba === "habilidades" && (
         <AbaHabilidades
-          funcionamentos={funcionamentosDaFicha(combatente.ficha)}
+          funcionamentos={funcionamentosComNativos(combatente.ficha)}
           itens={itens}
           abertos={abertos}
           onAberto={alternaItem}

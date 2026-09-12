@@ -12,8 +12,11 @@ import { aplicarAddons, modelosPendentesDeAddon, nivelDaFicha } from "./afty-add
 import {
   mesclaFichaAfty, AFTY_ATTRS, AFTY_TIPOS, AFTY_PATAMARES, AFTY_QNT_PE,
   AFTY_TECNICA_ATTRS, AFTY_TAMANHOS, AFTY_RESISTENCIAS, getTamanho,
-  createBlankFuncionamento, funcionamentosDaFicha, nomeParaGravar,
+  createBlankFuncionamento, nomeParaGravar,
 } from "./afty-schema";
+// Inclui os 3 Funcionamentos nativos (Aliados, Alma, Comidas) por cima da
+// leitura crua da ficha — ver o aviso em afty-extras-nativos.js.
+import { funcionamentosComNativos } from "./afty-extras-nativos";
 // Primitivos compartilhados com a Ficha Final. Eram locais deste arquivo até
 // 2026-08-05, e saíram porque duas cópias divergiriam na primeira errata.
 import { PainelDeFontes, ValorComFontes } from "./ui/fontes";
@@ -143,6 +146,7 @@ import {
   formatAuxValor, aplicaReducoesCustoFeitico, tituloCustoFeitico,
   calcularFeiticoPersonalizado, TIPOS_FEITICO, TIPO_FEITICO_LABEL, TIPO_FEITICO_CURTO,
   TODOS_TIPOS_FEITICO, tiposFeiticoDaLinha, peMaximoDasPassivas,
+  calcularFeiticoPassivo, PASSIVO_EFEITOS,
 } from "./afty-feiticos";
 import { IconeDeTipo } from "./ui/feitico-tipo";
 import {
@@ -4249,6 +4253,18 @@ function FuncionamentoAddonCard({ linha }) {
   );
 }
 
+// Mesma renderização somente-leitura do addon, mas para os extras embutidos
+// no próprio sistema (Aliados, Alma, Comidas — ver afty-extras-nativos.js):
+// sem o rótulo "Addon", porque não é um pacote instalável.
+function FuncionamentoNativoCard({ linha }) {
+  return (
+    <div className="mt-4 pt-4 border-t border-slate-700" title="Recurso embutido do sistema">
+      <FieldLabel>{linha.nome}</FieldLabel>
+      {String(linha.descricao ?? "").trim() && <TextoRico texto={linha.descricao} className="mt-2" />}
+    </div>
+  );
+}
+
 function PerfilAmaldicoadoCard({
   draft, derived, patchCore, addFuncionamento, removeFuncionamento, patchFuncionamento,
 }) {
@@ -4256,7 +4272,7 @@ function PerfilAmaldicoadoCard({
   const fontesDano = fontesDanoDaFicha(draft, derived);
   // O principal sai da lista: ele já tem o bloco fixo acima, com os campos que
   // moram direto no `core`.
-  const adicionais = funcionamentosDaFicha(draft).filter((f) => !f.principal);
+  const adicionais = funcionamentosComNativos(draft).filter((f) => !f.principal);
   return (
     <Card
       title="Perfil Amaldiçoado"
@@ -4295,7 +4311,9 @@ function PerfilAmaldicoadoCard({
           border-t`, e o redesenho de 2026-08-12 quer os irmãos na MESMA largura
           do principal. O `fontesDano` veio do commit do colaborador. */}
       {adicionais.map((f) => (
-        f.deAddon
+        f.nativo
+          ? <FuncionamentoNativoCard key={f.id} linha={f} />
+          : f.deAddon
           ? <FuncionamentoAddonCard key={f.id} linha={f} />
           : (
             <FuncionamentoAdicionalCard
@@ -4754,18 +4772,26 @@ function BarraDoFeitico({ tiles, avisos }) {
  * útil para sempre. Quem não tem CD simplesmente não mostra CD.
  */
 function tilesDoFeitico(f, calc, ctx = {}) {
-  /* ⚠ A PASSIVA NÃO TEM `calc` E MESMO ASSIM TEM UM NÚMERO. O tipo "passivo"
-     nunca ganhou calculador (`calculadorDe` devolve null para ele), e por isso
-     o card dele era o único da aba sem barra nenhuma. Desde 2026-09-09 ele tem
-     exatamente um número na Ficha de Jogador: o que ele tira do PE Máximo.
+  /* ⚠ A PASSIVA TEM DOIS NÚMEROS, DE FONTES DIFERENTES. O que ela CONCEDE vem
+     do `calc` de `calcularFeiticoPassivo` (2026-09-12); o que ela COBRA sai
+     de `peMaximoDasPassivas`, e só conta na Ficha de Jogador — ver
+     `passivaCustaPeMaximo` em afty-sistema.js. As duas fontes nunca se
+     confundem porque uma soma e a outra subtrai.
 
-     Fica antes do `if (!calc)` porque é justamente o caso em que não há cálculo.
-     Nível 0 continua sem barra, porque custa zero e o zero não vira tile. */
+     Fica antes do `if (!calc)` porque o PE Máximo pode valer mesmo quando a
+     categoria escolhida não tem valor no nível (calc.disponivel === false).
+     Nível 0 continua sem tile de PE, porque custa zero e o zero não vira tile. */
   if (f.tipo === "passivo") {
     const custo = peMaximoDasPassivas([f], ctx.sistema).total;
-    return custo
-      ? [{ id: "peMaximo", label: "PE Máximo", valor: `-${custo} PE`, curto: "PE Máx.", icon: Sparkles }]
-      : [];
+    const tiles = [];
+    if (calc?.disponivel) {
+      tiles.push({
+        id: "valor", label: calc.efeitoLabel, valor: `${calc.texto}${calc.notacao ? ` (${calc.notacao})` : ""}`,
+        curto: "Valor", icon: Zap, accent: true,
+      });
+    }
+    if (custo) tiles.push({ id: "peMaximo", label: "PE Máximo", valor: `-${custo} PE`, curto: "PE Máx.", icon: Sparkles });
+    return tiles;
   }
   if (!calc) return [];
   const tiles = [];
@@ -4947,7 +4973,8 @@ function FeiticoCard({ feitico, ctx, nivelMax, tiposPermitidos, efeitosPassivo, 
       : feitico.tipo === "curativo" ? calcularFeiticoCurativo(feitico, ctx)
         : feitico.tipo === "especial" ? calcularFeiticoEspecial(feitico, ctx)
           : feitico.tipo === "personalizado" ? calcularFeiticoPersonalizado(feitico, ctx)
-            : null;
+            : feitico.tipo === "passivo" ? calcularFeiticoPassivo(feitico, ctx)
+              : null;
   const calc = aplicaReducoesCustoFeitico(feitico, calculoBase, ctx);
   // Agrega avisos do Feitiço e dos sub-efeitos (Múltiplos Efeitos), para a barra
   // não mentir o número.
@@ -5090,13 +5117,13 @@ function FeiticoCard({ feitico, ctx, nivelMax, tiposPermitidos, efeitosPassivo, 
           ) : feitico.tipo === "especial" ? (
             <FeiticoEspecialEditor {...propsEditor} ctx={ctx} />
           ) : feitico.tipo === "passivo" ? (
-            <TecnicaMotorEditor
-              efeitos={efeitosPassivo}
-              onChange={(v) => onPatch({ efeitosPassivo: v })}
+            <FeiticoPassivoEditor
+              feitico={feitico}
+              calc={calc}
+              onPatch={onPatch}
+              efeitosPassivo={efeitosPassivo}
               fontesDano={fontesDano}
               dslGrupos={dslGrupos}
-              titulo="Efeitos da Passiva"
-              simplificarTamanho
             />
           ) : feitico.tipo === "personalizado" ? (
             <FeiticoPersonalizadoEditor feitico={feitico} onPatch={onPatch} />
@@ -6659,6 +6686,109 @@ function AtributosDoAuxiliar({ config, feitico, total, onPatch }) {
           <Plus className="w-3 h-3" /> Dividir em Outro Atributo
         </button>
       )}
+    </div>
+  );
+}
+
+/**
+ * Passivo / Característica — a calculadora de 2026-09-12 (`calcularFeiticoPassivo`
+ * em afty-feiticos.js). Escolha a categoria (e o alvo, quando ela pede um) e o
+ * valor daquele Nível aparece pronto; "Usar este valor" escreve o efeito no
+ * Motor de Automação abaixo, que continua livre para ajuste manual depois —
+ * a calculadora SUGERE, ela nunca é a única fonte de verdade da linha.
+ */
+function FeiticoPassivoEditor({ feitico, calc, onPatch, efeitosPassivo, fontesDano, dslGrupos }) {
+  const f = feitico;
+  const efeito = f.efeitoPassivo || "defesa";
+  const def = PASSIVO_EFEITOS.find((e) => e.value === efeito) || PASSIVO_EFEITOS[0];
+
+  const usarValor = () => {
+    if (calc?.efeitosGerados?.length) onPatch({ efeitosPassivo: calc.efeitosGerados });
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <FieldLabel>Categoria do Passivo</FieldLabel>
+          <Select
+            value={efeito}
+            onChange={(v) => onPatch({ efeitoPassivo: v })}
+            options={PASSIVO_EFEITOS.map((e) => ({ value: e.value, label: e.label }))}
+          />
+        </div>
+        {def.pedeAlvo === "atributo" && (
+          <div>
+            <FieldLabel>Atributo</FieldLabel>
+            <Select
+              value={f.alvoPassivoAtributo || "forca"}
+              onChange={(v) => onPatch({ alvoPassivoAtributo: v })}
+              options={alvoOpcoes("atributo")}
+            />
+          </div>
+        )}
+        {def.pedeAlvo === "tr" && (
+          <div>
+            <FieldLabel>Teste de Resistência</FieldLabel>
+            <Select
+              value={f.alvoPassivoTR || "reflexos"}
+              onChange={(v) => onPatch({ alvoPassivoTR: v })}
+              options={alvoOpcoes("tr")}
+            />
+          </div>
+        )}
+        {def.pedeAlvo === "pericia" && (
+          <div>
+            <FieldLabel>Perícia</FieldLabel>
+            <Select
+              value={f.alvoPassivoPericia || "percepcao"}
+              onChange={(v) => onPatch({ alvoPassivoPericia: v })}
+              options={alvoOpcoes("pericia")}
+            />
+          </div>
+        )}
+        {def.multiTipo && (
+          <div>
+            <FieldLabel>Tipos de dano extras cobertos</FieldLabel>
+            <NumberInput
+              value={f.tiposDanoExtraPassivo || 0}
+              onChange={(v) => onPatch({ tiposDanoExtraPassivo: Math.max(0, Math.trunc(Number(v) || 0)) })}
+              min={0}
+            />
+          </div>
+        )}
+      </div>
+
+      {calc && (
+        <div className="rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-2.5 flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-baseline gap-2 min-w-0">
+            <span className="text-[11px] text-slate-400 flex-shrink-0">Valor calculado</span>
+            <span className={`font-mono font-bold text-lg tabular-nums ${calc.disponivel ? "text-white" : "text-slate-600"}`}>
+              {calc.texto}{calc.notacao ? ` (${calc.notacao})` : ""}
+            </span>
+          </div>
+          {calc.efeitosGerados?.length > 0 && (
+            <button
+              type="button"
+              onClick={usarValor}
+              className="flex-shrink-0 text-[12px] font-semibold px-3 py-1.5 rounded-lg bg-purple-700 hover:bg-purple-600 text-white transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-500"
+            >
+              Usar este valor
+            </button>
+          )}
+        </div>
+      )}
+
+      {calc && <NotasDeFeitico avisos={calc.avisos} />}
+
+      <TecnicaMotorEditor
+        efeitos={efeitosPassivo}
+        onChange={(v) => onPatch({ efeitosPassivo: v })}
+        fontesDano={fontesDano}
+        dslGrupos={dslGrupos}
+        titulo="Efeitos da Passiva (Motor de Automação)"
+        simplificarTamanho
+      />
     </div>
   );
 }
@@ -9766,6 +9896,11 @@ function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, setHabili
     nd: derived.nd,
     attrEff: derived.attrEff,
     origemId: draft.core?.origem?.id ?? null,
+    // O clã do Herdado, para o requisito `cla` dos Talentos de Origem de clã
+    // (Estrela dos Zenin, e os clãs de Addon). O `resolveTalentos` do deriveAfty
+    // já passa isto; aqui faltava, então todo Talento com requisito de clã ficava
+    // travado na tela mesmo com o clã certo escolhido.
+    claId: draft.core?.origem?.cla ?? null,
     // A origem copiada em Verdadeiras Origens qualifica junto com a própria.
     origensQualificadas: origensQualificadas(draft),
     talentos: talentosEscolhidos,

@@ -108,6 +108,7 @@ import {
   estadosCombateDeAddon, epocaAddons,
 } from "./afty-addons";
 import { agrupaConcedido, concessoesDaSessao, escolhasDoConcedido } from "./afty-concessao";
+import { ESTADOS_NATIVOS_EXTRAS } from "./afty-extras-nativos";
 import {
   efeitosDasAdaptacoes, origensDiretasDasAdaptacoes, resumoAdaptacoes,
 } from "./afty-adaptacao";
@@ -1294,6 +1295,7 @@ export function deriveAfty(creature, opcoes = {}) {
       ...estadosAptidoes,
       ...estadosAddon,
       ...estadosVislumbre,
+      ...ESTADOS_NATIVOS_EXTRAS,
     ],
   });
   const auxiliaresAtivos = resolveAuxiliaresAtivos(creature, combate, estadosConjurador, {
