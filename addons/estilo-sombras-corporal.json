@@ -1,0 +1,264 @@
+{
+  "id": "sombras",
+  "nome": "Estilo das Sombras — Reforço Corporal e Pacto",
+  "versao": "1.1.0",
+  "autor": "Templas",
+  "paraRaw": "afty",
+  "descricao": "Addon do Estilo das Sombras. Libera Aura Excessiva, Aura Impenetrável e Casulo de Energia sem pré-requisito (só zera os requisitos). Bancada: Reforço Corporal (+6 PV/nível, +2 RD física, +BT RD Geral com Aura Excessiva) e duas seções de exemplo com campos de valor — 'Resistir a Manobra · nova regra' (troca o valor atual por Fortitude + Aura) e 'RD de Aura · dobrar' (você digita a RD atual e o addon soma de novo = dobra). Pacto e Cura Corporal são só sinalizadores. Três Linhas de Treinamento (Escudo Protetor, Firmeza, Treinamento Corporal) — as condicionais usam os interruptores de sessão 'Escudo erguido' e 'Firmeza · em Postura da Terra', que você liga junto com a condição real. ⚠ Ligue 'Em Combate'. Itens [REFERÊNCIA] não têm canal.",
+  "substitui": {
+    "aptidoes": [
+      { "id": "aura_excessiva", "requisitos": [] },
+      { "id": "aura_impenetravel", "requisitos": [] },
+      { "id": "casulo_de_energia", "requisitos": [] }
+    ]
+  },
+  "estadosCombate": [
+    {
+      "id": "reforco",
+      "label": "Reforço Corporal",
+      "tipo": "bool",
+      "title": "Enquanto ativo: +6 PV por nível; +2 de RD física (o '2 +' de Aura Reforçada); com o interruptor Aura Excessiva ligado e Aura ≥ 3, +BT de RD Geral. O dobrar da RD e a nova Resistir a Manobra têm seções próprias abaixo. ⚠ Precisa de 'Em Combate' ligado."
+    },
+
+    {
+      "id": "rm_ativo",
+      "label": "Resistir a Manobra · nova regra",
+      "tipo": "bool",
+      "requerEstado": "reforco",
+      "title": "SEÇÃO DE EXEMPLO — Aura ≥ 4 com Aura Impenetrável: 'Resistir a Manobra se torna Fortitude + Aura'. O motor não sabe substituir sozinho, então preencha os dois campos abaixo e o addon troca: ele tira o valor atual e põe (Fortitude + Nível de Aptidão em Aura). O número novo aparece na linha de Manobras da ficha."
+    },
+    {
+      "id": "rm_base",
+      "label": "Resistir a Manobra · valor atual",
+      "tipo": "faixa",
+      "requerEstado": "rm_ativo",
+      "min": 0,
+      "max": 40,
+      "passo": 1,
+      "title": "O valor de Resistir a Manobra que a ficha mostra HOJE (Acrobacia/Atletismo + bônus). O addon subtrai este número."
+    },
+    {
+      "id": "rm_fort",
+      "label": "Resistir a Manobra · Fortitude",
+      "tipo": "faixa",
+      "requerEstado": "rm_ativo",
+      "min": 0,
+      "max": 40,
+      "passo": 1,
+      "title": "O seu bônus total de TR de Fortitude. O addon soma este número + o Nível de Aptidão em Aura no lugar do valor atual."
+    },
+
+    {
+      "id": "rd_dobrar",
+      "label": "RD de Aura · dobrar",
+      "tipo": "bool",
+      "requerEstado": "reforco",
+      "title": "SEÇÃO DE EXEMPLO — 'a RD de Aura Reforçada e as demais dobram após todos os cálculos'. O motor não dobra um total já fechado, então preencha abaixo o valor de RD de Aura que a ficha mostra e o addon adiciona o mesmo valor de novo (= dobra)."
+    },
+    {
+      "id": "rd_fis_val",
+      "label": "RD de Aura · física atual",
+      "tipo": "faixa",
+      "requerEstado": "rd_dobrar",
+      "min": 0,
+      "max": 80,
+      "passo": 1,
+      "title": "O total de RD física vindo de Aura (Aura Reforçada + Aura Elemental Reforçada + Casulo...) que a ficha mostra. O addon soma este valor de novo."
+    },
+    {
+      "id": "rd_ger_val",
+      "label": "RD de Aura · geral atual",
+      "tipo": "faixa",
+      "requerEstado": "rd_dobrar",
+      "min": 0,
+      "max": 80,
+      "passo": 1,
+      "title": "O total de RD Geral vindo de Aura (Aura Excessiva...) que a ficha mostra. O addon soma este valor de novo."
+    },
+
+    {
+      "id": "pacto",
+      "label": "Pacto (referência)",
+      "tipo": "bool",
+      "title": "Enquanto NÃO ativo, sua Energia Amaldiçoada máxima é 40% do total. Enquanto ativo, é 140% do total, e você recupera o ganho adicional. ⚠ REFERÊNCIA: o motor não tem canal para porcentagem do PE máximo — ajuste o PE na mão. Este interruptor só marca o estado."
+    },
+    {
+      "id": "cura_ref",
+      "label": "Cura Corporal +2 / +5 (referência)",
+      "tipo": "bool",
+      "title": "REFERÊNCIA — Treinamento Corporal etapas 1 e 3: 'ao recuperar PV (não PVT), +2 PV; 1x por rodada, +5 PV'. O motor não tem canal de bônus de cura recebida. Este interruptor só lembra — some os PV na mão."
+    }
+  ],
+  "funcionamentos": [
+    {
+      "id": "reforco_motor",
+      "nome": "Reforço Corporal (bancada)",
+      "descricao": "Bônus do Reforço Corporal conforme o Nível de Aptidão em Aura. Só vale com 'Em Combate' e o interruptor Reforço Corporal ligados.",
+      "efeitos": [
+        {
+          "canal": "hp",
+          "expr": "6 * (nd - 1)",
+          "quando": "sombras_reforco",
+          "duracao": "temporaria"
+        },
+        {
+          "canal": "rdFisico",
+          "expr": "2 * (au >= 1) + sombras_rd_dobrar * sombras_rd_fis_val",
+          "quando": "sombras_reforco",
+          "duracao": "temporaria"
+        },
+        {
+          "canal": "rdGeral",
+          "expr": "aura_excessiva * bt * (au >= 3) + sombras_rd_dobrar * sombras_rd_ger_val",
+          "quando": "sombras_reforco",
+          "duracao": "temporaria"
+        },
+        {
+          "canal": "resistirManobra",
+          "expr": "(sombras_rm_fort + au) - sombras_rm_base",
+          "quando": "sombras_reforco && sombras_rm_ativo && au >= 4",
+          "duracao": "temporaria"
+        }
+      ]
+    }
+  ],
+  "acrescenta": {
+    "treinamentos": [
+      {
+        "id": "treino_escudo_protetor",
+        "nome": "Escudo Protetor",
+        "lore": "Você se especificou totalmente na utilização de escudos, seja para proteger você ou aos outros; seu objetivo é sempre visando a proteção.",
+        "gatilhoSessao": { "id": "escudo_erguido", "label": "Escudo erguido" },
+        "etapas": [
+          {
+            "n": 1,
+            "focos": 1,
+            "requisito": null,
+            "beneficio": "A sua CA aumenta em +1 enquanto estiver empunhando um escudo. [Ligue o interruptor 'Escudo erguido' quando estiver com o escudo.]",
+            "efeitos": [
+              { "canal": "defesa", "expr": "1", "gatilhoSessao": "escudo_erguido" }
+            ]
+          },
+          {
+            "n": 2,
+            "focos": 1,
+            "requisito": null,
+            "beneficio": "Você recebe +1 de Fortitude.",
+            "efeitos": [
+              { "canal": "bonusTR", "alvo": "fortitude", "expr": "1" }
+            ]
+          },
+          {
+            "n": 3,
+            "focos": 2,
+            "requisito": null,
+            "beneficio": "Seu escudo aumenta a RD física dele em 5. [Interruptor 'Escudo erguido'.]",
+            "efeitos": [
+              { "canal": "rdFisico", "expr": "5", "gatilhoSessao": "escudo_erguido" }
+            ]
+          },
+          {
+            "n": 4,
+            "focos": 2,
+            "requisito": null,
+            "beneficio": "Você recebe +1 encantamento adicional em seu escudo — aqui vale +2 de RD Geral enquanto o escudo estiver erguido.",
+            "efeitos": [
+              { "canal": "rdGeral", "expr": "2", "gatilhoSessao": "escudo_erguido" }
+            ]
+          }
+        ],
+        "completo": {
+          "beneficio": "Firmeza Absoluta\nSeu escudo passa a conceder RD contra uma quantidade de tipos de dano igual ao seu BT (exceto etéreos). [REFERÊNCIA: RD por tipo à escolha — resolvida na mesa.]",
+          "efeitos": []
+        }
+      },
+      {
+        "id": "treino_firmeza",
+        "nome": "Firmeza",
+        "lore": "Stark e inabalável para proteger seus aliados, seu corpo é forte o suficiente para se manter assim; ele foca em manter o corpo da maneira mais potente possível — afinal, seu treino o fez resistir a qualquer momento.",
+        "gatilhoSessao": { "id": "postura_terra_firmeza", "label": "Firmeza · em Postura da Terra" },
+        "etapas": [
+          {
+            "n": 1,
+            "focos": 1,
+            "requisito": null,
+            "beneficio": "Adiciona +2 no PV Temporário da sua Postura da Terra. [Ligue 'Firmeza · em Postura da Terra' junto com a Postura.]",
+            "efeitos": [
+              { "canal": "pvTemporario", "expr": "2", "gatilhoSessao": "postura_terra_firmeza" }
+            ]
+          },
+          {
+            "n": 2,
+            "focos": 1,
+            "requisito": null,
+            "beneficio": "Enquanto em Postura da Terra, recebe +1 de Fortitude.",
+            "efeitos": [
+              { "canal": "bonusTR", "alvo": "fortitude", "expr": "1", "gatilhoSessao": "postura_terra_firmeza" }
+            ]
+          },
+          {
+            "n": 3,
+            "focos": 1,
+            "requisito": null,
+            "beneficio": "Adiciona +3 no PV Temporário da sua Postura da Terra.",
+            "efeitos": [
+              { "canal": "pvTemporario", "expr": "3", "gatilhoSessao": "postura_terra_firmeza" }
+            ]
+          },
+          {
+            "n": 4,
+            "focos": 2,
+            "requisito": null,
+            "beneficio": "Ao adentrar em Postura da Terra, recebe o bônus de PV Temporário dobrado no seu primeiro uso. [REFERÊNCIA: 'primeiro uso' não é rastreado — role dobrado na mesa.]",
+            "efeitos": []
+          }
+        ],
+        "completo": {
+          "beneficio": "Inabalável\nAo adentrar em postura, seu corpo se mantém extremamente firme. Uma quantidade de vezes igual a 1 + metade do BT, por descanso curto, ao ser forçado a realizar uma TR de Reflexos durante a Postura da Terra, você pode alterar para Fortitude. [REFERÊNCIA: troca limitada por usos — resolvida na mesa.]",
+          "efeitos": []
+        }
+      },
+      {
+        "id": "treino_corporal",
+        "nome": "Treinamento Corporal",
+        "lore": "Após anos de treino, seu corpo se moldou de forma que aparenta ter um potencial quase ilimitado; receber ataques é algo normal para ele. Sofrendo estes danos e se recuperando rapidamente, com um vigor sobrenatural.",
+        "etapas": [
+          {
+            "n": 1,
+            "focos": 1,
+            "requisito": null,
+            "beneficio": "Sempre que for recuperar vida (PV Temporário não conta), você se recupera +2 PV adicionais. [REFERÊNCIA — sinalizado pelo interruptor 'Cura Corporal +2 / +5' na bancada; some os PV na mão.]",
+            "efeitos": []
+          },
+          {
+            "n": 2,
+            "focos": 1,
+            "requisito": null,
+            "beneficio": "Nada.",
+            "efeitos": []
+          },
+          {
+            "n": 3,
+            "focos": 1,
+            "requisito": null,
+            "beneficio": "1x por rodada, caso recupere seus PV por qualquer meio, você recupera +5 PV adicionais. [REFERÊNCIA — sinalizado pelo interruptor 'Cura Corporal +2 / +5' na bancada; some os PV na mão.]",
+            "efeitos": []
+          },
+          {
+            "n": 4,
+            "focos": 2,
+            "requisito": null,
+            "beneficio": "Passa a adicionar 1 + metade do BT em rolagens no portão da morte. [REFERÊNCIA: o motor não tem canal de portão da morte — some na mesa.]",
+            "efeitos": []
+          }
+        ],
+        "completo": {
+          "beneficio": "Vigor Sobrenatural\nSeu corpo se desenvolve de maneira mais otimizada e natural, capaz de usar seu potencial melhorado para resistir a golpes. Recebe +1 PV por nível, além de adicionar seu maior modificador de atributo físico como bônus de vida máxima adicional.",
+          "efeitos": [
+            { "canal": "hp", "expr": "(nd - 1) + max(mod_forca, mod_destreza, mod_constituicao)" }
+          ]
+        }
+      }
+    ]
+  }
+}

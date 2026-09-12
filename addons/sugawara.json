@@ -1,0 +1,70 @@
+{
+  "id": "sugawara",
+  "nome": "Clã Sugawara",
+  "versao": "1.1.0",
+  "autor": "Templas",
+  "paraRaw": "afty",
+  "descricao": "Adiciona o Clã Sugawara (um clã do Herdado, rival do Fujiwara e fundador do futuro Clã Gojo) com Bônus em Atributo, Treinamentos de Clã e Potencial Lendário, mais dois Talentos de Origem (Fundamentos Imponentes, Compreensão Avançada). Os pré-requisitos dos talentos (clã Sugawara, nível, aptidões) entram só como TEXTO — não travam a seleção, a mesa confere. Atributos e perícias entram como orçamento livre — o motor libera a quantidade, você escolhe onde gastar na aba de Atributos / Perícias / Aptidões.",
+  "acrescenta": {
+    "clas": [
+      {
+        "id": "cla_sugawara",
+        "nome": "Clã Sugawara",
+        "lore": "O Clã Sugawara é o clã de feiticeiros rival direto do poderoso clã Fujiwara, tendo sido fundado anos atrás pelo agora lendário feiticeiro Michizane Sugawara. Esse clã é uma das que se tornou a maior referência de força e potencial Jujutsu na Era de Ouro, onde disputando o posto de maior clã trava diversas batalhas contra o clã Fujiwara. Sendo também o clã que originou um dos grandes clãs das eras futuras, o Clã Gojo.",
+        "caracteristicas": [
+          {
+            "id": "bonus_atributo",
+            "nome": "Bônus em Atributo",
+            "descricao": "Um membro do clã Sugawara aumenta em 2 o atributo de Inteligência ou Sabedoria, e em 1 o que não foi escolhido. (Aqui a distribuição é livre: 3 pontos, máximo de 2 no mesmo atributo.)",
+            "bonus": { "distribuir": 3, "maxPorAtributo": 2 }
+          },
+          {
+            "id": "treinamentos_cla",
+            "nome": "Treinamentos de Clã",
+            "descricao": "Você se torna treinado em 2 perícias quaisquer. Ao invés de receber treinamento em 2 perícias, você pode escolher se tornar especialista em uma. (Entra como +2 vagas de treino na aba Perícias — o Mestre custa 2 vagas.)"
+          },
+          {
+            "id": "potencial_lendario",
+            "nome": "Potencial Lendário",
+            "descricao": "Ser parte do clã Sugawara, pelo fundador do mesmo ter passado uma linhagem abençoada para o Jujutsu, te confere um incrível potencial para uma energia extrema, juntamente de uma facilidade para desenvolver feitiços poderosos. Em todo nível par você recebe 1 ponto de energia amaldiçoada adicional. Além disso, você também recebe 1 Feitiço adicional no primeiro nível e mais um nos níveis 5, 10, 15 e 20."
+          }
+        ],
+        "efeitos": [
+          { "canal": "vagasPericia", "expr": "2" },
+          { "canal": "pe", "expr": "piso(nd / 2)" },
+          { "canal": "vagasFeitico", "expr": "1 + (nd >= 5) + (nd >= 10) + (nd >= 15) + (nd >= 20)" }
+        ]
+      }
+    ],
+    "talentos": [
+      {
+        "id": "tal_fundamentos_imponentes",
+        "nome": "Fundamentos Imponentes",
+        "grupo": "origem",
+        "descricao": "[Pré-Requisito: Origem Herdado: Sugawara e Nível 6] Vindo pelo potencial para o Jujutsu, além de um grande conhecimento com as técnicas do clã Sugawara, você aprimora seus feitiços para serem absolutos, manipulando-os e projetando-os de formas a dificultar a compreensão deles e a resistência aos mesmos, fortalecendo a Potência de Dificuldade de seus Feitiços. Recebe um bônus de CD Amaldiçoado e de Aptidões Amaldiçoada e de Acerto Amaldiçoado igual a metade do seu Bônus de Treinamento. (O Afty tem uma CD única — o bônus de metade do BT cobre Feitiço e Aptidão de uma vez.)",
+        "requisitos": [
+          { "tipo": "nota", "texto": "Origem Herdado: Sugawara" },
+          { "tipo": "nota", "texto": "Nível 6" }
+        ],
+        "efeitos": [
+          { "canal": "cd", "expr": "metade(bt)" },
+          { "canal": "bonusAcerto", "alvo": "amaldicoado", "expr": "metade(bt)" }
+        ]
+      },
+      {
+        "id": "tal_compreensao_avancada",
+        "nome": "Compreensão Avançada",
+        "grupo": "origem",
+        "descricao": "[Pré-Requisito: Origem Herdado: Sugawara, Possuir ao menos 1 nível nas Aptidões selecionadas e Nível 9] A linhagem dos Sugawara carrega o sangue de um dos maiores gênios da história do Jujutsu. Seus descendentes possuem uma compreensão quase sobrenatural da Energia Amaldiçoada, despertando talentos que outros feiticeiros levariam décadas para alcançar. Conforme seu potencial floresce, os ensinamentos e a genialidade herdados de seus ancestrais tornam-se cada vez mais evidentes. Você recebe +1 Nível de aptidão em 2 aptidões diferentes. (Entra como 2 pontos livres de Nível de Aptidão — aloque nas trilhas na aba de Aptidões.)",
+        "requisitos": [
+          { "tipo": "nota", "texto": "Origem Herdado: Sugawara" },
+          { "tipo": "nota", "texto": "Possuir ao menos 1 nível nas Aptidões selecionadas" },
+          { "tipo": "nota", "texto": "Nível 9" }
+        ],
+        "efeitos": [
+          { "canal": "pontosAptidao", "expr": "2" }
+        ]
+      }
+    ]
+  }
+}

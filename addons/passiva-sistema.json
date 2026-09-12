@@ -1,0 +1,538 @@
+{
+  "id": "passiva",
+  "nome": "Passiva - Sistema",
+  "versao": "2.0.0",
+  "autor": "Templas",
+  "paraRaw": "afty",
+  "descricao": "Calculadora de Feitiço Passivo (o tipo que o app nunca implementou) entregue como MODELOS DE FEITIÇO — aparecem na aba de Feitiços/Técnica do criador (não na bancada de combate), filtrados pelo nível já acessível à criatura. Escolher um modelo copia ele pra creature.feiticos, gasta vaga de Feitiço normalmente e FICA ATIVO PARA SEMPRE, sem interruptor: é uma criação de ficha, não um buff de sessão. Cada modelo já vem com a redução de PE máximo (dobro do nível) embutida. Cobre Defesa, RD (um tipo, ajustável), Dano Adicional (3 formas — NÃO acumulam entre si) e Nível de Dano (este acumula com Dano Adicional). Perícia e Atributo passivos dependem de um alvo à escolha do jogador, que os Modelos de Feitiço não conseguem pré-fixar: valores de referência — metade de Sustentada, Nv2 +1 / Nv3 +1 / Nv4 +2 / Nv5 +4 pra Perícia; tabela própria Nv2 +2 / Nv3 +3 / Nv4 +4 / Nv5 +6 pra Atributo — escreva-os direto no editor de Efeitos do próprio Feitiço Passivo (canal bonusPericia ou atributo, com o alvo que quiser).",
+  "feiticos": [
+    {
+      "id": "passivo_defesa_nv2",
+      "nome": "Passivo de Defesa (Nível 2)",
+      "tipo": "passivo",
+      "nivel": 2,
+      "descricao": "Feitiço Passivo de Defesa, Nível 2: +1 de Defesa (metade da Sustentada de Defesa daquele nível, arredondado). Reduz seu PE máximo em 4 (dobro do nível). Copie e ajuste o texto/lore pra sua técnica antes de usar em mesa.",
+      "efeitosPassivo": [
+        {
+          "canal": "defesa",
+          "expr": "1"
+        },
+        {
+          "canal": "pe",
+          "expr": "-4"
+        }
+      ]
+    },
+    {
+      "id": "passivo_defesa_nv3",
+      "nome": "Passivo de Defesa (Nível 3)",
+      "tipo": "passivo",
+      "nivel": 3,
+      "descricao": "Feitiço Passivo de Defesa, Nível 3: +1 de Defesa (metade da Sustentada de Defesa daquele nível, arredondado). Reduz seu PE máximo em 6 (dobro do nível). Copie e ajuste o texto/lore pra sua técnica antes de usar em mesa.",
+      "efeitosPassivo": [
+        {
+          "canal": "defesa",
+          "expr": "1"
+        },
+        {
+          "canal": "pe",
+          "expr": "-6"
+        }
+      ]
+    },
+    {
+      "id": "passivo_defesa_nv4",
+      "nome": "Passivo de Defesa (Nível 4)",
+      "tipo": "passivo",
+      "nivel": 4,
+      "descricao": "Feitiço Passivo de Defesa, Nível 4: +2 de Defesa (metade da Sustentada de Defesa daquele nível, arredondado). Reduz seu PE máximo em 8 (dobro do nível). Copie e ajuste o texto/lore pra sua técnica antes de usar em mesa.",
+      "efeitosPassivo": [
+        {
+          "canal": "defesa",
+          "expr": "2"
+        },
+        {
+          "canal": "pe",
+          "expr": "-8"
+        }
+      ]
+    },
+    {
+      "id": "passivo_defesa_nv5",
+      "nome": "Passivo de Defesa (Nível 5)",
+      "tipo": "passivo",
+      "nivel": 5,
+      "descricao": "Feitiço Passivo de Defesa, Nível 5: +4 de Defesa (metade da Sustentada de Defesa daquele nível, arredondado). Reduz seu PE máximo em 10 (dobro do nível). Copie e ajuste o texto/lore pra sua técnica antes de usar em mesa.",
+      "efeitosPassivo": [
+        {
+          "canal": "defesa",
+          "expr": "4"
+        },
+        {
+          "canal": "pe",
+          "expr": "-10"
+        }
+      ]
+    },
+    {
+      "id": "passivo_rd_nv0",
+      "nome": "Passivo de RD (Nível 0)",
+      "tipo": "passivo",
+      "nivel": 0,
+      "descricao": "Feitiço Passivo de Redução de Dano, Nível 0: +1 de RD Geral contra UM tipo de dano à sua escolha (metade da Sustentada de RD daquele nível). Cada tipo de dano extra reduz a RD em 2 — ajuste a expressão na mão se quiser cobrir mais de um tipo. Reduz seu PE máximo em 0.",
+      "efeitosPassivo": [
+        {
+          "canal": "rdGeral",
+          "expr": "1"
+        }
+      ]
+    },
+    {
+      "id": "passivo_rd_nv1",
+      "nome": "Passivo de RD (Nível 1)",
+      "tipo": "passivo",
+      "nivel": 1,
+      "descricao": "Feitiço Passivo de Redução de Dano, Nível 1: +2 de RD Geral contra UM tipo de dano à sua escolha (metade da Sustentada de RD daquele nível). Cada tipo de dano extra reduz a RD em 2 — ajuste a expressão na mão se quiser cobrir mais de um tipo. Reduz seu PE máximo em 2.",
+      "efeitosPassivo": [
+        {
+          "canal": "rdGeral",
+          "expr": "2"
+        },
+        {
+          "canal": "pe",
+          "expr": "-2"
+        }
+      ]
+    },
+    {
+      "id": "passivo_rd_nv2",
+      "nome": "Passivo de RD (Nível 2)",
+      "tipo": "passivo",
+      "nivel": 2,
+      "descricao": "Feitiço Passivo de Redução de Dano, Nível 2: +4 de RD Geral contra UM tipo de dano à sua escolha (metade da Sustentada de RD daquele nível). Cada tipo de dano extra reduz a RD em 2 — ajuste a expressão na mão se quiser cobrir mais de um tipo. Reduz seu PE máximo em 4.",
+      "efeitosPassivo": [
+        {
+          "canal": "rdGeral",
+          "expr": "4"
+        },
+        {
+          "canal": "pe",
+          "expr": "-4"
+        }
+      ]
+    },
+    {
+      "id": "passivo_rd_nv3",
+      "nome": "Passivo de RD (Nível 3)",
+      "tipo": "passivo",
+      "nivel": 3,
+      "descricao": "Feitiço Passivo de Redução de Dano, Nível 3: +5 de RD Geral contra UM tipo de dano à sua escolha (metade da Sustentada de RD daquele nível). Cada tipo de dano extra reduz a RD em 2 — ajuste a expressão na mão se quiser cobrir mais de um tipo. Reduz seu PE máximo em 6.",
+      "efeitosPassivo": [
+        {
+          "canal": "rdGeral",
+          "expr": "5"
+        },
+        {
+          "canal": "pe",
+          "expr": "-6"
+        }
+      ]
+    },
+    {
+      "id": "passivo_rd_nv4",
+      "nome": "Passivo de RD (Nível 4)",
+      "tipo": "passivo",
+      "nivel": 4,
+      "descricao": "Feitiço Passivo de Redução de Dano, Nível 4: +6 de RD Geral contra UM tipo de dano à sua escolha (metade da Sustentada de RD daquele nível). Cada tipo de dano extra reduz a RD em 2 — ajuste a expressão na mão se quiser cobrir mais de um tipo. Reduz seu PE máximo em 8.",
+      "efeitosPassivo": [
+        {
+          "canal": "rdGeral",
+          "expr": "6"
+        },
+        {
+          "canal": "pe",
+          "expr": "-8"
+        }
+      ]
+    },
+    {
+      "id": "passivo_rd_nv5",
+      "nome": "Passivo de RD (Nível 5)",
+      "tipo": "passivo",
+      "nivel": 5,
+      "descricao": "Feitiço Passivo de Redução de Dano, Nível 5: +9 de RD Geral contra UM tipo de dano à sua escolha (metade da Sustentada de RD daquele nível). Cada tipo de dano extra reduz a RD em 2 — ajuste a expressão na mão se quiser cobrir mais de um tipo. Reduz seu PE máximo em 10.",
+      "efeitosPassivo": [
+        {
+          "canal": "rdGeral",
+          "expr": "9"
+        },
+        {
+          "canal": "pe",
+          "expr": "-10"
+        }
+      ]
+    },
+    {
+      "id": "passivo_dano_durante_nv0",
+      "nome": "Passivo de Dano · Durante Ataque (Nível 0)",
+      "tipo": "passivo",
+      "nivel": 0,
+      "descricao": "Feitiço Passivo de Dano Adicional (Durante Ataque), Nível 0: +1.5 de dano (média da tabela do livro) somado nas suas rolagens de dano. Considerado parte do próprio golpe. NÃO acumula com as outras duas formas de Dano Adicional (Durante/Após/Fixo) — tenha só uma ativa por vez. Reduz seu PE máximo em 0.",
+      "efeitosPassivo": [
+        {
+          "canal": "danoBonus",
+          "expr": "1.5"
+        }
+      ]
+    },
+    {
+      "id": "passivo_dano_durante_nv1",
+      "nome": "Passivo de Dano · Durante Ataque (Nível 1)",
+      "tipo": "passivo",
+      "nivel": 1,
+      "descricao": "Feitiço Passivo de Dano Adicional (Durante Ataque), Nível 1: +2.5 de dano (média da tabela do livro) somado nas suas rolagens de dano. Considerado parte do próprio golpe. NÃO acumula com as outras duas formas de Dano Adicional (Durante/Após/Fixo) — tenha só uma ativa por vez. Reduz seu PE máximo em 2.",
+      "efeitosPassivo": [
+        {
+          "canal": "danoBonus",
+          "expr": "2.5"
+        },
+        {
+          "canal": "pe",
+          "expr": "-2"
+        }
+      ]
+    },
+    {
+      "id": "passivo_dano_durante_nv2",
+      "nome": "Passivo de Dano · Durante Ataque (Nível 2)",
+      "tipo": "passivo",
+      "nivel": 2,
+      "descricao": "Feitiço Passivo de Dano Adicional (Durante Ataque), Nível 2: +4.5 de dano (média da tabela do livro) somado nas suas rolagens de dano. Considerado parte do próprio golpe. NÃO acumula com as outras duas formas de Dano Adicional (Durante/Após/Fixo) — tenha só uma ativa por vez. Reduz seu PE máximo em 4.",
+      "efeitosPassivo": [
+        {
+          "canal": "danoBonus",
+          "expr": "4.5"
+        },
+        {
+          "canal": "pe",
+          "expr": "-4"
+        }
+      ]
+    },
+    {
+      "id": "passivo_dano_durante_nv3",
+      "nome": "Passivo de Dano · Durante Ataque (Nível 3)",
+      "tipo": "passivo",
+      "nivel": 3,
+      "descricao": "Feitiço Passivo de Dano Adicional (Durante Ataque), Nível 3: +6.5 de dano (média da tabela do livro) somado nas suas rolagens de dano. Considerado parte do próprio golpe. NÃO acumula com as outras duas formas de Dano Adicional (Durante/Após/Fixo) — tenha só uma ativa por vez. Reduz seu PE máximo em 6.",
+      "efeitosPassivo": [
+        {
+          "canal": "danoBonus",
+          "expr": "6.5"
+        },
+        {
+          "canal": "pe",
+          "expr": "-6"
+        }
+      ]
+    },
+    {
+      "id": "passivo_dano_durante_nv4",
+      "nome": "Passivo de Dano · Durante Ataque (Nível 4)",
+      "tipo": "passivo",
+      "nivel": 4,
+      "descricao": "Feitiço Passivo de Dano Adicional (Durante Ataque), Nível 4: +9 de dano (média da tabela do livro) somado nas suas rolagens de dano. Considerado parte do próprio golpe. NÃO acumula com as outras duas formas de Dano Adicional (Durante/Após/Fixo) — tenha só uma ativa por vez. Reduz seu PE máximo em 8.",
+      "efeitosPassivo": [
+        {
+          "canal": "danoBonus",
+          "expr": "9"
+        },
+        {
+          "canal": "pe",
+          "expr": "-8"
+        }
+      ]
+    },
+    {
+      "id": "passivo_dano_durante_nv5",
+      "nome": "Passivo de Dano · Durante Ataque (Nível 5)",
+      "tipo": "passivo",
+      "nivel": 5,
+      "descricao": "Feitiço Passivo de Dano Adicional (Durante Ataque), Nível 5: +13 de dano (média da tabela do livro) somado nas suas rolagens de dano. Considerado parte do próprio golpe. NÃO acumula com as outras duas formas de Dano Adicional (Durante/Após/Fixo) — tenha só uma ativa por vez. Reduz seu PE máximo em 10.",
+      "efeitosPassivo": [
+        {
+          "canal": "danoBonus",
+          "expr": "13"
+        },
+        {
+          "canal": "pe",
+          "expr": "-10"
+        }
+      ]
+    },
+    {
+      "id": "passivo_dano_apos_nv0",
+      "nome": "Passivo de Dano · Após Ataque (Nível 0)",
+      "tipo": "passivo",
+      "nivel": 0,
+      "descricao": "Feitiço Passivo de Dano Adicional (Após Ataque), Nível 0: +2.5 de dano (média da tabela do livro) somado nas suas rolagens de dano. Aplicado depois do golpe resolver (Após Ataque). NÃO acumula com as outras duas formas de Dano Adicional (Durante/Após/Fixo) — tenha só uma ativa por vez. Reduz seu PE máximo em 0.",
+      "efeitosPassivo": [
+        {
+          "canal": "danoBonus",
+          "expr": "2.5"
+        }
+      ]
+    },
+    {
+      "id": "passivo_dano_apos_nv1",
+      "nome": "Passivo de Dano · Após Ataque (Nível 1)",
+      "tipo": "passivo",
+      "nivel": 1,
+      "descricao": "Feitiço Passivo de Dano Adicional (Após Ataque), Nível 1: +3.5 de dano (média da tabela do livro) somado nas suas rolagens de dano. Aplicado depois do golpe resolver (Após Ataque). NÃO acumula com as outras duas formas de Dano Adicional (Durante/Após/Fixo) — tenha só uma ativa por vez. Reduz seu PE máximo em 2.",
+      "efeitosPassivo": [
+        {
+          "canal": "danoBonus",
+          "expr": "3.5"
+        },
+        {
+          "canal": "pe",
+          "expr": "-2"
+        }
+      ]
+    },
+    {
+      "id": "passivo_dano_apos_nv2",
+      "nome": "Passivo de Dano · Após Ataque (Nível 2)",
+      "tipo": "passivo",
+      "nivel": 2,
+      "descricao": "Feitiço Passivo de Dano Adicional (Após Ataque), Nível 2: +6.5 de dano (média da tabela do livro) somado nas suas rolagens de dano. Aplicado depois do golpe resolver (Após Ataque). NÃO acumula com as outras duas formas de Dano Adicional (Durante/Após/Fixo) — tenha só uma ativa por vez. Reduz seu PE máximo em 4.",
+      "efeitosPassivo": [
+        {
+          "canal": "danoBonus",
+          "expr": "6.5"
+        },
+        {
+          "canal": "pe",
+          "expr": "-4"
+        }
+      ]
+    },
+    {
+      "id": "passivo_dano_apos_nv3",
+      "nome": "Passivo de Dano · Após Ataque (Nível 3)",
+      "tipo": "passivo",
+      "nivel": 3,
+      "descricao": "Feitiço Passivo de Dano Adicional (Após Ataque), Nível 3: +9 de dano (média da tabela do livro) somado nas suas rolagens de dano. Aplicado depois do golpe resolver (Após Ataque). NÃO acumula com as outras duas formas de Dano Adicional (Durante/Após/Fixo) — tenha só uma ativa por vez. Reduz seu PE máximo em 6.",
+      "efeitosPassivo": [
+        {
+          "canal": "danoBonus",
+          "expr": "9"
+        },
+        {
+          "canal": "pe",
+          "expr": "-6"
+        }
+      ]
+    },
+    {
+      "id": "passivo_dano_apos_nv4",
+      "nome": "Passivo de Dano · Após Ataque (Nível 4)",
+      "tipo": "passivo",
+      "nivel": 4,
+      "descricao": "Feitiço Passivo de Dano Adicional (Após Ataque), Nível 4: +13 de dano (média da tabela do livro) somado nas suas rolagens de dano. Aplicado depois do golpe resolver (Após Ataque). NÃO acumula com as outras duas formas de Dano Adicional (Durante/Após/Fixo) — tenha só uma ativa por vez. Reduz seu PE máximo em 8.",
+      "efeitosPassivo": [
+        {
+          "canal": "danoBonus",
+          "expr": "13"
+        },
+        {
+          "canal": "pe",
+          "expr": "-8"
+        }
+      ]
+    },
+    {
+      "id": "passivo_dano_apos_nv5",
+      "nome": "Passivo de Dano · Após Ataque (Nível 5)",
+      "tipo": "passivo",
+      "nivel": 5,
+      "descricao": "Feitiço Passivo de Dano Adicional (Após Ataque), Nível 5: +16.5 de dano (média da tabela do livro) somado nas suas rolagens de dano. Aplicado depois do golpe resolver (Após Ataque). NÃO acumula com as outras duas formas de Dano Adicional (Durante/Após/Fixo) — tenha só uma ativa por vez. Reduz seu PE máximo em 10.",
+      "efeitosPassivo": [
+        {
+          "canal": "danoBonus",
+          "expr": "16.5"
+        },
+        {
+          "canal": "pe",
+          "expr": "-10"
+        }
+      ]
+    },
+    {
+      "id": "passivo_dano_fixo_nv0",
+      "nome": "Passivo de Dano · Fixo (Nível 0)",
+      "tipo": "passivo",
+      "nivel": 0,
+      "descricao": "Feitiço Passivo de Dano Adicional (Fixo), Nível 0: +2 de dano (média da tabela do livro) somado nas suas rolagens de dano. Valor fixo, sem variação. NÃO acumula com as outras duas formas de Dano Adicional (Durante/Após/Fixo) — tenha só uma ativa por vez. Reduz seu PE máximo em 0.",
+      "efeitosPassivo": [
+        {
+          "canal": "danoBonus",
+          "expr": "2"
+        }
+      ]
+    },
+    {
+      "id": "passivo_dano_fixo_nv1",
+      "nome": "Passivo de Dano · Fixo (Nível 1)",
+      "tipo": "passivo",
+      "nivel": 1,
+      "descricao": "Feitiço Passivo de Dano Adicional (Fixo), Nível 1: +4 de dano (média da tabela do livro) somado nas suas rolagens de dano. Valor fixo, sem variação. NÃO acumula com as outras duas formas de Dano Adicional (Durante/Após/Fixo) — tenha só uma ativa por vez. Reduz seu PE máximo em 2.",
+      "efeitosPassivo": [
+        {
+          "canal": "danoBonus",
+          "expr": "4"
+        },
+        {
+          "canal": "pe",
+          "expr": "-2"
+        }
+      ]
+    },
+    {
+      "id": "passivo_dano_fixo_nv2",
+      "nome": "Passivo de Dano · Fixo (Nível 2)",
+      "tipo": "passivo",
+      "nivel": 2,
+      "descricao": "Feitiço Passivo de Dano Adicional (Fixo), Nível 2: +7 de dano (média da tabela do livro) somado nas suas rolagens de dano. Valor fixo, sem variação. NÃO acumula com as outras duas formas de Dano Adicional (Durante/Após/Fixo) — tenha só uma ativa por vez. Reduz seu PE máximo em 4.",
+      "efeitosPassivo": [
+        {
+          "canal": "danoBonus",
+          "expr": "7"
+        },
+        {
+          "canal": "pe",
+          "expr": "-4"
+        }
+      ]
+    },
+    {
+      "id": "passivo_dano_fixo_nv3",
+      "nome": "Passivo de Dano · Fixo (Nível 3)",
+      "tipo": "passivo",
+      "nivel": 3,
+      "descricao": "Feitiço Passivo de Dano Adicional (Fixo), Nível 3: +10 de dano (média da tabela do livro) somado nas suas rolagens de dano. Valor fixo, sem variação. NÃO acumula com as outras duas formas de Dano Adicional (Durante/Após/Fixo) — tenha só uma ativa por vez. Reduz seu PE máximo em 6.",
+      "efeitosPassivo": [
+        {
+          "canal": "danoBonus",
+          "expr": "10"
+        },
+        {
+          "canal": "pe",
+          "expr": "-6"
+        }
+      ]
+    },
+    {
+      "id": "passivo_dano_fixo_nv4",
+      "nome": "Passivo de Dano · Fixo (Nível 4)",
+      "tipo": "passivo",
+      "nivel": 4,
+      "descricao": "Feitiço Passivo de Dano Adicional (Fixo), Nível 4: +14 de dano (média da tabela do livro) somado nas suas rolagens de dano. Valor fixo, sem variação. NÃO acumula com as outras duas formas de Dano Adicional (Durante/Após/Fixo) — tenha só uma ativa por vez. Reduz seu PE máximo em 8.",
+      "efeitosPassivo": [
+        {
+          "canal": "danoBonus",
+          "expr": "14"
+        },
+        {
+          "canal": "pe",
+          "expr": "-8"
+        }
+      ]
+    },
+    {
+      "id": "passivo_dano_fixo_nv5",
+      "nome": "Passivo de Dano · Fixo (Nível 5)",
+      "tipo": "passivo",
+      "nivel": 5,
+      "descricao": "Feitiço Passivo de Dano Adicional (Fixo), Nível 5: +17 de dano (média da tabela do livro) somado nas suas rolagens de dano. Valor fixo, sem variação. NÃO acumula com as outras duas formas de Dano Adicional (Durante/Após/Fixo) — tenha só uma ativa por vez. Reduz seu PE máximo em 10.",
+      "efeitosPassivo": [
+        {
+          "canal": "danoBonus",
+          "expr": "17"
+        },
+        {
+          "canal": "pe",
+          "expr": "-10"
+        }
+      ]
+    },
+    {
+      "id": "passivo_nivel_dano_nv2",
+      "nome": "Passivo de Nível de Dano (Nível 2)",
+      "tipo": "passivo",
+      "nivel": 2,
+      "descricao": "Feitiço Passivo de Nível de Dano, Nível 2: +1 Nível(is) de Dano nas suas rolagens. Tabela própria de Passivo (não é metade de Sustentada) — este ACUMULA com os Passivos de Dano Adicional acima. Reduz seu PE máximo em 4.",
+      "efeitosPassivo": [
+        {
+          "canal": "nivelDano",
+          "expr": "1"
+        },
+        {
+          "canal": "pe",
+          "expr": "-4"
+        }
+      ]
+    },
+    {
+      "id": "passivo_nivel_dano_nv3",
+      "nome": "Passivo de Nível de Dano (Nível 3)",
+      "tipo": "passivo",
+      "nivel": 3,
+      "descricao": "Feitiço Passivo de Nível de Dano, Nível 3: +2 Nível(is) de Dano nas suas rolagens. Tabela própria de Passivo (não é metade de Sustentada) — este ACUMULA com os Passivos de Dano Adicional acima. Reduz seu PE máximo em 6.",
+      "efeitosPassivo": [
+        {
+          "canal": "nivelDano",
+          "expr": "2"
+        },
+        {
+          "canal": "pe",
+          "expr": "-6"
+        }
+      ]
+    },
+    {
+      "id": "passivo_nivel_dano_nv4",
+      "nome": "Passivo de Nível de Dano (Nível 4)",
+      "tipo": "passivo",
+      "nivel": 4,
+      "descricao": "Feitiço Passivo de Nível de Dano, Nível 4: +3 Nível(is) de Dano nas suas rolagens. Tabela própria de Passivo (não é metade de Sustentada) — este ACUMULA com os Passivos de Dano Adicional acima. Reduz seu PE máximo em 8.",
+      "efeitosPassivo": [
+        {
+          "canal": "nivelDano",
+          "expr": "3"
+        },
+        {
+          "canal": "pe",
+          "expr": "-8"
+        }
+      ]
+    },
+    {
+      "id": "passivo_nivel_dano_nv5",
+      "nome": "Passivo de Nível de Dano (Nível 5)",
+      "tipo": "passivo",
+      "nivel": 5,
+      "descricao": "Feitiço Passivo de Nível de Dano, Nível 5: +4 Nível(is) de Dano nas suas rolagens. Tabela própria de Passivo (não é metade de Sustentada) — este ACUMULA com os Passivos de Dano Adicional acima. Reduz seu PE máximo em 10.",
+      "efeitosPassivo": [
+        {
+          "canal": "nivelDano",
+          "expr": "4"
+        },
+        {
+          "canal": "pe",
+          "expr": "-10"
+        }
+      ]
+    }
+  ]
+}
