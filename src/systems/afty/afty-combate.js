@@ -40,6 +40,20 @@ const POSTURA_OPCOES = POSTURAS_DE_COMBATE.map((p) => ({
   requerEscolha: p.id,
 }));
 
+/**
+ * PE acumulado do Ataque Concentrado por quantidade de concentrações, na ordem
+ * em que elas acontecem no turno: Ataque Extra (1), Surto de Ação (2) e o
+ * Ataque Extra do segundo Atacar (1). Ver o estado `ataqueConcentrado`.
+ */
+export const CUSTO_ATAQUE_CONCENTRADO = [0, 1, 3, 4];
+
+/**
+ * Quantas concentrações cabem no turno: 3 com Surto de Ação, 1 sem. UM leitor
+ * para as duas pontas, o `max` da tela e o teto que o `resolveCombate` apara.
+ */
+export const tetoAtaqueConcentrado = (habilidadesEfetivas = []) =>
+  (habilidadesEfetivas.includes("cmb_surto_de_acao") ? 3 : 1);
+
 const nivelDeEfeito = (derived, especializacaoId) =>
   derived?.habilidades?.niveisPorEfeito?.[especializacaoId]
   ?? derived?.habilidades?.niveisPorEspec?.[especializacaoId]
@@ -231,6 +245,15 @@ export const COMBATE_ESTADOS = [
   /* COMBATENTE                                                    */
   /* ============================================================ */
 
+  {
+    id: "invencivelSobOSol",
+    label: "Invencível sob o Sol",
+    tipo: "bool",
+    requerApice: "api_invencivel_sob_o_sol",
+    dono: { id: "combatente", label: "Combatente" },
+    custoPE: 4,
+  },
+
   // As 8 Posturas. Cada uma só aparece para quem a aprendeu (`requerEscolha`),
   // e o segundo slot só existe com Mestre da Postura.
   {
@@ -257,6 +280,7 @@ export const COMBATE_ESTADOS = [
     // "até um máximo igual ao seu bônus de treinamento para o acerto"
     max: (d) => Math.max(0, d?.maestria ?? 0),
     requerEscolha: "cmb_postura_da_devastacao",
+    ouRequerApice: "api_invencivel_sob_o_sol",
   },
 
   // Golpe Especial (Base 4). Só as propriedades que viram número entram: as
@@ -362,6 +386,27 @@ export const COMBATE_ESTADOS = [
     label: "Duelando · Uma Arma, Mão Livre",
     tipo: "bool",
     requerEscolha: "cmb_estilo_do_duelista",
+  },
+  /* ATAQUE CONCENTRADO (Combatente 10°): quantas vezes o próximo ataque recebe
+     metade dos dados de dano dele. Ligado em 2026-09-12.
+
+     ⚠ O TETO É A SEQUÊNCIA DO AUTOR, e não "uma de cada": *"Ataque (Cheio) +
+     Ataque Extra (Concentrado) + Surto de Ação (Concentrado) + Ataque Extra
+     (Concentrado)"*. O Surto dá uma ação comum a mais, e com ela um segundo
+     Atacar, que tem o próprio Ataque Extra. Ataque feito como ação bônus ou
+     livre (Corpo Treinado, Lutador Superior) não conta, porque Ataque Extra só
+     existe na ação Atacar. Sem Surto de Ação, o teto é 1.
+
+     O custo acompanha a mesma sequência: metade do Ataque Extra (2 PE, então 1)
+     e metade do Surto (5 PE, então 2, arredondado para baixo). */
+  {
+    id: "ataqueConcentrado",
+    label: "Ataque Concentrado",
+    tipo: "faixa",
+    min: 0,
+    max: (d) => tetoAtaqueConcentrado(d?.habilidades?.efetivas ?? d?.habilidades?.escolhidas ?? []),
+    custoPE: (valor) => CUSTO_ATAQUE_CONCENTRADO[Math.max(0, Math.min(3, Math.trunc(Number(valor) || 0)))],
+    requerHabilidade: "cmb_ataque_concentrado",
   },
   /* "Enquanto estiver lutando com duas armas": irmão do `duelando`, e a condição
      do Estilo Duplo. Só o bônus de dano dele passa por aqui, porque a outra
@@ -718,6 +763,7 @@ export function resolveCombate(creature, params = {}) {
     devastacaoPilha: params.devastacaoPilha ?? 0,
     precisaoPE: params.precisaoPE ?? 0,
     pistoleiroEmperrar: params.pistoleiroEmperrar ?? 0,
+    ataqueConcentrado: params.ataqueConcentrado ?? 0,
     adrenalinaAtletismo: params.adrenalinaAtletismo ?? 0,
     cacadorFeiticeiros: params.cacadorFeiticeiros ?? 0,
     corpoDeAco: params.corpoDeAco ?? 0,
@@ -734,7 +780,7 @@ export function resolveCombate(creature, params = {}) {
      `t-estados-organiza.mjs` passou a cobrar que toda faixa tenha teto. */
   const out = { ...zerado, ativo: true, empolgacaoMax, estadosExtras: extras };
   for (const e of COMBATE_ESTADOS) {
-    if (e.tipo === "bool") out[e.id] = !!c[e.id];
+    if (e.tipo === "bool") out[e.id] = (!e.requerApice || params.apiceId === e.requerApice) && !!c[e.id];
     else if (e.tipo === "opcao") out[e.id] = opcaoDe(e.id);
     else if (e.tipo === "dominio") out[e.id] = dominioDe();
     else {
@@ -766,6 +812,10 @@ export function resolveCombate(creature, params = {}) {
   const surto = !!c.surtoAdrenalina;
   return {
     ...out,
+    invencivelRodadas: out.invencivelSobOSol
+      ? intDe(c.invencivelRodadas ?? 1, 1, 4) : 0,
+    imuneCritico: !!out.invencivelSobOSol,
+    imuneMovimentoForcado: !!out.invencivelSobOSol,
     empolgacao,
     insistenciaUsada,
     dadoEmpolgacao: mediaDadoEmpolgacao(empolgacao, !!params.empolgacaoMaxima),
@@ -791,6 +841,9 @@ export function resolveCombate(creature, params = {}) {
  */
 export function combateDslVars(combate = {}) {
   const out = { em_combate: boolDe(combate.ativo) };
+  for (const postura of POSTURA_OPCOES) {
+    out[`apice_postura_${postura.id}`] = boolDe(combate.invencivelSobOSol);
+  }
   for (const e of COMBATE_ESTADOS) {
     const nome = varDoEstado(e.id);
     const valor = combate[e.id];

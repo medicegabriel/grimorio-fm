@@ -689,6 +689,100 @@ export function primitivasDaCriatura(creature) {
   return out.size ? [...out] : SEM_PRIMITIVAS;
 }
 
+/* ============================================================ */
+/* APTIDÃO CONCEDIDA POR ADDON                                   */
+/* ============================================================ */
+/**
+ * O verbo "conceder uma Aptidão pelo nome", aberto a Addon em 2026-09-12.
+ *
+ * Nasceu de uma Faixa do autor: a Habilidade Única dela, criada com o Narrador,
+ * dá Armas Naturais Aprimoradas a um personagem que não é Maldição. O motor já
+ * sabia conceder Aptidão pelo nome (origem, Especialização e sessão do mestre,
+ * ver `aptidoesConcedidas` no afty-derive.js), e o que faltava era o Addon
+ * poder dizer QUAL. É a tese de sempre: o verbo mora no motor e o substantivo
+ * mora no pacote.
+ *
+ * As três decisões do autor, por pergunta:
+ *   1. **Só com o item equipado.** Todo efeito de Habilidade Única só conta com
+ *      o item equipado, e a Aptidão dada por ela segue a mesma régua. Por isso
+ *      `enquantoEquipado`, que é o `refId` do item no inventário. Sem ele, a
+ *      concessão vale enquanto o pacote estiver na ficha.
+ *   2. **As duas Aptidões, e não só a pedida.** Armas Naturais Aprimoradas exige
+ *      Armas Naturais no livro, e a escada dela SOMA com a da outra. Isso é
+ *      conteúdo do pacote, e não regra do verbo: o verbo concede o que a lista
+ *      disser.
+ *   3. **Vale nos dois sistemas.**
+ *
+ * A concedida segue as regras das outras concessões por nome: ignora o próprio
+ * pré-requisito, não gasta vaga, conta para o requisito de terceiros e some
+ * inteira no Restringido, que não tem Aptidão nenhuma.
+ *
+ * ⚠ FICA FORA DO MOTOR DE EFEITOS, pelo mesmo motivo da concessão da origem: a
+ * lista de Aptidões tem de estar fechada antes de `coletarEfeitosAptidao`. Um
+ * canal chegaria tarde, e a Aptidão entraria sem os efeitos dela.
+ *
+ * Forma no pacote:
+ *   "concedeAptidoes": [
+ *     { "aptidoes": ["mal_armas_naturais"], "enquantoEquipado": "arm_faixas" }
+ *   ]
+ */
+function normalizarConcessoesDeAptidao(cru) {
+  if (!Array.isArray(cru)) return [];
+  return cru
+    .filter((c) => c && typeof c === "object")
+    .map((c) => ({
+      aptidoes: Array.isArray(c.aptidoes)
+        ? [...new Set(c.aptidoes.filter((x) => typeof x === "string").map((x) => x.trim()).filter(Boolean))]
+        : [],
+      enquantoEquipado: typeof c.enquantoEquipado === "string" && c.enquantoEquipado.trim()
+        ? c.enquantoEquipado.trim()
+        : null,
+    }));
+}
+
+/**
+ * As Aptidões que os addons DESTA criatura concedem agora.
+ *
+ * `equipados` é a lista `[{ refId, nome }]` dos itens equipados, montada por
+ * quem conhece o inventário (`itensEquipados`, em afty-equipamentos.js). Ela
+ * chega por parâmetro porque o catálogo de equipamento importa este módulo, e o
+ * contrário fecharia um ciclo.
+ *
+ * ⚠ Sai da CRIATURA, e não do mundo aplicado, pela mesma razão do
+ * `liberacoesDaCriatura`: num Encontro misto um combatente sem o addon não pode
+ * herdar a Aptidão de quem tem.
+ *
+ * Devolve `[{ id, fonte, addonId, addonNome, item }]`, uma linha por Aptidão.
+ * `fonte` é o que a tela escreve ao lado dela: o nome do item quando a
+ * concessão depende de um, e o nome do pacote quando não depende.
+ */
+export function aptidoesConcedidasPorAddon(creature, { equipados = [] } = {}) {
+  const porRefId = new Map();
+  for (const e of Array.isArray(equipados) ? equipados : []) {
+    if (e?.refId && !porRefId.has(e.refId)) porRefId.set(e.refId, e.nome ?? e.refId);
+  }
+  const out = [];
+  const vistos = new Set();
+  for (const cru of Array.isArray(creature?.addons) ? creature.addons : []) {
+    const pacote = normalizarPacote(cru);
+    if (!pacote.id) continue;
+    const locais = new Set((pacote.acrescenta.aptidoes ?? []).map((a) => String(a?.id ?? "").trim()));
+    for (const c of pacote.concedeAptidoes) {
+      if (c.enquantoEquipado && !porRefId.has(c.enquantoEquipado)) continue;
+      const item = c.enquantoEquipado ? porRefId.get(c.enquantoEquipado) : null;
+      for (const idCru of c.aptidoes) {
+        // Aptidão do próprio pacote ganha o namespace, como toda referência a
+        // irmão. Id do livro, ou de outro pacote já qualificado, fica cru.
+        const id = locais.has(idCru) ? `${pacote.id}${SEPARADOR}${idCru}` : idCru;
+        if (vistos.has(id)) continue;
+        vistos.add(id);
+        out.push({ id, fonte: item ?? (pacote.nome || pacote.id), addonId: pacote.id, addonNome: pacote.nome || pacote.id, item });
+      }
+    }
+  }
+  return out;
+}
+
 export function normalizarPacote(cru) {
   const p = cru && typeof cru === "object" ? cru : {};
   const acrescenta = p.acrescenta && typeof p.acrescenta === "object" ? p.acrescenta : {};
@@ -710,6 +804,13 @@ export function normalizarPacote(cru) {
     libera: Array.isArray(p.libera)
       ? [...new Set(p.libera.filter((x) => typeof x === "string").map((x) => x.trim()))]
       : [],
+    /* Aptidões Amaldiçoadas que o pacote CONCEDE pelo nome, opcionalmente só
+       enquanto um item está equipado. Ver `aptidoesConcedidasPorAddon`.
+
+       ⚠ ESTE CAMPO TEM DE ESTAR AQUI, e não só no leitor: a biblioteca grava o
+       pacote NORMALIZADO, e campo que o normalizador não conhece some na
+       instalação sem aviso nenhum. */
+    concedeAptidoes: normalizarConcessoesDeAptidao(p.concedeAptidoes),
     adaptacoes: Array.isArray(p.adaptacoes)
       ? p.adaptacoes.filter((x) => x && typeof x === "object").map(clonar)
       : [],
@@ -977,6 +1078,23 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
       );
     }
   }
+  /* A concessão de Aptidão. O id tem de existir: no livro (a lista RAW da
+     família, sem addon nenhum), no próprio pacote, ou já qualificado com o
+     namespace de outro pacote, que a linha morta cobre se sumir. */
+  const familiaAptidoes = FAMILIAS.get("aptidoes");
+  const aptidoesDoLivro = familiaAptidoes?.basicos
+    ? new Set(familiaAptidoes.basicos().map((a) => a.id))
+    : null;
+  const aptidoesDoPacote = new Set((p.acrescenta.aptidoes ?? []).map((a) => String(a?.id ?? "").trim()));
+  for (const [i, c] of p.concedeAptidoes.entries()) {
+    const onde = `Concessão de Aptidão #${i + 1}`;
+    if (c.aptidoes.length === 0) problemas.push(`${onde}: a lista "aptidoes" está vazia.`);
+    for (const id of c.aptidoes) {
+      const conhecida = aptidoesDoPacote.has(id) || id.includes(SEPARADOR)
+        || !aptidoesDoLivro || aptidoesDoLivro.has(id);
+      if (!conhecida) problemas.push(`${onde}: Aptidão inexistente "${id}".`);
+    }
+  }
   const ciclosVistos = new Set();
   if (p.adaptacoes.length > 0 && !p.permite.includes("adaptacao")) {
     problemas.push('Pacote com "adaptacoes" precisa incluir "adaptacao" em "permite".');
@@ -1089,12 +1207,13 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
     && familiasRemendadas.length === 0
     && p.permite.length === 0
     && p.libera.length === 0
+    && p.concedeAptidoes.length === 0
     && p.adaptacoes.length === 0
     && p.funcionamentos.length === 0
     && p.feiticos.length === 0
     && p.estadosCombate.length === 0
   ) {
-    problemas.push("O pacote não acrescenta, não substitui, não libera, não permite e não traz Funcionamento Básico, Feitiço ou Estado de Combate.");
+    problemas.push("O pacote não acrescenta, não substitui, não libera, não permite, não concede Aptidão e não traz Funcionamento Básico, Feitiço ou Estado de Combate.");
   }
 
   const vistos = new Set();

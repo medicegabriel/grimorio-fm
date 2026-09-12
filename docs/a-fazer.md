@@ -1221,6 +1221,19 @@ transcrever uma habilidade que fale de Guarda saber que o cano já está lá.
 
 ## AFTY — outros
 
+### Resolver no Encontro os efeitos de alvo das oito posturas do Ápice
+**Onde:** `src/systems/afty/afty-combate.js`, `ficha/abas/AbaAcoes.jsx` e `encontros/`
+**Situação:** Invencível sob o Sol aplica os bônus da própria habilidade e os números positivos das
+posturas, inclusive não aprendidas, com custo, duração e Exaustão. Ainda não há alvo associado ao
+ataque, defesa inimiga, dano recebido por reação nem escolha de rerrolagem. Por isso Dragão,
+Fortuna, Tempestade, a reação da Lua e a troca de alvo da Devastação não conseguem disparar seus
+procedimentos no painel. O autor confirmou em 2026-09-12 que todas as oito posturas valem no Ápice.
+**Precisa:** abrir os eventos de ataque e defesa com alvo na sessão, registrar a escolha de
+rerrolagem de Fortuna e sua quantidade de usos, a reação da Lua, os TRs de Dragão e Tempestade
+e o reset de pilhas ao trocar o alvo da Devastação. Aplicar a mesma passagem na Ficha e no
+Encontro, sem condicionar pela rota.
+**Anotado:** 2026-09-12, ao automatizar Invencível sob o Sol
+
 ### Dois campos de expressão aprovam nome de variável que não existe
 **Onde:** `src/systems/afty/AftyCreatureBuilder.jsx` (`MotorEfeitosEditor`, o da Habilidade Única, e
 `ExprField`, o Modificador de Ação e Característica de Invocação)

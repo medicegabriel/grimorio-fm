@@ -1,0 +1,79 @@
+{
+  "id": "arauto-da-corrupcao",
+  "nome": "Arauto da Corrupção",
+  "versao": "1.0.0",
+  "autor": "Afty",
+  "paraRaw": "afty",
+  "descricao": "Origem Arauto da Corrupção. Programados: os 3 pontos de atributo (máximo 2 no mesmo), o PE a cada nível par do Vosso Jardim e a Característica Única Corpo Transbordante (Bônus de Treinamento em Atletismo e +1 PV por nível). O resto depende da Corrupção, que a ficha não conta, e fica como texto. As Características Únicas são marcadas na própria origem, sem gastar vaga.",
+  "acrescenta": {
+    "origens": [
+      {
+        "id": "arauto_da_corrupcao",
+        "nome": "Arauto da Corrupção",
+        "lore": "Um humano e feiticeiro que nasceu com a capacidade incomum de perceber e despertar a Corrupção existente dentro de outras criaturas. Por ser capaz de tocar naquilo, passou a ser chamado de Arauto da Corrupção, tornando-se um mensageiro capaz de levar à tona o lado mais negativo daqueles ao seu redor, ou, melhor, o lado mais verdadeiro do seu ser.",
+        "caracteristicas": [
+          {
+            "id": "arauto_bonus_atributo",
+            "nome": "[Programado] Bônus de Atributo",
+            "descricao": "Um Arauto da Corrupção recebe +3 pontos de atributo. Você pode colocar +2 pontos em um atributo e +1 em outro atributo.",
+            "bonus": {
+              "distribuir": 3,
+              "maxPorAtributo": 2
+            }
+          },
+          {
+            "id": "arauto_vosso_jardim",
+            "nome": "[Programado] Vosso Jardim",
+            "descricao": "Se torna imune a efeitos da Corrupção e recebe +1 de PE a cada nível par.\n\nQuando uma criatura com Corrupção causar acerto crítico em um outro ser, o Arauto da Corrupção consegue achar uma brecha e consegue consumir leve sua Corrupção e corrompê-la levemente, aplicando 1 de Acúmulo de “Corrompimento”, e o usuário recebe 1 de Corrupção."
+          },
+          {
+            "id": "arauto_consumindo_esse_mal",
+            "nome": "Consumindo Esse Mal",
+            "descricao": "O Portador pode absorver Corrupção acumulada, transformando-a em Características Únicas, ou pode apenas consumi-la uma vez por rodada para receber +2 no seu próximo teste.",
+            "mesa": true
+          },
+          {
+            "id": "arauto_caracteristicas_unicas",
+            "nome": "Características Únicas",
+            "descricao": "As Características Únicas são aprimoramentos adquiridos ao consumir a Corrupção acumulada. Cada vez que o usuário desbloqueia uma delas, uma parte de sua humanidade é perdida, permitindo que a Corrupção avance ainda mais por seu corpo e preencha aquilo que antes era humano.\n\nEssas características podem ser adquiridas durante uma missão ou combate, desde que o usuário possua Corrupção suficiente para comprá-las. Uma vez adquiridas, fazem parte permanente de sua transformação.",
+            "escolha": {
+              "id": "arauto_caracteristicas_unicas",
+              "label": "Características Únicas",
+              "vagas": 4,
+              "opcoes": [
+                {
+                  "id": "arauto_amplificacao_da_corrupcao",
+                  "nome": "Amplificação da Corrupção (70 de Corrupção)",
+                  "descricao": "A Corrupção se acumula e se intensifica dentro daqueles que foram tocados por ela, fazendo com que sua força se manifeste de maneira cada vez mais violenta.\n\nAgora, seus benefícios de Dano adicional, como fixos, recebem +2 no valor total. Além disso, esse valor aumenta em 1 a cada 2 níveis de Corrupção acima de 1."
+                },
+                {
+                  "id": "arauto_colheita_corrompida",
+                  "nome": "Colheita Corrompida (60 de Corrupção)",
+                  "descricao": "O Arauto aprende a aproveitar a Corrupção que desperta nos outros, alimentando-se da energia liberada quando ela começa a se espalhar pelo corpo.\n\nQuando uma criatura com “Corroendo” perder Vida pelo efeito da Corrupção, você pode usar sua Reação para absorver metade dela como Vida temporária.\n\nAlém disso, quando uma criatura sofre de Corrupimento, ela sofre +1 de “Corrupimento” adicional."
+                },
+                {
+                  "id": "arauto_corpo_transbordante",
+                  "nome": "[Programado] Corpo Transbordante (80 de Corrupção)",
+                  "descricao": "A quantidade de Corrupção absorvida começa a exceder os limites naturais do corpo, fazendo sua energia transbordar e reforçar sua estrutura física.\n\nAgora recebe seu bônus de treinamento em testes de Atletismo e recebe +1 Ponto de Vida máxima por nível.",
+                  "efeitos": [
+                    { "canal": "bonusPericia", "alvo": "atletismo", "expr": "maestria" },
+                    { "canal": "hp", "expr": "nd" }
+                  ]
+                },
+                {
+                  "id": "arauto_devorador_de_corrupcao",
+                  "nome": "Devorador de Corrupção (70 de Corrupção)",
+                  "descricao": "Para o Arauto, a Corrupção não é apenas uma força a ser espalhada, mas uma fonte de poder.\n\nAgora, todos seus ganhos de Corrupção são multiplicados em 1,5x. Ainda assim, quando for bem-sucedido em um teste de Resistência, ganha +1 de PE temporário."
+                }
+              ]
+            }
+          }
+        ],
+        "efeitos": [
+          { "canal": "pe", "expr": "piso(nd / 2)" }
+        ],
+        "especializacaoExclusivaId": null
+      }
+    ]
+  }
+}

@@ -274,7 +274,7 @@ export const ESTADOS_COMIDAS = [
     label: "Refeições consumidas",
     tipo: "multi",
     maxSelecionados: 7,
-    title: "As refeições das Ferramentas de Cozinheiro que ESTA criatura consumiu. Produzir cada uma exige Ofício (Cozinheiro) CD 15 (+5 por benefício adicional). Duram até o próximo descanso longo. ⚠ Ligue 'Em Combate' na bancada para os efeitos entrarem. Escolha também o Grau do cozinheiro (vale para todas as refeições).",
+    title: "As refeições das Ferramentas de Cozinheiro que ESTA criatura consumiu. Produzir cada uma exige Ofício (Cozinheiro) CD 15 (+5 por benefício adicional). Duram até o próximo descanso longo. Ligue 'Em Combate' na bancada para os efeitos entrarem. Escolha também o Grau do cozinheiro (vale para todas as refeições).",
     opcoes: [
       { id: "energetica", label: "Energética", title: "Concede energia amaldiçoada temporária igual ao Bônus de Treinamento do cozinheiro. — Ligado pelo motor (informe o BT do cozinheiro)." },
       { id: "leve", label: "Leve", title: "Aumento no Deslocamento de 3 m para cada grau do cozinheiro: 3 (quarto), 6 (terceiro), 9 (segundo), 12 (primeiro), 15 (especial). — Ligado pelo motor (informe o Grau)." },

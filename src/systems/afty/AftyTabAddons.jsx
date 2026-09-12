@@ -79,8 +79,15 @@ function resumoDoPacote(p) {
   const permite = Array.isArray(p.permite) && p.permite.length
     ? [`${p.permite.length} ${p.permite.length === 1 ? "primitiva" : "primitivas"}`]
     : [];
+  /* A concessão de Aptidão conta APTIDÕES, e não entradas da lista: uma entrada
+     com duas Aptidões é o que a pessoa lê como "duas". */
+  const concedidas = new Set((Array.isArray(p.concedeAptidoes) ? p.concedeAptidoes : [])
+    .flatMap((c) => (Array.isArray(c?.aptidoes) ? c.aptidoes : [])));
+  const concede = concedidas.size
+    ? [`${concedidas.size} ${concedidas.size === 1 ? "Aptidão concedida" : "Aptidões concedidas"}`]
+    : [];
   return [...conteudo, ...ciclos, ...funcionamentos, ...feiticos, ...estados,
-    ...remendados, ...libera, ...permite];
+    ...remendados, ...libera, ...permite, ...concede];
 }
 
 function Aviso({ children }) {

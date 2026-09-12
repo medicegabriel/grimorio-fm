@@ -1221,20 +1221,27 @@ export function coletarEfeitosComAlvo(ids, mapaAlvos, mapaEfeitos, catalogo = {}
  * O `nome` sai do catálogo de opções, e é o que aparece no hover de fontes.
  */
 export function coletarEfeitosDeEscolha(mapa, nomesPorOpcao = {}, catalogoPai = null) {
-  const nomeDoPai = typeof catalogoPai === "function"
-    ? (id) => catalogoPai(id)?.nome
-    : (id) => catalogoPai?.[id]?.nome;
+  const entradaDoPai = typeof catalogoPai === "function"
+    ? (id) => catalogoPai(id)
+    : (id) => catalogoPai?.[id];
   const out = [];
   for (const [paiId, opcoes] of Object.entries(mapa || {})) {
     // ⚠ O nome da fonte é "Pai (Opção)", e não só a opção (2026-07-29). Uma
     // escolha de atributo se chama "Destreza", então o hover do atributo Destreza
     // mostrava a linha "Destreza +4", que não diz de onde vem nada. Com o pai
     // vira "Pináculo Físico (Destreza)". Sem catálogo de pai, volta ao antigo.
-    const pai = catalogoPai ? nomeDoPai(paiId) : null;
+    const entrada = catalogoPai ? entradaDoPai(paiId) : null;
+    const pai = entrada?.nome ?? null;
     for (const opcaoId of Array.isArray(opcoes) ? opcoes : []) {
       const opcao = nomesPorOpcao[opcaoId] || opcaoId;
+      // ⚠ A EXCEÇÃO É A OPÇÃO QUE SE NOMEIA SOZINHA (autor, 2026-09-12): os
+      // Estilos de Combate saem como "Estilo do Duelista", sem o "Repertório do
+      // Especialista" na frente. Quem decide é a marca `nomeProprio` na própria
+      // opção, lida pelo pai, e por isso o Adepto de Combate, que empresta o
+      // mesmo pool, lê igual.
+      const nomeProprio = !!entrada?.escolha?.opcoes?.find((o) => o?.id === opcaoId)?.nomeProprio;
       for (const e of ESCOLHA_EFEITOS[opcaoId] || []) {
-        out.push({ ...e, origem: opcaoId, nome: pai ? `${pai} (${opcao})` : opcao });
+        out.push({ ...e, origem: opcaoId, nome: pai && !nomeProprio ? `${pai} (${opcao})` : opcao });
       }
     }
   }

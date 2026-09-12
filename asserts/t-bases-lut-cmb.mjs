@@ -192,6 +192,32 @@ const vagasDe = (espId, nivel, habId) =>
 t("Estilos do Repertorio por nivel",
   [1, 5, 6, 11, 12, 20].map((n) => vagasDe("combatente", n, "cmb_repertorio_do_especialista")),
   [1, 1, 2, 2, 3, 3]);
+/* ⚠ O ESTILO SE NOMEIA SOZINHO NO HOVER (autor, 2026-09-12): "Estilo do
+   Duelista", e não "Repertório do Especialista (Estilo do Duelista)". O resto
+   das escolhas aninhadas segue "Pai (Opção)", porque "Força" sozinho não diz de
+   onde veio. Vale igual para o Adepto de Combate, que empresta o pool. */
+{
+  const EF = await import(R + "afty-efeitos.js");
+  const H = await import(R + "afty-habilidades.js");
+  const T = await import(R + "afty-talentos.js");
+  const nomesDe = (mapa, catalogo) => EF.coletarEfeitosDeEscolha(
+    mapa, { ...H.OPCAO_ESCOLHA_NOME, ...T.OPCAO_TALENTO_NOME }, catalogo,
+  ).map((e) => e.nome);
+  t("os oito Estilos carregam a marca", H.ESTILOS_DE_COMBATE.map((e) => e.nomeProprio), Array(8).fill(true));
+  t("Estilo pelo Repertorio sai so pelo nome",
+    [...new Set(nomesDe({ cmb_repertorio_do_especialista: ["cmb_estilo_do_duelista"] }, H.getHabilidade))],
+    ["Estilo do Duelista"]);
+  t("Estilo pelo Adepto de Combate tambem",
+    nomesDe({ tal_adepto_de_combate: ["cmb_estilo_defensivo"] }, T.getTalento), ["Estilo Defensivo"]);
+  t("escolha sem a marca segue Pai (Opcao)",
+    nomesDe({ res_pinaculo_fisico: ["res_pinaculo_forca"] }, H.getHabilidade), ["Pináculo Físico (Força)"]);
+  const duelo = ficha("combatente", 20, { armas: ["arm_espada_curta"], combate: { duelando: true } });
+  duelo.escolhasHabilidade = { cmb_repertorio_do_especialista: ["cmb_estilo_do_duelista"] };
+  const espada = linha(deriveAfty(duelo), "arm_espada_curta");
+  t("e e o que chega no hover do Acerto e do Dano",
+    [espada.partesAcerto, espada.partes].map((ps) => ps.map((p) => p.label).filter((l) => /Duelista/.test(l))),
+    [["Estilo do Duelista"], ["Estilo do Duelista"]]);
+}
 t("Manobras de Empolgacao por nivel",
   [1, 5, 6, 11, 12, 17, 18, 20].map((n) => vagasDe("lutador", n, "lut_empolgacao")),
   [2, 2, 3, 3, 4, 4, 5, 5]);

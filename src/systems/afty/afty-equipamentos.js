@@ -2054,6 +2054,28 @@ const listaEntradas = (creature) => {
 };
 
 /**
+ * Os itens EQUIPADOS da ficha, com o nome de catálogo: `[{ refId, tipo, nome }]`.
+ *
+ * Existe para a Aptidão concedida por Addon (`aptidoesConcedidasPorAddon`, em
+ * afty-addons.js), que precisa saber o que está equipado ANTES de a lista de
+ * Aptidões fechar. O `resolveEquipamentos` roda muito depois disso no derive,
+ * porque ele depende do Bônus de Treinamento.
+ *
+ * ⚠ Lê a MESMA regra de "equipado" do `resolveEquipamentos` (o campo
+ * `equipado` da entrada), e entrada de item desconhecido fica de fora, como lá.
+ */
+export function itensEquipados(creature) {
+  const out = [];
+  for (const e of listaEntradas(creature)) {
+    if (!e?.equipado) continue;
+    const def = getEquipamento(e?.tipo, e?.refId, creature);
+    if (!def) continue;
+    out.push({ refId: e.refId, tipo: e.tipo, nome: def.nome });
+  }
+  return out;
+}
+
+/**
  * Resolve a Ferramenta Amaldiçoada de UMA entrada (o campo `fa`).
  * Devolve o resumo pronto para a UI e para o motor: o bônus de grau, os
  * encantamentos escolhidos com o estado do pré-requisito de cada um, as

@@ -158,8 +158,17 @@ export const MANOBRAS_DE_EMPOLGACAO = [
  * Estilos de Combate do Repertório do Especialista (Combatente).
  * É uma escolha ANINHADA: a habilidade é uma só, mas concede 1 estilo no
  * nível 1, mais um no 6 e outro no 12 (ver `escolha.niveis` na habilidade).
+ *
+ * ⚠ `nomeProprio` (autor, 2026-09-12): no hover de fontes o Estilo aparece só
+ * pelo nome, "Estilo do Duelista", e não como "Repertório do Especialista
+ * (Estilo do Duelista)". A regra "Pai (Opção)" do `coletarEfeitosDeEscolha`
+ * existe porque uma opção como "Destreza" não diz de onde veio, e um Estilo
+ * diz. A marca mora no POOL, e não na habilidade, porque o Talento Adepto de
+ * Combate empresta o mesmo pool e tem de ler igual.
  */
-export const ESTILOS_DE_COMBATE = [
+const comNomeProprio = (opcoes) => opcoes.map((o) => ({ ...o, nomeProprio: true }));
+
+export const ESTILOS_DE_COMBATE = comNomeProprio([
   {
     id: "cmb_estilo_defensivo",
     nome: "Estilo Defensivo",
@@ -227,7 +236,7 @@ export const ESTILOS_DE_COMBATE = [
       "pode rolar novamente esse dado, ficando com o novo resultado. Além disso, você recebe +1 " +
       "em rolagens de dano com a arma, aumentando em +1 nos níveis 4, 8, 12 e 16.",
   },
-];
+]);
 
 /**
  * Posturas de Combate do Assumir Postura (Combatente). Segunda escolha

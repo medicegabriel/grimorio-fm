@@ -309,7 +309,14 @@ export function conteudoDaFicha(creature, derived) {
       grupo: "aptidao",
       tags: [
         getCategoriaAptidao(a.categoria)?.nome,
-        concedidasOrigem.has(id) ? "Origem" : null,
+        /* A concedida diz de ONDE veio. A do Addon leva o nome do item que a
+           dá (2026-09-12): escrever "Origem" nela seria dizer que ela nunca
+           some, e ela some ao desequipar o item. */
+        concedidasOrigem.has(id)
+          ? ((derived?.aptidoesConcedidasEspecializacao ?? []).includes(id) ? "Especialização"
+            : (derived?.aptidoesConcedidasOrigem ?? []).includes(id) ? "Origem"
+              : (derived?.aptidoesConcedidasAddon ?? []).find((c) => c.id === id)?.fonte ?? "Origem")
+          : null,
         vezes > 1 ? { label: `${vezes}×`, tipo: "vezes" } : null,
         /* O DOMÍNIO SIMPLES carrega os números dele na própria linha. Eles são
            o que se paga na mesa, e até 2026-08-28 viviam dentro da prosa: quem

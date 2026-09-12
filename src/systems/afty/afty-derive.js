@@ -82,7 +82,7 @@ import {
   resolveEquipamentos, resolveCarga, grauFeiticeiro, alcanceDaArma, propriedadesDaArma,
   armaTreinadaPor,
   podeSerArmaDedicada, grauDoRank, efeitosEspeciaisDeArma, catalogoDoTipo,
-  TIPOS_DANO, CATEGORIAS_DANO, tiposDeDanoDaCategoria,
+  TIPOS_DANO, CATEGORIAS_DANO, tiposDeDanoDaCategoria, itensEquipados,
 } from "./afty-equipamentos";
 import {
   nivelMaxFeitico, resumoDeUmFeitico, resumoFeiticos, overridesShikigami,
@@ -104,7 +104,7 @@ import { resolveCarteira } from "./afty-carteira";
 import { resolveCura } from "./afty-cura";
 import {
   problemasDeAddon, marcasDeclaradas, primitivasDaCriatura, liberacoesDaCriatura, precosDeCatarse,
-  nivelDaFicha,
+  nivelDaFicha, aptidoesConcedidasPorAddon,
   estadosCombateDeAddon, epocaAddons,
 } from "./afty-addons";
 import { agrupaConcedido, concessoesDaSessao, escolhasDoConcedido } from "./afty-concessao";
@@ -132,7 +132,7 @@ import {
   pvDaClasse, peDaClasse, peModTecnicaDaFicha, vagasDeHabilidadePorClasse,
   pacoteInicialDaFicha,
 } from "./afty-especializacoes";
-import { resolveCombate, degrausBrutalidade } from "./afty-combate";
+import { resolveCombate, degrausBrutalidade, tetoAtaqueConcentrado } from "./afty-combate";
 import {
   aplicarAptidoesNoDano, aptidoesAuraDesabilitadas, estadosCombateAptidoes,
 } from "./afty-combate-aptidoes";
@@ -221,6 +221,10 @@ function vocabularioDoMundo() {
   };
   return vocCache;
 }
+
+/** O Acerto que os ENCANTAMENTOS de uma Ferramenta somam, sem a parcela do grau. */
+const acertoDosEncantamentos = (fa) =>
+  (fa?.fontesAcerto ?? []).reduce((soma, f) => soma + (Number(f?.valor) || 0), 0);
 
 /**
  * @param creature ficha (só escolhas)
@@ -386,10 +390,17 @@ export function deriveAfty(creature, opcoes = {}) {
   // origem e as Habilidades já concediam: as três são "vale para tudo e não
   // gasta vaga". O `semEnergia` continua valendo por cima de todas, porque um
   // Restringido não tem Aptidão nenhuma, nem escolhida nem dada pelo mestre.
+  /* ⚠ E A DO ADDON (2026-09-12), no mesmo caixa pelo mesmo motivo. Ela pode
+     depender de um item EQUIPADO, e por isso o inventário é lido aqui em cima,
+     cru, bem antes do `resolveEquipamentos`. Ver `aptidoesConcedidasPorAddon`. */
+  const aptidoesConcedidasAddon = semEnergia
+    ? []
+    : aptidoesConcedidasPorAddon(creature, { equipados: itensEquipados(creature) });
   const aptidoesConcedidas = semEnergia ? [] : [...new Set([
     ...aptidoesConcedidasOrigem,
     ...aptidoesConcedidasEspecializacao,
     ...concedido.aptidoes,
+    ...aptidoesConcedidasAddon.map((c) => c.id),
   ])];
   const aptidoesEscolhidasFicha = semEnergia || !Array.isArray(creature?.aptidoesAmaldicoadas)
     ? []
@@ -811,7 +822,12 @@ export function deriveAfty(creature, opcoes = {}) {
          Encantamentos como Potente que aumenta em 1 Dado"). O que sai é só a
          parcela do GRAU: as `fontesAcerto` continuam, porque elas são o
          encantamento Precisa, e encantamento vale nos dois sistemas. */
-      acertoGrau: ehJogador("danoPorArma") ? 0 : (e.fa?.acertoArma ?? 0),
+      /* ⚠ E O ZERO LEVAVA O ENCANTAMENTO JUNTO até 2026-09-12. O `acertoArma`
+         da Ferramenta é o grau MAIS o Precisa, e zerar o campo inteiro tirava
+         os dois do total, enquanto as `fontesAcerto` seguiam no hover. O hover
+         então montava "Grau da Ferramenta −2" e "Precisa +2", que se anulavam, e
+         o autor perguntou o que era aquele −2. No jogador sai só o grau. */
+      acertoGrau: ehJogador("danoPorArma") ? acertoDosEncantamentos(e.fa) : (e.fa?.acertoArma ?? 0),
       fontesAcerto: e.fa?.fontesAcerto ?? [],
       ataqueId: e.ataqueId,
       fineza: !!e.def.props?.fineza,
@@ -857,10 +873,16 @@ export function deriveAfty(creature, opcoes = {}) {
       || ((y.fa ? 1 : 0) - (x.fa ? 1 : 0)))[0] ?? null;
   const grauBasico = pugilato ? grauCalcDaArma(pugilato) : null;
   // ⚠ Mesma regra do Acerto por grau das armas: some na ficha de jogador.
-  const acertoGrauBasico = ehJogador("danoPorArma") ? 0 : (pugilato?.fa?.acertoArma ?? 0);
+  // ⚠ Sai só o GRAU, e o encantamento fica: ver a nota do `acertoGrau` das armas.
+  const acertoGrauBasico = ehJogador("danoPorArma")
+    ? acertoDosEncantamentos(pugilato?.fa)
+    : (pugilato?.fa?.acertoArma ?? 0);
   // As fontes do Acerto que NÃO são o grau (o encantamento Precisa). Sem elas o
   // hover jogava o bônus todo dentro de "Grau da Ferramenta".
   const fontesAcertoBasico = pugilato?.fa?.fontesAcerto ?? [];
+  const propriedadesBasico = pugilato ? propriedadesDaArma(pugilato.def) : [];
+  const criticoExtraDadosBasico = pugilato?.fa?.encantamentos?.some(
+    (x) => x.id === "enc_arma_destruidora" && x.atende) ? 1 : 0;
   // O escopo do item, para o efeito de encantamento com `alvoItem` alcançar a
   // linha do Ataque Básico. Sem isto, Potente e Poderosa numas Faixas eram
   // descartados calados e o encantamento ainda cobrava o degrau de grau.
@@ -1255,6 +1277,7 @@ export function deriveAfty(creature, opcoes = {}) {
   const estadosAddon = estadosCombateDeAddon(creature, nivelMaxFeitico(nd, nivelConjurador));
   const estadosVislumbre = estadosDoVislumbre({ tem: temVislumbre });
   const combate = resolveCombate(creature, {
+    apiceId: altoNivel.apiceId,
     dominios: resumoDominios.lista,
     brutalidadePE: degrausBrutalidade({ habilidades }),
     brutalidadePilha: bt,
@@ -1262,6 +1285,7 @@ export function deriveAfty(creature, opcoes = {}) {
     devastacaoPilha: bt,
     precisaoPE: 1 + Math.floor(nivelCmb / 4),
     pistoleiroEmperrar: habilidades.efetivas.includes("cmb_pistoleiro_avancado") ? 6 : 2,
+    ataqueConcentrado: tetoAtaqueConcentrado(habilidades.efetivas),
     adrenalinaAtletismo: habilidades.efetivas.includes("res_restricao_definitiva") ? 8 : 4,
     cacadorFeiticeiros: 1 + Math.floor(nivelRes / 5),
     corpoDeAco: 1 + (nivelRes >= 10 ? 1 : 0) + (nivelRes >= 15 ? 1 : 0),
@@ -2443,6 +2467,7 @@ export function deriveAfty(creature, opcoes = {}) {
       (e) => e.def?.grupo === "pugilato" && armaTreinadaPor(e.def, treinamentosEquipamento.armas)),
     efeitos: ef, armas: armasParaDano, grauBasico, acertoGrauBasico,
     fontesAcertoBasico, escoposBasicoExtra, finezaBasico,
+    propriedadesBasico, criticoExtraDadosBasico,
     /* ⚠ O DADO DO GOLPE DESARMADO DA FICHA DE JOGADOR (autor, 2026-08-31):
        "Golpe Desarmado segue o cálculo de Lutador ou Arma Natural. Se não haver
        nenhum dos dois, é 1d3 + Mod. Força ou Mod. Dex."
@@ -2475,7 +2500,8 @@ export function deriveAfty(creature, opcoes = {}) {
     // da categoria mais o grau da arma daquela linha.
     ataques: testes.ataques,
     alcanceCorpo: tamanho.espacoAlcance,
-    alcanceMult: combate.postura === "ceu" || combate.postura2 === "ceu" ? 2 : 1,
+    alcanceMult: combate.invencivelSobOSol
+      || combate.postura === "ceu" || combate.postura2 === "ceu" ? 2 : 1,
   });
   dano = {
     ...dano,
@@ -3109,6 +3135,9 @@ export function deriveAfty(creature, opcoes = {}) {
     aptidoesConcedidas,
     aptidoesConcedidasOrigem,
     aptidoesConcedidasEspecializacao,
+    // As do Addon vêm com a FONTE (o item que as dá, ou o pacote), porque a tela
+    // escreve de onde a Aptidão veio, e "Origem" seria mentira para elas.
+    aptidoesConcedidasAddon,
     dominios: resumoDominios,
     /* Proficiência RESOLVIDA (a escolhida na ficha mais a concedida pelo Motor).
        É o que os requisitos de treino conferem, e desde 2026-09-01 eles valem

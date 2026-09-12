@@ -406,8 +406,10 @@ export function createBlankAfty() {
     armasCustom: [],            // [ armaCustom ] — ver novaArmaCustom()
     // Interlúdios de FORJA (2026-09-11). Caderno puro: quantos Focos a forja
     // gastou e o que saiu dela. Os Focos entram no mesmo orçamento das Linhas
-    // de Treinamento e dos Treinos Especiais. Ver afty-forja.js.
-    forjas: [],                 // [{ id, focos, itens }] — ver novaForja()
+    // de Treinamento e dos Treinos Especiais. Desde 2026-09-12 `itens` é LISTA
+    // de { id, nome, tipo }, e o texto das fichas antigas vira itens na leitura.
+    // Ver afty-forja.js.
+    forjas: [],                 // [{ id, focos, itens: [{ id, nome, tipo }] }] — ver novaForja()
 
     // Especializações (classes). Até 2, e soma(niveis) === core.nd — o
     // nível de Especialização É o ND. Não mudam cálculo: só destravam

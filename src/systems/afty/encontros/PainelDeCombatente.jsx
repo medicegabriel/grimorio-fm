@@ -14,7 +14,7 @@ import {
   sofreGolpeNaGuarda, desfazGolpeNaGuarda, encerraGuarda, defineCondicoes,
   estadoDaInvocacao, poeInvocacaoEmCampo, alternaAuxilioInvocacao,
   aplicaDanoInvocacao, aplicaCuraInvocacao, defineVitalInvocacao,
-  alteraTreinoAtivo,
+  alteraTreinoAtivo, alteraEstadoCombate, aplicaPatchCombate,
 } from "../ficha/ficha-sessao";
 import { rolarTeste, rolarDano, textoDaRolagem } from "../ficha/ficha-rolagem";
 import { deltaDosEstados } from "../ficha/ficha-buffs";
@@ -430,7 +430,11 @@ export default function PainelDeCombatente({
           derived={derived}
           sessao={sessao}
           deltaPorEstado={deltaPorEstado}
-          onPatchCombate={(parcial) => onSessao((s) => ({ ...s, combate: { ...s.combate, ...parcial } }))}
+          onPatchCombate={(parcial) => onSessao((s) => aplicaPatchCombate(s, parcial))}
+          onEstado={(estado, valor) => onSessao((s) => alteraEstadoCombate(s, estado, valor))}
+          onExaustao={(valor) => onSessao((s) => ({
+            ...s, exaustao: Math.max(0, Math.trunc(Number(valor) || 0)),
+          }))}
           onBuffs={(buffs) => onSessao((s) => ({ ...s, buffs }))}
           /* Mesmo caminho da Ficha: oito condições derrubam a Guarda, e as
              duas telas mexem na MESMA sessão. Ver `defineCondicoes`. */

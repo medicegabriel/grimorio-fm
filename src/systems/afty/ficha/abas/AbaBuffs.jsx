@@ -130,6 +130,7 @@ function LinhaEstado({ estado, valor, delta, opcoes, onValor, derived, bloqueado
      o inteiro: sem ele um rótulo aparado no `truncate` não teria como ser lido.
      Ver `organizaEstados`. */
   const rotulo = estado.rotulo ?? estado.label;
+  const custoPE = typeof estado.custoPE === "function" ? estado.custoPE(valor) : estado.custoPE;
   return (
     <div className="afty-estado-linha px-2.5 py-1.5 flex items-center gap-2 flex-wrap">
       <span className="flex-1 min-w-0 text-[12px] font-semibold truncate" title={estado.title || estado.label}>
@@ -154,8 +155,17 @@ function LinhaEstado({ estado, valor, delta, opcoes, onValor, derived, bloqueado
           ))}
         </span>
       )}
-      {estado.custoPE != null && valor && (
-        <span className="afty-valor text-[11px]" data-afty-tom="custo">{estado.custoPE} PE</span>
+      {/* O custo pode ser FUNÇÃO do valor, para a faixa cujo preço não é
+          linear (Ataque Concentrado: 1, 3 e 4 PE). Mesma leitura do `max`. */}
+      {custoPE != null && !!valor && (
+        <span className="afty-valor text-[11px]" data-afty-tom="custo">{custoPE} PE</span>
+      )}
+      {estado.id === "invencivelSobOSol" && !!valor && (
+        <>
+          <span className="afty-chip">{derived?.combate?.invencivelRodadas ?? 1}/4</span>
+          <span className="afty-chip">Imune a ataques críticos inimigos</span>
+          <span className="afty-chip">Não pode ser movido a força</span>
+        </>
       )}
 
       {/* ⚠ A COLUNA DE CONTROLE TEM LARGURA RESERVADA, e é o que tira o
@@ -481,7 +491,10 @@ export default function AbaBuffs({
     };
     return [
       ...COMBATE_ESTADOS.filter((e) => {
-        const temDono = e.requerEscolha ? opcoesEscolhidas.includes(e.requerEscolha)
+        const temDono = e.requerEscolha
+          ? opcoesEscolhidas.includes(e.requerEscolha)
+            || (!!e.ouRequerApice && derived.altoNivel?.apiceId === e.ouRequerApice)
+          : e.requerApice ? derived.altoNivel?.apiceId === e.requerApice
           : e.requerTalento ? talentos.includes(e.requerTalento)
           : e.requerAptidao ? aptidoes.includes(e.requerAptidao)
           : temHabilidade(e.requerHabilidade);

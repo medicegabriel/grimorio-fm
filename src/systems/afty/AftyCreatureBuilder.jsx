@@ -4,6 +4,7 @@ import {
   Dumbbell, GraduationCap, BookOpen, Check, ArrowRight, Lock, Plus, X, Zap, GripVertical,
   Copy, ArrowUp, ArrowDown, Heart, Shield, Footprints, AlertTriangle, Star, Swords,
   Trash2, Image as ImageIcon, Eye, Crosshair, RotateCcw, RefreshCw, Pencil, Table, Braces, ListChecks,
+  Sword, Shirt, Gem, Hammer, ScrollText, Ghost, Pill, CircleDashed,
 } from "lucide-react";
 
 import { FieldLabel, TextInput, TextArea, Select, NumberInput, StatField, ExpandableText } from "../../components/builder-controls";
@@ -60,13 +61,13 @@ import {
 import {
   ETAPAS_POR_LINHA, focosGastos, avaliarRequisito, requisitosDaEtapa, rotuloAlvo, treinamentosDaOrigem,
 } from "./afty-treinamentos";
-import { novaForja, forjasDaFicha, focosDeForja } from "./afty-forja";
+import { novaForja, novoItemForja, forjasDaFicha, focosDeForja, itensComNome, FORJA_TIPOS } from "./afty-forja";
 import {
   AFTY_TREINOS_ESPECIAIS, focosDeTreinosEspeciais, focosDoTreinoEspecial,
   tetosDeTreinoEspecial, vezesPorTreinoEspecial,
 } from "./afty-treinos-especiais";
 import {
-  APTIDAO_TRILHAS, APTIDAO_NIVEL_MAX,
+  APTIDAO_TRILHAS, APTIDAO_NIVEL_MAX, APTIDAO_CATEGORIAS, getAptidao,
   aptidoesDaCategoria, subgruposDaCategoria, abasAptidao, avaliarRequisitoAptidao,
 } from "./afty-aptidoes";
 import {
@@ -982,7 +983,8 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
      cada linha entram no mesmo orçamento das Linhas e dos Treinos Especiais. */
   const forjasArr = (d) => (Array.isArray(d.forjas) ? d.forjas : []);
   const addForja = () => {
-    const nova = novaForja();
+    // A forja nova já traz uma linha de item vazia, pronta para digitar.
+    const nova = novaForja({ itens: [novoItemForja()] });
     setDraft((d) => ({ ...d, forjas: [...forjasArr(d), nova] }));
     return nova.id;
   };
@@ -8822,20 +8824,142 @@ function TreinoEspecialCard({ item, vezes, max, onSetVezes, sistema }) {
 /* O Treino Especial cujo texto de regra ainda não chegou. Mesmo esqueleto do
    TreinoEspecialCard, com o ícone ocupando o lugar do quadrado que liga: assim
    as colunas do card batem e a lista lê como uma só. */
-/* Uma linha do caderno de Forja: quantos Focos ela gastou e o que saiu dela.
+/* O ícone de cada Tipo de item forjado. Tipo é dado (`FORJA_TIPOS`, no módulo
+   folha), e o desenho é da tela, então o mapa mora aqui. Sem tipo, o círculo
+   tracejado diz "ainda não escolhido" sem parecer um tipo a mais. */
+const ICONE_TIPO_FORJA = {
+  arma: Sword,
+  escudo: Shield,
+  ferramenta_amaldicoada: Hammer,
+  uniforme: Shirt,
+  acessorio: Gem,
+  talisma: ScrollText,
+  espiritual: Ghost,
+  mistura: FlaskConical,
+  farmaco: Pill,
+};
+const OPCOES_TIPO_FORJA = FORJA_TIPOS.map((t) => ({ value: t.id, label: t.label }));
+
+/* Um item feito na forja: ícone do tipo, nome e tipo.
+
+   ⚠ O CAMPO DE NOME É UM <input> PRÓPRIO, e não o TextInput da casa, porque a
+   linha precisa de `ref` para o foco andar com o teclado (Enter cria o próximo,
+   Backspace no campo vazio apaga e volta), e o TextInput não repassa ref. As
+   classes são as dele.
+
+   No telefone o seletor desce para baixo do nome, alinhado com ele, porque ícone,
+   nome, seletor e botão numa fileira de 400px deixavam o nome com meia palavra. */
+function ForjaItem({ item, registrarCampo, onPatch, onEnter, onApagarVazio, onRemove }) {
+  const Icone = (item.tipo && ICONE_TIPO_FORJA[item.tipo]) || CircleDashed;
+  return (
+    <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
+      <span
+        className={`order-1 w-7 h-7 rounded flex items-center justify-center flex-shrink-0 border ${
+          item.tipo
+            ? "border-purple-800/60 bg-purple-950/40 text-purple-300"
+            : "border-slate-800 bg-slate-900/60 text-slate-600"
+        }`}
+        aria-hidden="true"
+      >
+        <Icone className="w-3.5 h-3.5" />
+      </span>
+      <input
+        ref={registrarCampo}
+        type="text"
+        value={item.nome}
+        onChange={(e) => onPatch({ nome: e.target.value })}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            onEnter();
+          } else if (e.key === "Backspace" && item.nome === "") {
+            e.preventDefault();
+            onApagarVazio();
+          }
+        }}
+        placeholder="Nome do Item"
+        aria-label="Nome do Item"
+        className="order-2 flex-1 min-w-0 h-9 bg-slate-950 border border-slate-700 rounded px-3 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-colors"
+      />
+      <div className="order-4 sm:order-3 basis-full sm:basis-auto sm:w-48 pl-9 sm:pl-0">
+        <Select
+          value={item.tipo ?? ""}
+          onChange={(v) => onPatch({ tipo: v || null })}
+          options={OPCOES_TIPO_FORJA}
+          placeholder="Sem Tipo"
+          aria-label="Tipo do Item"
+        />
+      </div>
+      <button
+        type="button"
+        onClick={onRemove}
+        className="order-3 sm:order-4 w-7 h-7 rounded flex items-center justify-center flex-shrink-0 text-slate-500 hover:text-rose-300 hover:bg-rose-950/40 transition-colors"
+        title="Apagar Item"
+        aria-label="Apagar Item"
+      >
+        <X className="w-3.5 h-3.5" />
+      </button>
+    </div>
+  );
+}
+
+/* Uma linha do caderno de Forja: quantos Focos ela gastou e os itens que saíram
+   dela, um por fileira (autor, 2026-09-12: o bloco de texto era "MUITO feio e
+   pouco pratico").
 
    ⚠ SÓ ANOTAÇÃO (autor, 2026-09-11). O catálogo tem kit, Ofício, CD por grau e
    limite por interlúdio, e nada disso entra aqui: ele pediu o caderno, e um
-   campo que conferisse viraria regra que ninguém decidiu. */
-function ForjaLinha({ forja, onPatch, onRemove }) {
+   campo que conferisse viraria regra que ninguém decidiu. O Tipo do item é
+   rótulo, e não confere se o kit da ficha cria aquele tipo. */
+function ForjaLinha({ forja, numero, onPatch, onRemove }) {
   const [confirmDel, setConfirmDel] = useState(false);
+  const itens = forja.itens;
+  const comNome = itensComNome(forja);
+
+  /* O foco que o teclado pediu. É ref, e não estado, porque ele só precisa
+     sobreviver até o próximo commit: o efeito sem dependências roda depois de
+     todo render, encontra o campo novo já montado e se apaga. Estado aqui daria
+     um render a mais só para limpar a si mesmo. */
+  const campos = useRef(new Map());
+  const focarDepois = useRef(null);
+  useEffect(() => {
+    const id = focarDepois.current;
+    if (!id) return;
+    const campo = campos.current.get(id);
+    if (campo) {
+      campo.focus();
+      focarDepois.current = null;
+    }
+  });
+  const registrar = (id) => (el) => {
+    if (el) campos.current.set(id, el);
+    else campos.current.delete(id);
+  };
+
+  const gravarItens = (novos) => onPatch({ itens: novos });
+  const patchItem = (id, partial) =>
+    gravarItens(itens.map((i) => (i.id === id ? { ...i, ...partial } : i)));
+  const inserirDepois = (indice) => {
+    const novo = novoItemForja();
+    focarDepois.current = novo.id;
+    gravarItens([...itens.slice(0, indice + 1), novo, ...itens.slice(indice + 1)]);
+  };
+  const removerItem = (indice, { voltarFoco = false } = {}) => {
+    if (voltarFoco && indice > 0) focarDepois.current = itens[indice - 1].id;
+    gravarItens(itens.filter((_, i) => i !== indice));
+  };
+
   return (
-    <div className="rounded-lg border border-slate-800 bg-slate-950/40 px-3 py-2.5 space-y-2">
-      <div className="flex items-center gap-2">
-        <span className="text-[10px] uppercase tracking-wider text-slate-500 flex-shrink-0">Focos</span>
+    <div className="rounded-lg border border-slate-800 bg-slate-950/40 px-3 py-2.5 space-y-2.5">
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="text-sm font-semibold text-white flex-shrink-0">Forja {numero}</span>
+        <span className="text-[10px] uppercase tracking-wider text-slate-500 flex-shrink-0 ml-1">Focos</span>
         <div className="w-20 flex-shrink-0">
           <NumberInput value={forja.focos} onChange={(v) => onPatch({ focos: v })} min={0} max={99} />
         </div>
+        <span className="text-[11px] text-slate-500 tabular-nums flex-shrink-0">
+          {comNome === 1 ? "1 Item" : `${comNome} Itens`}
+        </span>
         {confirmDel ? (
           <span className="ml-auto flex items-center gap-1 flex-shrink-0">
             <span className="text-[10px] text-rose-300 whitespace-nowrap">Apagar?</span>
@@ -8869,12 +8993,35 @@ function ForjaLinha({ forja, onPatch, onRemove }) {
           </button>
         )}
       </div>
-      <TextArea
-        value={forja.itens}
-        onChange={(v) => onPatch({ itens: v })}
-        rows={2}
-        placeholder="Itens feitos"
-      />
+      {itens.length > 0 && (
+        /* No telefone cada item ocupa duas fileiras (nome, e o tipo embaixo), e
+           o respiro entre itens precisa ser maior que o de dentro do item, senão
+           o tipo parece do item de baixo. */
+        <div className="space-y-3 sm:space-y-1.5">
+          {itens.map((item, indice) => (
+            <ForjaItem
+              key={item.id}
+              item={item}
+              registrarCampo={registrar(item.id)}
+              onPatch={(partial) => patchItem(item.id, partial)}
+              onEnter={() => inserirDepois(indice)}
+              onApagarVazio={() => {
+                // A única linha vazia fica: apagar ela deixaria a forja sem campo.
+                if (itens.length > 1) removerItem(indice, { voltarFoco: true });
+              }}
+              onRemove={() => removerItem(indice)}
+            />
+          ))}
+        </div>
+      )}
+      <button
+        type="button"
+        onClick={() => inserirDepois(itens.length - 1)}
+        className="w-full flex items-center justify-center gap-1.5 h-8 rounded border border-dashed border-slate-700 text-[11px] font-semibold text-slate-400 hover:text-white hover:border-purple-600 hover:bg-purple-950/20 transition-colors"
+      >
+        <Plus className="w-3.5 h-3.5" />
+        Adicionar Item
+      </button>
     </div>
   );
 }
@@ -8899,10 +9046,11 @@ function ForjaCard({ forjas, onAdd, onPatch, onRemove }) {
         <p className="text-[11px] text-slate-600">Nenhuma forja anotada.</p>
       ) : (
         <div className="space-y-1.5">
-          {forjas.map((f) => (
+          {forjas.map((f, i) => (
             <ForjaLinha
               key={f.id}
               forja={f}
+              numero={i + 1}
               onPatch={(partial) => onPatch(f.id, partial)}
               onRemove={() => onRemove(f.id)}
             />
@@ -9021,8 +9169,32 @@ function NivelPicker({ value, concedido, restante, onChange, label, limite = APT
    parágrafo do livro: abertas todas de uma vez viram um paredão que
    ninguém lê. Recolhida, a linha mostra o que serve para ESCOLHER
    (nome + requisitos) e o texto abre sob demanda. */
+/* De onde veio uma Aptidão concedida: o texto verde ao lado do nome e o hover.
+
+   ⚠ ERA UM `if` DE DOIS RAMOS ("especializacao" ou "origem") até 2026-09-12, e
+   tudo que não fosse da Especialização saía escrito "Origem". A Aptidão dada
+   por Addon, que pode sumir ao desequipar um item, ficaria dizendo que vem da
+   origem, que é justamente a fonte que nunca some. */
+const FONTE_CONCESSAO_ORIGEM = { rotulo: "Origem", titulo: "Concedida pela origem" };
+const FONTE_CONCESSAO_ESPECIALIZACAO = { rotulo: "Especialização", titulo: "Concedida pela Especialização" };
+
+function fonteDaConcessao(id, derived) {
+  if ((derived.aptidoesConcedidasEspecializacao ?? []).includes(id)) return FONTE_CONCESSAO_ESPECIALIZACAO;
+  if ((derived.aptidoesConcedidasOrigem ?? []).includes(id)) return FONTE_CONCESSAO_ORIGEM;
+  const addon = (derived.aptidoesConcedidasAddon ?? []).find((c) => c.id === id);
+  if (addon) {
+    return {
+      rotulo: addon.fonte,
+      titulo: addon.item
+        ? `Concedida pelo Addon ${addon.addonNome}, enquanto o item ${addon.item} estiver equipado`
+        : `Concedida pelo Addon ${addon.addonNome}`,
+    };
+  }
+  return FONTE_CONCESSAO_ORIGEM;
+}
+
 function AptidaoCard({
-  aptidao, escolhida, concedida, concessao = "origem", vezes = 0, maxVezes = 1,
+  aptidao, escolhida, concedida, concessao = FONTE_CONCESSAO_ORIGEM, vezes = 0, maxVezes = 1,
   ctx, onToggle, opcaoAtual, onOpcao, opcoesRepetidas = [], onVezes, onOpcaoRepetida,
 }) {
   const [open, setOpen] = useState(false);
@@ -9064,7 +9236,7 @@ function AptidaoCard({
           aria-label={`${escolhida ? "Remover" : "Escolher"} ${aptidao.nome}`}
           title={
             concedida
-              ? `Concedida pela ${concessao === "especializacao" ? "Especialização" : "origem"}`
+              ? concessao.titulo
               : bloqueada
                 ? `Requisito não atendido: ${faltando.map((r) => r.label).join(", ")}`
                 : escolhida ? "Remover esta aptidão" : "Escolher esta aptidão"
@@ -9109,9 +9281,9 @@ function AptidaoCard({
             ? (
               <span
                 className="inline-flex items-center gap-0.5 text-[10px] font-medium whitespace-nowrap text-emerald-400 flex-shrink-0"
-                title={`Concedida pela ${concessao === "especializacao" ? "Especialização" : "origem"}`}
+                title={concessao.titulo}
               >
-                {concessao === "especializacao" ? "Especialização" : "Origem"}
+                {concessao.rotulo}
               </span>
             )
             : <RequisitoLista reqs={reqs} />}
@@ -10348,7 +10520,10 @@ function SimulacaoCombateCard({ derived, patchCombate, gatilhosTreino = [], onGa
   const aptidoes = derived.aptidoesEscolhidas ?? [];
   const linhas = [
     ...COMBATE_ESTADOS.filter((e) => {
-      const temDono = e.requerEscolha ? opcoes.includes(e.requerEscolha)
+      const temDono = e.requerEscolha
+        ? opcoes.includes(e.requerEscolha)
+          || (!!e.ouRequerApice && derived.altoNivel?.apiceId === e.ouRequerApice)
+        : e.requerApice ? derived.altoNivel?.apiceId === e.requerApice
         : e.requerTalento ? talentos.includes(e.requerTalento)
         : e.requerAptidao ? aptidoes.includes(e.requerAptidao)
         : temHabilidade(e.requerHabilidade);
@@ -10667,7 +10842,6 @@ function TabAptidoes({
   // 4) entram marcadas e travadas, e NÃO gastam orçamento: quem concede pelo
   // nome já pagou. Só o que a ficha escolheu à mão cobra vaga.
   const concedidas = derived.aptidoesConcedidas ?? [];
-  const concedidasPelaEspecializacao = new Set(derived.aptidoesConcedidasEspecializacao ?? []);
   const daFicha = Array.isArray(draft.aptidoesAmaldicoadas) ? draft.aptidoesAmaldicoadas : [];
   const vezesDe = (id) => daFicha.filter((x) => x === id).length;
   const gastasNaMao = daFicha.filter((id) => !concedidas.includes(id));
@@ -10697,12 +10871,31 @@ function TabAptidoes({
   };
 
   const [catTab, setCatTab] = useState("aura");
-  const abas = abasAptidao(draft);
+  const abasDaOrigem = abasAptidao(draft);
+  /* ⚠ A CATEGORIA QUE A ORIGEM NÃO ABRE, MAS QUE TEM APTIDÃO CONCEDIDA
+     (2026-09-12). A aba Maldição só existe para a Maldição, e um Addon pode dar
+     Armas Naturais a quem não é. Sem isto a Aptidão entrava na conta e ficava
+     invisível no criador, que é o "não computa" que o autor já achou uma vez.
+
+     A aba aparece listando SÓ as concedidas. Mostrar a categoria inteira
+     ofereceria à mão o que a origem não alcança. */
+  const idsDasAbas = new Set(abasDaOrigem.map((c) => c.id));
+  const categoriasSoConcedidas = new Set(
+    concedidas.map((id) => getAptidao(id)?.categoria).filter((cat) => cat && !idsDasAbas.has(cat)),
+  );
+  const abas = [
+    ...abasDaOrigem,
+    ...APTIDAO_CATEGORIAS.filter((c) => categoriasSoConcedidas.has(c.id)),
+  ];
   // Trocar a origem para/de Maldição troca uma aba de lugar. Se a aba
   // aberta sumiu, cai na primeira em vez de renderizar vazio.
   const catAtiva = abas.find((c) => c.id === catTab) ?? abas[0];
-  const listaAtiva = aptidoesDaCategoria(catAtiva.id);
-  const subgrupos = subgruposDaCategoria(catAtiva.id);   // null quando a categoria é plana
+  const soConcedidas = categoriasSoConcedidas.has(catAtiva.id);
+  const filtraConcedidas = (lista) => (soConcedidas ? lista.filter((a) => concedidas.includes(a.id)) : lista);
+  const listaAtiva = filtraConcedidas(aptidoesDaCategoria(catAtiva.id));
+  const subgrupos = subgruposDaCategoria(catAtiva.id)   // null quando a categoria é plana
+    ?.map((g) => ({ ...g, aptidoes: filtraConcedidas(g.aptidoes) }))
+    .filter((g) => g.aptidoes.length > 0) ?? null;
 
   return (
     <>
@@ -10843,7 +11036,7 @@ function TabAptidoes({
                         aptidao={ap}
                         escolhida={escolhidas.includes(ap.id)}
                         concedida={concedidas.includes(ap.id)}
-                        concessao={concedidasPelaEspecializacao.has(ap.id) ? "especializacao" : "origem"}
+                        concessao={fonteDaConcessao(ap.id, derived)}
                         vezes={vezes}
                         maxVezes={maxVezes}
                         ctx={ctx}
@@ -10873,7 +11066,7 @@ function TabAptidoes({
                   aptidao={ap}
                   escolhida={escolhidas.includes(ap.id)}
                   concedida={concedidas.includes(ap.id)}
-                  concessao={concedidasPelaEspecializacao.has(ap.id) ? "especializacao" : "origem"}
+                  concessao={fonteDaConcessao(ap.id, derived)}
                   vezes={vezes}
                   maxVezes={maxVezes}
                   ctx={ctx}
@@ -16099,7 +16292,13 @@ function AftyPreview({ draft, derived }) {
         </div>
 
         {/* Dano: uma linha por fonte, com o Acerto ao lado. É a mesma conta da
-            aba Habilidades, sem as propriedades e o alcance. */}
+            aba Habilidades, sem as propriedades e o alcance.
+
+            ⚠ OS DOIS NÚMEROS TÊM HOVER DE FONTES (autor, 2026-09-12), e por isso
+            a LINHA não é `group`: cada número é o próprio `relative group/<nome>`,
+            com o `aparecer` literal. Com a linha como `group`, passar o mouse em
+            qualquer ponto dela acenderia os dois painéis juntos. O `title` nativo
+            do Acerto saiu, porque ele abria por cima do painel. */}
         {linhasDano.length > 0 && (
           <div className="mt-4">
             <div className="text-[10px] uppercase tracking-wider text-slate-400 mb-1.5">Dano</div>
@@ -16108,11 +16307,35 @@ function AftyPreview({ draft, derived }) {
                 <div key={e.id} className="flex items-baseline gap-2 bg-slate-950/60 border border-slate-800 rounded-lg px-2.5 py-1.5">
                   <span className="flex-1 min-w-0 text-[11px] text-slate-300 truncate" title={e.nome}>{e.nome}</span>
                   {e.acerto != null && (
-                    <span className="font-mono text-[11px] tabular-nums text-slate-200 flex-shrink-0" title="Jogada de Ataque">
+                    <span
+                      className={`relative group/acerto font-mono text-[11px] tabular-nums text-slate-200 flex-shrink-0 ${
+                        e.partesAcerto?.length ? "cursor-help" : ""
+                      }`}
+                    >
                       {sinalDe(e.acerto)}
+                      {e.partesAcerto?.length > 0 && (
+                        <PainelDeFontes
+                          partes={e.partesAcerto}
+                          total={sinalDe(e.acerto)}
+                          aparecer="group-hover/acerto:block"
+                        />
+                      )}
                     </span>
                   )}
-                  <span className="font-mono text-[12px] font-bold tabular-nums text-white flex-shrink-0">{e.texto}</span>
+                  <span
+                    className={`relative group/dano font-mono text-[12px] font-bold tabular-nums text-white flex-shrink-0 ${
+                      e.partes?.length ? "cursor-help" : ""
+                    }`}
+                  >
+                    {e.texto}
+                    {e.partes?.length > 0 && (
+                      <PainelDeFontes
+                        partes={e.partes}
+                        total={e.totalFontes ?? e.total}
+                        aparecer="group-hover/dano:block"
+                      />
+                    )}
+                  </span>
                 </div>
               ))}
             </div>

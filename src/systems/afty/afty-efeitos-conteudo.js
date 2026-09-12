@@ -681,6 +681,26 @@ export const HABILIDADE_EFEITOS = {
     { canal: "danoBonus", alvo: "arma", expr: "2" },
   ],
 
+  // "você adiciona metade dos dados de dano de um ataque (mínimo 1 dado) à
+  // rolagem de dano do seu próximo ataque", uma vez por concentração. O estado
+  // `ataque_concentrado` diz quantas (0 a 3, ver afty-combate.js).
+  //
+  // ⚠ A METADE É DA PRÓPRIA LINHA, e por isso a expressão lê `dados_dano_final`:
+  // uma espada de 2d6 recebe +1d6 por vez, e uma de 1d12 recebe +1d12, porque o
+  // mínimo é 1 dado. A variável manda a linha para a passagem tardia, que entrega
+  // a quantidade ANTERIOR a este efeito, então três concentrações somam três
+  // metades do ataque, e não metade de uma bola que cresce.
+  //
+  // Duas linhas porque "Atacar" vale para as armas E para o Ataque Básico, e o
+  // alvo `arma` exclui o básico de propósito. Sem alvo, o dado vazaria para a
+  // linha de Feitiço, que também passa pela etapa tardia.
+  cmb_ataque_concentrado: [
+    { canal: "dadosDano", alvo: "arma", quando: "ataque_concentrado",
+      expr: "ataque_concentrado * max(1, piso(dados_dano_final / 2))", duracao: "temporaria" },
+    { canal: "dadosDano", alvo: "basico", quando: "ataque_concentrado",
+      expr: "ataque_concentrado * max(1, piso(dados_dano_final / 2))", duracao: "temporaria" },
+  ],
+
   // "antes da jogada de ataque, você pode escolher aumentar a margem de
   // Emperrar em 2 e, em troca, você causa 1 dado de dano adicional caso acerte."
   // Com Pistoleiro Avançado (8°) vai até 6, "causando 1 dado de dano adicional
@@ -1493,7 +1513,8 @@ export const ESCOLHA_EFEITOS = {
   cmb_postura_do_sol: [
     { canal: "bonusAcerto", quando: "em_postura_sol", expr: "2", duracao: "temporaria" },
     { canal: "dadosDano", quando: "em_postura_sol", expr: "1", duracao: "temporaria" },
-    { canal: "defesa", quando: "em_postura_sol", expr: "-4", duracao: "temporaria" },
+    { canal: "defesa", quando: "em_postura_sol && !invencivel_sob_osol",
+      expr: "-4", duracao: "temporaria" },
   ],
 
   // "você recebe +3 de Defesa [...] todos seus ataques recebem -4 para acertar
@@ -1504,7 +1525,8 @@ export const ESCOLHA_EFEITOS = {
   // Andar/Desengajar de graça e a redução por reação são procedimento de mesa.
   cmb_postura_da_lua: [
     { canal: "defesa", quando: "em_postura_lua", expr: "3", duracao: "temporaria" },
-    { canal: "bonusAcerto", quando: "em_postura_lua", expr: "-4", duracao: "temporaria" },
+    { canal: "bonusAcerto", quando: "em_postura_lua && !invencivel_sob_osol",
+      expr: "-4", duracao: "temporaria" },
   ],
 
   // "soma seu bônus de treinamento em rolagens de Fortitude e, no começo do seu
@@ -1800,7 +1822,37 @@ export const ESCOLHA_EFEITOS = {
 /* Ainda vazios: a passada de conteúdo é por catálogo, e o Lutador foi o
    primeiro. Ver docs/afty-efeitos-criatura.md. */
 
-export const APICE_EFEITOS = {};        // Habilidades Ápice (6)
+export const APICE_EFEITOS = {
+  api_invencivel_sob_o_sol: [
+    // `invencivelSobOSol` vira `invencivel_sob_osol` no varDoEstado: duas
+    // maiúsculas seguidas não abrem separador entre o artigo e o nome.
+    { canal: "defesa", quando: "invencivel_sob_osol", expr: "12", duracao: "temporaria" },
+    { canal: "bonusTR", quando: "invencivel_sob_osol", expr: "12", duracao: "temporaria" },
+    { canal: "margemCritico", quando: "invencivel_sob_osol", expr: "1", duracao: "temporaria" },
+    // O Ápice concede as oito posturas, inclusive as não aprendidas (autor,
+    // 2026-09-12). As partes numéricas de uma postura já ocupada por um dos
+    // dois espaços continuam com a fonte original e não são somadas de novo.
+    { canal: "bonusAcerto", quando: "apice_postura_sol && !em_postura_sol",
+      expr: "2", duracao: "temporaria" },
+    { canal: "dadosDano", quando: "apice_postura_sol && !em_postura_sol",
+      expr: "1", duracao: "temporaria" },
+    { canal: "defesa", quando: "apice_postura_lua && !em_postura_lua",
+      expr: "3", duracao: "temporaria" },
+    { canal: "bonusTR", alvo: "fortitude",
+      quando: "apice_postura_terra && !em_postura_terra",
+      expr: "maestria", duracao: "temporaria" },
+    { canal: "pvTemporario", quando: "apice_postura_terra && !em_postura_terra",
+      expr: "nd", duracao: "temporaria" },
+    { canal: "bonusAcerto", quando: "apice_postura_devastacao && !em_postura_devastacao && devastacao_pilha",
+      expr: "devastacao_pilha", duracao: "temporaria" },
+    { canal: "ignoraRD", quando: "apice_postura_devastacao && !em_postura_devastacao && devastacao_pilha",
+      expr: "2 * devastacao_pilha", duracao: "temporaria" },
+    { canal: "pontosPreparo", quando: "apice_postura_ceu && !em_postura_ceu",
+      expr: "2", duracao: "temporaria" },
+    { canal: "bonusPericia", quando: "apice_postura_ceu && !em_postura_ceu",
+      expr: "2", duracao: "temporaria" },
+  ],
+};
 
 /* ============================================================ */
 /* TALENTOS (51)                                                 */
@@ -2715,7 +2767,14 @@ export const APTIDAO_EFEITOS = {
   //
   // 1d8 → 1d10 no 5 → 1d12 no 9 → 2d10 no 13 → 2d12 no 17. Quatro subidas.
   mal_armas_naturais: [
-    { canal: "finezaAtaque", alvo: "corpo", expr: "1" },
+    /* ⚠ O ALVO É `basico`, e foi `corpo` até 2026-09-12. Em 2026-09-01 o canal
+       passou a ser lido pelo ESCOPO da linha (o Ataque Básico, o id da arma, as
+       propriedades e o grupo), e não mais pelo tipo de ataque. O Corpo Treinado
+       foi migrado naquele dia e esta linha não: ela seguia declarada, ninguém a
+       escutava, e nenhuma Maldição atacava com Destreza. Achado ao montar o
+       Addon das Faixas de Sif. A arma natural É o Ataque Básico, que é também
+       onde a escada logo abaixo mira. */
+    { canal: "finezaAtaque", alvo: "basico", expr: "1" },
     /* ⚠ Mesmo caso do Corpo Treinado: o `nome` é o que faz esta linha ser
        descontada na ficha de jogador. Ver ESCADAS_DESARMADO_NO_MOTOR. */
     { canal: "nivelDano", alvo: "basico", nome: "Armas Naturais (escada)",

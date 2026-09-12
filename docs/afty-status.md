@@ -121,6 +121,237 @@ Estado atual do sistema Afty (atualizado 2026-09-09). Leia junto com:
 
 ---
 
+## SESSÃO DE 2026-09-12 (parte 7): CRÍTICOS DAS ARMAS E INVENCÍVEL SOB O SOL
+
+A auditoria da ficha Minamoto no Flugel mostrou que as Faixas chegavam ao Ataque Básico com Potente,
+mas perdiam Destruidora: o dano excluía o grupo Pugilato da lista de armas e não passava o
+encantamento para a linha básica. A linha agora recebe as propriedades e o dado crítico do único
+item de Pugilato que a define. Destruidora acrescenta um dado apenas no crítico. Fatal troca o dado
+principal quando o tamanho listado é maior, não acrescenta nada quando é igual e acrescenta o dado
+listado quando o dado da arma o supera. Mortal acrescenta o dado listado no crítico. O leitor aceita
+`d10`, `1d10` e `10`, inclusive o formato `1d10` que sai da criação de armas.
+
+O autor definiu para Invencível sob o Sol que os efeitos positivos das **oito** posturas valem,
+inclusive as não aprendidas, e que os 4 PE são pagos ao ativar e a cada rodada seguinte. O estado
+na Ficha e no criador aplica +12 de Defesa, +12 em todos os TRs, reduz a margem crítica em 1 e
+aplica os números positivos de Sol, Lua, Terra, Devastação e Céu sem duplicar uma postura já ativa.
+As penalidades de Sol e Lua não valem durante o Ápice. O alcance de Céu dobra. A sessão cobra PE,
+soma 1 de Exaustão por rodada mantida, encerra após a quarta e reabastece os PV temporários de
+Terra no começo das rodadas seguintes. As imunidades a crítico inimigo e movimento forçado ficam
+marcadas no estado. Os efeitos que dependem de alvo, jogada inimiga ou escolha de rerrolagem ainda
+precisam de resolução na mesa e estão anotados em `docs/a-fazer.md`.
+
+O teste no navegador achou que o painel de Encontros desenhava a aba Buffs sem passar o escritor
+dos estados. A Ficha e o Encontro agora usam `alteraEstadoCombate` e `aplicaPatchCombate`, então
+o mesmo clique paga e liga o Ápice nos dois lugares. Começar o Encontro também liga o estado
+de combate da sessão, e Encerrar fecha o Ápice e acerta a Exaustão pendente.
+
+Validação: lint, build e asserts, mais `/Player`, `/Afty` e Encontros em 1440px e 390px. Os testes
+de crítico cobrem arma comum, Pugilato, item desequipado e as três relações entre o dado da arma
+e o dado de Fatal. Os de Ápice cobrem bônus, posturas não aprendidas, custos, quatro rodadas e
+encerramento. A árvore de `src/components/` permaneceu intacta.
+
+---
+
+## SESSÃO DE 2026-09-12 (parte 6): ATAQUE CONCENTRADO NO MOTOR
+
+Autor: *"programe a habilidade de combatente 'Ataque Concentrado'"* (Combatente 10°). Antes de começar
+o repositório estava 2 commits atrás (addons do GoliasK e a calculadora de Feitiço Passivo), com três
+arquivos em comum com o trabalho pendente. O pendente foi testado por cima do `origin/main` numa cópia
+separada, aplicou limpo e passou, e só então a árvore avançou (guardar, avançar, devolver).
+
+### As decisões, por pergunta
+
+| Pergunta | Resposta |
+|---|---|
+| Quantas vezes | *"Ataque (Cheio) + Ataque Extra (Concentrado) + Surto de Ação (Concentrado) + Ataque Extra (Concentrado)"*: **3 com Surto de Ação, 1 sem**. Ataque por ação bônus ou livre (Corpo Treinado, Lutador Superior) não conta |
+| Metade do Surto | **2 PE**, arredondado para baixo. A sequência custa 1, 3 e 4 PE |
+| Quem enxerga | **os dois sistemas** |
+
+### Como ficou
+
+- **Estado `ataqueConcentrado`** (faixa 0 a 3) em afty-combate.js. O teto sai de
+  `tetoAtaqueConcentrado`, UM leitor para o `max` da tela e para o teto que o `resolveCombate` apara.
+- ⚠ **Faixa sem teto no `resolveCombate` é aparada em zero, calada.** A primeira versão declarou só o
+  `max` do catálogo e não somava nada. O aviso já estava escrito no código desde o Conhecimento
+  Aplicado.
+- **Duas linhas de `dadosDano`** (alvo `arma` e alvo `basico`) com
+  `ataque_concentrado * max(1, piso(dados_dano_final / 2))`. A variável manda a linha para a passagem
+  TARDIA, que entrega os dados da própria linha antes deste efeito: a metade é do ataque, e três
+  concentrações somam três metades iguais. Sem alvo o dado vazaria para a linha de Feitiço.
+- **`custoPE` de estado pode ser função do valor.** A aba Buffs mostra 1, 3 e 4 PE conforme o número, e
+  deixou de imprimir um "0" solto quando a faixa está em zero.
+- `t-estados-organiza.mjs`: o catálogo foi de 58 para 59 estados.
+
+### Verificação
+
+`asserts/t-ataque-concentrado.mjs`, **21 asserts**: teto e custo, o `resolveCombate` aparando no mesmo
+teto, a metade em armas de 1, 2 e 3 dados nos dois sistemas, e a Bazuca no Combatente 20 (4 dados com o
+Autossuficiente) somando 2, 4 e 6, que é o caso que prova a metade de verdade. Mais Ataque Básico, sem a
+habilidade e fora de combate. Suíte inteira **80 arquivos, 4275 asserts**, eslint e `vite build` fecham.
+
+No navegador, Ficha Final de um Combatente 12 em `/Player`: a linha aparece na aba Buffs, em combate o
+contador vai de 0 a 3 e trava, o custo acompanha, e a Espada Grande vai de 1d12 para 4d12 na aba Ações.
+
+⚠ O resumo do delta da linha na aba Buffs lê o Ataque Básico ("Dados +3d3"), que é o comportamento de
+sempre daquele resumo. A arma recebe os dados dela.
+
+---
+
+## SESSÃO DE 2026-09-12 (parte 5): O ESTILO SE NOMEIA SOZINHO NO HOVER
+
+Autor, com a captura de "Repertório do Especialista (Estilo do Duelista)" num hover de fontes: *"Deixe
+só como 'Estilo Duelista' removendo o Repertorio do Especialista"*. Por pergunta: fica o **nome do
+livro**, "Estilo do Duelista", e vale para **os oito Estilos de Combate**.
+
+A regra "Pai (Opção)" do `coletarEfeitosDeEscolha` (2026-07-29) continua de pé, porque "Força" sozinho
+não diz de onde veio. A exceção é a opção marcada `nomeProprio`, e a marca mora no POOL
+(`ESTILOS_DE_COMBATE`), lida pelo pai: por isso o Talento Adepto de Combate, que empresta o mesmo pool,
+sai igual sem uma segunda marca. "Pináculo Físico (Força)" segue com o pai.
+
+Assert em `t-bases-lut-cmb.mjs` (+5): a marca nos oito, o nome pelo Repertório e pelo Adepto, a escolha
+sem marca com o pai, e o rótulo chegando no hover do Acerto e do Dano de uma espada duelando. Suíte
+inteira **78 arquivos, 4237 asserts**.
+
+---
+
+## SESSÃO DE 2026-09-12 (parte 4): HOVER NO DANO DO PREVIEW, E O PRECISA QUE NÃO SOMAVA NO JOGADOR
+
+Autor, com a captura da linha do Ataque Básico no Preview do criador: *"Coloca o Hover em cima do Dano
+e do Acerto. Para eu passar o mouse e ver as fontes"*. E logo depois, já usando o hover: *"Oq é isso na
+Ficha de Player? 'Grau de Ferramenta -2'"*.
+
+### O hover
+
+A linha de Dano do Preview tinha o Acerto com `title` nativo e o Dano sem nada. Os dois ganharam
+`PainelDeFontes`, cada número como o próprio `relative group/acerto` e `group/dano`, e a LINHA não é
+`group`: com ela como grupo, passar o mouse em qualquer ponto acenderia os dois painéis. O `title` saiu
+porque abria por cima do painel. Vale nos dois sistemas, porque o Preview é o mesmo.
+
+Medido no navegador em `/Player` 1280px e 400px e em `/Afty` 1280px: parado nenhum painel abre, o mouse
+no Acerto abre só o dele, no Dano só o dele, no nome nenhum, e os dois cabem na tela.
+
+### O −2
+
+⚠ **Era bug de NÚMERO, e o hover só o tornou visível.** O `acertoArma` da Ferramenta é o grau MAIS o
+encantamento Precisa. Na ficha de jogador o grau não dá Acerto (autor, 2026-08-31: *"Grau da Arma não
+fornece +Acerto ou +Dano para Jogador. Só fornece os Bônus de Encantamentos"*), e o derive zerava o
+campo INTEIRO, levando o Precisa junto. As `fontesAcerto` seguiam no hover, e o `acertoDe` monta a
+linha do grau como "total menos encantamentos": 0 − 2 = **"Grau da Ferramenta −2"**, ao lado de
+"Precisa +2". O comentário do código dizia que o encantamento continuava; a conta dizia que não.
+
+Consertado nos dois lugares (armas e Ataque Básico) com `acertoDosEncantamentos(fa)`. Arma de jogador
+com Precisa foi de Acerto 4 para 6, sem linha de grau. A criatura não mudou. Assert em `t-pugilato.mjs`
+(+10): para Faixas e Espada Curta no jogador, o Precisa soma 2, aparece com o nome, não há linha de
+grau nem negativa, e as parcelas do hover somam o total. Suíte inteira **78 arquivos, 4232 asserts**.
+
+---
+
+## SESSÃO DE 2026-09-12 (parte 3): FAIXAS DE SIF, E A APTIDÃO CONCEDIDA POR ADDON
+
+Autor: *"estou programando uma Faixa, e um dos efeitos da Habilidade Única (criada com o Narrador) é
+receber a Aptidão Amaldiçoada de Maldição 'Armas Naturais Aprimorada' mesmo sem ser uma Maldição.
+Faça um Addon para tal."*
+
+### As três decisões, por pergunta antes do código
+
+| Pergunta | Resposta |
+|---|---|
+| Quando vale | **só com as Faixas equipadas** |
+| O que conceder | **as duas**: Armas Naturais e Armas Naturais Aprimoradas |
+| Quem enxerga | **os dois sistemas** |
+
+⚠ **A segunda pergunta existiu porque o pedido era de uma Aptidão só.** A Aprimorada exige Armas
+Naturais no livro, e a escada dela SOMA com a da outra (na criatura) e a Fineza sai da outra. Conceder
+só a pedida entregaria uma arma natural aprimorada sem arma natural. É a lição do Estilo das Sombras:
+antes de liberar um recurso do raw, ler o que ele traz junto.
+
+⚠ **O nome do pacote é uma inferência.** O autor não disse o nome da Faixa, e "Faixas de Sif" é o
+primeiro item do Caderno de Forja que ele mandou na mesma data. Trocar é mudar `id` e `nome` no JSON.
+
+### O que nasceu
+
+- **O verbo `concedeAptidoes`** no pacote, com `enquantoEquipado` opcional. Ver a seção no
+  `afty-addons.md`. Entra no mesmo caixa das concessões da origem, da Especialização e da sessão.
+- **`itensEquipados(creature)`** em afty-equipamentos.js, lido cru no topo do derive, antes de a
+  lista de Aptidões fechar.
+- **`derived.aptidoesConcedidasAddon`**, com a fonte de cada uma.
+- **A aba de Aptidões do criador** mostra a categoria que a origem não abre quando há concedida nela,
+  listando só as concedidas. **O rótulo verde** diz a fonte de verdade, e não mais "Origem" para tudo
+  que não fosse da Especialização. **A Ficha Final** escreve "Faixas" na etiqueta.
+- **A aba Addons** resume o pacote como "2 Aptidões concedidas".
+
+### O conserto que veio junto
+
+⚠ **A Fineza das Armas Naturais estava morta desde 2026-09-01, para toda Maldição.** O canal
+`finezaAtaque` passou a ler o escopo da linha, o Corpo Treinado migrou para `basico`, e a linha da
+Armas Naturais ficou em `corpo`. Uma Maldição com Destreza 18 e Força 10 seguia atacando com Força. A
+opção "As duas" tinha sido oferecida ao autor dizendo que "entra a Fineza", e o assert provou que ela
+não entrava. Consertado para `basico`, com assert que varre toda linha de Fineza do livro e cobra que
+a varredura enxergue as três, para não passar vazia.
+
+### Verificação
+
+`asserts/t-aptidao-por-addon.mjs`, **37 asserts**: o pacote valida e o campo sobrevive ao normalizador,
+liga e desliga com o item nos dois sistemas, não gasta vaga, ignora o Nível, some no Restringido (Tipo
+na criatura, Especialização no jogador), não vaza para o vizinho sem addon, e o NÚMERO: jogador Nível 9
+com Ataque Básico 1d12 + 1d10 (os 2d10 da Aprimorada mais o +1 Nível do 8), criatura ND 9 com seis
+Níveis de Dano a mais, e a Destreza no golpe. Suíte inteira **78 arquivos, 4222 asserts**, eslint e
+`vite build` fecham.
+
+No navegador, `/Player` em 1280px, com duas fichas do mesmo pacote: a equipada ganha a aba Maldição com
+as duas Aptidões travadas e o rótulo "Faixas", o hover cita o pacote e o item, e a Ficha Final lista as
+duas com a etiqueta. A desequipada não tem aba Maldição. Sem erro de console e sem rolagem horizontal.
+
+---
+
+## SESSÃO DE 2026-09-12 (parte 2): O CADERNO DE FORJA VIROU LISTA DE ITENS
+
+Autor, com a captura do card escrito à mão em tópicos ("- Faixas de Sif", "- Uniforme"): *"melhore a
+anotação das coisas no Interludio de Forja. Ficou MUITO feio e pouco pratico só ser um bloco de
+texto"*.
+
+### As duas decisões, por pergunta antes do código
+
+| Pergunta | Resposta |
+|---|---|
+| O que cada item guarda | **Nome e Tipo** (as outras eram Só Nome, e Nome, Tipo e Nota) |
+| Vale para quem | **os dois sistemas**, como o card sempre foi |
+
+Continua **só anotação**. O Tipo é rótulo e não confere se o kit da ficha cria aquele tipo.
+
+### O que mudou
+
+- `forjas[].itens` deixou de ser texto e virou `[{ id: "fitm_...", nome, tipo }]`. O Tipo sai de
+  `FORJA_TIPOS` em `afty-forja.js`, os nove valores de `cria` dos kits, no singular.
+- ⚠ **A lista de tipos é CÓPIA do catálogo**, porque o módulo é folha e não pode importar
+  `afty-equipamentos.js`. O assert compara com a união dos `cria`, então kit novo com tipo novo faz o
+  assert falhar em vez de o seletor ficar sem a opção.
+- ⚠ **O caderno antigo não se perdeu.** Ficha com `itens` em texto é partida na LEITURA, um item por
+  linha, sem o marcador de tópico (`-`, `*`, `•`, travessão, `1.` e `1)`). Os ids desses itens saem
+  da posição (`fitm_txt_<forja>_<n>`), porque a conversão roda em todo render até a primeira edição e
+  id do relógio trocaria o campo no meio da digitação. A primeira edição grava a lista.
+- O card: cada forja ganhou "Forja N", o contador "N Itens" (a linha vazia não conta) e uma fileira
+  por item com ícone do tipo, nome, seletor e apagar. **Enter** cria o próximo item e leva o foco,
+  **Backspace** no nome vazio apaga a linha e volta para a de cima. "Nova Forja" já nasce com uma
+  linha. No telefone o seletor desce para baixo do nome, e o respiro entre itens cresce para o tipo
+  não parecer do item de baixo.
+- ⚠ O nome é um `<input>` próprio com as classes do `TextInput`, porque o foco precisa de `ref` e o
+  `TextInput` da 2.5.2 não repassa.
+
+### Verificação
+
+`asserts/t-forja.mjs` foi de 24 para **42**: itens, tipos contra o catálogo, a migração do texto com
+a captura do autor e a promessa de sempre (a ficha derivada não muda com forja anotada). Suíte
+inteira **77 arquivos, 4185 asserts**, eslint e `vite build` fecham.
+
+No navegador, `/Player` em 1280px e 400px, com uma ficha gravada no formato antigo: os três tópicos
+viraram três itens, o tipo troca o ícone, Enter e Backspace andam o foco, digitar com espaço funciona,
+"Nova Forja" cria a Forja 2 com uma linha, sem rolagem horizontal, e o Salvar grava a lista com nome e
+tipo. O único erro de console é o 404 do script do Vercel Analytics, que só existe no Vercel.
+
+---
+
 ## SESSÃO DE 2026-09-12: A FRONTEIRA ENTRE OS DOIS LIVROS (erro de produção)
 
 Autor, trazendo um erro que um usuário mandou do site: *"Ficha de Player / Grimorio Afty deu esse

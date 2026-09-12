@@ -641,6 +641,61 @@ contar. O card de Acessórios Únicos continua aparecendo para quem tem acessór
 para apagá-lo. Criar um novo pede a liberação. É a terceira porta do `feiticosRestritos`, aplicada ao
 item.
 
+### O campo `concedeAptidoes` (2026-09-12)
+
+O pacote pode **conceder Aptidões Amaldiçoadas pelo nome**, opcionalmente só enquanto um item está
+equipado. Nasceu das Faixas de Sif do autor (`addons/faixas-de-sif.json`): *"um dos efeitos da
+Habilidade Única (criada com o Narrador) é receber a Aptidão Amaldiçoada de Maldição 'Armas Naturais
+Aprimorada' mesmo sem ser uma Maldição."*
+
+```json
+{
+  "concedeAptidoes": [
+    {
+      "aptidoes": ["mal_armas_naturais", "mal_armas_naturais_aprimoradas"],
+      "enquantoEquipado": "arm_faixas"
+    }
+  ]
+}
+```
+
+O motor já concedia Aptidão pelo nome em três lugares (origem, Especialização e sessão do mestre), e
+a do Addon entra **no mesmo caixa**, com as mesmas regras: ignora o próprio pré-requisito, não gasta
+vaga, conta para o requisito de terceiros e some no Restringido. `enquantoEquipado` é o `refId` da
+entrada do inventário. Sem ele, a concessão vale enquanto o pacote estiver na ficha.
+
+As três decisões do autor, por pergunta:
+
+| Pergunta | Resposta |
+|---|---|
+| Quando vale | **só com o item equipado**, igual a todo efeito de Habilidade Única |
+| O que conceder | **Armas Naturais e Armas Naturais Aprimoradas**: a segunda exige a primeira, e as escadas somam |
+| Quem enxerga | **os dois sistemas** |
+
+⚠ **Não é `libera`.** Liberação é um id fixo do motor que destrava uma regra. Aqui o pacote diz QUAL
+Aptidão, que é substantivo, e por isso é campo com dado. O verbo mora em `aptidoesConcedidasPorAddon`
+(afty-addons.js), e o inventário chega por parâmetro (`itensEquipados`, afty-equipamentos.js), porque
+o catálogo de equipamento importa o registro e o contrário fecharia um ciclo.
+
+⚠ **Fica fora do Motor de efeitos**, pelo motivo da concessão da origem: a lista de Aptidões fecha
+antes do `coletarEfeitosAptidao`. Por isso o inventário é lido cru no topo do derive, muito antes do
+`resolveEquipamentos`.
+
+⚠ **Duas portas de tela que a concessão abriu.** A aba de Aptidões só mostra a categoria Maldição para
+a Maldição, e a Aptidão dada a quem não é entrava na conta e ficava invisível. A categoria agora
+aparece quando há concedida nela, listando **só as concedidas** (a categoria inteira ofereceria à mão
+o que a origem não alcança). E o rótulo verde da concedida era um `if` de dois ramos, que escrevia
+"Origem" em tudo que não fosse da Especialização. Agora ele diz a fonte, e na do Addon é o nome do
+item, com o hover citando o pacote.
+
+⚠ **O campo precisa estar no `normalizarPacote`.** A biblioteca grava o pacote normalizado, e campo
+que o normalizador não conhece some na instalação sem aviso.
+
+⚠ **Achado no caminho: a Fineza das Armas Naturais estava morta desde 2026-09-01.** O canal
+`finezaAtaque` passou a ser lido pelo escopo da linha naquele dia, o Corpo Treinado foi migrado para
+`basico` e a linha da Armas Naturais ficou em `corpo`, que ninguém escuta. Nenhuma Maldição atacava
+com Destreza. Consertada para `basico`, com assert varrendo toda linha de Fineza.
+
 ### O campo `permite`, e por que ele existe
 
 **As primitivas da fase 0 vivem no motor sempre, e aparecem na TELA só de quem pediu.** É o que o

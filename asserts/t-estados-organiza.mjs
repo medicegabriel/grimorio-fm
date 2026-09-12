@@ -58,10 +58,11 @@ t("vazio não quebra", familiaEParte(undefined), { familia: null, parte: "" });
 /* A convenção existe mesmo, e em quantidade: se um dia ela sumir do catálogo,
    este número cai e o cabeçalho de família deixa de valer a pena. */
 /* ⚠ 58 desde 2026-09-07, com o "Conhecimento Aplicado · PE Gasto" do Conjurador,
-   que entra na convenção pelo separador. */
-t("a convenção cobre 35 dos 58",
+   que entra na convenção pelo separador. 59 desde 2026-09-12, com o "Ataque
+   Concentrado" do Combatente, que NÃO entra: é uma linha só, sem família. */
+t("a convenção cobre 35 dos 60",
   COMBATE_ESTADOS.filter((e) => familiaEParte(e.label).familia).length, 35);
-t("e o catálogo tem 58 estados",  COMBATE_ESTADOS.length, 58);
+t("e o catálogo tem 60 estados",  COMBATE_ESTADOS.length, 60);
 
 /* ============================================================ */
 /* TODA FAIXA PRECISA DE TETO NO `resolveCombate`                */

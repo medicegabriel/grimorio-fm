@@ -1,0 +1,14 @@
+{
+  "id": "faixas-de-sif",
+  "nome": "Faixas de Sif",
+  "versao": "1.0.0",
+  "autor": "Afty",
+  "paraRaw": "afty",
+  "descricao": "Habilidade Única das Faixas, criada com o Narrador. Enquanto as Faixas estiverem equipadas, o portador recebe as Aptidões Amaldiçoadas de Maldição Armas Naturais e Armas Naturais Aprimoradas, mesmo sem ser uma Maldição. As duas entram como concedidas, sem gastar vaga e sem cobrar os pré-requisitos, e saem da ficha ao desequipar as Faixas. Os ataques com Faixas contam como desarmados, então é neles que o dano das Armas Naturais aparece.",
+  "concedeAptidoes": [
+    {
+      "aptidoes": ["mal_armas_naturais", "mal_armas_naturais_aprimoradas"],
+      "enquantoEquipado": "arm_faixas"
+    }
+  ]
+}

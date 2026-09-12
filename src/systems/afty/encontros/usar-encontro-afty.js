@@ -4,6 +4,7 @@ import { deriveAfty } from "../afty-derive";
 import { aplicarAddons, unirAddons, epocaAddons } from "../afty-addons";
 import {
   aparaSessao, proximaRodada, descansar, sessaoEmBranco, iniciaCombate, entradaDaGuarda,
+  aplicaPatchCombate,
 } from "../ficha/ficha-sessao";
 import {
   ENCONTRO_STATUS, LADO, criarCombatente, criarJogador, renumerarCopias,
@@ -294,7 +295,9 @@ const HANDLERS = {
   ENCERRAR: (s) => {
     if (!podeTransicionar(s.status, ENCONTRO_STATUS.FINALIZADO)) return s;
     return comLog(
-      { ...s, status: ENCONTRO_STATUS.FINALIZADO, ativoId: null },
+      { ...s, status: ENCONTRO_STATUS.FINALIZADO, ativoId: null,
+        combatentes: s.combatentes.map((c) => (c.sessao
+          ? { ...c, sessao: aplicaPatchCombate(c.sessao, { ativo: false }) } : c)) },
       [entradaDeLog({ rodada: s.rodada, tipo: LOG_TIPOS.RODADA, mensagem: "Combate encerrado." })],
     );
   },

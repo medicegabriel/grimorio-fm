@@ -642,7 +642,7 @@ export function resolveDano(creature, ctx = {}) {
 
   const facesDaPropriedade = (propriedades, id) => {
     const valor = propriedades.find((p) => p.id === id)?.valor;
-    const faces = Math.trunc(Number(String(valor ?? "").replace(/^d/i, "")));
+    const faces = Number(String(valor ?? "").match(/^(?:1d|d)?(\d+)$/i)?.[1]);
     return faces > 1 ? faces : 0;
   };
 
@@ -652,7 +652,7 @@ export function resolveDano(creature, ctx = {}) {
     const fatal = facesDaPropriedade(propriedades, "fatal");
     const mortal = facesDaPropriedade(propriedades, "mortal");
     if (fatal > base.faces) base.facesCritico = fatal;
-    else if (fatal) linha.gruposDano.push({
+    else if (fatal && base.faces > fatal) linha.gruposDano.push({
       nome: "Fatal", dados: 1, faces: fatal, fixo: 0,
       momento: "durante", multiplica: false, apenasCritico: true, entraRaioNegro: true,
     });
@@ -928,7 +928,8 @@ export function resolveDano(creature, ctx = {}) {
   const finezaDesarmado = canal("finezaAtaque", escoposBasico) > 0 || !!ctx.finezaBasico;
   const entradas = [
     // Desarmado não tem margem de crítico listada em lugar nenhum: é 20.
-    { id: "basico", nome: "Ataque Básico", fonte: "basico", alcance: alcanceDe(null), propriedades: [],
+    aplicaCriticoDaArma({ id: "basico", nome: "Ataque Básico", fonte: "basico", alcance: alcanceDe(null),
+      propriedades: ctx.propriedadesBasico ?? [],
       /* ⚠ O DADO DO DESARMADO CHEGA PRONTO do deriveAfty (`ctx.dadoBasico`), e
          não é decidido aqui: ele sai do Corpo Treinado, das Armas Naturais ou do
          1d3 padrão, que são leituras da FICHA e não do canal. Ver
@@ -944,6 +945,7 @@ export function resolveDano(creature, ctx = {}) {
       ...acertoDe("corpo", Math.max(0, Math.trunc(Number(ctx.acertoGrauBasico) || 0)),
         escoposBasico, ctx.fontesAcertoBasico ?? [], null,
         armaDecide ? !!ctx.treinadaBasico : null) },
+    ctx.propriedadesBasico ?? [], ctx.criticoExtraDadosBasico),
   ];
 
   for (const a of Array.isArray(ctx.armas) ? ctx.armas : []) {

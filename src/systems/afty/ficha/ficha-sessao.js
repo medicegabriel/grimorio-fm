@@ -845,7 +845,39 @@ export function proximaRodada(sessao, derived = null) {
     derived,
   );
   const comAdaptacao = avancarAdaptacoesNaRodada(comGuarda, derived, comGuarda.rodada);
-  return { sessao: avancaArmasTransformaveis(comAdaptacao, sessao.rodada === 0), expirou };
+  const comArmas = avancaArmasTransformaveis(comAdaptacao, sessao.rodada === 0);
+  return { sessao: avancaInvencivelSobOSol(comArmas, derived), expirou };
+}
+
+/** Fecha a rodada do Ápice, entrega a Exaustão e paga a próxima se continuar. */
+function avancaInvencivelSobOSol(sessao, derived) {
+  const combate = sessao.combate ?? {};
+  const exaustao = Math.max(0, inteiro(sessao.exaustao, 0))
+    + (combate.invencivelPendenteExaustao ? 1 : 0);
+  const encerrar = () => ({
+    ...sessao, exaustao,
+    combate: { ...combate, invencivelSobOSol: false,
+      invencivelRodadas: 0, invencivelPendenteExaustao: false },
+  });
+  if (!combate.ativo || !combate.invencivelSobOSol
+    || inteiro(combate.invencivelRodadas, 0) >= 4
+    || Math.max(0, inteiro(sessao.peAtual, 0)) + peTempTotal(sessao) < 4) {
+    return combate.invencivelPendenteExaustao || combate.invencivelSobOSol
+      ? encerrar() : sessao;
+  }
+  const pago = gastaPe(sessao, 4);
+  const pvTerra = Math.max(0, inteiro(derived?.nd, 0));
+  const fonteTerra = "Invencível sob o Sol · Postura da Terra";
+  return {
+    ...pago, exaustao,
+    pvTempFontes: pvTerra > 0
+      ? { ...(pago.pvTempFontes ?? {}),
+        [fonteTerra]: Math.max(pago.pvTempFontes?.[fonteTerra] ?? 0, pvTerra) }
+      : pago.pvTempFontes,
+    combate: { ...combate, invencivelSobOSol: true,
+      invencivelRodadas: Math.max(1, inteiro(combate.invencivelRodadas, 1)) + 1,
+      invencivelPendenteExaustao: true },
+  };
 }
 
 /**
@@ -854,7 +886,7 @@ export function proximaRodada(sessao, derived = null) {
  * do Treino de Controle de Energia só valeria a partir da segunda.
  */
 export function iniciaCombate(sessao, derived = null) {
-  sessao = avancaArmasTransformaveis(sessao, true);
+  sessao = avancaArmasTransformaveis(aplicaPatchCombate(sessao, { ativo: true }), true);
   if (!derived) return sessao;
   const comCena = aplicaPeTemporario(sessao, derived.peTemporario?.combate ?? []);
   // A Guarda entra junto: a primeira rodada já é rodada, e sem isto o mestre
@@ -885,6 +917,10 @@ export function descansar(sessao, derived) {
     pvTempFontes: {},
     // A casca de PE morre com a cena, então o descanso a zera junto com a de PV.
     peTempFontes: {},
+    exaustao: Math.max(0, inteiro(sessao.exaustao, 0))
+      + (sessao.combate?.invencivelPendenteExaustao ? 1 : 0),
+    combate: { ...(sessao.combate ?? {}), invencivelSobOSol: false,
+      invencivelRodadas: 0, invencivelPendenteExaustao: false },
     rodada: 0,
     // A Guarda volta a zero com a rodada: fora de combate não há guarda erguida,
     // e o próximo `iniciaCombate` (ou a saída da rodada 0) a reergue cheia.
@@ -942,6 +978,18 @@ export function alteraEstadoCombate(sessao, estado, valor) {
   if (!estado?.id) return sessao;
   const combate = sessao?.combate && typeof sessao.combate === "object" ? sessao.combate : {};
   const ativando = !!valor && !combate[estado.id];
+  if (estado.id === "invencivelSobOSol") {
+    if (ativando) {
+      if (!combate.ativo || Math.max(0, inteiro(sessao.peAtual, 0)) + peTempTotal(sessao) < 4) {
+        return sessao;
+      }
+      const pago = gastaPe(sessao, 4);
+      return { ...pago, combate: { ...combate, invencivelSobOSol: true,
+        invencivelRodadas: 1, invencivelPendenteExaustao: true } };
+    }
+    return { ...sessao, combate: { ...combate, invencivelSobOSol: false,
+      invencivelRodadas: 0 } };
+  }
   if (ativando && estado.umaVezPorRodada && estadoUsadoNestaRodada(sessao, estado.id)) {
     return sessao;
   }
@@ -951,6 +999,19 @@ export function alteraEstadoCombate(sessao, estado, valor) {
     usos: ativando && estado.umaVezPorRodada
       ? { ...(sessao.usos || {}), [chaveUsoEstado(estado.id)]: sessao.rodada }
       : sessao.usos,
+  };
+}
+
+/** A mudança de combate encerra o Ápice e cobra a Exaustão da rodada aberta. */
+export function aplicaPatchCombate(sessao, parcial) {
+  const combate = { ...(sessao?.combate ?? {}), ...parcial };
+  if (parcial?.ativo !== false) return { ...sessao, combate };
+  return {
+    ...sessao,
+    exaustao: Math.max(0, inteiro(sessao.exaustao, 0))
+      + (combate.invencivelPendenteExaustao ? 1 : 0),
+    combate: { ...combate, invencivelSobOSol: false,
+      invencivelRodadas: 0, invencivelPendenteExaustao: false },
   };
 }
 

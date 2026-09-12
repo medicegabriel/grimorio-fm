@@ -151,6 +151,30 @@ t("e o encantamento com o nome dele", rotulo(precisa, "Precisa"), 2);
 t("sem encantamento nao ha linha de Precisa", rotulo(soGrau, "Precisa"), null);
 t("e o grau leva o total", rotulo(soGrau, "Grau da Ferramenta"), 4);
 
+/* ⚠ NO JOGADOR O GRAU NÃO DÁ ACERTO, MAS O PRECISA DÁ (autor, 2026-08-31: "Grau
+   da Arma não fornece +Acerto ou +Dano para Jogador. Só fornece os Bônus de
+   Encantamentos"). Até 2026-09-12 o zero levava o encantamento junto: o total
+   ficava igual ao da arma sem Precisa, e o hover mostrava "Grau da Ferramenta
+   −2" ao lado de "Precisa +2". O autor achou pelo hover. */
+const doJogador = (itens) => {
+  const c = cria(itens);
+  c.rulesVersion = "player";
+  return c;
+};
+for (const [nome, ref, pega] of [
+  ["Faixas", "arm_faixas", basico],
+  ["Espada Curta", "arm_espada_curta", (c) => linhas(c).find((e) => e.id !== "basico")],
+]) {
+  const semEnc = pega(doJogador([it(ref, fa("primeiro"))]));
+  const comPrecisa = pega(doJogador([it(ref, fa("primeiro", ["enc_arma_precisa"]))]));
+  t(`jogador, ${nome}: o Precisa soma 2 no Acerto`, comPrecisa.acerto - semEnc.acerto, 2);
+  t(`jogador, ${nome}: e aparece com o nome dele`, rotulo(comPrecisa, "Precisa"), 2);
+  t(`jogador, ${nome}: sem linha de grau, nem negativa`, rotulo(comPrecisa, "Grau da Ferramenta"), null);
+  t(`jogador, ${nome}: sem encantamento, o grau não dá Acerto`, rotulo(semEnc, "Grau da Ferramenta"), null);
+  t(`jogador, ${nome}: e as parcelas somam o total`,
+    comPrecisa.partesAcerto.reduce((s, p) => s + (p.valor ?? 0), 0), comPrecisa.acerto);
+}
+
 /* ============================================================ */
 /* 6. FINEZA DO ITEM (conserto 4)                                */
 /* ============================================================ */
@@ -167,6 +191,68 @@ t("Corpo Treinado continua abrindo a Fineza sem item",
    Soco Inglês que veio junto não vale. */
 t("a Fineza vem do item que definiu o golpe",
   basico(cria([it("arm_faixas", fa("primeiro")), it("arm_soco_ingles")])).atributo, "forca");
+
+/* O crítico do item que define o golpe também deve chegar ao Ataque Básico.
+   Destruidora é encantamento das Faixas, enquanto Fatal e Mortal são
+   propriedades possíveis das armas de pugilato criadas pelo jogador. */
+const destruidora = basico(doJogador([it("arm_faixas", fa("especial", ["enc_arma_destruidora"]))]));
+t("Destruidora das Faixas cria dado apenas no critico",
+  destruidora.gruposDano.filter((g) => g.nome === "Destruidora")
+    .map((g) => [g.dados, g.faces, g.apenasCritico]),
+  [[1, destruidora.gruposDano[0].faces, true]]);
+t("Destruidora das Faixas entra na formula critica",
+  destruidora.formulaCritico.includes(`1d${destruidora.gruposDano[0].faces}`), true);
+t("Faixas guardadas nao concedem Destruidora",
+  basico(doJogador([it("arm_faixas", fa("especial", ["enc_arma_destruidora"]),
+    { equipado: false })])).gruposDano.some((g) => g.nome === "Destruidora"), false);
+const faixasDef = ARMAS.find((a) => a.id === "arm_faixas");
+const propsFaixas = faixasDef.props;
+try {
+  // O editor de arma própria guarda o tamanho como 1dN.
+  faixasDef.props = { ...propsFaixas, fatal: "1d12", mortal: "1d10" };
+  const pugilistaInicial = doJogador([it("arm_faixas")]);
+  pugilistaInicial.core.nd = 1;
+  pugilistaInicial.especializacoes = [{ id: "lutador", nivel: 1 }];
+  const criticoPugilato = basico(pugilistaInicial);
+  t("Fatal da arma de pugilato troca o dado do basico no critico",
+    criticoPugilato.gruposDano[0].facesCritico, 12);
+  t("Mortal da arma de pugilato soma dado ao basico no critico",
+    criticoPugilato.gruposDano.filter((g) => g.nome === "Mortal")
+      .map((g) => [g.faces, g.apenasCritico]), [[10, true]]);
+} finally {
+  faixasDef.props = propsFaixas;
+}
+
+const rapieira = (c) => linhas(c).find((e) => e.id === "arm_rapieira");
+const mortal = rapieira(doJogador([it("arm_rapieira")]));
+t("Mortal acrescenta dado critico do tamanho listado",
+  mortal.gruposDano.filter((g) => g.nome === "Mortal")
+    .map((g) => [g.dados, g.faces, g.apenasCritico]), [[1, 10, true]]);
+t("Mortal nao aparece na formula normal", mortal.formulaNormal.includes("1d10"), false);
+t("Mortal aparece na formula critica", mortal.formulaCritico.includes("1d10"), true);
+
+const katana = (c) => linhas(c).find((e) => e.id === "arm_katana");
+const fatal = katana(doJogador([it("arm_katana")]));
+t("Fatal troca o dado principal no critico quando maior",
+  fatal.gruposDano[0].facesCritico, 10);
+const katanaDef = ARMAS.find((a) => a.id === "arm_katana");
+const fatalOriginal = katanaDef.props.fatal;
+try {
+  katanaDef.props.fatal = "1d12";
+  t("Fatal aceita tamanho 1dN da criacao de armas",
+    katana(doJogador([it("arm_katana")])).gruposDano[0].facesCritico, 12);
+  katanaDef.props.fatal = `1d${fatal.gruposDano[0].faces}`;
+  const igual = katana(doJogador([it("arm_katana")]));
+  t("Fatal nao soma dado quando igual ao dado da arma",
+    igual.gruposDano.some((g) => g.nome === "Fatal"), false);
+  katanaDef.props.fatal = "1d4";
+  const menor = katana(doJogador([it("arm_katana")]));
+  t("Fatal acrescenta dado listado quando arma passa do tamanho",
+    menor.gruposDano.filter((g) => g.nome === "Fatal")
+      .map((g) => [g.dados, g.faces, g.apenasCritico]), [[1, 4, true]]);
+} finally {
+  katanaDef.props.fatal = fatalOriginal;
+}
 
 /* ============================================================ */
 /* 7. O QUE NÃO MUDOU                                            */

@@ -20,7 +20,7 @@ import {
   aplicaDano, aplicaCura, pagaCustoVida, proximaRodada, descansar, registraRolagem,
   peTempTotal, gastaPe, pvTempTotal,
   entradaDaGuarda, sofreGolpeNaGuarda, desfazGolpeNaGuarda, encerraGuarda, defineCondicoes,
-  alteraEstadoCombate, consomeEstadoCombate, registraFeiticoDano,
+  alteraEstadoCombate, aplicaPatchCombate, consomeEstadoCombate, registraFeiticoDano,
   alteraTreinoAtivo,
   configuraRitual, usosRitualista,
   ritualEmAndamento,
@@ -556,7 +556,7 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
         derived={derived}
         sessao={sessao}
         deltaPorEstado={deltaPorEstado}
-        onPatchCombate={(parcial) => atualiza((s) => ({ ...s, combate: { ...s.combate, ...parcial } }))}
+        onPatchCombate={(parcial) => atualiza((s) => aplicaPatchCombate(s, parcial))}
         onEstado={alteraEstado}
         onBuffs={(buffs) => atualiza((s) => ({ ...s, buffs }))}
         /* ⚠ PASSA PELO `defineCondicoes`, e não escreve o campo cru: oito
