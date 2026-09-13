@@ -274,40 +274,31 @@ export const ESTADOS_COMIDAS = [
     label: "Refeições consumidas",
     tipo: "multi",
     maxSelecionados: 7,
-    title: "As refeições das Ferramentas de Cozinheiro que ESTA criatura consumiu. Produzir cada uma exige Ofício (Cozinheiro) CD 15 (+5 por benefício adicional). Duram até o próximo descanso longo. Ligue 'Em Combate' na bancada para os efeitos entrarem. Escolha também o Grau do cozinheiro (vale para todas as refeições).",
+    title: "As refeições das Ferramentas de Cozinheiro que ESTA criatura consumiu. Produzir cada uma exige Ofício (Cozinheiro) CD 15 (+5 por benefício adicional). Duram até o próximo descanso longo. Ligue 'Em Combate' na bancada para os efeitos entrarem. Informe também o Nível de Maestria do cozinheiro (vale para todas as refeições).",
     opcoes: [
-      { id: "energetica", label: "Energética", title: "Concede energia amaldiçoada temporária igual ao Bônus de Treinamento do cozinheiro. — Ligado pelo motor (informe o BT do cozinheiro)." },
-      { id: "leve", label: "Leve", title: "Aumento no Deslocamento de 3 m para cada grau do cozinheiro: 3 (quarto), 6 (terceiro), 9 (segundo), 12 (primeiro), 15 (especial). — Ligado pelo motor (informe o Grau)." },
-      { id: "nutritiva", label: "Nutritiva", title: "+2 em um número de Testes de Resistência igual à metade do Bônus de Treinamento do cozinheiro. — REFERÊNCIA: é limitada por número de usos, o motor não aplica; controle na mesa." },
+      { id: "energetica", label: "Energética", title: "Concede energia amaldiçoada temporária igual ao Nível de Maestria do cozinheiro. — Ligado pelo motor." },
+      { id: "leve", label: "Leve", title: "Aumento no Deslocamento de 3 m por Nível de Maestria do cozinheiro. — Ligado pelo motor." },
+      { id: "nutritiva", label: "Nutritiva", title: "+2 em um número de Testes de Resistência igual à metade do Nível de Maestria do cozinheiro. — REFERÊNCIA: é limitada por número de usos, o motor não aplica; controle na mesa." },
       { id: "picante", label: "Picante", title: "+2 em jogadas de ataque. — Ligado pelo motor." },
       { id: "reforcada", label: "Reforçada", title: "+2 na Defesa. — Ligado pelo motor." },
       { id: "refrescante", label: "Refrescante", title: "Permite realizar um teste com vantagem; depois disso o benefício se encerra. — REFERÊNCIA: vantagem pontual, aplicada na mesa." },
-      { id: "revigorante", label: "Revigorante", title: "5 pontos de vida temporários para cada grau do cozinheiro: 5 (quarto), 10 (terceiro), 15 (segundo), 20 (primeiro), 25 (especial). — Ligado pelo motor (informe o Grau)." },
+      { id: "revigorante", label: "Revigorante", title: "5 pontos de vida temporários por Nível de Maestria do cozinheiro. — Ligado pelo motor." },
     ],
   },
-  {
-    id: "comidas_grau",
-    label: "Comidas · Grau do cozinheiro",
-    tipo: "opcao",
-    requerEstado: "comidas_refeicoes",
-    title: "O grau do cozinheiro que preparou as refeições. Vale para TODAS. Usado pela Leve (Deslocamento) e pela Revigorante (PV temporário).",
-    opcoes: [
-      { id: "quarto", label: "4º", title: "Quarto grau. Leve: +3 m. Revigorante: 5 PV temporários." },
-      { id: "terceiro", label: "3º", title: "Terceiro grau. Leve: +6 m. Revigorante: 10 PV temporários." },
-      { id: "segundo", label: "2º", title: "Segundo grau. Leve: +9 m. Revigorante: 15 PV temporários." },
-      { id: "primeiro", label: "1º", title: "Primeiro grau. Leve: +12 m. Revigorante: 20 PV temporários." },
-      { id: "especial", label: "Especial", title: "Grau especial. Leve: +15 m. Revigorante: 25 PV temporários." },
-    ],
-  },
+  /* ⚠ O "Grau do cozinheiro" (quarto/terceiro/.../especial) foi retirado em
+     2026-09-13, a pedido do autor: um seletor a menos na bancada, e Leve /
+     Revigorante passam a escalar só com este Nível de Maestria (mesma
+     variável que já alimentava a Energética), em vez de uma tabela de 5
+     graus. Simplifica o clique e o cálculo. */
   {
     id: "comidas_bt",
-    label: "Comidas · Bônus de Treino do cozinheiro",
+    label: "Comidas · Nível de Maestria do cozinheiro",
     tipo: "faixa",
     requerEstado: "comidas_refeicoes",
     min: 0,
     max: 10,
     passo: 1,
-    title: "Bônus de Treinamento do cozinheiro. A refeição Energética concede este valor em PE temporário na cena. (A Nutritiva usa a metade disto como número de TRs, controlado na mesa.)",
+    title: "Nível de Maestria (Bônus de Treinamento) do cozinheiro. Energética concede este valor em PE temporário na cena; Leve soma 3 m de Deslocamento por ponto; Revigorante soma 5 PV temporários por ponto. (A Nutritiva usa a metade disto como número de TRs, controlado na mesa.)",
   },
 ];
 
@@ -318,13 +309,15 @@ export const FUNCIONAMENTO_COMIDAS = {
   efeitos: [
     { canal: "defesa", duracao: "temporaria", expr: "2 * comidas_refeicoes_reforcada" },
     { canal: "bonusAcerto", duracao: "temporaria", expr: "2 * comidas_refeicoes_picante" },
+    // 3 m / 5 PV por ponto de Nível de Maestria, no lugar da tabela de 5
+    // graus (retirada em 2026-09-13 — ver o aviso em ESTADOS_COMIDAS).
     {
       canal: "movimento", duracao: "temporaria",
-      expr: "comidas_refeicoes_leve * (3*comidas_grau_quarto + 6*comidas_grau_terceiro + 9*comidas_grau_segundo + 12*comidas_grau_primeiro + 15*comidas_grau_especial)",
+      expr: "comidas_refeicoes_leve * 3 * comidas_bt",
     },
     {
       canal: "pvTemporario", duracao: "temporaria",
-      expr: "comidas_refeicoes_revigorante * (5*comidas_grau_quarto + 10*comidas_grau_terceiro + 15*comidas_grau_segundo + 20*comidas_grau_primeiro + 25*comidas_grau_especial)",
+      expr: "comidas_refeicoes_revigorante * 5 * comidas_bt",
     },
     {
       canal: "peTemporario", alvo: "combate", duracao: "temporaria",

@@ -519,7 +519,10 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
     ),
     habilidades: () => (
       <AbaHabilidades
-        funcionamentos={funcionamentosComNativos(ficha)}
+        // Os 3 nativos (Aliados, Alma, Comidas) saíram desta lista em
+        // 2026-09-13: eles agora têm cartão próprio na aba Buffs, junto dos
+        // controles que os alimentam (ver AbaBuffs.jsx, CartaoNativo).
+        funcionamentos={funcionamentosComNativos(ficha).filter((f) => !f.nativo)}
         itens={itens}
         abertos={abertos}
         onAberto={alternaItem}

@@ -384,7 +384,9 @@ export default function PainelDeCombatente({
       )}
       {aba === "habilidades" && (
         <AbaHabilidades
-          funcionamentos={funcionamentosComNativos(combatente.ficha)}
+          // Nativos (Aliados, Alma, Comidas) saíram daqui em 2026-09-13 — ver
+          // o mesmo comentário em AftyFicha.jsx. Aparecem na aba Buffs.
+          funcionamentos={funcionamentosComNativos(combatente.ficha).filter((f) => !f.nativo)}
           itens={itens}
           abertos={abertos}
           onAberto={alternaItem}

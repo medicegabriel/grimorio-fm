@@ -95,15 +95,34 @@ t("Fora de combate a Alma continua penalizando (não depende de 'Em Combate')",
   deriveAfty({ ...base, combate: { ativo: false } }, { almaAtual: 10 }).testes.ataques.find((a) => a.id === "amaldicoado").bonus,
   almaCritica.testes.ataques.find((a) => a.id === "amaldicoado").bonus);
 
-// 8) Comidas: Reforçada +2 Defesa, Revigorante escala com o Grau.
+// 8) Comidas: Reforçada +2 Defesa. Leve e Revigorante escalam com o Nível de
+//    Maestria (comidas_bt) — o "Grau do cozinheiro" foi retirado em
+//    2026-09-13, um seletor a menos na bancada.
 const comComidaReforcada = deriveAfty({
   ...base, combate: { ativo: true, comidas_refeicoes: ["reforcada"] },
 });
 t("Refeição Reforçada dá +2 de Defesa", comComidaReforcada.defesa - dentroSemNada.defesa, 2);
-const comRevigoranteQuarto = deriveAfty({
-  ...base, combate: { ativo: true, comidas_refeicoes: ["revigorante"], comidas_grau: "quarto" },
-}).pvTemporario ?? null;
+const comRevigoranteBt4 = deriveAfty({
+  ...base, combate: { ativo: true, comidas_refeicoes: ["revigorante"], comidas_bt: 4 },
+});
+t("Revigorante com Maestria 4 dá 20 PV temporários (5 por ponto)",
+  comRevigoranteBt4.pvTemporario, 20);
+const comLeveBt3 = deriveAfty({
+  ...base, combate: { ativo: true, comidas_refeicoes: ["leve"], comidas_bt: 3 },
+});
+t("Leve com Maestria 3 dá +9 de Deslocamento (3 por ponto)",
+  comLeveBt3.movimento - dentroSemNada.movimento, 9);
+
+// 9) OS 3 NATIVOS SAÍRAM DO POOL `funcionamentoBasico` em 2026-09-13: uma
+//    Técnica principal e o Aliado Protetor agora SOMAM na Defesa, em vez de
+//    só o maior contar (que era o comportamento antigo do pool exclusivo).
+const comTecnicaEDoisAliados = deriveAfty({
+  ...base,
+  core: { ...base.core, tecnicaEfeitos: [{ canal: "defesa", expr: "5" }] },
+  combate: { ativo: true, aliados_protetor: "mestre" },
+});
+t("Técnica (+5) e Aliado Protetor Mestre (+3) SOMAM na Defesa (8), não competem mais",
+  comTecnicaEDoisAliados.defesa - dentroSemNada.defesa, 8);
 
 console.log(bad.length ? `FALHAS (${bad.length}):\n` + bad.join("\n") : `TODOS OS ${ok} ASSERTS PASSARAM`);
-console.log("pvTemporario (Revigorante, grau 4º):", comRevigoranteQuarto);
 process.exitCode = bad.length ? 1 : 0;
