@@ -222,14 +222,14 @@ t("compra de família desconhecida vira linha morta, e o gasto fica",
 t("e ela avisa, em vez de sumir calada",
   morta.catarse.avisos.some((a) => a.includes("família conhecida")), true);
 
-/* O canal `vagasHabilidade` deixou de ter pendência em 2026-09-12: o
-   `contadorComum` da aba Habilidades passou a somá-lo (docs/a-fazer.md).
-   Comprar por esta família não deve mais gerar aviso de "contador". */
-t("a família de Habilidade não carrega mais pendência de canal",
-  C.getCatarseFamilia("habilidades").canalComPendencia, undefined);
-t("e a Loja não avisa mais nada sobre contador ao comprar por ela",
+/* A pendência conhecida do `vagasHabilidade` é DECLARADA, e não escondida: o
+   canal existe, a compra funciona, e o contador da aba Habilidades ainda não o
+   soma (ver docs/a-fazer.md, entrada de 2026-08-20). */
+t("a família de Habilidade declara a pendência do canal",
+  typeof C.getCatarseFamilia("habilidades").canalComPendencia, "string");
+t("e a Loja avisa quando alguém compra por ele",
   ficha({ compras: [{ id: "h", familia: "habilidades", custo: 3 }] })
-    .catarse.avisos.some((a) => a.includes("contador")), false);
+    .catarse.avisos.some((a) => a.includes("contador")), true);
 
 /* ============================================================ */
 /* 6. FICHA SEM A LOJA NÃO MUDA UM NÚMERO                        */

@@ -2036,12 +2036,7 @@ export function deriveAfty(creature, opcoes = {}) {
   // Arredonda para baixo, como todo o resto do Afty.
   const contadorBase = contadorHabilidades(bt, patamar);
   const fatorSlots = fatorSlotsHabilidade(creature);
-  /* `habilidades.comum` (afty-habilidades.js) e este contador são o MESMO
-     orçamento (decisão do autor, docs/a-fazer.md): antes o canal
-     `vagasHabilidade` só chegava em `derived.habilidades`, que nenhuma tela lê,
-     e Especialização/Treinamento para Habilidade gastavam vaga sem conceder
-     nenhuma de volta. */
-  const contadorComum = Math.floor(contadorBase * fatorSlots) + habilidades.comum;
+  const contadorComum = Math.floor(contadorBase * fatorSlots);
   // As fontes do contador, para o hover poder dizer de onde o número veio. Sem
   // isso o Gêmeo vê metade das vagas e nada explicando.
   const partesContador = [
@@ -2051,9 +2046,6 @@ export function deriveAfty(creature, opcoes = {}) {
         label: creature?.core?.origem?.irmaoMorto ? "Gêmeos: irmão morto" : "Gêmeos: irmão vivo",
         texto: `× ${String(fatorSlots).replace(".", ",")}`,
       }]
-      : []),
-    ...(habilidades.comum > 0
-      ? [{ label: "Motor de Automação", valor: habilidades.comum }]
       : []),
   ];
   // Vagas EXCLUSIVAS de Feitiço (autor, 2026-07-28): "Você fornece um Slot de
