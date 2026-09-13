@@ -1,37 +1,12 @@
 /**
- * ============================================================
- * EXTRAS NATIVOS DA BANCADA — Aliados, Alma e Comidas
- * ============================================================
- * Três controles que TODA criatura tem disponível, sem precisar instalar
- * addon nenhum: o aliado que acompanha, as refeições das Ferramentas de
- * Cozinheiro, e a penalidade automática dos Estados da Alma. Nasceram como
- * addons (Templas) e foram trazidos para o núcleo do sistema em 2026-09-12.
+ * Recursos nativos de Buffs: Aliado, Estados da Alma e Comidas.
  *
- * ⚠ POR QUE NÃO ENTRAM EM `COMBATE_ESTADOS` (afty-combate.js): aquele
- * catálogo exige um DONO — `requerHabilidade`/`requerTalento`/`requerAptidao`/
- * `requerEscolha` — porque cada linha representa algo que a CRIATURA tem. Os
- * três controles daqui representam coisas de FORA da criatura (um
- * companheiro, uma refeição, o estado da própria alma), então não têm esse
- * portão natural — exatamente a mesma razão pela qual os estados de addon
- * entram por `estadosExtras` em vez do catálogo (ver o comentário em
- * AftyCreatureBuilder.jsx, `SimulacaoCombateCard`). Aqui é o mesmo mecanismo,
- * só que embutido no código em vez de vir de um pacote instalável.
+ * Os controles ficam em estadosExtras. Aliado e Comidas entregam efeitos
+ * pelo coletor de Buffs nativos. A penalidade da Alma é calculada depois
+ * que o máximo de Integridade da Alma estiver definido.
  *
- * Cada id já sai com o prefixo (`aliados_`, `comidas_`, `alma_`) embutido,
- * então a variável do DSL (`varDoEstado`/`normalizarVariavel`) bate
- * exatamente com o que os addons antigos produziam via `comPrefixo` — as
- * fórmulas puderam ser portadas sem reescrever nome de variável nenhuma.
- *
- * ⚠ `funcionamentosDaFicha` (afty-schema.js) NÃO importa este arquivo: ele é
- * uma FOLHA travada por asserts/t-ordem-modulos.mjs (zero imports, carrega
- * sozinho — é o que evitou a tela branca de 2026-09-02). Por isso os três
- * `funcionamentos` nativos entram por FORA, através de
- * `funcionamentosComNativos` abaixo, que cada consumidor real chama no lugar
- * da função crua: `efeitosDaTecnica` (afty-efeitos.js, onde o bônus realmente
- * se aplica) e as três telas que listam Funcionamentos Básicos
- * (AftyCreatureBuilder.jsx, AftyFicha.jsx, PainelDeCombatente.jsx).
+ * Os ids permanecem estáveis para preservar fichas e estados já salvos.
  */
-import { funcionamentosDaFicha } from "./afty-schema";
 
 const PERICIAS_IDS = [
   "acrobacia", "atletismo", "direcao", "enganacao", "feiticaria", "furtividade",
@@ -189,7 +164,7 @@ const golpeDados = (golpeVar, graduacaoVar, dado, qtd) => ({
   expr: String(qtd),
 });
 
-export const FUNCIONAMENTO_ALIADOS = {
+export const RECURSO_BUFF_ALIADOS = {
   id: "aliados_bancada",
   nome: "Aliado (bancada)",
   descricao: "Bônus do aliado conforme os controles da bancada. Só vale com 'Em Combate' ligado.",
@@ -245,25 +220,28 @@ export const ESTADOS_ALMA = [
   },
 ];
 
-export const FUNCIONAMENTO_ALMA = {
+export const RECURSO_BUFF_ALMA = {
   id: "alma_estados_automatico",
   nome: "Estados da Alma (automático)",
-  descricao: "-3/-6/-8 em Perícia, Teste de Resistência e Acerto conforme a Integridade da Alma corrente cai abaixo de 75% / 50% / 25%. Lê alma_atual direto — não precisa de interruptor, e vale dentro e fora de combate.",
-  efeitos: [
-    {
-      canal: "bonusPericia", duracao: "temporaria",
-      expr: "-8*(alma_atual < 25) - 6*(alma_atual >= 25 && alma_atual < 50) - 3*(alma_atual >= 50 && alma_atual < 75)",
-    },
-    {
-      canal: "bonusTR", duracao: "temporaria",
-      expr: "-8*(alma_atual < 25) - 6*(alma_atual >= 25 && alma_atual < 50) - 3*(alma_atual >= 50 && alma_atual < 75)",
-    },
-    {
-      canal: "bonusAcerto", duracao: "temporaria",
-      expr: "-8*(alma_atual < 25) - 6*(alma_atual >= 25 && alma_atual < 50) - 3*(alma_atual >= 50 && alma_atual < 75)",
-    },
-  ],
+  descricao: "-3/-6/-8 em Perícia, Teste de Resistência e Acerto quando a Integridade da Alma corrente cai abaixo de 75% / 50% / 25% do máximo. Não precisa de interruptor e vale dentro e fora de combate.",
+  // O máximo do Player é o PV e só fecha depois dos efeitos da técnica.
+  // A penalidade entra no derive após esse cálculo, em efeitosDaAlmaAtual.
+  efeitos: [],
 };
+
+/** Efeitos da Alma calculados sobre a fração corrente do máximo da ficha. */
+export function efeitosDaAlmaAtual(atual, maximo) {
+  const total = Number(maximo);
+  if (!Number.isFinite(total) || total <= 0) return [];
+  const corrente = atual == null ? total : Math.max(0, Number(atual) || 0);
+  const fracao = corrente / total;
+  const penalidade = fracao < 0.25 ? -8 : fracao < 0.5 ? -6 : fracao < 0.75 ? -3 : 0;
+  if (!penalidade) return [];
+  return ["bonusPericia", "bonusTR", "bonusAcerto"].map((canal) => ({
+    canal, duracao: "temporaria", expr: String(penalidade),
+    origem: "buff:" + RECURSO_BUFF_ALMA.id, nome: RECURSO_BUFF_ALMA.nome,
+  }));
+}
 
 /* ============================================================ */
 /* COMIDAS — Ferramentas de Cozinheiro                           */
@@ -302,7 +280,7 @@ export const ESTADOS_COMIDAS = [
   },
 ];
 
-export const FUNCIONAMENTO_COMIDAS = {
+export const RECURSO_BUFF_COMIDAS = {
   id: "comidas_bancada",
   nome: "Comidas (bancada)",
   descricao: "Bônus das refeições conforme os controles da bancada. Só vale com 'Em Combate' ligado.",
@@ -326,19 +304,8 @@ export const FUNCIONAMENTO_COMIDAS = {
   ],
 };
 
-/** Concatenação pronta para entrar em `estadosExtras` no deriveAfty. */
+/** Controles nativos da bancada, usados como estadosExtras. */
 export const ESTADOS_NATIVOS_EXTRAS = [...ESTADOS_ALIADOS, ...ESTADOS_ALMA, ...ESTADOS_COMIDAS];
 
-/** Concatenação pronta para entrar em `funcionamentosDaFicha`, com `nativo: true`
- * (mesma renderização somente-leitura do `deAddon`, sem chamar de addon). */
-export const FUNCIONAMENTOS_NATIVOS = [FUNCIONAMENTO_ALIADOS, FUNCIONAMENTO_ALMA, FUNCIONAMENTO_COMIDAS]
-  .map((f) => ({ ...f, principal: false, nativo: true }));
-
-/**
- * `funcionamentosDaFicha` + os 3 nativos. É esta função que todo consumidor
- * REAL deve chamar (não a crua de afty-schema.js) — ver o aviso no topo do
- * arquivo sobre por que os dois não se fundem lá dentro.
- */
-export function funcionamentosComNativos(creature) {
-  return [...funcionamentosDaFicha(creature), ...FUNCIONAMENTOS_NATIVOS];
-}
+/** Recursos exibidos na área de Buffs, sem integrar Funcionamento Básico. */
+export const RECURSOS_BUFF_NATIVOS = [RECURSO_BUFF_ALIADOS, RECURSO_BUFF_ALMA, RECURSO_BUFF_COMIDAS];

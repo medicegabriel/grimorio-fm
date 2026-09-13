@@ -1,6 +1,6 @@
 # Azamaru
 
-Pacote em **`addons/azamaru.json`**, sem import no bundle. Instalá-lo em Cálculos > Addons, ativar
+Pacote em **`addons/azamaru.json`**, sem import no bundle. Instalá-lo em Outros > Addons, ativar
 na ficha e adicionar Azamaru no catálogo de armas. A arma ocupa uma única entrada de inventário.
 
 ⚠ **O pacote MUDOU DE LUGAR em 2026-09-07**, junto com este doc e com o assert. Ele nasceu em

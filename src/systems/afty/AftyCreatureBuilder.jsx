@@ -13,11 +13,9 @@ import { aplicarAddons, modelosPendentesDeAddon, nivelDaFicha } from "./afty-add
 import {
   mesclaFichaAfty, AFTY_ATTRS, AFTY_TIPOS, AFTY_PATAMARES, AFTY_QNT_PE,
   AFTY_TECNICA_ATTRS, AFTY_TAMANHOS, AFTY_RESISTENCIAS, getTamanho,
-  createBlankFuncionamento, nomeParaGravar,
+  createBlankFuncionamento, nomeParaGravar, funcionamentosDaFicha,
 } from "./afty-schema";
-// Inclui os 3 Funcionamentos nativos (Aliados, Alma, Comidas) por cima da
-// leitura crua da ficha — ver o aviso em afty-extras-nativos.js.
-import { funcionamentosComNativos, FUNCIONAMENTOS_NATIVOS } from "./afty-extras-nativos";
+import { RECURSOS_BUFF_NATIVOS } from "./afty-extras-nativos";
 // Primitivos compartilhados com a Ficha Final. Eram locais deste arquivo até
 // 2026-08-05, e saíram porque duas cópias divergiriam na primeira errata.
 import { PainelDeFontes, ValorComFontes } from "./ui/fontes";
@@ -198,39 +196,21 @@ const TABS = [
   { id: "aptidoes",      label: "Aptidões" },
   { id: "invocacoes",    label: "Invocações" },
   { id: "equipamentos",  label: "Equipamentos" },
-  /* ⚠ O ID CONTINUA `defesas`, e o rótulo virou "Resistências" (autor,
-     2026-09-05). O id é interno e amarra três coisas que NÃO foram renomeadas
-     junto: `AftyTabDefesas.jsx`, `afty-defesas-dano.js` e, principalmente, o
-     campo `creature.defesasDano`, que está gravado em ficha. Renomear o campo
-     pediria migração de ficha salva para não perder Imunidade, Resistência,
-     Vulnerabilidade e RD de quem já preencheu, e isso não é o que se pede
-     quando se pede um nome novo na aba.
-
-     ⚠ Não confundir com os TESTES DE RESISTÊNCIA da aba Perícias, que são outra
-     coisa (Reflexos, Fortitude, Vontade, Astúcia, Integridade). Esta aba é
-     Imunidade, Resistência, Vulnerabilidade e RD por tipo de dano. */
-  { id: "defesas",       label: "Resistências" },
   { id: "interludios",   label: "Interlúdios" },
-  /* ⚠ A CARTEIRA TAMBÉM SÓ APARECE COM O ADDON QUE A PEDE (`permite:
-     ["carteira"]`), pelo mesmo portão da Catarse logo abaixo. Ela fica COLADA
-     na aba de Interlúdios de propósito: quando o addon também traz a liberação
-     `carteiraFocos`, o número de Interlúdios que ela soma é o orçamento de
-     Focos daquela aba, e as duas passam a ser lidas juntas. */
+  // As áreas de consulta e configuração ficam no último item, Outros.
+  { id: "calculos",      label: "Cálculos", afty: true, outros: true },
+  { id: "addons",        label: "Addons", outros: true },
+  /* O id "defesas" e o campo defesasDano continuam os mesmos para preservar
+     as fichas salvas. Resistências aqui é por tipo de dano, diferente dos
+     testes de resistência em Perícias. */
+  { id: "defesas",       label: "Resistências", outros: true },
+  // Uma tela com primitiva só aparece quando a criatura tem o Addon.
   { id: "carteira",      label: "Carteira", primitiva: "carteira" },
-  /* ⚠ A LOJA DE CATARSE SÓ APARECE COM O ADDON QUE A PEDE. Ela é primitiva
-     (`permite: ["catarse"]`), e o filtro está logo abaixo, em `tabsDoSistema`.
-     Sem esse portão ela vazaria para a tela de quem nunca instalou nada, que é
-     exatamente o que aconteceu com a Concessão do Mestre em 2026-08-20. */
   { id: "catarse",       label: "Catarse", primitiva: "catarse" },
-  /* ⚠ ADDONS NÃO É ABA, e desde 2026-09-05 mora DENTRO de Cálculos, nos dois
-     sistemas (autor: *"passe a parte dos Addons para Cálculos em ambos os
-     lados"*). A fileira tinha treze abas e rolava na horizontal já em 1440px.
-
-     Quem procurar o id "addons" no `tabAtiva` não acha mais nada: a mudança é
-     de LUGAR, e não de conteúdo. O `TabAddons` continua no arquivo próprio dele
-     e é renderizado no ramo `calculos`, embaixo da bancada. */
-  { id: "calculos",      label: "Cálculos", afty: true },
 ];
+
+// Novas telas liberadas por Addon entram em Outros quando registradas em TABS.
+const abaEmOutros = (aba) => aba.outros || !!aba.primitiva;
 
 /* A aba "informacoes" some no Player, e o conteúdo dela sobe para a
    "identidade". A lista é filtrada em vez de duplicada: uma segunda lista
@@ -329,6 +309,17 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
      dentro da "identidade", e apontar para uma aba que a barra não mostra daria
      tela em branco. `abaBase` é a mesma coisa nos dois sistemas: a primeira. */
   const [tab, setTab] = useState("informacoes");
+  const [outrosAberto, setOutrosAberto] = useState(false);
+  const outrosBotaoRef = useRef(null);
+  const outrosRef = useRef(null);
+  useEffect(() => {
+    if (!outrosAberto) return undefined;
+    const fecharAoClicarFora = (event) => {
+      if (!outrosRef.current?.contains(event.target)) setOutrosAberto(false);
+    };
+    document.addEventListener("pointerdown", fecharAoClicarFora);
+    return () => document.removeEventListener("pointerdown", fecharAoClicarFora);
+  }, [outrosAberto]);
 
   const rascunho = useRascunhoAfty({
     id: alvoId,
@@ -375,6 +366,9 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
   // a aba escondida e o conteúdo aberto.
   const tabExiste = abasVisiveis.some((t) => t.id === tab);
   const tabAtiva = (!tabExiste || (tab === "aptidoes" && semEnergia)) ? abaBase : tab;
+  const abasPrincipais = abasVisiveis.filter((t) => !abaEmOutros(t));
+  const abasOutros = abasVisiveis.filter(abaEmOutros);
+  const outrosAtivo = abasOutros.some((t) => t.id === tabAtiva);
 
   // ---------- patches imutáveis ----------
   const patch = (partial) => setDraft((d) => ({ ...d, ...partial }));
@@ -1350,17 +1344,18 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
 
         {/* Tab strip */}
         <div className="bg-slate-950/40 border-t border-slate-800/70">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="flex gap-1 overflow-x-auto py-2 no-scrollbar" role="tablist" aria-label="Seções">
-              {abasVisiveis.filter((t) => !(t.id === "aptidoes" && semEnergia)).map((t) => {
+          <div className="max-w-7xl mx-auto px-4 flex items-center gap-1 py-2" role="tablist" aria-label="Seções">
+            <div className="flex min-w-0 gap-1 overflow-x-auto no-scrollbar">
+              {abasPrincipais.filter((t) => !(t.id === "aptidoes" && semEnergia)).map((t) => {
                 const on = t.id === tabAtiva;
                 return (
                   <button
                     key={t.id}
+                    type="button"
                     role="tab"
                     aria-selected={on}
-                    onClick={() => setTab(t.id)}
-                    className={`whitespace-nowrap px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-1.5 ${
+                    onClick={() => { setTab(t.id); setOutrosAberto(false); }}
+                    className={`shrink-0 whitespace-nowrap px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-1.5 ${
                       on ? "bg-purple-700 text-white" : "text-slate-400 hover:text-white hover:bg-slate-800/60"
                     }`}
                   >
@@ -1375,6 +1370,67 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
                   </button>
                 );
               })}
+            </div>
+            <div
+              ref={outrosRef}
+              className="relative shrink-0"
+              onMouseEnter={() => setOutrosAberto(true)}
+              onMouseLeave={() => setOutrosAberto(false)}
+              onBlur={(e) => {
+                if (!e.currentTarget.contains(e.relatedTarget)) setOutrosAberto(false);
+              }}
+            >
+              <button
+                ref={outrosBotaoRef}
+                type="button"
+                role="tab"
+                aria-selected={outrosAtivo}
+                aria-haspopup="menu"
+                aria-expanded={outrosAberto}
+                aria-controls="afty-outros-opcoes"
+                onClick={() => setOutrosAberto(true)}
+                onKeyDown={(e) => { if (e.key === "Escape") setOutrosAberto(false); }}
+                className={`whitespace-nowrap px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-1.5 ${
+                  outrosAtivo ? "bg-purple-700 text-white" : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+                }`}
+              >
+                Outros
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${outrosAberto ? "rotate-180" : ""}`} />
+              </button>
+              {outrosAberto && (
+                <div className="absolute right-0 top-full z-50 w-56 pt-1">
+                  <div
+                    id="afty-outros-opcoes"
+                    role="menu"
+                    aria-label="Outros"
+                    className="rounded-lg border border-slate-700 bg-slate-950 p-1.5 shadow-xl shadow-black/40"
+                    onKeyDown={(e) => {
+                      if (e.key === "Escape") {
+                        setOutrosAberto(false);
+                        outrosBotaoRef.current?.focus();
+                      }
+                    }}
+                  >
+                    {abasOutros.map((t) => {
+                      const on = t.id === tabAtiva;
+                      return (
+                        <button
+                          key={t.id}
+                          type="button"
+                          role="menuitem"
+                          aria-current={on ? "page" : undefined}
+                          onClick={() => { setTab(t.id); setOutrosAberto(false); }}
+                          className={`w-full px-3 py-2 rounded-md text-left text-sm font-semibold transition-colors ${
+                            on ? "bg-purple-700 text-white" : "text-slate-300 hover:text-white hover:bg-slate-800/80"
+                          }`}
+                        >
+                          {t.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -1415,7 +1471,8 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
           {tabAtiva === "defesas" && <TabDefesas derived={derived} setDefesaEstado={setDefesaEstado} setDefesaRd={setDefesaRd} />}
           {tabAtiva === "carteira" && <TabCarteira draft={draft} derived={derived} patchCarteira={patchCarteira} />}
           {tabAtiva === "catarse" && <TabCatarse draft={draft} derived={derived} patchCatarse={patchCatarse} />}
-          {tabAtiva === "calculos" && <TabCalculos draft={draft} derived={derived} setStatOverride={setStatOverride} patchCombate={patchCombate} setAddons={setAddons} trocarFicha={setDraft} gatilhosTreino={derived.gatilhosTreino} onGatilhoTreino={(id, v) => setTreinosAtivos((m) => ({ ...m, [id]: v }))} />}
+          {tabAtiva === "calculos" && <TabCalculos derived={derived} setStatOverride={setStatOverride} patchCombate={patchCombate} gatilhosTreino={derived.gatilhosTreino} onGatilhoTreino={(id, v) => setTreinosAtivos((m) => ({ ...m, [id]: v }))} />}
+          {tabAtiva === "addons" && <TabAddons draft={draft} derived={derived} setAddons={setAddons} trocarFicha={setDraft} />}
           {STUBS[tabAtiva] && <StubCard title={abasVisiveis.find((t) => t.id === tabAtiva)?.label} text={STUBS[tabAtiva]} />}
         </div>
       </div>
@@ -4260,7 +4317,7 @@ function FuncionamentoAddonCard({ linha }) {
 // SimulacaoCombateCard desde 2026-09-13, junto dos controles que eles
 // alimentam, então o estilo é o de LINHA da lista de estados (rounded-lg,
 // não mais "mt-4 pt-4 border-t" de quem se empilha sob outra coisa.
-function FuncionamentoNativoCard({ linha }) {
+function RecursoBuffNativoCard({ linha }) {
   return (
     <div
       className="rounded-lg border border-slate-800 bg-slate-950/40 px-2.5 py-2"
@@ -4277,13 +4334,9 @@ function PerfilAmaldicoadoCard({
 }) {
   const dslGrupos = useDslGrupos(derived);
   const fontesDano = fontesDanoDaFicha(draft, derived);
-  // O principal sai da lista: ele já tem o bloco fixo acima, com os campos que
-  // moram direto no `core`. Os 3 nativos (Aliados, Alma, Comidas) TAMBÉM saem
-  // daqui desde 2026-09-13 (a pedido do autor): eles pararam de ser tratados
-  // como Funcionamento Básico (não competem mais no pool `exclusivo`, ver
-  // afty-efeitos.js) e ganharam espaço próprio junto dos controles que já
-  // mexem neles, no card "Simulação de Combate" (`SimulacaoCombateCard`).
-  const adicionais = funcionamentosComNativos(draft).filter((f) => !f.principal && !f.nativo);
+  // O principal já tem o bloco fixo acima. Os adicionais vêm apenas da ficha.
+  // Aliado, Comidas e Alma são recursos de Buffs, não Funcionamentos Básicos.
+  const adicionais = funcionamentosDaFicha(draft).filter((f) => !f.principal);
   return (
     <Card
       title="Perfil Amaldiçoado"
@@ -10568,13 +10621,9 @@ function SimulacaoCombateCard({ derived, patchCombate, gatilhosTreino = [], onGa
         </BoolChip>
       }
     >
-      {/* Os 3 nativos (Aliados, Alma, Comidas) saíram do card "Funcionamento
-          Básico" em 2026-09-13 e vieram para cá: é aqui que os controles
-          deles (graduação do aliado, refeições, "Golpe da rodada"...) já
-          moram, como estadosExtras logo abaixo. Descrição perto do controle,
-          em vez de espalhada em duas telas. */}
+      {/* Recursos de Buffs e seus controles aparecem juntos na bancada. */}
       <div className="space-y-1 mb-1">
-        {FUNCIONAMENTOS_NATIVOS.map((f) => <FuncionamentoNativoCard key={f.id} linha={f} />)}
+        {RECURSOS_BUFF_NATIVOS.map((f) => <RecursoBuffNativoCard key={f.id} linha={f} />)}
       </div>
       {/* ⚠ FORA do bloco que "Em Combate" apaga, de propósito. Um gatilho de
           Treinamento não é estado de luta: o Cônjuge estar na cena mexe em
@@ -10849,7 +10898,7 @@ function TabAptidoes({
   const { alocado, concedido, efetivo, gastos, limite } = derived.aptidao;
   // A Maldição não tem Energia Reversa, então a trilha nem aparece.
   const trilhas = derived.trilhasAptidao ?? APTIDAO_TRILHAS;
-  const total = derived.totalAptidao;        // limiares de ND + Raio Negro + treinos "à sua escolha"
+  const total = derived.totalAptidao;        // limiares de ND + efeitos livres do Motor
   const overBudget = gastos > total;
   const restante = total - gastos;
 
@@ -10917,9 +10966,10 @@ function TabAptidoes({
       <Card
         title="Níveis de Aptidão"
         headerRight={
-          <div
-            className="flex items-center gap-1.5 border border-slate-800 bg-slate-950/50 rounded-md px-2 py-1"
-            title="Níveis gastos / totais (ND + Raio Negro + Treinamentos)"
+          <button
+            type="button"
+            className="relative group flex items-center gap-1.5 border border-slate-800 bg-slate-950/50 rounded-md px-2 py-1 cursor-help"
+            aria-label={`Níveis de Aptidão: ${gastos} gastos de ${total} disponíveis. Passe o mouse ou foque para ver as fontes do total.`}
           >
             <Zap className="w-3 h-3 text-purple-400 flex-shrink-0" />
             <span className="text-[9px] uppercase tracking-wider text-slate-400">Níveis</span>
@@ -10928,7 +10978,12 @@ function TabAptidoes({
               <span className="text-slate-600"> / </span>
               <span className="text-white">{total}</span>
             </span>
-          </div>
+            <PainelDeFontes
+              partes={derived.partes.totalAptidao}
+              total={total}
+              aparecer="group-hover:block group-focus:block"
+            />
+          </button>
         }
       >
         {/* As trilhas lado a lado no desktop; reempilham sozinhas quando aperta.
@@ -13395,7 +13450,7 @@ const CALC_ROWS = [
   { key: "iniciativa",   label: "Iniciativa" },
 ];
 
-function TabCalculos({ draft, derived, setStatOverride, patchCombate, setAddons, trocarFicha, gatilhosTreino, onGatilhoTreino }) {
+function TabCalculos({ derived, setStatOverride, patchCombate, gatilhosTreino, onGatilhoTreino }) {
   return (
     <>
     <Card title="Cálculos">
@@ -13442,12 +13497,6 @@ function TabCalculos({ draft, derived, setStatOverride, patchCombate, setAddons,
         ⚠ Arranjo PROVISÓRIO (autor, 2026-07-30). */}
     <SimulacaoCombateCard derived={derived} patchCombate={patchCombate} gatilhosTreino={gatilhosTreino} onGatilhoTreino={onGatilhoTreino} />
 
-    {/* ⚠ OS ADDONS VÊM POR ÚLTIMO, e a ordem é a leitura da aba: primeiro os
-        números, depois a bancada que os move, e por fim de onde o conteúdo veio.
-        Instalar um pacote muda o que a ficha inteira tem, mas é configuração e
-        não é resultado, então ele não pode empurrar a grade de stats para baixo
-        da dobra, que é o que aconteceria se subisse. */}
-    <TabAddons draft={draft} derived={derived} setAddons={setAddons} trocarFicha={trocarFicha} />
     </>
   );
 }

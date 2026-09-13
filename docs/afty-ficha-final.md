@@ -4,15 +4,18 @@ Plano de construção da **Ficha Final**, a tela de USO da criatura. Escrito em 
 qualquer código. Leia junto com `afty-status.md` (estado do sistema), `automacao-dsl.md` (o DSL) e
 `afty-formulas-base.md` (as fórmulas).
 
-> Até aqui o Afty só tinha o **criador**. A Ficha Final é a outra metade: o que fica aberto na mesa
+Este documento preserva o plano e os marcos da implementação. Para pendências atuais, consulte
+`a-fazer.md` e confirme no código.
+
+> No início deste plano o Afty só tinha o **criador**. A Ficha Final é a outra metade: o que fica aberto na mesa
 > enquanto se joga. O criador **calcula**, a Ficha **opera**.
 
 ---
 
-## ONDE ESTAMOS (atualizado em 2026-08-06)
+## MARCO DA IMPLEMENTAÇÃO (2026-08-06)
 
-**Todas as fases estão feitas.** A Ficha está usável na mesa de ponta a ponta. O que
-resta é conteúdo travado em decisão do autor, e não tela.
+**Na data deste marco, todas as fases planejadas estavam feitas.** A Ficha já estava usável na
+mesa. Os bloqueios conhecidos naquela data aparecem abaixo; a fila atual é `a-fazer.md`.
 
 | # | Fase | Estado | O que ela entregou | Seção |
 |---|---|---|---|---|
@@ -27,10 +30,10 @@ resta é conteúdo travado em decisão do autor, e não tela.
 | 8 | Domínios e Invocações | Feita | Domínio nas Ações, Invocações em aba própria | 23 |
 | 9 | Nenhuma rolagem de string | Feita | dano estruturado, dois grupos de dado | 25 |
 
-**As seis abas da Ficha hoje:** Ações, Habilidades, Perícias, Equipamentos, Invocações e
+**As seis abas da Ficha neste marco:** Ações, Habilidades, Perícias, Equipamentos, Invocações e
 Buffs.
 
-**O que falta, e por que não está feito:**
+**Pendências registradas neste marco:**
 
 | O que | Travado em |
 |---|---|
@@ -41,8 +44,8 @@ Buffs.
 | Trilho lateral de Buffs | **D10**: preferência do autor |
 | PV por Invocação | pergunta 3 da seção 24 |
 
-**Antes de começar qualquer coisa:** ler a **seção 24**, que é a lista viva de dúvidas e
-de decisões que eu tomei sozinho.
+**Para entender as decisões originais:** leia a **seção 24**. Confira as dúvidas ainda abertas
+em `a-fazer.md`.
 
 ---
 

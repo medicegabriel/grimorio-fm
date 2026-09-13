@@ -10,11 +10,11 @@ código. Leia junto com `afty-status.md` (estado do sistema), `automacao-dsl.md`
 
 ---
 
-## ONDE ESTAMOS (2026-09-01)
+## ONDE ESTAMOS (conferido em 2026-09-13)
 
-**Fase 0 com três primitivas fechadas e fase 1 no ar.** O caminho inteiro do Addon funciona de
+**Fase 0 com três primitivas fechadas e fase 1 concluída.** O caminho inteiro do Addon funciona de
 ponta a ponta: colar o JSON, ligar na criatura, o número mudar na Ficha, desinstalar sem deixar
-resto. A primitiva de vínculo entre criaturas continua travada em decisão do autor.
+resto. A primitiva de vínculo entre criaturas já foi decidida pelo autor e ainda aguarda implementação.
 
 | Primitiva | Estado | Onde |
 |---|---|---|
@@ -23,7 +23,7 @@ resto. A primitiva de vínculo entre criaturas continua travada em decisão do a
 | 8.3 Concessão vinda da sessão | **Feita** | `afty-concessao.js`, Ficha Final e Encontro |
 | 8.3.1 Ciclo de Adaptação | **Feita** | `afty-adaptacao.js`, `ficha/PainelDeAdaptacao.jsx` |
 | Herança de Especialização | **Feita** | `herdaDe` em `afty-especializacoes.js` e `afty-habilidades.js` |
-| 8.4 Vínculo entre criaturas | **Travada** | 4 perguntas no `a-fazer.md`, ver a seção 8.4 |
+| 8.4 Vínculo entre criaturas | **Pendente de implementação** | decisões do autor na seção 8.4 |
 
 ⚠ **A herança nasceu em 2026-09-07, com o Especialista em Estilo**, e ela NÃO estava na fase 0: é
 mais um caso de "o addon bate no muro e o muro vira fila de trabalho". A variação de uma classe
@@ -42,8 +42,8 @@ do DSL não aceita (namespace tem `-` e `:`), e o `VOCABULARIO_DSL` era uma foto
 no import, então nenhuma entrada de addon era declarada a zero. Os dois juntos faziam qualquer
 expressão que citasse conteúdo de addon cair no fallback, calada.
 
-**Fase 1 FECHADA**, enquanto a primitiva travada espera resposta. O caminho inteiro está
-de pé e testado, de colar o JSON até o número mudar na Ficha, em **14 famílias**.
+**Fase 1 FECHADA**, enquanto a primitiva de vínculo aguarda implementação. O caminho inteiro está
+de pé e testado, de colar o JSON até o número mudar na Ficha, em **15 famílias**.
 
 | Peça da fase 1 | Estado | Onde |
 |---|---|---|
@@ -52,14 +52,14 @@ de pé e testado, de colar o JSON até o número mudar na Ficha, em **14 famíli
 | Reconstrução do mundo | **Feita** | `aplicarAddons`, sempre do zero |
 | Biblioteca (`fm_addons_afty_v1`) | **Feita** | `afty-addons-biblioteca.js` (novo) |
 | `creature.addons` | **Feita** | `afty-schema.js` |
-| Aba Addons, colar JSON | **Feita** | `AftyTabAddons.jsx` (novo) |
+| Outros > Addons, colar JSON | **Feita** | `AftyTabAddons.jsx` |
 | Addons entrando antes da derivação | **Feita** | builder, Ficha e Encontro |
 | União para o Encontro misto | **Feita** | `unirAddons` |
 | Marca de "não raw" | **Feita** | chip no cabeçalho da Ficha |
 | Linha morta e marcada | **Feita** | `problemasDeAddon`, `derived.addonProblemas` |
-| **Famílias ligadas** | **14** | ver o quadro abaixo |
+| **Famílias ligadas** | **15** | ver o quadro abaixo |
 
-### As 14 famílias
+### As 15 famílias
 
 | Família | Módulo | Estruturas que o religador refaz |
 |---|---|---|
@@ -74,6 +74,7 @@ de pé e testado, de colar o JSON até o número mudar na Ficha, em **14 famíli
 | `lendarias` | `afty-alto-nivel.js` | array, índice |
 | `apices` | `afty-alto-nivel.js` | array, índice |
 | `tiposDano` | `afty-equipamentos.js` | objeto, **`TIPO_DANO_OK`** |
+| `armas` | `afty-equipamentos.js` | catálogo de armas reconstruído no mesmo array |
 | `condicoes` | `afty-feiticos.js` | mapa de listas de nomes |
 | `clas` | `afty-origens.js` | array **no lugar**, `CLA_BY_ID`, **cache das Verdadeiras Origens** |
 | `marcadores` | `afty-habilidades.js` | array no lugar |
@@ -135,8 +136,8 @@ namespace. Vale a lição para as próximas: **validador que olha o FORMATO do i
 
 | # | Fase | Estado | O que entrega | Seção |
 |---|---|---|---|---|
-| 0 | As 4 primitivas | **2 de 4** | o que falta no MOTOR para os casos reais do autor caberem | 8 |
-| 1 | Acrescentar por JSON | **Feita** (12 famílias) | registro, namespace, addon dentro da criatura, marca, linha morta | 3 a 7, 9 |
+| 0 | As 4 primitivas | **3 de 4** | o que falta no MOTOR para os casos reais do autor caberem | 8 |
+| 1 | Acrescentar por JSON | **Feita** (15 famílias) | registro, namespace, addon dentro da criatura, marca, linha morta | 3 a 7, 9 |
 | 2 | Oficina | Condicional | a tela de autoria, para quem não escreve JSON | 11 |
 | 3 | Remendar e desligar | Condicional | mexer no raw | 11 |
 | 4 | Tabelas | Condicional | Graus novos, Patamares novos, coeficientes | 11 |

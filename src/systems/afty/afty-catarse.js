@@ -86,6 +86,7 @@ export const CATARSE_FAMILIAS = [
     id: "habilidades",
     label: "Habilidade de Especialização",
     canal: "vagasHabilidade",
+    nota: "Vaga de Habilidade de Especialização, separada do contador de Feitiços e Habilidades Gerais.",
   },
   {
     id: "melhoriasSuperiores",
@@ -264,6 +265,13 @@ export function resolveCatarse(creature, opcoes = {}) {
   }
   if (mortas.length) {
     avisos.push(`${mortas.length} compra(s) sem família conhecida, e o gasto delas continua contando.`);
+  }
+  for (const c of compras) {
+    const f = getCatarseFamilia(c.familia);
+    if (f?.canalComPendencia) {
+      avisos.push(`${f.label}: ${f.canalComPendencia}.`);
+      break; // uma vez, e não uma por compra
+    }
   }
 
   return {

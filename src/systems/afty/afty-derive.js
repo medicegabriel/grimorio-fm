@@ -108,7 +108,7 @@ import {
   estadosCombateDeAddon, epocaAddons,
 } from "./afty-addons";
 import { agrupaConcedido, concessoesDaSessao, escolhasDoConcedido } from "./afty-concessao";
-import { ESTADOS_NATIVOS_EXTRAS } from "./afty-extras-nativos";
+import { ESTADOS_NATIVOS_EXTRAS, efeitosDaAlmaAtual } from "./afty-extras-nativos";
 import {
   efeitosDasAdaptacoes, origensDiretasDasAdaptacoes, resumoAdaptacoes,
 } from "./afty-adaptacao";
@@ -118,7 +118,7 @@ import {
   TALENTO_EFEITOS,
   efeitosInvocacaoDeEntradas,
   coletarEfeitosAptidao,
-  aplicarEfeitos, resolverExclusivos, carimbarGrupoExclusivo, valorCanal, furaTetoEm, efeitosDaTecnica, efeitosDosPassivos,
+  aplicarEfeitos, resolverExclusivos, carimbarGrupoExclusivo, valorCanal, furaTetoEm, efeitosDaTecnica, efeitosDosBuffsNativos, efeitosDosPassivos,
   efeitosDaSessao, EFEITO_CANAIS,
   ehAtributoPermanente, ehAtributoTemporario, ehEstagio2, ehPreContexto, ehPosAptidao, efeitoUsaDadosDanoFinal,
   mesclarEfeitos, detalhesDoCanal, detalhesDoCanalEscopos, custoEmPe, normalizarAlvoEfeito,
@@ -126,7 +126,7 @@ import {
 import { resolveGerais, contadorHabilidades, GERAL_BY_ID } from "./afty-gerais";
 import { resolveImitacao, concessaoImitada, efeitoDaImitacao } from "./afty-imitacao";
 // Quem é esta ficha, criatura ou personagem. Lê o `rulesVersion` dela.
-import { sistemaDaFicha, regraDo } from "./afty-sistema";
+import { sistemaDaFicha, regraDo, rotuloDoNivel } from "./afty-sistema";
 // Os números da ficha de JOGADOR vêm da Classe, e não do Tipo.
 import {
   pvDaClasse, peDaClasse, peModTecnicaDaFicha, vagasDeHabilidadePorClasse,
@@ -915,6 +915,7 @@ export function deriveAfty(creature, opcoes = {}) {
     // porque a técnica é única no mundo e nenhum catálogo a cobre. Entram no
     // mesmo bolo, e os filtros de estágio abaixo roteiam pelo canal.
     ...efeitosDaTecnica(creature),
+    ...efeitosDosBuffsNativos(),
     ...efeitosArmasTransformaveis(armasTransformaveis(creature, catalogoDoTipo("arma", creature), bt)),
     // Passivos / Características criados pelo jogador usam o mesmo Motor, mas
     // entram na família exclusiva própria dos Feitiços Passivos.
@@ -1689,7 +1690,7 @@ export function deriveAfty(creature, opcoes = {}) {
       { canal: "bonusTR", expr: String(guarda.bonus), origem: "guarda", nome: "Guarda Inabalável" },
     ]
     : [];
-  const ef = efeitosGuarda.length
+  let ef = efeitosGuarda.length
     ? mesclarEfeitos(efSemGuarda, aplicarEfeitos(efeitosGuarda, montarCtx(attrEff, modByAttr)))
     : efSemGuarda;
   const canal = (id, alvo = null) => valorCanal(ef, id, alvo);
@@ -1917,6 +1918,15 @@ export function deriveAfty(creature, opcoes = {}) {
      fez adiar esta parte: calcular a Alma antes do PV seria calcular o PV duas
      vezes ou mentir numa das duas. */
   const almaMaxFinal = almaPilha ? hp : almaMax;
+  // O máximo do Player só é conhecido depois do PV. Os estados da Alma usam
+  // a fração atual desse máximo, inclusive quando o máximo da criatura passa de 100.
+  const efeitosAlma = efeitosDaAlmaAtual(
+    opcoes.almaAtual == null ? almaMaxFinal : almaAtualDsl,
+    almaMaxFinal,
+  );
+  if (efeitosAlma.length) {
+    ef = mesclarEfeitos(ef, aplicarEfeitos(efeitosAlma, montarCtx(attrEff, modByAttr)));
+  }
 
   // ---------- PE (+ Treinos de Compreensão/Controle de Energia/…) ----------
   // UMA pilha só, para todo mundo. O Restringido a chama de Ponto de Estamina
@@ -2060,12 +2070,7 @@ export function deriveAfty(creature, opcoes = {}) {
   // Arredonda para baixo, como todo o resto do Afty.
   const contadorBase = contadorHabilidades(bt, patamar);
   const fatorSlots = fatorSlotsHabilidade(creature);
-  /* `habilidades.comum` (afty-habilidades.js) e este contador são o MESMO
-     orçamento (decisão do autor, docs/a-fazer.md): antes o canal
-     `vagasHabilidade` só chegava em `derived.habilidades`, que nenhuma tela lê,
-     e Especialização/Treinamento para Habilidade gastavam vaga sem conceder
-     nenhuma de volta. */
-  const contadorComum = Math.floor(contadorBase * fatorSlots) + habilidades.comum;
+  const contadorComum = Math.floor(contadorBase * fatorSlots);
   // As fontes do contador, para o hover poder dizer de onde o número veio. Sem
   // isso o Gêmeo vê metade das vagas e nada explicando.
   const partesContador = [
@@ -2075,9 +2080,6 @@ export function deriveAfty(creature, opcoes = {}) {
         label: creature?.core?.origem?.irmaoMorto ? "Gêmeos: irmão morto" : "Gêmeos: irmão vivo",
         texto: `× ${String(fatorSlots).replace(".", ",")}`,
       }]
-      : []),
-    ...(habilidades.comum > 0
-      ? [{ label: "Motor de Automação", valor: habilidades.comum }]
       : []),
   ];
   // Vagas EXCLUSIVAS de Feitiço (autor, 2026-07-28): "Você fornece um Slot de
@@ -2643,19 +2645,25 @@ export function deriveAfty(creature, opcoes = {}) {
   // lê aptidões escolhidas): fica para a passada de efeitos, quando o
   // catálogo fechar. Ver docs/afty-status.md.
   const aptidaoThresholds = [[2,1],[4,1],[6,1],[8,1],[10,2],[12,1],[14,1],[16,1],[18,1],[20,2]];
-  // ⚠ A tabela do livro para no ND 20, e o orçamento parava junto. O autor
-  // estendeu em 2026-08-12: a partir do 20 continua saindo 1 nível a cada 2 ND,
-  // ou seja, nos ND 22, 24, 26, 28, 30 e daí para cima sem fim (o ND não tem
-  // teto no Afty). Os ímpares não dão nada, então é divisão inteira.
-  const aptidaoAlem20 = Math.max(0, Math.floor((nd - 20) / 2));
+  // Só o Grimório Afty prolonga o orçamento depois do ND 20. Na Ficha de
+  // Player, o último marco de nível que dá pontos é o 20. As demais fontes do
+  // canal `pontosAptidao` continuam somando normalmente nos dois sistemas.
+  const aptidaoAlem20 = ehJogador("aptidaoApos20")
+    ? 0 : Math.max(0, Math.floor((nd - 20) / 2));
+  const rotuloMarcoAptidao = rotuloDoNivel(sistema);
+  const partesAptidaoND = [
+    ...aptidaoThresholds
+      .filter(([limiar]) => nd >= limiar)
+      .map(([limiar, valor]) => ({ label: `${rotuloMarcoAptidao} ${limiar}`, valor })),
+    ...Array.from({ length: aptidaoAlem20 }, (_, i) => ({ label: `${rotuloMarcoAptidao} ${22 + i * 2}`, valor: 1 })),
+  ];
   // ⚠ `canal("pontosAptidao")`, e não `treino.aptidao`: o orçamento vinha só do
   // estágio MONTANTE (Treinamentos e Habilidades Gerais), então uma HABILIDADE
   // que concedesse ponto de aptidão era descartada calada. O Elevar Aptidão do
   // Conjurador ("você aumenta um dos seus Níveis de Aptidão em 1") foi quem
   // expôs isso. O `ef` já traz o montante mesclado, então não dobra.
   const totalAptidao = semEnergia ? 0 : (
-    aptidaoThresholds.reduce((s, [t, v]) => s + (nd >= t ? v : 0), 0) +
-    aptidaoAlem20 +
+    partesAptidaoND.reduce((s, parte) => s + parte.valor, 0) +
     /* ⚠ O +1 DA QUANTIDADE DE PE MUITO GRANDE SAIU DAQUI em 2026-08-30. Ele era
        o Raio Negro cobrado no campo errado, e agora vem da Aptidão Raio Negro,
        pelo canal `pontosAptidao` (autor: "Quantidade de PE fica só para
@@ -2833,6 +2841,9 @@ export function deriveAfty(creature, opcoes = {}) {
   const divTexto = (d) => String(d).replace(".", ",");
 
   const partes = {
+    totalAptidao: semEnergia
+      ? [{ label: "Sem energia amaldiçoada", valor: 0 }]
+      : [...partesAptidaoND, ...doMotor("pontosAptidao")],
     // A Penalidade de Armadura item por item, mais o Motor. Ver o bloco dela.
     penalidadeDestreza: partesPenalidade,
     hp: [
@@ -3130,7 +3141,7 @@ export function deriveAfty(creature, opcoes = {}) {
     almaMax: almaMaxFinal,
     modTecnica,
     tecnicaAttr,
-    totalAptidao,               // orçamento de NÍVEIS de aptidão (1 a cada 2 ND depois do 20)
+    totalAptidao,               // orçamento de NÍVEIS de aptidão (Afty continua a cada 2 ND depois do 20)
     totalAptidoesAmaldicoadas,  // quantas pode ter (só da Habilidade Geral Aptidão, 0 sem ela)
     reduzNivelAptidao,          // quanto o pré-requisito de NÍVEL de cada Aptidão desce (0 no normal)
     aptidao,              // níveis por trilha: { alocado, concedido, efetivo, gastos, limite }

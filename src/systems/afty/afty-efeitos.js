@@ -95,11 +95,8 @@ import { getAnatomia } from "./afty-anatomias";
 import { CUSTO_PE_MINIMO } from "./afty-dominio-simples";
 // afty-aptidoes só importa afty-origens, que já é dependência daqui: sem ciclo.
 import { getAptidao } from "./afty-aptidoes";
-// `funcionamentosComNativos` já inclui os 3 Funcionamentos embutidos (Aliados,
-// Alma, Comidas — afty-extras-nativos.js) por cima da leitura crua da ficha;
-// ver o aviso no topo daquele arquivo sobre por que afty-schema.js continua
-// sem importar nada.
-import { funcionamentosComNativos } from "./afty-extras-nativos";
+import { funcionamentosDaFicha } from "./afty-schema";
+import { RECURSOS_BUFF_NATIVOS } from "./afty-extras-nativos";
 import {
   HABILIDADE_EFEITOS, ESCOLHA_EFEITOS, TALENTO_EFEITOS,
   MELHORIA_EFEITOS, MELHORIA_EFEITOS_ALVO, LENDARIA_EFEITOS, LENDARIA_EFEITOS_ALVO,
@@ -971,15 +968,8 @@ export function efeitosManuaisDaFicha(creature) {
  * Estilo da Sombra. Habilidade, talento, origem e treino seguem somando por
  * cima do vencedor, como sempre.
  *
- * ⚠ OS 3 NATIVOS (Aliados, Alma, Comidas) SAÍRAM DO POOL em 2026-09-13, a
- * pedido do autor: eles deixaram de ser tratados como Funcionamento Básico
- * (não competem entre si nem com a Técnica/Feitiço/Shikigami/Estilo). São
- * bônus de fora da criatura — companheiro, refeição, o estado da própria
- * alma — e sempre somaram por cima na cabeça do autor, só o código é que os
- * tratava como um quarto "Funcionamento". Continuam FORA do estágio de
- * `funcionamentosComNativos` que o jogador edita: não viram Funcionamento
- * novo, só saem do pool exclusivo. `fb.nativo` é a marca de
- * `afty-extras-nativos.js`.
+ * Os recursos nativos de Buffs são coletados separadamente e somam
+ * sem entrar no pool exclusivo dos Funcionamentos Básicos.
  *
  * ⚠ O `origem` do principal continua sendo `"tecnica"`, e não o id novo: ele já
  * aparece assim no hover de fontes das fichas existentes, e renomear trocaria o
@@ -989,37 +979,39 @@ export function efeitosManuaisDaFicha(creature) {
  * mensagem de erro são da UI, que mostra a expressão quebrada em vermelho na
  * hora de escrever. O motor não é o lugar de reclamar de digitação.
  */
-export function efeitosDaTecnica(creature) {
+function efeitosDeLinhas(linhas, tipo) {
   const out = [];
-  for (const fb of funcionamentosComNativos(creature)) {
-    for (const e of fb.efeitos) {
-      // Canal renomeado numa ficha antiga vira o novo aqui, na leitura.
+  for (const linha of linhas) {
+    for (const e of linha.efeitos) {
       const canal = CANAL_LEGADO[e?.canal] ?? e?.canal;
       if (!canal || !CANAL_BY_ID[canal]) continue;
       const expr = String(e.expr ?? "").trim();
       if (!expr) continue;
+      const buff = tipo === "buff";
       const ef = {
         canal,
         expr,
-        origem: fb.principal ? "tecnica" : `funcionamento:${fb.id}`,
-        nome: fb.principal ? "Técnica" : fb.nome,
+        origem: buff ? "buff:" + linha.id : linha.principal ? "tecnica" : "funcionamento:" + linha.id,
+        nome: linha.principal ? "Técnica" : linha.nome,
       };
-      // Os 3 nativos (Aliados, Alma, Comidas) não disputam pool: ver o aviso
-      // acima do exclusivo: "funcionamentoBasico".
-      if (!fb.nativo) ef.exclusivo = "funcionamentoBasico";
+      if (!buff) ef.exclusivo = "funcionamentoBasico";
       const alvo = normalizarAlvoEfeito(e.alvo);
       if (alvo) ef.alvo = alvo;
       if (e.quando) ef.quando = String(e.quando).trim();
       if (e.duracao === "temporaria") ef.duracao = "temporaria";
-      /* ⚠ A marca TEM de atravessar: este objeto é RECONSTRUÍDO campo a campo,
-         e o que não for copiado aqui some sem sintoma. Uma concessão de faixa
-         que perdesse o `semCredito` no caminho voltaria a creditar, e o único
-         sinal seria uma vaga de perícia a mais no contador. */
       if (e.semCredito) ef.semCredito = true;
       out.push(ef);
     }
   }
   return out;
+}
+
+export function efeitosDaTecnica(creature) {
+  return efeitosDeLinhas(funcionamentosDaFicha(creature), "funcionamento");
+}
+
+export function efeitosDosBuffsNativos() {
+  return efeitosDeLinhas(RECURSOS_BUFF_NATIVOS, "buff");
 }
 
 /**

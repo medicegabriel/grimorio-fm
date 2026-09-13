@@ -40,8 +40,9 @@ fallback: um id errado não pode derrubar o criador de fichas no meio da mesa.
 
 ### 2. A tabela `DIVERGENCIAS`
 
-Trinta entradas em `afty-sistema.js`, vinte e nove ligadas (contadas em 2026-09-11). **Isto é DADO, e não comentário**, porque
-comentário envelhece calado: cada entrada carrega a citação verbatim de onde a divergência está escrita, o que vale de
+Há 31 entradas em `afty-sistema.js`, 30 ativas no código atual. Só `inventarioSimplificado`
+permanece com `ativa: false`. **Isto é DADO, e não comentário**, porque comentário envelhece
+calado: cada entrada carrega a citação verbatim de onde a divergência está escrita, o que vale de
 cada lado, e se o código JÁ desvia.
 
 | campo | o que é |
@@ -65,23 +66,18 @@ molde, sempre. **Nunca escreva uma chave sem sufixo:** ela vaza uma ficha de um 
 
 ## O QUE FALTA, EM ORDEM DE UTILIDADE
 
-As duas primeiras saem prontas da tabela: são divergências **declaradas, com verbatim, e `ativa:
-false`**. O trabalho é ligar cada uma, não descobrir a regra. A terceira é a única que ainda espera
-regra do autor.
+`inventarioSimplificado` é a única divergência declarada com `ativa: false`. O Estilo das
+Sombras ainda espera o cálculo do autor antes de virar uma nova divergência. As demais perguntas
+continuam registradas em `a-fazer.md`.
 
 ### 1. `inventarioSimplificado` — o inventário inteiro volta
 
 > *"A aba de inventário da CRIATURA é simplificada, por decisão. O que sair da ficha de criatura
 > volta na ficha de jogador, e não está sendo apagado do catálogo, só desligado do motor."*
 
-O catálogo está inteiro em `afty-equipamentos.js`. É a maior das três e a que mais muda a tela.
+O catálogo está inteiro em `afty-equipamentos.js`. É a divergência pendente que mais muda a tela.
 
-### 2. ~~`defesaUniforme`~~ ✅ LIGADA em 2026-08-31
-
-Ela saiu desta lista. O jogador usa a coluna Bônus na Defesa da tabela do livro, e o grau não soma
-nada. Ver a sessão de 2026-08-31 (parte 7).
-
-### 3. `estiloDasSombras` — a progressão de Técnica de Estilo do livro
+### 2. `estiloDasSombras`: a progressão de Técnica de Estilo do livro
 
 Os Feitiços do jogador voltaram à progressão do livro em 2026-08-31, com orçamento **próprio**
 (divergência `progressaoDeFeiticos`). O autor confirmou na mesma mensagem que **o Estilo também
@@ -96,17 +92,12 @@ ganhou a dele.
 não tem técnica, então o portão *"todo usuário de energia amaldiçoada"* que zera o Feitiço do
 Restringido não o alcança. Quem decide o número dele é a regra de Estilo.
 
-### 5. As perguntas em aberto
+### 3. As perguntas em aberto
 
-Cada uma tem uma seção própria em `a-fazer.md`. A mais quente é do dia 2026-08-31:
-
-**`periciaAtributo` ainda existe?** O livro dizia *"você pode escolher entre os atributos
-Inteligência ou Sabedoria para receber novas perícias. Esta escolha não pode ser modificada nem
-revertida após a criação do personagem"*, e o autor depois fixou *"a quantidade de perícias é o
-maior modificador de atributo entre Inteligência ou Sabedoria e não só Inteligência"*. O campo ficou
-**parado** no schema: ninguém o lê. Se a escolha permanente voltar, ela precisa de **tela** antes de
-voltar a decidir número, porque campo sem controle foi exatamente o que produziu o bug (o padrão
-`"inteligencia"` valia para toda ficha e a Sabedoria não contava nunca).
+As dúvidas ainda abertas estão em `a-fazer.md`. O campo legado `periciaAtributo` continua
+no schema, mas ninguém o lê para calcular vagas. A regra confirmada pelo autor usa o maior
+modificador entre Inteligência e Sabedoria. Só retome a escolha permanente se houver uma nova
+decisão de regra e um controle na tela; o valor padrão antigo fazia a Sabedoria não contar.
 
 ---
 
@@ -193,18 +184,17 @@ proposital: escreva o novo valor esperado dos DOIS lados, nunca só do que você
 
 Valem em todo chat, e são as que mais se quebram.
 
-1. **NÃO TOQUE NO GRIMÓRIO 2.5.2.** Tudo em `src/components/` é somente-leitura. Pode importar,
-   nunca editar. Se precisar de algo de lá que não dá para importar, copie para
-   `src/systems/afty/` e anote de onde veio. Confira ao terminar:
-   `git diff --name-only | grep src/components/` volta vazio.
+1. **PRESERVE O GRIMÓRIO 2.5.2.** Evite mudar `src/components/` e mantenha o comportamento
+   público. O `Dashboard.jsx` já recebe opções do Player sem alterar os padrões da 2.5.2.
+   A regra definitiva para essas exceções continua pendente em `a-fazer.md`.
 2. **O autor faz os commits.** Nunca rode `git commit` nem `git push`.
 3. **Pare e pergunte quando tiver dúvida de regra.** Ele prefere responder a receber suposição.
 4. **Texto de regra vem VERBATIM do livro.** Não parafraseie, não resuma, não invente.
-5. **Nunca use travessão nem ponto-e-vírgula** em texto que aparece na tela.
+5. **Siga `AGENTS.md` para toda escrita da IA.** Na interface, também não use ponto-e-vírgula.
 6. **Nada de texto explicativo na UI.** Sem hint, sem nota, sem lore, sem fórmula escrita. Só
    resultado e aviso. Explicação de número vai no hover de fontes, explicação de item vai no
    `title`. O criador de fichas calcula, não ensina.
-7. **Todo o Afty vive em `src/systems/afty/`**, e só ali.
+7. **O motor e as telas próprias do Afty vivem em `src/systems/afty/`.** A integração de rotas fica em `src/App.jsx`; componentes compartilhados permanecem em `src/components/`.
 
 ---
 

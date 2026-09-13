@@ -556,6 +556,19 @@ export const DIVERGENCIAS = [
     ativa: true,
   },
   {
+    /* O Grimório Afty prolonga os Níveis de Aptidão depois do ND 20. A Ficha de
+       Player segue a tabela do livro: o último marco que concede pontos por
+       nível é o 20. Bônus de Habilidades, Treinamentos e Addons continuam valendo
+       nos dois sistemas, pois entram pelo canal `pontosAptidao`. */
+    id: "aptidaoApos20",
+    tipo: "regra",
+    onde: "afty-derive.js, orçamento e fontes de Níveis de Aptidão",
+    fonte: "Nível 22, 24, 26, 28, 30... não dá ponto na Ficha de Player. Só dão ponto do 2 ao 20; a progressão posterior é exclusiva do Grimório do Afty. (autor, 2026-09-13)",
+    afty: "+1 Nível de Aptidão a cada 2 ND depois do 20",
+    player: "nenhum ponto por nível depois do 20",
+    ativa: true,
+  },
+  {
     /* ⚠ O NÍVEL DO JOGADOR TRAVA EM 30. Autor, 2026-08-30: "Vai até +8 no Nível
        26. E os Leveis são TRAVADOS em 30. Player só vai até 30."
 

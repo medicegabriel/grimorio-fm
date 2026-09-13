@@ -116,7 +116,7 @@ t("ficha existente carrega o id no lugar do new",
 
 t("as divergencias de REGRA ligadas",
   S.DIVERGENCIAS.filter((d) => d.ativa && d.tipo === "regra").map((d) => d.id).sort(),
-  ["altoNivelSemGeral", "basesAutomaticas", "escalaDosTestes", "focosLivres",
+  ["altoNivelSemGeral", "aptidaoApos20", "basesAutomaticas", "escalaDosTestes", "focosLivres",
    "danoPorArma", "defesaUniforme", "danoFixoPorGrau", "reducaoDeGrau",
    "conteudoSoPorAddon", "guardaEresistenciaParcial", "habilidadesGerais",
    "pacoteDaClasseInicial", "passivaCustaPeMaximo", "patamarDoJogador", "poolExclusivo",
@@ -236,7 +236,8 @@ t("os dois derives diferem EXATAMENTE nos campos previstos",
 t("e expoem exatamente as mesmas chaves",
   Object.keys(dAfty).sort(), Object.keys(dPlayer).sort());
 
-/* O hover diverge só nas linhas dos stats que divergem. É o que impede uma
+/* O hover diverge só nas linhas dos stats que divergem ou no rótulo do Nível de
+   Aptidão, que é "ND" no Afty e "Nível" no Player. É o que impede uma
    divergência de mudar o número e esquecer o detalhamento, que foi o bug real
    que este assert pegou no dia em que nasceu: o PE do jogador mostrava a parcela
    "Quantidade de PE +7" numa ficha sem o campo, e as parcelas somavam 80 contra
@@ -250,10 +251,10 @@ const partesDiferem = Object.keys(dAfty.partes)
    citava o MESMO patamar dos dois lados. Com o Patamar neutralizado no jogador
    os rótulos passaram a divergir, este assert apontou, e as duas passaram a
    ficar VAZIAS no jogador, como o `guardaAtual` já ficava. */
-t("e o hover diverge so nas linhas dos stats que divergem",
+t("e o hover diverge so nos stats ou no rotulo do nivel",
   partesDiferem,
   ["cd", "defesa", "guardaAtual", "guardaBonus", "guardaVida", "hp", "iniciativa",
-   "movimento", "pe", "rdEspecifico", "rdGeral", "resParcial"]);
+   "movimento", "pe", "rdEspecifico", "rdGeral", "resParcial", "totalAptidao"]);
 
 /* E as três da Guarda ficam VAZIAS no jogador, e não com uma linha de valor
    nulo: hover de stat que não existe não é hover, é ruído. */
@@ -364,7 +365,7 @@ t("a ficha de player continua player depois de derivada",
    e a lista existe para que ligar uma seja um passo com nome. */
 t("as divergencias conhecidas estao na lista",
   S.DIVERGENCIAS.map((d) => d.id).sort(),
-  ["abasIdentidade", "altoNivelSemGeral", "basesAutomaticas", "danoPorArma",
+  ["abasIdentidade", "altoNivelSemGeral", "aptidaoApos20", "basesAutomaticas", "danoPorArma",
    "defesaUniforme", "escalaDosTestes", "focosLivres", "guardaEresistenciaParcial",
    "conteudoSoPorAddon", "habilidadesGerais", "inventarioSimplificado", "pacoteDaClasseInicial",
    "passivaCustaPeMaximo",

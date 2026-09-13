@@ -1,0 +1,323 @@
+/* Minamoto no Flugel — Céu de Íris.
+   Mistura a composição clara da referência com as cores do retrato.
+   Cole em Aparência > CSS Personalizado. */
+
+:scope#afty-ficha,
+#afty-ficha#afty-ficha {
+  --afty-fundo: #e7e5ed;
+  --afty-fundo-brilho: radial-gradient(ellipse 82% 42% at 50% -8%, #d9c7e8, transparent 72%), radial-gradient(ellipse 54% 46% at 88% 16%, #d8e8e9, transparent 78%), linear-gradient(180deg, #efedf3, #e7e5ed 66%);
+  --afty-card: #fbfafc;
+  --afty-poco: #f2eff6;
+  --afty-borda: #ded8e7;
+  --afty-borda-forte: #bcaecb;
+  --afty-texto: #2e2840;
+  --afty-texto-suave: #5b526a;
+  --afty-texto-fraco: #665d72;
+  --afty-destaque: #69458b;
+  --afty-destaque-texto: #573878;
+  --afty-destaque-fundo: #e8dcf2;
+  --afty-pv: #a33f65;
+  --afty-pe: #286c7a;
+  --afty-pvtemp: #916a36;
+  --afty-petemp: #447d84;
+  --afty-alma: #71458f;
+  --afty-cura: #2d735b;
+  --afty-aviso: #916a36;
+  --afty-veu: rgb(33 28 51 / 0.48);
+  --afty-raio: 15px;
+  --afty-raio-peq: 9px;
+  --afty-sombra: 0 1px 2px rgb(35 27 50 / 0.05), 0 12px 28px -13px rgb(63 45 88 / 0.22);
+  background-color: #e7e5ed;
+  background-image: var(--afty-fundo-brilho);
+  color: #2e2840;
+  color-scheme: light;
+  scrollbar-color: #bbaaca transparent;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) *:focus-visible {
+  outline: 2px solid #69458b;
+  outline-offset: 2px;
+}
+
+/* Faixa de íris e azul, com controles em porcelana. */
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-cabecalho {
+  --afty-texto: #fff9fd;
+  --afty-texto-suave: #f2eaf7;
+  --afty-texto-fraco: #ece3f1;
+  --afty-destaque: #dfc9f0;
+  --afty-destaque-texto: #fff9fd;
+  --afty-destaque-fundo: #f3e9fa33;
+  --afty-borda: #d9c8e7;
+  --afty-borda-forte: #e7dbee;
+  --afty-poco: #544574;
+  color: #fff9fd;
+  background: radial-gradient(ellipse 40% 118% at 82% -30%, #d2b6df55, transparent 68%), radial-gradient(ellipse 28% 110% at 13% 120%, #87b7c744, transparent 72%), linear-gradient(180deg, #71558f 0%, #5b4c82 48%, #365e78 100%);
+  border-bottom-color: #b9a9d0;
+  box-shadow: 0 11px 25px -12px rgb(39 30 61 / 0.42);
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-cabecalho::after {
+  height: 2px;
+  opacity: 0.9;
+  background: linear-gradient(90deg, transparent, #dfc9f0 35%, #a9d0d5 70%, #d7bd96 92%, transparent);
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-nome {
+  color: #fff9fd;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.3rem, 2.2vw, 1.7rem);
+  font-weight: 600;
+  letter-spacing: 0.015em;
+  line-height: 1.15;
+  text-shadow: 0 1px 12px rgb(31 22 51 / 0.3);
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-cabecalho .afty-chip {
+  background: #faf8fc;
+  border-color: #faf8fc;
+  color: #513a6e;
+  box-shadow: 0 3px 10px -6px rgb(26 20 47 / 0.45);
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-cabecalho .afty-chip[data-afty-tom="destaque"] {
+  background: #f0e7f8;
+  color: #573878;
+  border-color: #f0e7f8;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-cabecalho .afty-botao,
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-cabecalho .afty-passo {
+  background: #faf8fc;
+  border-color: #faf8fc;
+  color: #513a6e;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-cabecalho .afty-botao:hover,
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-cabecalho .afty-passo:hover {
+  background: #e9f2f3;
+  color: #245d6a;
+  border-color: #e9f2f3;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-retrato-painel {
+  border-color: #f7edf9;
+  box-shadow: 0 0 0 3px rgb(246 233 250 / 0.19), 0 10px 22px -8px rgb(25 24 48 / 0.42);
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-retrato-painel::after {
+  background: linear-gradient(180deg, transparent 72%, #28243b4d), linear-gradient(90deg, #dbc7e42b, transparent 55%);
+}
+
+/* Porcelana branca e cor concentrada nas barras e números dos recursos. */
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital {
+  --afty-texto: #2e2840;
+  --afty-texto-suave: #5b526a;
+  --afty-texto-fraco: #665d72;
+  color: #2e2840;
+  background: #fbfafc;
+  border-color: #f5f1f8;
+  box-shadow: 0 7px 19px -11px rgb(25 22 45 / 0.39);
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital[data-afty-vital="pv"] {
+  box-shadow: inset 0 3px 0 #a33f65, 0 7px 19px -11px rgb(25 22 45 / 0.39);
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital[data-afty-vital="pe"] {
+  box-shadow: inset 0 3px 0 #286c7a, 0 7px 19px -11px rgb(25 22 45 / 0.39);
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital[data-afty-vital="alma"] {
+  box-shadow: inset 0 3px 0 #71458f, 0 7px 19px -11px rgb(25 22 45 / 0.39);
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital-rotulo,
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital-max {
+  color: #5b526a;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital-trilho {
+  background: #e6e1ec;
+  box-shadow: inset 0 1px 2px rgb(40 31 54 / 0.13);
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital .afty-passo {
+  background: #f4eff8;
+  border-color: #dcd0e5;
+  color: #5b526a;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital-numero:focus {
+  background: #f4eff8;
+  border-color: var(--afty-vital-cor);
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital-barra {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--afty-vital-cor) 70%, white), var(--afty-vital-cor));
+  box-shadow: none;
+}
+
+/* Defesa em ouro fosco, CD em íris e os demais números neutros. */
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-stat {
+  --afty-texto: #2e2840;
+  --afty-texto-fraco: #5b526a;
+  background: #fbfafc;
+  border-color: #ede6f1;
+  box-shadow: 0 4px 12px -10px rgb(22 19 45 / 0.32);
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-stat[data-afty-stat="defesa"] {
+  --afty-texto: #916a36;
+  --afty-texto-fraco: #715733;
+  background: #fff8ec;
+  border-color: #dbc297;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-stat[data-afty-stat="cd"] {
+  --afty-texto: #69458b;
+  background: #f4ecfa;
+  border-color: #d9c7e6;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-stat-rotulo {
+  font-size: 0.625rem;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-abas {
+  gap: 0.35rem;
+  border-top: 1px solid rgb(255 249 253 / 0.18);
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-aba {
+  background: rgb(255 249 253 / 0.16);
+  border: 1px solid rgb(255 249 253 / 0.22);
+  border-bottom: 2px solid transparent;
+  border-radius: 9px 9px 0 0;
+  color: #f7eef9;
+  font-weight: 650;
+  letter-spacing: 0.025em;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-aba:hover {
+  background: rgb(255 249 253 / 0.27);
+  color: #ffffff;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-aba[aria-selected="true"] {
+  background: #fbfafc;
+  border-color: #fbfafc;
+  border-bottom-color: #fbfafc;
+  color: #573878;
+  box-shadow: 0 -2px 12px -5px rgb(255 255 255 / 0.65);
+}
+
+/* Corpo claro e macio: mais estrutura, menos massa lilás. */
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-card,
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-inv-ficha,
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-log,
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-fontes,
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-busca {
+  color: #2e2840;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-card {
+  background: #fbfafc;
+  border-color: #ded8e7;
+  box-shadow: var(--afty-sombra);
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-card-titulo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #3f3555;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  border-bottom: 1px solid #e4deeb;
+  padding-bottom: 0.45rem;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-card-titulo::before {
+  content: "";
+  flex: 0 0 auto;
+  width: 4px;
+  height: 1.05em;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #a283bc, #69458b);
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-linha {
+  background: #f2eff6;
+  border-color: #e5dfec;
+  color: #2e2840;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-linha:hover {
+  background: #ece6f2;
+  border-color: #c9b7d7;
+  box-shadow: inset 3px 0 0 #69458b;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-linha[data-afty-destacada="sim"] {
+  background: #eee6f5;
+  border-color: #c7b2d9;
+  box-shadow: inset 3px 0 0 #69458b;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-rotulo {
+  color: #5b526a;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-valor {
+  color: #2e2840;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-rolavel {
+  color: #573878;
+  background: #ebe2f3;
+  border: 1px solid #cbb6dd;
+  border-radius: 999px;
+  padding: 0.05em 0.45em;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-rolavel:hover {
+  color: #fff9fd;
+  background: #69458b;
+  border-color: #69458b;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-atributo {
+  --afty-texto: #2e2840;
+  --afty-texto-fraco: #5b526a;
+  --afty-destaque-texto: #fff9fd;
+  --afty-destaque-fundo: #69458b;
+  color: #2e2840;
+  background: linear-gradient(180deg, #faf8fc, #f2edf7);
+  border-color: #ded3e8;
+  box-shadow: 0 5px 13px -12px rgb(44 28 68 / 0.4);
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-atributo-mod {
+  background: #69458b;
+  color: #fff9fd;
+  border-radius: 999px;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-texto {
+  color: #4b435c;
+  background: #f7f4fa;
+  border-left: 3px solid #c8b4d9;
+  border-radius: 0 9px 9px 0;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.65;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-subaba[aria-selected="true"] {
+  background: #69458b;
+  border-color: #69458b;
+  color: #fff9fd;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-ficha-corpo .afty-botao {
+  background: #fbfafc;
+  color: #513a6e;
+  border-color: #cbbbd9;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-ficha-corpo .afty-botao:hover {
+  background: #ede5f4;
+  border-color: #8d6ba8;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-fontes,
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-busca,
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-log {
+  background: #fbfafc;
+  border-color: #d8cde3;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-log-topo {
+  background: linear-gradient(100deg, #71558f, #3b617b);
+  color: #fff9fd;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-log-topo .afty-log-modo {
+  color: #f3e9f7;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-log-topo .afty-log-modo[aria-pressed="true"] {
+  color: #573878;
+  background: #fbfafc;
+  border-color: #fbfafc;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-log-topo .afty-passo {
+  color: #fff9fd;
+  background: #fff9fd2b;
+  border-color: #fff9fd82;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-rolagem {
+  background: #f2eff6;
+  border-color: #e2d9eb;
+  color: #2e2840;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) ::selection {
+  background: #d5bce7;
+  color: #2e2840;
+}

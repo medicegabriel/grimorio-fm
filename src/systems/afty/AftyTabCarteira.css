@@ -1,0 +1,31 @@
+.faixa-carteira {
+  container: carteira / inline-size;
+}
+
+.faixa-carteira__grade {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@container carteira (min-width: 20rem) {
+  .faixa-carteira__grade {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@container carteira (min-width: 35rem) {
+  .faixa-carteira__grade {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@container carteira (min-width: 60rem) {
+  .faixa-carteira__grade:not(.faixa-carteira__grade--com-nivel) {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+@container carteira (min-width: 70rem) {
+  .faixa-carteira__grade--com-nivel {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}

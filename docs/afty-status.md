@@ -1,7 +1,12 @@
 # Status do Grimório Afty (handoff para chat novo)
 
-Estado atual do sistema Afty (atualizado 2026-09-09). Leia junto com:
-`docs/roadmap-versionamento-e-fichas.md` (arquitetura) e `docs/afty-formulas-base.md` (fórmulas).
+Histórico de implementação e decisões do sistema Afty. O contexto rápido abaixo foi atualizado
+em 2026-09-09; sessões posteriores registram mudanças mais recentes. Para pendências atuais,
+consulte `docs/a-fazer.md`. Leia junto com `docs/roadmap-versionamento-e-fichas.md` (arquitetura)
+e `docs/afty-formulas-base.md` (fórmulas).
+
+> **IAs e colaboradores:** leiam `AGENTS.md` antes de trabalhar neste projeto. É proibido
+> introduzir o travessão Unicode U+2014 em qualquer texto novo.
 
 > 📋 **A FILA DE TRABALHO NÃO É ESTE ARQUIVO.** Desde 2026-08-09 toda pendência mora em
 > **`docs/a-fazer.md`**, que vale para o repositório inteiro (2.5.2 e Afty) e é onde os outros
@@ -118,6 +123,20 @@ Estado atual do sistema Afty (atualizado 2026-09-09). Leia junto com:
 >
 > 👉 **Começando um chat novo? Vá direto para
 > [PENDÊNCIAS DE ESPECIALIZAÇÕES](#-pendências-de-especializações-lista-de-retomada).**
+
+---
+
+## INTEGRAÇÃO DE 2026-09-13: VAGAS DE HABILIDADE
+
+O commit ca465e0 havia somado o canal vagasHabilidade ao contador de Feitiços e
+Habilidades Gerais. O commit 35c52a8 reverteu essa soma: são dois orçamentos
+diferentes. A vaga concedida por Especialização, Treinamento ou Catarse entra
+em habilidades.comum, o orçamento de Habilidades de Especialização e Talentos.
+O contador de Feitiços e Habilidades Gerais permanece independente.
+
+Na integração, a nota de pendência da compra de Habilidade por Catarse foi
+corrigida, pois o criador já mostra a vaga no contador de Especialização. O
+teste da Loja verifica que a compra aumenta apenas esse orçamento.
 
 ---
 
@@ -7674,13 +7693,14 @@ Mudou junto o **`NivelPicker`** da aba Aptidões, que desenhava 0 a 5 literais: 
 `limite` daquela trilha e cresce um botão. Sem aviso nem nota na tela, porque o botão a mais É o
 aviso.
 
-### 3. Níveis de Aptidão continuam depois do ND 20
+### 3. Níveis de Aptidão continuam depois do ND 20 no Grimório Afty
 
 `Total.Aptidão += piso((ND - 20) / 2)`, ou seja, mais 1 nos ND 22, 24, 26, 28, 30 e daí para cima
 sem fim. A tabela do livro parava no 20 e o orçamento congelava ali, o que era estranho num sistema
 de ND sem teto. Fórmula atualizada em `docs/afty-formulas-base.md`.
 
 Confere: ND 20 = 12 · ND 22 = 13 · ND 30 = 17 · ND 36 = 20.
+Na Ficha de Player, o orçamento por nível para no Nível 20; os Níveis 22, 24, 26, 28 e 30 não acrescentam pontos (autor, 2026-09-13).
 
 ### 4. Habilidade de outra versão do livro: a tag `[2.0]`
 
@@ -12770,3 +12790,43 @@ A lista de Características passou a dobrar em duas colunas acima de quatro iten
 do vão que o autor apontou de manhã: quando as Ações e as Características são MUITAS, quem sobra
 vazio é o lado dos testes. Nesta ficha o vão caiu de 358px para 192px e o cartão de 1332px para
 1166px.
+
+## SESSÃO DE 2026-09-13: ESTADOS DA ALMA EM PERCENTUAL
+
+O autor confirmou que 75%, 50% e 25% são porcentagens da Integridade máxima, não valores fixos.
+A penalidade nativa comparava a Alma corrente diretamente com 75, 50 e 25. Isso só funcionava
+quando o máximo era 100. Na Ficha de Player, o máximo é o PV; uma ficha com 120 de Alma precisava
+dos limites 90, 60 e 30.
+
+A penalidade de Perícia, TR e Acerto agora entra depois do fechamento do PV e do máximo da Alma,
+usando a fração entre o valor corrente e o máximo da própria ficha. Em cada limite exato permanece
+o estado anterior, pois a regra exige cair abaixo dele. O mesmo cálculo serve a criaturas com
+máximo de Alma diferente de 100, sem mudar o significado da variável de Alma corrente usada por
+outros efeitos. A origem da penalidade continua registrada no Motor para os hovers.
+
+O teste dos extras nativos cobre os três limites na Ficha de Player, uma criatura com máximo 160,
+os três canais e o funcionamento fora de combate. Esta sessão trata somente da porcentagem dos
+limiares. Os demais efeitos de Estados da Alma permanecem no estado anterior de implementação.
+## SESSÃO DE 2026-09-13: ALIADO, COMIDAS E ALMA NA ÁREA DE BUFFS
+
+A classificação incorreta estava em afty-extras-nativos.js: os três recursos
+eram exportados como FUNCIONAMENTOS_NATIVOS e acrescentados a
+funcionamentosDaFicha por funcionamentosComNativos. O motor os recolhia pelo
+mesmo caminho do Funcionamento Básico em afty-efeitos.js. O criador, a Ficha
+Final e o painel de Encontros precisavam filtrar os três da lista de
+Funcionamentos Básicos.
+
+Agora a definição é RECURSOS_BUFF_NATIVOS. Aliado e Comidas entram no motor
+como efeitos de Buff, com origem própria e sem disputar o pool exclusivo do
+Funcionamento Básico. Estados da Alma continua calculado depois da Integridade
+máxima da ficha, com limites de 75%, 50% e 25%, e sua origem também é Buff.
+Os identificadores dos controles e recursos foram preservados para manter os
+estados já salvos.
+
+Na Ficha Final e no painel de Encontros, os cartões ficam na aba Buffs, seção
+Recursos do Sistema, e os controles aparecem na seção Estados da mesma aba.
+No criador de Player, as descrições e controles ficam em Outros > Cálculos >
+Simulação de Combate. A seção Funcionamento Básico do criador e a aba
+Habilidades da Ficha Final leem apenas os funcionamentos da própria ficha.
+O teste dos extras confirma a separação das listas e origens, além de manter
+a verificação dos efeitos de Aliado, Comidas e Alma.

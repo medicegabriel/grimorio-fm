@@ -2,11 +2,9 @@
  * ============================================================
  * ADDONS — biblioteca e o que esta criatura usa
  * ============================================================
- * ⚠ NÃO É MAIS UMA ABA. Desde 2026-09-05 este painel é renderizado no FIM da
- * aba Cálculos, nos dois sistemas (autor: *"passe a parte dos Addons para
- * Cálculos em ambos os lados"*). O componente não mudou, e o nome do arquivo e
- * o do export ficaram como estavam: renomear os dois só trocaria o lugar em que
- * a palavra "aba" mente.
+ * Em 2026-09-13, Addons passou a ser uma opção própria dentro de Outros no
+ * criador dos dois sistemas. O conteúdo e o export deste componente continuam
+ * os mesmos.
  * ============================================================
  * A fase 1 dos Addons (`docs/afty-addons.md`): **acrescentar por JSON colado**,
  * sem tela de autoria. A Oficina, que é a tela para quem NÃO escreve JSON, é a

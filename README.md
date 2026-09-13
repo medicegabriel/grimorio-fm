@@ -1,16 +1,26 @@
-# React + Vite
+# Grimório Tracker
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicação React para criação, consulta e acompanhamento de fichas e encontros. O Grimório 2.5.2 convive com o sistema Afty, usado nas rotas `/Afty` e `/Player`.
 
-Currently, two official plugins are available:
+## Começar
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```bash
+npm install
+npm run dev
+```
 
-## React Compiler
+O projeto usa Vite. Os comandos disponíveis são `npm run build`, `npm run lint` e `npm run asserts`.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Onde encontrar
 
-## Expanding the ESLint configuration
+- `src/App.jsx`: entrada do app e seleção das rotas.
+- `src/components/`: interface do Grimório 2.5.2 e componentes compartilhados.
+- `src/systems/afty/`: criador, ficha, encontros, regras e Addons do Afty e do Player.
+- `asserts/`: verificações da lógica do sistema.
+- `addons/`: pacotes de exemplo e conteúdo adicional.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Documentação
+
+Leia [AGENTS.md](AGENTS.md) antes de colaborar com uma IA. A fila atual de trabalho fica em [docs/a-fazer.md](docs/a-fazer.md). O histórico de decisões e sessões fica em [docs/afty-status.md](docs/afty-status.md).
+
+Os guias de [Player](docs/afty-player.md), [Addons](docs/afty-addons.md), [Ficha Final](docs/afty-ficha-final.md), [Carteira](docs/afty-carteira.md), [fórmulas](docs/afty-formulas-base.md) e [DSL de automação](docs/automacao-dsl.md) detalham cada área. Planos e sessões datados registram o contexto em que foram escritos; para saber o que ainda falta, consulte a fila e confirme no código.

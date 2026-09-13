@@ -273,8 +273,8 @@ O total acima é orçamento permanente. Bônus temporário de nível não gasta 
 Domínio ativa soma 2 ao nível efetivo e ao limite de Aura, Controle e Leitura e Energia Reversa,
 somente nas trilhas que já possuem ao menos Nível 1. Barreira e Domínio não recebem esse bônus.
 
-> ⚠ **ESTENDIDA ALÉM DO ND 20 pelo autor (2026-08-12).** A tabela da planilha para no 20, e o
-> orçamento parava junto. Agora ele **continua rendendo 1 nível a cada 2 ND** a partir do 20, ou
+> ⚠ **ESTENDIDA ALÉM DO ND 20 APENAS NO GRIMÓRIO AFTY pelo autor (2026-08-12).** A tabela da planilha para no 20, e o
+> orçamento parava junto. No Afty ele **continua rendendo 1 nível a cada 2 ND** a partir do 20, ou
 > seja, nos ND 22, 24, 26, 28, 30, 32 e daí para cima sem fim (o ND do Afty não tem teto).
 >
 > ```
@@ -283,6 +283,7 @@ somente nas trilhas que já possuem ao menos Nível 1. Barreira e Domínio não 
 >
 > Os ND ímpares não rendem nada, e o `+2` do ND 20 continua onde estava. Confere: ND 20 = 12,
 > ND 22 = 13, ND 30 = 17, ND 36 = 20. Em `afty-derive.js` é a constante `aptidaoAlem20`.
+> Na Ficha de Player, o último marco que concede pontos por nível é o Nível 20 (autor, 2026-09-13).
 
 ### Total.Atributos (pontos de atributo)
 ```

@@ -1540,7 +1540,7 @@ export function problemasDeAddon(creature) {
         // O que resolve, para o aviso não terminar num beco.
         saida: naFicha.has(pacoteId)
           ? `Volte à versão antiga do addon, ou tire esta entrada ${pal.g("do", "da")} ${pal.nome}.`
-          : `Ligue esse addon na aba Cálculos, ou tire esta entrada ${pal.g("do", "da")} ${pal.nome}.`,
+          : `Ligue esse addon em Outros > Addons, ou tire esta entrada ${pal.g("do", "da")} ${pal.nome}.`,
       });
     }
   }

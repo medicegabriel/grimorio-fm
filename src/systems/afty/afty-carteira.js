@@ -422,9 +422,6 @@ export function resolveCarteira(creature, opcoes = {}) {
   const atual = centavos(ganho - retirado);
 
   const avisos = [];
-  if (atual < 0) {
-    avisos.push("O dinheiro atual está negativo: os gastos passaram do que entrou.");
-  }
   const tiposPerdidos = entradas.filter((e) => e.tipoCru).length
     + gastos.filter((g) => g.tipoCru).length;
   if (tiposPerdidos) {

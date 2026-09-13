@@ -138,13 +138,12 @@ t("entrada aceita correção negativa",
   [-1, -2, -50]);
 t("gasto negativo é aparado em zero", C.normalizaGastoCarteira({ valor: -5 }).valor, 0);
 
-/* Gastar mais do que entrou é erro de anotação do jogador, e o extrato REPORTA
-   em vez de corrigir: apagar o gasto mais caro por conta própria seria escolher
-   por ele. É a convenção de todo orçamento do projeto. */
+/* Gastar mais do que entrou deixa o Atual negativo, sem corrigir o gasto nem
+   repetir o valor em um aviso separado. */
 const estourado = C.resolveCarteira({ carteira: { entradas: [{ dinheiro: 10 }], gastos: [{ valor: 40 }] } });
 t("o atual fica negativo", estourado.atual, -30);
 t("o gasto continua na lista", estourado.gastos.length, 1);
-t("e o extrato avisa", estourado.avisos.length, 1);
+t("saldo negativo não cria aviso", estourado.avisos.length, 0);
 
 /* ============================================================ */
 /* 5. TIPO DESCONHECIDO NÃO MATA A LINHA                         */

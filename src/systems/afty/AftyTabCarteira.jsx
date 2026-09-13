@@ -50,6 +50,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { BoolChip, Card } from "./ui/primitivos";
 import { moedaBr, decimalBr } from "./ui/formato";
+import "./AftyTabCarteira.css";
 import {
   CARTEIRA_TIPOS,
   CARTEIRA_GASTO_TIPOS,
@@ -208,9 +209,9 @@ function Seletor({ valor, opcoes, onChange, dica }) {
    conteúdo, não de gosto. */
 function Total({ rotulo, valor, dica, tom = "normal" }) {
   return (
-    <div title={dica} className="bg-slate-950/50 border border-slate-800 rounded-lg px-3 py-2">
+    <div title={dica} className="min-w-0 bg-slate-950/50 border border-slate-800 rounded-lg px-3 py-2">
       <div className={`${CABECALHO} truncate`}>{rotulo}</div>
-      <div className={`font-mono font-bold text-base tabular-nums ${
+      <div className={`font-mono font-bold text-base tabular-nums whitespace-nowrap ${
         tom === "ruim" ? "text-rose-300" : tom === "forte" ? "text-purple-300" : "text-white"
       }`}
       >
@@ -234,22 +235,14 @@ function Total({ rotulo, valor, dica, tom = "normal" }) {
 function FaixaDaCarteira({ extrato }) {
   return (
     <div
-      className="sticky z-10 -mx-4 -mt-4 px-4 pt-4 pb-3 mb-3 bg-slate-900 border-b border-slate-800"
+      className="faixa-carteira sticky z-10 -mx-4 -mt-4 px-4 pt-4 pb-3 mb-3 bg-slate-900 border-b border-slate-800"
       style={{ top: "var(--afty-topo, 0px)" }}
     >
-      {/* ⚠ AS COLUNAS TODAS SÓ ENTRAM NO `xl`, e não no `lg` como na aba de
-          Resistências. Lá o ladrilho carrega um inteiro de um ou dois dígitos,
-          e aqui carrega "$ 51.117,00": em cinco colunas na largura de 1024px o
-          ladrilho fica com ~97px de conteúdo e o valor não cabe. Em três
-          colunas ele cabe com folga, e a partir de 1280px as cinco entram.
-
-          ⚠ AS DUAS CLASSES ESTÃO ESCRITAS POR EXTENSO porque o Tailwind lê o
-          código-fonte e não enxerga nome de classe montado em template. É a
-          mesma nota das pilhas de RD na aba de Resistências. */}
-      <div className={`grid grid-cols-2 sm:grid-cols-3 gap-2 ${
-        extrato.alimentaNivel ? "xl:grid-cols-6" : "xl:grid-cols-5"
-      }`}
-      >
+      {/* O criador ocupa só duas colunas no desktop. Por isso a grade responde
+          à largura deste card, não à largura da janela (ver CSS da Carteira). */}
+      <div className={`faixa-carteira__grade grid gap-2 ${
+        extrato.alimentaNivel ? "faixa-carteira__grade--com-nivel" : ""
+      }`}>
         {/* ⚠ O NÍVEL SÓ APARECE COM A LIBERAÇÃO `carteiraNivel`. Sem ela a
             tabela continua sendo calculada (ela é uma leitura do XP), mas
             mostrá-la aqui anunciaria um nível que a ficha não tem. */}

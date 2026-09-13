@@ -5,7 +5,7 @@ import { COMBATE_ESTADOS } from "../../afty-combate";
 import { condicoesPorForca, fichaDaCondicao } from "../../afty-condicoes";
 import { getCanal } from "../../afty-efeitos";
 import { expandeHerdadas } from "../../afty-habilidades";
-import { FUNCIONAMENTOS_NATIVOS } from "../../afty-extras-nativos";
+import { RECURSOS_BUFF_NATIVOS } from "../../afty-extras-nativos";
 import { sinalDe } from "../../ui/formato";
 import TextoRico from "../../ui/TextoRico";
 import CanalPicker from "../CanalPicker";
@@ -699,7 +699,7 @@ export default function AbaBuffs({
 
       {/* ---------- os 3 nativos: referência para os estados de baixo ---------- */}
       <Secao titulo="Recursos do Sistema">
-        {FUNCIONAMENTOS_NATIVOS.map((f) => (
+        {RECURSOS_BUFF_NATIVOS.map((f) => (
           <CartaoNativo key={f.id} nome={f.nome} descricao={f.descricao} />
         ))}
       </Secao>

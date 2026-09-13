@@ -36,26 +36,6 @@ arquivo md. Para outros colaboradores usarem ele também e ir anotando oq for pr
 
 Coisas paradas esperando decisão de regra. Nada aqui deve ser resolvido por suposição.
 
-### O tipo "passivo" só tem UMA regra, e o resto dele segue em branco
-
-**Onde:** `src/systems/afty/afty-feiticos.js` (`calculadorDe` devolve `null` para "passivo")
-
-**Situação:** em 2026-09-09 a Passiva ganhou o primeiro número da vida dela, o custo em PE Máximo
-(`2 × nível`, só na Ficha de Jogador, divergência `passivaCustaPeMaximo`). Fora isso ela continua
-sendo o que era desde que entrou no schema: nome, nível, descrição, os efeitos do Motor de Automação
-e nada mais.
-
-Não há calculador, então ela não tem alcance, duração, condição, CD nem valor. Nas outras cinco
-famílias cada um desses campos sai de uma tabela do livro, e para a Passiva nenhuma foi enviada. O
-autor adiou isso por escrito em 2026-08-09: *"Os Especiais e Passivos deixamos para depois. Com
-calma."*, e a frase continua valendo para tudo menos o custo.
-
-**Precisa:** o autor dizer se a Passiva ganha mais alguma mecânica, e qual. Enquanto não ganhar, o
-tipo funciona (ela custa, aparece na Ficha e roda o Motor), e quem criar uma vai achar o card mais
-vazio da aba.
-**Anotado:** 2026-09-09, ao ligar o custo em PE Máximo
-
-
 ### Controlador: as reações que rolam dado não têm onde aparecer
 
 **Onde:** `src/systems/afty/afty-invocacoes.js` (`opcoesDeUso`)
@@ -509,38 +489,6 @@ nas três e gravava o campo sem mudar número nenhum, e por isso ele foi **escon
 Se puder, o controle não volta para o card do item: o Ataque Básico existe sem item nenhum, então a
 escolha mora na linha do golpe, na aba de Perícias e Testes.
 **Anotado:** 2026-08-20, ao consertar os quatro buracos das Faixas
-
-### BUG: `vagasHabilidade` não chega no orçamento que a tela mostra
-
-**Onde:** `src/systems/afty/afty-derive.js` (`orcamentoHabilidades`, por volta da linha 1186) e
-`resolveHabilidades` em `afty-habilidades.js`
-**Situação:** existem **dois objetos de orçamento** no derivado, e eles nunca se somam.
-
-| Objeto | `comum` sai de | Quem lê |
-|---|---|---|
-| `derived.habilidades` | SÓ o canal `vagasHabilidade` | ninguém na tela |
-| `derived.orcamentoHabilidades` | SÓ `contadorHabilidades(maestria, patamar) × fatorSlots` | o criador |
-
-Consequência: **tudo que emite `vagasHabilidade` promete uma vaga que não aparece.** Medido numa
-criatura 100% raw, ND 12, Lutador 12, zero addons:
-
-- Habilidade Geral **Especialização**: `comum` fica 8 com ela e sem ela. Ela GASTA uma vaga
-  (`gerais: 1`) e não concede nenhuma.
-- Treino Especial **Treinamento para Habilidade** (`tes_habilidade`): idem, 8 dos dois lados.
-- O irmão dele, `tes_feitico`, funciona: emite `vagasFeitico`, e `exclusivasFeitico` vai de 1 para 2.
-
-Efeito colateral: `derived.habilidades.excedeu` fica **true em qualquer ficha** com uma habilidade
-escolhida e nenhum `vagasHabilidade`, porque ali `comum` é zero. Não aparece na tela (o criador lê o
-outro objeto), mas é uma armadilha para quem escrever assert: um assert meu comparava esse campo e
-passava à toa. Já corrigido em `t-concessao.mjs`, com o motivo escrito.
-
-**Precisa:** o autor dizer qual é a regra, porque há duas leituras e elas dão números diferentes.
-1. Os dois orçamentos são o MESMO, e `orcamentoHabilidades.comum` deve somar `vagasHabilidade` (e
-   ganhar a linha de fonte no `partesComum`, para o hover dizer de onde veio).
-2. São orçamentos SEPARADOS de propósito, e aí falta a tela do segundo.
-
-Achado em 2026-08-20 ao montar um addon de teste com um Treino Especial que concede vaga.
-**Anotado:** 2026-08-20, ao gerar os pacotes de teste dos Addons
 
 ### ASSUNÇÃO: `gemeosSemTecnica` abre as DUAS do Sem Técnica, e não só as nomeadas
 
@@ -1357,25 +1305,15 @@ os 6, e não se sabe se foi decisão ou esquecimento.
 **Precisa:** o autor dizer se o Zenin é restrito também e, se for, quais dois atributos.
 **Anotado:** 2026-07-29, migrado de `afty-status.md` em 2026-08-09
 
-### ~~Precisão (Melhoria de Controlador): "Ataque ou CD"~~ ✅ RESOLVIDO
-**Onde:** `src/systems/afty/afty-habilidades.js` (`MELHORIA_EFEITOS_INVOCACAO`)
-**Situação:** o texto diz *"+2 em Jogadas de Ataque ou CD"*, e não se sabia se era escolha do
-jogador ou se valia para os dois.
-**Resolvido:** o autor decidiu em 2026-08-15 que é **escolha do jogador**, feita por invocação
-marcada. O marcador `mel_precisao` tem `opcoes` e o `quando` deixa passar só o lado escolhido.
-**Anotado:** 2026-07-29, migrado de `afty-status.md` em 2026-08-09, fechado em 2026-08-15
-
 ---
 
 ## Migração pendente deste próprio arquivo
 
-`afty-status.md` ainda tem pendências espalhadas pelas seções de sessão (~~Melhorias de
-Controlador sem marcador por invocação~~ ✅ 2026-08-15, ~~Controle Disperso sem limite de
-invocações ativas~~ ✅ 2026-08-15, Marca Registrada com a redução de PE desligada, subsistemas
-nunca enviados como Apoio, Imitação, Votos e técnicas marciais, e a lista de retomada das
-Especializações). Elas **não** foram
-movidas para cá: seriam um diff enorme num arquivo que outros colaboradores também editam, e o
-autor pediu padronização daqui para frente, não migração.
+`afty-status.md` ainda tem possíveis pendências espalhadas pelas seções de sessão, como Marca
+Registrada com a redução de PE desligada, subsistemas nunca enviados como Apoio, Imitação, Votos e
+técnicas marciais, e a lista de retomada das Especializações. Elas **não** foram movidas para cá:
+exigem conferência individual no código e nas decisões posteriores antes de entrarem na fila. O
+autor pediu padronização daqui para frente, não migração automática do histórico.
 
 **Precisa:** o autor dizer se quer a migração completa. Se sim, é uma passada só, de preferência
 logo depois de um commit, para o diff ficar isolado.

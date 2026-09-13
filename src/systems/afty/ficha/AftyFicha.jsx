@@ -6,8 +6,7 @@ import {
 } from "lucide-react";
 
 import "./ficha.css";
-import { mesclaFichaAfty, AFTY_TIPOS, AFTY_PATAMARES } from "../afty-schema";
-import { funcionamentosComNativos } from "../afty-extras-nativos";
+import { mesclaFichaAfty, AFTY_TIPOS, AFTY_PATAMARES, funcionamentosDaFicha } from "../afty-schema";
 import { deriveAfty } from "../afty-derive";
 import { preparaAtivacaoComCustoVida } from "../afty-feiticos";
 import { aplicarAddons, addonsDaCriatura } from "../afty-addons";
@@ -522,7 +521,7 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
         // Os 3 nativos (Aliados, Alma, Comidas) saíram desta lista em
         // 2026-09-13: eles agora têm cartão próprio na aba Buffs, junto dos
         // controles que os alimentam (ver AbaBuffs.jsx, CartaoNativo).
-        funcionamentos={funcionamentosComNativos(ficha).filter((f) => !f.nativo)}
+        funcionamentos={funcionamentosDaFicha(ficha)}
         itens={itens}
         abertos={abertos}
         onAberto={alternaItem}

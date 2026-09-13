@@ -36,9 +36,9 @@ const t = (nome, real, esp) => {
   else bad.push(`${nome}: ${JSON.stringify(real)} != ${JSON.stringify(esp)}`);
 };
 
-const ficha = (habs, nd = 20) => {
+const ficha = (habs, nd = 20, sistema = "player") => {
   const f = createBlankAfty();
-  f.rulesVersion = "player";
+  f.rulesVersion = sistema;
   f.core = { ...f.core, nd, tipo: "misto" };
   f.attributes = { forca: 10, destreza: 12, constituicao: 14, inteligencia: 15, sabedoria: 10, presenca: 10 };
   f.especializacoes = [{ id: "conjurador", nivel: nd }];
@@ -103,6 +103,48 @@ t("e o excedente não cobra", demais.habilidades.gastos - zero.habilidades.gasto
 t("uma pega dá um nível de aptidão", uma.totalAptidao - zero.totalAptidao, 1);
 t("três pegas dão três", tres.totalAptidao - zero.totalAptidao, 3);
 t("e o excedente não rende", demais.totalAptidao - zero.totalAptidao, 6);
+t("o hover do Player discrimina os marcos de Nível",
+  zero.partes.totalAptidao.map((p) => [p.label, p.valor]),
+  [["Nível 2", 1], ["Nível 4", 1], ["Nível 6", 1], ["Nível 8", 1], ["Nível 10", 2],
+    ["Nível 12", 1], ["Nível 14", 1], ["Nível 16", 1], ["Nível 18", 1], ["Nível 20", 2]]);
+t("o hover identifica os três pontos da habilidade",
+  tres.partes.totalAptidao.filter((p) => !p.label.startsWith("Nível "))
+    .reduce((soma, p) => soma + p.valor, 0), 3);
+t("as fontes fecham com o total exibido",
+  [zero, uma, tres, demais].map((d) =>
+    d.partes.totalAptidao.filter((p) => !p.suplantado)
+      .reduce((soma, p) => soma + p.valor, 0) === d.totalAptidao),
+  [true, true, true, true]);
+const alem20 = ficha([], 24, "afty");
+t("o Afty mostra cada marco depois do ND 20",
+  alem20.partes.totalAptidao.filter((p) => p.label.startsWith("ND "))
+    .slice(-2).map((p) => [p.label, p.valor]),
+  [["ND 22", 1], ["ND 24", 1]]);
+t("o total do Afty também fecha depois do ND 20",
+  alem20.partes.totalAptidao.reduce((soma, p) => soma + p.valor, 0),
+  alem20.totalAptidao);
+const jogador24 = ficha([], 24);
+t("o Player para nos pontos do Nível 20",
+  jogador24.partes.totalAptidao.filter((p) => p.label.startsWith("Nível "))
+    .slice(-2).map((p) => [p.label, p.valor]),
+  [["Nível 18", 1], ["Nível 20", 2]]);
+t("o Player não recebe ponto pelo Nível 22 ou 24",
+  jogador24.totalAptidao - ficha([], 20).totalAptidao, 0);
+t("as fontes do Player fecham com o total",
+  jogador24.partes.totalAptidao.reduce((soma, p) => soma + p.valor, 0),
+  jogador24.totalAptidao);
+for (const nivel of [22, 24, 26, 28, 30]) {
+  const porNivel = ficha([], nivel).partes.totalAptidao
+    .filter((p) => p.label.startsWith("Nível "));
+  t(`o Player no Nível ${nivel} conserva só os 12 pontos por nível até o 20`,
+    porNivel.reduce((soma, p) => soma + p.valor, 0), 12);
+  t(`o último marco do Player no Nível ${nivel} é o 20`,
+    porNivel.at(-1)?.label, "Nível 20");
+}
+const afty30 = ficha([], 30, "afty");
+t("o Afty mantém os marcos até o ND 30",
+  afty30.partes.totalAptidao.filter((p) => p.label.startsWith("ND "))
+    .reduce((soma, p) => soma + p.valor, 0), 17);
 /* A vaga e o efeito andam juntos: uma pega que cobra e não rende (ou o
    contrário) é o bug de agosto voltando por outra porta. */
 t("vaga e efeito medem o mesmo",

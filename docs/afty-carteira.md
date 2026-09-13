@@ -214,7 +214,7 @@ O Interlúdio é inteiro e continua `type="number"`, porque não passa por nada 
 |---|---|---|
 | XP, $ e Interlúdios da **Entrada** | aceitam negativo | É o único lugar onde cabe correção de XP e de Interlúdio, porque não existe lista de gasto para os dois |
 | Valor do **Gasto** | aparado em zero | Gasto negativo é entrada de dinheiro, e a lista de entradas está logo acima |
-| Dinheiro atual negativo | **avisa**, e nada é corrigido | Convenção de todo orçamento do projeto: reporta, não remove |
+| Dinheiro atual negativo | O valor aparece negativo, sem aviso separado | Gastos e entradas continuam intactos |
 | Linha com tipo desconhecido | fica, com os números valendo | O tipo é etiqueta e não decide conta nenhuma |
 
 ⚠ **A última é o CONTRÁRIO da Loja de Catarse, e de propósito.** Lá, família desconhecida vira linha
@@ -253,6 +253,11 @@ onde B está" é a mesma frase nas duas, e as linhas escondidas guardam a posiç
 ⚠ **Não há `DragOverlay` aqui, e na aba de Perícias há.** Não é esquecimento: a linha de Perícias é
 uma caixa própria, e esta é um conjunto de trilhas de uma grade, então uma cópia flutuante nasceria
 sem as colunas e com outra largura. O que segue o cursor é a linha de verdade, com um anel roxo.
+
+**A faixa de totais se adapta à largura do próprio card.** Ela usa uma coluna em espaços
+estreitos, depois duas ou três, e só mostra cinco ou seis na mesma linha quando há largura para os
+valores monetários. Os números ficam inteiros, sem quebra no meio do saldo. A opção Carteira fica no
+menu Outros do criador.
 
 **A aba veste a roupa da aba de Resistências.** A faixa de totais era uma tira `slate-950/95`, uma
 cor que não existe em mais lugar nenhum do criador, e o autor apontou que saltava aos olhos. Agora
@@ -303,10 +308,11 @@ Os totais fecham em duas casas, senão `0.1 + 0.2` chegaria à tela como `0.3000
 |---|---|
 | Modelo, saneamento e as contas | `src/systems/afty/afty-carteira.js` |
 | A aba | `src/systems/afty/AftyTabCarteira.jsx` |
+| A grade responsiva dos totais | `src/systems/afty/AftyTabCarteira.css` |
 | Primitiva `carteira` e liberação `carteiraFocos` | `src/systems/afty/afty-addons.js` |
 | `creature.carteira` | `src/systems/afty/afty-schema.js` |
 | `derived.carteira` e os Focos | `src/systems/afty/afty-derive.js` |
-| A aba na fileira, o `patchCarteira` e o contador de Focos | `src/systems/afty/AftyCreatureBuilder.jsx` |
+| O acesso por Outros, o `patchCarteira` e o contador de Focos | `src/systems/afty/AftyCreatureBuilder.jsx` |
 | `moedaBr` e `decimalBr` | `src/systems/afty/ui/formato.js` |
 | O pacote | `addons/carteira-da-guilda.json` |
 | As provas | `asserts/t-carteira.mjs` |

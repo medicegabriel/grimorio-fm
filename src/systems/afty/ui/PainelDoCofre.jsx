@@ -109,7 +109,7 @@ export default function PainelDoCofre({ creature, modo = "ficha", onFicha, onAbe
     if (!noCriador) {
       return (
         <p className="text-[11px] text-slate-400">
-          Esta ficha não tem Cofre. Para trancar o texto, abra o criador e vá na aba Addons.
+          Esta ficha não tem Cofre. Para trancar o texto, abra o criador e vá em Outros &gt; Addons.
         </p>
       );
     }

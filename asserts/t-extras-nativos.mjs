@@ -7,7 +7,8 @@ register(
 const R = new URL("../src/systems/afty/", import.meta.url).href;
 const { deriveAfty } = await import(R + "afty-derive.js");
 const { createBlankAfty, funcionamentosDaFicha } = await import(R + "afty-schema.js");
-const { funcionamentosComNativos } = await import(R + "afty-extras-nativos.js");
+const { RECURSOS_BUFF_NATIVOS, efeitosDaAlmaAtual } = await import(R + "afty-extras-nativos.js");
+const { efeitosDaTecnica, efeitosDosBuffsNativos } = await import(R + "afty-efeitos.js");
 
 let ok = 0;
 const bad = [];
@@ -18,15 +19,20 @@ const t = (nome, real, esperado) => {
 
 const base = createBlankAfty();
 
-// 1) `funcionamentosDaFicha` crua (afty-schema.js) continua sem os nativos —
-//    ela é FOLHA travada por t-ordem-modulos.mjs (zero imports). Só o
-//    wrapper `funcionamentosComNativos` (afty-extras-nativos.js) os inclui.
-t("funcionamentosDaFicha crua NÃO leva os nativos (afty-schema.js é folha)",
-  funcionamentosDaFicha(base).some((f) => f.nativo), false);
-const lista = funcionamentosComNativos(base);
-t("aliados/alma/comidas aparecem sem addon, via funcionamentosComNativos",
-  lista.filter((f) => f.nativo).map((f) => f.id).sort(),
-  ["aliados_bancada", "alma_estados_automatico", "comidas_bancada"]);
+// 1) Os tres recursos nativos pertencem a Buffs e nao integram os
+// Funcionamentos Basicos da ficha nem o pool exclusivo deles.
+const recursosEsperados = ["aliados_bancada", "alma_estados_automatico", "comidas_bancada"];
+t("recursos nativos listados em Buffs",
+  RECURSOS_BUFF_NATIVOS.map((f) => f.id).sort(), recursosEsperados);
+t("recursos nativos ausentes dos Funcionamentos Basicos",
+  funcionamentosDaFicha(base).some((f) => recursosEsperados.includes(f.id)), false);
+t("nenhum efeito nativo entra na tecnica vazia", efeitosDaTecnica(base).length, 0);
+t("a penalidade automatica da Alma tem origem de Buff",
+  efeitosDaAlmaAtual(20, 100)[0]?.origem, "buff:alma_estados_automatico");
+const efeitosBuffs = efeitosDosBuffsNativos();
+t("Buffs nativos mantem efeitos mecanicos", efeitosBuffs.length > 0, true);
+t("efeitos nativos tem origem de Buff e nao disputam Funcionamento Basico",
+  efeitosBuffs.every((e) => e.origem.startsWith("buff:") && !e.exclusivo), true);
 t("nenhum addon instalado", base.addons ?? [], []);
 
 // 2) Fora de combate, nada de Aliados/Comidas conta (bench zerado).
@@ -75,8 +81,8 @@ const assMestre = deriveAfty({
 t("Assassino Iniciante soma 1d6", assIniciante, `${basicoSem.texto} + 1d6`);
 t("Assassino Mestre soma 2d6", assMestre, `${basicoSem.texto} + 2d6`);
 
-// 7) Estados da Alma: penalidade automática por alma_atual, SEM precisar
-//    ligar nenhum estado de combate (nem "Em Combate").
+// 7) Estados da Alma: os limites são frações do máximo da ficha, não
+//    valores absolutos. Fora de combate a penalidade continua valendo.
 const almaCheia = deriveAfty(base, { almaAtual: 100 });
 const almaDanificada = deriveAfty(base, { almaAtual: 60 });
 const almaInstavel = deriveAfty(base, { almaAtual: 40 });
@@ -91,9 +97,47 @@ t("Alma Crítica (<25%) penaliza -8 na Percepção",
   periciaDe(almaCheia, "percepcao") - periciaDe(almaCritica, "percepcao"), 8);
 t("Alma Crítica (<25%) penaliza -8 no Acerto Amaldiçoado",
   acertoDe(almaCheia, "amaldicoado") - acertoDe(almaCritica, "amaldicoado"), 8);
-t("Fora de combate a Alma continua penalizando (não depende de 'Em Combate')",
+t("Fora de combate a Alma continua penalizando",
   deriveAfty({ ...base, combate: { ativo: false } }, { almaAtual: 10 }).testes.ataques.find((a) => a.id === "amaldicoado").bonus,
   almaCritica.testes.ataques.find((a) => a.id === "amaldicoado").bonus);
+
+// Um Combatente 19 sem bônus de Constituição tem 120 PV e 120 de Alma.
+// Os limites são 90, 60 e 30 pontos, com a penalidade só ABAIXO deles.
+const playerAlmaBase = {
+  ...base, rulesVersion: "player", system: "player",
+  core: { ...base.core, nd: 19 },
+  especializacoes: [{ id: "combatente", nivel: 19 }],
+};
+const playerAlmaCheia = deriveAfty(playerAlmaBase);
+t("Player tem Alma máxima igual aos 120 PV", playerAlmaCheia.almaMax, 120);
+const playerAlmaEm = (atual) => deriveAfty(playerAlmaBase, { almaAtual: atual });
+for (const [atual, penalidade] of [
+  [120, 0], [90, 0], [89, -3], [60, -3],
+  [59, -6], [30, -6], [29, -8],
+]) {
+  t("Player com Alma " + atual + "/120 aplica " + penalidade + " na Percepção",
+    periciaDe(playerAlmaEm(atual), "percepcao") - periciaDe(playerAlmaCheia, "percepcao"),
+    penalidade);
+}
+const playerAlmaCritica = playerAlmaEm(29);
+t("Player crítico também penaliza o TR",
+  resistenciaDe(playerAlmaCritica, "reflexos") - resistenciaDe(playerAlmaCheia, "reflexos"), -8);
+t("Player crítico também penaliza o Acerto",
+  acertoDe(playerAlmaCritica, "amaldicoado") - acertoDe(playerAlmaCheia, "amaldicoado"), -8);
+t("A fonte da penalidade continua no Motor",
+  playerAlmaCritica.efeitos.detalhes.some((e) => e.nome === "Estados da Alma (automático)" && e.canal === "bonusPericia" && e.valor === -8),
+  true);
+
+// A criatura também pode ter máximo acima de 100. A régua é o máximo real.
+const aftyAlmaMaior = { ...base, alma: { ...base.alma, max: 160 } };
+const aftyAlmaCheia = deriveAfty(aftyAlmaMaior, { almaAtual: 160 });
+t("Afty preserva o máximo de Alma 160", aftyAlmaCheia.almaMax, 160);
+for (const [atual, penalidade] of [[120, 0], [119, -3], [79, -6], [39, -8]]) {
+  t("Afty com Alma " + atual + "/160 aplica " + penalidade,
+    periciaDe(deriveAfty(aftyAlmaMaior, { almaAtual: atual }), "percepcao")
+      - periciaDe(aftyAlmaCheia, "percepcao"),
+    penalidade);
+}
 
 // 8) Comidas: Reforçada +2 Defesa. Leve e Revigorante escalam com o Nível de
 //    Maestria (comidas_bt) — o "Grau do cozinheiro" foi retirado em
