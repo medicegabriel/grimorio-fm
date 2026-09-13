@@ -16,7 +16,7 @@ import {
 } from "./afty-schema";
 // Inclui os 3 Funcionamentos nativos (Aliados, Alma, Comidas) por cima da
 // leitura crua da ficha — ver o aviso em afty-extras-nativos.js.
-import { funcionamentosComNativos } from "./afty-extras-nativos";
+import { funcionamentosComNativos, FUNCIONAMENTOS_NATIVOS } from "./afty-extras-nativos";
 // Primitivos compartilhados com a Ficha Final. Eram locais deste arquivo até
 // 2026-08-05, e saíram porque duas cópias divergiriam na primeira errata.
 import { PainelDeFontes, ValorComFontes } from "./ui/fontes";
@@ -4253,14 +4253,19 @@ function FuncionamentoAddonCard({ linha }) {
   );
 }
 
-// Mesma renderização somente-leitura do addon, mas para os extras embutidos
-// no próprio sistema (Aliados, Alma, Comidas — ver afty-extras-nativos.js):
-// sem o rótulo "Addon", porque não é um pacote instalável.
+// Somente-leitura, para os 3 extras embutidos no próprio sistema (Aliados,
+// Alma, Comidas — ver afty-extras-nativos.js). Vive dentro de
+// SimulacaoCombateCard desde 2026-09-13, junto dos controles que eles
+// alimentam, então o estilo é o de LINHA da lista de estados (rounded-lg,
+// não mais "mt-4 pt-4 border-t" de quem se empilha sob outra coisa.
 function FuncionamentoNativoCard({ linha }) {
   return (
-    <div className="mt-4 pt-4 border-t border-slate-700" title="Recurso embutido do sistema">
+    <div
+      className="rounded-lg border border-slate-800 bg-slate-950/40 px-2.5 py-2"
+      title="Recurso embutido do sistema"
+    >
       <FieldLabel>{linha.nome}</FieldLabel>
-      {String(linha.descricao ?? "").trim() && <TextoRico texto={linha.descricao} className="mt-2" />}
+      {String(linha.descricao ?? "").trim() && <TextoRico texto={linha.descricao} className="mt-1" />}
     </div>
   );
 }
@@ -4271,8 +4276,12 @@ function PerfilAmaldicoadoCard({
   const dslGrupos = useDslGrupos(derived);
   const fontesDano = fontesDanoDaFicha(draft, derived);
   // O principal sai da lista: ele já tem o bloco fixo acima, com os campos que
-  // moram direto no `core`.
-  const adicionais = funcionamentosComNativos(draft).filter((f) => !f.principal);
+  // moram direto no `core`. Os 3 nativos (Aliados, Alma, Comidas) TAMBÉM saem
+  // daqui desde 2026-09-13 (a pedido do autor): eles pararam de ser tratados
+  // como Funcionamento Básico (não competem mais no pool `exclusivo`, ver
+  // afty-efeitos.js) e ganharam espaço próprio junto dos controles que já
+  // mexem neles, no card "Simulação de Combate" (`SimulacaoCombateCard`).
+  const adicionais = funcionamentosComNativos(draft).filter((f) => !f.principal && !f.nativo);
   return (
     <Card
       title="Perfil Amaldiçoado"
@@ -4311,9 +4320,7 @@ function PerfilAmaldicoadoCard({
           border-t`, e o redesenho de 2026-08-12 quer os irmãos na MESMA largura
           do principal. O `fontesDano` veio do commit do colaborador. */}
       {adicionais.map((f) => (
-        f.nativo
-          ? <FuncionamentoNativoCard key={f.id} linha={f} />
-          : f.deAddon
+        f.deAddon
           ? <FuncionamentoAddonCard key={f.id} linha={f} />
           : (
             <FuncionamentoAdicionalCard
@@ -10386,6 +10393,14 @@ function SimulacaoCombateCard({ derived, patchCombate, gatilhosTreino = [], onGa
         </BoolChip>
       }
     >
+      {/* Os 3 nativos (Aliados, Alma, Comidas) saíram do card "Funcionamento
+          Básico" em 2026-09-13 e vieram para cá: é aqui que os controles
+          deles (graduação do aliado, refeições, "Golpe da rodada"...) já
+          moram, como estadosExtras logo abaixo. Descrição perto do controle,
+          em vez de espalhada em duas telas. */}
+      <div className="space-y-1 mb-1">
+        {FUNCIONAMENTOS_NATIVOS.map((f) => <FuncionamentoNativoCard key={f.id} linha={f} />)}
+      </div>
       {/* ⚠ FORA do bloco que "Em Combate" apaga, de propósito. Um gatilho de
           Treinamento não é estado de luta: o Cônjuge estar na cena mexe em
           Perícia e em Iniciativa, que valem antes de a briga começar. */}

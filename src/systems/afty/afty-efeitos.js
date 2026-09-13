@@ -963,12 +963,23 @@ export function efeitosManuaisDaFicha(creature) {
  * filtros de estágio do deriveAfty roteiam pelo canal sozinhos: um efeito de
  * `atributo` cai no estágio 1, um de `nivelAptidao` no pré-contexto, o resto no 2.
  *
- * ⚠ TODA linha leva `exclusivo: "funcionamentoBasico"` desde 2026-08-12, sem
- * exceção e sem interruptor por linha. É a regra do autor, e ela é dupla: dois
- * Funcionamentos Básicos não somam entre si (o pool é plano, então eles disputam
- * dentro da própria família) e nenhum deles soma com Feitiço, Shikigami,
- * Técnica Marcial ou Estilo da Sombra. Habilidade, talento, origem e treino
- * seguem somando por cima do vencedor, como sempre.
+ * ⚠ TODA linha do jogador (principal, adicionais e addon) leva
+ * `exclusivo: "funcionamentoBasico"` desde 2026-08-12, sem interruptor por
+ * linha. É a regra do autor, e ela é dupla: dois Funcionamentos Básicos não
+ * somam entre si (o pool é plano, então eles disputam dentro da própria
+ * família) e nenhum deles soma com Feitiço, Shikigami, Técnica Marcial ou
+ * Estilo da Sombra. Habilidade, talento, origem e treino seguem somando por
+ * cima do vencedor, como sempre.
+ *
+ * ⚠ OS 3 NATIVOS (Aliados, Alma, Comidas) SAÍRAM DO POOL em 2026-09-13, a
+ * pedido do autor: eles deixaram de ser tratados como Funcionamento Básico
+ * (não competem entre si nem com a Técnica/Feitiço/Shikigami/Estilo). São
+ * bônus de fora da criatura — companheiro, refeição, o estado da própria
+ * alma — e sempre somaram por cima na cabeça do autor, só o código é que os
+ * tratava como um quarto "Funcionamento". Continuam FORA do estágio de
+ * `funcionamentosComNativos` que o jogador edita: não viram Funcionamento
+ * novo, só saem do pool exclusivo. `fb.nativo` é a marca de
+ * `afty-extras-nativos.js`.
  *
  * ⚠ O `origem` do principal continua sendo `"tecnica"`, e não o id novo: ele já
  * aparece assim no hover de fontes das fichas existentes, e renomear trocaria o
@@ -992,8 +1003,10 @@ export function efeitosDaTecnica(creature) {
         expr,
         origem: fb.principal ? "tecnica" : `funcionamento:${fb.id}`,
         nome: fb.principal ? "Técnica" : fb.nome,
-        exclusivo: "funcionamentoBasico",
       };
+      // Os 3 nativos (Aliados, Alma, Comidas) não disputam pool: ver o aviso
+      // acima do exclusivo: "funcionamentoBasico".
+      if (!fb.nativo) ef.exclusivo = "funcionamentoBasico";
       const alvo = normalizarAlvoEfeito(e.alvo);
       if (alvo) ef.alvo = alvo;
       if (e.quando) ef.quando = String(e.quando).trim();

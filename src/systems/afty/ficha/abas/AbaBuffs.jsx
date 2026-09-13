@@ -5,7 +5,9 @@ import { COMBATE_ESTADOS } from "../../afty-combate";
 import { condicoesPorForca, fichaDaCondicao } from "../../afty-condicoes";
 import { getCanal } from "../../afty-efeitos";
 import { expandeHerdadas } from "../../afty-habilidades";
+import { FUNCIONAMENTOS_NATIVOS } from "../../afty-extras-nativos";
 import { sinalDe } from "../../ui/formato";
+import TextoRico from "../../ui/TextoRico";
 import CanalPicker from "../CanalPicker";
 import PainelDeConcessao from "../PainelDeConcessao";
 import PainelDeImitacao from "../PainelDeImitacao";
@@ -87,6 +89,22 @@ function ContadorDeExaustao({ valor, onValor }) {
         <Plus className="w-3 h-3" />
       </button>
     </span>
+  );
+}
+
+/* Os 3 nativos (Aliados, Alma, Comidas — ver afty-extras-nativos.js) vieram
+   para cá em 2026-09-13: são o texto de referência para os estados logo
+   abaixo, e não Funcionamento Básico. Pararam de competir no pool exclusivo
+   (afty-efeitos.js) e saíram da aba Habilidades, que é só o que o jogador
+   escreveu para a própria Técnica. */
+function CartaoNativo({ nome, descricao }) {
+  const corpo = String(descricao ?? "").trim();
+  if (!corpo) return null;
+  return (
+    <div className="afty-linha px-2.5 py-2">
+      <p className="text-[12px] font-semibold mb-1">{nome}</p>
+      <TextoRico texto={corpo} />
+    </div>
   );
 }
 
@@ -665,6 +683,13 @@ export default function AbaBuffs({
           </div>
         </Secao>
       )}
+
+      {/* ---------- os 3 nativos: referência para os estados de baixo ---------- */}
+      <Secao titulo="Recursos do Sistema">
+        {FUNCIONAMENTOS_NATIVOS.map((f) => (
+          <CartaoNativo key={f.id} nome={f.nome} descricao={f.descricao} />
+        ))}
+      </Secao>
 
       {/* ---------- catalogados ---------- */}
       {linhas.length > 0 && (
