@@ -12,8 +12,9 @@
       "tipo": "faixa",
       "min": 0,
       "max": 6,
+      "maxSemTalento": 3,
+      "maxRequerTalento": "tal_dancarino_das_laminas",
       "passo": 1,
-      "requerTalento": "tal_dancarino_das_laminas",
       "title": "Um acúmulo por ataque acertado, até 6. Errar um ataque tira um. Cada acúmulo dá +1 em Testes de Acerto e em Reflexos"
     }
   ],

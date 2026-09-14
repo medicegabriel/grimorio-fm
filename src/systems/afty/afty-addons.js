@@ -820,6 +820,9 @@ export function normalizarPacote(cru) {
     funcionamentos: Array.isArray(p.funcionamentos)
       ? p.funcionamentos.filter((x) => x && typeof x === "object").map(clonar)
       : [],
+    // Técnicas conhecidas fornecidas pelo pacote, isoladas por criatura.
+    estilos: Array.isArray(p.estilos) ? p.estilos.map(clonar) : [],
+    atributos: p.atributos && typeof p.atributos === "object" ? clonar(p.atributos) : {},
     /* Modelos de Feitiço próprios do pacote. Diferente de conteúdo de catálogo,
        eles não entram automaticamente na ficha nem gastam vaga enquanto forem
        só modelos. A pessoa escolhe um modelo já liberado e recebe uma cópia. */
@@ -975,6 +978,9 @@ export function estadosCombateDeAddon(creature, nivelMax = 5) {
         if (id) idsDoPacote.add(id);
       }
     }
+    const talentosDaFicha = new Set(
+      (Array.isArray(creature?.talentos) ? creature.talentos : []).map(String),
+    );
 
     for (const bruto of brutos) {
       const idLocal = String(bruto?.id ?? "").trim();
@@ -984,6 +990,20 @@ export function estadosCombateDeAddon(creature, nivelMax = 5) {
       if (!idLocal || nivel < nivelMin || nivel > nivelTeto) continue;
       const id = comPrefixo(pacoteId, idLocal);
       if (vistos.has(id)) continue;
+
+      // Algumas faixas continuam existindo sem um Talento, mas com teto menor.
+      // A referência segue a regra local primeiro do pacote, igual às entradas
+      // acrescentadas pelo Addon.
+      const maxRequerTalentoCru = String(bruto?.maxRequerTalento ?? "").trim();
+      const maxRequerTalento = idsDoPacote.has(maxRequerTalentoCru)
+        ? comPrefixo(pacoteId, maxRequerTalentoCru)
+        : maxRequerTalentoCru;
+      const usaMaxSemTalento = tipo === "faixa"
+        && bruto?.maxSemTalento != null
+        && maxRequerTalento
+        && !talentosDaFicha.has(maxRequerTalento);
+      const minFaixa = Math.trunc(Number(bruto.min) || 0);
+      const maxFaixaCru = usaMaxSemTalento ? bruto.maxSemTalento : bruto.max;
 
       const opcoes = (Array.isArray(bruto?.opcoes) ? bruto.opcoes : [])
         .filter((o) => {
@@ -1031,12 +1051,13 @@ export function estadosCombateDeAddon(creature, nivelMax = 5) {
           ),
         } : {}),
         ...(tipo === "faixa" ? {
-          min: Math.trunc(Number(bruto.min) || 0),
-          max: Math.max(Math.trunc(Number(bruto.min) || 0), Math.trunc(Number(bruto.max) || 0)),
+          min: minFaixa,
+          max: Math.max(minFaixa, Math.trunc(Number(maxFaixaCru) || 0)),
           passo: Math.max(1, Math.trunc(Number(bruto.passo) || 1)),
         } : {}),
         ...(tipo === "bool" && bruto.padrao != null ? { padrao: !!bruto.padrao } : {}),
         ...(bruto.foraCombate ? { foraCombate: true } : {}),
+        ...(bruto.expiraNaRodada ? { expiraNaRodada: true } : {}),
         dono: { id: `addon:${pacoteId}`, label: String(pacote?.nome ?? pacoteId) },
       });
     }
@@ -1112,6 +1133,39 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
   }
 
   const funcionamentosVistos = new Set();
+  const atributosValidos = new Set(["forca", "destreza", "constituicao", "inteligencia", "sabedoria", "presenca"]);
+  for (const [key, regra] of Object.entries(p.atributos)) {
+    if (!atributosValidos.has(key) || !regra || typeof regra !== "object"
+      || (regra.bonusBase != null && !Number.isInteger(regra.bonusBase))
+      || (regra.limiteFixo != null && (!Number.isInteger(regra.limiteFixo) || regra.limiteFixo < 0 || regra.limiteFixo > 32))) {
+      problemas.push(`Atributo de addon inválido: ${key}.`);
+    }
+  }
+  const estilosVistos = new Set();
+  for (const t of p.estilos) {
+    if (!t || !ID_ENTRADA_OK.test(t.id ?? "") || estilosVistos.has(t.id)
+      || !String(t.nome ?? "").trim() || !String(t.descricao ?? "").trim()) {
+      problemas.push("Técnica de Estilo de addon inválida ou repetida.");
+      continue;
+    }
+    estilosVistos.add(t.id);
+    for (const campo of ["maxImbuicoes", "custoImbuicao"]) {
+      if (t[campo] != null && (!Number.isInteger(t[campo]) || t[campo] < 1 || t[campo] > 99)) {
+        problemas.push(`${t.nome}: ${campo} inválido.`);
+      }
+    }
+    for (const campo of ["efeitos", "resultados"]) {
+      if (t[campo] != null && !Array.isArray(t[campo])) {
+        problemas.push(`${t.nome}: ${campo} precisa ser uma lista.`);
+        continue;
+      }
+      for (const e of t[campo] ?? []) {
+        if (!e || !String(e.expr ?? "").trim() || !String(e[campo === "efeitos" ? "canal" : "label"] ?? "").trim()) {
+          problemas.push(`${t.nome}: entrada inválida em ${campo}.`);
+        }
+      }
+    }
+  }
   for (const [i, funcionamento] of p.funcionamentos.entries()) {
     const onde = `Funcionamento Básico #${i + 1}`;
     const id = String(funcionamento.id ?? "").trim();
@@ -1193,6 +1247,17 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
     if (tipo === "faixa" && Math.trunc(Number(estado.max)) < Math.trunc(Number(estado.min) || 0)) {
       problemas.push(`${onde}: faixa inválida.`);
     }
+    if (estado.maxSemTalento != null) {
+      const minimo = Math.trunc(Number(estado.min) || 0);
+      const maximo = Math.trunc(Number(estado.max));
+      const reduzido = Math.trunc(Number(estado.maxSemTalento));
+      if (!String(estado.maxRequerTalento ?? "").trim()) {
+        problemas.push(`${onde}: "maxSemTalento" exige "maxRequerTalento".`);
+      }
+      if (reduzido < minimo || reduzido > maximo) {
+        problemas.push(`${onde}: "maxSemTalento" precisa ficar dentro da faixa.`);
+      }
+    }
   }
 
   const familias = Object.keys(p.acrescenta);
@@ -1210,6 +1275,8 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
     && p.concedeAptidoes.length === 0
     && p.adaptacoes.length === 0
     && p.funcionamentos.length === 0
+    && p.estilos.length === 0
+    && Object.keys(p.atributos).length === 0
     && p.feiticos.length === 0
     && p.estadosCombate.length === 0
   ) {

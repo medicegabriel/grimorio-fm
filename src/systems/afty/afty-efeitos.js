@@ -205,6 +205,7 @@ export const EFEITO_CANAIS = [
   { id: "margemCriticoTR", label: "Crítico em Resistência", alvo: "tr", nota: "quanto a margem DIMINUI, com piso de 2. Irmão do margemCritico do ataque" },
   { id: "proficienciaTR", label: "Treino em Resistência", alvo: "tr", aceitaSemCredito: true, nota: "irmão de proficienciaPericia, mesmas regras (1 Treinado, 2 Mestre, nunca rebaixa, e credita no orçamento)" },
   { id: "bonusAcerto",   label: "Acerto",                alvo: "ataque" },
+  { id: "ataquesExtras", label: "Ataques Extras",        nota: "quantidade adicional de Ataques Extras permitida por rodada" },
   // Irmão do `bonusAcerto` para quando o bônus é de UMA arma, e não da jogada
   // de ataque inteira ("+1 em jogadas de ataque com a arma escolhida", Treino
   // de Manejo de Arma). `bonusAcerto` mira a categoria (Corpo a Corpo, A
@@ -597,7 +598,7 @@ const GRUPOS_DE_CANAL = [
     "guardaBonus", "guardaVida",
   ]],
   ["Ataque e Dano", [
-    "cd", "bonusAcerto", "acertoArma", "danoBonus", "nivelDano", "dadosDano", "dadosNomeados",
+    "cd", "bonusAcerto", "acertoArma", "ataquesExtras", "danoBonus", "nivelDano", "dadosDano", "dadosNomeados",
     "margemCritico", "ignoraRD", "ignoraTodaRD", "ignoraImunidade", "removeResistencia", "propMarcial", "finezaAtaque",
   ]],
   // Atributo, limite e nível de trilha: o que a criatura É, em número próprio.

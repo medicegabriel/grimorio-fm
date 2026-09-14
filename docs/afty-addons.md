@@ -450,6 +450,31 @@ a usar o orçamento normal da ficha.
 converte a regra particular nas tabelas de Dano ou Auxiliar. `rolagens` oferece os dados exatos na Ficha.
 Passivas continuam usando `tipo: "passivo"` e podem trazer `efeitosPassivo` pelo Motor.
 
+O criador expõe todos esses campos do `personalizado`. Cada entrada de `rolagens` pode editar nome,
+quantidade, faces, valor fixo, repetições e tom de Dano ou Cura. Assim uma regra particular pode manter
+rolagens separadas para o impacto inicial e para um dano recorrente.
+
+Um modelo com `nivel: "max"` conserva as tabelas e o custo próprios de Técnica Máxima. Como a progressão
+normal de Feitiços para no Nível 5, o modelo passa a ser oferecido quando a criatura alcança esse teto.
+O Addon não abre a criação comum de outras Técnicas Máximas.
+
+Um modelo pode declarar um custo especial pago na ativação:
+
+```json
+{
+  "custoVidaAtivacao": {
+    "modo": "percentualAtual",
+    "percentual": 50,
+    "minimo": 1,
+    "somaAoDano": true
+  }
+}
+```
+
+O valor é calculado a partir da Vida atual no instante da primeira rolagem. O custo reduz a Vida
+real sem consumir PV temporário. `somaAoDano` acrescenta somente o valor pago nessa ativação ao
+valor fixo da rolagem. Vida perdida antes não entra. Com Vida zero, a ativação fica indisponível.
+
 ### O campo `libera`, e por que ele NÃO é o `permite`
 
 **O que ter o addon DESTRAVA para a criatura que o carrega.** As nove de hoje:
@@ -1540,6 +1565,28 @@ Uma definição pode trazer `faPadrao` para a entrada já nascer como Ferramenta
 `faFixa: true` para impedir que a configuração pronta seja desmontada e `equipadoPadrao: true`
 para ligar a arma assim que ela for adicionada. `etiquetas` mostra apenas os nomes das propriedades.
 O texto completo de cada uma fica no `title` da etiqueta.
+
+Uma faixa pode continuar disponível com um teto menor quando a criatura perde
+um Talento. `maxSemTalento` define esse teto e `maxRequerTalento` aponta para o
+Talento que libera o máximo normal. A referência pode usar o id local de uma
+entrada acrescentada pelo próprio pacote.
+
+`alcancePorTreino` permite que uma arma declare uma tabela de alcance pelo Bônus de Treinamento.
+Cada chave é um degrau e cada valor segue o formato de alcance curto e longo. Vale o maior degrau
+que não ultrapasse o Treino atual. Acima do último degrau, a arma conserva o último alcance. Antes
+do primeiro, continua valendo `props.alcance`.
+
+```json
+{
+  "props": { "alcance": [45] },
+  "alcancePorTreino": {
+    "2": [30, 60],
+    "3": [60, 120],
+    "4": [120, 240],
+    "5": [240, 360]
+  }
+}
+```
 
 `requerEstado` aponta para um Estado de Combate do mesmo pacote. A arma continua disponível no
 catálogo desde o primeiro nível, mas seus efeitos numéricos só entram enquanto aquele estado estiver

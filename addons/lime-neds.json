@@ -1,0 +1,80 @@
+{
+  "id": "lime-neds",
+  "nome": "Lime - Novo Estilo das Sombras",
+  "versao": "1.0.0",
+  "paraRaw": "afty",
+  "libera": ["estiloSombras"],
+  "atributos": {
+    "forca": { "nome": "Pacto ( restrição congenita )", "bonusBase": 4, "limiteFixo": 30 },
+    "constituicao": { "nome": "Pacto ( restrição congenita )", "bonusBase": 4, "limiteFixo": 30 },
+    "inteligencia": { "nome": "Pacto ( restrição congenita )", "limiteFixo": 6 },
+    "sabedoria": { "nome": "Pacto ( restrição congenita )", "limiteFixo": 6 }
+  },
+  "funcionamentos": [
+    {
+      "id": "pacto",
+      "nome": "Pacto ( restrição congenita )",
+      "descricao": "Pacto ( restrição congenita ) reduz o valor limite de inteligencia e sabedoria para 6, e Força e constituição para 30, alem de aumentar em + 4 o atributo base de ambos"
+    },
+    {
+      "id": "inovar_estilo",
+      "nome": "Inovar Estilo",
+      "descricao": "Inovar Estilo. Você escolhe um estilo que possua e pode inovar o funcionamento dele, desde que mantenha a mesma raiz, assim tornando-o mais potente. Como, por exemplo, o Estilo de Combate Defesa também adicionar um bônus em testes de resistência. Pode ser imbuido até 2 de cada vez, e eles ocupam cada 1 um espaço."
+    }
+  ],
+  "estadosCombate": [
+    { "id": "dentro", "label": "Dentro do Domínio Simples", "tipo": "bool" },
+    { "id": "defesa", "label": "Provocação Desafiadora ativada", "tipo": "bool", "expiraNaRodada": true },
+    { "id": "margem", "label": "Diferença contra o maior teste", "tipo": "faixa", "min": 0, "max": 100, "requerEstado": "defesa", "expiraNaRodada": true }
+  ],
+  "estilos": [
+    {
+      "id": "provocacao",
+      "nome": "NEdS - Provocação Desafiadora",
+      "maxImbuicoes": 2,
+      "custoImbuicao": 1,
+      "descricao": "Qualquer criatura hostil que iniciar o turno dentro do seu Domínio Simples deve realizar um Teste de Intuição ou Intimidação contra a sua Intimidação, ficando Provocada em caso de falha. Além disso, uma vez por rodada, você pode realizar a Ação Provocar como uma Ação Livre imediata assim que alguém entrar na área do seu Domínio. Se uma criatura falhar por 10 ou mais em qualquer um desses testes, ela sofre Desvantagem em Testes de Ataque contra você, e você recebe Vantagem em Testes de Resistência contra ela. A condição Provocada e os efeitos de Vantagem e Desvantagem duram até o próximo turno da criatura afetada.\n\n[Requer: Provocação Desafiadora]"
+    },
+    {
+      "id": "anulacao",
+      "nome": "NEdS - Anulação",
+      "maxImbuicoes": 2,
+      "custoImbuicao": 1,
+      "descricao": "Utilizando o peso da sua aura em seu Domínio Simples, quando você for alvo de um Feitiço, você pode usar sua Reação e gastar Energia Amaldiçoada igual ao custo do Feitiço original para realizar um Teste de Intimidação contra a Feitiçaria do conjurador. Em um sucesso, o Feitiço é completamente anulado, e para cada 2 pontos de diferença pelo qual o seu teste superar o do adversário, o custo de Energia Amaldiçoada gasto para ativar esta técnica é reduzido em 1.\n\n[Requer: NEdS - Provocação Desafiadora, Aura Anuladora]"
+    },
+    {
+      "id": "amizade",
+      "nome": "NEdS - Poder da Amizade",
+      "maxImbuicoes": 2,
+      "custoImbuicao": 1,
+      "descricao": "Os efeitos de Estilo do seus Novos Estilos das Sombras passam a afetar uma quantidade de criaturas que Lime considera como \"Amigos\" igual a 1 + Métade do seu Nível de Domínio (arredondado para cima).\n\n[Requer: 20 de Carisma, \"Amigos\"]",
+      "resultados": [{ "label": "Amigos", "expr": "(presenca >= 20) * (1 + teto(dom / 2))", "porImbuicao": true }]
+    },
+    {
+      "id": "aumento_defesa",
+      "nome": "NEdS - Aumento de Defesa",
+      "adendo": "O Efeito dura até o começo da proxima rodada",
+      "maxImbuicoes": 2,
+      "custoImbuicao": 1,
+      "descricao": "Imbuindo sua Aura Maciça em seu Domínio Simples através de um Voto de Restrição, você converte a sua presença em uma defesa impenetrável. Ao ativar a sua Provocação Desafiadora, você recebe um bônus na sua Defesa igual ao valor da sua Aura Maciça. Além disso, para cada 2 pontos de diferença pelos quais o seu teste superar o do adversário, esse bônus de Defesa aumenta em +1, sendo este aumento limitado a um valor máximo igual à sua Maestria.\n\n[Requer: Aura Maciça, NEdS - Provocação Desafiadora]",
+      "efeitos": [
+        {
+          "canal": "defesa",
+          "expr": "au + min(piso(lime_neds_margem / 2), maestria)",
+          "quando": "lime_neds_defesa e tem_aura_macica e estilo_lime_neds_provocacao >= 1",
+          "porImbuicao": true,
+          "acumulaComEstilo": true
+        }
+      ]
+    },
+    {
+      "id": "reforcada",
+      "nome": "NEdS - Reforçada",
+      "adendo": "Ela apenas soma em Rd geral ela não perde o Rd fisico",
+      "maxImbuicoes": 2,
+      "custoImbuicao": 1,
+      "descricao": "Ao canalizar a energia das suas Manoplas Elementais através do espaço delimitado pelo seu Domínio Simples, você altera a densidade e a natureza da sua barreira defensiva. Enquanto estiver dentro da área do seu Domínio, os efeitos da sua Aura Reforçada são aprimorados, fazendo com que a Redução de Dano (RD) física concedida por ela seja convertida em RD Geral, tornando-o capaz de absorver e mitigar impactos de qualquer tipo de fonte ou elemento.\n\n[Requer: Aura Reforçada, Manoplas Elementais]",
+      "efeitos": [{ "canal": "rdGeral", "expr": "dobro(au)", "quando": "lime_neds_dentro e tem_aura_reforcada", "porImbuicao": true }]
+    }
+  ]
+}

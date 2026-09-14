@@ -230,6 +230,25 @@ AD.aplicarAddons([PACOTE]);
 t("marcas declaradas listam a do addon",
   AD.marcasDeclaradas().find((m) => m.marca === "adaptacao")?.quantas, 2);
 
+/* ---- modelos de Técnica Máxima ---- */
+const COM_TECNICA_MAXIMA = {
+  id: "tecnica-maxima", nome: "Técnica Máxima", versao: "1.0.0",
+  feiticos: [{ id: "fim", nome: "Fim", tipo: "personalizado", nivel: "max" }],
+};
+const criaturaComMax = createBlankAfty();
+criaturaComMax.addons = [COM_TECNICA_MAXIMA];
+t("modelo maximo ainda nao aparece no teto 4", AD.feiticosDeAddon(criaturaComMax, 4).length, 0);
+t("modelo maximo aparece no teto 5", AD.feiticosDeAddon(criaturaComMax, 5).length, 1);
+t("modelo conserva o nivel maximo", AD.feiticosDeAddon(criaturaComMax, 5)[0]?.nivel, "max");
+t("modelo ainda nao copiado fica pendente",
+  AD.modelosPendentesDeAddon(criaturaComMax, 5, [])[0]?.situacaoModelo, "novo");
+const modeloMaximo = AD.feiticosDeAddon(criaturaComMax, 5)[0];
+t("modelo copiado na mesma versao sai dos pendentes",
+  AD.modelosPendentesDeAddon(criaturaComMax, 5, [modeloMaximo]).length, 0);
+t("modelo copiado em versao antiga pede atualizacao",
+  AD.modelosPendentesDeAddon(criaturaComMax, 5, [{ ...modeloMaximo, addonVersao: "0.9.0" }])[0]?.situacaoModelo,
+  "desatualizado");
+
 /* ---- limpeza, para nao deixar o mundo sujo ---- */
 AD.limparAddons();
 t("mundo limpo no fim", H.AFTY_HABILIDADES.length, QUANTAS_RAW);

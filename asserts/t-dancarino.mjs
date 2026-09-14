@@ -115,23 +115,16 @@ const temporarios = (d6.efeitos?.detalhes ?? [])
 t("os dois sao temporarios", temporarios, ["Ritmo:bonusAcerto", "Ritmo:bonusTR"]);
 
 /* ============================================================ */
-/* 4. O CONTADOR SÓ EXISTE PARA QUEM PEGOU O TALENTO             */
+/* 4. PERDER O TALENTO REDUZ O TETO                              */
 /* ============================================================ */
-/* ⚠ O `requerTalento` num estado de ADDON nasceu com este pacote (2026-09-07).
-   O catálogo do raw já tinha as três portas de dono, e o extra de addon não as
-   carregava: o estado existia pelo simples fato de o PACOTE estar instalado, e o
-   Ritmo aparecia no painel de quem não tinha pego o Talento. Um contador que se
-   mexe e não muda número nenhum.
-
-   Os outros extras (Habilidade Única de item, imbuição de Estilo) não precisam
-   da porta porque a existência do interruptor já depende do item equipado ou da
-   Técnica conhecida. O addon não tem esse portão natural. */
+/* A inovação de Estilo mantém o Ritmo disponível quando a criatura perde o
+   Talento, mas limita a faixa a 3. Os efeitos do Talento continuam fechados,
+   então o contador preservado não concede Acerto nem Reflexos sozinho. */
 const semTalento = deriveAfty(ficha(6, { comTalento: false }));
 t("sem o Talento o bonus nao vem", acerto(semTalento), 6);
 t("e o Reflexos tambem nao", reflexos(semTalento), 8);
-/* O estado declara o dono, e o id sai com o namespace do pacote: é o mesmo id
-   que a ficha guarda, senão o portão nunca fecharia. */
-t("o estado declara o dono", extraDe(semTalento)?.requerTalento, TALENTO);
+t("sem o Talento o contador permanece", extraDe(semTalento)?.tipo, "faixa");
+t("sem o Talento o teto cai para 3", extraDe(semTalento)?.max, 3);
 t("e ele bate com o id do Talento na ficha", deriveAfty(ficha(6)).talentos.escolhidas, [TALENTO]);
 
 /* Um estado de addon SEM `requerTalento` continua aparecendo para todos, que é

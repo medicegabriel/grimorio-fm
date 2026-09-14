@@ -825,6 +825,7 @@ export function proximaRodada(sessao, derived = null) {
   const base = {
     ...sessao,
     rodada: sessao.rodada + 1,
+    combate: expirarEstadosDaRodada(sessao.combate, derived),
     buffs: sessao.buffs.map(desce).filter(Boolean),
     condicoes: sessao.condicoes.map(desce).filter(Boolean),
   };
@@ -919,8 +920,10 @@ export function descansar(sessao, derived) {
     peTempFontes: {},
     exaustao: Math.max(0, inteiro(sessao.exaustao, 0))
       + (sessao.combate?.invencivelPendenteExaustao ? 1 : 0),
-    combate: { ...(sessao.combate ?? {}), invencivelSobOSol: false,
-      invencivelRodadas: 0, invencivelPendenteExaustao: false },
+    combate: expirarEstadosDaRodada({
+      ...(sessao.combate ?? {}), invencivelSobOSol: false,
+      invencivelRodadas: 0, invencivelPendenteExaustao: false,
+    }, derived),
     rodada: 0,
     // A Guarda volta a zero com a rodada: fora de combate não há guarda erguida,
     // e o próximo `iniciaCombate` (ou a saída da rodada 0) a reergue cheia.
@@ -939,6 +942,15 @@ export function descansar(sessao, derived) {
 }
 
 const chaveUsoEstado = (id) => `estado:${id}:rodada`;
+
+/** Estados de addon com duração até a próxima rodada também expiram no descanso. */
+function expirarEstadosDaRodada(combate, derived) {
+  const out = { ...combate };
+  for (const e of derived?.combate?.estadosExtras ?? []) {
+    if (e.expiraNaRodada) out[e.id] = e.tipo === "faixa" ? (e.min ?? 0) : false;
+  }
+  return out;
+}
 
 /** Liga ou desliga um efeito condicional de Treinamento nesta sessão. */
 export function alteraTreinoAtivo(sessao, id, valor) {

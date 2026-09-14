@@ -101,6 +101,7 @@ import { resolveTestes, resolveDano, catalogoPericiasDaFicha, ehPericiaOficio, a
 import { resolveDefesasDano, sanearDefesasDano } from "./afty-defesas-dano";
 import { resolveCatarse } from "./afty-catarse";
 import { resolveCarteira } from "./afty-carteira";
+import { atributosDosAddons } from "./afty-addons-atributos";
 import { resolveCura } from "./afty-cura";
 import {
   problemasDeAddon, marcasDeclaradas, primitivasDaCriatura, liberacoesDaCriatura, precosDeCatarse,
@@ -471,6 +472,7 @@ export function deriveAfty(creature, opcoes = {}) {
   // autor confirmou (2026-07-29) que o limite é do Restringido, não de um
   // caminho específico até ele.
   const limBase = (creature?.attrLimite && typeof creature.attrLimite === "object") ? creature.attrLimite : {};
+  const atributosAddon = atributosDosAddons(creature);
   const limTipo = tipo === "restringido"
     ? { forca: ATTR_LIMITE_MAX, destreza: ATTR_LIMITE_MAX, constituicao: ATTR_LIMITE_MAX }
     : {};
@@ -482,7 +484,7 @@ export function deriveAfty(creature, opcoes = {}) {
   // de origem). O limite FINAL sai mais abaixo, somando o canal `limiteAtributo`
   // do Motor, que só existe depois de os catálogos serem resolvidos.
   const limiteBaseOf = (key) =>
-    Math.min(
+    Number.isFinite(atributosAddon.limite(key)) ? atributosAddon.limite(key) : Math.min(
       Math.max(limBase[key] ?? ATTR_LIMITE_PADRAO, limOrigem[key] ?? 0)
         + (desenv[key] || 0) + (limPool[key] || 0),
       ATTR_LIMITE_MAX,
@@ -515,11 +517,11 @@ export function deriveAfty(creature, opcoes = {}) {
      `attrBaseFinal`, logo depois do `attrLimiteEfetivo`. */
   const somaCrua = {};
   const eff = (key) => {
-    const somado = (a[key] ?? 10) + (nivelAlloc[key] || 0) + (desenv[key] || 0) + (attrBonus[key] || 0);
+    const somado = (a[key] ?? 10) + atributosAddon.bonus(key) + (nivelAlloc[key] || 0) + (desenv[key] || 0) + (attrBonus[key] || 0);
     somaCrua[key] = somado;
     const dentroDoLimite = Math.min(somado, limiteBaseOf(key));
     perdaNoLimite[key] = somado - dentroDoLimite;
-    const comEquip = Math.min(dentroDoLimite + (equip.attrBonus[key] || 0), ATTR_LIMITE_MAX);
+    const comEquip = Math.min(dentroDoLimite + (equip.attrBonus[key] || 0), ATTR_LIMITE_MAX, atributosAddon.limite(key));
     folgaEquip[key] = comEquip - dentroDoLimite;
     return comEquip;
   };
@@ -1011,11 +1013,12 @@ export function deriveAfty(creature, opcoes = {}) {
   // limite quanto para o valor (o autor confirmou em 2026-07-29 que a Lendária
   // sobe as DUAS coisas em 2, então num atributo de limite 30 ela leva a 32).
   const tetoSistemaDe = (key) =>
-    furaTetoEm(efPreContexto, key) || furaTetoEm(efMontante, key)
+    Math.min(atributosAddon.limite(key), furaTetoEm(efPreContexto, key) || furaTetoEm(efMontante, key)
       ? ATTR_LIMITE_ABSOLUTO
-      : ATTR_LIMITE_MAX;
+      : ATTR_LIMITE_MAX);
   const attrLimiteEfetivo = Object.fromEntries(
-    ATTR_KEYS.map((k) => [k, Math.min(limiteBaseOf(k) + limiteMotorDe(k), tetoSistemaDe(k))]),
+    ATTR_KEYS.map((k) => [k, Number.isFinite(atributosAddon.limite(k))
+      ? atributosAddon.limite(k) : Math.min(limiteBaseOf(k) + limiteMotorDe(k), tetoSistemaDe(k))]),
   );
 
   /* ---------- O QUE O LIMITE DE ESTÁGIO 0 CORTOU, DEVOLVIDO ---------- */
@@ -1736,6 +1739,13 @@ export function deriveAfty(creature, opcoes = {}) {
   // não segunda aplicação: quem entra na conta é o `efeitosTodos` acima. Roda com
   // o contexto FINAL, então uma expressão que lê `mod_forca` vê a Força fechada.
   const ctxTecnica = montarCtx(attrEff, modByAttr);
+  // Resultados de mesa são números consultáveis, sem inventar canais de stat.
+  for (const t of estilo.conhecidas) {
+    t.resultadosCalculados = (t.resultados ?? []).map((r) => ({
+      label: r.label,
+      valor: evalNumberDsl(r.expr, ctxTecnica, 0) * (r.porImbuicao ? t.vezes : 1),
+    }));
+  }
   // A Habilidade Unica da Ferramenta precisa mostrar o mesmo valor que entra no
   // Motor. O equipamento e carregado antes de os atributos fecharem, mas a
   // expressao permanece viva e e reavaliada aqui com o contexto FINAL. As
@@ -2021,6 +2031,7 @@ export function deriveAfty(creature, opcoes = {}) {
   // tem canal próprio (autor, 2026-07-29). Nenhum Tipo nem Patamar concede base:
   // só existe quem tem um poder que dá (hoje o Talento Alma Inquebrável).
   const rdAlma = canal("rdAlma");
+  const ataquesExtras = Math.max(0, Math.trunc(canal("ataquesExtras")));
 
   // ---------- CD ----------
   // O DIVISOR fica numa constante porque ele é o que a UI mostra como fonte do
@@ -2931,6 +2942,7 @@ export function deriveAfty(creature, opcoes = {}) {
       ...doMotor("rdEspecifico"),
     ],
     rdAlma: doMotor("rdAlma"),
+    ataquesExtras: doMotor("ataquesExtras"),
     rdFisico: [
       ...rdPartesDe("rdFisico"),
       ...doMotor("rdFisico"),
@@ -3005,6 +3017,7 @@ export function deriveAfty(creature, opcoes = {}) {
     const perdido = perdaNoLimite[k] || 0;
     partesAtributo[k] = [
       { label: `Base (${METODO_LABEL[creature?.attrMethod || "pontos"]})`, valor: a[k] ?? 10 },
+      ...(atributosAddon.fontes[k] ?? []).filter((f) => f.bonusBase).map((f) => ({ label: f.nome, valor: f.bonusBase })),
       ...(nivelAlloc[k] ? [{ label: "Pontos de Nível", valor: nivelAlloc[k] }] : []),
       ...(attrBonus[k] ? [{ label: "Origem", valor: attrBonus[k] }] : []),
       ...(desenv[k] ? [{ label: "Desenvolvimento Inesperado", valor: desenv[k] }] : []),
@@ -3027,7 +3040,10 @@ export function deriveAfty(creature, opcoes = {}) {
        teto do SISTEMA em vez do limite do atributo. */
     const somaDoLimite = partesDoLimite.reduce((soma, x) => soma + (Number(x.valor) || 0), 0);
     const acimaDoTeto = somaDoLimite - attrLimiteEfetivo[k];
-    partesLimite[k] = acimaDoTeto > 0
+    const fonteFixa = (atributosAddon.fontes[k] ?? []).find((f) => f.limiteFixo === attrLimiteEfetivo[k]);
+    partesLimite[k] = fonteFixa
+      ? [...partesDoLimite, { label: fonteFixa.nome, valor: -acimaDoTeto }]
+      : acimaDoTeto > 0
       ? [...partesDoLimite, { label: `Teto do sistema ${attrLimiteEfetivo[k]}`, texto: `−${acimaDoTeto}` }]
       : partesDoLimite;
   }
@@ -3134,6 +3150,7 @@ export function deriveAfty(creature, opcoes = {}) {
     calc,                 // valores calculados (antes do override)
     isOverridden,
     maestria: bt,
+    ataquesExtras,
     almaMult,
     /* ⚠ O que sai é o `almaMaxFinal`: na criatura é `100 + Melhoria de Alma`, e
        no jogador é o PV, porque a Integridade da Alma dele é igual ao máximo de
@@ -3233,6 +3250,7 @@ export function deriveAfty(creature, opcoes = {}) {
     attrTetoAplicado: tetoAplicado,
     attrDesenv: desenv,   // pontos de Desenvolvimento Inesperado por atributo
     attrBonus,            // bônus de atributo da origem (efetivo)
+    attrBonusBaseAddon: Object.fromEntries(ATTR_KEYS.map((k) => [k, atributosAddon.bonus(k)])),
     attrEquip: equip.attrBonus, // acessórios de atributo (passam o limite, param em 30)
     attrPerda: perdaNoLimite,   // ponto de bônus desperdiçado no limite, por atributo
     // Quanto o Motor soma em cada atributo. O builder RESERVA este espaço no pool

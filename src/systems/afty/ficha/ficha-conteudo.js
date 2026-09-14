@@ -221,12 +221,13 @@ export function conteudoDaFicha(creature, derived) {
         tags: [
           t.tipo === "especial" ? "Especial" : null,
           t.vezes > 0 ? `Imbuída ${t.vezes}×` : null,
+          ...(t.resultadosCalculados ?? []).map((r) => `${r.label}: ${r.valor}`),
         ].filter(Boolean),
         // O estouro é da combinação inteira, e não de uma Técnica só, mas o
         // aviso tem de aparecer onde o jogador está olhando.
-        aviso: estilo.excedeuVagas
+        aviso: t.aviso || (estilo.excedeuVagas
           ? `${estilo.gastoVagas} imbuições, o Nível de Aptidão em Domínio permite ${estilo.vagas}`
-          : null,
+          : null),
       }));
     }
   }

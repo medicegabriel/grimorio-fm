@@ -1073,6 +1073,14 @@ export default function AbaAcoes({
           titulo="Dano"
           controles={(
             <>
+              {derived.ataquesExtras > 0 && (
+                <span className="afty-chip" title="Ataques Extras adicionais nesta rodada">
+                  Ataques Extras <NumeroComFontes
+                    valor={derived.ataquesExtras}
+                    partes={derived.partes?.ataquesExtras}
+                  />
+                </span>
+              )}
               <button
                 type="button"
                 className="afty-botao text-[10px]"

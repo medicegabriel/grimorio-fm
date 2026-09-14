@@ -268,6 +268,10 @@ export function estilosDaFicha(creature) {
       // releitura o remove antes do próximo chegar. Ver funcionamentosDaFicha.
       nomeCru: String(bruta.nome ?? ""),
       descricao: String(bruta.descricao ?? ""),
+      // Especiais antigas ocupam uma vaga. O campo existe para regras que
+      // declaram outro custo, sem obrigar a duplicar a Técnica na ficha.
+      custoImbuicao: inteiro(bruta.custoImbuicao, 1, 99),
+      maxImbuicoes: inteiro(bruta.maxImbuicoes, 1, 99),
       // ⚠ O `modo` de cada linha é descartado: ele morreu em 2026-08-10, quando
       // a Especial passou a exigir imbuição. Deixá-lo passar manteria um campo
       // morto viajando na ficha a cada edição, sem editor que o mostrasse.
@@ -372,7 +376,14 @@ export function resolveEstilos(
   { origemId = null, nd = 1, dom = 0, liberado = false, imbuicoesExtras = 0 } = {},
 ) {
   const disponivel = estiloDisponivel(origemId, nd, liberado);
-  const conhecidasCru = estilosDaFicha(creature);
+  // Não entram em estilosDaFicha: o editor grava só as técnicas particulares,
+  // nunca uma cópia do pacote que sobreviveria à desinstalação.
+  const deAddon = (Array.isArray(creature?.addons) ? creature.addons : []).flatMap((p) =>
+    (Array.isArray(p?.estilos) ? p.estilos : []).filter((t) => t?.id && t?.nome).map((t) => ({
+    ...t, id: `${p.id}:${t.id}`, tipo: "especial", deAddon: true,
+    descricao: [t.descricao, t.adendo].filter(Boolean).join("\n\n"),
+  })));
+  const conhecidasCru = [...estilosDaFicha(creature), ...deAddon];
   const avisos = [];
 
   const vagas = Math.max(
@@ -385,15 +396,17 @@ export function resolveEstilos(
   // A soma disso é o que ocupa as vagas do Domínio Simples.
   const pedido = conhecidasCru.map((t) => {
     const def = t.tipo === "tabela" ? TABELA_BY_ID[t.id] : null;
-    // ⚠ A Especial não tem cláusula de repetição no livro, então ela ocupa UMA
-    // vaga. Assunção anotada: só repete quem o texto manda repetir.
-    const teto = t.tipo === "tabela" ? (def?.max ?? vagas) : 1;
-    return { t, def, teto, vezes: inteiro(combate[estadoDaTecnica(t.id)], 0, Math.max(0, teto)) };
+    // ⚠ A Especial não tem cláusula de repetição no livro, então ela só pode
+    // ser ligada uma vez. O custo dessa ligação é próprio da Técnica e fica em
+    // uma vaga nas fichas antigas.
+    const teto = t.tipo === "tabela" ? (def?.max ?? vagas) : inteiro(t.maxImbuicoes, 1, 99);
+    const custo = t.tipo === "especial" ? inteiro(t.custoImbuicao, 1, 99) : 1;
+    return { t, def, teto, custo, vezes: inteiro(combate[estadoDaTecnica(t.id)], 0, Math.max(0, teto)) };
   });
-  const gastoVagas = pedido.reduce((s, p) => s + p.vezes, 0);
+  const gastoVagas = pedido.reduce((s, p) => s + (p.vezes * p.custo), 0);
   const folga = vagas - gastoVagas;
 
-  const conhecidas = pedido.map(({ t, def, teto, vezes }) => ({
+  const conhecidas = pedido.map(({ t, def, teto, custo, vezes }) => ({
     ...t,
     def,
     nome: t.tipo === "tabela"
@@ -402,10 +415,14 @@ export function resolveEstilos(
     descricao: t.tipo === "tabela" ? (def?.descricao ?? "") : t.descricao,
     estado: estadoDaTecnica(t.id),
     vezes,
+    custoImbuicao: custo,
     // O teto da faixa na bancada: nem passa do que o livro escreve, nem estoura
     // as vagas do Domínio. Mesmo desenho do orçamento de efeitos que existia
     // antes, e é o que impede a combinação de exceder sem aviso.
-    maxImbuicao: Math.max(vezes, Math.min(teto, vezes + Math.max(0, folga))),
+    maxImbuicao: Math.max(
+      vezes,
+      Math.min(teto, vezes + Math.floor(Math.max(0, folga) / custo)),
+    ),
   }));
 
   if (disponivel && gastoVagas > vagas) {
@@ -442,6 +459,10 @@ export function resolveEstilos(
         min: 0,
         max: t.maxImbuicao,
         requerEstado: ESTADO_ESTILO_ATIVO,
+        title: [
+          t.descricao,
+          t.custoImbuicao > 1 ? `${t.custoImbuicao} vagas de imbuição` : null,
+        ].filter(Boolean).join("\n\n"),
       })),
     ]
     : [];
@@ -508,7 +529,7 @@ export function efeitosDoEstilo(creature, ctx = {}) {
       const proprio = String(e?.quando ?? "").trim();
       const ef = {
         canal,
-        expr,
+        expr: e.porImbuicao ? `(${expr}) * ${t.estado}` : expr,
         // Preso ao Domínio Simples é sempre temporário: ele não pode contar para
         // pré-requisito, que é a regra do autor para tudo que liga e desliga.
         quando: proprio ? `${porta} && (${proprio})` : porta,
@@ -517,6 +538,8 @@ export function efeitosDoEstilo(creature, ctx = {}) {
         origem,
         nome: t.nome,
       };
+      // Exceção declarada pelo pacote para efeitos que somam ao Estilo comum.
+      if (t.deAddon && e.acumulaComEstilo) delete ef.exclusivo;
       if (e.alvo) ef.alvo = e.alvo;
       out.push(ef);
     }

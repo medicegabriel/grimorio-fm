@@ -126,6 +126,29 @@ e `docs/afty-formulas-base.md` (fórmulas).
 
 ---
 
+## SESSÃO DE 2026-09-14: ADDONS DE ESTILO, ATRIBUTOS E AÇÕES
+
+O addon da Lime passou a fornecer cinco técnicas do Novo Estilo das Sombras sem
+copiá-las para a ficha. Cada técnica pode ser imbuída duas vezes, cada imbuição
+ocupa uma vaga. O Pacto aplica +4 na base e limite 30 em Força e Constituição,
+além de limite 6 em Inteligência e Sabedoria. A Reforçada soma RD Geral sem
+remover a RD Física. O Aumento de Defesa usa a maior diferença adversária e
+expira seus controles no começo da rodada seguinte. Poder da Amizade mostra o
+resultado calculado a partir de Presença e Domínio.
+
+O motor de addons agora aceita atributos, técnicas de Estilo, resultados
+calculados, repetição por imbuição e estados que expiram na rodada. O canal
+`ataquesExtras` chega à ficha e o Dançarino das Lâminas conserva Ritmo com teto
+3 sem o Talento, subindo para 6 com ele. Modelos de Feitiço podem preservar o
+nível de Técnica Máxima, pagar custo de Vida na ativação e armas de addon podem
+declarar alcance por Bônus de Treinamento.
+
+Os testes novos usam cenários mínimos e não dependem de addons privados nem de
+exportações completas de personagem. A integração foi preparada sobre
+`origin/main` em `3d5ad26`.
+
+---
+
 ## INTEGRAÇÃO DE 2026-09-13: VAGAS DE HABILIDADE
 
 O commit ca465e0 havia somado o canal vagasHabilidade ao contador de Feitiços e

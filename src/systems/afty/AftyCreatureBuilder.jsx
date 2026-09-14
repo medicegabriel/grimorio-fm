@@ -396,7 +396,7 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
         const base = d.attributes[a.key] || 0;
         const bonus = bonusMap[a.key] || 0;
         const lim = derived.attrLimiteEfetivo?.[a.key] ?? ATTR_LIMITE_PADRAO;
-        const reservado = (derived.attrDesenv?.[a.key] || 0) + (derived.attrMotor?.[a.key] || 0);
+        const reservado = (derived.attrDesenv?.[a.key] || 0) + (derived.attrMotor?.[a.key] || 0) + (derived.attrBonusBaseAddon?.[a.key] || 0);
         const maxNivel = Math.max(0, lim - base - bonus - reservado);
         if ((nextNivel[a.key] || 0) > maxNivel) nextNivel[a.key] = maxNivel;
       }
@@ -3103,6 +3103,15 @@ function TecnicaTabelaLinha({ def, escolhida, onToggle }) {
 /* Uma Técnica de Estilo Especial: nome, Motor livre e texto. Sem `comModo` no
    editor, porque nada do Estilo fica no ar sem o Domínio Simples imbuído. */
 function EstiloEspecialCard({ linha, efeitosMotor, fontesDano, pericias, dslGrupos, onPatch, onRemove }) {
+  if (linha.deAddon) return (
+    <div className="rounded-lg border border-purple-900/50 p-3" title={linha.descricao}>
+      <div className="text-sm font-semibold">{linha.nome}</div>
+      {linha.aviso && <div className="flex items-center gap-1 text-xs text-amber-400"><AlertTriangle className="w-3 h-3" />{linha.aviso}</div>}
+      {(linha.resultadosCalculados ?? []).map((r) => (
+        <div key={r.label} className="text-xs text-slate-400">{r.label}: {r.valor}</div>
+      ))}
+    </div>
+  );
   return (
     <div className="rounded-lg border border-purple-900/50 bg-purple-950/10 p-3 space-y-3">
       <div className="flex flex-wrap items-center gap-2">
@@ -7990,7 +7999,7 @@ function AttributesCard({ draft, derived, patch, patchCore, patchAttr, patchNive
           // concessão ter prioridade e o ponto alocado voltar ao pool, e o Motor
           // entrou nessa conta em 2026-07-29 (antes ele furava o limite, então não
           // havia espaço para reservar).
-          const reservado = bonus + dev + (derived.attrMotor?.[a.key] || 0);
+          const reservado = bonus + dev + (derived.attrMotor?.[a.key] || 0) + (derived.attrBonusBaseAddon?.[a.key] || 0);
           const nivMax = Math.max(niv, Math.min(niv + nivelRestante, effLim - base - reservado));
           const miniLbl = "text-[10px] font-semibold uppercase tracking-wider text-slate-500 sm:hidden";
           // Chips de fonte. VERDE = concedido de fora e grátis (a convenção do
