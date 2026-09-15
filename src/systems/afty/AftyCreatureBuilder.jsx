@@ -59,7 +59,7 @@ import {
 } from "./afty-atributos";
 import {
   ETAPAS_POR_LINHA, focosGastos, avaliarRequisito, requisitosDaEtapa, rotuloAlvo, treinamentosDaOrigem,
-  SEP_ALVO_ACAO,
+  SEP_ALVO_ACAO, linhasComEscolhaFeiticos,
 } from "./afty-treinamentos";
 import { novaForja, novoItemForja, forjasDaFicha, focosDeForja, itensComNome, FORJA_TIPOS } from "./afty-forja";
 import {
@@ -585,6 +585,9 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
       const reducoes = d.reducoesCustoFeitico && typeof d.reducoesCustoFeitico === "object"
         ? d.reducoesCustoFeitico
         : {};
+      const treinoEscolha = d.treinoEscolhaFeiticos && typeof d.treinoEscolhaFeiticos === "object"
+        ? d.treinoEscolhaFeiticos
+        : {};
       return {
         ...d,
         feiticos: (Array.isArray(d.feiticos) ? d.feiticos : []).filter((f) => f.id !== id),
@@ -595,10 +598,18 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
             ? reducoes.manipulacao.filter((feiticoId) => feiticoId !== id)
             : [],
         },
+        treinoEscolhaFeiticos: Object.fromEntries(
+          Object.entries(treinoEscolha).map(([linhaId, ids]) => [
+            linhaId,
+            Array.isArray(ids) ? ids.filter((feiticoId) => feiticoId !== id) : [],
+          ]),
+        ),
       };
     });
   const setReducoesCustoFeitico = (proxima) =>
     setDraft((d) => ({ ...d, reducoesCustoFeitico: proxima }));
+  const setTreinoEscolhaFeiticos = (proxima) =>
+    setDraft((d) => ({ ...d, treinoEscolhaFeiticos: proxima }));
   const patchFeitico = (id, partial) =>
     setDraft((d) => ({
       ...d,
@@ -1464,7 +1475,7 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
               removerPericia={removerPericia}
             />
           )}
-{tabAtiva === "habilidades" && <TabHabilidades draft={draft} derived={derived} patchCore={patchCore} toggleArmaDedicada={toggleArmaDedicada} addFeitico={addFeitico} updateFeitico={updateFeitico} removeFeitico={removeFeitico} patchFeitico={patchFeitico} duplicarFeitico={duplicarFeitico} setReducoesCustoFeitico={setReducoesCustoFeitico} toggleEstiloTabela={toggleEstiloTabela} addEstiloEspecial={addEstiloEspecial} removeEstilo={removeEstilo} patchEstilo={patchEstilo} addFuncionamento={addFuncionamento} removeFuncionamento={removeFuncionamento} patchFuncionamento={patchFuncionamento} setGeralVezes={setGeralVezes} addDominio={addDominio} removeDominio={removeDominio} patchDominio={patchDominio} setDominioAtivo={setDominioAtivo} sistema={sistema} />}
+{tabAtiva === "habilidades" && <TabHabilidades draft={draft} derived={derived} patchCore={patchCore} toggleArmaDedicada={toggleArmaDedicada} addFeitico={addFeitico} updateFeitico={updateFeitico} removeFeitico={removeFeitico} patchFeitico={patchFeitico} duplicarFeitico={duplicarFeitico} setReducoesCustoFeitico={setReducoesCustoFeitico} setTreinoEscolhaFeiticos={setTreinoEscolhaFeiticos} toggleEstiloTabela={toggleEstiloTabela} addEstiloEspecial={addEstiloEspecial} removeEstilo={removeEstilo} patchEstilo={patchEstilo} addFuncionamento={addFuncionamento} removeFuncionamento={removeFuncionamento} patchFuncionamento={patchFuncionamento} setGeralVezes={setGeralVezes} addDominio={addDominio} removeDominio={removeDominio} patchDominio={patchDominio} setDominioAtivo={setDominioAtivo} sistema={sistema} />}
           {tabAtiva === "especializacoes" && <TabEspecializacoes draft={draft} derived={derived} setEspecializacoes={setEspecializacoes} toggleHabilidade={toggleHabilidade} setHabilidadeVezes={setHabilidadeVezes} toggleEscolhaHabilidade={toggleEscolhaHabilidade} toggleTalento={toggleTalento} setTalentoVezes={setTalentoVezes} toggleEscolhaTalento={toggleEscolhaTalento} setMelhoriaVezes={setMelhoriaVezes} toggleLendaria={toggleLendaria} toggleEscolhaAltoNivel={toggleEscolhaAltoNivel} patchTecnicasCombate={patchTecnicasCombate} />}
           {tabAtiva === "aptidoes" && <TabAptidoes draft={draft} derived={derived} setAptidaoNivel={setAptidaoNivel} toggleAptidao={toggleAptidao} setAptidaoOpcao={setAptidaoOpcao} setAptidaoVezes={setAptidaoVezes} setAptidaoOpcaoRepetida={setAptidaoOpcaoRepetida} />}
           {tabAtiva === "invocacoes" && <TabInvocacoes draft={draft} derived={derived} addInvocacao={addInvocacao} removeInvocacao={removeInvocacao} duplicarInvocacao={duplicarInvocacao} moverInvocacao={moverInvocacao} patchInvocacao={patchInvocacao} patchInvocacaoAttr={patchInvocacaoAttr} efeitosApi={efeitosApi} addHorda={addHorda} removeHorda={removeHorda} patchHorda={patchHorda} />}
@@ -2726,7 +2737,7 @@ function DominioCard({ derived, addDominio, removeDominio, patchDominio, setDomi
   );
 }
 
-function TabHabilidades({ draft, derived, patchCore, toggleArmaDedicada, addFeitico, updateFeitico, removeFeitico, patchFeitico, duplicarFeitico, setReducoesCustoFeitico, toggleEstiloTabela, addEstiloEspecial, removeEstilo, patchEstilo, addFuncionamento, removeFuncionamento, patchFuncionamento, setGeralVezes, addDominio, removeDominio, patchDominio, setDominioAtivo, sistema }) {
+function TabHabilidades({ draft, derived, patchCore, toggleArmaDedicada, addFeitico, updateFeitico, removeFeitico, patchFeitico, duplicarFeitico, setReducoesCustoFeitico, setTreinoEscolhaFeiticos, toggleEstiloTabela, addEstiloEspecial, removeEstilo, patchEstilo, addFuncionamento, removeFuncionamento, patchFuncionamento, setGeralVezes, addDominio, removeDominio, patchDominio, setDominioAtivo, sistema }) {
   const dominio = (
     <DominioCard
       derived={derived}
@@ -2804,6 +2815,7 @@ function TabHabilidades({ draft, derived, patchCore, toggleArmaDedicada, addFeit
       patchFeitico={patchFeitico}
       duplicarFeitico={duplicarFeitico}
       setReducoesCustoFeitico={setReducoesCustoFeitico}
+      setTreinoEscolhaFeiticos={setTreinoEscolhaFeiticos}
     />
   ) : null;
   if (origem === "sem_tecnica") {
@@ -4595,7 +4607,7 @@ function FeiticoMiniatura({ feitico, resumo, selecionado, onSelecionar }) {
 }
 
 /* Card dos Feitiços: orçamento no cabeçalho, fileira de miniaturas e UM editor. */
-function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico, patchFeitico, duplicarFeitico, setReducoesCustoFeitico }) {
+function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico, patchFeitico, duplicarFeitico, setReducoesCustoFeitico, setTreinoEscolhaFeiticos }) {
   const lista = Array.isArray(draft.feiticos) ? draft.feiticos : [];
   const feiticosBase = lista.filter((feitico) => !feitico.variacaoDe);
   /* Os tipos que esta criatura pode criar. Vem do MOTOR, e não de uma pergunta
@@ -4640,6 +4652,24 @@ function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico
         : [...manipulacao, id],
     });
   };
+  // Irmão genérico da Manipulação Perfeita: qualquer Linha de Treinamento
+  // (nativa ou Addon) cujo Completo declare `escolhaFeiticos` entra aqui, sem
+  // código novo por Linha. Ver `linhasComEscolhaFeiticos`.
+  const linhasEscolhaFeiticos = linhasComEscolhaFeiticos(draft);
+  const escolhasTreino = draft.treinoEscolhaFeiticos && typeof draft.treinoEscolhaFeiticos === "object"
+    ? draft.treinoEscolhaFeiticos
+    : {};
+  const alternarEscolhaTreino = (linhaId, quantidade, id) => {
+    const atuais = Array.isArray(escolhasTreino[linhaId])
+      ? escolhasTreino[linhaId].filter((feiticoId) => idsBase.has(feiticoId))
+      : [];
+    const escolhida = atuais.includes(id);
+    if (!escolhida && atuais.length >= quantidade) return;
+    setTreinoEscolhaFeiticos({
+      ...escolhasTreino,
+      [linhaId]: escolhida ? atuais.filter((feiticoId) => feiticoId !== id) : [...atuais, id],
+    });
+  };
   const fontesDano = fontesDanoDaFicha(draft, derived);
   const ctx = {
     nd: derived.nd,
@@ -4653,6 +4683,8 @@ function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico
     bonusTreinamento: derived.maestria,
     beneficiosRitualDominio: derived.dominios?.beneficiosRitualAtivos ?? {},
     reducoesCustoFeitico: reducoes,
+    linhasEscolhaFeiticos,
+    treinoEscolhaFeiticos: escolhasTreino,
     feiticos: lista,
     /* ⚠ O SISTEMA ENTRA AQUI desde 2026-09-09, pela Passiva: o custo em PE
        Máximo dela é divergência, e sem isto o card diria que a criatura paga.
@@ -4758,8 +4790,33 @@ function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico
           </div>
         </div>
       )}
-      {(temDominancia || temManipulacao) && feiticosBase.length > 0 && (
+      {(temDominancia || temManipulacao || linhasEscolhaFeiticos.length > 0) && feiticosBase.length > 0 && (
         <div className="mb-3 space-y-2 border-b border-slate-800 pb-3">
+          {linhasEscolhaFeiticos.map((linha) => {
+            const marcados = Array.isArray(escolhasTreino[linha.linhaId])
+              ? escolhasTreino[linha.linhaId].filter((id) => idsBase.has(id))
+              : [];
+            return (
+              <div key={linha.linhaId}>
+                <div className="mb-1.5 flex items-center justify-between gap-2 text-[10px] uppercase tracking-wider text-slate-500">
+                  <span>{linha.nome} (-{linha.reducao} PE)</span>
+                  <span className="font-mono">{marcados.length}/{linha.quantidade}</span>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {feiticosBase.map((feitico) => (
+                    <BoolChip
+                      key={feitico.id}
+                      ativo={marcados.includes(feitico.id)}
+                      bloqueado={!marcados.includes(feitico.id) && marcados.length >= linha.quantidade}
+                      onToggle={() => alternarEscolhaTreino(linha.linhaId, linha.quantidade, feitico.id)}
+                    >
+                      {feitico.nome || "Feitiço Sem Nome"}
+                    </BoolChip>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
           {temDominancia && (
             <div>
               <div className="mb-1.5 flex items-center justify-between gap-2 text-[10px] uppercase tracking-wider text-slate-500">

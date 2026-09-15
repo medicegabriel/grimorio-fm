@@ -45,6 +45,11 @@ import {
   detalhesDoCanalEscopos, resolverEfeitosDanoFinal, valorCanalEscopos,
 } from "./afty-efeitos";
 import { bonusRitual, resolveRitual } from "./afty-rituais";
+// Só a leitura de QUEM tem direito a marcar Feitiço para redução de custo por
+// Treino (afty-treinamentos.js não importa nada daqui, então a seta é segura
+// — ver t-ordem-modulos.mjs). A escolha em si mora na ficha (`creature.
+// treinoEscolhaFeiticos`), lida direto onde `creature` já está em mãos.
+import { linhasComEscolhaFeiticos } from "./afty-treinamentos";
 // Liberações Máximas. ⚠ `multArea` chega renomeado: o calculador de Dano já tem
 // uma local com esse nome (a do Destrutivo × 1,5 com a da Linha).
 import {
@@ -470,6 +475,24 @@ export function aplicaReducoesCustoFeitico(feitico, calculo, ctx = {}) {
   for (const fonte of detalhesDoCanalEscopos(ctx.efeitos, "custoPE", ["feitico"])) {
     const valor = Math.max(0, Math.trunc(Number(fonte.valor) || 0));
     if (valor > 0) reducoes.push({ fonte: fonte.nome, valor });
+  }
+
+  /* ⚠ IRMÃO GENÉRICO DA MANIPULAÇÃO PERFEITA (2026-09-15). Ela é travada ao
+     ID `cnj_manipulacao_perfeita` e reduz pela METADE; aqui qualquer Linha de
+     Treinamento (nativa ou Addon) que declare `completo.escolhaFeiticos` pode
+     conceder o mesmo tipo de escolha, com valor FIXO por marca. Ver
+     `linhasComEscolhaFeiticos` em afty-treinamentos.js. */
+  const linhasEscolha = Array.isArray(ctx.linhasEscolhaFeiticos) ? ctx.linhasEscolhaFeiticos : [];
+  const escolhasPorLinha = ctx.treinoEscolhaFeiticos && typeof ctx.treinoEscolhaFeiticos === "object"
+    ? ctx.treinoEscolhaFeiticos
+    : {};
+  for (const linha of linhasEscolha) {
+    const marcados = Array.isArray(escolhasPorLinha[linha.linhaId])
+      ? [...new Set(escolhasPorLinha[linha.linhaId])].slice(0, linha.quantidade)
+      : [];
+    if (marcados.includes(baseId) && linha.reducao > 0) {
+      reducoes.push({ fonte: linha.nome, valor: linha.reducao });
+    }
   }
 
   const reducaoTotal = reducoes.reduce((total, reducao) => total + reducao.valor, 0);
@@ -4098,6 +4121,8 @@ function linhaDoFeitico(f, ctx, creature) {
       ...ctx,
       feiticos: lista,
       reducoesCustoFeitico: creature?.reducoesCustoFeitico,
+      linhasEscolhaFeiticos: linhasComEscolhaFeiticos(creature),
+      treinoEscolhaFeiticos: creature?.treinoEscolhaFeiticos,
     });
     const reducaoSustentacao = Math.max(0, Math.trunc(Number(ctx.reducaoSustentacao) || 0));
     if (calc && reducaoSustentacao > 0) {

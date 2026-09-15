@@ -1,0 +1,62 @@
+{
+  "id": "aperfeicoamento-de-tecnica",
+  "nome": "Aperfeiçoamento de Técnica",
+  "versao": "1.0.0",
+  "autor": "Templas",
+  "paraRaw": "afty",
+  "descricao": "Linha de Treinamento não repetível para quem conjura Habilidades de Técnica (Feitiço). O Completo precisou de uma peça nova no motor (2026-09-15): `completo.escolhaFeiticos` ({ quantidade, reducao }), que generaliza o mesmo desenho da Manipulação Perfeita (marcar N Feitiços do próprio repertório para um desconto de custo), só que reutilizável por qualquer Treino ou Habilidade futura, sem código novo por linha. Fora do Restringido, que não tem Técnica nenhuma.",
+  "acrescenta": {
+    "treinamentos": [
+      {
+        "id": "aperfeicoamento_de_tecnica",
+        "nome": "Aperfeiçoamento de Técnica",
+        "foraDaOrigem": ["restringido"],
+        "resumo": "Estudando sobre sua técnica, você busca ampliar sua maior arma contra feiticeiros e maldições, sua técnica, algo que muitos passam a vida toda estudando para aplicar da melhor forma em campo de batalha, então você busca se aprofundar ainda mais para extrair o máximo potencial.",
+        "etapas": [
+          {
+            "n": 1,
+            "focos": 1,
+            "requisito": null,
+            "beneficio": "Você recebe +2 PE.",
+            "efeitos": [{ "tipo": "pe", "valor": 2 }]
+          },
+          {
+            "n": 2,
+            "focos": 1,
+            "requisito": null,
+            "beneficio": "Você recebe +1 Habilidade de Técnica.",
+            "efeitos": [{ "canal": "vagasFeitico", "expr": "1" }]
+          },
+          {
+            "n": 3,
+            "focos": 1,
+            "requisito": null,
+            "beneficio": "Você recebe +3 de CD ou +3 de Acerto com Habilidades de Técnica (escolha um, abaixo). [O motor não separa Acerto e CD por categoria de habilidade: os dois valem para a ficha inteira, e não só para conjuração.]",
+            "efeitos": []
+          },
+          {
+            "n": 4,
+            "focos": 2,
+            "requisito": null,
+            "beneficio": "Uma vez por descanso longo, você pode adquirir uma Habilidade de Técnica que não tenha aprendido durante uma cena, desde que cumpra os pré-requisitos dela. [O motor não tem como conceder e depois revogar uma Habilidade temporária: aplique essa parte na mesa. Só o +1 no limite abaixo é mecânico.] Você recebe +1 Habilidade de Técnica.",
+            "efeitos": [{ "canal": "vagasFeitico", "expr": "1" }]
+          }
+        ],
+        "escolhas": [
+          {
+            "id": "acerto_ou_cd",
+            "etapa": 3,
+            "opcoes": [
+              { "id": "acerto", "nome": "Acerto", "efeitos": [{ "canal": "bonusAcerto", "expr": "3" }] },
+              { "id": "cd", "nome": "CD", "efeitos": [{ "canal": "cd", "expr": "3" }] }
+            ]
+          }
+        ],
+        "completo": {
+          "beneficio": "Ápice de Si\nVocê desenvolve sua técnica ao máximo para extrair uma capacidade oculta e além do que se dizia básico, potencializando e otimizando suas conjurações: você reduz o custo de duas das suas Habilidades de Técnica em 1 (piso de 1 PE para conjurar), escolhendo as duas entre os Feitiços que você já criou. Além disso, uma vez por descanso longo você pode reduzir sua exaustão de técnica em 1 rodada. [Sem canal para \"exaustão de técnica\": mesma lacuna que o Completo de Treino de Energia Reversa já tem no livro nativo. Controle essa parte na mesa.]",
+          "escolhaFeiticos": { "quantidade": 2, "reducao": 1 }
+        }
+      }
+    ]
+  }
+}

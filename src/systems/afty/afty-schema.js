@@ -171,6 +171,14 @@ export function mesclaFichaAfty(existente) {
         ? [...new Set(existente.reducoesCustoFeitico.manipulacao.filter((id) => typeof id === "string"))]
         : [],
     },
+    treinoEscolhaFeiticos: existente.treinoEscolhaFeiticos && typeof existente.treinoEscolhaFeiticos === "object"
+      && !Array.isArray(existente.treinoEscolhaFeiticos)
+      ? Object.fromEntries(
+        Object.entries(existente.treinoEscolhaFeiticos)
+          .filter(([, v]) => Array.isArray(v))
+          .map(([linhaId, v]) => [linhaId, [...new Set(v.filter((id) => typeof id === "string"))]]),
+      )
+      : {},
     formulaOverrides: { ...(existente.formulaOverrides || {}) },
     periciaOficios: oficios,
     /* ⚠ Objeto SEMPRE, mesmo vindo lixo da ficha. Uma lista ou uma string aqui
@@ -509,6 +517,12 @@ export function createBlankAfty() {
     // Escolhas abertas por uma etapa de treinamento. A vaga criada pela opção
     // escolhida passa pelo mesmo Motor das demais fontes.
     treinamentoEscolhas: {},
+    // Feitiços marcados para redução de custo por um Treino cujo Completo
+    // declara `escolhaFeiticos` (mesmo desenho de Manipulação Perfeita, só que
+    // GENÉRICO e por Linha): { [linhaId]: [idDoFeitico, ...] }, até a
+    // `quantidade` que a Linha concede. Ver `linhasComEscolhaFeiticos` em
+    // afty-treinamentos.js e `aplicaReducoesCustoFeitico` em afty-feiticos.js.
+    treinoEscolhaFeiticos: {},
     // Interlúdios · Treinos Especiais (Interlúdios Adicionais, Livro do
     // Narrador p. 22): lista COM repetição, uma entrada por pega, no mesmo
     // espírito de habilidadesGerais. Cada pega custa 1 Foco do MESMO orçamento

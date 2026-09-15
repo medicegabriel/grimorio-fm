@@ -47,7 +47,7 @@ import {
 } from "./afty-origens";
 import {
   efeitosDeTreino, vagasEncantamentoDeTreino, atributosDePericiaDeTreino, gatilhosDeTreino,
-  efeitosInvocacaoDeTreino,
+  efeitosInvocacaoDeTreino, linhasComEscolhaFeiticos,
 } from "./afty-treinamentos";
 import { efeitosDeTreinoEspecial } from "./afty-treinos-especiais";
 import { resolveNiveisAptidao, trilhasDaCriatura, getAptidao, AFTY_APTIDOES } from "./afty-aptidoes";
@@ -2826,6 +2826,8 @@ export function deriveAfty(creature, opcoes = {}) {
     ...ctxFeiticos,
     feiticos: feiticosLista,
     reducoesCustoFeitico: creature?.reducoesCustoFeitico,
+    linhasEscolhaFeiticos: linhasComEscolhaFeiticos(creature),
+    treinoEscolhaFeiticos: creature?.treinoEscolhaFeiticos,
   });
   const donoInvoc = {
     nd, bt, nivelControlador,

@@ -1,0 +1,55 @@
+{
+  "id": "estudo-do-jujutsu",
+  "nome": "Estudo do Jujutsu",
+  "versao": "1.0.0",
+  "autor": "Templas",
+  "paraRaw": "afty",
+  "descricao": "Linha de Treinamento não repetível, mesmo desenho de Treino de Compreensão e Controle de Energia: energia amaldiçoada, bônus em Feitiçaria e níveis de Aptidão livres (a mesma vocabulário `tipo`/`valor` do livro, sem canal novo). Fora do Restringido, igual às outras cinco linhas de energia, por não ter energia amaldiçoada nenhuma.",
+  "acrescenta": {
+    "treinamentos": [
+      {
+        "id": "estudo_do_jujutsu",
+        "nome": "Estudo do Jujutsu",
+        "foraDaOrigem": ["restringido"],
+        "resumo": "Para se fortalecer como um feiticeiro, uma forma prática e direta para conseguir se desenvolver e performar é estudar e buscar refinar mais os seus próprios conceitos do mundo jujutsu, fazendo aqueles conceitos que você menos tem conhecimento ficarem mais claros em sua mente.",
+        "etapas": [
+          {
+            "n": 1,
+            "focos": 1,
+            "requisito": null,
+            "beneficio": "Seu máximo de energia aumenta em 2.",
+            "efeitos": [{ "tipo": "pe", "valor": 2 }]
+          },
+          {
+            "n": 2,
+            "focos": 1,
+            "requisito": null,
+            "beneficio": "Você recebe +2 em rolagens de Feitiçaria.",
+            "efeitos": [{ "tipo": "pericia", "pericia": "feiticaria", "valor": 2 }]
+          },
+          {
+            "n": 3,
+            "focos": 2,
+            "requisito": null,
+            "beneficio": "Seu máximo de Energia aumenta em 5.",
+            "efeitos": [{ "tipo": "pe", "valor": 5 }]
+          },
+          {
+            "n": 4,
+            "focos": 3,
+            "requisito": null,
+            "beneficio": "Você aumenta em 1 o nível de suas 2 menores aptidões. A mesma aptidão não pode ser escolhida duas vezes. [O motor entrega dois pontos de orçamento livre de Nível de Aptidão, do mesmo jeito que o Completo de Treino de Compreensão entrega um; distribua cada ponto numa trilha diferente, de preferência nas suas duas mais baixas, como pede o livro.]",
+            "efeitos": [
+              { "tipo": "aptidao", "valor": 1 },
+              { "tipo": "aptidao", "valor": 1 }
+            ]
+          }
+        ],
+        "completo": {
+          "beneficio": "Após tanto estudo e treino para se desenvolver no próprio jujutsu, você masterizou os conceitos gerais e se tornou um dos melhores naquela área específica. Seu nível em uma aptidão aumenta em 1.",
+          "efeitos": [{ "tipo": "aptidao", "valor": 1 }]
+        }
+      }
+    ]
+  }
+}

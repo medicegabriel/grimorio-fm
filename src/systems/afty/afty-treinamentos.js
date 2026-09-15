@@ -994,6 +994,40 @@ export function efeitosInvocacaoDeTreino(creature) {
   return out;
 }
 
+/**
+ * Linhas NÃO repetíveis, COMPLETAS, cujo Completo declara
+ * `escolhaFeiticos: { quantidade, reducao }`: o jogador marca até
+ * `quantidade` Feitiços do próprio repertório, e cada um marcado ganha
+ * `-reducao` PE de custo (piso de 1 PE, igual a toda redução do canal
+ * `custoPE`). Mesmo desenho da Manipulação Perfeita (afty-feiticos.js), só
+ * que GENÉRICO: qualquer Treino ou Habilidade futura que precise disto
+ * declara o campo, sem código novo no Motor. Nasceu com Aperfeiçoamento de
+ * Técnica (2026-09-15).
+ *
+ * ⚠ A ESCOLHA em si (`creature.treinoEscolhaFeiticos[linhaId]`) mora fora
+ * daqui: quem aplica a redução (afty-feiticos.js) já lê a ficha direto,
+ * porque o Feitiço mais próximo dele é lá. Esta função só diz QUEM tem
+ * direito a marcar e QUANTO cada marca vale.
+ */
+export function linhasComEscolhaFeiticos(creature) {
+  const origemId = origemEstrutural(creature);
+  const qualificadas = origensQualificadas(creature);
+  const prog = normalizeTreinamentos(creature?.treinamentos);
+  const out = [];
+  for (const [id, val] of Object.entries(prog)) {
+    const linha = BY_ID[id];
+    if (!linha || linha.repetivel) continue;
+    const cfg = linha.completo?.escolhaFeiticos;
+    if (!cfg) continue;
+    if (!treinoDisponivel(linha, origemId, qualificadas)) continue;
+    if (clampProg(val) < ETAPAS_POR_LINHA) continue;
+    const quantidade = Math.max(0, Math.trunc(Number(cfg.quantidade) || 0));
+    const reducao = Math.max(0, Math.trunc(Number(cfg.reducao) || 0));
+    if (quantidade > 0 && reducao > 0) out.push({ linhaId: id, nome: linha.nome, quantidade, reducao });
+  }
+  return out;
+}
+
 /** Interruptores de sessão abertos pelas linhas de treinamento escolhidas. */
 export function gatilhosDeTreino(creature) {
   const prog = normalizeTreinamentos(creature?.treinamentos);
