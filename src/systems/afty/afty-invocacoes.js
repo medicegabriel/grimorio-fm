@@ -31,7 +31,7 @@
  */
 
 import { evalNumber, CHAVE_FONTES, normalizarMarca } from "./afty-dsl";
-import { AFTY_ATTRS, AFTY_TAMANHOS, AFTY_RESISTENCIAS } from "./afty-schema";
+import { AFTY_ATTRS, AFTY_TAMANHOS, AFTY_RESISTENCIAS, funcionamentosDaFicha } from "./afty-schema";
 import {
   AFTY_PERICIAS, bonusProficiencia, usoPericias, ehPericiaOficio, periciasParaInvocacao,
 } from "./afty-pericias";
@@ -386,21 +386,24 @@ export function pontosAtributoUsados(inv) {
 }
 
 // bonusPontos: pontos de atributo extras (ex.: Potencial Superior do Controlador).
-// O teto POR atributo não muda, só o orçamento total.
-export function resumoAtributosInvocacao(inv, bonusPontos = 0) {
+// bonusMax: quanto o canal `limiteAtributo` subiu o teto POR atributo (2026-09-15).
+// Antes dele o teto do grau era fixo, e por isso uma Técnica que quisesse um
+// shikigami acima da tabela não tinha canal nenhum para pedir isso.
+export function resumoAtributosInvocacao(inv, bonusPontos = 0, bonusMax = 0) {
   const g = grauMeta(inv?.grau);
   const tab = INV_ATRIBUTOS_POR_GRAU[g.value] || INV_ATRIBUTOS_POR_GRAU.quarto;
   const at = inv?.atributos || {};
   const base = atributoBaseInvocacao(inv);
   const min = atributoMinInvocacao(inv);
   const total = tab.pontos + (bonusPontos || 0);
+  const maxPorAtributo = tab.max + Math.max(0, Math.trunc(Number(bonusMax) || 0));
   const usados = pontosAtributoUsados(inv);
   const warnings = [];
   if (usados > total) warnings.push(`Atributos: ${usados} de ${total} pontos (excedeu).`);
   for (const k of INV_ATTR_KEYS) {
     const v = at[k] ?? base;
     if (v < min) warnings.push(`${k}: ${v} abaixo do mínimo ${min}.`);
-    if (v > tab.max) warnings.push(`${k}: ${v} passa do máximo ${tab.max} do grau.`);
+    if (v > maxPorAtributo) warnings.push(`${k}: ${v} passa do máximo ${maxPorAtributo} do grau.`);
   }
   // `base` e `min` saem daqui porque o editor precisa deles e eles dependem do
   // TIPO da invocação, não do grau.
@@ -409,7 +412,7 @@ export function resumoAtributosInvocacao(inv, bonusPontos = 0) {
   // sobre os atributos da invocação. Sem eles ela tinha só o orçamento gasto, e
   // os seis atributos da criatura invocada não apareciam em lugar nenhum na mesa.
   return {
-    usados, total, max: tab.max, base, min, restante: total - usados, warnings,
+    usados, total, max: maxPorAtributo, maxDoGrau: tab.max, base, min, restante: total - usados, warnings,
     valores: Object.fromEntries(INV_ATTR_KEYS.map((k) => [k, at[k] ?? base])),
     mods: Object.fromEntries(INV_ATTR_KEYS.map((k) => [k, mod(at[k] ?? base)])),
   };
@@ -656,10 +659,18 @@ export function orcamentoAcoesCaract(inv, extra = 0, livresCaract = 0) {
 
 // Custo total em PE para invocar = custo base + acréscimos das escolhas:
 // Ação Simples ou Característica = +1, Ação Complexa = +2.
-// `gratis` = itens que NÃO custam (ex.: Ápice do Controle dá 2 grátis). Abatemos
-// os itens mais caros primeiro, que é o que o jogador escolheria.
+// `gratis` = itens que NÃO custam ALÉM da quantidade base do grau (ex.: Ápice
+// do Controle dá 2 grátis a mais). Abatemos os itens mais caros primeiro, que
+// é o que o jogador escolheria.
+//
+// ⚠ A QUANTIDADE BASE (`INV_ACOES_CARACT_BASE` — 2 no Quarto/Terceiro, 3 no
+// Segundo/Primeiro, 4 no Especial) NÃO CUSTA PE NENHUM, verbatim do livro: só
+// as Ações/Características ALÉM dela custam (achado em 2026-09-14 — o cálculo
+// cobrava PE pela ficha inteira e só abatia os grátis de Habilidade por cima,
+// então toda invocação pagava PE mesmo dentro da cota base).
 export function custoInvocacao(inv, gratis = 0, gratisCaract = 0) {
   const g = grauMeta(inv?.grau);
+  const base = INV_ACOES_CARACT_BASE[g.value] ?? 2;
   const nCaract = inv?.caracteristicas?.length ?? 0;
   /* ⚠ `gratisCaract` (Shikigami de Técnica) abate CARACTERÍSTICA, e não "o item
      mais caro". O `gratis` genérico do Ápice do Controle abate os maiores
@@ -670,7 +681,7 @@ export function custoInvocacao(inv, gratis = 0, gratisCaract = 0) {
   for (const a of inv?.acoes || []) custos.push(a?.classe === "complexa" ? 2 : 1);
   for (let i = 0; i < caractPagas; i++) custos.push(1);
   custos.sort((a, b) => b - a); // maiores primeiro
-  const soma = custos.slice(Math.max(0, gratis)).reduce((s, c) => s + c, 0);
+  const soma = custos.slice(Math.max(0, gratis) + base).reduce((s, c) => s + c, 0);
   return g.custoBase + soma;
 }
 
@@ -1130,13 +1141,18 @@ export function resolveAcao(acao, inv, dono = {}, invCtx = inv) {
   // Melhorias). Já chega 0 quando o marcador que o condiciona está desligado (o
   // `quando` filtra antes). DANO e CURA são canais separados: Concentrar Poder
   // alimenta os quatro, Agressividade só os dois de dano.
-  const danoNivel = dono.danoNivelHabilidade ?? 0;
-  const danoBonusHab = dono.danoBonusHabilidade ?? 0;
+  /* ⚠ O BALDE DESTA AÇÃO (2026-09-14). O que veio mirado em `acaoAlvo` não
+     entrou no total do canal de propósito (ver `efeitosHabilidade`): ele soma
+     AQUI, e só na Ação de id igual. É o que faz *"escolha uma Ação de sua
+     invocação"* virar número em vez de valer para todas as irmãs. */
+  const daAcao = (canal) => dono.porAcao?.[acao?.id]?.[canal] ?? 0;
+  const danoNivel = (dono.danoNivelHabilidade ?? 0) + daAcao("danoNivel");
+  const danoBonusHab = (dono.danoBonusHabilidade ?? 0) + daAcao("danoBonus");
   if (out.dano?.dado && (danoNivel > 0 || danoBonusHab > 0)) {
     out.dano = { ...out.dano, dado: subirNiveisDano(out.dano.dado, danoNivel).dado, bonus: (out.dano.bonus || 0) + danoBonusHab };
   }
-  const curaNivel = dono.curaNivelHabilidade ?? 0;
-  const curaBonusHab = dono.curaBonusHabilidade ?? 0;
+  const curaNivel = (dono.curaNivelHabilidade ?? 0) + daAcao("curaNivel");
+  const curaBonusHab = (dono.curaBonusHabilidade ?? 0) + daAcao("curaBonus");
   if (out.cura?.dado && (curaNivel > 0 || curaBonusHab > 0)) {
     out.cura = { ...out.cura, dado: subirNiveisDano(out.cura.dado, curaNivel).dado, bonus: (out.cura.bonus || 0) + curaBonusHab };
   }
@@ -1144,7 +1160,7 @@ export function resolveAcao(acao, inv, dono = {}, invCtx = inv) {
   // Dado extra que todo ataque da invocação carrega (Melhoria Agressividade).
   // Vale para as duas formas de ataque: a Jogada de Ataque e o Teste de
   // Resistência são "ações de ataque" iguais para o texto da Melhoria.
-  const extraMax = dono.ataqueDanoAdicionalHabilidade ?? 0;
+  const extraMax = Math.max(dono.ataqueDanoAdicionalHabilidade ?? 0, daAcao("ataqueDanoAdicional"));
   if (familia === "ataque" && extraMax > 0) {
     const dado = dadoDoMaximo(extraMax);
     if (dado) out.danoExtraAtaque = { dado, grupos: dadosDaNotacao(dado) };
@@ -1152,8 +1168,10 @@ export function resolveAcao(acao, inv, dono = {}, invCtx = inv) {
 
   // Acerto e CD concedidos por Habilidade (Melhoria Precisão). Entram depois
   // dos benefícios da Ação com Custo, no mesmo lugar em que ela mexe.
-  if (out.bonusAtaque != null && dono.acertoHabilidade) out.bonusAtaque += dono.acertoHabilidade;
-  if (out.cd != null && dono.cdHabilidade) out.cd += dono.cdHabilidade;
+  const acertoTotal = (dono.acertoHabilidade ?? 0) + daAcao("acerto");
+  const cdTotal = (dono.cdHabilidade ?? 0) + daAcao("cd");
+  if (out.bonusAtaque != null && acertoTotal) out.bonusAtaque += acertoTotal;
+  if (out.cd != null && cdTotal) out.cd += cdTotal;
 
   // Alcance / área finais (base + benefícios por PE).
   if (alcanceMetros === "corpo") {
@@ -1523,6 +1541,7 @@ export const INV_EFEITO_CANAIS = [
   { id: "cd",           label: "Em CD",        grupo: "Testes", nota: "CD das Ações por Teste de Resistência" },
   { id: "atributo",       label: "Atributo",           grupo: "Atributos e Perícias", alvo: "atributo", nota: "Soma no valor do atributo, até o máximo do grau" },
   { id: "atributoPontos", label: "Pontos de Atributo", grupo: "Atributos e Perícias", nota: "Pontos para distribuir" },
+  { id: "limiteAtributo", label: "Limite de Atributo", grupo: "Atributos e Perícias", alvo: "atributo", alvoOpcional: true, nota: "Sobe o máximo por atributo do grau. Sem alvo vale para todos os atributos" },
   { id: "pericias",       label: "Perícias",           grupo: "Atributos e Perícias", nota: "Vagas de perícia treinada" },
   // ⚠ DANO e CURA são canais separados (ver o comentário de cima).
   { id: "danoNivel",  label: "Dano (níveis)", grupo: "Dano e Cura", nota: "Níveis na rolagem de dano" },
@@ -1555,6 +1574,75 @@ export const INV_EFEITO_CANAL_GRUPOS = (() => {
   }
   return grupos;
 })();
+
+/**
+ * ============================================================
+ * O QUE O JOGADOR ESCREVE, MIRADO NA INVOCAÇÃO
+ * ============================================================
+ * Nasceu em 2026-09-15, a pedido do autor: *"a parte de shikigami é muito
+ * pouco acessível pelas demais partes do site [...] desta forma sua técnica
+ * poderia adicionar coisas em Shikigames"*.
+ *
+ * ⚠ O PROBLEMA NÃO ERA O CANAL, E SIM A PORTA. O espaço de canais da invocação
+ * (`INV_EFEITO_CANAIS`) já cobria PV, Defesa, Acerto, TR, Perícia, orçamento de
+ * Ações e custo em PE. O que faltava era quem podia escrever nele: até aqui só
+ * CATÁLOGO chegava na invocação (Habilidade de Controlador, Talento,
+ * Característica de Origem e Linha de Treinamento, todos pelo campo
+ * `efeitosInvocacao` da entrada). Nada do que o JOGADOR escreve na própria
+ * ficha tinha caminho.
+ *
+ * ⚠ A MARCA É `escopo: "invocacao"` NA LINHA, e não um campo separado por
+ * fonte. A alternativa era dar a cada fonte um segundo array (a Técnica com
+ * `tecnicaEfeitosInvocacao`, a Passiva com outro, o buff com outro), que é o
+ * padrão do catálogo. Ela foi recusada porque são quatro esquemas para manter
+ * em sincronia, e porque um Addon futuro precisaria de um quinto: com a marca
+ * na linha, qualquer lista de efeitos do jogador ganha a porta de graça.
+ *
+ * ⚠ O PREÇO DA MARCA É O FILTRO DO OUTRO LADO, e ele não é opcional: os dois
+ * espaços de canal repetem nomes com sentidos diferentes (`pv` da criatura
+ * contra `pv` do shikigami). Uma linha de invocação que vazasse para o coletor
+ * da criatura engordaria o PV do personagem calada, que é exatamente o risco
+ * que o campo separado do catálogo evita. Por isso `efeitosDaTecnica`,
+ * `efeitosDosPassivos` e `efeitosDaSessao` (afty-efeitos.js) DESCARTAM a linha
+ * marcada, e há assert prendendo os dois lados.
+ *
+ * `invocacaoAlvo` mira UMA invocação, e vem do mesmo campo que a Linha de
+ * Treinamento já usa: sem ele a linha vale para TODAS, que é o padrão.
+ */
+export function efeitosInvocacaoEscritos(creature) {
+  const out = [];
+  const colhe = (lista, origem, nome) => {
+    for (const e of Array.isArray(lista) ? lista : []) {
+      if (e?.escopo !== "invocacao") continue;
+      const expr = String(e?.expr ?? "").trim();
+      if (!expr || !CANAL_VALIDO.has(e?.canal)) continue;
+      out.push({
+        canal: e.canal,
+        expr,
+        origem,
+        nome: String(e?.nome ?? "").trim() || nome,
+        ...(e.alvo ? { alvo: e.alvo } : {}),
+        ...(e.quando ? { quando: String(e.quando).trim() } : {}),
+        ...(e.invocacaoAlvo ? { invocacaoAlvo: e.invocacaoAlvo } : {}),
+        ...(e.acaoAlvo ? { acaoAlvo: e.acaoAlvo } : {}),
+      });
+    }
+  };
+
+  // 1. Funcionamento Básico: o principal, os adicionais do jogador e os de
+  //    Addon, todos na lista que o `funcionamentosDaFicha` já entrega junta.
+  for (const fb of funcionamentosDaFicha(creature)) {
+    colhe(fb.efeitos, `funcionamento:${fb.id}`, fb.principal ? "Técnica" : (fb.nome || "Funcionamento Básico"));
+  }
+  // 2. Feitiço Passivo criado pelo jogador.
+  for (const f of Array.isArray(creature?.feiticos) ? creature.feiticos : []) {
+    if (f?.tipo !== "passivo") continue;
+    colhe(f.efeitosPassivo, `feitico:${f.id}`, String(f.nome ?? "").trim() || "Passivo");
+  }
+  // 3. Buff de mesa, escrito na Ficha Final durante o jogo.
+  colhe(creature?.buffsSessao, "sessao", "Buff");
+  return out;
+}
 
 /** O vocabulário de alvo de um canal da invocação, no formato `{ value, label }`. */
 export function alvoOpcoesInvocacao(tipo) {
@@ -1680,12 +1768,18 @@ function atributosEfetivos(inv, efe) {
   const at = { ...(inv?.atributos || {}) };
   const aplicado = {};
   const perdas = [];
+  /* O canal `limiteAtributo` sobe o teto do grau (2026-09-15). Sem alvo vale
+     para os seis; com alvo, só para aquele atributo. Os dois somam, então uma
+     Técnica que suba o geral em 2 e a Força em mais 2 dá Força 4 acima. */
+  const limiteGeral = Math.max(0, Math.trunc(Number(efe.limiteAtributo) || 0));
+  const limitePorAtributo = efe.porAlvo?.limiteAtributo || {};
   for (const k of chaves) {
     const bruto = at[k] ?? base;
     let v = bruto + bonus[k];
-    const teto = Math.max(bruto, tab.max);
+    const max = tab.max + limiteGeral + Math.max(0, Math.trunc(Number(limitePorAtributo[k]) || 0));
+    const teto = Math.max(bruto, max);
     if (bonus[k] > 0 && v > teto) {
-      perdas.push({ k, perdido: v - teto, max: tab.max });
+      perdas.push({ k, perdido: v - teto, max });
       v = teto;
     }
     at[k] = v;
@@ -1752,9 +1846,27 @@ function efeitosHabilidade(inv, dono) {
      existe). Mesma família do canal desconhecido: sem aviso, a habilidade
      simplesmente não faria nada. */
   acc.semAlvo = [];
+  /* ⚠ `acaoAlvo` (2026-09-14): o segundo nível da mira. Enquanto o
+     `invocacaoAlvo` diz QUAL invocação, este diz QUAL AÇÃO dentro dela, e é o
+     que o livro pede quando escreve *"escolha uma Ação de sua invocação"*.
+
+     Ele NÃO pode entrar no acumulador comum: aquele é um total por canal, lido
+     de uma vez por todas as Ações (é assim que a Melhoria Agressividade sobe o
+     dado de TODO ataque). Um bônus de uma Ação só precisa de balde próprio,
+     senão vazaria para as irmãs. Quem soma os dois é o `resolveAcao`, que é o
+     único lugar que sabe qual Ação está resolvendo. */
+  acc.porAcao = {};
   // Os efeitos do TIPO entram junto dos das Habilidades, no mesmo acumulador,
   // para o hover mostrar as duas origens lado a lado.
-  const efeitos = [...EFEITOS_DE_TIPO, ...(Array.isArray(dono?.efeitos) ? dono.efeitos : [])];
+  //
+  // ⚠ `invocacaoAlvo` (2026-09-14): uma Linha de Treinamento `alvoTipo:
+  // "invocacao"` treina UMA invocação por pega (mesmo padrão do Manejo de
+  // Arma, que treina UMA arma por pega). O efeito chega em `dono.efeitos`
+  // marcado com o id da invocação escolhida, e só vale para ELA — as outras
+  // não veem nada, ao contrário de todo efeito de Habilidade/Talento/
+  // Característica/Treino sem alvo, que vale para todas por igual.
+  const efeitos = [...EFEITOS_DE_TIPO, ...(Array.isArray(dono?.efeitos) ? dono.efeitos : [])]
+    .filter((e) => !e?.invocacaoAlvo || e.invocacaoAlvo === inv?.id);
   if (!efeitos.length) return acc;
   const ctx = buildInvocacaoDslContext(inv, dono);
   for (const e of efeitos) {
@@ -1773,7 +1885,16 @@ function efeitosHabilidade(inv, dono) {
     }
     // Condição do efeito: sem `quando`, sempre aplica; com, só se != 0.
     if (e.quando && evalNumber(e.quando, ctx, 0) === 0) continue;
-    somaNoAcumulador(acc, e.canal, alvo, evalNumber(e.expr, ctx, 0), nome);
+    const valor = evalNumber(e.expr, ctx, 0);
+    // Mira numa Ação específica: vai para o balde dela e NÃO entra no total do
+    // canal, que é o que as outras Ações leem.
+    if (e.acaoAlvo) {
+      const balde = acc.porAcao[e.acaoAlvo] || (acc.porAcao[e.acaoAlvo] = { detalhes: [] });
+      balde[e.canal] = (balde[e.canal] || 0) + valor;
+      balde.detalhes.push({ nome, canal: e.canal, valor });
+      continue;
+    }
+    somaNoAcumulador(acc, e.canal, alvo, valor, nome);
   }
   return acc;
 }
@@ -2200,6 +2321,9 @@ export function resolveInvocacao(inv, dono = {}) {
   if (efe.ataqueDanoAdicional) donoLocal.ataqueDanoAdicionalHabilidade = efe.ataqueDanoAdicional;
   if (efe.porAlvo.bonusTR) donoLocal.bonusTRPorAlvo = efe.porAlvo.bonusTR;
   if (efe.porAlvo.bonusPericia) donoLocal.bonusPericiaPorAlvo = efe.porAlvo.bonusPericia;
+  // Os baldes de Ação específica viajam inteiros: quem soma é o `resolveAcao`,
+  // por `acao.id`, porque só ele sabe qual Ação está na mão. Ver `acaoAlvo`.
+  if (efe.porAcao && Object.keys(efe.porAcao).length) donoLocal.porAcao = efe.porAcao;
 
   // Override de Feitiço de Criação de Shikigamis: quando esta invocação É o
   // shikigami de um Feitiço, o NÍVEL do Feitiço manda no grau, no orçamento e
@@ -2223,7 +2347,7 @@ export function resolveInvocacao(inv, dono = {}) {
      e uma expressão que lesse o bônus que ela mesma dá seria um laço. */
   const attrEf = atributosEfetivos(inv, efe);
   const invEf = attrEf.invEf;
-  const resumoAttr = resumoAtributosInvocacao(inv, efe.atributoPontos);
+  const resumoAttr = resumoAtributosInvocacao(inv, efe.atributoPontos, efe.limiteAtributo);
   const chavesAttr = Object.keys(attrEf.aplicado);
   const atributos = chavesAttr.length
     ? {

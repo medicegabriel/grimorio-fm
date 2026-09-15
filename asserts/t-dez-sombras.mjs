@@ -199,20 +199,25 @@ t("a Quimera soma os 2 maiores PV, mais Constituicao por sombra alem da 2a",
 
 /* "O Custo em PE é a soma de todas as invocações fundidas."
 
-   ⚠ E ELE FICA A 2 DA SOMA, sempre. `custoReducao` é canal de DELTA e a regra
-   pede SUBSTITUIÇÃO: a expressão desconta `custo - soma`, mas o `custo` que o
-   DSL enxerga é o da invocação sem vaga grátis, enquanto o custo resolvido já
-   levou o desconto das vagas que a própria Quimera concedeu. A diferença é o
-   preço das Ações que viraram grátis, e por isso ela é CONSTANTE.
-
-   O assert mede a distância nos três tamanhos em vez de fingir que fecha: se um
-   dia existir canal de substituição de custo, os três viram zero. */
+   ⚠ ATÉ 2026-09-14 ELA FICAVA A 2 DA SOMA, sempre — não por causa da fusão, e
+   sim de um bug em `custoInvocacao` que cobrava PE pela quantidade BASE de
+   Ações/Características do grau (2 no Quarto/Terceiro, 3 no Segundo/Primeiro,
+   4 no Especial), que o livro diz ser grátis. Corrigido isso, a distância
+   prevista pelo comentário antigo ("se um dia existir canal de substituição de
+   custo, os três viram zero") aconteceu sozinha: o `custo` que o DSL enxerga
+   já bate exato com a soma, sem precisar de canal novo nenhum. */
 const custoFontes = fontesDe().map((x) => x.custo);
 const somaAte = (n) => custoFontes.slice(0, n).reduce((a, b) => a + b, 0);
-t("o custo da Quimera acompanha a soma das fundidas, a uma distancia fixa",
-  [2, 3, 4].map((n) => somaAte(n) - alvoDe({ nQ: n }).custo), [2, 2, 2]);
-t("e ele sobe de verdade, e nao fica no custo de uma sombra so",
-  [2, 3, 4].map((n) => alvoDe({ nQ: n }).custo > alvoDe({}).custo - 1), [true, true, true]);
+t("o custo da Quimera acompanha a soma das fundidas, exato",
+  [2, 3, 4].map((n) => somaAte(n) - alvoDe({ nQ: n }).custo), [0, 0, 0]);
+/* ⚠ TROQUEI A REFERÊNCIA (2026-09-14, junto do fix de custo): comparar com `alvoDe({}).custo`
+   media contra um Grau Especial quase vazio (1 Ação só, dentro da base de 4),
+   que agora custa só o `custoBase` dele — MAIOR que a soma de duas sombras de
+   Grau Quarto baratas, sem relação nenhuma com "a Quimera cresce". O que o
+   texto realmente pede ("não fica preso no custo de uma sombra só") é
+   monotonicidade: cada sombra a mais tem de aumentar o custo da fusão. */
+t("e ele sobe de verdade a cada sombra fundida",
+  [3, 4].map((n) => alvoDe({ nQ: n }).custo > alvoDe({ nQ: n - 1 }).custo), [true, true]);
 
 /* ---- AS DUAS JUNTAS ---- */
 

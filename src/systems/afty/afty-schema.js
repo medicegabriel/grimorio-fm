@@ -476,6 +476,10 @@ export function createBlankAfty() {
     // Invocações do Controlador. Cada uma é uma
     // ficha própria que lê valores do dono. Ver afty-invocacoes.js.
     invocacoes: [],             // [ fichaInvocacao ]
+    // Contadores de Origem: recurso persistente por criatura (não some com
+    // Descanso nem com reset de sessão — ver afty-contadores-origem.js).
+    // Chave é o id namespaced do addon (`pacote:id`), valor é o número atual.
+    origemContadores: {},
     // Hordas: cada uma referencia um líder + membros por id (das invocacoes).
     hordas: [],                 // [ { id, nome, liderId, membroIds:[] } ]
     // Níveis de Aptidão, uma trilha por chave (0 a 5). O orçamento é

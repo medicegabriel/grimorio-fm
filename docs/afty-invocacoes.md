@@ -1338,6 +1338,48 @@ diz o que a Livre concede ("+3 Defesa · +2 Força").
 
 Assert: `asserts/t-invocacoes-motor.mjs`.
 
+## O QUE O JOGADOR ESCREVE CHEGANDO NA INVOCAÇÃO (2026-09-15)
+
+Autor: *"a parte de shikigami é muito pouco acessível pelas demais partes do site [...] desta forma
+sua técnica poderia adicionar coisas em Shikigames, [...] acerto, TR, Pericia, numero de ações,
+custo de PE atributo limite de atributo e etc."*
+
+O buraco não era o canal, era a PORTA. O espaço de canais da invocação já cobria PV, Defesa, Acerto,
+TR, Perícia, orçamento de Ações e custo em PE, mas só CATÁLOGO chegava nele: Habilidade de
+Controlador, Talento, Característica de Origem e Linha de Treinamento, todos pelo campo
+`efeitosInvocacao` da entrada. Nada do que o jogador escreve na própria ficha tinha caminho.
+
+**A marca é `escopo: "invocacao"` na própria linha do Motor.** A alternativa era um segundo array por
+fonte (o padrão do catálogo), recusada por serem quatro esquemas a manter em sincronia e um quinto
+para cada Addon futuro. Com a marca na linha, qualquer lista de efeitos escrita à mão ganha a porta:
+
+| Fonte | Onde mora |
+|---|---|
+| Técnica (Funcionamento Básico principal) | `core.tecnicaEfeitos` |
+| Funcionamentos adicionais e os de Addon | `core.funcionamentosAdicionais`, pacote |
+| Feitiço Passivo | `feiticos[].efeitosPassivo` |
+| Buff de mesa da Ficha Final | `sessao.buffs`, injetado como `buffsSessao` |
+
+Quem colhe é `efeitosInvocacaoEscritos` (afty-invocacoes.js), e ele entra no `efeitosInvoc` do
+`deriveAfty` ao lado das quatro fontes de catálogo. `invocacaoAlvo` mira UMA invocação, pelo mesmo
+campo que a Linha de Treinamento já usava: sem ele a linha vale para todas, que é o padrão.
+
+⚠ **O preço da marca é o filtro do outro lado, e ele não é opcional.** Os dois espaços de canal
+repetem nomes com sentidos diferentes (`pv` da criatura contra `pv` do shikigami), então uma linha de
+invocação que vazasse para o coletor da criatura engordaria o personagem calada. Por isso
+`efeitosDeLinhas`, `efeitosDosPassivos` e `efeitosDaSessao` (afty-efeitos.js) DESCARTAM a linha
+marcada. O bloco 3 de `asserts/t-invocacao-escrita.mjs` prende os dois lados.
+
+**Canal novo: `limiteAtributo`.** Era o único item da lista do autor sem canal. Ele sobe o máximo por
+atributo do grau (sem alvo vale para os seis, com alvo só para aquele), e o teto novo vale nos dois
+lugares que o liam: o aparo do bônus em `atributosEfetivos` e o aviso de `resumoAtributosInvocacao`.
+
+Na tela, a linha do Motor ganhou o seletor "na criatura / na invocação", que troca o catálogo de
+canal e o vocabulário de alvo, mais o "de todas as invocações / uma". Ficha sem invocação nenhuma
+não mostra o seletor. Na Ficha Final, o mesmo par entrou no formulário de buff da aba Buffs.
+
+Assert: `asserts/t-invocacao-escrita.mjs`.
+
 ### ⚠ GAPS DO MOTOR (adicionar depois, não dá com o motor atual)
 
 O motor (fm-dsl) só produz UM NÚMERO para um stat. O que sobra precisa de mecanismos novos:

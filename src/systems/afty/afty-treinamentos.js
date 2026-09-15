@@ -780,13 +780,43 @@ function paraCanal(ef, alvoInstancia, alvos = {}, ficha = {}) {
  * o jogador apagou depois de treinar. Nos dois o treino segue na aba, com o que
  * está gravado, em vez de sumir.
  */
-export function rotuloAlvo(linha, alvo, pericias = AFTY_PERICIAS, armas = null) {
+/** Separador do alvo composto `invocacaoId::acaoId`. Ver `alvoTipo: "acaoInvocacao"`. */
+export const SEP_ALVO_ACAO = "::";
+
+/** Parte um alvo composto. Alvo simples devolve `acaoId: null`. */
+export function partirAlvoAcao(alvo) {
+  const s = String(alvo ?? "");
+  const i = s.indexOf(SEP_ALVO_ACAO);
+  return i === -1
+    ? { invocacaoId: s, acaoId: null }
+    : { invocacaoId: s.slice(0, i), acaoId: s.slice(i + SEP_ALVO_ACAO.length) };
+}
+
+export function rotuloAlvo(linha, alvo, pericias = AFTY_PERICIAS, armas = null, invocacoes = null) {
   if (!alvo) return "";
   if (linha?.alvoTipo === "atributo") return AFTY_ATTRS.find((a) => a.key === alvo)?.label ?? alvo;
   if (linha?.alvoTipo === "pericia") return pericias.find((p) => p.id === alvo)?.nome ?? alvo;
   if (linha?.alvoTipo === "arma") {
     const achada = (armas ?? catalogoDoTipo("arma")).find((a) => a.id === alvo);
     if (achada) return achada.nome;
+  }
+  // `invocacao`: 2026-09-14, mesmo padrão da `arma` — o pool é a FICHA (as
+  // invocações que a criatura já tem), não um catálogo do livro.
+  if (linha?.alvoTipo === "invocacao") {
+    const achada = (invocacoes ?? []).find((i) => i.id === alvo);
+    if (achada) return achada.nome || "Sem nome";
+  }
+  /* `acaoInvocacao`: o alvo é COMPOSTO, `invocacaoId::acaoId`, porque o livro
+     manda escolher *"uma Ação de sua invocação"* e a Ação só existe dentro de
+     uma invocação. Guardar os dois num id só mantém a dedupe e a chave de
+     lista funcionando sem campo novo na instância. */
+  if (linha?.alvoTipo === "acaoInvocacao") {
+    const { invocacaoId, acaoId } = partirAlvoAcao(alvo);
+    const inv = (invocacoes ?? []).find((i) => i.id === invocacaoId);
+    const acao = (inv?.acoes ?? []).find((a) => a.id === acaoId);
+    if (inv || acao) {
+      return `${inv?.nome || "Sem nome"} · ${acao?.nome || "Ação sem nome"}`;
+    }
   }
   const s = String(alvo);
   return s.charAt(0).toUpperCase() + s.slice(1);
@@ -881,6 +911,83 @@ export function efeitosDeTreino(creature, gatilhosAtivos = null) {
         const opcaoId = creature?.treinamentoEscolhas?.[linha.id]?.[escolha.id];
         const opcao = escolha.opcoes?.find((item) => item.id === opcaoId);
         if (opcao) add(opcao.efeitos, linha, inst.alvo, alvos, `${linha.nome} (${opcao.nome})`);
+      }
+    }
+  }
+  return out;
+}
+
+/**
+ * Efeitos que uma Linha de Treinamento aplica nas INVOCAÇÕES do dono, e não na
+ * própria criatura (2026-09-14). Espelha `efeitosDeTreino`, mas lê o campo
+ * `efeitosInvocacao` de cada etapa/completo em vez de `efeitos`, e não passa
+ * por `paraCanal`: `efeitosInvocacao` já é `{canal, expr, quando?}` cru, do
+ * mesmo jeito que Habilidade de Controlador, Talento e Característica de
+ * Origem já declaram (ver `efeitosInvocacaoDeEntradas` em afty-efeitos.js).
+ *
+ * ⚠ ATÉ AQUI SÓ ESSAS TRÊS FONTES CHEGAVAM NA INVOCAÇÃO — Treinamento nunca
+ * teve esse canal, porque ele nasceu para mexer na FICHA da criatura, não em
+ * uma invocação dela. Uma Linha de Treinamento de Invocação (ex.: bônus na
+ * Defesa/Acerto do Controlador para os shikigamis) precisa deste caminho.
+ *
+ * `quando` continua funcionando aqui, ao contrário do `efeitosDeTreino`: ele
+ * não passa pela "passagem direta" do MONTANTE (que descarta `quando`), e sim
+ * pelo `efeitosHabilidade` de afty-invocacoes.js, que AVALIA `quando` contra o
+ * contexto DA PRÓPRIA INVOCAÇÃO (grau, bt, nd...) — outro estágio, outra regra.
+ */
+export function efeitosInvocacaoDeTreino(creature) {
+  const origemId = origemEstrutural(creature);
+  const qualificadas = origensQualificadas(creature);
+  const prog = normalizeTreinamentos(creature?.treinamentos);
+  const out = [];
+  /* `invocacaoAlvo`: presente só quando a linha é `alvoTipo: "invocacao"`
+     (repetível, uma pega por invocação escolhida — mesmo padrão do Manejo de
+     Arma). Sem ele, o efeito vale para TODAS as invocações do dono, como
+     sempre; com ele, `efeitosHabilidade` (afty-invocacoes.js) só aplica na
+     invocação com aquele id. */
+  const add = (efeitos, linha, mira, nome = null) => {
+    for (const ef of efeitos || []) {
+      if (!ef || !ef.canal || !ef.expr) continue;
+      out.push({
+        ...ef, origem: linha.id, nome: nome || linha.nome,
+        ...(mira?.invocacaoAlvo ? { invocacaoAlvo: mira.invocacaoAlvo } : {}),
+        ...(mira?.acaoAlvo ? { acaoAlvo: mira.acaoAlvo } : {}),
+      });
+    }
+  };
+  for (const [id, val] of Object.entries(prog)) {
+    const linha = BY_ID[id];
+    if (!linha) continue;
+    if (!treinoDisponivel(linha, origemId, qualificadas)) continue;
+    const instancias = linha.repetivel && Array.isArray(val)
+      ? val
+      : [{ progresso: Number(val) || 0 }];
+    for (const inst of instancias) {
+      const p = clampProg(inst.progresso);
+      /* Duas miras, uma dentro da outra: `invocacao` para a invocação inteira,
+         `acaoInvocacao` para UMA Ação dela (alvo composto, ver
+         `partirAlvoAcao`). Quem aplica o recorte é o afty-invocacoes.js. */
+      const mira = linha.alvoTipo === "invocacao" ? { invocacaoAlvo: inst.alvo }
+        : linha.alvoTipo === "acaoInvocacao" ? (() => {
+          const { invocacaoId, acaoId } = partirAlvoAcao(inst.alvo);
+          return { invocacaoAlvo: invocacaoId, acaoAlvo: acaoId };
+        })()
+          : null;
+      const nomeInst = mira
+        ? `${linha.nome} (${rotuloAlvo(linha, inst.alvo, undefined, undefined, creature?.invocacoes)})`
+        : null;
+      for (const et of linha.etapas) if (et.n <= p) add(et.efeitosInvocacao, linha, mira, nomeInst);
+      if (p >= ETAPAS_POR_LINHA) add(linha.completo?.efeitosInvocacao, linha, mira, nomeInst);
+      // Escolha aninhada (ex.: "+2 em Acerto OU CD"), espelhando o mesmo bloco
+      // de `efeitosDeTreino` — só que lendo `efeitosInvocacao` da opção.
+      for (const escolha of linha.escolhas || []) {
+        if (p < (escolha.etapa ?? 1)) continue;
+        const opcaoId = creature?.treinamentoEscolhas?.[linha.id]?.[escolha.id];
+        const opcao = escolha.opcoes?.find((item) => item.id === opcaoId);
+        if (opcao) {
+          add(opcao.efeitosInvocacao, linha, mira,
+            `${nomeInst || linha.nome} (${opcao.nome})`);
+        }
       }
     }
   }

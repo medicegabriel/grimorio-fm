@@ -62,8 +62,10 @@ const TIPO = "queimante" in TIPOS_DANO ? "queimante" : Object.keys(TIPOS_DANO)[0
 /* ============================================================ */
 t("o validador do catálogo de Invocação fecha zerado", INV.validarCatalogoInvocacoes(), []);
 t("a Característica em branco nasce com o Motor vazio", INV.createBlankCaracteristica().efeitos, []);
-t("os 19 canais de antes seguem no catálogo, e mais os dois novos",
-  INV.EFEITO_CANAIS.length, 21);
+/* 19 na origem, mais os dois de alvo de 2026-09-10, mais o `limiteAtributo` de
+   2026-09-15 (ver t-invocacao-escrita.mjs). */
+t("os canais de antes seguem no catálogo, e mais os novos",
+  INV.EFEITO_CANAIS.length, 22);
 for (const id of ["atributo", "bonusPericia"]) {
   t(`o canal ${id} existe`, INV.EFEITO_CANAIS.includes(id), true);
 }

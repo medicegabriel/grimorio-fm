@@ -6,6 +6,7 @@ import { condicoesPorForca, fichaDaCondicao } from "../../afty-condicoes";
 import { getCanal } from "../../afty-efeitos";
 import { expandeHerdadas } from "../../afty-habilidades";
 import { RECURSOS_BUFF_NATIVOS } from "../../afty-extras-nativos";
+import { INV_EFEITO_CANAL_GRUPOS } from "../../afty-invocacoes";
 import { sinalDe } from "../../ui/formato";
 import TextoRico from "../../ui/TextoRico";
 import CanalPicker from "../CanalPicker";
@@ -106,6 +107,19 @@ function CartaoNativo({ nome, descricao }) {
       <TextoRico texto={corpo} />
     </div>
   );
+}
+
+/* O rótulo de uma linha de buff: o canal, e para quem ele vai quando é de
+   invocação. Os dois espaços de canal repetem nomes, então ler o rótulo no
+   catálogo errado mostraria outro número com o mesmo nome. */
+function rotuloDoBuff(buff, invocacoes = []) {
+  if (buff?.escopo !== "invocacao") return getCanal(buff?.canal)?.label ?? buff?.canal;
+  const def = INV_EFEITO_CANAL_GRUPOS.flatMap((g) => g.itens).find((c) => c.id === buff.canal);
+  const canal = def?.label ?? buff.canal;
+  const alvo = buff.invocacaoAlvo
+    ? (invocacoes.find((i) => i.id === buff.invocacaoAlvo)?.nome || "invocação")
+    : "invocações";
+  return `${canal} (${alvo})`;
 }
 
 function Secao({ titulo, children, direita }) {
@@ -410,13 +424,29 @@ function GrupoDeEstados({ pai, filhos, children }) {
 
 /* O formulário do buff ad-hoc. Reusa o vocabulário do Motor: canal, alvo
    opcional e uma expressão do DSL (que na prática costuma ser só um número). */
-function NovoBuff({ onCriar }) {
+function NovoBuff({ onCriar, invocacoes = [] }) {
   const [nome, setNome] = useState("");
   const [canal, setCanal] = useState("defesa");
   const [expr, setExpr] = useState("");
   const [rodadas, setRodadas] = useState("");
+  /* ONDE o buff cai (2026-09-15). Um buff de mesa escrito para um shikigami
+     precisa do espaço de canais DELE: `pv` aqui e `pv` na criatura são números
+     diferentes. Ver `efeitosInvocacaoEscritos` em afty-invocacoes.js. */
+  const [escopo, setEscopo] = useState("criatura");
+  const [invocacaoAlvo, setInvocacaoAlvo] = useState("");
+  const naInvocacao = escopo === "invocacao";
+  const temInvocacoes = invocacoes.length > 0;
 
-  const def = getCanal(canal);
+  const def = naInvocacao
+    ? INV_EFEITO_CANAL_GRUPOS.flatMap((g) => g.itens).find((c) => c.id === canal)
+    : getCanal(canal);
+  const trocaEscopo = (v) => {
+    setEscopo(v);
+    setInvocacaoAlvo("");
+    // O canal recomeça: o id do catálogo antigo não existe no novo. `defesa`
+    // existe nos dois, e é o padrão dos dois.
+    setCanal("defesa");
+  };
   const cria = () => {
     const valor = expr.trim();
     if (!valor) return;
@@ -426,6 +456,8 @@ function NovoBuff({ onCriar }) {
       canal,
       expr: valor,
       rodadas: rodadas.trim() ? Math.max(1, Math.trunc(Number(rodadas)) || 1) : null,
+      ...(naInvocacao ? { escopo: "invocacao" } : {}),
+      ...(naInvocacao && invocacaoAlvo ? { invocacaoAlvo } : {}),
     });
     setNome(""); setExpr(""); setRodadas("");
   };
@@ -437,10 +469,42 @@ function NovoBuff({ onCriar }) {
         placeholder="Nome" aria-label="Nome do buff"
         className="afty-campo bg-transparent outline-none flex-1 min-w-[6rem]"
       />
+      {temInvocacoes && (
+        <select
+          value={escopo}
+          onChange={(e) => trocaEscopo(e.target.value)}
+          aria-label="Onde o buff cai"
+          className="afty-campo bg-transparent outline-none"
+          style={{ border: "1px solid var(--afty-borda)", borderRadius: "var(--afty-raio-peq)" }}
+        >
+          <option value="criatura" style={{ background: "var(--afty-card)" }}>na criatura</option>
+          <option value="invocacao" style={{ background: "var(--afty-card)" }}>na invocação</option>
+        </select>
+      )}
+      {naInvocacao && (
+        <select
+          value={invocacaoAlvo}
+          onChange={(e) => setInvocacaoAlvo(e.target.value)}
+          aria-label="Qual invocação"
+          className="afty-campo bg-transparent outline-none"
+          style={{ border: "1px solid var(--afty-borda)", borderRadius: "var(--afty-raio-peq)" }}
+        >
+          <option value="" style={{ background: "var(--afty-card)" }}>todas</option>
+          {invocacoes.map((inv) => (
+            <option key={inv.id} value={inv.id} style={{ background: "var(--afty-card)" }}>
+              {inv.nome || "Sem nome"}
+            </option>
+          ))}
+        </select>
+      )}
       {/* ⚠ Era um `<select>` com os canais numa lista corrida, e o autor pediu o
           do Motor em 2026-08-06: são dezenas de canais, e o nativo os despeja
           num tubo sem grupo nenhum. Ver `CanalPicker`. */}
-      <CanalPicker value={canal} onChange={setCanal} />
+      <CanalPicker
+        value={canal}
+        onChange={setCanal}
+        catalogo={naInvocacao ? INV_EFEITO_CANAL_GRUPOS : undefined}
+      />
       <input
         type="text" value={expr} onChange={(e) => setExpr(e.target.value)}
         onKeyDown={(e) => { if (e.key === "Enter") cria(); }}
@@ -467,6 +531,8 @@ export default function AbaBuffs({
   onConceder, onRemoverConcessao, onExaustao,
 }) {
   const combate = derived.combate ?? {};
+  // As invocações da ficha, para um buff de mesa poder cair num shikigami.
+  const invocacoes = derived.invocacoes?.lista ?? [];
   const [novaCondicao, setNovaCondicao] = useState("");
 
   /* ⚠ A CONCESSÃO É RECURSO DE ADDON, e não do raw (autor, 2026-08-20, vendo o
@@ -779,7 +845,10 @@ export default function AbaBuffs({
         {buffs.map((b) => (
           <div key={b.id} className="afty-linha px-2.5 py-1.5 flex items-center gap-2">
             <span className="flex-1 min-w-0 text-[12px] font-semibold truncate">{b.nome}</span>
-            <span className="afty-rotulo text-[10px] truncate">{getCanal(b.canal)?.label ?? b.canal}</span>
+            {/* O buff da invocação lê o rótulo no catálogo DELA, e diz para
+                quem vai: sem isso um "+2 Defesa" na lista não se distingue do
+                da criatura. */}
+            <span className="afty-rotulo text-[10px] truncate">{rotuloDoBuff(b, invocacoes)}</span>
             <span className="afty-valor text-[12px]">{b.expr}</span>
             {b.rodadas != null && (
               <span className="afty-chip" title="Rodadas restantes">{b.rodadas}</span>
@@ -793,7 +862,7 @@ export default function AbaBuffs({
             </button>
           </div>
         ))}
-        <NovoBuff onCriar={(b) => onBuffs([...buffs, b])} />
+        <NovoBuff onCriar={(b) => onBuffs([...buffs, b])} invocacoes={invocacoes} />
       </Secao>
 
       {/* ---------- temporários da própria criatura ---------- */}

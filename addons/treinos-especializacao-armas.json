@@ -1,0 +1,65 @@
+{
+  "id": "treinos-armas",
+  "nome": "Especialização em Combate com Armas",
+  "versao": "2.1.0",
+  "autor": "Templas",
+  "paraRaw": "afty",
+  "descricao": "Uma única Linha de Treinamento, generalista: os bônus valem com QUALQUER arma. Soma TODOS os buffs numéricos das 3 linhas originais (Técnicas de Arremesso + Especialista em Perfuração + Vigilância Perfurante) em 4 etapas + Completo — total final: +5 Nível de Dano, +2 de dano fixo, +4 em Acerto, +3 em Percepção, +1 de Margem Crítica.",
+  "acrescenta": {
+    "treinamentos": [
+      {
+        "id": "especializacao_combate_armas",
+        "nome": "Especialização em Combate com Armas",
+        "lore": "Você refina seus reflexos e sua pontaria até dominar qualquer arma que empunhar, sem se prender a um único estilo.",
+        "etapas": [
+          {
+            "n": 1,
+            "focos": 1,
+            "requisito": null,
+            "beneficio": "+1 Nível de Dano e +2 de dano fixo, com qualquer arma.",
+            "efeitos": [
+              { "canal": "nivelDano", "expr": "1" },
+              { "canal": "danoBonus", "expr": "2" }
+            ]
+          },
+          {
+            "n": 2,
+            "focos": 1,
+            "requisito": null,
+            "beneficio": "+2 Nível de Dano adicional, com qualquer arma (total +3 desde a etapa 1).",
+            "efeitos": [
+              { "canal": "nivelDano", "expr": "2" }
+            ]
+          },
+          {
+            "n": 3,
+            "focos": 1,
+            "requisito": null,
+            "beneficio": "+2 em Acerto (qualquer arma) e +2 em Percepção.",
+            "efeitos": [
+              { "canal": "acertoArma", "expr": "2" },
+              { "canal": "bonusPericia", "alvo": "percepcao", "expr": "2" }
+            ]
+          },
+          {
+            "n": 4,
+            "focos": 2,
+            "requisito": null,
+            "beneficio": "+2 em Acerto adicional (total +4) e +1 em Percepção adicional (total +3).",
+            "efeitos": [
+              { "canal": "acertoArma", "expr": "2" },
+              { "canal": "bonusPericia", "alvo": "percepcao", "expr": "1" }
+            ]
+          }
+        ],
+        "completo": {
+          "beneficio": "Instinto Certeiro\n+2 Nível de Dano adicional (total +5 desde a etapa 1) e +1 de Margem Crítica, com qualquer arma. [REFERÊNCIA: +9m de alcance em ataques a distância e +1 dado extra de dano ao confirmar um Crítico continuam sem canal no motor — resolva na mesa.]",
+          "efeitos": [
+            { "canal": "nivelDano", "expr": "2" },
+            { "canal": "margemCritico", "expr": "1" }
+          ]
+        }
+      }
+    ]
+  }
+}

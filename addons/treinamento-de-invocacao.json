@@ -1,0 +1,74 @@
+{
+  "id": "treino-invocacao",
+  "nome": "Treinamento de Invocação",
+  "versao": "2.0.0",
+  "autor": "Templas",
+  "paraRaw": "afty",
+  "descricao": "Linha de Treinamento pro Controlador, REPETÍVEL: cada pega treina UMA invocação específica do seu roster (mesmo padrão do Treino de Manejo de Arma, que treina UMA arma por vez — o pool aqui é a lista de invocações da própria ficha). Precisou de duas peças novas no motor (2026-09-14): efeitosInvocacao (Treinamento afetando invocação, já existia pra Habilidade/Talento/Característica) e alvoTipo:'invocacao' (mirar UMA invocação específica, e não todas). Sem essa segunda peça, 'escolha uma Ação' viraria sempre 'todas as Ações' — com ela, o treino é preciso.",
+  "acrescenta": {
+    "treinamentos": [
+      {
+        "id": "treinamento_de_invocacao",
+        "nome": "Treinamento de Invocação",
+        "lore": "Você dedica seu treino a uma invocação específica, refinando o vínculo com ela até ela lutar como uma extensão sua.",
+        "repetivel": true,
+        "alvoTipo": "invocacao",
+        "alvoLabel": "Invocação",
+        "resumo": "Escolha uma invocação do seu roster para treinar. Pode ser repetido, treinando uma invocação diferente a cada vez.",
+        "etapas": [
+          {
+            "n": 1,
+            "focos": 1,
+            "requisito": null,
+            "beneficio": "A invocação escolhida recebe +1 Nível de Dano em todas as Ações de Dano dela. [O livro pede 'escolha uma Ação' — o motor mira a invocação inteira, não uma Ação isolada dentro dela; ainda assim já é preciso: só ESSA invocação ganha, as outras não.]",
+            "efeitosInvocacao": [
+              { "canal": "danoNivel", "expr": "1" }
+            ]
+          },
+          {
+            "n": 2,
+            "focos": 1,
+            "requisito": null,
+            "beneficio": "A invocação escolhida recebe +2 de Defesa. Acumula com todas as outras fontes.",
+            "efeitosInvocacao": [
+              { "canal": "defesa", "expr": "2" }
+            ]
+          },
+          {
+            "n": 3,
+            "focos": 1,
+            "requisito": null,
+            "beneficio": "A invocação escolhida recebe +2 de Acerto ou CD (escolha um, abaixo). Acumula com todas as outras fontes.",
+            "efeitosInvocacao": []
+          },
+          {
+            "n": 4,
+            "focos": 2,
+            "requisito": null,
+            "beneficio": "A invocação escolhida recebe +1d6 extra em toda Ação de Ataque, e +2 em toda Ação de Cura. [Mesma nota da etapa 1: mira a invocação inteira. O caso 'Auxiliar' do livro (+2 Bônus Numérico) não tem canal de invocação que mire só Auxiliar — se ela tiver uma Ação Auxiliar sem dano/cura, aplique o +2 na mesa.]",
+            "efeitosInvocacao": [
+              { "canal": "ataqueDanoAdicional", "expr": "6" },
+              { "canal": "curaBonus", "expr": "2" }
+            ]
+          }
+        ],
+        "escolhas": [
+          {
+            "id": "acerto_ou_cd",
+            "etapa": 3,
+            "opcoes": [
+              { "id": "acerto", "nome": "Acerto", "efeitosInvocacao": [{ "canal": "acerto", "expr": "2" }] },
+              { "id": "cd", "nome": "CD", "efeitosInvocacao": [{ "canal": "cd", "expr": "2" }] }
+            ]
+          }
+        ],
+        "completo": {
+          "beneficio": "Ápice da Invocação\nA invocação escolhida aumenta a quantidade de Ações/Características dela em um valor igual a metade do seu Bônus de Treinamento (arredondado para baixo). Essas Ações/Características ADICIONAIS entram no custo normal da invocação (não são grátis).",
+          "efeitosInvocacao": [
+            { "canal": "orcamentoPago", "expr": "piso(bt / 2)" }
+          ]
+        }
+      }
+    ]
+  }
+}

@@ -126,6 +126,40 @@ e `docs/afty-formulas-base.md` (fórmulas).
 
 ---
 
+## SESSÃO DE 2026-09-15: A TÉCNICA ALCANÇA O SHIKIGAMI
+
+Autor: *"a parte de shikigami é muito pouco acessível pelas demais partes do
+site [...] desta forma sua técnica poderia adicionar coisas em Shikigames."*
+
+O diagnóstico foi que o buraco não era o canal, e sim a porta. O espaço de
+canais da invocação já cobria oito dos nove itens da lista do autor (PV, Defesa,
+Acerto, TR, Perícia, número de Ações, custo em PE e atributo), e só quem
+declarava `efeitosInvocacao` numa entrada de CATÁLOGO conseguia escrever neles.
+Nada do que o jogador escreve na ficha alcançava um shikigami.
+
+A porta nova é a marca `escopo: "invocacao"` na própria linha do Motor, e não um
+array separado por fonte: assim a Técnica, os Funcionamentos adicionais, o
+Feitiço Passivo, o buff de mesa e qualquer Addon futuro ganham o caminho de uma
+vez. Quem colhe é `efeitosInvocacaoEscritos`, e o filtro gêmeo em
+`afty-efeitos.js` impede a linha de vazar para a criatura, que era o risco real:
+`pv` existe nos dois espaços com sentidos diferentes.
+
+`limiteAtributo` era o único item da lista sem canal, e entrou subindo o máximo
+por atributo do grau nos dois lugares que o liam. Na tela, a linha do Motor
+ganhou "na criatura / na invocação" mais o alvo "todas / uma", e o mesmo par
+entrou no formulário de buff da aba Buffs.
+
+Decisões do autor na abertura: a linha vale para TODAS as invocações por padrão,
+com opção de mirar uma, e as fontes são a Técnica, os adicionais, a Passiva e o
+buff de mesa, com o mecanismo aberto para addons futuros.
+
+Assert novo: `asserts/t-invocacao-escrita.mjs` (27 asserts, com o bloco de não
+vazamento). Guia: `docs/afty-invocacoes.md`. Ficou uma pergunta de regra aberta
+em `docs/a-fazer.md` sobre a cota base isenta de PE, que veio de trabalho não
+commitado de 2026-09-14 e deixa um assert vermelho.
+
+---
+
 ## SESSÃO DE 2026-09-14: ADDONS DE ESTILO, ATRIBUTOS E AÇÕES
 
 O addon da Lime passou a fornecer cinco técnicas do Novo Estilo das Sombras sem

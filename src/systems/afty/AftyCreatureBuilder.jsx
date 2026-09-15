@@ -16,6 +16,7 @@ import {
   createBlankFuncionamento, nomeParaGravar, funcionamentosDaFicha,
 } from "./afty-schema";
 import { RECURSOS_BUFF_NATIVOS } from "./afty-extras-nativos";
+import { contadoresOrigemDeAddon, valorContadorOrigem, clampContadorOrigem } from "./afty-contadores-origem";
 // Primitivos compartilhados com a Ficha Final. Eram locais deste arquivo até
 // 2026-08-05, e saíram porque duas cópias divergiriam na primeira errata.
 import { PainelDeFontes, ValorComFontes } from "./ui/fontes";
@@ -58,6 +59,7 @@ import {
 } from "./afty-atributos";
 import {
   ETAPAS_POR_LINHA, focosGastos, avaliarRequisito, requisitosDaEtapa, rotuloAlvo, treinamentosDaOrigem,
+  SEP_ALVO_ACAO,
 } from "./afty-treinamentos";
 import { novaForja, novoItemForja, forjasDaFicha, focosDeForja, itensComNome, FORJA_TIPOS } from "./afty-forja";
 import {
@@ -3738,15 +3740,25 @@ function TecnicaMotorEditor({
   efeitos, onChange, pericias, fontesDano = [], comModo = false, dslGrupos = [],
   titulo = "Motor de Automação", simplificarTamanho = false,
   canalGrupos, alvoOpcoesDe = null, comDuracao = true,
+  // A lista de invocações da ficha. Presente = esta fonte pode mirar um
+  // shikigami, e a linha ganha o seletor de escopo. Ver `comInvocacao`.
+  invocacoes = null,
 }) {
+  const comInvocacao = Array.isArray(invocacoes) && invocacoes.length > 0;
   const lista = Array.isArray(efeitos) ? efeitos : [];
   // Devolve só os campos de DADO, nunca os resolvidos: `valor` e `ativo` são
   // derivados, e gravá-los deixaria a ficha mentindo no próximo render.
+  //
+  // ⚠ `escopo` e `invocacaoAlvo` viajam aqui (2026-09-15) pelo mesmo motivo que
+  // o `modo` e o `semCredito`: este objeto é gravado de volta na ficha, e campo
+  // que não for copiado se perde na primeira edição, calado.
   const bruto = () => lista.map((e) => ({
     canal: e.canal, ...(e.alvo ? { alvo: e.alvo } : {}), expr: e.expr,
     ...(e.quando ? { quando: e.quando } : {}),
     ...(e.duracao === "temporaria" ? { duracao: "temporaria" } : {}),
     ...(comModo ? { modo: e.modo === "ativa" ? "ativa" : "passiva" } : {}),
+    ...(e.escopo === "invocacao" ? { escopo: "invocacao" } : {}),
+    ...(e.escopo === "invocacao" && e.invocacaoAlvo ? { invocacaoAlvo: e.invocacaoAlvo } : {}),
   }));
   const add = () => onChange([...bruto(), {
     canal: "defesa", expr: "", ...(comModo ? { modo: "passiva" } : {}),
@@ -3755,6 +3767,16 @@ function TecnicaMotorEditor({
   const patch = (i, partial) => onChange(bruto().map((e, idx) => {
     if (idx !== i) return e;
     const next = { ...e, ...partial };
+    /* Trocar o ESCOPO troca o espaço de canais inteiro, então a linha recomeça
+       pelo canal padrão daquele lado: manter o canal antigo deixaria a linha
+       com um id que o outro catálogo não conhece, e ela sumiria calada no
+       coletor. `defesa` existe nos dois, e é o padrão dos dois. */
+    if (partial.escopo !== undefined) {
+      delete next.alvo;
+      delete next.invocacaoAlvo;
+      next.canal = "defesa";
+      if (partial.escopo !== "invocacao") delete next.escopo;
+    }
     // Trocar de canal invalida o alvo antigo: o vocabulário é outro.
     if (partial.canal !== undefined) {
       delete next.alvo;
@@ -3806,8 +3828,14 @@ function TecnicaMotorEditor({
           const exprRuim = ef.expr && !chk.ok;
           const chkQuando = ef.quando ? validateExpression(ef.quando, conhecidas) : { ok: true };
           const quandoRuim = ef.quando && !chkQuando.ok;
+          /* A linha mirada na invocação troca os DOIS vocabulários: o de canal
+             e o de alvo. Sem isso o seletor ofereceria perícia de criatura
+             para um bônus que vai cair num shikigami. */
+          const naInvocacao = ef.escopo === "invocacao";
+          const gruposDaLinha = naInvocacao ? INV_EFEITO_CANAL_GRUPOS : canalGrupos;
           const alvos = !ef.alvoTipo
             ? null
+            : naInvocacao ? alvoOpcoesInvocacao(ef.alvoTipo)
             : alvoOpcoesDe ? alvoOpcoesDe(ef.alvoTipo) : alvoOpcoes(ef.alvoTipo, pericias, fontesDano);
           const tamanhoSimples = simplificarTamanho && ef.canal === "tamanho";
           const tamanhoValor = Math.trunc(Number(ef.expr) || 1);
@@ -3817,7 +3845,29 @@ function TecnicaMotorEditor({
             <div key={i} className="rounded border border-slate-800 bg-slate-950/50 p-2 space-y-2">
               {/* ---- O QUE o efeito é, e quanto ele VALE ---- */}
               <div className="flex flex-wrap items-center gap-2">
-                <CanalPicker value={ef.canal} onChange={(v) => patch(i, { canal: v })} grupos={canalGrupos} />
+                {/* ONDE o efeito cai (2026-09-15, a pedido do autor: *"sua
+                    técnica poderia adicionar coisas em Shikigames"*). Só
+                    aparece para quem recebeu a lista de invocações, então o
+                    editor de Característica da própria invocação, que já vive
+                    dentro de uma, continua com uma coluna a menos. */}
+                {comInvocacao && (
+                  <>
+                    <div className="relative flex-shrink-0 min-w-[110px]">
+                      <select
+                        value={naInvocacao ? "invocacao" : "criatura"}
+                        onChange={(e) => patch(i, { escopo: e.target.value })}
+                        className={MOTOR_SELECT_CLS}
+                        aria-label="Onde o efeito cai"
+                      >
+                        <option value="criatura">na criatura</option>
+                        <option value="invocacao">na invocação</option>
+                      </select>
+                      <MotorChevron />
+                    </div>
+                    <Conector>:</Conector>
+                  </>
+                )}
+                <CanalPicker value={ef.canal} onChange={(v) => patch(i, { canal: v })} grupos={gruposDaLinha} />
 
                 {alvos && (
                   <>
@@ -3835,6 +3885,29 @@ function TecnicaMotorEditor({
                           ? <option value="" disabled>escolher...</option>
                           : <option value="">todos</option>}
                         {alvos.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                      </select>
+                      <MotorChevron />
+                    </div>
+                  </>
+                )}
+
+                {/* QUAL invocação. Sem escolha vale para todas, que é o padrão
+                    e o caso comum: uma Técnica que reforça "os seus
+                    shikigamis" não quer nomear um. */}
+                {naInvocacao && (
+                  <>
+                    <Conector>de</Conector>
+                    <div className="relative flex-shrink-0 min-w-[130px]">
+                      <select
+                        value={ef.invocacaoAlvo ?? ""}
+                        onChange={(e) => patch(i, { invocacaoAlvo: e.target.value })}
+                        className={MOTOR_SELECT_CLS}
+                        aria-label="Qual invocação"
+                      >
+                        <option value="">todas as invocações</option>
+                        {invocacoes.map((inv) => (
+                          <option key={inv.id} value={inv.id}>{inv.nome || "Sem nome"}</option>
+                        ))}
                       </select>
                       <MotorChevron />
                     </div>
@@ -4269,7 +4342,7 @@ function TextoLongo({ value, onChange, placeholder, minRows = 4, maxRows = 18, f
    A descrição usa o `TextoLongo` com formatação, e não o `TextArea` do Estilo,
    pela mesma razão: ele é irmão do principal, então ganha título, tabela e
    negrito igual. */
-function FuncionamentoAdicionalCard({ linha, efeitosMotor, pericias, fontesDano, dslGrupos, onPatch, onRemove }) {
+function FuncionamentoAdicionalCard({ linha, efeitosMotor, pericias, fontesDano, dslGrupos, invocacoes, onPatch, onRemove }) {
   return (
     <div className="mt-4 pt-4 border-t border-slate-700">
       <div className="flex items-center gap-2 mb-1">
@@ -4304,6 +4377,7 @@ function FuncionamentoAdicionalCard({ linha, efeitosMotor, pericias, fontesDano,
         pericias={pericias}
         fontesDano={fontesDano}
         dslGrupos={dslGrupos}
+        invocacoes={invocacoes}
       />
     </div>
   );
@@ -4346,6 +4420,10 @@ function PerfilAmaldicoadoCard({
   // O principal já tem o bloco fixo acima. Os adicionais vêm apenas da ficha.
   // Aliado, Comidas e Alma são recursos de Buffs, não Funcionamentos Básicos.
   const adicionais = funcionamentosDaFicha(draft).filter((f) => !f.principal);
+  /* As invocações da ficha, para uma linha do Motor poder cair num shikigami
+     (2026-09-15). Ficha sem invocação nenhuma não ganha o seletor de escopo:
+     ele não teria o que oferecer. */
+  const invocacoesDaFicha = derived.invocacoes?.lista ?? null;
   return (
     <Card
       title="Perfil Amaldiçoado"
@@ -4378,6 +4456,7 @@ function PerfilAmaldicoadoCard({
         pericias={derived.testes?.pericias}
         fontesDano={fontesDano}
         dslGrupos={dslGrupos}
+        invocacoes={invocacoesDaFicha}
       />
 
       {/* Sem div de agrupamento: cada adicional já traz o próprio `mt-4 pt-4
@@ -4394,6 +4473,7 @@ function PerfilAmaldicoadoCard({
               pericias={derived.testes?.pericias}
               fontesDano={fontesDano}
               dslGrupos={dslGrupos}
+              invocacoes={invocacoesDaFicha}
               onPatch={(partial) => patchFuncionamento(f.id, partial)}
               onRemove={() => removeFuncionamento(f.id)}
             />
@@ -4763,6 +4843,7 @@ function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico
               efeitosPassivo={efeitosPassivoComPreview(escolhido)}
               fontesDano={fontesDano}
               dslGrupos={dslGrupos}
+              invocacoes={derived.invocacoes?.lista ?? null}
               onPatch={(partial) => patchFeitico(escolhido.id, partial)}
               onRemove={() => removeFeitico(escolhido.id)}
               onDuplicate={() => duplicar(escolhido.id)}
@@ -5036,7 +5117,7 @@ function subAbasDoFeitico(f) {
  * leitura e o campo que o edita ficava logo abaixo, dentro do corpo aberto: dois
  * lugares para o mesmo dado. Mesma correção que a Invocação levou.
  */
-function FeiticoCard({ feitico, ctx, nivelMax, tiposPermitidos, efeitosPassivo, fontesDano, dslGrupos, onPatch, onRemove, onDuplicate }) {
+function FeiticoCard({ feitico, ctx, nivelMax, tiposPermitidos, efeitosPassivo, fontesDano, dslGrupos, invocacoes, onPatch, onRemove, onDuplicate }) {
   const [confirmDel, setConfirmDel] = useState(false);
   const [subtab, setSubtab] = useState("base");
   const calculoBase = feitico.tipo === "dano" ? calcularFeiticoDano(feitico, ctx)
@@ -5195,6 +5276,7 @@ function FeiticoCard({ feitico, ctx, nivelMax, tiposPermitidos, efeitosPassivo, 
               efeitosPassivo={efeitosPassivo}
               fontesDano={fontesDano}
               dslGrupos={dslGrupos}
+              invocacoes={invocacoes}
             />
           ) : feitico.tipo === "personalizado" ? (
             <FeiticoPersonalizadoEditor feitico={feitico} onPatch={onPatch} />
@@ -6768,7 +6850,7 @@ function AtributosDoAuxiliar({ config, feitico, total, onPatch }) {
  * Motor de Automação abaixo, que continua livre para ajuste manual depois —
  * a calculadora SUGERE, ela nunca é a única fonte de verdade da linha.
  */
-function FeiticoPassivoEditor({ feitico, calc, onPatch, efeitosPassivo, fontesDano, dslGrupos }) {
+function FeiticoPassivoEditor({ feitico, calc, onPatch, efeitosPassivo, fontesDano, dslGrupos, invocacoes }) {
   const f = feitico;
   const efeito = f.efeitoPassivo || "defesa";
   const def = PASSIVO_EFEITOS.find((e) => e.value === efeito) || PASSIVO_EFEITOS[0];
@@ -6859,6 +6941,7 @@ function FeiticoPassivoEditor({ feitico, calc, onPatch, efeitosPassivo, fontesDa
         dslGrupos={dslGrupos}
         titulo="Efeitos da Passiva (Motor de Automação)"
         simplificarTamanho
+        invocacoes={invocacoes}
       />
     </div>
   );
@@ -7342,6 +7425,7 @@ function TabIdentidade({ draft, derived, patch, patchCore, setOrigemBonus, setOr
       <OrigemCard
         draft={draft}
         derived={derived}
+        patch={patch}
         patchCore={patchCore}
         setOrigemId={setOrigemId}
         setOrigemBonus={setOrigemBonus}
@@ -7418,7 +7502,7 @@ function CaracteristicaPainel({ nome, estado, estadoAlerta, mesa, verdadeiraOrig
 
 /* Card da Origem: seletor, clã, características e todos os controles que elas
    abrem (bônus de atributo, alocação, escolhas aninhadas, anatomias). */
-function OrigemCard({ draft, derived, patchCore, setOrigemId, setOrigemBonus, setOrigemCla, toggleEscolhaOrigem, setOrigemPool }) {
+function OrigemCard({ draft, derived, patch, patchCore, setOrigemId, setOrigemBonus, setOrigemCla, toggleEscolhaOrigem, setOrigemPool }) {
   const id = draft.core.origem?.id;
   const origem = getOrigem(id);
   // ⚠ O NÍVEL SAI DO DERIVADO, e não do rascunho: com a Carteira ligada ele
@@ -7751,6 +7835,68 @@ function OrigemCard({ draft, derived, patchCore, setOrigemId, setOrigemBonus, se
                   </div>
                 )}
               </CaracteristicaPainel>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Recursos de Origem: contadores persistentes de addon (não somem com
+          Descanso nem "Em Combate" — ver afty-contadores-origem.js). São
+          diferentes das características acima porque o número é digitado pelo
+          jogador, não calculado pelo motor. */}
+      {contadoresOrigemDeAddon(draft).length > 0 && (
+        <div className="mt-4 space-y-2">
+          <div className="text-[10px] uppercase tracking-wider text-slate-400">Recursos de Origem</div>
+          {contadoresOrigemDeAddon(draft).map((c) => {
+            const valor = valorContadorOrigem(draft, c.id);
+            const setValor = (novo) => {
+              const v = clampContadorOrigem(c, novo);
+              patch({ origemContadores: { ...(draft.origemContadores || {}), [c.id]: v } });
+            };
+            if (c.tipo === "bool") {
+              const on = valor > 0;
+              return (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => setValor(on ? 0 : 1)}
+                  aria-pressed={on}
+                  title={c.title || undefined}
+                  className={`w-full rounded-lg border px-3 py-2 text-left transition-colors ${
+                    on
+                      ? "border-purple-700 bg-purple-950/40 text-purple-100"
+                      : "border-slate-800 bg-slate-950/40 text-slate-300 hover:border-purple-700/70 hover:text-white"
+                  }`}
+                >
+                  <span className="text-[12px] font-bold block">{c.label}</span>
+                </button>
+              );
+            }
+            return (
+              <div
+                key={c.id}
+                title={c.title || undefined}
+                className="rounded-lg border border-slate-800 bg-slate-950/40 px-3 py-2 flex items-center gap-2"
+              >
+                <span className="text-[12px] text-slate-300 flex-1 min-w-0">{c.label}</span>
+                <button
+                  type="button"
+                  onClick={() => setValor(valor - c.passo)}
+                  aria-label={`Diminuir ${c.label}`}
+                  className="w-7 h-7 rounded border border-slate-700 bg-slate-900 text-slate-200 hover:border-purple-600 hover:text-white transition-colors"
+                >
+                  −
+                </button>
+                <span className="font-mono font-bold text-white text-sm tabular-nums w-10 text-center">{valor}</span>
+                <button
+                  type="button"
+                  onClick={() => setValor(valor + c.passo)}
+                  aria-label={`Aumentar ${c.label}`}
+                  className="w-7 h-7 rounded border border-slate-700 bg-slate-900 text-slate-200 hover:border-purple-600 hover:text-white transition-colors"
+                >
+                  +
+                </button>
+              </div>
             );
           })}
         </div>
@@ -8455,7 +8601,7 @@ const alvoLabelDe = rotuloAlvo;
    que a criatura tem. Vale a arma CARREGADA, e não só a equipada, porque
    treinar não é empunhar. A lista já vem sem repetição, que é o que sobra de
    duas entradas do mesmo modelo (duas Adagas são uma opção só). */
-function opcoesDeAlvo(linha, instances, pericias = AFTY_PERICIAS, armas = []) {
+function opcoesDeAlvo(linha, instances, pericias = AFTY_PERICIAS, armas = [], invocacoes = []) {
   const usados = new Set(instances.map((i) => i.alvo));
   if (linha.alvoTipo === "atributo") {
     return AFTY_ATTRS.filter((a) => !usados.has(a.key)).map((a) => ({ value: a.key, label: a.label }));
@@ -8473,6 +8619,29 @@ function opcoesDeAlvo(linha, instances, pericias = AFTY_PERICIAS, armas = []) {
     }
     return out;
   }
+  // `invocacao`: o pool é o ROSTER da ficha (mesmo espírito da `arma` ser o
+  // inventário) — treina UMA invocação por pega, e a mesma não entra duas vezes.
+  if (linha.alvoTipo === "invocacao") {
+    return (invocacoes || [])
+      .filter((i) => !usados.has(i.id))
+      .map((i) => ({ value: i.id, label: i.nome || "Sem nome" }));
+  }
+  /* `acaoInvocacao`: um nível mais fundo — o pool são as AÇÕES de cada
+     invocação do roster, num seletor só ("Alfa · Golpe"), e não dois seletores
+     encadeados. O par vira um id composto (`invocacaoId::acaoId`), então a
+     dedupe e a chave de lista continuam sendo o `alvo` de sempre, e treinar
+     duas Ações da MESMA invocação continua sendo duas pegas distintas. */
+  if (linha.alvoTipo === "acaoInvocacao") {
+    const out = [];
+    for (const inv of invocacoes || []) {
+      for (const acao of inv?.acoes || []) {
+        const value = `${inv.id}${SEP_ALVO_ACAO}${acao.id}`;
+        if (usados.has(value)) continue;
+        out.push({ value, label: `${inv.nome || "Sem nome"} · ${acao.nome || "Ação sem nome"}` });
+      }
+    }
+    return out;
+  }
   return null;   // texto livre
 }
 
@@ -8480,7 +8649,7 @@ function opcoesDeAlvo(linha, instances, pericias = AFTY_PERICIAS, armas = []) {
    instâncias, cada uma com um alvo distinto (atributo/perícia/arma). */
 function TreinoLinha({
   linha, valor, attrEff, nd, ctxReq, onSetProgresso, onSetInstance,
-  pericias, armas, alvosEscolhidos = {}, escolhas = {}, onSetAlvo, onSetEscolha,
+  pericias, armas, invocacoes, alvosEscolhidos = {}, escolhas = {}, onSetAlvo, onSetEscolha,
 }) {
   const repetivel = !!linha.repetivel;
   const progresso = repetivel ? 0 : (Number(valor) || 0);
@@ -8506,12 +8675,17 @@ function TreinoLinha({
   // `null` = alvo de texto livre (nenhuma linha usa mais, mas o caminho fica
   // para uma linha nova nascer sem catálogo). Atributo, Perícia e Arma saem do
   // catálogo, já sem os que a criatura treinou.
-  const alvoOptions = opcoesDeAlvo(linha, instances, pericias, armas);
+  const alvoOptions = opcoesDeAlvo(linha, instances, pericias, armas, invocacoes);
   // Pool vazio tem duas causas, e a mensagem muda: ou tudo já foi treinado, ou
-  // não havia o que treinar (nenhuma arma no inventário).
+  // não havia o que treinar (nenhuma arma no inventário / nenhuma invocação).
   const poolVazio = linha.alvoTipo === "arma" && (armas?.length ?? 0) === 0
     ? "Nenhuma arma no inventário."
-    : "Tudo já foi treinado nesta linha.";
+    : linha.alvoTipo === "invocacao" && (invocacoes?.length ?? 0) === 0
+      ? "Nenhuma invocação criada."
+      : linha.alvoTipo === "acaoInvocacao"
+        && !(invocacoes || []).some((i) => (i.acoes?.length ?? 0) > 0)
+        ? "Nenhuma invocação com Ação criada."
+        : "Tudo já foi treinado nesta linha.";
   const textoDup = !!novoTexto.trim() && usados.has(novoTexto.trim().toLowerCase());
   const addTexto = () => {
     const v = novoTexto.trim();
@@ -8628,7 +8802,7 @@ function TreinoLinha({
                     {/* cabeçalho da instância: mesma anatomia da linha (alvo + segmentos + estado) */}
                     <div className="flex items-center gap-2 mb-2 pb-1.5 border-b border-slate-800">
                       <span className="text-[11px] font-bold text-purple-200 flex-1 min-w-0 truncate">
-                        {alvoLabelDe(linha, inst.alvo, pericias, armas)}
+                        {alvoLabelDe(linha, inst.alvo, pericias, armas, invocacoes)}
                       </span>
                       <ProgressoSegmentos progresso={inst.progresso} total={ETAPAS_POR_LINHA} />
                       {instCompleta ? (
@@ -8644,8 +8818,8 @@ function TreinoLinha({
                         type="button"
                         onClick={() => onSetInstance(linha.id, inst.alvo, 0)}
                         className="text-slate-600 hover:text-rose-300 p-0.5 rounded flex-shrink-0"
-                        title={`Remover treino de ${alvoLabelDe(linha, inst.alvo, pericias, armas)}`}
-                        aria-label={`Remover treino de ${alvoLabelDe(linha, inst.alvo, pericias, armas)}`}
+                        title={`Remover treino de ${alvoLabelDe(linha, inst.alvo, pericias, armas, invocacoes)}`}
+                        aria-label={`Remover treino de ${alvoLabelDe(linha, inst.alvo, pericias, armas, invocacoes)}`}
                       >
                         <X className="w-3.5 h-3.5" />
                       </button>
@@ -13328,6 +13502,16 @@ function TabInterludios({
   const armasDoInventario = (derived.equip?.entradas ?? [])
     .filter((e) => e.tipo === "arma" && e.def)
     .map((e) => e.def);
+  // Pool de uma Linha `alvoTipo: "invocacao"` (2026-09-14): o ROSTER da
+  // ficha, mesmo espírito da arma ser o inventário. Ver `opcoesDeAlvo`.
+  // As Ações vêm junto: uma Linha `alvoTipo: "acaoInvocacao"` mira UMA Ação, e
+  // o seletor precisa do nome dela para montar "Invocação · Ação".
+  const invocacoesDaFicha = (derived.invocacoes?.lista ?? draft.invocacoes ?? [])
+    .map((i) => ({
+      id: i.id,
+      nome: i.nome,
+      acoes: (i.acoes || []).map((a) => ({ id: a.id, nome: a.nome })),
+    }));
   // A origem esconde a linha que ela não alcança (a Maldição não tem Energia
   // Reversa), e o gasto acompanha: o Foco preso numa linha escondida volta.
   // ⚠ As duas perguntas são diferentes e as duas são feitas aqui. `origemId` é
@@ -13391,6 +13575,7 @@ function TabInterludios({
               ctxReq={ctxReq}
               pericias={derived.testes?.pericias}
               armas={armasDoInventario}
+              invocacoes={invocacoesDaFicha}
               onSetProgresso={setTreinoProgresso}
               onSetInstance={setTreinoInstance}
               alvosEscolhidos={draft.treinamentoAlvos?.[linha.id] || {}}

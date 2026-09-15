@@ -761,6 +761,9 @@ export function buildCriaturaDslContext(base = {}) {
     vez: 1,
     grau: base.grauRank ?? 1,                        // Quarto 1 ... Semi-Grau Especial 5, e para aí
     alma_atual: base.almaAtual ?? 100,
+    // Contadores de Origem (afty-contadores-origem.js): sempre presentes,
+    // nunca gated por combate.ativo — mesmo espírito do alma_atual acima.
+    ...(base.origemContadoresVars || {}),
     // RD base do escudo equipado, SEM a parcela da Ferramenta Amaldiçoada. É o
     // "aumento base em RD do seu escudo" do Especialista em Escudo. Único valor
     // de equipamento no contexto, e entra porque o equipamento é resolvido antes
@@ -984,6 +987,11 @@ function efeitosDeLinhas(linhas, tipo) {
   const out = [];
   for (const linha of linhas) {
     for (const e of linha.efeitos) {
+      // A linha mirada na INVOCAÇÃO sai daqui: ela é colhida por
+      // `efeitosInvocacaoEscritos` (afty-invocacoes.js) e vale no espaço de
+      // canais do shikigami. Sem este descarte, um `pv` de invocação
+      // engordaria o PV do personagem calado. Ver o aviso naquele arquivo.
+      if (e?.escopo === "invocacao") continue;
       const canal = CANAL_LEGADO[e?.canal] ?? e?.canal;
       if (!canal || !CANAL_BY_ID[canal]) continue;
       const expr = String(e.expr ?? "").trim();
@@ -1030,6 +1038,8 @@ export function efeitosDosPassivos(creature) {
     if (feitico?.tipo !== "passivo") continue;
     const lista = Array.isArray(feitico.efeitosPassivo) ? feitico.efeitosPassivo : [];
     for (const e of lista) {
+      // Mirada na invocação: ver o descarte gêmeo em `efeitosDeLinhas`.
+      if (e?.escopo === "invocacao") continue;
       const canal = CANAL_LEGADO[e?.canal] ?? e?.canal;
       if (!canal || !CANAL_BY_ID[canal]) continue;
       const expr = String(e.expr ?? "").trim();
@@ -1071,6 +1081,8 @@ export function efeitosDaSessao(creature) {
   if (!Array.isArray(lista)) return [];
   const out = [];
   for (const e of lista) {
+    // Mirada na invocação: ver o descarte gêmeo em `efeitosDeLinhas`.
+    if (e?.escopo === "invocacao") continue;
     const canal = CANAL_LEGADO[e?.canal] ?? e?.canal;
     if (!canal || !CANAL_BY_ID[canal]) continue;
     const expr = String(e.expr ?? "").trim();

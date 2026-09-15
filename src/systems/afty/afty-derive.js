@@ -47,6 +47,7 @@ import {
 } from "./afty-origens";
 import {
   efeitosDeTreino, vagasEncantamentoDeTreino, atributosDePericiaDeTreino, gatilhosDeTreino,
+  efeitosInvocacaoDeTreino,
 } from "./afty-treinamentos";
 import { efeitosDeTreinoEspecial } from "./afty-treinos-especiais";
 import { resolveNiveisAptidao, trilhasDaCriatura, getAptidao, AFTY_APTIDOES } from "./afty-aptidoes";
@@ -76,7 +77,10 @@ import {
 import {
   resolveAltoNivel, getMelhoriaSuperior, getHabilidadeLendaria, getHabilidadeApice,
 } from "./afty-alto-nivel";
-import { resolveInvocacoesList, resolveHordasList, efeitosDeInvocacao } from "./afty-invocacoes";
+import {
+  resolveInvocacoesList, resolveHordasList, efeitosDeInvocacao, efeitosInvocacaoEscritos,
+  INV_EFEITO_CANAIS,
+} from "./afty-invocacoes";
 import { armasTransformaveis, efeitosArmasTransformaveis } from "./afty-armas-transformaveis";
 import {
   resolveEquipamentos, resolveCarga, grauFeiticeiro, alcanceDaArma, propriedadesDaArma,
@@ -110,6 +114,7 @@ import {
 } from "./afty-addons";
 import { agrupaConcedido, concessoesDaSessao, escolhasDoConcedido } from "./afty-concessao";
 import { ESTADOS_NATIVOS_EXTRAS, efeitosDaAlmaAtual } from "./afty-extras-nativos";
+import { origemContadoresDslVars } from "./afty-contadores-origem";
 import {
   efeitosDasAdaptacoes, origensDiretasDasAdaptacoes, resumoAdaptacoes,
 } from "./afty-adaptacao";
@@ -428,6 +433,10 @@ export function deriveAfty(creature, opcoes = {}) {
   const almaAtualDsl = opcoes.almaAtual != null
     ? Math.max(0, Math.trunc(Number(opcoes.almaAtual) || 0))
     : almaMaxBase;
+  // Contadores de Origem: SEMPRE presentes no contexto, nunca gated por
+  // `combate.ativo` — é o que diferencia de um estado de bancada. Ver
+  // afty-contadores-origem.js.
+  const origemContadoresVars = origemContadoresDslVars(creature);
   const qntPE = creature?.qntPE || "normal";
 
   const attrBonus = resolveOrigemAttrBonus(creature);
@@ -558,6 +567,7 @@ export function deriveAfty(creature, opcoes = {}) {
     : resolveGerais(creature, { nd, maestria: bt, concedidos: concedido.gerais });
   const ctxMontante = buildCriaturaDslContext({
     nd, bt, grauRank: grau.rank, patamar, tipo, almaAtual: almaAtualDsl,
+    origemContadoresVars,
     irmaoMorto: !!creature?.core?.origem?.irmaoMorto,
     iniciativaIrmao: creature?.core?.origem?.iniciativaIrmao,
     attrEff: attrBase, mods: modBase, modTecnica: modBase[tecnicaAttr] ?? 0, tecnicaAttr,
@@ -1384,6 +1394,7 @@ export function deriveAfty(creature, opcoes = {}) {
 
   const montarCtx = (attrs, mods) => buildCriaturaDslContext({
     nd, bt, grauRank: grau.rank, patamar, tipo, almaAtual: almaAtualDsl,
+    origemContadoresVars,
     irmaoMorto: !!creature?.core?.origem?.irmaoMorto,
     iniciativaIrmao: creature?.core?.origem?.iniciativaIrmao,
     attrEff: attrs, mods, modTecnica: mods[tecnicaAttr] ?? 0, tecnicaAttr,
@@ -1782,10 +1793,35 @@ export function deriveAfty(creature, opcoes = {}) {
   };
   const resolverEfeitosEditaveis = (lista) => (Array.isArray(lista) ? lista : [])
     .map((e) => {
-      const def = EFEITO_CANAIS.find((c) => c.id === e?.canal) || null;
+      /* A linha mirada na INVOCAÇÃO (2026-09-15) lê o catálogo do shikigami, e
+         não o da criatura: os dois espaços repetem nomes de canal com sentidos
+         diferentes, então o `alvoTipo` e a nota do canal errado ofereceriam à
+         tela um vocabulário que não é o daquele número. */
+      const naInvocacao = e?.escopo === "invocacao";
+      const def = naInvocacao
+        ? (INV_EFEITO_CANAIS.find((c) => c.id === e?.canal) || null)
+        : (EFEITO_CANAIS.find((c) => c.id === e?.canal) || null);
       const expr = String(e?.expr ?? "").trim();
       const valorTardio = efeitoUsaDadosDanoFinal(e);
       const condicaoTardia = efeitoUsaDadosDanoFinal({ expr: e?.quando });
+      if (naInvocacao) {
+        /* ⚠ SEM VALOR RESOLVIDO AQUI, de propósito. A expressão é avaliada no
+           contexto de CADA invocação (grau, atributos, marcadores dela), e a
+           linha costuma valer para várias: um número só na tela do editor seria
+           o de nenhuma delas. O valor por invocação aparece no card do
+           shikigami, que é onde ele tem dono. */
+        return {
+          canal: e?.canal ?? "", alvo: e?.alvo ?? "", expr,
+          quando: e?.quando ?? "", duracao: e?.duracao ?? "permanente",
+          escopo: "invocacao",
+          ...(e?.invocacaoAlvo ? { invocacaoAlvo: e.invocacaoAlvo } : {}),
+          alvoTipo: def?.alvo ?? null,
+          alvoObrigatorio: !!def?.alvo && !def.alvoOpcional,
+          nota: def?.nota ?? null,
+          valor: null,
+          ativo: !!expr,
+        };
+      }
       return {
         canal: e?.canal ?? "", alvo: normalizarAlvoEfeito(e?.alvo) ?? "", expr,
         quando: e?.quando ?? "", duracao: e?.duracao ?? "permanente",
@@ -2750,6 +2786,16 @@ export function deriveAfty(creature, opcoes = {}) {
       ...caracteristicasEfetivas(creature),
       ...talentos.escolhidas.map((id) => getTalento(id)),
     ]),
+    // Linha de Treinamento (2026-09-14): a quarta fonte, ao lado de Habilidade
+    // de Controlador, Talento e Característica de Origem. Ver
+    // `efeitosInvocacaoDeTreino` em afty-treinamentos.js.
+    ...efeitosInvocacaoDeTreino(creature),
+    /* O que o JOGADOR escreve (2026-09-15): Técnica, Funcionamentos
+       adicionais, Addon, Feitiço Passivo e buff de mesa, quando a linha se
+       marca com `escopo: "invocacao"`. As quatro fontes acima são catálogo, e
+       até aqui nada escrito à mão alcançava um shikigami. Ver
+       `efeitosInvocacaoEscritos` em afty-invocacoes.js. */
+    ...efeitosInvocacaoEscritos(creature),
   ];
   // MARCADORES: uma Habilidade que vale só para ALGUMAS invocações (Concentrar
   // Poder, as 4 Melhorias, Fantoche Supremo, Companheiro, Econômicas) entra por

@@ -26,15 +26,18 @@ import { usePrimitiva } from "../ui/usar-primitiva";
  * Teclado: setas andam, Enter escolhe, Esc fecha.
  * ============================================================
  */
-export default function CanalPicker({ value, onChange, ancora = "esquerda" }) {
+/* `catalogo` troca o espaço de canais inteiro. O padrão é o da criatura, e a
+   aba Buffs passa o da INVOCAÇÃO quando o buff é escrito para um shikigami
+   (2026-09-15). */
+export default function CanalPicker({ value, onChange, ancora = "esquerda", catalogo = EFEITO_CANAL_GRUPOS }) {
   const [aberto, setAberto] = useState(false);
   const [busca, setBusca] = useState("");
   const [cursor, setCursor] = useState(0);
   const campo = useRef(null);
 
   const atual = useMemo(
-    () => EFEITO_CANAL_GRUPOS.flatMap((g) => g.itens).find((c) => c.id === value),
-    [value],
+    () => catalogo.flatMap((g) => g.itens).find((c) => c.id === value),
+    [catalogo, value],
   );
 
   /* O `hpAtributo` é canal de Addon, e some para quem não pediu a primitiva.
@@ -47,7 +50,7 @@ export default function CanalPicker({ value, onChange, ancora = "esquerda" }) {
   // e sem isso "critico" não acha "Margem de Crítico".
   const grupos = useMemo(() => {
     const termo = semAcento(busca.trim());
-    return EFEITO_CANAL_GRUPOS
+    return catalogo
       .map((g) => ({
         label: g.label,
         itens: g.itens.filter((c) =>
@@ -58,7 +61,7 @@ export default function CanalPicker({ value, onChange, ancora = "esquerda" }) {
           || semAcento(c.nota).includes(termo))),
       }))
       .filter((g) => g.itens.length);
-  }, [busca, veHpAtributo]);
+  }, [busca, catalogo, veHpAtributo]);
 
   const chapada = useMemo(() => grupos.flatMap((g) => g.itens), [grupos]);
 

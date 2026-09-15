@@ -36,6 +36,25 @@ arquivo md. Para outros colaboradores usarem ele também e ir anotando oq for pr
 
 Coisas paradas esperando decisão de regra. Nada aqui deve ser resolvido por suposição.
 
+### A cota base de Ações e Características isenta de PE deixou um assert vermelho
+
+**Onde:** `src/systems/afty/afty-invocacoes.js` (`custoInvocacao`), `asserts/t-invocacoes-motor.mjs`
+
+**Situação:** uma mudança de 2026-09-14, ainda não commitada, fez a QUANTIDADE BASE do grau
+(`INV_ACOES_CARACT_BASE`: 2 no Quarto e no Terceiro, 3 no Segundo e no Primeiro, 4 no Especial)
+deixar de custar PE, com a justificativa escrita no código de que é o texto verbatim do livro e de
+que o cálculo antigo cobrava a ficha inteira e só abatia os grátis de Habilidade por cima.
+
+O assert `t-invocacoes-motor.mjs` ainda cobra a regra ANTIGA na linha *"a Livre com Motor custa 1
+PE, como toda Característica"*, que era verdade quando toda Característica custava. Com a cota base
+isenta, a primeira Característica de uma invocação de Terceiro Grau passa a custar zero, e o assert
+falha. Ele é a única falha da suíte hoje (86 de 87 arquivos passam).
+
+**Precisa:** o autor confirmar a regra nova. Se ela vale, o assert muda para cobrar a cota (as duas
+primeiras de graça, a terceira custando), e a frase daquele bloco sai. Se não vale, o `+ base` do
+`custoInvocacao` é que sai.
+**Anotado:** 2026-09-15, ao sincronizar o repositório antes de abrir a Técnica para o shikigami
+
 ### Controlador: as reações que rolam dado não têm onde aparecer
 
 **Onde:** `src/systems/afty/afty-invocacoes.js` (`opcoesDeUso`)

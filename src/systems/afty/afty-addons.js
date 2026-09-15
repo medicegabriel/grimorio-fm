@@ -835,6 +835,17 @@ export function normalizarPacote(cru) {
     estadosCombate: Array.isArray(p.estadosCombate)
       ? p.estadosCombate.filter((x) => x && typeof x === "object").map(clonar)
       : [],
+    /* Contadores PERSISTENTES de origem (2026-09-13): ao contrário de
+       `estadosCombate`, que mora em `creature.combate` e zera fora de "Em
+       Combate", isto mora em `creature.origemContadores` — sobrevive a
+       Descanso e a qualquer reset de sessão, e vale sempre, dentro ou fora de
+       combate. Nasceu do Arauto da Corrupção: um contador manual (+/-) que
+       precisa acionar Características por limiar (`quando: "corrupcao >=
+       60"`) independente de a criatura estar em combate. Ver
+       afty-contadores-origem.js. */
+    contadoresOrigem: Array.isArray(p.contadoresOrigem)
+      ? p.contadoresOrigem.filter((x) => x && typeof x === "object").map(clonar)
+      : [],
     /* A tabela de preços da Loja de Catarse. Fica num campo PRÓPRIO, e não
        dentro de `acrescenta`, porque ela não é uma entrada de catálogo: é
        configuração do pacote, como `permite` e `libera`. Ver `precosDeCatarse`. */
@@ -1260,6 +1271,24 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
     }
   }
 
+  const contadoresVistos = new Set();
+  const tiposContador = new Set(["contador", "bool"]);
+  for (const [i, contador] of p.contadoresOrigem.entries()) {
+    const onde = `Contador de Origem #${i + 1}`;
+    const id = String(contador.id ?? "").trim();
+    if (!id || !ID_ENTRADA_OK.test(id)) problemas.push(`${onde}: id inválido.`);
+    else if (contadoresVistos.has(id)) problemas.push(`${onde}: id repetido ("${id}").`);
+    contadoresVistos.add(id);
+    if (!String(contador.label ?? "").trim()) problemas.push(`${onde}: falta o campo "label".`);
+    if (contador.tipo != null && !tiposContador.has(contador.tipo)) {
+      problemas.push(`${onde}: tipo inválido (use "contador" ou "bool").`);
+    }
+    if ((contador.tipo ?? "contador") === "contador"
+      && contador.max != null && Math.trunc(Number(contador.max)) < Math.trunc(Number(contador.min) || 0)) {
+      problemas.push(`${onde}: faixa inválida.`);
+    }
+  }
+
   const familias = Object.keys(p.acrescenta);
   /* ⚠ ACRESCENTAR DEIXOU DE SER OBRIGATÓRIO em 2026-08-21. Um pacote que só
      DESTRAVA (`libera`) ou só MOSTRA (`permite`) é legítimo e não traz conteúdo
@@ -1279,8 +1308,9 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
     && Object.keys(p.atributos).length === 0
     && p.feiticos.length === 0
     && p.estadosCombate.length === 0
+    && p.contadoresOrigem.length === 0
   ) {
-    problemas.push("O pacote não acrescenta, não substitui, não libera, não permite, não concede Aptidão e não traz Funcionamento Básico, Feitiço ou Estado de Combate.");
+    problemas.push("O pacote não acrescenta, não substitui, não libera, não permite, não concede Aptidão e não traz Funcionamento Básico, Feitiço, Estado de Combate ou Contador de Origem.");
   }
 
   const vistos = new Set();
