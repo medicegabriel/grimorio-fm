@@ -116,6 +116,39 @@ for (const id of ["it_pulseira_magistral", "it_pulseira_primacial"]) {
   t(`${id} continua inerte, esperando a tela de escolha`, def?.efeito?.aplicado ?? false, false);
 }
 
+/* ============================================================ */
+/* 4. DE QUAL ITEM VEIO CADA ESCALAR (2026-09-15)                */
+/* ============================================================ */
+/* O card "Efeito do Equipado" agrupa por item, e os escalares (Defesa da
+   armadura, atributo de item, PV, CD, penalidade, RD do escudo) não carregavam
+   dono. `partesDeItem` é só EXIBIÇÃO: ela nunca soma em conta nenhuma, e por
+   isso o que se cobra aqui é que ela BATA com o escalar. Se um caminho novo
+   somar sem registrar a parcela, a sobra aparece no card sem dono, e não some. */
+{
+  const c = createBlankAfty();
+  c.core.nd = 10;
+  c.equipamentos = { itens: [
+    { uid: "u1", tipo: "uniforme", refId: "unif_revestimento_robusto", qtd: 1, equipado: true },
+    { uid: "i1", tipo: "item", refId: "it_ombreiras_do_vigor_superior", qtd: 1, equipado: true },
+    { uid: "i2", tipo: "item", refId: "it_faixas_celeres", qtd: 1, equipado: true },
+  ] };
+  const eq = deriveAfty(c).equip;
+  const soma = (canal, alvo = null) => (eq.partesDeItem ?? [])
+    .filter((p) => p.canal === canal && (alvo ? p.alvo === alvo : true))
+    .reduce((s, p) => s + p.valor, 0);
+  t("a Defesa da armadura tem dono", soma("defesa"), eq.uniformeDefesa);
+  t("a penalidade também", soma("penalidadeArmadura"), eq.penalidadeDestreza);
+  t("o PV do item também", soma("hp"), eq.hpMaxBonus);
+  t("e o atributo do item, por atributo",
+    ["forca", "destreza", "constituicao", "inteligencia", "sabedoria", "presenca"]
+      .map((k) => soma("atributo", k)),
+    ["forca", "destreza", "constituicao", "inteligencia", "sabedoria", "presenca"]
+      .map((k) => eq.attrBonus[k]));
+  t("cada parcela aponta uma entrada da ficha",
+    (eq.partesDeItem ?? []).every((p) => eq.entradas.some((e) => e.uid === p.uid)), true);
+  t("e nenhuma parcela é zero", (eq.partesDeItem ?? []).every((p) => p.valor !== 0), true);
+}
+
 console.log(bad.length ? `FALHAS (${bad.length}):\n` + bad.join("\n") : `TODOS OS ${ok} ASSERTS PASSARAM`);
 
 /* sai diferente de zero quando falha, para o lancador e o CI enxergarem */

@@ -71,6 +71,46 @@ t("ficha inexistente nao quebra", S.sistemaDaFicha(null), "afty");
 t("ficha da 2.5.2 cai no afty", S.sistemaDaFicha({ rulesVersion: "2.5.2" }), "afty");
 t("ehPlayer le a ficha inteira", S.ehPlayer(S.sistemaDaFicha({ rulesVersion: "player" })), true);
 
+/* A terceira classe é exclusiva da ficha de jogador, inclusive na leitura de
+   uma ficha importada. A distribuição gravada volta quando o nível sobe. */
+const tresClasses = (rulesVersion, nd = 10) => {
+  const f = createBlankAfty();
+  f.rulesVersion = rulesVersion;
+  f.core.nd = nd;
+  f.especializacoes = [
+    { id: "lutador", nivel: 4 },
+    { id: "combatente", nivel: 3 },
+    { id: "conjurador", nivel: 3 },
+  ];
+  return f;
+};
+const niveisClasses = (f) => E.resolveEspecializacoes(f).escolhidas
+  .map(({ id, nivel }) => [id, nivel]);
+t("a criatura permite duas classes", E.maxEspecializacoes("inato", [], "afty"), 2);
+t("o jogador permite tres classes", E.maxEspecializacoes("inato", [], "player"), 3);
+t("a origem Restringido continua sem multiclasse no jogador",
+  E.maxEspecializacoes("restringido", [], "player"), 1);
+t("a criatura ignora a terceira classe importada",
+  niveisClasses(tresClasses("afty")), [["lutador", 4], ["combatente", 6]]);
+t("o jogador distribui os niveis entre tres classes",
+  niveisClasses(tresClasses("player")),
+  [["lutador", 4], ["combatente", 3], ["conjurador", 3]]);
+t("a quarta classe importada fica fora da ficha de jogador",
+  E.normalizeEspecializacoes([...tresClasses("player").especializacoes,
+    { id: "suporte", nivel: 1 }], "inato", [], "player").map((e) => e.id),
+  ["lutador", "combatente", "conjurador"]);
+t("com nivel dois a terceira classe fica guardada, mas fora da conta",
+  niveisClasses(tresClasses("player", 2)), [["lutador", 1], ["combatente", 1]]);
+t("com nivel tres as tres classes recebem ao menos um nivel",
+  niveisClasses(tresClasses("player", 3)),
+  [["lutador", 1], ["combatente", 1], ["conjurador", 1]]);
+t("subir o nivel restaura a divisao gravada",
+  niveisClasses(tresClasses("player", 10)),
+  [["lutador", 4], ["combatente", 3], ["conjurador", 3]]);
+t("o derive usa as tres classes do jogador",
+  deriveAfty(tresClasses("player")).especializacoes.escolhidas.map((e) => e.id),
+  ["lutador", "combatente", "conjurador"]);
+
 /* ============================================================ */
 /* 3. AS CHAVES DE STORAGE NÃO SE VEEM                           */
 /* ============================================================ */
@@ -122,7 +162,7 @@ t("as divergencias de REGRA ligadas",
    "pacoteDaClasseInicial", "passivaCustaPeMaximo", "patamarDoJogador", "poolExclusivo",
    "proficienciaPorArma", "progressaoDeFeiticos",
    "pvPePorEspecializacao", "quantidadeDePE", "rdBase", "rdEscudoFisico", "tetoDeNivel",
-   "trForaDoOrcamento", "vagasPorNivelDeClasse", "valoresAdicionais"].sort());
+   "trForaDoOrcamento", "vagasPorNivelDeClasse", "valoresAdicionais", "terceiraClasse"].sort());
 t("e a de TELA ligada e a das abas",
   S.DIVERGENCIAS.filter((d) => d.ativa && d.tipo === "tela").map((d) => d.id),
   ["abasIdentidade", "rotuloDoNivel", "marcaDoSistema", "interludioComTeste"]);
@@ -178,6 +218,7 @@ const dPlayer = deriveAfty(corpo("player"));
    campo fora desta lista que diferir é vazamento, e um campo daqui que NÃO
    diferir é divergência que não chegou ao número. */
 const DIFERENCAS_ESPERADAS = {
+  especializacoes: "terceiraClasse",
   hp: "pvPePorEspecializacao",
   almaMax: "pvPePorEspecializacao",
   pe: "pvPePorEspecializacao e quantidadeDePE",
@@ -250,11 +291,18 @@ const partesDiferem = Object.keys(dAfty.partes)
    explicar um número que no jogador é `null`, e ninguém viu porque o rótulo
    citava o MESMO patamar dos dois lados. Com o Patamar neutralizado no jogador
    os rótulos passaram a divergir, este assert apontou, e as duas passaram a
-   ficar VAZIAS no jogador, como o `guardaAtual` já ficava. */
+   ficar VAZIAS no jogador, como o `guardaAtual` já ficava.
+
+   `maestria` entrou em 2026-09-16 com o hover dela, e diverge SÓ no rótulo:
+   uma linha só, "ND 30" num lado e "Nível 30" no outro, com o mesmo valor. */
 t("e o hover diverge so nos stats ou no rotulo do nivel",
   partesDiferem,
   ["cd", "defesa", "guardaAtual", "guardaBonus", "guardaVida", "hp", "iniciativa",
-   "movimento", "pe", "rdEspecifico", "rdGeral", "resParcial", "totalAptidao"]);
+   "maestria", "movimento", "pe", "rdEspecifico", "rdGeral", "resParcial", "totalAptidao"]);
+
+t("e a Maestria diverge so no rotulo do nivel",
+  dPlayer.partes.maestria.map((p) => p.valor),
+  dAfty.partes.maestria.map((p) => p.valor));
 
 /* E as três da Guarda ficam VAZIAS no jogador, e não com uma linha de valor
    nulo: hover de stat que não existe não é hover, é ruído. */
@@ -372,7 +420,7 @@ t("as divergencias conhecidas estao na lista",
    "patamarDoJogador", "poolExclusivo", "proficienciaPorArma", "progressaoDeFeiticos",
    "pvPePorEspecializacao", "quantidadeDePE", "rdBase", "rdEscudoFisico",
    "reducaoDeGrau", "danoFixoPorGrau", "rotuloDoNivel", "marcaDoSistema", "interludioComTeste",
-   "tetoDeNivel", "trForaDoOrcamento", "vagasPorNivelDeClasse",
+   "terceiraClasse", "tetoDeNivel", "trForaDoOrcamento", "vagasPorNivelDeClasse",
    "valoresAdicionais"].sort());
 
 for (const d of S.DIVERGENCIAS) {

@@ -41,7 +41,7 @@ import { cofreTrancado, destrancarDeVez } from "./afty-cofre";
 import {
   lerBiblioteca, instalarDeTexto, instalarPacote, removerPacote, compararComBiblioteca,
 } from "./afty-addons-biblioteca";
-import { familiasDeAddon } from "./afty-addons";
+import { familiasDeAddon, incompativeisCom } from "./afty-addons";
 import { sistemaDaFicha, palavrasDoSistema } from "./afty-sistema";
 
 /* Quantas entradas o pacote acrescenta, por família, para o chip da linha. */
@@ -145,7 +145,13 @@ export default function TabAddons({ draft, derived, setAddons, trocarFicha }) {
 
   // Ligar COPIA o pacote da biblioteca para dentro da criatura. Desligar tira a
   // cópia, e não a biblioteca.
-  const ligar = (p) => setAddons([...naFicha.filter((x) => x.id !== p.id), p]);
+  const ligar = (p) => {
+    const outros = naFicha.filter((x) => x.id !== p.id);
+    // Só barra quem ENTRA. Atualizar um pacote que já está na ficha passa, e o
+    // conflito que a versão nova trouxer vira aviso em Problemas.
+    if (!idsNaFicha.has(p.id) && incompativeisCom(p, outros).length > 0) return;
+    setAddons([...outros, p]);
+  };
   const desligar = (id) => setAddons(naFicha.filter((x) => x.id !== id));
 
   /* ⚠ DESLIGAR O ADDON DO COFRE PEDE A SENHA (autor, 2026-09-08: *"você precisa
@@ -334,6 +340,11 @@ export default function TabAddons({ draft, derived, setAddons, trocarFicha }) {
           <div className="space-y-1">
             {biblioteca.map((p) => {
               const ligado = idsNaFicha.has(p.id);
+              /* ⚠ O QUE ESTA FICHA JÁ USA E NÃO LIGA JUNTO. Só trava o LIGAR:
+                 desligar um pacote que já está na ficha nunca é bloqueado, porque
+                 é justamente a saída do aviso. Ver `incompativeisCom`. */
+              const barrado = ligado ? [] : incompativeisCom(p, naFicha);
+              const nomesBarrado = barrado.map((o) => o.nome || o.id).join(" e ");
               return (
                 <div
                   key={p.id}
@@ -342,17 +353,33 @@ export default function TabAddons({ draft, derived, setAddons, trocarFicha }) {
                   <button
                     type="button"
                     onClick={() => (ligado ? desligar(p.id) : ligar(p))}
+                    disabled={barrado.length > 0}
                     aria-pressed={ligado}
                     title={ligado
                       ? `Tirar ${pal.g("deste", "desta")} ${pal.nome}`
-                      : `Usar ${pal.g("neste", "nesta")} ${pal.nome}`}
+                      : barrado.length > 0
+                        ? `Não liga junto com ${nomesBarrado}`
+                        : `Usar ${pal.g("neste", "nesta")} ${pal.nome}`}
                     className={`w-4 h-4 rounded border flex-shrink-0 ${
-                      ligado ? "bg-purple-600 border-purple-500" : "border-slate-600 hover:border-purple-600"
+                      ligado ? "bg-purple-600 border-purple-500"
+                        : barrado.length > 0 ? "border-slate-800 bg-slate-900 cursor-not-allowed"
+                          : "border-slate-600 hover:border-purple-600"
                     }`}
                   />
                   <span className="text-xs text-slate-200 truncate">{p.nome}</span>
                   <span className="text-[10px] font-mono text-slate-500 flex-shrink-0">{p.versao}</span>
                   <div className="ml-auto flex items-center gap-1 flex-shrink-0">
+                    {/* ⚠ CURTO NO TELEFONE. Em 390px o chip com os nomes empurrava a
+                        linha para fora da tela e o nome do pacote sumia inteiro.
+                        Os nomes ficam no `title` nas duas larguras. */}
+                    {barrado.length > 0 && (
+                      <span title={`Não liga junto com ${nomesBarrado}`}>
+                        <Chip tom="amber">
+                          <span className="sm:hidden">Não Liga</span>
+                          <span className="hidden sm:inline">Não Liga com {nomesBarrado}</span>
+                        </Chip>
+                      </span>
+                    )}
                     {resumoDoPacote(p).map((r) => <Chip key={r}>{r}</Chip>)}
                     <button
                       type="button"

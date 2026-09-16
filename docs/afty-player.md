@@ -40,7 +40,7 @@ fallback: um id errado não pode derrubar o criador de fichas no meio da mesa.
 
 ### 2. A tabela `DIVERGENCIAS`
 
-Há 31 entradas em `afty-sistema.js`, 30 ativas no código atual. Só `inventarioSimplificado`
+Há 32 entradas em `afty-sistema.js`, 31 ativas no código atual. Só `inventarioSimplificado`
 permanece com `ativa: false`. **Isto é DADO, e não comentário**, porque comentário envelhece
 calado: cada entrada carrega a citação verbatim de onde a divergência está escrita, o que vale de
 cada lado, e se o código JÁ desvia.
@@ -63,6 +63,18 @@ Todo `localStorage` do Player é isolado do Afty por sufixo (`_afty` / `_player`
 molde, sempre. **Nunca escreva uma chave sem sufixo:** ela vaza uma ficha de um lado para o outro.
 
 ---
+
+## MULTICLASSE DO JOGADOR
+
+A divergência ativa terceiraClasse permite até **3 Especializações** na Ficha de Player.
+A ficha de criatura continua com até **2**, e a Origem Restringido continua com apenas
+a sua classe obrigatória nos dois sistemas. A escolha depende de rulesVersion da
+ficha, inclusive quando ela aparece em Encontros.
+
+Com três classes, os níveis das duas primeiras são escolhas gravadas. Com duas,
+só o da primeira. A última recebe o restante do nível total. Cada classe ativa precisa ter ao menos 1 nível, e os
+controles de mais e menos transferem um nível entre as classes. Ao baixar o nível
+total, classes que não cabem saem da conta sem apagar a divisão gravada.
 
 ## O QUE FALTA, EM ORDEM DE UTILIDADE
 
@@ -163,7 +175,7 @@ npx vite build
 npm run asserts
 ```
 
-Em 2026-09-11: **74 arquivos, 4058 asserts.** Um arquivo de assert roda em processo próprio e imprime
+Em 2026-09-16: **91 arquivos, 4940 asserts.** Um arquivo de assert roda em processo próprio e imprime
 `TODOS OS N ASSERTS PASSARAM`.
 
 Para rodar o `deriveAfty` num script solto, o hook de resolução está no topo de qualquer

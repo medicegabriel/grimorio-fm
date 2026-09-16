@@ -30,18 +30,34 @@ import { sinalDe } from "./formato";
 
    `suplantado` é o perdedor do pool exclusivo (a arma venceu o shikigami). Ele
    aparece riscado e apagado, e não some: sem a linha, o jogador veria o bônus do
-   shikigami desaparecer da ficha sem nada explicando. */
+   shikigami desaparecer da ficha sem nada explicando.
+
+   `secao` abre uma PILHA com o subtotal dela à direita (o hover de Dano separa
+   Critável, Não Critável e Fixo, autor 2026-09-15). As parcelas que vêm depois
+   pertencem a ela até a próxima seção. */
 function LinhasDeFonte({ partes, total }) {
+  const lista = (partes || []).filter(Boolean);
+  const temSecao = lista.some((p) => p.secao);
   return (
     <>
-      {(partes || []).filter(Boolean).map((p, i) => (
-        <span key={i} className="afty-fonte-linha flex items-baseline justify-between gap-3 whitespace-nowrap">
+      {lista.map((p, i) => (p.secao ? (
+        <span
+          key={i}
+          className={`afty-fonte-secao flex items-baseline justify-between gap-3 whitespace-nowrap ${i > 0 ? "mt-1.5 pt-1" : ""}`}
+        >
+          <span className="text-[10px] font-semibold uppercase tracking-wider">{p.secao}</span>
+          <span className="font-mono text-[10px] font-semibold tabular-nums">{p.texto ?? sinalDe(p.valor)}</span>
+        </span>
+      ) : (
+        <span key={i} className={`afty-fonte-linha flex items-baseline justify-between gap-3 whitespace-nowrap ${
+          temSecao ? "pl-2" : ""
+        }`}>
           <span className={`afty-fonte-rotulo text-[10px] ${p.suplantado ? "line-through opacity-60" : ""}`}>{p.label}</span>
           <span className={`afty-fonte-valor font-mono text-[10px] tabular-nums ${p.suplantado ? "line-through opacity-60" : ""}`}>
             {p.texto ?? sinalDe(p.valor)}
           </span>
         </span>
-      ))}
+      )))}
       <span className="afty-fonte-total flex items-baseline justify-between gap-3 whitespace-nowrap mt-1 pt-1">
         <span className="text-[10px] uppercase tracking-wider">Total</span>
         <span className="font-mono text-[10px] font-bold tabular-nums">{total}</span>
@@ -160,13 +176,22 @@ function MolduraFlutuante({ retangulo, ancora, gatilho, largura = "16rem", child
   // Abre para CIMA quando o gatilho está na metade de baixo da tela, senão o
   // painel nasce fora da área visível e o jogador não vê nada.
   const paraCima = retangulo.bottom > window.innerHeight * 0.6;
+  /* ⚠ E TROCA DE LADO QUANDO NÃO CABE (2026-09-15). A âncora é escolhida olhando a
+     tela larga, e no celular a linha quebra: o Dano da aba Ações cai na esquerda
+     da tela com o painel ancorado à direita dele, e o painel nascia metade fora,
+     cortado pela borda. A conta usa a largura MÁXIMA do painel, que é o pior caso. */
+  const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+  const larguraMax = Math.min((parseFloat(largura) || 16) * rem, window.innerWidth - rem);
+  const lado = ancora === "esquerda"
+    ? (retangulo.left + larguraMax > window.innerWidth - 8 && retangulo.right - larguraMax >= 8 ? "direita" : "esquerda")
+    : (retangulo.right - larguraMax < 8 && retangulo.left + larguraMax <= window.innerWidth - 8 ? "esquerda" : "direita");
   const estilo = {
     position: "fixed",
     maxWidth: `min(${largura}, calc(100vw - 1rem))`,
     ...(paraCima
       ? { bottom: Math.round(window.innerHeight - retangulo.top + 4) }
       : { top: Math.round(retangulo.bottom + 4) }),
-    ...(ancora === "esquerda"
+    ...(lado === "esquerda"
       ? { left: Math.round(Math.max(8, retangulo.left)) }
       : { right: Math.round(Math.max(8, window.innerWidth - retangulo.right)) }),
   };

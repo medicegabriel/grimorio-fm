@@ -224,8 +224,14 @@ export const maiorDadoDe = (d) =>
 
 /**
  * O dado do Ataque Básico da ficha de jogador (autor, 2026-08-31): *"Golpe
- * Desarmado segue o cálculo de Lutador ou Arma Natural. Se não haver nenhum dos
- * dois, é 1d3 + Mod. Força ou Mod. Dex."*
+ * Desarmado segue o cálculo de Lutador ou Arma Natural."*
+ *
+ * ⚠ O PISO DEIXOU DE SER 1d3 FIXO (2026-09-16). O autor trouxe o texto do livro:
+ * *"O dano dos ataques desarmados inicia como 1d4 [...] Nos níveis 5, 9, 13 e 17
+ * o dano desarmado básico de um personagem aumenta para 1d6, 1d8, 1d10 e 1d12,
+ * respectivamente. Caso seja um Restringido, ele segue o mesmo aumento de um
+ * Lutador."* O básico é `DESARMADO_BASE`, e o Restringido virou uma fonte a mais,
+ * com a escada do Corpo Treinado.
  *
  * ⚠ AS ESCADAS DESTAS TRÊS SÃO DADO, E VÊM DO TEXTO DELAS. Não são degraus da
  * escada canônica, e não podiam ser: `2d8` para `2d12` no Corpo Treinado é um
@@ -239,7 +245,24 @@ export const maiorDadoDe = (d) =>
  * texto ganha. Por isso as linhas de escada delas são DESCONTADAS no jogador,
  * pela lista `ESCADAS_DESARMADO_NO_MOTOR` logo abaixo.
  */
-export const DESARMADO_PADRAO = "1d3";
+/** O dano desarmado BÁSICO, de todo personagem, pelo nível do personagem. */
+export const DESARMADO_BASE = [
+  { nivel: 1, dado: "1d4" },
+  { nivel: 5, dado: "1d6" },
+  { nivel: 9, dado: "1d8" },
+  { nivel: 13, dado: "1d10" },
+  { nivel: 17, dado: "1d12" },
+];
+
+/** O primeiro degrau do básico. É o que vale para quem chama sem nível. */
+export const DESARMADO_PADRAO = DESARMADO_BASE[0].dado;
+
+/** O degrau de uma escada no nível dado, ou `null` antes do primeiro. */
+const degrauNoNivel = (degraus, nivel) => {
+  let dado = null;
+  for (const d of degraus) if (nivel >= d.nivel) dado = d.dado;
+  return dado;
+};
 
 export const DESARMADO_FONTES = [
   {
@@ -293,6 +316,27 @@ export const DESARMADO_FONTES = [
       { nivel: 17, dado: "3d10" },
     ],
   },
+  {
+    id: "restringido",
+    nome: "Restringido",
+    /* "Caso seja um Restringido, ele segue o mesmo aumento de um Lutador." Os
+       degraus são os do Corpo Treinado, e a escala é o nível de Restringido: a
+       origem só aceita a própria classe, então ele anda junto do nível do
+       personagem. Não vem de habilidade nenhuma, e por isso quem liga a fonte é
+       o `restringido` do contexto, e não o `tem`.
+
+       "incapaz de exorcizar maldições com as mãos nuas, precisando de
+       Ferramentas Amaldiçoadas" é regra de mesa, e fica no texto. */
+    escala: "restringido",
+    porOrigem: true,
+    degraus: [
+      { nivel: 1, dado: "1d8" },
+      { nivel: 5, dado: "1d10" },
+      { nivel: 9, dado: "1d12" },
+      { nivel: 13, dado: "2d8" },
+      { nivel: 17, dado: "2d12" },
+    ],
+  },
 ];
 
 /**
@@ -322,18 +366,28 @@ export const ESCADAS_DESARMADO_NO_MOTOR = [
  * três descrições da mesma coisa. As Aprimoradas dizem "o dano de suas armas
  * naturais SE TORNA 1d10", que é substituição escrita no texto.
  *
- * ctx = { nivel, nivelLutador, tem: (id) => boolean }
+ * O ponto de partida é o BÁSICO do nível (`DESARMADO_BASE`), e as fontes só
+ * trocam o dado quando são maiores que ele. Corpo Treinado e Armas Naturais
+ * ganham do básico em todo nível, então o básico só aparece em quem não tem
+ * nenhuma das três.
+ *
+ * ctx = { nivel, nivelLutador, nivelRestringido, restringido, tem: (id) => boolean }
  */
 export function dadoDesarmado(ctx = {}) {
   const nivel = Math.max(1, Math.trunc(Number(ctx.nivel) || 1));
   const nivelLutador = Math.max(0, Math.trunc(Number(ctx.nivelLutador) || 0));
+  const nivelRestringido = Math.max(0, Math.trunc(Number(ctx.nivelRestringido ?? nivel) || 0));
   const tem = typeof ctx.tem === "function" ? ctx.tem : () => false;
-  let melhor = { dado: DESARMADO_PADRAO, fonte: null, max: maximoDe(lerDado(DESARMADO_PADRAO)) };
+  const base = degrauNoNivel(DESARMADO_BASE, nivel) ?? DESARMADO_PADRAO;
+  let melhor = { dado: base, fonte: null, max: maximoDe(lerDado(base)) };
   for (const f of DESARMADO_FONTES) {
-    if (!tem(f.id)) continue;
-    const escalaValor = f.escala === "lutador" ? nivelLutador : nivel;
-    let dado = null;
-    for (const d of f.degraus) if (escalaValor >= d.nivel) dado = d.dado;
+    // A fonte de origem (o Restringido) não é habilidade: quem a liga é o contexto.
+    const ativa = f.porOrigem ? !!ctx[f.id] : tem(f.id);
+    if (!ativa) continue;
+    const escalaValor = f.escala === "lutador" ? nivelLutador
+      : f.escala === "restringido" ? nivelRestringido
+        : nivel;
+    const dado = degrauNoNivel(f.degraus, escalaValor);
     if (!dado) continue;
     const max = maximoDe(lerDado(dado));
     if (max > melhor.max) melhor = { dado, fonte: f.nome, max };
@@ -359,11 +413,17 @@ export function validarNiveisDano() {
     if (maximoDe(d) !== d.max) erros.push(`Degrau ${d.texto} com máximo que não bate com os dados.`);
     if (textoDe(d) !== d.texto) erros.push(`Degrau ${d.texto} com texto que não bate com os dados.`);
   }
+  let anteriorBase = -1;
+  for (const d of DESARMADO_BASE) {
+    if (d.nivel <= anteriorBase) erros.push("Desarmado básico com degraus fora de ordem.");
+    anteriorBase = d.nivel;
+    if (!lerDado(d.dado)) erros.push(`Desarmado básico com dado ilegível: ${d.dado}`);
+  }
   const ids = new Set();
   for (const f of DESARMADO_FONTES) {
     if (ids.has(f.id)) erros.push(`Fonte de desarmado duplicada: ${f.id}`);
     ids.add(f.id);
-    if (f.escala !== "nivel" && f.escala !== "lutador") {
+    if (!["nivel", "lutador", "restringido"].includes(f.escala)) {
       erros.push(`Fonte de desarmado ${f.id} com escala desconhecida.`);
     }
     let anterior = -1;

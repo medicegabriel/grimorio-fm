@@ -1,7 +1,7 @@
 /**
  * Catálogo das Especializações do Afty + resolvers puros.
  *
- * Regras confirmadas pelo autor (2026-07-17):
+ * Regras confirmadas pelo autor (2026-07-17, e a terceira classe em 2026-09-14):
  *
  * 1. Especialização NÃO muda cálculo. Quem dirige fórmula é o Tipo
  *    (ver AFTY_TIPOS em ./afty-schema.js). A Especialização só (a) é
@@ -11,7 +11,7 @@
  *    propósito (ver aviso abaixo).
  * 3. Nível de Especialização == ND. A soma dos níveis distribuídos é
  *    exatamente o ND da criatura, e a multiclasse divide o próprio ND.
- * 4. Multiclasse: até 2 Especializações, livre entre elas.
+ * 4. Multiclasse: até 2 Especializações na criatura, até 3 no jogador.
  * 5. Restringido é exclusiva da Origem Restringido, nos DOIS sentidos:
  *    - quem tem a origem só pode pegar Restringido, e sem multiclasse
  *    - quem não tem a origem não pode pegar Restringido
@@ -69,9 +69,11 @@
 import { registrarFamilia, remendarLista, nivelDaFicha } from "./afty-addons";
 import { getOrigem, origensQualificadas } from "./afty-origens";
 import { AFTY_TIPOS } from "./afty-schema";
+import { regraDo, sistemaDaFicha } from "./afty-sistema";
 
-/** Teto de Especializações por ficha (multiclasse trivial: até 2). */
+/** Teto da ficha de criatura. O jogador pode ter uma terceira classe. */
 export const ESPECIALIZACAO_MAX = 2;
+export const ESPECIALIZACAO_MAX_PLAYER = 3;
 
 export const AFTY_ESPECIALIZACOES = [
   {
@@ -742,9 +744,11 @@ export function especializacaoIncompativel(id, jaEscolhidasIds = []) {
   return null;
 }
 
-/** Quantas Especializações a origem permite. Restringido não multiclassa. */
-export function maxEspecializacoes(origemId, extras = []) {
-  return especializacoesDisponiveis(origemId, extras).length === 1 ? 1 : ESPECIALIZACAO_MAX;
+/** Quantas Especializações a origem e o sistema da ficha permitem. */
+export function maxEspecializacoes(origemId, extras = [], sistema = "afty") {
+  if (especializacoesDisponiveis(origemId, extras).length === 1) return 1;
+  return regraDo(sistema, "terceiraClasse") === "player"
+    ? ESPECIALIZACAO_MAX_PLAYER : ESPECIALIZACAO_MAX;
 }
 
 /**
@@ -825,11 +829,12 @@ export function tipoDaOrigem(origemId, tipoAtual) {
  * gravar o rótulo junto faria uma errata de nome deixar fichas velhas
  * mentindo. Quem precisa do nome chama getEspecializacao(id).
  */
-export function normalizeEspecializacoes(lista, origemId, extras = []) {
+export function normalizeEspecializacoes(lista, origemId, extras = [], sistema = "afty") {
   const arr = Array.isArray(lista) ? lista : [];
   const vistos = new Set();
   const disponiveis = new Set(especializacoesDisponiveis(origemId, extras).map((e) => e.id));
   const out = [];
+  const max = maxEspecializacoes(origemId, extras, sistema);
   for (const item of arr) {
     const id = item?.id;
     if (!BY_ID[id] || vistos.has(id) || !disponiveis.has(id)) continue;
@@ -840,7 +845,7 @@ export function normalizeEspecializacoes(lista, origemId, extras = []) {
     if (especializacaoIncompativel(id, out.map((e) => e.id))) continue;
     vistos.add(id);
     out.push({ id, nivel: Math.max(1, Math.trunc(Number(item?.nivel) || 0) || 1) });
-    if (out.length >= maxEspecializacoes(origemId, extras)) break;
+    if (out.length >= max) break;
   }
   return out;
 }
@@ -888,23 +893,14 @@ export function especializacoesRecusadas(creature) {
  * O orçamento de níveis é o PRÓPRIO ND (autor, 2026-07-17): a soma dos
  * níveis é sempre exatamente o ND. Nada aqui alimenta o cálculo de stats.
  *
- * ⚠ A soma é garantida POR CONSTRUÇÃO, não validada depois. Como
- * soma(niveis) === ND é regra dura, uma ficha com 2 especializações tem
- * UM grau de liberdade só: escolhido o nível da primeira, o da segunda é
- * o resto do ND. Com 1 especialização não há escolha nenhuma, o nível é
- * o ND inteiro. Então a ficha guarda só o PONTO DE DIVISÃO (o nível da
- * primeira) e o resto é derivado aqui — "guarde escolhas, nunca
- * resultados". Isso faz o estado ilegal deixar de existir: mexer no ND
- * depois reflui sozinho no nível, em vez de deixar a ficha inconsistente
- * esperando validação.
+ * A soma é garantida por construção. A ficha guarda os níveis de todas as
+ * classes menos a última, que recebe o restante do nível total. Com uma
+ * classe só, ela recebe o total inteiro. Reduzir o nível total apara apenas
+ * a leitura, preservando a divisão gravada para quando ele subir de novo.
  *
- * O nível gravado da 2ª especialização é IGNORADO na leitura (ele é
- * sempre `total - primeira`). O aparo é só de leitura, não é gravado:
- * baixar o ND e subir de volta traz a divisão original (mesma convenção
- * de resolveNiveisAptidao em ./afty-aptidoes.js).
- *
- * Cada especialização tem nível mínimo 1, então só cabe multiclasse a
- * partir do ND 2. No ND 1 a segunda é aparada fora.
+ * O nível gravado da última especialização é ignorado na leitura. Cada
+ * especialização tem nível mínimo 1. Classes que não cabem no nível total
+ * ficam fora do resultado, sem serem removidas da ficha gravada.
  *
  * Retorna { escolhidas, total, max, obrigatoria, completa, erro }.
  */
@@ -917,23 +913,21 @@ export function resolveEspecializacoes(creature) {
   // XP anotado. Ler o campo aqui era o que travava o Nível de Especialização
   // no valor digitado (autor, 2026-09-08). Ver `nivelDaFicha`.
   const total = nivelDaFicha(creature);
-  const lista = normalizeEspecializacoes(creature?.especializacoes, origemId, extras);
-  const max = maxEspecializacoes(origemId, extras);
+  const sistema = sistemaDaFicha(creature);
+  const lista = normalizeEspecializacoes(creature?.especializacoes, origemId, extras, sistema);
+  const max = maxEspecializacoes(origemId, extras, sistema);
   const obrigatoria = especializacaoObrigatoria(origemId);
 
-  let escolhidas;
-  if (lista.length === 0) {
-    escolhidas = [];
-  } else if (lista.length === 1 || total < 2) {
-    // Sem divisão possível: a primeira leva o ND inteiro.
-    escolhidas = [{ id: lista[0].id, nivel: total }];
-  } else {
-    // Ponto de divisão: a 1ª fica entre 1 e ND-1, a 2ª leva o resto.
-    const primeira = Math.min(Math.max(lista[0].nivel, 1), total - 1);
-    escolhidas = [
-      { id: lista[0].id, nivel: primeira },
-      { id: lista[1].id, nivel: total - primeira },
-    ];
+  const cabem = lista.slice(0, total);
+  let restante = total;
+  let escolhidas = [];
+  for (let i = 0; i < cabem.length; i++) {
+    const faltam = cabem.length - i - 1;
+    const nivel = faltam === 0
+      ? restante
+      : Math.min(Math.max(1, cabem[i].nivel), restante - faltam);
+    escolhidas.push({ id: cabem[i].id, nivel });
+    restante -= nivel;
   }
 
   // Nível de ESCALONAMENTO por classe = nível real + metade do nível das OUTRAS

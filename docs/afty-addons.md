@@ -477,7 +477,10 @@ valor fixo da rolagem. Vida perdida antes não entra. Com Vida zero, a ativaçã
 
 ### O campo `libera`, e por que ele NÃO é o `permite`
 
-**O que ter o addon DESTRAVA para a criatura que o carrega.** As nove de hoje:
+**O que ter o addon DESTRAVA para a criatura que o carrega.** São dezesseis em 2026-09-14. A tabela
+abaixo tem as nove primeiras. As outras sete: `carteiraFocos` e `carteiraNivel` estão em
+`docs/afty-carteira.md`, e `segundaHabilidadeUnica`, `acessoriosUnicos`, `revestimentosCriados` e
+`escudosCriados` e `itensDeCusto` têm seção própria mais abaixo.
 
 | id | O que destrava |
 |---|---|
@@ -666,6 +669,68 @@ jogador em grupos nasceu da mesma conversa, e vale sem o addon. Ver `poolExclusi
 contar. O card de Acessórios Únicos continua aparecendo para quem tem acessório gravado, e é a porta
 para apagá-lo. Criar um novo pede a liberação. É a terceira porta do `feiticosRestritos`, aplicada ao
 item.
+
+#### `revestimentosCriados` e `escudosCriados`, a Criação de Equipamentos (2026-09-14)
+
+O pacote é `addons/criacao-de-equipamentos.json`, a fase 1 do guia Criação de Equipamentos e Itens
+2.5.2. Só-liberação, com duas linhas, pela mesma razão das da Benção: cada uma abre um tipo de item.
+
+| Liberação | O que abre |
+|---|---|
+| `revestimentosCriados` | o card Revestimentos Criados: Defesa e penalidade pelo Custo, e a troca de um degrau de Defesa por +2 em duas Perícias ou RD por Tipo |
+| `escudosCriados` | o card Escudos Criados: RD, penalidade e dado pelo Custo |
+
+⚠ **É liberação, e não primitiva como a bancada de Pontos de Criação.** A bancada conta uma arma que
+a pessoa já escrevia campo por campo, e por isso é `permite`. Aqui a tabela DECIDE a Defesa e a RD do
+item, e número decidido é regra. As contas e as decisões do autor estão em
+`docs/afty-criacao-equipamentos.md`.
+
+⚠ **Desligar não apaga nada**, no molde do Acessório Único: o item criado continua no catálogo e no
+inventário, marcado como equipado, e para de entrar em qualquer efeito. Os espaços continuam
+contando, porque ele continua carregado.
+
+#### A liberação `itensDeCusto` (2026-09-14)
+
+A fase 3 do mesmo pacote: o card Itens de Custo Criados, com um efeito da tabela do Custo, Passivo
+(vale equipado) ou Ativo (de uso). Liberação pela mesma razão das da fase 1: o item Passivo soma número
+na ficha, e sem a liberação ele continua carregado e deixa de contar. O item criado de Custo 4 Ativo que
+maximiza atributo abre o estado do Talismã do Ápice, e sem a liberação também não abre.
+
+#### A primitiva `armasPorNivel` (2026-09-14)
+
+A fase 2 do mesmo pacote. Ela abre no editor de arma própria a bancada do guia, onde o dado sai do
+Custo menos os Níveis de Dano gastos em propriedades e crítico. É primitiva, e não liberação, porque a
+**receita da arma vale sem o Addon** (autor: *"Continua com o dado da conta"*): a receita mora em
+`arma.niveis`, e ter o pacote só decide quem enxerga a bancada. Instalar ou desinstalar não muda número
+nenhum, que é a promessa de todo `permite`. Ver `docs/afty-criacao-equipamentos.md`.
+
+#### A primitiva `encantamentoGuia` (2026-09-14)
+
+A fase 4 do mesmo pacote. Ela abre, logo depois da primeira Habilidade Única da Ferramenta de Grau
+Especial, o interruptor "Conta do Guia": a tabela de Interações Simples, a divisão ou a penalidade de cada
+efeito a mais, a melhoria de um Encantamento Padrão e o Feitiço da Técnica Inata. É primitiva pela mesma
+razão da `armasPorNivel`: a **receita mora em `fa.guiaUnica` e vale sem o Addon**, e o pacote só decide
+quem enxerga a bancada. As linhas da conta somam com as livres da Habilidade Única, no mesmo pool
+exclusivo.
+
+### O campo `incompativeis` (2026-09-14)
+
+Ids de pacotes que **não ligam na mesma ficha** que este. Nasceu com a Criação de Equipamentos, que o
+autor decidiu que *"convivem e não podem ser instaladas juntos"* com a Criação de Armas.
+
+```json
+{ "incompativeis": ["criacao-de-armas"] }
+```
+
+- ⚠ **A trava é simétrica: basta UM dos dois declarar.** A Criação de Armas é anterior e não declara
+  nada, e toda cópia dela já gravada numa ficha ou numa biblioteca continuaria sem declarar.
+- ⚠ **Ela é da ficha, e não da biblioteca.** A máquina guarda os dois pacotes, e uma mesa pode ter um
+  personagem com cada um. Na aba Addons o quadrado de ligar fica bloqueado com o chip "Não Liga com".
+- Só barra quem ENTRA. Desligar nunca é bloqueado, e atualizar um pacote que já está na ficha passa.
+- A ficha que chega com os dois (importada ou montada à mão) abre normalmente e acusa o par em
+  Problemas, pelo `problemasDeAddon` (família `incompativeis`). Os dois continuam valendo.
+- O validador cobra só o formato do id e recusa o próprio id. O outro pacote não precisa estar
+  instalado, porque a trava serve justamente para quando ele aparecer.
 
 ### O campo `concedeAptidoes` (2026-09-12)
 

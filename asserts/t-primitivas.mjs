@@ -41,9 +41,11 @@ const t = (nome, real, esp) => {
    separadas: a primitiva abre a ABA (tela) e a liberacao faz os Interludios
    anotados virarem o orcamento de Focos (regra). Quem mede as duas juntas e o
    `t-carteira.mjs`, e aqui ela conta so no censo. */
-t("sao 11 primitivas", AD.PRIMITIVAS.length, 11);
+/* E a `armasPorNivel` e a `encantamentoGuia` (2026-09-14), das fases 2 e 4
+   da Criacao de Equipamentos, medidas nos asserts de cada fase. */
+t("sao 13 primitivas", AD.PRIMITIVAS.length, 13);
 t("ids esperados", AD.PRIMITIVAS.map((p) => p.id).sort(),
-  ["adaptacao", "armaTransformavel", "carteira", "catarse", "cofre", "concessao", "contar", "criacaoArmas", "hpAtributo", "requisitoAptidao", "vislumbreCeleste"]);
+  ["adaptacao", "armaTransformavel", "armasPorNivel", "carteira", "catarse", "cofre", "concessao", "contar", "criacaoArmas", "encantamentoGuia", "hpAtributo", "requisitoAptidao", "vislumbreCeleste"]);
 t("toda primitiva tem rotulo", AD.PRIMITIVAS.every((p) => !!p.rotulo), true);
 t("SEM_PRIMITIVAS e vazio", AD.SEM_PRIMITIVAS, []);
 

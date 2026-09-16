@@ -48,8 +48,9 @@
  *   • dados de vida por descanso (Resistência 2ª): a pilha de dados de vida não
  *     é modelada.
  *   • orçamento LIVRE de atributo (Potencial Físico 2ª): ver a etapa.
- *   • teto de PER por uso e reduções por aptidão nomeada (Energia Reversa 1ª e
- *     3ª): `curaPontos` cobre a linha de CURA e não a trilha inteira.
+ *   • redução de custo por aptidão nomeada (Energia Reversa 3ª): a Regeneração
+ *     Aprimorada não tem canal de custo. A 1ª saiu desta lista em 2026-09-16: o
+ *     teto de PER entra em `curaPontos` e o Fluxo Constante lê o mesmo teto.
  *   • vaga extra de escolha aninhada (Potencial Físico 4ª, "uma Dádiva do Céu
  *     adicional"): `concedeEscolha` só vai de habilidade para habilidade.
  *   • procedimento de mesa sem número (Perícia 2ª, 4ª e Completo, Luta Completo,
@@ -290,8 +291,12 @@ export const AFTY_TREINAMENTOS = [
     resumo:
       "O treino de energia reversa permite se aprimorar no uso da energia positiva, capaz de curar humanos e destruir maldições, sendo o completo oposto da energia amaldiçoada.",
     etapas: [
+      /* ⚠ O teto de PER mora na linha de Cura, e o Fluxo Constante o lê de lá
+         (ver `tetoPERDaCura` no afty-derive.js). Sem efeito, a etapa existia só
+         no texto, e o autor achou o teto parado em 8 onde a conta dava 9. */
       { n: 1, focos: 1, requisito: { tipo: "aptidao", id: "energia_reversa" },
-        beneficio: "A quantidade de pontos de energia reversa que você pode gastar em Aptidões de Energia Reversa aumenta em 1." },
+        beneficio: "A quantidade de pontos de energia reversa que você pode gastar em Aptidões de Energia Reversa aumenta em 1.",
+        efeitos: [{ canal: "curaPontos", alvo: "cura_energia_reversa", expr: "1" }] },
       { n: 2, focos: 1, requisito: null,
         beneficio: "Seu Nível de Aptidão em Energia Reversa aumenta em 1.",
         efeitos: [{ tipo: "aptidao", trilha: "er", valor: 1 }] },

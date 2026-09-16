@@ -1,0 +1,10 @@
+{
+  "id": "criacao-de-equipamentos",
+  "nome": "Criação de Equipamentos",
+  "versao": "1.3.0",
+  "paraRaw": "afty",
+  "descricao": "Guia Criação de Equipamentos e Itens 2.5.2. Abre os cards Revestimentos Criados e Escudos Criados na aba Equipamentos. O Custo, de 1 a 4, decide pela tabela a Defesa e a penalidade do Revestimento, e a RD, a penalidade e o dado do Escudo. Um Revestimento de Custo 2 ou mais pode trocar um degrau de Defesa por +2 em duas escolhas entre Perícia e RD por Tipo. No editor de arma própria, abre a conta do guia: o dado sai do Custo menos os Níveis de Dano gastos em propriedades e crítico, o alcance sai da tabela pelo grau da Ferramenta, e a Propriedade Especial recebe efeitos personalizados. Abre também o card Itens de Custo Criados: um efeito da tabela do Custo, Passivo quando vale equipado ou Ativo quando é de uso, com Arremessável, Área ou Totem. Na Habilidade Única da Ferramenta de Grau Especial, abre a conta opcional do Encantamento de Grau Especial: Interações Simples pelo modificador de um atributo, divisão ou penalidade, melhoria de Encantamento Padrão e o Feitiço da Técnica Inata. Sem o pacote, o Revestimento e o Escudo criados continuam na ficha e deixam de contar, e a arma continua com o dado da conta. Não liga junto com a Criação de Armas.",
+  "permite": ["armasPorNivel", "encantamentoGuia"],
+  "libera": ["revestimentosCriados", "escudosCriados", "itensDeCusto"],
+  "incompativeis": ["criacao-de-armas"]
+}

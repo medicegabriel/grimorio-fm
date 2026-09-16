@@ -516,6 +516,23 @@ export function tituloCustoFeitico(calculo) {
   return linhas.join("\n");
 }
 
+/**
+ * As mesmas fontes do custo, no formato do `PainelDeFontes`. A Liberação Máxima
+ * SUBSTITUI o custo do Feitiço, então ela vira a única linha. O piso de 1 PE
+ * fecha a conta quando as reduções passam do custo base.
+ */
+export function partesCustoFeitico(calculo) {
+  if (!calculo || calculo.custoPE == null) return [];
+  if (calculo.liberacao?.custoPE != null) return [{ label: "Liberação Máxima", valor: calculo.liberacao.custoPE }];
+  const partes = [
+    { label: "Custo Base", valor: calculo.custoPEBase ?? calculo.custoPE },
+    ...(calculo.reducoesCustoPE ?? []).map((r) => ({ label: r.fonte ?? r.label, valor: -r.valor })),
+  ];
+  const soma = partes.reduce((s, p) => s + p.valor, 0);
+  if (soma !== calculo.custoPE) partes.push({ label: "Custo Mínimo", valor: calculo.custoPE - soma });
+  return partes;
+}
+
 // ---------------------------------------------------------------
 // TABELAS DE DANO (verbatim). Cada linha = [quantidadeDeDados, tipoDeDado].
 // A média impressa no livro é referência (com arredondamentos irregulares
@@ -4179,6 +4196,7 @@ function linhaDoFeitico(f, ctx, creature) {
       custoPE: calc?.liberacao?.custoPE ?? calc?.custoPE ?? null,
       custoPEBase: calc?.custoPEBase ?? calc?.custoPE ?? null,
       reducoesCustoPE: calc?.reducoesCustoPE ?? [],
+      partesCustoPE: partesCustoFeitico(calc),
       valor: valor ?? null,
       descricao: f.descricao || "",
       conjuracaoTexto: f.conjuracaoTexto || "",

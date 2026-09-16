@@ -50,11 +50,14 @@ const t = (nome, real, esp) => {
    as mede e o `t-carteira.mjs`. Aqui elas contam so no censo. */
 /* E as duas da Bencao do Grao Mestre da Forja (2026-09-11), medidas no
    `t-bencao-forja.mjs`. */
-t("existem 13 liberacoes hoje", AD.LIBERACOES.length, 13);
+/* E as tres da Criacao de Equipamentos (2026-09-14), medidas no
+   `t-criacao-equipamentos.mjs` e no `t-criacao-equipamentos-itens.mjs`. */
+t("existem 16 liberacoes hoje", AD.LIBERACOES.length, 16);
 t("os ids", AD.LIBERACOES.map((l) => l.id),
   ["estiloSombras", "gemeosSemTecnica", "qualificaSemTecnica", "gemeosMaldicao",
    "feiticosRestritos", "carteiraFocos", "carteiraNivel",
    "segundaHabilidadeUnica", "acessoriosUnicos",
+   "revestimentosCriados", "escudosCriados", "itensDeCusto",
    "soPorAddon:gemeos", "soPorAddon:atributo",
    "soPorAddon:cnj_agilidade_no_campo_de_batalha", "soPorAddon:tal_alma_livre"]);
 t("SEM_LIBERACOES e vazio", AD.SEM_LIBERACOES, []);
