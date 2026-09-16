@@ -49,6 +49,7 @@ import {
   efeitosDeTreino, vagasEncantamentoDeTreino, atributosDePericiaDeTreino, gatilhosDeTreino,
   efeitosInvocacaoDeTreino, linhasComEscolhaFeiticos,
 } from "./afty-treinamentos";
+import { efeitosDePacto } from "./afty-pacto";
 import { efeitosDeTreinoEspecial } from "./afty-treinos-especiais";
 import { resolveNiveisAptidao, trilhasDaCriatura, getAptidao, AFTY_APTIDOES } from "./afty-aptidoes";
 import {
@@ -636,6 +637,11 @@ export function deriveAfty(creature, opcoes = {}) {
          blocos de benefício leem `cl` e um estado de combate, e nenhum dos dois
          existe ainda aqui: eles entram no bolo comum, mais abaixo. */
       ...efeitosVislumbre.filter((e) => e.canal === "pontosAptidao"),
+      /* ⚠ MESMA NOTA DA CATARSE, LOGO ACIMA: o Pacto emite QUALQUER canal (é o
+         Motor na mão do jogador, um Malefício ou Benefício por vez) e NENHUMA
+         linha leva `exclusivo` — acumular com qualquer fonte é a regra que o
+         autor pediu. Ver afty-pacto.js. */
+      ...efeitosDePacto(creature),
   ];
   const efMontante = resolverExclusivos(aplicarEfeitos(efeitosMontante, ctxMontante));
   // Os canais que precisam ser lidos ANTES do contexto principal: dois

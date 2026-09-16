@@ -404,6 +404,23 @@ export const PRIMITIVAS = [
     rotulo: "Criação de Armas",
     nota: "A bancada de Pontos de Criação no editor de arma própria: orçamento por classificação, custo, técnica e espaços, com o preço de cada propriedade e os limites de gasto",
   },
+  /* ⚠ NASCEU EM 2026-09-16, a pedido do autor: uma sessão de texto livre para
+     Malefícios e Benefícios, cada um com efeito OPCIONAL no Motor (mesmo
+     editor da Ferramenta Amaldiçoada). É primitiva e não família de catálogo
+     pela mesma razão da Carteira: o que ela acrescenta não é ENTRADA de
+     catálogo, é uma aba onde o jogador escreve as linhas. O pacote que só
+     `permite: ["pacto"]` abre a aba em branco; um pacote pode além disso trazer
+     `pactoPadrao` (afty-addons.js normalizarPacote) com um Pacto pronto que o
+     jogador copia com um botão, mesmo padrão dos Modelos de Feitiço.
+     ⚠ NUNCA ENTRA EM POOL EXCLUSIVO: os efeitos do Pacto não carregam
+     `exclusivo`, então somam por cima de qualquer fonte sempre — é a regra que
+     o autor pediu ("valor independente que acumula com qualquer fonte"). Ver
+     `afty-pacto.js`. */
+  {
+    id: "pacto",
+    rotulo: "Pacto",
+    nota: "Aba própria: Malefícios e Benefícios de texto livre, com efeito opcional no Motor. A cada 2 Malefícios libera 1 vaga de Benefício, e os efeitos somam sempre, sem entrar em pool exclusivo",
+  },
 ];
 
 const PRIMITIVA_IDS = new Set(PRIMITIVAS.map((p) => p.id));
@@ -850,6 +867,11 @@ export function normalizarPacote(cru) {
        dentro de `acrescenta`, porque ela não é uma entrada de catálogo: é
        configuração do pacote, como `permite` e `libera`. Ver `precosDeCatarse`. */
     catarse: (p.catarse && typeof p.catarse === "object") ? clonar(p.catarse) : null,
+    /* Um Pacto PRONTO que o pacote oferece, pela mesma razão do `catarse`: não
+       é entrada de catálogo, é um molde que o jogador copia com um botão (like
+       Modelos de Feitiço, `feiticosDeAddon`). Exige `permite: ["pacto"]` no
+       mesmo pacote para a aba existir e o molde aparecer. Ver `afty-pacto.js`. */
+    pactoPadrao: (p.pactoPadrao && typeof p.pactoPadrao === "object") ? clonar(p.pactoPadrao) : null,
     acrescenta: {},
     /* O que este pacote REESCREVE de entradas que já existem no livro. Ver
        `remendarLista`. */

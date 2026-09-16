@@ -179,6 +179,17 @@ export function mesclaFichaAfty(existente) {
           .map(([linhaId, v]) => [linhaId, [...new Set(v.filter((id) => typeof id === "string"))]]),
       )
       : {},
+    // ⚠ Sanitização RASA de propósito: quem lê de verdade é `pactoDaFicha`
+    // (afty-pacto.js), que este arquivo FOLHA não pode importar. Aqui só evita
+    // que lixo total (string, array na raiz) quebre o resto do merge.
+    pacto: (existente.pacto && typeof existente.pacto === "object" && !Array.isArray(existente.pacto))
+      ? {
+        nome: typeof existente.pacto.nome === "string" ? existente.pacto.nome : "",
+        descricao: typeof existente.pacto.descricao === "string" ? existente.pacto.descricao : "",
+        maleficios: Array.isArray(existente.pacto.maleficios) ? existente.pacto.maleficios : [],
+        beneficios: Array.isArray(existente.pacto.beneficios) ? existente.pacto.beneficios : [],
+      }
+      : { nome: "", descricao: "", maleficios: [], beneficios: [] },
     formulaOverrides: { ...(existente.formulaOverrides || {}) },
     periciaOficios: oficios,
     /* ⚠ Objeto SEMPRE, mesmo vindo lixo da ficha. Uma lista ou uma string aqui
@@ -523,6 +534,10 @@ export function createBlankAfty() {
     // `quantidade` que a Linha concede. Ver `linhasComEscolhaFeiticos` em
     // afty-treinamentos.js e `aplicaReducoesCustoFeitico` em afty-feiticos.js.
     treinoEscolhaFeiticos: {},
+    // Pacto: aba de texto livre aberta pela primitiva `pacto` (addon com
+    // `permite: ["pacto"]`). Malefícios e Benefícios com efeito OPCIONAL no
+    // Motor, que nunca entram em pool exclusivo. Ver afty-pacto.js.
+    pacto: { nome: "", descricao: "", maleficios: [], beneficios: [] },
     // Interlúdios · Treinos Especiais (Interlúdios Adicionais, Livro do
     // Narrador p. 22): lista COM repetição, uma entrada por pega, no mesmo
     // espírito de habilidadesGerais. Cada pega custa 1 Foco do MESMO orçamento

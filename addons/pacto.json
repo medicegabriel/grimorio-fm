@@ -1,0 +1,9 @@
+{
+  "id": "pacto",
+  "nome": "Pacto",
+  "versao": "1.0.0",
+  "autor": "Templas",
+  "paraRaw": "afty",
+  "descricao": "Libera a aba Pacto na ficha: Nome, Descrição, e duas listas de texto livre (Malefícios e Benefícios), cada entrada com um efeito OPCIONAL no Motor de Automação (mesmo editor da Ferramenta Amaldiçoada: canal, alvo, expressão). Máximo de 4 Malefícios; a cada 2 anotados, libera 1 vaga de Benefício (teto de 2). Os efeitos do Pacto nunca entram em pool exclusivo: acumulam com qualquer outra fonte, sempre. Este Addon só abre a sessão em branco, sem nenhum Pacto pronto.",
+  "permite": ["pacto"]
+}

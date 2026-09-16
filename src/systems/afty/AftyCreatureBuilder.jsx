@@ -61,6 +61,9 @@ import {
   ETAPAS_POR_LINHA, focosGastos, avaliarRequisito, requisitosDaEtapa, rotuloAlvo, treinamentosDaOrigem,
   SEP_ALVO_ACAO, linhasComEscolhaFeiticos,
 } from "./afty-treinamentos";
+import {
+  createBlankPactoItem, beneficiosLiberados, pactoPadraoDeAddon, MALEFICIOS_MAXIMO,
+} from "./afty-pacto";
 import { novaForja, novoItemForja, forjasDaFicha, focosDeForja, itensComNome, FORJA_TIPOS } from "./afty-forja";
 import {
   AFTY_TREINOS_ESPECIAIS, focosDeTreinosEspeciais, focosDoTreinoEspecial,
@@ -210,6 +213,7 @@ const TABS = [
   // Uma tela com primitiva só aparece quando a criatura tem o Addon.
   { id: "carteira",      label: "Carteira", primitiva: "carteira" },
   { id: "catarse",       label: "Catarse", primitiva: "catarse" },
+  { id: "pacto",         label: "Pacto", primitiva: "pacto" },
 ];
 
 // Novas telas liberadas por Addon entram em Outros quando registradas em TABS.
@@ -817,6 +821,28 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
     setDraft((d) => {
       const atual = d.carteira ?? { entradas: [], gastos: [] };
       return { ...d, carteira: { ...atual, ...partial } };
+    });
+
+  const PACTO_VAZIO = { nome: "", descricao: "", maleficios: [], beneficios: [] };
+  const patchPacto = (partial) =>
+    setDraft((d) => ({ ...d, pacto: { ...(d.pacto ?? PACTO_VAZIO), ...partial } }));
+  const addPactoItem = (lista) =>
+    setDraft((d) => {
+      const atual = d.pacto ?? PACTO_VAZIO;
+      return { ...d, pacto: { ...atual, [lista]: [...(atual[lista] ?? []), createBlankPactoItem()] } };
+    });
+  const removePactoItem = (lista, id) =>
+    setDraft((d) => {
+      const atual = d.pacto ?? PACTO_VAZIO;
+      return { ...d, pacto: { ...atual, [lista]: (atual[lista] ?? []).filter((it) => it.id !== id) } };
+    });
+  const patchPactoItem = (lista, id, partial) =>
+    setDraft((d) => {
+      const atual = d.pacto ?? PACTO_VAZIO;
+      return {
+        ...d,
+        pacto: { ...atual, [lista]: (atual[lista] ?? []).map((it) => (it.id === id ? { ...it, ...partial } : it)) },
+      };
     });
 
   const patchTecnicasCombate = (partial) =>
@@ -1484,6 +1510,16 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
           {tabAtiva === "interludios" && <TabInterludios draft={draft} derived={derived} setTreinoProgresso={setTreinoProgresso} setTreinoInstance={setTreinoInstance} setTreinoAlvo={setTreinoAlvo} setTreinoEscolha={setTreinoEscolha} setTreinoEspecialVezes={setTreinoEspecialVezes} sistema={sistema} setFocosLivres={setFocosLivres} addForja={addForja} patchForja={patchForja} removeForja={removeForja} />}
           {tabAtiva === "defesas" && <TabDefesas derived={derived} setDefesaEstado={setDefesaEstado} setDefesaRd={setDefesaRd} />}
           {tabAtiva === "carteira" && <TabCarteira draft={draft} derived={derived} patchCarteira={patchCarteira} />}
+          {tabAtiva === "pacto" && (
+            <TabPacto
+              draft={draft}
+              derived={derived}
+              patchPacto={patchPacto}
+              addPactoItem={addPactoItem}
+              removePactoItem={removePactoItem}
+              patchPactoItem={patchPactoItem}
+            />
+          )}
           {tabAtiva === "catarse" && <TabCatarse draft={draft} derived={derived} patchCatarse={patchCatarse} />}
           {tabAtiva === "calculos" && <TabCalculos derived={derived} setStatOverride={setStatOverride} patchCombate={patchCombate} gatilhosTreino={derived.gatilhosTreino} onGatilhoTreino={(id, v) => setTreinosAtivos((m) => ({ ...m, [id]: v }))} />}
           {tabAtiva === "addons" && <TabAddons draft={draft} derived={derived} setAddons={setAddons} trocarFicha={setDraft} />}
@@ -11903,6 +11939,155 @@ function BlocoHabilidadeUnica({
         dslContexto={dslContexto}
         dslExtras={dslExtras}
       />
+    </div>
+  );
+}
+
+/* ============================================================ */
+/* ABA PACTO                                                     */
+/* ============================================================ */
+/**
+ * Só existe com a primitiva `pacto` (addon com `permite: ["pacto"]` — ver
+ * `tabsDoSistema`). Nome, descrição e as duas listas de texto livre, cada
+ * entrada com efeito OPCIONAL no mesmo editor da Ferramenta Amaldiçoada. A
+ * régua de vagas de Benefício (1 a cada 2 Malefícios) mora em
+ * `beneficiosLiberados` (afty-pacto.js), e é o mesmo número que
+ * `efeitosDePacto` usa para cortar o excesso no cálculo — a tela nunca
+ * inventa um limite que o motor não aplicaria de volta.
+ */
+function TabPacto({ draft, derived, patchPacto, addPactoItem, removePactoItem, patchPactoItem }) {
+  const pacto = draft.pacto ?? { nome: "", descricao: "", maleficios: [], beneficios: [] };
+  const maleficios = Array.isArray(pacto.maleficios) ? pacto.maleficios : [];
+  const beneficios = Array.isArray(pacto.beneficios) ? pacto.beneficios : [];
+  const vagasBeneficio = beneficiosLiberados(pacto);
+  const padrao = pactoPadraoDeAddon(draft);
+  const fichaEmBranco = !pacto.nome?.trim() && maleficios.length === 0 && beneficios.length === 0;
+  const pericias = derived.testes?.pericias;
+  const fontesDano = fontesDanoDaFicha(draft, derived);
+  const dslContexto = derived.contextoDsl;
+  const dslExtras = derived.combate?.estadosExtras;
+
+  return (
+    <Card title="Pacto">
+      {padrao && fichaEmBranco && (
+        <button
+          type="button"
+          onClick={() => patchPacto({ ...padrao.pacto })}
+          className="mb-3 flex items-center gap-1.5 text-[11px] text-purple-300 hover:text-purple-200 border border-purple-900/50 rounded-lg px-2.5 py-1.5"
+        >
+          <Plus className="w-3.5 h-3.5" /> Usar o Pacto de {padrao.addonNome}
+        </button>
+      )}
+      <div className="space-y-2.5 mb-4">
+        <div>
+          <FieldLabel>Nome do Pacto</FieldLabel>
+          <input
+            type="text"
+            value={pacto.nome}
+            onChange={(e) => patchPacto({ nome: e.target.value })}
+            placeholder="Nome do Pacto"
+            className="w-full text-[13px] rounded-lg border border-slate-700 bg-slate-950/60 px-2.5 py-1.5 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-purple-600"
+          />
+        </div>
+        <div>
+          <FieldLabel>Descrição</FieldLabel>
+          <textarea
+            value={pacto.descricao}
+            onChange={(e) => patchPacto({ descricao: e.target.value })}
+            rows={3}
+            placeholder="A história do Pacto."
+            className="w-full text-[12px] rounded-lg border border-slate-700 bg-slate-950/60 px-2.5 py-2 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-purple-600 resize-y"
+          />
+        </div>
+      </div>
+
+      <div className="mb-1.5 flex items-center justify-between text-[10px] uppercase tracking-wider text-slate-500">
+        <span>Malefícios</span>
+        <span className="font-mono">{maleficios.length}/{MALEFICIOS_MAXIMO}</span>
+      </div>
+      <PactoLista
+        titulo="Malefícios"
+        itens={maleficios}
+        limite={MALEFICIOS_MAXIMO}
+        onAdd={() => addPactoItem("maleficios")}
+        onRemove={(id) => removePactoItem("maleficios", id)}
+        onPatch={(id, partial) => patchPactoItem("maleficios", id, partial)}
+        pericias={pericias}
+        fontesDano={fontesDano}
+        dslContexto={dslContexto}
+        dslExtras={dslExtras}
+      />
+
+      <div className="mt-4 mb-1.5 flex items-center justify-between text-[10px] uppercase tracking-wider text-slate-500">
+        <span>Benefícios</span>
+        <span className="font-mono">{beneficios.length}/{vagasBeneficio} vagas</span>
+      </div>
+      {vagasBeneficio === 0 && (
+        <p className="text-[11px] text-slate-500 mb-2">Anote 2 Malefícios para liberar a primeira vaga de Benefício.</p>
+      )}
+      <PactoLista
+        titulo="Benefícios"
+        itens={beneficios}
+        limite={vagasBeneficio}
+        onAdd={() => addPactoItem("beneficios")}
+        onRemove={(id) => removePactoItem("beneficios", id)}
+        onPatch={(id, partial) => patchPactoItem("beneficios", id, partial)}
+        pericias={pericias}
+        fontesDano={fontesDano}
+        dslContexto={dslContexto}
+        dslExtras={dslExtras}
+      />
+    </Card>
+  );
+}
+
+/** Uma lista de entradas do Pacto (Malefícios ou Benefícios): texto + Motor opcional. */
+function PactoLista({ itens, limite, onAdd, onRemove, onPatch, pericias, fontesDano, dslContexto, dslExtras }) {
+  const bloqueado = limite != null && itens.length >= limite;
+  return (
+    <div className="space-y-2.5">
+      {itens.map((item) => (
+        <div key={item.id} className="rounded-lg border border-slate-800 bg-slate-950/30 p-2.5 space-y-2">
+          <div className="flex items-start gap-2">
+            <textarea
+              value={item.texto}
+              onChange={(e) => onPatch(item.id, { texto: e.target.value })}
+              rows={2}
+              placeholder="Texto..."
+              className="flex-1 text-[12px] rounded-lg border border-slate-700 bg-slate-950/60 px-2.5 py-2 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-purple-600 resize-y"
+            />
+            <button
+              type="button"
+              onClick={() => onRemove(item.id)}
+              className="text-slate-600 hover:text-rose-300 p-1 rounded flex-shrink-0"
+              aria-label="Remover"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+          <MotorEfeitosEditor
+            efeitos={item.efeitos}
+            onChange={(efeitos) => onPatch(item.id, { efeitos })}
+            rotulo="Efeito no Motor (opcional)"
+            pericias={pericias}
+            fontesDano={fontesDano}
+            dslContexto={dslContexto}
+            dslExtras={dslExtras}
+          />
+        </div>
+      ))}
+      {!bloqueado && (
+        <button
+          type="button"
+          onClick={onAdd}
+          className="flex items-center gap-1 text-[11px] text-purple-300 hover:text-purple-200"
+        >
+          <Plus className="w-3 h-3" /> Adicionar
+        </button>
+      )}
+      {bloqueado && itens.length > 0 && (
+        <p className="text-[11px] text-slate-500">Limite de {limite} atingido.</p>
+      )}
     </div>
   );
 }

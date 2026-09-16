@@ -1,0 +1,54 @@
+{
+  "id": "pacto-do-receptaculo",
+  "nome": "Pacto do Receptáculo",
+  "versao": "1.0.0",
+  "autor": "Templas",
+  "paraRaw": "afty",
+  "descricao": "Mesma primitiva do Addon Pacto (`permite: [\"pacto\"]`), mais um Pacto PRONTO em `pactoPadrao` que o jogador copia com um botão na própria aba (mesmo espírito dos Modelos de Feitiço: o pacote é biblioteca, a cópia é escolha do jogador). Dois Malefícios não têm canal no motor (custo de Foco por uso e a regra de aprendizado de Aptidão em combate são texto puro, sem número); os outros dois usam vulnerabilidadeDano, hp e pe. O Benefício de dobrar o Concentrar Poder e +1 Shikigami em campo também ficou texto puro: depende de uma Habilidade específica (Concentrar Poder) e de um limite que o motor não modela como número — aplique os dois na mesa.",
+  "permite": ["pacto"],
+  "pactoPadrao": {
+    "nome": "Pacto do Receptáculo",
+    "descricao": "Um pacto selado com uma maldição que dividiu sua alma e corrompeu seu corpo, em troca de um poço quase sem fundo de energia amaldiçoada.",
+    "maleficios": [
+      {
+        "id": "receptaculo_maleficio_1",
+        "texto": "Devido à corrupção e à maldição dentro de seu corpo, você se tornou vulnerável a duas categorias únicas de dano: Energia Reversa e Radiante.",
+        "efeitos": [
+          { "canal": "vulnerabilidadeDano", "alvo": "energia_reversa", "expr": "1" },
+          { "canal": "vulnerabilidadeDano", "alvo": "radiante", "expr": "1" }
+        ]
+      },
+      {
+        "id": "receptaculo_maleficio_2",
+        "texto": "Devido a sua mente possuir outra alma compartilhando a sua e constantemente tentando tomar o controle, todo e qualquer uso de Focos durante o Interlúdio é aumentado em +1 (incluindo cada nível de treino e etc). [Sem canal no motor para custo de Foco: aplique na mesa, somando +1 Foco em cada compra de Interlúdio.]",
+        "efeitos": []
+      },
+      {
+        "id": "receptaculo_maleficio_3",
+        "texto": "Seu corpo é abaixo do medíocre, chegando a ser uma piada: você recebe -6 de PV por nível.",
+        "efeitos": [
+          { "canal": "hp", "expr": "-6 * nd" }
+        ]
+      },
+      {
+        "id": "receptaculo_maleficio_4",
+        "texto": "Você fica incapaz de pegar qualquer Aptidão de maneira convencional, sendo necessário, durante um combate, ver a utilização prática dela e realizar um teste de Feitiçaria com CD 15+ND para poder aprendê-la, desde que atenda os requisitos mínimos. [Regra de processo, não de número: sem canal no motor, é conduzida na mesa.]",
+        "efeitos": []
+      }
+    ],
+    "beneficios": [
+      {
+        "id": "receptaculo_beneficio_1",
+        "texto": "Apesar do corpo ser algo deplorável, o receptáculo da maldição herdou uma quantidade monstruosa de energia: você recebe +2 de PE por nível.",
+        "efeitos": [
+          { "canal": "pe", "expr": "2 * nd" }
+        ]
+      },
+      {
+        "id": "receptaculo_beneficio_2",
+        "texto": "Você consegue aplicar o dobro dos bônus concedidos pela Melhoria Ápice Corporal: Concentrar Poder em todos os seus Shikigamis em campo, além de aumentar em +1 a quantidade de Shikigamis em campo. [Depende da Habilidade Concentrar Poder e de um limite de Shikigamis em campo que o motor não modela como número: aplique os dois na mesa.]",
+        "efeitos": []
+      }
+    ]
+  }
+}
