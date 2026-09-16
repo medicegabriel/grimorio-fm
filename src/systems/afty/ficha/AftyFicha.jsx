@@ -42,6 +42,7 @@ import PainelDeAparencia from "./PainelDeAparencia";
 import AbaAcoes from "./abas/AbaAcoes";
 import PainelDeAdaptacao from "./PainelDeAdaptacao";
 import PainelDoVislumbre from "./PainelDoVislumbre";
+import PainelOlhosAgulha from "./PainelOlhosAgulha";
 import AbaPericias from "./abas/AbaPericias";
 import AbaHabilidades from "./abas/AbaHabilidades";
 import AbaBuffs from "./abas/AbaBuffs";
@@ -490,6 +491,7 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
         derived={derived}
         adaptacao={<PainelDeAdaptacao derived={derived} onSessao={atualiza} />}
         vislumbre={<PainelDoVislumbre derived={derived} sessao={sessao} onSessao={atualiza} />}
+        olhosAgulha={<PainelOlhosAgulha derived={derived} sessao={sessao} onSessao={atualiza} />}
         armasTransformaveis={<ArmasTransformaveis derived={derived} sessao={sessao} onSessao={atualiza} />}
         rolar={rolar}
         destaque={destaque}

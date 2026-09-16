@@ -142,12 +142,18 @@ export function rolarDano(
     const multDados = criticoAtivo && grupoMultiplicavel(g) ? 2 : 1;
     const dadosGrupo = rolarDados(g.dados * multDados, g.faces, rng);
     rolados.push(...dadosGrupo);
-    const subtotal = dadosGrupo.reduce((s, n) => s + n, 0) + g.fixo;
-    if (modo === "raio_negro" && grupoNoRaioNegro(g)) subtotalRaioNegro += subtotal;
-    else total += subtotal;
+    const somaDados = dadosGrupo.reduce((s, n) => s + n, 0);
+    /* ⚠ SÓ OS DADOS CRITÁVEIS vão para o 1,5x do Raio Negro (autor, 2026-09-15).
+       O fixo de todo grupo soma uma vez, por fora, e era ele que também subia
+       junto até aqui. */
+    if (modo === "raio_negro" && grupoNoRaioNegro(g)) subtotalRaioNegro += somaDados;
+    else total += somaDados;
+    total += g.fixo;
   }
   if (modo === "raio_negro") {
-    total += Math.floor(subtotalRaioNegro / 2) * 3;
+    // "dano adicional igual a metade do total": o total mais a metade, com piso
+    // na metade. `piso(x / 2) × 3` perdia 1 ponto em todo subtotal ímpar.
+    total += subtotalRaioNegro + Math.floor(subtotalRaioNegro / 2);
   }
   const soma = rolados.reduce((s, n) => s + n, 0);
   const ajuste = total - soma;

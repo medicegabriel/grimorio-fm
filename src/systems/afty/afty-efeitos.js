@@ -215,8 +215,12 @@ export const EFEITO_CANAIS = [
   // que resolve antes do Motor e chega como `acertoGrau`: a semântica é a
   // mesma, só o caminho é outro.
   { id: "acertoArma",    label: "Acerto (nesta Arma)",   alvo: "fonteDano", nota: "só quando manejando aquela fonte. Alvo `basico` ou o id da arma, e aceita os escopos (`arma`, `grupo:espada`, `prop:pesada`). Sem alvo vale para todas as linhas" },
-  { id: "bonusManobra",  label: "Manobra",               alvo: "manobra", nota: "Agarrar, Derrubar, Desarmar e Empurrar. Sem alvo vale para as quatro" },
-  { id: "resistirManobra", label: "Resistir a Manobra",  alvo: "manobra" },
+  /* ⚠ O ALVO CRESCEU EM 2026-09-15: além das quatro Manobras (Agarrar,
+     Derrubar, Desarmar e Empurrar), o canal aceita os outros testes nomeados do
+     livro que ganham bônus próprio (Concentração, Fintar, Provocar e o Teste de
+     Morte). Ver AFTY_MANOBRAS em afty-pericias.js, que é de onde a lista sai. */
+  { id: "bonusManobra",  label: "Manobra ou Teste",      alvo: "manobra", nota: "as quatro Manobras e os testes nomeados (Concentração, Fintar, Provocar, Teste de Morte). Sem alvo vale para todos" },
+  { id: "resistirManobra", label: "Resistir a Manobra",  alvo: "manobra", nota: "só as quatro Manobras têm o lado de resistir" },
   { id: "distanciaEmpurrao", label: "Empurrão",          nota: "em metros, por cima do 1,5 padrão" },
   { id: "danoBonus",     label: "Dano",                  alvo: "fonteDano", nota: "soma no Dano TOTAL da linha, e daí escorre para o dano fixo. Alvo `basico` ou o id da arma, e sem alvo vale para todas" },
   /* ⚠ O MESMO CANAL, DUAS RÉGUAS. Na criatura cada nível soma 1 no ND, e só no
@@ -244,6 +248,17 @@ export const EFEITO_CANAIS = [
      ⚠ Ele NÃO aceita escopo de fonte de dano, porque o `alvo` já é o dado. As
      regras que o usam dizem "ao realizar um ataque", sem recorte de arma. */
   { id: "dadosNomeados", label: "Dados de Dano (tamanho próprio)", alvo: "dadoNomeado", nota: "dado ADICIONAL com o tamanho escrito na regra (1d6, 2d10). O alvo é o dado e o valor é quantos. Para dado que acompanha o da linha, use Dados de Dano" },
+  /* ⚠ O DADO QUE SÓ EXISTE NO CRÍTICO (2026-09-15, Crítico Potente: "Ao acertar
+     um ataque crítico, ele causa 1 dado de dano adicional"). Não cabe no
+     `dadosDano`, que vale em toda rolagem. O tamanho é o maior dado da linha,
+     igual ao `dadosDano`, e ele DOBRA no crítico em que aparece (autor): o valor
+     1 rola 2 dados. */
+  { id: "dadosCritico",  label: "Dados de Dano no Crítico", alvo: "fonteDano", nota: "dado ADICIONAL que só entra em acerto crítico, do tamanho do maior dado da linha. Dobra no crítico, como os outros dados" },
+  /* ⚠ O IRMÃO DO `dadosTR` PARA A JOGADA DE ATAQUE (2026-09-15, Manobra de
+     Ajuste: "você pode adicionar seu dado de empolgação na rolagem de acerto e
+     no dano"). Somar a média no `bonusAcerto` dava número certo e rolagem
+     errada, que é o mesmo bug que o `dadosNomeados` consertou no dano. */
+  { id: "dadosAtaque",   label: "Dados em Jogada de Ataque", alvo: "dadoNomeado", nota: "dado somado ao resultado do ataque. O alvo é o dado e o valor é quantos. Vale em toda jogada de ataque, porque o alvo já é o dado" },
   { id: "margemCritico", label: "Margem de Crítico",     alvo: "fonteDano", nota: "quanto a margem DIMINUI, com piso de 2" },
   { id: "ignoraRD",      label: "Ignora RD",             alvo: "fonteDano" },
   { id: "ignoraTodaRD", label: "Ignora Toda RD", alvo: "fonteDano" },
@@ -599,7 +614,7 @@ const GRUPOS_DE_CANAL = [
   ]],
   ["Ataque e Dano", [
     "cd", "bonusAcerto", "acertoArma", "ataquesExtras", "danoBonus", "nivelDano", "dadosDano", "dadosNomeados",
-    "margemCritico", "ignoraRD", "ignoraTodaRD", "ignoraImunidade", "removeResistencia", "propMarcial", "finezaAtaque",
+    "dadosCritico", "dadosAtaque", "margemCritico", "ignoraRD", "ignoraTodaRD", "ignoraImunidade", "removeResistencia", "propMarcial", "finezaAtaque",
   ]],
   // Atributo, limite e nível de trilha: o que a criatura É, em número próprio.
   // `nivelAptidao` entra aqui, e não num grupo de Aptidões, porque ele é
@@ -794,11 +809,10 @@ export function buildCriaturaDslContext(base = {}) {
        é montado antes dela. */
     desarmado: base.desarmado ? 1 : 0,
     arma_marcial: base.armaMarcial ? 1 : 0,
-    /* ⚠ NÃO É O CONTRÁRIO DE `desarmado`. Manopla e Faixa deixam a criatura
-       desarmada E com equipamento de Pugilato ao mesmo tempo, e o Adepto de
-       Briga separa justamente esses dois casos: *"enquanto não estiver com
-       nenhum equipamento do grupo Pugilato"*. */
+    /* Um item de Pugilato pode contar como desarmado. A variável geral inclui
+       Faixas; a específica exclui Faixas para a condição do Adepto de Briga. */
     arma_pugilato: base.armaPugilato ? 1 : 0,
+    outro_pugilato: base.outroPugilato ? 1 : 0,
     /* ⚠ Só os GÊMEOS. A morte do irmão é o segundo estágio da Restrição
        Celestial e inverte quase tudo dela, então ela precisa ser LEGÍVEL numa
        expressão: quase todo efeito da origem é escrito como
@@ -1779,6 +1793,11 @@ export function escoposDaArma(arma) {
     ...(arma.grupo ? [`grupo:${arma.grupo}`] : []),
     ...(arma.tipoDano ? [`tipo:${arma.tipoDano}`] : []),
     ...(arma.propriedades ?? []).map((p) => `prop:${p.id}`),
+    /* O TIPO DE ATAQUE da linha (`atq:corpo`, `atq:distancia`, `atq:amaldicoado`),
+       que é a jogada que a arma usa, e não a categoria dela: uma arma corpo a corpo
+       pode rolar como Ataque Amaldiçoado. Nasceu em 2026-09-14 com o Dano do Item
+       de Custo, que o autor decidiu que mira um tipo de ataque. */
+    ...(arma.ataqueId ? [`atq:${arma.ataqueId}`] : []),
   ];
 }
 

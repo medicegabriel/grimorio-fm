@@ -28,11 +28,26 @@
   --afty-raio-peq: 9px;
   --afty-sombra: 0 1px 2px rgb(35 27 50 / 0.05), 0 12px 28px -13px rgb(63 45 88 / 0.22);
   background-color: #e7e5ed;
-  background-image: var(--afty-fundo-brilho);
+  background-image: none;
   color: #2e2840;
   color-scheme: light;
   scrollbar-color: #bbaaca transparent;
 }
+
+/* O brilho mora numa camada fixa própria. Como fundo `fixed` da raiz, ele
+   obrigava o navegador a redesenhar os três gradientes a cada quadro de rolagem. */
+@media screen {
+  :scope#afty-ficha::before,
+  #afty-ficha#afty-ficha::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image: var(--afty-fundo-brilho);
+  }
+}
+
 :is(:scope#afty-ficha, #afty-ficha#afty-ficha) *:focus-visible {
   outline: 2px solid #69458b;
   outline-offset: 2px;
@@ -164,7 +179,6 @@
 }
 :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-abas {
   gap: 0.35rem;
-  border-top: 1px solid rgb(255 249 253 / 0.18);
 }
 :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-aba {
   background: rgb(255 249 253 / 0.16);
@@ -320,4 +334,23 @@
 :is(:scope#afty-ficha, #afty-ficha#afty-ficha) ::selection {
   background: #d5bce7;
   color: #2e2840;
+}
+
+/* Botões ativos: estado inequívoco em violeta. */
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) button.afty-botao[aria-pressed="true"] {
+  color: #fff9fd;
+  background: linear-gradient(180deg, #7d58a0, #69458b);
+  border-color: #8e69aa;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.18), 0 4px 12px -6px rgb(74 45 101 / 0.65);
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) button.afty-botao[aria-pressed="true"]:hover {
+  color: #ffffff;
+  background: linear-gradient(180deg, #704a93, #593675);
+  border-color: #9a76b5;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-log-topo .afty-log-modo[aria-pressed="true"] {
+  color: #fff9fd;
+  background: #69458b;
+  border-color: #a98ac0;
+  box-shadow: 0 3px 10px -5px rgb(45 27 68 / 0.72);
 }

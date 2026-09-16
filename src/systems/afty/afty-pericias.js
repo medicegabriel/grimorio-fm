@@ -49,7 +49,7 @@ import { regraDo } from "./afty-sistema";
 /* A escada de dados da ficha de jogador. Na criatura nada disto roda: lá o dano
    é fórmula fechada e o dado da tabela da arma não entra. */
 import {
-  moverNivel, maiorDadoDe, maximoDe, lerDado, ESCADAS_DESARMADO_NO_MOTOR,
+  moverNivel, maiorDadoDe, maximoDe, lerDado, ESCADAS_DESARMADO_NO_MOTOR, DESARMADO_PADRAO,
 } from "./afty-niveis-dano";
 // O pacote de perícias e TR que a Classe inicial concede, na ficha de jogador.
 /* `vagasDoPacote` e não o `totalPericiasDoJogador`: o total do jogador agora sai
@@ -191,6 +191,7 @@ export function idsPericiasAtivas(creature) {
  */
 
 const OFICIO_ID = "oficio";
+const OFICIO_EXTRA_ID = /^oficio__(\d+)$/;
 
 /* ⚠ O `ehPericiaOficio` MUDOU DE CASA em 2026-09-01, e quem importava daqui
    continua importando daqui. Ele desceu para o afty-pericias-catalogo.js, que é
@@ -216,6 +217,20 @@ export function oficiosDaFicha(creature, id = OFICIO_ID) {
   return [...new Set((Array.isArray(lista) ? lista : []).map((n) => textoSeguro(n)).filter(Boolean))];
 }
 
+/** Linhas de Ofício que a pessoa acrescentou manualmente pelo criador. */
+export function oficiosExtrasDaFicha(creature) {
+  const bruto = Array.isArray(creature?.periciasOficiosExtras)
+    ? creature.periciasOficiosExtras
+    : [];
+  const ids = new Map();
+  for (const id of bruto) {
+    const match = OFICIO_EXTRA_ID.exec(String(id ?? ""));
+    const numero = Number(match?.[1]);
+    if (Number.isInteger(numero) && numero >= 2) ids.set(`oficio__${numero}`, numero);
+  }
+  return [...ids].sort((a, b) => a[1] - b[1]).map(([id]) => id);
+}
+
 /** O Ofício repetido guarda alguma coisa? É o que o mantém na ficha. */
 const oficioExtraOcupado = (creature, id) => {
   const prof = creature?.pericias?.[id];
@@ -233,6 +248,8 @@ export function catalogoPericiasDaFicha(creature) {
   const base = porId.get(OFICIO_ID);
   if (!base) return lista;
   const oficioExtra = (n) => ({ ...base, id: `oficio__${n}`, oficioExtra: true });
+  const manuais = oficiosExtrasDaFicha(creature);
+  const idsManuais = new Set(manuais);
   /* ⚠ A CLASSE PODE EXIGIR MAIS DE UMA LINHA DE OFÍCIO (2026-08-31). O
      Combatente e o Conjurador treinam DOIS Ofícios, e a linha repetida só
      nascia depois de alguém escrever algo nela: a segunda concessão da Classe
@@ -240,11 +257,23 @@ export function catalogoPericiasDaFicha(creature) {
      sem dizer nada. O mínimo vem do próprio pacote, que é onde o número mora. */
   const minimo = pacoteInicialDaFicha(creature?.especializacoes)?.periciasOficios ?? 0;
   // Os que já carregam escolha ficam, par ou ímpar.
-  const extras = [];
-  for (let n = 2; n <= minimo || oficioExtraOcupado(creature, `oficio__${n}`); n++) extras.push(oficioExtra(n));
+  const automaticos = [];
+  for (let n = 2; n <= minimo || (oficioExtraOcupado(creature, `oficio__${n}`)
+    && !idsManuais.has(`oficio__${n}`)); n++) automaticos.push(oficioExtra(n));
   // E o desempate, que é sempre no máximo um: acrescentar uma linha já vira a
-  // contagem para par.
-  if ((lista.length + extras.length) % 2 === 1) extras.push(oficioExtra(extras.length + 2));
+  // contagem para par. Linhas manuais não provocam outro desempate: o botão
+  // Novo Ofício precisa acrescentar exatamente uma linha por clique.
+  if ((lista.length + automaticos.length) % 2 === 1) {
+    automaticos.push(oficioExtra(automaticos.length + 2));
+  }
+  const numeros = new Set([
+    ...automaticos.map((p) => Number(OFICIO_EXTRA_ID.exec(p.id)?.[1])),
+    ...manuais.map((id) => Number(OFICIO_EXTRA_ID.exec(id)?.[1])),
+  ]);
+  const extras = [...numeros]
+    .filter((n) => Number.isInteger(n) && n >= 2)
+    .sort((a, b) => a - b)
+    .map(oficioExtra);
   if (extras.length === 0) return lista;
   /* ⚠ O EXTRA ENTRA LOGO ABAIXO DO OFÍCIO DO LIVRO (autor, 2026-08-30), e não no
      fim da lista: os dois são a mesma perícia, e separá-los faria o segundo
@@ -322,12 +351,43 @@ export const periciasParaInvocacao = () =>
 
 export const EMPURRAO_BASE = 1.5;
 
+/**
+ * As quatro Manobras do livro MAIS os outros testes nomeados que ganham bônus
+ * próprio (autor, 2026-09-15). O card chama-se "Outros" desde então, porque
+ * Concentração e Teste de Morte não são manobra nenhuma.
+ *
+ * `resistir` é o que separa os dois grupos: manobra tem dois lados (executar e
+ * resistir, sempre pela melhor entre Atletismo e Acrobacia), e os outros testes
+ * têm um lado só.
+ *
+ * A base de cada um:
+ *   • `pericia` — o bônus daquela perícia. `"melhor"` é a maior entre Atletismo
+ *     e Acrobacia, que é como o Desarmar do livro resolve.
+ *   • `tr` — o Teste de Resistência inteiro. Concentração usa Fortitude (autor,
+ *     2026-09-15).
+ *   • nenhum dos dois — o d20 puro, que é o Teste de Morte.
+ *
+ * ⚠ O canal `bonusManobra` aceita TODOS eles como alvo, e é por ele que o item
+ * ("+2 em testes para manter a concentração") e a habilidade chegam no número.
+ */
 export const AFTY_MANOBRAS = [
-  { id: "agarrar",  nome: "Agarrar",  pericia: "atletismo" },
-  { id: "derrubar", nome: "Derrubar", pericia: "atletismo" },
-  { id: "desarmar", nome: "Desarmar", pericia: "melhor",
+  { id: "agarrar",  nome: "Agarrar",  pericia: "atletismo", resistir: true },
+  { id: "derrubar", nome: "Derrubar", pericia: "atletismo", resistir: true },
+  { id: "desarmar", nome: "Desarmar", pericia: "melhor", resistir: true,
     nota: "o alvo resiste com a MESMA perícia que você escolher" },
-  { id: "empurrar", nome: "Empurrar", pericia: "atletismo", empurrao: true },
+  { id: "empurrar", nome: "Empurrar", pericia: "atletismo", resistir: true, empurrao: true },
+  // "Quando realizar um teste para manter concentração" (Mente Plácida) e "+2 em
+  // testes para manter a concentração" (Faixa de Foco).
+  { id: "concentracao", nome: "Concentração", tr: "fortitude" },
+  // "+2 em testes para fintar" (Reluzente) e "+2 em testes de Enganação para
+  // Fintar" (Leque). Duas habilidades trocam o atributo dele, e isso segue na
+  // perícia: aqui entra o número dela.
+  { id: "fintar", nome: "Fintar", pericia: "enganacao" },
+  // A ação de Provocar, que o livro resolve por Intimidação.
+  { id: "provocar", nome: "Provocar", pericia: "intimidacao" },
+  // "testes de morte": d20 puro. As fontes do livro ignoram falha ou dão
+  // vantagem, e nenhuma soma número, mas o canal existe para quando somar.
+  { id: "morte", nome: "Teste de Morte" },
 ];
 
 /* ============================================================ */
@@ -646,6 +706,12 @@ export function resolveDano(creature, ctx = {}) {
     return faces > 1 ? faces : 0;
   };
 
+  /* ⚠ O DADO QUE SÓ EXISTE NO CRÍTICO TAMBÉM DOBRA (autor, 2026-09-15): *"Crítico
+     Potente também é critável. Logo o 1 Dado de Dano em Acertos Críticos, por ser
+     um Crítico vira 2 Dados."* Destruidora, Mortal e o dado extra do Fatal usam a
+     mesma frase ("um dado de dano adicional" no crítico) e seguem a mesma regra,
+     confirmado na mesma conversa. Por isso os três são `multiplica: true`, e
+     entram no Raio Negro junto. */
   const aplicaCriticoDaArma = (linha, propriedades, extras = 0) => {
     const base = linha.gruposDano?.[0];
     if (!base) return linha;
@@ -654,15 +720,15 @@ export function resolveDano(creature, ctx = {}) {
     if (fatal > base.faces) base.facesCritico = fatal;
     else if (fatal && base.faces > fatal) linha.gruposDano.push({
       nome: "Fatal", dados: 1, faces: fatal, fixo: 0,
-      momento: "durante", multiplica: false, apenasCritico: true, entraRaioNegro: true,
+      momento: "durante", multiplica: true, apenasCritico: true,
     });
     if (mortal) linha.gruposDano.push({
       nome: "Mortal", dados: 1, faces: mortal, fixo: 0,
-      momento: "durante", multiplica: false, apenasCritico: true, entraRaioNegro: true,
+      momento: "durante", multiplica: true, apenasCritico: true,
     });
     if (extras > 0) linha.gruposDano.push({
       nome: "Destruidora", dados: extras, faces: base.faces, fixo: 0,
-      momento: "durante", multiplica: false, apenasCritico: true, entraRaioNegro: true,
+      momento: "durante", multiplica: true, apenasCritico: true,
     });
     return linha;
   };
@@ -777,17 +843,41 @@ export function resolveDano(creature, ctx = {}) {
       .map((g) => {
         const fontes = fontesDeDano("dadosNomeados", `d${g.faces}`);
         return {
+          /* O nome do GRUPO só tem uma vaga, então com duas fontes do mesmo
+             tamanho ele fica genérico. Quem nomeia cada uma é o hover, que
+             recebe uma parcela por FONTE logo abaixo. */
           nome: fontes.length === 1 ? fontes[0].label : "Dano Adicional",
           dados: g.qtd, faces: g.faces, fixo: 0,
           momento: "durante", multiplica: true,
+          // Já tem parcela própria logo abaixo: o hover não a repete.
+          naPartes: true,
+          /* ⚠ E JÁ ESTÁ ESCRITO NO TEXTO da linha (logo adiante), então não pode
+             virar chip na aba Ações: o mesmo `1d6` aparecia duas vezes, uma no
+             texto e outra ao lado. Mesma marca do segundo grupo do degrau. */
+          incluidoNoTexto: true,
         };
       });
 
     /* ⚠ UM GRUPO POR TAMANHO DE DADO na ficha de jogador, porque um degrau da
        escada pode ter dois (`1d12 + 1d4`). Todos multiplicam no crítico, e o
        fixo não, que é a regra do autor: "Só os Dados, o fixo não dobra". O fixo
-       viaja no primeiro grupo para não ser somado duas vezes. */
+       viaja no primeiro grupo para não ser somado duas vezes.
+
+       `naPartes` marca o grupo que já tem parcela em `linha.partes` (o dado da
+       arma, os Níveis de Dano, os dados extras). O hover de Dano monta as pilhas
+       a partir das parcelas e acrescenta só os grupos SEM essa marca. */
     const facesDoDado = Number(String(linha.dado).replace(/^d/i, ""));
+    /* CRÍTICO POTENTE e todo "1 dado de dano adicional" em acerto crítico (canal
+       `dadosCritico`). Um grupo por fonte, com o nome dela, do tamanho do maior
+       dado da linha ("habilidades que concedam um dado de dano adicional
+       consideram o maior dado do nível"). Só aparece no crítico, e DOBRA nele
+       (autor, 2026-09-15): o dado é 1 e a rolagem crítica rola 2. */
+    const gruposCritico = (ef ? detalhesDoCanalEscopos(ef, "dadosCritico", escopos) : [])
+      .map((d) => ({
+        nome: d.nome, dados: Math.max(0, Math.trunc(Number(d.valor) || 0)), faces: facesDoDado, fixo: 0,
+        momento: "durante", multiplica: true, apenasCritico: true,
+      }))
+      .filter((g) => g.dados > 0);
     linha.gruposDano = danoPorArma
       ? linha.dadosGrupos
         .filter((g) => g.qtd > 0)
@@ -806,23 +896,30 @@ export function resolveDano(creature, ctx = {}) {
              marca a Ficha mostrava `1d12 + 1d4 + 4` e um chip `+1d4` ao lado,
              e o mesmo dado aparecia duas vezes. */
           ...(i > 0 ? { incluidoNoTexto: true } : {}),
+          naPartes: true,
         }))
+        /* ⚠ O ATROZ É CRITÁVEL (autor, 2026-09-15: "Golpe Especial Atroz também é
+           Critável"). Ele nasceu com `multiplica: false` e fora do Raio Negro no
+           commit 93a186c, sem decisão citada. Segue em grupo próprio só pelo nome
+           no chip. */
         .concat(dadosAtroz ? [{
           nome: "Golpe Especial", dados: dadosAtroz, faces: facesDoDado, fixo: 0,
-          momento: "durante", multiplica: false, entraRaioNegro: false, incluidoNoTexto: true,
+          momento: "durante", multiplica: true, incluidoNoTexto: true, naPartes: true,
         }] : [])
         .concat(gruposNomeados)
+        .concat(gruposCritico)
       : [
         {
           nome: "Ataque", dados: Math.max(0, linha.dados - dadosAtroz),
           faces: facesDoDado, fixo: linha.fixo,
-          momento: "durante", multiplica: true,
+          momento: "durante", multiplica: true, naPartes: true,
         },
         ...(dadosAtroz ? [{
           nome: "Golpe Especial", dados: dadosAtroz, faces: facesDoDado, fixo: 0,
-          momento: "durante", multiplica: false, entraRaioNegro: false, incluidoNoTexto: true,
+          momento: "durante", multiplica: true, incluidoNoTexto: true, naPartes: true,
         }] : []),
         ...gruposNomeados,
+        ...gruposCritico,
       ];
     /* O TEXTO da linha passa a mostrar os dados nomeados, nos dois sistemas. Sem
        isso o grupo existiria na rolagem e não apareceria na linha, que é o mesmo
@@ -831,9 +928,18 @@ export function resolveDano(creature, ctx = {}) {
       const extra = gruposNomeados.map((g) => `${g.dados}d${g.faces}`).join(" + ");
       linha.texto = `${linha.texto} + ${extra}`;
       if (linha.totalFontes) linha.totalFontes = `${linha.totalFontes} + ${extra}`;
+      /* ⚠ UMA PARCELA POR FONTE, e não uma por tamanho de dado. Duas fontes do
+         mesmo tamanho (o Ajuste e o Desarme da Empolgação, os dois em d6) caíam
+         numa linha só chamada "Dano Adicional", e o hover deixava de dizer de
+         onde vinham os dados. O GRUPO segue somado, que é o que rola. */
       linha.partes = [
         ...linha.partes,
-        ...gruposNomeados.map((g) => ({ label: g.nome, texto: `${g.dados}d${g.faces}` })),
+        ...gruposNomeados.flatMap((g) => {
+          const fontes = fontesDeDano("dadosNomeados", `d${g.faces}`);
+          return fontes.length
+            ? fontes.map((f) => ({ label: f.label, texto: `${f.valor}d${g.faces}` }))
+            : [{ label: g.nome, texto: `${g.dados}d${g.faces}` }];
+        }),
       ];
       // A média entra no `total`, que é o número que o chip de delta da aba
       // Buffs compara. Piso para baixo, regra da casa.
@@ -841,6 +947,14 @@ export function resolveDano(creature, ctx = {}) {
         linha.total + gruposNomeados.reduce((acc, g) => acc + g.dados * (g.faces + 1) / 2, 0),
       );
     }
+    /* A PILHA de cada parcela no hover de Dano (ver `hoverDoDano`). Parcela com
+       `texto` é dado, e todo dado desta conta é critável. Parcela com `valor` é
+       fixo no jogador. Na criatura ela compõe o Dano TOTAL, que depois vira dados
+       e fixo, então ela não é nem uma coisa nem outra. */
+    linha.partes = linha.partes.map((p) => (p.categoria ? p : {
+      ...p,
+      categoria: p.texto != null ? "critavel" : (danoPorArma ? "fixo" : "total"),
+    }));
     return linha;
   };
 
@@ -856,7 +970,7 @@ export function resolveDano(creature, ctx = {}) {
      Treinamento à linha depois de o `resolveTestes` o ter tirado do tipo de
      ataque. `null` = decide o tipo, como sempre foi na criatura. */
   const acertoDe = (ataqueId, grauBonus, escopos, fontes = [], atributoForcado = null,
-    treinadaNaArma = null) => {
+    treinadaNaArma = null, rotuloTreino = "Maestria (Treinado na Arma)") => {
     const atq = ataques.find((a) => a.id === ataqueId);
     if (!atq) return null;
     /* ⚠ NÃO SOMA EM CIMA DE UM ATAQUE QUE JÁ ESTÁ TREINADO. O Amaldiçoado é
@@ -899,12 +1013,20 @@ export function resolveDano(creature, ctx = {}) {
     const partesComFineza = finezaConcedida
       ? [{ label: rotuloAttr(atq.atributoFineza), valor: modDe(atq.atributoFineza) }, ...partesAtaque.slice(1)]
       : partesAtaque;
+    /* Os dados somados à jogada (canal `dadosAtaque`, hoje a Manobra de Ajuste)
+       viajam ao lado do número, como no TR: quem mostra junta os dois num texto
+       e quem rola soma as duas coisas. */
+    const dadosAcerto = Array.isArray(atq.dadosExtras) ? atq.dadosExtras : [];
+    const acerto = bonusAtaque + trocaFineza + grauBonus + doMotor + btDaArma;
+    const textoDados = dadosAcerto.map((d) => `${d.qtd}d${d.faces}`).join(" + ");
     return {
-      acerto: bonusAtaque + trocaFineza + grauBonus + doMotor + btDaArma,
+      acerto,
+      acertoDados: dadosAcerto,
+      acertoTexto: textoDados ? `${acerto >= 0 ? "+" : "−"}${Math.abs(acerto)} + ${textoDados}` : null,
       acertoAtaque: atq.nome,
       partesAcerto: [
         ...partesComFineza,
-        ...(btDaArma ? [{ label: "Maestria (Treinado na Arma)", valor: btDaArma }] : []),
+        ...(btDaArma ? [{ label: rotuloTreino, valor: btDaArma }] : []),
         ...(doGrau ? [{ label: "Grau da Ferramenta", valor: doGrau }] : []),
         ...fontes,
         ...fontesDe("acertoArma", escopos),
@@ -919,6 +1041,9 @@ export function resolveDano(creature, ctx = {}) {
   const escoposBasico = [
     ...escoposDaArma(null),
     ...(Array.isArray(ctx.escoposBasicoExtra) ? ctx.escoposBasicoExtra : []),
+    // O Ataque Básico rola sempre Corpo a Corpo, então responde pelo tipo de
+    // ataque dele como toda arma responde pelo seu. Ver `escoposDaArma`.
+    "atq:corpo",
   ];
   // Fineza no golpe básico vem de duas portas: o canal (Corpo Treinado, "você
   // pode escolher usar tanto Força quanto Destreza") e a propriedade do item de
@@ -931,11 +1056,12 @@ export function resolveDano(creature, ctx = {}) {
     aplicaCriticoDaArma({ id: "basico", nome: "Ataque Básico", fonte: "basico", alcance: alcanceDe(null),
       propriedades: ctx.propriedadesBasico ?? [],
       /* ⚠ O DADO DO DESARMADO CHEGA PRONTO do deriveAfty (`ctx.dadoBasico`), e
-         não é decidido aqui: ele sai do Corpo Treinado, das Armas Naturais ou do
-         1d3 padrão, que são leituras da FICHA e não do canal. Ver
+         não é decidido aqui: ele sai do Corpo Treinado, das Armas Naturais, do
+         Restringido ou do básico por nível (1d4 a 1d12), que são leituras da
+         FICHA e não do canal. Ver
          `dadoDesarmado` em afty-niveis-dano.js. Na criatura ele é ignorado. */
       ...monta(escoposBasico, atributoDe({ fineza: finezaDesarmado }), ctx.grauBasico, 20,
-        ctx.dadoBasico ?? "1d3", ctx.fonteDadoBasico ?? "Golpe Desarmado"),
+        ctx.dadoBasico ?? DESARMADO_PADRAO, ctx.fonteDadoBasico ?? "Golpe Desarmado"),
       // Manoplas e Faixas são o Ataque Básico, então o grau delas entra aqui.
       // As `fontesAcertoBasico` são o que o encantamento somou por fora do grau:
       // elas saem do total do grau e aparecem com o nome próprio no hover.
@@ -944,7 +1070,10 @@ export function resolveDano(creature, ctx = {}) {
          desarmado não soma BT no jogador. */
       ...acertoDe("corpo", Math.max(0, Math.trunc(Number(ctx.acertoGrauBasico) || 0)),
         escoposBasico, ctx.fontesAcertoBasico ?? [], null,
-        armaDecide ? !!ctx.treinadaBasico : null) },
+        armaDecide ? !!ctx.treinadaBasico : null,
+        /* Ataque desarmado não é arma ("ataques desarmados não são armas"), e o
+           treino dele vem da regra do livro, e não de arma nenhuma. */
+        "Maestria (Ataque Desarmado)") },
     ctx.propriedadesBasico ?? [], ctx.criticoExtraDadosBasico),
   ];
 
@@ -1315,6 +1444,19 @@ export function resolveTestes(creature, ctx = {}) {
      livro escreve "você é sempre treinado" na fórmula dele, e é o `sempreTreinado`
      que já estava no catálogo. */
   const armaDecide = regraDo(ctx.sistema, "proficienciaPorArma") === "player";
+  /* DADOS SOMADOS À JOGADA DE ATAQUE (canal `dadosAtaque`), irmão do `dadosTR`:
+     a Manobra de Ajuste soma o Dado de Empolgação na rolagem de acerto. O alvo
+     do canal é o DADO, então eles valem em toda jogada e a lista sai uma vez. */
+  const dadosNoAtaque = FACES_NOMEADAS
+    .map((faces) => ({ faces, qtd: Math.trunc(bonusDeEfeito("dadosAtaque", `d${faces}`)) }))
+    .filter((g) => g.qtd > 0);
+  const textoDosDadosAtaque = dadosNoAtaque.map((g) => `${g.qtd}d${g.faces}`).join(" + ");
+  const partesDosDadosAtaque = FACES_NOMEADAS.flatMap((faces) =>
+    partesDeEfeito("dadosAtaque", `d${faces}`).map((x) => ({ label: x.label, texto: `${x.valor}d${faces}` })));
+  const comDados = (bonus) => (textoDosDadosAtaque
+    ? `${bonus >= 0 ? "+" : "−"}${Math.abs(bonus)} + ${textoDosDadosAtaque}`
+    : null);
+
   const ataques = AFTY_ATAQUES.map((a) => {
     const treinado = a.sempreTreinado || (!armaDecide && !!atqBruta[a.id]);
     /* Fineza libera o atributo alternativo do ataque, e aqui ela vem SÓ da
@@ -1335,11 +1477,16 @@ export function resolveTestes(creature, ctx = {}) {
       atributo: attr,
       treinado,
       bonus: modDe(attr) + escalaFixa + (treinado ? bt : 0) + bonusDeEfeito("bonusAcerto", a.id),
+      /* Os dados extras viajam ao lado do bônus, igual ao TR: o bônus soma
+         sempre e o dado é uma rolagem a mais. */
+      dadosExtras: dadosNoAtaque,
+      textoBonus: comDados(modDe(attr) + escalaFixa + (treinado ? bt : 0) + bonusDeEfeito("bonusAcerto", a.id)),
       partes: [
         { label: rotuloAttr(attr), valor: modDe(attr) },
         { label: ESCALA_ROTULO.fixa, valor: escalaFixa },
         ...(treinado ? [{ label: "Maestria", valor: bt }] : []),
         ...partesDeEfeito("bonusAcerto", a.id),
+        ...partesDosDadosAtaque,
       ],
     };
   });
@@ -1354,27 +1501,32 @@ export function resolveTestes(creature, ctx = {}) {
   const melhorDasDuas = Math.max(atletismo, acrobacia);
   const nomePericia = (id) => catalogoPericias.find((p) => p.id === id)?.nome ?? id;
 
+  const nomeDaMelhor = () => (acrobacia > atletismo ? nomePericia("acrobacia") : nomePericia("atletismo"));
   const manobras = AFTY_MANOBRAS.map((m) => {
+    /* A base de cada linha, e o nome dela para o hover. Ver AFTY_MANOBRAS: a
+       manobra sai de perícia, a Concentração sai de um Teste de Resistência e o
+       Teste de Morte é o d20 puro. */
     const usaMelhor = m.pericia === "melhor";
-    const baseExec = usaMelhor ? melhorDasDuas : bonusPericiaDe(m.pericia);
-    const rotuloExec = usaMelhor
-      ? (acrobacia > atletismo ? nomePericia("acrobacia") : nomePericia("atletismo"))
-      : nomePericia(m.pericia);
+    const tr = m.tr ? resistencias.find((r) => r.value === m.tr) : null;
+    const baseExec = usaMelhor ? melhorDasDuas : m.pericia ? bonusPericiaDe(m.pericia) : (tr?.bonus ?? 0);
+    const rotuloExec = usaMelhor ? nomeDaMelhor() : m.pericia ? nomePericia(m.pericia) : (tr?.label ?? null);
     return {
       ...m,
-      // Executar a manobra.
+      // Executar a manobra, ou fazer o teste.
       executar: baseExec + bonusDeEfeito("bonusManobra", m.id),
       periciaUsada: rotuloExec,
       partesExecutar: [
-        { label: rotuloExec, valor: baseExec },
+        ...(rotuloExec ? [{ label: rotuloExec, valor: baseExec }] : []),
         ...partesDeEfeito("bonusManobra", m.id),
       ],
-      // Resistir a ela: quem resiste sempre escolhe entre as duas.
-      resistir: melhorDasDuas + bonusDeEfeito("resistirManobra", m.id),
-      partesResistir: [
-        { label: acrobacia > atletismo ? nomePericia("acrobacia") : nomePericia("atletismo"), valor: melhorDasDuas },
+      /* Resistir a ela: quem resiste sempre escolhe entre as duas. Só as quatro
+         Manobras têm o outro lado, e por isso as demais devolvem `null` em vez
+         de um número que ninguém rola. */
+      resistir: m.resistir ? melhorDasDuas + bonusDeEfeito("resistirManobra", m.id) : null,
+      partesResistir: m.resistir ? [
+        { label: nomeDaMelhor(), valor: melhorDasDuas },
         ...partesDeEfeito("resistirManobra", m.id),
-      ],
+      ] : null,
       // Só o Empurrar tem distância. "+1,5m para cada 5 pontos" fica na mesa:
       // depende da margem da rolagem.
       distancia: m.empurrao ? EMPURRAO_BASE + bonusDeEfeito("distanciaEmpurrao") : null,

@@ -318,6 +318,7 @@ export function createBlankAfty() {
     periciasPersonalizadas: [], // [{ id, nome, atributo }]
     periciaOficio: "",         // legado: migrado para periciaOficios ao abrir
     periciaOficios: {},        // { [periciaId]: [subcategoria de Ofício, ...] }
+    periciasOficiosExtras: [], // [oficio__2, oficio__3, ...] criados manualmente
     /* O ATRIBUTO DE UMA PERÍCIA, TROCADO À MÃO: `{ [periciaId]: chave }`.
        Pedido do autor em 2026-09-05: *"muita gente precisa disso por N fontes
        diferentes como Treinos Próprios e etc, que o sistema não comporta sem

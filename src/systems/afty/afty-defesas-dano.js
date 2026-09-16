@@ -170,17 +170,25 @@ export function resolveDefesasDano({
          porque a Geral não a cobre (autor, 2026-07-29). */
       const ehFisico = fisicos.has(tipo);
       const ehAlma = tipo === TIPO_ALMA;
-      const doTipo = Math.max(0, Math.trunc(canalTipo("rdTipo", tipo)));
+      /* ⚠ A RD POR TIPO PODE SER NEGATIVA desde 2026-09-14. Ela nasceu só
+         somando, e era aparada em zero aqui. A penalidade do Encantamento de
+         Grau Especial ("reduzir RD de um Grupo inteiro") chega como `rdTipo`
+         negativo, e o autor decidiu que ela reduz a RD TOTAL contra aquele tipo,
+         inclusive a que vem da RD Geral. O total é que nunca fica abaixo de
+         zero, e o que o piso cortou entra no hover para as parcelas fecharem. */
+      const doTipo = Math.trunc(canalTipo("rdTipo", tipo));
+      const somaCrua = doManual.rd + doTipo
+        + (ehAlma ? rdAlma : rdGeral)
+        + (ehFisico ? rdFisico : 0);
+      const rd = Math.max(0, somaCrua);
       const partes = [
         ...(doManual.rd ? [{ label: "Ficha", valor: doManual.rd }] : []),
         ...(doTipo ? fontesTipo("rdTipo", tipo) : []),
         ...(!ehAlma && rdGeral ? [{ label: "RD Geral", valor: rdGeral }] : []),
         ...(ehFisico && rdFisico ? [{ label: "RD Física", valor: rdFisico }] : []),
         ...(ehAlma && rdAlma ? [{ label: "RD a Alma", valor: rdAlma }] : []),
+        ...(rd !== somaCrua ? [{ label: "RD não fica negativa", valor: rd - somaCrua }] : []),
       ];
-      const rd = doManual.rd + doTipo
-        + (ehAlma ? rdAlma : rdGeral)
-        + (ehFisico ? rdFisico : 0);
 
       linhas.push({
         tipo,
@@ -192,7 +200,8 @@ export function resolveDefesasDano({
         // O que veio SÓ da aba, para a UI saber o que ela pode desmarcar.
         manual: doManual,
         rd,
-        rdProprio: doManual.rd + doTipo,
+        // O próprio também tem piso: é o número que decide se a linha aparece.
+        rdProprio: Math.max(0, doManual.rd + doTipo),
         partes,
         // Dois estados no mesmo tipo é contradição de regra, e quem decide o
         // desempate é o autor. A UI mostra o aviso e não escolhe.

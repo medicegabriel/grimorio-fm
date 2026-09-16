@@ -1982,6 +1982,13 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
   z-index: 1000;
 }
 
+/* O cabeçalho de uma pilha dentro do painel (Critável, Não Critável, Fixo). A
+   borda só aparece da segunda pilha em diante, porque só ela vem depois de uma
+   parcela: a primeira não tem nada acima para separar. */
+.afty-fonte-secao { color: var(--afty-destaque-texto, #d8b4fe); }
+.afty-fonte-secao + .afty-fonte-linha { margin-top: 0.125rem; }
+.afty-fonte-linha + .afty-fonte-secao { border-top: 1px solid var(--afty-borda, #1e293b); }
+
 .afty-fonte-rotulo { color: var(--afty-texto-suave, #94a3b8); }
 .afty-fonte-valor { color: var(--afty-texto, #e2e8f0); }
 

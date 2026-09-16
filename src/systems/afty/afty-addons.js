@@ -400,9 +400,32 @@ export const PRIMITIVAS = [
     nota: "A Condição Corporal dos Seis Olhos: os dois blocos de benefício (cobertos e descobertos), a redução ampla de PE, a Fadiga Mental e o card na aba Habilidades",
   },
   {
+    id: "olhosDeAgulha",
+    rotulo: "Olhos de Agulha",
+    nota: "Condição corporal do Clã Akutame, habilidades oculares e usos por descanso",
+  },
+  {
     id: "criacaoArmas",
     rotulo: "Criação de Armas",
     nota: "A bancada de Pontos de Criação no editor de arma própria: orçamento por classificação, custo, técnica e espaços, com o preço de cada propriedade e os limites de gasto",
+  },
+  /* ⚠ NASCEU EM 2026-09-14, com a fase 2 do guia Criação de Equipamentos. É
+     primitiva, e não liberação como a fase 1, porque a receita da arma é dado da
+     ARMA e vale sem o Addon (autor: "Continua com o dado da conta"). Ter o pacote
+     só abre a bancada que escreve a receita. Ver
+     `afty-criacao-equipamentos-armas.js`. */
+  /* A fase 4 do mesmo guia. Primitiva pela mesma razão da de cima: a receita
+     mora na Ferramenta (`fa.guiaUnica`) e continua valendo sem o Addon, e ter o
+     pacote só abre a bancada. Ver `afty-criacao-equipamentos-encantamento.js`. */
+  {
+    id: "encantamentoGuia",
+    rotulo: "Encantamento de Grau Especial pelo Guia",
+    nota: "A conta opcional do guia Criação de Equipamentos na Habilidade Única da Ferramenta de Grau Especial: Interações Simples pelo modificador, divisão ou penalidade, melhoria de Encantamento Padrão e o Feitiço da Técnica Inata",
+  },
+  {
+    id: "armasPorNivel",
+    rotulo: "Armas por Nível de Dano",
+    nota: "A bancada do guia Criação de Equipamentos no editor de arma própria: o dado sai do Custo menos os Níveis gastos em propriedades e crítico, com alcance por grau e Propriedade Especial personalizada",
   },
   /* ⚠ NASCEU EM 2026-09-16, a pedido do autor: uma sessão de texto livre para
      Malefícios e Benefícios, cada um com efeito OPCIONAL no Motor (mesmo
@@ -516,6 +539,29 @@ export const LIBERACOES = [
     id: "acessoriosUnicos",
     rotulo: "Acessórios Únicos",
     nota: "Abre a criação de Acessórios Únicos, que contam como Grau Especial, pesam 1, não têm custo nem Encantamentos e recebem duas Habilidades Únicas",
+  },
+  /* ⚠ NASCERAM EM 2026-09-14, com o guia Criação de Equipamentos e Itens 2.5.2.
+     São DUAS pela mesma razão das da Benção: cada uma abre um tipo de item
+     diferente, e quem quer só o escudo não leva o revestimento de brinde. São
+     liberação, e não primitiva como a bancada de Pontos de Criação, porque a
+     tabela DECIDE a Defesa e a RD do item. Sem a liberação o item gravado
+     continua na ficha e deixa de contar. Ver `afty-criacao-equipamentos.js`. */
+  {
+    id: "revestimentosCriados",
+    rotulo: "Revestimentos Criados",
+    nota: "Abre a criação de Revestimentos por Custo: Defesa e penalidade da tabela, e a troca de um degrau de Defesa por +2 em duas Perícias ou RD por Tipo",
+  },
+  {
+    id: "escudosCriados",
+    rotulo: "Escudos Criados",
+    nota: "Abre a criação de Escudos por Custo: RD, penalidade e dado da tabela, sem efeito especial",
+  },
+  /* A fase 3 do mesmo guia. Liberação pela mesma razão das duas acima: o item
+     Passivo soma número na ficha, e sem a liberação ele deixa de contar. */
+  {
+    id: "itensDeCusto",
+    rotulo: "Itens de Custo Criados",
+    nota: "Abre a criação de Itens de Custo: um efeito da tabela do Custo, Passivo (vale equipado) ou Ativo (Arremessável, Área ou Totem, aplicado na mesa)",
   },
   /* As quatro entradas que saíram da Ficha de Jogador em 2026-09-01. O id segue
      o molde do `liberacaoSoPorAddon`, e cada uma é NOMEADA: quem quer só o
@@ -828,6 +874,11 @@ export function normalizarPacote(cru) {
        pacote NORMALIZADO, e campo que o normalizador não conhece some na
        instalação sem aviso nenhum. */
     concedeAptidoes: normalizarConcessoesDeAptidao(p.concedeAptidoes),
+    /* Ids de pacotes que NÃO ligam na mesma ficha que este. Ver
+       `incompativeisNaFicha`. */
+    incompativeis: Array.isArray(p.incompativeis)
+      ? [...new Set(p.incompativeis.filter((x) => typeof x === "string").map((x) => x.trim().toLowerCase()).filter(Boolean))]
+      : [],
     adaptacoes: Array.isArray(p.adaptacoes)
       ? p.adaptacoes.filter((x) => x && typeof x === "object").map(clonar)
       : [],
@@ -1131,6 +1182,12 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
         `Liberação desconhecida em "libera": "${id}". Existem hoje: ${LIBERACOES.map((x) => x.id).join(", ")}.`,
       );
     }
+  }
+  /* O pacote incompatível NÃO precisa estar instalado: a trava serve justamente
+     para quando o outro aparecer. Só o formato do id e o próprio id são cobrados. */
+  for (const id of p.incompativeis) {
+    if (!ID_PACOTE_OK.test(id)) problemas.push(`id inválido em "incompativeis": "${id}".`);
+    else if (id === p.id) problemas.push('O pacote não pode declarar a si mesmo em "incompativeis".');
   }
   /* A concessão de Aptidão. O id tem de existir: no livro (a lista RAW da
      família, sem addon nenhum), no próprio pacote, ou já qualificado com o
@@ -1582,6 +1639,42 @@ export function addonsDaCriatura(creature) {
   return Array.isArray(lista) ? lista.map(normalizarPacote) : [];
 }
 
+/* ============================================================ */
+/* PACOTES QUE NÃO LIGAM JUNTOS                                  */
+/* ============================================================ */
+/**
+ * Os pacotes de `outros` que não ligam na mesma ficha que `pacote`.
+ *
+ * ⚠ A TRAVA É SIMÉTRICA: basta UM dos dois declarar o outro. Nasceu em
+ * 2026-09-14 com a Criação de Equipamentos, que o autor decidiu que convive com
+ * a Criação de Armas e não liga junto com ela. A Criação de Armas é anterior e
+ * não declara nada, e toda cópia dela já gravada numa ficha ou numa biblioteca
+ * continuaria sem declarar. Exigir as duas pontas deixaria essas cópias soltas.
+ *
+ * ⚠ E ELA É DA FICHA, e não da biblioteca: a máquina guarda os dois pacotes, e
+ * uma mesa pode ter um personagem com cada um.
+ */
+export function incompativeisCom(pacote, outros) {
+  const p = normalizarPacote(pacote);
+  return (Array.isArray(outros) ? outros : [])
+    .map(normalizarPacote)
+    .filter((o) => o.id !== p.id && (p.incompativeis.includes(o.id) || o.incompativeis.includes(p.id)));
+}
+
+/**
+ * Os pares de pacotes que estão NA MESMA FICHA sem poder estar. A tela de
+ * Addons já não deixa ligar o segundo, então isto só aparece numa ficha
+ * importada ou montada à mão.
+ */
+export function incompativeisNaFicha(creature) {
+  const lista = addonsDaCriatura(creature);
+  const pares = [];
+  lista.forEach((p, i) => {
+    for (const o of incompativeisCom(p, lista.slice(i + 1))) pares.push([p, o]);
+  });
+  return pares;
+}
+
 /**
  * A união dos addons de VÁRIAS criaturas, para o Encontro misto (decisão 3 do
  * autor: *"nem sempre é mudança geral de sistema, pode ser mudança mínima em uma
@@ -1662,6 +1755,19 @@ export function problemasDeAddon(creature) {
           : `Ligue esse addon em Outros > Addons, ou tire esta entrada ${pal.g("do", "da")} ${pal.nome}.`,
       });
     }
+  }
+  // Dois pacotes que não ligam juntos e chegaram juntos. Os dois continuam
+  // valendo: ficha salva sempre abre, e o aviso diz o que resolver.
+  for (const [a, b] of incompativeisNaFicha(creature)) {
+    out.push({
+      familia: "incompativeis",
+      rotulo: "Addons",
+      id: `${a.id}+${b.id}`,
+      pacoteId: a.id,
+      idCru: b.id,
+      motivo: `Os addons "${a.nome || a.id}" e "${b.nome || b.id}" não ligam juntos ${pal.g("no mesmo", "na mesma")} ${pal.nome}.`,
+      saida: `Tire um dos dois em Outros > Addons.`,
+    });
   }
   return out;
 }

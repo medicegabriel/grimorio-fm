@@ -79,17 +79,28 @@ const briga = deriveAfty(ficha(["tal_adepto_de_briga"]));
 t("o Adepto de Briga soma o acerto SO no desarmado",
   acertos(briga).map((v, i) => v - acertos(base)[i]), [3, 0, 0, 0]);
 
-/* ⚠ E A CONDIÇÃO DO PUGILATO NÃO É `desarmado`. Manopla e Faixa deixam a
-   criatura desarmada E com equipamento de Pugilato ao mesmo tempo, e é
-   exatamente esse o caso que o Talento exclui. */
+/* Faixas permitem o Talento, mesmo constando no grupo Pugilato. Manoplas e
+   Soco Inglês o bloqueiam. Se houver Faixas e outro item do grupo equipados,
+   o outro item ainda bloqueia. O acerto e os níveis de dano seguem juntos. */
 const brigaCom = (armas) => {
   const s = deriveAfty(ficha([], { armas }));
   const c = deriveAfty(ficha(["tal_adepto_de_briga"], { armas }));
-  return (linha(c, "basico")?.acerto ?? 0) - (linha(s, "basico")?.acerto ?? 0);
+  const basicoSem = linha(s, "basico");
+  const basicoCom = linha(c, "basico");
+  return [
+    (basicoCom?.acerto ?? 0) - (basicoSem?.acerto ?? 0),
+    (basicoCom?.niveisDano ?? 0) - (basicoSem?.niveisDano ?? 0),
+  ];
 };
-t("de maos vazias ele vale", brigaCom([]), 3);
-t("com Manoplas ou Faixas ele NAO vale", [brigaCom(["arm_manoplas"]), brigaCom(["arm_faixas"])], [0, 0]);
-t("e uma arma que nao e de Pugilato nao o desliga", brigaCom(["arm_bastao"]), 3);
+t("de maos vazias ele vale", brigaCom([]), [3, 2]);
+t("com Faixas ele tambem vale", brigaCom(["arm_faixas"]), [3, 2]);
+t("com Manoplas ou Soco Ingles ele nao vale",
+  [brigaCom(["arm_manoplas"]), brigaCom(["arm_soco_ingles"])], [[0, 0], [0, 0]]);
+t("Faixas nao liberam o bonus se outro Pugilato estiver equipado",
+  [brigaCom(["arm_faixas", "arm_manoplas"]),
+    brigaCom(["arm_faixas", "arm_soco_ingles"])], [[0, 0], [0, 0]]);
+t("uma arma que nao e de Pugilato nao o desliga",
+  brigaCom(["arm_bastao"]), [3, 2]);
 
 /* ⚠ TÉCNICAS DE ARREMESSO: "Sempre que atacar com uma arma de ARREMESSO, você
    recebe um bônus de +2 para acertar e +3 no dano."

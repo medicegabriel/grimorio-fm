@@ -813,6 +813,7 @@ export const CONTRATO_DE_CLASSES = [
 
   /* ---------- camadas que flutuam ---------- */
   { grupo: "Camadas", seletor: ".afty-fontes", oque: "o painel que explica um número" },
+  { grupo: "Camadas", seletor: ".afty-fonte-secao", oque: "o cabeçalho de uma pilha dentro dele, com o subtotal" },
   { grupo: "Camadas", seletor: ".afty-fonte-linha", oque: "uma parcela dentro dele" },
   { grupo: "Camadas", seletor: ".afty-fonte-rotulo", oque: "o nome da parcela" },
   { grupo: "Camadas", seletor: ".afty-fonte-valor", oque: "o valor da parcela" },

@@ -60,9 +60,10 @@ t("vazio não quebra", familiaEParte(undefined), { familia: null, parte: "" });
 /* ⚠ 58 desde 2026-09-07, com o "Conhecimento Aplicado · PE Gasto" do Conjurador,
    que entra na convenção pelo separador. 59 desde 2026-09-12, com o "Ataque
    Concentrado" do Combatente, que NÃO entra: é uma linha só, sem família. */
-t("a convenção cobre 35 dos 60",
-  COMBATE_ESTADOS.filter((e) => familiaEParte(e.label).familia).length, 35);
-t("e o catálogo tem 60 estados",  COMBATE_ESTADOS.length, 60);
+/* 36 de 61 desde 2026-09-15, quando a Mente Plácida ganhou o contador de PE. */
+t("a convenção cobre 36 dos 61",
+  COMBATE_ESTADOS.filter((e) => familiaEParte(e.label).familia).length, 36);
+t("e o catálogo tem 61 estados",  COMBATE_ESTADOS.length, 61);
 
 /* ============================================================ */
 /* TODA FAIXA PRECISA DE TETO NO `resolveCombate`                */

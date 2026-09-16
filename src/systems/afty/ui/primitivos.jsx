@@ -16,10 +16,10 @@ import { Sparkles, Lock } from "lucide-react";
  */
 
 /* Cartão / cabeçalho de seção — mesmo visual do builder 2.5.2. */
-export function Card({ title, children, headerRight }) {
+export function Card({ title, children, headerRight, recolhido = false }) {
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-xl">
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-800">
+      <div className={`flex items-center gap-2 px-4 py-3 ${recolhido ? "" : "border-b border-slate-800"}`}>
         {/* Ícone DENTRO do h2 (mesmo padrão do builder 2.5.2): como irmão do
             título ele se alinhava contra a altura da barra inteira, e não
             contra a linha do texto, o que deixava ele visivelmente alto.
@@ -49,7 +49,7 @@ export function Card({ title, children, headerRight }) {
         </h2>
         {headerRight && <div className="ml-auto flex-shrink-0">{headerRight}</div>}
       </div>
-      <div className="p-4">{children}</div>
+      {!recolhido && <div className="p-4">{children}</div>}
     </div>
   );
 }

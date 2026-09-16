@@ -200,8 +200,15 @@ t("Destruidora das Faixas cria dado apenas no critico",
   destruidora.gruposDano.filter((g) => g.nome === "Destruidora")
     .map((g) => [g.dados, g.faces, g.apenasCritico]),
   [[1, destruidora.gruposDano[0].faces, true]]);
-t("Destruidora das Faixas entra na formula critica",
-  destruidora.formulaCritico.includes(`1d${destruidora.gruposDano[0].faces}`), true);
+/* O dado de crítico DOBRA no próprio crítico (autor, 2026-09-15): 1 dado vira 2.
+   A fórmula soma as faces iguais num termo só, então o que se mede é a
+   DIFERENÇA na contagem daquele dado, e não um termo `2dN` solto. */
+const contaDoDado = (formula, faces) =>
+  Number((new RegExp(`(\\d+)d${faces}(?!\\d)`).exec(formula) ?? [0, 0])[1]);
+const semDestruidora = basico(doJogador([it("arm_faixas", fa("especial"))]));
+t("Destruidora das Faixas soma dois dados na formula critica",
+  contaDoDado(destruidora.formulaCritico, destruidora.gruposDano[0].faces)
+  - contaDoDado(semDestruidora.formulaCritico, semDestruidora.gruposDano[0].faces), 2);
 t("Faixas guardadas nao concedem Destruidora",
   basico(doJogador([it("arm_faixas", fa("especial", ["enc_arma_destruidora"]),
     { equipado: false })])).gruposDano.some((g) => g.nome === "Destruidora"), false);
@@ -229,7 +236,7 @@ t("Mortal acrescenta dado critico do tamanho listado",
   mortal.gruposDano.filter((g) => g.nome === "Mortal")
     .map((g) => [g.dados, g.faces, g.apenasCritico]), [[1, 10, true]]);
 t("Mortal nao aparece na formula normal", mortal.formulaNormal.includes("1d10"), false);
-t("Mortal aparece na formula critica", mortal.formulaCritico.includes("1d10"), true);
+t("Mortal aparece na formula critica, dobrado", mortal.formulaCritico.includes("2d10"), true);
 
 const katana = (c) => linhas(c).find((e) => e.id === "arm_katana");
 const fatal = katana(doJogador([it("arm_katana")]));

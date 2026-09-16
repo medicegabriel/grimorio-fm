@@ -68,6 +68,13 @@ const FOLHAS = [
      depende do afty-criacao-armas, então um import novo aqui dentro viraria o
      ciclo do topo deste arquivo. */
   ["afty-niveis-dano.js", "a escada de dano e lida de dentro da criacao de armas"],
+  /* ⚠ ENTROU EM 2026-09-14, com a Criação de Equipamentos. O `afty-equipamentos`
+     o chama dentro do `catalogoDoTipo`, então um import de volta fecharia um
+     ciclo com o módulo que mais gente importa. */
+  ["afty-criacao-equipamentos.js", "o catalogoDoTipo de afty-equipamentos o chama"],
+  ["afty-criacao-equipamentos-itens.js", "idem, para os Itens de Custo"],
+  ["afty-talisma-apice.js", "o derive, a sessao e o equipamento o leem"],
+  ["afty-criacao-equipamentos-encantamento.js", "o resolveFerramenta de afty-equipamentos o chama"],
   ["afty-pericias-catalogo.js", "os três catálogos de requisito o chamam"],
   ["afty-schema.js", "todo mundo cria ficha em branco"],
   ["afty-dsl.js", "o avaliador não pode depender de conteúdo"],

@@ -201,9 +201,49 @@ t("e ainda soma 5 de acerto",
 /* 4. O GOLPE DESARMADO                                          */
 /* ============================================================ */
 
-/* "Se não haver nenhum dos dois, é 1d3 + Mod. Força ou Mod. Dex." */
-t("sem Lutador nem Arma Natural o desarmado e 1d3 + mod",
-  texto(deriveAfty(ficha("player", 10, { arma: null })), "basico"), "1d3 + 4");
+/* ⚠ O PISO DEIXOU DE SER 1d3 EM 2026-09-16. O livro, trazido pelo autor: "O dano
+   dos ataques desarmados inicia como 1d4 [...] Nos níveis 5, 9, 13 e 17 o dano
+   desarmado básico de um personagem aumenta para 1d6, 1d8, 1d10 e 1d12". No
+   nível 10 isso é 1d8. */
+t("sem Lutador nem Arma Natural o desarmado e o basico do nivel + mod",
+  texto(deriveAfty(ficha("player", 10, { arma: null })), "basico"), "1d8 + 4");
+for (const [nivel, dado] of [[1, "1d4"], [5, "1d6"], [9, "1d8"], [13, "1d10"], [17, "1d12"]]) {
+  t(`o basico no nivel ${nivel} rola ${dado}`,
+    linha(deriveAfty(ficha("player", nivel, { arma: null })), "basico").partes[0].texto, dado);
+}
+/* "Caso seja um Restringido, ele segue o mesmo aumento de um Lutador." */
+for (const [nivel, dado] of [[1, "1d8"], [5, "1d10"], [9, "1d12"], [13, "2d8"], [17, "2d12"]]) {
+  const res = ficha("player", nivel, { arma: null });
+  res.especializacoes = [{ id: "restringido", nivel }];
+  res.core = { ...res.core, origem: { ...res.core.origem, id: "restringido" } };
+  t(`o Restringido no nivel ${nivel} segue o Lutador e rola ${dado}`,
+    [linha(deriveAfty(res), "basico").partes[0].texto, linha(deriveAfty(res), "basico").partes[0].label],
+    [dado, "Restringido"]);
+}
+/* "Todo personagem é treinado em Ataques Desarmados": o Bônus de Treinamento
+   entra no Acerto do golpe mesmo sem Faixa nem Manopla. */
+/* ⚠ DUAS DECISÕES DO AUTOR DE 2026-09-16, presas aqui porque a regra do livro
+   ("ataques desarmados não são armas [...] pertencem ao grupo Pugilato") puxaria
+   para o lado contrário das duas:
+     1. Armas Escolhidas com o grupo Pugilato NÃO alcança o golpe desarmado.
+     2. Estilo do Duelista, Estilo Duplo e Arsenal Cíclico CONTINUAM no Ataque
+        Básico. */
+{
+  const escolhido = ficha("player", 10, { arma: null });
+  escolhido.habilidades = ["cmb_armas_escolhidas"];
+  escolhido.escolhasHabilidade = { cmb_armas_escolhidas: ["cmb_grupo_pugilato"] };
+  t("Armas Escolhidas: Pugilato nao da Nivel de Dano no desarmado",
+    linha(deriveAfty(escolhido), "basico").niveisDano, linha(deriveAfty(ficha("player", 10, { arma: null })), "basico").niveisDano);
+  const estilos = ficha("player", 20, { arma: null });
+  estilos.escolhasHabilidade = { cmb_repertorio_do_especialista: ["cmb_estilo_do_duelista", "cmb_estilo_duplo"] };
+  estilos.combate = { ativo: true, duelando: true, lutandoComDuasArmas: true };
+  const rotulos = linha(deriveAfty(estilos), "basico").partes.map((p) => p.label);
+  t("Duelista e Duplo seguem no Ataque Basico",
+    ["Estilo do Duelista", "Estilo Duplo"].every((r) => rotulos.includes(r)), true);
+}
+t("todo personagem soma a Maestria no ataque desarmado",
+  linha(deriveAfty(ficha("player", 10, { arma: null })), "basico").partesAcerto
+    .some((p) => p.label === "Maestria (Ataque Desarmado)"), true);
 
 /* ⚠ O CORPO TREINADO DÁ O DADO ABSOLUTO DO TEXTO DELE, e não um degrau sobre o
    1d3. "O dano dos seus ataques desarmados se torna 1d8. Nos níveis 5, 9, 13 e
@@ -250,8 +290,10 @@ t("Lutador 10 com Combatente 20 conta como Lutador 20",
    escalonamento de qualquer outra classe alto. */
 const semLutador = ficha("player", 20, { arma: null });
 semLutador.especializacoes = [{ id: "combatente", nivel: 20 }];
+/* Sem o Corpo Treinado, o nível 20 rola o BÁSICO (1d12), e não o 2d12 dele. */
 t("sem nivel real de Lutador o Corpo Treinado nao chega",
-  linha(deriveAfty(semLutador), "basico").partes[0].texto, "1d3");
+  [linha(deriveAfty(semLutador), "basico").partes[0].texto, linha(deriveAfty(semLutador), "basico").partes[0].label],
+  ["1d12", "Golpe Desarmado"]);
 
 /* Armas Naturais: mesma ideia, e a escala é o nível do personagem. */
 for (const [nivel, dado] of [[1, "1d8"], [5, "1d10"], [9, "1d12"], [13, "2d10"], [17, "2d12"]]) {
@@ -278,7 +320,7 @@ const dEsc = deriveAfty(escolhidas);
 t("tres Niveis de Dano levam 1d8 a 1d12 + 1d4",
   texto(dEsc, "arm_espada_longa"), "1d12 + 1d4 + 4");
 t("e o hover mostra o dado IMPRESSO na primeira linha",
-  linha(dEsc, "arm_espada_longa").partes[0], { label: "Dano da Arma", texto: "1d8" });
+  linha(dEsc, "arm_espada_longa").partes[0], { label: "Dano da Arma", texto: "1d8", categoria: "critavel" });
 t("e o degrau na segunda", linha(dEsc, "arm_espada_longa").partes[1].label, "Níveis de Dano (+3)");
 
 /* ⚠ NA CRIATURA O MESMO CANAL SOMA NO ND, e não move dado nenhum. É o mesmo

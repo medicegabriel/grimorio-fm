@@ -773,6 +773,13 @@ export const HABILIDADE_EFEITOS = {
     { canal: "margemCritico", expr: "1" },
   ],
 
+  // "Ao acertar um ataque crítico, ele causa 1 dado de dano adicional." Sem
+  // alvo: todas as linhas. Não tinha efeito nenhum até 2026-09-15, e o crítico
+  // saía com um dado a menos. O dado dobra no próprio crítico (autor).
+  cmb_critico_potente: [
+    { canal: "dadosCritico", expr: "1" },
+  ],
+
   /* ---- 8° nível ---- */
 
   // "aumentando o bônus em ataques para +5 e fazendo com que os pontos de vida
@@ -1125,6 +1132,18 @@ export const HABILIDADE_EFEITOS = {
     { canal: "bonusTR", expr: "2 * conhecimento_aplicado", duracao: "temporaria" },
   ],
 
+  /* "Quando realizar um teste para manter concentração, você pode gastar 1 ponto
+     de energia para receber um bônus de +3 ou 2 pontos de energia para receber
+     +5, e a Classe de Dificuldade sempre será reduzida em um valor igual ao seu
+     modificador de Inteligência ou sabedoria."
+
+     A escada não é linear, então são dois degraus e não `3 × pontos`. A redução
+     da CD fica de fora: ela é do efeito que ameaça a concentração. */
+  cnj_mente_placida: [
+    { canal: "bonusManobra", alvo: "concentracao",
+      expr: "3 * (mente_placida == 1) + 5 * (mente_placida == 2)", duracao: "temporaria" },
+  ],
+
   // "Você passa a adicionar seu modificador de Inteligência ou Sabedoria no seu
   // bônus de iniciativa."
   cnj_reacao_rapida: [
@@ -1368,6 +1387,12 @@ export const HABILIDADE_EFEITOS = {
    Coletado a partir de `habilidades.escolhas.mapa`, que já sai pronto do
    resolveEscolhasHabilidade. */
 
+/* Os tamanhos de dado que a tabela de Empolgação pode devolver. A lista mora
+   aqui porque este arquivo é DADO, sem import (ver o topo), e há assert cobrando
+   que todo dado de `EMPOLGACAO_DADOS` esteja coberto: um d10 novo na tabela sem
+   linha aqui não somaria nada, calado. */
+const FACES_EMPOLGACAO = [4, 6, 8, 10, 12];
+
 export const ESCOLHA_EFEITOS = {
   // Aptidões de Luta (Lutador 8°): "você pode aumentar o seu nível de aptidão
   // em Aura ou Controle e Leitura em 1. Você pode pegar esta habilidade duas
@@ -1376,9 +1401,17 @@ export const ESCOLHA_EFEITOS = {
   lut_aptidao_controle_leitura: [{ canal: "nivelAptidao", alvo: "cl", expr: "1" }],
 
   /* ---- Manobras de Empolgação (Lutador, base) ----
+     ⚠ O DADO É ROLADO onde há rolagem (autor, 2026-09-15): *"Empolgação Ajuste
+     não é bônus fixo. É rolagem do dado de empolgação."* O Ajuste (acerto e
+     dano) e o Desarme (dano) entram pelos canais de DADO, com o tamanho lido do
+     nível atual de Empolgação (`dado_empolgacao_faces`) e a quantidade em
+     `dado_empolgacao_qtd`. Uma linha por tamanho possível, porque o `alvo` de um
+     canal de dado é o próprio dado e a expressão não escolhe alvo.
+
      `dado_empolgacao` é a MÉDIA do dado do nível atual, arredondada para baixo
-     (ver mediaDadoEmpolgacao em afty-combate.js): o Motor trabalha com número e
-     a bancada quer o valor esperado.
+     (ver mediaDadoEmpolgacao em afty-combate.js). Ela fica para o que é NÚMERO
+     na ficha e não tem rolagem onde entrar: a Defesa do Trabalho de Pés e a RD
+     da Esquiva.
 
      Cada manobra tem a sua própria linha na Simulação de Combate, e não uma
      escolha única entre elas, porque o texto diz "cada manobra pode ser
@@ -1388,17 +1421,28 @@ export const ESCOLHA_EFEITOS = {
   // "ao realizar um ataque, você pode adicionar seu dado de empolgação na
   // rolagem de acerto e no dano."
   lut_manobra_ajuste: [
-    { canal: "bonusAcerto", quando: "manobra_ajuste", expr: "dado_empolgacao", duracao: "temporaria" },
-    { canal: "danoBonus", quando: "manobra_ajuste", expr: "dado_empolgacao", duracao: "temporaria" },
+    ...FACES_EMPOLGACAO.map((faces) => ({
+      canal: "dadosAtaque", alvo: `d${faces}`,
+      quando: `manobra_ajuste && dado_empolgacao_faces == ${faces}`,
+      expr: "dado_empolgacao_qtd", nome: "Ajuste", duracao: "temporaria",
+    })),
+    ...FACES_EMPOLGACAO.map((faces) => ({
+      canal: "dadosNomeados", alvo: `d${faces}`,
+      quando: `manobra_ajuste && dado_empolgacao_faces == ${faces}`,
+      expr: "dado_empolgacao_qtd", nome: "Ajuste", duracao: "temporaria",
+    })),
   ],
 
   // "Você adiciona seu dado de empolgação ao dano desse ataque e o alvo deve
   // fazer uma jogada de ataque corpo a corpo contra o resultado do seu ataque."
   // ⚠ Não é a manobra Desarmar da aba Perícias: esta resolve por jogada de
-  // ataque, não por Atletismo ou Acrobacia. Só o dano entra.
-  lut_manobra_desarme: [
-    { canal: "danoBonus", quando: "manobra_desarme", expr: "dado_empolgacao", duracao: "temporaria" },
-  ],
+  // ataque, não por Atletismo ou Acrobacia. Só o dano entra, e ele é ROLADO,
+  // pela mesma frase do Ajuste ("seu dado de empolgação").
+  lut_manobra_desarme: FACES_EMPOLGACAO.map((faces) => ({
+    canal: "dadosNomeados", alvo: `d${faces}`,
+    quando: `manobra_desarme && dado_empolgacao_faces == ${faces}`,
+    expr: "dado_empolgacao_qtd", nome: "Desarme", duracao: "temporaria",
+  })),
 
   // "Ao ser acertado por um ataque corpo-a-corpo você pode usar sua reação para
   // diminuir o dano em um valor igual a uma rolagem do seu dado de empolgação +
@@ -1918,26 +1962,13 @@ export const TALENTO_EFEITOS = {
       expr: "3 * mod_forca + mod_forca", duracao: "temporaria" },
   ],
 
-  // "Enquanto não estiver com nenhum equipamento do grupo Pugilato, você recebe
-  // +3 em jogadas de ataque desarmado e o dano de seus golpes desarmados
-  // aumenta em 2 níveis."
-  // ⚠ A condição "sem Pugilato" NÃO é checada: Manoplas e Faixas são o que dá
-  // grau ao Ataque Básico, e a ficha não expõe isso ao DSL. Quem carrega as
-  // duas coisas vê os dois bônus.
-  /* ⚠ DUAS CORREÇÕES em 2026-09-02, as duas medidas na varredura dos Talentos.
-     O acerto morava em `bonusAcerto` alvo `corpo`, que é o TIPO DE ATAQUE e
-     alcança toda arma de corpo a corpo: um Bastão na mão levava os +3 do
-     DESARMADO. É a mesma troca que o Impacto Misto e o Caminho da Mão Vazia
-     sofreram em 2026-09-01, e a régua continua sendo a frase do livro, que aqui
-     diz "jogadas de ataque desarmado".
-
-     E a condição *"Enquanto não estiver com nenhum equipamento do grupo
-     Pugilato"* não era cobrada. Ela NÃO é `desarmado`: quem veste Manopla está
-     desarmado e com pugilato ao mesmo tempo, que é exatamente o caso que o
-     Talento exclui. Daí a variável `arma_pugilato`. */
+  // O texto do livro permanece na descrição do Talento. Decisão do autor
+  // (2026-09-14): Faixas permitem Adepto de Briga, mas os outros itens do
+  // grupo Pugilato, como Manoplas e Soco Inglês, desligam os dois bônus.
+  // Um outro item equipado bloqueia mesmo quando há Faixas equipadas.
   tal_adepto_de_briga: [
-    { canal: "acertoArma", alvo: "basico", expr: "3", quando: "!arma_pugilato" },
-    { canal: "nivelDano", alvo: "basico", expr: "2", quando: "!arma_pugilato" },
+    { canal: "acertoArma", alvo: "basico", expr: "3", quando: "!outro_pugilato" },
+    { canal: "nivelDano", alvo: "basico", expr: "2", quando: "!outro_pugilato" },
   ],
 
   /* ---- Com pré-requisito ---- */
@@ -2580,6 +2611,25 @@ export const APTIDAO_EFEITOS = {
     { canal: "pontosAptidao", expr: "1" },
   ],
 
+  /* "após acertar um kokusen, você recebe um bônus igual a metade do seu Nível
+     de Aptidão em Controle e Leitura em jogadas de ataque e o nível total de
+     aptidão em rolagens de dano pelo resto da cena."
+
+     ⚠ O AUTOR FECHOU OS DOIS NÚMEROS em 2026-09-15, e o do DANO não é o do
+     livro: *"Metade do seu nivel de Controle e Leitura arredondado pra cima como
+     Acerto e Nivel de Controle e Leitura como Dano Fixo."* O dano é o Nível em
+     Controle e Leitura, e não o nível TOTAL de aptidão.
+
+     ⚠ E O ACERTO ARREDONDA PARA CIMA, contra a regra da casa (todo arredondamento
+     é para baixo). Foi dito com essas palavras, então é `teto`.
+
+     O gatilho é o interruptor `faiscasNegras`, ligado depois do Kokusen. O 19-20
+     do limiar e o Estado de Consciência Absoluta seguem de mesa. */
+  abencoado_pelas_faiscas_negras: [
+    { canal: "bonusAcerto", quando: "faiscas_negras", expr: "teto(cl / 2)", duracao: "temporaria" },
+    { canal: "danoBonus", quando: "faiscas_negras", expr: "cl", duracao: "temporaria" },
+  ],
+
   /* ---------- Aura: passivas ---------- */
 
   // "Você soma metade do seu Nível de Aptidão em Aura em testes de Furtividade."
@@ -2725,8 +2775,9 @@ export const APTIDAO_EFEITOS = {
   // que somado ao da base dá o dobro pedido.
   //
   // ⚠ O teto de PER é DELTA também: `1 + er` menos o `1 + piso(er / 2)` da base
-  // dá `teto(er / 2)`. Na REGENERAÇÃO ele não passa por canal nenhum, porque lá
-  // ele é o teto da FAIXA da bancada e sai do resolveCombate.
+  // dá `teto(er / 2)`. Na REGENERAÇÃO o teto é a FAIXA da bancada, e desde
+  // 2026-09-16 ela lê este mesmo canal (`tetoPERDaCura` no afty-derive.js), com
+  // a Cura em Grupo e o Treino de Energia Reversa dentro.
   cura_amplificada: [
     { canal: "curaFaces",  alvo: "cura_energia_reversa", expr: "8" },
     { canal: "curaFixa",   alvo: "cura_energia_reversa", expr: "mod_pre_ou_sab" },

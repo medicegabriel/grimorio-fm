@@ -103,6 +103,7 @@ const POR_NOME = [
       ["desarmado", "Nenhuma arma equipada, e item de pugilato conta como desarmado"],
       ["arma_marcial", "Está empunhando uma arma Marcial, incluindo a Arma Dedicada"],
       ["arma_pugilato", "Está com um equipamento do grupo Pugilato, o que NÃO é o contrário de desarmado"],
+      ["outro_pugilato", "Está com equipamento do grupo Pugilato diferente de Faixas"],
     ],
   },
   {

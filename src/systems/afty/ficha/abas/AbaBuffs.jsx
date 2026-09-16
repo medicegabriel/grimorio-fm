@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { Plus, Minus, X, AlertTriangle, Search, ChevronDown, ChevronRight } from "lucide-react";
 
 import { COMBATE_ESTADOS } from "../../afty-combate";
+import { ESTADO_APICE, RODADAS_APICE } from "../../afty-talisma-apice";
 import { condicoesPorForca, fichaDaCondicao } from "../../afty-condicoes";
 import { getCanal } from "../../afty-efeitos";
 import { expandeHerdadas } from "../../afty-habilidades";
@@ -198,6 +199,9 @@ function LinhaEstado({ estado, valor, delta, opcoes, onValor, derived, bloqueado
           <span className="afty-chip">Imune a ataques críticos inimigos</span>
           <span className="afty-chip">Não pode ser movido a força</span>
         </>
+      )}
+      {estado.id === ESTADO_APICE && !!valor && (
+        <span className="afty-chip">{derived?.combate?.talismaApiceRodadas || 1}/{RODADAS_APICE}</span>
       )}
 
       {/* ⚠ A COLUNA DE CONTROLE TEM LARGURA RESERVADA, e é o que tira o

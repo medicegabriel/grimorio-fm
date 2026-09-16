@@ -1,5 +1,25 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-09-16: OLHOS DE AGULHA
+
+Addon `addons/olhos-de-agulha.json`, habilitado por `olhosDeAgulha`. Condição corporal com
+bônus de Percepção, referência ao voto e habilidades oculares escolhidas como Feitiços Passivos.
+O autor confirmou nível de liberação de Feitiço, substituição da versão 2 pela 4 do Olhar,
+custos mantidos sem olhos, arredondamento para baixo e recuperação pelo Descansar existente.
+Imunidade e Precisão Infalível permanecem com um olho. Texto, decisões, armazenamento e limites
+da automação em `docs/afty-olhos-agulha.md`.
+
+Card na aba Habilidades e painel na aba Ações da Ficha Final e dos Encontros. Os usos são
+marcados manualmente e recuperados no descanso, que não restaura olhos. A cobrança usa
+`peMaximoDasPassivas`, inclusive para estas passivas na criatura Afty, sem alterar as demais.
+O editor ocular evita a sugestão incorreta de bônus de Defesa da calculadora genérica.
+
+Validação específica: 64 asserts em `asserts/t-olhos-agulha.mjs`, ESLint e build aprovados.
+Interface conferida no criador Afty e Player, na Ficha Final e em Encontros, incluindo tela estreita.
+A suíte geral passou em 94 de 95 arquivos e continua com a falha
+preexistente de `t-invocacoes-motor.mjs`, sobre a cota gratuita de Características.
+Nenhum arquivo de `src/components/` foi alterado.
+
 Histórico de implementação e decisões do sistema Afty. O contexto rápido abaixo foi atualizado
 em 2026-09-09; sessões posteriores registram mudanças mais recentes. Para pendências atuais,
 consulte `docs/a-fazer.md`. Leia junto com `docs/roadmap-versionamento-e-fichas.md` (arquitetura)
@@ -126,6 +146,205 @@ e `docs/afty-formulas-base.md` (fórmulas).
 
 ---
 
+## SESSÃO DE 2026-09-16: ATAQUES DESARMADOS
+
+O autor trouxe o texto do livro sobre Ataques Desarmados, verbatim:
+
+> *"Todo personagem é treinado em Ataques Desarmados, os quais são considerados corpo a corpo e
+> utilizam Força como atributo para jogadas de ataque e rolagens de dano. O dano dos ataques
+> desarmados inicia como 1d4 e, por padrão, considere que pertencem ao grupo Pugilato. Vale ressaltar
+> que ataques desarmados não são armas, e efeitos ou habilidades que funcionam com armas não irão
+> funcionar em ataques desarmados a menos que especificado o contrário. [...] Nos níveis 5, 9, 13 e 17
+> o dano desarmado básico de um personagem aumenta para 1d6, 1d8, 1d10 e 1d12, respectivamente. Caso
+> seja um Restringido, ele segue o mesmo aumento de um Lutador, mas é incapaz de exorcizar maldições
+> com as mãos nuas, precisando de Ferramentas Amaldiçoadas."*
+
+### O que mudou
+
+- **O piso do desarmado deixou de ser 1d3 fixo.** `DESARMADO_BASE` em `afty-niveis-dano.js` é o básico
+  por nível do personagem (1d4, 1d6, 1d8, 1d10, 1d12), e é dele que o `dadoDesarmado` parte. Corpo
+  Treinado e Armas Naturais continuam trocando o dado quando são maiores, e são em todo nível.
+- **O Restringido virou uma fonte a mais**, com os degraus do Corpo Treinado (1d8, 1d10, 1d12, 2d8,
+  2d12). Ela não vem de habilidade, então quem a liga é o `semEnergia` do `deriveAfty`, o mesmo que já
+  responde "esta ficha é Restringida" nos dois sistemas.
+- **Todo personagem soma a Maestria no ataque desarmado.** Até aqui o treino vinha só da Faixa ou da
+  Manopla equipada e treinada, e sem uma delas ninguém somava, nem o Lutador. O hover chama a parcela
+  de "Maestria (Ataque Desarmado)", e não mais "Treinado na Arma".
+- Força segue como o atributo do golpe, e a Destreza continua chegando só por Fineza concedida.
+  Duas mãos ocupadas e "não exorciza com as mãos nuas" são de mesa.
+
+O dado e o treino só existem na Ficha de Player: a criatura tem fórmula de dano fechada e treina pelo
+tipo de ataque. As duas regras saem lá pelas divergências que já existiam (`danoPorArma` e
+`proficienciaPorArma`).
+
+### O que o autor decidiu NÃO mudar
+
+- **Armas Escolhidas: Pugilato não alcança o golpe desarmado.** A linha do desarmado continua sem
+  responder a `grupo:pugilato`.
+- **Estilo do Duelista, Estilo Duplo e Arsenal Cíclico continuam no Ataque Básico**, apesar de o texto
+  deles falar de arma.
+- As duas leituras valem para a criatura também. Há assert prendendo as duas.
+
+### Verificação
+
+`asserts/t-niveis-dano.mjs` ganhou a escada do básico nos cinco níveis, a do Restringido, a Maestria
+sempre presente e as duas decisões acima. Duas expectativas antigas mudaram de propósito (o `1d3 + 4`
+virou `1d8 + 4` no nível 10, e o Combatente 20 sem Lutador rola o `1d12` do básico). Suíte inteira
+**91 arquivos, 4940 asserts**, eslint e `vite build` fecham. O Flugel não muda de número: ele já
+somava a Maestria pelas Faixas treinadas, e agora a parcela tem o nome certo.
+
+---
+
+## SESSÃO DE 2026-09-15: CRÍTICO, RAIO NEGRO E O HOVER DE DANO
+
+Nasceu da análise de todas as fontes de dano do Minamoto no Flugel (Nível 30, Combatente 20, Conjurador
+8, Lutador 2). O autor respondeu em mensagem e em quatro perguntas com opções, e disse que tudo vale
+**para os dois sistemas**.
+
+### As regras, nas palavras dele
+
+- *"Potente, Autossuficiente, Postura do Sol, Arsenal Cíclico. (Todos são Critáveis e Multiplicáveis em
+  Raio Negro)"*. Já era assim.
+- *"Golpe Especial Atroz também é Critável"*. Estava `multiplica: false` e fora do Raio Negro desde o
+  commit 93a186c, sem decisão citada.
+- *"O Dano Fixo não é Critável e nem multiplicado no Raio Negro"*. No crítico já era. No Raio Negro o
+  fixo ia inteiro para o 1,5x.
+- *"Crítico Potente também é critável. Logo o 1 Dado de Dano em Acertos Críticos, por ser um Crítico
+  vira 2 Dados."* A habilidade não tinha efeito nenhum. Destruidora, Mortal e o dado extra do Fatal usam
+  a mesma frase e seguem a mesma regra (pergunta com opções).
+- *"CANALIZAR EM GOLPE NÃO É APÓS ATAQUE"*. Também do 93a186c. Canalizar em Golpe e Canalizar Energia
+  Reversa rolam com o golpe, são critáveis e entram no Raio Negro.
+- *"Raio Negro multiplica por 1.5 somente os DADOS e Danos Critáveis."*
+- A Canalização Máxima compra um dado com o PE adicional: CL 5 são 6 PE e 6d10 (pergunta com opções).
+- Os dois Canalizar são exclusivos, e ligar um desliga o outro (pergunta com opções).
+- *"Sintonizada precisa chegar e é critável."*
+- *"Esses estados podem ser ativados juntos. Já que eu luto com Faixas e uma Arma Marcial."* Sobre o
+  Estilo do Duelista com o Duplo, e o Impacto Misto e o Arsenal Cíclico: a bancada não trava nada.
+- *"Também melhore o Hover de Dano. Separando o quê é critável, o quê não é critável e o fixo."*
+- *"Concentrar Aura somam ativas. E é Após Ataque (Não Critavel)."* Fecha a dúvida das auras passivas: o
+  seletor continua oferecendo todas, e o 1d8 por aura segue fora do crítico e do Raio Negro.
+- *"Abençoado Pelas Faiscas Negras precisa de um botão para ativar. Aonde quando ativado (Após dar um
+  Raio Negro na sessão) você recebe Metade do seu nivel de Controle e Leitura arredondado pra cima como
+  Acerto e Nivel de Controle e Leiura como Dano Fixo."* ⚠ O dano é o Nível em Controle e Leitura, e não
+  o "nível total de aptidão" que o livro escreve, e o acerto arredonda para CIMA, que é a única conta do
+  Afty que faz isso.
+- *"Empolgação Ajuste não é bônus fixo. É rolagem do dado de empolgação."*
+- *"Some os danos como 20d12 + 2d12 + 2d12 em 24d12. Os dados de face igual que forem Critaveis vc
+  soma. Os que não foram você soma fora no calculo de Raio Negro."* A fórmula tinha sete termos só
+  dentro do parêntese do Raio Negro.
+
+### Como ficou
+
+- **`afty-dano.js`**: `grupoNoRaioNegro` virou o próprio `grupoMultiplicavel`, e a marca
+  `entraRaioNegro` saiu de todo lugar. A fórmula do Raio Negro é `(dados critáveis dobrados) × 1,5 +
+  dados não critáveis + fixo`. O `hoverDoDano` monta as pilhas, e o `comFormulasDeDano` grava
+  `hoverDano: { partes, total }` em toda linha.
+- **`ficha-rolagem.js`**: o Raio Negro soma `subtotal + piso(subtotal / 2)`. O `piso(subtotal / 2) × 3`
+  antigo perdia 1 ponto em todo subtotal ímpar.
+- **A fórmula soma os dados de mesma FACE num termo só**, e o fixo de todos num número só, nos três
+  modos. O Flugel saiu de `(20d12 + 2d10 + 2d12 + 16d6 + 2d12 + 2d12 + 2d10) × 1,5 + 43` para
+  `(22d12 + 16d10 + 2d8 + 2d6) × 1,5 + 37`. Quem separa por fonte é o hover, que continua listando uma
+  linha por fonte.
+- **Canal novo `dadosCritico`**, para dado que só existe no crítico, do tamanho do maior dado da linha.
+  O Crítico Potente emite 1.
+- **Parcelas com `categoria`** no `resolveDano`: `critavel` (dado), `fixo` (valor no jogador) e `total`
+  (valor na criatura, que compõe o Dano Total antes de virar dados e fixo). Os grupos que já têm parcela
+  levam `naPartes`, e o hover só acrescenta os outros. O `partes` continua plano, e os asserts que leem
+  `partes[0]` como o dado da arma seguem valendo.
+- **Sintonizada**: o tipo mora em `fa.sintonizadaTipo`, escolhido na linha do encantamento, sem Físicos
+  e sem Alma. O interruptor `sintonizada` aparece com uma arma equipada que a tenha, e soma 1d8 critável
+  na linha dela (do pugilato, só o item que define o Ataque Básico).
+- **`exclusivoCom`** num estado de bancada desliga os listados quando ele liga. Lido pelo
+  `alteraEstadoCombate` (Ficha e Encontro) e pelo `patchCombate` do criador.
+- **O painel de fontes troca de lado quando não cabe.** Em 390px o Dano da aba Ações quebra para a
+  esquerda da tela, e o painel ancorado à direita dele nascia cortado. Vale para todo painel flutuante.
+- **Abençoado pelas Faíscas Negras**: interruptor `faiscasNegras` na bancada e na aba Buffs, com
+  `bonusAcerto` `teto(cl / 2)` e `danoBonus` `cl`. O 19-20 do limiar e o Estado de Consciência Absoluta
+  seguem de mesa.
+- **O Dado de Empolgação virou rolagem** no Ajuste (acerto e dano) e no Desarme (dano). O tamanho sai do
+  nível de Empolgação, com `dado_empolgacao_qtd` e `dado_empolgacao_faces` novos no contexto, e uma linha
+  por face no catálogo, porque o alvo de um canal de dado é o próprio dado. A média (`dado_empolgacao`)
+  ficou para o que é número na ficha e não tem rolagem: a Defesa do Trabalho de Pés e a RD da Esquiva.
+- **"Dano Adicional" sumiu do hover.** O grupo de dado nomeado tem uma vaga de nome só, e duas fontes do
+  mesmo tamanho (o Ajuste e o Desarme da Empolgação, os dois em d6) viravam uma linha genérica
+  "Dano Adicional 4d6". Agora o hover recebe uma parcela por FONTE, e o grupo que rola segue somado.
+  Mesma regra de `afty-fonte-com-nome`: número certo com detalhamento apagado é bug.
+- **O dado nomeado não vira mais chip repetido.** Ele já é escrito no texto da linha, e a aba Ações
+  desenhava um chip ao lado: o `1d6` do Ajuste aparecia duas vezes. Ganhou a marca `incluidoNoTexto`,
+  a mesma do segundo grupo do degrau. Vale para toda fonte de dado nomeado, a Execução Silenciosa
+  inclusive.
+- **Canal novo `dadosAtaque`**, irmão do `dadosTR`: dado somado à jogada de ataque. As Jogadas de Ataque
+  e a linha de Dano ganharam `dadosExtras` e `textoBonus` (a linha, `acertoDados` e `acertoTexto`), e a
+  Ficha mostra "+56 + 1d6" e rola os dois. O criador mostra o mesmo texto nos três lugares que têm Acerto.
+
+### O card "Efeitos Equipados", agrupado por item e recolhido
+
+Trinta e cinco pastilhas soltas, cada uma repetindo a etiqueta da fonte ("única", "item",
+"encantamento") e nenhuma dizendo de QUAL equipamento o número vinha, o que só existia no `title`.
+O autor: *"ficou bem feia, como podemos melhorar isso?"*, e escolheu o agrupamento por item entre
+três opções.
+
+- **Um bloco por equipamento**, em duas colunas na tela larga e uma no celular, com o rótulo à
+  esquerda, a parte do item no meio ("Única", "Segunda Única", "Blindado", "Potente") e o número
+  alinhado à direita.
+- **O card nasce RECOLHIDO** e o cabeçalho mostra quantos efeitos há (autor: *"faça isso não ficar
+  aberto o tempo inteiro, só quando eu quiser verificar"*). Mesmo liga-desliga do card de Armas
+  Criadas. O nome também mudou, de "Efeito do Equipado" para **Efeitos Equipados**.
+- **`partesDeItem` no `resolveEquipamentos`**, só para exibição: os escalares (Defesa da armadura,
+  penalidade, PV, CD, atributo de item, RD do escudo) passaram a registrar de qual entrada vieram.
+  Somar essa lista seria contar duas vezes, e há assert cobrando que ela bata com cada escalar.
+- **O que sobrar vira um grupo sem dono.** Um escalar que cresça por um caminho que não registre a
+  parcela aparece em "Equipamento", em vez de sumir da tela.
+- **As armas do inventário entraram no vocabulário de alvo de dano.** Faixas, Manoplas e Soco Inglês
+  são o Ataque Básico e não abrem linha própria, então o id delas não estava na lista: quem escrevia
+  um efeito mirando as Faixas não tinha o que escolher, e o card mostrava `arm_faixas` cru.
+
+### A aba de Perícias, revisada, e o card "Outros"
+
+Revisão pedida pelo autor. **Nenhum número errado**: o orçamento (16/16 no Flugel), as faixas
+concedidas em verde, os Ofícios, o atributo trocado à mão, as Jogadas de Ataque e os cinco TRs batem
+com o motor, em 1440px e 390px.
+
+⚠ **A régua de conferência tem um passo que não é óbvio.** Um script que chama `deriveAfty` sem
+`aplicarAddons(ficha.addons)` antes deriva a ficha SEM o conteúdo dos Addons dela, e os números saem
+menores sem erro nenhum: no Flugel deu Defesa 100 contra 108 na tela, e orçamento 20/14 contra 16/16.
+A tela chama o `aplicarAddons` no render (`AftyCreatureBuilder`, `AftyFicha` e o painel de Encontros
+fazem isso); quem deriva fora dela precisa chamar também.
+
+O card **Manobras virou "Outros"** (autor: *"mude o nome para Outros e coloque Concentração e
+qualquer outra citação do gênero do livro específica"*), nas duas telas: o card da aba Perícias do
+criador e a seção da aba Ações da Ficha.
+
+- **Concentração** entrou com base em **Fortitude** (decisão do autor). As quatro Manobras seguem com
+  os dois lados (Executar e Resistir), e os testes nomeados têm um lado só, com a base na etiqueta.
+- **Fintar** (Enganação), **Provocar** (Intimidação) e **Teste de Morte** (d20 puro) entraram junto,
+  das citações que a varredura achou. Escapar de Agarrão ficou de fora: ele já é o "Resistir" do
+  Agarrar.
+- **Três fontes do livro que não chegavam no número** foram ligadas: a **Faixa de Foco** ("+2 em
+  testes para manter a concentração", item que era só texto), o encantamento **Reluzente** ("+2 em
+  testes para fintar") e a **Mente Plácida** (Conjurador 2), que ganhou contador de PE na bancada,
+  com a escada do livro (1 PE vale +3, 2 PE valem +5). A redução de CD dela fica de fora: a CD é do
+  efeito que ameaça a concentração, e a ficha não a conhece.
+- O canal `bonusManobra` passou a aceitar os oito alvos, e o `resistirManobra` segue só nas quatro
+  Manobras.
+
+### Verificação
+
+`asserts/t-dano-critico.mjs`, **64 asserts**: a fórmula e a rolagem do Raio Negro com fila de dados
+(inclusive o ímpar), o crítico, o hover montado à mão e na ficha dos dois sistemas (as parcelas do Fixo
+somam o subtotal no jogador, as do Dano Total somam o total na criatura), Crítico Potente, Atroz, os dois
+Canalizar e a troca, a Sintonizada, as Faíscas Negras nos três arredondamentos, e o Dado de Empolgação
+rolado no Ajuste e no Desarme (com a Defesa do Trabalho de Pés provando que a média continua viva, e um
+assert cobrando que toda face da tabela de Empolgação tenha linha no catálogo). Três asserts antigos
+mudaram de propósito: duas parcelas ganharam `categoria`, e Destruidora e Mortal aparecem dobrados na
+fórmula crítica. `asserts/t-item-efeito.mjs` ganhou a seção 4, que cobra que as parcelas por item
+batam com cada escalar. Suíte inteira **91 arquivos, 4927 asserts**, eslint e `vite build` fecham.
+
+No navegador, em 1440px e 390px: a aba Ações do Flugel em `/Player`, com o painel de fontes inteiro
+nos dois, a linha nos três modos de dano, e a aba Equipamentos do criador com o card agrupado.
+
+---
+
 ## SESSÃO DE 2026-09-15: A TÉCNICA ALCANÇA O SHIKIGAMI
 
 Autor: *"a parte de shikigami é muito pouco acessível pelas demais partes do
@@ -168,6 +387,229 @@ pontos: a UI esconde o seletor, o editor não grava a mira e o coletor descarta 
 que chegar assim mesmo, deixando a linha valer para a invocação inteira. É o
 mesmo buraco que o `soInvocacao` tapa do lado do Treinamento, por outro caminho.
 O assert subiu para 31.
+
+---
+
+## SESSÃO DE 2026-09-14 (parte 6): CRIAÇÃO DE EQUIPAMENTOS, FASE 4 (ENCANTAMENTO DE GRAU ESPECIAL)
+
+Três rodadas de perguntas com opções antes do código, e uma quarta que nasceu de um assert (a RD por Tipo
+negativa). As doze perguntas e respostas estão, inteiras, em `docs/afty-criacao-equipamentos-decisoes.md`
+(43 a 54). O autor pediu que outro colaborador revise essas respostas, e por isso Alcance, Tipo de Dano
+da Técnica e Interação com Aptidões ficaram **guardados**, sem tela nenhuma.
+
+### Como ficou
+
+- **`afty-criacao-equipamentos-encantamento.js`** (folha): a tabela de Interações Simples (com o rótulo do
+  guia verbatim), o texto do Encantamento e da Técnica Inata, o saneamento da receita e a conta. A conta
+  devolve linhas no formato da Habilidade Única (`{ canal, alvo, expr }`), com o modificador lido na hora.
+- **A receita mora em `fa.guiaUnica`**, separada de `fa.habilidadeEfeitos`. O `resolveFerramenta` resolve
+  as duas listas, e o `resolveEquipamentos` emite as duas juntas na família `habilidadeUnica`. Misturar as
+  duas faria o editor livre gravar a conta de volta como linha livre.
+- **A melhoria "Dobrar Valor"** multiplica por 2 cada número que o Motor calcula no encantamento escolhido,
+  antes da soma. "Dobrar Usos" é só registro.
+- **Técnica Inata**: o vínculo e os avisos são resolvidos no `resolveEquipamentos`, que enxerga os Feitiços
+  da ficha. Com o item equipado, os usos viram estado de faixa com `zeraNoDescanso`.
+- **`ui/BancadaDoEncantamento.jsx`**: o interruptor "Conta do Guia" logo depois da primeira Habilidade
+  Única, só na Ferramenta de Grau Especial e só com a primitiva `encantamentoGuia`.
+- **A RD por Tipo deixou de ser aparada antes da soma** (`afty-defesas-dano.js`). O total contra o tipo é
+  que não fica negativo, com a parcela "RD não fica negativa" no hover. Vale para os dois sistemas.
+
+⚠ **O chip "Penalidade" não ligava.** O saneamento jogava fora a penalidade sem tipo, então o clique
+gravava `{ tipo: "" }` e a leitura devolvia `null` na mesma renderização. Achado no navegador, porque os
+asserts sempre passavam uma penalidade já com tipo. A penalidade sem tipo agora fica marcada, e a conta
+avisa "Penalidade sem efeito". Junto vieram os avisos de efeito sem alvo e de penalidade sem alvo ou sem
+atributo, que antes não geravam linha nenhuma e não diziam nada.
+
+⚠ **O contador de usos do Feitiço zerava a cada rodada.** O `expirarEstadosDaRodada` serve a virada de
+rodada E o descanso, e o `zeraNoDescanso` entrava nas duas. Achado ao escrever esta documentação. Ganhou
+a opção `{ descanso: true }`, que só o `descansar` passa, e um assert da virada.
+
+### Verificação
+
+`asserts/t-criacao-equipamentos-encantamento.mjs`, **78 asserts**. A tabela é conferida contra o
+documento-fonte, e há o saneamento, cada linha do Motor (cheia, dividida, com penalidade, Deslocamento,
+escopo de arma), os avisos, a melhoria dobrando no `deriveAfty`, a penalidade de RD descontando da RD
+total, o Feitiço vinculado (avisos, usos, faixa equipada e guardada, virada de rodada e descanso) e o
+pacote. Censo de primitivas de 12 para 13, e uma folha nova no `t-ordem-modulos.mjs`. Suíte inteira **90
+arquivos, 4843 asserts**, eslint e `vite build` fecham.
+
+No navegador, `/Player` e `/Afty` em 1440px e 390px, 11 checagens cada: Defesa +2 com Sabedoria 20, +1
+com a melhoria dividindo, o seletor sem repetir, +2 de novo com a penalidade e as cinco RD -2 dos
+Elementais, o Feitiço com "2 Usos" e o aviso de Nível 5, a gravação, e o contador "Rajada Sombria (Escudo
+Médio)" na aba Buffs. As rodadas das fases 1, 2 e 3 e do Encontro foram repetidas e seguem verdes.
+
+---
+
+## SESSÃO DE 2026-09-14 (parte 5): CRIAÇÃO DE EQUIPAMENTOS, FASE 3 (ITENS DE CUSTO E O TALISMÃ DO ÁPICE)
+
+Três rodadas de perguntas com opções antes do código, e uma quarta que nasceu de uma resposta: ao
+escolher Maximizar Atributo, o autor lembrou que o **Talismã do Ápice** do livro é a mesma regra e
+*"deveria estar programado"*. Estava só como texto. As respostas estão em
+`docs/afty-criacao-equipamentos.md` e, com as perguntas inteiras, em
+`docs/afty-criacao-equipamentos-decisoes.md`.
+
+### Como ficou
+
+- **`afty-criacao-equipamentos-itens.js`** (folha): as quatro tabelas do guia numa só, uma linha por
+  efeito com o valor de cada Custo, e `implementado: false` nas que o autor deixou fora. Os tópicos de
+  forma de cada Custo, verbatim.
+- **Passivo ou Ativo por item.** O Passivo emite pelo `efeito` de item de sempre (motor, `hpMax` e
+  `atributo`), então nada no `resolveEquipamentos` precisou saber que ele é criado além do portão da
+  liberação. O Ativo não emite nada e ganha forma (Arremessável, Área, Totem ou Selo).
+- **Escopo `atq:`** no `escoposDaArma`, e `atq:corpo` no Ataque Básico. O Dano do Passivo mira o tipo de
+  ataque, e o canal não tinha esse eixo.
+- **`afty-talisma-apice.js`** (folha) e o Ápice ponta a ponta: o estado entra nos `estadosExtras` quando a
+  ficha carrega o talismã (do livro ou criado), o derive eleva o atributo até o `tetoSistemaDe` logo
+  depois do estágio temporário, o hover ganha a parcela, a sessão conta 10 rodadas como o Invencível sob o
+  Sol, e a aba Buffs mostra o contador.
+
+⚠ **O resumo fechado do item saía com o id cru** ("Dano (corpo) +6") no editor, porque o card montava o
+item sem os nomes que o catálogo usa. Achado no navegador. O `rotulosDoItemCusto` passou a ser exportado
+e o card o usa.
+
+⚠ **O Ápice é estado de combate**, e a bancada zera todo estado fora de combate. O "um minuto" fora de
+combate fica com a mesa, e está escrito no guia.
+
+### Verificação
+
+`asserts/t-criacao-equipamentos-itens.mjs`, **121 asserts**. As 18 linhas das quatro tabelas são lidas
+do próprio documento-fonte, célula a célula, e os números de forma são lidos dos tópicos. Mais o que cada
+Custo oferece, o saneamento, as linhas do Motor, o `deriveAfty` nos dois sistemas (equipado,
+desequipado, sem o Addon, Ativo), o escopo `atq:` separando o arco do Ataque Básico, e o Ápice: 10 a 30,
+12 a 32 com o Aperfeiçoamento de Atributo na mesma Força, 30 com ele em outro atributo, hover fechando a
+conta, fora de combate, e as rodadas pela sessão (liga, troca, dez viradas, encerrar e descansar).
+Censos: liberações de 15 para 16, e duas folhas novas no `t-ordem-modulos.mjs`. Suíte inteira **89
+arquivos, 4763 asserts**, eslint e `vite build` fecham.
+
+No navegador, `/Player` e `/Afty` em 1440px e 390px, 14 checagens cada: o card, os resumos, um item novo
+com Treinamento e Área, o seletor sem Atributo no Custo 2, a gravação, e na Ficha Final o Ápice ligando
+em Presença com 1/10 e 2/10 na rodada seguinte. As rodadas das fases 1 e 2 e do Encontro foram repetidas
+e seguem verdes.
+
+---
+
+## SESSÃO DE 2026-09-14 (parte 4): CRIAÇÃO DE EQUIPAMENTOS, FASE 2 (ARMAS)
+
+Autor: *"Vamos para as proximas fases"*. As quatro perguntas de texto que ficaram da fase 1 vieram
+primeiro, com opções (Recarga pela faixa mais estreita, subir o Custo uma vez só, OBS² dividindo cada
+efeito, e na tabela dos Itens de Custo a linha é bônus e o tópico é o próprio item). Depois, oito
+perguntas de desenho da fase 2, em duas rodadas. As respostas estão todas em
+`docs/afty-criacao-equipamentos.md`, na seção da fase 2.
+
+### Como ficou
+
+- **`afty-criacao-equipamentos-armas.js`**, com a tabela de Armas, os preços em Níveis de Dano, as duas
+  tabelas de alcance, o texto do guia e a conta. Não é folha: importa a escada de Níveis de Dano, como a
+  Criação de Armas.
+- **A receita mora na arma** (`arma.niveis`) e a conta roda no `saneiaArmaCustom`, então o dado calculado
+  chega a toda tela sem ninguém saber que ele é calculado. **Sem o Addon a receita continua valendo**
+  (autor), e por isso a fase 2 é a primitiva `armasPorNivel`, e não liberação.
+- **O alcance por grau da Ferramenta** entrou no `alcanceDaArma` como terceiro parâmetro, e o derive
+  passa o grau real da entrada. O catálogo guarda o do 4° Grau em `props.alcance`, que é o de quem não
+  tem Ferramenta.
+- **A Propriedade Especial personalizada** emite pelo `efeitosEspeciaisDeArma`, que passou a ler
+  `def.efeitosEspeciais` antes do mapa do catálogo. O +2 de Dano mira o id da arma, e só a linha dela
+  soma.
+- **Dano Desarmado** vira grupo Pugilato sem dado, e o derive já montava o Ataque Básico com as
+  propriedades do item de Pugilato.
+- `BancadaDeNiveis.jsx`, e o `PropriedadeCustom` ganhou quatro props opcionais (preço em Níveis, valores
+  de Pesada, dados de Fatal e Mortal, e trava), sem mudar nada para quem não as passa.
+
+⚠ **O Custo 4 é `3d10`, e ele não está na lista de dados aceitos.** O dado calculado passa por fora dela,
+e sem redução ele fica impresso em vez de virar o degrau `2d12 + 1d6` da escada. O derive lê qualquer
+dado.
+
+### Verificação
+
+`asserts/t-criacao-equipamentos-armas.mjs`, **113 asserts**: as tabelas e os textos contra a fonte, cada
+preço, as faixas de Pesada e Recarga, os casos da conta (Custo 4 impresso, crédito que não sobe o dado,
+Custo anterior, Versátil, Desarmado, piso no degrau 1), a escolha da tabela contra as armas do livro, a
+diagonal das duas tabelas, o saneamento com e sem receita, e o `deriveAfty` nos dois sistemas com e sem
+o Addon. Censos que mudaram de propósito: `t-primitivas.mjs` (11 para 12) e o portão da Especial em
+`t-criacao-armas.mjs`. Suíte inteira **88 arquivos, 4638 asserts**, eslint e `vite build` fecham.
+
+No navegador, contra o build, `/Player` e `/Afty` em 1440px e 390px, 19 checagens cada: a bancada, o
+dado mudando ao marcar Marcial, Pesada sem o 15, Fineza travada com Pesada, Tiro ligando o Emperrar, um
+efeito novo gravado, a arma nova com receita e a Ficha Final. Os testes da fase 1 e do Encontro foram
+repetidos e seguem verdes.
+
+⚠ **Três vezes o meu esperado estava errado e a tela certa**, sempre por esquecer um crédito (a Complexa
++1) ou somar degrau a mais. A captura foi quem decidiu. Vale para as próximas fases: conferir a conta à
+mão antes de acusar a tela.
+
+---
+
+## SESSÃO DE 2026-09-14 (parte 3): CRIAÇÃO DE EQUIPAMENTOS, FASE 1
+
+Autor, com o guia "Criação de Equipamentos e Itens 2.5.2" anexado: *"Analise e veja como podemos
+programar o contéudo do arquivo MD"*. O guia tem cinco blocos (Armas, Revestimentos e Escudos,
+Propriedades Especiais, Encantamento de Grau Especial e Itens de Custo), e a análise os ordenou em
+quatro fases, da mais barata para a mais cara. O autor autorizou a fase 1, Revestimentos e Escudos. O
+guia inteiro está em `docs/afty-criacao-equipamentos-fonte.md`, cópia do arquivo original sem mudança,
+e o guia do sistema em `docs/afty-criacao-equipamentos.md`.
+
+Antes de começar, a árvore estava 1 commit atrás (o 753074b do GoliasK) com o trabalho da Terceira
+Classe e do Adepto de Briga pendente. A junção foi medida com `git merge-tree` sem tocar em nada, deu
+limpa, e o autor autorizou guardar, avançar e devolver. A base avançada passou nas três verificações
+antes de qualquer edição: 86 arquivos e 4430 asserts.
+
+### As decisões, por pergunta
+
+| Pergunta | Resposta |
+|---|---|
+| Que sistema | **os dois** |
+| E a Criação de Armas | **convivem e não ligam juntas** |
+| Addon ou regra | **Addon por enquanto**, vira regra depois de testado |
+| Troca de Defesa no Revestimento | *"Consome 2 de Defesa para adicionar +2 em duas pericias / rd"*, **um degrau só**, RD por Tipo |
+| Espaços | seguem o Custo, e o Custo 4 ocupa 6 |
+| Revestimento na criatura | Custo menos o degrau |
+| Dado do escudo criado | um degrau por Custo, como o livro, e **1d10** no Custo 4 |
+| Texto com erro de digitação | transcrito como está |
+
+As respostas de armas, Encantamento e Itens de Custo que já vieram (Fatal e Mortal a partir do d8,
+Pesada sem o 15, Arremessável, Alcance e Emperrar de graça, alcance pelo grau da Ferramenta, atributo
+à escolha na criação) estão no guia do sistema. As quatro que faltam estão em `a-fazer.md`.
+
+### Como ficou
+
+- **`afty-criacao-equipamentos.js`**, módulo folha com as duas tabelas, o texto do guia e as contas. A
+  ficha grava só nome, Custo, a troca e as duas escolhas, e todo número sai na leitura.
+- **Liberação, e não primitiva.** A bancada de Pontos de Criação é `permite` porque só conta. Aqui a
+  tabela decide a Defesa e a RD, e isso é regra. Duas liberações, `revestimentosCriados` e
+  `escudosCriados`, no molde da Benção do Grão Mestre da Forja.
+- **Nenhum verbo novo no motor.** O item criado tem o formato da entrada do catálogo e entra pela
+  `catalogoDoTipo`, e o `resolveEquipamentos` já lia `defesa`, `defesaCriatura`, `penalidade`,
+  `rdEscudo` e `efeito.motor`. A troca vira `bonusPericia` ou `rdTipo`.
+- **Sem o Addon o item continua carregado e equipado e sai de todo efeito.** Os espaços continuam
+  contando. ⚠ A primeira versão zerava o `equipado` da entrada resolvida junto, e o interruptor da
+  linha escreveria o contrário no clique seguinte. O portão virou `semAddon`, separado.
+- **Campo `incompativeis` no pacote**, com trava simétrica na ficha: basta um dos dois declarar, porque
+  a Criação de Armas é anterior e as cópias gravadas dela nunca vão declarar. A aba Addons bloqueia o
+  ligar, e a ficha que chega com os dois acusa o par em Problemas.
+- Cards **Revestimentos Criados** e **Escudos Criados** em `ui/EquipamentosCriados.jsx`, com as três
+  portas do Acessório Único e os avisos "Sem o Addon", "Fora do Inventário" e "Desequipado".
+
+### Verificação
+
+`asserts/t-criacao-equipamentos.mjs`, **93 asserts**: o pacote, as tabelas contra a fonte, os Custos 1 a
+3 contra o Leve, Médio e Robusto e contra os escudos Leve, Médio e Pesado do catálogo, o exemplo do
+autor, o saneamento, o `deriveAfty` nos dois sistemas com e sem o Addon, a Ferramenta sobre o escudo
+criado, as liberações independentes e a trava entre pacotes. O `t-ordem-modulos.mjs` ganhou a folha
+nova, e os censos de liberação do `t-estilo-liberado.mjs` e do `t-estilo-marcial.mjs` foram de 13 para
+15. Suíte inteira **87 arquivos, 4525 asserts**, eslint e `vite build` fecham.
+
+No navegador, contra o build, `/Player` e `/Afty` em 1440px e 390px: os dois cards, os ladrilhos
+(Colete Custo 4 com troca com Defesa +6 no jogador e +3 na criatura, penalidade -4, 6 espaços), a troca
+bloqueada no Custo 1, um Revestimento novo criado e gravado com as escolhas, os dois itens no catálogo,
+a Ficha Final e a trava na aba Addons. O painel de Encontros com um jogador e uma criatura, os dois com
+os mesmos itens, deu Defesa 21 e 25, que é o que o `deriveAfty` de cada um devolve.
+
+⚠ **O teste de 390px achou o chip da trava vazando**: "Não Liga com Criação de Equipamentos" empurrava a
+linha para fora da tela e apagava o nome do pacote. Medido sem conflito a aba não rolava, então a culpa
+era do chip. No telefone ele diz só "Não Liga", e os nomes ficam no `title`.
+
+Achado de passagem e anotado em `a-fazer.md`, sem mexer: o ladrilho RD do painel de Encontros lê só a
+RD Geral, e a RD do escudo do jogador cai na Física. Vale para os escudos do livro também.
 
 ---
 
@@ -6579,6 +7021,8 @@ As seis entradas foram para `docs/a-fazer.md`.
    de Treinamento não tem como emitir.
 5. **Teto de PER por uso** (Energia Reversa 1ª e 3ª). O `curaPontos` mira UMA linha de cura e a
    regra fala da trilha inteira, e ele SUBSTITUI em vez de somar, então um `+1` cru não faria efeito.
+   ⚠ **Atualizado em 2026-09-16:** a 1ª etapa foi ligada na linha de Cura e no Fluxo Constante
+   (`tetoPERDaCura`), e o "substitui" estava errado, o canal soma. Ver `docs/a-fazer.md`.
 6. **Quatro sistemas que nunca chegaram:** efeito de crítico por grupo de arma e de pugilato
    (Manejo de Arma 3ª, Luta Completo), dados de vida por descanso (Resistência 2ª), máximo de
    paredes de Barreira (Barreiras 4ª), e a rolagem de confronto e contestação de expansões
@@ -12898,3 +13342,69 @@ Simulação de Combate. A seção Funcionamento Básico do criador e a aba
 Habilidades da Ficha Final leem apenas os funcionamentos da própria ficha.
 O teste dos extras confirma a separação das listas e origens, além de manter
 a verificação dos efeitos de Aliado, Comidas e Alma.
+
+## SESSÃO DE 2026-09-14: TERCEIRA CLASSE NA FICHA DE PLAYER
+
+O autor pediu multiclasse com uma terceira classe na Ficha de Player, mantendo
+a ficha de criatura diferente. A divergência terceiraClasse está ativa:
+rulesVersion player permite até 3 Especializações, e afty mantém o teto de 2.
+A Origem Restringido segue limitada à classe obrigatória.
+
+O resolvedor guarda os níveis das classes anteriores à última e calcula o
+nível restante da última. A soma permanece igual ao nível total e cada classe
+ativa tem ao menos 1 nível. Baixar o nível total suspende classes que não cabem
+sem apagar as escolhas gravadas. Os controles da aba Especializações transferem
+níveis entre as classes e a normalização de uma ficha importada aplica o teto do
+sistema da própria ficha.
+
+A validação cobriu os dois sistemas, o nível mínimo, o retorno da divisão após
+aumentar o nível, a derivação do jogador, os 82 arquivos de asserts e o navegador
+em 1440 px e 390 px.
+
+## SESSÃO DE 2026-09-14: ADEPTO DE BRIGA COM FAIXAS
+
+O acerto do Adepto de Briga já estava ligado ao Ataque Básico, mas a condição
+anterior desligava o talento com qualquer equipamento do grupo Pugilato. O autor
+esclareceu que Faixas permitem o talento e que os outros itens do grupo, como
+Manoplas, não permitem. A descrição do livro foi preservada no catálogo.
+
+Agora Faixas equipadas mantêm o bônus de +3 no acerto desarmado e os +2 níveis
+de dano. Manoplas e Soco Inglês desligam os dois bônus, inclusive se houver
+Faixas equipadas ao mesmo tempo. O motor conserva a variável geral de Pugilato
+para outras regras e usa outra condição para esta exceção. Os testes cobrem
+cada item, a combinação de Faixas com outro Pugilato e uma arma fora do grupo.
+A suíte completa passou: 82 arquivos e 4396 asserts.
+
+## SESSÃO DE 2026-09-15: NOVO OFÍCIO NA ABA DE PERÍCIAS
+
+O criador da Ficha de Player e do Grimório Afty ganhou o botão Novo Ofício ao
+lado de Nova perícia. Cada clique cria exatamente uma linha de Ofício, abre o
+seletor daquela linha e mantém proficiência, atributo e categorias independentes.
+
+As linhas criadas manualmente ficam registradas em periciasOficiosExtras, por
+isso continuam na ficha mesmo antes de receber categoria ou treinamento. Elas
+podem ser removidas pelo X sem afetar o Ofício do livro, os Ofícios concedidos
+pela classe nem as linhas automáticas usadas para equilibrar as duas colunas.
+
+A validação passou com eslint, build e 91 arquivos com 4912 asserts. No navegador,
+o fluxo foi conferido em Player e Afty, além do layout do Player em 1440 px e 390 px.
+
+## SESSÃO DE 2026-09-15: ORGANIZAÇÃO DA ABA EQUIPAMENTOS
+
+A expansão de cada Acessório Único acontecia dentro da própria linha. Abrir o
+primeiro inseria todo o editor antes dos acessórios seguintes e mudava a posição
+dos alvos a cada clique. A lista agora mantém somente linhas compactas e um único
+editor depois dela. Em telas largas as linhas usam duas colunas e aproveitam toda
+a largura do cartão; em telas estreitas continuam em uma coluna.
+
+As cinco bancadas ocasionais saíram da passagem principal: Armas, Revestimentos,
+Escudos, Acessórios Únicos e Itens de Custo agora ficam depois do Catálogo. Todas
+nascem recolhidas e conservam no cabeçalho a quantidade, o controle de abertura e
+o botão Novo correspondente. Criar um item abre sua bancada automaticamente.
+
+No navegador, seis acessórios foram alternados em 1440 px e 390 px. Todas as
+linhas e a posição da janela tiveram deslocamento zero entre as seleções, com um
+único editor visível e sem rolagem horizontal. As cinco bancadas começaram
+recolhidas depois do Catálogo, e cada botão Novo abriu a sua própria bancada. Os
+cabeçalhos também couberam em 390 px. Eslint, build e a suíte completa passaram:
+91 arquivos e 4912 asserts.

@@ -158,10 +158,11 @@ t("as opcoes seguem com o id do livro",
    sumiriam caladas. */
 const honrado = clones.find((h) => h.herdadaDe === "cnj_o_honrado");
 t("o efeito do raw acompanha o clone", honrado.efeitos?.[0]?.canal, "cd");
-/* ⚠ 17 desde 2026-09-07, quando o Conhecimento Aplicado ganhou efeito no Motor.
+/* ⚠ 18 desde 2026-09-15, quando a Mente Plácida ganhou efeito no Motor (era 17
+   desde 2026-09-07, quando o Conhecimento Aplicado ganhou o dele).
    Este número subindo é a PROVA de que ligar uma habilidade do Conjurador chega
    sozinha à herdeira: ninguém tocou no addon para isso acontecer. */
-t("quantos clones trazem efeito", clones.filter((h) => h.efeitos).length, 17);
+t("quantos clones trazem efeito", clones.filter((h) => h.efeitos).length, 18);
 
 /* O remendo por clone: troca campo de UMA herdada, sem encostar na do livro. */
 const aprimorada = clones.find((h) => h.herdadaDe === "cnj_conjuracao_aprimorada");

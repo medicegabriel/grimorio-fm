@@ -591,6 +591,15 @@ export const DIVERGENCIAS = [
     ativa: true,
   },
   {
+    id: "terceiraClasse",
+    tipo: "regra",
+    onde: "afty-especializacoes.js (limite, normalização e níveis), AftyCreatureBuilder.jsx (seleção)",
+    fonte: "Eu preciso que você habilite fazer Multiclasse com uma terceira classe na Ficha de Jogador, diferente da ficha de criatura (autor, 2026-09-14)",
+    afty: "até 2 Especializações",
+    player: "até 3 Especializações",
+    ativa: true,
+  },
+  {
     /* ⚠ SÓ A CLASSE INICIAL DÁ O PACOTE (autor, 2026-08-30, escolhendo entre dar
        o pacote inteiro, só as livres, ou nada). A segunda Classe entra apenas
        pelos níveis dela, sem treinamento inicial nenhum.

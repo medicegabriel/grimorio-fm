@@ -36,6 +36,17 @@ arquivo md. Para outros colaboradores usarem ele também e ir anotando oq for pr
 
 Coisas paradas esperando decisão de regra. Nada aqui deve ser resolvido por suposição.
 
+### A escada do desarmado básico vale Nível de Dano na criatura?
+**Onde:** `src/systems/afty/afty-efeitos-conteudo.js` (as linhas `(escada)` do Corpo Treinado e das Armas Naturais) e `afty-niveis-dano.js` (`DESARMADO_BASE`)
+**Situação:** na criatura o dado do desarmado não existe, e a escada do Corpo Treinado virou `nivelDano`
+(um degrau por subida, ver `afty-escada-dado-nivel-dano`). A regra nova do livro dá a TODO personagem
+uma escada (1d4 a 1d12 nos níveis 5, 9, 13 e 17) e ao Restringido a do Lutador. Na ficha de jogador as
+duas entraram como dado. Na criatura não entrou nada, porque ninguém decidiu se "personagem" alcança
+criatura, nem se cada subida vale +1 Nível de Dano lá.
+**Precisa:** o autor dizer se a criatura ganha as duas escadas como Nível de Dano. Se sim, emitir as
+linhas `(escada)` e acrescentá-las a `ESCADAS_DESARMADO_NO_MOTOR`, para o jogador não contar duas vezes.
+**Anotado:** 2026-09-16, ao implementar os Ataques Desarmados.
+
 ### A cota base de Ações e Características isenta de PE deixou um assert vermelho
 
 **Onde:** `src/systems/afty/afty-invocacoes.js` (`custoInvocacao`), `asserts/t-invocacoes-motor.mjs`
@@ -951,6 +962,45 @@ e o segundo sai de graça.
 
 ---
 
+### Criação de Equipamentos: revisar as respostas da fase 4, e os três trechos guardados
+
+**Onde:** `docs/afty-criacao-equipamentos-decisoes.md` (perguntas 43 a 54 e a seção 7) e
+`src/systems/afty/afty-criacao-equipamentos-encantamento.js`
+**Situação:** as quatro fases foram feitas em 2026-09-14. O autor pediu que outro colaborador confira as
+respostas da fase 4, e guardou três trechos do Encantamento de Grau Especial até essa revisão: *"Só
+guarde para fazermos depois, ainda precisa ser revisado por outro colaborador se minhas decisões foram
+certeiras"*.
+
+- **Alcance** (1,5 × Mod / 2): não há canal de alcance. A linha está na tabela com `implementado: false`.
+- **Tipo de Dano da Técnica**: *"Sua Ferramenta causa o Tipo de Dano principal da sua Técnica sem a
+  necessidade."* A ficha não guarda um tipo de dano principal da técnica, e o trecho parece cortado.
+- **Interação com Aptidões**: os seis exemplos do guia, combinados com o Narrador.
+- **"Dobrar Usos"** da melhoria é só registro, porque os usos de encantamento são à mão.
+
+⚠ A pergunta 54 mudou código dos dois sistemas: a RD por Tipo negativa passou a descontar da RD total
+contra o tipo, em vez de ser aparada em zero antes da soma. Se a revisão desfizer essa resposta, o
+conserto é no `afty-defesas-dano.js`, e ele pega toda fonte de RD por Tipo negativa.
+**Precisa:** a revisão das respostas, e depois decidir com o autor se cada trecho guardado entra.
+**Anotado:** 2026-09-14, ao fechar a fase 4 da Criação de Equipamentos
+
+### Itens de Custo: os efeitos que ficaram fora da fase 3
+
+**Onde:** `src/systems/afty/afty-criacao-equipamentos-itens.js` (as linhas com `implementado: false`)
+**Situação:** o autor decidiu em 2026-09-14 deixar estes efeitos da tabela dos Itens de Custo fora do
+seletor, e pediu que ficasse escrito que não foram implementados:
+
+- **Cura e PV Temporário**: *"4 dados dos seus dados de cura do descanso longo ou +10"*. A ficha não tem
+  os Dados de Cura por descanso. O autor: *"Anota isso por enquanto, ainda não programamos os Dados de
+  Cura por descanso"*, e depois *"a Cura fica toda para depois"*.
+- **Condição** (*"3 dados para condições Fracas e Médias"*) e **Curar Condição**: esperam o sistema de
+  condições (`CONDICAO_TEXTOS` vazio). Os "3 dados" também não estão explicados.
+- **Tipo de Percepção**, **Brinco Comunicador** e **Reduzir Exaustão**: sem sistema na ficha.
+- **Alcance** e **Área** como bônus: não há canal de alcance nem de área.
+
+**Precisa:** cada um entra quando o sistema dele existir. Ligar é trocar `implementado` para `true` e dar
+à linha o seu caminho no `efeitoDoItemCusto`.
+**Anotado:** 2026-09-14, na fase 3 da Criação de Equipamentos
+
 ---
 
 ## AFTY — Feitiços
@@ -1111,17 +1161,15 @@ caminho serve também para Addon, que hoje tem o mesmo teto.
 ### O teto de PER por uso vale a trilha, e o canal só alcança a linha de cura
 
 **Onde:** `src/systems/afty/afty-cura.js` (`curaPontos`) e `afty-treinamentos.js` (Energia Reversa)
-**Situação:** a 1ª etapa diz "A quantidade de pontos de energia reversa que você pode
-gastar em **Aptidões de Energia Reversa** aumenta em 1". O canal `curaPontos` existe e
-mira `cura_energia_reversa`, que é UMA linha de cura. A regra fala da trilha inteira
-(Regeneração Aprimorada, Fluxo Constante, Reversão de Técnica), e essas outras aptidões
-não têm teto de pontos modelado. Além disso `curaPontos` SUBSTITUI
-(`max(porBloco, canal)`) em vez de somar, então um `+1` cru não faria efeito nenhum.
-A 3ª etapa tem o mesmo feitio: reduz em 2 o custo de UMA aptidão nomeada, e não existe
-canal de redução de custo por aptidão.
-**Precisa:** decidir se o teto de PER por uso é um número da criatura (um canal só,
-lido por toda aptidão de Energia Reversa) ou um número por aptidão. Só depois disso o
-canal tem forma.
+**Situação:** ✅ **A 1ª etapa foi ligada em 2026-09-16**, depois que o autor viu o teto
+parado em 8 onde a conta dava 9. Ela emite +1 em `curaPontos` na linha de Cura, e o
+Fluxo Constante passou a ler o mesmo teto (`tetoPERDaCura` no derive), que antes era
+uma conta à parte escrita duas vezes. Preso por `asserts/t-teto-per.mjs`. A leitura
+antiga de que `curaPontos` SUBSTITUI estava errada: o `max(porBloco, canal)` é só um
+piso, e o canal soma, que é como a Cura em Grupo já funcionava.
+**O que sobra:** a Regeneração Aprimorada e a Reversão de Técnica não têm teto de
+pontos modelado, então o +1 não chega nelas. A 3ª etapa reduz em 2 o custo de UMA
+aptidão nomeada, e não existe canal de redução de custo por aptidão.
 **Anotado:** 2026-08-26, na varredura dos Interlúdios
 
 ### Dois benefícios de Interlúdio esperam sistema que nunca chegou
@@ -1187,6 +1235,23 @@ transcrever uma habilidade que fale de Guarda saber que o cano já está lá.
 ---
 
 ## AFTY — outros
+
+### Manejo Único não tem onde escolher a segunda propriedade
+**Onde:** `src/systems/afty/afty-habilidades.js` (`cmb_manejo_unico`, sem `escolha`)
+**Situação:** "Você escolhe mais uma propriedade para ser aplicada em toda arma que estiver manejando". O
+Manejo Especial tem a escolha e o Manejo Único não, então a propriedade extra não existe na ficha.
+**Precisa:** uma escolha igual à do Manejo Especial, somada aos `encantamentosExtras`. O autor pediu
+para deixar para depois em 2026-09-15.
+**Anotado:** 2026-09-15, na análise do dano do Flugel.
+
+### O painel de Encontros mostra só a RD Geral
+**Onde:** `src/systems/afty/encontros/PainelDeCombatente.jsx` (o ladrilho `{ k: "RD", v: derived.rdGeral }`)
+**Situação:** no jogador a RD do escudo cai na RD Física (divergência `rdEscudoFisico`), e o ladrilho do
+painel lê só a Geral. Uma personagem com escudo aparece com RD 0 no Encontro e RD Física 6 na Ficha
+Final. Achado em 2026-09-14 no teste do Escudo criado, e vale igual para os escudos do livro.
+**Precisa:** decidir o que o ladrilho mostra na ficha de jogador: a RD Física no lugar, as duas lado a
+lado, ou a soma. É tela compartilhada pelos dois sistemas.
+**Anotado:** 2026-09-14, no teste de navegador da Criação de Equipamentos
 
 ### Resolver no Encontro os efeitos de alvo das oito posturas do Ápice
 **Onde:** `src/systems/afty/afty-combate.js`, `ficha/abas/AbaAcoes.jsx` e `encontros/`

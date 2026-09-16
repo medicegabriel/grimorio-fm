@@ -139,6 +139,8 @@ export default function AbaPericias({ derived, rolar, destaque }) {
               key={a.id}
               nome={a.nome}
               bonus={a.bonus}
+              textoBonus={a.textoBonus}
+              dados={a.dadosExtras}
               partes={a.partes}
               prof={a.treinado ? "treinado" : null}
               rolar={rolar}

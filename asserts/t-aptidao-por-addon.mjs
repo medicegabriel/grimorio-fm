@@ -124,7 +124,7 @@ const basico = (f) => deriveAfty(f).dano.entradas.find((e) => e.id === "basico")
    dano no 8" sobe um degrau. As escadas são o dado BASE no jogador e por isso
    não somam de novo (ESCADAS_DESARMADO_NO_MOTOR). */
 const comJogador = basico(ficha("player"));
-t("jogador: o dado base é o da Aprimorada", comJogador.partes[0], { label: "Armas Naturais Aprimoradas", texto: "2d10" });
+t("jogador: o dado base é o da Aprimorada", comJogador.partes[0], { label: "Armas Naturais Aprimoradas", texto: "2d10", categoria: "critavel" });
 t("jogador: e sobe um Nível de Dano", comJogador.niveisDano, 1);
 t("jogador: o golpe fica 1d12 + 1d10", comJogador.texto, "1d12 + 1d10");
 t("jogador: desequipada o golpe volta ao desarmado",

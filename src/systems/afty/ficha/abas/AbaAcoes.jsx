@@ -93,13 +93,22 @@ function LinhaDano({ e, rolar, critico, onCritico, destacado, onImbuir, modoDano
           <span className="afty-rotulo text-[10px] whitespace-nowrap" title={e.acertoAtaque}>
             Acerto{" "}
             <NumeroComFontes
-              valor={e.acerto}
+              /* Com dado somado à jogada (Manobra de Ajuste), a linha mostra a
+                 rolagem inteira: "+56 + 1d6". Ver `dadosAtaque`. */
+              valor={e.acertoTexto ?? e.acerto}
+              formatar={!e.acertoTexto}
               partes={e.partesAcerto}
-              total={sinalDe(e.acerto)}
+              total={e.acertoTexto ?? sinalDe(e.acerto)}
               className="afty-valor text-[11px]"
               ancora="direita"
               onRolar={() => {
-                const r = rolar({ tipo: "teste", rotulo: `${e.nome} · Acerto`, bonus: e.acerto, margem: e.margemCritico });
+                const r = rolar({
+                  tipo: "teste",
+                  rotulo: `${e.nome} · Acerto`,
+                  bonus: e.acerto,
+                  dados: e.acertoDados,
+                  margem: e.margemCritico,
+                });
                 onCritico(r.critico);
               }}
             />
@@ -107,8 +116,10 @@ function LinhaDano({ e, rolar, critico, onCritico, destacado, onImbuir, modoDano
         )}
         <NumeroComFontes
           valor={danoExibido}
-          partes={e.partes}
-          total={modoVisual === "normal" ? (e.totalFontes ?? e.total) : danoExibido}
+          /* As pilhas Critável, Não Critável e Fixo (autor, 2026-09-15). O rodapé
+             é a rolagem inteira do modo que o botão vai rolar. */
+          partes={e.hoverDano?.partes ?? e.partes}
+          total={modoVisual === "normal" ? (e.hoverDano?.total ?? e.totalFontes ?? e.total) : danoExibido}
           formatar={false}
           className="afty-valor text-[13px] whitespace-nowrap"
           ancora="direita"
@@ -959,29 +970,40 @@ function LinhaManobra({ m, rolar, destacado }) {
       data-afty-alvo={destacado ? "sim" : undefined}
     >
       <span className="flex-1 min-w-0 text-[12px] font-semibold truncate">{m.nome}</span>
-      <span className="afty-rotulo text-[10px] whitespace-nowrap">{m.periciaUsada}</span>
+      {m.periciaUsada && (
+        <span className="afty-rotulo text-[10px] whitespace-nowrap">{m.periciaUsada}</span>
+      )}
+      {/* ⚠ SÓ MANOBRA TEM DOIS LADOS. Concentração, Fintar, Provocar e o Teste
+          de Morte entraram no mesmo card em 2026-09-15 e têm um número só, então
+          a palavra "Executar" sai junto com o lado que não existe. */}
       <span className="afty-rotulo text-[10px] whitespace-nowrap">
-        Executar{" "}
+        {m.resistir != null ? "Executar " : ""}
         <NumeroComFontes
           valor={m.executar}
           partes={m.partesExecutar}
           total={sinalDe(m.executar)}
           className="afty-valor text-[11px]"
           ancora="direita"
-          onRolar={() => rolar({ tipo: "teste", rotulo: `${m.nome} · Executar`, bonus: m.executar })}
+          onRolar={() => rolar({
+            tipo: "teste",
+            rotulo: m.resistir != null ? `${m.nome} · Executar` : m.nome,
+            bonus: m.executar,
+          })}
         />
       </span>
-      <span className="afty-rotulo text-[10px] whitespace-nowrap">
-        Resistir{" "}
-        <NumeroComFontes
-          valor={m.resistir}
-          partes={m.partesResistir}
-          total={sinalDe(m.resistir)}
-          className="afty-valor text-[11px]"
-          ancora="direita"
-          onRolar={() => rolar({ tipo: "teste", rotulo: `${m.nome} · Resistir`, bonus: m.resistir })}
-        />
-      </span>
+      {m.resistir != null && (
+        <span className="afty-rotulo text-[10px] whitespace-nowrap">
+          Resistir{" "}
+          <NumeroComFontes
+            valor={m.resistir}
+            partes={m.partesResistir}
+            total={sinalDe(m.resistir)}
+            className="afty-valor text-[11px]"
+            ancora="direita"
+            onRolar={() => rolar({ tipo: "teste", rotulo: `${m.nome} · Resistir`, bonus: m.resistir })}
+          />
+        </span>
+      )}
     </div>
   );
 }
@@ -1008,6 +1030,7 @@ export default function AbaAcoes({
      Buffs o tempo inteiro"*. Descobrir os olhos é Ação Livre, e a Fadiga corre
      por turno: as duas coisas se fazem no meio da rodada. */
   vislumbre = null,
+  olhosAgulha = null,
   gatilhosTreino = [], onGatilhoTreino = null,
 }) {
   const dano = derived.dano?.entradas ?? [];
@@ -1029,6 +1052,7 @@ export default function AbaAcoes({
       {adaptacao}
       {/* Antes do Rápido: os olhos mudam o custo em PE de tudo que vem abaixo. */}
       {vislumbre}
+      {olhosAgulha}
       {/* Antes do Rápido e do Dano: reunir ou dividir é a primeira decisão da
           rodada, e ela muda a linha de dano que aparece logo abaixo. */}
       {armasTransformaveis}
@@ -1165,7 +1189,7 @@ export default function AbaAcoes({
       )}
 
       {manobras.length > 0 && (
-        <Secao titulo="Manobras">
+        <Secao titulo="Outros">
           {manobras.map((m) => (
             <LinhaManobra key={m.id} m={m} rolar={rolar} destacado={destaque === `manobra:${m.id}`} />
           ))}

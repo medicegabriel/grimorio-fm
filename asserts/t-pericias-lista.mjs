@@ -125,6 +125,25 @@ t("sao 24 linhas, par de novo", idsOcupado.length, 24);
 t("escolher um Oficio na linha extra tambem a segura",
   idsDe(comCustom(2, { periciaOficios: { oficio__2: ["Ferreiro"] } })).includes("oficio__2"), true);
 
+/* O botão Novo Ofício grava a linha explicitamente. Ela existe mesmo vazia e
+   cada entrada acrescenta somente uma linha, sem criar outro desempate. */
+const oficiosManuais = ficha({ periciasOficiosExtras: ["oficio__2", "oficio__3"] });
+t("Oficio manual vazio permanece na ficha",
+  idsDe(ficha({ periciasOficiosExtras: ["oficio__2"] })).includes("oficio__2"), true);
+t("cada Oficio manual acrescenta exatamente uma linha", idsDe(oficiosManuais).length, branca.length + 2);
+t("Oficios manuais seguem juntos do Oficio do livro",
+  idsDe(oficiosManuais).slice(branca.indexOf("oficio"), branca.indexOf("oficio") + 3),
+  ["oficio", "oficio__2", "oficio__3"]);
+t("id manual repetido ou invalido nao duplica linha",
+  P.oficiosExtrasDaFicha({ periciasOficiosExtras: ["oficio__3", "oficio__2", "oficio__2", "oficio__1", "x"] }),
+  ["oficio__2", "oficio__3"]);
+t("Oficio manual preenchido nao cria desempate adicional",
+  idsDe(ficha({
+    periciasOficiosExtras: ["oficio__2"],
+    periciaOficios: { oficio__2: ["Ferreiro"] },
+  })).filter(P.ehPericiaOficio),
+  ["oficio", "oficio__2"]);
+
 /* O id do extra nunca colide com uma personalizada, que usa outro prefixo. */
 t("o id do extra nao e de personalizada", "oficio__2".startsWith("custom_"), false);
 t("e ehPericiaOficio reconhece os dois",
@@ -195,6 +214,58 @@ t("ficha nova abre com o mapa vazio", mesclaFichaAfty({}).periciaOficios, {});
 t("e o formato novo passa inteiro",
   mesclaFichaAfty({ periciaOficios: { oficio__2: ["Cozinheiro"] } }).periciaOficios,
   { oficio__2: ["Cozinheiro"] });
+
+/* ============================================================ */
+/* O CARD "OUTROS" (2026-09-15)                                  */
+/* ============================================================ */
+/* Autor: *"em Manobras mude o nome para Outros e coloque Concentração e
+   qualquer outra citação do gênero do livro específica"*. As quatro Manobras
+   continuam com os dois lados, e os testes nomeados entram com um lado só:
+   Concentração sai do Fortitude (decisão do autor no mesmo dia), Fintar da
+   Enganação, Provocar da Intimidação, e o Teste de Morte é o d20 puro. */
+{
+  const base = ficha({
+    core: { ...createBlankAfty().core, nd: 10, tipo: "combatente", patamar: "comum" },
+    especializacoes: [{ id: "combatente", nivel: 10 }],
+    pericias: { atletismo: "treinado", acrobacia: "treinado", enganacao: "treinado", intimidacao: "treinado" },
+  });
+  const linhas = deriveAfty(base).testes.manobras;
+  const porId = Object.fromEntries(linhas.map((m) => [m.id, m]));
+  t("as quatro Manobras e os quatro testes nomeados, nesta ordem",
+    linhas.map((m) => m.id),
+    ["agarrar", "derrubar", "desarmar", "empurrar", "concentracao", "fintar", "provocar", "morte"]);
+  t("só a Manobra tem o lado de resistir",
+    linhas.filter((m) => m.resistir != null).map((m) => m.id),
+    ["agarrar", "derrubar", "desarmar", "empurrar"]);
+  const bonusDe = (id) => deriveAfty(base).testes.resistencias.find((r) => r.value === id)?.bonus;
+  t("Concentração é o Fortitude inteiro",
+    [porId.concentracao.executar, porId.concentracao.periciaUsada], [bonusDe("fortitude"), "Fortitude"]);
+  const pericia = (id) => deriveAfty(base).testes.pericias.find((p) => p.id === id).bonus;
+  t("Fintar é a Enganação", [porId.fintar.executar, porId.fintar.periciaUsada], [pericia("enganacao"), "Enganação"]);
+  t("Provocar é a Intimidação", [porId.provocar.executar, porId.provocar.periciaUsada], [pericia("intimidacao"), "Intimidação"]);
+  t("Teste de Morte é d20 puro, sem base nenhuma",
+    [porId.morte.executar, porId.morte.periciaUsada, porId.morte.partesExecutar], [0, null, []]);
+
+  /* As fontes que o livro já dava e não chegavam no número. */
+  const comItem = { ...base, equipamentos: { itens: [
+    { uid: "i1", tipo: "item", refId: "it_faixa_de_foco", qtd: 1, equipado: true },
+  ] } };
+  const concentracaoDe = (f, opcoes) => deriveAfty(f, opcoes).testes.manobras
+    .find((m) => m.id === "concentracao").executar;
+  t("a Faixa de Foco soma +2 em Concentração", concentracaoDe(comItem) - porId.concentracao.executar, 2);
+  const comMente = { ...base, especializacoes: [{ id: "conjurador", nivel: 10 }], habilidades: ["cnj_mente_placida"] };
+  const semPe = concentracaoDe(comMente);
+  t("Mente Plácida: 1 PE vale +3 e 2 PE valem +5",
+    [1, 2].map((pe) => concentracaoDe({ ...comMente, combate: { ativo: true, mentePlacida: pe } }) - semPe),
+    [3, 5]);
+  const comReluzente = { ...base, equipamentos: { itens: [
+    { uid: "a1", tipo: "arma", refId: "arm_espada_curta", qtd: 1, equipado: true,
+      fa: { grau: "segundo", encantamentos: ["enc_arma_reluzente"] } },
+  ] } };
+  t("o encantamento Reluzente soma +2 em Fintar",
+    deriveAfty(comReluzente).testes.manobras.find((m) => m.id === "fintar").executar
+    - porId.fintar.executar, 2);
+}
 
 console.log(bad.length ? `FALHAS (${bad.length}):\n` + bad.join("\n") : `TODOS OS ${ok} ASSERTS PASSARAM`);
 

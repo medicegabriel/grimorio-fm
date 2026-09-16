@@ -27,6 +27,7 @@
 
 import { EMPOLGACAO_DADOS, EMPOLGACAO_NIVEL_MAX, POSTURAS_DE_COMBATE } from "./afty-habilidades";
 import { normalizarVariavel } from "./afty-dsl";
+import { ESTADO_APICE, RODADAS_APICE } from "./afty-talisma-apice";
 
 /**
  * As Posturas viram opções da bancada com id curto (`sol`, `lua`...), porque o
@@ -523,6 +524,21 @@ export const COMBATE_ESTADOS = [
     max: (d) => Math.floor(Math.max(0, d?.maestria ?? 0) / 2),
     requerHabilidade: "cnj_conhecimento_aplicado",
   },
+  /* "Quando realizar um teste para manter concentração, você pode gastar 1 ponto
+     de energia para receber um bônus de +3 ou 2 pontos de energia para receber
+     +5." Mesmo desenho do Conhecimento Aplicado: o estado é QUANTOS PE foram
+     gastos, e a escada não é linear (1 PE vale 3, 2 PE valem 5).
+
+     ⚠ A redução da CD pelo modificador de Inteligência ou Sabedoria fica de
+     fora: a CD é do efeito que ameaça a concentração, e a ficha não a conhece. */
+  {
+    id: "mentePlacida",
+    label: "Mente Plácida · PE Gasto",
+    tipo: "faixa",
+    min: 0,
+    max: 2,
+    requerHabilidade: "cnj_mente_placida",
+  },
 
   /* ============================================================ */
   /* TALENTOS                                                      */
@@ -596,17 +612,15 @@ export const COMBATE_ESTADOS = [
   {
     // "Você pode gastar um máximo de pontos de energia reversa por vez igual a
     // 1 + metade do seu nível de aptidão", que a Cura Amplificada sobe para
-    // "1 + seu nível de aptidão".
+    // "1 + seu nível de aptidão". ⚠ A conta NÃO mora aqui: o teto vem pronto do
+    // derive, lido dos mesmos efeitos da linha de Cura (Cura em Grupo e Treino
+    // de Energia Reversa inclusos). Refazer a conta aqui foi o que deixou o
+    // treino de fora.
     id: "fluxoPER",
     label: "Fluxo Constante · PER Gasto",
     tipo: "faixa",
     min: 0,
-    max: (d) => {
-      const er = d?.aptidao?.efetivo?.er ?? 0;
-      const ids = d?.aptidoesEscolhidas ?? [];
-      return 1 + (ids.includes("cura_amplificada") ? er : Math.floor(er / 2))
-        + (ids.includes("cura_em_grupo") ? 2 : 0);
-    },
+    max: (d) => d?.tetoPERDaCura ?? 0,
     requerAptidao: "fluxo_constante",
   },
   {
@@ -655,18 +669,30 @@ const intDe = (v, min, max) => Math.min(max, Math.max(min, Math.trunc(Number(v) 
 export const varDoEstado = (id) => normalizarVariavel(id);
 
 /**
- * Média do Dado de Empolgação do nível atual, ARREDONDADA PARA BAIXO.
- *
- * O dado é rolagem e o Motor trabalha com número, então as manobras que somam
- * "seu dado de empolgação" (Ajuste, Desarme, Esquiva, Trabalho de Pés) entram
- * pela média. Para uma bancada de balanceamento é justamente o valor que
- * interessa. A tabela de dados em si continua sendo a de afty-habilidades.
+ * O Dado de Empolgação do nível atual, em quantidade e faces (`2d6` → 2 e 6).
+ * O nível 1 não tem dado. A tabela é a de afty-habilidades.
  */
-export function mediaDadoEmpolgacao(nivel, aprimorada = false) {
+export function dadoEmpolgacaoDe(nivel, aprimorada = false) {
   const tabela = aprimorada ? EMPOLGACAO_DADOS.maxima : EMPOLGACAO_DADOS.base;
   const notacao = tabela[nivel];
-  if (!notacao) return 0;                       // o nível 1 não tem dado
+  if (!notacao) return { qtd: 0, faces: 0 };
   const [qtd, faces] = notacao.split("d").map(Number);
+  return { qtd: qtd || 0, faces: faces || 0 };
+}
+
+/**
+ * Média do Dado de Empolgação do nível atual, ARREDONDADA PARA BAIXO.
+ *
+ * ⚠ A MÉDIA NÃO SERVE PARA TUDO (autor, 2026-09-15): *"Empolgação Ajuste não é
+ * bônus fixo. É rolagem do dado de empolgação."* O Ajuste e o Desarme somam o
+ * dado numa ROLAGEM (acerto e dano), e por isso entram pelos canais de dado
+ * (`dadosAtaque` e `dadosNomeados`), com `dado_empolgacao_qtd` e
+ * `dado_empolgacao_faces` no contexto. A média fica para o que é NÚMERO na
+ * ficha e não tem onde rolar: a Defesa do Trabalho de Pés e a RD da Esquiva.
+ */
+export function mediaDadoEmpolgacao(nivel, aprimorada = false) {
+  const { qtd, faces } = dadoEmpolgacaoDe(nivel, aprimorada);
+  if (!qtd || !faces) return 0;
   return Math.floor((qtd * (faces + 1)) / 2);
 }
 
@@ -757,6 +783,8 @@ export function resolveCombate(creature, params = {}) {
     brutalidadePE: params.brutalidadePE ?? 0,
     brutalidadePilha: params.brutalidadePilha ?? 0,
     resistirPE: 2,
+    // "1 ponto de energia para +3 ou 2 pontos para +5": o teto é o gasto máximo.
+    mentePlacida: 2,
     abates: 5,
     circularAlvos: 8,
     golpeDesfocado: 3,
@@ -816,9 +844,15 @@ export function resolveCombate(creature, params = {}) {
       ? intDe(c.invencivelRodadas ?? 1, 1, 4) : 0,
     imuneCritico: !!out.invencivelSobOSol,
     imuneMovimentoForcado: !!out.invencivelSobOSol,
+    // A rodada do Talismã do Ápice, para o chip da aba Buffs. Ver `afty-talisma-apice.js`.
+    talismaApiceRodadas: out[ESTADO_APICE]
+      ? intDe(c.talismaApiceRodadas ?? 1, 1, RODADAS_APICE) : 0,
     empolgacao,
     insistenciaUsada,
     dadoEmpolgacao: mediaDadoEmpolgacao(empolgacao, !!params.empolgacaoMaxima),
+    // O dado em si, para quem ROLA em vez de somar a média.
+    dadoEmpolgacaoQtd: dadoEmpolgacaoDe(empolgacao, !!params.empolgacaoMaxima).qtd,
+    dadoEmpolgacaoFaces: dadoEmpolgacaoDe(empolgacao, !!params.empolgacaoMaxima).faces,
     // Os dois de Brutalidade e o upgrade do Espírito só valem com o dono ligado.
     brutalidadePE: brutalidade ? out.brutalidadePE : 0,
     brutalidadePilha: brutalidade ? out.brutalidadePilha : 0,
@@ -888,8 +922,11 @@ export function combateDslVars(combate = {}) {
       out[nome] = boolDe(combate[e.id]);
     }
   }
-  // Média do Dado de Empolgação, o que as Manobras somam.
+  // Média do Dado de Empolgação, o que as Manobras de número somam, mais o dado
+  // em si, para as que ROLAM (Ajuste e Desarme).
   out.dado_empolgacao = Math.max(0, Math.trunc(Number(combate.dadoEmpolgacao) || 0));
+  out.dado_empolgacao_qtd = Math.max(0, Math.trunc(Number(combate.dadoEmpolgacaoQtd) || 0));
+  out.dado_empolgacao_faces = Math.max(0, Math.trunc(Number(combate.dadoEmpolgacaoFaces) || 0));
   return out;
 }
 

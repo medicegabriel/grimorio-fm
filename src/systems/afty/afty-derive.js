@@ -88,7 +88,9 @@ import {
   armaTreinadaPor,
   podeSerArmaDedicada, grauDoRank, efeitosEspeciaisDeArma, catalogoDoTipo,
   TIPOS_DANO, CATEGORIAS_DANO, tiposDeDanoDaCategoria, itensEquipados,
+  SINTONIZADA_ID, ESTADO_SINTONIZADA, aplicarSintonizadaNoDano,
 } from "./afty-equipamentos";
+import { atributoDoApice, ESTADO_APICE_DEF } from "./afty-talisma-apice";
 import {
   nivelMaxFeitico, resumoDeUmFeitico, resumoFeiticos, overridesShikigami,
   totalFeiticosJogador, CONJURACAO_APRIMORADA_ID,
@@ -102,6 +104,7 @@ import {
   estadosDoVislumbre, efeitosDoVislumbre, resolveVislumbre, olhosDescobertos, fadigaAtual,
   ESTADO_DESCOBERTO, ESTADO_FADIGA,
 } from "./afty-vislumbre-celeste";
+import { resolveOlhosAgulha, efeitosOlhosAgulha } from "./afty-olhos-agulha";
 import { resolveTestes, resolveDano, catalogoPericiasDaFicha, ehPericiaOficio, atributosDePericiaManuais } from "./afty-pericias";
 import { resolveDefesasDano, sanearDefesasDano } from "./afty-defesas-dano";
 import { resolveCatarse } from "./afty-catarse";
@@ -611,6 +614,11 @@ export function deriveAfty(creature, opcoes = {}) {
     tem: temVislumbre,
     descoberto: vislumbreDescoberto,
   });
+  const olhosAgulha = resolveOlhosAgulha(creature, {
+    tem: primitivasDaCriatura(creature).includes("olhosDeAgulha"),
+    bt, nivelMax: nivelMaxFeitico(nd, nivelConjurador),
+  });
+  const efeitosAgulha = efeitosOlhosAgulha(olhosAgulha);
 
   const efeitosMontante = [
       ...efeitosDeTreino(creature, opcoes.treinosAtivos),
@@ -864,7 +872,7 @@ export function deriveAfty(creature, opcoes = {}) {
       // Tipo de dano da arma (ct, im, pf), que é como os Especialistas em
       // Cortes, Concussão e Perfuração (Talentos) miram.
       tipoDano: e.def.dano?.tipo ?? null,
-      alcance: alcanceDaArma(e.def, bt),
+      alcance: alcanceDaArma(e.def, bt, e.fa?.grau ?? null),
       alcanceBonusCorpo: e.def.props?.estendida ? 1.5 : 0,
       propriedades: propriedadesDaArma(e.def),
       criticoExtraDados: e.fa?.encantamentos?.some((x) => x.id === "enc_arma_destruidora" && x.atende) ? 1 : 0,
@@ -910,9 +918,17 @@ export function deriveAfty(creature, opcoes = {}) {
   // Fineza do item que define o golpe (Soco Inglês). A propriedade estava na
   // tabela e não chegava em lugar nenhum: o básico só olhava o canal.
   const finezaBasico = !!pugilato?.def?.props?.fineza;
+  /* As linhas de dano que carregam a Sintonizada. Mesmo recorte do Destruidora:
+     a arma equipada que não é pugilato vira linha própria, e do pugilato só vale
+     o item que DEFINE o Ataque Básico. Ver `aplicarSintonizadaNoDano`. */
+  const sintonizadas = armasCarregadas
+    .filter((e) => e.fa?.encantamentos?.some((x) => x.id === SINTONIZADA_ID && x.atende))
+    .filter((e) => e.def?.grupo !== "pugilato" || e === pugilato)
+    .map((e) => ({ entradaId: e.def?.grupo === "pugilato" ? "basico" : e.def.id, tipo: e.fa.sintonizadaTipo ?? null }));
   const dedicadas = resolveArmasDedicadas(creature, armasParaDano, habilidades.efetivas);
 
   const efeitosTodos = carimbarGrupoExclusivo([
+    ...efeitosAgulha,
     // Os dois blocos do Vislumbre Celeste. O `quando` de cada um lê o estado
     // "Olhos Descobertos", então os dois convivem e só um vale por vez.
     ...efeitosVislumbre.filter((e) => e.canal !== "pontosAptidao"),
@@ -1296,6 +1312,26 @@ export function deriveAfty(creature, opcoes = {}) {
   });
   const estadosAddon = estadosCombateDeAddon(creature, nivelMaxFeitico(nd, nivelConjurador));
   const estadosVislumbre = estadosDoVislumbre({ tem: temVislumbre });
+
+  /* ---------- TETO DE PER DA ENERGIA REVERSA ----------
+     ⚠ ERA A MESMA CONTA ESCRITA TRÊS VEZES: os efeitos de `curaPontos` na
+     linha de Cura, o `fluxoPER` daqui e o `max` da faixa no afty-combate.js. O
+     Treino de Energia Reversa (1ª) nunca entrou em nenhuma, e o autor viu o teto
+     parado em 8 onde a conta dava 9 (2026-09-16).
+
+     Agora as três leem os MESMOS efeitos. Este é um passe próprio, e não a
+     leitura do `ef` final, porque a bancada apara o PER da sessão ANTES do
+     estágio 2 existir: a Regeneração do Fluxo Constante lê `fluxo_per`. As duas
+     listas entram porque a Linha de Treinamento vem pelo montante. */
+  const tetoPERDaCura = Math.max(0, Math.trunc(valorCanal(
+    aplicarEfeitos(
+      [...efeitosMontante, ...efeitosTodos].filter((e) => e?.canal === "curaPontos"),
+      ctxComAptidao,
+    ),
+    "curaPontos",
+    "cura_energia_reversa",
+  )));
+
   const combate = resolveCombate(creature, {
     apiceId: altoNivel.apiceId,
     dominios: resumoDominios.lista,
@@ -1313,14 +1349,9 @@ export function deriveAfty(creature, opcoes = {}) {
     // Controle e Leitura, que só existe depois do resolveNiveisAptidao.
     cobrirSePE: 2 + 2 * (aptidao.efetivo?.cl ?? 0),
     estimuloTeste: aptidao.efetivo?.cl ?? 0,
-    // A Cura Amplificada troca "1 + metade do nível" por "1 + o nível", e a Cura
-    // em Grupo soma +2 no teto ("a quantidade máxima de pontos que podem ser
-    // gastos aumenta em 2"). Confirmado pelo AppScript do autor (2026-07-30).
-    fluxoPER: (() => {
-      const er = aptidao.efetivo?.er ?? 0;
-      return 1 + (aptidoesIds.includes("cura_amplificada") ? er : Math.floor(er / 2))
-        + (aptidoesIds.includes("cura_em_grupo") ? 2 : 0);
-    })(),
+    // O Fluxo Constante segue "as mesmas regras da cura básica", então o teto
+    // dele é o da linha de Cura. Ver `tetoPERDaCura`, logo acima.
+    fluxoPER: tetoPERDaCura,
     // Regeneração Corporal (Maldição): "a quantidade máxima de pontos que podem
     // ser gastos passa a ser igual ao seu bônus de treinamento por rodada", que
     // a Regeneração Ampliada dobra. Irmão do fluxoPER, com PE no lugar de PER.
@@ -1334,11 +1365,15 @@ export function deriveAfty(creature, opcoes = {}) {
     // Técnica Especial com linha ativa).
     estadosExtras: [
       ...equip.estadosUnica,
+      // O Talismã do Ápice, do livro ou criado: um estado só, por ficha.
+      ...(equip.temApice ? [ESTADO_APICE_DEF] : []),
       ...estilo.estados,
       ...estadosConjurador,
       ...estadosAptidoes,
       ...estadosAddon,
       ...estadosVislumbre,
+      // Só existe com uma arma equipada que tenha a Sintonizada.
+      ...(sintonizadas.length ? [{ id: ESTADO_SINTONIZADA, label: "Sintonizada", tipo: "bool" }] : []),
       ...ESTADOS_NATIVOS_EXTRAS,
     ],
   });
@@ -1415,13 +1450,12 @@ export function deriveAfty(creature, opcoes = {}) {
        desarmado. A Arma Dedicada entra pela lista da ficha, e não pelo canal
        `propMarcial`, que só existe depois dos efeitos. */
     desarmado: armasParaDano.length === 0,
-    /* ⚠ PUGILATO NÃO É O MESMO QUE ARMADO. Manopla e Faixa ficam fora de
-       `armasParaDano` (elas SÃO o Ataque Básico), então quem as veste continua
-       `desarmado: true`, que é o certo para "enquanto estiver desarmado". Mas o
-       Adepto de Briga pede o oposto, *"enquanto não estiver com nenhum
-       equipamento do grupo Pugilato"*, e essa pergunta a lista de armas não
-       responde: ela precisa do item que o `pugilato` já resolveu acima. */
+    /* Faixas continuam no grupo Pugilato do catálogo, mas o Adepto de Briga
+       funciona com elas. Outro item do grupo equipado desliga o talento,
+       mesmo quando também há Faixas equipadas. */
     armaPugilato: !!pugilato,
+    outroPugilato: armasCarregadas.some(
+      (e) => e.def?.grupo === "pugilato" && e.def?.id !== "arm_faixas"),
     armaMarcial: armasParaDano.some((a) => (
       (a.propriedades ?? []).some((p) => p.id === "marcial")
       || (dedicadas.escolhidas ?? []).includes(a.id)
@@ -1542,6 +1576,19 @@ export function deriveAfty(creature, opcoes = {}) {
     efAttrPerm.aplicado,
   );
   const attrEff = somarAtributo(attrPermanente, efAttrTemp);
+  /* O TALISMÃ DO ÁPICE (autor, 2026-09-14): "Vira 30, se possuir a Habilidade
+     Lendaria que aumenta em +2. Fica como 32." O atributo escolhido sobe até o
+     TETO DO SISTEMA dele, que já é 30 ou 32 com o Aperfeiçoamento de Atributo, e
+     nunca desce. Entra DEPOIS dos dois estágios porque é temporário e vale sobre
+     tudo, e ANTES dos modificadores, que são o que o resto da ficha lê. A parcela
+     vai para o hover, senão as fontes somariam menos que o número grande. */
+  const apiceDelta = {};
+  const atributoApice = equip.temApice ? atributoDoApice(combate) : null;
+  if (atributoApice) {
+    const alvo = Math.max(attrEff[atributoApice], tetoSistemaDe(atributoApice));
+    apiceDelta[atributoApice] = alvo - attrEff[atributoApice];
+    attrEff[atributoApice] = alvo;
+  }
   const modFor = mod(attrEff.forca);
   const modDes = mod(attrEff.destreza);
   const modCon = mod(attrEff.constituicao);
@@ -2524,17 +2571,20 @@ export function deriveAfty(creature, opcoes = {}) {
   let dano = resolveDano(creature, {
     nd, patamar, mods: modByAttr, aptidaoCL: aptidao.efetivo.cl,
     sistema,
-    /* Manoplas e Faixas são o Ataque Básico, então a proficiência DELAS é a que
-       vale nele. Sem item de pugilato equipado, o golpe desarmado não soma o
-       Bônus de Treinamento na ficha de jogador. */
-    treinadaBasico: armasCarregadas.some(
-      (e) => e.def?.grupo === "pugilato" && armaTreinadaPor(e.def, treinamentosEquipamento.armas)),
+    /* ⚠ TODO PERSONAGEM É TREINADO EM ATAQUE DESARMADO (livro, trazido pelo
+       autor em 2026-09-16): *"Todo personagem é treinado em Ataques Desarmados"*.
+       Até aqui o treino vinha só da Manopla ou da Faixa equipada e treinada, e
+       sem uma delas ninguém somava o Bônus de Treinamento no soco, nem o
+       Lutador. Só a ficha de jogador lê este campo (divergência
+       `proficienciaPorArma`): a criatura treina pelo tipo de ataque. */
+    treinadaBasico: true,
     efeitos: ef, armas: armasParaDano, grauBasico, acertoGrauBasico,
     fontesAcertoBasico, escoposBasicoExtra, finezaBasico,
     propriedadesBasico, criticoExtraDadosBasico,
     /* ⚠ O DADO DO GOLPE DESARMADO DA FICHA DE JOGADOR (autor, 2026-08-31):
-       "Golpe Desarmado segue o cálculo de Lutador ou Arma Natural. Se não haver
-       nenhum dos dois, é 1d3 + Mod. Força ou Mod. Dex."
+       "Golpe Desarmado segue o cálculo de Lutador ou Arma Natural." Sem nenhum
+       dos dois, vale o básico do livro por nível (1d4, 1d6, 1d8, 1d10 e 1d12), e
+       o Restringido segue a escada do Lutador (2026-09-16).
 
        Ele é lido da FICHA, e não de canal: as três fontes escrevem um dado
        ABSOLUTO por faixa de nível ("se torna 1d8... 1d10, 1d12, 2d8 e 2d12"), e
@@ -2554,6 +2604,11 @@ export function deriveAfty(creature, opcoes = {}) {
       const d = dadoDesarmado({
         nivel: nd,
         nivelLutador: nivelEspec.lutador?.escalonamento ?? 0,
+        /* "Caso seja um Restringido, ele segue o mesmo aumento de um Lutador." O
+           `semEnergia` é quem já responde "esta ficha é Restringida" nos dois
+           sistemas (Especialização no jogador, Tipo na criatura). */
+        restringido: semEnergia,
+        nivelRestringido: nivelEspec.restringido?.escalonamento ?? nd,
         tem: (id) => habilidades.efetivas.includes(id) || aptidoesIds.includes(id),
       });
       return { dadoBasico: d.dado, fonteDadoBasico: d.fonte ?? "Golpe Desarmado" };
@@ -2580,10 +2635,14 @@ export function deriveAfty(creature, opcoes = {}) {
     habilidades.efetivas,
     feiticos.lista,
   );
+  // Antes das Aptidões: é o `aplicarAptidoesNoDano` que fecha fórmula e hover.
+  dano = aplicarSintonizadaNoDano(dano, sintonizadas, !!combate?.[ESTADO_SINTONIZADA]);
   dano = aplicarAptidoesNoDano(dano, creature, combate, {
     aptidoesIds,
     au: aptidao.efetivo?.au ?? 0,
     cl: aptidao.efetivo?.cl ?? 0,
+    // O Canalizar Energia Reversa gasta pontos iguais ao bônus de treinamento.
+    bt,
     modTecnica,
     cd,
   });
@@ -3020,6 +3079,41 @@ export function deriveAfty(creature, opcoes = {}) {
     ],
     pvTemporario: doMotor("pvTemporario"),
     pontosPreparo: doMotor("pontosPreparo"),
+    /* Os três canais da MESMA rolagem, cada um com a parcela dele. As faces
+       valem a maior, então só viram linha quando há disputa ou quando vêm de
+       uma fonte que não deu dado nenhum: com uma fonte só, a linha de dados já
+       mostra o dado final. O d6 de base entra quando ninguém chega nele. */
+    regeneracao: regeneracao.dados > 0 ? (() => {
+      const faces = Math.max(6, ...facesRegen);
+      const dados = doMotor("regeneracaoDados");
+      const fontesFaces = detalhesDoCanal(ef, "regeneracaoFaces", null, true);
+      const nomesDados = new Set(dados.map((p) => p.label));
+      const mostraFaces = fontesFaces.length > 1 || fontesFaces.some((d) => !nomesDados.has(d.nome));
+      return [
+        ...dados.map((p) => ({
+          label: p.label, texto: `${p.valor}${regeneracao.dado}`,
+          ...(p.suplantado ? { suplantado: true } : {}),
+        })),
+        ...(facesRegen.some((v) => v >= 6) ? [] : [{ label: "Dado Base", texto: "d6" }]),
+        ...(mostraFaces ? fontesFaces.map((d) => ({
+          label: d.nome, texto: `d${d.valor}`,
+          ...(d.suplantado || d.valor < faces ? { suplantado: true } : {}),
+        })) : []),
+        ...doMotor("regeneracaoFixa"),
+      ];
+    })() : [],
+    /* Médio mais os degraus do canal `tamanho`. A última linha só aparece
+       quando a soma passou da menor ou da maior categoria e foi aparada. */
+    tamanho: [
+      { label: "Base", texto: tamanhoPorDegraus(0).label },
+      ...detalhesDoCanal(efSemTamanho, "tamanho", null, true).map((d) => ({
+        label: d.nome,
+        texto: `${d.valor > 0 ? "+" : ""}${d.valor} ${Math.abs(d.valor) === 1 ? "Categoria" : "Categorias"}`,
+        ...(d.suplantado ? { suplantado: true } : {}),
+      })),
+      ...(tamanho.passo !== degrausTamanho ? [{ label: "Limite", texto: tamanho.label }] : []),
+    ],
+    maestria: [{ label: valoresDoJogador ? `Nível ${nd}` : `ND ${nd}`, valor: bt }],
     atencao: [
       { label: "Base", valor: 10 },
       { label: "Percepção", valor: testes.atencao - 10 },
@@ -3079,6 +3173,7 @@ export function deriveAfty(creature, opcoes = {}) {
       ...(equip.attrBonus[k] ? [{ label: "Equipamento", valor: equip.attrBonus[k] }] : []),
       ...doMotor("atributo", k),
       ...(perdido ? [{ label: `Perdido no limite ${tetoAplicado[k] ?? attrLimiteEfetivo[k]}`, texto: `−${perdido}` }] : []),
+      ...(apiceDelta[k] ? [{ label: "Talismã do Ápice", valor: apiceDelta[k] }] : []),
     ];
     const daOrigem = Math.max(limBase[k] ?? ATTR_LIMITE_PADRAO, limOrigem[k] ?? 0) - ATTR_LIMITE_PADRAO;
     const partesDoLimite = [
@@ -3101,6 +3196,28 @@ export function deriveAfty(creature, opcoes = {}) {
       : acimaDoTeto > 0
       ? [...partesDoLimite, { label: `Teto do sistema ${attrLimiteEfetivo[k]}`, texto: `−${acimaDoTeto}` }]
       : partesDoLimite;
+  }
+
+  // ---------- FONTES DE CADA NÍVEL DE APTIDÃO ----------
+  // Os pontos alocados e cada concessão pelo nome, das DUAS etapas que o nível
+  // lê (o montante e o pré-contexto, onde mora a Expansão de Domínio). O que o
+  // teto da trilha cortou fecha a conta na última linha. Sem energia não há
+  // trilha nenhuma, e a concessão que ficou nos detalhes não vira linha.
+  const partesAptidao = {};
+  if (!semEnergia) {
+    for (const { key } of trilhasOrigem) {
+      const efetivo = aptidao.efetivo?.[key] ?? 0;
+      const linhas = [
+        ...(aptidao.alocado?.[key] ? [{ label: "Pontos Alocados", valor: aptidao.alocado[key] }] : []),
+        ...[efMontante, efPreContexto]
+          .flatMap((res) => detalhesDoCanal(res, "nivelAptidao", key))
+          .filter((d) => d.alvo === key)
+          .map((d) => ({ label: d.nome, valor: d.valor })),
+      ];
+      const soma = linhas.reduce((s, x) => s + (Number(x.valor) || 0), 0);
+      if (soma !== efetivo) linhas.push({ label: `Limite da Trilha ${aptidao.limite?.[key] ?? efetivo}`, valor: efetivo - soma });
+      partesAptidao[key] = linhas;
+    }
   }
 
   /* ============================================================ */
@@ -3265,9 +3382,11 @@ export function deriveAfty(creature, opcoes = {}) {
     empolgacao,           // Lutador: { ativa, aprimorada, inicial, max, tabela }
     combate: combateExibicao, // simulação: estado já aparado nos tetos da ficha, e com o custo em PE reduzido
     vislumbre,            // Vislumbre Celeste: { tem, cl, descoberto, visao, reducaoPe, fadiga, ... }
+    olhosAgulha,
     pvTemporario,         // casca de PV vinda da simulação (Fluxo, Brutalidade Aprimorada)
     peTemporario,         // casca de PE POR FONTE: { combate:[], rodada:[], tem } — a sessão aplica
     regeneracao,          // cura no início do turno: { dados, dado, fixo }
+    tetoPERDaCura,        // PER gastáveis de uma vez na Energia Reversa, o mesmo da linha de Cura e do Fluxo Constante
     pontosPreparo,        // recurso do Combatente (Artes do Combate), 0 sem ela
     recursoLabel,         // "Estamina" no Restringido, "Energia" no resto — mesmo PE
     partes,               // fontes de cada stat, para o hover da UI
@@ -3319,6 +3438,7 @@ export function deriveAfty(creature, opcoes = {}) {
     attrMotor: Object.fromEntries(ATTR_KEYS.map((k) => [k, valorCanal(efAttrPerm, "atributo", k)])),
     partesAtributo,       // fontes de cada atributo, para o hover da UI
     partesLimite,         // fontes de cada limite, para o hover da UI
+    partesAptidao,        // fontes do Nível de Aptidão de cada trilha, para o hover da UI
     // ---------- Equipamentos ----------
     trilhasAptidao: trilhasOrigem,  // as que a ORIGEM tem (a Maldição não tem `er`)
     grauFeiticeiro: grau,  // { value, label, ordem, rank, ndMin } derivado do ND

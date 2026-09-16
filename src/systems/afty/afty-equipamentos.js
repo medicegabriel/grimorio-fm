@@ -27,6 +27,15 @@
 import { registrarFamilia, remendarLista, nivelDaFicha } from "./afty-addons";
 import { formaDaArma } from "./afty-armas-transformaveis";
 import { saneiaCriacaoDeArma } from "./afty-criacao-armas";
+import { escudoCriadoParaCatalogo, LIBERACAO_DO_CRIADO, revestimentoCriadoParaCatalogo } from "./afty-criacao-equipamentos";
+import { contaDaArmaPorNivel, efeitosDaEspecial, saneiaReceitaNiveis } from "./afty-criacao-equipamentos-armas";
+import { ATAQUES_ITEM, itemCustoParaCatalogo } from "./afty-criacao-equipamentos-itens";
+import {
+  avisosDoFeiticoVinculado, estadoUsosFeitico, linhasDaReceitaUnica, saneiaReceitaUnica, usosDoFeiticoVinculado,
+} from "./afty-criacao-equipamentos-encantamento";
+import { ITEM_TALISMA_APICE } from "./afty-talisma-apice";
+import { AFTY_PERICIAS } from "./afty-pericias-catalogo";
+import { AFTY_ATTRS, AFTY_RESISTENCIAS } from "./afty-schema";
 import { ESCADA_DANO, nivelDoDado } from "./afty-niveis-dano";
 import { evalNumber, normalizarVariavel, validateExpression } from "./afty-dsl";
 import { normalizarAlvoEfeito } from "./afty-efeitos";
@@ -503,8 +512,14 @@ export function podeSerArmaDedicada(def) {
  * Bônus de Treinamento, e acima do último a arma conserva o último alcance.
  * O catálogo cru continua declarando só `props.alcance`.
  */
-export function alcanceDaArma(def, bonusTreinamento = 0) {
+export function alcanceDaArma(def, bonusTreinamento = 0, grauFerramenta = null) {
   let a = def?.props?.alcance ?? def?.props?.arremessavel;
+  /* A arma criada pela conta do guia Criação de Equipamentos traz o alcance de
+     cada grau da FERRAMENTA (autor, 2026-09-14). Sem Ferramenta vale o
+     `props.alcance`, que já é o do 4° Grau. O grau é o REAL, e não o de cálculo:
+     a descida por encantamento da criatura é preço de Acerto, Dano, Defesa e RD. */
+  const porGrau = def?.alcancePorGrau?.[grauFerramenta];
+  if (Array.isArray(porGrau)) a = porGrau;
   const porTreino = def?.alcancePorTreino;
   if (porTreino && typeof porTreino === "object" && !Array.isArray(porTreino)) {
     const treino = Math.max(0, Math.trunc(Number(bonusTreinamento) || 0));
@@ -886,7 +901,9 @@ export const ARMA_ESPECIAL_EFEITOS = {
 export function efeitosEspeciaisDeArma(equipadas = []) {
   const out = [];
   for (const e of Array.isArray(equipadas) ? equipadas : []) {
-    const efs = ARMA_ESPECIAL_EFEITOS[e?.def?.especial];
+    // A Propriedade Especial personalizada da arma criada pelo guia Criação de
+    // Equipamentos. Ela não tem id de catálogo, então as linhas vêm na própria arma.
+    const efs = e?.def?.efeitosEspeciais ?? ARMA_ESPECIAL_EFEITOS[e?.def?.especial];
     if (!efs) continue;
     for (const ef of efs) out.push({ ...ef, origem: e.def.id, nome: e.def.nome });
   }
@@ -1015,7 +1032,7 @@ export function saneiaArmaCustom(bruta) {
   const criacao = saneiaCriacaoDeArma(bruta.criacao);
   const dado = DADO_OK.has(bruta.dano?.dado) ? bruta.dano.dado : "1d6";
   const duasMaos = DADO_OK.has(bruta.dano?.duasMaos) ? bruta.dano.duasMaos : null;
-  return {
+  const arma = {
     id,
     // Sem nome, a linha do catálogo ficaria em branco e o jogador não acharia a
     // arma que acabou de criar.
@@ -1043,6 +1060,44 @@ export function saneiaArmaCustom(bruta) {
     // A marca que a UI usa para dar botão de editar e apagar, e para o chip.
     custom: true,
   };
+  return aplicaReceitaNiveis(arma, bruta.niveis);
+}
+
+/**
+ * A arma criada pela conta do guia Criação de Equipamentos (fase 2). Com a
+ * receita em `niveis`, o DADO, o de duas mãos e o alcance saem da conta, e o que
+ * estava digitado na arma deixa de valer. Sem receita a arma volta inteira.
+ *
+ * ⚠ NÃO DEPENDE DO ADDON (autor, 2026-09-14): a receita é dado da arma, e o
+ * Addon só abre a bancada. Ver `afty-criacao-equipamentos-armas.js`.
+ *
+ * ⚠ O DADO CALCULADO PASSA POR FORA DO `DADO_OK`. O Custo 4 do guia é `3d10`,
+ * que não é degrau oferecido nem dado impresso do livro, e o derive lê qualquer
+ * dado pela escada.
+ */
+function aplicaReceitaNiveis(arma, brutaReceita) {
+  const receita = saneiaReceitaNiveis(brutaReceita);
+  if (!receita) return arma;
+  const tiposFisicos = tiposDeDanoDaCategoria("fisico").map((t) => t.id);
+  const comReceita = { ...arma, niveis: receita };
+  const conta = contaDaArmaPorNivel(comReceita, { tiposFisicos });
+  const props = { ...arma.props };
+  if (conta.alcance) props.alcance = conta.alcance.quarto;
+  const saida = {
+    ...comReceita,
+    ...(conta.desarmado
+      // A arma de Dano Desarmado é o Ataque Básico, como as Faixas: sem dado
+      // próprio e no grupo Pugilato, que é o que o derive lê para montar o golpe.
+      ? { dano: { desarmado: true, tipo: arma.dano.tipo }, grupo: "pugilato" }
+      : { dano: { dado: conta.dado, ...(conta.duasMaos ? { duasMaos: conta.duasMaos } : {}), tipo: arma.dano.tipo } }),
+    props,
+    ...(conta.alcance ? { alcancePorGrau: conta.alcance } : {}),
+  };
+  const efeitos = efeitosDaEspecial(saida);
+  if (efeitos.length) saida.efeitosEspeciais = efeitos;
+  const cenario = receita.especiais.filter((e) => e.tipo === "cenario" && e.texto.trim()).map((e) => e.texto.trim());
+  if (props.especial && cenario.length) saida.especialTexto = cenario.join("\n\n");
+  return saida;
 }
 
 /** As armas custom da ficha, saneadas e sem id repetido. */
@@ -1365,7 +1420,11 @@ export const ENCANTAMENTOS_ARMA = [
     descricao: "A arma foi modificada e trabalhada para permitir um manejo mais preciso. Você recebe um bônus de +2 em jogadas de ataque manejando esta arma.",
     efeitos: [{ canal: "acertoArma", expr: "2" }] },
   { id: "enc_arma_reluzente", nome: "Reluzente",
-    descricao: "Sua arma reluz, distraindo o inimigo. Enquanto empunhar esta arma, seu portador recebe +2 em testes para fintar e quando tem um acerto crítico com esta arma contra uma criatura ela deve realizar um TR contra a CD de especialização ou estilo marcial do portador, em uma falha ela fica Desprevenida (e se já estiver, fica Cega) por uma rodada. Enquanto estiver empunhando esta arma ela causa -5 de penalidade em testes de Furtividade em qualquer lugar minimamente iluminado." },
+    descricao: "Sua arma reluz, distraindo o inimigo. Enquanto empunhar esta arma, seu portador recebe +2 em testes para fintar e quando tem um acerto crítico com esta arma contra uma criatura ela deve realizar um TR contra a CD de especialização ou estilo marcial do portador, em uma falha ela fica Desprevenida (e se já estiver, fica Cega) por uma rodada. Enquanto estiver empunhando esta arma ela causa -5 de penalidade em testes de Furtividade em qualquer lugar minimamente iluminado.",
+    /* O +2 em Fintar virou número em 2026-09-15, quando o Fintar ganhou linha.
+       O TR do crítico e a penalidade de Furtividade em lugar iluminado seguem no
+       texto: o primeiro é do alvo, e a segunda depende da cena. */
+    efeitos: [{ canal: "bonusManobra", alvo: "fintar", expr: "2" }] },
   { id: "enc_arma_retorno", nome: "Retorno",
     descricao: "Este encantamento apenas pode ser posto em uma arma de arremesso. Ao arremessar uma arma com este encantamento, desde que não esteja completamente presa, retorna para a mão do portador logo após completar o ataque.",
     requisitos: [{ tipo: "categoriaArma", categorias: ["arremesso"], arremessavel: true }] },
@@ -1374,6 +1433,61 @@ export const ENCANTAMENTOS_ARMA = [
     preReq: "Ferramenta de Segundo Grau",
     requisitos: [{ tipo: "grauMin", grauMin: "segundo" }] },
 ];
+
+/* ============================================================ */
+/* SINTONIZADA — 1d8 depois de dano do tipo por Feitiço ou Aptidão */
+/* ============================================================ */
+/* "Escolha um tipo de dano, exceto danos físicos ou na alma; sempre que você
+   causar dano desse tipo com algum Feitiço ou Aptidão, até o final do próximo
+   turno, seus ataques com uma arma com este encantamento causam 1d8 de dano
+   adicional do mesmo tipo."
+
+   Não tinha efeito até 2026-09-15, quando o autor pediu que chegasse e disse que
+   o dado é critável. O tipo mora na Ferramenta (`fa.sintonizadaTipo`), e o gatilho
+   é um interruptor na bancada: quem sabe se o Feitiço ou a Aptidão causou dano
+   daquele tipo é a mesa. */
+export const SINTONIZADA_ID = "enc_arma_sintonizada";
+export const ESTADO_SINTONIZADA = "sintonizada";
+
+/** Os tipos que a Sintonizada aceita: toda categoria menos Físicos, e sem a Alma. */
+export const tiposDaSintonizada = () =>
+  CATEGORIAS_DANO
+    .filter((c) => c.id !== "fisico")
+    .flatMap((c) => tiposDeDanoDaCategoria(c.id))
+    .filter((t) => t.id !== "alma");
+
+export const tipoDaSintonizada = (bruto) =>
+  (tiposDaSintonizada().some((t) => t.id === bruto) ? bruto : null);
+
+/**
+ * Soma o 1d8 nas linhas das armas que têm a Sintonizada, com o interruptor
+ * ligado. Roda ANTES do `aplicarAptidoesNoDano`, que é quem fecha as fórmulas e o
+ * hover de toda linha.
+ *
+ * `sintonizadas` = [{ entradaId, tipo }]. A linha é o id da arma, ou `basico`
+ * quando a Ferramenta é o item de pugilato que define o golpe.
+ */
+export function aplicarSintonizadaNoDano(dano, sintonizadas, ligada) {
+  const lista = Array.isArray(sintonizadas) ? sintonizadas : [];
+  if (!ligada || !lista.length) return dano;
+  const porEntrada = new Map(lista.map((s) => [s.entradaId, s.tipo]));
+  return {
+    ...dano,
+    entradas: (dano?.entradas ?? []).map((entrada) => {
+      if (!porEntrada.has(entrada.id)) return entrada;
+      const tipo = porEntrada.get(entrada.id);
+      return {
+        ...entrada,
+        gruposDano: [...(entrada.gruposDano ?? []), {
+          nome: tipo ? `Sintonizada (${TIPOS_DANO[tipo]})` : "Sintonizada",
+          dados: 1, faces: 8, fixo: 0,
+          momento: "durante", multiplica: true,
+          ...(tipo ? { tipoDano: tipo } : {}),
+        }],
+      };
+    }),
+  };
+}
 
 export const ENCANTAMENTOS_ESCUDO = [
   { id: "enc_esc_avassalador", nome: "Avassalador",
@@ -1698,7 +1812,10 @@ export const ITENS_ESPECIAIS = [
   { id: "it_conjunto_de_perolas_carregadas", nome: "Conjunto de Pérolas Carregadas", categoria: "espiritual", custo: 2,
     descricao: "Um conjunto de pérolas carregadas com energia amaldiçoada. Como uma ação bônus, é possível consumir o conjunto de pérolas, recuperando 6 pontos de energia amaldiçoada." },
   { id: "it_faixa_de_foco", nome: "Faixa de Foco", categoria: "acessorio", custo: 2,
-    descricao: "Uma faixa que quando presa ao seu portador o permite focar e manter a concentração. Você recebe um bônus de +2 em testes para manter a concentração e, uma vez por dia, você pode escolher não perder a concentração ao invés de realizar um teste." },
+    descricao: "Uma faixa que quando presa ao seu portador o permite focar e manter a concentração. Você recebe um bônus de +2 em testes para manter a concentração e, uma vez por dia, você pode escolher não perder a concentração ao invés de realizar um teste.",
+    // O uso por dia ("não perder a concentração") é de mesa. O +2 virou número
+    // em 2026-09-15, quando a Concentração ganhou linha própria.
+    efeito: { aplicado: true, motor: [{ canal: "bonusManobra", alvo: "concentracao", expr: "2" }] } },
   { id: "it_injecao_de_adrenalina", nome: "Injeção de Adrenalina", categoria: "farmaco", custo: 2,
     descricao: "Uma injeção com uma dose considerável de adrenalina, que o faz esquecer temporariamente do cansaço. Usar a injeção é uma ação bônus; ao usar ela, seu nível de Exaustão é reduzido em 1 até o final da cena, voltando imediatamente após o término dela." },
   { id: "it_mix_energetico_medio", nome: "Mix Energético Médio", categoria: "farmaco", custo: 2,
@@ -1906,10 +2023,63 @@ export const catalogoDoTipo = (tipo, creature = null) => {
   if (!creature) return base;
   // Os Acessórios Únicos entram nos Itens Especiais pelo mesmo motivo das armas
   // criadas: é aqui que um item vira item para o inventário e o resolvedor.
+  // Os Revestimentos e Escudos criados (Addon Criação de Equipamentos) também.
   const custom = tipo === "arma" ? armasCustomDaFicha(creature)
-    : tipo === "item" ? acessoriosUnicosDaFicha(creature)
+    : tipo === "item" ? [...acessoriosUnicosDaFicha(creature), ...itensCustoDaFicha(creature)]
+    : tipo === "uniforme" ? revestimentosCriadosDaFicha(creature)
+    : tipo === "escudo" ? escudosCriadosDaFicha(creature)
     : [];
   return custom.length ? [...base, ...custom] : base;
+};
+
+/* ============================================================ */
+/* REVESTIMENTOS E ESCUDOS CRIADOS (Addon Criação de Equipamentos) */
+/* ============================================================ */
+/* As contas moram em `afty-criacao-equipamentos.js`. Aqui só a leitura da ficha,
+   no molde das armas criadas e dos Acessórios Únicos: saneado na LEITURA, sem id
+   repetido, e injetado no catálogo pela `catalogoDoTipo`.
+
+   ⚠ SEM O ADDON O ITEM CONTINUA NO CATÁLOGO E DEIXA DE CONTAR. Tirá-lo do
+   catálogo faria a entrada do inventário virar "equipamento desconhecido" e a
+   pessoa perderia o nome do que tinha. Quem zera os números é o
+   `resolveEquipamentos`, pela liberação, igual ao Acessório Único. */
+
+const listaCriadaDaFicha = (brutos, paraCatalogo) => {
+  const vistos = new Set();
+  const out = [];
+  for (const b of Array.isArray(brutos) ? brutos : []) {
+    const item = paraCatalogo(b);
+    if (!item || vistos.has(item.id)) continue;
+    vistos.add(item.id);
+    out.push(item);
+  }
+  return out;
+};
+
+/** Os Revestimentos criados da ficha, no formato de modificação de uniforme. */
+export const revestimentosCriadosDaFicha = (creature) =>
+  listaCriadaDaFicha(creature?.revestimentosCriados, revestimentoCriadoParaCatalogo);
+
+/** Os Escudos criados da ficha, no formato de escudo do catálogo. */
+export const escudosCriadosDaFicha = (creature) =>
+  listaCriadaDaFicha(creature?.escudosCriados, escudoCriadoParaCatalogo);
+
+/* Os nomes que o resumo do Item de Custo precisa e que o módulo dele, por ser
+   folha, não conhece. Perícia inclui os Ofícios extras da ficha pelo id cru. */
+export const rotulosDoItemCusto = () => ({
+  pericia: Object.fromEntries(AFTY_PERICIAS.map((p) => [p.id, p.nome])),
+  oficio: Object.fromEntries(AFTY_PERICIAS.filter((p) => p.id === "oficio").map((p) => [p.id, p.nome])),
+  tr: Object.fromEntries(AFTY_RESISTENCIAS.map((r) => [r.value, r.label])),
+  atributo: Object.fromEntries(AFTY_ATTRS.map((a) => [a.key, a.label])),
+  ataque: Object.fromEntries(ATAQUES_ITEM.map((a) => [a.value, a.label])),
+  tipoDano: { ...TIPOS_DANO },
+});
+
+/** Os Itens de Custo criados da ficha (fase 3), no formato de Item Especial. */
+export const itensCustoDaFicha = (creature) => {
+  if (!Array.isArray(creature?.itensCustoCriados) || !creature.itensCustoCriados.length) return [];
+  const rotulos = rotulosDoItemCusto();
+  return listaCriadaDaFicha(creature.itensCustoCriados, (b) => itemCustoParaCatalogo(b, rotulos));
 };
 
 /* ============================================================ */
@@ -2165,10 +2335,18 @@ export function resolveFerramenta(entrada, def, bt = 2, ctxBase = null, vagasLiv
   // Quem reduziu, pelo nome, para a parcela do hover da Penalidade de Armadura.
   const fontesReducaoPenalidade = [];
   const fontesAcerto = [];
+  /* A CONTA DO GUIA na Habilidade Única (Criação de Equipamentos, fase 4). Só no
+     Grau Especial, e opcional: sem receita ligada ela não gera nada. As
+     melhorias de Encantamento Padrão dobram o valor aqui, antes da soma. */
+  const guia = linhasDaReceitaUnica(temHabUnica ? fa.guiaUnica : null, {
+    armaId: tipo === "arma" ? def?.id ?? null : null,
+    tiposDaCategoria: (cat) => tiposDeDanoDaCategoria(cat).map((t) => t.id),
+  });
+  const dobraDe = (encId) => (guia.melhorias.some((m) => m.encantamento === encId && m.modo === "valor") ? 2 : 1);
   for (const x of encantamentos) {
     if (!x.atende) continue;
     for (const ef of x.enc?.efeitos ?? []) {
-      const valor = evalNumber(ef.expr, ctx);
+      const valor = evalNumber(ef.expr, ctx) * dobraDe(x.id);
       // Efeito que resolve em zero não vira linha: é o caso do Ajustado num
       // uniforme que já tem penalidade, cuja metade de Furtividade não vale.
       if (!valor) continue;
@@ -2201,6 +2379,9 @@ export function resolveFerramenta(entrada, def, bt = 2, ctxBase = null, vagasLiv
   // resolver é a lista RESOLVIDA, e quem a transforma em efeito de Motor é o
   // `resolveEquipamentos`.
   const habilidadeEfeitos = resolverLinhasUnica(fa.habilidadeEfeitos, ctx, contextoDsl);
+  // As linhas da conta do guia ficam SEPARADAS das livres: o editor grava de volta
+  // o `habilidadeEfeitos`, e misturar as duas escreveria a conta nas livres.
+  const guiaEfeitos = resolverLinhasUnica(guia.linhas, ctx, contextoDsl);
   /* A SEGUNDA (Addon Benção do Grão Mestre da Forja, 2026-09-11). Mesmo formato
      e mesmo contexto da primeira, e a diferença entre as duas é só a família do
      pool, que o `resolveEquipamentos` carimba. Sem a liberação as linhas
@@ -2238,9 +2419,17 @@ export function resolveFerramenta(entrada, def, bt = 2, ctxBase = null, vagasLiv
     temHabUnica,
     habilidadeUnica: fa.habilidadeUnica ?? "",
     habilidadeEfeitos,   // resolvidos, com expr para a edição
+    // A conta do guia (fase 4 da Criação de Equipamentos): a receita saneada, as
+    // linhas que ela gerou já resolvidas, as melhorias e os avisos.
+    guiaUnica: saneiaReceitaUnica(fa.guiaUnica),
+    guiaEfeitos,
+    guiaMelhorias: guia.melhorias,
+    guiaAvisos: guia.avisos,
     temSegundaUnica,
     segundaHabilidadeUnica: fa.segundaHabilidadeUnica ?? "",
     segundaHabilidadeEfeitos,
+    // O tipo escolhido na Sintonizada, já saneado. Ver `tiposDaSintonizada`.
+    sintonizadaTipo: tipoDaSintonizada(fa.sintonizadaTipo),
     efeitos,             // efeitos de encantamento, prontos para o Motor
     avisos,
   };
@@ -2277,6 +2466,8 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
   // da Forja são lidas aqui.
   const liberacoes = Array.isArray(opcoes.liberacoes) ? opcoes.liberacoes : [];
   const acessoriosLiberados = liberacoes.includes("acessoriosUnicos");
+  // O Revestimento e o Escudo criados só contam com a liberação do tipo deles.
+  const criadoVale = (def) => !def?.criado || liberacoes.includes(LIBERACAO_DO_CRIADO[def.criado]);
   const entradas = [];
   const custoGasto = { 1: 0, 2: 0, 3: 0, 4: 0 };
   const attrBonus = { forca: 0, destreza: 0, constituicao: 0, inteligencia: 0, sabedoria: 0, presenca: 0 };
@@ -2307,7 +2498,17 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
      (Polido, Ajustado). As parcelas fecham com o total, porque a redução já
      vem aparada no item (ela nunca inverte o sinal). */
   const penalidadePartes = [];
-  const somaPenalidade = (def, fa) => {
+  /* ⚠ SÓ PARA EXIBIÇÃO (2026-09-15). Os números abaixo já somam nos escalares
+     (`uniformeDefesa`, `rdGeralBonus`, `attrBonus`...), e esta lista guarda de
+     QUAL item cada um veio, que o escalar perde no caminho. O card "Efeito do
+     Equipado" agrupa por item e precisa disso. Nada aqui entra em conta nenhuma:
+     somar esta lista seria contar duas vezes. */
+  const partesDeItem = [];
+  const parteDoItem = (uid, canal, valor, nota = null, alvo = null) => {
+    if (!valor) return;
+    partesDeItem.push({ uid, canal, valor, ...(alvo ? { alvo } : {}), ...(nota ? { nota } : {}) });
+  };
+  const somaPenalidade = (def, fa, uid = null) => {
     const base = def?.penalidade ?? 0;
     const final = fa ? fa.penalidade : base;
     penalidadeDestreza += final;
@@ -2318,6 +2519,7 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
         valor: final - base,
       });
     }
+    parteDoItem(uid, "penalidadeArmadura", final);
   };
   let hpMaxBonus = 0;
   let cdBonus = 0;
@@ -2407,6 +2609,7 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
     if (item?.colecao === "tesouros_sagrados_japao") tesourosSagrados.add(item.id);
   }
   const conjuntoSagradoAutomatico = tesourosSagrados.size >= 3;
+  let temApice = false;
 
   for (const e of listaEntradas(creature)) {
     // ⚠ A criatura vai junto porque as armas CUSTOM moram nela. Sem isso, uma
@@ -2430,22 +2633,45 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
     // Ferramenta Amaldiçoada da entrada (se houver e o tipo permitir). As vagas
     // livres são por ARMA do catálogo, a mesma chave que a Arma Dedicada usa.
     const fa = resolveFerramenta(e, def, bt, ctxBase, vagasEncantamento[def.id] ?? 0);
+    /* O Feitiço da Técnica Inata (Criação de Equipamentos, fase 4): *"podendo ser
+       conjurado uma quantidade de vezes igual a metade do seu BT"*. Resolvido
+       aqui, e não no `resolveFerramenta`, porque ele precisa dos Feitiços da
+       ficha. Os avisos vão para a bancada. */
+    const idFeitico = fa?.temHabUnica && fa.guiaUnica?.ligada ? fa.guiaUnica.feitico : "";
+    if (idFeitico) {
+      const feitico = (creature?.feiticos ?? []).find((f) => f?.id === idFeitico);
+      const usos = usosDoFeiticoVinculado(bt);
+      fa.feiticoVinculado = feitico
+        ? { id: feitico.id, nome: feitico.nome || "Feitiço sem Nome", tipo: feitico.tipo, usos, avisos: avisosDoFeiticoVinculado(feitico) }
+        : { id: idFeitico, nome: null, tipo: null, usos, avisos: [{ id: "sumiu", texto: "O Feitiço vinculado não existe mais na ficha" }] };
+    }
     const quandoDoItem = def?.requerEstado ? normalizarVariavel(def.requerEstado) : null;
 
     const equipado = !!e?.equipado;
+    /* ⚠ O CRIADO SEM O ADDON NÃO ENTRA EM EFEITO NENHUM: Defesa, RD, penalidade,
+       bônus da troca e a Ferramenta. Continua carregado (os espaços e o custo
+       acima já foram contados) e continua marcado como equipado na entrada,
+       porque o interruptor da linha lê esse campo e escreveria o contrário. */
+    const semAddon = !criadoVale(def);
+    /* O Talismã do Ápice do livro, ou o Item de Custo criado que maximiza
+       atributo. Basta CARREGAR: o talismã se usa na mão, e a quantidade é à mão
+       (autor, 2026-09-14). Ver `afty-talisma-apice.js`. */
+    if (def.id === ITEM_TALISMA_APICE || (def.maximizaAtributo && !semAddon)) temApice = true;
     const temCondicaoSolar = def.efeito?.condicao === "sol";
     const conjuntoSagradoReunido = temCondicaoSolar && (
       conjuntoSagradoAutomatico || !!e?.conjuntoSagradoCompleto
     );
     const solAtivo = temCondicaoSolar && (conjuntoSagradoReunido || !!e?.solDireto);
-    if (equipado) {
+    if (equipado && !semAddon) {
       if (e.tipo === "uniforme") {
         uniformesEquipados += 1;
         // A armadura dá o CUSTO dela de Defesa, mais 1 por grau da Ferramenta
         // (autor, 2026-08-01). A tabela de Defesa por modificação não entra.
-        uniformeDefesa += defesaDaArmadura(def, fa?.defesaGrau ?? 0, opcoes.sistema);
+        const defesaDoUniforme = defesaDaArmadura(def, fa?.defesaGrau ?? 0, opcoes.sistema);
+        uniformeDefesa += defesaDoUniforme;
+        parteDoItem(e.uid, "defesa", defesaDoUniforme, "Armadura");
         // Com Ferramenta, a penalidade é a já reduzida pelo Ajustado.
-        somaPenalidade(def, fa);
+        somaPenalidade(def, fa, e.uid);
       } else if (e.tipo === "escudo") {
         /* ⚠ O DESTINO DEPENDE DO SISTEMA. Na criatura a RD do escudo é RD Geral
            (autor, 2026-08-01: "RD Geral, exceto Alma", que é a definição exata da
@@ -2455,6 +2681,7 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
           if (canalEscudo === "rdFisico") rdFisicoBonus += v;
           else rdGeralBonus += v;
           if (v) rdPartes.push({ label, valor: v, canal: canalEscudo });
+          parteDoItem(e.uid, canalEscudo, v, label);
         };
         soma(def.rdEscudo ?? 0, def.nome);
         // O "aumento BASE em RD do escudo", separado do que a Ferramenta soma.
@@ -2477,9 +2704,12 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
       if (ef?.aplicado && condicaoAtiva) {
         if (ef.hpMax) hpMaxBonus += ef.hpMax;
         if (ef.cd) cdBonus += ef.cd;
+        parteDoItem(e.uid, "hp", ef.hpMax ?? 0);
+        parteDoItem(e.uid, "cd", ef.cd ?? 0);
         if (ef.atributo) {
           for (const [k, v] of Object.entries(ef.atributo)) {
             if (k in attrBonus) attrBonus[k] += v;
+            parteDoItem(e.uid, "atributo", v, null, k);
           }
         }
         // Bônus de perícia de item. Ligado em 2026-08-01: as Perícias existem
@@ -2514,7 +2744,18 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
       // O valor já sai resolvido aqui e viaja como literal porque a expressão
       // dela lê `grau`, que é do item e não existe no contexto da criatura.
       if (fa?.temHabUnica) {
-        emitirUnica(fa.habilidadeEfeitos, e.uid, def.nome, "habilidadeUnica");
+        // A conta do guia entra na MESMA família das linhas livres: as duas são a
+        // Habilidade Única, e disputam o pool como uma coisa só.
+        emitirUnica([...(fa.habilidadeEfeitos ?? []), ...(fa.guiaEfeitos ?? [])], e.uid, def.nome, "habilidadeUnica");
+        // Os usos do Feitiço da Técnica Inata viram uma faixa na aba Buffs, que
+        // zera no descanso, e só com a Ferramenta equipada. O vínculo em si foi
+        // resolvido antes do `equipado`, para a bancada avisar mesmo guardada.
+        if (fa.feiticoVinculado?.nome && fa.feiticoVinculado.usos > 0) {
+          estadosUnica.push({
+            id: estadoUsosFeitico(e.uid), label: `${fa.feiticoVinculado.nome} (${def.nome})`,
+            tipo: "faixa", min: 0, max: fa.feiticoVinculado.usos, zeraNoDescanso: true,
+          });
+        }
         // A segunda só existe com a liberação (Addon Benção do Grão Mestre da
         // Forja), e disputa noutra família: não soma com Feitiço.
         if (fa.temSegundaUnica) emitirUnica(fa.segundaHabilidadeEfeitos, e.uid, def.nome, "segundaHabilidadeUnica");
@@ -2596,6 +2837,7 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
       custoUn,
       espacos: espacosUn * qtd,
       equipado,
+      ...(semAddon ? { semAddon } : {}),
       ...(temCondicaoSolar ? {
         solAtivo,
         conjuntoSagradoReunido,
@@ -2611,6 +2853,7 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
 
   return {
     entradas,
+    temApice,            // a ficha carrega um Talismã do Ápice (do livro ou criado)
     espacosUsados,
     uniformeDefesa,
     rdEscudoBase,        // só a parcela do escudo, sem a Ferramenta Amaldiçoada
@@ -2622,6 +2865,7 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
     hpMaxBonus,
     cdBonus,
     attrBonus,
+    partesDeItem,        // de QUAL item veio cada escalar, só para a tela agrupar
     custoGasto,
     efeitosUnica,        // para o Motor, já marcados como pool exclusivo
     efeitosEncantamento, // para o Motor, sem marca de pool (somam normal)

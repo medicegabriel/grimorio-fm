@@ -494,9 +494,11 @@ const builder = readFileSync(
 t("a bancada está atrás da primitiva", builder.includes('usePrimitiva("criacaoArmas")'), true);
 t("e ela é renderizada no editor de arma", builder.includes("<BancadaDeArma"), true);
 /* A Especial só entra na lista de propriedades com a bancada ligada: sem ela
-   não há onde guardar preço nem texto, e a caixa marcaria um campo morto. */
-t("a Especial depende da bancada",
-  builder.includes('bancada || p.id !== "especial"'), true);
+   não há onde guardar preço nem texto, e a caixa marcaria um campo morto. Desde
+   2026-09-14 a receita do guia Criação de Equipamentos também a abre, porque é
+   nela que mora a Propriedade Especial personalizada. */
+t("a Especial depende da bancada ou da receita",
+  builder.includes('bancada || receita || p.id !== "especial"'), true);
 /* O custo da arma de técnica vira mostrador, e é escrito pelo efeito. */
 t("o custo de técnica é escrito, e não só mostrado",
   builder.includes("custoDeTecnica(grauOrdem)"), true);

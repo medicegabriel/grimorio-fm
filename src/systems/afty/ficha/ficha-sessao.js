@@ -27,6 +27,7 @@
 import { normalizaConcedido, comConcessao, semConcessao } from "../afty-concessao";
 import { normalizaAdaptacoes, avancarAdaptacoesNaRodada } from "../afty-adaptacao";
 import { avancaArmasTransformaveis } from "../afty-armas-transformaveis";
+import { ESTADO_APICE, RODADAS_APICE } from "../afty-talisma-apice";
 
 const CHAVE_BASE = "fm_ficha_sessao_afty_v1";
 const LOG_MAX = 50;
@@ -847,7 +848,23 @@ export function proximaRodada(sessao, derived = null) {
   );
   const comAdaptacao = avancarAdaptacoesNaRodada(comGuarda, derived, comGuarda.rodada);
   const comArmas = avancaArmasTransformaveis(comAdaptacao, sessao.rodada === 0);
-  return { sessao: avancaInvencivelSobOSol(comArmas, derived), expirou };
+  return { sessao: avancaTalismaApice(avancaInvencivelSobOSol(comArmas, derived)), expirou };
+}
+
+/* O Talismã do Ápice desligado, com o contador zerado. */
+const semApice = (combate) => ({ ...combate, [ESTADO_APICE]: null, talismaApiceRodadas: 0 });
+
+/**
+ * Fecha a rodada do Talismã do Ápice: "10 rodadas dentro de um combate", e o
+ * autor decidiu em 2026-09-14 que ele desliga sozinho. Mesma contagem do
+ * Invencível sob o Sol: ligar é a rodada 1, e a virada da décima desliga.
+ */
+function avancaTalismaApice(sessao) {
+  const combate = sessao.combate ?? {};
+  if (!combate[ESTADO_APICE]) return sessao;
+  const rodadas = Math.max(1, inteiro(combate.talismaApiceRodadas, 1));
+  if (!combate.ativo || rodadas >= RODADAS_APICE) return { ...sessao, combate: semApice(combate) };
+  return { ...sessao, combate: { ...combate, talismaApiceRodadas: rodadas + 1 } };
 }
 
 /** Fecha a rodada do Ápice, entrega a Exaustão e paga a próxima se continuar. */
@@ -920,10 +937,10 @@ export function descansar(sessao, derived) {
     peTempFontes: {},
     exaustao: Math.max(0, inteiro(sessao.exaustao, 0))
       + (sessao.combate?.invencivelPendenteExaustao ? 1 : 0),
-    combate: expirarEstadosDaRodada({
+    combate: expirarEstadosDaRodada(semApice({
       ...(sessao.combate ?? {}), invencivelSobOSol: false,
       invencivelRodadas: 0, invencivelPendenteExaustao: false,
-    }, derived),
+    }), derived, { descanso: true }),
     rodada: 0,
     // A Guarda volta a zero com a rodada: fora de combate não há guarda erguida,
     // e o próximo `iniciaCombate` (ou a saída da rodada 0) a reergue cheia.
@@ -944,10 +961,13 @@ export function descansar(sessao, derived) {
 const chaveUsoEstado = (id) => `estado:${id}:rodada`;
 
 /** Estados de addon com duração até a próxima rodada também expiram no descanso. */
-function expirarEstadosDaRodada(combate, derived) {
+function expirarEstadosDaRodada(combate, derived, { descanso = false } = {}) {
   const out = { ...combate };
   for (const e of derived?.combate?.estadosExtras ?? []) {
-    if (e.expiraNaRodada) out[e.id] = e.tipo === "faixa" ? (e.min ?? 0) : false;
+    // `zeraNoDescanso`: os usos do Feitiço vinculado à Habilidade Única, que
+    // voltam cheios no descanso (Criação de Equipamentos, fase 4). ⚠ SÓ NO
+    // DESCANSO: a virada de rodada também passa por aqui, e zerava a contagem.
+    if (e.expiraNaRodada || (descanso && e.zeraNoDescanso)) out[e.id] = e.tipo === "faixa" ? (e.min ?? 0) : false;
   }
   return out;
 }
@@ -1002,12 +1022,24 @@ export function alteraEstadoCombate(sessao, estado, valor) {
     return { ...sessao, combate: { ...combate, invencivelSobOSol: false,
       invencivelRodadas: 0 } };
   }
+  // O Talismã do Ápice: ligar começa a contar, trocar o atributo com ele ligado
+  // mantém a contagem, e desligar zera. Ver `avancaTalismaApice`.
+  if (estado.id === ESTADO_APICE) {
+    if (!valor) return { ...sessao, combate: semApice(combate) };
+    return { ...sessao, combate: { ...combate, [ESTADO_APICE]: valor,
+      talismaApiceRodadas: combate[ESTADO_APICE] ? Math.max(1, inteiro(combate.talismaApiceRodadas, 1)) : 1 } };
+  }
   if (ativando && estado.umaVezPorRodada && estadoUsadoNestaRodada(sessao, estado.id)) {
     return sessao;
   }
+  /* `exclusivoCom`: ligar este desliga os listados (os dois Canalizar, autor
+     2026-09-15). Desligar não mexe nos outros. */
+  const desligados = ativando && Array.isArray(estado.exclusivoCom)
+    ? Object.fromEntries(estado.exclusivoCom.map((id) => [id, false]))
+    : {};
   return {
     ...sessao,
-    combate: { ...combate, [estado.id]: valor },
+    combate: { ...combate, ...desligados, [estado.id]: valor },
     usos: ativando && estado.umaVezPorRodada
       ? { ...(sessao.usos || {}), [chaveUsoEstado(estado.id)]: sessao.rodada }
       : sessao.usos,
@@ -1022,8 +1054,8 @@ export function aplicaPatchCombate(sessao, parcial) {
     ...sessao,
     exaustao: Math.max(0, inteiro(sessao.exaustao, 0))
       + (combate.invencivelPendenteExaustao ? 1 : 0),
-    combate: { ...combate, invencivelSobOSol: false,
-      invencivelRodadas: 0, invencivelPendenteExaustao: false },
+    combate: semApice({ ...combate, invencivelSobOSol: false,
+      invencivelRodadas: 0, invencivelPendenteExaustao: false }),
   };
 }
 
