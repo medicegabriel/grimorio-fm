@@ -1,10 +1,10 @@
 {
   "id": "treino-invocacao",
   "nome": "Treinamento de Invocação",
-  "versao": "2.0.0",
+  "versao": "3.0.0",
   "autor": "Templas",
   "paraRaw": "afty",
-  "descricao": "Linha de Treinamento pro Controlador, REPETÍVEL: cada pega treina UMA invocação específica do seu roster (mesmo padrão do Treino de Manejo de Arma, que treina UMA arma por vez — o pool aqui é a lista de invocações da própria ficha). Precisou de duas peças novas no motor (2026-09-14): efeitosInvocacao (Treinamento afetando invocação, já existia pra Habilidade/Talento/Característica) e alvoTipo:'invocacao' (mirar UMA invocação específica, e não todas). Sem essa segunda peça, 'escolha uma Ação' viraria sempre 'todas as Ações' — com ela, o treino é preciso.",
+  "descricao": "Linha de Treinamento pro Controlador, REPETÍVEL: cada pega treina UMA Ação específica de UMA invocação do seu roster (`alvoTipo: 'acaoInvocacao'`, a mesma peça de 2026-09-15 do Treino de Manejo de Arma para invocações). Precisou de mais uma peça nova no motor nesta versão: `soInvocacao` (afty-treinamentos.js), porque esta linha MISTURA efeito de Ação (Nível de Dano só na Ação escolhida) com efeito de invocação inteira (Defesa, Acerto/CD, orçamento de Ações/Características) na MESMA instância — sem a marca, o efeito de invocação inteira herdava o alvo da Ação e caía num balde que ninguém lê de volta. ⚠ LIMITAÇÃO ACEITA: a Etapa 1 e a Etapa 4 pedem 'escolha uma Ação' cada uma, mas o motor só guarda UM alvo por instância — as duas caem na MESMA Ação. Para mirar Ações diferentes, treine a mesma invocação de novo numa segunda instância (aceitando que a Defesa e o Acerto/CD dela dobram junto).",
   "acrescenta": {
     "treinamentos": [
       {
@@ -12,15 +12,15 @@
         "nome": "Treinamento de Invocação",
         "lore": "Você dedica seu treino a uma invocação específica, refinando o vínculo com ela até ela lutar como uma extensão sua.",
         "repetivel": true,
-        "alvoTipo": "invocacao",
-        "alvoLabel": "Invocação",
-        "resumo": "Escolha uma invocação do seu roster para treinar. Pode ser repetido, treinando uma invocação diferente a cada vez.",
+        "alvoTipo": "acaoInvocacao",
+        "alvoLabel": "Ação da Invocação",
+        "resumo": "Escolha uma invocação do seu roster e, dentro dela, uma Ação para treinar. Pode ser repetido, treinando uma Ação diferente (da mesma invocação ou de outra) a cada vez.",
         "etapas": [
           {
             "n": 1,
             "focos": 1,
             "requisito": null,
-            "beneficio": "A invocação escolhida recebe +1 Nível de Dano em todas as Ações de Dano dela. [O livro pede 'escolha uma Ação' — o motor mira a invocação inteira, não uma Ação isolada dentro dela; ainda assim já é preciso: só ESSA invocação ganha, as outras não.]",
+            "beneficio": "A Ação escolhida recebe +1 Nível de Dano. [O seletor não filtra por tipo de Ação: escolha uma Ação de Dano para o bônus valer de fato.]",
             "efeitosInvocacao": [
               { "canal": "danoNivel", "expr": "1" }
             ]
@@ -29,7 +29,8 @@
             "n": 2,
             "focos": 1,
             "requisito": null,
-            "beneficio": "A invocação escolhida recebe +2 de Defesa. Acumula com todas as outras fontes.",
+            "soInvocacao": true,
+            "beneficio": "A invocação treinada recebe +2 de Defesa. Acumula com todas as outras fontes.",
             "efeitosInvocacao": [
               { "canal": "defesa", "expr": "2" }
             ]
@@ -38,14 +39,14 @@
             "n": 3,
             "focos": 1,
             "requisito": null,
-            "beneficio": "A invocação escolhida recebe +2 de Acerto ou CD (escolha um, abaixo). Acumula com todas as outras fontes.",
+            "beneficio": "A invocação treinada recebe +2 de Acerto ou CD (escolha um, abaixo). Acumula com todas as outras fontes.",
             "efeitosInvocacao": []
           },
           {
             "n": 4,
             "focos": 2,
             "requisito": null,
-            "beneficio": "A invocação escolhida recebe +1d6 extra em toda Ação de Ataque, e +2 em toda Ação de Cura. [Mesma nota da etapa 1: mira a invocação inteira. O caso 'Auxiliar' do livro (+2 Bônus Numérico) não tem canal de invocação que mire só Auxiliar — se ela tiver uma Ação Auxiliar sem dano/cura, aplique o +2 na mesa.]",
+            "beneficio": "A MESMA Ação escolhida na Etapa 1 recebe +1d6 extra em toda Ação de Ataque, e +2 em toda Ação de Cura. [Caso ela seja uma Ação Auxiliar sem dano nem cura, o motor não tem canal que mire um Bônus Numérico genérico: aplique o +2 (ou equivalente) na mesa.]",
             "efeitosInvocacao": [
               { "canal": "ataqueDanoAdicional", "expr": "6" },
               { "canal": "curaBonus", "expr": "2" }
@@ -56,6 +57,7 @@
           {
             "id": "acerto_ou_cd",
             "etapa": 3,
+            "soInvocacao": true,
             "opcoes": [
               { "id": "acerto", "nome": "Acerto", "efeitosInvocacao": [{ "canal": "acerto", "expr": "2" }] },
               { "id": "cd", "nome": "CD", "efeitosInvocacao": [{ "canal": "cd", "expr": "2" }] }
@@ -63,7 +65,8 @@
           }
         ],
         "completo": {
-          "beneficio": "Ápice da Invocação\nA invocação escolhida aumenta a quantidade de Ações/Características dela em um valor igual a metade do seu Bônus de Treinamento (arredondado para baixo). Essas Ações/Características ADICIONAIS entram no custo normal da invocação (não são grátis).",
+          "soInvocacao": true,
+          "beneficio": "Ápice da Invocação\nA invocação treinada aumenta a quantidade de Ações/Características dela em um valor igual a metade do seu Bônus de Treinamento (arredondado para baixo). Essas Ações/Características ADICIONAIS entram no custo normal da invocação (não são grátis).",
           "efeitosInvocacao": [
             { "canal": "orcamentoPago", "expr": "piso(bt / 2)" }
           ]

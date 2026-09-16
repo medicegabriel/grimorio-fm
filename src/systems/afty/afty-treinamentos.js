@@ -976,8 +976,21 @@ export function efeitosInvocacaoDeTreino(creature) {
       const nomeInst = mira
         ? `${linha.nome} (${rotuloAlvo(linha, inst.alvo, undefined, undefined, creature?.invocacoes)})`
         : null;
-      for (const et of linha.etapas) if (et.n <= p) add(et.efeitosInvocacao, linha, mira, nomeInst);
-      if (p >= ETAPAS_POR_LINHA) add(linha.completo?.efeitosInvocacao, linha, mira, nomeInst);
+      /* ⚠ `soInvocacao` (2026-09-15): numa linha `alvoTipo: "acaoInvocacao"`, a
+         MESMA instância mistura efeito de Ação (Nível de Dano só numa Ação) com
+         efeito de invocação inteira (Defesa, Acerto/CD, orçamento de
+         Ações/Características). Sem a marca, TODO efeito da instância herdava o
+         `acaoAlvo`, e canais que não passam por `daAcao` (defesa,
+         orcamentoPago...) caíam num balde que ninguém lê de volta — silêncio, e
+         não erro. Uma etapa, escolha ou o Completo com `soInvocacao: true` usa
+         só o `invocacaoAlvo` da mira, mesmo a instância inteira sendo
+         `acaoInvocacao`. Nasceu com Treinamento de Invocação v3. */
+      const miraDaInvocacao = mira?.invocacaoAlvo ? { invocacaoAlvo: mira.invocacaoAlvo } : null;
+      const miraDe = (declaracao) => (declaracao?.soInvocacao ? miraDaInvocacao : mira);
+      for (const et of linha.etapas) if (et.n <= p) add(et.efeitosInvocacao, linha, miraDe(et), nomeInst);
+      if (p >= ETAPAS_POR_LINHA) {
+        add(linha.completo?.efeitosInvocacao, linha, miraDe(linha.completo), nomeInst);
+      }
       // Escolha aninhada (ex.: "+2 em Acerto OU CD"), espelhando o mesmo bloco
       // de `efeitosDeTreino` — só que lendo `efeitosInvocacao` da opção.
       for (const escolha of linha.escolhas || []) {
@@ -985,7 +998,7 @@ export function efeitosInvocacaoDeTreino(creature) {
         const opcaoId = creature?.treinamentoEscolhas?.[linha.id]?.[escolha.id];
         const opcao = escolha.opcoes?.find((item) => item.id === opcaoId);
         if (opcao) {
-          add(opcao.efeitosInvocacao, linha, mira,
+          add(opcao.efeitosInvocacao, linha, miraDe(escolha),
             `${nomeInst || linha.nome} (${opcao.nome})`);
         }
       }

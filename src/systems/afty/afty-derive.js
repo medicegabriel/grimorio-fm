@@ -1815,6 +1815,7 @@ export function deriveAfty(creature, opcoes = {}) {
           quando: e?.quando ?? "", duracao: e?.duracao ?? "permanente",
           escopo: "invocacao",
           ...(e?.invocacaoAlvo ? { invocacaoAlvo: e.invocacaoAlvo } : {}),
+          ...(e?.acaoAlvo ? { acaoAlvo: e.acaoAlvo } : {}),
           alvoTipo: def?.alvo ?? null,
           alvoObrigatorio: !!def?.alvo && !def.alvoOpcional,
           nota: def?.nota ?? null,

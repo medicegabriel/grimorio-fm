@@ -1378,7 +1378,28 @@ Na tela, a linha do Motor ganhou o seletor "na criatura / na invocação", que t
 canal e o vocabulário de alvo, mais o "de todas as invocações / uma". Ficha sem invocação nenhuma
 não mostra o seletor. Na Ficha Final, o mesmo par entrou no formulário de buff da aba Buffs.
 
-Assert: `asserts/t-invocacao-escrita.mjs`.
+### A segunda camada da mira, e os sete canais que ela alcança
+
+A mira tem DOIS níveis, os mesmos que as Linhas de Treinamento usam: `invocacaoAlvo` diz qual
+invocação e `acaoAlvo` diz qual Ação dentro dela. A Técnica escrita pelo jogador ganhou o segundo
+nível junto com o primeiro, e o seletor "na ação" aparece na linha do Motor quando há uma invocação
+escolhida.
+
+⚠ **`acaoAlvo` só entrega em sete canais**, e isso não é estilo: o efeito mirado numa Ação vai para
+o balde `porAcao`, e quem abre esse balde é o `resolveAcao`, que só busca `danoNivel`, `danoBonus`,
+`curaNivel`, `curaBonus`, `ataqueDanoAdicional`, `acerto` e `cd`. Qualquer outro canal com
+`acaoAlvo` (Defesa, orçamento, custo) entra num balde que ninguém lê, e o efeito some sem erro.
+
+A lista é `CANAIS_POR_ACAO` (afty-invocacoes.js), ao lado do `daAcao` que a consome, e ela vale em
+três pontos: a UI esconde o seletor de Ação fora dela, o `bruto()` do editor não grava a mira, e o
+`efeitosInvocacaoEscritos` DESCARTA a mira que chegar assim mesmo, deixando a linha valer para a
+invocação inteira. Perder a precisão da mira é visível na tela, perder o efeito não é.
+
+Do lado das Linhas de Treinamento o mesmo buraco é tapado por outro caminho, o `soInvocacao` de
+`afty-treinamentos.js`: lá a instância inteira é `acaoInvocacao` e a declaração diz, etapa a etapa,
+qual efeito ignora a Ação.
+
+Assert: `asserts/t-invocacao-escrita.mjs` (blocos 3 e 8).
 
 ### ⚠ GAPS DO MOTOR (adicionar depois, não dá com o motor atual)
 

@@ -114,6 +114,7 @@ import {
   // O rótulo dos canais da invocação mora no motor desde 2026-09-10: a Ficha
   // também precisa dele, e uma cópia aqui envelheceria separada.
   INV_EFEITO_CANAL_GRUPOS, INV_EFEITO_CANAL_LABEL as EFEITO_CANAL_LABEL, alvoOpcoesInvocacao,
+  CANAIS_POR_ACAO,
 } from "./afty-invocacoes";
 import { periciasParaInvocacao, DANO_ADICIONAL_ARMA } from "./afty-pericias";
 import {
@@ -3771,6 +3772,12 @@ function TecnicaMotorEditor({
     ...(comModo ? { modo: e.modo === "ativa" ? "ativa" : "passiva" } : {}),
     ...(e.escopo === "invocacao" ? { escopo: "invocacao" } : {}),
     ...(e.escopo === "invocacao" && e.invocacaoAlvo ? { invocacaoAlvo: e.invocacaoAlvo } : {}),
+    // A mira em Ação só sobrevive com invocação escolhida e num canal que a
+    // Ação lê: gravá-la fora disso deixaria a ficha com uma mira que o motor
+    // descarta. Ver `CANAIS_POR_ACAO` em afty-invocacoes.js.
+    ...(e.escopo === "invocacao" && e.invocacaoAlvo && e.acaoAlvo && CANAIS_POR_ACAO.has(e.canal)
+      ? { acaoAlvo: e.acaoAlvo }
+      : {}),
   }));
   const add = () => onChange([...bruto(), {
     canal: "defesa", expr: "", ...(comModo ? { modo: "passiva" } : {}),
@@ -3786,12 +3793,17 @@ function TecnicaMotorEditor({
     if (partial.escopo !== undefined) {
       delete next.alvo;
       delete next.invocacaoAlvo;
+      delete next.acaoAlvo;
       next.canal = "defesa";
       if (partial.escopo !== "invocacao") delete next.escopo;
     }
+    // Trocar a invocação invalida a Ação escolhida: as Ações são DELA.
+    if (partial.invocacaoAlvo !== undefined) delete next.acaoAlvo;
     // Trocar de canal invalida o alvo antigo: o vocabulário é outro.
     if (partial.canal !== undefined) {
       delete next.alvo;
+      // E invalida a mira em Ação quando o canal novo não é lido por ela.
+      if (!CANAIS_POR_ACAO.has(partial.canal)) delete next.acaoAlvo;
       // Em Passivo/Característica, tamanho é uma escolha permanente direta.
       if (simplificarTamanho && partial.canal === "tamanho") {
         next.expr = "1";
@@ -3919,6 +3931,32 @@ function TecnicaMotorEditor({
                         <option value="">todas as invocações</option>
                         {invocacoes.map((inv) => (
                           <option key={inv.id} value={inv.id}>{inv.nome || "Sem nome"}</option>
+                        ))}
+                      </select>
+                      <MotorChevron />
+                    </div>
+                  </>
+                )}
+
+                {/* QUAL Ação, a segunda camada da mira (o mesmo par que as
+                    Linhas de Treinamento usam). Só aparece com uma invocação
+                    escolhida, porque a lista de Ações é DELA, e só nos canais
+                    que a Ação lê: nos outros a mira sumiria calada, e um
+                    seletor que não faz nada é pior que seletor nenhum. Ver
+                    `CANAIS_POR_ACAO`. */}
+                {naInvocacao && ef.invocacaoAlvo && CANAIS_POR_ACAO.has(ef.canal) && (
+                  <>
+                    <Conector>na ação</Conector>
+                    <div className="relative flex-shrink-0 min-w-[130px]">
+                      <select
+                        value={ef.acaoAlvo ?? ""}
+                        onChange={(e) => patch(i, { acaoAlvo: e.target.value })}
+                        className={MOTOR_SELECT_CLS}
+                        aria-label="Qual Ação da invocação"
+                      >
+                        <option value="">todas as ações</option>
+                        {(invocacoes.find((inv) => inv.id === ef.invocacaoAlvo)?.acoes ?? []).map((acao, n) => (
+                          <option key={acao.id} value={acao.id}>{acao.nome || `Ação ${n + 1}`}</option>
                         ))}
                       </select>
                       <MotorChevron />

@@ -1144,7 +1144,13 @@ export function resolveAcao(acao, inv, dono = {}, invCtx = inv) {
   /* ⚠ O BALDE DESTA AÇÃO (2026-09-14). O que veio mirado em `acaoAlvo` não
      entrou no total do canal de propósito (ver `efeitosHabilidade`): ele soma
      AQUI, e só na Ação de id igual. É o que faz *"escolha uma Ação de sua
-     invocação"* virar número em vez de valer para todas as irmãs. */
+     invocação"* virar número em vez de valer para todas as irmãs.
+
+     ⚠ SÓ OS SETE DE `CANAIS_POR_ACAO` SÃO LIDOS AQUI, e essa lista não é
+     estilo: o balde é um mapa por canal, e canal que ninguém vem buscar fica
+     no mapa sem nunca virar número. Quem escreve `acaoAlvo` num canal de fora
+     (Defesa, orçamento, custo) perde o efeito em SILÊNCIO. Ver a checagem em
+     `efeitosInvocacaoEscritos` e o `soInvocacao` de afty-treinamentos.js. */
   const daAcao = (canal) => dono.porAcao?.[acao?.id]?.[canal] ?? 0;
   const danoNivel = (dono.danoNivelHabilidade ?? 0) + daAcao("danoNivel");
   const danoBonusHab = (dono.danoBonusHabilidade ?? 0) + daAcao("danoBonus");
@@ -1576,6 +1582,20 @@ export const INV_EFEITO_CANAL_GRUPOS = (() => {
 })();
 
 /**
+ * Os canais que um efeito mirado numa AÇÃO consegue entregar: são os que o
+ * `resolveAcao` vai buscar no balde `porAcao` (ver o aviso ao lado do
+ * `daAcao`). Qualquer outro canal com `acaoAlvo` entra num balde que ninguém
+ * lê, e o efeito some sem erro nenhum.
+ *
+ * ⚠ Esta lista e o `daAcao` mudam JUNTOS. Quem ligar um canal novo por Ação
+ * precisa acrescentá-lo aqui, senão a UI continuará escondendo o seletor e o
+ * coletor continuará derrubando a mira.
+ */
+export const CANAIS_POR_ACAO = new Set([
+  "danoNivel", "danoBonus", "curaNivel", "curaBonus", "ataqueDanoAdicional", "acerto", "cd",
+]);
+
+/**
  * ============================================================
  * O QUE O JOGADOR ESCREVE, MIRADO NA INVOCAÇÃO
  * ============================================================
@@ -1616,6 +1636,13 @@ export function efeitosInvocacaoEscritos(creature) {
       if (e?.escopo !== "invocacao") continue;
       const expr = String(e?.expr ?? "").trim();
       if (!expr || !CANAL_VALIDO.has(e?.canal)) continue;
+      /* ⚠ A MIRA EM AÇÃO SÓ VIAJA NOS CANAIS QUE A AÇÃO LÊ. Num canal de fora
+         (Defesa, orçamento, custo) o balde `porAcao` nunca é consultado, e o
+         efeito sumiria sem erro. Aqui ela é DESCARTADA em vez de viajar, e a
+         linha vale para a invocação inteira: perder a precisão da mira é
+         visível na tela, perder o efeito não é. Mesmo problema que o
+         `soInvocacao` resolve do lado das Linhas de Treinamento. */
+      const miraAcao = e.acaoAlvo && CANAIS_POR_ACAO.has(e.canal) ? e.acaoAlvo : null;
       out.push({
         canal: e.canal,
         expr,
@@ -1624,7 +1651,7 @@ export function efeitosInvocacaoEscritos(creature) {
         ...(e.alvo ? { alvo: e.alvo } : {}),
         ...(e.quando ? { quando: String(e.quando).trim() } : {}),
         ...(e.invocacaoAlvo ? { invocacaoAlvo: e.invocacaoAlvo } : {}),
-        ...(e.acaoAlvo ? { acaoAlvo: e.acaoAlvo } : {}),
+        ...(miraAcao ? { acaoAlvo: miraAcao } : {}),
       });
     }
   };

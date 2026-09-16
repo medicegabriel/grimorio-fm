@@ -203,7 +203,51 @@ t("a Técnica abate o custo em PE para invocar",
   baseA.custo - invDe(deriveAfty(comAbate), "inv-a").custo, 2);
 
 /* ============================================================ */
-/* 8. O `quando` CONTINUA VALENDO                                */
+/* 8. A MIRA EM AÇÃO, E ONDE ELA NÃO VALE                        */
+/* ============================================================ */
+/* A segunda camada da mira, a mesma das Linhas de Treinamento: `acaoAlvo`
+   escolhe UMA Ação dentro da invocação. Ela só entrega nos canais que o
+   `resolveAcao` vai buscar no balde (`CANAIS_POR_ACAO`): num canal de fora o
+   balde nunca é lido e o efeito sumiria calado, que é o mesmo buraco que o
+   `soInvocacao` tapa do lado do Treinamento. Por isso o coletor DESCARTA a
+   mira nesses canais, e a linha passa a valer para a invocação inteira. */
+t("os sete canais que a Ação lê estão declarados",
+  [...INV.CANAIS_POR_ACAO].sort(),
+  ["acerto", "ataqueDanoAdicional", "cd", "curaBonus", "curaNivel", "danoBonus", "danoNivel"]);
+
+const comAcoes = () => {
+  const c = comInvocacoes();
+  c.invocacoes[0].acoes = [
+    { id: "acao-1", nome: "Garras", classe: "simples", familia: "ataque", ataque: { tipo: "corpo" } },
+    { id: "acao-2", nome: "Cuspe", classe: "simples", familia: "ataque", ataque: { tipo: "distancia" } },
+  ];
+  return c;
+};
+const acertoDaAcao = (d, acaoId) => invDe(d, "inv-a").acoes.find((a) => a.id === acaoId)?.bonusAtaque;
+const baseAcoes = deriveAfty(comAcoes());
+
+const miraNaAcao = comAcoes();
+miraNaAcao.core.tecnicaEfeitos = [{
+  canal: "acerto", expr: "3", escopo: "invocacao", invocacaoAlvo: "inv-a", acaoAlvo: "acao-1",
+}];
+const dMiraAcao = deriveAfty(miraNaAcao);
+t("a mira em Ação sobe o Acerto só daquela Ação",
+  acertoDaAcao(dMiraAcao, "acao-1") - acertoDaAcao(baseAcoes, "acao-1"), 3);
+t("e a Ação irmã fica intocada",
+  acertoDaAcao(dMiraAcao, "acao-2"), acertoDaAcao(baseAcoes, "acao-2"));
+
+/* ⚠ O ASSERT QUE IMPORTA NESTE BLOCO. `defesa` não é lido por Ação nenhuma,
+   então a mira é jogada fora e o efeito vale para a invocação toda, em vez de
+   virar um balde que ninguém abre. */
+const miraImpossivel = comAcoes();
+miraImpossivel.core.tecnicaEfeitos = [{
+  canal: "defesa", expr: "5", escopo: "invocacao", invocacaoAlvo: "inv-a", acaoAlvo: "acao-1",
+}];
+t("mira em Ação num canal que a Ação não lê não some: vale para a invocação",
+  invDe(deriveAfty(miraImpossivel), "inv-a").defesa - baseA.defesa, 5);
+
+/* ============================================================ */
+/* 9. O `quando` CONTINUA VALENDO                                */
 /* ============================================================ */
 const desligado = comTecnica({ canal: "defesa", expr: "5", quando: "nunca", escopo: "invocacao" });
 t("uma linha com `quando: nunca` não entra",

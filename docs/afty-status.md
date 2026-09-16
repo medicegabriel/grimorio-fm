@@ -158,6 +158,17 @@ vazamento). Guia: `docs/afty-invocacoes.md`. Ficou uma pergunta de regra aberta
 em `docs/a-fazer.md` sobre a cota base isenta de PE, que veio de trabalho não
 commitado de 2026-09-14 e deixa um assert vermelho.
 
+**Segunda passada, no mesmo dia.** Com a mira por Ação das Linhas de Treinamento
+já no repositório, a Técnica ganhou a mesma segunda camada: o seletor "na ação"
+aparece na linha do Motor quando há uma invocação escolhida. O que a passada
+acrescentou de verdade foi a TRAVA: `acaoAlvo` só entrega em sete canais (os que
+o `resolveAcao` busca no balde `porAcao`), e fora deles o efeito sumia calado. A
+lista virou `CANAIS_POR_ACAO`, ao lado do `daAcao` que a consome, e vale em três
+pontos: a UI esconde o seletor, o editor não grava a mira e o coletor descarta a
+que chegar assim mesmo, deixando a linha valer para a invocação inteira. É o
+mesmo buraco que o `soInvocacao` tapa do lado do Treinamento, por outro caminho.
+O assert subiu para 31.
+
 ---
 
 ## SESSÃO DE 2026-09-14: ADDONS DE ESTILO, ATRIBUTOS E AÇÕES
