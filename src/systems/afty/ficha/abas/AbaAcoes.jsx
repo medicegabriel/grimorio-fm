@@ -1030,6 +1030,7 @@ export default function AbaAcoes({
      Buffs o tempo inteiro"*. Descobrir os olhos é Ação Livre, e a Fadiga corre
      por turno: as duas coisas se fazem no meio da rodada. */
   vislumbre = null,
+  olhosAgulha = null,
   gatilhosTreino = [], onGatilhoTreino = null,
 }) {
   const dano = derived.dano?.entradas ?? [];
@@ -1051,6 +1052,7 @@ export default function AbaAcoes({
       {adaptacao}
       {/* Antes do Rápido: os olhos mudam o custo em PE de tudo que vem abaixo. */}
       {vislumbre}
+      {olhosAgulha}
       {/* Antes do Rápido e do Dano: reunir ou dividir é a primeira decisão da
           rodada, e ela muda a linha de dano que aparece logo abaixo. */}
       {armasTransformaveis}

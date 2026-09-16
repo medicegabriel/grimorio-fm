@@ -37,6 +37,7 @@ import { registrarFamilia } from "./afty-addons";
 // Só o `regraDo`, para a Passiva saber se cobra PE Máximo. O afty-sistema é
 // módulo FOLHA (t-ordem-modulos.mjs prende isso), então a seta é de mão única.
 import { regraDo } from "./afty-sistema";
+import { habilidadeOcularAgulha } from "./afty-olhos-agulha";
 // Só o RÓTULO do atributo, para o aviso da divisão não sair em snake_case.
 // afty-atributos.js importa só o schema, que não importa nada: seta segura.
 import { ATTR_LABEL } from "./afty-atributos";
@@ -247,12 +248,13 @@ export const custoPeMaximoDaPassiva = (nivel) =>
  * contasse aqui, declarar uma variação cobraria o PE Máximo duas vezes.
  */
 export function peMaximoDasPassivas(feiticos, sistema = undefined) {
-  const vazio = { total: 0, linhas: [] };
-  if (regraDo(sistema, "passivaCustaPeMaximo") !== "player") return vazio;
+  const cobraTodas = regraDo(sistema, "passivaCustaPeMaximo") === "player";
   const lista = Array.isArray(feiticos) ? feiticos : [];
   const linhas = [];
   for (const f of lista) {
     if (!f || f.tipo !== "passivo" || f.variacaoDe) continue;
+    // As oculares cobram o custo escrito no texto também na criatura Afty.
+    if (!cobraTodas && !habilidadeOcularAgulha(f)) continue;
     const custo = custoPeMaximoDaPassiva(f.nivel);
     if (!custo) continue;   // Nível 0 custa 0, e linha de valor zero é ruído.
     linhas.push({
@@ -3496,6 +3498,13 @@ export const getPassivoEfeito = (id) => PASSIVO_EFEITO_BY_ID[id] ?? PASSIVO_EFEI
  * não alcança" (ver Regeneração por Rodada em `docs/afty-formulas-base.md`).
  */
 export function calcularFeiticoPassivo(feitico, ctx = {}) {
+  const ocular = habilidadeOcularAgulha(feitico);
+  if (ocular) return {
+    disponivel: false, efeito: "ocular", efeitoLabel: ocular.nome,
+    unidade: "", valor: null, notacao: null, texto: "", tiposDanoExtra: 0, alvo: null,
+    custoPeMaximo: custoPeMaximoDaPassiva(feitico.nivel),
+    custoPeMaximoAtivo: true, efeitosGerados: [], avisos: [],
+  };
   const f = feitico || {};
   const nivel = f.nivel ?? 0;
   const nNum = nivel === "max" ? 5 : Math.max(0, Math.min(5, Math.trunc(Number(nivel) || 0)));

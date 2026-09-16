@@ -21,6 +21,7 @@ import { deltaDosEstados } from "../ficha/ficha-buffs";
 import { conteudoDaFicha, equipamentosDaFicha } from "../ficha/ficha-conteudo";
 import AbaAcoes from "../ficha/abas/AbaAcoes";
 import PainelDeAdaptacao from "../ficha/PainelDeAdaptacao";
+import PainelOlhosAgulha from "../ficha/PainelOlhosAgulha";
 import AbaBuffs from "../ficha/abas/AbaBuffs";
 import AbaPericias from "../ficha/abas/AbaPericias";
 import AbaHabilidades from "../ficha/abas/AbaHabilidades";
@@ -371,6 +372,7 @@ export default function PainelDeCombatente({
         <AbaAcoes
           derived={derived}
           adaptacao={<PainelDeAdaptacao derived={derived} onSessao={onSessao} />}
+          olhosAgulha={<PainelOlhosAgulha derived={derived} sessao={sessao} onSessao={onSessao} />}
           armasTransformaveis={<ArmasTransformaveis derived={derived} sessao={sessao} onSessao={onSessao} />}
           gatilhosTreino={derived.gatilhosTreino}
           onGatilhoTreino={(id, v) => onSessao((s) => alteraTreinoAtivo(s, id, v))}

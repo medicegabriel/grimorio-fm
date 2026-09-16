@@ -169,6 +169,8 @@ import {
   PESADA_VALORES, PROPRIEDADES_FORA_DO_GUIA, tabelaDeAlcance, TEXTO_ARMA_DE_FOGO, TEXTO_ARMAS,
 } from "./afty-criacao-equipamentos-armas";
 import VislumbreCard from "./ui/VislumbreCard";
+import OlhosAgulhaCard from "./ui/OlhosAgulhaCard";
+import { habilidadeOcularAgulha } from "./afty-olhos-agulha";
 import {
   orcamentoDaArma, createBlankCriacao, saneiaCriacaoDeArma, custoDeTecnica,
   CLASSIFICACOES_ARMA, PC_PROPRIEDADE,
@@ -2905,6 +2907,7 @@ function TabHabilidades({ draft, derived, patchCore, toggleArmaDedicada, addFeit
   const vislumbre = derived.vislumbre?.tem
     ? <VislumbreCard vislumbre={derived.vislumbre} />
     : null;
+  const olhosAgulha = <OlhosAgulhaCard derived={derived} patchCore={patchCore} addFeitico={addFeitico} updateFeitico={updateFeitico} removeFeitico={removeFeitico} />;
   const feiticosCard = derived.feiticos?.mostraCard ? (
     <FeiticosCard
       draft={draft}
@@ -2922,6 +2925,7 @@ function TabHabilidades({ draft, derived, patchCore, toggleArmaDedicada, addFeit
     return (
       <>
         {vislumbre}
+        {olhosAgulha}
         {estilo}
         {feiticosCard}
         {dano}
@@ -2938,6 +2942,7 @@ function TabHabilidades({ draft, derived, patchCore, toggleArmaDedicada, addFeit
       <>
         <SubsistemaPendente titulo="Habilidades Marciais" origem="Restringido" />
         {vislumbre}
+        {olhosAgulha}
         {feiticosCard}
         {estilo}
         {dano}
@@ -2960,6 +2965,7 @@ function TabHabilidades({ draft, derived, patchCore, toggleArmaDedicada, addFeit
         patchFuncionamento={patchFuncionamento}
       />
       {vislumbre}
+      {olhosAgulha}
       {feiticosCard}
       {/* Depois dos Feitiços de propósito: quem chega aqui tem os dois, e o
           Feitiço é o que ele já tinha. Os dois dividem o mesmo contador. */}
@@ -5322,6 +5328,15 @@ function subAbasDoFeitico(f) {
 function FeiticoCard({ feitico, ctx, nivelMax, tiposPermitidos, efeitosPassivo, fontesDano, dslGrupos, invocacoes, onPatch, onRemove, onDuplicate }) {
   const [confirmDel, setConfirmDel] = useState(false);
   const [subtab, setSubtab] = useState("base");
+  const ocular = habilidadeOcularAgulha(feitico);
+  if (ocular) return (
+    <div className="rounded-lg border border-slate-800 bg-slate-950/40 p-3 flex items-center flex-wrap gap-3 text-sm text-slate-300">
+      <span className="flex-1" title={ocular.textos[feitico.nivel]}>{ocular.nome}</span>
+      <span>Nível {feitico.nivel}</span>
+      <span>−{2 * Number(feitico.nivel)} PE máx.</span>
+      <button type="button" onClick={onRemove} className="text-rose-300" aria-label={`Remover ${ocular.nome}`}>Remover</button>
+    </div>
+  );
   const calculoBase = feitico.tipo === "dano" ? calcularFeiticoDano(feitico, ctx)
     : feitico.tipo === "auxiliar" ? calcularFeiticoAuxiliar(feitico, ctx)
       : feitico.tipo === "curativo" ? calcularFeiticoCurativo(feitico, ctx)

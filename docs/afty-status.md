@@ -1,5 +1,25 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-09-16: OLHOS DE AGULHA
+
+Addon `addons/olhos-de-agulha.json`, habilitado por `olhosDeAgulha`. Condição corporal com
+bônus de Percepção, referência ao voto e habilidades oculares escolhidas como Feitiços Passivos.
+O autor confirmou nível de liberação de Feitiço, substituição da versão 2 pela 4 do Olhar,
+custos mantidos sem olhos, arredondamento para baixo e recuperação pelo Descansar existente.
+Imunidade e Precisão Infalível permanecem com um olho. Texto, decisões, armazenamento e limites
+da automação em `docs/afty-olhos-agulha.md`.
+
+Card na aba Habilidades e painel na aba Ações da Ficha Final e dos Encontros. Os usos são
+marcados manualmente e recuperados no descanso, que não restaura olhos. A cobrança usa
+`peMaximoDasPassivas`, inclusive para estas passivas na criatura Afty, sem alterar as demais.
+O editor ocular evita a sugestão incorreta de bônus de Defesa da calculadora genérica.
+
+Validação específica: 64 asserts em `asserts/t-olhos-agulha.mjs`, ESLint e build aprovados.
+Interface conferida no criador Afty e Player, na Ficha Final e em Encontros, incluindo tela estreita.
+A suíte geral passou em 94 de 95 arquivos e continua com a falha
+preexistente de `t-invocacoes-motor.mjs`, sobre a cota gratuita de Características.
+Nenhum arquivo de `src/components/` foi alterado.
+
 Histórico de implementação e decisões do sistema Afty. O contexto rápido abaixo foi atualizado
 em 2026-09-09; sessões posteriores registram mudanças mais recentes. Para pendências atuais,
 consulte `docs/a-fazer.md`. Leia junto com `docs/roadmap-versionamento-e-fichas.md` (arquitetura)

@@ -43,9 +43,9 @@ const t = (nome, real, esp) => {
    `t-carteira.mjs`, e aqui ela conta so no censo. */
 /* E a `armasPorNivel` e a `encantamentoGuia` (2026-09-14), das fases 2 e 4
    da Criacao de Equipamentos, medidas nos asserts de cada fase. */
-t("sao 13 primitivas", AD.PRIMITIVAS.length, 13);
+t("sao 14 primitivas", AD.PRIMITIVAS.length, 14);
 t("ids esperados", AD.PRIMITIVAS.map((p) => p.id).sort(),
-  ["adaptacao", "armaTransformavel", "armasPorNivel", "carteira", "catarse", "cofre", "concessao", "contar", "criacaoArmas", "encantamentoGuia", "hpAtributo", "requisitoAptidao", "vislumbreCeleste"]);
+  ["adaptacao", "armaTransformavel", "armasPorNivel", "carteira", "catarse", "cofre", "concessao", "contar", "criacaoArmas", "encantamentoGuia", "hpAtributo", "olhosDeAgulha", "requisitoAptidao", "vislumbreCeleste"]);
 t("toda primitiva tem rotulo", AD.PRIMITIVAS.every((p) => !!p.rotulo), true);
 t("SEM_PRIMITIVAS e vazio", AD.SEM_PRIMITIVAS, []);
 

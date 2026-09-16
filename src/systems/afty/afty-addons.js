@@ -400,6 +400,11 @@ export const PRIMITIVAS = [
     nota: "A Condição Corporal dos Seis Olhos: os dois blocos de benefício (cobertos e descobertos), a redução ampla de PE, a Fadiga Mental e o card na aba Habilidades",
   },
   {
+    id: "olhosDeAgulha",
+    rotulo: "Olhos de Agulha",
+    nota: "Condição corporal do Clã Akutame, habilidades oculares e usos por descanso",
+  },
+  {
     id: "criacaoArmas",
     rotulo: "Criação de Armas",
     nota: "A bancada de Pontos de Criação no editor de arma própria: orçamento por classificação, custo, técnica e espaços, com o preço de cada propriedade e os limites de gasto",

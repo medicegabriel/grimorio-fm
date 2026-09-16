@@ -1,0 +1,9 @@
+{
+  "id": "olhos-de-agulha",
+  "nome": "Olhos de Agulha",
+  "versao": "1.0.0",
+  "autor": "Afty",
+  "paraRaw": "afty",
+  "descricao": "Condição corporal intrínseca do Clã Akutame.",
+  "permite": ["olhosDeAgulha"]
+}

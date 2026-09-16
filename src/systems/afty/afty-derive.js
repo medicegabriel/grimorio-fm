@@ -103,6 +103,7 @@ import {
   estadosDoVislumbre, efeitosDoVislumbre, resolveVislumbre, olhosDescobertos, fadigaAtual,
   ESTADO_DESCOBERTO, ESTADO_FADIGA,
 } from "./afty-vislumbre-celeste";
+import { resolveOlhosAgulha, efeitosOlhosAgulha } from "./afty-olhos-agulha";
 import { resolveTestes, resolveDano, catalogoPericiasDaFicha, ehPericiaOficio, atributosDePericiaManuais } from "./afty-pericias";
 import { resolveDefesasDano, sanearDefesasDano } from "./afty-defesas-dano";
 import { resolveCatarse } from "./afty-catarse";
@@ -612,6 +613,11 @@ export function deriveAfty(creature, opcoes = {}) {
     tem: temVislumbre,
     descoberto: vislumbreDescoberto,
   });
+  const olhosAgulha = resolveOlhosAgulha(creature, {
+    tem: primitivasDaCriatura(creature).includes("olhosDeAgulha"),
+    bt, nivelMax: nivelMaxFeitico(nd, nivelConjurador),
+  });
+  const efeitosAgulha = efeitosOlhosAgulha(olhosAgulha);
 
   const efeitosMontante = [
       ...efeitosDeTreino(creature, opcoes.treinosAtivos),
@@ -916,6 +922,7 @@ export function deriveAfty(creature, opcoes = {}) {
   const dedicadas = resolveArmasDedicadas(creature, armasParaDano, habilidades.efetivas);
 
   const efeitosTodos = carimbarGrupoExclusivo([
+    ...efeitosAgulha,
     // Os dois blocos do Vislumbre Celeste. O `quando` de cada um lê o estado
     // "Olhos Descobertos", então os dois convivem e só um vale por vez.
     ...efeitosVislumbre.filter((e) => e.canal !== "pontosAptidao"),
@@ -3369,6 +3376,7 @@ export function deriveAfty(creature, opcoes = {}) {
     empolgacao,           // Lutador: { ativa, aprimorada, inicial, max, tabela }
     combate: combateExibicao, // simulação: estado já aparado nos tetos da ficha, e com o custo em PE reduzido
     vislumbre,            // Vislumbre Celeste: { tem, cl, descoberto, visao, reducaoPe, fadiga, ... }
+    olhosAgulha,
     pvTemporario,         // casca de PV vinda da simulação (Fluxo, Brutalidade Aprimorada)
     peTemporario,         // casca de PE POR FONTE: { combate:[], rodada:[], tem } — a sessão aplica
     regeneracao,          // cura no início do turno: { dados, dado, fixo }
