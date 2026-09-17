@@ -22,6 +22,14 @@ export function aptidoesAuraDesabilitadas(creature, aptidoesIds) {
 
 export function estadosCombateAptidoes({ aptidoesIds = [], au = 0, cl = 0 } = {}) {
   const estados = [];
+  if (tem(aptidoesIds, "aura_embacada")) {
+    estados.push({
+      id: "auraEmbacada",
+      label: "Aura Embaçada",
+      tipo: "bool",
+      custoPE: 2,
+    });
+  }
   if (tem(aptidoesIds, "aura_elemental")) {
     estados.push({
       id: "auraElemental",

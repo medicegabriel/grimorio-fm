@@ -60,9 +60,15 @@ function LinhaDano({ e, rolar, critico, onCritico, destacado, onImbuir, modoDano
   const condicoesImbuidas = feiticoImbuido?.propriedades?.find((p) => p.id === "condicoes")?.valor;
   const cdImbuida = feiticoImbuido?.propriedades?.find((p) => p.id === "cd")?.valor;
   const modoVisual = modoDano !== "normal" ? modoDano : critico ? "critico" : "normal";
+  /* ⚠ O MODO NORMAL TAMBÉM MOSTRA A FÓRMULA SOMADA (autor, 2026-09-16: "Pq fica o
+     +1d8 +1d10 +5d8 ao lado do Dano e não no dano?"). Ele mostrava o `texto` do
+     golpe e um chip para cada grupo que chegou depois (Aura Elemental, Canalizar,
+     Sintonizada, Auxiliares), enquanto o clique e o total do hover já rolavam
+     tudo junto. Os chips ainda duplicaram dado duas vezes (o `1d4` do degrau e o
+     `1d6` do Ajuste). De onde cada dado veio é o hover que diz. */
   const danoExibido = modoVisual === "critico"
     ? e.formulaCritico
-    : modoVisual === "raio_negro" ? e.formulaRaioNegro : e.texto;
+    : modoVisual === "raio_negro" ? e.formulaRaioNegro : (e.formulaNormal ?? e.texto);
   const rolarModo = (modoDano) => {
     rolar({ tipo: "dano", rotulo: e.nome, grupos: e.gruposDano, modoDano });
     if (critico) onCritico(false);
@@ -127,21 +133,17 @@ function LinhaDano({ e, rolar, critico, onCritico, destacado, onImbuir, modoDano
             rolarModo(modoVisual);
           }}
         />
-        {modoVisual === "normal" && (e.gruposDano ?? []).slice(1)
-          .filter((extra) => !extra.apenasCritico && !extra.incluidoNoTexto)
-          .map((extra, indice) => (
-            <span key={`${extra.nome}:${indice}`} className="afty-chip" title={extra.nome}>
-              {extra.dados ? `+${extra.dados}d${extra.faces}` : ""}
-              {extra.fixo ? `${extra.dados ? " " : "+"}${extra.fixo}` : ""}
-            </span>
-          ))}
+        {/* Com rolagem, os dados do Feitiço imbuído já estão na fórmula, e o chip
+            só diz QUAL é. Um "+3d6" aqui leria como dado a mais. */}
         {feiticoImbuido && (
           <span
             className="afty-chip"
             data-afty-tom="destaque"
             title={[feiticoImbuido.conjuracaoTexto, feiticoImbuido.descricao].filter(Boolean).join("\n\n")}
           >
-            +{feiticoImbuido.valor || feiticoImbuido.nome || "Efeito"}
+            {feiticoImbuido.rolagens?.length
+              ? (feiticoImbuido.nome || "Feitiço Sem Nome")
+              : `+${feiticoImbuido.valor || feiticoImbuido.nome || "Efeito"}`}
           </span>
         )}
         {condicoesImbuidas && cdImbuida && (
@@ -1031,6 +1033,7 @@ export default function AbaAcoes({
      por turno: as duas coisas se fazem no meio da rodada. */
   vislumbre = null,
   olhosAgulha = null,
+  manipulacaoCeu = null,
   gatilhosTreino = [], onGatilhoTreino = null,
 }) {
   const dano = derived.dano?.entradas ?? [];
@@ -1053,6 +1056,7 @@ export default function AbaAcoes({
       {/* Antes do Rápido: os olhos mudam o custo em PE de tudo que vem abaixo. */}
       {vislumbre}
       {olhosAgulha}
+      {manipulacaoCeu}
       {/* Antes do Rápido e do Dano: reunir ou dividir é a primeira decisão da
           rodada, e ela muda a linha de dano que aparece logo abaixo. */}
       {armasTransformaveis}

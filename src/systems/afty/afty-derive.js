@@ -106,6 +106,7 @@ import {
   ESTADO_DESCOBERTO, ESTADO_FADIGA,
 } from "./afty-vislumbre-celeste";
 import { resolveOlhosAgulha, efeitosOlhosAgulha } from "./afty-olhos-agulha";
+import { estadosManipulacaoCeu, resolveManipulacaoCeu } from "./afty-manipulacao-ceu";
 import { resolveTestes, resolveDano, catalogoPericiasDaFicha, ehPericiaOficio, atributosDePericiaManuais } from "./afty-pericias";
 import { resolveDefesasDano, sanearDefesasDano } from "./afty-defesas-dano";
 import { resolveCatarse } from "./afty-catarse";
@@ -114,7 +115,7 @@ import { atributosDosAddons } from "./afty-addons-atributos";
 import { resolveCura } from "./afty-cura";
 import {
   problemasDeAddon, marcasDeclaradas, primitivasDaCriatura, liberacoesDaCriatura, precosDeCatarse,
-  nivelDaFicha, aptidoesConcedidasPorAddon,
+  nivelDaFicha, aptidoesConcedidasPorAddon, substituicaoEnergiaReversaPorAddon,
   estadosCombateDeAddon, epocaAddons,
 } from "./afty-addons";
 import { agrupaConcedido, concessoesDaSessao, escolhasDoConcedido } from "./afty-concessao";
@@ -407,20 +408,26 @@ export function deriveAfty(creature, opcoes = {}) {
   const aptidoesConcedidasAddon = semEnergia
     ? []
     : aptidoesConcedidasPorAddon(creature, { equipados: itensEquipados(creature) });
+  const substituicaoEnergiaReversa = substituicaoEnergiaReversaPorAddon(creature);
+  const aptidaoPermitidaPelaEstrutura = (id) => (
+    !substituicaoEnergiaReversa || getAptidao(id)?.categoria !== "energia_reversa"
+  );
   const aptidoesConcedidas = semEnergia ? [] : [...new Set([
     ...aptidoesConcedidasOrigem,
     ...aptidoesConcedidasEspecializacao,
     ...concedido.aptidoes,
     ...aptidoesConcedidasAddon.map((c) => c.id),
-  ])];
-  const aptidoesEscolhidasFicha = semEnergia || !Array.isArray(creature?.aptidoesAmaldicoadas)
+  ])].filter(aptidaoPermitidaPelaEstrutura);
+  const aptidoesEscolhidasRaw = semEnergia || !Array.isArray(creature?.aptidoesAmaldicoadas)
     ? []
     : creature.aptidoesAmaldicoadas;
+  const aptidoesEscolhidasFicha = aptidoesEscolhidasRaw.filter(aptidaoPermitidaPelaEstrutura);
   // A concedida NÃO duplica quando o jogador também a marcou à mão.
   const aptidoesIds = [...new Set([...aptidoesEscolhidasFicha, ...aptidoesConcedidas])];
   // A ficha que o resto do motor enxerga já vem com a concedida dentro, para
   // nenhum leitor precisar lembrar de somar as duas listas.
   const creatureComAptidoes = aptidoesConcedidas.length
+    || aptidoesEscolhidasFicha.length !== aptidoesEscolhidasRaw.length
     ? { ...creature, aptidoesAmaldicoadas: aptidoesIds }
     : creature;
   // ⚠ A ficha do criador é sempre montada com a alma ÍNTEGRA (autor,
@@ -940,12 +947,15 @@ export function deriveAfty(creature, opcoes = {}) {
     ...efeitosVislumbre.filter((e) => e.canal !== "pontosAptidao"),
     ...coletarEfeitosCriatura({
       habilidades, talentos: talentosPre, altoNivel,
+      // As Melhorias Superiores do jogador têm números próprios.
+      sistema,
       catalogos: {
         habilidades: getHabilidade, talentos: getTalento,
         // Um mapa só para as opções dos dois catálogos: os ids não colidem
         // (prefixo `lut_`/`cmb_`/`res_` contra `tal_`).
         opcoes: { ...OPCAO_ESCOLHA_NOME, ...OPCAO_TALENTO_NOME },
-        altoNivel: (id) => getMelhoriaSuperior(id) || getHabilidadeLendaria(id) || getHabilidadeApice(id),
+        // Com o sistema, o hover diz "Melhoria de Classe de Armadura" no jogador.
+        altoNivel: (id) => getMelhoriaSuperior(id, sistema) || getHabilidadeLendaria(id) || getHabilidadeApice(id),
       },
     }).map(aplicarDiretoDaAdaptacao).map((e) => efeitoDaImitacao(e, imitacao, nd)),
     // Direcionados por uma escolha que mora FORA do card da habilidade (a
@@ -1318,6 +1328,7 @@ export function deriveAfty(creature, opcoes = {}) {
   });
   const estadosAddon = estadosCombateDeAddon(creature, nivelMaxFeitico(nd, nivelConjurador));
   const estadosVislumbre = estadosDoVislumbre({ tem: temVislumbre });
+  const estadosCeu = estadosManipulacaoCeu(creature);
 
   /* ---------- TETO DE PER DA ENERGIA REVERSA ----------
      ⚠ ERA A MESMA CONTA ESCRITA TRÊS VEZES: os efeitos de `curaPontos` na
@@ -1378,6 +1389,7 @@ export function deriveAfty(creature, opcoes = {}) {
       ...estadosAptidoes,
       ...estadosAddon,
       ...estadosVislumbre,
+      ...estadosCeu,
       // Só existe com uma arma equipada que tenha a Sintonizada.
       ...(sintonizadas.length ? [{ id: ESTADO_SINTONIZADA, label: "Sintonizada", tipo: "bool" }] : []),
       ...ESTADOS_NATIVOS_EXTRAS,
@@ -1803,6 +1815,7 @@ export function deriveAfty(creature, opcoes = {}) {
         : { ...e, custoPE: custo.valor, custoPEBase: e.custoPE, reducoesCustoPE: custo.partes };
     }),
   };
+  const manipulacaoCeu = resolveManipulacaoCeu(creature, combateExibicao, aptidoesIds);
 
   // Funcionamento Básico da técnica, RESOLVIDO linha a linha, só para o editor
   // mostrar quanto cada expressão vale enquanto o jogador digita. É reavaliação,
@@ -2177,7 +2190,8 @@ export function deriveAfty(creature, opcoes = {}) {
   // Arredonda para baixo, como todo o resto do Afty.
   const contadorBase = contadorHabilidades(bt, patamar);
   const fatorSlots = fatorSlotsHabilidade(creature);
-  const contadorComum = Math.floor(contadorBase * fatorSlots);
+  // `let`: a Segunda Habilidade Única preenchida desconta daqui na criatura.
+  let contadorComum = Math.floor(contadorBase * fatorSlots);
   // As fontes do contador, para o hover poder dizer de onde o número veio. Sem
   // isso o Gêmeo vê metade das vagas e nada explicando.
   const partesContador = [
@@ -2226,12 +2240,35 @@ export function deriveAfty(creature, opcoes = {}) {
      tem técnica, e o que ocupa o lugar dos Feitiços dele é o Estilo das Sombras.
      Quem decide o número dele é a regra de Estilo, que o autor vai mandar. */
   const feiticoTemCaixaProprio = ehJogador("progressaoDeFeiticos") && !semEnergia;
-  const orcamentoFeitico = feiticoTemCaixaProprio
+  /* ⚠ A SEGUNDA HABILIDADE ÚNICA PREENCHIDA CUSTA UM SLOT DE FEITIÇO (autor,
+     2026-09-16, Addon Benção do Grão Mestre da Forja): "Eu perco um Slot de
+     Feitiço. Já que estou efetivamente colocando Feitiços no objeto". Um por
+     item, com o item guardado também, e nos DOIS sistemas. O Slot sai da pilha
+     em que o Feitiço daquela ficha gasta: o orçamento próprio no jogador, o
+     contador comum na criatura. Cada item vira uma parcela negativa com o nome
+     dele, que é o aviso no hover. */
+  const partesSegundaUnica = (equip.segundasUnicasPreenchidas ?? [])
+    .map((s) => ({ label: `${s.nome} (Segunda Habilidade Única)`, valor: -1 }));
+  const slotsDaSegundaUnica = partesSegundaUnica.length;
+  const progressaoFeitico = feiticoTemCaixaProprio
     ? totalFeiticosJogador(nd, {
       conjuracaoAprimorada: habilidades.efetivas.includes(CONJURACAO_APRIMORADA_ID),
     })
     : { total: 0, partes: [] };
-  const feiticosNoProprio = Math.min(feiticosGastos, orcamentoFeitico.total);
+  const orcamentoFeitico = feiticoTemCaixaProprio
+    ? {
+      total: progressaoFeitico.total - slotsDaSegundaUnica,
+      partes: [...progressaoFeitico.partes, ...partesSegundaUnica],
+    }
+    : progressaoFeitico;
+  if (!feiticoTemCaixaProprio && slotsDaSegundaUnica) {
+    contadorComum -= slotsDaSegundaUnica;
+    partesContador.push(...partesSegundaUnica);
+  }
+  /* O total pode ficar NEGATIVO (dois itens num orçamento de 1), e é o certo:
+     as parcelas continuam somando o total, e o medidor fica vermelho. Só a
+     conta de quantos Feitiços cabem apara em zero. */
+  const feiticosNoProprio = Math.min(feiticosGastos, Math.max(0, orcamentoFeitico.total));
   const feiticoForaDoProprio = feiticosGastos - feiticosNoProprio;
   /* A vaga de Feitiço serve às DUAS famílias (a nota do canal diz "Feitiço,
      Estilo das Sombras ou Habilidade Marcial"), então elas a dividem. A Técnica
@@ -2266,13 +2303,17 @@ export function deriveAfty(creature, opcoes = {}) {
        desenhar: quem tem caixa próprio não mostra o contador comum, que ali não
        tem dono nenhum. */
     proprioFeitico: orcamentoFeitico.total,
+    /* Se o caixa próprio EXISTE, separado do total: com a Segunda Habilidade
+       Única ele pode chegar a zero ou menos, e a UI que perguntava `total > 0`
+       trocaria o medidor de Feitiços pelo de Habilidades. */
+    proprioFeiticoAtivo: feiticoTemCaixaProprio,
     proprioFeiticoPartes: orcamentoFeitico.partes,
     proprioFeiticoUsado: feiticosNoProprio,
     /* O Feitiço estourou o caixa dele e as vagas exclusivas. Separado do
        `excedeu`, que mede o contador comum: no jogador os dois nunca são a mesma
        pergunta, e um Conjurador tem sempre `excedeu: false` porque não gasta o
        comum. */
-    excedeuFeitico: feiticoTemCaixaProprio && feiticoForaDeTudo > 0,
+    excedeuFeitico: feiticoTemCaixaProprio && (feiticoForaDeTudo > 0 || orcamentoFeitico.total < 0),
     exclusivasFeitico: vagasFeitico,
     exclusivasUsadas: feiticosNoExclusivo,
     exclusivasEstilo: vagasEstilo,
@@ -3387,6 +3428,7 @@ export function deriveAfty(creature, opcoes = {}) {
     dedicadas,            // Armas Dedicadas: { ativa, escolhidas, elegiveis, max, restante }
     empolgacao,           // Lutador: { ativa, aprimorada, inicial, max, tabela }
     combate: combateExibicao, // simulação: estado já aparado nos tetos da ficha, e com o custo em PE reduzido
+    manipulacaoCeu,
     vislumbre,            // Vislumbre Celeste: { tem, cl, descoberto, visao, reducaoPe, fadiga, ... }
     olhosAgulha,
     pvTemporario,         // casca de PV vinda da simulação (Fluxo, Brutalidade Aprimorada)

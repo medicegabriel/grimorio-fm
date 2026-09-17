@@ -52,14 +52,17 @@ const t = (nome, real, esp) => {
    `t-bencao-forja.mjs`. */
 /* E as tres da Criacao de Equipamentos (2026-09-14), medidas no
    `t-criacao-equipamentos.mjs` e no `t-criacao-equipamentos-itens.mjs`. */
-t("existem 16 liberacoes hoje", AD.LIBERACOES.length, 16);
+/* E a quinta de conteudo fora do jogador (2026-09-17), a Versatilidade Extrema,
+   medida no `t-melhorias-jogador.mjs`. */
+t("existem 17 liberacoes hoje", AD.LIBERACOES.length, 17);
 t("os ids", AD.LIBERACOES.map((l) => l.id),
   ["estiloSombras", "gemeosSemTecnica", "qualificaSemTecnica", "gemeosMaldicao",
    "feiticosRestritos", "carteiraFocos", "carteiraNivel",
    "segundaHabilidadeUnica", "acessoriosUnicos",
    "revestimentosCriados", "escudosCriados", "itensDeCusto",
    "soPorAddon:gemeos", "soPorAddon:atributo",
-   "soPorAddon:cnj_agilidade_no_campo_de_batalha", "soPorAddon:tal_alma_livre"]);
+   "soPorAddon:cnj_agilidade_no_campo_de_batalha", "soPorAddon:tal_alma_livre",
+   "soPorAddon:len_versatilidade_extrema"]);
 t("SEM_LIBERACOES e vazio", AD.SEM_LIBERACOES, []);
 
 /* ⚠ id com 2+ caracteres: o ID_PACOTE_OK recusa um caractere so, e um id curto

@@ -39,7 +39,8 @@
  * o teto duro de 30 de `deriveAfty` quando esse canal existir.
  */
 
-import { registrarFamilia, remendarLista, nivelDaFicha } from "./afty-addons";
+import { registrarFamilia, remendarLista, nivelDaFicha, filtraForaDoJogador, perdidaNoJogador } from "./afty-addons";
+import { sistemaDaFicha, regraDo } from "./afty-sistema";
 import {
   AFTY_ATTRS, AFTY_RESISTENCIAS, MELHORIA_NIVEL_INICIAL, LENDARIA_NIVEL_INICIAL,
 } from "./afty-schema";
@@ -100,6 +101,15 @@ export const MELHORIAS_SUPERIORES = [
       "Seja por resistência ou esquivando, te acertar é mais difícil. Você soma metade do seu " +
       "bônus de maestria ao total de sua Defesa.",
     maxVezes: 1,
+    // Ficha de Jogador: o texto do livro do jogador, verbatim (autor, 2026-09-17).
+    // Ver `melhoriaNoSistema` e a divergência `melhoriasSuperioresDoJogador`.
+    jogador: {
+      nome: "Melhoria de Classe de Armadura",
+      descricao:
+        "Seja por resistência ou esquivando, te acertar é mais difícil. Sua Classe de Armadura aumenta " +
+        "em 3. Você pode pegar esta melhoria uma segunda vez, aumentando em mais 2.",
+      maxVezes: 2,
+    },
   },
   {
     id: "mel_classe_de_dificuldade",
@@ -109,6 +119,14 @@ export const MELHORIAS_SUPERIORES = [
       "metade do seu bônus de maestria ao total de CD de todas suas habilidades de técnica, " +
       "aptidões amaldiçoadas e habilidades de especialização.",
     maxVezes: 1,
+    jogador: {
+      nome: "Melhoria de Classe de Dificuldade",
+      descricao:
+        "Com técnicas e habilidades refinadas, resistir a elas se torna mais difícil. A CD de todas suas " +
+        "habilidades de técnica, aptidões amaldiçoadas e habilidades de especialização aumenta em 3. Você " +
+        "pode pegar esta melhoria uma segunda vez, aumentando em mais 2.",
+      maxVezes: 2,
+    },
   },
   {
     id: "mel_dano",
@@ -125,6 +143,14 @@ export const MELHORIAS_SUPERIORES = [
       "A energia amaldiçoada é cultivada com mais facilidade e naturalidade em seu interior. Seu " +
       "máximo de pontos de energia amaldiçoada aumenta em um valor igual à sua maestria.",
     maxVezes: 1,
+    jogador: {
+      nome: "Melhoria de Energia",
+      descricao:
+        "A energia amaldiçoada é cultivada com mais facilidade e naturalidade em seu interior. Seu " +
+        "máximo de pontos de energia amaldiçoada aumenta em 6. Você pode pegar esta melhoria uma segunda " +
+        "vez, aumentando em mais 4.",
+      maxVezes: 2,
+    },
   },
   {
     id: "mel_movimento",
@@ -133,6 +159,11 @@ export const MELHORIAS_SUPERIORES = [
       "Agilidade e velocidade são importantes. Seu valor de movimento aumenta em um valor igual " +
       "metade de sua maestria * 1,5m.",
     maxVezes: 1,
+    jogador: {
+      nome: "Melhoria de Movimento",
+      descricao: "Agilidade e velocidade são importantes. Seu valor de movimento aumenta em 6 metros.",
+      maxVezes: 1,
+    },
   },
   {
     id: "mel_pericia",
@@ -469,6 +500,12 @@ export const HABILIDADES_LENDARIAS = [
     // direcionada por texto ("o limite de um Nível de Aptidão").
     id: "len_versatilidade_extrema",
     nome: "Versatilidade Extrema",
+    /* ⚠ FORA DO JOGADOR, E QUEM TEM PERDE (autor, 2026-09-17: "Isso não era para
+       ter em JOGADOR, qlqr pessoa com isso, precisa PERDER esse poder"). As duas
+       marcas andam juntas: `foraDoJogador` tira da lista, e `perdeNoJogador` tira
+       da ficha que já a escolheu. Ver a divergência `perdidoNoJogador`. */
+    foraDoJogador: true,
+    perdeNoJogador: true,
     descricao:
       "Buscando aprimorar-se em diversas áreas, você consegue desenvolver com perfeição suas " +
       "aptidões, recebendo 2 aumentos de nível de aptidão para distribuir, podendo aumentar uma " +
@@ -584,7 +621,24 @@ registrarFamilia("apices", {
   },
 });
 
-export const getMelhoriaSuperior = (id) => MELHORIA_BY_ID[id] || null;
+/**
+ * A Melhoria como ESTE sistema a lê. Na Ficha de Jogador o bloco `jogador` da
+ * entrada troca nome, texto e repetições (divergência
+ * `melhoriasSuperioresDoJogador`). O bloco sai do resultado, para ninguém ler o
+ * texto do outro livro por engano.
+ */
+export function melhoriaNoSistema(m, sistema) {
+  if (!m) return null;
+  if (!m.jogador) return m;
+  const { jogador, ...resto } = m;
+  return regraDo(sistema, "melhoriasSuperioresDoJogador") === "player" ? { ...resto, ...jogador } : resto;
+}
+
+/** O catálogo de Melhorias como este sistema o lê. */
+export const melhoriasSuperioresDe = (sistema) => MELHORIAS_SUPERIORES.map((m) => melhoriaNoSistema(m, sistema));
+
+/** Sem sistema devolve a do Afty, que é o ramo padrão do `regraDo`. */
+export const getMelhoriaSuperior = (id, sistema = null) => melhoriaNoSistema(MELHORIA_BY_ID[id], sistema) || null;
 export const getHabilidadeLendaria = (id) => LENDARIA_BY_ID[id] || null;
 export const getHabilidadeApice = (id) => APICE_BY_ID[id] || null;
 
@@ -716,6 +770,7 @@ function resolveEscolhas(itens, escolhasBrutas, opcoesPorItem = {}) {
 export function resolveAltoNivel(creature, ctx = {}) {
   const nd = nivelDaFicha(creature);
   const ativo = altoNivelAtivo(nd);
+  const sistema = sistemaDaFicha(creature);
   const destravado = {
     melhorias: ctx.destravado ? !!ctx.destravado.melhorias : true,
     lendarias: ctx.destravado ? !!ctx.destravado.lendarias : true,
@@ -725,7 +780,9 @@ export function resolveAltoNivel(creature, ctx = {}) {
   const vezesPorId = new Map();
   const brutasMel = Array.isArray(creature?.melhoriasSuperiores) ? creature.melhoriasSuperiores : [];
   for (const id of brutasMel) {
-    const m = MELHORIA_BY_ID[id];
+    // O `maxVezes` é do SISTEMA: a Classe de Armadura repete no jogador e a
+    // Defesa não repete na criatura, e as duas são o mesmo id.
+    const m = melhoriaNoSistema(MELHORIA_BY_ID[id], sistema);
     if (!m) continue;
     const atual = vezesPorId.get(id) ?? 0;
     if (atual >= m.maxVezes) continue;       // apara no teto do texto do livro
@@ -763,6 +820,10 @@ export function resolveAltoNivel(creature, ctx = {}) {
   const lendariasEscolhidas = [];
   for (const id of Array.isArray(creature?.habilidadesLendarias) ? creature.habilidadesLendarias : []) {
     if (!LENDARIA_BY_ID[id] || vistos.has(id)) continue;
+    /* ⚠ A LENDÁRIA QUE O JOGADOR PERDE (divergência `perdidoNoJogador`). Ela
+       some daqui, e com ela os efeitos, a escolha aninhada e a vaga que ocupava.
+       O id continua gravado na ficha: um Addon que a libere a devolve. */
+    if (perdidaNoJogador(LENDARIA_BY_ID[id], creature)) continue;
     vistos.add(id);
     lendariasEscolhidas.push(id);
   }
@@ -835,6 +896,13 @@ export function resolveAltoNivel(creature, ctx = {}) {
     },
     escolhas,                            // { porItem, mapa }
     apiceId,
+    /* Os catálogos como a tela desta ficha os mostra: as Melhorias com o texto
+       do sistema, e as Lendárias sem as que saíram do jogador. O card do criador
+       não recebe a ficha, só o derivado, e é por isso que a lista sai daqui. */
+    catalogo: {
+      melhorias: melhoriasSuperioresDe(sistema),
+      lendarias: filtraForaDoJogador(HABILIDADES_LENDARIAS, creature, lendariasEscolhidas),
+    },
   };
 }
 
@@ -910,6 +978,14 @@ export function validarCatalogoAltoNivel() {
   checarLista(MELHORIAS_SUPERIORES, "Melhorias Superiores", (m) => {
     if (!Number.isInteger(m.maxVezes) || m.maxVezes < 1) {
       problemas.push(`${m.nome}: maxVezes inválido (${m.maxVezes})`);
+    }
+    // O bloco do jogador troca a entrada inteira no /Player: faltar um campo
+    // mostraria o nome de um livro com o texto do outro.
+    if (m.jogador) {
+      if (!m.jogador.nome || !m.jogador.descricao) problemas.push(`${m.nome}: bloco do jogador sem nome ou descrição`);
+      if (!Number.isInteger(m.jogador.maxVezes) || m.jogador.maxVezes < 1) {
+        problemas.push(`${m.nome}: maxVezes do jogador inválido (${m.jogador.maxVezes})`);
+      }
     }
   });
   checarLista(HABILIDADES_LENDARIAS, "Habilidades Lendárias");

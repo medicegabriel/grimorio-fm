@@ -603,7 +603,8 @@ export default function AbaBuffs({
          ⚠ O `tipo` vem antes do espalhamento: a imbuição é `faixa`, e o extra
          que não declara nada continua caindo em `bool`. */
       ...(derived.combate?.estadosExtras ?? [])
-        .filter((e) => (!e.requerTalento || comLista(e.requerTalento).some((id) => talentos.includes(id)))
+        .filter((e) => !e.ocultarEmBuffs
+          && (!e.requerTalento || comLista(e.requerTalento).some((id) => talentos.includes(id)))
           && (!e.requerAptidao || comLista(e.requerAptidao).some((id) => aptidoes.includes(id)))
           && (!e.requerHabilidade || temHabilidade(e.requerHabilidade)))
         .map((e) => ({ tipo: "bool", ...e })),

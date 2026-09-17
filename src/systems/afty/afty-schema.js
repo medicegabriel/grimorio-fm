@@ -561,6 +561,9 @@ export function createBlankAfty() {
     // dos Treinamentos. `alvo` fica nulo enquanto nenhum Treino Especial pedir
     // um. Ver afty-treinos-especiais.js.
     treinosEspeciais: [],       // [{ id: 'tes_...', alvo: null }]
+    // Só a ficha de jogador lê (divergência `interludioComTeste`): lá a pega
+    // acima é o GANHO, e a tentativa mora aqui. Interlúdio é Foco.
+    treinoEspecialProgresso: {}, // { [id]: { interludios, sucessos } }
     // Orçamento de Focos = ND + bônus de poderes (derivado; ver deriveAfty).
     // "Outros" (poderes que dão treinos) virá do sistema de poderes:
     focosBonus: 0,

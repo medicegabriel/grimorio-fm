@@ -40,12 +40,27 @@
  * LEITURA, então baixar o ND devolve a pega excedente em vez de
  * apagá-la da ficha.
  *
+ * ⚠ NO JOGADOR O TESTE É ROLADO, e a ficha anota a tentativa (autor,
+ * 2026-09-16: "falta espaço para colocar Quantos Interludios foram
+ * gastos. Além de verdadeiramente quantas Habilidades ou Feitiços foram
+ * ganhos"). A pega da lista deixa de ser o Interlúdio e passa a ser só
+ * o GANHO, e o que mais a linha guarda mora em
+ * `treinoEspecialProgresso[id]`:
+ *
+ *   interludios   os Interlúdios gastos, que SÃO os Focos gastos
+ *                 ("Interludio e Foco é a mesma coisa")
+ *   sucessos      os da tentativa que não completou, até um a menos
+ *                 que `sucessosNecessarios`
+ *
+ * A vaga continua saindo das pegas, então o Motor, a concessão e o
+ * registro de Addons não mudam. Ver as divergências `interludioComTeste`
+ * e `tetoDeTreinoEspecial`.
+ *
  * ⚠ FALTA o **Estudos**, que continua como cartão "em breve" na aba:
  * o que existe dele é paráfrase de uma sessão antiga, e texto de
  * regra vem verbatim. Entra aqui como DADO, sem tocar em código,
- * assim que o autor mandar o texto. O **Treinamento para Habilidade**
- * já existe, mas a `descricao` dele ainda é a mesma paráfrase antiga:
- * o autor mandou construir o Treino antes de mandar o texto.
+ * assim que o autor mandar o texto. O texto do **Treinamento para
+ * Habilidade** chegou em 2026-09-16.
  *
  * `alvo` na instância: nenhum Treino Especial usa hoje (a vaga de
  * Feitiço é genérica, quem escolhe o Feitiço é a aba Habilidades).
@@ -55,10 +70,22 @@
  */
 
 import { registrarFamilia, remendarLista, partirId, nivelDaFicha } from "./afty-addons";
+import { evalNumber, validateExpression } from "./afty-dsl";
+import { sistemaDaFicha, regraDo } from "./afty-sistema";
 
 /** Uma pega de Treino Especial custa isto em Focos, salvo a entrada dizer outro. */
 export const FOCOS_POR_TREINO_ESPECIAL = 1;
 
+/* Os três campos que só o jogador lê, e os três são DADO porque um Addon pode
+   querer outro número:
+
+   `sucessosNecessarios`  quantos sucessos completam o treino. Sem ele a linha
+                          não guarda sucesso nenhum.
+   `cdTeste`              a CD, em expressão do Motor com `nd` sendo o Nível.
+                          Sem ela a linha não mostra CD.
+   `tetoJogador`          a escada do teto, degrau a degrau: vale o último
+                          `nivel` alcançado, e `max: null` é sem teto. Sem ela o
+                          jogador usa a conta da criatura. */
 export const AFTY_TREINOS_ESPECIAIS = [
   {
     id: "tes_feitico",
@@ -67,6 +94,10 @@ export const AFTY_TREINOS_ESPECIAIS = [
     // Teto: 1 + 1 a cada 5 ND (autor, 2026-08-18). ND 5 = 2, ND 10 = 3,
     // ND 15 = 4, e daí para cima sem fim, porque o ND do Afty não tem teto.
     vezesACada: 5,
+    // No jogador não há teto (autor, 2026-09-16, "Sem teto").
+    tetoJogador: [{ nivel: 1, max: null }],
+    sucessosNecessarios: 3,
+    cdTeste: "12 + piso(nd / 2)",
     concede: "Vaga de Feitiço",
     descricao:
       "Focar seu Interlúdio em Treinamento de Feitiço significa buscar novos conhecimentos e " +
@@ -90,16 +121,27 @@ export const AFTY_TREINOS_ESPECIAIS = [
     // ND 30 = 4. Bate com o texto antigo da aba ("até o 9º nível, uma
     // habilidade adicional por essa via, a partir do 10º mais uma").
     vezesACada: 10,
+    // No jogador vale a letra do texto: 1 até o 9° nível e 2 do 10° em diante,
+    // sem subir mais (autor, 2026-09-16, "Máximo 2").
+    tetoJogador: [{ nivel: 1, max: 1 }, { nivel: 10, max: 2 }],
+    sucessosNecessarios: 3,
+    cdTeste: "12 + piso(nd / 2)",
     concede: "Vaga de Habilidade",
-    // ⚠ TEXTO AINDA NÃO VERBATIM. Esta descrição é a paráfrase que estava no
-    // cartão "em breve" da aba desde 2026-07-2X, reflowada e sem os
-    // ponto-e-vírgula. Ela NÃO foi conferida contra o livro, e o autor mandou
-    // construir o Treino antes de mandar o texto. Trocar pelo verbatim assim
-    // que ele chegar: está anotado em docs/a-fazer.md.
+    // Verbatim, enviado pelo autor em 2026-09-16.
     descricao:
-      "Escolher uma habilidade de especialização cujos requisitos você atende como objetivo do " +
-      "treino. São quatro testes de um atributo, com dificuldade igual a 12 + metade do seu " +
-      "Nível, e três sucessos concluem o treinamento.",
+      "O Treinamento já é uma opção presente no Livro Básico. Entretanto, este treinamento " +
+      "adiciona mais uma possibilidade, oferecendo uma nova maneira de desenvolvimento e " +
+      "crescimento.\n\n" +
+      "Ao escolher a opção do Treinamento para Habilidade, você deve escolher uma habilidade de " +
+      "especialização cujos requisitos sejam atendidos, transformando-a no objetivo do seu " +
+      "treinamento. Logo após, você deve escolher um dos seus atributos e descrever como é o " +
+      "treino, realizando quatro testes de habilidade com o atributo escolhido. Os testes possuem " +
+      "CD igual a 12 + metade do seu nível, e o personagem deve suceder em pelo menos três deles " +
+      "para completar o seu treinamento.\n\n" +
+      "Caso não consiga completar o treinamento, você mantém os seus sucessos, podendo tentar " +
+      "novamente em outro interlúdio.\n\n" +
+      "Um personagem pode obter apenas uma habilidade adicional a partir desse treinamento até o " +
+      "9° nível. A partir do 10° nível, pode obter uma habilidade a mais.",
     efeitos: [{ canal: "vagasHabilidade", expr: "1" }],
   },
 ];
@@ -159,9 +201,23 @@ const ndDaFicha = (creature) => nivelDaFicha(creature);
 export function maxVezesTreinoEspecial(id, ctx = {}) {
   const def = BY_ID[id];
   if (!def) return 0;
-  if (def.vezesACada == null) return def.maxVezes ?? null;
   const nd = Math.max(1, Math.trunc(Number(ctx.nd) || 1));
+  /* ⚠ `ctx.sistema` decide a régua. Sem ele cai na da criatura, que é o que
+     o `regraDo` devolve para sistema desconhecido. */
+  if (regraDo(ctx.sistema, "tetoDeTreinoEspecial") === "player" && Array.isArray(def.tetoJogador)) {
+    return tetoDaEscada(def.tetoJogador, nd);
+  }
+  if (def.vezesACada == null) return def.maxVezes ?? null;
   return 1 + Math.floor(nd / def.vezesACada);
+}
+
+/** O `max` do último degrau alcançado. Nenhum degrau alcançado é teto zero. */
+function tetoDaEscada(escada, nd) {
+  let teto = 0;
+  for (const degrau of escada) {
+    if (nd >= degrau.nivel) teto = degrau.max ?? null;
+  }
+  return teto;
 }
 
 /**
@@ -194,7 +250,10 @@ export function normalizeTreinosEspeciais(lista, ctx = {}) {
 
 /** As pegas válidas de uma ficha, já aparadas no teto do ND dela. */
 const instanciasDa = (creature) =>
-  normalizeTreinosEspeciais(creature?.treinosEspeciais, { nd: ndDaFicha(creature) });
+  normalizeTreinosEspeciais(creature?.treinosEspeciais, {
+    nd: ndDaFicha(creature),
+    sistema: sistemaDaFicha(creature),
+  });
 
 /** Quantas vezes cada Treino Especial foi pego: `{ [id]: n }`. */
 export function vezesPorTreinoEspecial(creature) {
@@ -207,17 +266,56 @@ export function vezesPorTreinoEspecial(creature) {
 
 /** O teto de cada Treino Especial nesta ficha: `{ [id]: n | null }`. */
 export function tetosDeTreinoEspecial(creature) {
-  const nd = ndDaFicha(creature);
+  const ctx = { nd: ndDaFicha(creature), sistema: sistemaDaFicha(creature) };
   return Object.fromEntries(
-    AFTY_TREINOS_ESPECIAIS.map((t) => [t.id, maxVezesTreinoEspecial(t.id, { nd })]),
+    AFTY_TREINOS_ESPECIAIS.map((t) => [t.id, maxVezesTreinoEspecial(t.id, ctx)]),
   );
+}
+
+/** Quantos sucessos uma tentativa incompleta guarda: um a menos que o necessário. */
+export const maxSucessosGuardados = (def) =>
+  Math.max(0, Math.trunc(Number(def?.sucessosNecessarios) || 0) - 1);
+
+const inteiroNaoNegativo = (v) => Math.max(0, Math.trunc(Number(v) || 0));
+
+/**
+ * O que a linha do jogador mostra: `{ interludios, sucessos, ganhos }`.
+ *
+ * ⚠ OS INTERLÚDIOS NUNCA FICAM ABAIXO DOS GANHOS. Cada Ganho é pelo menos uma
+ * tentativa, e a ficha de jogador anterior a 2026-09-16 tem pegas e nenhum
+ * Interlúdio anotado. Ler o gravado cru a deixaria com Ganhos sem Interlúdio e
+ * com os Focos daquelas pegas devolvidos ao orçamento, calados.
+ */
+export function progressoTreinoEspecial(creature, id) {
+  const def = BY_ID[id];
+  if (!def) return { interludios: 0, sucessos: 0, ganhos: 0 };
+  const bruto = creature?.treinoEspecialProgresso?.[id];
+  const ganhos = vezesPorTreinoEspecial(creature)[id] ?? 0;
+  return {
+    interludios: Math.max(inteiroNaoNegativo(bruto?.interludios), ganhos * focosDoTreinoEspecial(def)),
+    sucessos: Math.min(inteiroNaoNegativo(bruto?.sucessos), maxSucessosGuardados(def)),
+    ganhos,
+  };
+}
+
+/** A CD do teste, pelo Nível da ficha. `null` quando a entrada não declara CD. */
+export function cdDoTreinoEspecial(def, creature) {
+  if (!def?.cdTeste) return null;
+  return evalNumber(def.cdTeste, { nd: ndDaFicha(creature) }, null);
 }
 
 /**
  * Focos gastos em Treinos Especiais. Irmão do `focosGastos` das Linhas de
  * Treinamento, e as duas somas entram no MESMO orçamento do cabeçalho da aba.
+ *
+ * ⚠ No jogador o gasto são os Interlúdios anotados, e não as pegas: três
+ * Feitiços podem ter custado nove. Ver a divergência `interludioComTeste`.
  */
 export function focosDeTreinosEspeciais(creature) {
+  if (regraDo(sistemaDaFicha(creature), "interludioComTeste") === "player") {
+    return AFTY_TREINOS_ESPECIAIS
+      .reduce((total, def) => total + progressoTreinoEspecial(creature, def.id).interludios, 0);
+  }
   let total = 0;
   for (const inst of instanciasDa(creature)) {
     total += focosDoTreinoEspecial(BY_ID[inst.id]);
@@ -290,6 +388,21 @@ export function validarCatalogoTreinosEspeciais() {
     for (const ef of t.efeitos || []) {
       if (!ef.canal) problemas.push(`${t.id} com efeito sem canal`);
       if (!ef.expr) problemas.push(`${t.id} com efeito sem expressão`);
+    }
+    if (t.sucessosNecessarios != null && !(Number.isInteger(t.sucessosNecessarios) && t.sucessosNecessarios >= 1)) {
+      problemas.push(`${t.id} com sucessosNecessarios inválido`);
+    }
+    // A CD só conhece o Nível: um nome a mais cairia no fallback e a linha perderia a CD calada.
+    if (t.cdTeste != null && !validateExpression(t.cdTeste, new Set(["nd"])).ok) {
+      problemas.push(`${t.id} com cdTeste inválida`);
+    }
+    if (t.tetoJogador != null) {
+      const escada = Array.isArray(t.tetoJogador) ? t.tetoJogador : [];
+      const degrausOk = escada.length > 0 && escada.every((d, i) =>
+        Number.isInteger(d?.nivel) && d.nivel >= 1
+        && (i === 0 || d.nivel > escada[i - 1].nivel)
+        && (d.max == null || (Number.isInteger(d.max) && d.max >= 0)));
+      if (!degrausOk) problemas.push(`${t.id} com tetoJogador inválido`);
     }
   }
   return problemas;

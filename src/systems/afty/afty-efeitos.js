@@ -91,6 +91,8 @@ import {
 /* O Nível efetivo, que pode vir do XP da Carteira. O afty-addons só importa
    folhas (afty-dsl, afty-sistema e afty-carteira), entao a seta e segura. */
 import { nivelDaFicha } from "./afty-addons";
+// Folha: a divergência das Melhorias Superiores do jogador.
+import { regraDo } from "./afty-sistema";
 import { getAnatomia } from "./afty-anatomias";
 import { CUSTO_PE_MINIMO } from "./afty-dominio-simples";
 // afty-aptidoes só importa afty-origens, que já é dependência daqui: sem ciclo.
@@ -99,7 +101,7 @@ import { funcionamentosDaFicha } from "./afty-schema";
 import { RECURSOS_BUFF_NATIVOS } from "./afty-extras-nativos";
 import {
   HABILIDADE_EFEITOS, ESCOLHA_EFEITOS, TALENTO_EFEITOS,
-  MELHORIA_EFEITOS, MELHORIA_EFEITOS_ALVO, LENDARIA_EFEITOS, LENDARIA_EFEITOS_ALVO,
+  MELHORIA_EFEITOS, MELHORIA_EFEITOS_JOGADOR, MELHORIA_EFEITOS_ALVO, LENDARIA_EFEITOS, LENDARIA_EFEITOS_ALVO,
   APICE_EFEITOS, GERAL_EFEITOS,
   // Os três de origem entram no ESCOPO LOCAL (o `export ... from` mais abaixo
   // só reexporta, não declara), porque o coletarEfeitosOrigem daqui os usa.
@@ -176,7 +178,7 @@ export const EFEITO_CANAIS = [
   // Cálculo de vida de uma pessoa para um a minha escolha"*. A regra de
   // desempate é a MESMA da Defesa, e pelo mesmo motivo.
   { id: "hpAtributo",     label: "Atributo do PV",       alvo: "atributo", nota: "TROCA a Constituição no cálculo do PV, e não soma nada. Com mais de um concedido vale o de maior modificador, porque a regra é sempre \"você pode optar\"" },
-  { id: "bonusPericia",  label: "Perícia",               alvo: "pericia", nota: "aceita `atr:destreza` para atingir toda perícia daquele atributo (Dádivas do Céu)" },
+  { id: "bonusPericia",  label: "Perícia",               alvo: "pericia", nota: "aceita `atr:destreza` para atingir toda perícia daquele atributo (Dádivas do Céu) e `oficio:todos` para atingir toda linha de Ofício" },
   /* Irmão do `defesaAtributo` do lado da Perícia: ele SUBSTITUI o bônus inteiro
      da linha por um número, em vez de somar nele. Nasceu com o Treino Cônjuge
      do Flugel, cuja 1ª etapa diz *"pode usar o bônus do seu cônjuge pra fazer um
@@ -189,7 +191,7 @@ export const EFEITO_CANAIS = [
 
      ⚠ Desempate igual ao do `defesaAtributo`: vale o MAIOR, porque a regra é
      sempre *"você PODE usar"*. Quem oferece uma troca opcional nunca piora. */
-  { id: "periciaFixa",   label: "Perícia com Valor Fixo", alvo: "pericia", nota: "TROCA o bônus inteiro da perícia por este número, e não soma nada. Com mais de um vale o maior, porque a regra é sempre \"você pode usar\"" },
+  { id: "periciaFixa",   label: "Perícia com Valor Fixo", alvo: "pericia", nota: "TROCA o bônus inteiro da perícia por este número quando ele é maior que o da própria ficha, e não soma nada. Com mais de um vale o maior, porque a regra é sempre \"você pode usar\"" },
   /* ⚠ O TOTAL PARA EM ZERO (autor, 2026-09-11). Soma na penalidade do uniforme e
      do escudo, que só pesa nas perícias de Destreza: positivo alivia, negativo
      aumenta, e um aumento vale mesmo sem nada equipado. Quem apara é o derive,
@@ -942,7 +944,7 @@ export function buildCriaturaDslContext(base = {}) {
 
 export {
   HABILIDADE_EFEITOS, ESCOLHA_EFEITOS, TALENTO_EFEITOS,
-  MELHORIA_EFEITOS, MELHORIA_EFEITOS_ALVO, LENDARIA_EFEITOS, LENDARIA_EFEITOS_ALVO,
+  MELHORIA_EFEITOS, MELHORIA_EFEITOS_JOGADOR, MELHORIA_EFEITOS_ALVO, LENDARIA_EFEITOS, LENDARIA_EFEITOS_ALVO,
   APICE_EFEITOS, GERAL_EFEITOS, APTIDAO_EFEITOS,
   ORIGEM_EFEITOS, CLA_EFEITOS, ANATOMIA_EFEITOS,
 } from "./afty-efeitos-conteudo";
@@ -1179,7 +1181,12 @@ export function coletarEfeitos(ids, mapa, catalogo = {}, vezesPorId = null) {
  */
 export const ESCOLHAS_DE_HABILIDADE = ["res_roubo_de_habilidade"];
 
-export function coletarEfeitosCriatura({ habilidades, talentos, altoNivel, catalogos } = {}) {
+export function coletarEfeitosCriatura({ habilidades, talentos, altoNivel, catalogos, sistema = null } = {}) {
+  /* As quatro Melhorias que o livro do jogador escreve diferente trocam as
+     linhas do mesmo id. Ver `MELHORIA_EFEITOS_JOGADOR`. */
+  const efeitosMelhoria = regraDo(sistema, "melhoriasSuperioresDoJogador") === "player"
+    ? { ...MELHORIA_EFEITOS, ...MELHORIA_EFEITOS_JOGADOR }
+    : MELHORIA_EFEITOS;
   const vezesMel = Object.fromEntries(
     (altoNivel?.melhorias?.escolhidas || []).map((m) => [m.id, m.vezes]),
   );
@@ -1200,7 +1207,7 @@ export function coletarEfeitosCriatura({ habilidades, talentos, altoNivel, catal
     // Talento também tem escolha aninhada (o atributo do Incremento, a trilha
     // da Aptidão Desenvolvida), e cai no mesmo ESCOLHA_EFEITOS.
     ...coletarEfeitosDeEscolha(talentos?.escolhas?.mapa, catalogos?.opcoes, catalogos?.talentos),
-    ...coletarEfeitos(Object.keys(vezesMel), MELHORIA_EFEITOS, catalogos?.altoNivel, vezesMel),
+    ...coletarEfeitos(Object.keys(vezesMel), efeitosMelhoria, catalogos?.altoNivel, vezesMel),
     ...coletarEfeitosComAlvo(
       Object.keys(vezesMel), altoNivel?.escolhas?.mapa, MELHORIA_EFEITOS_ALVO,
       catalogos?.altoNivel, vezesMel,

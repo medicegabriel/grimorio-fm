@@ -1,24 +1,35 @@
 # Status do Grimório Afty (handoff para chat novo)
 
-## SESSÃO DE 2026-09-16: OLHOS DE AGULHA
+## SESSÃO DE 2026-09-17: TOBIMUNE REBALANCEADA
 
-Addon `addons/olhos-de-agulha.json`, habilitado por `olhosDeAgulha`. Condição corporal com
-bônus de Percepção, referência ao voto e habilidades oculares escolhidas como Feitiços Passivos.
-O autor confirmou nível de liberação de Feitiço, substituição da versão 2 pela 4 do Olhar,
-custos mantidos sem olhos, arredondamento para baixo e recuperação pelo Descansar existente.
-Imunidade e Precisão Infalível permanecem com um olho. Texto, decisões, armazenamento e limites
-da automação em `docs/afty-olhos-agulha.md`.
+### Revisão 2.1.0: substituição de Energia Reversa
 
-Card na aba Habilidades e painel na aba Ações da Ficha Final e dos Encontros. Os usos são
-marcados manualmente e recuperados no descanso, que não restaura olhos. A cobrança usa
-`peMaximoDasPassivas`, inclusive para estas passivas na criatura Afty, sem alterar as demais.
-O editor ocular evita a sugestão incorreta de bônus de Defesa da calculadora genérica.
+O autor corrigiu a interpretação de acesso: as cinco Aptidões de cura não são concessões gratuitas.
+Ativar o addon agora remove a trilha e a aba Energia Reversa e coloca a aba Tobimune no mesmo lugar.
+Ela lista somente Regeneração Corporal, Regeneração Ampliada, Regeneração Máxima, Regeneração de
+Membros e Fluxo Imparável. Cada uma continua sendo escolha normal, com vaga e pré-requisitos.
 
-Validação específica: 64 asserts em `asserts/t-olhos-agulha.mjs`, ESLint e build aprovados.
-Interface conferida no criador Afty e Player, na Ficha Final e em Encontros, incluindo tela estreita.
-A suíte geral passou em 94 de 95 arquivos e continua com a falha
-preexistente de `t-invocacoes-motor.mjs`, sobre a cota gratuita de Características.
-Nenhum arquivo de `src/components/` foi alterado.
+Nasceu o campo genérico `substituiEnergiaReversa` dos Addons. O verbo mora no motor e a lista de ids
+fica no pacote. A substituição não muda a origem estrutural, não concede Aptidão e não depende de a
+arma estar equipada. Escolhas e concessões antigas de Energia Reversa ficam inativas enquanto a
+substituição existir. Sem o addon, Energia Reversa volta com os valores que já estavam gravados.
+
+O addon `addons/tobimune.json` foi reduzido à katana pedida pelo autor. Os 16 modelos de Passivo,
+os quatro Estados de Combate e os três Funcionamentos da versão 1.0.0 foram removidos. A pendência
+dos Feitiços ativos também saiu de `docs/a-fazer.md`, pois esse conteúdo não pertence mais ao pacote.
+
+A versão 2.0.0 é uma arma Tática de Técnica de custo 4 e um espaço. O orçamento de 20 PC fecha sem
+sobra: 6 em dano, 6 na margem 18 e 8 nas propriedades Aparar, Fatal d12, Fineza, Marcial,
+Oscilante e Versátil. A linha causa 1d12 + 1d4 cortante com uma mão e 2d8 com duas mãos.
+
+A Tobimune nasce como Ferramenta Amaldiçoada de Quarto Grau, mas não tem grau fixo. A ficha pode
+alterar seu grau e seus Encantamentos pelas regras normais, com Grau Especial como o último degrau.
+O pacote libera Regeneração Corporal, Regeneração Ampliada, Regeneração Máxima, Regeneração de
+Membros e Fluxo Imparável como alternativas à Energia Reversa. A revisão 2.1.0 acima substitui a
+concessão automática que existia na primeira versão deste rebalanceamento.
+
+O guia foi reescrito em `docs/afty-tobimune.md`. O assert específico verifica pacote, orçamento,
+grau editável, substituição da aba e da trilha, lista fechada de Aptidões e desinstalação.
 
 Histórico de implementação e decisões do sistema Afty. O contexto rápido abaixo foi atualizado
 em 2026-09-09; sessões posteriores registram mudanças mais recentes. Para pendências atuais,
@@ -143,6 +154,388 @@ e `docs/afty-formulas-base.md` (fórmulas).
 >
 > 👉 **Começando um chat novo? Vá direto para
 > [PENDÊNCIAS DE ESPECIALIZAÇÕES](#-pendências-de-especializações-lista-de-retomada).**
+
+---
+
+## INTEGRAÇÃO DE 2026-09-17: OLHOS DE AGULHA, PACTO E MANIPULAÇÃO DO CÉU
+
+Cinco commits do remoto entraram por cima do trabalho não commitado (três do GoliasK, dois do Arthur
+Kyldare): Olhos de Agulha, a primitiva Pacto e a Manipulação do Céu com a Aura Embaçada. O HEAD foi de
+`fe1bebc` para `aa0923c`, e o trabalho local continua não commitado por cima.
+
+- **Sem `stash`**, porque outra sessão gravava na mesma árvore. Um script mesclou cada arquivo
+  (versão do remoto quando só ele mudou, três vias quando os dois mudaram), gravou só depois de tudo
+  calculado, e o `git reset -q origin/main` moveu o HEAD sem tocar na cópia de trabalho. Backup no
+  stash "antes do pull 2026-09-17", criado sem mexer na árvore.
+- **Dois conflitos, os dois no Passivo.** O colaborador criou a categoria "Personalizado" gravando
+  `efeitoPassivo: "personalizado"` (código e `addons/manipulacao-do-ceu.json`), e a sessão de hoje
+  tinha trocado o campo para `categoriaPassivo`. A junção é **`categoriaDoPassivo(f)`**: lê o campo
+  novo e, do antigo, só o "personalizado", que nunca foi padrão de ninguém. O Addon dele funciona sem
+  editar o JSON, e o painel "Valor calculado" não nasce nem sem categoria nem no Personalizado.
+- As duas sessões dele estavam acima do cabeçalho deste arquivo, e foram movidas para a posição da
+  data, com o texto intacto.
+- Conferido que nenhuma linha local se perdeu: fora as quatro reescritas de propósito na junção, todas
+  as mudanças locais estão no arquivo final.
+
+`asserts/t-feiticos-passivos.mjs` ganhou 3 (o Personalizado nos dois campos, e o "defesa" antigo sem
+leitor). eslint e `vite build` fecham. Suíte: **99 arquivos, 5365 asserts** passando, os dois arquivos
+novos do colaborador inclusos (19 e 64), com o `t-invocacoes-motor.mjs` ainda vermelho. No navegador,
+`/Player` e `/Afty` em 1440px e 390px: a Ficha Final abre, o Passivo "Duplicata perfeita" com o campo
+antigo mostra "Personalizado" sem Valor calculado, e a lista de Encontros abre. Zero erro de console.
+
+---
+
+## SESSÃO DE 2026-09-17 (parte 4): AS APTIDÕES DA FAIXA DE SIF SAÍRAM DA ABA
+
+O autor, com a captura da aba "Maldição 2" no criador: *"As Aptidões de Maldição fornecidas pela Faixa
+de Sif, não precisam aparecer na Aba de Aptidões. Só de funcionar mecânicamente já está bom"*.
+
+- A porta de tela aberta em 2026-09-12 fechou: uma categoria que a origem não abre deixou de ganhar
+  aba por ter Aptidão concedida. A aba de Aptidões usa só o `abasAptidao`, e saíram o
+  `categoriasSoConcedidas` e o filtro de "só as concedidas".
+- **O motor não mudou.** Armas Naturais e Armas Naturais Aprimoradas seguem concedidas com as Faixas
+  equipadas, e o `t-aptidao-por-addon.mjs` continua passando inteiro (37).
+- Na Maldição de verdade a aba Maldição continua, com as concedidas dentro dela. Vale nos dois
+  sistemas, como o Addon da Faixa de Sif.
+
+eslint e `vite build` fecham, suíte com **97 arquivos e 5279 asserts** passando, e o
+`t-invocacoes-motor.mjs` ainda vermelho. No navegador, `/Player` e `/Afty` em 1440px e 390px, com uma
+ficha Inata usando as Faixas de Sif: sem aba Maldição, e o motor concedendo as duas. Contraprova com
+uma Maldição: a aba "Maldição 2" segue lá. Zero erro de console.
+
+---
+
+## SESSÃO DE 2026-09-17 (parte 3): AS MELHORIAS SUPERIORES DO JOGADOR, E A VERSATILIDADE EXTREMA QUE ELE PERDE
+
+Dois pedidos seguidos do autor:
+
+> *"Na Ficha de Jogador, deixe as Melhorias Superiores assim. Elas são diferentes de Jogador para
+> Grimorio."*, com o texto das onze.
+
+> *"E remova "Versatilidade Extrema" das Habilidades Lendarias de JOGADOR. Quem tinha isso, deve ser
+> REMOVIDO. Isso não era para ter em JOGADOR, qlqr pessoa com isso, precisa PERDER esse poder."*
+
+### As Melhorias Superiores
+
+Comparado o texto com o catálogo, **sete são iguais** (Alma, Atenção, Dano, Perícia, Precisão,
+Resistência, Vida) e **quatro mudam**, as mesmas que o autor reescreveu para a criatura em 2026-07-27:
+
+| Melhoria | Criatura | Jogador |
+|---|---|---|
+| `mel_defesa` | Melhoria de Defesa, metade da Maestria, 1 vez | **Melhoria de Classe de Armadura**, +3 e +2 na segunda |
+| `mel_classe_de_dificuldade` | metade da Maestria, 1 vez | +3 e +2 na segunda |
+| `mel_energia` | a Maestria, 1 vez | +6 e +4 na segunda |
+| `mel_movimento` | metade da Maestria × 1,5m | +6 metros |
+
+- **O id não muda.** A escolha gravada vale nos dois lados, com o nome e o número do livro da ficha.
+- O texto, o nome e o `maxVezes` do jogador moram num bloco **`jogador`** na entrada. O
+  **`melhoriaNoSistema`** devolve a entrada como o sistema a lê (sem o bloco, para ninguém ler o texto
+  do outro livro), e o `getMelhoriaSuperior(id, sistema)` e o `melhoriasSuperioresDe(sistema)` passam
+  por ele. O `resolveAltoNivel` apara no teto do sistema.
+- Os números do jogador moram em **`MELHORIA_EFEITOS_JOGADOR`**, que troca as linhas do mesmo id no
+  `coletarEfeitosCriatura` quando a ficha é de jogador. O hover diz "Melhoria de Classe de Armadura".
+- Divergência nova **`melhoriasSuperioresDoJogador`** (regra). O validador cobra o bloco inteiro.
+
+### A Versatilidade Extrema
+
+O mecanismo de 2026-09-01 (`foraDoJogador` e `conteudoSoPorAddon`) tira a entrada da LISTA e deixa, por
+decisão do autor naquela data, quem já a tinha ficar com ela. Este pedido é o contrário, e muda número.
+
+- Divergência nova **`perdidoNoJogador`** (regra), e a marca **`perdeNoJogador: true`** na entrada, ao
+  lado do `foraDoJogador`.
+- **`perdidaNoJogador(entrada, creature)`**, em `afty-addons.js`: verdadeiro com a marca, na ficha de
+  jogador, sem Addon que libere o id. O `resolveAltoNivel` descarta a Lendária, e com ela somem os 2
+  níveis de aptidão, o limite 6, a escolha aninhada e a vaga que ocupava. O `filtraForaDoJogador`
+  fecha a terceira porta (a da ficha que já tem) para a entrada marcada.
+- **O id continua gravado na ficha**, e a liberação `soPorAddon:len_versatilidade_extrema` a devolve,
+  inclusive para quem a tinha. A concessão do mestre na sessão não foi tocada.
+- O card de Níveis Lendários do criador não recebe a ficha, então o `resolveAltoNivel` passou a
+  devolver **`catalogo: { melhorias, lendarias }`** já no livro da ficha, e o card lê dali.
+
+### Verificação
+
+`asserts/t-melhorias-jogador.mjs` nasceu com **47**: o texto verbatim das quatro, o teto de repetição
+nos dois sistemas, os números na ficha inteira (uma e duas pegas), o hover, as sete iguais, a
+Versatilidade saindo da lista, da ficha e dos efeitos, voltando com o Addon e não com outro, e as
+divergências e o validador. Mudaram de propósito: as listas de divergência e a de entradas marcadas
+em `t-sistema.mjs` (as Lendárias entraram na varredura), e a contagem de liberações em
+`t-estilo-liberado.mjs` e `t-estilo-marcial.mjs` (16 para 17). eslint e `vite build` fecham. Suíte:
+**97 arquivos, 5279 asserts** passando, com o `t-invocacoes-motor.mjs` ainda vermelho. São 35
+divergências, 34 ativas.
+
+No navegador, `/Player` e `/Afty` em 1440px e 390px, uma ficha de Nível 26 com duas pegas de Defesa,
+uma de Energia e a Versatilidade Extrema: no jogador o criador e a Ficha Final dizem "Melhoria de
+Classe de Armadura" com medidor de dois segmentos, e a Versatilidade some das duas telas. Na criatura
+seguem "Melhoria de Defesa" e a Versatilidade. Zero erro de console.
+
+---
+
+## SESSÃO DE 2026-09-17 (parte 2): A CATEGORIA DO PASSIVO COMEÇA EM "-"
+
+O autor avisou que a Categoria do Passivo vai ser reformulada, e pediu antes disso: *"deixar a caixa
+de seleção começando vazia e sem mostrar efeito númerico algum? E deixar a opção de NADA/Vazio como a
+primeira opção?"*, e depois *"É SÓ O SELETOR DE EFEITOS [...] Não quero que apareça DEFESA +4 para
+qualquer efeito que não for numerico"*. Vale para os dois sistemas.
+
+- O seletor ganhou "-" como primeira opção, e começa nela.
+- **A escolha mudou de campo**, de `efeitoPassivo` para `categoriaPassivo`. Todo Feitiço nascia com
+  `efeitoPassivo: "defesa"` gravado, até os que nunca foram Passivos, então não havia como separar
+  quem escolheu Defesa de quem só ficou com o padrão. O campo novo nasce vazio, e o antigo fica nas
+  fichas gravadas sem leitor. Nenhum número da ficha muda: a categoria só sugere, e o que soma é o
+  Motor de Automação da Passiva.
+- `getPassivoEfeito` devolve nulo para categoria vazia ou desconhecida, e o `calcularFeiticoPassivo`
+  sai sem valor, sem efeito para usar e sem o aviso de valor faltando. O custo em PE Máximo continua.
+  O painel "Valor calculado" só nasce com categoria escolhida.
+
+`asserts/t-feiticos-passivos.mjs` ganhou 9. eslint e `vite build` fecham, e a suíte tem **96 arquivos
+e 5223 asserts** passando, com o `t-invocacoes-motor.mjs` ainda vermelho. No navegador, `/Player` e
+`/Afty` em 1440px e 390px, com um Passivo que tinha Defesa gravada: o seletor abre em "-", nenhum
+"+4 DEF" na tela, e escolher Defesa traz o valor de volta.
+
+---
+
+## SESSÃO DE 2026-09-17: A FILEIRA DE CARTÕES VIROU LISTA LATERAL
+
+O autor, com uma captura da fileira de Feitiços:
+
+> *"A aba de Feitiços está MUITO dificil navegar entre os Feitiços quando possuimos muitos. Como
+> podemos melhorar a lista de Feitiços, para podermos navegar e identificar o quê queremos de maneira
+> mais rapida e facil?"*
+
+A fileira mostrava quatro cartões por vez, e o resto só aparecia rolando de lado.
+
+### As decisões, por pergunta com opções
+
+- **Lista lateral**, entre três desenhos (lista lateral, grade compacta em cima, manter a fileira).
+- As quatro ferramentas: **busca por nome, filtro por Tipo, agrupar por Tipo e ordenar**.
+- **Feitiços e Invocações**, que usavam a mesma fileira.
+- **Os dois sistemas.**
+
+### Como ficou
+
+- **`ui/ListaLateral.jsx`**, um componente para as duas abas. A lista fica à esquerda (15rem),
+  grudada logo abaixo do cabeçalho do criador (`--afty-topo`), e o editor à direita. Trocar de
+  Feitiço é um clique, sem voltar ao topo da página.
+- **A quebra é pela largura do CARD** (`@container`, 48rem), e não da janela, porque o Preview divide
+  a mesma janela. Abaixo disso a lista vira um botão com o item aberto, que abre a lista por cima do
+  editor e fecha ao escolher.
+- Busca sem acento e sem maiúscula (Esc limpa), chips de Tipo com o ícone do Feitiço (só os Tipos que
+  a ficha tem, e só com dois ou mais), ordem Criação, Nome ou Nível (Grau na Invocação), agrupar
+  ligado por padrão, e as setas do teclado andando na ordem visível. Filtrando, o rodapé mostra
+  "visíveis / total".
+- **`afty-lista-lateral.js`** é a metade sem tela (`organizarLista`, `tiposPresentes`,
+  `vizinhoNaLista`), módulo FOLHA. O empate de ordem cai sempre na ordem de criação, senão dois
+  Feitiços de Nível 5 trocariam de lugar a cada tecla. Tipo desconhecido fecha a fila com o próprio
+  nome em vez de sumir.
+- As miniaturas viraram **`FeiticoLinha`** e **`InvocacaoLinha`**, só conteúdo. A Invocação mantém o
+  retrato, agora quadrado de 32px ao lado do nome. `FileiraDeCartoes` e `useVisivelNaFileira` saíram,
+  e o `ChevronRight` junto.
+- ⚠ **O `:root` do `index.css` declara `font: 18px/145%`**, e o 145% vira 26px FIXOS herdados por
+  todo elemento. Cada linha da lista media 70px, com o `text-[10px]` ocupando 26px. O painel ganhou
+  `leading-tight`, e a linha caiu para 46px. Vale para toda tela nova que não declare `leading`.
+- A lista só gruda quando o editor é mais alto que ela. Com um Feitiço curto não há por onde grudar,
+  e ela rola com o card, que é o comportamento do `sticky`.
+
+### Verificação
+
+`asserts/t-lista-lateral.mjs`, **32 asserts**: módulo folha, busca, filtro, as três ordens com
+desempate, grupos e as setas. eslint e `vite build` fecham. Suíte: **96 arquivos, 5214 asserts**
+passando (a outra sessão acrescentou asserts no mesmo período), com o `t-invocacoes-motor.mjs` ainda
+vermelho pela pergunta da cota base.
+
+No navegador, com Playwright, uma ficha com 16 Feitiços dos seis Tipos e 6 Invocações dos dois Tipos,
+em `/Player` e `/Afty`, 1440px e 390px: busca "bencao" achando as três Bênçãos, filtro de Dano,
+ordem por Nome sem grupos, escolher abrindo no editor, a lista grudando em 244px com o cabeçalho em
+230px, e no telefone o botão abrindo e fechando a lista. Zero erro de console do componente. Em 390px
+a aba Habilidades segue com os 28px do "Atributo da Técnica", que é entrada antiga da fila, e a de
+Invocações não rola de lado.
+
+---
+
+## SESSÃO DE 2026-09-17: HOVER QUE PISCA, VÃO NA PRÉVIA E TODOS OS OFÍCIOS
+
+Três pedidos do autor, todos compartilhados por `/Afty` e `/Player`.
+
+**Hover de fontes piscando no fim da tela.** O `PainelDeFontes` do criador é `absolute top-full` e
+abria sempre para baixo. Na última linha da página ele passava do fim do documento, a barra de
+rolagem nascia, a página estreitava 15px, o número saía de baixo do cursor, o painel fechava e a
+barra sumia: um laço. Reproduzido no Playwright com barra de rolagem real (o padrão do headless
+esconde a barra e o defeito não aparece). Agora um `ResizeObserver` único percebe o painel abrindo e
+o vira para cima quando não cabe embaixo, antes da pintura. A conta usa o retângulo do pai, para não
+oscilar. Painel flutuante da Ficha Final não mudou (ele é `fixed` e já escolhia o lado).
+
+**Vão embaixo do texto na prévia do `TextoLongo`** (Funcionamento Básico e Descrição de Feitiço).
+Eram três sobras somadas: o `pb-7` da setinha de expandir, que na prévia nunca aparece; a prévia
+herdando como altura mínima a altura da caixa de edição; e a caixa de edição contando o padding duas
+vezes (o `scrollHeight` já o inclui). Com o texto da Bênção do Grão Mestre da Forja o vão caiu de
+75px para 10px. A prévia não herda mais altura, e o `pb-7` da edição só existe com a setinha à vista.
+
+**"Todos os Ofícios" no Motor.** Alvo novo `oficio:todos` (`ALVO_TODOS_OFICIOS`, no catálogo de
+perícias), que é escopo como o `atr:destreza`: toda linha de Ofício responde por ele, inclusive as
+repetidas e as que nascerem depois. Só o canal `bonusPericia` lê, e por isso o seletor só oferece a
+opção nele (em Valor Fixo e em Treino a linha seria descartada calada). Assert novo
+`asserts/t-oficios-todos.mjs`, 21 casos nos dois sistemas.
+
+⚠ `t-invocacoes-motor.mjs` falha em "a Livre com Motor custa 1 PE" (0 != 1). A falha é anterior
+a esta sessão: ela se repete numa cópia limpa do `HEAD` feita com `git archive`.
+
+---
+
+## SESSÃO DE 2026-09-16: MANIPULAÇÃO DO CÉU
+
+Addon `addons/manipulacao-do-ceu.json` com dois modelos de Feitiço de Nível 5. Refletir Imagem é
+Personalizado, tem custo base de 20 PE, usa Ação Comum, alcance Pessoal, alvo Próprio e duração
+Sustentado, Concentração.
+Duplicata Perfeita é Passivo / Característica, reduz o PE máximo em 10 e não inventa um efeito
+numérico do Motor.
+
+Aura Embaçada ganhou interruptor próprio na aba Buffs, com custo exibido de 2 PE. Quando Refletir
+Imagem está na ficha, a aba Ações mostra um card separado que também permite ativar a Aura e reúne
+a chance percentual, a margem em 1d10 e o contador de zero a duas cópias. Com Duplicata Perfeita e
+Aura Embaçada ligadas, o limiar atual passa de 2 para 3 ou 4 em 1d10 conforme restam zero, uma ou
+duas cópias. Fora de combate, a Aura e o contador ficam zerados.
+
+A integração também reconhece os ids locais dos Feitiços já presentes na ficha exportada de
+Argalia pela combinação de nome, tipo e Nível 5. Na ficha enviada, Refletir Imagem mantém custo base
+20 PE e custo final 10 PE por Manipulação Perfeita.
+
+Implementação e limites em `docs/afty-manipulacao-ceu.md`. Validação específica em
+`asserts/t-manipulacao-ceu.mjs`.
+
+---
+
+## SESSÃO DE 2026-09-16: OLHOS DE AGULHA
+
+Addon `addons/olhos-de-agulha.json`, habilitado por `olhosDeAgulha`. Condição corporal com
+bônus de Percepção, referência ao voto e habilidades oculares escolhidas como Feitiços Passivos.
+O autor confirmou nível de liberação de Feitiço, substituição da versão 2 pela 4 do Olhar,
+custos mantidos sem olhos, arredondamento para baixo e recuperação pelo Descansar existente.
+Imunidade e Precisão Infalível permanecem com um olho. Texto, decisões, armazenamento e limites
+da automação em `docs/afty-olhos-agulha.md`.
+
+Card na aba Habilidades e painel na aba Ações da Ficha Final e dos Encontros. Os usos são
+marcados manualmente e recuperados no descanso, que não restaura olhos. A cobrança usa
+`peMaximoDasPassivas`, inclusive para estas passivas na criatura Afty, sem alterar as demais.
+O editor ocular evita a sugestão incorreta de bônus de Defesa da calculadora genérica.
+
+Validação específica: 64 asserts em `asserts/t-olhos-agulha.mjs`, ESLint e build aprovados.
+Interface conferida no criador Afty e Player, na Ficha Final e em Encontros, incluindo tela estreita.
+A suíte geral passou em 94 de 95 arquivos e continua com a falha
+preexistente de `t-invocacoes-motor.mjs`, sobre a cota gratuita de Características.
+Nenhum arquivo de `src/components/` foi alterado.
+
+---
+
+## SESSÃO DE 2026-09-16 (parte 3): A SEGUNDA HABILIDADE ÚNICA CUSTA UM SLOT DE FEITIÇO
+
+Pendência do Addon Benção do Grão Mestre da Forja, nas palavras do autor:
+
+> *"Toda vez que tiver TEXTO e/ou Algo no Motor de Automação na Segunda Habilidade Única. Eu perco um
+> Slot de Feitiço. Já que estou efetivamente colocando Feitiços no objeto. Preciso disso, e que fique
+> avisado no Hover de Feitiços isso"*
+
+### As decisões, por pergunta com opções
+
+- **Sempre que o item existir**: a Ferramenta no inventário, equipada ou guardada, e o Acessório Único
+  criado no card, mesmo fora do inventário.
+- **Um por item**: dois itens preenchidos custam dois Slots.
+- **Os dois sistemas**: no jogador sai do orçamento próprio de Feitiços, na criatura do contador comum.
+
+### Como ficou
+
+- **Preenchida** é ter texto (sem contar espaço) ou uma linha do Motor com expressão. A linha nova do
+  editor nasce com canal `defesa` e expressão vazia, e clicar em adicionar não custa nada
+  (`segundaUnicaPreenchida`, em `afty-equipamentos.js`).
+- O `resolveEquipamentos` devolve `segundasUnicasPreenchidas`, montada antes do teste de `equipado`.
+  Sem a liberação a segunda não existe e não custa.
+- O `deriveAfty` desconta da pilha em que o Feitiço daquela ficha gasta: o orçamento próprio quando o
+  jogador o tem, e o contador comum na criatura e no jogador sem energia. Cada item é uma parcela
+  `−1` com o nome dele, "Adaga (Segunda Habilidade Única)", e é esse o aviso no hover.
+- **O total pode ficar negativo** (três itens num orçamento de dois), e as parcelas continuam fechando
+  com ele. O `excedeuFeitico` passou a acender também com total negativo, e só a conta de quantos
+  Feitiços cabem apara em zero.
+- **`proprioFeiticoAtivo`** nasceu no `orcamentoHabilidades`. O medidor perguntava `proprioFeitico >
+  0` para saber se desenhava Feitiços ou Habilidades, e um total zerado pela Segunda trocaria o
+  medidor de pilha.
+- A `nota` da liberação `segundaHabilidadeUnica` ganhou a frase do custo. A `descricao` do pacote não
+  mudou, porque é o texto que o autor aprovou.
+
+### Verificação
+
+`asserts/t-bencao-forja.mjs` ganhou a seção 6, com 28 asserts: só texto, só Motor, linha vazia, os
+dois juntos, guardado, dois itens, sem o Addon, abaixo do Especial, o Acessório fora do inventário e
+dentro dele (conta uma vez), a criatura no comum, o jogador Restringido no comum, e o total negativo
+com o caixa ainda ativo. As parcelas fecham com o total em todos. eslint e `vite build` fecham, e a
+suíte tem **94 arquivos e 5161 asserts** passando, com o `t-invocacoes-motor.mjs` ainda vermelho pela
+pergunta da cota base.
+
+No navegador, com Playwright no dev server, a aba Habilidades de `/Player` e `/Afty` em 1440px e 390px,
+com uma Adaga guardada e um Anel fora do inventário: o hover lista as duas linhas e fecha em 10 no
+jogador (12 menos 2) e em 6 na criatura (8 menos 2). Zero erro de console. Em 390px a aba tem os 28px
+de rolagem horizontal do "Atributo da Técnica", medidos antes de abrir o hover, que é a entrada que já
+está na fila.
+
+---
+
+## SESSÃO DE 2026-09-16 (parte 2): O TREINO ESPECIAL DO JOGADOR ANOTA A TENTATIVA
+
+O autor mandou o texto do Treinamento para Habilidade, verbatim, e o pedido:
+
+> *"No atual momento falta espaço para colocar Quantos Interludios foram gastos. Além de
+> verdadeiramente quantas Habilidades ou Feitiços foram ganhos. Por exemplo eu gastei 9 Interludios
+> para conseguir 3 Feitiços. ISSO É SÓ PARA JOGADOR"*
+
+Até aqui cada pega da lista `treinosEspeciais` era, ao mesmo tempo, o Interlúdio gasto e a vaga
+ganha, porque na criatura o teste é sucesso automático. No jogador o teste é rolado desde
+2026-09-10, e a ficha não tinha onde dizer que três Feitiços custaram nove Interlúdios.
+
+### As decisões, por pergunta com opções
+
+- *"Interludio e Foco é a mesma coisa. O nome só é duplicado no sistema por alguma razão"*. O
+  Interlúdio anotado sai do contador de Focos da aba, um para um.
+- **Treinamento para Habilidade: máximo 2** no jogador, a letra do texto (1 até o 9° nível e 2 do 10°
+  em diante). A criatura segue com `1 + piso(ND / 10)`.
+- **Treinamento para Feitiço: sem teto** no jogador. A criatura segue com `1 + piso(ND / 5)`.
+- A linha guarda também os **Sucessos** da tentativa incompleta e mostra a **CD**. O objetivo do
+  treino (qual Habilidade ou Feitiço) ficou de fora.
+
+### Como ficou
+
+- **A pega virou o GANHO no jogador**, e a vaga continua saindo dela. Por isso o Motor, a concessão
+  da sessão e o registro de Addons não mudaram uma linha.
+- **Campo novo `treinoEspecialProgresso: { [id]: { interludios, sucessos } }`**, lido só pelo
+  jogador.
+- **`focosDeTreinosEspeciais`** soma os Interlúdios no jogador e as pegas na criatura.
+- **`progressoTreinoEspecial`** nunca devolve Interlúdios abaixo de `Ganhos × focos`. A ficha de
+  jogador anterior a esta data tem pegas e nenhum Interlúdio anotado, e ler o gravado cru devolveria
+  aqueles Focos ao orçamento sem aviso.
+- **Três campos de catálogo**, todos DADO: `sucessosNecessarios` (3), `cdTeste` (expressão do Motor,
+  `12 + piso(nd / 2)`, com `nd` sendo o Nível) e `tetoJogador` (escada de degraus, `max: null` é sem
+  teto). O validador cobra os três, e a CD só aceita o nome `nd`.
+- **Duas divergências**: `interludioComTeste` deixou de ser de tela e virou de REGRA (o Foco gasto
+  mudou de régua), e `tetoDeTreinoEspecial` nasceu. São 33 entradas, 32 ativas.
+- **A tela**, só no jogador: a linha mostra "CD 17" onde a criatura mostra "2 Focos", e o treino
+  começado abre uma fileira com Interlúdios, Sucessos (medidor de dois segmentos) e Ganhos (com
+  "/ 2" quando há teto). Ganhos não passam de Interlúdios, e Interlúdios não descem abaixo dos
+  Ganhos. O quadrado do jogador só COMEÇA o treino: zerar é descer os contadores, para um clique não
+  apagar nove Interlúdios. Em 390px o rótulo sobe e a fileira vira grade de duas colunas.
+- O texto do Treinamento para Habilidade é o do livro nos dois sistemas, e a paráfrase saiu.
+
+### Verificação
+
+`asserts/t-treinos-especiais.mjs` nasceu com 41: o verbatim, os tetos nos dois sistemas com o aparo de
+leitura, o progresso (inclusive a ficha antiga e o lixo), os Focos, a CD por nível, a vaga saindo só
+do Ganho, a criatura com progresso gravado derivando igual a sem ele, e o validador dos três campos.
+`t-sistema.mjs` mudou as listas de divergência de propósito. eslint e `vite build` fecham. Suíte:
+**94 arquivos, 5133 asserts passando**, e o único vermelho segue sendo o `t-invocacoes-motor.mjs`
+(a cota base de Invocação, pergunta aberta na fila).
+
+No navegador, com Playwright no dev server: `/Player` e `/Afty` em 1440px e 390px, começando o Treino
+de Habilidade, travando no teto 2, marcando Sucessos, salvando e lendo o `localStorage`. Zero erro de
+console e zero rolagem horizontal. A aba Interlúdios não aparece no painel de Encontros.
+
+⚠ Outra sessão editava Perícias e Extras Nativos na mesma árvore durante este trabalho. Os números da
+suíte acima incluem o estado dela naquele momento.
 
 ---
 

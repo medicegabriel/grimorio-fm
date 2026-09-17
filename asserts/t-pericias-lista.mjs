@@ -125,24 +125,77 @@ t("sao 24 linhas, par de novo", idsOcupado.length, 24);
 t("escolher um Oficio na linha extra tambem a segura",
   idsDe(comCustom(2, { periciaOficios: { oficio__2: ["Ferreiro"] } })).includes("oficio__2"), true);
 
-/* O botão Novo Ofício grava a linha explicitamente. Ela existe mesmo vazia e
-   cada entrada acrescenta somente uma linha, sem criar outro desempate. */
+/* O botão Novo Ofício grava a linha explicitamente, e ela existe mesmo vazia.
+   ⚠ A LINHA MANUAL ENTRA NA CONTA DO PAR (autor, 2026-09-16: *"isso quebrou o
+   código que deixava as perícias sempre PAR [...] Fica muito feio um numero
+   impar"*). Até aqui ela ficava de fora para cada clique somar uma linha só. */
 const oficiosManuais = ficha({ periciasOficiosExtras: ["oficio__2", "oficio__3"] });
 t("Oficio manual vazio permanece na ficha",
   idsDe(ficha({ periciasOficiosExtras: ["oficio__2"] })).includes("oficio__2"), true);
-t("cada Oficio manual acrescenta exatamente uma linha", idsDe(oficiosManuais).length, branca.length + 2);
+t("dois Oficios manuais fecham par sozinhos", idsDe(oficiosManuais).length, branca.length + 2);
 t("Oficios manuais seguem juntos do Oficio do livro",
   idsDe(oficiosManuais).slice(branca.indexOf("oficio"), branca.indexOf("oficio") + 3),
   ["oficio", "oficio__2", "oficio__3"]);
 t("id manual repetido ou invalido nao duplica linha",
   P.oficiosExtrasDaFicha({ periciasOficiosExtras: ["oficio__3", "oficio__2", "oficio__2", "oficio__1", "x"] }),
   ["oficio__2", "oficio__3"]);
-t("Oficio manual preenchido nao cria desempate adicional",
-  idsDe(ficha({
-    periciasOficiosExtras: ["oficio__2"],
-    periciaOficios: { oficio__2: ["Ferreiro"] },
-  })).filter(P.ehPericiaOficio),
-  ["oficio", "oficio__2"]);
+const umManual = ficha({ periciasOficiosExtras: ["oficio__2"], periciaOficios: { oficio__2: ["Ferreiro"] } });
+t("um Oficio manual deixa a conta impar e ganha o desempate atras dele",
+  idsDe(umManual).filter(P.ehPericiaOficio), ["oficio", "oficio__2", "oficio__3"]);
+t("e o desempate vem marcado", P.catalogoPericiasDaFicha(umManual).find((p) => p.id === "oficio__3")?.desempate, true);
+
+/* ⚠ UM OFÍCIO PREENCHIDO DEPOIS DE UM BURACO NÃO SOME. A conta antiga parava no
+   primeiro número manual, e o desempate que alguém preencheu ficava gravado e
+   fora da tela. */
+t("Oficio preenchido depois de uma linha manual aparece",
+  idsDe(ficha({ periciasOficiosExtras: ["oficio__2"], pericias: { oficio__3: "treinado" } })).includes("oficio__3"),
+  true);
+t("e Oficio preenchido depois de um buraco tambem",
+  idsDe(ficha({ pericias: { oficio__4: "mestre" } })).includes("oficio__4"), true);
+
+/* A LISTA É SEMPRE PAR, em qualquer sequência de cliques. O botão soma duas
+   linhas, e a remoção tira duas quando existe outra linha manual vazia. */
+const aplicarNa = (f, r) => {
+  const out = { ...f, periciasOficiosExtras: r.periciasOficiosExtras };
+  for (const id of r.idsRemovidos ?? []) {
+    out.pericias = { ...out.pericias }; delete out.pericias[id];
+    out.periciaOficios = { ...out.periciaOficios }; delete out.periciaOficios[id];
+  }
+  return out;
+};
+for (const personalizadas of [0, 1, 2, 3]) {
+  let f = comCustom(personalizadas);
+  const tamanhos = [idsDe(f).length];
+  for (let clique = 0; clique < 4; clique++) {
+    f = aplicarNa(f, P.adicionarOficioExtra(f));
+    tamanhos.push(idsDe(f).length);
+  }
+  t(`${personalizadas} personalizada(s): todo clique deixa a lista par`, tamanhos.every((n) => n % 2 === 0), true);
+  t(`${personalizadas} personalizada(s): e todo clique soma duas linhas`,
+    tamanhos.slice(1).map((n, i) => n - tamanhos[i]), [2, 2, 2, 2]);
+  /* Preenche uma linha manual e remove todas, uma a uma, da última para a
+     primeira. A preenchida só pode sair quando for ELA a pedida. */
+  const preenchida = P.oficiosExtrasDaFicha(f)[0];
+  f = { ...f, pericias: { ...f.pericias, [preenchida]: "treinado" } };
+  let apagadaPorTabela = false;
+  for (const id of [...P.oficiosExtrasDaFicha(f)].reverse()) {
+    if (!P.oficiosExtrasDaFicha(f).includes(id)) continue;
+    const r = P.removerOficioExtra(f, id);
+    if (id !== preenchida && r.idsRemovidos.includes(preenchida)) apagadaPorTabela = true;
+    f = aplicarNa(f, r);
+    t(`${personalizadas} personalizada(s): remover ${id} deixa a lista par`, idsDe(f).length % 2, 0);
+  }
+  t(`${personalizadas} personalizada(s): a linha preenchida nunca e apagada por tabela`, apagadaPorTabela, false);
+}
+/* Uma personalizada e três manuais são 24 linhas, sem desempate na tela. */
+const umaVazia = comCustom(1, { periciasOficiosExtras: ["oficio__2", "oficio__3", "oficio__4"], pericias: { oficio__2: "mestre" } });
+t("o caso comeca sem desempate", P.catalogoPericiasDaFicha(umaVazia).some((p) => p.desempate), false);
+t("remover sem desempate na tela leva junto a ultima manual vazia",
+  P.removerOficioExtra(umaVazia, "oficio__2").idsRemovidos, ["oficio__2", "oficio__4"]);
+t("e com desempate na tela sai so a pedida",
+  P.removerOficioExtra(ficha({ periciasOficiosExtras: ["oficio__2"] }), "oficio__2").idsRemovidos, ["oficio__2"]);
+t("remover um id que nao e manual nao faz nada",
+  P.removerOficioExtra(ficha({}), "oficio__2").idsRemovidos, []);
 
 /* O id do extra nunca colide com uma personalizada, que usa outro prefixo. */
 t("o id do extra nao e de personalizada", "oficio__2".startsWith("custom_"), false);

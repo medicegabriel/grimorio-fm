@@ -27,6 +27,8 @@
  * 5. O Acessório Único: Grau Especial, pesa 1, sem custo, só equipado, e só com
  *    a liberação.
  * 6. A segunda ativa ganha interruptor PRÓPRIO na bancada.
+ * 7. A segunda PREENCHIDA custa um Slot de Feitiço por item, nos dois sistemas,
+ *    com a linha nomeada no hover (autor, 2026-09-16).
  */
 import { register } from "node:module";
 register(
@@ -267,6 +269,87 @@ t("o texto do item são as duas Habilidades",
 t("id repetido entra uma vez",
   EQ.acessoriosUnicosDaFicha({ acessoriosUnicos: [acessorio([], []), acessorio([], [])] }).length, 1);
 t("o novo nasce no molde", EQ.novoAcessorioUnico().id.startsWith("acsu_"), true);
+
+/* ============================================================ */
+/* 6. A SEGUNDA PREENCHIDA CUSTA UM SLOT DE FEITIÇO              */
+/* ============================================================ */
+/* Autor, 2026-09-16: "Toda vez que tiver TEXTO e/ou Algo no Motor de Automação
+   na Segunda Habilidade Única. Eu perco um Slot de Feitiço. Já que estou
+   efetivamente colocando Feitiços no objeto." Por pergunta: um por item,
+   sempre que o item existir (guardado e fora do inventário também), e nos dois
+   sistemas. */
+const segunda = (uid, { texto = "", hu2 = [], grau = "especial", equipado = true, refId = ARMA, tipo = "arma" } = {}) => ({
+  uid, tipo, refId, qtd: 1, equipado,
+  fa: { grau, encantamentos: [], habilidadeUnica: "Primeira", habilidadeEfeitos: [], segundaHabilidadeUnica: texto, segundaHabilidadeEfeitos: hu2 },
+});
+const orc = (f) => deriveAfty(f).orcamentoHabilidades;
+const nomeArma = EQ.getEquipamento("arma", ARMA).nome;
+const soma = (partes) => partes.reduce((s, p) => s + (p.valor || 0), 0);
+
+const baseJ = orc(ficha("player", { itens: [segunda("e1")] }));
+t("jogador: a Segunda vazia não custa nada", baseJ.proprioFeiticoPartes.some((p) => p.valor < 0), false);
+t("jogador: nível 17 recebe 11 Feitiços", baseJ.proprioFeitico, 11);
+
+const comTexto = orc(ficha("player", { itens: [segunda("e1", { texto: "Um Feitiço no objeto" })] }));
+t("jogador: só texto custa 1", comTexto.proprioFeitico, 10);
+t("e o hover nomeia o item", comTexto.proprioFeiticoPartes.at(-1), { label: `${nomeArma} (Segunda Habilidade Única)`, valor: -1 });
+t("e as parcelas fecham com o total", soma(comTexto.proprioFeiticoPartes), comTexto.proprioFeitico);
+t("o contador comum do jogador não é tocado", comTexto.partesComum.some((p) => p.valor < 0), false);
+
+t("jogador: só o Motor custa 1",
+  orc(ficha("player", { itens: [segunda("e1", { hu2: [def(2)] })] })).proprioFeitico, 10);
+t("a linha nova do editor, sem expressão, e texto em branco não custam",
+  orc(ficha("player", { itens: [segunda("e1", { texto: "   ", hu2: [{ canal: "defesa", expr: "" }] })] })).proprioFeitico, 11);
+t("texto e Motor juntos custam 1, e não 2",
+  orc(ficha("player", { itens: [segunda("e1", { texto: "X", hu2: [def(2)] })] })).proprioFeitico, 10);
+t("guardado também custa",
+  orc(ficha("player", { itens: [segunda("e1", { texto: "X", equipado: false })] })).proprioFeitico, 10);
+t("dois itens custam 2", orc(ficha("player", {
+  itens: [segunda("e1", { texto: "X" }), segunda("e2", { texto: "Y", tipo: "uniforme", refId: UNIFORME })],
+})).proprioFeitico, 9);
+t("sem o Addon não custa",
+  orc(ficha("player", { itens: [segunda("e1", { texto: "X" })], addon: false })).proprioFeitico, 11);
+t("abaixo do Especial não há Segunda, e não custa",
+  orc(ficha("player", { itens: [segunda("e1", { texto: "X", grau: "primeiro" })] })).proprioFeitico, 11);
+
+// O Acessório Único conta mesmo fora do inventário.
+const anel = (texto, hu2 = []) => ({ id: "acsu_t2", nome: "Anel do Mestre", habilidadeUnica: "Um", habilidadeEfeitos: [], segundaHabilidadeUnica: texto, segundaHabilidadeEfeitos: hu2 });
+const soAnel = orc(ficha("player", { acessorios: [anel("Dois")] }));
+t("Acessório Único fora do inventário custa 1", soAnel.proprioFeitico, 10);
+t("com o nome dele no hover", soAnel.proprioFeiticoPartes.at(-1).label, "Anel do Mestre (Segunda Habilidade Única)");
+t("Acessório com só a primeira não custa", orc(ficha("player", { acessorios: [anel("")] })).proprioFeitico, 11);
+t("Acessório sem o Addon não custa", orc(ficha("player", { acessorios: [anel("Dois")], addon: false })).proprioFeitico, 11);
+t("Acessório no inventário conta uma vez só",
+  orc(ficha("player", { itens: noInventario(), acessorios: [anel("Dois")] })).proprioFeitico, 10);
+
+// Na criatura o Slot sai do contador comum.
+const baseC = orc(ficha("afty", { itens: [segunda("e1")] }));
+const comC = orc(ficha("afty", { itens: [segunda("e1", { texto: "X" })] }));
+t("criatura: o contador comum cai 1", comC.comum, baseC.comum - 1);
+t("criatura: com a linha nomeada", comC.partesComum.at(-1), { label: `${nomeArma} (Segunda Habilidade Única)`, valor: -1 });
+t("criatura: e as parcelas fecham", soma(comC.partesComum), comC.comum);
+t("criatura: não existe caixa próprio", [comC.proprioFeiticoAtivo, comC.proprioFeitico], [false, 0]);
+
+// Jogador sem energia não tem caixa próprio, e o Slot cai no comum.
+const restringido = (texto) => {
+  const f = ficha("player", { itens: [segunda("e1", { texto })] });
+  f.especializacoes = [{ id: "restringido", nivel: 17 }];
+  return orc(f);
+};
+t("jogador Restringido: o Slot sai do comum", restringido("X").comum, restringido("").comum - 1);
+
+/* ⚠ O TOTAL PODE FICAR NEGATIVO, e o caixa continua existindo: é o que mantém o
+   medidor de Feitiços na tela, vermelho, em vez de trocá-lo pelo de Habilidades. */
+const nivel1 = ficha("player", {
+  itens: ["e1", "e2", "e3"].map((uid) => segunda(uid, { texto: "X" })),
+});
+nivel1.core.nd = 1;
+const neg = orc(nivel1);
+t("três itens no nível 1: 2 - 3", neg.proprioFeitico, -1);
+t("o caixa segue ativo", neg.proprioFeiticoAtivo, true);
+t("e estoura sem Feitiço nenhum", neg.excedeuFeitico, true);
+t("as parcelas fecham com o negativo", soma(neg.proprioFeiticoPartes), -1);
+t("nenhum Feitiço cabe, e não menos que zero", neg.proprioFeiticoUsado, 0);
 
 /* ============================================================ */
 if (bad.length) {

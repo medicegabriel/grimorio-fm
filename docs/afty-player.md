@@ -40,7 +40,7 @@ fallback: um id errado não pode derrubar o criador de fichas no meio da mesa.
 
 ### 2. A tabela `DIVERGENCIAS`
 
-Há 32 entradas em `afty-sistema.js`, 31 ativas no código atual. Só `inventarioSimplificado`
+Há 35 entradas em `afty-sistema.js`, 34 ativas no código atual. Só `inventarioSimplificado`
 permanece com `ativa: false`. **Isto é DADO, e não comentário**, porque comentário envelhece
 calado: cada entrada carrega a citação verbatim de onde a divergência está escrita, o que vale de
 cada lado, e se o código JÁ desvia.
@@ -75,6 +75,35 @@ Com três classes, os níveis das duas primeiras são escolhas gravadas. Com dua
 só o da primeira. A última recebe o restante do nível total. Cada classe ativa precisa ter ao menos 1 nível, e os
 controles de mais e menos transferem um nível entre as classes. Ao baixar o nível
 total, classes que não cabem saem da conta sem apagar a divisão gravada.
+
+## ENTRADA COM TEXTO PRÓPRIO, E ENTRADA QUE O JOGADOR PERDE
+
+Desde 2026-09-17 há dois moldes a mais para conteúdo que difere por sistema:
+
+- **Texto e número próprios, mesmo id** (divergência `melhoriasSuperioresDoJogador`). A entrada
+  carrega um bloco `jogador` com nome, descrição e `maxVezes`, lido por `melhoriaNoSistema`, e os
+  números ficam num mapa `*_JOGADOR` que troca as linhas do mesmo id. Hoje são quatro Melhorias
+  Superiores: a Defesa vira Classe de Armadura, e Classe de Dificuldade, Energia e Movimento voltam
+  ao valor fixo.
+- **Quem tem, perde** (divergência `perdidoNoJogador`). A marca `perdeNoJogador: true` vai junto do
+  `foraDoJogador`, e o `perdidaNoJogador` tira a entrada da ficha resolvida com os efeitos e a vaga.
+  É o contrário da `conteudoSoPorAddon`, que deixa quem já tinha ficar. Hoje é só a Versatilidade
+  Extrema. O id fica gravado e o Addon `soPorAddon:<id>` devolve.
+
+## TREINOS ESPECIAIS DO JOGADOR
+
+Desde 2026-09-16 (divergências `interludioComTeste` e `tetoDeTreinoEspecial`), a linha do Treino
+Especial anota a tentativa. A pega de `treinosEspeciais` é o **Ganho**, e é dela que a vaga sai. Os
+**Interlúdios** gastos e os **Sucessos** guardados moram em `treinoEspecialProgresso`, e Interlúdio
+é Foco, um para um. A linha mostra a CD pelo Nível.
+
+No jogador a Habilidade para em 2 e o Feitiço não tem teto. Os três números (`sucessosNecessarios`,
+`cdTeste` e `tetoJogador`) são campos do catálogo, então um Treino Especial de Addon que os declare
+ganha a mesma linha.
+
+⚠ **Interlúdios nunca ficam abaixo de `Ganhos × focos`.** A ficha de jogador de antes dessa data tem
+pegas e nenhum Interlúdio anotado, e é o piso que impede os Focos daquelas pegas de voltarem ao
+orçamento calados.
 
 ## O QUE FALTA, EM ORDEM DE UTILIDADE
 
@@ -175,7 +204,8 @@ npx vite build
 npm run asserts
 ```
 
-Em 2026-09-16: **91 arquivos, 4940 asserts.** Um arquivo de assert roda em processo próprio e imprime
+Em 2026-09-17: **99 arquivos, 5365 asserts** passando, e o `t-invocacoes-motor.mjs` vermelho à
+espera da decisão sobre a cota base de Invocação (ver `a-fazer.md`). Um arquivo de assert roda em processo próprio e imprime
 `TODOS OS N ASSERTS PASSARAM`.
 
 Para rodar o `deriveAfty` num script solto, o hook de resolução está no topo de qualquer

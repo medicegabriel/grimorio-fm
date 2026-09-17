@@ -1,0 +1,33 @@
+{
+  "id": "manipulacao-do-ceu",
+  "nome": "Manipulação do Céu",
+  "versao": "1.0.0",
+  "autor": "Afty",
+  "paraRaw": "afty",
+  "descricao": "Refletir Imagem e Duplicata Perfeita.",
+  "feiticos": [
+    {
+      "id": "refletir_imagem",
+      "nome": "Refletir Imagem",
+      "tipo": "personalizado",
+      "nivel": 5,
+      "descricao": "Você altera o tecido do céu, alterando a forma como a luz se propaga em si próprio, fazendo ela refletir duas imagens perfeitamente idênticas a você, como clones, que perturbam a percepção de inimigos sobre o real. Essa habilidade não afeta alvos cegos ou que não dependam dos olhos para enxergar. Ao criar os dois clones eles duram enquanto você se mantiver concentrando a habilidade, sempre que for alvo de um efeito que cause dano o oponente deve realizar um TR de Astúcia, num fracasso ele acerta uma de suas cópias e você anula o ataque, com o céu sendo distorcido e a cópia atingida sendo dissipada. Além de serem dissipadas caso você pare de se concentrar ou caso falhem no TR, você precisa gastar 2 PE no início de cada um de seus turnos para manter as imagens, se durante o intervalo entre turnos você receber um ataque, ambas as cópias são desfeitas e a habilidade se encerra, caso seja alvo de um efeito em área, ambas as cópias são desfeitas e a habilidade se encerra.",
+      "resolucao": "tr",
+      "acaoPersonalizada": "Comum",
+      "alcanceTexto": "Pessoal",
+      "alvoTexto": "Próprio",
+      "duracaoTexto": "Sustentado, Concentração",
+      "resolucaoTexto": "",
+      "comCd": true
+    },
+    {
+      "id": "duplicata_perfeita",
+      "nome": "Duplicata perfeita",
+      "tipo": "passivo",
+      "nivel": 5,
+      "descricao": "Enquanto estiver com as duplicatas em campo, o valor de sua Aura embaça aumenta em +1 para ataques corpo a corpo e ataques a distancia",
+      "efeitoPassivo": "personalizado",
+      "efeitosPassivo": []
+    }
+  ]
+}

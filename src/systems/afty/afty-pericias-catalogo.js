@@ -280,6 +280,12 @@ const OFICIO_EXTRA_CAT = /^oficio__(\d+)$/;
 /** Este id é um Ofício (o do livro ou um dos repetidos)? */
 export const ehPericiaOficio = (id) =>
   id === OFICIO_ID_CAT || OFICIO_EXTRA_CAT.test(String(id ?? ""));
+/* Alvo de Motor que atinge TODA linha de Ofício, a do livro e as repetidas
+   (autor, 2026-09-17: *"Preciso fazer uma Habilidade que me dá bônus em OFÍCIO
+   de forma geral, e preciso selecionar um por um"*). É escopo, igual ao
+   `atr:destreza`, e não id de perícia: `ehPericiaOficio` responde falso para
+   ele. Hoje só o `bonusPericia` o lê. Ver `escoposDe` em afty-pericias.js. */
+export const ALVO_TODOS_OFICIOS = "oficio:todos";
 const rankDe = (prof) => RANK_PROF[prof] ?? 0;
 const rotuloFaixa = (nivel) => (nivel === "mestre" ? "Mestre" : "Treinado");
 

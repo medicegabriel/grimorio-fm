@@ -3474,9 +3474,24 @@ export const PASSIVO_EFEITOS = [
   { value: "iniciativa",  label: "Aumento de Iniciativa (sem tabela no livro)",    unidade: "",       canal: "iniciativa", extrapolado: true, auxTabela: "defesa" },
   { value: "atencao",     label: "Aumento de Atenção (sem tabela no livro)",       unidade: "",       canal: "atencao",    extrapolado: true, auxTabela: "defesa" },
   { value: "regeneracao", label: "Regeneração por Rodada (referência — sem canal)", unidade: "PV/rodada", canal: null },
+  { value: "personalizado", label: "Personalizado", unidade: "", canal: null },
 ];
 const PASSIVO_EFEITO_BY_ID = Object.fromEntries(PASSIVO_EFEITOS.map((e) => [e.value, e]));
-export const getPassivoEfeito = (id) => PASSIVO_EFEITO_BY_ID[id] ?? PASSIVO_EFEITOS[0];
+/* ⚠ SEM CATEGORIA É NULO, e não Defesa (autor, 2026-09-17: "Não quero que
+   apareça DEFESA +4 para qualquer efeito que não for numerico"). O seletor
+   começa em "-", e a maioria das Passivas não é número nenhum. */
+export const getPassivoEfeito = (id) => PASSIVO_EFEITO_BY_ID[id] ?? null;
+
+/**
+ * A categoria do Passivo que esta ficha escolheu, ou "" quando nenhuma.
+ *
+ * Lê o `categoriaPassivo` (2026-09-17). Do campo antigo `efeitoPassivo` só aceita
+ * "personalizado", que nunca foi o padrão de ninguém: o Addon Manipulação do Céu
+ * (GoliasK, 2026-09-16) o grava assim, e fichas criadas por ele também. O
+ * "defesa" antigo segue sem leitor, porque todo Feitiço nascia com ele.
+ */
+export const categoriaDoPassivo = (feitico) =>
+  feitico?.categoriaPassivo || (feitico?.efeitoPassivo === "personalizado" ? "personalizado" : "");
 
 /**
  * Feitiço Passivo / Característica: benefício permanente, sem ação nem
@@ -3508,10 +3523,50 @@ export function calcularFeiticoPassivo(feitico, ctx = {}) {
   const f = feitico || {};
   const nivel = f.nivel ?? 0;
   const nNum = nivel === "max" ? 5 : Math.max(0, Math.min(5, Math.trunc(Number(nivel) || 0)));
-  const def = getPassivoEfeito(f.efeitoPassivo);
+  if (categoriaDoPassivo(f) === "personalizado") {
+    return {
+      disponivel: false,
+      efeito: "personalizado",
+      efeitoLabel: "Personalizado",
+      unidade: "",
+      valor: null,
+      notacao: null,
+      texto: "",
+      tiposDanoExtra: 0,
+      alvo: null,
+      custoPeMaximo: custoPeMaximoDaPassiva(nivel),
+      custoPeMaximoAtivo: true,
+      efeitosGerados: [],
+      avisos: [],
+    };
+  }
+  /* ⚠ `categoriaPassivo`, e não mais `efeitoPassivo` (2026-09-17). Todo Feitiço
+     nascia com `efeitoPassivo: "defesa"` gravado, até os que nunca foram
+     Passivos, e não havia como separar a escolha do padrão. O campo novo nasce
+     vazio, e o antigo fica nas fichas gravadas sem leitor. */
+  const def = getPassivoEfeito(categoriaDoPassivo(f));
   const avisos = [];
 
   if (nivel === "max") avisos.push("Não existe Feitiço Passivo de Técnica Máxima — o Nível fica preso em 5.");
+
+  // Sem categoria a calculadora não sugere nada, e nenhum número aparece.
+  if (!def) {
+    return {
+      disponivel: false,
+      efeito: null,
+      efeitoLabel: null,
+      unidade: "",
+      valor: null,
+      notacao: null,
+      texto: "-",
+      tiposDanoExtra: 0,
+      alvo: null,
+      custoPeMaximo: custoPeMaximoDaPassiva(nivel) || null,
+      custoPeMaximoAtivo: regraDo(ctx.sistema, "passivaCustaPeMaximo") === "player",
+      efeitosGerados: [],
+      avisos,
+    };
+  }
 
   let valor = null;
   let notacao = null;
@@ -3642,7 +3697,8 @@ export function createBlankFeitico() {
     alvosMult: 1,              // alvos ÚNICOS do Feitiço (todos os efeitos seguem)
     efeitosMult: [],           // [createBlankAuxEffect()]
     // --- campos de Passivo / Característica ---
-    efeitoPassivo: "defesa",    // ver PASSIVO_EFEITOS — o que a calculadora usa
+    // Vazio é "-": sem categoria a calculadora não sugere número. Ver PASSIVO_EFEITOS.
+    categoriaPassivo: "",
     alvoPassivoAtributo: "forca",
     alvoPassivoTR: "reflexos",
     alvoPassivoPericia: "percepcao",

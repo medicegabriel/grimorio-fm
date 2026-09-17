@@ -23,6 +23,7 @@ import { getTalento } from "../afty-talentos";
 import { getAptidao, getCategoriaAptidao } from "../afty-aptidoes";
 import { getHabilidadeGeral } from "../afty-gerais";
 import { getMelhoriaSuperior, getHabilidadeLendaria, getHabilidadeApice } from "../afty-alto-nivel";
+import { sistemaDaFicha } from "../afty-sistema";
 import { getEspecializacao } from "../afty-especializacoes";
 import { caracteristicasEfetivas, getOrigem, getCla } from "../afty-origens";
 import { NIVEL_LABEL } from "../afty-feiticos";
@@ -351,7 +352,8 @@ export function conteudoDaFicha(creature, derived) {
   const mapaAlto = derived?.altoNivel?.escolhas?.mapa ?? {};
   const opcoesAlto = derived?.altoNivel?.escolhas?.opcoesPorItem ?? {};
   for (const m of derived?.altoNivel?.melhorias?.escolhidas ?? []) {
-    const def = getMelhoriaSuperior(m.id);
+    // O nome e o texto são os do livro desta ficha (Classe de Armadura no jogador).
+    const def = getMelhoriaSuperior(m.id, sistemaDaFicha(creature));
     if (!def) continue;
     itens.push(item({
       id: m.id,

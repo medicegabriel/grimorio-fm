@@ -195,21 +195,19 @@ a maior (+2)? E uma Ação com uma Característica? Se somarem, o `grupoJogador`
 o assert `t-bencao-forja.mjs` muda na tabela dos grupos.
 **Anotado:** 2026-09-11, ao ligar o pool em grupos do jogador
 
-### Ficha de Player: o teste do Interlúdio não é rastreado
+### Ficha de Player: as etapas de Linha de Treinamento que pedem teste
 
-**Onde:** `src/systems/afty/AftyCreatureBuilder.jsx` (`TreinoEspecialCard`), `afty-treinos-especiais.js`
+**Onde:** `src/systems/afty/afty-treinamentos.js`, `AftyCreatureBuilder.jsx` (`TreinoLinha`)
 
-**Situação:** na criatura, Interlúdio que pede teste é sucesso automático, e por isso escolher o
-Treino Especial já concede. O autor decidiu em 2026-09-10 que **o jogador rola o teste**. A ficha
-não tem teste nenhum modelado: no /Player escolher continua concedendo, e o `title` só deixou de
-afirmar a regra da criatura (divergência de tela `interludioComTeste`). O mesmo vale para as etapas
-das Linhas de Treinamento que pedem teste.
+**Situação:** o Treino Especial do jogador passou a anotar a tentativa em 2026-09-16 (Interlúdios,
+Sucessos, Ganhos e a CD, divergência `interludioComTeste`). As etapas das Linhas de Treinamento que
+pedem teste continuam como antes: marcar a etapa já concede, e o jogador só marca depois de passar
+na mesa.
 
-**Precisa:** o autor dizer se a ficha deve acompanhar o teste (sucessos por etapa, CD, o que
-acontece na falha) ou se o jogador marca o Treino só depois de passar na mesa, que é como funciona
-hoje. Se for o primeiro, é sistema novo, e o Estudos e o Treinamento para Habilidade, que ainda
-esperam o texto verbatim, são os primeiros clientes.
+**Precisa:** o autor dizer se as etapas com teste ganham a mesma anotação. O pedido de 2026-09-16
+falou só de Feitiço e Habilidade.
 **Anotado:** 2026-09-10, na varredura dos restos de "criatura" no /Player
+**Nota:** reescrita em 2026-09-16, quando a metade do Treino Especial foi feita.
 
 ### Os 64px de margem morta do cabeçalho do criador, agora sem bloqueio
 
@@ -685,6 +683,8 @@ Numa trilha em que nada mais mexeu as duas leituras dão o mesmo 6, e elas só d
 fonte de limite cair na MESMA trilha: somando dá 7, absoluto para em 6.
 **Precisa:** o autor confirmar a soma ou pedir o teto absoluto. É uma linha.
 **Anotado:** 2026-08-12, na entrada da Versatilidade Extrema
+**Nota:** desde 2026-09-17 a Versatilidade Extrema não existe na Ficha de Jogador (divergência
+`perdidoNoJogador`), então a dúvida vale só para a criatura e para um jogador cujo Addon a devolva.
 
 ### ASSUNÇÃO: em que ORDEM o Ritual e a Liberação Máxima se compõem
 **Onde:** `src/systems/afty/afty-feiticos.js` (`calcularFeiticoDano` e `calcularFeiticoCurativo`)
@@ -779,26 +779,21 @@ junto.
 pelo mesmo caminho que o Múltiplos Efeitos já usa.
 **Anotado:** 2026-08-09, revisão de Transformação e Auxiliares
 
-### FALTA o texto verbatim do Estudos, e o do Treinamento para Habilidade
+### FALTA o texto verbatim do Estudos
 **Onde:** `src/systems/afty/afty-treinos-especiais.js` (catálogo) e o card
 `Interlúdios · Treinos Especiais` do criador
 **Situação:** os Treinos Especiais (Interlúdios Adicionais, Livro do Narrador p. 22) ganharam
 sistema em 2026-08-18. Dois estão no catálogo (**Treinamento para Feitiço** e **Treinamento para
-Habilidade**) e o **Estudos** segue como cartão "em breve". Faltam DOIS textos, por motivos
-diferentes:
-- **Estudos** nem entrou no catálogo, porque só existe a paráfrase da aba ("4 testes de INT/SAB,
-  CD 12 + maestria, 2 sucessos concedem maestria, ou 3 testes CD 15 + nível para especialista").
-- **Treinamento para Habilidade** já funciona (vaga e teto), mas a `descricao` dele **ainda é a
-  paráfrase antiga** ("4 testes de um atributo, CD 12 + metade do nível, 3 sucessos concluem"). O
-  autor mandou construir o Treino antes de mandar o texto. Só o mecanismo foi confirmado por ele.
-
-Nenhuma das duas paráfrases foi conferida contra o livro.
-**Precisa:** o autor mandar o texto de cada um. Entram como DADO no catálogo (`id`, `nome`,
-`focos`, `vezesACada`, `concede`, `descricao`, `efeitos`), sem tocar em código. No Estudos isso
-apaga o `InterludioInfo` correspondente, e no Treinamento para Habilidade é só trocar a string. O
-Estudos provavelmente é o primeiro a usar o campo `alvo` da instância (ele nomeia uma perícia) e o
-canal `proficienciaPericia`.
+Habilidade**) e o **Estudos** segue como cartão "em breve", porque só existe a paráfrase da aba
+("4 testes de INT/SAB, CD 12 + maestria, 2 sucessos concedem maestria, ou 3 testes CD 15 + nível
+para especialista"), nunca conferida contra o livro.
+**Precisa:** o autor mandar o texto. Entra como DADO no catálogo (`id`, `nome`, `focos`,
+`vezesACada`, `concede`, `descricao`, `efeitos`, e no jogador `sucessosNecessarios`, `cdTeste` e
+`tetoJogador`), sem tocar em código, e apaga o `InterludioInfo` correspondente. Ele provavelmente é
+o primeiro a usar o campo `alvo` da instância (ele nomeia uma perícia) e o canal
+`proficienciaPericia`. A CD dele não é a metade do Nível, e o `cdTeste` já aceita outra expressão.
 **Anotado:** 2026-08-18, ao criar os Treinos Especiais
+**Nota:** o texto do Treinamento para Habilidade chegou em 2026-09-16 e já está no catálogo.
 
 ### DECIDIR: fonte display baixada para a Ficha (arquivo no repositório)
 **Onde:** `public/` mais um `@font-face` em `src/systems/afty/ficha/ficha.css`

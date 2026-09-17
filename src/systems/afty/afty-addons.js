@@ -547,7 +547,7 @@ export const LIBERACOES = [
   {
     id: "segundaHabilidadeUnica",
     rotulo: "Segunda Habilidade Única",
-    nota: "Todo item de Grau Especial recebe uma segunda Habilidade Única, que não acumula com Feitiços",
+    nota: "Todo item de Grau Especial recebe uma segunda Habilidade Única, que não acumula com Feitiços. Cada item com a segunda preenchida custa um Slot de Feitiço",
   },
   {
     id: "acessoriosUnicos",
@@ -600,6 +600,13 @@ export const LIBERACOES = [
     id: "soPorAddon:tal_alma_livre",
     rotulo: "Talento Alma Livre no Jogador",
     nota: "Devolve o Talento Alma Livre à lista de Talentos da Ficha de Jogador",
+  },
+  /* A quinta (2026-09-17), e a primeira que o jogador PERDE mesmo já tendo. Ver
+     a divergência `perdidoNoJogador`. */
+  {
+    id: "soPorAddon:len_versatilidade_extrema",
+    rotulo: "Versatilidade Extrema no Jogador",
+    nota: "Devolve a Habilidade Lendária Versatilidade Extrema à Ficha de Jogador, inclusive para quem já a tinha escolhido",
   },
 ];
 
@@ -660,6 +667,10 @@ export const liberacaoSoPorAddon = (id) => `soPorAddon:${id}`;
  *      personagem por acidente. Tirar da lista é fechar a PORTA, e não confiscar
  *      o que já passou por ela.
  *
+ *      ⚠ Salvo a entrada marcada `perdeNoJogador`, que é justamente o confisco
+ *      (divergência `perdidoNoJogador`, 2026-09-17). Para ela a terceira porta
+ *      não existe, e quem a tinha a perde. Ver `perdidaNoJogador`.
+ *
  * `jaNaFicha` é o conjunto de ids que a ficha já escolheu naquela família. Quem
  * chama sabe onde eles moram, e por isso ele vem de fora.
  */
@@ -673,7 +684,21 @@ export function filtraForaDoJogador(lista, creature, jaNaFicha = null, chave = "
   const tem = jaNaFicha instanceof Set ? jaNaFicha : new Set(jaNaFicha || []);
   return lista.filter((e) => !e?.foraDoJogador
     || liberadas.includes(liberacaoSoPorAddon(e?.[chave]))
-    || tem.has(e?.[chave]));
+    || (tem.has(e?.[chave]) && !perdidaNoJogador(e, creature, chave)));
+}
+
+/**
+ * Esta entrada foi tirada do jogador, INCLUSIVE de quem já a tinha? Quem lê a
+ * lista resolvida da ficha pergunta aqui e descarta o id, e com ele somem os
+ * efeitos e a vaga que ele ocupava.
+ *
+ * Verdadeiro só com as três condições: a marca `perdeNoJogador`, a ficha é de
+ * jogador, e nenhum Addon dela libera aquele id.
+ */
+export function perdidaNoJogador(entrada, creature, chave = "id") {
+  if (!entrada?.perdeNoJogador) return false;
+  if (regraDo(sistemaDaFicha(creature), "perdidoNoJogador") !== "player") return false;
+  return !liberacoesDaCriatura(creature).includes(liberacaoSoPorAddon(entrada?.[chave]));
 }
 
 /* ============================================================ */
@@ -817,6 +842,37 @@ function normalizarConcessoesDeAptidao(cru) {
     }));
 }
 
+function normalizarSubstituicaoEnergiaReversa(cru) {
+  if (!cru || typeof cru !== "object") return null;
+  const aptidoes = Array.isArray(cru.aptidoes)
+    ? [...new Set(cru.aptidoes.filter((x) => typeof x === "string").map((x) => x.trim()).filter(Boolean))]
+    : [];
+  if (aptidoes.length === 0) return null;
+  return {
+    tab: String(cru.tab ?? "Alternativas").trim() || "Alternativas",
+    aptidoes,
+  };
+}
+
+/**
+ * Aptidões que ocupam o lugar da Energia Reversa por regra de Addon.
+ *
+ * Isto ABRE escolhas, não concede nenhuma delas. A lista serve à aba de
+ * Aptidões e também retira a trilha ER. Mais de um pacote pode contribuir, e
+ * nesse caso as listas se unem sem duplicar ids.
+ */
+export function substituicaoEnergiaReversaPorAddon(creature) {
+  const regras = (Array.isArray(creature?.addons) ? creature.addons : [])
+    .map(normalizarPacote)
+    .map((p) => p.substituiEnergiaReversa)
+    .filter(Boolean);
+  if (regras.length === 0) return null;
+  return {
+    tab: regras.length === 1 ? regras[0].tab : "Alternativas",
+    aptidoes: [...new Set(regras.flatMap((r) => r.aptidoes))],
+  };
+}
+
 /**
  * As Aptidões que os addons DESTA criatura concedem agora.
  *
@@ -888,6 +944,10 @@ export function normalizarPacote(cru) {
        pacote NORMALIZADO, e campo que o normalizador não conhece some na
        instalação sem aviso nenhum. */
     concedeAptidoes: normalizarConcessoesDeAptidao(p.concedeAptidoes),
+    /* Substitui a trilha e a aba de Energia Reversa por uma lista fechada de
+       Aptidões. Diferente de `concedeAptidoes`, as entradas continuam sendo
+       escolhas normais e gastam vaga. */
+    substituiEnergiaReversa: normalizarSubstituicaoEnergiaReversa(p.substituiEnergiaReversa),
     /* Ids de pacotes que NÃO ligam na mesma ficha que este. Ver
        `incompativeisNaFicha`. */
     incompativeis: Array.isArray(p.incompativeis)
@@ -1220,6 +1280,13 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
       if (!conhecida) problemas.push(`${onde}: Aptidão inexistente "${id}".`);
     }
   }
+  if (p.substituiEnergiaReversa) {
+    for (const id of p.substituiEnergiaReversa.aptidoes) {
+      const conhecida = aptidoesDoPacote.has(id) || id.includes(SEPARADOR)
+        || !aptidoesDoLivro || aptidoesDoLivro.has(id);
+      if (!conhecida) problemas.push(`Substituição de Energia Reversa: Aptidão inexistente "${id}".`);
+    }
+  }
   const ciclosVistos = new Set();
   if (p.adaptacoes.length > 0 && !p.permite.includes("adaptacao")) {
     problemas.push('Pacote com "adaptacoes" precisa incluir "adaptacao" em "permite".');
@@ -1395,6 +1462,7 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
     && p.permite.length === 0
     && p.libera.length === 0
     && p.concedeAptidoes.length === 0
+    && !p.substituiEnergiaReversa
     && p.adaptacoes.length === 0
     && p.funcionamentos.length === 0
     && p.estilos.length === 0
@@ -1403,7 +1471,7 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
     && p.estadosCombate.length === 0
     && p.contadoresOrigem.length === 0
   ) {
-    problemas.push("O pacote não acrescenta, não substitui, não libera, não permite, não concede Aptidão e não traz Funcionamento Básico, Feitiço, Estado de Combate ou Contador de Origem.");
+    problemas.push("O pacote não acrescenta, não substitui, não libera, não permite, não concede ou libera Aptidão e não traz Funcionamento Básico, Feitiço, Estado de Combate ou Contador de Origem.");
   }
 
   const vistos = new Set();

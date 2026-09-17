@@ -22,6 +22,7 @@ import { conteudoDaFicha, equipamentosDaFicha } from "../ficha/ficha-conteudo";
 import AbaAcoes from "../ficha/abas/AbaAcoes";
 import PainelDeAdaptacao from "../ficha/PainelDeAdaptacao";
 import PainelOlhosAgulha from "../ficha/PainelOlhosAgulha";
+import PainelManipulacaoCeu from "../ficha/PainelManipulacaoCeu";
 import AbaBuffs from "../ficha/abas/AbaBuffs";
 import AbaPericias from "../ficha/abas/AbaPericias";
 import AbaHabilidades from "../ficha/abas/AbaHabilidades";
@@ -373,6 +374,7 @@ export default function PainelDeCombatente({
           derived={derived}
           adaptacao={<PainelDeAdaptacao derived={derived} onSessao={onSessao} />}
           olhosAgulha={<PainelOlhosAgulha derived={derived} sessao={sessao} onSessao={onSessao} />}
+          manipulacaoCeu={<PainelManipulacaoCeu derived={derived} onEstado={(estado, valor) => onSessao((s) => alteraEstadoCombate(s, estado, valor))} />}
           armasTransformaveis={<ArmasTransformaveis derived={derived} sessao={sessao} onSessao={onSessao} />}
           gatilhosTreino={derived.gatilhosTreino}
           onGatilhoTreino={(id, v) => onSessao((s) => alteraTreinoAtivo(s, id, v))}
