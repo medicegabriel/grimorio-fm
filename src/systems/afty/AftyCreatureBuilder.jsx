@@ -64,6 +64,7 @@ import {
 import {
   createBlankPactoItem, beneficiosLiberados, pactoPadraoDeAddon, MALEFICIOS_MAXIMO,
 } from "./afty-pacto";
+import { createBlankEnxerto } from "./afty-modificacoes-corporais";
 import { novaForja, novoItemForja, forjasDaFicha, focosDeForja, itensComNome, FORJA_TIPOS } from "./afty-forja";
 import {
   AFTY_TREINOS_ESPECIAIS, focosDeTreinosEspeciais, focosDoTreinoEspecial,
@@ -210,6 +211,11 @@ const TABS = [
   { id: "informacoes",   label: "Informações" },
   { id: "pericias",      label: "Perícias" },
   { id: "habilidades",   label: "Habilidades" },
+  // ⚠ AO LADO DE HABILIDADES, e não em Outros (pedido do autor, 2026-09-17):
+  // `principal: true` sobrepõe a regra de `abaEmOutros` que manda toda aba com
+  // `primitiva` para Outros. Só aparece com o Addon (`permite:
+  // ["modificacoesCorporais"]"), do mesmo jeito que Carteira e Catarse.
+  { id: "modificacoesCorporais", label: "Modificações Corporais", primitiva: "modificacoesCorporais", principal: true },
   { id: "especializacoes", label: "Especializações" },
   { id: "aptidoes",      label: "Aptidões" },
   { id: "invocacoes",    label: "Invocações" },
@@ -229,7 +235,7 @@ const TABS = [
 ];
 
 // Novas telas liberadas por Addon entram em Outros quando registradas em TABS.
-const abaEmOutros = (aba) => aba.outros || !!aba.primitiva;
+const abaEmOutros = (aba) => !aba.principal && (aba.outros || !!aba.primitiva);
 
 /* A aba "informacoes" some no Player, e o conteúdo dela sobe para a
    "identidade". A lista é filtrada em vez de duplicada: uma segunda lista
@@ -854,6 +860,31 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
       return {
         ...d,
         pacto: { ...atual, [lista]: (atual[lista] ?? []).map((it) => (it.id === id ? { ...it, ...partial } : it)) },
+      };
+    });
+
+  const MODCORP_VAZIO = { descricao: "", efeitosBase: [], limite: 0, enxertos: [] };
+  const patchModificacoesCorporais = (partial) =>
+    setDraft((d) => ({ ...d, modificacoesCorporais: { ...(d.modificacoesCorporais ?? MODCORP_VAZIO), ...partial } }));
+  const addEnxerto = () =>
+    setDraft((d) => {
+      const atual = d.modificacoesCorporais ?? MODCORP_VAZIO;
+      return { ...d, modificacoesCorporais: { ...atual, enxertos: [...(atual.enxertos ?? []), createBlankEnxerto()] } };
+    });
+  const removeEnxerto = (id) =>
+    setDraft((d) => {
+      const atual = d.modificacoesCorporais ?? MODCORP_VAZIO;
+      return { ...d, modificacoesCorporais: { ...atual, enxertos: (atual.enxertos ?? []).filter((it) => it.id !== id) } };
+    });
+  const patchEnxerto = (id, partial) =>
+    setDraft((d) => {
+      const atual = d.modificacoesCorporais ?? MODCORP_VAZIO;
+      return {
+        ...d,
+        modificacoesCorporais: {
+          ...atual,
+          enxertos: (atual.enxertos ?? []).map((it) => (it.id === id ? { ...it, ...partial } : it)),
+        },
       };
     });
 
@@ -1568,6 +1599,16 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
               addPactoItem={addPactoItem}
               removePactoItem={removePactoItem}
               patchPactoItem={patchPactoItem}
+            />
+          )}
+          {tabAtiva === "modificacoesCorporais" && (
+            <TabModificacoesCorporais
+              draft={draft}
+              derived={derived}
+              patchModificacoesCorporais={patchModificacoesCorporais}
+              addEnxerto={addEnxerto}
+              removeEnxerto={removeEnxerto}
+              patchEnxerto={patchEnxerto}
             />
           )}
           {tabAtiva === "catarse" && <TabCatarse draft={draft} derived={derived} patchCatarse={patchCatarse} />}
@@ -12251,6 +12292,76 @@ function PactoLista({ itens, limite, onAdd, onRemove, onPatch, pericias, fontesD
         <p className="text-[11px] text-slate-500">Limite de {limite} atingido.</p>
       )}
     </div>
+  );
+}
+
+/* ============================================================ */
+/* ABA MODIFICAÇÕES CORPORAIS                                    */
+/* ============================================================ */
+/**
+ * Só existe com a primitiva `modificacoesCorporais` (addon com `permite:
+ * ["modificacoesCorporais"]` — ver `tabsDoSistema`). Mesmo espírito do Perfil
+ * Amaldiçoado: uma Base (descrição + efeito, sempre ativa) e uma lista de
+ * texto livre com efeito opcional (Enxertos), reaproveitando o mesmo
+ * `PactoLista` de acima — a forma é idêntica, só o rótulo muda. O limite de
+ * Enxertos é DIGITADO na ficha, sem fórmula.
+ */
+function TabModificacoesCorporais({ draft, derived, patchModificacoesCorporais, addEnxerto, removeEnxerto, patchEnxerto }) {
+  const mc = draft.modificacoesCorporais ?? { descricao: "", efeitosBase: [], limite: 0, enxertos: [] };
+  const enxertos = Array.isArray(mc.enxertos) ? mc.enxertos : [];
+  const pericias = derived.testes?.pericias;
+  const fontesDano = fontesDanoDaFicha(draft, derived);
+  const dslContexto = derived.contextoDsl;
+  const dslExtras = derived.combate?.estadosExtras;
+
+  return (
+    <Card title="Modificações Corporais">
+      <div className="mb-4 space-y-2">
+        <FieldLabel>Base da Modificação</FieldLabel>
+        <textarea
+          value={mc.descricao}
+          onChange={(e) => patchModificacoesCorporais({ descricao: e.target.value })}
+          rows={3}
+          placeholder="Descreva a natureza das modificações: origem, material, limites."
+          className="w-full text-[12px] rounded-lg border border-slate-700 bg-slate-950/60 px-2.5 py-2 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-purple-600 resize-y"
+        />
+        <MotorEfeitosEditor
+          efeitos={mc.efeitosBase}
+          onChange={(efeitos) => patchModificacoesCorporais({ efeitos })}
+          rotulo="Efeito no Motor (opcional)"
+          pericias={pericias}
+          fontesDano={fontesDano}
+          dslContexto={dslContexto}
+          dslExtras={dslExtras}
+        />
+      </div>
+
+      <div className="mb-1.5 flex items-center justify-between text-[10px] uppercase tracking-wider text-slate-500">
+        <span>Enxertos</span>
+        <div className="flex items-center gap-1.5">
+          <span className="font-mono">{enxertos.length}/{mc.limite}</span>
+          <input
+            type="number"
+            min={0}
+            value={mc.limite}
+            onChange={(e) => patchModificacoesCorporais({ limite: Math.max(0, Math.trunc(Number(e.target.value) || 0)) })}
+            className="w-14 text-[11px] rounded border border-slate-700 bg-slate-950/60 px-1.5 py-0.5 text-slate-100 focus:outline-none focus:border-purple-600"
+            aria-label="Limite de Enxertos"
+          />
+        </div>
+      </div>
+      <PactoLista
+        itens={enxertos}
+        limite={mc.limite}
+        onAdd={addEnxerto}
+        onRemove={removeEnxerto}
+        onPatch={patchEnxerto}
+        pericias={pericias}
+        fontesDano={fontesDano}
+        dslContexto={dslContexto}
+        dslExtras={dslExtras}
+      />
+    </Card>
   );
 }
 

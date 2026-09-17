@@ -50,6 +50,7 @@ import {
   efeitosInvocacaoDeTreino, linhasComEscolhaFeiticos,
 } from "./afty-treinamentos";
 import { efeitosDePacto } from "./afty-pacto";
+import { efeitosDeModificacoesCorporais } from "./afty-modificacoes-corporais";
 import { efeitosDeTreinoEspecial } from "./afty-treinos-especiais";
 import { resolveNiveisAptidao, trilhasDaCriatura, getAptidao, AFTY_APTIDOES } from "./afty-aptidoes";
 import {
@@ -650,6 +651,11 @@ export function deriveAfty(creature, opcoes = {}) {
          linha leva `exclusivo` — acumular com qualquer fonte é a regra que o
          autor pediu. Ver afty-pacto.js. */
       ...efeitosDePacto(creature),
+      /* ⚠ MESMA NOTA DO PACTO, LOGO ACIMA: Modificações Corporais também não
+         leva `exclusivo` em nenhuma linha — "capaz de acumular com
+         Habilidades" é a regra que o autor pediu. Ver
+         afty-modificacoes-corporais.js. */
+      ...efeitosDeModificacoesCorporais(creature),
   ];
   const efMontante = resolverExclusivos(aplicarEfeitos(efeitosMontante, ctxMontante));
   // Os canais que precisam ser lidos ANTES do contexto principal: dois

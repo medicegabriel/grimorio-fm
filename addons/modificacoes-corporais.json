@@ -1,0 +1,9 @@
+{
+  "id": "modificacoes-corporais",
+  "nome": "Modificações Corporais",
+  "versao": "1.0.0",
+  "autor": "Templas",
+  "paraRaw": "afty",
+  "descricao": "Libera a aba Modificações Corporais ao lado de Habilidades: Base da Modificação (descrição + efeito opcional no Motor, sempre ativa) e Enxertos (lista de texto livre com efeito opcional, limitada por um número digitado direto na ficha, sem fórmula). Os efeitos nunca entram em pool exclusivo: acumulam com Habilidade e com qualquer outra fonte, sempre.",
+  "permite": ["modificacoesCorporais"]
+}

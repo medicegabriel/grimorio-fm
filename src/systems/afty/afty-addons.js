@@ -444,6 +444,20 @@ export const PRIMITIVAS = [
     rotulo: "Pacto",
     nota: "Aba própria: Malefícios e Benefícios de texto livre, com efeito opcional no Motor. A cada 2 Malefícios libera 1 vaga de Benefício, e os efeitos somam sempre, sem entrar em pool exclusivo",
   },
+  /* ⚠ NASCEU EM 2026-09-17, a pedido do autor: uma aba ao lado de Habilidades,
+     mesmo espírito do Perfil Amaldiçoado (Base + lista de texto livre com
+     efeito opcional), reflavorada para modificação corporal e com orçamento
+     PRÓPRIO digitado na ficha (sem fórmula ligada a ND/BT). É primitiva pela
+     mesma razão do Pacto: o que ela acrescenta não é ENTRADA de catálogo, é
+     uma aba onde o jogador escreve as linhas.
+     ⚠ NUNCA ENTRA EM POOL EXCLUSIVO, mesma regra do Pacto: os efeitos somam
+     por cima de Habilidade e de qualquer outra fonte sempre ("capaz de
+     acumular com Habilidades"). Ver `afty-modificacoes-corporais.js`. */
+  {
+    id: "modificacoesCorporais",
+    rotulo: "Modificações Corporais",
+    nota: "Aba própria ao lado de Habilidades: Base da Modificação e Enxertos de texto livre, com efeito opcional no Motor. O orçamento de Enxertos é digitado na ficha, e os efeitos somam sempre, sem entrar em pool exclusivo",
+  },
 ];
 
 const PRIMITIVA_IDS = new Set(PRIMITIVAS.map((p) => p.id));

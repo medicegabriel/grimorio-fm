@@ -190,6 +190,17 @@ export function mesclaFichaAfty(existente) {
         beneficios: Array.isArray(existente.pacto.beneficios) ? existente.pacto.beneficios : [],
       }
       : { nome: "", descricao: "", maleficios: [], beneficios: [] },
+    // ⚠ Mesma sanitização RASA do `pacto`, acima, e pelo mesmo motivo: quem lê
+    // de verdade é `modificacoesCorporaisDaFicha` (afty-modificacoes-corporais.js).
+    modificacoesCorporais: (existente.modificacoesCorporais && typeof existente.modificacoesCorporais === "object"
+      && !Array.isArray(existente.modificacoesCorporais))
+      ? {
+        descricao: typeof existente.modificacoesCorporais.descricao === "string" ? existente.modificacoesCorporais.descricao : "",
+        efeitosBase: Array.isArray(existente.modificacoesCorporais.efeitosBase) ? existente.modificacoesCorporais.efeitosBase : [],
+        limite: Math.max(0, Math.trunc(Number(existente.modificacoesCorporais.limite) || 0)),
+        enxertos: Array.isArray(existente.modificacoesCorporais.enxertos) ? existente.modificacoesCorporais.enxertos : [],
+      }
+      : { descricao: "", efeitosBase: [], limite: 0, enxertos: [] },
     formulaOverrides: { ...(existente.formulaOverrides || {}) },
     periciaOficios: oficios,
     /* ⚠ Objeto SEMPRE, mesmo vindo lixo da ficha. Uma lista ou uma string aqui
@@ -539,6 +550,11 @@ export function createBlankAfty() {
     // `permite: ["pacto"]`). Malefícios e Benefícios com efeito OPCIONAL no
     // Motor, que nunca entram em pool exclusivo. Ver afty-pacto.js.
     pacto: { nome: "", descricao: "", maleficios: [], beneficios: [] },
+    // Modificações Corporais: aba de texto livre aberta pela primitiva
+    // `modificacoesCorporais`. Base da Modificação (descrição + efeito) e
+    // Enxertos (lista, orçamento DIGITADO em `limite`, sem fórmula). Nunca
+    // entra em pool exclusivo. Ver afty-modificacoes-corporais.js.
+    modificacoesCorporais: { descricao: "", efeitosBase: [], limite: 0, enxertos: [] },
     // Interlúdios · Treinos Especiais (Interlúdios Adicionais, Livro do
     // Narrador p. 22): lista COM repetição, uma entrada por pega, no mesmo
     // espírito de habilidadesGerais. Cada pega custa 1 Foco do MESMO orçamento
