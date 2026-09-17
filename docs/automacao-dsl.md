@@ -152,6 +152,38 @@ perfeita: a caixa ficava **verde**, o `evalNumber` estourava e o efeito morria c
 vocabulário do seletor `{ }` é o conjunto de nomes conhecidos, e um nome errado fica vermelho na
 hora, com o motivo escrito embaixo.
 
+## A LINHA PODE CAIR NA INVOCAÇÃO (`escopo`, 2026-09-15)
+
+Uma linha do Motor escrita pelo jogador vale, por padrão, na CRIATURA. Com `escopo: "invocacao"`
+ela passa a valer nas invocações dela, e aí ela lê **outro espaço de canais**: `INV_EFEITO_CANAIS`
+(`src/systems/afty/afty-invocacoes.js`), que tem PV, Defesa, Acerto, TR, Perícia, atributo, limite
+de atributo, orçamento de Ações e custo em PE, todos no sentido do shikigami.
+
+Vale nas quatro fontes que o jogador escreve à mão, e em qualquer Addon que use o mesmo formato:
+Técnica (Funcionamento Básico principal), Funcionamentos adicionais, Feitiço Passivo e buff de mesa
+da Ficha Final. Quem colhe é `efeitosInvocacaoEscritos`.
+
+⚠ **Os dois espaços repetem nomes de canal com sentidos diferentes.** `pv` na criatura é o PV do
+personagem e `pv` na invocação é o do shikigami. Por isso a marca obriga um descarte do outro lado:
+`efeitosDeLinhas`, `efeitosDosPassivos` e `efeitosDaSessao` (`afty-efeitos.js`) ignoram a linha
+marcada. Sem esse descarte a linha contaria nos dois lugares, e o PV do personagem cresceria calado.
+
+A mira tem duas camadas, as mesmas das Linhas de Treinamento:
+
+| Campo | O que faz | Sem ele |
+|---|---|---|
+| `invocacaoAlvo` | o id de UMA invocação | vale para todas |
+| `acaoAlvo` | o id de UMA Ação dentro dela | vale para todas as Ações |
+
+⚠ **`acaoAlvo` só entrega em sete canais**, os que o `resolveAcao` busca no balde `porAcao`:
+`danoNivel`, `danoBonus`, `curaNivel`, `curaBonus`, `ataqueDanoAdicional`, `acerto` e `cd`. Em
+qualquer outro o balde nunca é consultado e o efeito sumiria sem erro. A lista é `CANAIS_POR_ACAO`,
+declarada ao lado do `daAcao` que a consome, e ela vale em três pontos: a tela esconde o seletor de
+Ação fora dela, o editor não grava a mira, e o coletor descarta a que chegar assim mesmo, deixando a
+linha valer para a invocação inteira.
+
+Detalhe completo em `docs/afty-invocacoes.md`. Assert: `asserts/t-invocacao-escrita.mjs`.
+
 ## Notas
 - Identificadores são normalizados (minúsculas, sem acento): `Constituição` e `constituicao` são a mesma variável.
 - As expressões leem os valores **base** (sem os próprios buffs) + os recursos atuais — então um efeito que modifica Defesa não lê a Defesa já modificada (evita laço).
