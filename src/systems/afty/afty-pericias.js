@@ -37,7 +37,7 @@
 
 // As duas listas cruas vêm de um módulo FOLHA para não fechar ciclo com
 // afty-origens.js, que as lê durante a própria inicialização. Ver o cabeçalho de lá.
-import { AFTY_PERICIAS, AFTY_ATAQUES, ehPericiaOficio } from "./afty-pericias-catalogo";
+import { AFTY_PERICIAS, AFTY_ATAQUES, ehPericiaOficio, ALVO_TODOS_OFICIOS } from "./afty-pericias-catalogo";
 export { AFTY_PERICIAS, AFTY_ATAQUES };
 import { AFTY_ATTRS, AFTY_RESISTENCIAS } from "./afty-schema";
 import {
@@ -182,7 +182,8 @@ export function idsPericiasAtivas(creature) {
  * as perícias em duas colunas, e um número ímpar deixa uma delas mais curta.
  * O desempate é um Ofício, e não uma linha vazia, porque Ofício é a única
  * perícia que o personagem pode ter mais de uma vez: são vinte no livro (par),
- * então o extra só aparece quando a ficha cria uma perícia personalizada.
+ * então o extra aparece quando a ficha cria uma perícia personalizada ou uma
+ * linha pelo botão Novo Ofício, que desde 2026-09-16 também entra na conta.
  *
  * ⚠ E ELE É UM OFÍCIO DE VERDADE (autor, 2026-08-30): tem proficiência
  * própria e Ofícios escolhidos próprios, então dá para ser Treinado num e
@@ -198,7 +199,7 @@ const OFICIO_EXTRA_ID = /^oficio__(\d+)$/;
    FOLHA, porque o requisito de treino (`avaliarRequisitoDeTreino`) precisa dele e
    é lido por Habilidades, Talentos e Aptidões: importar ESTE arquivo em qualquer
    um dos três fecharia o ciclo que a separação do catálogo existe para evitar. */
-export { ehPericiaOficio };
+export { ehPericiaOficio, ALVO_TODOS_OFICIOS };
 
 /**
  * Os Ofícios escolhidos numa linha de Ofício.
@@ -232,9 +233,26 @@ export function oficiosExtrasDaFicha(creature) {
 }
 
 /** O Ofício repetido guarda alguma coisa? É o que o mantém na ficha. */
-const oficioExtraOcupado = (creature, id) => {
+export const oficioExtraOcupado = (creature, id) => {
   const prof = creature?.pericias?.[id];
   return prof === "treinado" || prof === "mestre" || oficiosDaFicha(creature, id).length > 0;
+};
+
+const numeroDoOficio = (id) => Number(OFICIO_EXTRA_ID.exec(String(id ?? ""))?.[1]);
+
+/* Todo `oficio__N` que a ficha guarda (faixa ou Ofícios escolhidos), olhando as
+   DUAS chaves. Não para no primeiro buraco: um Ofício preenchido depois de uma
+   linha removida continuava gravado e sumia da tela. */
+const numerosGuardados = (creature) => {
+  const ids = new Set([
+    ...Object.keys(creature?.pericias ?? {}),
+    ...(creature?.periciaOficios && !Array.isArray(creature.periciaOficios)
+      ? Object.keys(creature.periciaOficios) : []),
+  ]);
+  return [...ids]
+    .filter((id) => oficioExtraOcupado(creature, id))
+    .map(numeroDoOficio)
+    .filter((n) => Number.isInteger(n) && n >= 2);
 };
 
 export function catalogoPericiasDaFicha(creature) {
@@ -248,32 +266,33 @@ export function catalogoPericiasDaFicha(creature) {
   const base = porId.get(OFICIO_ID);
   if (!base) return lista;
   const oficioExtra = (n) => ({ ...base, id: `oficio__${n}`, oficioExtra: true });
-  const manuais = oficiosExtrasDaFicha(creature);
-  const idsManuais = new Set(manuais);
   /* ⚠ A CLASSE PODE EXIGIR MAIS DE UMA LINHA DE OFÍCIO (2026-08-31). O
      Combatente e o Conjurador treinam DOIS Ofícios, e a linha repetida só
      nascia depois de alguém escrever algo nela: a segunda concessão da Classe
      não teria onde pousar, e a ficha mostraria uma perícia concedida a menos
      sem dizer nada. O mínimo vem do próprio pacote, que é onde o número mora. */
   const minimo = pacoteInicialDaFicha(creature?.especializacoes)?.periciasOficios ?? 0;
-  // Os que já carregam escolha ficam, par ou ímpar.
-  const automaticos = [];
-  for (let n = 2; n <= minimo || (oficioExtraOcupado(creature, `oficio__${n}`)
-    && !idsManuais.has(`oficio__${n}`)); n++) automaticos.push(oficioExtra(n));
-  // E o desempate, que é sempre no máximo um: acrescentar uma linha já vira a
-  // contagem para par. Linhas manuais não provocam outro desempate: o botão
-  // Novo Ofício precisa acrescentar exatamente uma linha por clique.
-  if ((lista.length + automaticos.length) % 2 === 1) {
-    automaticos.push(oficioExtra(automaticos.length + 2));
-  }
+  // Os do mínimo, os que carregam escolha e os criados pelo botão ficam todos.
   const numeros = new Set([
-    ...automaticos.map((p) => Number(OFICIO_EXTRA_ID.exec(p.id)?.[1])),
-    ...manuais.map((id) => Number(OFICIO_EXTRA_ID.exec(id)?.[1])),
+    ...Array.from({ length: Math.max(0, minimo - 1) }, (_, i) => i + 2),
+    ...numerosGuardados(creature),
+    ...oficiosExtrasDaFicha(creature).map(numeroDoOficio),
   ]);
+  /* ⚠ E O DESEMPATE CONTA TODAS AS LINHAS, AS MANUAIS INCLUSIVE (autor,
+     2026-09-16: *"isso quebrou o código que deixava as perícias sempre PAR"*).
+     Quando o botão Novo Ofício nasceu, a linha manual ficou fora da conta para
+     cada clique somar exatamente uma, e a lista passou a ficar ímpar. Com a
+     lista sempre par, o clique soma DUAS: ver `adicionarOficioExtra`. O
+     desempate é o número seguinte ao maior, para nascer no fim dos Ofícios. */
+  let desempate = null;
+  if ((lista.length + numeros.size) % 2 === 1) {
+    desempate = Math.max(1, ...numeros) + 1;
+    numeros.add(desempate);
+  }
   const extras = [...numeros]
     .filter((n) => Number.isInteger(n) && n >= 2)
     .sort((a, b) => a - b)
-    .map(oficioExtra);
+    .map((n) => (n === desempate ? { ...oficioExtra(n), desempate: true } : oficioExtra(n)));
   if (extras.length === 0) return lista;
   /* ⚠ O EXTRA ENTRA LOGO ABAIXO DO OFÍCIO DO LIVRO (autor, 2026-08-30), e não no
      fim da lista: os dois são a mesma perícia, e separá-los faria o segundo
@@ -282,6 +301,50 @@ export function catalogoPericiasDaFicha(creature) {
   const at = lista.findIndex((x) => x.id === OFICIO_ID);
   const corte = at >= 0 ? at + 1 : lista.length;
   return [...lista.slice(0, corte), ...extras, ...lista.slice(corte)];
+}
+
+/**
+ * O botão Novo Ofício. Devolve a lista nova de `periciasOficiosExtras` e o id da
+ * linha que abre.
+ *
+ * ⚠ SOMA SEMPRE DUAS LINHAS, porque a lista é sempre par. Sem desempate na tela,
+ * a linha nova deixa a conta ímpar e o desempate nasce atrás dela. Com desempate
+ * na tela, ele vira manual JUNTO: gravar só a linha nova tiraria o desempate, e
+ * o clique trocaria uma linha vazia por outra sem a lista crescer.
+ */
+export function adicionarOficioExtra(creature) {
+  const linhas = catalogoPericiasDaFicha(creature).filter((p) => ehPericiaOficio(p.id));
+  const maior = linhas.reduce((m, p) => Math.max(m, numeroDoOficio(p.id) || 1), 1);
+  const desempate = linhas.find((p) => p.desempate)?.id;
+  const novoId = `oficio__${maior + 1}`;
+  return {
+    periciasOficiosExtras: [...oficiosExtrasDaFicha(creature), ...(desempate ? [desempate] : []), novoId],
+    novoId,
+  };
+}
+
+/**
+ * Remover uma linha manual. Devolve a lista nova e TODOS os ids que saem, para
+ * quem chama limpar faixa, Ofícios e atributo de cada um.
+ *
+ * ⚠ Tirar uma linha deixa a conta ímpar quando não havia desempate. Aí sai junto
+ * a ÚLTIMA linha manual VAZIA, e a lista encolhe duas. Sem nenhuma vazia, um
+ * desempate vazio ocupa o lugar: uma linha preenchida nunca é apagada por tabela.
+ */
+export function removerOficioExtra(creature, id) {
+  const manuais = oficiosExtrasDaFicha(creature);
+  if (!manuais.includes(id)) return { periciasOficiosExtras: manuais, idsRemovidos: [] };
+  const tinhaDesempate = catalogoPericiasDaFicha(creature).some((p) => p.desempate);
+  const restantes = manuais.filter((item) => item !== id);
+  const idsRemovidos = [id];
+  if (!tinhaDesempate) {
+    const vazia = [...restantes].reverse().find((item) => !oficioExtraOcupado(creature, item));
+    if (vazia) idsRemovidos.push(vazia);
+  }
+  return {
+    periciasOficiosExtras: restantes.filter((item) => !idsRemovidos.includes(item)),
+    idsRemovidos,
+  };
 }
 
 /* ============================================================ */
@@ -851,10 +914,6 @@ export function resolveDano(creature, ctx = {}) {
           momento: "durante", multiplica: true,
           // Já tem parcela própria logo abaixo: o hover não a repete.
           naPartes: true,
-          /* ⚠ E JÁ ESTÁ ESCRITO NO TEXTO da linha (logo adiante), então não pode
-             virar chip na aba Ações: o mesmo `1d6` aparecia duas vezes, uma no
-             texto e outra ao lado. Mesma marca do segundo grupo do degrau. */
-          incluidoNoTexto: true,
         };
       });
 
@@ -865,7 +924,13 @@ export function resolveDano(creature, ctx = {}) {
 
        `naPartes` marca o grupo que já tem parcela em `linha.partes` (o dado da
        arma, os Níveis de Dano, os dados extras). O hover de Dano monta as pilhas
-       a partir das parcelas e acrescenta só os grupos SEM essa marca. */
+       a partir das parcelas e acrescenta só os grupos SEM essa marca.
+
+       ⚠ Até 2026-09-16 os grupos depois do primeiro levavam `incluidoNoTexto`,
+       porque a aba Ações desenhava um chip para cada grupo extra, e a segunda
+       metade do degrau (o `1d4` de `1d12 + 1d4`) e o dado nomeado apareciam duas
+       vezes. Os chips saíram: toda tela de Dano mostra a `formulaNormal`, que
+       soma os grupos por face, e a marca deixou de ter leitor. */
     const facesDoDado = Number(String(linha.dado).replace(/^d/i, ""));
     /* CRÍTICO POTENTE e todo "1 dado de dano adicional" em acerto crítico (canal
        `dadosCritico`). Um grupo por fonte, com o nome dela, do tamanho do maior
@@ -887,24 +952,15 @@ export function resolveDano(creature, ctx = {}) {
           faces: g.faces,
           fixo: i === 0 ? linha.fixo : 0,
           momento: "durante", multiplica: true,
-          /* ⚠ `incluidoNoTexto` NOS GRUPOS DEPOIS DO PRIMEIRO, e não é detalhe.
-             A aba Ações desenha um chip para cada grupo além do primeiro
-             (`gruposDano.slice(1)`), porque na criatura todo grupo extra é
-             mesmo um extra: Fatal, Mortal, Destruidora, Golpe Especial. No
-             jogador o segundo grupo é a segunda METADE do degrau (o `1d4` de
-             `1d12 + 1d4`), que já está escrito no texto da linha. Sem esta
-             marca a Ficha mostrava `1d12 + 1d4 + 4` e um chip `+1d4` ao lado,
-             e o mesmo dado aparecia duas vezes. */
-          ...(i > 0 ? { incluidoNoTexto: true } : {}),
           naPartes: true,
         }))
         /* ⚠ O ATROZ É CRITÁVEL (autor, 2026-09-15: "Golpe Especial Atroz também é
            Critável"). Ele nasceu com `multiplica: false` e fora do Raio Negro no
-           commit 93a186c, sem decisão citada. Segue em grupo próprio só pelo nome
-           no chip. */
+           commit 93a186c, sem decisão citada. Segue em grupo próprio só pelo nome,
+           que é o que o painel de rolagem mostra. */
         .concat(dadosAtroz ? [{
           nome: "Golpe Especial", dados: dadosAtroz, faces: facesDoDado, fixo: 0,
-          momento: "durante", multiplica: true, incluidoNoTexto: true, naPartes: true,
+          momento: "durante", multiplica: true, naPartes: true,
         }] : [])
         .concat(gruposNomeados)
         .concat(gruposCritico)
@@ -916,7 +972,7 @@ export function resolveDano(creature, ctx = {}) {
         },
         ...(dadosAtroz ? [{
           nome: "Golpe Especial", dados: dadosAtroz, faces: facesDoDado, fixo: 0,
-          momento: "durante", multiplica: true, incluidoNoTexto: true, naPartes: true,
+          momento: "durante", multiplica: true, naPartes: true,
         }] : []),
         ...gruposNomeados,
         ...gruposCritico,
@@ -1203,8 +1259,14 @@ export function resolveTestes(creature, ctx = {}) {
   /* Perícia e TR respondem por DOIS alvos: o próprio id e o atributo que usam
      (`atr:destreza`). As Dádivas do Céu do Restringido são escritas assim,
      "bônus em teste de perícia ou resistência usando destreza", e listar as
-     perícias uma a uma no conteúdo seria lista copiada à mão que envelhece. */
-  const escoposDe = (id, atributo) => [id, `atr:${atributo}`];
+     perícias uma a uma no conteúdo seria lista copiada à mão que envelhece.
+
+     Toda linha de Ofício responde também por `oficio:todos` (2026-09-17). Ofício
+     é a única perícia que se repete na ficha, e o bônus "em Ofício" de uma
+     Habilidade vale para todas as linhas, inclusive as que nascerem depois. */
+  const escoposDe = (id, atributo) => [
+    id, `atr:${atributo}`, ...(ehPericiaOficio(id) ? [ALVO_TODOS_OFICIOS] : []),
+  ];
   const bonusPorAtributo = (canal, id, atributo) =>
     (ef ? valorCanalEscopos(ef, canal, escoposDe(id, atributo)) : 0);
   const partesPorAtributo = (canal, id, atributo) =>
@@ -1333,10 +1395,18 @@ export function resolveTestes(creature, ctx = {}) {
        e somá-las inventaria um número que nenhuma das duas dá. Só a vencedora
        fica no `partes`: uma parcela perdedora ao lado do total confundiria mais
        do que explicaria. */
+    /* ⚠ E A OFERTA PRECISA GANHAR DO BÔNUS DO PRÓPRIO DONO (autor, 2026-09-16: *"A
+       Percepção está bugando [...] e deixando ela como 8"*). O "vale o maior" só
+       comparava uma oferta com a outra, e com o Cônjuge ligado uma Percepção de
+       61 virava os 8 digitados, levando junto o +2 do Treino Cônjuge Pt. 2. A
+       regra é "você PODE usar": ninguém escolhe rolar com um bônus menor. No
+       empate fica o do dono, que tem as parcelas para mostrar no hover. */
     const ofertasFixas = partesDeEfeito("periciaFixa", p.id);
     const fixo = ofertasFixas.reduce((m, o) => Math.max(m, Number(o.valor) || 0), 0);
     const partesFixo = ofertasFixas.filter((o) => (Number(o.valor) || 0) === fixo).slice(0, 1);
-    if (fixo > 0) {
+    const bonusProprio = bonusDe(atributo, prof) + bonusPorAtributo("bonusPericia", p.id, atributo)
+      + penalidadeDe(atributo);
+    if (fixo > bonusProprio) {
       return {
         ...p,
         nome,
@@ -1367,8 +1437,7 @@ export function resolveTestes(creature, ctx = {}) {
       // `concedida` marca o treino que veio de fora, para a UI poder mostrar
       // que aquela faixa não é desmarcável ali.
       concedida: !!prof && prof !== escolhida,
-      bonus: bonusDe(atributo, prof) + bonusPorAtributo("bonusPericia", p.id, atributo)
-        + penalidadeDe(atributo),
+      bonus: bonusProprio,
       partes: [
         { label: rotuloAttr(atributo), valor: modDe(atributo) },
         /* "ND" é vocabulário de criatura, e a ficha de jogador tem Nível. O

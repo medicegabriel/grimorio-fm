@@ -2194,6 +2194,30 @@ export const MELHORIA_EFEITOS = {
 };
 
 /**
+ * As quatro Melhorias que o livro do JOGADOR escreve diferente (autor,
+ * 2026-09-17). Na Ficha de Jogador estas linhas TROCAM as do mapa acima para o
+ * mesmo id, e as outras sete seguem iguais. Quem escolhe é o
+ * `coletarEfeitosCriatura`, pela divergência `melhoriasSuperioresDoJogador`.
+ */
+export const MELHORIA_EFEITOS_JOGADOR = {
+  // "Sua Classe de Armadura aumenta em 3. Você pode pegar esta melhoria uma
+  // segunda vez, aumentando em mais 2." A Classe de Armadura do jogador é a Defesa.
+  mel_defesa: [{ canal: "defesa", expr: "3 * (vez == 1) + 2 * (vez >= 2)" }],
+
+  // "A CD de todas suas habilidades de técnica, aptidões amaldiçoadas e
+  // habilidades de especialização aumenta em 3. Você pode pegar esta melhoria uma
+  // segunda vez, aumentando em mais 2."
+  mel_classe_de_dificuldade: [{ canal: "cd", expr: "3 * (vez == 1) + 2 * (vez >= 2)" }],
+
+  // "Seu máximo de pontos de energia amaldiçoada aumenta em 6. Você pode pegar
+  // esta melhoria uma segunda vez, aumentando em mais 4."
+  mel_energia: [{ canal: "pe", expr: "6 * (vez == 1) + 4 * (vez >= 2)" }],
+
+  // "Seu valor de movimento aumenta em 6 metros."
+  mel_movimento: [{ canal: "movimento", expr: "6" }],
+};
+
+/**
  * Melhorias cujo ALVO é escolhido na ficha. O canal e a expressão são fixos, e
  * só o destino vem da escolha aninhada (`altoNivel.escolhas.mapa`). Por isso os
  * efeitos aqui saem SEM `alvo`: quem preenche é o `coletarEfeitosComAlvo`.

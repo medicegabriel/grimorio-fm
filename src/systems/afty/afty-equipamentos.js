@@ -1320,6 +1320,20 @@ export const estadoDaUnica = (uid) => `unica_${uid}`;
 /** O mesmo, para a segunda Habilidade Única do Addon. Um interruptor por Habilidade. */
 export const estadoDaSegundaUnica = (uid) => `unica2_${uid}`;
 
+/**
+ * A Segunda Habilidade Única está PREENCHIDA: tem texto ou uma linha do Motor
+ * com expressão. Cada item preenchido custa um Slot de Feitiço (autor,
+ * 2026-09-16: "Eu perco um Slot de Feitiço. Já que estou efetivamente colocando
+ * Feitiços no objeto").
+ *
+ * ⚠ A linha sem expressão não conta: o editor cria a linha nova com canal
+ * `defesa` e expressão vazia, e clicar em "adicionar" não é pôr nada no Motor.
+ */
+export function segundaUnicaPreenchida(texto, linhas) {
+  if (String(texto ?? "").trim()) return true;
+  return (Array.isArray(linhas) ? linhas : []).some((l) => String(l?.expr ?? "").trim());
+}
+
 /** Contexto base da DSL para os efeitos de equipamento (sem o grau, que é por item).
     Usa os atributos BASE da ficha (o efetivo ainda não fechou quando o
     equipamento é resolvido), o que basta para os efeitos constantes. */
@@ -2568,6 +2582,17 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
   });
   const acessorioResolvido = new Map(acessoriosUnicos.map((a) => [a.id, a]));
 
+  /* ⚠ OS ITENS QUE CUSTAM UM SLOT DE FEITIÇO, um por item com a Segunda
+     Habilidade Única preenchida (autor, 2026-09-16). Contam "sempre que o item
+     existir": a Ferramenta no inventário, equipada ou guardada, e o Acessório
+     Único criado no card, mesmo fora do inventário. Sem a liberação a segunda
+     não existe, e não custa nada. Quem desconta do orçamento é o `deriveAfty`. */
+  const segundasUnicasPreenchidas = acessoriosLiberados
+    ? acessoriosUnicos
+      .filter((a) => segundaUnicaPreenchida(a.segundaHabilidadeUnica, a.segundaHabilidadeEfeitos))
+      .map((a) => ({ origem: a.id, nome: a.nome }))
+    : [];
+
   /* Uma Habilidade Única vira efeito do MOTOR com a marca da família dela, e a
      ativa ganha um interruptor na bancada. Um lugar só para as quatro (duas da
      Ferramenta, duas do Acessório Único), porque a regra de emissão é a mesma e
@@ -2646,6 +2671,10 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
         : { id: idFeitico, nome: null, tipo: null, usos, avisos: [{ id: "sumiu", texto: "O Feitiço vinculado não existe mais na ficha" }] };
     }
     const quandoDoItem = def?.requerEstado ? normalizarVariavel(def.requerEstado) : null;
+    // Antes do `equipado` de propósito: o Slot de Feitiço sai com o item guardado.
+    if (fa?.temSegundaUnica && segundaUnicaPreenchida(fa.segundaHabilidadeUnica, fa.segundaHabilidadeEfeitos)) {
+      segundasUnicasPreenchidas.push({ origem: e.uid, nome: def.nome });
+    }
 
     const equipado = !!e?.equipado;
     /* ⚠ O CRIADO SEM O ADDON NÃO ENTRA EM EFEITO NENHUM: Defesa, RD, penalidade,
@@ -2871,6 +2900,7 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
     efeitosEncantamento, // para o Motor, sem marca de pool (somam normal)
     estadosUnica,        // interruptores das ativas, para a bancada
     acessoriosUnicos,    // os da ficha, com as linhas resolvidas para o editor
+    segundasUnicasPreenchidas, // cada uma custa um Slot de Feitiço, no deriveAfty
     avisos,
   };
 }

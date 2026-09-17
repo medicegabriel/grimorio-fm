@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef, useCallback, useEffect, useLayoutEffect } from "react";
 import {
-  Save, ChevronLeft, ChevronRight, ChevronDown, Wand2, Sparkles, FlaskConical,
+  Save, ChevronLeft, ChevronDown, Wand2, Sparkles, FlaskConical,
   Dumbbell, GraduationCap, BookOpen, Check, ArrowRight, Lock, Plus, X, Zap, GripVertical,
   Copy, ArrowUp, ArrowDown, Heart, Shield, Footprints, AlertTriangle, Star, Swords,
   Trash2, Image as ImageIcon, Eye, Crosshair, RotateCcw, RefreshCw, Pencil, Table, Braces, ListChecks,
@@ -67,10 +67,11 @@ import {
 import { novaForja, novoItemForja, forjasDaFicha, focosDeForja, itensComNome, FORJA_TIPOS } from "./afty-forja";
 import {
   AFTY_TREINOS_ESPECIAIS, focosDeTreinosEspeciais, focosDoTreinoEspecial,
-  tetosDeTreinoEspecial, vezesPorTreinoEspecial,
+  tetosDeTreinoEspecial, vezesPorTreinoEspecial, progressoTreinoEspecial,
+  cdDoTreinoEspecial, maxSucessosGuardados,
 } from "./afty-treinos-especiais";
 import {
-  APTIDAO_TRILHAS, APTIDAO_NIVEL_MAX, APTIDAO_CATEGORIAS, getAptidao,
+  APTIDAO_TRILHAS, APTIDAO_NIVEL_MAX,
   aptidoesDaCategoria, subgruposDaCategoria, abasAptidao, avaliarRequisitoAptidao,
 } from "./afty-aptidoes";
 import {
@@ -83,14 +84,12 @@ import {
   expandeHerdadas,
 } from "./afty-habilidades";
 import { ALMA_LIVRE_TALENTO_ID, gruposDeTalento, avaliarAcessoTalento } from "./afty-talentos";
-import {
-  MELHORIAS_SUPERIORES, HABILIDADES_LENDARIAS, avaliarAcessoAltoNivel,
-} from "./afty-alto-nivel";
+import { avaliarAcessoAltoNivel } from "./afty-alto-nivel";
 import { HABILIDADES_GERAIS } from "./afty-gerais";
 import {
   AFTY_PERICIAS, AFTY_ATAQUES, AFTY_MANOBRAS, EMPURRAO_BASE,
-  idsPericiasAtivas, novaPericiaPersonalizada, ehPericiaOficio, oficiosDaFicha,
-  oficiosExtrasDaFicha,
+  idsPericiasAtivas, novaPericiaPersonalizada, ehPericiaOficio, ALVO_TODOS_OFICIOS, oficiosDaFicha,
+  oficiosExtrasDaFicha, adicionarOficioExtra, removerOficioExtra,
 } from "./afty-pericias";
 import { FONTES_CURA, rotuloBloco } from "./afty-cura";
 // Os canais do Motor, já agrupados por assunto para o <optgroup> do editor
@@ -152,9 +151,10 @@ import {
   formatAuxValor, aplicaReducoesCustoFeitico, tituloCustoFeitico,
   calcularFeiticoPersonalizado, TIPOS_FEITICO, TIPO_FEITICO_LABEL, TIPO_FEITICO_CURTO,
   TODOS_TIPOS_FEITICO, tiposFeiticoDaLinha, peMaximoDasPassivas,
-  calcularFeiticoPassivo, PASSIVO_EFEITOS,
+  calcularFeiticoPassivo, PASSIVO_EFEITOS, categoriaDoPassivo,
 } from "./afty-feiticos";
 import { IconeDeTipo } from "./ui/feitico-tipo";
+import ListaLateral from "./ui/ListaLateral";
 import {
   createBlankEstiloEspecial, estilosDaFicha, TECNICAS_TABELA, TEXTO_EFEITO_ESPECIAL,
   mostraCardEstilo,
@@ -1024,6 +1024,14 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
       const minhas = Array.from({ length: Math.max(0, vezes) }, () => ({ id, alvo: null }));
       return { ...d, treinosEspeciais: [...outros, ...minhas] };
     });
+  // A tentativa do jogador (Interlúdios e Sucessos). Os Ganhos seguem pelo
+  // setter de cima, porque a vaga sai das pegas.
+  const setTreinoEspecialProgresso = (id, partial) =>
+    setDraft((d) => {
+      const mapa = (d.treinoEspecialProgresso && typeof d.treinoEspecialProgresso === "object")
+        ? d.treinoEspecialProgresso : {};
+      return { ...d, treinoEspecialProgresso: { ...mapa, [id]: { ...mapa[id], ...partial } } };
+    });
 
   /* Interlúdios de Forja: caderno puro na ficha (`creature.forjas`). Os Focos de
      cada linha entram no mesmo orçamento das Linhas e dos Treinos Especiais. */
@@ -1557,7 +1565,7 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
           {tabAtiva === "aptidoes" && <TabAptidoes draft={draft} derived={derived} setAptidaoNivel={setAptidaoNivel} toggleAptidao={toggleAptidao} setAptidaoOpcao={setAptidaoOpcao} setAptidaoVezes={setAptidaoVezes} setAptidaoOpcaoRepetida={setAptidaoOpcaoRepetida} />}
           {tabAtiva === "invocacoes" && <TabInvocacoes draft={draft} derived={derived} addInvocacao={addInvocacao} removeInvocacao={removeInvocacao} duplicarInvocacao={duplicarInvocacao} moverInvocacao={moverInvocacao} patchInvocacao={patchInvocacao} patchInvocacaoAttr={patchInvocacaoAttr} efeitosApi={efeitosApi} addHorda={addHorda} removeHorda={removeHorda} patchHorda={patchHorda} />}
           {tabAtiva === "equipamentos" && <TabEquipamentos draft={draft} derived={derived} addEquipamento={addEquipamento} removeEquipamento={removeEquipamento} patchEquipamento={patchEquipamento} toggleFerramenta={toggleFerramenta} patchFerramenta={patchFerramenta} toggleEncantamento={toggleEncantamento} addArmaCustom={addArmaCustom} patchArmaCustom={patchArmaCustom} removeArmaCustom={removeArmaCustom} addAcessorioUnico={addAcessorioUnico} patchAcessorioUnico={patchAcessorioUnico} removeAcessorioUnico={removeAcessorioUnico} criados={criados} />}
-          {tabAtiva === "interludios" && <TabInterludios draft={draft} derived={derived} setTreinoProgresso={setTreinoProgresso} setTreinoInstance={setTreinoInstance} setTreinoAlvo={setTreinoAlvo} setTreinoEscolha={setTreinoEscolha} setTreinoEspecialVezes={setTreinoEspecialVezes} sistema={sistema} setFocosLivres={setFocosLivres} addForja={addForja} patchForja={patchForja} removeForja={removeForja} />}
+          {tabAtiva === "interludios" && <TabInterludios draft={draft} derived={derived} setTreinoProgresso={setTreinoProgresso} setTreinoInstance={setTreinoInstance} setTreinoAlvo={setTreinoAlvo} setTreinoEscolha={setTreinoEscolha} setTreinoEspecialVezes={setTreinoEspecialVezes} setTreinoEspecialProgresso={setTreinoEspecialProgresso} sistema={sistema} setFocosLivres={setFocosLivres} addForja={addForja} patchForja={patchForja} removeForja={removeForja} />}
           {tabAtiva === "defesas" && <TabDefesas derived={derived} setDefesaEstado={setDefesaEstado} setDefesaRd={setDefesaRd} />}
           {tabAtiva === "carteira" && <TabCarteira draft={draft} derived={derived} patchCarteira={patchCarteira} />}
           {tabAtiva === "pacto" && (
@@ -1717,30 +1725,32 @@ function TabPericias({
     const next = atuais.includes(nome) ? atuais.filter((item) => item !== nome) : [...atuais, nome];
     patch({ periciaOficios: { ...mapaOficios, [id]: next }, periciaOficio: "" });
   };
+  /* A lista de perícias é sempre PAR, então o botão soma duas linhas e a remoção
+     tira duas quando dá. A conta mora em `adicionarOficioExtra` e
+     `removerOficioExtra` (afty-pericias.js), onde os asserts alcançam. */
   const adicionarOficio = () => {
-    const maiorNumero = pericias.reduce((maior, p) => {
-      const match = /^oficio__(\d+)$/.exec(p.id);
-      return Math.max(maior, Number(match?.[1]) || 1);
-    }, 1);
-    const id = `oficio__${maiorNumero + 1}`;
-    patch({ periciasOficiosExtras: [...oficiosExtras, id] });
-    setOficioAberto(id);
+    const { periciasOficiosExtras, novoId } = adicionarOficioExtra(draft);
+    patch({ periciasOficiosExtras });
+    setOficioAberto(novoId);
   };
   const removerOficio = (id) => {
+    const { periciasOficiosExtras, idsRemovidos } = removerOficioExtra(draft, id);
     const periciasProf = { ...(draft.pericias ?? {}) };
     const periciaOficios = { ...(draft.periciaOficios ?? {}) };
     const periciaAtributoManual = { ...(draft.periciaAtributoManual ?? {}) };
-    delete periciasProf[id];
-    delete periciaOficios[id];
-    delete periciaAtributoManual[id];
+    for (const removido of idsRemovidos) {
+      delete periciasProf[removido];
+      delete periciaOficios[removido];
+      delete periciaAtributoManual[removido];
+    }
     patch({
       pericias: periciasProf,
       periciaOficios,
       periciaAtributoManual,
-      periciasOficiosExtras: oficiosExtras.filter((item) => item !== id),
+      periciasOficiosExtras,
     });
-    if (oficioAberto === id) setOficioAberto(null);
-    if (atributoAberto === id) setAtributoAberto(null);
+    if (idsRemovidos.includes(oficioAberto)) setOficioAberto(null);
+    if (idsRemovidos.includes(atributoAberto)) setAtributoAberto(null);
   };
   /* A troca manual de atributo. Escolher o PADRÃO do livro apaga a entrada em
      vez de gravá-la, e isso não é economia de bytes: uma ficha que grava
@@ -2378,8 +2388,11 @@ function DanoCard({ derived, toggleArmaDedicada }) {
                   />
                 </span>
               )}
+              {/* A fórmula somada, e não o `texto` do golpe: o hover fecha com a
+                  rolagem inteira, Aptidões e Auxiliares inclusos. Mesma regra da
+                  linha da aba Ações. */}
               <span className="relative group/dano font-mono text-[13px] font-bold tabular-nums text-white whitespace-nowrap cursor-help">
-                {e.texto}
+                {e.formulaNormal ?? e.texto}
                 <PainelDeFontes
                   partes={e.hoverDano?.partes ?? e.partes}
                   total={e.hoverDano?.total ?? e.totalFontes ?? e.total}
@@ -3027,12 +3040,16 @@ function ContadorHabilidades({ derived, proprio = false }) {
   const {
     gastosNoComum, comum, partesComum, exclusivasFeitico, exclusivasUsadas,
     exclusivasEstilo, exclusivasEstiloUsadas, excedeu,
-    proprioFeitico, proprioFeiticoPartes, proprioFeiticoUsado, excedeuFeitico,
+    proprioFeitico, proprioFeiticoAtivo, proprioFeiticoPartes, proprioFeiticoUsado, excedeuFeitico,
   } = derived.orcamentoHabilidades;
   /* O contador comum não tem dono na ficha de jogador de quem tem caixa próprio:
      lá não existe Habilidade Geral, e o Estilo é de outra origem. Mostrá-lo
-     seria um medidor de nada. */
-  const proprioAtivo = proprio && proprioFeitico > 0;
+     seria um medidor de nada.
+
+     ⚠ A pergunta é se o caixa EXISTE, e não se o total é positivo: a Segunda
+     Habilidade Única preenchida desconta dele, e um total zero trocaria o
+     medidor de Feitiços pelo de Habilidades. */
+  const proprioAtivo = proprio && proprioFeiticoAtivo;
   const usado = proprioAtivo ? proprioFeiticoUsado : gastosNoComum;
   const teto = proprioAtivo ? proprioFeitico : comum;
   const partes = proprioAtivo ? proprioFeiticoPartes : partesComum;
@@ -3828,8 +3845,18 @@ const ALVO_OPCOES_BASE = {
   trilha: APTIDAO_TRILHAS.map((t) => ({ value: t.key, label: t.label })),
 };
 
-function alvoOpcoes(tipo, pericias = AFTY_PERICIAS, fontesDano = []) {
-  if (tipo === "pericia") return pericias.map((p) => ({ value: p.id, label: p.nome }));
+/* ⚠ `canal` decide se "Todos os Ofícios" aparece. Só o `bonusPericia` lê o
+   escopo (ver `escoposDe` em afty-pericias.js): oferecer a opção em Valor Fixo
+   ou em Treino gravaria um efeito que o motor descarta calado. A opção nasce
+   logo antes da primeira linha de Ofício, que é onde o olho procura. */
+function alvoOpcoes(tipo, pericias = AFTY_PERICIAS, fontesDano = [], canal = null) {
+  if (tipo === "pericia") {
+    const opcoes = pericias.map((p) => ({ value: p.id, label: p.nome }));
+    if (canal !== "bonusPericia") return opcoes;
+    const todos = { value: ALVO_TODOS_OFICIOS, label: "Todos os Ofícios" };
+    const i = pericias.findIndex((p) => ehPericiaOficio(p.id));
+    return i < 0 ? [...opcoes, todos] : [...opcoes.slice(0, i), todos, ...opcoes.slice(i)];
+  }
   if (tipo === "fonteDano") return fontesDano;
   if (tipo === "fonteCura") return FONTES_CURA.map((f) => ({ value: f.id, label: f.nome }));
   return ALVO_OPCOES_BASE[tipo] ?? null;
@@ -4009,7 +4036,7 @@ function TecnicaMotorEditor({
           const alvos = !ef.alvoTipo
             ? null
             : naInvocacao ? alvoOpcoesInvocacao(ef.alvoTipo)
-            : alvoOpcoesDe ? alvoOpcoesDe(ef.alvoTipo) : alvoOpcoes(ef.alvoTipo, pericias, fontesDano);
+            : alvoOpcoesDe ? alvoOpcoesDe(ef.alvoTipo) : alvoOpcoes(ef.alvoTipo, pericias, fontesDano, ef.canal);
           const tamanhoSimples = simplificarTamanho && ef.canal === "tamanho";
           const tamanhoValor = Math.trunc(Number(ef.expr) || 1);
           const tamanhoDirecao = tamanhoValor < 0 ? -1 : 1;
@@ -4377,15 +4404,14 @@ function TextoLongo({ value, onChange, placeholder, minRows = 4, maxRows = 18, f
   // A seleção nova só pode ser aplicada DEPOIS de o React repintar o valor, por
   // isso ela fica pendurada aqui e o efeito abaixo a devolve ao campo.
   const selPendente = useRef(null);
-  // A última altura medida da caixa de edição. A prévia a reaproveita para o
-  // bloco não pular de tamanho na ida e na volta: são o mesmo texto, e uma
-  // caixa que encolhe ao trocar de modo parece bug.
-  //
-  // ⚠ ESTADO, e não ref: a prévia LÊ este valor durante o render, e ler
-  // `ref.current` no render é justamente o que o `react-hooks/refs` proíbe (o
-  // valor mudaria sem repintar). O efeito grava o mesmo número a cada medida, e
-  // o React descarta o set idêntico, então não há laço.
-  const [altura, setAltura] = useState(0);
+  /* ⚠ A PRÉVIA ABRAÇA O TEXTO (autor, 2026-09-17): *"Pq fica esse vão enorme
+     entre o fim do texto e o fim da caixa de escrita?"*. Antes ela herdava como
+     altura mínima a última altura da caixa de edição, para não pular de tamanho
+     na troca de modo. Só que o texto cru é mais alto que o formatado (a linha em
+     branco vale uma linha inteira na edição e 12px na prévia), e a caixa de
+     edição ainda contava o padding duas vezes. Somado ao `pb-7` da setinha, que
+     na prévia nunca aparece, sobravam 75px vazios embaixo do texto. Não
+     reintroduzir a altura herdada. */
 
   useLayoutEffect(() => {
     const el = ref.current;
@@ -4393,15 +4419,22 @@ function TextoLongo({ value, onChange, placeholder, minRows = 4, maxRows = 18, f
     // O `auto` zera a altura para o scrollHeight refletir só o conteúdo: sem
     // isso a caixa cresce e nunca encolhe ao apagar texto.
     el.style.height = "auto";
-    const linha = parseFloat(getComputedStyle(el).lineHeight) || 20;
-    const respiro = el.offsetHeight - el.clientHeight + 16;   // bordas + padding
-    const min = linha * minRows + respiro;
-    const teto = expandido ? Infinity : linha * maxRows + respiro;
-    const alvo = Math.max(min, Math.min(el.scrollHeight + respiro, teto));
-    el.style.height = `${alvo}px`;
-    setAltura(alvo);
-    setRolando(el.scrollHeight + respiro > teto);
-  }, [value, expandido, minRows, maxRows, previa]);
+    const cs = getComputedStyle(el);
+    const linha = parseFloat(cs.lineHeight) || 20;
+    /* ⚠ O `scrollHeight` JÁ INCLUI O PADDING. Só as bordas ficam de fora dele. O
+       mínimo e o teto são contados em linhas, então esses dois precisam somar o
+       padding à parte, e o conteúdo não. */
+    const bordas = el.offsetHeight - el.clientHeight;
+    const moldura = bordas + (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0);
+    const min = linha * minRows + moldura;
+    const teto = expandido ? Infinity : linha * maxRows + moldura;
+    const conteudo = el.scrollHeight + bordas;
+    el.style.height = `${Math.max(min, Math.min(conteudo, teto))}px`;
+    setRolando(conteudo > teto);
+    // `rolando` entra nas dependências porque ele troca o padding de baixo (a
+    // setinha precisa de lugar). A troca não oscila: o padding soma igual no
+    // conteúdo e no teto, e a comparação dá a mesma resposta nos dois estados.
+  }, [value, expandido, minRows, maxRows, previa, rolando]);
 
   useLayoutEffect(() => {
     const el = ref.current;
@@ -4461,10 +4494,7 @@ function TextoLongo({ value, onChange, placeholder, minRows = 4, maxRows = 18, f
       )}
       <div className="relative">
         {previa ? (
-          <div
-            className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 pb-7 text-sm leading-relaxed text-slate-300 overflow-auto"
-            style={altura ? { minHeight: `${altura}px` } : undefined}
-          >
+          <div className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-sm leading-relaxed text-slate-300 overflow-auto">
             {value
               ? <TextoRico texto={value} />
               : <span className="text-slate-600">{placeholder}</span>}
@@ -4476,7 +4506,9 @@ function TextoLongo({ value, onChange, placeholder, minRows = 4, maxRows = 18, f
             onChange={(e) => onChange(e.target.value)}
             onKeyDown={teclado}
             placeholder={placeholder}
-            className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 pb-7 text-sm leading-relaxed text-white placeholder:text-slate-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 resize-none transition-colors"
+            className={`w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 ${
+              rolando || expandido ? "pb-7" : ""
+            } text-sm leading-relaxed text-white placeholder:text-slate-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 resize-none transition-colors`}
           />
         )}
         {/* Só aparece quando há o que revelar: um botão que não faz nada é pior
@@ -4740,31 +4772,29 @@ function PerfilAmaldicoadoCard({
  *    `ui/feitico-tipo.jsx`.
  */
 
-/* Uma miniatura da fileira. Sem retrato, ao contrário da Invocação: o que
-   identifica um Feitiço de relance é o TIPO, o nível e o número que ele faz.
+/* Uma linha da lista lateral (2026-09-16, antes miniatura da fileira). Sem
+   retrato, ao contrário da Invocação: o que identifica um Feitiço de relance é o
+   TIPO, o nível e o número que ele faz.
 
    ⚠ O RESUMO VEM DO MOTOR, e não de um cálculo aqui. `derived.feiticos.lista`
    já traz nome, nível, valor, custo e avisos de cada Feitiço, montados uma vez
-   pelo `resumoFeiticos`. Recalcular por miniatura seria rodar treze vezes o
-   mesmo motor a cada tecla digitada no nome. */
-function FeiticoMiniatura({ feitico, resumo, selecionado, onSelecionar }) {
+   pelo `resumoFeiticos`. Recalcular por linha seria rodar treze vezes o mesmo
+   motor a cada tecla digitada no nome.
+
+   ⚠ É SÓ O CONTEÚDO: o botão, a seleção e a rolagem são da `ListaLateral`. */
+/* Os Tipos na ordem dos grupos da lista, com o rótulo curto: "Passivo /
+   Característica" não cabe no cabeçalho de grupo de uma coluna de 15rem. */
+const TIPOS_FEITICO_DA_LISTA = TIPOS_FEITICO.map((t) => ({
+  value: t.value,
+  label: TIPO_FEITICO_CURTO[t.value] ?? t.label,
+}));
+
+function FeiticoLinha({ feitico, resumo, selecionado }) {
   const r = resumo || {};
   const avisos = r.avisos || [];
   const nome = feitico.nome || "Sem nome";
-  const ref = useVisivelNaFileira(selecionado);
   return (
-    <button
-      ref={ref}
-      type="button"
-      onClick={onSelecionar}
-      aria-pressed={selecionado}
-      title={nome}
-      className={`relative flex-shrink-0 w-44 text-left rounded-lg border px-2.5 py-2 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-500 ${
-        selecionado
-          ? "border-purple-500 bg-purple-950/30 ring-1 ring-purple-500"
-          : "border-slate-700/80 bg-slate-950/40 hover:border-slate-600"
-      }`}
-    >
+    <>
       <span className="flex items-center gap-1.5 min-w-0">
         <span className={selecionado ? "text-purple-300" : "text-slate-500"}>
           <IconeDeTipo tipo={feitico.tipo} className="w-3.5 h-3.5 flex-shrink-0" />
@@ -4778,18 +4808,17 @@ function FeiticoMiniatura({ feitico, resumo, selecionado, onSelecionar }) {
       </span>
       {/* ⚠ O NÍVEL VAI NESTA LINHA e não na de cima, ao lado do nome: nome longo
           come a largura toda e o nível seria a primeira coisa a sumir no
-          `truncate`, justamente numa fileira em que ele é metade da identidade. */}
-      <span className="flex items-baseline gap-2 mt-1 font-mono text-[10px] tabular-nums text-slate-400">
-        <span className="flex-shrink-0">{TIPO_FEITICO_CURTO[feitico.tipo] ?? ""}</span>
+          `truncate`. O valor vem por último porque é o que mais cresce. */}
+      <span className="flex items-baseline gap-2 mt-0.5 pl-5 min-w-0 font-mono text-[10px] tabular-nums text-slate-400">
         <span className="flex-shrink-0 text-slate-500">{r.nivelLabel ?? NIVEL_LABEL[feitico.nivel]}</span>
-        {r.custoPE != null && <span className="ml-auto flex-shrink-0 text-purple-300">{r.custoPE} PE</span>}
+        {r.custoPE != null && <span className="flex-shrink-0 text-purple-300">{r.custoPE} PE</span>}
+        {r.valor && (
+          <span className="min-w-0 truncate font-bold text-slate-200" title={`${r.valorLabel}: ${r.valor}`}>
+            {r.valor}
+          </span>
+        )}
       </span>
-      {r.valor && (
-        <span className="block mt-0.5 font-mono text-[11px] font-bold tabular-nums text-white truncate" title={`${r.valorLabel}: ${r.valor}`}>
-          {r.valor}
-        </span>
-      )}
-    </button>
+    </>
   );
 }
 
@@ -5058,25 +5087,31 @@ function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico
           </button>
         </div>
       ) : (
-        <div className="space-y-3">
-          {/* ===== 0. A FILEIRA ===== */}
-          <FileiraDeCartoes
-            onNova={podeCriar ? () => novoFeitico() : null}
-            rotuloNovo="Novo Feitiço"
-            rotuloAnterior="Ver Feitiços Anteriores"
-            rotuloProximo="Ver Próximos Feitiços"
-          >
-            {lista.map((f) => (
-              <FeiticoMiniatura
-                key={f.id}
-                feitico={f}
-                resumo={resumoDe(f.id)}
-                selecionado={escolhido?.id === f.id}
-                onSelecionar={() => setEscolhidoId(f.id)}
-              />
-            ))}
-          </FileiraDeCartoes>
-
+        /* ===== 0. A LISTA LATERAL (2026-09-16) =====
+           Era a fileira de cartões, que mostrava quatro por vez. Ver
+           `ui/ListaLateral.jsx`. O nível da ordem é numérico: a Técnica Máxima
+           vale 6, um acima do Nível 5. */
+        <ListaLateral
+          itens={lista.map((f) => ({
+            id: f.id,
+            nome: f.nome || "Sem nome",
+            tipo: f.tipo,
+            nivel: f.nivel === "max" ? 6 : Number(f.nivel) || 0,
+            feitico: f,
+          }))}
+          tipos={TIPOS_FEITICO_DA_LISTA}
+          IconeTipo={IconeDeTipo}
+          rotuloNivel="Nível"
+          selecionadoId={escolhido?.id ?? null}
+          onSelecionar={setEscolhidoId}
+          renderItem={(item, selecionado) => (
+            <FeiticoLinha feitico={item.feitico} resumo={resumoDe(item.id)} selecionado={selecionado} />
+          )}
+          onNova={podeCriar ? () => novoFeitico() : null}
+          rotuloNovo="Novo Feitiço"
+          rotuloBusca="Buscar Feitiço"
+          rotuloVazio="Nenhum Feitiço encontrado"
+        >
           {escolhido && (
             <FeiticoCard
               key={escolhido.id}
@@ -5093,7 +5128,7 @@ function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico
               onDuplicate={() => duplicar(escolhido.id)}
             />
           )}
-        </div>
+        </ListaLateral>
       )}
     </Card>
   );
@@ -7105,8 +7140,11 @@ function AtributosDoAuxiliar({ config, feitico, total, onPatch }) {
  */
 function FeiticoPassivoEditor({ feitico, calc, onPatch, efeitosPassivo, fontesDano, dslGrupos, invocacoes }) {
   const f = feitico;
-  const efeito = f.efeitoPassivo || "defesa";
-  const def = PASSIVO_EFEITOS.find((e) => e.value === efeito) || PASSIVO_EFEITOS[0];
+  /* ⚠ O SELETOR COMEÇA EM "-" (autor, 2026-09-17), e a escolha mora em
+     `categoriaPassivo`. O `efeitoPassivo` antigo tinha "defesa" gravado em todo
+     Feitiço, e mostrava "+4 DEF" em Passiva que não é número nenhum. */
+  const efeito = categoriaDoPassivo(f);
+  const def = PASSIVO_EFEITOS.find((e) => e.value === efeito) ?? null;
 
   const usarValor = () => {
     if (calc?.efeitosGerados?.length) onPatch({ efeitosPassivo: calc.efeitosGerados });
@@ -7119,11 +7157,12 @@ function FeiticoPassivoEditor({ feitico, calc, onPatch, efeitosPassivo, fontesDa
           <FieldLabel>Categoria do Passivo</FieldLabel>
           <Select
             value={efeito}
-            onChange={(v) => onPatch({ efeitoPassivo: v })}
+            onChange={(v) => onPatch({ categoriaPassivo: v })}
             options={PASSIVO_EFEITOS.map((e) => ({ value: e.value, label: e.label }))}
+            placeholder="-"
           />
         </div>
-        {def.pedeAlvo === "atributo" && (
+        {def?.pedeAlvo === "atributo" && (
           <div>
             <FieldLabel>Atributo</FieldLabel>
             <Select
@@ -7133,7 +7172,7 @@ function FeiticoPassivoEditor({ feitico, calc, onPatch, efeitosPassivo, fontesDa
             />
           </div>
         )}
-        {def.pedeAlvo === "tr" && (
+        {def?.pedeAlvo === "tr" && (
           <div>
             <FieldLabel>Teste de Resistência</FieldLabel>
             <Select
@@ -7143,7 +7182,7 @@ function FeiticoPassivoEditor({ feitico, calc, onPatch, efeitosPassivo, fontesDa
             />
           </div>
         )}
-        {def.pedeAlvo === "pericia" && (
+        {def?.pedeAlvo === "pericia" && (
           <div>
             <FieldLabel>Perícia</FieldLabel>
             <Select
@@ -7153,7 +7192,7 @@ function FeiticoPassivoEditor({ feitico, calc, onPatch, efeitosPassivo, fontesDa
             />
           </div>
         )}
-        {def.multiTipo && (
+        {def?.multiTipo && (
           <div>
             <FieldLabel>Tipos de dano extras cobertos</FieldLabel>
             <NumberInput
@@ -7165,7 +7204,9 @@ function FeiticoPassivoEditor({ feitico, calc, onPatch, efeitosPassivo, fontesDa
         )}
       </div>
 
-      {calc && efeito !== "personalizado" && (
+      {/* Sem categoria não há sugestão, e o painel não nasce. O Personalizado também
+          não tem número para sugerir. */}
+      {calc?.efeito && efeito !== "personalizado" && (
         <div className="rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-2.5 flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-baseline gap-2 min-w-0">
             <span className="text-[11px] text-slate-400 flex-shrink-0">Valor calculado</span>
@@ -9230,41 +9271,61 @@ function ChipConcede({ texto, aceso }) {
 
    `max` vem de fora porque o teto depende do ND (1 + 1 a cada 5 ou 10 níveis),
    e quem tem o ND é a aba. */
-/* ⚠ `sistema` decide só o title: no jogador o teste é rolado na mesa (autor,
-   2026-09-10), e o title não pode afirmar a regra da criatura. Ver a
-   divergência `interludioComTeste`. */
-function TreinoEspecialCard({ item, vezes, max, onSetVezes, sistema }) {
+/* ⚠ NO JOGADOR A LINHA ANOTA A TENTATIVA (autor, 2026-09-16), divergência
+   `interludioComTeste`. A pega deixa de ser o Interlúdio e passa a ser o Ganho,
+   e a linha ganha a CD e uma fileira com Interlúdios, Sucessos e Ganhos. Os
+   Ganhos nunca passam dos Interlúdios, porque cada Interlúdio é UMA tentativa, e
+   os Interlúdios nunca descem abaixo dos Ganhos.
+
+   ⚠ O quadrado do jogador só COMEÇA. Depois de começado ele vira marca, e zerar
+   é descer os contadores: um clique não pode apagar nove Interlúdios e três
+   Ganhos de uma vez. */
+function TreinoEspecialCard({ item, vezes, max, onSetVezes, sistema, progresso, cd, onSetProgresso }) {
   const [open, setOpen] = useState(false);
-  const escolhido = vezes > 0;
-  const repetivel = max == null || max > 1;
+  const jogador = regraDo(sistema, "interludioComTeste") === "player";
   const focos = focosDoTreinoEspecial(item);
+  const interludios = progresso?.interludios ?? 0;
+  const sucessos = progresso?.sucessos ?? 0;
+  const maxSucessos = maxSucessosGuardados(item);
+  const escolhido = jogador ? interludios > 0 || sucessos > 0 || vezes > 0 : vezes > 0;
+  const repetivel = max == null || max > 1;
   // Preço enquanto não pegou, gasto depois: o número que interessa muda de um
   // estado para o outro, e os dois cabem no mesmo lugar.
   const custo = escolhido ? vezes * focos : focos;
+  const maxGanhos = Math.min(max ?? Infinity, Math.floor(interludios / Math.max(1, focos)));
+  const classeQuadrado = `w-5 h-5 rounded flex items-center justify-center flex-shrink-0 border transition-colors ${
+    escolhido
+      ? "bg-purple-700 border-purple-600 text-white"
+      : "border-slate-600 text-slate-500 hover:border-purple-600 hover:text-purple-300"
+  }`;
 
   return (
     <div className={`rounded-lg border transition-colors ${
       escolhido ? "border-purple-700 bg-purple-950/30" : "border-slate-800 bg-slate-950/40"
     }`}>
       <div className={LINHA_INTERLUDIO}>
-        <button
-          type="button"
-          onClick={() => onSetVezes(escolhido ? 0 : 1)}
-          aria-pressed={escolhido}
-          aria-label={`${escolhido ? "Remover" : "Escolher"} ${item.nome}`}
-          title={escolhido
-            ? "Remover"
-            : regraDo(sistema, "interludioComTeste") === "player"
-              ? "Escolher"
-              : "Escolher. Interlúdio que pede teste é sucesso automático para criaturas"}
-          className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 border transition-colors ${
-            escolhido
-              ? "bg-purple-700 border-purple-600 text-white"
-              : "border-slate-600 text-slate-500 hover:border-purple-600 hover:text-purple-300"
-          }`}
-        >
-          {escolhido ? <Check className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
-        </button>
+        {jogador && escolhido ? (
+          <span className={classeQuadrado} aria-hidden="true">
+            <Check className="w-3 h-3" />
+          </span>
+        ) : (
+          <button
+            type="button"
+            onClick={() => (jogador
+              ? onSetProgresso({ interludios: focos })
+              : onSetVezes(escolhido ? 0 : 1))}
+            aria-pressed={escolhido}
+            aria-label={`${escolhido ? "Remover" : "Escolher"} ${item.nome}`}
+            title={escolhido
+              ? "Remover"
+              : jogador
+                ? "Escolher"
+                : "Escolher. Interlúdio que pede teste é sucesso automático para criaturas"}
+            className={classeQuadrado}
+          >
+            {escolhido ? <Check className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
+          </button>
+        )}
 
         <button
           type="button"
@@ -9281,20 +9342,33 @@ function TreinoEspecialCard({ item, vezes, max, onSetVezes, sistema }) {
           <ChipConcede texto={item.concede} aceso={escolhido} />
         </button>
 
-        <span
-          className={`font-mono text-[11px] tabular-nums whitespace-nowrap flex-shrink-0 ${
-            escolhido ? "text-purple-200" : "text-slate-500"
-          }`}
-          title={escolhido ? "Focos gastos neste treino" : "Focos por pega"}
-        >
-          {custo} Foco{custo > 1 ? "s" : ""}
-        </span>
+        {jogador ? (
+          cd != null && (
+            <span
+              className={`font-mono text-[11px] tabular-nums whitespace-nowrap flex-shrink-0 ${
+                escolhido ? "text-purple-200" : "text-slate-500"
+              }`}
+              title="CD do teste"
+            >
+              CD {cd}
+            </span>
+          )
+        ) : (
+          <span
+            className={`font-mono text-[11px] tabular-nums whitespace-nowrap flex-shrink-0 ${
+              escolhido ? "text-purple-200" : "text-slate-500"
+            }`}
+            title={escolhido ? "Focos gastos neste treino" : "Focos por pega"}
+          >
+            {custo} Foco{custo > 1 ? "s" : ""}
+          </span>
+        )}
 
         {/* Medidor só depois de escolhido: o 1º segmento duplicaria o toggle.
             Acima de 6 vezes ele não cabe e vira contador, e sem teto nenhum o
             contador é a única saída (o medidor precisa de um máximo para
             desenhar os segmentos). */}
-        {repetivel && escolhido && (
+        {!jogador && repetivel && escolhido && (
           max != null && max <= 6
             ? <VezesGauge vezes={vezes} max={max} nome={item.nome} onSet={onSetVezes} />
             : <ContadorCompacto value={vezes} min={1} max={max ?? undefined} onChange={onSetVezes} />
@@ -9305,6 +9379,46 @@ function TreinoEspecialCard({ item, vezes, max, onSetVezes, sistema }) {
           aria-hidden="true"
         />
       </div>
+
+      {/* No telefone os três não cabem numa fileira com o rótulo ao lado, e
+          quebrando soltos o Ganhos caía sozinho numa terceira linha. Lá o rótulo
+          sobe e a grade fica em duas colunas, com os dois contadores juntos e os
+          Sucessos embaixo. */}
+      {jogador && escolhido && (
+        <div className="px-2.5 pb-2.5 sm:pl-10 grid grid-cols-2 gap-x-4 gap-y-2 sm:flex sm:flex-wrap sm:items-center sm:gap-x-5">
+          <span className="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:gap-2">
+            <span className="text-[10px] uppercase tracking-wider text-slate-500">Interlúdios</span>
+            <ContadorCompacto
+              value={interludios}
+              min={vezes * focos}
+              onChange={(n) => onSetProgresso({ interludios: n })}
+            />
+          </span>
+          {maxSucessos > 0 && (
+            <span className="order-3 sm:order-none flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:gap-2">
+              <span className="text-[10px] uppercase tracking-wider text-slate-500">Sucessos</span>
+              <VezesGauge
+                vezes={sucessos}
+                max={maxSucessos}
+                nome="Sucessos"
+                onSet={(n) => onSetProgresso({ sucessos: n })}
+                rotulos={Array.from({ length: maxSucessos }, (_, i) => (i === 0 ? "1 Sucesso" : `${i + 1} Sucessos`))}
+              />
+            </span>
+          )}
+          <span className="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:gap-2">
+            <span className="text-[10px] uppercase tracking-wider text-slate-500">Ganhos</span>
+            <span className="flex items-center gap-2">
+              <ContadorCompacto value={vezes} min={0} max={maxGanhos} onChange={onSetVezes} />
+              {max != null && (
+                <span className="font-mono text-[11px] tabular-nums text-slate-500" title="Máximo pelo Nível">
+                  / {max}
+                </span>
+              )}
+            </span>
+          </span>
+        </div>
+      )}
 
       {open && (
         <div className={CORPO_INTERLUDIO}>
@@ -11217,7 +11331,9 @@ const ALTO_NIVEL_ABAS = [
    (o resolver sanea a ficha e a UI só exibe, convenção do projeto). */
 function AltoNivel({ derived, setMelhoriaVezes, toggleLendaria, toggleEscolhaAltoNivel }) {
   const [aba, setAba] = useState("melhorias");
-  const { ativo, melhorias, lendarias, escolhas } = derived.altoNivel;
+  /* O `catalogo` vem do motor já no livro desta ficha: as Melhorias com o texto
+     do jogador no /Player, e as Lendárias sem as que saíram de lá. */
+  const { ativo, melhorias, lendarias, escolhas, catalogo } = derived.altoNivel;
 
   // Abaixo do ND 21 nada disso existe: o card some inteiro em vez de aparecer
   // zerado, que é o que o autor pediu ("só aparecerem em Níveis 21+").
@@ -11313,7 +11429,7 @@ function AltoNivel({ derived, setMelhoriaVezes, toggleLendaria, toggleEscolhaAlt
 
       <div className="space-y-1">
         {emMelhorias
-          ? MELHORIAS_SUPERIORES.map((m) => {
+          ? catalogo.melhorias.map((m) => {
               const vezes = vezesDe(m.id);
               return (
                 <AltoNivelCard
@@ -11329,7 +11445,7 @@ function AltoNivel({ derived, setMelhoriaVezes, toggleLendaria, toggleEscolhaAlt
                 />
               );
             })
-          : HABILIDADES_LENDARIAS.map((l) => (
+          : catalogo.lendarias.map((l) => (
               <AltoNivelCard
                 key={l.id}
                 item={itemComOpcoesResolvidas(l)}
@@ -11393,31 +11509,21 @@ function TabAptidoes({
   };
 
   const [catTab, setCatTab] = useState("aura");
-  const abasDaOrigem = abasAptidao(draft);
-  /* ⚠ A CATEGORIA QUE A ORIGEM NÃO ABRE, MAS QUE TEM APTIDÃO CONCEDIDA
-     (2026-09-12). A aba Maldição só existe para a Maldição, e um Addon pode dar
-     Armas Naturais a quem não é. Sem isto a Aptidão entrava na conta e ficava
-     invisível no criador, que é o "não computa" que o autor já achou uma vez.
+  /* ⚠ SÓ AS ABAS QUE A ORIGEM ABRE (autor, 2026-09-17: "As Aptidões de Maldição
+     fornecidas pela Faixa de Sif, não precisam aparecer na Aba de Aptidões. Só
+     de funcionar mecânicamente já está bom").
 
-     A aba aparece listando SÓ as concedidas. Mostrar a categoria inteira
-     ofereceria à mão o que a origem não alcança. */
-  const idsDasAbas = new Set(abasDaOrigem.map((c) => c.id));
-  const categoriasSoConcedidas = new Set(
-    concedidas.map((id) => getAptidao(id)?.categoria).filter((cat) => cat && !idsDasAbas.has(cat)),
-  );
-  const abas = [
-    ...abasDaOrigem,
-    ...APTIDAO_CATEGORIAS.filter((c) => categoriasSoConcedidas.has(c.id)),
-  ];
+     De 2026-09-12 até aqui, uma categoria que a origem não abre ganhava aba
+     quando tinha Aptidão CONCEDIDA, listando só as concedidas. Era a Maldição
+     aparecendo para quem não é Maldição por causa das Faixas de Sif. A aba saiu,
+     e a concessão continua inteira no motor: as Armas Naturais seguem valendo
+     com as Faixas equipadas. */
+  const abas = abasAptidao(draft);
   // Trocar a origem para/de Maldição troca uma aba de lugar. Se a aba
   // aberta sumiu, cai na primeira em vez de renderizar vazio.
   const catAtiva = abas.find((c) => c.id === catTab) ?? abas[0];
-  const soConcedidas = categoriasSoConcedidas.has(catAtiva.id);
-  const filtraConcedidas = (lista) => (soConcedidas ? lista.filter((a) => concedidas.includes(a.id)) : lista);
-  const listaAtiva = filtraConcedidas(aptidoesDaCategoria(catAtiva.id));
-  const subgrupos = subgruposDaCategoria(catAtiva.id)   // null quando a categoria é plana
-    ?.map((g) => ({ ...g, aptidoes: filtraConcedidas(g.aptidoes) }))
-    .filter((g) => g.aptidoes.length > 0) ?? null;
+  const listaAtiva = aptidoesDaCategoria(catAtiva.id);
+  const subgrupos = subgruposDaCategoria(catAtiva.id);   // null quando a categoria é plana
 
   return (
     <>
@@ -11810,7 +11916,7 @@ function MotorEfeitosEditor({
       <FieldLabel>{rotulo}</FieldLabel>
       {efeitos.map((ef, i) => {
         const chk = validateExpression(ef.expr || "");
-        const alvos = alvoOpcoes(getCanal(ef.canal)?.alvo, pericias, fontesDano);
+        const alvos = alvoOpcoes(getCanal(ef.canal)?.alvo, pericias, fontesDano, ef.canal);
         return (
           <div
             key={i}
@@ -14143,7 +14249,7 @@ function rotuloCanalUnica(ex, pericias, fontesDano = []) {
   /* ⚠ AS FONTES DE DANO PRECISAM SER PASSADAS. Sem elas o alvo caía para o id
      cru, e o card mostrava "Dados de Dano (arm_faixas)" e "Nível de Dano
      (basico)" no lugar dos nomes. */
-  const alvo = (alvoOpcoes(canal?.alvo, pericias, fontesDano) ?? []).find((o) => o.value === ex.alvo);
+  const alvo = (alvoOpcoes(canal?.alvo, pericias, fontesDano, ex.canal) ?? []).find((o) => o.value === ex.alvo);
   return `${base} (${alvo?.label ?? ex.alvo})`;
 }
 
@@ -14259,7 +14365,7 @@ function EfeitoDoItem({ grupo }) {
 
 function TabInterludios({
   draft, derived, setTreinoProgresso, setTreinoInstance, setTreinoAlvo,
-  setTreinoEscolha, setTreinoEspecialVezes, sistema, setFocosLivres,
+  setTreinoEscolha, setTreinoEspecialVezes, setTreinoEspecialProgresso, sistema, setFocosLivres,
   addForja, patchForja, removeForja,
 }) {
   const treinos = (draft.treinamentos && !Array.isArray(draft.treinamentos) && typeof draft.treinamentos === "object")
@@ -14372,6 +14478,9 @@ function TabInterludios({
               max={tetosEspeciais[t.id]}
               onSetVezes={(n) => setTreinoEspecialVezes(t.id, n)}
               sistema={sistemaDaFicha(draft)}
+              progresso={progressoTreinoEspecial(draft, t.id)}
+              cd={cdDoTreinoEspecial(t, draft)}
+              onSetProgresso={(partial) => setTreinoEspecialProgresso(t.id, partial)}
             />
           ))}
           <InterludioInfo icon={BookOpen} titulo="Estudos">
@@ -15095,9 +15204,10 @@ function InvocacaoPericias({ inv, allowance, fontes, onPatch }) {
    QUEM existe e quem está selecionado, e o editor embaixo é de UM por vez, e
    sempre aberto. Selecionar deixou de ser abrir e fechar acordeão. */
 
-/* Um cartão da fileira: retrato, nome, grau e os três números de relance. */
-function InvocacaoMiniatura({ inv, resolvida, selecionada, onSelecionar }) {
-  const ref = useVisivelNaFileira(selecionada);
+/* Uma linha da lista lateral (2026-09-16, antes cartão da fileira): o retrato
+   como ícone quadrado ao lado do nome, o grau e os três números de relance. É só
+   o conteúdo: botão, seleção e rolagem são da `ListaLateral`. */
+function InvocacaoLinha({ inv, resolvida }) {
   const [erroUrl, setErroUrl] = useState(null);
   const r = resolvida || {};
   const g = grauMeta(inv.grau);
@@ -15105,18 +15215,8 @@ function InvocacaoMiniatura({ inv, resolvida, selecionada, onSelecionar }) {
   const foco = inv.portraitFocus || {};
   const avisos = r.warnings || [];
   return (
-    <button
-      ref={ref}
-      type="button"
-      onClick={onSelecionar}
-      aria-pressed={selecionada}
-      className={`relative flex-shrink-0 w-40 text-left rounded-lg border overflow-hidden transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-500 ${
-        selecionada
-          ? "border-purple-500 bg-purple-950/30 ring-1 ring-purple-500"
-          : "border-slate-700/80 bg-slate-950/40 hover:border-slate-600"
-      }`}
-    >
-      <span className="block h-20 bg-slate-900 relative">
+    <span className="flex items-center gap-2 min-w-0">
+      <span className="w-8 h-8 flex-shrink-0 rounded bg-slate-900 overflow-hidden flex items-center justify-center">
         {url ? (
           <img
             src={url}
@@ -15128,34 +15228,35 @@ function InvocacaoMiniatura({ inv, resolvida, selecionada, onSelecionar }) {
             draggable={false}
           />
         ) : (
-          <span className="w-full h-full flex items-center justify-center">
-            <ImageIcon className="w-6 h-6 text-slate-700" aria-hidden="true" />
-          </span>
-        )}
-        {avisos.length > 0 && (
-          <AlertTriangle
-            className="absolute top-1 right-1 w-3.5 h-3.5 text-amber-400"
-            aria-label={`${avisos.length} aviso(s)`}
-            title={avisos.join("\n")}
-          />
+          <ImageIcon className="w-4 h-4 text-slate-700" aria-hidden="true" />
         )}
       </span>
-      <span className="block px-2 py-1.5">
-        <span className="flex items-baseline gap-1.5 min-w-0">
-          <span className="flex-1 min-w-0 truncate text-[12px] font-semibold text-white" title={inv.nome || "Sem nome"}>
+      <span className="flex-1 min-w-0">
+        <span className="flex items-center gap-1.5 min-w-0">
+          <span className={`flex-1 min-w-0 truncate text-[12px] font-semibold ${inv.nome ? "text-white" : "text-slate-500"}`}>
             {inv.nome || "Sem nome"}
           </span>
-          <span className="flex-shrink-0 text-[9px] text-slate-500">{g.label}</span>
+          {avisos.length > 0 && (
+            <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 text-amber-400" aria-label={`${avisos.length} aviso(s)`} />
+          )}
+          <span className="flex-shrink-0 font-mono text-[10px] text-slate-500">{g.num === 0 ? "Esp." : `${g.num}°`}</span>
         </span>
         <span className="flex items-baseline gap-2 mt-0.5 font-mono text-[10px] tabular-nums text-slate-400">
           <span title="Pontos de Vida">PV {r.pv ?? "-"}</span>
           <span title="Defesa">DEF {r.defesa ?? "-"}</span>
-          <span title="Custo em PE" className="text-purple-300 ml-auto">{r.custo ?? "-"} PE</span>
+          <span title="Custo em PE" className="text-purple-300">{r.custo ?? "-"} PE</span>
         </span>
       </span>
-    </button>
+    </span>
   );
 }
+
+/* Os dois Tipos de Invocação, com o rótulo curto do chip de filtro. */
+const TIPOS_INVOCACAO_DA_LISTA = AFTY_INV_TIPOS.map((t) => ({
+  value: t.value,
+  label: t.label,
+  curto: t.value === "tecnica" ? "Técnica" : "Invocação",
+}));
 
 /* O campo de Retrato de UMA invocação. ⚠ REUSA o `RetratoFocoPicker` da aba
    Identidade, e não uma cópia: são os mesmos dois campos (`portraitUrl` e
@@ -16490,165 +16591,6 @@ function LimitesResumo({ acesso, controle, marcadores }) {
   );
 }
 
-/* ============================================================ */
-/* A FILEIRA, E A BORDA QUE DIZ QUE HÁ MAIS                      */
-/* ============================================================ */
-/* ⚠ `overflow-x-auto no-scrollbar` esconde a barra de rolagem, e com cinco
-   invocações a última nascia CORTADA na borda direita sem nada dizendo que
-   havia mais para o lado. A máscara é essa afirmação, e ela apaga sozinha ao
-   chegar no fim, senão viraria decoração permanente.
-
-   ⚠ ELA ERA `FileiraInvocacoes` E VIROU GENÉRICA em 2026-09-07, quando os
-   Feitiços ganharam a mesma fileira. O que mora aqui é comportamento medido e
-   caro: a roda vertical rolando de lado, as setas para quem não pensa em rolar,
-   a máscara das bordas e o botão de novo FORA do rolador. Uma segunda cópia
-   divergiria no primeiro conserto, e este componente já levou dois. */
-/**
- * Puxa o cartão selecionado para dentro da vista da fileira.
- *
- * ⚠ ISTO É CONSERTO DE UM DEFEITO REAL, e ele existe na aba de Invocações desde
- * que ela virou mestre-detalhe: com quatro cartões visíveis e catorze na ficha,
- * criar o décimo quarto o seleciona e o editor passa a mostrá-lo, mas a fileira
- * continua parada nos quatro primeiros, sem nenhum deles aceso. A tela fica
- * dizendo "nenhum selecionado" enquanto se edita um.
- *
- * ⚠ A ROLAGEM É CALCULADA À MÃO, e não por `scrollIntoView`. O `scrollIntoView`
- * rola TODO ancestral rolável até o elemento aparecer, então ele mexeria também
- * na rolagem vertical da página: clicar numa miniatura saltaria a página inteira.
- * Aqui só o `scrollLeft` do container é tocado.
- */
-function useVisivelNaFileira(selecionado) {
-  const ref = useRef(null);
-  useEffect(() => {
-    const el = ref.current;
-    const fila = el?.parentElement;
-    if (!selecionado || !el || !fila) return;
-    const c = el.getBoundingClientRect();
-    const f = fila.getBoundingClientRect();
-    if (c.left < f.left) fila.scrollLeft -= f.left - c.left + 8;
-    else if (c.right > f.right) fila.scrollLeft += c.right - f.right + 8;
-  }, [selecionado]);
-  return ref;
-}
-
-function FileiraDeCartoes({ children, onNova, rotuloNovo, rotuloAnterior, rotuloProximo }) {
-  const ref = useRef(null);
-  const [pode, setPode] = useState({ esq: false, dir: false });
-  /* ⚠ A ÚLTIMA MEDIDA MORA NUM REF, e o `setPode` só é chamado quando ela MUDA.
-     Isto é o conserto do relato do autor em 2026-09-09: criar o quinto Feitiço
-     derrubava a aba inteira com o erro 185 do React (*Maximum update depth
-     exceeded*), e o mesmo valia para a quinta Invocação. É o ponto exato em que
-     a fileira passa a ter conteúdo maior que a caixa.
-
-     A CAUSA são DUAS medidas de PRIORIDADE DIFERENTE na mesma passada. O quinto
-     cartão nasce selecionado, o `useVisivelNaFileira` rola a fileira até ele, e
-     essa rolagem chega aqui pelo `onScroll`, que o React trata como evento
-     CONTÍNUO. A medida do efeito de leiaute é SÍNCRONA. Com as duas na fila, a
-     renderização síncrona PULA a contínua em vez de aplicá-la, deixa o
-     componente marcado como tendo trabalho pendente, e a partir daí nenhuma
-     chamada de `setPode` consegue mais sair barata: cada render dispara outra,
-     e as antigas voltam a ser aplicadas em cima de uma base velha, fazendo o
-     valor oscilar entre "dá para rolar" e "não dá" até estourar o limite.
-
-     Guardar a medida num ref corta o laço na raiz: medida igual não vira
-     chamada nenhuma. E o valor vai CRU, e não por função: se o React reaplicar
-     a fila, a última medida vence e nada oscila. */
-  const medido = useRef({ esq: false, dir: false });
-  const medir = useCallback(() => {
-    const el = ref.current;
-    if (!el) return;
-    const esq = el.scrollLeft > 4;
-    const dir = el.scrollWidth - el.clientWidth - el.scrollLeft > 4;
-    if (medido.current.esq === esq && medido.current.dir === dir) return;
-    medido.current = { esq, dir };
-    setPode(medido.current);
-  }, []);
-  /* DOIS efeitos, e não um. O primeiro roda a cada render porque acrescentar
-     uma invocação muda o `scrollWidth` sem mudar o tamanho do container, e o
-     ResizeObserver não acorda nesse caso. O segundo monta o observador uma vez
-     só, para a mudança de largura da janela. */
-  useLayoutEffect(medir);
-  useLayoutEffect(() => {
-    const el = ref.current;
-    if (!el || typeof ResizeObserver === "undefined") return undefined;
-    const ro = new ResizeObserver(medir);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [medir]);
-
-  /* ⚠ A RODA VERTICAL NÃO ROLA UM CONTAINER HORIZONTAL. Esta é a causa do
-     relato do autor em 2026-09-02: *"Fiz 5 invocações, e não consigo mexer a
-     tela para o lado, para fazer da sexta para frente."*
-
-     A fileira usa `no-scrollbar`, então não há barra para arrastar, e um mouse
-     comum só manda `deltaY`: o navegador rolava a PÁGINA e a fileira ficava
-     parada no zero. Medido: com cinco invocações a fileira tem 1125px de
-     conteúdo em 889px de caixa, e a roda movia `window.scrollY` em 300 e o
-     `scrollLeft` em NADA. Quem usa trackpad nunca viu o problema, porque o
-     gesto lateral manda `deltaX`.
-
-     Duas saídas, e as duas entraram: a roda vira rolagem lateral aqui, e as
-     setas dão um alvo clicável para quem não pensa em rolar de lado. */
-  const rolar = (dir) => {
-    const el = ref.current;
-    if (el) el.scrollBy({ left: dir * Math.max(160, el.clientWidth * 0.8), behavior: "smooth" });
-  };
-  const naRoda = (ev) => {
-    const el = ref.current;
-    if (!el || Math.abs(ev.deltaY) <= Math.abs(ev.deltaX)) return;
-    if (el.scrollWidth <= el.clientWidth) return;
-    el.scrollLeft += ev.deltaY;
-  };
-
-  const seta = "absolute top-1/2 -translate-y-1/2 z-10 w-7 h-7 flex items-center justify-center rounded-full border border-slate-700 bg-slate-950/90 text-slate-300 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-500";
-  return (
-    <div className="flex items-stretch gap-2">
-      <div className="relative flex-1 min-w-0">
-        <div ref={ref} onScroll={medir} onWheel={naRoda} className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-          {children}
-        </div>
-        {pode.esq && (
-          <>
-            <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-slate-900 to-transparent" />
-            <button type="button" onClick={() => rolar(-1)} className={`${seta} left-1`} aria-label={rotuloAnterior}>
-              <ChevronLeft className="w-4 h-4" aria-hidden="true" />
-            </button>
-          </>
-        )}
-        {pode.dir && (
-          <>
-            <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-slate-900 to-transparent" />
-            <button type="button" onClick={() => rolar(1)} className={`${seta} right-1`} aria-label={rotuloProximo}>
-              <ChevronRight className="w-4 h-4" aria-hidden="true" />
-            </button>
-          </>
-        )}
-      </div>
-      {/* ⚠ O BOTÃO DE NOVA FICA FORA DO ROLADOR, e é a outra metade do conserto.
-          Ele era o último item DENTRO da fileira, então com cinco invocações
-          nascia fora da área visível: quem não conseguia rolar de lado também
-          não conseguia criar a sexta. Fixo na borda direita, ele não depende
-          mais de rolagem nenhuma.
-
-          ⚠ `onNova` NULO some com o botão, e é a fileira SÓ DE LEITURA. Ela
-          existe para a ficha que tem Feitiço gravado e perdeu o acesso: dá para
-          ver e remover o que já está lá, e não para criar mais. Quem sempre
-          pode criar (a Invocação) passa a função e nunca vê diferença. */}
-      {onNova && (
-        <button
-          type="button"
-          onClick={onNova}
-          className="flex-shrink-0 w-12 inline-flex flex-col items-center justify-center gap-1 text-[12px] font-semibold rounded-lg border border-dashed border-slate-700 text-slate-400 hover:text-white hover:border-slate-600 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-500"
-          title={rotuloNovo}
-          aria-label={rotuloNovo}
-        >
-          <Plus className="w-4 h-4" aria-hidden="true" />
-        </button>
-      )}
-    </div>
-  );
-}
-
 function TabInvocacoes({ draft, derived, addInvocacao, removeInvocacao, duplicarInvocacao, moverInvocacao, patchInvocacao, patchInvocacaoAttr, efeitosApi, addHorda, removeHorda, patchHorda }) {
   const lista = Array.isArray(draft.invocacoes) ? draft.invocacoes : [];
   const resolvidas = derived.invocacoes.lista;
@@ -16734,27 +16676,26 @@ function TabInvocacoes({ draft, derived, addInvocacao, removeInvocacao, duplicar
           </div>
         </div>
       ) : (
-        <div className="space-y-3">
-          {/* A FILEIRA. Rolagem horizontal, e não quebra de linha: com sete
-              invocações a quebra empurra o editor para fora da tela, e a
-              fileira deixa de ser referência rápida para virar meia página. */}
-          <FileiraDeCartoes
-            onNova={novaInvocacao}
-            rotuloNovo="Nova Invocação"
-            rotuloAnterior="Ver Invocações Anteriores"
-            rotuloProximo="Ver Próximas Invocações"
-          >
-            {lista.map((inv) => (
-              <InvocacaoMiniatura
-                key={inv.id}
-                inv={inv}
-                resolvida={resolvidaDe(inv.id)}
-                selecionada={escolhida?.id === inv.id}
-                onSelecionar={() => setEscolhidaId(inv.id)}
-              />
-            ))}
-          </FileiraDeCartoes>
-
+        /* A LISTA LATERAL (2026-09-16), a mesma dos Feitiços. Era a fileira de
+           cartões. O Grau ordena do Quarto ao Especial, pelo `rank`. */
+        <ListaLateral
+          itens={lista.map((inv) => ({
+            id: inv.id,
+            nome: inv.nome || "Sem nome",
+            tipo: tipoMecanicoDaInvocacao(inv),
+            nivel: grauMeta(inv.grau).rank,
+            inv,
+          }))}
+          tipos={TIPOS_INVOCACAO_DA_LISTA}
+          rotuloNivel="Grau"
+          selecionadoId={escolhida?.id ?? null}
+          onSelecionar={setEscolhidaId}
+          renderItem={(item) => <InvocacaoLinha inv={item.inv} resolvida={resolvidaDe(item.id)} />}
+          onNova={novaInvocacao}
+          rotuloNovo="Nova Invocação"
+          rotuloBusca="Buscar Invocação"
+          rotuloVazio="Nenhuma Invocação encontrada"
+        >
           {escolhida && (
             <InvocacaoCard
               key={escolhida.id}
@@ -16782,7 +16723,7 @@ function TabInvocacoes({ draft, derived, addInvocacao, removeInvocacao, duplicar
               caracApi={efeitosApi(escolhida.id, "caracteristicas", createBlankCaracteristica)}
             />
           )}
-        </div>
+        </ListaLateral>
       )}
     </Card>
 
@@ -17354,7 +17295,7 @@ function AftyPreview({ draft, derived }) {
                       e.partes?.length ? "cursor-help" : ""
                     }`}
                   >
-                    {e.texto}
+                    {e.formulaNormal ?? e.texto}
                     {e.partes?.length > 0 && (
                       <PainelDeFontes
                         partes={e.hoverDano?.partes ?? e.partes}

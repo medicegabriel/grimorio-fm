@@ -143,6 +143,28 @@ t("ligado, ela vira o valor digitado", medDe(deriveAfty(comValor, { treinosAtivo
 t("e o hover mostra só a fonte que substituiu",
   medDe(deriveAfty(comValor, { treinosAtivos: { conjuge: true } })).partes,
   [{ label: "Treino Cônjuge", valor: 17 }]);
+/* ⚠ A OFERTA SÓ ENTRA SE GANHAR DO DONO (autor, 2026-09-16: *"A Percepção está
+   bugando [...] e deixando ela como 8"*). Uma Percepção de 61 virava os 8
+   digitados. "Você pode usar" nunca piora, e no empate fica o do dono, que tem
+   as parcelas. */
+const menor = { ...comValor, treinamentoAlvos: { [CONJUGE]: { pericia: "medicina", bonusConjuge: "3" } } };
+t("com valor menor que o do dono, a perícia fica com o do dono",
+  medDe(deriveAfty(menor, { treinosAtivos: { conjuge: true } })).bonus, 5);
+t("e o hover segue com as parcelas do dono",
+  medDe(deriveAfty(menor, { treinosAtivos: { conjuge: true } })).partes,
+  medDe(deriveAfty(menor)).partes);
+const empate = { ...comValor, treinamentoAlvos: { [CONJUGE]: { pericia: "medicina", bonusConjuge: "5" } } };
+t("no empate fica o do dono",
+  medDe(deriveAfty(empate, { treinosAtivos: { conjuge: true } })).partes.length > 1, true);
+/* O caso da Shaula: o +2 do Pt. 2 na Percepção não pode sumir por baixo de uma
+   oferta menor na mesma perícia. */
+const shaula = createBlankAfty();
+shaula.core.nd = 10;
+shaula.treinamentos = { [CONJUGE]: 4, [CONJUGE_2]: 4 };
+shaula.treinamentoAlvos = { [CONJUGE]: { pericia: "percepcao", bonusConjuge: "1" } };
+const percDe = (d) => d.testes.pericias.find((p) => p.id === "percepcao").bonus;
+t("com oferta menor, a Percepção ligada é a do dono mais o +2 do Pt. 2",
+  percDe(deriveAfty(shaula, { treinosAtivos: { conjuge: true } })) - percDe(deriveAfty(shaula)), 2);
 /* Campo vazio não é campo com zero: sem número digitado a linha fica intacta. */
 const semValor = { ...comValor, treinamentoAlvos: { [CONJUGE]: { pericia: "medicina" } } };
 t("sem número digitado nada muda",

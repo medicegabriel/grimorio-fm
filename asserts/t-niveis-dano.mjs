@@ -17,6 +17,7 @@
         Naturais emitem `nivelDano` para a criatura E têm dado absoluto no
         jogador. Contar os dois somaria o mesmo ganho duas vezes. */
 import { register } from "node:module";
+import { readFileSync } from "node:fs";
 register(
   "data:text/javascript,export async function resolve(s,c,n){try{return await n(s,c)}catch(e){if(s.startsWith(\".\")&&!s.endsWith(\".js\"))return n(s+\".js\",c);throw e}}",
   import.meta.url,
@@ -338,12 +339,20 @@ t("e os dois multiplicam no critico", grupos.every((g) => g.multiplica), true);
 t("e o fixo aparece uma vez so", grupos.filter((g) => g.fixo !== 0).length, 1);
 t("e o fixo e o modificador", grupos.find((g) => g.fixo !== 0).fixo, 4);
 
-/* ⚠ O SEGUNDO GRUPO É MARCADO COMO JÁ ESCRITO NO TEXTO. A aba Ações desenha um
-   chip para cada grupo depois do primeiro, porque na criatura todo grupo extra é
-   mesmo um extra (Fatal, Mortal, Destruidora, Golpe Especial). No jogador o
-   segundo grupo é a segunda metade do degrau, e sem esta marca a Ficha mostrava
-   `1d12 + 1d4 + 4` com um chip `+1d4` ao lado: o mesmo dado duas vezes. */
-t("o segundo grupo do degrau nao vira chip na Ficha", grupos[1].incluidoNoTexto, true);
+/* ⚠ O SEGUNDO GRUPO APARECE UMA VEZ SÓ. Até 2026-09-16 a aba Ações desenhava um
+   chip para cada grupo depois do primeiro, e a segunda metade do degrau precisava
+   de uma marca para não sair `1d12 + 1d4 + 4` com um `+1d4` ao lado. Os chips
+   saíram, e toda tela de Dano mostra a `formulaNormal`, que soma os grupos por
+   face. É ela que tem de fechar com o texto do degrau. */
+t("o segundo grupo do degrau aparece uma vez so na formula da linha",
+  linha(dEsc, "arm_espada_longa").formulaNormal, "1d12 + 1d4 + 4");
+
+/* A linha e o criador leem a fórmula somada, e não o `texto` do golpe mais um
+   chip por grupo. Sem isto, Aura Elemental, Canalizar e Sintonizada voltam a
+   ficar ao lado do Dano enquanto o clique rola tudo junto. */
+const fonteAcoes = readFileSync(new URL("../src/systems/afty/ficha/abas/AbaAcoes.jsx", import.meta.url), "utf8");
+t("a aba Acoes mostra a formula somada no modo normal", fonteAcoes.includes("e.formulaNormal ?? e.texto"), true);
+t("e nao desenha chip por grupo de dano", /gruposDano \?\? \[\]\)\.slice\(1\)/.test(fonteAcoes), false);
 
 /* ⚠ O RODAPÉ DO HOVER MOSTRA A ROLAGEM, e não uma média. O painel de fontes
    fecha com uma linha "Total", e no jogador as parcelas são um dado e um
@@ -352,7 +361,8 @@ t("o rodape do hover do jogador e a expressao",
   linha(deriveAfty(ficha("player", 10)), "arm_espada_longa").totalFontes, "1d8 + 4");
 t("e a criatura nao ganhou o campo",
   linha(deriveAfty(ficha("afty", 10)), "arm_espada_longa").totalFontes, undefined);
-t("e o primeiro nao carrega a marca", grupos[0].incluidoNoTexto, undefined);
+t("sem grupo tardio a formula da linha e o proprio texto do golpe",
+  linha(deriveAfty(ficha("player", 10)), "arm_espada_longa").formulaNormal, "1d8 + 4");
 
 /* Na criatura nada disso mudou: um grupo só, e sem a marca. */
 const gruposAfty = linha(deriveAfty({ ...ficha("afty", 10) }), "arm_espada_longa").gruposDano;

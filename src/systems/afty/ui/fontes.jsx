@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { sinalDe } from "./formato";
 
@@ -72,10 +72,60 @@ function LinhasDeFonte({ partes, total }) {
    junto com o de fora. Quem precisa de hover próprio passa um grupo NOMEADO, e
    a string vem literal do chamador porque o Tailwind lê o código-fonte e não
    enxerga classe montada em template. */
+/* ⚠ O PAINEL VIRA PARA CIMA QUANDO NÃO CABE EMBAIXO (2026-09-17).
+
+   Ele é `absolute top-full` e abria sempre para baixo. Na última linha da tela
+   ele passava do fim da página, a barra de rolagem nascia, a página estreitava
+   15px, o número saía de baixo do cursor, o painel fechava, a barra sumia, o
+   número voltava para baixo do cursor e o painel abria de novo. Da tela, isso é
+   o painel piscando sem parar. O autor achou por captura na tabela de Atributos.
+
+   Quem decide é um ResizeObserver, e não um `mouseenter`: quem abre o painel é o
+   CSS (`group-hover`), e a única coisa que o painel percebe ao abrir é que o
+   tamanho dele deixou de ser zero. O aviso chega depois do leiaute e antes da
+   pintura, então o painel nunca é pintado do lado errado, e a barra de rolagem
+   não chega a nascer.
+
+   A conta usa o retângulo do PAI (o `relative` em que o painel se ancora), e não
+   o do próprio painel: assim ela dá a mesma resposta com o painel virado para
+   cima ou para baixo, e não oscila. O estilo vai direto no elemento porque o
+   React não controla o `style` deste span, e um `setState` só pintaria o lado
+   certo um quadro depois, que é justamente o quadro que dispara a barra.
+
+   Um observador só para todos os painéis, porque a ficha monta centenas deles. */
+const FOLGA_PAINEL = 8;
+let observadorDePaineis = null;
+
+function virarPainelSeNaoCabe(painel) {
+  const pai = painel.offsetParent;
+  const altura = painel.offsetHeight;
+  if (!pai || !altura) return;
+  const r = pai.getBoundingClientRect();
+  const precisa = altura + 4 + FOLGA_PAINEL;
+  const abaixo = window.innerHeight - r.bottom;
+  const acima = r.top;
+  const paraCima = abaixo < precisa && (acima >= precisa || acima > abaixo);
+  painel.style.top = paraCima ? "auto" : "";
+  painel.style.bottom = paraCima ? "100%" : "";
+  painel.style.marginTop = paraCima ? "0" : "";
+  painel.style.marginBottom = paraCima ? "0.25rem" : "";
+}
+
+function observarPainel(painel) {
+  if (!painel || typeof ResizeObserver === "undefined") return undefined;
+  observadorDePaineis ??= new ResizeObserver((entradas) => {
+    for (const e of entradas) virarPainelSeNaoCabe(e.target);
+  });
+  observadorDePaineis.observe(painel);
+  return () => observadorDePaineis.unobserve(painel);
+}
+
 /* `aberto` é o caminho do TOQUE, e ele TIRA o `hidden` em vez de somar um
    `block` por cima: `hidden` e `block` são utilidades da mesma camada, e quem
    vence é a ordem em que o Tailwind as gerou, não a ordem do atributo class. */
 export function PainelDeFontes({ partes, total, ancora = "direita", aparecer = "group-hover:block", aberto = false }) {
+  const painel = useRef(null);
+  useLayoutEffect(() => observarPainel(painel.current), []);
   return (
     /* ⚠ `pointer-events-none` NÃO É DETALHE, É O CONSERTO DE 2026-09-02.
 
@@ -89,7 +139,7 @@ export function PainelDeFontes({ partes, total, ancora = "direita", aparecer = "
 
        Sem receber ponteiro, o painel deixa de ser alvo: o mouse atravessa ele e
        chega em quem está embaixo. Ninguém precisa clicar num painel de leitura. */
-    <span className={`afty-fontes pointer-events-none ${aberto ? "block" : `hidden ${aparecer}`} absolute top-full mt-1 z-30 w-max max-w-[min(16rem,calc(100vw-2rem))] p-2 text-left ${
+    <span ref={painel} className={`afty-fontes pointer-events-none ${aberto ? "block" : `hidden ${aparecer}`} absolute top-full mt-1 z-30 w-max max-w-[min(16rem,calc(100vw-2rem))] p-2 text-left ${
       ancora === "esquerda" ? "left-0" : "right-0"
     }`}>
       <LinhasDeFonte partes={partes} total={total} />

@@ -162,10 +162,21 @@ t("as divergencias de REGRA ligadas",
    "pacoteDaClasseInicial", "passivaCustaPeMaximo", "patamarDoJogador", "poolExclusivo",
    "proficienciaPorArma", "progressaoDeFeiticos",
    "pvPePorEspecializacao", "quantidadeDePE", "rdBase", "rdEscudoFisico", "tetoDeNivel",
-   "trForaDoOrcamento", "vagasPorNivelDeClasse", "valoresAdicionais", "terceiraClasse"].sort());
+   "trForaDoOrcamento", "vagasPorNivelDeClasse", "valoresAdicionais", "terceiraClasse",
+   /* ⚠ `interludioComTeste` era de TELA até 2026-09-16, quando a linha do Treino
+      Especial passou a anotar Interlúdios e Ganhos e o Foco gasto mudou de
+      régua. `tetoDeTreinoEspecial` nasceu no mesmo dia. A ficha abaixo não tem
+      Treino Especial, então o clone dos derives não sente nenhuma das duas: quem
+      mede é `t-treinos-especiais.mjs`. */
+   "interludioComTeste", "tetoDeTreinoEspecial",
+   /* As duas de 2026-09-17: as Melhorias Superiores do livro do jogador e a
+      Lendária que o jogador perde. A ficha abaixo é Nível 14, sem Alto Nível, e o
+      clone dos derives só sente o catálogo do `altoNivel`, que já divergia. Quem
+      mede os números é `t-melhorias-jogador.mjs`. */
+   "melhoriasSuperioresDoJogador", "perdidoNoJogador"].sort());
 t("e a de TELA ligada e a das abas",
   S.DIVERGENCIAS.filter((d) => d.ativa && d.tipo === "tela").map((d) => d.id),
-  ["abasIdentidade", "rotuloDoNivel", "marcaDoSistema", "interludioComTeste"]);
+  ["abasIdentidade", "rotuloDoNivel", "marcaDoSistema"]);
 /* O vocabulário da ficha (2026-09-10), com a concordância: "personagem" é
    masculino, e trocar só o substantivo deixaria "Esta personagem". */
 t("a palavra da criatura", S.palavrasDoSistema("afty").nome, "criatura");
@@ -415,13 +426,14 @@ t("as divergencias conhecidas estao na lista",
   S.DIVERGENCIAS.map((d) => d.id).sort(),
   ["abasIdentidade", "altoNivelSemGeral", "aptidaoApos20", "basesAutomaticas", "danoPorArma",
    "defesaUniforme", "escalaDosTestes", "focosLivres", "guardaEresistenciaParcial",
-   "conteudoSoPorAddon", "habilidadesGerais", "inventarioSimplificado", "pacoteDaClasseInicial",
+   "conteudoSoPorAddon", "habilidadesGerais", "inventarioSimplificado", "melhoriasSuperioresDoJogador",
+   "pacoteDaClasseInicial", "perdidoNoJogador",
    "passivaCustaPeMaximo",
    "patamarDoJogador", "poolExclusivo", "proficienciaPorArma", "progressaoDeFeiticos",
    "pvPePorEspecializacao", "quantidadeDePE", "rdBase", "rdEscudoFisico",
    "reducaoDeGrau", "danoFixoPorGrau", "rotuloDoNivel", "marcaDoSistema", "interludioComTeste",
-   "terceiraClasse", "tetoDeNivel", "trForaDoOrcamento", "vagasPorNivelDeClasse",
-   "valoresAdicionais"].sort());
+   "terceiraClasse", "tetoDeNivel", "tetoDeTreinoEspecial", "trForaDoOrcamento",
+   "vagasPorNivelDeClasse", "valoresAdicionais"].sort());
 
 for (const d of S.DIVERGENCIAS) {
   t(`${d.id} cita de onde a regra saiu`, d.onde.length > 0 && d.fonte.length > 0, true);
@@ -1043,6 +1055,7 @@ const TRE = await import(R + "afty-treinamentos.js");
 const HAB = await import(R + "afty-habilidades.js");
 const TAL = await import(R + "afty-talentos.js");
 const ADD = await import(R + "afty-addons.js");
+const AN = await import(R + "afty-alto-nivel.js");
 
 const fichaDe = (sistema, patch = {}) => {
   const f = createBlankAfty();
@@ -1099,15 +1112,23 @@ t("e devolve o Gêmeos", REMOVIDAS[0][2](soOGemeos), true);
 /* ⚠ DECLARADO vs REGISTRADO. A marca no catálogo e a liberação são dois lados, e
    se um deles faltar o sintoma é mudo: entrada marcada sem liberação é entrada
    que NINGUÉM consegue devolver, e liberação sem entrada é letra morta. */
+/* ⚠ As Lendárias entraram na varredura em 2026-09-17, com a Versatilidade
+   Extrema. Uma família fora daqui deixaria a marca dela sem conferência. */
 const marcadas = [...O.AFTY_ORIGENS_CATALOG, ...TRE.AFTY_TREINAMENTOS,
-  ...HAB.AFTY_HABILIDADES, ...TAL.AFTY_TALENTOS]
+  ...HAB.AFTY_HABILIDADES, ...TAL.AFTY_TALENTOS, ...AN.HABILIDADES_LENDARIAS]
   .filter((e) => e?.foraDoJogador).map((e) => e.id).sort();
 const registradas = ADD.LIBERACOES.map((l) => l.id)
   .filter((id) => id.startsWith("soPorAddon:"))
   .map((id) => id.slice("soPorAddon:".length)).sort();
 t("toda entrada marcada tem liberação, e vice-versa", marcadas, registradas);
-t("e são as quatro que o autor nomeou", marcadas,
-  ["atributo", "cnj_agilidade_no_campo_de_batalha", "gemeos", "tal_alma_livre"]);
+t("e são as cinco que o autor nomeou", marcadas,
+  ["atributo", "cnj_agilidade_no_campo_de_batalha", "gemeos", "len_versatilidade_extrema", "tal_alma_livre"]);
+/* A que o jogador PERDE mesmo já tendo é uma só, e é marcada fora do jogador
+   também: a perda sem a marca de lista deixaria a opção aparecendo sem efeito. */
+t("a única que o jogador perde é a Versatilidade Extrema",
+  [...O.AFTY_ORIGENS_CATALOG, ...TRE.AFTY_TREINAMENTOS, ...HAB.AFTY_HABILIDADES, ...TAL.AFTY_TALENTOS, ...AN.HABILIDADES_LENDARIAS]
+    .filter((e) => e?.perdeNoJogador).map((e) => [e.id, !!e.foraDoJogador]),
+  [["len_versatilidade_extrema", true]]);
 
 /* A lista some UMA entrada por vez, e não leva vizinho junto. */
 t("o filtro tira exatamente uma origem",

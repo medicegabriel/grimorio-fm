@@ -267,5 +267,34 @@ t("na criatura sai so o nivel",
    ["Pele Dura", ["Nível 5"]],
    ["Tique", ["Nível 0"]]]);
 
+/* ⚠ O SELETOR DE CATEGORIA COMEÇA EM "-" (autor, 2026-09-17: "Não quero que
+   apareça DEFESA +4 para qualquer efeito que não for numerico"). Sem categoria
+   a calculadora não sugere número, e o `efeitoPassivo: "defesa"` que toda ficha
+   antiga tem gravado não é mais lido. */
+const semCategoria = F.calcularFeiticoPassivo(passiva("Vazia", 3));
+t("o Feitiço novo nasce sem categoria", F.createBlankFeitico().categoriaPassivo, "");
+t("e o campo antigo não nasce mais", "efeitoPassivo" in F.createBlankFeitico(), false);
+t("sem categoria não há número", [semCategoria.disponivel, semCategoria.valor, semCategoria.texto], [false, null, "-"]);
+t("nem efeito para usar", semCategoria.efeitosGerados, []);
+t("nem aviso de valor faltando", semCategoria.avisos, []);
+t("mas o custo em PE Máximo continua", semCategoria.custoPeMaximo, F.calcularFeiticoPassivo({ ...passiva("Com", 3), categoriaPassivo: "defesa" }).custoPeMaximo);
+t("a ficha antiga com Defesa gravada também fica sem número",
+  F.calcularFeiticoPassivo({ ...passiva("Antiga", 3), efeitoPassivo: "defesa" }).disponivel, false);
+const comDefesa = F.calcularFeiticoPassivo({ ...passiva("Escolhida", 3), categoriaPassivo: "defesa" });
+t("escolhendo Defesa o número volta", [comDefesa.disponivel, comDefesa.efeitosGerados[0]?.canal], [true, "defesa"]);
+/* ⚠ O PERSONALIZADO DO CAMPO ANTIGO SEGUE VALENDO. A Manipulação do Céu (GoliasK,
+   2026-09-16) grava `efeitoPassivo: "personalizado"`, e ele nunca foi o padrão
+   de ninguém. Só o "defesa" antigo perdeu o leitor. */
+t("o Personalizado gravado no campo antigo é lido",
+  F.calcularFeiticoPassivo({ ...passiva("Duplicata", 5), efeitoPassivo: "personalizado" }).efeito, "personalizado");
+t("e no campo novo também",
+  F.calcularFeiticoPassivo({ ...passiva("Duplicata", 5), categoriaPassivo: "personalizado" }).efeito, "personalizado");
+t("a categoria efetiva de cada caso",
+  [{ efeitoPassivo: "personalizado" }, { efeitoPassivo: "defesa" }, { categoriaPassivo: "rd", efeitoPassivo: "personalizado" }, {}]
+    .map((f) => F.categoriaDoPassivo(f)),
+  ["personalizado", "", "rd", ""]);
+t("categoria que não existe é o mesmo que nenhuma",
+  F.calcularFeiticoPassivo({ ...passiva("Lixo", 3), categoriaPassivo: "xyz" }).efeito, null);
+
 console.log(bad.length ? `FALHAS (${bad.length}):\n` + bad.join("\n") : `TODOS OS ${ok} ASSERTS PASSARAM`);
 process.exitCode = bad.length ? 1 : 0;

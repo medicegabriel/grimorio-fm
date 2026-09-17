@@ -665,6 +665,14 @@ e na criatura no pool único. O addon só decide se ela EXISTE. A divergência q
 jogador em grupos nasceu da mesma conversa, e vale sem o addon. Ver `poolExclusivo` e a sessão de
 2026-09-11 (parte 3) em `afty-status.md`.
 
+⚠ **A segunda PREENCHIDA custa um Slot de Feitiço** (autor, 2026-09-16: *"Eu perco um Slot de
+Feitiço. Já que estou efetivamente colocando Feitiços no objeto"*). Preenchida é ter texto ou uma
+linha do Motor com expressão. Custa um por item, com o item guardado e com o Acessório Único fora do
+inventário também, e nos dois sistemas: no jogador sai do orçamento próprio de Feitiços, na criatura
+do contador comum. Cada item vira uma parcela negativa com o nome dele no hover do medidor de
+Feitiços. Quem lista é o `segundasUnicasPreenchidas` do `resolveEquipamentos`, e quem desconta é o
+`deriveAfty`.
+
 ⚠ **Desinstalar não apaga nada.** O texto e as linhas das duas Habilidades ficam gravados e deixam de
 contar. O card de Acessórios Únicos continua aparecendo para quem tem acessório gravado, e é a porta
 para apagá-lo. Criar um novo pede a liberação. É a terceira porta do `feiticosRestritos`, aplicada ao
@@ -778,6 +786,11 @@ aparece quando há concedida nela, listando **só as concedidas** (a categoria i
 o que a origem não alcança). E o rótulo verde da concedida era um `if` de dois ramos, que escrevia
 "Origem" em tudo que não fosse da Especialização. Agora ele diz a fonte, e na do Addon é o nome do
 item, com o hover citando o pacote.
+
+⚠ **A primeira porta foi fechada em 2026-09-17**, a pedido do autor: *"As Aptidões de Maldição
+fornecidas pela Faixa de Sif, não precisam aparecer na Aba de Aptidões. Só de funcionar mecânicamente
+já está bom"*. A aba de Aptidões voltou a mostrar só as categorias que a origem abre, e a concessão
+segue inteira no motor. Na Maldição de verdade a aba Maldição continua, com as concedidas dentro dela.
 
 ⚠ **O campo precisa estar no `normalizarPacote`.** A biblioteca grava o pacote normalizado, e campo
 que o normalizador não conhece some na instalação sem aviso.
@@ -1542,6 +1555,11 @@ painel de fontes mostra **uma** linha, "Treino Cônjuge".
 
 Com mais de uma fonte na mesma perícia vale a MAIOR, e não a soma, pela mesma razão do
 `defesaAtributo`: a regra é sempre *"você PODE usar"*, e quem oferece uma troca opcional nunca piora.
+
+⚠ **E a oferta só entra se for MAIOR que o bônus do próprio dono** (autor, 2026-09-16). O "vale a
+maior" comparava só uma oferta com a outra, e com o Cônjuge ligado a Percepção 61 da Shaula virava os 8
+digitados, levando junto o +2 do Treino Cônjuge Pt. 2. No empate fica o do dono, que tem as parcelas
+para mostrar no hover. Preso em `asserts/t-flugel.mjs`.
 
 ⚠ **Alvo de `numero` não tranca a 1ª etapa**, e os outros trancam. Os outros são escolha estrutural
 (qual perícia, qual atributo) e a etapa não tem o que fazer sem eles. Um número é um valor, pode não

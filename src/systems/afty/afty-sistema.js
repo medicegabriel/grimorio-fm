@@ -720,6 +720,38 @@ export const DIVERGENCIAS = [
     ativa: true,
   },
   {
+    /* ⚠ A IRMÃ QUE CONFISCA. A `conteudoSoPorAddon` fecha a porta e deixa quem já
+       passou por ela ficar. Esta tira o poder de quem JÁ TEM, e por isso muda
+       número: a entrada some da ficha resolvida, os efeitos dela somem, e a vaga
+       que ela ocupava volta. A marca é `perdeNoJogador: true` na entrada, ao lado
+       do `foraDoJogador`, e o Addon que libera pelo id ainda a devolve.
+
+       A primeira é a Versatilidade Extrema (autor, 2026-09-17). */
+    id: "perdidoNoJogador",
+    tipo: "regra",
+    onde: "afty-addons.js (perdidaNoJogador, filtraForaDoJogador) e afty-alto-nivel.js (resolveAltoNivel)",
+    fonte: "E remova \"Versatilidade Extrema\" das Habilidades Lendarias de JOGADOR. Quem tinha isso, deve ser REMOVIDO. Isso não era para ter em JOGADOR, qlqr pessoa com isso, precisa PERDER esse poder. (autor, 2026-09-17)",
+    afty: "a entrada marcada vale como qualquer outra",
+    player: "a entrada marcada some da lista E da ficha que já a tinha, com os efeitos, salvo um Addon que a libere pelo id",
+    ativa: true,
+  },
+  {
+    /* As Melhorias Superiores do livro do jogador (autor, 2026-09-17: "Elas são
+       diferentes de Jogador para Grimorio"). Sete são iguais, e quatro mudam:
+       Classe de Armadura (a Melhoria de Defesa do Afty), Classe de Dificuldade e
+       Energia voltam ao valor fixo com a segunda pega menor, e Movimento vira
+       6 metros. O texto, o nome e as repetições moram no bloco `jogador` da
+       entrada, e os números em `MELHORIA_EFEITOS_JOGADOR`. O id não muda, então
+       a escolha gravada vale nos dois lados. */
+    id: "melhoriasSuperioresDoJogador",
+    tipo: "regra",
+    onde: "afty-alto-nivel.js (bloco `jogador` e melhoriaNoSistema) e afty-efeitos-conteudo.js (MELHORIA_EFEITOS_JOGADOR)",
+    fonte: "Na Ficha de Jogador, deixe as Melhorias Superiores assim. Elas são diferentes de Jogador para Grimorio. (autor, 2026-09-17), com o texto verbatim das onze",
+    afty: "Defesa, Classe de Dificuldade e Energia escalam com a Maestria uma vez só, e Movimento é metade da Maestria × 1,5m",
+    player: "Classe de Armadura +3 e +2, Classe de Dificuldade +3 e +2, Energia +6 e +4, e Movimento +6 metros",
+    ativa: true,
+  },
+  {
     /* ⚠ A PASSIVA NÃO CUSTAVA NADA ATÉ AQUI, nos dois sistemas. O tipo
        "passivo" está no schema desde sempre, não tem calculador
        (`calculadorDe` devolve null para ele) e o autor tinha adiado o
@@ -796,18 +828,33 @@ export const DIVERGENCIAS = [
     ativa: true,
   },
   {
-    /* ⚠ É REGRA na mesa, e TELA no código. Na criatura, Interlúdio que pede
-       teste é sucesso automático, e o title do Treino Especial diz isso. No
-       jogador o teste é rolado, e a ficha NÃO rastreia teste nenhum: escolher o
-       Treino segue concedendo, e quem marca é o jogador depois de passar. O
-       que o código muda é só o title deixar de afirmar a regra da criatura. A
-       mecânica do teste está anotada em docs/a-fazer.md. */
+    /* ⚠ ERA DE TELA ATÉ 2026-09-16. Até ali o jogador rolava o teste na mesa e
+       a ficha só deixava de afirmar a regra da criatura no title. O autor pediu
+       lugar para "Quantos Interludios foram gastos. Além de verdadeiramente
+       quantas Habilidades ou Feitiços foram ganhos", e isso muda NÚMERO: no
+       jogador o Foco gasto é o Interlúdio anotado, e a vaga é o Ganho. Na
+       criatura cada pega continua sendo um Interlúdio de sucesso automático,
+       que custa o Foco e concede junto. Interlúdio e Foco são a mesma coisa
+       (autor, mesma data). */
     id: "interludioComTeste",
-    tipo: "tela",
-    onde: "AftyCreatureBuilder.jsx, TreinoEspecialCard (o title do botão de escolher)",
-    fonte: "O jogador rola o teste (resposta do autor, 2026-09-10, sobre o sucesso automático do Interlúdio que pede teste)",
-    afty: "Interlúdio que pede teste é sucesso automático, e o title diz isso",
-    player: "o teste é rolado na mesa, e o title não afirma a regra",
+    tipo: "regra",
+    onde: "afty-treinos-especiais.js (focosDeTreinosEspeciais, progressoTreinoEspecial) e AftyCreatureBuilder.jsx, TreinoEspecialCard",
+    fonte: "Caso não consiga completar o treinamento, você mantém os seus sucessos, podendo tentar novamente em outro interlúdio. (Treinamento para Habilidade e Treinamento para Feitiço) + \"No atual momento falta espaço para colocar Quantos Interludios foram gastos. Além de verdadeiramente quantas Habilidades ou Feitiços foram ganhos.\" (autor, 2026-09-16)",
+    afty: "Interlúdio que pede teste é sucesso automático: cada pega custa o Foco e concede a vaga",
+    player: "Interlúdios gastos, Sucessos guardados e Ganhos anotados à parte, com a CD do teste na linha. O Foco gasto é o Interlúdio, e a vaga é o Ganho",
+    ativa: true,
+  },
+  {
+    /* O teto de repetição do Treino Especial. Na criatura ele é `1 + piso(ND /
+       vezesACada)`, decisão do autor de 2026-08-18. No jogador vale a escada
+       `tetoJogador` do catálogo, que é DADO: a Habilidade para em 2 e o Feitiço
+       não tem teto (autor, 2026-09-16, por pergunta com opções). */
+    id: "tetoDeTreinoEspecial",
+    tipo: "regra",
+    onde: "afty-treinos-especiais.js (maxVezesTreinoEspecial, campo tetoJogador)",
+    fonte: "Um personagem pode obter apenas uma habilidade adicional a partir desse treinamento até o 9° nível. A partir do 10° nível, pode obter uma habilidade a mais. (Treinamento para Habilidade) + \"Máximo 2\" e \"Sem teto\" para o Feitiço (autor, 2026-09-16)",
+    afty: "1 + 1 a cada 5 ND no Feitiço, e 1 + 1 a cada 10 ND na Habilidade",
+    player: "Habilidade: 1 até o 9° nível e 2 do 10° em diante. Feitiço: sem teto",
     ativa: true,
   },
   {

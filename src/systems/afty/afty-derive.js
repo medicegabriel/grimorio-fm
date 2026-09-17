@@ -935,12 +935,15 @@ export function deriveAfty(creature, opcoes = {}) {
     ...efeitosVislumbre.filter((e) => e.canal !== "pontosAptidao"),
     ...coletarEfeitosCriatura({
       habilidades, talentos: talentosPre, altoNivel,
+      // As Melhorias Superiores do jogador têm números próprios.
+      sistema,
       catalogos: {
         habilidades: getHabilidade, talentos: getTalento,
         // Um mapa só para as opções dos dois catálogos: os ids não colidem
         // (prefixo `lut_`/`cmb_`/`res_` contra `tal_`).
         opcoes: { ...OPCAO_ESCOLHA_NOME, ...OPCAO_TALENTO_NOME },
-        altoNivel: (id) => getMelhoriaSuperior(id) || getHabilidadeLendaria(id) || getHabilidadeApice(id),
+        // Com o sistema, o hover diz "Melhoria de Classe de Armadura" no jogador.
+        altoNivel: (id) => getMelhoriaSuperior(id, sistema) || getHabilidadeLendaria(id) || getHabilidadeApice(id),
       },
     }).map(aplicarDiretoDaAdaptacao).map((e) => efeitoDaImitacao(e, imitacao, nd)),
     // Direcionados por uma escolha que mora FORA do card da habilidade (a
@@ -2175,7 +2178,8 @@ export function deriveAfty(creature, opcoes = {}) {
   // Arredonda para baixo, como todo o resto do Afty.
   const contadorBase = contadorHabilidades(bt, patamar);
   const fatorSlots = fatorSlotsHabilidade(creature);
-  const contadorComum = Math.floor(contadorBase * fatorSlots);
+  // `let`: a Segunda Habilidade Única preenchida desconta daqui na criatura.
+  let contadorComum = Math.floor(contadorBase * fatorSlots);
   // As fontes do contador, para o hover poder dizer de onde o número veio. Sem
   // isso o Gêmeo vê metade das vagas e nada explicando.
   const partesContador = [
@@ -2224,12 +2228,35 @@ export function deriveAfty(creature, opcoes = {}) {
      tem técnica, e o que ocupa o lugar dos Feitiços dele é o Estilo das Sombras.
      Quem decide o número dele é a regra de Estilo, que o autor vai mandar. */
   const feiticoTemCaixaProprio = ehJogador("progressaoDeFeiticos") && !semEnergia;
-  const orcamentoFeitico = feiticoTemCaixaProprio
+  /* ⚠ A SEGUNDA HABILIDADE ÚNICA PREENCHIDA CUSTA UM SLOT DE FEITIÇO (autor,
+     2026-09-16, Addon Benção do Grão Mestre da Forja): "Eu perco um Slot de
+     Feitiço. Já que estou efetivamente colocando Feitiços no objeto". Um por
+     item, com o item guardado também, e nos DOIS sistemas. O Slot sai da pilha
+     em que o Feitiço daquela ficha gasta: o orçamento próprio no jogador, o
+     contador comum na criatura. Cada item vira uma parcela negativa com o nome
+     dele, que é o aviso no hover. */
+  const partesSegundaUnica = (equip.segundasUnicasPreenchidas ?? [])
+    .map((s) => ({ label: `${s.nome} (Segunda Habilidade Única)`, valor: -1 }));
+  const slotsDaSegundaUnica = partesSegundaUnica.length;
+  const progressaoFeitico = feiticoTemCaixaProprio
     ? totalFeiticosJogador(nd, {
       conjuracaoAprimorada: habilidades.efetivas.includes(CONJURACAO_APRIMORADA_ID),
     })
     : { total: 0, partes: [] };
-  const feiticosNoProprio = Math.min(feiticosGastos, orcamentoFeitico.total);
+  const orcamentoFeitico = feiticoTemCaixaProprio
+    ? {
+      total: progressaoFeitico.total - slotsDaSegundaUnica,
+      partes: [...progressaoFeitico.partes, ...partesSegundaUnica],
+    }
+    : progressaoFeitico;
+  if (!feiticoTemCaixaProprio && slotsDaSegundaUnica) {
+    contadorComum -= slotsDaSegundaUnica;
+    partesContador.push(...partesSegundaUnica);
+  }
+  /* O total pode ficar NEGATIVO (dois itens num orçamento de 1), e é o certo:
+     as parcelas continuam somando o total, e o medidor fica vermelho. Só a
+     conta de quantos Feitiços cabem apara em zero. */
+  const feiticosNoProprio = Math.min(feiticosGastos, Math.max(0, orcamentoFeitico.total));
   const feiticoForaDoProprio = feiticosGastos - feiticosNoProprio;
   /* A vaga de Feitiço serve às DUAS famílias (a nota do canal diz "Feitiço,
      Estilo das Sombras ou Habilidade Marcial"), então elas a dividem. A Técnica
@@ -2264,13 +2291,17 @@ export function deriveAfty(creature, opcoes = {}) {
        desenhar: quem tem caixa próprio não mostra o contador comum, que ali não
        tem dono nenhum. */
     proprioFeitico: orcamentoFeitico.total,
+    /* Se o caixa próprio EXISTE, separado do total: com a Segunda Habilidade
+       Única ele pode chegar a zero ou menos, e a UI que perguntava `total > 0`
+       trocaria o medidor de Feitiços pelo de Habilidades. */
+    proprioFeiticoAtivo: feiticoTemCaixaProprio,
     proprioFeiticoPartes: orcamentoFeitico.partes,
     proprioFeiticoUsado: feiticosNoProprio,
     /* O Feitiço estourou o caixa dele e as vagas exclusivas. Separado do
        `excedeu`, que mede o contador comum: no jogador os dois nunca são a mesma
        pergunta, e um Conjurador tem sempre `excedeu: false` porque não gasta o
        comum. */
-    excedeuFeitico: feiticoTemCaixaProprio && feiticoForaDeTudo > 0,
+    excedeuFeitico: feiticoTemCaixaProprio && (feiticoForaDeTudo > 0 || orcamentoFeitico.total < 0),
     exclusivasFeitico: vagasFeitico,
     exclusivasUsadas: feiticosNoExclusivo,
     exclusivasEstilo: vagasEstilo,

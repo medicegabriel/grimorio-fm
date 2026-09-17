@@ -5,7 +5,7 @@ register(
 );
 
 const R = new URL("../src/systems/afty/", import.meta.url).href;
-const { deriveAfty } = await import(R + "afty-derive.js");
+const { deriveAfty, maestria } = await import(R + "afty-derive.js");
 const { createBlankAfty, funcionamentosDaFicha } = await import(R + "afty-schema.js");
 const { RECURSOS_BUFF_NATIVOS, efeitosDaAlmaAtual } = await import(R + "afty-extras-nativos.js");
 const { efeitosDaTecnica, efeitosDosBuffsNativos } = await import(R + "afty-efeitos.js");
@@ -139,23 +139,35 @@ for (const [atual, penalidade] of [[120, 0], [119, -3], [79, -6], [39, -8]]) {
     penalidade);
 }
 
-// 8) Comidas: Reforçada +2 Defesa. Leve e Revigorante escalam com o Nível de
-//    Maestria (comidas_bt) — o "Grau do cozinheiro" foi retirado em
-//    2026-09-13, um seletor a menos na bancada.
-const comComidaReforcada = deriveAfty({
-  ...base, combate: { ativo: true, comidas_refeicoes: ["reforcada"] },
+// 8) Comidas, pelo texto das Ferramentas de Cozinheiro.
+//    ⚠ LEVE E REVIGORANTE ESCALAM POR GRAU, e não por ponto de Maestria (autor,
+//    2026-09-16: "meu colaborador programou errado"). Os graus vêm por Nível
+//    (1 Quarto, 5 Terceiro, 9 Segundo, 13 Primeiro, 17+ Especial), e a Maestria
+//    sobe nos mesmos níveis, então o controle `comidas_bt` segue sendo o único.
+const comida = (refeicoes, bt) => deriveAfty({
+  ...base, combate: { ativo: true, comidas_refeicoes: refeicoes, ...(bt != null ? { comidas_bt: bt } : {}) },
 });
-t("Refeição Reforçada dá +2 de Defesa", comComidaReforcada.defesa - dentroSemNada.defesa, 2);
-const comRevigoranteBt4 = deriveAfty({
-  ...base, combate: { ativo: true, comidas_refeicoes: ["revigorante"], comidas_bt: 4 },
-});
-t("Revigorante com Maestria 4 dá 20 PV temporários (5 por ponto)",
-  comRevigoranteBt4.pvTemporario, 20);
-const comLeveBt3 = deriveAfty({
-  ...base, combate: { ativo: true, comidas_refeicoes: ["leve"], comidas_bt: 3 },
-});
-t("Leve com Maestria 3 dá +9 de Deslocamento (3 por ponto)",
-  comLeveBt3.movimento - dentroSemNada.movimento, 9);
+t("Refeição Reforçada dá +2 de Defesa", comida(["reforcada"]).defesa - dentroSemNada.defesa, 2);
+t("Refeição Picante dá +2 nas jogadas de ataque",
+  acertoDe(comida(["picante"]), "amaldicoado") - acertoDe(dentroSemNada, "amaldicoado"), 2);
+// [Maestria do cozinheiro, Nível de exemplo, Grau, Leve, Revigorante]
+for (const [bt, nivel, grau, leve, pv] of [
+  [2, 1, "Quarto", 3, 5], [3, 5, "Terceiro", 6, 10], [4, 9, "Segundo", 9, 15],
+  [5, 13, "Primeiro", 12, 20], [6, 17, "Especial", 15, 25], [8, 30, "Especial", 15, 25],
+  [10, 36, "Especial", 15, 25],
+]) {
+  t(`Maestria ${bt} (Nível ${nivel}) e o Grau ${grau}: a Maestria sobe no mesmo Nível`, maestria(nivel), bt);
+  t(`Leve no Grau ${grau} (Maestria ${bt}) dá +${leve} m`,
+    comida(["leve"], bt).movimento - dentroSemNada.movimento, leve);
+  t(`Revigorante no Grau ${grau} (Maestria ${bt}) dá ${pv} PV temporários`,
+    comida(["revigorante"], bt).pvTemporario, pv);
+  t(`Energética com Maestria ${bt} dá ${bt} PE temporários`,
+    comida(["energetica"], bt).peTemporario.combate.reduce((s, x) => s + x.valor, 0), bt);
+}
+t("Leve sem a Maestria do cozinheiro preenchida não dá nada",
+  comida(["leve"]).movimento - dentroSemNada.movimento, 0);
+t("Revigorante sem a Maestria do cozinheiro preenchida não dá nada",
+  comida(["revigorante"]).pvTemporario, 0);
 
 // 9) OS 3 NATIVOS SAÍRAM DO POOL `funcionamentoBasico` em 2026-09-13: uma
 //    Técnica principal e o Aliado Protetor agora SOMAM na Defesa, em vez de
