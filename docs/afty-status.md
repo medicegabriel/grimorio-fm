@@ -1,5 +1,36 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-09-17: TOBIMUNE REBALANCEADA
+
+### Revisão 2.1.0: substituição de Energia Reversa
+
+O autor corrigiu a interpretação de acesso: as cinco Aptidões de cura não são concessões gratuitas.
+Ativar o addon agora remove a trilha e a aba Energia Reversa e coloca a aba Tobimune no mesmo lugar.
+Ela lista somente Regeneração Corporal, Regeneração Ampliada, Regeneração Máxima, Regeneração de
+Membros e Fluxo Imparável. Cada uma continua sendo escolha normal, com vaga e pré-requisitos.
+
+Nasceu o campo genérico `substituiEnergiaReversa` dos Addons. O verbo mora no motor e a lista de ids
+fica no pacote. A substituição não muda a origem estrutural, não concede Aptidão e não depende de a
+arma estar equipada. Escolhas e concessões antigas de Energia Reversa ficam inativas enquanto a
+substituição existir. Sem o addon, Energia Reversa volta com os valores que já estavam gravados.
+
+O addon `addons/tobimune.json` foi reduzido à katana pedida pelo autor. Os 16 modelos de Passivo,
+os quatro Estados de Combate e os três Funcionamentos da versão 1.0.0 foram removidos. A pendência
+dos Feitiços ativos também saiu de `docs/a-fazer.md`, pois esse conteúdo não pertence mais ao pacote.
+
+A versão 2.0.0 é uma arma Tática de Técnica de custo 4 e um espaço. O orçamento de 20 PC fecha sem
+sobra: 6 em dano, 6 na margem 18 e 8 nas propriedades Aparar, Fatal d12, Fineza, Marcial,
+Oscilante e Versátil. A linha causa 1d12 + 1d4 cortante com uma mão e 2d8 com duas mãos.
+
+A Tobimune nasce como Ferramenta Amaldiçoada de Quarto Grau, mas não tem grau fixo. A ficha pode
+alterar seu grau e seus Encantamentos pelas regras normais, com Grau Especial como o último degrau.
+O pacote libera Regeneração Corporal, Regeneração Ampliada, Regeneração Máxima, Regeneração de
+Membros e Fluxo Imparável como alternativas à Energia Reversa. A revisão 2.1.0 acima substitui a
+concessão automática que existia na primeira versão deste rebalanceamento.
+
+O guia foi reescrito em `docs/afty-tobimune.md`. O assert específico verifica pacote, orçamento,
+grau editável, substituição da aba e da trilha, lista fechada de Aptidões e desinstalação.
+
 Histórico de implementação e decisões do sistema Afty. O contexto rápido abaixo foi atualizado
 em 2026-09-09; sessões posteriores registram mudanças mais recentes. Para pendências atuais,
 consulte `docs/a-fazer.md`. Leia junto com `docs/roadmap-versionamento-e-fichas.md` (arquitetura)

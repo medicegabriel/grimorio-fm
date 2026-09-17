@@ -1,0 +1,60 @@
+{
+  "id": "tobimune",
+  "nome": "Tobimune",
+  "versao": "2.1.0",
+  "autor": "Afty",
+  "paraRaw": "afty",
+  "descricao": "Katana de Técnica de custo 4. O addon substitui Energia Reversa pelas cinco Aptidões de regeneração de Maldição. Pode ser tratada como Ferramenta Amaldiçoada do Quarto Grau até o Grau Especial.",
+  "substituiEnergiaReversa": {
+    "tab": "Tobimune",
+    "aptidoes": [
+      "mal_regeneracao_corporal",
+      "mal_regeneracao_ampliada",
+      "mal_regeneracao_maxima",
+      "mal_regeneracao_de_membros",
+      "mal_fluxo_imparavel"
+    ]
+  },
+  "acrescenta": {
+    "armas": [
+      {
+        "id": "tobimune",
+        "nome": "Tobimune",
+        "classe": "complexa",
+        "categoria": "corpo",
+        "grupo": "espada",
+        "custo": 4,
+        "espacos": 1,
+        "critico": 18,
+        "dano": {
+          "dado": "1d12 + 1d4",
+          "duasMaos": "2d8",
+          "tipo": "ct"
+        },
+        "props": {
+          "aparar": true,
+          "fatal": "1d12",
+          "fineza": true,
+          "marcial": true,
+          "oscilante": true,
+          "versatil": true
+        },
+        "unico": true,
+        "equipadoPadrao": true,
+        "faPadrao": {
+          "grau": "quarto",
+          "encantamentos": [],
+          "habilidadeUnica": "A Tobimune substitui o acesso às Aptidões de Energia Reversa por Regeneração Corporal, Regeneração Ampliada, Regeneração Máxima, Regeneração de Membros e Fluxo Imparável."
+        },
+        "criacao": {
+          "tecnica": true,
+          "especialPc": 0,
+          "especialTexto": "",
+          "bonus2": "propriedades",
+          "bonus4": "propriedades"
+        },
+        "descricao": "Katana de Técnica de custo 4. Pode ser uma Ferramenta Amaldiçoada do Quarto Grau até o Grau Especial. O addon remove o acesso às Aptidões de Energia Reversa e libera somente Regeneração Corporal, Regeneração Ampliada, Regeneração Máxima, Regeneração de Membros e Fluxo Imparável."
+      }
+    ]
+  }
+}

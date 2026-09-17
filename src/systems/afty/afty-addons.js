@@ -828,6 +828,37 @@ function normalizarConcessoesDeAptidao(cru) {
     }));
 }
 
+function normalizarSubstituicaoEnergiaReversa(cru) {
+  if (!cru || typeof cru !== "object") return null;
+  const aptidoes = Array.isArray(cru.aptidoes)
+    ? [...new Set(cru.aptidoes.filter((x) => typeof x === "string").map((x) => x.trim()).filter(Boolean))]
+    : [];
+  if (aptidoes.length === 0) return null;
+  return {
+    tab: String(cru.tab ?? "Alternativas").trim() || "Alternativas",
+    aptidoes,
+  };
+}
+
+/**
+ * Aptidões que ocupam o lugar da Energia Reversa por regra de Addon.
+ *
+ * Isto ABRE escolhas, não concede nenhuma delas. A lista serve à aba de
+ * Aptidões e também retira a trilha ER. Mais de um pacote pode contribuir, e
+ * nesse caso as listas se unem sem duplicar ids.
+ */
+export function substituicaoEnergiaReversaPorAddon(creature) {
+  const regras = (Array.isArray(creature?.addons) ? creature.addons : [])
+    .map(normalizarPacote)
+    .map((p) => p.substituiEnergiaReversa)
+    .filter(Boolean);
+  if (regras.length === 0) return null;
+  return {
+    tab: regras.length === 1 ? regras[0].tab : "Alternativas",
+    aptidoes: [...new Set(regras.flatMap((r) => r.aptidoes))],
+  };
+}
+
 /**
  * As Aptidões que os addons DESTA criatura concedem agora.
  *
@@ -899,6 +930,10 @@ export function normalizarPacote(cru) {
        pacote NORMALIZADO, e campo que o normalizador não conhece some na
        instalação sem aviso nenhum. */
     concedeAptidoes: normalizarConcessoesDeAptidao(p.concedeAptidoes),
+    /* Substitui a trilha e a aba de Energia Reversa por uma lista fechada de
+       Aptidões. Diferente de `concedeAptidoes`, as entradas continuam sendo
+       escolhas normais e gastam vaga. */
+    substituiEnergiaReversa: normalizarSubstituicaoEnergiaReversa(p.substituiEnergiaReversa),
     /* Ids de pacotes que NÃO ligam na mesma ficha que este. Ver
        `incompativeisNaFicha`. */
     incompativeis: Array.isArray(p.incompativeis)
@@ -1231,6 +1266,13 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
       if (!conhecida) problemas.push(`${onde}: Aptidão inexistente "${id}".`);
     }
   }
+  if (p.substituiEnergiaReversa) {
+    for (const id of p.substituiEnergiaReversa.aptidoes) {
+      const conhecida = aptidoesDoPacote.has(id) || id.includes(SEPARADOR)
+        || !aptidoesDoLivro || aptidoesDoLivro.has(id);
+      if (!conhecida) problemas.push(`Substituição de Energia Reversa: Aptidão inexistente "${id}".`);
+    }
+  }
   const ciclosVistos = new Set();
   if (p.adaptacoes.length > 0 && !p.permite.includes("adaptacao")) {
     problemas.push('Pacote com "adaptacoes" precisa incluir "adaptacao" em "permite".');
@@ -1406,6 +1448,7 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
     && p.permite.length === 0
     && p.libera.length === 0
     && p.concedeAptidoes.length === 0
+    && !p.substituiEnergiaReversa
     && p.adaptacoes.length === 0
     && p.funcionamentos.length === 0
     && p.estilos.length === 0
@@ -1414,7 +1457,7 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
     && p.estadosCombate.length === 0
     && p.contadoresOrigem.length === 0
   ) {
-    problemas.push("O pacote não acrescenta, não substitui, não libera, não permite, não concede Aptidão e não traz Funcionamento Básico, Feitiço, Estado de Combate ou Contador de Origem.");
+    problemas.push("O pacote não acrescenta, não substitui, não libera, não permite, não concede ou libera Aptidão e não traz Funcionamento Básico, Feitiço, Estado de Combate ou Contador de Origem.");
   }
 
   const vistos = new Set();

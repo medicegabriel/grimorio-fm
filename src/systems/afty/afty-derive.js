@@ -114,7 +114,7 @@ import { atributosDosAddons } from "./afty-addons-atributos";
 import { resolveCura } from "./afty-cura";
 import {
   problemasDeAddon, marcasDeclaradas, primitivasDaCriatura, liberacoesDaCriatura, precosDeCatarse,
-  nivelDaFicha, aptidoesConcedidasPorAddon,
+  nivelDaFicha, aptidoesConcedidasPorAddon, substituicaoEnergiaReversaPorAddon,
   estadosCombateDeAddon, epocaAddons,
 } from "./afty-addons";
 import { agrupaConcedido, concessoesDaSessao, escolhasDoConcedido } from "./afty-concessao";
@@ -407,20 +407,26 @@ export function deriveAfty(creature, opcoes = {}) {
   const aptidoesConcedidasAddon = semEnergia
     ? []
     : aptidoesConcedidasPorAddon(creature, { equipados: itensEquipados(creature) });
+  const substituicaoEnergiaReversa = substituicaoEnergiaReversaPorAddon(creature);
+  const aptidaoPermitidaPelaEstrutura = (id) => (
+    !substituicaoEnergiaReversa || getAptidao(id)?.categoria !== "energia_reversa"
+  );
   const aptidoesConcedidas = semEnergia ? [] : [...new Set([
     ...aptidoesConcedidasOrigem,
     ...aptidoesConcedidasEspecializacao,
     ...concedido.aptidoes,
     ...aptidoesConcedidasAddon.map((c) => c.id),
-  ])];
-  const aptidoesEscolhidasFicha = semEnergia || !Array.isArray(creature?.aptidoesAmaldicoadas)
+  ])].filter(aptidaoPermitidaPelaEstrutura);
+  const aptidoesEscolhidasRaw = semEnergia || !Array.isArray(creature?.aptidoesAmaldicoadas)
     ? []
     : creature.aptidoesAmaldicoadas;
+  const aptidoesEscolhidasFicha = aptidoesEscolhidasRaw.filter(aptidaoPermitidaPelaEstrutura);
   // A concedida NÃO duplica quando o jogador também a marcou à mão.
   const aptidoesIds = [...new Set([...aptidoesEscolhidasFicha, ...aptidoesConcedidas])];
   // A ficha que o resto do motor enxerga já vem com a concedida dentro, para
   // nenhum leitor precisar lembrar de somar as duas listas.
   const creatureComAptidoes = aptidoesConcedidas.length
+    || aptidoesEscolhidasFicha.length !== aptidoesEscolhidasRaw.length
     ? { ...creature, aptidoesAmaldicoadas: aptidoesIds }
     : creature;
   // ⚠ A ficha do criador é sempre montada com a alma ÍNTEGRA (autor,

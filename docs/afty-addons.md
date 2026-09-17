@@ -800,6 +800,33 @@ que o normalizador não conhece some na instalação sem aviso.
 `basico` e a linha da Armas Naturais ficou em `corpo`, que ninguém escuta. Nenhuma Maldição atacava
 com Destreza. Consertada para `basico`, com assert varrendo toda linha de Fineza.
 
+### O campo `substituiEnergiaReversa` (2026-09-17)
+
+Um pacote pode retirar a trilha e a aba Energia Reversa e colocar no lugar uma lista fechada de
+Aptidões já existentes. Nasceu do rebalanceamento da Tobimune: o portador não deve receber as cinco
+Aptidões gratuitamente, mas deve poder escolhê-las no lugar das Aptidões de Energia Reversa.
+
+```json
+{
+  "substituiEnergiaReversa": {
+    "tab": "Tobimune",
+    "aptidoes": [
+      "mal_regeneracao_corporal",
+      "mal_regeneracao_ampliada"
+    ]
+  }
+}
+```
+
+O campo abre escolhas normais. As Aptidões gastam vaga, respeitam pré-requisitos e só produzem
+efeito depois de escolhidas. Ele não é `concedeAptidoes`, não depende de item equipado e não muda a
+origem estrutural da ficha. Enquanto estiver ativo, escolhas e concessões da categoria Energia
+Reversa deixam de produzir efeitos. Desativar o addon devolve a trilha, a aba e as escolhas antigas.
+
+Na interface, a categoria usada é Maldição, filtrada pelos ids declarados no pacote. Assim o addon
+reutiliza os textos, requisitos e efeitos do catálogo sem duplicá-los e sem abrir as outras Aptidões
+de Maldição.
+
 ### O campo `permite`, e por que ele existe
 
 **As primitivas da fase 0 vivem no motor sempre, e aparecem na TELA só de quem pediu.** É o que o

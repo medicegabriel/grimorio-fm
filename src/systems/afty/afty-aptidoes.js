@@ -55,7 +55,7 @@
  * ============================================================
  */
 
-import { registrarFamilia, remendarLista } from "./afty-addons";
+import { registrarFamilia, remendarLista, substituicaoEnergiaReversaPorAddon } from "./afty-addons";
 import { getOrigem, origemEstrutural } from "./afty-origens";
 // Só o VALIDADOR usa. afty-efeitos-conteudo.js não importa nada, então a seta
 // para lá é segura (afty-efeitos.js, esse sim, importaria de volta e faria ciclo).
@@ -1666,7 +1666,12 @@ export const trilhasDaOrigem = (origemId) => {
  * regras dela e perde a Energia Reversa, embora a origem gravada na ficha
  * continue sendo Gêmeos (autor, 2026-08-29). Ver `origemEstrutural`.
  */
-export const trilhasDaCriatura = (creature) => trilhasDaOrigem(origemEstrutural(creature));
+export const trilhasDaCriatura = (creature) => {
+  const trilhas = trilhasDaOrigem(origemEstrutural(creature));
+  return substituicaoEnergiaReversaPorAddon(creature)
+    ? trilhas.filter((t) => t.key !== "er")
+    : trilhas;
+};
 
 /**
  * `trilhas` é a lista que a origem tem (ver trilhasDaOrigem). As de fora saem
@@ -1888,8 +1893,19 @@ export function abasAptidao(creature) {
   /* ⚠ ORIGEM ESTRUTURAL, e não a gravada na ficha: o Gêmeo que copiou da
      Maldição em Verdadeiras Origens também troca a aba (autor, 2026-08-29). */
   const ehMaldicao = origemEstrutural(creature) === "maldicao";
+  const substituicao = substituicaoEnergiaReversaPorAddon(creature);
   return APTIDAO_CATEGORIAS
     // Maldição nunca entra pela ordem natural: só pela troca abaixo.
     .filter((c) => c.id !== "maldicao")
-    .map((c) => (ehMaldicao && c.id === "energia_reversa" ? CAT_BY_ID.maldicao : c));
+    .map((c) => {
+      if (c.id !== "energia_reversa") return c;
+      if (substituicao) {
+        return {
+          ...CAT_BY_ID.maldicao,
+          tab: substituicao.tab,
+          aptidoesPermitidas: substituicao.aptidoes,
+        };
+      }
+      return ehMaldicao ? CAT_BY_ID.maldicao : c;
+    });
 }

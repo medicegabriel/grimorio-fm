@@ -11522,8 +11522,16 @@ function TabAptidoes({
   // Trocar a origem para/de Maldição troca uma aba de lugar. Se a aba
   // aberta sumiu, cai na primeira em vez de renderizar vazio.
   const catAtiva = abas.find((c) => c.id === catTab) ?? abas[0];
-  const listaAtiva = aptidoesDaCategoria(catAtiva.id);
-  const subgrupos = subgruposDaCategoria(catAtiva.id);   // null quando a categoria é plana
+  const permitidasNaAba = Array.isArray(catAtiva.aptidoesPermitidas)
+    ? new Set(catAtiva.aptidoesPermitidas)
+    : null;
+  const filtraDaAba = (lista) => lista.filter((a) => (
+    !permitidasNaAba || permitidasNaAba.has(a.id)
+  ));
+  const listaAtiva = filtraDaAba(aptidoesDaCategoria(catAtiva.id));
+  const subgrupos = subgruposDaCategoria(catAtiva.id)   // null quando a categoria é plana
+    ?.map((g) => ({ ...g, aptidoes: filtraDaAba(g.aptidoes) }))
+    .filter((g) => g.aptidoes.length > 0) ?? null;
 
   return (
     <>
@@ -11621,7 +11629,9 @@ function TabAptidoes({
         >
           {abas.map((cat) => {
             const on = cat.id === catAtiva.id;
-            const escolhidasNaCat = aptidoesDaCategoria(cat.id).filter((a) => escolhidas.includes(a.id)).length;
+            const permitidas = Array.isArray(cat.aptidoesPermitidas) ? new Set(cat.aptidoesPermitidas) : null;
+            const escolhidasNaCat = aptidoesDaCategoria(cat.id)
+              .filter((a) => (!permitidas || permitidas.has(a.id)) && escolhidas.includes(a.id)).length;
             return (
               <button
                 key={cat.id}
