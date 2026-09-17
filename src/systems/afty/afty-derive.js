@@ -105,6 +105,7 @@ import {
   ESTADO_DESCOBERTO, ESTADO_FADIGA,
 } from "./afty-vislumbre-celeste";
 import { resolveOlhosAgulha, efeitosOlhosAgulha } from "./afty-olhos-agulha";
+import { estadosManipulacaoCeu, resolveManipulacaoCeu } from "./afty-manipulacao-ceu";
 import { resolveTestes, resolveDano, catalogoPericiasDaFicha, ehPericiaOficio, atributosDePericiaManuais } from "./afty-pericias";
 import { resolveDefesasDano, sanearDefesasDano } from "./afty-defesas-dano";
 import { resolveCatarse } from "./afty-catarse";
@@ -1312,6 +1313,7 @@ export function deriveAfty(creature, opcoes = {}) {
   });
   const estadosAddon = estadosCombateDeAddon(creature, nivelMaxFeitico(nd, nivelConjurador));
   const estadosVislumbre = estadosDoVislumbre({ tem: temVislumbre });
+  const estadosCeu = estadosManipulacaoCeu(creature);
 
   /* ---------- TETO DE PER DA ENERGIA REVERSA ----------
      ⚠ ERA A MESMA CONTA ESCRITA TRÊS VEZES: os efeitos de `curaPontos` na
@@ -1372,6 +1374,7 @@ export function deriveAfty(creature, opcoes = {}) {
       ...estadosAptidoes,
       ...estadosAddon,
       ...estadosVislumbre,
+      ...estadosCeu,
       // Só existe com uma arma equipada que tenha a Sintonizada.
       ...(sintonizadas.length ? [{ id: ESTADO_SINTONIZADA, label: "Sintonizada", tipo: "bool" }] : []),
       ...ESTADOS_NATIVOS_EXTRAS,
@@ -1797,6 +1800,7 @@ export function deriveAfty(creature, opcoes = {}) {
         : { ...e, custoPE: custo.valor, custoPEBase: e.custoPE, reducoesCustoPE: custo.partes };
     }),
   };
+  const manipulacaoCeu = resolveManipulacaoCeu(creature, combateExibicao, aptidoesIds);
 
   // Funcionamento Básico da técnica, RESOLVIDO linha a linha, só para o editor
   // mostrar quanto cada expressão vale enquanto o jogador digita. É reavaliação,
@@ -3381,6 +3385,7 @@ export function deriveAfty(creature, opcoes = {}) {
     dedicadas,            // Armas Dedicadas: { ativa, escolhidas, elegiveis, max, restante }
     empolgacao,           // Lutador: { ativa, aprimorada, inicial, max, tabela }
     combate: combateExibicao, // simulação: estado já aparado nos tetos da ficha, e com o custo em PE reduzido
+    manipulacaoCeu,
     vislumbre,            // Vislumbre Celeste: { tem, cl, descoberto, visao, reducaoPe, fadiga, ... }
     olhosAgulha,
     pvTemporario,         // casca de PV vinda da simulação (Fluxo, Brutalidade Aprimorada)

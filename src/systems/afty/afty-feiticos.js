@@ -3474,6 +3474,7 @@ export const PASSIVO_EFEITOS = [
   { value: "iniciativa",  label: "Aumento de Iniciativa (sem tabela no livro)",    unidade: "",       canal: "iniciativa", extrapolado: true, auxTabela: "defesa" },
   { value: "atencao",     label: "Aumento de Atenção (sem tabela no livro)",       unidade: "",       canal: "atencao",    extrapolado: true, auxTabela: "defesa" },
   { value: "regeneracao", label: "Regeneração por Rodada (referência — sem canal)", unidade: "PV/rodada", canal: null },
+  { value: "personalizado", label: "Personalizado", unidade: "", canal: null },
 ];
 const PASSIVO_EFEITO_BY_ID = Object.fromEntries(PASSIVO_EFEITOS.map((e) => [e.value, e]));
 export const getPassivoEfeito = (id) => PASSIVO_EFEITO_BY_ID[id] ?? PASSIVO_EFEITOS[0];
@@ -3508,6 +3509,23 @@ export function calcularFeiticoPassivo(feitico, ctx = {}) {
   const f = feitico || {};
   const nivel = f.nivel ?? 0;
   const nNum = nivel === "max" ? 5 : Math.max(0, Math.min(5, Math.trunc(Number(nivel) || 0)));
+  if (f.efeitoPassivo === "personalizado") {
+    return {
+      disponivel: false,
+      efeito: "personalizado",
+      efeitoLabel: "Personalizado",
+      unidade: "",
+      valor: null,
+      notacao: null,
+      texto: "",
+      tiposDanoExtra: 0,
+      alvo: null,
+      custoPeMaximo: custoPeMaximoDaPassiva(nivel),
+      custoPeMaximoAtivo: true,
+      efeitosGerados: [],
+      avisos: [],
+    };
+  }
   const def = getPassivoEfeito(f.efeitoPassivo);
   const avisos = [];
 

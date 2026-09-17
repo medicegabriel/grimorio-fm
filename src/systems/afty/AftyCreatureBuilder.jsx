@@ -7165,7 +7165,7 @@ function FeiticoPassivoEditor({ feitico, calc, onPatch, efeitosPassivo, fontesDa
         )}
       </div>
 
-      {calc && (
+      {calc && efeito !== "personalizado" && (
         <div className="rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-2.5 flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-baseline gap-2 min-w-0">
             <span className="text-[11px] text-slate-400 flex-shrink-0">Valor calculado</span>
@@ -11051,7 +11051,8 @@ function SimulacaoCombateCard({ derived, patchCombate, gatilhosTreino = [], onGa
          ⚠ O `tipo` vem antes do espalhamento: a imbuição é `faixa`, e o extra
          que não declara nada continua caindo em `bool`. */
       ...(combate.estadosExtras ?? [])
-        .filter((e) => (!e.requerTalento || comLista(e.requerTalento).some((id) => talentos.includes(id)))
+        .filter((e) => !e.ocultarNoCriador
+          && (!e.requerTalento || comLista(e.requerTalento).some((id) => talentos.includes(id)))
           && (!e.requerAptidao || comLista(e.requerAptidao).some((id) => aptidoes.includes(id)))
           && (!e.requerHabilidade || temHabilidade(e.requerHabilidade)))
         .map((e) => ({ tipo: "bool", ...e })),

@@ -1,5 +1,25 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-09-16: MANIPULAÇÃO DO CÉU
+
+Addon `addons/manipulacao-do-ceu.json` com dois modelos de Feitiço de Nível 5. Refletir Imagem é
+Personalizado, tem custo base de 20 PE, usa Ação Comum, alcance Pessoal, alvo Próprio e duração
+Sustentado, Concentração.
+Duplicata Perfeita é Passivo / Característica, reduz o PE máximo em 10 e não inventa um efeito
+numérico do Motor.
+
+Aura Embaçada ganhou interruptor próprio na aba Buffs, com custo exibido de 2 PE. Quando Refletir
+Imagem está na ficha, a aba Ações mostra um card separado com o contador de zero a duas cópias. Com
+Duplicata Perfeita e Aura Embaçada ligadas, o limiar atual passa de 2 para 3 ou 4 em 1d10 conforme
+restam zero, uma ou duas cópias. Fora de combate, a Aura e o contador ficam zerados.
+
+A integração também reconhece os ids locais dos Feitiços já presentes na ficha exportada de
+Argalia pela combinação de nome, tipo e Nível 5. Na ficha enviada, Refletir Imagem mantém custo base
+20 PE e custo final 10 PE por Manipulação Perfeita.
+
+Implementação e limites em `docs/afty-manipulacao-ceu.md`. Validação específica em
+`asserts/t-manipulacao-ceu.mjs`.
+
 ## SESSÃO DE 2026-09-16: OLHOS DE AGULHA
 
 Addon `addons/olhos-de-agulha.json`, habilitado por `olhosDeAgulha`. Condição corporal com
