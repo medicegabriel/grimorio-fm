@@ -96,6 +96,12 @@ fichaArgalia.feiticos = [
 ];
 t("a ficha existente da Argalia é reconhecida pelos Feitiços que já possui",
   deriveAfty(fichaArgalia).manipulacaoCeu.percentual, 40);
+const painel = readFileSync(
+  new URL("../src/systems/afty/ficha/PainelManipulacaoCeu.jsx", import.meta.url),
+  "utf8",
+);
+t("o painel principal permite ativar a Aura Embaçada",
+  painel.includes('onEstado({ id: "auraEmbacada" }, !ceu.auraAtiva)'), true);
 
 if (bad.length) {
   console.error(`FALHOU ${bad.length} de ${ok + bad.length}:\n  - ${bad.join("\n  - ")}`);

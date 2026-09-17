@@ -43,8 +43,9 @@ combate.
 ## Tela
 
 `PainelManipulacaoCeu.jsx` aparece como card separado na aba Ações da Ficha Final e do painel de
-Encontros. Ele contém somente o resultado da Aura Embaçada, o custo de Sustentação e o contador de
-cópias. A explicação permanece nos `title` dos elementos e no texto dos Feitiços.
+Encontros. Ele reúne o controle Ativa ou Inativa da Aura Embaçada, a chance percentual, a margem
+atual em 1d10, o custo de Sustentação e o contador de cópias. A explicação permanece nos `title` dos
+elementos e no texto dos Feitiços.
 
 ## Verificação
 
@@ -58,3 +59,4 @@ cópias. A explicação permanece nos `title` dos elementos e no texto dos Feiti
 - perda do bônus quando Duplicata Perfeita não está na ficha
 - desligamento da Aura e zeragem fora de combate
 - reconhecimento dos Feitiços já existentes na ficha de Argalia
+- ativação da Aura Embaçada diretamente no painel principal

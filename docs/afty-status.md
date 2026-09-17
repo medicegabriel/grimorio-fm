@@ -9,9 +9,10 @@ Duplicata Perfeita é Passivo / Característica, reduz o PE máximo em 10 e não
 numérico do Motor.
 
 Aura Embaçada ganhou interruptor próprio na aba Buffs, com custo exibido de 2 PE. Quando Refletir
-Imagem está na ficha, a aba Ações mostra um card separado com o contador de zero a duas cópias. Com
-Duplicata Perfeita e Aura Embaçada ligadas, o limiar atual passa de 2 para 3 ou 4 em 1d10 conforme
-restam zero, uma ou duas cópias. Fora de combate, a Aura e o contador ficam zerados.
+Imagem está na ficha, a aba Ações mostra um card separado que também permite ativar a Aura e reúne
+a chance percentual, a margem em 1d10 e o contador de zero a duas cópias. Com Duplicata Perfeita e
+Aura Embaçada ligadas, o limiar atual passa de 2 para 3 ou 4 em 1d10 conforme restam zero, uma ou
+duas cópias. Fora de combate, a Aura e o contador ficam zerados.
 
 A integração também reconhece os ids locais dos Feitiços já presentes na ficha exportada de
 Argalia pela combinação de nome, tipo e Nível 5. Na ficha enviada, Refletir Imagem mantém custo base
