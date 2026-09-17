@@ -873,6 +873,33 @@ export function resolveCombate(creature, params = {}) {
  * booleana do estado inteiro (`armas_absolutas`, ligada em qualquer opção):
  * assim o `quando` continua legível, sem número mágico.
  */
+/**
+ * Uma linha da bancada deve aparecer?
+ *
+ * `requerEstado` sempre significou "esta linha só existe com aquela ligada", e
+ * as duas telas (a bancada do criador e a aba Buffs da Ficha) repetiam a mesma
+ * expressão de uma linha. Ela virou função em 2026-09-17, quando os Aliados
+ * passaram a ser ESCOLHIDOS antes de graduados e o gate deixou de ser
+ * booleano: a graduação do Protetor depende de `protetor` estar na lista do
+ * seletor, e não de a lista ter qualquer coisa dentro.
+ *
+ * ⚠ LINHA COM VALOR PRÓPRIO NUNCA SOME, e essa é a regra que protege o
+ * jogador: o valor de um filho não é zerado quando o pai muda, e o
+ * `combateDslVars` não consulta `requerEstado` nenhum. Sem esta guarda, tirar
+ * "protetor" do seletor esconderia a linha da graduação com ela ainda valendo,
+ * e o bônus continuaria na ficha sem controle nenhum para desligá-lo. É o
+ * mesmo motivo pelo qual uma ficha gravada antes do seletor existir continua
+ * enxergando os aliados que ela já tinha.
+ */
+export function estadoVisivel(estado, combate = {}) {
+  if (!estado?.requerEstado) return true;
+  const proprio = combate[estado.id];
+  if (Array.isArray(proprio) ? proprio.length > 0 : proprio) return true;
+  const pai = combate[estado.requerEstado];
+  if (!estado.requerOpcao) return Array.isArray(pai) ? pai.length > 0 : !!pai;
+  return Array.isArray(pai) ? pai.includes(estado.requerOpcao) : pai === estado.requerOpcao;
+}
+
 export function combateDslVars(combate = {}) {
   const out = { em_combate: boolDe(combate.ativo) };
   for (const postura of POSTURA_OPCOES) {

@@ -105,7 +105,7 @@ import {
   DOMINIO_RITUAL_CATEGORIAS, rotuloDoEfeito,
 } from "./afty-dominios";
 import { RITUAL_MELHORIAS } from "./afty-rituais";
-import { COMBATE_ESTADOS } from "./afty-combate";
+import { COMBATE_ESTADOS, estadoVisivel } from "./afty-combate";
 import {
   createBlankInvocacao, cloneInvocacao, createBlankAcao, createBlankCaracteristica, createBlankHorda, AFTY_INV_GRAUS,
   grausDisponiveis, grauMeta, INV_ATRIBUTOS_POR_GRAU, INV_ATTR_MIN, mod as invMod,
@@ -11214,7 +11214,7 @@ function SimulacaoCombateCard({ derived, patchCombate, gatilhosTreino = [], onGa
   ];
   if (!linhas.length && !gatilhosTreino.length) return null;
 
-  const visivel = (e) => !e.requerEstado || combate[e.requerEstado];
+  const visivel = (e) => estadoVisivel(e, combate);
   return (
     <Card
       title="Simulação de Combate"

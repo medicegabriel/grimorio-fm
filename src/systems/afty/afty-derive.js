@@ -119,7 +119,7 @@ import {
   estadosCombateDeAddon, epocaAddons,
 } from "./afty-addons";
 import { agrupaConcedido, concessoesDaSessao, escolhasDoConcedido } from "./afty-concessao";
-import { ESTADOS_NATIVOS_EXTRAS, efeitosDaAlmaAtual } from "./afty-extras-nativos";
+import { estadosNativosExtras, efeitosDaAlmaAtual } from "./afty-extras-nativos";
 import { origemContadoresDslVars } from "./afty-contadores-origem";
 import {
   efeitosDasAdaptacoes, origensDiretasDasAdaptacoes, resumoAdaptacoes,
@@ -1392,7 +1392,10 @@ export function deriveAfty(creature, opcoes = {}) {
       ...estadosCeu,
       // Só existe com uma arma equipada que tenha a Sintonizada.
       ...(sintonizadas.length ? [{ id: ESTADO_SINTONIZADA, label: "Sintonizada", tipo: "bool" }] : []),
-      ...ESTADOS_NATIVOS_EXTRAS,
+      /* O teto de aliados sai do GRAU DE FEITICEIRO, verbatim do livro, e por
+         isso os nativos são montados aqui em vez de virem prontos: Quarto Grau
+         não pode ter aliado nenhum, e nesse caso as linhas deles nem entram. */
+      ...estadosNativosExtras(grau.rank),
     ],
   });
   const auxiliaresAtivos = resolveAuxiliaresAtivos(creature, combate, estadosConjurador, {

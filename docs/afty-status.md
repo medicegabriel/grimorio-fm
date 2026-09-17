@@ -1,5 +1,43 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-09-17 (parte 5): ALIADOS ESCOLHIDOS, COMIDAS PELO LIVRO E O FERREIRO
+
+Três pedidos do autor, com o texto do livro em mãos nos três.
+
+**Aliados.** Eram treze linhas sempre abertas na bancada, e a ficha sem aliado
+nenhum pagava a altura delas. Agora é uma linha só, o seletor, e a graduação de
+cada um aparece depois de escolhido, no mesmo gesto do painel de Ofícios. O
+limite é o do livro, por grau de feiticeiro: Quarto Grau não tem aliado (e não
+ganha nem o seletor), Terceiro e Segundo têm um, Primeiro tem dois, Especial
+tem três. Quem apara a lista no teto é o `resolveCombate`.
+
+⚠ **O limite mexe no NÚMERO, e não só na tela.** A graduação continua gravada
+quando o aliado sai do seletor, para a linha poder ser limpa, então todo efeito
+de aliado passou a ser multiplicado pela booleana da escolha
+(`aliados_escolhidos_protetor`). Sem isso uma ficha com cinco graduações
+gravadas somaria as cinco, e o teto seria enfeite.
+
+**Comidas.** O livro tem DUAS escadas, e o sistema vinha tratando como uma: a
+Leve e a Revigorante sobem por GRAU do cozinheiro (3/6/9/12/15 metros e
+5/10/15/20/25 PV), a Energética e a Nutritiva pelo BÔNUS DE TREINAMENTO dele. O
+Grau voltou a ser controle próprio, ao lado do Bônus de Treinamento, que agora
+para em 8. O grau derivado do Bônus de Treinamento continua valendo como
+reserva, para a sessão gravada entre 16 e 17 de setembro não perder o bônus.
+
+**Ferreiro.** Recurso nativo novo, o quarto: arma melhorada dá +2 em jogadas de
+ataque e escudo melhorado soma metade do Bônus de Treinamento do ferreiro na RD
+Geral, que é onde a RD do escudo já mora. A quantidade de equipamentos que cabe
+numa melhoria (metade do bônus no descanso curto, o bônus inteiro no longo) é
+teto de mesa e ficou no `title`, sem virar contador que não alimentaria canal.
+
+**Peça nova do motor da bancada:** `requerOpcao`, que faz uma linha depender de
+UMA opção do estado `multi` pai, e o `estadoVisivel` compartilhado pelas duas
+telas. Ele carrega a regra de que linha com valor próprio nunca some, senão
+esconder a linha deixaria o bônus ativo e sem botão para desligar.
+
+Asserts: `t-extras-nativos.mjs` foi de 76 para 105. Suíte em 99 de 100, com a
+única falha pré-existente e já registrada em `docs/a-fazer.md`.
+
 ## SESSÃO DE 2026-09-17: TOBIMUNE REBALANCEADA
 
 ### Revisão 2.1.0: substituição de Energia Reversa

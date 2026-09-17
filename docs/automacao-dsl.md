@@ -47,6 +47,23 @@ Onde se usa:
 - `dominio_ativo` — 1 quando a sessão selecionou uma Expansão de Domínio válida.
 - Os demais ids de `COMBATE_ESTADOS` viram identificadores normalizados pelo mesmo caminho. Estados
   de opção também geram uma variável para cada opção.
+- Um estado `multi` gera a CONTAGEM de selecionados no nome dele mais uma booleana por opção
+  (`aliados_escolhidos` e `aliados_escolhidos_protetor`).
+
+#### Linha que depende de outra (`requerEstado` e `requerOpcao`)
+
+`requerEstado` diz que a linha só aparece com outra ligada. Desde 2026-09-17 ela aceita companhia:
+`requerOpcao` exige que o pai, um estado `multi`, tenha AQUELA opção marcada. Foi o que permitiu os
+Aliados serem escolhidos antes de graduados, com uma linha só na bancada em vez de treze.
+
+⚠ **Os dois campos são de TELA, e não de conta.** O `combateDslVars` não consulta nenhum dos dois:
+uma graduação gravada continua sendo variável mesmo com o pai desmarcado. Quem precisa que o valor
+dependa da escolha tem de escrever isso na PRÓPRIA EXPRESSÃO, e é o que os Aliados fazem
+(`aliados_escolhidos_protetor * (...)`). Sem isso o limite de aliados por grau seria cosmético.
+
+⚠ **Linha com valor próprio nunca some** (`estadoVisivel`, afty-combate.js). Esconder uma linha que
+está produzindo número deixaria o bônus ativo e sem controle para desligá-lo, que é pior que a
+linha sobrando na tela.
 
 ## Funções
 - `metade(x)` — Metade de x.

@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { Plus, Minus, X, AlertTriangle, Search, ChevronDown, ChevronRight } from "lucide-react";
 
-import { COMBATE_ESTADOS } from "../../afty-combate";
+import { COMBATE_ESTADOS, estadoVisivel } from "../../afty-combate";
 import { ESTADO_APICE, RODADAS_APICE } from "../../afty-talisma-apice";
 import { condicoesPorForca, fichaDaCondicao } from "../../afty-condicoes";
 import { getCanal } from "../../afty-efeitos";
@@ -654,7 +654,7 @@ export default function AbaBuffs({
          quando o pai desliga, então um "Pilhas 3" esquecido de uma luta anterior
          continua ligado no papel: sem esta guarda ele subiria para o topo da aba
          enquanto a lista de baixo, que aplica o mesmo teste, o esconde. */
-      return linhas.filter((e) => estaLigado(e, c[e.id]) && (!e.requerEstado || c[e.requerEstado]));
+      return linhas.filter((e) => estaLigado(e, c[e.id]) && estadoVisivel(e, c));
     },
     [linhas, derived],
   );
@@ -701,7 +701,7 @@ export default function AbaBuffs({
     return [...porFonte.values()];
   }, [derived]);
 
-  const visivel = (e) => !e.requerEstado || combate[e.requerEstado];
+  const visivel = (e) => estadoVisivel(e, combate);
   const buffs = sessao.buffs ?? [];
   const condicoes = sessao.condicoes ?? [];
 
