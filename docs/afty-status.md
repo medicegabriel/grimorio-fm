@@ -14110,3 +14110,18 @@ cura devolve o teto sem devolver a Vida corrente.
 
 Eslint limpo, suíte na linha de base: 100 arquivos, com o `t-invocacoes-motor.mjs`
 falhando antes e depois pelo mesmo motivo de sempre.
+
+
+## SESSÃO DE 2026-09-18: ÁPICE CONSUMIR CINZAS (ADDON)
+
+Addon `consumir-cinzas`: a Habilidade Ápice do Locke, na família `apices`, escolhida dentro de Atingir
+Ápice como qualquer outra. Nenhuma linha de código mudou. O texto do livro entra inteiro na descrição,
+e o motor só alcança dois números dela, `bonusAcerto` +12 e `dadosDano` +2, com `quando` no estado
+`consumir-cinzas:ativo` da bancada.
+
+Limites que ficaram como texto, por falta de canal: os PEs Temporários por ataque, os 3d10 de Perda de
+Vida (o livro separa Perda de Vida de dano), Morte Direta, o TR de Integridade por rodada, a Exaustão
+por rodada, a perda permanente de Integridade máxima e a troca da Ficha pela Maldição. Também não há
+portão de Ápice para o interruptor de Addon (o `comDono` só conhece Talento, Habilidade e Aptidão), então
+ele aparece para quem instala o pacote e os números só contam com a Ápice escolhida. Asserts em
+`t-consumir-cinzas.mjs` (15).

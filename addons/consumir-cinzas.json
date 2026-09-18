@@ -1,0 +1,30 @@
+{
+  "id": "consumir-cinzas",
+  "nome": "Consumir Cinzas",
+  "versao": "1.0.0",
+  "autor": "Templas",
+  "paraRaw": "afty",
+  "descricao": "Habilidade Ápice do Locke, escolhida dentro de Atingir Ápice como qualquer outra Ápice. O motor só alcança dois números dela: +12 em Testes de Acerto e +2 Dados de Dano Adicional, que valem enquanto o interruptor Consumir Cinzas da bancada estiver ligado. Todo o resto é texto do livro, resolvido na mesa: os PEs Temporários por ataque (não existe canal por ataque), os 3d10 de Perda de Vida (o livro separa Perda de Vida de dano, e ela não tem canal), Morte Direta, o TR de Integridade, a Exaustão por rodada, a perda de Integridade máxima (o motor não altera a Integridade máxima de forma permanente) e a troca da Ficha pela Maldição. Sem requisito de Especialização escrito no livro, ela fica aberta a quem tiver Atingir Ápice. O interruptor aparece para quem instala o Addon, mas os números só contam com a Ápice escolhida.",
+  "estadosCombate": [
+    {
+      "id": "ativo",
+      "label": "Consumir Cinzas",
+      "tipo": "bool",
+      "title": "Habilidade Ápice ativa: +12 em Testes de Acerto e +2 Dados de Dano Adicional."
+    }
+  ],
+  "acrescenta": {
+    "apices": [
+      {
+        "id": "consumir_cinzas",
+        "nome": "Consumir Cinzas",
+        "descricao": "Imagine viver sabendo exatamente o dia de sua morte. Imagine viver sabendo que, por mais que lute, aquele futuro não poderá ser alterado. Parece insuportável, mas é justamente nesses momentos que sua força de vontade se torna maior do que tudo.\n\nLocke divide seu corpo e sua alma com uma Maldição. Quando sua sanidade se aproxima do limite, ele consegue extrair cada vez mais poder dessa criatura. Para proteger aqueles que ama, está disposto a sacrificar a própria vida, utilizando esse poder até seu limite absoluto.\n\nA cada utilização, porém, a criatura aproveita a oportunidade para consumir uma parte maior de seu corpo. Atualmente, Locke possui apenas 8 meses de vida, e cada uso desse poder reduz ainda mais o tempo que lhe resta.\n\nNesse estado, Locke utiliza a técnica da criatura para maximizar seu potencial destrutivo, levando seus pregos ao máximo de sua capacidade. Para alcançar esse nível de poder, ele repete os mesmos princípios e movimentos daqueles que lhe ensinaram tudo o que sabe, transformando seu próprio corpo em um instrumento para liberar todo o potencial da Maldição.\n\nCada utilização o aproxima de seu fim, mas, para Locke, esse preço é aceitável: enquanto ainda puder proteger alguém, continuará sacrificando o próprio futuro.\n\nEfeito\n\nUtiliza a energia da criatura, para potencializar seus corpo e pregos de maneira altamente destrutiva, para ate mesmo seu proprio corpo, imitando a grande liberação de energia de Raiden, a atingindo os pontos mais letais de maneira mais fria como a Kami e concentrando todo seu poder em cada golpe fluindo sua energia de maneira mais natural possível como Akemura\n\nMalefícios\n\n- Ao termino da sua Habilidade Ápice você perde permanentemente 25% da sua Barra de Integridade máxima atual.\n- Para cada rodada que manter a Habilidade Ápice ativa, você recebe 1 Ponto de Exaustão.\n- Para cada rodada que manter a Habilidade Ápice ativa, deve realizar um TR de Integridade de CD igual a 10 + ND. Em uma falha, deve gastar uma Ação Comum para evitar receber a Condição Paralisado e Fragilizado por uma rodada.\n- Caso sua Integridade seja reduzida temporariamente ou permanentemente para abaixo de 25% de seu máximo. Você perde sua Ficha Permanentemente, que passa a ser usada pela Maldição, e deve ser adaptada como uma Criatura Calamidade de mesmo ND.\n\nBenefícios\n\n- Ativar a Habilidade Ápice é uma Ação Livre no seu turno, e ela pode ser mantida por até 3 rodadas.\n- Para cada ataque, você recebe 2 PEs Temporários. Podendo acumular até um máximo igual seu BT.\n- Seus Ataques e Técnicas recebem 2 Dados de Dano Adicional.\n- Você recebe +12 em Testes de Acerto.\n- Seus ataques causam adicionalmente 3d10 de Perda de Vida.\n- Caso você deixe uma criatura com 0 PV, você causa Morte Direta na mesma e pode prolongar a Habilidade Ápice por mais uma rodada. Além disso, quando isso ocorrer durante o uso de sua Habilidade Ápice, sua perda de Integridade Máxima é reduzida em 5%, até o máximo de 15% de redução.\n- Durante o uso de sua Habilidade Ápice, você ignora as penalidades em integridade causadas por sua Habilidade Ápice.\n\nSe você eliminar 3 durante a Habilidade Ápice, você perde 10% da Integridade ao invés de 25%.\n(Logo, mesmo se você tiver com a alma danificada por usos anteriores, durante as rodadas da habilidade, ela fica em 100%).",
+        "requisitos": [],
+        "efeitos": [
+          { "canal": "bonusAcerto", "quando": "consumir_cinzas_ativo", "expr": "12", "duracao": "temporaria" },
+          { "canal": "dadosDano", "quando": "consumir_cinzas_ativo", "expr": "2", "duracao": "temporaria" }
+        ]
+      }
+    ]
+  }
+}
