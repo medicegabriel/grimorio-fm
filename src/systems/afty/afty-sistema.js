@@ -379,10 +379,10 @@ export const DIVERGENCIAS = [
        que nunca podem estar em estados diferentes. */
     id: "pvPePorEspecializacao",
     tipo: "regra",
-    onde: "afty-derive.js, blocos HP, PE e Alma",
-    fonte: "PV e PE saem da Especialização. O valor de Integridade da Alma de um personagem é igual ao seu máximo de Pontos de Vida. (autor e livro, 2026-08-30)",
+    onde: "afty-derive.js, blocos HP, PE e Alma; ficha/ficha-sessao.js, os verbos da Alma",
+    fonte: "PV e PE saem da Especialização. O valor de Integridade da Alma de um personagem é igual ao seu máximo de Pontos de Vida. Vida Máxima de Jogador é igual a Alma Atual, e Dano na Alma também é Dano na Vida. (autor e livro, 2026-08-30 e 2026-09-18)",
     afty: "base e por nível vêm do Tipo, com multiplicador de Patamar, e a Alma é porcentagem sobre 100",
-    player: "base da classe inicial mais o valor por nível de cada classe, e a Alma é uma pilha do tamanho do PV",
+    player: "base da classe inicial mais o valor por nível de cada classe, a Alma é uma pilha do tamanho do PV, e o PV máximo segue a Alma corrente",
     ativa: true,
   },
   {

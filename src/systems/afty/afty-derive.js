@@ -88,7 +88,7 @@ import {
   resolveEquipamentos, resolveCarga, grauFeiticeiro, alcanceDaArma, propriedadesDaArma,
   armaTreinadaPor,
   podeSerArmaDedicada, grauDoRank, efeitosEspeciaisDeArma, catalogoDoTipo,
-  TIPOS_DANO, CATEGORIAS_DANO, tiposDeDanoDaCategoria, itensEquipados,
+  TIPOS_DANO, CATEGORIAS_DANO, tiposDeDanoDaCategoria, itensEquipados, ehFaixas,
   SINTONIZADA_ID, ESTADO_SINTONIZADA, aplicarSintonizadaNoDano,
 } from "./afty-equipamentos";
 import { atributoDoApice, ESTADO_APICE_DEF } from "./afty-talisma-apice";
@@ -1486,10 +1486,13 @@ export function deriveAfty(creature, opcoes = {}) {
     desarmado: armasParaDano.length === 0,
     /* Faixas continuam no grupo Pugilato do catálogo, mas o Adepto de Briga
        funciona com elas. Outro item do grupo equipado desliga o talento,
-       mesmo quando também há Faixas equipadas. */
+       mesmo quando também há Faixas equipadas.
+       ⚠ "Faixas" aqui não é mais o id do livro: a arma CRIADA com Dano
+       Desarmado e "Faixas" no nome também é Faixas, e quem responde isso é o
+       `ehFaixas` (afty-equipamentos.js), lido também pelo `itensEquipados`. */
     armaPugilato: !!pugilato,
     outroPugilato: armasCarregadas.some(
-      (e) => e.def?.grupo === "pugilato" && e.def?.id !== "arm_faixas"),
+      (e) => e.def?.grupo === "pugilato" && !ehFaixas(e.def)),
     armaMarcial: armasParaDano.some((a) => (
       (a.propriedades ?? []).some((p) => p.id === "marcial")
       || (dedicadas.escolhidas ?? []).includes(a.id)
@@ -2046,17 +2049,39 @@ export function deriveAfty(creature, opcoes = {}) {
      sobe a outra, e uma Melhoria de +10 vale +10 nas duas. Na criatura o mesmo
      canal continua sendo porcentagem, dentro do `almaMult`. */
   /* O canal `hpMult` (primitiva `pvEPassivas`) multiplica o PV FINAL, depois da
-     Alma e do Patamar. Piso de 1: sem fonte nenhuma o PV não muda. */
+     Alma e do Patamar e ANTES do Dano na Alma, que é descontado do total já
+     multiplicado. Piso de 1: sem fonte nenhuma o PV não muda. */
   const hpMult = Math.max(1, canal("hpMult") || 1);
-  const hp = Math.round(
+  const hpCheio = Math.round(
     almaMult
     * (hpBase + nd * modHp + canal("hp") + equip.hpMaxBonus + (almaPilha ? bonusAlma : 0))
     * hpPatamarMult
     * hpMult);
   /* E aqui a Alma do jogador fecha, DEPOIS do PV e igual a ele. É a ordem que me
      fez adiar esta parte: calcular a Alma antes do PV seria calcular o PV duas
-     vezes ou mentir numa das duas. */
-  const almaMaxFinal = almaPilha ? hp : almaMax;
+     vezes ou mentir numa das duas.
+
+     ⚠ O máximo sai do `hpCheio`, e NÃO do `hp` logo abaixo. O máximo da Alma é o
+     PV de alma ÍNTEGRA, e o `hp` já desconta o Dano na Alma: amarrar um no outro
+     faria a Alma perseguir o próprio dano, mostrando 400 de 400 onde o certo é
+     400 de 500, e o dano seria irrecuperável porque o teto desceria junto. */
+  const almaMaxFinal = almaPilha ? hpCheio : almaMax;
+  /* ⚠ NO JOGADOR O PV MÁXIMO É A ALMA CORRENTE (autor, 2026-09-18): *"Vida Máxima
+     de Jogador é igual a Alma Atual. E Dano na Alma também é Dano na Vida."* Com
+     500 de PV e 100 de Dano na Alma, a ficha fica com 400 de 500 de Alma e 400 de
+     400 de Vida. A outra metade da regra (o PV CORRENTE cai o mesmo tanto) é da
+     sessão, e não daqui: ver `aplicaDanoNaAlma` em `ficha/ficha-sessao.js`.
+
+     Na criatura o desconto não se repete, e não é isenção: lá a Alma é
+     PORCENTAGEM e já multiplicou o PV no `almaMult` acima. Descontar de novo aqui
+     cobraria a mesma perda duas vezes.
+
+     Sem `opcoes.almaAtual` nada muda, que é a mesma promessa do `almaMult`: o
+     criador monta a ficha com a alma íntegra e nunca vê este ramo. */
+  const hp = almaPilha && opcoes.almaAtual != null
+    ? Math.min(almaAtualDsl, hpCheio)
+    : hpCheio;
+  const danoNaAlma = hpCheio - hp;
   // O máximo do Player só é conhecido depois do PV. Os estados da Alma usam
   // a fração atual desse máximo, inclusive quando o máximo da criatura passa de 100.
   const efeitosAlma = efeitosDaAlmaAtual(
@@ -2270,8 +2295,16 @@ export function deriveAfty(creature, opcoes = {}) {
      em que o Feitiço daquela ficha gasta: o orçamento próprio no jogador, o
      contador comum na criatura. Cada item vira uma parcela negativa com o nome
      dele, que é o aviso no hover. */
+  /* ⚠ "Segunda Única", E NÃO O NOME INTEIRO (2026-09-18). Este rótulo só
+     alimenta o hover, e uma ficha com muitos Acessórios Únicos repete o sufixo
+     em toda linha: com o nome inteiro, "Anel da Atração em Combate (Segunda
+     Habilidade Única)" estourava o teto do painel e empurrava o "−1" para fora
+     da borda. O painel agora quebra a linha em vez de vazar (ver `fontes.jsx`),
+     e encurtar aqui é o que faz a quebra quase nunca precisar acontecer.
+     Mesma abreviação que o card Efeitos Equipados já usa (`NOTA_CURTA`, no
+     AftyCreatureBuilder), então os dois lugares falam igual. */
   const partesSegundaUnica = (equip.segundasUnicasPreenchidas ?? [])
-    .map((s) => ({ label: `${s.nome} (Segunda Habilidade Única)`, valor: -1 }));
+    .map((s) => ({ label: `${s.nome} (Segunda Única)`, valor: -1 }));
   const slotsDaSegundaUnica = partesSegundaUnica.length;
   const progressaoFeitico = feiticoTemCaixaProprio
     ? totalFeiticosJogador(nd, {
@@ -3058,6 +3091,14 @@ export function deriveAfty(creature, opcoes = {}) {
       ...detalhesDoCanal(ef, "hpAtributo", attrHp)
         .map((d) => ({ label: d.nome, texto: "substitui" })),
       ...doMotor("hp"),
+      /* ⚠ O CANAL `almaMax` SOMA NO PV DO JOGADOR, e até 2026-09-18 ele somava
+         CALADO: a Consciência Absoluta da Alma levava o PV de 162 para 187 e o
+         hover continuava listando 162, com as parcelas sem fechar com o total.
+         Quem ganhou Alma precisa ver de onde ela veio, pelo nome da fonte.
+
+         Só no jogador. Na criatura o mesmo canal é porcentagem, entra pelo
+         `almaMult` e já tem a linha "Integridade da Alma ×N" logo abaixo. */
+      ...(almaPilha ? doMotor("almaMax") : []),
       ...(equip.hpMaxBonus ? [{ label: "Equipamento", valor: equip.hpMaxBonus }] : []),
       ...(almaMult !== 1 ? [{ label: "Integridade da Alma", texto: `×${divTexto(almaMult)}` }] : []),
       ...(hpPatamarMult !== 1 ? [{ label: `Patamar (${PATAMAR_LABEL[patamar] ?? patamar})`, texto: `×${hpPatamarMult}` }] : []),
@@ -3066,6 +3107,10 @@ export function deriveAfty(creature, opcoes = {}) {
         valor: undefined,
         texto: `× ${fonte.valor}`,
       })),
+      /* A perda que a Alma ferida impõe ao teto, por último e NEGATIVA, porque é
+         descontada do total já arredondado. Sem esta linha o jogador vê o PV
+         máximo menor e não tem onde ler o motivo. */
+      ...(danoNaAlma ? [{ label: "Dano na Alma", valor: -danoNaAlma }] : []),
     ],
     pe: [
       ...(pvPorClasse
@@ -3399,6 +3444,11 @@ export function deriveAfty(creature, opcoes = {}) {
     isOverridden,
     maestria: bt,
     ataquesExtras,
+    /* O sistema desta FICHA, já resolvido pelo `sistemaDaFicha`. Sai daqui porque
+       quem só tem o derivado em mão (a sessão, por exemplo) não tem como
+       perguntar, e a lei do projeto é que o sistema venha da ficha e nunca da
+       rota. Ver o cabeçalho de `afty-sistema.js`. */
+    sistema,
     almaMult,
     /* ⚠ O que sai é o `almaMaxFinal`: na criatura é `100 + Melhoria de Alma`, e
        no jogador é o PV, porque a Integridade da Alma dele é igual ao máximo de

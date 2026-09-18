@@ -13896,3 +13896,217 @@ quem vê os canais no seletor:
 O Addon `vida-dobrada-passivas-gratis` liga as duas por um Funcionamento do pacote, sempre ativo.
 Na criatura o Addon só dobra o PV: a Passiva já era de graça ali. Asserts em `t-vida-passivas.mjs`
 (20). A suíte passa, com a única falha já registrada em `docs/a-fazer.md`, e o build também.
+
+## SESSÃO DE 2026-09-18: A FAIXA CRIADA NA BANCADA É FAIXAS
+
+A arma de Dano Desarmado do Addon Criação de Equipamentos já entrava no grupo
+Pugilato e já virava o Ataque Básico, como as Faixas do livro. O que faltava era
+o resto do sistema reconhecê-la: as duas regras que perguntam "isto é Faixas?"
+comparavam o id `arm_faixas`, e uma Faixa feita na bancada tem id próprio. O
+efeito prático era o oposto do esperado. Ela DESLIGAVA o Adepto de Briga,
+exatamente como uma Manopla, e não servia para o Addon Faixas de Sif, que concede
+as Aptidões de Armas Naturais enquanto as Faixas estiverem equipadas.
+
+O autor escolheu a identidade completa, e não só o Talento (pergunta 55 de
+`docs/afty-criacao-equipamentos-decisoes.md`). A regra agora mora numa função só,
+`ehFaixas` em `afty-equipamentos.js`, e cobra as duas condições juntas: Dano
+Desarmado E "Faixas" no nome, sem caixa e em qualquer posição. Uma espada chamada
+"Faixas de Sif" continua sendo uma espada, e uma arma de pugilato com dado
+próprio continua bloqueando o Talento, porque nenhuma das duas é o Ataque Básico
+de ninguém.
+
+Os dois pontos de leitura são o `outroPugilato` do `deriveAfty`, que é a condição
+do Talento, e o `itensEquipados`, que passou a devolver a Faixa criada DUAS vezes,
+com o id dela e com `arm_faixas`. O segundo par é o que faz o `enquantoEquipado`
+de um pacote casar, já que ele compara refId exato. O nome das duas linhas é o do
+item de verdade, e não o do catálogo, porque é ele que a ficha mostra como fonte
+da concessão.
+
+⚠ O NOME É A CHAVE, e renomear o item tira a regra dele sem avisar. É o preço
+aceito para não abrir campo novo na bancada, e está escrito no cabeçalho da
+função. Uma marca explícita ("conta como Faixas") seria mais firme, e é a troca a
+fazer no dia em que um renome surpreender alguém.
+
+Medido antes e depois com sonda fora da tela, nos dois lados. Asserts novos em
+`t-talentos.mjs` (27) e `t-aptidao-por-addon.mjs` (42), cobrindo os quatro lados
+da regra e a fonte do rótulo. `t-ordem-modulos.mjs` passou, o eslint do Afty saiu
+limpo e a suíte completa ficou na linha de base: 99 arquivos, com o
+`t-invocacoes-motor.mjs` falhando antes e depois, pelo mesmo motivo.
+
+## SESSÃO DE 2026-09-18: A FATAL NÃO FAZIA NADA NO EMPATE
+
+O autor notou que a Fatal da arma dele não aparecia no painel de dano. A causa é
+uma lacuna entre os dois ramos da regra, e não um efeito perdido no caminho.
+
+O livro diz que, no crítico, o dado da arma AUMENTA para o tamanho listado, e que
+*"caso o dado da arma se torne maior que o dado listado por aumento de níveis de
+dano"*, ele adiciona 1 dado do tamanho listado em vez disso. O código era fiel:
+`fatal > base` subia o dado, `base > fatal` somava o dado. O EMPATE não caía em
+nenhum dos dois. Subir o dado para um tamanho que ele já tem é um nada, e a arma
+não era "maior", então a Fatal do tamanho do dado da arma não fazia coisa alguma.
+
+⚠ E doía calado justo em quem pagou mais. O dado empaca no d12, que é o topo da
+escada, e a bancada da Criação de Equipamentos cobra 3 Níveis pela Fatal d12: a
+opção mais cara era a única que podia não valer nada. No caso do autor o dado do
+Ataque Básico já estava em d12 por Níveis de Dano, e a Fatal d12 saía do painel
+sem deixar rastro, enquanto a Mortal ao lado aparecia (ela nunca comparou nada).
+
+Decisão do autor, no mesmo dia: *"se o Dano for maior ou igual ao Dano do Fatal.
+Você recebe 1 Dado Extra igual em Mortal ou Crítico Potente. Logo 1d12 c/ Fatal
+1d8 sendo critico. Viraria 2d12 + 2d8. 1d12 c/ Fatal 1d12 sendo critico. Viraria
+4d12."* O empate passa a ganhar o dado extra, e o ramo de subir o dado fica só
+para o dado MENOR que o listado.
+
+Uma linha de regra em `aplicaCriticoDaArma` (`afty-pericias.js`), agora escrita
+como dois ramos explícitos em vez de duas comparações que deixavam um vão no
+meio. O dado extra é critável e dobra no crítico, igual ao da Mortal, que é o que
+transforma o segundo exemplo em 4d12.
+
+⚠ Um assert TRAVAVA o comportamento antigo (`t-pugilato.mjs`: *"Fatal nao soma
+dado quando igual ao dado da arma"*). Ele prendia um buraco achando que prendia
+uma regra, e foi invertido com a nota do porquê. As duas contas do autor viraram
+assert na fórmula crítica, em `t-dano-critico.mjs`, porque é a fórmula que soma as
+faces iguais e faz o 4d12 aparecer.
+
+Medido antes e depois com sonda fora da tela, na arma do livro (Katana) e no
+Ataque Básico com Faixas criadas. Eslint limpo, e a suíte na linha de base: 99
+arquivos, com o `t-invocacoes-motor.mjs` falhando antes e depois pelo mesmo motivo.
+
+## SESSÃO DE 2026-09-18: O NÚMERO SAÍA PARA FORA DO HOVER
+
+O autor mostrou o painel de fontes dos Feitiços com treze Acessórios Únicos, cada
+linha dizendo "Anel da Atração em Combate (Segunda Habilidade Única)", e o "−1"
+de algumas linhas simplesmente não estava lá.
+
+A linha da parcela era `flex ... whitespace-nowrap`, e item de flex não encolhe
+abaixo do próprio conteúdo. Com o rótulo maior que o teto do painel
+(`max-w-[min(16rem,calc(100vw-2rem))]`), quem era empurrado para fora era o
+NÚMERO. E como o `.afty-fontes` não tem `overflow`, ele não era cortado com
+honestidade: era pintado no vazio, fora da borda arredondada.
+
+Medido no criador de verdade, trocando só o texto do rótulo de um painel real:
+
+| Rótulo | 1440px | 390px |
+|---|---|---|
+| `Anel da Vitalidade (Segunda Habilidade Única)` | dentro | vazava 9px |
+| `Anel da Atração em Combate (Segunda Habilidade Única)` | vazava 31px | vazava 60px |
+
+⚠ O TELEFONE SOFRIA MAIS, e por isso o problema durou: no desktop o teto é 16rem,
+mas no telefone é `100vw-2rem`, então lá o mesmo rótulo vazava o dobro.
+
+O autor escolheu as duas metades juntas:
+
+1. **A parcela pode quebrar linha** (`fontes.jsx`). O `whitespace-nowrap` saiu da
+   linha e foi para o VALOR, e o rótulo ganhou `min-w-0`, que é o que devolve a
+   ele o direito de encolher. Sem o `min-w-0` tirar o `nowrap` não muda nada. É a
+   rede de segurança: nenhum rótulo, por mais longo, empurra o número para fora
+   outra vez, em nenhuma largura. A seção e o Total seguem sem quebrar, porque os
+   rótulos deles são do sistema e nunca crescem.
+2. **O sufixo repetido encurtou** para "(Segunda Única)" (`afty-derive.js`), que é
+   a mesma abreviação que o card Efeitos Equipados já usava (`NOTA_CURTA`). Com
+   ela o rótulo cabe em UMA linha nas duas larguras, então a quebra quase nunca
+   precisa acontecer, e o painel fica mais estreito em vez de mais alto.
+
+Sozinha, a segunda só moveria a trave: o próximo nome comprido voltaria a vazar,
+e calado. Sozinha, a primeira custaria altura num painel que já ocupa metade da
+tela. Juntas, o painel do print fica em 257px de largura sem ganhar altura.
+
+Três asserts de `t-bencao-forja.mjs` prendiam o rótulo antigo e foram atualizados.
+⚠ O nome do EFEITO continua "Segunda Habilidade Única" inteiro, e o assert das
+duas linhas continua cobrando isso: são textos diferentes, escritos por lados
+diferentes, e só o do hover encurtou.
+
+Eslint limpo, suíte na linha de base: 99 arquivos, com o `t-invocacoes-motor.mjs`
+falhando antes e depois pelo mesmo motivo.
+
+---
+
+## SESSÃO DE 2026-09-18: A ALMA DO JOGADOR, E OS TRÊS BUGS DELA
+
+Pedido do autor, sobre a Ficha de Player: *"Efeitos que aumentam alma NÃO ESTÃO
+FUNCIONANDO. E quando você da Dano na Alma, a Vida Máxima não reduz junto como
+era proposto."* Com dois exemplos, que viraram assert literal:
+
+> *"caso eu tenha 500 de HP e Alma. e tome 100 de Dano na Alma. É para eu ficar
+> com 400 de 500 de Alma e 400 de 400 de Vida Máxima."*
+>
+> *"estou com 250 de 500 de HP Máximo. Tomo 100 de Dano na Alma, eu fico com 150
+> de 400 de HP máximo."*
+
+Eram **três** bugs, e só o segundo estava no pedido.
+
+### 1. O máximo subia e a corrente ficava para trás
+
+O canal `almaMax` sempre funcionou no cálculo: a Consciência Absoluta da Alma
+levava o PV de 162 para 187. O que não acontecia era a atualização da Alma
+CORRENTE, gravada na sessão e aparada só para BAIXO. A ficha que já tinha jogado
+reabria em **162 de 187**, e o efeito parecia morto.
+
+A frase que faltava já estava citada dentro do `afty-derive.js`, vinda do livro:
+*"Sempre que seu máximo de Pontos de Vida aumentar, sua Integridade deve ser
+atualizada."* Quem guarda isso agora é o campo de sessão **`almaMaxVisto`**, e o
+`aparaSessao` SOMA a subida em vez de encher: alma em 400 de 500 que ganha +25
+vira 425 de 525, e não 525 de 525 (autor, 2026-09-18). Alma ferida continua
+ferida do mesmo tanto.
+
+### 2. O Dano na Alma não encostava na Vida
+
+No jogador o `almaMult` vale 1, então `opcoes.almaAtual` não entrava na conta do
+PV: `almaAtual` em 162, 62 ou negativo devolvia `hp=162` sempre. E as duas barras
+de Alma (a da Ficha e a do Painel de Combatente) escreviam `almaAtual` na mão, sem
+tocar no PV corrente.
+
+A regra tem duas metades, e elas moram em lugares diferentes de propósito:
+
+| Metade | Onde |
+|---|---|
+| o TETO, `hp = min(almaAtual, hpCheio)` | `afty-derive.js` |
+| o CORRENTE, que desce o mesmo tanto | `ficha-sessao.js`, `aplicaDanoNaAlma` |
+
+⚠ As duas são necessárias, e o SEGUNDO exemplo do autor é a prova: só aparar no
+novo máximo deixaria 250 de 400, porque 250 já cabe em 400. Ele pediu 150 de 400.
+
+⚠ O `almaMaxFinal` passou a sair do `hpCheio`, e não do `hp`. Amarrá-lo no `hp`
+já descontado faria a Alma perseguir o próprio dano, mostrando 400 de 400 onde o
+certo é 400 de 500, e o dano viraria irrecuperável porque o teto desceria junto.
+
+### 3. O +25 era invisível no hover
+
+O canal `almaMax` somava no PV do jogador sem virar parcela: o hover listava 162
+contra um total de 187. Número certo com detalhamento errado é bug, e é a mesma
+regra do `defesaAtributo`. Agora sai `Consciência Absoluta da Alma 25`, e a Alma
+ferida sai como `Dano na Alma -100`, negativa, para as parcelas fecharem com o
+total nos dois sentidos.
+
+### As decisões do autor
+
+1. **Cura na Alma devolve só o TETO.** 150 de 400 que recupera 100 de Alma fica em
+   150 de 500. Por isso `curaAlma` não é o dano com o sinal trocado.
+2. **A casca de PV não protege a alma.** O `pvTempFontes` sai intacto e a Guarda
+   não se quebra, ao contrário do `aplicaDano`.
+3. **Sessões de jogador já gravadas abrem com a Alma CHEIA**, uma vez só. O número
+   gravado não distingue alma ferida de alma que ficou para trás, e preservá-lo
+   deixaria toda ficha existente com menos Vida máxima do que tem direito. A
+   criatura NÃO é tocada: lá a Alma sempre multiplicou o PV, então o número dela é
+   ferida de verdade.
+
+### A criatura não mudou, e isso é metade do trabalho
+
+A barra de Alma é a MESMA nas duas telas e nos dois sistemas, então os três verbos
+novos (`aplicaDanoNaAlma`, `curaAlma`, `defineAlma`) recebem o `derived` e não o
+máximo solto: na criatura a Alma é porcentagem e já multiplicou o PV, e descontar
+o corrente aqui cobraria a mesma perda duas vezes. É o assert mais importante do
+arquivo novo.
+
+O `deriveAfty` passou a publicar **`sistema`**, porque a sessão precisa dele e só
+tem o derivado em mão. O `t-sistema.mjs` pegou a mudança na hora, que é para o que
+ele existe, e a entrada nova em `DIFERENCAS_ESPERADAS` explica por que este campo
+difere por definição.
+
+`asserts/t-alma-jogador.mjs`: **46 asserts**, com os dois exemplos do autor
+literais, a criatura como controle e a migração das sessões velhas. Conferido
+também no navegador, com a ficha de 500 de PV: os dois exemplos batem na tela, e a
+cura devolve o teto sem devolver a Vida corrente.
+
+Eslint limpo, suíte na linha de base: 100 arquivos, com o `t-invocacoes-motor.mjs`
+falhando antes e depois pelo mesmo motivo de sempre.

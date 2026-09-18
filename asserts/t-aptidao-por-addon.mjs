@@ -186,6 +186,42 @@ t("a Aptidão do pacote ganha o namespace e a do livro fica crua",
 t("e o validador aceita a própria", A.validarPacote(comPropria).some((p) => p.includes("inexistente")), false);
 
 /* ============================================================ */
+/* 6. AS FAIXAS CRIADAS SERVEM (autor, 2026-09-18)               */
+/* ============================================================ */
+/* O `enquantoEquipado` casa por refId EXATO, e a arma criada tem id próprio.
+   Quem faz a ponte é o `itensEquipados`, que devolve a arma criada com o id
+   dela E com `arm_faixas` quando o `ehFaixas` reconhece as duas condições.
+
+   ⚠ O NOME DA LINHA-ALIAS É O DO ITEM DE VERDADE, e isso é medido aqui embaixo
+   porque é o que aparece na ficha como fonte da concessão: se o alias levasse o
+   nome "Faixas" do catálogo, o rótulo mentiria sobre qual item está concedendo. */
+const faixaCriada = (nome, o = {}) => ({
+  id: "armc_sif", nome, classe: "simples", categoria: "corpo",
+  dano: { dado: "1d6", tipo: "ct" }, critico: 20, custo: 1, grupo: o.grupo ?? "espada",
+  props: {}, ...(o.desarmado === false ? {} : { niveis: { desarmado: true, especiais: [] } }),
+});
+const fichaCriada = (nome, o) => {
+  const f = ficha("player");
+  f.armasCustom = [faixaCriada(nome, o)];
+  f.equipamentos = { itens: [{ uid: "c1", tipo: "arma", refId: "armc_sif", qtd: 1, equipado: true }] };
+  return f;
+};
+t("a arma criada Desarmada chamada Faixas concede as duas",
+  aptidoes(fichaCriada("Faixas de Sif")), AMBAS);
+t("e a fonte mostra o nome do item criado, não o do catálogo",
+  A.aptidoesConcedidasPorAddon(fichaCriada("Faixas de Sif"),
+    { equipados: EQ.itensEquipados(fichaCriada("Faixas de Sif")) }).map((c) => c.fonte),
+  ["Faixas de Sif", "Faixas de Sif"]);
+t("outra arma criada Desarmada não concede nada",
+  aptidoes(fichaCriada("Manoplas de Aço")), []);
+t("e o nome sozinho não basta: pugilato com dado próprio não concede",
+  aptidoes(fichaCriada("Faixas de Sif", { desarmado: false, grupo: "pugilato" })), []);
+/* Desequipar continua desligando, como no item do livro. */
+const criadaGuardada = fichaCriada("Faixas de Sif");
+criadaGuardada.equipamentos.itens[0].equipado = false;
+t("desequipada, a criada não concede nada", aptidoes(criadaGuardada), []);
+
+/* ============================================================ */
 if (bad.length) {
   console.log(`FALHAS (${bad.length}):`);
   for (const b of bad) console.log("  " + b);

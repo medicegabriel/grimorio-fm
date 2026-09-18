@@ -276,6 +276,13 @@ const DIFERENCAS_ESPERADAS = {
   calc: "consequência dos de cima",
   // `partes` é o hover de fontes, e ele diverge nas mesmas linhas.
   partes: "consequência dos de cima",
+  /* ⚠ ESTE É O ÚNICO QUE DIVERGE POR SER A PRÓPRIA RESPOSTA, e não por regra
+     nenhuma: o derivado passou a publicar o sistema da ficha em 2026-09-18,
+     porque a sessão precisa dele e só tem o derivado em mão (o Dano na Alma vale
+     no jogador e não na criatura). Ele vale "afty" de um lado e "player" do
+     outro, então diferir aqui é o certo, e o dia em que ele PARAR de diferir é
+     que seria bug. */
+  sistema: "é o nome do sistema, então difere por definição",
 };
 
 const diferem = Object.keys(dAfty)

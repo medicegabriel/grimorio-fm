@@ -305,6 +305,47 @@ const comTP = ["lut_manobra_trabalho_de_pes"];
 t("Trabalho de Pés segue na média, porque Defesa não rola",
   lutador({ empolgacao: 3, manobraTrabalhoDePes: true }, comTP).defesa - lutador({ empolgacao: 3 }, comTP).defesa, 3);
 
+/* ============================================================ */
+/* A FATAL NO EMPATE (autor, 2026-09-18)                         */
+/* ============================================================ */
+/* *"se o Dano for maior ou igual ao Dano do Fatal. Você recebe 1 Dado Extra igual
+   em Mortal ou Crítico Potente. Logo 1d12 c/ Fatal 1d8 sendo critico. Viraria
+   2d12 + 2d8. 1d12 c/ Fatal 1d12 sendo critico. Viraria 4d12."*
+
+   ⚠ O EMPATE FICAVA FORA DOS DOIS RAMOS ate esta data. O livro so fala em "maior
+   que o dado listado", e subir o dado para o tamanho que ele ja tem nao da nada,
+   entao a Fatal do tamanho do dado da arma nao fazia coisa alguma. Doia calado
+   justo em quem pagou mais: o dado empaca no d12 (topo da escada) e a bancada
+   cobra 3 Niveis pela Fatal d12.
+
+   As duas contas do autor sao medidas na FORMULA, e nao no grupo, porque e a
+   formula que soma as faces iguais: o 4d12 do segundo exemplo so aparece depois
+   de o dado extra dobrar e se juntar ao dado da arma dobrado. */
+const armaFatal = (fatalDado) => {
+  const c = createBlankAfty();
+  c.rulesVersion = "player";
+  c.core = { ...c.core, nd: 1, tipo: "combatente", patamar: "comum" };
+  c.especializacoes = [{ id: "combatente", nivel: 1 }];
+  c.attrMethod = "fixos";
+  c.attributes = { forca: 10, destreza: 10, constituicao: 10, inteligencia: 10, sabedoria: 10, presenca: 10 };
+  c.armasCustom = [{
+    id: "armc_fatal", nome: "Arma de Teste", classe: "simples", categoria: "corpo",
+    dano: { dado: "1d12", tipo: "ct" }, critico: 20, custo: 1, grupo: "espada",
+    props: { fatal: fatalDado },
+  }];
+  c.equipamentos = { itens: [{ uid: "f1", tipo: "arma", refId: "armc_fatal", qtd: 1, equipado: true }] };
+  return deriveAfty(c).dano.entradas.find((e) => e.id === "armc_fatal");
+};
+t("1d12 com Fatal 1d8 crita em 2d12 + 2d8", armaFatal("1d8").formulaCritico, "2d12 + 2d8");
+t("1d12 com Fatal 1d12 crita em 4d12", armaFatal("1d12").formulaCritico, "4d12");
+t("e nenhuma das duas mexe na rolagem normal",
+  [armaFatal("1d8").formulaNormal, armaFatal("1d12").formulaNormal], ["1d12", "1d12"]);
+/* O ramo antigo continua: dado MENOR que a Fatal sobe, e não ganha dado extra. */
+const sobe = armaFatal("1d12");
+t("o dado extra do empate e critavel, como a Mortal",
+  (sobe.gruposDano ?? []).filter((g) => g.nome === "Fatal")
+    .map((g) => [g.dados, g.faces, g.apenasCritico, g.multiplica]), [[1, 12, true, true]]);
+
 /* ⚠ Toda face da tabela de Empolgação precisa de linha no catálogo de efeitos:
    uma face nova sem linha não somaria nada, calado. */
 const { EMPOLGACAO_DADOS } = await import(R + "afty-habilidades.js");

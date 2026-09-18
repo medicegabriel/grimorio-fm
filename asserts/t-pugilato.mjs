@@ -248,10 +248,19 @@ try {
   katanaDef.props.fatal = "1d12";
   t("Fatal aceita tamanho 1dN da criacao de armas",
     katana(doJogador([it("arm_katana")])).gruposDano[0].facesCritico, 12);
-  katanaDef.props.fatal = `1d${fatal.gruposDano[0].faces}`;
+  /* ⚠ ESTE ASSERT DIZIA O CONTRARIO ate 2026-09-18, e travava um buraco em vez
+     de uma regra. O livro so fala em "maior que o dado listado", e o EMPATE
+     ficava fora dos dois ramos: subir o dado para o tamanho que ele ja tem nao
+     da nada, e a arma nao era maior, entao a Fatal virava pagamento por nada.
+     O autor fechou: maior OU IGUAL ganha 1 dado extra do tamanho listado. */
+  const facesBase = fatal.gruposDano[0].faces;
+  katanaDef.props.fatal = `1d${facesBase}`;
   const igual = katana(doJogador([it("arm_katana")]));
-  t("Fatal nao soma dado quando igual ao dado da arma",
-    igual.gruposDano.some((g) => g.nome === "Fatal"), false);
+  t("Fatal soma dado quando igual ao dado da arma",
+    igual.gruposDano.filter((g) => g.nome === "Fatal")
+      .map((g) => [g.dados, g.faces, g.apenasCritico]), [[1, facesBase, true]]);
+  t("e o dado igual nao sobe o dado principal, porque nao ha para onde subir",
+    igual.gruposDano[0].facesCritico ?? null, null);
   katanaDef.props.fatal = "1d4";
   const menor = katana(doJogador([it("arm_katana")]));
   t("Fatal acrescenta dado listado quando arma passa do tamanho",

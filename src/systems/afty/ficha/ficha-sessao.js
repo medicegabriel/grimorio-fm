@@ -77,6 +77,19 @@ export function sessaoEmBranco(derived = null) {
        que foi gasto. Desenho copiado do `applyRoundStartResources` da 2.5.2. */
     peTempFontes: {},
     almaAtual: derived?.almaMax ?? 100,
+    /* O MÁXIMO DE ALMA QUE ESTA SESSÃO JÁ VIU (2026-09-18). Existe por uma frase
+       do livro que nunca tinha sido implementada: *"Sempre que seu máximo de
+       Pontos de Vida aumentar, sua Integridade deve ser atualizada."*
+
+       Sem ele, comprar a Consciência Absoluta da Alma subia o MÁXIMO de 162 para
+       187 e deixava a corrente em 162, calada: a barra abria em 162 de 187 e o
+       efeito parecia não ter funcionado. No jogador isso ficou pior ainda depois
+       que o PV máximo passou a seguir a Alma corrente, porque os +25 de Alma
+       deixavam de virar +25 de Vida.
+
+       O que o `aparaSessao` faz com ele é somar a SUBIDA na corrente, e não
+       encher: alma ferida continua ferida do mesmo tanto (autor, 2026-09-18). */
+    almaMaxVisto: derived?.almaMax ?? 100,
     rodada: 0,
     /* GUARDA INABALÁVEL: quantos golpes já desgastaram o bônus nesta rodada, e
        se ela foi encerrada antes da hora (Raio Negro ou uma das oito condições).
@@ -129,6 +142,36 @@ export function sessaoEmBranco(derived = null) {
 }
 
 /**
+ * A Alma corrente e o máximo já visto, na leitura do armazenamento.
+ *
+ * ⚠ MIGRAÇÃO ÚNICA (autor, 2026-09-18). Sessão gravada antes desta data não tem
+ * `almaMaxVisto`, e a de JOGADOR abre com a Alma CHEIA. O motivo é que até aqui o
+ * máximo da Alma subia sem levar a corrente junto, e o número gravado não
+ * distingue uma alma ferida de uma alma que só ficou para trás. Com o PV máximo
+ * passando a seguir a Alma corrente, preservar o número travado deixaria toda
+ * ficha existente com menos Vida máxima do que ela tem direito, que é o oposto do
+ * conserto. Entre isso e curar alguma ferida real, o autor escolheu encher.
+ *
+ * ⚠ A CRIATURA NÃO É TOCADA. Lá a Alma sempre foi porcentagem e sempre multiplicou
+ * o PV, então o número gravado é ferida de verdade e encher seria apagá-la.
+ */
+function almaLida(bruta, base, derived) {
+  const almaMax = Math.max(0, derived?.almaMax ?? 100);
+  const gravada = Math.max(0, inteiro(bruta.almaAtual, base.almaAtual));
+  // Sessão nova em folha já nasce com o campo, então a ausência dele é sempre
+  // sessão velha. O `almaMaxVisto` é gravado para os dois sistemas: quando a
+  // regra da criatura for decidida, o número já estará lá e será verdadeiro.
+  if (bruta.almaMaxVisto == null) {
+    const jogador = derived?.sistema === "player";
+    return { almaAtual: jogador ? almaMax : gravada, almaMaxVisto: almaMax };
+  }
+  return {
+    almaAtual: gravada,
+    almaMaxVisto: Math.max(0, inteiro(bruta.almaMaxVisto, almaMax)),
+  };
+}
+
+/**
  * Sanea o que veio do armazenamento. Chave ausente, JSON corrompido e
  * `localStorage` indisponível (modo privado, cota estourada) viram sessão nova,
  * em silêncio: nada disso pode derrubar a Ficha.
@@ -149,7 +192,7 @@ export function normalizaSessao(bruta, derived = null) {
     // Sessão gravada antes de 2026-09-09 não tem o campo, e zero é o certo.
     exaustao: Math.max(0, Math.trunc(Number(bruta.exaustao) || 0)),
     peTempFontes: normalizaPeTemp(bruta.peTempFontes),
-    almaAtual: Math.max(0, inteiro(bruta.almaAtual, base.almaAtual)),
+    ...almaLida(bruta, base, derived),
     rodada: Math.max(0, inteiro(bruta.rodada, 0)),
     guardaGolpes: Math.max(0, inteiro(bruta.guardaGolpes, 0)),
     guardaEncerrada: !!bruta.guardaEncerrada,
@@ -558,18 +601,28 @@ export function aparaSessao(sessao, derived) {
   const hpMax = Math.max(0, derived?.hp ?? 0);
   const peMax = Math.max(0, derived?.pe ?? 0);
   const almaMax = Math.max(0, derived?.almaMax ?? 100);
+  /* ⚠ O MÁXIMO QUE SOBE LEVA A CORRENTE JUNTO, pela frase do livro citada no
+     `almaMaxVisto` do `sessaoEmBranco`. A subida é SOMADA, e não usada para
+     encher: alma ferida continua ferida do mesmo tanto (autor, 2026-09-18). Uma
+     Alma em 400 de 500 que ganha +25 vira 425 de 525, e não 525 de 525.
+
+     ⚠ SÓ NO JOGADOR. A Alma da criatura é outra regra e ainda não foi revisada
+     pelo autor, então ela segue exatamente como estava. O campo é gravado nos
+     dois sistemas, para o dia dessa decisão chegar com o número certo em mão. */
+  const visto = Math.max(0, inteiro(sessao.almaMaxVisto, almaMax));
+  const ganho = derived?.sistema === "player" ? Math.max(0, almaMax - visto) : 0;
   const hpAtual = entre(sessao.hpAtual, 0, hpMax);
   const peAtual = entre(sessao.peAtual, 0, peMax);
-  const almaAtual = entre(sessao.almaAtual, 0, almaMax);
+  const almaAtual = entre(sessao.almaAtual + ganho, 0, almaMax);
   /* As invocações apararam pelo mesmo caminho. Sem isto, tirar uma Característica
      de Vida do shikigami deixava o PV corrente ACIMA do máximo e a barra passava
      de 100%. É o mesmo motivo de o dono ser aparado aqui. */
   const invocacoes = aparaInvocacoes(sessao.invocacoes, derived?.invocacoes?.lista);
   if (hpAtual === sessao.hpAtual && peAtual === sessao.peAtual && almaAtual === sessao.almaAtual
-    && invocacoes === sessao.invocacoes) {
+    && visto === almaMax && invocacoes === sessao.invocacoes) {
     return sessao;
   }
-  return { ...sessao, hpAtual, peAtual, almaAtual, invocacoes };
+  return { ...sessao, hpAtual, peAtual, almaAtual, almaMaxVisto: almaMax, invocacoes };
 }
 
 /** Apara PV e Integridade de cada invocação contra o máximo resolvido dela. */
@@ -642,6 +695,77 @@ export function aplicaCura(sessao, bruto, hpMax) {
   const cura = Math.max(0, inteiro(bruto, 0));
   if (!cura) return sessao;
   return { ...sessao, hpAtual: entre(sessao.hpAtual + cura, 0, Math.max(0, hpMax)) };
+}
+
+/* ============================================================ */
+/* A ALMA COMO RECURSO (2026-09-18)                              */
+/* ============================================================ */
+/* ⚠ OS TRÊS VERBOS MORAM AQUI, e não nas telas, porque a barra de Alma existe em
+   DUAS: a da Ficha Final e a do Painel de Combatente do Encontro. Cada uma
+   escrevia `almaAtual` na mão, e é por isso que o Dano na Alma nunca encostou no
+   PV: a regra não tinha um dono, tinha duas cópias.
+
+   ⚠ E ELES PRECISAM DO `derived`, não do máximo solto, porque a regra DIVERGE
+   entre os sistemas e a barra é a mesma para os dois:
+
+     jogador   a Alma é uma pilha do tamanho do PV, e o dano desce nas duas
+     criatura  a Alma é PORCENTAGEM, e o PV máximo já cai sozinho pelo `almaMult`
+
+   Descontar o PV corrente na criatura cobraria a mesma perda duas vezes, uma no
+   multiplicador e outra aqui. */
+
+/**
+ * Dano na Alma: no jogador, encolhe a Alma e a Vida juntas.
+ *
+ * Verbatim do autor (2026-09-18): *"Dano na Alma também é Dano na Vida"*, com o
+ * exemplo *"estou com 250 de 500 de HP Máximo. Tomo 100 de Dano na Alma, eu fico
+ * com 150 de 400 de HP máximo."* O TETO quem baixa é o `deriveAfty`, que faz o PV
+ * máximo do jogador seguir a Alma corrente. O que sobra para a sessão é o PV
+ * CORRENTE: sem esta linha o exemplo daria 250 de 400, e não 150.
+ *
+ * ⚠ O PV TEMPORÁRIO NÃO PROTEGE (autor, 2026-09-18), e é a diferença para o
+ * `aplicaDano`. A casca é vida emprestada por fora e a alma encolhe por dentro,
+ * então o `pvTempFontes` sai intacto e a Guarda não se quebra com Dano na Alma.
+ */
+export function aplicaDanoNaAlma(sessao, bruto, derived) {
+  const dano = Math.max(0, inteiro(bruto, 0));
+  if (!dano) return sessao;
+  const almaAtual = Math.max(0, sessao.almaAtual - dano);
+  if (derived?.sistema !== "player") return { ...sessao, almaAtual };
+  return { ...sessao, almaAtual, hpAtual: Math.max(0, sessao.hpAtual - dano) };
+}
+
+/**
+ * Cura na Alma: devolve o TETO, e não a Vida corrente (autor, 2026-09-18).
+ *
+ * Quem está em 150 de 400 e recupera 100 de Alma fica em 150 de 500: o máximo
+ * volta e o PV que faltava se cura pelos meios normais. É por isso que ela não é
+ * o `aplicaDanoNaAlma` com o sinal trocado, e por isso que ela não precisa saber
+ * o sistema: subir a Alma nunca mexeu no PV corrente de ninguém.
+ */
+export function curaAlma(sessao, bruto, derived) {
+  const cura = Math.max(0, inteiro(bruto, 0));
+  if (!cura) return sessao;
+  const almaMax = Math.max(0, derived?.almaMax ?? 100);
+  return { ...sessao, almaAtual: entre(sessao.almaAtual + cura, 0, almaMax) };
+}
+
+/**
+ * Escreve um valor ABSOLUTO na Alma, roteando pelo verbo certo.
+ *
+ * ⚠ Existe porque a barra tem DOIS caminhos, o botão de passo e o campo de
+ * digitar, e eles têm de concordar: escrever 400 numa Alma de 500 é o mesmo que
+ * clicar em -100. Sem isto o campo mexeria só na Alma enquanto o botão mexe nas
+ * duas, e o jogador teria como fugir do dano digitando.
+ */
+export function defineAlma(sessao, valor, derived) {
+  const almaMax = Math.max(0, derived?.almaMax ?? 100);
+  const alvo = entre(inteiro(valor, 0), 0, almaMax);
+  const delta = alvo - sessao.almaAtual;
+  if (!delta) return sessao;
+  return delta < 0
+    ? aplicaDanoNaAlma(sessao, -delta, derived)
+    : curaAlma(sessao, delta, derived);
 }
 
 /* ============================================================ */

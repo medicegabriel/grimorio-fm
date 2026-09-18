@@ -49,11 +49,25 @@ function LinhasDeFonte({ partes, total }) {
           <span className="font-mono text-[10px] font-semibold tabular-nums">{p.texto ?? sinalDe(p.valor)}</span>
         </span>
       ) : (
-        <span key={i} className={`afty-fonte-linha flex items-baseline justify-between gap-3 whitespace-nowrap ${
+        /* ⚠ A PARCELA É A ÚNICA LINHA QUE PODE QUEBRAR (2026-09-18). Ela era
+           `whitespace-nowrap` como as outras duas, e o rótulo, sendo item de
+           flex, não encolhe abaixo do próprio conteúdo: um nome comprido
+           empurrava o NÚMERO para fora da borda arredondada, que não tem
+           `overflow`, então ele saía pintado no vazio. Medido no painel de
+           Perícias do autor: dois rótulos jogavam o número 3px e 19px para fora.
+
+           O conserto são as duas metades juntas. O `min-w-0` é o que devolve ao
+           rótulo o direito de encolher, e sem ele tirar o `nowrap` não muda
+           nada; o `nowrap` no VALOR é o que impede o "−1" de se partir entre o
+           sinal e o dígito no aperto.
+
+           ⚠ A seção e o total seguem sem quebrar de propósito: os rótulos deles
+           são do sistema ("Critável", "Total") e nunca crescem. */
+        <span key={i} className={`afty-fonte-linha flex items-baseline justify-between gap-3 ${
           temSecao ? "pl-2" : ""
         }`}>
-          <span className={`afty-fonte-rotulo text-[10px] ${p.suplantado ? "line-through opacity-60" : ""}`}>{p.label}</span>
-          <span className={`afty-fonte-valor font-mono text-[10px] tabular-nums ${p.suplantado ? "line-through opacity-60" : ""}`}>
+          <span className={`afty-fonte-rotulo min-w-0 text-[10px] ${p.suplantado ? "line-through opacity-60" : ""}`}>{p.label}</span>
+          <span className={`afty-fonte-valor whitespace-nowrap font-mono text-[10px] tabular-nums ${p.suplantado ? "line-through opacity-60" : ""}`}>
             {p.texto ?? sinalDe(p.valor)}
           </span>
         </span>

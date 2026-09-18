@@ -17,6 +17,7 @@ import { Guarda } from "../ui/guarda";
 import {
   carregarSessao, salvarSessao, aparaSessao,
   aplicaDano, aplicaCura, pagaCustoVida, proximaRodada, descansar, registraRolagem,
+  aplicaDanoNaAlma, curaAlma, defineAlma,
   peTempTotal, gastaPe, pvTempTotal,
   entradaDaGuarda, sofreGolpeNaGuarda, desfazGolpeNaGuarda, encerraGuarda, defineCondicoes,
   alteraEstadoCombate, aplicaPatchCombate, consomeEstadoCombate, registraFeiticoDano,
@@ -783,8 +784,15 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
             <Vital
               tipo="alma" icone={Sparkles} rotulo="Alma"
               atual={sessao.almaAtual} max={derived.almaMax}
-              onSet={(v) => setVital("almaAtual", v)}
-              onDelta={(n) => setVital("almaAtual", sessao.almaAtual + n)}
+              /* ⚠ Os dois passam pelos verbos de `ficha-sessao.js`, e não por um
+                 `setVital` que escreveria só a Alma. No jogador o delta NEGATIVO
+                 é Dano na Alma, e ele desce o PV corrente junto: escrever o campo
+                 direto aqui era o que deixava a Vida intacta. Ver
+                 `aplicaDanoNaAlma`. */
+              onSet={(v) => atualiza((s) => defineAlma(s, v, derived))}
+              onDelta={(n) => atualiza((s) => (n < 0
+                ? aplicaDanoNaAlma(s, -n, derived)
+                : curaAlma(s, n, derived)))}
             />
           </div>
 

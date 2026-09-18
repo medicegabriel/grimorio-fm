@@ -1115,6 +1115,38 @@ export function armasCustomDaFicha(creature) {
 }
 
 /* ============================================================ */
+/* O QUE CONTA COMO FAIXAS                                       */
+/* ============================================================ */
+/**
+ * As Faixas do livro e a arma CRIADA que se apresenta como Faixas.
+ *
+ * Decisão do autor (2026-09-18), ao revisar o Addon Criação de Equipamentos:
+ * uma arma criada com Dano Desarmado e com "Faixas" no nome É Faixas para toda
+ * regra que pergunta, e não só para o Adepto de Briga. Quem lê esta função hoje:
+ * o `outroPugilato` do `deriveAfty` (a condição do Talento) e o `itensEquipados`
+ * logo abaixo (a Aptidão concedida por Addon com `enquantoEquipado`).
+ *
+ * ⚠ SÃO AS DUAS CONDIÇÕES JUNTAS, e nenhuma das duas basta sozinha. Uma Espada
+ * chamada "Faixas de Sif" continua sendo uma espada, e não vira o Ataque Básico
+ * de ninguém. E o Dano Desarmado sozinho é o que Manoplas e Soco Inglês também
+ * têm, e esses dois BLOQUEIAM o Talento de propósito (autor, 2026-09-14).
+ *
+ * ⚠ O NOME É COMPARADO SEM CAIXA e em qualquer posição, que é o que o autor
+ * pediu. O preço está pago de olho aberto: renomear o item tira a regra dele
+ * calado, porque aqui o nome É a chave, e não existe outra para agarrar. Uma
+ * marca explícita na bancada ("conta como Faixas") seria mais firme, e é a
+ * troca a fazer no dia em que um renome surpreender alguém.
+ *
+ * ⚠ O id do livro é testado À PARTE, e não por confiar no nome dele. A entrada
+ * `arm_faixas` casaria na regra do nome por coincidência, e depender disso seria
+ * amarrar o item do livro a um rótulo que a regra nova pode querer mudar.
+ */
+export const ehFaixas = (def) => (
+  def?.id === "arm_faixas"
+  || (!!def?.dano?.desarmado && /faixas/i.test(String(def?.nome ?? "")))
+);
+
+/* ============================================================ */
 /* UNIFORMES                                                    */
 /* ============================================================ */
 /* Um uniforme só pode possuir uma modificação, sendo ela uma alteração
@@ -2247,6 +2279,13 @@ const listaEntradas = (creature) => {
  *
  * ⚠ Lê a MESMA regra de "equipado" do `resolveEquipamentos` (o campo
  * `equipado` da entrada), e entrada de item desconhecido fica de fora, como lá.
+ *
+ * ⚠ AS FAIXAS CRIADAS ENTRAM DUAS VEZES, com o id próprio e com `arm_faixas`
+ * (ver `ehFaixas`). O `enquantoEquipado` de um pacote casa por refId exato, e
+ * sem o segundo par o Addon Faixas de Sif exigiria o item do livro para conceder
+ * as Aptidões, que é o contrário da decisão do autor (2026-09-18). O NOME das
+ * duas linhas é o do item de verdade, porque é ele que aparece na ficha como
+ * fonte da concessão.
  */
 export function itensEquipados(creature) {
   const out = [];
@@ -2255,6 +2294,9 @@ export function itensEquipados(creature) {
     const def = getEquipamento(e?.tipo, e?.refId, creature);
     if (!def) continue;
     out.push({ refId: e.refId, tipo: e.tipo, nome: def.nome });
+    if (e.refId !== "arm_faixas" && ehFaixas(def)) {
+      out.push({ refId: "arm_faixas", tipo: e.tipo, nome: def.nome });
+    }
   }
   return out;
 }
