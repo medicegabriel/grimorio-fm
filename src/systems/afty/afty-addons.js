@@ -458,6 +458,16 @@ export const PRIMITIVAS = [
     rotulo: "Modificações Corporais",
     nota: "Aba própria ao lado de Habilidades: Base da Modificação e Enxertos de texto livre, com efeito opcional no Motor. O orçamento de Enxertos é digitado na ficha, e os efeitos somam sempre, sem entrar em pool exclusivo",
   },
+  /* ⚠ NASCEU EM 2026-09-18, a pedido do autor: "dobre a vida e tire o gasto de PE
+     de passivas de uma ficha". É primitiva pela lição do `hpAtributo`: os dois
+     canais (`hpMult` e `passivaSemCusto`) vivem no motor sempre e só aparecem no
+     seletor de quem pediu. Ver `afty-derive.js` (PV e PE) e
+     `peMaximoDasPassivas` em afty-feiticos.js. */
+  {
+    id: "pvEPassivas",
+    rotulo: "PV e Passivas",
+    nota: "Os dois canais que multiplicam o PV final (hpMult) e isentam as Passivas do custo de PE Máximo (passivaSemCusto)",
+  },
 ];
 
 const PRIMITIVA_IDS = new Set(PRIMITIVAS.map((p) => p.id));

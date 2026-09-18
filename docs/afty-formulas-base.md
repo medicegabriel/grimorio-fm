@@ -97,6 +97,11 @@ HP = (Alma.Atual/100) × (base + ND·Mod.Con + treinoRes) × patamarMult
 > O termo de Treinamento fica dentro do parêntese, então escala junto: Resistência 1ª (+4 na base)
 > dá +4 no Comum, +8 no Desafio, +12 na Calamidade e +16 no Beyond.
 
+> **Multiplicador de PV por Addon (2026-09-18).** Depois de tudo isso o PV ainda é multiplicado
+> pelo canal `hpMult` (`max(1, soma das fontes)`), que só um Addon com a primitiva `pvEPassivas`
+> emite. Sem fonte o valor é 1 e nada muda. Como ele entra depois da Alma, a Integridade da Alma
+> da ficha de jogador, que é igual ao PV, acompanha.
+
 ### PE.Max
 ```
 =SWITCH(Tipo;"Combatente";4*ND;"Misto";5*ND;"Conjurador";6*ND;"Restringido";4*ND)
@@ -109,6 +114,11 @@ HP = (Alma.Atual/100) × (base + ND·Mod.Con + treinoRes) × patamarMult
 +SE(Treinamentos!AJ17;2;0)  // Potencial Físico 1ª
 +SE(Treinamentos!AJ19;4;0)  // Potencial Físico 3ª
 ```
+
+> **Passivas sem custo por Addon (2026-09-18).** Na ficha de jogador cada Passiva tira o dobro do
+> nível dela do PE Máximo (`passivaCustaPeMaximo`). O canal `passivaSemCusto`, emitido por um Addon
+> com a primitiva `pvEPassivas`, zera essa subtração para TODA Passiva (inclusive a ocular), no PE
+> Máximo, no hover do PE e no custo que a linha de cada Feitiço carrega.
 
 ### Maestria / Treinamento (mesmo valor)
 ```

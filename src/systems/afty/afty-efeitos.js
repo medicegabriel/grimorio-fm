@@ -120,6 +120,16 @@ import {
 export const EFEITO_CANAIS = [
   // Stats de combate
   { id: "hp",            label: "PV",                    nota: "entra ANTES do multiplicador de Integridade da Alma (autor, 2026-07-27)" },
+  /* ⚠ CANAL DE ADDON (primitiva `pvEPassivas`), irmão do `movimentoMult`: o valor
+     é o multiplicador, e vale 2 para "dobra o PV". Multiplica o PV FINAL, depois
+     da Alma e do Patamar, e por isso o Integridade da Alma do jogador (que é o
+     PV) acompanha. Como o `movimentoMult`, as fontes somam entre si e o total
+     tem piso de 1. */
+  { id: "hpMult",        label: "Multiplicador de PV",   nota: "multiplica o PV final, já com Alma e Patamar. 2 dobra. Como no multiplicador de movimento, as fontes somam entre si" },
+  /* ⚠ SINALIZADOR de Addon (primitiva `pvEPassivas`). Qualquer valor acima de zero
+     isenta TODA Passiva do PE Máximo, que é onde a regra do jogador
+     (`passivaCustaPeMaximo`) cobra o dobro do nível dela. */
+  { id: "passivaSemCusto", label: "Passivas sem custo de PE", nota: "sinalizador: as Passivas deixam de tirar o dobro do nível do PE Máximo" },
   { id: "pvTemporario",  label: "PV Temporário",         nota: "não é PV máximo: é a casca que some no fim do efeito. Quase sempre vem da simulação de combate" },
   // ⚠ IRMÃO do de cima, e ele faltava desde julho (o topo de afty-status.md o
   // nomeava como "o PE temporário exclusivo de Aptidão"). O ALVO aqui é o
@@ -598,7 +608,7 @@ export const chaveExclusiva = (canal, alvo, valor = 1, grupo = GRUPO_POOL_UNICO)
  */
 const GRUPOS_DE_CANAL = [
   ["Vitalidade e Recursos", [
-    "hp", "pvTemporario", "pe", "peTemporario", "almaMax", "pontosPreparo", "custoPE",
+    "hp", "hpMult", "pvTemporario", "pe", "passivaSemCusto", "peTemporario", "almaMax", "pontosPreparo", "custoPE",
   ]],
   // ⚠ Grupo PRÓPRIO desde 2026-08-03. Os três de Regeneração viviam soltos em
   // "Vitalidade e Recursos", entre PV e Pontos de Preparo, e lá o leitor não

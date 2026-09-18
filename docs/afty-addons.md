@@ -721,6 +721,14 @@ razão da `armasPorNivel`: a **receita mora em `fa.guiaUnica` e vale sem o Addon
 quem enxerga a bancada. As linhas da conta somam com as livres da Habilidade Única, no mesmo pool
 exclusivo.
 
+#### A primitiva `pvEPassivas` (2026-09-18)
+
+Abre no seletor de canal os dois de PV e Passivas: `hpMult`, que multiplica o PV final (o valor é o
+multiplicador, `2` dobra), e `passivaSemCusto`, sinalizador que isenta toda Passiva do PE Máximo. É
+primitiva pela lição do `hpAtributo`: os canais vivem no motor sempre, e o `permite` só decide quem os
+enxerga. O pacote `vida-dobrada-passivas-gratis` usa os dois num Funcionamento do pacote, sempre ativo.
+Ver `docs/automacao-dsl.md` e `docs/afty-formulas-base.md`.
+
 ### O campo `incompativeis` (2026-09-14)
 
 Ids de pacotes que **não ligam na mesma ficha** que este. Nasceu com a Criação de Equipamentos, que o

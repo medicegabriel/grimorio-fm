@@ -1,0 +1,20 @@
+{
+  "id": "vida-dobrada-passivas-gratis",
+  "nome": "Vida Dobrada e Passivas Gratis",
+  "versao": "1.0.0",
+  "autor": "Templas",
+  "paraRaw": "afty",
+  "descricao": "Dobra o PV máximo da ficha e isenta TODA Passiva do custo de PE Máximo (a regra do jogador cobra o dobro do nível de cada Passiva). Usa dois canais de motor (`hpMult`, que multiplica o PV final depois da Alma e do Patamar, e `passivaSemCusto`, sinalizador) liberados pela primitiva `pvEPassivas`. Os dois efeitos moram num Funcionamento do pacote, sempre ativo, e por isso valem para qualquer ficha que instale o Addon.",
+  "permite": ["pvEPassivas"],
+  "funcionamentos": [
+    {
+      "id": "vida_dobrada_passivas_gratis",
+      "nome": "Vida Dobrada e Passivas Gratis",
+      "descricao": "O PV máximo é multiplicado por 2 e as Passivas não tiram PE Máximo.",
+      "efeitos": [
+        { "canal": "hpMult", "expr": "2", "nome": "Vida Dobrada" },
+        { "canal": "passivaSemCusto", "expr": "1", "nome": "Passivas sem custo de PE" }
+      ]
+    }
+  ]
+}

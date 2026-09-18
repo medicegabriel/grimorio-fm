@@ -13876,3 +13876,23 @@ linhas e a posição da janela tiveram deslocamento zero entre as seleções, co
 recolhidas depois do Catálogo, e cada botão Novo abriu a sua própria bancada. Os
 cabeçalhos também couberam em 390 px. Eslint, build e a suíte completa passaram:
 91 arquivos e 4912 asserts.
+
+
+## SESSÃO DE 2026-09-18: VIDA DOBRADA E PASSIVAS SEM CUSTO
+
+Pedido do autor: um Addon que dobre a vida e tire o gasto de PE das Passivas de uma ficha de
+jogador. Nenhuma das duas coisas tinha caminho por Addon: não existe canal multiplicador de PV, e o
+custo da Passiva (dobro do nível, tirado do PE Máximo) vem da lista de Feitiços, e não de um canal.
+
+Duas peças pequenas no motor, ligadas pela primitiva nova `pvEPassivas` (`permite`), que só decide
+quem vê os canais no seletor:
+
+- `hpMult` multiplica o PV final, depois da Alma e do Patamar. Piso de 1, as fontes somam entre si.
+  A Integridade da Alma do jogador acompanha, porque ela é igual ao PV.
+- `passivaSemCusto` é um sinalizador. `peMaximoDasPassivas` ganhou o parâmetro `isenta`, e o
+  derivado expõe `passivasIsentas`, lido pelo PE, pelo hover do PE, pela linha de cada Feitiço e
+  pelo tile de PE Máximo da Passiva no criador.
+
+O Addon `vida-dobrada-passivas-gratis` liga as duas por um Funcionamento do pacote, sempre ativo.
+Na criatura o Addon só dobra o PV: a Passiva já era de graça ali. Asserts em `t-vida-passivas.mjs`
+(20). A suíte passa, com a única falha já registrada em `docs/a-fazer.md`, e o build também.

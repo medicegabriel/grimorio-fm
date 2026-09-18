@@ -2045,10 +2045,14 @@ export function deriveAfty(creature, opcoes = {}) {
      aumentando ela em +10 junto no processo." Como a Alma dele é o PV, subir uma
      sobe a outra, e uma Melhoria de +10 vale +10 nas duas. Na criatura o mesmo
      canal continua sendo porcentagem, dentro do `almaMult`. */
+  /* O canal `hpMult` (primitiva `pvEPassivas`) multiplica o PV FINAL, depois da
+     Alma e do Patamar. Piso de 1: sem fonte nenhuma o PV não muda. */
+  const hpMult = Math.max(1, canal("hpMult") || 1);
   const hp = Math.round(
     almaMult
     * (hpBase + nd * modHp + canal("hp") + equip.hpMaxBonus + (almaPilha ? bonusAlma : 0))
-    * hpPatamarMult);
+    * hpPatamarMult
+    * hpMult);
   /* E aqui a Alma do jogador fecha, DEPOIS do PV e igual a ele. É a ordem que me
      fez adiar esta parte: calcular a Alma antes do PV seria calcular o PV duas
      vezes ou mentir numa das duas. */
@@ -2105,7 +2109,10 @@ export function deriveAfty(creature, opcoes = {}) {
      dobro do nível não precisa do Feitiço calculado.
 
      Só na Ficha de Jogador. Ver a divergência `passivaCustaPeMaximo`. */
-  const passivasNoPe = peMaximoDasPassivas(creature?.feiticos, sistema);
+  /* O sinalizador `passivaSemCusto` (primitiva `pvEPassivas`) isenta TODA Passiva
+     do PE Máximo. Lido do canal, então vale de qualquer fonte de Motor. */
+  const passivasIsentas = canal("passivaSemCusto") > 0;
+  const passivasNoPe = peMaximoDasPassivas(creature?.feiticos, sistema, { isenta: passivasIsentas });
   /* ⚠ SEM PISO, de propósito (autor, 2026-09-09). Passivas caras podem levar o
      PE Máximo abaixo de zero e o criador mostra o número como ele é. Quem apara
      é a pilha CORRENTE da sessão, que é outra coisa e já tinha piso zero. */
@@ -2376,6 +2383,7 @@ export function deriveAfty(creature, opcoes = {}) {
        número nem lista da ficha, e existe porque o custo em PE Máximo da
        Passiva é divergência: sem ele a linha diria que a criatura paga. */
     sistema,
+    passivasIsentas,
   };
   /* ⚠ A ABA DE FEITIÇOS É DECISÃO DE MOTOR, e não de JSX (2026-09-07). O criador
      ramifica o layout inteiro por origem, e enquanto "quem conjura" era regra
@@ -3053,6 +3061,11 @@ export function deriveAfty(creature, opcoes = {}) {
       ...(equip.hpMaxBonus ? [{ label: "Equipamento", valor: equip.hpMaxBonus }] : []),
       ...(almaMult !== 1 ? [{ label: "Integridade da Alma", texto: `×${divTexto(almaMult)}` }] : []),
       ...(hpPatamarMult !== 1 ? [{ label: `Patamar (${PATAMAR_LABEL[patamar] ?? patamar})`, texto: `×${hpPatamarMult}` }] : []),
+      ...doMotor("hpMult").map((fonte) => ({
+        ...fonte,
+        valor: undefined,
+        texto: `× ${fonte.valor}`,
+      })),
     ],
     pe: [
       ...(pvPorClasse
@@ -3447,6 +3460,7 @@ export function deriveAfty(creature, opcoes = {}) {
     manipulacaoCeu,
     vislumbre,            // Vislumbre Celeste: { tem, cl, descoberto, visao, reducaoPe, fadiga, ... }
     olhosAgulha,
+    passivasIsentas,      // canal `passivaSemCusto` ligado: nenhuma Passiva tira PE Máximo
     pvTemporario,         // casca de PV vinda da simulação (Fluxo, Brutalidade Aprimorada)
     peTemporario,         // casca de PE POR FONTE: { combate:[], rodada:[], tem } — a sessão aplica
     regeneracao,          // cura no início do turno: { dados, dado, fixo }

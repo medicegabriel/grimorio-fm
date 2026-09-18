@@ -209,3 +209,8 @@ Detalhe completo em `docs/afty-invocacoes.md`. Assert: `asserts/t-invocacao-escr
   usa `movimentoMult` para multiplicar o movimento final, `custoPE` como redução de custo,
   `removeResistencia` como sinalizador por fonte de dano e `nivelAptidao` com `limiteAptidao` para o
   bônus que pode passar do teto normal.
+- Dois canais de PV e Passivas (2026-09-18), liberados pela primitiva `pvEPassivas` (`permite:
+  ["pvEPassivas"]` no Addon): `hpMult` multiplica o PV FINAL, depois da Integridade da Alma e do
+  Patamar (o valor é o multiplicador, `2` dobra; as fontes somam entre si e o total tem piso de 1,
+  igual ao `movimentoMult`), e `passivaSemCusto` é um sinalizador que isenta TODA Passiva do PE
+  Máximo. Sem a primitiva os dois somem do seletor de canal, mas continuam valendo no motor.

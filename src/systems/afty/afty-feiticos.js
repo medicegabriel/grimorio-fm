@@ -247,7 +247,11 @@ export const custoPeMaximoDaPassiva = (nivel) =>
  * jeito (`variacaoDe` aponta o original) e já não gasta vaga no orçamento. Se
  * contasse aqui, declarar uma variação cobraria o PE Máximo duas vezes.
  */
-export function peMaximoDasPassivas(feiticos, sistema = undefined) {
+export function peMaximoDasPassivas(feiticos, sistema = undefined, { isenta = false } = {}) {
+  /* ⚠ `isenta` vem do canal `passivaSemCusto` (primitiva `pvEPassivas`) e vale
+     para TODA Passiva, inclusive a ocular abaixo: o Addon diz "as Passivas não
+     custam PE Máximo", sem exceção por origem do custo. */
+  if (isenta) return { total: 0, linhas: [] };
   const cobraTodas = regraDo(sistema, "passivaCustaPeMaximo") === "player";
   const lista = Array.isArray(feiticos) ? feiticos : [];
   const linhas = [];
@@ -3562,7 +3566,7 @@ export function calcularFeiticoPassivo(feitico, ctx = {}) {
       tiposDanoExtra: 0,
       alvo: null,
       custoPeMaximo: custoPeMaximoDaPassiva(nivel) || null,
-      custoPeMaximoAtivo: regraDo(ctx.sistema, "passivaCustaPeMaximo") === "player",
+      custoPeMaximoAtivo: regraDo(ctx.sistema, "passivaCustaPeMaximo") === "player" && !ctx.passivasIsentas,
       efeitosGerados: [],
       avisos,
     };
@@ -3622,7 +3626,7 @@ export function calcularFeiticoPassivo(feitico, ctx = {}) {
     tiposDanoExtra: tiposExtra,
     alvo,
     custoPeMaximo: custoPeMaximoDaPassiva(nivel) || null,
-    custoPeMaximoAtivo: regraDo(ctx.sistema, "passivaCustaPeMaximo") === "player",
+    custoPeMaximoAtivo: regraDo(ctx.sistema, "passivaCustaPeMaximo") === "player" && !ctx.passivasIsentas,
     efeitosGerados,
     avisos,
   };
@@ -4301,7 +4305,7 @@ function linhaDoFeitico(f, ctx, creature) {
          divergem na primeira errata. Zero na criatura, porque a regra é do
          jogador (ver `passivaCustaPeMaximo`). */
       custoPeMaximo: f.tipo === "passivo" && !f.variacaoDe
-        ? (peMaximoDasPassivas([f], ctx.sistema).total || null)
+        ? (peMaximoDasPassivas([f], ctx.sistema, { isenta: !!ctx.passivasIsentas }).total || null)
         : null,
       avisos,
     };

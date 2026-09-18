@@ -3527,6 +3527,9 @@ function CanalPicker({ value, onChange, grupos: catalogo = EFEITO_CANAL_GRUPOS }
   // E para os dois da Arma Transformável, que o Azamaru abriu.
   const CANAIS_ARMA_TRANSF = ["ignoraTodaRD", "ignoraImunidade"];
   const veArmaTransf = usePrimitiva("armaTransformavel") || CANAIS_ARMA_TRANSF.includes(value);
+  // E para os dois de PV e Passivas (multiplicador de PV e Passivas sem custo).
+  const CANAIS_PV_PASSIVAS = ["hpMult", "passivaSemCusto"];
+  const vePvPassivas = usePrimitiva("pvEPassivas") || CANAIS_PV_PASSIVAS.includes(value);
 
   const termo = semAcento(busca.trim());
   const grupos = catalogo
@@ -3536,6 +3539,7 @@ function CanalPicker({ value, onChange, grupos: catalogo = EFEITO_CANAL_GRUPOS }
         (veHpAtributo || c.id !== "hpAtributo")
         && (veReqAptidao || c.id !== "reduzNivelAptidao")
         && (veArmaTransf || !CANAIS_ARMA_TRANSF.includes(c.id))
+        && (vePvPassivas || !CANAIS_PV_PASSIVAS.includes(c.id))
         && (!termo
         || semAcento(c.label).includes(termo)
         || semAcento(g.label).includes(termo)
@@ -4929,6 +4933,7 @@ function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico
     bonusTreinamento: derived.maestria,
     beneficiosRitualDominio: derived.dominios?.beneficiosRitualAtivos ?? {},
     reducoesCustoFeitico: reducoes,
+    passivasIsentas: !!derived.passivasIsentas,
     linhasEscolhaFeiticos,
     treinoEscolhaFeiticos: escolhasTreino,
     feiticos: lista,
@@ -5243,7 +5248,7 @@ function tilesDoFeitico(f, calc, ctx = {}) {
      categoria escolhida não tem valor no nível (calc.disponivel === false).
      Nível 0 continua sem tile de PE, porque custa zero e o zero não vira tile. */
   if (f.tipo === "passivo") {
-    const custo = peMaximoDasPassivas([f], ctx.sistema).total;
+    const custo = peMaximoDasPassivas([f], ctx.sistema, { isenta: !!ctx.passivasIsentas }).total;
     const tiles = [];
     if (calc?.disponivel) {
       tiles.push({
