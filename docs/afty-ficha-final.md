@@ -191,19 +191,47 @@ inteiro. Três acréscimos pequenos e aditivos são necessários:
 | M2 | `almaAtual` opcional no `deriveAfty` | ver abaixo | ~5 linhas |
 | M3 | nada mais | a bancada, os canais, o pool exclusivo e as fontes já servem | 0 |
 
-### ⚠ M2: dano na Alma muda o PV MÁXIMO, e o motor hoje ignora isso
+### M2: dano na Alma muda o PV MÁXIMO (feito, e diferente em cada sistema)
 
 O criador tirou o campo de Integridade da Alma de propósito (a criatura nasce íntegra), e o
 `almaMult` passou a seguir o **máximo**: `almaMult = almaMax / 100`. O comentário do
 `afty-derive.js` já diz onde o corrente deveria viver: *"O valor CORRENTE existe só no jogo"*.
 
-Em jogo isso é mecânica de verdade: uma criatura com Alma em 60 tem **60% do PV máximo**, e o
-número grande no topo da Ficha precisa cair junto. Então o derive ganha um argumento opcional, e
-sem ele nada muda para o criador.
+Em jogo isso é mecânica de verdade, e ela virou **duas** mecânicas quando a ficha de jogador entrou.
+O derive recebe `opcoes.almaAtual` nos dois casos, e sem ele nada muda para o criador.
 
-⚠ **Consequência de UX:** baixar a Alma baixa o PV máximo, e o PV corrente precisa ser aparado no
-novo máximo. Isso tem de aparecer, senão o jogador vê vida sumir sem explicação. O painel de fontes
-do PV já mostra "Integridade da Alma ×0,6", então a explicação existe. Falta o aviso do momento.
+**Na criatura, a Alma MULTIPLICA.** Alma em 60 dá 60% do PV máximo, e o número grande no topo da
+Ficha cai junto. O painel de fontes do PV mostra a linha "Integridade da Alma ×0,6", que é de onde
+sai a explicação.
+
+**No jogador, a Alma É o teto** (autor, 2026-09-18): *"Vida Máxima de Jogador é igual a Alma Atual. E
+Dano na Alma também é Dano na Vida."* Com 500 de PV e 100 de Dano na Alma, a ficha fica com 400 de
+500 de Alma e 400 de 400 de Vida. A regra tem duas metades e elas moram em lugares diferentes:
+
+| Metade | Onde | O que faz |
+|---|---|---|
+| o TETO | `afty-derive.js`, `hp = min(almaAtual, hpCheio)` | o PV máximo segue a Alma corrente |
+| o CORRENTE | `ficha-sessao.js`, `aplicaDanoNaAlma` | o PV corrente desce o mesmo tanto |
+
+⚠ As duas são necessárias. Só aparar no novo máximo deixaria quem está em **250 de 500** com 250 de
+400 depois de 100 na Alma, porque 250 já cabe em 400. O autor pediu **150 de 400**.
+
+Três decisões do autor no mesmo dia, que é o que separa este desenho de um "dano negativo":
+
+1. **Cura na Alma devolve só o TETO.** Quem está em 150 de 400 e recupera 100 de Alma fica em 150 de
+   500. O PV que faltava se cura pelos meios normais, então `curaAlma` não é o dano com o sinal
+   trocado.
+2. **A casca de PV não protege a alma.** O `pvTempFontes` sai intacto e a Guarda não se quebra com
+   Dano na Alma, ao contrário do `aplicaDano`.
+3. **O máximo que sobe leva a corrente junto**, somando a subida em vez de encher: alma em 400 de 500
+   que ganha +25 vira 425 de 525. É a frase do livro que faltava: *"Sempre que seu máximo de Pontos
+   de Vida aumentar, sua Integridade deve ser atualizada."* Quem guarda isso é o campo de sessão
+   `almaMaxVisto`.
+
+⚠ **A criatura não entra em nada disso.** Lá a Alma já multiplicou o PV no `almaMult`, e descontar de
+novo cobraria a mesma perda duas vezes. É por isso que os três verbos da Alma recebem o `derived` e
+não o máximo solto: a barra é a mesma nas duas telas e nos dois sistemas. Medido em
+`asserts/t-alma-jogador.mjs`, que tem os dois exemplos do autor literais e a criatura como controle.
 
 ---
 

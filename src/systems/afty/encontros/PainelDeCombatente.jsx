@@ -10,6 +10,7 @@ import { Vital } from "../ui/vital";
 import { Guarda } from "../ui/guarda";
 import {
   aplicaDano, aplicaCura, descansar, registraRolagem,
+  aplicaDanoNaAlma, curaAlma, defineAlma,
   concedeNaSessao, removeConcessao, peTempTotal, gastaPe, pvTempTotal,
   sofreGolpeNaGuarda, desfazGolpeNaGuarda, encerraGuarda, defineCondicoes,
   estadoDaInvocacao, poeInvocacaoEmCampo, alternaAuxilioInvocacao,
@@ -293,8 +294,14 @@ export default function PainelDeCombatente({
           <Vital
             tipo="alma" icone={Sparkles} rotulo="Alma"
             atual={sessao.almaAtual} max={derived.almaMax}
-            onSet={(v) => onSessao((s) => ({ ...s, almaAtual: v }))}
-            onDelta={(d) => onSessao((s) => ({ ...s, almaAtual: s.almaAtual + d }))}
+            /* ⚠ Pelos mesmos verbos da Ficha, e pelo mesmo motivo do PE logo
+               acima: as duas telas mexem na MESMA sessão, e o Dano na Alma de um
+               jogador desce o PV corrente junto. Divergir aqui faria o mestre e o
+               jogador chegarem a Vidas diferentes na mesma ficha. */
+            onSet={(v) => onSessao((s) => defineAlma(s, v, derived))}
+            onDelta={(d) => onSessao((s) => (d < 0
+              ? aplicaDanoNaAlma(s, -d, derived)
+              : curaAlma(s, d, derived)))}
           />
           <DanoRapido
             onDano={(n) => onSessao((s) => aplicaDano(s, n))}

@@ -1,9 +1,12 @@
 # Criação de Equipamentos: decisões e dúvidas
 
 Registro de tudo que foi perguntado ao autor sobre o guia **"Criação de Equipamentos e Itens 2.5.2"**
-durante a implementação no Grimório Afty e na Ficha de Player, em 2026-09-14. Cada pergunta traz o
-contexto, as opções oferecidas e a resposta. Serve para outros colaboradores conferirem se alguma
+durante a implementação no Grimório Afty e na Ficha de Player, a partir de 2026-09-14. Cada pergunta traz
+o contexto, as opções oferecidas e a resposta. Serve para outros colaboradores conferirem se alguma
 resposta saiu errada.
+
+As perguntas de 1 a 54 são da implementação das quatro fases, em 2026-09-14. Da 55 em diante são as
+revisões posteriores, com a data na própria resposta.
 
 - **O guia**, sem mudança nenhuma: `docs/afty-criacao-equipamentos-fonte.md`
 - **Como ficou no sistema**: `docs/afty-criacao-equipamentos.md`
@@ -74,6 +77,7 @@ nome da opção aparece em negrito.
 | 52 | Alcance, Tipo de Dano da Técnica e Interação com Aptidões | Guardados para depois, esperando revisão |
 | 53 | A melhoria conta como efeito | Conta como um efeito |
 | 54 | A penalidade de RD (Grupo) | Reduz a RD total contra aqueles tipos |
+| 55 | A arma de Dano Desarmado chamada Faixas | É Faixas para todo efeito, e não só para o Adepto de Briga |
 
 ---
 
@@ -294,6 +298,35 @@ conceder Mestre em Perícia ou Ofício."* e a interação com o cenário.
 **Opções.** Uma Perícia / Um Teste de Resistência / Iniciativa / Dano (na linha da própria arma).
 
 **Resposta.** **Todas as quatro.**
+
+### 55. A arma de Dano Desarmado que se chama Faixas
+
+**Contexto.** A arma criada com Dano Desarmado entra no grupo Pugilato e vira o Ataque Básico, como as
+Faixas do livro (ver a pergunta 9). Só que o resto do sistema reconhecia Faixas pelo id `arm_faixas`, e
+não pelo que a arma é: uma Faixa criada na bancada **desligava** o Talento Adepto de Briga, exatamente
+como uma Manopla, e não servia para o Addon Faixas de Sif, que concede as Aptidões de Armas Naturais
+enquanto as Faixas estiverem equipadas.
+
+**Pergunta.** Até onde vai o "considerado como Faixas"?
+
+**Opções.**
+- **Identidade completa** (recomendada): além de liberar o Adepto de Briga, o item criado satisfaz
+  `enquantoEquipado: "arm_faixas"`, então o Addon Faixas de Sif e qualquer pacote futuro que peça Faixas
+  equipadas enxergam o item.
+- Só o Adepto de Briga: o item criado deixa de desligar o Talento, e o Addon Faixas de Sif continua
+  exigindo o item do livro.
+
+**Resposta.** **Identidade completa.** (2026-09-18)
+
+**Como ficou.** Uma arma **com Dano Desarmado E com "Faixas" no nome** é Faixas. As duas condições são
+cobradas juntas: uma espada chamada "Faixas de Sif" continua sendo uma espada, e o Dano Desarmado sozinho
+é o que as Manoplas também têm, e elas bloqueiam o Talento de propósito (ver a seção 7). O nome é
+comparado sem caixa e em qualquer posição, então "FAIXAS pretas" e "Minhas faixas" valem. Quem responde é
+a função `ehFaixas`, em `afty-equipamentos.js`.
+
+⚠ **O nome é a chave, e renomear o item tira a regra dele sem avisar.** É o preço aceito para não precisar
+de um campo novo na bancada. Uma marca explícita ("conta como Faixas") seria mais firme, e é a troca a
+fazer no dia em que um renome surpreender alguém.
 
 ---
 

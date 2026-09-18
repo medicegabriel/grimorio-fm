@@ -258,6 +258,11 @@ Consequências que saem das respostas, e não de leitura nova:
 
 - **Dano Desarmado** usa `piso(1,5 × Custo)`, mínimo 1, como os Níveis da conta (1, 3, 4 e 6). A arma
   não tem dado próprio, entra no grupo Pugilato e vira o Ataque Básico, como as Faixas.
+- **E se ela tiver "Faixas" no nome, ela É Faixas** (autor, 2026-09-18, pergunta 55). Vale para toda
+  regra que pergunta, e não só para o Adepto de Briga: o item também satisfaz o `enquantoEquipado` de um
+  pacote que peça Faixas equipadas, como o Addon Faixas de Sif. As duas condições são cobradas juntas,
+  Dano Desarmado E o nome, e o nome vale sem caixa e em qualquer posição. Quem responde é o `ehFaixas`,
+  em `afty-equipamentos.js`. ⚠ Renomear o item tira a regra dele sem avisar, porque o nome é a chave.
 - **A tabela de alcance pela Classe bate com todas as armas do livro**: Arco Curto, Besta Leve e Pistola
   são Simples, e Arco Longo, Besta Pesada e os rifles são Complexas. Há assert medindo.
 - **As duas tabelas andam na diagonal** (o Custo 2 no 4° Grau é o Custo 1 no 3° Grau), e o "-" é só onde

@@ -102,6 +102,47 @@ t("Faixas nao liberam o bonus se outro Pugilato estiver equipado",
 t("uma arma que nao e de Pugilato nao o desliga",
   brigaCom(["arm_bastao"]), [3, 2]);
 
+/* ⚠ A ARMA CRIADA QUE SE CHAMA FAIXAS (autor, 2026-09-18). A arma de Dano
+   Desarmado do Addon Criação de Equipamentos cai no grupo Pugilato, como as
+   Faixas do livro, e ate aqui ela DESLIGAVA o Talento por nao ser o id
+   `arm_faixas`. Hoje quem responde e o `ehFaixas`, e ele cobra as duas
+   condicoes: Dano Desarmado E "Faixas" no nome.
+
+   As quatro linhas de baixo sao os quatro lados da regra, e nenhuma e
+   redundante. As duas primeiras provam que o nome LIGA, em qualquer caixa e
+   posicao. A terceira prova que o Dano Desarmado sozinho NAO liga, senao toda
+   arma criada de pugilato passaria e as Manoplas da mesa entrariam junto. A
+   quarta prova que o nome sozinho tambem nao: uma arma de pugilato com dado
+   PROPRIO, chamada Faixas, nao e o Ataque Basico de ninguem e segue bloqueando.
+   ⚠ Ela precisa ser de pugilato para medir alguma coisa: uma espada chamada
+   Faixas deixaria o Talento valer por estar FORA do grupo, e o assert passaria
+   dizendo o contrario do que testa. */
+const criada = (nome, { desarmado = false, grupo = "espada" } = {}) => ({
+  id: "armc_faixa", nome, classe: "simples", categoria: "corpo",
+  dano: { dado: "1d6", tipo: "ct" }, critico: 20, custo: 1, grupo,
+  props: {}, ...(desarmado ? { niveis: { desarmado: true, especiais: [] } } : {}),
+});
+const brigaCriada = (nome, o) => {
+  const comArma = (talentos) => {
+    const f = ficha(talentos, { armas: [] });
+    f.armasCustom = [criada(nome, o)];
+    f.equipamentos = { itens: [{ id: "e0", tipo: "arma", refId: "armc_faixa", qtd: 1, equipado: true }] };
+    return deriveAfty(f);
+  };
+  const s = linha(comArma([]), "basico");
+  const c = linha(comArma(["tal_adepto_de_briga"]), "basico");
+  return [(c?.acerto ?? 0) - (s?.acerto ?? 0), (c?.niveisDano ?? 0) - (s?.niveisDano ?? 0)];
+};
+const DESARMADA = { desarmado: true };
+t("a arma criada Desarmada chamada Faixas libera o Talento",
+  brigaCriada("Faixas de Sif", DESARMADA), [3, 2]);
+t("a caixa do nome nao importa, e ele vale em qualquer posicao",
+  [brigaCriada("FAIXAS pretas", DESARMADA), brigaCriada("Minhas faixas", DESARMADA)], [[3, 2], [3, 2]]);
+t("outra arma criada Desarmada continua desligando",
+  brigaCriada("Manoplas de Aco", DESARMADA), [0, 0]);
+t("e o nome sozinho nao basta: pugilato com dado proprio segue desligando",
+  brigaCriada("Faixas de Sif", { grupo: "pugilato" }), [0, 0]);
+
 /* ⚠ TÉCNICAS DE ARREMESSO: "Sempre que atacar com uma arma de ARREMESSO, você
    recebe um bônus de +2 para acertar e +3 no dano."
 

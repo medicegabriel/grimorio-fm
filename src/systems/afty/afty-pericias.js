@@ -780,11 +780,27 @@ export function resolveDano(creature, ctx = {}) {
     if (!base) return linha;
     const fatal = facesDaPropriedade(propriedades, "fatal");
     const mortal = facesDaPropriedade(propriedades, "mortal");
-    if (fatal > base.faces) base.facesCritico = fatal;
-    else if (fatal && base.faces > fatal) linha.gruposDano.push({
-      nome: "Fatal", dados: 1, faces: fatal, fixo: 0,
-      momento: "durante", multiplica: true, apenasCritico: true,
-    });
+    /* ⚠ MAIOR **OU IGUAL** GANHA O DADO EXTRA (autor, 2026-09-18). O livro diz
+       *"caso o dado da arma se torne maior que o dado listado"*, e o empate ficava
+       de fora dos dois ramos: subir o dado para um tamanho que ele já tem é um
+       nada, e a arma não era "maior", então a Fatal não fazia coisa alguma. O
+       autor fechou a lacuna: *"se o Dano for maior ou igual ao Dano do Fatal, você
+       recebe 1 Dado Extra igual em Mortal ou Crítico Potente"*.
+
+       Custava caro e calado: o dado do golpe empaca no d12 (o topo da escada) e a
+       bancada cobra 3 Níveis pela Fatal d12, então TODA Fatal d12 de personagem
+       crescido era um pagamento por nada. As contas do autor, que os asserts
+       medem: 1d12 com Fatal 1d8 crita em 2d12 + 2d8, e 1d12 com Fatal 1d12 crita
+       em 4d12 (o dado extra dobra no crítico, como a Mortal). */
+    if (fatal) {
+      // Dado menor que o listado: ele SOBE para o tamanho da Fatal no crítico.
+      if (base.faces < fatal) base.facesCritico = fatal;
+      // Igual ou maior: 1 dado extra do tamanho listado, critável como a Mortal.
+      else linha.gruposDano.push({
+        nome: "Fatal", dados: 1, faces: fatal, fixo: 0,
+        momento: "durante", multiplica: true, apenasCritico: true,
+      });
+    }
     if (mortal) linha.gruposDano.push({
       nome: "Mortal", dados: 1, faces: mortal, fixo: 0,
       momento: "durante", multiplica: true, apenasCritico: true,

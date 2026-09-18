@@ -292,7 +292,11 @@ t("jogador: nível 17 recebe 11 Feitiços", baseJ.proprioFeitico, 11);
 
 const comTexto = orc(ficha("player", { itens: [segunda("e1", { texto: "Um Feitiço no objeto" })] }));
 t("jogador: só texto custa 1", comTexto.proprioFeitico, 10);
-t("e o hover nomeia o item", comTexto.proprioFeiticoPartes.at(-1), { label: `${nomeArma} (Segunda Habilidade Única)`, valor: -1 });
+/* ⚠ O RÓTULO DO HOVER É CURTO DESDE 2026-09-18, e o nome do EFEITO segue
+   inteiro (ver o assert das duas linhas lá em cima). São textos diferentes: o
+   de cima o Motor escreve, este aí é uma parcela repetida em toda linha do
+   painel, e o sufixo inteiro empurrava o número para fora da borda. */
+t("e o hover nomeia o item, com o sufixo curto", comTexto.proprioFeiticoPartes.at(-1), { label: `${nomeArma} (Segunda Única)`, valor: -1 });
 t("e as parcelas fecham com o total", soma(comTexto.proprioFeiticoPartes), comTexto.proprioFeitico);
 t("o contador comum do jogador não é tocado", comTexto.partesComum.some((p) => p.valor < 0), false);
 
@@ -316,7 +320,7 @@ t("abaixo do Especial não há Segunda, e não custa",
 const anel = (texto, hu2 = []) => ({ id: "acsu_t2", nome: "Anel do Mestre", habilidadeUnica: "Um", habilidadeEfeitos: [], segundaHabilidadeUnica: texto, segundaHabilidadeEfeitos: hu2 });
 const soAnel = orc(ficha("player", { acessorios: [anel("Dois")] }));
 t("Acessório Único fora do inventário custa 1", soAnel.proprioFeitico, 10);
-t("com o nome dele no hover", soAnel.proprioFeiticoPartes.at(-1).label, "Anel do Mestre (Segunda Habilidade Única)");
+t("com o nome dele no hover", soAnel.proprioFeiticoPartes.at(-1).label, "Anel do Mestre (Segunda Única)");
 t("Acessório com só a primeira não custa", orc(ficha("player", { acessorios: [anel("")] })).proprioFeitico, 11);
 t("Acessório sem o Addon não custa", orc(ficha("player", { acessorios: [anel("Dois")], addon: false })).proprioFeitico, 11);
 t("Acessório no inventário conta uma vez só",
@@ -326,7 +330,7 @@ t("Acessório no inventário conta uma vez só",
 const baseC = orc(ficha("afty", { itens: [segunda("e1")] }));
 const comC = orc(ficha("afty", { itens: [segunda("e1", { texto: "X" })] }));
 t("criatura: o contador comum cai 1", comC.comum, baseC.comum - 1);
-t("criatura: com a linha nomeada", comC.partesComum.at(-1), { label: `${nomeArma} (Segunda Habilidade Única)`, valor: -1 });
+t("criatura: com a linha nomeada", comC.partesComum.at(-1), { label: `${nomeArma} (Segunda Única)`, valor: -1 });
 t("criatura: e as parcelas fecham", soma(comC.partesComum), comC.comum);
 t("criatura: não existe caixa próprio", [comC.proprioFeiticoAtivo, comC.proprioFeitico], [false, 0]);
 
