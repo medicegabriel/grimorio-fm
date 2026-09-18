@@ -6,10 +6,8 @@ import { ESTADO_APICE, RODADAS_APICE } from "../../afty-talisma-apice";
 import { condicoesPorForca, fichaDaCondicao } from "../../afty-condicoes";
 import { getCanal } from "../../afty-efeitos";
 import { expandeHerdadas } from "../../afty-habilidades";
-import { RECURSOS_BUFF_NATIVOS } from "../../afty-extras-nativos";
 import { INV_EFEITO_CANAL_GRUPOS } from "../../afty-invocacoes";
 import { sinalDe } from "../../ui/formato";
-import TextoRico from "../../ui/TextoRico";
 import CanalPicker from "../CanalPicker";
 import PainelDeConcessao from "../PainelDeConcessao";
 import PainelDeImitacao from "../PainelDeImitacao";
@@ -94,21 +92,12 @@ function ContadorDeExaustao({ valor, onValor }) {
   );
 }
 
-/* Os 3 nativos (Aliados, Alma, Comidas — ver afty-extras-nativos.js) vieram
-   para cá em 2026-09-13: são o texto de referência para os estados logo
-   abaixo, e não Funcionamento Básico. Pararam de competir no pool exclusivo
-   (afty-efeitos.js) e saíram da aba Habilidades, que é só o que o jogador
-   escreveu para a própria Técnica. */
-function CartaoNativo({ nome, descricao }) {
-  const corpo = String(descricao ?? "").trim();
-  if (!corpo) return null;
-  return (
-    <div className="afty-linha px-2.5 py-2">
-      <p className="text-[12px] font-semibold mb-1">{nome}</p>
-      <TextoRico texto={corpo} />
-    </div>
-  );
-}
+/* ⚠ NÃO VOLTE COM O CARTÃO DE "RECURSOS DO SISTEMA" AQUI. Entre 2026-09-13 e
+   2026-09-17 esta aba abria com quatro cartões de texto descrevendo Aliados,
+   Alma, Comidas e Ferreiro, sempre à mostra. O autor mandou tirar: *"não quero
+   que ela seja visível o tempo todo"*. Ela também contrariava a regra de a UI
+   não explicar (AGENTS.md), e o texto não se perdeu: cada controle da bancada
+   carrega a própria explicação no `title`, que é onde ela deve morar. */
 
 /* O rótulo de uma linha de buff: o canal, e para quem ele vai quando é de
    invocação. Os dois espaços de canal repetem nomes, então ler o rótulo no
@@ -767,13 +756,6 @@ export default function AbaBuffs({
           </div>
         </Secao>
       )}
-
-      {/* ---------- os 3 nativos: referência para os estados de baixo ---------- */}
-      <Secao titulo="Recursos do Sistema">
-        {RECURSOS_BUFF_NATIVOS.map((f) => (
-          <CartaoNativo key={f.id} nome={f.nome} descricao={f.descricao} />
-        ))}
-      </Secao>
 
       {/* ---------- catalogados ---------- */}
       {linhas.length > 0 && (

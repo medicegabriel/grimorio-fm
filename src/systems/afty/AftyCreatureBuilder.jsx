@@ -15,7 +15,6 @@ import {
   AFTY_TECNICA_ATTRS, AFTY_TAMANHOS, AFTY_RESISTENCIAS, getTamanho,
   createBlankFuncionamento, nomeParaGravar, funcionamentosDaFicha,
 } from "./afty-schema";
-import { RECURSOS_BUFF_NATIVOS } from "./afty-extras-nativos";
 import { contadoresOrigemDeAddon, valorContadorOrigem, clampContadorOrigem } from "./afty-contadores-origem";
 // Primitivos compartilhados com a Ficha Final. Eram locais deste arquivo até
 // 2026-08-05, e saíram porque duas cópias divergiriam na primeira errata.
@@ -4667,22 +4666,12 @@ function FuncionamentoAddonCard({ linha }) {
   );
 }
 
-// Somente-leitura, para os 3 extras embutidos no próprio sistema (Aliados,
-// Alma, Comidas — ver afty-extras-nativos.js). Vive dentro de
-// SimulacaoCombateCard desde 2026-09-13, junto dos controles que eles
-// alimentam, então o estilo é o de LINHA da lista de estados (rounded-lg,
-// não mais "mt-4 pt-4 border-t" de quem se empilha sob outra coisa.
-function RecursoBuffNativoCard({ linha }) {
-  return (
-    <div
-      className="rounded-lg border border-slate-800 bg-slate-950/40 px-2.5 py-2"
-      title="Recurso embutido do sistema"
-    >
-      <FieldLabel>{linha.nome}</FieldLabel>
-      {String(linha.descricao ?? "").trim() && <TextoRico texto={linha.descricao} className="mt-1" />}
-    </div>
-  );
-}
+/* ⚠ NÃO VOLTE COM OS CARTÕES DOS RECURSOS NATIVOS NA BANCADA. Entre
+   2026-09-13 e 2026-09-17 o card de Simulação de Combate abria com quatro
+   blocos de texto descrevendo Aliados, Alma, Comidas e Ferreiro, sempre à
+   mostra. O autor mandou tirar: *"não quero que ela seja visível o tempo
+   todo"*. A explicação de cada um continua no `title` do controle dele, que é
+   onde a regra da UI manda ela morar. */
 
 function PerfilAmaldicoadoCard({
   draft, derived, patchCore, addFuncionamento, removeFuncionamento, patchFuncionamento,
@@ -11224,10 +11213,6 @@ function SimulacaoCombateCard({ derived, patchCombate, gatilhosTreino = [], onGa
         </BoolChip>
       }
     >
-      {/* Recursos de Buffs e seus controles aparecem juntos na bancada. */}
-      <div className="space-y-1 mb-1">
-        {RECURSOS_BUFF_NATIVOS.map((f) => <RecursoBuffNativoCard key={f.id} linha={f} />)}
-      </div>
       {/* ⚠ FORA do bloco que "Em Combate" apaga, de propósito. Um gatilho de
           Treinamento não é estado de luta: o Cônjuge estar na cena mexe em
           Perícia e em Iniciativa, que valem antes de a briga começar. */}
