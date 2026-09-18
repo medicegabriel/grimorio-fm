@@ -76,8 +76,12 @@ t("o Duradouro ganha interruptor", estado(d0, LIG("dur"))?.tipo, "bool");
 t("o Imediato também", estado(d0, LIG("ime"))?.tipo, "bool");
 t("o Sustentado NÃO: ele segue nas vagas de Sustentação", estado(d0, LIG("sus")), undefined);
 t("e aparece na Sustentação", (estado(d0, "sustentacaoFeitico1")?.opcoes ?? []).map((o) => o.id), ["sus"]);
-t("o interruptor mora na sub-aba Feitiços", estado(d0, LIG("dur"))?.dono?.id, "feiticos");
-t("a Sustentação também, e sai de Outras", estado(d0, "sustentacaoFeitico1")?.dono?.id, "feiticos");
+/* ⚠ A SUB-ABA VIROU "TÉCNICA" em 2026-09-17, e era "Feitiços". A divisão da aba
+   passou a ser por PAPEL: o Auxiliar ligado e a Transformação são "coisas que
+   se ativa", do mesmo jeito que o Estilo e o Domínio, e agora dividem a mesma
+   casa. Ver `donoDoEstado` em ficha/ficha-estados.js. */
+t("o interruptor mora na sub-aba Técnica", estado(d0, LIG("dur"))?.dono?.id, "tecnica");
+t("a Sustentação também, e não cai no balde", estado(d0, "sustentacaoFeitico1")?.dono?.id, "tecnica");
 t("o rótulo é o nome do Feitiço", estado(d0, LIG("dur"))?.label, "Aux dur");
 
 /* ============================================================ */

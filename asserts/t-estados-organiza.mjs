@@ -119,10 +119,12 @@ t("por requerEscolha, a Especialização de quem oferece",
   donoDoEstado(acha("manobraAjuste")), { id: "lutador", label: "Lutador" });
 t("Aptidão vai para o balde das Aptidões",
   donoDoEstado({ requerAptidao: "regeneracao" }), { id: "aptidao", label: "Aptidões" });
-t("Talento vai para o balde dos Talentos",
-  donoDoEstado({ requerTalento: "tal_x" }), { id: "talento", label: "Talentos" });
-t("sem requisito nenhum cai em Outras",
-  donoDoEstado({ id: "x", label: "X" }), { id: "outras", label: "Outras" });
+/* ⚠ TALENTO PERDEU A SUB-ABA PRÓPRIA em 2026-09-17: a divisão que o autor
+   pediu tem seis nomes e Talentos não é um deles, então ele cai no balde. */
+t("Talento cai em Outros, que é o balde",
+  donoDoEstado({ requerTalento: "tal_x" }), { id: "outros", label: "Outros" });
+t("sem requisito nenhum cai em Outros",
+  donoDoEstado({ id: "x", label: "X" }), { id: "outros", label: "Outros" });
 /* Os `estadosExtras` nascem no derive sem `requer*`, então podem dizer o dono. */
 t("o `dono` declarado manda em tudo",
   donoDoEstado({ dono: { id: "estilo", label: "Estilo" }, requerAptidao: "regeneracao" }),
@@ -131,8 +133,9 @@ t("o `dono` declarado manda em tudo",
 /* TODO estado do catálogo tem dono achável. Um `requerHabilidade` apontando
    para id que não existe mais cairia em "Outras" calado, e o balde encheria sem
    ninguém ver. */
-t("nenhum estado do catálogo cai em Outras",
-  COMBATE_ESTADOS.filter((e) => donoDoEstado(e).id === "outras").map((e) => e.id), []);
+t("nenhum estado do catálogo cai no balde sem querer",
+  COMBATE_ESTADOS.filter((e) => donoDoEstado(e).id === "outros" && !e.requerTalento).map((e) => e.id),
+  []);
 
 /* ============================================================ */
 /* 3. A ÁRVORE: SUB-ABAS, BLOCOS E PARENTESCO                    */
@@ -246,12 +249,12 @@ t("as sub-abas somam as raízes todas",
   tudo.subs.reduce((a, s) => a + s.quantos, 0),
   COMBATE_ESTADOS.filter((e) => !e.requerEstado
     || !COMBATE_ESTADOS.some((x) => x.id === e.requerEstado)).length);
-/* A ordem é a DO CATÁLOGO, e não alfabética nem por tamanho: a primeira sub-aba
-   é a da primeira raiz escrita no arquivo. Trocar isso mexeria em qual divisão
-   abre sozinha ao entrar na aba. */
-t("e são seis divisões, na ordem do catálogo",
+/* A ordem é a DIVISÃO PEDIDA pelo autor em 2026-09-17: Técnica primeiro,
+   Outros por último, e as Especializações no meio na ordem do catálogo. Dentro
+   do mesmo peso a ordem de chegada é preservada, porque o `sort` é estável. */
+t("as divisões saem na ordem pedida, com Outros por último",
   tudo.subs.map((s) => s.id),
-  ["lutador", "combatente", "conjurador", "restringido", "talento", "aptidao"]);
+  ["lutador", "combatente", "conjurador", "restringido", "aptidao", "outros"]);
 
 /* Nenhum estado se perde no caminho: toda raiz de toda sub-aba, somada aos
    filhos, devolve o catálogo inteiro. É o assert que pega um bloco esquecido. */
@@ -281,6 +284,52 @@ t("opcao sem escolha", estaLigado({ tipo: "opcao" }, null), false);
 t("opcao escolhida", estaLigado({ tipo: "opcao" }, "devastacao"), true);
 t("multi vazio não conta", estaLigado({ tipo: "multi" }, []), false);
 t("multi com um conta", estaLigado({ tipo: "multi" }, ["aura_lacerante"]), true);
+
+/* ============================================================ */
+/* 6. AS SEIS DIVISÕES NUMA CRIATURA DE VERDADE (2026-09-17)     */
+/* ============================================================ */
+/* Autor: *"Técnica | Especialização 1 | Especialização 2 | Aptidões |
+   Interlúdio | Outros"*. As três divisões que não saem de `requer*` chegam
+   pelo `dono` carimbado no `deriveAfty`, e este bloco prova a ponta a ponta:
+   se alguém tirar o carimbo de uma fonte, ela cai calada no balde. */
+const { deriveAfty } = await import(R + "afty-derive.js");
+const { createBlankAfty } = await import(R + "afty-schema.js");
+
+const fichaRica = () => {
+  const c = createBlankAfty();
+  // ND alto: libera o Grau Especial, que é quem pode ter três aliados.
+  c.core.nd = 21;
+  c.core.tipo = "conjurador";
+  c.especializacoes = [{ id: "conjurador", nivel: 11 }, { id: "lutador", nivel: 10 }];
+  return c;
+};
+const derivada = deriveAfty({ ...fichaRica(), combate: { ativo: true } });
+const linhasDaFicha = (derivada.combate.estadosExtras ?? []).map((e) => ({ tipo: "bool", ...e }));
+const subsDe = (linhas) => organizaEstados(linhas, "").subs.map((s) => s.id);
+
+/* Interlúdio: as duas Ferramentas, Cozinheiro e Ferreiro. */
+const donoPorId = new Map(linhasDaFicha.map((e) => [e.id, donoDoEstado(e).id]));
+t("as refeições são Interlúdio", donoPorId.get("comidas_refeicoes"), "interludio");
+t("o Grau do cozinheiro também", donoPorId.get("comidas_grau"), "interludio");
+t("o ferreiro é Interlúdio", donoPorId.get("armeiro_melhorias"), "interludio");
+/* Outros: o que não tem casa. */
+t("os aliados caem em Outros", donoPorId.get("aliados_escolhidos"), "outros");
+t("os Estados da Alma também", donoPorId.get("alma_info"), "outros");
+
+/* A ordem final, com as duas Especializações no meio. O Conjurador entra na
+   Técnica pelos estados de ativação dele, então a lista tem as seis. */
+const ordem = subsDe(linhasDaFicha);
+t("Outros é sempre a última divisão", ordem[ordem.length - 1], "outros");
+t("Interlúdio vem logo antes de Outros", ordem[ordem.length - 2], "interludio");
+t("nenhuma divisão aparece duas vezes", ordem.length, new Set(ordem).size);
+
+/* ⚠ E O CARIMBO NÃO PODE SUMIR. Uma fonte de `estadosExtras` sem `dono` cai em
+   Outros sem erro nenhum, que é o jeito silencioso de a aba voltar a ser uma
+   lista só. Este assert quebra no dia em que alguém acrescentar uma fonte e
+   esquecer o carimbo. */
+const semDono = linhasDaFicha.filter((e) => !e.dono && !e.requerEstado
+  && !e.requerAptidao && !e.requerTalento && !e.requerHabilidade && !e.requerEscolha);
+t("toda fonte de estadosExtras carimba a divisão dela", semDono.map((e) => e.id), []);
 
 console.log(bad.length ? `FALHAS (${bad.length}):\n` + bad.join("\n") : `TODOS OS ${ok} ASSERTS PASSARAM`);
 process.exitCode = bad.length ? 1 : 0;

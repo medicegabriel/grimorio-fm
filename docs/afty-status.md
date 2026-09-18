@@ -1,5 +1,42 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-09-17 (parte 6): A ABA DE COMBATE DIVIDIDA POR PAPEL
+
+Autor: *"Técnica | Especialização 1 | Especialização 2 | Aptidões | Interlúdio
+| Outros"*, com o critério de cada uma escrito junto.
+
+A aba já tinha sub-abas desde 2026-08-28, mas a divisão saía de ONDE o estado
+nasce: uma sub-aba por Especialização, mais Talentos, mais Aptidões, mais
+Feitiços, mais uma por Addon, e um balde. A divisão nova é por PAPEL, e é o que
+a pessoa procura no meio do turno:
+
+| Divisão | O que entra |
+|---|---|
+| Técnica | o que se ATIVA: Feitiço Auxiliar ligado, Transformação, Estilo, Domínio |
+| (uma por Especialização) | os estados das habilidades pegas, com o nome da classe |
+| Aptidões | as Aptidões ativáveis |
+| Interlúdio | as duas Ferramentas: Cozinheiro e Ferreiro |
+| Outros | o que não tem casa: Aliados, Alma, Ápice, Talento, item, Addon sem dono |
+
+Duas peças fizeram isso:
+
+1. **Cada fonte de `estadosExtras` carimba a divisão dela** no `deriveAfty`.
+   Esses estados nascem no derive e não têm `requer*` nenhum, então sem carimbo
+   caíam todos no mesmo balde. O `dono` já era a porta que `donoDoEstado`
+   consulta primeiro, e quem declara o próprio (os Addons) passa intacto. Há
+   assert que quebra se alguém acrescentar uma fonte e esquecer o carimbo.
+2. **A ordem virou tabela** (`ORDEM_DA_SUB`), com Técnica na frente e Outros
+   sempre por último. As Especializações e os Addons caem no meio, na ordem do
+   catálogo, porque o `sort` é estável.
+
+O dono dos estados de Feitiço deixou de ser "Feitiços" e virou "Técnica": o
+Auxiliar ligado e a Transformação fazem a mesma coisa que o Estilo e o Domínio,
+e estavam em duas casas. Talentos perdeu a sub-aba própria, porque a divisão
+pedida tem seis nomes e ele não é um deles.
+
+Asserts: `t-estados-organiza.mjs` foi de 47 para 56, com um bloco de ponta a
+ponta numa criatura multiclasse. Suíte em 99 de 100.
+
 ## SESSÃO DE 2026-09-17 (parte 5): ALIADOS ESCOLHIDOS, COMIDAS PELO LIVRO E O FERREIRO
 
 Três pedidos do autor, com o texto do livro em mãos nos três.

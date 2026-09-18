@@ -144,7 +144,10 @@ import {
   pvDaClasse, peDaClasse, peModTecnicaDaFicha, vagasDeHabilidadePorClasse,
   pacoteInicialDaFicha,
 } from "./afty-especializacoes";
-import { resolveCombate, degrausBrutalidade, tetoAtaqueConcentrado } from "./afty-combate";
+import {
+  resolveCombate, degrausBrutalidade, tetoAtaqueConcentrado,
+  comDonoDeBancada, SUB_TECNICA, SUB_APTIDOES, SUB_OUTROS,
+} from "./afty-combate";
 import {
   aplicarAptidoesNoDano, aptidoesAuraDesabilitadas, estadosCombateAptidoes,
 } from "./afty-combate-aptidoes";
@@ -1380,21 +1383,31 @@ export function deriveAfty(creature, opcoes = {}) {
     // instâncias: uma por Habilidade Única ativa, e uma por Técnica de Estilo
     // que precisa de gatilho (toda Modificação de Domínio Simples, mais a
     // Técnica Especial com linha ativa).
+    /* ⚠ CADA FONTE CARIMBA A SUB-ABA DELA (2026-09-17). Estes estados nascem
+       aqui e não têm `requer*` nenhum, então sem o carimbo todos caíam no mesmo
+       balde de "Outros" e a aba Buffs virava uma lista só. O `dono` é a porta
+       que `donoDoEstado` (ficha-estados.js) consulta antes de qualquer outra
+       coisa, e quem já declara o próprio (os Addons) passa intacto. */
     estadosExtras: [
-      ...equip.estadosUnica,
+      ...comDonoDeBancada(equip.estadosUnica, SUB_OUTROS),
       // O Talismã do Ápice, do livro ou criado: um estado só, por ficha.
-      ...(equip.temApice ? [ESTADO_APICE_DEF] : []),
-      ...estilo.estados,
-      ...estadosConjurador,
-      ...estadosAptidoes,
+      ...(equip.temApice ? comDonoDeBancada([ESTADO_APICE_DEF], SUB_OUTROS) : []),
+      // Técnica: o que se ATIVA. Estilo, Domínio, Feitiço Auxiliar e Transformação.
+      ...comDonoDeBancada(estilo.estados, SUB_TECNICA),
+      ...comDonoDeBancada(estadosConjurador, SUB_TECNICA),
+      ...comDonoDeBancada(estadosAptidoes, SUB_APTIDOES),
       ...estadosAddon,
-      ...estadosVislumbre,
+      ...comDonoDeBancada(estadosVislumbre, SUB_OUTROS),
       ...estadosCeu,
       // Só existe com uma arma equipada que tenha a Sintonizada.
-      ...(sintonizadas.length ? [{ id: ESTADO_SINTONIZADA, label: "Sintonizada", tipo: "bool" }] : []),
+      ...(sintonizadas.length
+        ? comDonoDeBancada([{ id: ESTADO_SINTONIZADA, label: "Sintonizada", tipo: "bool" }], SUB_OUTROS)
+        : []),
       /* O teto de aliados sai do GRAU DE FEITICEIRO, verbatim do livro, e por
          isso os nativos são montados aqui em vez de virem prontos: Quarto Grau
-         não pode ter aliado nenhum, e nesse caso as linhas deles nem entram. */
+         não pode ter aliado nenhum, e nesse caso as linhas deles nem entram.
+         O dono de cada um já vem de lá: Comidas e Ferreiro são Interlúdio, e
+         Aliados e Alma são Outros. */
       ...estadosNativosExtras(grau.rank),
     ],
   });

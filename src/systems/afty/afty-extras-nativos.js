@@ -489,7 +489,20 @@ export function estadosNativosExtras(rankDeFeiticeiro = 0) {
       e.id === "aliados_escolhidos" ? { ...e, maxSelecionados: max } : e
     ))
     : [];
-  return [...aliados, ...ESTADOS_ALMA, ...ESTADOS_COMIDAS, ...ESTADOS_ARMEIRO];
+  /* A sub-aba de cada um, na divisão que o autor pediu em 2026-09-17: Comidas
+     e Ferreiro são Interlúdio (as duas Ferramentas), e Aliados e Alma não têm
+     casa própria, então caem em Outros. O id é o mesmo de `afty-combate.js`, e
+     está escrito aqui em vez de importado para este módulo não ganhar aresta
+     nova no grafo (ver asserts/t-ordem-modulos.mjs). */
+  const interludio = { id: "interludio", label: "Interlúdio" };
+  const outros = { id: "outros", label: "Outros" };
+  const com = (lista, dono) => lista.map((e) => (e.dono ? e : { ...e, dono }));
+  return [
+    ...com(aliados, outros),
+    ...com(ESTADOS_ALMA, outros),
+    ...com(ESTADOS_COMIDAS, interludio),
+    ...com(ESTADOS_ARMEIRO, interludio),
+  ];
 }
 
 /** Recursos exibidos na área de Buffs, sem integrar Funcionamento Básico. */

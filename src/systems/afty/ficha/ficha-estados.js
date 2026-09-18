@@ -36,9 +36,19 @@ import { semAcento } from "./ficha-conteudo";
 /** O separador que o catálogo usa entre a família e a parte. */
 const SEP = " · ";
 
-/** O balde de quem não tem dono achável. Mesmo nome do que a aba Habilidades
-    já usa para uma habilidade sem `especializacaoId`. */
-const OUTRAS = { id: "outras", label: "Outras" };
+/** O balde de quem não tem casa própria. */
+const OUTROS = { id: "outros", label: "Outros" };
+
+/**
+ * A ORDEM DAS SUB-ABAS, pedida pelo autor em 2026-09-17: *"Técnica |
+ * Especialização 1 | Especialização 2 | Aptidões | Interlúdio | Outros"*.
+ *
+ * As Especializações e os Addons que declaram casa própria não estão na tabela
+ * e caem no meio, entre a Técnica e as Aptidões, na ordem em que o catálogo os
+ * apresenta. Outros é sempre o último, porque é o balde.
+ */
+const ORDEM_DA_SUB = { tecnica: 0, aptidao: 8, interludio: 9, outros: 10 };
+const pesoDaSub = (id) => ORDEM_DA_SUB[id] ?? 4;
 
 /**
  * Quebra `Família · Parte`. Rótulo sem separador não tem família, e a parte
@@ -79,15 +89,18 @@ const donoDaEscolha = (opcaoId) => {
  */
 export function donoDoEstado(estado) {
   if (estado?.dono?.id) return estado.dono;
-  if (estado?.requerEscolha) return donoDaEscolha(estado.requerEscolha) ?? OUTRAS;
-  if (estado?.requerTalento) return { id: "talento", label: "Talentos" };
+  if (estado?.requerEscolha) return donoDaEscolha(estado.requerEscolha) ?? OUTROS;
+  /* ⚠ TALENTO NÃO TEM MAIS SUB-ABA PRÓPRIA (autor, 2026-09-17). A divisão
+     pedida tem seis nomes e Talentos não é um deles, então ele cai no balde
+     junto de origem, Ápice e o que mais não tiver casa. */
+  if (estado?.requerTalento) return OUTROS;
   if (estado?.requerAptidao) return { id: "aptidao", label: "Aptidões" };
   for (const id of [].concat(estado?.requerHabilidade ?? [])) {
     const hab = AFTY_HABILIDADES.find((h) => h.id === id);
     const sub = subDaEspecializacao(hab?.especializacaoId);
     if (sub) return sub;
   }
-  return OUTRAS;
+  return OUTROS;
 }
 
 /**
@@ -163,7 +176,10 @@ export function organizaEstados(linhas, termo = "") {
     }
   }
 
-  // As sub-abas, na ordem em que aparecem no catálogo.
+  /* As sub-abas. A ordem de CHEGADA é a do catálogo, e depois ela é reordenada
+     pela divisão pedida: Técnica primeiro, Outros por último, Especializações e
+     Addons no meio. O `sort` do JS é estável, então quem tem o mesmo peso
+     preserva a ordem do catálogo. */
   const subs = [];
   const vistas = new Map();
   const donoDe = new Map();
@@ -176,6 +192,7 @@ export function organizaEstados(linhas, termo = "") {
     }
     vistas.get(dono.id).quantos += 1;
   }
+  subs.sort((a, b) => pesoDaSub(a.id) - pesoDaSub(b.id));
 
   /* Uma família só vira cabeçalho com DOIS ou mais na mesma sub-aba. Com um
      só, o cabeçalho não agruparia nada e ainda roubaria a palavra do rótulo:

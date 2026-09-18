@@ -874,6 +874,30 @@ export function resolveCombate(creature, params = {}) {
  * assim o `quando` continua legível, sem número mágico.
  */
 /**
+ * ============================================================
+ * AS DIVISÕES DA BANCADA
+ * ============================================================
+ * As sub-abas que a aba Buffs desenha, pedidas pelo autor em 2026-09-17:
+ * *"Técnica | Especialização 1 | Especialização 2 | Aptidões | Interlúdio |
+ * Outros"*.
+ *
+ * As Especializações não estão aqui porque elas saem da FICHA: uma sub-aba por
+ * classe escolhida, com o nome dela, montada em `ficha-estados.js`. O que mora
+ * aqui são as divisões FIXAS.
+ *
+ * ⚠ O id é gravado em lugar nenhum, então ele pode mudar. O `label` é o que a
+ * pessoa lê na aba.
+ */
+export const SUB_TECNICA = { id: "tecnica", label: "Técnica" };
+export const SUB_APTIDOES = { id: "aptidao", label: "Aptidões" };
+export const SUB_INTERLUDIO = { id: "interludio", label: "Interlúdio" };
+export const SUB_OUTROS = { id: "outros", label: "Outros" };
+
+/** Carimba o dono numa lista de estados, sem passar por cima de quem já tem. */
+export const comDonoDeBancada = (lista, dono) => (Array.isArray(lista) ? lista : [])
+  .map((e) => (e?.dono ? e : { ...e, dono }));
+
+/**
  * Uma linha da bancada deve aparecer?
  *
  * `requerEstado` sempre significou "esta linha só existe com aquela ligada", e

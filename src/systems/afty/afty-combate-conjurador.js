@@ -120,10 +120,17 @@ const transformacaoSustentada = (f) => ehTransformacao(f) && !["duradoura", "cen
    Duradouro, e cada Transformação Duradoura ou de Cena, vira um estado de
    liga e desliga. O Sustentado continua preso às vagas de Sustentação.
 
-   ⚠ O DONO "Feitiços" põe estes estados numa sub-aba própria da aba Buffs. Sem
-   dono eles caem em "Outras", e quem tem estado de habilidade abre a aba em outra
-   sub-aba e não os vê, que era a outra metade do "não está aparecendo". */
-const DONO_FEITICOS = { id: "feiticos", label: "Feitiços" };
+   ⚠ O DONO põe estes estados numa sub-aba própria da aba Buffs. Sem dono eles
+   caem no balde, e quem tem estado de habilidade abre a aba em outra sub-aba e
+   não os vê, que era a outra metade do "não está aparecendo".
+
+   ⚠ A SUB-ABA É "TÉCNICA" desde 2026-09-17, e era "Feitiços". O autor definiu a
+   divisão da aba por PAPEL e não por catálogo: *"Técnica, se refere a
+   transformações, habilidades auxiliares coisas que se ativa"*. O Auxiliar
+   ligado e a Transformação são exatamente isso, e ficavam numa sub-aba ao lado
+   do Estilo e do Domínio, que fazem a mesma coisa. O id acompanha o rótulo
+   porque ele não é gravado em ficha nenhuma. */
+const DONO_FEITICOS = { id: "tecnica", label: "Técnica" };
 const ESTADO_LIGADO = "feiticoLigado_";
 export const estadoLigadoDoFeitico = (id) => `${ESTADO_LIGADO}${id}`;
 
