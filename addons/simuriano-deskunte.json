@@ -1,0 +1,47 @@
+{
+  "id": "simuriano-deskunte",
+  "nome": "Simuriano Deskunte",
+  "versao": "1.0.0",
+  "autor": "Templas",
+  "paraRaw": "afty",
+  "descricao": "Nova Origem: os Deskuntianos, guerreiros da tribo Deskunte em Shimuria. Três notas de engenharia: (1) o `efeitos` de uma Característica dentro de `caracteristicas[]` NÃO é lido pelo motor para o efeito numérico principal (só `efeitosInvocacao`, um campo separado, passa por ali) — `coletarEfeitosOrigem` só coleta o `efeitos` do NÍVEL RAIZ da Origem. Por isso os números de Rolloluca e Constituição Guerreira moram no `efeitos` raiz, cada um com `nome` próprio (o campo do efeito vence o rótulo do catálogo), e as Características ficam só com o texto. (2) 'Bônus em Atributo' pede +2 num atributo MENTAL e +1 em outro qualquer, mas o motor só tem UM pool de distribuição livre por criatura (bonus.distribuir/maxPorAtributo, sem como travar só uma PARTE do pool a uma categoria de atributo) — virou distribuir:3, maxPorAtributo:2, sem a restrição de 'mental' no +2 (reserve 2 pontos pra um atributo mental na mesa). (3) 'Herança Deskunte' concede uma Técnica secundária à principal, e o motor não tem sistema de segunda Técnica nenhum — nem o Flugel do próprio livro, que também cita 'Técnica Herdada', tem efeito mecânico pra isso (é só rótulo de pré-requisito, resolvido pelo Clã Akutame). Ficou como texto puro, resolvida na mesa.",
+  "acrescenta": {
+    "origens": [
+      {
+        "id": "simuriano_deskunte",
+        "nome": "Simuriano Deskunte",
+        "lore": "Em Shimuria, existe uma energia natural, chamada de Rolloluca, que é muito similar à Energia Amaldiçoada existente no planeta Terra, e você, sendo um Simuriano, possui a capacidade de manipular essa energia.",
+        "bonusAtributos": { "constituicao": 2 },
+        "limiteAtributo": { "constituicao": 24 },
+        "efeitos": [
+          { "canal": "pe", "expr": "piso((nd + 1) / 2)", "nome": "Rolloluca" },
+          { "canal": "pontosAptidao", "expr": "1", "nome": "Rolloluca" },
+          { "canal": "hp", "expr": "piso((nd + 1) / 2)", "nome": "Constituição Guerreira" }
+        ],
+        "caracteristicas": [
+          {
+            "id": "deskunte_rolloluca",
+            "nome": "Rolloluca",
+            "descricao": "Em Shimuria, existe uma energia natural, chamada de Rolloluca, que é muito similar a Energia Amaldiçoada existente no planeta Terra, e você sendo um Simuriano possui a capacidade de manipular essa energia. Porém ela tem uma diferença característica, sendo mais bruta e existindo em maior quantidade de forma natural, diferentemente da Energia Amaldiçoada. Recebe +1 PE a cada Nível Ímpar e começa com +1 Aptidão Amaldiçoada."
+          },
+          {
+            "id": "deskunte_bonus_atributo",
+            "nome": "Bônus em Atributo",
+            "descricao": "Um Deskuntiano aumenta o valor de um atributo mental em 2 pontos, além de outro em 1 ponto. [O motor não separa uma parte do bônus para atributos mentais: distribua os 3 pontos como preferir, até 2 no mesmo atributo, reservando ao menos 2 pontos para Inteligência, Sabedoria ou Presença na mesa.]",
+            "bonus": { "distribuir": 3, "maxPorAtributo": 2 }
+          },
+          {
+            "id": "deskunte_constituicao_guerreira",
+            "nome": "Constituição Guerreira",
+            "descricao": "O corpo de um Deskuntiano é naturalmente mais resistente e adepto para ser um guerreiro, sendo maior, mais forte e resistente que outros Simurianos. Recebe +1 PV a cada Nível Ímpar e +2 pontos para aumentar o atributo de Constituição, tendo o limite desse atributo aumentado para 24."
+          },
+          {
+            "id": "deskunte_heranca",
+            "nome": "Herança Deskunte",
+            "descricao": "A tribo Deskunte possui uma Técnica que é passada para cada guerreiro da tribo, um conceito herdado da Tribo Deskunte, impossível de pronunciar para os terráqueos. É descrito como uma \"Intenção Intangível que se torna Tangível\". Recebe a Técnica Herdada (uma técnica secundária à principal do usuário). [Sem sistema de segunda Técnica no motor: construa e resolva a Técnica Herdada na mesa, como um Perfil Amaldiçoado à parte.]"
+          }
+        ]
+      }
+    ]
+  }
+}
