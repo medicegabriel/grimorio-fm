@@ -14125,3 +14125,25 @@ por rodada, a perda permanente de Integridade máxima e a troca da Ficha pela Ma
 portão de Ápice para o interruptor de Addon (o `comDono` só conhece Talento, Habilidade e Aptidão), então
 ele aparece para quem instala o pacote e os números só contam com a Ápice escolhida. Asserts em
 `t-consumir-cinzas.mjs` (15).
+
+
+## SESSÃO DE 2026-09-19: QUIMERA COMO PASSIVA DE NÍVEL 2 A 4 (ADDON)
+
+Addon `quimera`, na aba de Invocações, sem código novo. Ele usa o mecanismo de fontes que a Quimera das
+Dez Sombras já usa (marcador com `fontes`, `herdaDaFonte` e as funções `fontes()` do DSL), com as regras
+do texto novo: o PV é a soma do PV de todas as fundidas menos 10 (e não os dois maiores), o Custo em PE é
+a soma delas, a Quimera une os Treinamentos de Perícia, Acerto e TR, pega o maior atributo e recebe +1 em
+Acerto, CD, Defesa, Nível de Dano, TRs e Perícia por fundida além da primeira, mais 1 Ação ou
+Característica por fundida além da primeira. Uma Quimera por cena é o `limiteExpr: "1"` do marcador.
+
+O teto de fusões vem do Nível da Passiva (2, 3 ou 4), e o marcador só enxerga Talento, Habilidade, Origem
+e Clã (`temIds` em `afty-derive.js`), nunca um Feitiço Passivo. Por isso cada nível virou um Talento que
+paga a própria vaga, com o marcador dele e o `fontesMaxExpr` certo (2, 3 ou 4). A pessoa pega o Talento do
+nível da Passiva dela. Ficaram na mesa: o custo de PE Máximo da Passiva na ficha de jogador, a ficha da
+Quimera feita de antemão e a trava das invocações fundidas depois de Dissipada. Asserts em
+`t-quimera.mjs` (29).
+
+O mesmo Addon traz também o Talento Maldição (2026-09-19), que libera nas invocações normais a opção
+selecionável Maldição: o PV base da invocação marcada vira 1,5 vezes (`piso(pv_max / 2)` somado). Ela não
+vale numa Quimera: o efeito só liga com nenhuma fonte de fusão declarada. O marcador não tem `fontes` e o
+limite de invocações marcadas é 20, valor meu porque o pedido não fixou um número.

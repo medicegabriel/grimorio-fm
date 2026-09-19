@@ -1,0 +1,239 @@
+{
+  "id": "quimera",
+  "nome": "Quimera",
+  "versao": "1.0.0",
+  "autor": "Templas",
+  "paraRaw": "afty",
+  "descricao": "Fusão de Invocações (Quimera) na aba de Invocações, como Passiva de Nível 2, 3 ou 4. Sem código novo: usa o mecanismo de fontes que a Quimera das Dez Sombras já usa (marcador com `fontes`, `herdaDaFonte` e as funções `fontes()` do DSL). Como o teto de fusões vem do Nível da Passiva (2, 3 ou 4) e o marcador só enxerga Talento, Habilidade, Origem e Clã, cada nível virou um Talento próprio que paga a própria vaga, e cada Talento abre o seu marcador com o teto certo. Pegue o Talento do nível da sua Passiva. O PV da Quimera é a soma do PV base de todas as fundidas menos 10, o Custo em PE é a soma delas, a Quimera une os Treinamentos de Perícia, Acerto e TR, pega o maior atributo e recebe +1 em Acerto, CD, Defesa, Nível de Dano, TRs e Perícia por fundida além da primeira, mais 1 Ação ou Característica por fundida além da primeira. Não alcançados pelo motor, feitos na mesa: o custo de PE Máximo da Passiva na ficha de jogador, a ficha de antemão para avaliação, a regra de uma Quimera por cena e as invocações fundidas que ficam bloqueadas depois que ela é Dissipada. Também traz o Talento Maldição, que libera nas invocações normais a opção selecionável Maldição: multiplica por 1,5 o PV base da invocação (não vale numa Quimera).",
+  "acrescenta": {
+    "talentos": [
+      {
+        "id": "tal_quimera_2",
+        "nome": "Quimera (Passiva de Nível 2)",
+        "grupo": "geral",
+        "descricao": "Quimeras são fusões realizadas entre Invocações, permitindo maior versatilidade ao Controlador. Entretanto, essa prática também torna os Invocações mais frágeis durante o combate.\n\nUma Quimera pode ser formada pela fusão de até 4 Invocações. Um exemplo é o Agito, invocado por Sukuna, resultado da fusão entre Cervo Circular, Tigre Fúnebre, Grande Serpente e Nue.\n\n- Para invocar uma Quimera, o conjurador deve subir em um Passo a Ação de Invocar o Invocações. O Custo em PE é a soma de todas as invocações fundidas.\n- Uma Passiva de Nível 2, pode fundir até 2 Invocações.\n- Uma Passiva de Nível 3, pode fundir até 3 Invocações.\n- Uma Passiva de Nível 4, pode fundir até 4 Invocações.\n- A Vida Máxima de uma Quimera é igual a soma do HP de cada Invocação fundido - 10.\n- A Quimera recebe todos os Treinamentos de Pericia, Acerto e TR das invocações fundidas.\n- A Quimera recebe o maior atributo entre as Invocações fundidas. Pegando Força, Destreza, Constituição e etc sempre do maior valor entre as invocações.\n- Movimento, Defesa e Valores da Quimera devem ser calculadas novamente com base nas mudanças acima, seguindo os padrões do sistema normalmente.\n- Recebe +1 em Acerto, CD, Defesa, Nível de Dano, TRs e Pericia para cada Invocação fundida além da primeira.\n- Uma Quimera possui uma quantidade de Ações/Caracteristicas iguais a Invocação Principal usada para a fusão + 1 para cada outra Invocação colocada na Fusão.\n- As Ações/Caracteristicas da Quimera, podem ser escolhidas entre quaisquer Açõe/Caracteristicas das invocações fundidas. Além ser possível criar Ações/Caracteristicas únicas para a Quimera.\n- A Ficha da Quimera deve ser feita de antemão e enviada para Avaliação.\n- Você só pode invocar uma Quimera por cena. Caso ela venha a ser Dissipada, as Invocações usadas para cria-la não podem ser invocadas novamente durante a cena.",
+        "efeitos": [
+          {
+            "canal": "vagasTalento",
+            "expr": "1",
+            "nome": "Quimera · Vaga de Talento"
+          }
+        ],
+        "efeitosInvocacao": [
+          {
+            "canal": "pv",
+            "expr": "fontes(\"quimera_passiva_2\", \"soma\", \"pv_max\") - 10 - pv_max",
+            "quando": "fontes_qtd(\"quimera_passiva_2\") > 0",
+            "nome": "Quimera · Pontos de Vida"
+          },
+          {
+            "canal": "custoReducao",
+            "expr": "custo - fontes(\"quimera_passiva_2\", \"soma\", \"custo\")",
+            "quando": "fontes_qtd(\"quimera_passiva_2\") > 0",
+            "nome": "Quimera · Custo em PE"
+          },
+          {
+            "canal": "bonusTeste",
+            "expr": "max(0, fontes_qtd(\"quimera_passiva_2\") - 1)",
+            "nome": "Quimera · Acerto, TR e Perícia"
+          },
+          {
+            "canal": "cd",
+            "expr": "max(0, fontes_qtd(\"quimera_passiva_2\") - 1)",
+            "nome": "Quimera · CD"
+          },
+          {
+            "canal": "defesa",
+            "expr": "max(0, fontes_qtd(\"quimera_passiva_2\") - 1)",
+            "nome": "Quimera · Defesa"
+          },
+          {
+            "canal": "danoNivel",
+            "expr": "max(0, fontes_qtd(\"quimera_passiva_2\") - 1)",
+            "nome": "Quimera · Nível de Dano"
+          },
+          {
+            "canal": "orcamentoLivre",
+            "expr": "max(0, fontes_qtd(\"quimera_passiva_2\") - 1)",
+            "nome": "Quimera · Ações e Características"
+          }
+        ]
+      },
+      {
+        "id": "tal_quimera_3",
+        "nome": "Quimera (Passiva de Nível 3)",
+        "grupo": "geral",
+        "descricao": "Quimeras são fusões realizadas entre Invocações, permitindo maior versatilidade ao Controlador. Entretanto, essa prática também torna os Invocações mais frágeis durante o combate.\n\nUma Quimera pode ser formada pela fusão de até 4 Invocações. Um exemplo é o Agito, invocado por Sukuna, resultado da fusão entre Cervo Circular, Tigre Fúnebre, Grande Serpente e Nue.\n\n- Para invocar uma Quimera, o conjurador deve subir em um Passo a Ação de Invocar o Invocações. O Custo em PE é a soma de todas as invocações fundidas.\n- Uma Passiva de Nível 2, pode fundir até 2 Invocações.\n- Uma Passiva de Nível 3, pode fundir até 3 Invocações.\n- Uma Passiva de Nível 4, pode fundir até 4 Invocações.\n- A Vida Máxima de uma Quimera é igual a soma do HP de cada Invocação fundido - 10.\n- A Quimera recebe todos os Treinamentos de Pericia, Acerto e TR das invocações fundidas.\n- A Quimera recebe o maior atributo entre as Invocações fundidas. Pegando Força, Destreza, Constituição e etc sempre do maior valor entre as invocações.\n- Movimento, Defesa e Valores da Quimera devem ser calculadas novamente com base nas mudanças acima, seguindo os padrões do sistema normalmente.\n- Recebe +1 em Acerto, CD, Defesa, Nível de Dano, TRs e Pericia para cada Invocação fundida além da primeira.\n- Uma Quimera possui uma quantidade de Ações/Caracteristicas iguais a Invocação Principal usada para a fusão + 1 para cada outra Invocação colocada na Fusão.\n- As Ações/Caracteristicas da Quimera, podem ser escolhidas entre quaisquer Açõe/Caracteristicas das invocações fundidas. Além ser possível criar Ações/Caracteristicas únicas para a Quimera.\n- A Ficha da Quimera deve ser feita de antemão e enviada para Avaliação.\n- Você só pode invocar uma Quimera por cena. Caso ela venha a ser Dissipada, as Invocações usadas para cria-la não podem ser invocadas novamente durante a cena.",
+        "efeitos": [
+          {
+            "canal": "vagasTalento",
+            "expr": "1",
+            "nome": "Quimera · Vaga de Talento"
+          }
+        ],
+        "efeitosInvocacao": [
+          {
+            "canal": "pv",
+            "expr": "fontes(\"quimera_passiva_3\", \"soma\", \"pv_max\") - 10 - pv_max",
+            "quando": "fontes_qtd(\"quimera_passiva_3\") > 0",
+            "nome": "Quimera · Pontos de Vida"
+          },
+          {
+            "canal": "custoReducao",
+            "expr": "custo - fontes(\"quimera_passiva_3\", \"soma\", \"custo\")",
+            "quando": "fontes_qtd(\"quimera_passiva_3\") > 0",
+            "nome": "Quimera · Custo em PE"
+          },
+          {
+            "canal": "bonusTeste",
+            "expr": "max(0, fontes_qtd(\"quimera_passiva_3\") - 1)",
+            "nome": "Quimera · Acerto, TR e Perícia"
+          },
+          {
+            "canal": "cd",
+            "expr": "max(0, fontes_qtd(\"quimera_passiva_3\") - 1)",
+            "nome": "Quimera · CD"
+          },
+          {
+            "canal": "defesa",
+            "expr": "max(0, fontes_qtd(\"quimera_passiva_3\") - 1)",
+            "nome": "Quimera · Defesa"
+          },
+          {
+            "canal": "danoNivel",
+            "expr": "max(0, fontes_qtd(\"quimera_passiva_3\") - 1)",
+            "nome": "Quimera · Nível de Dano"
+          },
+          {
+            "canal": "orcamentoLivre",
+            "expr": "max(0, fontes_qtd(\"quimera_passiva_3\") - 1)",
+            "nome": "Quimera · Ações e Características"
+          }
+        ]
+      },
+      {
+        "id": "tal_quimera_4",
+        "nome": "Quimera (Passiva de Nível 4)",
+        "grupo": "geral",
+        "descricao": "Quimeras são fusões realizadas entre Invocações, permitindo maior versatilidade ao Controlador. Entretanto, essa prática também torna os Invocações mais frágeis durante o combate.\n\nUma Quimera pode ser formada pela fusão de até 4 Invocações. Um exemplo é o Agito, invocado por Sukuna, resultado da fusão entre Cervo Circular, Tigre Fúnebre, Grande Serpente e Nue.\n\n- Para invocar uma Quimera, o conjurador deve subir em um Passo a Ação de Invocar o Invocações. O Custo em PE é a soma de todas as invocações fundidas.\n- Uma Passiva de Nível 2, pode fundir até 2 Invocações.\n- Uma Passiva de Nível 3, pode fundir até 3 Invocações.\n- Uma Passiva de Nível 4, pode fundir até 4 Invocações.\n- A Vida Máxima de uma Quimera é igual a soma do HP de cada Invocação fundido - 10.\n- A Quimera recebe todos os Treinamentos de Pericia, Acerto e TR das invocações fundidas.\n- A Quimera recebe o maior atributo entre as Invocações fundidas. Pegando Força, Destreza, Constituição e etc sempre do maior valor entre as invocações.\n- Movimento, Defesa e Valores da Quimera devem ser calculadas novamente com base nas mudanças acima, seguindo os padrões do sistema normalmente.\n- Recebe +1 em Acerto, CD, Defesa, Nível de Dano, TRs e Pericia para cada Invocação fundida além da primeira.\n- Uma Quimera possui uma quantidade de Ações/Caracteristicas iguais a Invocação Principal usada para a fusão + 1 para cada outra Invocação colocada na Fusão.\n- As Ações/Caracteristicas da Quimera, podem ser escolhidas entre quaisquer Açõe/Caracteristicas das invocações fundidas. Além ser possível criar Ações/Caracteristicas únicas para a Quimera.\n- A Ficha da Quimera deve ser feita de antemão e enviada para Avaliação.\n- Você só pode invocar uma Quimera por cena. Caso ela venha a ser Dissipada, as Invocações usadas para cria-la não podem ser invocadas novamente durante a cena.",
+        "efeitos": [
+          {
+            "canal": "vagasTalento",
+            "expr": "1",
+            "nome": "Quimera · Vaga de Talento"
+          }
+        ],
+        "efeitosInvocacao": [
+          {
+            "canal": "pv",
+            "expr": "fontes(\"quimera_passiva_4\", \"soma\", \"pv_max\") - 10 - pv_max",
+            "quando": "fontes_qtd(\"quimera_passiva_4\") > 0",
+            "nome": "Quimera · Pontos de Vida"
+          },
+          {
+            "canal": "custoReducao",
+            "expr": "custo - fontes(\"quimera_passiva_4\", \"soma\", \"custo\")",
+            "quando": "fontes_qtd(\"quimera_passiva_4\") > 0",
+            "nome": "Quimera · Custo em PE"
+          },
+          {
+            "canal": "bonusTeste",
+            "expr": "max(0, fontes_qtd(\"quimera_passiva_4\") - 1)",
+            "nome": "Quimera · Acerto, TR e Perícia"
+          },
+          {
+            "canal": "cd",
+            "expr": "max(0, fontes_qtd(\"quimera_passiva_4\") - 1)",
+            "nome": "Quimera · CD"
+          },
+          {
+            "canal": "defesa",
+            "expr": "max(0, fontes_qtd(\"quimera_passiva_4\") - 1)",
+            "nome": "Quimera · Defesa"
+          },
+          {
+            "canal": "danoNivel",
+            "expr": "max(0, fontes_qtd(\"quimera_passiva_4\") - 1)",
+            "nome": "Quimera · Nível de Dano"
+          },
+          {
+            "canal": "orcamentoLivre",
+            "expr": "max(0, fontes_qtd(\"quimera_passiva_4\") - 1)",
+            "nome": "Quimera · Ações e Características"
+          }
+        ]
+      },
+      {
+        "id": "tal_maldicao",
+        "nome": "Maldição",
+        "grupo": "geral",
+        "descricao": "Libera, em cada invocação normal, a opção selecionável Maldição: a invocação marcada tem a vida multiplicada por 1,5. Não vale para uma Quimera, que segue o cálculo de vida da fusão.",
+        "efeitos": [
+          {
+            "canal": "vagasTalento",
+            "expr": "1",
+            "nome": "Maldição · Vaga de Talento"
+          }
+        ],
+        "efeitosInvocacao": [
+          {
+            "canal": "pv",
+            "expr": "piso(pv_max / 2)",
+            "quando": "marc_quimera_maldicao && fontes_qtd(\"quimera_passiva_2\") + fontes_qtd(\"quimera_passiva_3\") + fontes_qtd(\"quimera_passiva_4\") == 0",
+            "nome": "Maldição · Pontos de Vida"
+          }
+        ]
+      }
+    ],
+    "marcadores": [
+      {
+        "id": "passiva_2",
+        "label": "Quimera (Passiva de Nível 2)",
+        "requerId": "tal_quimera_2",
+        "limiteExpr": "1",
+        "fontes": true,
+        "herdaDaFonte": {
+          "pericias": "uniao",
+          "tr": "uniao",
+          "ataque": "uniao",
+          "atributos": "maior"
+        },
+        "fontesMaxExpr": "2"
+      },
+      {
+        "id": "passiva_3",
+        "label": "Quimera (Passiva de Nível 3)",
+        "requerId": "tal_quimera_3",
+        "limiteExpr": "1",
+        "fontes": true,
+        "herdaDaFonte": {
+          "pericias": "uniao",
+          "tr": "uniao",
+          "ataque": "uniao",
+          "atributos": "maior"
+        },
+        "fontesMaxExpr": "3"
+      },
+      {
+        "id": "passiva_4",
+        "label": "Quimera (Passiva de Nível 4)",
+        "requerId": "tal_quimera_4",
+        "limiteExpr": "1",
+        "fontes": true,
+        "herdaDaFonte": {
+          "pericias": "uniao",
+          "tr": "uniao",
+          "ataque": "uniao",
+          "atributos": "maior"
+        },
+        "fontesMaxExpr": "4"
+      },
+      {
+        "id": "maldicao",
+        "label": "Maldição",
+        "requerId": "tal_maldicao",
+        "limiteExpr": "20"
+      }
+    ]
+  }
+}
