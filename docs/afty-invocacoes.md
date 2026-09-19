@@ -1263,7 +1263,7 @@ porque o editor pintava o resultado em verde e confirmava um número que a invoc
 
 | Variável | O que é |
 |---|---|
-| `tipo_shikigami`, `tipo_tecnica`, `tipo_dispositivo` | qual tipo mecânico ela é |
+| `tipo_shikigami`, `tipo_tecnica`, `tipo_dispositivo`, `tipo_maldicao` | qual tipo mecânico ela é (`tipo_shikigami` também vale para a Maldição, que é uma invocação de Talismã, e o `tipo_dispositivo` já saiu do catálogo em 2026-09-02) |
 | `tamanho` | tamanho como DEGRAU (Miúdo 1 em diante), lido da Característica de Tamanho |
 | `acoes`, `caracteristicas` | quantas ela tem |
 

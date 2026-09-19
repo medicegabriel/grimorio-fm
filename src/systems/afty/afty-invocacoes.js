@@ -113,7 +113,7 @@ export const resistenciasTreinaveis = () => AFTY_RESISTENCIAS.filter((r) => r.va
 export const INV_ATTR_KEYS = ["forca", "destreza", "constituicao", "inteligencia", "sabedoria", "presenca"];
 
 /**
- * Os dois tipos mecânicos.
+ * Os tipos mecânicos: Invocação, Invocação de Técnica e Maldição (2026-09-19).
  *
  * ⚠ INVOCAÇÃO DE TÉCNICA é um tipo à parte, e não um rótulo: ele muda números
  * (base de atributo, PV, bônus, orçamento) e a economia de ação. O capítulo já o
@@ -131,6 +131,11 @@ export const AFTY_INV_TIPOS = [
      Trocar o value seria migração de dado, e o pedido foi de nome na tela. */
   { value: "shikigami",   label: "Invocação",             intermediario: "Talismã",     retirada: "dissipar / exorcizar" },
   { value: "tecnica",     label: "Invocação de Técnica",  intermediario: null,          retirada: "dissipar / exorcizar" },
+  /* ⚠ MALDIÇÃO (2026-09-19, pedido do autor): um tipo NATIVO, ao lado dos dois de
+     cima, e não uma opção de Talento ou de Addon. É uma invocação normal (mesmo
+     Intermediário, mesma base de atributo, mesma retirada) cuja vida vale 1,5
+     vez o PV já somado. O efeito mora em `MALDICAO_EFEITOS`, no canal `pvMult`. */
+  { value: "maldicao",    label: "Maldição",              intermediario: "Talismã",     retirada: "dissipar / exorcizar" },
 ];
 
 /**
@@ -1476,7 +1481,10 @@ export function buildInvocacaoDslContext(inv, dono = {}, resolved = {}) {
     /* TIPO MECÂNICO como booleana. Sem isto não dava para escrever efeito que
        vale só para um tipo, e o próprio `TECNICA_EFEITOS` precisou de um desvio
        em código (`efeitosDoTipo`) por falta de `quando: "tipo_tecnica"`. */
-    tipo_shikigami: tipo === "shikigami" ? 1 : 0,
+    // A Maldição é uma invocação de Talismã como a normal, então também liga o
+    // `tipo_shikigami`: regra escrita para "invocação de Talismã" vale para ela.
+    tipo_shikigami: tipo === "shikigami" || tipo === "maldicao" ? 1 : 0,
+    tipo_maldicao: tipo === "maldicao" ? 1 : 0,
     tipo_tecnica: tipo === "tecnica" ? 1 : 0,
     /* Tamanho como DEGRAU (Miúdo 1 ... Colossal N), porque é assim que ele se
        move: a Característica de Tamanho sobe degraus, não centímetros. */
@@ -1537,6 +1545,12 @@ export function buildInvocacaoDslContext(inv, dono = {}, resolved = {}) {
  */
 export const INV_EFEITO_CANAIS = [
   { id: "pv",           label: "PV",           grupo: "Vida e Defesa", nota: "Pontos de Vida máximos" },
+  /* ⚠ MULTIPLICADOR (2026-09-19), e não soma. Multiplica o PV FINAL, depois do PV
+     base, do canal `pv` e da Característica de Vida, e por isso os bônus de vida
+     das Habilidades também são multiplicados. VALE UMA VEZ SÓ: com várias fontes
+     vale a MAIOR, nunca o produto nem a soma (autor: "não pode aumentar de novo o
+     bônus de vida"). O valor é o multiplicador, então 1,5 vale uma vez e meia. */
+  { id: "pvMult",       label: "Multiplicador de PV", grupo: "Vida e Defesa", nota: "Multiplica o PV final, já com os bônus de vida. Vale uma vez só: com mais de uma fonte vale a maior" },
   { id: "defesa",       label: "Defesa",       grupo: "Vida e Defesa" },
   { id: "rd",           label: "RD",           grupo: "Vida e Defesa", alvo: "rdTipo", alvoOpcional: true, nota: "Sem alvo vale contra todos os tipos. Com alvo, só contra aquele tipo de dano" },
   { id: "deslocamento", label: "Deslocamento", grupo: "Vida e Defesa", nota: "Em metros" },
@@ -1856,7 +1870,17 @@ export const TECNICA_EFEITOS = [
     2026-09-02, quando o autor trocou "Shikigami de Técnica" por
     "Invocação de Técnica". */
 const NOME_TIPO_TECNICA = AFTY_INV_TIPOS.find((t) => t.value === "tecnica")?.label ?? "Técnica";
-const EFEITOS_DE_TIPO = TECNICA_EFEITOS.map((e) => ({ ...e, origem: "tecnica", nome: NOME_TIPO_TECNICA }));
+const NOME_TIPO_MALDICAO = AFTY_INV_TIPOS.find((t) => t.value === "maldicao")?.label ?? "Maldição";
+/* A Maldição: a vida vale 1,5 vez o PV já somado (base, canal `pv` e Característica
+   de Vida), então os bônus de vida das Habilidades também são multiplicados. O
+   canal `pvMult` vale uma vez só: com outra fonte de multiplicador vale a maior. */
+const MALDICAO_EFEITOS = [
+  { canal: "pvMult", expr: "1.5", quando: "tipo_maldicao" },
+];
+const EFEITOS_DE_TIPO = [
+  ...TECNICA_EFEITOS.map((e) => ({ ...e, origem: "tecnica", nome: NOME_TIPO_TECNICA })),
+  ...MALDICAO_EFEITOS.map((e) => ({ ...e, origem: "maldicao", nome: NOME_TIPO_MALDICAO })),
+];
 
 function efeitosHabilidade(inv, dono) {
   const acc = Object.fromEntries(EFEITO_CANAIS.map((c) => [c, 0]));
@@ -2393,7 +2417,13 @@ export function resolveInvocacao(inv, dono = {}) {
       })),
     }
     : resumoAttr;
-  const pv = pvInvocacao(invEf, dono) + efe.pv + caract.pv;
+  /* O canal `pvMult` multiplica o PV JÁ SOMADO (base, canal `pv` e Característica
+     de Vida), arredondado para baixo. Vale a MAIOR fonte, uma vez só: o
+     acumulador soma, então o multiplicador sai dos detalhes, e não de `efe.pvMult`. */
+  const fontesPvMult = (efe.detalhes || []).filter((d) => d.canal === "pvMult" && !d.alvo && Number(d.valor) > 1);
+  const pvMultVencedor = fontesPvMult.reduce((m, d) => (Number(d.valor) > Number(m?.valor ?? 0) ? d : m), null);
+  const pvMult = pvMultVencedor ? Number(pvMultVencedor.valor) : 1;
+  const pv = Math.floor((pvInvocacao(invEf, dono) + efe.pv + caract.pv) * pvMult);
   const defesa = defesaInvocacao(invEf, dono) + efe.defesa + aux.proprio.defesa;
   const deslocamento = deslocamentoInvocacao() + efe.deslocamento;
   // Tamanho: Médio até que uma Característica de Tamanho diga outro.
@@ -2448,6 +2478,8 @@ export function resolveInvocacao(inv, dono = {}) {
          leva o nome de quem venceu, que pode ser o Motor de uma Livre. Ver
          `agregarCaracteristicas`. */
       ...(caract.pv ? [{ label: caract.pvFonte || "Característica", valor: caract.pv }] : []),
+      // A fonte que venceu, por último: o multiplicador age sobre a soma acima.
+      ...(pvMultVencedor ? [{ label: pvMultVencedor.nome, texto: `× ${pvMult}` }] : []),
     ],
     defesa: [
       ...partesDefesaInvocacao(invEf, dono),

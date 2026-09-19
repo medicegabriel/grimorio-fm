@@ -4,7 +4,7 @@
   "versao": "1.0.0",
   "autor": "Templas",
   "paraRaw": "afty",
-  "descricao": "Fusão de Invocações (Quimera) na aba de Invocações, como Passiva de Nível 2, 3 ou 4. Sem código novo: usa o mecanismo de fontes que a Quimera das Dez Sombras já usa (marcador com `fontes`, `herdaDaFonte` e as funções `fontes()` do DSL). Como o teto de fusões vem do Nível da Passiva (2, 3 ou 4) e o marcador só enxerga Talento, Habilidade, Origem e Clã, cada nível virou um Talento próprio que paga a própria vaga, e cada Talento abre o seu marcador com o teto certo. Pegue o Talento do nível da sua Passiva. O PV da Quimera é a soma do PV base de todas as fundidas menos 10, o Custo em PE é a soma delas, a Quimera une os Treinamentos de Perícia, Acerto e TR, pega o maior atributo e recebe +1 em Acerto, CD, Defesa, Nível de Dano, TRs e Perícia por fundida além da primeira, mais 1 Ação ou Característica por fundida além da primeira. Não alcançados pelo motor, feitos na mesa: o custo de PE Máximo da Passiva na ficha de jogador, a ficha de antemão para avaliação, a regra de uma Quimera por cena e as invocações fundidas que ficam bloqueadas depois que ela é Dissipada. Também traz o Talento Maldição, que libera nas invocações normais a opção selecionável Maldição: multiplica por 1,5 o PV base da invocação (não vale numa Quimera).",
+  "descricao": "Fusão de Invocações (Quimera) na aba de Invocações, como Passiva de Nível 2, 3 ou 4. Sem código novo: usa o mecanismo de fontes que a Quimera das Dez Sombras já usa (marcador com `fontes`, `herdaDaFonte` e as funções `fontes()` do DSL). Como o teto de fusões vem do Nível da Passiva (2, 3 ou 4) e o marcador só enxerga Talento, Habilidade, Origem e Clã, cada nível virou um Talento próprio que paga a própria vaga, e cada Talento abre o seu marcador com o teto certo. Pegue o Talento do nível da sua Passiva. O PV da Quimera é a soma do PV base de todas as fundidas menos 10, o Custo em PE é a soma delas, a Quimera une os Treinamentos de Perícia, Acerto e TR, pega o maior atributo e recebe +1 em Acerto, CD, Defesa, Nível de Dano, TRs e Perícia por fundida além da primeira, mais 1 Ação ou Característica por fundida além da primeira. Não alcançados pelo motor, feitos na mesa: o custo de PE Máximo da Passiva na ficha de jogador, a ficha de antemão para avaliação, a regra de uma Quimera por cena e as invocações fundidas que ficam bloqueadas depois que ela é Dissipada.",
   "acrescenta": {
     "talentos": [
       {
@@ -162,27 +162,6 @@
             "nome": "Quimera · Ações e Características"
           }
         ]
-      },
-      {
-        "id": "tal_maldicao",
-        "nome": "Maldição",
-        "grupo": "geral",
-        "descricao": "Libera, em cada invocação normal, a opção selecionável Maldição: a invocação marcada tem a vida multiplicada por 1,5. Não vale para uma Quimera, que segue o cálculo de vida da fusão.",
-        "efeitos": [
-          {
-            "canal": "vagasTalento",
-            "expr": "1",
-            "nome": "Maldição · Vaga de Talento"
-          }
-        ],
-        "efeitosInvocacao": [
-          {
-            "canal": "pv",
-            "expr": "piso(pv_max / 2)",
-            "quando": "marc_quimera_maldicao && fontes_qtd(\"quimera_passiva_2\") + fontes_qtd(\"quimera_passiva_3\") + fontes_qtd(\"quimera_passiva_4\") == 0",
-            "nome": "Maldição · Pontos de Vida"
-          }
-        ]
       }
     ],
     "marcadores": [
@@ -227,12 +206,6 @@
           "atributos": "maior"
         },
         "fontesMaxExpr": "4"
-      },
-      {
-        "id": "maldicao",
-        "label": "Maldição",
-        "requerId": "tal_maldicao",
-        "limiteExpr": "20"
       }
     ]
   }

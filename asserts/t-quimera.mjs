@@ -198,40 +198,5 @@ t("a fonte nao herda nada da Quimera", outra.pv, pvFontes[0]);
   t("marcador de um nivel que a ficha nao tem nao da PV", r.pv, base.pv);
 }
 
-
-/* ============================================================ */
-/* 6. A OPÇÃO MALDIÇÃO, NAS INVOCAÇÕES NORMAIS                   */
-/* ============================================================ */
-/* Multiplica por 1,5 o PV BASE da invocação marcada, e não vale numa Quimera. */
-const MALDICAO = NS + 'maldicao';
-t('o Talento Maldicao existe e paga a propria vaga',
-  [getTalento(NS + 'tal_maldicao')?.nome,
-    (getTalento(NS + 'tal_maldicao')?.efeitos ?? []).filter((e) => e.canal === 'vagasTalento').length], ['Maldição', 1]);
-t('orcamento com a Maldicao continua o de sempre', orcamento([NS + 'tal_maldicao']), [3, 1, 2]);
-const maldicaoDe = (ts) => {
-  const c = ficha({});
-  c.talentos = ts;
-  return deriveAfty(c).invocacoes.marcadores.find((m) => m.id === MALDICAO);
-};
-t('sem o Talento a Maldicao nao aparece', maldicaoDe([talentoDe(4)]), undefined);
-t('com o Talento ela aparece, sem fontes', [maldicaoDe([NS + 'tal_maldicao'])?.label, !!maldicaoDe([NS + 'tal_maldicao'])?.fontes],
-  ['Maldição', false]);
-const comMaldicao = (marcada, nQ = 0) => {
-  const c = ficha({ nQ });
-  c.talentos = [NS + 'tal_maldicao', talentoDe(4)];
-  if (marcada) c.invocacoes[0].marcadores = { ...c.invocacoes[0].marcadores, [MALDICAO]: true };
-  return deriveAfty(c).invocacoes.lista.find((x) => x.id === 'alvo');
-};
-const semM = comMaldicao(false);
-const comM = comMaldicao(true);
-t('marcada, a vida e 1,5 vezes a base (arredondada para baixo)', comM.pv, Math.floor(semM.pv * 1.5));
-t('desmarcada nada muda', semM.pv, base.pv);
-/* Numa Quimera (fontes ligadas) a Maldicao nao soma. */
-t('numa Quimera a Maldicao nao vale', comMaldicao(true, 3).pv, comMaldicao(false, 3).pv);
-/* So a invocacao marcada muda. */
-const outraM = (() => { const c = ficha({}); c.talentos = [NS + 'tal_maldicao']; c.invocacoes[0].marcadores = { [MALDICAO]: true };
-  return deriveAfty(c).invocacoes.lista.find((x) => x.id === 'f0').pv; })();
-t('a outra invocacao nao e afetada', outraM, pvFontes[0]);
-
 console.log(bad.length ? `FALHAS (${bad.length}):\n` + bad.join("\n") : `TODOS OS ${ok} ASSERTS PASSARAM`);
 process.exitCode = bad.length ? 1 : 0;

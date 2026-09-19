@@ -304,6 +304,7 @@ const INV_POR_NOME = [
     nomes: [
       ["tipo_shikigami", "É uma Invocação de Talismã"],
       ["tipo_tecnica", "É uma Invocação de Técnica"],
+      ["tipo_maldicao", "É uma Maldição"],
     ],
   },
   {

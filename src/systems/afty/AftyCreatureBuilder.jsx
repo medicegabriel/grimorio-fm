@@ -15362,11 +15362,11 @@ function InvocacaoLinha({ inv, resolvida }) {
   );
 }
 
-/* Os dois Tipos de Invocação, com o rótulo curto do chip de filtro. */
+/* Os Tipos de Invocação, com o rótulo curto do chip de filtro. */
 const TIPOS_INVOCACAO_DA_LISTA = AFTY_INV_TIPOS.map((t) => ({
   value: t.value,
   label: t.label,
-  curto: t.value === "tecnica" ? "Técnica" : "Invocação",
+  curto: t.value === "tecnica" ? "Técnica" : t.value === "maldicao" ? "Maldição" : "Invocação",
 }));
 
 /* O campo de Retrato de UMA invocação. ⚠ REUSA o `RetratoFocoPicker` da aba

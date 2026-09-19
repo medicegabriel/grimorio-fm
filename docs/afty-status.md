@@ -14143,7 +14143,29 @@ nível da Passiva dela. Ficaram na mesa: o custo de PE Máximo da Passiva na fic
 Quimera feita de antemão e a trava das invocações fundidas depois de Dissipada. Asserts em
 `t-quimera.mjs` (29).
 
-O mesmo Addon traz também o Talento Maldição (2026-09-19), que libera nas invocações normais a opção
-selecionável Maldição: o PV base da invocação marcada vira 1,5 vezes (`piso(pv_max / 2)` somado). Ela não
-vale numa Quimera: o efeito só liga com nenhuma fonte de fusão declarada. O marcador não tem `fontes` e o
-limite de invocações marcadas é 20, valor meu porque o pedido não fixou um número.
+A Maldição NÃO mora neste Addon. Ela nasceu como Talento e marcador do pacote e o autor pediu que virasse
+algo nativo, então saiu daqui (ver a sessão abaixo).
+
+
+## SESSÃO DE 2026-09-19: MALDIÇÃO, UM TIPO NATIVO DE INVOCAÇÃO
+
+Pedido do autor: a Maldição fica ao lado de Invocação e de Invocação de Técnica, como um TIPO da
+invocação, sem Talento e sem Addon. A vida dela vale 1,5 vez o PV já somado, e os bônus de vida das
+Habilidades também são multiplicados. Ela "não pode aumentar de novo o bônus de vida", então o
+multiplicador vale uma vez só.
+
+Duas peças no motor (`afty-invocacoes.js`):
+
+- Canal de invocação `pvMult`, o multiplicador do PV FINAL (depois do PV base, do canal `pv` e da
+  Característica de Vida). Com mais de uma fonte vale a MAIOR, nunca o produto nem a soma, e um valor
+  de 1 ou menos não faz nada. O hover mostra a fonte que venceu, com o texto `× N`.
+- Tipo `maldicao` em `AFTY_INV_TIPOS`. Mesmo Intermediário (Talismã), mesma retirada e mesma base de
+  atributo da invocação normal. O efeito mora em `MALDICAO_EFEITOS` (`pvMult` 1,5 com `quando:
+  "tipo_maldicao"`), no mesmo caminho dos efeitos do tipo Técnica. `tipo_shikigami` também liga para
+  ela, porque é uma invocação de Talismã, e `tipo_maldicao` é a variável nova.
+
+Decisões minhas, por o pedido não fixar: o Intermediário da Maldição é o Talismã, e a fusão em Quimera
+não corta o 1,5 (o tipo é escolha da pessoa, e a Quimera do Addon `quimera` é um marcador à parte).
+Conferido no navegador: escolher Maldição no Perfil da invocação levou o PV de 34 para 51, sem mexer
+em Defesa nem PE e sem erro no console. Asserts em `t-maldicao.mjs` (26), e a contagem de canais de
+invocação em `t-invocacoes-motor.mjs` foi de 22 para 23.
