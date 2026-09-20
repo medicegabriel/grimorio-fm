@@ -94,9 +94,9 @@ t("so se enxerga o marcador do Talento que a ficha tem",
   marcadoresDe([talentoDe(2), talentoDe(4)]).map((m) => m.id).sort(), [marcadorDe(2), marcadorDe(4)]);
 t("so uma Quimera por cena: o limite de cada marcador e 1",
   marcadoresDe(NIVEIS.map(talentoDe)).map((m) => m.limite), [1, 1, 1]);
-t("a politica de fusao pede a uniao das faixas e o maior atributo",
+t("a politica de fusao pede a uniao das faixas e o maior atributo FIXO",
   marcadoresDe([talentoDe(3)])[0].herdaDaFonte,
-  { pericias: "uniao", tr: "uniao", ataque: "uniao", atributos: "maior" });
+  { pericias: "uniao", tr: "uniao", ataque: "uniao", atributos: "maiorFixo" });
 
 /* ============================================================ */
 /* 4. A FUSÃO                                                    */
@@ -180,6 +180,30 @@ t("o maior atributo entre as fundidas, atributo por atributo",
   [20, 18, 18]);
 t("o alvo sem fusao fica com os proprios",
   [atrDe({ nQ: 0 }).forca, atrDe({ nQ: 0 }).constituicao], [12, 12]);
+/* ⚠ O VALOR É FIXO (2026-09-19): o atributo vira EXATAMENTE o maior das fundidas,
+   e a ficha da própria Quimera deixa de contar, tanto quando ela tem um número
+   maior quanto quando tem um menor. Com o `maior` antigo a ficha alta vencia. */
+const comFichaDaQuimera = (atributos, nQ) => {
+  const c = ficha({ nQ });
+  c.invocacoes[0].atributos = { ...c.invocacoes[0].atributos, ...atributos };
+  return deriveAfty(c).invocacoes.lista.find((x) => x.id === "alvo").atributos.valores;
+};
+const maioresDasFundidas = (n) => Object.fromEntries(
+  ["forca", "destreza", "constituicao"].map((k, i) => [k, Math.max(...FONTES.slice(0, n).map((f) => f[2 + i]))]));
+t("ficha da Quimera MAIOR que as fundidas: cai para o maior das fundidas",
+  (({ forca, destreza, constituicao }) => ({ forca, destreza, constituicao }))(
+    comFichaDaQuimera({ forca: 30, destreza: 28, constituicao: 26 }, 4)),
+  maioresDasFundidas(4));
+t("ficha da Quimera MENOR: sobe para o maior das fundidas",
+  (({ forca, destreza, constituicao }) => ({ forca, destreza, constituicao }))(
+    comFichaDaQuimera({ forca: 8, destreza: 8, constituicao: 8 }, 3)),
+  maioresDasFundidas(3));
+t("a fusao de menos fontes da o maior daquelas fontes, e nao das quatro",
+  comFichaDaQuimera({}, 2).forca, maioresDasFundidas(2).forca);
+t("todo atributo e fixado, tambem o mental: 10 das fundidas, e nao o 16 da ficha",
+  comFichaDaQuimera({ inteligencia: 16 }, 4).inteligencia, 10);
+t("sem fonte declarada a ficha da Quimera segue a propria",
+  comFichaDaQuimera({ forca: 30 }, 0).forca, 30);
 
 /* Nada vaza para outra invocacao da ficha. */
 const outra = deriveAfty(ficha({ nQ: 4 })).invocacoes.lista.find((x) => x.id === "f0");

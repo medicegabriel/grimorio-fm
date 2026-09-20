@@ -2701,7 +2701,13 @@ export function resolveInvocacao(inv, dono = {}) {
  *                             passa do mestre vira bônus. NENHUM PACOTE PEDE ESTA
  *                             POLÍTICA HOJE, e ver o aviso logo abaixo.
  *   atributos: "maior"      — Quimera: "recebe o maior atributo entre as sombras
- *                             fundidas [...] sempre do maior valor".
+ *                             fundidas [...] sempre do maior valor". Vale o MAIOR
+ *                             entre a ficha da própria invocação e as fontes.
+ *   atributos: "maiorFixo"  : o mesmo texto, lido como valor FIXO (2026-09-19,
+ *                             pedido do autor): cada atributo passa a ser
+ *                             EXATAMENTE o maior valor daquele atributo entre as
+ *                             invocações fundidas, e a ficha da própria invocação
+ *                             deixa de contar. Sem fonte declarada, nada muda.
  *   ataque: "uniao"         — Quimera: "recebe todos os Treinamentos de [...]
  *                             Acerto". Quem já tem um treino mantém o dele.
  *   tr: "uniao"/"escalonado" — os mesmos dois modos das perícias, agora que o TR
@@ -2798,6 +2804,22 @@ export function aplicarFusaoDeFontes(inv, marcadores = [], porId = new Map()) {
           const n = Number(v);
           if (Number.isFinite(n) && n > (Number(atributos[k]) || 0)) { atributos[k] = n; mexeu = true; }
         }
+      }
+    }
+
+    /* ⚠ `maiorFixo` SUBSTITUI, e não compara com a ficha da própria invocação: o
+       atributo vira o maior valor entre as FONTES, mesmo que a ficha dela tenha
+       um número maior ou menor. Só troca o atributo que alguma fonte declara. */
+    if (pol.atributos === "maiorFixo") {
+      const maiores = {};
+      for (const f of fontes) {
+        for (const [k, v] of Object.entries(f?.atributos || {})) {
+          const n = Number(v);
+          if (Number.isFinite(n) && n > (maiores[k] ?? -Infinity)) maiores[k] = n;
+        }
+      }
+      for (const [k, n] of Object.entries(maiores)) {
+        if (atributos[k] !== n) { atributos[k] = n; mexeu = true; }
       }
     }
 

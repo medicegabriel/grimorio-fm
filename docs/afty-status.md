@@ -14169,3 +14169,17 @@ não corta o 1,5 (o tipo é escolha da pessoa, e a Quimera do Addon `quimera` é
 Conferido no navegador: escolher Maldição no Perfil da invocação levou o PV de 34 para 51, sem mexer
 em Defesa nem PE e sem erro no console. Asserts em `t-maldicao.mjs` (26), e a contagem de canais de
 invocação em `t-invocacoes-motor.mjs` foi de 22 para 23.
+
+
+## SESSÃO DE 2026-09-20: ATRIBUTOS FIXOS NA QUIMERA
+
+Pedido do autor: na Quimera os atributos são os maiores de cada invocação fundida, então eles ficam
+fixos nesse valor. A política `atributos: "maior"` do `herdaDaFonte` comparava a ficha da própria
+Quimera com as fundidas e deixava vencer o maior dos dois. Ela ficou como está, porque a Quimera das
+Dez Sombras (`t-dez-sombras.mjs`) depende dessa leitura.
+
+Nasceu a política `atributos: "maiorFixo"` em `aplicarFusaoDeFontes` (`afty-invocacoes.js`): cada
+atributo vira exatamente o maior valor daquele atributo entre as fundidas, e a ficha da própria
+invocação deixa de contar, seja ela maior ou menor. Sem fonte declarada nada muda. O Addon `quimera`
+passou a pedi-la nos três marcadores. Asserts novos em `t-quimera.mjs` (34 no total): ficha da Quimera
+maior que as fundidas, menor, fusão de duas fontes e sem fonte.

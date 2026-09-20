@@ -4,7 +4,7 @@
   "versao": "1.0.0",
   "autor": "Templas",
   "paraRaw": "afty",
-  "descricao": "Fusão de Invocações (Quimera) na aba de Invocações, como Passiva de Nível 2, 3 ou 4. Sem código novo: usa o mecanismo de fontes que a Quimera das Dez Sombras já usa (marcador com `fontes`, `herdaDaFonte` e as funções `fontes()` do DSL). Como o teto de fusões vem do Nível da Passiva (2, 3 ou 4) e o marcador só enxerga Talento, Habilidade, Origem e Clã, cada nível virou um Talento próprio que paga a própria vaga, e cada Talento abre o seu marcador com o teto certo. Pegue o Talento do nível da sua Passiva. O PV da Quimera é a soma do PV base de todas as fundidas menos 10, o Custo em PE é a soma delas, a Quimera une os Treinamentos de Perícia, Acerto e TR, pega o maior atributo e recebe +1 em Acerto, CD, Defesa, Nível de Dano, TRs e Perícia por fundida além da primeira, mais 1 Ação ou Característica por fundida além da primeira. Não alcançados pelo motor, feitos na mesa: o custo de PE Máximo da Passiva na ficha de jogador, a ficha de antemão para avaliação, a regra de uma Quimera por cena e as invocações fundidas que ficam bloqueadas depois que ela é Dissipada.",
+  "descricao": "Fusão de Invocações (Quimera) na aba de Invocações, como Passiva de Nível 2, 3 ou 4. Sem código novo: usa o mecanismo de fontes que a Quimera das Dez Sombras já usa (marcador com `fontes`, `herdaDaFonte` e as funções `fontes()` do DSL). Como o teto de fusões vem do Nível da Passiva (2, 3 ou 4) e o marcador só enxerga Talento, Habilidade, Origem e Clã, cada nível virou um Talento próprio que paga a própria vaga, e cada Talento abre o seu marcador com o teto certo. Pegue o Talento do nível da sua Passiva. O PV da Quimera é a soma do PV base de todas as fundidas menos 10, o Custo em PE é a soma delas, a Quimera une os Treinamentos de Perícia, Acerto e TR, tem cada atributo FIXO no maior valor daquele atributo entre as fundidas (a ficha da própria Quimera deixa de contar) e recebe +1 em Acerto, CD, Defesa, Nível de Dano, TRs e Perícia por fundida além da primeira, mais 1 Ação ou Característica por fundida além da primeira. Não alcançados pelo motor, feitos na mesa: o custo de PE Máximo da Passiva na ficha de jogador, a ficha de antemão para avaliação, a regra de uma Quimera por cena e as invocações fundidas que ficam bloqueadas depois que ela é Dissipada.",
   "acrescenta": {
     "talentos": [
       {
@@ -175,7 +175,7 @@
           "pericias": "uniao",
           "tr": "uniao",
           "ataque": "uniao",
-          "atributos": "maior"
+          "atributos": "maiorFixo"
         },
         "fontesMaxExpr": "2"
       },
@@ -189,7 +189,7 @@
           "pericias": "uniao",
           "tr": "uniao",
           "ataque": "uniao",
-          "atributos": "maior"
+          "atributos": "maiorFixo"
         },
         "fontesMaxExpr": "3"
       },
@@ -203,7 +203,7 @@
           "pericias": "uniao",
           "tr": "uniao",
           "ataque": "uniao",
-          "atributos": "maior"
+          "atributos": "maiorFixo"
         },
         "fontesMaxExpr": "4"
       }
