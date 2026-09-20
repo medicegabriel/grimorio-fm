@@ -106,7 +106,7 @@ import {
 import { RITUAL_MELHORIAS } from "./afty-rituais";
 import { COMBATE_ESTADOS, estadoVisivel } from "./afty-combate";
 import {
-  createBlankInvocacao, cloneInvocacao, createBlankAcao, createBlankCaracteristica, createBlankHorda, AFTY_INV_GRAUS,
+  createBlankInvocacao, cloneInvocacao, createBlankAcao, createBlankCaracteristica, createBlankHorda, createBlankQuimera, INV_QUIMERA_NIVEIS, AFTY_INV_GRAUS,
   grausDisponiveis, grauMeta, INV_ATRIBUTOS_POR_GRAU, INV_ATTR_MIN, mod as invMod,
   custoMaxAcao, tamanhosNaFaixa, lideresElegiveis, membrosElegiveis,
   alvosDanoDisponiveis, curaMultiplosDisponivel, marcadorLigado, marcadorOpcao, dadoDoMaximo,
@@ -1282,6 +1282,12 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
   const hordasArr = (d) => (Array.isArray(d.hordas) ? d.hordas : []);
   const addHorda = () => setDraft((d) => ({ ...d, hordas: [...hordasArr(d), createBlankHorda()] }));
   const removeHorda = (id) => setDraft((d) => ({ ...d, hordas: hordasArr(d).filter((x) => x.id !== id) }));
+  // Quimeras: principal + fundidas (por id) das invocações. Só com a primitiva `quimera`.
+  const quimerasArr = (d) => (Array.isArray(d.quimeras) ? d.quimeras : []);
+  const addQuimera = () => setDraft((d) => ({ ...d, quimeras: [...quimerasArr(d), createBlankQuimera()] }));
+  const removeQuimera = (id) => setDraft((d) => ({ ...d, quimeras: quimerasArr(d).filter((x) => x.id !== id) }));
+  const patchQuimera = (id, partial) =>
+    setDraft((d) => ({ ...d, quimeras: quimerasArr(d).map((x) => (x.id === id ? { ...x, ...partial } : x)) }));
   const patchHorda = (id, partial) =>
     setDraft((d) => ({ ...d, hordas: hordasArr(d).map((x) => (x.id === id ? { ...x, ...partial } : x)) }));
 
@@ -1593,7 +1599,7 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
 {tabAtiva === "habilidades" && <TabHabilidades draft={draft} derived={derived} patchCore={patchCore} toggleArmaDedicada={toggleArmaDedicada} addFeitico={addFeitico} updateFeitico={updateFeitico} removeFeitico={removeFeitico} patchFeitico={patchFeitico} duplicarFeitico={duplicarFeitico} setReducoesCustoFeitico={setReducoesCustoFeitico} setTreinoEscolhaFeiticos={setTreinoEscolhaFeiticos} toggleEstiloTabela={toggleEstiloTabela} addEstiloEspecial={addEstiloEspecial} removeEstilo={removeEstilo} patchEstilo={patchEstilo} addFuncionamento={addFuncionamento} removeFuncionamento={removeFuncionamento} patchFuncionamento={patchFuncionamento} setGeralVezes={setGeralVezes} addDominio={addDominio} removeDominio={removeDominio} patchDominio={patchDominio} setDominioAtivo={setDominioAtivo} sistema={sistema} />}
           {tabAtiva === "especializacoes" && <TabEspecializacoes draft={draft} derived={derived} setEspecializacoes={setEspecializacoes} toggleHabilidade={toggleHabilidade} setHabilidadeVezes={setHabilidadeVezes} toggleEscolhaHabilidade={toggleEscolhaHabilidade} toggleTalento={toggleTalento} setTalentoVezes={setTalentoVezes} toggleEscolhaTalento={toggleEscolhaTalento} setMelhoriaVezes={setMelhoriaVezes} toggleLendaria={toggleLendaria} toggleEscolhaAltoNivel={toggleEscolhaAltoNivel} patchTecnicasCombate={patchTecnicasCombate} />}
           {tabAtiva === "aptidoes" && <TabAptidoes draft={draft} derived={derived} setAptidaoNivel={setAptidaoNivel} toggleAptidao={toggleAptidao} setAptidaoOpcao={setAptidaoOpcao} setAptidaoVezes={setAptidaoVezes} setAptidaoOpcaoRepetida={setAptidaoOpcaoRepetida} />}
-          {tabAtiva === "invocacoes" && <TabInvocacoes draft={draft} derived={derived} addInvocacao={addInvocacao} removeInvocacao={removeInvocacao} duplicarInvocacao={duplicarInvocacao} moverInvocacao={moverInvocacao} patchInvocacao={patchInvocacao} patchInvocacaoAttr={patchInvocacaoAttr} efeitosApi={efeitosApi} addHorda={addHorda} removeHorda={removeHorda} patchHorda={patchHorda} />}
+          {tabAtiva === "invocacoes" && <TabInvocacoes draft={draft} derived={derived} addInvocacao={addInvocacao} removeInvocacao={removeInvocacao} duplicarInvocacao={duplicarInvocacao} moverInvocacao={moverInvocacao} patchInvocacao={patchInvocacao} patchInvocacaoAttr={patchInvocacaoAttr} efeitosApi={efeitosApi} addHorda={addHorda} removeHorda={removeHorda} patchHorda={patchHorda} addQuimera={addQuimera} removeQuimera={removeQuimera} patchQuimera={patchQuimera} />}
           {tabAtiva === "equipamentos" && <TabEquipamentos draft={draft} derived={derived} addEquipamento={addEquipamento} removeEquipamento={removeEquipamento} patchEquipamento={patchEquipamento} toggleFerramenta={toggleFerramenta} patchFerramenta={patchFerramenta} toggleEncantamento={toggleEncantamento} addArmaCustom={addArmaCustom} patchArmaCustom={patchArmaCustom} removeArmaCustom={removeArmaCustom} addAcessorioUnico={addAcessorioUnico} patchAcessorioUnico={patchAcessorioUnico} removeAcessorioUnico={removeAcessorioUnico} criados={criados} />}
           {tabAtiva === "interludios" && <TabInterludios draft={draft} derived={derived} setTreinoProgresso={setTreinoProgresso} setTreinoInstance={setTreinoInstance} setTreinoAlvo={setTreinoAlvo} setTreinoEscolha={setTreinoEscolha} setTreinoEspecialVezes={setTreinoEspecialVezes} setTreinoEspecialProgresso={setTreinoEspecialProgresso} sistema={sistema} setFocosLivres={setFocosLivres} addForja={addForja} patchForja={patchForja} removeForja={removeForja} />}
           {tabAtiva === "defesas" && <TabDefesas derived={derived} setDefesaEstado={setDefesaEstado} setDefesaRd={setDefesaRd} />}
@@ -16702,7 +16708,8 @@ function LimitesResumo({ acesso, controle, marcadores }) {
   );
 }
 
-function TabInvocacoes({ draft, derived, addInvocacao, removeInvocacao, duplicarInvocacao, moverInvocacao, patchInvocacao, patchInvocacaoAttr, efeitosApi, addHorda, removeHorda, patchHorda }) {
+function TabInvocacoes({ draft, derived, addInvocacao, removeInvocacao, duplicarInvocacao, moverInvocacao, patchInvocacao, patchInvocacaoAttr, efeitosApi, addHorda, removeHorda, patchHorda, addQuimera, removeQuimera, patchQuimera }) {
+  const temQuimera = usePrimitiva("quimera");
   const lista = Array.isArray(draft.invocacoes) ? draft.invocacoes : [];
   const resolvidas = derived.invocacoes.lista;
   const resolvidaDe = (id) => resolvidas.find((r) => r.id === id);
@@ -16846,7 +16853,177 @@ function TabInvocacoes({ draft, derived, addInvocacao, removeInvocacao, duplicar
       removeHorda={removeHorda}
       patchHorda={patchHorda}
     />
+
+    {temQuimera && (
+      <QuimerasCard
+        fichas={lista}
+        resolvidas={derived.quimeras?.lista ?? []}
+        custoTotal={derived.quimeras?.custoTotal ?? 0}
+        addQuimera={addQuimera}
+        removeQuimera={removeQuimera}
+        patchQuimera={patchQuimera}
+      />
+    )}
     </>
+  );
+}
+
+/* Uma Quimera: escolhe o Nível da Passiva (2, 3 ou 4), a Invocação principal e
+   as fundidas. O teto de fundidas é o Nível, contando a principal. */
+function QuimeraCard({ quimera, res, fichas, onPatch, onRemove }) {
+  const [open, setOpen] = useState(!quimera.nome);
+  const nomeDe = (inv) => inv.nome || grauMeta(inv.grau).label;
+  const principal = fichas.find((x) => x.id === quimera.principalId) || null;
+  const fundidasIds = Array.isArray(quimera.fundidasIds) ? quimera.fundidasIds : [];
+  const nivel = INV_QUIMERA_NIVEIS.includes(Number(quimera.nivel)) ? Number(quimera.nivel) : 2;
+
+  const setPrincipal = (id) => onPatch({ principalId: id, fundidasIds: fundidasIds.filter((x) => x !== id) });
+  const toggleFundida = (id) =>
+    onPatch({ fundidasIds: fundidasIds.includes(id) ? fundidasIds.filter((x) => x !== id) : [...fundidasIds, id] });
+
+  const r = res?.resolvida;
+  const attrs = r?.atributos?.valores ?? {};
+  return (
+    <div className="rounded-lg border border-slate-700/80 bg-slate-950/40">
+      <div className="flex items-center gap-2.5 px-3 py-2.5">
+        <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} className="flex items-center gap-2.5 flex-1 min-w-0 text-left">
+          <ChevronDown className={`w-4 h-4 text-slate-500 flex-shrink-0 transition-transform ${open ? "" : "-rotate-90"}`} />
+          <span className="text-sm font-semibold text-white truncate">{quimera.nome || "Quimera sem nome"}</span>
+          {res?.valido && (
+            <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded border border-purple-800/60 bg-purple-950/40 text-purple-300 flex-shrink-0">
+              {res.total} fundidas
+            </span>
+          )}
+        </button>
+        {res?.valido && (
+          <span className="hidden sm:flex items-center gap-2 flex-shrink-0 font-mono text-[11px] tabular-nums text-slate-400">
+            <span title="Pontos de Vida">PV {res.pv}</span>
+            <span title="Custo em PE" className="text-purple-300">{res.custo} PE</span>
+          </span>
+        )}
+        <button type="button" onClick={onRemove} className="text-slate-600 hover:text-rose-300 p-1 rounded flex-shrink-0" aria-label="Remover quimera">
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+
+      {open && (
+        <div className="px-3 pb-3 space-y-4 border-t border-slate-800 pt-3">
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="sm:col-span-2">
+              <FieldLabel>Nome</FieldLabel>
+              <TextInput value={quimera.nome} onChange={(v) => onPatch({ nome: v })} placeholder="Nome da quimera" />
+            </div>
+            <div>
+              <FieldLabel hint="quantas invocações pode fundir">Passiva de Nível</FieldLabel>
+              <Select value={String(nivel)} onChange={(v) => onPatch({ nivel: Number(v) })} options={INV_QUIMERA_NIVEIS.map((n) => ({ value: String(n), label: `Nível ${n} (até ${n})` }))} />
+            </div>
+          </div>
+
+          <div className="sm:max-w-xs">
+            <FieldLabel hint="dá o Grau, as Ações e as Características">Invocação principal</FieldLabel>
+            {fichas.length === 0 ? (
+              <p className="text-[11px] text-slate-500">Crie invocações para fundir.</p>
+            ) : (
+              <Select value={quimera.principalId} onChange={setPrincipal} options={fichas.map((inv) => ({ value: inv.id, label: `${nomeDe(inv)} (${grauMeta(inv.grau).label})` }))} placeholder="escolher principal..." />
+            )}
+          </div>
+
+          {principal && (
+            <div>
+              <FieldLabel hint={`até ${nivel - 1} além da principal`}>Invocações fundidas</FieldLabel>
+              <div className="flex flex-wrap gap-1.5">
+                {fichas.filter((f) => f.id !== principal.id).map((f) => (
+                  <BoolChip key={f.id} ativo={fundidasIds.includes(f.id)} onToggle={() => toggleFundida(f.id)}>
+                    {nomeDe(f)} <span className="text-[9px] opacity-70">({grauMeta(f.grau).label})</span>
+                  </BoolChip>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {res?.warnings?.length > 0 && (
+            <ul className="space-y-1">
+              {res.warnings.map((w, i) => (
+                <li key={i} className="text-[11px] text-amber-400 flex items-start gap-1.5"><AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" aria-hidden="true" /> {w}</li>
+              ))}
+            </ul>
+          )}
+
+          {r && res.valido && (
+            <>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <StatMini label="Pontos de Vida" value={r.pv} />
+                <StatMini label="Custo (PE)" value={r.custo} accent />
+                <StatMini label="Defesa" value={r.defesa} />
+                <StatMini label="Deslocamento" value={r.deslocamento != null ? `${r.deslocamento} m` : "-"} />
+              </div>
+              <div className="rounded-lg border border-slate-800 bg-slate-950/40 px-3 py-2.5">
+                <div className="text-[10px] uppercase tracking-wider text-slate-400 mb-1.5">Atributos fixos no maior valor</div>
+                <div className="flex flex-wrap gap-2 text-[11px] font-mono text-slate-300">
+                  {Object.entries(attrs).map(([k, v]) => (
+                    <span key={k} className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700">{k.slice(0, 3).toUpperCase()} {v}</span>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function QuimerasCard({ fichas, resolvidas, custoTotal, addQuimera, removeQuimera, patchQuimera }) {
+  const botao = "inline-flex items-center gap-1.5 text-[12px] font-semibold px-3 py-1.5 rounded-lg border border-purple-700 bg-purple-800/40 text-purple-200 hover:bg-purple-700/50";
+  return (
+    <Card
+      title="Quimeras"
+      headerRight={
+        resolvidas.length > 0 ? (
+          <div className="flex items-center gap-1.5 border border-slate-800 bg-slate-950/50 rounded-md px-2 py-1" title="Quimeras e custo total em PE">
+            <Sparkles className="w-3 h-3 text-purple-400 flex-shrink-0" />
+            <span className="text-[9px] uppercase tracking-wider text-slate-400">Quimeras</span>
+            <span className="font-mono text-xs font-bold tabular-nums text-white">{resolvidas.length}</span>
+            <span className="text-slate-600">·</span>
+            <span className="font-mono text-xs font-bold tabular-nums text-purple-300">{custoTotal} PE</span>
+          </div>
+        ) : null
+      }
+    >
+      {fichas.length < 2 ? (
+        <div className="text-center py-6 border border-dashed border-slate-700 rounded-lg text-sm text-slate-500">
+          Crie ao menos duas invocações para formar uma quimera.
+        </div>
+      ) : resolvidas.length === 0 ? (
+        <div className="text-center py-6 border border-dashed border-slate-700 rounded-lg text-sm text-slate-400">
+          Nenhuma quimera ainda.
+          <div className="mt-3">
+            <button type="button" onClick={addQuimera} className={botao}>
+              <Plus className="w-3.5 h-3.5" /> Nova quimera
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-2.5">
+          {resolvidas.map((res) => {
+            const quimera = { id: res.id, nome: res.nome, principalId: res.principalId, fundidasIds: res.fundidasIds, nivel: res.nivel };
+            return (
+              <QuimeraCard
+                key={res.id}
+                quimera={quimera}
+                res={res}
+                fichas={fichas}
+                onPatch={(partial) => patchQuimera(res.id, partial)}
+                onRemove={() => removeQuimera(res.id)}
+              />
+            );
+          })}
+          <button type="button" onClick={addQuimera} className="w-full inline-flex items-center justify-center gap-1.5 text-[12px] font-semibold px-3 py-2 rounded-lg border border-dashed border-slate-700 text-slate-400 hover:text-white hover:border-slate-600">
+            <Plus className="w-3.5 h-3.5" /> Nova quimera
+          </button>
+        </div>
+      )}
+    </Card>
   );
 }
 

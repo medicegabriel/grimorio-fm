@@ -513,6 +513,8 @@ export function createBlankAfty() {
     origemContadores: {},
     // Hordas: cada uma referencia um líder + membros por id (das invocacoes).
     hordas: [],                 // [ { id, nome, liderId, membroIds:[] } ]
+    // Quimeras: fusão de 2 a 4 invocações. Só aparece com a primitiva `quimera`.
+    quimeras: [],               // [ { id, nome, principalId, fundidasIds:[], nivel } ]
     // Níveis de Aptidão, uma trilha por chave (0 a 5). O orçamento é
     // derived.totalAptidao e cada ponto sobe 1 nível. Ver afty-aptidoes.js.
     aptidoes: { au: 0, cl: 0, bar: 0, dom: 0, er: 0 },

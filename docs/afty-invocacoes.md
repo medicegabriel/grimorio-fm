@@ -1118,6 +1118,10 @@ referência direta a mecânicas de Invocação. Lista para orientar o desenho fu
 - **Graus** (Quarto → Especial): tabela de acesso por nível de Controlador + tabela de custo.
   Referenciados por Autonomia, Potencial Superior (pontos de atributo por grau), Hoste
   Amaldiçoada e Buchas de Canhão (custo de membro de horda por grau).
+- **Quimeras (2026-09-20):** `creature.quimeras`, `resolveQuimera`/`resolveQuimerasList` e `derived.quimeras`.
+  Funde de 2 a 4 invocações (Nível da Passiva escolhido no card, contando a principal): PV soma de todas menos
+  10, Custo soma, treinos em união, atributos FIXOS no maior valor, +1 em Acerto, CD, Defesa, Nível de Dano,
+  TRs e Perícia por fundida além da primeira. Card liberado pela primitiva `quimera` do addon.
 - **Criar Horda / Hordas:** líder + membros, custo por grau, limite = metade do limite de campo,
   escalonamento por nº de membros (Hoste Amaldiçoada, Flanco Avançado, Combate em Alcateia).
 - **Ações e Características** como itens que somam ao custo da invocação (Visionário, Ápice do

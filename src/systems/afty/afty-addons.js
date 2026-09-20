@@ -468,6 +468,15 @@ export const PRIMITIVAS = [
     rotulo: "PV e Passivas",
     nota: "Os dois canais que multiplicam o PV final (hpMult) e isentam as Passivas do custo de PE Máximo (passivaSemCusto)",
   },
+  /* ⚠ NASCEU EM 2026-09-20, a pedido do autor: a Quimera deixou de ser Talento e
+     virou um card ao lado das Hordas, na aba de Invocações. O motor da fusão
+     (`resolveQuimera`, afty-invocacoes.js) vive sempre e só aparece na tela de
+     quem instalou o addon que pediu. */
+  {
+    id: "quimera",
+    rotulo: "Quimera",
+    nota: "Card de Quimeras ao lado das Hordas: funde de 2 a 4 Invocações (Passiva de Nível 2, 3 ou 4) somando PV e custo, unindo treinos e fixando cada atributo no maior valor entre as fundidas",
+  },
 ];
 
 const PRIMITIVA_IDS = new Set(PRIMITIVAS.map((p) => p.id));

@@ -3099,6 +3099,106 @@ export function resolveHordasList(hordas, invocacoes = [], dono = {}) {
   return { lista, total: lista.length, custoTotal: lista.reduce((s, h) => s + (h.custo || 0), 0) };
 }
 
+// ============================================================
+// Quimeras
+// ============================================================
+// Uma Quimera funde de 2 a 4 Invocações da mesma ficha (Passiva de Nível 2, 3
+// ou 4). A Invocação PRINCIPAL dá a base (Grau, Ações, Características), e o
+// resto vem da fusão:
+//   PV        = soma do PV de cada fundida - 10
+//   Custo     = soma do custo de cada fundida
+//   Treinos   = união de Perícia, Acerto e TR
+//   Atributos = o MAIOR valor de cada atributo entre as fundidas (fixo)
+//   +1 em Acerto, CD, Defesa, Nível de Dano, TRs e Perícia por fundida além da
+//   primeira, e +1 Ação ou Característica por fundida além da primeira.
+//
+// ⚠ NÃO HÁ CÓDIGO NOVO DE FUSÃO. A Quimera é uma invocação sintética resolvida
+// pelo mesmo mecanismo de fontes da Quimera das Dez Sombras (marcador com
+// `fontes`, política `herdaDaFonte` e as funções `fontes()` do DSL). O
+// marcador e os efeitos abaixo são NATIVOS, e só existem dentro desta função:
+// nenhuma outra invocação da ficha enxerga nem paga nada disto.
+
+export const INV_QUIMERA_NIVEIS = [2, 3, 4];
+const QUIMERA_MARCADOR = "quimera_fusao";
+
+export function createBlankQuimera() {
+  return { id: novoId("quimera"), nome: "", principalId: "", fundidasIds: [], nivel: 2 };
+}
+
+const QUIMERA_MARCADOR_DEF = {
+  id: QUIMERA_MARCADOR, label: "Quimera", limite: 1, fontes: true,
+  herdaDaFonte: { pericias: "uniao", tr: "uniao", ataque: "uniao", atributos: "maiorFixo" },
+};
+const quimeraSoma = (v) => `fontes("${QUIMERA_MARCADOR}", "soma", "${v}")`;
+const quimeraQtd = `fontes_qtd("${QUIMERA_MARCADOR}")`;
+const quimeraExtras = `max(0, ${quimeraQtd} - 1)`;
+const QUIMERA_EFEITOS = [
+  { canal: "pv", expr: `${quimeraSoma("pv_max")} - 10 - pv_max`, quando: `${quimeraQtd} > 0`, nome: "Quimera · Pontos de Vida" },
+  { canal: "custoReducao", expr: `custo - ${quimeraSoma("custo")}`, quando: `${quimeraQtd} > 0`, nome: "Quimera · Custo em PE" },
+  { canal: "bonusTeste", expr: quimeraExtras, nome: "Quimera · Acerto, TR e Perícia" },
+  { canal: "cd", expr: quimeraExtras, nome: "Quimera · CD" },
+  { canal: "defesa", expr: quimeraExtras, nome: "Quimera · Defesa" },
+  { canal: "danoNivel", expr: quimeraExtras, nome: "Quimera · Nível de Dano" },
+  { canal: "orcamentoLivre", expr: quimeraExtras, nome: "Quimera · Ações e Características" },
+].map((e) => ({ ...e, origem: "quimera" }));
+
+/** Resolve UMA Quimera a partir das fichas de invocação do dono. */
+export function resolveQuimera(quimera, invocacoes = [], dono = {}) {
+  const fichas = Array.isArray(invocacoes) ? invocacoes : [];
+  const principal = fichas.find((x) => x.id === quimera?.principalId) || null;
+  const nivel = INV_QUIMERA_NIVEIS.includes(Number(quimera?.nivel)) ? Number(quimera.nivel) : 2;
+  const warnings = [];
+  const vistos = new Set(principal ? [principal.id] : []);
+  const fundidas = [];
+  for (const id of Array.isArray(quimera?.fundidasIds) ? quimera.fundidasIds : []) {
+    const f = fichas.find((x) => x.id === id);
+    if (f && !vistos.has(f.id)) { vistos.add(f.id); fundidas.push(f); }
+  }
+  const out = {
+    id: quimera?.id, nome: quimera?.nome || "", principalId: quimera?.principalId || "",
+    fundidasIds: fundidas.map((f) => f.id), nivel, valido: false, warnings, resolvida: null,
+    total: 0, limite: nivel,
+  };
+  if (!principal) { warnings.push("Escolha a Invocação principal da Quimera."); return out; }
+  if (fundidas.length + 1 > nivel) {
+    warnings.push(`Uma Passiva de Nível ${nivel} funde até ${nivel} Invocações, contando a principal.`);
+  }
+  const usadas = fundidas.slice(0, nivel - 1);
+  out.total = usadas.length + 1;
+  if (!usadas.length) { warnings.push("Escolha ao menos uma Invocação para fundir com a principal."); return out; }
+
+  const sintetica = {
+    ...principal,
+    id: `quimera:${quimera.id}`,
+    nome: quimera.nome || principal.nome,
+    marcadores: { ...(principal.marcadores || {}), [QUIMERA_MARCADOR]: true },
+    marcadorFontes: { ...(principal.marcadorFontes || {}), [QUIMERA_MARCADOR]: [principal.id, ...usadas.map((f) => f.id)] },
+  };
+  const donoQ = {
+    ...dono,
+    marcadores: [...(Array.isArray(dono.marcadores) ? dono.marcadores : []), QUIMERA_MARCADOR_DEF],
+    efeitos: [...(Array.isArray(dono.efeitos) ? dono.efeitos : []), ...QUIMERA_EFEITOS],
+  };
+  const lista = resolveInvocacoesList([...fichas, sintetica], donoQ).lista;
+  out.resolvida = lista[lista.length - 1];
+  out.valido = true;
+  out.fundidasIds = usadas.map((f) => f.id);
+  out.principal = { id: principal.id, nome: principal.nome };
+  out.fundidas = [principal, ...usadas].map((f) => ({ id: f.id, nome: f.nome || grauMeta(f.grau).label }));
+  out.pv = out.resolvida.pv;
+  out.custo = out.resolvida.custo;
+  out.defesa = out.resolvida.defesa;
+  out.deslocamento = out.resolvida.deslocamento;
+  return out;
+}
+
+/** Lista de Quimeras do dono, resolvida. */
+export function resolveQuimerasList(quimeras, invocacoes = [], dono = {}) {
+  const arr = Array.isArray(quimeras) ? quimeras : [];
+  const lista = arr.map((q) => resolveQuimera(q, invocacoes, dono));
+  return { lista, total: lista.length, custoTotal: lista.reduce((s, q) => s + (q.custo || 0), 0) };
+}
+
 // ------------------------------------------------------------
 // Validador de conteúdo (mesmo papel de validarCatalogoAptidoes): confere que
 // as tabelas por grau estão completas e consistentes. Não há catálogo de texto

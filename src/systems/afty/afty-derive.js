@@ -80,7 +80,7 @@ import {
   resolveAltoNivel, getMelhoriaSuperior, getHabilidadeLendaria, getHabilidadeApice,
 } from "./afty-alto-nivel";
 import {
-  resolveInvocacoesList, resolveHordasList, efeitosDeInvocacao, efeitosInvocacaoEscritos,
+  resolveInvocacoesList, resolveHordasList, resolveQuimerasList, efeitosDeInvocacao, efeitosInvocacaoEscritos,
   INV_EFEITO_CANAIS,
 } from "./afty-invocacoes";
 import { armasTransformaveis, efeitosArmasTransformaveis } from "./afty-armas-transformaveis";
@@ -3027,6 +3027,7 @@ export function deriveAfty(creature, opcoes = {}) {
   };
   const invocacoes = { ...resolveInvocacoesList(creature?.invocacoes, donoInvoc), controle };
   const hordas = resolveHordasList(creature?.hordas, creature?.invocacoes, donoInvoc);
+  const quimeras = resolveQuimerasList(creature?.quimeras, creature?.invocacoes, donoInvoc);
 
   // Focos de interlúdio (orçamento de Treinamento) = ND + Outros.
   // "Outros" = bônus de poderes que concedem treinos (sistema futuro),
@@ -3532,6 +3533,7 @@ export function deriveAfty(creature, opcoes = {}) {
     imitacao,
     invocacoes,           // { lista, total, custoTotal, temWarnings }
     hordas,               // { lista, total, custoTotal } (líder + membros escalados)
+    quimeras,             // { lista, total, custoTotal } (fusão de 2 a 4 invocações)
     focosTotais,          // orçamento de Focos de interlúdio = ND + bônus de poderes
     treino,               // contribuições agregadas dos Treinamentos (hp/pe/movimento/aptidao/defesa)
     nd, tipo, patamar,

@@ -868,6 +868,33 @@ function FichaDoShikigami({ inv, estado, rolar, acoes, aoTemar }) {
 }
 
 /* ============================================================ */
+/* QUIMERAS                                                      */
+/* ============================================================ */
+/** Uma QUIMERA: números já fundidos, e a lista de quem entrou na fusão. */
+function Quimera({ q }) {
+  const r = q.resolvida;
+  const attrs = Object.entries(r?.atributos?.valores ?? {});
+  return (
+    <div className="afty-linha px-2.5 py-1.5 space-y-1">
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="flex-1 min-w-0 text-[12px] font-semibold truncate">{q.nome || r?.nome || "Quimera"}</span>
+        <span className="afty-rotulo text-[10px] whitespace-nowrap">{q.total} Fundidas</span>
+        <span className="afty-valor text-[11px]" data-afty-tom="custo">{q.custo} PE</span>
+      </div>
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="afty-chip" title="Pontos de Vida">PV {q.pv}</span>
+        <span className="afty-chip" title="Defesa">Defesa {q.defesa}</span>
+        {q.deslocamento != null && <span className="afty-chip" title="Deslocamento">{q.deslocamento}m</span>}
+        {attrs.map(([k, v]) => (
+          <span key={k} className="afty-chip" title="Atributo fixo no maior valor entre as fundidas">{k.slice(0, 3).toUpperCase()} {v}</span>
+        ))}
+      </div>
+      <div className="text-[11px] opacity-80">{(q.fundidas ?? []).map((f) => f.nome).join(" + ")}</div>
+    </div>
+  );
+}
+
+/* ============================================================ */
 /* HORDAS                                                        */
 /* ============================================================ */
 /**
@@ -969,6 +996,7 @@ function Horda({ h, rolar }) {
 export default function AbaInvocacoes({ derived, rolar, destaque, estadoDe, acoes, aoTemar, temaEmEdicao }) {
   const invocacoes = derived.invocacoes?.lista ?? [];
   const hordas = derived.hordas?.lista ?? [];
+  const quimeras = (derived.quimeras?.lista ?? []).filter((q) => q.valido);
   const marcadores = derived.invocacoes?.marcadores ?? [];
   const controle = derived.invocacoes?.controle;
 
@@ -1016,7 +1044,7 @@ export default function AbaInvocacoes({ derived, rolar, destaque, estadoDe, acoe
 
   const emCampo = invocacoes.filter((i) => i.emCampo).length;
 
-  if (!invocacoes.length && !hordas.length) {
+  if (!invocacoes.length && !hordas.length && !quimeras.length) {
     return (
       <section className="afty-card p-3">
         <p className="afty-vazio">Nenhuma Invocação</p>
@@ -1109,6 +1137,15 @@ export default function AbaInvocacoes({ derived, rolar, destaque, estadoDe, acoe
           <h2 className="afty-card-titulo mb-2">Hordas</h2>
           <div className="space-y-2">
             {hordas.map((h) => <Horda key={h.id} h={h} rolar={rolar} />)}
+          </div>
+        </section>
+      )}
+
+      {quimeras.length > 0 && (
+        <section className="afty-card p-3">
+          <h2 className="afty-card-titulo mb-2">Quimeras</h2>
+          <div className="space-y-2">
+            {quimeras.map((q) => <Quimera key={q.id} q={q} />)}
           </div>
         </section>
       )}

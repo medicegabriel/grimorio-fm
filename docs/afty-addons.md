@@ -729,6 +729,12 @@ primitiva pela lição do `hpAtributo`: os canais vivem no motor sempre, e o `pe
 enxerga. O pacote `vida-dobrada-passivas-gratis` usa os dois num Funcionamento do pacote, sempre ativo.
 Ver `docs/automacao-dsl.md` e `docs/afty-formulas-base.md`.
 
+#### A primitiva `quimera` (2026-09-20)
+
+Mostra o card de Quimeras ao lado das Hordas, na aba de Invocações. O motor (`resolveQuimera`) vive sempre
+e só a tela depende do `permite`. O pacote `quimera` só declara `permite: ["quimera"]`. Ver
+`docs/afty-invocacoes.md`.
+
 ### O campo `incompativeis` (2026-09-14)
 
 Ids de pacotes que **não ligam na mesma ficha** que este. Nasceu com a Criação de Equipamentos, que o

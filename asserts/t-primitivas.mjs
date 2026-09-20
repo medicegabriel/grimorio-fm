@@ -46,9 +46,9 @@ const t = (nome, real, esp) => {
    (2026-09-16) e a sessao de Maleficios/Beneficios de texto livre. A
    `modificacoesCorporais` (2026-09-17) e a sessao ao lado de Habilidades,
    mesma forma do Pacto (Base + Enxertos de texto livre). */
-t("sao 17 primitivas", AD.PRIMITIVAS.length, 17);
+t("sao 18 primitivas", AD.PRIMITIVAS.length, 18);
 t("ids esperados", AD.PRIMITIVAS.map((p) => p.id).sort(),
-  ["adaptacao", "armaTransformavel", "armasPorNivel", "carteira", "catarse", "cofre", "concessao", "contar", "criacaoArmas", "encantamentoGuia", "hpAtributo", "modificacoesCorporais", "olhosDeAgulha", "pacto", "pvEPassivas", "requisitoAptidao", "vislumbreCeleste"]);
+  ["adaptacao", "armaTransformavel", "armasPorNivel", "carteira", "catarse", "cofre", "concessao", "contar", "criacaoArmas", "encantamentoGuia", "hpAtributo", "modificacoesCorporais", "olhosDeAgulha", "pacto", "pvEPassivas", "quimera", "requisitoAptidao", "vislumbreCeleste"]);
 t("toda primitiva tem rotulo", AD.PRIMITIVAS.every((p) => !!p.rotulo), true);
 t("SEM_PRIMITIVAS e vazio", AD.SEM_PRIMITIVAS, []);
 

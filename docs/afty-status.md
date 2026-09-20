@@ -14183,3 +14183,26 @@ atributo vira exatamente o maior valor daquele atributo entre as fundidas, e a f
 invocação deixa de contar, seja ela maior ou menor. Sem fonte declarada nada muda. O Addon `quimera`
 passou a pedi-la nos três marcadores. Asserts novos em `t-quimera.mjs` (34 no total): ficha da Quimera
 maior que as fundidas, menor, fusão de duas fontes e sem fonte.
+
+
+## SESSÃO DE 2026-09-20: QUIMERA VIRA CARD, E DEIXA DE SER TALENTO
+
+Pedido do autor: a Quimera não é mais pega como Talento, e ganha uma seção parecida com a das Hordas.
+
+- **Motor nativo** em `afty-invocacoes.js`: `createBlankQuimera`, `resolveQuimera`, `resolveQuimerasList` e
+  `INV_QUIMERA_NIVEIS` (2, 3 e 4). A ficha guarda `creature.quimeras`, uma lista de
+  `{ id, nome, principalId, fundidasIds, nivel }`, e o `deriveAfty` devolve `derived.quimeras`
+  (`lista`, `total`, `custoTotal`). Nenhum código de fusão novo: a Quimera é uma invocação sintética
+  resolvida pelo mecanismo de fontes das Dez Sombras, com um marcador e sete efeitos NATIVOS que só existem
+  dentro de `resolveQuimera`. As invocações reais da ficha nunca mudam.
+- **O Nível da Passiva é escolhido no card** (2, 3 ou 4) e é o teto de fundidas, contando a principal. O
+  Feitiço Passiva não é lido pelo marcador, e foi por isso que o addon antigo tinha um Talento por nível.
+- **A principal conta como fundida**, então o maior atributo, a união de treinos e a soma de PV e custo a
+  incluem. O `fundidasIds` são as outras. O card mostra PV, Custo, Defesa, Deslocamento e os atributos fixos.
+- **Primitiva `quimera`** (nova, são 18): o addon `quimera` (v2.0.0) só faz `permite: ["quimera"]`, sem
+  Talento nem marcador. Sem o addon o card não aparece, e o motor segue em pé.
+- **Ficha Final**: a aba de Invocações ganhou a seção Quimeras, com os números fundidos e quem entrou.
+- Asserts: `t-quimera.mjs` reescrito (34), `t-primitivas.mjs` foi de 17 para 18.
+- Ficou de fora: as Ações e Características da Quimera são as da principal mais 1 por fundida (orçamento), e a
+  escolha entre as das fundidas ainda é feita editando a invocação principal. Custo de PE Máximo da Passiva no
+  Jogador, ficha de antemão, uma Quimera por cena e bloqueio pós-Dissipar seguem na mesa.
