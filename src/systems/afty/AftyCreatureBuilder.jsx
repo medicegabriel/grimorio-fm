@@ -16857,6 +16857,7 @@ function TabInvocacoes({ draft, derived, addInvocacao, removeInvocacao, duplicar
     {temQuimera && (
       <QuimerasCard
         fichas={lista}
+        brutas={Array.isArray(draft.quimeras) ? draft.quimeras : []}
         resolvidas={derived.quimeras?.lista ?? []}
         custoTotal={derived.quimeras?.custoTotal ?? 0}
         addQuimera={addQuimera}
@@ -16872,6 +16873,7 @@ function TabInvocacoes({ draft, derived, addInvocacao, removeInvocacao, duplicar
    as fundidas. O teto de fundidas é o Nível, contando a principal. */
 function QuimeraCard({ quimera, res, fichas, onPatch, onRemove }) {
   const [open, setOpen] = useState(!quimera.nome);
+  const [subtab, setSubtab] = useState("acoes");
   const nomeDe = (inv) => inv.nome || grauMeta(inv.grau).label;
   const principal = fichas.find((x) => x.id === quimera.principalId) || null;
   const fundidasIds = Array.isArray(quimera.fundidasIds) ? quimera.fundidasIds : [];
@@ -16883,6 +16885,33 @@ function QuimeraCard({ quimera, res, fichas, onPatch, onRemove }) {
 
   const r = res?.resolvida;
   const attrs = r?.atributos?.valores ?? {};
+  const grupos = useMemo(() => vocabularioInvocacao(r?.contextoDsl), [r?.contextoDsl]);
+
+  /* Ações e Características são da própria Quimera. Sem lista gravada (Quimera
+     antiga) valem as da principal, e a primeira edição grava a lista. */
+  const listaDe = (campo) => (Array.isArray(quimera[campo]) ? quimera[campo] : (principal?.[campo] ?? []));
+  const listaApi = (campo, factory) => ({
+    add: () => onPatch({ [campo]: [...listaDe(campo), factory()] }),
+    remove: (id) => onPatch({ [campo]: listaDe(campo).filter((x) => x.id !== id) }),
+    patch: (id, p) => onPatch({ [campo]: listaDe(campo).map((x) => (x.id === id ? { ...x, ...p } : x)) }),
+  });
+  const acoesApi = listaApi("acoes", createBlankAcao);
+  const caracApi = listaApi("caracteristicas", createBlankCaracteristica);
+  /* Copiar de uma fundida: o clone ganha id novo, e a fundida não é tocada. */
+  const fundidasFichas = [principal, ...fundidasIds.map((id) => fichas.find((x) => x.id === id))].filter(Boolean);
+  const opcoesCopia = (campo, factory) => fundidasFichas.flatMap((f) =>
+    (f[campo] ?? []).map((it) => ({ value: `${f.id}|${it.id}`, label: `${nomeDe(f)} · ${it.nome || "Sem nome"}`, fonte: it, factory })));
+  const copiar = (campo, factory, valor) => {
+    const [fid, iid] = String(valor).split("|");
+    const it = fichas.find((x) => x.id === fid)?.[campo]?.find((x) => x.id === iid);
+    if (it) onPatch({ [campo]: [...listaDe(campo), { ...it, id: factory().id }] });
+  };
+  const orc = r?.orcamento;
+  const orcOver = (orc?.usados ?? 0) > (orc?.total ?? 0);
+  const SUBABAS = [
+    { id: "acoes", label: "Ações e Características", n: listaDe("acoes").length + listaDe("caracteristicas").length },
+    { id: "info", label: "Informações" },
+  ];
   return (
     <div className="rounded-lg border border-slate-700/80 bg-slate-950/40">
       <div className="flex items-center gap-2.5 px-3 py-2.5">
@@ -16957,14 +16986,111 @@ function QuimeraCard({ quimera, res, fichas, onPatch, onRemove }) {
                 <StatMini label="Defesa" value={r.defesa} />
                 <StatMini label="Deslocamento" value={r.deslocamento != null ? `${r.deslocamento} m` : "-"} />
               </div>
-              <div className="rounded-lg border border-slate-800 bg-slate-950/40 px-3 py-2.5">
-                <div className="text-[10px] uppercase tracking-wider text-slate-400 mb-1.5">Atributos fixos no maior valor</div>
-                <div className="flex flex-wrap gap-2 text-[11px] font-mono text-slate-300">
-                  {Object.entries(attrs).map(([k, v]) => (
-                    <span key={k} className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700">{k.slice(0, 3).toUpperCase()} {v}</span>
-                  ))}
-                </div>
+              <div className="flex gap-1 overflow-x-auto no-scrollbar border-b border-slate-800 py-2" role="tablist" aria-label="Seções da quimera">
+                {SUBABAS.map((t) => {
+                  const on = subtab === t.id;
+                  return (
+                    <button
+                      key={t.id}
+                      type="button"
+                      role="tab"
+                      aria-selected={on}
+                      onClick={() => setSubtab(t.id)}
+                      className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg text-[13px] font-semibold transition-colors flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-500 ${
+                        on ? "bg-purple-700 text-white" : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+                      }`}
+                    >
+                      {t.label}
+                      {t.n > 0 && (
+                        <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded font-mono ${on ? "bg-white/20 text-white" : "bg-purple-500/25 text-purple-300"}`}>{t.n}</span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
+
+              {subtab === "acoes" && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[10px] uppercase tracking-wider text-slate-500">Orçamento (principal + 1 por fundida)</span>
+                    <span className={`font-mono text-[11px] tabular-nums px-2 py-0.5 rounded border ${
+                      orcOver ? "text-rose-300 border-rose-800 bg-rose-950/30" : "text-slate-300 border-slate-700 bg-slate-800/50"
+                    }`}>{orc?.usados ?? 0} / {orc?.total ?? 0}</span>
+                  </div>
+                  <EfeitosSecao
+                    titulo="Ações"
+                    itens={listaDe("acoes")}
+                    resolvidos={r.acoes || []}
+                    onAdd={acoesApi.add}
+                    addLabel="Nova ação"
+                    render={(item, resA) => (
+                      <AcaoCard key={item.id} acao={item} res={resA} grau={r.grau} otimizacaoEnergia={r.otimizacaoEnergia} grupos={grupos} efe={r.efeitosHabilidade} onPatch={(p) => acoesApi.patch(item.id, p)} onRemove={() => acoesApi.remove(item.id)} />
+                    )}
+                  />
+                  <div className="sm:max-w-sm">
+                    <Select value="" onChange={(v) => copiar("acoes", createBlankAcao, v)} options={opcoesCopia("acoes", createBlankAcao)} placeholder="copiar ação de uma fundida..." />
+                  </div>
+                  <EfeitosSecao
+                    titulo="Características"
+                    itens={listaDe("caracteristicas")}
+                    resolvidos={r.caracteristicas || []}
+                    onAdd={caracApi.add}
+                    addLabel="Nova característica"
+                    render={(item, resC) => (
+                      <CaracteristicaCard key={item.id} carac={item} res={resC} grau={r.grau} grupos={grupos} onPatch={(p) => caracApi.patch(item.id, p)} onRemove={() => caracApi.remove(item.id)} />
+                    )}
+                  />
+                  <div className="sm:max-w-sm">
+                    <Select value="" onChange={(v) => copiar("caracteristicas", createBlankCaracteristica, v)} options={opcoesCopia("caracteristicas", createBlankCaracteristica)} placeholder="copiar característica de uma fundida..." />
+                  </div>
+                </div>
+              )}
+
+              {subtab === "info" && (
+                <div className="space-y-3">
+                  <InvocacaoRetrato inv={{ portraitUrl: quimera.portraitUrl, portraitFocus: quimera.portraitFocus }} onPatch={onPatch} />
+                  <div className="rounded-lg border border-slate-800 bg-slate-950/40 px-3 py-2.5">
+                    <div className="text-[10px] uppercase tracking-wider text-slate-400 mb-1.5">Atributos fixos no maior valor</div>
+                    <div className="flex flex-wrap gap-2 text-[11px] font-mono text-slate-300">
+                      {Object.entries(attrs).map(([k, v]) => (
+                        <span key={k} className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700">{k.slice(0, 3).toUpperCase()} {v}</span>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="rounded-lg border border-slate-800 bg-slate-950/40 px-3 py-2.5">
+                    <div className="text-[10px] uppercase tracking-wider text-slate-400 mb-1.5">Acertos</div>
+                    <div className="flex flex-wrap gap-2 text-[11px] font-mono text-slate-300">
+                      <span className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700">Corpo a Corpo {sinalDe(r.testes?.acerto?.corpo?.bonus ?? 0)}{r.testes?.acerto?.corpo?.treinado ? " (treinado)" : ""}</span>
+                      <span className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700">A Distância {sinalDe(r.testes?.acerto?.distancia?.bonus ?? 0)}{r.testes?.acerto?.distancia?.treinado ? " (treinado)" : ""}</span>
+                      <span className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700">CD {r.testes?.cd}</span>
+                    </div>
+                  </div>
+                  <div className="rounded-lg border border-slate-800 bg-slate-950/40 px-3 py-2.5">
+                    <div className="text-[10px] uppercase tracking-wider text-slate-400 mb-1.5">Testes de Resistência</div>
+                    <div className="flex flex-wrap gap-2 text-[11px] font-mono text-slate-300">
+                      {(r.testes?.resistencias ?? []).map((t) => (
+                        <span key={t.value} className={`px-1.5 py-0.5 rounded border ${t.treinado ? "bg-purple-950/40 border-purple-800/60 text-purple-200" : "bg-slate-800 border-slate-700"}`}>
+                          {t.label} {sinalDe(t.bonus)}{t.mestre ? " (mestre)" : t.treinado ? " (treinado)" : ""}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="rounded-lg border border-slate-800 bg-slate-950/40 px-3 py-2.5">
+                    <div className="text-[10px] uppercase tracking-wider text-slate-400 mb-1.5">Perícias (união das fundidas)</div>
+                    {(r.testes?.pericias ?? []).length === 0 ? (
+                      <p className="text-[11px] text-slate-600 italic">Nenhuma perícia treinada.</p>
+                    ) : (
+                      <div className="flex flex-wrap gap-2 text-[11px] font-mono text-slate-300">
+                        {r.testes.pericias.map((p) => (
+                          <span key={p.id} className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700">
+                            {p.nome} {sinalDe(p.bonus)}{p.mestre ? " (mestre)" : p.treinado ? " (treinado)" : ""}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </>
           )}
         </div>
@@ -16973,7 +17099,7 @@ function QuimeraCard({ quimera, res, fichas, onPatch, onRemove }) {
   );
 }
 
-function QuimerasCard({ fichas, resolvidas, custoTotal, addQuimera, removeQuimera, patchQuimera }) {
+function QuimerasCard({ fichas, brutas, resolvidas, custoTotal, addQuimera, removeQuimera, patchQuimera }) {
   const botao = "inline-flex items-center gap-1.5 text-[12px] font-semibold px-3 py-1.5 rounded-lg border border-purple-700 bg-purple-800/40 text-purple-200 hover:bg-purple-700/50";
   return (
     <Card
@@ -17006,7 +17132,8 @@ function QuimerasCard({ fichas, resolvidas, custoTotal, addQuimera, removeQuimer
       ) : (
         <div className="space-y-2.5">
           {resolvidas.map((res) => {
-            const quimera = { id: res.id, nome: res.nome, principalId: res.principalId, fundidasIds: res.fundidasIds, nivel: res.nivel };
+            const quimera = brutas.find((x) => x.id === res.id)
+              ?? { id: res.id, nome: res.nome, principalId: res.principalId, fundidasIds: res.fundidasIds, nivel: res.nivel };
             return (
               <QuimeraCard
                 key={res.id}

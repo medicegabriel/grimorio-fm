@@ -3122,7 +3122,13 @@ export const INV_QUIMERA_NIVEIS = [2, 3, 4];
 const QUIMERA_MARCADOR = "quimera_fusao";
 
 export function createBlankQuimera() {
-  return { id: novoId("quimera"), nome: "", principalId: "", fundidasIds: [], nivel: 2 };
+  /* `acoes` e `caracteristicas` são da PRÓPRIA Quimera: "podem ser escolhidas
+     entre quaisquer Ações/Características das invocações fundidas, além de criar
+     únicas". Quimera gravada sem elas (antes de 2026-09-20) usa as da principal. */
+  return {
+    id: novoId("quimera"), nome: "", principalId: "", fundidasIds: [], nivel: 2,
+    acoes: [], caracteristicas: [], portraitUrl: "", portraitFocus: { x: 50, y: 50 },
+  };
 }
 
 const QUIMERA_MARCADOR_DEF = {
@@ -3171,6 +3177,10 @@ export function resolveQuimera(quimera, invocacoes = [], dono = {}) {
     ...principal,
     id: `quimera:${quimera.id}`,
     nome: quimera.nome || principal.nome,
+    acoes: Array.isArray(quimera.acoes) ? quimera.acoes : principal.acoes,
+    caracteristicas: Array.isArray(quimera.caracteristicas) ? quimera.caracteristicas : principal.caracteristicas,
+    portraitUrl: typeof quimera.portraitUrl === "string" ? quimera.portraitUrl : "",
+    portraitFocus: quimera.portraitFocus || { x: 50, y: 50 },
     marcadores: { ...(principal.marcadores || {}), [QUIMERA_MARCADOR]: true },
     marcadorFontes: { ...(principal.marcadorFontes || {}), [QUIMERA_MARCADOR]: [principal.id, ...usadas.map((f) => f.id)] },
   };

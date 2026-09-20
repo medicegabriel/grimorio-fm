@@ -14203,6 +14203,10 @@ Pedido do autor: a Quimera não é mais pega como Talento, e ganha uma seção p
   Talento nem marcador. Sem o addon o card não aparece, e o motor segue em pé.
 - **Ficha Final**: a aba de Invocações ganhou a seção Quimeras, com os números fundidos e quem entrou.
 - Asserts: `t-quimera.mjs` reescrito (34), `t-primitivas.mjs` foi de 17 para 18.
-- Ficou de fora: as Ações e Características da Quimera são as da principal mais 1 por fundida (orçamento), e a
-  escolha entre as das fundidas ainda é feita editando a invocação principal. Custo de PE Máximo da Passiva no
-  Jogador, ficha de antemão, uma Quimera por cena e bloqueio pós-Dissipar seguem na mesa.
+- **Abas do card (mesmo dia, a pedido do autor):** "Ações e Características" e "Informações". A Quimera tem
+  `acoes`, `caracteristicas`, `portraitUrl` e `portraitFocus` PRÓPRIOS (orçamento: principal + 1 por fundida).
+  Cada lista aceita ação nova, edição e "copiar de uma fundida" (clone com id novo, a fundida não muda).
+  Quimera gravada sem as listas usa as da principal até a primeira edição. A aba Informações mostra o retrato
+  (editável), atributos fixos, Acertos, CD, TRs e Perícias (somente leitura, vêm da fusão).
+- Ficou de fora: a Ficha Final mostra a Quimera só em resumo (sem rolar as ações dela). Custo de PE Máximo da
+  Passiva no Jogador, ficha de antemão, uma Quimera por cena e bloqueio pós-Dissipar seguem na mesa.

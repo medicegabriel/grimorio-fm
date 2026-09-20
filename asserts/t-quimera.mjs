@@ -148,7 +148,30 @@ t("trocar a principal nao muda o maximo do grupo",
   tres(attr({ n: 4, principal: "f3" })), maiores(4));
 
 /* ============================================================ */
-/* 8. NADA VAZA                                                  */
+/* 7b. AÇÕES, CARACTERÍSTICAS E RETRATO SÃO DA QUIMERA            */
+/* ============================================================ */
+t("a Quimera nova nasce com listas proprias e retrato vazio",
+  (({ acoes, caracteristicas, portraitUrl }) => [acoes, caracteristicas, portraitUrl])(INV.createBlankQuimera()),
+  [[], [], ""]);
+t("Quimera sem lista gravada usa as acoes da principal",
+  qDe({ n: 2 }).resolvida.acoes.map((a) => a.nome), ["A1", "A2", "A3"]);
+{
+  const c = ficha({ n: 2 });
+  c.quimeras[0].acoes = [{ ...INV.createBlankAcao(), id: "qa1", nome: "Golpe Unico" }];
+  c.quimeras[0].caracteristicas = [];
+  c.quimeras[0].portraitUrl = "https://x/y.png";
+  const q = deriveAfty(c).quimeras.lista[0];
+  t("com lista propria valem so as acoes da Quimera", q.resolvida.acoes.map((a) => a.nome), ["Golpe Unico"]);
+  t("o retrato da Quimera chega no resolvido", q.resolvida.portraitUrl, "https://x/y.png");
+  t("as acoes da principal ficam intactas",
+    deriveAfty(c).invocacoes.lista.find((x) => x.id === "f0").acoes.length, 3);
+  t("o resolvido traz TRs, acerto e pericias para a aba de informacoes",
+    [q.resolvida.testes.resistencias.length, typeof q.resolvida.testes.acerto.corpo.bonus, Array.isArray(q.resolvida.testes.pericias)],
+    [5, "number", true]);
+}
+
+/* ============================================================ */
+/* 8. NADA VAZA                                                 */
 /* ============================================================ */
 const lista = dQ({ n: 4 }).invocacoes.lista;
 t("as invocacoes da ficha ficam intactas",
