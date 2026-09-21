@@ -437,6 +437,14 @@ export const COMBATE_ESTADOS = [
   /* ============================================================ */
 
   {
+    id: "fluxoInvencivel",
+    label: "Fluxo Invencível",
+    tipo: "bool",
+    requerApice: "api_fluxo_invencivel",
+    dono: { id: "restringido", label: "Restringido" },
+    custoPE: 6,
+  },
+  {
     id: "surtoAdrenalina",
     label: "Surto de Adrenalina",
     tipo: "bool",

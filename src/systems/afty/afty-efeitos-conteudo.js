@@ -1867,6 +1867,16 @@ export const ESCOLHA_EFEITOS = {
    primeiro. Ver docs/afty-efeitos-criatura.md. */
 
 export const APICE_EFEITOS = {
+  api_fluxo_invencivel: [
+    { canal: "defesa", quando: "fluxo_invencivel", expr: "12", duracao: "temporaria" },
+    { canal: "bonusTR", quando: "fluxo_invencivel", expr: "12", duracao: "temporaria" },
+    { canal: "rdGeral", quando: "fluxo_invencivel", expr: "30", duracao: "temporaria" },
+    { canal: "margemCritico", quando: "fluxo_invencivel", expr: "2", duracao: "temporaria" },
+    { canal: "dadosCritico", quando: "fluxo_invencivel", expr: "2", duracao: "temporaria" },
+    { canal: "ataquesExtras", quando: "fluxo_invencivel", expr: "1", duracao: "temporaria" },
+    // Acerto e dano dependem da jogada normal já resolvida, sem o próprio
+    // Fluxo. São acrescentados pelo derive depois dos demais bônus de ataque.
+  ],
   api_invencivel_sob_o_sol: [
     // `invencivelSobOSol` vira `invencivel_sob_osol` no varDoEstado: duas
     // maiúsculas seguidas não abrem separador entre o artigo e o nome.

@@ -59,6 +59,20 @@ O que estas fórmulas revelam e que contradiz o esquema v0 (`createBlankAfty`):
 
 ## Fórmulas (verbatim + decodificadas)
 
+### Fluxo Invencível (decisão de 2026-09-21)
+
+O bônus de luta usa o bônus numérico da jogada normal de Corpo a Corpo na aba Perícias,
+com as demais fontes e sem o próprio Fluxo. O dano de cada ataque básico ou arma recebe esse
+valor, e o acerto recebe `piso(bonusDeLuta / 2)`. O motor reutiliza `resolveTestes`, respeitando
+`rulesVersion`, para não duplicar a fórmula da jogada nem realimentar o bônus.
+
+Enquanto ativo, soma 12 à Defesa e a todos os TRs, 30 à RD Geral e um ataque extra. A margem de
+crítico reduz em dois e o crítico recebe dois dados adicionais pelo canal `dadosCritico`, com
+o tamanho e a multiplicação já adotados pelo motor de crítico. O texto do catálogo permanece
+verbatim. O autor confirmou 6 vigor na ativação e 4 para a segunda rodada, total de 10.
+Duração, gasto e exaustão ficam sob controle manual na ficha, sem cobrança ao desligar ou
+automatismo de manutenção.
+
 ### Alma / Integridade
 `Alma.Max = 100`. `Alma.Atual` = valor corrente (0–100). Escala o HP.
 

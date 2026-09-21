@@ -1,5 +1,34 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-09-21: FLUXO INVENCÍVEL
+
+A base local avançou de `8c80212` para `ea01a94`, preservando o trabalho local de
+Reencarnação das Terras Impuras e as demais alterações existentes. O único conflito na
+reaplicação foi neste histórico, resolvido mantendo as sessões de ambos os lados. O backup
+automático do Git foi preservado. Nenhum commit ou push foi executado.
+
+Fluxo Invencível agora tem interruptor na bancada de combate e em Buffs, na aba Restringido.
+Só produz efeitos em combate com o Ápice escolhido. O catálogo conserva o texto verbatim.
+Defesa, TRs, RD Geral, margem, dados adicionais no crítico e ataque extra usam os canais do
+Motor. O dano usa o acerto normal de Corpo a Corpo da aba Perícias, e o bônus de acerto usa
+sua metade arredondada para baixo, conforme a resposta do autor. A resolução ocorre antes
+do próprio bônus para impedir realimentação e respeita o sistema da ficha.
+
+O autor confirmou o total de 10 vigor, 6 para ativar e 4 para a segunda rodada. O interruptor
+mantém o funcionamento manual dos estados comuns: não desconta recurso, não avança duração
+nem aplica exaustão automaticamente. Esses controles continuam com a pessoa usando a ficha.
+
+Validação: 46 asserts específicos nos dois sistemas, incluindo armas corpo a corpo e à
+distância, arredondamento, fontes, crítico e desligamento. A contagem do catálogo de estados
+foi atualizada de 62 para 63, com seus 56 asserts passando. ESLint e build passaram. A suíte
+completa encontrou também a falha já registrada de custo da Característica Livre em
+`t-invocacoes-motor.mjs`, fora desta implementação.
+
+No navegador, a ficha de teste com acerto normal +15 passou a somar +15 de dano e +7 de
+acerto, mostrou margem 18 e um ataque extra. Defesa passou de 25 a 37 e RD de 0 a 30.
+O crítico passou a usar os dois dados adicionais pela regra vigente de multiplicação.
+`src/components/` permaneceu sem alterações.
+
 ## SESSÃO DE 2026-09-21: SEM TÉCNICA - LIBERTO E O VERBO `variacaoDe`
 
 Pedido do autor: um Addon para "essa variação de Sem Técnica, chamado Sem Técnica - Liberto".

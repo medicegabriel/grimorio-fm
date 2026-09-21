@@ -43,6 +43,11 @@ Onde se usa:
 - `hp_pct, pe_pct` — Percentual de PV/PE atual (0–100).
 
 ### Estados de combate do Afty
+
+- `fluxo_invencivel` vale 1 somente em combate e com o Ápice Fluxo Invencível escolhido.
+  Seus efeitos fixos usam os canais existentes de Defesa, TR, RD Geral, margem, dados de crítico
+  e ataques extras. Acerto e dano entram depois de resolver o ataque normal, sem ler o próprio
+  bônus. Não há variável pública nova para acerto. A ativação é manual na bancada e na ficha.
 - `em_combate` — 1 enquanto a bancada ou a sessão está em combate.
 - `dominio_ativo` — 1 quando a sessão selecionou uma Expansão de Domínio válida.
 - Os demais ids de `COMBATE_ESTADOS` viram identificadores normalizados pelo mesmo caminho. Estados

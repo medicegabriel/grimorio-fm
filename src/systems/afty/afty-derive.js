@@ -2130,6 +2130,24 @@ export function deriveAfty(creature, opcoes = {}) {
     ef = mesclarEfeitos(ef, aplicarEfeitos(efeitosAlma, montarCtx(attrEff, modByAttr)));
   }
 
+  // O bônus de luta é a jogada normal de Corpo a Corpo, antes do próprio
+  // Fluxo (autor, 2026-09-21). Reutilizar o resolver mantém a mesma escala,
+  // atributo, treino e fontes da aba Perícias, sem realimentar o acerto.
+  if (combate.fluxoInvencivel) {
+    const acertoNormal = resolveTestes(creature, {
+      nd, bt, mods: modByAttr, tecnicaAttr, sistema, efeitos: ef,
+    }).ataques.find((a) => a.id === "corpo")?.bonus ?? 0;
+    const efeitosFluxo = [
+      { canal: "bonusAcerto", expr: String(Math.floor(acertoNormal / 2)) },
+      // Dano de ataque: cobre o desarmado e todas as armas, sem conceder
+      // dano a Feitiços que só exigem um teste de resistência.
+      { canal: "danoBonus", alvo: "basico", expr: String(acertoNormal) },
+      { canal: "danoBonus", alvo: "arma", expr: String(acertoNormal) },
+    ].map((e) => ({ ...e, origem: "api_fluxo_invencivel",
+      nome: "Fluxo Invencível", duracao: "temporaria" }));
+    ef = mesclarEfeitos(ef, aplicarEfeitos(efeitosFluxo, montarCtx(attrEff, modByAttr)));
+  }
+
   // ---------- PE (+ Treinos de Compreensão/Controle de Energia/…) ----------
   // UMA pilha só, para todo mundo. O Restringido a chama de Ponto de Estamina
   // (ou vigor) e os outros de Ponto de Energia, mas a abreviação é PE nos dois
