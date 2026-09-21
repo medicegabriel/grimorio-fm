@@ -21,7 +21,7 @@ import TextoRico from "../../ui/TextoRico";
  * quando não se aplica.
  *
  * ⚠ AS HABILIDADES NÃO ENTRAM AQUI, e não é esquecimento: nenhum catálogo do
- * Afty tem metadado de ação. As 413 Habilidades de Especialização, os 51
+ * Afty tem metadado de ação. As 413 Habilidades de Especialização, os 52
  * Talentos e as 85 Aptidões têm `id`, `nome`, `descricao` e `requisitos`, e nada
  * dizendo se são ação, ação bônus ou reação, nem custo, nem usos. Montar uma
  * lista de ações a partir delas exigiria inventar essa classificação. Elas vão
@@ -89,9 +89,11 @@ function LinhaDano({ e, rolar, critico, onCritico, destacado, onImbuir, modoDano
         {e.ignoraTodaRD && <span className="afty-rotulo text-[10px]">Ignora Toda RD</span>}
         {e.ignoraImunidade && <span className="afty-rotulo text-[10px]">Ignora Imunidade</span>}
         {e.removeResistencia && <span className="afty-rotulo text-[10px] whitespace-nowrap">Remove Resistência</span>}
-        <span className="afty-rotulo text-[10px] whitespace-nowrap" title="Margem de Crítico">
-          Crít. {e.margemCritico}
-        </span>
+        {e.margemCritico != null && (
+          <span className="afty-rotulo text-[10px] whitespace-nowrap" title="Margem de Crítico">
+            Crít. {e.margemCritico}
+          </span>
+        )}
         {e.alcance && <span className="afty-rotulo text-[10px] whitespace-nowrap">{e.alcance.texto}</span>}
         {e.tipoDanoLabel && <span className="afty-chip">{e.tipoDanoLabel}</span>}
         {critico && <span className="afty-chip" data-afty-tom="destaque">Crítico</span>}

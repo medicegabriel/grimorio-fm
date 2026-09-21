@@ -61,6 +61,7 @@ import { sistemaDaFicha, regraDo, palavrasDoSistema } from "./afty-sistema";
 /* A tabela de progressão da Carteira. O `afty-carteira.js` é FOLHA, então este
    import é de mão única e não pode fechar ciclo. Ver `nivelDaFicha`. */
 import { nivelDaCarteira } from "./afty-carteira";
+import { normalizarRegrasAfty, validarRegrasAfty } from "./afty-regras-addon";
 
 /* ============================================================ */
 /* O REGISTRO DE FAMÍLIAS                                        */
@@ -427,22 +428,14 @@ export const PRIMITIVAS = [
     rotulo: "Armas por Nível de Dano",
     nota: "A bancada do guia Criação de Equipamentos no editor de arma própria: o dado sai do Custo menos os Níveis gastos em propriedades e crítico, com alcance por grau e Propriedade Especial personalizada",
   },
-  /* ⚠ NASCEU EM 2026-09-16, a pedido do autor: uma sessão de texto livre para
-     Malefícios e Benefícios, cada um com efeito OPCIONAL no Motor (mesmo
-     editor da Ferramenta Amaldiçoada). É primitiva e não família de catálogo
-     pela mesma razão da Carteira: o que ela acrescenta não é ENTRADA de
-     catálogo, é uma aba onde o jogador escreve as linhas. O pacote que só
-     `permite: ["pacto"]` abre a aba em branco; um pacote pode além disso trazer
-     `pactoPadrao` (afty-addons.js normalizarPacote) com um Pacto pronto que o
-     jogador copia com um botão, mesmo padrão dos Modelos de Feitiço.
-     ⚠ NUNCA ENTRA EM POOL EXCLUSIVO: os efeitos do Pacto não carregam
-     `exclusivo`, então somam por cima de qualquer fonte sempre — é a regra que
-     o autor pediu ("valor independente que acumula com qualquer fonte"). Ver
-     `afty-pacto.js`. */
+  /* Compatibilidade com os addons anteriores à área nativa de Votos. O id
+     `pacto` continua válido para não reprovar pacotes salvos, mas não libera
+     mais tela alguma. Um `pactoPadrao` pode ser copiado como Voto Mecânico na
+     aba nativa, que existe com ou sem addon. */
   {
     id: "pacto",
-    rotulo: "Pacto",
-    nota: "Aba própria: Malefícios e Benefícios de texto livre, com efeito opcional no Motor. A cada 2 Malefícios libera 1 vaga de Benefício, e os efeitos somam sempre, sem entrar em pool exclusivo",
+    rotulo: "Voto (compatibilidade)",
+    nota: "Compatibilidade com addons antigos que ofereciam um Voto pronto no campo pactoPadrao. A aba Votos agora é nativa e não depende desta permissão",
   },
   /* ⚠ NASCEU EM 2026-09-17, a pedido do autor: uma aba ao lado de Habilidades,
      mesmo espírito do Perfil Amaldiçoado (Base + lista de texto livre com
@@ -1011,11 +1004,20 @@ export function normalizarPacote(cru) {
        dentro de `acrescenta`, porque ela não é uma entrada de catálogo: é
        configuração do pacote, como `permite` e `libera`. Ver `precosDeCatarse`. */
     catarse: (p.catarse && typeof p.catarse === "object") ? clonar(p.catarse) : null,
-    /* Um Pacto PRONTO que o pacote oferece, pela mesma razão do `catarse`: não
-       é entrada de catálogo, é um molde que o jogador copia com um botão (like
-       Modelos de Feitiço, `feiticosDeAddon`). Exige `permite: ["pacto"]` no
-       mesmo pacote para a aba existir e o molde aparecer. Ver `afty-pacto.js`. */
+    /* Campo legado de um Voto pronto. A aba nativa pode converter e copiar o
+       molde mesmo sem `permite: ["pacto"]`. O nome do campo fica estável para
+       addons e fichas existentes. Ver `afty-votos.js`. */
     pactoPadrao: (p.pactoPadrao && typeof p.pactoPadrao === "object") ? clonar(p.pactoPadrao) : null,
+    /* Voto obrigatório inserido na primeira vaga da ficha quando o pacote é
+       ligado. Diferente de `pactoPadrao`, ele não espera um clique do jogador. */
+    votoAutomatico: (p.votoAutomatico && typeof p.votoAutomatico === "object" && !Array.isArray(p.votoAutomatico))
+      ? clonar(p.votoAutomatico)
+      : null,
+    /* Ajustes finais seguros que pertencem ao pacote, como multiplicar o PV
+       depois das fontes ou isentar o custo de PE Máximo das Passivas. */
+    regrasAfty: (p.regrasAfty && typeof p.regrasAfty === "object" && !Array.isArray(p.regrasAfty))
+      ? clonar(p.regrasAfty)
+      : null,
     acrescenta: {},
     /* O que este pacote REESCREVE de entradas que já existem no livro. Ver
        `remendarLista`. */
@@ -1262,6 +1264,23 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
   if (!p.nome) problemas.push("O pacote precisa de um nome.");
   if (p.paraRaw !== "afty") problemas.push(`Este pacote é para "${p.paraRaw}", e não para o Afty.`);
 
+  problemas.push(...validarRegrasAfty(p.regrasAfty, "Regras Afty do Addon"));
+  if (p.votoAutomatico) {
+    const voto = p.votoAutomatico;
+    const votoId = String(voto.id ?? "").trim();
+    if (!votoId || !ID_ENTRADA_OK.test(votoId)) {
+      problemas.push("Voto automático: id inválido.");
+    }
+    if (!String(voto.nome ?? "").trim()) problemas.push("Voto automático: falta o campo nome.");
+    if (!voto.beneficio || typeof voto.beneficio !== "object" || Array.isArray(voto.beneficio)) {
+      problemas.push("Voto automático: falta o objeto beneficio.");
+    }
+    if (!voto.maleficio || typeof voto.maleficio !== "object" || Array.isArray(voto.maleficio)) {
+      problemas.push("Voto automático: falta o objeto maleficio.");
+    }
+    problemas.push(...validarRegrasAfty(voto.regrasAfty, "Regras Afty do Voto automático"));
+  }
+
   for (const id of p.permite) {
     if (!PRIMITIVA_IDS.has(id)) {
       problemas.push(
@@ -1489,8 +1508,10 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
     && p.feiticos.length === 0
     && p.estadosCombate.length === 0
     && p.contadoresOrigem.length === 0
+    && !p.votoAutomatico
+    && Object.keys(normalizarRegrasAfty(p.regrasAfty)).length === 0
   ) {
-    problemas.push("O pacote não acrescenta, não substitui, não libera, não permite, não concede ou libera Aptidão e não traz Funcionamento Básico, Feitiço, Estado de Combate ou Contador de Origem.");
+    problemas.push("O pacote não acrescenta, não substitui, não libera, não permite, não concede ou libera Aptidão e não traz Funcionamento Básico, Feitiço, Estado de Combate, Contador de Origem, Voto automático ou Regra Afty.");
   }
 
   const vistos = new Set();

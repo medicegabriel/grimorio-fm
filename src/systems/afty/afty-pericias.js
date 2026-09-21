@@ -193,6 +193,11 @@ export function idsPericiasAtivas(creature) {
 
 const OFICIO_ID = "oficio";
 const OFICIO_EXTRA_ID = /^oficio__(\d+)$/;
+// Chaves reservadas das duas linhas de Ofício concedidas por Talento. Ficam
+// locais para este módulo folha não importar o catálogo de Talentos e fechar um
+// ciclo com Habilidades e Combate durante a inicialização.
+const OFICIO_TALENTO_ARTESAO = "oficio__9001";
+const OFICIO_TALENTO_TEMPESTADE = "oficio__9002";
 
 /* ⚠ O `ehPericiaOficio` MUDOU DE CASA em 2026-09-01, e quem importava daqui
    continua importando daqui. Ele desceu para o afty-pericias-catalogo.js, que é
@@ -215,6 +220,16 @@ export function oficiosDaFicha(creature, id = OFICIO_ID) {
   if (Array.isArray(bruto)) lista = id === OFICIO_ID ? bruto : [];
   else if (bruto && typeof bruto === "object") lista = bruto[id] ?? [];
   else if (id === OFICIO_ID && creature?.periciaOficio) lista = [creature.periciaOficio];
+  const config = creature?.talentosConfig ?? {};
+  const talentoAtivo = (talentoId) => (creature?.talentos ?? []).includes(talentoId);
+  if (id === OFICIO_TALENTO_ARTESAO && talentoAtivo("tal_artesao_amaldicoado")) {
+    const nome = config.tal_artesao_amaldicoado?.ferramenta;
+    if (["Ferreiro", "Canalizador"].includes(nome)) lista = [...lista, nome];
+  }
+  if (id === OFICIO_TALENTO_TEMPESTADE && talentoAtivo("tal_tempestade_de_ideias")) {
+    const nome = textoSeguro(config.tal_tempestade_de_ideias?.ferramenta);
+    if (nome) lista = [...lista, nome];
+  }
   return [...new Set((Array.isArray(lista) ? lista : []).map((n) => textoSeguro(n)).filter(Boolean))];
 }
 
@@ -266,6 +281,18 @@ export function catalogoPericiasDaFicha(creature) {
   const base = porId.get(OFICIO_ID);
   if (!base) return lista;
   const oficioExtra = (n) => ({ ...base, id: `oficio__${n}`, oficioExtra: true });
+  const talentos = new Set(Array.isArray(creature?.talentos) ? creature.talentos : []);
+  const config = creature?.talentosConfig ?? {};
+  const oficiosTalento = [
+    talentos.has("tal_artesao_amaldicoado")
+      && ["Ferreiro", "Canalizador"].includes(config.tal_artesao_amaldicoado?.ferramenta)
+      ? { ...base, id: OFICIO_TALENTO_ARTESAO, oficioExtra: true, oficioTalento: true }
+      : null,
+    talentos.has("tal_tempestade_de_ideias")
+      && textoSeguro(config.tal_tempestade_de_ideias?.ferramenta)
+      ? { ...base, id: OFICIO_TALENTO_TEMPESTADE, oficioExtra: true, oficioTalento: true }
+      : null,
+  ].filter(Boolean);
   /* ⚠ A CLASSE PODE EXIGIR MAIS DE UMA LINHA DE OFÍCIO (2026-08-31). O
      Combatente e o Conjurador treinam DOIS Ofícios, e a linha repetida só
      nascia depois de alguém escrever algo nela: a segunda concessão da Classe
@@ -293,14 +320,14 @@ export function catalogoPericiasDaFicha(creature) {
     .filter((n) => Number.isInteger(n) && n >= 2)
     .sort((a, b) => a - b)
     .map((n) => (n === desempate ? { ...oficioExtra(n), desempate: true } : oficioExtra(n)));
-  if (extras.length === 0) return lista;
+  if (extras.length === 0 && oficiosTalento.length === 0) return lista;
   /* ⚠ O EXTRA ENTRA LOGO ABAIXO DO OFÍCIO DO LIVRO (autor, 2026-08-30), e não no
      fim da lista: os dois são a mesma perícia, e separá-los faria o segundo
      parecer outra coisa. Se o Ofício do livro tiver sido arrastado, os extras
      vão junto com ele. */
   const at = lista.findIndex((x) => x.id === OFICIO_ID);
   const corte = at >= 0 ? at + 1 : lista.length;
-  return [...lista.slice(0, corte), ...extras, ...lista.slice(corte)];
+  return [...lista.slice(0, corte), ...extras, ...oficiosTalento, ...lista.slice(corte)];
 }
 
 /**
@@ -313,7 +340,7 @@ export function catalogoPericiasDaFicha(creature) {
  * o clique trocaria uma linha vazia por outra sem a lista crescer.
  */
 export function adicionarOficioExtra(creature) {
-  const linhas = catalogoPericiasDaFicha(creature).filter((p) => ehPericiaOficio(p.id));
+  const linhas = catalogoPericiasDaFicha(creature).filter((p) => ehPericiaOficio(p.id) && !p.oficioTalento);
   const maior = linhas.reduce((m, p) => Math.max(m, numeroDoOficio(p.id) || 1), 1);
   const desempate = linhas.find((p) => p.desempate)?.id;
   const novoId = `oficio__${maior + 1}`;
@@ -1116,6 +1143,9 @@ export function resolveDano(creature, ctx = {}) {
     // O Ataque Básico rola sempre Corpo a Corpo, então responde pelo tipo de
     // ataque dele como toda arma responde pelo seu. Ver `escoposDaArma`.
     "atq:corpo",
+    // O golpe desarmado é sempre Impacto, então também participa das regras que
+    // exigem ao mesmo tempo um ataque corpo a corpo e um tipo de dano.
+    "atq_tipo:corpo:im",
   ];
   // Fineza no golpe básico vem de duas portas: o canal (Corpo Treinado, "você
   // pode escolher usar tanto Força quanto Destreza") e a propriedade do item de

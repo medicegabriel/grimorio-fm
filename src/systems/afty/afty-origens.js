@@ -1044,7 +1044,9 @@ function opcoesVerdadeirasOrigens(liberacoes = []) {
   const proibidas = VERDADEIRAS_ORIGENS_PROIBIDAS.filter((id) => !soltas.includes(id));
   const out = [];
   for (const origem of AFTY_ORIGENS_CATALOG) {
-    if (proibidas.includes(origem.id)) continue;
+    // A variação segue a mãe: um Liberto fica fora enquanto o Sem Técnica
+    // estiver, e entra junto quando o `gemeosSemTecnica` o solta.
+    if (proibidas.includes(origemMae(origem.id))) continue;
     for (const c of origem.caracteristicas || []) {
       if (c.id === "bonus_atributo") continue;
       if (origem.id === "restringido" && c.id !== RESTRINGIDO_CARACTERISTICA_OBRIGATORIA) continue;
@@ -1139,7 +1141,9 @@ export function fatorSlotsHabilidade(creature) {
  * Uma segunda trava aqui seria uma segunda verdade para manter em sincronia.
  */
 export function origemEstrutural(creature) {
-  const propria = creature?.core?.origem?.id ?? null;
+  // A variação de uma origem do livro É a mãe para toda regra de estrutura.
+  // Ver `origemMae`.
+  const propria = origemMae(creature?.core?.origem?.id ?? null);
   if (propria === "maldicao") return propria;
   const copiada = verdadeiraOrigemEscolhida(creature)?.origem?.id ?? null;
   return copiada === "maldicao" ? "maldicao" : propria;
@@ -1162,6 +1166,10 @@ export function origemEstrutural(creature) {
  *     abre o Sem Técnica a quem carrega o pacote. Ele acompanha o
  *     `estiloSombras` mas é liberação SEPARADA: uma solta o Estilo, e esta
  *     solta o Treino e os Talentos de Origem que pedem Sem Técnica.
+ *
+ * ⚠ A QUARTA FONTE É A MÃE (2026-09-21). Uma origem com `variacaoDe` conta
+ * como ela mesma E como a origem do livro que ela varia, então o Liberto
+ * alcança os Talentos de Origem do Sem Técnica. Ver `origemMae`.
  */
 export function origensQualificadas(creature) {
   const propria = creature?.core?.origem?.id ?? null;
@@ -1169,7 +1177,8 @@ export function origensQualificadas(creature) {
   const porAddon = liberacoesDaCriatura(creature).includes("qualificaSemTecnica")
     ? "sem_tecnica"
     : null;
-  return [propria, copiada, porAddon].filter((id, i, a) => id && a.indexOf(id) === i);
+  return [propria, origemMae(propria), copiada, origemMae(copiada), porAddon]
+    .filter((id, i, a) => id && a.indexOf(id) === i);
 }
 
 // Opções para <Select> (value/label).
@@ -1311,6 +1320,43 @@ registrarFamilia("clas", {
 
 
 export const getOrigem = (id) => BY_ID[id] ?? null;
+
+/**
+ * A origem do LIVRO que esta varia, ou ela mesma.
+ *
+ * `variacaoDe` nasceu em 2026-09-21 com o Addon Sem Técnica - Liberto. O
+ * Liberto não é uma origem nova do zero: é um Sem Técnica com características
+ * trocadas. Sem o verbo, a origem de Addon ganhava um id próprio
+ * (`pacote:liberto`) e cada trava que pergunta "é Sem Técnica?" respondia não,
+ * calada: Feitiços abertos, Estilo das Sombras fechado, aba com o leiaute das
+ * origens com técnica e nenhum Talento de Origem do Sem Técnica. É o mesmo muro
+ * que o Especialista em Estilo bateu com as classes, e que virou `herdaDe`.
+ *
+ * ⚠ HERDA A IDENTIDADE, NÃO O CONTEÚDO. As características, os efeitos e as
+ * restrições continuam sendo os da variação, escritos no pacote: o Liberto não
+ * tem os Estudos Dedicados. O que a mãe empresta é a resposta às perguntas de
+ * ESTRUTURA, e cada uma passa por aqui:
+ *   • `origemEstrutural`      trilhas de Aptidão e `foraDaOrigem` das Linhas
+ *   • `origensQualificadas`   Talento, Linha e Especialização de origem
+ *   • `opcoesVerdadeirasOrigens`  o Gêmeo copia da variação só se copiar da mãe
+ *   • o Estilo das Sombras e os Feitiços, no `deriveAfty`
+ *   • o leiaute da aba Habilidades, no criador
+ *
+ * ⚠ SÓ O SEM TÉCNICA É MÃE ACEITA (`VARIACOES_ACEITAS`). As outras origens têm
+ * travas literais espalhadas pelo código (a Restringido perto de trinta, a
+ * Maldição e os Gêmeos meia dúzia cada), e uma variação delas funcionaria pela
+ * metade sem aviso. Por isso a mãe fora da lista é IGNORADA aqui, e a origem
+ * responde como ela mesma, enquanto o validador relata o problema na aba
+ * Addons. A lista cresce quando as travas da mãe nova passarem por aqui.
+ *
+ * Um nível só: a mãe é sempre do livro, então não há cadeia para seguir.
+ */
+export const VARIACOES_ACEITAS = Object.freeze(["sem_tecnica"]);
+
+export const origemMae = (origemId) => {
+  const mae = getOrigem(origemId)?.variacaoDe;
+  return VARIACOES_ACEITAS.includes(mae) ? mae : (origemId || null);
+};
 
 /** Clãs da origem, se ela se divide (só o Herdado, por ora). */
 export const clasDaOrigem = (id) => getOrigem(id)?.clas ?? null;
@@ -1855,6 +1901,13 @@ export function validarCatalogoOrigens() {
     }
     for (const k of Object.keys(o.limiteAtributo || {})) {
       if (!attrValidos.has(k)) problemas.push(`${o.nome}: atributo inválido em limiteAtributo (${k})`);
+    }
+    if (o.variacaoDe != null) {
+      if (!ORIGENS_BASE.some((b) => b.id === o.variacaoDe)) {
+        problemas.push(`${o.nome}: variacaoDe aponta para uma origem que não é do livro (${o.variacaoDe})`);
+      } else if (!VARIACOES_ACEITAS.includes(o.variacaoDe)) {
+        problemas.push(`${o.nome}: variacaoDe ainda não aceita ${o.variacaoDe}, só ${VARIACOES_ACEITAS.join(", ")}`);
+      }
     }
     checarCaracteristicas(o.nome, o.caracteristicas);
   }

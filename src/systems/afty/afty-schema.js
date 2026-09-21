@@ -145,6 +145,44 @@ export function mesclaFichaAfty(existente) {
   const oficios = oficiosBrutos && !Array.isArray(oficiosBrutos) && typeof oficiosBrutos === "object"
     ? oficiosBrutos
     : (listaLegado.length ? { oficio: listaLegado } : {});
+  const votosExistentes = existente.votos && typeof existente.votos === "object" && !Array.isArray(existente.votos)
+    ? {
+      contratuais: Array.isArray(existente.votos.contratuais) ? existente.votos.contratuais : [],
+      mecanicos: Array.isArray(existente.votos.mecanicos) ? existente.votos.mecanicos : [],
+    }
+    : null;
+  const pactoLegado = existente.pacto && typeof existente.pacto === "object" && !Array.isArray(existente.pacto)
+    ? existente.pacto
+    : null;
+  const pactoLegadoTemConteudo = !!(
+    pactoLegado
+    && (
+      (typeof pactoLegado.nome === "string" && pactoLegado.nome.trim())
+      || (typeof pactoLegado.descricao === "string" && pactoLegado.descricao.trim())
+      || (Array.isArray(pactoLegado.beneficios) && pactoLegado.beneficios.length)
+      || (Array.isArray(pactoLegado.maleficios) && pactoLegado.maleficios.length)
+    )
+  );
+  const juntarLadoLegado = (lista) => ({
+    texto: Array.isArray(lista)
+      ? lista.map((item) => item?.texto).filter((texto) => typeof texto === "string" && texto.trim()).join("\n\n")
+      : "",
+    efeitos: Array.isArray(lista)
+      ? lista.flatMap((item) => (Array.isArray(item?.efeitos) ? item.efeitos : []))
+      : [],
+  });
+  const votos = votosExistentes ?? (pactoLegadoTemConteudo
+    ? {
+      contratuais: [],
+      mecanicos: [{
+        id: "voto_pacto_legado",
+        nome: typeof pactoLegado.nome === "string" ? pactoLegado.nome : "",
+        narrativa: typeof pactoLegado.descricao === "string" ? pactoLegado.descricao : "",
+        beneficio: juntarLadoLegado(pactoLegado.beneficios),
+        maleficio: juntarLadoLegado(pactoLegado.maleficios),
+      }],
+    }
+    : blank.votos);
   return {
     ...blank,
     ...existente,
@@ -160,6 +198,27 @@ export function mesclaFichaAfty(existente) {
       armas: Array.isArray(existente.tecnicasCombate?.armas)
         ? existente.tecnicasCombate.armas
         : [],
+    },
+    talentosConfig: {
+      ...blank.talentosConfig,
+      ...(existente.talentosConfig && typeof existente.talentosConfig === "object"
+        ? existente.talentosConfig
+        : {}),
+      tal_mestre_das_armas: {
+        ...blank.talentosConfig.tal_mestre_das_armas,
+        ...(existente.talentosConfig?.tal_mestre_das_armas ?? {}),
+        armas: Array.isArray(existente.talentosConfig?.tal_mestre_das_armas?.armas)
+          ? existente.talentosConfig.tal_mestre_das_armas.armas
+          : [],
+      },
+      tal_tempestade_de_ideias: {
+        ...blank.talentosConfig.tal_tempestade_de_ideias,
+        ...(existente.talentosConfig?.tal_tempestade_de_ideias ?? {}),
+      },
+      tal_artesao_amaldicoado: {
+        ...blank.talentosConfig.tal_artesao_amaldicoado,
+        ...(existente.talentosConfig?.tal_artesao_amaldicoado ?? {}),
+      },
     },
     aptidoes: { ...blank.aptidoes, ...(existente.aptidoes || {}) },
     reducoesCustoFeitico: {
@@ -179,9 +238,13 @@ export function mesclaFichaAfty(existente) {
           .map(([linhaId, v]) => [linhaId, [...new Set(v.filter((id) => typeof id === "string"))]]),
       )
       : {},
-    // ⚠ Sanitização RASA de propósito: quem lê de verdade é `pactoDaFicha`
-    // (afty-pacto.js), que este arquivo FOLHA não pode importar. Aqui só evita
-    // que lixo total (string, array na raiz) quebre o resto do merge.
+    // Votos são nativos e opcionais. Os Contratuais são texto sem limite; os
+    // Mecânicos carregam narrativa, Benefício e Malefício. Uma ficha antiga
+    // que só tenha `pacto` é convertida na leitura, sem descartar suas listas
+    // de texto e efeitos.
+    votos,
+    // Compatibilidade rasa com a estrutura antiga. A área nativa lê `votos`,
+    // mas preservar `pacto` mantém a ida e volta de fichas antigas sem perda.
     pacto: (existente.pacto && typeof existente.pacto === "object" && !Array.isArray(existente.pacto))
       ? {
         nome: typeof existente.pacto.nome === "string" ? existente.pacto.nome : "",
@@ -391,6 +454,11 @@ export function createBlankAfty() {
       armas: [],
       atributo: "inteligencia",
     },
+    talentosConfig: {
+      tal_mestre_das_armas: { modo: "armas", armas: [], grupo: null },
+      tal_tempestade_de_ideias: { pericia: null, ferramenta: "", vantagemPericia: null },
+      tal_artesao_amaldicoado: { ferramenta: null },
+    },
 
     // ---------- SIMULAÇÃO DE COMBATE ----------
     // Bancada de balanceamento (autor, 2026-07-28): ligar os estados aqui e ver
@@ -548,9 +616,12 @@ export function createBlankAfty() {
     // `quantidade` que a Linha concede. Ver `linhasComEscolhaFeiticos` em
     // afty-treinamentos.js e `aplicaReducoesCustoFeitico` em afty-feiticos.js.
     treinoEscolhaFeiticos: {},
-    // Pacto: aba de texto livre aberta pela primitiva `pacto` (addon com
-    // `permite: ["pacto"]`). Malefícios e Benefícios com efeito OPCIONAL no
-    // Motor, que nunca entram em pool exclusivo. Ver afty-pacto.js.
+    // Votos: área nativa e opcional. Contratuais são somente texto e não têm
+    // limite; Mecânicos têm Benefício e Malefício com Motor de Automação e
+    // quantidade ativa igual ao BT. Ver afty-votos.js.
+    votos: { contratuais: [], mecanicos: [] },
+    // Formato antigo preservado apenas para importar fichas e addons anteriores
+    // à área nativa de Votos. O merge acima o converte para `votos`.
     pacto: { nome: "", descricao: "", maleficios: [], beneficios: [] },
     // Modificações Corporais: aba de texto livre aberta pela primitiva
     // `modificacoesCorporais`. Base da Modificação (descrição + efeito) e

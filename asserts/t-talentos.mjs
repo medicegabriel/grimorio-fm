@@ -15,7 +15,7 @@
      3. O PLACAR, que é o que impede a varredura de envelhecer calada: se alguém
         acrescentar um Talento sem efeito, a conta muda e o assert avisa.
 
-   ⚠ SOBRE OS 23 SEM EFEITO. A maioria é economia de ação, procedimento de mesa
+   ⚠ SOBRE OS 21 DE PROCEDIMENTO. A maioria é economia de ação, procedimento de mesa
    ou efeito no INIMIGO, e a ausência deles no Motor é o estado correto. Dois
    casos merecem nome, porque parecem lacuna e não são: Reposição Sanguínea e
    Expansão de Reserva modificam características (Vigor Maldito e Energia
@@ -30,7 +30,9 @@ register(
 const R = new URL("../src/systems/afty/", import.meta.url).href;
 const { deriveAfty } = await import(R + "afty-derive.js");
 const { createBlankAfty } = await import(R + "afty-schema.js");
-const { AFTY_TALENTOS, avaliarAcessoTalento, getTalento } = await import(R + "afty-talentos.js");
+const {
+  AFTY_TALENTOS, avaliarAcessoTalento, getTalento, resolveTalentos,
+} = await import(R + "afty-talentos.js");
 const { TALENTO_EFEITOS, ESCOLHA_EFEITOS } = await import(R + "afty-efeitos-conteudo.js");
 
 let ok = 0;
@@ -53,9 +55,16 @@ const ficha = (talentos = [], o = {}) => {
   c.core = { ...c.core, nd: o.nd ?? 20, tipo: "combatente", patamar: "comum" };
   c.especializacoes = [{ id: "lutador", nivel: o.nd ?? 20 }];
   c.talentos = talentos;
-  c.attributes = { forca: 10, destreza: 10, constituicao: 10, inteligencia: 10, sabedoria: 10, presenca: 10 };
+  c.attributes = {
+    forca: 10, destreza: 10, constituicao: 10, inteligencia: 10, sabedoria: 10, presenca: 10,
+    ...(o.attributes ?? {}),
+  };
+  c.talentosConfig = { ...c.talentosConfig, ...(o.talentosConfig ?? {}) };
   c.equipamentos = {
-    itens: (o.armas ?? ARMAS).map((refId, i) => ({ id: `e${i}`, tipo: "arma", refId, qtd: 1, equipado: true })),
+    itens: [
+      ...(o.armas ?? ARMAS).map((refId, i) => ({ id: `e${i}`, tipo: "arma", refId, qtd: 1, equipado: true })),
+      ...(o.escudo ? [{ id: "escudo_teste", tipo: "escudo", refId: o.escudo, qtd: 1, equipado: true }] : []),
+    ],
   };
   return c;
 };
@@ -170,6 +179,31 @@ const distante = deriveAfty(ficha(["tal_adepto_de_combate"]));
 t("sem a escolha marcada o Adepto de Combate nao muda nada",
   acertos(distante).map((v, i) => v - acertos(base)[i]), [0, 0, 0, 0]);
 
+/* Especialistas de dano exigem a interseção entre Corpo a Corpo e o tipo. Uma
+   arma de impacto a distância não pode receber Concussão. */
+const concussaoBase = deriveAfty(ficha([], { armas: ["arm_bastao", "arm_bazuca"] }));
+const concussao = deriveAfty(ficha(["tal_especialista_em_concussao"], { armas: ["arm_bastao", "arm_bazuca"] }));
+const nivel = (d, id) => linha(d, id)?.niveisDano ?? 0;
+t("Especialista em Concussao alcanca desarmado e arma corpo a corpo, mas nao a Bazuca", [
+  nivel(concussao, "basico") - nivel(concussaoBase, "basico"),
+  nivel(concussao, "arm_bastao") - nivel(concussaoBase, "arm_bastao"),
+  nivel(concussao, "arm_bazuca") - nivel(concussaoBase, "arm_bazuca"),
+], [1, 1, 0]);
+
+/* O empurrão com escudo é uma fonte própria de dano, sem acerto nem crítico, e
+   só existe com um escudo equipado. */
+const escudoSemItem = deriveAfty(ficha(["tal_tecnicas_ofensivas_de_escudo"], { armas: [] }));
+const escudoComItem = deriveAfty(ficha(["tal_tecnicas_ofensivas_de_escudo"], {
+  armas: [], escudo: "esc_medio", attributes: { forca: 14 },
+}));
+const empurrao = linha(escudoComItem, "tal_tecnicas_ofensivas_de_escudo");
+t("Tecnicas Ofensivas cria uma linha apenas com escudo equipado", [
+  !!linha(escudoSemItem, "tal_tecnicas_ofensivas_de_escudo"),
+  empurrao?.formulaNormal,
+  empurrao?.acerto ?? null,
+  empurrao?.margemCritico ?? null,
+], [false, "2d6 + 2", null, null]);
+
 /* ============================================================ */
 /* 2. OS PRÉ-REQUISITOS                                          */
 /* ============================================================ */
@@ -183,6 +217,7 @@ const ctx = (o = {}) => ({
   attrEff: { forca: 10, destreza: 10, constituicao: o.con ?? 10, inteligencia: 10, sabedoria: 10, presenca: 10 },
   origemId: o.origemId ?? null,
   origensQualificadas: o.origemId ? [o.origemId] : [],
+  feiticos: o.feiticos,
 });
 const passa = (id, o) => avaliarAcessoTalento(getTalento(id), ctx(o)).ok;
 
@@ -227,6 +262,69 @@ t("o teto de dois Adeptos bloqueia o terceiro", [
     talentos: ["tal_adepto_de_combate", "tal_adepto_de_medicina"],
   }),
 ], [true, false]);
+t("na reavaliacao final dois Adeptos continuam validos e so o terceiro falha", [
+  passa("tal_adepto_de_briga", {
+    periciaProf: { atletismo: "mestre" },
+    talentos: ["tal_adepto_de_briga", "tal_adepto_de_combate"],
+  }),
+  passa("tal_adepto_de_briga", {
+    periciaProf: { atletismo: "mestre" },
+    talentos: ["tal_adepto_de_briga", "tal_adepto_de_combate", "tal_adepto_de_medicina"],
+  }),
+], [true, false]);
+
+t("Adepto de Feiticaria exige Feitico e exclui Feitico Rapido", [
+  passa("tal_adepto_de_feiticaria", { periciaProf: { feiticaria: "mestre" }, feiticos: [] }),
+  passa("tal_adepto_de_feiticaria", { periciaProf: { feiticaria: "mestre" }, feiticos: [{ id: "f1" }] }),
+  getTalento("tal_adepto_de_feiticaria").escolha.opcoes.some((o) => o.id === "cnj_fundamento_feitico_rapido"),
+], [false, true, false]);
+
+const quebra = resolveTalentos({
+  talentos: ["tal_quebra_de_limites"],
+  escolhasTalento: { tal_quebra_de_limites: ["tal_quebra_forca", "tal_quebra_destreza"] },
+}, {
+  nd: 6,
+  origemId: "derivado",
+  origensQualificadas: ["derivado"],
+  limitesAtributo: {
+    forca: 24, destreza: 20, constituicao: 20, inteligencia: 20, sabedoria: 20, presenca: 20,
+  },
+});
+t("Quebra de Limites recusa o atributo de maior limite", [
+  quebra.escolhas.mapa.tal_quebra_de_limites,
+  quebra.escolhas.porTal.tal_quebra_de_limites.disponiveis.includes("tal_quebra_forca"),
+], [["tal_quebra_destreza"], false]);
+
+const mestreArmasBase = deriveAfty(ficha([], { armas: ["arm_rapieira"] }));
+const mestreArmas = deriveAfty(ficha(["tal_mestre_das_armas"], {
+  armas: ["arm_rapieira"],
+  talentosConfig: { tal_mestre_das_armas: { modo: "armas", armas: ["arm_rapieira"], grupo: null } },
+}));
+t("Mestre das Armas concede treino nas armas escolhidas",
+  (linha(mestreArmas, "arm_rapieira")?.acerto ?? 0) > (linha(mestreArmasBase, "arm_rapieira")?.acerto ?? 0), true);
+
+const tempestadeFicha = ficha(["tal_tempestade_de_ideias"], {
+  armas: [],
+  talentosConfig: {
+    tal_tempestade_de_ideias: { pericia: "medicina", ferramenta: "Caligrafia", vantagemPericia: "medicina" },
+  },
+});
+const tempestade = deriveAfty(tempestadeFicha);
+t("Tempestade de Ideias concede pericia e ferramenta treinadas", [
+  tempestade.periciaProf.medicina,
+  tempestade.periciaProf.oficio__9002,
+  tempestade.periciaOficios.oficio__9002,
+], ["treinado", "treinado", ["Caligrafia"]]);
+
+const artesaoFicha = ficha(["tal_artesao_amaldicoado"], {
+  armas: [],
+  talentosConfig: { tal_artesao_amaldicoado: { ferramenta: "Ferreiro" } },
+});
+const artesao = deriveAfty(artesaoFicha);
+t("Artesao Amaldicoado concede o Oficio escolhido", [
+  artesao.periciaProf.oficio__9001,
+  artesao.periciaOficios.oficio__9001,
+], ["treinado", ["Ferreiro"]]);
 
 /* ============================================================ */
 /* 3. O PLACAR                                                   */
@@ -234,11 +332,21 @@ t("o teto de dois Adeptos bloqueia o terceiro", [
 
 const ligadoPorEfeito = (x) => (TALENTO_EFEITOS[x.id] ?? []).length > 0;
 const ligadoPorEscolha = (x) => (x.escolha?.opcoes ?? []).some((o) => (ESCOLHA_EFEITOS[o.id] ?? []).length > 0);
+const LIGADOS_FORA_DOS_MAPAS = new Set([
+  "tal_alma_livre",
+  "tal_tecnicas_ofensivas_de_escudo",
+  "tal_adepto_de_feiticaria",
+  "tal_artesao_amaldicoado",
+]);
 
 t("o catalogo tem 52 Talentos", AFTY_TALENTOS.length, 52);
-t("19 ligados por TALENTO_EFEITOS", AFTY_TALENTOS.filter(ligadoPorEfeito).length, 19);
+t("18 ligados por TALENTO_EFEITOS", AFTY_TALENTOS.filter(ligadoPorEfeito).length, 18);
 t("e 9 SO pela escolha aninhada",
   AFTY_TALENTOS.filter((x) => !ligadoPorEfeito(x) && ligadoPorEscolha(x)).length, 9);
+t("4 usam um resolvedor proprio fora dos mapas", LIGADOS_FORA_DOS_MAPAS.size, 4);
+t("31 Talentos tem ao menos uma parte programada",
+  AFTY_TALENTOS.filter((x) => ligadoPorEfeito(x) || ligadoPorEscolha(x) || LIGADOS_FORA_DOS_MAPAS.has(x.id)).length,
+  31);
 
 /* ⚠ ALMA LIVRE NÃO TEM EFEITO E ESTÁ LIGADA. Ela chega ao Motor por uma porta
    própria no deriveAfty (ela concede o DIREITO de escolher uma habilidade de
@@ -247,12 +355,10 @@ t("e 9 SO pela escolha aninhada",
 t("Alma Livre nao aparece em nenhum dos dois mapas",
   [ligadoPorEfeito(getTalento("tal_alma_livre")), ligadoPorEscolha(getTalento("tal_alma_livre"))], [false, false]);
 
-/* A única `nota` que sobrou nos Talentos. Ela NÃO fala de treino, que é o que a
-   varredura de 2026-09-01 converteu: fala de possuir Feitiços, e isso é outro
-   sistema. Se alguém escrever uma nota de treino aqui, esta lista cresce. */
+/* Requisitos verificáveis não podem voltar a ser anotação de mesa. */
 const notas = AFTY_TALENTOS.flatMap((x) => (x.requisitos ?? [])
   .filter((r) => r.tipo === "nota").map((r) => `${x.id}: ${r.texto}`));
-t("so uma nota restante, e ela nao pede treino", notas, ["tal_adepto_de_feiticaria: Possuir Feitiços"]);
+t("nenhum requisito verificavel ficou como nota", notas, []);
 
 /* Todo Talento com escolha aninhada tem TODAS as opções com efeito, ou nenhuma:
    um pool meio ligado deixa o jogador escolher uma opção que não faz nada. */

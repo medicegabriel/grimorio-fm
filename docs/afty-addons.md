@@ -1420,6 +1420,52 @@ de lá é que aquele mapa não sabe a qual das três características da Maldiç
 ⚠ No dia em que a Maldição ganhar outra característica com número, as duas listas divergem em
 silêncio. Anotado em `docs/a-fazer.md`.
 
+### A variação de origem (`variacaoDe`), 2026-09-21
+
+Nasceu com o pacote **`addons/sem-tecnica-liberto.json`**, o Liberto, que o autor descreveu como
+"essa variação de Sem Técnica". Ele não é uma origem nova do zero: é um Sem Técnica com as
+características trocadas (Inquebrável e Caminho até o Fim no lugar de Estudos Dedicados e Empenho
+Implacável).
+
+O muro era o id. Toda origem de Addon ganha o namespace (`sem-tecnica-liberto:liberto`), e cada
+trava que perguntava "é Sem Técnica?" comparava com o literal `"sem_tecnica"` e respondia não,
+calada: Feitiços abertos, Estilo das Sombras fechado, a aba Habilidades com o leiaute das origens
+com técnica e nenhum Talento de Origem do Sem Técnica. As liberações `estiloSombras` e
+`qualificaSemTecnica` não resolviam: elas valem para a ficha que carrega o pacote, seja qual for a
+origem, e nenhuma fecha os Feitiços.
+
+```json
+{ "id": "liberto", "nome": "Sem Técnica - Liberto", "variacaoDe": "sem_tecnica" }
+```
+
+O verbo é `origemMae(id)` em `afty-origens.js`, e ele responde pela mãe em cinco lugares:
+
+| Trava | Onde |
+|---|---|
+| Estrutura (trilhas de Aptidão, `foraDaOrigem` das Linhas) | `origemEstrutural` |
+| Qualificação (Talento, Linha e Especialização de origem) | `origensQualificadas`, que devolve a variação E a mãe |
+| Verdadeiras Origens (o Gêmeo só copia da variação se puder copiar da mãe) | `opcoesVerdadeirasOrigens` |
+| Estilo das Sombras e Feitiços | `estiloCtx` e `tiposFeiticoPermitidos` no `deriveAfty` |
+| Leiaute da aba Habilidades | `TabHabilidades` no criador |
+
+⚠ **Herda a IDENTIDADE, não o CONTEÚDO.** Características, efeitos, `restricoes` e
+`especializacoesVetadas` são os da variação, escritos no pacote. É a diferença para o `herdaDe` da
+Especialização, que herda as habilidades: o Liberto não ganha os Estudos Dedicados da mãe.
+
+⚠ **Só o Sem Técnica é mãe aceita** (`VARIACOES_ACEITAS`). As outras origens têm travas literais
+espalhadas pelo código (a Restringido perto de trinta, a Maldição e os Gêmeos meia dúzia cada), e uma
+variação delas funcionaria pela metade sem aviso. O validador de Origem relata a mãe recusada, e o
+`origemMae` a ignora, então a origem responde como ela mesma em vez de meia mãe. A lista cresce
+quando as travas da mãe nova passarem pelo verbo.
+
+Veio junto uma correção pequena no `coletarEfeitosOrigem`: o `nome` do efeito inline de uma OPÇÃO
+passou a vencer o nome da opção, a mesma regra do `efeitos` da raiz. Sem isso o hover do +5 do
+Liberto dizia só "Percepção", e agora diz "Caminho até o Fim (Percepção)". Nenhum pacote anterior
+nomeava efeito de opção, então nada mudou para eles.
+
+O `asserts/t-liberto.mjs` lê o mesmo JSON que a pessoa cola, confere cada trava contra o Sem Técnica
+do livro nos dois sistemas, cada degrau no nível exato em que abre, e a mãe recusada.
+
 ---
 
 ## 16. FLUGEL E AS ESCOLHAS ESTRUTURAIS DE TREINAMENTO, 2026-09-01
@@ -1760,3 +1806,29 @@ nomeado, e a lista existe para nenhum deles envelhecer calado:
 parceiro"*, que mora em outra ficha, e o autor trocou pelo BT do próprio dono: *"Dupla Empenhada pode
 usar Metade do BT do usuario."* A outra metade da regra, que só a MAIOR iniciativa da dupla recebe o
 bônus, continua de mesa, e quem a resolve é o interruptor: ele só se liga quando vale.
+
+## Voto automático e regras finais
+
+Desde 2026-09-20, um pacote pode declarar um único `votoAutomatico`. Ele usa a
+forma nativa de Voto Mecânico (`id`, `nome`, `narrativa`, `beneficio` e
+`maleficio`) e é materializado antes dos Votos criados pelo jogador. Portanto,
+ele consome a primeira vaga do limite por BT. A cópia gravada vence o molde em
+releituras, preservando edições. Enquanto o Addon estiver ativo, a interface não
+permite remover esse Voto.
+
+`regrasAfty` é o conjunto fechado de verbos numéricos seguros que um Addon ou
+Voto automático pode declarar:
+
+| Campo | Resultado |
+|---|---|
+| `multiplicadorPeMaximo` | multiplica o PE Máximo depois de todas as fontes e custos |
+| `multiplicadorPvFinal` | multiplica somente o PV final; Integridade e fontes proporcionais usam o valor anterior |
+| `passivasSemCustoPeMaximo` | isenta Feitiços Passivos da Técnica do custo no PE Máximo |
+| `ignoraMultiplicadorPeMaximoDeVotos` | ignora somente multiplicadores de PE declarados por Votos |
+
+Os multiplicadores precisam ser números maiores que zero e os interruptores
+precisam ser booleanos. Chaves desconhecidas reprovam a instalação. A origem de
+cada multiplicador aparece no detalhamento do atributo afetado.
+
+Pacotes de referência: `addons/restricao-celestial-santo-da-espada.json` e
+`addons/regras-grimorio.json`.

@@ -33,12 +33,14 @@ import { evalNumber } from "./afty-dsl";
 import { getOrigem, getCla } from "./afty-origens";
 import { AFTY_ATTRS, AFTY_RESISTENCIAS } from "./afty-schema";
 // Requisito de treino em perícia ou TR. Módulo FOLHA, então não há ciclo.
-import { avaliarRequisitoDeTreino, conferirRequisitoDeTreino } from "./afty-pericias-catalogo";
+import {
+  AFTY_PERICIAS, avaliarRequisitoDeTreino, conferirRequisitoDeTreino, ehPericiaOficio,
+} from "./afty-pericias-catalogo";
 import { APTIDAO_TRILHAS, AFTY_APTIDOES } from "./afty-aptidoes";
 import { AFTY_ESPECIALIZACOES, treinamentosDasEspecializacoes } from "./afty-especializacoes";
 // O Adepto de Combate empresta o pool de Estilos do Combatente. Sem ciclo:
 // afty-habilidades.js não importa daqui.
-import { ESTILOS_DE_COMBATE } from "./afty-habilidades";
+import { ESTILOS_DE_COMBATE, MUDANCAS_DE_FUNDAMENTO } from "./afty-habilidades";
 
 export const ALMA_LIVRE_TALENTO_ID = "tal_alma_livre";
 const ALMA_LIVRE_OPCAO_PREFIXO = "tal_alma_livre_esp_";
@@ -49,6 +51,58 @@ export const TALENTOS_DE_ESCUDO = [
   "tal_tecnicas_ofensivas_de_escudo",
   "tal_tecnicas_defensivas_de_escudo",
 ];
+
+export const OFICIO_TALENTO_ARTESAO = "oficio__9001";
+export const OFICIO_TALENTO_TEMPESTADE = "oficio__9002";
+
+export function efeitosDeTalentosConfigurados(creature) {
+  const escolhidos = new Set(Array.isArray(creature?.talentos) ? creature.talentos : []);
+  const config = creature?.talentosConfig && typeof creature.talentosConfig === "object"
+    ? creature.talentosConfig
+    : {};
+  const out = [];
+
+  if (escolhidos.has("tal_tempestade_de_ideias")) {
+    const tempestade = config.tal_tempestade_de_ideias ?? {};
+    const pericia = AFTY_PERICIAS.find((p) => p.id === tempestade.pericia && !ehPericiaOficio(p.id));
+    if (pericia) {
+      out.push({
+        canal: "proficienciaPericia", alvo: pericia.id, expr: "1",
+        origem: "tal_tempestade_de_ideias", nome: "Tempestade de Ideias",
+      });
+    }
+    if (String(tempestade.ferramenta ?? "").trim()) {
+      out.push({
+        canal: "proficienciaPericia", alvo: OFICIO_TALENTO_TEMPESTADE, expr: "1",
+        origem: "tal_tempestade_de_ideias", nome: "Tempestade de Ideias",
+      });
+    }
+  }
+
+  if (escolhidos.has("tal_artesao_amaldicoado")) {
+    const artesao = config.tal_artesao_amaldicoado ?? {};
+    const ferramenta = ["Ferreiro", "Canalizador"].includes(artesao.ferramenta)
+      ? artesao.ferramenta
+      : null;
+    if (ferramenta) {
+      const nomesTreinados = new Set();
+      const oficios = creature?.periciaOficios && typeof creature.periciaOficios === "object"
+        ? creature.periciaOficios
+        : {};
+      for (const [id, nomes] of Object.entries(oficios)) {
+        if (!["treinado", "mestre"].includes(creature?.pericias?.[id])) continue;
+        for (const nome of Array.isArray(nomes) ? nomes : []) nomesTreinados.add(String(nome).trim().toLowerCase());
+      }
+      const nivel = nomesTreinados.has("ferreiro") && nomesTreinados.has("canalizador") ? 2 : 1;
+      out.push({
+        canal: "proficienciaPericia", alvo: OFICIO_TALENTO_ARTESAO, expr: String(nivel),
+        origem: "tal_artesao_amaldicoado", nome: "Artesão Amaldiçoado",
+      });
+    }
+  }
+
+  return out;
+}
 
 /**
  * Resolve as fontes de treino em escudos sem guardar resultado na ficha.
@@ -236,8 +290,8 @@ export const AFTY_TALENTOS = [
       "você escolhe aumentar o valor de sua Força ou Destreza em 2 e pode escolher entre se tornar " +
       "treinado em quatro armas quaisquer à sua escolha ou receber acesso ao efeito de crítico de " +
       "um grupo de armas à sua escolha.",
-    // "escolhe aumentar o valor de sua Força ou Destreza em 2". O treino em
-    // quatro armas e o efeito de crítico de grupo não têm canal.
+    // "escolhe aumentar o valor de sua Força ou Destreza em 2". O treino nas
+    // quatro armas vem de `talentosConfig`; o crítico aguarda a tabela do livro.
     escolha: {
       id: "mestre_armas_atributo",
       label: "Atributo",
@@ -376,8 +430,8 @@ export const AFTY_TALENTOS = [
       "sua escolha. Além disso, escolha uma perícia na qual seja treinado: uma quantidade de vezes " +
       "igual a metade do seu bônus de treinamento, por descanso curto, você pode escolher receber " +
       "vantagem em um teste com ela.",
-    // "Aumenta um atributo a sua escolha em 1." Os treinos em perícia e
-    // ferramenta, e a vantagem por descanso, seguem na mesa.
+    // "Aumenta um atributo a sua escolha em 1." Perícia e ferramenta entram por
+    // `talentosConfig`; a perícia da vantagem e seus usos também ficam salvos.
     escolha: {
       id: "tempestade_atributo",
       label: "Atributo",
@@ -454,12 +508,14 @@ export const AFTY_TALENTOS = [
       "Fundamento da habilidade Domínio dos Fundamentos de Especialista em Técnica (p.78), com " +
       "exceção de Técnica Rápida. Você pode reduzir o custo da Mudança de Fundamento em 1 uma " +
       "quantidade de vezes igual ao seu bônus de treinamento por cena.",
-    // ⚠ CONCEDE uma escolha do pool MUDANCAS_DE_FUNDAMENTO, exceto uma. O
-    // livro escreve "Técnica Rápida", mas a opção do pool se chama "Feitiço
-    // Rápido" (mesma troca Técnica/Feitiço de Mira Aperfeiçoada).
+    escolha: {
+      id: "adepto_fundamento",
+      label: "Mudança de Fundamento",
+      opcoes: MUDANCAS_DE_FUNDAMENTO.filter((o) => o.id !== "cnj_fundamento_feitico_rapido"),
+    },
     requisitos: [
       { tipo: "pericia", pericia: "feiticaria", nivel: "mestre" },
-      { tipo: "nota", texto: "Possuir Feitiços" },
+      { tipo: "feiticos", quantidade: 1 },
       { tipo: "maxComNome", prefixo: "Adepto", max: 2 },
     ],
   },
@@ -789,9 +845,8 @@ export const AFTY_TALENTOS = [
       "escolha em 2, com exceção do seu atributo com maior limite. Além disso, o limite dos dois " +
       "atributos escolhidos é aumentado em 2.",
     // DOIS atributos: `niveis: [1, 1]` conta duas concessões desde o começo (o
-    // pré-requisito de ND já trava o acesso).
-    // ⚠ "com exceção do seu atributo com maior limite" não é checado: o pool
-    // traz os seis e a restrição fica com o Mestre.
+    // pré-requisito de ND já trava o acesso). O resolvedor remove do pool todos
+    // os atributos empatados no maior limite antes de aceitar as escolhas.
     escolha: {
       id: "quebra_atributo",
       label: "Atributo",
@@ -1019,11 +1074,21 @@ export function avaliarRequisitoTalento(requisito, ctx = {}) {
     if (!alvo) return { ok: true, verificavel: false, label: requisito.id };
     return { ok: (ctx.talentos || []).includes(requisito.id), verificavel: true, label: alvo.nome };
   }
-  // "não possuir mais que dois talentos com o nome Adepto". Verificável: conta
-  // os já escolhidos cujo nome começa com o prefixo. O talento em avaliação
-  // ainda não está na lista, então o teste é "< max", não "<= max".
+  if (requisito?.tipo === "feiticos") {
+    const quantidade = Math.max(1, Math.trunc(Number(requisito.quantidade) || 1));
+    if (!Array.isArray(ctx.feiticos)) {
+      return { ok: true, verificavel: false, label: "Possuir Feitiços" };
+    }
+    const total = ctx.feiticos.filter(Boolean).length;
+    return { ok: total >= quantidade, verificavel: true, label: "Possuir Feitiços" };
+  }
+  // "não possuir mais que dois talentos com o nome Adepto". A lista completa é
+  // usada tanto no card quanto na reavaliação final, então o talento atual deve
+  // sair da contagem. Sem isso, dois Adeptos escolhidos invalidavam os dois.
   if (requisito?.tipo === "maxComNome") {
-    const n = (ctx.talentos || []).filter((id) => BY_ID[id]?.nome.startsWith(requisito.prefixo)).length;
+    const n = (ctx.talentos || []).filter((id) => (
+      id !== ctx.talentoEmAvaliacao && BY_ID[id]?.nome.startsWith(requisito.prefixo)
+    )).length;
     return {
       ok: n < requisito.max,
       verificavel: true,
@@ -1045,7 +1110,8 @@ export function avaliarRequisitoTalento(requisito, ctx = {}) {
  * Retorna { ok, extras }.
  */
 export function avaliarAcessoTalento(talento, ctx = {}) {
-  const extras = (talento?.requisitos || []).map((r) => avaliarRequisitoTalento(r, ctx));
+  const contexto = { ...ctx, talentoEmAvaliacao: talento?.id ?? null };
+  const extras = (talento?.requisitos || []).map((r) => avaliarRequisitoTalento(r, contexto));
   return { ok: extras.every((e) => e.ok), extras };
 }
 
@@ -1127,6 +1193,7 @@ export function resolveTalentos(creature, ctx = {}) {
     creature?.escolhasTalento,
     ctx.nd ?? 1,
     ctx.especializacoes,
+    ctx,
   );
   return {
     escolhidas,
@@ -1159,7 +1226,13 @@ export function resolveTalentos(creature, ctx = {}) {
  * Guarda escolhas, nunca resultados, e não remove excedente: reporta em
  * `excedeu`, que é o padrão do projeto.
  */
-export function resolveEscolhasTalento(escolhidasIds = [], escolhasTalento = {}, nd = 1, especializacoes = []) {
+export function resolveEscolhasTalento(
+  escolhidasIds = [],
+  escolhasTalento = {},
+  nd = 1,
+  especializacoes = [],
+  ctx = {},
+) {
   const porTal = {};
   const mapa = {};
   let vagasExtras = 0;
@@ -1169,9 +1242,19 @@ export function resolveEscolhasTalento(escolhidasIds = [], escolhasTalento = {},
   for (const talId of escolhidasIds) {
     const tal = BY_ID[talId];
     if (!tal?.escolha) continue;
-    const validas = new Set(tal.escolha.opcoes
-      .filter((o) => talId !== ALMA_LIVRE_TALENTO_ID || !especializacoesAtuais.has(o.especializacaoId))
-      .map((o) => o.id));
+    const limites = ctx.limitesAtributo && typeof ctx.limitesAtributo === "object"
+      ? ctx.limitesAtributo
+      : null;
+    const maiorLimite = limites
+      ? Math.max(...AFTY_ATTRS.map((a) => Number(limites[a.key])).filter(Number.isFinite))
+      : null;
+    const disponiveis = tal.escolha.opcoes.filter((o) => {
+      if (talId === ALMA_LIVRE_TALENTO_ID && especializacoesAtuais.has(o.especializacaoId)) return false;
+      if (talId !== "tal_quebra_de_limites" || !Number.isFinite(maiorLimite)) return true;
+      const atributo = o.id.replace(/^tal_quebra_/, "");
+      return Number(limites[atributo]) !== maiorLimite;
+    });
+    const validas = new Set(disponiveis.map((o) => o.id));
     const brutas = Array.isArray(escolhasTalento?.[talId]) ? escolhasTalento[talId] : [];
     const vistos = new Set();
     const opcoes = [];
@@ -1183,7 +1266,13 @@ export function resolveEscolhasTalento(escolhidasIds = [], escolhasTalento = {},
     const allowance = tal.escolha.repetivel
       ? tal.escolha.opcoes.length
       : (tal.escolha.niveis ?? [1]).filter((n) => nd >= n).length;
-    porTal[talId] = { opcoes, allowance, repetivel: !!tal.escolha.repetivel, excedeu: opcoes.length > allowance };
+    porTal[talId] = {
+      opcoes,
+      disponiveis: disponiveis.map((o) => o.id),
+      allowance,
+      repetivel: !!tal.escolha.repetivel,
+      excedeu: opcoes.length > allowance,
+    };
     mapa[talId] = opcoes;
     if (tal.escolha.repetivel) vagasExtras += Math.max(0, opcoes.length - 1);
   }

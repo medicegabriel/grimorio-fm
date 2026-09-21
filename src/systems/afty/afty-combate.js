@@ -551,12 +551,21 @@ export const COMBATE_ESTADOS = [
     requerTalento: "tal_tecnicas_de_empunhadura_dupla",
   },
   {
-    id: "golpeEscudo",
-    label: "Empurrão com Escudo",
-    tipo: "bool",
-    requerTalento: "tal_tecnicas_ofensivas_de_escudo",
+    id: "adeptoFeiticariaReducoesUsadas",
+    label: "Adepto de Feitiçaria · Reduções Usadas",
+    tipo: "faixa",
+    min: 0,
+    max: (d) => Math.max(0, d?.maestria ?? 0),
+    requerTalento: "tal_adepto_de_feiticaria",
   },
-
+  {
+    id: "tempestadeIdeiasUsos",
+    label: "Tempestade de Ideias · Usos",
+    tipo: "faixa",
+    min: 0,
+    max: (d) => Math.floor(Math.max(0, d?.maestria ?? 0) / 2),
+    requerTalento: "tal_tempestade_de_ideias",
+  },
   {
     id: "corpoDeAco",
     label: "Corpo de Aço · Cura",
@@ -800,6 +809,8 @@ export function resolveCombate(creature, params = {}) {
     fluxoPER: params.fluxoPER ?? 0,
     regeneracaoPE: params.regeneracaoPE ?? 0,
     conhecimentoAplicado: params.conhecimentoAplicado ?? 0,
+    adeptoFeiticariaReducoesUsadas: params.adeptoFeiticariaReducoesUsadas ?? 0,
+    tempestadeIdeiasUsos: params.tempestadeIdeiasUsos ?? 0,
   };
   /* ⚠ O AVISO ACIMA NÃO ERA TEÓRICO. Ao ligar o Conhecimento Aplicado em
      2026-09-07 eu declarei o `max` no catálogo, esqueci a linha aqui, e o

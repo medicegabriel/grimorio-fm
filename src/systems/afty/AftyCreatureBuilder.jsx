@@ -46,6 +46,7 @@ import {
   clasDaOrigem, getCla, caracteristicasEfetivas, totalDaAlocacao, usoDaAlocacao,
   origensQualificadas,
   origemEstrutural,
+  origemMae,
 } from "./afty-origens";
 // A descrição de cada anatomia agora aparece na própria linha selecionável, em
 // vez de repetida numa lista embaixo: o `getAnatomia` deixou de ser preciso aqui.
@@ -61,8 +62,9 @@ import {
   SEP_ALVO_ACAO, linhasComEscolhaFeiticos,
 } from "./afty-treinamentos";
 import {
-  createBlankPactoItem, beneficiosLiberados, pactoPadraoDeAddon, MALEFICIOS_MAXIMO,
-} from "./afty-pacto";
+  createBlankVotoContratual, createBlankVotoMecanico, limiteVotosMecanicos, votoPadraoDeAddon,
+  sincronizarVotosAutomaticos,
+} from "./afty-votos";
 import { createBlankEnxerto } from "./afty-modificacoes-corporais";
 import { novaForja, novoItemForja, forjasDaFicha, focosDeForja, itensComNome, FORJA_TIPOS } from "./afty-forja";
 import {
@@ -222,6 +224,7 @@ const TABS = [
   { id: "interludios",   label: "Interlúdios" },
   // As áreas de consulta e configuração ficam no último item, Outros.
   { id: "calculos",      label: "Cálculos", afty: true, outros: true },
+  { id: "votos",         label: "Votos", outros: true },
   { id: "addons",        label: "Addons", outros: true },
   /* O id "defesas" e o campo defesasDano continuam os mesmos para preservar
      as fichas salvas. Resistências aqui é por tipo de dano, diferente dos
@@ -230,7 +233,6 @@ const TABS = [
   // Uma tela com primitiva só aparece quando a criatura tem o Addon.
   { id: "carteira",      label: "Carteira", primitiva: "carteira" },
   { id: "catarse",       label: "Catarse", primitiva: "catarse" },
-  { id: "pacto",         label: "Pacto", primitiva: "pacto" },
 ];
 
 // Novas telas liberadas por Addon entram em Outros quando registradas em TABS.
@@ -300,7 +302,7 @@ function IndicadorRascunho({ rascunho }) {
    ou a ficha em branco. É a régua do "tem alteração pendente" e o destino do
    Descartar. O merge em si mora no schema desde 2026-08-05, porque a Ficha Final
    precisa exatamente do mesmo saneamento antes de derivar. */
-const fichaGravada = mesclaFichaAfty;
+const fichaGravada = (creature) => sincronizarVotosAutomaticos(mesclaFichaAfty(creature));
 
 export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel, sistema: sistemaDaRota = SISTEMA_PADRAO }) {
   const alvoId = existingCreature?.id ?? null;
@@ -327,7 +329,7 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
   // montar: restaurar depois faria a tela piscar a ficha em branco antes de
   // trocar, e todo `useState` derivado do draft nasceria do valor errado.
   const [rascunhoInicial] = useState(() => estadoInicialComRascunho(alvoId, base, sistema));
-  const [draft, setDraft] = useState(rascunhoInicial.draft);
+  const [draft, setDraft] = useState(() => sincronizarVotosAutomaticos(rascunhoInicial.draft));
   /* ⚠ A aba de pouso, e o fallback do `tabAtiva` mais abaixo, apontavam os dois
      para "informacoes". Ela NÃO EXISTE no Player, onde o conteúdo dela mora
      dentro da "identidade", e apontar para uma aba que a barra não mostra daria
@@ -400,7 +402,7 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
   const setFocosLivres = (v) => patch({ focosLivres: Math.max(0, Math.trunc(Number(v) || 0)) });
   const patchCore = (partial) => setDraft((d) => ({ ...d, core: { ...d.core, ...partial } }));
   // Os addons desta criatura, como CÓPIA congelada. Ver AftyTabAddons.jsx.
-  const setAddons = (lista) => setDraft((d) => ({ ...d, addons: lista }));
+  const setAddons = (lista) => setDraft((d) => sincronizarVotosAutomaticos({ ...d, addons: lista }));
   const patchAttr = (key, val) =>
     setDraft((d) => ({ ...d, attributes: { ...d.attributes, [key]: val } }));
   const patchNivel = (key, val) =>
@@ -840,25 +842,47 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
       return { ...d, carteira: { ...atual, ...partial } };
     });
 
-  const PACTO_VAZIO = { nome: "", descricao: "", maleficios: [], beneficios: [] };
-  const patchPacto = (partial) =>
-    setDraft((d) => ({ ...d, pacto: { ...(d.pacto ?? PACTO_VAZIO), ...partial } }));
-  const addPactoItem = (lista) =>
+  const VOTOS_VAZIOS = { contratuais: [], mecanicos: [] };
+  const addVotoContratual = () =>
     setDraft((d) => {
-      const atual = d.pacto ?? PACTO_VAZIO;
-      return { ...d, pacto: { ...atual, [lista]: [...(atual[lista] ?? []), createBlankPactoItem()] } };
+      const atual = d.votos ?? VOTOS_VAZIOS;
+      return { ...d, votos: { ...atual, contratuais: [...(atual.contratuais ?? []), createBlankVotoContratual()] } };
     });
-  const removePactoItem = (lista, id) =>
+  const removeVotoContratual = (id) =>
     setDraft((d) => {
-      const atual = d.pacto ?? PACTO_VAZIO;
-      return { ...d, pacto: { ...atual, [lista]: (atual[lista] ?? []).filter((it) => it.id !== id) } };
+      const atual = d.votos ?? VOTOS_VAZIOS;
+      return { ...d, votos: { ...atual, contratuais: (atual.contratuais ?? []).filter((voto) => voto.id !== id) } };
     });
-  const patchPactoItem = (lista, id, partial) =>
+  const patchVotoContratual = (id, partial) =>
     setDraft((d) => {
-      const atual = d.pacto ?? PACTO_VAZIO;
+      const atual = d.votos ?? VOTOS_VAZIOS;
       return {
         ...d,
-        pacto: { ...atual, [lista]: (atual[lista] ?? []).map((it) => (it.id === id ? { ...it, ...partial } : it)) },
+        votos: {
+          ...atual,
+          contratuais: (atual.contratuais ?? []).map((voto) => (voto.id === id ? { ...voto, ...partial } : voto)),
+        },
+      };
+    });
+  const addVotoMecanico = (modelo = null) =>
+    setDraft((d) => {
+      const atual = d.votos ?? VOTOS_VAZIOS;
+      return { ...d, votos: { ...atual, mecanicos: [...(atual.mecanicos ?? []), modelo ?? createBlankVotoMecanico()] } };
+    });
+  const removeVotoMecanico = (id) =>
+    setDraft((d) => {
+      const atual = d.votos ?? VOTOS_VAZIOS;
+      return { ...d, votos: { ...atual, mecanicos: (atual.mecanicos ?? []).filter((voto) => voto.id !== id) } };
+    });
+  const patchVotoMecanico = (id, partial) =>
+    setDraft((d) => {
+      const atual = d.votos ?? VOTOS_VAZIOS;
+      return {
+        ...d,
+        votos: {
+          ...atual,
+          mecanicos: (atual.mecanicos ?? []).map((voto) => (voto.id === id ? { ...voto, ...partial } : voto)),
+        },
       };
     });
 
@@ -895,6 +919,15 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
         atributo: "inteligencia",
         ...(d.tecnicasCombate ?? {}),
         ...partial,
+      },
+    }));
+
+  const patchTalentosConfig = (talentoId, partial) =>
+    setDraft((d) => ({
+      ...d,
+      talentosConfig: {
+        ...(d.talentosConfig ?? {}),
+        [talentoId]: { ...(d.talentosConfig?.[talentoId] ?? {}), ...partial },
       },
     }));
 
@@ -1597,21 +1630,23 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
             />
           )}
 {tabAtiva === "habilidades" && <TabHabilidades draft={draft} derived={derived} patchCore={patchCore} toggleArmaDedicada={toggleArmaDedicada} addFeitico={addFeitico} updateFeitico={updateFeitico} removeFeitico={removeFeitico} patchFeitico={patchFeitico} duplicarFeitico={duplicarFeitico} setReducoesCustoFeitico={setReducoesCustoFeitico} setTreinoEscolhaFeiticos={setTreinoEscolhaFeiticos} toggleEstiloTabela={toggleEstiloTabela} addEstiloEspecial={addEstiloEspecial} removeEstilo={removeEstilo} patchEstilo={patchEstilo} addFuncionamento={addFuncionamento} removeFuncionamento={removeFuncionamento} patchFuncionamento={patchFuncionamento} setGeralVezes={setGeralVezes} addDominio={addDominio} removeDominio={removeDominio} patchDominio={patchDominio} setDominioAtivo={setDominioAtivo} sistema={sistema} />}
-          {tabAtiva === "especializacoes" && <TabEspecializacoes draft={draft} derived={derived} setEspecializacoes={setEspecializacoes} toggleHabilidade={toggleHabilidade} setHabilidadeVezes={setHabilidadeVezes} toggleEscolhaHabilidade={toggleEscolhaHabilidade} toggleTalento={toggleTalento} setTalentoVezes={setTalentoVezes} toggleEscolhaTalento={toggleEscolhaTalento} setMelhoriaVezes={setMelhoriaVezes} toggleLendaria={toggleLendaria} toggleEscolhaAltoNivel={toggleEscolhaAltoNivel} patchTecnicasCombate={patchTecnicasCombate} />}
+          {tabAtiva === "especializacoes" && <TabEspecializacoes draft={draft} derived={derived} setEspecializacoes={setEspecializacoes} toggleHabilidade={toggleHabilidade} setHabilidadeVezes={setHabilidadeVezes} toggleEscolhaHabilidade={toggleEscolhaHabilidade} toggleTalento={toggleTalento} setTalentoVezes={setTalentoVezes} toggleEscolhaTalento={toggleEscolhaTalento} setMelhoriaVezes={setMelhoriaVezes} toggleLendaria={toggleLendaria} toggleEscolhaAltoNivel={toggleEscolhaAltoNivel} patchTecnicasCombate={patchTecnicasCombate} patchTalentosConfig={patchTalentosConfig} />}
           {tabAtiva === "aptidoes" && <TabAptidoes draft={draft} derived={derived} setAptidaoNivel={setAptidaoNivel} toggleAptidao={toggleAptidao} setAptidaoOpcao={setAptidaoOpcao} setAptidaoVezes={setAptidaoVezes} setAptidaoOpcaoRepetida={setAptidaoOpcaoRepetida} />}
           {tabAtiva === "invocacoes" && <TabInvocacoes draft={draft} derived={derived} addInvocacao={addInvocacao} removeInvocacao={removeInvocacao} duplicarInvocacao={duplicarInvocacao} moverInvocacao={moverInvocacao} patchInvocacao={patchInvocacao} patchInvocacaoAttr={patchInvocacaoAttr} efeitosApi={efeitosApi} addHorda={addHorda} removeHorda={removeHorda} patchHorda={patchHorda} addQuimera={addQuimera} removeQuimera={removeQuimera} patchQuimera={patchQuimera} />}
           {tabAtiva === "equipamentos" && <TabEquipamentos draft={draft} derived={derived} addEquipamento={addEquipamento} removeEquipamento={removeEquipamento} patchEquipamento={patchEquipamento} toggleFerramenta={toggleFerramenta} patchFerramenta={patchFerramenta} toggleEncantamento={toggleEncantamento} addArmaCustom={addArmaCustom} patchArmaCustom={patchArmaCustom} removeArmaCustom={removeArmaCustom} addAcessorioUnico={addAcessorioUnico} patchAcessorioUnico={patchAcessorioUnico} removeAcessorioUnico={removeAcessorioUnico} criados={criados} />}
           {tabAtiva === "interludios" && <TabInterludios draft={draft} derived={derived} setTreinoProgresso={setTreinoProgresso} setTreinoInstance={setTreinoInstance} setTreinoAlvo={setTreinoAlvo} setTreinoEscolha={setTreinoEscolha} setTreinoEspecialVezes={setTreinoEspecialVezes} setTreinoEspecialProgresso={setTreinoEspecialProgresso} sistema={sistema} setFocosLivres={setFocosLivres} addForja={addForja} patchForja={patchForja} removeForja={removeForja} />}
           {tabAtiva === "defesas" && <TabDefesas derived={derived} setDefesaEstado={setDefesaEstado} setDefesaRd={setDefesaRd} />}
           {tabAtiva === "carteira" && <TabCarteira draft={draft} derived={derived} patchCarteira={patchCarteira} />}
-          {tabAtiva === "pacto" && (
-            <TabPacto
+          {tabAtiva === "votos" && (
+            <TabVotos
               draft={draft}
               derived={derived}
-              patchPacto={patchPacto}
-              addPactoItem={addPactoItem}
-              removePactoItem={removePactoItem}
-              patchPactoItem={patchPactoItem}
+              addVotoContratual={addVotoContratual}
+              removeVotoContratual={removeVotoContratual}
+              patchVotoContratual={patchVotoContratual}
+              addVotoMecanico={addVotoMecanico}
+              removeVotoMecanico={removeVotoMecanico}
+              patchVotoMecanico={patchVotoMecanico}
             />
           )}
           {tabAtiva === "modificacoesCorporais" && (
@@ -2412,9 +2447,11 @@ function DanoCard({ derived, toggleArmaDedicada }) {
                   Remove Resistência
                 </span>
               )}
-              <span className="text-[10px] text-slate-400 whitespace-nowrap flex-shrink-0" title="Margem de Crítico">
-                Crít. {e.margemCritico}
-              </span>
+              {e.margemCritico != null && (
+                <span className="text-[10px] text-slate-400 whitespace-nowrap flex-shrink-0" title="Margem de Crítico">
+                  Crít. {e.margemCritico}
+                </span>
+              )}
               {e.alcance && (
                 <span className="text-[10px] text-slate-400 whitespace-nowrap flex-shrink-0">{e.alcance.texto}</span>
               )}
@@ -2946,7 +2983,9 @@ function TabHabilidades({ draft, derived, patchCore, toggleArmaDedicada, addFeit
   );
   const barreira = <BarreiraCard derived={derived} />;
   const dominioSimples = <DominioSimplesCard derived={derived} />;
-  const origem = draft.core.origem?.id;
+  // A MÃE decide o leiaute: a variação do Sem Técnica monta a aba dele. Ver
+  // `origemMae`.
+  const origem = origemMae(draft.core.origem?.id);
   /* ⚠ A ficha de jogador não tem Habilidades Gerais (autor, 2026-08-30). Some
      AQUI, e não nos três lugares que compõem `{gerais}` por origem: uma variável
      nula é o único ponto em que a regra cabe uma vez só. O derive já resolve as
@@ -4947,6 +4986,7 @@ function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico
        Máximo dela é divergência, e sem isto o card diria que a criatura paga.
        Sai da FICHA e não da rota, como tudo que decide regra. */
     sistema: sistemaDaFicha(draft),
+    passivasSemCustoPeMaximo: !!derived.regrasAfty?.passivasSemCustoPeMaximo,
     temEnergiaReversa: Array.isArray(draft.aptidoesAmaldicoadas) && draft.aptidoesAmaldicoadas.includes("energia_reversa"),
     invocacoes: Array.isArray(draft.invocacoes) ? draft.invocacoes : [],
     /* ⚠ O CÁLCULO do Shikigami usa a lista CRUA acima (só precisa de id, nome e
@@ -5445,7 +5485,7 @@ function FeiticoCard({ feitico, ctx, nivelMax, tiposPermitidos, efeitosPassivo, 
     <div className="rounded-lg border border-slate-800 bg-slate-950/40 p-3 flex items-center flex-wrap gap-3 text-sm text-slate-300">
       <span className="flex-1" title={ocular.textos[feitico.nivel]}>{ocular.nome}</span>
       <span>Nível {feitico.nivel}</span>
-      <span>−{2 * Number(feitico.nivel)} PE máx.</span>
+      <span>{ctx.passivasIsentas ? "Sem custo de PE máx." : `−${2 * Number(feitico.nivel)} PE máx.`}</span>
       <button type="button" onClick={onRemove} className="text-rose-300" aria-label={`Remover ${ocular.nome}`}>Remover</button>
     </div>
   );
@@ -10077,7 +10117,7 @@ function AptidaoCard({
 
    Com multiclasse, os botões transferem um nível entre classes e preservam
    a soma. A última classe recebe o restante no resolveEspecializacoes. */
-function TabEspecializacoes({ draft, derived, setEspecializacoes, toggleHabilidade, setHabilidadeVezes, toggleEscolhaHabilidade, toggleTalento, setTalentoVezes, toggleEscolhaTalento, setMelhoriaVezes, toggleLendaria, toggleEscolhaAltoNivel, patchTecnicasCombate }) {
+function TabEspecializacoes({ draft, derived, setEspecializacoes, toggleHabilidade, setHabilidadeVezes, toggleEscolhaHabilidade, toggleTalento, setTalentoVezes, toggleEscolhaTalento, setMelhoriaVezes, toggleLendaria, toggleEscolhaAltoNivel, patchTecnicasCombate, patchTalentosConfig }) {
   const { escolhidas, total, max, obrigatoria } = derived.especializacoes;
   // A origem copiada em Verdadeiras Origens ABRE o que for exclusivo dela: o
   // Físico Abençoado do Restringido diz que dá acesso à Especialização
@@ -10275,7 +10315,7 @@ function TabEspecializacoes({ draft, derived, setEspecializacoes, toggleHabilida
         (autor, 2026-07-17): a aba "Habilidades" do topo é de Ações &
         Características, não destas. Mesmo arranjo da aba de Aptidões, que
         tem o alocador em cima e a lista de leitura embaixo. */}
-    <HabilidadesEspecializacao draft={draft} derived={derived} toggleHabilidade={toggleHabilidade} setHabilidadeVezes={setHabilidadeVezes} toggleEscolhaHabilidade={toggleEscolhaHabilidade} toggleTalento={toggleTalento} setTalentoVezes={setTalentoVezes} toggleEscolhaTalento={toggleEscolhaTalento} patchTecnicasCombate={patchTecnicasCombate} />
+    <HabilidadesEspecializacao draft={draft} derived={derived} toggleHabilidade={toggleHabilidade} setHabilidadeVezes={setHabilidadeVezes} toggleEscolhaHabilidade={toggleEscolhaHabilidade} toggleTalento={toggleTalento} setTalentoVezes={setTalentoVezes} toggleEscolhaTalento={toggleEscolhaTalento} patchTecnicasCombate={patchTecnicasCombate} patchTalentosConfig={patchTalentosConfig} />
 
     {/* Empolgação: some inteira sem a habilidade Base do Lutador. */}
     <EmpolgacaoCard derived={derived} />
@@ -10488,6 +10528,123 @@ function TecnicasCombateEscolhas({ draft, derived, escolhida, onPatch }) {
   );
 }
 
+function TalentoConfiguracao({ talento, draft, derived, escolhida, onPatch }) {
+  const config = draft?.talentosConfig?.[talento.id] ?? {};
+  const pericias = (derived?.testes?.pericias ?? []).filter((p) => !ehPericiaOficio(p.id));
+  const opcoesPericia = pericias.map((p) => ({ value: p.id, label: p.nome }));
+
+  if (talento.id === "tal_mestre_das_armas") {
+    const modo = config.modo === "grupo" ? "grupo" : "armas";
+    const armas = Array.isArray(config.armas) ? config.armas.slice(0, 4) : [];
+    const opcoesArma = catalogoDoTipo("arma", draft).map((a) => ({ value: a.id, label: a.nome }));
+    const defineArma = (indice, id) => {
+      const proxima = [...armas];
+      proxima[indice] = id || null;
+      onPatch(talento.id, { armas: proxima.filter(Boolean) });
+    };
+    return (
+      <div className="mt-2 border-t border-slate-800 pt-2 space-y-2">
+        <FieldLabel>Benefício de armas</FieldLabel>
+        <OptionChips
+          value={modo}
+          onChange={(v) => onPatch(talento.id, { modo: v })}
+          options={[
+            { value: "armas", label: "Treino em quatro armas" },
+            { value: "grupo", label: "Crítico de um grupo" },
+          ]}
+          disabledValues={!escolhida ? ["armas", "grupo"] : undefined}
+        />
+        {modo === "armas" ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {[0, 1, 2, 3].map((indice) => (
+              <div key={indice}>
+                <FieldLabel>Arma {indice + 1}</FieldLabel>
+                <Select
+                  value={armas[indice] ?? ""}
+                  onChange={(v) => defineArma(indice, v)}
+                  options={[
+                    { value: "", label: "Nenhuma" },
+                    ...opcoesArma.filter((o) => !armas.some((id, i) => i !== indice && id === o.value)),
+                  ]}
+                  disabled={!escolhida}
+                />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div>
+            <FieldLabel>Grupo de armas</FieldLabel>
+            <Select
+              value={config.grupo ?? ""}
+              onChange={(v) => onPatch(talento.id, { grupo: v || null })}
+              options={[{ value: "", label: "Nenhum" }, ...ARMA_GRUPOS]}
+              disabled={!escolhida}
+            />
+            <p className="mt-1 text-[10px] text-amber-400" role="status">
+              A tabela dos efeitos de crítico por grupo ainda não foi fornecida.
+            </p>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (talento.id === "tal_tempestade_de_ideias") {
+    const treinadas = pericias.filter((p) => p.prof).map((p) => ({ value: p.id, label: p.nome }));
+    return (
+      <div className="mt-2 border-t border-slate-800 pt-2 grid grid-cols-1 sm:grid-cols-3 gap-2">
+        <div>
+          <FieldLabel>Perícia treinada</FieldLabel>
+          <Select
+            value={config.pericia ?? ""}
+            onChange={(v) => onPatch(talento.id, { pericia: v || null })}
+            options={[{ value: "", label: "Nenhuma" }, ...opcoesPericia]}
+            disabled={!escolhida}
+          />
+        </div>
+        <div>
+          <FieldLabel>Ferramenta treinada</FieldLabel>
+          <TextInput
+            value={config.ferramenta ?? ""}
+            onChange={(v) => onPatch(talento.id, { ferramenta: v })}
+            placeholder="Nome da ferramenta"
+            disabled={!escolhida}
+          />
+        </div>
+        <div>
+          <FieldLabel>Perícia com vantagem</FieldLabel>
+          <Select
+            value={config.vantagemPericia ?? ""}
+            onChange={(v) => onPatch(talento.id, { vantagemPericia: v || null })}
+            options={[{ value: "", label: "Nenhuma" }, ...treinadas]}
+            disabled={!escolhida}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  if (talento.id === "tal_artesao_amaldicoado") {
+    return (
+      <div className="mt-2 border-t border-slate-800 pt-2 max-w-xs">
+        <FieldLabel>Ofício concedido</FieldLabel>
+        <Select
+          value={config.ferramenta ?? ""}
+          onChange={(v) => onPatch(talento.id, { ferramenta: v || null })}
+          options={[
+            { value: "", label: "Nenhum" },
+            { value: "Ferreiro", label: "Ofício (Ferreiro)" },
+            { value: "Canalizador", label: "Ofício (Canalizador)" },
+          ]}
+          disabled={!escolhida}
+        />
+      </div>
+    );
+  }
+
+  return null;
+}
+
 /* Medidor de repetição do Talento. Só aparece no Talento que o texto manda
    repetir E depois de escolhido: o 1º segmento duplicaria o botão de escolher,
    que é a mesma regra do card das Habilidades Gerais.
@@ -10665,7 +10822,7 @@ function HabilidadeCard({ habilidade, escolhida, concedida = false, acesso, nive
 
 const TALENTOS_TAB = "__talentos__";
 
-function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, setHabilidadeVezes, toggleEscolhaHabilidade, toggleTalento, setTalentoVezes, toggleEscolhaTalento, patchTecnicasCombate }) {
+function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, setHabilidadeVezes, toggleEscolhaHabilidade, toggleTalento, setTalentoVezes, toggleEscolhaTalento, patchTecnicasCombate, patchTalentosConfig }) {
   const {
     escolhidas, selecionadas, concedidas, escolhas, gastosNoComum, comum, exclusivasTalento, exclusivasUsadas,
     excedeu, niveisPorEspec,
@@ -10748,6 +10905,7 @@ function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, setHabili
     periciaProf: derived.periciaProf,
     resistenciaProf: derived.resistenciaProf,
     periciaOficios: derived.periciaOficios,
+    feiticos: draft.feiticos,
   };
 
   // Rótulo curto para a aba: "Base", "2°", "4°"... (o título longo não cabe).
@@ -10756,15 +10914,22 @@ function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, setHabili
     g.id === "base"
       ? "Base"
       : g.titulo.replace("Habilidades de ", "").replace("Talentos ", "").replace(" Nível", "");
-  const talentoParaTela = (talento) => talento.id === ALMA_LIVRE_TALENTO_ID
-    ? {
-        ...talento,
-        escolha: {
-          ...talento.escolha,
-          opcoes: talento.escolha.opcoes.filter((o) => !especializacoesAtuais.has(o.especializacaoId)),
-        },
-      }
-    : talento;
+  const talentoParaTela = (talento) => {
+    if (!talento.escolha) return talento;
+    const disponiveis = derived.talentos?.escolhas?.porTal?.[talento.id]?.disponiveis;
+    if (Array.isArray(disponiveis)) {
+      const ids = new Set(disponiveis);
+      return { ...talento, escolha: { ...talento.escolha, opcoes: talento.escolha.opcoes.filter((o) => ids.has(o.id)) } };
+    }
+    if (talento.id !== ALMA_LIVRE_TALENTO_ID) return talento;
+    return {
+      ...talento,
+      escolha: {
+        ...talento.escolha,
+        opcoes: talento.escolha.opcoes.filter((o) => !especializacoesAtuais.has(o.especializacaoId)),
+      },
+    };
+  };
 
   return (
     <Card
@@ -10905,6 +11070,13 @@ function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, setHabili
                   acesso={{ ...avaliarAcessoTalento(h, ctxTalento), nivelOk: true, faltam: 0 }}
                   escolhaEstado={derived.talentos?.escolhas?.porTal?.[h.id]}
                   onToggleOpcao={(opcaoId) => toggleEscolhaTalento(h.id, opcaoId)}
+                  extra={<TalentoConfiguracao
+                    talento={h}
+                    draft={draft}
+                    derived={derived}
+                    escolhida={talentosEscolhidos.includes(h.id)}
+                    onPatch={patchTalentosConfig}
+                  />}
                   medidor={<TalentoMedidor
                     talento={h}
                     vezes={derived.talentos?.vezes?.[h.id] ?? 0}
@@ -12260,105 +12432,242 @@ function BlocoHabilidadeUnica({
 }
 
 /* ============================================================ */
-/* ABA PACTO                                                     */
+/* ABA VOTOS                                                     */
 /* ============================================================ */
-/**
- * Só existe com a primitiva `pacto` (addon com `permite: ["pacto"]` — ver
- * `tabsDoSistema`). Nome, descrição e as duas listas de texto livre, cada
- * entrada com efeito OPCIONAL no mesmo editor da Ferramenta Amaldiçoada. A
- * régua de vagas de Benefício (1 a cada 2 Malefícios) mora em
- * `beneficiosLiberados` (afty-pacto.js), e é o mesmo número que
- * `efeitosDePacto` usa para cortar o excesso no cálculo — a tela nunca
- * inventa um limite que o motor não aplicaria de volta.
- */
-function TabPacto({ draft, derived, patchPacto, addPactoItem, removePactoItem, patchPactoItem }) {
-  const pacto = draft.pacto ?? { nome: "", descricao: "", maleficios: [], beneficios: [] };
-  const maleficios = Array.isArray(pacto.maleficios) ? pacto.maleficios : [];
-  const beneficios = Array.isArray(pacto.beneficios) ? pacto.beneficios : [];
-  const vagasBeneficio = beneficiosLiberados(pacto);
-  const padrao = pactoPadraoDeAddon(draft);
-  const fichaEmBranco = !pacto.nome?.trim() && maleficios.length === 0 && beneficios.length === 0;
+function TabVotos({
+  draft, derived,
+  addVotoContratual, removeVotoContratual, patchVotoContratual,
+  addVotoMecanico, removeVotoMecanico, patchVotoMecanico,
+}) {
+  const votos = draft.votos ?? { contratuais: [], mecanicos: [] };
+  const contratuais = Array.isArray(votos.contratuais) ? votos.contratuais : [];
+  const mecanicos = Array.isArray(votos.mecanicos) ? votos.mecanicos : [];
+  const limiteMecanicos = limiteVotosMecanicos(derived.maestria);
+  const padrao = votoPadraoDeAddon(draft);
   const pericias = derived.testes?.pericias;
   const fontesDano = fontesDanoDaFicha(draft, derived);
-  const dslContexto = derived.contextoDsl;
-  const dslExtras = derived.combate?.estadosExtras;
+  const dslGrupos = useDslGrupos(derived);
+  const podeAdicionarMecanico = mecanicos.length < limiteMecanicos;
+  const addonsAtivos = new Set((draft.addons ?? []).map((addon) => addon?.id).filter(Boolean));
 
   return (
-    <Card title="Pacto">
-      {padrao && fichaEmBranco && (
-        <button
-          type="button"
-          onClick={() => patchPacto({ ...padrao.pacto })}
-          className="mb-3 flex items-center gap-1.5 text-[11px] text-purple-300 hover:text-purple-200 border border-purple-900/50 rounded-lg px-2.5 py-1.5"
-        >
-          <Plus className="w-3.5 h-3.5" /> Usar o Pacto de {padrao.addonNome}
-        </button>
-      )}
-      <div className="space-y-2.5 mb-4">
-        <div>
-          <FieldLabel>Nome do Pacto</FieldLabel>
-          <input
-            type="text"
-            value={pacto.nome}
-            onChange={(e) => patchPacto({ nome: e.target.value })}
-            placeholder="Nome do Pacto"
-            className="w-full text-[13px] rounded-lg border border-slate-700 bg-slate-950/60 px-2.5 py-1.5 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-purple-600"
-          />
+    <Card title="Votos">
+      <section className="mb-6">
+        <div className="mb-2 flex items-center justify-between gap-3">
+          <div>
+            <h3 className="text-sm font-bold text-slate-100">Votos Contratuais</h3>
+          </div>
+          <span className="rounded border border-slate-700 px-2 py-0.5 font-mono text-[10px] text-slate-400">
+            {contratuais.length}
+          </span>
         </div>
-        <div>
-          <FieldLabel>Descrição</FieldLabel>
-          <textarea
-            value={pacto.descricao}
-            onChange={(e) => patchPacto({ descricao: e.target.value })}
-            rows={3}
-            placeholder="A história do Pacto."
-            className="w-full text-[12px] rounded-lg border border-slate-700 bg-slate-950/60 px-2.5 py-2 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-purple-600 resize-y"
-          />
+
+        <div className="space-y-2.5">
+          {contratuais.map((voto, indice) => (
+            <div key={voto.id} className="rounded-lg border border-slate-800 bg-slate-950/30 p-2.5">
+              <div className="mb-1.5 flex items-center justify-between gap-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                  Voto Contratual {indice + 1}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => removeVotoContratual(voto.id)}
+                  className="rounded p-1 text-slate-600 hover:text-rose-300"
+                  aria-label={`Remover Voto Contratual ${indice + 1}`}
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+              <textarea
+                value={voto.texto}
+                onChange={(e) => patchVotoContratual(voto.id, { texto: e.target.value })}
+                rows={3}
+                placeholder="Descreva o acordo, as partes e as condições do Voto."
+                className="w-full resize-y rounded-lg border border-slate-700 bg-slate-950/60 px-2.5 py-2 text-[12px] text-slate-100 placeholder:text-slate-600 focus:border-purple-600 focus:outline-none"
+              />
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={addVotoContratual}
+            className="flex items-center gap-1 text-[11px] text-purple-300 hover:text-purple-200"
+          >
+            <Plus className="h-3 w-3" /> Adicionar Voto Contratual
+          </button>
         </div>
-      </div>
+      </section>
 
-      <div className="mb-1.5 flex items-center justify-between text-[10px] uppercase tracking-wider text-slate-500">
-        <span>Malefícios</span>
-        <span className="font-mono">{maleficios.length}/{MALEFICIOS_MAXIMO}</span>
-      </div>
-      <PactoLista
-        titulo="Malefícios"
-        itens={maleficios}
-        limite={MALEFICIOS_MAXIMO}
-        onAdd={() => addPactoItem("maleficios")}
-        onRemove={(id) => removePactoItem("maleficios", id)}
-        onPatch={(id, partial) => patchPactoItem("maleficios", id, partial)}
-        pericias={pericias}
-        fontesDano={fontesDano}
-        dslContexto={dslContexto}
-        dslExtras={dslExtras}
-      />
+      <section>
+        <div className="mb-2 flex items-center justify-between gap-3">
+          <div>
+            <h3 className="text-sm font-bold text-slate-100">Votos Mecânicos</h3>
+          </div>
+          <span className="rounded border border-purple-900/60 bg-purple-950/30 px-2 py-0.5 font-mono text-[10px] text-purple-300">
+            {Math.min(mecanicos.length, limiteMecanicos)}/{limiteMecanicos} BT
+          </span>
+        </div>
 
-      <div className="mt-4 mb-1.5 flex items-center justify-between text-[10px] uppercase tracking-wider text-slate-500">
-        <span>Benefícios</span>
-        <span className="font-mono">{beneficios.length}/{vagasBeneficio} vagas</span>
-      </div>
-      {vagasBeneficio === 0 && (
-        <p className="text-[11px] text-slate-500 mb-2">Anote 2 Malefícios para liberar a primeira vaga de Benefício.</p>
-      )}
-      <PactoLista
-        titulo="Benefícios"
-        itens={beneficios}
-        limite={vagasBeneficio}
-        onAdd={() => addPactoItem("beneficios")}
-        onRemove={(id) => removePactoItem("beneficios", id)}
-        onPatch={(id, partial) => patchPactoItem("beneficios", id, partial)}
-        pericias={pericias}
-        fontesDano={fontesDano}
-        dslContexto={dslContexto}
-        dslExtras={dslExtras}
-      />
+        {padrao && mecanicos.length === 0 && podeAdicionarMecanico && (
+          <button
+            type="button"
+            onClick={() => addVotoMecanico(padrao.voto)}
+            className="mb-3 flex items-center gap-1.5 rounded-lg border border-purple-900/50 px-2.5 py-1.5 text-[11px] text-purple-300 hover:text-purple-200"
+          >
+            <Plus className="h-3.5 w-3.5" /> Usar o Voto de {padrao.addonNome}
+          </button>
+        )}
+
+        {limiteMecanicos === 0 && (
+          <p className="mb-3 rounded-lg border border-slate-800 bg-slate-950/30 px-3 py-2 text-[11px] text-slate-500">
+            Seu BT atual é 0. A primeira vaga de Voto Mecânico será liberada quando o BT aumentar.
+          </p>
+        )}
+
+        <div className="space-y-3">
+          {mecanicos.map((voto, indice) => (
+            <VotoMecanicoCard
+              key={voto.id}
+              voto={voto}
+              efeitosMotor={derived.votosEfeitos?.[voto.id]}
+              indice={indice}
+              ativo={indice < limiteMecanicos}
+              protegidoAddon={!!voto.origemAddon && addonsAtivos.has(voto.origemAddon)}
+              onRemove={() => removeVotoMecanico(voto.id)}
+              onPatch={(partial) => patchVotoMecanico(voto.id, partial)}
+              pericias={pericias}
+              fontesDano={fontesDano}
+              dslGrupos={dslGrupos}
+            />
+          ))}
+          {podeAdicionarMecanico && (
+            <button
+              type="button"
+              onClick={() => addVotoMecanico()}
+              className="flex items-center gap-1 text-[11px] text-purple-300 hover:text-purple-200"
+            >
+              <Plus className="h-3 w-3" /> Adicionar Voto Mecânico
+            </button>
+          )}
+          {!podeAdicionarMecanico && limiteMecanicos > 0 && (
+            <p className="text-[11px] text-slate-500">Limite de {limiteMecanicos} Votos Mecânicos atingido pelo BT atual.</p>
+          )}
+        </div>
+      </section>
     </Card>
   );
 }
 
-/** Uma lista de entradas do Pacto (Malefícios ou Benefícios): texto + Motor opcional. */
-function PactoLista({ itens, limite, onAdd, onRemove, onPatch, pericias, fontesDano, dslContexto, dslExtras }) {
+function VotoMecanicoCard({
+  voto, efeitosMotor, indice, ativo, protegidoAddon, onRemove, onPatch, pericias, fontesDano, dslGrupos,
+}) {
+  const patchLado = (chave, partial) => onPatch({
+    [chave]: { ...(voto[chave] ?? { texto: "", efeitos: [] }), ...partial },
+  });
+
+  return (
+    <div className={`rounded-xl border p-3 ${
+      ativo ? "border-purple-900/60 bg-purple-950/15" : "border-amber-900/50 bg-amber-950/10"
+    }`}>
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-purple-300">
+            Voto Mecânico {indice + 1}
+          </span>
+          {!ativo && (
+            <span className="rounded border border-amber-800/70 px-1.5 py-0.5 text-[9px] font-bold uppercase text-amber-300">
+              Automação inativa acima do BT
+            </span>
+          )}
+          {protegidoAddon && (
+            <span className="rounded border border-sky-800/70 px-1.5 py-0.5 text-[9px] font-bold uppercase text-sky-300">
+              Voto do Addon
+            </span>
+          )}
+        </div>
+        {!protegidoAddon && (
+          <button
+            type="button"
+            onClick={onRemove}
+            className="rounded p-1 text-slate-600 hover:text-rose-300"
+            aria-label={`Remover Voto Mecânico ${indice + 1}`}
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        )}
+      </div>
+
+      <div className="mb-3 space-y-2.5">
+        <div>
+          <FieldLabel>Nome do Voto</FieldLabel>
+          <input
+            type="text"
+            value={voto.nome ?? ""}
+            onChange={(e) => onPatch({ nome: e.target.value })}
+            placeholder="Nome do Voto"
+            className="w-full rounded-lg border border-slate-700 bg-slate-950/60 px-2.5 py-1.5 text-[13px] text-slate-100 placeholder:text-slate-600 focus:border-purple-600 focus:outline-none"
+          />
+        </div>
+        <div>
+          <FieldLabel>Narrativa do Voto</FieldLabel>
+          <textarea
+            value={voto.narrativa ?? ""}
+            onChange={(e) => onPatch({ narrativa: e.target.value })}
+            rows={3}
+            placeholder="Descreva como o Voto foi firmado e quais condições ele impõe."
+            className="w-full resize-y rounded-lg border border-slate-700 bg-slate-950/60 px-2.5 py-2 text-[12px] text-slate-100 placeholder:text-slate-600 focus:border-purple-600 focus:outline-none"
+          />
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <VotoLado
+          titulo="Benefício"
+          lado={voto.beneficio}
+          efeitos={efeitosMotor?.beneficio}
+          onPatch={(partial) => patchLado("beneficio", partial)}
+          pericias={pericias}
+          fontesDano={fontesDano}
+          dslGrupos={dslGrupos}
+        />
+        <VotoLado
+          titulo="Malefício"
+          lado={voto.maleficio}
+          efeitos={efeitosMotor?.maleficio}
+          onPatch={(partial) => patchLado("maleficio", partial)}
+          pericias={pericias}
+          fontesDano={fontesDano}
+          dslGrupos={dslGrupos}
+        />
+      </div>
+    </div>
+  );
+}
+
+function VotoLado({ titulo, lado, efeitos, onPatch, pericias, fontesDano, dslGrupos }) {
+  return (
+    <div className="space-y-2 rounded-lg border border-slate-800 bg-slate-950/30 p-2.5">
+      <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">{titulo}</span>
+      <textarea
+        value={lado?.texto ?? ""}
+        onChange={(e) => onPatch({ texto: e.target.value })}
+        rows={3}
+        placeholder={`Descreva o ${titulo.toLowerCase()} do Voto.`}
+        className="w-full resize-y rounded-lg border border-slate-700 bg-slate-950/60 px-2.5 py-2 text-[12px] text-slate-100 placeholder:text-slate-600 focus:border-purple-600 focus:outline-none"
+      />
+      <TecnicaMotorEditor
+        efeitos={efeitos ?? lado?.efeitos ?? []}
+        onChange={(efeitos) => onPatch({ efeitos })}
+        titulo={`Motor de Automação do ${titulo} (opcional)`}
+        pericias={pericias}
+        fontesDano={fontesDano}
+        dslGrupos={dslGrupos}
+      />
+    </div>
+  );
+}
+
+/** Lista genérica de texto livre com efeito opcional no Motor. */
+function ListaComEfeitos({ itens, limite, onAdd, onRemove, onPatch, pericias, fontesDano, dslContexto, dslExtras }) {
   const bloqueado = limite != null && itens.length >= limite;
   return (
     <div className="space-y-2.5">
@@ -12416,8 +12725,7 @@ function PactoLista({ itens, limite, onAdd, onRemove, onPatch, pericias, fontesD
  * ["modificacoesCorporais"]` — ver `tabsDoSistema`). Mesmo espírito do Perfil
  * Amaldiçoado: uma Base (descrição + efeito, sempre ativa) e uma lista de
  * texto livre com efeito opcional (Enxertos), reaproveitando o mesmo
- * `PactoLista` de acima — a forma é idêntica, só o rótulo muda. O limite de
- * Enxertos é DIGITADO na ficha, sem fórmula.
+ * `ListaComEfeitos` de acima. O limite de Enxertos é digitado na ficha.
  */
 function TabModificacoesCorporais({ draft, derived, patchModificacoesCorporais, addEnxerto, removeEnxerto, patchEnxerto }) {
   const mc = draft.modificacoesCorporais ?? { descricao: "", efeitosBase: [], limite: 0, enxertos: [] };
@@ -12463,7 +12771,7 @@ function TabModificacoesCorporais({ draft, derived, patchModificacoesCorporais, 
           />
         </div>
       </div>
-      <PactoLista
+      <ListaComEfeitos
         itens={enxertos}
         limite={mc.limite}
         onAdd={addEnxerto}

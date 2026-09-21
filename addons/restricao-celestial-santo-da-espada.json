@@ -1,0 +1,25 @@
+{
+  "id": "restricao-celestial-santo-da-espada",
+  "nome": "Restrição Celestial - O Santo da Espada",
+  "versao": "1.0.0",
+  "autor": "Afty",
+  "paraRaw": "afty",
+  "descricao": "Insere automaticamente o Voto do Santo da Espada na primeira vaga de Voto Mecânico. Enquanto estiver dentro do limite de BT, o PE Máximo final é reduzido pela metade e os Feitiços Passivos da Técnica deixam de consumir PE Máximo.",
+  "votoAutomatico": {
+    "id": "santo_da_espada",
+    "nome": "Restrição Celestial - O Santo da Espada",
+    "narrativa": "A Técnica Herdada do Santo da Espada é dita como uma Benção dos Céus, porém, até mesmo bênçãos possuem seu custo para funcionar e manter as leis do mundo em vigor. Por conta disso, para manter tantas bênçãos ativas ao mesmo tempo, a energia do usuário do Santo da Espada é drasticamente reduzida, e nunca pode deixar seu corpo.",
+    "maleficio": {
+      "texto": "Ao invés do normal, você passa a receber metade do seu PE que receberia por qualquer fonte. Desde Especialização, Treinos, Raio Negro e etc.\n\nVocê é incapaz de usar sua Energia Amaldiçoada em Habilidades ou Aptidões que narrativamente sejam externas ao seu corpo. Como por exemplo, Expansões de Domínio, Domínio Simples, Cesta Oca de Vime, Feitiços de Dano e etc. Com a única exceção sendo Transferência de Aura, que só pode ser usada em um usuário dos Olhos de Agulha.",
+      "efeitos": []
+    },
+    "beneficio": {
+      "texto": "As habilidades passivas presentes na sua técnica não consomem PE Máximo.",
+      "efeitos": []
+    },
+    "regrasAfty": {
+      "multiplicadorPeMaximo": 0.5,
+      "passivasSemCustoPeMaximo": true
+    }
+  }
+}

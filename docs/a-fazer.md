@@ -36,6 +36,18 @@ arquivo md. Para outros colaboradores usarem ele também e ir anotando oq for pr
 
 Coisas paradas esperando decisão de regra. Nada aqui deve ser resolvido por suposição.
 
+### Sem Técnica - Liberto: seis leituras para confirmar
+**Onde:** `addons/sem-tecnica-liberto.json` (o pacote) e `asserts/t-liberto.mjs` (as expectativas)
+**Situação:** o pacote foi entregue em 2026-09-21 e funciona, mas o texto do autor deixou seis pontos abertos, e cada um saiu pela leitura abaixo. Todas são DADO do pacote, então trocar qualquer uma é editar o JSON e o assert, sem código.
+1. **Conta como Sem Técnica para Talento de Origem.** O Liberto alcança Estudo de Aptidão e Noção e Preparação, porque o `variacaoDe` o qualifica como a mãe.
+2. **Restrições copiadas do Sem Técnica.** O texto não as repete: sem Feitiços (vem da mãe) e sem Especialista em Técnicas (`especializacoesVetadas`, escrito no pacote).
+3. **"Técnica de estilo adicional" (10 e 15) é vaga EXCLUSIVA de Técnica de Estilo** (`vagasEstilo`), que não serve para Feitiço nem Habilidade Geral.
+4. **"Alcance" do Domínio Simples (19) é a área**, o canal `areaDominioSimples`, que soma no raio. O Domínio Simples do Afty não tem outro número de alcance.
+5. **Nível 3, "+2 em 1 perícia ou TR", é UMA escolha** entre as perícias e os cinco TRs, sem jogada de ataque.
+6. **As listas de perícia deixam de fora as complementares** (Direção, Sobrevivência, Teologia), o mesmo recorte do Sem Técnica do livro. Vale para os bônus e para a troca de atributo do Inquebrável.
+**Precisa:** confirmação do autor, ou a leitura certa de cada item.
+**Anotado:** 2026-09-21, na entrega do pacote
+
 ### A escada do desarmado básico vale Nível de Dano na criatura?
 **Onde:** `src/systems/afty/afty-efeitos-conteudo.js` (as linhas `(escada)` do Corpo Treinado e das Armas Naturais) e `afty-niveis-dano.js` (`DESARMADO_BASE`)
 **Situação:** na criatura o dado do desarmado não existe, e a escada do Corpo Treinado virou `nivelDano`
@@ -1171,9 +1183,9 @@ aptidão nomeada, e não existe canal de redução de custo por aptidão.
 
 **Onde:** `src/systems/afty/afty-treinamentos.js`
 **Situação:** cada um espera um sistema inteiro, e não um canal:
-- **efeito de crítico** por grupo de arma e de pugilato (Manejo de Arma 3ª, Luta Completo).
-  A tabela de efeitos de crítico nunca foi enviada, e a palavra só aparece no texto destas
-  duas etapas.
+- **efeito de crítico** por grupo de arma e de pugilato (Manejo de Arma 3ª, Luta Completo e
+  o ramo de grupo do Talento Mestre das Armas). A escolha do grupo do Talento já fica salva e
+  mostra um aviso, mas a tabela de efeitos de crítico nunca foi enviada.
 - **dados de vida por descanso** (Resistência 2ª). A pilha de dados de vida não é modelada,
   e três itens do capítulo de Equipamentos já a citam na descrição.
 

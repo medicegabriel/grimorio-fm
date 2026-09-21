@@ -19,10 +19,35 @@ estilo de escrita e nas regras de colaboração. O que mais pega está repetido 
   definitiva dessas exceções continua em `docs/a-fazer.md`.
 - Pendência nova vai para `docs/a-fazer.md`, nunca só num `// TODO` no código. Ao resolver, apague
   a entrada e registre o que foi feito em `docs/afty-status.md` ou no guia da área.
+- Arredondamento no Afty é sempre para baixo (`Math.floor`), salvo quando o texto do livro manda
+  outro. Não é bug nem pergunta.
 - Texto de regra do livro é fiel à fonte. Regra ambígua ou faltando vira pergunta em
   `docs/a-fazer.md`, não suposição.
 - Aviso na tela usa o ícone `<AlertTriangle/>` do lucide, nunca o caractere U+26A0. O lint reprova
   esse caractere em JSX e em string dentro de `src/systems/afty/`, e o deixa livre em comentário.
+
+## Regras de UI do Afty
+
+O autor pediu cada uma destas mais de uma vez. A skill `frontend-design` só roda sob pedido, e fora
+dela vale esta lista.
+
+- Rótulos, chips e toggles em Title Case, com conectores curtos em minúscula ("Nível do Efeito",
+  "Tipos de Dano Extras").
+- Texto de tela sem travessão e sem ponto e vírgula. Vírgula, dois-pontos e parênteses servem.
+- Nada de texto explicativo solto no criador: não acrescente `hint`, memória de cálculo cinza nem
+  legenda ensinando regra. A tela mostra o resultado e os avisos em âmbar de problema real. A
+  descrição de catálogo de suplemento vai no hover com `DicaDeTexto` (`ui/fontes.jsx`), nunca no
+  `title` nativo.
+- Todo número derivado mostra de onde vem: stat novo no `deriveAfty` sai com `partes` junto do
+  valor, e o hover (`PainelDeFontes`) lê essas partes. Parcela vinda do Motor leva o nome da
+  Habilidade, Talento ou treino que a gerou.
+- Cápsula de raio total (`.afty-chip`) só em rótulo curto de valor fixo. Condição escrita em frase
+  sai como texto puro (`afty-rotulo`).
+- `src/index.css` é global, compartilhado com a 2.5.2 e escrito fora de `@layer`, então `h1`,
+  `h2`, `p` e `code` vencem qualquer utilidade do Tailwind 4. Tamanho ou margem que "não obedece"
+  se resolve com o sufixo `!` (`m-0!`), nunca editando o `index.css`.
+- Campo de texto livre é marcação (`afty-texto-rico.js`, desenhada por `ui/TextoRico.jsx`), nunca
+  HTML nem `dangerouslySetInnerHTML`: a ficha viaja no export e a Ficha Final aceita CSS do usuário.
 
 ## Comandos
 
@@ -33,6 +58,7 @@ npm run dev       # Vite em http://localhost:5173
 npm run build     # produção (o vite.config força NODE_ENV=production por causa da Vercel)
 npm run lint
 npm run asserts   # a suíte de lógica
+npm run preview   # serve o dist/ do build de produção
 ```
 
 ### Asserts
@@ -52,8 +78,8 @@ node asserts/t-addons.mjs       # um só, o caminho mais rápido enquanto se mex
   `t-invocacoes-motor.mjs` falha em *"a Livre com Motor custa 1 PE, como toda Característica"*,
   porque a cota base de Ações e Características deixou de custar PE em 2026-09-14. É uma PERGUNTA
   AO AUTOR aberta em `docs/a-fazer.md`, esperando decisão de regra. **Não conserte por conta
-  própria**: os dois consertos possíveis apontam para lados opostos, e escolher é do autor. Os
-  outros 98 arquivos passam.
+  própria**: os dois consertos possíveis apontam para lados opostos, e escolher é do autor. Todo o
+  resto passa.
 - `node asserts/t-ordem-modulos.mjs` sozinho pega quase todo acidente de import, em segundos. É
   obrigatório em qualquer mudança de `import`.
 - O lançador roda cada arquivo em processo próprio porque eles reescrevem os catálogos globais com
@@ -65,7 +91,7 @@ node asserts/t-addons.mjs       # um só, o caminho mais rápido enquanto se mex
 - Assert novo segue o padrão dos vizinhos: `register()` com o shim de extensão no topo, depois
   `t(nome, real, esperado)` comparando `JSON.stringify`. Nenhum deles escreve nada. O contrato está
   em `asserts/LEIA.md`, que também traz a tabela do que cada arquivo cobre. ⚠ As CONTAGENS daquele
-  arquivo estão velhas (ele diz 62 arquivos, hoje são 99); a tabela continua boa.
+  arquivo estão velhas (ele diz 62 arquivos, e a pasta já passou de cem); a tabela continua boa.
 - Todo arquivo importa `afty-derive.js` PRIMEIRO. Começar por `afty-habilidades.js` estoura o ciclo
   de `afty-combate.js`.
 - A pasta fica fora de `src/` e usa `.mjs` de propósito: nem o `vite build` nem o `eslint .` a
@@ -87,6 +113,10 @@ npx eslint src/systems/afty
 Depois de editar arquivo pesado (`AftyCreatureBuilder.jsx`, `afty-schema.js`), um
 `Cannot access 'X' before initialization` no console pode ser fantasma de HMR: mate o processo do
 Vite e suba de novo antes de acreditar no erro.
+
+**Lentidão nunca se mede no `npm run dev`.** Lá a mesma ficha custa de 10x a 20x mais JS, e o
+perfil aponta para o Motor (`reavaliarUnica`, `aplicarEfeitos`) sem que ele seja o problema. Meça
+com `npm run build` seguido de `npm run preview`.
 
 Para conferência automática de tela existe `.audit/`, um punhado de scripts Playwright soltos
 (o Playwright está instalado mas não consta do `package.json`). Com o `dev` de pé em outro
@@ -118,8 +148,11 @@ rotas, o combatente guarda a ficha inteira, e a mesma tela renderiza fichas dos 
 mesmo tempo. Um contexto global preso à rota daria a resposta errada para metade da lista, e daria
 calada. Por isso `deriveAfty(creature)` não recebe parâmetro de sistema.
 
-Quando o comportamento precisa divergir entre os dois, use `regraDo(sistema, chave)` e registre a
-linha na tabela `DIVERGENCIAS` de `afty-sistema.js`. O `asserts/t-sistema.mjs` falha no dia em que
+Como o código é um só, toda mudança em `src/systems/afty/` pega os dois sistemas por padrão, sem
+sintoma. **Antes de editar, pergunte ao autor se a mudança vale para a criatura e para o
+personagem, ou só para um.** Quando o comportamento precisa divergir entre os dois, use
+`regraDo(sistema, chave)` e registre a linha na tabela `DIVERGENCIAS` de `afty-sistema.js`, nunca
+um `if` solto no meio do cálculo. O `asserts/t-sistema.mjs` falha no dia em que
 a lista muda sem aviso.
 
 As duas portas de fronteira entre os livros ficam no `src/App.jsx`: a de ENTRADA (o importador do

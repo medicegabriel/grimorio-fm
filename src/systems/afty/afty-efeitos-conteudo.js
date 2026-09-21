@@ -1899,7 +1899,7 @@ export const APICE_EFEITOS = {
 };
 
 /* ============================================================ */
-/* TALENTOS (51)                                                 */
+/* TALENTOS (52)                                                 */
 /* ============================================================ */
 /* Talento não pertence a classe nenhuma, então o nível que os degraus leem é o
    ND (`nd`), e nunca `esc_<espec>`. Vários deles têm escolha aninhada, e essa
@@ -1953,15 +1953,6 @@ export const TALENTO_EFEITOS = {
     { canal: "bonusTR", alvo: "reflexos", expr: "rd_escudo" },
   ],
 
-  // "Caso o alvo seja empurrado com sucesso, ele recebe Xd6 + seu Modificador
-  // de Força de dano de impacto, onde X é igual ao seu Modificador de Força."
-  // 1d6 = 3. "aumentar a distância em 4,5 metros ou a derrubar" é escolha de
-  // uso e não soma no empurrão padrão.
-  tal_tecnicas_ofensivas_de_escudo: [
-    { canal: "danoBonus", quando: "golpe_escudo",
-      expr: "3 * mod_forca + mod_forca", duracao: "temporaria" },
-  ],
-
   // O texto do livro permanece na descrição do Talento. Decisão do autor
   // (2026-09-14): Faixas permitem Adepto de Briga, mas os outros itens do
   // grupo Pugilato, como Manoplas e Soco Inglês, desligam os dois bônus.
@@ -1985,16 +1976,14 @@ export const TALENTO_EFEITOS = {
 
   // "Sempre que causar Dano de Impacto em um ataque corpo a corpo, ele é
   // aumentado em um nível." O empurrão de 3 metros é por turno e fica na mesa.
-  // ⚠ `tipo:im` pega TODA arma de impacto, inclusive a de arremesso: o recorte
-  // "corpo a corpo" não dá para somar ao escopo de tipo.
   tal_especialista_em_concussao: [
-    { canal: "nivelDano", alvo: "tipo:im", expr: "1" },
+    { canal: "nivelDano", alvo: "atq_tipo:corpo:im", expr: "1" },
   ],
   tal_especialista_em_cortes: [
-    { canal: "nivelDano", alvo: "tipo:ct", expr: "1" },
+    { canal: "nivelDano", alvo: "atq_tipo:corpo:ct", expr: "1" },
   ],
   tal_especialista_em_perfuracao: [
-    { canal: "nivelDano", alvo: "tipo:pf", expr: "1" },
+    { canal: "nivelDano", alvo: "atq_tipo:corpo:pf", expr: "1" },
   ],
 
   // "Toda arma de arremesso que você utilizar tem o seu dano aumentado em um

@@ -1,5 +1,146 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-09-21: SEM TÉCNICA - LIBERTO E O VERBO `variacaoDe`
+
+Pedido do autor: um Addon para "essa variação de Sem Técnica, chamado Sem Técnica - Liberto".
+Entregue em `addons/sem-tecnica-liberto.json`: Bônus em Atributo (4 pontos, até 3 no mesmo),
+Inquebrável (TR de Vontade treinado e troca do atributo de uma perícia, pelo mesmo
+`trocaAtributoPericia` do Flugel) e Caminho até o Fim, com cada degrau no nível do texto: Talento ou
+Aptidão no 1, +2 em perícia ou TR no 3, Estilo e Domínio Simples no 4, Habilidade de Especialização
+no 6, Técnica de Estilo no 10 e no 15, +5 em perícia no 13, +3 em perícia e +2 em ataque ou TR no
+17, e +3,5 m no Domínio Simples no 19.
+
+O muro foi o id. A origem de Addon nasce `sem-tecnica-liberto:liberto`, e cinco travas comparavam
+com o literal `"sem_tecnica"`: sem o verbo, o Liberto teria Feitiços, não teria Estilo e não
+alcançaria os Talentos de Origem. Nasceu `variacaoDe` na origem, lido por `origemMae` em
+`afty-origens.js`, e as cinco travas passaram por ele (estrutura, qualificação, Verdadeiras
+Origens, Estilo e Feitiços no derive, leiaute da aba Habilidades). Herda a identidade e não o
+conteúdo, e só aceita o Sem Técnica como mãe, porque as outras origens têm travas literais
+espalhadas. Desenho completo no fim da seção 15 de `afty-addons.md`.
+
+De brinde, o `coletarEfeitosOrigem` passou a deixar o `nome` do efeito de uma opção vencer o nome
+da opção, para o hover dizer "Caminho até o Fim (Percepção)" e não só "Percepção".
+
+Seis leituras do texto ficaram como pergunta em `a-fazer.md`, e todas são dado do pacote.
+
+Verificação: `t-liberto.mjs` com 66 asserts, e a mutação sem `variacaoDe` derruba exatamente os 11
+das travas. Suíte completa em 103 de 104 arquivos, com a mesma falha preexistente de
+`t-invocacoes-motor.mjs`. `npx eslint src/systems/afty` limpo, build de produção de pé, e o
+navegador conferido em `/player` e `/afty` com uma ficha de Nível 19: card de Origem com as
+escolhas, aba Habilidades com Estilo das Sombras e sem Feitiços, Domínio Simples com 5 m.
+
+### O pull dos 9 commits do Arthur, e as duas isenções de Passiva juntadas
+
+O `main` local estava 9 commits atrás (Quimera, Maldição como tipo de invocação, Simuriano
+Deskunte, Consumir Cinzas, Vida Dobrada) e foi adiantado a pedido do autor, sem stash: backup em
+`stash@{0}` "antes do pull 2026-09-21", merge de três vias por arquivo e `git reset -q origin/main`.
+Cinco arquivos com mudança dos dois lados fundiram sozinhos depois de tirar o `\r`.
+
+Três conflitavam de verdade (`afty-derive.js`, `afty-feiticos.js`, `AftyCreatureBuilder.jsx`),
+porque os dois lados fizeram a mesma coisa em paralelo: isentar TODA Passiva do PE Máximo. O local
+pelo `regrasAfty.passivasSemCustoPeMaximo` (Regras Grimorio, Santo da Espada, Votos) e o remoto pelo
+canal `passivaSemCusto` (Vida Dobrada). A resolução não escolheu um: as DUAS portas valem.
+
+- `passivasIsentas` no `deriveAfty` é a resposta única, verdadeira se qualquer porta abrir. O
+  hover do PE com as fontes do `regrasAfty` continuou.
+- `peMaximoDasPassivas` ficou com o parâmetro `isenta` do remoto.
+- `passivasIsentasNoCtx` em `afty-feiticos.js` aceita as duas chaves de ctx, porque o
+  `t-santo-espada-regras-grimorio.mjs` passa só `passivasSemCustoPeMaximo` e o
+  `t-vida-passivas.mjs` passa só `passivasIsentas`.
+- O texto "Sem custo de PE máx." do criador e o card de Olhos de Agulha passaram a ler
+  `passivasIsentas`, senão a Vida Dobrada zerava o custo e o card continuava dizendo que cobrava.
+
+Conferido: ficha de jogador com uma Passiva de Nível 2 perde 4 de PE sem Addon e zero com Regras
+Grimorio, com Vida Dobrada ou com os dois. Suíte em 107 de 108 arquivos, com a falha de sempre de
+`t-invocacoes-motor.mjs`, eslint do Afty limpo e build de pé.
+
+## SESSÃO DE 2026-09-20: SANTO DA ESPADA E REGRAS GRIMORIO
+
+Dois pacotes importáveis foram adicionados em `addons/`:
+
+- `restricao-celestial-santo-da-espada.json` insere o Voto Mecânico do Santo da
+  Espada automaticamente na primeira posição. Ele ocupa uma vaga do BT, reduz
+  o PE Máximo final pela metade e isenta somente Feitiços Passivos do custo de
+  PE Máximo. A proibição de efeitos externos ao corpo permanece narrativa.
+- `regras-grimorio.json` dobra o PV final, mantém a Integridade da Alma no valor
+  anterior e faz fontes proporcionais ao PV, como Símbolo de Vida Absoluta,
+  consultarem o valor anterior à dobra. Também isenta Feitiços Passivos. Quando
+  usado com o Santo da Espada, cancela somente a redução de PE pela metade.
+
+O formato de Addon agora aceita `votoAutomatico` e `regrasAfty`. O primeiro é
+materializado ao ligar ou abrir a ficha e permanece na primeira posição. O
+segundo declara multiplicadores finais e isenções validadas, sem executar código
+do pacote. Um Voto automático não pode ser removido enquanto seu Addon estiver
+ativo. Desligar o Addon preserva a cópia editada, mas desativa sua regra especial.
+
+Regressões: `t-santo-espada-regras-grimorio.mjs` cobre 29 casos de validação,
+inserção, limite por BT, PE, Passivas, interação dos pacotes, PV, Integridade e
+Símbolo de Vida Absoluta. As regressões focadas de Votos, Olhos de Agulha e Alma
+do Jogador passaram, assim como o build de produção. A suíte completa passou em
+102 de 103 arquivos e manteve somente a falha preexistente de custo da
+Característica Livre em `t-invocacoes-motor.mjs`.
+
+## SESSÃO DE 2026-09-20: VOTOS NATIVOS
+
+A Ficha de Jogador e o Grimório Afty agora têm a aba permanente **Votos** em
+**Outros**, imediatamente acima de **Addons**. O recurso é opcional e começa
+vazio.
+
+- **Votos Contratuais:** lista sem limite, somente com texto narrativo e sem
+  automação.
+- **Votos Mecânicos:** a quantidade ativa é igual ao BT da ficha. Cada entrada
+  tem nome, narrativa, Benefício e Malefício.
+- **Motor de Automação:** Benefício e Malefício têm seus próprios textos e
+  usam o mesmo editor completo do Funcionamento Básico, em largura total, com
+  canal, alvo, expressão, condição, duração, prévia e seletor de variáveis. Os
+  efeitos ativos entram no montante geral e acumulam com as outras fontes.
+- **Queda de BT:** uma entrada que ficar acima do novo limite continua salva e
+  editável, mas sua automação fica inativa até voltar a caber no BT.
+- **Compatibilidade:** o antigo `pacto` de uma ficha é convertido em um Voto
+  Mecânico. O campo de addon `pactoPadrao` também pode oferecer um modelo para
+  copiar, mas não libera nem controla a aba.
+
+Regressões: `t-votos.mjs` cobre 25 casos de schema, limite por BT, Votos
+Contratuais ilimitados, Benefício, Malefício, Motor completo e migração. O build de
+produção e a análise estática dos arquivos alterados passaram. A suíte completa
+manteve a única falha preexistente de custo da Característica Livre em
+`t-invocacoes-motor.mjs`; todos os outros arquivos, inclusive Votos, passaram.
+
+## SESSÃO DE 2026-09-19: REVISÃO DOS 52 TALENTOS
+
+A varredura confirmou os 52 Talentos do catálogo. Depois das correções desta sessão, a
+classificação funcional ficou em 12 completos, 19 parciais e 21 de procedimento de mesa. A
+contagem separa automação integral, automação de apenas parte do texto e regras que não têm um
+resultado persistente ou numérico para o motor aplicar.
+
+Correções fechadas:
+
+- O limite de dois Adeptos agora exclui o próprio Talento durante a reavaliação final. Dois
+  Adeptos continuam válidos e apenas o terceiro é bloqueado.
+- Especialista em Concussão, Cortes e Perfuração usa um escopo composto de ataque corpo a corpo
+  e tipo de dano. O bônus não alcança mais armas à distância ou linhas Amaldiçoadas.
+- Técnicas Ofensivas de Escudo cria a linha própria Empurrão com Escudo somente com escudo
+  equipado. Ela rola `Xd6 + Modificador de Força`, sem acerto nem crítico, e não soma dano em
+  ataques sem relação com o uso.
+- Adepto de Feitiçaria verifica a existência de Feitiços, oferece uma Mudança de Fundamento sem
+  Feitiço Rápido e ganhou contador das reduções usadas por cena.
+- Quebra de Limites remove das opções todo atributo empatado no maior limite antes de aceitar as
+  duas escolhas.
+- Mestre das Armas salva quatro armas e concede treino nelas. O ramo de crítico salva o grupo,
+  mas continua sem efeito porque a tabela de críticos ainda não foi fornecida.
+- Tempestade de Ideias salva e concede a perícia e a ferramenta treinadas, salva a perícia da
+  vantagem e rastreia os usos por descanso curto.
+- Artesão Amaldiçoado concede Ofício (Ferreiro) ou Ofício (Canalizador). Se a ficha já estiver
+  treinada nos dois, a escolha sobe para Mestre.
+
+Também foram corrigidos os contextos da reavaliação final de Talentos de Origem, nível, clã e
+Feitiços, que agora usam as mesmas informações do card do criador.
+
+Regressões: `t-talentos.mjs` passou de 27 para 37 verificações. As suítes
+`t-requisitos-treino.mjs` (37) e `t-requisitos-ficha.mjs` (33) continuam verdes.
+O build de produção passou. A suíte completa ficou em 100 de 101 arquivos, com apenas a falha
+preexistente de custo da Característica Livre em `t-invocacoes-motor.mjs`.
+
 ## SESSÃO DE 2026-09-17 (parte 6): A ABA DE COMBATE DIVIDIDA POR PAPEL
 
 Autor: *"Técnica | Especialização 1 | Especialização 2 | Aptidões | Interlúdio

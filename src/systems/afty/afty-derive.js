@@ -43,13 +43,14 @@ import {
   resolveOrigemAttrBonus, resolveDesenvolvimento, resolveEscolhasOrigem,
   limiteAtributoDaOrigem, resolveLimitePoolOrigem, origensQualificadas,
   fatorSlotsHabilidade, aptidoesConcedidasPelaOrigem, caracteristicasEfetivas,
-  atributosDePericiaDaOrigem,
+  atributosDePericiaDaOrigem, origemMae,
 } from "./afty-origens";
 import {
   efeitosDeTreino, vagasEncantamentoDeTreino, atributosDePericiaDeTreino, gatilhosDeTreino,
   efeitosInvocacaoDeTreino, linhasComEscolhaFeiticos,
 } from "./afty-treinamentos";
-import { efeitosDePacto } from "./afty-pacto";
+import { efeitosDeVotos, regrasAftyDeVotosAtivos, votosDaFicha } from "./afty-votos";
+import { regrasAftyDaCriatura } from "./afty-regras-addon";
 import { efeitosDeModificacoesCorporais } from "./afty-modificacoes-corporais";
 import { efeitosDeTreinoEspecial } from "./afty-treinos-especiais";
 import { resolveNiveisAptidao, trilhasDaCriatura, getAptidao, AFTY_APTIDOES } from "./afty-aptidoes";
@@ -74,7 +75,7 @@ import {
 } from "./afty-habilidades";
 import {
   resolveTalentos, resolveTreinoEscudo, getTalento, OPCAO_TALENTO_NOME, AFTY_TALENTOS,
-  avaliarAcessoTalento,
+  avaliarAcessoTalento, efeitosDeTalentosConfigurados,
 } from "./afty-talentos";
 import {
   resolveAltoNivel, getMelhoriaSuperior, getHabilidadeLendaria, getHabilidadeApice,
@@ -113,6 +114,7 @@ import { resolveCatarse } from "./afty-catarse";
 import { resolveCarteira } from "./afty-carteira";
 import { atributosDosAddons } from "./afty-addons-atributos";
 import { resolveCura } from "./afty-cura";
+import { comFormulasDeDano } from "./afty-dano";
 import {
   problemasDeAddon, marcasDeclaradas, primitivasDaCriatura, liberacoesDaCriatura, precosDeCatarse,
   nivelDaFicha, aptidoesConcedidasPorAddon, substituicaoEnergiaReversaPorAddon,
@@ -465,6 +467,10 @@ export function deriveAfty(creature, opcoes = {}) {
   // efetivo. A CARGA não sai daqui, porque depende do mod de Força final.
   // BT antecipado só para as Cargas de Encantamento das Ferramentas (= BT).
   const bt = maestria(nd);                                          // Maestria == Treinamento
+  const regrasAddon = regrasAftyDaCriatura(creature);
+  const regrasVotos = regrasAftyDeVotosAtivos(creature, bt);
+  const passivasSemCustoPeMaximo = regrasAddon.passivasSemCustoPeMaximo
+    || regrasVotos.passivasSemCustoPeMaximo;
   // ⚠ Os dois abaixo leem a ficha CRUA, e não os catálogos já resolvidos, e é
   // por causa desta ordem: o equipamento é o primeiro passo, e Treinamentos e
   // Habilidades só são resolvidos bem mais abaixo. Nenhum dos dois depende de
@@ -513,6 +519,7 @@ export function deriveAfty(creature, opcoes = {}) {
         + (desenv[key] || 0) + (limPool[key] || 0),
       ATTR_LIMITE_MAX,
     );
+  const limitesAtributoBase = Object.fromEntries(ATTR_KEYS.map((key) => [key, limiteBaseOf(key)]));
 
   // Atributo EFETIVO = base + nível + Desenvolvimento + bônus de origem.
   // Atributos de ORIGEM NÃO passam o limite (salvo os que digam explicitamente — TODO).
@@ -656,12 +663,12 @@ export function deriveAfty(creature, opcoes = {}) {
          blocos de benefício leem `cl` e um estado de combate, e nenhum dos dois
          existe ainda aqui: eles entram no bolo comum, mais abaixo. */
       ...efeitosVislumbre.filter((e) => e.canal === "pontosAptidao"),
-      /* ⚠ MESMA NOTA DA CATARSE, LOGO ACIMA: o Pacto emite QUALQUER canal (é o
-         Motor na mão do jogador, um Malefício ou Benefício por vez) e NENHUMA
-         linha leva `exclusivo` — acumular com qualquer fonte é a regra que o
-         autor pediu. Ver afty-pacto.js. */
-      ...efeitosDePacto(creature),
-      /* ⚠ MESMA NOTA DO PACTO, LOGO ACIMA: Modificações Corporais também não
+      /* Votos Mecânicos emitem qualquer canal pelo mesmo Motor das outras
+         fontes de texto livre. A quantidade ativa é o BT, e nenhuma linha
+         leva `exclusivo`, então Benefícios e Malefícios acumulam normalmente.
+         Ver afty-votos.js. */
+      ...efeitosDeVotos(creature, bt),
+      /* Modificações Corporais também não
          leva `exclusivo` em nenhuma linha — "capaz de acumular com
          Habilidades" é a regra que o autor pediu. Ver
          afty-modificacoes-corporais.js. */
@@ -720,6 +727,8 @@ export function deriveAfty(creature, opcoes = {}) {
     nd, maestria: bt, attrEff: attrBase, origemId, origensQualificadas: origensQuali,
     claId: creature?.core?.origem?.cla ?? null,
     especializacoes: especializacoes.escolhidas, aptidoes: aptidoesIds,
+    feiticos: creature?.feiticos,
+    limitesAtributo: limitesAtributoBase,
     concedidos: concedido.talentos,
   });
   /* ============================================================ */
@@ -880,7 +889,12 @@ export function deriveAfty(creature, opcoes = {}) {
          "Lutador tem Treinamento em Armas Simples. Logo, sempre que usando uma
          Arma Simples ele é considerado como Treinado" (autor, 2026-08-30).
          Arma fora do treino continua utilizável e só não soma o BT. */
-      treinada: armaTreinadaPor(e.def, treinamentosEquipamento.armas),
+      treinada: armaTreinadaPor(e.def, treinamentosEquipamento.armas)
+        || (
+          talentosPre.escolhidas.includes("tal_mestre_das_armas")
+          && creature?.talentosConfig?.tal_mestre_das_armas?.modo === "armas"
+          && (creature?.talentosConfig?.tal_mestre_das_armas?.armas ?? []).includes(e.def.id)
+        ),
       // Categoria e grupo alimentam os escopos de alvo (`cat:arremesso`,
       // `grupo:espada`), que é como o Combatente mira classes de arma inteiras.
       categoria: e.def.categoria ?? null,
@@ -964,6 +978,7 @@ export function deriveAfty(creature, opcoes = {}) {
     // Direcionados por uma escolha que mora FORA do card da habilidade (a
     // marcação na linha de dano). Mesmo padrão do efeitosDeTreino.
     ...efeitosArmasDedicadas(dedicadas, habilidades.efetivas.includes("lut_um_com_a_arma")),
+    ...efeitosDeTalentosConfigurados(creature),
     // Funcionamento Básico da técnica: os únicos efeitos ESCRITOS pelo jogador,
     // porque a técnica é única no mundo e nenhum catálogo a cobre. Entram no
     // mesmo bolo, e os filtros de estágio abaixo roteiam pelo canal.
@@ -1170,7 +1185,9 @@ export function deriveAfty(creature, opcoes = {}) {
   // isso não dependem do `resolveCombate` lá embaixo: a linha é estática e o
   // valor só é lido quando as expressões rodam, com o contexto já montado.
   const estiloCtx = {
-    origemId: core?.origem?.id ?? null,
+    // A MÃE, e não a origem gravada: o Liberto (variação de Addon) tem o Estilo
+    // porque é um Sem Técnica. Ver `origemMae`.
+    origemId: origemMae(core?.origem?.id ?? null),
     nd,
     dom: aptidao.efetivo?.dom ?? 0,
     // Addon com `libera: ["estiloSombras"]` solta a trava de ORIGEM. O piso de
@@ -1379,6 +1396,8 @@ export function deriveAfty(creature, opcoes = {}) {
     // "gastar pontos de energia amaldiçoada igual a metade do seu bônus de
     // treinamento". O teto do contador é quanto ele pode gastar de uma vez.
     conhecimentoAplicado: Math.floor(bt / 2),
+    adeptoFeiticariaReducoesUsadas: bt,
+    tempestadeIdeiasUsos: Math.floor(bt / 2),
     // Interruptores que vêm da FICHA, e não do catálogo de estados, porque são
     // instâncias: uma por Habilidade Única ativa, e uma por Técnica de Estilo
     // que precisa de gatilho (toda Modificação de Domínio Simples, mais a
@@ -1596,6 +1615,8 @@ export function deriveAfty(creature, opcoes = {}) {
     nd, maestria: bt, attrEff: attrPermanente, origemId, origensQualificadas: origensQuali,
     claId: creature?.core?.origem?.cla ?? null,
     especializacoes: especializacoes.escolhidas, aptidoes: aptidoesIds,
+    feiticos: creature?.feiticos,
+    limitesAtributo: limitesAtributoBase,
     concedidos: concedido.talentos,
   });
 
@@ -1947,6 +1968,20 @@ export function deriveAfty(creature, opcoes = {}) {
       .filter((f) => f?.tipo === "passivo")
       .map((f) => [f.id, resolverEfeitosEditaveis(f.efeitosPassivo)]),
   );
+  // O editor dos Votos usa o mesmo formato resolvido do Funcionamento Básico:
+  // tipo de alvo, valor atual, condição e duração. Entradas acima do BT ficam
+  // visíveis para edição, mas a prévia as marca como inativas junto do motor.
+  const votosEfeitos = Object.fromEntries(
+    votosDaFicha(creature).mecanicos.map((voto, indice) => {
+      const dentroDoBt = indice < bt;
+      const resolverLado = (lado) => resolverEfeitosEditaveis(lado?.efeitos)
+        .map((efeito) => (dentroDoBt ? efeito : { ...efeito, ativo: false }));
+      return [voto.id, {
+        beneficio: resolverLado(voto.beneficio),
+        maleficio: resolverLado(voto.maleficio),
+      }];
+    }),
+  );
   // Um mapa por Técnica de Estilo ESPECIAL, no mesmo formato: o editor do Motor
   // mostra o valor e o estado de cada linha escrita à mão. As de tabela não
   // entram, porque a expressão delas é do catálogo e não é editável.
@@ -2078,10 +2113,13 @@ export function deriveAfty(creature, opcoes = {}) {
 
      Sem `opcoes.almaAtual` nada muda, que é a mesma promessa do `almaMult`: o
      criador monta a ficha com a alma íntegra e nunca vê este ramo. */
-  const hp = almaPilha && opcoes.almaAtual != null
+  const hpAntesMultiplicador = almaPilha && opcoes.almaAtual != null
     ? Math.min(almaAtualDsl, hpCheio)
     : hpCheio;
-  const danoNaAlma = hpCheio - hp;
+  /* Multiplicadores finais de Addon não mudam a Integridade nem viram base para
+     efeitos que consultam o PV máximo. Eles alteram somente o PV resultante. */
+  const hp = Math.round(hpAntesMultiplicador * regrasAddon.multiplicadorPvFinal);
+  const danoNaAlma = hpCheio - hpAntesMultiplicador;
   // O máximo do Player só é conhecido depois do PV. Os estados da Alma usam
   // a fração atual desse máximo, inclusive quando o máximo da criatura passa de 100.
   const efeitosAlma = efeitosDaAlmaAtual(
@@ -2134,14 +2172,26 @@ export function deriveAfty(creature, opcoes = {}) {
      dobro do nível não precisa do Feitiço calculado.
 
      Só na Ficha de Jogador. Ver a divergência `passivaCustaPeMaximo`. */
-  /* O sinalizador `passivaSemCusto` (primitiva `pvEPassivas`) isenta TODA Passiva
-     do PE Máximo. Lido do canal, então vale de qualquer fonte de Motor. */
-  const passivasIsentas = canal("passivaSemCusto") > 0;
-  const passivasNoPe = peMaximoDasPassivas(creature?.feiticos, sistema, { isenta: passivasIsentas });
+  const passivasNoPeBrutas = peMaximoDasPassivas(creature?.feiticos, sistema);
+  /* ⚠ DUAS PORTAS PARA A MESMA ISENÇÃO, juntadas no pull de 2026-09-21. Elas
+     nasceram em paralelo e fazem a mesma coisa: o `regrasAfty` de Addon ou de
+     Voto (`passivasSemCustoPeMaximo`, Regras Grimorio e Santo da Espada) e o
+     canal `passivaSemCusto` do Motor (primitiva `pvEPassivas`, Vida Dobrada).
+     Qualquer uma isenta TODA Passiva do PE Máximo, e `passivasIsentas` é a
+     resposta única que o resto do código lê. */
+  const passivasIsentas = passivasSemCustoPeMaximo || canal("passivaSemCusto") > 0;
+  const passivasNoPe = passivasIsentas
+    ? { total: 0, linhas: [] }
+    : passivasNoPeBrutas;
   /* ⚠ SEM PISO, de propósito (autor, 2026-09-09). Passivas caras podem levar o
      PE Máximo abaixo de zero e o criador mostra o número como ele é. Quem apara
      é a pilha CORRENTE da sessão, que é outra coisa e já tinha piso zero. */
-  const pe = peBase + peQntEfetivo + modTecnicaNoPE + canal("pe") - passivasNoPe.total;
+  const peAntesMultiplicador = peBase + peQntEfetivo + modTecnicaNoPE + canal("pe") - passivasNoPe.total;
+  const multiplicadorPeDosVotos = regrasAddon.ignoraMultiplicadorPeMaximoDeVotos
+    ? 1
+    : regrasVotos.multiplicadorPeMaximo;
+  const multiplicadorPeMaximo = regrasAddon.multiplicadorPeMaximo * multiplicadorPeDosVotos;
+  const pe = Math.floor(peAntesMultiplicador * multiplicadorPeMaximo);
 
   // ---------- Resistência Parcial ----------
   // Calamidade ganha +1 em ND 10, 20 e 30 (0 a 3).
@@ -2409,6 +2459,7 @@ export function deriveAfty(creature, opcoes = {}) {
     ritualAtual: opcoes.ritualAtual ?? null,
     rituaisSemTeste: opcoes.rituaisSemTeste ?? {},
     beneficiosRitualDominio,
+    passivasSemCustoPeMaximo,
     temEnergiaReversa: aptidoesIds.includes("energia_reversa"),
     invocacoes: Array.isArray(creature?.invocacoes) ? creature.invocacoes : [],
     vidaAtual: opcoes.vidaAtual ?? null,
@@ -2430,10 +2481,11 @@ export function deriveAfty(creature, opcoes = {}) {
     gastos: feiticosGastos,
     cdBase: cd,
     /* Os tipos que esta criatura pode criar, e se o card aparece. Vazio quer
-       dizer "não cria nenhum": é o Restringido e o Sem Técnica sem o Addon. */
-    tiposPermitidos: tiposFeiticoPermitidos(core?.origem?.id ?? null, feiticosLiberados),
+       dizer "não cria nenhum": é o Restringido e o Sem Técnica sem o Addon.
+       Pela MÃE, então a variação do Sem Técnica também não cria. */
+    tiposPermitidos: tiposFeiticoPermitidos(origemMae(core?.origem?.id ?? null), feiticosLiberados),
     liberado: feiticosLiberados,
-    mostraCard: mostraCardFeiticos(core?.origem?.id ?? null, {
+    mostraCard: mostraCardFeiticos(origemMae(core?.origem?.id ?? null), {
       liberado: feiticosLiberados,
       temFeiticos: feiticosLista.length > 0,
     }),
@@ -2750,6 +2802,33 @@ export function deriveAfty(creature, opcoes = {}) {
     modTecnica,
     cd,
   });
+  const temEscudoEquipado = equip.entradas.some((e) => e.tipo === "escudo" && e.equipado);
+  if (talentos.escolhidas.includes("tal_tecnicas_ofensivas_de_escudo") && temEscudoEquipado) {
+    const modForca = Math.trunc(Number(modByAttr.forca) || 0);
+    const dadosEscudo = Math.max(0, modForca);
+    const linhaEscudo = comFormulasDeDano({
+      id: "tal_tecnicas_ofensivas_de_escudo",
+      nome: "Empurrão com Escudo",
+      fonte: "talento",
+      tipoDano: "im",
+      tipoDanoLabel: TIPOS_DANO.im ?? "Impacto",
+      margemCritico: null,
+      gruposDano: [{
+        nome: "Técnicas Ofensivas de Escudo",
+        dados: dadosEscudo,
+        faces: 6,
+        fixo: modForca,
+        momento: "apos",
+        multiplica: false,
+        naPartes: true,
+      }],
+      partes: [
+        { label: "Técnicas Ofensivas de Escudo", texto: `${dadosEscudo}d6`, categoria: "naoCritavel" },
+        { label: "Modificador de Força", valor: modForca, categoria: "fixo" },
+      ],
+    });
+    dano = { ...dano, entradas: [...(dano.entradas ?? []), linhaEscudo] };
+  }
 
   // ---------- Cura (2026-08-03) ----------
   // Uma linha por FONTE, igual ao Dano, mas o número vem todo do Motor: cada
@@ -2766,7 +2845,7 @@ export function deriveAfty(creature, opcoes = {}) {
     aptidoes: aptidoesIds,
     habilidades: habilidades.efetivas,
     itens: equip.entradas,
-    hp,
+    hp: hpAntesMultiplicador,
     danoBasico: dano.entradas.find((e) => e.id === "basico") ?? null,
   });
 
@@ -3112,6 +3191,10 @@ export function deriveAfty(creature, opcoes = {}) {
          descontada do total já arredondado. Sem esta linha o jogador vê o PV
          máximo menor e não tem onde ler o motivo. */
       ...(danoNaAlma ? [{ label: "Dano na Alma", valor: -danoNaAlma }] : []),
+      ...regrasAddon.fontesMultiplicadorPvFinal.map((fonte) => ({
+        label: fonte.nome,
+        texto: `×${divTexto(fonte.valor)}`,
+      })),
     ],
     pe: [
       ...(pvPorClasse
@@ -3132,6 +3215,23 @@ export function deriveAfty(creature, opcoes = {}) {
          quanto sumiu e não de onde, e a ficha que tem quatro delas é justamente
          a que precisa saber qual sai caro. Mesma regra da `Fonte com nome`. */
       ...passivasNoPe.linhas.map((l) => ({ label: `${l.nome} (Passiva)`, valor: -l.custo })),
+      ...(passivasSemCustoPeMaximo && passivasNoPeBrutas.total
+        ? [...regrasAddon.fontesPassivasSemCusto, ...regrasVotos.fontesPassivasSemCusto]
+          .map((fonte) => ({ label: fonte.nome, texto: "Passivas sem custo de PE Máximo" }))
+        : []),
+      ...regrasAddon.fontesMultiplicadorPeMaximo.map((fonte) => ({
+        label: fonte.nome,
+        texto: `×${divTexto(fonte.valor)}`,
+      })),
+      ...(!regrasAddon.ignoraMultiplicadorPeMaximoDeVotos
+        ? regrasVotos.fontesMultiplicadorPeMaximo.map((fonte) => ({
+          label: fonte.nome,
+          texto: `×${divTexto(fonte.valor)}`,
+        }))
+        : regrasAddon.fontesIgnoraMultiplicadorPeVotos.map((fonte) => ({
+          label: fonte.nome,
+          texto: "ignora a redução de PE Máximo dos Votos",
+        }))),
     ],
     defesa: [
       { label: "Base", valor: 10 },
@@ -3379,6 +3479,10 @@ export function deriveAfty(creature, opcoes = {}) {
   /* O MESMO ctx que o criador monta. Se os dois divergirem, a Ficha volta a
      discordar da tela onde a escolha foi feita, que é o bug de origem. */
   const ctxRequisitos = {
+    nd,
+    origemId,
+    origensQualificadas: origensQuali,
+    claId: creature?.core?.origem?.cla ?? null,
     niveisPorEspec: habilidades.niveisPorEspec,
     escolhidas: habilidades.escolhidas,
     escolhasHabilidade: habilidades.escolhas?.mapa,
@@ -3388,6 +3492,8 @@ export function deriveAfty(creature, opcoes = {}) {
     periciaProf: periciaProfMapa,
     resistenciaProf: resistenciaProfMapa,
     periciaOficios: periciaOficiosMapa,
+    feiticos: creature?.feiticos,
+    limitesAtributo: limitesAtributoBase,
   };
   const habilidadesFinal = {
     ...habilidades,
@@ -3450,6 +3556,12 @@ export function deriveAfty(creature, opcoes = {}) {
        perguntar, e a lei do projeto é que o sistema venha da ficha e nunca da
        rota. Ver o cabeçalho de `afty-sistema.js`. */
     sistema,
+    regrasAfty: {
+      multiplicadorPeMaximo,
+      multiplicadorPvFinal: regrasAddon.multiplicadorPvFinal,
+      passivasSemCustoPeMaximo,
+      ignoraMultiplicadorPeMaximoDeVotos: regrasAddon.ignoraMultiplicadorPeMaximoDeVotos,
+    },
     almaMult,
     /* ⚠ O que sai é o `almaMaxFinal`: na criatura é `100 + Melhoria de Alma`, e
        no jogador é o PV, porque a Integridade da Alma dele é igual ao máximo de
@@ -3497,6 +3609,7 @@ export function deriveAfty(creature, opcoes = {}) {
     tecnicaEfeitos,       // Funcionamento Básico resolvido, para o editor mostrar o valor de cada linha
     funcionamentoEfeitos, // o mesmo, por Funcionamento Básico ADICIONAL, chaveado pelo id
     passivosEfeitos,      // Motor resolvido por Feitiço Passivo / Característica
+    votosEfeitos,         // Benefício e Malefício resolvidos pelo mesmo editor completo
     motorLinhaDano: { efeitos: efeitosLinhaDano, contexto: ctxTecnica },
     gerais,               // { escolhidas, gastos, ganhos, destravado, maxVezes, acesso, inacessiveis }
     efeitos: ef,          // Motor de Automação: { porCanal, porAlvo, detalhes, avisos }

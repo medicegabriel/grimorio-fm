@@ -7,6 +7,8 @@ import {
 export default function OlhosAgulhaCard({ derived, patchCore, addFeitico, updateFeitico, removeFeitico }) {
   const v = derived.olhosAgulha;
   if (!v?.tem) return null;
+  // As duas portas da isenção juntas (regrasAfty e o canal passivaSemCusto).
+  const passivasSemCusto = !!derived.passivasIsentas;
   const escolher = (h, nivel) => {
     if (!nivel) return removeFeitico(h.id);
     const modelo = modeloPassivaAgulha(h.id, nivel);
@@ -33,7 +35,11 @@ export default function OlhosAgulhaCard({ derived, patchCore, addFeitico, update
                 <span title={Object.values(h.textos).join("\n\n")}>{h.nome}</span>
                 <select aria-label={h.nome} value={h.nivel} onChange={(e) => escolher(h, Number(e.target.value))} className="bg-slate-950 border border-slate-700 rounded px-2 py-1">
                   <option value={0}>Não escolhida</option>
-                  {h.niveis.map((n) => <option key={n} value={n} disabled={n > v.nivelMax}>Nível {n} · −{n * 2} PE máx.</option>)}
+                  {h.niveis.map((n) => (
+                    <option key={n} value={n} disabled={n > v.nivelMax}>
+                      Nível {n} · {passivasSemCusto ? "sem custo de PE máx." : `−${n * 2} PE máx.`}
+                    </option>
+                  ))}
                 </select>
               </label>
               {h.nivel > v.nivelMax && <p className="text-amber-400 text-xs flex gap-1"><AlertTriangle size={14} />Requer liberação de Feitiço de nível {h.nivel}</p>}

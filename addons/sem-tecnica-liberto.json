@@ -1,0 +1,1145 @@
+{
+  "id": "sem-tecnica-liberto",
+  "nome": "Sem Técnica - Liberto",
+  "versao": "1.0.0",
+  "autor": "Afty",
+  "paraRaw": "afty",
+  "descricao": "Nova Origem: o Liberto, uma variação do Sem Técnica. Conta como Sem Técnica para o Novo Estilo da Sombra, para a trava de Feitiços e para os Talentos de Origem, com características próprias no lugar de Estudos Dedicados e Empenho Implacável.",
+  "acrescenta": {
+    "origens": [
+      {
+        "id": "liberto",
+        "nome": "Sem Técnica - Liberto",
+        "variacaoDe": "sem_tecnica",
+        "restricoes": [
+          "Sem técnica e sem acesso a Feitiços.",
+          "Não pode ter a especialização Especialista em Técnicas."
+        ],
+        "especializacoesVetadas": [
+          "conjurador"
+        ],
+        "efeitos": [
+          {
+            "canal": "proficienciaTR",
+            "alvo": "vontade",
+            "expr": "1",
+            "nome": "Inquebrável"
+          },
+          {
+            "canal": "vagasHabilidade",
+            "expr": "(nd >= 6)",
+            "nome": "Caminho até o Fim"
+          },
+          {
+            "canal": "vagasEstilo",
+            "expr": "(nd >= 10) + (nd >= 15)",
+            "nome": "Caminho até o Fim"
+          },
+          {
+            "canal": "areaDominioSimples",
+            "expr": "3.5 * (nd >= 19)",
+            "nome": "Caminho até o Fim"
+          }
+        ],
+        "caracteristicas": [
+          {
+            "id": "bonus_atributo",
+            "nome": "Bônus em Atributo",
+            "descricao": "Um Liberto recebe 4 pontos adicionais para distribuir entre seus atributos, com um máximo de 3 pontos no mesmo atributo.",
+            "bonus": {
+              "distribuir": 4,
+              "maxPorAtributo": 3
+            }
+          },
+          {
+            "id": "inquebravel",
+            "nome": "Inquebrável",
+            "descricao": "Dentre as dores e provações do caminho trilhado, você aprendeu a se manter firme diante a tempestade. Voce recebe treinado no TR de Vontade e pode trocar o atributo principal de uma pericia por outra",
+            "escolhas": [
+              {
+                "id": "lib_inq_pericia",
+                "label": "Perícia",
+                "vagas": 1,
+                "opcoes": [
+                  {
+                    "id": "lib_inq_per_acrobacia",
+                    "nome": "Acrobacia",
+                    "periciaId": "acrobacia"
+                  },
+                  {
+                    "id": "lib_inq_per_atletismo",
+                    "nome": "Atletismo",
+                    "periciaId": "atletismo"
+                  },
+                  {
+                    "id": "lib_inq_per_enganacao",
+                    "nome": "Enganação",
+                    "periciaId": "enganacao"
+                  },
+                  {
+                    "id": "lib_inq_per_feiticaria",
+                    "nome": "Feitiçaria",
+                    "periciaId": "feiticaria"
+                  },
+                  {
+                    "id": "lib_inq_per_furtividade",
+                    "nome": "Furtividade",
+                    "periciaId": "furtividade"
+                  },
+                  {
+                    "id": "lib_inq_per_historia",
+                    "nome": "História",
+                    "periciaId": "historia"
+                  },
+                  {
+                    "id": "lib_inq_per_intimidacao",
+                    "nome": "Intimidação",
+                    "periciaId": "intimidacao"
+                  },
+                  {
+                    "id": "lib_inq_per_intuicao",
+                    "nome": "Intuição",
+                    "periciaId": "intuicao"
+                  },
+                  {
+                    "id": "lib_inq_per_investigacao",
+                    "nome": "Investigação",
+                    "periciaId": "investigacao"
+                  },
+                  {
+                    "id": "lib_inq_per_medicina",
+                    "nome": "Medicina",
+                    "periciaId": "medicina"
+                  },
+                  {
+                    "id": "lib_inq_per_ocultismo",
+                    "nome": "Ocultismo",
+                    "periciaId": "ocultismo"
+                  },
+                  {
+                    "id": "lib_inq_per_oficio",
+                    "nome": "Ofício",
+                    "periciaId": "oficio"
+                  },
+                  {
+                    "id": "lib_inq_per_percepcao",
+                    "nome": "Percepção",
+                    "periciaId": "percepcao"
+                  },
+                  {
+                    "id": "lib_inq_per_performance",
+                    "nome": "Performance",
+                    "periciaId": "performance"
+                  },
+                  {
+                    "id": "lib_inq_per_persuasao",
+                    "nome": "Persuasão",
+                    "periciaId": "persuasao"
+                  },
+                  {
+                    "id": "lib_inq_per_prestidigitacao",
+                    "nome": "Prestidigitação",
+                    "periciaId": "prestidigitacao"
+                  },
+                  {
+                    "id": "lib_inq_per_tecnologia",
+                    "nome": "Tecnologia",
+                    "periciaId": "tecnologia"
+                  }
+                ]
+              },
+              {
+                "id": "lib_inq_atributo",
+                "label": "Atributo",
+                "vagas": 1,
+                "opcoes": [
+                  {
+                    "id": "lib_inq_atr_forca",
+                    "nome": "Força",
+                    "atributoId": "forca"
+                  },
+                  {
+                    "id": "lib_inq_atr_destreza",
+                    "nome": "Destreza",
+                    "atributoId": "destreza"
+                  },
+                  {
+                    "id": "lib_inq_atr_constituicao",
+                    "nome": "Constituição",
+                    "atributoId": "constituicao"
+                  },
+                  {
+                    "id": "lib_inq_atr_inteligencia",
+                    "nome": "Inteligência",
+                    "atributoId": "inteligencia"
+                  },
+                  {
+                    "id": "lib_inq_atr_sabedoria",
+                    "nome": "Sabedoria",
+                    "atributoId": "sabedoria"
+                  },
+                  {
+                    "id": "lib_inq_atr_presenca",
+                    "nome": "Presença",
+                    "atributoId": "presenca"
+                  }
+                ]
+              }
+            ],
+            "trocaAtributoPericia": {
+              "escolhaPericia": "lib_inq_pericia",
+              "escolhaAtributo": "lib_inq_atributo"
+            }
+          },
+          {
+            "id": "caminho_ate_o_fim",
+            "nome": "Caminho até o Fim",
+            "descricao": "Sua jornada não acabou, na verdade ela só esta começando, você agora ira encarar seus próprios Demônios. Além disso, no 4° nível, você recebe acesso ao Novo Estilo da Sombra e, por meio do funcionamento básico deste, recebe a aptidão amaldiçoada Domínio Simples.",
+            "concedeAptidoes": [
+              {
+                "id": "dominio_simples",
+                "ndMin": 4
+              }
+            ],
+            "niveis": [
+              {
+                "nd": 1,
+                "texto": "recebe um talento ou aptidão amaldiçoada, a sua escolha."
+              },
+              {
+                "nd": 3,
+                "texto": "recebe um bônus de +2 em 1 perícia ou TR"
+              },
+              {
+                "nd": 4,
+                "texto": "recebe acesso ao Novo Estilo da Sombra e, por meio do funcionamento básico deste, a aptidão amaldiçoada Domínio Simples."
+              },
+              {
+                "nd": 6,
+                "texto": "recebe uma habilidade de especialização adicional."
+              },
+              {
+                "nd": 10,
+                "texto": "recebe uma técnica de estilo adicional"
+              },
+              {
+                "nd": 13,
+                "texto": "Você se dedicou, seus pés cansados e músculos que chegaram ao limite, enxergaram que ainda existe um caminho a seguir, você recebe +5 em uma pericia a sua escolha"
+              },
+              {
+                "nd": 15,
+                "texto": "recebe uma técnica de estilo adicional."
+              },
+              {
+                "nd": 17,
+                "texto": "recebe um bônus de +3 em 1 perícia a sua escolha e +2 em um tipo de jogada de ataque ou TR a sua escolha."
+              },
+              {
+                "nd": 19,
+                "texto": "Seu domínio simples aumenta o alcance em 3,5 m"
+              }
+            ],
+            "escolhas": [
+              {
+                "id": "lib_n1",
+                "label": "Nível 1",
+                "vagas": 1,
+                "ndMin": 1,
+                "opcoes": [
+                  {
+                    "id": "lib_n1_talento",
+                    "nome": "Talento",
+                    "descricao": "Você recebe um Talento adicional.",
+                    "efeitos": [
+                      {
+                        "canal": "vagasTalento",
+                        "expr": "1",
+                        "nome": "Caminho até o Fim (Talento)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n1_aptidao",
+                    "nome": "Aptidão Amaldiçoada",
+                    "descricao": "Você recebe uma Aptidão Amaldiçoada adicional.",
+                    "efeitos": [
+                      {
+                        "canal": "vagasAptidao",
+                        "expr": "1",
+                        "nome": "Caminho até o Fim (Aptidão Amaldiçoada)"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "lib_n3",
+                "label": "Nível 3 · Perícia ou TR",
+                "vagas": 1,
+                "ndMin": 3,
+                "opcoes": [
+                  {
+                    "id": "lib_n3_per_acrobacia",
+                    "nome": "Acrobacia",
+                    "descricao": "Você recebe +2 em testes de Acrobacia.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "acrobacia",
+                        "expr": "2",
+                        "nome": "Caminho até o Fim (Acrobacia)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n3_per_atletismo",
+                    "nome": "Atletismo",
+                    "descricao": "Você recebe +2 em testes de Atletismo.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "atletismo",
+                        "expr": "2",
+                        "nome": "Caminho até o Fim (Atletismo)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n3_per_enganacao",
+                    "nome": "Enganação",
+                    "descricao": "Você recebe +2 em testes de Enganação.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "enganacao",
+                        "expr": "2",
+                        "nome": "Caminho até o Fim (Enganação)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n3_per_feiticaria",
+                    "nome": "Feitiçaria",
+                    "descricao": "Você recebe +2 em testes de Feitiçaria.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "feiticaria",
+                        "expr": "2",
+                        "nome": "Caminho até o Fim (Feitiçaria)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n3_per_furtividade",
+                    "nome": "Furtividade",
+                    "descricao": "Você recebe +2 em testes de Furtividade.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "furtividade",
+                        "expr": "2",
+                        "nome": "Caminho até o Fim (Furtividade)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n3_per_historia",
+                    "nome": "História",
+                    "descricao": "Você recebe +2 em testes de História.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "historia",
+                        "expr": "2",
+                        "nome": "Caminho até o Fim (História)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n3_per_intimidacao",
+                    "nome": "Intimidação",
+                    "descricao": "Você recebe +2 em testes de Intimidação.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "intimidacao",
+                        "expr": "2",
+                        "nome": "Caminho até o Fim (Intimidação)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n3_per_intuicao",
+                    "nome": "Intuição",
+                    "descricao": "Você recebe +2 em testes de Intuição.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "intuicao",
+                        "expr": "2",
+                        "nome": "Caminho até o Fim (Intuição)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n3_per_investigacao",
+                    "nome": "Investigação",
+                    "descricao": "Você recebe +2 em testes de Investigação.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "investigacao",
+                        "expr": "2",
+                        "nome": "Caminho até o Fim (Investigação)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n3_per_medicina",
+                    "nome": "Medicina",
+                    "descricao": "Você recebe +2 em testes de Medicina.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "medicina",
+                        "expr": "2",
+                        "nome": "Caminho até o Fim (Medicina)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n3_per_ocultismo",
+                    "nome": "Ocultismo",
+                    "descricao": "Você recebe +2 em testes de Ocultismo.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "ocultismo",
+                        "expr": "2",
+                        "nome": "Caminho até o Fim (Ocultismo)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n3_per_oficio",
+                    "nome": "Ofício",
+                    "descricao": "Você recebe +2 em testes de Ofício.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "oficio",
+                        "expr": "2",
+                        "nome": "Caminho até o Fim (Ofício)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n3_per_percepcao",
+                    "nome": "Percepção",
+                    "descricao": "Você recebe +2 em testes de Percepção.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "percepcao",
+                        "expr": "2",
+                        "nome": "Caminho até o Fim (Percepção)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n3_per_performance",
+                    "nome": "Performance",
+                    "descricao": "Você recebe +2 em testes de Performance.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "performance",
+                        "expr": "2",
+                        "nome": "Caminho até o Fim (Performance)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n3_per_persuasao",
+                    "nome": "Persuasão",
+                    "descricao": "Você recebe +2 em testes de Persuasão.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "persuasao",
+                        "expr": "2",
+                        "nome": "Caminho até o Fim (Persuasão)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n3_per_prestidigitacao",
+                    "nome": "Prestidigitação",
+                    "descricao": "Você recebe +2 em testes de Prestidigitação.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "prestidigitacao",
+                        "expr": "2",
+                        "nome": "Caminho até o Fim (Prestidigitação)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n3_per_tecnologia",
+                    "nome": "Tecnologia",
+                    "descricao": "Você recebe +2 em testes de Tecnologia.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "tecnologia",
+                        "expr": "2",
+                        "nome": "Caminho até o Fim (Tecnologia)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n3_tr_reflexos",
+                    "nome": "TR de Reflexos",
+                    "descricao": "Você recebe +2 em testes de resistência de Reflexos.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusTR",
+                        "alvo": "reflexos",
+                        "expr": "2",
+                        "nome": "Caminho até o Fim (TR de Reflexos)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n3_tr_fortitude",
+                    "nome": "TR de Fortitude",
+                    "descricao": "Você recebe +2 em testes de resistência de Fortitude.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusTR",
+                        "alvo": "fortitude",
+                        "expr": "2",
+                        "nome": "Caminho até o Fim (TR de Fortitude)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n3_tr_vontade",
+                    "nome": "TR de Vontade",
+                    "descricao": "Você recebe +2 em testes de resistência de Vontade.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusTR",
+                        "alvo": "vontade",
+                        "expr": "2",
+                        "nome": "Caminho até o Fim (TR de Vontade)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n3_tr_astucia",
+                    "nome": "TR de Astúcia",
+                    "descricao": "Você recebe +2 em testes de resistência de Astúcia.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusTR",
+                        "alvo": "astucia",
+                        "expr": "2",
+                        "nome": "Caminho até o Fim (TR de Astúcia)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n3_tr_integridade",
+                    "nome": "TR de Integridade",
+                    "descricao": "Você recebe +2 em testes de resistência de Integridade.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusTR",
+                        "alvo": "integridade",
+                        "expr": "2",
+                        "nome": "Caminho até o Fim (TR de Integridade)"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "lib_n13",
+                "label": "Nível 13 · Perícia",
+                "vagas": 1,
+                "ndMin": 13,
+                "opcoes": [
+                  {
+                    "id": "lib_n13_per_acrobacia",
+                    "nome": "Acrobacia",
+                    "descricao": "Você recebe +5 em testes de Acrobacia.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "acrobacia",
+                        "expr": "5",
+                        "nome": "Caminho até o Fim (Acrobacia)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n13_per_atletismo",
+                    "nome": "Atletismo",
+                    "descricao": "Você recebe +5 em testes de Atletismo.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "atletismo",
+                        "expr": "5",
+                        "nome": "Caminho até o Fim (Atletismo)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n13_per_enganacao",
+                    "nome": "Enganação",
+                    "descricao": "Você recebe +5 em testes de Enganação.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "enganacao",
+                        "expr": "5",
+                        "nome": "Caminho até o Fim (Enganação)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n13_per_feiticaria",
+                    "nome": "Feitiçaria",
+                    "descricao": "Você recebe +5 em testes de Feitiçaria.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "feiticaria",
+                        "expr": "5",
+                        "nome": "Caminho até o Fim (Feitiçaria)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n13_per_furtividade",
+                    "nome": "Furtividade",
+                    "descricao": "Você recebe +5 em testes de Furtividade.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "furtividade",
+                        "expr": "5",
+                        "nome": "Caminho até o Fim (Furtividade)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n13_per_historia",
+                    "nome": "História",
+                    "descricao": "Você recebe +5 em testes de História.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "historia",
+                        "expr": "5",
+                        "nome": "Caminho até o Fim (História)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n13_per_intimidacao",
+                    "nome": "Intimidação",
+                    "descricao": "Você recebe +5 em testes de Intimidação.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "intimidacao",
+                        "expr": "5",
+                        "nome": "Caminho até o Fim (Intimidação)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n13_per_intuicao",
+                    "nome": "Intuição",
+                    "descricao": "Você recebe +5 em testes de Intuição.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "intuicao",
+                        "expr": "5",
+                        "nome": "Caminho até o Fim (Intuição)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n13_per_investigacao",
+                    "nome": "Investigação",
+                    "descricao": "Você recebe +5 em testes de Investigação.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "investigacao",
+                        "expr": "5",
+                        "nome": "Caminho até o Fim (Investigação)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n13_per_medicina",
+                    "nome": "Medicina",
+                    "descricao": "Você recebe +5 em testes de Medicina.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "medicina",
+                        "expr": "5",
+                        "nome": "Caminho até o Fim (Medicina)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n13_per_ocultismo",
+                    "nome": "Ocultismo",
+                    "descricao": "Você recebe +5 em testes de Ocultismo.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "ocultismo",
+                        "expr": "5",
+                        "nome": "Caminho até o Fim (Ocultismo)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n13_per_oficio",
+                    "nome": "Ofício",
+                    "descricao": "Você recebe +5 em testes de Ofício.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "oficio",
+                        "expr": "5",
+                        "nome": "Caminho até o Fim (Ofício)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n13_per_percepcao",
+                    "nome": "Percepção",
+                    "descricao": "Você recebe +5 em testes de Percepção.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "percepcao",
+                        "expr": "5",
+                        "nome": "Caminho até o Fim (Percepção)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n13_per_performance",
+                    "nome": "Performance",
+                    "descricao": "Você recebe +5 em testes de Performance.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "performance",
+                        "expr": "5",
+                        "nome": "Caminho até o Fim (Performance)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n13_per_persuasao",
+                    "nome": "Persuasão",
+                    "descricao": "Você recebe +5 em testes de Persuasão.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "persuasao",
+                        "expr": "5",
+                        "nome": "Caminho até o Fim (Persuasão)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n13_per_prestidigitacao",
+                    "nome": "Prestidigitação",
+                    "descricao": "Você recebe +5 em testes de Prestidigitação.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "prestidigitacao",
+                        "expr": "5",
+                        "nome": "Caminho até o Fim (Prestidigitação)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n13_per_tecnologia",
+                    "nome": "Tecnologia",
+                    "descricao": "Você recebe +5 em testes de Tecnologia.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "tecnologia",
+                        "expr": "5",
+                        "nome": "Caminho até o Fim (Tecnologia)"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "lib_n17_pericia",
+                "label": "Nível 17 · Perícia",
+                "vagas": 1,
+                "ndMin": 17,
+                "opcoes": [
+                  {
+                    "id": "lib_n17_per_acrobacia",
+                    "nome": "Acrobacia",
+                    "descricao": "Você recebe +3 em testes de Acrobacia.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "acrobacia",
+                        "expr": "3",
+                        "nome": "Caminho até o Fim (Acrobacia)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n17_per_atletismo",
+                    "nome": "Atletismo",
+                    "descricao": "Você recebe +3 em testes de Atletismo.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "atletismo",
+                        "expr": "3",
+                        "nome": "Caminho até o Fim (Atletismo)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n17_per_enganacao",
+                    "nome": "Enganação",
+                    "descricao": "Você recebe +3 em testes de Enganação.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "enganacao",
+                        "expr": "3",
+                        "nome": "Caminho até o Fim (Enganação)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n17_per_feiticaria",
+                    "nome": "Feitiçaria",
+                    "descricao": "Você recebe +3 em testes de Feitiçaria.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "feiticaria",
+                        "expr": "3",
+                        "nome": "Caminho até o Fim (Feitiçaria)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n17_per_furtividade",
+                    "nome": "Furtividade",
+                    "descricao": "Você recebe +3 em testes de Furtividade.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "furtividade",
+                        "expr": "3",
+                        "nome": "Caminho até o Fim (Furtividade)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n17_per_historia",
+                    "nome": "História",
+                    "descricao": "Você recebe +3 em testes de História.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "historia",
+                        "expr": "3",
+                        "nome": "Caminho até o Fim (História)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n17_per_intimidacao",
+                    "nome": "Intimidação",
+                    "descricao": "Você recebe +3 em testes de Intimidação.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "intimidacao",
+                        "expr": "3",
+                        "nome": "Caminho até o Fim (Intimidação)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n17_per_intuicao",
+                    "nome": "Intuição",
+                    "descricao": "Você recebe +3 em testes de Intuição.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "intuicao",
+                        "expr": "3",
+                        "nome": "Caminho até o Fim (Intuição)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n17_per_investigacao",
+                    "nome": "Investigação",
+                    "descricao": "Você recebe +3 em testes de Investigação.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "investigacao",
+                        "expr": "3",
+                        "nome": "Caminho até o Fim (Investigação)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n17_per_medicina",
+                    "nome": "Medicina",
+                    "descricao": "Você recebe +3 em testes de Medicina.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "medicina",
+                        "expr": "3",
+                        "nome": "Caminho até o Fim (Medicina)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n17_per_ocultismo",
+                    "nome": "Ocultismo",
+                    "descricao": "Você recebe +3 em testes de Ocultismo.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "ocultismo",
+                        "expr": "3",
+                        "nome": "Caminho até o Fim (Ocultismo)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n17_per_oficio",
+                    "nome": "Ofício",
+                    "descricao": "Você recebe +3 em testes de Ofício.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "oficio",
+                        "expr": "3",
+                        "nome": "Caminho até o Fim (Ofício)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n17_per_percepcao",
+                    "nome": "Percepção",
+                    "descricao": "Você recebe +3 em testes de Percepção.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "percepcao",
+                        "expr": "3",
+                        "nome": "Caminho até o Fim (Percepção)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n17_per_performance",
+                    "nome": "Performance",
+                    "descricao": "Você recebe +3 em testes de Performance.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "performance",
+                        "expr": "3",
+                        "nome": "Caminho até o Fim (Performance)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n17_per_persuasao",
+                    "nome": "Persuasão",
+                    "descricao": "Você recebe +3 em testes de Persuasão.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "persuasao",
+                        "expr": "3",
+                        "nome": "Caminho até o Fim (Persuasão)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n17_per_prestidigitacao",
+                    "nome": "Prestidigitação",
+                    "descricao": "Você recebe +3 em testes de Prestidigitação.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "prestidigitacao",
+                        "expr": "3",
+                        "nome": "Caminho até o Fim (Prestidigitação)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n17_per_tecnologia",
+                    "nome": "Tecnologia",
+                    "descricao": "Você recebe +3 em testes de Tecnologia.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "tecnologia",
+                        "expr": "3",
+                        "nome": "Caminho até o Fim (Tecnologia)"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "lib_n17_jogada",
+                "label": "Nível 17 · Ataque ou TR",
+                "vagas": 1,
+                "ndMin": 17,
+                "opcoes": [
+                  {
+                    "id": "lib_n17_atq_corpo",
+                    "nome": "Ataque Corpo a Corpo",
+                    "descricao": "Você recebe +2 em jogadas de ataque Corpo a Corpo.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusAcerto",
+                        "alvo": "corpo",
+                        "expr": "2",
+                        "nome": "Caminho até o Fim (Ataque Corpo a Corpo)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n17_atq_distancia",
+                    "nome": "Ataque A Distância",
+                    "descricao": "Você recebe +2 em jogadas de ataque A Distância.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusAcerto",
+                        "alvo": "distancia",
+                        "expr": "2",
+                        "nome": "Caminho até o Fim (Ataque A Distância)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n17_atq_amaldicoado",
+                    "nome": "Ataque Amaldiçoado",
+                    "descricao": "Você recebe +2 em jogadas de ataque Amaldiçoado.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusAcerto",
+                        "alvo": "amaldicoado",
+                        "expr": "2",
+                        "nome": "Caminho até o Fim (Ataque Amaldiçoado)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n17_tr_reflexos",
+                    "nome": "TR de Reflexos",
+                    "descricao": "Você recebe +2 em testes de resistência de Reflexos.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusTR",
+                        "alvo": "reflexos",
+                        "expr": "2",
+                        "nome": "Caminho até o Fim (TR de Reflexos)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n17_tr_fortitude",
+                    "nome": "TR de Fortitude",
+                    "descricao": "Você recebe +2 em testes de resistência de Fortitude.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusTR",
+                        "alvo": "fortitude",
+                        "expr": "2",
+                        "nome": "Caminho até o Fim (TR de Fortitude)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n17_tr_vontade",
+                    "nome": "TR de Vontade",
+                    "descricao": "Você recebe +2 em testes de resistência de Vontade.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusTR",
+                        "alvo": "vontade",
+                        "expr": "2",
+                        "nome": "Caminho até o Fim (TR de Vontade)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n17_tr_astucia",
+                    "nome": "TR de Astúcia",
+                    "descricao": "Você recebe +2 em testes de resistência de Astúcia.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusTR",
+                        "alvo": "astucia",
+                        "expr": "2",
+                        "nome": "Caminho até o Fim (TR de Astúcia)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "lib_n17_tr_integridade",
+                    "nome": "TR de Integridade",
+                    "descricao": "Você recebe +2 em testes de resistência de Integridade.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusTR",
+                        "alvo": "integridade",
+                        "expr": "2",
+                        "nome": "Caminho até o Fim (TR de Integridade)"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

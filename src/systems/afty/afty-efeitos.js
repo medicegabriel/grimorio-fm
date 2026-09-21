@@ -1349,10 +1349,13 @@ export function coletarEfeitosOrigem(creature, escolhas = null) {
     ...coletarEfeitos(claId ? [claId] : [], CLA_EFEITOS, (id) => getCla(id)),
     ...coletarEfeitos(anatomias, ANATOMIA_EFEITOS, (id) => getAnatomia(id)),
     ...coletarEfeitos(opcoesEscolhidas, ORIGEM_ESCOLHA_EFEITOS, (id) => ({ nome: OPCAO_ORIGEM_NOME[id] })),
+    /* O `nome` do próprio efeito vence o da opção (2026-09-21), a mesma regra
+       do `efeitos` da raiz. É o que deixa o pacote escrever "Pai (Opção)" no
+       hover sem trocar o rótulo do botão da escolha. */
     ...opcoesInteiras.flatMap((opcao) => (opcao.efeitos || []).map((efeito) => ({
       ...efeito,
       origem: opcao.id,
-      nome: opcao.nome ?? opcao.id,
+      nome: efeito.nome ?? opcao.nome ?? opcao.id,
     }))),
   ];
 }
@@ -1791,15 +1794,16 @@ export const alvosDoCanal = (res, canal) => Object.keys(res?.porAlvo?.[canal] ||
  *   `cat:<id>`     — corpo, distancia, arremesso
  *   `grupo:<id>`   — espada, arco, tiro... (ver ARMA_GRUPOS)
  *   `prop:<id>`    — duas_maos, pesada, estendida... (ver ARMA_PROPRIEDADES)
- *   `tipo:<id>`    — ct, im, pf, queimante (ver TIPOS_DANO). Os Especialistas
- *                    em Cortes, Concussão e Perfuração (Talentos) miram assim
+ *   `tipo:<id>`: ct, im, pf, queimante (ver TIPOS_DANO)
+ *   `atq:<id>`: corpo, distancia ou amaldicoado
+ *   `atq_tipo:<ataque>:<tipo>` - interseção usada quando a regra exige os dois
  *
  * O mesmo mecanismo serve PERÍCIA e TR pelo atributo, `atr:<id>`: as Dádivas do
  * Céu do Restringido dizem "bônus em teste de perícia ou resistência usando
  * destreza", e listar as perícias uma a uma no conteúdo seria lista à mão que
  * envelhece. Ver `escoposDe` em resolveTestes.
  */
-export const ESCOPO_PREFIXOS = ["cat:", "grupo:", "prop:", "atr:", "tipo:"];
+export const ESCOPO_PREFIXOS = ["cat:", "grupo:", "prop:", "atr:", "tipo:", "atq:", "atq_tipo:"];
 
 /** Os alvos a que uma linha de dano responde. Sem arma, é só o Ataque Básico. */
 export function escoposDaArma(arma) {
@@ -1815,6 +1819,7 @@ export function escoposDaArma(arma) {
        pode rolar como Ataque Amaldiçoado. Nasceu em 2026-09-14 com o Dano do Item
        de Custo, que o autor decidiu que mira um tipo de ataque. */
     ...(arma.ataqueId ? [`atq:${arma.ataqueId}`] : []),
+    ...(arma.ataqueId && arma.tipoDano ? [`atq_tipo:${arma.ataqueId}:${arma.tipoDano}`] : []),
   ];
 }
 
