@@ -14380,3 +14380,37 @@ Pedido do autor: a Quimera não é mais pega como Talento, e ganha uma seção p
   (editável), atributos fixos, Acertos, CD, TRs e Perícias (somente leitura, vêm da fusão).
 - Ficou de fora: a Ficha Final mostra a Quimera só em resumo (sem rolar as ações dela). Custo de PE Máximo da
   Passiva no Jogador, ficha de antemão, uma Quimera por cena e bloqueio pós-Dissipar seguem na mesa.
+
+
+## SESSÃO DE 2026-09-22: TITÃ (COLOSSO), BARRAS SEPARADAS POR MEMBRO
+
+Pedido do autor, com o texto do livro colado (exemplo Mechamaru Supremo): um inimigo Colossal de
+pelo menos 20 metros de altura pode ser um Titã. A Vida Máxima dobra e o dobro se divide entre os
+membros do corpo (2 braços, 2 pernas e o torso, 5 por padrão), exceto a Cabeça, que fica com o
+dobro inteiro. Acertar a Cabeça é sempre crítico, um Membro a 0 fica desabilitado (penalidade de
+membro perdido, só cura se a criatura regenera membros, com o custo em dobro), e o Titã só morre
+quando a Cabeça chega a 0.
+
+- **Motor novo, `afty-tita.js`** (FOLHA): `createBlankTita`, `titaDaFicha`, `nomeDoMembroTita` e
+  `resolveTita(creature, hpCheio)`, que devolve `{ ativo, membros, dobro, cabecaMax, membroMax,
+  nomes }`. `afty-derive.js` chama `resolveTita` logo depois do `hpCheio` (a Vida Máxima ÍNTEGRA,
+  antes do Dano na Alma) e expõe `derived.titaColosso`.
+- **Campo na ficha**: `creature.tita = { ativo, membros }` (schema com default em
+  `createBlankAfty` e sanitização em `mesclaFichaAfty`, mesmo padrão do Pacto e das Modificações
+  Corporais). O NÚMERO calcula sempre, e não depende do addon: `permite` só decide quem vê a tela
+  (mesma lei do resto do sistema).
+- **Estado de mesa em `ficha-sessao.js`**: `sessao.tita = { cabeca, membros: [] }`, `null` valendo
+  "cheio", mesma convenção do PV de Invocação. Funções `aplicaDanoTitaCabeca`,
+  `aplicaCuraTitaCabeca`, `defineVitalTitaCabeca` e as três irmãs por índice de membro.
+  `aparaSessao` reencaixa a Cabeça e cada Membro contra o máximo de hoje, e o array de membros
+  encolhe ou estica se a contagem mudar no criador. `descansar` enche o Titã de novo.
+- **Primitiva `titaColosso`** (nova, são 19): aba "Titã" no criador (ao lado de Pacto/Catarse em
+  Outros), com o texto do livro, o interruptor, o campo de Membros e a prévia dos números. Painel
+  `PainelTita` (`ui/tita.jsx`, compartilhado com o Encontro pelo mesmo espírito da Guarda) na Ficha
+  Final: uma barra `Vital` por Cabeça e por Membro, com o aviso de membro perdido quando chega a 0.
+- Addon `tita.json` (v1.0.0): só `permite: ["titaColosso"]`, com o texto do livro na descrição.
+- Asserts: `t-tita.mjs` (40), `t-primitivas.mjs` de 18 para 19.
+- Ficou de fora, de propósito: crítico automático na Cabeça, penalidade de membro perdido e a
+  condição de regenerar com custo em dobro são texto de aviso, não regra imposta pelo motor (o
+  Motor calcula os números, a mesa decide a condição narrativa, mesma divisão do resto do
+  sistema). O mínimo de 20 metros de altura também é conferido na mesa: a ficha não mede altura.

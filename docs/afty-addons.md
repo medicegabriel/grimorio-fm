@@ -735,6 +735,13 @@ Mostra o card de Quimeras ao lado das Hordas, na aba de Invocações. O motor (`
 e só a tela depende do `permite`. O pacote `quimera` só declara `permite: ["quimera"]`. Ver
 `docs/afty-invocacoes.md`.
 
+#### A primitiva `titaColosso` (2026-09-22)
+
+Mostra a aba "Titã" no criador e o painel de barras na Ficha Final. O motor (`resolveTita`,
+`afty-tita.js`) calcula sempre a partir da Vida Máxima; o `permite` só decide quem vê a aba e o
+painel. O pacote `tita` só declara `permite: ["titaColosso"]`. Ver `docs/afty-status.md`, sessão de
+2026-09-22.
+
 ### O campo `incompativeis` (2026-09-14)
 
 Ids de pacotes que **não ligam na mesma ficha** que este. Nasceu com a Criação de Equipamentos, que o

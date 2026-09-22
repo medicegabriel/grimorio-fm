@@ -264,6 +264,14 @@ export function mesclaFichaAfty(existente) {
         enxertos: Array.isArray(existente.modificacoesCorporais.enxertos) ? existente.modificacoesCorporais.enxertos : [],
       }
       : { descricao: "", efeitosBase: [], limite: 0, enxertos: [] },
+    // ⚠ Mesma sanitização RASA das duas de cima, e pelo mesmo motivo: quem lê de
+    // verdade é `titaDaFicha` (afty-tita.js).
+    tita: (existente.tita && typeof existente.tita === "object" && !Array.isArray(existente.tita))
+      ? {
+        ativo: !!existente.tita.ativo,
+        membros: Math.max(1, Math.trunc(Number(existente.tita.membros) || 5)),
+      }
+      : { ativo: false, membros: 5 },
     formulaOverrides: { ...(existente.formulaOverrides || {}) },
     periciaOficios: oficios,
     /* ⚠ Objeto SEMPRE, mesmo vindo lixo da ficha. Uma lista ou uma string aqui
@@ -628,6 +636,10 @@ export function createBlankAfty() {
     // Enxertos (lista, orçamento DIGITADO em `limite`, sem fórmula). Nunca
     // entra em pool exclusivo. Ver afty-modificacoes-corporais.js.
     modificacoesCorporais: { descricao: "", efeitosBase: [], limite: 0, enxertos: [] },
+    // Titã: aba aberta pela primitiva `titaColosso`. Dobra a Vida Máxima e
+    // divide o dobro entre os membros do corpo, exceto a Cabeça (o dobro
+    // inteiro). Ver afty-tita.js.
+    tita: { ativo: false, membros: 5 },
     // Interlúdios · Treinos Especiais (Interlúdios Adicionais, Livro do
     // Narrador p. 22): lista COM repetição, uma entrada por pega, no mesmo
     // espírito de habilidadesGerais. Cada pega custa 1 Foco do MESMO orçamento

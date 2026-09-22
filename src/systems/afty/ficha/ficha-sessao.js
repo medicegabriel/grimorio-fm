@@ -124,6 +124,11 @@ export function sessaoEmBranco(derived = null) {
        muda no criador (elas sobem e descem), e uma lista por índice trocaria o
        PV de duas invocações de lugar sem ninguém ver. */
     invocacoes: {},
+    /* O TITÃ NA MESA (2026-09-22): `{ cabeca, membros: [] }`. `null` quer dizer
+       CHEIO, mesma convenção do PV de Invocação: a barra nasce cheia sem
+       precisar de uma sessão que já saiba o máximo. Ver `afty-tita.js` para o
+       máximo de cada parte. */
+    tita: { cabeca: null, membros: [] },
     // O que o mestre CONCEDEU nesta sessão (Addons 8.3). Estado de sessão e
     // nunca ficha, por decisão do autor (2026-08-20): vale para tudo, não gasta
     // vaga nenhuma e morre junto com a sessão. Ver `afty-concessao.js`.
@@ -214,6 +219,7 @@ export function normalizaSessao(bruta, derived = null) {
       ? Object.fromEntries(Object.entries(bruta.treinosAtivos).map(([id, ativo]) => [id, !!ativo]))
       : {},
     invocacoes: normalizaInvocacoesSessao(bruta.invocacoes),
+    tita: normalizaTitaSessao(bruta.tita, derived?.titaColosso?.membros),
     favoritos: lista(bruta.favoritos),
     log: lista(bruta.log).slice(0, LOG_MAX),
   };
@@ -406,6 +412,98 @@ function descansaInvocacoes(invocacoes) {
     };
   }
   return out;
+}
+
+/* ============================================================ */
+/* O TITÃ NA MESA                                                 */
+/* ============================================================ */
+/**
+ * `null` numa parte quer dizer CHEIA (mesma convenção do PV de Invocação, ver
+ * `normalizaInvocacoesSessao`). `membros` é aparado para o tamanho de HOJE
+ * (`titaMembros`, de `derived.titaColosso.membros`): mudar a contagem no
+ * criador não deixa lixo de um membro que já não existe, e um membro NOVO
+ * nasce cheio.
+ */
+function normalizaTitaSessao(bruto, titaMembros) {
+  const cabeca = bruto?.cabeca == null ? null : Math.max(0, inteiro(bruto.cabeca, 0));
+  const brutos = Array.isArray(bruto?.membros) ? bruto.membros : [];
+  const n = Math.max(0, Math.trunc(Number(titaMembros) || 0));
+  const membros = Array.from({ length: n }, (_, i) => (
+    brutos[i] == null ? null : Math.max(0, inteiro(brutos[i], 0))
+  ));
+  return { cabeca, membros };
+}
+
+/** O estado do Titã, com o padrão de quem nunca foi tocado. */
+export function estadoTita(sessao) {
+  const t = sessao?.tita;
+  return { cabeca: t?.cabeca ?? null, membros: Array.isArray(t?.membros) ? t.membros : [] };
+}
+
+function comTita(sessao, partial) {
+  return { ...sessao, tita: { ...estadoTita(sessao), ...partial } };
+}
+
+/** Dano na CABEÇA. Chegar a 0 é a morte do Titã (regra de mesa, ver a nota do
+    painel na Ficha). */
+export function aplicaDanoTitaCabeca(sessao, bruto, max) {
+  const dano = Math.max(0, inteiro(bruto, 0));
+  if (!dano) return sessao;
+  const teto = Math.max(0, inteiro(max, 0));
+  const atual = estadoTita(sessao).cabeca ?? teto;
+  return comTita(sessao, { cabeca: entre(atual - dano, 0, teto) });
+}
+
+/** Cura na CABEÇA. Nunca passa do máximo. */
+export function aplicaCuraTitaCabeca(sessao, bruto, max) {
+  const cura = Math.max(0, inteiro(bruto, 0));
+  if (!cura) return sessao;
+  const teto = Math.max(0, inteiro(max, 0));
+  const atual = estadoTita(sessao).cabeca ?? teto;
+  return comTita(sessao, { cabeca: entre(atual + cura, 0, teto) });
+}
+
+/** Escreve a vida da CABEÇA direto, pelo campo da barra. */
+export function defineVitalTitaCabeca(sessao, valor, max) {
+  const teto = Math.max(0, inteiro(max, 0));
+  return comTita(sessao, { cabeca: entre(inteiro(valor, 0), 0, teto) });
+}
+
+const comMembros = (sessao, i, valor) => {
+  const membros = [...estadoTita(sessao).membros];
+  membros[i] = valor;
+  return comTita(sessao, { membros });
+};
+
+/** Dano num MEMBRO. Chegar a 0 desabilita a parte (penalidade de membro
+    perdido, de mesa: a barra fica marcada, e a regra fica no painel). */
+export function aplicaDanoTitaMembro(sessao, i, bruto, max) {
+  const dano = Math.max(0, inteiro(bruto, 0));
+  if (!dano || i == null) return sessao;
+  const teto = Math.max(0, inteiro(max, 0));
+  const atual = estadoTita(sessao).membros[i] ?? teto;
+  return comMembros(sessao, i, entre(atual - dano, 0, teto));
+}
+
+/**
+ * Cura num MEMBRO. "Só pode ser curada caso o inimigo possa regenerar membros
+ * com seu custo duplicado": o botão não sabe se a criatura regenera, então a
+ * regra é lembrete no painel, e não trava aqui (mesma divisão do resto do
+ * sistema: o Motor calcula, a mesa decide a condição narrativa).
+ */
+export function aplicaCuraTitaMembro(sessao, i, bruto, max) {
+  const cura = Math.max(0, inteiro(bruto, 0));
+  if (!cura || i == null) return sessao;
+  const teto = Math.max(0, inteiro(max, 0));
+  const atual = estadoTita(sessao).membros[i] ?? teto;
+  return comMembros(sessao, i, entre(atual + cura, 0, teto));
+}
+
+/** Escreve a vida de UM MEMBRO direto, pelo campo da barra. */
+export function defineVitalTitaMembro(sessao, i, valor, max) {
+  if (i == null) return sessao;
+  const teto = Math.max(0, inteiro(max, 0));
+  return comMembros(sessao, i, entre(inteiro(valor, 0), 0, teto));
 }
 
 export function carregarSessao(id, derived = null) {
@@ -618,11 +716,30 @@ export function aparaSessao(sessao, derived) {
      de Vida do shikigami deixava o PV corrente ACIMA do máximo e a barra passava
      de 100%. É o mesmo motivo de o dono ser aparado aqui. */
   const invocacoes = aparaInvocacoes(sessao.invocacoes, derived?.invocacoes?.lista);
+  const tita = apararTita(sessao.tita, derived?.titaColosso);
   if (hpAtual === sessao.hpAtual && peAtual === sessao.peAtual && almaAtual === sessao.almaAtual
-    && visto === almaMax && invocacoes === sessao.invocacoes) {
+    && visto === almaMax && invocacoes === sessao.invocacoes && tita === sessao.tita) {
     return sessao;
   }
-  return { ...sessao, hpAtual, peAtual, almaAtual, almaMaxVisto: almaMax, invocacoes };
+  return { ...sessao, hpAtual, peAtual, almaAtual, almaMaxVisto: almaMax, invocacoes, tita };
+}
+
+/** Apara a Cabeça e cada Membro do Titã contra o máximo resolvido de hoje, e
+    encolhe/estica o array de membros se a contagem mudou no criador. */
+function apararTita(t, titaColosso) {
+  if (!titaColosso?.ativo) return t;
+  const cabecaMax = Math.max(0, titaColosso.cabecaMax ?? 0);
+  const membroMax = Math.max(0, titaColosso.membroMax ?? 0);
+  const n = Math.max(0, Math.trunc(Number(titaColosso.membros) || 0));
+  const cabeca = t?.cabeca == null ? null : entre(t.cabeca, 0, cabecaMax);
+  const membrosAntigos = Array.isArray(t?.membros) ? t.membros : [];
+  const membros = Array.from({ length: n }, (_, i) => (
+    (membrosAntigos[i] ?? null) == null ? null : entre(membrosAntigos[i], 0, membroMax)
+  ));
+  const mudouMembros = membros.length !== membrosAntigos.length
+    || membros.some((v, i) => v !== membrosAntigos[i]);
+  if (cabeca === (t?.cabeca ?? null) && !mudouMembros) return t;
+  return { cabeca, membros };
 }
 
 /** Apara PV e Integridade de cada invocação contra o máximo resolvido dela. */
@@ -1074,6 +1191,9 @@ export function descansar(sessao, derived) {
     // As invocações enchem junto. Era a pendência que segurava o PV delas fora
     // da sessão: sem descanso, ninguém zerava aqueles números.
     invocacoes: descansaInvocacoes(sessao.invocacoes),
+    // O Titã enche junto: a regra de membro perdido some com um descanso, do
+    // mesmo espírito da Invocação abatida (`descansaInvocacoes` acima).
+    tita: { cabeca: null, membros: [] },
     buffs: sessao.buffs.filter((b) => b.rodadas == null),
     condicoes: sessao.condicoes
       .filter((c) => c.rodadas == null)

@@ -470,6 +470,16 @@ export const PRIMITIVAS = [
     rotulo: "Quimera",
     nota: "Card de Quimeras ao lado das Hordas: funde de 2 a 4 Invocações (Passiva de Nível 2, 3 ou 4) somando PV e custo, unindo treinos e fixando cada atributo no maior valor entre as fundidas",
   },
+  /* ⚠ NASCEU EM 2026-09-22, a pedido do autor: a regra do Titã (Mechamaru
+     Supremo), que separa a Vida Máxima de um inimigo Colossal em barras por
+     membro. O número (dobro, divisão) é sempre calculado (`resolveTita`,
+     afty-tita.js), e o `permite` só decide quem enxerga o card no criador e o
+     painel na Ficha Final. */
+  {
+    id: "titaColosso",
+    rotulo: "Titã (Colosso)",
+    nota: "Card na criação e painel na Ficha Final: separa a Vida Máxima em barras por membro (dobro dividido pela contagem) e uma barra de Cabeça (o dobro inteiro), com aviso de crítico e morte só pela cabeça",
+  },
 ];
 
 const PRIMITIVA_IDS = new Set(PRIMITIVAS.map((p) => p.id));

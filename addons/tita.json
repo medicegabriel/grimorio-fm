@@ -1,0 +1,9 @@
+{
+  "id": "tita",
+  "nome": "Titã",
+  "versao": "1.0.0",
+  "autor": "Templas",
+  "paraRaw": "afty",
+  "descricao": "Libera a aba Titã na criação e o painel de barras na Ficha Final. Um exemplo de Titã que foi apresentado em Jujutsu seria o Mechamaru Supremo. Ao criar um inimigo Colossal e utilizar dessa mecânica, o inimigo deve ter, no mínimo, 20 metros de altura, sendo considerado um Titã. Em seguida, dobre a vida máxima do inimigo e divida-a pela quantidade de membros em seu corpo, normalmente sendo 5 (2 braços, 2 pernas e o torso), excluindo a cabeça, que terá a vida inteira. Sempre que um ataque for desferido contra um membro específico do corpo, ataques na cabeça do Titã sempre serão um crítico, desde que se acerte o ataque. Quando uma parte do corpo recebe dano suficiente para chegar a 0 de vida, ela recebe as penalidades de como se tivesse perdido o membro, ficando desabilitada e só podendo ser curada caso o inimigo possa regenerar membros com seu custo duplicado. Porém, um colosso só é morto quando sua cabeça chegar a 0 de vida.",
+  "permite": ["titaColosso"]
+}

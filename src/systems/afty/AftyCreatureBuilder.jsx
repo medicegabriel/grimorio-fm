@@ -233,6 +233,7 @@ const TABS = [
   // Uma tela com primitiva só aparece quando a criatura tem o Addon.
   { id: "carteira",      label: "Carteira", primitiva: "carteira" },
   { id: "catarse",       label: "Catarse", primitiva: "catarse" },
+  { id: "tita",          label: "Titã", primitiva: "titaColosso" },
 ];
 
 // Novas telas liberadas por Addon entram em Outros quando registradas em TABS.
@@ -910,6 +911,10 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
         },
       };
     });
+
+  const TITA_VAZIO = { ativo: false, membros: 5 };
+  const patchTita = (partial) =>
+    setDraft((d) => ({ ...d, tita: { ...(d.tita ?? TITA_VAZIO), ...partial } }));
 
   const patchTecnicasCombate = (partial) =>
     setDraft((d) => ({
@@ -1660,6 +1665,7 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
             />
           )}
           {tabAtiva === "catarse" && <TabCatarse draft={draft} derived={derived} patchCatarse={patchCatarse} />}
+          {tabAtiva === "tita" && <TabTita draft={draft} derived={derived} patchTita={patchTita} />}
           {tabAtiva === "calculos" && <TabCalculos derived={derived} setStatOverride={setStatOverride} patchCombate={patchCombate} gatilhosTreino={derived.gatilhosTreino} onGatilhoTreino={(id, v) => setTreinosAtivos((m) => ({ ...m, [id]: v }))} />}
           {tabAtiva === "addons" && <TabAddons draft={draft} derived={derived} setAddons={setAddons} trocarFicha={setDraft} />}
           {STUBS[tabAtiva] && <StubCard title={abasVisiveis.find((t) => t.id === tabAtiva)?.label} text={STUBS[tabAtiva]} />}
@@ -12782,6 +12788,72 @@ function TabModificacoesCorporais({ draft, derived, patchModificacoesCorporais, 
         dslContexto={dslContexto}
         dslExtras={dslExtras}
       />
+    </Card>
+  );
+}
+
+/* ============================================================ */
+/* ABA TITÃ                                                      */
+/* ============================================================ */
+/**
+ * Só existe com a primitiva `titaColosso` (addon com `permite: ["titaColosso"]`
+ * — ver `tabsDoSistema`). O NÚMERO (dobro da Vida Máxima, dividido pelos
+ * membros) é sempre calculado em `derived.titaColosso` (`afty-tita.js`); esta
+ * aba só liga o recurso e escolhe a contagem de membros. A vida CORRENTE de
+ * cada parte mora na sessão da Ficha Final, e não aqui.
+ */
+function TabTita({ draft, derived, patchTita }) {
+  const t = draft.tita ?? { ativo: false, membros: 5 };
+  const r = derived.titaColosso;
+  return (
+    <Card title="Titã">
+      <p className="text-[12px] text-slate-400 mb-3">
+        Um inimigo Colossal de pelo menos 20 metros de altura pode ser um Titã, como o Mechamaru
+        Supremo. A Vida Máxima dobra e o dobro se divide entre os membros do corpo (2 braços,
+        2 pernas e o torso, 5 por padrão). A Cabeça fica de fora da divisão e guarda o dobro
+        inteiro.
+      </p>
+      <div className="flex flex-wrap items-center gap-3 mb-4">
+        <BoolChip ativo={t.ativo} onToggle={() => patchTita({ ativo: !t.ativo })}>
+          Ativar Titã
+        </BoolChip>
+        <div className="flex items-center gap-1.5">
+          <FieldLabel hint="normalmente 5: 2 braços, 2 pernas e o torso">Membros</FieldLabel>
+          <input
+            type="number"
+            min={1}
+            value={t.membros}
+            onChange={(e) => patchTita({ membros: Math.max(1, Math.trunc(Number(e.target.value) || 5)) })}
+            className="w-16 text-[12px] rounded border border-slate-700 bg-slate-950/60 px-1.5 py-1 text-slate-100 focus:outline-none focus:border-purple-600"
+            aria-label="Quantidade de membros"
+          />
+        </div>
+      </div>
+
+      {t.ativo && r?.ativo && (
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <StatMini label="Vida Máxima (dobro)" value={r.dobro} accent />
+            <StatMini label="Cabeça" value={r.cabecaMax} />
+            <StatMini label={`Cada Membro (${r.membros})`} value={r.membroMax} />
+          </div>
+          <div className="rounded-lg border border-slate-800 bg-slate-950/40 px-3 py-2.5">
+            <div className="text-[10px] uppercase tracking-wider text-slate-400 mb-1.5">Partes do corpo</div>
+            <div className="flex flex-wrap gap-2 text-[11px] font-mono text-slate-300">
+              <span className="px-1.5 py-0.5 rounded bg-purple-950/40 border border-purple-800/60 text-purple-200">Cabeça {r.cabecaMax}</span>
+              {r.nomes.map((nome) => (
+                <span key={nome} className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700">{nome} {r.membroMax}</span>
+              ))}
+            </div>
+          </div>
+          <ul className="space-y-1 text-[11px] text-slate-400">
+            <li className="flex items-start gap-1.5"><AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0 text-amber-400" aria-hidden="true" /> Acertar a Cabeça é sempre crítico, desde que o ataque acerte.</li>
+            <li className="flex items-start gap-1.5"><AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0 text-amber-400" aria-hidden="true" /> Um Membro a 0 fica desabilitado, com a penalidade de membro perdido, e só é curado se a criatura regenera membros, com o custo em dobro.</li>
+            <li className="flex items-start gap-1.5"><AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0 text-amber-400" aria-hidden="true" /> O Titã só morre quando a Cabeça chega a 0.</li>
+            <li className="flex items-start gap-1.5"><AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0 text-amber-400" aria-hidden="true" /> O mínimo de 20 metros de altura é conferido na mesa: a ficha não mede altura.</li>
+          </ul>
+        </div>
+      )}
     </Card>
   );
 }

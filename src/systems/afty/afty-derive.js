@@ -52,6 +52,7 @@ import {
 import { efeitosDeVotos, regrasAftyDeVotosAtivos, votosDaFicha } from "./afty-votos";
 import { regrasAftyDaCriatura } from "./afty-regras-addon";
 import { efeitosDeModificacoesCorporais } from "./afty-modificacoes-corporais";
+import { resolveTita } from "./afty-tita";
 import { efeitosDeTreinoEspecial } from "./afty-treinos-especiais";
 import { resolveNiveisAptidao, trilhasDaCriatura, getAptidao, AFTY_APTIDOES } from "./afty-aptidoes";
 import {
@@ -2100,6 +2101,10 @@ export function deriveAfty(creature, opcoes = {}) {
      PV de alma ÍNTEGRA, e o `hp` já desconta o Dano na Alma: amarrar um no outro
      faria a Alma perseguir o próprio dano, mostrando 400 de 400 onde o certo é
      400 de 500, e o dano seria irrecuperável porque o teto desceria junto. */
+  /* O Titã lê o PV ÍNTEGRO (`hpCheio`), e não o `hp` mais abaixo: o máximo dele
+     não pode encolher com o Dano na Alma, do mesmo jeito que o máximo da Alma
+     não encolhe (ver a nota do `almaMaxFinal` logo abaixo). */
+  const titaColosso = resolveTita(creature, hpCheio);
   const almaMaxFinal = almaPilha ? hpCheio : almaMax;
   /* ⚠ NO JOGADOR O PV MÁXIMO É A ALMA CORRENTE (autor, 2026-09-18): *"Vida Máxima
      de Jogador é igual a Alma Atual. E Dano na Alma também é Dano na Vida."* Com
@@ -3665,6 +3670,7 @@ export function deriveAfty(creature, opcoes = {}) {
     invocacoes,           // { lista, total, custoTotal, temWarnings }
     hordas,               // { lista, total, custoTotal } (líder + membros escalados)
     quimeras,             // { lista, total, custoTotal } (fusão de 2 a 4 invocações)
+    titaColosso,          // { ativo, membros, dobro, cabecaMax, membroMax, nomes } (afty-tita.js)
     focosTotais,          // orçamento de Focos de interlúdio = ND + bônus de poderes
     treino,               // contribuições agregadas dos Treinamentos (hp/pe/movimento/aptidao/defesa)
     nd, tipo, patamar,

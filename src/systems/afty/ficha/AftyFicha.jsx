@@ -14,6 +14,7 @@ import { NumeroComFontes } from "../ui/fontes";
 import { numeroBr } from "../ui/formato";
 import { Vital } from "../ui/vital";
 import { Guarda } from "../ui/guarda";
+import { PainelTita } from "../ui/tita";
 import {
   carregarSessao, salvarSessao, aparaSessao,
   aplicaDano, aplicaCura, pagaCustoVida, proximaRodada, descansar, registraRolagem,
@@ -29,6 +30,8 @@ import {
   concedeNaSessao, removeConcessao,
   estadoDaInvocacao, poeInvocacaoEmCampo, alternaAuxilioInvocacao,
   aplicaDanoInvocacao, aplicaCuraInvocacao, defineVitalInvocacao,
+  estadoTita, aplicaDanoTitaCabeca, aplicaCuraTitaCabeca, defineVitalTitaCabeca,
+  aplicaDanoTitaMembro, aplicaCuraTitaMembro, defineVitalTitaMembro,
 } from "./ficha-sessao";
 import { rolarTeste, rolarDano } from "./ficha-rolagem";
 import PrimitivasDeAddon from "../ui/PrimitivasDeAddon";
@@ -807,6 +810,20 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
             onGolpe={() => atualiza((s) => sofreGolpeNaGuarda(s, derived))}
             onDesfazGolpe={() => atualiza(desfazGolpeNaGuarda)}
             onRaioNegro={() => atualiza(encerraGuarda)}
+          />
+
+          {/* ---------- Titã ----------
+              Some fora de quem ligou o card no criador (primitiva `titaColosso`,
+              ver `AftyCreatureBuilder.jsx`). */}
+          <PainelTita
+            titaColosso={derived.titaColosso}
+            estado={estadoTita(sessao)}
+            onDanoCabeca={(n) => atualiza((s) => aplicaDanoTitaCabeca(s, n, derived.titaColosso?.cabecaMax))}
+            onCuraCabeca={(n) => atualiza((s) => aplicaCuraTitaCabeca(s, n, derived.titaColosso?.cabecaMax))}
+            onSetCabeca={(v) => atualiza((s) => defineVitalTitaCabeca(s, v, derived.titaColosso?.cabecaMax))}
+            onDanoMembro={(i, n) => atualiza((s) => aplicaDanoTitaMembro(s, i, n, derived.titaColosso?.membroMax))}
+            onCuraMembro={(i, n) => atualiza((s) => aplicaCuraTitaMembro(s, i, n, derived.titaColosso?.membroMax))}
+            onSetMembro={(i, v) => atualiza((s) => defineVitalTitaMembro(s, i, v, derived.titaColosso?.membroMax))}
           />
 
           {/* ---------- defesas ----------
