@@ -55,6 +55,7 @@ import { efeitosDeModificacoesCorporais } from "./afty-modificacoes-corporais";
 import { resolveTita } from "./afty-tita";
 import { efeitosDeTreinoEspecial } from "./afty-treinos-especiais";
 import { resolveNiveisAptidao, trilhasDaCriatura, getAptidao, AFTY_APTIDOES } from "./afty-aptidoes";
+import { resolveCaracteristicasAmaldicoadas } from "./afty-caracteristicas-amaldicoadas";
 import {
   efeitosDoDominio, efeitosDeAptidaoDoDominio, beneficiosRitualDoDominio,
   dominioEmUso,
@@ -593,6 +594,7 @@ export function deriveAfty(creature, opcoes = {}) {
     origemContadoresVars,
     irmaoMorto: !!creature?.core?.origem?.irmaoMorto,
     iniciativaIrmao: creature?.core?.origem?.iniciativaIrmao,
+    origemMaldicao: creature?.core?.origem?.id === "maldicao",
     attrEff: attrBase, mods: modBase, modTecnica: modBase[tecnicaAttr] ?? 0, tecnicaAttr,
     periciasProf: creature?.pericias,
     // O vocabulário entra AQUI TAMBÉM: o contexto reduzido não tem `esc_*` nem
@@ -967,6 +969,7 @@ export function deriveAfty(creature, opcoes = {}) {
       habilidades, talentos: talentosPre, altoNivel,
       // As Melhorias Superiores do jogador têm números próprios.
       sistema,
+      caracteristicasAmaldicoadas: creature?.caracteristicasAmaldicoadas,
       catalogos: {
         habilidades: getHabilidade, talentos: getTalento,
         // Um mapa só para as opções dos dois catálogos: os ids não colidem
@@ -1492,6 +1495,7 @@ export function deriveAfty(creature, opcoes = {}) {
     origemContadoresVars,
     irmaoMorto: !!creature?.core?.origem?.irmaoMorto,
     iniciativaIrmao: creature?.core?.origem?.iniciativaIrmao,
+    origemMaldicao: origemId === "maldicao",
     attrEff: attrs, mods, modTecnica: mods[tecnicaAttr] ?? 0, tecnicaAttr,
     aptidao: aptidao.efetivo, nivelEspec, periciasProf: creature?.pericias,
     resistenciasProf: creature?.resistenciasProf, combate,
@@ -3014,6 +3018,15 @@ export function deriveAfty(creature, opcoes = {}) {
      Aptidão, senão um Restringido carregaria um número que não usa. */
   const reduzNivelAptidao = semEnergia ? 0 : Math.max(0, canal("reduzNivelAptidao"));
 
+  /* Pool de Características Amaldiçoadas (Anatomia Amaldiçoada, addon Maldição
+     - Era de Ouro): mesma forma da Aptidão, uma vaga por canal, sem trilha.
+     Não segue o `semEnergia`: a característica é da Origem, não da Energia, e
+     um Restringido de Origem Maldição (se algum addon algum dia permitir)
+     continuaria com o corpo que a Origem descreve. */
+  const caracteristicasAmaldicoadas = resolveCaracteristicasAmaldicoadas(creature, {
+    nd, vagas: Math.max(0, canal("vagasCaracteristicaAmaldicoada")),
+  });
+
   // ⚠ Especializações, Talentos, Habilidades, Alto Nível, Aptidão e o MOTOR DE
   // AUTOMAÇÃO subiram para o topo desta função (logo depois dos atributos
   // base), porque os efeitos precisam alcançar os stats. Ver o bloco
@@ -3594,6 +3607,7 @@ export function deriveAfty(creature, opcoes = {}) {
     tecnicaAttr,
     totalAptidao,               // orçamento de NÍVEIS de aptidão (Afty continua a cada 2 ND depois do 20)
     totalAptidoesAmaldicoadas,  // quantas pode ter (só da Habilidade Geral Aptidão, 0 sem ela)
+    caracteristicasAmaldicoadas, // { lista, catalogo, escolhidas, vagas, usadas, excedeu } (afty-caracteristicas-amaldicoadas.js)
     reduzNivelAptidao,          // quanto o pré-requisito de NÍVEL de cada Aptidão desce (0 no normal)
     aptidao,              // níveis por trilha: { alocado, concedido, efetivo, gastos, limite }
     // As Aptidões Amaldiçoadas EFETIVAS (escolhidas + concedidas por nome pela

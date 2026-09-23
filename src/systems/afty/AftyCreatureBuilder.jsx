@@ -234,6 +234,7 @@ const TABS = [
   { id: "carteira",      label: "Carteira", primitiva: "carteira" },
   { id: "catarse",       label: "Catarse", primitiva: "catarse" },
   { id: "tita",          label: "Titã", primitiva: "titaColosso" },
+  { id: "caracteristicasAmaldicoadas", label: "Características Amaldiçoadas", primitiva: "caracteristicasAmaldicoadas" },
 ];
 
 // Novas telas liberadas por Addon entram em Outros quando registradas em TABS.
@@ -910,6 +911,13 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
           enxertos: (atual.enxertos ?? []).map((it) => (it.id === id ? { ...it, ...partial } : it)),
         },
       };
+    });
+
+  const toggleCaracteristicaAmaldicoada = (id) =>
+    setDraft((d) => {
+      const atual = Array.isArray(d.caracteristicasAmaldicoadas) ? d.caracteristicasAmaldicoadas : [];
+      const removendo = atual.includes(id);
+      return { ...d, caracteristicasAmaldicoadas: removendo ? atual.filter((x) => x !== id) : [...atual, id] };
     });
 
   const TITA_VAZIO = { ativo: false, membros: 5 };
@@ -1666,6 +1674,9 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
           )}
           {tabAtiva === "catarse" && <TabCatarse draft={draft} derived={derived} patchCatarse={patchCatarse} />}
           {tabAtiva === "tita" && <TabTita draft={draft} derived={derived} patchTita={patchTita} />}
+          {tabAtiva === "caracteristicasAmaldicoadas" && (
+            <TabCaracteristicasAmaldicoadas draft={draft} derived={derived} onToggle={toggleCaracteristicaAmaldicoada} />
+          )}
           {tabAtiva === "calculos" && <TabCalculos derived={derived} setStatOverride={setStatOverride} patchCombate={patchCombate} gatilhosTreino={derived.gatilhosTreino} onGatilhoTreino={(id, v) => setTreinosAtivos((m) => ({ ...m, [id]: v }))} />}
           {tabAtiva === "addons" && <TabAddons draft={draft} derived={derived} setAddons={setAddons} trocarFicha={setDraft} />}
           {STUBS[tabAtiva] && <StubCard title={abasVisiveis.find((t) => t.id === tabAtiva)?.label} text={STUBS[tabAtiva]} />}
@@ -12852,6 +12863,72 @@ function TabTita({ draft, derived, patchTita }) {
             <li className="flex items-start gap-1.5"><AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0 text-amber-400" aria-hidden="true" /> O Titã só morre quando a Cabeça chega a 0.</li>
             <li className="flex items-start gap-1.5"><AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0 text-amber-400" aria-hidden="true" /> O mínimo de 20 metros de altura é conferido na mesa: a ficha não mede altura.</li>
           </ul>
+        </div>
+      )}
+    </Card>
+  );
+}
+
+/* ============================================================ */
+/* ABA CARACTERÍSTICAS AMALDIÇOADAS                              */
+/* ============================================================ */
+/**
+ * Só existe com a primitiva `caracteristicasAmaldicoadas` (addon Maldição -
+ * Era de Ouro, `permite: ["caracteristicasAmaldicoadas"]`). O catálogo em si
+ * (as ~20 características) é conteúdo do addon; esta tela só lista o que o
+ * addon acrescentou e conta contra a vaga que "Anatomia Amaldiçoada" concede
+ * (`derived.caracteristicasAmaldicoadas`, afty-caracteristicas-amaldicoadas.js).
+ * Exceder a vaga avisa, não trava (mesma regra do resto do sistema).
+ */
+function TabCaracteristicasAmaldicoadas({ draft, derived, onToggle }) {
+  const res = derived.caracteristicasAmaldicoadas ?? { catalogo: [], escolhidas: [], vagas: 0, usadas: 0, excedeu: false };
+  const escolhidas = Array.isArray(draft.caracteristicasAmaldicoadas) ? draft.caracteristicasAmaldicoadas : [];
+  return (
+    <Card
+      title="Características Amaldiçoadas"
+      headerRight={
+        <div
+          className={`flex items-center gap-1.5 border rounded-md px-2 py-1 ${
+            res.excedeu ? "border-rose-800 bg-rose-950/30" : "border-slate-800 bg-slate-950/50"
+          }`}
+          title="Concedidas pela Anatomia Amaldiçoada: 1 no 1° nível, +1 a cada 5 níveis"
+        >
+          {res.excedeu && <AlertTriangle className="w-3 h-3 text-rose-400 flex-shrink-0" aria-hidden="true" />}
+          <span className="text-[9px] uppercase tracking-wider text-slate-400">Vagas</span>
+          <span className="font-mono text-xs font-bold tabular-nums text-white">{res.usadas} / {res.vagas}</span>
+        </div>
+      }
+    >
+      {res.catalogo.length === 0 ? (
+        <div className="text-center py-8 border border-dashed border-slate-700 rounded-lg text-sm text-slate-400">
+          Nenhuma Característica Amaldiçoada no catálogo. Instale um addon que acrescente a família
+          "caracteristicasAmaldicoadas" (ex.: Maldição - Era de Ouro).
+        </div>
+      ) : (
+        <div className="space-y-1.5">
+          {res.catalogo.map((c) => {
+            const ativo = escolhidas.includes(c.id);
+            return (
+              <label
+                key={c.id}
+                className={`flex items-start gap-2.5 rounded-lg border px-3 py-2 cursor-pointer transition-colors ${
+                  ativo ? "border-purple-700 bg-purple-950/30" : "border-slate-800 bg-slate-950/40 hover:border-slate-700"
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={ativo}
+                  onChange={() => onToggle(c.id)}
+                  className="mt-0.5 accent-purple-600"
+                  aria-label={c.nome}
+                />
+                <span className="min-w-0">
+                  <span className="block text-[13px] font-semibold text-white">{c.nome}</span>
+                  <span className="block text-[11px] text-slate-400">{c.descricao}</span>
+                </span>
+              </label>
+            );
+          })}
         </div>
       )}
     </Card>

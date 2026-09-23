@@ -742,6 +742,15 @@ Mostra a aba "Titã" no criador e o painel de barras na Ficha Final. O motor (`r
 painel. O pacote `tita` só declara `permite: ["titaColosso"]`. Ver `docs/afty-status.md`, sessão de
 2026-09-22.
 
+#### A primitiva `caracteristicasAmaldicoadas` (2026-09-22)
+
+Mostra a aba "Características Amaldiçoadas" no criador: um checklist contra o catálogo
+`AFTY_CARACTERISTICAS_AMALDICOADAS` (`afty-caracteristicas-amaldicoadas.js`), que nasce VAZIO no
+raw porque o conteúdo (as 18 entradas do suplemento Maldição - Era de Ouro) é todo de Addon, pela
+família `caracteristicasAmaldicoadas`. O canal `vagasCaracteristicaAmaldicoada` dá o orçamento
+("Anatomia Amaldiçoada" concede 1 no 1° nível, +1 a cada 5). Ver `docs/afty-status.md`, sessão de
+2026-09-22.
+
 ### O campo `incompativeis` (2026-09-14)
 
 Ids de pacotes que **não ligam na mesma ficha** que este. Nasceu com a Criação de Equipamentos, que o

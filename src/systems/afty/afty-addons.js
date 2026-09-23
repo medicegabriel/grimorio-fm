@@ -480,6 +480,16 @@ export const PRIMITIVAS = [
     rotulo: "Titã (Colosso)",
     nota: "Card na criação e painel na Ficha Final: separa a Vida Máxima em barras por membro (dobro dividido pela contagem) e uma barra de Cabeça (o dobro inteiro), com aviso de crítico e morte só pela cabeça",
   },
+  /* ⚠ NASCEU EM 2026-09-22, junto da primitiva `titaColosso`, para o addon
+     Maldição - Era de Ouro: o pool de Características Amaldiçoadas que a
+     característica "Anatomia Amaldiçoada" concede. O catálogo em si é vazio no
+     raw (família `caracteristicasAmaldicoadas`, afty-caracteristicas-amaldicoadas.js);
+     o addon é quem traz as ~20 entradas. */
+  {
+    id: "caracteristicasAmaldicoadas",
+    rotulo: "Características Amaldiçoadas",
+    nota: "Aba de escolha do pool de Características Amaldiçoadas (Anatomia Amaldiçoada: 1 no 1° nível, +1 a cada 5 níveis). O catálogo em si vem do addon, pela família caracteristicasAmaldicoadas",
+  },
 ];
 
 const PRIMITIVA_IDS = new Set(PRIMITIVAS.map((p) => p.id));

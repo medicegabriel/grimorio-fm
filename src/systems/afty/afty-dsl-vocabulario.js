@@ -114,6 +114,13 @@ const POR_NOME = [
       ["iniciativa_irmao", "Bônus de Iniciativa do outro gêmeo"],
     ],
   },
+  {
+    id: "maldicao",
+    label: "Maldição",
+    nomes: [
+      ["origem_maldicao", "A Origem desta criatura é Maldição"],
+    ],
+  },
 ];
 
 /* Regras de PREFIXO, da mais específica para a mais geral. A ordem importa:

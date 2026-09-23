@@ -97,6 +97,9 @@ import { getAnatomia } from "./afty-anatomias";
 import { CUSTO_PE_MINIMO } from "./afty-dominio-simples";
 // afty-aptidoes só importa afty-origens, que já é dependência daqui: sem ciclo.
 import { getAptidao } from "./afty-aptidoes";
+// afty-caracteristicas-amaldicoadas só importa afty-addons e afty-aptidoes
+// (que, pelo comentário acima, já é seguro): sem ciclo, mesma razão.
+import { getCaracteristicaAmaldicoada } from "./afty-caracteristicas-amaldicoadas";
 import { funcionamentosDaFicha } from "./afty-schema";
 import { RECURSOS_BUFF_NATIVOS } from "./afty-extras-nativos";
 import {
@@ -337,6 +340,9 @@ export const EFEITO_CANAIS = [
   // "Vagas de" no rótulo para o canal cair junto dos irmãos numa busca por
   // "vaga". O que ele dá é QUANTAS Aptidões Amaldiçoadas a criatura pode ter.
   { id: "vagasAptidao",   label: "Vagas de Aptidão",     nota: "quantas Aptidões Amaldiçoadas a ficha pode ter. Sem fonte nenhuma o orçamento é ZERO: o ND não concede" },
+  // Mesmo espírito do `vagasAptidao`, para o pool de Características
+  // Amaldiçoadas (Anatomia Amaldiçoada, addon Maldição - Era de Ouro, 2026-09-22).
+  { id: "vagasCaracteristicaAmaldicoada", label: "Vagas de Característica Amaldiçoada", nota: "quantas Características Amaldiçoadas a ficha pode ter. Sem fonte nenhuma o orçamento é ZERO" },
   /* ⚠ ESTE NÃO DÁ VAGA, ele ABAIXA O PORTÃO. Nasceu em 2026-09-07 para a
      Adiantar a Evolução do Especialista em Estilo (*"você reduz em 2 os
      pré-requisitos de nível das aptidões amaldiçoadas"*), e por isso mora ao
@@ -645,6 +651,7 @@ const GRUPOS_DE_CANAL = [
   // motivo, ele é orçamento de nível de aptidão.
   ["Orçamentos", [
     "vagasPericia", "vagasHabilidade", "vagasFeitico", "vagasEstilo", "vagasTalento", "vagasAptidao",
+    "vagasCaracteristicaAmaldicoada",
     "reduzNivelAptidao",
     "vagasMelhoria", "vagasLendaria",
     "pontosAptidao", "focos", "espacosCarga",
@@ -834,6 +841,14 @@ export function buildCriaturaDslContext(base = {}) {
     /* Só os Gêmeos. O bônus de Iniciativa do OUTRO gêmeo, digitado pelo jogador:
        a Dupla Empenhada soma os dois e o irmão é outra ficha. */
     iniciativa_irmao: Math.trunc(Number(base.iniciativaIrmao) || 0),
+    /* A Origem desta criatura é Maldição? Nasceu em 2026-09-22 para um Addon
+       que precisa CORRIGIR um número que já mora na origem do livro (o PE de
+       Natureza Amaldiçoada) sem tocar no raw: o efeito do Addon se escreve
+       `quando: "origem_maldicao"` e vale só para quem tem essa origem, mesmo
+       que o Addon esteja instalado numa ficha de outra origem. Mesmo espírito
+       do `irmao_morto`, um degrau acima (aqui é Origem inteira, não um campo
+       dela). */
+    origem_maldicao: base.origemMaldicao ? 1 : 0,
 
     /* Qual dos seis atributos é o da TÉCNICA desta criatura, como seis bandeiras
        0/1. `mod_tecnica` já entrega o modificador, mas ele não serve para uma
@@ -1191,7 +1206,9 @@ export function coletarEfeitos(ids, mapa, catalogo = {}, vezesPorId = null) {
  */
 export const ESCOLHAS_DE_HABILIDADE = ["res_roubo_de_habilidade"];
 
-export function coletarEfeitosCriatura({ habilidades, talentos, altoNivel, catalogos, sistema = null } = {}) {
+export function coletarEfeitosCriatura({
+  habilidades, talentos, altoNivel, catalogos, sistema = null, caracteristicasAmaldicoadas,
+} = {}) {
   /* As quatro Melhorias que o livro do jogador escreve diferente trocam as
      linhas do mesmo id. Ver `MELHORIA_EFEITOS_JOGADOR`. */
   const efeitosMelhoria = regraDo(sistema, "melhoriasSuperioresDoJogador") === "player"
@@ -1217,6 +1234,12 @@ export function coletarEfeitosCriatura({ habilidades, talentos, altoNivel, catal
     // Talento também tem escolha aninhada (o atributo do Incremento, a trilha
     // da Aptidão Desenvolvida), e cai no mesmo ESCOLHA_EFEITOS.
     ...coletarEfeitosDeEscolha(talentos?.escolhas?.mapa, catalogos?.opcoes, catalogos?.talentos),
+    /* Características Amaldiçoadas (Anatomia Amaldiçoada, addon Maldição - Era
+       de Ouro): SEM mapa do raw, porque o catálogo inteiro é de Addon. O
+       `coletarEfeitos` já sabe ler `efeitos` de DENTRO da entrada quando o
+       mapa não tem a chave (ver o comentário dele), que é exatamente este
+       caso: `{}` no lugar do mapa, e o resolvedor no lugar do catálogo. */
+    ...coletarEfeitos(caracteristicasAmaldicoadas, {}, getCaracteristicaAmaldicoada),
     ...coletarEfeitos(Object.keys(vezesMel), efeitosMelhoria, catalogos?.altoNivel, vezesMel),
     ...coletarEfeitosComAlvo(
       Object.keys(vezesMel), altoNivel?.escolhas?.mapa, MELHORIA_EFEITOS_ALVO,

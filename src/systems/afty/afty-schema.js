@@ -640,6 +640,10 @@ export function createBlankAfty() {
     // divide o dobro entre os membros do corpo, exceto a Cabeça (o dobro
     // inteiro). Ver afty-tita.js.
     tita: { ativo: false, membros: 5 },
+    // Características Amaldiçoadas escolhidas (Anatomia Amaldiçoada, addon
+    // Maldição - Era de Ouro). Lista de ids, mesma forma de `talentos`. Ver
+    // afty-caracteristicas-amaldicoadas.js.
+    caracteristicasAmaldicoadas: [],
     // Interlúdios · Treinos Especiais (Interlúdios Adicionais, Livro do
     // Narrador p. 22): lista COM repetição, uma entrada por pega, no mesmo
     // espírito de habilidadesGerais. Cada pega custa 1 Foco do MESMO orçamento
