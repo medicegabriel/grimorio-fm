@@ -266,7 +266,25 @@ export const CLAS_HERDADO = [
 /* ⚠ `let`, e não `const`, porque a família `clas` dos Addons o RECONSTRÓI. Ver
    `aplicarExtrasClas`, lá embaixo, junto do religador das origens. */
 let CLA_BY_ID = Object.fromEntries(CLAS_HERDADO.map((c) => [c.id, c]));
-export const getCla = (id) => CLA_BY_ID[id] ?? null;
+/**
+ * ⚠ SEGUNDA BUSCA, dentro do `.clas` de QUALQUER origem (2026-09-22, Maldição
+ * Era de Ouro). `CLA_BY_ID` só conhece `CLAS_HERDADO`, porque até aqui só o
+ * Herdado se dividia e a família `clas` dos Addons falava só com ele
+ * (`aplicarExtrasClas` reescreve esse MESMO array). Uma origem NOVA de Addon
+ * (não o Herdado) que se divide declara os clãs DENTRO dela mesma
+ * (`acrescenta.origens[].clas`), e não tem como entrar em `CLAS_HERDADO`: são
+ * dois donos diferentes. Por isso `getCla` cai para uma busca linear em
+ * `AFTY_ORIGENS_CATALOG` quando o id não é de Herdado. É `O(origens)`, e roda
+ * só quando algo RESOLVE um clã (nunca por linha de efeito nem por frame).
+ *
+ * ⚠ Referencia `AFTY_ORIGENS_CATALOG` antes dele ser declarado no arquivo, e
+ * isso é seguro: `getCla` só LÊ a variável quando é CHAMADA, nunca na hora de
+ * ser definida, e a primeira chamada real só acontece depois que o módulo
+ * inteiro já rodou uma vez (closures resolvem no uso, não na declaração).
+ */
+export const getCla = (id) => CLA_BY_ID[id]
+  ?? AFTY_ORIGENS_CATALOG.flatMap((o) => o.clas || []).find((c) => c.id === id)
+  ?? null;
 
 /* ============================================================ */
 /* CATÁLOGO DE ORIGENS                                           */
@@ -1240,6 +1258,11 @@ registrarFamilia("origens", {
   rotulo: "Origem",
   chave: "id",
   obrigatorios: ["nome"],
+  // Uma origem de Addon que se divide (Maldição Era de Ouro) escreve os
+  // próprios clãs em `clas[]`, e o id de CADA um precisa do prefixo do
+  // pacote, a mesma razão de sempre: sem isso `core.origem.cla` gravaria o id
+  // cru e `getCla` (que já procura pelo id PREFIXADO) nunca acharia.
+  caminhosDeId: ["clas[].id"],
   aplicar: aplicarExtrasOrigens,
   basicos: () => ORIGENS_BASE,
   validador: validarCatalogoOrigens,
@@ -1342,16 +1365,25 @@ export const getOrigem = (id) => BY_ID[id] ?? null;
  *   • o Estilo das Sombras e os Feitiços, no `deriveAfty`
  *   • o leiaute da aba Habilidades, no criador
  *
- * ⚠ SÓ O SEM TÉCNICA É MÃE ACEITA (`VARIACOES_ACEITAS`). As outras origens têm
- * travas literais espalhadas pelo código (a Restringido perto de trinta, a
- * Maldição e os Gêmeos meia dúzia cada), e uma variação delas funcionaria pela
- * metade sem aviso. Por isso a mãe fora da lista é IGNORADA aqui, e a origem
- * responde como ela mesma, enquanto o validador relata o problema na aba
- * Addons. A lista cresce quando as travas da mãe nova passarem por aqui.
+ * ⚠ SÓ SEM TÉCNICA E MALDIÇÃO SÃO MÃE ACEITA (`VARIACOES_ACEITAS`). As outras
+ * origens têm travas literais espalhadas pelo código (a Restringido perto de
+ * trinta, os Gêmeos meia dúzia), e uma variação delas funcionaria pela metade
+ * sem aviso. Por isso a mãe fora da lista é IGNORADA aqui, e a origem responde
+ * como ela mesma, enquanto o validador relata o problema na aba Addons. A
+ * lista cresce quando as travas da mãe nova passarem por aqui.
+ *
+ * ⚠ MALDIÇÃO ENTROU EM 2026-09-22, com o Addon Maldição Era de Ouro: os 5
+ * tipos de Espírito Amaldiçoado (Comum, de Medo, Vingativo, Vingativo
+ * Imaginário, Enfermo) do suplemento viram uma origem PRÓPRIA que varia de
+ * `maldicao`, e não a origem `maldicao` do livro remendada: assim ela some do
+ * seletor de quem não instalou o Addon, tem nome e clãs próprios, e ainda
+ * assim destrava as 18 Aptidões de Maldição (`APTIDAO_CATEGORIAS`, categoria
+ * `origemId: "maldicao"`) e qualquer Talento com `requisitos: [{tipo:"origem",
+ * id:"maldicao"}]`, porque os dois LEEM `origemMae()`, não o id cru da ficha.
  *
  * Um nível só: a mãe é sempre do livro, então não há cadeia para seguir.
  */
-export const VARIACOES_ACEITAS = Object.freeze(["sem_tecnica"]);
+export const VARIACOES_ACEITAS = Object.freeze(["sem_tecnica", "maldicao"]);
 
 export const origemMae = (origemId) => {
   const mae = getOrigem(origemId)?.variacaoDe;

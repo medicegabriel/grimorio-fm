@@ -594,7 +594,6 @@ export function deriveAfty(creature, opcoes = {}) {
     origemContadoresVars,
     irmaoMorto: !!creature?.core?.origem?.irmaoMorto,
     iniciativaIrmao: creature?.core?.origem?.iniciativaIrmao,
-    origemMaldicao: creature?.core?.origem?.id === "maldicao",
     attrEff: attrBase, mods: modBase, modTecnica: modBase[tecnicaAttr] ?? 0, tecnicaAttr,
     periciasProf: creature?.pericias,
     // O vocabulário entra AQUI TAMBÉM: o contexto reduzido não tem `esc_*` nem
@@ -1495,7 +1494,6 @@ export function deriveAfty(creature, opcoes = {}) {
     origemContadoresVars,
     irmaoMorto: !!creature?.core?.origem?.irmaoMorto,
     iniciativaIrmao: creature?.core?.origem?.iniciativaIrmao,
-    origemMaldicao: origemId === "maldicao",
     attrEff: attrs, mods, modTecnica: mods[tecnicaAttr] ?? 0, tecnicaAttr,
     aptidao: aptidao.efetivo, nivelEspec, periciasProf: creature?.pericias,
     resistenciasProf: creature?.resistenciasProf, combate,

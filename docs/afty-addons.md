@@ -751,6 +751,26 @@ família `caracteristicasAmaldicoadas`. O canal `vagasCaracteristicaAmaldicoada`
 ("Anatomia Amaldiçoada" concede 1 no 1° nível, +1 a cada 5). Ver `docs/afty-status.md`, sessão de
 2026-09-22.
 
+#### Origem de Addon que se divide em Tipos (2026-09-22)
+
+Uma origem de Addon pode se dividir como o Herdado se divide em Clãs: o seletor aparece no card da
+Origem, e cada clã traz as próprias características. O exemplo vivo é `addons/maldicao-era-de-ouro.json`.
+Três pegadinhas, todas pagas com bug:
+
+1. **Os clãs vão em DOIS lugares, com o mesmo id.** `acrescenta.origens[].clas` guarda só `{ id, nome }`
+   (é o que a tela lê para desenhar os botões), e `acrescenta.clas` guarda a definição inteira
+   (`nome`, `caracteristicas`, `efeitos`). O id aninhado só ganha o prefixo do pacote se o mesmo id
+   existir como entrada de TOPO de alguma família.
+2. **Número mora em `efeitos` na RAIZ** da origem e do clã, nunca dentro de
+   `caracteristicas[].efeitos`, que o motor não lê. A característica fica só com o texto (e com
+   `bonus`/`poolLimite`, que são lidos por outro caminho).
+3. **`variacaoDe: "maldicao"` (ou `"sem_tecnica"`) é o que mantém as travas da origem do livro.**
+   Sem ele, as Aptidões de Maldição e os Talentos com requisito de Origem Maldição não enxergam a
+   origem nova. Só as mães de `VARIACOES_ACEITAS` (`afty-origens.js`) valem, e a lista cresce quando as
+   travas da mãe nova passam por `origemMae()`.
+
+Opcionais na origem: `clasRotulo` (o nome do seletor, padrão "Clã") e `clasArtigo` (padrão "um").
+
 ### O campo `incompativeis` (2026-09-14)
 
 Ids de pacotes que **não ligam na mesma ficha** que este. Nasceu com a Criação de Equipamentos, que o

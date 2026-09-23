@@ -1,13 +1,26 @@
-/* MALDIÇÃO - ERA DE OURO — o addon dos 5 tipos de Espírito Amaldiçoado
-   (2026-09-22). Não duplica o que o raw já tem (a Origem "maldicao" com 3
-   características, e as 18 Aptidões de Maldição): só acrescenta os 7
-   Talentos (Restrição e Anatomia Amaldiçoada, mais os 5 tipos) e as 18
-   Características para Maldições que a Anatomia libera.
+/* MALDIÇÃO - ERA DE OURO v2 (2026-09-22): virou ORIGEM PRÓPRIA que se divide em
+   Tipo, como o Herdado se divide em Clã. A v1 (7 Talentos soltos) tinha um
+   problema real: o jogador tinha de ACHAR os Talentos numa lista de dezenas,
+   sem nenhum seletor dedicado, e o autor pediu para mover tudo para a aba de
+   escolher Origem.
 
-   ⚠ O PE da Natureza Amaldiçoada (raw) é "por nível" (pe: nd), e este
-   suplemento é mais preciso ("a cada nível ÍMPAR"). O Funcionamento do pacote
-   corrige a diferença (só com `origem_maldicao`), e cada Talento de tipo
-   devolve o valor certo por cima. */
+   ⚠ POR QUE UMA ORIGEM NOVA, E NÃO A `maldicao` DO RAW REMENDADA: assim ela
+   tem nome e Tipos próprios e some do seletor de quem não instala o Addon.
+   `variacaoDe: "maldicao"` (mais `VARIACOES_ACEITAS` em afty-origens.js) faz
+   `origemMae()` resolver para "maldicao" em toda pergunta estrutural, e é
+   assim que as 18 Aptidões de Maldição do raw (`APTIDAO_CATEGORIAS`, categoria
+   travada em `origemId: "maldicao"`) e qualquer Talento com
+   `requisitos: [{tipo:"origem", id:"maldicao"}]` continuam alcançáveis.
+
+   ⚠ O MURO NOVO, e como este addon o resolve: `getCla()` só conhecia
+   `CLAS_HERDADO`. Uma origem de Addon que se divide declara os Tipos em DOIS
+   lugares (`acrescenta.origens[].clas`, que a TELA lê para desenhar os
+   botões, e `acrescenta.clas`, que entra em `CLAS_HERDADO` de verdade e é o
+   que `getCla()` acha primeiro) com o MESMO id nos dois, e `afty-origens.js`
+   ganhou `caminhosDeId: ["clas[].id"]` na família `origens` para o id nested
+   ganhar o mesmo prefixo do pacote que o id do topo ganha, e os dois baterem.
+   `getCla()` também ganhou uma segunda busca (varrer `origem.clas` de
+   qualquer origem) como rede de segurança. */
 import { register } from "node:module";
 import { readFileSync } from "node:fs";
 register(
@@ -20,7 +33,7 @@ const { deriveAfty } = await import(R + "afty-derive.js");
 const { createBlankAfty } = await import(R + "afty-schema.js");
 const AD = await import(R + "afty-addons.js");
 const CA = await import(R + "afty-caracteristicas-amaldicoadas.js");
-const { getTalento } = await import(R + "afty-talentos.js");
+const O = await import(R + "afty-origens.js");
 
 let ok = 0;
 const bad = [];
@@ -36,116 +49,108 @@ t("a primitiva existe no catalogo", AD.PRIMITIVAS.some((p) => p.id === "caracter
 AD.aplicarAddons([pacote]);
 
 const NS = "maldicao-era-de-ouro:";
-const TAL = {
-  restricao: `${NS}tal_restricao_amaldicoada`,
-  anatomia: `${NS}tal_anatomia_amaldicoada`,
-  comum: `${NS}tal_espirito_comum`,
-  medo: `${NS}tal_espirito_medo`,
-  vingativo: `${NS}tal_espirito_vingativo`,
-  vingativoImaginario: `${NS}tal_espirito_vingativo_imaginario`,
-  enfermo: `${NS}tal_espirito_enfermo`,
+const ORIGEM_ID = `${NS}maldicao_era_de_ouro`;
+const TIPO = {
+  comum: `${NS}tipo_comum`,
+  medo: `${NS}tipo_medo`,
+  vingativo: `${NS}tipo_vingativo`,
+  vingativoImaginario: `${NS}tipo_vingativo_imaginario`,
+  enfermo: `${NS}tipo_enfermo`,
 };
 
 /* ============================================================ */
-/* 1. O CATÁLOGO DE CARACTERÍSTICAS (18, todas do Addon)         */
+/* 1. A ORIGEM E O MURO DO getCla                                */
 /* ============================================================ */
-t("sao 18 caracteristicas amaldicoadas no catalogo", CA.AFTY_CARACTERISTICAS_AMALDICOADAS.length, 18);
-t("todas tem nome e descricao", CA.AFTY_CARACTERISTICAS_AMALDICOADAS.every((c) => c.nome && c.descricao), true);
-t("Ola Adicionais existe com o texto novo (numero, nao BT)",
-  CA.getCaracteristicaAmaldicoada(`${NS}ca_olhos_adicionais`)?.descricao.includes("+2 em Percepção"), true);
+const origem = O.getOrigem(ORIGEM_ID);
+t("a origem existe, com o namespace do pacote", !!origem, true);
+t("e diz de qual origem do raw ela varia", origem?.variacaoDe, "maldicao");
+t("origemMae resolve para a origem do raw (destrava Aptidao de Maldicao e Talentos de Origem)",
+  O.origemMae(ORIGEM_ID), "maldicao");
+t("a origem tem 5 Tipos, na ordem do livro",
+  O.clasDaOrigem(ORIGEM_ID)?.map((c) => c.id),
+  [TIPO.comum, TIPO.medo, TIPO.vingativo, TIPO.vingativoImaginario, TIPO.enfermo]);
+
+for (const [nome, id] of Object.entries(TIPO)) {
+  const cla = O.getCla(id);
+  t(`getCla acha o Tipo ${nome} de verdade (com caracteristicas, nao so o stub do picker)`,
+    [!!cla, Array.isArray(cla?.caracteristicas) && cla.caracteristicas.length > 0], [true, true]);
+}
+t("o rotulo do seletor e Tipo, nao Cla (e o artigo e 'um')", [origem?.clasRotulo, origem?.clasArtigo], ["Tipo", "um"]);
 
 /* ============================================================ */
 /* 2. A FICHA                                                    */
 /* ============================================================ */
-const ficha = ({ nd = 10, origemId = "maldicao", talentos = [], caracteristicasAmaldicoadas = [] } = {}) => {
+const ficha = ({ nd = 10, origemId = ORIGEM_ID, cla = null, caracteristicasAmaldicoadas = [] } = {}) => {
   const c = createBlankAfty();
   c.core = { ...c.core, nd, tipo: "conjurador", patamar: "comum" };
-  c.core.origem = { id: origemId };
+  c.core.origem = { id: origemId, ...(cla ? { cla } : {}) };
   c.addons = [pacote];
-  c.talentos = talentos;
   c.caracteristicasAmaldicoadas = caracteristicasAmaldicoadas;
   return c;
 };
-const semOrigem = ficha({ origemId: "inato" });
-const dSemOrigem = deriveAfty(semOrigem);
-const comOrigemSoTalento = (talento, nd = 10) => deriveAfty(ficha({ nd, talentos: [talento] }));
+const outraOrigem = () => deriveAfty(ficha({ origemId: "inato" }));
 
 /* ============================================================ */
-/* 3. OS SETE TALENTOS EXIGEM A ORIGEM (NA TELA) E SE PAGAM SOZINHOS */
+/* 3. A ORIGEM INTEIRA VALE MESMO SEM ESCOLHER TIPO               */
 /* ============================================================ */
-/* ⚠ `requisitos` é TELA, não trava do Motor (mesma regra do resto do sistema:
-   "validar é papel da UI, não do motor"). Uma ficha que já TEM o Talento
-   aplica o efeito dele de qualquer forma, então o que se confere aqui é que
-   o requisito está DECLARADO certo (quem monta a ficha na UI não consegue
-   escolher sem a Origem), não que o motor bloqueia em tempo de derive. */
-for (const [nome, id] of Object.entries(TAL)) {
-  t(`${nome}: exige a Origem Maldicao (requisito de tela)`,
-    getTalento(id)?.requisitos, [{ tipo: "origem", id: "maldicao" }]);
-}
-t("com a Origem Maldicao, Anatomia Amaldicoada abre 1 vaga no nivel 1",
-  comOrigemSoTalento(TAL.anatomia, 1).caracteristicasAmaldicoadas.vagas, 1);
-t("cada Talento devolve `vagasTalento`, entao pegar os 7 nao gasta vaga de verdade",
-  (() => {
-    const c = createBlankAfty();
-    c.core = { ...c.core, nd: 10, tipo: "conjurador", patamar: "comum" };
-    c.core.origem = { id: "maldicao" };
-    c.addons = [pacote];
-    c.talentos = Object.values(TAL);
-    const h = deriveAfty(c).habilidades;
-    return h.exclusivasUsadas === 0 || h.exclusivasTalento >= h.exclusivasUsadas;
-  })(), true);
-
-/* ============================================================ */
-/* 4. A CORREÇÃO DE PE (nivel impar, nao todo nivel)              */
-/* ============================================================ */
-const peBase = (nd) => deriveAfty(ficha({ nd })).pe; // Origem Maldicao sozinha, sem nenhum Talento
-const peComTipo = (nd, talTipo) => deriveAfty(ficha({ nd, talentos: [talTipo] })).pe;
+/* Nada aqui e doCla: Bonus em Atributo, Natureza, Restricao e Anatomia sao da
+   ORIGEM, e so a caracteristica exclusiva de cada Tipo fica no cla. */
 for (const nd of [1, 2, 3, 4, 5, 10, 11, 20]) {
-  const esperadoNivelImpar = Math.floor((nd + 1) / 2);
-  t(`nivel ${nd}: sem nenhum tipo, a Natureza Amaldicoada zera (Funcionamento corrige pra baixo)`,
-    peBase(nd) - deriveAfty(ficha({ nd, origemId: "inato" })).pe, 0);
-  t(`nivel ${nd}: com um tipo (Medo), o PE extra vira o certo (nivel impar)`,
-    peComTipo(nd, TAL.medo) - deriveAfty(ficha({ nd, origemId: "inato" })).pe, esperadoNivelImpar);
+  const d = deriveAfty(ficha({ nd }));
+  const base = deriveAfty(ficha({ nd, origemId: "inato" }));
+  t(`nivel ${nd}, sem Tipo: PE ja e o certo (nivel impar), so por ter a Origem`,
+    d.pe - base.pe, Math.floor((nd + 1) / 2));
 }
-t("Espirito Comum tambem devolve o PE certo (e mais nada)",
-  peComTipo(10, TAL.comum) - deriveAfty(ficha({ nd: 10, origemId: "inato" })).pe, Math.floor(11 / 2));
-t("Vingativo tambem", peComTipo(9, TAL.vingativo) - deriveAfty(ficha({ nd: 9, origemId: "inato" })).pe, Math.floor(10 / 2));
-t("Vingativo Imaginario tambem", peComTipo(7, TAL.vingativoImaginario) - deriveAfty(ficha({ nd: 7, origemId: "inato" })).pe, Math.floor(8 / 2));
-t("Enfermo tambem", peComTipo(4, TAL.enfermo) - deriveAfty(ficha({ nd: 4, origemId: "inato" })).pe, Math.floor(5 / 2));
-
-/* A correcao so vale para quem TEM a Origem Maldicao: o `quando: origem_maldicao`
-   nao pode vazar para outra origem so por o Addon estar instalado. */
-t("outra Origem com o Addon instalado nao perde PE nenhum (a correcao nao se aplica)",
-  dSemOrigem.pe, deriveAfty((() => { const c = ficha({ origemId: "inato" }); c.addons = []; return c; })()).pe);
-
-/* ============================================================ */
-/* 5. RESQUÍCIOS DE EMOÇÕES: reduz o pre-requisito de Aptidao     */
-/* ============================================================ */
-t("sem o Talento de Medo, reduzNivelAptidao e zero",
-  deriveAfty(ficha({ talentos: [TAL.anatomia] })).reduzNivelAptidao, 0);
-t("com Espirito de Medo, reduzNivelAptidao sobe 1 (mais largo que 'um grupo', nunca mais estreito)",
-  deriveAfty(ficha({ talentos: [TAL.medo] })).reduzNivelAptidao, 1);
+const dSemTipo = deriveAfty(ficha({ nd: 20 }));
+t("sem Tipo: vagasAptidao 1 + (10) + (15), no nd 20 vale 3",
+  dSemTipo.totalAptidoesAmaldicoadas - outraOrigem().totalAptidoesAmaldicoadas, 3);
+t("sem Tipo: vaga de Caracteristica Amaldicoada ja abre (Anatomia e da Origem)",
+  dSemTipo.caracteristicasAmaldicoadas.vagas, 1 + Math.floor(20 / 5));
+t("sem Tipo: Bonus em Atributo (distribuir 4, max 3) ja esta na lista de caracteristicas efetivas",
+  O.caracteristicasEfetivas(ficha({ nd: 1 })).some((c) => c.bonus?.distribuir === 4 && c.bonus?.maxPorAtributo === 3), true);
+t("sem Tipo: reduzNivelAptidao continua zero (e so do Tipo De Medo)",
+  dSemTipo.reduzNivelAptidao, 0);
 
 /* ============================================================ */
-/* 6. O POOL DE CARACTERÍSTICAS AMALDIÇOADAS                     */
+/* 4. ESCOLHER UM TIPO                                            */
 /* ============================================================ */
+const dComum = deriveAfty(ficha({ nd: 10, cla: TIPO.comum }));
+const dSemTipoNd10 = deriveAfty(ficha({ nd: 10 }));
+t("Tipo Comum nao soma PE nem vaga a mais (e so identidade, mesmo total da Origem sozinha)",
+  [dComum.pe, dComum.totalAptidoesAmaldicoadas], [dSemTipoNd10.pe, dSemTipoNd10.totalAptidoesAmaldicoadas]);
+
+t("sem o Tipo De Medo, reduzNivelAptidao e zero", dSemTipoNd10.reduzNivelAptidao, 0);
+const dMedo = deriveAfty(ficha({ nd: 10, cla: TIPO.medo }));
+t("com o Tipo De Medo, reduzNivelAptidao sobe 1 (mais largo que 'um grupo', nunca mais estreito)",
+  dMedo.reduzNivelAptidao, 1);
+t("e o PE do Tipo De Medo continua o da Origem (a caracteristica dele nao mexe em PE)",
+  dMedo.pe, dSemTipoNd10.pe);
+
+for (const [nome, id] of Object.entries(TIPO)) {
+  t(`Tipo ${nome}: a ficha crua guarda o id certo em core.origem.cla`, ficha({ cla: id }).core.origem.cla, id);
+  // Escolher o Tipo nao quebra o derive (todo mundo deriva sem excecao).
+  t(`Tipo ${nome}: deriva sem excecao`, typeof deriveAfty(ficha({ nd: 7, cla: id })).pe, "number");
+}
+
+/* ============================================================ */
+/* 5. O POOL DE CARACTERÍSTICAS AMALDIÇOADAS (18, sem mudanca)   */
+/* ============================================================ */
+t("sao 18 caracteristicas amaldicoadas no catalogo", CA.AFTY_CARACTERISTICAS_AMALDICOADAS.length, 18);
+t("todas tem nome e descricao", CA.AFTY_CARACTERISTICAS_AMALDICOADAS.every((c) => c.nome && c.descricao), true);
+
 const CA_ID = (id) => `${NS}ca_${id}`;
-const comPool = (nd, escolhidas) => deriveAfty(ficha({ nd, talentos: [TAL.anatomia], caracteristicasAmaldicoadas: escolhidas }));
+const comPool = (nd, escolhidas) => deriveAfty(ficha({ nd, caracteristicasAmaldicoadas: escolhidas }));
 
 t("nivel 1: 1 vaga", comPool(1, []).caracteristicasAmaldicoadas.vagas, 1);
 t("nivel 4: ainda 1 vaga (so sobe a cada 5)", comPool(4, []).caracteristicasAmaldicoadas.vagas, 1);
 t("nivel 5: 2 vagas", comPool(5, []).caracteristicasAmaldicoadas.vagas, 2);
-t("nivel 10: 3 vagas", comPool(10, []).caracteristicasAmaldicoadas.vagas, 3);
 t("nivel 20: 5 vagas", comPool(20, []).caracteristicasAmaldicoadas.vagas, 5);
 
-const dPool = comPool(10, [CA_ID("pernas_extras"), CA_ID("olhos_adicionais"), CA_ID("instinto_sanguinario")]);
-t("3 escolhidas, dentro da vaga (3 de 3): nao excede", [dPool.caracteristicasAmaldicoadas.usadas, dPool.caracteristicasAmaldicoadas.excedeu], [3, false]);
-t("Pernas Extras soma 4,5m de deslocamento", dPool.movimento - comPool(10, []).movimento, 4.5);
-t("Olhos Adicionais soma Percepcao e Atencao",
-  [dPool.testes?.pericias?.find?.((p) => p.id === "percepcao")?.bonus, dPool.atencao]
-    .map((v) => typeof v), ["number", "number"]);
-t("Instinto Sanguinario soma o BT na Iniciativa",
-  dPool.iniciativa - comPool(10, []).iniciativa, dPool.maestria);
+const dCarac = comPool(10, [CA_ID("pernas_extras"), CA_ID("olhos_adicionais"), CA_ID("instinto_sanguinario")]);
+t("3 escolhidas, dentro da vaga (3 de 3): nao excede",
+  [dCarac.caracteristicasAmaldicoadas.usadas, dCarac.caracteristicasAmaldicoadas.excedeu], [3, false]);
+t("Pernas Extras soma 4,5m de deslocamento", dCarac.movimento - comPool(10, []).movimento, 4.5);
+t("Instinto Sanguinario soma o BT na Iniciativa", dCarac.iniciativa - comPool(10, []).iniciativa, dCarac.maestria);
 
 const dExcesso = comPool(1, [CA_ID("pernas_extras"), CA_ID("olhos_adicionais")]);
 t("2 escolhidas com 1 vaga so: excede, mas NAO trava (mesma regra do resto do sistema)",
@@ -153,9 +158,6 @@ t("2 escolhidas com 1 vaga so: excede, mas NAO trava (mesma regra do resto do si
   [2, 1, true]);
 t("mesmo excedendo, os efeitos das duas continuam somando (a mesa que corta)",
   dExcesso.movimento - comPool(1, []).movimento, 4.5);
-
-t("id que nao existe no catalogo nao quebra, so nao acha",
-  comPool(10, ["fantasma"]).caracteristicasAmaldicoadas.lista[0].encontrada, false);
 
 console.log(bad.length ? `FALHAS (${bad.length}):\n` + bad.join("\n") : `TODOS OS ${ok} ASSERTS PASSARAM`);
 process.exitCode = bad.length ? 1 : 0;

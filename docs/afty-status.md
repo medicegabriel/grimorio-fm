@@ -14424,49 +14424,63 @@ CMaps ToUnicode de cada fonte). Antes de escrever qualquer coisa, a sessão desc
 já existia: a origem `"maldicao"` (com Bônus em Atributo, Existência Metafísica e Natureza
 Amaldiçoada) e as 18 Aptidões de Maldição (categorias `mal_anatomia`, `mal_controle_leitura`,
 `mal_especiais`) já estavam no raw, esperando por este suplemento desde 2026-07-16/08-01. O autor
-decidiu, em duas rodadas de perguntas: (1) o suplemento entra como **Addon**, não no raw, apesar da
-origem já existir; (2) os 5 tipos **não** substituem a Natureza Amaldiçoada, entram por fora; (3)
-Restrição Amaldiçoada (nova) convive com Existência Metafísica (já existente); (4) o pool de
-Características Amaldiçoadas se constrói agora, motor incluso.
+decidiu: (1) o suplemento entra como **Addon**, não no raw; (2) o pool de Características
+Amaldiçoadas se constrói agora, motor incluso; (3) o Tipo se escolhe **na aba de Origem**, como o
+Clã do Herdado, e se preciso vira uma origem nova chamada "Maldição Era de Ouro".
 
-- **DSL nova**: `origem_maldicao` (`afty-efeitos.js`, `buildCriaturaDslContext`), 1 quando
-  `creature.core.origem.id === "maldicao"`. Mesmo espírito do `irmao_morto` dos Gêmeos: deixa um
-  Addon escrever `quando: "origem_maldicao"` sem tocar no raw. Threads em `afty-derive.js`, nos
-  dois pontos que montam o contexto (`ctxMontante` e `montarCtx`).
-- **Canal novo**: `vagasCaracteristicaAmaldicoada` (`afty-efeitos.js`, grupo Orçamentos), mesmo
-  papel do `vagasAptidao`.
-- **Catálogo novo, `afty-caracteristicas-amaldicoadas.js`** (FOLHA-ish): nasce VAZIO no raw (família
-  addon `caracteristicasAmaldicoadas`, `registrarFamilia`), porque as 18 características são
-  conteúdo do Addon, não do livro básico. `resolveCaracteristicasAmaldicoadas(creature, {nd, vagas})`
-  confere contra o catálogo e a vaga; excede avisa, não trava (mesma regra de sempre). O
-  `coletarEfeitosCriatura` (`afty-efeitos.js`) ganhou o parâmetro `caracteristicasAmaldicoadas` e lê
-  `efeitos` de DENTRO de cada entrada (mapa `{}`, resolvedor a função): é o mesmo caminho que já
-  existe para Talento de Addon, só que sem tabela nenhuma no raw.
+⚠ **A PRIMEIRA ENTREGA (v1) ERROU O DESENHO e foi refeita no mesmo dia.** Ela trazia os 5 Tipos como
+7 Talentos soltos (mais um Funcionamento que zerava a Natureza Amaldiçoada do raw e a variável de
+DSL `origem_maldicao`). O autor tentou usar e não achou o Tipo: ele estava enterrado numa lista de
+dezenas de Talentos, sem seletor. A v2 (esta) apaga tudo isso, e `origem_maldicao` saiu do motor.
+
+- **Origem de Addon que se divide em Tipos** (`addons/maldicao-era-de-ouro.json`, v2.0.0): origem
+  nova `maldicao_era_de_ouro`, "Maldição Era de Ouro", com `variacaoDe: "maldicao"`. O seletor de
+  Tipo aparece no card da Origem (aba Identidade), igual ao Clã do Herdado. Bônus em Atributo (pool
+  4, máx 3, limite +2 a cada 4 níveis), Natureza Amaldiçoada (aptidão a escolha, 10º e 15º nível, PE
+  a cada nível ÍMPAR), Restrição Amaldiçoada (texto longo, `mesa`) e Anatomia Amaldiçoada são da
+  ORIGEM inteira, valem sem escolher Tipo; só a característica exclusiva de cada Tipo mora no clã.
+  Os números de Origem e de Clã moram em `efeitos` na RAIZ do objeto (`origem.efeitos`,
+  `cla.efeitos`), nunca dentro de `caracteristicas[].efeitos`, que o motor não lê.
+- **Por que uma origem NOVA e não a `maldicao` remendada**: ela some do seletor de quem não instala
+  o Addon e tem nome e Tipos próprios. `variacaoDe: "maldicao"` faz `origemMae()` resolver para
+  `maldicao`, e é por isso que as 18 Aptidões de Maldição do raw (categoria travada em
+  `origemId: "maldicao"`) e todo Talento com requisito de Origem Maldição continuam alcançáveis. Foi
+  preciso acrescentar `"maldicao"` a `VARIACOES_ACEITAS` (`afty-origens.js`), a lista de mães aceitas
+  que até aqui só tinha `sem_tecnica`.
+- **Três remendos no motor para uma origem de Addon poder se dividir** (`afty-origens.js`):
+  1. `getCla()` só conhecia `CLAS_HERDADO`. Ganhou uma segunda busca em `origem.clas` de qualquer
+     origem, como rede de segurança.
+  2. A família `origens` ganhou `caminhosDeId: ["clas[].id"]`: sem isso o id do clã aninhado na
+     origem ficava CRU enquanto o do topo ganhava o prefixo do pacote, e o clã nunca era achado.
+  3. Os Tipos são declarados em DOIS lugares com o MESMO id: `acrescenta.origens[].clas` (só id e nome,
+     o que a tela lê para desenhar os botões) e `acrescenta.clas` (a definição inteira, que entra em
+     `CLAS_HERDADO` e é o que `getCla` acha primeiro). O `idsLocais` do pacote só conhece id de
+     entrada de TOPO de família, e é a declaração no topo que faz o id aninhado ganhar o prefixo.
+- **Rótulo do seletor por origem** (`AftyCreatureBuilder.jsx`): a origem pode declarar `clasRotulo`
+  ("Tipo") e `clasArtigo` ("um"); sem eles continua "Clã" e "um", como o Herdado sempre foi.
+- **Canal novo** `vagasCaracteristicaAmaldicoada` (`afty-efeitos.js`, grupo Orçamentos), mesmo papel
+  do `vagasAptidao`, e **catálogo novo** `afty-caracteristicas-amaldicoadas.js`, que nasce VAZIO no raw
+  (família de Addon `caracteristicasAmaldicoadas`). `resolveCaracteristicasAmaldicoadas` confere
+  contra o catálogo e a vaga (excede avisa, não trava). `coletarEfeitosCriatura` ganhou o parâmetro
+  `caracteristicasAmaldicoadas` e lê o `efeitos` de dentro de cada entrada.
 - **Primitiva `caracteristicasAmaldicoadas`** (nova, são 20): abre a aba "Características
-  Amaldiçoadas" no criador (`TabCaracteristicasAmaldicoadas`), um checklist simples contra o
-  catálogo do Addon, com contador de vagas.
-- **O addon `maldicao-era-de-ouro.json`**: sete Talentos, todos com `requisitos: [{tipo:"origem",
-  id:"maldicao"}]` (trava de TELA, não do motor, igual a todo requisito do sistema) e todos com
-  `vagasTalento: 1` (se pagam sozinhos, pegar os sete não gasta vaga de verdade). "Restrição
-  Amaldiçoada" e "Anatomia Amaldiçoada" são de todo Espírito; os outros cinco são os TIPOS
-  (Comum, de Medo, Vingativo, Vingativo Imaginário, Enfermo). Um Funcionamento do pacote
-  (`quando: "origem_maldicao"`) ZERA o PE da Natureza Amaldiçoada (`pe: -nd`), e cada um dos cinco
-  Talentos de tipo devolve o valor CERTO por cima (`pe: piso((nd+1)/2)`), porque este suplemento é
-  mais preciso que o raw: "a cada nível ÍMPAR", não "por nível" (todo nível). Sem nenhum dos cinco,
-  o PE extra da origem fica em zero, porque o livro não descreve Espírito Amaldiçoado sem tipo.
-  "Resquícios de Emoções" (Medo) usa `reduzNivelAptidao` para "reduzir o pré-requisito de nível de
-  um grupo de aptidões", mas o canal não tem alvo por grupo ainda: aplica mais LARGO que o texto
-  (todos os grupos), nunca mais estreito. As 18 Características Amaldiçoadas: a maioria é só texto
-  (chance probabilística, tipo de movimento, resistência a dano, dado de bônus, escolha de atributo
-  com estouro de limite, aliado da p.348 não têm canal), e as com número simples (Braços Extras,
-  Olhos Adicionais, Instinto Sanguinário, Olhos Sombrios, Pernas Extras) usam canais que já
-  existem. "Olhos Adicionais" existe TAMBÉM como Aptidão de Anatomia no raw, com número diferente:
-  são duas entradas de fato diferentes, mesmo nome do livro para as duas, por decisão do autor.
-- Asserts: `t-maldicao-era-de-ouro.mjs` (50), `t-primitivas.mjs` de 19 para 20.
-- Verificado ao vivo no navegador (Origem Maldição, os 7 Talentos, a aba de Características): PE
-  80 → 90 no ND 20 (Espírito de Medo), orçamento de Talento intacto (14/59, os 3 pegos não
-  gastaram vaga), Movimento 9m → 13,5m (Pernas Extras) e Iniciativa +3 → +9 (Instinto Sanguinário),
-  vagas 2/5, sem erro de console.
-- Ficou de fora, procedimento de mesa (sem canal no motor): o benefício condicional de "Espírito
-  Vingativo" contra o foco de vingança, o reviver de "Memórias Esquecidas", a redução de custo de
-  UMA técnica de "Epidemia sem Controle", e a maioria das Características (ver acima).
+  Amaldiçoadas" (Outros), um checklist contra o catálogo do Addon, com contador de vagas. Anatomia
+  Amaldiçoada (característica da Origem) dá 1 vaga no 1º nível e mais 1 a cada 5.
+- **Tipo De Medo**: "Resquícios de Emoções" usa `reduzNivelAptidao` para "reduzir o pré-requisito de
+  nível de um grupo de aptidões". O canal não tem alvo por grupo ainda: aplica mais LARGO que o texto
+  (todos os grupos), nunca mais estreito. Os outros 4 Tipos não somam número: "Espírito Vingativo"
+  (benefício condicional contra o foco), "Memórias Esquecidas" (reviver), "Epidemia sem Controle"
+  (redução de custo de UMA técnica) e "Afinidade Amaldiçoada" (Comum, só identidade) ficam em texto,
+  com o sinalizador de Mesa. Das 18 Características, a maioria é só texto (chance probabilística, tipo
+  de movimento, resistência a dano, dado de bônus, escolha de atributo com estouro de limite, aliado
+  da p.348); as com número simples (Braços Extras, Olhos Adicionais, Instinto Sanguinário, Olhos
+  Sombrios, Pernas Extras) usam canais que já existem. "Olhos Adicionais" existe TAMBÉM como Aptidão
+  de Anatomia no raw, com número diferente: duas entradas de fato diferentes, mesmo nome do livro.
+- Asserts: `t-maldicao-era-de-ouro.mjs` (50, reescrito para a v2), `t-primitivas.mjs` de 19 para 20.
+- Verificado ao vivo no navegador (ficha Afty nova, addon colado, Origem "Maldição Era de Ouro"): o
+  seletor **Tipo** aparece no card da Origem com os 5 Tipos e o aviso "Escolha um tipo"; PE 80 → 90
+  no ND 20 só de ter a Origem; escolher "De Medo" mostra "Maldição Era de Ouro > De Medo" e a
+  característica do Tipo; a aba Aptidões mostra a categoria Maldição com as 18 do raw, "0 / 3" de vagas
+  e os pré-requisitos de nível reduzidos em 1 pelo De Medo; a aba Características mostra "0 / 5" e, com
+  Pernas Extras e Instinto Sanguinário marcadas, "2 / 5", Movimento 9m → 13,5m e Iniciativa +3 → +9.
+  Sem erro de console.

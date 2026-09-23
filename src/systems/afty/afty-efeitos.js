@@ -841,14 +841,6 @@ export function buildCriaturaDslContext(base = {}) {
     /* Só os Gêmeos. O bônus de Iniciativa do OUTRO gêmeo, digitado pelo jogador:
        a Dupla Empenhada soma os dois e o irmão é outra ficha. */
     iniciativa_irmao: Math.trunc(Number(base.iniciativaIrmao) || 0),
-    /* A Origem desta criatura é Maldição? Nasceu em 2026-09-22 para um Addon
-       que precisa CORRIGIR um número que já mora na origem do livro (o PE de
-       Natureza Amaldiçoada) sem tocar no raw: o efeito do Addon se escreve
-       `quando: "origem_maldicao"` e vale só para quem tem essa origem, mesmo
-       que o Addon esteja instalado numa ficha de outra origem. Mesmo espírito
-       do `irmao_morto`, um degrau acima (aqui é Origem inteira, não um campo
-       dela). */
-    origem_maldicao: base.origemMaldicao ? 1 : 0,
 
     /* Qual dos seis atributos é o da TÉCNICA desta criatura, como seis bandeiras
        0/1. `mod_tecnica` já entrega o modificador, mas ele não serve para uma

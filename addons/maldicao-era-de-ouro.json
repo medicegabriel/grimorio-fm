@@ -1,96 +1,119 @@
 {
   "id": "maldicao-era-de-ouro",
   "nome": "Maldição - Era de Ouro",
-  "versao": "1.0.0",
+  "versao": "2.0.0",
   "autor": "Templas",
   "paraRaw": "afty",
-  "descricao": "Origem Maldição, do suplemento Era de Ouro. NÃO duplica o que o raw já tem (a Origem 'Maldição' com Bônus em Atributo, Existência Metafísica e Natureza Amaldiçoada, e as 18 Aptidões de Maldição): só acrescenta o que falta. Sete Talentos exigem `requisitos: origem maldicao` e se pagam sozinhos (`vagasTalento: 1`), então pegar todos não custa vaga de Talento de verdade. 'Anatomia Amaldiçoada' e 'Restrição Amaldiçoada' são de todo Espírito Amaldiçoado. Os outros cinco são os TIPOS do livro (Comum, de Medo, Vingativo, Vingativo Imaginário, Enfermo), um por Espírito: cada um traz só a parte NOVA dele, porque o Bônus em Atributo e o ponto de energia amaldiçoada adicional já saem da Natureza Amaldiçoada do raw. Único ajuste: o livro deste suplemento é mais preciso e diz 'a cada nível ÍMPAR' onde a Natureza Amaldiçoada do raw dá 'por nível' (todo nível); o Funcionamento deste pacote ZERA o PE dela (`pe: -nd`, ativo só com `origem_maldicao`), e cada um dos cinco Talentos de tipo devolve o valor certo (`piso((nd+1)/2)`) por cima. Sem nenhum dos cinco, o total de PE da Natureza Amaldiçoada zera de vez, porque o livro não descreve um Espírito Amaldiçoado sem tipo. Notas de motor: 'Resquícios de Emoções' pede reduzir o pré-requisito de nível de UM GRUPO de Aptidões, mas o canal `reduzNivelAptidao` só abaixa TODOS os grupos de uma vez (não existe canal por grupo ainda), então aplica mais largo que o texto, nunca mais estreito. 'Restrição Amaldiçoada', o benefício condicional de 'Espírito Vingativo' contra o foco de vingança, o reviver de 'Memórias Esquecidas' e a redução de custo de UMA técnica de 'Epidemia sem Controle' não têm canal (imunidade a régua de morte, escolha condicional em combate, revivificação e redução de custo de uma única técnica): ficam só no texto, procedimento de mesa. Além dos sete Talentos, o pacote acrescenta as 18 Características para Maldições (família `caracteristicasAmaldicoadas`, primitiva do mesmo nome) que a Anatomia Amaldiçoada libera (1 no 1° nível, +1 a cada 5 níveis): a maioria é só texto (chance probabilística, alcance, tipo de movimento, resistência a dano, dado de bônus em perícia, escolha de atributo com estouro de limite, aliado da página 348 não têm canal no motor), e as que dão um número simples (Braços Extras, Olhos Adicionais, Instinto Sanguinário, Olhos Sombrios, Pernas Extras) usam os canais que já existem. 'Olhos Adicionais' existe TAMBÉM como Aptidão de Anatomia no raw, com número diferente: são duas entradas de fato diferentes, o mesmo nome do livro para as duas, por decisão do autor.",
+  "descricao": "Origem Maldição, do suplemento Era de Ouro. Acrescenta a Origem 'Maldição Era de Ouro' (variação de 'maldicao': destrava as 18 Aptidões de Maldição do raw e qualquer Talento com requisito de Origem Maldição, mas some do seletor de quem não instala o Addon e mostra nome e Tipo próprios). Ela se divide em 5 Tipos de Espírito Amaldiçoado (Comum, De Medo, Vingativo, Vingativo Imaginário, Enfermo), escolhidos no card da Origem como o Clã do Herdado. Bônus em Atributo, Natureza Amaldiçoada (aptidão a escolha + 10°/15° nível + PE a cada nível ímpar), Restrição Amaldiçoada e Anatomia Amaldiçoada são da Origem inteira; só o Tipo muda entre os 5, e cada um traz a característica exclusiva dele. Anatomia Amaldiçoada libera o pool de Características Amaldiçoadas (`caracteristicasAmaldicoadas`, primitiva do mesmo nome): 18 entradas, 1 no 1° nível e mais 1 a cada 5 níveis. Notas de motor: 'Resquícios de Emoções' (Tipo De Medo) pede reduzir o pré-requisito de nível de UM GRUPO de Aptidões, mas o canal `reduzNivelAptidao` só abaixa TODOS os grupos de uma vez (não existe canal por grupo ainda), então aplica mais largo que o texto, nunca mais estreito. O benefício condicional de 'Espírito Vingativo' contra o foco de vingança, o reviver de 'Memórias Esquecidas' e a redução de custo de UMA técnica de 'Epidemia sem Controle' não têm canal (escolha condicional em combate, revivificação e redução de custo de uma única técnica): ficam só no texto, procedimento de mesa, com o sinalizador de Mesa na tela. Das 18 Características Amaldiçoadas, a maioria também é só texto (chance probabilística, tipo de movimento, resistência a dano, dado de bônus em perícia, escolha de atributo com estouro de limite, aliado da página 348 não têm canal), e as com número simples (Braços Extras, Olhos Adicionais, Instinto Sanguinário, Olhos Sombrios, Pernas Extras) usam canais que já existem. 'Olhos Adicionais' existe TAMBÉM como Aptidão de Anatomia no raw, com número diferente: são duas entradas de fato diferentes, o mesmo nome do livro para as duas, por decisão do autor.",
   "permite": ["caracteristicasAmaldicoadas"],
-  "funcionamentos": [
-    {
-      "id": "correcao_natureza_amaldicoada",
-      "nome": "Correção da Natureza Amaldiçoada",
-      "descricao": "Este suplemento é mais preciso que a Origem do raw sobre o PE adicional da Natureza Amaldiçoada: é a cada nível ÍMPAR, não a cada nível (todo nível). Este Funcionamento zera o PE dela; um dos sete Talentos deste pacote (os cinco tipos) devolve o valor certo por cima.",
-      "efeitos": [
-        { "canal": "pe", "expr": "-nd", "quando": "origem_maldicao", "nome": "Natureza Amaldiçoada (zerada, ver Talento de tipo)" }
-      ]
-    }
-  ],
   "acrescenta": {
-    "talentos": [
+    "origens": [
       {
-        "id": "tal_restricao_amaldicoada",
-        "nome": "Restrição Amaldiçoada",
-        "grupo": "geral",
-        "descricao": "Um Espírito Amaldiçoado é composto puramente de energia amaldiçoada, sendo limitado a utilizar única e exclusivamente energia amaldiçoada para tudo. Sempre que receber um ataque provindo de energia reversa, o dano é tratado como vulnerável, mas não pode ser finalizado por objetos que não possuam energia amaldiçoada, também não pode ser finalizado por danos naturais como queda, estruturas e coisas do tipo, também não pode ser afetado ou morto por doenças mundanas e não precisa respirar, mas também não recebe benefícios de comida.",
-        "requisitos": [{ "tipo": "origem", "id": "maldicao" }],
-        "efeitos": [{ "canal": "vagasTalento", "expr": "1", "nome": "Restrição Amaldiçoada" }]
-      },
-      {
-        "id": "tal_anatomia_amaldicoada",
-        "nome": "Anatomia Amaldiçoada",
-        "grupo": "geral",
-        "descricao": "Um Espírito Amaldiçoado pode apresentar algumas mudanças em seu corpo devido a instabilidade de energia amaldiçoada, o permitindo receber algumas modificações. Recebe no nível 1 uma característica amaldiçoada, recebendo outra a cada 5 níveis.",
-        "requisitos": [{ "tipo": "origem", "id": "maldicao" }],
+        "id": "maldicao_era_de_ouro",
+        "nome": "Maldição Era de Ouro",
+        "variacaoDe": "maldicao",
+        "clasRotulo": "Tipo",
+        "clasArtigo": "um",
+        "bonusAtributos": {},
+        "clas": [
+          { "id": "tipo_comum", "nome": "Comum" },
+          { "id": "tipo_medo", "nome": "De Medo" },
+          { "id": "tipo_vingativo", "nome": "Vingativo" },
+          { "id": "tipo_vingativo_imaginario", "nome": "Vingativo Imaginário" },
+          { "id": "tipo_enfermo", "nome": "Enfermo" }
+        ],
+        "caracteristicas": [
+          {
+            "id": "bonus_atributo",
+            "nome": "Bônus em Atributo",
+            "descricao": "Uma maldição recebe 4 pontos adicionais para distribuir entre os seus atributos, com um máximo de 3 pontos no mesmo atributo. A cada 4 níveis, você pode aumentar o limite de um atributo em 2.",
+            "bonus": { "distribuir": 4, "maxPorAtributo": 3 },
+            "poolLimite": { "porNivel": 4, "valor": 2 }
+          },
+          {
+            "id": "natureza_amaldicoada",
+            "nome": "Natureza Amaldiçoada",
+            "descricao": "Com uma natureza que deriva da própria energia, você já surgiu mais familiarizado com ela e consegue atingir novos patamares mais facilmente. Você recebe uma aptidão amaldiçoada a sua escolha, e outra no 10° e 15° nível, as quais você deve atender os requisitos. Além disso, você recebe 1 ponto de energia amaldiçoada adicional a cada nível ímpar."
+          },
+          {
+            "id": "restricao_amaldicoada",
+            "nome": "Restrição Amaldiçoada",
+            "descricao": "Um Espírito Amaldiçoado é composto puramente de energia amaldiçoada, sendo limitado a utilizar única e exclusivamente energia amaldiçoada para tudo. Sempre que receber um ataque provindo de energia reversa, o dano é tratado como vulnerável, mas não pode ser finalizado por objetos que não possuam energia amaldiçoada, também não pode ser finalizado por danos naturais como queda, estruturas e coisas do tipo, também não pode ser afetado ou morto por doenças mundanas e não precisa respirar, mas também não recebe benefícios de comida.",
+            "mesa": true
+          },
+          {
+            "id": "anatomia_amaldicoada",
+            "nome": "Anatomia Amaldiçoada",
+            "descricao": "Um Espírito Amaldiçoado pode apresentar algumas mudanças em seu corpo devido a instabilidade de energia amaldiçoada, o permitindo receber algumas modificações. Recebe no nível 1 uma característica amaldiçoada, recebendo outra a cada 5 níveis."
+          }
+        ],
         "efeitos": [
-          { "canal": "vagasTalento", "expr": "1", "nome": "Anatomia Amaldiçoada" },
+          { "canal": "vagasAptidao", "expr": "1 + (nd >= 10) + (nd >= 15)", "nome": "Natureza Amaldiçoada" },
+          { "canal": "pe", "expr": "piso((nd + 1) / 2)", "nome": "Natureza Amaldiçoada" },
           { "canal": "vagasCaracteristicaAmaldicoada", "expr": "1 + piso(nd / 5)", "nome": "Anatomia Amaldiçoada" }
         ]
-      },
+      }
+    ],
+    "clas": [
       {
-        "id": "tal_espirito_comum",
-        "nome": "Espírito Amaldiçoado Comum",
-        "grupo": "geral",
-        "descricao": "Esses espíritos são caracterizados por não possuírem um local exato como seu ninho ou até mesmo um local de fortalecimento, vagando sempre a procura de pessoas emocionalmente instáveis para se alimentarem e parasitarem seus corpos. (Exemplo: Maldições que o Geto consumia em jujutsu kaisen 0 e também da moça da padaria do flashback do nanami.)\n\nAfinidade Amaldiçoada. Um Espírito Amaldiçoado Comum recebe uma Aptidão Amaldiçoada a sua escolha e outra no 10° e 15° nível, as quais você deve atender os requisitos, além de 1 ponto de energia amaldiçoada adicional a cada nível ímpar. A aptidão a escolha e o PE já são a Natureza Amaldiçoada da Origem: escolher este Talento é assumir o tipo Comum, sem nada mecanicamente novo além dela.",
-        "requisitos": [{ "tipo": "origem", "id": "maldicao" }],
-        "efeitos": [
-          { "canal": "vagasTalento", "expr": "1", "nome": "Espírito Amaldiçoado Comum" },
-          { "canal": "pe", "expr": "piso((nd + 1) / 2)", "nome": "Afinidade Amaldiçoada" }
+        "id": "tipo_comum",
+        "nome": "Comum",
+        "caracteristicas": [
+          {
+            "id": "afinidade_amaldicoada",
+            "nome": "Afinidade Amaldiçoada",
+            "descricao": "Esses espíritos são caracterizados por não possuírem um local exato como seu ninho ou até mesmo um local de fortalecimento, vagando sempre a procura de pessoas emocionalmente instáveis para se alimentarem e parasitarem seus corpos. (Exemplo: Maldições que o Geto consumia em jujutsu kaisen 0 e também da moça da padaria do flashback do nanami.) A aptidão a escolha e o ponto de energia amaldiçoada adicional já são a Natureza Amaldiçoada da Origem: este Tipo não soma nada mecanicamente novo além dela."
+          }
         ]
       },
       {
-        "id": "tal_espirito_medo",
-        "nome": "Espírito Amaldiçoado de Medo",
-        "grupo": "geral",
-        "descricao": "Esses espíritos são caracterizados por se originarem de medos e fobias humanas, possuindo grande poder desde sua formação e não precisam parasitar humanos para se fortalecerem, aumentando seu poder conforme o medo que lhe formou cresce. (Exemplo: Maldições do Desastre e Mahito.)\n\nResquícios de Emoções. Um Espírito Amaldiçoado de Medo tem a capacidade de reduzir o pré-requisito de nível de um grupo de aptidões em 1. Além disso, você recebe +1 ponto de energia amaldiçoada adicional a cada nível ímpar.",
-        "requisitos": [{ "tipo": "origem", "id": "maldicao" }],
+        "id": "tipo_medo",
+        "nome": "De Medo",
+        "caracteristicas": [
+          {
+            "id": "resquicios_de_emocoes",
+            "nome": "Resquícios de Emoções",
+            "descricao": "Esses espíritos são caracterizados por se originarem de medos e fobias humanas, possuindo grande poder desde sua formação e não precisam parasitar humanos para se fortalecerem, aumentando seu poder conforme o medo que lhe formou cresce. (Exemplo: Maldições do Desastre e Mahito.) Um Espírito Amaldiçoado de Medo tem a capacidade de reduzir o pré-requisito de nível de um grupo de aptidões em 1."
+          }
+        ],
         "efeitos": [
-          { "canal": "vagasTalento", "expr": "1", "nome": "Espírito Amaldiçoado de Medo" },
-          { "canal": "pe", "expr": "piso((nd + 1) / 2)", "nome": "Resquícios de Emoções" },
           { "canal": "reduzNivelAptidao", "expr": "1", "nome": "Resquícios de Emoções" }
         ]
       },
       {
-        "id": "tal_espirito_vingativo",
-        "nome": "Espírito Amaldiçoado Vingativo",
-        "grupo": "geral",
-        "descricao": "Esses espíritos amaldiçoados são formados quando um humano morre e se torna um espírito amaldiçoado, seja por posteriormente ser um xamã e acabar por ser morto sem uso de energia amaldiçoada, ou por ter sido amaldiçoado de alguma forma por um xamã. Esses espíritos possuem uma força impressionante e possuem um aumento considerável baseado nas emoções que sentem. (Exemplos: Rika Orimoto e Naoya.)\n\nEspírito Vingativo. Um Espírito Amaldiçoado Vingativo renasce com um foco de vingança: ao criar esse tipo de maldição, o jogador deve definir quem ou o que é a sua vingança (Pessoas que assassinam por prazer, traidores ou ser específico). Sempre que estiver lutando contra o seu foco, pode escolher um dos seguintes benefícios: receber uma quantidade de níveis de dano em sua arma (equipamento ou natural) igual a metade do seu bônus de treinamento, receber um aumento na sua classe de dificuldade igual a metade do seu bônus de treinamento, ou +2 de acerto multiplicado pela metade do seu bônus de treinamento arredondado para baixo em seus feitiços. Além disso, você recebe +1 ponto de energia amaldiçoada adicional a cada nível ímpar.",
-        "requisitos": [{ "tipo": "origem", "id": "maldicao" }],
-        "efeitos": [
-          { "canal": "vagasTalento", "expr": "1", "nome": "Espírito Amaldiçoado Vingativo" },
-          { "canal": "pe", "expr": "piso((nd + 1) / 2)", "nome": "Espírito Vingativo" }
+        "id": "tipo_vingativo",
+        "nome": "Vingativo",
+        "caracteristicas": [
+          {
+            "id": "espirito_vingativo",
+            "nome": "Espírito Vingativo",
+            "descricao": "Esses espíritos amaldiçoados são formados quando um humano morre e se torna um espírito amaldiçoado, seja por posteriormente ser um xamã e acabar por ser morto sem uso de energia amaldiçoada, ou por ter sido amaldiçoado de alguma forma por um xamã. Esses espíritos possuem uma força impressionante e possuem um aumento considerável baseado nas emoções que sentem. (Exemplos: Rika Orimoto e Naoya.) Um Espírito Amaldiçoado Vingativo renasce com um foco de vingança: ao criar esse tipo de maldição, o jogador deve definir quem ou o que é a sua vingança (Pessoas que assassinam por prazer, traidores ou ser específico). Sempre que estiver lutando contra o seu foco, pode escolher um dos seguintes benefícios: receber uma quantidade de níveis de dano em sua arma (equipamento ou natural) igual a metade do seu bônus de treinamento, receber um aumento na sua classe de dificuldade igual a metade do seu bônus de treinamento, ou +2 de acerto multiplicado pela metade do seu bônus de treinamento arredondado para baixo em seus feitiços.",
+            "mesa": true
+          }
         ]
       },
       {
-        "id": "tal_espirito_vingativo_imaginario",
-        "nome": "Espírito Amaldiçoado Vingativo Imaginário",
-        "grupo": "geral",
-        "descricao": "Esses espíritos são formados por mitos e lendas que trazem medo a humanidade, como criaturas do folclore, lendas urbanas, creepypastas e até mesmo outras formas de espalhar o medo com criaturas fantasiosas. Funcionam basicamente como uma quimera dos espíritos vingativos e de medo, tendo locais e sentimentos que o fortalecem, mas também possuindo mais poder baseado no medo que os humanos sentem de si. (Exemplo: Tamamo-no-mae e Ganesha.)\n\nMemórias Esquecidas. Um Espírito Amaldiçoado Vingativo Imaginário é criado a partir de lendas, e como dizem 'Lendas nunca morrem', então sempre que a maldição morrer ela pode gastar 15 focos de interlúdio para reviver com metade do nível após 7 dias úteis (na vida real) depois, no lugar onde nasceu sua lenda (Templo, túmulo, ruína, etc). Além disso, você recebe +1 ponto de energia amaldiçoada adicional a cada nível ímpar.",
-        "requisitos": [{ "tipo": "origem", "id": "maldicao" }],
-        "efeitos": [
-          { "canal": "vagasTalento", "expr": "1", "nome": "Espírito Amaldiçoado Vingativo Imaginário" },
-          { "canal": "pe", "expr": "piso((nd + 1) / 2)", "nome": "Memórias Esquecidas" }
+        "id": "tipo_vingativo_imaginario",
+        "nome": "Vingativo Imaginário",
+        "caracteristicas": [
+          {
+            "id": "memorias_esquecidas",
+            "nome": "Memórias Esquecidas",
+            "descricao": "Esses espíritos são formados por mitos e lendas que trazem medo a humanidade, como criaturas do folclore, lendas urbanas, creepypastas e até mesmo outras formas de espalhar o medo com criaturas fantasiosas. Funcionam basicamente como uma quimera dos espíritos vingativos e de medo, tendo locais e sentimentos que o fortalecem, mas também possuindo mais poder baseado no medo que os humanos sentem de si. (Exemplo: Tamamo-no-mae e Ganesha.) Um Espírito Amaldiçoado Vingativo Imaginário é criado a partir de lendas, e como dizem 'Lendas nunca morrem', então sempre que a maldição morrer ela pode gastar 15 focos de interlúdio para reviver com metade do nível após 7 dias úteis (na vida real) depois, no lugar onde nasceu sua lenda (Templo, túmulo, ruína, etc).",
+            "mesa": true
+          }
         ]
       },
       {
-        "id": "tal_espirito_enfermo",
-        "nome": "Espírito Amaldiçoado Enfermo",
-        "grupo": "geral",
-        "descricao": "Esses espíritos amaldiçoados são formados da energia amaldiçoada e pensamentos negativos de humanos que estejam passando por alguma enfermidade. Diferente de espíritos amaldiçoados comuns e até mesmo de outras classificações, esses espíritos já são formados com seu feitiço inato, sendo uma propagação amaldiçoada de sua doença, além de serem fortalecidos por quem carrega sua enfermidade. (Exemplo: Maldição da Varíola.)\n\nEpidemia sem Controle. Um Espírito Amaldiçoado Enfermo tem uma redução de 2PE no custo de uma técnica que é usada após infectar uma criatura. Além disso, você recebe +1 ponto de energia amaldiçoada adicional a cada nível ímpar.",
-        "requisitos": [{ "tipo": "origem", "id": "maldicao" }],
-        "efeitos": [
-          { "canal": "vagasTalento", "expr": "1", "nome": "Espírito Amaldiçoado Enfermo" },
-          { "canal": "pe", "expr": "piso((nd + 1) / 2)", "nome": "Epidemia sem Controle" }
+        "id": "tipo_enfermo",
+        "nome": "Enfermo",
+        "caracteristicas": [
+          {
+            "id": "epidemia_sem_controle",
+            "nome": "Epidemia sem Controle",
+            "descricao": "Esses espíritos amaldiçoados são formados da energia amaldiçoada e pensamentos negativos de humanos que estejam passando por alguma enfermidade. Diferente de espíritos amaldiçoados comuns e até mesmo de outras classificações, esses espíritos já são formados com seu feitiço inato, sendo uma propagação amaldiçoada de sua doença, além de serem fortalecidos por quem carrega sua enfermidade. (Exemplo: Maldição da Varíola.) Um Espírito Amaldiçoado Enfermo tem uma redução de 2PE no custo de uma técnica que é usada após infectar uma criatura.",
+            "mesa": true
+          }
         ]
       }
     ],

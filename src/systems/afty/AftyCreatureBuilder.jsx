@@ -8018,12 +8018,22 @@ function OrigemCard({ draft, derived, patch, patchCore, setOrigemId, setOrigemBo
         </div>
       )}
 
-      {/* clãs: só o Herdado se divide, e sem clã ele não tem conteúdo nenhum */}
+      {/* clãs: origem que se divide (Herdado no livro, e uma origem de Addon
+          pode se dividir do mesmo jeito, ver `clasDaOrigem`). Sem clã ela não
+          tem conteúdo nenhum. O RÓTULO é da origem (`clasRotulo`/`clasArtigo`):
+          o livro chama de "Clã" no Herdado e de outra coisa numa origem de
+          Addon (Maldição Era de Ouro chama de "Tipo"), e "Clã" seria o nome
+          errado lá. `clasArtigo` é só o artigo indefinido da frase de aviso
+          ("um Clã" / "um Tipo"), para não adivinhar gênero por código. */}
       {clas && (
         <div className="mt-4">
           <div className="flex items-center justify-between mb-1.5">
-            <span className="text-[10px] uppercase tracking-wider text-slate-400">Clã</span>
-            {faltaCla && <span className="text-[11px] text-amber-300">Escolha um clã para receber as características</span>}
+            <span className="text-[10px] uppercase tracking-wider text-slate-400">{origem.clasRotulo || "Clã"}</span>
+            {faltaCla && (
+              <span className="text-[11px] text-amber-300">
+                Escolha {origem.clasArtigo || "um"} {(origem.clasRotulo || "Clã").toLowerCase()} para receber as características
+              </span>
+            )}
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {clas.map((c) => {
