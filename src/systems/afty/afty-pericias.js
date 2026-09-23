@@ -1452,6 +1452,27 @@ export function resolveTestes(creature, ctx = {}) {
     const partesFixo = ofertasFixas.filter((o) => (Number(o.valor) || 0) === fixo).slice(0, 1);
     const bonusProprio = bonusDe(atributo, prof) + bonusPorAtributo("bonusPericia", p.id, atributo)
       + penalidadeDe(atributo);
+    /* DADOS SOMADOS A ESTA PERÍCIA (canal `dadosPericia`, 2026-09-23), o irmão do
+       `dadosTR`: o Corpo Especializado soma "1d4" numa perícia escolhida. O alvo do
+       canal é `<pericia>:d<faces>`, então a pergunta é feita uma vez por dado
+       possível. Os dados viajam ao lado do bônus, e não dentro dele, como no TR.
+
+       ⚠ SÓ ENTRAM NA LINHA QUANDO EXISTEM. O TR sempre devolve `dadosExtras`,
+       mas a perícia nunca devolveu, e mexer no formato de toda linha para a
+       maioria das fichas, que não tem dado nenhum, seria custo sem ganho. */
+    const dadosDaPericia = FACES_NOMEADAS
+      .map((faces) => ({ faces, qtd: Math.trunc(bonusDeEfeito("dadosPericia", `${p.id}:d${faces}`)) }))
+      .filter((g) => g.qtd > 0);
+    const textoDosDados = dadosDaPericia.map((g) => `${g.qtd}d${g.faces}`).join(" + ");
+    const partesDosDados = FACES_NOMEADAS.flatMap((faces) =>
+      partesDeEfeito("dadosPericia", `${p.id}:d${faces}`)
+        .map((x) => ({ label: x.label, texto: `${x.valor}d${faces}` })));
+    const comDados = (bonus) => (dadosDaPericia.length
+      ? {
+        dadosExtras: dadosDaPericia,
+        textoBonus: `${bonus >= 0 ? "+" : "−"}${Math.abs(bonus)} + ${textoDosDados}`,
+      }
+      : {});
     if (fixo > bonusProprio) {
       return {
         ...p,
@@ -1466,7 +1487,8 @@ export function resolveTestes(creature, ctx = {}) {
         profEscolhida: escolhida,
         concedida: !!prof && prof !== escolhida,
         bonus: fixo,
-        partes: partesFixo,
+        partes: [...partesFixo, ...partesDosDados],
+        ...comDados(fixo),
       };
     }
     return {
@@ -1493,7 +1515,9 @@ export function resolveTestes(creature, ctx = {}) {
         ...parteProficiencia(prof),
         ...partePenalidade(atributo),
         ...partesPorAtributo("bonusPericia", p.id, atributo),
+        ...partesDosDados,
       ],
+      ...comDados(bonusProprio),
     };
   });
 

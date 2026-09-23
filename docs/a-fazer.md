@@ -36,6 +36,19 @@ arquivo md. Para outros colaboradores usarem ele também e ir anotando oq for pr
 
 Coisas paradas esperando decisão de regra. Nada aqui deve ser resolvido por suposição.
 
+### Maldição - Era de Ouro: o que ainda é só texto, e o que vale mais largo que o livro
+**Onde:** `addons/maldicao-era-de-ouro.json` (`acrescenta.caracteristicasAmaldicoadas` e o Tipo De Medo) e `src/systems/afty/afty-efeitos.js` (os canais)
+**Situação:** das 18 do pool, 9 têm número no Motor e 9 se declaram `mesa` (a marca "Mesa" na tela, e um assert em `asserts/t-maldicao-era-de-ouro.mjs` cobra que nenhuma fique muda). As de mesa ficam assim por falta de mecanismo, e cada uma pede uma decisão de desenho antes de virar número. Nenhuma foi suposta.
+1. **Articulações Extensas** (*"o alcance dos seus ataques corpo a corpo aumenta em 1,5 metros"*). Não existe canal de alcance: o "Espaço/alcance" da criatura sai do Tamanho. Proposta: um canal `alcanceCorpoACorpo` (metros), somado ao alcance mostrado no Tamanho e na linha do Ataque. Falta o autor dizer se o alcance do Ataque Básico, o das armas e o dos Feitiços corpo a corpo somam todos.
+2. **Capacidade de Voo e de Nado** (*"transformar seu deslocamento de caminhada em deslocamento de voo"*, uma vez por rodada, ação livre). O `movimento` é um número só. Proposta: um estado de bancada "Voando" e "Nadando" que apenas rotula o deslocamento já calculado, sem canal novo. Falta o autor dizer se voo e nado têm cálculo próprio (multiplicador, teto) ou se vale o número da caminhada, como o texto diz.
+3. **Braços Extras, o "+2 em Atletismo se tiver pelo menos duas mãos livres"**. Não há estado de mãos livres. Proposta: um interruptor de mesa "Mãos Livres" na aba de Estados (`gatilhoSessao`) que liga o +2. Falta confirmar se um interruptor serve para um bônus que depende do inventário.
+4. **Alma Maldita** (dano na alma pela metade, anulado no 15°, 2/3/4/5 usos por dia). O `rdAlma` é RD fixa, e o texto é uma fração mais usos por descanso. Proposta: um contador de usos por descanso (a peça que a `curaUsos` já usa) mais a marca Mesa para a metade. Falta o autor dizer se o Afty tem "usos por dia" genérico para característica de origem.
+5. **Guia Espiritual** (*"recebe um aliado seguindo as regras da página 348"*). O Afty tem o teto de aliados por Grau (`limiteDeAliados`). Falta o autor dizer se o Guia é UM ALIADO A MAIS que o teto, ou só o direito de ter um dentro dele.
+6. **Anatomia Incompreensível, Devorador de Energia, Energia Tóxica e Presença Nefasta** são reações e testes de mesa (chance de 1 em 1d4, 1 PE temporário cumulativo, perda de vida igual ao modificador de Constituição, teste de Vontade contra a CD Amaldiçoada). O Motor não modela reação. Ficam em Mesa até o autor pedir uma "Ação de Reação" nativa na Ficha.
+7. **Tipo De Medo, "Resquícios de Emoções"** (*"reduzir o pré-requisito de nível de UM grupo de aptidões em 1"*). O canal `reduzNivelAptidao` não tem alvo por grupo, então o pacote aplica em TODOS os grupos, mais largo que o livro e nunca mais estreito. Proposta: um `alvo` de grupo no canal (Aura, Controle e Leitura, Barreira, Domínio, Maldição, Especiais), com a escolha do grupo no card da Origem, e o `avaliarRequisitoAptidao` lendo o desconto do grupo da aptidão. Falta o autor dizer se a escolha do grupo é fixa ou se pode ser trocada.
+**Precisa:** a decisão do autor em cada item, e só então o canal ou o estado correspondente.
+**Anotado:** 2026-09-23, ao fazer as Características Amaldiçoadas com escolha mexerem no número
+
 ### Sem Técnica - Liberto: seis leituras para confirmar
 **Onde:** `addons/sem-tecnica-liberto.json` (o pacote) e `asserts/t-liberto.mjs` (as expectativas)
 **Situação:** o pacote foi entregue em 2026-09-21 e funciona, mas o texto do autor deixou seis pontos abertos, e cada um saiu pela leitura abaixo. Todas são DADO do pacote, então trocar qualquer uma é editar o JSON e o assert, sem código.

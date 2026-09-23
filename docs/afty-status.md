@@ -14464,18 +14464,18 @@ dezenas de Talentos, sem seletor. A v2 (esta) apaga tudo isso, e `origem_maldica
   contra o catálogo e a vaga (excede avisa, não trava). `coletarEfeitosCriatura` ganhou o parâmetro
   `caracteristicasAmaldicoadas` e lê o `efeitos` de dentro de cada entrada.
 - **Primitiva `caracteristicasAmaldicoadas`** (nova, são 20): abre a aba "Características
-  Amaldiçoadas" (Outros), um checklist contra o catálogo do Addon, com contador de vagas. Anatomia
+  Amaldiçoadas" (Outros), um cartão por entrada do catálogo do Addon, com contador de vagas (checklist
+  na v2.0.0, cartão no molde da Aptidão desde 2026-09-23). Anatomia
   Amaldiçoada (característica da Origem) dá 1 vaga no 1º nível e mais 1 a cada 5.
 - **Tipo De Medo**: "Resquícios de Emoções" usa `reduzNivelAptidao` para "reduzir o pré-requisito de
   nível de um grupo de aptidões". O canal não tem alvo por grupo ainda: aplica mais LARGO que o texto
   (todos os grupos), nunca mais estreito. Os outros 4 Tipos não somam número: "Espírito Vingativo"
   (benefício condicional contra o foco), "Memórias Esquecidas" (reviver), "Epidemia sem Controle"
   (redução de custo de UMA técnica) e "Afinidade Amaldiçoada" (Comum, só identidade) ficam em texto,
-  com o sinalizador de Mesa. Das 18 Características, a maioria é só texto (chance probabilística, tipo
-  de movimento, resistência a dano, dado de bônus, escolha de atributo com estouro de limite, aliado
-  da p.348); as com número simples (Braços Extras, Olhos Adicionais, Instinto Sanguinário, Olhos
-  Sombrios, Pernas Extras) usam canais que já existem. "Olhos Adicionais" existe TAMBÉM como Aptidão
-  de Anatomia no raw, com número diferente: duas entradas de fato diferentes, mesmo nome do livro.
+  com o sinalizador de Mesa. Das 18 Características, o que entrou no Motor e o que ficou em texto
+  está na sessão de 2026-09-23, logo abaixo (na v2.0.0 as que pedem escolha eram checkbox puro e não
+  mexiam em número nenhum). "Olhos Adicionais" existe TAMBÉM como Aptidão de Anatomia no raw, com
+  número diferente: duas entradas de fato diferentes, mesmo nome do livro.
 - Asserts: `t-maldicao-era-de-ouro.mjs` (50, reescrito para a v2), `t-primitivas.mjs` de 19 para 20.
 - Verificado ao vivo no navegador (ficha Afty nova, addon colado, Origem "Maldição Era de Ouro"): o
   seletor **Tipo** aparece no card da Origem com os 5 Tipos e o aviso "Escolha um tipo"; PE 80 → 90
@@ -14484,3 +14484,104 @@ dezenas de Talentos, sem seletor. A v2 (esta) apaga tudo isso, e `origem_maldica
   e os pré-requisitos de nível reduzidos em 1 pelo De Medo; a aba Características mostra "0 / 5" e, com
   Pernas Extras e Instinto Sanguinário marcadas, "2 / 5", Movimento 9m → 13,5m e Iniciativa +3 → +9.
   Sem erro de console.
+
+## SESSÃO DE 2026-09-23: MALDIÇÃO - ERA DE OURO v2.1 (CARACTERÍSTICAS COM ESCOLHA, DADO EM PERÍCIA E O ACESSO DA ORIGEM NOVA)
+
+O autor testou a v2 e mandou três recados seguidos: *"Ele perdeu acesso as aptidoes de maldiçao faça
+ele tbm conseguir acessar"*, *"confira as Características amaldiçoadas, elas algumas nao estao
+modificando corretamente, como selecionar [...] ou ate mesmo atributos"* e *"lembre de tirar acesso de
+energia reversa apos conseguir o acesso as apotidoes de maldiçao"*.
+
+### O acesso às Aptidões de Maldição não era bug do código de hoje
+
+- **Reproduzido.** O JSON da v2 rodando no código da v1 (commit `b33afe9`) dá exatamente os dois
+  sintomas juntos, porque a lista de mães aceitas (`VARIACOES_ACEITAS`) ali só tinha `sem_tecnica`. O
+  `variacaoDe: "maldicao"` é ignorado (`origemMae` devolve a própria origem nova), a aba de Energia
+  Reversa fica, a de Maldição não aparece, e a trilha ER continua no Nível de Aptidão. O app NÃO recusa o
+  pacote nesse caso: só relata, no retorno do `aplicarAddons`, *"variacaoDe ainda não aceita maldicao,
+  só sem_tecnica"*. ⚠ E os três chamadores (o criador, a Ficha e o Encontro) JOGAVAM O RETORNO FORA, então
+  o motor velho falhava calado: a origem aparecia no seletor e não havia uma palavra na tela.
+- **No código de hoje (`7d55f9a`) as duas metades da regra da Maldição já valem para a origem nova:**
+  GANHA a categoria Maldição (as 18 do raw) e PERDE a trilha, a aba e o Treino de Energia Reversa.
+  Medido em 360 combinações (2 sistemas, 3 Tipos de criatura, os 5 Tipos da origem mais nenhum, 10 faixas
+  de ND), no navegador em dev e na build de produção, criando a ficha do zero e subindo a v1 para a v2
+  pelo botão "Trocar pela versão".
+- **O relato chegou 4 minutos depois do commit**, com o deploy ainda no ar da v1. Não houve mudança de
+  código por isso. O que ficou foi a PROVA: a seção 6 de `asserts/t-maldicao-era-de-ouro.mjs` cobra o
+  acesso e a perda da ER, fica vermelha contra o motor da v1 (19 falhas, a primeira delas a do problema
+  relatado) e verde contra o de hoje.
+- ⚠ **A lição vale para todo addon que pede mudança de motor**: o pacote entra em qualquer versão do
+  app, e o motor velho só relata. "Addon instalado e nada acontece" é o sintoma. Motor e addon vão no
+  mesmo push, e o addon só se instala depois que o deploy do motor está no ar.
+- **A tela ganhou o relato** (`problemasDaAplicacao()` em `afty-addons.js`, lido pelo card "Problemas" do
+  topo da aba Addons em `AftyTabAddons.jsx`): o que os validadores reclamam ao aplicar os pacotes da ficha
+  aparece como aviso âmbar, com o id do pacote na frente quando é um pacote recusado. Só vale do motor
+  novo em diante, e um app anterior a esta mudança segue calado. Coberto por assert nos dois arquivos de
+  Maldição (uma cópia do pacote com `variacaoDe: "inato"` vira o problema legível, e o relato zera quando o
+  pacote certo volta). Verificado ao vivo: a mesma cópia mostra *"Maldição Era de Ouro: variacaoDe ainda
+  não aceita inato, só sem_tecnica, maldicao"* no card.
+
+### As Características Amaldiçoadas passam a mexer no número
+
+O diagnóstico do *"não estão modificando corretamente"*: as entradas que pedem uma ESCOLHA (o atributo
+do Desenvolvimento Físico e do Mental, o tipo de dano da Carapaça Mutante, a perícia do Corpo
+Especializado) eram checkbox puro. Marcava, e nada mexia, porque não havia onde dizer QUAL atributo,
+QUAL tipo, QUAL perícia. E a Ficha Final não listava as Características de jeito nenhum.
+
+- **`alvos` e `alvo: "escolha:<id>"`** (`afty-caracteristicas-amaldicoadas.js`): mesmo desenho das
+  Linhas de Treinamento (seção 16 de `docs/afty-addons.md`), para quem escreve addon aprender uma vez
+  só. A entrada declara `alvos: [{ id, tipo, label, opcoes? }]` (`tipo` em `atributo`, `pericia`,
+  `tipoDano`), e o `efeitos` mira a escolha com `escolha:<id>`. Sem resposta válida o efeito NÃO ENTRA
+  (nem com o alvo cru). `opcoes` recorta o que vale (o Físico só aceita Força, Destreza e Constituição).
+  Depois do id vale um SUFIXO: `escolha:pericia:d4` vira `percepcao:d4`. A resposta mora em
+  `creature.caracteristicasAmaldicoadasAlvos`, no molde do `treinamentoAlvos`, e sai junto quando a
+  característica sai.
+- **`incompativeisIds`** no lugar do requisito `nota` que dizia *"Não pode ter a característica:
+  Desenvolvimento mental"* (um cadeado roxo com a dica "requisito de sistema ainda não construído", que
+  mentia duas vezes). Vale nos dois sentidos, ganha o namespace do pacote (`caminhosDeId:
+  ["incompativeisIds[]"]`), vira um chip de requisito ("Sem Desenvolvimento mental") e uma ficha que já
+  carrega as duas continua abrindo, com o cadeado nas duas.
+- **`mesa` e `parcial`** no molde da característica de Origem: `mesa` é a marca "Mesa" (nada nela vira
+  número), `parcial` é a frase âmbar que diz QUAL pedaço o Motor não cobre. Toda entrada do pool ou tem
+  número no Motor ou se declara Mesa, e um assert cobra isso: uma entrada muda, que não faz nada e não
+  avisa, é exatamente o defeito relatado.
+- **O que entrou no Motor** (`addons/maldicao-era-de-ouro.json`, agora v2.1.0):
+  - Desenvolvimento Físico e Mental: +2 no atributo escolhido e +1 nos níveis 15 e 20, com `atributo` e
+    `limiteAtributo` juntos, que é o que *"ignora o limite natural"* pede (o mesmo par da Lendária
+    Aperfeiçoamento de Atributo).
+  - Carapaça Mutante: `resistenciaDano` no tipo físico escolhido, e o nome dela aparece como fonte na
+    aba Resistências.
+  - Corpo Especializado: `dadosPericia` (abaixo).
+  - Olhos Sombrios: agora também *"treinado em Percepção"*, que faltava (`proficienciaPericia`).
+  - Instinto Sanguinário: agora também *"enquanto em uma cena de combate, adiciona seu bônus de
+    treinamento na Atenção"*, com `quando: "em_combate"`, que vale com a bancada em "Em Combate".
+- **Canal novo `dadosPericia`** (`afty-efeitos.js`, grupo Perícias e Resistências), irmão do `dadosTR` e
+  do `dadosAtaque`: o Corpo Especializado diz *"um bônus de 1d4"*, e a média daria número certo com
+  rolagem errada. O alvo carrega a perícia E o dado (`percepcao:d4`), porque aqui o dado vale em UMA
+  perícia e no TR ele vale em todo. A linha da perícia devolve `dadosExtras` e `textoBonus` só quando
+  há dado (o formato de toda perícia sem dado continua igual), o hover ganha a parcela com o nome da
+  característica, e a Ficha rola o dado junto (`AbaPericias.jsx` passou `textoBonus` e `dados`). ⚠ O
+  editor manual de efeitos não tem seletor para esse alvo, como já acontece com o `dadosTR`: o canal é
+  de Addon.
+- **A aba virou cartão** (`AftyCreatureBuilder.jsx`, `CaracteristicaAmaldicoadaCard`), no molde do
+  `AptidaoCard`: botão de escolher (trava com requisito ou incompatibilidade, e a marcada nunca trava),
+  nome, chip Mesa, requisitos, descrição recolhida, e com a característica marcada os chips da escolha
+  (até 6 opções) ou a lista (as perícias) mais o aviso âmbar "Escolha ...".
+- **A Ficha Final ganhou o grupo "Características Amaldiçoadas"** (`ficha-conteudo.js`), depois das
+  Aptidões, com o texto verbatim, a escolha como opção da linha ("Atributo: Força") e o `parcial` ou o
+  "Falta escolher ..." como aviso.
+- **O que continua em texto, e por quê** (perguntas em `docs/a-fazer.md`): Articulações Extensas (não há
+  canal de alcance), Capacidade de Voo e de Nado (o `movimento` é um número só), o +2 em Atletismo do
+  Braços Extras (não há estado de mãos livres), Alma Maldita (usos por dia e dano na alma pela metade),
+  Anatomia Incompreensível (chance), Devorador de Energia e Energia Tóxica (reações), Presença Nefasta e
+  Guia Espiritual.
+- **Versão do addon: 2.1.0**, e não 2.0.0 com o conteúdo trocado. A ficha guarda uma cópia congelada e
+  só avisa "Trocar pela versão" quando o número muda, então o mesmo número com conteúdo novo ficaria
+  invisível para quem já instalou.
+- Asserts: `t-caracteristicas-amaldicoadas.mjs` (novo, 55, mede o MECANISMO com um pacote de teste) e
+  `t-maldicao-era-de-ouro.mjs` (de 50 para 122, com as seções 6 a 8: o acesso e a perda da ER, o conteúdo
+  real de cada entrada com escolha, e a Ficha).
+- Verificado ao vivo (dev limpo, `/Afty`, addon v2.1.0 instalado): as três escolhas feitas na aba, FOR
+  10 → 14 com LIMITE 20 → 24 no ND 20, Percepção "+10 + 1d4" no criador e na Ficha (rolagem `d20+10 +
+  1d4`), o grupo novo na Ficha com as três respostas, o Mental travado com o Físico marcado e liberado
+  ao desmarcar, e a resposta antiga não volta ao remarcar. Sem erro de console.

@@ -969,6 +969,8 @@ export function deriveAfty(creature, opcoes = {}) {
       // As Melhorias Superiores do jogador têm números próprios.
       sistema,
       caracteristicasAmaldicoadas: creature?.caracteristicasAmaldicoadas,
+      // As respostas de quem pede escolha (atributo, perícia, tipo de dano).
+      caracteristicasAmaldicoadasAlvos: creature?.caracteristicasAmaldicoadasAlvos,
       catalogos: {
         habilidades: getHabilidade, talentos: getTalento,
         // Um mapa só para as opções dos dois catálogos: os ids não colidem
@@ -3021,8 +3023,12 @@ export function deriveAfty(creature, opcoes = {}) {
      Não segue o `semEnergia`: a característica é da Origem, não da Energia, e
      um Restringido de Origem Maldição (se algum addon algum dia permitir)
      continuaria com o corpo que a Origem descreve. */
+  /* O `attrEff` entra para o requisito de atributo (nenhuma característica de
+     hoje pede, mas o requisito é o da Aptidão e ele o lê). O `reduzNivelAptidao`
+     NÃO entra de propósito: o canal fala em "pré-requisitos de nível" das
+     Aptidões, e uma Característica não é Aptidão. */
   const caracteristicasAmaldicoadas = resolveCaracteristicasAmaldicoadas(creature, {
-    nd, vagas: Math.max(0, canal("vagasCaracteristicaAmaldicoada")),
+    nd, attrEff, vagas: Math.max(0, canal("vagasCaracteristicaAmaldicoada")),
   });
 
   // ⚠ Especializações, Talentos, Habilidades, Alto Nível, Aptidão e o MOTOR DE

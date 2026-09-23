@@ -227,7 +227,7 @@ extensão, só que hoje tem uma porta de entrada só (`core.tecnicaEfeitos`).
 
 | Peça | Onde | O que já resolve |
 |---|---|---|
-| Linguagem de efeito | `EFEITO_CANAIS`, 61 canais, 29 com alvo | como o addon diz "+3 de Defesa quando o ND passa de 10" |
+| Linguagem de efeito | `EFEITO_CANAIS`, 97 canais, 44 com alvo | como o addon diz "+3 de Defesa quando o ND passa de 10" |
 | Editor de efeito | `TecnicaMotorEditor` (AftyCreatureBuilder.jsx) | a tela de autoria, com seletor `{ }` e valor ao vivo |
 | Prova de conceito | `core.tecnicaEfeitos` | o único lugar onde efeito já é ESCRITO e não escolhido |
 | Portão de aceitação | os 13 `validarCatalogo*` | recusar addon quebrado antes de entrar na ficha |
@@ -744,18 +744,61 @@ painel. O pacote `tita` só declara `permite: ["titaColosso"]`. Ver `docs/afty-s
 
 #### A primitiva `caracteristicasAmaldicoadas` (2026-09-22)
 
-Mostra a aba "Características Amaldiçoadas" no criador: um checklist contra o catálogo
+Mostra a aba "Características Amaldiçoadas" no criador: um cartão por entrada do catálogo
 `AFTY_CARACTERISTICAS_AMALDICOADAS` (`afty-caracteristicas-amaldicoadas.js`), que nasce VAZIO no
 raw porque o conteúdo (as 18 entradas do suplemento Maldição - Era de Ouro) é todo de Addon, pela
 família `caracteristicasAmaldicoadas`. O canal `vagasCaracteristicaAmaldicoada` dá o orçamento
-("Anatomia Amaldiçoada" concede 1 no 1° nível, +1 a cada 5). Ver `docs/afty-status.md`, sessão de
-2026-09-22.
+("Anatomia Amaldiçoada" concede 1 no 1° nível, +1 a cada 5). Ver `docs/afty-status.md`, sessões de
+2026-09-22 e 2026-09-23.
+
+**A entrada** (2026-09-23) é `{ id, nome, descricao }` mais o que ela quiser destes campos:
+
+| Campo | Para que serve |
+|---|---|
+| `efeitos` | linhas `{ canal, expr, alvo?, quando?, nome? }` do Motor, lidas de DENTRO da entrada |
+| `requisitos` | os da Aptidão (`nd`, `atributo`, `nota`...), que trancam a escolha na tela |
+| `incompativeisIds` | ids de outras características que brigam com esta, nos dois sentidos, com namespace automático |
+| `alvos` | o que o jogador escolhe: `[{ id, tipo, label, opcoes? }]`, com `tipo` em `atributo`, `pericia` ou `tipoDano` |
+| `mesa` | `true` quando nada nela vira número (a marca "Mesa") |
+| `parcial` | a frase que diz QUAL pedaço o Motor não cobre (aviso âmbar) |
+
+**Escolha do jogador.** O efeito mira a resposta com `alvo: "escolha:<id do alvo>"`, e o motor troca
+isso pelo valor gravado em `creature.caracteristicasAmaldicoadasAlvos`. Sem resposta válida o efeito
+NÃO ENTRA. `opcoes` recorta a lista (o Desenvolvimento Físico só aceita `forca`, `destreza` e
+`constituicao`) e resposta fora dela é ignorada. Um sufixo depois do id é preservado: `escolha:pericia:d4`
+vira `percepcao:d4`, que é o formato do canal `dadosPericia`.
+
+```json
+{
+  "id": "ca_desenvolvimento_fisico",
+  "nome": "Desenvolvimento Físico",
+  "descricao": "...",
+  "requisitos": [{ "tipo": "nd", "valor": 4 }],
+  "incompativeisIds": ["ca_desenvolvimento_mental"],
+  "alvos": [{ "id": "atributo", "tipo": "atributo", "label": "Atributo", "opcoes": ["forca", "destreza", "constituicao"] }],
+  "efeitos": [
+    { "canal": "atributo",       "alvo": "escolha:atributo", "expr": "2 + (nd >= 15) + (nd >= 20)" },
+    { "canal": "limiteAtributo", "alvo": "escolha:atributo", "expr": "2 + (nd >= 15) + (nd >= 20)" }
+  ]
+}
+```
+
+⚠ **"Ignora o limite natural" é o par `atributo` mais `limiteAtributo`**, e nunca só o primeiro: o
+`atributo` é aparado no limite do atributo, e quem sobe o limite é o outro canal. É o mesmo par da
+Lendária Aperfeiçoamento de Atributo.
+
+⚠ **Toda entrada tem número no Motor ou é `mesa`.** O `asserts/t-maldicao-era-de-ouro.mjs` cobra isso
+para o pacote do livro, porque uma entrada que não faz nada e não avisa parece que funciona.
+
+O canal `dadosPericia` (2026-09-23), irmão do `dadosTR`, soma um DADO ao resultado de UMA perícia. O
+alvo é `<perícia>:d<faces>` (`percepcao:d4`) e o valor é quantos dados. Não tem seletor no editor manual
+de efeitos, como o `dadosTR`: é canal de Addon.
 
 #### Origem de Addon que se divide em Tipos (2026-09-22)
 
 Uma origem de Addon pode se dividir como o Herdado se divide em Clãs: o seletor aparece no card da
 Origem, e cada clã traz as próprias características. O exemplo vivo é `addons/maldicao-era-de-ouro.json`.
-Três pegadinhas, todas pagas com bug:
+Quatro pegadinhas, todas pagas com bug:
 
 1. **Os clãs vão em DOIS lugares, com o mesmo id.** `acrescenta.origens[].clas` guarda só `{ id, nome }`
    (é o que a tela lê para desenhar os botões), e `acrescenta.clas` guarda a definição inteira
@@ -768,6 +811,13 @@ Três pegadinhas, todas pagas com bug:
    Sem ele, as Aptidões de Maldição e os Talentos com requisito de Origem Maldição não enxergam a
    origem nova. Só as mães de `VARIACOES_ACEITAS` (`afty-origens.js`) valem, e a lista cresce quando as
    travas da mãe nova passam por `origemMae()`.
+4. **O motor tem de estar no ar ANTES de o addon ser instalado.** O pacote entra em qualquer versão do
+   app, e o motor velho só RELATA o problema (*"variacaoDe ainda não aceita maldicao"*, no retorno do
+   `aplicarAddons`). Desde 2026-09-23 o card "Problemas" da aba Addons o mostra (`problemasDaAplicacao()`),
+   mas um app anterior a isso segue calado. O sintoma é traiçoeiro: a origem aparece no seletor, e sobram a aba de Energia Reversa e nenhuma de
+   Maldição, como se a origem fosse uma qualquer. Foi o relato do autor 4 minutos depois de um commit, e
+   o `asserts/t-maldicao-era-de-ouro.mjs` (seção 6) fica vermelho contra o motor antigo justamente por
+   isso. Motor e addon vão no mesmo push, e o addon só se instala depois do deploy.
 
 Opcionais na origem: `clasRotulo` (o nome do seletor, padrão "Clã") e `clasArtigo` (padrão "um").
 

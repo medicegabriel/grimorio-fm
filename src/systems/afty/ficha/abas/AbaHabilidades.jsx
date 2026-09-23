@@ -11,7 +11,9 @@ import { filtraHabilidades, correspondeFiltroHabilidade } from "../../afty-filtr
  * ============================================================
  * ABA HABILIDADES — tudo que a criatura escolheu, com o texto do livro
  * ============================================================
- * Seis grupos, na ordem em que o sistema os apresenta: Origem, Habilidades de
+ * Nove grupos hoje (a lista de verdade é o `GRUPOS` de ficha-conteudo.js, e a
+ * Característica Amaldiçoada de Addon fica logo depois das Aptidões). Os
+ * seis originais, na ordem em que o sistema os apresenta: Origem, Habilidades de
  * Especialização, Talentos, Habilidades Gerais, Aptidões Amaldiçoadas e Níveis
  * Lendários. Grupo sem nenhum item some inteiro.
  *

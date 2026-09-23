@@ -41,7 +41,7 @@ import { cofreTrancado, destrancarDeVez } from "./afty-cofre";
 import {
   lerBiblioteca, instalarDeTexto, instalarPacote, removerPacote, compararComBiblioteca,
 } from "./afty-addons-biblioteca";
-import { familiasDeAddon, incompativeisCom } from "./afty-addons";
+import { familiasDeAddon, incompativeisCom, problemasDaAplicacao } from "./afty-addons";
 import { sistemaDaFicha, palavrasDoSistema } from "./afty-sistema";
 
 /* Quantas entradas o pacote acrescenta, por família, para o chip da linha. */
@@ -212,6 +212,13 @@ export default function TabAddons({ draft, derived, setAddons, trocarFicha }) {
   // LINHA MORTA: o que a ficha cita e o mundo não tem (decisão 4 do autor).
   // Aparece PRIMEIRO, porque é a única coisa aqui que exige ação.
   const mortas = derived?.addonProblemas ?? [];
+  /* O que os validadores reclamaram ao APLICAR os pacotes desta ficha (2026-09-23).
+     É o caso do addon que o app não entende: o pacote entra, o item aparece, e sem
+     este aviso a pessoa fica sem saber por que nada funciona. O pacote recusado
+     leva o id na frente, e o relato de um validador de família já diz o nome da
+     entrada. */
+  const relatados = problemasDaAplicacao().flatMap((r) => r.problemas
+    .map((texto) => (r.pacote.startsWith("(") ? texto : `${r.pacote}: ${texto}`)));
 
   /* O Cofre aparece para quem instalou um addon que o PEDIU, e some para todo o
      resto. Mesmo portão das outras primitivas, e pela mesma lição escrita no
@@ -271,7 +278,7 @@ export default function TabAddons({ draft, derived, setAddons, trocarFicha }) {
         </Card>
       )}
 
-      {mortas.length > 0 && (
+      {(mortas.length > 0 || relatados.length > 0) && (
         <Card title="Problemas">
           <div className="space-y-2">
             {mortas.map((m) => (
@@ -280,6 +287,7 @@ export default function TabAddons({ draft, derived, setAddons, trocarFicha }) {
                 <p className="text-[11px] text-slate-500 pl-4">{m.saida}</p>
               </div>
             ))}
+            {relatados.map((texto) => <Aviso key={texto}>{texto}</Aviso>)}
           </div>
         </Card>
       )}

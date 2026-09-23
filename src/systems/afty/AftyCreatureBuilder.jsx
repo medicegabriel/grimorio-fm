@@ -917,8 +917,25 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
     setDraft((d) => {
       const atual = Array.isArray(d.caracteristicasAmaldicoadas) ? d.caracteristicasAmaldicoadas : [];
       const removendo = atual.includes(id);
-      return { ...d, caracteristicasAmaldicoadas: removendo ? atual.filter((x) => x !== id) : [...atual, id] };
+      // Tirar a característica leva as respostas dela (atributo, perícia, tipo de
+      // dano) junto: deixar lixo gravado faria a escolha antiga voltar sozinha
+      // ao marcar de novo, que é o mesmo cuidado do `setTreinoProgresso`.
+      const alvos = { ...(d.caracteristicasAmaldicoadasAlvos || {}) };
+      if (removendo) delete alvos[id];
+      return {
+        ...d,
+        caracteristicasAmaldicoadas: removendo ? atual.filter((x) => x !== id) : [...atual, id],
+        caracteristicasAmaldicoadasAlvos: alvos,
+      };
     });
+  const setCaracteristicaAmaldicoadaAlvo = (id, alvoId, valor) =>
+    setDraft((d) => ({
+      ...d,
+      caracteristicasAmaldicoadasAlvos: {
+        ...(d.caracteristicasAmaldicoadasAlvos || {}),
+        [id]: { ...(d.caracteristicasAmaldicoadasAlvos?.[id] || {}), [alvoId]: valor || null },
+      },
+    }));
 
   const TITA_VAZIO = { ativo: false, membros: 5 };
   const patchTita = (partial) =>
@@ -1675,7 +1692,11 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
           {tabAtiva === "catarse" && <TabCatarse draft={draft} derived={derived} patchCatarse={patchCatarse} />}
           {tabAtiva === "tita" && <TabTita draft={draft} derived={derived} patchTita={patchTita} />}
           {tabAtiva === "caracteristicasAmaldicoadas" && (
-            <TabCaracteristicasAmaldicoadas draft={draft} derived={derived} onToggle={toggleCaracteristicaAmaldicoada} />
+            <TabCaracteristicasAmaldicoadas
+              derived={derived}
+              onToggle={toggleCaracteristicaAmaldicoada}
+              onAlvo={setCaracteristicaAmaldicoadaAlvo}
+            />
           )}
           {tabAtiva === "calculos" && <TabCalculos derived={derived} setStatOverride={setStatOverride} patchCombate={patchCombate} gatilhosTreino={derived.gatilhosTreino} onGatilhoTreino={(id, v) => setTreinosAtivos((m) => ({ ...m, [id]: v }))} />}
           {tabAtiva === "addons" && <TabAddons draft={draft} derived={derived} setAddons={setAddons} trocarFicha={setDraft} />}
@@ -12889,10 +12910,20 @@ function TabTita({ draft, derived, patchTita }) {
  * addon acrescentou e conta contra a vaga que "Anatomia Amaldiçoada" concede
  * (`derived.caracteristicasAmaldicoadas`, afty-caracteristicas-amaldicoadas.js).
  * Exceder a vaga avisa, não trava (mesma regra do resto do sistema).
+ *
+ * ⚠ CADA LINHA É UM CARTÃO NO MOLDE DA APTIDÃO (2026-09-23), e não mais um
+ * checkbox. O autor achou que algumas não estavam *"modificando corretamente"*, e
+ * era isso: as que pedem uma escolha (o atributo do Desenvolvimento Físico, o tipo
+ * de dano da Carapaça Mutante, a perícia do Corpo Especializado) não tinham onde
+ * recebê-la. O cartão abre o seletor quando a característica está marcada.
  */
-function TabCaracteristicasAmaldicoadas({ draft, derived, onToggle }) {
-  const res = derived.caracteristicasAmaldicoadas ?? { catalogo: [], escolhidas: [], vagas: 0, usadas: 0, excedeu: false };
-  const escolhidas = Array.isArray(draft.caracteristicasAmaldicoadas) ? draft.caracteristicasAmaldicoadas : [];
+function TabCaracteristicasAmaldicoadas({ derived, onToggle, onAlvo }) {
+  const res = derived.caracteristicasAmaldicoadas ?? { catalogo: [], vagas: 0, usadas: 0, excedeu: false };
+  // A lista de perícias sai do derivado, e não do catálogo cru: ela já traz o
+  // Ofício repetido e a perícia que um addon acrescentou. TODAS entram, inclusive
+  // as complementares: o recorte delas é do Sem Técnica, e o texto do Corpo
+  // Especializado diz só "escolha uma perícia".
+  const pericias = derived.testes?.pericias ?? [];
   return (
     <Card
       title="Características Amaldiçoadas"
@@ -12916,32 +12947,159 @@ function TabCaracteristicasAmaldicoadas({ draft, derived, onToggle }) {
         </div>
       ) : (
         <div className="space-y-1.5">
-          {res.catalogo.map((c) => {
-            const ativo = escolhidas.includes(c.id);
-            return (
-              <label
-                key={c.id}
-                className={`flex items-start gap-2.5 rounded-lg border px-3 py-2 cursor-pointer transition-colors ${
-                  ativo ? "border-purple-700 bg-purple-950/30" : "border-slate-800 bg-slate-950/40 hover:border-slate-700"
-                }`}
-              >
-                <input
-                  type="checkbox"
-                  checked={ativo}
-                  onChange={() => onToggle(c.id)}
-                  className="mt-0.5 accent-purple-600"
-                  aria-label={c.nome}
-                />
-                <span className="min-w-0">
-                  <span className="block text-[13px] font-semibold text-white">{c.nome}</span>
-                  <span className="block text-[11px] text-slate-400">{c.descricao}</span>
-                </span>
-              </label>
-            );
-          })}
+          {res.catalogo.map((c) => (
+            <CaracteristicaAmaldicoadaCard
+              key={c.id}
+              caracteristica={c}
+              pericias={pericias}
+              onToggle={() => onToggle(c.id)}
+              onAlvo={(alvoId, valor) => onAlvo(c.id, alvoId, valor)}
+            />
+          ))}
         </div>
       )}
     </Card>
+  );
+}
+
+/* As opções de UM alvo, já com o rótulo que a tela mostra. O que a entrada
+   recortou em `opcoes` vale, e sem recorte vale o universo do tipo. */
+function opcoesDoAlvoDeCaracteristica(alvo, pericias) {
+  const recorte = alvo.opcoes ? new Set(alvo.opcoes) : null;
+  const passa = (id) => !recorte || recorte.has(id);
+  if (alvo.tipo === "atributo") {
+    return AFTY_ATTRS.filter((a) => passa(a.key)).map((a) => ({ value: a.key, label: a.label }));
+  }
+  if (alvo.tipo === "tipoDano") {
+    const ids = alvo.opcoes ?? Object.keys(TIPOS_DANO);
+    return ids.filter((id) => TIPOS_DANO[id] != null).map((id) => ({ value: id, label: TIPOS_DANO[id] }));
+  }
+  return pericias.filter((p) => passa(p.id)).map((p) => ({ value: p.id, label: p.nome }));
+}
+
+/* Uma Característica Amaldiçoada. Escolher é de graça (a vaga só avisa), o que
+   trava é o requisito ou a incompatibilidade, e a linha marcada nunca trava, para
+   uma ficha que perdeu o requisito não ficar presa sem como remover.
+
+   RECOLHIDA por padrão, pelo mesmo motivo da Aptidão: cada descrição é um
+   parágrafo do livro, e abertas todas juntas viravam um paredão. */
+function CaracteristicaAmaldicoadaCard({ caracteristica: c, pericias, onToggle, onAlvo }) {
+  const [open, setOpen] = useState(false);
+  const faltando = c.requisitos.filter((r) => r.verificavel && !r.ok);
+  return (
+    <div className={`rounded-lg border transition-colors ${
+      c.escolhida ? "border-purple-700 bg-purple-950/30" : "border-slate-800 bg-slate-950/40"
+    }`}>
+      <div className="flex items-center gap-2.5 px-2.5 h-8">
+        <button
+          type="button"
+          onClick={onToggle}
+          disabled={c.bloqueada}
+          aria-pressed={c.escolhida}
+          aria-label={`${c.escolhida ? "Remover" : "Escolher"} ${c.nome}`}
+          title={
+            c.bloqueada
+              ? `Requisito não atendido: ${faltando.map((r) => r.titulo || r.label).join(", ")}`
+              : c.escolhida ? "Remover esta característica" : "Escolher esta característica"
+          }
+          className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 border transition-colors ${
+            c.escolhida
+              ? "bg-purple-700 border-purple-600 text-white"
+              : c.bloqueada
+                ? "border-slate-800 text-slate-700 cursor-not-allowed"
+                : "border-slate-600 text-slate-500 hover:border-purple-600 hover:text-purple-300"
+          }`}
+        >
+          {c.escolhida
+            ? <Check className="w-3 h-3" />
+            : c.bloqueada ? <Lock className="w-2.5 h-2.5" /> : <Plus className="w-3 h-3" />}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          aria-expanded={open}
+          className="flex-1 min-w-0 flex items-center gap-x-2 text-left overflow-hidden"
+        >
+          <span
+            className={`text-[12px] font-semibold truncate ${c.bloqueada ? "text-slate-500" : "text-slate-100"}`}
+            title={c.nome}
+          >
+            {c.nome}
+          </span>
+          {c.mesa && <OrigemChip title="Sem número na ficha: vale na mesa">Mesa</OrigemChip>}
+          <RequisitoLista reqs={c.requisitos} />
+        </button>
+
+        <ChevronDown
+          className={`w-3.5 h-3.5 text-slate-600 flex-shrink-0 transition-transform ${open ? "" : "-rotate-90"}`}
+          aria-hidden="true"
+        />
+      </div>
+
+      {open && (
+        <div className="px-2.5 pb-2.5 pl-[38px] space-y-1.5">
+          <p className="text-[11px] text-slate-400 leading-relaxed whitespace-pre-line">{c.descricao}</p>
+          {/* O pedaço que o Motor não cobre, dito pela própria entrada. */}
+          {c.parcial && (
+            <div className="flex items-start gap-1.5 text-[10px] text-amber-400">
+              <AlertTriangle className="w-3 h-3 mt-px flex-shrink-0" aria-hidden="true" />
+              <span className="leading-relaxed">{c.parcial}</span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* A escolha. Chips quando cabem (três atributos, três tipos de dano) e
+          lista quando não (as perícias), pela regra desta aba de manter as
+          opções à mostra. Só com a característica marcada: antes disso não há o
+          que decidir. */}
+      {c.escolhida && c.alvos.length > 0 && (
+        <div className="px-2.5 pb-2.5 pl-[38px] space-y-1.5">
+          {c.alvos.map((alvo) => {
+            const opcoes = opcoesDoAlvoDeCaracteristica(alvo, pericias);
+            return (
+              <div key={alvo.id} className="flex flex-wrap items-center gap-1.5">
+                <span className="w-20 text-[10px] text-slate-500">{alvo.label}</span>
+                {opcoes.length <= 6 ? (
+                  opcoes.map((o) => {
+                    const on = alvo.valor === o.value;
+                    return (
+                      <button
+                        key={o.value}
+                        type="button"
+                        onClick={() => onAlvo(alvo.id, on ? "" : o.value)}
+                        aria-pressed={on}
+                        className={`text-[10px] px-2 py-1 rounded transition-colors ${
+                          on ? "bg-purple-700 text-white" : "bg-slate-800/70 text-slate-400 hover:text-white"
+                        }`}
+                      >
+                        {o.label}
+                      </button>
+                    );
+                  })
+                ) : (
+                  <div className="w-56 max-w-full">
+                    <Select
+                      value={alvo.valor || ""}
+                      onChange={(v) => onAlvo(alvo.id, v)}
+                      options={opcoes}
+                      placeholder="Selecione"
+                    />
+                  </div>
+                )}
+              </div>
+            );
+          })}
+          {c.pendentes.length > 0 && (
+            <div className="flex items-start gap-1.5 text-[10px] text-amber-400">
+              <AlertTriangle className="w-3 h-3 mt-px flex-shrink-0" aria-hidden="true" />
+              <span className="leading-relaxed">Escolha {c.pendentes.join(" e ")}</span>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 

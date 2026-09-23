@@ -644,6 +644,10 @@ export function createBlankAfty() {
     // Maldição - Era de Ouro). Lista de ids, mesma forma de `talentos`. Ver
     // afty-caracteristicas-amaldicoadas.js.
     caracteristicasAmaldicoadas: [],
+    // O que cada uma pediu para escolher (atributo, perícia, tipo de dano), no
+    // molde do `treinamentoAlvos`: `{ [caracteristicaId]: { [alvoId]: valor } }`.
+    // Tirar a característica leva as respostas junto.
+    caracteristicasAmaldicoadasAlvos: {},
     // Interlúdios · Treinos Especiais (Interlúdios Adicionais, Livro do
     // Narrador p. 22): lista COM repetição, uma entrada por pega, no mesmo
     // espírito de habilidadesGerais. Cada pega custa 1 Foco do MESMO orçamento

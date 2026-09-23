@@ -183,6 +183,8 @@ export default function AbaPericias({ derived, rolar, destaque }) {
               nome={p.nome}
               atributo={p.atributo}
               bonus={p.bonus}
+              textoBonus={p.textoBonus}
+              dados={p.dadosExtras}
               partes={p.partes}
               prof={p.prof}
               tag={p.prof === "mestre" ? "Mestre" : null}

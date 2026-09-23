@@ -26,6 +26,8 @@ import { getMelhoriaSuperior, getHabilidadeLendaria, getHabilidadeApice } from "
 import { sistemaDaFicha } from "../afty-sistema";
 import { getEspecializacao } from "../afty-especializacoes";
 import { caracteristicasEfetivas, getOrigem, getCla } from "../afty-origens";
+import { AFTY_ATTRS } from "../afty-schema";
+import { TIPOS_DANO } from "../afty-equipamentos";
 import { NIVEL_LABEL } from "../afty-feiticos";
 import { DOMINIO_SIMPLES_APTIDAO } from "../afty-dominio-simples";
 import { numeroBr } from "../ui/formato";
@@ -51,6 +53,7 @@ export const GRUPOS = [
   { id: "talento", label: "Talentos" },
   { id: "geral", label: "Habilidades Gerais" },
   { id: "aptidao", label: "Aptidões Amaldiçoadas" },
+  { id: "caracteristicaAmaldicoada", label: "Características Amaldiçoadas" },
   { id: "altoNivel", label: "Níveis Lendários" },
 ];
 
@@ -345,6 +348,35 @@ export function conteudoDaFicha(creature, derived) {
         ...(escolhida ? [{ id: escolhida.id, nome: escolhida.nome ?? escolhida.label, descricao: null }] : []),
         ...escolhasRepetidas,
       ],
+    }));
+  }
+
+  /* ---------- Características Amaldiçoadas ---------- */
+  /* Só as que o catálogo do addon ainda conhece (`encontrada`): o id órfão de um
+     addon que saiu é linha morta e não tem texto para mostrar. A escolha do
+     jogador (o atributo, o tipo de dano, a perícia) aparece como opção da linha,
+     no mesmo lugar onde a Aptidão mostra a dela, e o que falta escolher vira o
+     aviso, porque sem a resposta o efeito não entra no número. */
+  const rotuloDoAlvo = (alvo) => {
+    if (alvo.tipo === "atributo") return AFTY_ATTRS.find((a) => a.key === alvo.valor)?.label ?? alvo.valor;
+    if (alvo.tipo === "tipoDano") return TIPOS_DANO[alvo.valor] ?? alvo.valor;
+    if (alvo.tipo === "pericia") {
+      return (derived?.testes?.pericias ?? []).find((p) => p.id === alvo.valor)?.nome ?? alvo.valor;
+    }
+    return alvo.valor;
+  };
+  for (const c of derived?.caracteristicasAmaldicoadas?.lista ?? []) {
+    if (!c.encontrada) continue;
+    itens.push(item({
+      id: c.id,
+      chave: `caracteristicaAmaldicoada:${c.id}`,
+      nome: c.nome,
+      texto: c.descricao ?? "",
+      grupo: "caracteristicaAmaldicoada",
+      opcoes: c.alvos
+        .filter((a) => a.valor)
+        .map((a) => ({ id: `${c.id}:${a.id}`, nome: `${a.label}: ${rotuloDoAlvo(a)}`, descricao: null })),
+      aviso: c.pendentes.length ? `Falta escolher ${c.pendentes.join(" e ")}` : (c.parcial ?? null),
     }));
   }
 

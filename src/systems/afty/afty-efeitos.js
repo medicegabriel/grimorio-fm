@@ -99,7 +99,7 @@ import { CUSTO_PE_MINIMO } from "./afty-dominio-simples";
 import { getAptidao } from "./afty-aptidoes";
 // afty-caracteristicas-amaldicoadas só importa afty-addons e afty-aptidoes
 // (que, pelo comentário acima, já é seguro): sem ciclo, mesma razão.
-import { getCaracteristicaAmaldicoada } from "./afty-caracteristicas-amaldicoadas";
+import { efeitosDasCaracteristicasAmaldicoadas } from "./afty-caracteristicas-amaldicoadas";
 import { funcionamentosDaFicha } from "./afty-schema";
 import { RECURSOS_BUFF_NATIVOS } from "./afty-extras-nativos";
 import {
@@ -217,6 +217,17 @@ export const EFEITO_CANAIS = [
      certo e uma rolagem errada. O alvo é o DADO, então ele vale em todo Teste de
      Resistência — que é o que o único caso de hoje diz, "vale em qualquer TR". */
   { id: "dadosTR",       label: "Dados em Resistência",  alvo: "dadoNomeado", nota: "dado somado ao resultado do TR. O alvo é o dado e o valor é quantos. Vale em todo TR, porque o alvo já é o dado" },
+  /* O irmão do `dadosTR` para a PERÍCIA (2026-09-23): o Corpo Especializado diz
+     "você recebe um bônus de 1d4" numa perícia à escolha, e como no TR e no
+     ataque a média (+2 ou +3) daria um número certo com a rolagem errada.
+
+     ⚠ O ALVO CARREGA DUAS COISAS, a perícia E o dado, no formato
+     `<pericia>:d<faces>` (`percepcao:d4`). No `dadosTR` o dado sozinho bastava,
+     porque o efeito vale em todo TR; aqui ele vale em UMA perícia, e um segundo
+     campo no efeito seria um campo novo para o motor, a validação e o editor
+     aprenderem. O sufixo de `escolha:pericia:d4` (afty-caracteristicas-
+     amaldicoadas.js) é o que monta esta string a partir da perícia escolhida. */
+  { id: "dadosPericia",  label: "Dados em Perícia",      alvo: "periciaDado", nota: "dado somado ao resultado de UMA perícia. O alvo é a perícia e o dado, no formato pericia:dN (percepcao:d4), e o valor é quantos" },
   { id: "margemCriticoTR", label: "Crítico em Resistência", alvo: "tr", nota: "quanto a margem DIMINUI, com piso de 2. Irmão do margemCritico do ataque" },
   { id: "proficienciaTR", label: "Treino em Resistência", alvo: "tr", aceitaSemCredito: true, nota: "irmão de proficienciaPericia, mesmas regras (1 Treinado, 2 Mestre, nunca rebaixa, e credita no orçamento)" },
   { id: "bonusAcerto",   label: "Acerto",                alvo: "ataque" },
@@ -640,7 +651,7 @@ const GRUPOS_DE_CANAL = [
   // outro canal e está em Orçamentos.
   ["Atributos e Aptidões", ["atributo", "limiteAtributo", "defesaAtributo", "hpAtributo", "nivelAptidao", "limiteAptidao", "imbuicoesEstilo"]],
   ["Perícias e Resistências", [
-    "bonusPericia", "periciaFixa", "proficienciaPericia", "penalidadeArmadura", "bonusTR", "dadosTR", "proficienciaTR", "margemCriticoTR",
+    "bonusPericia", "periciaFixa", "proficienciaPericia", "penalidadeArmadura", "dadosPericia", "bonusTR", "dadosTR", "proficienciaTR", "margemCriticoTR",
   ]],
   ["Manobras", ["bonusManobra", "resistirManobra", "distanciaEmpurrao"]],
   ["Movimento e Percepção", ["movimento", "movimentoMult", "iniciativa", "atencao", "tamanho"]],
@@ -1199,7 +1210,8 @@ export function coletarEfeitos(ids, mapa, catalogo = {}, vezesPorId = null) {
 export const ESCOLHAS_DE_HABILIDADE = ["res_roubo_de_habilidade"];
 
 export function coletarEfeitosCriatura({
-  habilidades, talentos, altoNivel, catalogos, sistema = null, caracteristicasAmaldicoadas,
+  habilidades, talentos, altoNivel, catalogos, sistema = null,
+  caracteristicasAmaldicoadas, caracteristicasAmaldicoadasAlvos,
 } = {}) {
   /* As quatro Melhorias que o livro do jogador escreve diferente trocam as
      linhas do mesmo id. Ver `MELHORIA_EFEITOS_JOGADOR`. */
@@ -1227,11 +1239,16 @@ export function coletarEfeitosCriatura({
     // da Aptidão Desenvolvida), e cai no mesmo ESCOLHA_EFEITOS.
     ...coletarEfeitosDeEscolha(talentos?.escolhas?.mapa, catalogos?.opcoes, catalogos?.talentos),
     /* Características Amaldiçoadas (Anatomia Amaldiçoada, addon Maldição - Era
-       de Ouro): SEM mapa do raw, porque o catálogo inteiro é de Addon. O
-       `coletarEfeitos` já sabe ler `efeitos` de DENTRO da entrada quando o
-       mapa não tem a chave (ver o comentário dele), que é exatamente este
-       caso: `{}` no lugar do mapa, e o resolvedor no lugar do catálogo. */
-    ...coletarEfeitos(caracteristicasAmaldicoadas, {}, getCaracteristicaAmaldicoada),
+       de Ouro): SEM mapa do raw, porque o catálogo inteiro é de Addon, e o
+       efeito mora DENTRO da entrada.
+
+       ⚠ NÃO PASSA MAIS PELO `coletarEfeitos` (2026-09-23). A entrada pode pedir
+       uma escolha (o atributo do Desenvolvimento Físico, o tipo de dano da
+       Carapaça Mutante) e o `alvo: "escolha:<id>"` do efeito precisa ser trocado
+       pela resposta da ficha ANTES de o Motor ver a linha. Quem sabe fazer isso é
+       o módulo da família, e o `coletarEfeitos` também preferiria o `efeitos`
+       cru de uma entrada remendada, que ainda traz o `escolha:` sem resolver. */
+    ...efeitosDasCaracteristicasAmaldicoadas(caracteristicasAmaldicoadas, caracteristicasAmaldicoadasAlvos),
     ...coletarEfeitos(Object.keys(vezesMel), efeitosMelhoria, catalogos?.altoNivel, vezesMel),
     ...coletarEfeitosComAlvo(
       Object.keys(vezesMel), altoNivel?.escolhas?.mapa, MELHORIA_EFEITOS_ALVO,

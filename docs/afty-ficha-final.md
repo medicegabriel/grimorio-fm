@@ -673,6 +673,9 @@ descartada em silêncio, que é o que o resolver já fazia.
 ### Aba Habilidades
 
 Seis grupos na ordem do sistema, grupo vazio some inteiro, e cada item **fechado por padrão**.
+(Em 2026-09-23 são nove, com os Passivos, as Técnicas de Estilo e as **Características
+Amaldiçoadas** de Addon, que ficam logo depois das Aptidões e mostram a escolha do jogador como
+opção da linha. A lista de verdade é o `GRUPOS` de `ficha-conteudo.js`.)
 
 ⚠ Fechado é escolha, e não preguiça: 193 parágrafos abertos de uma vez é uma parede que ninguém lê.
 Quem resolve o "achar" é a busca, não o texto todo à mostra.

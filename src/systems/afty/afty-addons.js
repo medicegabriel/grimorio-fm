@@ -1625,6 +1625,24 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
 
 let pacotesAtivos = [];
 let epoca = 0;
+let problemasDaUltimaAplicacao = [];
+
+/**
+ * O que a ÚLTIMA `aplicarAddons` reclamou, no formato dela: `[{ pacote, problemas }]`.
+ * Pacote recusado vem com o id dele, e o relato de um validador de família vem
+ * como `(validador de Origem)`.
+ *
+ * ⚠ EXISTE PORQUE O RETORNO ERA JOGADO FORA (2026-09-23). Os três chamadores
+ * (o criador, a Ficha e o Encontro) chamam `aplicarAddons(...)` e ignoram o que
+ * ela devolve, então o único jeito de um addon dizer "esta versão do app não me
+ * entende" era sumir calado. Foi o que aconteceu com a Maldição - Era de Ouro: o
+ * app no ar era o da v1, cuja lista de mães aceitas não tinha `maldicao`, o
+ * pacote entrou, a origem apareceu no seletor, e sobraram a Energia Reversa e
+ * nenhuma aba de Maldição, sem uma palavra na tela. A aba Addons lê isto.
+ */
+export const problemasDaAplicacao = () => problemasDaUltimaAplicacao.map((p) => ({
+  pacote: p.pacote, problemas: [...p.problemas],
+}));
 
 /**
  * Contador que sobe a cada troca do conjunto de addons.
@@ -1754,6 +1772,7 @@ export function aplicarAddons(pacotes = []) {
     if (ruins?.length) problemas.push({ pacote: `(validador de ${def.rotulo})`, problemas: ruins });
   }
 
+  problemasDaUltimaAplicacao = problemas;
   return { aplicados: addonsAtivos(), problemas };
 }
 

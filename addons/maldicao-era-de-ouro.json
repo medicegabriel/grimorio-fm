@@ -1,10 +1,10 @@
 {
   "id": "maldicao-era-de-ouro",
   "nome": "Maldição - Era de Ouro",
-  "versao": "2.0.0",
+  "versao": "2.1.0",
   "autor": "Templas",
   "paraRaw": "afty",
-  "descricao": "Origem Maldição, do suplemento Era de Ouro. Acrescenta a Origem 'Maldição Era de Ouro' (variação de 'maldicao': destrava as 18 Aptidões de Maldição do raw e qualquer Talento com requisito de Origem Maldição, mas some do seletor de quem não instala o Addon e mostra nome e Tipo próprios). Ela se divide em 5 Tipos de Espírito Amaldiçoado (Comum, De Medo, Vingativo, Vingativo Imaginário, Enfermo), escolhidos no card da Origem como o Clã do Herdado. Bônus em Atributo, Natureza Amaldiçoada (aptidão a escolha + 10°/15° nível + PE a cada nível ímpar), Restrição Amaldiçoada e Anatomia Amaldiçoada são da Origem inteira; só o Tipo muda entre os 5, e cada um traz a característica exclusiva dele. Anatomia Amaldiçoada libera o pool de Características Amaldiçoadas (`caracteristicasAmaldicoadas`, primitiva do mesmo nome): 18 entradas, 1 no 1° nível e mais 1 a cada 5 níveis. Notas de motor: 'Resquícios de Emoções' (Tipo De Medo) pede reduzir o pré-requisito de nível de UM GRUPO de Aptidões, mas o canal `reduzNivelAptidao` só abaixa TODOS os grupos de uma vez (não existe canal por grupo ainda), então aplica mais largo que o texto, nunca mais estreito. O benefício condicional de 'Espírito Vingativo' contra o foco de vingança, o reviver de 'Memórias Esquecidas' e a redução de custo de UMA técnica de 'Epidemia sem Controle' não têm canal (escolha condicional em combate, revivificação e redução de custo de uma única técnica): ficam só no texto, procedimento de mesa, com o sinalizador de Mesa na tela. Das 18 Características Amaldiçoadas, a maioria também é só texto (chance probabilística, tipo de movimento, resistência a dano, dado de bônus em perícia, escolha de atributo com estouro de limite, aliado da página 348 não têm canal), e as com número simples (Braços Extras, Olhos Adicionais, Instinto Sanguinário, Olhos Sombrios, Pernas Extras) usam canais que já existem. 'Olhos Adicionais' existe TAMBÉM como Aptidão de Anatomia no raw, com número diferente: são duas entradas de fato diferentes, o mesmo nome do livro para as duas, por decisão do autor.",
+  "descricao": "Origem Maldição, do suplemento Era de Ouro. Acrescenta a Origem 'Maldição Era de Ouro' (variação de 'maldicao': destrava as 18 Aptidões de Maldição do raw e qualquer Talento com requisito de Origem Maldição, mas some do seletor de quem não instala o Addon e mostra nome e Tipo próprios). Ela se divide em 5 Tipos de Espírito Amaldiçoado (Comum, De Medo, Vingativo, Vingativo Imaginário, Enfermo), escolhidos no card da Origem como o Clã do Herdado. Bônus em Atributo, Natureza Amaldiçoada (aptidão a escolha + 10°/15° nível + PE a cada nível ímpar), Restrição Amaldiçoada e Anatomia Amaldiçoada são da Origem inteira; só o Tipo muda entre os 5, e cada um traz a característica exclusiva dele. Anatomia Amaldiçoada libera o pool de Características Amaldiçoadas (`caracteristicasAmaldicoadas`, primitiva do mesmo nome): 18 entradas, 1 no 1° nível e mais 1 a cada 5 níveis. Notas de motor: 'Resquícios de Emoções' (Tipo De Medo) pede reduzir o pré-requisito de nível de UM GRUPO de Aptidões, mas o canal `reduzNivelAptidao` só abaixa TODOS os grupos de uma vez (não existe canal por grupo ainda), então aplica mais largo que o texto, nunca mais estreito. O benefício condicional de 'Espírito Vingativo' contra o foco de vingança, o reviver de 'Memórias Esquecidas' e a redução de custo de UMA técnica de 'Epidemia sem Controle' não têm canal (escolha condicional em combate, revivificação e redução de custo de uma única técnica): ficam só no texto, procedimento de mesa, com o sinalizador de Mesa na tela. Das 18 Características Amaldiçoadas, as que pedem uma escolha abrem o seletor na própria aba e mexem no número: o atributo do Desenvolvimento Físico e do Desenvolvimento mental (+2, e +1 nos níveis 15 e 20, valor e limite juntos), o tipo de dano da Carapaça Mutante e a perícia do Corpo Especializado (+1d4). As de número fixo (Braços Extras, Olhos Adicionais, Instinto Sanguinário, Olhos Sombrios, Pernas Extras) usam canais que já existem. O que não tem canal (chance probabilística, deslocamento de voo e de nado, alcance, usos por dia, reação, aliado da página 348) fica em texto de mesa, com a marca Mesa ou o aviso do pedaço que o Motor não cobre. 'Olhos Adicionais' existe TAMBÉM como Aptidão de Anatomia no raw, com número diferente: são duas entradas de fato diferentes, o mesmo nome do livro para as duas, por decisão do autor.",
   "permite": ["caracteristicasAmaldicoadas"],
   "acrescenta": {
     "origens": [
@@ -121,48 +121,59 @@
       {
         "id": "ca_alma_maldita",
         "nome": "Alma Maldita",
-        "descricao": "Sua alma é impregnada com energia amaldiçoada, assumindo um aspecto maldito e difícil de se alterar. Quando uma criatura for causar dano na sua alma, esse dano é reduzido à metade antes do teste de Integridade; a partir do nível 15, ele é anulado. Essa habilidade funciona 2 vezes por dia, 3 no nível 6, 4 no nível 12 e 5 no nível 18."
+        "descricao": "Sua alma é impregnada com energia amaldiçoada, assumindo um aspecto maldito e difícil de se alterar. Quando uma criatura for causar dano na sua alma, esse dano é reduzido à metade antes do teste de Integridade; a partir do nível 15, ele é anulado. Essa habilidade funciona 2 vezes por dia, 3 no nível 6, 4 no nível 12 e 5 no nível 18.",
+        "mesa": true
       },
       {
         "id": "ca_anatomia_incompreensivel",
         "nome": "Anatomia Incompreensível",
-        "descricao": "O seu corpo tem uma forma que é difícil de compreender. Você tem 25% de chance (resultado '1' em 1d4) de ignorar o dano adicional de um ataque crítico ou um ataque furtivo. No nível 15, se torna 50% (resultado '1 ou 2' em 1d4)."
+        "descricao": "O seu corpo tem uma forma que é difícil de compreender. Você tem 25% de chance (resultado '1' em 1d4) de ignorar o dano adicional de um ataque crítico ou um ataque furtivo. No nível 15, se torna 50% (resultado '1 ou 2' em 1d4).",
+        "mesa": true
       },
       {
         "id": "ca_articulacoes_extensas",
         "nome": "Articulações Extensas",
-        "descricao": "Suas juntas são mais longas, ou suas garras são estendidas, aumentando a distância com que pode atacar. O alcance dos seus ataques corpo a corpo aumenta em 1,5 metros."
+        "descricao": "Suas juntas são mais longas, ou suas garras são estendidas, aumentando a distância com que pode atacar. O alcance dos seus ataques corpo a corpo aumenta em 1,5 metros.",
+        "mesa": true
       },
       {
         "id": "ca_bracos_extras",
         "nome": "Braços Extras",
         "descricao": "Seu corpo possui um par de braços adicionais. Você recebe +2 em testes de prestidigitação e, se tiver pelo menos duas mãos livres, pode usar esse bônus em testes de atletismo. Uma vez por cena pode descer em um passo a ritualização de um feitiço. E recebe um par adicional de mãos, permitindo você equipar dois equipamentos de uma mão ou um equipamento de duas mãos adicional, assim como agarrar duas criaturas e outros benefícios à discrição do Narrador.",
+        "parcial": "O +2 em Prestidigitação já está no número. O +2 em Atletismo com duas mãos livres, a ritualização e as mãos adicionais ficam na mesa.",
         "efeitos": [{ "canal": "bonusPericia", "alvo": "prestidigitacao", "expr": "2", "nome": "Braços Extras" }]
       },
       {
         "id": "ca_capacidade_de_voo",
         "nome": "Capacidade de Voo",
-        "descricao": "No seu corpo repousa uma capacidade de voo, que com um estímulo de energia se torna ativa. Uma vez por rodada, como uma ação livre, você pode transformar seu deslocamento de caminhada em deslocamento de voo."
+        "descricao": "No seu corpo repousa uma capacidade de voo, que com um estímulo de energia se torna ativa. Uma vez por rodada, como uma ação livre, você pode transformar seu deslocamento de caminhada em deslocamento de voo.",
+        "mesa": true
       },
       {
         "id": "ca_capacidade_de_nado",
         "nome": "Capacidade de Nado",
-        "descricao": "No seu corpo repousa uma capacidade de nado, que com um estímulo de energia se torna ativa. Uma vez por rodada, como uma ação livre, você pode transformar seu deslocamento de caminhada em deslocamento de nado."
+        "descricao": "No seu corpo repousa uma capacidade de nado, que com um estímulo de energia se torna ativa. Uma vez por rodada, como uma ação livre, você pode transformar seu deslocamento de caminhada em deslocamento de nado.",
+        "mesa": true
       },
       {
         "id": "ca_carapaca_mutante",
         "nome": "Carapaça Mutante",
-        "descricao": "Uma carapaça cobre o seu corpo, sendo uma mutação bizarra, mas resistente. Você recebe resistência a um tipo de dano físico à sua escolha. Depois de feita essa escolha não pode ser mudada."
+        "descricao": "Uma carapaça cobre o seu corpo, sendo uma mutação bizarra, mas resistente. Você recebe resistência a um tipo de dano físico à sua escolha. Depois de feita essa escolha não pode ser mudada.",
+        "alvos": [{ "id": "tipo", "tipo": "tipoDano", "label": "Tipo de Dano", "opcoes": ["ct", "im", "pf"] }],
+        "efeitos": [{ "canal": "resistenciaDano", "alvo": "escolha:tipo", "expr": "1", "nome": "Carapaça Mutante" }]
       },
       {
         "id": "ca_corpo_especializado",
         "nome": "Corpo Especializado",
-        "descricao": "Seu corpo se desenvolve de maneira a possuir um foco. Escolha uma perícia: você recebe um bônus de 1d4 nela."
+        "descricao": "Seu corpo se desenvolve de maneira a possuir um foco. Escolha uma perícia: você recebe um bônus de 1d4 nela.",
+        "alvos": [{ "id": "pericia", "tipo": "pericia", "label": "Perícia" }],
+        "efeitos": [{ "canal": "dadosPericia", "alvo": "escolha:pericia:d4", "expr": "1", "nome": "Corpo Especializado" }]
       },
       {
         "id": "ca_devorador_de_energia",
         "nome": "Devorador de Energia",
-        "descricao": "Sendo envolvido com a própria energia, você pode a devorar quando resiste a uma habilidade originada dela. Quando passar em um teste de resistência para resistir a um Feitiço, você recebe 1 ponto de energia temporário cumulativo."
+        "descricao": "Sendo envolvido com a própria energia, você pode a devorar quando resiste a uma habilidade originada dela. Quando passar em um teste de resistência para resistir a um Feitiço, você recebe 1 ponto de energia temporário cumulativo.",
+        "mesa": true
       },
       {
         "id": "ca_olhos_adicionais",
@@ -177,53 +188,70 @@
         "id": "ca_instinto_sanguinario",
         "nome": "Instinto Sanguinário",
         "descricao": "Em sua essência há um instinto por sangue e violência. Você adiciona o seu bônus de treinamento na sua Iniciativa; enquanto em uma cena de combate, você também adiciona seu bônus de treinamento na sua Atenção.",
-        "efeitos": [{ "canal": "iniciativa", "expr": "bt", "nome": "Instinto Sanguinário" }]
+        "efeitos": [
+          { "canal": "iniciativa", "expr": "bt", "nome": "Instinto Sanguinário" },
+          { "canal": "atencao", "expr": "bt", "quando": "em_combate", "nome": "Instinto Sanguinário" }
+        ]
       },
       {
         "id": "ca_olhos_sombrios",
         "nome": "Olhos Sombrios",
         "descricao": "Seus olhos guardam escuridão, sendo sombrios por natureza e aguçados. Você recebe Visão no Escuro (p.297 do livro básico). Além disso, você se torna treinado em Percepção e recebe um bônus de +2 em rolagens com a perícia. No nível 12 você passa a ignorar completamente efeitos de escuridão Leve e Total.",
-        "efeitos": [{ "canal": "bonusPericia", "alvo": "percepcao", "expr": "2", "nome": "Olhos Sombrios" }]
+        "parcial": "O treino em Percepção e o +2 já estão no número. A Visão no Escuro e o efeito de escuridão no nível 12 ficam na mesa.",
+        "efeitos": [
+          { "canal": "proficienciaPericia", "alvo": "percepcao", "expr": "1", "nome": "Olhos Sombrios" },
+          { "canal": "bonusPericia", "alvo": "percepcao", "expr": "2", "nome": "Olhos Sombrios" }
+        ]
       },
       {
         "id": "ca_pernas_extras",
         "nome": "Pernas Extras",
         "descricao": "No seu corpo cresce um par de pernas extras. Seu deslocamento aumenta em 4,5 metros e você passa a ignorar terreno difícil que esteja no solo.",
+        "parcial": "O deslocamento já está no número. Ignorar terreno difícil no solo fica na mesa.",
         "efeitos": [{ "canal": "movimento", "expr": "4.5", "nome": "Pernas Extras" }]
       },
       {
         "id": "ca_presenca_nefasta",
         "nome": "Presença Nefasta",
-        "descricao": "Com um semblante vil, a sua própria presença é nefasta. Toda criatura hostil, ao vê-lo pela primeira vez, deve realizar um teste de resistência de Vontade contra sua CD Amaldiçoada. Em uma falha, ela fica amedrontada por uma rodada. Em um sucesso, ela consegue lidar parcialmente com a sua presença, ficando abalada por uma rodada."
+        "descricao": "Com um semblante vil, a sua própria presença é nefasta. Toda criatura hostil, ao vê-lo pela primeira vez, deve realizar um teste de resistência de Vontade contra sua CD Amaldiçoada. Em uma falha, ela fica amedrontada por uma rodada. Em um sucesso, ela consegue lidar parcialmente com a sua presença, ficando abalada por uma rodada.",
+        "mesa": true
       },
       {
         "id": "ca_energia_toxica",
         "nome": "Energia Tóxica",
-        "descricao": "A sua energia é tóxica, capaz de corroer o que entra em contato. Sempre que sofre dano de um ataque corpo a corpo, o atacante perde vida igual ao seu modificador de Constituição."
+        "descricao": "A sua energia é tóxica, capaz de corroer o que entra em contato. Sempre que sofre dano de um ataque corpo a corpo, o atacante perde vida igual ao seu modificador de Constituição.",
+        "mesa": true
       },
       {
         "id": "ca_desenvolvimento_fisico",
         "nome": "Desenvolvimento Físico",
         "descricao": "Você alcança um desenvolvimento físico superior, com a própria energia o fortalecendo. Ao obter esta aptidão, um atributo físico (Força, Destreza ou Constituição) a sua escolha aumenta em 2, essa aptidão ignora o limite natural. Nos níveis 15 e 20 aumentam em +1.",
-        "requisitos": [
-          { "tipo": "nd", "valor": 4 },
-          { "tipo": "nota", "label": "Não pode ter a característica: Desenvolvimento mental" }
+        "requisitos": [{ "tipo": "nd", "valor": 4 }],
+        "incompativeisIds": ["ca_desenvolvimento_mental"],
+        "alvos": [{ "id": "atributo", "tipo": "atributo", "label": "Atributo", "opcoes": ["forca", "destreza", "constituicao"] }],
+        "efeitos": [
+          { "canal": "atributo", "alvo": "escolha:atributo", "expr": "2 + (nd >= 15) + (nd >= 20)", "nome": "Desenvolvimento Físico" },
+          { "canal": "limiteAtributo", "alvo": "escolha:atributo", "expr": "2 + (nd >= 15) + (nd >= 20)", "nome": "Desenvolvimento Físico" }
         ]
       },
       {
         "id": "ca_desenvolvimento_mental",
         "nome": "Desenvolvimento mental",
         "descricao": "Você alcança um desenvolvimento mental superior, com a própria energia o fortalecendo. Ao obter esta aptidão, um atributo Mental (Inteligência, Sabedoria ou Presença) a sua escolha aumenta em 2, essa aptidão ignora o limite natural. Nos níveis 15 e 20 aumentam em +1.",
-        "requisitos": [
-          { "tipo": "nd", "valor": 4 },
-          { "tipo": "nota", "label": "Não pode ter a característica: Desenvolvimento Físico" }
+        "requisitos": [{ "tipo": "nd", "valor": 4 }],
+        "incompativeisIds": ["ca_desenvolvimento_fisico"],
+        "alvos": [{ "id": "atributo", "tipo": "atributo", "label": "Atributo", "opcoes": ["inteligencia", "sabedoria", "presenca"] }],
+        "efeitos": [
+          { "canal": "atributo", "alvo": "escolha:atributo", "expr": "2 + (nd >= 15) + (nd >= 20)", "nome": "Desenvolvimento mental" },
+          { "canal": "limiteAtributo", "alvo": "escolha:atributo", "expr": "2 + (nd >= 15) + (nd >= 20)", "nome": "Desenvolvimento mental" }
         ]
       },
       {
         "id": "ca_guia_espiritual",
         "nome": "Guia Espiritual",
         "descricao": "Ao nascer ou reviver no mundo humano você recebe um guia que o acompanha, auxiliando a recuperar memórias, ficar mais forte ou guiá-lo ao seu objetivo. Recebe um aliado seguindo as regras da página 348 do livro básico.",
-        "requisitos": [{ "tipo": "nd", "valor": 9 }]
+        "requisitos": [{ "tipo": "nd", "valor": 9 }],
+        "mesa": true
       }
     ]
   }
