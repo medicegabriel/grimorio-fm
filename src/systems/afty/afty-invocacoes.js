@@ -2423,7 +2423,17 @@ export function resolveInvocacao(inv, dono = {}) {
   const fontesPvMult = (efe.detalhes || []).filter((d) => d.canal === "pvMult" && !d.alvo && Number(d.valor) > 1);
   const pvMultVencedor = fontesPvMult.reduce((m, d) => (Number(d.valor) > Number(m?.valor ?? 0) ? d : m), null);
   const pvMult = pvMultVencedor ? Number(pvMultVencedor.valor) : 1;
-  const pv = Math.floor((pvInvocacao(invEf, dono) + efe.pv + caract.pv) * pvMult);
+  /* ⚠ O PV FIXO É DA QUIMERA, e ele PULA a conta de cima inteira (2026-09-23). O
+     livro diz *"a Vida Máxima de uma Quimera é igual a soma do HP de cada
+     Invocação fundido - 10"*, e é igual mesmo: o PV de cada fundida já carrega o
+     que o dono deu a ela (Invocações Resistentes, Característica de Vida, o
+     multiplicador da Maldição). Deixar a fusão passar pela conta normal de novo
+     somava esse bônus outra vez POR CIMA da soma, e o multiplicador multiplicava
+     a soma que já vinha multiplicada: uma Quimera de três Maldições saía com 450
+     de vida onde o livro manda 300. O campo só existe na CÓPIA sintética que o
+     `resolveQuimera` monta, nunca numa ficha salva. */
+  const pvFixo = inv?.pvFixo == null ? null : Math.max(0, Math.trunc(Number(inv.pvFixo) || 0));
+  const pv = pvFixo ?? Math.floor((pvInvocacao(invEf, dono) + efe.pv + caract.pv) * pvMult);
   const defesa = defesaInvocacao(invEf, dono) + efe.defesa + aux.proprio.defesa;
   const deslocamento = deslocamentoInvocacao() + efe.deslocamento;
   // Tamanho: Médio até que uma Característica de Tamanho diga outro.
@@ -2471,7 +2481,9 @@ export function resolveInvocacao(inv, dono = {}) {
     .map((f) => ({ label: f.label, valor: f.valor }));
   const partesRdGeral = [...parcelasDoCanal(efe.detalhes, "rd"), ...auxDoCanal("rdGeral")];
   const fontes = {
-    pv: [
+    /* Na Quimera as parcelas são o PV de cada fundida, mais o desconto da fusão:
+       a soma delas fecha com o número, e é o que o hover precisa mostrar. */
+    pv: pvFixo != null ? (Array.isArray(inv?.pvFixoPartes) ? inv.pvFixoPartes : []) : [
       ...partesPvInvocacao(invEf, dono),
       ...parcelasDoCanal(efe.detalhes, "pv"),
       /* Duas Características de Vida não acumulam: vale a MAIOR, e a parcela
@@ -2942,7 +2954,25 @@ export function efeitosDeInvocacao(creature, ctx = {}) {
     sessaoInvocacoes: ctx.sessaoInvocacoes,
   };
   const out = [];
-  for (const inv of lista) {
+  /* ⚠ A QUIMERA TAMBÉM ENTREGA AUXÍLIO (2026-09-23). Ela ganhou ficha na mesa, com
+     o interruptor de cada auxílio, e um interruptor que acende sem mexer no número
+     do dono é pior que nenhum. Entra a mesma cópia leve que o `resolveQuimera`
+     monta (id `quimera:<id>`, Ações próprias ou as da principal), sem resolver a
+     fusão inteira: o valor do auxílio sai do grau e da classe da ação, e não lê
+     nenhum número que a fusão mexe. */
+  const quimeras = (Array.isArray(creature?.quimeras) ? creature.quimeras : []).flatMap((q) => {
+    const principal = lista.find((x) => x.id === q?.principalId);
+    const fundidas = (Array.isArray(q?.fundidasIds) ? q.fundidasIds : [])
+      .filter((id) => id !== principal?.id && lista.some((x) => x.id === id));
+    if (!principal || !fundidas.length) return [];
+    return [{
+      ...principal,
+      id: `quimera:${q.id}`,
+      nome: q.nome || principal.nome,
+      acoes: Array.isArray(q.acoes) ? q.acoes : principal.acoes,
+    }];
+  });
+  for (const inv of [...lista, ...quimeras]) {
     for (const a of auxiliosLigadosDa(inv, dono).paraAliados) {
       out.push({
         canal: a.canal,
@@ -3138,8 +3168,18 @@ const QUIMERA_MARCADOR_DEF = {
 const quimeraSoma = (v) => `fontes("${QUIMERA_MARCADOR}", "soma", "${v}")`;
 const quimeraQtd = `fontes_qtd("${QUIMERA_MARCADOR}")`;
 const quimeraExtras = `max(0, ${quimeraQtd} - 1)`;
+
+/** O que o livro tira da soma dos PV: *"a soma do HP de cada Invocação fundido - 10"*. */
+export const QUIMERA_PV_ABATE = 10;
+
+/* ⚠ O PV NÃO É EFEITO DAQUI (2026-09-23). Era `soma - 10 - pv_max` no canal `pv`,
+   e o canal soma na conta normal do PV, que ainda multiplicava por cima e ainda
+   somava o que o dono dá a toda invocação. A Quimera saía com vida a mais em
+   quatro jeitos: as Invocações Resistentes contadas de novo, a Característica de
+   Vida da principal contada de novo, o multiplicador da Maldição multiplicando a
+   soma que já vinha multiplicada, e o bônus do tipo Técnica. O número agora é FIXO
+   (`pvFixo`, calculado em `resolveQuimera`) e a conta normal não roda. */
 const QUIMERA_EFEITOS = [
-  { canal: "pv", expr: `${quimeraSoma("pv_max")} - 10 - pv_max`, quando: `${quimeraQtd} > 0`, nome: "Quimera · Pontos de Vida" },
   { canal: "custoReducao", expr: `custo - ${quimeraSoma("custo")}`, quando: `${quimeraQtd} > 0`, nome: "Quimera · Custo em PE" },
   { canal: "bonusTeste", expr: quimeraExtras, nome: "Quimera · Acerto, TR e Perícia" },
   { canal: "cd", expr: quimeraExtras, nome: "Quimera · CD" },
@@ -3148,8 +3188,14 @@ const QUIMERA_EFEITOS = [
   { canal: "orcamentoLivre", expr: quimeraExtras, nome: "Quimera · Ações e Características" },
 ].map((e) => ({ ...e, origem: "quimera" }));
 
-/** Resolve UMA Quimera a partir das fichas de invocação do dono. */
-export function resolveQuimera(quimera, invocacoes = [], dono = {}) {
+/**
+ * Resolve UMA Quimera a partir das fichas de invocação do dono.
+ *
+ * `base` é a lista das invocações do dono JÁ RESOLVIDA, do jeito que a Ficha a
+ * mostra. Quem chama várias Quimeras em sequência (`resolveQuimerasList`) a
+ * resolve uma vez só e a passa adiante, porque ela não depende da Quimera.
+ */
+export function resolveQuimera(quimera, invocacoes = [], dono = {}, base = null) {
   const fichas = Array.isArray(invocacoes) ? invocacoes : [];
   const principal = fichas.find((x) => x.id === quimera?.principalId) || null;
   const nivel = INV_QUIMERA_NIVEIS.includes(Number(quimera?.nivel)) ? Number(quimera.nivel) : 2;
@@ -3173,6 +3219,20 @@ export function resolveQuimera(quimera, invocacoes = [], dono = {}) {
   out.total = usadas.length + 1;
   if (!usadas.length) { warnings.push("Escolha ao menos uma Invocação para fundir com a principal."); return out; }
 
+  /* A VIDA MÁXIMA É A SOMA DO PV DE CADA FUNDIDA MENOS 10, e "o PV de cada
+     fundida" é o que o CARTÃO dela mostra, com tudo que o dono deu a ela. Por isso
+     a soma sai da lista resolvida do jeito que a Ficha a resolve, e não de uma
+     conta refeita aqui: refazer a conta daria dois números para a mesma
+     invocação assim que alguém mexesse numa das duas. As parcelas viajam junto,
+     para o hover mostrar "Cervo Circular 76, Tigre Fúnebre 78, Quimera -10". */
+  const resolvidasBase = Array.isArray(base) ? base : resolveInvocacoesList(fichas, dono).lista;
+  const pvDe = (id) => resolvidasBase.find((r) => r.id === id)?.pv ?? 0;
+  const partesPv = [principal, ...usadas].map((f) => ({
+    label: f.nome || grauMeta(f.grau).label, valor: pvDe(f.id),
+  }));
+  const somaPv = partesPv.reduce((t, p) => t + p.valor, 0);
+  const pvFixo = Math.max(0, somaPv - QUIMERA_PV_ABATE);
+
   const sintetica = {
     ...principal,
     id: `quimera:${quimera.id}`,
@@ -3181,8 +3241,15 @@ export function resolveQuimera(quimera, invocacoes = [], dono = {}) {
     caracteristicas: Array.isArray(quimera.caracteristicas) ? quimera.caracteristicas : principal.caracteristicas,
     portraitUrl: typeof quimera.portraitUrl === "string" ? quimera.portraitUrl : "",
     portraitFocus: quimera.portraitFocus || { x: 50, y: 50 },
+    /* O tema da principal NÃO vem junto. Ele é ancorado no id dela, e a Quimera
+       não tem editor de aparência: herdar pintaria a ficha da Quimera com o CSS
+       de outra criatura, que o dono nunca escreveu para ela. */
+    aparencia: null,
     marcadores: { ...(principal.marcadores || {}), [QUIMERA_MARCADOR]: true },
     marcadorFontes: { ...(principal.marcadorFontes || {}), [QUIMERA_MARCADOR]: [principal.id, ...usadas.map((f) => f.id)] },
+    // CALCULADOS e nunca salvos: vivem só nesta cópia. Ver o `pvFixo` do resolveInvocacao.
+    pvFixo,
+    pvFixoPartes: [...partesPv, { label: "Quimera", valor: pvFixo - somaPv }],
   };
   const donoQ = {
     ...dono,
@@ -3205,7 +3272,10 @@ export function resolveQuimera(quimera, invocacoes = [], dono = {}) {
 /** Lista de Quimeras do dono, resolvida. */
 export function resolveQuimerasList(quimeras, invocacoes = [], dono = {}) {
   const arr = Array.isArray(quimeras) ? quimeras : [];
-  const lista = arr.map((q) => resolveQuimera(q, invocacoes, dono));
+  // A lista das invocações resolvida UMA vez, e não uma por Quimera: ela não
+  // depende de nenhuma delas.
+  const base = arr.length ? resolveInvocacoesList(Array.isArray(invocacoes) ? invocacoes : [], dono).lista : [];
+  const lista = arr.map((q) => resolveQuimera(q, invocacoes, dono, base));
   return { lista, total: lista.length, custoTotal: lista.reduce((s, q) => s + (q.custo || 0), 0) };
 }
 

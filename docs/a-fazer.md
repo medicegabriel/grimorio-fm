@@ -49,6 +49,12 @@ Coisas paradas esperando decisão de regra. Nada aqui deve ser resolvido por sup
 **Precisa:** a decisão do autor em cada item, e só então o canal ou o estado correspondente.
 **Anotado:** 2026-09-23, ao fazer as Características Amaldiçoadas com escolha mexerem no número
 
+### A Quimera em campo conta no limite de Invocações em campo?
+**Onde:** `src/systems/afty/ficha/abas/AbaInvocacoes.jsx` (o chip "Em Campo N / limite") e `asserts/t-quimera.mjs` (seção 10)
+**Situação:** a Quimera ganhou ficha e interruptor de campo na aba de Invocações (2026-09-23). O chip "Em Campo N / limite" conta só as invocações da ficha, e a Quimera fica de fora por decisão minha, a confirmar. O texto do addon também diz duas coisas que o app não impõe: só uma Quimera por cena, e as fundidas ficam bloqueadas depois que ela é Dissipada.
+**Precisa:** o autor dizer (1) se a Quimera em campo ocupa uma vaga do limite (e se as fundidas dela contam enquanto ela existe), e (2) se a Ficha deve avisar quando uma fundida é posta em campo com a Quimera em campo, ou quando duas Quimeras estão em campo.
+**Anotado:** 2026-09-23, ao mostrar a ficha da Quimera fora do modo de edição
+
 ### Sem Técnica - Liberto: seis leituras para confirmar
 **Onde:** `addons/sem-tecnica-liberto.json` (o pacote) e `asserts/t-liberto.mjs` (as expectativas)
 **Situação:** o pacote foi entregue em 2026-09-21 e funciona, mas o texto do autor deixou seis pontos abertos, e cada um saiu pela leitura abaixo. Todas são DADO do pacote, então trocar qualquer uma é editar o JSON e o assert, sem código.

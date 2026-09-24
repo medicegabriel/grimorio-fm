@@ -29,7 +29,7 @@ import {
   concluiPreparacaoRitual, cancelaRitual, finalizaRitual, encerraRitual, desativaRitual,
   concedeNaSessao, removeConcessao,
   estadoDaInvocacao, poeInvocacaoEmCampo, alternaAuxilioInvocacao,
-  aplicaDanoInvocacao, aplicaCuraInvocacao, defineVitalInvocacao,
+  aplicaDanoInvocacao, aplicaCuraInvocacao, defineVitalInvocacao, invocacaoDaMesa,
   estadoTita, aplicaDanoTitaCabeca, aplicaCuraTitaCabeca, defineVitalTitaCabeca,
   aplicaDanoTitaMembro, aplicaCuraTitaMembro, defineVitalTitaMembro,
 } from "./ficha-sessao";
@@ -317,8 +317,11 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
     /* ⚠ O `pvMax` viaja porque quem caiu a 0 VOLTA PELA METADE, e a sessão não
        conhece o máximo de ninguém: ela guarda o corrente. Ver a regra em
        `poeInvocacaoEmCampo`. */
+    /* ⚠ `invocacaoDaMesa` e não `invocacoes.lista`: a Quimera mora em
+       `derived.quimeras`, e procurar só na lista das invocações dava máximo zero
+       para ela. */
     emCampo: (id, valor) => atualiza((s) => poeInvocacaoEmCampo(
-      s, id, valor, derived.invocacoes?.lista?.find((i) => i.id === id)?.pv ?? 0,
+      s, id, valor, invocacaoDaMesa(derived, id)?.pv ?? 0,
     )),
     auxilio: (id, acaoId, ligado) => atualiza((s) => alternaAuxilioInvocacao(s, id, acaoId, ligado)),
     dano: (id, quanto, pvMax) => atualiza((s) => aplicaDanoInvocacao(s, id, quanto, pvMax)),
@@ -326,10 +329,10 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
     vital: (id, qual, valor) => atualiza((s) => defineVitalInvocacao(
       s, id, qual, valor,
       qual === "alma"
-        ? (derived.invocacoes?.lista?.find((i) => i.id === id)?.almaMax ?? 0)
-        : (derived.invocacoes?.lista?.find((i) => i.id === id)?.pv ?? 0),
+        ? (invocacaoDaMesa(derived, id)?.almaMax ?? 0)
+        : (invocacaoDaMesa(derived, id)?.pv ?? 0),
     )),
-  }), [atualiza, derived.invocacoes]);
+  }), [atualiza, derived]);
 
   /* O tema de UM Shikigami. Ele mora DENTRO da invocação, em `inv.aparencia`,
      pela mesma razão de o tema da ficha morar na criatura (autor, 2026-08-05:

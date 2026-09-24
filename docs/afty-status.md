@@ -14585,3 +14585,23 @@ QUAL tipo, QUAL perícia. E a Ficha Final não listava as Características de je
   10 → 14 com LIMITE 20 → 24 no ND 20, Percepção "+10 + 1d4" no criador e na Ficha (rolagem `d20+10 +
   1d4`), o grupo novo na Ficha com as três respostas, o Mental travado com o Físico marcado e liberado
   ao desmarcar, e a resposta antiga não volta ao remarcar. Sem erro de console.
+
+---
+
+## SESSÃO DE 2026-09-23: QUIMERA - VIDA EXATA E FICHA FORA DO MODO DE EDIÇÃO
+
+Pedido do autor: *"O codigo de quimera esta multiplicando a vida novamente ou algo similar ele esta com mais vida do que deveria, e tbm faça com que apareça a ficha fora do modo de ediçao"*, com a regra do livro *"A Vida Máxima de uma Quimera é igual a soma do HP de cada Invocação fundido - 10"*.
+
+**1. A vida.**
+- Causa: o `- 10` ia como efeito no canal `pv` (`soma - 10 - pv_max`), e o `resolveInvocacao` ainda rodava a conta normal do PV por cima. O que o dono dá a toda invocação (Invocações Resistentes, +5 x BT), a Característica de Vida da principal, o multiplicador da Maldição (x1,5, sobre uma soma que já vinha multiplicada) e o bônus do tipo Técnica entravam duas vezes. Medido antes: 450 em vez de 300 numa fusão só de Maldições, 317 em vez de 287 com Invocações Resistentes.
+- Conserto: PV FIXO. `resolveQuimera` soma o PV resolvido de cada fundida (o do cartão dela) e abate `QUIMERA_PV_ABATE` (10). A cópia sintética leva `pvFixo` e `pvFixoPartes`, e o `resolveInvocacao` pula a conta normal quando `pvFixo` existe (piso zero). O hover mostra cada fundida e a parcela "Quimera" de -10, e o `fontes.pv` fecha no número. Não reaproveitei `overridesPorInvocacao`: ele preenche `resolvida.shikigami` e o cabeçalho ganharia uma pastilha vazia. `resolveQuimerasList` resolve a lista base uma vez só.
+
+**2. A ficha fora do modo de edição.**
+- `AbaInvocacoes.jsx`: a Quimera é um cartão na fileira ("Quimera · N Fundidas") e abre `FichaDoShikigami` com a resolvida dela (Atributos, Ataque, TRs, Perícias, Ações, Características, Bônus, vitais editáveis, retrato), a pastilha "Quimera" e as fundidas no cabeçalho, sem botão de aparência. O resumo antigo do pé da aba saiu.
+- `ficha-sessao.js`: `invocacoesDaMesa` e `invocacaoDaMesa` (a Quimera entra com o id `quimera:<id>`, na mesma tabela de sessão). `aparaSessao` apara a Quimera pelo PV dela, `AftyFicha.jsx` e `PainelDeCombatente.jsx` acham o máximo por essa porta (antes dava zero para a Quimera), e `alvosDeBusca` a inclui (acha também pelo nome de uma fundida).
+- `efeitosDeInvocacao` passou a incluir a Quimera: um auxílio de Aliados ligado nela em campo sobe o número do dono. A cópia sintética zera `aparencia` (o tema da principal é ancorado no id dela).
+- A Quimera NÃO conta no chip "Em Campo N / limite" (pergunta em `docs/a-fazer.md`).
+
+**Asserts:** `t-quimera.mjs` de 40 para 75. A seção 9 mede 9 cenários de vida contra a soma dos cartões menos 10 (com o hover fechando no número), e a seção 10 cobre a sessão por id, o clamp, a busca e o auxílio de Aliados. Contraprova: contra o motor anterior (`git archive` do commit) 21 desses falham, entre eles os 450 no lugar de 300.
+
+**Verificado ao vivo** (dev limpo, `/Afty`, addon `quimera` instalado, Cervo 76 + Tigre 78 + Serpente 53): o cartão mostra 197, a ficha abre com a pastilha "Quimera", as três fundidas, Vida e Integridade em 197, e cinco cliques no menos levam a 192 com "Em Campo". Console sem erro. `npx eslint src/systems/afty` zerado, `npm run build` limpo, suíte toda verde exceto o `t-invocacoes-motor.mjs` conhecido.

@@ -258,6 +258,29 @@ function normalizaInvocacoesSessao(bruto) {
   return out;
 }
 
+/**
+ * Tudo que a mesa opera como invocação: as da ficha e as QUIMERAS válidas.
+ *
+ * ⚠ A QUIMERA ENTRA COM A RESOLVIDA DELA (2026-09-23), sob o id `quimera:<id>`
+ * que o `resolveQuimera` dá à cópia sintética. É o mesmo formato de invocação, com
+ * PV, Integridade, Ações e auxílios, então a sessão a guarda na mesma tabela e os
+ * seis escritores daqui servem para ela sem uma linha nova. Quem procurava o
+ * máximo só em `derived.invocacoes.lista` achava zero para a Quimera, e zero de
+ * máximo mata no primeiro clique.
+ */
+export function invocacoesDaMesa(derived) {
+  const quimeras = (derived?.quimeras?.lista ?? [])
+    .filter((q) => q.valido && q.resolvida)
+    .map((q) => q.resolvida);
+  return [...(derived?.invocacoes?.lista ?? []), ...quimeras];
+}
+
+/** A invocação (ou Quimera) resolvida daquele id, ou `null`. */
+export function invocacaoDaMesa(derived, invId) {
+  if (!invId) return null;
+  return invocacoesDaMesa(derived).find((i) => i.id === invId) ?? null;
+}
+
 /** A linha daquela invocação, com o padrão de quem nunca foi tocada. */
 export function estadoDaInvocacao(sessao, invId) {
   const e = sessao?.invocacoes?.[invId];
@@ -714,8 +737,9 @@ export function aparaSessao(sessao, derived) {
   const almaAtual = entre(sessao.almaAtual + ganho, 0, almaMax);
   /* As invocações apararam pelo mesmo caminho. Sem isto, tirar uma Característica
      de Vida do shikigami deixava o PV corrente ACIMA do máximo e a barra passava
-     de 100%. É o mesmo motivo de o dono ser aparado aqui. */
-  const invocacoes = aparaInvocacoes(sessao.invocacoes, derived?.invocacoes?.lista);
+     de 100%. É o mesmo motivo de o dono ser aparado aqui. A Quimera entra junto,
+     porque o PV dela desce quando uma das fundidas perde vida no criador. */
+  const invocacoes = aparaInvocacoes(sessao.invocacoes, invocacoesDaMesa(derived));
   const tita = apararTita(sessao.tita, derived?.titaColosso);
   if (hpAtual === sessao.hpAtual && peAtual === sessao.peAtual && almaAtual === sessao.almaAtual
     && visto === almaMax && invocacoes === sessao.invocacoes && tita === sessao.tita) {

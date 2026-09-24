@@ -1122,6 +1122,24 @@ referência direta a mecânicas de Invocação. Lista para orientar o desenho fu
   Funde de 2 a 4 invocações (Nível da Passiva escolhido no card, contando a principal): PV soma de todas menos
   10, Custo soma, treinos em união, atributos FIXOS no maior valor, +1 em Acerto, CD, Defesa, Nível de Dano,
   TRs e Perícia por fundida além da primeira. Card liberado pela primitiva `quimera` do addon.
+  - **A Vida é EXATAMENTE a soma do PV que o cartão de cada fundida mostra, menos 10 (2026-09-23).**
+    Livro: *"A Vida Máxima de uma Quimera é igual a soma do HP de cada Invocação fundido - 10"*. O número
+    é FIXO (`pvFixo` na cópia sintética, `QUIMERA_PV_ABATE` = 10) e a conta normal do PV NÃO roda para
+    ela: sem multiplicador da Maldição, sem o que o dono dá a toda invocação (Invocações Resistentes), sem
+    bônus do tipo Técnica e sem Característica de Vida da Quimera. O que cada fundida já ganhou dessas
+    fontes está DENTRO do cartão dela, e por isso está dentro da soma. Antes, o abate ia como efeito
+    `soma - 10 - pv_max` no canal `pv` e a conta normal rodava por cima, contando tudo duas vezes (450
+    em vez de 300 numa fusão só de Maldições). O hover do PV lista as fundidas e a parcela "Quimera" de
+    -10 (`fontes.pv`, alimentado por `pvFixoPartes`).
+  - **Ficha fora do modo de edição (2026-09-23):** a Quimera é um cartão na fileira da aba Invocações
+    (depois das invocações) e, selecionada, abre a MESMA ficha de uma invocação (`FichaDoShikigami`), com
+    Atributos, Ataque, TRs, Perícias, Ações, Características, vitais editáveis e o retrato, mais a pastilha
+    "Quimera" e os nomes das fundidas. O id na mesa é `quimera:<id>`, a mesma tabela de sessão das
+    invocações (`sessao.invocacoes`), e `invocacoesDaMesa`/`invocacaoDaMesa` (`ficha-sessao.js`) são a
+    porta de leitura por id, usada pela Ficha, pelo painel de Encontros, pelo clamp (`aparaSessao`) e pela
+    busca global. Sem botão de aparência (o tema mora em `creature.invocacoes`). Um auxílio de Aliados
+    ligado na Quimera em campo entra no dono como o de qualquer invocação (`efeitosDeInvocacao`). A
+    Quimera NÃO conta no chip "Em Campo N / limite".
 - **Criar Horda / Hordas:** líder + membros, custo por grau, limite = metade do limite de campo,
   escalonamento por nº de membros (Hoste Amaldiçoada, Flanco Avançado, Combate em Alcateia).
 - **Ações e Características** como itens que somam ao custo da invocação (Visionário, Ápice do

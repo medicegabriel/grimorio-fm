@@ -179,5 +179,110 @@ t("as invocacoes da ficha ficam intactas",
 t("a lista de invocacoes nao ganha a Quimera", lista.length, 4);
 t("os marcadores da ficha nao ganham o interno", dQ({ n: 4 }).invocacoes.marcadores.length, 0);
 
+/* ============================================================ */
+/* 9. A VIDA É A SOMA DOS CARTÕES MENOS 10, E MAIS NADA (2026-09-23) */
+/* ============================================================ */
+/* Autor: *"O codigo de quimera esta multiplicando a vida novamente ou algo
+   similar ele esta com mais vida do que deveria"*. O `soma - 10 - pv_max` ia pelo
+   canal `pv`, e a conta normal do PV rodava por cima: o que o dono dá a toda
+   invocação entrava duas vezes, a Característica de Vida da principal também, e o
+   multiplicador da Maldição multiplicava a soma que já vinha multiplicada. */
+const pvDaQuimera = ({ habilidades = [], todas = {}, porIndice = {}, n = 3, quimera = {} } = {}) => {
+  const c = ficha({ n });
+  c.habilidades = habilidades;
+  c.invocacoes = c.invocacoes.map((inv, i) => ({ ...inv, ...todas, ...(porIndice[i] ?? {}) }));
+  Object.assign(c.quimeras[0], quimera);
+  const d = deriveAfty(c);
+  const q = d.quimeras.lista[0];
+  const somaCartoes = d.invocacoes.lista.filter((x) => [q.principalId, ...q.fundidasIds].includes(x.id))
+    .reduce((s, x) => s + x.pv, 0);
+  return { pv: q.pv, esperado: somaCartoes - 10, partes: q.resolvida.fontes.pv, resolvida: q.resolvida };
+};
+const VIDA = { id: "cv", nome: "Vitalidade", subtipo: "vida" };
+const CENARIOS = {
+  "sem nada": {},
+  "Invocacoes Resistentes do dono (+5 x BT em cada)": { habilidades: ["ctr_invocacoes_resistentes"] },
+  "principal do tipo Maldicao (x1,5)": { porIndice: { 0: { tipoMecanico: "maldicao" } } },
+  "todas do tipo Maldicao": { todas: { tipoMecanico: "maldicao" } },
+  "Maldicao com Invocacoes Resistentes": { habilidades: ["ctr_invocacoes_resistentes"], todas: { tipoMecanico: "maldicao" } },
+  "todas do tipo Tecnica": { todas: { tipoMecanico: "tecnica" } },
+  "Caracteristica de Vida em todas": { todas: { caracteristicas: [VIDA] } },
+  "Quimera legada herdando a Vida da principal": { porIndice: { 0: { caracteristicas: [VIDA] } } },
+  "Quimera com Caracteristica de Vida propria": { quimera: { acoes: [], caracteristicas: [VIDA] } },
+};
+for (const [nome, o] of Object.entries(CENARIOS)) {
+  const r = pvDaQuimera(o);
+  t(`PV = soma dos cartoes - 10: ${nome}`, r.pv, r.esperado);
+  t(`o hover do PV fecha no numero: ${nome}`, r.partes.reduce((s, p) => s + p.valor, 0), r.pv);
+}
+{
+  const base = pvDaQuimera();
+  t("o hover lista cada fundida e a parcela da Quimera",
+    base.partes.map((p) => p.label), ["Cervo Circular", "Tigre Funebre", "Grande Serpente", "Quimera"]);
+  t("a parcela da Quimera e o abate de 10", base.partes.at(-1).valor, -INV.QUIMERA_PV_ABATE);
+  t("a Integridade da Quimera acompanha o PV fixo", base.resolvida.almaMax, base.pv);
+}
+t("PV fixo nunca fica negativo",
+  INV.resolveQuimera({ id: "q", principalId: "a", fundidasIds: ["b"], nivel: 2 },
+    [{ ...INV.createBlankInvocacao("quarto"), id: "a" }, { ...INV.createBlankInvocacao("quarto"), id: "b" }],
+    {}, [{ id: "a", pv: 2 }, { id: "b", pv: 3 }]).pv, 0);
+
+/* ============================================================ */
+/* 10. A QUIMERA NA MESA (Ficha Final e Encontro)                */
+/* ============================================================ */
+/* Autor, no mesmo pedido: *"faça com que apareça a ficha fora do modo de
+   edição"*. A aba mostra a resolvida dela com a mesma ficha de invocação, então o
+   que precisa valer em Node é o que a aba LÊ: a sessão por id, o máximo por id, a
+   busca e o auxílio que ela entrega ao dono. */
+const S = await import(R + "ficha/ficha-sessao.js");
+const FC = await import(R + "ficha/ficha-conteudo.js");
+{
+  const d = dQ({ n: 3 });
+  const q = d.quimeras.lista[0];
+  const id = q.resolvida.id;
+  t("o id da Quimera na mesa e quimera:<id>", id, "quimera:q1");
+  t("a mesa enxerga as invocacoes e a Quimera",
+    S.invocacoesDaMesa(d).map((x) => x.id), ["f0", "f1", "f2", "f3", "quimera:q1"]);
+  t("o maximo da Quimera sai pelo id dela", S.invocacaoDaMesa(d, id)?.pv, q.pv);
+  t("id que nao existe devolve null", S.invocacaoDaMesa(d, "quimera:fantasma"), null);
+  t("Quimera invalida nao entra na mesa",
+    S.invocacoesDaMesa(deriveAfty(ficha({ n: 2, fundidas: [] }))).some((x) => x.id.startsWith("quimera:")), false);
+
+  let s = S.sessaoEmBranco(d);
+  s = S.poeInvocacaoEmCampo(s, id, true, q.pv);
+  s = S.aplicaDanoInvocacao(s, id, 25, q.pv);
+  t("dano na Quimera desce do PV fixo dela",
+    [S.estadoDaInvocacao(s, id).pvAtual, S.estadoDaInvocacao(s, id).emCampo], [q.pv - 25, true]);
+  s = S.defineVitalInvocacao(s, id, "pv", q.pv + 999, S.invocacaoDaMesa(d, id).pv);
+  t("escrever acima do maximo apara no PV fixo", S.estadoDaInvocacao(s, id).pvAtual, q.pv);
+  const menor = dQ({ n: 2 });
+  t("a sessao apara a Quimera quando o PV dela desce",
+    S.estadoDaInvocacao(S.aparaSessao(s, menor), id).pvAtual, menor.quimeras.lista[0].pv);
+
+  const alvo = FC.alvosDeBusca(d).find((a) => a.id === id);
+  t("a busca acha a Quimera e leva para a aba de Invocacoes",
+    [alvo?.aba, alvo?.grupo, alvo?.nome, alvo?.detalhe], ["invocacoes", "invocacao", "Agito", "Quimera"]);
+  t("e acha pelo nome de uma fundida", FC.alvosDeBusca(d).some((a) => a.id === id && a.busca.includes("tigre")), true);
+}
+{
+  /* Um auxilio de Defesa para Aliados, ligado na Quimera em campo, sobe a
+     Defesa do dono como o de qualquer invocacao. */
+  const c = ficha({ n: 2 });
+  c.quimeras[0].acoes = [{
+    ...INV.createBlankAcao(), id: "qaux", nome: "Muralha", familia: "auxilio",
+    auxilioSub: "defesa", alvoAuxilio: "aliados",
+  }];
+  c.quimeras[0].caracteristicas = [];
+  const semLigar = deriveAfty(c);
+  const ligado = deriveAfty(c, { invocacoes: { "quimera:q1": { emCampo: true, auxilios: { qaux: true } } } });
+  const q = ligado.quimeras.lista[0];
+  const aux = q.resolvida.auxilios.find((a) => a.id === "qaux");
+  t("o auxilio da Quimera aparece ligado na ficha dela", aux?.ligado, true);
+  t("e sobe a Defesa do dono pelo valor do auxilio",
+    ligado.defesa - semLigar.defesa, aux?.valor);
+  const fora = deriveAfty(c, { invocacoes: { "quimera:q1": { emCampo: false, auxilios: { qaux: true } } } });
+  t("Quimera fora de campo nao sustenta o auxilio", fora.defesa, semLigar.defesa);
+}
+
 console.log(bad.length ? `FALHAS (${bad.length}):\n` + bad.join("\n") : `TODOS OS ${ok} ASSERTS PASSARAM`);
 process.exitCode = bad.length ? 1 : 0;

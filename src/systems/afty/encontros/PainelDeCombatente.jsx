@@ -14,7 +14,7 @@ import {
   concedeNaSessao, removeConcessao, peTempTotal, gastaPe, pvTempTotal,
   sofreGolpeNaGuarda, desfazGolpeNaGuarda, encerraGuarda, defineCondicoes,
   estadoDaInvocacao, poeInvocacaoEmCampo, alternaAuxilioInvocacao,
-  aplicaDanoInvocacao, aplicaCuraInvocacao, defineVitalInvocacao,
+  aplicaDanoInvocacao, aplicaCuraInvocacao, defineVitalInvocacao, invocacaoDaMesa,
   alteraTreinoAtivo, alteraEstadoCombate, aplicaPatchCombate,
 } from "../ficha/ficha-sessao";
 import { rolarTeste, rolarDano, textoDaRolagem } from "../ficha/ficha-rolagem";
@@ -140,8 +140,9 @@ export default function PainelDeCombatente({
      `onSessao` como todo o resto do painel, então o mestre abate o PV de um
      shikigami em campo sem sair do encontro. */
   const acoesDeInvocacao = useMemo(() => {
-    const pvDe = (id) => derived?.invocacoes?.lista?.find((i) => i.id === id)?.pv ?? 0;
-    const almaDe = (id) => derived?.invocacoes?.lista?.find((i) => i.id === id)?.almaMax ?? 0;
+    // A Quimera entra pelo mesmo id da Ficha Final. Ver `invocacaoDaMesa`.
+    const pvDe = (id) => invocacaoDaMesa(derived, id)?.pv ?? 0;
+    const almaDe = (id) => invocacaoDaMesa(derived, id)?.almaMax ?? 0;
     return {
       emCampo: (id, v) => onSessao((s) => poeInvocacaoEmCampo(s, id, v, pvDe(id))),
       auxilio: (id, acaoId, on) => onSessao((s) => alternaAuxilioInvocacao(s, id, acaoId, on)),

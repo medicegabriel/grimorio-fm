@@ -119,7 +119,7 @@ function Retrato({ inv, className }) {
  * não. Selecionar é a ação de leitura e acontece o tempo todo, então ela merece
  * o alvo grande. Invocar e dissipar são atos de mesa e ficam num alvo próprio.
  */
-function CartaoDoRoster({ inv, estado, selecionado, aoSelecionar, aoEmCampo }) {
+function CartaoDoRoster({ inv, estado, selecionado, aoSelecionar, aoEmCampo, fusao = null }) {
   const pvAtual = estado.pvAtual ?? inv.pv;
   const pct = inv.pv > 0 ? Math.max(0, Math.min(100, (pvAtual / inv.pv) * 100)) : 0;
   const nivel = pct <= 25 ? "critico" : pct <= 50 ? "baixo" : "normal";
@@ -142,7 +142,11 @@ function CartaoDoRoster({ inv, estado, selecionado, aoSelecionar, aoEmCampo }) {
             <span className="afty-inv-cartao-nome" title={inv.nome || "Invocação Sem Nome"}>
               {inv.nome || "Sem Nome"}
             </span>
-            <span className="afty-inv-cartao-grau">{inv.grauLabel}</span>
+            {/* A Quimera diz o que é no lugar do grau: o grau dela é o da
+                principal, e "Segundo Grau" num cartão de fusão confunde. */}
+            <span className="afty-inv-cartao-grau">
+              {fusao ? `Quimera · ${fusao.total} Fundidas` : inv.grauLabel}
+            </span>
           </span>
         </span>
         <span className="afty-inv-cartao-vida">
@@ -542,7 +546,13 @@ function StatDaInvocacao({ id, rotulo, valor, partes, titulo }) {
  * dois. É o mesmo `sm:grid-cols-2` que estas listas tinham quando ocupavam a
  * largura inteira, agora medido contra a coluna e não contra a janela.
  */
-function FichaDoShikigami({ inv, estado, rolar, acoes, aoTemar }) {
+/* ⚠ A QUIMERA USA ESTA MESMA FICHA (2026-09-23). Autor: *"faça com que apareça a
+   ficha fora do modo de edição"*. Ela era um resumo de quatro pastilhas no pé da
+   aba (PV, Defesa, Deslocamento, atributos), sem Ações, testes nem vida editável,
+   então a mesa voltava ao criador para saber o que ela fazia. A resolvida dela já
+   tem o formato de invocação, e `fusao` só acrescenta a identidade: a pastilha
+   "Quimera" e quem entrou na fusão. */
+function FichaDoShikigami({ inv, estado, rolar, acoes, aoTemar, fusao = null }) {
   const nome = inv.nome || "Invocação";
   const testes = inv.testes ?? {};
   const fontes = inv.fontes ?? {};
@@ -567,7 +577,8 @@ function FichaDoShikigami({ inv, estado, rolar, acoes, aoTemar }) {
         <div className="afty-inv-cabeca-texto">
           <h2 className="afty-inv-titulo">{nome}</h2>
           <div className="afty-inv-cabeca-marcas">
-            <span className="afty-chip" data-afty-tom="destaque">{inv.grauLabel}</span>
+            {fusao && <span className="afty-chip" data-afty-tom="destaque">Quimera</span>}
+            <span className="afty-chip" data-afty-tom={fusao ? undefined : "destaque"}>{inv.grauLabel}</span>
             {inv.tipoLabel && (
               <span className="afty-chip" title={`Intermediário: ${inv.intermediario}. Retirada: ${inv.retirada}`}>
                 {inv.tipoLabel}
@@ -607,6 +618,11 @@ function FichaDoShikigami({ inv, estado, rolar, acoes, aoTemar }) {
               </span>
             )}
           </div>
+          {fusao && (fusao.fundidas ?? []).length > 0 && (
+            <span className="afty-rotulo text-[11px]" title="Invocações fundidas, a principal primeiro">
+              {fusao.fundidas.map((f) => f.nome).join(" + ")}
+            </span>
+          )}
         </div>
         {/* ⚠ SEM GANCHO, SEM BOTÃO. No painel de Encontros o combatente guarda
             uma CÓPIA congelada da ficha, e o editor de aparência grava na
@@ -868,33 +884,6 @@ function FichaDoShikigami({ inv, estado, rolar, acoes, aoTemar }) {
 }
 
 /* ============================================================ */
-/* QUIMERAS                                                      */
-/* ============================================================ */
-/** Uma QUIMERA: números já fundidos, e a lista de quem entrou na fusão. */
-function Quimera({ q }) {
-  const r = q.resolvida;
-  const attrs = Object.entries(r?.atributos?.valores ?? {});
-  return (
-    <div className="afty-linha px-2.5 py-1.5 space-y-1">
-      <div className="flex items-center gap-2 flex-wrap">
-        <span className="flex-1 min-w-0 text-[12px] font-semibold truncate">{q.nome || r?.nome || "Quimera"}</span>
-        <span className="afty-rotulo text-[10px] whitespace-nowrap">{q.total} Fundidas</span>
-        <span className="afty-valor text-[11px]" data-afty-tom="custo">{q.custo} PE</span>
-      </div>
-      <div className="flex items-center gap-2 flex-wrap">
-        <span className="afty-chip" title="Pontos de Vida">PV {q.pv}</span>
-        <span className="afty-chip" title="Defesa">Defesa {q.defesa}</span>
-        {q.deslocamento != null && <span className="afty-chip" title="Deslocamento">{q.deslocamento}m</span>}
-        {attrs.map(([k, v]) => (
-          <span key={k} className="afty-chip" title="Atributo fixo no maior valor entre as fundidas">{k.slice(0, 3).toUpperCase()} {v}</span>
-        ))}
-      </div>
-      <div className="text-[11px] opacity-80">{(q.fundidas ?? []).map((f) => f.nome).join(" + ")}</div>
-    </div>
-  );
-}
-
-/* ============================================================ */
 /* HORDAS                                                        */
 /* ============================================================ */
 /**
@@ -1013,14 +1002,20 @@ export default function AbaInvocacoes({ derived, rolar, destaque, estadoDe, acoe
   const [escolha, setEscolha] = useState({ id: null, buscaVista: null });
   const selecionar = (id) => setEscolha({ id, buscaVista: alvoDaBusca });
 
+  /* A fileira tem as invocações e depois as Quimeras. A Quimera entra pela
+     resolvida dela (id `quimera:<id>`), que é o mesmo formato de invocação, e a
+     `fusao` ao lado diz à ficha que ela é uma fusão. */
+  const fusaoDe = new Map(quimeras.filter((q) => q.resolvida).map((q) => [q.resolvida.id, q]));
+  const fileira = [...invocacoes, ...[...fusaoDe.values()].map((q) => q.resolvida)];
+
   /* O selecionado, com o cuidado de sobreviver a uma invocação removida no
      criador com a Ficha aberta: id que não existe mais cai no primeiro. */
   const buscaNova = alvoDaBusca && alvoDaBusca !== escolha.buscaVista
-    ? invocacoes.find((i) => i.id === alvoDaBusca)
+    ? fileira.find((i) => i.id === alvoDaBusca)
     : null;
   const selecionado = buscaNova
-    ?? invocacoes.find((i) => i.id === escolha.id)
-    ?? invocacoes[0]
+    ?? fileira.find((i) => i.id === escolha.id)
+    ?? fileira[0]
     ?? null;
   const raiz = useDestaque(!!alvoDaBusca && selecionado?.id === alvoDaBusca);
 
@@ -1105,12 +1100,13 @@ export default function AbaInvocacoes({ derived, rolar, destaque, estadoDe, acoe
       )}
 
       {/* ---------- a fileira ---------- */}
-      {invocacoes.length > 0 && (
+      {fileira.length > 0 && (
         <div className="afty-inv-fileira">
-          {invocacoes.map((inv) => (
+          {fileira.map((inv) => (
             <CartaoDoRoster
               key={inv.id}
               inv={inv}
+              fusao={fusaoDe.get(inv.id) ?? null}
               estado={estadoDe(inv.id)}
               selecionado={selecionado?.id === inv.id}
               aoSelecionar={() => selecionar(inv.id)}
@@ -1121,14 +1117,17 @@ export default function AbaInvocacoes({ derived, rolar, destaque, estadoDe, acoe
       )}
 
       {/* ---------- a ficha do selecionado ---------- */}
+      {/* A Quimera fica sem o botão de aparência: o tema mora dentro de
+          `creature.invocacoes`, e ela não está lá. */}
       {selecionado && (
         <FichaDoShikigami
           key={selecionado.id}
           inv={selecionado}
+          fusao={fusaoDe.get(selecionado.id) ?? null}
           estado={estadoDe(selecionado.id)}
           rolar={rolar}
           acoes={acoes}
-          aoTemar={aoTemar ? () => aoTemar(selecionado.id) : null}
+          aoTemar={aoTemar && !fusaoDe.has(selecionado.id) ? () => aoTemar(selecionado.id) : null}
         />
       )}
 
@@ -1141,14 +1140,6 @@ export default function AbaInvocacoes({ derived, rolar, destaque, estadoDe, acoe
         </section>
       )}
 
-      {quimeras.length > 0 && (
-        <section className="afty-card p-3">
-          <h2 className="afty-card-titulo mb-2">Quimeras</h2>
-          <div className="space-y-2">
-            {quimeras.map((q) => <Quimera key={q.id} q={q} />)}
-          </div>
-        </section>
-      )}
     </div>
   );
 }

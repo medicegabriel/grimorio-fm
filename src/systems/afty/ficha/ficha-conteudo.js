@@ -522,6 +522,16 @@ export function alvosDeBusca(derived) {
       .map((x) => x.nome).filter(Boolean).join(" ");
     add("invocacoes", "invocacao", i.id, i.nome || "Invocação Sem Nome", i.grauLabel, dentro);
   }
+  /* A Quimera tem ficha própria na aba desde 2026-09-23, então a busca também a
+     alcança, pelo id da resolvida (`quimera:<id>`). Os nomes das fundidas entram
+     na busca: quem procura "Nue" acha a Quimera em que o Nue está. */
+  for (const q of derived?.quimeras?.lista ?? []) {
+    const r = q.valido ? q.resolvida : null;
+    if (!r) continue;
+    const dentro = [...(r.acoes ?? []), ...(r.caracteristicas ?? []), ...(q.fundidas ?? [])]
+      .map((x) => x.nome).filter(Boolean).join(" ");
+    add("invocacoes", "invocacao", r.id, r.nome || "Quimera Sem Nome", "Quimera", dentro);
+  }
   for (const a of derived?.testes?.ataques ?? []) add("pericias", "ataque", a.id, a.nome, null);
   for (const r of derived?.testes?.resistencias ?? []) add("pericias", "tr", r.value, r.label, null);
   for (const p of derived?.testes?.pericias ?? []) add("pericias", "pericia", p.id, p.nome, null);

@@ -1294,6 +1294,11 @@ resolver aparecem, no cartão e por ação, porque eles dizem que a Invocação 
 regras e escondê-los seria esconder o que precisa ser consertado. As Hordas entram numa
 lista simples no fim.
 
+**A Quimera tem ficha própria (2026-09-23).** Ela deixou de ser um resumo de quatro pastilhas no pé da aba:
+é um cartão na fileira, e selecionada abre a ficha inteira de uma invocação, com a pastilha "Quimera" e as
+fundidas no cabeçalho. Vale igual no painel de Encontros. Detalhes e a regra da Vida em
+`docs/afty-invocacoes.md`.
+
 ### Verificação
 
 Lint e build limpos, **186 asserts** (9 novos), `src/components/` intocado.
