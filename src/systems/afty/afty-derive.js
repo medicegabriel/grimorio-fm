@@ -73,7 +73,7 @@ import {
   AFTY_HABILIDADES,
   resolveArmasDedicadas, efeitosArmasDedicadas, resolveEmpolgacao,
   encantamentosDeManejoEspecial, habilidadesConcedidasPelasEspecializacoes,
-  aptidoesConcedidasPelasHabilidades,
+  aptidoesConcedidasPelasHabilidades, expandeHerdadas,
 } from "./afty-habilidades";
 import {
   resolveTalentos, resolveTreinoEscudo, getTalento, OPCAO_TALENTO_NOME, AFTY_TALENTOS,
@@ -146,7 +146,7 @@ import { sistemaDaFicha, regraDo, rotuloDoNivel } from "./afty-sistema";
 // Os números da ficha de JOGADOR vêm da Classe, e não do Tipo.
 import {
   pvDaClasse, peDaClasse, peModTecnicaDaFicha, vagasDeHabilidadePorClasse,
-  pacoteInicialDaFicha,
+  pacoteInicialDaFicha, resistenciasDaClasse,
 } from "./afty-especializacoes";
 import {
   resolveCombate, degrausBrutalidade, tetoAtaqueConcentrado,
@@ -589,8 +589,11 @@ export function deriveAfty(creature, opcoes = {}) {
   const gerais = ehJogador("habilidadesGerais")
     ? resolveGerais({ ...creature, habilidadesGerais: [] }, { nd, maestria: bt, concedidos: [] })
     : resolveGerais(creature, { nd, maestria: bt, concedidos: concedido.gerais });
+  // A parcela de nível da Jogada de Ataque, na régua do sistema. É a mesma conta
+  // do `escalaFixa` de `resolveTestes` (afty-pericias.js), para o DSL enxergar.
+  const escalaAtaque = ehJogador("escalaDosTestes") ? Math.floor(nd / 2) : Math.floor(nd / 1.5);
   const ctxMontante = buildCriaturaDslContext({
-    nd, bt, grauRank: grau.rank, patamar, tipo, almaAtual: almaAtualDsl,
+    nd, bt, escalaAtaque, grauRank: grau.rank, patamar, tipo, almaAtual: almaAtualDsl,
     origemContadoresVars,
     irmaoMorto: !!creature?.core?.origem?.irmaoMorto,
     iniciativaIrmao: creature?.core?.origem?.iniciativaIrmao,
@@ -760,8 +763,15 @@ export function deriveAfty(creature, opcoes = {}) {
   );
   const vagasTalentoTotal = vagasTalento + vagasTalentoDeTalento;
 
-  const treinamentosEquipamento = treinamentosDasEspecializacoes(especializacoes.escolhidas);
-  const treinoEscudo = resolveTreinoEscudo(especializacoes.escolhidas, talentosPre.escolhidas);
+  /* ⚠ NO JOGADOR SÓ A CLASSE INICIAL TREINA ARMA E ESCUDO (divergência
+     `treinoDaClasseInicial`, 2026-09-23): "Ao obter uma nova especialização, você
+     não recebe novos treinamentos em perícias nem equipamentos". A inicial é a
+     primeira da lista, a mesma régua do PV e do pacote de perícias. */
+  const classesDoTreino = ehJogador("treinoDaClasseInicial")
+    ? especializacoes.escolhidas.slice(0, 1)
+    : especializacoes.escolhidas;
+  const treinamentosEquipamento = treinamentosDasEspecializacoes(classesDoTreino);
+  const treinoEscudo = resolveTreinoEscudo(classesDoTreino, talentosPre.escolhidas);
   // bt entra por causa do Roubo de Habilidade, cujo limite de repetições é o
   // Bônus de Treinamento. O último parâmetro são as vagas extras da Habilidade
   // Geral Especialização.
@@ -1166,7 +1176,15 @@ export function deriveAfty(creature, opcoes = {}) {
   // `empolgacaoMaxima` sai do estágio 0b junto do nível de aptidão, e por isso
   // já está resolvido aqui: ele troca a tabela de dados de Empolgação, e a
   // média do dado é o que as Manobras de Empolgação somam.
-  const nivelCmb = habilidades.niveisPorEfeito?.combatente ?? 0;
+  /* ⚠ O COMBATENTE LÊ O ESCALONAMENTO (2026-09-23). A Precisão Definitiva ("A
+     cada quatro níveis, você pode gastar 1 ponto a mais") é EFEITO de habilidade,
+     e o livro manda a multiclasse contar "seu nível da Multiclasse + Metade do
+     seu Nível em outras Especializações para efeitos de habilidades". Era o
+     nível real: um Combatente 4 / Lutador 8 (escalonamento 8) ficava com teto 2
+     em vez de 3, enquanto o Revigorar, com a mesma frase, já lia o
+     escalonamento. É a mesma fonte do `esc_combatente` do DSL, Alma Livre
+     incluída. O Restringido não faz multiclasse, então o real dele é o mesmo. */
+  const nivelCmb = nivelEspec.combatente?.escalonamento ?? 0;
   const nivelRes = habilidades.niveisPorEfeito?.restringido ?? 0;
 
   // ---------- Expansão de Domínio ----------
@@ -1377,7 +1395,8 @@ export function deriveAfty(creature, opcoes = {}) {
   const combate = resolveCombate(creature, {
     apiceId: altoNivel.apiceId,
     dominios: resumoDominios.lista,
-    brutalidadePE: degrausBrutalidade({ habilidades }),
+    // Com as especializações: o degrau lê o escalonamento. Ver `degrausBrutalidade`.
+    brutalidadePE: degrausBrutalidade({ habilidades, especializacoes }),
     brutalidadePilha: bt,
     empolgacaoMaxima: valorCanal(efPreContexto, "empolgacaoMaxima") > 0,
     devastacaoPilha: bt,
@@ -1492,7 +1511,7 @@ export function deriveAfty(creature, opcoes = {}) {
   );
 
   const montarCtx = (attrs, mods) => buildCriaturaDslContext({
-    nd, bt, grauRank: grau.rank, patamar, tipo, almaAtual: almaAtualDsl,
+    nd, bt, escalaAtaque, grauRank: grau.rank, patamar, tipo, almaAtual: almaAtualDsl,
     origemContadoresVars,
     irmaoMorto: !!creature?.core?.origem?.irmaoMorto,
     iniciativaIrmao: creature?.core?.origem?.iniciativaIrmao,
@@ -1867,6 +1886,29 @@ export function deriveAfty(creature, opcoes = {}) {
   // não segunda aplicação: quem entra na conta é o `efeitosTodos` acima. Roda com
   // o contexto FINAL, então uma expressão que lê `mod_forca` vê a Força fechada.
   const ctxTecnica = montarCtx(attrEff, modByAttr);
+  /* O MÁXIMO DE USOS de cada habilidade com contador (2026-09-23), no contexto
+     FINAL, porque as fórmulas leem atributo fechado ("modificador de Força,
+     Destreza ou Sabedoria"). Quem gasta e devolve é a sessão, e o Descansar zera
+     tudo. Ver `usos` no catálogo de afty-habilidades.js. */
+  const usosHabilidades = Object.fromEntries(
+    (habilidades.efetivas ?? [])
+      .map((id) => [id, getHabilidade(id)?.usos])
+      .filter(([, u]) => u?.expr)
+      .map(([id, u]) => [id, {
+        max: Math.max(0, Math.trunc(evalNumberDsl(u.expr, ctxTecnica, 0))),
+        recarga: u.recarga ?? "descanso",
+      }]),
+  );
+  /* O MONTADOR DO GOLPE ESPECIAL (2026-09-24). O derive só diz se a ficha tem
+     o Golpe e o Autossuficiente, com as herdadas como a aba Buffs: o custo e o
+     pagamento são da sessão (afty-golpe-especial.js e ficha-sessao.js). */
+  const comHerdadas = expandeHerdadas(habilidades.efetivas ?? []);
+  const golpeEspecial = {
+    disponivel: comHerdadas.includes("cmb_golpe_especial"),
+    // "recebe 3 PE temporários para serem usados no ataque. Uma vez por cena,
+    // você pode escolher transformar esse valor em 6."
+    autossuficiente: comHerdadas.includes("cmb_autossuficiente"),
+  };
   // Resultados de mesa são números consultáveis, sem inventar canais de stat.
   for (const t of estilo.conhecidas) {
     t.resultadosCalculados = (t.resultados ?? []).map((r) => ({
@@ -2628,12 +2670,20 @@ export function deriveAfty(creature, opcoes = {}) {
        vazio porque a ficha não escolheu Classe nenhuma". O `resolveTestes`
        distingue as duas com `!== undefined`. */
     ...(ehJogador("pacoteDaClasseInicial")
-      ? {
+      ? (() => {
         /* ⚠ `periciaAtributo` NÃO VIAJA MAIS para cá desde 2026-08-31: o
            orçamento do jogador passou a usar o maior mod entre INT e SAB, como
            o da criatura. Ver a nota em `resolveTestes`. */
-        pacoteInicial: pacoteInicialDaFicha(especializacoes.escolhidas),
-      }
+        const pacoteInicial = pacoteInicialDaFicha(especializacoes.escolhidas);
+        return {
+          pacoteInicial,
+          /* O TR que a Classe inicial deu, com a faixa, e o Teste de
+             Resistência Mestre por cima (2026-09-23). */
+          trDaClasse: resistenciasDaClasse(pacoteInicial, creature, {
+            comMestre: ehJogador("trMestreDoJogador"),
+          }),
+        };
+      })()
       : {}),
     escalaCD: cdTipo, escalaDefesa: defTipo,
     divisorCD, divisorDefesa,
@@ -2931,6 +2981,9 @@ export function deriveAfty(creature, opcoes = {}) {
   // o Preview esconde. A Estamina do Restringido NÃO mora aqui: é o próprio PE
   // com outro nome, então tudo que a alimenta usa o canal `pe`.
   const pontosPreparo = canal("pontosPreparo");
+  // A casca por rodada (Postura do Céu). Quem a entrega é a sessão, a cada
+  // rodada: ver `proximaRodada` em ficha/ficha-sessao.js.
+  const preparoTemporario = Math.max(0, Math.trunc(canal("preparoTemporario")));
 
   // ---------- Regeneração ----------
   // Cura no INÍCIO do turno, em dados + fixo, igual às linhas de dano.
@@ -3341,6 +3394,7 @@ export function deriveAfty(creature, opcoes = {}) {
     ],
     pvTemporario: doMotor("pvTemporario"),
     pontosPreparo: doMotor("pontosPreparo"),
+    preparoTemporario: doMotor("preparoTemporario"),
     /* Os três canais da MESMA rolagem, cada um com a parcela dele. As faces
        valem a maior, então só viram linha quando há disputa ou quando vêm de
        uma fonte que não deu dado nenhum: com uma fonte só, a linha de dados já
@@ -3671,6 +3725,9 @@ export function deriveAfty(creature, opcoes = {}) {
     regeneracao,          // cura no início do turno: { dados, dado, fixo }
     tetoPERDaCura,        // PER gastáveis de uma vez na Energia Reversa, o mesmo da linha de Cura e do Fluxo Constante
     pontosPreparo,        // recurso do Combatente (Artes do Combate), 0 sem ela
+    preparoTemporario,    // casca de Preparo por rodada (Postura do Céu), que a sessão topa
+    usosHabilidades,      // { [habId]: { max, recarga } } das habilidades com contador de usos
+    golpeEspecial,        // { disponivel, autossuficiente } para o montador da Ficha
     recursoLabel,         // "Estamina" no Restringido, "Energia" no resto — mesmo PE
     partes,               // fontes de cada stat, para o hover da UI
     orcamentoHabilidades, // contador ÚNICO da aba: Feitiços + Habilidades Gerais

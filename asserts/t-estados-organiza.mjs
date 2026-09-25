@@ -60,10 +60,11 @@ t("vazio não quebra", familiaEParte(undefined), { familia: null, parte: "" });
 /* ⚠ 58 desde 2026-09-07, com o "Conhecimento Aplicado · PE Gasto" do Conjurador,
    que entra na convenção pelo separador. 59 desde 2026-09-12, com o "Ataque
    Concentrado" do Combatente, que NÃO entra: é uma linha só, sem família. */
-/* 38 de 63 desde 2026-09-21, com o estado de Fluxo Invencível. */
-t("a convenção cobre 38 dos 63",
-  COMBATE_ESTADOS.filter((e) => familiaEParte(e.label).familia).length, 38);
-t("e o catálogo tem 63 estados", COMBATE_ESTADOS.length, 63);
+/* 38 de 63 desde 2026-09-21, com o estado de Fluxo Invencível. 39 de 64 desde
+   2026-09-24, com o "Golpe Especial · Longo", que entra na família do Golpe. */
+t("a convenção cobre 39 dos 64",
+  COMBATE_ESTADOS.filter((e) => familiaEParte(e.label).familia).length, 39);
+t("e o catálogo tem 64 estados", COMBATE_ESTADOS.length, 64);
 
 /* ============================================================ */
 /* TODA FAIXA PRECISA DE TETO NO `resolveCombate`                */

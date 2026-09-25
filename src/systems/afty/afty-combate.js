@@ -61,6 +61,24 @@ const nivelDeEfeito = (derived, especializacaoId) =>
   ?? 0;
 
 /**
+ * O nível de ESCALONAMENTO da classe: o nível nela mais a metade das outras,
+ * que é como o livro manda a multiclasse contar "para efeitos de habilidades".
+ * A Alma Livre vale por cima, como no `esc_<classe>` do DSL, que é o que o
+ * derive usa no teto da mesma faixa.
+ *
+ * Existe à parte do `nivelDeEfeito` (que lê o nível real) porque os tetos foram
+ * revisados um a um contra essa regra (2026-09-23): a Precisão Definitiva e a
+ * Brutalidade usam este. Os dois do Restringido seguem no real, que para ele é o
+ * mesmo número, porque o Restringido não faz multiclasse.
+ */
+const nivelDeEscalonamento = (derived, especializacaoId) => {
+  const alma = derived?.habilidades?.almaLivre;
+  if (alma?.habilidadeId && alma.especializacaoId === especializacaoId) return alma.nivel ?? 0;
+  const e = (derived?.especializacoes?.escolhidas ?? []).find((x) => x.id === especializacaoId);
+  return e?.nivelEscalonamento ?? e?.nivel ?? nivelDeEfeito(derived, especializacaoId);
+};
+
+/**
  * Os estados, com o alcance de cada um. A UI esconde o que a criatura não tem
  * como usar, por dois caminhos:
  *
@@ -285,8 +303,9 @@ export const COMBATE_ESTADOS = [
   },
 
   // Golpe Especial (Base 4). Só as propriedades que viram número entram: as
-  // outras (Amplo, Impactante, Longo, Preciso, Sanguinário, Lento) são alvo,
-  // alcance, vantagem ou economia de ação.
+  // outras (Amplo, Impactante, Preciso, Sanguinário, Lento, Sacrifício) são
+  // alvo, vantagem, condição, economia de ação ou dano sofrido, e moram no
+  // montador da Ficha (afty-golpe-especial.js), que soma o custo de todas.
   {
     id: "golpeAtroz",
     label: "Golpe Especial · Atroz",
@@ -302,6 +321,13 @@ export const COMBATE_ESTADOS = [
   {
     id: "golpePenetrante",
     label: "Golpe Especial · Penetrante",
+    tipo: "bool",
+    requerHabilidade: "cmb_golpe_especial",
+  },
+  // O Longo virou número em 2026-09-24, com o canal `alcanceArma`.
+  {
+    id: "golpeLongo",
+    label: "Golpe Especial · Longo",
     tipo: "bool",
     requerHabilidade: "cmb_golpe_especial",
   },
@@ -348,7 +374,8 @@ export const COMBATE_ESTADOS = [
     tipo: "faixa",
     min: 0,
     // "1 PE para +2. A cada quatro níveis, você pode gastar 1 ponto a mais."
-    max: (d) => 1 + Math.floor(nivelDeEfeito(d, "combatente") / 4),
+    // Pelo escalonamento, igual ao teto do derive. Ver `nivelDeEscalonamento`.
+    max: (d) => 1 + Math.floor(nivelDeEscalonamento(d, "combatente") / 4),
     requerHabilidade: "cmb_precisao_definitiva",
   },
   {
@@ -673,9 +700,16 @@ export const COMBATE_ESTADOS = [
   },
 ];
 
-/** Quantos incrementos de 2 PE a Brutalidade já liberou, pelo nível de Lutador. */
+/**
+ * Quantos incrementos de 2 PE a Brutalidade já liberou, pelo nível de Lutador.
+ *
+ * ⚠ PELO ESCALONAMENTO desde 2026-09-23 (autor), como a Precisão Definitiva: o
+ * degrau é efeito de habilidade, e a multiclasse conta "seu nível da
+ * Multiclasse + Metade do seu Nível em outras Especializações para efeitos de
+ * habilidades". Um Lutador 6 / Combatente 6 conta como Lutador 9 aqui.
+ */
 export function degrausBrutalidade(derived) {
-  const n = nivelDeEfeito(derived, "lutador");
+  const n = nivelDeEscalonamento(derived, "lutador");
   return (n >= 8 ? 1 : 0) + (n >= 12 ? 1 : 0) + (n >= 16 ? 1 : 0) + (n >= 20 ? 1 : 0);
 }
 
