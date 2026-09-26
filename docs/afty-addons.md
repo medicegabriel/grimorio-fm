@@ -418,6 +418,15 @@ somente nas criaturas que carregam aquela cópia. Ele participa do mesmo Motor d
 escritos na ficha. No criador, o conteúdo aparece sem controles de edição ou remoção, porque a fonte
 de verdade é o arquivo do addon.
 
+**Linha de invocação dentro do Funcionamento do pacote (2026-09-26).** Uma linha com
+`escopo: "invocacao"` cai nas invocações da ficha, no espaço de canais delas (`INV_EFEITO_CANAIS`), e
+o `quando` é avaliado no contexto de cada invocação (`marc_*`, `nivel_controlador`, `grau`). É o
+caminho para um pacote mexer num benefício de Controlador sem verbo novo: o
+`concentrar-poder-dobrado` copia as sete linhas do Concentrar Poder do raw com o mesmo
+`quando: "marc_concentrar_poder"`, e somadas às do livro elas dão o dobro. A variável do marcador só
+existe com a Habilidade dona, então a linha não vale sem ela. Assert:
+`t-concentrar-poder-dobrado.mjs`.
+
 ### Modelos de Feitiço próprios do pacote
 
 O campo `feiticos` mantém modelos prontos dentro da cópia congelada do addon. Modelo não é Feitiço

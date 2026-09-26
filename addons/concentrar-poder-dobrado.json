@@ -1,0 +1,24 @@
+{
+  "id": "concentrar-poder-dobrado",
+  "nome": "Concentrar Poder Dobrado",
+  "versao": "1.0.0",
+  "autor": "Templas",
+  "paraRaw": "afty",
+  "descricao": "Dobra os benefícios da habilidade Concentrar Poder (Controlador 6°, liberada pelo Apogeu · Controle Concentrado) na invocação marcada: Pontos de Vida, Defesa, Testes de Resistência, níveis de dano e de cura e o bônus somado ao total, em cada degrau (Inicial, 6, 12 e 18 de Controlador). O efeito mora num Funcionamento do pacote, sempre ativo, que soma uma segunda vez os mesmos valores da tabela do livro. Vale só nas invocações marcadas pelo Concentrar Poder, e só em ficha que tenha a habilidade. O limite de invocações marcadas continua o do livro (metade do Bônus de Treinamento).",
+  "funcionamentos": [
+    {
+      "id": "concentrar_poder_dobrado",
+      "nome": "Concentrar Poder Dobrado",
+      "descricao": "Os benefícios do Concentrar Poder são dobrados. Enquanto estiver com apenas uma invocação marcada ativa em campo, ela recebe o dobro dos benefícios da tabela, de acordo com o seu nível de Controlador:\n\n• Inicial. Toda rolagem de dano ou cura da invocação é aumentada em 2 níveis, recebe +10 pontos de vida e +2 de Defesa.\n• Nível 6. Toda rolagem de dano ou cura da invocação é aumentada em 4 níveis e soma +6 ao total, recebe +20 pontos de vida e +4 em Defesa e TRs.\n• Nível 12. Toda rolagem de dano ou cura da invocação é aumentada em 6 níveis e soma +10 ao total, recebe +40 pontos de vida e +6 em Defesa e TRs.\n• Nível 18. Toda rolagem de dano ou cura da invocação é aumentada em 10 níveis e soma +20 ao total, recebe +60 pontos de vida e +10 em Defesa e TRs.",
+      "efeitos": [
+        { "canal": "pv", "escopo": "invocacao", "quando": "marc_concentrar_poder", "expr": "5 + 5*(nivel_controlador >= 6) + 10*(nivel_controlador >= 12) + 10*(nivel_controlador >= 18)", "nome": "Concentrar Poder Dobrado" },
+        { "canal": "defesa", "escopo": "invocacao", "quando": "marc_concentrar_poder", "expr": "1 + (nivel_controlador >= 6) + (nivel_controlador >= 12) + 2*(nivel_controlador >= 18)", "nome": "Concentrar Poder Dobrado" },
+        { "canal": "bonusTR", "escopo": "invocacao", "quando": "marc_concentrar_poder", "expr": "2*(nivel_controlador >= 6) + (nivel_controlador >= 12) + 2*(nivel_controlador >= 18)", "nome": "Concentrar Poder Dobrado" },
+        { "canal": "danoNivel", "escopo": "invocacao", "quando": "marc_concentrar_poder", "expr": "1 + (nivel_controlador >= 6) + (nivel_controlador >= 12) + 2*(nivel_controlador >= 18)", "nome": "Concentrar Poder Dobrado" },
+        { "canal": "curaNivel", "escopo": "invocacao", "quando": "marc_concentrar_poder", "expr": "1 + (nivel_controlador >= 6) + (nivel_controlador >= 12) + 2*(nivel_controlador >= 18)", "nome": "Concentrar Poder Dobrado" },
+        { "canal": "danoBonus", "escopo": "invocacao", "quando": "marc_concentrar_poder", "expr": "3*(nivel_controlador >= 6) + 2*(nivel_controlador >= 12) + 5*(nivel_controlador >= 18)", "nome": "Concentrar Poder Dobrado" },
+        { "canal": "curaBonus", "escopo": "invocacao", "quando": "marc_concentrar_poder", "expr": "3*(nivel_controlador >= 6) + 2*(nivel_controlador >= 12) + 5*(nivel_controlador >= 18)", "nome": "Concentrar Poder Dobrado" }
+      ]
+    }
+  ]
+}

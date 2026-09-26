@@ -14690,3 +14690,19 @@ Pedido do autor, depois do fechamento dos pontos de verificação: *"inicie a mo
 **Ficou no `a-fazer.md`:** o contador nas outras classes (lista das candidatas), o Ataque Circular do Lutador, que agora pode usar o `alcanceArma`, e notas nas entradas que diziam não haver canal de alcance (Auxiliar, Era de Ouro, Criação de Equipamentos, Itens de Custo). Saíram as entradas resolvidas: a do Combatente, o treino de arma na multiclasse, os tetos pelo nível real, as escolhas aninhadas, o TR à mão, as 7 propriedades do Golpe Especial e o Manejo Único.
 
 **Fica de mesa, e não é pendência** (decisão do jogador, alvo ou cena, sem número na ficha): a rerolagem de 1 e 2 do Estilo Massivo (escolha por dado); as reações (Interceptador, Protetor, Golpe Falso, Tiro Falso); o movimento e os ataques extras das Artes; os efeitos no alvo (Distração Letal, Flanqueador Superior, Marcar Inimigo, o sangramento do Sanguinário); o alvo a mais do Amplo, o empurrão do Impactante e a ação completa do Lento; a vantagem do Preciso, que é o modo Vantagem do rolador; a propriedade única criada do Manejo Único; e a ação de movimento do Mestre Pistoleiro. O custo de todas as propriedades do Golpe Especial, esse sim, entra no montador.
+
+---
+
+## SESSÃO DE 2026-09-26: ADDON CONCENTRAR PODER DOBRADO
+
+Pedido do autor: *"faça um addon que O usuário consegue aplica o dobro dos bônus concedido pela melhoria apogeu: concentrar poder"*. O Concentrar Poder é a Habilidade de Controlador 6° liberada pelo Apogeu · Controle Concentrado, e dá à invocação marcada a tabela de PV, Defesa, TR, níveis de dano e de cura e bônus somado ao total, por degrau de Controlador (Inicial, 6, 12 e 18).
+
+**O pacote** (`addons/concentrar-poder-dobrado.json`, autor Templas): um Funcionamento do pacote, sempre ativo, com as MESMAS sete linhas do `CONTROLADOR_EFEITOS_INVOCACAO.ctr_concentrar_poder`, escritas com `escopo: "invocacao"` e o mesmo `quando: "marc_concentrar_poder"`. Somadas às linhas do raw, elas dão o dobro em todo degrau. Sem verbo novo e sem mexer no motor: o caminho (linha de invocação dentro de Funcionamento de pacote) já existia desde 2026-09-15 e ganhou uma nota no `docs/afty-addons.md`.
+
+**O que o addon não muda:** o limite de invocações marcadas (metade do Bônus de Treinamento) e a condição de "apenas uma invocação marcada ativa em campo", que o motor não confere nem no raw. A variável do marcador só existe com a Habilidade dona, então uma marca antiga numa ficha sem o Concentrar Poder não liga nada.
+
+**Números** (invocação de Grau Especial, Controlador 18, jogador): o livro dá PV 186, Defesa 35 e Mordida 4d12 + 10, e com o addon fica PV 216, Defesa 40 e 5d12 + 20. Os dois sistemas saem iguais.
+
+**Asserts:** `t-concentrar-poder-dobrado.mjs` (novo, 27). Cobre o pacote validando, as linhas copiando o raw, a parcela do addon valendo a do livro em cada canal nos degraus 6, 12 e 18 dos dois sistemas, os totais iguais à tabela em dobro, nada vazando sem marca, sem Habilidade ou sem addon, e o hover fechando.
+
+**Verificado ao vivo** (`/Player`, dev limpo, ficha com o addon na cópia congelada): o selo "Concentrar Poder Dobrado" no cabeçalho, "Concentrar Poder 1 / 3" na aba Invocações, Orochi com Vida 216, Defesa 40 e Fortitude +30, a Mordida em 5d12+20, e o hover da Defesa com "Concentrar Poder +5" e "Concentrar Poder Dobrado +5". Console sem erro.
