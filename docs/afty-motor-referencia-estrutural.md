@@ -180,6 +180,10 @@ Comidas, só um dos dois conta — não é bug, é a regra do pool.
   selecionada) + `X_a` + `X_b` (uma booleana por opção). `tipo: "multi"` gera `X` (contagem de
   selecionados) + uma booleana por opção. Isso é o que faz addon virar nativo (ou vice-versa) sem
   reescrever fórmula: o nome final da variável só depende do `id` final, não da origem.
+- O `alvo` de um canal de fonte de dano aceita escopos da linha (`arma`, `basico`, `cat:`, `grupo:`,
+  `prop:`, `tipo:`, `atq:`, `empunho:duas_maos`, `treinada`), e um alvo com `|` vale para a linha que
+  responde a qualquer uma das partes, uma vez só (`valorCanalEscopos`). Detalhes em
+  `docs/automacao-dsl.md`.
 - Efeito = `{ canal, expr, alvo?, quando?, duracao? }`. `quando` é a condição (0/1) que liga/desliga
   o efeito; sem `quando` conta como sempre ligado. Existem as constantes de vocabulário `sempre: 1`
   e `nunca: 0` para quem quer escrever isso explicitamente na UI (histórico: `""` no campo Quando
@@ -243,6 +247,7 @@ porte, com aviso a cada uso — nunca silenciosamente.
 | `afty-dsl.js` | avaliador de expressão, `normalizarVariavel` |
 | `afty-feiticos.js` | calculadoras de Feitiço (Dano/Auxiliar/Curativo/Especial/Passivo), `AUX_TABELAS` |
 | `afty-sistema.js` | `regraDo()`/`REGRAS`, divergência Afty×Player |
+| `afty-golpe-especial.js` | as onze propriedades do Golpe Especial e a conta do custo. **FOLHA, zero imports** |
 | `AftyCreatureBuilder.jsx` | UI do criador, 13k+ linhas, `SimulacaoCombateCard`, editores de Feitiço |
 | `ficha/AftyFicha.jsx` | Ficha Final (uso em jogo) |
 | `encontros/PainelDeCombatente.jsx` | painel de combatente no Encontro |
@@ -258,5 +263,11 @@ porte, com aviso a cada uso — nunca silenciosamente.
   precisa citar o id JÁ NORMALIZADO pelo prefixo (addon: `pacote:id`; nativo: o id literal já com
   prefixo embutido, ex. `aliados_protetor`).
 - Treinamento (estágio MONTANTE) não tem `quando` de verdade — só `gatilhoSessao`/`quandoProf`.
+- O id de estado de bancada é global dentro de `sessao.combate`: procure o id antes de criar um.
+  `golpeImpactante` é do Golpe Impactante do Restringido, e por isso as marcas sem número do Golpe
+  Especial do Combatente moram em `sessao.golpeEspecial` (2026-09-24).
+- Uso por descanso de Habilidade é o campo `usos: { expr, recarga }` do catálogo, e não estado de
+  bancada: o derive monta o máximo (`usosHabilidades`) e a sessão guarda os gastos em
+  `usos["hab:<id>"]`, que o Descansar zera (2026-09-24).
 - Uma "categoria (sem tabela no livro)" precisa aparecer com esse texto na label E gerar aviso
   toda vez que for usada — nunca silenciosa.

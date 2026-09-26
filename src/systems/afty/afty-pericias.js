@@ -634,7 +634,7 @@ const textoDaLinha = (grupos, fixo) => {
 function linhaDeDanoJogador({
   dadoBase, niveis, modChave, atributo, bonus, fonteDado, grauRank = 0,
   dadosExtras = 0, margemBase = 20, reducaoMargem = 0, ignoraRD = 0,
-  removeResistencia = false, fontes = [],
+  removeResistencia = false, fontes = [], fonteSemAtributo = null,
 }) {
   const movido = moverNivel(dadoBase, niveis) ?? moverNivel("1d3", 0);
   const maiorDado = maiorDadoDe(movido) || 3;
@@ -693,7 +693,9 @@ function linhaDeDanoJogador({
       ...(niveis
         ? [{ label: `Níveis de Dano (${niveis > 0 ? "+" : ""}${niveis})`, texto: movido.texto }]
         : []),
-      { label: rotuloAttr(atributo), valor: modChave },
+      /* Com o atributo tirado (Postura da Lua), a parcela fica em 0 e diz quem
+         tirou, para o hover não mostrar "Força 0" sem explicação. */
+      { label: fonteSemAtributo ? `${rotuloAttr(atributo)} (${fonteSemAtributo})` : rotuloAttr(atributo), valor: modChave },
       ...(grau ? [{ label: `${GRAU_LABEL[grau] ?? "Grau"} da Ferramenta`, valor: grau }] : []),
       ...fontes,
     ],
@@ -779,15 +781,22 @@ export function resolveDano(creature, ctx = {}) {
     return fineza && modDe("destreza") > modDe("forca") ? "destreza" : "forca";
   };
 
-  const alcanceDe = (alcance, bonusCorpo = 0) => {
+  /* `extra` é o canal `alcanceArma` da linha (2026-09-23): metros a mais que uma
+     regra dá ("Seu alcance em ataques com armas corpo a corpo aumenta em 1,5
+     metros"). Na arma corpo a corpo ele soma ao alcance dela; na de distância,
+     aos dois alcances. Entra ANTES do multiplicador, porque a Postura do Céu
+     dobra "o alcance dos seus ataques", e o bônus já faz parte desse alcance. */
+  const alcanceDe = (alcance, bonusCorpo = 0, extra = 0) => {
     const mult = Math.max(1, Number(ctx.alcanceMult) || 1);
+    const mais = Math.max(0, Number(extra) || 0);
+    const br = (n) => String(n).replace(".", ",");
     if (alcance) {
-      const curto = alcance.curto * mult;
-      const longo = alcance.longo * mult;
-      return { curto, longo, texto: `${curto}m / ${longo}m` };
+      const curto = (alcance.curto + mais) * mult;
+      const longo = (alcance.longo + mais) * mult;
+      return { curto, longo, texto: `${br(curto)}m / ${br(longo)}m` };
     }
-    const metros = (Math.max(0, Number(ctx.alcanceCorpo) || 0) + Math.max(0, Number(bonusCorpo) || 0)) * mult;
-    return metros ? { curto: metros, longo: metros, texto: `${String(metros).replace(".", ",")}m` } : null;
+    const metros = (Math.max(0, Number(ctx.alcanceCorpo) || 0) + Math.max(0, Number(bonusCorpo) || 0) + mais) * mult;
+    return metros ? { curto: metros, longo: metros, texto: `${br(metros)}m` } : null;
   };
 
   const facesDaPropriedade = (propriedades, id) => {
@@ -859,11 +868,22 @@ export function resolveDano(creature, ctx = {}) {
       .filter((d) => ESCADAS_DESARMADO_NO_MOTOR
         .some((x) => x.origem === d.origem && x.nome === d.nome))
       .reduce((s, d) => s + Math.trunc(Number(d.valor) || 0), 0);
+    /* "Não recebem seu bônus de atributo no dano" (Postura da Lua), pelo canal
+       `semAtributoDano`. Só no jogador: ver a nota do canal em afty-efeitos.js. */
+    const semAtributo = danoPorArma
+      ? (ef ? detalhesDoCanalEscopos(ef, "semAtributoDano", escopos) : []).filter((d) => d.valor > 0)
+      : [];
     const linha = danoPorArma ? linhaDeDanoJogador({
       dadoBase: dadoBase ?? "1d3",
       fonteDado,
       grauRank: RANK_DO_GRAU[grauArma] ?? 0,
-      atributo, modChave: modDe(atributo),
+      atributo, modChave: semAtributo.length ? 0 : modDe(atributo),
+      /* A fonte vem como "Assumir Postura (Postura da Lua)", a regra "Pai
+         (Opção)" do hover. Dentro do rótulo do atributo vale só a opção, senão o
+         hover lê "Força (Assumir Postura (Postura da Lua))". */
+      fonteSemAtributo: semAtributo.length
+        ? (String(semAtributo[0].nome ?? "").match(/\(([^()]+)\)\s*$/)?.[1] ?? semAtributo[0].nome ?? null)
+        : null,
       niveis: niveisCrus - descontoEscada,
       bonus: canal("danoBonus", escopos),
       dadosExtras,
@@ -1155,7 +1175,8 @@ export function resolveDano(creature, ctx = {}) {
   const finezaDesarmado = canal("finezaAtaque", escoposBasico) > 0 || !!ctx.finezaBasico;
   const entradas = [
     // Desarmado não tem margem de crítico listada em lugar nenhum: é 20.
-    aplicaCriticoDaArma({ id: "basico", nome: "Ataque Básico", fonte: "basico", alcance: alcanceDe(null),
+    aplicaCriticoDaArma({ id: "basico", nome: "Ataque Básico", fonte: "basico",
+      alcance: alcanceDe(null, 0, canal("alcanceArma", escoposBasico)),
       propriedades: ctx.propriedadesBasico ?? [],
       /* ⚠ O DADO DO DESARMADO CHEGA PRONTO do deriveAfty (`ctx.dadoBasico`), e
          não é decidido aqui: ele sai do Corpo Treinado, das Armas Naturais, do
@@ -1201,7 +1222,7 @@ export function resolveDano(creature, ctx = {}) {
       : atributoDe({ ...a, fineza: a.fineza || canal("finezaAtaque", escopos) > 0 });
     const linhaArma = {
       id: a.id, nome: a.nome, fonte: "arma",
-      alcance: alcanceDe(a.alcance, a.alcanceBonusCorpo), propriedades,
+      alcance: alcanceDe(a.alcance, a.alcanceBonusCorpo, canal("alcanceArma", escopos)), propriedades,
       grupo: a.grupo ?? null, categoria: a.categoria ?? null, tipoDano: a.tipoDano ?? null,
       dedicada,
       elegivelDedicada: !!a.elegivelDedicada,
@@ -1355,14 +1376,19 @@ export function resolveTestes(creature, ctx = {}) {
      Entra pela MESMA porta do treino concedido pelo Motor: a faixa resolvida
      sobe, a escolhida não, então a linha fica verde, não gasta vaga de novo e
      não pode ser desmarcada ali. */
-  const automaticas = (lista) => new Set(Array.isArray(lista) ? lista : []);
-  const trDoPacote = automaticas(ctx.pacoteInicial?.trAutomaticos);
-  const profComEfeito = (canal, id, escolhida, concedidaPeloPacote = false) => {
+  /* A FAIXA que o pacote concede em cada TR (2026-09-23). Era um conjunto (tudo
+     treinado) e virou mapa, porque o Teste de Resistência Mestre do jogador sobe
+     o TR da classe para Mestre e soma um segundo TR treinado. Quem monta é
+     `resistenciasDaClasse`. Sem ele, vale o pacote de sempre. */
+  const trDoPacote = ctx.trDaClasse?.faixas
+    ?? Object.fromEntries((Array.isArray(ctx.pacoteInicial?.trAutomaticos)
+      ? ctx.pacoteInicial.trAutomaticos : []).map((id) => [id, 1]));
+  const profComEfeito = (canal, id, escolhida, faixaDoPacote = 0) => {
     const concedida = Math.trunc(bonusDeEfeito(canal, id));
     const nivel = Math.max(
       FAIXA[escolhida] ?? 0,
       Math.min(2, Math.max(0, concedida)),
-      concedidaPeloPacote ? 1 : 0,
+      Math.min(2, Math.max(0, Math.trunc(Number(faixaDoPacote) || 0))),
     );
     return NOME_FAIXA[nivel] ?? null;
   };
@@ -1536,18 +1562,34 @@ export function resolveTestes(creature, ctx = {}) {
   const bonusDoTR = (r, prof) => modDe(r.atributo) + (ESCALA_TR[r.escala] ?? 0)
     + bonusProficiencia(bt, prof) + bonusPorAtributo("bonusTR", r.value, r.atributo);
 
+  // No jogador o TR não gasta vaga. Ver a nota do `gastos`, no fim da função.
+  const trForaDoCaixa = regraDo(ctx.sistema, "trForaDoOrcamento") === "player";
+
   const resistencias = AFTY_RESISTENCIAS.map((r) => {
     // Mesma anatomia das perícias: a faixa ESCOLHIDA é a que gasta vaga, e a
     // resolvida ainda soma o que foi concedido de fora (Teste de Resistência
     // Mestre e afins). Sem os dois campos a UI trataria todo TR treinado como
     // concessão externa, pintava de verde e não deixava desmarcar.
     const escolhida = valida(trBruta[r.value]);
-    const prof = profComEfeito("proficienciaTR", r.value, escolhida, trDoPacote.has(r.value));
+    const prof = profComEfeito("proficienciaTR", r.value, escolhida, trDoPacote[r.value] ?? 0);
+    /* A faixa que as FONTES dão, sem a marcação à mão: a Classe (o pacote e o
+       Teste de Resistência Mestre) e o Motor (Talento, Treinamento, Addon). */
+    const faixaDasFontes = Math.max(
+      Math.min(2, Math.max(0, Math.trunc(bonusDeEfeito("proficienciaTR", r.value)))),
+      Math.min(2, Math.max(0, Math.trunc(Number(trDoPacote[r.value]) || 0))),
+    );
     return {
       ...r,
       prof,
       profEscolhida: escolhida,
       concedida: !!prof && prof !== escolhida,
+      /* ⚠ NO JOGADOR, A MARCAÇÃO À MÃO ACIMA DAS FONTES VIRA AVISO (autor,
+         2026-09-24, "Avisar em âmbar"). O livro diz que TR "NÃO PODE SER
+         ESCOLHIDO DE FORMA LIVRE", e a marcação continua possível: ela só é
+         acusada, e não tirada de ninguém. Marcar o que uma fonte já dá não
+         acusa nada. Na criatura o TR é escolha da aba, e o campo é sempre
+         falso. */
+      semFonte: trForaDoCaixa && (FAIXA[escolhida] ?? 0) > faixaDasFontes,
       // Escala por Tipo no lugar da metade do nível, ver o cabeçalho da função.
       bonus: bonusDoTR(r, prof),
       // `critico` preserva a marca de Mestre usada na linha. A margem do d20
@@ -1737,10 +1779,9 @@ export function resolveTestes(creature, ctx = {}) {
      RECEBIDO POR ESPECIALIZAÇÃO, TALENTOS E OUTRAS FONTES. [...] E não contam
      para o Limite de Pericias."
 
-     O gasto continua CALCULADO no jogador, e só não entra na soma: ele é o que
-     a tela usa para saber que aquele TR foi marcado à mão numa ficha onde marcar
-     não devia ser possível. Zerar a variável esconderia o sintoma. */
-  const trForaDoCaixa = regraDo(ctx.sistema, "trForaDoOrcamento") === "player";
+     O gasto continua CALCULADO no jogador, e só não entra na soma. Quem acusa a
+     marcação à mão na tela é o `semFonte` de cada TR (2026-09-24). O
+     `trForaDoCaixa` mora lá em cima, junto das resistências. */
   const gastoPericias = pericias.reduce(
     (s, p) => s + custoLiquido("proficienciaPericia", p.id, p.profEscolhida), 0,
   );
@@ -1762,6 +1803,9 @@ export function resolveTestes(creature, ctx = {}) {
       // A tela precisa saber se deve mostrar o TR dentro do medidor.
       trNoOrcamento: !trForaDoCaixa,
     },
+    /* O TR da Classe inicial e o Teste de Resistência Mestre, para a aba de
+       Perícias do jogador desenhar as duas escolhas. `null` na criatura. */
+    trDaClasse: ctx.trDaClasse ?? null,
     // Atenção = 10 + o bônus de Percepção (Percepção passiva).
     atencao: 10 + (pericias.find((p) => p.id === "percepcao")?.bonus ?? 0),
   };

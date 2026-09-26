@@ -68,12 +68,25 @@
 
 import { registrarFamilia, remendarLista, nivelDaFicha } from "./afty-addons";
 import { getOrigem, origensQualificadas } from "./afty-origens";
-import { AFTY_TIPOS } from "./afty-schema";
+import { AFTY_TIPOS, AFTY_RESISTENCIAS } from "./afty-schema";
 import { regraDo, sistemaDaFicha } from "./afty-sistema";
 
 /** Teto da ficha de criatura. O jogador pode ter uma terceira classe. */
 export const ESPECIALIZACAO_MAX = 2;
 export const ESPECIALIZACAO_MAX_PLAYER = 3;
+
+/**
+ * O Teste de Resistência Mestre das cinco classes que têm o texto comum:
+ * *"Você se torna treinado em um segundo teste de resistência e mestre no
+ * concedido pela sua especialização."* Base do nível 9 no livro.
+ *
+ * ⚠ SÓ NO JOGADOR (divergência `trMestreDoJogador`). Na criatura a habilidade
+ * foi removida pelo autor em 2026-07-27 e continua fora. O campo mora no pacote
+ * de TR da classe, e não no catálogo de Habilidades, porque o que ele faz é
+ * mexer na faixa do TR que o pacote deu: quem sabe qual TR é esse é o pacote.
+ * Ver `resistenciasDaClasse`.
+ */
+const TR_MESTRE_COM_SEGUNDO = Object.freeze({ nivel: 9, segundo: true });
 
 export const AFTY_ESPECIALIZACOES = [
   {
@@ -97,7 +110,7 @@ export const AFTY_ESPECIALIZACOES = [
       multiclasse: { attrs: ["forca", "destreza"], valor: 16 },
       /* "Um Teste de Resistência entre Fortitude ou Reflexos. Uma perícia de
          Ofício, Atletismo ou Acrobacia e outras três perícias quaisquer." */
-      resistencias: { escolhe: 1, entre: ["fortitude", "reflexos"] },
+      resistencias: { escolhe: 1, entre: ["fortitude", "reflexos"], mestre: TR_MESTRE_COM_SEGUNDO },
       // 1 Ofício + 1 entre Atletismo ou Acrobacia + 3 quaisquer = 5.
       pericias: { oficios: 1, escolhe: 1, entre: ["atletismo", "acrobacia"], livres: 3 },
     },
@@ -120,7 +133,7 @@ export const AFTY_ESPECIALIZACOES = [
       multiclasse: { attrs: ["forca", "destreza"], valor: 16 },
       /* "Um Teste de Resistência entre Fortitude ou Reflexos. Duas perícias de
          Ofício, Atletismo ou Acrobacia e três outras perícias quaisquer." */
-      resistencias: { escolhe: 1, entre: ["fortitude", "reflexos"] },
+      resistencias: { escolhe: 1, entre: ["fortitude", "reflexos"], mestre: TR_MESTRE_COM_SEGUNDO },
       /* ⚠ 2 Ofícios + 1 entre Atletismo ou Acrobacia + 3 quaisquer = 6. É a
          frase que o autor desmontou em 2026-08-31: *"fornece 2 Ofícios,
          Atletismo ou Acrobacia e 3 a Escolha. Totalizando 6 Perícias."* */
@@ -147,7 +160,7 @@ export const AFTY_ESPECIALIZACOES = [
       multiclasse: { attrs: ["inteligencia", "sabedoria"], valor: 16 },
       /* "Um Teste de Resistência entre Astúcia ou Vontade. Duas perícias de
          Ofício, Feitiçaria, Ocultismo e duas outras perícias quaisquer." */
-      resistencias: { escolhe: 1, entre: ["astucia", "vontade"] },
+      resistencias: { escolhe: 1, entre: ["astucia", "vontade"], mestre: TR_MESTRE_COM_SEGUNDO },
       // 2 Ofícios + Feitiçaria + Ocultismo + 2 quaisquer = 6. A lista aqui é
       // por VÍRGULA, e não "ou": as duas entram, sem escolha.
       pericias: { oficios: 2, fixas: ["feiticaria", "ocultismo"], livres: 2 },
@@ -170,7 +183,7 @@ export const AFTY_ESPECIALIZACOES = [
       multiclasse: { attrs: ["presenca", "sabedoria"], valor: 16 },
       /* "Um Teste de Resistência entre Astúcia ou Vontade. Duas perícias de
          Ofício, Medicina, Prestidigitação e outras três quaisquer." */
-      resistencias: { escolhe: 1, entre: ["astucia", "vontade"] },
+      resistencias: { escolhe: 1, entre: ["astucia", "vontade"], mestre: TR_MESTRE_COM_SEGUNDO },
       // 2 Ofícios + Medicina + Prestidigitação + 3 quaisquer = 7.
       pericias: { oficios: 2, fixas: ["medicina", "prestidigitacao"], livres: 3 },
     },
@@ -192,7 +205,7 @@ export const AFTY_ESPECIALIZACOES = [
       multiclasse: { attrs: ["presenca", "sabedoria"], valor: 16 },
       /* "Um Teste de Resistência entre Astúcia ou Vontade. Uma perícia de
          Ofício, Percepção, Persuasão e outras duas perícias quaisquer." */
-      resistencias: { escolhe: 1, entre: ["astucia", "vontade"] },
+      resistencias: { escolhe: 1, entre: ["astucia", "vontade"], mestre: TR_MESTRE_COM_SEGUNDO },
       // 1 Ofício + Percepção + Persuasão + 2 quaisquer = 5.
       pericias: { oficios: 1, fixas: ["percepcao", "persuasao"], livres: 2 },
     },
@@ -251,7 +264,10 @@ export const AFTY_ESPECIALIZACOES = [
 
          ⚠ E o único com VETO: "exceto Feitiçaria". `vetadas` é a lista, e ela
          vale só para as livres, porque o pool dele já é só Ofício. */
-      resistencias: { fixas: ["fortitude", "reflexos"] },
+      /* "Teste de Resistência Mestre. Você se torna mestre nos dois Testes de
+         Resistência conferidos por sua Especialização." É o único sem o
+         "segundo teste de resistência": ele já recebe os dois. */
+      resistencias: { fixas: ["fortitude", "reflexos"], mestre: { nivel: 9, segundo: false } },
       // 1 Ofício + 4 quaisquer, exceto Feitiçaria = 5.
       pericias: { oficios: 1, livres: 4, vetadas: ["feiticaria"] },
     },
@@ -468,6 +484,72 @@ export function pacoteInicialDaFicha(escolhidas = []) {
        que eles "NÃO PODEM SER ESCOLHIDOS DE FORMA LIVRE, SENDO RECEBIDO POR
        ESPECIALIZAÇÃO", e eles não contam para o Limite de Perícias. */
     trAutomaticos: [...trFixos, ...dirigidasAutomaticas(trEscolhe, trEntre)],
+    /* O Teste de Resistência Mestre da Classe inicial e o nível REAL dela, que é
+       o que o "No nível 9" do livro conta (Base de Classe). Ver
+       `resistenciasDaClasse`. */
+    trMestre: resistencias.mestre ?? null,
+    nivelClasse: Math.max(0, Math.trunc(Number(primeira.nivel) || 0)),
+  };
+}
+
+const TR_IDS = AFTY_RESISTENCIAS.map((r) => r.value);
+
+/**
+ * Os Testes de Resistência que a Classe inicial dá na ficha de JOGADOR, e a
+ * faixa de cada um. É a peça que faltava para o Teste de Resistência Mestre
+ * (2026-09-23): a ficha não sabia QUAL TR a classe tinha dado.
+ *
+ * ⚠ A ESCOLHA DO TR DA CLASSE PASSOU A SER GRAVADA (autor, 2026-09-23: "Registrar
+ * a escolha"). Quem tem "um Teste de Resistência entre Fortitude ou Reflexos"
+ * escolhe uma vez, em `ficha.trDaClasse`, e esse TR chega treinado pela classe,
+ * igual aos dois do Restringido. Até aqui o jogador o marcava à mão, e o livro
+ * diz em caixa alta que o TR é "RECEBIDO POR ESPECIALIZAÇÃO". A marcação à mão
+ * continua existindo, e as duas convivem pela regra de sempre: vale a maior.
+ *
+ * ⚠ O MESTRE É DA CLASSE INICIAL, e só dela (autor, 2026-09-23). É a única que
+ * concede TR (`pacoteDaClasseInicial`), então é a única que tem "o concedido pela
+ * sua especialização" para subir. No nível REAL `mestre.nivel` dela:
+ *   • todo TR da classe vira Mestre;
+ *   • com `mestre.segundo`, um SEGUNDO TR à escolha vira treinado
+ *     (`ficha.trSegundo`), que nenhum TR da classe pode ser.
+ * O Restringido tem `segundo: false`: "mestre nos dois Testes de Resistência
+ * conferidos por sua Especialização", e nada de segundo.
+ *
+ * `comMestre` é a divergência `trMestreDoJogador`, lida por quem chama.
+ *
+ * Devolve `null` sem pacote. `faixas` é `{ [trId]: 1 | 2 }`, a faixa concedida.
+ */
+export function resistenciasDaClasse(pacote, ficha = {}, { comMestre = false } = {}) {
+  if (!pacote) return null;
+  const entre = pacote.trEntre ?? [];
+  const escolhe = Math.max(0, Math.trunc(Number(pacote.trEscolhe) || 0));
+  // Escolha que só tem um caminho já chega no `trAutomaticos`.
+  const precisaEscolher = escolhe > 0 && escolhe < entre.length;
+  const brutos = Array.isArray(ficha?.trDaClasse) ? ficha.trDaClasse : [];
+  const escolhidos = precisaEscolher
+    ? [...new Set(brutos.filter((id) => entre.includes(id)))].slice(0, escolhe)
+    : [];
+  const daClasse = [...new Set([...(pacote.trAutomaticos ?? []), ...escolhidos])];
+  const escolhaPendente = precisaEscolher && escolhidos.length < escolhe;
+
+  const mestre = pacote.trMestre;
+  const mestreAtivo = !!comMestre && !!mestre && pacote.nivelClasse >= mestre.nivel;
+  // O segundo só é pedido depois do TR da Classe: antes disso não dá para saber
+  // qual dos dois da lista ele pode ser.
+  const segundoPermitido = mestreAtivo && !!mestre.segundo && !escolhaPendente;
+  // O segundo é "um segundo teste de resistência": nenhum que a classe já dá.
+  const opcoesSegundo = segundoPermitido ? TR_IDS.filter((id) => !daClasse.includes(id)) : [];
+  const segundo = opcoesSegundo.includes(ficha?.trSegundo) ? ficha.trSegundo : null;
+
+  const faixas = {};
+  for (const id of daClasse) faixas[id] = mestreAtivo ? 2 : 1;
+  if (segundo) faixas[segundo] = 1;
+  return {
+    entre, escolhe, precisaEscolher, escolhidos, escolhaPendente, daClasse,
+    mestreAtivo, nivelMestre: mestre?.nivel ?? null,
+    segundoPermitido, opcoesSegundo, segundo,
+    segundoPendente: segundoPermitido && !segundo,
+    faixas,
   };
 }
 
@@ -580,6 +662,14 @@ export function validarCaracteristicasDeClasse() {
       }
       if (tabela.vetadas != null && !Array.isArray(tabela.vetadas)) {
         erros.push(`${e.nome}: ${campo}.vetadas tem de ser lista`);
+      }
+      /* O Teste de Resistência Mestre, só no pacote de TR. Opcional: uma classe
+         de Addon sem ele simplesmente não ganha o Mestre no nível dele. */
+      if (campo === "resistencias" && tabela.mestre != null) {
+        const m = tabela.mestre;
+        if (typeof m !== "object" || !Number.isInteger(m.nivel) || m.nivel < 1 || typeof m.segundo !== "boolean") {
+          erros.push(`${e.nome}: resistencias.mestre tem de ser { nivel, segundo }`);
+        }
       }
     }
     if (c.multiclasse !== null) {

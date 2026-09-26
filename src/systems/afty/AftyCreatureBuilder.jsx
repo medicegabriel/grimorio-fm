@@ -1819,12 +1819,78 @@ const PROF_POR_INDICE = [null, "treinado", "mestre"];
 const INDICE_POR_PROF = { treinado: 1, mestre: 2 };
 const OFICIO_OPCOES = [...new Set(catalogoDoTipo("kit").map((item) => item.oficio).filter(Boolean))];
 
+/**
+ * As duas escolhas de TR que a Classe inicial pede na ficha de JOGADOR
+ * (2026-09-23). `trDaClasse` vem de `resistenciasDaClasse`, e é `null` na
+ * criatura, onde nada disto aparece.
+ *
+ *   • TR da Classe: "um Teste de Resistência entre Fortitude ou Reflexos". Quem
+ *     tem escolha de verdade escolhe aqui, e o TR chega treinado pela Classe.
+ *   • Segundo TR: o "treinado em um segundo teste de resistência" do Teste de
+ *     Resistência Mestre, a partir do nível dele na Classe inicial.
+ *
+ * O aviso âmbar é o de problema real: a escolha que falta. Sem texto de regra.
+ */
+function EscolhasDoTrDaClasse({ trDaClasse, resistencias, patch }) {
+  if (!trDaClasse || (!trDaClasse.precisaEscolher && !trDaClasse.segundoPermitido)) return null;
+  const rotulo = (id) => resistencias.find((r) => r.value === id)?.label ?? id;
+  const alternaDaClasse = (id) => {
+    const atuais = trDaClasse.escolhidos;
+    const proximos = atuais.includes(id)
+      ? atuais.filter((x) => x !== id)
+      // Escolha de um só troca, e a de vários acumula até o limite.
+      : trDaClasse.escolhe === 1 ? [id] : [...atuais, id].slice(-trDaClasse.escolhe);
+    patch({ trDaClasse: proximos });
+  };
+  const linha = (titulo, pendente, avisoPendente, chips) => (
+    <div className="flex items-center gap-1.5 flex-wrap">
+      <span className="text-[11px] font-semibold text-slate-400">{titulo}</span>
+      {chips}
+      {pendente && (
+        <span className="inline-flex items-center gap-1 text-[11px] text-amber-400">
+          <AlertTriangle className="w-3 h-3 flex-shrink-0" aria-hidden="true" />
+          {avisoPendente}
+        </span>
+      )}
+    </div>
+  );
+  return (
+    <div className="space-y-1.5 mb-2">
+      {trDaClasse.precisaEscolher && linha(
+        "TR da Classe",
+        trDaClasse.escolhaPendente,
+        "Escolha o TR da Classe",
+        trDaClasse.entre.map((id) => (
+          <BoolChip key={id} ativo={trDaClasse.escolhidos.includes(id)} onToggle={() => alternaDaClasse(id)}>
+            {rotulo(id)}
+          </BoolChip>
+        )),
+      )}
+      {trDaClasse.segundoPermitido && linha(
+        "Segundo TR",
+        trDaClasse.segundoPendente,
+        "Escolha o Segundo TR",
+        trDaClasse.opcoesSegundo.map((id) => (
+          <BoolChip
+            key={id}
+            ativo={trDaClasse.segundo === id}
+            onToggle={() => patch({ trSegundo: trDaClasse.segundo === id ? null : id })}
+            title="Teste de Resistência Mestre"
+          >
+            {rotulo(id)}
+          </BoolChip>
+        )),
+      )}
+    </div>
+  );
+}
+
 function TabPericias({
   draft, derived, patch, setProficiencia, toggleAtaqueProf,
   adicionarPericiaPersonalizada,
   editarPericiaPersonalizada, reordenarPericia, removerPericia,
 }) {
-  const { pericias, resistencias, ataques, manobras, orcamento } = derived.testes;
+  const { pericias, resistencias, ataques, manobras, orcamento, trDaClasse } = derived.testes;
   const [periciaEditando, setPericiaEditando] = useState(null);
   const [oficioAberto, setOficioAberto] = useState(null);
   const [atributoAberto, setAtributoAberto] = useState(null);
@@ -1918,6 +1984,8 @@ function TabPericias({
       item={{ ...r, id: r.value, nome: r.label }}
       onCicla={(prof) => setProficiencia("resistenciasProf", r.value, prof)}
       tag={r.critico ? "Sucesso Crítico" : null}
+      // Jogador: marcado à mão acima do que Classe e Motor dão (2026-09-24).
+      aviso={r.semFonte ? "Sem Fonte" : null}
     />
   );
   const linhaAtaque = (a) => (
@@ -1964,6 +2032,7 @@ function TabPericias({
         title="Testes de Resistência"
         headerRight={orcamento.trNoOrcamento ? <ContadorVagas orcamento={orcamento} /> : null}
       >
+        <EscolhasDoTrDaClasse trDaClasse={trDaClasse} resistencias={resistencias} patch={patch} />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-2 gap-y-1">
           {["defesa", "cd"].map((esc) => (
             <div key={esc} className="space-y-1">
@@ -2314,7 +2383,7 @@ function ContadorVagas({ orcamento }) {
    medidor mexe na proficiência ESCOLHIDA, então marcar por cima do verde
    converte a concessão no bônus numérico (+1 Treinado, +2 Mestre). */
 function TesteLinha({
-  item, onCicla, maxProf = 2, travado, tag, edicao, acoes, nomeConteudo, atributoConteudo,
+  item, onCicla, maxProf = 2, travado, tag, aviso = null, edicao, acoes, nomeConteudo, atributoConteudo,
   estadoArraste,
 }) {
   const escolhido = travado ? maxProf : (INDICE_POR_PROF[item.profEscolhida] ?? 0);
@@ -2361,6 +2430,12 @@ function TesteLinha({
           )}
           {tag && (
             <span className="text-[10px] font-medium text-purple-300 whitespace-nowrap flex-shrink-0">{tag}</span>
+          )}
+          {aviso && (
+            <span className="text-[10px] font-medium text-amber-400 whitespace-nowrap flex-shrink-0 flex items-center gap-1">
+              <AlertTriangle className="w-3 h-3" aria-hidden="true" />
+              {aviso}
+            </span>
           )}
           {item.margemCritico != null && (
             <span
@@ -10401,7 +10476,11 @@ function TabEspecializacoes({ draft, derived, setEspecializacoes, toggleHabilida
    nível), só que menores por estarem um nível mais fundo. Cada aba conta
    quantas opções daquele galho já foram escolhidas, senão o que foi pego nas
    outras abas sumiria da vista (mesma lição da barra de grupos). */
-function OpcoesDeEscolha({ escolha, opcoesEscolhidas, escolhida, onToggleOpcao }) {
+/* `bloqueadas` são as opções cujo "Pré-Requisito: Nível N" o nível de
+   escalonamento ainda não alcança (ver `resolveEscolhasHabilidade`). Livre, ela
+   trava. Já marcada, ela continua desmarcável e o rótulo do nível fica âmbar,
+   porque a ficha a guarda e só reporta. */
+function OpcoesDeEscolha({ escolha, opcoesEscolhidas, escolhida, onToggleOpcao, bloqueadas = [] }) {
   const eixos = escolha.abas || [];
   // Aba ativa por eixo. Vazio = a primeira de cada barra.
   const [abaPorEixo, setAbaPorEixo] = useState([]);
@@ -10467,8 +10546,10 @@ function OpcoesDeEscolha({ escolha, opcoesEscolhidas, escolhida, onToggleOpcao }
         {lista.length === 0 && <p className="text-xs text-slate-500 py-2" role="status">Nenhuma habilidade encontrada</p>}
         {lista.map((o) => {
           const sel = opcoesEscolhidas.includes(o.id);
-          // Sem a habilidade, a escolha não vale: leitura apenas.
-          const desabilitada = !escolhida;
+          const trancada = bloqueadas.includes(o.id);
+          // Sem a habilidade, a escolha não vale: leitura apenas. Com o nível
+          // abaixo do pedido, só dá para desmarcar.
+          const desabilitada = !escolhida || (trancada && !sel);
           return (
             <button
               key={o.id}
@@ -10476,6 +10557,7 @@ function OpcoesDeEscolha({ escolha, opcoesEscolhidas, escolhida, onToggleOpcao }
               onClick={() => onToggleOpcao?.(o.id)}
               disabled={desabilitada}
               aria-pressed={sel}
+              title={trancada ? `Requer Nível ${o.nivelMin}` : undefined}
               className={`w-full text-left rounded-md border px-2 py-1.5 transition-colors flex gap-2 ${
                 sel
                   ? "border-purple-700 bg-purple-950/40"
@@ -10497,7 +10579,9 @@ function OpcoesDeEscolha({ escolha, opcoesEscolhidas, escolhida, onToggleOpcao }
                 {/* Com o pool tabulado por nível, o nível já é a aba: repetir
                     aqui seria ruído. Sem abas, ele continua na linha. */}
                 {o.nivelMin && !eixos.includes("nivel") && (
-                  <span className="text-[10px] text-purple-300 font-medium"> (Nível {o.nivelMin})</span>
+                  <span className={`text-[10px] font-medium ${trancada && sel ? "text-amber-400" : "text-purple-300"}`}>
+                    {" "}(Nível {o.nivelMin})
+                  </span>
                 )}
                 {" "}{o.descricao}
               </span>
@@ -10859,6 +10943,7 @@ function HabilidadeCard({ habilidade, escolhida, concedida = false, acesso, nive
                 opcoesEscolhidas={opcoesEscolhidas}
                 escolhida={escolhida}
                 onToggleOpcao={onToggleOpcao}
+                bloqueadas={escolhaEstado?.bloqueadas}
               />
             </div>
           )}

@@ -227,7 +227,7 @@ extensão, só que hoje tem uma porta de entrada só (`core.tecnicaEfeitos`).
 
 | Peça | Onde | O que já resolve |
 |---|---|---|
-| Linguagem de efeito | `EFEITO_CANAIS`, 97 canais, 44 com alvo | como o addon diz "+3 de Defesa quando o ND passa de 10" |
+| Linguagem de efeito | `EFEITO_CANAIS`, 100 canais, 46 com alvo | como o addon diz "+3 de Defesa quando o ND passa de 10" |
 | Editor de efeito | `TecnicaMotorEditor` (AftyCreatureBuilder.jsx) | a tela de autoria, com seletor `{ }` e valor ao vivo |
 | Prova de conceito | `core.tecnicaEfeitos` | o único lugar onde efeito já é ESCRITO e não escolhido |
 | Portão de aceitação | os 13 `validarCatalogo*` | recusar addon quebrado antes de entrar na ficha |

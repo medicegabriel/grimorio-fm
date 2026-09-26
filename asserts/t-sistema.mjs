@@ -173,7 +173,15 @@ t("as divergencias de REGRA ligadas",
       Lendária que o jogador perde. A ficha abaixo é Nível 14, sem Alto Nível, e o
       clone dos derives só sente o catálogo do `altoNivel`, que já divergia. Quem
       mede os números é `t-melhorias-jogador.mjs`. */
-   "melhoriasSuperioresDoJogador", "perdidoNoJogador"].sort());
+   "melhoriasSuperioresDoJogador", "perdidoNoJogador",
+   /* O Teste de Resistência Mestre do jogador (2026-09-23). A ficha abaixo não
+      escolhe TR da Classe, então o clone dos derives não sente: quem mede é
+      `t-tr-mestre-jogador.mjs`. */
+   "trMestreDoJogador",
+   /* O treino de arma e escudo só da Classe inicial (2026-09-23). A ficha abaixo
+      tem uma classe só, então o clone dos derives não sente: quem mede é
+      `t-combatente-revisao.mjs`. */
+   "treinoDaClasseInicial"].sort());
 t("e a de TELA ligada e a das abas",
   S.DIVERGENCIAS.filter((d) => d.ativa && d.tipo === "tela").map((d) => d.id),
   ["abasIdentidade", "rotuloDoNivel", "marcaDoSistema"]);
@@ -272,6 +280,10 @@ const DIFERENCAS_ESPERADAS = {
   efeitos: "consequência das Bases concedidas",
   contextoDsl: "consequência das Bases concedidas",
   motorLinhaDano: "consequência das Bases concedidas",
+  /* O montador do Golpe Especial (2026-09-24) só existe para quem TEM o Golpe,
+     e ele é Base do Combatente no nível 4: concedido no jogador, escolhido à mão
+     na criatura. Mesma consequência das três linhas de cima. */
+  golpeEspecial: "consequência das Bases concedidas",
   // `calc` é o pacote dos stats sobrescrevíveis, então ele carrega os de cima.
   calc: "consequência dos de cima",
   // `partes` é o hover de fontes, e ele diverge nas mesmas linhas.
@@ -283,6 +295,9 @@ const DIFERENCAS_ESPERADAS = {
      outro, então diferir aqui é o certo, e o dia em que ele PARAR de diferir é
      que seria bug. */
   sistema: "é o nome do sistema, então difere por definição",
+  /* A ficha é Combatente 8 / Conjurador 6: no jogador só a Classe inicial treina
+     arma e escudo (2026-09-23), e o Conjurador deixa de somar as dele. */
+  treinamentosEquipamento: "treinoDaClasseInicial",
 };
 
 const diferem = Object.keys(dAfty)
@@ -439,7 +454,7 @@ t("as divergencias conhecidas estao na lista",
    "patamarDoJogador", "poolExclusivo", "proficienciaPorArma", "progressaoDeFeiticos",
    "pvPePorEspecializacao", "quantidadeDePE", "rdBase", "rdEscudoFisico",
    "reducaoDeGrau", "danoFixoPorGrau", "rotuloDoNivel", "marcaDoSistema", "interludioComTeste",
-   "terceiraClasse", "tetoDeNivel", "tetoDeTreinoEspecial", "trForaDoOrcamento",
+   "terceiraClasse", "tetoDeNivel", "tetoDeTreinoEspecial", "trForaDoOrcamento", "trMestreDoJogador", "treinoDaClasseInicial",
    "vagasPorNivelDeClasse", "valoresAdicionais"].sort());
 
 for (const d of S.DIVERGENCIAS) {

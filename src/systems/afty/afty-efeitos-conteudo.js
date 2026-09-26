@@ -452,7 +452,8 @@ export const HABILIDADE_EFEITOS = {
   //     numa faixa, igual ao `abates`. E o recorte é corpo a corpo, porque o
   //     golpe é um giro dentro do alcance corpo a corpo: `basico` mais
   //     `cat:corpo`, as mesmas duas linhas da Brutalidade Sanguinária. O
-  //     aumento de 3 metros no alcance não tem canal: alcance vem da arma.
+  //     aumento de 3 metros no alcance ainda não entra: o canal `alcanceArma`
+  //     existe desde 2026-09-23, e ligá-lo aqui está em docs/a-fazer.md.
   //   • Golpe Certeiro: "Sua próxima jogada de ataque automaticamente tem o seu
   //     resultado tratado como 10 acima do resultado original."
   //   • Quebra Crânio: "Seu próximo ataque causa 2d10 de dano adicional. O alvo
@@ -600,10 +601,10 @@ export const HABILIDADE_EFEITOS = {
   ],
 
   // Golpe Especial: só as propriedades que viram número. Amplo (alvo a mais),
-  // Impactante (empurrão por dano causado), Longo (alcance), Preciso
-  // (vantagem), Sanguinário (condição) e Lento (ação) não têm canal.
-  // ⚠ O CUSTO em PE de cada propriedade não é somado em lugar nenhum: montar o
-  // custo total do ataque especial seria uma calculadora à parte.
+  // Impactante (empurrão por dano causado), Preciso (vantagem), Sanguinário
+  // (condição), Lento (ação) e Sacrifício (dano sofrido) não têm canal.
+  // O CUSTO em PE de todas é somado pelo montador da Ficha, desde 2026-09-24
+  // (afty-golpe-especial.js), e o Pagar desconta da sessão.
   cmb_golpe_especial: [
     // "Atroz. Em um acerto, o ataque causa 1 dado de dano adicional."
     { canal: "dadosDano", quando: "golpe_atroz", expr: "1", duracao: "temporaria" },
@@ -616,6 +617,14 @@ export const HABILIDADE_EFEITOS = {
     // três vezes)."
     { canal: "bonusAcerto", quando: "golpe_desfocado",
       expr: "-4 * golpe_desfocado", duracao: "temporaria" },
+    /* "Longo. Aumenta o alcance da arma em 1,5 metros para corpo-a-corpo ou 9
+       metros para ataques a distância." Na arma, como a Extensão do Corpo, e os
+       9 metros valem nos dois alcances da arma de distância e da de arremesso
+       (autor, 2026-09-23: "Nos dois alcances"). */
+    { canal: "alcanceArma", alvo: "cat:corpo", quando: "golpe_longo",
+      expr: "1.5", duracao: "temporaria" },
+    { canal: "alcanceArma", alvo: "cat:distancia|cat:arremesso", quando: "golpe_longo",
+      expr: "9", duracao: "temporaria" },
   ],
 
   // "+2 na CD [...] Esse bônus aumenta em 1 nos níveis 8° e 16°." Mesmo texto
@@ -625,11 +634,15 @@ export const HABILIDADE_EFEITOS = {
   ],
 
   // "todos seus ataques causam um dado de dano adicional, do mesmo tipo da arma
-  // manuseada." Sem alvo: vale para todas as linhas. Os 3 PE temporários por
-  // Golpe Especial são recurso por uso, não máximo.
-  cmb_autossuficiente: [
-    { canal: "dadosDano", expr: "1" },
-  ],
+  // manuseada." Os 3 PE temporários por Golpe Especial são recurso por uso, não
+  // máximo.
+  /* ⚠ ARMA E ATAQUE BÁSICO, E NÃO SEM ALVO (2026-09-23). Sem alvo o dado caía
+     também em todo Feitiço de dano, que lê o valor sem alvo junto do dele
+     (`valorCanalEscopos` no resolve do Feitiço): um Nível 1 saía com 5d8 em vez
+     de 4d8 e o hover mostrava "Autossuficiente +1d8". Feitiço não tem "arma
+     manuseada". As duas linhas cobrem o que a regra cobre: a arma e o golpe
+     desarmado. */
+  cmb_autossuficiente: ["arma", "basico"].map((alvo) => ({ canal: "dadosDano", alvo, expr: "1" })),
 
   /* ---- 2° nível ---- */
 
@@ -646,16 +659,22 @@ export const HABILIDADE_EFEITOS = {
   // "Ao realizar um golpe com um grupo de armas e trocar para outra arma de
   // outro grupo na mesma rodada ou na próxima, você recebe +1d até o fim do seu
   // próximo turno com a arma trocada."
+  /* ⚠ ARMA E ATAQUE BÁSICO, e não sem alvo (2026-09-23). Sem alvo o dado caía
+     também em todo Feitiço de dano. O Básico fica por decisão do autor de
+     2026-09-16 (Duelista, Duplo e Arsenal seguem no golpe desarmado, preso em
+     t-niveis-dano.mjs). */
   cmb_arsenal_ciclico: [
-    { canal: "dadosDano", quando: "arsenal_ciclico", expr: "1", duracao: "temporaria" },
+    { canal: "dadosDano", alvo: "arma", quando: "arsenal_ciclico", expr: "1", duracao: "temporaria" },
+    { canal: "dadosDano", alvo: "basico", quando: "arsenal_ciclico", expr: "1", duracao: "temporaria" },
   ],
 
   // "Uma quantidade de vezes igual ao seu bônus de treinamento você pode usar
   // sua ação bônus para se curar em um valor igual a 1d10 + o dobro do seu
   // modificador de Constituição + bônus de treinamento, aumentando em um dado a
   // cada 4 níveis."
-  // ⚠ ASSUMIDO: "a cada 4 níveis" é o nível de COMBATENTE, como no resto da
-  // especialização, que usa `esc_combatente` em toda escada.
+  // "A cada 4 níveis" é o nível de escalonamento do COMBATENTE (`esc_combatente`,
+  // como toda escada da especialização), e o dado sobe no 4, 8, 12, 16 e 20:
+  // decisão do autor em 2026-09-23 ("Nos níveis 4, 8, 12, 16 e 20").
   cmb_revigorar: [
     { canal: "curaDados", alvo: "cura_revigorar", expr: "1 + piso(esc_combatente / 4)" },
     { canal: "curaFaces", alvo: "cura_revigorar", expr: "10" },
@@ -665,20 +684,27 @@ export const HABILIDADE_EFEITOS = {
 
   // "Seu alcance em ataques com armas corpo a corpo aumenta em 1,5 metros e
   // você recebe um bônus de +2 em jogadas de ataque e em testes para evitar ser
-  // desarmado." O alcance não tem canal.
+  // desarmado." O alcance entra pelo canal `alcanceArma` desde 2026-09-23, nas
+  // ARMAS corpo a corpo (`cat:corpo`): o texto fala de armas, e o golpe
+  // desarmado não é uma.
   cmb_extensao_do_corpo: [
     { canal: "bonusAcerto", alvo: "corpo", expr: "2" },
     { canal: "resistirManobra", alvo: "desarmar", expr: "2" },
+    { canal: "alcanceArma", alvo: "cat:corpo", expr: "1.5" },
   ],
 
   // "Sempre que você estiver usando uma arma com a qual você seja treinado o
   // dano dela aumenta em um nível e suas rolagens de dano recebem um bônus
   // de +2."
-  // ⚠ ASSUMIDO: vale para toda ARMA (alvo `arma`, que exclui o Ataque Básico).
-  // Treino em arma não existe como escolha na ficha, então não há o que checar.
+  /* ⚠ SÓ NA ARMA TREINADA (escopo `treinada`, 2026-09-23). Era toda arma, e
+     coincidia enquanto toda classe da ficha treinava as armas dela. Desde que no
+     jogador só a Classe inicial treina (divergência `treinoDaClasseInicial`), um
+     Conjurador que multiclassa para Combatente não é treinado em arma marcial, e
+     o Golpes Potentes não vale nela. O golpe desarmado segue de fora: ele não é
+     arma. */
   cmb_golpes_potentes: [
-    { canal: "nivelDano", alvo: "arma", expr: "1" },
-    { canal: "danoBonus", alvo: "arma", expr: "2" },
+    { canal: "nivelDano", alvo: "treinada", expr: "1" },
+    { canal: "danoBonus", alvo: "treinada", expr: "2" },
   ],
 
   // "você adiciona metade dos dados de dano de um ataque (mínimo 1 dado) à
@@ -715,11 +741,21 @@ export const HABILIDADE_EFEITOS = {
   // acertar. A cada quatro níveis, você pode gastar 1 ponto a mais para
   // aumentar o bônus em +2. Você também pode optar por adicionar esse bônus na
   // rolagem de dano ao invés da de acerto, com um bônus de +4 ao invés de +2."
+  /* ⚠ ARMA E ATAQUE BÁSICO, pelo canal da LINHA (2026-09-23). Era `bonusAcerto`
+     e `danoBonus` sem alvo, e os dois vazavam: o acerto subia a jogada
+     Amaldiçoada, que é a dos Feitiços, e o dano entrava em todo Feitiço de dano.
+     "Canalizar a energia amaldiçoada na sua arma" é o golpe, armado ou não. O
+     acerto vai por `acertoArma`, que é o que a linha da arma soma por cima da
+     jogada do tipo de ataque. */
   cmb_precisao_definitiva: [
-    { canal: "bonusAcerto", quando: "precisao_pe && precisao_modo_acerto",
-      expr: "2 * precisao_pe", duracao: "temporaria" },
-    { canal: "danoBonus", quando: "precisao_pe && precisao_modo_dano",
-      expr: "4 * precisao_pe", duracao: "temporaria" },
+    ...["arma", "basico"].map((alvo) => ({
+      canal: "acertoArma", alvo, quando: "precisao_pe && precisao_modo_acerto",
+      expr: "2 * precisao_pe", duracao: "temporaria",
+    })),
+    ...["arma", "basico"].map((alvo) => ({
+      canal: "danoBonus", alvo, quando: "precisao_pe && precisao_modo_dano",
+      expr: "4 * precisao_pe", duracao: "temporaria",
+    })),
   ],
 
   // "Você recebe um bônus de +2 em rolagens de Furtividade." A redução da
@@ -787,13 +823,20 @@ export const HABILIDADE_EFEITOS = {
   // Personagem, já considerando o bônus da habilidade."
   // Entra como DELTA por cima do Espírito de Luta: +3 no acerto (2 → 5), e os
   // PV temporários trocam `nd` por `acerto`, daí o `- nd`.
-  // ⚠ ASSUMIDO: "o seu bônus de ataque" é o bônus da jogada Corpo a Corpo já
-  // com os +5 dentro. `acerto` não está no contexto (ver VARS_ADIADAS), então
-  // aqui ele é remontado: INT(nd / 1,5) + maestria + mod de Força + 5.
+  // "O seu bônus de ataque" é o MELHOR bônus de ataque da ficha, já com os +5
+  // dentro (autor, 2026-09-23: o maior entre Força e Destreza, para servir ao
+  // Combatente de Destreza). `acerto` não está no contexto (ver VARS_ADIADAS),
+  // então aqui ele é remontado: escala de nível + maestria + o maior modificador
+  // entre FOR e DES + 5.
+  /* ⚠ A ESCALA É A DO SISTEMA (2026-09-23). Era `piso(nd / 1.5)`, a régua da
+     criatura, também no jogador, onde a jogada usa metade do nível: um
+     Combatente 20 com Força 16 tinha 24 de acerto na espada e ganhava 27 de PV
+     temporário. `escala_ataque` é a mesma conta do `resolveTestes`, então a
+     criatura não muda de número. */
   cmb_espirito_incansavel: [
     { canal: "bonusAcerto", quando: "espirito_incansavel", expr: "3", duracao: "temporaria" },
     { canal: "pvTemporario", quando: "espirito_incansavel",
-      expr: "piso(nd / 1.5) + maestria + mod_forca + 5 - nd", duracao: "temporaria" },
+      expr: "escala_ataque + maestria + max(mod_forca, mod_destreza) + 5 - nd", duracao: "temporaria" },
   ],
 
   /* ---- 10° nível ---- */
@@ -808,11 +851,23 @@ export const HABILIDADE_EFEITOS = {
   ],
 
   // "sua margem de crítico com armas de fogo aumenta em 1."
-  // ⚠ LEITURA: "aumenta" aqui é a FAIXA de crítico aumentando (20 vira 19-20),
-  // que é melhora. Todo o resto do sistema escreve melhora como "a margem
-  // reduz", então o canal recebe 1 de redução. A confirmar com o autor.
+  // "Aumenta" aqui é a FAIXA de crítico aumentando (20 vira 19-20), que é
+  // melhora, e o canal recebe 1 de redução. ⚠ CONFIRMADO PELO PRÓPRIO LIVRO
+  // (revisão de 2026-09-23): quase todo texto escreve melhora como "a margem
+  // reduz", mas a tabela de Feitiço usa o mesmo verbo no mesmo sentido, "o
+  // quanto um Feitiço pode aumentar a margem de crítico de um personagem"
+  // (Margem de Crítico Adicional), e ler como penalidade daria a uma habilidade
+  // de mestre um prejuízo.
   cmb_mestre_pistoleiro: [
     { canal: "margemCritico", alvo: "grupo:tiro", expr: "1" },
+  ],
+
+  // "O alcance adicional concedido por Extensão do Corpo aumenta para 3 metros e
+  // recebe vantagem em testes para evitar ser desarmado." A Extensão (que é
+  // pré-requisito) já dá 1,5, então aqui entra o degrau até 3. A vantagem é o
+  // modo do rolador, escolhido na hora.
+  cmb_sincronia_perfeita: [
+    { canal: "alcanceArma", alvo: "cat:corpo", expr: "1.5" },
   ],
 
   /* ---- 16° nível ---- */
@@ -1496,12 +1551,21 @@ export const ESCOLHA_EFEITOS = {
   // rolagens de acerto e +2 em rolagens de dano. Nos níveis 4, 8, 12 e 16, o
   // bônus em dano aumenta em +1; nos níveis 8 e 16, o bônus em acerto aumenta
   // em +1." A condição "uma mão livre" é estado, daí o gatilho na bancada.
+  /* ⚠ ARMA E ATAQUE BÁSICO, pelo canal da LINHA (2026-09-23). Sem alvo os dois
+     números entravam também na jogada Amaldiçoada (a dos Feitiços) e em todo
+     Feitiço de dano. O Básico fica por decisão do autor de 2026-09-16 (preso em
+     t-niveis-dano.mjs). O acerto vai por `acertoArma`, que é o que a linha soma
+     por cima da jogada do tipo de ataque. */
   cmb_estilo_do_duelista: [
-    { canal: "bonusAcerto", quando: "duelando",
-      expr: `1 + (${NIVEL_ESTILO} >= 8) + (${NIVEL_ESTILO} >= 16)`, duracao: "temporaria" },
-    { canal: "danoBonus", quando: "duelando",
+    ...["arma", "basico"].map((alvo) => ({
+      canal: "acertoArma", alvo, quando: "duelando",
+      expr: `1 + (${NIVEL_ESTILO} >= 8) + (${NIVEL_ESTILO} >= 16)`, duracao: "temporaria",
+    })),
+    ...["arma", "basico"].map((alvo) => ({
+      canal: "danoBonus", alvo, quando: "duelando",
       expr: `2 + (${NIVEL_ESTILO} >= 4) + (${NIVEL_ESTILO} >= 8) + (${NIVEL_ESTILO} >= 12) + (${NIVEL_ESTILO} >= 16)`,
-      duracao: "temporaria" },
+      duracao: "temporaria",
+    })),
   ],
 
   // "+1 em rolagens de acerto e +2 em rolagens de dano com armas a distância."
@@ -1517,15 +1581,16 @@ export const ESCOLHA_EFEITOS = {
   // esteja usando em duas mãos ou que possua a propriedade pesada, você pode
   // rolar novamente [...] Além disso, você recebe +1 em rolagens de dano com a
   // arma, aumentando em +1 nos níveis 4, 8, 12 e 16."
-  // ⚠ A rolagem repetida não é número. O +1 vai nos dois escopos, e uma arma
-  // Pesada E de Duas Mãos receberia DUAS VEZES: o texto diz "com a arma", uma
-  // vez só, então o efeito mira só `prop:duas_maos` e `prop:pesada` numa
-  // expressão que não dobra. Como não dá para escrever "ou" entre dois alvos,
-  // ficam as duas linhas e a dobra é aceita como limitação conhecida.
+  // A rolagem repetida é escolha do jogador, por dado, e fica de mesa.
+  /* ⚠ UMA LINHA, COM O ALVO "OU" (2026-09-23). Eram duas, uma em `prop:duas_maos`
+     e outra em `prop:pesada`, e as dez armas que são as duas coisas (Espada
+     Grande, Machado Grande, Martelo Grande, Alabarda...) recebiam o bônus DUAS
+     vezes: +10 no nível 16, onde o texto dá +5 "com a arma". E a Versátil
+     empunhada com as duas mãos, que é "usando em duas mãos", não recebia nada.
+     `empunho:duas_maos` cobre a propriedade Duas Mãos e a Versátil com o
+     interruptor ligado, e o "ou" entra uma vez só. Ver `escoposDaArma`. */
   cmb_estilo_massivo: [
-    { canal: "danoBonus", alvo: "prop:duas_maos",
-      expr: `1 + (${NIVEL_ESTILO} >= 4) + (${NIVEL_ESTILO} >= 8) + (${NIVEL_ESTILO} >= 12) + (${NIVEL_ESTILO} >= 16)` },
-    { canal: "danoBonus", alvo: "prop:pesada",
+    { canal: "danoBonus", alvo: "empunho:duas_maos|prop:pesada",
       expr: `1 + (${NIVEL_ESTILO} >= 4) + (${NIVEL_ESTILO} >= 8) + (${NIVEL_ESTILO} >= 12) + (${NIVEL_ESTILO} >= 16)` },
   ],
 
@@ -1539,11 +1604,13 @@ export const ESCOLHA_EFEITOS = {
      atributo no dano do ataque com a segunda arma" continua de mesa: a ficha tem
      uma linha por ARMA e não por MÃO, então ela não sabe qual das duas é a
      segunda, e somar o modificador em todas daria o bônus a mais na primeira. */
-  cmb_estilo_duplo: [
-    { canal: "danoBonus", quando: "lutando_com_duas_armas",
-      expr: `1 + (${NIVEL_ESTILO} >= 4) + (${NIVEL_ESTILO} >= 8) + (${NIVEL_ESTILO} >= 12) + (${NIVEL_ESTILO} >= 16)`,
-      duracao: "temporaria" },
-  ],
+  // ⚠ Arma e Ataque Básico, e não sem alvo: sem alvo vazava para todo Feitiço
+  // de dano (2026-09-23). O Básico fica pela decisão do autor de 2026-09-16.
+  cmb_estilo_duplo: ["arma", "basico"].map((alvo) => ({
+    canal: "danoBonus", alvo, quando: "lutando_com_duas_armas",
+    expr: `1 + (${NIVEL_ESTILO} >= 4) + (${NIVEL_ESTILO} >= 8) + (${NIVEL_ESTILO} >= 12) + (${NIVEL_ESTILO} >= 16)`,
+    duracao: "temporaria",
+  })),
 
   // Os dois de reação (Interceptador, Protetor) ficam de fora: eles agem no
   // ataque de OUTRA criatura, e a ficha só conhece a si.
@@ -1563,14 +1630,20 @@ export const ESCOLHA_EFEITOS = {
 
   // "você recebe +3 de Defesa [...] todos seus ataques recebem -4 para acertar
   // e não recebem seu bônus de atributo no dano."
-  // ⚠ A PERDA DO ATRIBUTO NO DANO ficou de fora, e é pergunta ao autor: na
-  // planilha o atributo entra como `escala × modificador` dentro do total, e
-  // não como uma parcela avulsa que dê para subtrair sem reescrever a conta.
   // Andar/Desengajar de graça e a redução por reação são procedimento de mesa.
+  /* ⚠ A PERDA DO ATRIBUTO NO DANO entra desde 2026-09-23, pelo canal
+     `semAtributoDano`, e só vale na ficha de JOGADOR: lá o atributo é uma
+     parcela da linha (dado + modificador), e tirá-la é o que o texto diz. Na
+     criatura o atributo entra como `escala × modificador` e decide também quantos
+     dados a linha rola, então o canal é ignorado e a leitura segue pergunta ao
+     autor (docs/a-fazer.md). Como o −4, ele respeita o Invencível sob o Sol, que
+     dá "todos os efeitos positivos das suas posturas". */
   cmb_postura_da_lua: [
     { canal: "defesa", quando: "em_postura_lua", expr: "3", duracao: "temporaria" },
     { canal: "bonusAcerto", quando: "em_postura_lua && !invencivel_sob_osol",
       expr: "-4", duracao: "temporaria" },
+    { canal: "semAtributoDano", quando: "em_postura_lua && !invencivel_sob_osol",
+      expr: "1", duracao: "temporaria" },
   ],
 
   // "soma seu bônus de treinamento em rolagens de Fortitude e, no começo do seu
@@ -1596,9 +1669,12 @@ export const ESCOLHA_EFEITOS = {
 
   // "o alcance dos seus ataques é dobrado, você recebe 2 pontos de preparo
   // temporários no começo de todo turno e +2 em todas as suas rolagens de
-  // perícia." O alcance dobrado não tem canal.
+  // perícia." O alcance dobrado é o `alcanceMult` do derive.
+  /* ⚠ OS 2 PONTOS SÃO CASCA, e não máximo (2026-09-23). Eram +2 no máximo, que
+     não volta sozinho a cada turno. O canal `preparoTemporario` é o valor que a
+     sessão topa no começo de cada rodada (autor: topa em 2, não acumula). */
   cmb_postura_do_ceu: [
-    { canal: "pontosPreparo", quando: "em_postura_ceu", expr: "2", duracao: "temporaria" },
+    { canal: "preparoTemporario", quando: "em_postura_ceu", expr: "2", duracao: "temporaria" },
     { canal: "bonusPericia", quando: "em_postura_ceu", expr: "2", duracao: "temporaria" },
   ],
 
@@ -1901,7 +1977,7 @@ export const APICE_EFEITOS = {
       expr: "devastacao_pilha", duracao: "temporaria" },
     { canal: "ignoraRD", quando: "apice_postura_devastacao && !em_postura_devastacao && devastacao_pilha",
       expr: "2 * devastacao_pilha", duracao: "temporaria" },
-    { canal: "pontosPreparo", quando: "apice_postura_ceu && !em_postura_ceu",
+    { canal: "preparoTemporario", quando: "apice_postura_ceu && !em_postura_ceu",
       expr: "2", duracao: "temporaria" },
     { canal: "bonusPericia", quando: "apice_postura_ceu && !em_postura_ceu",
       expr: "2", duracao: "temporaria" },

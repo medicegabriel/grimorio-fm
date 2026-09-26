@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { ArmasTransformaveis } from "../ui/armas-transformaveis";
 import {
   ChevronLeft, Pencil, AlertTriangle, Moon, ChevronRight, Search, Heart, Zap, Sparkles, Palette,
-  Rows2, Rows3, Lock,
+  Rows2, Rows3, Lock, Crosshair,
 } from "lucide-react";
 
 import "./ficha.css";
@@ -32,6 +32,8 @@ import {
   aplicaDanoInvocacao, aplicaCuraInvocacao, defineVitalInvocacao, invocacaoDaMesa,
   estadoTita, aplicaDanoTitaCabeca, aplicaCuraTitaCabeca, defineVitalTitaCabeca,
   aplicaDanoTitaMembro, aplicaCuraTitaMembro, defineVitalTitaMembro,
+  preparoDe, preparoTempDe, alteraPreparo, definePreparo,
+  usosGastosDe, marcaUso,
 } from "./ficha-sessao";
 import { rolarTeste, rolarDano } from "./ficha-rolagem";
 import PrimitivasDeAddon from "../ui/PrimitivasDeAddon";
@@ -47,6 +49,7 @@ import AbaAcoes from "./abas/AbaAcoes";
 import PainelDeAdaptacao from "./PainelDeAdaptacao";
 import PainelDoVislumbre from "./PainelDoVislumbre";
 import PainelOlhosAgulha from "./PainelOlhosAgulha";
+import PainelDoGolpeEspecial from "./PainelDoGolpeEspecial";
 import PainelManipulacaoCeu from "./PainelManipulacaoCeu";
 import AbaPericias from "./abas/AbaPericias";
 import AbaHabilidades from "./abas/AbaHabilidades";
@@ -467,7 +470,8 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
     // `null` some, zero fica. Ver a nota em AftyCreatureBuilder.jsx.
     ...(derived.resParcial != null ? [{ id: "res-parcial", k: "Res. Parcial", v: derived.resParcial, p: "resParcial" }] : []),
     { id: "maestria", k: "Maestria", v: derived.maestria, sinal: true },
-    ...(derived.pontosPreparo > 0 ? [{ id: "preparo", k: "Preparo", v: derived.pontosPreparo, p: "pontosPreparo" }] : []),
+    /* O Preparo saiu daqui em 2026-09-23: virou barra própria junto dos vitais,
+       com o corrente e o máximo, porque é recurso que se gasta na mesa. */
   ], [derived]);
 
   /* ⚠ O delta roda um `deriveAfty` por estado LIGADO, e por isso ele mora num
@@ -493,6 +497,12 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
     [sessao.favoritos, itens],
   );
 
+  // O contador de usos das habilidades, igual no Rápido e na aba Habilidades.
+  const contadorUsos = {
+    gastosDe: (chave) => usosGastosDe(sessao, chave),
+    onUso: (usos, delta) => atualiza((s) => marcaUso(s, usos, delta)),
+  };
+
   const corpo = {
     acoes: () => (
       <AbaAcoes
@@ -502,6 +512,7 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
         olhosAgulha={<PainelOlhosAgulha derived={derived} sessao={sessao} onSessao={atualiza} />}
         manipulacaoCeu={<PainelManipulacaoCeu derived={derived} onEstado={alteraEstado} />}
         armasTransformaveis={<ArmasTransformaveis derived={derived} sessao={sessao} onSessao={atualiza} />}
+        golpeEspecial={<PainelDoGolpeEspecial derived={derived} sessao={sessao} onSessao={atualiza} />}
         rolar={rolar}
         destaque={destaque}
         rapido={itensDoRapido}
@@ -525,6 +536,7 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
         onImbuir={(estadoId, feiticoId) => alteraEstado({ id: estadoId }, feiticoId)}
         gatilhosTreino={derived.gatilhosTreino}
         onGatilhoTreino={(id, valor) => atualiza((s) => alteraTreinoAtivo(s, id, valor))}
+        contadorUsos={contadorUsos}
       />
     ),
     habilidades: () => (
@@ -539,6 +551,7 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
         favoritos={sessao.favoritos}
         onFavorito={alternaFavorito}
         destaque={destaque}
+        contadorUsos={contadorUsos}
       />
     ),
     pericias: () => <AbaPericias derived={derived} rolar={rolar} destaque={destaque} />,
@@ -764,7 +777,7 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
           </div>
 
           {/* ---------- vitais ---------- */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 pb-2">
+          <div className={`grid grid-cols-1 gap-2 pb-2 ${derived.pontosPreparo > 0 ? "md:grid-cols-2 xl:grid-cols-4" : "md:grid-cols-3"}`}>
             <Vital
               tipo="pv" icone={Heart} rotulo="Vida"
               atual={sessao.hpAtual} max={derived.hp} temp={pvTempTotal(sessao)}
@@ -800,6 +813,19 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
                 ? aplicaDanoNaAlma(s, -n, derived)
                 : curaAlma(s, n, derived)))}
             />
+            {/* PONTOS DE PREPARO (Combatente), desde 2026-09-23. Era um número
+                fixo entre os stats, sem o corrente: a mesa gastava e recuperava
+                de cabeça. Só existe para quem tem as Artes do Combate. */}
+            {derived.pontosPreparo > 0 && (
+              <Vital
+                tipo="preparo" icone={Crosshair} rotulo="Preparo"
+                atual={preparoDe(sessao, derived.pontosPreparo)} max={derived.pontosPreparo}
+                temp={preparoTempDe(sessao)} rotuloTemp="Preparo Temporário"
+                partes={derived.partes?.pontosPreparo}
+                onSet={(v) => atualiza((s) => definePreparo(s, v, derived.pontosPreparo))}
+                onDelta={(n) => atualiza((s) => alteraPreparo(s, n, derived.pontosPreparo))}
+              />
+            )}
           </div>
 
           {/* ---------- Guarda Inabalável ----------

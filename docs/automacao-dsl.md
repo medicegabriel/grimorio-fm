@@ -174,6 +174,85 @@ perfeita: a caixa ficava **verde**, o `evalNumber` estourava e o efeito morria c
 vocabulário do seletor `{ }` é o conjunto de nomes conhecidos, e um nome errado fica vermelho na
 hora, com o motivo escrito embaixo.
 
+### `escala_ataque`, a parcela de nível da Jogada de Ataque (2026-09-23, só no Afty)
+
+Vale `piso(nd / 1.5)` na criatura e `piso(nd / 2)` no jogador. É a mesma conta do `escalaFixa` de
+`resolveTestes` (`afty-pericias.js`), que muda de régua pela divergência `escalaDosTestes`. Montada
+no `afty-derive.js` e exposta em `buildCriaturaDslContext`.
+
+Nasceu para o Espírito Incansável (Combatente 8°), cujo *"os pontos de vida temporários ganhos se
+tornam o seu bônus de ataque"* era montado com `piso(nd / 1.5)` também no jogador. Um Combatente 20
+com Força 16 tinha +24 de acerto na espada e ganhava 27 de PV temporário. Quem escrever uma
+expressão que depende do bônus de ataque usa esta variável, e não a divisão escrita à mão: o
+`acerto` em si continua fora do contexto (`VARS_ADIADAS`).
+
+### O alvo com "ou" e o escopo `empunho:` (2026-09-23, só no Afty)
+
+Um alvo pode listar escopos separados por `|`: `empunho:duas_maos|prop:pesada` vale para a linha que
+responde a **qualquer** uma das partes, e entra **uma vez só**, por mais partes que a linha tenha.
+Funciona nos leitores por escopo (`valorCanalEscopos` e `detalhesDoCanalEscopos` em `afty-efeitos.js`),
+que são os das linhas de dano e de acerto, das Perícias e dos TR. Alvo sem `|` não muda nada.
+
+Nasceu no Estilo Massivo, cujo "+1 em rolagens de dano com a arma" vale numa arma "que esteja usando
+em duas mãos ou que possua a propriedade pesada". Eram duas linhas de efeito, uma por propriedade, e
+as dez armas que são Pesadas **e** de Duas Mãos recebiam o bônus duas vezes.
+
+O escopo `empunho:duas_maos` nasceu junto: ele marca a arma que está nas duas mãos agora, que é a
+propriedade Duas Mãos ou a Versátil com o interruptor de duas mãos ligado. `prop:duas_maos` fala da
+propriedade e não cobria a Versátil.
+
+### O canal `semAtributoDano` (2026-09-23)
+
+Sinalizador por fonte de dano: a linha deixa de somar o modificador de atributo. Nasceu na Postura da
+Lua ("não recebem seu bônus de atributo no dano"). ⚠ Vale **só na ficha de jogador**, onde o atributo
+é uma parcela da linha (dado mais modificador). Na criatura o atributo também decide quantos dados a
+linha rola, e o canal é ignorado lá por decisão do autor (2026-09-23: *"Deixar como está"*). Com o
+canal ativo, o hover mostra a parcela zerada com a fonte ("Força (Postura da Lua)").
+
+### O canal `alcanceArma` (2026-09-23)
+
+Metros a mais no alcance de uma fonte de dano (`alvo` de fonte, com os escopos de arma). Na arma corpo
+a corpo ele soma ao alcance dela, e na de distância e na de arremesso soma aos **dois** alcances (curto
+e longo). Entra **antes** do multiplicador, porque a Postura do Céu dobra "o alcance dos seus
+ataques" e o bônus já faz parte desse alcance: um Arco Longo (30/60) com o Longo do Golpe Especial e
+o Céu fica 78/138. O texto da linha usa vírgula ("1,5m").
+
+Clientes: Extensão do Corpo e Sincronia Perfeita (`cat:corpo`, 1,5 cada) e o Longo do Golpe Especial
+(`cat:corpo` 1,5 e `cat:distancia|cat:arremesso` 9). O Ataque Básico não é arma e não recebe os três.
+Quem lê é o `alcanceDe` do `resolveDano` (`afty-pericias.js`).
+
+### O escopo `treinada` (2026-09-23)
+
+`escoposDaArma` marca com `treinada` a arma com que a ficha é treinada (o mesmo `treinada` que decide
+se a jogada soma o Bônus de Treinamento). Nasceu no Golpes Potentes: *"Sempre que você estiver usando
+uma arma com a qual você seja treinado"*. Importa desde que, no jogador, só a Classe inicial treina
+equipamento (divergência `treinoDaClasseInicial`): um Suporte que multiclassa para Combatente segue
+sem treino na Espada Longa, e o Golpes Potentes não pega nela.
+
+### O canal `preparoTemporario` (2026-09-23)
+
+Sem alvo. É o valor da casca de Pontos de Preparo temporários que a sessão TOPA no começo de cada
+rodada (e no começo do combate), e não soma no máximo. Nasceu na Postura do Céu (*"você recebe 2
+pontos de preparo temporários no começo de todo turno"*), e topa em vez de acumular por decisão do
+autor. A casca é gasta antes do Preparo corrente e some no descanso (`ficha-sessao.js`).
+
+### O contador de usos de Habilidade (`usos`, 2026-09-24)
+
+Não é canal: é um campo da entrada de Habilidade no catálogo, `usos: { expr, recarga }`. O `expr` é
+DSL avaliada no contexto final (lê atributo fechado, `maestria`, `nd`), e a `recarga` é `"curto"`,
+`"longo"` ou `"descanso"` (quando o texto diz "curto ou longo" ou não diz). O validador do catálogo
+recusa `expr` que não avalia e recarga fora da lista.
+
+O derive devolve `usosHabilidades` (`{ [id]: { max, recarga } }`), a linha da Habilidade na Ficha
+mostra "Usos restantes/máximo" com o menos gastando e o mais devolvendo, e a sessão guarda os
+GASTOS sob `usos["hab:<id>"]`: subir de nível aumenta o máximo e os usos novos já nascem livres. O
+Descansar zera tudo, porque o botão é um só (D3). A `recarga` fica gravada como dado para o dia em
+que os dois descansos se separarem.
+
+Hoje só as seis do Combatente declaram o campo (decisão do autor, 2026-09-23): Assumir Postura,
+Indomável, Revigorar, Marcar Inimigo, Surto de Ação e Potência Antes de Cair. As outras classes
+estão listadas em `docs/a-fazer.md`.
+
 ## A LINHA PODE CAIR NA INVOCAÇÃO (`escopo`, 2026-09-15)
 
 Uma linha do Motor escrita pelo jogador vale, por padrão, na CRIATURA. Com `escopo: "invocacao"`

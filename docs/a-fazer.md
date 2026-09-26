@@ -48,6 +48,14 @@ Coisas paradas esperando decisão de regra. Nada aqui deve ser resolvido por sup
 7. **Tipo De Medo, "Resquícios de Emoções"** (*"reduzir o pré-requisito de nível de UM grupo de aptidões em 1"*). O canal `reduzNivelAptidao` não tem alvo por grupo, então o pacote aplica em TODOS os grupos, mais largo que o livro e nunca mais estreito. Proposta: um `alvo` de grupo no canal (Aura, Controle e Leitura, Barreira, Domínio, Maldição, Especiais), com a escolha do grupo no card da Origem, e o `avaliarRequisitoAptidao` lendo o desconto do grupo da aptidão. Falta o autor dizer se a escolha do grupo é fixa ou se pode ser trocada.
 **Precisa:** a decisão do autor em cada item, e só então o canal ou o estado correspondente.
 **Anotado:** 2026-09-23, ao fazer as Características Amaldiçoadas com escolha mexerem no número
+**Nota:** dois mecanismos citados aqui existem desde 2026-09-23 e 24. O canal `alcanceArma` (item 1: ele soma na linha de dano por escopo, `cat:corpo` para armas corpo a corpo, e a pergunta de quais linhas somam continua) e o contador de usos de Habilidade (item 4: campo `usos` no catálogo de Habilidades, com a linha na Ficha e o Descansar zerando, ver `docs/automacao-dsl.md`). Levar o contador para Característica de Origem é a mesma peça num catálogo novo.
+
+### A CD de Especialização e a CD Amaldiçoada são duas no livro
+**Onde:** `src/systems/afty/afty-derive.js` (a `cd` única) e o canal `cd`
+**Situação:** o livro separa as duas: cada classe tem "Atributos Chave" para "calcular a CD das suas habilidades de especialização" (Combatente: Força, Destreza ou Sabedoria), e o Reforço Amaldiçoado diz "Sua CD de Especialização e Amaldiçoada aumenta em +2". O sistema tem uma CD só, pelo Atributo da Técnica, e o `atributosChave` do catálogo não é lido. Consequências: um Combatente com Técnica em Inteligência resiste pela INT nas habilidades de classe, e o Aprimoramento Especializado ("metade do modificador do seu atributo chave em sua CD de Especialização") sobe também a CD de Feitiço e Aptidão.
+**Precisa:** decidir se o sistema ganha a segunda CD (a escolha do atributo-chave por classe, e o destino de cada fonte: Implemento Marcial nas duas, Aprimoramento Especializado e Complementar só na de Especialização).
+**Anotado:** 2026-09-23
+**Nota:** o autor respondeu *"Não fazer agora"* em 2026-09-23, na rodada de automação do Combatente. A entrada fica.
 
 ### A Quimera em campo conta no limite de Invocações em campo?
 **Onde:** `src/systems/afty/ficha/abas/AbaInvocacoes.jsx` (o chip "Em Campo N / limite") e `asserts/t-quimera.mjs` (seção 10)
@@ -282,31 +290,6 @@ naquele dia deixa as outras seis de pé. Vale varrer se aparecer qualquer coisa 
 
 **Anotado:** 2026-09-02, na reestruturação da aba de Invocações
 **Nota:** reescrita em 2026-09-09, quando o selo saiu e a pergunta das três opções deixou de existir.
-
-### As 7 propriedades restantes do Golpe Especial, e a única que dá para ligar
-
-**Onde:** `src/systems/afty/afty-efeitos-conteudo.js` (`cmb_golpe_especial`)
-**Situação:** o Golpe Especial (Combatente, Base 4°) monta o ataque com 11 propriedades, e **4 estão
-ligadas** (Atroz, Letal, Penetrante, Desfocado), cada uma no seu interruptor da bancada. As outras 7
-pedem coisas diferentes, e só uma delas está a um canal de distância:
-
-| Propriedade | Texto | O que falta |
-|---|---|---|
-| **Longo** | *"Aumenta o alcance da arma em 1,5 metros para corpo-a-corpo ou 9 metros para ataques a distância"* | ⚠ **um canal `alcanceArma`**, que não existe. O `alcanceDe` do resolveDano já soma `alcanceBonusCorpo` e multiplica por `alcanceMult`, então o lugar de encaixe está pronto |
-| **Amplo** | *"O ataque atinge uma criatura a mais"* | contagem de alvos, que a ficha não tem |
-| **Impactante** | *"Empurra o alvo em 1,5 metros para cada 15 pontos de dano causados"* | empurrão POR DANO CAUSADO. O `distanciaEmpurrao` que existe é da manobra Empurrar, e é outra coisa |
-| **Preciso** | *"Recebe vantagem no ataque"* | canal de vantagem |
-| **Sanguinário** | *"sofre sangramento leve (CD de Especialização)"* | condição aplicada no alvo, e o `CONDICAO_TEXTOS` segue vazio |
-| **Lento** | *"deve ser usado como ação completa"* | economia de ação |
-| **Sacrifício** | *"Recebe 15 de dano ao efetuar o ataque"* | dano em si mesmo, que é procedimento de mesa |
-
-⚠ **O custo em PE de cada propriedade não é somado em lugar nenhum.** Montar o custo total do ataque
-especial (com o *"deve custar no mínimo 1 PE"* e o Preciso que dobra depois do primeiro uso na rodada)
-seria uma calculadora à parte, e ninguém pediu uma.
-
-**Precisa:** o autor dizer se vale abrir o canal `alcanceArma` só pelo Longo, e se as outras seis
-ficam de mesa de vez. Se ficarem, a lista acima vira comentário no catálogo e esta entrada sai.
-**Anotado:** 2026-09-01, ao varrer as Habilidades Base de Lutador e Combatente
 
 ### PERGUNTA AO AUTOR: o desempate entre Imunidade e Vulnerabilidade
 **Onde:** `src/systems/afty/afty-defesas-dano.js`, `asserts/t-defesas-dano.mjs`
@@ -1008,6 +991,7 @@ contra o tipo, em vez de ser aparada em zero antes da soma. Se a revisão desfiz
 conserto é no `afty-defesas-dano.js`, e ele pega toda fonte de RD por Tipo negativa.
 **Precisa:** a revisão das respostas, e depois decidir com o autor se cada trecho guardado entra.
 **Anotado:** 2026-09-14, ao fechar a fase 4 da Criação de Equipamentos
+**Nota:** o "não há canal de alcance" do primeiro trecho deixou de valer em 2026-09-23 (`alcanceArma`, ver `docs/automacao-dsl.md`). O Alcance do encantamento continua guardado pela revisão, e não pelo canal.
 
 ### Itens de Custo: os efeitos que ficaram fora da fase 3
 
@@ -1026,6 +1010,7 @@ seletor, e pediu que ficasse escrito que não foram implementados:
 **Precisa:** cada um entra quando o sistema dele existir. Ligar é trocar `implementado` para `true` e dar
 à linha o seu caminho no `efeitoDoItemCusto`.
 **Anotado:** 2026-09-14, na fase 3 da Criação de Equipamentos
+**Nota:** o canal de alcance existe desde 2026-09-23 (`alcanceArma`, por escopo de arma). Área continua sem canal.
 
 ---
 
@@ -1041,6 +1026,7 @@ tradutor de efeito não tem caso para eles: o número é descartado sem aviso. A
 `alcanceBonusCorpo` e multiplica por `alcanceMult`, e o Longo do Golpe Especial pede a mesma peça
 (ver a entrada dele nas perguntas). Com o canal decidido, é um `case` cada.
 **Anotado:** 2026-09-10, ao dar interruptor aos Feitiços Auxiliares
+**Nota:** o canal existe desde 2026-09-23: `alcanceArma` (metros a mais na linha de dano, por escopo de arma, nos dois alcances da arma de distância e antes do dobro do Céu). Ver `docs/automacao-dsl.md`. Falta decidir em que linhas o Alcance do Auxiliar entra (armas `cat:corpo`, Ataque Básico, Feitiços) e escrever o `case`.
 
 ### A Transformação não escolhe o alvo de Atributo e de TR
 **Onde:** `src/systems/afty/afty-combate-conjurador.js` (`TRANSF_SEM_ALVO`) e o
@@ -1262,13 +1248,17 @@ transcrever uma habilidade que fale de Guarda saber que o cano já está lá.
 
 ## AFTY — outros
 
-### Manejo Único não tem onde escolher a segunda propriedade
-**Onde:** `src/systems/afty/afty-habilidades.js` (`cmb_manejo_unico`, sem `escolha`)
-**Situação:** "Você escolhe mais uma propriedade para ser aplicada em toda arma que estiver manejando". O
-Manejo Especial tem a escolha e o Manejo Único não, então a propriedade extra não existe na ficha.
-**Precisa:** uma escolha igual à do Manejo Especial, somada aos `encantamentosExtras`. O autor pediu
-para deixar para depois em 2026-09-15.
-**Anotado:** 2026-09-15, na análise do dano do Flugel.
+### O contador de usos cobre só o Combatente
+**Onde:** `src/systems/afty/afty-habilidades.js` (o campo `usos` de cada Habilidade)
+**Situação:** o contador de usos por Habilidade nasceu em 2026-09-24 com as seis do Combatente (Assumir Postura, Indomável, Revigorar, Marcar Inimigo, Surto de Ação e Potência Antes de Cair), por decisão do autor (*"Só o Combatente agora"*). Ligar outra é declarar `usos: { expr, recarga }` na entrada, e o resto já existe: o máximo no derive, a linha na Ficha, os gastos na sessão e o Descansar zerando. Candidatas "por descanso" nas outras classes: Puxar um Ar, Um com a Arma e Empolgar-se (Lutador); Abastecido pelo Sangue, Até a Última Gota e Preparação de Técnicas (Conjurador); Versatilidade, Conceder Outra Chance e Contra-Ataque (Suporte); Reserva para Invocação, Ataque em Conjunto, Invocação Às e Fantoche Supremo (Controlador); Ainda de Pé (Restringido). As "por cena" (Insistência, Inspirar Aliados, Negação Crítica, Contaminar com Determinação, Necessidade de Continuar) pedem saber quando a cena acaba, e hoje quem marca isso é o começo do combate e o descanso (é o que devolve a troca por 6 do Autossuficiente). O Ritualista já conta pelos usos dele (`usosRitualista`), e as curas com `curaUsos` mostram só o máximo.
+**Precisa:** o autor dizer quais entram, e se "por cena" zera no começo de cada combate.
+**Anotado:** 2026-09-24, ao fazer o contador do Combatente
+
+### O Ataque Circular do Lutador pode ganhar os 3 metros de alcance
+**Onde:** `src/systems/afty/afty-efeitos-conteudo.js` (`lut_manobras_finalizadoras`)
+**Situação:** *"Durante esta manobra, seu alcance corpo a corpo aumenta em 3 metros"*. O comentário da entrada dizia que não havia canal, e desde 2026-09-23 há: `alcanceArma`, que o Combatente usa na Extensão do Corpo, na Sincronia Perfeita e no Longo do Golpe Especial. O dano do Circular já mira `basico` e `cat:corpo`, e o alcance seriam as mesmas duas linhas com `expr: "3"` e o mesmo `quando`. Não foi mexido porque a rodada era do Combatente, e o autor pediu para não alterar outra classe sem necessidade.
+**Precisa:** o autor confirmar. São duas linhas de efeito e um assert.
+**Anotado:** 2026-09-24, ao abrir o canal de alcance
 
 ### O painel de Encontros mostra só a RD Geral
 **Onde:** `src/systems/afty/encontros/PainelDeCombatente.jsx` (o ladrilho `{ k: "RD", v: derived.rdGeral }`)

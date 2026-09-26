@@ -38,7 +38,7 @@ Buffs.
 | O que | Travado em |
 |---|---|
 | Habilidades na aba Ações | **D7**: nenhum catálogo tem metadado de ação, custo ou usos |
-| Descanso curto e longo | **D3**: falta a regra do que cada um devolve |
+| ✅ Descanso curto e longo | **D3** respondida em 2026-09-23: um botão só, que devolve tudo |
 | Condições com mecânica | **D6**: as 26 condições não têm efeito modelado |
 | RD abatendo dano sozinha | **D9**: decisão do autor |
 | Trilho lateral de Buffs | **D10**: preferência do autor |
@@ -283,8 +283,10 @@ para receber mecânica no dia em que o autor mandar as regras (pergunta D6).
 ### A régua do tempo
 
 Um contador de **rodada** com o botão "Próxima rodada" decrementa toda duração e avisa o que
-expirou. **"Descanso"** zera os `usos` das linhas de cura e o que mais for por descanso. ⚠ O
-sistema tem descanso curto e longo, e o que cada um devolve é pergunta aberta (D3).
+expirou. **"Descanso"** zera os `usos` das linhas de cura e o que mais for por descanso. O sistema
+tem descanso curto e longo, e o botão continua um só e devolve tudo, por decisão do autor (D3,
+2026-09-23: *"Manter um botão só"*). Os contadores de usos das Habilidades guardam a recarga do
+livro só como dado (seção 27).
 
 ---
 
@@ -441,8 +443,19 @@ quebra. Então existe uma **lista estável e documentada**, e a promessa é que 
 |---|---|
 | `.afty-ficha` | a raiz. Todo tema começa aqui |
 | `.afty-cabecalho` | a faixa fixa do topo |
-| `.afty-vital`, `[data-afty-vital="pv"\|"pe"\|"alma"]` | as barras de recurso |
+| `.afty-vital`, `[data-afty-vital="pv"\|"pe"\|"alma"\|"preparo"]` | as barras de recurso |
 | `.afty-stat`, `[data-afty-stat="defesa"\|"cd"\|...]` | cada número derivado |
+
+⚠ **A única quebra desta lista (2026-09-23):** os Pontos de Preparo do Combatente eram o ladrilho
+`[data-afty-stat="preparo"]`, só com o máximo, e viraram a barra `[data-afty-vital="preparo"]`, com o
+corrente, o `−`/`+` e o campo. O motivo é de regra: é recurso que se gasta e se recupera na mesa
+(*"Sempre que eliminar um inimigo, você recupera um Ponto de Preparo"*). Nenhum tema do repositório
+mirava o ladrilho. A barra vive em `ficha-sessao.js` (`preparoAtual`, `null` = cheio, `alteraPreparo`,
+`definePreparo`), nunca passa do máximo nem desce de zero, é aparada quando o máximo cai e enche no
+Descansar, que devolve tudo como o resto da Ficha (D3). Aparece também no painel de Encontros. A
+Postura do Céu não mexe no máximo: ela dá uma CASCA de 2 temporários (`preparoTemp`), mostrada na
+barra como a casca de PV e PE, que a sessão topa em 2 no começo de cada rodada e do combate (sem
+acumular), que o gasto come antes do corrente, e que some ao sair da Postura e no Descansar.
 | `.afty-abas`, `.afty-aba[data-afty-aba="acoes"]` | a navegação |
 | `.afty-card`, `.afty-linha`, `.afty-rotulo`, `.afty-valor` | o corpo |
 | `.afty-fontes` | o painel de fontes |
@@ -512,7 +525,7 @@ Cada fase fecha com `npx eslint src/systems/afty/`, `npx vite build` e asserts d
 |---|---|---|
 | **D1** | A bancada do criador e os buffs da Ficha são estados separados (recomendo sim) ou o mesmo? | fase 1 |
 | **D2** | O `combatState` morto sai do `createBlankAfty` ou fica? | fase 1 |
-| **D3** | Descanso curto e longo: existem os dois, e o que cada um devolve (usos de cura, PE, PV)? | fase 4 |
+| ✅ ~~D3~~ | **Um botão só, que devolve tudo** (autor, 2026-09-23: *"Manter um botão só"*). A recarga de cada contador de usos fica gravada como dado | feito |
 | ✅ ~~D4~~ | **O crítico DOBRA OS DADOS ROLADOS** (autor, 2026-08-05). `3d8+12` vira `6d8+12`, e o fixo entra uma vez | feito |
 | ✅ ~~D5~~ | **Vantagem e desvantagem são 2d20**, ficando o maior ou o menor (autor, 2026-08-05) | feito |
 | **D6** | As 26 condições são só marcadores por enquanto, certo? (é como está) | fase 4 |
@@ -1646,3 +1659,51 @@ efeito temporário fica sempre ligado na ficha.
 - **Temporário não se desliga.** Se a intenção é poder apagar um buff temporário na mesa (a magia
   acabou antes da cena), isso é mudança no Motor e não na aba, porque hoje nada carrega quantas
   rodadas o efeito ainda tem.
+
+---
+
+## 27. O contador de usos e o montador do Golpe Especial (2026-09-24)
+
+Os dois nasceram na rodada de automação do Especialista em Combate, com as respostas do autor em
+2026-09-23. Os dois vivem nas duas telas que desenham a aba Ações e a aba Habilidades: a Ficha e o
+painel de Encontros.
+
+### O contador de usos
+
+A linha da Habilidade (`ItemDeFicha`) ganha "Usos restantes/máximo" com o `−` gastando e o `+`
+devolvendo, quando a Habilidade declara `usos` no catálogo (autor: *"Na linha da habilidade"*). O
+mesmo contador aparece no Rápido, porque é o mesmo item. O máximo vem do derive
+(`usosHabilidades`), e a sessão guarda os GASTOS em `usos["hab:<id>"]` (`usosGastosDe` e `marcaUso`
+em `ficha-sessao.js`), aparados entre zero e o máximo. O Descansar zera o `usos` inteiro (D3).
+
+Quem desenha passa o `contadorUsos` (`{ gastosDe, onUso }`) pela `AbaHabilidades`, pelo
+`GrupoComSubAbas` e pela `AbaAcoes`. Sem ele a linha segue como era, e é o caso da aba
+Equipamentos. Hoje só as seis do Combatente declaram o campo (ver `docs/automacao-dsl.md`).
+
+### O montador do Golpe Especial
+
+`PainelDoGolpeEspecial.jsx`, na aba Ações, logo antes do Dano, para quem tem o Golpe Especial (com
+as herdadas). As onze propriedades do livro com o custo de cada uma, o custo total (mínimo de 1 PE),
+o Autossuficiente e o Pagar.
+
+- **Onde cada marca mora.** Atroz, Letal, Longo, Penetrante e Desfocado são estados de bancada (o
+  Longo nasceu agora, com o canal `alcanceArma`), então marcar no montador já mexe nas linhas de
+  Dano e aparece também na aba Buffs. Amplo, Impactante, Preciso, Sanguinário, Lento e Sacrifício não
+  têm número na linha e moram em `sessao.golpeEspecial`. ⚠ Eles NÃO viraram estado de bancada: o id
+  `golpeImpactante` já é o do Golpe Impactante do Restringido, e uma linha sem número na aba Buffs
+  seria interruptor morto.
+- **As marcas ficam** depois do Pagar, até a pessoa desmarcar (autor: *"Ficam marcadas até
+  desmarcar"*).
+- **O Pagar** (`pagaGolpeEspecial`) gasta o PE pelo `gastaPe` (casca primeiro), cobra os 15 de dano
+  do Sacrifício pelo `aplicaDano` (é dano, então a casca de PV come primeiro) e grava o Preciso da
+  rodada: o segundo Preciso da mesma rodada custa 2. Fora de combate, sem golpe montado ou sem PE, o
+  botão fica desligado e a função não mexe em nada.
+- **O Autossuficiente** abate 3 do custo (*"3 PE temporários para serem usados no ataque"*, e o
+  autor decidiu que eles abatem o custo do golpe). O botão troca para 6 uma vez por cena: a troca
+  fica gasta até o começo do próximo combate (`iniciaCombate` ou a saída da rodada 0) ou o
+  Descansar.
+- **O que não vira número**, e fica com a mesa: o alvo a mais do Amplo, o empurrão do Impactante, a
+  vantagem do Preciso (o rolador já tem o modo Vantagem), a condição do Sanguinário e a ação
+  completa do Lento. O Sanguinário mostra Leve ou Médio no próprio contador.
+
+Asserts em `asserts/t-combatente-automacoes.mjs`.

@@ -556,6 +556,22 @@ export const DIVERGENCIAS = [
     ativa: true,
   },
   {
+    /* ⚠ A HABILIDADE SAIU DA CRIATURA E VOLTOU NO JOGADOR. O autor removeu
+       "Teste de Resistência Mestre" das seis classes em 2026-07-27, antes de a
+       Ficha de Player existir, e decidiu em 2026-09-23 que ela volta só no
+       jogador, só para a Classe inicial (a única que concede TR, ver
+       `pacoteDaClasseInicial`). Quem sabe qual TR sobe é o pacote, e por isso o
+       dado mora em `caracteristicas.resistencias.mestre`, e não no catálogo de
+       Habilidades. */
+    id: "trMestreDoJogador",
+    tipo: "regra",
+    onde: "afty-especializacoes.js (resistenciasDaClasse) e afty-pericias.js (resolveTestes)",
+    fonte: "No nível 9, você recebe a habilidade Teste de Resistência Mestre: Você se torna treinado em um segundo teste de resistência e mestre no concedido pela sua especialização. (livro do jogador; volta só no jogador, autor, 2026-09-23)",
+    afty: "não existe: a habilidade foi removida das seis classes em 2026-07-27",
+    player: "no nível 9 da Classe inicial, o TR dela vira Mestre e um segundo TR à escolha vira treinado (o Restringido fica Mestre nos dois, sem segundo)",
+    ativa: true,
+  },
+  {
     /* O Grimório Afty prolonga os Níveis de Aptidão depois do ND 20. A Ficha de
        Player segue a tabela do livro: o último marco que concede pontos por
        nível é o 20. Bônus de Habilidades, Treinamentos e Addons continuam valendo
@@ -619,6 +635,22 @@ export const DIVERGENCIAS = [
     fonte: "Nada (autor, 2026-08-30, sobre o que a segunda Classe da multiclasse concede de perícias e TR)",
     afty: "orçamento de 3 + maior mod entre INT e SAB + rank do Grau, e o TR gasta dele",
     player: "o pacote da Classe inicial, mais o maior mod entre INT e SAB",
+    ativa: true,
+  },
+  {
+    /* ⚠ A IRMÃ DO PACOTE, PARA EQUIPAMENTO (autor, 2026-09-23). O livro, nas regras
+       de Multiclasse: "Ao obter uma nova especialização, você não recebe novos
+       treinamentos em perícias nem equipamentos." O pacote de perícias e TR já
+       seguia isso, e o treino de ARMA e ESCUDO juntava todas as classes: um
+       Conjurador que multiclassava para Combatente ficava treinado em todas as
+       armas. Na criatura o treino de ataque é uma marca por tipo, e o de escudo
+       segue somando as classes, como sempre foi. */
+    id: "treinoDaClasseInicial",
+    tipo: "regra",
+    onde: "afty-derive.js, o treino de armas e escudos (treinamentosDasEspecializacoes e resolveTreinoEscudo)",
+    fonte: "Ao obter uma nova especialização, você não recebe novos treinamentos em perícias nem equipamentos. (livro do jogador, Multiclasse; autor, 2026-09-23)",
+    afty: "toda Especialização da ficha treina as armas e os escudos do catálogo dela",
+    player: "só a Classe inicial treina armas e escudos",
     ativa: true,
   },
   {

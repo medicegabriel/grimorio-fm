@@ -292,6 +292,18 @@ export const EFEITO_CANAIS = [
   { id: "removeResistencia", label: "Remove Resistência", alvo: "fonteDano", nota: "sinalizador para golpes ou Feitiços que retiram a resistência do alvo" },
   { id: "propMarcial",   label: "Marcial",               alvo: "fonteDano", nota: "concede a propriedade Marcial à arma, que é o gatilho de vários poderes de Lutador" },
   { id: "finezaAtaque",  label: "Fineza",                alvo: "fonteDano", nota: "libera o atributo alternativo do ataque (Destreza no Corpo a Corpo). Vale o maior dos dois, no acerto E no dano daquela linha. Alvo `basico` ou o id da arma, e aceita os escopos (`prop:marcial`, `grupo:espada`)" },
+  /* ⚠ SÓ NA FICHA DE JOGADOR (2026-09-23), e de propósito. Nasceu na Postura da
+     Lua: "todos seus ataques [...] não recebem seu bônus de atributo no dano". No
+     jogador o atributo é uma parcela da linha (dado + modificador), e tirá-la é
+     exatamente o que o texto diz. Na criatura o atributo decide também QUANTOS
+     dados a linha rola, e zerá-lo mudaria a rolagem inteira, não só o bônus:
+     lá o canal é ignorado e a leitura é pergunta ao autor (docs/a-fazer.md). */
+  { id: "semAtributoDano", label: "Sem Atributo no Dano", alvo: "fonteDano", nota: "sinalizador: a linha de dano deixa de somar o modificador de atributo. Só na ficha de jogador, onde o atributo é parcela própria da linha. Na criatura é ignorado" },
+  /* O ALCANCE DA LINHA em metros (2026-09-23). Extensão do Corpo, Sincronia
+     Perfeita e o Longo do Golpe Especial dizem "o alcance aumenta em X metros", e
+     não havia onde somar: o `alcanceDe` do resolveDano já sabia somar o
+     Estendida e multiplicar pela Postura do Céu, faltava a porta do Motor. */
+  { id: "alcanceArma", label: "Alcance da Arma", alvo: "fonteDano", nota: "metros a mais no alcance da linha. Na arma corpo a corpo soma ao alcance dela, na de distância soma aos dois alcances. Entra antes do dobro da Postura do Céu" },
   { id: "nivelAptidao",  label: "Nível de Aptidão",      alvo: "trilha", nota: "com alvo é concessão direcionada e grátis. Apara no teto da trilha (5 por padrão). Quem sobe o teto é o canal Limite de Aptidão" },
   { id: "limiteAptidao", label: "Limite de Aptidão",     alvo: "trilha", nota: "sobe o teto daquela trilha por cima do 5 padrão. Não concede nível: quem concede é o canal Nível de Aptidão, e as regras que quebram o teto emitem os dois juntos" },
   // ⚠ NÃO É `nivelAptidao`. Este canal dá VAGA DE IMBUIÇÃO no Domínio Simples e
@@ -389,6 +401,12 @@ export const EFEITO_CANAIS = [
   { id: "pontosAptidao",  label: "Nível de Aptidão (à escolha)", nota: "orçamento LIVRE de níveis: cada ponto sobe 1 nível na trilha que o jogador quiser. O irmão direcionado é o canal Nível de Aptidão, que nomeia a trilha" },
   { id: "focos",          label: "Focos de Interlúdio" },
   { id: "pontosPreparo",  label: "Pontos de Preparo",    nota: "recurso do Combatente (Artes do Combate). Zero sem a habilidade, então o Preview só mostra quem tem" },
+  /* A casca de Preparo (2026-09-23). A Postura do Céu dá "2 pontos de preparo
+     temporários no começo de todo turno", e isso somava 2 no MÁXIMO, que é outra
+     coisa: o máximo não volta sozinho a cada turno. A sessão topa a casca neste
+     valor a cada rodada (autor: topa, não acumula), gasta ela antes do Preparo e
+     a zera quando o canal cai (fora da postura). */
+  { id: "preparoTemporario", label: "Preparo Temporário", nota: "Pontos de Preparo temporários que voltam a este valor no começo de cada rodada, sem acumular. Gastos antes do Preparo, e somem quando a fonte acaba" },
   { id: "espacosCarga",   label: "Espaços de Item",      nota: "sobe o LIMITE de carga, não o usado. Entra antes da conta de sobrecarga" },
 
   /* ---------- GUARDA INABALÁVEL (Calamidade e Beyond) ----------
@@ -625,7 +643,7 @@ export const chaveExclusiva = (canal, alvo, valor = 1, grupo = GRUPO_POOL_UNICO)
  */
 const GRUPOS_DE_CANAL = [
   ["Vitalidade e Recursos", [
-    "hp", "hpMult", "pvTemporario", "pe", "passivaSemCusto", "peTemporario", "almaMax", "pontosPreparo", "custoPE",
+    "hp", "hpMult", "pvTemporario", "pe", "passivaSemCusto", "peTemporario", "almaMax", "pontosPreparo", "preparoTemporario", "custoPE",
   ]],
   // ⚠ Grupo PRÓPRIO desde 2026-08-03. Os três de Regeneração viviam soltos em
   // "Vitalidade e Recursos", entre PV e Pontos de Preparo, e lá o leitor não
@@ -644,6 +662,7 @@ const GRUPOS_DE_CANAL = [
   ["Ataque e Dano", [
     "cd", "bonusAcerto", "acertoArma", "ataquesExtras", "danoBonus", "nivelDano", "dadosDano", "dadosNomeados",
     "dadosCritico", "dadosAtaque", "margemCritico", "ignoraRD", "ignoraTodaRD", "ignoraImunidade", "removeResistencia", "propMarcial", "finezaAtaque",
+    "semAtributoDano", "alcanceArma",
   ]],
   // Atributo, limite e nível de trilha: o que a criatura É, em número próprio.
   // `nivelAptidao` entra aqui, e não num grupo de Aptidões, porque ele é
@@ -799,6 +818,12 @@ export function buildCriaturaDslContext(base = {}) {
     nd: base.nd ?? 1,
     bt: base.bt ?? 0,
     maestria: base.bt ?? 0,                          // alias, o texto do livro usa os dois nomes
+    /* A parcela de NÍVEL da Jogada de Ataque, que muda de régua com o sistema
+       (divergência `escalaDosTestes`): INT(Nível ÷ 1,5) na criatura e metade do
+       Nível no jogador. Nasceu em 2026-09-23 para o Espírito Incansável, cujo "o
+       seu bônus de ataque" era montado com a régua da criatura também no jogador.
+       O padrão é a da criatura, que é o que o contexto sempre supôs. */
+    escala_ataque: base.escalaAtaque ?? Math.floor((base.nd ?? 1) / 1.5),
     // Qual repetição está sendo avaliada, para as entradas repetíveis cujo
     // valor muda por pega ("aumenta em 20. Você pode pegar mais duas vezes,
     // aumentando em 15 ao invés de 20"). O `aplicarEfeitos` sobrescreve com o
@@ -1829,13 +1854,35 @@ export const alvosDoCanal = (res, canal) => Object.keys(res?.porAlvo?.[canal] ||
  *   `tipo:<id>`: ct, im, pf, queimante (ver TIPOS_DANO)
  *   `atq:<id>`: corpo, distancia ou amaldicoado
  *   `atq_tipo:<ataque>:<tipo>` - interseção usada quando a regra exige os dois
+ *   `treinada`: a ficha é treinada nesta arma (jogador: Classe inicial ou
+ *                  Mestre das Armas; criatura: o catálogo das classes dela)
+ *   `empunho:duas_maos`: a arma está nas duas mãos AGORA. É a propriedade Duas
+ *                  Mãos, ou a Versátil com o interruptor de duas mãos ligado.
+ *                  Nasceu em 2026-09-23 para o "arma que esteja usando em duas
+ *                  mãos" do Estilo Massivo, que `prop:duas_maos` não cobria na
+ *                  Versátil.
+ *
+ * ⚠ O ALVO ACEITA "OU" (2026-09-23): `empunho:duas_maos|prop:pesada` vale para a
+ * linha que responde a QUALQUER uma das partes, e entra UMA vez só. Nasceu no
+ * Estilo Massivo: "+1 em rolagens de dano com a arma", numa arma "que esteja
+ * usando em duas mãos ou que possua a propriedade pesada". Eram duas linhas, uma
+ * por escopo, e as dez armas que são Pesadas E de Duas Mãos (Espada Grande,
+ * Machado Grande...) recebiam o bônus duas vezes. Vale nos leitores por escopo
+ * (`valorCanalEscopos` e `detalhesDoCanalEscopos`), que são os das linhas de
+ * dano, de acerto, de Perícia e de TR.
  *
  * O mesmo mecanismo serve PERÍCIA e TR pelo atributo, `atr:<id>`: as Dádivas do
  * Céu do Restringido dizem "bônus em teste de perícia ou resistência usando
  * destreza", e listar as perícias uma a uma no conteúdo seria lista à mão que
  * envelhece. Ver `escoposDe` em resolveTestes.
  */
-export const ESCOPO_PREFIXOS = ["cat:", "grupo:", "prop:", "atr:", "tipo:", "atq:", "atq_tipo:"];
+export const ESCOPO_PREFIXOS = ["cat:", "grupo:", "prop:", "atr:", "tipo:", "atq:", "atq_tipo:", "empunho:"];
+
+/** A arma está nas duas mãos agora: Duas Mãos sempre, Versátil só com o interruptor. */
+const emDuasMaos = (arma) => {
+  const props = (arma?.propriedades ?? []).map((p) => p.id);
+  return props.includes("duas_maos") || (props.includes("versatil") && !!arma?.duasMaos);
+};
 
 /** Os alvos a que uma linha de dano responde. Sem arma, é só o Ataque Básico. */
 export function escoposDaArma(arma) {
@@ -1846,6 +1893,11 @@ export function escoposDaArma(arma) {
     ...(arma.grupo ? [`grupo:${arma.grupo}`] : []),
     ...(arma.tipoDano ? [`tipo:${arma.tipoDano}`] : []),
     ...(arma.propriedades ?? []).map((p) => `prop:${p.id}`),
+    ...(emDuasMaos(arma) ? ["empunho:duas_maos"] : []),
+    /* A ficha é TREINADA nesta arma (2026-09-23). No jogador é o treino da Classe
+       inicial ou o Mestre das Armas; na criatura, o catálogo das classes dela. É
+       o "arma com a qual você seja treinado" do Golpes Potentes. */
+    ...(arma.treinada ? ["treinada"] : []),
     /* O TIPO DE ATAQUE da linha (`atq:corpo`, `atq:distancia`, `atq:amaldicoado`),
        que é a jogada que a arma usa, e não a categoria dela: uma arma corpo a corpo
        pode rolar como Ataque Amaldiçoado. Nasceu em 2026-09-14 com o Dano do Item
@@ -1861,7 +1913,19 @@ export function escoposDaArma(arma) {
  */
 export function valorCanalEscopos(res, canal, escopos = []) {
   const dir = res?.porAlvo?.[canal] || {};
-  return escopos.reduce((s, e) => s + (dir[e] || 0), res?.porCanal?.[canal] || 0);
+  const direto = escopos.reduce((s, e) => s + (dir[e] || 0), res?.porCanal?.[canal] || 0);
+  // O alvo com "ou" entra UMA vez, por mais partes que a linha tenha.
+  let comOu = 0;
+  for (const [alvo, valor] of Object.entries(dir)) {
+    if (!escopos.includes(alvo) && casaAlvoComOu(alvo, escopos)) comOu += valor || 0;
+  }
+  return direto + comOu;
+}
+
+/** O alvo `a|b` casa com a linha que responde a qualquer uma das partes. */
+function casaAlvoComOu(alvo, escopos) {
+  return typeof alvo === "string" && alvo.includes("|")
+    && alvo.split("|").some((parte) => escopos.includes(parte.trim()));
 }
 
 /**
@@ -1929,7 +1993,9 @@ export function custoEmPe(base, efeitos, escopo = null) {
 export function detalhesDoCanalEscopos(res, canal, escopos = [], incluirSuplantados = false) {
   const alvo = new Set(escopos);
   return (res?.detalhes || []).filter(
-    (d) => d.canal === canal && (d.alvo == null || alvo.has(d.alvo)) && contaNoTotal(d, incluirSuplantados),
+    (d) => d.canal === canal
+      && (d.alvo == null || alvo.has(d.alvo) || casaAlvoComOu(d.alvo, escopos))
+      && contaNoTotal(d, incluirSuplantados),
   );
 }
 

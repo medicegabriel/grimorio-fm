@@ -41,7 +41,11 @@ t("o Sol não aprendido concede acerto", com.dano.entradas[0].acerto - sem.dano.
 t("o Céu não aprendido concede perícias", com.testes.pericias[0].bonus - sem.testes.pericias[0].bonus, 2);
 t("o Céu não aprendido dobra alcance", com.dano.entradas[0].alcance.curto,
   2 * sem.dano.entradas[0].alcance.curto);
-t("Céu concede preparo", com.pontosPreparo - sem.pontosPreparo, 2);
+/* ⚠ OS 2 DO CÉU SÃO CASCA POR RODADA desde 2026-09-23, e não mais máximo: "2
+   pontos de preparo temporários no começo de todo turno". O máximo fica igual e
+   o `preparoTemporario` (o valor que a sessão topa) vira 2. */
+t("Céu concede preparo temporário, e não máximo",
+  [com.preparoTemporario - sem.preparoTemporario, com.pontosPreparo - sem.pontosPreparo], [2, 0]);
 t("Ápice reduz margem", com.dano.entradas[0].margemCritico,
   sem.dano.entradas[0].margemCritico - 1);
 const solAtivo = deriveAfty({ ...ficha, combate: { ativo: true, postura: "sol",

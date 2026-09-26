@@ -109,12 +109,14 @@ export const SUBS_ALTO_NIVEL = [
  */
 const marca = (t) => (typeof t === "string" ? { label: t, tipo: null } : { label: t.label, tipo: t.tipo ?? null });
 
-const item = ({ id, chave, nome, texto, grupo, sub = null, tags = [], opcoes = [], aviso = null }) => ({
+const item = ({ id, chave, nome, texto, grupo, sub = null, tags = [], opcoes = [], aviso = null, usos = null }) => ({
   // `chave` é única na Ficha inteira. O `id` sozinho não serve: uma Melhoria
   // repetível aparece mais de uma vez, e duas listas diferentes podem trazer o
   // mesmo id (o Ataque Inconsequente existe no Lutador e no Restringido).
   chave: chave ?? `${grupo}:${id}`,
   id, nome, texto, grupo, sub, tags: tags.filter(Boolean).map(marca), opcoes, aviso,
+  // O contador de usos: `{ max, recarga, chave }`, e a chave é a da sessão.
+  usos,
   busca: semAcento(`${nome} ${texto} ${opcoes.map((o) => o.nome).join(" ")}`),
 });
 
@@ -173,6 +175,10 @@ export function conteudoDaFicha(creature, derived) {
       tags: [espec?.nome, h.nivel ? { label: `Nível ${h.nivel}`, tipo: "nivel" } : null],
       opcoes: opcoesEscolhidas(h, mapaHab),
       aviso: inacessiveisHab.has(id) ? "Pré-requisito não atendido" : null,
+      // A sessão guarda os gastos pela chave `hab:<id>`. Ver `alteraUso`.
+      usos: derived?.usosHabilidades?.[id]
+        ? { ...derived.usosHabilidades[id], chave: `hab:${id}` }
+        : null,
     }));
   }
 

@@ -1036,7 +1036,12 @@ export default function AbaAcoes({
   vislumbre = null,
   olhosAgulha = null,
   manipulacaoCeu = null,
+  /* ⚠ NÓ PRONTO também: o montador do Golpe Especial (2026-09-24) paga PE e
+     cobra o dano do Sacrifício, e isso é sessão. */
+  golpeEspecial = null,
   gatilhosTreino = [], onGatilhoTreino = null,
+  // O contador de usos das habilidades fixadas no Rápido. Ver `ItemDeFicha`.
+  contadorUsos = null,
 }) {
   const dano = derived.dano?.entradas ?? [];
   const cura = derived.cura?.linhas ?? [];
@@ -1062,6 +1067,8 @@ export default function AbaAcoes({
       {/* Antes do Rápido e do Dano: reunir ou dividir é a primeira decisão da
           rodada, e ela muda a linha de dano que aparece logo abaixo. */}
       {armasTransformaveis}
+      {/* Logo antes do Dano: as propriedades marcadas mudam as linhas dele. */}
+      {golpeEspecial}
       {gatilhosTreino.length > 0 && (
         <div className="afty-card flex items-center gap-2 p-2">
           {gatilhosTreino.map((gatilho) => (
@@ -1093,6 +1100,7 @@ export default function AbaAcoes({
               favorito
               onFavorito={onFavorito}
               destacado={destaque === i.chave}
+              contadorUsos={contadorUsos}
             />
           ))}
         </Secao>

@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { ArmasTransformaveis } from "../ui/armas-transformaveis";
-import { Heart, Zap, Sparkles, Skull, EyeOff, Moon, Swords, Shield, BookOpen, Backpack, Wand2, AlertTriangle } from "lucide-react";
+import { Heart, Zap, Sparkles, Skull, EyeOff, Moon, Swords, Shield, BookOpen, Backpack, Wand2, AlertTriangle, Crosshair } from "lucide-react";
 
 import { funcionamentosDaFicha } from "../afty-schema";
 import { sistemaDaFicha, palavrasDoSistema } from "../afty-sistema";
@@ -15,7 +15,9 @@ import {
   sofreGolpeNaGuarda, desfazGolpeNaGuarda, encerraGuarda, defineCondicoes,
   estadoDaInvocacao, poeInvocacaoEmCampo, alternaAuxilioInvocacao,
   aplicaDanoInvocacao, aplicaCuraInvocacao, defineVitalInvocacao, invocacaoDaMesa,
+  preparoDe, preparoTempDe, alteraPreparo, definePreparo,
   alteraTreinoAtivo, alteraEstadoCombate, aplicaPatchCombate,
+  usosGastosDe, marcaUso,
 } from "../ficha/ficha-sessao";
 import { rolarTeste, rolarDano, textoDaRolagem } from "../ficha/ficha-rolagem";
 import { deltaDosEstados } from "../ficha/ficha-buffs";
@@ -23,6 +25,7 @@ import { conteudoDaFicha, equipamentosDaFicha } from "../ficha/ficha-conteudo";
 import AbaAcoes from "../ficha/abas/AbaAcoes";
 import PainelDeAdaptacao from "../ficha/PainelDeAdaptacao";
 import PainelOlhosAgulha from "../ficha/PainelOlhosAgulha";
+import PainelDoGolpeEspecial from "../ficha/PainelDoGolpeEspecial";
 import PainelManipulacaoCeu from "../ficha/PainelManipulacaoCeu";
 import AbaBuffs from "../ficha/abas/AbaBuffs";
 import AbaPericias from "../ficha/abas/AbaPericias";
@@ -304,6 +307,17 @@ export default function PainelDeCombatente({
               ? aplicaDanoNaAlma(s, -d, derived)
               : curaAlma(s, d, derived)))}
           />
+          {/* Pontos de Preparo (Combatente), pelos mesmos verbos da Ficha: as
+              duas telas mexem na MESMA sessão. */}
+          {derived.pontosPreparo > 0 && (
+            <Vital
+              tipo="preparo" icone={Crosshair} rotulo="Preparo"
+              atual={preparoDe(sessao, derived.pontosPreparo)} max={derived.pontosPreparo}
+              temp={preparoTempDe(sessao)} rotuloTemp="Preparo Temporário"
+              onSet={(v) => onSessao((s) => definePreparo(s, v, derived.pontosPreparo))}
+              onDelta={(d) => onSessao((s) => alteraPreparo(s, d, derived.pontosPreparo))}
+            />
+          )}
           <DanoRapido
             onDano={(n) => onSessao((s) => aplicaDano(s, n))}
             onCura={(n) => onSessao((s) => aplicaCura(s, n, derived.hp))}
@@ -384,6 +398,7 @@ export default function PainelDeCombatente({
           olhosAgulha={<PainelOlhosAgulha derived={derived} sessao={sessao} onSessao={onSessao} />}
           manipulacaoCeu={<PainelManipulacaoCeu derived={derived} onEstado={(estado, valor) => onSessao((s) => alteraEstadoCombate(s, estado, valor))} />}
           armasTransformaveis={<ArmasTransformaveis derived={derived} sessao={sessao} onSessao={onSessao} />}
+          golpeEspecial={<PainelDoGolpeEspecial derived={derived} sessao={sessao} onSessao={onSessao} />}
           gatilhosTreino={derived.gatilhosTreino}
           onGatilhoTreino={(id, v) => onSessao((s) => alteraTreinoAtivo(s, id, v))}
           rolar={rolar}
@@ -405,6 +420,10 @@ export default function PainelDeCombatente({
           favoritos={[]}
           onFavorito={() => {}}
           destaque={destaque}
+          contadorUsos={{
+            gastosDe: (chave) => usosGastosDe(sessao, chave),
+            onUso: (usos, delta) => onSessao((s) => marcaUso(s, usos, delta)),
+          }}
         />
       )}
       {aba === "pericias" && (

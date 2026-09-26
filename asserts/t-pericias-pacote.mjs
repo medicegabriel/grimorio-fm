@@ -54,9 +54,14 @@ const linha = (lista, id, chave = "id") => lista.find((x) => x[chave] === id);
 /* ⚠ O RESTRINGIDO É O ÚNICO SEM ESCOLHA NENHUMA: o livro dá "Testes de
    Resistência de Fortitude e Reflexos" com "e", e "uma perícia de Ofício", que é
    uma lista de um caminho só. Os três chegam prontos. */
+/* ⚠ NO NÍVEL 10 OS DOIS JÁ CHEGAM MESTRE (2026-09-23): o Teste de Resistência
+   Mestre voltou no jogador, e o do Restringido é "mestre nos dois Testes de
+   Resistência conferidos por sua Especialização", no 9. O que este assert
+   mede continua igual: os dois chegam SEM MARCAR e concedidos. O degrau do 8
+   para o 9 é medido em t-tr-mestre-jogador.mjs. */
 for (const tr of ["fortitude", "reflexos"]) {
   const r = linha(restr.resistencias, tr, "value");
-  t(`o Restringido recebe ${tr} sem marcar`, [r.prof, r.profEscolhida, r.concedida], ["treinado", null, true]);
+  t(`o Restringido recebe ${tr} sem marcar`, [r.prof, r.profEscolhida, r.concedida], ["mestre", null, true]);
 }
 /* ⚠ MAS A PERÍCIA NÃO CHEGA MARCADA (autor, 2026-08-31): *"Não era para FORÇAR
    as perícias já que tem escolhas e coisa do gênero. Só colocar no contador como

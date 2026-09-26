@@ -419,6 +419,11 @@ export function createBlankAfty() {
     periciaAtributoManual: {},
     periciasBonus: 0,          // vagas extras vindas de fora ("+ OUTROS" da fórmula)
     resistenciasProf: {},      // { [trValue]: "treinado" | "mestre" }
+    // Só no jogador (2026-09-23): o TR que a Classe inicial dá quando o livro diz
+    // "um entre Fortitude ou Reflexos", e o segundo TR do Teste de Resistência
+    // Mestre. Ver `resistenciasDaClasse` em afty-especializacoes.js.
+    trDaClasse: [],
+    trSegundo: null,
     ataquesProf: {},           // { corpo: true, distancia: true }
     ataqueFineza: false,       // arma com o traço Fineza: corpo a corpo pode usar Destreza
 

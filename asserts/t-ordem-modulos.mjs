@@ -74,6 +74,8 @@ const FOLHAS = [
   ["afty-criacao-equipamentos.js", "o catalogoDoTipo de afty-equipamentos o chama"],
   ["afty-criacao-equipamentos-itens.js", "idem, para os Itens de Custo"],
   ["afty-talisma-apice.js", "o derive, a sessao e o equipamento o leem"],
+  // Entrou em 2026-09-24: o montador do Golpe Especial, lido pela sessão e pelo painel.
+  ["afty-golpe-especial.js", "a sessao e o painel do Golpe Especial o leem"],
   ["afty-criacao-equipamentos-encantamento.js", "o resolveFerramenta de afty-equipamentos o chama"],
   ["afty-pericias-catalogo.js", "os três catálogos de requisito o chamam"],
   ["afty-schema.js", "todo mundo cria ficha em branco"],

@@ -34,7 +34,10 @@
  * nome repetido ENTRE especializações e acusa dentro de uma.
  *
  * ⚠ "Teste de Resistência Mestre" existia nas seis e foi REMOVIDA do sistema
- * (autor, 2026-07-27). Não reintroduzir.
+ * (autor, 2026-07-27). Não reintroduzir NESTE catálogo. No jogador ela voltou
+ * em 2026-09-23, mas pelo pacote de TR da Classe e não como Habilidade: ver
+ * `resistenciasDaClasse` (afty-especializacoes.js) e a divergência
+ * `trMestreDoJogador`.
  *
  * ⚠ Ordem do array = ordem do livro, NÃO alfabética (convenção do projeto).
  *
@@ -85,6 +88,14 @@ const opcoesDeEncantamentoArma = () =>
   }));
 const opcoesDeResistencia = (prefixo, descricao) =>
   AFTY_RESISTENCIAS.map((r) => ({ id: `${prefixo}_${r.value}`, nome: r.label, descricao: descricao(r.label) }));
+
+/**
+ * O que devolve os usos de uma habilidade com contador (campo `usos`). O livro
+ * separa "por descanso curto", "por descanso longo" e "por descanso" qualquer.
+ * A Ficha tem um Descansar só e ele devolve tudo (autor, 2026-09-23), então a
+ * recarga é registro de regra para o dia em que houver dois descansos.
+ */
+export const USOS_RECARGAS = ["curto", "longo", "descanso"];
 
 export const HABILIDADE_TIPOS = [
   { id: "base",  label: "Habilidades Base" },
@@ -244,9 +255,9 @@ export const ESTILOS_DE_COMBATE = comNomeProprio([
  * nos níveis 8 e 16, e a habilidade Aprender Postura concede mais (4 e 10).
  *
  * ⚠ `nivelMin` são os pré-requisitos "Pré-Requisito: Nível N" das últimas
- * três posturas. Se N é nível de Especialista ou de personagem é ambíguo no
- * livro (aqui tudo mais é nível de Especialista); resolver quando o estado
- * da escolha aninhada existir. Por ora as Posturas são só leitura.
+ * três posturas. Conferido desde 2026-09-23 contra o nível de ESCALONAMENTO do
+ * Combatente (o nível nele mais a metade das outras classes), por decisão do
+ * autor. Ver `resolveEscolhasHabilidade`.
  */
 export const POSTURAS_DE_COMBATE = [
   {
@@ -1808,6 +1819,9 @@ export const AFTY_HABILIDADES = [
       niveis: [2, 8, 16],
       opcoes: POSTURAS_DE_COMBATE,
     },
+    // "Você pode ativar suas posturas uma quantidade de vezes igual ao seu bônus
+    // de treinamento." O texto não diz o que devolve: fica "por descanso".
+    usos: { expr: "maestria", recarga: "descanso" },
     requisitos: [],
   },
   {
@@ -1895,6 +1909,9 @@ export const AFTY_HABILIDADES = [
       "descanso curto ou longo igual a metade do seu nível de personagem, você pode gastar 1 " +
       "ponto de energia amaldiçoada para rolar novamente um teste de resistência em que você " +
       "falhar, ficando com o melhor resultado.",
+    // "Uma quantidade de vezes por descanso curto ou longo igual a metade do seu
+    // nível de personagem."
+    usos: { expr: "piso(nd / 2)", recarga: "descanso" },
     requisitos: [],
   },
   {
@@ -1962,6 +1979,9 @@ export const AFTY_HABILIDADES = [
       "ação bônus para se curar em um valor igual a 1d10 + o dobro do seu modificador de " +
       "Constituição + bônus de treinamento, aumentando em um dado a cada 4 níveis. Você recupera " +
       "todos os usos em um descanso longo ou metade em um descanso curto.",
+    // "Uma quantidade de vezes igual ao seu bônus de treinamento [...] Você
+    // recupera todos os usos em um descanso longo ou metade em um descanso curto."
+    usos: { expr: "maestria", recarga: "longo" },
     requisitos: [],
   },
   {
@@ -2119,6 +2139,16 @@ export const AFTY_HABILIDADES = [
     descricao:
       "Você descobre como utilizar melhor um certo tipo de armas. Escolha um grupo de armas: você " +
       "recebe acesso ao efeito de crítico do grupo enquanto manejando uma arma que pertença a ele.",
+    /* "Escolha um grupo de armas" (2026-09-23). A escolha não existia, e o grupo
+       ficava só na cabeça do jogador. Sem efeito de Motor: o efeito de crítico
+       do grupo é regra de mesa e não tem canal. Mesmo pool do Armas Escolhidas,
+       com prefixo próprio para não dividir chave de escolha com ele. */
+    escolha: {
+      id: "grupo_favorito",
+      label: "Grupo de Arma",
+      niveis: [4],
+      opcoes: opcoesDeGrupoArma("cmb_favorito", (n) => `Você recebe acesso ao efeito de crítico do grupo ${n} enquanto manejando uma arma dele.`),
+    },
     requisitos: [],
   },
   {
@@ -2331,6 +2361,10 @@ export const AFTY_HABILIDADES = [
       "realizar este ataque uma quantidade de vezes igual ao seu modificador de Força, Destreza ou " +
       "Sabedoria por descanso curto. Caso seja incapacitado, desmaiado ou morto, o efeito da " +
       "habilidade é cancelado.",
+    // "Você pode realizar este ataque uma quantidade de vezes igual ao seu
+    // modificador de Força, Destreza ou Sabedoria por descanso curto." O "ou" é
+    // escolha livre e sem custo, então vale o maior, com piso zero.
+    usos: { expr: "max(0, mod_forca, mod_destreza, mod_sabedoria)", recarga: "curto" },
     requisitos: [],
   },
   {
@@ -2492,6 +2526,9 @@ export const AFTY_HABILIDADES = [
       "normais. Uma quantidade de vezes igual a metade do seu bônus de treinamento, por descanso " +
       "longo, você pode, uma vez por rodada, gastar 5 pontos de energia amaldiçoada para realizar " +
       "uma ação comum a mais no seu turno.",
+    // "Uma quantidade de vezes igual a metade do seu bônus de treinamento, por
+    // descanso longo."
+    usos: { expr: "piso(maestria / 2)", recarga: "longo" },
     requisitos: [],
   },
 
@@ -2577,6 +2614,8 @@ export const AFTY_HABILIDADES = [
       "turno atual. Ao ter 0 de vida neste turno, tomar dano resulta em falhas no teste de morte. " +
       "Quando o turno acaba, você fica inconsciente e recebe um nível de exaustão. Pode ser usada " +
       "uma vez por descanso longo.",
+    // "Pode ser usada uma vez por descanso longo."
+    usos: { expr: "1", recarga: "longo" },
     requisitos: [],
   },
 
@@ -2628,6 +2667,13 @@ export const AFTY_HABILIDADES = [
       "no começo de uma cena de combate, pode pagar 2 pontos de energia para receber uma " +
       "propriedade única durante o resto da cena. Essa propriedade pode tanto ser criada pelo " +
       "jogador, quanto ser uma das já existentes.",
+    /* "Você escolhe mais uma propriedade para ser aplicada em toda arma" (feito
+       em 2026-09-23, adiado desde 2026-09-15). É mais uma vaga no card do Manejo
+       Especial, que é pré-requisito, do mesmo jeito que o Acervo Amplo soma um
+       Estilo: um segundo card deixaria escolher a mesma propriedade duas vezes.
+       A "propriedade única" paga no começo da cena é criação livre do jogador, e
+       fica de mesa. */
+    concedeEscolha: { habilidade: "cmb_manejo_especial", niveis: [12] },
     requisitos: [{ tipo: "habilidade", id: "cmb_manejo_especial" }],
   },
   {
@@ -6338,13 +6384,30 @@ export function escolhasMaximas(habilidade, nivelEspec, bt = 0) {
  * NÃO remove excedente (o padrão do projeto é reportar em vermelho, não
  * bloquear). Só considera habilidades que estão ESCOLHIDAS e têm `escolha`.
  *
- * ctx = { escolhidasIds: [habId], niveisPorEspec, escolhasHabilidade }.
- * Retorna { porHab: { [habId]: { opcoes, allowance, repetivel, excedeu } },
- *           mapa: { [habId]: [opcaoId] }, vagasExtras } — vagasExtras é quanto
- * as escolhas repetíveis gastam ALÉM da vaga da própria habilidade.
+ * ctx = { escolhidasIds: [habId], niveisPorEspec, niveisEscalonamento, escolhasHabilidade }.
+ * Retorna { porHab: { [habId]: { opcoes, allowance, repetivel, excedeu, bloqueadas,
+ *           abaixoDoNivel } }, mapa: { [habId]: [opcaoId] }, vagasExtras }. O
+ * `vagasExtras` é quanto as escolhas repetíveis gastam ALÉM da vaga da própria
+ * habilidade.
+ *
+ * ⚠ O `nivelMin` DA OPÇÃO É CONFERIDO DESDE 2026-09-23. Ele existia em três
+ * pools (as três últimas Posturas de Combate, Feitiço Rápido e Apoio
+ * Estratégico, os "Pré-Requisito: Nível N" do livro) e ninguém o lia: um
+ * Combatente de nível 2 escolhia a Postura do Céu, que pede Nível 12.
+ *
+ * A régua é o nível de ESCALONAMENTO da Especialização dona (o nível nela mais a
+ * metade das outras), por decisão do autor em 2026-09-23: *"Nível de combatente
+ * + metade dos níveis de outras classes (O padrão que usamos)"*. É diferente do
+ * requisito da HABILIDADE, que segue o nível real.
+ *
+ * `bloqueadas` são as opções que ainda não dá para escolher, e a tela as
+ * desabilita. `abaixoDoNivel` são as já gravadas que estão abaixo do nível
+ * (a multiclasse foi redividida, por exemplo). Elas ficam na ficha e são
+ * reportadas, igual aos `inacessiveis` das habilidades.
  */
 export function resolveEscolhasHabilidade({
-  escolhidasIds = [], niveisPorEspec = {}, nivelPorHabilidade = {}, escolhasHabilidade = {}, bt = 0,
+  escolhidasIds = [], niveisPorEspec = {}, niveisEscalonamento = {}, nivelPorHabilidade = {},
+  escolhasHabilidade = {}, bt = 0,
 } = {}) {
   const porHab = {};
   const mapa = {};
@@ -6379,7 +6442,18 @@ export function resolveEscolhasHabilidade({
     }
     const nivelEspec = nivelPorHabilidade?.[habId] ?? niveisPorEspec?.[hab.especializacaoId] ?? 0;
     const allowance = escolhasMaximas(hab, nivelEspec, bt) + (concedidas[habId] || 0);
-    porHab[habId] = { opcoes, allowance, repetivel: !!hab.escolha.repetivel, excedeu: opcoes.length > allowance };
+    // A Alma Livre dá um nível só, e ele vale também aqui.
+    const nivelOpcao = nivelPorHabilidade?.[habId]
+      ?? niveisEscalonamento?.[hab.especializacaoId]
+      ?? nivelEspec;
+    const bloqueadas = hab.escolha.opcoes
+      .filter((o) => (Number(o.nivelMin) || 0) > nivelOpcao)
+      .map((o) => o.id);
+    porHab[habId] = {
+      opcoes, allowance, repetivel: !!hab.escolha.repetivel, excedeu: opcoes.length > allowance,
+      bloqueadas,
+      abaixoDoNivel: opcoes.filter((id) => bloqueadas.includes(id)),
+    };
     mapa[habId] = opcoes;
     // Repetível: a 1ª escolha vem junto da vaga da própria habilidade; cada
     // escolha a mais custa uma vaga de Habilidade adicional.
@@ -7301,6 +7375,9 @@ export function resolveHabilidades(
   const escolhas = resolveEscolhasHabilidade({
     escolhidasIds: escolhidas,
     niveisPorEspec,
+    // O nível que trava a OPÇÃO com `nivelMin`. Ver resolveEscolhasHabilidade.
+    niveisEscalonamento: Object.fromEntries((escolhidasEspec || [])
+      .map((e) => [e.id, e.nivelEscalonamento ?? e.nivel ?? 0])),
     nivelPorHabilidade,
     escolhasHabilidade: escolhasMescladas,
     bt,
@@ -7419,6 +7496,18 @@ export function validarCatalogoHabilidades() {
     }
     if (h.maxVezesExpr && !validateExpression(h.maxVezesExpr, new Set(["nd", "maestria", "bt"])).ok) {
       problemas.push(`${h.nome}: maxVezesExpr não avalia (${h.maxVezesExpr})`);
+    }
+    /* O contador de usos (2026-09-23): `expr` é o MÁXIMO, em DSL, avaliado no
+       contexto final da ficha, e `recarga` diz o que o devolve. Hoje o Descansar
+       é um botão só e devolve tudo (autor, 2026-09-23), e a recarga fica gravada
+       para o dia em que houver dois descansos. */
+    if (h.usos != null) {
+      if (typeof h.usos?.expr !== "string" || !validateExpression(h.usos.expr).ok) {
+        problemas.push(`${h.nome}: usos.expr não avalia (${h.usos?.expr})`);
+      }
+      if (!USOS_RECARGAS.includes(h.usos?.recarga)) {
+        problemas.push(`${h.nome}: usos.recarga inválida (${h.usos?.recarga})`);
+      }
     }
 
     // Escolha aninhada (ex.: Estilos de Combate do Repertório).

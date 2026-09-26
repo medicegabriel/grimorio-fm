@@ -28,6 +28,9 @@ import { normalizaConcedido, comConcessao, semConcessao } from "../afty-concessa
 import { normalizaAdaptacoes, avancarAdaptacoesNaRodada } from "../afty-adaptacao";
 import { avancaArmasTransformaveis } from "../afty-armas-transformaveis";
 import { ESTADO_APICE, RODADAS_APICE } from "../afty-talisma-apice";
+import {
+  PROPRIEDADES_GOLPE, vezesDaPropriedade, marcasDoGolpe, custoDoGolpe, normalizaGolpeEspecial,
+} from "../afty-golpe-especial";
 
 const CHAVE_BASE = "fm_ficha_sessao_afty_v1";
 const LOG_MAX = 50;
@@ -129,6 +132,18 @@ export function sessaoEmBranco(derived = null) {
        precisar de uma sessão que já saiba o máximo. Ver `afty-tita.js` para o
        máximo de cada parte. */
     tita: { cabeca: null, membros: [] },
+    /* PONTOS DE PREPARO correntes (Combatente, Artes do Combate), desde
+       2026-09-23. `null` quer dizer CHEIO, a convenção do PV de Invocação e do
+       Titã: quem não é Combatente nunca escreve aqui, e quem é nasce cheio sem
+       a sessão precisar saber o máximo. Ver `alteraPreparo`. */
+    preparoAtual: null,
+    // A casca de Preparo temporário (Postura do Céu), topada a cada rodada.
+    preparoTemp: 0,
+    /* As marcas do Golpe Especial que não viram número (Amplo, Impactante,
+       Preciso, Sanguinário, Lento, Sacrifício), desde 2026-09-24. As que viram
+       número são estados de bancada e moram no `combate`. Ver
+       afty-golpe-especial.js. */
+    golpeEspecial: {},
     // O que o mestre CONCEDEU nesta sessão (Addons 8.3). Estado de sessão e
     // nunca ficha, por decisão do autor (2026-08-20): vale para tudo, não gasta
     // vaga nenhuma e morre junto com a sessão. Ver `afty-concessao.js`.
@@ -220,6 +235,10 @@ export function normalizaSessao(bruta, derived = null) {
       : {},
     invocacoes: normalizaInvocacoesSessao(bruta.invocacoes),
     tita: normalizaTitaSessao(bruta.tita, derived?.titaColosso?.membros),
+    // Sessão gravada antes de 2026-09-23 não tem o campo, e cheio é o certo.
+    preparoAtual: bruta.preparoAtual == null ? null : Math.max(0, inteiro(bruta.preparoAtual, 0)),
+    preparoTemp: Math.max(0, inteiro(bruta.preparoTemp, 0)),
+    golpeEspecial: normalizaGolpeEspecial(bruta.golpeEspecial),
     favoritos: lista(bruta.favoritos),
     log: lista(bruta.log).slice(0, LOG_MAX),
   };
@@ -741,11 +760,85 @@ export function aparaSessao(sessao, derived) {
      porque o PV dela desce quando uma das fundidas perde vida no criador. */
   const invocacoes = aparaInvocacoes(sessao.invocacoes, invocacoesDaMesa(derived));
   const tita = apararTita(sessao.tita, derived?.titaColosso);
+  // O Preparo cai junto do máximo, e `null` continua cheio: ele acompanha o
+  // máximo sozinho.
+  const preparoAtual = sessao.preparoAtual == null
+    ? null
+    : entre(inteiro(sessao.preparoAtual, 0), 0, Math.max(0, derived?.pontosPreparo ?? 0));
+  /* A casca da Postura do Céu some quando a fonte some ("sai da postura"), e
+     nunca passa do valor da fonte, que é o teto dela (topa, não acumula). */
+  const preparoTemp = entre(inteiro(sessao.preparoTemp, 0), 0, Math.max(0, derived?.preparoTemporario ?? 0));
   if (hpAtual === sessao.hpAtual && peAtual === sessao.peAtual && almaAtual === sessao.almaAtual
-    && visto === almaMax && invocacoes === sessao.invocacoes && tita === sessao.tita) {
+    && visto === almaMax && invocacoes === sessao.invocacoes && tita === sessao.tita
+    && preparoAtual === (sessao.preparoAtual ?? null) && preparoTemp === inteiro(sessao.preparoTemp, 0)) {
     return sessao;
   }
-  return { ...sessao, hpAtual, peAtual, almaAtual, almaMaxVisto: almaMax, invocacoes, tita };
+  return {
+    ...sessao, hpAtual, peAtual, almaAtual, almaMaxVisto: almaMax, invocacoes, tita, preparoAtual, preparoTemp,
+  };
+}
+
+/* ============================================================ */
+/* PONTOS DE PREPARO (Combatente, Artes do Combate)              */
+/* ============================================================ */
+/**
+ * O Preparo corrente, com `null` lido como cheio.
+ *
+ * Livro: *"Você recebe uma quantidade de Pontos de Preparo igual ao seu nível de
+ * Especialista em Combate + Modificador de Sabedoria"*. O máximo vem do Motor
+ * (`derived.pontosPreparo`), e a sessão só guarda o corrente.
+ */
+export function preparoDe(sessao, max) {
+  const teto = Math.max(0, inteiro(max, 0));
+  return sessao?.preparoAtual == null ? teto : entre(inteiro(sessao.preparoAtual, 0), 0, teto);
+}
+
+/**
+ * Gasta (delta negativo) ou recupera (positivo) Pontos de Preparo. Nunca passa
+ * do máximo nem desce de zero: *"os quais são usados para realizar artes de
+ * combate"*, e não se gasta o que não se tem.
+ *
+ * As recuperações do livro são todas por clique, porque nascem de um fato de
+ * mesa: *"Sempre que eliminar um inimigo, você recupera um Ponto de Preparo;
+ * você pode usar sua ação comum para analisar o campo de batalha, recuperando
+ * dois Pontos de Preparo."* O descanso enche (ver `descansar`).
+ */
+export function alteraPreparo(sessao, delta, max) {
+  const teto = Math.max(0, inteiro(max, 0));
+  const d = inteiro(delta, 0);
+  /* O GASTO COME A CASCA PRIMEIRO, a regra de toda casca temporária do sistema
+     (PV e PE temporários): ela existe para ser gasta antes. A recuperação vai
+     só para o Preparo, porque a casca não se recupera por clique. */
+  if (d < 0) {
+    const casca = Math.max(0, inteiro(sessao?.preparoTemp, 0));
+    const daCasca = Math.min(casca, -d);
+    const resto = -d - daCasca;
+    return {
+      ...sessao,
+      preparoTemp: casca - daCasca,
+      preparoAtual: entre(preparoDe(sessao, teto) - resto, 0, teto),
+    };
+  }
+  return { ...sessao, preparoAtual: entre(preparoDe(sessao, teto) + d, 0, teto) };
+}
+
+/** A casca de Preparo temporário corrente (Postura do Céu). */
+export const preparoTempDe = (sessao) => Math.max(0, inteiro(sessao?.preparoTemp, 0));
+
+/**
+ * Topa a casca no valor da fonte: *"você recebe 2 pontos de preparo temporários
+ * no começo de todo turno"*. TOPA e não acumula (autor, 2026-09-23), a mesma
+ * regra do PE temporário de mesma fonte. Sem fonte, a casca vai a zero.
+ */
+function topaPreparoTemp(sessao, derived) {
+  if (!derived) return sessao;
+  return { ...sessao, preparoTemp: Math.max(0, inteiro(derived.preparoTemporario, 0)) };
+}
+
+/** Escreve o Preparo direto, pelo campo da barra. */
+export function definePreparo(sessao, valor, max) {
+  const teto = Math.max(0, inteiro(max, 0));
+  return { ...sessao, preparoAtual: entre(inteiro(valor, 0), 0, teto) };
 }
 
 /** Apara a Cabeça e cada Membro do Titã contra o máximo resolvido de hoje, e
@@ -1072,6 +1165,22 @@ export function defineCondicoes(sessao, condicoes) {
   return { ...proxima, pvTempFontes: fontes };
 }
 
+/* O GOLPE ESPECIAL na sessão (2026-09-24). O Preciso guarda a RODADA em que foi
+   pago, igual ao `chaveUsoEstado`, e a virada de rodada o libera sozinha. A
+   troca do Autossuficiente por 6 guarda só que foi usada, e quem a devolve é a
+   cena nova (a saída da rodada 0 e o `iniciaCombate`) e o descanso. Os verbos
+   estão depois do `marcaUso`. */
+const CHAVE_GOLPE_PRECISO = "golpe:preciso:rodada";
+const CHAVE_GOLPE_SEIS = "golpe:autossuficiente6";
+
+/** A cena nova devolve a troca por 6 do Autossuficiente ("Uma vez por cena"). */
+function cenaNovaDoGolpe(sessao) {
+  if (!sessao?.usos?.[CHAVE_GOLPE_SEIS]) return sessao;
+  const usos = { ...sessao.usos };
+  delete usos[CHAVE_GOLPE_SEIS];
+  return { ...sessao, usos };
+}
+
 /**
  * Fecha a rodada: o contador sobe e toda duração desce um.
  * O que zerou SAI, e volta na lista `expirou` para a Ficha poder avisar (buff
@@ -1101,7 +1210,7 @@ export function proximaRodada(sessao, derived = null) {
      de Controle de Energia 2ª ("quando uma cena de combate iniciar") nunca
      chegariam a quem joga pela Ficha, só a quem joga pela aba de Encontros. */
   const comCena = sessao.rodada === 0
-    ? aplicaPeTemporario(base, derived?.peTemporario?.combate ?? [])
+    ? aplicaPeTemporario(cenaNovaDoGolpe(base), derived?.peTemporario?.combate ?? [])
     : base;
   /* ⚠ A GUARDA VOLTA CHEIA AQUI, as duas metades (autor, 2026-08-26). E a
      renovação vem DEPOIS do `desce` das condições: a condição que expirou nesta
@@ -1113,7 +1222,9 @@ export function proximaRodada(sessao, derived = null) {
   );
   const comAdaptacao = avancarAdaptacoesNaRodada(comGuarda, derived, comGuarda.rodada);
   const comArmas = avancaArmasTransformaveis(comAdaptacao, sessao.rodada === 0);
-  return { sessao: avancaTalismaApice(avancaInvencivelSobOSol(comArmas, derived)), expirou };
+  // A casca de Preparo da Postura do Céu topa no começo de cada rodada.
+  const comPreparo = topaPreparoTemp(comArmas, derived);
+  return { sessao: avancaTalismaApice(avancaInvencivelSobOSol(comPreparo, derived)), expirou };
 }
 
 /* O Talismã do Ápice desligado, com o contador zerado. */
@@ -1169,21 +1280,27 @@ function avancaInvencivelSobOSol(sessao, derived) {
  * do Treino de Controle de Energia só valeria a partir da segunda.
  */
 export function iniciaCombate(sessao, derived = null) {
-  sessao = avancaArmasTransformaveis(aplicaPatchCombate(sessao, { ativo: true }), true);
+  sessao = cenaNovaDoGolpe(
+    avancaArmasTransformaveis(aplicaPatchCombate(sessao, { ativo: true }), true),
+  );
   if (!derived) return sessao;
   const comCena = aplicaPeTemporario(sessao, derived.peTemporario?.combate ?? []);
   // A Guarda entra junto: a primeira rodada já é rodada, e sem isto o mestre
-  // abriria o combate com o chefe sem casca nenhuma até virar a rodada 2.
-  return renovaGuarda(aplicaPeTemporario(comCena, derived.peTemporario?.rodada ?? []), derived);
+  // abriria o combate com o chefe sem casca nenhuma até virar a rodada 2. A casca
+  // de Preparo da Postura do Céu também, pelo mesmo motivo.
+  return topaPreparoTemp(
+    renovaGuarda(aplicaPeTemporario(comCena, derived.peTemporario?.rodada ?? []), derived),
+    derived,
+  );
 }
 
 /**
  * Descanso. Zera os usos gastos e os buffs com duração, e devolve os recursos.
  *
- * ⚠ O que cada tipo de descanso devolve no Afty é PERGUNTA ABERTA (D3). Até o
- * autor responder, o botão é um só e devolve tudo, que é o comportamento que
- * não engana: um descanso que devolvesse metade sem regra escrita seria número
- * inventado.
+ * ⚠ O BOTÃO É UM SÓ E DEVOLVE TUDO, por decisão do autor (a D3, respondida em
+ * 2026-09-23 como "Manter um botão só"). Os contadores de usos das habilidades
+ * guardam a recarga do livro (curto, longo) só como dado, para o dia em que os
+ * dois descansos se separarem.
  *
  * ⚠ SEM `derived` a sessão volta INTACTA (2026-08-09). O `?? 0` abaixo fazia um
  * descanso sem os derivados ZERAR o PV e o PE em vez de reenchê-los, que é o
@@ -1218,12 +1335,104 @@ export function descansar(sessao, derived) {
     // O Titã enche junto: a regra de membro perdido some com um descanso, do
     // mesmo espírito da Invocação abatida (`descansaInvocacoes` acima).
     tita: { cabeca: null, membros: [] },
+    /* O Preparo enche. O livro separa os dois descansos (*"Em um descanso curto,
+       você recupera metade do seu máximo, enquanto em um descanso longo os
+       recupera por completo"*), e o botão da Ficha é um só e devolve tudo, por
+       decisão do autor (2026-09-23, a D3 respondida como "manter um botão").
+       A casca da Postura do Céu morre com a cena, como as de PV e PE. */
+    preparoAtual: null,
+    preparoTemp: 0,
     buffs: sessao.buffs.filter((b) => b.rodadas == null),
     condicoes: sessao.condicoes
       .filter((c) => c.rodadas == null)
       .filter((c) => c.id !== CHAVE_CONDICAO_RITUAL_ESTENDIDO),
     ritualAtual: null,
   };
+}
+
+/**
+ * O contador de usos das habilidades (`derived.usosHabilidades`, só o
+ * Combatente por enquanto). A sessão guarda os GASTOS, e não os restantes, sob a
+ * chave `hab:<id>`: subir de nível aumenta o máximo e os usos novos já nascem
+ * livres. O `descansar` zera o `usos` inteiro e devolve todos os contadores de
+ * uma vez, porque o botão de descanso é um só (a D3, 2026-09-23).
+ */
+export function usosGastosDe(sessao, chave) {
+  return Math.max(0, inteiro(sessao?.usos?.[chave], 0));
+}
+
+/** Gasta (`delta` positivo) ou devolve (negativo) usos, sempre entre 0 e o máximo. */
+export function marcaUso(sessao, usos, delta) {
+  if (!usos?.chave) return sessao;
+  const max = Math.max(0, inteiro(usos.max, 0));
+  const antes = usosGastosDe(sessao, usos.chave);
+  const depois = Math.max(0, Math.min(max, Math.min(max, antes) + inteiro(delta, 0)));
+  if (depois === antes) return sessao;
+  return { ...sessao, usos: { ...(sessao.usos || {}), [usos.chave]: depois } };
+}
+
+/**
+ * Marca ou desmarca uma propriedade do Golpe Especial, na casa dela (ver o
+ * cabeçalho de afty-golpe-especial.js). As de contagem ficam entre 0 e o máximo.
+ */
+export function marcaPropriedadeGolpe(sessao, id, valor) {
+  const p = PROPRIEDADES_GOLPE.find((x) => x.id === id);
+  if (!p) return sessao;
+  const vezes = vezesDaPropriedade(p, valor);
+  const guardado = p.max ? vezes : vezes > 0;
+  if (p.estado) {
+    return { ...sessao, combate: { ...(sessao.combate ?? {}), [p.estado]: guardado } };
+  }
+  const proprias = { ...(sessao.golpeEspecial ?? {}) };
+  if (vezes) proprias[p.id] = guardado;
+  else delete proprias[p.id];
+  return { ...sessao, golpeEspecial: proprias };
+}
+
+/** O Preciso já foi pago nesta rodada? Daí em diante ele custa 2. */
+export const precisoPagoNaRodada = (sessao) => (
+  sessao?.usos?.[CHAVE_GOLPE_PRECISO] === sessao?.rodada
+);
+
+/** A troca do Autossuficiente por 6 PE já foi usada nesta cena? */
+export const seisDoAutossuficienteUsado = (sessao) => !!sessao?.usos?.[CHAVE_GOLPE_SEIS];
+
+/**
+ * O custo do golpe marcado na sessão. `seis` é a escolha da vez: sem o
+ * Autossuficiente ela não vale nada, e depois de usada na cena o abate volta a 3.
+ */
+export function custoDoGolpeDaSessao(sessao, derived, { seis = false } = {}) {
+  const auto = !!derived?.golpeEspecial?.autossuficiente;
+  const abate = !auto ? 0 : (seis && !seisDoAutossuficienteUsado(sessao) ? 6 : 3);
+  return custoDoGolpe(marcasDoGolpe(sessao), { precisoRepetido: precisoPagoNaRodada(sessao), abate });
+}
+
+/**
+ * Paga o golpe montado, e é o único lugar que cobra:
+ *   • o custo sai do PE pelo `gastaPe`, casca primeiro, como todo gasto;
+ *   • o Sacrifício cobra os 15 de dano pelo `aplicaDano`: é dano, e não custo,
+ *     então a casca de PV come primeiro;
+ *   • o Preciso pago grava a rodada, e o próximo da mesma rodada custa 2;
+ *   • a troca por 6 do Autossuficiente fica gasta até a cena acabar.
+ * As marcas ficam onde estão. Fora de combate, sem golpe montado ou sem PE para
+ * pagar, nada muda, e o botão da Ficha já vem desligado nesses casos.
+ */
+export function pagaGolpeEspecial(sessao, derived, { seis = false } = {}) {
+  if (!derived?.golpeEspecial?.disponivel || !sessao?.combate?.ativo) return sessao;
+  const custo = custoDoGolpeDaSessao(sessao, derived, { seis });
+  if (!custo.montado) return sessao;
+  if (Math.max(0, inteiro(sessao.peAtual, 0)) + peTempTotal(sessao) < custo.aPagar) return sessao;
+  const marcas = marcasDoGolpe(sessao);
+  let proxima = gastaPe(sessao, custo.aPagar);
+  if (marcas.sacrificio) {
+    proxima = aplicaDano(proxima, PROPRIEDADES_GOLPE.find((p) => p.id === "sacrificio").dano);
+  }
+  const usos = { ...(proxima.usos || {}) };
+  if (marcas.preciso) usos[CHAVE_GOLPE_PRECISO] = proxima.rodada;
+  if (seis && derived.golpeEspecial.autossuficiente && !seisDoAutossuficienteUsado(sessao)) {
+    usos[CHAVE_GOLPE_SEIS] = true;
+  }
+  return { ...proxima, usos };
 }
 
 const chaveUsoEstado = (id) => `estado:${id}:rodada`;

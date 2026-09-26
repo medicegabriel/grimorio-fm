@@ -90,6 +90,47 @@ Desde 2026-09-17 há dois moldes a mais para conteúdo que difere por sistema:
   É o contrário da `conteudoSoPorAddon`, que deixa quem já tinha ficar. Hoje é só a Versatilidade
   Extrema. O id fica gravado e o Addon `soPorAddon:<id>` devolve.
 
+## O TR DA CLASSE E O TESTE DE RESISTÊNCIA MESTRE
+
+Desde 2026-09-23 (divergência `trMestreDoJogador`), e decidido pelo autor na revisão do Especialista
+em Combate:
+
+- **O TR da Classe é escolhido e gravado** (`ficha.trDaClasse`). Quem tem "um Teste de Resistência
+  entre Fortitude ou Reflexos" escolhe uma vez, na aba Perícias, e o TR chega treinado pela Classe,
+  do mesmo jeito que os dois do Restringido sempre chegaram. Até aqui o jogador o marcava à mão, e o
+  livro diz em caixa alta que TR é "RECEBIDO POR ESPECIALIZAÇÃO". A marcação à mão segue existindo e
+  vale a maior das duas.
+- **A marcação à mão sem fonte vira aviso** (autor, 2026-09-24: *"Avisar em âmbar"*). O TR que a
+  marcação sobe acima do que a Classe (pacote, Mestre e Segundo TR) e o Motor (Talento, Treinamento,
+  Addon) dão sai com `semFonte` do `resolveTestes`, e a linha do criador mostra "Sem Fonte" em âmbar.
+  Nada é tirado de ninguém, e marcar o que uma fonte já dá não acusa. Quem decide é a mesma
+  divergência `trForaDoOrcamento` ("NÃO PODEM SER ESCOLHIDOS DE FORMA LIVRE"), então na criatura o
+  campo é sempre falso.
+- **No nível 9 REAL da Classe inicial** (Base de Classe), o TR da Classe vira Mestre e aparece a
+  escolha do **Segundo TR** (`ficha.trSegundo`, treinado), que não pode ser o da Classe e só é pedido
+  depois dele. O Restringido fica Mestre nos dois e não tem segundo ("mestre nos dois Testes de
+  Resistência conferidos por sua Especialização").
+- **Só a Classe inicial.** Ela é a única que concede TR (`pacoteDaClasseInicial`), então é a única que
+  tem "o concedido pela sua especialização" para subir. A segunda classe no nível 9 não ganha nada de TR.
+- O dado mora em `caracteristicas.resistencias.mestre = { nivel, segundo }`, e quem resolve é
+  `resistenciasDaClasse` (`afty-especializacoes.js`). O `resolveTestes` lê as faixas de lá. Na
+  criatura nada disto existe: a habilidade saiu das seis classes em 2026-07-27 e continua fora do
+  catálogo de Habilidades.
+
+## O TREINO DE EQUIPAMENTO É SÓ DA CLASSE INICIAL
+
+Desde 2026-09-23 (divergência `treinoDaClasseInicial`, confirmada pelo autor: *"Só a classe inicial
+treina"*). O livro, nas regras de Multiclasse: *"Ao obter uma nova especialização, você não recebe
+novos treinamentos em perícias nem equipamentos."* O pacote de perícias e de TR já seguia isso, e o
+treino de arma e escudo juntava todas as classes. Agora o `treinamentosEquipamento` e o
+`treinoEscudo` do jogador leem só a primeira classe da lista.
+
+- Um Suporte que multiclassa para Combatente continua treinado só nas Armas Simples. A Espada Longa
+  (Complexa) segue utilizável e não soma o Bônus de Treinamento.
+- O Golpes Potentes (*"arma com a qual você seja treinado"*) mira o escopo `treinada`, então ele não
+  pega nessa Espada Longa.
+- Na criatura o treino continua juntando o catálogo das classes (autor: *"O catálogo das classes"*).
+
 ## TREINOS ESPECIAIS DO JOGADOR
 
 Desde 2026-09-16 (divergências `interludioComTeste` e `tetoDeTreinoEspecial`), a linha do Treino

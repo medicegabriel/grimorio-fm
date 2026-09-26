@@ -20,10 +20,42 @@ import { useDestaque } from "./usar-destaque";
  * A ESTRELA fixa o item no Rápido, no topo da aba Ações. Uma ficha de ND 40 tem
  * 40 itens e o jogador usa seis: fixar é o que faz a diferença entre procurar e
  * ter à mão.
+ *
+ * O CONTADOR DE USOS aparece na linha da habilidade que declara `usos` (autor,
+ * 2026-09-23: *"Na linha da habilidade"*), e só quando quem desenha passa o
+ * `contadorUsos`, que é o que liga a linha à sessão. Sem ele a linha segue como
+ * sempre foi.
  * ============================================================
  */
 
-export default function ItemDeFicha({ item, aberto, onAberto, favorito, onFavorito, destacado }) {
+/** Restantes e máximo, com o menos gastando um uso e o mais devolvendo. */
+function ContadorDeUsos({ nome, usos, gastos, onUso }) {
+  const restantes = Math.max(0, usos.max - gastos);
+  return (
+    <span className="flex items-center gap-1 flex-shrink-0" data-afty-usos={usos.chave}>
+      <span className="afty-rotulo text-[10px]">Usos</span>
+      <button
+        type="button"
+        className="afty-passo"
+        disabled={restantes === 0}
+        onClick={() => onUso(1)}
+        aria-label={`Gastar um uso de ${nome}`}
+      >−</button>
+      <span className="afty-valor text-[12px] tabular-nums text-center min-w-[2.5rem]">
+        {restantes}/{usos.max}
+      </span>
+      <button
+        type="button"
+        className="afty-passo"
+        disabled={gastos === 0}
+        onClick={() => onUso(-1)}
+        aria-label={`Devolver um uso de ${nome}`}
+      >+</button>
+    </span>
+  );
+}
+
+export default function ItemDeFicha({ item, aberto, onAberto, favorito, onFavorito, destacado, contadorUsos = null }) {
   const raiz = useDestaque(destacado);
 
   return (
@@ -76,6 +108,14 @@ export default function ItemDeFicha({ item, aberto, onAberto, favorito, onFavori
             <AlertTriangle className="w-3 h-3 flex-shrink-0" aria-hidden="true" />
             <span className="hidden sm:inline">{item.aviso}</span>
           </span>
+        )}
+        {item.usos && contadorUsos && (
+          <ContadorDeUsos
+            nome={item.nome}
+            usos={item.usos}
+            gastos={contadorUsos.gastosDe(item.usos.chave)}
+            onUso={(delta) => contadorUsos.onUso(item.usos, delta)}
+          />
         )}
       </div>
 
