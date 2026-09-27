@@ -227,7 +227,7 @@ extensão, só que hoje tem uma porta de entrada só (`core.tecnicaEfeitos`).
 
 | Peça | Onde | O que já resolve |
 |---|---|---|
-| Linguagem de efeito | `EFEITO_CANAIS`, 100 canais, 46 com alvo | como o addon diz "+3 de Defesa quando o ND passa de 10" |
+| Linguagem de efeito | `EFEITO_CANAIS`, 101 canais, 47 com alvo | como o addon diz "+3 de Defesa quando o ND passa de 10" |
 | Editor de efeito | `TecnicaMotorEditor` (AftyCreatureBuilder.jsx) | a tela de autoria, com seletor `{ }` e valor ao vivo |
 | Prova de conceito | `core.tecnicaEfeitos` | o único lugar onde efeito já é ESCRITO e não escolhido |
 | Portão de aceitação | os 13 `validarCatalogo*` | recusar addon quebrado antes de entrar na ficha |
@@ -1773,6 +1773,37 @@ no treino: trocar o atributo da técnica leva o bônus junto.
 ```json
 { "canal": "atributo", "alvo": "atributoDaTecnica", "expr": "2" }
 ```
+
+### O TR como alvo, o atributo do alvo e o efeito por alvo (2026-09-26)
+
+Três peças nasceram com o **Treino de Testes de Resistência** (`addons/treino-testes-de-resistencia.json`),
+uma linha repetível "uma vez para cada TR, exceto Integridade". As três servem a qualquer linha.
+
+- **`alvoTipo: "tr"`** abre o seletor com os quatro Testes de Resistência treináveis (sem
+  Integridade), sem os que a ficha já treinou. O efeito usa a resposta com `alvo: "instancia"`.
+- **O requisito `atributoDoAlvo`** confere o atributo do alvo da instância (Fortitude é
+  Constituição, Reflexos é Destreza, Vontade é Sabedoria, Astúcia é Inteligência, e vale também para
+  alvo de Atributo e de Perícia). O chip mostra o atributo de verdade ("Constituição 12"), e na prévia
+  da linha, ainda sem alvo, ele só exibe "Atributo do Alvo 12".
+- **`soAlvos`** num efeito de etapa ou do Completo: ele só existe para as instâncias com aquele alvo.
+
+```json
+{ "n": 2, "focos": 1,
+  "requisito": [{ "tipo": "nd", "valor": 13 }, { "tipo": "atributoDoAlvo", "valor": 12 }],
+  "efeitos": [{ "canal": "proficienciaTRCasoJa", "alvo": "instancia", "expr": "2" }] }
+```
+
+```json
+{ "canal": "margemCriticoTR", "alvo": "instancia", "expr": "2", "soAlvos": ["astucia", "vontade"] }
+```
+
+O "caso já fosse treinado" do mesmo treino é o canal `proficienciaTRCasoJa`, descrito em
+`docs/automacao-dsl.md`: ele conta o TR que vem da Classe, o que o `prof_tr_*` não faz.
+
+⚠ **Achado no caminho: a linha repetível de um addon que sumiu não virava linha morta.** O
+`idsDaFicha` da família lia `Number(progresso)`, e numa linha repetível o progresso é a LISTA de
+instâncias, que dá NaN. A ficha perdia o treino calada. Corrigido no mesmo dia, e preso em
+`t-treino-testes-resistencia.mjs`.
 
 ### Estado gravado na criatura
 

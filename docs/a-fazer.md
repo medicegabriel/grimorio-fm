@@ -1248,6 +1248,12 @@ transcrever uma habilidade que fale de Guarda saber que o cano já está lá.
 
 ## AFTY — outros
 
+### No jogador, a Força Imparável e a Resiliência Melhorada não enxergam o TR da Classe
+**Onde:** `src/systems/afty/afty-efeitos-conteudo.js` (`res_imparavel_*` e `tal_resiliencia_*`) e `afty-efeitos.js` (as variáveis `prof_tr_*`)
+**Situação:** as duas decidem entre Treinado e Mestre por um "caso já seja" (a Força Imparável, do Restringido: *"mestre em outro no qual já seja treinado"*, e o Talento Resiliência Melhorada: *"você se torna treinado nele ou, caso já seja treinado, se torna mestre"*) com a fórmula `1 + (prof_tr_<tr> >= 1)`, e o `prof_tr_*` só lê a MARCAÇÃO À MÃO. No jogador o TR vem do pacote da Classe, que não é marcação: um Restringido 8 que escolhe a Força Imparável na Fortitude (treinada pela Classe) continua Treinado, e o livro dá Mestre. Na criatura está certo, porque lá o TR é marcado na aba. Achado em 2026-09-26, ao fazer o Treino de Testes de Resistência, e não mexido por ser de outra classe e de um Talento.
+**Precisa:** o autor confirmar. O conserto provável é o `prof_tr_*` do jogador passar a contar a faixa da Classe (o `trDaClasse`), e ele pega as duas entradas de uma vez.
+**Anotado:** 2026-09-26
+
 ### O contador de usos cobre só o Combatente
 **Onde:** `src/systems/afty/afty-habilidades.js` (o campo `usos` de cada Habilidade)
 **Situação:** o contador de usos por Habilidade nasceu em 2026-09-24 com as seis do Combatente (Assumir Postura, Indomável, Revigorar, Marcar Inimigo, Surto de Ação e Potência Antes de Cair), por decisão do autor (*"Só o Combatente agora"*). Ligar outra é declarar `usos: { expr, recarga }` na entrada, e o resto já existe: o máximo no derive, a linha na Ficha, os gastos na sessão e o Descansar zerando. Candidatas "por descanso" nas outras classes: Puxar um Ar, Um com a Arma e Empolgar-se (Lutador); Abastecido pelo Sangue, Até a Última Gota e Preparação de Técnicas (Conjurador); Versatilidade, Conceder Outra Chance e Contra-Ataque (Suporte); Reserva para Invocação, Ataque em Conjunto, Invocação Às e Fantoche Supremo (Controlador); Ainda de Pé (Restringido). As "por cena" (Insistência, Inspirar Aliados, Negação Crítica, Contaminar com Determinação, Necessidade de Continuar) pedem saber quando a cena acaba, e hoje quem marca isso é o começo do combate e o descanso (é o que devolve a troca por 6 do Autossuficiente). O Ritualista já conta pelos usos dele (`usosRitualista`), e as curas com `curaUsos` mostram só o máximo.

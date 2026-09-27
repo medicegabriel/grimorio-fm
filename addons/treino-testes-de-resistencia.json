@@ -1,0 +1,65 @@
+{
+  "id": "treino-testes-de-resistencia",
+  "nome": "Treino de Testes de Resistência",
+  "versao": "1.0.0",
+  "autor": "Templas",
+  "paraRaw": "afty",
+  "descricao": "Uma Linha de Treinamento repetível, uma vez para cada Teste de Resistência exceto Integridade. A 1ª etapa torna treinado no TR escolhido (ou +1 no teste, se outra fonte já dava o treino) e a 2ª torna mestre (ou +2, se outra fonte já dava o mestre), contando o TR que vem da Classe. A 2ª e a 4ª conferem o Nível de Personagem e o atributo do TR escolhido. O Completo reduz a margem de crítico em 2 em Astúcia e Vontade, e dá +2 em Fortitude e Reflexos. A 3ª e a 4ª etapa (vantagem ou +3 por rodada, e subir o nível de sucesso uma vez por cena) ficam de mesa.",
+  "acrescenta": {
+    "treinamentos": [
+      {
+        "id": "testes_de_resistencia",
+        "nome": "Treino de Testes de Resistência",
+        "repetivel": true,
+        "alvoTipo": "tr",
+        "alvoLabel": "Teste de Resistência",
+        "resumo": "Treinando suas táticas defensivas em um âmbito específico, você se aprimora de forma a conseguir evitar certos tipos de ataques e Feitiços específicos.\n\nAo realizar esse treinamento, você deve escolher um TR, exceto Integridade. Os benefícios dele se aplicam apenas ao TR escolhido. Você pode fazer esse treino uma vez para cada TR, exceto Integridade.",
+        "etapas": [
+          {
+            "n": 1,
+            "focos": 1,
+            "requisito": null,
+            "beneficio": "Você se torna treinado no TR escolhido. Caso já fosse treinado, recebe +1 em testes desse TR.",
+            "efeitos": [
+              { "canal": "proficienciaTRCasoJa", "alvo": "instancia", "expr": "1" }
+            ]
+          },
+          {
+            "n": 2,
+            "focos": 1,
+            "requisito": [
+              { "tipo": "nd", "valor": 13 },
+              { "tipo": "atributoDoAlvo", "valor": 12 }
+            ],
+            "beneficio": "Você se torna mestre no TR escolhido. Caso já fosse mestre, recebe +2 em testes desse TR.",
+            "efeitos": [
+              { "canal": "proficienciaTRCasoJa", "alvo": "instancia", "expr": "2" }
+            ]
+          },
+          {
+            "n": 3,
+            "focos": 1,
+            "requisito": null,
+            "beneficio": "Você pode, uma vez por rodada, receber vantagem ou um bônus de +3 em um teste do TR. Você pode usar esse efeito uma quantidade de vezes por cena igual a metade do seu bônus de maestria."
+          },
+          {
+            "n": 4,
+            "focos": 2,
+            "requisito": [
+              { "tipo": "nd", "valor": 22 },
+              { "tipo": "atributoDoAlvo", "valor": 16 }
+            ],
+            "beneficio": "Você pode, uma vez por cena, aumentar o nível de sucesso em um teste do TR escolhido."
+          }
+        ],
+        "completo": {
+          "beneficio": "Você reduz a margem de crítico necessária para o TR em 2 caso seja Astúcia ou Vontade. Você recebe um bônus de +2 no TR caso seja Fortitude ou Reflexos.",
+          "efeitos": [
+            { "canal": "margemCriticoTR", "alvo": "instancia", "expr": "2", "soAlvos": ["astucia", "vontade"] },
+            { "canal": "bonusTR", "alvo": "instancia", "expr": "2", "soAlvos": ["fortitude", "reflexos"] }
+          ]
+        }
+      }
+    ]
+  }
+}

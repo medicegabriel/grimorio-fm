@@ -230,6 +230,13 @@ export const EFEITO_CANAIS = [
   { id: "dadosPericia",  label: "Dados em Perícia",      alvo: "periciaDado", nota: "dado somado ao resultado de UMA perícia. O alvo é a perícia e o dado, no formato pericia:dN (percepcao:d4), e o valor é quantos" },
   { id: "margemCriticoTR", label: "Crítico em Resistência", alvo: "tr", nota: "quanto a margem DIMINUI, com piso de 2. Irmão do margemCritico do ataque" },
   { id: "proficienciaTR", label: "Treino em Resistência", alvo: "tr", aceitaSemCredito: true, nota: "irmão de proficienciaPericia, mesmas regras (1 Treinado, 2 Mestre, nunca rebaixa, e credita no orçamento)" },
+  /* O "CASO JÁ SEJA" DO TR (2026-09-26, Treino de Testes de Resistência): "Você
+     se torna treinado no TR escolhido. Caso já fosse treinado, recebe +1".
+     Cada efeito é lido SOZINHO pelo `resolveTestes` (afty-pericias.js), e não
+     pela soma do canal: ele concede a faixa, ou, quando OUTRA fonte já dá essa
+     faixa (a Classe, um Talento, a marcação da criatura), vira o mesmo número
+     no teste. Nunca credita no orçamento, pela mesma razão do `semCredito`. */
+  { id: "proficienciaTRCasoJa", label: "Treino em Resistência (Caso Já Seja)", alvo: "tr", nota: "concede a faixa no TR (1 Treinado, 2 Mestre). Quando outra fonte já dá essa faixa, soma o mesmo número no teste (+1 no Treinado, +2 no Mestre). Cada efeito vale sozinho e não credita no orçamento" },
   { id: "bonusAcerto",   label: "Acerto",                alvo: "ataque" },
   { id: "ataquesExtras", label: "Ataques Extras",        nota: "quantidade adicional de Ataques Extras permitida por rodada" },
   // Irmão do `bonusAcerto` para quando o bônus é de UMA arma, e não da jogada
@@ -670,7 +677,8 @@ const GRUPOS_DE_CANAL = [
   // outro canal e está em Orçamentos.
   ["Atributos e Aptidões", ["atributo", "limiteAtributo", "defesaAtributo", "hpAtributo", "nivelAptidao", "limiteAptidao", "imbuicoesEstilo"]],
   ["Perícias e Resistências", [
-    "bonusPericia", "periciaFixa", "proficienciaPericia", "penalidadeArmadura", "dadosPericia", "bonusTR", "dadosTR", "proficienciaTR", "margemCriticoTR",
+    "bonusPericia", "periciaFixa", "proficienciaPericia", "penalidadeArmadura", "dadosPericia", "bonusTR", "dadosTR", "proficienciaTR",
+    "proficienciaTRCasoJa", "margemCriticoTR",
   ]],
   ["Manobras", ["bonusManobra", "resistirManobra", "distanciaEmpurrao"]],
   ["Movimento e Percepção", ["movimento", "movimentoMult", "iniciativa", "atencao", "tamanho"]],

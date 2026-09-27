@@ -59,7 +59,7 @@ import {
 } from "./afty-atributos";
 import {
   ETAPAS_POR_LINHA, focosGastos, avaliarRequisito, requisitosDaEtapa, rotuloAlvo, treinamentosDaOrigem,
-  SEP_ALVO_ACAO, linhasComEscolhaFeiticos,
+  SEP_ALVO_ACAO, linhasComEscolhaFeiticos, atributoDoAlvo,
 } from "./afty-treinamentos";
 import {
   createBlankVotoContratual, createBlankVotoMecanico, limiteVotosMecanicos, votoPadraoDeAddon,
@@ -9107,6 +9107,10 @@ function opcoesDeAlvo(linha, instances, pericias = AFTY_PERICIAS, armas = [], in
   if (linha.alvoTipo === "pericia") {
     return pericias.filter((p) => !usados.has(p.id)).map((p) => ({ value: p.id, label: p.nome }));
   }
+  // `tr` (2026-09-26): os quatro Testes de Resistência treináveis, sem Integridade.
+  if (linha.alvoTipo === "tr") {
+    return resistenciasTreinaveis().filter((r) => !usados.has(r.value)).map((r) => ({ value: r.value, label: r.label }));
+  }
   if (linha.alvoTipo === "arma") {
     const vistos = new Set();
     const out = [];
@@ -9327,7 +9331,8 @@ function TreinoLinha({
                       progresso={inst.progresso}
                       attrEff={attrEff}
                       nd={nd}
-                      ctxReq={ctxReq}
+                      // O requisito `atributoDoAlvo` confere o atributo DESTE alvo.
+                      ctxReq={{ ...ctxReq, atributoDoAlvo: atributoDoAlvo(linha, inst.alvo, pericias) }}
                       onSet={(p) => onSetInstance(linha.id, inst.alvo, p)}
                     />
                   </div>

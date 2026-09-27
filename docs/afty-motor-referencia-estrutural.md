@@ -266,6 +266,10 @@ porte, com aviso a cada uso — nunca silenciosamente.
 - O id de estado de bancada é global dentro de `sessao.combate`: procure o id antes de criar um.
   `golpeImpactante` é do Golpe Impactante do Restringido, e por isso as marcas sem número do Golpe
   Especial do Combatente moram em `sessao.golpeEspecial` (2026-09-24).
+- Os canais de proficiência (`proficienciaTR`, `proficienciaPericia`) SOMAM as concessões: duas de
+  Treinado viram Mestre. Um "caso já seja" que precise comparar com as outras fontes não cabe neles
+  nem no `prof_tr_*` (que só lê a marcação à mão). Para TR existe o `proficienciaTRCasoJa`, lido
+  efeito a efeito pelo `resolveTestes` (2026-09-26).
 - Uso por descanso de Habilidade é o campo `usos: { expr, recarga }` do catálogo, e não estado de
   bancada: o derive monta o máximo (`usosHabilidades`) e a sessão guarda os gastos em
   `usos["hab:<id>"]`, que o Descansar zera (2026-09-24).

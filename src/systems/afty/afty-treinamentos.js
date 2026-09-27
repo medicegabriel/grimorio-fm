@@ -31,6 +31,13 @@
  *     nivelDano                             → `nivelDano` no Ataque Básico
  *   `quandoProf: N` num efeito de perícia vira a condição "Caso já seja":
  *   o bônus só entra se a FICHA já tiver aquela faixa.
+ *   `soAlvos: [ids]` (2026-09-26): numa linha repetível, o efeito só existe
+ *   para as instâncias cujo alvo está na lista (o Completo do Treino de Testes
+ *   de Resistência dá margem em Astúcia e Vontade, e +2 em Fortitude e Reflexos).
+ *
+ * `alvoTipo` de uma linha repetível: `atributo`, `pericia`, `arma`,
+ *   `invocacao`, `acaoInvocacao` e, desde 2026-09-26, `tr` (os quatro Testes de
+ *   Resistência treináveis, sem Integridade). Sem tipo conhecido o alvo é texto.
  *
  * ⚠ RESOLVIDO em 2026-08-26, na segunda leva da varredura: o autor mandou a
  * Expansão de Domínio LER O MOTOR e deu a fórmula do Conflito. Nasceram sete
@@ -66,6 +73,9 @@
  *   { tipo:"trilha", trilha, valor }  → Nível de Aptidão naquela trilha.
  *   { tipo:"cla", id, label? }        → ser do clã (id com namespace, quando
  *       de Addon). `label` troca o texto do chip, e o nome do clã vai no title.
+ *   { tipo:"atributoDoAlvo", valor }  → o atributo do ALVO da instância (o do
+ *       TR, da perícia, ou o próprio atributo) com `valor` ou mais. Sem alvo
+ *       (a prévia da linha) ele só exibe. Ver `atributoDoAlvo`.
  *   { tipo:"nota", label }            → referencia sistema ainda
  *       não construído (aptidões/features): exibido, não bloqueia.
  *   [ ...vários ]                     → uma LISTA, e todos têm de passar. Ver
@@ -95,7 +105,7 @@
 import { registrarFamilia, remendarLista, filtraForaDoJogador } from "./afty-addons";
 import { origensQualificadas, origemEstrutural, getCla } from "./afty-origens";
 import { getAptidao, APTIDAO_TRILHAS } from "./afty-aptidoes";
-import { AFTY_ATTRS } from "./afty-schema";
+import { AFTY_ATTRS, AFTY_RESISTENCIAS } from "./afty-schema";
 import { AFTY_PERICIAS, catalogoPericiasDaFicha } from "./afty-pericias";
 import { catalogoDoTipo } from "./afty-equipamentos";
 
@@ -578,9 +588,12 @@ registrarFamilia("treinamentos", {
   basicos: () => TREINAMENTOS_BASE,
   resolver: (id) => getTreinamento(id),
   /* A ficha guarda `{ [id]: progresso }`, e não uma lista. Só os ids com
-     progresso contam: uma linha em zero não é uma linha escolhida. */
+     progresso contam: uma linha em zero não é uma linha escolhida.
+     ⚠ A LINHA REPETÍVEL GUARDA UMA LISTA de instâncias (2026-09-26). O
+     `Number(lista)` dava NaN, e a linha repetível de um addon que sumiu não era
+     acusada como linha morta: o treino sumia da ficha calado. */
   idsDaFicha: (c) => Object.entries(c?.treinamentos ?? {})
-    .filter(([, prog]) => Number(prog) > 0)
+    .filter(([, prog]) => (Array.isArray(prog) ? prog.length > 0 : Number(prog) > 0))
     .map(([id]) => id),
 });
 
@@ -651,6 +664,9 @@ function progressosDe(linha, val) {
  * Atributo é o atributo escolhido, e é o que faz o `+1` cair no lugar certo.
  */
 function paraCanal(ef, alvoInstancia, alvos = {}, ficha = {}) {
+  /* `soAlvos`: o efeito só existe para as instâncias com aquele alvo. Vale nos
+     dois formatos, e antes deles, porque é o efeito inteiro que some. */
+  if (Array.isArray(ef?.soAlvos) && !ef.soAlvos.includes(alvoInstancia)) return null;
   /* ⚠ PASSAGEM DIRETA (2026-08-22). Uma etapa pode declarar `{ canal, expr }`
      em vez de `{ tipo, valor }`, e aí ela vai crua para o Motor. Existe pelo
      Addon: o vocabulário de `tipo` abaixo é uma lista fechada, escrita para as
@@ -801,6 +817,7 @@ export function rotuloAlvo(linha, alvo, pericias = AFTY_PERICIAS, armas = null, 
   if (!alvo) return "";
   if (linha?.alvoTipo === "atributo") return AFTY_ATTRS.find((a) => a.key === alvo)?.label ?? alvo;
   if (linha?.alvoTipo === "pericia") return pericias.find((p) => p.id === alvo)?.nome ?? alvo;
+  if (linha?.alvoTipo === "tr") return AFTY_RESISTENCIAS.find((r) => r.value === alvo)?.label ?? alvo;
   if (linha?.alvoTipo === "arma") {
     const achada = (armas ?? catalogoDoTipo("arma")).find((a) => a.id === alvo);
     if (achada) return achada.nome;
@@ -1162,6 +1179,18 @@ export function avaliarRequisito(requisito, ctx = {}) {
   if (requisito.tipo === "nd") {
     return { ok: nd >= requisito.valor, verificavel: true, label: `Nível de Personagem ${requisito.valor}` };
   }
+  /* O atributo do ALVO da instância (2026-09-26): "12 ou mais no atributo do
+     TR". Quem chama resolve o atributo com `atributoDoAlvo` e o passa em
+     `ctx.atributoDoAlvo`. Sem ele (a prévia da linha, ainda sem alvo), o
+     requisito só exibe, pela mesma porta do `aptidao`: falta de alvo não é falta
+     de atributo. */
+  if (requisito.tipo === "atributoDoAlvo") {
+    const attr = ctx.atributoDoAlvo;
+    if (!ATTR_LABEL[attr]) {
+      return { ok: true, verificavel: false, label: `Atributo do Alvo ${requisito.valor}` };
+    }
+    return { ok: (attrEff[attr] ?? 0) >= requisito.valor, verificavel: true, label: `${ATTR_LABEL[attr]} ${requisito.valor}` };
+  }
   if (requisito.tipo === "todosAtributos") {
     const menor = Math.min(...Object.keys(ATTR_LABEL).map((attr) => attrEff[attr] ?? 0));
     return { ok: menor >= requisito.valor, verificavel: true, label: `Todos os atributos ${requisito.valor}` };
@@ -1219,6 +1248,20 @@ export function avaliarRequisito(requisito, ctx = {}) {
 export function requisitosDaEtapa(requisito) {
   if (!requisito) return [];
   return (Array.isArray(requisito) ? requisito : [requisito]).filter((r) => r && typeof r === "object");
+}
+
+/**
+ * O atributo que o alvo de uma instância usa: o próprio atributo (Treino de
+ * Atributo), o do Teste de Resistência (Fortitude é Constituição) ou o da
+ * perícia. É o que o requisito `atributoDoAlvo` confere. Alvo de outro tipo
+ * (arma, invocação, texto) não tem atributo, e devolve `null`.
+ */
+export function atributoDoAlvo(linha, alvo, pericias = AFTY_PERICIAS) {
+  if (!alvo) return null;
+  if (linha?.alvoTipo === "atributo") return ATTR_LABEL[alvo] ? alvo : null;
+  if (linha?.alvoTipo === "tr") return AFTY_RESISTENCIAS.find((r) => r.value === alvo)?.atributo ?? null;
+  if (linha?.alvoTipo === "pericia") return pericias.find((p) => p.id === alvo)?.atributo ?? null;
+  return null;
 }
 
 /** O alvo reservado que aponta para o Atributo da Técnica da ficha. */

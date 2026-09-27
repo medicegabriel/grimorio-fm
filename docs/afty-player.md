@@ -106,6 +106,11 @@ em Combate:
   Nada é tirado de ninguém, e marcar o que uma fonte já dá não acusa. Quem decide é a mesma
   divergência `trForaDoOrcamento` ("NÃO PODEM SER ESCOLHIDOS DE FORMA LIVRE"), então na criatura o
   campo é sempre falso.
+- **O "caso já seja" de TR conta a Classe, e não a marcação à mão** (2026-09-26, canal
+  `proficienciaTRCasoJa`, do Treino de Testes de Resistência). Um Combatente com a Fortitude da
+  Classe que faz a 1ª etapa na Fortitude ganha +1, e no nível 9 (Mestre pela Classe) a 2ª etapa vira
+  +2. Marcar à mão por cima do treino não compra o +1, pela mesma divergência. Ver
+  `docs/automacao-dsl.md`.
 - **No nível 9 REAL da Classe inicial** (Base de Classe), o TR da Classe vira Mestre e aparece a
   escolha do **Segundo TR** (`ficha.trSegundo`, treinado), que não pode ser o da Classe e só é pedido
   depois dele. O Restringido fica Mestre nos dois e não tem segundo ("mestre nos dois Testes de

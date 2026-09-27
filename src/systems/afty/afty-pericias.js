@@ -1571,13 +1571,34 @@ export function resolveTestes(creature, ctx = {}) {
     // Mestre e afins). Sem os dois campos a UI trataria todo TR treinado como
     // concessão externa, pintava de verde e não deixava desmarcar.
     const escolhida = valida(trBruta[r.value]);
-    const prof = profComEfeito("proficienciaTR", r.value, escolhida, trDoPacote[r.value] ?? 0);
+    const faixaMotor = Math.min(2, Math.max(0, Math.trunc(bonusDeEfeito("proficienciaTR", r.value))));
+    const faixaPacote = Math.min(2, Math.max(0, Math.trunc(Number(trDoPacote[r.value]) || 0)));
+    /* ⚠ O "CASO JÁ SEJA" DO TR (canal `proficienciaTRCasoJa`, 2026-09-26). Cada
+       efeito é lido SOZINHO, e não pela soma do canal: o Treino de Testes de
+       Resistência dá Treinado na 1ª etapa e Mestre na 2ª, e somados eles virariam
+       outra coisa. Cada um é comparado com as OUTRAS fontes do TR: quando elas já
+       dão aquela faixa, o efeito vira o mesmo número no teste (+1 no Treinado, +2
+       no Mestre), e senão ele concede a faixa.
+
+       No jogador a marcação à mão NÃO conta como fonte (a mesma divergência
+       `trForaDoOrcamento`: TR "NÃO PODE SER ESCOLHIDO DE FORMA LIVRE"), senão
+       marcar à mão por cima do treino daria o +1 de graça. Na criatura ela conta,
+       e é paga: o efeito não credita no orçamento, como o Treino de Perícia. */
+    const faixaOutras = Math.max(trForaDoCaixa ? 0 : (FAIXA[escolhida] ?? 0), faixaMotor, faixaPacote);
+    const casoJa = (ef ? detalhesDoCanal(ef, "proficienciaTRCasoJa", r.value) : [])
+      .map((d) => ({ faixa: Math.min(2, Math.max(0, Math.trunc(Number(d.valor) || 0))), nome: d.nome }))
+      .filter((d) => d.faixa > 0);
+    const casoJaNoTeste = casoJa.filter((d) => faixaOutras >= d.faixa);
+    const faixaCasoJa = Math.max(0, ...casoJa.filter((d) => faixaOutras < d.faixa).map((d) => d.faixa));
+    const bonusCasoJa = casoJaNoTeste.reduce((s, d) => s + d.faixa, 0);
+    // A faixa concedida por fora do canal (o pacote da Classe e o "caso já seja")
+    // entra pelo mesmo parâmetro: as duas sobem a resolvida sem tocar na escolhida.
+    const prof = profComEfeito("proficienciaTR", r.value, escolhida, Math.max(faixaPacote, faixaCasoJa));
     /* A faixa que as FONTES dão, sem a marcação à mão: a Classe (o pacote e o
-       Teste de Resistência Mestre) e o Motor (Talento, Treinamento, Addon). */
-    const faixaDasFontes = Math.max(
-      Math.min(2, Math.max(0, Math.trunc(bonusDeEfeito("proficienciaTR", r.value)))),
-      Math.min(2, Math.max(0, Math.trunc(Number(trDoPacote[r.value]) || 0))),
-    );
+       Teste de Resistência Mestre) e o Motor (Talento, Treinamento, Addon). O
+       "caso já seja" é fonte mesmo quando virou número no teste. */
+    const faixaDasFontes = Math.max(faixaMotor, faixaPacote, ...casoJa.map((d) => d.faixa));
+    const bonusFinal = bonusDoTR(r, prof) + bonusCasoJa;
     return {
       ...r,
       prof,
@@ -1591,7 +1612,7 @@ export function resolveTestes(creature, ctx = {}) {
          falso. */
       semFonte: trForaDoCaixa && (FAIXA[escolhida] ?? 0) > faixaDasFontes,
       // Escala por Tipo no lugar da metade do nível, ver o cabeçalho da função.
-      bonus: bonusDoTR(r, prof),
+      bonus: bonusFinal,
       // `critico` preserva a marca de Mestre usada na linha. A margem do d20
       // fica disponível para o TR inteiro, inclusive quando um efeito a reduz.
       critico: prof === "mestre",
@@ -1604,13 +1625,14 @@ export function resolveTestes(creature, ctx = {}) {
          dois num texto ("+7 + 2d3") e quem rola soma as duas coisas. */
       dadosExtras: dadosNoTR,
       textoBonus: textoDosDadosTR
-        ? `${bonusDoTR(r, prof) >= 0 ? "+" : "−"}${Math.abs(bonusDoTR(r, prof))} + ${textoDosDadosTR}`
+        ? `${bonusFinal >= 0 ? "+" : "−"}${Math.abs(bonusFinal)} + ${textoDosDadosTR}`
         : null,
       partes: [
         { label: rotuloAttr(r.atributo), valor: modDe(r.atributo) },
         { label: ESCALA_ROTULO[r.escala] ?? "Escala de Nível", valor: ESCALA_TR[r.escala] ?? 0 },
         ...parteProficiencia(prof),
         ...partesPorAtributo("bonusTR", r.value, r.atributo),
+        ...casoJaNoTeste.map((d) => ({ label: d.nome, valor: d.faixa })),
         ...partesDosDadosTR,
       ],
     };

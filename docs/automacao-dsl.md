@@ -253,6 +253,29 @@ Hoje só as seis do Combatente declaram o campo (decisão do autor, 2026-09-23):
 Indomável, Revigorar, Marcar Inimigo, Surto de Ação e Potência Antes de Cair. As outras classes
 estão listadas em `docs/a-fazer.md`.
 
+### O canal `proficienciaTRCasoJa` (2026-09-26)
+
+O "Caso já seja" de Teste de Resistência, com alvo de TR e valor igual à faixa (1 Treinado, 2
+Mestre). Nasceu no Treino de Testes de Resistência (`addons/treino-testes-de-resistencia.json`):
+*"Você se torna treinado no TR escolhido. Caso já fosse treinado, recebe +1"*, e *"Você se torna
+mestre [...] Caso já fosse mestre, recebe +2"*.
+
+- **Cada efeito é lido sozinho** pelo `resolveTestes`, e não pela soma do canal. A 1ª e a 2ª etapa
+  do mesmo treino dão 1 e 2, e somadas virariam outra coisa.
+- **Cada um é comparado com as OUTRAS fontes do TR**: o pacote da Classe (com o Teste de
+  Resistência Mestre), o `proficienciaTR` do Motor e, na criatura, a marcação da aba. Quando elas já
+  dão aquela faixa, o efeito vira o mesmo número no teste (+1 no Treinado, +2 no Mestre), com o nome
+  da fonte no hover. Senão, ele concede a faixa.
+- ⚠ **No jogador a marcação à mão NÃO conta como outra fonte** (a divergência `trForaDoOrcamento`,
+  "NÃO PODE SER ESCOLHIDO DE FORMA LIVRE"). Sem isso, marcar à mão por cima do treino daria o +1 de
+  graça. Na criatura ela conta, e é paga: o canal nunca credita no orçamento, como o `semCredito` do
+  Treino de Perícia.
+- Ele é fonte para o aviso de TR marcado à mão (`semFonte`), mesmo quando virou número.
+
+⚠ **O `proficienciaTR` comum SOMA as concessões** (duas de Treinado dão Mestre), e o `prof_tr_*` do
+DSL só lê a marcação à mão. Por isso o "caso já seja" de TR não coube numa expressão com
+`prof_tr_*`: ele não enxergaria o TR que vem da Classe.
+
 ## A LINHA PODE CAIR NA INVOCAÇÃO (`escopo`, 2026-09-15)
 
 Uma linha do Motor escrita pelo jogador vale, por padrão, na CRIATURA. Com `escopo: "invocacao"`

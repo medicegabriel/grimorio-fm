@@ -14706,3 +14706,25 @@ Pedido do autor: *"faça um addon que O usuário consegue aplica o dobro dos bô
 **Asserts:** `t-concentrar-poder-dobrado.mjs` (novo, 27). Cobre o pacote validando, as linhas copiando o raw, a parcela do addon valendo a do livro em cada canal nos degraus 6, 12 e 18 dos dois sistemas, os totais iguais à tabela em dobro, nada vazando sem marca, sem Habilidade ou sem addon, e o hover fechando.
 
 **Verificado ao vivo** (`/Player`, dev limpo, ficha com o addon na cópia congelada): o selo "Concentrar Poder Dobrado" no cabeçalho, "Concentrar Poder 1 / 3" na aba Invocações, Orochi com Vida 216, Defesa 40 e Fortitude +30, a Mordida em 5d12+20, e o hover da Defesa com "Concentrar Poder +5" e "Concentrar Poder Dobrado +5". Console sem erro.
+
+---
+
+## SESSÃO DE 2026-09-26: TREINO DE TESTES DE RESISTÊNCIA (ADDON E QUATRO PEÇAS DO MOTOR)
+
+Pedido do autor: um Treinamento novo, colado como texto ("Treinando suas táticas defensivas em um âmbito específico..."), repetível uma vez para cada TR exceto Integridade. O autor escolheu o nome (*"Treino de Testes de Resistência"*) e o caminho *"Motor + addon"*, em vez de aproximar com quatro linhas fixas, porque quatro coisas do texto o motor não sabia dizer.
+
+**As quatro peças, todas genéricas:**
+- **`alvoTipo: "tr"`** numa linha repetível: o seletor oferece os quatro TR treináveis (`resistenciasTreinaveis`, sem Integridade) e o `rotuloAlvo` dá o nome com acento. Antes o tipo desconhecido caía em texto livre, e um erro de digitação sumia calado.
+- **O requisito `atributoDoAlvo`** ("12 ou mais no atributo do TR"): o criador passa o atributo da instância (`atributoDoAlvo(linha, alvo)`), e o chip mostra o atributo de verdade ("Constituição 12"). Sem alvo, na prévia, ele só exibe.
+- **`soAlvos`** num efeito de Treinamento: o `paraCanal` descarta o efeito para a instância fora da lista. É o que dá margem em Astúcia e Vontade e +2 em Fortitude e Reflexos no Completo.
+- **O canal `proficienciaTRCasoJa`** (101 canais, 47 com alvo): "treinado, e caso já fosse treinado, +1", e o mesmo no Mestre com +2. O `resolveTestes` lê cada efeito sozinho e compara com as OUTRAS fontes do TR (a Classe e o Teste de Resistência Mestre, o Motor e, só na criatura, a marcação da aba). O `proficienciaTR` comum soma as concessões e o `prof_tr_*` só lê a marcação, e nenhum dos dois enxergava o TR da Classe.
+
+**Números** (Combatente jogador, Fortitude da Classe, CON 14): no nível 8 a 1ª etapa na Fortitude dá +1 (Treinada pela Classe), e a 2ª concede o Mestre com o +1 mantido. No 13 (Mestre pela Classe) a 1ª dá +1, a 2ª +2 e o Completo mais +2. A Vontade sem fonte fica Treinada na 1ª e Mestre na 2ª, e o Completo reduz a margem para 18 sem somar +2.
+
+**Achado e consertado no caminho:** a linha REPETÍVEL de um addon que sumiu não virava linha morta, porque o `idsDaFicha` da família lia `Number(lista)`. A ficha perdia o treino calada.
+
+**Achado e NÃO consertado** (entrada nova no `a-fazer.md`): no jogador, a Força Imparável e a Resiliência Melhorada não enxergam o TR da Classe, porque decidem pelo `prof_tr_*`. Um Restringido 8 com Força Imparável na Fortitude continua Treinado.
+
+**Asserts:** `t-treino-testes-resistencia.mjs` (novo, 30). Contraprova contra o motor anterior: o +1 não existia, a Vontade não ficava treinada, o requisito passava sempre e o Completo aplicava margem e +2 em qualquer TR. Suíte: 117 arquivos, só o vermelho conhecido.
+
+**Verificado ao vivo** (`/Player`, ficha com o addon): a linha na aba Interlúdios com a instância "Fortitude 1/4" e a 2ª etapa pedindo "Nível de Personagem 13" e "Constituição 12", o seletor oferecendo Reflexos, Vontade e Astúcia, e a Fortitude em +16 (15 da Classe mais o +1 do treino) na aba Perícias. Console limpo depois de recarregar.
