@@ -1,5 +1,25 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-09-29: HOVER DO DANO E SALDO DO SOMENTE CONDIÇÃO
+
+Pedido do autor: *"Preciso passar o mouse em cima do dano e aparecer o Hover das Fontes. Além
+disso, Somente Condição deve mostrar quantos dados ainda temos a distribuir."*
+
+- **O Dano da barra grudada do criador ganhou hover**, em DUAS pilhas: Dados e Fixo. ⚠ Feitiço não
+  separa Critável de Não Critável como o ataque (autor). As linhas nascem no `calcularFeiticoDano`
+  junto de cada `dados +=` (`fontesDados`), e toda correção do motor vira linha própria (Teto das
+  Trocas, Arredondamento do meio dado de área, Piso de 1 Dado), para as parcelas somarem o número.
+  Múltiplos Disparos fecha em UM disparo (linha "Divisão em N Disparos"). Sai em `calc.hoverDano`.
+- **⚠ REGRA NOVA: no Somente Condição as condições GASTAM dados** (autor, 2026-09-29). Antes saíam
+  de graça nesse modo, e o chip mostrava "−5d" sem descontar. O saldo que sobra é
+  `calc.dadosADistribuir` (sem piso: zero é gasto por inteiro, negativo é "Faltam"), e ocupa a
+  primeira pílula da barra no lugar do texto "Somente Condição", com hover próprio
+  (`calc.hoverADistribuir`). A Ficha Final segue mostrando "Somente Condição" e sem botão de rolar.
+- A barra do Feitiço passou a repassar `alerta` ao `ValorBarra`. Ele era calculado e descartado, e
+  isso também acende o Saldo negativo do Curativo, que nunca ficava vermelho.
+- Fica igual: Golpeador e Dano na Alma (motor `saldoUnicoVariante`) e o hover da Ficha Final, que
+  segue lendo `calc.partesDano` (só o que vem de fora da criação).
+
 ## SESSÃO DE 2026-09-22 (parte 6): A RAJADA DE DERIVES DA ABA BUFFS
 
 Pedido do autor: *"A aba de Buffs é a única que ficou pesada ainda. Porém agora, ela ficou SUPER

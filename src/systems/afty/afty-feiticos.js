@@ -830,6 +830,18 @@ export function bonusConjuracaoAprimorada(nivel, ctx = {}) {
   return 0;
 }
 
+/* Uma linha da pilha de Dados do hover: a base sai como notação ("12d8") e o
+   resto com sinal ("+2d8", "−0,5d8"). Meio dado existe: as trocas de área
+   valem metade, e o arredondamento do saldo é outra linha. */
+function linhaDeDados(p, faces) {
+  const qtd = String(Math.round(Math.abs(p.dados) * 100) / 100).replace(".", ",");
+  return {
+    label: p.label,
+    texto: p.base ? notacaoDano(p.dados, faces) : `${p.dados < 0 ? "−" : "+"}${qtd}d${faces}`,
+    ...(p.suplantado ? { suplantado: true } : {}),
+  };
+}
+
 export function notacaoDanoComBonus(qtd, tipo, bonus = 0, explosiva = false) {
   const base = `${notacaoDano(qtd, tipo)}${explosiva ? "!" : ""}`;
   const fixo = Math.trunc(Number(bonus) || 0);
@@ -913,8 +925,18 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
   const explosiva = habilidades.includes("cnj_explosao_encadeada");
   const escoposDano = ["feitico", `feitico:${f.id}`, `feitico:${alvo}`];
 
+  /* ⚠ AS FONTES DOS DADOS nascem junto da conta, uma a cada `dados +=`, e não
+     numa segunda passada que refaz a conta (autor, 2026-09-29: o hover do Dano
+     no criador). Refazer divergiria na primeira regra nova. Toda correção que
+     o motor aplica (teto, arredondamento, piso) também vira linha, senão as
+     parcelas deixam de somar o número mostrado. */
+  const fontesDados = [{ label: NIVEL_LABEL[nivel], dados, base: true }];
+  const somarFonte = (label, n) => { if (n) fontesDados.push({ label, dados: n }); };
+
   // 1) Ação (não conta para o limite de trocas).
-  dados += modDadosPorAcao(acaoEff, nNum);
+  const dadosAcao = modDadosPorAcao(acaoEff, nNum);
+  dados += dadosAcao;
+  somarFonte(FEITICO_ACOES.find((a) => a.value === acaoEff)?.label ?? "Conjuração", dadosAcao);
   if (f.acao === "bonus" && subtipo === "vampirico") avisos.push("Feitiço Vampírico não pode ser Ação Bônus.");
 
   // 2) Trocas do guia. No modelo unificado (autor 2026-07-24) o DANO é o
@@ -995,6 +1017,9 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
     ? (CONDICAO_FORCAS_POR_NIVEL[Math.min(nNum + 1, 5)] || [])
     : forcasNormais;
   let reducaoCond = 0;
+  // As linhas das condições entram no hover junto do saldo (passo 8), que é
+  // onde elas de fato descontam.
+  const fontesCondicoes = [];
   const maxCond = nNum; // "quantidade máxima de condições igual ao nível dela"
   if (condicoes.length > maxCond) {
     avisos.push(`Máximo de ${maxCond} condição(ões) no ${NIVEL_LABEL[nivel]}.`);
@@ -1004,6 +1029,7 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
       avisos.push(`${NIVEL_LABEL[nivel]} não pode aplicar condição ${c.forca}.`);
     }
     reducaoCond += CONDICAO_REDUCAO[c.forca] || 0;
+    fontesCondicoes.push([c.nome, -(CONDICAO_REDUCAO[c.forca] || 0)]);
   }
   // Somente Condição: no máximo UMA condição acima do nível normal do Feitiço.
   if (f.focoCondicao) {
@@ -1016,6 +1042,8 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
   if (f.sangramento) {
     const forca = SANGRAMENTO_FORCA[f.sangramento];
     reducaoCond += CONDICAO_REDUCAO[forca] || 0;
+    const rotuloForca = CONDICAO_FORCAS.find((c) => c.value === forca)?.label;
+    fontesCondicoes.push([rotuloForca ? `Sangramento ${rotuloForca}` : "Sangramento", -(CONDICAO_REDUCAO[forca] || 0)]);
   }
 
   // 5) Subtipos.
@@ -1031,10 +1059,15 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
   if (subtipo === "destrutivo") {
     if (nNum < 4) avisos.push("Feitiço Destrutivo só pode ser Nível 4 ou superior.");
     dados += nNum;                                  // +nível dados
-    if (f.ignorarResistencias) dados -= 4;          // Ignorar Resistências
+    somarFonte("Destrutivo", nNum);
+    if (f.ignorarResistencias) {                    // Ignorar Resistências
+      dados -= 4;
+      somarFonte("Ignorar Resistências", -4);
+    }
     if (f.morteDireta) {
       if (!(nivel === 5 || nivel === "max")) avisos.push("Morte Direta só em Nível 5 ou Técnica Máxima.");
       dados -= 2;
+      somarFonte("Morte Direta", -2);
     }
     detalhes.destrutivo = { areaMult: 1.5, desvantagemTR: true, terrenoDificil: true };
   } else if (subtipo === "cataclismico") {
@@ -1043,12 +1076,15 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
       avisos.push("Feitiço Cataclísmico exige requisito Difícil ou maior.");
     }
     dados += Math.floor(1.5 * nNum);                // +1,5x nível dados
+    somarFonte("Cataclísmico", Math.floor(1.5 * nNum));
     detalhes.cataclismico = { areaMapa: true, terrenoDificilRaio: 45, ignoraResistenciaERd: true, perdaVidaUsuario: "1/3 do dano" };
   } else if (subtipo === "continuo") {
     if (nNum < 1) avisos.push("Dano Contínuo é a partir do Nível 1.");
     dados -= nNum;                                  // reduz dados igual ao nível
+    somarFonte("Dano Contínuo", -nNum);
   } else if (subtipo === "vampirico") {
     dados -= nNum;                                  // reduz dados igual ao nível
+    somarFonte("Vampírico", -nNum);
     detalhes.vampirico = { cura: "1/3 do dano após RD/Resistência/Imunidade", umaVezPorRodada: true };
   } else if (subtipo === "multiplos") {
     if (resolucao !== "ataque") avisos.push("Múltiplos Disparos são sempre jogadas de ataque.");
@@ -1070,7 +1106,10 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
       areaFinal = null;                       // mapa inteiro
       detalhes.areaMapa = true;
     } else {
-      if (linhaOuCone) dados += dadosLinha(nNum);
+      if (linhaOuCone) {
+        dados += dadosLinha(nNum);
+        somarFonte(FORMAS_AREA.find((a) => a.value === f.formaArea)?.label ?? "Linha", dadosLinha(nNum));
+      }
       // A melhoria Área (Liberação Máxima) dobra o resultado JÁ escalado pelo
       // Destrutivo e pela Linha, porque o texto fala das "dimensões da área de
       // efeito", que é o que se mede na mesa, e não da base antes dos
@@ -1101,23 +1140,48 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
   //    área 12m alcance e 3m área por dado (6m + 1,5m = meio dado cada).
   const custoAlcance = alcanceBase != null ? alcanceDelta / taxas.alcance : 0;
   const custoArea = (alvo === "area" && areaBase != null) ? areaDelta / taxas.area : 0;
+  if (req) somarFonte(`Requisito ${req.label}`, requisitoDados);
+  const comSinal = (v) => `${v > 0 ? "+" : "−"}${String(Math.abs(v)).replace(".", ",")}`;
+  if (trocaCd) somarFonte(`CD ${comSinal(trocaCd)}`, -trocaCd);
+  if (trocaAcerto) somarFonte(`Acerto ${comSinal(trocaAcerto)}`, -trocaAcerto / 2);
+  if (custoAlcance) somarFonte(`Alcance ${comSinal(alcanceDelta)} m`, -custoAlcance);
+  if (custoArea) somarFonte(`Área ${comSinal(areaDelta)} m`, -custoArea);
   // Efeito das trocas proporcionais no dano: redução credita, aumento debita.
   let netCustom = -trocaCd - trocaAcerto / 2 - custoAlcance - custoArea;
   if (netCustom > lim.dados) {
     avisos.push(`Aumento de dados por customização passa do teto (+${lim.dados}).`);
+    somarFonte("Teto das Trocas", lim.dados - netCustom);
     netCustom = lim.dados;                                  // excesso de redução é desperdiçado
   } else if (netCustom < -lim.dados) {
     avisos.push(`Redução de dados por customização passa do teto (−${lim.dados}).`);
   }
-  const efeitosSeparados = empurraoDados + (f.focoCondicao ? 0 : reducaoCond);
-  dados = Math.floor(dados + requisitoDados + netCustom - efeitosSeparados + 1e-9);
+  if (empurraoDados) somarFonte(`Empurrão ${empurraoMetros} m`, -empurraoDados);
+  for (const [rotulo, n] of fontesCondicoes) somarFonte(rotulo, n);
+  /* ⚠ SOMENTE CONDIÇÃO TAMBÉM PAGA AS CONDIÇÕES (autor, 2026-09-29). Até aqui
+     elas saíam de graça nesse modo, e o chip de cada uma dizia "−5d" sem
+     descontar nada. Agora o modo só troca o DANO que sobra pelo que as
+     condições fazem: o que resta do saldo são os dados ainda a distribuir. */
+  const efeitosSeparados = empurraoDados + reducaoCond;
+  const saldoBruto = dados + requisitoDados + netCustom - efeitosSeparados;
+  dados = Math.floor(saldoBruto + 1e-9);
+  // Meio dado vem das trocas de área (6m de alcance ou 1,5m de área).
+  if (Math.abs(dados - saldoBruto) > 1e-6) somarFonte("Arredondamento", dados - saldoBruto);
+
+  // O que o Somente Condição ainda tem para distribuir. Sem piso: zero é
+  // saldo gasto por inteiro, e abaixo de zero é falta.
+  const dadosADistribuir = f.focoCondicao ? dados : null;
+  const fontesADistribuir = f.focoCondicao ? [...fontesDados] : null;
 
   // 8b) Piso de 1 dado. Se os débitos passam do que o Feitiço tem, acusamos a
   //     falta de verdade (condições e empurrão agora entram nessa conta).
+  //     No Somente Condição não há dano para pisar, então falta só abaixo de 0.
   let faltamDados = 0;
-  if (dados < 1) {
-    faltamDados = 1 - dados;
+  if (dados < (f.focoCondicao ? 0 : 1)) {
+    faltamDados = (f.focoCondicao ? 0 : 1) - dados;
     avisos.push(`Faltam ${faltamDados} dado(s): as trocas, condições e empurrão passaram do que o Feitiço tem.`);
+  }
+  if (dados < 1) {
+    somarFonte("Piso de 1 Dado", 1 - dados);
     dados = 1;
   }
 
@@ -1125,6 +1189,17 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
   // um Feitiço específico. O alvo `feitico:<id>` é oferecido pelo editor dos
   // Passivos / Características, enquanto `feitico` cobre todos os de dano.
   const dadosMotor = Math.trunc(valorCanalEscopos(ctx.efeitos, "dadosDano", escoposDano));
+  // O perdedor do pool exclusivo aparece riscado e não soma.
+  const somarFontesDoCanal = (efeitos) => {
+    let soma = 0;
+    for (const d of detalhesDoCanalEscopos(efeitos, "dadosDano", escoposDano, true)) {
+      if (d.suplantado) fontesDados.push({ label: d.nome, dados: d.valor, suplantado: true });
+      else { somarFonte(d.nome, d.valor); soma += d.valor; }
+    }
+    return soma;
+  };
+  somarFontesDoCanal(ctx.efeitos);
+  if (dados + dadosMotor < 1) somarFonte("Piso de 1 Dado", 1 - (dados + dadosMotor));
   dados = Math.max(1, dados + dadosMotor);
   // Ciclagem Maldita depende de estado da sessão e da identidade DESTA linha,
   // por isso fecha aqui, depois dos dados do Motor. Sem Feitiço anterior não há
@@ -1138,7 +1213,10 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
   // Múltiplos Disparos recebe os dados adicionais na primeira rolagem, depois
   // que o pool comum é dividido. Assim a habilidade acrescenta exatamente a
   // quantidade escrita, sem multiplicá-la pela quantidade de disparos.
-  if (subtipo !== "multiplos") dados += dadosCiclagem;
+  if (subtipo !== "multiplos") {
+    dados += dadosCiclagem;
+    somarFonte("Ciclagem Maldita", dadosCiclagem);
+  }
   const bonusMotor = Math.trunc(valorCanalEscopos(ctx.efeitos, "danoBonus", escoposDano));
   const ignoraRD = Math.max(0, Math.trunc(valorCanalEscopos(ctx.efeitos, "ignoraRD", escoposDano)));
   const removeResistencia = valorCanalEscopos(ctx.efeitos, "removeResistencia", escoposDano) > 0;
@@ -1149,6 +1227,7 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
   // Sobrecarga entregaria o pacote inteiro em CADA disparo.
   const dadosSobrecarga = sobrecargaDados(lib, nNum);
   dados += dadosSobrecarga;
+  somarFonte("Sobrecarga Energética", dadosSobrecarga);
 
   // Múltiplos Disparos fecha a quantidade de dados de CADA rolagem antes de o
   // Motor avaliar `dados_dano_final`. Usar o montante concentrado daria o bônus
@@ -1160,6 +1239,9 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
     const disparos = Math.min(Math.max(1, f.disparos | 0 || 1), maxDisparos);
     if ((f.disparos | 0) > maxDisparos) avisos.push(`Máximo de ${maxDisparos} disparos no ${NIVEL_LABEL[nivel]}.`);
     const porDisparo = Math.max(1, Math.floor(dados / disparos)) + dadosCiclagem;
+    // O hover de Múltiplos Disparos fecha em UM disparo, que é o que se rola.
+    somarFonte(`Divisão em ${disparos} Disparos`, Math.max(1, Math.floor(dados / disparos)) - dados);
+    somarFonte("Ciclagem Maldita", dadosCiclagem);
     disparosCalculados = { disparos, porDisparo };
     dadosDanoFinal = porDisparo;
   }
@@ -1183,6 +1265,11 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
   // 6. Em Múltiplos Disparos isso acontece na linha de cada disparo.
   const efeitoDanoFinal = resolveEfeitoDanoFinal(dadosDanoFinal);
   avisos.push(...(efeitoDanoFinal.efeitos.avisos || []));
+  // O efeito tardio nunca TIRA dados (ver `resolveEfeitoDanoFinal`).
+  const somaDanoFinal = somarFontesDoCanal(efeitoDanoFinal.efeitos);
+  if (somaDanoFinal < efeitoDanoFinal.dados - 1e-6 || somaDanoFinal > efeitoDanoFinal.dados + 1e-6) {
+    somarFonte("Piso de 0 Dados", efeitoDanoFinal.dados - somaDanoFinal);
+  }
   if (subtipo === "multiplos") {
     disparosCalculados = {
       ...disparosCalculados,
@@ -1304,6 +1391,60 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
     ...(temCD ? ["potencializacaoDificuldade"] : []),
   ];
 
+  const partesDano = [
+    ...(bonusConjuracao ? [{ label: "Conjuração Aprimorada", valor: bonusConjuracao }] : []),
+    // Sobrecarga Energética entra no POOL, como o canal `dadosDano` do Motor
+    // logo abaixo, e por isso aparece aqui com a mesma cara.
+    ...(dadosSobrecarga ? [{ label: "Sobrecarga Energética", texto: `+${dadosSobrecarga}d${tipoDado}` }] : []),
+    ...detalhesDoCanalEscopos(ctx.efeitos, "dadosDano", escoposDano, true).map((d) => ({
+      label: d.nome,
+      texto: `${d.valor >= 0 ? "+" : ""}${d.valor}d${tipoDado}`,
+      ...(d.suplantado ? { suplantado: true } : {}),
+    })),
+    ...detalhesDoCanalEscopos(efeitoDanoFinal.efeitos, "dadosDano", escoposDano, true).map((d) => ({
+      label: d.nome,
+      texto: `${d.valor >= 0 ? "+" : ""}${d.valor}d${tipoDado}`,
+      ...(d.suplantado ? { suplantado: true } : {}),
+    })),
+    ...(dadosCiclagem ? [{
+      label: "Ciclagem Maldita",
+      texto: `+${dadosCiclagem}d${tipoDado}`,
+    }] : []),
+    ...(bonusRitualDano ? [{ label: "Aumento de Dano", valor: bonusRitualDano }] : []),
+    ...detalhesDoCanalEscopos(ctx.efeitos, "danoBonus", escoposDano, true).map((d) => ({
+      label: d.nome,
+      valor: d.valor,
+      ...(d.suplantado ? { suplantado: true } : {}),
+    })),
+    ...detalhesDoCanalEscopos(efeitoDanoFinal.efeitos, "danoBonus", escoposDano, true).map((d) => ({
+      label: d.nome,
+      valor: d.valor,
+      ...(d.suplantado ? { suplantado: true } : {}),
+    })),
+  ];
+
+  /* O HOVER DO DANO NO CRIADOR (autor, 2026-09-29). Duas pilhas só, Dados e
+     Fixo: Feitiço não separa Critável de Não Critável como o ataque (autor).
+     Em Múltiplos Disparos a pilha de Dados fecha em UM disparo, que é o que se
+     rola, e o total embaixo é a notação inteira. O Somente Condição não tem
+     dano, e no lugar dele mostra o saldo que sobrou para distribuir. */
+  const dadosDoHover = subtipo === "multiplos" ? disparosCalculados.porDisparo : dados;
+  const fixosDoHover = partesDano.filter((p) => p.valor != null);
+  const hoverDano = f.focoCondicao ? null : {
+    partes: [
+      { secao: "Dados", texto: notacaoDano(dadosDoHover, tipoDado) },
+      ...fontesDados.map((p) => linhaDeDados(p, tipoDado)),
+      ...(fixosDoHover.length
+        ? [{ secao: "Fixo", texto: `${bonusDano < 0 ? "−" : "+"}${Math.abs(bonusDano)}` }, ...fixosDoHover]
+        : []),
+    ],
+    total: danoTexto,
+  };
+  const hoverADistribuir = f.focoCondicao ? {
+    partes: fontesADistribuir.map((p) => linhaDeDados(p, tipoDado)),
+    total: `${dadosADistribuir < 0 ? "−" : ""}${notacaoDano(Math.abs(dadosADistribuir), tipoDado)}`,
+  } : null;
+
   return {
     nivel,
     dados,
@@ -1320,37 +1461,10 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
     acaoResultante: acaoEff,
     resolucao,
     alvo,
-    partesDano: [
-      ...(bonusConjuracao ? [{ label: "Conjuração Aprimorada", valor: bonusConjuracao }] : []),
-      // Sobrecarga Energética entra no POOL, como o canal `dadosDano` do Motor
-      // logo abaixo, e por isso aparece aqui com a mesma cara.
-      ...(dadosSobrecarga ? [{ label: "Sobrecarga Energética", texto: `+${dadosSobrecarga}d${tipoDado}` }] : []),
-      ...detalhesDoCanalEscopos(ctx.efeitos, "dadosDano", escoposDano, true).map((d) => ({
-        label: d.nome,
-        texto: `${d.valor >= 0 ? "+" : ""}${d.valor}d${tipoDado}`,
-        ...(d.suplantado ? { suplantado: true } : {}),
-      })),
-      ...detalhesDoCanalEscopos(efeitoDanoFinal.efeitos, "dadosDano", escoposDano, true).map((d) => ({
-        label: d.nome,
-        texto: `${d.valor >= 0 ? "+" : ""}${d.valor}d${tipoDado}`,
-        ...(d.suplantado ? { suplantado: true } : {}),
-      })),
-      ...(dadosCiclagem ? [{
-        label: "Ciclagem Maldita",
-        texto: `+${dadosCiclagem}d${tipoDado}`,
-      }] : []),
-      ...(bonusRitualDano ? [{ label: "Aumento de Dano", valor: bonusRitualDano }] : []),
-      ...detalhesDoCanalEscopos(ctx.efeitos, "danoBonus", escoposDano, true).map((d) => ({
-        label: d.nome,
-        valor: d.valor,
-        ...(d.suplantado ? { suplantado: true } : {}),
-      })),
-      ...detalhesDoCanalEscopos(efeitoDanoFinal.efeitos, "danoBonus", escoposDano, true).map((d) => ({
-        label: d.nome,
-        valor: d.valor,
-        ...(d.suplantado ? { suplantado: true } : {}),
-      })),
-    ],
+    partesDano,
+    hoverDano,
+    dadosADistribuir,
+    hoverADistribuir,
     // Somente Condição e Múltiplos Disparos não têm média de dano única.
     media: (subtipo === "multiplos" || f.focoCondicao) ? null : mediaDano(dados, tipoDado) + bonusDano,
     alcance: alcanceFinal,

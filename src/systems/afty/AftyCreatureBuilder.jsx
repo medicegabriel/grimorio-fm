@@ -5358,9 +5358,15 @@ function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico
  *
  * ⚠ Ela usa o mesmo `ValorBarra` da Invocação, e não uma cópia. As duas barras
  * são a mesma ideia na mesma tela, e duas aparências fariam parecer que são
- * coisas de natureza diferente. O que a de Feitiço NÃO tem é a medida do lado em
- * que o painel de fontes abre, porque número de Feitiço ainda não tem hover de
- * fontes: quando tiver, a medida vem junto com ele.
+ * coisas de natureza diferente.
+ *
+ * ⚠ SÓ A PRIMEIRA PÍLULA TEM HOVER DE FONTES (autor, 2026-09-29: o Dano, e no
+ * Somente Condição o saldo A Distribuir), e por isso ela NÃO MEDE de que lado o
+ * painel abre, ao contrário da barra da Invocação. A primeira pílula começa na
+ * margem esquerda em qualquer largura, mesmo quando a fila quebra, então o
+ * painel sempre cabe crescendo para a direita. O grupo nomeado é um só pela
+ * mesma razão: se uma segunda pílula ganhar fontes, ela precisa do próprio
+ * grupo e da medida da Invocação junto.
  *
  * ⚠ `--afty-topo` E NÃO UMA CONSTANTE. A altura do cabeçalho do criador muda com
  * a largura (230px em 1440 e 259px em 390), e todo `top-[Npx]` cravado envelhece
@@ -5387,8 +5393,14 @@ function BarraDoFeitico({ tiles, avisos }) {
             curto={t.curto}
             valor={t.valor}
             accent={t.accent}
+            alerta={t.alerta}
             icon={t.icon}
             title={t.title}
+            partes={t.partes}
+            total={t.total}
+            grupo={t.partes ? "group/fvalor" : undefined}
+            aparecer="group-hover/fvalor:block"
+            ancora="esquerda"
           />
         ))}
         {avisos.length > 0 && (
@@ -5459,7 +5471,18 @@ function tilesDoFeitico(f, calc, ctx = {}) {
      existe. O rótulo muda com o tipo, e sai do mesmo lugar de onde a Ficha Final
      tira o dela (`fichaDoFeitico`), para as duas telas nomearem igual. */
   const especial = f.especialSubtipo;
-  const valor = f.tipo === "dano" ? calc.dano
+  /* ⚠ SOMENTE CONDIÇÃO NÃO TEM DANO, e o lugar dele vai para o SALDO (autor,
+     2026-09-29): quantos dados ainda sobram para distribuir entre condições e
+     trocas. Ele fica vermelho e vira "Faltam" quando passa do que o Feitiço
+     tem. O "Somente Condição" que ocupava a pílula só repetia o chip ligado. */
+  if (f.tipo === "dano" && f.focoCondicao && calc.dadosADistribuir != null) {
+    const n = calc.dadosADistribuir;
+    push("valor", n < 0 ? "Faltam" : "A Distribuir", notacaoDano(Math.abs(n), calc.tipoDado), {
+      accent: n >= 0, alerta: n < 0, curto: n < 0 ? "Faltam" : "Distribuir", icon: Zap,
+      partes: calc.hoverADistribuir?.partes, total: calc.hoverADistribuir?.total,
+    });
+  }
+  const valor = f.tipo === "dano" ? (f.focoCondicao ? null : calc.dano)
     : f.tipo === "auxiliar" ? formatAuxValor(calc)
       : f.tipo === "curativo" ? calc.cura
         : f.tipo === "especial" ? (calc.dano ?? calc.resumo)
@@ -5470,7 +5493,11 @@ function tilesDoFeitico(f, calc, ctx = {}) {
         : f.tipo === "especial" && especial === "danoAlma" ? "Dano"
           : f.tipo === "auxiliar" && !calc.multiplos ? (calc.efeitoLabel || "Efeito")
             : "Efeito";
-  push("valor", valorLabel, valor, { accent: true, curto: "Valor", icon: Zap });
+  // As fontes do Dano vêm prontas do motor (`hoverDano`), em Dados e Fixo.
+  push("valor", valorLabel, valor, {
+    accent: true, curto: "Valor", icon: Zap,
+    ...(f.tipo === "dano" && calc.hoverDano ? { partes: calc.hoverDano.partes, total: calc.hoverDano.total } : {}),
+  });
 
   /* A média é a régua de balanceamento, e ela mora em campos diferentes: o Dano,
      a Cura e as variantes de Especial têm `media`, e no Auxiliar de dados o valor
@@ -16556,7 +16583,9 @@ function InvocacaoAparencia({ inv, onPatch }) {
    por base, então ele centraliza sem arrastar ninguém. Ver a nota de
    `afty-numero-base`: base é o certo, e base com um item sem metade de baixo
    é o que piora. */
-function ValorBarra({ dataId, label, curto, valor, accent, alerta, icon: Icon, title, partes, grupo, aparecer, ancora }) {
+/* `total` existe para parcelas que não são número: o Dano do Feitiço soma dados
+   ("12d8", "−2d8"), e a soma das fontes só enxerga `valor`. */
+function ValorBarra({ dataId, label, curto, valor, accent, alerta, icon: Icon, title, partes, total, grupo, aparecer, ancora }) {
   const lista = (partes || []).filter(Boolean);
   const temFontes = lista.length > 0;
   return (
@@ -16593,7 +16622,7 @@ function ValorBarra({ dataId, label, curto, valor, accent, alerta, icon: Icon, t
           acréscimo. Agora ela é a derivação inteira e fecha com o número ao
           lado, então "+198" embaixo de um PV de 198 leria como bônus. */}
       {temFontes && (
-        <PainelDeFontes partes={lista} total={somaDasFontes(lista)} aparecer={aparecer} ancora={ancora} />
+        <PainelDeFontes partes={lista} total={total ?? somaDasFontes(lista)} aparecer={aparecer} ancora={ancora} />
       )}
     </span>
   );
