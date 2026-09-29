@@ -1232,12 +1232,16 @@ export function resolveAcao(acao, inv, dono = {}, invCtx = inv) {
 
   /* A redução ampla entra DEPOIS da Otimização, e o piso de 1 PE vale no fim:
      as duas reduzem o mesmo gasto, e o piso é do gasto, não de cada parcela. */
-  const reducaoAmpla = (Array.isArray(dono.reducaoCustoPe) ? dono.reducaoCustoPe : [])
-    .filter((r) => (Number(r?.valor) || 0) > 0);
-  if (reducaoAmpla.length && out.custoPE > 0) {
+  /* ⚠ O NEGATIVO É AUMENTO (condição Condenado, 2026-09-21), e soma DEPOIS do
+     piso: ver `custoEmPe` em afty-efeitos.js. */
+  const amplas = Array.isArray(dono.reducaoCustoPe) ? dono.reducaoCustoPe : [];
+  const reducaoAmpla = amplas.filter((r) => (Number(r?.valor) || 0) > 0);
+  const aumentoAmplo = amplas.filter((r) => (Number(r?.valor) || 0) < 0);
+  if ((reducaoAmpla.length || aumentoAmplo.length) && out.custoPE > 0) {
     const total = reducaoAmpla.reduce((soma, r) => soma + Math.trunc(Number(r.valor) || 0), 0);
-    out.reducoesCustoPE = reducaoAmpla.map((r) => ({ label: r.label, valor: r.valor }));
-    out.custoPE = Math.max(1, out.custoPE - total);
+    const aumento = aumentoAmplo.reduce((soma, r) => soma - Math.trunc(Number(r.valor) || 0), 0);
+    out.reducoesCustoPE = [...reducaoAmpla, ...aumentoAmplo].map((r) => ({ label: r.label, valor: r.valor }));
+    out.custoPE = Math.max(1, out.custoPE - total) + aumento;
   }
 
   // Escape hatch DSL: um modificador numérico livre no contexto da invocação,

@@ -36,6 +36,29 @@ arquivo md. Para outros colaboradores usarem ele também e ir anotando oq for pr
 
 Coisas paradas esperando decisão de regra. Nada aqui deve ser resolvido por suposição.
 
+### Yna: cinco leituras para confirmar
+**Onde:** `addons/yna.json` e `docs/afty-yna.md`
+**Situação:** o pacote da Yna (Kitsune, Clã Getsurin, Treino de Cônjuge e Treino de Desenvolvimento Amaldiçoado) entrou em 2026-09-29 com quatro decisões do autor por pergunta com opções. Estas cinco leituras ficaram por conta própria, cada uma no lado mais simples, e nenhuma muda o que já foi decidido:
+1. **Forma de Raposa com Desenvolvimento Exagerado.** O texto diz *"você é considerado como tamanho pequeno"*, que é tamanho ABSOLUTO. O canal `tamanho` conta degrau, então a Forma escreve `-1`: uma Kitsune com a Anatomia Desenvolvimento Exagerado (+1, Grande) vira Médio na Forma, e não Pequeno. Para quem não tem a Anatomia, dá Pequeno certo.
+2. **O +2 de Percepção vale em toda Percepção** enquanto a Forma está ligada. O texto restringe a *"(Faro e audição)"*. A linha aparece no hover como "Forma de Raposa (Faro e Audição)" para dizer o recorte.
+3. **"O nível de sua menor aptidão"**, na etapa 4 do Treino de Desenvolvimento, vira um ponto LIVRE de Nível de Aptidão, igual ao Estudo do Jujutsu. O Motor não sabe qual é a menor, e o jogador põe o ponto onde quiser.
+4. **Pensamento Mútuo** soma metade do BT DA PRÓPRIA ficha na Iniciativa (aparado para baixo), e vale para os dois cônjuges sem conferir quem tem a maior Iniciativa. É o mesmo desenho que o autor aceitou na Dupla Empenhada do Flugel. O texto diz *"metade do BT de seu parceiro"* e só para a maior Iniciativa da dupla.
+5. **Focos das etapas 1 a 3 do Treino de Desenvolvimento.** O texto só marca a etapa 4 ("2 focos"), e as outras ficaram com 1 Foco cada.
+**Precisa:** o autor confirmar cada item ou dizer qual muda. O 1 pede uma variável de tamanho no DSL ou um canal que FIXA o tamanho, e os outros são uma linha do JSON.
+**Anotado:** 2026-09-29, ao fazer o pacote da Yna
+
+### Fórmula de Combate Entrópica: as leituras do PDF que faltam, antes de cada fase
+**Onde:** `docs/afty-formula-entropica.md`, seção "Perguntas em aberto" (a lista inteira e numerada mora SÓ lá, para não haver duas cópias)
+**Situação:** o Addon da Restrição Intelectual (homebrew de Dr. Xeno) foi planejado em 5 fases em 2026-09-28. As Fases 0, 1 e 2 estão feitas, e as leituras delas foram respondidas. Faltam as das etapas seguintes: o Engenho Superior ligado à Criação de Equipamentos (2b), quantas Técnicas Marciais ele conhece e os nomes das duas de Nível 4 ("aaaaaaaaaaaaaaaaaaa") (3), quatro dispositivos sem Modo de Instalação e Acionamento e a Mina Terrestre repetida com números diferentes (4), e as Características do Avião copiadas do Tanque (5). Mais uma observação da Fase 2: com o contador de falhas ligado a Atenção sobe junto, porque o bônus vale em toda perícia e a Atenção sai da Percepção.
+**Precisa:** o autor (ou Dr. Xeno, por ele) responder as perguntas de cada fase ANTES de ela começar. Elas vão por pergunta com opções, em lotes por fase.
+**Anotado:** 2026-09-28, no planejamento do Addon
+
+### PERGUNTA AO AUTOR: as marcas das linhas da Ficha deviam sumir no telefone?
+**Onde:** `src/systems/afty/ficha/ItemDeFicha.jsx` (as marcas têm `hidden sm:inline-flex`) e `src/systems/afty/ficha/ficha.css` (`.afty-chip`)
+**Situação:** o código declara que as marcas da linha (a origem, a Especialização, o Nível) somem abaixo de 640 px, mas elas aparecem: o `display` do `.afty-chip` no CSS da Ficha, fora de camada, vence o `hidden` do Tailwind (a mesma regra do `index.css`). Em 390 px, uma linha com marca e contador de usos espreme o nome até sobrar "A." (medido com a Restrição Intelectual em 2026-09-28, e vale igual para as linhas do Combatente com contador). Os números de mesa novos já saem da linha fechada abaixo de 560 px (`@container itemficha`).
+**Precisa:** o autor decidir se as marcas somem no telefone, como o código pretendia, ou se ficam e o nome ganha espaço de outro jeito (por exemplo, a linha quebrar em duas). Não mexido, porque muda o telefone de toda ficha.
+**Anotado:** 2026-09-28, na verificação de tela da Fórmula de Combate Entrópica
+
 ### Maldição - Era de Ouro: o que ainda é só texto, e o que vale mais largo que o livro
 **Onde:** `addons/maldicao-era-de-ouro.json` (`acrescenta.caracteristicasAmaldicoadas` e o Tipo De Medo) e `src/systems/afty/afty-efeitos.js` (os canais)
 **Situação:** das 18 do pool, 9 têm número no Motor e 9 se declaram `mesa` (a marca "Mesa" na tela, e um assert em `asserts/t-maldicao-era-de-ouro.mjs` cobra que nenhuma fique muda). As de mesa ficam assim por falta de mecanismo, e cada uma pede uma decisão de desenho antes de virar número. Nenhuma foi suposta.
@@ -62,6 +85,30 @@ Coisas paradas esperando decisão de regra. Nada aqui deve ser resolvido por sup
 **Situação:** a Quimera ganhou ficha e interruptor de campo na aba de Invocações (2026-09-23). O chip "Em Campo N / limite" conta só as invocações da ficha, e a Quimera fica de fora por decisão minha, a confirmar. O texto do addon também diz duas coisas que o app não impõe: só uma Quimera por cena, e as fundidas ficam bloqueadas depois que ela é Dissipada.
 **Precisa:** o autor dizer (1) se a Quimera em campo ocupa uma vaga do limite (e se as fundidas dela contam enquanto ela existe), e (2) se a Ficha deve avisar quando uma fundida é posta em campo com a Quimera em campo, ou quando duas Quimeras estão em campo.
 **Anotado:** 2026-09-23, ao mostrar a ficha da Quimera fora do modo de edição
+
+### A camada de imagem do tema pode virar ambiente FIXO?
+**Onde:** `src/systems/afty/ficha/ficha.css`, `.afty-ficha-corpo::before` (e o `::after` dos modos Caber e Tamanho Real)
+**Situação:** saiu da entrega de performance de 2026-09-22, que atacou a lentidão da Ficha Final em nível alto. O `::before` usa `position: absolute` com `inset: 0` dentro de um `.afty-ficha-corpo` que embrulha o `<main>` inteiro, então ele estica por TODA a altura rolável. Numa ficha de nível alto isso é uma superfície de milhares de pixels que o navegador reescala para `cover` e repinta junto com a rolagem. Trocar para `position: fixed` limitaria a camada à tela e casaria com o brilho de fundo, que virou camada fixa na mesma entrega.
+O conserto NÃO foi feito porque o comentário logo acima da regra diz que acompanhar toda a altura da aba é proposital, e nos modos Caber e Tamanho Real a cópia de ambiente existe justamente para a imagem não terminar numa faixa preta quando a aba é mais alta do que ela. Mudar sem decisão quebraria um enquadramento escolhido a dedo.
+Vale notar que o custo só aparece em ficha COM imagem de tema: sem ela a camada é `background-image: none` e não pesa.
+**Precisa:** o autor dizer se a imagem de ambiente pode ficar presa à tela (mais barata, e some a faixa preta de graça) ou se ela tem de continuar acompanhando a altura da aba.
+**Anotado:** 2026-09-22, na entrega de performance da Ficha Final
+
+### Condições: leituras para confirmar
+**Onde:** `src/systems/afty/afty-condicoes.js` (`CONDICAO_EFEITOS`) e `asserts/t-condicoes-efeitos.mjs`
+**Situação:** as condições mexem no número desde 2026-09-21, sem acumular entre si (a regra do autor). O texto deixou pontos abertos, e cada um saiu pela leitura abaixo. Os cinco primeiros são dado do catálogo, e trocar é editar uma linha e o assert. Os outros cinco são código.
+1. **Caído entra como -3 na Defesa**, como o próprio livro o conta no exemplo "enredado e caído sofre -3 na Defesa, não -5". O +3 contra ataque a distância fica no texto, e não muda número.
+2. **Sofrendo: os -5 valem na Concentração** (o teste nomeado do Motor). Os -5 em Prestidigitação só valem para ritual e ficam no texto.
+3. **Confuso não mexe em número.** Os -4 são só "para se manter de pé".
+4. **Exposto não mexe em número da ficha dele.** O +4 e o dano extra são do atacante.
+5. **Metade do movimento arredonda para baixo no quadrado de 1,5m** (15m viram 7,5m, 10,5m viram 4,5m).
+6. **Condenado vale nos cinco gastos** (Feitiço, Domínio, Estilo, Invocação e Aptidão) e entra DEPOIS do piso de 1 PE: um gasto de 3 com redução 5 fica em 1 e o Condenado leva a 2.
+7. **Perda de vida do Sangramento não é dano**: o PV Temporário não protege e a Guarda não se quebra. A rolagem é por botão, e não automática na virada de rodada.
+8. **As três Especiais (Indefeso, Invisível, Surpreso) são oferecidas na Ficha e na bancada**, e não no editor de Feitiço, porque ficam fora da lista de níveis.
+9. **Surdo em combate:** a Iniciativa da ficha cai 5, mas a ordem de turnos já rolada no Encontro não é mexida sozinha.
+10. **Valor manual da aba Cálculos vence a condição**, como vence todo efeito: uma Defesa sobrescrita à mão não cai com o Paralisado.
+**Precisa:** confirmação do autor, ou a leitura certa de cada item.
+**Anotado:** 2026-09-21, na entrega das Condições
 
 ### Sem Técnica - Liberto: seis leituras para confirmar
 **Onde:** `addons/sem-tecnica-liberto.json` (o pacote) e `asserts/t-liberto.mjs` (as expectativas)
@@ -887,6 +934,7 @@ id cru. O conserto é fazer o avaliador resolver a herança nos DOIS eixos, prov
 **Precisa:** decidir se a herdeira herda também os pré-requisitos da mãe. Vale a pena só quando
 alguém jogar um Especialista em Estilo acima do ND 20.
 **Anotado:** 2026-09-07, ao montar a herança de Especialização
+**Nota:** desde 2026-09-28 vale também para a herdeira do Restringido (Addon Fórmula de Combate Entrópica): o Ápice que pede *20 Níveis de Restringido* (`afty-alto-nivel.js`) lê o `niveisPorEspec` pelo id do livro. O nível de EFEITO já responde pela mãe (`niveisPorEfeito`), e o de pré-requisito ficou de fora de propósito, esperando esta decisão.
 
 ### PERGUNTA AO AUTOR: o que um Nível de Exaustão FAZ
 **Onde:** `src/systems/afty/ficha/ficha-sessao.js` (`exaustao`), `afty-condicoes.js`
@@ -1248,6 +1296,30 @@ transcrever uma habilidade que fale de Guarda saber que o cano já está lá.
 
 ## AFTY — outros
 
+### BUG: a Atenção em combate do Instinto Sanguinário nunca soma
+**Onde:** `src/systems/afty/afty-efeitos-conteudo.js` (`ANATOMIA_EFEITOS.instinto_sanguinario`) e `src/systems/afty/afty-derive.js` (o `ctxMontante`)
+**Situação:** a Anatomia do Feto Amaldiçoado diz *"soma o bônus de treinamento na Iniciativa; em combate, também na Atenção"*, e a segunda linha é `{ canal: "atencao", quando: "em_combate" }`. Efeito de origem, de clã e de Anatomia roda no MONTANTE, com o contexto reduzido, e ali `em_combate` não existe: o `quando` avalia zero e a linha cai calada, com "Em Combate" ligado ou não. Medido em 2026-09-29 num Feto de ND 5: a Iniciativa ganha o +3, a Atenção fica igual. Vale para a Kitsune da Yna também, que escolhe do mesmo pool. Qualquer efeito de origem com `quando` apontando para estado de bancada tem o mesmo defeito.
+**Precisa:** levar os efeitos de origem cujo `quando` cita estado de combate para o estágio principal, onde o contexto inteiro existe. É a opção "Estado de Combate" que o autor NÃO escolheu para a Forma de Raposa (ela ficou no interruptor de sessão), então o conserto continua valendo por si.
+**Anotado:** 2026-09-29, ao medir por onde a Forma de Raposa podia ligar
+
+### Lapidação Prateada: alcance e área de Feitiço e de Aptidão não têm canal
+**Onde:** `addons/yna.json` (Clã Getsurin) e `src/systems/afty/afty-feiticos.js` (a calculadora de alcance e área)
+**Situação:** *"o alcance/área de qualquer feitiço ou aptidão aumenta em 4,5m/3m respectivamente"* ficou no texto, por decisão do autor em 2026-09-29 ("Só Texto por Ora"). O +1 Nível de Aptidão da mesma característica está no Motor. O alcance e a área do Feitiço saem da calculadora de criação (`ALCANCE_POR_NIVEL` mais as trocas), e o Alcance do Auxiliar já é descartado pelo tradutor pela mesma falta.
+**Precisa:** dois canais (alcance e área) somados ao Feitiço já calculado, e o autor dizer quais Aptidões "de alcance ou área" entram (Domínio Simples, Expansão de Domínio, Cortina) antes de ligar a metade da Aptidão.
+**Anotado:** 2026-09-29
+
+### O Completo do Treino Cônjuge do Flugel soma meio ponto de Iniciativa
+**Onde:** `addons/flugel.json` (`treino_conjuge`, `completo.efeitos`)
+**Situação:** a Dupla Empenhada escreve `metade(bt)`, e o `metade` do DSL não apara. Com BT ímpar (3, 5, 7) a Iniciativa ganha 1,5, 2,5, 3,5, e o `canal("iniciativa")` soma sem aparar. Todo arredondamento do Afty é para baixo. O Treino de Cônjuge da Yna nasceu com `piso(bt / 2)` por isso.
+**Precisa:** trocar para `piso(bt / 2)` no JSON do Flugel e subir a versão. Não mexido porque é pacote de outra pessoa, e a ficha dele só muda quando ele apertar Atualizar na biblioteca.
+**Anotado:** 2026-09-29, pelo assert da Yna
+
+### As Anatomias escolhidas não aparecem na Ficha Final
+**Onde:** `src/systems/afty/ficha/ficha-conteudo.js`
+**Situação:** o criador deixa escolher as Características de Anatomia (Feto Amaldiçoado e, desde 2026-09-29, a Kitsune da Yna), o Motor soma o número delas, e a aba Habilidades da Ficha lista só as características da origem e do clã. Quem joga não vê que tem Olhos Sombrios ou Instinto Sanguinário. Vale para o Feto do livro, não é do pacote.
+**Precisa:** uma linha por Anatomia escolhida no grupo Origem, com o texto do catálogo `ANATOMIAS`.
+**Anotado:** 2026-09-29, na verificação de tela da Yna
+
 ### No jogador, a Força Imparável e a Resiliência Melhorada não enxergam o TR da Classe
 **Onde:** `src/systems/afty/afty-efeitos-conteudo.js` (`res_imparavel_*` e `tal_resiliencia_*`) e `afty-efeitos.js` (as variáveis `prof_tr_*`)
 **Situação:** as duas decidem entre Treinado e Mestre por um "caso já seja" (a Força Imparável, do Restringido: *"mestre em outro no qual já seja treinado"*, e o Talento Resiliência Melhorada: *"você se torna treinado nele ou, caso já seja treinado, se torna mestre"*) com a fórmula `1 + (prof_tr_<tr> >= 1)`, e o `prof_tr_*` só lê a MARCAÇÃO À MÃO. No jogador o TR vem do pacote da Classe, que não é marcação: um Restringido 8 que escolhe a Força Imparável na Fortitude (treinada pela Classe) continua Treinado, e o livro dá Mestre. Na criatura está certo, porque lá o TR é marcado na aba. Achado em 2026-09-26, ao fazer o Treino de Testes de Resistência, e não mexido por ser de outra classe e de um Talento.
@@ -1259,6 +1331,7 @@ transcrever uma habilidade que fale de Guarda saber que o cano já está lá.
 **Situação:** o contador de usos por Habilidade nasceu em 2026-09-24 com as seis do Combatente (Assumir Postura, Indomável, Revigorar, Marcar Inimigo, Surto de Ação e Potência Antes de Cair), por decisão do autor (*"Só o Combatente agora"*). Ligar outra é declarar `usos: { expr, recarga }` na entrada, e o resto já existe: o máximo no derive, a linha na Ficha, os gastos na sessão e o Descansar zerando. Candidatas "por descanso" nas outras classes: Puxar um Ar, Um com a Arma e Empolgar-se (Lutador); Abastecido pelo Sangue, Até a Última Gota e Preparação de Técnicas (Conjurador); Versatilidade, Conceder Outra Chance e Contra-Ataque (Suporte); Reserva para Invocação, Ataque em Conjunto, Invocação Às e Fantoche Supremo (Controlador); Ainda de Pé (Restringido). As "por cena" (Insistência, Inspirar Aliados, Negação Crítica, Contaminar com Determinação, Necessidade de Continuar) pedem saber quando a cena acaba, e hoje quem marca isso é o começo do combate e o descanso (é o que devolve a troca por 6 do Autossuficiente). O Ritualista já conta pelos usos dele (`usosRitualista`), e as curas com `curaUsos` mostram só o máximo.
 **Precisa:** o autor dizer quais entram, e se "por cena" zera no começo de cada combate.
 **Anotado:** 2026-09-24, ao fazer o contador do Combatente
+**Nota:** desde 2026-09-28 existem as recargas `cena` e `rodada` (`USOS_RECARGAS`), devolvidas pela sessão na cena nova (o `iniciaCombate` e a saída da rodada 0, a mesma porta do Autossuficiente) e na virada da rodada, e o `usos` vale também em característica de origem, Talento e opção de escolha (`mesa` no derive). Nasceu com a Fórmula de Combate Entrópica. Ligar uma das candidatas "por cena" acima agora é só declarar `recarga: "cena"`, falta o autor escolher quais.
 
 ### O Ataque Circular do Lutador pode ganhar os 3 metros de alcance
 **Onde:** `src/systems/afty/afty-efeitos-conteudo.js` (`lut_manobras_finalizadoras`)

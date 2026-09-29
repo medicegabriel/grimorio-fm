@@ -55,14 +55,14 @@ function ContadorDeUsos({ nome, usos, gastos, onUso }) {
   );
 }
 
-export default function ItemDeFicha({ item, aberto, onAberto, favorito, onFavorito, destacado, contadorUsos = null }) {
+function ItemDeFicha({ item, aberto, onAberto, favorito, onFavorito, destacado, contadorUsos = null }) {
   const raiz = useDestaque(destacado);
 
   return (
     <div
       ref={raiz}
       id={`afty-item-${item.chave}`}
-      className="afty-linha"
+      className="afty-linha afty-item-lista"
       data-afty-alvo={destacado ? "sim" : undefined}
     >
       <div className="flex items-center gap-2 px-2 py-1.5">
@@ -103,6 +103,11 @@ export default function ItemDeFicha({ item, aberto, onAberto, favorito, onFavori
             {t.label}
           </span>
         ))}
+        {/* Os números de mesa. Em linha estreita eles saem daqui e aparecem
+            dentro da linha aberta (`.afty-mesa-*` em ficha.css). */}
+        {(item.numeros ?? []).map((n) => (
+          <span key={n} className="afty-chip afty-mesa-fechada">{n}</span>
+        ))}
         {item.aviso && (
           <span className="afty-chip" data-afty-tom="aviso" title={item.aviso}>
             <AlertTriangle className="w-3 h-3 flex-shrink-0" aria-hidden="true" />
@@ -121,6 +126,11 @@ export default function ItemDeFicha({ item, aberto, onAberto, favorito, onFavori
 
       {aberto && (
         <div className="px-2 pb-2 pl-8">
+          {(item.numeros ?? []).length > 0 && (
+            <div className="afty-mesa-aberta flex flex-wrap gap-1.5 mb-1.5">
+              {item.numeros.map((n) => <span key={n} className="afty-chip">{n}</span>)}
+            </div>
+          )}
           {item.texto && <p className="afty-texto">{item.texto}</p>}
           {item.opcoes.length > 0 && (
             <div className="mt-2 space-y-1">
@@ -137,3 +147,14 @@ export default function ItemDeFicha({ item, aberto, onAberto, favorito, onFavori
     </div>
   );
 }
+
+/* ⚠ MEMOIZADO, e por um motivo medido. O conjunto de itens ABERTOS (`abertos`,
+   um Set) mora na raiz da Ficha, então abrir uma linha re-renderizava as outras
+   139 junto, de graça. Nenhum `deriveAfty` roda nesse caminho: o custo era render
+   puro, e é o que o autor sentia ao abrir e fechar card numa ficha de nível alto.
+
+   As props que entram aqui já são estáveis para esse gesto: `onAberto` é o
+   `alternaItem` da Ficha (`useCallback` com deps vazias) e `item` sai da lista
+   memoizada `itens`. `aberto` e `favorito` são booleanos por linha, então só a
+   linha clicada volta a renderizar. */
+export default React.memo(ItemDeFicha);

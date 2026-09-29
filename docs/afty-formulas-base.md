@@ -191,9 +191,15 @@ Decodificado: só Calamidade/Maldição têm Guarda; se `CN7>=0`, valor por índ
 > Em `afty-derive.js` o teto sai em `derived.guarda`, e o corrente vem da sessão por `opcoes.guarda`.
 > Os canais `guardaBonus` e `guardaVida` mexem nas duas metades.
 
-### Resistência Parcial  — SUBSTITUÍDA pelo autor (2026-07-16)
+### Resistência Parcial: REMOVIDA do Afty pelo autor (2026-09-21)
 
-A planilha antiga era gambiarra (base 2/4 + limiares de ND {15,20,25,30}). **Regra atual:**
+⚠ **Não existe mais no Afty**, nem na criatura nem no jogador (no jogador ela já não existia desde
+2026-08-30). Saíram o número, o hover, a linha da aba Cálculos, as células do Preview, da Ficha
+Final e do Encontro, o chip de Buff e o canal `resParcial` do Motor, que estava declarado e nada
+lia. A Grimório 2.5.2 continua com a dela. A tabela abaixo fica como registro da regra que valeu
+de 2026-07-16 a 2026-09-21.
+
+A planilha antiga era gambiarra (base 2/4 + limiares de ND {15,20,25,30}). **Regra de 2026-07-16:**
 
 | Patamar | Ganha +1 em | Faixa |
 |---|---|---|
@@ -202,7 +208,7 @@ A planilha antiga era gambiarra (base 2/4 + limiares de ND {15,20,25,30}). **Reg
 | Calamidade | ND 10, 20, 30 | 0 a 3 |
 | Beyond | ND 1, 10, 20, 30 | 1 a 4 |
 
-Implementado em `afty-derive.js`. Como `nd` tem piso 1, o limiar de ND 1 do Beyond é constante.
+Era implementada em `afty-derive.js`. Como `nd` tem piso 1, o limiar de ND 1 do Beyond era constante.
 
 <details><summary>Fórmula antiga da planilha (histórico)</summary>
 

@@ -43,7 +43,7 @@ import {
   resolveOrigemAttrBonus, resolveDesenvolvimento, resolveEscolhasOrigem,
   limiteAtributoDaOrigem, resolveLimitePoolOrigem, origensQualificadas,
   fatorSlotsHabilidade, aptidoesConcedidasPelaOrigem, caracteristicasEfetivas,
-  atributosDePericiaDaOrigem, origemMae,
+  atributosDePericiaDaOrigem, origemMae, ehVariacaoDoRestringido, gatilhosDeOrigem,
 } from "./afty-origens";
 import {
   efeitosDeTreino, vagasEncantamentoDeTreino, atributosDePericiaDeTreino, gatilhosDeTreino,
@@ -65,9 +65,9 @@ import {
   PAREDES_BASE, PAREDES_NA_CORTINA, PAREDES_NO_DOMO,
   DOMINIO_CUSTO_BASE, CUSTO_ACERTO_GARANTIDO, rotuloVersao,
 } from "./afty-dominios";
-import { resolveEspecializacoes, AFTY_ESPECIALIZACOES, treinamentosDasEspecializacoes, getEspecializacao } from "./afty-especializacoes";
+import { resolveEspecializacoes, AFTY_ESPECIALIZACOES, treinamentosDasEspecializacoes, getEspecializacao, especializacaoMae } from "./afty-especializacoes";
 import {
-  resolveHabilidades, efeitosInvocacaoControlador, getHabilidade, OPCAO_ESCOLHA_NOME,
+  resolveHabilidades, efeitosInvocacaoControlador, getHabilidade, OPCAO_ESCOLHA_NOME, USOS_RECARGAS,
   avaliarAcessoHabilidade,
   resolveMarcadoresInvocacao, resolveControleInvocacoes,
   AFTY_HABILIDADES,
@@ -112,6 +112,8 @@ import { resolveOlhosAgulha, efeitosOlhosAgulha } from "./afty-olhos-agulha";
 import { estadosManipulacaoCeu, resolveManipulacaoCeu } from "./afty-manipulacao-ceu";
 import { resolveTestes, resolveDano, catalogoPericiasDaFicha, ehPericiaOficio, atributosDePericiaManuais } from "./afty-pericias";
 import { resolveDefesasDano, sanearDefesasDano } from "./afty-defesas-dano";
+import { resolveCondicoes, marcaMovimentoNasLinhas } from "./afty-condicoes";
+import { AFTY_ATAQUES } from "./afty-pericias-catalogo";
 import { resolveCatarse } from "./afty-catarse";
 import { resolveCarteira } from "./afty-carteira";
 import { atributosDosAddons } from "./afty-addons-atributos";
@@ -184,7 +186,7 @@ export const maestria = (nd) => {
 export const HP_PATAMAR_MULT = { comum: 1, desafio: 2, calamidade: 3, beyond: 4 };
 
 // Stats que a aba Cálculos permite sobrescrever (valor final, padrão StatField).
-export const OVERRIDABLE = ["hp", "pe", "defesa", "cd", "rdGeral", "rdEspecifico", "rdAlma", "movimento", "resParcial", "atencao", "iniciativa"];
+export const OVERRIDABLE = ["hp", "pe", "defesa", "cd", "rdGeral", "rdEspecifico", "rdAlma", "movimento", "atencao", "iniciativa"];
 
 const INT = (x) => Math.floor(x); // INT() da planilha (ND > 0 → floor)
 
@@ -262,10 +264,11 @@ export function deriveAfty(creature, opcoes = {}) {
      do combate, ela vale para tudo, não gasta vaga nenhuma e morre quando a
      sessão acaba (decisões do autor, 2026-08-20). Cada família recebe a parte
      dela pelo CANAL DE CONCESSÃO do resolvedor. Ver `afty-concessao.js`. */
-  const imitacao = resolveImitacao(creature, [
+  // Com as herdadas: a Imitação da herdeira do Restringido mora sob o id clonado.
+  const imitacao = resolveImitacao(creature, expandeHerdadas([
     ...(creature?.habilidades ?? []),
     ...agrupaConcedido(opcoes.concedido).habilidades,
-  ]);
+  ]));
   const concessoesComImitacao = [...(opcoes.concedido ?? []), ...concessaoImitada(imitacao)];
   const concedido = agrupaConcedido(opcoes.concedido);
   for (const c of concessaoImitada(imitacao)) {
@@ -307,10 +310,29 @@ export function deriveAfty(creature, opcoes = {}) {
   });
   const a = creature?.attributes ?? {};
   const ov = creature?.statOverrides ?? {};
+  const catalogoPericiasFicha = catalogoPericiasDaFicha(creature);
   const vocabularioDsl = {
     ...vocabularioDoMundo(),
-    pericias: catalogoPericiasDaFicha(creature).map((p) => p.id),
+    pericias: catalogoPericiasFicha.map((p) => p.id),
   };
+
+  /* ---------- CONDIÇÕES (2026-09-21) ----------
+     Da SESSÃO na Ficha Final e no Encontro (`opcoes.condicoes`), e da bancada no
+     criador (`combate.condicoes`). A Ficha troca o `combate` da ficha pelo da
+     sessão, então a bancada nunca vaza para a mesa.
+
+     ⚠ ELAS NÃO ACUMULAM ENTRE SI (autor, 2026-09-21: Paralisado e Desprevenido
+     dão -10 de Defesa, e não -13). Quem decide o vencedor de cada número é o
+     `resolveCondicoes`, e o Motor recebe só as linhas vencedoras. As perdedoras
+     entram no hover, riscadas, logo depois do estágio da Guarda.
+
+     Os alvos concretos saem daqui porque as perícias dependem da ficha: um Ofício
+     repetido ou uma perícia personalizada também sofre o -2 do Envenenado. */
+  const condicoes = resolveCondicoes(opcoes.condicoes ?? creature?.combate?.condicoes, {
+    pericias: catalogoPericiasFicha.map((p) => ({ id: p.id, nome: p.nome })),
+    trs: AFTY_RESISTENCIAS.map((r) => ({ id: r.value, nome: r.label })),
+    ataques: AFTY_ATAQUES.map((x) => ({ id: x.id, nome: x.nome })),
+  });
 
   /* ⚠ O SISTEMA SAI DA FICHA, e não de parâmetro nem de rota. A mesma tela de
      encontro deriva criatura e personagem lado a lado, então uma global daria a
@@ -335,9 +357,12 @@ export function deriveAfty(creature, opcoes = {}) {
   /* ⚠ NO JOGADOR NÃO HÁ TIPO, então quem responde "esta ficha tem energia
      amaldiçoada" é a Especialização Restringido. A trava Origem ↔ Especialização
      é bidirecional desde 2026-08-03, então as duas leituras dão o mesmo
-     resultado na criatura, e no jogador só a segunda existe. */
+     resultado na criatura, e no jogador só a segunda existe.
+
+     ⚠ LÊ A MÃE DA CLASSE (2026-09-28): a herdeira do Restringido, que a
+     variação da origem traz, também é sem energia. Ver `especializacaoMae`. */
   const semEnergia = ehJogador("pvPePorEspecializacao")
-    ? (creature?.especializacoes ?? []).some((e) => e?.id === "restringido")
+    ? (creature?.especializacoes ?? []).some((e) => especializacaoMae(e?.id) === "restringido")
     : tipo === "restringido";
   // Nome do recurso na UI. O número é o mesmo dos outros Tipos.
   const recursoLabel = semEnergia ? "Estamina" : "Energia";
@@ -356,8 +381,8 @@ export function deriveAfty(creature, opcoes = {}) {
 
      "comum" é o valor NEUTRO das fórmulas, e não uma escolha: bônus de contador
      zero, multiplicador de PV 1, coeficiente de dano 2/1. Quem o autor pediu
-     para não aparecer "nem como zero" é a Guarda e a Resistência Parcial, e as
-     duas seguem devolvendo `null` pela divergência delas. */
+     para não aparecer "nem como zero" é a Guarda, e ela segue devolvendo `null`
+     pela divergência dela. */
   const patamar = ehJogador("patamarDoJogador") ? "comum" : (core.patamar || "comum");
   /* ⚠ O NÍVEL DO JOGADOR TRAVA EM 30 (autor, 2026-08-30). O teto entra AQUI, no
      `nd` que todo o resto lê, e não só no campo da tela: uma ficha importada ou
@@ -505,7 +530,12 @@ export function deriveAfty(creature, opcoes = {}) {
   // caminho específico até ele.
   const limBase = (creature?.attrLimite && typeof creature.attrLimite === "object") ? creature.attrLimite : {};
   const atributosAddon = atributosDosAddons(creature);
-  const limTipo = tipo === "restringido"
+  /* ⚠ A VARIAÇÃO DO RESTRINGIDO NÃO LEVA O LIMITE DO TIPO (autor, 2026-09-28,
+     sobre a Restrição Intelectual: *"Só INT vai a 30"*). O 30 dos físicos é o
+     conteúdo do Ápice Corporal Humano, e a variação herda a identidade, não o
+     conteúdo: ela declara o próprio `limiteAtributo`. */
+  const variacaoDoRestringido = ehVariacaoDoRestringido(core?.origem?.id ?? null);
+  const limTipo = tipo === "restringido" && !variacaoDoRestringido
     ? { forca: ATTR_LIMITE_MAX, destreza: ATTR_LIMITE_MAX, constituicao: ATTR_LIMITE_MAX }
     : {};
   // ⚠ Recebe a CRIATURA, e não o id: o limite do Gêmeo depende da morte do
@@ -649,7 +679,7 @@ export function deriveAfty(creature, opcoes = {}) {
       // família (Interlúdio) e emite a mesma classe de coisa: VAGA de orçamento,
       // lida antes de os stats existirem. Hoje só `vagasFeitico`.
       ...efeitosDeTreinoEspecial(creature, concedido.treinosEspeciais),
-      ...coletarEfeitosOrigem(creature, escolhasOrigem),
+      ...coletarEfeitosOrigem(creature, escolhasOrigem, opcoes.treinosAtivos),
       ...coletarEfeitosMontante(creature, gerais, GERAL_BY_ID),
       /* ⚠ A LOJA DE CATARSE ENTRA NO MONTANTE, e não no estágio 2, porque o que
          ela emite é VAGA de orçamento: `vagasTalento`, `vagasHabilidade`,
@@ -1007,6 +1037,12 @@ export function deriveAfty(creature, opcoes = {}) {
     // Funcionamento Básico, e por isso entram na mesma linha. Só existem quando
     // a Ficha injeta `buffsSessao`: o criador nunca os vê.
     ...efeitosDaSessao(creature),
+    /* As CONDIÇÕES, já com a disputa resolvida: uma linha por número, só a
+       vencedora. Entram aqui, e não numa lista própria mais abaixo, porque o
+       Condenado mexe no `custoPE`, que precisa chegar no passe pós-aptidão do
+       Domínio Simples, e o resto (Defesa, TR, perícia, acerto, iniciativa) é
+       estágio 2 comum. */
+    ...condicoes.efeitos,
     ...efeitosDasAdaptacoes(creature, opcoes.adaptacoes),
     // Habilidade Única da Ferramenta equipada, a primeira das cinco fontes do
     // pool exclusivo a chegar no Motor. Já vem com o valor resolvido no contexto
@@ -1369,7 +1405,10 @@ export function deriveAfty(creature, opcoes = {}) {
     au: aptidao.efetivo?.au ?? 0,
     cl: aptidao.efetivo?.cl ?? 0,
   });
-  const estadosAddon = estadosCombateDeAddon(creature, nivelMaxFeitico(nd, nivelConjurador));
+  // O teto de faixa escrito como expressão ("bt") é lido no contexto do montante.
+  const estadosAddon = estadosCombateDeAddon(creature, nivelMaxFeitico(nd, nivelConjurador), {
+    avaliar: (expr) => evalNumberDsl(expr, ctxComAptidao, 0),
+  });
   const estadosVislumbre = estadosDoVislumbre({ tem: temVislumbre });
   const estadosCeu = estadosManipulacaoCeu(creature);
 
@@ -1403,7 +1442,8 @@ export function deriveAfty(creature, opcoes = {}) {
     precisaoPE: 1 + Math.floor(nivelCmb / 4),
     pistoleiroEmperrar: habilidades.efetivas.includes("cmb_pistoleiro_avancado") ? 6 : 2,
     ataqueConcentrado: tetoAtaqueConcentrado(habilidades.efetivas),
-    adrenalinaAtletismo: habilidades.efetivas.includes("res_restricao_definitiva") ? 8 : 4,
+    // Com as herdadas: a herdeira do Restringido tem a Restrição Definitiva sob o id clonado.
+    adrenalinaAtletismo: expandeHerdadas(habilidades.efetivas).includes("res_restricao_definitiva") ? 8 : 4,
     cacadorFeiticeiros: 1 + Math.floor(nivelRes / 5),
     corpoDeAco: 1 + (nivelRes >= 10 ? 1 : 0) + (nivelRes >= 15 ? 1 : 0),
     // Tetos das faixas das Aptidões: os dois dependem do Nível de Aptidão em
@@ -1788,7 +1828,7 @@ export function deriveAfty(creature, opcoes = {}) {
      a Guarda da tela, porque todo leitor checa `guarda?.ativa`, mas o autor
      pediu que ela NÃO EXISTA na ficha de jogador, e um objeto de Guarda numa
      ficha que não tem Guarda é convite para alguém ler `bonusMax` dele um dia. */
-  const guarda = ehJogador("guardaEresistenciaParcial") ? null : (() => {
+  const guarda = ehJogador("guardaInabalavel") ? null : (() => {
     const ses = opcoes.guarda ?? {};
     const inteiroNaoNeg = (v) => Math.max(0, Math.trunc(Number(v)) || 0);
     const golpes = inteiroNaoNeg(ses.golpes);
@@ -1842,6 +1882,12 @@ export function deriveAfty(creature, opcoes = {}) {
   let ef = efeitosGuarda.length
     ? mesclarEfeitos(efSemGuarda, aplicarEfeitos(efeitosGuarda, montarCtx(attrEff, modByAttr)))
     : efSemGuarda;
+  /* As CONDIÇÕES QUE PERDERAM a disputa entram só no `detalhes`, marcadas como
+     suplantadas: não somam em nada (`contaNoTotal` as pula) e o hover as mostra
+     riscadas, dizendo por que o -3 do Desprevenido não está na Defesa. */
+  if (condicoes.suplantados.length) {
+    ef = { ...ef, detalhes: [...(ef.detalhes ?? []), ...condicoes.suplantados] };
+  }
   const canal = (id, alvo = null) => valorCanal(ef, id, alvo);
 
   /* ⚠ O CUSTO EM PE DOS ESTADOS É REDUZIDO SÓ NA EXIBIÇÃO, e por isso esta é uma
@@ -1897,6 +1943,10 @@ export function deriveAfty(creature, opcoes = {}) {
       .map(([id, u]) => [id, {
         max: Math.max(0, Math.trunc(evalNumberDsl(u.expr, ctxTecnica, 0))),
         recarga: u.recarga ?? "descanso",
+        /* A chave da sessão leva a recarga na frente quando ela é `cena` ou
+           `rodada` (2026-09-28), a mesma convenção do `mesa` logo abaixo. As do
+           Combatente são de descanso e seguem com `hab:<id>`. */
+        chave: u.recarga === "cena" || u.recarga === "rodada" ? `${u.recarga}:hab:${id}` : `hab:${id}`,
       }]),
   );
   /* O MONTADOR DO GOLPE ESPECIAL (2026-09-24). O derive só diz se a ficha tem
@@ -1916,6 +1966,54 @@ export function deriveAfty(creature, opcoes = {}) {
       valor: evalNumberDsl(r.expr, ctxTecnica, 0) * (r.porImbuicao ? t.vezes : 1),
     }));
   }
+  /* ---------- CONTADOR E NÚMEROS DE MESA EM TODA ENTRADA (2026-09-28) ----------
+     O `usos` que a Habilidade tinha e os `resultados` que a Técnica de Estilo
+     tinha, estendidos a Talento, característica de origem e OPÇÃO de escolha
+     aninhada. Nasceram com a Fórmula de Combate Entrópica, que é quase toda de
+     coisa que age em aliado ou inimigo ("o aliado recebe metade do seu BT"): o
+     número não é da ficha, mas o jogador precisa dele pronto na mesa (plano
+     aprovado: "linha com a CD, o BT e o dado já calculados, mais um contador de
+     usos"). A Habilidade ganha só os `resultados`, porque o contador dela já
+     existe em `usosHabilidades`.
+
+     ⚠ A RECARGA VIAJA NA CHAVE DA SESSÃO: `cena:` e `rodada:` na frente. A
+     sessão zera por prefixo na cena nova e na virada da rodada, sem precisar do
+     derive nessa hora (ver `cenaNovaDoGolpe` e `proximaRodada` em
+     ficha/ficha-sessao.js). O Descansar continua zerando tudo.
+
+     Chaves: `origem:<id>`, `talento:<id>`, `especializacao:<id>` e
+     `opcao:<paiId>:<opcaoId>`, as mesmas do `item()` da Ficha. */
+  const valorDeMesa = (expr) => Math.floor(evalNumberDsl(String(expr), ctxTecnica, 0));
+  const mesa = {};
+  const registraMesa = (chave, entrada, { semUsos = false } = {}) => {
+    const u = semUsos ? null : entrada?.usos;
+    const recarga = USOS_RECARGAS.includes(u?.recarga) ? u.recarga : "descanso";
+    const usos = u?.expr != null ? {
+      max: Math.max(0, valorDeMesa(u.expr)),
+      recarga,
+      chave: recarga === "cena" || recarga === "rodada" ? `${recarga}:${chave}` : chave,
+    } : null;
+    const resultados = (Array.isArray(entrada?.resultados) ? entrada.resultados : [])
+      .filter((r) => String(r?.label ?? "").trim() && r?.expr != null)
+      .map((r) => ({ label: String(r.label), valor: valorDeMesa(r.expr) }));
+    if (usos || resultados.length) mesa[chave] = { usos, resultados };
+  };
+  for (const c of caracteristicasEfetivas(creature)) registraMesa(`origem:${c.id}`, c);
+  for (const id of talentos.escolhidas ?? []) registraMesa(`talento:${id}`, getTalento(id));
+  for (const id of habilidades.efetivas ?? []) {
+    registraMesa(`especializacao:${id}`, getHabilidade(id), { semUsos: true });
+  }
+  const opcoesDeMesa = (mapa, pegaPai) => {
+    for (const [paiId, ids] of Object.entries(mapa ?? {})) {
+      const opcoes = pegaPai(paiId)?.escolha?.opcoes ?? [];
+      for (const oid of Array.isArray(ids) ? ids : []) {
+        const o = opcoes.find((x) => x?.id === oid);
+        if (o) registraMesa(`opcao:${paiId}:${oid}`, o);
+      }
+    }
+  };
+  opcoesDeMesa(habilidades.escolhas?.mapa, getHabilidade);
+  opcoesDeMesa(talentos.escolhas?.mapa, getTalento);
   // A Habilidade Unica da Ferramenta precisa mostrar o mesmo valor que entra no
   // Motor. O equipamento e carregado antes de os atributos fecharem, mas a
   // expressao permanece viva e e reavaliada aqui com o contexto FINAL. As
@@ -2262,18 +2360,10 @@ export function deriveAfty(creature, opcoes = {}) {
   const multiplicadorPeMaximo = regrasAddon.multiplicadorPeMaximo * multiplicadorPeDosVotos;
   const pe = Math.floor(peAntesMultiplicador * multiplicadorPeMaximo);
 
-  // ---------- Resistência Parcial ----------
-  // Calamidade ganha +1 em ND 10, 20 e 30 (0 a 3).
-  // Beyond ganha +1 em ND 1, 10, 20 e 30 (1 a 4) — o limiar de ND 1 é sempre
-  // atendido, já que nd tem piso 1, então entra como constante.
-  // Comum e Desafio não têm Resistência Parcial.
-  const resThresh = (nd >= 10 ? 1 : 0) + (nd >= 20 ? 1 : 0) + (nd >= 30 ? 1 : 0);
-  /* ⚠ `null`, e não `0`, no jogador. O zero apareceria na tela como uma linha
-     de valor zero, e o autor pediu que a característica "não apareça nem como
-     zero". Quem desenha checa `!= null`. */
-  const resParcial = ehJogador("guardaEresistenciaParcial") ? null : (
-    patamar === "calamidade" ? resThresh :
-    patamar === "beyond" ? 1 + resThresh : 0);
+  /* ⚠ A RESISTÊNCIA PARCIAL SAIU DO AFTY em 2026-09-21, a pedido do autor, nos
+     dois sistemas (no jogador ela já não existia). Era +1 por degrau de ND no
+     Calamidade e no Beyond, e não tinha fonte no Motor: o canal `resParcial`
+     estava declarado e nada o lia. A 2.5.2 continua com a dela. */
 
 
   // ---------- Movimento (+ Treino de Agilidade, - sobrecarga) ----------
@@ -2283,7 +2373,13 @@ export function deriveAfty(creature, opcoes = {}) {
   const movimentoBase = 9 + (valoresDoJogador ? 0 : maxForDex * 1.5)
     + carga.movimento + canal("movimento");
   const movimentoMult = Math.max(1, canal("movimentoMult") || 1);
-  const movimento = movimentoBase * movimentoMult;
+  const movimentoSemCondicao = movimentoBase * movimentoMult;
+  /* ⚠ AS CONDIÇÕES DE MOVIMENTO NÃO SOMAM, elas TRANSFORMAM o valor final (Lento
+     e Enredado pela metade, Caído até 4,5m, Sofrendo -3m, Imóvel zero), e entre
+     elas vale o resultado MENOR. Por isso ficam fora do Motor e entram depois do
+     multiplicador: "toda forma de movimento é reduzida pela metade". */
+  const movimentoCondicao = condicoes.movimento(movimentoSemCondicao);
+  const movimento = movimentoCondicao.valor;
 
   // ---------- RD Geral ----------
   /* ⚠ A BASE zera no jogador, e só ela. Autor, 2026-08-30: "Começa em 0. E é
@@ -2295,18 +2391,26 @@ export function deriveAfty(creature, opcoes = {}) {
     tipo === "conjurador" ? (nd >= 10 ? Math.floor(nd / 2) : 0) :
     tipo === "misto" ? (nd >= 10 ? nd : Math.floor(nd / 2)) :
     /* combatente | restringido */ (nd >= 10 ? maxAllMods : 0) + nd);
-  const rdGeral = rdGeralBase + equip.rdGeralBonus + canal("rdGeral");
+  /* ⚠ FRAGILIZADO ZERA TODA RD (Geral, Específica, Física, a da Alma e a por
+     tipo), e não subtrai: "não pode ter sua Redução de Dano aumentada". O zero
+     entra no fim de cada uma, e o hover leva a parcela negativa com o nome da
+     condição para as fontes fecharem no total. */
+  const fragilizado = condicoes.fragilizado;
+  const rdGeralSemCondicao = rdGeralBase + equip.rdGeralBonus + canal("rdGeral");
+  const rdGeral = fragilizado ? 0 : rdGeralSemCondicao;
 
   // ---------- RD Específico ----------
-  const rdEspecifico = rdSemBase ? canal("rdEspecifico") : (
+  const rdEspecificoSemCondicao = rdSemBase ? canal("rdEspecifico") : (
     tipo === "conjurador" ? modTecnica :
     tipo === "misto" ? (nd >= 10 ? 2 * modTecnica : modTecnica) : 0);
+  const rdEspecifico = fragilizado ? 0 : rdEspecificoSemCondicao;
 
   // ---------- RD a Alma ----------
   // A RD Geral vale para todo tipo de dano EXCETO alma, então o Dano na Alma
   // tem canal próprio (autor, 2026-07-29). Nenhum Tipo nem Patamar concede base:
   // só existe quem tem um poder que dá (hoje o Talento Alma Inquebrável).
-  const rdAlma = canal("rdAlma");
+  const rdAlmaSemCondicao = canal("rdAlma");
+  const rdAlma = fragilizado ? 0 : rdAlmaSemCondicao;
   const ataquesExtras = Math.max(0, Math.trunc(canal("ataquesExtras")));
 
   // ---------- CD ----------
@@ -2574,7 +2678,8 @@ export function deriveAfty(creature, opcoes = {}) {
      a RD base, a do grau da Ferramenta e o encantamento Reforçado. Quem escolhe
      a pilha é o `resolveEquipamentos`, e aqui só se soma a que ele encheu.
      Ver a divergência `rdEscudoFisico`. */
-  const rdFisico = equip.rdFisicoBonus + canal("rdFisico");
+  const rdFisicoSemCondicao = equip.rdFisicoBonus + canal("rdFisico");
+  const rdFisico = fragilizado ? 0 : rdFisicoSemCondicao;
 
   /* ---------- Defesas por tipo de dano ----------
      Imunidade, Resistência, RD e Vulnerabilidade, um por tipo. Fica AQUI, e não
@@ -2586,6 +2691,8 @@ export function deriveAfty(creature, opcoes = {}) {
     canalTipo: (c, t) => canal(c, t),
     fontesTipo: (c, t) => detalhesDoCanal(ef, c, t).map((d) => ({ label: d.nome, valor: d.valor })),
     rdGeral, rdFisico, rdAlma,
+    // Fragilizado zera a RD por tipo e anula a Resistência (a Imunidade fica).
+    fragilizado,
     /* ⚠ O catálogo VIAJA POR PARÂMETRO, e não por import lá dentro: o
        afty-defesas-dano é módulo FOLHA de propósito. A nota no topo dele conta
        qual ciclo isso evita. Aqui é seguro, porque o afty-derive já importa o
@@ -2719,6 +2826,14 @@ export function deriveAfty(creature, opcoes = {}) {
     penalidadeDestreza: penalidadeArmadura,
     penalidadePartes: partesPenalidadePericia,
   });
+  /* FALHA AUTOMÁTICA (Paralisado e Inconsciente, em Reflexos). O número do TR
+     continua o mesmo, porque a regra não o muda: a linha só ganha a marca, com
+     o nome de quem a impôs, e a tela diz que a rolagem não vale. */
+  if (Object.keys(condicoes.falhas).length) {
+    testes.resistencias = (testes.resistencias ?? []).map((r) => (condicoes.falhas[r.value]
+      ? { ...r, falhaAutomatica: condicoes.falhas[r.value] }
+      : r));
+  }
 
   // O teste de Conjuração em Ritual parte de Prestidigitação. Naturalidade com
   // Rituais abre uma escolha por uso, então a ficha guarda o atributo escolhido
@@ -2840,7 +2955,10 @@ export function deriveAfty(creature, opcoes = {}) {
         /* "Caso seja um Restringido, ele segue o mesmo aumento de um Lutador." O
            `semEnergia` é quem já responde "esta ficha é Restringida" nos dois
            sistemas (Especialização no jogador, Tipo na criatura). */
-        restringido: semEnergia,
+        /* ⚠ A VARIAÇÃO DO RESTRINGIDO NÃO RECEBE A ESCADA (autor, 2026-09-28, sobre
+           a Restrição Intelectual: "por não ser um restringido focado em força").
+           É conteúdo do Restringido do livro, e a variação herda identidade. */
+        restringido: semEnergia && !variacaoDoRestringido,
         nivelRestringido: nivelEspec.restringido?.escalonamento ?? nd,
         tem: (id) => habilidades.efetivas.includes(id) || aptidoesIds.includes(id),
       });
@@ -2920,7 +3038,8 @@ export function deriveAfty(creature, opcoes = {}) {
     // O `semEnergia` já zera as aptidões, então o Restringido não ganha linha de
     // Energia Reversa por engano.
     aptidoes: aptidoesIds,
-    habilidades: habilidades.efetivas,
+    // Com as herdadas: o `requer` das curas cita o id do livro (Ainda de Pé).
+    habilidades: expandeHerdadas(habilidades.efetivas),
     itens: equip.entradas,
     hp: hpAntesMultiplicador,
     danoBasico: dano.entradas.find((e) => e.id === "basico") ?? null,
@@ -3241,6 +3360,8 @@ export function deriveAfty(creature, opcoes = {}) {
   const TIPO_LABEL = { combatente: "Combatente", misto: "Misto", conjurador: "Conjurador", restringido: "Restringido" };
   const PATAMAR_LABEL = { comum: "Comum", desafio: "Desafio", calamidade: "Calamidade", beyond: "Beyond" };
   const divTexto = (d) => String(d).replace(".", ",");
+  /* A parcela que o Fragilizado tira de uma RD, para o hover fechar em zero. */
+  const zeradaPorCondicao = (v) => (fragilizado && v ? [{ label: fragilizado, valor: -v }] : []);
 
   const partes = {
     totalAptidao: semEnergia
@@ -3365,16 +3486,19 @@ export function deriveAfty(creature, opcoes = {}) {
       ...(rdSemBase ? [] : [{ label: `Base do Tipo (${TIPO_LABEL[tipo] ?? tipo})`, valor: rdGeralBase }]),
       ...rdPartesDe("rdGeral"),
       ...doMotor("rdGeral"),
+      ...zeradaPorCondicao(rdGeralSemCondicao),
     ],
     rdEspecifico: [
-      ...(rdSemBase ? [] : [{ label: `Base do Tipo (${TIPO_LABEL[tipo] ?? tipo})`, valor: rdEspecifico - canal("rdEspecifico") }]),
+      ...(rdSemBase ? [] : [{ label: `Base do Tipo (${TIPO_LABEL[tipo] ?? tipo})`, valor: rdEspecificoSemCondicao - canal("rdEspecifico") }]),
       ...doMotor("rdEspecifico"),
+      ...zeradaPorCondicao(rdEspecificoSemCondicao),
     ],
-    rdAlma: doMotor("rdAlma"),
+    rdAlma: [...doMotor("rdAlma"), ...zeradaPorCondicao(rdAlmaSemCondicao)],
     ataquesExtras: doMotor("ataquesExtras"),
     rdFisico: [
       ...rdPartesDe("rdFisico"),
       ...doMotor("rdFisico"),
+      ...zeradaPorCondicao(rdFisicoSemCondicao),
     ],
     movimento: [
       { label: "Base", valor: 9 },
@@ -3386,6 +3510,8 @@ export function deriveAfty(creature, opcoes = {}) {
         valor: undefined,
         texto: `× ${fonte.valor}`,
       })),
+      // Por último, porque transforma o valor final. Ver `movimentoCondicao`.
+      ...movimentoCondicao.partes,
     ],
     iniciativa: [
       ...(valoresDoJogador ? [] : [{ label: "Maestria ÷ 2", valor: INT(bt / 2) }]),
@@ -3435,16 +3561,13 @@ export function deriveAfty(creature, opcoes = {}) {
       { label: "Percepção", valor: testes.atencao - 10 },
       ...doMotor("atencao"),
     ],
-    /* ⚠ OS TRÊS FICAM VAZIOS NA FICHA DE JOGADOR, onde a Resistência Parcial e a
-       Guarda são `null`. O `guardaAtual` logo abaixo já se protegia assim, e
-       estes dois não: eles seguiam montando uma linha "Patamar (...)" para
-       explicar um número que não existe. Passou despercebido até 2026-08-31
-       porque a linha citava o MESMO patamar nos dois sistemas e o assert do
-       clone via dois hovers idênticos. Com o Patamar neutralizado no jogador os
-       rótulos passaram a divergir, e o assert apontou o resto. */
-    resParcial: resParcial == null ? [] : [
-      { label: `Patamar (${PATAMAR_LABEL[patamar] ?? patamar})`, valor: resParcial },
-    ],
+    /* ⚠ OS DOIS FICAM VAZIOS NA FICHA DE JOGADOR, onde a Guarda é `null`. O
+       `guardaAtual` logo abaixo já se protegia assim, e estes não: eles seguiam
+       montando uma linha "Patamar (...)" para explicar um número que não existe.
+       Passou despercebido até 2026-08-31 porque a linha citava o MESMO patamar
+       nos dois sistemas e o assert do clone via dois hovers idênticos. Com o
+       Patamar neutralizado no jogador os rótulos passaram a divergir, e o assert
+       apontou o resto. */
     guardaBonus: guarda ? [
       { label: `Patamar (${PATAMAR_LABEL[patamar] ?? patamar})`, valor: guardaBonusBase },
       ...doMotor("guardaBonus"),
@@ -3494,7 +3617,7 @@ export function deriveAfty(creature, opcoes = {}) {
     const daOrigem = Math.max(limBase[k] ?? ATTR_LIMITE_PADRAO, limOrigem[k] ?? 0) - ATTR_LIMITE_PADRAO;
     const partesDoLimite = [
       { label: "Limite padrão", valor: ATTR_LIMITE_PADRAO },
-      ...(daOrigem ? [{ label: tipo === "restringido" ? "Ápice Corporal Humano" : "Origem", valor: daOrigem }] : []),
+      ...(daOrigem ? [{ label: tipo === "restringido" && !variacaoDoRestringido ? "Ápice Corporal Humano" : "Origem", valor: daOrigem }] : []),
       ...(desenv[k] ? [{ label: "Desenvolvimento Inesperado", valor: desenv[k] }] : []),
       ...(limPool[k] ? [{ label: "Bônus em Atributo", valor: limPool[k] }] : []),
       ...doMotor("limiteAtributo", k),
@@ -3605,7 +3728,7 @@ export function deriveAfty(creature, opcoes = {}) {
   };
 
   // ---------- overrides de valor final (aba Cálculos) ----------
-  const calc = { hp, pe, defesa, cd, rdGeral, rdEspecifico, rdAlma, movimento, resParcial, atencao, iniciativa };
+  const calc = { hp, pe, defesa, cd, rdGeral, rdEspecifico, rdAlma, movimento, atencao, iniciativa };
   const stats = {};
   for (const k of OVERRIDABLE) stats[k] = ov[k] != null ? ov[k] : calc[k];
   const isOverridden = (k) => ov[k] != null;
@@ -3633,7 +3756,14 @@ export function deriveAfty(creature, opcoes = {}) {
     // são o orçamento de Focos da aba Interlúdios.
     carteira,
     adaptacoes: resumoAdaptacoes(creature, opcoes.adaptacoes),
-    gatilhosTreino: gatilhosDeTreino(creature).map((gatilho) => ({
+    /* Os da ORIGEM entram na mesma lista (2026-09-29, Forma de Raposa): as três
+       telas que desenham o interruptor leem só daqui, e o estado é o mesmo
+       `treinosAtivos`. O nome ficou "Treino" por isso, e não por ser só dele.
+       Mesmo id nas duas fontes vira um interruptor só, como entre duas Linhas. */
+    gatilhosTreino: [
+      ...new Map([...gatilhosDeTreino(creature), ...gatilhosDeOrigem(creature)]
+        .map((gatilho) => [gatilho.id, gatilho])).values(),
+    ].map((gatilho) => ({
       ...gatilho,
       ativo: !!opcoes.treinosAtivos?.[gatilho.id],
     })),
@@ -3727,6 +3857,7 @@ export function deriveAfty(creature, opcoes = {}) {
     pontosPreparo,        // recurso do Combatente (Artes do Combate), 0 sem ela
     preparoTemporario,    // casca de Preparo por rodada (Postura do Céu), que a sessão topa
     usosHabilidades,      // { [habId]: { max, recarga } } das habilidades com contador de usos
+    mesa,                 // { [chave]: { usos, resultados } } de origem, talento, habilidade e opção (2026-09-28)
     golpeEspecial,        // { disponivel, autossuficiente } para o montador da Ficha
     recursoLabel,         // "Estamina" no Restringido, "Energia" no resto — mesmo PE
     partes,               // fontes de cada stat, para o hover da UI
@@ -3796,5 +3927,14 @@ export function deriveAfty(creature, opcoes = {}) {
        (quantos golpes já levou, se ainda está de pé) é SESSÃO, e quem resolve é
        o `resolveGuarda` em ficha-sessao.js. */
     guarda,
+    /* As CONDIÇÕES em cima da criatura, resolvidas: cada uma com o que faz e
+       com a marca do que perdeu a disputa. Os números já entraram lá em cima, e
+       isto é o que a aba Buffs e a bancada do criador desenham. */
+    condicoes: {
+      lista: marcaMovimentoNasLinhas(condicoes.ativas, movimentoCondicao.nome),
+      falhas: condicoes.falhas,
+      fragilizado,
+      movimento: movimentoCondicao.fonte,
+    },
   };
 }

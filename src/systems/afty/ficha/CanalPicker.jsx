@@ -45,6 +45,8 @@ export default function CanalPicker({ value, onChange, ancora = "esquerda", cata
      campo em branco com efeito ativo por trás seria pior. Ver
      `ui/usar-primitiva.js`. */
   const veHpAtributo = usePrimitiva("hpAtributo") || value === "hpAtributo";
+  // E o irmão dele no ataque (2026-09-28, Fórmula de Combate Entrópica).
+  const veAtaqueAtributo = usePrimitiva("ataqueAtributo") || value === "ataqueAtributo";
   // Mesma regra para os dois de PV e Passivas (multiplicador de PV e Passivas
   // sem custo de PE), que só aparecem para quem pediu a primitiva `pvEPassivas`.
   const vePvPassivas = usePrimitiva("pvEPassivas") || value === "hpMult" || value === "passivaSemCusto";
@@ -58,6 +60,7 @@ export default function CanalPicker({ value, onChange, ancora = "esquerda", cata
         label: g.label,
         itens: g.itens.filter((c) =>
           (veHpAtributo || c.id !== "hpAtributo")
+          && (veAtaqueAtributo || c.id !== "ataqueAtributo")
           && (vePvPassivas || (c.id !== "hpMult" && c.id !== "passivaSemCusto"))
           && (!termo
           || semAcento(c.label).includes(termo)
@@ -65,7 +68,7 @@ export default function CanalPicker({ value, onChange, ancora = "esquerda", cata
           || semAcento(c.nota).includes(termo))),
       }))
       .filter((g) => g.itens.length);
-  }, [busca, catalogo, veHpAtributo, vePvPassivas]);
+  }, [busca, catalogo, veHpAtributo, veAtaqueAtributo, vePvPassivas]);
 
   const chapada = useMemo(() => grupos.flatMap((g) => g.itens), [grupos]);
 

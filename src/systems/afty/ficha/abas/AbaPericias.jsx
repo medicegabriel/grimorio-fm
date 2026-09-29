@@ -26,7 +26,7 @@ import { useDestaque } from "../usar-destaque";
 
 const ABREV = Object.fromEntries(AFTY_ATTRS.map((a) => [a.key, a.abbr]));
 
-function LinhaTeste({ nome, atributo, bonus, textoBonus, dados, partes, prof, tag, margem, rolar, chave, destacado }) {
+function LinhaTeste({ nome, atributo, bonus, textoBonus, dados, partes, prof, tag, margem, rolar, chave, destacado, falha }) {
   const raiz = useDestaque(destacado);
   return (
     <div
@@ -47,6 +47,14 @@ function LinhaTeste({ nome, atributo, bonus, textoBonus, dados, partes, prof, ta
         <span className="afty-rotulo text-[9px] uppercase tracking-wider flex-shrink-0">{ABREV[atributo] || ""}</span>
       )}
       {tag && <span className="afty-chip flex-shrink-0">{tag}</span>}
+      {/* FALHA AUTOMÁTICA de condição (Paralisado e Inconsciente, em
+          Reflexos). O número fica, porque a regra não o muda, e a marca diz
+          que a rolagem não vale. Quem impôs vai no `title`. */}
+      {falha?.length > 0 && (
+        <span className="afty-chip flex-shrink-0" data-afty-tom="aviso" title={`Falha automática: ${falha.join(", ")}`}>
+          Falha
+        </span>
+      )}
       {margem != null && (
         <span className="afty-rotulo font-mono tabular-nums flex-shrink-0" title="Margem de crítico">
           ({margem})
@@ -167,6 +175,7 @@ export default function AbaPericias({ derived, rolar, destaque }) {
               /* A margem é própria do TR. O treinamento Mestre continua
                  identificado na linha, mas não bloqueia o crítico reduzido. */
               margem={r.margemCritico}
+              falha={r.falhaAutomatica}
               rolar={rolar}
               chave={`tr:${r.value}`}
               destacado={destaque === `tr:${r.value}`}

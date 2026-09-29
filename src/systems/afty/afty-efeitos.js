@@ -171,7 +171,6 @@ export const EFEITO_CANAIS = [
   { id: "tamanho",       label: "Categoria de Tamanho",  nota: "em DEGRAUS a partir de Médio, e não em metros: +1 = Grande, +2 = Enorme, −1 = Pequeno. Apara em Minúsculo e Colossal. Cada degrau mexe em Atletismo e Furtividade" },
   // ⚠ Os três de Regeneração e os sete de Cura moram no grupo "Cura e
   // Regeneração", e não aqui. Ver GRUPOS_DE_CANAL.
-  { id: "resParcial",    label: "Resistência Parcial" },
   { id: "almaMax",       label: "Integridade da Alma" },
   { id: "empolgacaoMaxima",  label: "Empolgação Máxima",  nota: "sinalizador: troca a tabela de dados de Empolgação inteira, não soma" },
   { id: "empolgacaoInicial", label: "Empolgação Inicial", nota: "quantos níveis acima do 1 o combate começa" },
@@ -191,6 +190,11 @@ export const EFEITO_CANAIS = [
   // Cálculo de vida de uma pessoa para um a minha escolha"*. A regra de
   // desempate é a MESMA da Defesa, e pelo mesmo motivo.
   { id: "hpAtributo",     label: "Atributo do PV",       alvo: "atributo", nota: "TROCA a Constituição no cálculo do PV, e não soma nada. Com mais de um concedido vale o de maior modificador, porque a regra é sempre \"você pode optar\"" },
+  // O terceiro irmão (2026-09-28, Restrição Congênita Intelectual: "Inteligência
+  // em vez de Força ou Destreza para realizar ações de ataque"). Acerto E dano,
+  // por decisão do autor, e só no corpo a corpo e na distância. Canal de Addon,
+  // escondido no seletor atrás da primitiva `ataqueAtributo`.
+  { id: "ataqueAtributo", label: "Atributo do Ataque",   alvo: "atributo", nota: "TROCA a Força ou a Destreza no acerto e no dano dos ataques corpo a corpo e à distância, e não soma nada. Vale o de maior modificador" },
   { id: "bonusPericia",  label: "Perícia",               alvo: "pericia", nota: "aceita `atr:destreza` para atingir toda perícia daquele atributo (Dádivas do Céu) e `oficio:todos` para atingir toda linha de Ofício" },
   /* Irmão do `defesaAtributo` do lado da Perícia: ele SUBSTITUI o bônus inteiro
      da linha por um número, em vez de somar nele. Nasceu com o Treino Cônjuge
@@ -439,7 +443,7 @@ export const EFEITO_CANAIS = [
      Domínio precisou nomear o dela: o texto dela é *"O custo dos seus FEITIÇOS
      dentro da expansão"*, e sem o alvo ela passaria a baratear Domínio Simples,
      Estilo e Invocação de lambuja. Ver `efeitosDoDominio`. */
-  { id: "custoPE",        label: "Custo em PE",          alvo: "custo", nota: "redução de custo em PE, e o piso de 1 PE continua valendo em CADA gasto. Sem alvo vale para todo gasto que a ficha calcula. Com alvo, só naquele" },
+  { id: "custoPE",        label: "Custo em PE",          alvo: "custo", nota: "redução de custo em PE, e o piso de 1 PE continua valendo em CADA gasto. Sem alvo vale para todo gasto que a ficha calcula. Com alvo, só naquele. Valor negativo AUMENTA o custo, depois do piso (condição Condenado)" },
 
   /* ---------- REGENERAÇÃO: cura automática no INÍCIO DO TURNO ----------
      Os três escrevem uma parte diferente da MESMA rolagem (`3d8+5`), e é por
@@ -662,7 +666,7 @@ const GRUPOS_DE_CANAL = [
     "curaPorDado", "curaPorDadoTeto", "curaUsos", "curaPontos",
   ]],
   ["Defesa", [
-    "defesa", "rdGeral", "rdEspecifico", "rdFisico", "rdAlma", "resParcial",
+    "defesa", "rdGeral", "rdEspecifico", "rdFisico", "rdAlma",
     "rdTipo", "imunidadeDano", "resistenciaDano", "vulnerabilidadeDano",
     "guardaBonus", "guardaVida",
   ]],
@@ -675,7 +679,7 @@ const GRUPOS_DE_CANAL = [
   // `nivelAptidao` entra aqui, e não num grupo de Aptidões, porque ele é
   // concessão DIRETA de nível (a regra nomeia a trilha). O orçamento livre é
   // outro canal e está em Orçamentos.
-  ["Atributos e Aptidões", ["atributo", "limiteAtributo", "defesaAtributo", "hpAtributo", "nivelAptidao", "limiteAptidao", "imbuicoesEstilo"]],
+  ["Atributos e Aptidões", ["atributo", "limiteAtributo", "defesaAtributo", "hpAtributo", "ataqueAtributo", "nivelAptidao", "limiteAptidao", "imbuicoesEstilo"]],
   ["Perícias e Resistências", [
     "bonusPericia", "periciaFixa", "proficienciaPericia", "penalidadeArmadura", "dadosPericia", "bonusTR", "dadosTR", "proficienciaTR",
     "proficienciaTRCasoJa", "margemCriticoTR",
@@ -1255,7 +1259,11 @@ export function coletarEfeitosCriatura({
     (altoNivel?.melhorias?.escolhidas || []).map((m) => [m.id, m.vezes]),
   );
   const apiceId = altoNivel?.apiceId ? [altoNivel.apiceId] : [];
-  const roubadas = ESCOLHAS_DE_HABILIDADE.flatMap((id) => habilidades?.escolhas?.mapa?.[id] || []);
+  /* O `roubadas` do resolvedor primeiro: ele já acha o Roubo de Habilidade da
+     herdeira do Restringido, que mora sob o id clonado (2026-09-28). O mapa cru
+     fica para quem chama com um `habilidades` parcial. */
+  const roubadas = habilidades?.roubadas
+    ?? ESCOLHAS_DE_HABILIDADE.flatMap((id) => habilidades?.escolhas?.mapa?.[id] || []);
   return [
     /* `habilidades.vezes` multiplica a Habilidade de Especialização pega mais de
        uma vez (o Elevar Aptidão do Conjurador é a primeira). Sem isso a 2ª pega
@@ -1347,15 +1355,31 @@ export function coletarEfeitosDeEscolha(mapa, nomesPorOpcao = {}, catalogoPai = 
     const entrada = catalogoPai ? entradaDoPai(paiId) : null;
     const pai = entrada?.nome ?? null;
     for (const opcaoId of Array.isArray(opcoes) ? opcoes : []) {
-      const opcao = nomesPorOpcao[opcaoId] || opcaoId;
+      const opcaoCat = entrada?.escolha?.opcoes?.find((o) => o?.id === opcaoId) ?? null;
+      // O nome da opção de Addon não está no índice do livro (`nomesPorOpcao` é
+      // montado do raw), então ele sai da própria entrada antes de cair no id.
+      const opcao = nomesPorOpcao[opcaoId] || opcaoCat?.nome || opcaoId;
       // ⚠ A EXCEÇÃO É A OPÇÃO QUE SE NOMEIA SOZINHA (autor, 2026-09-12): os
       // Estilos de Combate saem como "Estilo do Duelista", sem o "Repertório do
       // Especialista" na frente. Quem decide é a marca `nomeProprio` na própria
       // opção, lida pelo pai, e por isso o Adepto de Combate, que empresta o
       // mesmo pool, lê igual.
-      const nomeProprio = !!entrada?.escolha?.opcoes?.find((o) => o?.id === opcaoId)?.nomeProprio;
-      for (const e of ESCOLHA_EFEITOS[opcaoId] || []) {
-        out.push({ ...e, origem: opcaoId, nome: pai && !nomeProprio ? `${pai} (${opcao})` : opcao });
+      const nomeProprio = !!opcaoCat?.nomeProprio;
+      const nomeDaFonte = pai && !nomeProprio ? `${pai} (${opcao})` : opcao;
+      /* ⚠ O EFEITO ESCRITO NA OPÇÃO (2026-09-28). As Dádivas Intelectuais da
+         Fórmula de Combate Entrópica são opções de Addon com número, e este
+         caminho só lia o mapa do livro: a opção era escolhida, o texto
+         aparecia, e o número nunca entrava, calado. O mapa do livro vence,
+         porque o raw nunca escreve `efeitos` na opção. Só no efeito ESCRITO na
+         opção o `nome` dele vence o da opção (a regra do `coletarEfeitosOrigem`),
+         para o rótulo das opções do livro não mudar. */
+      const doLivro = ESCOLHA_EFEITOS[opcaoId];
+      const escritos = !doLivro && Array.isArray(opcaoCat?.efeitos) ? opcaoCat.efeitos : [];
+      for (const e of doLivro ?? []) {
+        out.push({ ...e, origem: opcaoId, nome: nomeDaFonte });
+      }
+      for (const e of escritos) {
+        out.push({ ...e, origem: opcaoId, nome: e.nome ?? nomeDaFonte });
       }
     }
   }
@@ -1391,8 +1415,12 @@ export function coletarEfeitosMontante(creature, gerais, catalogoGerais = {}) {
  * feitiço, de aptidão) e vaga é lida antes de os stats existirem. O `efMontante`
  * é mesclado inteiro no agregado final, então os canais comuns (`hp`, `pe`,
  * `movimento`) também chegam.
+ *
+ * `gatilhosAtivos` é o `sessao.treinosAtivos`: efeito com `gatilhoSessao`
+ * desligado sai aqui, antes do Motor, igual ao `efeitosDeTreino`. Desligado é
+ * o padrão. Ver `gatilhosDeOrigem` em afty-origens.js.
  */
-export function coletarEfeitosOrigem(creature, escolhas = null) {
+export function coletarEfeitosOrigem(creature, escolhas = null, gatilhosAtivos = null) {
   const origemId = creature?.core?.origem?.id;
   if (!origemId) return [];
   const claId = creature?.core?.origem?.cla;
@@ -1422,7 +1450,7 @@ export function coletarEfeitosOrigem(creature, escolhas = null) {
       origem: opcao.id,
       nome: efeito.nome ?? opcao.nome ?? opcao.id,
     }))),
-  ];
+  ].filter((e) => !e.gatilhoSessao || !!gatilhosAtivos?.[e.gatilhoSessao]);
 }
 
 /**
@@ -1983,18 +2011,26 @@ export const custoPeValido = (alvo) => alvo == null || CUSTO_PE_OK.has(alvo);
  *
  * ⚠ BASE ZERO CONTINUA ZERO. O que não custa PE não passa a custar 1 por causa
  * do piso: quem não gasta não gasta.
+ *
+ * ⚠ VALOR NEGATIVO É AUMENTO (2026-09-21, condição Condenado: "o custo em PE de
+ * todas as suas habilidades aumentado em 1"). Ele entra DEPOIS do piso, e não na
+ * mesma soma das reduções: um gasto de 3 com redução 5 fica em 1 pelo piso, e o
+ * Condenado leva a 2. Somado antes, o piso comeria o aumento calado. Nas
+ * `partes` ele vem com o sinal do canal (negativo), igual às reduções.
  */
 export function custoEmPe(base, efeitos, escopo = null) {
   const bruto = Math.max(0, Math.trunc(Number(base) || 0));
   const partes = detalhesDoCanalEscopos(efeitos, "custoPE", escopo ? [escopo] : [])
-    .map((d) => ({ label: d.nome, valor: Math.max(0, Math.trunc(Number(d.valor) || 0)) }))
-    .filter((p) => p.valor > 0);
-  const reducao = partes.reduce((soma, p) => soma + p.valor, 0);
+    .map((d) => ({ label: d.nome, valor: Math.trunc(Number(d.valor) || 0) }))
+    .filter((p) => p.valor !== 0);
+  const reducao = partes.filter((p) => p.valor > 0).reduce((soma, p) => soma + p.valor, 0);
+  const aumento = partes.filter((p) => p.valor < 0).reduce((soma, p) => soma - p.valor, 0);
   return {
     base: bruto,
     reducao,
+    aumento,
     partes,
-    valor: bruto > 0 ? Math.max(CUSTO_PE_MINIMO, bruto - reducao) : 0,
+    valor: bruto > 0 ? Math.max(CUSTO_PE_MINIMO, bruto - reducao) + aumento : 0,
   };
 }
 

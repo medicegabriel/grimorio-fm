@@ -67,7 +67,7 @@
  */
 
 import { registrarFamilia, remendarLista, nivelDaFicha } from "./afty-addons";
-import { getOrigem, origensQualificadas } from "./afty-origens";
+import { getOrigem, origensQualificadas, origemMae } from "./afty-origens";
 import { AFTY_TIPOS, AFTY_RESISTENCIAS } from "./afty-schema";
 import { regraDo, sistemaDaFicha } from "./afty-sistema";
 
@@ -751,7 +751,7 @@ registrarFamilia("especializacoes", {
      traga a variação e a classe variada no mesmo JSON precisa que a referência
      ache o irmão. Quem aponta para o livro (o caso do Especialista em Estilo,
      que herda do Conjurador) continua cru. */
-  caminhosDeId: ["herdaDe", "incompativeisIds[]", "restritaOrigemIds[]"],
+  caminhosDeId: ["herdaDe", "incompativeisIds[]", "restritaOrigemIds[]", "exclusivaOrigemId"],
   aplicar: aplicarExtrasEspecializacoes,
   basicos: () => ESPECIALIZACOES_BASE,
   validador: validarCatalogoEspecializacoes,
@@ -764,6 +764,20 @@ registrarFamilia("especializacoes", {
 
 
 export const getEspecializacao = (id) => BY_ID[id] || null;
+
+/**
+ * A Especialização do LIVRO que esta herda, ou ela mesma.
+ *
+ * É o irmão do `origemMae` (afty-origens.js), e nasceu pela mesma razão em
+ * 2026-09-28, com a variação do Restringido: as travas por id de CLASSE
+ * (`semEnergia` no jogador, o nível de efeito do Restringido) comparavam com o
+ * literal `"restringido"`, e a herdeira tem id próprio. Sem o verbo, uma classe
+ * que herda do Restringido ganhava as habilidades dele e continuava com energia
+ * amaldiçoada, calada.
+ *
+ * Um degrau só, igual ao `herdaDe`: o validador reprova herança de herança.
+ */
+export const especializacaoMae = (id) => getEspecializacao(id)?.herdaDe ?? (id || null);
 
 /**
  * Treinamentos de equipamento concedidos pelas Especializações escolhidas.
@@ -794,8 +808,26 @@ export function treinamentosDasEspecializacoes(especializacoes = []) {
  * literalmente diz. A diferença entre a origem própria e uma extra importa: a
  * própria TRANCA (a Origem Restringido vê só Restringido), a extra só ABRE.
  */
+/**
+ * A Especialização exclusiva da origem, ou null.
+ *
+ * A própria vence. Sem ela, a VARIAÇÃO segue a mãe (2026-09-28): uma variação do
+ * Restringido que não traga classe herdeira fica presa ao Restringido do livro,
+ * que é o que a identidade dela diz. Com a herdeira declarando
+ * `exclusivaOrigemId` na variação, é a herdeira que vence, e o Restringido do
+ * livro continua fechado para ela.
+ */
+function exclusivaDaOrigem(origemId) {
+  const propria = AFTY_ESPECIALIZACOES.find((e) => e.exclusivaOrigemId === origemId);
+  if (propria || !origemId) return propria ?? null;
+  const mae = origemMae(origemId);
+  return mae !== origemId
+    ? AFTY_ESPECIALIZACOES.find((e) => e.exclusivaOrigemId === mae) ?? null
+    : null;
+}
+
 export function especializacoesDisponiveis(origemId, extras = []) {
-  const exclusiva = AFTY_ESPECIALIZACOES.find((e) => e.exclusivaOrigemId === origemId);
+  const exclusiva = exclusivaDaOrigem(origemId);
   if (exclusiva) return [exclusiva];
   const abertas = extras.filter((x) => x && x !== origemId);
   /* As origens que a criatura CONTA como suas, para o `restritaOrigemIds`. A
@@ -846,7 +878,7 @@ export function maxEspecializacoes(origemId, extras = [], sistema = "afty") {
  * Hoje só a Origem Restringido obriga.
  */
 export function especializacaoObrigatoria(origemId) {
-  const exclusiva = AFTY_ESPECIALIZACOES.find((e) => e.exclusivaOrigemId === origemId);
+  const exclusiva = exclusivaDaOrigem(origemId);
   return exclusiva ? exclusiva.id : null;
 }
 
@@ -855,9 +887,12 @@ export function especializacaoObrigatoria(origemId) {
  * livre. É o ÚNICO ponto onde os eixos Tipo e Especialização se tocam: a
  * Origem Restringido força os dois (autor, 2026-07-17). Não generalize
  * isso para uma relação Tipo × Especialização, ela não existe.
+ *
+ * Lê a MÃE (2026-09-28): a variação do Restringido também é sem energia, e na
+ * criatura quem responde isso é o Tipo.
  */
 export function tipoObrigatorio(origemId) {
-  return origemId === "restringido" ? "restringido" : null;
+  return origemMae(origemId) === "restringido" ? "restringido" : null;
 }
 
 /**
@@ -1082,6 +1117,12 @@ export function validarCatalogoEspecializacoes() {
         problemas.push(`${e.nome}: herdaDe aponta para uma Especialização que já herda (${e.herdaDe}). A herança é de um degrau só.`);
       } else if (!e.caracteristicas) {
         problemas.push(`${e.nome}: herdaDe não materializou as características. Religou fora de ordem?`);
+      } else if (mae.exclusivaOrigemId != null && e.exclusivaOrigemId == null && !e.restritaOrigemIds?.length) {
+        /* A trava de origem NÃO desce pelo `comHeranca`, de propósito: a
+           herdeira do Restringido pertence à variação, e não à origem do livro.
+           Sem declarar a dela, a classe nasce aberta a TODA origem, e no
+           jogador isso dá um Herdado sem energia amaldiçoada. */
+        problemas.push(`${e.nome}: herda de uma Especialização exclusiva de origem (${e.herdaDe}) e não declara exclusivaOrigemId nem restritaOrigemIds, então fica aberta a toda origem`);
       }
     }
   }

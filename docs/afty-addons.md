@@ -816,7 +816,7 @@ Quatro pegadinhas, todas pagas com bug:
 2. **Número mora em `efeitos` na RAIZ** da origem e do clã, nunca dentro de
    `caracteristicas[].efeitos`, que o motor não lê. A característica fica só com o texto (e com
    `bonus`/`poolLimite`, que são lidos por outro caminho).
-3. **`variacaoDe: "maldicao"` (ou `"sem_tecnica"`) é o que mantém as travas da origem do livro.**
+3. **`variacaoDe: "maldicao"` (ou `"sem_tecnica"`, ou `"restringido"`) é o que mantém as travas da origem do livro.**
    Sem ele, as Aptidões de Maldição e os Talentos com requisito de Origem Maldição não enxergam a
    origem nova. Só as mães de `VARIACOES_ACEITAS` (`afty-origens.js`) valem, e a lista cresce quando as
    travas da mãe nova passam por `origemMae()`.
@@ -1547,11 +1547,11 @@ O verbo é `origemMae(id)` em `afty-origens.js`, e ele responde pela mãe em cin
 `especializacoesVetadas` são os da variação, escritos no pacote. É a diferença para o `herdaDe` da
 Especialização, que herda as habilidades: o Liberto não ganha os Estudos Dedicados da mãe.
 
-⚠ **Só o Sem Técnica é mãe aceita** (`VARIACOES_ACEITAS`). As outras origens têm travas literais
-espalhadas pelo código (a Restringido perto de trinta, a Maldição e os Gêmeos meia dúzia cada), e uma
-variação delas funcionaria pela metade sem aviso. O validador de Origem relata a mãe recusada, e o
-`origemMae` a ignora, então a origem responde como ela mesma em vez de meia mãe. A lista cresce
-quando as travas da mãe nova passarem pelo verbo.
+⚠ **Só as mães de `VARIACOES_ACEITAS` valem**: Sem Técnica (2026-09-21), Maldição (2026-09-22) e
+Restringido (2026-09-28, ver a seção seguinte). As outras origens têm travas literais espalhadas
+pelo código (os Gêmeos meia dúzia), e uma variação delas funcionaria pela metade sem aviso. O
+validador de Origem relata a mãe recusada, e o `origemMae` a ignora, então a origem responde como
+ela mesma em vez de meia mãe. A lista cresce quando as travas da mãe nova passarem pelo verbo.
 
 Veio junto uma correção pequena no `coletarEfeitosOrigem`: o `nome` do efeito inline de uma OPÇÃO
 passou a vencer o nome da opção, a mesma regra do `efeitos` da raiz. Sem isso o hover do +5 do
@@ -1559,7 +1559,78 @@ Liberto dizia só "Percepção", e agora diz "Caminho até o Fim (Percepção)".
 nomeava efeito de opção, então nada mudou para eles.
 
 O `asserts/t-liberto.mjs` lê o mesmo JSON que a pessoa cola, confere cada trava contra o Sem Técnica
-do livro nos dois sistemas, cada degrau no nível exato em que abre, e a mãe recusada.
+do livro nos dois sistemas, cada degrau no nível exato em que abre, e a mãe recusada (o Inato, desde
+que o Restringido entrou na lista).
+
+### A variação do Restringido, 2026-09-28
+
+Nasceu para o Addon **Fórmula de Combate Entrópica** (a Restrição Intelectual de Dr. Xeno, guia em
+`docs/afty-formula-entropica.md`). O Restringido é a mãe mais cara de aceitar porque tem travas em
+DOIS eixos: a origem trava a classe, e no jogador quem responde "sem energia amaldiçoada" é a
+CLASSE, e não o Tipo. Uma variação do Restringido vem então em par: a origem com `variacaoDe` e uma
+Especialização com `herdaDe: "restringido"`.
+
+```json
+"origens": [{ "id": "intelecto", "nome": "...", "variacaoDe": "restringido",
+              "especializacaoExclusivaId": "res_intelecto", "limiteAtributo": { "inteligencia": 30 } }],
+"especializacoes": [{ "id": "res_intelecto", "nome": "...", "herdaDe": "restringido",
+                      "exclusivaOrigemId": "intelecto", "incompativeisIds": ["restringido"] }]
+```
+
+| Eixo | O que passou a ler a mãe |
+|---|---|
+| Origem (`origemMae`) | `tipoObrigatorio` (o Tipo Restringido forçado), a classe exclusiva (`exclusivaDaOrigem`), a cópia do Gêmeo (só o Físico Abençoado, que a variação não tem), e pelo `origemEstrutural` as Linhas de energia e o Treino de Potencial Físico |
+| Classe (`especializacaoMae`, em `afty-especializacoes.js`) | o `semEnergia` do jogador, e o `niveisPorEfeito.restringido` (Caçador de Feiticeiros, Corpo de Aço), que a herdeira publica sob o nome da mãe como o `nivelEspec` já fazia |
+| Habilidade (`expandeHerdadas`) | a Restrição Definitiva no teto do Surto, a Imitação, o Ainda de Pé nas curas, e o Roubo de Habilidade (`roubadas`) |
+
+⚠ **Dois pedaços do Tipo NÃO descem**, por decisão do autor (*"Só INT vai a 30"*): o limite 30 de
+Força, Destreza e Constituição e o rótulo "Ápice Corporal Humano" no hover do limite. São o CONTEÚDO
+de uma característica do livro, e a variação herda identidade. Ela declara o próprio
+`limiteAtributo`. Quem responde é `ehVariacaoDoRestringido(id)`.
+
+⚠ **A variação sem classe própria fica presa ao Restringido do livro**, que é o que a identidade dela
+diz. Com a herdeira declarando `exclusivaOrigemId`, é a herdeira que vence. Os dois campos que se
+citam (`especializacaoExclusivaId` na origem e `exclusivaOrigemId` na classe) ganham o prefixo do
+pacote pelo `caminhosDeId`. A trava de origem NÃO desce pelo `herdaDe`, e o validador relata a herdeira
+de classe exclusiva que não declara a dela, porque no jogador isso daria um Herdado sem energia.
+
+⚠ **Um defeito da herança que valia para todo `herdaDe` saiu junto**: o clone de uma habilidade com
+`concedeEscolha` continuava apontando para a irmã do LIVRO. O Respeito Celeste clonado dava as Dádivas
+extras para um Restrito pelos Céus que a herdeira não tem, calado. `clonesDaHeranca` agora remapeia o
+`concedeEscolha.habilidade`, a terceira forma de citar uma irmã.
+
+Fica de fora, e já estava anotado para o Conjurador: o requisito `nivelEspec` do Alto Nível ("20 Níveis
+de Restringido") segue lendo o nível REAL, e a herdeira não o alcança. Ver `docs/a-fazer.md`.
+
+O `asserts/t-restringido-variacao.mjs` mede o verbo com um pacote mínimo, nos dois sistemas, e confere
+que o Restringido do livro deriva igual com e sem o pacote instalado.
+
+### O que a Fórmula de Combate Entrópica acrescentou ao motor, 2026-09-28
+
+O pacote `addons/formula-combate-entropica.json` é quase todo de regra que age em aliado ou inimigo,
+e o pedido era deixar a ficha "mastigada" para quem conhece pouco o sistema. Sete verbos novos, todos
+genéricos e valendo nos dois sistemas:
+
+| Verbo | Como se escreve | O que faz |
+|---|---|---|
+| `bonus.livres` | `"bonus": { "distribuir": 4, "maxPorAtributo": 3, "entre": [...], "livres": 1 }` na característica de origem | N dos pontos podem sair do `entre`. O teto por atributo vale para o pool inteiro, e é por isso que é campo do mesmo bônus, e não uma segunda alocação |
+| canal `ataqueAtributo` | `{ "canal": "ataqueAtributo", "alvo": "inteligencia", "expr": "1" }` | TROCA a FOR ou a DES no acerto e no dano do corpo a corpo e da distância, e vale o maior modificador. Irmão do `hpAtributo`, escondido no seletor pela primitiva `ataqueAtributo` |
+| teto de faixa por expressão | `"max": "bt"` num estado `faixa` | lido no contexto do montante. Antes, texto virava zero e a faixa nascia travada |
+| efeito na opção | `efeitos` dentro de `escolha.opcoes[]` de Habilidade ou Talento | o mapa do livro continua vencendo, e o `nome` do efeito escrito vence o da opção |
+| `usos` e `resultados` em toda entrada | em característica de origem, Talento, opção de escolha e (só `resultados`) Habilidade | o derive devolve em `mesa`, por chave de item. A Ficha mostra o contador na linha e o número pronto ("Bônus dos Aliados: 2") |
+| recargas `cena` e `rodada` | `"usos": { "expr": "1", "recarga": "cena" }` | a recarga vai na frente da chave da sessão (`cena:`, `rodada:`), e a sessão devolve por prefixo na cena nova e na virada da rodada. O Descansar segue devolvendo tudo |
+| porta `requerEscolha` | `"requerEscolha": "id_da_opcao"` num estado de Addon | a quarta porta de dono, a opção escolhida (a mesma das Posturas do livro) |
+
+⚠ **Opção com contador ou número vira LINHA PRÓPRIA na Ficha**, logo abaixo da mãe, e sai da lista de
+opções dela (decisão do autor para as Dádivas Intelectuais). Opção sem nada disso segue como sempre,
+então as Dádivas do Céu do livro não mudaram.
+
+⚠ **Os números de mesa são um campo à parte das marcas** (`numeros` no item da Ficha). Abaixo de
+560 px de linha eles saem do cabeçalho fechado e aparecem dentro da linha aberta, por
+`@container itemficha` em `ficha.css`.
+
+Asserts: `t-formula-entropica.mjs` (102) mede cada verbo pelo conteúdo que o usa, nos dois sistemas.
+O censo do `t-primitivas.mjs` foi para 21.
 
 ---
 
@@ -1710,6 +1781,37 @@ bancada mora no `draft` porque lá o estado é entrada de balanceamento, e são 
 
 ⚠ **E ele fica FORA do que "Em Combate" apaga.** O Cônjuge estar na cena mexe em Perícia e em
 Iniciativa, que valem antes de a briga começar.
+
+### Interruptor de sessão na ORIGEM (2026-09-29)
+
+O mesmo `gatilhoSessao` vale numa característica de origem ou de clã. Nasceu com a Forma de Raposa
+da Kitsune (`addons/yna.json`):
+
+```json
+{
+  "id": "forma_de_raposa",
+  "nome": "Forma de Raposa",
+  "descricao": "...",
+  "gatilhoSessao": { "id": "forma_de_raposa", "label": "Forma de Raposa" }
+}
+```
+
+Os efeitos moram no `efeitos` da origem (ou do clã) e apontam para o id:
+
+```json
+{ "canal": "tamanho", "expr": "-1", "gatilhoSessao": "forma_de_raposa", "duracao": "temporaria" }
+```
+
+⚠ **Por que interruptor, e não estado de combate.** Efeito de origem roda no MONTANTE, antes de a
+bancada existir, então um `quando` que cite estado de combate avalia zero e cai calado (o mesmo
+defeito que deixa a Atenção do Instinto Sanguinário sempre de fora, anotado em `a-fazer.md`). O
+interruptor não passa pelo `quando`: `coletarEfeitosOrigem` recebe o `treinosAtivos` e tira o efeito
+desligado antes do Motor, pela mesma porta do `efeitosDeTreino`. E vale fora de combate, que é o que
+uma forma usada para farejar precisa. Decisão do autor.
+
+`gatilhosDeOrigem` (afty-origens.js) lê `caracteristicasEfetivas`, então o do clã só existe com o
+clã escolhido. O derive junta os dois em `gatilhosTreino`, sem duplicar id, e as três telas que
+desenham o interruptor leem só dali: nenhuma mudou. O id não ganha namespace, igual ao do treino.
 
 ### Alvo de VALOR, e um canal que substitui
 

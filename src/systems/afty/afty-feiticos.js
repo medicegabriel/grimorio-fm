@@ -486,9 +486,13 @@ export function aplicaReducoesCustoFeitico(feitico, calculo, ctx = {}) {
   /* ⚠ O ESCOPO É OBRIGATÓRIO desde 2026-09-09: sem ele, este leitor veria só as
      reduções SEM alvo e perderia a da Expansão de Domínio, que agora nomeia o
      alvo `feitico`. Ver o canal `custoPE` em afty-efeitos.js. */
+  /* ⚠ E O NEGATIVO É AUMENTO (condição Condenado, 2026-09-21), somado DEPOIS do
+     piso de 1 PE. Ver `custoEmPe` em afty-efeitos.js. */
+  const aumentos = [];
   for (const fonte of detalhesDoCanalEscopos(ctx.efeitos, "custoPE", ["feitico"])) {
-    const valor = Math.max(0, Math.trunc(Number(fonte.valor) || 0));
+    const valor = Math.trunc(Number(fonte.valor) || 0);
     if (valor > 0) reducoes.push({ fonte: fonte.nome, valor });
+    else if (valor < 0) aumentos.push({ fonte: fonte.nome, valor });
   }
 
   /* ⚠ IRMÃO GENÉRICO DA MANIPULAÇÃO PERFEITA (2026-09-15). Ela é travada ao
@@ -510,12 +514,14 @@ export function aplicaReducoesCustoFeitico(feitico, calculo, ctx = {}) {
   }
 
   const reducaoTotal = reducoes.reduce((total, reducao) => total + reducao.valor, 0);
-  const custoPE = custoBase > 0 ? Math.max(1, custoBase - reducaoTotal) : custoBase;
+  const aumentoTotal = aumentos.reduce((total, aumento) => total - aumento.valor, 0);
+  const custoPE = custoBase > 0 ? Math.max(1, custoBase - reducaoTotal) + aumentoTotal : custoBase;
   return {
     ...calculo,
     custoPE,
     custoPEBase: custoBase,
-    reducoesCustoPE: reducoes,
+    // O aumento viaja na mesma lista, com o valor negativo do canal.
+    reducoesCustoPE: custoBase > 0 ? [...reducoes, ...aumentos] : reducoes,
   };
 }
 
@@ -524,7 +530,7 @@ export function tituloCustoFeitico(calculo) {
   if (!calculo || calculo.custoPE == null) return "Custo em PE";
   const linhas = [`Custo base: ${calculo.custoPEBase ?? calculo.custoPE} PE`];
   for (const reducao of calculo.reducoesCustoPE ?? []) {
-    linhas.push(`${reducao.fonte}: -${reducao.valor} PE`);
+    linhas.push(`${reducao.fonte}: ${reducao.valor < 0 ? "+" : "-"}${Math.abs(reducao.valor)} PE`);
   }
   linhas.push(`Total: ${calculo.custoPE} PE`);
   return linhas.join("\n");
@@ -538,13 +544,20 @@ export function tituloCustoFeitico(calculo) {
 export function partesCustoFeitico(calculo) {
   if (!calculo || calculo.custoPE == null) return [];
   if (calculo.liberacao?.custoPE != null) return [{ label: "Liberação Máxima", valor: calculo.liberacao.custoPE }];
+  /* O aumento (valor negativo, Condenado) entra DEPOIS do piso, igual à conta,
+     senão a linha "Custo Mínimo" engoliria o +1 e diria o número errado. */
+  const lista = calculo.reducoesCustoPE ?? [];
+  const aumentos = lista.filter((r) => r.valor < 0).map((r) => ({ label: r.fonte ?? r.label, valor: -r.valor }));
   const partes = [
     { label: "Custo Base", valor: calculo.custoPEBase ?? calculo.custoPE },
-    ...(calculo.reducoesCustoPE ?? []).map((r) => ({ label: r.fonte ?? r.label, valor: -r.valor })),
+    ...lista.filter((r) => r.valor > 0).map((r) => ({ label: r.fonte ?? r.label, valor: -r.valor })),
   ];
   const soma = partes.reduce((s, p) => s + p.valor, 0);
-  if (soma !== calculo.custoPE) partes.push({ label: "Custo Mínimo", valor: calculo.custoPE - soma });
-  return partes;
+  const somaAumentos = aumentos.reduce((s, p) => s + p.valor, 0);
+  if (soma + somaAumentos !== calculo.custoPE) {
+    partes.push({ label: "Custo Mínimo", valor: calculo.custoPE - somaAumentos - soma });
+  }
+  return [...partes, ...aumentos];
 }
 
 // ---------------------------------------------------------------

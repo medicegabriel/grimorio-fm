@@ -39,7 +39,7 @@ Buffs.
 |---|---|
 | Habilidades na aba Ações | **D7**: nenhum catálogo tem metadado de ação, custo ou usos |
 | ✅ Descanso curto e longo | **D3** respondida em 2026-09-23: um botão só, que devolve tudo |
-| Condições com mecânica | **D6**: as 26 condições não têm efeito modelado |
+| ✅ Condições com mecânica | **D6** respondida em 2026-09-21: ver `docs/afty-condicoes.md` |
 | RD abatendo dano sozinha | **D9**: decisão do autor |
 | Trilho lateral de Buffs | **D10**: preferência do autor |
 | PV por Invocação | pergunta 3 da seção 24 |
@@ -237,6 +237,13 @@ não o máximo solto: a barra é a mesma nas duas telas e nos dois sistemas. Med
 
 ## 5. Buffs temporários, em três camadas
 
+⚠ **A tela da aba mudou em 2026-09-22** (autor: *"o Ligado Agora fica MUITO poluído"*). De cima para
+baixo: a faixa **Agora** (o saldo de tudo que a aba liga, contra a ficha sem nada disso, e o botão Em
+Combate), **Condições** (cartões e catálogo), **Ligados Agora** (ladrilhos com um × que desliga),
+**Estados** (a lista completa), **Buffs de Mesa** e **Temporários**. O saldo tem conta própria em
+`saldoDoAgora` (ficha-buffs.js): ele NÃO é a soma dos deltas de cada linha, porque as regras
+interagem. As camadas de dados abaixo continuam as mesmas.
+
 Este é o coração do pedido. As três camadas moram no mesmo painel, na mesma ordem.
 
 ### Camada 1: os catalogados (já existem e já funcionam)
@@ -274,6 +281,9 @@ existe, o painel de fontes já nomeia a parcela, e a expiração é só decremen
 exatamente a regra que o autor deu em 2026-07-28: *"se o aumento de Força for temporário, não!"*.
 
 ### Camada 3: as condições
+
+⚠ **Desde 2026-09-21 as condições mexem no número**, sem acumular entre si, e a camada 3 conta as
+rodadas de cada uma. Ver `docs/afty-condicoes.md`. O texto abaixo é o registro de como ela nasceu.
 
 `CONDICOES_CATALOGO` existe em `afty-feiticos.js` com as 26 condições em quatro forças, mas **é só
 nome**: nenhuma tem efeito mecânico modelado. Então a camada 3 nasce como **marcador com duração**,
@@ -528,7 +538,7 @@ Cada fase fecha com `npx eslint src/systems/afty/`, `npx vite build` e asserts d
 | ✅ ~~D3~~ | **Um botão só, que devolve tudo** (autor, 2026-09-23: *"Manter um botão só"*). A recarga de cada contador de usos fica gravada como dado | feito |
 | ✅ ~~D4~~ | **O crítico DOBRA OS DADOS ROLADOS** (autor, 2026-08-05). `3d8+12` vira `6d8+12`, e o fixo entra uma vez | feito |
 | ✅ ~~D5~~ | **Vantagem e desvantagem são 2d20**, ficando o maior ou o menor (autor, 2026-08-05) | feito |
-| **D6** | As 26 condições são só marcadores por enquanto, certo? (é como está) | fase 4 |
+| ✅ ~~D6~~ | **As condições mexem no número e não acumulam entre si** (autor, 2026-09-21). Ver `docs/afty-condicoes.md` | feito |
 | **D7** | Índice de ações: caminho A, B ou C da seção 8? | fase 3 |
 | ✅ ~~D8~~ | **Os dois**: por ficha (gravado NA CRIATURA, viaja no export) e um padrão global opcional | feito |
 | **D9** | Ao aplicar dano, a Ficha abate a RD sozinha ou só mostra quanto ela abateria? | fase 1 |
@@ -899,10 +909,9 @@ graça: o buff aparece **nomeado** na lista de fontes do número que ele mudou.
 aliado não pode destravar uma Habilidade que pede Força 18, que é exatamente a regra do autor de
 2026-07-28. Coberto por assert que compara `attrEff` com `attrPermanente`.
 
-**Camada 3, as condições.** Marcadores com duração, e **sem número**. ⚠ Isso é honestidade: as 26
-condições do `CONDICOES_CATALOGO` não têm efeito mecânico modelado no Afty, e marcar "Cego" com um -4
-inventado seria número saído do nada. Qualquer número que a condição imponha entra como buff ad-hoc,
-onde fica visível e rastreável. É a pergunta D6.
+**Camada 3, as condições.** Com número desde 2026-09-21, quando o autor mandou os textos e a regra
+de não acumular. Até ali eram marcadores com duração e sem número, porque marcar "Cego" com um -4
+inventado seria número saído do nada. Ver `docs/afty-condicoes.md`.
 
 ### Verificação
 

@@ -323,6 +323,14 @@ export const PRIMITIVAS = [
     rotulo: "Atributo do PV",
     nota: "O canal que TROCA a Constituição no cálculo do PV",
   },
+  /* ⚠ NASCEU EM 2026-09-28, com a Fórmula de Combate Entrópica, já com o portão
+     junto: é a lição do `hpAtributo` e do Azamaru, canal novo por causa de Addon
+     nasce com a primitiva. */
+  {
+    id: "ataqueAtributo",
+    rotulo: "Atributo do Ataque",
+    nota: "O canal que TROCA a Força ou a Destreza no acerto e no dano dos ataques corpo a corpo e à distância",
+  },
   {
     id: "adaptacao",
     rotulo: "Ciclo de Adaptação",
@@ -1144,9 +1152,14 @@ function textoNoNivel(entrada, nivel, campo = "label") {
  * `idsDoPacote` são todos os ids que o pacote declara, em qualquer família: um
  * estado que exige o Talento do próprio pacote cita o id local.
  */
+/* ⚠ A QUARTA PORTA, `requerEscolha` (2026-09-28): a OPÇÃO de escolha aninhada
+   escolhida, a mesma porta das Posturas do livro. Nasceu com as Dádivas
+   Intelectuais, que são opções e não Habilidades: sem ela o contador da
+   Inferência Rápida apareceria para quem não pegou a Dádiva. Id de opção não é
+   entrada de família, então fica cru, que é o que a ficha grava. */
 function comDono(bruto, pacoteId, idsDoPacote) {
   const out = {};
-  for (const porta of ["requerTalento", "requerHabilidade", "requerAptidao"]) {
+  for (const porta of ["requerTalento", "requerHabilidade", "requerAptidao", "requerEscolha"]) {
     const cru = bruto?.[porta];
     if (!cru) continue;
     const resolve = (id) => (idsDoPacote.has(String(id)) ? comPrefixo(pacoteId, id) : String(id));
@@ -1155,10 +1168,22 @@ function comDono(bruto, pacoteId, idsDoPacote) {
   return out;
 }
 
-export function estadosCombateDeAddon(creature, nivelMax = 5) {
+/**
+ * ⚠ O TETO DA FAIXA PODE SER EXPRESSÃO (2026-09-28, Fórmula de Combate
+ * Entrópica: *"+1 cumulativo [...] até o máximo do seu Bônus de Treinamento"*).
+ * Número continua valendo como sempre. Texto que não é número vai para o
+ * `avaliar`, que o derive passa com o contexto do montante: sem ele, `"bt"`
+ * virava `Number("bt")`, zero, e a faixa nascia travada em 0, calada.
+ */
+export function estadosCombateDeAddon(creature, nivelMax = 5, { avaliar = null } = {}) {
   const nivel = nivelMax === "max"
     ? 5
     : Math.max(0, Math.min(5, Math.trunc(Number(nivelMax) || 0)));
+  const teto = (cru) => {
+    const texto = typeof cru === "string" ? cru.trim() : "";
+    if (texto && !Number.isFinite(Number(texto)) && typeof avaliar === "function") return avaliar(texto);
+    return Number(cru);
+  };
   const estados = [];
   const vistos = new Set();
 
@@ -1251,7 +1276,7 @@ export function estadosCombateDeAddon(creature, nivelMax = 5) {
         } : {}),
         ...(tipo === "faixa" ? {
           min: minFaixa,
-          max: Math.max(minFaixa, Math.trunc(Number(maxFaixaCru) || 0)),
+          max: Math.max(minFaixa, Math.trunc(teto(maxFaixaCru) || 0)),
           passo: Math.max(1, Math.trunc(Number(bruto.passo) || 1)),
         } : {}),
         ...(tipo === "bool" && bruto.padrao != null ? { padrao: !!bruto.padrao } : {}),

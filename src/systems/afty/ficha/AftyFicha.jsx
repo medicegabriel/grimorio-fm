@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { ArmasTransformaveis } from "../ui/armas-transformaveis";
 import {
   ChevronLeft, Pencil, AlertTriangle, Moon, ChevronRight, Search, Heart, Zap, Sparkles, Palette,
@@ -17,7 +17,7 @@ import { Guarda } from "../ui/guarda";
 import { PainelTita } from "../ui/tita";
 import {
   carregarSessao, salvarSessao, aparaSessao,
-  aplicaDano, aplicaCura, pagaCustoVida, proximaRodada, descansar, registraRolagem,
+  aplicaDano, aplicaCura, aplicaPerdaDeVida, pagaCustoVida, proximaRodada, descansar, registraRolagem,
   aplicaDanoNaAlma, curaAlma, defineAlma,
   peTempTotal, gastaPe, pvTempTotal,
   entradaDaGuarda, sofreGolpeNaGuarda, desfazGolpeNaGuarda, encerraGuarda, defineCondicoes,
@@ -56,7 +56,7 @@ import AbaHabilidades from "./abas/AbaHabilidades";
 import AbaBuffs from "./abas/AbaBuffs";
 import AbaEquipamentos from "./abas/AbaEquipamentos";
 import AbaInvocacoes from "./abas/AbaInvocacoes";
-import { deltaDosEstados } from "./ficha-buffs";
+import { deltaDosEstados, saldoDoAgora } from "./ficha-buffs";
 // O padrão global de tema é POR SISTEMA: "quero todas as minhas fichas assim"
 // dito no Grimório Afty não pode repintar as fichas de jogador. Ver afty-sistema.js.
 import { sistemaDaFicha, ehPlayer, regraDo, rotuloDoNivel } from "../afty-sistema";
@@ -206,6 +206,11 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
          fora repetiria o erro do `guarda`: a lista de opção que falta é
          creditada, calada, ao estado que estiver sendo medido. */
       invocacoes: sessaoBruta.invocacoes,
+      /* AS CONDIÇÕES DA SESSÃO (2026-09-21). Mexem em Defesa, TR, perícia,
+         acerto, movimento e RD, então são número do derive, e entram na MESMA
+         lista de opções pelo motivo de sempre: um derive de comparação sem elas
+         creditaria o -10 do Paralisado a cada estado ligado. */
+      condicoes: sessaoBruta.condicoes,
     }),
     [sessaoBruta],
   );
@@ -345,9 +350,9 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
      ⚠ ESCREVE A LISTA INTEIRA, e não um campo solto, porque `storage.update`
      faz merge de chave de PRIMEIRO nível: mandar `{ invocacoes }` pela metade
      apagaria as outras invocações. */
-  const invocacaoTemada = temandoInvocacao
+  const invocacaoTemada = useMemo(() => (temandoInvocacao
     ? (ficha.invocacoes ?? []).find((i) => i.id === temandoInvocacao) ?? null
-    : null;
+    : null), [temandoInvocacao, ficha.invocacoes]);
 
   /* Grava o tema de um Shikigami DENTRO da invocação, reescrevendo a lista.
      ⚠ A LISTA INTEIRA, e não um campo solto, porque `storage.update` faz merge
@@ -450,6 +455,15 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
     return r;
   }, [atualiza, modo, sessao.hpAtual]);
 
+  /* A perda de vida do Sangramento: rola o dado da faixa, põe no histórico e
+     desconta do PV, sem passar pela casca (ver `aplicaPerdaDeVida`). */
+  const sangrar = useCallback((condicao) => {
+    const faixa = condicao?.sangramento;
+    if (!faixa) return;
+    const r = rolarDano({ rotulo: "Sangramento", detalhe: "Perda de Vida", dados: faixa.dados, faces: faixa.faces });
+    atualiza((s) => aplicaPerdaDeVida(registraRolagem(s, r), r.total));
+  }, [atualiza]);
+
   const alteraEstado = useCallback((estado, valor) => {
     atualiza((s) => alteraEstadoCombate(s, estado, valor));
   }, [atualiza]);
@@ -467,8 +481,6 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
     { id: "movimento", k: "Movimento", v: `${numeroBr(derived.movimento)}m`, p: "movimento" },
     { id: "iniciativa", k: "Iniciativa", v: derived.iniciativa, p: "iniciativa", sinal: true },
     { id: "atencao", k: "Atenção", v: derived.atencao, p: "atencao" },
-    // `null` some, zero fica. Ver a nota em AftyCreatureBuilder.jsx.
-    ...(derived.resParcial != null ? [{ id: "res-parcial", k: "Res. Parcial", v: derived.resParcial, p: "resParcial" }] : []),
     { id: "maestria", k: "Maestria", v: derived.maestria, sinal: true },
     /* O Preparo saiu daqui em 2026-09-23: virou barra própria junto dos vitais,
        com o corrente e o máximo, porque é recurso que se gasta na mesa. */
@@ -476,10 +488,34 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
 
   /* ⚠ O delta roda um `deriveAfty` por estado LIGADO, e por isso ele mora num
      `useMemo` amarrado à ficha e à sessão: sem isso ele recalcularia a cada
-     tecla digitada no campo de PV. Com três ou quatro estados ligados custa uns
-     7ms, e a lista some inteira fora de combate. */
+     tecla digitada no campo de PV. A lista some inteira fora de combate.
+
+     NÚMEROS DE 2026-09-22, medidos fora da tela e em velocidade de produção: um
+     `deriveAfty` custa 3,4ms, e o delta com vinte estados ligados custa 61ms. O
+     comentário antigo daqui dizia 7ms com três ou quatro ligados, de quando o
+     derive custava 1,75ms.
+
+     ⚠ E SÓ RODA NA ABA BUFFS, que é a única que lê o resultado (junto do
+     `saldoAgora` logo abaixo). Antes eles ficavam soltos no corpo do componente
+     e rodavam em qualquer aba: na aba Ações eram N+1 derives inteiros jogados
+     fora a cada mudança de sessão. O `tab` na dependência é o que segura isso,
+     e a conta volta assim que a aba abre. */
+  const naAbaBuffs = tab === "buffs";
+  /* ⚠ A ABA PINTA PRIMEIRO, A CONTA VEM DEPOIS. O `useDeferredValue` segura o
+     sinal por um render: na troca para Buffs a aba aparece com o delta ainda em
+     `null` (a faixa Agora mostra "Calculando"), e só então a rajada de derives
+     roda e a tela se completa.
+
+     Sem isto, os N+1 derives rodavam DENTRO do render que monta a aba, e a troca
+     de aba congelava. Com vinte estados ligados eram 1 a 2 segundos no `dev`.
+
+     As DUAS condições entram no teste de propósito: ao SAIR da aba, `naAbaBuffs`
+     cai na hora e evita uma última rajada inútil, que o valor diferido sozinho
+     ainda dispararia. */
+  const buffsPronta = useDeferredValue(naAbaBuffs);
+
   const deltaPorEstado = useMemo(
-    () => deltaDosEstados(
+    () => (!(naAbaBuffs && buffsPronta) ? null : deltaDosEstados(
       ficha, sessao.combate,
       /* ⚠ AS MESMAS OPÇÕES DA FICHA, inteiras, e não uma seleção escrita à mão:
          cada derive de comparação tem de sair do mesmo estado de mesa que o
@@ -488,8 +524,19 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
          derive, e sim a lista que entra NA CRIATURA como `buffsSessao`. */
       { ...opcoesDerive, buffs: sessao.buffs },
       derived,
-    ),
-    [ficha, sessao.combate, sessao.buffs, opcoesDerive, derived],
+    )),
+    [naAbaBuffs, buffsPronta, ficha, sessao.combate, sessao.buffs, opcoesDerive, derived],
+  );
+
+  /* O SALDO da faixa "Agora" da aba Buffs: tudo que a aba liga, contra a ficha
+     sem nada disso. Um derive a mais, com as MESMAS opções do delta logo acima,
+     pelo mesmo motivo: opção esquecida vira número fantasma no saldo. Mesma
+     porteira de aba do delta, pelo mesmo motivo. */
+  const saldoAgora = useMemo(
+    () => (!(naAbaBuffs && buffsPronta)
+      ? null
+      : saldoDoAgora(ficha, sessao.combate, { ...opcoesDerive, buffs: sessao.buffs }, derived)),
+    [naAbaBuffs, buffsPronta, ficha, sessao.combate, sessao.buffs, opcoesDerive, derived],
   );
 
   const itensDoRapido = useMemo(
@@ -497,11 +544,20 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
     [sessao.favoritos, itens],
   );
 
-  // O contador de usos das habilidades, igual no Rápido e na aba Habilidades.
-  const contadorUsos = {
+  /* O contador de usos das habilidades, igual no Rápido e na aba Habilidades.
+
+     ⚠ MEMOIZADO porque desce até o `ItemDeFicha`, que é `React.memo` e só
+     funciona com props estáveis. Um objeto literal aqui renderizava TODA linha
+     a cada clique, abrir e fechar card inclusive, e o ganho do memo sumia sem
+     aviso. Abrir card mexe em `abertos`, e não na `sessao`, então com estas
+     deps só uma mudança de sessão (PV, uso gasto) redesenha as linhas. */
+  const contadorUsos = useMemo(() => ({
     gastosDe: (chave) => usosGastosDe(sessao, chave),
     onUso: (usos, delta) => atualiza((s) => marcaUso(s, usos, delta)),
-  };
+  }), [sessao, atualiza]);
+  /* Estava sendo chamado direto dentro do JSX da aba Habilidades, então refazia
+     a varredura a cada render da Ficha. Só depende da ficha. */
+  const funcionamentos = useMemo(() => funcionamentosDaFicha(ficha), [ficha]);
 
   const corpo = {
     acoes: () => (
@@ -544,7 +600,7 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
         // Os 3 nativos (Aliados, Alma, Comidas) saíram desta lista em
         // 2026-09-13: eles agora têm cartão próprio na aba Buffs, junto dos
         // controles que os alimentam (ver AbaBuffs.jsx, CartaoNativo).
-        funcionamentos={funcionamentosDaFicha(ficha)}
+        funcionamentos={funcionamentos}
         itens={itens}
         abertos={abertos}
         onAberto={alternaItem}
@@ -594,12 +650,17 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
         onExaustao={(exaustao) => atualiza((s) => ({ ...s, exaustao: Math.max(0, Math.trunc(exaustao) || 0) }))}
         onConceder={(familia, id) => atualiza((s) => concedeNaSessao(s, familia, id))}
         onRemoverConcessao={(uid) => atualiza((s) => removeConcessao(s, uid))}
+        onSangrar={sangrar}
+        saldoAgora={saldoAgora}
       />
     ),
   };
 
-  const varsCss = SEM_CSS ? "" : cssDasVars(tema);
-  const usuarioCss = SEM_CSS ? "" : cssDoUsuario(tema);
+  /* Memoizados porque só dependem do tema, e o tema quase nunca muda: sem isto
+     as duas folhas eram remontadas em string a cada render da Ficha, inclusive
+     ao abrir um card ou cruzar o limiar da rolagem. */
+  const varsCss = useMemo(() => (SEM_CSS ? "" : cssDasVars(tema)), [tema]);
+  const usuarioCss = useMemo(() => (SEM_CSS ? "" : cssDoUsuario(tema)), [tema]);
 
   return (
     /* As primitivas de Addon que ESTA criatura enxerga. Sem provedor, ninguém
@@ -858,8 +919,8 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
           {/* ---------- defesas ----------
               ⚠ GRADE de células iguais, e não `flex-wrap`. Com o wrap cada
               caixa ficava do tamanho do próprio texto ("CD" minúscula ao lado
-              de "Res. Parcial" larga) e a fileira virava uma serra. O autor
-              apontou em 2026-08-05.
+              de "Res. Parcial" larga, rótulo que saiu em 2026-09-21) e a
+              fileira virava uma serra. O autor apontou em 2026-08-05.
 
               ⚠ E as COLUNAS moram no `.afty-stats` do `ficha.css`, não aqui.
               Eram `grid-cols-N` por breakpoint, e como a fileira tem de 8 a 12

@@ -109,7 +109,7 @@ export const SUBS_ALTO_NIVEL = [
  */
 const marca = (t) => (typeof t === "string" ? { label: t, tipo: null } : { label: t.label, tipo: t.tipo ?? null });
 
-const item = ({ id, chave, nome, texto, grupo, sub = null, tags = [], opcoes = [], aviso = null, usos = null }) => ({
+const item = ({ id, chave, nome, texto, grupo, sub = null, tags = [], opcoes = [], aviso = null, usos = null, numeros = [] }) => ({
   // `chave` é única na Ficha inteira. O `id` sozinho não serve: uma Melhoria
   // repetível aparece mais de uma vez, e duas listas diferentes podem trazer o
   // mesmo id (o Ataque Inconsequente existe no Lutador e no Restringido).
@@ -117,6 +117,11 @@ const item = ({ id, chave, nome, texto, grupo, sub = null, tags = [], opcoes = [
   id, nome, texto, grupo, sub, tags: tags.filter(Boolean).map(marca), opcoes, aviso,
   // O contador de usos: `{ max, recarga, chave }`, e a chave é a da sessão.
   usos,
+  /* Os números de mesa ("Bônus dos Aliados: 2"), SEPARADOS das marcas: em
+     largura de telefone eles saem da linha fechada e aparecem na aberta, para
+     não espremer o nome até sumir (medido em 390px, 2026-09-28). Ver
+     `.afty-mesa-*` em ficha.css. */
+  numeros: numeros.filter(Boolean),
   busca: semAcento(`${nome} ${texto} ${opcoes.map((o) => o.nome).join(" ")}`),
 });
 
@@ -128,6 +133,38 @@ const item = ({ id, chave, nome, texto, grupo, sub = null, tags = [], opcoes = [
  */
 export function conteudoDaFicha(creature, derived) {
   const itens = [];
+
+  /* ⚠ CONTADOR E NÚMEROS DE MESA (2026-09-28). O derive devolve em `mesa`, pela
+     chave do item, o contador (`usos`, com a chave da sessão já com a recarga) e
+     os `resultados` calculados de toda entrada que os declara. Aqui eles viram
+     o contador da linha e chips "Rótulo: valor", o mesmo formato das Técnicas
+     de Estilo. */
+  const mesa = derived?.mesa ?? {};
+  const usosDeMesa = (chave) => mesa[chave]?.usos ?? null;
+  const numerosDeMesa = (chave) => (mesa[chave]?.resultados ?? []).map((r) => `${r.label}: ${r.valor}`);
+  /* A OPÇÃO com contador ou número vira LINHA PRÓPRIA, logo abaixo da mãe
+     (autor, 2026-09-28: as Dádivas Intelectuais), e sai da lista de opções da
+     mãe para não aparecer duas vezes. Opção sem nada disso segue como sempre. */
+  const promovida = (paiId, opcaoId) => !!mesa[`opcao:${paiId}:${opcaoId}`];
+  const linhasDeOpcao = (pai, mapa, base) => (Array.isArray(mapa?.[pai?.id]) ? mapa[pai.id] : [])
+    .filter((oid) => promovida(pai.id, oid))
+    .map((oid) => {
+      const o = pai.escolha?.opcoes?.find((x) => x?.id === oid);
+      if (!o) return null;
+      const chave = `opcao:${pai.id}:${oid}`;
+      return item({
+        ...base,
+        id: oid,
+        chave,
+        nome: o.nome,
+        texto: o.descricao ?? "",
+        tags: [pai.escolha?.label ?? pai.nome],
+        numeros: numerosDeMesa(chave),
+        usos: usosDeMesa(chave),
+      });
+    })
+    .filter(Boolean);
+  const semPromovidas = (pai, opcoes) => opcoes.filter((o) => !promovida(pai?.id, o.id));
 
   /* ---------- Origem ---------- */
   const origem = getOrigem(creature?.core?.origem?.id);
@@ -141,6 +178,8 @@ export function conteudoDaFicha(creature, derived) {
       texto: c.descricao ?? "",
       grupo: "origem",
       tags: [origem?.nome, cla?.nome].filter(Boolean),
+      numeros: numerosDeMesa(`origem:${c.id}`),
+      usos: usosDeMesa(`origem:${c.id}`),
       opcoes: opcoesEscolhidas(c, mapaOrigem),
       /* ⚠ `mesa` NÃO VIRA MAIS AVISO NA FICHA (autor, 2026-09-08: *"Remova os
          'Resolve na mesa'. Isso é bem feio. Pode tirar de forma geral"*). O
@@ -163,23 +202,26 @@ export function conteudoDaFicha(creature, derived) {
     const h = getHabilidade(id);
     if (!h) continue;
     const espec = getEspecializacao(h.especializacaoId);
+    // ⚠ A sub-aba sai da PRÓPRIA Especialização, e não de uma lista escrita à
+    // mão: classe nova entra sozinha. Sem `especializacaoId` (não deveria
+    // acontecer) o item cai numa aba "Outras" em vez de sumir da tela.
+    const sub = { id: h.especializacaoId ?? "outras", label: espec?.nome ?? "Outras" };
     itens.push(item({
       id,
       nome: h.nome,
       texto: h.descricao ?? "",
       grupo: "especializacao",
-      // ⚠ A sub-aba sai da PRÓPRIA Especialização, e não de uma lista escrita à
-      // mão: classe nova entra sozinha. Sem `especializacaoId` (não deveria
-      // acontecer) o item cai numa aba "Outras" em vez de sumir da tela.
-      sub: { id: h.especializacaoId ?? "outras", label: espec?.nome ?? "Outras" },
+      sub,
       tags: [espec?.nome, h.nivel ? { label: `Nível ${h.nivel}`, tipo: "nivel" } : null],
-      opcoes: opcoesEscolhidas(h, mapaHab),
+      numeros: numerosDeMesa(`especializacao:${id}`),
+      opcoes: semPromovidas(h, opcoesEscolhidas(h, mapaHab)),
       aviso: inacessiveisHab.has(id) ? "Pré-requisito não atendido" : null,
       // A sessão guarda os gastos pela chave `hab:<id>`. Ver `alteraUso`.
       usos: derived?.usosHabilidades?.[id]
-        ? { ...derived.usosHabilidades[id], chave: `hab:${id}` }
+        ? { ...derived.usosHabilidades[id], chave: derived.usosHabilidades[id].chave ?? `hab:${id}` }
         : null,
     }));
+    itens.push(...linhasDeOpcao(h, mapaHab, { grupo: "especializacao", sub }));
   }
 
   /* ---------- Passivos e Características ---------- */
@@ -262,9 +304,12 @@ export function conteudoDaFicha(creature, derived) {
         ...(t.nivel ? [{ label: `Nível ${t.nivel}`, tipo: "nivel" }] : []),
         ...(vezes > 1 ? [{ label: `${vezes}×`, tipo: "vezes" }] : []),
       ],
-      opcoes: opcoesEscolhidas(t, mapaTal),
+      numeros: numerosDeMesa(`talento:${id}`),
+      usos: usosDeMesa(`talento:${id}`),
+      opcoes: semPromovidas(t, opcoesEscolhidas(t, mapaTal)),
       aviso: inacessiveisTal.has(id) ? "Pré-requisito não atendido" : null,
     }));
+    itens.push(...linhasDeOpcao(t, mapaTal, { grupo: "talento" }));
   }
 
   /* ---------- Habilidades Gerais ---------- */

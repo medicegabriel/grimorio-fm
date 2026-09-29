@@ -107,6 +107,8 @@ import {
 } from "./afty-dominios";
 import { RITUAL_MELHORIAS } from "./afty-rituais";
 import { COMBATE_ESTADOS, estadoVisivel } from "./afty-combate";
+import { condicoesPorForca, descreveCondicao, listaComE, CONDICAO_EFEITOS, SANGRAMENTO_FAIXAS, faixaDeSangramento } from "./afty-condicoes";
+import { IconeDaCondicao } from "./ui/icones-afty";
 import {
   createBlankInvocacao, cloneInvocacao, createBlankAcao, createBlankCaracteristica, createBlankHorda, createBlankQuimera, INV_QUIMERA_NIVEIS, AFTY_INV_GRAUS,
   grausDisponiveis, grauMeta, INV_ATRIBUTOS_POR_GRAU, INV_ATTR_MIN, mod as invMod,
@@ -3680,6 +3682,8 @@ function CanalPicker({ value, onChange, grupos: catalogo = EFEITO_CANAL_GRUPOS }
      deixaria o campo mostrando vazio com um efeito ativo por trás, que é pior
      que mostrar uma linha a mais. */
   const veHpAtributo = usePrimitiva("hpAtributo") || value === "hpAtributo";
+  // E o irmão dele no ataque (2026-09-28, Fórmula de Combate Entrópica).
+  const veAtaqueAtributo = usePrimitiva("ataqueAtributo") || value === "ataqueAtributo";
   // Mesma regra do de cima, para o canal que abaixa o pré-requisito de Aptidão.
   const veReqAptidao = usePrimitiva("requisitoAptidao") || value === "reduzNivelAptidao";
   // E para os dois da Arma Transformável, que o Azamaru abriu.
@@ -3695,6 +3699,7 @@ function CanalPicker({ value, onChange, grupos: catalogo = EFEITO_CANAL_GRUPOS }
       label: g.label,
       itens: g.itens.filter((c) =>
         (veHpAtributo || c.id !== "hpAtributo")
+        && (veAtaqueAtributo || c.id !== "ataqueAtributo")
         && (veReqAptidao || c.id !== "reduzNivelAptidao")
         && (veArmaTransf || !CANAIS_ARMA_TRANSF.includes(c.id))
         && (vePvPassivas || !CANAIS_PV_PASSIVAS.includes(c.id))
@@ -4614,6 +4619,8 @@ function TextoLongo({ value, onChange, placeholder, minRows = 4, maxRows = 18, f
      edição ainda contava o padding duas vezes. Somado ao `pb-7` da setinha, que
      na prévia nunca aparece, sobravam 75px vazios embaixo do texto. Não
      reintroduzir a altura herdada. */
+  // As entradas da última vez que `rolando` foi decidido. Ver o efeito abaixo.
+  const decisaoRolando = useRef(null);
 
   useLayoutEffect(() => {
     const el = ref.current;
@@ -4632,10 +4639,24 @@ function TextoLongo({ value, onChange, placeholder, minRows = 4, maxRows = 18, f
     const teto = expandido ? Infinity : linha * maxRows + moldura;
     const conteudo = el.scrollHeight + bordas;
     el.style.height = `${Math.max(min, Math.min(conteudo, teto))}px`;
+    /* `rolando` entra nas dependências porque ele troca o padding de baixo (a
+       setinha precisa de lugar) e a altura tem de ser refeita com o padding
+       novo. Mas essa volta só REFAZ A ALTURA, nunca decide `rolando` de novo.
+
+       ⚠ A TROCA OSCILAVA (erro #185 do React em produção, 2026-09-26, no campo
+       Descrição do Feitiço). O padding soma igual no conteúdo e no teto, só que
+       a LARGURA muda por fora: os 20px do `pb-7` fazem nascer a barra de rolagem
+       da página (15px no Windows), a Lista Lateral cai abaixo do `@3xl`, o editor
+       vira coluna única e fica MAIS LARGO, o texto ocupa menos linhas e
+       `rolando` volta a false. Sem o `pb-7` a barra some, voltam as duas colunas
+       e ele vira true outra vez, em laço. Reproduz com a janela entre 800 e
+       812px e a página quase do tamanho da tela. Não voltar a decidir
+       `rolando` quando só ele mudou. */
+    const entrada = [value, expandido, minRows, maxRows, previa];
+    const anterior = decisaoRolando.current;
+    if (anterior && entrada.every((v, i) => v === anterior[i])) return;
+    decisaoRolando.current = entrada;
     setRolando(conteudo > teto);
-    // `rolando` entra nas dependências porque ele troca o padding de baixo (a
-    // setinha precisa de lugar). A troca não oscila: o padding soma igual no
-    // conteúdo e no teto, e a comparação dá a mesma resposta nos dois estados.
   }, [value, expandido, minRows, maxRows, previa, rolando]);
 
   useLayoutEffect(() => {
@@ -8189,17 +8210,38 @@ function OrigemCard({ draft, derived, patch, patchCore, setOrigemId, setOrigemBo
                     atributos físicos são aumentados em 1": os dois casos são
                     excludentes, e deixar o alocador na tela ofereceria pontos
                     que o `resolveOrigemAttrBonus` recusa a somar. */}
-                {c.bonus?.distribuir && !(c.bonus.semEnergiaNao && draft.core.tipo === "restringido") && (
-                  <AlocadorDeAtributo
-                    titulo={`Distribuir · máx ${c.bonus.maxPorAtributo}/atributo`}
-                    chaves={c.bonus.entre}
-                    valorDe={(k) => bonusMap[k] || 0}
-                    maxDe={(k) => Math.min(c.bonus.maxPorAtributo, (bonusMap[k] || 0) + (c.bonus.distribuir - distribUsado))}
-                    onChange={setDistrib}
-                    usado={distribUsado}
-                    total={c.bonus.distribuir}
-                  />
-                )}
+                {c.bonus?.distribuir && !(c.bonus.semEnergiaNao && draft.core.tipo === "restringido") && (() => {
+                  /* ⚠ `livres` (2026-09-28, Restrição Intelectual: "+4 pontos
+                     entre os atributos mentais [...] e +1 o qual você pode
+                     distribuir em que quiser", lido pelo autor como 4 no total):
+                     N dos pontos podem sair do `entre`. O teto por atributo vale
+                     para o pool inteiro, e é por isso que é um campo do mesmo
+                     bônus, e não uma segunda alocação: duas pilhas deixariam a
+                     mesma INT passar de +3. */
+                  const b = c.bonus;
+                  const livres = Math.max(0, Math.trunc(Number(b.livres) || 0));
+                  const dentro = (k) => !b.entre || b.entre.includes(k);
+                  const usadoFora = Object.entries(bonusMap)
+                    .filter(([k]) => !dentro(k))
+                    .reduce((s, [, v]) => s + v, 0);
+                  return (
+                    <AlocadorDeAtributo
+                      titulo={`Distribuir · máx ${b.maxPorAtributo}/atributo${livres ? ` · ${livres} em Qualquer` : ""}`}
+                      chaves={livres ? undefined : b.entre}
+                      valorDe={(k) => bonusMap[k] || 0}
+                      maxDe={(k) => Math.min(
+                        b.maxPorAtributo,
+                        (bonusMap[k] || 0) + Math.min(
+                          b.distribuir - distribUsado,
+                          dentro(k) ? Infinity : livres - usadoFora,
+                        ),
+                      )}
+                      onChange={setDistrib}
+                      usado={distribUsado}
+                      total={b.distribuir}
+                    />
+                  );
+                })()}
 
                 {/* alocação com pool próprio (Ápice Corporal Humano) */}
                 {c.alocacao && (() => {
@@ -11519,7 +11561,9 @@ function SimulacaoCombateCard({ derived, patchCombate, gatilhosTreino = [], onGa
         .filter((e) => !e.ocultarNoCriador
           && (!e.requerTalento || comLista(e.requerTalento).some((id) => talentos.includes(id)))
           && (!e.requerAptidao || comLista(e.requerAptidao).some((id) => aptidoes.includes(id)))
-          && (!e.requerHabilidade || temHabilidade(e.requerHabilidade)))
+          && (!e.requerHabilidade || temHabilidade(e.requerHabilidade))
+          // A quarta porta do Addon (2026-09-28), a opção escolhida. Ver `comDono`.
+          && (!e.requerEscolha || comLista(e.requerEscolha).some((id) => opcoes.includes(id))))
         .map((e) => ({ tipo: "bool", ...e })),
   ];
   if (!linhas.length && !gatilhosTreino.length) return null;
@@ -11535,8 +11579,9 @@ function SimulacaoCombateCard({ derived, patchCombate, gatilhosTreino = [], onGa
       }
     >
       {/* ⚠ FORA do bloco que "Em Combate" apaga, de propósito. Um gatilho de
-          Treinamento não é estado de luta: o Cônjuge estar na cena mexe em
-          Perícia e em Iniciativa, que valem antes de a briga começar. */}
+          sessão (de Treinamento ou de Origem) não é estado de luta: o Cônjuge
+          estar na cena mexe em Perícia e em Iniciativa, e a Forma de Raposa em
+          Percepção, que valem antes de a briga começar. */}
       {gatilhosTreino.length > 0 && (
         <div className="space-y-1 mb-1">
           {gatilhosTreino.map((g) => (
@@ -15335,6 +15380,299 @@ function TabInterludios({
 }
 
 /* ============================================================ */
+/* Bancada: Condições                                            */
+/* ============================================================ */
+/* As condições da bancada (2026-09-21), gêmeas da Simulação de Combate: o
+   cenário montado para dosar a mão fica salvo na ficha (`combate.condicoes`) e
+   mexe na grade de cima na hora. A Ficha Final troca o `combate` da ficha pelo
+   da sessão, então nada do que se monta aqui vaza para a mesa.
+
+   ⚠ NÃO DEPENDEM DO "EM COMBATE". Envenenado e Cego valem fora da luta, e o
+   interruptor da Simulação zera só os estados de combate.
+
+   ⚠ SEM RODADAS. A contagem é da Ficha Final, onde o tempo passa. Aqui a
+   pergunta é "quanto fica a Defesa dele Paralisado", e ela não tem relógio.
+
+   ⚠ CONDIÇÕES NÃO ACUMULAM ENTRE SI (autor, 2026-09-21), e o número que perdeu
+   a disputa aparece riscado na linha da condição. Ver `resolveCondicoes`. */
+/* O detalhe de uma condição na bancada, com cada coisa no seu rótulo: é o rótulo
+   que separa "o que ela faz no número" de "o que o livro diz", e sem ele os dois
+   eram dois parágrafos seguidos (autor, 2026-09-22). Gêmeo do detalhe da gaveta
+   da Ficha Final, em `GavetaDeCondicoes.jsx`. */
+function DetalheDaCondicaoBancada({ condicao }) {
+  const { efeitos = [], inclui = [], resumo, descricao } = condicao;
+  const rotulo = "text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-0.5";
+  return (
+    <div className="flex flex-col gap-2 min-w-0">
+      {efeitos.length > 0 && (
+        <div>
+          <p className={rotulo}>No Número</p>
+          {/* Uma linha por efeito, com o valor à direita: em frase única com
+              pontos médios, quatro efeitos liam como uma coisa só. */}
+          <ul className="max-w-sm m-0 p-0 list-none">
+            {efeitos.map((x) => (
+              <li key={x.chave} className="flex items-baseline gap-2 py-0.5 border-b border-slate-800/70 last:border-b-0">
+                <span className="flex-1 min-w-0 text-[11px] text-slate-400">{x.rotulo}</span>
+                <span
+                  className={`text-[12px] font-bold ${x.suplantado ? "text-slate-600 line-through" : "text-purple-300"}`}
+                  title={x.suplantado ? "Outra condição já impõe um valor pior: este não está valendo" : undefined}
+                >
+                  {x.texto}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {inclui.length > 0 && (
+        <div>
+          <p className={rotulo}>Inclui</p>
+          <p className="text-[11px] leading-snug text-slate-400">{listaComE(inclui)}</p>
+        </div>
+      )}
+      {resumo && (
+        <div>
+          <p className={rotulo}>Na Mesa</p>
+          <p className="text-[11px] leading-snug text-slate-400">{resumo}</p>
+        </div>
+      )}
+      {descricao && (
+        <div>
+          <p className={rotulo}>No Livro</p>
+          <p className="text-[11px] leading-snug text-slate-300">{descricao}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CondicoesSimuladasCard({ derived, patchCombate }) {
+  const lista = derived.condicoes?.lista ?? [];
+  const [catalogo, setCatalogo] = useState(false);
+  const [termo, setTermo] = useState("");
+  const [aberta, setAberta] = useState(null);
+  // Qual condição o detalhe do catálogo está mostrando, pelo nome.
+  const [escolhida, setEscolhida] = useState(null);
+  const [faixa, setFaixa] = useState("medio");
+  // O catálogo com o que cada condição faz, lido uma vez: ele só muda com Addon.
+  const grupos = useMemo(() => condicoesPorForca({ especiais: true }).map((g) => ({
+    ...g,
+    rotulo: g.nivel ? `${g.nivel}. ${g.label}` : g.label,
+    condicoes: g.condicoes.map((c) => ({ ...c, ...descreveCondicao(c.nome) })),
+  })), []);
+  // O cru que a bancada grava, remontado do resolvido: é o mesmo formato da
+  // sessão da Ficha, `{ id, nome, forca, sangramento }`.
+  const cru = lista.map((c) => ({
+    id: c.id, nome: c.nome, forca: c.forcaId,
+    ...(c.sangramento ? { sangramento: c.sangramento.id } : {}),
+  }));
+  const aplicadas = new Set(lista.map((c) => c.nome));
+  const aplica = (c, faixaId = null) => {
+    // Id pela contagem, e não pelo relógio: o lint de pureza do React barra o
+    // `Date.now` aqui, e na bancada basta não repetir um id da própria lista.
+    let n = cru.length + 1;
+    while (cru.some((x) => x.id === `cond_${n}`)) n += 1;
+    patchCombate({
+      condicoes: [...cru, {
+        id: `cond_${n}`,
+        nome: c.nome,
+        forca: faixaId ? faixaDeSangramento(faixaId).forca : c.forcaId,
+        ...(faixaId ? { sangramento: faixaId } : {}),
+      }],
+    });
+  };
+  const tira = (nome) => patchCombate({ condicoes: cru.filter((x) => x.nome !== nome) });
+  const casa = (c) => {
+    const partes = semAcento(termo).split(/\s+/).filter(Boolean);
+    if (!partes.length) return true;
+    const alvo = semAcento([c.nome, c.resumo ?? "", ...c.efeitos.map((e) => `${e.rotulo} ${e.texto}`)].join(" "));
+    return partes.every((p) => alvo.includes(p));
+  };
+  const filtrados = grupos
+    .map((g) => ({ ...g, condicoes: g.condicoes.filter(casa) }))
+    .filter((g) => g.condicoes.length > 0);
+  const emOrdem = filtrados.flatMap((g) => g.condicoes);
+  const atual = emOrdem.find((c) => c.nome === escolhida) ?? emOrdem[0] ?? null;
+  const atualJa = !!atual && aplicadas.has(atual.nome);
+  const atualSangra = !!CONDICAO_EFEITOS[atual?.nome]?.perdaVida;
+  /* A borda da esquerda cresce com a força, no roxo da casa: ver a linha da
+     Ficha Final (`.afty-cond-linha`), que é a gêmea desta. */
+  const bordaDaForca = (nivel) => ["border-l-slate-600", "border-l-purple-900", "border-l-purple-700", "border-l-purple-500", "border-l-purple-400"][nivel] ?? "border-l-slate-600";
+  const rotuloBloco = "text-[10px] font-bold uppercase tracking-widest text-slate-500";
+
+  return (
+    <Card
+      title="Condições"
+      headerRight={lista.length > 0 && (
+        <BoolChip ativo={false} onToggle={() => patchCombate({ condicoes: [] })}>Limpar</BoolChip>
+      )}
+    >
+      {/* ⚠ LINHA, E NÃO CARTÃO (autor, 2026-09-22: "tamanhos irregulares"). O
+          cartão dizia tudo de uma vez e três condições viravam uma parede de
+          alturas diferentes. A linha diz o nome, os números e a força, e o
+          resto abre embaixo. */}
+      {lista.length > 0 && (
+        <div className="flex flex-col gap-px mb-2">
+          {lista.map((c) => (
+            <React.Fragment key={c.id}>
+              <div className={`flex items-center gap-2 pl-2 pr-1 py-1 rounded-r border-l-[3px] ${bordaDaForca(c.nivel)} hover:bg-slate-950/50`}>
+                <button
+                  type="button"
+                  onClick={() => setAberta((a) => (a === c.id ? null : c.id))}
+                  aria-expanded={aberta === c.id}
+                  className="flex items-center gap-1.5 flex-1 min-w-0 text-left"
+                >
+                  <ChevronDown className={`w-3.5 h-3.5 flex-shrink-0 text-slate-500 transition-transform ${aberta === c.id ? "" : "-rotate-90"}`} />
+                  <IconeDaCondicao nome={c.nome} className="w-4 h-4 flex-shrink-0 text-slate-400" />
+                  <span className="truncate text-[13px] font-bold text-slate-100">{c.nome}</span>
+                </button>
+                {c.efeitos.length > 0 && (
+                  <span className="hidden sm:flex items-baseline gap-x-3 min-w-0 overflow-hidden whitespace-nowrap">
+                    {c.efeitos.slice(0, 3).map((x) => (
+                      <span
+                        key={x.chave}
+                        className={`text-[11px] font-semibold ${x.suplantado ? "text-slate-600 line-through" : "text-purple-300"}`}
+                        title={x.suplantado ? "Outra condição já impõe um valor pior: este não está valendo" : undefined}
+                      >
+                        {x.rotulo} {x.texto}
+                      </span>
+                    ))}
+                    {c.efeitos.length > 3 && (
+                      <span className="text-[11px] text-slate-500">e mais {c.efeitos.length - 3}</span>
+                    )}
+                  </span>
+                )}
+                {c.forcaLabel && (
+                  <span className="flex-shrink-0 text-[10px] font-semibold uppercase tracking-wider text-slate-400">{c.forcaLabel}</span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => patchCombate({ condicoes: cru.filter((x) => x.id !== c.id) })}
+                  className="flex-shrink-0 text-slate-500 hover:text-white"
+                  aria-label={`Remover ${c.nome}`}
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+              {aberta === c.id && (
+                <div className="ml-4 mb-1 pl-3 py-2 border-l-2 border-slate-800">
+                  <DetalheDaCondicaoBancada condicao={c} />
+                </div>
+              )}
+            </React.Fragment>
+          ))}
+        </div>
+      )}
+
+      <button
+        type="button"
+        onClick={() => setCatalogo((a) => !a)}
+        aria-expanded={catalogo}
+        className={`inline-flex items-center gap-1.5 text-[12px] font-semibold px-2.5 py-1 rounded-lg border transition-colors ${
+          catalogo ? "bg-purple-700 border-purple-600 text-white" : "border-slate-700 text-slate-300 hover:text-white hover:border-slate-600"
+        }`}
+      >
+        {catalogo ? <X className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
+        {catalogo ? "Fechar Catálogo" : "Adicionar Condição"}
+      </button>
+
+      {/* ⚠ MESTRE-DETALHE, E NÃO GRADE DE LADRILHOS (autor, 2026-09-22). Na
+          grade, a fileira esticava pela condição mais alta e o painel inteiro
+          mudava de tamanho a cada letra do filtro. Aqui a lista tem linhas
+          iguais, a altura é a mesma sempre, e tudo que varia mora ao lado. */}
+      {catalogo && (
+        <div className="mt-2 rounded-lg border border-slate-800 bg-slate-950 overflow-hidden">
+          <div className="border-b border-slate-800 p-1.5">
+            <input
+              type="text"
+              value={termo}
+              onChange={(e) => setTermo(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Escape") setTermo(""); }}
+              placeholder="Filtrar"
+              aria-label="Filtrar as condições"
+              className="w-full bg-transparent border border-slate-700 rounded-lg text-[12px] text-slate-200 px-2 py-1 focus:outline-none focus:border-purple-600"
+            />
+          </div>
+          <div className="grid md:grid-cols-[15rem_minmax(0,1fr)]">
+            <div className="h-64 overflow-y-auto p-1 border-b md:border-b-0 md:border-r border-slate-800">
+              {emOrdem.length === 0 && <p className="px-2 py-3 text-[11px] text-slate-500">Nada com esse filtro</p>}
+              {filtrados.map((g) => (
+                <div key={g.id}>
+                  <p className={`sticky top-0 bg-slate-950 px-1.5 py-1 ${rotuloBloco}`}>{g.rotulo}</p>
+                  {g.condicoes.map((c) => {
+                    const ja = aplicadas.has(c.nome);
+                    const sob = atual?.nome === c.nome;
+                    return (
+                      <button
+                        key={c.nome}
+                        type="button"
+                        aria-pressed={ja}
+                        onClick={() => setEscolhida(c.nome)}
+                        className={`w-full flex items-center gap-1.5 px-1.5 py-1 rounded text-left transition-colors ${
+                          sob ? "bg-purple-950/60" : "hover:bg-slate-900"
+                        }`}
+                      >
+                        <IconeDaCondicao nome={c.nome} className="w-3.5 h-3.5 flex-shrink-0 text-slate-400" />
+                        <span className={`flex-1 min-w-0 truncate text-[12px] ${ja ? "font-bold text-purple-300" : "text-slate-200"}`}>
+                          {c.nome}
+                        </span>
+                        {ja && <Check className="w-3 h-3 flex-shrink-0 text-purple-300" aria-label="Aplicada" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+            <div className="flex flex-col min-w-0">
+              {atual ? (
+                <>
+                  <div className="h-52 md:h-64 overflow-y-auto p-3">
+                    <p className="flex items-center gap-1.5 m-0 text-[14px] font-bold text-slate-100">
+                      <IconeDaCondicao nome={atual.nome} className="w-4 h-4 flex-shrink-0 text-slate-400" />
+                      {atual.nome}
+                    </p>
+                    {(atual.forcaLabel || atual.grupo) && (
+                      <p className={`mt-0.5 mb-2 ${rotuloBloco}`}>
+                        {[atual.forcaLabel, atual.grupo].filter(Boolean).join(" · ")}
+                      </p>
+                    )}
+                    <DetalheDaCondicaoBancada condicao={atual} />
+                  </div>
+                  {/* O rodapé não rola com o texto: a faixa e o botão são o que
+                      se faz DEPOIS de ler. */}
+                  <div className="flex items-center gap-1.5 flex-wrap border-t border-slate-800 p-2">
+                    {atualSangra && (
+                      <>
+                        <span className={rotuloBloco}>Faixa</span>
+                        {SANGRAMENTO_FAIXAS.map((x) => (
+                          <BoolChip key={x.id} ativo={x.id === faixa} onToggle={() => setFaixa(x.id)}>
+                            {x.label} {x.dados}d{x.faces}
+                          </BoolChip>
+                        ))}
+                      </>
+                    )}
+                    <span className="ml-auto">
+                      <BoolChip
+                        ativo={!atualJa}
+                        onToggle={() => (atualJa ? tira(atual.nome) : aplica(atual, atualSangra ? faixa : null))}
+                      >
+                        {atualJa ? "Tirar" : "Aplicar"}
+                      </BoolChip>
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <p className="p-3 text-[11px] text-slate-500">Nenhuma condição escolhida</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </Card>
+  );
+}
+
+/* ============================================================ */
 /* Aba: Cálculos (fórmulas editáveis — a superpotência Afty)   */
 /* ============================================================ */
 const CALC_ROWS = [
@@ -15347,7 +15685,6 @@ const CALC_ROWS = [
   { key: "rdEspecifico", label: "RD Específico" },
   { key: "rdAlma",       label: "RD a Alma" },
   { key: "movimento",    label: "Movimento (m)" },
-  { key: "resParcial",   label: "Resistência Parcial" },
   { key: "atencao",      label: "Atenção" },
   { key: "iniciativa",   label: "Iniciativa" },
 ];
@@ -15398,6 +15735,8 @@ function TabCalculos({ derived, setStatOverride, patchCombate, gatilhosTreino, o
         estado e a grade acima se move. Some para quem não tem estado nenhum.
         ⚠ Arranjo PROVISÓRIO (autor, 2026-07-30). */}
     <SimulacaoCombateCard derived={derived} patchCombate={patchCombate} gatilhosTreino={gatilhosTreino} onGatilhoTreino={onGatilhoTreino} />
+
+    <CondicoesSimuladasCard derived={derived} patchCombate={patchCombate} />
 
     </>
   );
@@ -18250,11 +18589,6 @@ function AftyPreview({ draft, derived }) {
       p: "tamanho",
       accent: "text-purple-200",
     },
-    /* ⚠ `null` some da lista, e zero NÃO some. A Resistência Parcial não
-       existe na ficha de jogador (autor, 2026-08-30: "sem aparecer nem como
-       zero"), e o `null` é como o derive diz isso. Uma criatura Comum, que tem
-       a característica e simplesmente está em zero, continua mostrando a linha. */
-    ...(derived.resParcial != null ? [{ k: "Res. Parcial", v: derived.resParcial, p: "resParcial" }] : []),
     /* Guarda Inabalável: só Calamidade e Beyond têm, e some para o resto. Ela
        entra no Preview porque é AQUI que a criatura é dosada, e a Vida da Guarda
        é uma parcela grande do PV efetivo de um chefe: um Beyond ND 30 leva 300
@@ -18328,6 +18662,16 @@ function AftyPreview({ draft, derived }) {
       {derived.combate?.ativo && (
         <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-950/50 text-amber-300 border border-amber-800">
           Em Combate
+        </span>
+      )}
+      {/* As condições da bancada mexem no Preview pelo mesmo motivo, e com a
+          mesma obrigação de aparecer. Uma pelo nome, várias pela contagem. */}
+      {derived.condicoes?.lista?.length > 0 && (
+        <span
+          className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-950/50 text-amber-300 border border-amber-800"
+          title={derived.condicoes.lista.map((c) => c.nome).join(", ")}
+        >
+          {derived.condicoes.lista.length === 1 ? derived.condicoes.lista[0].nome : `${derived.condicoes.lista.length} Condições`}
         </span>
       )}
       {carga?.sobrecarregado && (

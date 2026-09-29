@@ -141,6 +141,10 @@ export function resolveDefesasDano({
   manual = {}, canalTipo = () => 0, fontesTipo = () => [],
   rdGeral = 0, rdFisico = 0, rdAlma = 0,
   categorias = [], tiposDaCategoria = () => [],
+  /* O nome da condição que zera a RD e anula a Resistência (Fragilizado), ou
+     `null`. "Imunidades não são anuladas", então a Imunidade fica, e a
+     Vulnerabilidade também, porque a condição só tira proteção. */
+  fragilizado = null,
 } = {}) {
   const linhas = [];
   /* Os tipos que a RD Física alcança saem da CATEGORIA, e não de uma lista
@@ -158,6 +162,7 @@ export function resolveDefesasDano({
         const doMotor = canalTipo(e.canal, tipo) > 0;
         const manualLigou = doManual.estado === e.id;
         if (!doMotor && !manualLigou) continue;
+        if (fragilizado && e.id === "resistente") continue;
         estados.push(e.id);
         fontesEstado[e.id] = [
           ...(manualLigou ? [{ label: "Ficha", valor: 1 }] : []),
@@ -180,14 +185,16 @@ export function resolveDefesasDano({
       const somaCrua = doManual.rd + doTipo
         + (ehAlma ? rdAlma : rdGeral)
         + (ehFisico ? rdFisico : 0);
-      const rd = Math.max(0, somaCrua);
+      const rdSemCondicao = Math.max(0, somaCrua);
+      const rd = fragilizado ? 0 : rdSemCondicao;
       const partes = [
         ...(doManual.rd ? [{ label: "Ficha", valor: doManual.rd }] : []),
         ...(doTipo ? fontesTipo("rdTipo", tipo) : []),
         ...(!ehAlma && rdGeral ? [{ label: "RD Geral", valor: rdGeral }] : []),
         ...(ehFisico && rdFisico ? [{ label: "RD Física", valor: rdFisico }] : []),
         ...(ehAlma && rdAlma ? [{ label: "RD a Alma", valor: rdAlma }] : []),
-        ...(rd !== somaCrua ? [{ label: "RD não fica negativa", valor: rd - somaCrua }] : []),
+        ...(rdSemCondicao !== somaCrua ? [{ label: "RD não fica negativa", valor: rdSemCondicao - somaCrua }] : []),
+        ...(rd !== rdSemCondicao ? [{ label: fragilizado, valor: rd - rdSemCondicao }] : []),
       ];
 
       linhas.push({
@@ -201,7 +208,7 @@ export function resolveDefesasDano({
         manual: doManual,
         rd,
         // O próprio também tem piso: é o número que decide se a linha aparece.
-        rdProprio: Math.max(0, doManual.rd + doTipo),
+        rdProprio: fragilizado ? 0 : Math.max(0, doManual.rd + doTipo),
         partes,
         // Dois estados no mesmo tipo é contradição de regra, e quem decide o
         // desempate é o autor. A UI mostra o aviso e não escolhe.

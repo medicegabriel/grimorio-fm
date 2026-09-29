@@ -400,10 +400,41 @@ export function DicaDeTexto({ titulo, texto, nota, ancora = "esquerda", children
  * dedo. Sem `onRolar`, o clique volta a abrir as fontes, que é o que os números
  * do cabeçalho (Defesa, CD, RD) fazem, porque não se rola nenhum deles.
  */
+/* ⚠ A DECISÃO DE SER MUDO VEM ANTES DE QUALQUER HOOK, e é o motivo de existirem
+   dois componentes aqui em vez de um.
+
+   Um número sem `partes` e sem `onRolar` desenha um `<span>` que não abre nada e
+   não rola nada. Enquanto o early return dele morava DEPOIS do `useFlutuante`,
+   esse span mudo pagava mesmo assim os doze slots de hook do painel flutuante (1
+   `useState`, 3 `useRef`, 6 `useCallback` e 2 `useEffect`). Numa ficha cheia são
+   de 70 a 170 destes ao mesmo tempo, todos refeitos a cada render da Ficha.
+
+   Separando em dois, o ramo mudo passa a não ter hook nenhum e a regra dos hooks
+   continua respeitada, porque quem tem hook é sempre o `NumeroInterativo`
+   inteiro. Nenhum comportamento muda: o interativo é o mesmo de antes. */
 export function NumeroComFontes({
   valor, partes, total, ancora = "esquerda", className = "", titulo, formatar = true, onRolar,
 }) {
   const lista = (partes || []).filter(Boolean);
+  const texto = formatar && typeof valor === "number" ? sinalDe(valor) : valor;
+
+  if (!lista.length && !onRolar) {
+    return <span className={className} title={titulo}>{texto}</span>;
+  }
+  return (
+    <NumeroInterativo
+      lista={lista}
+      texto={texto}
+      total={total}
+      ancora={ancora}
+      className={className}
+      titulo={titulo}
+      onRolar={onRolar}
+    />
+  );
+}
+
+function NumeroInterativo({ lista, texto, total, ancora, className, titulo, onRolar }) {
   const {
     gatilho, retangulo, aberto, abrir, fechar, segurarComeca, segurarTermina, consumiuToqueLongo,
   } = useFlutuante();
@@ -418,10 +449,6 @@ export function NumeroComFontes({
     onRolar();
   };
 
-  const texto = formatar && typeof valor === "number" ? sinalDe(valor) : valor;
-  if (!lista.length && !onRolar) {
-    return <span className={className} title={titulo}>{texto}</span>;
-  }
   return (
     <span className="afty-fontes-raiz relative inline-flex">
       <button

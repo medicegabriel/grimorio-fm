@@ -1067,7 +1067,9 @@ function opcoesVerdadeirasOrigens(liberacoes = []) {
     if (proibidas.includes(origemMae(origem.id))) continue;
     for (const c of origem.caracteristicas || []) {
       if (c.id === "bonus_atributo") continue;
-      if (origem.id === "restringido" && c.id !== RESTRINGIDO_CARACTERISTICA_OBRIGATORIA) continue;
+      // A variação do Restringido segue a mãe aqui também: do Restringido o
+      // Gêmeo só copia o Físico Abençoado, e a variação não o tem.
+      if (origemMae(origem.id) === "restringido" && c.id !== RESTRINGIDO_CARACTERISTICA_OBRIGATORIA) continue;
       // A promessa de conteudo nao e conteudo: quem entra e a caracteristica do
       // cla, logo abaixo, e nao a linha que diz que ela depende do cla.
       if (c.doCla) continue;
@@ -1261,8 +1263,10 @@ registrarFamilia("origens", {
   // Uma origem de Addon que se divide (Maldição Era de Ouro) escreve os
   // próprios clãs em `clas[]`, e o id de CADA um precisa do prefixo do
   // pacote, a mesma razão de sempre: sem isso `core.origem.cla` gravaria o id
-  // cru e `getCla` (que já procura pelo id PREFIXADO) nunca acharia.
-  caminhosDeId: ["clas[].id"],
+  // cru e `getCla` (que já procura pelo id PREFIXADO) nunca acharia. O
+  // `especializacaoExclusivaId` entrou em 2026-09-28 pela mesma razão: a
+  // variação do Restringido aponta para a classe herdeira do mesmo JSON.
+  caminhosDeId: ["clas[].id", "especializacaoExclusivaId"],
   aplicar: aplicarExtrasOrigens,
   basicos: () => ORIGENS_BASE,
   validador: validarCatalogoOrigens,
@@ -1381,14 +1385,37 @@ export const getOrigem = (id) => BY_ID[id] ?? null;
  * `origemId: "maldicao"`) e qualquer Talento com `requisitos: [{tipo:"origem",
  * id:"maldicao"}]`, porque os dois LEEM `origemMae()`, não o id cru da ficha.
  *
+ * ⚠ RESTRINGIDO ENTROU EM 2026-09-28, com o Addon Fórmula de Combate
+ * Entrópica (a Restrição Intelectual de Dr. Xeno). As travas por id de ORIGEM
+ * passaram por aqui (`tipoObrigatorio`, a cópia do Gêmeo, o `foraDaOrigem` e o
+ * `soDaOrigem` das Linhas pelo `origemEstrutural`, os Feitiços e o leiaute da
+ * aba). As travas por id de CLASSE passam pelo `especializacaoMae`, o irmão
+ * deste em afty-especializacoes.js, porque a variação do Restringido vem com
+ * uma Especialização que HERDA a do livro. E duas coisas do Tipo Restringido
+ * NÃO descem para a variação, porque são CONTEÚDO do Ápice Corporal Humano e
+ * não identidade: o limite 30 dos físicos e o rótulo dele no hover (autor,
+ * 2026-09-28: *"Só INT vai a 30"*). A variação declara o próprio
+ * `limiteAtributo`. Ver `ehVariacaoDoRestringido`.
+ *
  * Um nível só: a mãe é sempre do livro, então não há cadeia para seguir.
  */
-export const VARIACOES_ACEITAS = Object.freeze(["sem_tecnica", "maldicao"]);
+export const VARIACOES_ACEITAS = Object.freeze(["sem_tecnica", "maldicao", "restringido"]);
 
 export const origemMae = (origemId) => {
   const mae = getOrigem(origemId)?.variacaoDe;
   return VARIACOES_ACEITAS.includes(mae) ? mae : (origemId || null);
 };
+
+/**
+ * A origem é uma VARIAÇÃO do Restringido, e não o Restringido do livro?
+ *
+ * Existe para as duas perguntas em que a variação NÃO é a mãe: o limite 30 dos
+ * físicos que o Tipo dá, e o rótulo "Ápice Corporal Humano" do hover do
+ * limite. Os dois são o conteúdo de uma característica do livro, e a variação
+ * herda a identidade, não o conteúdo. Ver a nota do `VARIACOES_ACEITAS`.
+ */
+export const ehVariacaoDoRestringido = (origemId) =>
+  !!origemId && origemId !== "restringido" && origemMae(origemId) === "restringido";
 
 /** Clãs da origem, se ela se divide (só o Herdado, por ora). */
 export const clasDaOrigem = (id) => getOrigem(id)?.clas ?? null;
@@ -1440,6 +1467,29 @@ export function caracteristicasEfetivas(creature) {
     ]
     : proprias;
   return [...base, ...caracteristicaCopiada(creature)].map(comOpcoesDaCriatura(creature));
+}
+
+/**
+ * Os interruptores de sessão que a ORIGEM declara: o mesmo `gatilhoSessao` da
+ * Linha de Treinamento, só que numa característica de origem ou de clã.
+ *
+ * ⚠ NASCEU EM 2026-09-29 com a Forma de Raposa da Kitsune (`addons/yna.json`).
+ * Efeito de origem roda no MONTANTE, antes de os estados de combate existirem,
+ * então um `quando` apontando para um estado de bancada caía calado. O
+ * interruptor de sessão não tem esse problema: ele é filtrado ANTES do Motor,
+ * pela mesma porta do treino (`coletarEfeitosOrigem` recebe os ativos), e vale
+ * dentro e fora de combate.
+ *
+ * Sai de `caracteristicasEfetivas`, então o do clã só existe com o clã
+ * escolhido. O id NÃO ganha namespace, igual ao do treino: é a chave em
+ * `sessao.treinosAtivos`, e o efeito o cita cru.
+ */
+export function gatilhosDeOrigem(creature) {
+  const unicos = new Map();
+  for (const c of caracteristicasEfetivas(creature)) {
+    if (c?.gatilhoSessao?.id) unicos.set(c.gatilhoSessao.id, c.gatilhoSessao);
+  }
+  return [...unicos.values()];
 }
 
 /**

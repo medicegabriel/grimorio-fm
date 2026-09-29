@@ -94,8 +94,13 @@ const opcoesDeResistencia = (prefixo, descricao) =>
  * separa "por descanso curto", "por descanso longo" e "por descanso" qualquer.
  * A Ficha tem um Descansar só e ele devolve tudo (autor, 2026-09-23), então a
  * recarga é registro de regra para o dia em que houver dois descansos.
+ *
+ * ⚠ `cena` e `rodada` entraram em 2026-09-28 (Fórmula de Combate Entrópica), e
+ * essas duas NÃO são só registro: a sessão as devolve na cena nova e na virada
+ * da rodada, pelo prefixo na chave (ver `mesa` em afty-derive.js). O derive
+ * aceita a mesma lista para Talento, origem e opção de escolha.
  */
-export const USOS_RECARGAS = ["curto", "longo", "descanso"];
+export const USOS_RECARGAS = ["curto", "longo", "descanso", "cena", "rodada"];
 
 export const HABILIDADE_TIPOS = [
   { id: "base",  label: "Habilidades Base" },
@@ -6215,6 +6220,14 @@ function clonesDaHeranca(lista) {
           if (r?.tipo === "escolha" && clonadas.has(r.habId)) return { ...r, habId: novoId(r.habId) };
           return r;
         }),
+        /* ⚠ A TERCEIRA FORMA DE CITAR UMA IRMÃ (2026-09-28): a habilidade que dá
+           vaga a mais na escolha de outra. O Respeito Celeste do Restringido
+           concede Dádivas ao Restrito pelos Céus, e o clone dele continuava
+           apontando para a habilidade do livro: a herdeira pegava o Respeito
+           Celeste e as vagas iam para uma escolha que ela não tem, caladas. */
+        ...(h.concedeEscolha && clonadas.has(h.concedeEscolha.habilidade)
+          ? { concedeEscolha: { ...h.concedeEscolha, habilidade: novoId(h.concedeEscolha.habilidade) } }
+          : {}),
         // O efeito do raw mora fora do catálogo. Ver a nota grande acima.
         ...(HABILIDADE_EFEITOS[h.id] ? { efeitos: HABILIDADE_EFEITOS[h.id] } : {}),
         // De quem esta linha veio, para a tela e para os asserts.
@@ -7385,7 +7398,10 @@ export function resolveHabilidades(
   const ctx = { niveisPorEspec, escolhidas, escolhasHabilidade: escolhas.mapa, almaLivre };
   // Roubar concede a habilidade, mas a vaga já foi paga pela escolha do Roubo.
   // Consumidores de combate consultam efetivas, o orçamento mantém escolhidas.
-  const roubadas = escolhas.mapa.res_roubo_de_habilidade ?? [];
+  // A herdeira do Restringido guarda o Roubo sob o id clonado (2026-09-28).
+  const roubadas = [...new Set(Object.entries(escolhas.mapa)
+    .filter(([habId]) => (HERANCA_ORIGEM[habId] ?? habId) === "res_roubo_de_habilidade")
+    .flatMap(([, lista]) => lista ?? []))];
   const efetivas = [...new Set([...escolhidas, ...roubadas])];
   // Habilidades escolhidas que a criatura deixou de alcançar (ex.: a
   // multiclasse foi redividida depois da escolha). Reportado, não removido.
@@ -7405,6 +7421,16 @@ export function resolveHabilidades(
   const total = comum + exclusivasTalento;
   const gastos = gastosHabilidade + talentos;
   const niveisPorEfeito = { ...niveisPorEspec };
+  /* ⚠ A HERDEIRA RESPONDE TAMBÉM PELO NOME DA MÃE, como no `nivelEspec` do
+     derive (2026-09-28). Os tetos do Restringido (Caçador de Feiticeiros, Corpo
+     de Aço) leem `restringido`, e a herdeira tem id próprio. O `??=` deixa a
+     mãe de verdade vencer, e só o nível de EFEITO recebe o apelido: o
+     `niveisPorEspec` responde pré-requisito, e a herdeira herdar os
+     pré-requisitos da mãe é pergunta aberta (docs/a-fazer.md). */
+  for (const [id, nivel] of Object.entries(niveisPorEspec)) {
+    const mae = AFTY_ESPECIALIZACOES.find((e) => e.id === id)?.herdaDe;
+    if (mae) niveisPorEfeito[mae] ??= nivel;
+  }
   if (habilidadeAlmaLivreId) niveisPorEfeito[almaLivreEspecializacao] = almaLivre.nivel;
   return {
     escolhidas,

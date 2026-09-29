@@ -97,7 +97,7 @@ de canal, mas mexe num sistema que já funciona.
 core (tipo, patamar, nd)  →  attrBonus/desenv  →  bt = maestria(nd)
   →  equip  →  attrEff  →  mods  →  tecnicaAttr/modTecnica
   →  treino  →  carga  →  grau
-  →  HP  →  PE  →  resParcial  →  movimento  →  rdGeral  →  rdEspecifico
+  →  HP  →  PE  →  movimento  →  rdGeral  →  rdEspecifico
   →  cd (cdTipo)  →  feitiços/gerais/orcamentoHabilidades
   →  rdFisico  →  defesa (defTipo)  →  testes (perícias/TR/ataque)  →  atencao
   →  ORÇAMENTOS: aptidão, especializações, talentos, HABILIDADES, altoNivel
@@ -173,7 +173,6 @@ Derivados do que o `deriveAfty` já calcula. Nomes a fechar antes de escrever co
 | `rdGeral`, `rdEspecifico`, `rdFisico` | idem | RD Física é canal separado |
 | `movimento` | `movimento` | em metros, aceita 1,5 |
 | `atencao` | `atencao` | hoje é 10 + Percepção |
-| `resParcial` | `resParcial` | |
 | `atributo` | `attrEff` por atributo | precisa de alvo (`atributo: "forca"`), e o teto de 30 |
 | `bonusPericia` | `testes.pericias[].bonus` | com alvo, ou todas |
 | `bonusTR` | `testes.resistencias[].bonus` | com alvo, ou todos |
@@ -182,7 +181,7 @@ Derivados do que o `deriveAfty` já calcula. Nomes a fechar antes de escrever co
 | `vagasHabilidade` | `habilidades.total` | já existe como `bonusVagas` |
 | `vagasAptidao`, `nivelAptidao` | `totalAptidoesAmaldicoadas`, `aptidao` | dois canais, ver §4 |
 | `focos` | `focosTotais` | já existe como `focosBonus` |
-| `custoPE` | Feitiços | redução de custo, com o piso de 1 PE |
+| `custoPE` | Feitiços | redução de custo, com o piso de 1 PE. Negativo é aumento, somado depois do piso (condição Condenado) |
 
 Note que quatro deles (`periciasBonus`, `bonusVagas`, `focosBonus`, `periciasBonus`) já existem
 como campos avulsos da ficha. O motor deve **substituir** esses campos, não somar por fora.

@@ -158,7 +158,7 @@ t("as divergencias de REGRA ligadas",
   S.DIVERGENCIAS.filter((d) => d.ativa && d.tipo === "regra").map((d) => d.id).sort(),
   ["altoNivelSemGeral", "aptidaoApos20", "basesAutomaticas", "escalaDosTestes", "focosLivres",
    "danoPorArma", "defesaUniforme", "danoFixoPorGrau", "reducaoDeGrau",
-   "conteudoSoPorAddon", "guardaEresistenciaParcial", "habilidadesGerais",
+   "conteudoSoPorAddon", "guardaInabalavel", "habilidadesGerais",
    "pacoteDaClasseInicial", "passivaCustaPeMaximo", "patamarDoJogador", "poolExclusivo",
    "proficienciaPorArma", "progressaoDeFeiticos",
    "pvPePorEspecializacao", "quantidadeDePE", "rdBase", "rdEscudoFisico", "tetoDeNivel",
@@ -214,8 +214,8 @@ for (const d of S.DIVERGENCIAS) {
 /* As duas fichas, idênticas em tudo menos no `rulesVersion`. Uma criatura com
    corpo de verdade, e não a em branco: a em branco passaria por acidente, já que
    quase todo número dela é zero. Calamidade e Qnt.PE Grande de propósito, para
-   a Guarda, a Resistência Parcial e o ajuste de PE terem valor não nulo do lado
-   do Afty, senão a comparação não mediria nada. */
+   a Guarda e o ajuste de PE terem valor não nulo do lado do Afty, senão a
+   comparação não mediria nada. */
 const corpo = (sistema) => {
   const f = createBlankAfty();
   f.rulesVersion = sistema;
@@ -252,8 +252,7 @@ const DIFERENCAS_ESPERADAS = {
      quinze linhas. Se um dia a Imunidade ou a Vulnerabilidade divergirem POR
      REGRA, é aqui que a nota tem de mudar. */
   defesasDano: "consequência da rdBase",
-  resParcial: "guardaEresistenciaParcial",
-  guarda: "guardaEresistenciaParcial",
+  guarda: "guardaInabalavel",
   // A CD move a CD dos Feitiços, que é a CD de Feitiçaria da ficha.
   feiticos: "consequência da CD",
   habilidades: "basesAutomaticas e vagasPorNivelDeClasse",
@@ -331,7 +330,7 @@ const partesDiferem = Object.keys(dAfty.partes)
 t("e o hover diverge so nos stats ou no rotulo do nivel",
   partesDiferem,
   ["cd", "defesa", "guardaAtual", "guardaBonus", "guardaVida", "hp", "iniciativa",
-   "maestria", "movimento", "pe", "rdEspecifico", "rdGeral", "resParcial", "totalAptidao"]);
+   "maestria", "movimento", "pe", "rdEspecifico", "rdGeral", "totalAptidao"]);
 
 t("e a Maestria diverge so no rotulo do nivel",
   dPlayer.partes.maestria.map((p) => p.valor),
@@ -339,7 +338,7 @@ t("e a Maestria diverge so no rotulo do nivel",
 
 /* E as três da Guarda ficam VAZIAS no jogador, e não com uma linha de valor
    nulo: hover de stat que não existe não é hover, é ruído. */
-for (const campo of ["guardaAtual", "guardaBonus", "guardaVida", "resParcial"]) {
+for (const campo of ["guardaAtual", "guardaBonus", "guardaVida"]) {
   t(`o hover de ${campo} e vazio no jogador`, dPlayer.partes[campo], []);
   t(`e tem conteudo na criatura de Calamidade`, dAfty.partes[campo].length > 0, true);
 }
@@ -375,10 +374,13 @@ t("a RD Geral do afty vem do Tipo Misto", dAfty.rdGeral, 14);
 t("e a do jogador comeca em zero", dPlayer.rdGeral, 0);
 t("a RD Especifica do afty vem do Tipo Misto", dAfty.rdEspecifico, 6);
 t("e a do jogador comeca em zero", dPlayer.rdEspecifico, 0);
-t("a Resistencia Parcial do afty vem do Patamar", dAfty.resParcial, 1);
-/* ⚠ `null`, e NÃO zero. O autor pediu que ela não apareça "nem como zero", e um
-   zero seria uma linha na tela. */
-t("e a do jogador nao existe, nem como zero", dPlayer.resParcial, null);
+/* ⚠ A RESISTÊNCIA PARCIAL SAIU DO AFTY em 2026-09-21 (autor), nos DOIS sistemas.
+   Até ali ela vinha do Patamar na criatura e era `null` no jogador. Agora não é
+   número, nem hover, nem campo sobrescrevível da aba Cálculos, e a criatura de
+   Calamidade aqui de cima é justamente a que teria valor. */
+t("a Resistencia Parcial nao existe mais na criatura", "resParcial" in dAfty, false);
+t("nem no jogador", "resParcial" in dPlayer, false);
+t("nem no hover dos dois", ["resParcial" in dAfty.partes, "resParcial" in dPlayer.partes], [false, false]);
 t("a Guarda do afty existe", dAfty.guarda?.ativa, true);
 t("e a do jogador e nula", dPlayer.guarda, null);
 
@@ -447,7 +449,7 @@ t("a ficha de player continua player depois de derivada",
 t("as divergencias conhecidas estao na lista",
   S.DIVERGENCIAS.map((d) => d.id).sort(),
   ["abasIdentidade", "altoNivelSemGeral", "aptidaoApos20", "basesAutomaticas", "danoPorArma",
-   "defesaUniforme", "escalaDosTestes", "focosLivres", "guardaEresistenciaParcial",
+   "defesaUniforme", "escalaDosTestes", "focosLivres", "guardaInabalavel",
    "conteudoSoPorAddon", "habilidadesGerais", "inventarioSimplificado", "melhoriasSuperioresDoJogador",
    "pacoteDaClasseInicial", "perdidoNoJogador",
    "passivaCustaPeMaximo",

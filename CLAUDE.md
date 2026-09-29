@@ -74,7 +74,8 @@ node asserts/t-addons.mjs       # um só, o caminho mais rápido enquanto se mex
 ```
 
 - **Rode a suíte antes de começar.** Nem toda falha é sua, e a linha de base muda.
-- ⚠ **A linha de base de hoje tem UM vermelho conhecido**, e ele não é bug:
+- ⚠ **A linha de base tem UM vermelho conhecido**, e ele não é bug (conferida em 2026-09-22:
+  110 arquivos, 1 vermelho):
   `t-invocacoes-motor.mjs` falha em *"a Livre com Motor custa 1 PE, como toda Característica"*,
   porque a cota base de Ações e Características deixou de custar PE em 2026-09-14. É uma PERGUNTA
   AO AUTOR aberta em `docs/a-fazer.md`, esperando decisão de regra. **Não conserte por conta
@@ -91,7 +92,7 @@ node asserts/t-addons.mjs       # um só, o caminho mais rápido enquanto se mex
 - Assert novo segue o padrão dos vizinhos: `register()` com o shim de extensão no topo, depois
   `t(nome, real, esperado)` comparando `JSON.stringify`. Nenhum deles escreve nada. O contrato está
   em `asserts/LEIA.md`, que também traz a tabela do que cada arquivo cobre. ⚠ As CONTAGENS daquele
-  arquivo estão velhas (ele diz 62 arquivos, e a pasta já passou de cem); a tabela continua boa.
+  arquivo estão velhas (ele diz 62 arquivos, e a pasta já tem 110). A tabela continua boa.
 - Todo arquivo importa `afty-derive.js` PRIMEIRO. Começar por `afty-habilidades.js` estoura o ciclo
   de `afty-combate.js`.
 - A pasta fica fora de `src/` e usa `.mjs` de propósito: nem o `vite build` nem o `eslint .` a
@@ -128,6 +129,10 @@ node .audit/smoke.mjs   # carrega a raiz, junta erro de console, tira print em .
 
 ⚠ Script de `.audit/` ou de `design.local/` roda FORA do app: se ele deriva uma ficha, precisa
 chamar `aplicarAddons` antes, ou o número sai mentindo.
+
+⚠ Bug de leiaute que depende da barra de rolagem não reproduz com `--hide-scrollbars`, que é
+justamente o que vários desses scripts passam para o Chromium. Ao caçar largura, corte ou
+transbordamento, tire a flag antes de concluir que o bug sumiu.
 
 ## Arquitetura
 
@@ -271,7 +276,7 @@ A interface do Afty está em quatro lugares, e saber qual poupa uma busca:
 
 | Onde | O que é |
 |---|---|
-| `AftyCreatureBuilder.jsx` | o criador, um arquivo só, mais de 17 mil linhas. A maioria das abas de criação mora aqui dentro |
+| `AftyCreatureBuilder.jsx` | o criador, um arquivo só, mais de 18 mil linhas. A maioria das abas de criação mora aqui dentro |
 | `AftyTab*.jsx` (raiz do afty) | as abas de criação que ficaram grandes demais para o builder: Addons, Carteira, Catarse, Defesas |
 | `ficha/` e `ficha/abas/` | a Ficha Final, suas abas de jogo (Ações, Buffs, Equipamentos, Habilidades, Invocações, Perícias) e os painéis `PainelDe*.jsx` |
 | `ui/` | o que criador e ficha compartilham: `fontes.jsx` monta o painel de fontes do hover, mais `vital.jsx`, `TextoRico.jsx` e as bancadas |
@@ -280,6 +285,13 @@ Uma aba da Ficha também é renderizada dentro do Encontro, então ela tem dois 
 `@container`, não por largura de janela.
 
 ### Arquivos-chave
+
+A raiz de `src/systems/afty/` tem 67 módulos `.js`, e o nome é o índice: `afty-<área>.js` guarda o
+CATÁLOGO daquela área (as constantes em MAIÚSCULA, tipo `AFTY_ORIGENS` ou `APTIDAO_TRILHAS`) mais
+as funções que leem esse catálogo. Procurar conteúdo de regra começa por aí (`afty-habilidades.js`,
+`afty-aptidoes.js`, `afty-origens.js`, `afty-pericias.js`, `afty-feiticos.js`,
+`afty-equipamentos.js`, `afty-invocacoes.js`, `afty-talentos.js`, `afty-alto-nivel.js`). A tabela
+abaixo é só o que não segue essa regra, ou o que se lê antes de tudo.
 
 | Arquivo | Responsabilidade |
 |---|---|
@@ -293,7 +305,7 @@ Uma aba da Ficha também é renderizada dentro do Encontro, então ela tem dois 
 | `afty-addons.js` | registro de famílias, namespace, `permite` e `libera` |
 | `afty-dsl.js` | o avaliador, `normalizarVariavel`. FOLHA |
 | `afty-sistema.js` | `regraDo()`, `DIVERGENCIAS`, Afty contra Player. FOLHA |
-| `AftyCreatureBuilder.jsx` | o criador, mais de 17 mil linhas |
+| `AftyCreatureBuilder.jsx` | o criador, mais de 18 mil linhas |
 | `ficha/AftyFicha.jsx` | a Ficha Final |
 | `encontros/PainelDeCombatente.jsx` | o combatente dentro do Encontro |
 
@@ -303,7 +315,7 @@ Uma aba da Ficha também é renderizada dentro do Encontro, então ela tem dois 
   **Leia as perguntas antes de "consertar" o que parecer errado.** Várias são decisão de regra do
   autor, não bug, e uma delas é o assert vermelho da suíte.
 - `docs/afty-status.md`: o log de sessões e o porquê das coisas. Afirmação datada nele não
-  substitui conferir o código de hoje. ⚠ São quase 14 mil linhas: procure com `grep`, não leia
+  substitui conferir o código de hoje. ⚠ São mais de 14 mil linhas: procure com `grep`, não leia
   inteiro.
 - `docs/afty-motor-referencia-estrutural.md`: corte transversal do motor, sem data. É o documento
   para colar no início de uma sessão que vai mexer em `src/systems/afty/*.js`.

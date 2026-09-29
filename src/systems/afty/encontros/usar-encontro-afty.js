@@ -37,6 +37,34 @@ import {
 /* Deriva um combatente do jeito que a Ficha Final deriva: a bancada de combate e
    os buffs da SESSÃO entram, e a Alma corrente multiplica o PV.
    Jogador (sem ficha) devolve `null`, e todo consumidor trata esse caso. */
+/* AS OPÇÕES DO DERIVE DE UM COMBATENTE, num lugar só (2026-09-22). O derive do
+   combatente e os de comparação do painel (o delta de cada estado e o saldo da
+   faixa "Agora") têm de receber a MESMA lista: com opções diferentes, a
+   diferença entre elas sai carimbada como bônus do estado medido. O painel
+   passava só a Alma, e toda linha ligada de um Calamidade mostrava a Guarda. */
+const opcoesDoCombatente = (sessao) => (!sessao ? {} : {
+  almaAtual: sessao.almaAtual,
+  concedido: sessao.concedido,
+  adaptacoes: sessao.adaptacoes,
+  // A Guarda Inabalável corrente, igual à Ficha: o bônus dela soma na
+  // Defesa e nos cinco TRs desta mesma derivação.
+  guarda: entradaDaGuarda(sessao),
+  /* ⚠ O ESTADO DAS INVOCAÇÕES tem de vir junto, e pelo mesmo motivo da
+     Guarda: um Shikigami em campo com um auxílio ligado dá Defesa, Acerto
+     ou RD ao dono, e isso é número DESTA derivação. Sem esta linha, o
+     mestre ligava o bônus no painel de Encontros e o número não mexia,
+     enquanto na Ficha Final mexia. Ver `efeitosDeInvocacao`. */
+  invocacoes: sessao.invocacoes,
+  /* ⚠ E os interruptores de Treinamento, pelo MESMO motivo das duas
+     linhas acima. Sem isto o Cônjuge do Flugel dava +2 de Defesa, +2 de
+     Acerto e a Iniciativa da Dupla Empenhada na Ficha Final e nada aqui,
+     que é exatamente o sintoma descrito para as invocações. */
+  treinosAtivos: sessao.treinosAtivos,
+  /* As CONDIÇÕES da sessão (2026-09-21): Paralisado, Envenenado e as
+     outras mexem em Defesa, TR e acerto desta mesma derivação. */
+  condicoes: sessao.condicoes,
+});
+
 const derivarCombatente = (c) => {
   if (!c.ficha || !c.sessao) return null;
   try {
@@ -47,25 +75,7 @@ const derivarCombatente = (c) => {
        (um `getHabilidade` no painel) via um mundo arbitrário. */
     return deriveAfty(
       { ...c.ficha, combate: c.sessao.combate, buffsSessao: c.sessao.buffs },
-      {
-        almaAtual: c.sessao.almaAtual,
-        concedido: c.sessao.concedido,
-        adaptacoes: c.sessao.adaptacoes,
-        // A Guarda Inabalável corrente, igual à Ficha: o bônus dela soma na
-        // Defesa e nos cinco TRs desta mesma derivação.
-        guarda: entradaDaGuarda(c.sessao),
-        /* ⚠ O ESTADO DAS INVOCAÇÕES tem de vir junto, e pelo mesmo motivo da
-           Guarda: um Shikigami em campo com um auxílio ligado dá Defesa, Acerto
-           ou RD ao dono, e isso é número DESTA derivação. Sem esta linha, o
-           mestre ligava o bônus no painel de Encontros e o número não mexia,
-           enquanto na Ficha Final mexia. Ver `efeitosDeInvocacao`. */
-        invocacoes: c.sessao.invocacoes,
-        /* ⚠ E os interruptores de Treinamento, pelo MESMO motivo das duas
-           linhas acima. Sem isto o Cônjuge do Flugel dava +2 de Defesa, +2 de
-           Acerto e a Iniciativa da Dupla Empenhada na Ficha Final e nada aqui,
-           que é exatamente o sintoma descrito para as invocações. */
-        treinosAtivos: c.sessao.treinosAtivos,
-      },
+      opcoesDoCombatente(c.sessao),
     );
   } catch {
     // Ficha de uma versão antiga que o derive não engole. O encontro continua
@@ -451,4 +461,4 @@ export default function useEncontroAfty(encontroId, gerenciador) {
   return { encontro, derivado, acoes };
 }
 
-export { derivarCombatente, sessaoEmBranco };
+export { derivarCombatente, opcoesDoCombatente, sessaoEmBranco };

@@ -69,11 +69,29 @@ export const normalizarMarca = (m) => normalizeWord(String(m ?? "").trim());
 
 /** Um id de estado como identificador válido do DSL. Addons usam `:` no
     namespace, enquanto o tokenizer aceita somente letras, números e `_`. */
-export const normalizarVariavel = (id) => normalizeWord(
-  String(id ?? "").replace(/([a-z0-9])([A-Z])/g, "$1_$2"),
+/* ⚠ COM MEMORIA, e ela paga muito. A funcao e PURA, e o contexto da DSL e
+   remontado varias vezes por derive, normalizando a lista inteira do
+   vocabulario (umas 500 ids) em cada passada. Medi 2,54ms para 3971 chamadas,
+   que e quase metade do custo de um `deriveAfty` inteiro.
+
+   Guardar e correto por construcao: o resultado so depende da string de
+   entrada, entao Addon instalado nao atrapalha (id diferente, chave
+   diferente). O mapa nao cresce sem limite na pratica, porque as chaves sao
+   ids de catalogo mais os do pacote instalado. */
+const VARIAVEIS = new Map();
+
+const variavelCrua = (id) => normalizeWord(
+  String(id).replace(/([a-z0-9])([A-Z])/g, "$1_$2"),
 )
   .replace(/[^a-z0-9_]+/g, "_")
   .replace(/^_+|_+$/g, "");
+
+export const normalizarVariavel = (id) => {
+  const chave = String(id ?? "");
+  let v = VARIAVEIS.get(chave);
+  if (v === undefined) { v = variavelCrua(chave); VARIAVEIS.set(chave, v); }
+  return v;
+};
 
 export const CHAVE_MARCAS = "#marcas";
 
@@ -351,9 +369,43 @@ function evaluate(ast, ctx) {
 /* API PÚBLICA                                                   */
 /* ============================================================ */
 
+/* ⚠ A ARVORE DA EXPRESSAO FICA GUARDADA, e so o `evaluate` roda de novo.
+   Antes disto toda chamada refazia `tokenize` mais `parse`: o tokenizer anda
+   caractere a caractere com regex e o parser aloca a arvore inteira, e medi
+   3,9us por chamada. Num derive sao centenas de avaliacoes, e a aba Buffs roda
+   um derive por estado de combate ligado, entao o desperdicio se multiplica.
+
+   A arvore e somente leitura para o `evaluate` (ele le `n`, `v`, `name`,
+   `args`, `e`, `l` e `r`, e nao escreve em nenhum), por isso da para
+   compartilhar entre chamadas. O contexto continua entrando a cada vez, que e
+   a parte que de fato muda.
+
+   O ERRO TAMBEM E GUARDADO, de proposito: expressao invalida caia no fallback
+   depois de re-parsear e re-lancar em toda chamada. Guardando, ela erra uma
+   vez e o resto sai do mapa. A chave e `String(src ?? "")` porque e
+   exatamente o que o `tokenize` monta na primeira linha dele. */
+const ASTS = new Map();
+
+const astDe = (src) => {
+  const chave = String(src ?? "");
+  const guardado = ASTS.get(chave);
+  if (guardado) {
+    if (guardado.erro) throw guardado.erro;
+    return guardado.ast;
+  }
+  try {
+    const ast = parse(tokenize(chave));
+    ASTS.set(chave, { ast });
+    return ast;
+  } catch (e) {
+    ASTS.set(chave, { erro: e });
+    throw e;
+  }
+};
+
 export function evalNumber(src, ctx, fallback = 0) {
   try {
-    const v = evaluate(parse(tokenize(src)), ctx ?? {});
+    const v = evaluate(astDe(src), ctx ?? {});
     // Expressão que termina em texto não é número: cai no fallback em vez de
     // devolver string para quem espera somar.
     return typeof v === "number" && Number.isFinite(v) ? v : fallback;
@@ -361,7 +413,7 @@ export function evalNumber(src, ctx, fallback = 0) {
 }
 
 export function evalBoolean(src, ctx, fallback = false) {
-  try { return num(evaluate(parse(tokenize(src)), ctx ?? {})) ? true : false; }
+  try { return num(evaluate(astDe(src), ctx ?? {})) ? true : false; }
   catch { return fallback; }
 }
 

@@ -8,10 +8,11 @@
    "as condições, seus efeitos, o nível da condição": duas dessas três coisas já
    existiam e estavam mal desenhadas, e a terceira nunca foi escrita.
 
-   ⚠ O `CONDICAO_TEXTOS` NASCE VAZIO, e o assert do fim tranca justamente isso:
-   inventar o que faz "Fragilizado" seria número saído do nada. O que este
-   arquivo prova é que, quando os textos chegarem, eles chegam CERTOS: um nome
-   com acento errado é recusado no validador em vez de a condição aparecer muda.
+   ⚠ O `CONDICAO_TEXTOS` NASCEU VAZIO e ficou assim até 2026-09-21, quando o
+   autor mandou os textos. O que este arquivo prova é que eles chegaram CERTOS:
+   um nome com acento errado é recusado no validador em vez de a condição
+   aparecer muda, e toda condição tem o texto dela. O que elas fazem no número
+   está em `t-condicoes-efeitos.mjs`.
 
    ⚠ Prova NÚMERO e ESTRUTURA, e não aparência. */
 import { register } from "node:module";
@@ -56,15 +57,29 @@ t("nenhuma força do catálogo ficou de fora",
 /* 2. A FICHA DE UMA CONDIÇÃO                                    */
 /* ============================================================ */
 
-t("condição fraca", COND.fichaDaCondicao("Caído"), {
+const campos = ({ nome, forcaId, forcaLabel, nivel, grupo, doCatalogo, especial }) =>
+  ({ nome, forcaId, forcaLabel, nivel, grupo, doCatalogo, especial });
+t("condição fraca", campos(COND.fichaDaCondicao("Caído")), {
   nome: "Caído", forcaId: "fraca", forcaLabel: "Fraca", nivel: 1,
-  resumo: null, descricao: null, doCatalogo: true,
+  grupo: "Movimento", doCatalogo: true, especial: false,
+});
+t("e o texto do livro chega com ela",
+  COND.fichaDaCondicao("Caído").descricao.startsWith("O personagem sofre -3 em ataques corpo a corpo"), true);
+
+t("condição extrema", campos(COND.fichaDaCondicao("Paralisado")), {
+  nome: "Paralisado", forcaId: "extrema", forcaLabel: "Extrema", nivel: 4,
+  grupo: "Incapacitação", doCatalogo: true, especial: false,
 });
 
-t("condição extrema", COND.fichaDaCondicao("Paralisado"), {
-  nome: "Paralisado", forcaId: "extrema", forcaLabel: "Extrema", nivel: 4,
-  resumo: null, descricao: null, doCatalogo: true,
+/* As três ESPECIAIS existem na mesa (Cego deixa Surpreso) e NÃO no catálogo de
+   níveis: o livro diz que condição fora da lista não pode ser aplicada, então o
+   editor de Feitiço não pode oferecê-las. */
+t("Surpreso é especial, sem degrau", campos(COND.fichaDaCondicao("Surpreso")), {
+  nome: "Surpreso", forcaId: "especial", forcaLabel: "Especial", nivel: 0,
+  grupo: "Sensorial", doCatalogo: true, especial: true,
 });
+t("as especiais não entram no catálogo que o Feitiço lê",
+  COND.CONDICOES_ESPECIAIS.filter((n) => Object.values(CONDICOES_CATALOGO).flat().includes(n)), []);
 
 /* ⚠ NOME DESCONHECIDO NÃO SOME NEM QUEBRA. Uma condição gravada na sessão pode
    ter vindo de um Addon desinstalado, e ela continua sendo um rótulo válido em
@@ -100,6 +115,11 @@ t("e somam as 26 do catálogo",
   Object.values(CONDICOES_CATALOGO).reduce((a, l) => a + l.length, 0));
 t("cada uma já vem com o degrau resolvido",
   grupos.find((g) => g.id === "forte").condicoes.every((c) => c.nivel === 3), true);
+/* A Ficha e a bancada pedem as especiais, e elas vêm num grupo no fim. */
+const comEspeciais = COND.condicoesPorForca({ especiais: true });
+t("com especiais, um quinto grupo no fim",
+  comEspeciais.map((g) => g.id), ["fraca", "media", "forte", "extrema", "especial"]);
+t("com as três", comEspeciais.at(-1).condicoes.map((c) => c.nome), ["Indefeso", "Invisível", "Surpreso"]);
 
 /* ============================================================ */
 /* 4. O VALIDADOR, QUE É O PONTO DO TERRENO                      */
@@ -111,6 +131,7 @@ t("o catálogo de hoje é válido", COND.validarCatalogoCondicoes(), []);
    e gravado como "Enfeiticado" não daria erro nenhum sem o validador: a
    condição apareceria sem texto, calada, e ninguém saberia que o texto foi
    escrito. É a mesma armadilha do requisito `nota`. */
+const cegoDoLivro = COND.CONDICAO_TEXTOS["Cego"];
 COND.CONDICAO_TEXTOS["Enfeiticado"] = { texto: "sem cedilha" };
 t("nome que não casa é recusado",
   COND.validarCatalogoCondicoes(),
@@ -122,24 +143,39 @@ COND.CONDICAO_TEXTOS["Cego"] = { resumo: "Não enxerga" };
 t("entrada sem texto é recusada",
   COND.validarCatalogoCondicoes(),
   ['CONDICAO_TEXTOS: "Cego" não tem texto']);
-delete COND.CONDICAO_TEXTOS["Cego"];
 
-/* E o caminho feliz, que é como vai ficar quando o autor mandar os textos. */
+/* E o resumo opcional chega na ficha da condição quando existe. */
 COND.CONDICAO_TEXTOS["Cego"] = { resumo: "Não enxerga", texto: "Você falha em testes que exijam visão." };
 t("texto bem escrito passa", COND.validarCatalogoCondicoes(), []);
 t("e chega na ficha da condição",
   [COND.fichaDaCondicao("Cego").resumo, COND.fichaDaCondicao("Cego").descricao],
   ["Não enxerga", "Você falha em testes que exijam visão."]);
-delete COND.CONDICAO_TEXTOS["Cego"];
+COND.CONDICAO_TEXTOS["Cego"] = cegoDoLivro;
+
+/* Um efeito que inclui condição inexistente também é recusado: a inclusão
+   sumiria calada, e Agarrado deixaria de deixar Desprevenido. */
+const agarradoDoLivro = COND.CONDICAO_EFEITOS["Agarrado"];
+COND.CONDICAO_EFEITOS["Agarrado"] = { inclui: ["Desprevinido"] };
+t("inclusão com nome errado é recusada",
+  COND.validarCatalogoCondicoes(),
+  ['CONDICAO_EFEITOS: "Agarrado" inclui "Desprevinido", que não existe']);
+COND.CONDICAO_EFEITOS["Agarrado"] = agarradoDoLivro;
+t("e o catálogo volta a ser válido", COND.validarCatalogoCondicoes(), []);
 
 /* ============================================================ */
-/* 5. O TERRENO ESTÁ VAZIO, E ISSO É DE PROPÓSITO                */
+/* 5. O LIVRO CHEGOU INTEIRO (2026-09-21)                        */
 /* ============================================================ */
-/* ⚠ Se este assert falhar, alguém escreveu efeito de condição. Não é proibido:
-   é o dia em que o autor mandou os textos. Suba o número e siga. */
-
-t("nenhum texto de condição foi inventado",
-  Object.keys(COND.CONDICAO_TEXTOS).length, 0);
+/* O terreno ficou vazio de 2026-08-28 a 2026-09-21, esperando o autor. Agora
+   toda condição do catálogo e as três especiais têm o texto dele, e nenhuma
+   outra: 26 da lista de níveis (Desmembramento incluído) mais as especiais. */
+const todos = [...Object.values(CONDICOES_CATALOGO).flat(), ...COND.CONDICOES_ESPECIAIS];
+t("toda condição tem o texto do autor", todos.filter((n) => !COND.CONDICAO_TEXTOS[n]?.texto), []);
+t("e são 29 textos", Object.keys(COND.CONDICAO_TEXTOS).length, 29);
+/* ⚠ Regra de tela do autor: nunca travessão nem ponto e vírgula. O texto do
+   livro tinha um de cada (Lento e Sangramento), trocados por vírgula e ponto. */
+t("nenhum texto nem resumo tem travessão nem ponto e vírgula",
+  Object.entries(COND.CONDICAO_TEXTOS)
+    .filter(([, d]) => new RegExp(`[${String.fromCharCode(0x2013, 0x2014)};]`).test(`${d.texto} ${d.resumo ?? ""}`)).map(([n]) => n), []);
 
 console.log(bad.length ? `FALHAS (${bad.length}):\n` + bad.join("\n") : `TODOS OS ${ok} ASSERTS PASSARAM`);
 process.exitCode = bad.length ? 1 : 0;

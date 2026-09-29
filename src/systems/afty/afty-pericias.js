@@ -776,9 +776,17 @@ export function resolveDano(creature, ctx = {}) {
   // Força por padrão, Destreza a distância, e o maior dos dois quando a arma
   // tem Fineza (ou quando uma habilidade concede a mesma permissão, como o
   // Corpo Treinado: "você pode escolher usar tanto Força quanto Destreza").
+  /* O canal `ataqueAtributo` vale no DANO também (autor, 2026-09-28: "Acerto e
+     dano"). O acerto já chega trocado da linha de Ataque do `resolveTestes`, e
+     aqui é o outro lado, com a mesma regra: o maior modificador vence. As
+     Técnicas de Combate não passam por aqui, porque trocam por conta própria. */
+  const trocasDeAtaque = AFTY_ATTRS.map((x) => x.key)
+    .filter((k) => (ef ? valorCanal(ef, "ataqueAtributo", k) : 0) > 0);
   const atributoDe = ({ distancia, fineza }) => {
-    if (distancia) return "destreza";
-    return fineza && modDe("destreza") > modDe("forca") ? "destreza" : "forca";
+    const base = distancia
+      ? "destreza"
+      : (fineza && modDe("destreza") > modDe("forca") ? "destreza" : "forca");
+    return trocasDeAtaque.reduce((m, k) => (modDe(k) > modDe(m) ? k : m), base);
   };
 
   /* `extra` é o canal `alcanceArma` da linha (2026-09-23): metros a mais que uma
@@ -1660,6 +1668,21 @@ export function resolveTestes(creature, ctx = {}) {
     ? `${bonus >= 0 ? "+" : "−"}${Math.abs(bonus)} + ${textoDosDadosAtaque}`
     : null);
 
+  /* ⚠ O CANAL `ataqueAtributo` (2026-09-28, Restrição Congênita Intelectual:
+     *"você pode usar Inteligência em vez de Força ou Destreza para realizar
+     ações de ataque"*). Mesmo desenho do `hpAtributo`: o alvo é o atributo que
+     PODE entrar, e não soma nada. Vale o maior modificador entre o do ataque e
+     os concedidos, porque a regra é "você pode". Só no corpo a corpo e na
+     distância: o Amaldiçoado já lê o atributo da técnica. O dano lê o mesmo
+     canal no `resolveDano` (autor: "Acerto e dano"). */
+  const trocasDeAtaque = AFTY_ATTRS.map((x) => x.key).filter((k) => bonusDeEfeito("ataqueAtributo", k) > 0);
+  const comTrocaDeAtaque = (base) => trocasDeAtaque.reduce((m, k) => (modDe(k) > modDe(m) ? k : m), base);
+  const rotuloDoAtaque = (attr, base) => {
+    if (attr === base) return rotuloAttr(attr);
+    const fonte = partesDeEfeito("ataqueAtributo", attr)[0]?.label;
+    return fonte ? `${rotuloAttr(attr)} (${fonte})` : rotuloAttr(attr);
+  };
+
   const ataques = AFTY_ATAQUES.map((a) => {
     const treinado = a.sempreTreinado || (!armaDecide && !!atqBruta[a.id]);
     /* Fineza libera o atributo alternativo do ataque, e aqui ela vem SÓ da
@@ -1672,9 +1695,10 @@ export function resolveTestes(creature, ctx = {}) {
        Treinado dava Destreza na Espada Grande enquanto esta linha existia. Quem
        o lê agora é o `acertoDe` do resolveDano, uma linha por arma. */
     const liberado = a.atributoFineza && fineza;
+    const semTroca = liberado && modDe(a.atributoFineza) > modDe(a.atributo) ? a.atributoFineza : a.atributo;
     const attr = a.id === "amaldicoado"
       ? (ctx.tecnicaAttr || "inteligencia")
-      : (liberado && modDe(a.atributoFineza) > modDe(a.atributo) ? a.atributoFineza : a.atributo);
+      : comTrocaDeAtaque(semTroca);
     return {
       ...a,
       atributo: attr,
@@ -1685,7 +1709,7 @@ export function resolveTestes(creature, ctx = {}) {
       dadosExtras: dadosNoAtaque,
       textoBonus: comDados(modDe(attr) + escalaFixa + (treinado ? bt : 0) + bonusDeEfeito("bonusAcerto", a.id)),
       partes: [
-        { label: rotuloAttr(attr), valor: modDe(attr) },
+        { label: a.id === "amaldicoado" ? rotuloAttr(attr) : rotuloDoAtaque(attr, semTroca), valor: modDe(attr) },
         { label: ESCALA_ROTULO.fixa, valor: escalaFixa },
         ...(treinado ? [{ label: "Maestria", valor: bt }] : []),
         ...partesDeEfeito("bonusAcerto", a.id),

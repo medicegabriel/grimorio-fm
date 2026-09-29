@@ -226,20 +226,24 @@ export function vocabularioDoDashboard(valor) {
  */
 export const DIVERGENCIAS = [
   {
-    /* Guarda Inabalável e Resistência Parcial são mecânica de PATAMAR, e o
-       jogador não tem Patamar. Autor, 2026-08-30: "deixam de existir na ficha de
-       jogador, sem aparecer nem como zero".
+    /* A Guarda Inabalável é mecânica de PATAMAR, e o jogador não tem Patamar.
+       Autor, 2026-08-30: "deixam de existir na ficha de jogador, sem aparecer
+       nem como zero".
 
-       ⚠ O "nem como zero" é a metade que muda código. As duas já valem 0 fora de
+       ⚠ O "nem como zero" é a metade que muda código. A Guarda já vale 0 fora de
        Calamidade e Beyond, então bastaria o Patamar sumir para o número ficar
        certo. O que o autor pediu é que a LINHA suma: um zero sem dono na tela é
-       ruído, e é a mesma regra da quarta célula do Domínio Simples. */
-    id: "guardaEresistenciaParcial",
+       ruído, e é a mesma regra da quarta célula do Domínio Simples.
+
+       ⚠ ERA `guardaEresistenciaParcial` até 2026-09-21, quando a Resistência
+       Parcial saiu do Afty nos dois sistemas. A citação do autor abaixo fica
+       como foi dita. */
+    id: "guardaInabalavel",
     tipo: "regra",
-    onde: "afty-derive.js, blocos Guarda Inabalável e Resistência Parcial",
+    onde: "afty-derive.js, bloco Guarda Inabalável",
     fonte: "E Guarda, Resistências Parcial e etc deixam de existir na ficha de jogador, sem aparecer nem como zero. (autor, 2026-08-30)",
-    afty: "Guarda e Resistência Parcial por Patamar",
-    player: "as duas não existem, e não aparecem nem zeradas",
+    afty: "Guarda por Patamar",
+    player: "não existe, e não aparece nem zerada",
     ativa: true,
   },
   {
@@ -266,8 +270,8 @@ export const DIVERGENCIAS = [
        ⚠ "comum" e não `null`: ele é o valor NEUTRO das fórmulas (nenhum bônus de
        contador, multiplicador de PV 1, coeficiente de dano 2/1), e um `null`
        quebraria os leitores que indexam tabela por patamar. Quem o autor pediu
-       para não aparecer "nem como zero" é a Guarda e a Resistência Parcial, e
-       essas duas seguem devolvendo `null` pela divergência delas. */
+       para não aparecer "nem como zero" é a Guarda, e ela segue devolvendo
+       `null` pela divergência dela. */
     id: "patamarDoJogador",
     tipo: "regra",
     onde: "afty-derive.js, a definição de `patamar`",

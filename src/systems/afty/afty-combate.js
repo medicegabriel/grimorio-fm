@@ -25,7 +25,7 @@
  * ============================================================
  */
 
-import { EMPOLGACAO_DADOS, EMPOLGACAO_NIVEL_MAX, POSTURAS_DE_COMBATE } from "./afty-habilidades";
+import { EMPOLGACAO_DADOS, EMPOLGACAO_NIVEL_MAX, POSTURAS_DE_COMBATE, expandeHerdadas } from "./afty-habilidades";
 import { normalizarVariavel } from "./afty-dsl";
 import { ESTADO_APICE, RODADAS_APICE } from "./afty-talisma-apice";
 
@@ -491,7 +491,8 @@ export const COMBATE_ESTADOS = [
     min: 0,
     // "distribuir um bônus de +4 entre Atletismo e Acrobacia", +8 com a
     // Restrição Definitiva. O que sobra vai para Acrobacia.
-    max: (d) => ((d?.habilidades?.efetivas ?? d?.habilidades?.escolhidas ?? []).includes("res_restricao_definitiva") ? 8 : 4),
+    // Com as herdadas: a herdeira do Restringido tem a Definitiva sob o id clonado.
+    max: (d) => (expandeHerdadas(d?.habilidades?.efetivas ?? d?.habilidades?.escolhidas ?? []).includes("res_restricao_definitiva") ? 8 : 4),
     requerHabilidade: "res_adrenalina_intensificadora",
     requerEstado: "surtoAdrenalina",
   },

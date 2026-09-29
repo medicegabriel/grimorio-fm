@@ -1,5 +1,303 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-09-22 (parte 6): A RAJADA DE DERIVES DA ABA BUFFS
+
+Pedido do autor: *"A aba de Buffs é a única que ficou pesada ainda. Porém agora, ela ficou SUPER
+PESADA leva cerca de 1 a 2 segundos só para abrir ela."*
+
+Era regressão da entrega de performance mais cedo no mesmo dia. Eu tinha posto `tab` nas
+dependências de `deltaPorEstado` e `saldoAgora` para não gastar os N+1 derives nas outras abas. Deu
+certo naquilo, e empurrou o custo TODO para o instante da troca de aba. Ninguém tinha reduzido
+trabalho, só mudado a hora de pagar.
+
+### O que a medição mostrou
+
+Fora da tela, em velocidade de produção, com ficha de ND 20 e 69 Habilidades:
+
+| | antes | depois |
+|---|---|---|
+| um `deriveAfty` | 6,34ms | **3,13ms** |
+| delta, 5 estados ligados | 29ms | **4ms** |
+| delta, 20 ligados | 116ms | **45ms** |
+| delta, 40 ligados | 218ms | **41ms** |
+| delta, 83 ligados | 424ms | **90ms** |
+
+5,5ms por estado ligado era exatamente um derive inteiro. Com 20 ligados dava 116ms, e no `dev`
+(onde o autor mede, e onde o JS custa de 10x a 20x mais) isso é 1 a 2 segundos. A conta fechava.
+
+⚠ O achado que reorientou tudo: de 20 para 83 ligados o custo quadruplicava e o número de linhas na
+tela NÃO mudava. O `deltaDosEstados` derivava primeiro e descartava depois.
+
+### As três etapas
+
+**1. Parar de derivar estado que a aba nem desenha.** `deltaDosEstados` montava a lista do catálogo
+CRU, sem filtro de posse e sem `estadoVisivel`, enquanto a aba filtrava os dois. Um contador
+esquecido de uma luta anterior pagava um derive cujo chip nunca era desenhado. O filtro morava
+dentro da `AbaBuffs` (55 linhas, com dois filtros propositalmente INVERSOS), então foi extraído
+para `ficha-buffs.js` como `linhasDeEstado(derived)` e os dois lados passaram a ler a MESMA regra.
+Não podia ser cópia: seria a mesma posse escrita duas vezes, com uma envelhecendo calada.
+
+⚠ O filtro não pode morar em `ficha-estados.js`: `afty-combate.js` importa esse módulo, então ele
+não pode importar `COMBATE_ESTADOS` de volta.
+
+**2. Baratear TODO derive, na DSL.** Duas funções puras sem cache nenhum:
+`normalizarVariavel` (2,54ms por 3971 chamadas, e o contexto é remontado várias vezes por derive) e
+`evalNumber`/`evalBoolean`, que refaziam `tokenize` mais `parse` a cada chamada (3,9µs cada). Um
+`Map` em cada uma. Sozinha, esta etapa levou o derive de 6,34ms para 3,36ms, e melhora TODO derive
+do sistema, inclusive os do Encontro.
+
+**3. A aba pinta antes de a conta rodar.** `useDeferredValue` no sinal da aba, que é o primeiro uso
+desse recurso no `src/`. A aba aparece com o delta em `null` e a conta entra depois. Precisou de
+três coisas: a guarda de `null` que a `AbaBuffs` não tinha (ela desestruturava `deltaPorEstado` sem
+padrão, e só não estourava porque `corpo.buffs()` roda apenas com a aba aberta), e um TERCEIRO
+estado no painel Agora, porque com saldo vazio a aba escreve "Nada mexendo na ficha" e entregar
+lista vazia na primeira pintura seria mentira por um quadro. Agora ela escreve "Calculando".
+
+### No navegador, com 13 estados ligados
+
+| | produção | dev |
+|---|---|---|
+| aba visível | 14 a 22ms | 20 a 25ms |
+| delta completo | 75 a 82ms | 110 a 175ms |
+
+### A prova de que nada mudou de valor
+
+Comparei o mapa de `deltaDosEstados` antes e depois, em quatro cenários (5, 20, 40 e 83 ligados), e
+conferi contra o conjunto que a aba de fato desenha: **nenhum valor mudou e nenhuma linha sumiu**. A
+Etapa 1 muda quantos estados ENTRAM na conta, e o risco era justo o bug de 2026-08-28, em que opção
+diferente entre os dois derives virava bônus fantasma. `t-delta-buffs.mjs`, `t-dsl.mjs`,
+`t-estados-organiza.mjs` e `t-ordem-modulos.mjs` passam, e a suíte segue em 110 arquivos com o
+único vermelho conhecido de `t-invocacoes-motor.mjs`.
+
+### Ficou de fora
+
+A Etapa 4 do plano, um `opcoes.modo = "comparacao"` que pularia FONTES, `partes`, os blocos de
+editor do Motor e os catálogos de invocação e carteira nos derives de comparação. `comparar` lê 13
+campos e `compararSaldo` uns 17 escalares, de um retorno de ~150 chaves. É o maior corte que resta,
+e o único que mexe no contrato do Motor. Com as três etapas resolvendo o sintoma, não valia o risco
+agora.
+
+O Encontro tem o MESMO N+1 em `encontros/PainelDeCombatente.jsx`, e SEM porteira de aba: qualquer
+PV de qualquer combatente refaz a rajada dele. As Etapas 1 e 2 já o melhoraram de graça, porque
+moram no `ficha-buffs.js` e na DSL. A porteira de aba não se aplica lá.
+## SESSÃO DE 2026-09-22 (parte 5): A SEGUNDA LEVA DA ABA BUFFS
+
+O autor voltou com três apontamentos ESTRUTURAIS (plano refeito em `docs/afty-aba-buffs-plano.md`,
+seções 9 a 13), e pediu pesquisa em VTTs e sites de RPG consolidados antes de qualquer traço.
+
+- **A gaveta de condições virou MESTRE-DETALHE.** A grade de ladrilhos caiu pelo motivo que o autor
+  apontou: "tamanhos irregulares, inicialmente enorme, e os efeitos mecânicos aparecendo junto aos
+  narrativos". As três queixas são o mesmo defeito, porque o ladrilho carregava conteúdo de tamanho
+  livre. Agora a esquerda tem 29 linhas de 32px (ícone, nome, marca de aplicada) e a direita tem o
+  item inteiro com RÓTULO por bloco: `No Número` (tabela de duas colunas), `Inclui`, `Na Mesa` e
+  `No Livro` (o texto verbatim, que era o pedido). Em tela estreita o detalhe desce para baixo.
+- ⚠ **A GAVETA TEM `height`, E NÃO `max-height`.** Uma caixa que encolhe a cada letra do filtro puxa
+  o chão de quem está lendo. Medido: 612px com a lista inteira e 612px filtrada por uma condição.
+- ⚠ **A FAIXA DO SANGRAMENTO MUDOU DE LUGAR** (cabeçalho para o rodapé do detalhe). Era ela que fazia
+  do Sangramento o ladrilho mais alto da grade.
+- **`Ligados Agora` virou linha de DUAS.** Em cima nome, escolha e controles; embaixo os números com
+  quebra livre. O `efesa -4` da captura era `justify-content: flex-end` com `overflow: hidden`: o
+  delta transbordava PELA ESQUERDA e comia a primeira letra. O `S...` era a escolha com
+  `min-width: 0`, encolhendo antes de todo o resto.
+- **O ponto médio virou `::after` do anterior.** Com `::before` do seguinte, a quebra deixava
+  "· Acerto +2" pendurado no começo da linha nova.
+- **O cabeçalho do dono ganhou fio e contagem** ("ícones de separação faltando", autor), e a família
+  ganhou trilho à esquerda ligando as linhas dela.
+- **O detalhe do estado virou GRADE** de duas colunas, com os rótulos alinhados entre as linhas, e
+  parou de repetir o que a linha já diz: `Está Dando` e `Também` saíram, `Quanto` virou leitura
+  (`3 de 5`) em vez de um segundo par de botões, e **a seta só aparece quando há detalhe**.
+- **A seção `Temporários` saiu** ("não precisa existir", autor), com o memo que a calculava. O que ela
+  dizia continua no hover de cada número da Ficha.
+- **O criador recebeu o mesmo desenho**: condições aplicadas em linha com detalhe embaixo, e o
+  catálogo em mestre-detalhe de altura fixa (398px, com filtro ou sem).
+- Medido a 1440px e a 390px: 0 nomes ou escolhas cortados, 29 linhas de altura idêntica, aba de
+  2048px para 1985px, 13 setas para 3. Suíte 109 de 110 (o vermelho antigo de `t-invocacoes-motor`).
+
+## SESSÃO DE 2026-09-22 (parte 4): A GAVETA DE CONDIÇÕES
+
+A fase 4 do plano (`docs/afty-aba-buffs-plano.md`): aplicar condição pelo teclado.
+
+- `src/systems/afty/ficha/GavetaDeCondicoes.jsx`, com a MESMA anatomia da busca global: véu, caixa
+  no alto, foco no campo ao abrir, setas para andar, Enter para aplicar, Esc para sair. Uma segunda
+  gramática de camada na mesma tela seria uma segunda coisa para aprender.
+- O filtro casa contra nome, resumo E o que a condição faz, então "defesa" acha Paralisado,
+  Desprevenido e Enredado.
+- ⚠ A gaveta NÃO FECHA ao aplicar: numa emboscada o mestre põe Surpreso em quatro criaturas. O termo
+  é limpo e o foco volta ao campo. Enter numa condição já aplicada TIRA, que é o mesmo interruptor
+  do toque.
+- O Sangramento pede uma segunda escolha (a faixa decide o dado da perda), e o campo dela aparece no
+  cabeçalho da gaveta quando ele está sob o cursor.
+- ⚠ **A GAVETA SAI POR PORTAL, e isto não é firula.** O `.afty-ficha-corpo` tem `isolation: isolate`:
+  todo `position: fixed` nascido dentro da aba fica preso naquele contexto de empilhamento, e o
+  cabeçalho grudado (z-index 40) passa por cima de um véu de z-index 1200. Medido: o clique no canto
+  superior esquerdo caía no cabeçalho, e o véu não fechava. O destino é o `.afty-ficha`, que é onde
+  os tokens do tema moram (o `body` perderia o tema do usuário), igual ao painel de fontes.
+
+Conferido no navegador em 1440px e 390px: abrir põe o foco na busca, "atord" e Enter aplicam o
+Atordoado, as setas andam, a faixa Forte do Sangramento vira "Perda de Vida 4d10", Enter numa
+aplicada tira, Esc limpa e depois fecha, e o clique fora fecha. Suíte em 109 de 110 (a falha de
+sempre), eslint e build de pé, sem erro de console.
+
+## SESSÃO DE 2026-09-22 (parte 3): A ABA BUFFS, FASE 3
+
+O detalhe sob demanda, que é a terceira camada do plano (`docs/afty-aba-buffs-plano.md`).
+
+- **A linha do estado abre.** O nome virou botão com seta, e embaixo dele nasce um bloco recuado com
+  o que ele está dando por inteiro, as notas que saíram da linha na fase 1 (as três do Invencível), o
+  custo em PE, o "quanto" das faixas com o teto, e **a troca da escolha ali mesmo**: a Postura, a
+  Manobra e as Auras mudam sem descer até a lista completa, que era o motivo mais comum de rolar a
+  aba no meio do turno. O texto do catálogo (`title` do estado) fecha o bloco.
+- **A condição deixou de ser cartão.** Virou linha de 30px com ícone, nome, degrau, até três números
+  (o resto vira "e mais N") e as rodadas, e o detalhe traz os números inteiros com o riscado da
+  disputa, o "Inclui", o resumo, o botão de Perda de Vida do Sangramento e o texto do livro. Quatro
+  condições saíram de 4 cartões para 4 linhas.
+- **A pastilha do painel do turno abre a condição** além de rolar até ela.
+- ⚠ No estreito (menos de 560px de cartão, o celular e o painel do Encontro) os números da condição
+  descem para uma segunda linha: eles espremiam o nome até "San..." no Sangramento.
+
+Com 14 estados ligados, 4 condições e 1 buff, a aba mede 2048px no desktop e 2385px no celular, com
+nenhum nome truncado nas duas larguras. Suíte em 109 de 110 (a falha de sempre), eslint e build de
+pé, e as fotos das três fases ficaram no scratchpad da sessão. Falta a fase 4 (catálogo em gaveta com
+busca por teclado) e a 6 (Modo Combate), e o painel do Encontro segue conferido só por lint e
+asserts.
+
+## SESSÃO DE 2026-09-22 (parte 2): A ABA BUFFS, FASES 1 E 2
+
+O autor recusou a primeira reforma: *"melhorou mas ainda está muito ruim. Ficou extremamente feio em
+quesito Design e confuso ainda para o uso"*, e pediu um plano de gente de UX. O plano está em
+`docs/afty-aba-buffs-plano.md`, com o que foi medido, o que a pesquisa (NN/g, Foundry, Argon HUD,
+barras de buff de jogo eletrônico) recomenda e seis fases. O autor escolheu as fases 1 e 2, ícones
+nas condições e nos donos de estado, e **recusou a cor de severidade pela segunda vez**.
+
+- **Ladrilho durou um dia.** Ele foi para lista densa: linha de 32px, sem caixa por item, agrupada
+  por dono (com ícone) e por família, que é o que resolve o nome longo (27 dos 63 estados do
+  catálogo passam de 22 caracteres). O que não cabe na linha vai para o `title`, e não some.
+- **Painel do Turno** no lugar da faixa: saldo com teto de 8 marcas e `+N`, e a faixa **Sofrendo**
+  com as condições em pastilha com ícone e rodadas. Tocar na pastilha rola até o cartão da condição
+  e o destaca (`useDestaque`, o mesmo da busca da Ficha).
+- **Estados e Temporários nascem recolhidos** quando há algo ligado, com a contagem no cabeçalho, e
+  o formulário de Buff de Mesa foi para trás de um botão. Os três somavam 890px sempre abertos.
+- **Ícones** em `src/systems/afty/ui/icones-afty.jsx`: 29 condições e 9 donos. ⚠ É TELA, e não
+  regra: o `afty-condicoes.js` não importa pacote de ícone, porque ele é lido pelos asserts e pelo
+  derive.
+- **Sem vermelho**: quem separa "o que eu ganhei" de "o que estão fazendo comigo" é o ícone e a
+  posição. Verde e vermelho seguem só nos números do saldo.
+
+Medido: a aba caiu de 2334px para 1754px no desktop e de 3246px para 2242px no celular, a linha de
+estado de 71px para 32px, e não sobrou nome truncado. Suíte em 109 de 110 (a falha de sempre de
+`t-invocacoes-motor.mjs`), eslint e build de pé, navegador conferido em 1440px e 390px sem erro de
+console. Falta a fase 3 (detalhe sob demanda), que é o que tira as últimas listas de dentro da
+linha, e o painel do Encontro segue conferido só por lint e asserts.
+
+## SESSÃO DE 2026-09-22: A ABA BUFFS PARA USO EM SESSÃO
+
+Dois pedidos do autor, com captura de vinte estados ligados: *"Melhore a aparência da aba de
+condições na Ficha Final e Criador de Fichas. Deixar como uma lista não fala nada sobre nenhuma das
+condições ou mostra o que elas fazem"* e *"o Ligado Agora fica MUITO poluído [...] Faça um checkup
+geral de como podemos melhorar definitivamente a aba de buffs para facilitar o uso em sessão"*.
+
+**O checkup, e o que ele achou:**
+1. **Ninguém somava.** Cada linha dizia o que ELA dava, e a pergunta da mesa é "onde estão os meus
+   números com tudo isso ligado". Com vinte linhas, a conta era de cabeça.
+2. **Ligados Agora repetia a lista.** Era a linha inteira de cada estado, da largura do cartão: nome
+   numa ponta, número na outra, o Concentrar Aura com as dez auras em botão, e o Invencível com três
+   cápsulas de frase (que o autor já tinha recusado em 2026-09-03).
+3. **As condições moravam no fim**, embaixo de três seções, e são o que mais muda numa rodada.
+4. **O seletor de condição era uma lista de nomes** que não dizia o que cada uma fazia.
+5. **No Encontro o delta mentia:** o painel derivava a comparação só com a Alma, e a Guarda, a
+   concessão e os interruptores de Treino saíam carimbados em cada estado ligado (o bug de
+   2026-08-28, anotado ontem como fora do pedido).
+
+**O que foi feito:**
+- Faixa **Agora** no topo, com o saldo (`saldoDoAgora`, um derive a mais contra a ficha sem bancada,
+  sem buff e sem condição). Perícias e TRs viram UMA marca quando a maioria mudou igual ("Perícias
+  -2"), com as exceções ao lado. Verde sobe, vermelho desce, e o número de baixo é onde ficou. No
+  estreito (menos de 560px de cartão) as células viram linha corrida.
+- **Condições** subiram para logo abaixo, em cartões, com o catálogo no lugar do `<select>`. O mesmo
+  desenho na bancada do Cálculos do criador. Ver `docs/afty-condicoes.md`.
+- **Ligados Agora** em ladrilhos, numa grade que se enche sozinha (cinco por fileira na Ficha, um no
+  celular), com o × que desliga e o menos e mais das faixas. As cápsulas do Invencível e do Ápice
+  viraram texto, também na lista completa.
+- **Buffs de Mesa** (era "Buffs") ganharam as mesmas rodadas com menos e mais das condições.
+- No Encontro, `opcoesDoCombatente` (usar-encontro-afty.js) é a lista ÚNICA de opções do derive, e o
+  painel a usa no delta e no saldo. O bug do item 5 acabou.
+
+**O que ficou como proposta, sem código:**
+- Agrupar ladrilhos da mesma família ("Golpe Especial: Atroz, Letal, Penetrante" num só).
+- Fixar favoritos na faixa Agora, para o estado que se liga toda rodada ficar a um toque.
+- Recolher a lista de Estados por padrão quando há ladrilhos, já que o controle diário foi para
+  cima.
+- O painel do Encontro não foi conferido no navegador nesta sessão, só por lint e pelos asserts: o
+  componente é o mesmo e as grades perguntam a largura do cartão.
+
+Asserts: `t-condicoes-efeitos.mjs` subiu para 141 (catálogo e saldo, nos dois sistemas) e
+`t-condicoes.mjs` confere a pontuação do `resumo`. Suíte em 109 de 110, com a falha de sempre de
+`t-invocacoes-motor.mjs`. Eslint e build de pé, navegador conferido em 1440px e 390px (Ficha) e na
+bancada do criador, sem erro de console. `src/components/` e `src/data/` seguem sem alteração.
+
+## SESSÃO DE 2026-09-21 (parte 3): AS CONDIÇÕES MEXEM NO NÚMERO
+
+Pedido do autor: programar as Condições na aba Cálculos do criador e na aba Buffs da Ficha Final,
+nos dois sistemas, com o efeito numérico automático e as rodadas contando na Ficha. No meio do
+trabalho veio a regra que manda em tudo: *"CONDIÇÕES NÃO SE ACUMULAM OS EFEITOS. LOGO PARALISADO
+(-10 DE DEFESA) E DESPREVINIDO (-3 DE DEFESA) FICA COMO -10 DE DEFESA E NÃO COMO -13"*.
+
+Antes de começar, o commit do GoliasK (Fluxo Invencível, `3c8f8a9`) foi puxado sem stash, com o
+backup "antes do pull 2026-09-21 (condicoes)". Só este arquivo conflitou, e as duas sessões ficaram.
+
+- `afty-condicoes.js` deixou de ser terreno vazio. `CONDICAO_TEXTOS` tem os 29 textos do autor (26
+  da lista de níveis e as três Especiais), e `CONDICAO_EFEITOS` diz o que cada uma faz no número. O
+  `resolveCondicoes` expande o `*` dos alvos nos ids concretos da ficha, decide o vencedor de cada
+  número (penalidade a pior, bônus o maior) e devolve só as linhas vencedoras para o Motor, com as
+  perdedoras marcadas `suplantado` para o hover riscar.
+- `afty-derive.js`: as condições vêm de `opcoes.condicoes` (sessão) ou de `combate.condicoes`
+  (bancada), entram no `efeitosTodos`, e o que não é soma sai por fora: movimento (vale o menor
+  resultado), RD zerada pelo Fragilizado (também a por tipo e a Resistência, em
+  `afty-defesas-dano.js`) e falha automática em Reflexos. O `derived.condicoes` é o que as telas
+  desenham.
+- Condenado pedia AUMENTO de custo, e o canal `custoPE` só reduzia. Valor negativo virou aumento,
+  somado depois do piso de 1 PE, nos cinco leitores (`custoEmPe`, Feitiço, Domínio Simples e Invocação).
+  O assert "redução negativa é ignorada" do `t-custo-pe.mjs` virou "redução negativa é aumento".
+- Tela: card Condições na aba Cálculos do criador, com o chip no Preview. A aba Buffs da Ficha e do
+  Encontro ganhou o número de cada condição, o riscado de quem perdeu, as rodadas com menos e mais, o
+  seletor com as Especiais e a faixa do Sangramento, e o botão de Perda de Vida. O aviso "Condição
+  não muda número" saiu. A aba Perícias marca "Falha" no TR.
+- O `deltaDosEstados` do Encontro passou a receber as condições, senão o -10 do Paralisado seria
+  creditado a cada estado ligado (o bug de 2026-08-28). ⚠ Ele ainda não recebe a Guarda, a concessão
+  e os interruptores, que a Ficha manda: é o mesmo bug para esses três, e ficou fora deste pedido.
+
+Doc em `docs/afty-condicoes.md`, leituras a confirmar em `a-fazer.md`. Asserts: `t-condicoes.mjs`
+atualizado (29) e `t-condicoes-efeitos.mjs` novo (124, nos dois sistemas). Suíte em 109 de 110, com
+a falha de sempre de `t-invocacoes-motor.mjs`. Eslint e build de pé, e o navegador conferido nas duas
+telas (1440px e 390px): Defesa 26 para 16 com Paralisado e Desprevenido e o -3 riscado, "2 Rodadas"
+descendo até a condição sair, Sangramento Médio descontando 3d8 do PV, marca "Falha" em Reflexos, e
+nenhum erro de console. `src/components/` e `src/data/` seguem sem alteração.
+
+## SESSÃO DE 2026-09-21 (parte 2): A RESISTÊNCIA PARCIAL SAIU DO AFTY
+
+Pedido do autor: "Remova Resistência Parcial do Grimorio do Afty. Não altere o GRIMORIO DA 2.5".
+Saiu dos DOIS sistemas. No jogador ela já era `null` desde 2026-08-30, então a mudança real é na
+criatura, onde ela vinha do Patamar (Calamidade 0 a 3, Beyond 1 a 4).
+
+- `afty-derive.js`: o bloco de cálculo, a linha do hover, o valor na lista `OVERRIDABLE` e no
+  `calc`. O `derived` não tem mais a chave `resParcial`.
+- `afty-efeitos.js`: o canal `resParcial` saiu do catálogo e do grupo Defesa do seletor. Ele
+  estava declarado e nada o lia, então nenhum número mudou por isso. Ficha gravada com um efeito
+  nesse canal cai na regra de sempre: canal desconhecido é ignorado sem quebrar.
+- Tela: a linha da aba Cálculos, a célula do Preview, da Ficha Final e do painel do combatente no
+  Encontro, e o chip da lista de Buffs. Um `overrides.resParcial` gravado numa ficha antiga fica
+  sem leitor e é ignorado.
+- A divergência `guardaEresistenciaParcial` ficou só com a Guarda e virou `guardaInabalavel`. A
+  citação do autor dentro dela ficou como foi dita.
+- `t-sistema.mjs` trocou os dois asserts do valor por três de ausência (criatura, jogador e
+  hover). Doc da regra em `afty-formulas-base.md` marcada como removida, com a tabela guardada
+  como registro, e o canal tirado de `afty-efeitos-criatura.md`.
+
+A 2.5.2 não foi tocada: `src/components/CombatantPanel.jsx` continua com a Resistência Parcial
+dela. Suíte em 107 de 108 arquivos, com a falha de sempre de `t-invocacoes-motor.mjs`, eslint do
+Afty limpo, build de pé, e o navegador conferido numa Calamidade de ND 20: Preview com a Guarda e
+sem a Resistência Parcial, aba Cálculos com dez células, sem erro de console.
+
 ## SESSÃO DE 2026-09-21: FLUXO INVENCÍVEL
 
 A base local avançou de `8c80212` para `ea01a94`, preservando o trabalho local de
@@ -14728,3 +15026,53 @@ Pedido do autor: um Treinamento novo, colado como texto ("Treinando suas tática
 **Asserts:** `t-treino-testes-resistencia.mjs` (novo, 30). Contraprova contra o motor anterior: o +1 não existia, a Vontade não ficava treinada, o requisito passava sempre e o Completo aplicava margem e +2 em qualquer TR. Suíte: 117 arquivos, só o vermelho conhecido.
 
 **Verificado ao vivo** (`/Player`, ficha com o addon): a linha na aba Interlúdios com a instância "Fortitude 1/4" e a 2ª etapa pedindo "Nível de Personagem 13" e "Constituição 12", o seletor oferecendo Reflexos, Vontade e Astúcia, e a Fortitude em +16 (15 da Classe mais o +1 do treino) na aba Perícias. Console limpo depois de recarregar.
+
+---
+
+## SESSÃO DE 2026-09-28: FÓRMULA DE COMBATE ENTRÓPICA, FASES 0 E 1 (O RESTRINGIDO VIRA MÃE)
+
+Pedido do autor: adaptar o PDF inteiro "Fórmula de Combate Entrópica" (homebrew de Dr. Xeno, a Restrição Intelectual) como Addon, "mastigado" para um amigo que conhece pouco o sistema. Plano em 5 fases e transcrição fiel em `docs/afty-formula-entropica.md`. Decisões: variação do Restringido com classe herdeira, dispositivos num card de Preparação, veículos como Invocação de ficha fixa, e valer nos DOIS sistemas.
+
+**Fase 0:** transcrição do PDF (fonte de verdade), mapa página por página contra a classe Restringido, 23 perguntas numeradas (entrada única no `a-fazer.md` apontando para elas). O `main` estava 2 commits atrás com 30 arquivos não commitados, 5 deles tocados pelos commits novos. A simulação do merge por arquivo mostrou que os "conflitos" eram só fim de linha (CRLF na cópia de trabalho), e o stash, fast-forward e pop entrou limpo.
+
+**Fase 1, o verbo:** `restringido` entrou em `VARIACOES_ACEITAS`. O Restringido é a mãe mais cara porque trava em dois eixos, e o segundo é a CLASSE: no jogador o `semEnergia` lia o id literal da Especialização. Nasceu o `especializacaoMae` (irmão do `origemMae`), a classe exclusiva passou a seguir a mãe quando a variação não traz a dela (`exclusivaDaOrigem`), o Tipo forçado lê a mãe, e os dois campos que se citam (`especializacaoExclusivaId` e `exclusivaOrigemId`) ganharam o prefixo do pacote. As travas por id de habilidade (Restrição Definitiva no teto do Surto, Imitação, Ainda de Pé, Roubo de Habilidade) passam pelo `expandeHerdadas`, e o `niveisPorEfeito` publica a herdeira sob o nome da mãe. O validador relata herdeira de classe exclusiva sem trava de origem.
+
+**O que não desce:** o limite 30 dos físicos e o rótulo "Ápice Corporal Humano" (autor: *"Só INT vai a 30"*). São conteúdo, e a variação herda identidade. `ehVariacaoDoRestringido` responde.
+
+**Achado e consertado, valia para todo `herdaDe`:** o clone de habilidade com `concedeEscolha` apontava para a irmã do livro. O Respeito Celeste clonado dava as Dádivas extras a um Restrito pelos Céus que a herdeira não tem. Nenhuma herdeira anterior (o Especialista em Estilo herda do Conjurador) tinha `concedeEscolha`, então nada mudou para elas.
+
+**Asserts:** `t-restringido-variacao.mjs` (novo, 52), nos dois sistemas, com contraprova de que o Restringido do livro deriva igual com e sem o pacote. O `t-liberto.mjs` usava o Restringido como exemplo de mãe recusada e passou a usar o Inato. Suíte: 119 arquivos, só o vermelho conhecido. `t-filtro-habilidades` e `t-imitacao` (fora do lançador) passam.
+
+---
+
+## SESSÃO DE 2026-09-28 (parte 2): FÓRMULA DE COMBATE ENTRÓPICA, FASE 2 (O PACOTE)
+
+O pacote `addons/formula-combate-entropica.json` (autor Dr. Xeno): a origem Restrição Intelectual, a Especialização Restringido Intelectual (herdeira do Restringido, com a Restrição Congênita e a Definitiva Intelectual remendadas), as 11 Dádivas Intelectuais do Céu, os 8 Talentos de Origem e 6 estados de combate. Quinze leituras respondidas pelo autor em três lotes de pergunta com opções, todas no guia (`docs/afty-formula-entropica.md`, decisões 5 a 18).
+
+**Sete verbos de motor, todos genéricos:** `bonus.livres` no Bônus em Atributo ("4 pontos, um deles livre", com o teto de +3 valendo no pool inteiro); o canal `ataqueAtributo` (INT no acerto e no dano, vale o maior modificador, escondido atrás da primitiva de mesmo nome); o teto de faixa por expressão (`"max": "bt"` virava zero); `efeitos` escritos na opção de escolha aninhada; `usos` e `resultados` em característica de origem, Talento e opção (e `resultados` em Habilidade), devolvidos pelo derive em `mesa`; as recargas `cena` e `rodada`, que viajam como prefixo na chave da sessão e voltam na cena nova e na virada da rodada; e a porta `requerEscolha` nos estados de Addon. Mais a regra de que a variação não recebe a escada do desarmado do Restringido.
+
+**Na Ficha Final**, a opção com contador ou número vira linha própria logo abaixo da mãe, e os números de mesa ("Bônus dos Aliados: 2") são campo à parte das marcas, para sair da linha fechada abaixo de 560 px (`@container itemficha`).
+
+**Decisão minha, e o autor pode mudar:** a Inferência Rápida usa o MESMO contador de falhas da Restrição Congênita, em vez de um segundo. O autor pediu que as duas somem, e um clique por falha dá as duas somas.
+
+**Achado e não mexido** (pergunta nova no `a-fazer.md`): as marcas das linhas da Ficha têm `hidden sm:inline-flex` e aparecem no telefone mesmo assim, porque o `display` do `.afty-chip` vence o `hidden`. Em 390 px a linha com marca e contador espreme o nome. Vale para toda ficha.
+
+**Asserts:** `t-formula-entropica.mjs` (novo, 102), nos dois sistemas. O `t-primitivas.mjs` foi para 21. Suíte: 120 arquivos, só o vermelho conhecido.
+
+**Verificado ao vivo** (`/player`, 1440 e 390 px, console limpo): o cabeçalho com "Restringido Intelectual" e Estamina 48, a Defesa 26, o Ataque Básico em +16 e 1d8 + 6 (dano pela INT, sem a escada do Restringido), a aba Habilidades com os contadores e os números, a aba Buffs com o grupo do pacote e o contador de falhas levando o Ataque Básico a +22, e o criador com o distribuidor "1 em Qualquer" e a alocação de INT.
+
+## SESSÃO DE 2026-09-29: YNA (KITSUNE, CLÃ GETSURIN E DOIS TREINOS)
+
+Pedido do autor: um Addon chamado "Yna" com a Origem Kitsune, a Linhagem Clã Getsurin, o Treino de Cônjuge e o Treino de Desenvolvimento Amaldiçoado. O pacote é `addons/yna.json`, o guia é `docs/afty-yna.md` e o assert é `asserts/t-yna.mjs`.
+
+**Quatro decisões do autor**, por pergunta com opções: a Forma de Raposa liga por interruptor de sessão (e não por estado de combate nem só texto); as Caudas são contadas pela ficha, mais um contador de marcos de 0 a 3; o alcance e a área da Lapidação Prateada ficam no texto por ora; o pacote vale nos dois sistemas.
+
+**Uma peça de motor, genérica:** o `gatilhoSessao` passou a valer em característica de origem e de clã. `gatilhosDeOrigem` (afty-origens.js) lê as características efetivas, `coletarEfeitosOrigem` recebe o `treinosAtivos` e tira o efeito desligado antes do Motor, e o derive junta os interruptores da origem aos do treino em `gatilhosTreino`. As três telas que desenham o interruptor (Ficha, bancada e Encontro) não mudaram.
+
+**O resto coube no que já existia:** o pool de Anatomia do Feto (`poolAnatomia`, que qualquer origem pode declarar), o seletor de clã com rótulo próprio ("Linhagem"), o contador de origem (`contadoresOrigem`, do Arauto), o número pronto na Ficha (`resultados`, da Fórmula Entrópica) e os moldes do Treino Cônjuge do Flugel e do Estudo do Jujutsu. A Lapidação liga pelo `quando` com a conta das Caudas, que o montante consegue avaliar porque o contador está no contexto dele.
+
+**Achados e não mexidos** (quatro entradas novas no `a-fazer.md`): a Atenção do Instinto Sanguinário nunca soma, porque efeito de origem roda no montante e o `quando: "em_combate"` cai calado lá (medido num Feto de ND 5); o Completo do Treino Cônjuge do Flugel soma meio ponto de Iniciativa com BT ímpar (`metade(bt)` sem piso, e a Yna nasceu com `piso(bt / 2)`); as Anatomias escolhidas não aparecem na Ficha Final; e o alcance e a área da Lapidação. Mais cinco leituras minhas para o autor confirmar, na mesma lista.
+
+**Asserts:** `t-yna.mjs` (novo, 107), nos dois sistemas. Suíte: 121 arquivos, só o vermelho conhecido. `npx eslint src/systems/afty` limpo e `npm run build` passando.
+
+**Verificado ao vivo** (`/player` e `/afty`, 1440 px, console limpo): o botão Forma de Raposa na aba Ações ao lado do Cônjuge, ligando e levando o cabeçalho a "Pequeno · 1,5m"; a aba Habilidades com as sete características e "Caudas: 6" num nível 13 com um marco; o card de Origem com a Linhagem Getsurin, o pool de Anatomia em 2 de 3 e o contador "Caudas por Marco"; e o interruptor na bancada de Simulação de Combate. O Encontro não foi aberto: ele desenha a mesma `AbaAcoes` a partir do mesmo `gatilhosTreino`.

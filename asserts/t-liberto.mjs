@@ -10,8 +10,10 @@
    2. O conteúdo: Bônus em Atributo, Inquebrável e cada degrau do Caminho até o
       Fim no nível em que ele abre, e nem um antes.
 
-   ⚠ O `variacaoDe` só aceita o Sem Técnica. Uma variação de outra origem é
-   relatada pelo validador e responde como ela mesma, e isso também é medido. */
+   ⚠ O `variacaoDe` só aceita as mães de `VARIACOES_ACEITAS` (Sem Técnica,
+   Maldição e, desde 2026-09-28, Restringido). Uma variação de outra origem é
+   relatada pelo validador e responde como ela mesma, e isso também é medido
+   com o Inato, que era o Restringido até ele entrar na lista. */
 import { readFileSync } from "node:fs";
 import { register } from "node:module";
 register(
@@ -197,7 +199,7 @@ t("com o Sem Técnica solto, o Liberto vem junto",
 A.aplicarAddons([pacote]);
 
 /* ---------------- a mãe fora da lista ---------------- */
-for (const [mae, trecho] of [["restringido", "ainda não aceita restringido"], ["nao_existe", "não é do livro"]]) {
+for (const [mae, trecho] of [["inato", "ainda não aceita inato"], ["nao_existe", "não é do livro"]]) {
   const ruim = structuredClone(LIBERTO);
   ruim.acrescenta.origens[0].variacaoDe = mae;
   const { problemas } = A.aplicarAddons([A.normalizarPacote(ruim)]);

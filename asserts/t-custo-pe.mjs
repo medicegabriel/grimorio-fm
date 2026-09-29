@@ -71,7 +71,11 @@ t("o piso segura", EF.custoEmPe(3, efeitos(reducao(5))).valor, 1);
 /* ⚠ E BASE ZERO CONTINUA ZERO. Sem isto, toda ação de graça passaria a custar 1
    PE por causa do piso, que é o contrário do que o piso quer dizer. */
 t("o que não custa não passa a custar", EF.custoEmPe(0, efeitos(reducao(5))).valor, 0);
-t("redução negativa é ignorada", EF.custoEmPe(4, efeitos(reducao(-3))).valor, 4);
+/* ⚠ Até 2026-09-21 a redução negativa era ignorada. A condição Condenado ("o
+   custo em PE de todas as suas habilidades aumentado em 1") a transformou em
+   AUMENTO, somado depois do piso. Ver `t-condicoes-efeitos.mjs`. */
+t("redução negativa é aumento", EF.custoEmPe(4, efeitos(reducao(-3))).valor, 7);
+t("e o aumento entra depois do piso", EF.custoEmPe(3, efeitos(reducao(5), reducao(-1))).valor, 2);
 t("as parcelas viajam para o hover",
   EF.custoEmPe(4, efeitos(reducao(2, null, "Vislumbre"))).partes, [{ label: "Vislumbre", valor: 2 }]);
 

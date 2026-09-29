@@ -131,11 +131,17 @@ export function dadosDoDominioSimples(def) {
  */
 function custoComPartes(base, partesBase, fontesReducao) {
   if (base <= 0) return { valor: 0, partes: partesBase };
-  const reducao = fontesReducao.reduce((s, p) => s + p.valor, 0);
+  /* ⚠ VALOR NEGATIVO É AUMENTO (condição Condenado, 2026-09-21), e entra DEPOIS
+     do piso: ver `custoEmPe` em afty-efeitos.js. */
+  const reducoes = fontesReducao.filter((p) => p.valor > 0);
+  const aumentos = fontesReducao.filter((p) => p.valor < 0);
+  const reducao = reducoes.reduce((s, p) => s + p.valor, 0);
   const bruto = base - reducao;
-  const valor = Math.max(CUSTO_PE_MINIMO, bruto);
-  const partes = [...partesBase, ...fontesReducao.map((p) => ({ ...p, valor: -p.valor }))];
-  if (valor !== bruto) partes.push({ label: `Piso de ${CUSTO_PE_MINIMO} PE`, valor: valor - bruto });
+  const comPiso = Math.max(CUSTO_PE_MINIMO, bruto);
+  const valor = comPiso - aumentos.reduce((s, p) => s + p.valor, 0);
+  const partes = [...partesBase, ...reducoes.map((p) => ({ ...p, valor: -p.valor }))];
+  if (comPiso !== bruto) partes.push({ label: `Piso de ${CUSTO_PE_MINIMO} PE`, valor: comPiso - bruto });
+  partes.push(...aumentos.map((p) => ({ ...p, valor: -p.valor })));
   return { valor, partes };
 }
 

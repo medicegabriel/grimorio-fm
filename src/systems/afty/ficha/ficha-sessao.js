@@ -924,6 +924,20 @@ export function aplicaDano(sessao, bruto) {
   };
 }
 
+/**
+ * Perda de vida: a do Sangramento, no início do turno (2026-09-21).
+ *
+ * ⚠ NÃO É DANO, e por isso não passa pelo `aplicaDano`: a casca de PV
+ * Temporário não protege e a Guarda Inabalável não se quebra. É a leitura de
+ * "perda de vida" dos sistemas de onde o Afty veio, e está em docs/a-fazer.md
+ * para o autor confirmar.
+ */
+export function aplicaPerdaDeVida(sessao, bruto) {
+  const perda = Math.max(0, inteiro(bruto, 0));
+  if (!perda) return sessao;
+  return { ...sessao, hpAtual: Math.max(0, sessao.hpAtual - perda) };
+}
+
 /** Aplica cura. Nunca passa do máximo, e nunca ressuscita PV temporário. */
 export function aplicaCura(sessao, bruto, hpMax) {
   const cura = Math.max(0, inteiro(bruto, 0));
@@ -1173,12 +1187,23 @@ export function defineCondicoes(sessao, condicoes) {
 const CHAVE_GOLPE_PRECISO = "golpe:preciso:rodada";
 const CHAVE_GOLPE_SEIS = "golpe:autossuficiente6";
 
-/** A cena nova devolve a troca por 6 do Autossuficiente ("Uma vez por cena"). */
-function cenaNovaDoGolpe(sessao) {
-  if (!sessao?.usos?.[CHAVE_GOLPE_SEIS]) return sessao;
+/** Os usos gastos sem as chaves que o teste manda devolver, ou a mesma sessão. */
+function devolveUsos(sessao, devolve) {
+  const chaves = Object.keys(sessao?.usos ?? {}).filter(devolve);
+  if (!chaves.length) return sessao;
   const usos = { ...sessao.usos };
-  delete usos[CHAVE_GOLPE_SEIS];
+  for (const k of chaves) delete usos[k];
   return { ...sessao, usos };
+}
+
+/**
+ * A cena nova devolve a troca por 6 do Autossuficiente ("Uma vez por cena") e,
+ * desde 2026-09-28, todo contador de mesa com recarga `cena`, que o derive
+ * grava com o prefixo `cena:` na chave (ver `mesa` em afty-derive.js). O nome
+ * ficou por ser o de quem nasceu primeiro.
+ */
+function cenaNovaDoGolpe(sessao) {
+  return devolveUsos(sessao, (k) => k === CHAVE_GOLPE_SEIS || k.startsWith("cena:"));
 }
 
 /**
@@ -1197,8 +1222,10 @@ export function proximaRodada(sessao, derived = null) {
   /* ⚠ A casca de PE do gatilho `rodada` volta ao teto AQUI, e não soma: ver
      `aplicaPeTemporario`. Sem `derived` nada acontece, que é o mesmo cuidado do
      `descansar`: quem não conseguiu calcular a ficha não sabe quanto entregar. */
+  /* Os contadores "uma vez por rodada" voltam na virada (prefixo `rodada:` na
+     chave, 2026-09-28). Ver `mesa` em afty-derive.js. */
   const base = {
-    ...sessao,
+    ...devolveUsos(sessao, (k) => k.startsWith("rodada:")),
     rodada: sessao.rodada + 1,
     combate: expirarEstadosDaRodada(sessao.combate, derived),
     buffs: sessao.buffs.map(desce).filter(Boolean),

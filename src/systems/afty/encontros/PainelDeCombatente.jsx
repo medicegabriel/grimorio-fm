@@ -9,7 +9,7 @@ import { numeroBr } from "../ui/formato";
 import { Vital } from "../ui/vital";
 import { Guarda } from "../ui/guarda";
 import {
-  aplicaDano, aplicaCura, descansar, registraRolagem,
+  aplicaDano, aplicaCura, aplicaPerdaDeVida, descansar, registraRolagem,
   aplicaDanoNaAlma, curaAlma, defineAlma,
   concedeNaSessao, removeConcessao, peTempTotal, gastaPe, pvTempTotal,
   sofreGolpeNaGuarda, desfazGolpeNaGuarda, encerraGuarda, defineCondicoes,
@@ -20,7 +20,8 @@ import {
   usosGastosDe, marcaUso,
 } from "../ficha/ficha-sessao";
 import { rolarTeste, rolarDano, textoDaRolagem } from "../ficha/ficha-rolagem";
-import { deltaDosEstados } from "../ficha/ficha-buffs";
+import { deltaDosEstados, saldoDoAgora } from "../ficha/ficha-buffs";
+import { opcoesDoCombatente } from "./usar-encontro-afty";
 import { conteudoDaFicha, equipamentosDaFicha } from "../ficha/ficha-conteudo";
 import AbaAcoes from "../ficha/abas/AbaAcoes";
 import PainelDeAdaptacao from "../ficha/PainelDeAdaptacao";
@@ -173,11 +174,27 @@ export default function PainelDeCombatente({
     () => (combatente.ficha
       ? deltaDosEstados(
         combatente.ficha, sessao?.combate,
-        { almaAtual: sessao?.almaAtual, buffs: sessao?.buffs },
+        /* ⚠ AS OPÇÕES INTEIRAS DO COMBATENTE, as mesmas do `derived` (2026-09-22).
+           Até aqui só a Alma e as condições vinham, e a diferença entre as duas
+           listas saía carimbada como bônus de cada estado ligado: a Guarda de
+           um Calamidade, a concessão do mestre e os interruptores de Treino. É
+           o bug de 2026-08-28 anotado no `deltaDosEstados`. */
+        { ...opcoesDoCombatente(sessao), buffs: sessao?.buffs },
         derived,
       )
       : {}),
-    [combatente.ficha, sessao?.combate, sessao?.almaAtual, sessao?.buffs, derived],
+    [combatente.ficha, sessao, derived],
+  );
+  /* O saldo da faixa "Agora", com as mesmas opções do delta acima. */
+  const saldoAgora = useMemo(
+    () => (combatente.ficha
+      ? saldoDoAgora(
+        combatente.ficha, sessao?.combate,
+        { ...opcoesDoCombatente(sessao), buffs: sessao?.buffs },
+        derived,
+      )
+      : []),
+    [combatente.ficha, sessao, derived],
   );
 
   // Jogador: nada de ficha, nada de painel. A ficha dele está na mão dele.
@@ -203,8 +220,6 @@ export default function PainelDeCombatente({
     ...(derived.rdAlma > 0 ? [{ k: "RD Alma", v: derived.rdAlma, p: "rdAlma" }] : []),
     { k: "Mov.", v: `${numeroBr(derived.movimento)}m`, p: "movimento" },
     { k: "Atenção", v: derived.atencao, p: "atencao" },
-    // `null` some, zero fica. Ver a nota em AftyCreatureBuilder.jsx.
-    ...(derived.resParcial != null ? [{ k: "Res. Parcial", v: derived.resParcial, p: "resParcial" }] : []),
   ];
 
   const ultima = sessao.log?.[0] ?? null;
@@ -336,8 +351,9 @@ export default function PainelDeCombatente({
 
         {/* Mesma célula de tamanho fixo da Ficha (`afty-stat`), e não uma
             fileira `flex-wrap`: com caixas do tamanho do próprio texto, "CD"
-            minúscula ao lado de "Res. Parcial" larga faz a fileira virar uma
-            serra. O autor apontou isso na Ficha em 2026-08-05.
+            minúscula ao lado de "Res. Parcial" larga (rótulo que saiu em
+            2026-09-21) fazia a fileira virar uma serra. O autor apontou isso
+            na Ficha em 2026-08-05.
 
             ⚠ As colunas vêm do `.afty-stats` do `ficha.css`, que este painel já
             importa. Aqui a coluna é estreita e muda de largura com o painel de
@@ -477,6 +493,14 @@ export default function PainelDeCombatente({
              custou passar duas props. */
           onConceder={(familia, id) => onSessao((s) => concedeNaSessao(s, familia, id))}
           onRemoverConcessao={(uid) => onSessao((s) => removeConcessao(s, uid))}
+          /* O Sangramento rola e desconta igual à Ficha Final. */
+          onSangrar={(condicao) => {
+            const faixa = condicao?.sangramento;
+            if (!faixa) return;
+            const r = rolarDano({ rotulo: "Sangramento", detalhe: "Perda de Vida", dados: faixa.dados, faces: faixa.faces });
+            onSessao((s) => aplicaPerdaDeVida(registraRolagem(s, r), r.total));
+          }}
+          saldoAgora={saldoAgora}
         />
       )}
     </div>

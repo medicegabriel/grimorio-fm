@@ -1,0 +1,325 @@
+{
+  "id": "formula-combate-entropica",
+  "nome": "Fórmula de Combate Entrópica",
+  "versao": "1.0.0",
+  "autor": "Dr. Xeno",
+  "paraRaw": "afty",
+  "descricao": "A Restrição Intelectual: um Restringido que troca o físico pela mente. Traz a origem, os Talentos de Origem, a Especialização Restringido Intelectual (herda o Restringido, com a Restrição Congênita, as Dádivas Intelectuais do Céu e a Restrição Definitiva Intelectual no lugar das do livro) e os estados de combate que contam as falhas contra o mesmo inimigo. Guia em docs/afty-formula-entropica.md.",
+  "permite": ["ataqueAtributo"],
+  "estadosCombate": [
+    {
+      "id": "falhas_alvo",
+      "label": "Falhas Contra o Alvo",
+      "tipo": "faixa",
+      "min": 0,
+      "max": "bt",
+      "requerHabilidade": "formula-combate-entropica:res_intelectual__res_restrito_pelos_ceus"
+    },
+    {
+      "id": "feitico_repetido",
+      "label": "Mesmo Feitiço Duas Vezes Seguidas",
+      "tipo": "bool",
+      "requerHabilidade": "formula-combate-entropica:res_intelectual__res_restrito_pelos_ceus"
+    },
+    {
+      "id": "hipotese_tipo",
+      "label": "Hipótese Adaptativa · Mesmo Tipo de Dano",
+      "tipo": "bool",
+      "requerEscolha": "dint_hipotese_adaptativa"
+    },
+    {
+      "id": "primeira_cena",
+      "label": "Primeira Cena de Combate",
+      "tipo": "bool",
+      "requerTalento": "tal_planejamento_perfeito"
+    },
+    {
+      "id": "contra_medida",
+      "label": "Contra-Medida Rápida",
+      "tipo": "bool",
+      "requerTalento": "tal_contra_medida_rapida"
+    },
+    {
+      "id": "leitura_antecipada",
+      "label": "Leitura Antecipada",
+      "tipo": "bool",
+      "requerTalento": "tal_leitura_antecipada"
+    }
+  ],
+  "acrescenta": {
+    "origens": [
+      {
+        "id": "restricao_intelectual",
+        "nome": "Restrição Intelectual",
+        "variacaoDe": "restringido",
+        "especializacaoExclusivaId": "res_intelectual",
+        "lore": "Nem toda Restrição Celestial se manifesta através do porte físico. Em casos raros, um humano pode nascer privado de sua Energia Amaldiçoada em troca de uma mente capaz de processar informações, formular estratégias e compreender padrões em um nível além do comum. Aqueles que carregam essa Restrição desenvolvem capacidades analíticas e criativas que desafiam a lógica, sendo capazes de prever comportamentos, elaborar diversos e inúmerosos planos complexos em instantes e criar invenções que ultrapassam os limites tecnológicos de sua era.",
+        "bonusAtributos": {},
+        "limiteAtributo": { "inteligencia": 30 },
+        "caracteristicas": [
+          {
+            "id": "bonus_atributo",
+            "nome": "Bônus em Atributo",
+            "descricao": "Como um ser de extrema Inteligência você possui uma mente sem igual para todas as pessoas de sua era, você recebe +4 pontos para distribuir entre os seus atributos mentais, com um limite máximo de +3 no mesmo atributo e +1 o qual você pode distribuir em que quiser.",
+            "bonus": { "distribuir": 4, "maxPorAtributo": 3, "entre": ["inteligencia", "sabedoria", "presenca"], "livres": 1 }
+          },
+          {
+            "id": "restricao_congenita",
+            "nome": "Restrição Congênita Intelectual",
+            "descricao": "Seu limite de atributo de Inteligência é 30 e, a cada 6 níveis, você pode aumentar em +2 Inteligência, no lugar de Força, Destreza ou Constituição.",
+            "alocacao": { "id": "restricao_congenita_intelectual", "porNivel": 6, "valor": 2, "entre": ["inteligencia"] }
+          },
+          {
+            "id": "analise_de_campo",
+            "nome": "Análise de Campo",
+            "descricao": "No início de cada combate pode gastar uma ação bônus para analisar o inimigo, identificando fraquezas, hábitos e padrões comportamentais. Durante uma quantidade de turnos igual a seu modificador de inteligência, os aliados que seguirem suas instruções recebem um bônus igual à metade do seu BT (mínimo +1) em jogadas de ataque ou Defesa contra esse inimigo.",
+            "mesa": true,
+            "usos": { "expr": "1", "recarga": "cena" },
+            "resultados": [
+              { "label": "Bônus dos Aliados", "expr": "max(1, piso(bt / 2))" },
+              { "label": "Turnos", "expr": "max(0, mod_inteligencia)" }
+            ]
+          },
+          {
+            "id": "engenho_superior",
+            "nome": "Engenho Superior",
+            "descricao": "Sempre que o usuário cria ou modifica um equipamento, ele pode atribuir até 2 efeitos especiais de grau. Itens criados por ele têm 1.5x mais eficiência e se aliados usarem itens do usuário, eles ganham vantagem na primeira rolagem que fizerem com ele.",
+            "mesa": true
+          },
+          {
+            "id": "estratagema_de_guerra",
+            "nome": "Estratagema de Guerra",
+            "descricao": "Durante um descanso curto, você pode elaborar planos e instruções para sua equipe. Escolha um número de aliados igual ao seu modificador de Sabedoria (mínimo 1). Até o próximo descanso, cada aliado escolhido recebe uma utilização de Estratagema. Quando ativado, o aliado pode adicionar seu Bônus de Treinamento a uma jogada de ataque, Defesa ou Teste de Resistência após realizar a rolagem até o final da cena.",
+            "mesa": true,
+            "usos": { "expr": "max(1, mod_sabedoria)", "recarga": "descanso" },
+            "resultados": [
+              { "label": "Aliados", "expr": "max(1, mod_sabedoria)" },
+              { "label": "Bônus do Aliado", "expr": "bt" }
+            ]
+          }
+        ]
+      }
+    ],
+    "especializacoes": [
+      {
+        "id": "res_intelectual",
+        "nome": "Restringido Intelectual",
+        "herdaDe": "restringido",
+        "exclusivaOrigemId": "restricao_intelectual",
+        "incompativeisIds": ["restringido"],
+        "resumo": "O Restringido da Restrição Intelectual: as mesmas habilidades, com a mente no lugar do corpo.",
+        "descricao": "Você recebe as Habilidades de Especialização do Restringido, e todas continuam valendo. A Restrição Congênita Intelectual ocupa o lugar do Restrito pelos Céus, as Dádivas Intelectuais do Céu ocupam o das Dádivas do Céu, e a Restrição Definitiva Intelectual ocupa o da Restrição Definitiva.",
+        "remendaHabilidades": {
+          "res_restrito_pelos_ceus": {
+            "nome": "Restrição Congênita Intelectual",
+            "descricao": "Seu limite de atributo de Inteligência é 30 e, a cada 6 níveis, você pode aumentar em +2 Inteligência, no lugar de Força, Destreza ou Constituição. Além disso, você pode usar Inteligência em vez de Força ou Destreza para realizar ações de ataque e para cálculos de Defesa. Sempre que você falhar em um teste contra o mesmo inimigo, você recebe +1 cumulativo contra ele, até o máximo do seu Bônus de Treinamento. Se um inimigo usar o mesmo feitiço contra você duas vezes seguidas, você recebe redução de dano contra esse efeito até um limite igual ao seu bônus de treinamento.\n\nNo 4° nível, e depois a cada 4 níveis, você recebe uma Dádiva Intelectual do Céu.",
+            "efeitos": [
+              { "canal": "defesa", "expr": "max(0, min(mod_inteligencia, nd))" },
+              { "canal": "ataqueAtributo", "alvo": "inteligencia", "expr": "1" },
+              { "canal": "bonusAcerto", "expr": "formula_combate_entropica_falhas_alvo", "duracao": "temporaria", "nome": "Restrição Congênita · Contra o Alvo" },
+              { "canal": "bonusTR", "expr": "formula_combate_entropica_falhas_alvo", "duracao": "temporaria", "nome": "Restrição Congênita · Contra o Alvo" },
+              { "canal": "bonusPericia", "expr": "formula_combate_entropica_falhas_alvo", "duracao": "temporaria", "nome": "Restrição Congênita · Contra o Alvo" },
+              { "canal": "rdGeral", "expr": "bt", "quando": "formula_combate_entropica_feitico_repetido", "duracao": "temporaria", "nome": "Restrição Congênita · Mesmo Feitiço" }
+            ],
+            "escolha": {
+              "id": "dadiva_intelectual",
+              "label": "Dádiva Intelectual do Céu",
+              "niveis": [4, 8, 12, 16, 20],
+              "opcoes": [
+                {
+                  "id": "dint_calculo_instantaneo",
+                  "nome": "Cálculo Instantâneo",
+                  "descricao": "Uma vez por rodada, você pode substituir um teste de Reflexos por um teste de Vontade ou Astúcia, desde que ela dependa de leitura, reação mental ou previsão de movimento.",
+                  "usos": { "expr": "1", "recarga": "rodada" }
+                },
+                {
+                  "id": "dint_engenho_de_batalha",
+                  "nome": "Engenho de Batalha",
+                  "descricao": "Ao adquirir uma dádiva que estende ainda mais os seus conhecimentos faz com que os seus protótipos ou armadilhas durem o dobro do tempo e tenham CD +2."
+                },
+                {
+                  "id": "dint_logistica_de_campo",
+                  "nome": "Logística de Campo",
+                  "descricao": "No início de um combate, antes da primeira rodada, você pode reposicionar até 2 aliados em até 4,5 metros, desde que ambos estejam conscientes e possam ouvi-lo. Esse reposicionamento não provoca ataques de oportunidade.",
+                  "usos": { "expr": "1", "recarga": "cena" }
+                },
+                {
+                  "id": "dint_memoria_tatica",
+                  "nome": "Memória Tática",
+                  "descricao": "Uma vez por cena, você pode repetir uma jogada de ataque ou teste de perícia de um aliado, como se tivesse previsto a ação dele e a corrigido, qual o novo resultado substitui o anterior. Ao atingir o nível 10 você passa a conseguir utilizá-la duas vezes por cena",
+                  "usos": { "expr": "1 + (nd >= 10)", "recarga": "cena" }
+                },
+                {
+                  "id": "dint_inferencia_rapida",
+                  "nome": "Inferência Rápida",
+                  "descricao": "Sempre que falhar em um teste contra o mesmo inimigo, você recebe um bônus cumulativo de +2 em novos testes contra ele até o fim da cena, até um máximo igual ao seu Bônus de Treinamento.",
+                  "efeitos": [
+                    { "canal": "bonusAcerto", "expr": "min(2 * formula_combate_entropica_falhas_alvo, bt)", "duracao": "temporaria", "nome": "Inferência Rápida" },
+                    { "canal": "bonusTR", "expr": "min(2 * formula_combate_entropica_falhas_alvo, bt)", "duracao": "temporaria", "nome": "Inferência Rápida" },
+                    { "canal": "bonusPericia", "expr": "min(2 * formula_combate_entropica_falhas_alvo, bt)", "duracao": "temporaria", "nome": "Inferência Rápida" }
+                  ]
+                },
+                {
+                  "id": "dint_rede_de_comando",
+                  "nome": "Rede de Comando",
+                  "descricao": "Enquanto estiver consciente, todos os aliados em até 6 metros recebem +1 em Defesa e +1 em Testes de Resistência, desde que possam ouvir suas instruções."
+                },
+                {
+                  "id": "dint_hipotese_adaptativa",
+                  "nome": "Hipótese Adaptativa",
+                  "descricao": "A primeira vez em cada combate que você sofrer dano de uma fonte, você reduz esse dano igual ao seu modificador de inteligência + modificador de sabedoria. Além disso, até o fim da cena, você recebe +2 de redução de dano contra o mesmo tipo de dano de um ataque.",
+                  "resultados": [
+                    { "label": "Redução", "expr": "max(0, mod_inteligencia + mod_sabedoria)" }
+                  ],
+                  "efeitos": [
+                    { "canal": "rdGeral", "expr": "2", "quando": "formula_combate_entropica_hipotese_tipo", "duracao": "temporaria", "nome": "Hipótese Adaptativa" }
+                  ]
+                },
+                {
+                  "id": "dint_estrategia_ilusoria",
+                  "nome": "Estratégia Ilusória",
+                  "descricao": "Uma vez por combate, quando um inimigo declarar um ataque contra você ou um aliado em sua linha de visão, você pode impor uma nova rolagem para o ataque, obrigando-o a repetir o teste contra sua CD. Se falhar, o ataque da criatura inimiga sofre desvantagem.",
+                  "usos": { "expr": "1", "recarga": "cena" }
+                },
+                {
+                  "id": "dint_efeito_domino",
+                  "nome": "Efeito Dominó",
+                  "descricao": "Sempre que você derrubar um inimigo, pode imediatamente dar uma instrução a um aliado visível para que ele se mova até 3m ou realize uma Ação Livre que ainda não tenha agido."
+                },
+                {
+                  "id": "dint_mapeamento_perfeito",
+                  "nome": "Mapeamento Perfeito",
+                  "descricao": "Você não pode ser surpreendido ou pego desprevenido em combate. Além disso, sempre que rolar Iniciativa, os aliados que puderem ouvi-lo podem receber +2 na rolagem."
+                },
+                {
+                  "id": "dint_calculo_de_precisao",
+                  "nome": "Cálculo de Precisão",
+                  "descricao": "Uma quantidade de vezes igual a seu modificador de atributo por descanso longo, quando você ou um aliado errar um ataque, você pode corrigir a análise e adicionar +1d6 ao resultado, representando um ajuste instantâneo de cálculo.",
+                  "usos": { "expr": "max(0, mod_inteligencia)", "recarga": "longo" }
+                }
+              ]
+            }
+          },
+          "res_restricao_definitiva": {
+            "nome": "Restrição Definitiva Intelectual",
+            "descricao": "Ao atingir o décimo nível, o usuário adquire a Restrição Definitiva Intelectual. Se tornando capaz de prever padrões de energia amaldiçoada, mesmo sem possuí-la. Isso funciona como “ver a alma” do inimigo, mas não apenas isso: você também passa a poder reagir antes de um ataque, 1 vez por rodada, gastando sua reação para dar instrução a um aliado, permitindo que ele se mova 3m ou receba +2 de Defesa extra. Além disso, qualquer salvaguarda envolvendo vontade ou astúcia que seja bem-sucedida é considerada um sucesso crítico. Assim como um Restringido, o usuário é imune a expansão de domínio e possui vantagem em testes de furtividade contra qualquer usuário de energia amaldiçoada, enquanto possuem desvantagem em testes para percebê-lo. Além disso, devido ao seu intelecto aprimorado, além disso por não ser um restringido focado em força ele adquire a mecânica única da restrição sendo ela a Preparação de Terreno e Equipamentos.",
+            "efeitos": [],
+            "usos": { "expr": "1", "recarga": "rodada" }
+          }
+        }
+      }
+    ],
+    "talentos": [
+      {
+        "id": "tal_planejamento_perfeito",
+        "nome": "Planejamento Perfeito",
+        "grupo": "origem",
+        "descricao": "Sempre que você tiver ao menos 1 minuto para preparar terreno, montar posição ou armar emboscadas antes de um combate, o número máximo de armadilhas que você pode preparar aumenta em 1 e a CD delas aumenta em 2. Além disso, na primeira cena de combate, você recebe bônus igual à metade do seu BT em Iniciativa.",
+        "requisitos": [
+          { "tipo": "origem", "id": "restricao_intelectual" },
+          { "tipo": "atributo", "attr": "inteligencia", "valor": 16 }
+        ],
+        "efeitos": [
+          { "canal": "iniciativa", "expr": "piso(bt / 2)", "quando": "formula_combate_entropica_primeira_cena", "duracao": "temporaria" }
+        ]
+      },
+      {
+        "id": "tal_contra_medida_rapida",
+        "nome": "Contra-Medida Rápida",
+        "grupo": "origem",
+        "descricao": "Quando um inimigo visível usar uma técnica, feitiço ou habilidade contra você, você pode gastar sua reação para analisar sua execução. Ao fazê-lo, você recebe vantagem no primeiro teste de resistência realizado contra aquele efeito e soma metade do seu Bônus de Treinamento na rolagem.",
+        "requisitos": [
+          { "tipo": "origem", "id": "restricao_intelectual" },
+          { "tipo": "atributo", "attr": "sabedoria", "valor": 16 }
+        ],
+        "efeitos": [
+          { "canal": "bonusTR", "expr": "piso(bt / 2)", "quando": "formula_combate_entropica_contra_medida", "duracao": "temporaria" }
+        ]
+      },
+      {
+        "id": "tal_inventor_prolifico",
+        "nome": "Inventor Prolífico",
+        "grupo": "origem",
+        "descricao": "O usuário consegue criar itens em metade do tempo normal e pode manter até 2 equipamentos ativos com efeitos extras simultâneos, desde que esses efeitos sejam diferentes entre si. Além disso, se torna capaz de realizar testes com vantagem que envolvam a criação ou uma modificação de equipamentos.",
+        "requisitos": [
+          { "tipo": "origem", "id": "restricao_intelectual" },
+          { "tipo": "atributo", "attr": "inteligencia", "valor": 18 },
+          { "tipo": "pericia", "pericia": "percepcao", "nivel": "mestre" }
+        ]
+      },
+      {
+        "id": "tal_leitura_antecipada",
+        "nome": "Leitura Antecipada",
+        "grupo": "origem",
+        "descricao": "Sua capacidade de interpretar linguagem corporal, padrões de movimento e intenções hostis alcançou níveis excepcionais. Uma vez por rodada, quando uma criatura visível realizar um ataque contra você, você pode utilizar sua reação para receber +2 na Defesa contra aquele ataque. Caso o ataque erre, você recebe vantagem no primeiro teste realizado contra aquele alvo até o fim do seu próximo turno.",
+        "requisitos": [
+          { "tipo": "origem", "id": "restricao_intelectual" },
+          { "tipo": "atributo", "attr": "inteligencia", "valor": 16 },
+          { "tipo": "pericia", "pericia": "intuicao", "nivel": "mestre" }
+        ],
+        "usos": { "expr": "1", "recarga": "rodada" },
+        "efeitos": [
+          { "canal": "defesa", "expr": "2", "quando": "formula_combate_entropica_leitura_antecipada", "duracao": "temporaria" }
+        ]
+      },
+      {
+        "id": "tal_diretivas_de_combate",
+        "nome": "Diretivas de Combate",
+        "grupo": "origem",
+        "descricao": "Sua capacidade de coordenar aliados pode transmitir instruções precisas mesmo durante o caos da batalha. Uma vez por rodada, quando um aliado em sua linha de visão realizar uma jogada de ataque ou teste de resistência, você pode utilizar sua reação para conceder um bônus igual à metade do seu Bônus de Treinamento naquela rolagem. Você deve declarar o uso antes de saber o resultado.",
+        "requisitos": [
+          { "tipo": "origem", "id": "restricao_intelectual" },
+          { "tipo": "atributo", "attr": "sabedoria", "valor": 16 },
+          { "tipo": "pericia", "pericia": "intuicao", "nivel": "treinado" }
+        ],
+        "usos": { "expr": "1", "recarga": "rodada" },
+        "resultados": [
+          { "label": "Bônus do Aliado", "expr": "piso(bt / 2)" }
+        ]
+      },
+      {
+        "id": "tal_analise_balistica",
+        "nome": "Análise Balística",
+        "grupo": "origem",
+        "descricao": "Após observar uma criatura por pelo menos uma rodada, você identifica falhas em sua postura defensiva. Uma vez por turno, quando atingir uma criatura com um ataque realizado através de uma ferramenta, arma ou equipamento criado por você, causa dano adicional igual à metade do seu Mod de Atributo.",
+        "requisitos": [
+          { "tipo": "origem", "id": "restricao_intelectual" },
+          { "tipo": "atributo", "attr": "inteligencia", "valor": 16 },
+          { "tipo": "pericia", "pericia": "percepcao", "nivel": "treinado" }
+        ],
+        "usos": { "expr": "1", "recarga": "rodada" },
+        "resultados": [
+          { "label": "Dano Adicional", "expr": "max(0, piso(mod_inteligencia / 2))" }
+        ]
+      },
+      {
+        "id": "tal_banco_de_contingencias",
+        "nome": "Banco de Contingências",
+        "grupo": "origem",
+        "descricao": "Você está sempre preparado para situações inesperadas. No início de cada cena, escolha um número de itens comuns ou equipamentos criados por você igual ao seu modificador de Inteligência. Enquanto estiver portando esses itens, você pode sacar ou guardar um deles uma vez por rodada como Ação Livre.",
+        "requisitos": [
+          { "tipo": "origem", "id": "restricao_intelectual" },
+          { "tipo": "atributo", "attr": "inteligencia", "valor": 18 },
+          { "tipo": "pericia", "pericia": "intuicao", "nivel": "treinado" }
+        ],
+        "resultados": [
+          { "label": "Itens", "expr": "max(0, mod_inteligencia)" }
+        ]
+      },
+      {
+        "id": "tal_observador_incansavel",
+        "nome": "Observador Incansável",
+        "grupo": "origem",
+        "descricao": "Sua atenção aos detalhes dificilmente deixa algo escapar. Você soma metade do seu Bônus de Treinamento em testes de Percepção e Intuição. Caso já seja Mestre em uma dessas perícias, passa a somar seu Bônus de Treinamento nela.",
+        "requisitos": [
+          { "tipo": "origem", "id": "restricao_intelectual" },
+          { "tipo": "periciaOr", "pericias": ["percepcao", "intuicao"], "nivel": "treinado" }
+        ],
+        "efeitos": [
+          { "canal": "bonusPericia", "alvo": "percepcao", "expr": "piso(bt / 2) + (bt - piso(bt / 2)) * (prof_percepcao >= 2)" },
+          { "canal": "bonusPericia", "alvo": "intuicao", "expr": "piso(bt / 2) + (bt - piso(bt / 2)) * (prof_intuicao >= 2)" }
+        ]
+      }
+    ]
+  }
+}
