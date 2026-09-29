@@ -9,7 +9,9 @@ register(
 );
 
 const R = new URL("../src/systems/afty/", import.meta.url).href;
-const { calcularFeiticoDano, createBlankFeitico } = await import(R + "afty-feiticos.js");
+const {
+  calcularFeiticoDano, calcularFeiticoEspecial, createBlankFeitico, opcoesSemDadoFeitico, patchSubtipoDano,
+} = await import(R + "afty-feiticos.js");
 
 let ok = 0;
 const bad = [];
@@ -151,6 +153,48 @@ const ctx = { nd: 20, cdBase: 20, modTecnica: 4 };
   const c = calcularFeiticoDano(feitico({ nivel: 3, resolucao: "tr", alvo: "unico", acao: "comum", condicoes: [{ nome: "Cego", forca: "forte" }] }), ctx);
   t("comum: 12 − 5", c.dados, 7);
   t("comum: sem a distribuir", c.dadosADistribuir, null);
+}
+
+// 10. Dano Contínuo em Área não reduz os dados (autor, 2026-09-29). No alvo único segue reduzindo.
+{
+  const area = calcularFeiticoDano(feitico({ nivel: 3, alvo: "area", formaArea: "esfera", acao: "comum", subtipo: "continuo" }), ctx);
+  const unico = calcularFeiticoDano(feitico({ nivel: 3, alvo: "unico", resolucao: "tr", acao: "comum", subtipo: "continuo" }), ctx);
+  t("contínuo: área fica com a tabela", area.dados, 5);
+  t("contínuo: área sem linha de redução", area.hoverDano.partes.some((p) => p.label === "Dano Contínuo"), false);
+  t("contínuo: único reduz o nível", unico.dados, 12 - 3);
+}
+
+// 11. Combinação sem dado: aviso próprio, e o "Faltam" conta só o que o jogador gastou.
+{
+  const so = calcularFeiticoDano(feitico({ nivel: 0, alvo: "unico", resolucao: "tr", acao: "bonus" }), ctx);
+  t("sem dado: aviso nomeia a Conjuração", so.avisos.includes("Ação Bônus deixa o Feitiço sem dado."), true);
+  t("sem dado: não culpa as trocas", so.avisos.some((a) => a.startsWith("Faltam")), false);
+  t("sem dado: piso de 1", so.dados, 1);
+  const comTroca = calcularFeiticoDano(feitico({ nivel: 0, alvo: "unico", resolucao: "tr", acao: "bonus", trocas: { cd: 1 } }), ctx);
+  t("sem dado + CD: Faltam só a parte do jogador", comTroca.avisos.filter((a) => a.startsWith("Faltam")), [
+    "Faltam 1 dado(s): as trocas, condições e empurrão passaram do que o Feitiço tem.",
+  ]);
+  const doJogador = calcularFeiticoDano(feitico({ nivel: 1, alvo: "unico", resolucao: "tr", acao: "comum", trocas: { empurraoDados: 4 } }), ctx);
+  t("só do jogador: Faltam 2", doJogador.avisos.filter((a) => a.startsWith("Faltam")).length, 1);
+  t("só do jogador: sem aviso de combinação", doJogador.avisos.some((a) => a.endsWith("sem dado.")), false);
+  const alma = calcularFeiticoEspecial({ ...createBlankFeitico(), tipo: "especial", especialSubtipo: "danoAlma", nivel: 1, acao: "bonus" }, ctx);
+  t("Dano na Alma: aviso nomeia a Conjuração", alma.avisos, ["Ação Bônus deixa o Feitiço sem dado."]);
+}
+
+// 12. A trava: opções que deixariam o Feitiço sem dado.
+{
+  const nv0 = opcoesSemDadoFeitico(feitico({ nivel: 0, alvo: "unico", resolucao: "tr", acao: "comum" }));
+  t("trava: Nível 0 trava a Ação Bônus", nv0.acoes, ["bonus"]);
+  const nv1Bonus = opcoesSemDadoFeitico(feitico({ nivel: 1, alvo: "unico", resolucao: "tr", acao: "bonus" }));
+  t("trava: Nível 1 em Bônus trava o Nível 0", nv1Bonus.niveis, [0]);
+  t("trava: Nível 1 em Bônus trava a Área", nv1Bonus.alvos, ["area"]);
+  t("trava: Nível 1 em Bônus trava o Contínuo", nv1Bonus.subtipos.includes("continuo"), true);
+  const legado = opcoesSemDadoFeitico(feitico({ nivel: 0, alvo: "unico", resolucao: "tr", acao: "bonus" }));
+  t("trava: Feitiço já sem dado não fica preso", Object.values(legado).every((v) => v.length === 0), true);
+  const alma = opcoesSemDadoFeitico({ ...createBlankFeitico(), tipo: "especial", especialSubtipo: "danoAlma", nivel: 1, acao: "comum" });
+  t("trava: Dano na Alma trava a Ação Bônus", alma.acoes, ["bonus"]);
+  t("trava: Auxiliar não trava nada", Object.values(opcoesSemDadoFeitico({ ...createBlankFeitico(), tipo: "auxiliar" })).every((v) => v.length === 0), true);
+  t("Múltiplos no Nível 0 nasce com 1 disparo", patchSubtipoDano(feitico({ nivel: 0 }), "multiplos").disparos, 1);
 }
 
 console.log(bad.length

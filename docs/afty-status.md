@@ -20,6 +20,29 @@ disso, Somente Condição deve mostrar quantos dados ainda temos a distribuir."*
 - Fica igual: Golpeador e Dano na Alma (motor `saldoUnicoVariante`) e o hover da Ficha Final, que
   segue lendo `calc.partesDano` (só o que vem de fora da criação).
 
+### Parte 2: o "Faltam 1 dado(s)" que culpava trocas que ninguém fez
+
+O autor pediu para investigar o aviso. Varridas todas as combinações SEM escolha do jogador: 26
+disparavam, e as legítimas eram Nível 0 em Ação Bônus (1 − 1), Nível 1 em Área com Ação Bônus
+(2 − 2), Dano Contínuo em Ação Bônus e Dano na Alma nos Níveis 0 e 1 em Ação Bônus. A mensagem
+culpava "trocas, condições e empurrão", e a causa era a Conjuração e o Subtipo.
+
+- **⚠ COMBINAÇÃO SEM DADO NÃO EXISTE (autor, 2026-09-29): trava, e não aviso.** O motor devolve
+  `dadosDaCriacao` (tabela, Conjuração, Subtipo e Linha, antes das trocas), e
+  `opcoesSemDadoFeitico(f)` simula cada opção no próprio motor e diz quais Níveis, Resoluções,
+  Alvos, Formas, Conjurações e Subtipos deixariam o Feitiço com menos de 1 dado. A tela só põe o
+  cadeado ("Deixa o Feitiço sem dado"). Vale para o Dano e o Dano na Alma. Feitiço GRAVADO antes,
+  já sem dado, não recebe trava (ficaria preso), e sim o aviso com a causa: "Ação Bônus deixa o
+  Feitiço sem dado.".
+- O "Faltam N" agora conta só a parte do JOGADOR. A varredura voltou com zero casos.
+- **⚠ Dano Contínuo em Área NÃO reduz os dados** (autor, 2026-09-29, fechando o item 1 da lista
+  de pendências do review). No alvo único segue reduzindo o nível.
+- `patchSubtipoDano` saiu da tela para o motor (a trava simula o mesmo clique) e passou a caber os
+  disparos no nível: um Múltiplos Disparos no Nível 0 acusava "Máximo de 1 disparos" porque o
+  Feitiço em branco nasce com 2. Trocar o Nível também ajusta os disparos.
+- Assert `t-feitico-hover-dano.mjs` com 58 casos. A suíte tem uma falha que já existia antes
+  (`t-invocacoes-motor.mjs`, a Característica Livre com Motor custa 0 PE em vez de 1).
+
 ## SESSÃO DE 2026-09-22 (parte 6): A RAJADA DE DERIVES DA ABA BUFFS
 
 Pedido do autor: *"A aba de Buffs é a única que ficou pesada ainda. Porém agora, ela ficou SUPER

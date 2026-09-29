@@ -142,6 +142,7 @@ import { evalNumber as evalNumberDsl, validateExpression } from "./afty-dsl";
 import { deriveAfty } from "./afty-derive";
 import {
   createBlankFeitico, calcularFeiticoDano, ALCANCE_POR_NIVEL, AREA_POR_NIVEL, taxasTroca,
+  opcoesSemDadoFeitico, patchSubtipoDano,
   calcularFeiticoCurativo, CURA_ACOES, CURA_REMOCAO,
   calcularFeiticoEspecial, ESPECIAL_SUBTIPOS, maxGolpesGolpeador, ITEM_CUSTO_MAX,
   TRANSF_DURACOES, TRANSF_ACOES,
@@ -5680,7 +5681,11 @@ function FeiticoCard({ feitico, ctx, nivelMax, tiposPermitidos, efeitosPassivo, 
      que é o mesmo da Invocação. */
   const btnFerramenta = "p-1.5 rounded focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-500";
 
-  const propsEditor = { feitico, calc, onPatch, aba: abaAtiva };
+  /* As opções que deixariam o Feitiço sem dado, travadas (autor, 2026-09-29).
+     Calculadas aqui uma vez só, porque o Nível mora na Identidade e o resto
+     no editor. Só o Dano e o Dano na Alma têm dado a perder pela Conjuração. */
+  const semDado = opcoesSemDadoFeitico(feitico);
+  const propsEditor = { feitico, calc, onPatch, aba: abaAtiva, semDado };
 
   return (
     <div className="rounded-lg border border-slate-800 bg-slate-950/40">
@@ -5751,6 +5756,7 @@ function FeiticoCard({ feitico, ctx, nivelMax, tiposPermitidos, efeitosPassivo, 
           onChange={(n) => onPatch(patchNivelFeitico(feitico, n))}
           nivelMax={nivelMax}
           nivelMin={feitico.tipo === "curativo" ? 1 : 0}
+          niveisSemDado={semDado.niveis}
         />
       </div>
 
@@ -5860,8 +5866,23 @@ function SecaoFeitico({ titulo, children }) {
   );
 }
 
+/* A trava de combinação sem dado (autor, 2026-09-29): quem decide é o motor
+   (`opcoesSemDadoFeitico`), e a tela só acrescenta o cadeado e o título. Um
+   motivo que o seletor já tinha (Destrutivo sempre em área) fica com o título
+   dele, que é o mais específico. */
+const TRAVA_SEM_DADO = "Deixa o Feitiço sem dado";
+
+function comTravaSemDado(options, travados = [], disabledValues = []) {
+  return {
+    options: options.map((o) => (travados.includes(o.value) && !disabledValues.includes(o.value)
+      ? { ...o, lockTitle: TRAVA_SEM_DADO }
+      : o)),
+    disabledValues: [...disabledValues, ...travados],
+  };
+}
+
 /* Picker segmentado 0..5 do nível do Feitiço (medidor, não campo numérico). */
-function NivelFeiticoPicker({ value, onChange, nivelMax, nivelMin = 0 }) {
+function NivelFeiticoPicker({ value, onChange, nivelMax, nivelMin = 0, niveisSemDado = [] }) {
   // A Técnica Máxima não nasce na criação comum. Quando uma fonte externa,
   // como um Addon, entrega uma pronta, o degrau precisa continuar editável sem
   // abrir a criação irrestrita de novas Técnicas Máximas.
@@ -5870,7 +5891,8 @@ function NivelFeiticoPicker({ value, onChange, nivelMax, nivelMin = 0 }) {
     <div className="flex gap-1.5" role="group" aria-label="Nível do Feitiço">
       {niveis.map((n) => {
         const on = n === value;
-        const off = n !== "max" && (n > nivelMax || n < nivelMin) && !on;
+        const foraDoAcesso = n !== "max" && (n > nivelMax || n < nivelMin);
+        const off = (foraDoAcesso || niveisSemDado.includes(n)) && !on;
         return (
           <button
             key={n}
@@ -5878,7 +5900,10 @@ function NivelFeiticoPicker({ value, onChange, nivelMax, nivelMin = 0 }) {
             onClick={() => !off && onChange(n)}
             disabled={off}
             aria-pressed={on}
-            title={off ? (n < nivelMin ? "Nível 0 não cura" : `Inacessível no ND atual (máximo ${NIVEL_LABEL[nivelMax]})`) : NIVEL_LABEL[n]}
+            title={off
+              ? (!foraDoAcesso ? TRAVA_SEM_DADO
+                : n < nivelMin ? "Nível 0 não cura" : `Inacessível no ND atual (máximo ${NIVEL_LABEL[nivelMax]})`)
+              : NIVEL_LABEL[n]}
             className={`grow py-1.5 rounded-lg text-sm font-bold tabular-nums border transition-colors focus:outline-none focus:ring-1 focus:ring-purple-500 ${
               on
                 ? "bg-purple-700 border-purple-600 text-white"
@@ -6082,7 +6107,7 @@ function tituloDasTrocas(emArea) {
    ⚠ O REQUISITO MUDOU DE SEÇÃO e agora vive em Trocas. Ele é uma troca como
    qualquer outra (uma dificuldade aceita na ficção rende dados), e como seção
    própria ele era uma fila de cinco chips sozinha no fim do editor. */
-function FeiticoDanoEditor({ feitico, calc, onPatch, aba }) {
+function FeiticoDanoEditor({ feitico, calc, onPatch, aba, semDado }) {
   const f = feitico;
   const nNum = f.nivel === "max" ? 6 : f.nivel;
   const multiplos = f.subtipo === "multiplos";
@@ -6144,11 +6169,10 @@ function FeiticoDanoEditor({ feitico, calc, onPatch, aba }) {
           <OptionChips
             value={multiplos ? "ataque" : (emArea ? "tr" : f.resolucao)}
             onChange={(v) => onPatch({ resolucao: v })}
-            options={[
+            {...comTravaSemDado([
               { value: "tr", label: "Resistência" },
               { value: "ataque", label: "Ataque" },
-            ]}
-            disabledValues={multiplos ? ["tr"] : (emArea ? ["ataque"] : [])}
+            ], semDado?.resolucoes, multiplos ? ["tr"] : (emArea ? ["ataque"] : []))}
           />
         </div>
         <div>
@@ -6156,11 +6180,10 @@ function FeiticoDanoEditor({ feitico, calc, onPatch, aba }) {
           <OptionChips
             value={emArea ? "area" : f.alvo}
             onChange={(v) => onPatch({ alvo: v, ...(v === "area" && !multiplos ? { resolucao: "tr" } : {}) })}
-            options={[
+            {...comTravaSemDado([
               { value: "unico", label: "Alvo Único", lockTitle: "Destrutivo e Cataclísmico são sempre em área" },
               { value: "area", label: "Área", lockTitle: "Múltiplos Disparos não podem ser em área" },
-            ]}
-            disabledValues={[...(areaObrigatoria ? ["unico"] : []), ...(multiplos ? ["area"] : [])]}
+            ], semDado?.alvos, [...(areaObrigatoria ? ["unico"] : []), ...(multiplos ? ["area"] : [])])}
           />
         </div>
       </div>
@@ -6170,31 +6193,26 @@ function FeiticoDanoEditor({ feitico, calc, onPatch, aba }) {
         <OptionChips
           value={areaObrigatoria ? "ritual" : f.acao}
           onChange={(v) => !areaObrigatoria && onPatch({ acao: v })}
-          options={FEITICO_ACOES}
-          disabledValues={areaObrigatoria ? FEITICO_ACOES.filter((a) => a.value !== "ritual").map((a) => a.value) : []}
+          {...comTravaSemDado(FEITICO_ACOES, semDado?.acoes,
+            areaObrigatoria ? FEITICO_ACOES.filter((a) => a.value !== "ritual").map((a) => a.value) : [])}
         />
       </div>
 
       <div>
         <FieldLabel>Subtipo</FieldLabel>
+        {/* O que o Subtipo leva junto (área, ritual, disparos) mora no motor,
+            porque a trava simula exatamente este clique. */}
         <OptionChips
           value={f.subtipo}
-          onChange={(v) => onPatch(
-            v === "cataclismico"
-              ? { subtipo: v, alvo: "area", acao: "ritual", resolucao: "tr", formaArea: "esfera" }
-              : v === "destrutivo"
-                ? { subtipo: v, alvo: "area", acao: "ritual", resolucao: "tr" }
-                : v === "multiplos"
-                  ? { subtipo: v, alvo: "unico", resolucao: "ataque" }
-                  : { subtipo: v })}
-          options={DANO_SUBTIPOS}
+          onChange={(v) => onPatch(patchSubtipoDano(f, v))}
+          {...comTravaSemDado(DANO_SUBTIPOS, semDado?.subtipos)}
         />
       </div>
 
       {emArea && !cataclismico && (
         <div>
           <FieldLabel>Forma da Área</FieldLabel>
-          <OptionChips value={f.formaArea} onChange={(v) => onPatch({ formaArea: v })} options={FORMAS_AREA} />
+          <OptionChips value={f.formaArea} onChange={(v) => onPatch({ formaArea: v })} {...comTravaSemDado(FORMAS_AREA, semDado?.formas)} />
         </div>
       )}
 
@@ -6631,10 +6649,10 @@ function NotasDaCura({ calc }) {
    dano de alvo único). Nos outros quatro `subAbasDoFeitico` devolve uma aba só,
    e a tira de abas nem chega a nascer.
    --------------------------------------------------------------- */
-function FeiticoEspecialEditor({ feitico, calc, ctx, onPatch, aba }) {
+function FeiticoEspecialEditor({ feitico, calc, ctx, onPatch, aba, semDado }) {
   const f = feitico;
   const sub = f.especialSubtipo || "golpeador";
-  const props = { feitico: f, calc, onPatch, aba };
+  const props = { feitico: f, calc, onPatch, aba, semDado };
   return (
     <div className="space-y-3">
       {/* O subtipo só aparece na Base: repeti-lo nas outras abas gastaria uma
@@ -6743,7 +6761,7 @@ function GolpeadorEditor({ feitico, calc, onPatch, aba }) {
 }
 
 /* Feitiço de Dano na Alma: alvo único, fura tudo, alcance base pela metade. */
-function DanoAlmaEditor({ feitico, calc, onPatch, aba }) {
+function DanoAlmaEditor({ feitico, calc, onPatch, aba, semDado }) {
   const f = feitico;
   const nNum = f.nivel === "max" ? 6 : f.nivel;
   const setTroca = (chave, v) => onPatch({ trocas: { ...f.trocas, [chave]: v } });
@@ -6786,12 +6804,16 @@ function DanoAlmaEditor({ feitico, calc, onPatch, aba }) {
           <OptionChips
             value={ehAtaque ? "ataque" : "tr"}
             onChange={(v) => onPatch({ resolucao: v })}
-            options={[{ value: "tr", label: "Resistência" }, { value: "ataque", label: "Ataque" }]}
+            {...comTravaSemDado([{ value: "tr", label: "Resistência" }, { value: "ataque", label: "Ataque" }], semDado?.resolucoes)}
           />
         </div>
         <div>
           <FieldLabel>Conjuração</FieldLabel>
-          <OptionChips value={f.acao} onChange={(v) => onPatch({ acao: v })} options={FEITICO_ACOES.filter((a) => a.value !== "ritual")} />
+          <OptionChips
+            value={f.acao}
+            onChange={(v) => onPatch({ acao: v })}
+            {...comTravaSemDado(FEITICO_ACOES.filter((a) => a.value !== "ritual"), semDado?.acoes)}
+          />
         </div>
       </div>
       {calc && <NotasDoEspecial calc={calc} kind="danoAlma" />}
@@ -7155,6 +7177,12 @@ function patchNivelFeitico(feitico, n) {
     const disp = auxDuracoesDisponiveis(feitico.efeitoAux || "defesa", n);
     const atual = feitico.duracaoAux || "imediata";
     return { nivel: n, duracaoAux: disp.includes(atual) ? atual : (disp[0] || "imediata") };
+  }
+  // Os disparos cabem no nível novo (máximo nível + 1), senão o Nível 0 acusa
+  // "Máximo de 1 disparos" sem o jogador ter escolhido nada.
+  if (feitico.tipo === "dano" && feitico.subtipo === "multiplos") {
+    const maximo = (n === "max" ? 6 : n) + 1;
+    return { nivel: n, disparos: Math.min(Math.max(1, feitico.disparos | 0 || 1), maximo) };
   }
   return { nivel: n };
 }

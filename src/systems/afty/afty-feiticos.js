@@ -842,6 +842,18 @@ function linhaDeDados(p, faces) {
   };
 }
 
+/* Os dois avisos de dado que falta, e a diferença entre eles é de QUEM é a
+   culpa. O primeiro é da combinação (Conjuração e Subtipo), que o criador já
+   trava. O segundo é do que o jogador gastou, e só ele cita trocas. */
+function avisoSemDado(fontes) {
+  const causas = fontes.filter((p) => p.dados < 0).map((p) => p.label);
+  return causas.length
+    ? `${causas.join(" e ")} ${causas.length > 1 ? "deixam" : "deixa"} o Feitiço sem dado.`
+    : "A combinação deixa o Feitiço sem dado.";
+}
+const avisoFaltam = (n) =>
+  `Faltam ${n} dado(s): as trocas, condições e empurrão passaram do que o Feitiço tem.`;
+
 export function notacaoDanoComBonus(qtd, tipo, bonus = 0, explosiva = false) {
   const base = `${notacaoDano(qtd, tipo)}${explosiva ? "!" : ""}`;
   const fixo = Math.trunc(Number(bonus) || 0);
@@ -1080,8 +1092,12 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
     detalhes.cataclismico = { areaMapa: true, terrenoDificilRaio: 45, ignoraResistenciaERd: true, perdaVidaUsuario: "1/3 do dano" };
   } else if (subtipo === "continuo") {
     if (nNum < 1) avisos.push("Dano Contínuo é a partir do Nível 1.");
-    dados -= nNum;                                  // reduz dados igual ao nível
-    somarFonte("Dano Contínuo", -nNum);
+    // Reduz dados igual ao nível, e SÓ em alvo único: em Área o pool fica
+    // inteiro (autor, 2026-09-29, fechando a pendência do review).
+    if (alvo !== "area") {
+      dados -= nNum;
+      somarFonte("Dano Contínuo", -nNum);
+    }
   } else if (subtipo === "vampirico") {
     dados -= nNum;                                  // reduz dados igual ao nível
     somarFonte("Vampírico", -nNum);
@@ -1138,6 +1154,14 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
   //    seção "Customizando Feitiços de Dano"). Condições e Empurrão são efeitos
   //    SEPARADOS, fora desse teto. Taxas (item 9, autor): alvo único 6m/dado,
   //    área 12m alcance e 3m área por dado (6m + 1,5m = meio dado cada).
+  /* ⚠ OS DADOS DA CRIAÇÃO: o que o Feitiço tem ANTES das trocas (tabela,
+     Conjuração, Subtipo e Linha). Abaixo de 1 a combinação NÃO EXISTE (autor,
+     2026-09-29): o criador trava a opção (`opcoesSemDadoFeitico`), e o aviso
+     só alcança Feitiço gravado antes da trava. Ele nomeia a causa, porque o
+     "Faltam" culpava trocas, condições e empurrão que o jogador nem tinha
+     feito (Nível 0 em Ação Bônus: 1 − 1 = 0). */
+  const dadosDaCriacao = dados;
+  if (dadosDaCriacao < 1) avisos.push(avisoSemDado(fontesDados));
   const custoAlcance = alcanceBase != null ? alcanceDelta / taxas.alcance : 0;
   const custoArea = (alvo === "area" && areaBase != null) ? areaDelta / taxas.area : 0;
   if (req) somarFonte(`Requisito ${req.label}`, requisitoDados);
@@ -1175,10 +1199,13 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
   // 8b) Piso de 1 dado. Se os débitos passam do que o Feitiço tem, acusamos a
   //     falta de verdade (condições e empurrão agora entram nessa conta).
   //     No Somente Condição não há dano para pisar, então falta só abaixo de 0.
+  //     O aviso conta só a parte do JOGADOR: a da criação já tem o dela.
+  const piso = f.focoCondicao ? 0 : 1;
   let faltamDados = 0;
-  if (dados < (f.focoCondicao ? 0 : 1)) {
-    faltamDados = (f.focoCondicao ? 0 : 1) - dados;
-    avisos.push(`Faltam ${faltamDados} dado(s): as trocas, condições e empurrão passaram do que o Feitiço tem.`);
+  if (dados < piso) {
+    faltamDados = piso - dados;
+    const faltaDoJogador = faltamDados - Math.max(0, piso - dadosDaCriacao);
+    if (faltaDoJogador > 0) avisos.push(avisoFaltam(faltaDoJogador));
   }
   if (dados < 1) {
     somarFonte("Piso de 1 Dado", 1 - dados);
@@ -1479,6 +1506,7 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
     ignoraImunidade: valorCanalEscopos(ctx.efeitos, "ignoraImunidade", escoposDano) > 0,
     empurraoMetros,
     faltamDados,
+    dadosDaCriacao,
     reducaoCondicoes: reducaoCond,
     contInicial: danoContInicial,
     contPorRodada,
@@ -1870,16 +1898,23 @@ function saldoUnicoVariante(f, ctx, cfg) {
   else if (netCustom < -lim.dados) { avisos.push(`Redução de dados por customização passa do teto (−${lim.dados}).`); }
 
   let dados = Math.floor(poolBase + requisitoDados + netCustom - empurraoDados - reducaoCond + 1e-9);
+  // Mesma separação do Dano: a combinação sem dado tem aviso próprio, e o
+  // "Faltam" conta só o que o jogador gastou.
+  if (poolBase < 1) avisos.push(avisoSemDado(cfg.fontesPool ?? []));
   let faltamDados = 0;
   if (dados < 1) {
     faltamDados = 1 - dados;
-    avisos.push(`Faltam ${faltamDados} dado(s): as trocas, condições e empurrão passaram do que o Feitiço tem.`);
+    const faltaDoJogador = faltamDados - Math.max(0, 1 - poolBase);
+    if (faltaDoJogador > 0) avisos.push(avisoFaltam(faltaDoJogador));
     dados = 1;
   }
 
   const cd = (temCD && (ctx.cdBase ?? null) != null) ? ctx.cdBase + trocaCd : null;
   const alcanceFinal = (permiteAlcance && alcanceBase != null) ? alcanceBase + alcanceDelta : null;
-  return { dados, cd, acertoDelta: trocaAcerto, alcanceFinal, reducaoCond, empurraoMetros, faltamDados, temCD };
+  return {
+    dados, cd, acertoDelta: trocaAcerto, alcanceFinal, reducaoCond, empurraoMetros, faltamDados, temCD,
+    dadosDaCriacao: poolBase,
+  };
 }
 
 // ---------------------------------------------------------------
@@ -1947,6 +1982,66 @@ export function calcularFeiticoGolpeador(feitico, ctx = {}) {
 }
 
 // ---------------------------------------------------------------
+// O que trocar o Subtipo de um Feitiço de Dano leva junto. Destrutivo e
+// Cataclísmico são sempre área, Ritual Estendido e TR (autor), Múltiplos
+// Disparos é sempre alvo único e Ataque. Mora no motor porque a trava de
+// `opcoesSemDadoFeitico` precisa simular exatamente o clique.
+// ---------------------------------------------------------------
+export function patchSubtipoDano(f, subtipo) {
+  if (subtipo === "cataclismico") {
+    return { subtipo, alvo: "area", acao: "ritual", resolucao: "tr", formaArea: "esfera" };
+  }
+  if (subtipo === "destrutivo") return { subtipo, alvo: "area", acao: "ritual", resolucao: "tr" };
+  if (subtipo === "multiplos") {
+    // Os disparos cabem no nível: o Feitiço em branco nasce com 2, e o Nível 0
+    // só tem 1, o que acusava "Máximo de 1 disparos" sem o jogador mexer.
+    const nNum = f?.nivel === "max" ? 6 : Number(f?.nivel) || 0;
+    return { subtipo, alvo: "unico", resolucao: "ataque", disparos: Math.min(Math.max(1, f?.disparos | 0 || 1), nNum + 1) };
+  }
+  return { subtipo };
+}
+
+// ---------------------------------------------------------------
+// ⚠ COMBINAÇÃO SEM DADO NÃO EXISTE (autor, 2026-09-29). Quando Nível,
+// Resolução, Alvo, Forma, Conjuração e Subtipo juntos deixam o Feitiço com
+// menos de 1 dado ANTES de qualquer troca, a opção que levaria a isso fica
+// travada no criador, em vez de virar aviso. Ex.: Nível 0 em Ação Bônus
+// (1 − 1 = 0), Dano Contínuo de Nível 1 em Ação Bônus (3 − 2 − 1 = 0).
+//
+// Cada opção é simulada no próprio motor, com o Feitiço limpo de trocas,
+// condições e requisito: reescrever a conta do pool aqui divergiria dele na
+// primeira regra nova. Vale para o Dano e para o Dano na Alma, os dois que
+// têm Ação Bônus e dado a perder.
+// ---------------------------------------------------------------
+export function opcoesSemDadoFeitico(f) {
+  const vazio = { niveis: [], resolucoes: [], alvos: [], formas: [], acoes: [], subtipos: [] };
+  const danoAlma = f?.tipo === "especial" && f?.especialSubtipo === "danoAlma";
+  if (f?.tipo !== "dano" && !danoAlma) return vazio;
+  const calcular = danoAlma ? calcularFeiticoDanoAlma : calcularFeiticoDano;
+  const limpo = { ...f, trocas: {}, condicoes: [], sangramento: null, requisito: null, focoCondicao: false };
+  const semDado = (patch) => {
+    const c = calcular({ ...limpo, ...patch }, {});
+    return c.dadosDaCriacao != null && c.dadosDaCriacao < 1;
+  };
+  // Feitiço gravado antes da trava, já sem dado: travar aqui o prenderia na
+  // combinação (quase toda opção segue sem dado). A trava impede ENTRAR, e o
+  // aviso do motor mostra a saída.
+  if (semDado({})) return vazio;
+  const acoes = FEITICO_ACOES.map((a) => a.value).filter((a) => !danoAlma || a !== "ritual");
+  return {
+    ...vazio,
+    niveis: FEITICO_NIVEIS.filter((n) => semDado({ nivel: n })),
+    resolucoes: ["tr", "ataque"].filter((r) => semDado({ resolucao: r })),
+    acoes: acoes.filter((a) => semDado({ acao: a })),
+    ...(danoAlma ? {} : {
+      alvos: ["unico", "area"].filter((a) => semDado({ alvo: a })),
+      formas: FORMAS_AREA.map((x) => x.value).filter((x) => semDado({ formaArea: x })),
+      subtipos: DANO_SUBTIPOS.map((s) => s.value).filter((s) => semDado(patchSubtipoDano(f, s))),
+    }),
+  };
+}
+
+// ---------------------------------------------------------------
 // MOTOR — Feitiço de Dano na Alma.
 // ---------------------------------------------------------------
 export function calcularFeiticoDanoAlma(feitico, ctx = {}) {
@@ -1966,13 +2061,15 @@ export function calcularFeiticoDanoAlma(feitico, ctx = {}) {
 
   const resolucao = f.resolucao === "ataque" ? "ataque" : "tr";
   const acao = f.acao || "comum";           // bonus | comum | completa
-  poolBase += modDadosPorAcao(acao, nNum);
+  const dadosAcao = modDadosPorAcao(acao, nNum);
+  poolBase += dadosAcao;
 
   // Alcance base = METADE do alcance de alvo único (piso).
   const alcanceBase = Math.floor((ALCANCE_POR_NIVEL[nivel] ?? 0) / 2);
 
   const r = saldoUnicoVariante(f, ctx, {
     nivel, nNum, poolBase, resolucao, alcanceBase, permiteAlcance: true, avisos,
+    fontesPool: [{ label: FEITICO_ACOES.find((a) => a.value === acao)?.label ?? "Conjuração", dados: dadosAcao }],
   });
 
   const custoPE = custoPadrao(nivel);
@@ -1989,6 +2086,7 @@ export function calcularFeiticoDanoAlma(feitico, ctx = {}) {
     acertoDelta: r.acertoDelta,
     empurraoMetros: r.empurraoMetros,
     faltamDados: r.faltamDados,
+    dadosDaCriacao: r.dadosDaCriacao,
     avisos,
     detalhes: {
       furaTudo: "Passa por Vida Temporária, RD e demais efeitos, ferindo a integridade da alma (reduz vida máxima, vida atual e integridade).",
