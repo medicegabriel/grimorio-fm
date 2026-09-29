@@ -54,7 +54,7 @@ import { AFTY_ESPECIALIZACOES, getEspecializacao } from "./afty-especializacoes"
    justificativa que afty-aptidoes.js já escreveu para o APTIDAO_EFEITOS. */
 import { HABILIDADE_EFEITOS } from "./afty-efeitos-conteudo";
 import { getAptidao } from "./afty-aptidoes";
-import { ARMA_GRUPOS, ENCANTAMENTOS_ARMA } from "./afty-equipamentos";
+import { ARMA_GRUPOS, ENCANTAMENTOS_ARMA, CATEGORIAS_DANO, TIPOS_DANO } from "./afty-equipamentos";
 import { AFTY_RESISTENCIAS } from "./afty-schema";
 // Quem lê a divergência das Bases automáticas. Módulo folha, sem ciclo.
 import { regraDo } from "./afty-sistema";
@@ -4361,6 +4361,26 @@ export const AFTY_HABILIDADES = [
       "Você pode escolher um tipo de dano Elemental para que você e dois aliados sejam " +
       "resistentes. Em um descanso longo, você pode trocar esses tipos de dano e os aliados " +
       "recebendo o benefício.",
+    /* ⚠ SÓ A METADE DE QUEM TEM A HABILIDADE É AUTOMÁTICA (2026-09-29). O texto
+       dá a resistência a "você e dois aliados", e só a sua entra no motor: a dos
+       aliados depende de quais são, de onde estão e da cena, e mora na ficha
+       deles, não nesta. Fica de mesa, como as outras de aliado do Suporte.
+
+       A troca no descanso longo é a própria escolha: mudar a opção troca o tipo,
+       e o motor não guarda o anterior. Uma opção por tipo ELEMENTAL, tirada da
+       categoria do livro em vez de uma lista à mão, porque a regra cita a
+       CATEGORIA e um Addon pode acrescentar um elemento. Os efeitos ficam em
+       ESCOLHA_EFEITOS, e há assert cobrando que toda opção tenha o dela. */
+    escolha: {
+      id: "taticas_defensivas",
+      label: "Tipo de Dano",
+      niveis: [10],
+      opcoes: (CATEGORIAS_DANO.find((c) => c.id === "elemental")?.tipos ?? []).map((tipo) => ({
+        id: `sup_taticas_${tipo}`,
+        nome: TIPOS_DANO[tipo] ?? tipo,
+        descricao: `Você se torna resistente a dano ${TIPOS_DANO[tipo] ?? tipo}.`,
+      })),
+    },
     requisitos: [],
   },
 

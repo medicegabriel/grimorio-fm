@@ -18,25 +18,46 @@ import {
  *
  *   Conjurador  "utilizar Inteligência ou Sabedoria nas jogadas de ataque e dano"
  *   Controlador "utilizar Presença ou Sabedoria nas jogadas de ataque e dano"
+ *   Suporte     "utilizar Inteligência ou Sabedoria nas jogadas de ataque e dano"
  *
  * Quem tem as duas (multiclasse) soma os pares, e é por isso que a lista sai
  * calculada em vez de constante: cravar três atributos daria Inteligência a um
  * Controlador puro, e cravar dois daria Presença a um Conjurador puro.
+ *
+ * ⚠ O SUPORTE ENTROU EM 2026-09-29, e pelo mesmo buraco do Controlador: a
+ * `sup_tecnicas_de_combate` estava no catálogo, no nível certo e com o texto
+ * certo, e não ligava em nada. Registrar o id aqui é tudo que ela precisava,
+ * porque o resolvedor, o seletor de armas e a troca de atributo por arma já
+ * eram genéricos. O par dela é o mesmo do Conjurador.
  */
 export const TECNICAS_COMBATE_ID = "cnj_tecnicas_de_combate";
 export const TECNICAS_COMBATE_ID_CTR = "ctr_tecnicas_de_combate";
-export const TECNICAS_COMBATE_IDS = [TECNICAS_COMBATE_ID, TECNICAS_COMBATE_ID_CTR];
+export const TECNICAS_COMBATE_ID_SUP = "sup_tecnicas_de_combate";
+export const TECNICAS_COMBATE_IDS = [
+  TECNICAS_COMBATE_ID, TECNICAS_COMBATE_ID_CTR, TECNICAS_COMBATE_ID_SUP,
+];
 
 /* O par de atributos que CADA habilidade libera, na ordem do texto. */
 const TECNICAS_ATRIBUTOS = {
   [TECNICAS_COMBATE_ID]: ["inteligencia", "sabedoria"],
   [TECNICAS_COMBATE_ID_CTR]: ["presenca", "sabedoria"],
+  [TECNICAS_COMBATE_ID_SUP]: ["inteligencia", "sabedoria"],
 };
 export const COMBATE_AMALDICOADO_ID = "cnj_combate_amaldicoado";
 export const IMBUIR_TECNICA_ID = "cnj_imbuir_com_tecnica";
 export const ESGRIMISTA_JUJUTSU_ID = "cnj_esgrimista_jujutsu";
-export const SUSTENTACAO_AVANCADA_ID = "cnj_sustentacao_avancada";
-export const SUSTENTACAO_MESTRE_ID = "cnj_sustentacao_mestre";
+/* ⚠ SUSTENTAR NÃO É SÓ DO CONJURADOR. O Suporte tem as duas com o MESMO texto,
+   palavra por palavra (livro, Conjurador nas linhas 2846 e 2891, Suporte nas
+   3561 e 3615), e até 2026-09-29 só os ids do Conjurador eram consultados: um
+   Suporte de nível 8 ficava com uma vaga em vez de duas, e no 16 com uma em vez
+   de três, sem aviso nenhum na tela. As duas habilidades existiam no catálogo e
+   não ligavam em coisa alguma.
+
+   A lista é por DEGRAU, e não por especialização, e é isso que impede o
+   acúmulo indevido: quem tem as duas versões numa multiclasse continua no teto
+   do degrau (3), porque a conta escolhe o degrau e não soma as fontes. */
+export const SUSTENTACAO_AVANCADA_IDS = ["cnj_sustentacao_avancada", "sup_sustentacao_avancada"];
+export const SUSTENTACAO_MESTRE_IDS = ["cnj_sustentacao_mestre", "sup_sustentacao_mestre"];
 
 const ESTADO_COMBATE = "combateAmaldicoado";
 const ESTADO_ESGRIMISTA = "esgrimistaJujutsu";
@@ -44,6 +65,9 @@ const ESTADO_IMBUIR = "imbuirTecnica";
 
 const lista = (v) => (Array.isArray(v) ? v : []);
 const tem = (habilidades, id) => lista(habilidades).includes(id);
+/* Qualquer uma da lista serve: o mesmo degrau chega por mais de uma
+   especialização, e ter as duas não sobe o teto. */
+const temAlguma = (habilidades, ids) => ids.some((id) => tem(habilidades, id));
 
 export function resolveTecnicasCombate(creature, armasCatalogo = [], habilidades = []) {
   const fontes = TECNICAS_COMBATE_IDS.filter((id) => tem(habilidades, id));
@@ -207,9 +231,9 @@ export function estadosCombateConjurador({ habilidades, tecnicas, armas = [], fe
   const opcoesSustentadas = lista(feiticos)
     .filter((f) => (auxiliarSustentado(f) || transformacaoSustentada(f)) && utilizavel(f))
     .map((f) => ({ id: f.id, label: f.nome || "Feitiço Sem Nome" }));
-  const maxSustentados = tem(habilidades, SUSTENTACAO_MESTRE_ID)
+  const maxSustentados = temAlguma(habilidades, SUSTENTACAO_MESTRE_IDS)
     ? 3
-    : tem(habilidades, SUSTENTACAO_AVANCADA_ID) ? 2 : 1;
+    : temAlguma(habilidades, SUSTENTACAO_AVANCADA_IDS) ? 2 : 1;
   if (opcoesSustentadas.length > 0) {
     for (let i = 1; i <= maxSustentados; i += 1) {
       estados.push({
@@ -395,7 +419,7 @@ export function resolveAuxiliaresAtivos(creature, combate, estados, ctx = {}) {
       nome,
       custoPE: calc.custoPE ?? null,
       sustentacaoPE: upkeep > 0
-        ? Math.max(1, upkeep - (tem(ctx.habilidades, SUSTENTACAO_MESTRE_ID) ? 1 : 0))
+        ? Math.max(1, upkeep - (temAlguma(ctx.habilidades, SUSTENTACAO_MESTRE_IDS) ? 1 : 0))
         : 0,
     });
   }

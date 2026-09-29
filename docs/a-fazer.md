@@ -36,6 +36,29 @@ arquivo md. Para outros colaboradores usarem ele também e ir anotando oq for pr
 
 Coisas paradas esperando decisão de regra. Nada aqui deve ser resolvido por suposição.
 
+### Suporte Absoluto soma o atributo da Técnica, e o livro pede o da CD de especialização
+
+**Onde:** `src/systems/afty/afty-efeitos-conteudo.js` (`sup_suporte_absoluto`)
+
+**Situação:** o texto do nível 20 diz *"você soma seu modificador de atributo escolhido para CD de
+especialização em toda cura que realizar"*, e as Características do Suporte definem esse atributo:
+*"Um Suporte pode escolher entre Presença ou Sabedoria como atributos para calcular a CD das suas
+habilidades de especialização"*. A implementação soma `mod_tecnica`, com o comentário justificando
+que *"o Afty tem uma CD só, a Amaldiçoada"*.
+
+O ponto é que isso mistura o VALOR da CD com o ATRIBUTO dela. O livro define o atributo por
+especialização, independente de quantas CDs o motor rastreia, e a própria classe já usa
+`mod_pre_ou_sab` na cura do Suporte em Combate, que vem da mesma frase do livro. Hoje o mesmo
+conceito está resolvido de dois jeitos dentro da mesma especialização.
+
+Na prática só diverge para quem escolheu um atributo de Técnica que não seja Presença nem Sabedoria,
+e aí a cura do nível 20 sai maior ou menor que a do livro.
+
+**Precisa:** o autor dizer se o Suporte Absoluto passa a somar `mod_pre_ou_sab`. É uma expressão. A
+decisão encosta na entrada "A CD de Especialização e a CD Amaldiçoada são duas no livro", e pode ser
+resolvida junto com ela ou antes dela.
+**Anotado:** 2026-09-29, na auditoria do Suporte contra o livro
+
 ### Yna: cinco leituras para confirmar
 **Onde:** `addons/yna.json` e `docs/afty-yna.md`
 **Situação:** o pacote da Yna (Kitsune, Clã Getsurin, Treino de Cônjuge e Treino de Desenvolvimento Amaldiçoado) entrou em 2026-09-29 com quatro decisões do autor por pergunta com opções. Estas cinco leituras ficaram por conta própria, cada uma no lado mais simples, e nenhuma muda o que já foi decidido:

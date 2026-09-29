@@ -60,6 +60,66 @@ culpava "trocas, condições e empurrão", e a causa era a Conjuração e o Subt
   Feitiço em branco nasce com 2. Trocar o Nível também ajusta os disparos.
 - Assert `t-feitico-hover-dano.mjs` com 58 casos. A suíte tem uma falha que já existia antes
   (`t-invocacoes-motor.mjs`, a Característica Livre com Motor custa 0 PE em vez de 1).
+## SESSÃO DE 2026-09-29: AUDITORIA DO SUPORTE, E AS TRÊS QUE ELA ACHOU
+
+Pedido do autor: auditar a Especialização Suporte inteira contra o Livro 2.5.2,
+sem recriar nada, e depois corrigir só o que a auditoria confirmasse.
+
+**O que a auditoria achou de CERTO, e por isso não foi tocado:** todos os valores
+base (PV, PE, treinamentos, TR, perícias, atributos chave, multiclasse), as 57
+habilidades do catálogo com nome, nível e pré-requisito conferindo um a um com o
+livro, e os cinco tipos de requisito que a classe usa, todos realmente
+verificados. A cura do Suporte em Combate está exata nos cinco degraus
+(2d6, 2d12 no 4, 3d12 no 8, 6d8 no 12, 6d10 no 16), e o Físico Controlado está
+bem modelado como delta, ficando negativo quando a Constituição é a melhor, que é
+o que "ao invés de" manda.
+
+**Registro de conflito na fonte:** a tabela de nível do Suporte omite o que o
+texto concede nos níveis 6, 8 e 9 (as duas aptidões de Energia Reversa e o Teste
+de Resistência Mestre). A implementação segue o TEXTO, que é a leitura certa.
+
+**Erro confirmado, corrigido:** Sustentação Avançada (8) e Sustentação Mestre
+(16) do Suporte não faziam NADA. O limite de feitiços sustentados consultava só
+`cnj_sustentacao_*`, então um Suporte de nível 8 ficava com uma vaga em vez de
+duas e no 16 com uma em vez de três, e a redução de 1 no upkeep da Mestre também
+não valia. Os dois ids existiam no catálogo e não apareciam em nenhum outro
+arquivo do motor. Os textos do Conjurador e do Suporte são idênticos palavra por
+palavra no livro, então a correção foi generalizar as constantes para LISTA por
+degrau. Isso resolve o acúmulo de graça: quem tem as duas famílias numa
+multiclasse fica no teto do degrau, porque a conta escolhe o degrau e não soma as
+fontes.
+
+**Automação segura, ligada:** Técnicas de Combate do Suporte caiu no mesmo buraco
+que o Controlador já tinha tido, e a correção foi a mesma, registrar o id. O
+resolvedor, o seletor de duas armas e a troca de atributo por arma já eram
+genéricos, e a tela já testava contra a lista. O par do Suporte é Inteligência ou
+Sabedoria, igual ao do Conjurador. A troca vale SÓ nas duas armas escolhidas,
+porque a leitura acontece dentro do laço das armas: não alcança Feitiço, Ataque
+Básico nem as outras armas do inventário.
+
+**Automação parcial, por decisão:** Táticas Defensivas (10) ganhou escolha de um
+tipo de dano Elemental, e só a resistência de quem tem a habilidade entra no
+motor. A dos dois aliados fica de mesa, porque mora na ficha deles e depende de
+quem são e de onde estão. As opções saem da categoria `elemental` de
+`CATEGORIAS_DANO` em vez de uma lista à mão, e os efeitos usam o canal
+`resistenciaDano`, que existia desde a aba de Resistências e até aqui não tinha
+nenhum emissor no catálogo raw. A troca do descanso longo é a própria escolha.
+
+**Ficou para o autor** (entrada nova em `a-fazer.md`): o Suporte Absoluto soma
+`mod_tecnica` e o livro pede o atributo da CD de especialização, que para o
+Suporte é Presença ou Sabedoria. Só diverge para quem escolheu outro atributo de
+Técnica, e a decisão encosta na entrada das duas CDs.
+
+**De mesa, e está certo assim:** Protetor, Análise Profunda, Amizade
+Inquebrável, Transmitir Conhecimento, Olhar Aguçado, Cura Avançada em Grupo,
+Disseminar Cura, Cura Aperfeiçoada e Sobrecura. Reação, efeito no alvo ou
+benefício em aliado, na mesma régua que o Combatente usou em 2026-09-23.
+
+**Asserts:** `t-suporte-revisao.mjs` (novo, 37). Ele prende os dois lados de cada
+correção: que o Suporte passou a contar E que o Conjurador e o Controlador não
+mudaram, mais o não acúmulo na multiclasse e a guarda de deriva que falha se
+alguém acrescentar um tipo Elemental sem o efeito dele. Suíte em 121 de 122, com
+o vermelho conhecido de sempre. ESLint do Afty zerado, build limpo.
 
 ## SESSÃO DE 2026-09-22 (parte 6): A RAJADA DE DERIVES DA ABA BUFFS
 

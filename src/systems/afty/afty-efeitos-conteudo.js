@@ -1449,6 +1449,29 @@ export const HABILIDADE_EFEITOS = {
 const FACES_EMPOLGACAO = [4, 6, 8, 10, 12];
 
 export const ESCOLHA_EFEITOS = {
+  /* ---- Táticas Defensivas (Suporte 10°) ----
+     "Você pode escolher um tipo de dano Elemental para que você e dois aliados
+     sejam resistentes."
+
+     ⚠ SÓ A SUA RESISTÊNCIA ENTRA AQUI. A dos dois aliados é de mesa: ela mora
+     na ficha deles e depende de quem são e de onde estão.
+
+     ⚠ `resistenciaDano` É SINALIZADOR, e não número: quem resolve meia-dano por
+     tipo é a aba de Resistências (afty-defesas-dano.js), e este canal só levanta
+     a bandeira daquele tipo. Por isso a expressão é 1, e não um valor.
+
+     ⚠ AS CINCO CHAVES ACOMPANHAM A CATEGORIA "elemental" de CATEGORIAS_DANO
+     (afty-equipamentos.js), que é de onde as opções da habilidade saem. Elas
+     estão escritas à mão porque este arquivo não importa nada, de propósito, e
+     um import para o catálogo de equipamentos fecharia um ciclo novo. O assert
+     `t-suporte-revisao.mjs` cobra que toda opção da habilidade tenha a linha
+     dela aqui, então acrescentar um elemento sem acrescentar o efeito falha. */
+  sup_taticas_acido: [{ canal: "resistenciaDano", alvo: "acido", expr: "1" }],
+  sup_taticas_congelante: [{ canal: "resistenciaDano", alvo: "congelante", expr: "1" }],
+  sup_taticas_chocante: [{ canal: "resistenciaDano", alvo: "chocante", expr: "1" }],
+  sup_taticas_queimante: [{ canal: "resistenciaDano", alvo: "queimante", expr: "1" }],
+  sup_taticas_sonico: [{ canal: "resistenciaDano", alvo: "sonico", expr: "1" }],
+
   // Aptidões de Luta (Lutador 8°): "você pode aumentar o seu nível de aptidão
   // em Aura ou Controle e Leitura em 1. Você pode pegar esta habilidade duas
   // vezes, uma para cada aptidão."
