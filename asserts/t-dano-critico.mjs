@@ -54,7 +54,7 @@ t("o Raio Negro e o crítico olham o mesmo conjunto",
 t("o crítico dobra os dados, soma as faces iguais e deixa o fixo",
   formulaModoDano([golpe, apos, soCritico], "critico"), "6d8 + 1d6 + 5");
 t("o Raio Negro multiplica só os dados critáveis, com o fixo por fora",
-  formulaModoDano([golpe, apos, soCritico], "raio_negro"), "(6d8) × 1,5 + 1d6 + 5");
+  formulaModoDano([golpe, apos, soCritico], "raio_negro"), "(6d8)/2*3 + 1d6 + 5");
 t("a rolagem normal não mostra o dado de crítico",
   formulaModoDano([golpe, apos, soCritico], "normal"), "2d8 + 1d6 + 5");
 /* Faces diferentes seguem separadas, e a não critável fica fora do parêntese. */
@@ -64,7 +64,7 @@ const d12apos = { nome: "C", dados: 1, faces: 12, fixo: 0, momento: "apos", mult
 t("faces iguais somam, e o que não é critável soma fora",
   [formulaModoDano([d12, d12b, d12apos], "normal"),
     formulaModoDano([d12, d12b, d12apos], "raio_negro")],
-  ["4d12", "(6d12) × 1,5 + 1d12"]);
+  ["4d12", "(6d12)/2*3 + 1d12"]);
 
 /* 4d8 critáveis saindo 1, 2, 3 e 1 somam 7, que é ímpar: 7 + piso(7 / 2) = 10.
    O `piso(7 / 2) × 3` antigo dava 9. O fixo (4) e o Após (1d6 = 1, fixo 1) somam

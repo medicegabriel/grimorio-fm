@@ -1,5 +1,23 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-09-30: RAIO NEGRO COMPATÍVEL COM BOT DE DADOS
+
+A fórmula de Raio Negro em `afty-dano.js` voltou ao formato `(dados)/2*3`,
+compatível com o bot de dados. O crítico continua dobrando os dados critáveis,
+com os dados não critáveis e o fixo somados por fora. A rolagem interna mantém
+o cálculo e o arredondamento existentes. Os asserts de fórmula foram atualizados.
+Não havia entrada correspondente na fila de `a-fazer.md`.
+
+A base local foi atualizada de `3c8f8a9` para `ac17945` com os 12 commits remotos.
+As alterações locais foram preservadas em backup no stash e reaplicadas.
+O único conflito foi neste histórico, resolvido mantendo as sessões dos dois lados.
+Nenhum commit ou push executado.
+
+Validação: ESLint e build passaram, assim como os 68 asserts de dano e crítico.
+A suíte completa encontrou a falha já registrada de custo da Característica Livre
+em `t-invocacoes-motor.mjs`. `src/components/` permaneceu sem alterações.
+A conferência visual no navegador ficou pendente.
+
 ## SESSÃO DE 2026-09-29: HOVER DO DANO E SALDO DO SOMENTE CONDIÇÃO
 
 Pedido do autor: *"Preciso passar o mouse em cima do dano e aparecer o Hover das Fontes. Além

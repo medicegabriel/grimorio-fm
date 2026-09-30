@@ -54,7 +54,7 @@ export function formulaModoDano(grupos, modo = "normal") {
     // TODO grupo e os dados que não são critáveis ficam fora e somam uma vez.
     const dentro = dadosDaPilha(lista.filter(grupoNoRaioNegro), modo, true);
     const fora = dadosDaPilha(lista.filter((g) => !grupoNoRaioNegro(g)), "normal", false);
-    return juntar([dentro ? `(${dentro}) × 1,5` : "", fora, textoDoFixo(fixoDaPilha(lista))]) || "0";
+    return juntar([dentro ? `(${dentro})/2*3` : "", fora, textoDoFixo(fixoDaPilha(lista))]) || "0";
   }
   const dobra = modo === "critico";
   return juntar([dadosDaPilha(lista, modo, dobra), textoDoFixo(fixoDaPilha(lista))]) || "0";

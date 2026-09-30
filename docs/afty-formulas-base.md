@@ -12,6 +12,14 @@ FLOOR, `INT`=parte inteira, `MAIOR(intervalo;k)`=k-ésimo maior, `VERDADEIRO`=TR
 
 ## Correções estruturais ao que estava assumido
 
+### Expressão de Raio Negro para bot de dados (2026-09-30)
+
+`formulaModoDano` em `src/systems/afty/afty-dano.js` escreve os dados critáveis
+já dobrados como `(dados)/2*3`. Dados não critáveis e dano fixo somam por fora.
+Exemplo: `(6d8)/2*3 + 1d6 + 5`. O crítico continua `6d8 + 1d6 + 5`.
+Esta correção troca somente a representação da fórmula. Na rolagem interna,
+o subtotal critável continua somando sua metade arredondada para baixo.
+
 O que estas fórmulas revelam e que contradiz o esquema v0 (`createBlankAfty`):
 
 1. **A criatura Afty usa ND + Patamar + Tipo** — não só "nível + tipo".
