@@ -55,6 +55,7 @@
  * ============================================================
  */
 
+import { validarBloodfeast } from "./afty-bloodfeast";
 import { normalizarMarca } from "./afty-dsl";
 // Sem risco de ciclo: `afty-sistema.js` não importa nada.
 import { sistemaDaFicha, regraDo, palavrasDoSistema } from "./afty-sistema";
@@ -308,6 +309,7 @@ const ID_ENTRADA_OK = /^[a-z0-9][a-z0-9_]{0,63}$/;
  * do projeto é que quem enxerga é quem pediu.
  */
 export const PRIMITIVAS = [
+  { id: "bloodfeast", rotulo: "Bloodfeast", nota: "Conversão de energia em Vida e recursos sanguíneos de cena" },
   {
     id: "concessao",
     rotulo: "Concessão do Mestre",
@@ -1009,6 +1011,7 @@ export function normalizarPacote(cru) {
     /* Funcionamentos Básicos próprios do pacote. Eles não entram no catálogo
        global: saem direto da cópia congelada em `creature.addons`, para uma
        criatura nunca herdar o Funcionamento de outra no mesmo encontro. */
+    bloodfeast: p.bloodfeast && typeof p.bloodfeast === "object" ? clonar(p.bloodfeast) : null,
     funcionamentos: Array.isArray(p.funcionamentos)
       ? p.funcionamentos.filter((x) => x && typeof x === "object").map(clonar)
       : [],
@@ -1319,6 +1322,7 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
   if (!p.nome) problemas.push("O pacote precisa de um nome.");
   if (p.paraRaw !== "afty") problemas.push(`Este pacote é para "${p.paraRaw}", e não para o Afty.`);
 
+  problemas.push(...validarBloodfeast(p.bloodfeast));
   problemas.push(...validarRegrasAfty(p.regrasAfty, "Regras Afty do Addon"));
   if (p.votoAutomatico) {
     const voto = p.votoAutomatico;

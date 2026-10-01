@@ -170,6 +170,12 @@ decisão encosta na entrada "A CD de Especialização e a CD Amaldiçoada são d
 resolvida junto com ela ou antes dela.
 **Anotado:** 2026-09-29, na auditoria do Suporte contra o livro
 
+### The Crimsom Queen: definir Catalisadora
+**Onde:** `addons/the-crimsom-queen.json`, Yearning Mircalla
+**Situação:** addon implementado, propriedade Catalisadora preservada no texto da arma. PDF e catálogo nativo não trazem seu efeito numérico.
+**Precisa:** autor informar a regra de Catalisadora para automatizar eventual modificador. Pergunta enviada, demais encantamentos e manifestação implementados.
+**Anotado:** 2026-10-01, validação final de Bloodfeast
+
 ### Yna: cinco leituras para confirmar
 **Onde:** `addons/yna.json` e `docs/afty-yna.md`
 **Situação:** o pacote da Yna (Kitsune, Clã Getsurin, Treino de Cônjuge e Treino de Desenvolvimento Amaldiçoado) entrou em 2026-09-29 com quatro decisões do autor por pergunta com opções. Estas cinco leituras ficaram por conta própria, cada uma no lado mais simples, e nenhuma muda o que já foi decidido:
@@ -279,6 +285,16 @@ falha. Ele é a única falha da suíte hoje (86 de 87 arquivos passam).
 primeiras de graça, a terceira custando), e a frase daquele bloco sai. Se não vale, o `+ base` do
 `custoInvocacao` é que sai.
 **Anotado:** 2026-09-15, ao sincronizar o repositório antes de abrir a Técnica para o shikigami
+
+### Poder da Trindade: recuperação diária e encerramento do estado
+
+**Onde:** `src/systems/afty/afty-alto-nivel.js` (`api_poder_da_trindade`), `afty-combate.js` e `ficha/ficha-sessao.js`.
+
+**Situação:** o texto enviado pelo autor já consta no catálogo. Falta a ativação e a ligação dos efeitos. O motor separa RD geral de RD à alma, portanto os 40 contra todos os tipos precisam alcançar ambas. A ficha possui um único descanso e ainda não representa sucesso automático nas rolagens.
+
+**Precisa:** definir se o uso diário é recuperado manualmente ou pelo botão Descansar. Confirmar quando cobrar os 2 pontos de exaustão se o estado for desligado ou o combate terminar antes da virada de rodada. Confirmar se os acertos automáticos e os +10 de dano também abrangem Feitiços com jogada de ataque.
+
+**Anotado:** 2026-09-14, pedido de ativação de Poder da Trindade. Perguntas enviadas ao autor, implementação aguardando essas decisões.
 
 ### Controlador: as reações que rolam dado não têm onde aparecer
 

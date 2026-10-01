@@ -27,6 +27,7 @@ import { rolarTeste, rolarDano, textoDaRolagem } from "../ficha/ficha-rolagem";
 import { deltaDosEstados, saldoDoAgora } from "../ficha/ficha-buffs";
 import { opcoesDoCombatente } from "./usar-encontro-afty";
 import { conteudoDaFicha, equipamentosDaFicha } from "../ficha/ficha-conteudo";
+import PainelBloodfeast, { ConjuracaoBloodfeast } from "../ficha/PainelBloodfeast";
 import AbaAcoes from "../ficha/abas/AbaAcoes";
 import PainelDeAdaptacao from "../ficha/PainelDeAdaptacao";
 import PainelOlhosAgulha from "../ficha/PainelOlhosAgulha";
@@ -121,7 +122,7 @@ function DanoRapido({ onDano, onCura }) {
 }
 
 export default function PainelDeCombatente({
-  combatente, derived, sessao, onSessao, onFlag, ativo,
+  combatente, derived, sessao, onSessao, onFlag, ativo, alvosBloodfeast = [], onAlvoBloodfeast = null,
 }) {
   const [aba, setAba] = useState("acoes");
   const [abertos, setAbertos] = useState(() => new Set());
@@ -319,7 +320,7 @@ export default function PainelDeCombatente({
             onSet={(v) => onSessao((s) => ({ ...s, hpAtual: v }))}
             onDelta={(d) => onSessao((s) => ({ ...s, hpAtual: s.hpAtual + d }))}
           />
-          <Vital
+          {!derived.bloodfeast?.tem && <Vital
             tipo="pe" icone={Zap} rotulo={derived.recursoLabel}
             atual={sessao.peAtual} max={derived.pe} temp={peTempTotal(sessao)}
             rotuloTemp={`${derived.recursoLabel} Temporário`}
@@ -331,7 +332,7 @@ export default function PainelDeCombatente({
             onDelta={(d) => onSessao((s) => (
               d < 0 ? gastaPe(s, -d) : { ...s, peAtual: s.peAtual + d }
             ))}
-          />
+          />}
           <Vital
             tipo="alma" icone={Sparkles} rotulo="Alma"
             atual={sessao.almaAtual} max={derived.almaMax}
@@ -431,6 +432,8 @@ export default function PainelDeCombatente({
 
       {aba === "acoes" && (
         <AbaAcoes
+        bloodfeast={<PainelBloodfeast derived={derived} sessao={sessao} onSessao={onSessao} alvos={alvosBloodfeast} onAlvo={onAlvoBloodfeast} />}
+        conjuracaoBloodfeast={(f) => <ConjuracaoBloodfeast f={f} derived={derived} sessao={sessao} onSessao={onSessao} />}
           derived={derived}
           adaptacao={<PainelDeAdaptacao derived={derived} onSessao={onSessao} />}
           olhosAgulha={<PainelOlhosAgulha derived={derived} sessao={sessao} onSessao={onSessao} />}

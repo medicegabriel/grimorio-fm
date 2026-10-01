@@ -1,6 +1,6 @@
 # Asserts do Afty
 
-Os asserts de lógica do lado do Afty. São **7263, em 133 arquivos** (contados em 2026-10-01, com o
+Os asserts de lógica do lado do Afty. São **7299, em 134 arquivos** (contados em 2026-10-01, com o
 vermelho conhecido do `t-invocacoes-motor`), e cobrem o avaliador do DSL, as
 primitivas novas do motor, o sistema de Addons de ponta a ponta e regras do catálogo que
 são fáceis de quebrar sem sintoma.

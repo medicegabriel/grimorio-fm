@@ -467,6 +467,10 @@ a usar o orçamento normal da ficha.
 converte a regra particular nas tabelas de Dano ou Auxiliar. `rolagens` oferece os dados exatos na Ficha.
 Passivas continuam usando `tipo: "passivo"` e podem trazer `efeitosPassivo` pelo Motor.
 
+Quando o custo não é um número único, o modelo pode declarar `custoPETexto`. O texto substitui o custo
+numérico na Ficha e impede que o custo padrão do Nível apareça ou receba reduções. É o caso de uma
+tabela por grau ou de uma habilidade cujo custo seja a soma de várias invocações.
+
 O criador expõe todos esses campos do `personalizado`. Cada entrada de `rolagens` pode editar nome,
 quantidade, faces, valor fixo, repetições e tom de Dano ou Cura. Assim uma regra particular pode manter
 rolagens separadas para o impacto inicial e para um dano recorrente.
@@ -2081,3 +2085,11 @@ cada multiplicador aparece no detalhamento do atributo afetado.
 
 Pacotes de referência: `addons/restricao-celestial-santo-da-espada.json` e
 `addons/regras-grimorio.json`.
+
+## The Crimsom Queen (2026-10-01)
+
+`addons/the-crimsom-queen.json`: 15 passivas, 6 modelos máximos e alabarda.
+Primitiva `bloodfeast`, total do registro agora 23 (a `heranca` entrou no mesmo dia). Instalar o JSON pela biblioteca,
+ativar na criatura, escolher passivas e Anatomia em Habilidades e adicionar os
+modelos desejados. Controles de sessão disponíveis em Ações na Ficha e no Encontro.
+Decisões e limites detalhados em `afty-crimsom-queen.md`.

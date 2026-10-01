@@ -49,10 +49,10 @@ const t = (nome, real, esp) => {
    (2026-09-28) e o canal que troca FOR ou DES no ataque, da Formula de Combate
    Entropica, medido em `t-formula-entropica.mjs`. */
 /* E a `heranca` (2026-10-01): a sub-aba de Heranças das Sombras do Mecânicas, medida
-   em `t-invocacao-heranca.mjs`. */
-t("sao 22 primitivas", AD.PRIMITIVAS.length, 22);
+   em `t-invocacao-heranca.mjs`. A `bloodfeast` (2026-10-01) é do addon The Crimsom Queen. */
+t("sao 23 primitivas", AD.PRIMITIVAS.length, 23);
 t("ids esperados", AD.PRIMITIVAS.map((p) => p.id).sort(),
-  ["adaptacao", "armaTransformavel", "armasPorNivel", "ataqueAtributo", "caracteristicasAmaldicoadas", "carteira", "catarse", "cofre", "concessao", "contar", "criacaoArmas", "encantamentoGuia", "heranca", "hpAtributo", "modificacoesCorporais", "olhosDeAgulha", "pacto", "pvEPassivas", "quimera", "requisitoAptidao", "titaColosso", "vislumbreCeleste"]);
+  ["adaptacao", "armaTransformavel", "armasPorNivel", "ataqueAtributo", "bloodfeast", "caracteristicasAmaldicoadas", "carteira", "catarse", "cofre", "concessao", "contar", "criacaoArmas", "encantamentoGuia", "heranca", "hpAtributo", "modificacoesCorporais", "olhosDeAgulha", "pacto", "pvEPassivas", "quimera", "requisitoAptidao", "titaColosso", "vislumbreCeleste"]);
 t("toda primitiva tem rotulo", AD.PRIMITIVAS.every((p) => !!p.rotulo), true);
 t("SEM_PRIMITIVAS e vazio", AD.SEM_PRIMITIVAS, []);
 
