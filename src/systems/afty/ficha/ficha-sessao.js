@@ -32,6 +32,9 @@ import {
   PROPRIEDADES_GOLPE, vezesDaPropriedade, marcasDoGolpe, custoDoGolpe, normalizaGolpeEspecial,
 } from "../afty-golpe-especial";
 
+import { rolarDano } from "./ficha-rolagem";
+import { normalizaBloodfeast, pagaVidaBloodfeast, rodadaBloodfeast } from "../afty-bloodfeast";
+
 const CHAVE_BASE = "fm_ficha_sessao_afty_v1";
 const LOG_MAX = 50;
 
@@ -59,6 +62,9 @@ export function sessaoEmBranco(derived = null) {
 
        O MÁXIMO continua podendo ser negativo. Quem apara é a pilha CORRENTE,
        que é o que se gasta na mesa. */
+    bloodfeastRegras: derived?.bloodfeast?.tem ? derived.bloodfeast.ids : [],
+    energiaEmVida: derived?.bloodfeast?.tem ? 3 : 0,
+    bloodfeast: normalizaBloodfeast(),
     hpAtual: Math.max(0, derived?.hp ?? 0),
     peAtual: Math.max(0, derived?.pe ?? 0),
     /* PV temporário POR FONTE, igual ao de PE logo abaixo. Era um número só até
@@ -203,6 +209,9 @@ export function normalizaSessao(bruta, derived = null) {
   return {
     ...base,
     ...bruta,
+    bloodfeastRegras: base.bloodfeastRegras,
+    energiaEmVida: base.energiaEmVida,
+    bloodfeast: normalizaBloodfeast(bruta.bloodfeast),
     hpAtual: inteiro(bruta.hpAtual, base.hpAtual),
     peAtual: inteiro(bruta.peAtual, base.peAtual),
     /* ⚠ MIGRAÇÃO: sessão gravada antes de 2026-08-26 tem `pvTempAtual`, um
@@ -668,7 +677,7 @@ function normalizaPeTemp(bruto) {
 
 /** O total de PE temporário disponível agora. */
 export const peTempTotal = (sessao) =>
-  Object.values(sessao?.peTempFontes ?? {}).reduce((soma, n) => soma + n, 0);
+  sessao?.energiaEmVida ? 0 : Object.values(sessao?.peTempFontes ?? {}).reduce((soma, n) => soma + n, 0);
 
 /**
  * Gasta `quanto` da casca, na ordem em que as fontes estão. Devolve
@@ -711,6 +720,10 @@ export function aplicaPeTemporario(sessao, entradas = []) {
     fontes[chave] = teto;
     mudou = true;
   }
+  if (mudou && sessao.energiaEmVida) {
+    const ganho = Object.entries(fontes).reduce((n, [id, valor]) => n + Math.max(0, valor - (sessao.peTempFontes?.[id] ?? 0)), 0);
+    return { ...sessao, hpAtual: sessao.hpAtual + ganho * sessao.energiaEmVida, peTempFontes: fontes };
+  }
   return mudou ? { ...sessao, peTempFontes: fontes } : sessao;
 }
 
@@ -721,6 +734,7 @@ export function aplicaPeTemporario(sessao, entradas = []) {
 export function gastaPe(sessao, quanto) {
   const custo = Math.max(0, Math.trunc(Number(quanto)) || 0);
   if (!custo) return sessao;
+  if (sessao.energiaEmVida) return pagaVidaBloodfeast(sessao, custo * sessao.energiaEmVida).sessao;
   const { fontes, sobrou } = drenaPeTemp(sessao.peTempFontes, custo);
   return { ...sessao, peTempFontes: fontes, peAtual: Math.max(0, sessao.peAtual - sobrou) };
 }
@@ -738,6 +752,8 @@ export function gastaPe(sessao, quanto) {
  * O PV temporário NÃO é aparado: ele é casca por fora do máximo, por definição.
  */
 export function aparaSessao(sessao, derived) {
+  const energiaEmVida = derived?.bloodfeast?.tem ? 3 : 0;
+  const bloodfeastRegras = derived?.bloodfeast?.tem ? derived.bloodfeast.ids : [];
   const hpMax = Math.max(0, derived?.hp ?? 0);
   const peMax = Math.max(0, derived?.pe ?? 0);
   const almaMax = Math.max(0, derived?.almaMax ?? 100);
@@ -768,13 +784,13 @@ export function aparaSessao(sessao, derived) {
   /* A casca da Postura do Céu some quando a fonte some ("sai da postura"), e
      nunca passa do valor da fonte, que é o teto dela (topa, não acumula). */
   const preparoTemp = entre(inteiro(sessao.preparoTemp, 0), 0, Math.max(0, derived?.preparoTemporario ?? 0));
-  if (hpAtual === sessao.hpAtual && peAtual === sessao.peAtual && almaAtual === sessao.almaAtual
+  if (JSON.stringify(bloodfeastRegras) === JSON.stringify(sessao.bloodfeastRegras ?? []) && energiaEmVida === (sessao.energiaEmVida ?? 0) && hpAtual === sessao.hpAtual && peAtual === sessao.peAtual && almaAtual === sessao.almaAtual
     && visto === almaMax && invocacoes === sessao.invocacoes && tita === sessao.tita
     && preparoAtual === (sessao.preparoAtual ?? null) && preparoTemp === inteiro(sessao.preparoTemp, 0)) {
     return sessao;
   }
   return {
-    ...sessao, hpAtual, peAtual, almaAtual, almaMaxVisto: almaMax, invocacoes, tita, preparoAtual, preparoTemp,
+    ...sessao, energiaEmVida, bloodfeastRegras, hpAtual, peAtual, almaAtual, almaMaxVisto: almaMax, invocacoes, tita, preparoAtual, preparoTemp,
   };
 }
 
@@ -939,7 +955,8 @@ export function aplicaPerdaDeVida(sessao, bruto) {
 }
 
 /** Aplica cura. Nunca passa do máximo, e nunca ressuscita PV temporário. */
-export function aplicaCura(sessao, bruto, hpMax) {
+export function aplicaCura(sessao, bruto, hpMax, { externa = false } = {}) {
+  if (externa && sessao.energiaEmVida) return sessao;
   const cura = Math.max(0, inteiro(bruto, 0));
   if (!cura) return sessao;
   return { ...sessao, hpAtual: entre(sessao.hpAtual + cura, 0, Math.max(0, hpMax)) };
@@ -1171,7 +1188,10 @@ export function encerraGuarda(sessao) {
  * (autor, 2026-08-26).
  */
 export function defineCondicoes(sessao, condicoes) {
-  const lista = Array.isArray(condicoes) ? condicoes : [];
+  const regras = sessao.bloodfeastRegras ?? [];
+  const lista = (Array.isArray(condicoes) ? condicoes : [])
+    .filter((c) => !(regras.includes("pureza") && (typeof c === "string" ? c : c.nome) === "Envenenado"))
+    .map((c) => regras.includes("pureza_refinada") && typeof c === "object" ? { ...c, rodadas: Math.min(c.rodadas ?? 1, 1) } : c);
   const proxima = { ...sessao, condicoes: lista };
   if (condicaoQueQuebraGuarda(proxima) == null) return proxima;
   const fontes = { ...(proxima.pvTempFontes ?? {}) };
@@ -1251,7 +1271,12 @@ export function proximaRodada(sessao, derived = null) {
   const comArmas = avancaArmasTransformaveis(comAdaptacao, sessao.rodada === 0);
   // A casca de Preparo da Postura do Céu topa no começo de cada rodada.
   const comPreparo = topaPreparoTemp(comArmas, derived);
-  return { sessao: avancaTalismaApice(avancaInvencivelSobOSol(comPreparo, derived)), expirou };
+  let proxima = rodadaBloodfeast(avancaTalismaApice(avancaInvencivelSobOSol(comPreparo, derived)), derived);
+  if (derived?.bloodfeast?.tem && derived.bloodfeast.ids.includes("regeneracao") && sessao.hpAtual < derived.hp / 2) {
+    const r = rolarDano({ rotulo: "Regeneração Constante", dados: 2, faces: 8, fixo: derived.bloodfeast.modCon, tom: "cura" });
+    proxima = aplicaCura(registraRolagem(proxima, r), r.total, derived.hp);
+  }
+  return { sessao: proxima, expirou };
 }
 
 /* O Talismã do Ápice desligado, com o contador zerado. */
@@ -1339,6 +1364,8 @@ export function descansar(sessao, derived) {
   if (!derived) return sessao;
   return {
     ...sessao,
+    energiaEmVida: derived?.bloodfeast?.tem ? 3 : 0,
+    bloodfeast: { ...normalizaBloodfeast(), sanidade: normalizaBloodfeast(sessao.bloodfeast).sanidade, bleed: normalizaBloodfeast(sessao.bloodfeast).bleed },
     hpAtual: Math.max(0, derived?.hp ?? 0),
     peAtual: Math.max(0, derived?.pe ?? 0),
     pvTempFontes: {},
@@ -1491,6 +1518,7 @@ export function alteraTreinoAtivo(sessao, id, valor) {
  * que a criatura já não possuía.
  */
 export function pagaCustoVida(sessao, bruto) {
+  if (sessao.energiaEmVida) return pagaVidaBloodfeast(sessao, bruto);
   const atual = Math.max(0, inteiro(sessao?.hpAtual, 0));
   const pedido = Math.max(0, inteiro(bruto, 0));
   const pago = Math.min(atual, pedido);

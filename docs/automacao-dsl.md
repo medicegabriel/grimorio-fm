@@ -321,3 +321,17 @@ Detalhe completo em `docs/afty-invocacoes.md`. Assert: `asserts/t-invocacao-escr
   Patamar (o valor é o multiplicador, `2` dobra; as fontes somam entre si e o total tem piso de 1,
   igual ao `movimentoMult`), e `passivaSemCusto` é um sinalizador que isenta TODA Passiva do PE
   Máximo. Sem a primitiva os dois somem do seletor de canal, mas continuam valendo no motor.
+
+## Bloodfeast (2026-10-01)
+
+Primitiva optativa `bloodfeast`, a 22ª. O pacote retém `bloodfeast.passivas`
+(id, nome, descrição, nível e custoPV). O gate lê exclusivamente creature.addons.
+Escolhas ficam em creature.bloodfeast, recursos em sessao.bloodfeast, nunca no
+catálogo global. Bleed pode atingir uma sessão sem addon, sem conceder poderes.
+Os efeitos usam os canais nativos de vulnerabilidade, resistência, imunidade,
+RD e bônus. Conjuração consome nível vezes BT, saldo parcial é consumido e
+insuficiência aplica Bleed igual ao nível. Consumo de pelo menos BT gera uma
+carga de Hardblood por evento. Melhorias compartilham teto BT e saldo disponível.
+`bloodfeastBase` preserva rolagens/CD antes de melhorias, impedindo acumulação
+entre conjurações. A arma optativa aceita atributoAtaque e usarDadoArma,
+resolvidos por linha de dano, sem mudar a política global do sistema.

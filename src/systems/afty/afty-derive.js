@@ -50,6 +50,7 @@ import {
   efeitosInvocacaoDeTreino, linhasComEscolhaFeiticos,
 } from "./afty-treinamentos";
 import { efeitosDeVotos, regrasAftyDeVotosAtivos, votosDaFicha } from "./afty-votos";
+import { resolveBloodfeast, temBloodfeast, efeitosBloodfeast, efeitosPoderDoSangue, comArmaBloodfeast, aprimoraLinhaBloodfeast } from "./afty-bloodfeast";
 import { regrasAftyDaCriatura } from "./afty-regras-addon";
 import { efeitosDeModificacoesCorporais } from "./afty-modificacoes-corporais";
 import { resolveTita } from "./afty-tita";
@@ -258,6 +259,7 @@ const acertoDosEncantamentos = (fa) =>
  *   • rituaisSemTeste — mapa de Feitiços cuja fonte dispensa Prestidigitação.
  */
 export function deriveAfty(creature, opcoes = {}) {
+  creature = comArmaBloodfeast(creature, opcoes.bloodfeast);
   const core = creature?.core ?? {};
   /* CONCESSÃO VINDA DA SESSÃO (Addons 8.3). Chega pelo `opcoes`, e não pela
      criatura, porque ela é estado de SESSÃO e nunca ficha: o mestre dá no meio
@@ -271,6 +273,7 @@ export function deriveAfty(creature, opcoes = {}) {
   ]));
   const concessoesComImitacao = [...(opcoes.concedido ?? []), ...concessaoImitada(imitacao)];
   const concedido = agrupaConcedido(opcoes.concedido);
+  if (temBloodfeast(creature) && !concedido.talentos.includes("tal_robustez_aprimorada")) concedido.talentos.push("tal_robustez_aprimorada");
   for (const c of concessaoImitada(imitacao)) {
     if (!(creature?.habilidades ?? []).includes(c.id) && !concedido.habilidades.includes(c.id)) {
       concedido.habilidades.push(c.id);
@@ -328,7 +331,10 @@ export function deriveAfty(creature, opcoes = {}) {
 
      Os alvos concretos saem daqui porque as perícias dependem da ficha: um Ofício
      repetido ou uma perícia personalizada também sofre o -2 do Envenenado. */
-  const condicoes = resolveCondicoes(opcoes.condicoes ?? creature?.combate?.condicoes, {
+  const estadoBloodfeast = opcoes.bloodfeast ?? creature?.combate?.bloodfeast;
+  const listaCondicoes = opcoes.condicoes ?? creature?.combate?.condicoes ?? [];
+  const condicoes = resolveCondicoes(temBloodfeast(creature) && estadoBloodfeast?.agua
+    ? [...listaCondicoes, { nome: "Exposto" }, { nome: "Abalado" }] : listaCondicoes, {
     pericias: catalogoPericiasFicha.map((p) => ({ id: p.id, nome: p.nome })),
     trs: AFTY_RESISTENCIAS.map((r) => ({ id: r.value, nome: r.label })),
     ataques: AFTY_ATAQUES.map((x) => ({ id: x.id, nome: x.nome })),
@@ -445,6 +451,7 @@ export function deriveAfty(creature, opcoes = {}) {
     !substituicaoEnergiaReversa || getAptidao(id)?.categoria !== "energia_reversa"
   );
   const aptidoesConcedidas = semEnergia ? [] : [...new Set([
+    ...(temBloodfeast(creature) && getAptidao(creature?.bloodfeast?.anatomia)?.subcategoria === "mal_anatomia" ? [creature.bloodfeast.anatomia] : []),
     ...aptidoesConcedidasOrigem,
     ...aptidoesConcedidasEspecializacao,
     ...concedido.aptidoes,
@@ -902,6 +909,7 @@ export function deriveAfty(creature, opcoes = {}) {
          versátil). Elas não têm `dano.dado`, então caíam no `1d3` do desarmado,
          caladas: o dano certo é a soma dos dois. Os TIPOS seguem só no texto
          especial da arma, como já seguiam antes desta mudança. */
+      usarDadoArma: !!e.def.usarDadoArma,
       dadoArma: Array.isArray(e.def.dano?.dados)
         ? e.def.dano.dados.map((d) => d.dado).filter(Boolean).join(" + ")
         : ((e.duasMaos && e.def.dano?.duasMaos) ? e.def.dano.duasMaos : (e.def.dano?.dado ?? null)),
@@ -931,7 +939,8 @@ export function deriveAfty(creature, opcoes = {}) {
          "Lutador tem Treinamento em Armas Simples. Logo, sempre que usando uma
          Arma Simples ele é considerado como Treinado" (autor, 2026-08-30).
          Arma fora do treino continua utilizável e só não soma o BT. */
-      treinada: armaTreinadaPor(e.def, treinamentosEquipamento.armas)
+      atributoAtaque: e.def.atributoAtaque,
+      treinada: !!e.def.treinadaPadrao || armaTreinadaPor(e.def, treinamentosEquipamento.armas)
         || (
           talentosPre.escolhidas.includes("tal_mestre_das_armas")
           && creature?.talentosConfig?.tal_mestre_das_armas?.modo === "armas"
@@ -999,7 +1008,9 @@ export function deriveAfty(creature, opcoes = {}) {
     .map((e) => ({ entradaId: e.def?.grupo === "pugilato" ? "basico" : e.def.id, tipo: e.fa.sintonizadaTipo ?? null }));
   const dedicadas = resolveArmasDedicadas(creature, armasParaDano, habilidades.efetivas);
 
+  const bloodfeast = resolveBloodfeast(creature, { bt, nd, modCon: modBase.constituicao, sessao: estadoBloodfeast, aptidoes: aptidoesIds });
   const efeitosTodos = carimbarGrupoExclusivo([
+    ...efeitosBloodfeast(bloodfeast, Object.keys(TIPOS_DANO)),
     ...efeitosAgulha,
     // Os dois blocos do Vislumbre Celeste. O `quando` de cada um lê o estado
     // "Olhos Descobertos", então os dois convivem e só um vale por vez.
@@ -2267,7 +2278,7 @@ export function deriveAfty(creature, opcoes = {}) {
     : hpCheio;
   /* Multiplicadores finais de Addon não mudam a Integridade nem viram base para
      efeitos que consultam o PV máximo. Eles alteram somente o PV resultante. */
-  const hp = Math.round(hpAntesMultiplicador * regrasAddon.multiplicadorPvFinal);
+  let hp = Math.round(hpAntesMultiplicador * regrasAddon.multiplicadorPvFinal);
   const danoNaAlma = hpCheio - hpAntesMultiplicador;
   // O máximo do Player só é conhecido depois do PV. Os estados da Alma usam
   // a fração atual desse máximo, inclusive quando o máximo da criatura passa de 100.
@@ -2358,7 +2369,11 @@ export function deriveAfty(creature, opcoes = {}) {
     ? 1
     : regrasVotos.multiplicadorPeMaximo;
   const multiplicadorPeMaximo = regrasAddon.multiplicadorPeMaximo * multiplicadorPeDosVotos;
-  const pe = Math.floor(peAntesMultiplicador * multiplicadorPeMaximo);
+  const peOriginal = Math.floor(peAntesMultiplicador * multiplicadorPeMaximo);
+  const pe = bloodfeast.tem ? 0 : peOriginal;
+  if (bloodfeast.tem) hp += peOriginal * 3 - bloodfeast.custoMaximo;
+  const efeitosPoderSangue = efeitosPoderDoSangue(bloodfeast, opcoes.vidaAtual, hp);
+  if (efeitosPoderSangue.length) ef = mesclarEfeitos(ef, aplicarEfeitos(efeitosPoderSangue, montarCtx(attrEff, modByAttr)));
 
   /* ⚠ A RESISTÊNCIA PARCIAL SAIU DO AFTY em 2026-09-21, a pedido do autor, nos
      dois sistemas (no jogador ela já não existia). Era +1 por degrau de ND no
@@ -2666,7 +2681,25 @@ export function deriveAfty(creature, opcoes = {}) {
     // do `resumoDominios`: a UI não recalcula nada). O card da aba Habilidades
     // segue chamando os `calcularFeitico*` por conta própria, porque ele precisa
     // do objeto INTEIRO do cálculo, e não do resumo.
-    lista: resumoFeiticos(creature, ctxFeiticos),
+    lista: resumoFeiticos(creature, ctxFeiticos).map((f) => {
+      const original = creature.feiticos?.find((x) => x.id === f.id);
+      const t = original?.bloodfeastTecnica;
+      if (!bloodfeast.tem) return f;
+      const passivaMircalla = bloodfeast.ids.includes("mircalla_passiva") && t?.id === "mircalla";
+      const linha = { ...f, bloodfeastTecnica: t, cd: f.cd == null ? f.cd : f.cd + (t?.bonusCD ?? 0),
+        conjuracaoTexto: passivaMircalla ? "Ação Livre" : f.conjuracaoTexto,
+        custoPETexto: f.custoPE == null ? f.custoPETexto : `${f.custoPE * 3} PV`,
+        custoPV: f.custoPE == null ? null : f.custoPE * 3,
+        sustentacaoPE: t?.sustentacaoPE == null ? undefined : Math.max(1, t.sustentacaoPE - ctxFeiticos.reducaoSustentacao),
+        propriedades: f.propriedades.map((p) => {
+          if (p.id === "conjuracao" && passivaMircalla) return { ...p, valor: "Ação Livre" };
+          if (p.id === "duracao" && passivaMircalla) return { ...p, valor: "Sustentada" };
+          if (p.id === "cd" && t?.bonusCD) return { ...p, valor: (Number(p.valor) || cd) + t.bonusCD };
+          return p;
+        }),
+        duracaoTexto: passivaMircalla ? "Sustentada" : f.duracaoTexto };
+      return aprimoraLinhaBloodfeast(linha, bloodfeast.estado.ultima);
+    }),
   };
 
   // ---------- RD Física ----------
@@ -3370,6 +3403,8 @@ export function deriveAfty(creature, opcoes = {}) {
     // A Penalidade de Armadura item por item, mais o Motor. Ver o bloco dela.
     penalidadeDestreza: partesPenalidade,
     hp: [
+      ...(bloodfeast.tem ? [{ label: "Bloodfeast: energia convertida", valor: peOriginal * 3 },
+        ...bloodfeast.passivas.filter((p) => p.custoPV).map((p) => ({ label: p.nome, valor: -p.custoPV }))] : []),
       ...(pvPorClasse
         ? linhasBaseDeClasse((e, i) => pvDaClasse(e.id, e.nivel, { inicial: i === 0 }))
         : [{ label: `Base do Tipo (${TIPO_LABEL[tipo] ?? tipo})`, valor: hpBase }]),
@@ -3411,6 +3446,7 @@ export function deriveAfty(creature, opcoes = {}) {
       })),
     ],
     pe: [
+      ...(bloodfeast.tem ? [{ label: "Bloodfeast: convertido em Vida", valor: -peOriginal }] : []),
       ...(pvPorClasse
         ? linhasBaseDeClasse((e) => peDaClasse(e.id, e.nivel))
         : [{ label: `Base do Tipo (${TIPO_LABEL[tipo] ?? tipo})`, valor: peBase }]),
@@ -3747,6 +3783,7 @@ export function deriveAfty(creature, opcoes = {}) {
     /* As primitivas de Addon que ESTA criatura enxerga, pelo `permite` dos
        pacotes dela. Vazio é o caso normal, e é o que mantém a tela de quem só
        usa o raw exatamente como era. Ver `PRIMITIVAS` em afty-addons.js. */
+    bloodfeast: bloodfeast.tem ? { ...bloodfeast, modCon, peOriginal, hpMax: hp } : { tem: false },
     primitivas: primitivasDaCriatura(creature),
     // O extrato da Loja de Catarse: saldo, gasto, compras e as vagas que elas
     // abriram. A tela lê daqui, e os efeitos já entraram no Motor lá em cima.

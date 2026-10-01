@@ -1,0 +1,267 @@
+{
+  "id": "the-crimsom-queen",
+  "nome": "The Crimsom Queen",
+  "versao": "1.0.0",
+  "autor": "Afty, O Sem Sombras",
+  "paraRaw": "afty",
+  "descricao": "Restrição Congênita: Bloodfeast",
+  "permite": [
+    "bloodfeast"
+  ],
+  "bloodfeast": {
+    "descricao": "Restrição Congênita: Bloodfeast Você é uma maldição, um ser feito inteiramente de energia. Ou, pelo menos deveria ser assim! A combinação de técnicas e raças de seus pais criaram algo único, um ser completamente diferente dos demais. Seu corpo é feito inteiramente de energia, porém sua energia é sangue e sangue é sua energia, em um mix perfeito entre humanidade e maldição. Malefícios Como uma maldição vampírica, seu corpo tem as seguintes limitações: - Você se torna vulnerável a dano de Energia Reversa e Radiante. - Enquanto em contato direto com Água Corrente ou Chuva, você fica sobre a condição \"Exposto\" e “Abalado”. - Você não pode ser curada por nenhuma fonte externa que não seja sua, fazendo com que itens como 'Pote do Espírito Curandeiro' e 'Laço da Vida' não tenham efeitos em seu corpo, e que suportes não possam te curar. Benefícios Seu corpo funciona de forma diferente do normal, gastando sangue ao invés de energia. Fazendo com que sua energia seja sempre convertida em sangue . - Você converte todos os seus pontos de energia amaldiçoada para pontos de vida (3 PVs equivalem a 1 PM). Todos os seus gastos de energia são convertidos para gastos de vida e qualquer forma de regeneração de pontos de energia que você fosse ter, é convertido em recuperação de vida. - Você recebe acesso às Aptidões de Anatomia, e recebe uma Aptidão de Anatomia. - Você recebe vantagem nos Portões da Morte. ",
+    "passivas": [
+      {
+        "id": "ultima_gota",
+        "nome": "Até a Última Gota",
+        "nivel": 0,
+        "custoPV": 0,
+        "descricao": "Até a Última Gota Habilidade Passiva de Nível 0 A falta de sangue pode ser nociva e mortal para maioria dos seres, porém você consegue continuar mesmo em casos extremos. Seus pontos de vida não podem ser baixados para abaixo de 1 por uso de suas Habilidades e Aptidões. Entretanto, para cada 3 Pontos de Vida consumidos além do limite desta forma você recebe 1 Ponto de Sanidade. Além disso, você soma seu modificador de Constituição em Testes no Portão da Morte."
+      },
+      {
+        "id": "bloodfeast",
+        "nome": "Bloodfeast",
+        "nivel": 0,
+        "custoPV": 0,
+        "descricao": "Bloodfeast Habilidade Passiva de Nível 0 Para cada Ponto de Vida perdido na cena por Bleed, você recebe uma carga de Bloodfeast. Todas as suas habilidades de técnica consomem obrigatoriamente uma quantidade de Bloodfeast igual a (Nível da Habilidade * Maestria). Caso você não tenha Bloodfeast o suficiente a Habilidade é usada indiferentemente, porém você recebe o Nível da Habilidade como Cargas de Bleed em si mesmo."
+      },
+      {
+        "id": "hardblood",
+        "nome": "Hardblood",
+        "nivel": 0,
+        "custoPV": 0,
+        "descricao": "Hardblood Habilidade Passiva de Nível 0 Para cada vez que você consumir uma quantidade de Bloodfeast igual ou maior que seu bônus de maestria, você recebe uma carga de Hardblood, que dura até o final da cena. Ao conjurar uma Habilidade de Técnica, você pode gastar uma quantidade Hardblood limitada ao seu bônus de maestria para aplicar os seguintes efeitos: • Aumento de Dano: Para cada ponto de Hardblood consumido, você pode adicionar 1 dado de dano à habilidade. • Aumento de Alcance ou Área: Para cada ponto de Hardblood consumido, você pode aumentar o alcance em 3 metros ou a área em 1,5 metros. • Bônus em Acerto: Para cada ponto de Hardblood consumido, você pode adicionar +1 na rolagem de acerto com a habilidade. • Aumento de CD: Para cada ponto de Hardblood consumido, você pode aumentar a CD da habilidade em 1. • Bônus em Auxiliar: Para cada ponto de Hardblood consumida, você pode aumentar os benefícios numéricos da habilidade (aumento de CA, RD, bônus em rolagem etc.) aumentado em um valor igual a 1. Algumas habilidades específicas podem também utilizar Hardblood em seu funcionamento."
+      },
+      {
+        "id": "robustez",
+        "nome": "Robustez",
+        "nivel": 0,
+        "custoPV": 0,
+        "descricao": "Robustez Habilidade Passiva de Nível 0 Sua robustez é muito acima do comum, fazendo com que você tenha uma vitalidade muito maior do que qualquer humano ou maldição. Você recebe o talento “Robustez Aprimorada”."
+      },
+      {
+        "id": "pureza",
+        "nome": "Pureza Sanguínea",
+        "nivel": 1,
+        "custoPV": 6,
+        "descricao": "Pureza Sanguínea Habilidade Passiva de Nível 1 Seu sangue cristalizado segue um fluxo quase perfeito dentro do seu corpo, sendo capaz de expulsar e remover a maioria das impurezas. Você se torna imune a condição Envenenado e passa a ter resistência contra dano Venenoso. Seus Pontos de Vida máximo diminuem em 6."
+      },
+      {
+        "id": "mais_sangue",
+        "nome": "Mais Sangue",
+        "nivel": 4,
+        "custoPV": 24,
+        "descricao": "Mais Sangue Habilidade Passiva de Nível 1 Suas marcas de Bleed já são extremamente letais, porém você aprendeu como intensificar isso ainda mais. Quando aplica Bleed a inimigos com Sangramento Leve, você causa uma carga de Bleed adicional. Seus Pontos de Vida máximo diminuem em 6. - Nível 2: Assim como acima, porém adicionar “Quando ataca inimigos com Sangramento Médio, você causa duas cargas de Bleed adicionais. Seus Pontos de Vida Máximo diminuem em 12.” - Nível 3: Assim como acima, porém adicionar “Quando ataca inimigos com Sangramento Forte, você causa três cargas de Bleed adicionais. Seus Pontos de Vida Máximo diminuem em 18.” - Nível 4: Assim como acima, porém adicionar “Quando ataca inimigos com Sangramento Extremo, você causa quatro cargas de Bleed adicionais. Seus Pontos de Vida Máximo diminuem em 24.”"
+      },
+      {
+        "id": "hemofagia",
+        "nome": "Hemofagia",
+        "nivel": 5,
+        "custoPV": 30,
+        "descricao": "Hemofagia Habilidade Passiva de Nível 1 As feridas de seus oponentes mexem com você, te fortalecem e recuperam parte dos danos sofridos em combate. Sempre que causar dano a um oponente com uma Habilidade de Técnica, você recupera 1d6 Pontos de Vida. Seus Pontos de Vida máximo diminuem em 6. - Nível 2: Assim como acima, porém recupera 2d6 Pontos de Vida. Seus Pontos de Vida máximo diminuem em 12. - Nível 3: Assim como acima, porém recupera 2d10 Pontos de Vida. Seus Pontos de Vida máximo diminuem em 18. - Nível 4: Assim como acima, porém recupera 4d8 Pontos de Vida. Seus Pontos de Vida máximo diminuem em 24. - Nível 5: Assim como acima, porém recupera 7d8 Pontos de Vida. Seus Pontos de Vida máximo diminuem em 30."
+      },
+      {
+        "id": "mircalla_passiva",
+        "nome": "Yearning Mircalla",
+        "nivel": 4,
+        "custoPV": 24,
+        "descricao": "Yearning Mircalla Habilidade Passiva de Nível 2 Uma quantidade de vezes igual ao seu bônus de maestria por descanso, caso você vá perder a concentração da habilidade Yearning Mircalla, você consegue manter a concentração de maneira forçada. Seus Pontos de Vida máximo diminuem em 12. - Nível 4: A habilidade Yearning Mircalla deixa de precisar ser concentrada, só mantendo o preço da sustentação e você pode invocá-la como Ação Livre. Seus Pontos de Vida máximo diminuem em 24."
+      },
+      {
+        "id": "ciclagem",
+        "nome": "Ciclagem Sanguínea",
+        "nivel": 2,
+        "custoPV": 12,
+        "descricao": "Ciclagem Sanguínea Habilidade Passiva de Nível 2 Você se torna capaz de manter uma ciclagem do seu sangue que está fora do seu corpo, reduzindo as perdas ao utilizar habilidades. Sempre que usar uma habilidade de técnica você pode realizar um teste de Fortitude com CD igual a 10 + 4 para cada nível da habilidade e, caso suceda, você consegue manter uma quantidade de sangue equivalente à metade dos pontos de vida gastos na habilidade ao seu redor, reutilizando-os em outras habilidades de técnica. Por ser um processo exaustivo, caso reutilize uma quantidade de pontos de vida igual ao seu modificador de Constituição multiplicado por 10, sem realizar um descanso, você recebe 1 ponto de exaustão cada vez que reutilizar sangue com esta habilidade. Seu máximo de Pontos de Vida é reduzido em 12 pontos."
+      },
+      {
+        "id": "reacoes",
+        "nome": "Reação Sanguínea",
+        "nivel": 3,
+        "custoPV": 18,
+        "descricao": "Reação Sanguínea Habilidade Passiva de Nível 3 Sua manipulação sanguínea apurada permite que seu corpo reaja muito mais rapidamente. Você passa a ser capaz de utilizar duas reações por rodada. Seu máximo de Pontos de Vida é reduzido em 18 pontos."
+      },
+      {
+        "id": "regeneracao",
+        "nome": "Regeneração Constante",
+        "nivel": 3,
+        "custoPV": 18,
+        "descricao": "Regeneração Constante Habilidade Passiva de Nível 3 Sua regeneração sanguínea é gravemente aumentada enquanto em perigo de vida. Sempre que estiver com menos de 50% de sua vida máxima, no início de todas as suas rodadas você recupera 2d8 + Mod de Constituição. Seu máximo de Pontos de Vida é reduzido em 18 pontos."
+      },
+      {
+        "id": "cristalizacao",
+        "nome": "Cristalização Corporal",
+        "nivel": 3,
+        "custoPV": 18,
+        "descricao": "Cristalização Corporal Habilidade Passiva de Nível 3 Você criou uma camada de sangue cristalizado em volta do seu corpo natural. Você recebe RD contra todo tipo de dano, exceto psíquico e alma, igual ao seu bônus de maestria. Seu máximo de Pontos de Vida é reduzido em 18 pontos."
+      },
+      {
+        "id": "poder",
+        "nome": "Poder do Sangue",
+        "nivel": 4,
+        "custoPV": 24,
+        "descricao": "Poder do Sangue Habilidade Passiva de Nível 4 Conseguindo reutilizar a vitalidade em seu sangue por conta da propriedade que o impede de liberá-la, você reduz a perda da vitalidade contida na carne e no sangue perdido em um golpe drasticamente, reaproveitando dela para fortalecer seu físico. Quando abaixo de metade dos seus pontos de vida máximo, você recebe metade do seu bônus de maestria em todos os testes de atributos físicos, e enquanto abaixo de ¼ dos seus pontos de vida máximos, muda o bônus para seu bônus de maestria total. Seu máximo de Pontos de Vida é reduzido em 24 pontos."
+      },
+      {
+        "id": "pureza_refinada",
+        "nome": "Pureza Sanguínea Refinada",
+        "nivel": 4,
+        "custoPV": 24,
+        "descricao": "Pureza Sanguínea Refinada Habilidade Passiva de Nível 4 Aprimorando e refinando ainda mais seu sangue, você faz com que ele flua de maneira realmente perfeita dentro de seu corpo. Condições negativas não perduram por mais de uma rodada em seu corpo e você se torna imune a dano Venenoso e a todo tipo de veneno e toxina. Seu máximo de Pontos de Vida é reduzido em 24 pontos. [Requer: Regeneração Corporal e Pureza Sanguínea]"
+      }
+    ]
+  },
+  "feiticos": [
+    {
+      "id": "sancho_1",
+      "nome": "Variante Sancho Hardblood Arts 1",
+      "tipo": "personalizado",
+      "nivel": 4,
+      "acaoPersonalizada": "Ação Comum",
+      "alcanceTexto": "Corpo-a-Corpo",
+      "alvoTexto": "Uma Criatura",
+      "duracaoTexto": "Imediata",
+      "resolucaoTexto": "",
+      "descricao": "Variante Sancho Hardblood Arts 1 Habilidade de Técnica de Nível 1 Conjuração: Ação Comum Alcance: Corpo-a-Corpo Alvo: Uma Criatura Duração: Imediata Você golpeia seu inimigo com brutalidade anormal. Realize um Teste de Acerto contra a Classe de Armadura adversária. Em um acerto o alvo recebe 5d8 de Dano Cortante e o alvo deve realizar um TR de Fortitude, recebendo a condição Sangramento Leve em uma falha. - Nível 2: Muda o dano para 8d8 e a condição para Sangramento Médio. - Nível 3: Muda o dano para 13d8 e a condição para Sangramento Forte. - Nível 4: Muda o dano para 13d10 e a condição para Sangramento Extremo.",
+      "comCd": true,
+      "rolagens": [
+        {
+          "rotulo": "Dano Cortante",
+          "dados": 13,
+          "faces": 10
+        }
+      ],
+      "bloodfeastTecnica": {
+        "id": "sancho_1",
+        "ataques": 1,
+        "bonusCD": 0,
+        "sustentacaoPE": 0
+      }
+    },
+    {
+      "id": "sancho_2",
+      "nome": "Variante Sancho Hardblood Arts 2",
+      "tipo": "personalizado",
+      "nivel": 5,
+      "acaoPersonalizada": "Ação Bônus",
+      "alcanceTexto": "Corpo-a-Corpo",
+      "alvoTexto": "Uma Criatura",
+      "duracaoTexto": "Imediata",
+      "resolucaoTexto": "Fortitude",
+      "descricao": "Variante Sancho Hardblood Arts 2 Habilidade de Técnica de Nível 1 Conjuração: Ação Bônus Alcance: Corpo-a-Corpo Alvo: Uma Criatura Duração: Imediata Você canaliza sua energia e começa a cristalizar o sangue do adversário, fazendo com que sangre de dentro para fora. Escolha uma criatura, ela deve realizar um TR de Fortitude com a CD aumentada em +2. Recebendo a condição “Sangramento Leve” em uma falha. - Nível 2: Muda o aumento de CD para +3. Recebendo a condição “Sangramento Médio” em uma falha ou a condição “Sangramento Leve” em um sucesso. - Nível 3: Muda o aumento de CD para +4. Recebendo a condição “Sangramento Forte” em uma falha ou a condição “Sangramento Médio” em um sucesso. - Nível 4: Muda o aumento de CD para +5. Recebendo a condição “Sangramento Extremo” em uma falha ou a condição “Sangramento Leve” em um sucesso. - Nível 5: Muda o aumento de CD para +6. Recebendo a condição “Sangramento Extremo” em uma falha ou as condições “Sangramento Forte”, “Caído” e “Desorientado” por três rodadas em um sucesso.",
+      "comCd": true,
+      "rolagens": [],
+      "bloodfeastTecnica": {
+        "id": "sancho_2",
+        "ataques": 1,
+        "bonusCD": 6,
+        "sustentacaoPE": 0
+      }
+    },
+    {
+      "id": "defesa",
+      "nome": "Defensive Sancho Hardblood Arts 1",
+      "tipo": "personalizado",
+      "nivel": 5,
+      "acaoPersonalizada": "Ação Comum",
+      "alcanceTexto": "Próprio",
+      "alvoTexto": "Próprio",
+      "duracaoTexto": "Sustentada",
+      "resolucaoTexto": "",
+      "descricao": "Defensive Sancho Hardblood Arts 1 Habilidade de Técnica de Nível 1 Conjuração: Ação Comum Alcance: Próprio Duração: Sustentada Você canaliza seu sangue em volta do seu corpo, criando uma camada protetiva fazendo com que os danos gerados contra seu corpo sejam reduzidos. Você recebe 4 de RD Geral, exceto alma. - Nível 2: Assim como acima, porém muda o bônus para 7 de RD Geral. - Nível 3: Assim como acima, porém muda o bônus para 10 de RD Geral. - Nível 4: Assim como acima, porém muda o bônus para 12 de RD Geral. - Nível 5: Assim como acima, porém muda o bônus para 18 de RD Geral.",
+      "comCd": false,
+      "rolagens": [],
+      "bloodfeastTecnica": {
+        "id": "defesa",
+        "ataques": 1,
+        "bonusCD": 0,
+        "sustentacaoPE": 2
+      }
+    },
+    {
+      "id": "sancho_3",
+      "nome": "Variante Sancho Hardblood Arts 3",
+      "tipo": "personalizado",
+      "nivel": 4,
+      "acaoPersonalizada": "Ação Completa",
+      "alcanceTexto": "Restante do Seu Movimento + 9 Metros",
+      "alvoTexto": "Uma Criatura",
+      "duracaoTexto": "Imediata",
+      "resolucaoTexto": "",
+      "descricao": "Variante Sancho Hardblood Arts 3 Habilidade de Técnica de Nível 2 Conjuração: Ação Completa Alcance: Restante do Seu Movimento + 3 Metros Alvo: Uma Criatura Duração: Imediata Você dispara em direção a uma criatura de maneira feroz e focada. Realizando dois ataques consecutivos, que recebem um bônus em acerto equivalente ao grau de Sangramento do alvo. (Leve +1, Médio +2, Forte +3, Extremo +4) - Nível 3: Muda para três ataques consecutivos e o deslocamento para 4,5 Metros. - Nível 3: Muda para quatro ataques consecutivos e o deslocamento para 6 Metros. - Nível 4: Muda para cinco ataques consecutivos e o deslocamento para 9 Metros.",
+      "comCd": false,
+      "rolagens": [],
+      "bloodfeastTecnica": {
+        "id": "sancho_3",
+        "ataques": 5,
+        "bonusCD": 0,
+        "sustentacaoPE": 0
+      }
+    },
+    {
+      "id": "reacao",
+      "nome": "Defensive Sancho Hardblood Arts 2",
+      "tipo": "personalizado",
+      "nivel": 5,
+      "acaoPersonalizada": "Reação",
+      "alcanceTexto": "Próprio",
+      "alvoTexto": "Próprio",
+      "duracaoTexto": "Imediata",
+      "resolucaoTexto": "",
+      "descricao": "Defensive Sancho Hardblood Arts 2 Habilidade de Técnica de Nível 2 Conjuração: Reação Alcance: Próprio Alvo: Próprio Duração: Imediata Você endurece grandemente o seu sangue em resposta a um golpe, absorvendo o dano dele grandemente. Ao receber um ataque, você pode usar sua reação para reduzir o dano. Faça um Teste de Fortitude contra o Acerto ou CD do Ataque. Em um sucesso você evita completamente o ataque, em uma falha você recebe somente metade do dano. Após utilizar essa habilidade, você também recebe sua maestria como redução de danos contra danos físicos até o final da rodada. - Nível 3: Você desvia automaticamente do ataque, sem precisar realizar qualquer rolagem. - Nível 4: Assim como acima, porém você realiza um ataque como parte da reação. - Nível 5: Assim como acima, porém você realiza dois ataques como parte da reação.",
+      "comCd": false,
+      "rolagens": [],
+      "bloodfeastTecnica": {
+        "id": "reacao",
+        "ataques": 2,
+        "bonusCD": 0,
+        "sustentacaoPE": 0
+      }
+    },
+    {
+      "id": "mircalla",
+      "nome": "Yearning Mircalla",
+      "tipo": "personalizado",
+      "nivel": 5,
+      "acaoPersonalizada": "Ação Bônus",
+      "alcanceTexto": "Próprio",
+      "alvoTexto": "Próprio",
+      "duracaoTexto": "Concentrada",
+      "resolucaoTexto": "",
+      "descricao": "Yearning Mircalla Habilidade de Técnica de Nível 2 Conjuração: Ação Bônus Alcance: Próprio Duração: Concentrada Você forma uma Alabarda de sangue, mantendo sempre uma alta concentração afiando a ponta, atingindo assim uma grande letalidade. Ao utilizar a habilidade, você cria uma Alabarda de sangue, o qual possui as propriedades Adaptada (Constituição) e Potente (já contabilizado), margem de crítico 18 e causa 2d10 de Dano Cortante. Você possui maestria na Alabarda e ela não pode ser desarmada. Ela dura até que você perca a sua concentração. Qualquer Habilidade ou Aptidão que afete armas de qualquer forma, afeta a Alabarda. - Nível 3: Adiciona a propriedade Afiada e reduz a margem de crítico para 17. - Nível 4: Adiciona as propriedades Catalisadora, Canalizadora e Harmonizada. - Nível 5: Adiciona a propriedade de Grau Especial “ Yearning Mircalla ” e tem seu nível de dano aumentado em dois. Yearning Mircalla : Coming soon. Mudar descrição para “Sempre que causar dano em um oponente com uma habilidade de técnica”. Mudar cura para Xd10. Onde X é igual a (Nível da Habilidade ÷ 2).",
+      "comCd": false,
+      "rolagens": [],
+      "bloodfeastTecnica": {
+        "id": "mircalla",
+        "ataques": 1,
+        "bonusCD": 0,
+        "sustentacaoPE": 2
+      }
+    }
+  ],
+  "acrescenta": {
+    "armas": [
+      {
+        "id": "alabarda_mircalla",
+        "nome": "Yearning Mircalla",
+        "classe": "complexa",
+        "categoria": "corpo",
+        "grupo": "haste",
+        "dano": {
+          "dado": "2d10",
+          "tipo": "ct"
+        },
+        "critico": 17,
+        "espacos": 0,
+        "custo": 1,
+        "props": {
+          "duas_maos": true
+        },
+        "atributoAtaque": "constituicao",
+        "usarDadoArma": true,
+        "treinadaPadrao": true,
+        "descricao": "Yearning Mircalla Habilidade de Técnica de Nível 2 Conjuração: Ação Bônus Alcance: Próprio Duração: Concentrada Você forma uma Alabarda de sangue, mantendo sempre uma alta concentração afiando a ponta, atingindo assim uma grande letalidade. Ao utilizar a habilidade, você cria uma Alabarda de sangue, o qual possui as propriedades Adaptada (Constituição) e Potente (já contabilizado), margem de crítico 18 e causa 2d10 de Dano Cortante. Você possui maestria na Alabarda e ela não pode ser desarmada. Ela dura até que você perca a sua concentração. Qualquer Habilidade ou Aptidão que afete armas de qualquer forma, afeta a Alabarda. - Nível 3: Adiciona a propriedade Afiada e reduz a margem de crítico para 17. - Nível 4: Adiciona as propriedades Catalisadora, Canalizadora e Harmonizada. - Nível 5: Adiciona a propriedade de Grau Especial “ Yearning Mircalla ” e tem seu nível de dano aumentado em dois. Yearning Mircalla : Coming soon. Mudar descrição para “Sempre que causar dano em um oponente com uma habilidade de técnica”. Mudar cura para Xd10. Onde X é igual a (Nível da Habilidade ÷ 2)."
+      }
+    ]
+  }
+}

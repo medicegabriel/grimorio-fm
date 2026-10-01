@@ -699,6 +699,8 @@ function Ativo({ encontro, derivado, acoes, criaturas, pastas, onVoltar, sistema
               <PainelDeCombatente
                 key={focado.id}
                 combatente={focado}
+                alvosBloodfeast={encontro.combatentes.filter((c) => c.id !== focado.id && c.sessao).map((c) => ({ id: c.id, nome: c.nome }))}
+                onAlvoBloodfeast={(id, fn) => acoes.patchSessao(id, fn)}
                 derived={derivado.derivados[focado.id] ?? null}
                 sessao={focado.sessao}
                 ativo={focado.id === encontro.ativoId}

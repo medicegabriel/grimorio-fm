@@ -43,6 +43,8 @@ import {
    diferença entre elas sai carimbada como bônus do estado medido. O painel
    passava só a Alma, e toda linha ligada de um Calamidade mostrava a Guarda. */
 const opcoesDoCombatente = (sessao) => (!sessao ? {} : {
+  bloodfeast: sessao.bloodfeast,
+  vidaAtual: sessao.hpAtual,
   almaAtual: sessao.almaAtual,
   concedido: sessao.concedido,
   adaptacoes: sessao.adaptacoes,

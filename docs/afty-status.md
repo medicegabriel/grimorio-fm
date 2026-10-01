@@ -1,5 +1,31 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-10-01: THE CRIMSOM QUEEN
+
+Addon `addons/the-crimsom-queen.json`, com 15 passivas, 6 modelos de técnica
+nas versões máximas e alabarda nativa. A primitiva `bloodfeast` é a 22ª,
+ativada exclusivamente pelo pacote congelado na criatura. Escolhas ficam na
+criatura, recursos e manifestações na sessão da Ficha e do Encontro.
+
+Decisões do autor: consumir o saldo insuficiente, Bleed por ação sem consumir
+cargas, custos e sustentação padrão convertidos em PV. A propriedade incompleta
+de Mircalla recebeu a cura da nota do PDF, metade do nível arredondada para baixo
+em d10 por evento confirmado de dano de técnica. Hemofagia continua independente.
+Conversão de PE final em PV ocorre depois dos multiplicadores, passivas descontam
+PV máximo uma vez. Custos próprios têm piso 1, dano e Bleed podem zerar PV.
+
+Interface conferida no navegador: instalação, ativação e remoção sem vazamento,
+15 passivas, modelos máximos, Hemofagia reduz 30 PV, 18 Bleed por três ações perde
+54 PV e gera 54 Bloodfeast, Mircalla custa 60 PV e consome 30 Bloodfeast com BT 6.
+Correções encontradas na revisão: propriedade Duas Mãos, custo de catálogo da arma
+e uso explícito do dado impresso da alabarda, inclusive em criatura Afty.
+
+ESLint e build passaram. Testes de Bloodfeast: 36, primitivas: 48, sistema: 456.
+Suíte completa: 123 de 124 arquivos passaram. Falha anterior em
+`t-invocacoes-motor.mjs`, Livre com Motor custa 0 PE, teste espera 1.
+Nenhum commit ou push, nenhuma alteração em `src/components/`.
+Detalhes, decisões e limites de resolução da mesa em `docs/afty-crimsom-queen.md`.
+
 ## SESSÃO DE 2026-09-30: RAIO NEGRO COMPATÍVEL COM BOT DE DADOS
 
 A fórmula de Raio Negro em `afty-dano.js` voltou ao formato `(dados)/2*3`,
@@ -528,6 +554,32 @@ Regressões: `t-talentos.mjs` passou de 27 para 37 verificações. As suítes
 `t-requisitos-treino.mjs` (37) e `t-requisitos-ficha.mjs` (33) continuam verdes.
 O build de produção passou. A suíte completa ficou em 100 de 101 arquivos, com apenas a falha
 preexistente de custo da Característica Livre em `t-invocacoes-motor.mjs`.
+
+## SESSÃO DE 2026-09-18: REENCARNAÇÃO DAS TERRAS IMPURAS
+
+O addon `addons/reencarnacao-das-terras-impuras.json` foi criado a partir do texto enviado pelo
+autor. Ele traz um Funcionamento Básico com a regra estrutural da Técnica e seis modelos de
+Feitiço Personalizado: Reviver Apenas o Corpo, Restaurar Corpo e Alma, Receptáculo Temporário,
+Voto Vinculativo Forçado, Realização de Ritual e Manifestação em Massa.
+
+Todos os modelos são de Nível 0 e usam Ritual Estendido. O acervo de corpos reanimados não tem
+limite, mas os corpos sem alma são fichas de Invocação tratadas como Shikigamis e continuam presos
+ao limite simultâneo de campo. A tabela confirmada pelo autor, 2, 4, 6, 8 e 12 PE do Quarto Grau ao
+Grau Especial, já é exatamente `AFTY_INV_GRAUS.custoBase`, então o addon reutiliza o custo nativo
+dos cartões de Invocação. A Manifestação em Massa cobra a soma dos corpos trazidos ao campo.
+
+O Receptáculo Temporário explicita a CD 5 no Quarto Grau, com +5 por grau, e conserva os três
+resultados como regra narrativa. Na falha, o hospedeiro perde o controle para a alma da entidade e
+perde acesso à ficha, que fica sob controle do Mestre.
+
+Feitiços Personalizados ganharam o campo genérico `custoPETexto`. Quando preenchido, ele aparece
+na Ficha no lugar do custo padrão e o motor não aplica reduções sobre um valor que não conhece. O
+editor e o Cofre preservam o campo. Isso evita que os rituais do addon apareçam falsamente como
+gratuitos apenas por serem de Nível 0.
+
+O assert `t-reencarnacao-terras-impuras.mjs` prende a validação e instalação do pacote, os seis
+modelos, o Ritual Estendido, a tabela nativa por grau, os resultados do receptáculo, o custo textual
+e a ausência do caractere U+2014. A dúvida correspondente saiu de `docs/a-fazer.md`.
 
 ## SESSÃO DE 2026-09-17 (parte 6): A ABA DE COMBATE DIVIDIDA POR PAPEL
 

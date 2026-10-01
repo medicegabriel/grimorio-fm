@@ -45,6 +45,7 @@ import {
 import PainelDeRolagens from "./PainelDeRolagens";
 import BuscaGlobal from "./BuscaGlobal";
 import PainelDeAparencia from "./PainelDeAparencia";
+import PainelBloodfeast, { ConjuracaoBloodfeast } from "./PainelBloodfeast";
 import AbaAcoes from "./abas/AbaAcoes";
 import PainelDeAdaptacao from "./PainelDeAdaptacao";
 import PainelDoVislumbre from "./PainelDoVislumbre";
@@ -181,6 +182,7 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
      nenhuma, aparecia dando +5. Uma lista só, e a diferença cancela sozinha. */
   const opcoesDerive = useMemo(
     () => ({
+      bloodfeast: sessaoBruta.bloodfeast,
       vidaAtual: sessaoBruta.hpAtual,
       almaAtual: sessaoBruta.almaAtual,
       ultimoFeiticoDanoId: sessaoBruta.ultimoFeiticoDanoId,
@@ -562,6 +564,8 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
   const corpo = {
     acoes: () => (
       <AbaAcoes
+        bloodfeast={<PainelBloodfeast derived={derived} sessao={sessao} onSessao={atualiza} />}
+        conjuracaoBloodfeast={(f) => <ConjuracaoBloodfeast f={f} derived={derived} sessao={sessao} onSessao={atualiza} />}
         derived={derived}
         adaptacao={<PainelDeAdaptacao derived={derived} onSessao={atualiza} />}
         vislumbre={<PainelDoVislumbre derived={derived} sessao={sessao} onSessao={atualiza} />}
@@ -848,7 +852,7 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
                  primeiro. Subtrair direto pularia a casca. */
               onDelta={(n) => atualiza((s) => (n < 0 ? aplicaDano(s, -n) : aplicaCura(s, n, derived.hp)))}
             />
-            <Vital
+            {!derived.bloodfeast?.tem && <Vital
               tipo="pe" icone={Zap} rotulo={derived.recursoLabel}
               atual={sessao.peAtual} max={derived.pe} temp={peTempTotal(sessao)}
               rotuloTemp={`${derived.recursoLabel} Temporário`}
@@ -860,7 +864,7 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
               onDelta={(n) => atualiza((s) => (
                 n < 0 ? gastaPe(s, -n) : { ...s, peAtual: Math.max(0, s.peAtual + n) }
               ))}
-            />
+            />}
             <Vital
               tipo="alma" icone={Sparkles} rotulo="Alma"
               atual={sessao.almaAtual} max={derived.almaMax}

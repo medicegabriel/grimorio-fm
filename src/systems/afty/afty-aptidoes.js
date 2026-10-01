@@ -1890,13 +1890,18 @@ export function validarCatalogoAptidoes() {
  * duas nunca aparecem juntas, e Gerais fica sempre no fim.
  */
 export function abasAptidao(creature) {
+  const sangue = (creature?.addons ?? []).some((p) => p.permite?.includes("bloodfeast"));
   /* ⚠ ORIGEM ESTRUTURAL, e não a gravada na ficha: o Gêmeo que copiou da
      Maldição em Verdadeiras Origens também troca a aba (autor, 2026-08-29). */
   const ehMaldicao = origemEstrutural(creature) === "maldicao";
   const substituicao = substituicaoEnergiaReversaPorAddon(creature);
-  return APTIDAO_CATEGORIAS
+  const categorias = sangue && origemEstrutural(creature) !== "maldicao"
+    ? [...APTIDAO_CATEGORIAS.filter((c) => c.id !== "maldicao"),
+      { ...CAT_BY_ID.maldicao, tab: "Anatomia", aptidoesPermitidas: AFTY_APTIDOES.filter((a) => a.subcategoria === "mal_anatomia").map((a) => a.id) }]
+    : APTIDAO_CATEGORIAS;
+  return categorias
     // Maldição nunca entra pela ordem natural: só pela troca abaixo.
-    .filter((c) => c.id !== "maldicao")
+    .filter((c) => c.id !== "maldicao" || (sangue && !ehMaldicao))
     .map((c) => {
       if (c.id !== "energia_reversa") return c;
       if (substituicao) {

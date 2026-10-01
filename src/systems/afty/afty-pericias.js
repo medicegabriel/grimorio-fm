@@ -753,7 +753,6 @@ export function resolveDano(creature, ctx = {}) {
   /* ⚠ NA FICHA DE JOGADOR O DANO É O DA ARMA, e não a fórmula da criatura
      (autor, 2026-08-31). Ver `danoPorArma` em afty-sistema.js e a escada em
      afty-niveis-dano.js. */
-  const danoPorArma = regraDo(ctx.sistema, "danoPorArma") === "player";
 
   // `alvo` aqui é sempre a LISTA de escopos da fonte (ver escoposDaArma): uma
   // arma responde pelo id, por "arma", pela categoria, pelo grupo e por cada
@@ -856,7 +855,8 @@ export function resolveDano(creature, ctx = {}) {
     return linha;
   };
 
-  const monta = (escopos, atributo, grauArma, margemBase, dadoBase = null, fonteDado = null) => {
+  const monta = (escopos, atributo, grauArma, margemBase, dadoBase = null, fonteDado = null, usarDadoArma = false) => {
+    const danoPorArma = usarDadoArma || regraDo(ctx.sistema, "danoPorArma") === "player";
     const dadosExtras = Math.max(0, Math.trunc(canal("dadosDano", escopos)));
     const detalhesDados = ef ? detalhesDoCanalEscopos(ef, "dadosDano", escopos) : [];
     const dadosAtroz = detalhesDados
@@ -1225,9 +1225,10 @@ export function resolveDano(creature, ctx = {}) {
        escopo (o Corpo Treinado mira `prop:marcial`), então a Marcial sem a
        propriedade Fineza (Bastão, Nunchaku Pesado) para de ficar com Destreza no
        acerto e Força no dano. */
-    const atributo = usaTecnicas
+    const atributoDaArma = AFTY_ATTRS.some((x) => x.key === a.atributoAtaque) ? a.atributoAtaque : null;
+    const atributo = atributoDaArma ?? (usaTecnicas
       ? atributoTecnicas
-      : atributoDe({ ...a, fineza: a.fineza || canal("finezaAtaque", escopos) > 0 });
+      : atributoDe({ ...a, fineza: a.fineza || canal("finezaAtaque", escopos) > 0 }));
     const linhaArma = {
       id: a.id, nome: a.nome, fonte: "arma",
       alcance: alcanceDe(a.alcance, a.alcanceBonusCorpo, canal("alcanceArma", escopos)), propriedades,
@@ -1236,12 +1237,12 @@ export function resolveDano(creature, ctx = {}) {
       elegivelDedicada: !!a.elegivelDedicada,
       /* O dado impresso da arma, já resolvido pelo manejo escolhido na ficha
          (uma mão ou duas, nas versáteis). Só o jogador o usa. */
-      ...monta(escopos, atributo, a.grauArma, a.critico ?? 20, a.dadoArma ?? null, "Dano da Arma"),
+      ...monta(escopos, atributo, a.grauArma, a.critico ?? 20, a.dadoArma ?? null, "Dano da Arma", a.usarDadoArma),
       // A ficha escolhe entre o ataque físico da categoria e o Ataque
       // Amaldiçoado. O atributo do dano continua vindo da arma.
       ...acertoDe(a.ataqueId ?? (a.distancia ? "distancia" : "corpo"),
         Math.max(0, Math.trunc(Number(a.acertoGrau) || 0)), escopos, a.fontesAcerto ?? [],
-        usaTecnicas ? atributoTecnicas : null,
+        atributoDaArma ?? (usaTecnicas ? atributoTecnicas : null),
         armaDecide ? !!a.treinada : null),
     };
     entradas.push(aplicaCriticoDaArma(linhaArma, propriedades, a.criticoExtraDados));

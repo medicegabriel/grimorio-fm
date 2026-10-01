@@ -402,3 +402,19 @@ somente nas trilhas que já possuem ao menos Nível 1. Barreira e Domínio não 
 
 > **Status:** `afty-derive.js` e `createBlankAfty` já implementam TODAS as fórmulas acima
 > (menos os itens ADIADOS). Verificado com valores conferidos à mão.
+
+## Bloodfeast (2026-10-01)
+
+Com a primitiva bloodfeast, PE utilizável é zero. PV máximo recebe três vezes
+PE final após todas as fontes e multiplicadores, depois desconta custoPV das
+passivas selecionadas. A conversão não volta a passar pelos multiplicadores de
+PV. Custos e sustentação em PE multiplicam por três. Custo próprio limita perda
+a PV atual menos um, excedentes completos de três geram um ponto de Sanidade.
+Dano inimigo e perda por Bleed não usam esse piso. Bleed perde cargas vezes ações,
+sem consumir cargas, e somente PV efetivamente perdido gera Bloodfeast.
+Limite aplicado pelo causador: min(80, BT vezes 10), nível 30 usa 99.
+Ciclagem guarda metade do PV efetivamente pago, arredondada para baixo, após TR
+Fortitude CD 10 mais quatro vezes nível. Regeneração abaixo da metade: 2d8 mais
+Constituição. Poder do Sangue usa metade do BT abaixo da metade dos PV, BT inteiro
+abaixo de um quarto. Mircalla manifestada cura floor(nível/2)d10 por evento de
+dano de técnica confirmado, independente de Hemofagia 7d8.

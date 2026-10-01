@@ -176,6 +176,7 @@ import {
   contaDaArmaPorNivel, DADOS_PROPRIEDADE, GRUPO_ARMA_DE_FOGO, NIVEIS_PROPRIEDADE, novaReceitaNiveis, OBSERVACOES_ARMAS,
   PESADA_VALORES, PROPRIEDADES_FORA_DO_GUIA, tabelaDeAlcance, TEXTO_ARMA_DE_FOGO, TEXTO_ARMAS,
 } from "./afty-criacao-equipamentos-armas";
+import BloodfeastCard from "./ui/BloodfeastCard";
 import VislumbreCard from "./ui/VislumbreCard";
 import OlhosAgulhaCard from "./ui/OlhosAgulhaCard";
 import { habilidadeOcularAgulha } from "./afty-olhos-agulha";
@@ -1662,7 +1663,7 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
               removerPericia={removerPericia}
             />
           )}
-{tabAtiva === "habilidades" && <TabHabilidades draft={draft} derived={derived} patchCore={patchCore} toggleArmaDedicada={toggleArmaDedicada} addFeitico={addFeitico} updateFeitico={updateFeitico} removeFeitico={removeFeitico} patchFeitico={patchFeitico} duplicarFeitico={duplicarFeitico} setReducoesCustoFeitico={setReducoesCustoFeitico} setTreinoEscolhaFeiticos={setTreinoEscolhaFeiticos} toggleEstiloTabela={toggleEstiloTabela} addEstiloEspecial={addEstiloEspecial} removeEstilo={removeEstilo} patchEstilo={patchEstilo} addFuncionamento={addFuncionamento} removeFuncionamento={removeFuncionamento} patchFuncionamento={patchFuncionamento} setGeralVezes={setGeralVezes} addDominio={addDominio} removeDominio={removeDominio} patchDominio={patchDominio} setDominioAtivo={setDominioAtivo} sistema={sistema} />}
+{tabAtiva === "habilidades" && <TabHabilidades draft={draft} derived={derived} patch={patch} patchCore={patchCore} toggleArmaDedicada={toggleArmaDedicada} addFeitico={addFeitico} updateFeitico={updateFeitico} removeFeitico={removeFeitico} patchFeitico={patchFeitico} duplicarFeitico={duplicarFeitico} setReducoesCustoFeitico={setReducoesCustoFeitico} setTreinoEscolhaFeiticos={setTreinoEscolhaFeiticos} toggleEstiloTabela={toggleEstiloTabela} addEstiloEspecial={addEstiloEspecial} removeEstilo={removeEstilo} patchEstilo={patchEstilo} addFuncionamento={addFuncionamento} removeFuncionamento={removeFuncionamento} patchFuncionamento={patchFuncionamento} setGeralVezes={setGeralVezes} addDominio={addDominio} removeDominio={removeDominio} patchDominio={patchDominio} setDominioAtivo={setDominioAtivo} sistema={sistema} />}
           {tabAtiva === "especializacoes" && <TabEspecializacoes draft={draft} derived={derived} setEspecializacoes={setEspecializacoes} toggleHabilidade={toggleHabilidade} setHabilidadeVezes={setHabilidadeVezes} toggleEscolhaHabilidade={toggleEscolhaHabilidade} toggleTalento={toggleTalento} setTalentoVezes={setTalentoVezes} toggleEscolhaTalento={toggleEscolhaTalento} setMelhoriaVezes={setMelhoriaVezes} toggleLendaria={toggleLendaria} toggleEscolhaAltoNivel={toggleEscolhaAltoNivel} patchTecnicasCombate={patchTecnicasCombate} patchTalentosConfig={patchTalentosConfig} />}
           {tabAtiva === "aptidoes" && <TabAptidoes draft={draft} derived={derived} setAptidaoNivel={setAptidaoNivel} toggleAptidao={toggleAptidao} setAptidaoOpcao={setAptidaoOpcao} setAptidaoVezes={setAptidaoVezes} setAptidaoOpcaoRepetida={setAptidaoOpcaoRepetida} />}
           {tabAtiva === "invocacoes" && <TabInvocacoes draft={draft} derived={derived} addInvocacao={addInvocacao} removeInvocacao={removeInvocacao} duplicarInvocacao={duplicarInvocacao} moverInvocacao={moverInvocacao} patchInvocacao={patchInvocacao} patchInvocacaoAttr={patchInvocacaoAttr} efeitosApi={efeitosApi} addHorda={addHorda} removeHorda={removeHorda} patchHorda={patchHorda} addQuimera={addQuimera} removeQuimera={removeQuimera} patchQuimera={patchQuimera} />}
@@ -3087,7 +3088,7 @@ function DominioCard({ derived, addDominio, removeDominio, patchDominio, setDomi
   );
 }
 
-function TabHabilidades({ draft, derived, patchCore, toggleArmaDedicada, addFeitico, updateFeitico, removeFeitico, patchFeitico, duplicarFeitico, setReducoesCustoFeitico, setTreinoEscolhaFeiticos, toggleEstiloTabela, addEstiloEspecial, removeEstilo, patchEstilo, addFuncionamento, removeFuncionamento, patchFuncionamento, setGeralVezes, addDominio, removeDominio, patchDominio, setDominioAtivo, sistema }) {
+function TabHabilidades({ draft, derived, patch, patchCore, toggleArmaDedicada, addFeitico, updateFeitico, removeFeitico, patchFeitico, duplicarFeitico, setReducoesCustoFeitico, setTreinoEscolhaFeiticos, toggleEstiloTabela, addEstiloEspecial, removeEstilo, patchEstilo, addFuncionamento, removeFuncionamento, patchFuncionamento, setGeralVezes, addDominio, removeDominio, patchDominio, setDominioAtivo, sistema }) {
   const dominio = (
     <DominioCard
       derived={derived}
@@ -3154,9 +3155,10 @@ function TabHabilidades({ draft, derived, patchCore, toggleArmaDedicada, addFeit
 
      Lugar pedido pelo autor: abaixo do Funcionamento Básico e acima dos
      Feitiços. Nos dois ramos que não têm Funcionamento Básico ele abre a aba. */
-  const vislumbre = derived.vislumbre?.tem
-    ? <VislumbreCard vislumbre={derived.vislumbre} />
-    : null;
+  const vislumbre = <>
+    <BloodfeastCard draft={draft} derived={derived} onChange={(bloodfeast) => patch({ bloodfeast })} />
+    {derived.vislumbre?.tem && <VislumbreCard vislumbre={derived.vislumbre} />}
+  </>;
   const olhosAgulha = <OlhosAgulhaCard derived={derived} patchCore={patchCore} addFeitico={addFeitico} updateFeitico={updateFeitico} removeFeitico={removeFeitico} />;
   const feiticosCard = derived.feiticos?.mostraCard ? (
     <FeiticosCard
@@ -5967,6 +5969,15 @@ function FeiticoPersonalizadoEditor({ feitico, onPatch }) {
       <div>
         <FieldLabel>Resolução</FieldLabel>
         <TextInput value={f.resolucaoTexto || ""} onChange={(v) => onPatch({ resolucaoTexto: v })} placeholder="Resolução" />
+      </div>
+
+      <div>
+        <FieldLabel>Custo em PE</FieldLabel>
+        <TextInput
+          value={f.custoPETexto || ""}
+          onChange={(v) => onPatch({ custoPETexto: v })}
+          placeholder="Vazio usa o custo do Nível"
+        />
       </div>
 
       <BoolChip ativo={f.comCd !== false} onToggle={() => onPatch({ comCd: f.comCd === false })}>CD</BoolChip>

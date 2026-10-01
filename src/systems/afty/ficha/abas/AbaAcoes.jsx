@@ -492,7 +492,7 @@ function ControlesRitual({
 }
 
 function LinhaFeitico({
-  f: base, rolar, destacado, comLiberacao,
+  f: base, rolar, destacado, comLiberacao, conjuracaoBloodfeast,
   onRitual, onDesativarRitual, onIniciarRitualEstendido, onIniciarRitualSemTeste,
   onConcluirPreparacaoRitual, onCancelarRitual, onFinalizarRitual, onEncerrarRitual,
 }) {
@@ -588,7 +588,9 @@ function LinhaFeitico({
           {f.valor && (
             <span className="afty-feitico-valor" title={`${f.valorLabel}: ${f.valor}`}>{f.valor}</span>
           )}
-          {f.custoPE != null && (
+          {f.custoPETexto ? (
+            <span className="afty-feitico-custo" title="Custo definido pela regra do Feitiço">{f.custoPETexto}</span>
+          ) : f.custoPE != null && (
             <span className="afty-feitico-custo" title={tituloCustoFeitico(f)}>{f.custoPE} PE</span>
           )}
         </span>
@@ -647,6 +649,7 @@ function LinhaFeitico({
             cartão tem dois donos (a Ficha e o painel de Encontros) com larguras
             bem diferentes. Seis propriedades viram duas filas em 1440px e seguem
             empilhando no telefone. */}
+        {conjuracaoBloodfeast?.(f)}
         {(propriedadesFixas.length > 0 || f.custoVidaAtivacao) && (
           <dl className="afty-feitico-propriedades">
             {propriedadesFixas.map((propriedade) => (
@@ -1033,6 +1036,7 @@ export default function AbaAcoes({
      parar aqui a pedido do autor (2026-09-09): *"para eu não precisar ir para
      Buffs o tempo inteiro"*. Descobrir os olhos é Ação Livre, e a Fadiga corre
      por turno: as duas coisas se fazem no meio da rodada. */
+  bloodfeast = null, conjuracaoBloodfeast = null,
   vislumbre = null,
   olhosAgulha = null,
   manipulacaoCeu = null,
@@ -1061,6 +1065,7 @@ export default function AbaAcoes({
     <div className="space-y-3">
       {adaptacao}
       {/* Antes do Rápido: os olhos mudam o custo em PE de tudo que vem abaixo. */}
+      {bloodfeast}
       {vislumbre}
       {olhosAgulha}
       {manipulacaoCeu}
@@ -1169,6 +1174,7 @@ export default function AbaAcoes({
         <Secao titulo="Feitiços">
           {feiticos.map((f) => (
             <LinhaFeitico
+              conjuracaoBloodfeast={conjuracaoBloodfeast}
               key={f.id}
               f={f}
               rolar={rolar}
