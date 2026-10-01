@@ -308,6 +308,18 @@ linha valer para a invocação inteira.
 
 Detalhe completo em `docs/afty-invocacoes.md`. Assert: `asserts/t-invocacao-escrita.mjs`.
 
+### As variáveis de invocação e de mesa (2026-10-01)
+
+A atualização de Controlador e Invocações acrescentou estas, com o motivo de cada uma em
+`docs/afty-invocacoes.md`:
+
+| Variável | Onde | O que vale |
+|---|---|---|
+| `tipo_shikigami_puro`, `tipo_tecnica`, `tipo_maldicao`, `tipo_marionete`, `tipo_corpo` | contexto da invocação | 1 no tipo dela, um sinal por tipo. Código oficial novo usa só estes |
+| `tipo_shikigami` | contexto da invocação | ⚠ LEGACY (DA-05): liga no Shikigami e na Maldição, o sentido antigo. Fica para addon antigo que o escreveu, e código novo não o lê |
+| `marc_concentrar_poder` | contexto da invocação | a marca, e, na mesa, só com UMA invocação no total em campo (DA-15, condição `unicaEmCampo` do marcador). No criador segue acesa |
+| `invocacoes_em_campo` | contexto da criatura | quantas invocações ocupam vaga em campo agora (a Horda, a Quimera e o Corpo de Múltiplos Núcleos contam 1, o Mecha 2). Só existe com mesa: no criador vale 0. É o número do Controle Sintonizado |
+
 ## Notas
 - Identificadores são normalizados (minúsculas, sem acento): `Constituição` e `constituicao` são a mesma variável.
 - As expressões leem os valores **base** (sem os próprios buffs) + os recursos atuais — então um efeito que modifica Defesa não lê a Defesa já modificada (evita laço).

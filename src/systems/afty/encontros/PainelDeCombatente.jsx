@@ -13,8 +13,12 @@ import {
   aplicaDanoNaAlma, curaAlma, defineAlma,
   concedeNaSessao, removeConcessao, peTempTotal, gastaPe, pvTempTotal,
   sofreGolpeNaGuarda, desfazGolpeNaGuarda, encerraGuarda, defineCondicoes,
-  estadoDaInvocacao, poeInvocacaoEmCampo, alternaAuxilioInvocacao,
-  aplicaDanoInvocacao, aplicaCuraInvocacao, defineVitalInvocacao, invocacaoDaMesa,
+  estadoDaInvocacao, alternaAuxilioInvocacao,
+  aplicaCuraInvocacao, defineVitalInvocacao, invocacaoDaMesa,
+  entradaDaInvocacao, invocaNaMesa, saiDeCampo, recolheInvocacao, reconstroiInvocacao,
+  alternaAuraInvocacao, defineEmTarefa, defineFormaInvocacao,
+  alternaOpcaoDeEntrada, ativaReservaInvocacao, pagaManutencaoCorpo,
+  aplicaDanoNaMesa, formaMecha, separaMecha, trocaNucleo, mechaPermitido, emCombateNaSessao,
   preparoDe, preparoTempDe, alteraPreparo, definePreparo,
   alteraTreinoAtivo, alteraEstadoCombate, aplicaPatchCombate,
   usosGastosDe, marcaUso,
@@ -147,13 +151,31 @@ export default function PainelDeCombatente({
     // A Quimera entra pelo mesmo id da Ficha Final. Ver `invocacaoDaMesa`.
     const pvDe = (id) => invocacaoDaMesa(derived, id)?.pv ?? 0;
     const almaDe = (id) => invocacaoDaMesa(derived, id)?.almaMax ?? 0;
+    // As regras do tipo, que decidem como cada um cai a 0 PV (2026-09-30).
+    const regrasDe = (id) => invocacaoDaMesa(derived, id)?.regras;
     return {
-      emCampo: (id, v) => onSessao((s) => poeInvocacaoEmCampo(s, id, v, pvDe(id))),
+      // Entrar em campo desconta o PE do combatente, igual à Ficha Final.
+      entrar: (id) => onSessao((s) => invocaNaMesa(s, derived, id)),
+      sair: (id) => onSessao((s) => saiDeCampo(s, id)),
+      recolher: (id) => onSessao((s) => recolheInvocacao(s, id)),
+      reconstruir: (id) => onSessao((s) => reconstroiInvocacao(s, id, pvDe(id))),
       auxilio: (id, acaoId, on) => onSessao((s) => alternaAuxilioInvocacao(s, id, acaoId, on)),
-      dano: (id, n, max) => onSessao((s) => aplicaDanoInvocacao(s, id, n, max)),
-      cura: (id, n, max) => onSessao((s) => aplicaCuraInvocacao(s, id, n, max)),
+      aura: (id, caracId, on) => onSessao((s) => alternaAuraInvocacao(s, id, caracId, on)),
+      forma: (id, forma) => onSessao((s) => defineFormaInvocacao(s, id, forma)),
+      tarefa: (id, on) => onSessao((s) => defineEmTarefa(s, id, on)),
+      opcaoEntrada: (id, opcaoId, on) => onSessao((s) => alternaOpcaoDeEntrada(s, id, opcaoId, on)),
+      reserva: (modo) => onSessao((s) => ativaReservaInvocacao(s, modo)),
+      manter: (id) => onSessao((s) => pagaManutencaoCorpo(
+        s, id, invocacaoDaMesa(derived, id)?.duracao?.manutencao ?? 0,
+      )),
+      // O roteador da mesa: Horda, Quimera e Mecha caem do jeito deles (Etapa 9).
+      dano: (id, n) => onSessao((s) => aplicaDanoNaMesa(s, derived, id, n)),
+      formarMecha: (a, b) => onSessao((s) => formaMecha(s, derived, a, b)),
+      separarMecha: () => onSessao((s) => separaMecha(s)),
+      trocarNucleo: (id) => onSessao((s) => trocaNucleo(s, derived, id)),
+      cura: (id, n, max) => onSessao((s) => aplicaCuraInvocacao(s, id, n, max, regrasDe(id))),
       vital: (id, qual, v) => onSessao((s) => defineVitalInvocacao(
-        s, id, qual, v, qual === "alma" ? almaDe(id) : pvDe(id),
+        s, id, qual, v, qual === "alma" ? almaDe(id) : pvDe(id), regrasDe(id),
       )),
     };
   }, [onSessao, derived]);
@@ -471,6 +493,10 @@ export default function PainelDeCombatente({
           rolar={rolar}
           destaque={destaque}
           estadoDe={(id) => estadoDaInvocacao(sessao, id)}
+          entradaDe={(inv) => entradaDaInvocacao(sessao, inv)}
+          mechaDe={(a, b) => mechaPermitido(sessao, derived, a, b)}
+          emCombate={emCombateNaSessao(sessao)}
+          reserva={sessao.reservaInvocacao}
           acoes={acoesDeInvocacao}
         />
       )}

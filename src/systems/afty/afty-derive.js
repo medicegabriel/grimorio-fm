@@ -55,6 +55,8 @@ import { efeitosDeModificacoesCorporais } from "./afty-modificacoes-corporais";
 import { resolveTita } from "./afty-tita";
 import { efeitosDeTreinoEspecial } from "./afty-treinos-especiais";
 import { resolveNiveisAptidao, trilhasDaCriatura, getAptidao, AFTY_APTIDOES } from "./afty-aptidoes";
+// A contagem de invocações em campo (2026-09-30). Módulo FOLHA, sem ciclo.
+import { contaInvocacoesEmCampo } from "./afty-invocacoes-tipos";
 import { resolveCaracteristicasAmaldicoadas } from "./afty-caracteristicas-amaldicoadas";
 import {
   efeitosDoDominio, efeitosDeAptidaoDoDominio, beneficiosRitualDoDominio,
@@ -84,12 +86,13 @@ import {
 } from "./afty-alto-nivel";
 import {
   resolveInvocacoesList, resolveHordasList, resolveQuimerasList, efeitosDeInvocacao, efeitosInvocacaoEscritos,
-  INV_EFEITO_CANAIS,
+  INV_EFEITO_CANAIS, estadoDaTecnicaInata,
+  resolveMultiplosNucleosList, idsDeNucleos, resolveMecha,
 } from "./afty-invocacoes";
 import { armasTransformaveis, efeitosArmasTransformaveis } from "./afty-armas-transformaveis";
 import {
   resolveEquipamentos, resolveCarga, grauFeiticeiro, alcanceDaArma, propriedadesDaArma,
-  armaTreinadaPor,
+  armaTreinadaPor, ARMAS,
   podeSerArmaDedicada, grauDoRank, efeitosEspeciaisDeArma, catalogoDoTipo,
   TIPOS_DANO, CATEGORIAS_DANO, tiposDeDanoDaCategoria, itensEquipados, ehFaixas,
   SINTONIZADA_ID, ESTADO_SINTONIZADA, aplicarSintonizadaNoDano,
@@ -277,6 +280,15 @@ export function deriveAfty(creature, opcoes = {}) {
     }
   }
   const escolhasConcedidas = escolhasDoConcedido(concessoesComImitacao);
+  /* A TÉCNICA INATA E O FUNDAMENTO (DA-07, 2026-09-30). Com o Fundamento morto, a
+     Técnica Inata fica BLOQUEADA de verdade: os efeitos do Funcionamento e das
+     Passivas saem do Motor, e cada Feitiço sai marcado como indisponível. Nada é
+     apagado da ficha. Com o Fundamento só fora de campo, a mesa marca os
+     Feitiços e o resto continua (ver docs/a-fazer.md). */
+  const tecnicaInata = estadoDaTecnicaInata(creature, opcoes.invocacoes ?? null);
+  // O Funcionamento principal sai como "tecnica", os outros como "funcionamento:<id>".
+  const daTecnicaInata = (e) => /^(funcionamento|feitico):|^tecnica$/.test(String(e?.origem ?? ""));
+  const semTecnicaPerdida = (lista) => (tecnicaInata.perdida ? lista.filter((e) => !daTecnicaInata(e)) : lista);
   const origensDiretasDaAdaptacao = new Set(origensDiretasDasAdaptacoes(creature, opcoes.adaptacoes));
   const aplicarDiretoDaAdaptacao = (efeito) => {
     if (!efeito?.quando || !origensDiretasDaAdaptacao.has(efeito.origem)) return efeito;
@@ -1027,12 +1039,12 @@ export function deriveAfty(creature, opcoes = {}) {
     // Funcionamento Básico da técnica: os únicos efeitos ESCRITOS pelo jogador,
     // porque a técnica é única no mundo e nenhum catálogo a cobre. Entram no
     // mesmo bolo, e os filtros de estágio abaixo roteiam pelo canal.
-    ...efeitosDaTecnica(creature),
+    ...semTecnicaPerdida(efeitosDaTecnica(creature)),
     ...efeitosDosBuffsNativos(),
     ...efeitosArmasTransformaveis(armasTransformaveis(creature, catalogoDoTipo("arma", creature), bt)),
     // Passivos / Características criados pelo jogador usam o mesmo Motor, mas
     // entram na família exclusiva própria dos Feitiços Passivos.
-    ...efeitosDosPassivos(creature),
+    ...semTecnicaPerdida(efeitosDosPassivos(creature)),
     // Buffs de MESA, escritos na Ficha Final durante o jogo. Mesmo shape do
     // Funcionamento Básico, e por isso entram na mesma linha. Só existem quando
     // a Ficha injeta `buffsSessao`: o criador nunca os vê.
@@ -1550,8 +1562,23 @@ export function deriveAfty(creature, opcoes = {}) {
   ]),
   );
 
+  /* QUANTAS INVOCAÇÕES ESTÃO EM CAMPO (2026-09-30, Etapa 7). Só existe com mesa
+     (Ficha e Encontro, `opcoes.invocacoes`); no criador é `null`. Lê o Controle
+     Sintonizado (+1 em acerto e dano por invocação em campo) e o Concentrar Poder
+     (só com uma em campo). A Quimera conta 1 (decisão do autor). */
+  const idsDaMesa = [
+    ...(Array.isArray(creature?.invocacoes) ? creature.invocacoes : []).map((i) => i?.id),
+    ...(Array.isArray(creature?.quimeras) ? creature.quimeras : []).map((q) => `quimera:${q?.id}`),
+    /* As Hordas e os Corpos de Múltiplos Núcleos contam como UMA invocação em
+       campo cada (2026-10-01, Etapa 9). O Mecha não entra: as duas Marionetes
+       dele seguem ativas, e é assim que ele conta como duas. */
+    ...(Array.isArray(creature?.hordas) ? creature.hordas : []).map((h) => `horda:${h?.id}`),
+    ...(Array.isArray(creature?.multiplosNucleos) ? creature.multiplosNucleos : []).map((g) => `nucleos:${g?.id}`),
+  ].filter(Boolean);
+  const invocacoesEmCampo = opcoes.invocacoes ? contaInvocacoesEmCampo(opcoes.invocacoes, idsDaMesa) : null;
+
   const montarCtx = (attrs, mods) => buildCriaturaDslContext({
-    nd, bt, escalaAtaque, grauRank: grau.rank, patamar, tipo, almaAtual: almaAtualDsl,
+    nd, bt, escalaAtaque, grauRank: grau.rank, patamar, tipo, almaAtual: almaAtualDsl, invocacoesEmCampo,
     origemContadoresVars,
     irmaoMorto: !!creature?.core?.origem?.irmaoMorto,
     iniciativaIrmao: creature?.core?.origem?.iniciativaIrmao,
@@ -2892,9 +2919,13 @@ export function deriveAfty(creature, opcoes = {}) {
       };
     }
   };
+  /* A Técnica Inata bloqueada (DA-07): cada Feitiço continua na lista, marcado
+     com o motivo, e a tela o desenha indisponível. Nada é apagado. */
+  const marcaBloqueio = (f) => (tecnicaInata.bloqueada ? { ...f, bloqueado: tecnicaInata.motivo } : f);
   feiticos = {
     ...feiticos,
-    lista: (feiticos.lista ?? []).map(comTesteDeRitual),
+    tecnicaInata,
+    lista: (feiticos.lista ?? []).map(comTesteDeRitual).map(marcaBloqueio),
     /* ⚠ FUNÇÃO, e não valor. A Liberação Máxima é escolhida na HORA DA
        CONJURAÇÃO, então ela não tem como estar na lista pré-calculada: o jogador
        declara as melhorias na mesa e a Ficha pede a versão liberada daquele
@@ -3230,7 +3261,17 @@ export function deriveAfty(creature, opcoes = {}) {
      uma Habilidade de Controlador continua sendo o nível REAL da
      Especialização, em `avaliarAcessoHabilidade`. O ND diz o quanto ela escala,
      e não se ela existe. */
-  const nivelControlador = nd;
+  /* ⚠ DOIS NÍVEIS DE CONTROLADOR, com nomes que não se confundem (decisão do
+     autor, 2026-09-30):
+       nivelEscalonamentoControlador  o ND, o que os efeitos e o roster escalam
+                                      (decisão de 2026-09-04, abaixo)
+       nivelControladorReal           o nível REAL na Especialização, para
+                                      pré-requisito escrito como nível de classe
+                                      ("5 níveis em Controlador", "nível 17")
+     O `nivelControlador` de sempre continua sendo o de escalonamento. */
+  const nivelEscalonamentoControlador = nd;
+  const nivelControladorReal = nivelEspec.controlador?.real ?? 0;
+  const nivelControlador = nivelEscalonamentoControlador;
   // Efeitos estáticos das Habilidades de Controlador escolhidas, aplicados a
   // TODAS as invocações do dono (via Motor de Automação, ver afty-habilidades.js).
   const escolhasMapa = habilidades.escolhas?.mapa ?? {};
@@ -3256,7 +3297,7 @@ export function deriveAfty(creature, opcoes = {}) {
        marca com `escopo: "invocacao"`. As quatro fontes acima são catálogo, e
        até aqui nada escrito à mão alcançava um shikigami. Ver
        `efeitosInvocacaoEscritos` em afty-invocacoes.js. */
-    ...efeitosInvocacaoEscritos(creature),
+    ...semTecnicaPerdida(efeitosInvocacaoEscritos(creature)),
   ];
   // MARCADORES: uma Habilidade que vale só para ALGUMAS invocações (Concentrar
   // Poder, as 4 Melhorias, Fantoche Supremo, Companheiro, Econômicas) entra por
@@ -3291,7 +3332,21 @@ export function deriveAfty(creature, opcoes = {}) {
     treinoEscolhaFeiticos: creature?.treinoEscolhaFeiticos,
   });
   const donoInvoc = {
-    nd, bt, nivelControlador,
+    nd, bt, nivelControlador, nivelControladorReal,
+    /* As invocações em campo agora (mesa), ou `null` no criador. Ver o
+       `invocacoesEmCampo` lá em cima e a condição do Concentrar Poder. */
+    invocacoesEmCampo,
+    /* Controle Aprimorado (E-04, 2026-09-30): "você pode utilizar Aptidões
+       Amaldiçoadas das categorias Controle e Leitura a partir de suas Invocações
+       [...] entretanto, não é possível utilizar Punho Divergente e Emoção da
+       Pétala Decadente". A lista sai para a ficha da invocação mostrar. */
+    aptidoesPelaInvocacao: controle.controleAprimorado
+      ? aptidoesIds
+        .map((id) => getAptidao(id))
+        .filter((a) => a?.categoria === "controle_leitura"
+          && a.id !== "punho_divergente" && a.id !== "emocao_da_petala_decadente")
+        .map((a) => ({ id: a.id, nome: a.nome }))
+      : [],
     efeitos: efeitosInvoc,
     marcadores,
     overridesPorInvocacao,
@@ -3311,14 +3366,54 @@ export function deriveAfty(creature, opcoes = {}) {
        poder ser trazida como Ação Livre. */
     apogeuEstilo: controle.estilo ?? null,
     apice: controle.apice ?? false,
+    /* Os tipos de dano a que algum FEITIÇO PASSIVO do dono dá Resistência. É o
+       requisito da Característica Resistência da invocação (Adicionais: "Possuir
+       um Feitiço Passivo que garante Resistência, a resistência deve ser a mesma
+       da passiva"). O Feitiço é do dono (decisão do autor, 2026-09-30). */
+    /* As armas em que o dono é treinado: o requisito da Forma de Arma da invocação
+       (Adicionais: "o invocador ser Treinado na arma escolhida", 2026-09-30). */
+    armasTreinadas: ARMAS.filter((a) => armaTreinadaPor(a, treinamentosEquipamento.armas)).map((a) => a.id),
+    resistenciasDePassiva: [...new Set(semTecnicaPerdida(efeitosDosPassivos(creature))
+      .filter((e) => e.canal === "resistenciaDano" && e.alvo)
+      .map((e) => e.alvo))],
+    /* Os números do dono que os tipos especiais leem (2026-09-30, Etapa 8): o
+       grau dele (a refeição do Corpo Biológico, "considerando a BT de seu
+       Criador"), o CL (a duração do Corpo, PV-01), o mod de Presença (o Nível de
+       Aptidão da Maldição) e os TRs (a Marionete manda Vontade e Astúcia ao
+       invocador). `fundamentos` conta as Técnicas marcadas, para o aviso. */
+    grauRankDono: grau.rank,
+    /* Os compostos (2026-10-01, Etapa 9): o limite em campo (o teto de membros de
+       uma Horda), a Hoste Amaldiçoada, os núcleos (que não compõem Horda) e o
+       tamanho do dono, que já existe (PV-19), para o Mecha "maior que o
+       Controlador". */
+    limiteCampo: controle.ativo ? controle.limiteCampo : undefined,
+    hosteAmaldicoada: habilidades.efetivas.includes("ctr_hoste_amaldicoada"),
+    nucleosIds: idsDeNucleos(creature?.multiplosNucleos),
+    tamanhoDono: tamanho.value,
+    clControlador: aptidao.efetivo?.cl ?? 0,
+    modPresenca: modByAttr.presenca ?? 0,
+    trsDoDono: Object.fromEntries((testes.resistencias ?? [])
+      .map((r) => [r.value, { bonus: r.bonus, prof: r.prof ?? null }])),
+    fundamentos: tecnicaInata.fundamentoIds.length,
     /* O estado de MESA de cada invocação (em campo, auxílios ligados). Vem por
        `opcoes` e nunca pela criatura, pela mesma razão da concessão: é sessão,
        e o rascunho automático do criador não pode gravá-lo na ficha. */
     sessaoInvocacoes: opcoes.invocacoes,
   };
-  const invocacoes = { ...resolveInvocacoesList(creature?.invocacoes, donoInvoc), controle };
+  const invocacoes = {
+    ...resolveInvocacoesList(creature?.invocacoes, donoInvoc), controle,
+    // Os dois níveis de Controlador, com nomes distintos (DA-13, 2026-09-30).
+    nivelControladorReal, nivelEscalonamentoControlador,
+    // A Hoste Amaldiçoada, para o criador oferecer o par de hordas (Etapa 9).
+    hosteAmaldicoada: donoInvoc.hosteAmaldicoada,
+  };
   const hordas = resolveHordasList(creature?.hordas, creature?.invocacoes, donoInvoc);
   const quimeras = resolveQuimerasList(creature?.quimeras, creature?.invocacoes, donoInvoc);
+  /* Os Corpos de Múltiplos Núcleos e o Mecha (2026-10-01, Etapa 9). O Mecha é da
+     SESSÃO (a linha `mecha`), e só existe com a mesa. */
+  const multiplosNucleos = resolveMultiplosNucleosList(creature?.multiplosNucleos, creature?.invocacoes, donoInvoc);
+  const linhaMecha = opcoes.invocacoes?.mecha;
+  const mecha = linhaMecha?.estado === "ativa" ? resolveMecha(linhaMecha, invocacoes.lista) : null;
 
   // Focos de interlúdio (orçamento de Treinamento) = ND + Outros.
   // "Outros" = bônus de poderes que concedem treinos (sistema futuro),
@@ -3823,6 +3918,8 @@ export function deriveAfty(creature, opcoes = {}) {
     resistenciaProf: resistenciaProfMapa,
     periciaOficios: periciaOficiosMapa,
     feiticos,             // { nivelMax, gastos, cdBase } — o orçamento é o de baixo
+    // A Técnica Inata e o Fundamento (DA-07): bloqueio, motivo e a perda a gravar.
+    tecnicaInata,
     // ⚠ O contexto CRU do DSL, exposto para o seletor de variáveis do Motor
     // (`vocabularioDsl` em afty-dsl-vocabulario.js). Sai cru de propósito: o
     // agrupamento custa uma varredura das ~663 chaves, e o `deriveAfty` roda por
@@ -3876,6 +3973,8 @@ export function deriveAfty(creature, opcoes = {}) {
     invocacoes,           // { lista, total, custoTotal, temWarnings }
     hordas,               // { lista, total, custoTotal } (líder + membros escalados)
     quimeras,             // { lista, total, custoTotal } (fusão de 2 a 4 invocações)
+    multiplosNucleos,     // { lista, total } (dois núcleos de Corpo, uma entidade na mesa)
+    mecha,                // a ficha do Mecha formado na mesa, ou null
     titaColosso,          // { ativo, membros, dobro, cabecaMax, membroMax, nomes } (afty-tita.js)
     focosTotais,          // orçamento de Focos de interlúdio = ND + bônus de poderes
     treino,               // contribuições agregadas dos Treinamentos (hp/pe/movimento/aptidao/defesa)

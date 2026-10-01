@@ -78,6 +78,11 @@ const FOLHAS = [
   ["afty-golpe-especial.js", "a sessao e o painel do Golpe Especial o leem"],
   ["afty-criacao-equipamentos-encantamento.js", "o resolveFerramenta de afty-equipamentos o chama"],
   ["afty-pericias-catalogo.js", "os três catálogos de requisito o chamam"],
+  // Entrou em 2026-09-30: as regras por tipo de invocação, lidas pelo afty-invocacoes.
+  ["afty-invocacoes-tipos.js", "o afty-invocacoes o importa, e o criador importa o afty-invocacoes no topo"],
+  // Entrou em 2026-09-30: o catálogo de Características de Invocação, lido pelo
+  // afty-invocacoes, pelo afty-habilidades (família de addon) e pelo criador.
+  ["afty-invocacoes-caracteristicas.js", "o afty-habilidades o importa, e ele está no ciclo"],
   ["afty-schema.js", "todo mundo cria ficha em branco"],
   ["afty-dsl.js", "o avaliador não pode depender de conteúdo"],
   ["afty-sistema.js", "regraDo() é lido de dentro dos catálogos"],

@@ -29,12 +29,21 @@ const t = (nome, real, esp) => {
 /* ============================================================ */
 /* 1. O TIPO                                                     */
 /* ============================================================ */
-t("o catalogo tem os tres tipos, Maldicao ao lado dos dois",
+/* ⚠ CINCO TIPOS desde 2026-09-30 (decisão do autor, Mecânicas para Invocações
+   2.5.2): Marionete e Corpo entraram depois da Maldição. */
+t("o catalogo tem os cinco tipos, Maldicao na mesma posicao",
   INV.AFTY_INV_TIPOS.map((x) => [x.value, x.label]),
-  [["shikigami", "Invocação"], ["tecnica", "Invocação de Técnica"], ["maldicao", "Maldição"]]);
-t("a Maldicao e uma invocacao normal: mesmo Intermediario e mesma retirada",
+  [["shikigami", "Invocação"], ["tecnica", "Invocação de Técnica"], ["maldicao", "Maldição"],
+    ["marionete", "Marionete"], ["corpo", "Corpo Amaldiçoado"]]);
+/* ⚠ A MALDIÇÃO DEIXOU DE SER "UMA INVOCAÇÃO NORMAL" em 2026-09-30. Até ali ela
+   tinha o Talismã e a dissipação do Shikigami. O Mecânicas diz que ela "não pode
+   ser dissipada nem colocada dentro de um talismã", e é exorcizada a 0 PV. */
+t("a Maldicao nao tem Talisma e so sai exorcizada",
   [INV.tipoInvocacaoMeta("maldicao").intermediario, INV.tipoInvocacaoMeta("maldicao").retirada],
-  [INV.tipoInvocacaoMeta("shikigami").intermediario, INV.tipoInvocacaoMeta("shikigami").retirada]);
+  [null, "exorcizar"]);
+t("o Shikigami segue com Talisma e dissipacao",
+  [INV.tipoInvocacaoMeta("shikigami").intermediario, INV.tipoInvocacaoMeta("shikigami").retirada],
+  ["Talismã", "dissipar / exorcizar"]);
 t("a ficha guarda o valor e ele nao cai no padrao",
   INV.tipoMecanicoDaInvocacao({ tipoMecanico: "maldicao" }), "maldicao");
 t("o rotulo que a ficha mostra", INV.tipoInvocacaoLabel({ tipoMecanico: "maldicao" }), "Maldição");
@@ -116,7 +125,11 @@ t("e ele nao atrapalha a Maldicao, que continua valendo 1,5",
 t("os atributos da Maldicao sao os da invocacao normal (mesma base)",
   maldicao.atributos.valores.forca, normal.atributos.valores.forca);
 t("a Defesa nao muda", maldicao.defesa, normal.defesa);
-t("o custo em PE nao muda", maldicao.custo, normal.custo);
+/* ⚠ O CUSTO MUDOU em 2026-09-30 (decisão do autor, Mecânicas): a Maldição não
+   tem custo base de ativação. Sem Ação nem Característica além da cota, ela não
+   custa nada, e a invocação normal segue pagando o base do grau. */
+t("a Maldicao nao tem custo base, e a normal tem", [maldicao.custo, normal.custo > 0], [0, true]);
+t("e o hover diz por que", maldicao.fontes.custo[0], { label: "Maldição (Sem Custo Base)", valor: 0 });
 t("o tipo aparece na linha da lista", maldicao.tipoMecanico, "maldicao");
 t("a Invocacao de Tecnica nao ganha o multiplicador",
   resolvida({ tipo: "tecnica" }).fontes.pv.some((p) => String(p.texto ?? "").startsWith("×")), false);

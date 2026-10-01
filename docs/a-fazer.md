@@ -33,6 +33,117 @@ arquivo md. Para outros colaboradores usarem ele também e ir anotando oq for pr
 ---
 
 ## PERGUNTAS AO AUTOR
+### Horda: o PV máximo cai junto com os membros perdidos? E o que acontece a 0 PV?
+**Onde:** `src/systems/afty/afty-invocacoes.js` (`resolveHorda`) e `ficha/ficha-sessao.js` (`aplicaDanoHorda`)
+**Situação:** o Livro diz que na metade da vida a horda "perde metade dos seus membros [...]
+diminuindo todos os efeitos baseados no número de membros". O PV máximo também é "baseado nos
+membros" (metade do PV de cada um), e o texto não diz se ele cai. Cair faz a horda recalcular a
+metade e perder membros de novo em cascata. Hoje o máximo FICA, e só as escalas (dano, cura, RD,
+tamanho, prejuízo) caem. O texto também não diz o que acontece a 0 PV. Hoje a horda acaba, e o
+líder e os membros que sobraram caem pela regra do tipo de cada um (exorcizados com o excedente
+acima do máximo da horda).
+**Precisa:** o autor dizer (1) se o PV máximo cai com os membros perdidos, e (2) se a queda a 0
+fica como está.
+**Anotado:** 2026-10-01, na Etapa 9 da atualização de Controlador e Invocações
+
+### Hoste Amaldiçoada: o par de hordas conta como uma também no limite em campo?
+**Onde:** `src/systems/afty/afty-derive.js` (`idsDaMesa`) e `ficha/abas/AbaInvocacoes.jsx`
+**Situação:** a Hoste diz que as duas hordas "contam como apenas uma para o seu limite de hordas
+em campo". O Livro diz que cada horda "é contabilizada como uma Invocação" no limite de
+Invocações em campo. Hoje o par conta UMA no limite de hordas e DUAS no de Invocações, pela
+leitura literal dos dois textos.
+**Precisa:** o autor dizer se o par conta como uma também no limite de Invocações em campo.
+**Anotado:** 2026-10-01, na Etapa 9 da atualização de Controlador e Invocações
+
+### Quimera do Mecânicas: Invocações Resistentes entra de novo depois da fusão?
+**Onde:** `src/systems/afty/afty-invocacoes.js` (`resolveQuimeraMecanicas`)
+**Situação:** o *Mecânicas* diz "Efeitos como Visionário, Invocações Resistentes e afins são
+aplicados após a criação da Quimera". O PV da fórmula ("Shikigami Base + 1/3 dos PVs dos outros")
+sai dos cartões das componentes, que já trazem o PV da Invocações Resistentes. Hoje o PV da
+Quimera é esse número, sem somar a Resistentes outra vez, e o Visionário entra normalmente (ele dá
+vagas, e não PV).
+**Precisa:** o autor dizer se a Resistentes (e afins de PV) (1) fica como está, só dentro dos
+cartões, ou (2) sai dos cartões e entra uma vez sobre o PV da Quimera.
+**Anotado:** 2026-10-01, na Etapa 9 da atualização de Controlador e Invocações
+
+### Mecha: "maior PV" é o máximo ou o atual? E a 0 PV?
+**Onde:** `src/systems/afty/ficha/ficha-sessao.js` (`mechaPermitido`, `formaMecha`, `aplicaDanoMecha`)
+**Situação:** "O PV de um Mecha é igual a maior PV de seus componentes com o menor PV sendo
+utilizada como PV Temporário". Hoje a maior é a de maior PV MÁXIMO, o Mecha leva o PV ATUAL dela,
+e a casca é o PV atual da menor (o Separar devolve esses dois números). A 0 PV, "todas as regras
+de Marionete são aplicadas": a maior quebra e o Mecha se desfaz.
+**Precisa:** o autor confirmar a leitura, ou dizer se "maior PV" é o PV atual.
+**Anotado:** 2026-10-01, na Etapa 9 da atualização de Controlador e Invocações
+
+### Fundamento fora de campo: bloqueia só os Feitiços, ou a Técnica Inata inteira?
+**Onde:** `src/systems/afty/afty-derive.js` (`tecnicaInata`, `semTecnicaPerdida`) e
+`afty-invocacoes.js` (`estadoDaTecnicaInata`)
+**Situação:** o *Mecânicas* diz *"Para utilizar sua Técnica Inata, o feiticeiro deve manter esse
+shikigami invocado"*. A DA-07 decidiu a MORTE do Fundamento (bloqueio real, gravado na ficha), e
+não fala do Fundamento só fora de campo. Hoje, com mesa e o Fundamento fora de campo, os Feitiços
+saem marcados "Fundamento Fora de Campo" (sem rolagem nem Ritual), e os efeitos do Funcionamento e
+das Passivas continuam no Motor. Com ele morto, os três saem. "Utilizar" cobre o Feitiço sem
+dúvida, e o efeito passivo ficou de fora para não escolher sozinho.
+**Precisa:** o autor dizer se, fora de campo, (1) só os Feitiços param, como hoje, ou (2) a Técnica
+inteira para, Funcionamento e Passivas inclusive, como na morte. A (2) muda número da ficha toda
+vez que o Fundamento sai de campo, e só na mesa (o criador nunca vê).
+**Anotado:** 2026-10-01, na Etapa 8 da atualização de Controlador e Invocações
+
+### Técnica Inata perdida: a Passiva continua ocupando PE Máximo?
+**Onde:** `src/systems/afty/afty-derive.js` (`peMaximoDasPassivas`)
+**Situação:** no jogador, cada Feitiço Passivo encolhe o PE Máximo (divergência
+`passivaCustaPeMaximo`). Com o Fundamento morto, os efeitos das Passivas saem do Motor, mas o
+custo no PE Máximo continua, porque a DA-07 manda não apagar nada e não diz se a Passiva parada
+ainda reserva energia.
+**Precisa:** o autor dizer se a Passiva da Técnica perdida (1) segue reservando o PE Máximo, como
+hoje, ou (2) deixa de reservar enquanto a Técnica estiver perdida.
+**Anotado:** 2026-10-01, na Etapa 8 da atualização de Controlador e Invocações
+
+### Corpo Biológico: qual CD de reparo por Medicina ou Cura Aprimorada?
+**Onde:** `src/systems/afty/afty-invocacoes.js` (`reparoDaInvocacao`)
+**Situação:** o *Mecânicas* manda o Corpo biológico se reparar *"através de Cura Aprimorada ou pela
+perícia Medicina"* e diz *"Em ambos os casos, segue-se as regras abaixo para definir a CD"*, com o
+Custo pelo grau. A CD por Custo do Livro é a tabela de Criação de Itens, que só tem colunas de
+Ofício (Alquimia, Canalizador e Ferreiro; Entalhador e Farmacêutico; Alfaiate). Medicina não é
+Ofício. Hoje a Ficha mostra o Custo e não mostra CD para o biológico.
+**Precisa:** o autor dizer a coluna (ou a tabela) da CD do biológico. É só exibição: nenhuma conta
+depende dela.
+**Anotado:** 2026-10-01, na Etapa 8 da atualização de Controlador e Invocações
+
+### Corpo Amaldiçoado: as Ações e Características extras custam PE?
+**Onde:** `src/systems/afty/afty-invocacoes.js` (`detalheCustoInvocacao`)
+**Situação:** o *Mecânicas* diz da Marionete *"não possuem custo base de ativação, mas efeitos como
+'Autonomia' ou aumento de características devem ser pagos no ato da ativação"*, e da Maldição algo
+parecido. Do Corpo diz só *"não possuem custo de ativação, no entanto, eles duram uma quantidade de
+rodadas em combate igual ao seu CL"*, sem falar das extras. Hoje o Corpo segue a Marionete: o base
+é zero e as Ações e Características além da cota custam, pagas na entrada. Ficou assim para não
+escolher sozinho.
+**Precisa:** o autor dizer se o Corpo (1) paga as extras na ativação, como a Marionete, ou (2) não
+paga nada na ativação, e o custo dele é só a manutenção por rodada depois do CL.
+**Anotado:** 2026-09-30, na Etapa 4 da atualização de Controlador e Invocações
+
+### O descanso repara todas as Marionetes, ou uma só?
+**Onde:** `src/systems/afty/ficha/ficha-sessao.js` (`descansaInvocacoes`)
+**Situação:** o *Mecânicas* diz *"Você repara completamente uma Marionete não destruída em um
+Descanso Longo ou todas as suas Marionetes não destruídas em um interlúdio"*. A Ficha tem UM
+botão de descanso, que devolve tudo (a D3, decidida em 2026-09-23). Hoje o botão enche todas as
+invocações, Marionete inclusive, e zera as quedas dela, que é o que ele fazia antes dos estados.
+Ficou assim para não escolher sozinho.
+**Precisa:** o autor dizer se o descanso (1) segue reparando todas, (2) repara uma escolhida, ou
+(3) não repara nenhuma e a ficha ganha um botão "Reparar" com limite de uma por descanso.
+**Anotado:** 2026-09-30, na Etapa 3 da atualização de Controlador e Invocações
+
+### O chip do Shikigami volta a dizer "Shikigami"?
+**Onde:** `src/systems/afty/afty-invocacoes-tipos.js` (`label` e `curto` de `shikigami` e `tecnica`)
+**Situação:** em 2026-09-02 o autor renomeou os chips para "Invocação" e "Invocação de Técnica",
+porque o tipo não mudava nada. Desde 2026-09-30 os tipos têm regra própria, e as decisões do
+projeto falam em "Shikigami" e "Shikigami de Técnica", ao lado de Marionete, Corpo Amaldiçoado e
+Maldição. Com cinco tipos, "Invocação" passa a nomear um tipo e também o conjunto inteiro. Os
+rótulos ficaram como estavam, porque trocar seria escolher sozinho.
+**Precisa:** o autor dizer se os rótulos de tela voltam a "Shikigami" e "Shikigami de Técnica"
+(só o `label` e o `curto`, sem tocar no `value` gravado nas fichas), ou ficam como estão.
+**Anotado:** 2026-09-30, na Etapa 2 da atualização de Controlador e Invocações
+
 
 Coisas paradas esperando decisão de regra. Nada aqui deve ser resolvido por suposição.
 
@@ -102,12 +213,6 @@ resolvida junto com ela ou antes dela.
 **Precisa:** decidir se o sistema ganha a segunda CD (a escolha do atributo-chave por classe, e o destino de cada fonte: Implemento Marcial nas duas, Aprimoramento Especializado e Complementar só na de Especialização).
 **Anotado:** 2026-09-23
 **Nota:** o autor respondeu *"Não fazer agora"* em 2026-09-23, na rodada de automação do Combatente. A entrada fica.
-
-### A Quimera em campo conta no limite de Invocações em campo?
-**Onde:** `src/systems/afty/ficha/abas/AbaInvocacoes.jsx` (o chip "Em Campo N / limite") e `asserts/t-quimera.mjs` (seção 10)
-**Situação:** a Quimera ganhou ficha e interruptor de campo na aba de Invocações (2026-09-23). O chip "Em Campo N / limite" conta só as invocações da ficha, e a Quimera fica de fora por decisão minha, a confirmar. O texto do addon também diz duas coisas que o app não impõe: só uma Quimera por cena, e as fundidas ficam bloqueadas depois que ela é Dissipada.
-**Precisa:** o autor dizer (1) se a Quimera em campo ocupa uma vaga do limite (e se as fundidas dela contam enquanto ela existe), e (2) se a Ficha deve avisar quando uma fundida é posta em campo com a Quimera em campo, ou quando duas Quimeras estão em campo.
-**Anotado:** 2026-09-23, ao mostrar a ficha da Quimera fora do modo de edição
 
 ### A camada de imagem do tema pode virar ambiente FIXO?
 **Onde:** `src/systems/afty/ficha/ficha.css`, `.afty-ficha-corpo::before` (e o `::after` dos modos Caber e Tamanho Real)
@@ -1423,18 +1528,38 @@ prontas. É mudança visível de número, e a decisão é sua.
 `espacosUsados` antes do `resolveCarga`, no `deriveAfty`.
 **Anotado:** 2026-08-16, ao dar tela ao tipo mecânico da Invocação
 
-### DECIDIR: a invocação exorcizada sai da ficha sozinha?
-**Onde:** `src/systems/afty/ficha/ficha-sessao.js` (`aplicaDanoInvocacao`), `ficha/abas/AbaInvocacoes.jsx`
-**Situação:** o livro é explícito: *"caso uma Invocação receba dano excedente superior ao seu máximo
-de vida, ela é exorcizada ou destruída [...] sendo removido da lista de invocações do controlador"*
-e *"não pode ser recuperada por métodos convencionais, sendo perdida permanentemente"*.
-Em 2026-08-31 o estado passou a ser DETECTADO e marcado (`exorcizada` na sessão, cartão riscado,
-botão de campo morto, chip âmbar na ficha), mas a invocação **continua na lista da criatura**.
-Foi decisão minha: a Ficha Final opera e não edita ficha, e um clique errado no botão de dano
-apagaria um shikigami inteiro, com todas as Ações e Características, sem desfazer.
-**Precisa:** o autor dizer se a Ficha deve mesmo remover da criatura. Se sim, precisa de confirmação
-antes e provavelmente de um desfazer, porque o gesto é o mesmo de "levei um golpe forte".
-**Anotado:** 2026-08-31, ao pôr os Shikigamis na sessão
+### Quimera do Mecânicas: as Ações e Características de Visionário das componentes entram
+**Onde:** `src/systems/afty/afty-invocacoes.js` (`resolveQuimeraMecanicas`)
+**Situação:** o *Mecânicas* diz que a Quimera "não recebe as Ações ou Características provindas de
+efeitos como Visionário dos Shikigamis componentes". A ficha não marca de onde veio cada Ação ou
+Característica (a vaga do Visionário é um número, e não um item), então a Quimera recebe todas as
+da principal e as escolhas, sem saber quais ocuparam vaga de Visionário.
+**Precisa:** marcar na ficha da invocação os itens que usam vaga concedida, ou o autor dizer que a
+mesa confere isso à mão.
+**Anotado:** 2026-10-01, na Etapa 9 da atualização de Controlador e Invocações
+
+### Morte do Fundamento no Encontro não chega à criatura da biblioteca
+**Onde:** `src/systems/afty/encontros/usar-encontro-afty.js` (`REGISTRAR_FUNDAMENTO_PERDIDO`)
+**Situação:** a perda da Técnica Inata (DA-07) é gravada na ficha. Na Ficha Final ela vai para a
+criatura (`creature.fundamentosPerdidos`). No Encontro, o combatente guarda uma CÓPIA da ficha, e a
+gravação vai para essa cópia, que vale para o resto do Encontro. A criatura da biblioteca não sabe
+da morte, e abrir a Ficha dela depois mostra a Técnica inteira.
+**Precisa:** um caminho do Encontro para a biblioteca (o mesmo que um dia levar PV, PE ou estado
+de volta), ou um aviso no fim do Encontro com as perdas a copiar.
+**Anotado:** 2026-10-01, na Etapa 8 da atualização de Controlador e Invocações
+
+### Forma de Arma: a invocação ainda não vira arma no arsenal do dono
+**Onde:** `src/systems/afty/afty-derive.js` (lista de armas do dono), `ficha/abas/AbaInvocacoes.jsx`
+**Situação:** a Forma de Arma (Adicionais) já tem a escolha da arma, o custo pelo grau, o requisito
+de treino do dono e o interruptor de mesa, que não tira a invocação de campo. O que falta é o
+ataque: *"você usa suas ações e não as da invocação para atacar, mas você usa seu tipo de dano e
+dado de dano da ação complexa da invocação"*. Hoje a Ficha não monta essa linha de ataque, e a mesa
+rola pela arma do dono.
+**Precisa:** o derive montar uma ARMA VIRTUAL na lista de armas do dono enquanto a sessão diz
+`forma: "arma"`, com o dado e o tipo de dano da Ação Complexa de ataque da invocação, e a reação
+do portador (levar o dano inteiro de um ataque de alvo único, ignorando a RD) na tela. A
+Encantada, que hoje é texto, entra junto.
+**Anotado:** 2026-09-30, na Etapa 6 da atualização de Controlador e Invocações
 
 ### Auxílio de Dano Adicional não vira número no dono
 **Onde:** `src/systems/afty/afty-invocacoes.js` (`AUXILIO_SUSTENTAVEL`)

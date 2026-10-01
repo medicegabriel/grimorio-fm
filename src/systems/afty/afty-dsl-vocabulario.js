@@ -303,9 +303,12 @@ const INV_POR_NOME = [
     id: "tipo",
     label: "Tipo Mecânico",
     nomes: [
-      ["tipo_shikigami", "É uma Invocação de Talismã"],
+      ["tipo_shikigami_puro", "É um Shikigami que não é de Técnica"],
       ["tipo_tecnica", "É uma Invocação de Técnica"],
       ["tipo_maldicao", "É uma Maldição"],
+      ["tipo_marionete", "É uma Marionete"],
+      ["tipo_corpo", "É um Corpo Amaldiçoado"],
+      ["tipo_shikigami", "Legado: Shikigami ou Maldição"],
     ],
   },
   {

@@ -1838,6 +1838,14 @@ export const ESCOLHA_EFEITOS = {
   // Aura, Controle e Leitura ou Barreira em 1. Você pode pegar esta habilidade
   // três vezes, uma para cada aptidão." A quarta irmã do mesmo padrão, e a
   // última a ser ligada (2026-07-29): o pool dela não existia no catálogo.
+  /* Controle Sintonizado (Apogeu, 6°): "para cada invocação que possua em campo,
+     você recebe +1 em acerto e dano, com elas te auxiliando" (2026-09-30, D-02).
+     Sem alvo: vale em todo ataque e em toda linha de dano. É estado de mesa, então
+     temporário, e no criador vale 0. O ataque pago de 2 PE segue de mesa. */
+  ctr_controle_sintonizado: [
+    { canal: "bonusAcerto", expr: "invocacoes_em_campo", duracao: "temporaria" },
+    { canal: "danoBonus", expr: "invocacoes_em_campo", duracao: "temporaria" },
+  ],
   ctr_aptidao_aura: [{ canal: "nivelAptidao", alvo: "au", expr: "1" }],
   ctr_aptidao_controle_leitura: [{ canal: "nivelAptidao", alvo: "cl", expr: "1" }],
   ctr_aptidao_barreira: [{ canal: "nivelAptidao", alvo: "bar", expr: "1" }],

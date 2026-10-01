@@ -476,7 +476,17 @@ export const PRIMITIVAS = [
   {
     id: "quimera",
     rotulo: "Quimera",
-    nota: "Card de Quimeras ao lado das Hordas: funde de 2 a 4 Invocações (Passiva de Nível 2, 3 ou 4) somando PV e custo, unindo treinos e fixando cada atributo no maior valor entre as fundidas",
+    nota: "Card de Quimeras ao lado das Hordas: funde de 2 a 4 Invocações (Passiva de Nível 2, 3 ou 4) somando PV e custo, unindo treinos e fixando cada atributo no maior valor entre as fundidas. Desde 2026-10-01 é a regra LEGACY: a oficial é a do Mecânicas, que o Controlador de nível 5 abre sem addon",
+  },
+  /* ⚠ NASCEU EM 2026-10-01 (Etapa 10 da atualização de Invocações, DA-12): a
+     Herança das Sombras persistente do Mecânicas, "para os Usuários de Dez Sombras
+     e técnicas semelhantes". O motor (`herancasDa`, afty-invocacoes.js) vive
+     sempre. A sub-aba Heranças aparece para quem tem uma Invocação de Técnica, e
+     esta primitiva a abre para quem não tem (um addon de clã, por exemplo). */
+  {
+    id: "heranca",
+    rotulo: "Herança das Sombras",
+    nota: "Sub-aba Heranças na Invocação: a fusão permanente de uma sombra exorcizada numa viva, com Nível de Dano, bônus escolhido, resistência, Ação, Característica, treinos e atributo, acumulando e passando adiante",
   },
   /* ⚠ NASCEU EM 2026-09-22, a pedido do autor: a regra do Titã (Mechamaru
      Supremo), que separa a Vida Máxima de um inimigo Colossal em barras por

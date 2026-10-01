@@ -211,9 +211,16 @@ t("duas invocacoes somam no dono", dosDois.defesa - semNenhum.defesa, 5);
 
 const s0 = SES.sessaoEmBranco(base);
 t("a sessao nasce sem invocacao nenhuma", s0.invocacoes, {});
+/* ⚠ A LINHA GANHOU O ESTADO E OS CONTADORES em 2026-09-30 (Etapa 3). Os campos
+   de antes continuam com os mesmos valores, e são eles que este assert confere. */
+const intocada = SES.estadoDaInvocacao(s0, "INV1");
 t("invocacao intocada le como cheia e fora de campo",
-  SES.estadoDaInvocacao(s0, "INV1"),
+  { emCampo: intocada.emCampo, pvAtual: intocada.pvAtual, almaAtual: intocada.almaAtual,
+    pvTempFontes: intocada.pvTempFontes, auxilios: intocada.auxilios,
+    abatida: intocada.abatida, exorcizada: intocada.exorcizada },
   { emCampo: false, pvAtual: null, almaAtual: null, pvTempFontes: {}, auxilios: {}, abatida: false, exorcizada: false });
+t("e o estado dela e Fora de Campo, sem contador nenhum",
+  [intocada.estado, intocada.retorno, intocada.quedas, intocada.exorcismos], ["fora", null, 0, 0]);
 
 /* ⚠ Ligar um auxílio TRAZ ao campo. Era a alternativa a um interruptor
    desabilitado que não diz o que falta fazer. */

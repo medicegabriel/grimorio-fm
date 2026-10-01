@@ -1,4 +1,4 @@
-import { useMemo, useCallback } from "react";
+import { useEffect, useMemo, useCallback } from "react";
 
 import { deriveAfty } from "../afty-derive";
 import { aplicarAddons, unirAddons, epocaAddons } from "../afty-addons";
@@ -104,41 +104,52 @@ const derivarCombatente = (c) => {
  */
 const CACHE_DERIVE = new WeakMap();
 
+/**
+ * A CHAVE DO CACHE: tudo da sessão que o `derivarCombatente` lê, e nada mais.
+ * Mudou uma peça, deriva de novo. Não mudou nenhuma, o número é o mesmo por
+ * definição. A comparação é por IDENTIDADE (os escritores da sessão sempre
+ * devolvem objeto novo), e a Guarda vai por VALOR, porque `entradaDaGuarda` monta
+ * um objeto novo a cada chamada.
+ *
+ * ⚠ A ÉPOCA DOS ADDONS entra na chave junto (2026-08-20). Hoje ela quase nunca
+ * muda o número, porque addon só ACRESCENTA e todo id é prefixado, então uma
+ * união maior não mexe em quem já estava. Mas essa é uma invariante da FASE 1,
+ * e a fase 3 (remendar e desligar o raw) a quebra: lá, um addon que entra no
+ * encontro pode mudar o número de quem já estava. Deixar a época fora da chave
+ * hoje seria plantar um bug para aquele dia, e o custo é zero.
+ *
+ * ⚠ O CONCEDIDO ENTRA NA CHAVE, senão conceder no meio da luta não mudaria
+ * número nenhum: o cache devolveria o derivado de antes da concessão.
+ *
+ * ⚠ E AS QUATRO DE `opcoesDoCombatente` QUE FALTAVAM (2026-10-01): as
+ * invocações, os treinos ligados, as condições e a Guarda. Elas entraram nas
+ * opções do derive (2026-09-21 e 2026-09-22) e não na chave, então o cache
+ * devolvia o derivado de antes: o mestre punha um Shikigami em campo no Encontro,
+ * ligava um auxílio, uma Aura ou uma condição, e o número do combatente não
+ * mexia até outra peça da chave mudar. A morte do Fundamento (DA-07) depende
+ * disso para bloquear a Técnica Inata na mesma hora.
+ */
+const chaveDoDerive = (sessao, epoca) => ({
+  combate: sessao.combate,
+  buffs: sessao.buffs,
+  alma: sessao.almaAtual,
+  concedido: sessao.concedido,
+  adaptacoes: sessao.adaptacoes,
+  invocacoes: sessao.invocacoes,
+  treinosAtivos: sessao.treinosAtivos,
+  condicoes: sessao.condicoes,
+  guarda: JSON.stringify(entradaDaGuarda(sessao)),
+  epoca,
+});
+const mesmaChave = (a, b) => !!a && Object.keys(b).every((k) => a[k] === b[k]);
+
 const derivarComCache = (c, epoca) => {
   if (!c.ficha || !c.sessao) return null;
   const anterior = CACHE_DERIVE.get(c.ficha);
-  // As três da sessão são exatamente o que o `derivarCombatente` lê. Mudou uma,
-  // deriva de novo. Não mudou nenhuma, o número é o mesmo por definição.
-  //
-  // ⚠ A ÉPOCA DOS ADDONS entra na chave junto (2026-08-20). Hoje ela quase nunca
-  // muda o número, porque addon só ACRESCENTA e todo id é prefixado, então uma
-  // união maior não mexe em quem já estava. Mas essa é uma invariante da FASE 1,
-  // e a fase 3 (remendar e desligar o raw) a quebra: lá, um addon que entra no
-  // encontro pode mudar o número de quem já estava. Deixar a época fora da chave
-  // hoje seria plantar um bug para aquele dia, e o custo é zero.
-  if (anterior
-    && anterior.combate === c.sessao.combate
-    && anterior.buffs === c.sessao.buffs
-    && anterior.alma === c.sessao.almaAtual
-    && anterior.concedido === c.sessao.concedido
-    && anterior.adaptacoes === c.sessao.adaptacoes
-    && anterior.epoca === epoca) {
-    return anterior.derived;
-  }
+  const chave = chaveDoDerive(c.sessao, epoca);
+  if (anterior && mesmaChave(anterior.chave, chave)) return anterior.derived;
   const derived = derivarCombatente(c);
-  CACHE_DERIVE.set(c.ficha, {
-    combate: c.sessao.combate,
-    buffs: c.sessao.buffs,
-    alma: c.sessao.almaAtual,
-    /* ⚠ O CONCEDIDO ENTRA NA CHAVE, senão conceder no meio da luta não mudaria
-       número nenhum: o cache devolveria o derivado de antes da concessão. Igual
-       aos outros três, a comparação é por IDENTIDADE, e os escritores da sessão
-       sempre devolvem lista nova. */
-    concedido: c.sessao.concedido,
-    adaptacoes: c.sessao.adaptacoes,
-    epoca,
-    derived,
-  });
+  CACHE_DERIVE.set(c.ficha, { chave, derived });
   return derived;
 };
 
@@ -216,6 +227,20 @@ const HANDLERS = {
   PATCH_SESSAO: (s, { id, sessao }) => ({
     ...s,
     combatentes: s.combatentes.map((c) => (c.id === id ? { ...c, sessao } : c)),
+  }),
+
+  /* A MORTE DO FUNDAMENTO (DA-07, 2026-09-30): a perda da Técnica Inata é gravada
+     na ficha DESTE combatente, que é a cópia que o Encontro guarda. A criatura da
+     biblioteca não é tocada daqui (ver docs/a-fazer.md). A ficha nova troca a
+     chave do cache do derive, e o próximo derive já lê o registro. */
+  REGISTRAR_FUNDAMENTO_PERDIDO: (s, { id, registro }) => ({
+    ...s,
+    combatentes: s.combatentes.map((c) => {
+      if (c.id !== id || !c.ficha || !registro?.invocacaoId) return c;
+      const antes = Array.isArray(c.ficha.fundamentosPerdidos) ? c.ficha.fundamentosPerdidos : [];
+      if (antes.some((r) => r?.invocacaoId === registro.invocacaoId)) return c;
+      return { ...c, ficha: { ...c.ficha, fundamentosPerdidos: [...antes, registro] } };
+    }),
   }),
 
   COMECAR: (s, { derivados = {} } = {}) => {
@@ -402,6 +427,18 @@ export default function useEncontroAfty(encontroId, gerenciador) {
     return { mapa, divergencias };
   }, [encontro]);
 
+  /* A MORTE DO FUNDAMENTO (DA-07): a mesa a vê primeiro (o estado "morta"), e a
+     gravação na ficha do combatente sai daqui, para todo combatente, e não só
+     para o do painel aberto. O redutor ignora o registro repetido. */
+  const fundamentosAGravar = useMemo(() => Object.entries(derivados)
+    .filter(([, d]) => d?.tecnicaInata?.aRegistrar)
+    .map(([id, d]) => [id, d.tecnicaInata.aRegistrar]), [derivados]);
+  useEffect(() => {
+    for (const [id, r] of fundamentosAGravar) {
+      despachar({ tipo: "REGISTRAR_FUNDAMENTO_PERDIDO", id, registro: { ...r, em: new Date().toISOString() } });
+    }
+  }, [fundamentosAGravar, despachar]);
+
   const acoes = useMemo(() => ({
     renomear: (nome) => despachar({ tipo: "RENOMEAR", nome }),
     adicionar: (creature, opcoes = {}) => despachar({
@@ -461,4 +498,5 @@ export default function useEncontroAfty(encontroId, gerenciador) {
   return { encontro, derivado, acoes };
 }
 
-export { derivarCombatente, opcoesDoCombatente, sessaoEmBranco };
+// `derivarComCache` sai para o assert da chave do cache (E-13, 2026-10-01).
+export { derivarCombatente, derivarComCache, opcoesDoCombatente, sessaoEmBranco };

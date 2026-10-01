@@ -25,6 +25,11 @@
  */
 
 import { normalizaConcedido, comConcessao, semConcessao } from "../afty-concessao";
+import {
+  regrasDoTipoValor, ESTADOS_INVOCACAO, ESTADOS_TERMINAIS, ESTADOS_EM_CAMPO, estadoDaLinha,
+  FONTE_PV_MECHA, entradaDeMesaDaHorda,
+} from "../afty-invocacoes-tipos";
+import { AFTY_TAMANHOS } from "../afty-schema";
 import { normalizaAdaptacoes, avancarAdaptacoesNaRodada } from "../afty-adaptacao";
 import { avancaArmasTransformaveis } from "../afty-armas-transformaveis";
 import { ESTADO_APICE, RODADAS_APICE } from "../afty-talisma-apice";
@@ -144,6 +149,14 @@ export function sessaoEmBranco(derived = null) {
        número são estados de bancada e moram no `combate`. Ver
        afty-golpe-especial.js. */
     golpeEspecial: {},
+    // A Reserva para Invocação (Controlador 10°, 2026-09-30). Ver `ativaReservaInvocacao`.
+    reservaInvocacao: { usada: false, modo: null, restantes: 0 },
+    /* A cena dos compostos (2026-10-01, Etapa 9): a Quimera que já entrou nesta
+       cena ("só pode manter 1 Quimera ativa por cena") e os líderes de Horda
+       dissipada no combate ("se utilizar o líder da antiga horda em outra horda,
+       ela tem seus pontos de vida máximos reduzidos pela metade"). */
+    quimeraDaCena: null,
+    lideresDeHordaDissolvida: [],
     // O que o mestre CONCEDEU nesta sessão (Addons 8.3). Estado de sessão e
     // nunca ficha, por decisão do autor (2026-08-20): vale para tudo, não gasta
     // vaga nenhuma e morre junto com a sessão. Ver `afty-concessao.js`.
@@ -239,6 +252,9 @@ export function normalizaSessao(bruta, derived = null) {
     preparoAtual: bruta.preparoAtual == null ? null : Math.max(0, inteiro(bruta.preparoAtual, 0)),
     preparoTemp: Math.max(0, inteiro(bruta.preparoTemp, 0)),
     golpeEspecial: normalizaGolpeEspecial(bruta.golpeEspecial),
+    reservaInvocacao: normalizaReserva(bruta.reservaInvocacao),
+    quimeraDaCena: typeof bruta.quimeraDaCena === "string" ? bruta.quimeraDaCena : null,
+    lideresDeHordaDissolvida: lista(bruta.lideresDeHordaDissolvida).filter((x) => typeof x === "string"),
     favoritos: lista(bruta.favoritos),
     log: lista(bruta.log).slice(0, LOG_MAX),
   };
@@ -253,26 +269,83 @@ export function normalizaSessao(bruta, derived = null) {
  * Ficha aberta noutra aba, e apagar o PV dela por causa disso seria perder a
  * luta. O que não existe simplesmente não é desenhado.
  */
+/* ============================================================
+   OS ESTADOS DE UMA INVOCAÇÃO NA MESA (2026-09-30, Etapa 3)
+   ============================================================
+   Eram três booleanos (`emCampo`, `abatida`, `exorcizada`), e com eles a mesa
+   só sabia dizer "em campo", "caiu" e "morreu". Os tipos do Mecânicas caem de
+   jeitos diferentes, então o estado virou um nome só, e a transição sai das
+   regras do tipo (`regras.aZero` e `regras.terminal`, em afty-invocacoes-tipos.js).
+
+   ⚠ NENHUM ESTADO APAGA A FICHA (decisão do autor, 2026-09-30). Morte permanente
+   é estado, e remover a invocação é ação manual no criador.
+
+   ⚠ OS TRÊS BOOLEANOS CONTINUAM ESCRITOS, derivados do estado, em toda linha.
+   O `resolveInvocacao` lê `emCampo` do mapa cru, e sessão e Encontro salvos antes
+   desta etapa só têm os booleanos. Ver `comBooleanos` e `estadoLegado`. */
+/* Os conjuntos de estado moram na folha de tipos (afty-invocacoes-tipos.js), que
+   o derive também lê, e saem daqui de novo para quem sempre os importou. */
+export { ESTADOS_INVOCACAO, ESTADOS_TERMINAIS, ESTADOS_EM_CAMPO };
+const ESTADO_VALIDO = new Set(ESTADOS_INVOCACAO);
+
+/** O rótulo de tela de cada estado. */
+export const ROTULO_ESTADO_INVOCACAO = {
+  fora: "Fora de Campo", guardada: "Guardada", ativa: "Em Campo", dissipada: "Dissipada",
+  desativada: "Desativada", quebrada: "Quebrada", recolhida: "Recolhida",
+  exorcizada: "Exorcizada", destruida: "Destruída", morta: "Morta",
+};
+
+/** O estado de uma linha gravada no formato antigo. ⚠ Nada é convertido pelo
+    tipo: uma Maldição que estava "abatida" (a regra de antes) continua
+    dissipada, e a regra nova do tipo vale do próximo golpe em diante. */
+const estadoLegado = (e) => estadoDaLinha({ ...e, estado: undefined });
+
+/** A fração do PV com que ela volta: `null`, ou um número em (0, 1]. */
+function fracaoDeRetorno(v) {
+  const n = Number(v);
+  return Number.isFinite(n) && n > 0 && n <= 1 ? n : null;
+}
+
+/** Os três booleanos antigos, derivados do estado. `abatida` é "volta com uma
+    fração da vida", que é o que ela sempre quis dizer. */
+function comBooleanos(linha) {
+  return {
+    ...linha,
+    emCampo: linha.estado === "ativa",
+    abatida: linha.retorno != null,
+    exorcizada: ESTADOS_TERMINAIS.has(linha.estado),
+  };
+}
+
+function normalizaEntrada(e) {
+  if (!e || typeof e !== "object") return null;
+  return { via: String(e.via || "invocar"), rodada: inteiro(e.rodada, 0), custo: Math.max(0, inteiro(e.custo, 0)) };
+}
+
 function normalizaInvocacoesSessao(bruto) {
   if (!bruto || typeof bruto !== "object") return {};
   const out = {};
   for (const [id, e] of Object.entries(bruto)) {
     if (!id || !e || typeof e !== "object") continue;
-    out[id] = {
-      emCampo: !!e.emCampo,
+    out[id] = comBooleanos({
+      estado: ESTADO_VALIDO.has(e.estado) ? e.estado : estadoLegado(e),
       /* ⚠ `null` quer dizer CHEIO, e não zero. A invocação nasce sem linha na
          sessão, e a primeira vez que a Ficha a desenha ela tem de aparecer com
-         a vida inteira. Um zero aqui a mataria só por ter sido olhada. */
-      pvAtual: e.pvAtual == null ? null : Math.max(0, inteiro(e.pvAtual, 0)),
+         a vida inteira. Um zero aqui a mataria só por ter sido olhada.
+         ⚠ PODE SER NEGATIVO: o Corpo desativado desce até −PV máximo. Quem
+         apara pelo tipo é o `aparaInvocacoes`, que conhece o máximo. */
+      pvAtual: e.pvAtual == null ? null : inteiro(e.pvAtual, 0),
       almaAtual: e.almaAtual == null ? null : Math.max(0, inteiro(e.almaAtual, 0)),
       pvTempFontes: normalizaPvTemp(e.pvTempFontes, null),
       auxilios: (e.auxilios && typeof e.auxilios === "object") ? { ...e.auxilios } : {},
-      /* Caiu a 0 PV por dano, então a volta dela é pela metade. Ver
-         `poeInvocacaoEmCampo`. */
-      abatida: !!e.abatida,
-      /* Recebeu dano excedente superior ao máximo de vida. Ver `aplicaDanoInvocacao`. */
-      exorcizada: !!e.exorcizada,
-    };
+      /* Linha antiga sem `estado`: a `abatida` de antes era a volta pela metade. */
+      retorno: fracaoDeRetorno(e.retorno) ?? (e.estado == null && e.abatida ? 0.5 : null),
+      quedas: Math.max(0, inteiro(e.quedas, 0)),
+      exorcismos: Math.max(0, inteiro(e.exorcismos, 0)),
+      bloqueadaAteFimDaCena: !!e.bloqueadaAteFimDaCena,
+      ultimaEntrada: normalizaEntrada(e.ultimaEntrada),
+      ...camposDeIntrinseca(e),
+    });
   }
   return out;
 }
@@ -283,7 +356,7 @@ function normalizaInvocacoesSessao(bruto) {
  * ⚠ A QUIMERA ENTRA COM A RESOLVIDA DELA (2026-09-23), sob o id `quimera:<id>`
  * que o `resolveQuimera` dá à cópia sintética. É o mesmo formato de invocação, com
  * PV, Integridade, Ações e auxílios, então a sessão a guarda na mesma tabela e os
- * seis escritores daqui servem para ela sem uma linha nova. Quem procurava o
+ * escritores daqui servem para ela sem uma linha nova. Quem procurava o
  * máximo só em `derived.invocacoes.lista` achava zero para a Quimera, e zero de
  * máximo mata no primeiro clique.
  */
@@ -291,7 +364,16 @@ export function invocacoesDaMesa(derived) {
   const quimeras = (derived?.quimeras?.lista ?? [])
     .filter((q) => q.valido && q.resolvida)
     .map((q) => q.resolvida);
-  return [...(derived?.invocacoes?.lista ?? []), ...quimeras];
+  /* As Hordas, os Corpos de Múltiplos Núcleos e o Mecha (2026-10-01, Etapa 9),
+     pelo mesmo motivo da Quimera: a sessão procura o máximo de PV aqui. */
+  const hordas = (derived?.hordas?.lista ?? []).map(entradaDeMesaDaHorda).filter(Boolean);
+  const nucleos = (derived?.multiplosNucleos?.lista ?? [])
+    .filter((g) => g.valido && g.resolvida)
+    .map((g) => g.resolvida);
+  return [
+    ...(derived?.invocacoes?.lista ?? []), ...quimeras, ...hordas, ...nucleos,
+    ...(derived?.mecha ? [derived.mecha] : []),
+  ];
 }
 
 /** A invocação (ou Quimera) resolvida daquele id, ou `null`. */
@@ -300,53 +382,714 @@ export function invocacaoDaMesa(derived, invId) {
   return invocacoesDaMesa(derived).find((i) => i.id === invId) ?? null;
 }
 
-/** A linha daquela invocação, com o padrão de quem nunca foi tocada. */
+/**
+ * A linha daquela invocação, com o padrão de quem nunca foi tocada, mais três
+ * campos de TELA que nunca são gravados: o rótulo do estado, se é morte
+ * permanente e se ocupa vaga em campo. Eles saem daqui para a aba não importar a
+ * sessão, que puxaria meio sistema para dentro de um componente de tela.
+ */
 export function estadoDaInvocacao(sessao, invId) {
-  const e = sessao?.invocacoes?.[invId];
+  const linha = linhaDaInvocacao(sessao, invId);
   return {
-    emCampo: !!e?.emCampo,
+    ...linha,
+    rotulo: ROTULO_ESTADO_INVOCACAO[linha.estado],
+    terminal: ESTADOS_TERMINAIS.has(linha.estado),
+    /* A Bem Treinada em tarefa fora do combate "não é considerada como uma
+       Invocação em Campo" (Adicionais). */
+    contaNoCampo: ESTADOS_EM_CAMPO.has(linha.estado) && !linha.emTarefa,
+    // Dentro de um composto ativo (2026-10-01, Etapa 9): o id dele e o rótulo.
+    emComposto: compostoAtivoDe(sessao, invId),
+    rotuloComposto: rotuloDoComposto(compostoAtivoDe(sessao, invId)),
+  };
+}
+
+/** A linha GRAVÁVEL: só o que a sessão guarda. */
+function linhaDaInvocacao(sessao, invId) {
+  const e = sessao?.invocacoes?.[invId];
+  const estado = ESTADO_VALIDO.has(e?.estado) ? e.estado : estadoLegado(e);
+  const retorno = fracaoDeRetorno(e?.retorno) ?? (e && e.estado == null && e.abatida ? 0.5 : null);
+  return comBooleanos({
+    estado,
     pvAtual: e?.pvAtual ?? null,
     almaAtual: e?.almaAtual ?? null,
     pvTempFontes: e?.pvTempFontes ?? {},
     auxilios: e?.auxilios ?? {},
-    abatida: !!e?.abatida,
-    exorcizada: !!e?.exorcizada,
-  };
-}
-
-/** Escreve na linha daquela invocação. Devolve sessão nova. */
-function comInvocacao(sessao, invId, partial) {
-  if (!invId) return sessao;
-  const atual = estadoDaInvocacao(sessao, invId);
-  return {
-    ...sessao,
-    invocacoes: { ...(sessao.invocacoes || {}), [invId]: { ...atual, ...partial } },
-  };
+    retorno,
+    quedas: Math.max(0, inteiro(e?.quedas, 0)),
+    exorcismos: Math.max(0, inteiro(e?.exorcismos, 0)),
+    bloqueadaAteFimDaCena: !!e?.bloqueadaAteFimDaCena,
+    ultimaEntrada: e?.ultimaEntrada ?? null,
+    ...camposDeIntrinseca(e),
+  });
 }
 
 /**
- * Traz ao campo ou dissipa.
+ * O estado de mesa das Intrínsecas e Auras (2026-09-30, Etapa 6):
+ *   auras     { [caracId]: true }, as Auras desta invocação em que o dono está
+ *   emTarefa  a Bem Treinada cumprindo um comando fora do combate (sai da contagem)
+ *   forma     "arma" | "armadura" | null, a Forma ligada. Ela segue EM CAMPO
+ */
+function camposDeIntrinseca(e) {
+  const auras = {};
+  for (const [id, v] of Object.entries((e?.auras && typeof e.auras === "object") ? e.auras : {})) if (v) auras[id] = true;
+  const opcoes = {};
+  for (const [id, v] of Object.entries((e?.opcoesDeEntrada && typeof e.opcoesDeEntrada === "object") ? e.opcoesDeEntrada : {})) if (v) opcoes[id] = true;
+  return {
+    auras,
+    emTarefa: !!e?.emTarefa,
+    forma: e?.forma === "arma" || e?.forma === "armadura" ? e.forma : null,
+    /* As opções do Controlador (2026-09-30, Etapa 7): o que a mesa marcou para a
+       PRÓXIMA entrada (Autonomia, Resistência Sobrecarregada), o que a entrada
+       deixou valendo enquanto ela está em campo, e quantas vezes ela entrou desde
+       o descanso (o Fantoche Supremo entra uma vez só). */
+    opcoesDeEntrada: opcoes,
+    autonomia: !!e?.autonomia,
+    sobrecargaPv: Math.max(0, inteiro(e?.sobrecargaPv, 0)),
+    entradasDesdeDescanso: Math.max(0, inteiro(e?.entradasDesdeDescanso, 0)),
+    /* A duração do Corpo Amaldiçoado (2026-09-30, Etapa 8): as rodadas de combate
+       desde que ele entrou (ou desde que o combate começou com ele em campo), e a
+       manutenção da rodada que ainda não foi paga. Ver `avancaInvocacoesNaRodada`. */
+    rodadasAtiva: Math.max(0, inteiro(e?.rodadasAtiva, 0)),
+    manutencaoPendente: !!e?.manutencaoPendente,
+    /* Os compostos (2026-10-01, Etapa 9). Na linha do COMPOSTO: quem está dentro
+       (`componentes`), os membros ativos da Horda (`null` é todos), a metade do PV
+       máximo do líder reaproveitado, a perda de metade já aplicada, o núcleo ativo
+       do Corpo de Múltiplos Núcleos e as duas Marionetes do Mecha. */
+    componentes: Array.isArray(e?.componentes) ? e.componentes.filter((x) => typeof x === "string") : [],
+    membrosAtivos: Array.isArray(e?.membrosAtivos) ? e.membrosAtivos.filter((x) => typeof x === "string") : null,
+    pvMaxMetade: !!e?.pvMaxMetade,
+    metadePerdida: !!e?.metadePerdida,
+    nucleoAtivo: typeof e?.nucleoAtivo === "string" ? e.nucleoAtivo : null,
+    maiorId: typeof e?.maiorId === "string" ? e.maiorId : null,
+    menorId: typeof e?.menorId === "string" ? e.menorId : null,
+    menorQuebrada: !!e?.menorQuebrada,
+  };
+}
+
+/** A linha de um composto que acabou: fora de campo, sem nada dentro. */
+const COMPOSTO_DESFEITO = {
+  estado: "fora", pvAtual: null, pvTempFontes: {}, auxilios: {}, auras: {}, forma: null,
+  autonomia: false, sobrecargaPv: 0, retorno: null, quedas: 0, exorcismos: 0,
+  componentes: [], membrosAtivos: null, pvMaxMetade: false, metadePerdida: false,
+  maiorId: null, menorId: null, menorQuebrada: false, rodadasAtiva: 0, manutencaoPendente: false,
+};
+
+/** As linhas que são de composto que se DESFAZ (Horda, Quimera, Mecha). O Corpo
+    de Múltiplos Núcleos é um Corpo de verdade, e segue as regras dele. */
+const ehCompostoQueSeDesfaz = (id) => /^(horda|quimera):/.test(id) || id === "mecha";
+
+/**
+ * O composto ATIVO que tem esta invocação dentro (o id da linha dele), ou null.
+ * Quem está numa Horda, numa Quimera, num Mecha ou num grupo de núcleos não entra
+ * em campo sozinho, e o Mecha não se desfaz por um componente sair.
+ */
+export function compostoAtivoDe(sessao, invId) {
+  if (!invId) return null;
+  for (const [id, e] of Object.entries(sessao?.invocacoes || {})) {
+    if (id === invId || estadoDaLinha(e) !== "ativa") continue;
+    if (Array.isArray(e?.componentes) && e.componentes.includes(invId)) return id;
+  }
+  return null;
+}
+
+/** O rótulo de quem está dentro de um composto. */
+export function rotuloDoComposto(id) {
+  if (!id) return null;
+  if (id === "mecha") return "No Mecha";
+  if (id.startsWith("horda:")) return "Na Horda";
+  if (id.startsWith("quimera:")) return "Na Quimera";
+  if (id.startsWith("nucleos:")) return "Nos Núcleos";
+  return "Em Composto";
+}
+
+/** A Reserva para Invocação, saneada. */
+function normalizaReserva(r) {
+  const modo = r?.modo === "metade" || r?.modo === "gratis" ? r.modo : null;
+  return { usada: !!r?.usada, modo, restantes: modo ? Math.max(0, inteiro(r?.restantes, 0)) : 0 };
+}
+
+/** Escreve na linha daquela invocação, e refaz os booleanos. Devolve sessão nova. */
+function comInvocacao(sessao, invId, partial) {
+  if (!invId) return sessao;
+  const atual = linhaDaInvocacao(sessao, invId);
+  return {
+    ...sessao,
+    invocacoes: { ...(sessao.invocacoes || {}), [invId]: comBooleanos({ ...atual, ...partial }) },
+  };
+}
+
+/** As regras de quem não as recebeu: o Shikigami, que é a regra de antes. */
+const regrasOuPadrao = (regras) => regras || regrasDoTipoValor("shikigami");
+
+/**
+ * Para onde vai uma invocação cujo PV acabou de chegar a `pvDepois` (zero ou
+ * menos, e o que passa de zero é o excedente). Devolve só o que muda.
  *
- * ⚠ DISSIPAR NÃO ZERA O PV, e a decisão é de regra: "Caso uma Invocação seja
- * dissipada, ela pode ser reinvocada com os PVs que possuía", e só o Shikigami
- * de Técnica volta cheio na primeira vez (ver `tracosDeTecnica`). Zerar aqui
- * inventaria uma cura de graça em toda dissipação.
+ * `jaCaida` diz que ela já estava a 0 ou menos antes do golpe: ela não "cai de
+ * novo" (a Marionete não conta outra queda), e só o excedente decide.
  *
- * O que a saída de campo faz é apagar os AUXÍLIOS: bônus que sobrevive à fonte
- * é bug com cara de número. Ver `auxiliosLigadosDa`.
+ * | Tipo (aZero)            | A 0 PV                          | Excedente acima do máximo |
+ * |---|---|---|
+ * | Shikigami (dissipada)   | dissipada, volta com ½          | exorcizada                |
+ * | Técnica (dissipada)     | dissipada, volta com ½          | 1º: dissipada com ½. 2º antes do descanso: morta |
+ * | Maldição (exorcizada)   | exorcizada                      | exorcizada                |
+ * | Marionete (quebrada)    | quebrada (1ª volta com ½, 2ª com ¼), a 3ª queda destrói | destruída |
+ * | Corpo (desativada)      | desativado, PV negativo         | a −PV máximo, destruído (núcleo quebrado) |
+ */
+export function transicaoDeQueda(regras, atual, pvDepois, max, jaCaida = false) {
+  const r = regrasOuPadrao(regras);
+  const maximo = Math.max(0, inteiro(max, 0));
+  if (pvDepois > 0) return null;
+  const passou = -pvDepois > maximo;   // "dano excedente SUPERIOR ao seu máximo de vida"
+  const sai = { auxilios: {}, pvTempFontes: {}, auras: {}, forma: null, autonomia: false, sobrecargaPv: 0 };
+  switch (r.aZero) {
+    case "desativada": {
+      if (pvDepois <= -maximo) return { ...sai, estado: "destruida", pvAtual: -maximo };
+      return { ...sai, estado: "desativada", pvAtual: pvDepois };
+    }
+    case "quebrada": {
+      if (passou) return { ...sai, estado: "destruida", pvAtual: 0 };
+      if (jaCaida) return { ...sai, pvAtual: 0 };
+      const quedas = (atual?.quedas || 0) + 1;
+      if (quedas >= 3) return { ...sai, estado: "destruida", pvAtual: 0, quedas };
+      return { ...sai, estado: "quebrada", pvAtual: 0, quedas, retorno: quedas === 1 ? 0.5 : 0.25 };
+    }
+    case "exorcizada":
+      return { ...sai, estado: "exorcizada", pvAtual: 0 };
+    case "dissipada":
+    default: {
+      if (!passou) return { ...sai, estado: "dissipada", pvAtual: 0, retorno: 0.5 };
+      if (r.terminal === "morta") {
+        const exorcismos = (atual?.exorcismos || 0) + 1;
+        if (exorcismos >= 2) return { ...sai, estado: "morta", pvAtual: 0, exorcismos };
+        return { ...sai, estado: "dissipada", pvAtual: 0, retorno: 0.5, exorcismos };
+      }
+      return { ...sai, estado: r.terminal, pvAtual: 0 };
+    }
+  }
+}
+
+/** O PV com que ela entra em campo agora. Guardada por vontade volta com o PV que
+    tinha (Livro: "retornará com os mesmos pontos de vida que possuía quando
+    dissipada"). Quem caiu volta com a fração. O resto, com o corrente. */
+function pvInicialDe(atual, pvMax) {
+  const max = Math.max(0, inteiro(pvMax, 0));
+  if (atual.estado === "guardada") return atual.pvAtual;
+  if (atual.retorno != null) return Math.floor(max * atual.retorno);
+  return atual.pvAtual;
+}
+
+/**
+ * A ENTRADA EM CAMPO (decisão do autor, 2026-09-30): uma função só para invocar e
+ * ativar, porque "Ativar uma Invocação também conta como Invocá-la para todos os
+ * efeitos" (Mecânicas). Quem quer saber se ela "acabou de ser invocada" lê
+ * `contaComoInvocar`, e nunca compara a via.
+ *
+ * Pura: calcula, e não grava. Devolve `{ permitida, motivo, verbo, via,
+ * contaComoInvocar, custo: { partes, total }, pvInicial }`.
+ *
+ * ⚠ O CUSTO SAI DO PE DO DONO na mesa (Ficha e Encontro), e a entrada recusa o
+ * gasto que o PE não cobre. O Criador não chama esta função.
+ */
+export function entradaDaInvocacao(sessao, inv, { via = "invocar" } = {}) {
+  const atual = estadoDaInvocacao(sessao, inv?.id);
+  const regras = inv?.regras ?? regrasDoTipoValor(inv?.tipoMecanico);
+  const verbo = regras.verbo === "ativar" ? "Ativar" : "Invocar";
+  const nega = (motivo, custo = { partes: [], total: 0 }) => ({
+    permitida: false, motivo, verbo, via, contaComoInvocar: false, custo, pvInicial: null,
+  });
+  if (!inv) return nega("Invocação Inexistente");
+  if (ESTADOS_TERMINAIS.has(atual.estado)) return nega(ROTULO_ESTADO_INVOCACAO[atual.estado]);
+  if (atual.estado === "ativa") return nega("Já Em Campo");
+  if (atual.bloqueadaAteFimDaCena) return nega("Bloqueada Até o Fim da Cena");
+  if (atual.estado === "quebrada" || atual.estado === "recolhida") return nega("Precisa Ser Reconstruída");
+  if (atual.estado === "desativada") return nega("Núcleo Desativado");
+  /* OS COMPOSTOS (2026-10-01, Etapa 9). Quem está dentro de um composto ativo não
+     entra sozinho, e o composto só entra com todas as componentes livres (nem em
+     campo, nem caídas, nem em outro composto, nem perdidas). */
+  if (atual.emComposto) return nega(atual.rotuloComposto);
+  // "Um Controlador só pode manter 1 Quimera ativa por cena" (Mecânicas).
+  const ehQuimera = String(inv.id).startsWith("quimera:");
+  if (ehQuimera && sessao?.quimeraDaCena && sessao.quimeraDaCena !== inv.id) return nega("Uma Quimera por Cena");
+  for (const cid of Array.isArray(inv.componentesIds) ? inv.componentesIds : []) {
+    const c = estadoDaInvocacao(sessao, cid);
+    if (c.terminal || c.bloqueadaAteFimDaCena || c.emComposto
+      || ["ativa", "quebrada", "recolhida", "desativada"].includes(c.estado)) {
+      return nega("Componente Indisponível");
+    }
+  }
+  /* Fantoche Supremo: "você só pode Invocar o seu fantoche supremo uma vez por
+     descanso longo" (o botão de descanso é um só, e vale como longo). */
+  if ((inv.marcadores ?? []).some((m) => m?.id === "fantoche_supremo") && atual.entradasDesdeDescanso >= 1) {
+    return nega("Fantoche Supremo: Uma Vez por Descanso");
+  }
+  /* "Caso a Invocação seja dissipada voluntariamente, você pode optar por a
+     retornar sem pagar o seu custo novamente" (Livro). */
+  const voluntaria = atual.estado === "guardada";
+  const base = voluntaria ? 0 : Math.max(0, inteiro(inv.custo, 0));
+  const partes = voluntaria
+    ? [{ label: "Retorno Sem Custo", valor: 0 }]
+    : (Array.isArray(inv.fontes?.custo) && inv.fontes.custo.length ? [...inv.fontes.custo] : [{ label: "Custo", valor: base }]);
+  /* RESERVA PARA INVOCAÇÃO (E-01, 2026-09-30): "trazer duas invocações com o custo
+     reduzido pela metade ou uma invocação sem custo". Reduz o custo DA INVOCAÇÃO,
+     e não o que se paga a mais (Autonomia, Sobrecarga). Arredonda para baixo. */
+  const reserva = normalizaReserva(sessao?.reservaInvocacao);
+  let custoDaInvocacao = base;
+  let usaReserva = null;
+  if (reserva.modo && reserva.restantes > 0 && base > 0) {
+    const reducao = reserva.modo === "gratis" ? base : base - Math.floor(base / 2);
+    custoDaInvocacao = base - reducao;
+    partes.push({ label: "Reserva para Invocação", valor: -reducao });
+    usaReserva = reserva.modo;
+  }
+  /* As opções marcadas para esta entrada: Autonomia (paga na entrada) e
+     Resistência Sobrecarregada (PE a mais, PV máximo a mais em campo).
+
+     ⚠ A AUTONOMIA DA MALDIÇÃO é paga "no início do combate" (Mecânicas), e é o
+     `iniciaInvocacoesNoCombate` quem a cobra. Ativada com o combate JÁ correndo,
+     a entrada dela é a entrada apropriada (decisão do autor, PV-10), e a
+     Autonomia vem junto. */
+  const emCombate = inteiro(sessao?.rodada, 0) > 0 || !!sessao?.combate?.ativo;
+  let extras = 0;
+  let autonomia = false;
+  let sobrecargaPv = 0;
+  for (const o of inv.opcoesDeUso ?? []) {
+    const cobraAgora = o.quando === "entrada" || (o.quando === "inicioCombate" && emCombate);
+    if (!atual.opcoesDeEntrada?.[o.id] || !cobraAgora || !Number.isFinite(o.custo)) continue;
+    extras += o.custo;
+    partes.push({ label: o.nome, valor: o.custo });
+    if (o.id === "autonomia") autonomia = true;
+    if (o.id === "sobrecarga") sobrecargaPv = Math.max(0, inteiro(o.pv, 0));
+  }
+  const total = custoDaInvocacao + extras;
+  const custo = { partes, total };
+  const disponivel = Math.max(0, inteiro(sessao?.peAtual, 0)) + peTempTotal(sessao);
+  if (total > disponivel) return nega("PE Insuficiente", custo);
+  return {
+    permitida: true, motivo: null, verbo,
+    via: voluntaria ? "retornoVoluntario" : usaReserva ? "reserva" : via,
+    contaComoInvocar: true, custo, pvInicial: pvInicialDe(atual, inv.pv),
+    usaReserva, autonomia, sobrecargaPv,
+    /* O Corpo com CL 0 "dura" zero rodadas: ativado com o combate correndo, a
+       manutenção já vale para esta rodada. */
+    manutencaoImediata: !!inv.duracao && emCombate && inteiro(inv.duracao.rodadas, 0) <= 0,
+    /* Os compostos: quem vai dentro, a Quimera da cena e a Horda de um líder que
+       liderou outra dissipada neste combate (metade do PV máximo). */
+    componentes: Array.isArray(inv.componentesIds) ? [...inv.componentesIds] : [],
+    quimeraDaCena: ehQuimera ? inv.id : null,
+    pvMaxMetade: !!inv.horda && (sessao?.lideresDeHordaDissolvida ?? []).includes(inv.liderId),
+  };
+}
+
+/** Grava a entrada já calculada: gasta o PE (casca primeiro) e põe em campo. */
+export function entraEmCampo(sessao, invId, entrada) {
+  if (!invId || !entrada?.permitida) return sessao;
+  let pago = gastaPe(sessao, entrada.custo?.total ?? 0);
+  // A Reserva gasta uma entrada: a "Sem Custo" acaba nela, e a "pela Metade" vale para duas.
+  if (entrada.usaReserva) {
+    const r = normalizaReserva(pago.reservaInvocacao);
+    const restantes = Math.max(0, r.restantes - 1);
+    pago = { ...pago, reservaInvocacao: { ...r, restantes, modo: restantes ? r.modo : null } };
+  }
+  const atual = linhaDaInvocacao(sessao, invId);
+  if (entrada.quimeraDaCena) pago = { ...pago, quimeraDaCena: entrada.quimeraDaCena };
+  return comInvocacao(pago, invId, {
+    estado: "ativa",
+    // A Horda com metade do PV máximo nasce CHEIA dele: o `null` é o máximo novo.
+    pvAtual: entrada.pvMaxMetade ? null : entrada.pvInicial,
+    componentes: Array.isArray(entrada.componentes) ? entrada.componentes : [],
+    membrosAtivos: null,
+    pvMaxMetade: !!entrada.pvMaxMetade,
+    metadePerdida: false,
+    ultimaEntrada: { via: entrada.via, rodada: inteiro(sessao.rodada, 0), custo: entrada.custo?.total ?? 0 },
+    autonomia: !!entrada.autonomia,
+    sobrecargaPv: Math.max(0, inteiro(entrada.sobrecargaPv, 0)),
+    opcoesDeEntrada: {},
+    entradasDesdeDescanso: atual.entradasDesdeDescanso + 1,
+    rodadasAtiva: 0,
+    manutencaoPendente: !!entrada.manutencaoImediata,
+  });
+}
+
+/** Marca ou desmarca uma opção do Controlador para a PRÓXIMA entrada desta
+    invocação (Autonomia, Resistência Sobrecarregada). Quem cobra é a entrada. */
+export function alternaOpcaoDeEntrada(sessao, invId, opcaoId, ligado) {
+  if (!opcaoId) return sessao;
+  const atual = linhaDaInvocacao(sessao, invId);
+  const opcoesDeEntrada = { ...atual.opcoesDeEntrada };
+  if (ligado) opcoesDeEntrada[opcaoId] = true;
+  else delete opcoesDeEntrada[opcaoId];
+  return comInvocacao(sessao, invId, { opcoesDeEntrada });
+}
+
+/**
+ * Usa a Reserva para Invocação (Controlador 10°): "Uma vez por descanso curto,
+ * você pode optar por usar a ação Invocar para trazer duas invocações com o custo
+ * reduzido pela metade ou uma invocação sem custo". `modo` é "metade" (vale para
+ * as duas próximas entradas) ou "gratis" (vale para a próxima). Uma vez por
+ * descanso: depois de usada, só o descanso a devolve.
+ */
+export function ativaReservaInvocacao(sessao, modo) {
+  const r = normalizaReserva(sessao?.reservaInvocacao);
+  if (r.usada || (modo !== "metade" && modo !== "gratis")) return sessao;
+  return { ...sessao, reservaInvocacao: { usada: true, modo, restantes: modo === "metade" ? 2 : 1 } };
+}
+
+/** Invoca ou ativa pela mesa, com o custo e as regras da resolvida. */
+export function invocaNaMesa(sessao, derived, invId, opcoes = {}) {
+  const inv = invocacaoDaMesa(derived, invId);
+  return entraEmCampo(sessao, invId, entradaDaInvocacao(sessao, inv, opcoes));
+}
+
+/**
+ * Tira de campo por vontade. Fica GUARDADA, com o PV que tinha: dissipar não
+ * zera nada, e quem não dissipa (Marionete, Corpo, Maldição) fica fora de
+ * combate do mesmo jeito. Os auxílios e a casca de PV caem: bônus que sobrevive
+ * à fonte é bug com cara de número.
+ */
+export function saiDeCampo(sessao, invId) {
+  const atual = estadoDaInvocacao(sessao, invId);
+  if (atual.estado !== "ativa") return sessao;
+  // O componente de um Mecha não sai sozinho: quem desfaz é o Separar.
+  if (atual.emComposto === "mecha") return sessao;
+  if (invId === "mecha") return separaMecha(sessao);
+  /* "Uma Horda só pode ser dissipada voluntariamente no final do combate"
+     (Livro). Com o combate correndo, o botão é recusado, e a Horda sai pela queda. */
+  if (String(invId).startsWith("horda:")) {
+    if (emCombateNaSessao(sessao)) return sessao;
+    return comInvocacao(sessao, invId, COMPOSTO_DESFEITO);
+  }
+  return comInvocacao(sessao, invId, {
+    estado: "guardada", auxilios: {}, pvTempFontes: {}, auras: {}, forma: null, autonomia: false, sobrecargaPv: 0,
+    rodadasAtiva: 0, manutencaoPendente: false,
+    // A Quimera (e o grupo de núcleos) guardados soltam as componentes.
+    componentes: [],
+  });
+}
+
+/** O combate está correndo: a rodada saiu do zero ou o Encontro o abriu. */
+export const emCombateNaSessao = (sessao) => inteiro(sessao?.rodada, 0) > 0 || !!sessao?.combate?.ativo;
+
+/* ============================================================ */
+/* OS COMPOSTOS NA MESA (2026-10-01, Etapa 9)                    */
+/* ============================================================ */
+
+/** Uma componente cai (dissipada pela regra do tipo dela) ou é exorcizada (o
+    excedente acima do máximo, que também segue o tipo: a Técnica conta o
+    exorcismo, a Marionete é destruída). */
+function quedaDoComponente(sessao, m, exorciza = false) {
+  if (!m?.id) return sessao;
+  const atual = linhaDaInvocacao(sessao, m.id);
+  if (ESTADOS_TERMINAIS.has(atual.estado)) return sessao;
+  const max = Math.max(0, inteiro(m.pv, 0));
+  const queda = transicaoDeQueda(m.regras, atual, exorciza ? -(max + 1) : 0, max, false);
+  return queda ? comInvocacao(sessao, m.id, queda) : sessao;
+}
+
+/**
+ * Dano numa HORDA (Livro, "Criando Hordas"):
+ *   "Quando uma horda chega a metade dos seus pontos de vida máximos, ela perde
+ *    metade dos seus membros, iniciando pelos de grau menor" (os que saem são
+ *    dissipados pela regra do tipo de cada um);
+ *   "Caso o dano que ela receba seja metade da vida máxima da horda, ultrapassando
+ *    o limiar de metade da vida, toda Invocação que fosse ser dissipada é
+ *    exorcizada".
+ * A 0 PV a Horda acaba: o líder e os membros que sobraram caem pelo tipo (e são
+ * exorcizados com o excedente acima do máximo), e o líder fica marcado, porque a
+ * Horda foi dissipada durante o combate.
+ */
+function aplicaDanoHorda(sessao, h, bruto) {
+  const dano = Math.max(0, inteiro(bruto, 0));
+  if (!dano) return sessao;
+  const atual = estadoDaInvocacao(sessao, h.id);
+  if (atual.estado !== "ativa") return sessao;
+  const max = Math.max(0, inteiro(h.pv, 0));
+  const pv = atual.pvAtual ?? max;
+  const { fontes, sobrou } = drenaPvTemp(atual.pvTempFontes, dano);
+  const restante = pv - sobrou;
+  const metade = Math.floor(max / 2);
+  const membros = Array.isArray(h.membrosDetalhe) ? h.membrosDetalhe : [];
+  let ativos = atual.membrosAtivos ?? membros.map((m) => m.id);
+  let out = sessao;
+  const parcial = { pvTempFontes: fontes, pvAtual: restante };
+  if (!atual.metadePerdida && pv > metade && restante <= metade) {
+    const exorciza = sobrou >= metade;
+    const saem = membrosQueSaemDaMesa(membros.filter((m) => ativos.includes(m.id)));
+    for (const id of saem) out = quedaDoComponente(out, membros.find((m) => m.id === id), exorciza);
+    ativos = ativos.filter((id) => !saem.includes(id));
+    Object.assign(parcial, { membrosAtivos: ativos, metadePerdida: true });
+  }
+  if (restante > 0) return comInvocacao(out, h.id, parcial);
+  const passou = -restante > max;
+  out = quedaDoComponente(out, { id: h.liderId, regras: h.regras, pv: h.liderPv }, passou);
+  for (const id of ativos) out = quedaDoComponente(out, membros.find((m) => m.id === id), passou);
+  out = { ...out, lideresDeHordaDissolvida: [...new Set([...(out.lideresDeHordaDissolvida ?? []), h.liderId])] };
+  return comInvocacao(out, h.id, COMPOSTO_DESFEITO);
+}
+
+/** Os membros que saem na metade da vida: metade, para baixo, do menor grau para
+    o maior, e no mesmo grau o último que entrou. Mesma conta do
+    `membrosQueSaem` do resolvedor, que a sessão não pode importar. */
+function membrosQueSaemDaMesa(ativos) {
+  const n = Math.floor(ativos.length / 2);
+  return ativos
+    .map((m, i) => ({ id: m.id, rank: m.rank ?? 0, i }))
+    .sort((a, b) => a.rank - b.rank || b.i - a.i)
+    .slice(0, n)
+    .map((m) => m.id);
+}
+
+/**
+ * Dano na QUIMERA: segue a do Shikigami, e a queda chega às componentes
+ * (Mecânicas): "Caso ela seja exorcizada, os Shikigamis que são seus componentes
+ * não são exorcizados, mas não poderão ser invocados novamente durante a mesma
+ * cena. Se ela for dissipada, as regras comuns se aplicam a todos os seus
+ * componentes."
+ */
+function aplicaDanoQuimera(sessao, q, bruto) {
+  const antes = linhaDaInvocacao(sessao, q.id);
+  let out = aplicaDanoInvocacao(sessao, q.id, bruto, q.pv, regrasDoTipoValor("shikigami"));
+  const depois = linhaDaInvocacao(out, q.id);
+  if (antes.estado !== "ativa" || depois.estado === "ativa") return out;
+  const componentes = antes.componentes.length ? antes.componentes : (q.componentesIds ?? []);
+  for (const cid of componentes) {
+    const c = linhaDaInvocacao(out, cid);
+    if (ESTADOS_TERMINAIS.has(c.estado)) continue;
+    out = ESTADOS_TERMINAIS.has(depois.estado)
+      ? comInvocacao(out, cid, { bloqueadaAteFimDaCena: true })
+      : comInvocacao(out, cid, { estado: "dissipada", pvAtual: 0, retorno: 0.5 });
+  }
+  return comInvocacao(out, q.id, { componentes: [] });
+}
+
+/**
+ * Dano no MECHA (Mecânicas): a casca é o PV da Marionete menor, e "Se o PV
+ * Temporário acabar, a Marionete com menor PV é quebrada e suas Ações e
+ * Características são desativadas". "Todas as regras de Marionete são aplicadas
+ * normalmente": a 0 PV a maior quebra também, e o Mecha se desfaz.
+ */
+function aplicaDanoMecha(sessao, derived, mecha, bruto) {
+  const antes = linhaDaInvocacao(sessao, "mecha");
+  if (antes.estado !== "ativa") return sessao;
+  const cascaAntes = antes.pvTempFontes?.[FONTE_PV_MECHA] ?? 0;
+  let out = aplicaDanoInvocacao(sessao, "mecha", bruto, mecha.pv, regrasDoTipoValor("marionete"));
+  const depois = linhaDaInvocacao(out, "mecha");
+  const comp = (id) => {
+    const r = invocacaoDaMesa(derived, id);
+    return r ? { id, regras: r.regras, pv: r.pv } : null;
+  };
+  if (!antes.menorQuebrada && cascaAntes > 0 && (depois.pvTempFontes?.[FONTE_PV_MECHA] ?? 0) <= 0) {
+    out = quedaDoComponente(out, comp(antes.menorId), false);
+    out = comInvocacao(out, "mecha", { menorQuebrada: true });
+  }
+  if (depois.estado === "ativa") return out;
+  const destruido = ESTADOS_TERMINAIS.has(depois.estado);
+  out = quedaDoComponente(out, comp(antes.maiorId), destruido);
+  return comInvocacao(out, "mecha", COMPOSTO_DESFEITO);
+}
+
+/**
+ * O DANO NA MESA, por quem leva: a Horda, a Quimera e o Mecha têm regra própria
+ * de queda, e o resto é a invocação comum pela regra do tipo. É o escritor que a
+ * Ficha e o Encontro chamam.
+ */
+export function aplicaDanoNaMesa(sessao, derived, invId, bruto) {
+  const inv = invocacaoDaMesa(derived, invId);
+  if (!inv) return sessao;
+  if (inv.horda) return aplicaDanoHorda(sessao, inv, bruto);
+  if (inv.mecha) return aplicaDanoMecha(sessao, derived, inv, bruto);
+  if (String(invId).startsWith("quimera:")) return aplicaDanoQuimera(sessao, inv, bruto);
+  return aplicaDanoInvocacao(sessao, invId, bruto, inv.pv, inv.regras);
+}
+
+/**
+ * Pode formar o Mecha com estas duas? (Mecânicas, "Criando Mechas"): 5 níveis em
+ * Controlador (o real, DA-13), duas Marionetes ativas, do mesmo tamanho e maiores
+ * que o Controlador (o tamanho que a ficha já deriva, PV-19), e nenhum Mecha
+ * ativo. A adjacência é de mesa. Devolve `{ permitido, motivo, maiorId, menorId }`.
+ */
+export function mechaPermitido(sessao, derived, idA, idB) {
+  const nega = (motivo) => ({ permitido: false, motivo, maiorId: null, menorId: null });
+  if ((derived?.invocacoes?.nivelControladorReal ?? 0) < 5) return nega("Pede 5 Níveis de Controlador");
+  if (linhaDaInvocacao(sessao, "mecha").estado === "ativa") return nega("Já Há um Mecha");
+  if (!idA || !idB || idA === idB) return nega("Escolha Duas Marionetes");
+  const a = invocacaoDaMesa(derived, idA);
+  const b = invocacaoDaMesa(derived, idB);
+  if (!a || !b || a.regras?.familia !== "marionete" || b.regras?.familia !== "marionete") return nega("Só Marionetes");
+  for (const id of [idA, idB]) {
+    const e = estadoDaInvocacao(sessao, id);
+    if (e.estado !== "ativa" || e.emComposto) return nega("As Duas Precisam Estar Ativas");
+  }
+  if (a.tamanho !== b.tamanho) return nega("Tamanhos Diferentes");
+  const ordem = (v) => AFTY_TAMANHOS.findIndex((x) => x.value === v);
+  if (ordem(a.tamanho) <= ordem(derived?.tamanho ?? "medio")) return nega("Precisam Ser Maiores que o Controlador");
+  const [maior, menor] = (b.pv > a.pv) ? [b, a] : [a, b];
+  return { permitido: true, motivo: null, maiorId: maior.id, menorId: menor.id };
+}
+
+/**
+ * Forma o Mecha (Ação Bônus): "O PV de um Mecha é igual a maior PV de seus
+ * componentes com o menor PV sendo utilizada como PV Temporário". O PV atual de
+ * cada uma vai junto: a maior dá o PV do Mecha, e a menor, a casca. As duas
+ * seguem ativas, e é assim que o Mecha "conta como duas Invocações em campo".
+ */
+export function formaMecha(sessao, derived, idA, idB) {
+  const p = mechaPermitido(sessao, derived, idA, idB);
+  if (!p.permitido) return sessao;
+  const maior = invocacaoDaMesa(derived, p.maiorId);
+  const menor = invocacaoDaMesa(derived, p.menorId);
+  const casca = Math.max(0, inteiro(linhaDaInvocacao(sessao, p.menorId).pvAtual ?? menor.pv, 0));
+  return comInvocacao(sessao, "mecha", {
+    ...COMPOSTO_DESFEITO,
+    estado: "ativa",
+    pvAtual: linhaDaInvocacao(sessao, p.maiorId).pvAtual ?? maior.pv,
+    pvTempFontes: { [FONTE_PV_MECHA]: casca },
+    componentes: [p.maiorId, p.menorId],
+    maiorId: p.maiorId,
+    menorId: p.menorId,
+    ultimaEntrada: { via: "mecha", rodada: inteiro(sessao.rodada, 0), custo: 0 },
+  });
+}
+
+/** Separa o Mecha (Ação Bônus): "A Marionete com maior PV tem sua vida igualizada
+    aos do Mecha, enquanto a com menor PV fica com sua vida igualizada aos PVs
+    Temporários". A menor que já quebrou continua quebrada. */
+export function separaMecha(sessao) {
+  const m = linhaDaInvocacao(sessao, "mecha");
+  if (m.estado !== "ativa" || !m.maiorId) return sessao;
+  let out = comInvocacao(sessao, m.maiorId, { pvAtual: m.pvAtual });
+  if (!m.menorQuebrada && m.menorId) {
+    out = comInvocacao(out, m.menorId, { pvAtual: Math.max(0, inteiro(m.pvTempFontes?.[FONTE_PV_MECHA], 0)) });
+  }
+  return comInvocacao(out, "mecha", COMPOSTO_DESFEITO);
+}
+
+/** Troca o núcleo ativo de um Corpo de Múltiplos Núcleos (Ação Simples): "a
+    Invocação muda sua ficha para o núcleo desativado, porém mantém o PV atual". */
+export function trocaNucleo(sessao, derived, mesaId) {
+  const g = invocacaoDaMesa(derived, mesaId);
+  if (!Array.isArray(g?.nucleos) || g.nucleos.length < 2) return sessao;
+  const atual = linhaDaInvocacao(sessao, mesaId).nucleoAtivo ?? g.nucleoAtivo;
+  const outro = g.nucleos.find((n) => n.id !== atual)?.id;
+  return outro ? comInvocacao(sessao, mesaId, { nucleoAtivo: outro }) : sessao;
+}
+
+/**
+ * Paga a manutenção do Corpo Amaldiçoado nesta rodada: "Você pode mantê-los
+ * ativos após isso gastando 1 de PE, caso eles sejam de Quarto a Segundo Grau,
+ * ou 2 de PE, caso eles sejam de Primeiro a Grau Especial por rodada"
+ * (Mecânicas). `custo` vem da resolvida (`duracao.manutencao`). Sem PE, nada
+ * muda, e a próxima rodada o tira de campo.
+ */
+export function pagaManutencaoCorpo(sessao, invId, custo) {
+  const atual = linhaDaInvocacao(sessao, invId);
+  const pe = Math.max(0, inteiro(custo, 0));
+  if (atual.estado !== "ativa" || !atual.manutencaoPendente) return sessao;
+  if (pe > Math.max(0, inteiro(sessao?.peAtual, 0)) + peTempTotal(sessao)) return sessao;
+  return comInvocacao(gastaPe(sessao, pe), invId, { manutencaoPendente: false });
+}
+
+/** O Corpo que acabou a duração sem manutenção sai de campo com o PV que tinha.
+    Ele não dissipa (o tipo não deixa): só deixa de estar ativo. */
+const corpoSemManutencao = {
+  estado: "fora", auxilios: {}, pvTempFontes: {}, auras: {}, forma: null, autonomia: false, sobrecargaPv: 0,
+  rodadasAtiva: 0, manutencaoPendente: false,
+};
+
+/**
+ * A virada de rodada das invocações (2026-09-30, Etapa 8). Só o Corpo
+ * Amaldiçoado conta rodadas: com a duração (CL rodadas) vencida, a rodada nova
+ * pede a manutenção, e a que passou sem ela o tira de campo. Pura.
+ */
+function avancaInvocacoesNaRodada(sessao, derived) {
+  let out = sessao;
+  for (const inv of invocacoesDaMesa(derived)) {
+    if (!inv?.duracao) continue;
+    const atual = linhaDaInvocacao(out, inv.id);
+    if (atual.estado !== "ativa") continue;
+    if (atual.manutencaoPendente) {
+      out = comInvocacao(out, inv.id, corpoSemManutencao);
+      continue;
+    }
+    const rodadasAtiva = atual.rodadasAtiva + 1;
+    out = comInvocacao(out, inv.id, {
+      rodadasAtiva, manutencaoPendente: rodadasAtiva >= Math.max(0, inteiro(inv.duracao.rodadas, 0)),
+    });
+  }
+  return out;
+}
+
+/**
+ * O combate começou com invocações em campo (2026-09-30, Etapa 8). "Uma Invocação
+ * que comece o combate já ativada ou invocada é considerada como se tivesse
+ * acabado de ser invocada ou ativada para Habilidades de Especialização como
+ * 'Autonomia'" (Mecânicas). Então:
+ *   - a Autonomia marcada e ainda não paga é cobrada agora (é a hora da
+ *     Maldição: "devem ser pagos no início do combate"), se o PE cobrir;
+ *   - a contagem de rodadas do Corpo começa do zero.
+ */
+function iniciaInvocacoesNoCombate(sessao, derived) {
+  /* A CENA NOVA (2026-10-01, Etapa 9): a Quimera da cena e os líderes de Horda
+     dissipada zeram, as componentes bloqueadas "durante a mesma cena" voltam, e a
+     Quimera ou a Horda que acabaram na cena anterior podem ser formadas de novo. */
+  const linhas = {};
+  for (const [id, e] of Object.entries(sessao?.invocacoes || {})) {
+    linhas[id] = ehCompostoQueSeDesfaz(id) && ESTADOS_TERMINAIS.has(estadoDaLinha(e))
+      ? comBooleanos({ ...e, ...COMPOSTO_DESFEITO, bloqueadaAteFimDaCena: false })
+      : (e?.bloqueadaAteFimDaCena ? { ...e, bloqueadaAteFimDaCena: false } : e);
+  }
+  let out = { ...sessao, invocacoes: linhas, quimeraDaCena: null, lideresDeHordaDissolvida: [] };
+  for (const inv of invocacoesDaMesa(derived)) {
+    const atual = linhaDaInvocacao(out, inv.id);
+    if (atual.estado !== "ativa") continue;
+    // Com CL 0, o Corpo já pede a manutenção na primeira rodada.
+    const parcial = {
+      rodadasAtiva: 0,
+      manutencaoPendente: !!inv.duracao && inteiro(inv.duracao.rodadas, 0) <= 0,
+    };
+    const auto = (inv.opcoesDeUso ?? []).find((o) => o.id === "autonomia" && Number.isFinite(o.custo));
+    const disponivel = Math.max(0, inteiro(out?.peAtual, 0)) + peTempTotal(out);
+    if (auto && atual.opcoesDeEntrada?.autonomia && !atual.autonomia && auto.custo <= disponivel) {
+      out = gastaPe(out, auto.custo);
+      const opcoesDeEntrada = { ...atual.opcoesDeEntrada };
+      delete opcoesDeEntrada.autonomia;
+      Object.assign(parcial, {
+        autonomia: true, opcoesDeEntrada,
+        ultimaEntrada: { via: "inicioCombate", rodada: inteiro(out.rodada, 0), custo: auto.custo },
+      });
+    }
+    out = comInvocacao(out, inv.id, parcial);
+  }
+  return out;
+}
+
+/** Marionete quebrada recolhida (Ação Bônus): deixa de ocupar vaga em campo. */
+export function recolheInvocacao(sessao, invId) {
+  const atual = estadoDaInvocacao(sessao, invId);
+  if (atual.estado !== "quebrada") return sessao;
+  return comInvocacao(sessao, invId, { estado: "recolhida" });
+}
+
+/** Marionete reconstruída (Ação Comum e teste de Ofício, rolados na mesa): volta
+    a poder ser ativada, com a fração da queda (½ na 1ª, ¼ na 2ª). */
+export function reconstroiInvocacao(sessao, invId, pvMax) {
+  const atual = estadoDaInvocacao(sessao, invId);
+  if (atual.estado !== "quebrada" && atual.estado !== "recolhida") return sessao;
+  const max = Math.max(0, inteiro(pvMax, 0));
+  return comInvocacao(sessao, invId, {
+    estado: "fora", pvAtual: Math.floor(max * (atual.retorno ?? 0.5)), retorno: null,
+  });
+}
+
+/**
+ * COMPATIBILIDADE: o verbo de antes, que liga e desliga sem cobrar PE. A mesa usa
+ * `invocaNaMesa` e `saiDeCampo`. Fica para quem ainda chama o antigo.
  */
 export function poeInvocacaoEmCampo(sessao, invId, emCampo, pvMax = 0) {
+  if (!emCampo) return saiDeCampo(sessao, invId);
   const atual = estadoDaInvocacao(sessao, invId);
-  if (!emCampo) return comInvocacao(sessao, invId, { emCampo: false, auxilios: {}, pvTempFontes: {} });
-  /* ⚠ QUEM CAIU VOLTA PELA METADE, verbatim do livro: *"quando uma Invocação que
-     já tenha sido desativada é invocada novamente, ela retorna com metade dos
-     seus pontos de vida máximos, até que seja feito um descanso curto ou
-     longo."* A marca `abatida` fica de pé até o descanso, porque a regra vale
-     para toda reinvocação até lá, e não só para a primeira. */
-  const meio = Math.floor(Math.max(0, inteiro(pvMax, 0)) / 2);
-  return comInvocacao(sessao, invId, atual.abatida
-    ? { emCampo: true, pvAtual: meio }
-    : { emCampo: true });
+  if (ESTADOS_TERMINAIS.has(atual.estado) || atual.estado === "ativa") return sessao;
+  return comInvocacao(sessao, invId, { estado: "ativa", pvAtual: pvInicialDe(atual, pvMax) });
 }
 
 /** Liga ou desliga UM auxílio daquela invocação. */
@@ -356,102 +1099,165 @@ export function alternaAuxilioInvocacao(sessao, invId, acaoId, ligado) {
   const auxilios = { ...atual.auxilios };
   if (ligado) auxilios[acaoId] = true;
   else delete auxilios[acaoId];
-  /* Ligar um auxílio de quem está fora de campo TRAZ a invocação ao campo. É a
-     única leitura possível do clique: ninguém liga o escudo de um shikigami
-     guardado, e a alternativa era um interruptor desabilitado que não explica
-     o que falta fazer. */
-  return comInvocacao(sessao, invId, { auxilios, emCampo: atual.emCampo || ligado });
+  /* Ligar um auxílio de quem está fora de campo TRAZ a invocação ao campo, sem
+     cobrar (é o atalho de mesa de antes). Só vale para quem pode voltar: morta,
+     quebrada ou desativada não liga nada. */
+  const podeVoltar = !ESTADOS_TERMINAIS.has(atual.estado)
+    && !["quebrada", "recolhida", "desativada"].includes(atual.estado);
+  if (ligado && atual.estado !== "ativa" && !podeVoltar) return sessao;
+  return comInvocacao(sessao, invId, ligado && atual.estado !== "ativa"
+    ? { auxilios, estado: "ativa" }
+    : { auxilios });
+}
+
+/** Liga ou desliga o dono numa Aura desta invocação (2026-09-30). O app não tem
+    posição: é a mesa que diz que o dono está a 4,5 m. Ver `aurasLigadasDa`. */
+export function alternaAuraInvocacao(sessao, invId, caracId, ligado) {
+  if (!caracId) return sessao;
+  const atual = linhaDaInvocacao(sessao, invId);
+  const auras = { ...atual.auras };
+  if (ligado) auras[caracId] = true;
+  else delete auras[caracId];
+  return comInvocacao(sessao, invId, { auras });
+}
+
+/** A Bem Treinada em tarefa (ou não). */
+export function defineEmTarefa(sessao, invId, emTarefa) {
+  return comInvocacao(sessao, invId, { emTarefa: !!emTarefa });
 }
 
 /**
- * Dano numa invocação. A casca dela come primeiro, igual à do dono.
- *
- * ⚠ CHEGAR A ZERO TIRA DE CAMPO, e é regra do livro: *"Quando uma Invocação
- * chega a 0 pontos de vida, ela é dissipada ou desativada"*. Sem isso, um
- * shikigami morto continuaria sustentando os bônus que ele dava.
- *
- * ⚠ E O DANO EXCEDENTE EXORCIZA: *"caso uma Invocação receba dano excedente
- * superior ao seu máximo de vida, ela é exorcizada ou destruída [...] sendo
- * removido da lista de invocações do controlador"*.
- *
- * ⚠ MAS A LISTA NÃO É MEXIDA AQUI, e é decisão minha, a confirmar (anotada em
- * `docs/a-fazer.md`). Apagar a invocação da CRIATURA é edição de ficha, e a
- * Ficha Final não edita ficha: ela opera. Um clique errado no botão de dano
- * apagaria um shikigami inteiro sem desfazer. O estado fica marcado, a mesa vê,
- * e quem remove de vez é o criador.
+ * Liga ou desliga a Forma de Arma ou de Armadura (Ação Simples). ⚠ A invocação
+ * NÃO SAI DE CAMPO: "Enquanto em Forma de Arma, ela ainda conta como uma Invocação
+ * em Campo e pode ser alvo de ataques" (Adicionais). Só quem está em campo muda
+ * de forma.
  */
-export function aplicaDanoInvocacao(sessao, invId, bruto, pvMax) {
+export function defineFormaInvocacao(sessao, invId, forma) {
+  const atual = linhaDaInvocacao(sessao, invId);
+  if (atual.estado !== "ativa") return sessao;
+  return comInvocacao(sessao, invId, { forma: forma === "arma" || forma === "armadura" ? forma : null });
+}
+
+/**
+ * O dano que o dono recebe vestindo a Forma de Armadura (2026-09-30): "caso você
+ * receba o dano de um ataque sua armadura recebe a metade do dano. Caso receba um
+ * ataque crítico, ambos recebem o dano completo". Pura: devolve quanto vai para
+ * cada um, e quem aplica é a mesa.
+ */
+export function divideDanoComArmadura(dano, critico = false) {
+  const total = Math.max(0, inteiro(dano, 0));
+  if (critico) return { dono: total, armadura: total };
+  const armadura = Math.floor(total / 2);
+  return { dono: total - armadura, armadura };
+}
+
+/**
+ * Dano numa invocação. A casca dela come primeiro, igual à do dono, e o que
+ * chega a zero segue a regra do TIPO (`transicaoDeQueda`).
+ *
+ * ⚠ A LISTA NÃO É MEXIDA AQUI (decisão do autor, 2026-09-30): morte permanente é
+ * estado, e remover a ficha é ação manual no criador.
+ */
+export function aplicaDanoInvocacao(sessao, invId, bruto, pvMax, regras = null) {
   const dano = Math.max(0, inteiro(bruto, 0));
   if (!dano) return sessao;
   const max = Math.max(0, inteiro(pvMax, 0));
   const atual = estadoDaInvocacao(sessao, invId);
+  if (ESTADOS_TERMINAIS.has(atual.estado)) return sessao;
   const pv = atual.pvAtual ?? max;
   const { fontes, sobrou } = drenaPvTemp(atual.pvTempFontes, dano);
   const restante = pv - sobrou;
   if (restante > 0) return comInvocacao(sessao, invId, { pvTempFontes: fontes, pvAtual: restante });
-  /* "dano excedente SUPERIOR ao seu máximo de vida": o excedente é o que passou
-     de zero, e ele tem de passar do MÁXIMO, não do que restava. */
-  const excedente = -restante;
-  return comInvocacao(sessao, invId, {
-    pvTempFontes: fontes,
-    pvAtual: 0,
-    emCampo: false,
-    auxilios: {},
-    abatida: true,
-    exorcizada: atual.exorcizada || excedente > max,
-  });
+  const queda = transicaoDeQueda(regras, atual, restante, max, pv <= 0);
+  return comInvocacao(sessao, invId, { pvTempFontes: fontes, ...queda });
 }
 
-/** Cura numa invocação. Nunca passa do máximo. */
-export function aplicaCuraInvocacao(sessao, invId, bruto, pvMax) {
+/**
+ * A cura que o tipo aceita, pela fonte: "comum" ou "er" (Energia Reversa). A
+ * Marionete não se cura de forma nenhuma ("Marionetes não podem ser curadas de
+ * nenhuma forma"), e a Maldição não se cura por ER (Mecânicas). Pura, para a tela
+ * desenhar o botão travado com o mesmo critério do escritor.
+ */
+export function curaPermitida(regras, fonte = "comum") {
+  const cura = regrasOuPadrao(regras).cura ?? { comum: true, er: true };
+  return fonte === "er" ? !!cura.er : !!cura.comum;
+}
+
+/** Cura numa invocação. Nunca passa do máximo. O Corpo desativado curado acima
+    de 0 volta a funcionar (Mecânicas: "só podendo ser reativado ao ser curado
+    acima de 0"). Morte permanente não se cura, e a fonte que o tipo recusa
+    (`curaPermitida`) não cura nada. */
+export function aplicaCuraInvocacao(sessao, invId, bruto, pvMax, regras = null, fonte = "comum") {
   const cura = Math.max(0, inteiro(bruto, 0));
   if (!cura) return sessao;
+  if (!curaPermitida(regras, fonte)) return sessao;
   const max = Math.max(0, inteiro(pvMax, 0));
   const atual = estadoDaInvocacao(sessao, invId);
-  return comInvocacao(sessao, invId, { pvAtual: entre((atual.pvAtual ?? max) + cura, 0, max) });
+  if (ESTADOS_TERMINAIS.has(atual.estado)) return sessao;
+  const pvAtual = entre((atual.pvAtual ?? max) + cura, -max, max);
+  const reativa = atual.estado === "desativada" && pvAtual > 0 && regrasOuPadrao(regras).aZero === "desativada";
+  return comInvocacao(sessao, invId, reativa ? { pvAtual, estado: "ativa" } : { pvAtual });
 }
 
 /**
  * Escreve o PV ou a Integridade da invocação direto, pelo campo da barra.
  *
- * ⚠ ESCREVER ZERO NO PV DISSIPA IGUAL, e isso não é zelo: o campo da barra e os
- * botões de passo são duas portas para o mesmo fato ("ela chegou a zero"), e só
- * uma delas aplicava a regra. Quem digitasse `0` em vez de clicar no menos
- * ficava com um shikigami morto em campo, ainda sustentando os bônus que dava
- * ao dono. É a mesma família do efeito descartado calado.
- *
- * O que NÃO acontece por aqui é a exorcização: ela depende do EXCEDENTE, e um
- * valor absoluto não tem excedente nenhum. Ver `aplicaDanoInvocacao`.
+ * ⚠ ESCREVER ZERO NO PV FAZ ELA CAIR IGUAL, pela regra do tipo: o campo da barra e
+ * os botões de passo são duas portas para o mesmo fato. O que NÃO acontece por
+ * aqui é o excedente: um valor absoluto não tem excedente nenhum.
  */
-export function defineVitalInvocacao(sessao, invId, qual, valor, max) {
+export function defineVitalInvocacao(sessao, invId, qual, valor, max, regras = null) {
   const teto = Math.max(0, inteiro(max, 0));
+  const atual = estadoDaInvocacao(sessao, invId);
   if (qual === "alma") {
+    // A Marionete é imune a dano na alma, e não tem Integridade para escrever.
+    if (regrasOuPadrao(regras).alma === "nenhuma") return sessao;
     return comInvocacao(sessao, invId, { almaAtual: entre(inteiro(valor, 0), 0, teto) });
   }
-  const pv = entre(inteiro(valor, 0), 0, teto);
-  return comInvocacao(sessao, invId, pv > 0
-    ? { pvAtual: pv }
-    : { pvAtual: 0, emCampo: false, auxilios: {}, abatida: true });
+  if (ESTADOS_TERMINAIS.has(atual.estado)) return sessao;
+  const r = regrasOuPadrao(regras);
+  const piso = r.aZero === "desativada" ? -teto : 0;
+  const pv = entre(inteiro(valor, 0), piso, teto);
+  if (pv > 0) {
+    const reativa = atual.estado === "desativada";
+    return comInvocacao(sessao, invId, reativa ? { pvAtual: pv, estado: "ativa" } : { pvAtual: pv });
+  }
+  const jaCaida = (atual.pvAtual ?? teto) <= 0;
+  return comInvocacao(sessao, invId, transicaoDeQueda(r, atual, pv, teto, jaCaida) ?? { pvAtual: pv });
 }
 
 /**
  * O descanso enche as invocações junto do dono.
  *
- * ⚠ PV temporário some e os auxílios caem, mas quem estava em campo CONTINUA em
- * campo: descansar não dissipa shikigami, e obrigar o jogador a reinvocar tudo
- * depois de cada descanso seria trabalho sem regra por trás.
+ * ⚠ O BOTÃO DE DESCANSO É UM SÓ E DEVOLVE TUDO (decisão D3 do autor, 2026-09-23),
+ * então ele vale como descanso longo: a volta pela metade some, os exorcismos da
+ * Técnica zeram, e quem caiu (dissipada, quebrada, recolhida, desativada) volta
+ * a poder entrar, cheia. A Marionete também enche e zera as quedas, como fazia
+ * antes desta etapa: o reparo de UMA Marionete por descanso longo do Mecânicas
+ * espera decisão (ver docs/a-fazer.md).
+ *
+ * Quem estava em campo CONTINUA em campo. Morte permanente não volta.
  */
 function descansaInvocacoes(invocacoes) {
   const out = {};
   for (const [id, e] of Object.entries(invocacoes || {})) {
-    /* ⚠ A marca `abatida` cai aqui, e é o que o texto manda: a volta pela
-       metade vale *"até que seja feito um descanso curto ou longo"*.
-       A `exorcizada` NÃO cai: *"não pode ser recuperada por métodos
-       convencionais, sendo perdida permanentemente"*, e descansar é o método
-       mais convencional que existe. */
-    out[id] = {
-      ...e, pvAtual: null, almaAtual: null, pvTempFontes: {}, auxilios: {}, abatida: false,
-    };
+    /* A Horda, a Quimera e o Mecha se DESFAZEM no descanso (2026-10-01, Etapa
+       9): a cena acabou, e quem estava dentro volta a ser uma invocação comum. */
+    if (ehCompostoQueSeDesfaz(id)) {
+      out[id] = comBooleanos({ ...e, ...COMPOSTO_DESFEITO, almaAtual: null, bloqueadaAteFimDaCena: false, opcoesDeEntrada: {}, entradasDesdeDescanso: 0 });
+      continue;
+    }
+    const estado = ESTADO_VALIDO.has(e?.estado) ? e.estado : estadoLegado(e);
+    const terminal = ESTADOS_TERMINAIS.has(estado);
+    out[id] = comBooleanos({
+      ...e,
+      estado: terminal || estado === "ativa" ? estado : "fora",
+      pvAtual: null, almaAtual: null, pvTempFontes: {}, auxilios: {},
+      retorno: null, quedas: 0, exorcismos: 0, bloqueadaAteFimDaCena: false,
+      auras: {}, forma: null, emTarefa: false,
+      opcoesDeEntrada: {}, entradasDesdeDescanso: 0,
+      rodadasAtiva: 0, manutencaoPendente: false,
+    });
   }
   return out;
 }
@@ -868,7 +1674,11 @@ function aparaInvocacoes(mapa, lista) {
     const r = lista.find((x) => x.id === id);
     // Invocação que sumiu da ficha fica intacta: ver `normalizaInvocacoesSessao`.
     if (!r) { out[id] = e; continue; }
-    const pv = e.pvAtual == null ? null : entre(e.pvAtual, 0, Math.max(0, r.pv ?? 0));
+    /* O Corpo desativado desce até −PV máximo (Mecânicas). Os outros tipos param
+       em zero, como sempre. */
+    const max = Math.max(0, r.pv ?? 0);
+    const piso = r.regras?.aZero === "desativada" ? -max : 0;
+    const pv = e.pvAtual == null ? null : entre(e.pvAtual, piso, max);
     const alma = e.almaAtual == null ? null : entre(e.almaAtual, 0, Math.max(0, r.almaMax ?? 0));
     if (pv !== e.pvAtual || alma !== e.almaAtual) mudou = true;
     out[id] = { ...e, pvAtual: pv, almaAtual: alma };
@@ -1251,7 +2061,13 @@ export function proximaRodada(sessao, derived = null) {
   const comArmas = avancaArmasTransformaveis(comAdaptacao, sessao.rodada === 0);
   // A casca de Preparo da Postura do Céu topa no começo de cada rodada.
   const comPreparo = topaPreparoTemp(comArmas, derived);
-  return { sessao: avancaTalismaApice(avancaInvencivelSobOSol(comPreparo, derived)), expirou };
+  /* As invocações (2026-09-30, Etapa 8): sair da rodada 0 é o combate começar
+     (a Autonomia de quem já estava em campo, a contagem do Corpo do zero), e as
+     outras viradas contam a duração do Corpo. */
+  const comInvocacoes = sessao.rodada === 0
+    ? iniciaInvocacoesNoCombate(comPreparo, derived)
+    : avancaInvocacoesNaRodada(comPreparo, derived);
+  return { sessao: avancaTalismaApice(avancaInvencivelSobOSol(comInvocacoes, derived)), expirou };
 }
 
 /* O Talismã do Ápice desligado, com o contador zerado. */
@@ -1315,10 +2131,10 @@ export function iniciaCombate(sessao, derived = null) {
   // A Guarda entra junto: a primeira rodada já é rodada, e sem isto o mestre
   // abriria o combate com o chefe sem casca nenhuma até virar a rodada 2. A casca
   // de Preparo da Postura do Céu também, pelo mesmo motivo.
-  return topaPreparoTemp(
+  return iniciaInvocacoesNoCombate(topaPreparoTemp(
     renovaGuarda(aplicaPeTemporario(comCena, derived.peTemporario?.rodada ?? []), derived),
     derived,
-  );
+  ), derived);
 }
 
 /**
@@ -1359,6 +2175,11 @@ export function descansar(sessao, derived) {
     // As invocações enchem junto. Era a pendência que segurava o PV delas fora
     // da sessão: sem descanso, ninguém zerava aqueles números.
     invocacoes: descansaInvocacoes(sessao.invocacoes),
+    // A Reserva para Invocação volta com o descanso (2026-09-30).
+    reservaInvocacao: { usada: false, modo: null, restantes: 0 },
+    // A cena acaba no descanso: a Quimera da cena e os líderes de Horda dissipada.
+    quimeraDaCena: null,
+    lideresDeHordaDissolvida: [],
     // O Titã enche junto: a regra de membro perdido some com um descanso, do
     // mesmo espírito da Invocação abatida (`descansaInvocacoes` acima).
     tita: { cabeca: null, membros: [] },

@@ -510,6 +510,10 @@ function LinhaFeitico({
     [base.id, melhorias, comLiberacao],
   );
   const f = liberado ?? base;
+  /* A TÉCNICA INATA BLOQUEADA (DA-07, 2026-09-30): o Feitiço continua na lista, com
+     o motivo à vista e sem rolagem nem Ritual. Nada é apagado. O motivo vem da
+     base, porque a versão liberada é recalculada pelo motor sem ele. */
+  const bloqueado = base.bloqueado || null;
   const cheioLiberacao = menu ? melhorias.length >= menu.max : false;
   const alternarMelhoria = (id) => setMelhorias((atual) => (
     atual.includes(id) ? atual.filter((x) => x !== id)
@@ -545,6 +549,7 @@ function LinhaFeitico({
       id={`afty-item-feitico:${f.id}`}
       className="afty-linha afty-feitico"
       data-afty-alvo={destacado ? "sim" : undefined}
+      data-afty-bloqueado={bloqueado ? "sim" : undefined}
     >
       {/* ⚠ A LINHA FECHADA PASSOU A INFORMAR, em 2026-09-07. Ela mostrava SÓ o
           nome, centralizado, numa faixa de 1373px: o nível, o custo e o
@@ -571,6 +576,12 @@ function LinhaFeitico({
         <span className="afty-feitico-nivel">{f.nivelLabel}</span>
         {f.variacao && (
           <span className="afty-chip afty-feitico-var" title="Variação de liberação">Var.</span>
+        )}
+        {bloqueado && (
+          <span className="afty-chip" data-afty-tom="aviso" title="Técnica Inata indisponível">
+            <AlertTriangle className="w-3 h-3 flex-shrink-0" aria-hidden="true" />
+            {bloqueado}
+          </span>
         )}
         {f.avisos.length > 0 && (
           <AlertTriangle
@@ -625,7 +636,8 @@ function LinhaFeitico({
                     formatar={false}
                     className="afty-valor afty-feitico-saida-num whitespace-nowrap"
                     titulo={r.rotulo}
-                    onRolar={(f.ritual?.ativo && !f.ritual?.podeRolarFeitico)
+                    onRolar={bloqueado
+                      || (f.ritual?.ativo && !f.ritual?.podeRolarFeitico)
                       || (indice === 0 && f.custoVidaAtivacao && !f.custoVidaDisponivel)
                       ? undefined
                       : () => rolarFeitico(r, indice)}
@@ -736,7 +748,7 @@ function LinhaFeitico({
             </div>
           </details>
         )}
-        <ControlesRitual
+        {!bloqueado && <ControlesRitual
           f={f}
           rolar={rolar}
           onRitual={onRitual}
@@ -747,7 +759,7 @@ function LinhaFeitico({
           onCancelarRitual={onCancelarRitual}
           onFinalizarRitual={onFinalizarRitual}
           onEncerrarRitual={onEncerrarRitual}
-        />
+        />}
       </div>
     </details>
   );

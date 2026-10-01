@@ -57,9 +57,9 @@ de pé e testado, de colar o JSON até o número mudar na Ficha, em **15 famíli
 | União para o Encontro misto | **Feita** | `unirAddons` |
 | Marca de "não raw" | **Feita** | chip no cabeçalho da Ficha |
 | Linha morta e marcada | **Feita** | `problemasDeAddon`, `derived.addonProblemas` |
-| **Famílias ligadas** | **15** | ver o quadro abaixo |
+| **Famílias ligadas** | **17** | ver o quadro abaixo |
 
-### As 15 famílias
+### As 17 famílias
 
 | Família | Módulo | Estruturas que o religador refaz |
 |---|---|---|
@@ -78,6 +78,14 @@ de pé e testado, de colar o JSON até o número mudar na Ficha, em **15 famíli
 | `condicoes` | `afty-feiticos.js` | mapa de listas de nomes |
 | `clas` | `afty-origens.js` | array **no lugar**, `CLA_BY_ID`, **cache das Verdadeiras Origens** |
 | `marcadores` | `afty-habilidades.js` | array no lugar |
+| `caracteristicasAmaldicoadas` | `afty-caracteristicas-amaldicoadas.js` | array no lugar (o catálogo nasce vazio no raw) |
+| `caracteristicasInvocacao` | `afty-habilidades.js` (catálogo em `afty-invocacoes-caracteristicas.js`) | array no lugar |
+
+⚠ **`caracteristicasInvocacao` entrou em 2026-09-30** (Etapa 5 da atualização de Invocações): o
+catálogo de Características de Invocação do *Adicionais* (Modificadoras, Intrínsecas e Auras). A
+entrada de addon segue o formato do raw (`escala` por grau e `canal`), e vira número pelo mesmo
+caminho. ⚠ Dado extra de dano só passa com `dadoExtra: true` (DA-10: a regra geral do Livro proíbe
+Característica de dar dado, e a exceção é por lista fechada); o validador reprova o resto.
 
 ⚠ **A ORDEM DE RELIGAÇÃO PASSOU A SER DECLARADA em 2026-09-07** (`ordem` no `registrarFamilia`,
 padrão 50). Ela não importava enquanto nenhuma família lia outra, e a herança de Especialização
@@ -743,6 +751,19 @@ Ver `docs/automacao-dsl.md` e `docs/afty-formulas-base.md`.
 Mostra o card de Quimeras ao lado das Hordas, na aba de Invocações. O motor (`resolveQuimera`) vive sempre
 e só a tela depende do `permite`. O pacote `quimera` só declara `permite: ["quimera"]`. Ver
 `docs/afty-invocacoes.md`.
+
+⚠ Desde 2026-10-01 a regra do addon é LEGACY (decisão do autor DA-06): a oficial é a do *Mecânicas
+para Invocações 2.5.2*, que o Controlador de nível 5 abre sem addon. Quimera gravada sem o campo
+`regra` continua com a do addon, e a nova nasce `"mecanicas"`. Quem abriu a aba só pela primitiva,
+sem o Controlador 5, ainda cria Quimera do addon.
+
+#### A primitiva `heranca` (2026-10-01)
+
+Mostra a sub-aba Heranças na ficha de cada Shikigami, no criador: a Herança das Sombras persistente
+do *Mecânicas* (`inv.herancas`). Ela já aparece para quem tem uma Invocação de Técnica ("para os
+Usuários de Dez Sombras e técnicas semelhantes"), e a primitiva a abre para quem não tem. O motor
+(`herancasDa`, `afty-invocacoes.js`) vive sempre. O exemplo antigo de Herança por marcador com
+`fontes` (`asserts/exemplo-dez-sombras.json`) segue funcionando, independente dela.
 
 #### A primitiva `titaColosso` (2026-09-22)
 

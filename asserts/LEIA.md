@@ -1,6 +1,7 @@
 # Asserts do Afty
 
-Os asserts de lógica do lado do Afty. São **3265, em 62 arquivos**, e cobrem o avaliador do DSL, as
+Os asserts de lógica do lado do Afty. São **7263, em 133 arquivos** (contados em 2026-10-01, com o
+vermelho conhecido do `t-invocacoes-motor`), e cobrem o avaliador do DSL, as
 primitivas novas do motor, o sistema de Addons de ponta a ponta e regras do catálogo que
 são fáceis de quebrar sem sintoma.
 
@@ -97,6 +98,32 @@ vai para o ar.
 | `t-manipulacao-ceu` | os dois Feitiços de Nível 5, o custo padrão de Refletir Imagem, o custo máximo de Duplicata Perfeita, o contador de duas cópias e a Aura Embaçada em 20%, 30% e 40% |
 | `t-dominio-barreira` | a Expansão de Domínio lendo o Motor: os seis canais e o passe pós-aptidão em que rodam, as 4 etapas do Treino de Domínios medidas uma a uma, o Conflito de Domínio, a fórmula das duas aptidões de barreira verbatim, a Cortina valendo 3 paredes e o domo 12, o ciclo inteiro da casca de PE (da cena ao descanso), e ⚠ o assert de ARQUIVO que amarra o `Vital` compartilhado, porque assert de lógica não pega componente duplicado |
 | `t-yna` | o pacote Yna, lido de `addons/yna.json`, nos dois sistemas: as Caudas nível a nível com o contador de marcos e o teto 10, a Lapidação Prateada ligando em 5 Caudas, o Atletismo Treinado ou Mestre do Salto Gravitacional, o pool de Anatomia do Feto numa origem de Addon, ⚠ a Forma de Raposa como `gatilhoSessao` de ORIGEM (desligada por padrão, valendo fora de combate), os dois treinos e a linha "Caudas: N" da Ficha |
+
+### Invocações e Controlador
+
+A atualização de Controlador e Invocações (2026-09-30 e 2026-10-01, doze etapas) tem uma suíte por
+assunto. As decisões que elas medem estão no topo de `docs/afty-invocacoes.md`.
+
+| Arquivo | O que verifica |
+|---|---|
+| `t-controlador` | as 47 habilidades de Controlador, LIGADAS e DE MESA, e os efeitos de cada uma na invocação |
+| `t-controlador-progressao` | o roster nível a nível (recebidas, comandos, grau, Disperso, Concentrado), os dois níveis (real e escalonamento), o Sintonizado, o Concentrar Poder só com UMA em campo, a Reserva, a Autonomia, a Sobrecarga, o Fantoche e o Controle Aprimorado |
+| `t-invocacoes-motor` | ⚠ o VERMELHO CONHECIDO (a Livre com Motor e a cota base, pergunta ao autor). O resto: os canais da invocação e o Motor nas Características |
+| `t-invocacoes-mesa` | a sessão de mesa: dano, cura, campo, auxílios, descanso e apara |
+| `t-invocacoes-fontes` | o hover de cada número da invocação fechando com o valor |
+| `t-invocacao-escrita` | a linha do jogador com `escopo: "invocacao"` chegando na invocação |
+| `t-invocacao-tipos` | a tabela de regras por tipo (Shikigami, Técnica, Maldição, Marionete, Corpo) e os sinais de DSL, com o LEGACY `tipo_shikigami` |
+| `t-invocacao-estados` | os estados de mesa, a queda por tipo, o formato antigo de três booleanos e a entrada em campo com PE |
+| `t-invocacao-custo` | o custo em partes e o orçamento separado (gratuitas, compradas, concedidas) |
+| `t-invocacao-caracteristicas` | o catálogo de Características do *Adicionais* (Modificadoras), a TR Treinada e Mestre e a lista fechada de dado extra |
+| `t-invocacao-intrinsecas` | as Intrínsecas, as Auras (só no dono, iguais não acumulam) e as Formas de Arma e de Armadura |
+| `t-invocacao-tipos-especiais` | Marionete, Corpo (duração, manutenção, refeição), Maldição (Visionário, ficha adaptada, Nível de Aptidão), o Fundamento e a Técnica Inata bloqueada, e o cache do Encontro (E-13) |
+| `t-invocacao-compostos` | Horda (E-02, E-07, Hoste, Líder de Horda, a mesa), Quimera do Mecânicas, Corpo de Múltiplos Núcleos e Mecha |
+| `t-invocacao-heranca` | a Herança das Sombras persistente: cópia congelada, efeitos, acúmulo e a Herança que passa adiante |
+| `t-invocacao-acoes-adicionais` | as regras de Ação do *Adicionais*: Reação, Manobra, Reduzir Cura e Cobertura |
+| `t-quimera` | a Quimera do addon (LEGACY): PV, custo, treinos e atributos |
+| `t-dez-sombras` | a Herança e a Quimera por marcador com `fontes` (o exemplo antigo, que segue valendo) |
+| `t-estrela-zenin`, `t-maldicao`, `t-tita` | o clã com shikigamis, a Maldição e o Titã |
 
 ⚠ O `t-exemplo` é o mais importante de manter: ele garante que o JSON que está escrito no doc
 realmente funciona. Foi ele que achou a lacuna do `efeitos` que era validado e nunca aplicado.

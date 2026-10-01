@@ -365,6 +365,8 @@ export default function App() {
              deles reescreve a LISTA inteira. O `update` faz merge de chave de
              primeiro nível, e mandar meia lista apagaria as outras. */
           onSalvarInvocacoes={(invocacoes) => storage.update(activeCreature.id, { invocacoes })}
+          /* A morte do Fundamento (DA-07): a perda da Técnica Inata fica na ficha. */
+          onSalvarFundamentosPerdidos={(fundamentosPerdidos) => storage.update(activeCreature.id, { fundamentosPerdidos })}
         />
       );
     },

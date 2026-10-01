@@ -62,6 +62,8 @@ sintaticamente (grep no próprio texto do arquivo por linhas `import`) e comport
 | **`afty-schema.js`** | **"todo mundo cria ficha em branco"** — é a fábrica base, importada de quase todo lugar |
 | `afty-dsl.js` | o avaliador não pode depender de conteúdo |
 | `afty-sistema.js` | `regraDo()` é lido de dentro dos catálogos |
+| `afty-invocacoes-tipos.js` | as regras por tipo de invocação, os estados de mesa e a contagem em campo: o resolvedor, o derive e a sessão de mesa leem, e a sessão não pode importar o resolvedor (2026-09-30) |
+| `afty-invocacoes-caracteristicas.js` | o catálogo de Características de Invocação: o resolvedor e a família de addon o leem (2026-09-30) |
 
 **Regra prática:** antes de adicionar `import` no topo de qualquer um destes arquivos, rode
 `node asserts/t-ordem-modulos.mjs`. Se precisar mesmo de um dado externo dentro de uma dessas
@@ -248,6 +250,10 @@ porte, com aviso a cada uso — nunca silenciosamente.
 | `afty-feiticos.js` | calculadoras de Feitiço (Dano/Auxiliar/Curativo/Especial/Passivo), `AUX_TABELAS` |
 | `afty-sistema.js` | `regraDo()`/`REGRAS`, divergência Afty×Player |
 | `afty-golpe-especial.js` | as onze propriedades do Golpe Especial e a conta do custo. **FOLHA, zero imports** |
+| `afty-invocacoes.js` | as invocações: regras por tipo (`regrasDoTipo`), `resolveInvocacao` em dois passes, Características, custo em partes, os compostos (Horda, Quimera, Múltiplos Núcleos, Mecha) e a Herança das Sombras |
+| `afty-invocacoes-tipos.js` | `REGRAS_POR_TIPO`, os estados de mesa, `contaInvocacoesEmCampo`. **FOLHA, zero imports** |
+| `afty-invocacoes-caracteristicas.js` | o catálogo de Características de Invocação (Modificadoras, Intrínsecas, Auras). **FOLHA, zero imports** |
+| `ficha/ficha-sessao.js` | a sessão de mesa: estado de cada invocação, entrada em campo com PE, quedas por tipo, compostos, rodadas e descanso |
 | `AftyCreatureBuilder.jsx` | UI do criador, 13k+ linhas, `SimulacaoCombateCard`, editores de Feitiço |
 | `ficha/AftyFicha.jsx` | Ficha Final (uso em jogo) |
 | `encontros/PainelDeCombatente.jsx` | painel de combatente no Encontro |

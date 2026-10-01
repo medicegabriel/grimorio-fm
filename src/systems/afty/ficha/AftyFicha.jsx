@@ -8,6 +8,8 @@ import {
 import "./ficha.css";
 import { mesclaFichaAfty, AFTY_TIPOS, AFTY_PATAMARES, funcionamentosDaFicha } from "../afty-schema";
 import { deriveAfty } from "../afty-derive";
+// A Herança criada pela mesa (2026-10-01, Etapa 11). O derive já carregou o módulo.
+import { criaHeranca } from "../afty-invocacoes";
 import { preparaAtivacaoComCustoVida } from "../afty-feiticos";
 import { aplicarAddons, addonsDaCriatura } from "../afty-addons";
 import { NumeroComFontes } from "../ui/fontes";
@@ -28,8 +30,12 @@ import {
   iniciaRitualComum, iniciaRitualSemTeste, iniciaRitualEstendido,
   concluiPreparacaoRitual, cancelaRitual, finalizaRitual, encerraRitual, desativaRitual,
   concedeNaSessao, removeConcessao,
-  estadoDaInvocacao, poeInvocacaoEmCampo, alternaAuxilioInvocacao,
-  aplicaDanoInvocacao, aplicaCuraInvocacao, defineVitalInvocacao, invocacaoDaMesa,
+  estadoDaInvocacao, alternaAuxilioInvocacao,
+  aplicaCuraInvocacao, defineVitalInvocacao, invocacaoDaMesa,
+  entradaDaInvocacao, invocaNaMesa, saiDeCampo, recolheInvocacao, reconstroiInvocacao,
+  alternaAuraInvocacao, defineEmTarefa, defineFormaInvocacao,
+  alternaOpcaoDeEntrada, ativaReservaInvocacao, pagaManutencaoCorpo,
+  aplicaDanoNaMesa, formaMecha, separaMecha, trocaNucleo, mechaPermitido, emCombateNaSessao,
   estadoTita, aplicaDanoTitaCabeca, aplicaCuraTitaCabeca, defineVitalTitaCabeca,
   aplicaDanoTitaMembro, aplicaCuraTitaMembro, defineVitalTitaMembro,
   preparoDe, preparoTempDe, alteraPreparo, definePreparo,
@@ -110,7 +116,9 @@ function Chip({ children, tom, title }) {
 
 /* ============================================================ */
 
-export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, onSalvarInvocacoes }) {
+export default function AftyFicha({
+  creature, onVoltar, onEditar, onSalvarTema, onSalvarInvocacoes, onSalvarFundamentosPerdidos,
+}) {
   const alvoId = creature?.id ?? null;
 
   /* ⚠ O TEXTO DESTRANCADO ENTRA AQUI, NA MONTAGEM DA FICHA DE TELA, e em lugar
@@ -230,6 +238,25 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
     [ficha, sessaoBruta, opcoesDerive],
   );
 
+  /* A MORTE DO FUNDAMENTO VAI PARA A FICHA (DA-07, 2026-09-30). A mesa sabe
+     primeiro (o estado "morta" do Shikigami de Técnica marcado como Fundamento),
+     e é esta gravação que faz a perda sobreviver ao descanso e à sessão nova.
+     Nada é apagado: a Técnica e os Feitiços continuam, e o derive os marca como
+     indisponíveis. A lista é reescrita inteira pelo mesmo motivo do tema das
+     invocações (o `update` faz merge de chave de primeiro nível). */
+  const idPerdido = derived?.tecnicaInata?.aRegistrar?.invocacaoId ?? null;
+  const nomePerdido = derived?.tecnicaInata?.aRegistrar?.nome ?? "";
+  const perdidosGravados = ficha.fundamentosPerdidos;
+  useEffect(() => {
+    if (!idPerdido || !onSalvarFundamentosPerdidos) return;
+    const anteriores = (Array.isArray(perdidosGravados) ? perdidosGravados : [])
+      .filter((r) => r?.invocacaoId !== idPerdido);
+    onSalvarFundamentosPerdidos([
+      ...anteriores,
+      { invocacaoId: idPerdido, nome: nomePerdido, em: new Date().toISOString() },
+    ]);
+  }, [idPerdido, nomePerdido, perdidosGravados, onSalvarFundamentosPerdidos]);
+
   /* Os addons que ESTA ficha carrega, para a marca do cabeçalho. Sai da própria
      criatura (a cópia congelada), e não da biblioteca da máquina: a marca tem de
      valer também para quem recebeu a ficha de fora e não instalou nada. */
@@ -277,10 +304,17 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
   // precisa viajar no export para a ficha chegar bonita na mão dos outros
   // (autor, 2026-08-05). O `update` do armazenamento faz MERGE, então um Salvar
   // do criador que não conhece o campo `aparencia` preserva o que já está lá.
-  const primeiroTema = useRef(true);
+  /* ⚠ GRAVA SÓ O TEMA QUE MUDOU (2026-10-01, E-14). A guarda era "pula a primeira
+     vez", e o efeito depende do `onSalvarTema`, que o App recria a cada render.
+     Gravar a criatura re-renderiza o App (o `isSaving` do armazenamento volta a
+     falso 300ms depois), o callback novo disparava o efeito outra vez, e a Ficha
+     aberta regravava a criatura inteira a cada segundo, para sempre, com um
+     derive completo a cada volta. A comparação com o último tema gravado corta o
+     laço sem depender da identidade do callback. */
+  const temaGravado = useRef(tema);
   useEffect(() => {
-    if (primeiroTema.current) { primeiroTema.current = false; return undefined; }
-    const t = setTimeout(() => onSalvarTema?.(tema), 600);
+    if (tema === temaGravado.current) return undefined;
+    const t = setTimeout(() => { temaGravado.current = tema; onSalvarTema?.(tema); }, 600);
     return () => clearTimeout(t);
   }, [tema, onSalvarTema]);
 
@@ -321,26 +355,54 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
      precisa dos seis e passá-los como seis props faria a assinatura dela crescer
      a cada verbo novo. Todos passam pelo `atualiza`, que apara nos dois
      sentidos, igual aos vitais do dono. */
-  const acoesDeInvocacao = useMemo(() => ({
-    /* ⚠ O `pvMax` viaja porque quem caiu a 0 VOLTA PELA METADE, e a sessão não
-       conhece o máximo de ninguém: ela guarda o corrente. Ver a regra em
-       `poeInvocacaoEmCampo`. */
+  const acoesDeInvocacao = useMemo(() => {
     /* ⚠ `invocacaoDaMesa` e não `invocacoes.lista`: a Quimera mora em
        `derived.quimeras`, e procurar só na lista das invocações dava máximo zero
-       para ela. */
-    emCampo: (id, valor) => atualiza((s) => poeInvocacaoEmCampo(
-      s, id, valor, invocacaoDaMesa(derived, id)?.pv ?? 0,
-    )),
-    auxilio: (id, acaoId, ligado) => atualiza((s) => alternaAuxilioInvocacao(s, id, acaoId, ligado)),
-    dano: (id, quanto, pvMax) => atualiza((s) => aplicaDanoInvocacao(s, id, quanto, pvMax)),
-    cura: (id, quanto, pvMax) => atualiza((s) => aplicaCuraInvocacao(s, id, quanto, pvMax)),
-    vital: (id, qual, valor) => atualiza((s) => defineVitalInvocacao(
-      s, id, qual, valor,
-      qual === "alma"
-        ? (invocacaoDaMesa(derived, id)?.almaMax ?? 0)
-        : (invocacaoDaMesa(derived, id)?.pv ?? 0),
-    )),
-  }), [atualiza, derived]);
+       para ela. As REGRAS DO TIPO viajam junto (2026-09-30): é por elas que cada
+       tipo cai do seu jeito a 0 PV. */
+    const daMesa = (id) => invocacaoDaMesa(derived, id);
+    return {
+      /* ENTRAR EM CAMPO (2026-09-30): calcula o custo, recusa o que o PE não
+         cobre, desconta do PE do dono e registra a entrada. Ver `entradaDaInvocacao`. */
+      entrar: (id) => atualiza((s) => invocaNaMesa(s, derived, id)),
+      sair: (id) => atualiza((s) => saiDeCampo(s, id)),
+      recolher: (id) => atualiza((s) => recolheInvocacao(s, id)),
+      reconstruir: (id) => atualiza((s) => reconstroiInvocacao(s, id, daMesa(id)?.pv ?? 0)),
+      auxilio: (id, acaoId, ligado) => atualiza((s) => alternaAuxilioInvocacao(s, id, acaoId, ligado)),
+      // As Intrínsecas e Auras na mesa (2026-09-30): o dono na Aura, a Forma, a tarefa.
+      aura: (id, caracId, ligado) => atualiza((s) => alternaAuraInvocacao(s, id, caracId, ligado)),
+      forma: (id, forma) => atualiza((s) => defineFormaInvocacao(s, id, forma)),
+      tarefa: (id, emTarefa) => atualiza((s) => defineEmTarefa(s, id, emTarefa)),
+      // As opções do Controlador na entrada e a Reserva para Invocação (2026-09-30).
+      opcaoEntrada: (id, opcaoId, ligado) => atualiza((s) => alternaOpcaoDeEntrada(s, id, opcaoId, ligado)),
+      reserva: (modo) => atualiza((s) => ativaReservaInvocacao(s, modo)),
+      // A manutenção do Corpo Amaldiçoado depois de CL rodadas (2026-09-30, Etapa 8).
+      manter: (id) => atualiza((s) => pagaManutencaoCorpo(s, id, daMesa(id)?.duracao?.manutencao ?? 0)),
+      /* O dano passa pelo roteador da mesa (2026-10-01, Etapa 9): a Horda, a
+         Quimera e o Mecha caem do jeito deles, e o resto pela regra do tipo. */
+      dano: (id, quanto) => atualiza((s) => aplicaDanoNaMesa(s, derived, id, quanto)),
+      // Os compostos de mesa: o Mecha (formar e separar) e o núcleo ativo.
+      formarMecha: (a, b) => atualiza((s) => formaMecha(s, derived, a, b)),
+      separarMecha: () => atualiza((s) => separaMecha(s)),
+      trocarNucleo: (id) => atualiza((s) => trocaNucleo(s, derived, id)),
+      cura: (id, quanto, pvMax) => atualiza((s) => aplicaCuraInvocacao(s, id, quanto, pvMax, daMesa(id)?.regras)),
+      vital: (id, qual, valor) => atualiza((s) => defineVitalInvocacao(
+        s, id, qual, valor,
+        qual === "alma" ? (daMesa(id)?.almaMax ?? 0) : (daMesa(id)?.pv ?? 0),
+        daMesa(id)?.regras,
+      )),
+      /* A HERANÇA PELA MESA (Mecânicas: "no próximo Descanso Curto ou Longo, você
+         pode criar uma Herança"): a sombra exorcizada vira uma entrada na ficha da
+         herdeira, gravada na criatura. As escolhas se fazem no criador. */
+      criarHeranca: (origemId, herdeiraId) => {
+        const lista = ficha.invocacoes ?? [];
+        const origem = lista.find((i) => i.id === origemId);
+        if (!origem || !onSalvarInvocacoes) return;
+        const nova = criaHeranca(origem, daMesa(origemId));
+        onSalvarInvocacoes(lista.map((i) => (i.id === herdeiraId ? { ...i, herancas: [...(i.herancas ?? []), nova] } : i)));
+      },
+    };
+  }, [atualiza, derived, ficha.invocacoes, onSalvarInvocacoes]);
 
   /* O tema de UM Shikigami. Ele mora DENTRO da invocação, em `inv.aparencia`,
      pela mesma razão de o tema da ficha morar na criatura (autor, 2026-08-05:
@@ -376,13 +438,23 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
     : normalizaTema(invocacaoTemada?.aparencia);
 
   /* ⚠ O primeiro disparo NÃO grava: ele é a abertura do painel, e gravar ali
-     carimbaria um tema normalizado em quem nunca teve nenhum. Mesma guarda do
-     `primeiroTema` logo acima. */
-  const primeiroRascunho = useRef(true);
+     carimbaria um tema normalizado em quem nunca teve nenhum. Depois dele, grava
+     só o rascunho que MUDOU desde a última gravação daquela invocação (E-14,
+     2026-10-01): o `gravarAparenciaDaInvocacao` muda a cada render do App, e a
+     guarda de "pula a primeira" sozinha regravava a lista inteira a cada segundo
+     com o painel aberto. Mesma correção do tema da ficha, logo acima. */
+  const rascunhoGravado = useRef(null);
   useEffect(() => {
-    if (!rascunhoInv) { primeiroRascunho.current = true; return undefined; }
-    if (primeiroRascunho.current) { primeiroRascunho.current = false; return undefined; }
-    const t = setTimeout(() => gravarAparenciaDaInvocacao(rascunhoInv.id, rascunhoInv.tema), 600);
+    if (!rascunhoInv) { rascunhoGravado.current = null; return undefined; }
+    if (rascunhoGravado.current?.id !== rascunhoInv.id) {
+      rascunhoGravado.current = { id: rascunhoInv.id, tema: rascunhoInv.tema };
+      return undefined;
+    }
+    if (rascunhoGravado.current.tema === rascunhoInv.tema) return undefined;
+    const t = setTimeout(() => {
+      rascunhoGravado.current = { id: rascunhoInv.id, tema: rascunhoInv.tema };
+      gravarAparenciaDaInvocacao(rascunhoInv.id, rascunhoInv.tema);
+    }, 600);
     return () => clearTimeout(t);
   }, [rascunhoInv, gravarAparenciaDaInvocacao]);
 
@@ -628,6 +700,10 @@ export default function AftyFicha({ creature, onVoltar, onEditar, onSalvarTema, 
         rolar={rolar}
         destaque={destaque}
         estadoDe={(id) => estadoDaInvocacao(sessao, id)}
+        entradaDe={(inv) => entradaDaInvocacao(sessao, inv)}
+        mechaDe={(a, b) => mechaPermitido(sessao, derived, a, b)}
+        emCombate={emCombateNaSessao(sessao)}
+        reserva={sessao.reservaInvocacao}
         acoes={acoesDeInvocacao}
         aoTemar={setTemandoInvocacao}
         temaEmEdicao={rascunhoInv}

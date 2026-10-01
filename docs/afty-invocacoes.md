@@ -59,6 +59,121 @@
 
 ---
 
+## Atualização de Controlador e Invocações: decisões do autor (2026-09-30)
+
+> **Estas decisões prevalecem** sobre qualquer decisão mais antiga deste arquivo que as
+> contradiga. As antigas ficam no texto, marcadas como revogadas, para o histórico.
+
+**Fontes.** Duas fontes novas entram ao lado do Livro 2.5.2, enviadas pelo autor em PDF (fora do
+repositório):
+- *Mecânicas para Invocações 2.5.2*: os quatro tipos, Domar Maldições, Quimeras, Mechas,
+  Múltiplos Núcleos e Herança das Sombras.
+- *Adicionais para Invocações*: Regras Intrínsecas, Regras de Reação e Características
+  (Intrínsecas, Modificadoras e de Aura).
+
+O projeto técnico que comparou as três fontes com o código foi aprovado como base. A
+implementação segue doze etapas, e a fila do que falta está em `docs/a-fazer.md` ("Atualização de
+Controlador e Invocações").
+
+| Decisão | O que vale |
+|---|---|
+| **Sistemas** | Vale na criatura (`/Afty`) e no jogador (`/Player`), com as regras compartilhadas. Diferença real vai para `DIVERGENCIAS` (`afty-sistema.js`) |
+| **Tipos** | Os tipos separados do *Mecânicas*: **Marionete, Corpo Amaldiçoado, Maldição Domada, Shikigami**, e o **Shikigami de Técnica** como subtipo do Shikigami. Eles diferem de verdade em cura, alma, custo, ativação, dissipação, destruição, exorcismo, evolução e reparo |
+| **Maldição Domada** | Regras do *Mecânicas* inteiras: grau fixo, não dissipa, sem talismã, ficha adaptada, PV ×1,5, atributos, treinos, masterizações, resistências e imunidades mantidos, Aptidão vira Característica e gasta PE do Controlador, sem cura por ER, exorcizada a 0 PV, sem custo base de ativação, sem Visionário. Maldições já salvas mudam de regra, sem corromper nem apagar dado |
+| **Shikigami de Técnica** | Regras do *Mecânicas*. Dissipação normal segue a regra comum. O 1º exorcismo antes do descanso longo vira dissipação. O 2º mata, e o Fundamento e a Técnica Inata são perdidos. Dissipação e exorcismo são contadores separados. O antigo "Retorno Completo" sai |
+| **`tipo_shikigami`** | Fica só como compatibilidade **LEGACY** de leitura (o sentido de hoje, que também liga na Maldição). Código oficial novo usa sinais específicos para Shikigami puro, Técnica, Maldição, Marionete e Corpo |
+| **Quimera** | `regra: "addon" \| "mecanicas"`. Quimera salva sem o campo continua `addon` (LEGACY), e nada é convertido em silêncio. Quimera nova nasce `mecanicas`, a regra oficial |
+| **Perda da Técnica Inata** | A morte do Shikigami de Técnica marcado como **Fundamento** bloqueia a Técnica Inata de verdade, gravado na ficha e refletido na sessão. Nada é apagado: a Técnica fica marcada como indisponível |
+| **Estado terminal** | Nenhuma ficha é apagada sozinha (exorcizada, destruída, morta). Ela fica com o estado, para histórico, Herança, componentes e restauração futura. Remover é ação manual |
+| **PE ao invocar** | Na Ficha e no Encontro, entrar em campo desconta o PE do Controlador, já com Econômicas, Autonomia, Reserva, Ápice, extras e o custo do tipo. A mesa calcula, mostra, recusa o impossível, desconta e registra a entrada. O Criador só calcula |
+| **Dados extras** | Característica comum continua sem poder criar dado extra (Livro). Só as autorizadas por fonte podem, numa lista fechada: Dano Durante o Ataque, Corrida Perfurante e Aura de Dano Durante o Ataque |
+| **TR Treinada e TR Mestre** | Pelo *Adicionais*: Treinada sem trava de grau, e Mestre só num TR em que a invocação já é treinada. As travas de 2026-09-03 saem |
+| **Herança das Sombras** | A do *Mecânicas*, persistente e empilhável: Nível de Dano, bônus escolhido, resistência ou imunidade, Ação, Característica, treinos, atributo, e a Herança passa adiante quando a herdeira morre. Substitui a regra do exemplo, e addons próprios de Herança continuam funcionando |
+| **Nível real e ND** | Pré-requisito escrito como nível de classe ("5 níveis em Controlador", "nível 17", pegar Habilidade) usa o **nível real** da Especialização. A escala continua pelo ND onde isso já foi decidido. No código, `nivelControladorReal` e `nivelEscalonamentoControlador` têm nomes distintos |
+| **Invocações recebidas** | A lista do Treinamento em Controle: 2, e mais uma no 3, 6, 9, 10, 12, 15 e 18 (máximo 9). Vale sobre a frase "a cada 3 níveis" do capítulo |
+| **PE do Controlador** | Continua 5 por nível mais o modificador do atributo da Técnica (Livro, capítulo do Controlador). ⚠ **Divergência registrada:** a regra geral de PE (Livro, "Pontos de Energia") manda somar o atributo-chave da especialização. O número não muda nesta revisão |
+| **Concentrar Poder** | Funciona só enquanto houver **UMA invocação no total em campo**, contando os compostos pela regra de cada um. A marca diz qual invocação recebe, e não muda a condição |
+
+**Leituras do texto (pontos de verificação fechados):**
+- **CL** é o Nível de Aptidão em Controle e Leitura **do Controlador**, sem mínimo artificial.
+- **Grau numérico** em fórmula é o rank: Quarto 1, Terceiro 2, Segundo 3, Primeiro 4, Especial 5.
+- **Quimera:**
+  - o "Shikigami Base" é a componente principal;
+  - "2 Características e Ações" são duas escolhas no total por componente adicional;
+  - bônus e penalidades contam todas as componentes.
+- **Cobertura de reação:** 4 PE com grau mínimo Terceiro, e 6 PE com grau mínimo Segundo.
+- **Alado e Nadador:** o deslocamento novo parte do de caminhada.
+- **Forma de Arma e de Armadura:** Custo 1 no Quarto, 2 no Terceiro, 3 no Segundo, 4 no Primeiro e no Especial.
+- **Marionete:** o reparo completo zera as quedas, e o dano excedente ainda pode destruí-la.
+- **Corpo:** núcleo quebrado é destruição permanente, sem apagar a ficha.
+- **Maldição:**
+  - Ações e Características extras com custo são cobradas na entrada, junto da ativação ou do início do combate;
+  - o Nível de Aptidão é metade do modificador de Presença do Controlador, para baixo, mínimo 0.
+- **Aura:** não vale na própria invocação, salvo regra específica. Duas auras iguais não acumulam (vale a maior), e auras de efeitos diferentes convivem.
+- **Concedidas por regra:** "Trocar Núcleo" e as Ações e Características herdadas não ocupam vaga nem aumentam custo.
+- **Fundamento:** é marca explícita (`fundamento`), e nem toda Invocação de Técnica é Fundamento.
+- **Ações com Custo:** o limite por grau segue 1, 1, 2, 2, 3.
+- **Quimera em campo:** conta como 1 no limite.
+- **Antes de codificar:**
+  - o tamanho do Controlador (Mecha) sai do campo que já existe;
+  - os efeitos do Cozinheiro saem da tabela do Livro;
+  - Sentido às Cegas reaproveita catálogo de percepção, se houver, ou guarda escolha textual estruturada.
+- **Traçado da Alma:** marca manual no dono, até o motor ter sinal objetivo.
+- **Característica Resistência:** o Feitiço Passivo exigido é do dono, e a resistência tem de ser a mesma.
+- **Alcance Auxiliar:** remove a redução de alcance que o resolvedor já aplica, e não soma metros.
+- **Resistência Sobrecarregada:** aumenta o PV **máximo** enquanto a invocação está em campo, e não é PV temporário. Ao sair de campo, o aumento some e o PV atual é aparado.
+
+### Como os tipos especiais ficaram no motor (Etapa 8, 2026-10-01)
+
+As regras por tipo moram em `REGRAS_POR_TIPO` (`afty-invocacoes-tipos.js`). O resolvedor as lê
+por `regrasDoTipo`, a sessão pelo campo `regras` da resolvida.
+
+| Tipo | Campos da ficha | O que o motor faz |
+|---|---|---|
+| Marionete | `oficio` | Sem Integridade (`temAlma: false`), imune a dano na alma, Envenenado e venenos comuns, Vontade e Astúcia com o número do invocador (`doInvocador`), sem cura nenhuma (`curaPermitida`), reparo pelo Ofício com Custo pelo grau e CD da tabela de Criação de Itens, aviso no Grau Especial abaixo do nível 17 real |
+| Corpo | `natureza`, `refeicao`, `refeicaoTrs` | Boneco imune a Envenenado e reparado pelo Alfaiate. Biológico com a refeição de Cozinheiro (grau e BT do dono): Leve, Picante, Reforçada e Nutritiva como efeito de canal. Duração de CL rodadas (`duracao`), contada pela sessão (`rodadasAtiva`), com a manutenção de 1 ou 2 PE (`pagaManutencaoCorpo`) e a saída de campo sem ela |
+| Maldição Domada | (nenhum) | Sem os efeitos de orçamento do dono (Visionário, Ápice), ficha adaptada (sem avisos de point-buy, cota de perícia, vaga de TR e Ofício, sem trava de grau), Nível de Aptidão pela Presença do Controlador, sem cura por ER, Autonomia no início do combate |
+| Shikigami de Técnica | `fundamento` | Iniciativa própria. O Fundamento morto bloqueia a Técnica Inata (`estadoDaTecnicaInata`): os efeitos do Funcionamento e das Passivas saem do Motor, e os Feitiços ficam marcados (`bloqueado`). A perda é gravada em `creature.fundamentosPerdidos`. Fora de campo, só os Feitiços ficam marcados |
+
+A Autonomia de quem já está em campo quando o combate começa é cobrada no `iniciaCombate` (e na
+Ficha, na saída da rodada 0), pela regra do *Mecânicas* de que começar o combate em campo conta
+como acabar de entrar.
+
+### Como os compostos ficaram no motor (Etapa 9, 2026-10-01)
+
+Todo composto tem linha própria em `sessao.invocacoes`, e a linha guarda quem está dentro
+(`componentes`). Quem está dentro de um composto ativo não entra em campo sozinho
+(`compostoAtivoDe`), e o composto só entra com as componentes livres. O dano passa por
+`aplicaDanoNaMesa`, que dá a cada composto a queda dele.
+
+| Composto | Onde mora | Linha de mesa | Conta em campo |
+|---|---|---|---|
+| Horda | `creature.hordas` (`hoste`, `parId`, `liderHorda`) | `horda:<id>` (`membrosAtivos`, `pvMaxMetade`) | 1 (o par da Hoste, 1 no limite de hordas) |
+| Quimera | `creature.quimeras` (`regra`, `escolhas`) | `quimera:<id>` | 1 |
+| Corpo de Múltiplos Núcleos | `creature.multiplosNucleos` (`nucleoIds`) | `nucleos:<id>` (`nucleoAtivo`) | 1 |
+| Mecha | só a sessão | `mecha` (`maiorId`, `menorId`, `menorQuebrada`) | 2 (as duas Marionetes seguem ativas) |
+
+A Horda, a Quimera e o Mecha se desfazem no descanso. O início do combate abre a cena nova: a
+Quimera da cena, os líderes de Horda dissipada e as componentes bloqueadas voltam.
+
+### A Herança das Sombras persistente (Etapa 10, 2026-10-01)
+
+`inv.herancas[]`, uma entrada por sombra, criada por `criaHeranca(origem, resolvida)`:
+
+```js
+{ id, origemId, origemNome, criadaEm,
+  copia: { maioresAtributos, valorMaiorAtributo, resistencias, imunidades, acoes, caracteristicas },
+  escolhas: { bonus: "pericias" | "trs" | "rd" | "ataque", atributo, resistencia: "tipo:<x>" | "imunidade:<x>",
+              acaoId, caracteristicaId, treinos: [{ tipo: "pericia" | "tr" | "ataque", id }] },
+  herdadas: [] }   // as Heranças que a sombra já carregava, que contam como desta
+```
+
+A cópia é congelada (a sombra está morta). O que ela concede não ocupa vaga nem custa (PV-14),
+e o +2 de atributo passa do limite do grau até 30. Ela abre para quem tem uma Invocação de
+Técnica, ou pela primitiva `heranca`. O exemplo antigo por marcador com `fontes` continua.
+
+---
+
 ## Plano de implementação (DECISÃO DO AUTOR, 2026-07-17)
 
 **Escopo escolhido: COMPLETO, usando o MOTOR DE AUTOMAÇÃO.** O autor decidiu mecanizar toda a
@@ -103,6 +218,10 @@ característica). Isso entra na MESMA passada de efeitos ainda pendente de Aptid
 (ver `docs/afty-status.md`). O motor de invocação e essa passada precisam conversar.
 
 ### Decisões (autor, 2026-07-17)
+> ⚠ **As decisões 1 e 2 abaixo foram REVOGADAS em 2026-09-30.** A Maldição Domada, a Marionete e
+> o Corpo Amaldiçoado passam a ser tipos com regra própria (ver "Atualização de Controlador e
+> Invocações" no topo). O processo de domar segue de mesa.
+
 1. ✅ **Domar maldições / Maldições Domadas: FORA DE ESCOPO** para criação de ficha. Não precisa
    ser implementado. (O tipo "Maldição Domada" pode existir como rótulo narrativo, mas sem fluxo
    de domar.)
@@ -1028,6 +1147,10 @@ diferentes. A faixa concedida não gasta a vaga de treino de Teste de Resistênc
 > economia de ação, o **retorno com vida cheia na primeira dissipação** depende do PV da invocação
 > estar na sessão (que ainda não está, ver `a-fazer.md`) e a **desvantagem alheia** precisa de um
 > canal de vantagem/desvantagem que o Motor não tem.
+>
+> ⚠ **O retorno com vida cheia foi REVOGADO em 2026-09-30** (decisão do autor, *Mecânicas*): o 1º
+> exorcismo antes do descanso longo vira dissipação com metade da vida, e o 2º mata. A sessão aplica
+> a regra (`transicaoDeQueda`).
 
 > ⚠ **"Até 1 Grau abaixo" ficou sem interpretação de propósito.** A frase admite ler como "grau
 > igual ou um abaixo" e como "um abaixo ou qualquer coisa mais fraca". Como a regra não é
@@ -1175,7 +1298,7 @@ escolhidas em `donoInvoc.efeitos`.
 | Controle Aprimorado (base 4) | +2 em testes, +1 por grau acima do quarto | `1 + grau` | bonusTeste |
 | Potencial Superior (4°) | +2 pontos de atributo por grau | `2 * grau` | atributoPontos |
 | Ápice do Controle (base 20) | +2 ações/características (capacidade) | `2` | orcamentoLivre |
-| **Concentrar Poder (6°)** — só em invocação **marcada** (`quando: "marcada"`), por faixa Inicial/6/12/18 | +PV | `5 + 5*(nc>=6) + 10*(nc>=12) + 10*(nc>=18)` | pv |
+| **Concentrar Poder (6°)**, na invocação marcada (`marc_concentrar_poder`) e só com UMA invocação no total em campo (DA-15, condição `unicaEmCampo` do marcador), por faixa Inicial/6/12/18 | +PV | `5 + 5*(nc>=6) + 10*(nc>=12) + 10*(nc>=18)` | pv |
 | " | +Defesa | `1 + (nc>=6) + (nc>=12) + 2*(nc>=18)` | defesa |
 | " | +TRs | `2*(nc>=6) + (nc>=12) + 2*(nc>=18)` | bonusTR |
 | " | +níveis de dano/cura | `1 + (nc>=6) + (nc>=12) + 2*(nc>=18)` | danoNivel |
@@ -1285,7 +1408,8 @@ porque o editor pintava o resultado em verde e confirmava um número que a invoc
 
 | Variável | O que é |
 |---|---|
-| `tipo_shikigami`, `tipo_tecnica`, `tipo_dispositivo`, `tipo_maldicao` | qual tipo mecânico ela é (`tipo_shikigami` também vale para a Maldição, que é uma invocação de Talismã, e o `tipo_dispositivo` já saiu do catálogo em 2026-09-02) |
+| `tipo_shikigami_puro`, `tipo_tecnica`, `tipo_maldicao`, `tipo_marionete`, `tipo_corpo` | qual tipo mecânico ela é, um sinal por tipo (2026-09-30). Código oficial usa só estes |
+| `tipo_shikigami` | ⚠ **LEGACY**: liga no Shikigami **e** na Maldição, o sentido antigo de "invocação de Talismã". Fica para addon antigo que o escreveu. Desliga na Marionete e no Corpo. O `tipo_dispositivo` saiu em 2026-09-02 |
 | `tamanho` | tamanho como DEGRAU (Miúdo 1 em diante), lido da Característica de Tamanho |
 | `acoes`, `caracteristicas` | quantas ela tem |
 
@@ -1423,43 +1547,30 @@ qual efeito ignora a Ação.
 
 Assert: `asserts/t-invocacao-escrita.mjs` (blocos 3 e 8).
 
-### ⚠ GAPS DO MOTOR (adicionar depois, não dá com o motor atual)
+### GAPS DO MOTOR (revistos em 2026-10-01, na atualização de Controlador e Invocações)
 
-O motor (fm-dsl) só produz UM NÚMERO para um stat. O que sobra precisa de mecanismos novos:
+O que ainda não cabe no motor, e o que deixou de faltar:
 
 1. **Efeitos não-numéricos / economia de ação** (o motor não tem tipo de efeito para isso):
    conceder ação/ataque extra, reação, reroll, vantagem/desvantagem. Habilidades: Aceleração,
-   Frenesi da Invocação, Chamado Destruidor, Ataque em Conjunto, Invocação Parcial, Atacar e
-   Invocar, Golpes Ágeis, Ação Corretiva (reroll), Ápice do Controle (desvantagem inimiga),
-   Acompanhamento Amaldiçoado, Companheiro Avançado, Invocação Às, Crítico Brutal, Proteger
-   Invocação e Proteção Avançada (reações). **Motor precisaria de:** tipos de efeito além de valor
-   (conceder ação/reação/gatilho, vantagem/desvantagem, reroll).
-2. **Posicionais / condicionais de campo** (dependem de contagem em alcance ou flanqueamento):
-   Guarda Viva, Rede de Detecção, Táticas de Alcateia, Combate em Alcateia, Concentrar Poder (só 1
-   em campo). **Motor precisaria de:** variáveis de combate (invocações em alcance / em campo) e
-   condições posicionais.
-3. **Roster, limite de campo e custo por invocação escolhida:** Treinamento em Controle (limite de
-   campo, invocações iniciais, comandos), Reserva para Invocação, Invocações Econômicas, Otimização
-   de Energia. **Precisa de:** modelo de "campo" (invocações ativas) e override de custo por
-   invocação marcada.
-4. **Escolha / repetível / seleção de invocação:** Apogeu (estilo), Melhoria de Controlador
-   (repetível + aplica a N invocações), Companheiro Amaldiçoado, Concentrar Poder (marcadas),
-   Aptidões de Controle (repetível + concede nível de trilha). **Precisa de:** estado de escolha
-   aninhada, habilidade repetível (TODO já existente) e a passada de efeitos das Aptidões.
-   > **PARCIAL (2026-07-19):** o estado de **escolha aninhada** existe agora
-   > (`creature.escolhasHabilidade` + `resolveEscolhasHabilidade` em afty-habilidades.js,
-   > picker em HabilidadeCard). Já ligado: a escolha de **Apogeu** (Estilo de Controle) é um
-   > requisito `escolha` verificável de verdade, travando/liberando Concentrar Poder (Concentrado),
-   > Hoste Amaldiçoada (Disperso) e Combate em Alcateia (Sintonizado). A **repetibilidade** também:
-   > cada Melhoria de Controlador escolhida consome uma vaga de Habilidade (`vagasExtras`).
-   > **Falta:** APLICAR os efeitos das Melhorias (dano adicional/Defesa/RD/Deslocamento/acerto-CD,
-   > escalando com nível) às invocações, a seleção de QUAIS invocações recebem (limite = BT), e a
-   > passada de efeitos das Aptidões de Controle.
-5. **Variáveis fora do fm-dsl padrão:** `nivel_controlador` e o `grau` da invocação não existem no
-   `buildDslContext` da 2.5.2. Aqui foram montados no lado do Afty (`buildInvocacaoDslContext`), sem
-   editar `fm-dsl.js`. Se um dia quisermos essas fórmulas no editor de automação padrão, o Motor
-   precisaria expor níveis de especialização e um contexto "de invocação".
-6. **"Grátis no custo" do Ápice:** a capacidade +2 é aplicada, mas a parte "não influenciam no
-   custo" NÃO é deduzida automaticamente (precisaria de uma flag "grátis" por item). Hoje a
-   capacidade sobe e o custo por item segue o normal.
-7. **Domar maldições** (Domador de Maldições): fora de escopo (autor).
+   Frenesi da Invocação, Chamado Destruidor, Ataque em Conjunto, Golpes Ágeis, Ação Corretiva
+   (reroll), a desvantagem do Ápice do Controle, Acompanhamento Amaldiçoado, Companheiro Avançado,
+   Proteger Invocação e Proteção Avançada (reações). Continua de mesa. O Crítico Brutal virou
+   rolagem (Etapa 7), e Atacar e Invocar e Invocação Parcial continuam de mesa.
+2. **Posicionais** (alcance, adjacência, flanqueamento): Guarda Viva, Rede de Detecção, Táticas e
+   Combate em Alcateia, Flanco Avançado, a aura em aliados e a entrada no Mecha. Continua de mesa.
+   ✅ A parte de CAMPO foi feita: a mesa conta as invocações em campo (`contaInvocacoesEmCampo`,
+   `invocacoes_em_campo` no dono), e o Concentrar Poder e o Controle Sintonizado leem esse número.
+3. ✅ **Roster, limite de campo e custo por invocação** (feito): o roster tem limite em campo,
+   Complexas e Simples, hordas por ação e a Reserva para Invocação. Invocações Econômicas e
+   Otimização de Energia entram no custo, e a entrada em campo desconta o PE (DA-09).
+4. ✅ **Escolha, repetível e seleção de invocação** (feito): a escolha aninhada, a Melhoria
+   repetível e os marcadores (Concentrar Poder, Melhorias, Fantoche, Companheiro, Econômicas)
+   aplicam os efeitos às invocações marcadas, com o limite de cada marcador.
+5. **Variáveis fora do fm-dsl padrão:** `nivel_controlador`, o `grau` e os sinais de tipo vivem no
+   contexto da invocação (`buildInvocacaoDslContext`), e não no editor de automação da 2.5.2.
+6. ✅ **"Grátis no custo" do Ápice** (feito): o `orcamentoLivre` abate o custo dos itens além da
+   cota (`detalheCustoInvocacao`), e o hover do custo mostra cada parcela.
+7. **Domar maldições** (Domador de Maldições e a seção do *Mecânicas*): processo de mesa, com
+   rolagens, Voto Contratual, subjugação e traição. A ficha da Maldição Domada resultante é a do
+   tipo `maldicao`.

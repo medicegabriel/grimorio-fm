@@ -596,6 +596,11 @@ export function createBlankAfty() {
     hordas: [],                 // [ { id, nome, liderId, membroIds:[] } ]
     // Quimeras: fusão de 2 a 4 invocações. Só aparece com a primitiva `quimera`.
     quimeras: [],               // [ { id, nome, principalId, fundidasIds:[], nivel } ]
+    /* A morte do Fundamento (o Shikigami de Técnica que É a Técnica Inata), gravada
+       pela mesa (DA-07, 2026-09-30). Enquanto houver entrada, a Técnica Inata fica
+       bloqueada, e nada da Técnica nem dos Feitiços é apagado. Ver
+       `estadoDaTecnicaInata` em afty-invocacoes.js. */
+    fundamentosPerdidos: [],    // [ { invocacaoId, nome, em } ]
     // Níveis de Aptidão, uma trilha por chave (0 a 5). O orçamento é
     // derived.totalAptidao e cada ponto sobe 1 nível. Ver afty-aptidoes.js.
     aptidoes: { au: 0, cl: 0, bar: 0, dom: 0, er: 0 },

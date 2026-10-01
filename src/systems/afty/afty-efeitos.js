@@ -843,6 +843,10 @@ export function buildCriaturaDslContext(base = {}) {
     vez: 1,
     grau: base.grauRank ?? 1,                        // Quarto 1 ... Semi-Grau Especial 5, e para aí
     alma_atual: base.almaAtual ?? 100,
+    /* Quantas invocações do dono estão em campo agora (2026-09-30). Só a mesa
+       sabe, e no criador vale 0. Quem lê é o Controle Sintonizado ("para cada
+       invocação que possua em campo, você recebe +1 em acerto e dano"). */
+    invocacoes_em_campo: base.invocacoesEmCampo ?? 0,
     // Contadores de Origem (afty-contadores-origem.js): sempre presentes,
     // nunca gated por combate.ativo — mesmo espírito do alma_atual acima.
     ...(base.origemContadoresVars || {}),

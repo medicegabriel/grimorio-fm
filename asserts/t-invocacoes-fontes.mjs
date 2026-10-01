@@ -259,19 +259,21 @@ t("Defesa por grau segue a tabela",
 /* ============================================================ */
 /* 5. A CARACTERÍSTICA DE PROFICIÊNCIA EM TR                     */
 /* ============================================================ */
-/* Autor, 2026-09-03: *"Invocações de Segundo Grau podem fazer uma Característica
-   pra se tornar Treinado em um TR. Invocações de Grau Especial podem fazer uma
-   Característica para se tornar Mestre em um TR."*
-
-   As três decisões dele, e cada uma tem assert porque nenhuma sai do texto:
-   "de Segundo Grau" vale do Segundo para cima, o Especial SÓ dá Mestre, e o
-   Mestre não cobra Treinado antes. */
-const comCaracTR = (grau, trTipo, extras = {}) => {
+/* ⚠ A REGRA MUDOU EM 2026-09-30 (decisão do autor, Adicionais para Invocações):
+     TR Treinada: "Permite que sua invocação se torne treinada em um TR."
+     TR Mestre:   "Permite que sua invocação se torne mestre em um TR em que ela
+                  é Treinada."
+   As três decisões de 2026-09-03 (só do Segundo Grau em diante, o Especial só dá
+   Mestre, e o Mestre sem cobrar Treinado) saíram. A faixa é escolha da
+   Característica (`prof`). A Característica salva antes, sem `prof`, lê a faixa
+   que concedia: Mestre no Especial e Treinado nos outros. */
+const comCaracTR = (grau, trTipo, extras = {}, prof = undefined) => {
   const i = INV.createBlankInvocacao(grau);
   i.trProf = { reflexos: "treinado" };
   Object.assign(i, extras);
   const c = INV.createBlankCaracteristica();
   c.nome = "Vontade de Ferro"; c.subtipo = "resistencia"; c.trTipo = trTipo;
+  if (prof) c.prof = prof;
   i.caracteristicas = [c];
   return INV.resolveInvocacao(i, { nd: 20, bt: 6 });
 };
@@ -280,83 +282,82 @@ const faixaDe = (r, id) => {
   return linha.mestre ? "mestre" : linha.treinado ? "treinado" : null;
 };
 
-t("Quarto Grau não treina TR por Característica", faixaDe(comCaracTR("quarto", "fortitude"), "fortitude"), null);
-t("Terceiro Grau também não", faixaDe(comCaracTR("terceiro", "fortitude"), "fortitude"), null);
-t("Segundo Grau treina", faixaDe(comCaracTR("segundo", "fortitude"), "fortitude"), "treinado");
-/* ⚠ "DE SEGUNDO GRAU" É "DE SEGUNDO GRAU OU SUPERIOR" (autor, 2026-09-03). A
-   leitura literal deixaria o Primeiro Grau sem uma opção que o grau ABAIXO
-   dele tem, e foi por isso que a pergunta foi feita. */
-t("Primeiro Grau treina também", faixaDe(comCaracTR("primeiro", "fortitude"), "fortitude"), "treinado");
-t("Grau Especial vai a Mestre", faixaDe(comCaracTR("especial", "fortitude"), "fortitude"), "mestre");
+t("a TR Treinada vale em qualquer grau, inclusive no Quarto",
+  ["quarto", "terceiro", "segundo", "primeiro"].map((g) => faixaDe(comCaracTR(g, "fortitude", {}, "treinado"), "fortitude")),
+  ["treinado", "treinado", "treinado", "treinado"]);
+t("e no Especial tambem, quando escolhida",
+  faixaDe(comCaracTR("especial", "fortitude", {}, "treinado"), "fortitude"), "treinado");
+t("a salva sem faixa le Treinado fora do Especial (o Quarto deixou de ficar sem nada)",
+  faixaDe(comCaracTR("quarto", "fortitude"), "fortitude"), "treinado");
 
-/* ⚠ O MESTRE NÃO COBRA TREINADO ANTES. Fortitude não está no `trProf` da ficha
-   em nenhum destes casos, e o Especial a leva direto a Mestre. */
-t("o Mestre não exige Treinado antes",
-  comCaracTR("especial", "fortitude").testes.resistencias.find((r) => r.value === "fortitude").mestre, true);
+/* ⚠ A MESTRE PEDE O TR JÁ TREINADO. Reflexos é treinado na ficha, Fortitude não. */
+t("a TR Mestre num TR que a ficha treina vai a Mestre",
+  faixaDe(comCaracTR("segundo", "reflexos", {}, "mestre"), "reflexos"), "mestre");
+t("a TR Mestre num TR sem treino nao concede nada",
+  faixaDe(comCaracTR("segundo", "fortitude", {}, "mestre"), "fortitude"), null);
+t("e avisa por que",
+  comCaracTR("segundo", "fortitude", {}, "mestre").warnings.some((w) => w.includes("pede a invocação já treinada")), true);
+t("a Especial salva sem faixa le Mestre, e tambem pede o treino",
+  [faixaDe(comCaracTR("especial", "reflexos"), "reflexos"), faixaDe(comCaracTR("especial", "fortitude"), "fortitude")],
+  ["mestre", null]);
 
 /* E a vaga base continua livre: a Característica não gasta a escolha da ficha. */
 t("a Característica não gasta a vaga base de TR",
   INV.usoTR(INV.trProfDaInvocacao({ trProf: { reflexos: "treinado" } })), INV.TR_VAGAS_BASE);
 
-/* ⚠ A CARACTERÍSTICA NUNCA REBAIXA. Reflexos já é Mestre na ficha; uma
-   Característica de Segundo Grau apontada para ele daria "treinado", e o
-   `Math.max` das faixas é o que impede a queda. */
+/* ⚠ A CARACTERÍSTICA NUNCA REBAIXA. Reflexos já é Mestre na ficha, e a TR
+   Treinada apontada para ele daria "treinado". O `Math.max` das faixas impede. */
 t("a Característica não rebaixa um TR que a ficha já dominava",
-  faixaDe(comCaracTR("segundo", "reflexos", { trProf: { reflexos: "mestre" } }), "reflexos"), "mestre");
+  faixaDe(comCaracTR("segundo", "reflexos", { trProf: { reflexos: "mestre" } }, "treinado"), "reflexos"), "mestre");
 
-/* O hover diz DE ONDE veio a faixa. Sem o nome, o jogador vê a Maestria num TR
-   que ele não treinou na ficha e não tem como descobrir a origem. */
+/* O hover diz DE ONDE veio a faixa. */
 t("a parcela nomeia a Característica que concedeu a faixa",
-  comCaracTR("especial", "fortitude").testes.resistencias
+  comCaracTR("segundo", "fortitude", {}, "treinado").testes.resistencias
     .find((r) => r.value === "fortitude").partes
-    .some((p) => p.label === "Maestria (Mestre) · Vontade de Ferro"), true);
+    .some((p) => p.label === "Maestria · Vontade de Ferro"), true);
 t("e a faixa escolhida na ficha segue sem nome de fonte",
-  comCaracTR("especial", "fortitude").testes.resistencias
+  comCaracTR("segundo", "fortitude", {}, "treinado").testes.resistencias
     .find((r) => r.value === "reflexos").partes
     .some((p) => p.label === "Maestria"), true);
 
 /* As parcelas continuam fechando com o número, que é a regra desta suíte. */
 t("com faixa concedida, as parcelas do TR ainda somam o bônus",
-  comCaracTR("especial", "fortitude").testes.resistencias
+  comCaracTR("segundo", "reflexos", {}, "mestre").testes.resistencias
     .every((r) => soma(r.partes) === r.bonus), true);
 
-/* Grau que não alcança AVISA, em vez de silenciar: uma Característica gasta
-   vaga de orçamento, e uma que não faz nada tem de aparecer. */
-t("o grau que não alcança vira aviso",
-  comCaracTR("quarto", "fortitude").warnings.some((w) => w.includes("não pode treinar")), true);
-t("e sem TR escolhido também",
+t("sem TR escolhido avisa",
   comCaracTR("especial", "").warnings.some((w) => w.includes("Escolha o Teste de Resistência")), true);
 /* Integridade não é treinável por Invocação (regra do capítulo). */
 t("Integridade não é treinável",
   comCaracTR("especial", "integridade").warnings.some((w) => w.includes("não pode ser treinado")), true);
 
-/* Duas no MESMO TR são o mesmo efeito e não acumulam: vale a maior, com aviso.
-   Em TRs diferentes convivem, como duas RDs de tipos diferentes. */
-const duasNoMesmo = (() => {
-  const i = INV.createBlankInvocacao("especial");
-  const a = INV.createBlankCaracteristica();
-  a.nome = "Vontade de Ferro"; a.subtipo = "resistencia"; a.trTipo = "fortitude";
-  const b2 = INV.createBlankCaracteristica();
-  b2.nome = "Couro Grosso"; b2.subtipo = "resistencia"; b2.trTipo = "fortitude";
-  i.caracteristicas = [a, b2];
+const duasCarac = (grau, specs) => {
+  const i = INV.createBlankInvocacao(grau);
+  i.caracteristicas = specs.map(([nome, trTipo, prof]) => {
+    const c = INV.createBlankCaracteristica();
+    c.nome = nome; c.subtipo = "resistencia"; c.trTipo = trTipo; c.prof = prof;
+    return c;
+  });
   return INV.resolveInvocacao(i, { nd: 20, bt: 6 });
-})();
-t("duas Características no mesmo TR avisam",
-  duasNoMesmo.warnings.some((w) => w.includes("não acumulam")), true);
-t("e o TR fica Mestre uma vez só", faixaDe(duasNoMesmo, "fortitude"), "mestre");
+};
 
-const duasEmTRsDiferentes = (() => {
-  const i = INV.createBlankInvocacao("especial");
-  const a = INV.createBlankCaracteristica();
-  a.nome = "Vontade de Ferro"; a.subtipo = "resistencia"; a.trTipo = "fortitude";
-  const b2 = INV.createBlankCaracteristica();
-  b2.nome = "Mente Limpa"; b2.subtipo = "resistencia"; b2.trTipo = "vontade";
-  i.caracteristicas = [a, b2];
-  return INV.resolveInvocacao(i, { nd: 20, bt: 6 });
-})();
+/* Duas com a MESMA faixa no MESMO TR são o mesmo efeito e não acumulam. */
+const duasIguais = duasCarac("segundo", [["Vontade de Ferro", "fortitude", "treinado"], ["Couro Grosso", "fortitude", "treinado"]]);
+t("duas TR Treinada no mesmo TR avisam", duasIguais.warnings.some((w) => w.includes("não acumulam")), true);
+t("e o TR fica Treinado uma vez só", faixaDe(duasIguais, "fortitude"), "treinado");
+
+/* ⚠ A Treinada e a Mestre no mesmo TR NÃO são o mesmo efeito: a Treinada é o
+   que deixa a Mestre valer. */
+const treinadaMaisMestre = duasCarac("segundo", [["Vontade de Ferro", "fortitude", "treinado"], ["Mente de Aço", "fortitude", "mestre"]]);
+t("a TR Treinada cumpre o requisito da TR Mestre no mesmo TR", faixaDe(treinadaMaisMestre, "fortitude"), "mestre");
+t("e as duas juntas nao avisam acumulo", treinadaMaisMestre.warnings.some((w) => w.includes("não acumulam")), false);
+const mestreAntes = duasCarac("segundo", [["Mente de Aço", "fortitude", "mestre"], ["Vontade de Ferro", "fortitude", "treinado"]]);
+t("a ordem das duas nao importa", faixaDe(mestreAntes, "fortitude"), "mestre");
+
+const duasEmTRsDiferentes = duasCarac("segundo", [["Vontade de Ferro", "fortitude", "treinado"], ["Mente Limpa", "vontade", "treinado"]]);
 t("em TRs diferentes as duas valem",
   [faixaDe(duasEmTRsDiferentes, "fortitude"), faixaDe(duasEmTRsDiferentes, "vontade")],
-  ["mestre", "mestre"]);
+  ["treinado", "treinado"]);
 t("e não avisam nada de acúmulo",
   duasEmTRsDiferentes.warnings.some((w) => w.includes("não acumulam")), false);
 

@@ -12,10 +12,11 @@
  *     Defesa usa maestria(ND) (o Bônus de Treinamento).
  *   - O Bônus de Teste usa Metade do Nível de Controlador (o lado da multiclasse).
  *   - O acesso a graus é travado pelo Nível de Controlador, não pelo ND.
- *   - São DOIS tipos mecânicos, Invocação e Invocação de Técnica (2026-09-02).
- *     Houve um terceiro, "dispositivo", com dois sabores narrativos (Corpo
- *     Amaldiçoado e Marionete): o autor tirou, e `tipoMecanicoDaInvocacao`
- *     é quem segura ficha antiga que ainda traz o valor.
+ *   - Os TIPOS são cinco desde 2026-09-30 (Mecânicas para Invocações 2.5.2):
+ *     Shikigami ("Invocação"), Shikigami de Técnica, Maldição Domada, Marionete
+ *     e Corpo Amaldiçoado. As regras de cada um são DADO, em
+ *     afty-invocacoes-tipos.js, e quem as lê passa por `regrasDoTipo`. O antigo
+ *     "dispositivo" segue lido como Shikigami por `tipoMecanicoDaInvocacao`.
  *
  * DSL: esta camada monta um contexto de variáveis próprio (buildInvocacaoDslContext)
  * e delega ao evalNumber/evalBoolean de fm-dsl.js, que são agnósticos de variável.
@@ -35,7 +36,16 @@ import { AFTY_ATTRS, AFTY_TAMANHOS, AFTY_RESISTENCIAS, funcionamentosDaFicha } f
 import {
   AFTY_PERICIAS, bonusProficiencia, usoPericias, ehPericiaOficio, periciasParaInvocacao,
 } from "./afty-pericias";
-import { TIPOS_DANO } from "./afty-equipamentos";
+import { TIPOS_DANO, ARMAS } from "./afty-equipamentos";
+import {
+  TIPOS_INVOCACAO_ORDEM, regrasDoTipoValor, validarRegrasPorTipo, estadoDaLinha,
+  FONTE_PV_MECHA, entradaDeMesaDaHorda,
+} from "./afty-invocacoes-tipos";
+// Moram na folha porque a sessão de mesa também os lê (2026-10-01, Etapa 9).
+export { FONTE_PV_MECHA, entradaDeMesaDaHorda };
+import {
+  CARACTERISTICAS_INVOCACAO, caracteristicaDoCatalogo, valorPorGrau, validarCatalogoCaracteristicasInvocacao,
+} from "./afty-invocacoes-caracteristicas";
 
 export const mod = (attr) => Math.floor(((attr ?? 10) - 10) / 2);
 
@@ -113,7 +123,9 @@ export const resistenciasTreinaveis = () => AFTY_RESISTENCIAS.filter((r) => r.va
 export const INV_ATTR_KEYS = ["forca", "destreza", "constituicao", "inteligencia", "sabedoria", "presenca"];
 
 /**
- * Os tipos mecânicos: Invocação, Invocação de Técnica e Maldição (2026-09-19).
+ * Os tipos mecânicos (2026-09-30): Invocação (o Shikigami), Invocação de Técnica,
+ * Maldição, Marionete e Corpo Amaldiçoado. As regras de cada um estão em
+ * `REGRAS_POR_TIPO` (afty-invocacoes-tipos.js).
  *
  * ⚠ INVOCAÇÃO DE TÉCNICA é um tipo à parte, e não um rótulo: ele muda números
  * (base de atributo, PV, bônus, orçamento) e a economia de ação. O capítulo já o
@@ -123,20 +135,19 @@ export const INV_ATTR_KEYS = ["forca", "destreza", "constituicao", "inteligencia
  * Por isso ele é o único sem Intermediário, e o único que não ocupa espaço de
  * inventário.
  */
-export const AFTY_INV_TIPOS = [
-  /* ⚠ RÓTULO ≠ `value`. O autor renomeou os dois primeiros para "Invocação" e
-     "Invocação de Técnica" em 2026-09-02, e os `value` seguem `shikigami` e
-     `tecnica`: eles estão gravados em toda ficha salva, viram variável de DSL
-     (`tipo_shikigami`, `tipo_tecnica`) e são citados por `quando` de habilidade.
-     Trocar o value seria migração de dado, e o pedido foi de nome na tela. */
-  { value: "shikigami",   label: "Invocação",             intermediario: "Talismã",     retirada: "dissipar / exorcizar" },
-  { value: "tecnica",     label: "Invocação de Técnica",  intermediario: null,          retirada: "dissipar / exorcizar" },
-  /* ⚠ MALDIÇÃO (2026-09-19, pedido do autor): um tipo NATIVO, ao lado dos dois de
-     cima, e não uma opção de Talento ou de Addon. É uma invocação normal (mesmo
-     Intermediário, mesma base de atributo, mesma retirada) cuja vida vale 1,5
-     vez o PV já somado. O efeito mora em `MALDICAO_EFEITOS`, no canal `pvMult`. */
-  { value: "maldicao",    label: "Maldição",              intermediario: "Talismã",     retirada: "dissipar / exorcizar" },
-];
+/* ⚠ RÓTULO ≠ `value`. O autor renomeou os dois primeiros para "Invocação" e
+   "Invocação de Técnica" em 2026-09-02, e os `value` seguem `shikigami` e
+   `tecnica`: eles estão gravados em toda ficha salva, viram variável de DSL e são
+   citados por `quando` de habilidade. Trocar o value seria migração de dado.
+
+   ⚠ A LISTA SAI DA TABELA DE REGRAS desde 2026-09-30. Antes ela era escrita à
+   mão aqui, com o Intermediário e a retirada de cada tipo, e a Maldição tinha o
+   Talismã e a dissipação de uma invocação comum. O Mecânicas tirou as duas coisas
+   dela, e a fonte de cada campo passou a ser `REGRAS_POR_TIPO`. */
+export const AFTY_INV_TIPOS = TIPOS_INVOCACAO_ORDEM.map((value) => {
+  const r = regrasDoTipoValor(value);
+  return { value, label: r.label, curto: r.curto, intermediario: r.intermediario, retirada: r.retirada };
+});
 
 /**
  * ⚠ O TIPO GRAVADO NA FICHA PODE NÃO EXISTIR MAIS. "dispositivo" foi um terceiro
@@ -152,8 +163,20 @@ export const AFTY_INV_TIPOS = [
 export const tipoMecanicoDaInvocacao = (inv) =>
   (TIPO_BY_VALUE[inv?.tipoMecanico] ? inv.tipoMecanico : "shikigami");
 
-/** Este é um Shikigami de Técnica? É a chave de quase toda regra própria dele. */
-export const ehShikigamiDeTecnica = (inv) => inv?.tipoMecanico === "tecnica";
+/** Este é um Shikigami de Técnica? É a chave de quase toda regra própria dele.
+    Lê o tipo NORMALIZADO, como todo leitor de tipo deste arquivo. */
+export const ehShikigamiDeTecnica = (inv) => tipoMecanicoDaInvocacao(inv) === "tecnica";
+
+/**
+ * As regras do tipo desta invocação, com a herança do subtipo resolvida. Todo
+ * leitor de regra por tipo passa por aqui, e nunca por um `if` no valor cru.
+ */
+export const regrasDoTipo = (inv) => regrasDoTipoValor(tipoMecanicoDaInvocacao(inv));
+
+/** A ficha ainda traz o tipo "dispositivo", que saiu em 2026-09-02. Ela é lida
+    como Shikigami, e nada a converte sozinho: a Marionete e o Corpo voltaram como
+    tipos próprios, e escolher entre eles é do dono da ficha. */
+export const tipoLegadoDispositivo = (inv) => inv?.tipoMecanico === "dispositivo";
 
 /* ⚠ `AFTY_INV_SABORES` (Corpo Amaldiçoado e Marionete) SAIU JUNTO. Ele só
    existia para dar dois rótulos ao Dispositivo, e sem o Dispositivo não sobra
@@ -179,11 +202,12 @@ export function tipoInvocacaoLabel(inv) {
  *
  * ⚠ O SHIKIGAMI DE TÉCNICA não conta: ele não tem Intermediário, porque a
  * técnica inata dispensa o Talismã ("substituindo-a apenas por movimentos ou
- * sinais de mão, como é o caso da Dez Sombras").
+ * sinais de mão, como é o caso da Dez Sombras"). A Maldição também não, desde
+ * 2026-09-30 (Mecânicas: sem Talismã, "sempre caminhará ao lado").
  */
 export const espacosDeIntermediario = (lista) =>
   (Array.isArray(lista) ? lista : [])
-    .filter((inv) => tipoInvocacaoMeta(inv?.tipoMecanico).intermediario != null)
+    .filter((inv) => regrasDoTipo(inv).intermediario != null)
     .length * 0.5;
 
 /**
@@ -222,8 +246,8 @@ export const INV_ATTR_MIN = 6; // pode reduzir de 8 até 6, devolvendo pontos.
  */
 export const INV_ATTR_BASE = 8;
 export const INV_ATTR_BASE_TECNICA = 10;
-export const atributoBaseInvocacao = (inv) => (ehShikigamiDeTecnica(inv) ? INV_ATTR_BASE_TECNICA : INV_ATTR_BASE);
-export const atributoMinInvocacao = (inv) => (ehShikigamiDeTecnica(inv) ? INV_ATTR_BASE : INV_ATTR_MIN);
+export const atributoBaseInvocacao = (inv) => regrasDoTipo(inv).atributoBase;
+export const atributoMinInvocacao = (inv) => regrasDoTipo(inv).atributoMin;
 
 /** Quantidade base de Ações/Características por grau (some com adicionais). */
 export const INV_ACOES_CARACT_BASE = {
@@ -306,6 +330,17 @@ export function createBlankAcao() {
     // expressão era avaliada e o resultado descartado (ver MODIFICADOR_ALVOS).
     modificadorExpr: "",
     modificadorAlvo: "",
+    /* As marcas do Adicionais (2026-10-01, Etapa 11), opcionais:
+         reacao       é uma Reação (a Simples Auxiliar vale 1,5 vez)
+         manobra      é uma Manobra (não pode ser Simples)
+         especial     "" | "reducaoCura" | "cobertura"
+         reducaoCura  "terco" | "metade"
+         cobertura    "meia" | "tresQuartos" */
+    reacao: false,
+    manobra: false,
+    especial: "",
+    reducaoCura: "terco",
+    cobertura: "meia",
   };
 }
 
@@ -342,7 +377,7 @@ export function cloneInvocacao(inv) {
 
 export function createBlankInvocacao(grau = "quarto", tipoMecanico = "shikigami") {
   // A base de atributo depende do TIPO: o Shikigami de Técnica começa em 10.
-  const b = tipoMecanico === "tecnica" ? INV_ATTR_BASE_TECNICA : INV_ATTR_BASE;
+  const b = regrasDoTipoValor(tipoMecanico).atributoBase;
   return {
     id: novoId(),
     nome: "",
@@ -377,6 +412,18 @@ export function createBlankInvocacao(grau = "quarto", tipoMecanico = "shikigami"
        porque tema ausente é o tema herdado da ficha do dono, e um objeto vazio
        aqui já seria uma escolha (a de sobrescrever com o padrão). */
     aparencia: null,
+    /* OS CAMPOS DOS TIPOS ESPECIAIS (2026-09-30, Etapa 8). Opcionais: ficha sem
+       eles lê o padrão, e cada um só vale no tipo dele.
+         fundamento   Shikigami de Técnica que É a Técnica Inata (PV-15)
+         oficio       Marionete: o Ofício do material (reparo e reconstrução)
+         natureza     Corpo: "boneco" | "biologico"
+         refeicao     Corpo Biológico: a refeição de Cozinheiro permanente
+         refeicaoTrs  os TRs da refeição Nutritiva */
+    fundamento: false,
+    oficio: "",
+    natureza: "",
+    refeicao: "",
+    refeicaoTrs: [],
   };
 }
 
@@ -433,13 +480,17 @@ export function resumoAtributosInvocacao(inv, bonusPontos = 0, bonusMax = 0) {
  * três termos, e quem os separa é esta função: o `pvInvocacao` é a soma dela, e
  * o hover da Ficha é a lista dela. Uma fórmula só, dois consumidores.
  */
-export function partesPvInvocacao(inv, dono = {}) {
-  const con = inv?.atributos?.constituicao ?? 8;
+export function partesPvInvocacao(inv, dono = {}, atributoPv = "constituicao") {
+  /* ⚠ `atributoPv` é a Resiliência Alternativa (2026-09-30): "o atributo usado
+     para definir os pontos de vida da invocação é trocado". Troca o VALOR, e a
+     fórmula do grau (metade ou inteiro) continua a mesma. */
+  const chave = INV_ATTR_KEYS.includes(atributoPv) ? atributoPv : "constituicao";
+  const con = inv?.atributos?.[chave] ?? 8;
   const nd = Math.max(1, dono.nd ?? 1);
   const g = grauMeta(inv?.grau);
   const linha = (base, deCon, deNd) => [
     { label: `${g.label} (Base)`, valor: base },
-    { label: "Constituição", valor: deCon },
+    { label: rotuloAttrInv(chave), valor: deCon },
     { label: "Nível de Desafio", valor: deNd },
   ];
   switch (g.value) {
@@ -453,23 +504,33 @@ export function partesPvInvocacao(inv, dono = {}) {
   }
 }
 
-export function pvInvocacao(inv, dono = {}) {
-  return partesPvInvocacao(inv, dono).reduce((t, x) => t + x.valor, 0);
+export function pvInvocacao(inv, dono = {}, atributoPv = "constituicao") {
+  return partesPvInvocacao(inv, dono, atributoPv).reduce((t, x) => t + x.valor, 0);
+}
+
+/** O atributo de combate: Destreza, ou o do Estilo de Combate quando ele dá mais.
+    O Estilo "PERMITE que sua invocação utilize outro Atributo" (Adicionais), então
+    ele entra como opção, e vale o melhor dos dois. */
+function atributoDeCombate(inv, alternativo, padrao = "destreza") {
+  const at = inv?.atributos || {};
+  if (!INV_ATTR_KEYS.includes(alternativo)) return padrao;
+  return mod(at[alternativo] ?? 8) > mod(at[padrao] ?? 8) ? alternativo : padrao;
 }
 
 /** As parcelas da Defesa base, nomeadas. Ver `partesPvInvocacao`. */
-export function partesDefesaInvocacao(inv, dono = {}) {
+export function partesDefesaInvocacao(inv, dono = {}, atributoAlternativo = null) {
   const base = { quarto: 10, terceiro: 12, segundo: 16, primeiro: 20, especial: 24 };
   const g = grauMeta(inv?.grau);
+  const attr = atributoDeCombate(inv, atributoAlternativo);
   return [
     { label: `${g.label} (Base)`, valor: base[g.value] ?? 10 },
-    { label: "Destreza", valor: mod(inv?.atributos?.destreza ?? 8) },
+    { label: rotuloAttrInv(attr), valor: mod(inv?.atributos?.[attr] ?? 8) },
     ...(dono.bt ? [{ label: "Maestria", valor: dono.bt }] : []),
   ];
 }
 
-export function defesaInvocacao(inv, dono = {}) {
-  return partesDefesaInvocacao(inv, dono).reduce((t, x) => t + x.valor, 0);
+export function defesaInvocacao(inv, dono = {}, atributoAlternativo = null) {
+  return partesDefesaInvocacao(inv, dono, atributoAlternativo).reduce((t, x) => t + x.valor, 0);
 }
 
 export function deslocamentoInvocacao() {
@@ -542,6 +603,15 @@ export function sessaoDaInvocacao(dono, invId) {
   return {
     emCampo: !!e?.emCampo,
     auxilios: (e?.auxilios && typeof e.auxilios === "object") ? e.auxilios : {},
+    /* O estado de mesa das Intrínsecas e Auras (2026-09-30, Etapa 6): as Auras em
+       que o dono está, a tarefa da Bem Treinada e a Forma (arma ou armadura). */
+    auras: (e?.auras && typeof e.auras === "object") ? e.auras : {},
+    emTarefa: !!e?.emTarefa,
+    forma: e?.forma === "arma" || e?.forma === "armadura" ? e.forma : null,
+    /* O que a ENTRADA deixou (2026-09-30, Etapa 7): o PV a mais da Resistência
+       Sobrecarregada, que vale enquanto ela está em campo, e a Autonomia paga. */
+    sobrecargaPv: Math.max(0, Math.trunc(Number(e?.sobrecargaPv) || 0)),
+    autonomia: !!e?.autonomia,
   };
 }
 
@@ -648,8 +718,10 @@ export function orcamentoAcoesCaract(inv, extra = 0, livresCaract = 0) {
   const g = grauMeta(inv?.grau);
   const base = INV_ACOES_CARACT_BASE[g.value] ?? 2;
   const maxAdicionais = g.rank; // 4°=1, 3°=2, 2°=3, 1°=4, especial=5
-  const nAcoes = inv?.acoes?.length ?? 0;
-  const nCaract = inv?.caracteristicas?.length ?? 0;
+  /* O que a Herança CONCEDE não ocupa vaga (decisão do autor, PV-14): os itens
+     marcados `concedida` ficam fora da conta. */
+  const nAcoes = (inv?.acoes ?? []).filter((a) => !a?.concedida).length;
+  const nCaract = (inv?.caracteristicas ?? []).filter((c) => !c?.concedida).length;
   const exclusivas = Math.max(0, livresCaract || 0);
   const caractNoPool = Math.max(0, nCaract - exclusivas);
   const usados = nAcoes + caractNoPool;
@@ -674,20 +746,57 @@ export function orcamentoAcoesCaract(inv, extra = 0, livresCaract = 0) {
 // cobrava PE pela ficha inteira e só abatia os grátis de Habilidade por cima,
 // então toda invocação pagava PE mesmo dentro da cota base).
 export function custoInvocacao(inv, gratis = 0, gratisCaract = 0) {
+  return detalheCustoInvocacao(inv, gratis, gratisCaract).total;
+}
+
+/**
+ * O CUSTO EM PARTES (2026-09-30, Etapa 4). O `custoInvocacao` devolvia só o
+ * número, e o hover mostrava uma parcela "(Base)" que já trazia os itens dentro:
+ * a mesa não tinha como saber quanto era o grau e quanto eram as escolhas.
+ *
+ * ⚠ O CUSTO BASE É DO TIPO (decisão do autor, Mecânicas): Marionete, Corpo e
+ * Maldição não têm custo base de ativação (`regras.custoBase: 0`). As Ações e
+ * Características além da cota continuam custando, e são pagas na entrada.
+ *
+ * Devolve `{ base, baseLabel, itens, nItens, poupadoGratis, total }`:
+ *   base           o custo do grau, ou zero pelo tipo
+ *   itens          o que as Ações e Características além da cota custam
+ *   poupadoGratis  o que o `gratis` (Ápice do Controle) deixou de cobrar
+ */
+export function detalheCustoInvocacao(inv, gratis = 0, gratisCaract = 0) {
   const g = grauMeta(inv?.grau);
-  const base = INV_ACOES_CARACT_BASE[g.value] ?? 2;
-  const nCaract = inv?.caracteristicas?.length ?? 0;
+  const regras = regrasDoTipo(inv);
+  const cota = INV_ACOES_CARACT_BASE[g.value] ?? 2;
+  // O concedido pela Herança não custa (PV-14), igual ao orçamento acima.
+  const nCaract = (inv?.caracteristicas ?? []).filter((c) => !c?.concedida).length;
   /* ⚠ `gratisCaract` (Shikigami de Técnica) abate CARACTERÍSTICA, e não "o item
      mais caro". O `gratis` genérico do Ápice do Controle abate os maiores
      primeiro, que é o que o jogador escolheria; aqui o texto diz qual item é de
      graça, então ele sai da conta antes da ordenação. */
   const caractPagas = Math.max(0, nCaract - Math.max(0, gratisCaract));
   const custos = [];
-  for (const a of inv?.acoes || []) custos.push(a?.classe === "complexa" ? 2 : 1);
+  for (const a of inv?.acoes || []) if (!a?.concedida) custos.push(a?.classe === "complexa" ? 2 : 1);
   for (let i = 0; i < caractPagas; i++) custos.push(1);
   custos.sort((a, b) => b - a); // maiores primeiro
-  const soma = custos.slice(Math.max(0, gratis) + base).reduce((s, c) => s + c, 0);
-  return g.custoBase + soma;
+  const soma = (lista) => lista.reduce((s, c) => s + c, 0);
+  const livres = Math.max(0, gratis);
+  const pagos = custos.slice(livres + cota);
+  const comBase = regras.custoBase === "grau";
+  /* ⚠ `custoBaseFixo` é da Quimera do Mecânicas (2026-10-01, Etapa 9): "O custo em
+     PE é calculado somando o custo de PE base das Invocações". Só existe na cópia
+     sintética que o `resolveQuimera` monta, nunca numa ficha salva. */
+  const baseFixa = Number.isFinite(inv?.custoBaseFixo) ? Math.max(0, Math.trunc(inv.custoBaseFixo)) : null;
+  const base = baseFixa ?? (comBase ? g.custoBase : 0);
+  const itens = soma(pagos);
+  return {
+    base,
+    baseLabel: baseFixa != null ? "Quimera (Soma dos Custos Base)"
+      : comBase ? `${g.label} (Base)` : `${regras.label} (Sem Custo Base)`,
+    itens,
+    nItens: pagos.length,
+    poupadoGratis: soma(custos.slice(cota, cota + livres)),
+    total: base + itens,
+  };
 }
 
 // ============================================================
@@ -1011,6 +1120,8 @@ export function resolveAcao(acao, inv, dono = {}, invCtx = inv) {
   const out = {
     id: acao?.id, nome: acao?.nome || "", descricao: acao?.descricao || "",
     classe, familia, custoPE: acao?.custoPE ?? 0, acaoComCusto,
+    // A Ação recebida por Herança das Sombras leva o nome da sombra (Etapa 10).
+    ...(acao?.herancaDe ? { herancaDe: acao.herancaDe } : {}),
   };
   const warnings = [];
 
@@ -1089,7 +1200,11 @@ export function resolveAcao(acao, inv, dono = {}, invCtx = inv) {
     const sub = ["cura", "defesa", "acerto", "danoAdicional", "rd"].includes(acao?.auxilioSub) ? acao.auxilioSub : "defesa";
     out.auxilioSub = sub;
     out.alvoAuxilio = acao?.alvoAuxilio === "aliados" ? "aliados" : "invocacao";
-    alcanceMetros = "corpo";
+    /* ⚠ ALCANCE AUXILIAR (2026-09-30, Adicionais): "Suas ações de auxílio usam o
+       alcance normal sem precisar seguir a regra de redução". A redução é este
+       corpo a corpo, e a Característica a tira: o auxílio passa a usar o alcance
+       da tabela do grau, como a Cura. Não soma metro nenhum. */
+    alcanceMetros = dono?.alcanceAuxiliar ? INV_ALCANCE[grau] : "corpo";
 
     if (sub === "cura") {
       const multi = acao?.alvo === "multiplos";
@@ -1252,19 +1367,83 @@ export function resolveAcao(acao, inv, dono = {}, invCtx = inv) {
   // o mesmo valor base que o seletor de variáveis mostra (ver `atributosEfetivos`).
   aplicaModificador(out, acao, invCtx, dono, warnings, alvosDeModificador(acao));
 
+  /* AS REGRAS DE AÇÃO DO ADICIONAIS (2026-10-01, Etapa 11). */
+  // "Não é possível utilizar Manobras ou aplicar Condições como Ação Simples."
+  if (classe === "simples" && acao?.manobra) warnings.push("Manobra não pode ser Ação Simples.");
+  if (classe === "simples" && bens.condicoes.length) warnings.push("Condição não pode ser aplicada por Ação Simples.");
+  out.manobra = !!acao?.manobra;
+  /* "Ao criar uma Reação para sua Invocação, caso ela seja uma Ação Simples
+     Auxiliar, seu valor é multiplicado por 1.5x." O valor numérico (Defesa,
+     Acerto, RD), para baixo. */
+  // A Cobertura é sempre Reação, e o multiplicador vale nela também.
+  out.reacao = !!acao?.reacao || acao?.especial === "cobertura";
+  if (out.reacao && classe === "simples" && familia === "auxilio" && Number.isFinite(out.valor)) {
+    out.valorSemReacao = out.valor;
+    out.valor = Math.floor(out.valor * 1.5);
+  }
+  /* As duas Ações especiais. ⚠ O PE delas é custo de uso, como os 2 PE da Cura, e
+     não Ação com Custo: não entram no limite por grau. */
+  if (acao?.especial === "reducaoCura") {
+    // "reduzem a cura recebida pelo Alvo em 1/3. Ela é uma Ação Complexa que
+    // custa 8 PE [...] reduz a cura pela metade por 10 PE [...] Esta Ação deve
+    // pedir TR." Dura até o início do próximo turno do invocador (ou dela).
+    const metade = acao.reducaoCura === "metade";
+    out.especial = { tipo: "reducaoCura", rotulo: metade ? "Reduz Cura pela Metade" : "Reduz Cura em 1/3", custo: metade ? 10 : 8 };
+    out.custoPE = Math.max(out.custoPE, out.especial.custo);
+    if (classe !== "complexa") warnings.push("Reduzir Cura é Ação Complexa.");
+    if (familia !== "ataque" || acao?.ataqueTipo !== "tr") warnings.push("Reduzir Cura deve pedir TR.");
+  } else if (acao?.especial === "cobertura") {
+    /* "Meia Cobertura e Cobertura 3/4, com um custo de 4PE (Grau 3) e 6 PE (Grau
+       2), respectivamente como uma Reação": o custo e o grau mínimo (PV-04). Sem
+       Cobertura Total. */
+    const tres = acao.cobertura === "tresQuartos";
+    const grauMin = tres ? "segundo" : "terceiro";
+    out.especial = { tipo: "cobertura", rotulo: tres ? "Cobertura 3/4" : "Meia Cobertura", custo: tres ? 6 : 4 };
+    out.custoPE = Math.max(out.custoPE, out.especial.custo);
+    if (grauMeta(inv?.grau).rank < grauMeta(grauMin).rank) {
+      warnings.push(`${out.especial.rotulo} pede ${grauMeta(grauMin).label} ou acima.`);
+    }
+  }
+
   out.warnings = warnings;
   return out;
 }
 
 /** Resolve uma Característica passiva pelas tabelas do grau. */
+/** O custo máximo da arma ou armadura de uma Forma, pelo grau (decisão do autor,
+    2026-09-30): Custo 1 no Quarto, 2 no Terceiro, 3 no Segundo, 4 no Primeiro e
+    no Especial. */
+export const CUSTO_DE_FORMA_POR_GRAU = { quarto: 1, terceiro: 2, segundo: 3, primeiro: 4, especial: 4 };
+
+/** Os tipos de ataque que a Aura de Acerto pode especificar (os do dono). */
+const ROTULO_ATAQUE_DE_AURA = { corpo: "Corpo a Corpo", distancia: "A Distância", amaldicoado: "Amaldiçoado" };
+
+/** O rótulo do alvo de uma Aura, pelo tipo de alvo dela. */
+function rotuloDoAlvoDeAura(tipo, alvo) {
+  if (!tipo || !alvo) return "";
+  if (tipo === "ataque") return ROTULO_ATAQUE_DE_AURA[alvo] ?? alvo;
+  if (tipo === "tr") return AFTY_RESISTENCIAS.find((r) => r.value === alvo)?.label ?? alvo;
+  if (tipo === "pericia") return AFTY_PERICIAS.find((p) => p.id === alvo)?.nome ?? alvo;
+  if (tipo === "tipoDano") return TIPOS_DANO[alvo] ?? alvo;
+  return alvo;
+}
+
 export function resolveCaracteristica(carac, inv, dono = {}) {
   const grau = grauMeta(inv?.grau).value;
-  const sub = ["vida", "teste", "resistencia", "rd", "tamanho", "livre"].includes(carac?.subtipo) ? carac.subtipo : "livre";
+  /* ⚠ O SUBTIPO É O ID DO CATÁLOGO desde 2026-09-30 (Etapa 5). Os seis de antes
+     estão no catálogo com o mesmo id, e por isso ficha salva não muda. Id que o
+     catálogo não conhece segue caindo na Livre, como sempre caiu. */
+  const entrada = caracteristicaDoCatalogo(carac?.subtipo);
+  const sub = entrada ? entrada.id : "livre";
   // ⚠ A `descricao` viaja resolvida: é o texto que a pessoa escreveu para dizer
   // o que a Característica faz, e sem ela a Ficha mostrava só o nome, deixando
   // toda Característica "livre" (a que não tem número) sem conteúdo nenhum.
-  const out = { id: carac?.id, nome: carac?.nome || "", subtipo: sub, descricao: carac?.descricao || "" };
+  const out = {
+    id: carac?.id, nome: carac?.nome || "", subtipo: sub, descricao: carac?.descricao || "",
+    catalogoNome: entrada?.nome ?? "Livre", grupoEfeito: entrada?.grupoEfeito ?? null,
+  };
   const warnings = [];
+  const parametros = (carac?.parametros && typeof carac.parametros === "object") ? carac.parametros : {};
 
   if (sub === "vida") {
     out.valor = INV_CARACT_VIDA[grau];
@@ -1288,17 +1467,20 @@ export function resolveCaracteristica(carac, inv, dono = {}) {
       out.requerGatilho = true;
     }
   } else if (sub === "resistencia") {
-    /* ⚠ A FAIXA VEM DO GRAU, e não é escolha: Segundo e Primeiro treinam,
-       Especial domina, e os dois graus de baixo não têm a Característica. Ver
-       `INV_CARACT_TR_PROF`. O TR alvo reusa o campo `trTipo`, que é o mesmo
-       "qual Teste de Resistência" que o subtipo `teste` já perguntava. */
-    out.prof = INV_CARACT_TR_PROF[grau] || null;
-    out.profLabel = out.prof === "mestre" ? "Mestre" : out.prof === "treinado" ? "Treinado" : "";
+    /* ⚠ TR TREINADA E TR MESTRE (decisão do autor, 2026-09-30, Adicionais): a
+       faixa é ESCOLHA da Característica (`prof`), e não sai mais do grau. A
+       Treinada vale em qualquer grau, e a Mestre só num TR em que a invocação já
+       é treinada (quem confere é o `resolveInvocacao`, que enxerga a ficha).
+
+       ⚠ A Característica salva antes, sem `prof`, lê a faixa que ela concedia:
+       Mestre no Grau Especial e Treinado nos outros. Nada é convertido. O TR alvo
+       reusa o campo `trTipo`, o mesmo do subtipo `teste`. */
+    out.prof = carac?.prof === "mestre" || carac?.prof === "treinado"
+      ? carac.prof
+      : (grau === "especial" ? "mestre" : "treinado");
+    out.profLabel = out.prof === "mestre" ? "Mestre" : "Treinado";
     out.trTipo = carac?.trTipo || "";
     out.trTipoLabel = AFTY_RESISTENCIAS.find((r) => r.value === out.trTipo)?.label ?? "";
-    if (!out.prof) {
-      warnings.push(`${grauMeta(inv?.grau).label} não pode treinar Teste de Resistência por Característica.`);
-    }
     if (!out.trTipo) warnings.push("Escolha o Teste de Resistência desta Característica.");
     else if (!resistenciasTreinaveis().some((r) => r.value === out.trTipo)) {
       warnings.push(`${out.trTipoLabel || out.trTipo} não pode ser treinado por uma Invocação.`);
@@ -1320,6 +1502,101 @@ export function resolveCaracteristica(carac, inv, dono = {}) {
     out.tamanhoLabel = AFTY_TAMANHOS.find((t) => t.value === out.tamanho)?.label ?? out.tamanho;
     if (out.tamanho && !out.faixa.includes(out.tamanho)) {
       warnings.push(`Tamanho "${out.tamanho}" fora da faixa do grau.`);
+    }
+  } else if (entrada?.categoria === "aura") {
+    /* AS AURAS (2026-09-30, Etapa 6). Só do Segundo Grau em diante, e o valor sai
+       da escala do grau. Ela não vale sozinha em ninguém: quem a liga no dono é a
+       mesa ("Na Aura"), e o efeito vai pelo `canalDono`. Ver `aurasLigadasDa`. */
+    out.aura = true;
+    out.canalDono = entrada.canalDono;
+    out.alvoParam = entrada.alvoParam ?? null;
+    out.alvo = out.alvoParam ? (parametros[out.alvoParam] || "") : null;
+    out.alvoLabel = rotuloDoAlvoDeAura(out.alvoParam, out.alvo);
+    out.valor = valorPorGrau(entrada, grau) ?? 0;
+    if (grauMeta(inv?.grau).rank < grauMeta(entrada.grauMin || "segundo").rank) {
+      warnings.push("Aura só a partir do Segundo Grau.");
+      out.valor = 0;
+      out.bloqueada = true;
+    } else if (out.alvoParam && !out.alvo) {
+      warnings.push("Escolha o alvo desta Aura.");
+      out.bloqueada = true;
+    }
+  } else if (entrada?.categoria === "intrinseca") {
+    /* AS INTRÍNSECAS (2026-09-30, Etapa 6). A maioria é regra de mesa, e a ficha
+       mostra o texto. As que viram número ou estado dizem qual no `efeito`, e o
+       `agregarCaracteristicas` as junta. Requisito que falta trava o efeito e
+       vira aviso, e a Característica continua na ficha. */
+    out.intrinseca = true;
+    out.efeito = entrada.efeito ?? null;
+    const req = entrada.requisitos || {};
+    const irmas = (inv?.caracteristicas || []).filter((c) => c !== carac).map((c) => c?.subtipo);
+    const trava = (msg) => { warnings.push(msg); out.bloqueada = true; };
+    if (req.tamanhoMin) {
+      const tam = tamanhoBrutoDaInvocacao(inv);
+      if (TAMANHO_ORDEM.indexOf(tam) < TAMANHO_ORDEM.indexOf(req.tamanhoMin)) {
+        trava(`Pede tamanho ${AFTY_TAMANHOS.find((t) => t.value === req.tamanhoMin)?.label ?? req.tamanhoMin} ou maior.`);
+      }
+    }
+    if (Array.isArray(req.requer) && !req.requer.some((id) => irmas.includes(id))) {
+      trava(`Pede ${req.requer.map((id) => caracteristicaDoCatalogo(id)?.nome ?? id).join(" ou ")}.`);
+    }
+    if (Array.isArray(req.tipos) && !req.tipos.includes(regrasDoTipo(inv).value)) {
+      trava(`Só em ${req.tipos.map((x) => regrasDoTipoValor(x).label).join(" ou ")}.`);
+    }
+    if (req.confirmacao && !parametros[req.confirmacao]) {
+      trava("Pede o requisito do dono confirmado.");
+    }
+    if (out.efeito === "formaArma") {
+      /* A arma: o custo segue o grau (Custo 1 no Quarto, 2 no Terceiro, 3 no
+         Segundo, 4 no Primeiro e no Especial, decisão do autor), e o dono tem de
+         ser treinado nela. */
+      const arma = ARMAS.find((a) => a.id === parametros.arma) ?? null;
+      out.arma = arma ? { id: arma.id, nome: arma.nome, custo: arma.custo } : null;
+      out.custoMaximo = CUSTO_DE_FORMA_POR_GRAU[grau] ?? 1;
+      if (!arma) trava("Escolha a arma.");
+      else {
+        if ((arma.custo ?? 1) > out.custoMaximo) trava(`${arma.nome} custa ${arma.custo}, e o grau aceita até ${out.custoMaximo}.`);
+        if (Array.isArray(dono?.armasTreinadas) && !dono.armasTreinadas.includes(arma.id)) {
+          trava(`O dono não é treinado em ${arma.nome}.`);
+        }
+      }
+    } else if (out.efeito === "formaArmadura") {
+      out.armadura = String(parametros.armadura || "").trim();
+      out.custoMaximo = CUSTO_DE_FORMA_POR_GRAU[grau] ?? 1;
+      if (!out.armadura) warnings.push("Escreva a armadura ou o uniforme.");
+    } else if (out.efeito === "laceracao") {
+      // "Grau da Invocação × 5, com o mínimo de 1", com o grau pelo rank (decisão do autor).
+      out.valor = Math.max(1, grauMeta(inv?.grau).rank * 5);
+    } else if (out.efeito === "corridaPerfurante") {
+      // O teto de dados: o modificador do atributo de dano (o melhor de Força e Destreza).
+      const at = inv?.atributos || {};
+      out.valor = Math.max(0, mod(at.forca ?? 8), mod(at.destreza ?? 8));
+    }
+    if (entrada.parametros?.includes("percepcao")) out.percepcao = String(parametros.percepcao || "").trim();
+    if (entrada.parametros?.includes("encantamento")) out.encantamento = String(parametros.encantamento || "").trim();
+  } else if (entrada?.canal && entrada?.escala) {
+    /* As MODIFICADORAS NUMÉRICAS do catálogo (Defesa, Nível de Dano, Dano Durante
+       o Ataque, Aumento de Cura, e as de Addon): o valor sai da escala do grau
+       e cai num canal da invocação. Quem soma e decide o "mesmo efeito" é o
+       `agregarCaracteristicas`. */
+    out.valor = valorPorGrau(entrada, grau);
+    out.canal = entrada.canal;
+  } else if (sub === "arsenal") {
+    out.valor = valorPorGrau(entrada, grau);
+  } else if (sub === "estiloCombate" || sub === "resilienciaAlternativa") {
+    out.atributo = INV_ATTR_KEYS.includes(parametros.atributo) ? parametros.atributo : "";
+    out.atributoLabel = out.atributo ? rotuloAttrInv(out.atributo) : "";
+    if (!out.atributo) warnings.push("Escolha o atributo desta Característica.");
+  } else if (sub === "resistenciaDano") {
+    out.tipoDano = parametros.tipoDano || "";
+    out.tipoDanoLabel = TIPOS_DANO[out.tipoDano] ?? out.tipoDano;
+    if (!out.tipoDano) {
+      warnings.push("Escolha o tipo de dano desta Resistência.");
+    } else if (Array.isArray(dono?.resistenciasDePassiva) && !dono.resistenciasDePassiva.includes(out.tipoDano)) {
+      /* "Possuir um Feitiço Passivo que garante Resistência, a resistência deve
+         ser a mesma da passiva" (Adicionais). O Feitiço é do DONO (decisão do
+         autor, 2026-09-30). Sem a lista no dono, ninguém confere. */
+      warnings.push(`O dono não tem Feitiço Passivo com Resistência a ${out.tipoDanoLabel}.`);
     }
   } else if (sub === "livre") {
     /* ⚠ A LIVRE GANHOU O MOTOR em 2026-09-10. Autor: *"Faça igual Feitiços
@@ -1430,7 +1707,14 @@ function varsDeMarcador(inv, dono) {
   const out = {};
   for (const m of Array.isArray(dono?.marcadores) ? dono.marcadores : []) {
     if (!m?.id) continue;
-    const on = marcadorLigado(inv, m.id) ? 1 : 0;
+    /* ⚠ A CONDIÇÃO DE MESA (2026-09-30): o Concentrar Poder vale "enquanto
+       estiver com apenas UMA invocação em campo". `dono.invocacoesEmCampo` só
+       existe com mesa (Ficha e Encontro). No criador ele é `null`, e a marca vale
+       sempre, como valia antes. */
+    const condicaoOk = m.condicao !== "unicaEmCampo"
+      || dono?.invocacoesEmCampo == null
+      || dono.invocacoesEmCampo === 1;
+    const on = condicaoOk && marcadorLigado(inv, m.id) ? 1 : 0;
     const base = varDeMarcador(m.id);
     out[base] = on;
     for (const o of Array.isArray(m.opcoes) ? m.opcoes : []) {
@@ -1460,6 +1744,7 @@ export function buildInvocacaoDslContext(inv, dono = {}, resolved = {}) {
   const g = grauMeta(inv?.grau);
   const tipo = tipoInvocacaoMeta(inv?.tipoMecanico).value;
   const tam = resolved.tamanho ?? tamanhoBrutoDaInvocacao(inv);
+  const marcas = varsDeMarcador(inv, dono);
   return {
     /* ⚠ AS FONTES ENTRAM PRIMEIRO e sob chave ilegível (`#fontes`), montadas
        pelo passe 1 do `resolveInvocacoesList`. Sem elas o objeto é o de sempre e
@@ -1472,7 +1757,7 @@ export function buildInvocacaoDslContext(inv, dono = {}, resolved = {}) {
        zero e DESLIGAVA a linha, que é o engano de 2026-08-31 de novo. */
     sempre: 1,
     nunca: 0,
-    ...varsDeMarcador(inv, dono),
+    ...marcas,
     // Invocação (nomes diretos)
     forca: at.forca ?? 8, destreza: at.destreza ?? 8, constituicao: at.constituicao ?? 8,
     inteligencia: at.inteligencia ?? 8, sabedoria: at.sabedoria ?? 8, presenca: at.presenca ?? 8,
@@ -1484,12 +1769,23 @@ export function buildInvocacaoDslContext(inv, dono = {}, resolved = {}) {
     deslocamento: resolved.deslocamento ?? deslocamentoInvocacao(),
     /* TIPO MECÂNICO como booleana. Sem isto não dava para escrever efeito que
        vale só para um tipo, e o próprio `TECNICA_EFEITOS` precisou de um desvio
-       em código (`efeitosDoTipo`) por falta de `quando: "tipo_tecnica"`. */
-    // A Maldição é uma invocação de Talismã como a normal, então também liga o
-    // `tipo_shikigami`: regra escrita para "invocação de Talismã" vale para ela.
-    tipo_shikigami: tipo === "shikigami" || tipo === "maldicao" ? 1 : 0,
-    tipo_maldicao: tipo === "maldicao" ? 1 : 0,
+       em código (`efeitosDoTipo`) por falta de `quando: "tipo_tecnica"`.
+
+       ⚠ OS SINAIS ESPECÍFICOS (2026-09-30, decisão do autor). Cada tipo tem o
+       seu, e só ele liga: `tipo_shikigami_puro` (o Shikigami que não é de
+       Técnica), `tipo_tecnica`, `tipo_maldicao`, `tipo_marionete`, `tipo_corpo`.
+       Código oficial novo usa SÓ estes. */
+    tipo_shikigami_puro: tipo === "shikigami" ? 1 : 0,
     tipo_tecnica: tipo === "tecnica" ? 1 : 0,
+    tipo_maldicao: tipo === "maldicao" ? 1 : 0,
+    tipo_marionete: tipo === "marionete" ? 1 : 0,
+    tipo_corpo: tipo === "corpo" ? 1 : 0,
+    /* ⚠ LEGACY. `tipo_shikigami` liga no Shikigami E na Maldição, porque nasceu
+       quando a Maldição era "uma invocação de Talismã como a normal". Addon antigo
+       pode tê-lo escrito com esse sentido, e por isso ele fica, com o sentido de
+       sempre (e desligado na Marionete e no Corpo, que não existiam). Código
+       oficial não o lê. */
+    tipo_shikigami: tipo === "shikigami" || tipo === "maldicao" ? 1 : 0,
     /* Tamanho como DEGRAU (Miúdo 1 ... Colossal N), porque é assim que ele se
        move: a Característica de Tamanho sobe degraus, não centímetros. */
     tamanho: Math.max(0, TAMANHO_ORDEM.indexOf(tam)) + 1,
@@ -1502,7 +1798,8 @@ export function buildInvocacaoDslContext(inv, dono = {}, resolved = {}) {
     custo: custoInvocacao(inv),
     // Alias herdado do tempo em que Concentrar Poder era o único marcador.
     // Prefira `marc_concentrar_poder`, que é o nome do registro.
-    marcada: marcadorLigado(inv, "concentrar_poder") ? 1 : 0,
+    // ⚠ Segue a variável do marcador, com a condição de mesa (2026-09-30).
+    marcada: marcas.marc_concentrar_poder ?? (marcadorLigado(inv, "concentrar_poder") ? 1 : 0),
     // Dono
     nd: dono.nd ?? 0, bt: dono.bt ?? 0, nivel_controlador: dono.nivelControlador ?? 0,
     /* O estilo do Apogeu como booleana. O Ápice do Controle precisa saber se a
@@ -1842,9 +2139,10 @@ function atributosEfetivos(inv, efe) {
  * Especial), que é exatamente como as três regras escalam, e assim as parcelas
  * aparecem nomeadas no hover de fontes junto das Habilidades de Controlador.
  *
- * As regras que NÃO têm canal (turno próprio, retorno com vida cheia na primeira
- * dissipação, desvantagem alheia e a imunidade ao Prejuízo por Múltiplos
- * Auxílios) saem em `tracosDeTecnica` e no `resolveAcao`.
+ * As regras que NÃO têm canal (turno próprio, desvantagem alheia e a imunidade
+ * ao Prejuízo por Múltiplos Auxílios) saem em `tracosDeTecnica` e no
+ * `resolveAcao`. A regra do exorcismo (Mecânicas, 2026-09-30) é estado de mesa,
+ * e mora na sessão.
  */
 /**
  * ⚠ Eles são efeitos NORMAIS, com `quando`, e não um caso especial. Até a
@@ -1886,6 +2184,268 @@ const EFEITOS_DE_TIPO = [
   ...MALDICAO_EFEITOS.map((e) => ({ ...e, origem: "maldicao", nome: NOME_TIPO_MALDICAO })),
 ];
 
+/* ============================================================
+   OS TIPOS ESPECIAIS (2026-09-30, Etapa 8)
+   ============================================================ */
+
+/** Os canais que AUMENTAM Ações e Características. A Maldição Domada não os
+    recebe: "Efeitos que aumentam ações e características como 'Visionário' não
+    podem ser aplicados em maldições Domadas" (Mecânicas). Quem diz é o tipo
+    (`regras.visionario`), e os efeitos do próprio tipo passam. */
+const CANAIS_DE_ORCAMENTO = new Set(["orcamentoLivre", "orcamentoPago", "caracteristicasLivres"]);
+
+/** As naturezas do Corpo Amaldiçoado (Mecânicas): o boneco, que se repara por
+    Ofício (Alfaiate), e o biológico, por Cura Aprimorada ou Medicina. */
+export const NATUREZAS_DE_CORPO = [
+  { value: "boneco", label: "Boneco" },
+  { value: "biologico", label: "Biológico" },
+];
+const NATUREZA_VALIDA = new Set(NATUREZAS_DE_CORPO.map((n) => n.value));
+
+/** A natureza gravada na ficha do Corpo, ou "" quando não escolhida (ou quando
+    a ficha nem é de Corpo: o campo sobra de uma troca de tipo e não vale nada). */
+export const naturezaDoCorpo = (inv) =>
+  (regrasDoTipo(inv).familia === "corpo" && NATUREZA_VALIDA.has(inv?.natureza) ? inv.natureza : "");
+
+/**
+ * As refeições do Ofício (Cozinheiro) que um Corpo Biológico pode receber: as do
+ * Livro (Ferramentas de Cozinheiro, conferidas em 2026-10-01 pela decisão PV-20),
+ * menos a Energética ("O efeito de Energética não pode ser aplicado em Corpos
+ * Amaldiçoados").
+ */
+export const REFEICOES_DE_CORPO = [
+  { value: "leve", label: "Leve" },
+  { value: "nutritiva", label: "Nutritiva" },
+  { value: "picante", label: "Picante" },
+  { value: "reforcada", label: "Reforçada" },
+  { value: "refrescante", label: "Refrescante" },
+  { value: "revigorante", label: "Revigorante" },
+];
+const REFEICAO_POR_VALOR = Object.fromEntries(REFEICOES_DE_CORPO.map((r) => [r.value, r]));
+
+/**
+ * A refeição do Corpo Biológico, resolvida: "ele recebe um dos efeitos do Ofício
+ * Cozinheiro permanentemente, considerando a BT de seu Criador" (Mecânicas). O
+ * Criador é o dono, então o "grau do cozinheiro" das refeições Leve e Revigorante
+ * é o grau do dono (rank 1 a 5), e a "metade do bônus de treinamento" da Nutritiva
+ * é a BT dele. Devolve `null` sem refeição, ou `{ id, nome, texto, efeitos }`.
+ *
+ * As quatro de número viram efeito de canal, no mesmo cano das Habilidades. A
+ * Refrescante e a Revigorante são de uso ("Efeitos que garantem bônus temporários
+ * são recuperados num Descanso Curto ou Longo"), e saem como texto com o número.
+ */
+export function refeicaoDoCorpo(inv, dono = {}) {
+  if (naturezaDoCorpo(inv) !== "biologico") return null;
+  const meta = REFEICAO_POR_VALOR[inv?.refeicao];
+  if (!meta) return null;
+  const rank = Math.max(1, Math.min(5, Math.trunc(Number(dono.grauRankDono) || 1)));
+  const bt = Math.max(0, Math.trunc(Number(dono.bt) || 0));
+  const nome = `Refeição ${meta.label}`;
+  const linha = (canal, valor, alvo = null) => ({
+    canal, expr: String(valor), nome, origem: "refeicao", ...(alvo ? { alvo } : {}),
+  });
+  switch (meta.value) {
+    case "leve":
+      return { id: meta.value, nome, texto: `+${3 * rank} m de Deslocamento`, efeitos: [linha("deslocamento", 3 * rank)] };
+    case "nutritiva": {
+      // "+2 em um número de TRs igual a metade do bônus de treinamento do cozinheiro".
+      const limite = Math.floor(bt / 2);
+      const validos = new Set(AFTY_RESISTENCIAS.map((r) => r.value));
+      const trs = [...new Set((Array.isArray(inv?.refeicaoTrs) ? inv.refeicaoTrs : []).filter((t) => validos.has(t)))]
+        .slice(0, limite);
+      return {
+        id: meta.value, nome, limiteTrs: limite, trs,
+        texto: `+2 em ${limite} ${limite === 1 ? "TR" : "TRs"}`,
+        efeitos: trs.map((t) => linha("bonusTR", 2, t)),
+      };
+    }
+    case "picante":
+      return { id: meta.value, nome, texto: "+2 em Jogadas de Ataque", efeitos: [linha("acerto", 2)] };
+    case "reforcada":
+      return { id: meta.value, nome, texto: "+2 na Defesa", efeitos: [linha("defesa", 2)] };
+    case "refrescante":
+      return { id: meta.value, nome, texto: "Um Teste com Vantagem por Descanso", efeitos: [] };
+    case "revigorante":
+      return { id: meta.value, nome, texto: `${5 * rank} PV Temporários por Descanso`, pvTemp: 5 * rank, efeitos: [] };
+    default:
+      return null;
+  }
+}
+
+/** As imunidades que a invocação traz pelo tipo: as da Marionete, e as do Corpo
+    boneco ("Caso o Corpo Amaldiçoado seja um boneco, ele é imune à condição
+    Envenenado e a venenos não amaldiçoados"). */
+export function imunidadesDoTipo(inv) {
+  const out = [...regrasDoTipo(inv).imunidadesNaturais];
+  if (naturezaDoCorpo(inv) === "boneco") out.push("Envenenado", "Venenos Não Amaldiçoados");
+  return [...new Set(out)];
+}
+
+/**
+ * A CD de Criação de Itens do Livro (Interlúdio), por Ofício e Custo 1 a 4. São
+ * três colunas: Alquimia, Canalizador e Ferreiro, depois Entalhador e
+ * Farmacêutico, e o Alfaiate sozinho.
+ */
+const CD_DE_CRIACAO_POR_OFICIO = {
+  Alquimia: [15, 20, 25, 30], Canalizador: [15, 20, 25, 30], Ferreiro: [15, 20, 25, 30],
+  Entalhador: [15, 20, 25, 35], "Farmacêutico": [15, 20, 25, 35],
+  Alfaiate: [15, 20, 30, 40],
+};
+/** Os Ofícios com que uma Marionete pode ser feita (e reparada). O Mecânicas dá
+    o Ferreiro (robô) e o Entalhador (madeira) como exemplo, e manda seguir "as
+    regras do Ofício correspondente": a lista é a da tabela de Criação de Itens. */
+export const OFICIOS_DE_MARIONETE = Object.keys(CD_DE_CRIACAO_POR_OFICIO);
+
+/**
+ * O reparo do Desmembramento (ou a reconstrução da Marionete), pelo tipo. O Custo
+ * vem do grau, igual nos três tipos do Mecânicas: "Custo 1 = Grau 4, Custo 2 =
+ * Grau 3, Custo 3 = Grau 2, Custo 4 = Grau 1 e Especial". A CD sai da tabela de
+ * Criação de Itens quando o reparo é por um Ofício dela, e fica `null` quando não
+ * é (Medicina e Cura Aprimorada não estão na tabela, ver docs/a-fazer.md).
+ *
+ * Devolve `null` para quem não se repara (a Maldição), ou
+ * `{ vias: [rótulos], oficio, custo, cd, quando }`.
+ */
+export function reparoDaInvocacao(inv) {
+  const r = regrasDoTipo(inv);
+  if (!r.reparo) return null;
+  const custo = CUSTO_DE_FORMA_POR_GRAU[grauMeta(inv?.grau).value] ?? 1;
+  const cdDo = (oficio) => CD_DE_CRIACAO_POR_OFICIO[oficio]?.[custo - 1] ?? null;
+  if (r.reparo === "material") {
+    const oficio = OFICIOS_DE_MARIONETE.includes(inv?.oficio) ? inv.oficio : "";
+    return {
+      vias: oficio ? [`Ofício (${oficio})`] : [], oficio, custo, cd: oficio ? cdDo(oficio) : null,
+      quando: "Ação Comum", falta: !oficio,
+    };
+  }
+  if (r.reparo === "natureza") {
+    const natureza = naturezaDoCorpo(inv);
+    if (natureza === "boneco") {
+      return { vias: ["Ofício (Alfaiate)"], oficio: "Alfaiate", custo, cd: cdDo("Alfaiate"), quando: "Descanso Longo", falta: false };
+    }
+    if (natureza === "biologico") {
+      return { vias: ["Cura Aprimorada", "Medicina"], oficio: "", custo, cd: null, quando: "Descanso Longo", falta: false };
+    }
+    return { vias: [], oficio: "", custo, cd: null, quando: "Descanso Longo", falta: true };
+  }
+  // Shikigami (e a Técnica, que herda): "Cura Aprimorada ou do Ofício de Canalizador".
+  return {
+    vias: ["Cura Aprimorada", "Ofício (Canalizador)"], oficio: "Canalizador", custo, cd: cdDo("Canalizador"),
+    quando: "Descanso Longo", falta: false,
+  };
+}
+
+/**
+ * A TÉCNICA INATA E O FUNDAMENTO (decisões do autor DA-04, DA-07 e PV-15,
+ * 2026-09-30). O Mecânicas: "Para utilizar sua Técnica Inata, o feiticeiro deve
+ * manter esse shikigami invocado. Caso ele seja exorcizado, o invocador perde
+ * acesso à sua Técnica Inata", e o 2º exorcismo antes do descanso longo o mata.
+ *
+ * Pura: lê a ficha e o mapa de mesa (`sessao.invocacoes`, ou `null` no criador).
+ * Dois bloqueios, com pesos diferentes:
+ *
+ *   perdida      o Fundamento morreu. PERMANENTE: gravado na ficha em
+ *                `creature.fundamentosPerdidos` (nada é apagado, e a Técnica e os
+ *                Feitiços continuam lá, marcados como indisponíveis). Antes da
+ *                gravação, a mesa já mostra a perda pelo estado "morta".
+ *   foraDeCampo  há mesa, e o Fundamento não está em campo. Só a mesa sabe disso,
+ *                e o criador nunca vê.
+ *
+ * `aRegistrar` diz à Ficha que a morte aconteceu e ainda não foi gravada.
+ */
+export function estadoDaTecnicaInata(creature, mapaSessao = null) {
+  const fundamentos = (Array.isArray(creature?.invocacoes) ? creature.invocacoes : [])
+    .filter((i) => i?.fundamento && ehShikigamiDeTecnica(i));
+  const registros = (Array.isArray(creature?.fundamentosPerdidos) ? creature.fundamentosPerdidos : [])
+    .filter((r) => r && typeof r === "object" && r.invocacaoId);
+  const temMesa = !!mapaSessao && typeof mapaSessao === "object";
+  const estadoDe = (f) => (temMesa ? estadoDaLinha(mapaSessao[f.id]) : null);
+  const morto = fundamentos.find((f) => estadoDe(f) === "morta") ?? null;
+  const perdida = registros.length > 0 || !!morto;
+  const foraDeCampo = !perdida && temMesa && fundamentos.length > 0
+    && !fundamentos.some((f) => estadoDe(f) === "ativa");
+  return {
+    fundamentoIds: fundamentos.map((f) => f.id),
+    perdida, foraDeCampo,
+    bloqueada: perdida || foraDeCampo,
+    motivo: perdida ? "Fundamento Perdido" : foraDeCampo ? "Fundamento Fora de Campo" : null,
+    registros,
+    aRegistrar: morto && !registros.some((r) => r.invocacaoId === morto.id)
+      ? { invocacaoId: morto.id, nome: morto.nome || "" }
+      : null,
+  };
+}
+
+/** Os efeitos que a ficha DESTA invocação gera pelo tipo dela: hoje, a refeição
+    do Corpo Biológico. Entram no acumulador junto dos efeitos do tipo. */
+function efeitosDaFichaDoTipo(inv, dono) {
+  return [...(refeicaoDoCorpo(inv, dono)?.efeitos ?? []), ...efeitosDeHeranca(inv)];
+}
+
+/**
+ * A duração do Corpo Amaldiçoado: "eles duram uma quantidade de rodadas em
+ * combate igual ao seu CL. Você pode mantê-los ativos após isso gastando 1 de PE,
+ * caso eles sejam de Quarto a Segundo Grau, ou 2 de PE, caso eles sejam de
+ * Primeiro a Grau Especial por rodada. Fora de combate, Corpos Amaldiçoados duram
+ * uma quantidade de horas igual ao seu CL" (Mecânicas). O CL é o do Controlador,
+ * sem mínimo (decisão do autor, PV-01). Quem conta as rodadas é a sessão.
+ */
+function duracaoDoCorpo(regras, g, dono) {
+  if (!regras.duracaoPorCL) return null;
+  const cl = Math.max(0, Math.trunc(Number(dono.clControlador) || 0));
+  return {
+    rodadas: cl, horas: cl, manutencao: g.rank >= 4 ? 2 : 1,
+    partes: [{ label: "CL do Controlador", valor: cl }],
+  };
+}
+
+/** O Nível de Aptidão da Maldição Domada: "igual à metade do modificador de
+    Presença do controlador" (Mecânicas), para baixo e com mínimo 0 (PV-11). */
+function nivelAptidaoDaMaldicao(regras, dono) {
+  if (!regras.aptidoes) return null;
+  const valor = Math.max(0, Math.floor(Math.trunc(Number(dono.modPresenca) || 0) / 2));
+  return { valor, partes: [{ label: "Metade da Presença do Controlador", valor }] };
+}
+
+/**
+ * Os TRs que o tipo manda para o INVOCADOR: "Caso ela receba Dano Psíquico ou TRs
+ * de Vontade ou Astúcia, os efeitos e danos são aplicados diretamente ao
+ * Invocador" (Marionete). A linha continua no stat block, com o número do dono e
+ * a marca `doInvocador`, para a mesa rolar o teste certo.
+ */
+function trsPeloInvocador(testes, regras, dono) {
+  const ids = regras.trsDoInvocador ?? [];
+  if (!ids.length) return testes;
+  const doDono = dono.trsDoDono ?? {};
+  return {
+    ...testes,
+    resistencias: testes.resistencias.map((r) => {
+      if (!ids.includes(r.value)) return r;
+      const d = doDono[r.value];
+      if (!d) return { ...r, doInvocador: true };
+      return {
+        ...r, doInvocador: true, treinado: !!d.prof, mestre: d.prof === "mestre", bonus: d.bonus,
+        partes: [{ label: "TR do Invocador", valor: d.bonus }],
+      };
+    }),
+  };
+}
+
+/**
+ * A Iniciativa de quem tem turno próprio (o Shikigami de Técnica: "devendo
+ * realizar uma Jogada de Iniciativa ao ser Invocado"). O Livro: "Iniciativa =
+ * Modificador de Destreza + Outros Bônus", e os outros bônus de uma invocação são
+ * os do canal de todos os testes (o grau da Técnica, o Controle Aprimorado).
+ */
+function iniciativaDaInvocacao(inv, regras, efe) {
+  if (!regras.turnoProprio) return null;
+  const des = mod(inv?.atributos?.destreza ?? 8);
+  return {
+    bonus: des + (efe.bonusTeste || 0),
+    partes: [{ label: "Destreza", valor: des }, ...parcelasDoCanal(efe.detalhes, "bonusTeste")],
+  };
+}
+
 function efeitosHabilidade(inv, dono) {
   const acc = Object.fromEntries(EFEITO_CANAIS.map((c) => [c, 0]));
   acc.detalhes = []; // { nome (fonte), canal, valor } por efeito aplicado
@@ -1920,7 +2480,20 @@ function efeitosHabilidade(inv, dono) {
   // marcado com o id da invocação escolhida, e só vale para ELA — as outras
   // não veem nada, ao contrário de todo efeito de Habilidade/Talento/
   // Característica/Treino sem alvo, que vale para todas por igual.
-  const efeitos = [...EFEITOS_DE_TIPO, ...(Array.isArray(dono?.efeitos) ? dono.efeitos : [])]
+  /* ⚠ A MALDIÇÃO NÃO RECEBE VAGA A MAIS (2026-09-30, Etapa 8). O efeito do dono
+     num canal de orçamento é posto de lado, e não some calado: ele vai para
+     `vetadosPeloTipo`, que o hover do orçamento mostra. Os do tipo nunca são
+     vetados, porque o tipo é quem dita a regra. */
+  acc.vetadosPeloTipo = [];
+  const regras = regrasDoTipo(inv);
+  const doDono = (Array.isArray(dono?.efeitos) ? dono.efeitos : []).filter((e) => {
+    if (regras.visionario || !CANAIS_DE_ORCAMENTO.has(e?.canal)) return true;
+    if (!e?.invocacaoAlvo || e.invocacaoAlvo === inv?.id) {
+      acc.vetadosPeloTipo.push({ nome: e.nome || e.origem || "Habilidade", canal: e.canal });
+    }
+    return false;
+  });
+  const efeitos = [...EFEITOS_DE_TIPO, ...efeitosDaFichaDoTipo(inv, dono), ...doDono]
     .filter((e) => !e?.invocacaoAlvo || e.invocacaoAlvo === inv?.id);
   if (!efeitos.length) return acc;
   const ctx = buildInvocacaoDslContext(inv, dono);
@@ -1977,11 +2550,93 @@ export function agregarCaracteristicas(resolvidas = []) {
        Fica FORA de `testes` porque não é um bônus numérico, é uma faixa, e quem
        a aplica é o `resolveTestesInvocacao` ao montar o mapa de proficiência. */
     trProf: {},
+    /* As modificadoras do catálogo de 2026-09-30 (Etapa 5). */
+    arsenal: 0,
+    atributoCombate: null,   // Estilo de Combate: { atributo, nome }
+    atributoPv: null,        // Resiliência Alternativa: { atributo, nome }
+    resistencias: [],        // Resistência: [{ tipo, label, nome }]
+    /* As Intrínsecas e as Auras de 2026-09-30 (Etapa 6). `efeitosIntrinsecos` é
+       o que vira número ou estado (voo, nado, alcanceAuxiliar, emTarefa, as Formas,
+       laceracao, corridaPerfurante, percebeAlma), só das que cumprem o requisito. */
+    intrinsecas: [],
+    efeitosIntrinsecos: {},
+    auras: [],
     warnings: [],
   };
+  const vistasIntrinsecas = new Set();
   const rdIndex = new Map();
   const vistosTeste = new Set();
+  /* As numéricas do catálogo entram na MESMA disputa da Livre (mais abaixo), e o
+     grupo de efeito barra o que é "o mesmo efeito" em canais diferentes: Nível
+     de Dano e Dado de Dano não se acumulam (Adicionais). Vale a primeira. */
+  const numericas = [];
+  const gruposUsados = new Map();
   for (const c of resolvidas) {
+    if (c.aura) {
+      if (c.bloqueada || !c.valor) continue;
+      /* Duas Auras iguais não acumulam: vale a maior (decisão do autor). Iguais
+         é o mesmo tipo de Aura com o mesmo alvo; de alvos diferentes convivem. */
+      const chave = `${c.subtipo}|${c.alvo ?? ""}`;
+      const antes = out.auras.find((a) => a.chave === chave);
+      const linha = {
+        chave, caracId: c.id, subtipo: c.subtipo, nome: c.nome || c.catalogoNome,
+        canalDono: c.canalDono, alvo: c.alvo, alvoLabel: c.alvoLabel, valor: c.valor,
+      };
+      if (antes) {
+        out.warnings.push(`Duas ${c.catalogoNome} no mesmo alvo: elas não acumulam.`);
+        if (c.valor > antes.valor) Object.assign(antes, linha);
+        continue;
+      }
+      out.auras.push(linha);
+      continue;
+    }
+    if (c.intrinseca) {
+      if (vistasIntrinsecas.has(c.subtipo)) {
+        out.warnings.push(`Duas Características de ${c.catalogoNome}: elas não acumulam.`);
+        continue;
+      }
+      vistasIntrinsecas.add(c.subtipo);
+      out.intrinsecas.push({ id: c.id, subtipo: c.subtipo, nome: c.nome || c.catalogoNome, efeito: c.efeito, bloqueada: !!c.bloqueada });
+      if (c.efeito && !c.bloqueada) {
+        out.efeitosIntrinsecos[c.efeito] = c.efeito === "formaArma"
+          ? { arma: c.arma, caracId: c.id }
+          : c.efeito === "formaArmadura"
+            ? { armadura: c.armadura, caracId: c.id }
+            : (Number.isFinite(c.valor) ? c.valor : true);
+      }
+      continue;
+    }
+    if (c.canal && Number.isFinite(c.valor) && c.valor) {
+      const dono = c.grupoEfeito ? gruposUsados.get(c.grupoEfeito) : null;
+      if (dono && dono.subtipo !== c.subtipo) {
+        out.warnings.push(`${c.nome || c.catalogoNome} e ${dono.nome || dono.catalogoNome} dão o mesmo efeito: elas não acumulam.`);
+        continue;
+      }
+      if (c.grupoEfeito && !dono) gruposUsados.set(c.grupoEfeito, c);
+      numericas.push({ canal: c.canal, alvo: null, valor: c.valor, nome: c.nome || c.catalogoNome });
+      continue;
+    }
+    if (c.subtipo === "arsenal") {
+      if (out.arsenal) out.warnings.push("Duas Características de Arsenal: elas não acumulam.");
+      out.arsenal = Math.max(out.arsenal, c.valor ?? 0);
+      continue;
+    }
+    if (c.subtipo === "estiloCombate" || c.subtipo === "resilienciaAlternativa") {
+      if (!c.atributo) continue;
+      const chave = c.subtipo === "estiloCombate" ? "atributoCombate" : "atributoPv";
+      if (out[chave]) { out.warnings.push(`Duas Características de ${c.catalogoNome}: vale a primeira.`); continue; }
+      out[chave] = { atributo: c.atributo, nome: c.nome || c.catalogoNome };
+      continue;
+    }
+    if (c.subtipo === "resistenciaDano") {
+      if (!c.tipoDano) continue;
+      if (out.resistencias.some((r) => r.tipo === c.tipoDano)) {
+        out.warnings.push(`Duas Características dão Resistência a ${c.tipoDanoLabel}: elas não acumulam.`);
+        continue;
+      }
+      out.resistencias.push({ tipo: c.tipoDano, label: c.tipoDanoLabel, nome: c.nome || c.catalogoNome });
+      continue;
+    }
     if (c.subtipo === "vida") {
       // Duas Características de Vida não acumulam (o livro proíbe efeitos
       // iguais): vale a maior. O aviso de duplicata sai no resolveInvocacao.
@@ -2009,15 +2664,19 @@ export function agregarCaracteristicas(resolvidas = []) {
       // Sem faixa (grau baixo) ou sem alvo, ela não concede nada: o aviso já
       // saiu do `resolveCaracteristica` e repeti-lo aqui duplicaria a linha.
       if (!c.prof || !c.trTipo) continue;
-      /* Duas Características no MESMO TR são o mesmo efeito, e o livro proíbe
-         acumular: vale a maior faixa, com aviso. TRs diferentes convivem, do
-         mesmo jeito que duas RDs de tipos diferentes. */
+      /* Duas Características no MESMO TR com a MESMA faixa são o mesmo efeito, e
+         não acumulam: vale a maior, com aviso. ⚠ A Treinada e a Mestre no mesmo
+         TR NÃO são o mesmo efeito (2026-09-30): a Mestre pede o TR já treinado, e
+         a Treinada é um dos jeitos de cumprir isso. */
       const antes = out.trProf[c.trTipo];
+      const temTreinada = c.prof === "treinado" || !!antes?.temTreinada;
       if (antes) {
-        out.warnings.push(`Duas Características treinam ${c.trTipoLabel || c.trTipo}: elas não acumulam.`);
-        if (RANK_PROF_INV[c.prof] <= RANK_PROF_INV[antes.prof]) continue;
+        if (antes.prof === c.prof) {
+          out.warnings.push(`Duas Características treinam ${c.trTipoLabel || c.trTipo}: elas não acumulam.`);
+        }
+        if (RANK_PROF_INV[c.prof] <= RANK_PROF_INV[antes.prof]) { antes.temTreinada = temTreinada; continue; }
       }
-      out.trProf[c.trTipo] = { prof: c.prof, nome: c.nome || "Característica" };
+      out.trProf[c.trTipo] = { prof: c.prof, nome: c.nome || "Característica", temTreinada };
     } else if (c.subtipo === "teste") {
       // Mesmo teste duas vezes é o mesmo efeito, e o livro proíbe: vale a maior.
       // ⚠ `ataque` já nasce 0 no acumulador, então quem decide se é repetição é
@@ -2064,17 +2723,31 @@ export function agregarCaracteristicas(resolvidas = []) {
   out.motor = [];
   out.testesNomes = { pericias: {}, resistencias: {} };
   const disputa = new Map();
+  /* Cada Característica vira um grupo de candidatos: a Livre, com as linhas do
+     Motor somadas por canal, e cada numérica do catálogo, com a linha dela. */
+  const grupos = numericas.map((cand) => [cand]);
   for (const c of resolvidas) {
     if (c.subtipo !== "livre" || !Array.isArray(c.efeitos)) continue;
     const proprio = new Map();
     for (const ef of c.efeitos) {
       if (!ef.ativo || !Number.isFinite(ef.valor) || !ef.valor) continue;
+      /* ⚠ DADO EXTRA SÓ NAS AUTORIZADAS (decisão do autor, 2026-09-30): o Livro
+         diz que "Características não podem garantir dados extras", e o Adicionais
+         abre exceção só em algumas, catalogadas (`CARACTERISTICAS_COM_DADO_EXTRA`).
+         A Livre não é uma delas. */
+      if (ef.canal === "ataqueDanoAdicional") {
+        out.warnings.push(`${c.nome || "Característica Livre"}: Característica Livre não pode dar dado extra.`);
+        continue;
+      }
       const k = `${ef.canal}|${ef.alvo || ""}`;
       const atual = proprio.get(k);
       if (atual) atual.valor += ef.valor;
       else proprio.set(k, { canal: ef.canal, alvo: ef.alvo || null, valor: ef.valor, nome: c.nome || "Característica" });
     }
-    for (const cand of proprio.values()) {
+    grupos.push([...proprio.values()]);
+  }
+  for (const candidatos of grupos) {
+    for (const cand of candidatos) {
       if (!cand.valor) continue;
       const k = `${cand.canal}|${cand.alvo || ""}|${cand.valor < 0 ? "-" : "+"}`;
       const atual = disputa.get(k);
@@ -2164,7 +2837,11 @@ export function resolveTestesInvocacao(inv, dono = {}, caract = null) {
   // Acerto: jogada usa Força OU Destreza (o melhor), com BT no tipo treinado.
   const modFor = mod(at.forca ?? 8);
   const modDes = mod(at.destreza ?? 8);
-  const best = modFor >= modDes ? { m: modFor, attr: "forca" } : { m: modDes, attr: "destreza" };
+  let best = modFor >= modDes ? { m: modFor, attr: "forca" } : { m: modDes, attr: "destreza" };
+  /* O Estilo de Combate (2026-09-30) entra como mais uma opção de atributo, para
+     o Acerto e a CD de referência: vale o melhor. Cada Ação já escolhe o dela. */
+  const alt = caract?.atributoCombate?.atributo;
+  if (INV_ATTR_KEYS.includes(alt) && mod(at[alt] ?? 8) > best.m) best = { m: mod(at[alt] ?? 8), attr: alt };
   /* ⚠ A CARACTERÍSTICA DE TESTE ENTRA NO NÚMERO desde 2026-09-04, e o `comGatilho`
      morreu junto. Autor: *"o Corpo a Corpo com Gatilho, vc pode remover a parte
      do Gatilho. Somando o +5 da Caracteristica"*, e ele estendeu ao TR na mesma
@@ -2180,14 +2857,16 @@ export function resolveTestesInvocacao(inv, dono = {}, caract = null) {
 
      ⚠ AS DUAS FILAS MUDAM JUNTAS, porque a frase do livro é uma só. Somar no
      Ataque e deixar o TR de fora seria uma assimetria sem fonte. */
+  // O ataque treinado da ficha, e o que a Herança treinou (`ataquesHerdados`).
+  const treinadoEm = (tipo) => inv?.ataqueTreinado === tipo || (inv?.ataquesHerdados ?? []).includes(tipo);
   const acertoDe = (tipo) => ({
-    bonus: best.m + (inv?.ataqueTreinado === tipo ? bt : 0) + base
+    bonus: best.m + (treinadoEm(tipo) ? bt : 0) + base
       + (dono.acertoHabilidade ?? 0) + (dono.auxilioAcertoProprio ?? 0) + (cTes.ataque || 0),
     attr: best.attr,
-    treinado: inv?.ataqueTreinado === tipo,
+    treinado: treinadoEm(tipo),
     partes: [
       { label: rotuloAttrInv(best.attr), valor: best.m },
-      ...(inv?.ataqueTreinado === tipo ? [{ label: "Maestria", valor: bt }] : []),
+      ...(treinadoEm(tipo) ? [{ label: "Maestria", valor: bt }] : []),
       ...parcelasAcerto,
       ...auxFontes.filter((f) => f.canal === "bonusAcerto").map((f) => ({ label: f.label, valor: f.valor })),
       ...(cTes.ataque ? [{ label: "Característica", valor: cTes.ataque }] : []),
@@ -2273,6 +2952,184 @@ export function resolveTestesInvocacao(inv, dono = {}, caract = null) {
 // ------------------------------------------------------------
 // Resolver principal
 // ------------------------------------------------------------
+/* ============================================================
+   A HERANÇA DAS SOMBRAS (decisão do autor DA-12, 2026-10-01, Etapa 10)
+   ============================================================
+   "Uma Herança é a fusão permanente de um Shikigami exorcizado em um Shikigami
+   vivo", e cada entrada dá (Mecânicas):
+     +1 de Nível de Dano;
+     +1 em Todas as Perícias, Todas as TRs, RD (Geral) ou Jogadas de Ataque;
+     1 resistência ou imunidade da sombra;
+     até 1 Ação e 1 Característica da sombra;
+     +2 Treinamentos em Perícia, TR ou Jogada de Ataque;
+     +2 no maior atributo da sombra, até 30, passando do limite do grau.
+   "Os efeitos acima se acumulam para cada Shikigami exorcizado", e a Herança de
+   uma herdeira que morre passa adiante ("adicionar todos os efeitos de Herança
+   que ela possuia em vida"), em `herdadas`.
+
+   ⚠ A CÓPIA É CONGELADA na criação (`copia`): a sombra está morta e pode sair da
+   lista. É o oposto da Quimera, que lê as componentes vivas a cada derive.
+   ⚠ O que a Herança concede não ocupa vaga nem custa (PV-14): marca `concedida`.
+   ⚠ Convive com o exemplo antigo por marcador com `fontes`: os dois mecanismos
+   são independentes, e um addon próprio de Herança segue funcionando. */
+
+/** Os bônus que a Herança deixa escolher, um por entrada. */
+export const HERANCA_BONUS = [
+  { value: "pericias", label: "Todas as Perícias" },
+  { value: "trs", label: "Todas as TRs" },
+  { value: "rd", label: "RD Geral" },
+  { value: "ataque", label: "Jogadas de Ataque" },
+];
+const HERANCA_BONUS_VALIDO = new Set(HERANCA_BONUS.map((b) => b.value));
+
+/** O teto absoluto de atributo da Herança ("até um máximo de 30"). */
+export const HERANCA_ATRIBUTO_TETO = 30;
+
+const clonarJson = (x) => JSON.parse(JSON.stringify(x ?? null));
+
+/** Os atributos de maior valor da sombra (empate deixa a pessoa escolher). */
+export function maioresAtributosDe(origem) {
+  const at = origem?.atributos || {};
+  const base = atributoBaseInvocacao(origem);
+  const valor = (k) => Number(at[k] ?? base) || 0;
+  const maior = Math.max(...INV_ATTR_KEYS.map(valor));
+  return INV_ATTR_KEYS.filter((k) => valor(k) === maior);
+}
+
+/**
+ * Uma Herança nova a partir da sombra exorcizada, com a cópia congelada: o maior
+ * atributo, as resistências e imunidades (da resolvida, que é o que a mesa vê),
+ * as Ações, as Características e as Heranças que ela já carregava.
+ */
+export function criaHeranca(origem, resolvida = null) {
+  const maiores = maioresAtributosDe(origem);
+  const base = atributoBaseInvocacao(origem);
+  return {
+    id: novoId("heranca"),
+    origemId: origem?.id ?? "",
+    origemNome: origem?.nome || "",
+    criadaEm: new Date().toISOString(),
+    copia: {
+      maioresAtributos: maiores,
+      valorMaiorAtributo: Number(origem?.atributos?.[maiores[0]] ?? base) || 0,
+      resistencias: (resolvida?.resistencias ?? []).map((r) => ({ tipo: r.tipo, label: r.label })),
+      imunidades: [...(resolvida?.imunidades ?? [])],
+      acoes: clonarJson(origem?.acoes ?? []),
+      caracteristicas: clonarJson(origem?.caracteristicas ?? []),
+    },
+    escolhas: { bonus: "", atributo: maiores[0] ?? "", resistencia: "", acaoId: "", caracteristicaId: "", treinos: [] },
+    herdadas: clonarJson(Array.isArray(origem?.herancas) ? origem.herancas : []),
+  };
+}
+
+/** As Heranças achatadas: cada entrada e, depois dela, as que ela herdou. */
+export function herancasAchatadas(lista, profundidade = 0) {
+  const out = [];
+  for (const h of Array.isArray(lista) ? lista : []) {
+    if (!h || typeof h !== "object") continue;
+    out.push({ h, profundidade });
+    out.push(...herancasAchatadas(h.herdadas, profundidade + 1));
+  }
+  return out;
+}
+
+/**
+ * A invocação lida com as Heranças: as Ações e Características herdadas (com a
+ * marca `concedida`), os treinos (Perícia, TR ou Ataque viram treinados), as
+ * resistências e imunidades, o resumo para a tela e os avisos. Pura.
+ */
+export function herancasDa(inv) {
+  const vazio = { inv, resistencias: [], imunidades: [], resumo: [], warnings: [] };
+  const todas = herancasAchatadas(inv?.herancas);
+  if (!todas.length) return vazio;
+  const acoes = [];
+  const caracteristicas = [];
+  const periciasProf = { ...(inv?.periciasProf || {}) };
+  const trProf = { ...trProfDaInvocacao(inv) };
+  const ataques = new Set(inv?.ataqueTreinado ? [inv.ataqueTreinado] : []);
+  const resistencias = [];
+  const imunidades = [];
+  const resumo = [];
+  const warnings = [];
+  for (const { h, profundidade } of todas) {
+    const nome = h.origemNome || "Sombra";
+    const e = h.escolhas || {};
+    const copia = h.copia || {};
+    if (!HERANCA_BONUS_VALIDO.has(e.bonus)) warnings.push(`Herança de ${nome}: escolha o bônus.`);
+    const acao = (copia.acoes ?? []).find((a) => a?.id === e.acaoId);
+    if (acao) acoes.push({ ...acao, id: `heranca:${h.id}:${acao.id}`, concedida: true, herancaDe: nome });
+    const carac = (copia.caracteristicas ?? []).find((c) => c?.id === e.caracteristicaId);
+    if (carac) caracteristicas.push({ ...carac, id: `heranca:${h.id}:${carac.id}`, concedida: true, herancaDe: nome });
+    const [tipoRes, valorRes] = String(e.resistencia || "").split(":");
+    if (tipoRes === "tipo" && valorRes) {
+      const r = (copia.resistencias ?? []).find((x) => x.tipo === valorRes);
+      if (r) resistencias.push({ tipo: r.tipo, label: r.label, nome: `Herança de ${nome}` });
+    } else if (tipoRes === "imunidade" && valorRes) {
+      imunidades.push(valorRes);
+    }
+    const treinos = Array.isArray(e.treinos) ? e.treinos : [];
+    if (treinos.length > 2) warnings.push(`Herança de ${nome}: ${treinos.length} treinos, e a Herança dá dois.`);
+    for (const tr of treinos.slice(0, 2)) {
+      if (tr?.tipo === "pericia" && tr.id && !periciasProf[tr.id]) periciasProf[tr.id] = "treinado";
+      else if (tr?.tipo === "tr" && tr.id && !trProf[tr.id]) trProf[tr.id] = "treinado";
+      else if (tr?.tipo === "ataque" && (tr.id === "corpo" || tr.id === "distancia")) ataques.add(tr.id);
+    }
+    resumo.push({
+      id: h.id, origemId: h.origemId ?? null, origemNome: nome, profundidade,
+      bonus: HERANCA_BONUS.find((b) => b.value === e.bonus)?.label ?? null,
+      atributo: e.atributo || (copia.maioresAtributos ?? [])[0] || null,
+      acao: acao?.nome || null, caracteristica: carac?.nome || null,
+    });
+  }
+  const ataquesHerdados = [...ataques].filter((a) => a !== inv?.ataqueTreinado);
+  return {
+    inv: {
+      ...inv,
+      acoes: [...(inv?.acoes ?? []), ...acoes],
+      caracteristicas: [...(inv?.caracteristicas ?? []), ...caracteristicas],
+      periciasProf, trProf,
+      ...(ataquesHerdados.length ? { ataquesHerdados } : {}),
+    },
+    resistencias, imunidades, resumo, warnings,
+  };
+}
+
+/**
+ * Os NÚMEROS da Herança, como efeito de canal: +1 Nível de Dano, o bônus
+ * escolhido e o +2 no maior atributo da sombra, com o teto desse atributo
+ * subindo até 30. "Todas as Perícias" vale como +1 em cada perícia que a
+ * herdeira tem na ficha (a lista que a mesa vê).
+ */
+function efeitosDeHeranca(inv) {
+  const todas = herancasAchatadas(inv?.herancas);
+  if (!todas.length) return [];
+  const out = [];
+  const tab = INV_ATRIBUTOS_POR_GRAU[grauMeta(inv?.grau).value] || INV_ATRIBUTOS_POR_GRAU.quarto;
+  const comTeto = new Set();
+  for (const { h } of todas) {
+    const nome = `Herança · ${h.origemNome || "Sombra"}`;
+    const e = h.escolhas || {};
+    const linha = (canal, valor, alvo = null) => ({ canal, expr: String(valor), nome, origem: "heranca", ...(alvo ? { alvo } : {}) });
+    out.push(linha("danoNivel", 1));
+    if (e.bonus === "trs") out.push(linha("bonusTR", 1));
+    else if (e.bonus === "rd") out.push(linha("rd", 1));
+    else if (e.bonus === "ataque") out.push(linha("acerto", 1));
+    else if (e.bonus === "pericias") {
+      for (const id of Object.keys(inv?.periciasProf || {})) out.push(linha("bonusPericia", 1, id));
+    }
+    const maiores = h.copia?.maioresAtributos ?? [];
+    const k = maiores.includes(e.atributo) ? e.atributo : maiores[0];
+    if (INV_ATTR_KEYS.includes(k)) {
+      out.push(linha("atributo", 2, k));
+      if (!comTeto.has(k)) {
+        comTeto.add(k);
+        out.push({ ...linha("limiteAtributo", Math.max(0, HERANCA_ATRIBUTO_TETO - tab.max), k), nome: "Herança · Até 30" });
+      }
+    }
+  }
+  return out;
+}
+
 /**
  * As Habilidades de USO que o dono pode gastar NESTA invocação, com o número já
  * fechado. Elas não mudam a ficha dela (dependem de uma decisão no momento do
@@ -2292,11 +3149,11 @@ export function tracosDeTecnica(inv) {
       nome: "Turno Próprio",
       regra: "Possui um turno próprio na Iniciativa, com uma Ação para realizar uma ação complexa ou simples, além de uma ação de movimento. Não se beneficia de Autonomia.",
     },
-    {
-      id: "retorno_completo",
-      nome: "Retorno Completo",
-      regra: "Na primeira vez em um combate que for dissipado, pode ser invocado novamente com a vida máxima em vez da metade. Da segunda vez em diante, volta com metade da vida normalmente.",
-    },
+    /* ⚠ O "RETORNO COMPLETO" SAIU em 2026-09-30 (decisão do autor). Ele dizia que
+       a primeira dissipação no combate voltava com a vida cheia, e o Mecânicas o
+       substitui pela regra do exorcismo: o 1º vira dissipação com metade da vida,
+       e o 2º antes do descanso longo mata. Quem aplica é a sessão
+       (`transicaoDeQueda`, em ficha/ficha-sessao.js). */
     {
       id: "desvantagem_alheia",
       nome: "Desvantagem Alheia",
@@ -2318,13 +3175,21 @@ function opcoesDeUso(inv, dono) {
   if (dono?.autonomia && !ehShikigamiDeTecnica(inv)) {
     // "pagar uma quantidade adicional de PE igual a 2 para cada grau dela
     // (2 para quarto grau, 10 para grau especial)".
-    out.push({ id: "autonomia", nome: "Autonomia", valor: `${2 * g.rank} PE` });
+    /* ⚠ Os números saem SEPARADOS do texto desde 2026-09-30 (Etapa 7): a entrada
+       em campo cobra o `custo` quando a mesa marca a opção, e a Ficha mostra o
+       `valor`. O tipo diz se a Autonomia é paga na entrada (a Maldição paga no
+       início do combate, e a Técnica não usa). */
+    const paga = regrasDoTipo(inv).autonomia;
+    if (paga) {
+      out.push({ id: "autonomia", nome: "Autonomia", valor: `${2 * g.rank} PE`, custo: 2 * g.rank, quando: paga });
+    }
   }
   if (dono?.resistenciaSobrecarregada) {
     // "gastar uma quantidade de PE igual a metade do seu bônus de treinamento e,
     // para cada ponto gasto, a invocação tem seus pontos de vida aumentados em 10".
+    // O aumento é do PV MÁXIMO enquanto ela está em campo (decisão do autor).
     const pe = Math.floor((dono.bt ?? 0) / 2);
-    out.push({ id: "sobrecarga", nome: "Resistência Sobrecarregada", valor: `${pe} PE, +${pe * 10} PV` });
+    out.push({ id: "sobrecarga", nome: "Resistência Sobrecarregada", valor: `${pe} PE, +${pe * 10} PV`, custo: pe, pv: pe * 10, quando: "entrada" });
   }
   return out;
 }
@@ -2345,8 +3210,14 @@ function marcadoresDaInvocacao(inv, dono) {
   return out;
 }
 
-export function resolveInvocacao(inv, dono = {}) {
+export function resolveInvocacao(invCru, dono = {}) {
+  /* A HERANÇA DAS SOMBRAS (2026-10-01, Etapa 10): a invocação herdeira é lida com
+     o que as Heranças concedem (Ações, Características, treinos), e os números
+     (Nível de Dano, bônus, atributo) entram como efeito. Ver `herancasDa`. */
+  const her = herancasDa(invCru);
+  const inv = her.inv;
   const g = grauMeta(inv?.grau);
+  const regras = regrasDoTipo(inv);
   const efe = efeitosHabilidade(inv, dono);
 
   /* As Características são passivas e resolvem ANTES dos stats, porque o PV, o
@@ -2360,6 +3231,17 @@ export function resolveInvocacao(inv, dono = {}) {
   const caracteristicas = (inv?.caracteristicas || []).map((c) => resolveCaracteristica(c, inv, dono));
   const caract = agregarCaracteristicas(caracteristicas);
   for (const m of caract.motor) somaNoAcumulador(efe, m.canal, m.alvo, m.valor, m.nome);
+  /* ⚠ TR MESTRE SÓ NUM TR JÁ TREINADO (decisão do autor, 2026-09-30, Adicionais:
+     "Permite que sua invocação se torne mestre em um TR em que ela é Treinada").
+     Treinado pela ficha ou por uma TR Treinada. Sem isso, a Mestre não concede
+     nada, e a ficha avisa. */
+  const trDaFichaCru = trProfDaInvocacao(inv);
+  for (const [id, dado] of Object.entries(caract.trProf)) {
+    if (dado.prof !== "mestre" || dado.temTreinada || trDaFichaCru[id]) continue;
+    const rotulo = AFTY_RESISTENCIAS.find((r) => r.value === id)?.label ?? id;
+    caract.warnings.push(`${dado.nome}: TR Mestre em ${rotulo} pede a invocação já treinada nele.`);
+    delete caract.trProf[id];
+  }
 
   // Efeitos per-invocação que as Ações/Testes precisam ler vão num dono local:
   // bonusTeste (Controle Aprimorado, todos os testes), bonusTR (Concentrar
@@ -2376,6 +3258,8 @@ export function resolveInvocacao(inv, dono = {}) {
   if (efe.ataqueDanoAdicional) donoLocal.ataqueDanoAdicionalHabilidade = efe.ataqueDanoAdicional;
   if (efe.porAlvo.bonusTR) donoLocal.bonusTRPorAlvo = efe.porAlvo.bonusTR;
   if (efe.porAlvo.bonusPericia) donoLocal.bonusPericiaPorAlvo = efe.porAlvo.bonusPericia;
+  // Alcance Auxiliar (2026-09-30): o auxílio deixa de usar o alcance reduzido.
+  if (caract.efeitosIntrinsecos.alcanceAuxiliar) donoLocal.alcanceAuxiliar = true;
   // Os baldes de Ação específica viajam inteiros: quem soma é o `resolveAcao`,
   // por `acao.id`, porque só ele sabe qual Ação está na mão. Ver `acaoAlvo`.
   if (efe.porAcao && Object.keys(efe.porAcao).length) donoLocal.porAcao = efe.porAcao;
@@ -2437,9 +3321,23 @@ export function resolveInvocacao(inv, dono = {}) {
      de vida onde o livro manda 300. O campo só existe na CÓPIA sintética que o
      `resolveQuimera` monta, nunca numa ficha salva. */
   const pvFixo = inv?.pvFixo == null ? null : Math.max(0, Math.trunc(Number(inv.pvFixo) || 0));
-  const pv = pvFixo ?? Math.floor((pvInvocacao(invEf, dono) + efe.pv + caract.pv) * pvMult);
-  const defesa = defesaInvocacao(invEf, dono) + efe.defesa + aux.proprio.defesa;
+  /* A Resiliência Alternativa troca o atributo do PV, e o Estilo de Combate entra
+     na Defesa (2026-09-30). Ver `agregarCaracteristicas`. */
+  const atributoPv = caract.atributoPv?.atributo ?? "constituicao";
+  const atributoCombate = caract.atributoCombate?.atributo ?? null;
+  /* A Resistência Sobrecarregada aumenta o PV MÁXIMO enquanto ela está em campo
+     (decisão do autor, 2026-09-30), e não é PV temporário. Fora de campo, some. */
+  const pvSobrecarga = aux.sessao.emCampo ? aux.sessao.sobrecargaPv : 0;
+  const pv = (pvFixo ?? Math.floor((pvInvocacao(invEf, dono, atributoPv) + efe.pv + caract.pv) * pvMult)) + pvSobrecarga;
+  const defesa = defesaInvocacao(invEf, dono, atributoCombate) + efe.defesa + aux.proprio.defesa;
   const deslocamento = deslocamentoInvocacao() + efe.deslocamento;
+  /* Alado e Nadador (2026-09-30): o deslocamento novo parte do de caminhada
+     (decisão do autor, na falta de outro valor na fonte). */
+  const deslocamentos = {
+    caminhada: deslocamento,
+    ...(caract.efeitosIntrinsecos.voo ? { voo: deslocamento } : {}),
+    ...(caract.efeitosIntrinsecos.nado ? { nado: deslocamento } : {}),
+  };
   // Tamanho: Médio até que uma Característica de Tamanho diga outro.
   const tamanho = caract.tamanho || inv?.tamanho || "medio";
   // RD: a Geral (Melhoria Resistência, "contra todos os tipos") cobre tudo, e
@@ -2459,20 +3357,46 @@ export function resolveInvocacao(inv, dono = {}) {
     }
   }
   const rd = {
-    geral: rdGeralTotal,
-    porTipo: linhasRd.map((l) => ({ ...l, total: l.valor + (rdAlvo[l.chave] || 0) + rdGeralTotal })),
+    /* Piso em zero (2026-10-01): a Quimera do Mecânicas tira RD ("-1 em [...] RD"),
+       e RD negativa não existe na mesa. */
+    geral: Math.max(0, rdGeralTotal),
+    porTipo: linhasRd.map((l) => ({ ...l, total: Math.max(0, l.valor + (rdAlvo[l.chave] || 0) + rdGeralTotal) })),
   };
   // Ápice do Controle (efe.orcamentoLivre) dá slots que NÃO influenciam no custo.
   // Invocações Econômicas abate o custo, com piso em zero.
-  const custoBruto = ovr?.custoFixo != null
-    ? ovr.custoFixo
-    : custoInvocacao(inv, efe.orcamentoLivre, efe.caracteristicasLivres);
-  const custo = Math.max(0, custoBruto - efe.custoReducao);
+  const detCusto = detalheCustoInvocacao(inv, efe.orcamentoLivre, efe.caracteristicasLivres);
+  const custoBruto = ovr?.custoFixo != null ? ovr.custoFixo : detCusto.total;
+  /* ⚠ O CUSTO FIXO É DA QUIMERA do addon (2026-09-30, E-11), como o `pvFixo`:
+     *"o Custo em PE é a soma de todas as invocações fundidas"*, e a soma é a do
+     custo que o CARTÃO de cada uma mostra, já com as reduções dela. Antes saía da
+     variável `custo` crua do DSL, sem as reduções, e uma fundida com Invocações
+     Econômicas entrava na soma 2 PE mais cara do que o cartão dela dizia. */
+  const custoFixoQ = inv?.custoFixo == null ? null : Math.max(0, Math.trunc(Number(inv.custoFixo) || 0));
+  const custoSemPiso = custoBruto - efe.custoReducao;
+  const custo = custoFixoQ ?? Math.max(0, custoSemPiso);
   const orcamento = orcamentoAcoesCaract(
     inv,
     efe.orcamentoLivre + efe.orcamentoPago + (ovr?.ajusteAcoes ?? 0),
     efe.caracteristicasLivres,
   );
+  /* O ORÇAMENTO SEPARADO (2026-09-30, Etapa 4): a cota gratuita do grau, o que
+     se COMPRA pagando PE (os adicionais do grau e as vagas pagas, como as do
+     Visionário), e o que uma Habilidade CONCEDE sem custo (Ápice do Controle).
+     O total de antes continua o mesmo número. */
+  const nAcoesSimples = (inv?.acoes || []).filter((a) => a?.classe !== "complexa").length;
+  orcamento.partes = {
+    gratuitas: orcamento.base,
+    compradas: { max: orcamento.maxAdicionais, pagas: detCusto.nItens },
+    concedidasGratis: parcelasDoCanal(efe.detalhes, "orcamentoLivre"),
+    concedidasPagas: parcelasDoCanal(efe.detalhes, "orcamentoPago"),
+    feitico: ovr?.ajusteAcoes ?? 0,
+    exclusivasCaract: orcamento.exclusivas,
+  };
+  orcamento.uso = {
+    simples: nAcoesSimples,
+    complexas: (inv?.acoes || []).length - nAcoesSimples,
+    caracteristicas: (inv?.caracteristicas || []).length,
+  };
   /* ============================================================
      AS FONTES DE CADA NÚMERO DO STAT BLOCK
      ============================================================
@@ -2487,8 +3411,8 @@ export function resolveInvocacao(inv, dono = {}) {
   const fontes = {
     /* Na Quimera as parcelas são o PV de cada fundida, mais o desconto da fusão:
        a soma delas fecha com o número, e é o que o hover precisa mostrar. */
-    pv: pvFixo != null ? (Array.isArray(inv?.pvFixoPartes) ? inv.pvFixoPartes : []) : [
-      ...partesPvInvocacao(invEf, dono),
+    pv: [...(pvFixo != null ? (Array.isArray(inv?.pvFixoPartes) ? inv.pvFixoPartes : []) : [
+      ...partesPvInvocacao(invEf, dono, atributoPv),
       ...parcelasDoCanal(efe.detalhes, "pv"),
       /* Duas Características de Vida não acumulam: vale a MAIOR, e a parcela
          leva o nome de quem venceu, que pode ser o Motor de uma Livre. Ver
@@ -2496,9 +3420,11 @@ export function resolveInvocacao(inv, dono = {}) {
       ...(caract.pv ? [{ label: caract.pvFonte || "Característica", valor: caract.pv }] : []),
       // A fonte que venceu, por último: o multiplicador age sobre a soma acima.
       ...(pvMultVencedor ? [{ label: pvMultVencedor.nome, texto: `× ${pvMult}` }] : []),
+    ]),
+      ...(pvSobrecarga ? [{ label: "Resistência Sobrecarregada", valor: pvSobrecarga }] : []),
     ],
     defesa: [
-      ...partesDefesaInvocacao(invEf, dono),
+      ...partesDefesaInvocacao(invEf, dono, atributoCombate),
       ...parcelasDoCanal(efe.detalhes, "defesa"),
       ...auxDoCanal("defesa"),
     ],
@@ -2518,9 +3444,18 @@ export function resolveInvocacao(inv, dono = {}) {
         ...partesRdGeral,
       ],
     ])),
-    custo: [
-      { label: `${g.label} (Base)`, valor: custoBruto },
+    /* O custo em partes (2026-09-30): o base do grau (ou zero pelo tipo), os
+       itens além da cota, as reduções, e o piso quando a redução passa do custo.
+       A Quimera do addon traz as parcelas dela (o cartão de cada fundida). */
+    custo: custoFixoQ != null ? (Array.isArray(inv?.custoFixoPartes) ? inv.custoFixoPartes : []) : [
+      ...(ovr?.custoFixo != null
+        ? [{ label: ovr.fonte || "Feitiço de Criação", valor: ovr.custoFixo }]
+        : [
+          { label: detCusto.baseLabel, valor: detCusto.base },
+          ...(detCusto.itens ? [{ label: "Ações e Características Extras", valor: detCusto.itens }] : []),
+        ]),
       ...parcelasDoCanal(efe.detalhes, "custoReducao").map((x) => ({ label: x.label, valor: -x.valor })),
+      ...(custoSemPiso < 0 ? [{ label: "Piso em Zero", valor: -custoSemPiso }] : []),
     ],
     /* ⚠ `caracteristicasLivres` NÃO ENTRA AQUI, e a ausência é a regra. Ele é o
        pool EXCLUSIVO de Característica (`orcamento.exclusivas`), que corre por
@@ -2531,6 +3466,8 @@ export function resolveInvocacao(inv, dono = {}) {
       { label: "Adicionais do Grau", valor: orcamento.maxAdicionais },
       ...parcelasDoCanal(efe.detalhes, "orcamentoLivre", "orcamentoPago"),
       ...(ovr?.ajusteAcoes ? [{ label: "Feitiço de Criação", valor: ovr.ajusteAcoes }] : []),
+      // O que o tipo vetou (a Maldição não recebe vaga a mais), com o nome da fonte.
+      ...efe.vetadosPeloTipo.map((v) => ({ label: `${v.nome} (Não se Aplica)`, valor: 0 })),
     ],
     vagasPericia: [
       ...partesPericiasInvocacao(invEf),
@@ -2538,7 +3475,8 @@ export function resolveInvocacao(inv, dono = {}) {
     ],
   };
 
-  const perProf = (inv?.periciasProf && typeof inv.periciasProf === "object") ? inv.periciasProf : {};
+  // A cota de perícia conta o que a FICHA treinou: o treino da Herança é concedido.
+  const perProf = (invCru?.periciasProf && typeof invCru.periciasProf === "object") ? invCru.periciasProf : {};
   const pericias = {
     allowance: periciasAllowanceInvocacao(invEf) + efe.pericias,
     usadas: usoPericias(perProf), // Mestre gasta 2, Treinado gasta 1
@@ -2578,7 +3516,24 @@ export function resolveInvocacao(inv, dono = {}) {
       ligado: AUXILIO_SUSTENTAVEL.includes(a.auxilioSub) && auxilioLigado(aux.sessao, a.id),
     }));
 
-  const warnings = [...atributos.warnings, ...caract.warnings];
+  /* ⚠ A MALDIÇÃO TEM FICHA ADAPTADA (2026-09-30, Etapa 8): "Seus atributos Base
+     são mantidos" e "Seus Treinamentos e Masterizações são mantidos", então os
+     avisos do point-buy e da cota de perícias do guia de criação não valem nela.
+     O limite de Ações e Características continua ("Elas ainda devem seguir o seu
+     limite máximo de Características e Ações"). */
+  const warnings = [...(regras.fichaAdaptada ? [] : atributos.warnings), ...caract.warnings, ...her.warnings];
+  // Tipo antigo, lido como Shikigami e nunca convertido sozinho.
+  if (tipoLegadoDispositivo(inv)) warnings.push("Tipo antigo Dispositivo lido como Invocação.");
+  /* Pré-requisito de classe, pelo nível REAL (DA-13): "É preciso ter nível 17
+     para criar Marionetes de Grau Especial" (e Corpos). Aviso, nunca bloqueio. */
+  if (g.value === "especial" && regras.especialNivelReal
+    && (dono.nivelControladorReal ?? 0) < regras.especialNivelReal) {
+    warnings.push(`${regras.label} de Grau Especial pede nível ${regras.especialNivelReal} de Controlador.`);
+  }
+  // Fundamento só existe no Shikigami de Técnica, e é um por ficha.
+  if (inv?.fundamento && ehShikigamiDeTecnica(inv) && (dono.fundamentos ?? 0) > 1) {
+    warnings.push(`${dono.fundamentos} Invocações marcadas como Fundamento, e a Técnica Inata tem um só.`);
+  }
   // Grau ditado pelo Feitiço de Criação de Shikigamis: o nível do Feitiço manda,
   // e a invocação que não bate com ele é um erro de ficha.
   if (ovr?.grauExigido && ovr.grauExigido !== g.value) {
@@ -2596,10 +3551,10 @@ export function resolveInvocacao(inv, dono = {}) {
   // segue o limite (1 + metade do melhor mod entre INT/SAB + ganho por grau).
   // Qualquer linha de Ofício, e não só a do livro: a ficha pode ter Ofícios
   // repetidos desde 2026-08-30, e o aviso vale para todos.
-  if (Object.keys(perProf).some(ehPericiaOficio)) {
+  if (!regras.fichaAdaptada && Object.keys(perProf).some(ehPericiaOficio)) {
     warnings.push("Invocação não pode ser treinada em Ofício.");
   }
-  if (pericias.usadas > pericias.allowance) {
+  if (!regras.fichaAdaptada && pericias.usadas > pericias.allowance) {
     warnings.push(`Perícias treinadas: ${pericias.usadas} de ${pericias.allowance} (excedeu).`);
   }
   // Efeitos passivos que NÃO acumulam: no máximo uma Característica de Vida e uma
@@ -2639,17 +3594,60 @@ export function resolveInvocacao(inv, dono = {}) {
     nome: inv?.nome || "",
     grau: g.value,
     grauLabel: g.label,
-    tipoMecanico: inv?.tipoMecanico || "shikigami",
+    /* ⚠ O TIPO SAI NORMALIZADO desde 2026-09-30. Saía o valor cru, e uma ficha
+       com o antigo "dispositivo" chegava à tela com esse tipo enquanto o rótulo
+       dizia "Invocação": cada leitor normalizava de um jeito. */
+    tipoMecanico: tipoMecanicoDaInvocacao(inv),
+    familia: regrasDoTipo(inv).familia,
+    regras: regrasDoTipo(inv),
     tipoLabel: tipoInvocacaoLabel(inv),
-    intermediario: tipoInvocacaoMeta(inv?.tipoMecanico).intermediario,
-    retirada: tipoInvocacaoMeta(inv?.tipoMecanico).retirada,
+    intermediario: regrasDoTipo(inv).intermediario,
+    retirada: regrasDoTipo(inv).retirada,
     pv, defesa, deslocamento, custo, tamanho, rd,
     /* INTEGRIDADE DA ALMA da invocação = o máximo de PV dela (autor,
        2026-08-31). É a régua do livro do JOGADOR, e não a da criatura: lá a
        Alma é uma porcentagem de 0 a 100 que MULTIPLICA o PV, e aqui ela
        acompanha o PV em pontos. Uma invocação com escala de porcentagem teria
-       dois números medindo a mesma casca. */
-    almaMax: pv,
+       dois números medindo a mesma casca.
+
+       ⚠ A MARIONETE NÃO TEM ALMA (2026-09-30, Etapa 8): "Marionetes são imunes a
+       dano na alma". O máximo vira zero e `temAlma` some, e a Ficha esconde a
+       barra. O Corpo tem a alma no núcleo, com a mesma régua do PV. */
+    almaMax: regras.alma === "nenhuma" ? 0 : pv,
+    temAlma: regras.alma !== "nenhuma",
+    imunidades: [...new Set([...imunidadesDoTipo(inv), ...her.imunidades])],
+    /* Os tipos especiais (2026-09-30, Etapa 8). Cada campo existe só no tipo que o
+       usa, e vale `null` nos outros, para a Ficha não ter de saber a regra. */
+    fundamento: ehShikigamiDeTecnica(inv) && !!inv?.fundamento,
+    natureza: naturezaDoCorpo(inv) || null,
+    refeicao: refeicaoDoCorpo(inv, dono),
+    reparo: reparoDaInvocacao(inv),
+    duracao: duracaoDoCorpo(regras, g, dono),
+    nivelAptidao: nivelAptidaoDaMaldicao(regras, dono),
+    psiquicoNoInvocador: !!regras.psiquicoNoInvocador,
+    /* As modificadoras de 2026-09-30 que não são número de canal: a Resistência a
+       dano (lista de tipos) e o Arsenal (quantos itens ela guarda). */
+    resistencias: [
+      ...caract.resistencias,
+      ...her.resistencias.filter((r) => !caract.resistencias.some((x) => x.tipo === r.tipo)),
+    ],
+    arsenal: caract.arsenal,
+    // As Heranças, achatadas (as herdadas de uma herança morta entram junto).
+    herancas: her.resumo,
+    /* As Intrínsecas e as Auras (2026-09-30, Etapa 6). A Aura sai com o estado de
+       mesa: `ligada` quando o dono está nela e ela está em campo. */
+    deslocamentos,
+    intrinsecas: caract.intrinsecas,
+    efeitosIntrinsecos: caract.efeitosIntrinsecos,
+    auras: caract.auras.map((a) => ({ ...a, ligada: !!aux.sessao.emCampo && !!aux.sessao.auras?.[a.caracId] })),
+    emTarefa: !!aux.sessao.emTarefa && !!caract.efeitosIntrinsecos.emTarefa,
+    /* A Autonomia paga na entrada (turno próprio enquanto em campo), e as
+       Aptidões de Controle e Leitura do dono que ela pode usar (Controle
+       Aprimorado, E-04). As duas de 2026-09-30, Etapa 7. */
+    autonomiaAtiva: !!aux.sessao.emCampo && !!aux.sessao.autonomia,
+    aptidoesDoControlador: Array.isArray(dono.aptidoesPelaInvocacao) ? dono.aptidoesPelaInvocacao : [],
+    forma: aux.sessao.forma && caract.efeitosIntrinsecos[aux.sessao.forma === "arma" ? "formaArma" : "formaArmadura"]
+      ? aux.sessao.forma : null,
     /* Estado de mesa: em campo, os auxílios com o interruptor de cada um, e o
        que ela está entregando ao DONO agora (que o `deriveAfty` transforma em
        efeito de Motor, com o nome dela como fonte). */
@@ -2680,7 +3678,8 @@ export function resolveInvocacao(inv, dono = {}) {
     margemCritico: dono.margemCritico ?? 20,
     criticoBrutal: !!dono.criticoBrutal,
     shikigami: ovr || null,
-    testes: resolveTestesInvocacao(invEf, donoLocal, caract),
+    testes: trsPeloInvocador(resolveTestesInvocacao(invEf, donoLocal, caract), regras, dono),
+    iniciativa: iniciativaDaInvocacao(invEf, regras, efe),
     acoes, caracteristicas,
     /* O contexto que o `modificadorExpr` enxerga, para o seletor de variáveis do
        editor. Sai SEM os valores resolvidos de propósito: é exatamente o que o
@@ -2948,6 +3947,33 @@ export function resolveInvocacoesList(lista, dono = {}) {
  * Se lesse, isto seria um laço: o dono precisaria da Defesa dele para calcular
  * o que sobe a Defesa dele.
  */
+/**
+ * As AURAS que o dono está recebendo desta invocação agora (2026-09-30, Etapa 6).
+ *
+ * ⚠ O APP NÃO TEM POSIÇÃO, e por isso a aura não vale sozinha: só a que a mesa
+ * marcou "Na Aura" (`sessao.invocacoes[id].auras[caracId]`), com a invocação em
+ * campo, do Segundo Grau em diante e com o alvo escolhido. A aura não vale na
+ * própria invocação (decisão do autor). Leve como os auxílios: lê o grau, a
+ * escolha e a sessão, e nenhum número que a resolução mexe.
+ */
+export function aurasLigadasDa(inv, dono = {}) {
+  const sess = sessaoDaInvocacao(dono, inv?.id);
+  if (!sess.emCampo) return [];
+  const g = grauMeta(inv?.grau);
+  const out = [];
+  for (const c of Array.isArray(inv?.caracteristicas) ? inv.caracteristicas : []) {
+    const entrada = caracteristicaDoCatalogo(c?.subtipo);
+    if (entrada?.categoria !== "aura" || !sess.auras?.[c.id]) continue;
+    if (g.rank < grauMeta(entrada.grauMin || "segundo").rank) continue;
+    const alvo = entrada.alvoParam ? (c.parametros?.[entrada.alvoParam] || "") : null;
+    if (entrada.alvoParam && !alvo) continue;
+    const valor = valorPorGrau(entrada, g.value) ?? 0;
+    if (!valor) continue;
+    out.push({ subtipo: entrada.id, canal: entrada.canalDono, alvo, valor, nome: c.nome || entrada.nome });
+  }
+  return out;
+}
+
 export function efeitosDeInvocacao(creature, ctx = {}) {
   const lista = Array.isArray(creature?.invocacoes) ? creature.invocacoes : [];
   if (!lista.length) return [];
@@ -2976,6 +4002,11 @@ export function efeitosDeInvocacao(creature, ctx = {}) {
       acoes: Array.isArray(q.acoes) ? q.acoes : principal.acoes,
     }];
   });
+  /* As auras de TODAS as invocações, para a disputa: duas Auras iguais (o mesmo
+     tipo de Aura no mesmo alvo) não acumulam, vale a maior (decisão do autor),
+     mesmo vindo de invocações diferentes. ⚠ Não usa o pool exclusivo do Motor: na
+     criatura ele é um só, e a aura brigaria com os bônus de Técnica do dono. */
+  const aurasPorChave = new Map();
   for (const inv of [...lista, ...quimeras]) {
     for (const a of auxiliosLigadosDa(inv, dono).paraAliados) {
       out.push({
@@ -2986,15 +4017,27 @@ export function efeitosDeInvocacao(creature, ctx = {}) {
         nome: `${inv?.nome || "Invocação"} · ${a.nome}`,
       });
     }
+    for (const a of aurasLigadasDa(inv, dono)) {
+      const chave = `${a.subtipo}|${a.alvo ?? ""}`;
+      const antes = aurasPorChave.get(chave);
+      if (!antes || a.valor > antes.valor) aurasPorChave.set(chave, { ...a, dono: inv?.nome || "Invocação" });
+    }
+  }
+  for (const a of aurasPorChave.values()) {
+    // A Aura de Dano é um DADO nomeado (1d4, 1d6, 1d8): o alvo é o dado, o valor é 1.
+    const dado = a.canal === "dadosNomeados";
+    out.push({
+      canal: a.canal,
+      ...(dado ? { alvo: `d${a.valor}` } : a.alvo ? { alvo: a.alvo } : {}),
+      expr: dado ? "1" : String(a.valor),
+      duracao: "temporaria",
+      origem: "invocacao",
+      nome: `${a.dono} · ${a.nome}`,
+    });
   }
   return out;
 }
 
-/** Normaliza o array de invocações da ficha (tolera ausência). */
-export function normalizeInvocacoes(creature) {
-  const arr = creature?.invocacoes;
-  return Array.isArray(arr) ? arr : [];
-}
 
 // ============================================================
 // FATIA 3 — Hordas
@@ -3008,22 +4051,60 @@ export function normalizeInvocacoes(creature) {
 /** Custo adicional em PE por membro, conforme o grau do membro. */
 export const INV_HORDA_CUSTO_MEMBRO = { quarto: 1, terceiro: 2, segundo: 3 };
 
+/**
+ * Uma Horda em branco (2026-10-01, Etapa 9, campos novos opcionais):
+ *   hoste       criada pela Hoste Amaldiçoada: o líder desce um grau, e o par
+ *               (`parId`, a outra horda da mesma ação) conta como UMA no limite
+ *               de hordas em campo
+ *   liderHorda  a Característica Líder de Horda do líder: `membroId` e o `caracId`
+ *               da Característica desse membro que o líder recebe
+ */
 export function createBlankHorda() {
-  return { id: novoId("horda"), nome: "", liderId: "", membroIds: [] };
+  return {
+    id: novoId("horda"), nome: "", liderId: "", membroIds: [],
+    hoste: false, parId: "", liderHorda: { membroId: "", caracId: "" },
+  };
 }
 
-/** Invocações que podem LIDERAR (Primeiro Grau ou inferior). */
-export function lideresElegiveis(invocacoes = []) {
-  return (Array.isArray(invocacoes) ? invocacoes : []).filter((inv) => grauMeta(inv.grau).rank <= 4);
+/** O teto de grau do líder: Primeiro Grau (rank 4), e um abaixo com a Hoste. */
+const rankMaxDoLider = (hoste) => (hoste ? 3 : 4);
+
+/** Quem nunca compõe Horda: o tipo que a recusa e os núcleos de um Corpo de
+    Múltiplos Núcleos ("Quimeras, Mechas e Corpos Amaldiçoados de Múltiplos
+    Núcleos não podem compor Hordas"). A Quimera e o Mecha nem estão na lista. */
+const podeComporHorda = (inv, excluidos) => regrasDoTipo(inv).horda && !excluidos.has(inv?.id);
+
+/** Invocações que podem LIDERAR (Primeiro Grau ou inferior, Segundo com a Hoste). */
+export function lideresElegiveis(invocacoes = [], { hoste = false, excluidos = [] } = {}) {
+  const fora = new Set(excluidos);
+  return (Array.isArray(invocacoes) ? invocacoes : [])
+    .filter((inv) => grauMeta(inv.grau).rank <= rankMaxDoLider(hoste) && podeComporHorda(inv, fora));
 }
 
 /** Invocações que podem ser MEMBRO de um líder (grau estritamente inferior). */
-export function membrosElegiveis(invocacoes = [], lider) {
+export function membrosElegiveis(invocacoes = [], lider, { excluidos = [] } = {}) {
   if (!lider) return [];
   const rl = grauMeta(lider.grau).rank;
+  const fora = new Set(excluidos);
   return (Array.isArray(invocacoes) ? invocacoes : []).filter(
-    (inv) => inv.id !== lider.id && grauMeta(inv.grau).rank < rl
+    (inv) => inv.id !== lider.id && grauMeta(inv.grau).rank < rl && podeComporHorda(inv, fora),
   );
+}
+
+/**
+ * Os membros que SAEM quando a horda chega à metade da vida: "ela perde metade
+ * dos seus membros, iniciando pelos de grau menor". Metade para baixo (a regra
+ * da casa), e no mesmo grau sai primeiro o último que entrou. Pura: recebe os
+ * membros ativos (`[{ id, rank }]`) e devolve os ids que saem.
+ */
+export function membrosQueSaem(ativos = []) {
+  const n = Math.floor(ativos.length / 2);
+  if (!n) return [];
+  return ativos
+    .map((m, i) => ({ ...m, i }))
+    .sort((a, b) => a.rank - b.rank || b.i - a.i)
+    .slice(0, n)
+    .map((m) => m.id);
 }
 
 // Sobe N categorias de tamanho a partir de um tamanho (clamp em Colossal).
@@ -3061,40 +4142,117 @@ function ajusteHordaAcao(base, escala) {
   return Object.keys(h).length ? h : null;
 }
 
-/** Resolve uma Horda a partir das fichas de invocação do dono. */
-export function resolveHorda(horda, invocacoes = [], dono = {}) {
+/**
+ * Resolve uma Horda a partir das fichas de invocação do dono.
+ *
+ * ⚠ O LÍDER E OS MEMBROS SAEM DA LISTA RESOLVIDA (E-07, 2026-10-01), e não de um
+ * `resolveInvocacao` solto. A resolução solta pulava o passe de fontes, e o bônus
+ * que um marcador com `fontes()` dava ao líder sumia dentro da horda: a mesma
+ * invocação tinha um número no cartão e outro na horda. `base` é essa lista, e
+ * quem resolve várias hordas a passa pronta (`resolveHordasList`).
+ *
+ * A MESA (2026-10-01, Etapa 9): a horda tem linha própria na sessão
+ * (`horda:<id>`). Os membros ativos (`membrosAtivos`) mudam as escalas, e a
+ * marca `pvMaxMetade` corta o PV máximo da horda nova cujo líder liderou outra
+ * dissipada no mesmo combate. O PV máximo NÃO cai com os membros perdidos (ver a
+ * pergunta em docs/a-fazer.md).
+ */
+export function resolveHorda(horda, invocacoes = [], dono = {}, base = null) {
   const fichas = Array.isArray(invocacoes) ? invocacoes : [];
+  const resolvidas = Array.isArray(base) ? base : resolveInvocacoesList(fichas, dono).lista;
+  const resDe = (id) => resolvidas.find((r) => r.id === id) ?? null;
   const lider = fichas.find((x) => x.id === horda?.liderId) || null;
   const membros = (horda?.membroIds || []).map((id) => fichas.find((x) => x.id === id)).filter(Boolean);
   const warnings = [];
+  const hoste = !!horda?.hoste;
+  const mesaId = `horda:${horda?.id}`;
   const out = {
-    id: horda?.id, nome: horda?.nome || "", liderId: horda?.liderId || "",
+    id: horda?.id, mesaId, nome: horda?.nome || "", liderId: horda?.liderId || "",
     membros: membros.map((m) => m.id), membrosCount: membros.length, valido: true, warnings,
+    hoste, parId: hoste ? (horda?.parId || "") : "",
   };
 
   if (!lider) { warnings.push("Escolha um líder para a horda."); out.valido = false; return out; }
   const rl = grauMeta(lider.grau).rank;
-  if (rl > 4) { warnings.push("O líder deve ser de Primeiro Grau ou inferior."); out.valido = false; }
-
-  const liderRes = resolveInvocacao(lider, dono);
-  let pvExtra = 0, custoMembros = 0, danoNiveis = 0, curaNiveis = 0, nGrau2 = 0;
+  const excluidos = new Set(Array.isArray(dono.nucleosIds) ? dono.nucleosIds : []);
+  if (rl > rankMaxDoLider(hoste)) {
+    warnings.push(hoste
+      ? "Na Hoste Amaldiçoada o líder deve ser de Segundo Grau ou inferior."
+      : "O líder deve ser de Primeiro Grau ou inferior.");
+    out.valido = false;
+  }
+  if (hoste && !dono.hosteAmaldicoada) warnings.push("Hoste Amaldiçoada sem a Habilidade.");
+  if (!podeComporHorda(lider, excluidos)) {
+    warnings.push(`${lider.nome || "Líder"} não pode compor uma Horda.`);
+    out.valido = false;
+  }
+  /* E-02: "possuindo um limite igual ao seu máximo possível em campo,
+     desconsiderando o líder". O limite vem do roster; sem ele (dono sem
+     Controlador), não há o que conferir. */
+  if (Number.isFinite(dono.limiteCampo) && membros.length > dono.limiteCampo) {
+    warnings.push(`Membros: ${membros.length} de ${dono.limiteCampo} (o limite em campo, sem o líder).`);
+  }
   for (const m of membros) {
     if (grauMeta(m.grau).rank >= rl) {
       warnings.push(`${m.nome || "Membro"} não pode ser de grau igual ou superior ao líder.`);
       out.valido = false;
     }
-    const mRes = resolveInvocacao(m, dono);
+    if (!podeComporHorda(m, excluidos)) {
+      warnings.push(`${m.nome || "Membro"} não pode compor uma Horda.`);
+      out.valido = false;
+    }
+  }
+
+  /* OS MEMBROS ATIVOS, pela mesa. Sem linha (o criador), todos. */
+  const sess = dono.sessaoInvocacoes?.[mesaId] ?? null;
+  const ativosIds = Array.isArray(sess?.membrosAtivos)
+    ? new Set(sess.membrosAtivos)
+    : new Set(membros.map((m) => m.id));
+  const ativos = membros.filter((m) => ativosIds.has(m.id));
+
+  /* LÍDER DE HORDA (Adicionais): "Escolha uma invocação que esteja na horda: você
+     recebe uma característica desse shikigami a sua escolha enquanto ele se
+     mantiver na horda". A Característica entra numa CÓPIA do líder, resolvida
+     pela lista, e só enquanto o membro escolhido está ativo. */
+  let liderRes = resDe(lider.id) ?? resolveInvocacao(lider, dono);
+  const escolha = horda?.liderHorda ?? {};
+  const temLiderHorda = (liderRes.intrinsecas ?? []).some((i) => i.subtipo === "liderHorda" && !i.bloqueada);
+  out.liderHorda = null;
+  if (temLiderHorda && escolha.membroId) {
+    const fonte = membros.find((m) => m.id === escolha.membroId) ?? null;
+    const carac = (fonte?.caracteristicas ?? []).find((c) => c.id === escolha.caracId) ?? null;
+    if (!fonte || !carac) {
+      warnings.push("Líder de Horda: escolha o membro e a Característica.");
+    } else if (ativosIds.has(fonte.id)) {
+      const herdada = { ...carac, id: `liderHorda:${carac.id}`, nome: `${carac.nome || "Característica"} (Líder de Horda)` };
+      const copia = { ...lider, caracteristicas: [...(lider.caracteristicas ?? []), herdada] };
+      liderRes = resolveInvocacoesList(fichas.map((f) => (f.id === lider.id ? copia : f)), dono).lista
+        .find((r) => r.id === lider.id) ?? liderRes;
+      out.liderHorda = { membroId: fonte.id, membroNome: fonte.nome || "", caracNome: carac.nome || "" };
+    }
+  } else if (escolha.membroId && !temLiderHorda) {
+    warnings.push("Líder de Horda escolhido sem a Característica no líder.");
+  }
+
+  let pvExtra = 0, custoMembros = 0;
+  for (const m of membros) {
+    const mRes = resDe(m.id) ?? resolveInvocacao(m, dono);
     pvExtra += Math.floor(mRes.pv / 2);                                   // metade do PV do membro
     // Buchas de Canhão (10°): membro de quarto grau para de cobrar PE extra.
     const grauMembro = grauMeta(m.grau).value;
     const gratis = dono.membroQuartoGrauGratis && grauMembro === "quarto";
     custoMembros += gratis ? 0 : (INV_HORDA_CUSTO_MEMBRO[grauMembro] ?? 0);
+  }
+  /* As ESCALAS contam só os membros ativos: "perde metade dos seus membros [...]
+     diminuindo todos os efeitos baseados no número de membros". */
+  let danoNiveis = 0, curaNiveis = 0, nGrau2 = 0;
+  for (const m of ativos) {
     const g2 = grauMeta(m.grau).value === "segundo";
     if (g2) nGrau2 += 1;
     danoNiveis += g2 ? 2 : 1;   // +1 por membro, dobrado para membro de Grau 2
     curaNiveis += g2 ? 2 : 1;
   }
-  const n = membros.length;
+  const n = ativos.length;
   const escala = {
     danoNiveis, curaNiveis,
     danoAdicionalNiveis: Math.floor(n / 2),   // +1 nível por 2 membros
@@ -3104,8 +4262,16 @@ export function resolveHorda(horda, invocacoes = [], dono = {}) {
     tamanhoCategorias: Math.floor(n / 2),      // +1 categoria por 2 membros
   };
 
+  const pvCheio = liderRes.pv + pvExtra;
+  const metade = !!sess?.pvMaxMetade;
   out.lider = { id: lider.id, nome: lider.nome, grau: lider.grau };
-  out.pv = liderRes.pv + pvExtra;
+  out.liderPv = liderRes.pv;
+  out.pv = metade ? Math.floor(pvCheio / 2) : pvCheio;
+  out.fontesPv = [
+    { label: lider.nome || "Líder", valor: liderRes.pv },
+    ...membros.map((m) => ({ label: `${m.nome || "Membro"} (Metade)`, valor: Math.floor((resDe(m.id)?.pv ?? 0) / 2) })),
+    ...(metade ? [{ label: "Líder Reaproveitado", valor: out.pv - pvCheio }] : []),
+  ];
   out.custo = liderRes.custo + custoMembros;
   out.deslocamento = liderRes.deslocamento;
   // ⚠ O tamanho parte do RESOLVIDO do líder, não do `lider.tamanho` cru: quem
@@ -3114,22 +4280,47 @@ export function resolveHorda(horda, invocacoes = [], dono = {}) {
   out.tamanho = subirTamanho(liderRes.tamanho, escala.tamanhoCategorias);
   out.tamanhoLabel = AFTY_TAMANHOS.find((t) => t.value === out.tamanho)?.label ?? out.tamanho;
   out.escala = escala;
+  /* A Defesa, a RD, a CD e os testes do LÍDER (2026-10-01): "Outros valores [...]
+     consideram apenas as do líder da horda". A RD contra alvo único (o nível do
+     usuário) e o Fragilizado contra área são de mesa. */
+  out.defesa = liderRes.defesa;
+  out.rd = liderRes.rd;
+  out.testes = liderRes.testes;
+  out.rdContraAlvoUnico = Math.max(1, Math.trunc(Number(dono.nd) || 1));
+  out.regras = liderRes.regras;
+  out.componentesIds = [lider.id, ...membros.map((m) => m.id)];
+  out.membrosDetalhe = membros.map((m) => ({
+    id: m.id, nome: m.nome || grauMeta(m.grau).label, grau: m.grau, rank: grauMeta(m.grau).rank,
+    ativo: ativosIds.has(m.id), pv: resDe(m.id)?.pv ?? 0, regras: regrasDoTipo(m),
+  }));
   /* ⚠ As ações vêm do `liderRes`, e NÃO de um `resolveAcao` refeito aqui.
      Refazer perdia tudo que mora no `donoLocal` do líder (Concentrar Poder,
      Agressividade, Precisão) e também os `grupos` estruturados: a mesma ação
      rolava um dano dentro da horda e outro fora dela. */
-  out.acoes = (liderRes.acoes || []).map((base) => ({
-    nome: base.nome, familia: base.familia, auxilioSub: base.auxilioSub,
-    base, horda: ajusteHordaAcao(base, escala),
+  out.acoes = (liderRes.acoes || []).map((acaoBase) => ({
+    nome: acaoBase.nome, familia: acaoBase.familia, auxilioSub: acaoBase.auxilioSub,
+    base: acaoBase, horda: ajusteHordaAcao(acaoBase, escala),
   }));
 
   return out;
 }
 
-/** Lista de hordas do dono, resolvida. */
+/**
+ * Lista de hordas do dono, resolvida. A lista das invocações é resolvida UMA vez
+ * (E-07), e o par da Hoste é conferido aqui, porque é relação entre duas hordas.
+ */
 export function resolveHordasList(hordas, invocacoes = [], dono = {}) {
   const arr = Array.isArray(hordas) ? hordas : [];
-  const lista = arr.map((h) => resolveHorda(h, invocacoes, dono));
+  const base = arr.length ? resolveInvocacoesList(Array.isArray(invocacoes) ? invocacoes : [], dono).lista : [];
+  const lista = arr.map((h) => resolveHorda(h, invocacoes, dono, base));
+  /* A Hoste cria DUAS hordas numa ação, e elas contam como uma: as duas marcadas
+     e apontando uma para a outra. */
+  for (const h of lista) {
+    if (!h.hoste) continue;
+    const par = lista.find((o) => o.id === h.parId && o.id !== h.id);
+    if (!par) h.warnings.push("Hoste Amaldiçoada: escolha a outra horda do par.");
+    else if (!par.hoste || par.parId !== h.id) h.warnings.push(`Hoste Amaldiçoada: ${par.nome || "a outra horda"} não aponta de volta para esta.`);
+  }
   return { lista, total: lista.length, custoTotal: lista.reduce((s, h) => s + (h.custo || 0), 0) };
 }
 
@@ -3155,21 +4346,45 @@ export function resolveHordasList(hordas, invocacoes = [], dono = {}) {
 export const INV_QUIMERA_NIVEIS = [2, 3, 4];
 const QUIMERA_MARCADOR = "quimera_fusao";
 
-export function createBlankQuimera() {
-  /* `acoes` e `caracteristicas` são da PRÓPRIA Quimera: "podem ser escolhidas
-     entre quaisquer Ações/Características das invocações fundidas, além de criar
-     únicas". Quimera gravada sem elas (antes de 2026-09-20) usa as da principal. */
+/**
+ * ⚠ DUAS REGRAS DE QUIMERA (decisão do autor DA-06, 2026-09-30):
+ *   "addon"      a do addon `quimera.json` (Passiva de Nível 2 a 4), LEGACY. É a
+ *                regra de toda Quimera gravada SEM o campo, e nada a converte.
+ *   "mecanicas"  a do *Mecânicas para Invocações 2.5.2*, a oficial. Toda Quimera
+ *                NOVA nasce com ela. Ver `resolveQuimera`.
+ */
+export const QUIMERA_REGRAS = [
+  { value: "mecanicas", label: "Mecânicas" },
+  { value: "addon", label: "Addon" },
+];
+export const regraDaQuimera = (q) => (q?.regra === "mecanicas" ? "mecanicas" : "addon");
+
+export function createBlankQuimera(regra = "mecanicas") {
+  /* `acoes` e `caracteristicas` são da PRÓPRIA Quimera do addon: "podem ser
+     escolhidas entre quaisquer Ações/Características das invocações fundidas,
+     além de criar únicas". Quimera gravada sem elas (antes de 2026-09-20) usa as
+     da principal. Na do Mecânicas valem as da principal mais as `escolhas`: até
+     DUAS Ações ou Características de cada componente adicional (PV-03),
+     `{ [componenteId]: [{ tipo: "acao" | "caracteristica", id }] }`. */
   return {
     id: novoId("quimera"), nome: "", principalId: "", fundidasIds: [], nivel: 2,
+    regra: regra === "addon" ? "addon" : "mecanicas", escolhas: {},
     acoes: [], caracteristicas: [], portraitUrl: "", portraitFocus: { x: 50, y: 50 },
   };
+}
+
+/** Quantas invocações (contando a principal) o Controlador funde pelo nível REAL
+    (DA-13): "No nível 5, [...] até 2 Shikigamis. No nível 9, [...] até 3. No
+    nível 13, [...] até 4". Zero abaixo do 5. */
+export function limiteDeQuimeraMecanicas(nivelControladorReal = 0) {
+  const n = Math.trunc(Number(nivelControladorReal) || 0);
+  return n >= 13 ? 4 : n >= 9 ? 3 : n >= 5 ? 2 : 0;
 }
 
 const QUIMERA_MARCADOR_DEF = {
   id: QUIMERA_MARCADOR, label: "Quimera", limite: 1, fontes: true,
   herdaDaFonte: { pericias: "uniao", tr: "uniao", ataque: "uniao", atributos: "maiorFixo" },
 };
-const quimeraSoma = (v) => `fontes("${QUIMERA_MARCADOR}", "soma", "${v}")`;
 const quimeraQtd = `fontes_qtd("${QUIMERA_MARCADOR}")`;
 const quimeraExtras = `max(0, ${quimeraQtd} - 1)`;
 
@@ -3183,13 +4398,28 @@ export const QUIMERA_PV_ABATE = 10;
    Vida da principal contada de novo, o multiplicador da Maldição multiplicando a
    soma que já vinha multiplicada, e o bônus do tipo Técnica. O número agora é FIXO
    (`pvFixo`, calculado em `resolveQuimera`) e a conta normal não roda. */
+/* ⚠ O CUSTO TAMBÉM SAIU DAQUI (2026-09-30, E-11). Era um `custoReducao` de
+   `custo - soma do custo das fundidas`, lido da variável `custo` crua do DSL,
+   sem as reduções de cada uma. Agora é FIXO como o PV (`custoFixo`, somado do
+   custo que o cartão de cada fundida mostra). */
 const QUIMERA_EFEITOS = [
-  { canal: "custoReducao", expr: `custo - ${quimeraSoma("custo")}`, quando: `${quimeraQtd} > 0`, nome: "Quimera · Custo em PE" },
   { canal: "bonusTeste", expr: quimeraExtras, nome: "Quimera · Acerto, TR e Perícia" },
   { canal: "cd", expr: quimeraExtras, nome: "Quimera · CD" },
   { canal: "defesa", expr: quimeraExtras, nome: "Quimera · Defesa" },
   { canal: "danoNivel", expr: quimeraExtras, nome: "Quimera · Nível de Dano" },
   { canal: "orcamentoLivre", expr: quimeraExtras, nome: "Quimera · Ações e Características" },
+].map((e) => ({ ...e, origem: "quimera" }));
+
+/* A QUIMERA DO MECÂNICAS: "+1 em Jogadas de Ataque, CD e Perícias, mas recebendo
+   -1 em Defesa, TR e RD para cada shikigami que componha a Quimera", e "para cada"
+   conta TODAS as componentes (PV-03). O canal de todos os testes soma em Ataque,
+   TR e Perícia, e o de TR tira o dobro, para o TR fechar em -1 por componente. */
+const QUIMERA_EFEITOS_MECANICAS = [
+  { canal: "bonusTeste", expr: quimeraQtd, nome: "Quimera · Ataque, TR e Perícias" },
+  { canal: "bonusTR", expr: `0 - 2 * ${quimeraQtd}`, nome: "Quimera · TR" },
+  { canal: "cd", expr: quimeraQtd, nome: "Quimera · CD" },
+  { canal: "defesa", expr: `0 - ${quimeraQtd}`, nome: "Quimera · Defesa" },
+  { canal: "rd", expr: `0 - ${quimeraQtd}`, nome: "Quimera · RD" },
 ].map((e) => ({ ...e, origem: "quimera" }));
 
 /**
@@ -3200,6 +4430,7 @@ const QUIMERA_EFEITOS = [
  * resolve uma vez só e a passa adiante, porque ela não depende da Quimera.
  */
 export function resolveQuimera(quimera, invocacoes = [], dono = {}, base = null) {
+  if (regraDaQuimera(quimera) === "mecanicas") return resolveQuimeraMecanicas(quimera, invocacoes, dono, base);
   const fichas = Array.isArray(invocacoes) ? invocacoes : [];
   const principal = fichas.find((x) => x.id === quimera?.principalId) || null;
   const nivel = INV_QUIMERA_NIVEIS.includes(Number(quimera?.nivel)) ? Number(quimera.nivel) : 2;
@@ -3236,6 +4467,12 @@ export function resolveQuimera(quimera, invocacoes = [], dono = {}, base = null)
   }));
   const somaPv = partesPv.reduce((t, p) => t + p.valor, 0);
   const pvFixo = Math.max(0, somaPv - QUIMERA_PV_ABATE);
+  // O custo, do mesmo jeito: o de cada cartão, somado (E-11).
+  const custoDe = (id) => resolvidasBase.find((r) => r.id === id)?.custo ?? 0;
+  const partesCusto = [principal, ...usadas].map((f) => ({
+    label: f.nome || grauMeta(f.grau).label, valor: custoDe(f.id),
+  }));
+  const custoFixo = partesCusto.reduce((t, p) => t + p.valor, 0);
 
   const sintetica = {
     ...principal,
@@ -3249,11 +4486,15 @@ export function resolveQuimera(quimera, invocacoes = [], dono = {}, base = null)
        não tem editor de aparência: herdar pintaria a ficha da Quimera com o CSS
        de outra criatura, que o dono nunca escreveu para ela. */
     aparencia: null,
+    // A Quimera nunca é o Fundamento da Técnica Inata, mesmo com a principal sendo.
+    fundamento: false,
     marcadores: { ...(principal.marcadores || {}), [QUIMERA_MARCADOR]: true },
     marcadorFontes: { ...(principal.marcadorFontes || {}), [QUIMERA_MARCADOR]: [principal.id, ...usadas.map((f) => f.id)] },
     // CALCULADOS e nunca salvos: vivem só nesta cópia. Ver o `pvFixo` do resolveInvocacao.
     pvFixo,
     pvFixoPartes: [...partesPv, { label: "Quimera", valor: pvFixo - somaPv }],
+    custoFixo,
+    custoFixoPartes: partesCusto,
   };
   const donoQ = {
     ...dono,
@@ -3261,11 +4502,133 @@ export function resolveQuimera(quimera, invocacoes = [], dono = {}, base = null)
     efeitos: [...(Array.isArray(dono.efeitos) ? dono.efeitos : []), ...QUIMERA_EFEITOS],
   };
   const lista = resolveInvocacoesList([...fichas, sintetica], donoQ).lista;
-  out.resolvida = lista[lista.length - 1];
+  // As componentes viajam na resolvida: a mesa as confere na entrada e na queda.
+  out.resolvida = { ...lista[lista.length - 1], componentesIds: [principal.id, ...usadas.map((f) => f.id)], regraQuimera: "addon" };
+  out.regra = "addon";
   out.valido = true;
   out.fundidasIds = usadas.map((f) => f.id);
   out.principal = { id: principal.id, nome: principal.nome };
   out.fundidas = [principal, ...usadas].map((f) => ({ id: f.id, nome: f.nome || grauMeta(f.grau).label }));
+  out.pv = out.resolvida.pv;
+  out.custo = out.resolvida.custo;
+  out.defesa = out.resolvida.defesa;
+  out.deslocamento = out.resolvida.deslocamento;
+  return out;
+}
+
+/**
+ * A QUIMERA DO MECÂNICAS (DA-06 e PV-03, 2026-10-01, Etapa 9). Monta a mesma
+ * cópia sintética da do addon, com as regras do *Mecânicas*:
+ *   quantas      pelo nível REAL de Controlador (`limiteDeQuimeraMecanicas`)
+ *   quem         só Shikigamis ("fusões realizadas entre Shikigamis")
+ *   grau         o maior entre as componentes
+ *   atributos    o maior de cada; treinos e masterizações: a união
+ *   PV           "Shikigami Base + 1/3 dos PVs dos outros Shikigamis - (Grau da
+ *                Invocação * Shikigamis adicionais)", com a principal como base e
+ *                o grau pelo rank (PV-02). Os PVs são os dos cartões
+ *   bônus        +1 Ataque, CD e Perícias, -1 Defesa, TR e RD, por componente
+ *   Ações/Caract.todas as da principal e até duas de cada adicional (`escolhas`),
+ *                que entram como vagas concedidas, sem custo
+ *   custo        a soma dos custos BASE dos graus, e o que passar das vagas paga
+ *                por cima ("Efeitos como Visionário e Autonomia são aplicados após")
+ */
+function resolveQuimeraMecanicas(quimera, invocacoes = [], dono = {}, base = null) {
+  const fichas = Array.isArray(invocacoes) ? invocacoes : [];
+  const principal = fichas.find((x) => x.id === quimera?.principalId) || null;
+  const limite = limiteDeQuimeraMecanicas(dono.nivelControladorReal);
+  const warnings = [];
+  const vistos = new Set(principal ? [principal.id] : []);
+  const fundidas = [];
+  for (const id of Array.isArray(quimera?.fundidasIds) ? quimera.fundidasIds : []) {
+    const f = fichas.find((x) => x.id === id);
+    if (f && !vistos.has(f.id)) { vistos.add(f.id); fundidas.push(f); }
+  }
+  const out = {
+    id: quimera?.id, nome: quimera?.nome || "", principalId: quimera?.principalId || "",
+    fundidasIds: fundidas.map((f) => f.id), nivel: limite, regra: "mecanicas",
+    valido: false, warnings, resolvida: null, total: 0, limite,
+  };
+  if (!limite) warnings.push("Quimera pede 5 níveis de Controlador.");
+  if (!principal) { warnings.push("Escolha a Invocação principal da Quimera."); return out; }
+  const teto = Math.max(2, limite || 4);
+  if (fundidas.length + 1 > teto) warnings.push(`O Controlador funde até ${teto} Invocações, contando a principal.`);
+  const usadas = fundidas.slice(0, teto - 1);
+  out.total = usadas.length + 1;
+  if (!usadas.length) { warnings.push("Escolha ao menos uma Invocação para fundir com a principal."); return out; }
+  const componentes = [principal, ...usadas];
+  for (const c of componentes) {
+    if (regrasDoTipo(c).familia !== "shikigami") warnings.push(`${c.nome || "Componente"}: Quimera só funde Shikigamis.`);
+  }
+
+  const resolvidasBase = Array.isArray(base) ? base : resolveInvocacoesList(fichas, dono).lista;
+  const pvDe = (id) => resolvidasBase.find((r) => r.id === id)?.pv ?? 0;
+  const grauQ = componentes.reduce((m, c) => (grauMeta(c.grau).rank > grauMeta(m).rank ? c.grau : m), principal.grau);
+  const rankQ = grauMeta(grauQ).rank;
+  const pvBase = pvDe(principal.id);
+  const somaOutros = usadas.reduce((t, f) => t + pvDe(f.id), 0);
+  const terco = Math.floor(somaOutros / 3);
+  const abate = rankQ * usadas.length;
+  const pvFixo = Math.max(0, pvBase + terco - abate);
+
+  /* As escolhas: até duas Ações ou Características de cada adicional. O item
+     copiado ganha id próprio (`componente:item`), e quem passar de duas avisa e
+     fica de fora. */
+  const escolhas = (quimera?.escolhas && typeof quimera.escolhas === "object") ? quimera.escolhas : {};
+  const acoesEscolhidas = [];
+  const caractEscolhidas = [];
+  for (const f of usadas) {
+    const lista = (Array.isArray(escolhas[f.id]) ? escolhas[f.id] : []);
+    if (lista.length > 2) warnings.push(`${f.nome || "Componente"}: ${lista.length} escolhas, e a Quimera recebe até duas.`);
+    for (const e of lista.slice(0, 2)) {
+      const campo = e?.tipo === "caracteristica" ? "caracteristicas" : "acoes";
+      const item = (f[campo] ?? []).find((x) => x.id === e?.id);
+      if (!item) continue;
+      const copia = { ...item, id: `${f.id}:${item.id}` };
+      (campo === "acoes" ? acoesEscolhidas : caractEscolhidas).push(copia);
+    }
+  }
+  const nEscolhas = acoesEscolhidas.length + caractEscolhidas.length;
+  const custoBaseFixo = componentes.reduce(
+    (t, c) => t + (regrasDoTipo(c).custoBase === "grau" ? grauMeta(c.grau).custoBase : 0), 0);
+
+  const sintetica = {
+    ...principal,
+    id: `quimera:${quimera.id}`,
+    nome: quimera.nome || principal.nome,
+    grau: grauQ,
+    acoes: [...(principal.acoes ?? []), ...acoesEscolhidas],
+    caracteristicas: [...(principal.caracteristicas ?? []), ...caractEscolhidas],
+    portraitUrl: typeof quimera.portraitUrl === "string" ? quimera.portraitUrl : "",
+    portraitFocus: quimera.portraitFocus || { x: 50, y: 50 },
+    aparencia: null,
+    // A Quimera nunca é o Fundamento da Técnica Inata, mesmo com a principal sendo.
+    fundamento: false,
+    marcadores: { ...(principal.marcadores || {}), [QUIMERA_MARCADOR]: true },
+    marcadorFontes: { ...(principal.marcadorFontes || {}), [QUIMERA_MARCADOR]: componentes.map((f) => f.id) },
+    // CALCULADOS e nunca salvos: vivem só nesta cópia.
+    pvFixo,
+    pvFixoPartes: [
+      { label: `${principal.nome || "Principal"} (Base)`, valor: pvBase },
+      ...(terco ? [{ label: "Um Terço dos Outros", valor: terco }] : []),
+      ...(abate ? [{ label: "Grau × Adicionais", valor: -abate }] : []),
+      ...(pvBase + terco - abate < 0 ? [{ label: "Piso em Zero", valor: -(pvBase + terco - abate) }] : []),
+    ],
+    custoBaseFixo,
+  };
+  const efeitosEscolhas = nEscolhas
+    ? [{ canal: "orcamentoLivre", expr: String(nEscolhas), nome: "Quimera · Ações e Características dos Componentes", origem: "quimera" }]
+    : [];
+  const donoQ = {
+    ...dono,
+    marcadores: [...(Array.isArray(dono.marcadores) ? dono.marcadores : []), QUIMERA_MARCADOR_DEF],
+    efeitos: [...(Array.isArray(dono.efeitos) ? dono.efeitos : []), ...QUIMERA_EFEITOS_MECANICAS, ...efeitosEscolhas],
+  };
+  const lista = resolveInvocacoesList([...fichas, sintetica], donoQ).lista;
+  out.resolvida = { ...lista[lista.length - 1], componentesIds: componentes.map((f) => f.id), regraQuimera: "mecanicas" };
+  out.valido = true;
+  out.fundidasIds = usadas.map((f) => f.id);
+  out.principal = { id: principal.id, nome: principal.nome };
+  out.fundidas = componentes.map((f) => ({ id: f.id, nome: f.nome || grauMeta(f.grau).label }));
   out.pv = out.resolvida.pv;
   out.custo = out.resolvida.custo;
   out.defesa = out.resolvida.defesa;
@@ -3283,6 +4646,161 @@ export function resolveQuimerasList(quimeras, invocacoes = [], dono = {}) {
   return { lista, total: lista.length, custoTotal: lista.reduce((s, q) => s + (q.custo || 0), 0) };
 }
 
+// ============================================================
+// Corpos de Múltiplos Núcleos (2026-10-01, Etapa 9)
+// ============================================================
+// "Duas fichas de invocação são criadas, ambas são consideradas como Núcleos",
+// do mesmo tipo de Corpo, do mesmo grau, com o mesmo mod de CON e o mesmo PV.
+// Cada núcleo é uma ficha comum de Corpo em `creature.invocacoes`, e o grupo
+// mora em `creature.multiplosNucleos`. Na mesa, o grupo é UMA entidade
+// (`nucleos:<id>`): conta como 1, só um núcleo está ativo, e o PV e o estado
+// moram na linha do grupo, então trocar de núcleo mantém o PV atual.
+//
+// ⚠ A Ação "Trocar Núcleo" é parte do subtipo (PV-13): não ocupa vaga, não custa,
+// e a Ficha a desenha como botão do grupo, sem a ficha precisar criá-la.
+
+export function createBlankNucleos() {
+  return { id: novoId("nucleos"), nome: "", nucleoIds: [] };
+}
+
+/** Os ids que estão em algum grupo de Múltiplos Núcleos (não compõem Horda). */
+export const idsDeNucleos = (grupos) =>
+  (Array.isArray(grupos) ? grupos : []).flatMap((g) => (Array.isArray(g?.nucleoIds) ? g.nucleoIds : []));
+
+export function resolveMultiplosNucleos(grupo, invocacoes = [], dono = {}, base = null) {
+  const fichas = Array.isArray(invocacoes) ? invocacoes : [];
+  const resolvidas = Array.isArray(base) ? base : resolveInvocacoesList(fichas, dono).lista;
+  const resDe = (id) => resolvidas.find((r) => r.id === id) ?? null;
+  const mesaId = `nucleos:${grupo?.id}`;
+  const nucleos = (Array.isArray(grupo?.nucleoIds) ? grupo.nucleoIds : [])
+    .map((id) => fichas.find((x) => x.id === id)).filter(Boolean);
+  const warnings = [];
+  const out = {
+    id: grupo?.id, mesaId, nome: grupo?.nome || "", nucleoIds: nucleos.map((n) => n.id),
+    valido: false, warnings, resolvida: null,
+  };
+  if ((dono.nivelControladorReal ?? 0) < 5) warnings.push("Múltiplos Núcleos pede 5 níveis de Controlador.");
+  if (nucleos.length !== 2) { warnings.push("Escolha os dois núcleos."); return out; }
+  const [a, b] = nucleos;
+  const [ra, rb] = [resDe(a.id), resDe(b.id)];
+  if (!ra || !rb) return out;
+  if (nucleos.some((n) => regrasDoTipo(n).familia !== "corpo")) warnings.push("Os dois núcleos têm de ser Corpos Amaldiçoados.");
+  if (naturezaDoCorpo(a) !== naturezaDoCorpo(b)) warnings.push("Os núcleos têm de ser do mesmo tipo de Corpo (boneco ou biológico).");
+  if (grauMeta(a.grau).value !== grauMeta(b.grau).value) warnings.push("Os núcleos têm de ser do mesmo grau.");
+  if ((ra.atributos?.mods?.constituicao ?? 0) !== (rb.atributos?.mods?.constituicao ?? 0)) {
+    warnings.push("Os núcleos têm de ter o mesmo modificador de Constituição.");
+  }
+  if (ra.pv !== rb.pv) warnings.push(`Os núcleos têm de ter o mesmo PV (${ra.pv} e ${rb.pv}).`);
+  const sess = dono.sessaoInvocacoes?.[mesaId] ?? null;
+  const ativoId = out.nucleoIds.includes(sess?.nucleoAtivo) ? sess.nucleoAtivo : a.id;
+  const resAtivo = ativoId === a.id ? ra : rb;
+  out.valido = true;
+  out.nucleoAtivo = ativoId;
+  out.resolvida = {
+    ...resAtivo,
+    id: mesaId,
+    nome: grupo?.nome || resAtivo.nome,
+    componentesIds: out.nucleoIds,
+    nucleos: nucleos.map((n) => ({ id: n.id, nome: n.nome || grauMeta(n.grau).label })),
+    nucleoAtivo: ativoId,
+    multiplosNucleos: true,
+    warnings: [...resAtivo.warnings, ...warnings],
+  };
+  out.pv = resAtivo.pv;
+  return out;
+}
+
+/** Lista dos grupos de Múltiplos Núcleos, resolvida. Um núcleo em dois grupos avisa. */
+export function resolveMultiplosNucleosList(grupos, invocacoes = [], dono = {}) {
+  const arr = Array.isArray(grupos) ? grupos : [];
+  const base = arr.length ? resolveInvocacoesList(Array.isArray(invocacoes) ? invocacoes : [], dono).lista : [];
+  const lista = arr.map((g) => resolveMultiplosNucleos(g, invocacoes, dono, base));
+  const vistos = new Map();
+  for (const g of lista) {
+    for (const id of g.nucleoIds) {
+      if (vistos.has(id)) g.warnings.push(`Um núcleo já está em ${vistos.get(id) || "outro grupo"}.`);
+      else vistos.set(id, g.nome);
+    }
+  }
+  return { lista, total: lista.length };
+}
+
+// ============================================================
+// Mecha (2026-10-01, Etapa 9)
+// ============================================================
+// O Mecha nasce em combate, então mora na SESSÃO, e não na ficha: a linha
+// `mecha` de `sessao.invocacoes` guarda as duas Marionetes (`maiorId`,
+// `menorId`), o PV do Mecha e a casca da menor (`pvTempFontes`). Ver
+// `formaMecha` em ficha/ficha-sessao.js. Daqui sai só a ficha resolvida dele,
+// montada das duas componentes já resolvidas.
+
+/**
+ * A ficha do Mecha, das duas Marionetes resolvidas:
+ *   "O Mecha é um tamanho acima dos seus componentes"
+ *   "O Mecha recebe todas as Ações e Características de seus constituintes. As
+ *    Ações e Características não são modificadas para comportar o maior Grau"
+ *   "O Mecha possui as maiores Defesas, TRs, Jogada de Ataque e Perícias de seus
+ *    componentes e os atributos da Marionete de maior PV"
+ * Com a menor quebrada (a casca acabou), as Ações e Características dela saem, e
+ * os números voltam a ser os da maior.
+ */
+export function resolveMecha(linhaMecha, resolvidas = []) {
+  if (!linhaMecha?.maiorId || !linhaMecha?.menorId) return null;
+  const a = resolvidas.find((r) => r.id === linhaMecha.maiorId);
+  const b = resolvidas.find((r) => r.id === linhaMecha.menorId);
+  if (!a || !b) return null;
+  const sem = !!linhaMecha.menorQuebrada;
+  const melhor = (x, y) => (!sem && y && (y.bonus ?? 0) > (x?.bonus ?? 0) ? y : x);
+  const ta = a.testes ?? {};
+  const tb = b.testes ?? {};
+  const pericias = [...(ta.pericias ?? [])];
+  if (!sem) {
+    for (const p of tb.pericias ?? []) {
+      const i = pericias.findIndex((x) => x.id === p.id);
+      if (i < 0) pericias.push(p);
+      else pericias[i] = melhor(pericias[i], p);
+    }
+  }
+  const defesa = sem ? a.defesa : Math.max(a.defesa, b.defesa);
+  const tamanho = subirTamanho(a.tamanho, 1);
+  return {
+    ...a,
+    id: "mecha",
+    nome: `Mecha · ${a.nome || "Marionete"} e ${b.nome || "Marionete"}`,
+    mecha: true,
+    componentesIds: [a.id, b.id],
+    maiorId: a.id,
+    menorId: b.id,
+    menorQuebrada: sem,
+    pvTempMax: b.pv,
+    // As regras de Marionete valem normalmente: sem alma.
+    almaMax: 0,
+    temAlma: false,
+    tamanho,
+    tamanhoLabel: AFTY_TAMANHOS.find((t) => t.value === tamanho)?.label ?? tamanho,
+    defesa,
+    acoes: sem ? a.acoes : [...(a.acoes ?? []), ...(b.acoes ?? [])],
+    caracteristicas: sem ? a.caracteristicas : [...(a.caracteristicas ?? []), ...(b.caracteristicas ?? [])],
+    auxilios: sem ? a.auxilios : [...(a.auxilios ?? []), ...(b.auxilios ?? [])],
+    testes: {
+      ...ta,
+      acerto: { corpo: melhor(ta.acerto?.corpo, tb.acerto?.corpo), distancia: melhor(ta.acerto?.distancia, tb.acerto?.distancia) },
+      cd: sem ? ta.cd : Math.max(ta.cd ?? 0, tb.cd ?? 0),
+      cdPartes: !sem && (tb.cd ?? 0) > (ta.cd ?? 0) ? tb.cdPartes : ta.cdPartes,
+      resistencias: (ta.resistencias ?? []).map((r) => melhor(r, (tb.resistencias ?? []).find((x) => x.value === r.value))),
+      pericias,
+    },
+    fontes: {
+      ...(a.fontes ?? {}),
+      defesa: !sem && b.defesa > a.defesa ? (b.fontes?.defesa ?? []) : (a.fontes?.defesa ?? []),
+      pv: [{ label: a.nome || "Marionete Maior", valor: a.pv }],
+    },
+    custo: 0,
+    warnings: [],
+  };
+}
+
+
 // ------------------------------------------------------------
 // Validador de conteúdo (mesmo papel de validarCatalogoAptidoes): confere que
 // as tabelas por grau estão completas e consistentes. Não há catálogo de texto
@@ -3291,6 +4809,19 @@ export function resolveQuimerasList(quimeras, invocacoes = [], dono = {}) {
 export function validarCatalogoInvocacoes() {
   const erros = [];
   const graus = AFTY_INV_GRAUS.map((g) => g.value);
+
+  // A tabela de regras por tipo: campos completos depois da herança.
+  erros.push(...validarRegrasPorTipo());
+  // O catálogo de Características: escala completa, e canal que existe.
+  erros.push(...validarCatalogoCaracteristicasInvocacao());
+  for (const c of CARACTERISTICAS_INVOCACAO) {
+    if (c.canal && !EFEITO_CANAIS.includes(c.canal)) {
+      erros.push(`Característica "${c.id}": canal desconhecido "${c.canal}"`);
+    }
+  }
+  // As constantes antigas de atributo continuam batendo com a tabela.
+  if (regrasDoTipoValor("shikigami").atributoBase !== INV_ATTR_BASE) erros.push("REGRAS_POR_TIPO: base de atributo do Shikigami diverge de INV_ATTR_BASE");
+  if (regrasDoTipoValor("tecnica").atributoBase !== INV_ATTR_BASE_TECNICA) erros.push("REGRAS_POR_TIPO: base de atributo da Técnica diverge de INV_ATTR_BASE_TECNICA");
 
   // Ranks e nums únicos e cobrindo 1..5 e 0..4.
   const ranks = AFTY_INV_GRAUS.map((g) => g.rank).sort((a, b) => a - b);

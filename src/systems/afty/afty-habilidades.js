@@ -54,6 +54,11 @@ import { AFTY_ESPECIALIZACOES, getEspecializacao } from "./afty-especializacoes"
    justificativa que afty-aptidoes.js já escreveu para o APTIDAO_EFEITOS. */
 import { HABILIDADE_EFEITOS } from "./afty-efeitos-conteudo";
 import { getAptidao } from "./afty-aptidoes";
+/* O catálogo de Características de Invocação (2026-09-30), para a família de
+   addon. É módulo FOLHA (zero imports), então a seta não fecha ciclo. */
+import {
+  CARACTERISTICAS_INVOCACAO, caracteristicaDoCatalogo, validarCatalogoCaracteristicasInvocacao,
+} from "./afty-invocacoes-caracteristicas";
 import { ARMA_GRUPOS, ENCANTAMENTOS_ARMA, CATEGORIAS_DANO, TIPOS_DANO } from "./afty-equipamentos";
 import { AFTY_RESISTENCIAS } from "./afty-schema";
 // Quem lê a divergência das Bases automáticas. Módulo folha, sem ciclo.
@@ -384,9 +389,9 @@ export const ESTILOS_DE_CONTROLE = [
  * Melhorias da habilidade Melhoria de Controlador (Controlador). Quarta
  * escolha ANINHADA do sistema: cada vez que você pega Melhoria de Controlador
  * escolhe UMA melhoria daqui (`escolha.niveis: [2]`, uma concessão por
- * instância). A habilidade é REPETÍVEL (até 4x, uma por melhoria), mas o
- * shape atual da ficha (lista de ids únicos) ainda não suporta pegar 2x+;
- * ver o comentário na habilidade dona.
+ * instância). A habilidade é REPETÍVEL (até 4x, uma por melhoria): a escolha
+ * aninhada `repetivel` deixa escolher uma de cada opção, e cada escolha consome
+ * uma vaga de Habilidade (`escolhasMaximas`, `resolveEscolhasHabilidade`).
  *
  * ⚠ Texto VERBATIM do "final da especialização": contém ponto-e-vírgula.
  */
@@ -4510,7 +4515,8 @@ export const AFTY_HABILIDADES = [
 
   /* ================= CONTROLADOR · BASE =================
      No livro a especialização controla Invocações (shikigamis e corpos
-     amaldiçoados). Base nos níveis 1, 4, 6, 9, 10 e 20. Treinamento em
+     amaldiçoados). Base nos níveis 1, 4, 6, 10 e 20 (o TR Mestre do 9° é
+     genérico, em afty-especializacoes.js). Treinamento em
      Controle e Controle Aprimorado são automáticas: sem elas o Controlador
      não tem invocação nenhuma para controlar. */
   {
@@ -4752,11 +4758,9 @@ export const AFTY_HABILIDADES = [
       opcoes: MELHORIAS_DE_CONTROLADOR,
       repetivel: true,
     },
-    // ⚠ REPETÍVEL ("quatro vezes, uma para cada melhoria"). O pool já existe
-    // (MELHORIAS_DE_CONTROLADOR), mas o shape atual da ficha (lista de ids
-    // únicos) não suporta pegar 4x, então hoje só uma instância é possível.
-    // Resolver junto do estado da escolha aninhada. Mesmo caso de Aptidões de
-    // Combate (8° do Combatente).
+    // REPETÍVEL ("quatro vezes, uma para cada melhoria") pela escolha aninhada:
+    // cada melhoria escolhida é uma instância e consome uma vaga de Habilidade
+    // (`escolhasMaximas`). Mesmo caso de Aptidões de Combate (8° do Combatente).
     requisitos: [],
   },
   {
@@ -6816,6 +6820,12 @@ export const MARCADORES_INVOCACAO = [
     label: "Concentrar Poder",
     habilidadeId: "ctr_concentrar_poder",
     limiteExpr: "piso(bt / 2)",
+    /* ⚠ "Enquanto estiver com apenas UMA invocação em campo" (decisão do autor,
+       2026-09-30): na mesa, a variável `marc_concentrar_poder` só acende com uma
+       invocação no total em campo, e a marca diz quem recebe. Por ser na
+       variável, vale também para os addons que escrevem com ela (o Concentrar
+       Poder Dobrado). No criador, sem mesa, ela segue acesa. Ver `varsDeMarcador`. */
+    condicao: "unicaEmCampo",
   },
   {
     id: "companheiro",
@@ -6963,6 +6973,8 @@ export function resolveMarcadoresInvocacao({
         : {}),
       // Política de fusão estrutural (perícias, TR, ataque, atributos).
       ...(m.herdaDaFonte ? { herdaDaFonte: m.herdaDaFonte } : {}),
+      // A condição de mesa do marcador (o Concentrar Poder, 2026-09-30).
+      ...(m.condicao ? { condicao: m.condicao } : {}),
     }));
 }
 
@@ -7017,6 +7029,49 @@ registrarFamilia("marcadores", {
     .flatMap((inv) => Object.keys(inv?.marcadores || {})),
 });
 
+/* ============================================================ */
+/* FAMÍLIA `caracteristicasInvocacao` DOS ADDONS (2026-09-30)    */
+/* ============================================================ */
+/**
+ * A mesa acrescenta Características de Invocação ao catálogo sem abrir o código.
+ * Uma entrada com `escala` (os cinco graus) e `canal` (um canal da invocação)
+ * vira número pelo mesmo caminho das modificadoras do raw, e uma sem os dois é
+ * só texto. A ficha guarda o id no `subtipo` da Característica.
+ *
+ * ⚠ Dado extra continua só nas autorizadas: uma entrada de addon com o canal
+ * `ataqueDanoAdicional` precisa de `dadoExtra`, e o validador cobra.
+ */
+const CARACTERISTICAS_BASE = CARACTERISTICAS_INVOCACAO.slice();
+
+function aplicarExtrasCaracteristicas(extras = [], remendos = null) {
+  CARACTERISTICAS_INVOCACAO.splice(
+    0, CARACTERISTICAS_INVOCACAO.length, ...remendarLista(CARACTERISTICAS_BASE, remendos), ...extras,
+  );
+}
+
+function validarFamiliaCaracteristicas() {
+  const problemas = validarCatalogoCaracteristicasInvocacao();
+  for (const c of CARACTERISTICAS_INVOCACAO) {
+    if (c.canal === "ataqueDanoAdicional" && !c.dadoExtra) {
+      problemas.push(`${c.id}: dado extra sem autorização de fonte (dadoExtra)`);
+    }
+  }
+  return problemas;
+}
+
+registrarFamilia("caracteristicasInvocacao", {
+  rotulo: "Característica de Invocação",
+  chave: "id",
+  obrigatorios: ["nome"],
+  aplicar: aplicarExtrasCaracteristicas,
+  basicos: () => CARACTERISTICAS_BASE,
+  validador: validarFamiliaCaracteristicas,
+  resolver: (id) => caracteristicaDoCatalogo(id),
+  idsDaFicha: (c) => (Array.isArray(c?.invocacoes) ? c.invocacoes : [])
+    .flatMap((inv) => (Array.isArray(inv?.caracteristicas) ? inv.caracteristicas : []).map((ch) => ch?.subtipo))
+    .filter(Boolean),
+});
+
 /**
  * ============================================================
  * ROSTER DO CONTROLADOR (invocações iniciais, campo, comandos)
@@ -7068,7 +7123,19 @@ export function resolveControleInvocacoes({ escolhidasIds = [], escolhasMapa = {
     invocarPorAcao,
     invocarAcaoLivre: concentrado || apice,
     comandos,
+    /* Os comandos SEPARADOS (2026-09-30): o Treinamento sobe os dois juntos ("a
+       quantidade de comandos que você realiza com uma Ação Comum e Bônus aumenta
+       em um"), e a Ação Comum comanda Complexas e a Bônus, Simples. */
+    comandosComplexas: comandos,
+    comandosSimples: comandos,
     criarHorda: disperso,
+    /* Disperso no 12: "você pode criar duas hordas como parte de uma mesma ação
+       de Criar Horda" (E-03, 2026-09-30). */
+    hordasPorAcao: disperso ? 1 + degraus(12) : 0,
+    // Reserva para Invocação (10°, base): uma vez por descanso, na mesa (E-01).
+    reserva: ids.includes("ctr_reserva_para_invocacao"),
+    // Controle Aprimorado (4°, base): as Aptidões de Controle e Leitura pela invocação (E-04).
+    controleAprimorado: ids.includes("ctr_controle_aprimorado"),
     // "limite de Hordas em campo igual a metade do seu limite de Invocações em campo"
     limiteHordas: disperso ? Math.floor(limiteCampo / 2) : 0,
     // Buchas de Canhão (10°): membro de quarto grau deixa de cobrar PE extra.

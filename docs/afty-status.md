@@ -1,5 +1,290 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÕES DE 2026-09-30 E 2026-10-01: PROJETO DE CONTROLADOR E INVOCAÇÕES (ETAPAS 0 A 12)
+
+O autor mandou duas fontes novas, *Mecânicas para Invocações 2.5.2* e *Adicionais para
+Invocações*, e pediu um projeto completo antes de qualquer código. O projeto comparou as duas
+fontes e o Livro com o código atual, e foi aprovado com dezesseis decisões. Elas estão no topo
+de `docs/afty-invocacoes.md` e valem sobre as decisões antigas daquele arquivo.
+
+- **O que muda de rumo:**
+  - a Marionete, o Corpo Amaldiçoado e a Maldição Domada voltam a ser tipos com regra própria, o
+    que revoga as decisões de 2026-07-17 (Maldição fora de escopo, Corpo e Marionete só
+    narrativos) e a de 2026-09-02 (o Dispositivo saiu);
+  - o Shikigami de Técnica perde o "Retorno Completo" e ganha a regra de exorcismo do
+    *Mecânicas*;
+  - a Quimera nova segue o *Mecânicas*, e a do addon vira LEGACY;
+  - a Herança das Sombras vira persistente.
+- **Etapa 0:**
+  - `main` integrado com os três commits remotos (08c8524, ac17945 e 2323893), com o commit local
+    do Suporte por cima. O autor rodou os comandos, e o único conflito foi o topo deste arquivo,
+    resolvido mantendo os dois blocos;
+  - linha de base: 123 arquivos de assert, só o vermelho conhecido (`t-invocacoes-motor.mjs`, 84
+    ok e 1 falha). ESLint de `src/systems/afty` zerado, build limpo.
+- **Etapa 1:**
+  - decisões gravadas em `docs/afty-invocacoes.md`, e as antigas marcadas como revogadas;
+  - em `docs/a-fazer.md`, duas perguntas saíram por estarem respondidas (a Quimera conta 1 em
+    campo, e a invocação exorcizada não sai da ficha sozinha). A fila das Etapas 2 a 12 entrou no
+    lugar.
+- **Etapa 2 (base de tipos):**
+  - módulo FOLHA novo `afty-invocacoes-tipos.js`, com `REGRAS_POR_TIPO`: uma linha por tipo
+    (Shikigami, Técnica como subtipo que herda do Shikigami, Maldição, Marionete e Corpo), e
+    `regrasDoTipoValor` resolvendo a herança. Entrou na lista de folhas do `t-ordem-modulos`;
+  - `afty-invocacoes.js` lê as regras por `regrasDoTipo(inv)`: o catálogo de tipos, a base e o
+    piso de atributo, a ficha em branco e o espaço de Intermediário. Por enquanto só isso: cura,
+    estados e custo por tipo entram nas próximas etapas;
+  - **⚠ a Maldição perdeu o Talismã e a dissipação nos metadados** (DA-03): Intermediário nenhum,
+    retirada "exorcizar", e ela deixa de contar meio espaço de inventário;
+  - sinais de DSL específicos: `tipo_shikigami_puro`, `tipo_marionete`, `tipo_corpo`, ao lado de
+    `tipo_tecnica` e `tipo_maldicao`. O `tipo_shikigami` virou LEGACY, com o sentido de sempre
+    (Shikigami e Maldição);
+  - o resolvido devolve o tipo normalizado, mais `familia` e `regras` (era o valor cru, e o antigo
+    "dispositivo" chegava à tela como tipo). A ficha com "dispositivo" segue lida como Shikigami,
+    sem conversão, e ganha o aviso "Tipo antigo Dispositivo lido como Invocação.";
+  - no criador, o filtro da lista lê o rótulo curto da tabela;
+  - asserts: `t-invocacao-tipos.mjs` (novo, 76) e `t-maldicao.mjs` (dois asserts reescritos pela
+    decisão). Os números do Shikigami, da Técnica e do antigo Dispositivo nos cinco graus, com ND 1
+    e 9, batem com os do código anterior;
+  - pergunta nova em `a-fazer.md`: o chip do Shikigami volta a dizer "Shikigami"?
+- **Etapa 3 (estados e entrada em campo):**
+  - a linha de cada invocação na sessão ganhou `estado` (fora, guardada, ativa, dissipada,
+    desativada, quebrada, recolhida, exorcizada, destruída, morta) e os contadores `retorno`,
+    `quedas`, `exorcismos`, `bloqueadaAteFimDaCena` e `ultimaEntrada`. Os três booleanos de antes
+    continuam gravados, derivados do estado, e a linha antiga é lida sem conversão pelo tipo (a
+    `abatida` vira dissipada com volta pela metade);
+  - `transicaoDeQueda` aplica a regra do tipo a 0 PV e no excedente. Shikigami dissipa ou é
+    exorcizada. Técnica: o 1º exorcismo vira dissipação, o 2º mata. Maldição é exorcizada. A
+    Marionete quebra (½, depois ¼) e a 3ª queda a destrói. O Corpo desativa com PV negativo e é
+    destruído a −PV máximo, e volta curado acima de 0. O apara deixa o Corpo negativo;
+  - **⚠ entrar em campo desconta o PE do dono** na Ficha e no Encontro (`entradaDaInvocacao` calcula
+    e recusa o que o PE não cobre, `invocaNaMesa` grava). A volta depois de dissipar por vontade é
+    sem custo e com o mesmo PV (Livro), e o botão mostrava o custo cheio;
+  - o botão de campo segue o estado: o verbo do tipo (Invocar ou Ativar), Retirar de Campo para quem
+    não dissipa, Recolher e Reconstruir na Marionete quebrada, e o rótulo da morte permanente. O
+    chip "Em Campo" conta pelo estado (a Marionete quebrada ocupa vaga, o Corpo desativado não);
+  - o traço "Retorno Completo" da Técnica saiu (DA-04);
+  - asserts: `t-invocacao-estados.mjs` (novo, 67) e `t-invocacoes-mesa.mjs` (o assert de formato
+    passou a conferir os campos antigos mais o estado). Contraprova dos dois erros contra o código
+    anterior: a Técnica com excedente era exorcizada direto, e a volta voluntária mostrava 4 PE;
+  - pergunta nova em `a-fazer.md`: o descanso repara todas as Marionetes, ou uma só?
+- **Etapa 4 (custo e orçamento em partes):**
+  - `detalheCustoInvocacao` devolve o custo em partes, e o `custoInvocacao` virou a soma dele.
+    **⚠ O custo base é do tipo:** Marionete, Corpo e Maldição pagam zero de base, e as Ações e
+    Características além da cota continuam custando. O hover do custo mostra o base (ou "Sem
+    Custo Base"), os extras, as reduções e o "Piso em Zero" quando a redução passa do custo, e a
+    soma fecha em todas as 400 combinações do assert;
+  - o orçamento ganhou `partes` (cota gratuita, compradas, concedidas grátis como o Ápice,
+    concedidas pagas como o Visionário, o ajuste do Feitiço) e `uso` (Simples, Complexas,
+    Características). O total segue o mesmo número;
+  - E-11: a Quimera do addon soma o custo que o CARTÃO de cada fundida mostra (`custoFixo`, como o
+    `pvFixo`). A conta antiga lia o custo cru do DSL e errava quando a redução estava numa fundida
+    que não era a principal (os cartões somavam 2 e a Quimera saía por 4);
+  - E-08: o campo de atributo do criador trava no teto resolvido, e não mais no da tabela;
+  - a troca de atributo do Estilo de Combate e da Resiliência Alternativa foi para a Etapa 5;
+  - asserts: `t-invocacao-custo.mjs` (novo, 21) e `t-maldicao.mjs` (o custo da Maldição sem base);
+  - pergunta nova em `a-fazer.md`: as extras do Corpo custam PE?
+- **Etapa 5 (catálogo de Características):**
+  - módulo FOLHA novo `afty-invocacoes-caracteristicas.js`, com `CARACTERISTICAS_INVOCACAO`. **O
+    `subtipo` gravado é o id do catálogo**, e os seis de antes (vida, teste, resistencia, rd,
+    tamanho, livre) estão lá com o mesmo id, então nenhuma ficha migra. Entrou na lista de folhas;
+  - modificadoras novas do *Adicionais*, com o valor pela escala do grau: Defesa (+1 a +5), Aumento
+    de Nível de Dano (+1 a +5), Dano Durante o Ataque (1d4 a 1d12), Aumento de Cura (+2 a +10),
+    Arsenal (2 a 10 itens), Estilo de Combate, Resiliência Alternativa e Resistência a dano. As
+    numéricas entram na mesma disputa da Livre, e o grupo de efeito barra o "mesmo efeito" em
+    canais diferentes (Nível de Dano e Dado de Dano: vale a primeira, com aviso);
+  - **⚠ TR Treinada e TR Mestre pelo *Adicionais*** (DA-11): a faixa virou escolha (`prof`), a
+    Treinada vale em qualquer grau e a Mestre só num TR já treinado (pela ficha ou por uma Treinada).
+    A Característica salva sem `prof` lê a faixa que concedia. As travas de 2026-09-03 saíram, e a
+    seção 5 do `t-invocacoes-fontes.mjs` foi reescrita para a regra nova;
+  - **⚠ a Livre não dá dado extra** (DA-10): a linha do canal `ataqueDanoAdicional` numa Livre é
+    descartada, com aviso. Só o Dano Durante o Ataque pode (`dadoExtra`);
+  - Estilo de Combate: o atributo escolhido entra como opção na Defesa, no Acerto e na CD de
+    referência, e vale o melhor ("permite"). Resiliência Alternativa troca o atributo do PV;
+  - Resistência: o requisito confere os Feitiços Passivos do DONO (`resistenciasDePassiva`, montado
+    no derive a partir do canal `resistenciaDano`);
+  - família de addon nova `caracteristicasInvocacao` (em `afty-habilidades.js`): entrada com
+    `escala` e `canal` vira número pelo mesmo caminho do raw, e dado extra pede `dadoExtra`;
+  - no criador, os chips de tipo saem do catálogo, a TR ganhou a Faixa, e as escolhas novas moram
+    em `parametros`. A Ficha resume os tipos novos;
+  - asserts: `t-invocacao-caracteristicas.mjs` (novo, 35) e `t-invocacoes-fontes.mjs` (seção 5).
+- **Etapa 6 (Intrínsecas, Auras e Formas):**
+  - o catálogo ganhou as 25 Intrínsecas e as 6 Auras do *Adicionais*, com o texto da fonte (o hover
+    do catálogo), as escolhas em `parametros` e os requisitos. Requisito que falta TRAVA o efeito e
+    avisa, e a Característica fica na ficha: Montaria (tamanho Médio), Encantada (uma Forma), Líder
+    de Horda (Inteligente), Forma de Armadura (só Marionete), Forma de Arma (custo da arma pelo grau,
+    1 a 4, e o dono treinado nela, pela lista `armasTreinadas` que o derive entrega) e Traçado da
+    Alma (confirmação manual do dono);
+  - viram número ou estado: voo e nado iguais à caminhada (Alado, Nadador), o Alcance Auxiliar (o
+    auxílio deixa o corpo a corpo e usa a tabela do grau), a Laceração (grau × 5, mínimo 1) e a
+    Corrida Perfurante (teto de dados). O resto é texto de mesa;
+  - **⚠ a Aura não vale sozinha**: o app não tem posição. Só do Segundo Grau em diante, com o alvo
+    escolhido, a invocação em campo e a mesa ligando "Na Aura" para o dono
+    (`sessao.invocacoes[id].auras`). O efeito vai pelo mesmo cano dos auxílios
+    (`efeitosDeInvocacao`), e duas Auras iguais não acumulam, nem entre invocações diferentes (vale
+    a maior, sem o pool exclusivo, que na criatura brigaria com a Técnica). A Aura não vale na
+    própria invocação. O dado extra da Aura de Dano e da Corrida Perfurante entrou na lista fechada;
+  - a mesa: "Em Tarefa" (Bem Treinada fora da contagem em campo), a Forma de Arma e de Armadura
+    (não tira de campo, e só quem está em campo muda de forma), e `divideDanoComArmadura` (metade
+    para a armadura, e no crítico os dois levam tudo). Sair de campo, cair e descansar desfazem as
+    Auras e a Forma;
+  - no criador, os chips de tipo viraram quatro fileiras (Modificadoras, Intrínsecas, Auras,
+    Livre), com a Aura travada abaixo do Segundo Grau. Na Ficha, o bloco "Na Mesa" e as tiras de
+    Voo e Nado;
+  - asserts: `t-invocacao-intrinsecas.mjs` (novo, 41) e `t-invocacao-caracteristicas.mjs` (a lista
+    de dado extra com as três);
+  - pendência nova em `a-fazer.md`: a Forma de Arma ainda não monta a arma virtual no arsenal do dono.
+- **Etapa 7 (Controlador):**
+  - **os dois níveis com nomes distintos** (DA-13): `nivelEscalonamentoControlador` (o ND, que os
+    efeitos e o roster escalam) e `nivelControladorReal` (o nível real na Especialização, para
+    pré-requisito de classe). Saem no `derived.invocacoes` e no dono da invocação;
+  - **contagem em campo**: `contaInvocacoesEmCampo` (na folha de tipos, junto dos conjuntos de
+    estado, que saíram da sessão e voltam reexportados). O derive a publica para o dono como
+    `invocacoes_em_campo` (só com mesa; no criador vale 0) e para a invocação como
+    `invocacoesEmCampo` (no criador, `null`). A Quimera conta 1;
+  - **Controle Sintonizado** (D-02): +1 em acerto e dano do dono por invocação em campo
+    (`ESCOLHA_EFEITOS`, temporário). O ataque de 2 PE segue de mesa;
+  - **⚠ Concentrar Poder só com UMA invocação no total em campo** (DA-15): o marcador ganhou a
+    condição `unicaEmCampo`, e na mesa a variável `marc_concentrar_poder` (e a antiga `marcada`)
+    apaga com duas em campo, então o Concentrar Poder Dobrado segue junto. No criador segue aceso;
+  - roster: comandos separados (Complexas e Simples), hordas por Criar Horda no Disperso 12 (E-03),
+    Possuídas e Disponíveis na Ficha, a marca da Reserva e a do Controle Aprimorado;
+  - **Reserva para Invocação** (E-01): "Duas pela Metade" ou "Uma Sem Custo", uma vez por descanso,
+    na sessão (`reservaInvocacao`). A redução é do custo da invocação, e não do que se paga a mais;
+  - **opções na entrada**: a mesa marca Autonomia e Resistência Sobrecarregada para a próxima
+    entrada, e a entrada soma o custo. A Sobrecarga sobe o PV MÁXIMO enquanto em campo (PV-25), com
+    a parcela no hover, e some ao sair. A Autonomia da Maldição é paga no início do combate (desde
+    a Etapa 8 ela também se marca, e o início do combate cobra). **Fantoche Supremo**: a segunda
+    entrada no mesmo descanso é recusada;
+  - Controle Aprimorado (E-04): a ficha da invocação lista as Aptidões de Controle e Leitura do dono
+    que ela pode usar, sem Punho Divergente e Emoção da Pétala Decadente;
+  - Crítico Brutal: o rolador ganha um dado do tamanho do maior da ação, só no modo Crítico;
+  - E-09: o chip do criador virou "Invocar como Ação Livre";
+  - assert: `t-controlador-progressao.mjs` (novo, 36), com o roster nos onze níveis pedidos.
+- **Etapa 8 (tipos especiais, 2026-10-01):**
+  - a tabela de tipos ganhou seis campos (`imunidadesNaturais`, `trsDoInvocador`,
+    `psiquicoNoInvocador`, `fichaAdaptada`, `duracaoPorCL`, `reparo`), e o resolvedor devolve
+    `temAlma`, `imunidades`, `fundamento`, `natureza`, `refeicao`, `reparo`, `duracao`,
+    `nivelAptidao`, `iniciativa` e a marca `doInvocador` no TR;
+  - **Marionete**: sem Integridade (a barra some e a escrita é recusada), imune a dano na alma,
+    Envenenado e venenos não amaldiçoados, Vontade e Astúcia com o número do invocador, sem cura
+    nenhuma (comum ou ER), e o reparo pelo Ofício do material (`inv.oficio`). O Custo sai do grau
+    (1, 2, 3, 4 e 4) e a CD da tabela de Criação de Itens do Livro (três colunas de Ofício). Grau
+    Especial avisa abaixo do nível 17 REAL de Controlador;
+  - **Corpo**: `inv.natureza` (boneco ou biológico). O boneco é imune a Envenenado e se repara pelo
+    Alfaiate. O biológico tem uma refeição de Cozinheiro permanente (`inv.refeicao`, a tabela do
+    Livro conferida pela PV-20, sem Energética), com o grau e a BT do dono: Leve, Picante, Reforçada
+    e Nutritiva (`inv.refeicaoTrs`) viram efeito de canal, Refrescante e Revigorante saem como
+    texto com o número. A duração é o CL do Controlador (sem mínimo): a sessão conta as rodadas
+    (`rodadasAtiva`), pede a manutenção de 1 ou 2 PE (`manutencaoPendente`, botão "Manter Ativo")
+    e, sem ela, a rodada seguinte o tira de campo com o PV que tinha. Com CL 0 a manutenção vale
+    desde a primeira rodada;
+  - **Maldição**: os efeitos do dono nos canais de orçamento (Visionário, Ápice) não entram, e o
+    hover diz "(Não se Aplica)". A ficha é adaptada: sem aviso de point-buy, de cota de perícias,
+    de vaga de TR nem de Ofício, sem trava de grau pelo Controlador e com o atributo até 30 no
+    criador. Nível de Aptidão = metade do mod de Presença do Controlador, para baixo, mínimo 0. Sem
+    cura por ER (a cura tem fonte agora, `aplicaCuraInvocacao(..., fonte)` e `curaPermitida`);
+  - **Autonomia no início do combate** (Mecânicas, para todos os tipos): quem já está em campo e
+    tem a Autonomia marcada paga quando o combate começa (`iniciaCombate`, e na Ficha a saída da
+    rodada 0). A Maldição ativada com o combate correndo paga na entrada (PV-10);
+  - **Técnica e Fundamento** (DA-07, PV-15): `inv.fundamento` no Perfil. `estadoDaTecnicaInata`
+    decide: com o Fundamento MORTO a Técnica Inata é perdida (o Motor perde os efeitos do
+    Funcionamento e das Passivas, e os Feitiços ficam marcados "Fundamento Perdido", sem rolagem nem
+    Ritual). A perda é gravada em `creature.fundamentosPerdidos` pela Ficha e, no Encontro, na ficha
+    do combatente. Com o Fundamento só FORA DE CAMPO, os Feitiços ficam marcados e os números não
+    mudam (ver a decisão aberta em `a-fazer.md`). A Técnica ganhou a Iniciativa (Destreza mais os
+    bônus de todos os testes);
+  - **E-13** (achado nesta etapa): o cache do derive do Encontro não tinha na chave as invocações,
+    as condições, os treinos ligados nem a Guarda, e o número do combatente não mudava ao pôr uma
+    invocação em campo. Contraprova no `HEAD`: Defesa 32 no cache contra 33 no derive direto;
+  - **E-14** (achado nesta etapa): a Ficha aberta regravava a criatura inteira a cada segundo,
+    para sempre. O efeito do tema dependia do `onSalvarTema`, que o App recria a cada render, e a
+    guarda era "pula a primeira vez". Agora grava só o tema que mudou (e o rascunho de tema das
+    invocações, que tinha o mesmo laço). Contraprova: um documento com o código antigo seguiu
+    regravando `aparencia` a cada 3 segundos durante o teste, e o novo fez zero gravações em 5s;
+  - assert: `t-invocacao-tipos-especiais.mjs` (novo, 84).
+- **Etapa 9 (compostos, 2026-10-01):**
+  - **Horda**: o líder e os membros saem da lista resolvida, com o passe de fontes (**E-07**:
+    contraprova no `HEAD`, PV 89 contra 116). Os limites (**E-02**): membros pelo limite em
+    campo, o grau do líder, e quem não compõe (o tipo, os núcleos de Múltiplos Núcleos). O card do
+    criador só aparece com Criar Horda (ou com horda já gravada, com aviso). A horda traz Defesa,
+    RD, CD e testes do líder, e a RD contra alvo único (o nível do usuário) como número de mesa;
+  - **Hoste Amaldiçoada**: `horda.hoste` e `horda.parId`. O líder desce um grau, o par se confere
+    dos dois lados e conta como uma no limite de hordas;
+  - **Líder de Horda**: `horda.liderHorda` (membro e Característica). A Característica entra numa
+    cópia do líder, no grau dele, só enquanto o membro está ativo;
+  - **Horda na mesa** (linha `horda:<id>`): Criar Horda cobra o PE e só entra com as componentes
+    livres. Na metade da vida, metade dos membros sai (do menor grau), dissipada pela regra do
+    tipo, e exorcizada quando o golpe tem metade da vida. As escalas recalculam pelos ativos. A
+    0 PV, a horda acaba e o líder fica marcado: a próxima horda dele tem metade do PV máximo. Só
+    sai por vontade fora do combate;
+  - **Quimera do Mecânicas** (DA-06): `quimera.regra`. Sem o campo, segue a do addon (LEGACY), e a
+    nova nasce "mecanicas". Quantas pelo nível REAL (5, 9, 13), só Shikigamis, o maior grau, PV
+    pela fórmula com a principal de base, +1 Ataque, CD e Perícias e -1 Defesa, TR e RD por
+    componente, as Ações da principal mais até duas escolhas por adicional (`quimera.escolhas`),
+    e o custo pela soma dos custos base. Na mesa: uma por cena (`quimeraDaCena`), dissipada leva as
+    componentes junto, exorcizada as bloqueia até o fim da cena. A RD da invocação ganhou piso 0;
+  - **Corpo de Múltiplos Núcleos**: `creature.multiplosNucleos`. Avisos de tipo, grau, CON, PV e
+    nível 5. Na mesa é UMA entidade (`nucleos:<id>`), com o núcleo ativo trocado pelo botão
+    "Trocar Núcleo", que mantém o PV. Os núcleos saem da fileira e não compõem Horda;
+  - **Mecha**: mora na sessão (linha `mecha`). "Formar Mecha" aparece com duas Marionetes ativas,
+    do mesmo tamanho e maiores que o dono (o `tamanho` que o derive já calcula, PV-19), e o nível
+    5 real. A ficha dele: um tamanho acima, as Ações e Características das duas, as maiores
+    Defesas, TRs, ataques e perícias, sem alma. A casca é o PV da menor: acabou, ela quebra e sai
+    da ficha. A 0 PV, a maior quebra e o Mecha se desfaz. Separar devolve os dois PVs;
+  - o descanso desfaz Horda, Quimera e Mecha, e o início do combate abre a cena nova;
+  - o dano da mesa passou pelo roteador `aplicaDanoNaMesa`, na Ficha e no Encontro;
+  - asserts: `t-invocacao-compostos.mjs` (novo, 73).
+- **Etapa 10 (Herança das Sombras persistente, 2026-10-01, DA-12):**
+  - `inv.herancas[]`: cada entrada guarda a CÓPIA congelada da sombra (`criaHeranca`: os maiores
+    atributos, resistências e imunidades da resolvida, Ações e Características) e as escolhas da
+    herdeira (bônus, atributo no empate, resistência ou imunidade, Ação, Característica, dois
+    treinos). As Heranças que a sombra carregava entram em `herdadas` e contam como desta;
+  - `herancasDa` lê a herdeira com o que a Herança concede: a Ação e a Característica (marcadas
+    `concedida`, que o orçamento e o custo ignoram, PV-14), e os treinos (perícia, TR ou ataque,
+    que a cota de perícia não conta). `efeitosDeHeranca` dá os números pelo Motor: +1 Nível de
+    Dano, o bônus (TRs, RD Geral, Ataque, ou +1 em cada perícia da herdeira) e +2 no maior atributo
+    da sombra, com o teto daquele atributo subindo até 30;
+  - não houve canal novo: "Todas as Perícias" usa o canal de perícia com alvo, porque o vermelho
+    conhecido (`t-invocacoes-motor.mjs`) conta os canais e quebraria em outro ponto;
+  - primitiva de addon nova `heranca` (22 primitivas). A sub-aba Heranças aparece para os
+    Shikigamis de quem tem uma Invocação de Técnica, ou pela primitiva, ou com Herança gravada. A
+    Ficha mostra o bloco Heranças, com as herdadas recuadas;
+  - o exemplo antigo por marcador com `fontes` segue igual (`t-dez-sombras.mjs`);
+  - assert: `t-invocacao-heranca.mjs` (novo, 25).
+- **Etapa 11 (interface e acabamento, 2026-10-01):**
+  - as regras de Ação do *Adicionais*, no `resolveAcao` e no `AcaoCard` (marcas `reacao`,
+    `manobra`, `especial`, `reducaoCura`, `cobertura`): Manobra e Condição não podem ser Ação
+    Simples, a Reação Simples Auxiliar vale 1,5 vez (para baixo), Reduzir Cura é Complexa, pede TR
+    e custa 8 PE (1/3) ou 10 PE (metade), e a Cobertura (sempre Reação) custa 4 PE (Meia, Terceiro
+    Grau) ou 6 PE (3/4, Segundo Grau). O PE das duas é custo de uso, fora do limite de Ações com
+    Custo. A Ficha mostra as marcas, e a Ação herdada leva a marca Herança;
+  - **Criar Herança pela mesa**: o Shikigami exorcizado (ou a Técnica morta) mostra os Shikigamis
+    vivos, e o clique grava a Herança na ficha da herdeira (`onSalvarInvocacoes`, só na Ficha). As
+    escolhas se fazem no criador. Herança repetida da mesma sombra não aparece;
+  - os contadores de Quedas (Marionete) e de Exorcismos (Técnica) na ficha da invocação;
+  - revisão no navegador em `/Afty` e `/Player`: Ficha e Criador com as mesmas regras (DA-01),
+    console limpo;
+  - assert: `t-invocacao-acoes-adicionais.mjs` (novo, 14).
+- **Etapa 12 (documentação, 2026-10-01):**
+  - `docs/afty-invocacoes.md`: a seção de como os tipos especiais, os compostos e a Herança ficaram
+    no motor, a linha do Concentrar Poder pela DA-15 (não mais `quando: "marcada"`), e os GAPS DO
+    MOTOR revistos (3, 4 e 6 feitos, 2 em parte);
+  - `docs/automacao-dsl.md`: as variáveis de invocação e de mesa (os sinais de tipo, o LEGACY
+    `tipo_shikigami`, o `marc_concentrar_poder` e o `invocacoes_em_campo`);
+  - `docs/afty-addons.md`: as 17 famílias (faltavam `caracteristicasAmaldicoadas` e
+    `caracteristicasInvocacao`), a Quimera do addon como LEGACY e a primitiva `heranca`;
+  - `asserts/LEIA.md`: a contagem (7263 asserts em 133 arquivos) e o quadro das suítes de
+    invocação, que não estavam nele;
+  - `docs/afty-motor-referencia-estrutural.md`: as duas folhas novas e os módulos de invocação;
+  - **E-12**: os comentários velhos da Melhoria de Controlador (já repetível) e da base no 9° em
+    `afty-habilidades.js`, e o `normalizeInvocacoes`, que não tinha quem chamasse, saiu;
+  - `docs/a-fazer.md`: a entrada das etapas saiu. Ficam as decisões abertas de cada etapa (Corpo
+    e extras, reparo de Marionete, chip do Shikigami, Fundamento fora de campo, PE Máximo da Passiva,
+    CD do Corpo Biológico, Horda, Hoste, Quimera e Resistentes, Mecha) e as pendências (Visionário
+    nas componentes da Quimera, Fundamento do Encontro na biblioteca, Forma de Arma no arsenal).
+- **Resumo do projeto:** 12 etapas, 14 erros confirmados corrigidos com contraprova (E-01 a E-14,
+  E-13 e E-14 achados no caminho), 10 suítes novas, nenhum commit (os comandos ficam com o autor).
+
 ## SESSÃO DE 2026-09-30: RAIO NEGRO COMPATÍVEL COM BOT DE DADOS
 
 A fórmula de Raio Negro em `afty-dano.js` voltou ao formato `(dados)/2*3`,

@@ -106,6 +106,7 @@ import {
   DOMINIO_RITUAL_CATEGORIAS, rotuloDoEfeito,
 } from "./afty-dominios";
 import { RITUAL_MELHORIAS } from "./afty-rituais";
+import { CARACTERISTICAS_INVOCACAO } from "./afty-invocacoes-caracteristicas";
 import { COMBATE_ESTADOS, estadoVisivel } from "./afty-combate";
 import { condicoesPorForca, descreveCondicao, listaComE, CONDICAO_EFEITOS, SANGRAMENTO_FAIXAS, faixaDeSangramento } from "./afty-condicoes";
 import { IconeDaCondicao } from "./ui/icones-afty";
@@ -121,11 +122,18 @@ import {
   // O rótulo dos canais da invocação mora no motor desde 2026-09-10: a Ficha
   // também precisa dele, e uma cópia aqui envelheceria separada.
   INV_EFEITO_CANAL_GRUPOS, INV_EFEITO_CANAL_LABEL as EFEITO_CANAL_LABEL, alvoOpcoesInvocacao,
-  CANAIS_POR_ACAO,
+  CANAIS_POR_ACAO, CUSTO_DE_FORMA_POR_GRAU,
+  // Os tipos especiais (2026-09-30, Etapa 8): o Ofício da Marionete, a natureza
+  // e a refeição do Corpo.
+  OFICIOS_DE_MARIONETE, NATUREZAS_DE_CORPO, REFEICOES_DE_CORPO,
+  // Os compostos (2026-10-01, Etapa 9): as duas regras de Quimera e os núcleos.
+  QUIMERA_REGRAS, regraDaQuimera, createBlankNucleos,
+  // A Herança das Sombras persistente (2026-10-01, Etapa 10).
+  criaHeranca, HERANCA_BONUS,
 } from "./afty-invocacoes";
 import { periciasParaInvocacao, DANO_ADICIONAL_ARMA } from "./afty-pericias";
 import {
-  EQUIP_TIPOS, CUSTOS, ARMA_CATEGORIAS, ARMA_GRUPOS, TIPOS_DANO, tiposDeDanoDaCategoria,
+  EQUIP_TIPOS, CUSTOS, ARMA_CATEGORIAS, ARMA_GRUPOS, TIPOS_DANO, tiposDeDanoDaCategoria, ARMAS,
   ITEM_CATEGORIAS, catalogoDoTipo, novaEntradaEquip,
   getEquipamento,
   orcamentoDoGrau, espacosDoEquipamento, custoDoEquipamento,
@@ -1350,12 +1358,20 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
   const removeHorda = (id) => setDraft((d) => ({ ...d, hordas: hordasArr(d).filter((x) => x.id !== id) }));
   // Quimeras: principal + fundidas (por id) das invocações. Só com a primitiva `quimera`.
   const quimerasArr = (d) => (Array.isArray(d.quimeras) ? d.quimeras : []);
-  const addQuimera = () => setDraft((d) => ({ ...d, quimeras: [...quimerasArr(d), createBlankQuimera()] }));
+  /* A regra da Quimera nova (DA-06): a oficial é a do Mecânicas. Só quando a aba
+     abriu pela primitiva do addon, sem o Controlador 5, ela nasce "addon". */
+  const addQuimera = (regra = "mecanicas") => setDraft((d) => ({ ...d, quimeras: [...quimerasArr(d), createBlankQuimera(regra)] }));
   const removeQuimera = (id) => setDraft((d) => ({ ...d, quimeras: quimerasArr(d).filter((x) => x.id !== id) }));
   const patchQuimera = (id, partial) =>
     setDraft((d) => ({ ...d, quimeras: quimerasArr(d).map((x) => (x.id === id ? { ...x, ...partial } : x)) }));
   const patchHorda = (id, partial) =>
     setDraft((d) => ({ ...d, hordas: hordasArr(d).map((x) => (x.id === id ? { ...x, ...partial } : x)) }));
+  // Corpos de Múltiplos Núcleos (2026-10-01, Etapa 9): dois núcleos (por id) de Corpo.
+  const nucleosArr = (d) => (Array.isArray(d.multiplosNucleos) ? d.multiplosNucleos : []);
+  const addNucleos = () => setDraft((d) => ({ ...d, multiplosNucleos: [...nucleosArr(d), createBlankNucleos()] }));
+  const removeNucleos = (id) => setDraft((d) => ({ ...d, multiplosNucleos: nucleosArr(d).filter((x) => x.id !== id) }));
+  const patchNucleos = (id, partial) =>
+    setDraft((d) => ({ ...d, multiplosNucleos: nucleosArr(d).map((x) => (x.id === id ? { ...x, ...partial } : x)) }));
 
   // Aba Cálculos: sobrescreve o VALOR FINAL de um stat (padrão StatField).
   const setStatOverride = (key, val) =>
@@ -1665,7 +1681,7 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
 {tabAtiva === "habilidades" && <TabHabilidades draft={draft} derived={derived} patchCore={patchCore} toggleArmaDedicada={toggleArmaDedicada} addFeitico={addFeitico} updateFeitico={updateFeitico} removeFeitico={removeFeitico} patchFeitico={patchFeitico} duplicarFeitico={duplicarFeitico} setReducoesCustoFeitico={setReducoesCustoFeitico} setTreinoEscolhaFeiticos={setTreinoEscolhaFeiticos} toggleEstiloTabela={toggleEstiloTabela} addEstiloEspecial={addEstiloEspecial} removeEstilo={removeEstilo} patchEstilo={patchEstilo} addFuncionamento={addFuncionamento} removeFuncionamento={removeFuncionamento} patchFuncionamento={patchFuncionamento} setGeralVezes={setGeralVezes} addDominio={addDominio} removeDominio={removeDominio} patchDominio={patchDominio} setDominioAtivo={setDominioAtivo} sistema={sistema} />}
           {tabAtiva === "especializacoes" && <TabEspecializacoes draft={draft} derived={derived} setEspecializacoes={setEspecializacoes} toggleHabilidade={toggleHabilidade} setHabilidadeVezes={setHabilidadeVezes} toggleEscolhaHabilidade={toggleEscolhaHabilidade} toggleTalento={toggleTalento} setTalentoVezes={setTalentoVezes} toggleEscolhaTalento={toggleEscolhaTalento} setMelhoriaVezes={setMelhoriaVezes} toggleLendaria={toggleLendaria} toggleEscolhaAltoNivel={toggleEscolhaAltoNivel} patchTecnicasCombate={patchTecnicasCombate} patchTalentosConfig={patchTalentosConfig} />}
           {tabAtiva === "aptidoes" && <TabAptidoes draft={draft} derived={derived} setAptidaoNivel={setAptidaoNivel} toggleAptidao={toggleAptidao} setAptidaoOpcao={setAptidaoOpcao} setAptidaoVezes={setAptidaoVezes} setAptidaoOpcaoRepetida={setAptidaoOpcaoRepetida} />}
-          {tabAtiva === "invocacoes" && <TabInvocacoes draft={draft} derived={derived} addInvocacao={addInvocacao} removeInvocacao={removeInvocacao} duplicarInvocacao={duplicarInvocacao} moverInvocacao={moverInvocacao} patchInvocacao={patchInvocacao} patchInvocacaoAttr={patchInvocacaoAttr} efeitosApi={efeitosApi} addHorda={addHorda} removeHorda={removeHorda} patchHorda={patchHorda} addQuimera={addQuimera} removeQuimera={removeQuimera} patchQuimera={patchQuimera} />}
+          {tabAtiva === "invocacoes" && <TabInvocacoes draft={draft} derived={derived} addInvocacao={addInvocacao} removeInvocacao={removeInvocacao} duplicarInvocacao={duplicarInvocacao} moverInvocacao={moverInvocacao} patchInvocacao={patchInvocacao} patchInvocacaoAttr={patchInvocacaoAttr} efeitosApi={efeitosApi} addHorda={addHorda} removeHorda={removeHorda} patchHorda={patchHorda} addQuimera={addQuimera} removeQuimera={removeQuimera} patchQuimera={patchQuimera} addNucleos={addNucleos} removeNucleos={removeNucleos} patchNucleos={patchNucleos} />}
           {tabAtiva === "equipamentos" && <TabEquipamentos draft={draft} derived={derived} addEquipamento={addEquipamento} removeEquipamento={removeEquipamento} patchEquipamento={patchEquipamento} toggleFerramenta={toggleFerramenta} patchFerramenta={patchFerramenta} toggleEncantamento={toggleEncantamento} addArmaCustom={addArmaCustom} patchArmaCustom={patchArmaCustom} removeArmaCustom={removeArmaCustom} addAcessorioUnico={addAcessorioUnico} patchAcessorioUnico={patchAcessorioUnico} removeAcessorioUnico={removeAcessorioUnico} criados={criados} />}
           {tabAtiva === "interludios" && <TabInterludios draft={draft} derived={derived} setTreinoProgresso={setTreinoProgresso} setTreinoInstance={setTreinoInstance} setTreinoAlvo={setTreinoAlvo} setTreinoEscolha={setTreinoEscolha} setTreinoEspecialVezes={setTreinoEspecialVezes} setTreinoEspecialProgresso={setTreinoEspecialProgresso} sistema={sistema} setFocosLivres={setFocosLivres} addForja={addForja} patchForja={patchForja} removeForja={removeForja} />}
           {tabAtiva === "defesas" && <TabDefesas derived={derived} setDefesaEstado={setDefesaEstado} setDefesaRd={setDefesaRd} />}
@@ -16232,8 +16248,15 @@ function InvocacaoCorpo({ rd, tamanho, fontes }) {
    começa em 10 e reduz só até 8, enquanto o resto começa em 8 e reduz até 6.
    Com o piso fixo em 6 o campo deixava baixar um Shikigami de Técnica abaixo do
    que a regra dele permite. */
-function InvocacaoAtributos({ inv, resumo, max, efe, onPatchAttr }) {
-  const over = resumo && resumo.usados > resumo.total;
+/* O teto de atributo de uma ficha adaptada (a Maldição Domada): o de qualquer
+   invocação, o mesmo da Herança das Sombras ("até um máximo de 30"). */
+const INV_ATTR_TETO_ABSOLUTO = 30;
+
+/* ⚠ `adaptada` (2026-09-30, Etapa 8): a Maldição Domada mantém os atributos da
+   maldição subjugada ("Seus atributos Base são mantidos"), então não há
+   point-buy para contar nem máximo do grau para travar. */
+function InvocacaoAtributos({ inv, resumo, max, efe, onPatchAttr, adaptada = false }) {
+  const over = !adaptada && resumo && resumo.usados > resumo.total;
   const base = resumo?.base ?? INV_ATTR_MIN + 2;
   const min = resumo?.min ?? INV_ATTR_MIN;
   const fontesPts = fontesDoCanal(efe, "atributoPontos");
@@ -16241,14 +16264,14 @@ function InvocacaoAtributos({ inv, resumo, max, efe, onPatchAttr }) {
     <div>
       <div className="flex items-center justify-between mb-1.5">
         <span className="text-[10px] uppercase tracking-wider text-slate-400">Atributos</span>
-        <span className={`relative group/apt text-[11px] font-mono tabular-nums px-2 py-0.5 rounded border ${
+        {!adaptada && <span className={`relative group/apt text-[11px] font-mono tabular-nums px-2 py-0.5 rounded border ${
           over ? "text-rose-300 border-rose-800 bg-rose-950/30" : "text-slate-300 border-slate-700 bg-slate-800/50"
         } ${fontesPts.length ? "cursor-help" : ""}`}>
           {resumo?.usados ?? 0} / {resumo?.total ?? 0} pts
           {fontesPts.length > 0 && (
             <PainelDeFontes partes={fontesPts} total={sinalDe(somaDasFontes(fontesPts))} aparecer="group-hover/apt:block" />
           )}
-        </span>
+        </span>}
       </div>
       {/* Empilhado (rótulo + mod em cima, campo largo embaixo): dá espaço ao
           número e deixa os botões +/- proporcionalmente menores. */}
@@ -16300,10 +16323,11 @@ function InvocacaoAtributos({ inv, resumo, max, efe, onPatchAttr }) {
  * um save, e um mapa sem teto daria TR de graça a toda invocação que já existe.
  * O que a Herança e a Quimera concedem entra por FUSÃO e não passa por aqui.
  */
-function InvocacaoResistencias({ inv, onPatch }) {
+function InvocacaoResistencias({ inv, onPatch, adaptada = false }) {
   const prof = trProfDaInvocacao(inv);
   const usadas = usoTR(prof);
-  const over = usadas > TR_VAGAS_BASE;
+  // A Maldição Domada mantém os treinos da maldição, sem a vaga base (Etapa 8).
+  const over = !adaptada && usadas > TR_VAGAS_BASE;
   const cycle = (id) => {
     const cur = prof[id];
     const next = { ...prof };
@@ -16321,11 +16345,11 @@ function InvocacaoResistencias({ inv, onPatch }) {
         <span className="text-[10px] uppercase tracking-wider text-slate-400" title="Clique cicla treinado, mestre">
           Testes de Resistência
         </span>
-        <span className={`text-[11px] font-mono tabular-nums px-2 py-0.5 rounded border ${
+        {!adaptada && <span className={`text-[11px] font-mono tabular-nums px-2 py-0.5 rounded border ${
           over ? "text-rose-300 border-rose-800 bg-rose-950/30" : "text-slate-300 border-slate-700 bg-slate-800/50"
         }`}>
           {usadas} / {TR_VAGAS_BASE}
-        </span>
+        </span>}
       </div>
       <div className="flex flex-wrap gap-1.5">
         {TR_OPCOES.map((r) => {
@@ -16354,7 +16378,9 @@ function InvocacaoResistencias({ inv, onPatch }) {
   );
 }
 
-function InvocacaoPericias({ inv, allowance, fontes, onPatch }) {
+/* `adaptada`: a Maldição Domada mantém as perícias da maldição ("Seus
+   Treinamentos e Masterizações são mantidos"), sem a cota do guia de criação. */
+function InvocacaoPericias({ inv, allowance, fontes, onPatch, adaptada = false }) {
   /* ⚠ A CONTA INTEIRA, e não só o canal. Antes daqui saía `fontesDoCanal(efe,
      "pericias")`, então uma invocação sem nenhuma Habilidade que desse vaga não
      tinha hover NENHUM, e com uma tinha um painel que ignorava a base (1, mais
@@ -16362,7 +16388,7 @@ function InvocacaoPericias({ inv, allowance, fontes, onPatch }) {
   const fontesVagas = fontes?.vagasPericia ?? [];
   const prof = (inv.periciasProf && typeof inv.periciasProf === "object") ? inv.periciasProf : {};
   const usadas = usoPericias(prof); // Mestre gasta 2, Treinado gasta 1
-  const over = usadas > allowance;
+  const over = !adaptada && usadas > allowance;
   // Clique cicla: nada -> treinado -> mestre -> nada.
   const cycle = (id) => {
     const cur = prof[id];
@@ -16376,14 +16402,14 @@ function InvocacaoPericias({ inv, allowance, fontes, onPatch }) {
     <div>
       <div className="flex items-center justify-between mb-1.5">
         <span className="text-[10px] uppercase tracking-wider text-slate-400" title="Clique cicla treinado, mestre">Perícias</span>
-        <span className={`relative group/vag text-[11px] font-mono tabular-nums px-2 py-0.5 rounded border ${
+        {!adaptada && <span className={`relative group/vag text-[11px] font-mono tabular-nums px-2 py-0.5 rounded border ${
           over ? "text-rose-300 border-rose-800 bg-rose-950/30" : "text-slate-300 border-slate-700 bg-slate-800/50"
         } ${fontesVagas.length ? "cursor-help" : ""}`}>
           {usadas} / {allowance}
           {fontesVagas.length > 0 && (
             <PainelDeFontes partes={fontesVagas} total={sinalDe(somaDasFontes(fontesVagas))} aparecer="group-hover/vag:block" />
           )}
-        </span>
+        </span>}
       </div>
       <div className="flex flex-wrap gap-1.5">
         {periciasParaInvocacao().map((p) => {
@@ -16477,11 +16503,14 @@ function InvocacaoLinha({ inv, resolvida }) {
   );
 }
 
-/* Os Tipos de Invocação, com o rótulo curto do chip de filtro. */
+/* Os Tipos de Invocação, com o rótulo curto do chip de filtro. O curto sai da
+   tabela de regras por tipo (afty-invocacoes-tipos.js), e não de um mapa
+   escrito aqui: com cinco tipos, o mapa à mão rotulava a Marionete e o Corpo
+   como "Invocação". */
 const TIPOS_INVOCACAO_DA_LISTA = AFTY_INV_TIPOS.map((t) => ({
   value: t.value,
   label: t.label,
-  curto: t.value === "tecnica" ? "Técnica" : t.value === "maldicao" ? "Maldição" : "Invocação",
+  curto: t.curto,
 }));
 
 /* O campo de Retrato de UMA invocação. ⚠ REUSA o `RetratoFocoPicker` da aba
@@ -16722,7 +16751,8 @@ function BarraResultado({ r, orcamento, orcOver, avisos }) {
       <div ref={filaRef} className="flex flex-wrap items-center gap-1.5">
         <ValorBarra dataId="pv" icon={Heart} label="Vida" valor={r.pv} ancora={ancoras.pv}
           partes={fontes.pv} grupo="group/pv" aparecer="group-hover/pv:block" />
-        <ValorBarra dataId="alma" icon={Sparkles} label="Integridade" curto="Integ." valor={r.almaMax} />
+        {/* A Marionete não tem alma (Etapa 8): o traço no lugar de um zero. */}
+        <ValorBarra dataId="alma" icon={Sparkles} label="Integridade" curto="Integ." valor={r.temAlma === false ? "-" : r.almaMax} />
         <ValorBarra dataId="def" icon={Shield} label="Defesa" valor={r.defesa} ancora={ancoras.def}
           partes={fontes.defesa} grupo="group/def" aparecer="group-hover/def:block" />
         <ValorBarra dataId="desl" icon={Footprints} label="Desloc." valor={r.deslocamento != null ? `${r.deslocamento} m` : "-"} ancora={ancoras.desl}
@@ -16759,7 +16789,10 @@ function BarraResultado({ r, orcamento, orcOver, avisos }) {
    O que ficou aberto lá em cima é o que se mexe sempre: o Nome e o Grau. O
    preço de recolher os Marcadores é uma escolha em falta passar batida, e é
    por isso que a sub-aba acende o triângulo quando isso acontece. */
-function PerfilInvocacao({ inv, intermediario, marcadores, outrasInvocacoes, onPatch }) {
+function PerfilInvocacao({ inv, resolvida, intermediario, marcadores, outrasInvocacoes, onPatch }) {
+  const tipo = tipoMecanicoDaInvocacao(inv);
+  const refeicao = resolvida?.refeicao ?? null;
+  const trsRefeicao = Array.isArray(inv.refeicaoTrs) ? inv.refeicaoTrs : [];
   return (
     <div className="space-y-3">
       <div>
@@ -16769,14 +16802,191 @@ function PerfilInvocacao({ inv, intermediario, marcadores, outrasInvocacoes, onP
             sem nenhuma opção acesa. O campo Sabor saiu junto: ele só rotulava o
             Dispositivo. */}
         <OptionChips
-          value={tipoMecanicoDaInvocacao(inv)}
+          value={tipo}
           options={AFTY_INV_TIPOS.map((t) => ({ value: t.value, label: t.label }))}
           onChange={(v) => onPatch({ tipoMecanico: v })}
         />
       </div>
+      {/* ---------- os campos de cada tipo especial (2026-09-30, Etapa 8) ---------- */}
+      {/* O Fundamento: nem toda Invocação de Técnica é a Técnica Inata (PV-15). */}
+      {tipo === "tecnica" && (
+        <div className="flex items-center gap-2 flex-wrap">
+          <BoolChip ativo={!!inv.fundamento} onToggle={() => onPatch({ fundamento: !inv.fundamento })}>
+            Fundamento
+          </BoolChip>
+        </div>
+      )}
+      {/* A Marionete se faz e se repara pelo Ofício do material. */}
+      {tipo === "marionete" && (
+        <div>
+          <FieldLabel>Ofício do Material</FieldLabel>
+          <OptionChips
+            value={inv.oficio || ""}
+            options={OFICIOS_DE_MARIONETE.map((o) => ({ value: o, label: o }))}
+            onChange={(v) => onPatch({ oficio: v })}
+          />
+        </div>
+      )}
+      {/* O Corpo é boneco ou biológico, e o biológico tem uma refeição de Cozinheiro. */}
+      {tipo === "corpo" && (
+        <div className="space-y-2">
+          <div>
+            <FieldLabel>Natureza</FieldLabel>
+            <OptionChips
+              value={inv.natureza || ""}
+              options={NATUREZAS_DE_CORPO}
+              onChange={(v) => onPatch({ natureza: v })}
+            />
+          </div>
+          {inv.natureza === "biologico" && (
+            <div>
+              <FieldLabel>Refeição</FieldLabel>
+              <OptionChips
+                value={inv.refeicao || ""}
+                options={REFEICOES_DE_CORPO}
+                onChange={(v) => onPatch({ refeicao: v })}
+              />
+            </div>
+          )}
+          {refeicao?.id === "nutritiva" && (
+            <div>
+              <FieldLabel>TRs da Refeição {trsRefeicao.length} / {refeicao.limiteTrs}</FieldLabel>
+              <div className="flex flex-wrap gap-1.5">
+                {AFTY_RESISTENCIAS.map((r) => {
+                  const ativo = trsRefeicao.includes(r.value);
+                  return (
+                    <BoolChip
+                      key={r.value}
+                      ativo={ativo}
+                      bloqueado={!ativo && trsRefeicao.length >= refeicao.limiteTrs}
+                      lockTitle="Limite de TRs da refeição"
+                      onToggle={() => onPatch({
+                        refeicaoTrs: ativo ? trsRefeicao.filter((t) => t !== r.value) : [...trsRefeicao, r.value],
+                      })}
+                    >
+                      {r.label}
+                    </BoolChip>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+          {refeicao && refeicao.id !== "nutritiva" && (
+            <span className="text-[11px] font-mono text-purple-300">{refeicao.texto}</span>
+          )}
+        </div>
+      )}
       <InvocacaoMarcadores inv={inv} marcadores={marcadores} outrasInvocacoes={outrasInvocacoes} onPatch={onPatch} />
       <InvocacaoRetrato inv={inv} onPatch={onPatch} />
       <InvocacaoAparencia inv={inv} onPatch={onPatch} />
+    </div>
+  );
+}
+
+/* A família de uma ficha de invocação (shikigami, maldicao, marionete, corpo). */
+const regraDeFamilia = (inv) => AFTY_INV_TIPOS_FAMILIA[tipoMecanicoDaInvocacao(inv)] ?? "shikigami";
+const AFTY_INV_TIPOS_FAMILIA = { shikigami: "shikigami", tecnica: "shikigami", maldicao: "maldicao", marionete: "marionete", corpo: "corpo" };
+
+/* ============================================================ */
+/* HERANÇAS DAS SOMBRAS (2026-10-01, Etapa 10)                   */
+/* ============================================================ */
+/* Cada Herança copia a sombra exorcizada NA CRIAÇÃO (a cópia é congelada), e as
+   escolhas são da herdeira: o bônus, o atributo (no empate), a resistência ou
+   imunidade, a Ação, a Característica e os dois treinos. As Heranças que a sombra
+   já carregava vêm junto e contam como desta. */
+function InvocacaoHerancas({ inv, origens = [], resolvidaDe, onPatch }) {
+  const lista = Array.isArray(inv.herancas) ? inv.herancas : [];
+  const patchH = (id, p) => onPatch({ herancas: lista.map((h) => (h.id === id ? { ...h, ...p } : h)) });
+  const patchEsc = (h, p) => patchH(h.id, { escolhas: { ...(h.escolhas || {}), ...p } });
+  const nova = (origemId) => {
+    const origem = origens.find((o) => o.id === origemId);
+    if (origem) onPatch({ herancas: [...lista, criaHeranca(origem, resolvidaDe(origem.id))] });
+  };
+  const treinoOpcoes = [
+    ...AFTY_RESISTENCIAS.map((r) => ({ value: `tr|${r.value}`, label: `TR ${r.label}` })),
+    { value: "ataque|corpo", label: "Ataque Corpo a Corpo" },
+    { value: "ataque|distancia", label: "Ataque a Distância" },
+    ...periciasParaInvocacao().map((p) => ({ value: `pericia|${p.id}`, label: p.nome })),
+  ];
+  const rotuloAtributo = (k) => AFTY_ATTRS.find((a) => a.key === k)?.label ?? k;
+  return (
+    <div className="space-y-3">
+      {lista.map((h) => {
+        const e = h.escolhas || {};
+        const c = h.copia || {};
+        const treinos = Array.isArray(e.treinos) ? e.treinos : [];
+        const setTreino = (i, v) => {
+          const novo = [treinos[0] ?? null, treinos[1] ?? null];
+          const [tipo, id] = String(v || "").split("|");
+          novo[i] = v ? { tipo, id } : null;
+          patchEsc(h, { treinos: novo.filter(Boolean) });
+        };
+        const resOpcoes = [
+          ...(c.resistencias ?? []).map((r) => ({ value: `tipo:${r.tipo}`, label: `Resistência a ${r.label}` })),
+          ...(c.imunidades ?? []).map((i) => ({ value: `imunidade:${i}`, label: `Imunidade a ${i}` })),
+        ];
+        const maiores = c.maioresAtributos ?? [];
+        const nHerdadas = (h.herdadas ?? []).length;
+        return (
+          <div key={h.id} className="rounded-lg border border-slate-700/80 bg-slate-950/40 px-3 py-2.5 space-y-3">
+            <div className="flex items-center gap-2">
+              <span className="flex-1 min-w-0 text-sm font-semibold text-white truncate">Herança de {h.origemNome || "Sombra"}</span>
+              {nHerdadas > 0 && (
+                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded border border-purple-800/60 bg-purple-950/40 text-purple-300 flex-shrink-0">
+                  +{nHerdadas} Herdada{nHerdadas > 1 ? "s" : ""}
+                </span>
+              )}
+              <button type="button" onClick={() => onPatch({ herancas: lista.filter((x) => x.id !== h.id) })} className="text-slate-600 hover:text-rose-300 p-1 rounded flex-shrink-0" aria-label="Remover herança">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div>
+              <FieldLabel>Bônus</FieldLabel>
+              <OptionChips value={e.bonus || ""} options={HERANCA_BONUS} onChange={(v) => patchEsc(h, { bonus: v })} />
+            </div>
+            {maiores.length > 1 && (
+              <div>
+                <FieldLabel>Atributo (+2)</FieldLabel>
+                <OptionChips value={e.atributo || maiores[0]} options={maiores.map((k) => ({ value: k, label: rotuloAtributo(k) }))} onChange={(v) => patchEsc(h, { atributo: v })} />
+              </div>
+            )}
+            <div className="grid gap-3 sm:grid-cols-3">
+              {resOpcoes.length > 0 && (
+                <div>
+                  <FieldLabel>Resistência ou Imunidade</FieldLabel>
+                  <Select value={e.resistencia || ""} onChange={(v) => patchEsc(h, { resistencia: v })} options={resOpcoes} placeholder="nenhuma..." />
+                </div>
+              )}
+              <div>
+                <FieldLabel>Ação</FieldLabel>
+                <Select value={e.acaoId || ""} onChange={(v) => patchEsc(h, { acaoId: v })} options={(c.acoes ?? []).map((a) => ({ value: a.id, label: a.nome || "Ação" }))} placeholder="nenhuma..." />
+              </div>
+              <div>
+                <FieldLabel>Característica</FieldLabel>
+                <Select value={e.caracteristicaId || ""} onChange={(v) => patchEsc(h, { caracteristicaId: v })} options={(c.caracteristicas ?? []).map((x) => ({ value: x.id, label: x.nome || "Característica" }))} placeholder="nenhuma..." />
+              </div>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {[0, 1].map((i) => (
+                <div key={i}>
+                  <FieldLabel>{i === 0 ? "Primeiro Treino" : "Segundo Treino"}</FieldLabel>
+                  <Select
+                    value={treinos[i] ? `${treinos[i].tipo}|${treinos[i].id}` : ""}
+                    onChange={(v) => setTreino(i, v)}
+                    options={treinoOpcoes}
+                    placeholder="escolher treino..."
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+      {origens.length > 0 && (
+        <div className="sm:max-w-xs">
+          <Select value="" onChange={nova} options={origens.map((o) => ({ value: o.id, label: o.nome || grauMeta(o.grau).label }))} placeholder="nova herança de..." />
+        </div>
+      )}
     </div>
   );
 }
@@ -16828,7 +17038,7 @@ function DetalheResultado({ r, avisos }) {
    O desenho antigo intercalava as quatro: campo, número, campo, número. Assim
    não havia como saber, de relance, se o que se está olhando é coisa que se
    edita ou coisa que o motor devolveu. */
-function InvocacaoCard({ inv, resolvida, grausOk, marcadores, outrasInvocacoes, podeSubir, podeDescer, onPatch, onPatchAttr, onRemove, onDuplicar, onSubir, onDescer, acoesApi, caracApi }) {
+function InvocacaoCard({ inv, resolvida, grausOk, marcadores, outrasInvocacoes, podeSubir, podeDescer, onPatch, onPatchAttr, onRemove, onDuplicar, onSubir, onDescer, acoesApi, caracApi, herancaLiberada = false, origensDeHeranca = [], resolvidaDe = () => null }) {
   const [subtab, setSubtab] = useState("atributos");
   const [confirmDel, setConfirmDel] = useState(false);
   const g = grauMeta(inv.grau);
@@ -16858,6 +17068,12 @@ function InvocacaoCard({ inv, resolvida, grausOk, marcadores, outrasInvocacoes, 
     { id: "acoes", label: "Ações", n: (inv.acoes || []).length },
     { id: "caracteristicas", label: "Caract.", n: (inv.caracteristicas || []).length },
     { id: "perfil", label: "Perfil", aviso: perfilAviso },
+    /* A Herança das Sombras (2026-10-01, Etapa 10): só nos Shikigamis, e só com
+       ela liberada (uma Invocação de Técnica, ou a primitiva de addon), ou com
+       Herança já gravada. */
+    ...((herancaLiberada || (inv.herancas ?? []).length > 0) && r.familia === "shikigami"
+      ? [{ id: "herancas", label: "Heranças", n: (inv.herancas ?? []).length, aviso: (r.herancas ?? []).length > 0 && (r.warnings ?? []).some((w) => w.startsWith("Herança de")) }]
+      : []),
   ];
 
   /* ⚠ A trava por Nível de Controlador NÃO vale para um shikigami de Feitiço.
@@ -16865,7 +17081,11 @@ function InvocacaoCard({ inv, resolvida, grausOk, marcadores, outrasInvocacoes, 
      travava a invocação num grau que o próprio Feitiço da ficha exigia: um
      Controlador de nível 1 com um Feitiço de Nível 5 via o Grau Especial
      desabilitado e não tinha como satisfazer o aviso que a ficha dava. */
-  const grausBloqueados = r.shikigami
+  /* ⚠ NEM A MALDIÇÃO DOMADA (2026-09-30, Etapa 8): "O grau da maldição é
+     equivalente ao seu grau original", o da maldição subjugada, e não o que o
+     Controlador alcança. A ficha dela é adaptada (`regras.fichaAdaptada`). */
+  const fichaAdaptada = !!r.regras?.fichaAdaptada;
+  const grausBloqueados = r.shikigami || fichaAdaptada
     ? []
     : AFTY_INV_GRAUS.filter((gr) => !grausOk.includes(gr.value)).map((gr) => gr.value);
   const grauOptions = AFTY_INV_GRAUS.map((gr) => ({
@@ -16977,8 +17197,15 @@ function InvocacaoCard({ inv, resolvida, grausOk, marcadores, outrasInvocacoes, 
         </div>
 
         <div className="pt-3">
+          {/* ⚠ O TETO É O DO RESOLVIDO, e não o da tabela (2026-09-30, E-08): o
+              canal `limiteAtributo` sobe o máximo do grau, e o campo travava na
+              tabela mesmo assim, num número que o resolvedor aceitava. */}
           {subtab === "atributos" && (
-            <InvocacaoAtributos inv={inv} resumo={r.atributos} max={tabAttr.max} efe={r.efeitosHabilidade} onPatchAttr={onPatchAttr} />
+            <InvocacaoAtributos
+              inv={inv} resumo={r.atributos} efe={r.efeitosHabilidade} onPatchAttr={onPatchAttr}
+              adaptada={fichaAdaptada}
+              max={fichaAdaptada ? INV_ATTR_TETO_ABSOLUTO : (r.atributos?.max ?? tabAttr.max)}
+            />
           )}
 
           {subtab === "treino" && (
@@ -16993,13 +17220,17 @@ function InvocacaoCard({ inv, resolvida, grausOk, marcadores, outrasInvocacoes, 
                   />
                 </div>
               </div>
-              <InvocacaoResistencias inv={inv} onPatch={onPatch} />
-              <InvocacaoPericias inv={inv} allowance={r.pericias?.allowance ?? 0} fontes={r.fontes} onPatch={onPatch} />
+              <InvocacaoResistencias inv={inv} onPatch={onPatch} adaptada={fichaAdaptada} />
+              <InvocacaoPericias inv={inv} allowance={r.pericias?.allowance ?? 0} fontes={r.fontes} onPatch={onPatch} adaptada={fichaAdaptada} />
             </div>
           )}
 
+          {subtab === "herancas" && (
+            <InvocacaoHerancas inv={inv} origens={origensDeHeranca} resolvidaDe={resolvidaDe} onPatch={onPatch} />
+          )}
+
           {subtab === "perfil" && (
-            <PerfilInvocacao inv={inv} intermediario={r.intermediario} marcadores={marcadores} outrasInvocacoes={outrasInvocacoes} onPatch={onPatch} />
+            <PerfilInvocacao inv={inv} resolvida={r} intermediario={r.intermediario} marcadores={marcadores} outrasInvocacoes={outrasInvocacoes} onPatch={onPatch} />
           )}
 
           {(subtab === "acoes" || subtab === "caracteristicas") && (
@@ -17324,6 +17555,32 @@ function AcaoCard({ acao, res, grau, otimizacaoEnergia, grupos, efe, onPatch, on
             )}
           </div>
 
+          {/* As marcas do Adicionais (2026-10-01, Etapa 11): Reação, Manobra e as
+              duas Ações especiais, com o custo e o grau de cada uma no resultado. */}
+          <div className="flex flex-wrap items-center gap-1.5">
+            <BoolChip ativo={!!acao.reacao} onToggle={() => onPatch({ reacao: !acao.reacao })}>Reação</BoolChip>
+            <BoolChip ativo={!!acao.manobra} onToggle={() => onPatch({ manobra: !acao.manobra })}>Manobra</BoolChip>
+            <OptionChips
+              value={acao.especial || ""}
+              options={[{ value: "", label: "Comum" }, { value: "reducaoCura", label: "Reduzir Cura" }, { value: "cobertura", label: "Cobertura" }]}
+              onChange={(v) => onPatch({ especial: v })}
+            />
+            {acao.especial === "reducaoCura" && (
+              <OptionChips
+                value={acao.reducaoCura || "terco"}
+                options={[{ value: "terco", label: "Em 1/3 (8 PE)" }, { value: "metade", label: "Pela Metade (10 PE)" }]}
+                onChange={(v) => onPatch({ reducaoCura: v })}
+              />
+            )}
+            {acao.especial === "cobertura" && (
+              <OptionChips
+                value={acao.cobertura || "meia"}
+                options={[{ value: "meia", label: "Meia (4 PE)" }, { value: "tresQuartos", label: "3/4 (6 PE)" }]}
+                onChange={(v) => onPatch({ cobertura: v })}
+              />
+            )}
+          </div>
+
           {/* ============================================================ */}
           {/* 3. A MECÂNICA, NUMA FILA SÓ QUE EMBRULHA                     */}
           {/* ============================================================ */}
@@ -17580,6 +17837,32 @@ function ResumoDaAcao({ res, classe, partes }) {
   );
 }
 
+/* As fileiras de chips de tipo de Característica, uma por categoria do catálogo. */
+const GRUPOS_CHIP_CARAC = [
+  { categoria: "modificadora", rotulo: "Modificadoras" },
+  { categoria: "intrinseca", rotulo: "Intrínsecas" },
+  { categoria: "aura", rotulo: "Auras" },
+  { categoria: "livre", rotulo: "Livre" },
+];
+
+/* Os tipos de ataque que a Aura de Acerto especifica (os ataques do dono). */
+const ATAQUE_DE_AURA_OPCOES = [
+  { value: "corpo", label: "Corpo a Corpo" }, { value: "distancia", label: "A Distância" },
+  { value: "amaldicoado", label: "Amaldiçoado" },
+];
+
+/* O rótulo curto do chip de tipo, quando o nome do catálogo é longo demais para
+   uma fileira de chips. O resto usa o nome do catálogo. */
+const ROTULO_CHIP_CARAC = {
+  vida: "Vida", teste: "Teste", resistencia: "TR", tamanho: "Tamanho",
+  nivelDano: "Nível de Dano", danoDurante: "Dado de Dano", curaBonus: "Cura",
+  resilienciaAlternativa: "Resiliência", resistenciaDano: "Resistência",
+  // Na fileira "Auras" o cabeçalho já diz que é Aura.
+  auraAcerto: "Acerto", auraDefesa: "Defesa", auraTR: "TR", auraPericia: "Perícia",
+  auraRD: "RD", auraDano: "Dado de Dano",
+  polegaresOpositores: "Polegares Opositores", tracadoAlma: "Traçado da Alma",
+};
+
 /* Resumo curto de uma Característica resolvida. */
 function resumoCaracTexto(res) {
   if (!res) return "";
@@ -17587,13 +17870,30 @@ function resumoCaracTexto(res) {
     case "vida": return `+${res.valor} PV`;
     case "teste": return `+${res.valor}${res.requerGatilho ? " (gatilho)" : ""}`;
     case "resistencia":
-      return res.profLabel
-        ? `${res.profLabel}${res.trTipoLabel ? ` em ${res.trTipoLabel}` : ""}`
-        : "fora do grau";
+      return `${res.profLabel}${res.trTipoLabel ? ` em ${res.trTipoLabel}` : ""}`;
     case "rd": return res.rdTipoLabel ? `${res.valor} RD ${res.rdTipoLabel}` : `${res.valor} RD`;
     case "tamanho": return res.tamanho ? (AFTY_TAMANHOS.find((t) => t.value === res.tamanho)?.label ?? res.tamanho) : "tamanho";
+    // As modificadoras do catálogo de 2026-09-30.
+    case "defesa": return `+${res.valor} Defesa`;
+    case "nivelDano": return `+${res.valor} Nível de Dano`;
+    case "danoDurante": return `+1d${res.valor}`;
+    case "curaBonus": return `+${res.valor} Cura`;
+    case "arsenal": return `${res.valor} Itens`;
+    case "estiloCombate": return res.atributoLabel ? `Combate por ${res.atributoLabel}` : "atributo";
+    case "resilienciaAlternativa": return res.atributoLabel ? `PV por ${res.atributoLabel}` : "atributo";
+    case "resistenciaDano": return res.tipoDanoLabel ? `Resistência a ${res.tipoDanoLabel}` : "tipo de dano";
+    // As Auras e as Intrínsecas de 2026-09-30 (Etapa 6).
+    case "formaArma": return res.arma?.nome ?? "arma";
+    case "laceracaoConstante": return `Cura −${res.valor}`;
+    case "corridaPerfurante": return `Até ${res.valor}d6`;
     // A Livre com Motor diz o que concede, no texto que o motor já monta.
-    default: return res.resumoMotor || "passiva";
+    default:
+      if (res.aura) {
+        if (!res.valor) return "sem aura";
+        return res.canalDono === "dadosNomeados" ? `Aura 1d${res.valor}` : `Aura +${res.valor}${res.alvoLabel ? ` ${res.alvoLabel}` : ""}`;
+      }
+      if (res.intrinseca) return res.catalogoNome;
+      return res.resumoMotor || "passiva";
   }
 }
 
@@ -17626,15 +17926,32 @@ function CaracteristicaCard({ carac, res, grau, grupos, onPatch, onRemove }) {
 
           <div>
             <FieldLabel>Tipo</FieldLabel>
-            <OptionChips
-              value={carac.subtipo}
-              options={[
-                { value: "vida", label: "Vida" }, { value: "teste", label: "Teste" },
-                { value: "resistencia", label: "Resistência" },
-                { value: "rd", label: "RD" }, { value: "tamanho", label: "Tamanho" }, { value: "livre", label: "Livre" },
-              ]}
-              onChange={(v) => onPatch({ subtipo: v })}
-            />
+            {/* Os tipos saem do CATÁLOGO (2026-09-30, afty-invocacoes-caracteristicas.js),
+                e não de uma lista escrita aqui, numa fileira por categoria. A Aura
+                abaixo do Segundo Grau aparece travada, com o motivo. */}
+            <div className="space-y-1.5">
+              {GRUPOS_CHIP_CARAC.map((grupoChip) => {
+                const opcoes = CARACTERISTICAS_INVOCACAO.filter((c) => c.categoria === grupoChip.categoria);
+                if (!opcoes.length) return null;
+                return (
+                  <div key={grupoChip.categoria}>
+                    <span className="text-[10px] uppercase tracking-wider text-slate-500">{grupoChip.rotulo}</span>
+                    <OptionChips
+                      value={carac.subtipo}
+                      options={opcoes.map((c) => ({
+                        value: c.id,
+                        label: ROTULO_CHIP_CARAC[c.id] ?? c.nome,
+                        lockTitle: c.grauMin ? "Só a partir do Segundo Grau" : undefined,
+                      }))}
+                      disabledValues={opcoes
+                        .filter((c) => c.grauMin && grauMeta(grau).rank < grauMeta(c.grauMin).rank)
+                        .map((c) => c.id)}
+                      onChange={(v) => onPatch({ subtipo: v })}
+                    />
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           {carac.subtipo === "teste" && (
@@ -17664,15 +17981,105 @@ function CaracteristicaCard({ carac, res, grau, grupos, onPatch, onRemove }) {
               )}
             </div>
           )}
-          {/* ⚠ SÓ O TR, e nenhum campo de faixa: quem decide Treinado ou Mestre
-              é o GRAU (Segundo e Primeiro treinam, Especial domina, e os dois
-              graus de baixo não têm a Característica). Um seletor de faixa aqui
-              seria uma escolha que o livro não dá. O resultado sai na pastilha
-              do resumo, e o grau que não alcança sai como aviso. */}
+          {/* ⚠ A FAIXA VIROU ESCOLHA em 2026-09-30 (decisão do autor, Adicionais):
+              TR Treinada em qualquer grau, e TR Mestre só num TR já treinado. A
+              Característica salva sem faixa lê a que concedia (Mestre no Especial,
+              Treinado nos outros), e é ela que o chip mostra aceso. */}
           {carac.subtipo === "resistencia" && (
+            <div className="space-y-3">
+              <div>
+                <FieldLabel>Faixa</FieldLabel>
+                <OptionChips
+                  value={res?.prof ?? carac.prof ?? "treinado"}
+                  options={[{ value: "treinado", label: "TR Treinada" }, { value: "mestre", label: "TR Mestre" }]}
+                  onChange={(v) => onPatch({ prof: v })}
+                />
+              </div>
+              <div className="sm:max-w-xs">
+                <FieldLabel hint="exceto Integridade">Teste de Resistência</FieldLabel>
+                <Select value={carac.trTipo} onChange={(v) => onPatch({ trTipo: v })} options={TR_OPCOES} placeholder="escolher..." />
+              </div>
+            </div>
+          )}
+          {/* As escolhas das modificadoras de 2026-09-30 moram em `parametros`,
+              um campo só para todas, e não um campo novo por Característica. */}
+          {(carac.subtipo === "estiloCombate" || carac.subtipo === "resilienciaAlternativa") && (
             <div className="sm:max-w-xs">
-              <FieldLabel hint="exceto Integridade">Teste de Resistência</FieldLabel>
-              <Select value={carac.trTipo} onChange={(v) => onPatch({ trTipo: v })} options={TR_OPCOES} placeholder="escolher..." />
+              <FieldLabel>Atributo</FieldLabel>
+              <Select
+                value={carac.parametros?.atributo ?? ""}
+                onChange={(v) => onPatch({ parametros: { ...(carac.parametros || {}), atributo: v } })}
+                options={ATTR_OPCOES}
+                placeholder="escolher..."
+              />
+            </div>
+          )}
+          {/* As escolhas das Intrínsecas e Auras de 2026-09-30, também em `parametros`. */}
+          {(() => {
+            const entrada = CARACTERISTICAS_INVOCACAO.find((c) => c.id === carac.subtipo);
+            const ps = entrada?.categoria === "intrinseca" || entrada?.categoria === "aura" ? (entrada.parametros || []) : [];
+            const valorDe = (k) => carac.parametros?.[k] ?? "";
+            const poe = (k, v) => onPatch({ parametros: { ...(carac.parametros || {}), [k]: v } });
+            const campos = [];
+            for (const k of ps) {
+              if (k === "arma") {
+                const maximo = CUSTO_DE_FORMA_POR_GRAU[grauMeta(grau).value] ?? 1;
+                campos.push(
+                  <div key={k} className="sm:max-w-xs">
+                    <FieldLabel>Arma</FieldLabel>
+                    <Select
+                      value={valorDe(k)}
+                      onChange={(v) => poe(k, v)}
+                      options={ARMAS.filter((a) => (a.custo ?? 1) <= maximo).map((a) => ({ value: a.id, label: a.nome }))}
+                      placeholder="escolher..."
+                    />
+                  </div>,
+                );
+              } else if (k === "ataque" || k === "tr" || k === "pericia" || k === "tipoDano") {
+                const opcoes = k === "ataque" ? ATAQUE_DE_AURA_OPCOES
+                  : k === "tr" ? TR_OPCOES
+                    : k === "pericia" ? periciasParaInvocacao().map((p) => ({ value: p.id, label: p.nome }))
+                      : Object.entries(TIPOS_DANO).map(([v, l]) => ({ value: v, label: l }));
+                const rotulo = { ataque: "Ataque", tr: "Teste de Resistência", pericia: "Perícia", tipoDano: "Tipo de Dano" }[k];
+                campos.push(
+                  <div key={k} className="sm:max-w-xs">
+                    <FieldLabel>{rotulo}</FieldLabel>
+                    <Select value={valorDe(k)} onChange={(v) => poe(k, v)} options={opcoes} placeholder="escolher..." />
+                  </div>,
+                );
+              } else {
+                const rotulo = { armadura: "Armadura ou Uniforme", encantamento: "Encantamento", percepcao: "Percepção Especial" }[k] ?? k;
+                campos.push(
+                  <div key={k} className="sm:max-w-xs">
+                    <FieldLabel>{rotulo}</FieldLabel>
+                    <TextInput value={valorDe(k)} onChange={(v) => poe(k, v)} placeholder={rotulo.toLowerCase()} />
+                  </div>,
+                );
+              }
+            }
+            if (entrada?.requisitos?.confirmacao) {
+              const k = entrada.requisitos.confirmacao;
+              campos.push(
+                <div key={k}>
+                  <OptionChips
+                    value={carac.parametros?.[k] ? "sim" : "nao"}
+                    options={[{ value: "sim", label: "Dono Vê e Fere a Alma" }, { value: "nao", label: "Não Confirmado" }]}
+                    onChange={(v) => poe(k, v === "sim")}
+                  />
+                </div>,
+              );
+            }
+            return campos.length ? <div className="space-y-3">{campos}</div> : null;
+          })()}
+          {carac.subtipo === "resistenciaDano" && (
+            <div className="sm:max-w-xs">
+              <FieldLabel>Tipo de Dano</FieldLabel>
+              <Select
+                value={carac.parametros?.tipoDano ?? ""}
+                onChange={(v) => onPatch({ parametros: { ...(carac.parametros || {}), tipoDano: v } })}
+                options={Object.entries(TIPOS_DANO).map(([v, l]) => ({ value: v, label: l }))}
+                placeholder="escolher..."
+              />
             </div>
           )}
           {carac.subtipo === "rd" && (
@@ -17781,9 +18188,12 @@ function LimitesResumo({ acesso, controle, marcadores }) {
       { label: "Recebidas", valor: controle.iniciais },
       { label: "Em Campo", valor: controle.limiteCampo },
       { label: "Por Invocar", valor: controle.invocarPorAcao },
-      { label: "Comandos", valor: controle.comandos },
+      // Os comandos separados (2026-09-30): Complexas pela Ação Comum, Simples pela Bônus.
+      { label: "Complexas", valor: controle.comandosComplexas ?? controle.comandos },
+      { label: "Simples", valor: controle.comandosSimples ?? controle.comandos },
     );
     if (controle.criarHorda) limites.push({ label: "Hordas", valor: controle.limiteHordas });
+    if (controle.hordasPorAcao > 1) limites.push({ label: "Por Criar Horda", valor: controle.hordasPorAcao });
   }
   const marcas = marcadores ?? [];
   if (!limites.length && !marcas.length && !controle?.invocarAcaoLivre) return null;
@@ -17794,7 +18204,7 @@ function LimitesResumo({ acesso, controle, marcadores }) {
       ))}
       {controle?.invocarAcaoLivre && (
         <span className="inline-flex items-center gap-1 px-2 py-1 rounded border border-purple-800/60 bg-purple-950/40 text-[11px] text-purple-300">
-          Invocar Como Ação Livre
+          Invocar como Ação Livre
         </span>
       )}
       {/* Contador por marcador, com a estrela para separar do teto do
@@ -17819,8 +18229,26 @@ function LimitesResumo({ acesso, controle, marcadores }) {
   );
 }
 
-function TabInvocacoes({ draft, derived, addInvocacao, removeInvocacao, duplicarInvocacao, moverInvocacao, patchInvocacao, patchInvocacaoAttr, efeitosApi, addHorda, removeHorda, patchHorda, addQuimera, removeQuimera, patchQuimera }) {
-  const temQuimera = usePrimitiva("quimera");
+function TabInvocacoes({ draft, derived, addInvocacao, removeInvocacao, duplicarInvocacao, moverInvocacao, patchInvocacao, patchInvocacaoAttr, efeitosApi, addHorda, removeHorda, patchHorda, addQuimera, removeQuimera, patchQuimera, addNucleos, removeNucleos, patchNucleos }) {
+  const temQuimeraAddon = usePrimitiva("quimera");
+  /* A Herança das Sombras é "para os Usuários de Dez Sombras e técnicas
+     semelhantes": abre com uma Invocação de Técnica, ou pela primitiva de addon. */
+  const temHerancaAddon = usePrimitiva("heranca");
+  /* OS COMPOSTOS PELO NÍVEL REAL (DA-13, 2026-10-01): a Quimera do Mecânicas e o
+     Corpo de Múltiplos Núcleos pedem "5 níveis em Controlador". A Quimera do addon
+     segue pela primitiva. O card também aparece com Quimera já gravada, para
+     nada sumir da tela. */
+  const nivelReal = derived.invocacoes?.nivelControladorReal ?? 0;
+  const brutasQuimeras = Array.isArray(draft.quimeras) ? draft.quimeras : [];
+  const temQuimera = temQuimeraAddon || nivelReal >= 5 || brutasQuimeras.length > 0;
+  const regraNova = nivelReal >= 5 || !temQuimeraAddon ? "mecanicas" : "addon";
+  const brutasNucleos = Array.isArray(draft.multiplosNucleos) ? draft.multiplosNucleos : [];
+  const temNucleos = nivelReal >= 5 || brutasNucleos.length > 0;
+  /* A Horda pede Criar Horda (o Disperso). Sem ela, o card só aparece para não
+     esconder horda já gravada, com o aviso. */
+  const controle = derived.invocacoes?.controle ?? {};
+  const brutasHordas = Array.isArray(draft.hordas) ? draft.hordas : [];
+  const temHordas = !!controle.criarHorda || brutasHordas.length > 0;
   const lista = Array.isArray(draft.invocacoes) ? draft.invocacoes : [];
   const resolvidas = derived.invocacoes.lista;
   const resolvidaDe = (id) => resolvidas.find((r) => r.id === id);
@@ -17932,6 +18360,9 @@ function TabInvocacoes({ draft, derived, addInvocacao, removeInvocacao, duplicar
               resolvida={resolvidaDe(escolhida.id)}
               grausOk={grausOk}
               marcadores={derived.invocacoes.marcadores}
+              herancaLiberada={temHerancaAddon || lista.some((i) => tipoMecanicoDaInvocacao(i) === "tecnica")}
+              origensDeHeranca={lista.filter((i) => i.id !== escolhida.id && regraDeFamilia(i) === "shikigami")}
+              resolvidaDe={resolvidaDe}
               outrasInvocacoes={lista
                 .filter((i) => i.id !== escolhida.id)
                 .map((i) => ({
@@ -17956,24 +18387,42 @@ function TabInvocacoes({ draft, derived, addInvocacao, removeInvocacao, duplicar
       )}
     </Card>
 
-    <HordasCard
-      fichas={lista}
-      resolvidas={derived.hordas.lista}
-      custoTotal={derived.hordas.custoTotal}
-      addHorda={addHorda}
-      removeHorda={removeHorda}
-      patchHorda={patchHorda}
-    />
+    {temHordas && (
+      <HordasCard
+        fichas={lista}
+        brutas={brutasHordas}
+        resolvidas={derived.hordas.lista}
+        resolvidasInv={resolvidas}
+        custoTotal={derived.hordas.custoTotal}
+        semCriarHorda={!controle.criarHorda}
+        hoste={!!derived.invocacoes?.hosteAmaldicoada}
+        excluidos={brutasNucleos.flatMap((g) => g.nucleoIds ?? [])}
+        addHorda={addHorda}
+        removeHorda={removeHorda}
+        patchHorda={patchHorda}
+      />
+    )}
 
     {temQuimera && (
       <QuimerasCard
         fichas={lista}
-        brutas={Array.isArray(draft.quimeras) ? draft.quimeras : []}
+        brutas={brutasQuimeras}
         resolvidas={derived.quimeras?.lista ?? []}
         custoTotal={derived.quimeras?.custoTotal ?? 0}
-        addQuimera={addQuimera}
+        addQuimera={() => addQuimera(regraNova)}
         removeQuimera={removeQuimera}
         patchQuimera={patchQuimera}
+      />
+    )}
+
+    {temNucleos && (
+      <NucleosCard
+        fichas={lista}
+        brutas={brutasNucleos}
+        resolvidas={derived.multiplosNucleos?.lista ?? []}
+        addNucleos={addNucleos}
+        removeNucleos={removeNucleos}
+        patchNucleos={patchNucleos}
       />
     )}
     </>
@@ -17997,6 +18446,18 @@ function QuimeraCard({ quimera, res, fichas, onPatch, onRemove }) {
   const r = res?.resolvida;
   const attrs = r?.atributos?.valores ?? {};
   const grupos = useMemo(() => vocabularioInvocacao(r?.contextoDsl), [r?.contextoDsl]);
+  /* A REGRA (DA-06): explícita no card, e trocar é um clique da pessoa, nunca uma
+     conversão calada. Na do Mecânicas não há Passiva de Nível nem lista própria
+     de Ações: valem as da principal e até duas escolhas de cada adicional. */
+  const regra = regraDaQuimera(quimera);
+  const mecanicas = regra === "mecanicas";
+  const escolhas = (quimera.escolhas && typeof quimera.escolhas === "object") ? quimera.escolhas : {};
+  const alternaEscolha = (compId, tipo, itemId) => {
+    const atual = Array.isArray(escolhas[compId]) ? escolhas[compId] : [];
+    const tem = atual.some((e) => e.tipo === tipo && e.id === itemId);
+    const novo = tem ? atual.filter((e) => !(e.tipo === tipo && e.id === itemId)) : [...atual, { tipo, id: itemId }];
+    onPatch({ escolhas: { ...escolhas, [compId]: novo } });
+  };
 
   /* Ações e Características são da própria Quimera. Sem lista gravada (Quimera
      antiga) valem as da principal, e a primeira edição grava a lista. */
@@ -18034,6 +18495,9 @@ function QuimeraCard({ quimera, res, fichas, onPatch, onRemove }) {
               {res.total} fundidas
             </span>
           )}
+          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded border border-slate-700 text-slate-400 flex-shrink-0">
+            {regraDaQuimera(quimera) === "mecanicas" ? "Mecânicas" : "Addon"}
+          </span>
         </button>
         {res?.valido && (
           <span className="hidden sm:flex items-center gap-2 flex-shrink-0 font-mono text-[11px] tabular-nums text-slate-400">
@@ -18053,10 +18517,22 @@ function QuimeraCard({ quimera, res, fichas, onPatch, onRemove }) {
               <FieldLabel>Nome</FieldLabel>
               <TextInput value={quimera.nome} onChange={(v) => onPatch({ nome: v })} placeholder="Nome da quimera" />
             </div>
-            <div>
-              <FieldLabel hint="quantas invocações pode fundir">Passiva de Nível</FieldLabel>
-              <Select value={String(nivel)} onChange={(v) => onPatch({ nivel: Number(v) })} options={INV_QUIMERA_NIVEIS.map((n) => ({ value: String(n), label: `Nível ${n} (até ${n})` }))} />
-            </div>
+            {mecanicas ? (
+              <div>
+                <FieldLabel>Funde Até</FieldLabel>
+                <span className="text-[12px] font-mono text-slate-300">{res?.limite || 0} Invocações</span>
+              </div>
+            ) : (
+              <div>
+                <FieldLabel hint="quantas invocações pode fundir">Passiva de Nível</FieldLabel>
+                <Select value={String(nivel)} onChange={(v) => onPatch({ nivel: Number(v) })} options={INV_QUIMERA_NIVEIS.map((n) => ({ value: String(n), label: `Nível ${n} (até ${n})` }))} />
+              </div>
+            )}
+          </div>
+
+          <div>
+            <FieldLabel>Regra</FieldLabel>
+            <OptionChips value={regra} options={QUIMERA_REGRAS} onChange={(v) => onPatch({ regra: v })} />
           </div>
 
           <div className="sm:max-w-xs">
@@ -18070,7 +18546,7 @@ function QuimeraCard({ quimera, res, fichas, onPatch, onRemove }) {
 
           {principal && (
             <div>
-              <FieldLabel hint={`até ${nivel - 1} além da principal`}>Invocações fundidas</FieldLabel>
+              <FieldLabel hint={`até ${(mecanicas ? (res?.limite || 2) : nivel) - 1} além da principal`}>Invocações fundidas</FieldLabel>
               <div className="flex flex-wrap gap-1.5">
                 {fichas.filter((f) => f.id !== principal.id).map((f) => (
                   <BoolChip key={f.id} ativo={fundidasIds.includes(f.id)} onToggle={() => toggleFundida(f.id)}>
@@ -18120,7 +18596,41 @@ function QuimeraCard({ quimera, res, fichas, onPatch, onRemove }) {
                 })}
               </div>
 
-              {subtab === "acoes" && (
+              {subtab === "acoes" && mecanicas && (
+                <div className="space-y-3">
+                  {/* Mecânicas: as da principal entram todas, e de cada adicional
+                      até duas Ações ou Características (PV-03). */}
+                  {fundidasFichas.filter((f) => f.id !== principal?.id).map((f) => {
+                    const sel = Array.isArray(escolhas[f.id]) ? escolhas[f.id] : [];
+                    const itens = [
+                      ...(f.acoes ?? []).map((a) => ({ tipo: "acao", id: a.id, nome: a.nome || "Ação" })),
+                      ...(f.caracteristicas ?? []).map((c) => ({ tipo: "caracteristica", id: c.id, nome: c.nome || "Característica" })),
+                    ];
+                    return (
+                      <div key={f.id}>
+                        <FieldLabel>{nomeDe(f)} {sel.length} / 2</FieldLabel>
+                        {itens.length === 0 ? (
+                          <p className="text-[11px] text-slate-500">Sem Ações nem Características.</p>
+                        ) : (
+                          <div className="flex flex-wrap gap-1.5">
+                            {itens.map((it) => {
+                              const ativo = sel.some((e) => e.tipo === it.tipo && e.id === it.id);
+                              return (
+                                <BoolChip key={`${it.tipo}|${it.id}`} ativo={ativo} bloqueado={!ativo && sel.length >= 2}
+                                  lockTitle="Duas escolhas por invocação" onToggle={() => alternaEscolha(f.id, it.tipo, it.id)}>
+                                  {it.nome}
+                                </BoolChip>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {subtab === "acoes" && !mecanicas && (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-[10px] uppercase tracking-wider text-slate-500">Orçamento (principal + 1 por fundida)</span>
@@ -18244,7 +18754,7 @@ function QuimerasCard({ fichas, brutas, resolvidas, custoTotal, addQuimera, remo
         <div className="space-y-2.5">
           {resolvidas.map((res) => {
             const quimera = brutas.find((x) => x.id === res.id)
-              ?? { id: res.id, nome: res.nome, principalId: res.principalId, fundidasIds: res.fundidasIds, nivel: res.nivel };
+              ?? { id: res.id, nome: res.nome, principalId: res.principalId, fundidasIds: res.fundidasIds, nivel: res.nivel, regra: res.regra };
             return (
               <QuimeraCard
                 key={res.id}
@@ -18266,16 +18776,22 @@ function QuimerasCard({ fichas, brutas, resolvidas, custoTotal, addQuimera, remo
 }
 
 /* Uma Horda: escolhe um líder (Primeiro Grau ou inferior) e membros de grau
-   inferior. Custo, PV e tamanho crescem, e as ações do líder escalam. */
-function HordaCard({ horda, res, fichas, onPatch, onRemove }) {
+   inferior. Custo, PV e tamanho crescem, e as ações do líder escalam.
+   Desde 2026-10-01 (Etapa 9): o par da Hoste Amaldiçoada (o líder desce um grau)
+   e a escolha do Líder de Horda, quando o líder tem a Característica. */
+function HordaCard({ horda, res, fichas, outras = [], hosteLiberada = false, excluidos = [], liderRes = null, onPatch, onRemove }) {
   const [open, setOpen] = useState(!horda.nome);
+  const hoste = !!horda.hoste;
   const lider = fichas.find((x) => x.id === horda.liderId) || null;
-  const lideres = lideresElegiveis(fichas);
-  const membros = membrosElegiveis(fichas, lider);
+  const lideres = lideresElegiveis(fichas, { hoste, excluidos });
+  const membros = membrosElegiveis(fichas, lider, { excluidos });
   const nomeDe = (inv) => inv.nome || grauMeta(inv.grau).label;
   const membroIds = Array.isArray(horda.membroIds) ? horda.membroIds : [];
+  const escolhaLider = horda.liderHorda ?? { membroId: "", caracId: "" };
+  const temLiderHorda = (liderRes?.intrinsecas ?? []).some((i) => i.subtipo === "liderHorda" && !i.bloqueada);
+  const membroDaEscolha = fichas.find((x) => x.id === escolhaLider.membroId) || null;
 
-  const setLider = (id) => onPatch({ liderId: id, membroIds: [] }); // trocar líder zera membros
+  const setLider = (id) => onPatch({ liderId: id, membroIds: [], liderHorda: { membroId: "", caracId: "" } }); // trocar líder zera membros
   const toggleMembro = (id) =>
     onPatch({ membroIds: membroIds.includes(id) ? membroIds.filter((x) => x !== id) : [...membroIds, id] });
 
@@ -18291,6 +18807,10 @@ function HordaCard({ horda, res, fichas, onPatch, onRemove }) {
               {res?.membrosCount ?? 0} membro{(res?.membrosCount ?? 0) !== 1 ? "s" : ""}
             </span>
           )}
+          {hoste && (
+            <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded border border-slate-700 text-slate-400 flex-shrink-0">Hoste</span>
+          )}
+          {res?.warnings?.length > 0 && <AlertTriangle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" aria-label="Avisos" />}
         </button>
         {res?.valido && (
           <span className="hidden sm:flex items-center gap-2 flex-shrink-0 font-mono text-[11px] tabular-nums text-slate-400">
@@ -18310,10 +18830,29 @@ function HordaCard({ horda, res, fichas, onPatch, onRemove }) {
             <TextInput value={horda.nome} onChange={(v) => onPatch({ nome: v })} placeholder="Nome da horda" />
           </div>
 
+          {/* A Hoste Amaldiçoada: o par de hordas da mesma ação, que conta como uma. */}
+          {(hosteLiberada || hoste) && (
+            <div className="flex items-center gap-2 flex-wrap">
+              <BoolChip ativo={hoste} onToggle={() => onPatch({ hoste: !hoste, parId: hoste ? "" : horda.parId })}>
+                Hoste Amaldiçoada
+              </BoolChip>
+              {hoste && (
+                <div className="min-w-[12rem]">
+                  <Select
+                    value={horda.parId || ""}
+                    onChange={(v) => onPatch({ parId: v })}
+                    options={outras.map((o) => ({ value: o.id, label: o.nome || "Horda sem nome" }))}
+                    placeholder="horda do par..."
+                  />
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="sm:max-w-xs">
-            <FieldLabel hint="Primeiro Grau ou inferior">Líder</FieldLabel>
+            <FieldLabel hint={hoste ? "Segundo Grau ou inferior" : "Primeiro Grau ou inferior"}>Líder</FieldLabel>
             {lideres.length === 0 ? (
-              <p className="text-[11px] text-slate-500">Nenhuma invocação de Primeiro Grau ou inferior para liderar.</p>
+              <p className="text-[11px] text-slate-500">Nenhuma invocação pode liderar.</p>
             ) : (
               <Select value={horda.liderId} onChange={setLider} options={lideres.map((inv) => ({ value: inv.id, label: `${nomeDe(inv)} (${grauMeta(inv.grau).label})` }))} placeholder="escolher líder..." />
             )}
@@ -18331,6 +18870,32 @@ function HordaCard({ horda, res, fichas, onPatch, onRemove }) {
                       {nomeDe(m)} <span className="text-[9px] opacity-70">({grauMeta(m.grau).label})</span>
                     </BoolChip>
                   ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Líder de Horda (Adicionais): um membro e uma Característica dele. */}
+          {lider && temLiderHorda && membroIds.length > 0 && (
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <FieldLabel>Líder de Horda: Membro</FieldLabel>
+                <Select
+                  value={escolhaLider.membroId || ""}
+                  onChange={(v) => onPatch({ liderHorda: { membroId: v, caracId: "" } })}
+                  options={membroIds.map((id) => fichas.find((x) => x.id === id)).filter(Boolean).map((m) => ({ value: m.id, label: nomeDe(m) }))}
+                  placeholder="escolher membro..."
+                />
+              </div>
+              {membroDaEscolha && (
+                <div>
+                  <FieldLabel>Característica</FieldLabel>
+                  <Select
+                    value={escolhaLider.caracId || ""}
+                    onChange={(v) => onPatch({ liderHorda: { ...escolhaLider, caracId: v } })}
+                    options={(membroDaEscolha.caracteristicas ?? []).map((c) => ({ value: c.id, label: c.nome || "Característica" }))}
+                    placeholder="escolher característica..."
+                  />
                 </div>
               )}
             </div>
@@ -18393,8 +18958,9 @@ function HordaCard({ horda, res, fichas, onPatch, onRemove }) {
   );
 }
 
-function HordasCard({ fichas, resolvidas, custoTotal, addHorda, removeHorda, patchHorda }) {
-  const temLider = lideresElegiveis(fichas).length > 0;
+function HordasCard({ fichas, brutas = [], resolvidas, resolvidasInv = [], custoTotal, semCriarHorda = false, hoste = false, excluidos = [], addHorda, removeHorda, patchHorda }) {
+  const temLider = lideresElegiveis(fichas, { hoste: false, excluidos }).length > 0
+    || lideresElegiveis(fichas, { hoste: true, excluidos }).length > 0;
   const lista = resolvidas;
 
   return (
@@ -18412,6 +18978,12 @@ function HordasCard({ fichas, resolvidas, custoTotal, addHorda, removeHorda, pat
         ) : null
       }
     >
+      {/* E-02: Criar Horda vem do Controle Disperso. Horda gravada sem ele fica, com aviso. */}
+      {semCriarHorda && (
+        <p className="text-[11px] text-amber-400 flex items-center gap-1.5 mb-2">
+          <AlertTriangle className="w-3 h-3 flex-shrink-0" aria-hidden="true" /> Sem Criar Horda (Apogeu: Controle Disperso).
+        </p>
+      )}
       {!temLider ? (
         <div className="text-center py-6 border border-dashed border-slate-700 rounded-lg text-sm text-slate-500">
           Crie ao menos uma invocação de Primeiro Grau ou inferior para formar hordas.
@@ -18428,13 +19000,18 @@ function HordasCard({ fichas, resolvidas, custoTotal, addHorda, removeHorda, pat
       ) : (
         <div className="space-y-2.5">
           {lista.map((res) => {
-            const horda = { id: res.id, nome: res.nome, liderId: res.liderId, membroIds: res.membros };
+            const horda = brutas.find((x) => x.id === res.id)
+              ?? { id: res.id, nome: res.nome, liderId: res.liderId, membroIds: res.membros };
             return (
               <HordaCard
                 key={res.id}
                 horda={horda}
                 res={res}
                 fichas={fichas}
+                outras={brutas.filter((x) => x.id !== res.id)}
+                hosteLiberada={hoste}
+                excluidos={excluidos}
+                liderRes={resolvidasInv.find((r) => r.id === horda.liderId) ?? null}
                 onPatch={(partial) => patchHorda(res.id, partial)}
                 onRemove={() => removeHorda(res.id)}
               />
@@ -18442,6 +19019,77 @@ function HordasCard({ fichas, resolvidas, custoTotal, addHorda, removeHorda, pat
           })}
           <button type="button" onClick={addHorda} className="w-full inline-flex items-center justify-center gap-1.5 text-[12px] font-semibold px-3 py-2 rounded-lg border border-dashed border-slate-700 text-slate-400 hover:text-white hover:border-slate-600">
             <Plus className="w-3.5 h-3.5" /> Nova horda
+          </button>
+        </div>
+      )}
+    </Card>
+  );
+}
+
+/* ============================================================ */
+/* CORPOS DE MÚLTIPLOS NÚCLEOS (2026-10-01, Etapa 9)             */
+/* ============================================================ */
+/* Dois Corpos da lista viram um só na mesa: mesmo tipo de Corpo, mesmo grau,
+   mesmo mod de CON e mesmo PV (os avisos vêm do resolvedor). A Ação "Trocar
+   Núcleo" é do grupo, e não precisa ser criada em nenhuma das fichas. */
+function NucleosCard({ fichas, brutas = [], resolvidas = [], addNucleos, removeNucleos, patchNucleos }) {
+  const corpos = fichas.filter((f) => tipoMecanicoDaInvocacao(f) === "corpo");
+  const nomeDe = (inv) => inv.nome || grauMeta(inv.grau).label;
+  const botao = "inline-flex items-center gap-1.5 text-[12px] font-semibold px-3 py-1.5 rounded-lg border border-purple-700 bg-purple-800/40 text-purple-200 hover:bg-purple-700/50";
+  return (
+    <Card title="Múltiplos Núcleos">
+      {corpos.length < 2 && brutas.length === 0 ? (
+        <div className="text-center py-6 border border-dashed border-slate-700 rounded-lg text-sm text-slate-500">
+          Crie ao menos dois Corpos Amaldiçoados para juntar núcleos.
+        </div>
+      ) : (
+        <div className="space-y-2.5">
+          {brutas.map((g) => {
+            const res = resolvidas.find((r) => r.id === g.id) ?? null;
+            const ids = Array.isArray(g.nucleoIds) ? g.nucleoIds : [];
+            const setNucleo = (i, v) => {
+              const novo = [ids[0] ?? "", ids[1] ?? ""];
+              novo[i] = v;
+              patchNucleos(g.id, { nucleoIds: novo.filter(Boolean) });
+            };
+            return (
+              <div key={g.id} className="rounded-lg border border-slate-700/80 bg-slate-950/40 px-3 py-2.5 space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 min-w-0">
+                    <TextInput value={g.nome} onChange={(v) => patchNucleos(g.id, { nome: v })} placeholder="Nome do corpo" />
+                  </div>
+                  {res?.valido && (
+                    <span className="font-mono text-[11px] tabular-nums text-slate-400 flex-shrink-0" title="Pontos de Vida">PV {res.pv}</span>
+                  )}
+                  <button type="button" onClick={() => removeNucleos(g.id)} className="text-slate-600 hover:text-rose-300 p-1 rounded flex-shrink-0" aria-label="Remover corpo de múltiplos núcleos">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {[0, 1].map((i) => (
+                    <div key={i}>
+                      <FieldLabel>{i === 0 ? "Primeiro Núcleo" : "Segundo Núcleo"}</FieldLabel>
+                      <Select
+                        value={ids[i] ?? ""}
+                        onChange={(v) => setNucleo(i, v)}
+                        options={corpos.filter((c) => c.id === ids[i] || !ids.includes(c.id)).map((c) => ({ value: c.id, label: `${nomeDe(c)} (${grauMeta(c.grau).label})` }))}
+                        placeholder="escolher corpo..."
+                      />
+                    </div>
+                  ))}
+                </div>
+                {res?.warnings?.length > 0 && (
+                  <ul className="space-y-1">
+                    {res.warnings.map((w, i) => (
+                      <li key={i} className="text-[11px] text-amber-400 flex items-start gap-1.5"><AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" aria-hidden="true" /> {w}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            );
+          })}
+          <button type="button" onClick={addNucleos} className={brutas.length ? "w-full inline-flex items-center justify-center gap-1.5 text-[12px] font-semibold px-3 py-2 rounded-lg border border-dashed border-slate-700 text-slate-400 hover:text-white hover:border-slate-600" : botao}>
+            <Plus className="w-3.5 h-3.5" /> Novo Corpo de Múltiplos Núcleos
           </button>
         </div>
       )}
