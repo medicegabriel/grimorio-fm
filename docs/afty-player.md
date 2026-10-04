@@ -151,6 +151,22 @@ ganha a mesma linha.
 pegas e nenhum Interlúdio anotado, e é o piso que impede os Focos daquelas pegas de voltarem ao
 orçamento calados.
 
+## O DESENVOLVIMENTO INESPERADO DO DERIVADO
+
+Desde 2026-10-01 (divergência `desenvolvimentoNoNivel`, decidida pelo autor por pergunta com
+opções, depois do relato de que o jogador Derivado "considera como se fosse Inato"). O texto da
+origem: *"A cada quatro níveis, recebe um ponto de atributo adicional e aumenta em 1 o limite do
+atributo escolhido."*
+
+- **O ponto entra no contador de Pontos de Nível**, livre, como os de nível. O derive devolve
+  `attrNivelExtra` (1 no nível 4, 2 no 8, até 5 no 20) e o `resumoAtributos` soma no total. O
+  Derivado de nível 8 mostra "Pontos de nível 0 / 6", e o Inato segue 0 / 4.
+- **O quadro Desenvolvimento Inesperado sobe só o limite**, +1 por escolha, em qualquer atributo.
+  Na criatura ele continua subindo valor e limite do mesmo atributo.
+- **A ficha salva não migra.** O mapa `core.origem.desenvolvimento` é o mesmo, e no jogador ele é lido
+  como a escolha de limite: o limite fica onde estava, e o +1 de valor volta como ponto livre no
+  contador.
+
 ## O QUE FALTA, EM ORDEM DE UTILIDADE
 
 `inventarioSimplificado` é a única divergência declarada com `ativa: false`. O Estilo das

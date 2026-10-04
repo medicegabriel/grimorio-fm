@@ -373,6 +373,8 @@ export const AFTY_ORIGENS_CATALOG = [
         // Mexe no pool de pontos de atributo E no limite por atributo: caminho
         // próprio (`core.origem.desenvolvimento`), fora do Motor, igual ao bônus.
         // Alocador na aba de Atributos, e o limite entra em `attrLimiteEfetivo`.
+        // No jogador o ponto vai livre para os Pontos de Nível e o alocador sobe
+        // só o limite (divergência `desenvolvimentoNoNivel`, 2026-10-01).
         afetaAtributos: true,
       },
     ],

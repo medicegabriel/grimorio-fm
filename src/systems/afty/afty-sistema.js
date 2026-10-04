@@ -956,6 +956,25 @@ export const DIVERGENCIAS = [
     player: "grupos separados: Feitiços, Estilo e Funcionamento Básico disputam entre si, a Habilidade Única disputa só com a de outro item, e os grupos somam",
     ativa: true,
   },
+  {
+    /* O Desenvolvimento Inesperado do Derivado. Na criatura cada ponto sobe o
+       valor e o limite do mesmo atributo, num quadro próprio do card Atributos.
+       No jogador o ponto entra livre no contador de Pontos de Nível, e o quadro
+       fica só com o +1 de limite por escolha (autor, 2026-10-01, por pergunta
+       com opções, a partir do relato "considera como se fosse Inato").
+
+       ⚠ A FICHA SALVA NÃO MIGRA. O mapa `core.origem.desenvolvimento` é o mesmo
+       nos dois sistemas, e no jogador ele passa a ser lido como a escolha de
+       limite: nada é apagado, o limite fica onde estava, e o +1 de valor volta
+       como ponto livre no contador. */
+    id: "desenvolvimentoNoNivel",
+    tipo: "regra",
+    onde: "afty-derive.js (desenvValor e attrNivelExtra) e o card Atributos do criador",
+    fonte: "A cada quatro níveis, recebe um ponto de atributo adicional e aumenta em 1 o limite do atributo escolhido. (Derivado) + \"Somar no Pontos de Nível\", com o limite num quadro só de limite (autor, 2026-10-01)",
+    afty: "cada ponto sobe +1 no valor e +1 no limite do mesmo atributo, num quadro próprio",
+    player: "o ponto entra livre nos Pontos de Nível, e o quadro dá só +1 de limite por escolha",
+    ativa: true,
+  },
 ];
 
 const POR_ID = new Map(DIVERGENCIAS.map((d) => [d.id, d]));

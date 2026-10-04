@@ -91,7 +91,9 @@ export const nivelPontosUsados = (attrNivel = {}) =>
   ATTR_KEYS.reduce((s, k) => s + (attrNivel[k] || 0), 0);
 
 // ---------- Desenvolvimento Inesperado (Derivado: +1 a cada 4 ND) ----------
-// Cada ponto = +1 no valor E +1 no limite do atributo escolhido.
+// Na criatura cada ponto = +1 no valor E +1 no limite do atributo escolhido. No
+// jogador o ponto entra livre nos Pontos de Nível e o quadro sobe só o limite
+// (divergência `desenvolvimentoNoNivel`, o `attrNivelExtra` do derive).
 export const desenvolvimentoTotal = (nd) => Math.floor((nd ?? 1) / 4);
 export const desenvolvimentoUsado = (desenv = {}) =>
   ATTR_KEYS.reduce((s, k) => s + (desenv[k] || 0), 0);
@@ -117,7 +119,7 @@ export const limitePoolUsado = (mapa = {}) =>
  * avisava errado em toda ficha de Restringido (limite 30 nos físicos) e em toda
  * ficha com Incremento de Atributo. Sem o mapa, cai no 20 padrão.
  */
-export function resumoAtributos(creature, limitesEfetivos = null, perdas = null) {
+export function resumoAtributos(creature, limitesEfetivos = null, perdas = null, nivelExtra = 0) {
   const metodo = creature?.attrMethod || "pontos";
   const attrs = creature?.attributes || {};
   const nivel = creature?.attrNivel || {};
@@ -127,7 +129,9 @@ export function resumoAtributos(creature, limitesEfetivos = null, perdas = null)
   const patamar = creature?.core?.patamar || "comum";
   const limiteDe = (k) => limitesEfetivos?.[k] ?? ATTR_LIMITE_PADRAO;
 
-  const nivelTotal = nivelPontosTotal(nd, patamar);
+  // `nivelExtra` vem do derive (`attrNivelExtra`): hoje só o Desenvolvimento
+  // Inesperado do jogador, que é ponto de nível livre a mais.
+  const nivelTotal = nivelPontosTotal(nd, patamar) + Math.max(0, Math.trunc(Number(nivelExtra) || 0));
   const nivelUsado = nivelPontosUsados(nivel);
   const gasto = pointBuyGasto(attrs);
   const warnings = [];

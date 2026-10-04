@@ -1,5 +1,30 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-10-01: DESENVOLVIMENTO INESPERADO DO DERIVADO NO JOGADOR
+
+Relato do autor: o jogador Derivado não recebia o ponto de atributo do Desenvolvimento Inesperado,
+e a ficha "considera como se fosse Inato". O motor aplicava o quadro (+1 no valor e +1 no limite do
+mesmo atributo) igual nos dois sistemas e no código de antes do Controlador, então não era
+regressão. O que faltava era o ponto aparecer no contador de Pontos de Nível. O autor decidiu por
+pergunta com opções:
+
+- **só no jogador** (divergência nova `desenvolvimentoNoNivel`, `afty-sistema.js`). A criatura
+  continua com o quadro de valor e limite;
+- **o ponto entra livre nos Pontos de Nível.** O derive devolve `attrNivelExtra` (1 a cada 4
+  níveis) e `desenvolvimentoSoLimite`, e o `resumoAtributos` ganhou o quarto argumento
+  `nivelExtra`. O Derivado de nível 8 vai de 0 / 4 para 0 / 6;
+- **o quadro sobe só o limite**, +1 por escolha. O `attrDesenv` passou a ser só a parte do VALOR
+  (vazio no jogador), e o limite saiu para `attrDesenvLimite`;
+- **⚠ a ficha de jogador salva com pontos no quadro muda de número sem edição:** o mapa gravado vira
+  a escolha de limite, o atributo perde o +1 de valor e o contador mostra o ponto livre para
+  realocar. Nada é apagado.
+
+Assert novo `t-desenvolvimento-inesperado.mjs` (24), com contraprova contra o `6f5c129` (12
+falhas lá, entre elas o contador do Nível 8 em 4). `t-sistema` com a divergência nova (460).
+Suíte: 7327 asserts em 135 arquivos, só o vermelho conhecido. ESLint zerado, build limpo,
+conferido no navegador em `/Player` (contador 0 / 6, o quadro sobe só o limite) e em `/Afty`
+(contador 0 / 4, o quadro sobe valor e limite).
+
 ## SESSÕES DE 2026-09-30 E 2026-10-01: PROJETO DE CONTROLADOR E INVOCAÇÕES (ETAPAS 0 A 12)
 
 O autor mandou duas fontes novas, *Mecânicas para Invocações 2.5.2* e *Adicionais para

@@ -8625,7 +8625,7 @@ function AttributesCard({ draft, derived, patch, patchCore, patchAttr, patchNive
   // já soma o padrão, a Origem, o Desenvolvimento e o canal `limiteAtributo`.
   // Ler `draft.attrLimite` aqui era o que fazia o pool de nível de um Restringido
   // parar no 20 mesmo com o limite dele valendo 30.
-  const resumo = resumoAtributos(draft, derived.attrLimiteEfetivo, derived.attrPerda);
+  const resumo = resumoAtributos(draft, derived.attrLimiteEfetivo, derived.attrPerda, derived.attrNivelExtra);
   const nivelRestante = resumo.nivelTotal - resumo.nivelUsado;
   const somaBase = AFTY_ATTRS.reduce((s, a) => s + (draft.attributes[a.key] || 0), 0);
 
@@ -8852,13 +8852,17 @@ function AttributesCard({ draft, derived, patch, patchCore, patchAttr, patchNive
         })}
       </div>
 
-      {/* Desenvolvimento Inesperado (Derivado) — pool que sobe valor + limite */}
+      {/* Desenvolvimento Inesperado (Derivado): pool que sobe valor + limite.
+          No jogador o valor foi para os Pontos de Nível e o quadro sobe só o
+          limite (divergência `desenvolvimentoNoNivel`). */}
       {temDesenv && (
         <div className="mt-4 pt-3 border-t border-slate-800">
           <div className="flex items-center justify-between gap-3 mb-2">
             <div className="text-[11px] uppercase tracking-wider text-slate-400">
               Desenvolvimento Inesperado
-              <span className="normal-case tracking-normal text-slate-500 ml-1.5">· +1 no valor e no limite por ponto</span>
+              <span className="normal-case tracking-normal text-slate-500 ml-1.5">
+                {derived.desenvolvimentoSoLimite ? "· +1 no limite por escolha" : "· +1 no valor e no limite por ponto"}
+              </span>
             </div>
             <span className={`text-[11px] font-mono tabular-nums ${desenvUsado > desenvTotal ? "text-red-400" : "text-slate-400"}`}>
               {desenvUsado} / {desenvTotal}

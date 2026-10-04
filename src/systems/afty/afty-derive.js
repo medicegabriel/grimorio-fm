@@ -38,9 +38,10 @@ import {
 } from "./afty-schema";
 import {
   ATTR_KEYS, ATTR_LABEL, ATTR_LIMITE_PADRAO, ATTR_LIMITE_MAX, ATTR_LIMITE_ABSOLUTO,
+  desenvolvimentoTotal,
 } from "./afty-atributos";
 import {
-  resolveOrigemAttrBonus, resolveDesenvolvimento, resolveEscolhasOrigem,
+  resolveOrigemAttrBonus, resolveDesenvolvimento, origemTemDesenvolvimento, resolveEscolhasOrigem,
   limiteAtributoDaOrigem, resolveLimitePoolOrigem, origensQualificadas,
   fatorSlotsHabilidade, aptidoesConcedidasPelaOrigem, caracteristicasEfetivas,
   atributosDePericiaDaOrigem, origemMae, ehVariacaoDoRestringido, gatilhosDeOrigem,
@@ -505,6 +506,13 @@ export function deriveAfty(creature, opcoes = {}) {
   const attrBonus = resolveOrigemAttrBonus(creature);
   const nivelAlloc = creature?.attrNivel ?? {};
   const desenv = resolveDesenvolvimento(creature);
+  /* ⚠ NO JOGADOR O PONTO DO DESENVOLVIMENTO VAI PARA OS PONTOS DE NÍVEL
+     (divergência `desenvolvimentoNoNivel`, autor, 2026-10-01). O mapa gravado
+     segue subindo o LIMITE nos dois sistemas, e só na criatura sobe também o
+     valor. No jogador o valor vira ponto livre no contador, `attrNivelExtra`. */
+  const desenvSoLimite = ehJogador("desenvolvimentoNoNivel") && origemTemDesenvolvimento(core?.origem?.id);
+  const desenvValor = desenvSoLimite ? {} : desenv;
+  const nivelExtraDesenv = desenvSoLimite ? desenvolvimentoTotal(nd) : 0;
   // Pool que sobe SÓ o limite (Maldição). Irmão do desenvolvimento, e por isso
   // NÃO entra no `eff` lá embaixo: ele abre espaço, quem preenche é o jogador
   // com os pontos distribuíveis da origem.
@@ -599,7 +607,7 @@ export function deriveAfty(creature, opcoes = {}) {
      `attrBaseFinal`, logo depois do `attrLimiteEfetivo`. */
   const somaCrua = {};
   const eff = (key) => {
-    const somado = (a[key] ?? 10) + atributosAddon.bonus(key) + (nivelAlloc[key] || 0) + (desenv[key] || 0) + (attrBonus[key] || 0);
+    const somado = (a[key] ?? 10) + atributosAddon.bonus(key) + (nivelAlloc[key] || 0) + (desenvValor[key] || 0) + (attrBonus[key] || 0);
     somaCrua[key] = somado;
     const dentroDoLimite = Math.min(somado, limiteBaseOf(key));
     perdaNoLimite[key] = somado - dentroDoLimite;
@@ -3739,7 +3747,7 @@ export function deriveAfty(creature, opcoes = {}) {
       ...(atributosAddon.fontes[k] ?? []).filter((f) => f.bonusBase).map((f) => ({ label: f.nome, valor: f.bonusBase })),
       ...(nivelAlloc[k] ? [{ label: "Pontos de Nível", valor: nivelAlloc[k] }] : []),
       ...(attrBonus[k] ? [{ label: "Origem", valor: attrBonus[k] }] : []),
-      ...(desenv[k] ? [{ label: "Desenvolvimento Inesperado", valor: desenv[k] }] : []),
+      ...(desenvValor[k] ? [{ label: "Desenvolvimento Inesperado", valor: desenvValor[k] }] : []),
       ...(equip.attrBonus[k] ? [{ label: "Equipamento", valor: equip.attrBonus[k] }] : []),
       ...doMotor("atributo", k),
       ...(perdido ? [{ label: `Perdido no limite ${tetoAplicado[k] ?? attrLimiteEfetivo[k]}`, texto: `−${perdido}` }] : []),
@@ -4031,7 +4039,10 @@ export function deriveAfty(creature, opcoes = {}) {
        linha ATIVA levantou. Difere do de cima só enquanto um Feitiço Auxiliar
        de Atributo está no ar. */
     attrTetoAplicado: tetoAplicado,
-    attrDesenv: desenv,   // pontos de Desenvolvimento Inesperado por atributo
+    attrDesenv: desenvValor, // o que o Desenvolvimento Inesperado soma no VALOR (vazio no jogador)
+    attrDesenvLimite: desenv, // o que ele soma no LIMITE, nos dois sistemas
+    desenvolvimentoSoLimite: desenvSoLimite, // jogador Derivado: o quadro é só de limite
+    attrNivelExtra: nivelExtraDesenv, // pontos de nível a mais (o Desenvolvimento do jogador)
     attrBonus,            // bônus de atributo da origem (efetivo)
     attrBonusBaseAddon: Object.fromEntries(ATTR_KEYS.map((k) => [k, atributosAddon.bonus(k)])),
     attrEquip: equip.attrBonus, // acessórios de atributo (passam o limite, param em 30)
